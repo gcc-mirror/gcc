@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -453,7 +453,7 @@ package Lib is
    --  same value for each argument.
 
    function In_Same_Code_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
-   pragma Inline (In_Same_Source_Unit);
+   pragma Inline (In_Same_Code_Unit);
    --  Determines if the two nodes or entities N1 and N2 are in the same
    --  code unit, the criterion being that Get_Code_Unit yields the same
    --  value for each argument.

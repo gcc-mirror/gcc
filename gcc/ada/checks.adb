@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
@@ -514,7 +515,7 @@ package body Checks is
       else
          --  Skip generation of this code if we don't want elab code
 
-         if not Restrictions (No_Elaboration_Code) then
+         if not Restriction_Active (No_Elaboration_Code) then
             Insert_After_And_Analyze (N,
               Make_Raise_Program_Error (Loc,
                 Condition =>

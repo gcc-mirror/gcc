@@ -136,6 +136,7 @@ THREADSLIB =
 GMEM_LIB =
 MISCLIB =
 SYMLIB =
+ADDR2LINE_SYMLIB = -laddr2line -lbfd -liberty $(LIBINTL)
 SYMDEPS = $(LIBINTL_DEP)
 OUTPUT_OPTION = @OUTPUT_OPTION@
 
@@ -715,7 +716,7 @@ ifeq ($(strip $(filter-out sparc sun solaris%,$(targ))),)
 
   THREADSLIB = -lposix4 -lthread
   MISCLIB = -lposix4 -lnsl -lsocket
-  SYMLIB = -laddr2line -lbfd $(LIBINTL)
+  SYMLIB = $(ADDR2LINE_SYMLIB)
   SO_OPTS = -Wl,-h,
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
@@ -824,8 +825,10 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   s-parame.adb<5lparame.adb \
   system.ads<5lsystem.ads
 
-  TOOLS_TARGET_PAIRS = mlib-tgt.adb<5lml-tgt.adb
-  SYMLIB = -laddr2line -lbfd -liberty $(LIBINTL)
+  TOOLS_TARGET_PAIRS =  \
+    mlib-tgt.adb<5lml-tgt.adb
+
+  SYMLIB = $(ADDR2LINE_SYMLIB)
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
@@ -964,7 +967,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(targ))),)
   TOOLS_TARGET_PAIRS = mlib-tgt.adb<5hml-tgt.adb
   TGT_LIB = /usr/lib/libcl.a
   THREADSLIB = -lpthread
-  SYMLIB = -laddr2line -lbfd $(LIBINTL)
+  SYMLIB = $(ADDR2LINE_SYMLIB)
   GMEM_LIB = gmemlib
   soext = .sl
   SO_OPTS = -Wl,+h,
@@ -1030,7 +1033,7 @@ ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
 
   TOOLS_TARGET_PAIRS = mlib-tgt.adb<5bml-tgt.adb
   GMEM_LIB = gmemlib
-  SYMLIB = -laddr2line -lbfd -liberty $(LIBINTL)
+  SYMLIB = $(ADDR2LINE_SYMLIB)
 
 endif
 
@@ -1117,7 +1120,7 @@ ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<5aml-tgt.adb
 
   GMEM_LIB=gmemlib
-  SYMLIB = -laddr2line -lbfd $(LIBINTL)
+  SYMLIB = $(ADDR2LINE_SYMLIB)
   THREADSLIB = -lpthread -lmach -lexc -lrt
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   GNATLIB_SHARED = gnatlib-shared-default
@@ -1237,7 +1240,7 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<5wml-tgt.adb
   MISCLIB = -lwsock32
-  SYMLIB = -laddr2line -lbfd -liberty $(LIBINTL)
+  SYMLIB = $(ADDR2LINE_SYMLIB)
   GMEM_LIB = gmemlib
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   EXTRA_GNATTOOLS = ../../gnatdll$(exeext)
@@ -1287,7 +1290,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   system.ads<5nsystem.ads
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<5lml-tgt.adb
-  SYMLIB = -laddr2line -lbfd -liberty $(LIBINTL)
+  SYMLIB = $(ADDR2LINE_SYMLIB)
   THREADSLIB=-lpthread
   GNATLIB_SHARED=gnatlib-shared-dual
   GMEM_LIB = gmemlib

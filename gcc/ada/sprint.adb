@@ -929,7 +929,7 @@ package body Sprint is
             Sprint_Bar_List (Choices (Node));
             Write_Str (" => ");
 
-            --  Ada0Y (AI-287): Print the mbox if present
+            --  Ada 0Y (AI-287): Print the mbox if present
 
             if Box_Present (Node) then
                Write_Str_With_Col_Check ("<>");
@@ -952,11 +952,21 @@ package body Sprint is
          when N_Component_Definition =>
             Set_Debug_Sloc;
 
-            if Aliased_Present (Node) then
-               Write_Str_With_Col_Check ("aliased ");
-            end if;
+            --  Ada 0Y (AI-230): Access definition components
 
-            Sprint_Node (Subtype_Indication (Node));
+            if Present (Access_Definition (Node)) then
+               Sprint_Node (Access_Definition (Node));
+
+            elsif Present (Subtype_Indication (Node)) then
+               if Aliased_Present (Node) then
+                  Write_Str_With_Col_Check ("aliased ");
+               end if;
+
+               Sprint_Node (Subtype_Indication (Node));
+            else
+               pragma Assert (False);
+               null;
+            end if;
 
          when N_Component_Declaration =>
             if Write_Indent_Identifiers_Sloc (Node) then
@@ -1693,7 +1703,20 @@ package body Sprint is
             Set_Debug_Sloc;
             Sprint_Node (Defining_Identifier (Node));
             Write_Str (" : ");
-            Sprint_Node (Subtype_Mark (Node));
+
+            --  Ada 0Y (AI-230): Access renamings
+
+            if Present (Access_Definition (Node)) then
+               Sprint_Node (Access_Definition (Node));
+
+            elsif Present (Subtype_Mark (Node)) then
+               Sprint_Node (Subtype_Mark (Node));
+
+            else
+               pragma Assert (False);
+               null;
+            end if;
+
             Write_Str_With_Col_Check (" renames ");
             Sprint_Node (Name (Node));
             Write_Char (';');
@@ -2349,6 +2372,7 @@ package body Sprint is
             Write_Indent_Str_Sloc ("task type ");
             Write_Id (Defining_Identifier (Node));
             Write_Discr_Specs (Node);
+
             if Present (Task_Definition (Node)) then
                Write_Str (" is");
                Sprint_Node (Task_Definition (Node));
@@ -2493,7 +2517,7 @@ package body Sprint is
             else
                if First_Name (Node) or else not Dump_Original_Only then
 
-                  --  Ada0Y (AI-50217): Print limited with_clauses
+                  --  Ada 0Y (AI-50217): Print limited with_clauses
 
                   if Limited_Present (Node) then
                      Write_Indent_Str ("limited with ");

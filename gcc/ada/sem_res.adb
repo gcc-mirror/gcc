@@ -44,6 +44,7 @@ with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aggr; use Sem_Aggr;
@@ -3659,7 +3660,7 @@ package body Sem_Res is
       Scop := Current_Scope;
 
       if Nam = Scop
-        and then not Restrictions (No_Recursion)
+        and then not Restriction_Active (No_Recursion)
         and then Check_Infinite_Recursion (N)
       then
          --  Here we detected and flagged an infinite recursion, so we do

@@ -43,6 +43,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch6;
@@ -557,7 +558,7 @@ package body Exp_Ch9 is
 
          elsif Has_Entries (Typ) then
             if Abort_Allowed
-              or else Restrictions (No_Entry_Queue) = False
+              or else Restriction_Active (No_Entry_Queue) = False
               or else Number_Entries (Typ) > 1
             then
                Protection_Type := RE_Protection_Entries;
@@ -1201,35 +1202,24 @@ package body Exp_Ch9 is
       S    : Entity_Id;
 
    begin
-      --  Ada0Y (AI-287): Do not set/get the has_master_entity reminder in
+      S := Scope (E);
+
+      --  Ada 0Y (AI-287): Do not set/get the has_master_entity reminder in
       --  internal scopes. Required for nested limited aggregates.
 
-      if not Extensions_Allowed then
-
-         --  Nothing to do if we already built a master entity for this scope
-         --  or if there is no task hierarchy.
-
-         if Has_Master_Entity (Scope (E))
-           or else Restrictions (No_Task_Hierarchy)
-         then
-            return;
-         end if;
-
-      else
-         --  Ada0Y (AI-287): Similar to the previous case but skipping
-         --  internal scopes. If we are not inside an internal scope this
-         --  code is equivalent to the previous code.
-
-         S := Scope (E);
+      if Extensions_Allowed then
          while Is_Internal (S) loop
             S := Scope (S);
          end loop;
+      end if;
 
-         if Has_Master_Entity (S)
-           or else Restrictions (No_Task_Hierarchy)
-         then
-            return;
-         end if;
+      --  Nothing to do if we already built a master entity for this scope
+      --  or if there is no task hierarchy.
+
+      if Has_Master_Entity (S)
+        or else Restriction_Active (No_Task_Hierarchy)
+      then
+         return;
       end if;
 
       --  Otherwise first build the master entity
@@ -1250,7 +1240,7 @@ package body Exp_Ch9 is
       Insert_Before (P, Decl);
       Analyze (Decl);
 
-      --  Ada0Y (AI-287): Set the has_marter_entity reminder in the
+      --  Ada 0Y (AI-287): Set the has_master_entity reminder in the
       --  non-internal scope selected above.
 
       if not Extensions_Allowed then
@@ -1311,7 +1301,7 @@ package body Exp_Ch9 is
       Add_Object_Pointer (Op_Decls, Pid, Loc);
 
       if Abort_Allowed
-        or else Restrictions (No_Entry_Queue) = False
+        or else Restriction_Active (No_Entry_Queue) = False
         or else Number_Entries (Pid) > 1
       then
          Complete := New_Reference_To (RTE (RE_Complete_Entry_Body), Loc);
@@ -1339,7 +1329,7 @@ package body Exp_Ch9 is
                      Make_Identifier (Loc, Name_uObject)),
                  Attribute_Name => Name_Unchecked_Access))));
 
-      if Restrictions (No_Exception_Handlers) then
+      if Restriction_Active (No_Exception_Handlers) then
          return
            Make_Subprogram_Body (Loc,
              Specification => Espec,
@@ -1352,7 +1342,7 @@ package body Exp_Ch9 is
          Set_All_Others (Ohandle);
 
          if Abort_Allowed
-           or else Restrictions (No_Entry_Queue) = False
+           or else Restriction_Active (No_Entry_Queue) = False
            or else Number_Entries (Pid) > 1
          then
             Complete :=
@@ -1746,7 +1736,7 @@ package body Exp_Ch9 is
         or else (Has_Attach_Handler (Pid) and then not Restricted_Profile)
       then
          if Abort_Allowed
-           or else Restrictions (No_Entry_Queue) = False
+           or else Restriction_Active (No_Entry_Queue) = False
            or else Number_Entries (Pid) > 1
          then
             Lock_Name := New_Reference_To (RTE (RE_Lock_Entries), Loc);
@@ -2070,7 +2060,7 @@ package body Exp_Ch9 is
          --  parameters.
 
          if Abort_Allowed
-           or else Restrictions (No_Entry_Queue) = False
+           or else Restriction_Active (No_Entry_Queue) = False
            or else not Is_Protected_Type (Conctyp)
            or else Number_Entries (Conctyp) > 1
          then
@@ -2182,7 +2172,7 @@ package body Exp_Ch9 is
 
          if Is_Protected_Type (Conctyp) then
             if Abort_Allowed
-              or else Restrictions (No_Entry_Queue) = False
+              or else Restriction_Active (No_Entry_Queue) = False
               or else Number_Entries (Conctyp) > 1
             then
                --  Change the type of the index declaration
@@ -2660,7 +2650,6 @@ package body Exp_Ch9 is
                 Component_Definition =>
                   Make_Component_Definition (Loc,
                     Aliased_Present    => False,
-
                     Subtype_Indication =>
                       Make_Subtype_Indication (Loc,
                         Subtype_Mark =>
@@ -2672,7 +2661,6 @@ package body Exp_Ch9 is
                               New_Occurrence_Of
                                 (Etype (Discrete_Subtype_Definition
                                   (Parent (Efam))), Loc)))))));
-
 
          end if;
 
@@ -2973,7 +2961,7 @@ package body Exp_Ch9 is
       Call : Node_Id;
 
    begin
-      if Restrictions (No_Task_Hierarchy) = False then
+      if Restriction_Active (No_Task_Hierarchy) = False then
          Call := Build_Runtime_Call (Sloc (N), RE_Enter_Master);
          Prepend_To (Declarations (N), Call);
          Analyze (Call);
@@ -4994,7 +4982,7 @@ package body Exp_Ch9 is
 
       if Has_Entries
         and then (Abort_Allowed
-                    or else Restrictions (No_Entry_Queue) = False
+                    or else Restriction_Active (No_Entry_Queue) = False
                     or else Num_Entries > 1)
       then
          New_Op_Body := Build_Find_Body_Index (Pid);
@@ -5249,7 +5237,7 @@ package body Exp_Ch9 is
 
          elsif Has_Entries (Prottyp) then
             if Abort_Allowed
-              or else Restrictions (No_Entry_Queue) = False
+              or else Restriction_Active (No_Entry_Queue) = False
               or else Number_Entries (Prottyp) > 1
             then
                Protection_Subtype :=
@@ -5572,7 +5560,7 @@ package body Exp_Ch9 is
            New_External_Name (Chars (Prottyp), 'A'));
 
          if Abort_Allowed
-           or else Restrictions (No_Entry_Queue) = False
+           or else Restriction_Active (No_Entry_Queue) = False
            or else E_Count > 1
          then
             Body_Arr := Make_Object_Declaration (Loc,
@@ -5622,7 +5610,7 @@ package body Exp_Ch9 is
          --  no entry queue, 1 entry)
 
          if Abort_Allowed
-           or else Restrictions (No_Entry_Queue) = False
+           or else Restriction_Active (No_Entry_Queue) = False
            or else E_Count > 1
          then
             Sub :=
@@ -7593,7 +7581,7 @@ package body Exp_Ch9 is
          Append_To (Parms, New_Reference_To (B, Loc));
 
          if Abort_Allowed
-           or else Restrictions (No_Entry_Queue) = False
+           or else Restriction_Active (No_Entry_Queue) = False
            or else Number_Entries (Etype (Concval)) > 1
          then
             Rewrite (Call,
@@ -8195,7 +8183,7 @@ package body Exp_Ch9 is
                 Attribute_Name => Name_Unrestricted_Access));
 
             if Abort_Allowed
-              or else Restrictions (No_Entry_Queue) = False
+              or else Restriction_Active (No_Entry_Queue) = False
               or else Number_Entries (Ptyp) > 1
             then
                --  Find index mapping function (clumsy but ok for now).
@@ -8217,7 +8205,7 @@ package body Exp_Ch9 is
          end if;
 
          if Abort_Allowed
-           or else Restrictions (No_Entry_Queue) = False
+           or else Restriction_Active (No_Entry_Queue) = False
            or else Number_Entries (Ptyp) > 1
          then
             Append_To (L,
@@ -8439,7 +8427,7 @@ package body Exp_Ch9 is
          --  See comments in System.Tasking.Initialization.Init_RTS for the
          --  value 3.
 
-         if Restrictions (No_Task_Hierarchy) = False then
+         if Restriction_Active (No_Task_Hierarchy) = False then
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          else
             Append_To (Args, Make_Integer_Literal (Loc, 3));

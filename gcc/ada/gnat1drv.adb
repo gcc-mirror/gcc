@@ -49,7 +49,6 @@ with Output;   use Output;
 with Prepcomp;
 with Repinfo;  use Repinfo;
 with Restrict;
-with Rident;
 with Sem;
 with Sem_Ch8;
 with Sem_Ch12;
@@ -127,8 +126,6 @@ begin
 
          S : Source_File_Index;
          N : Name_Id;
-         R : Restrict.Restriction_Id;
-         P : Restrict.Restriction_Parameter_Id;
 
       begin
          Name_Buffer (1 .. 10) := "system.ads";
@@ -156,24 +153,7 @@ begin
 
          --  Acquire configuration pragma information from Targparm
 
-         for J in Rident.Partition_Restrictions loop
-            R := Restrict.Partition_Restrictions (J);
-
-            if Targparm.Restrictions_On_Target (J) then
-               Restrict.Restrictions (R)     := True;
-               Restrict.Restrictions_Loc (R) := System_Location;
-            end if;
-         end loop;
-
-         for K in Rident.Restriction_Parameter_Id loop
-            P := Restrict.Restriction_Parameter_Id (K);
-
-            if Targparm.Restriction_Parameters_On_Target (K) /= No_Uint then
-               Restrict.Restriction_Parameters (P) :=
-                 Targparm.Restriction_Parameters_On_Target (K);
-               Restrict.Restriction_Parameters_Loc (P) := System_Location;
-            end if;
-         end loop;
+         Restrict.Restrictions := Targparm.Restrictions_On_Target;
       end;
 
       --  Set Configurable_Run_Time mode if system.ads flag set

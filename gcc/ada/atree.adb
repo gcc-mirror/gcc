@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1836,6 +1836,7 @@ package body Atree is
 
       procedure New_Entity_Debugging_Output;
       --  Debugging routine for debug flag N
+      pragma Inline (New_Entity_Debugging_Output);
 
       ---------------------------------
       -- New_Entity_Debugging_Output --
@@ -1853,8 +1854,6 @@ package body Atree is
             Write_Eol;
          end if;
       end New_Entity_Debugging_Output;
-
-      pragma Inline (New_Entity_Debugging_Output);
 
    --  Start of processing for New_Entity
 
@@ -1908,6 +1907,7 @@ package body Atree is
 
       procedure New_Node_Debugging_Output;
       --  Debugging routine for debug flag N
+      pragma Inline (New_Node_Debugging_Output);
 
       --------------------------
       -- New_Debugging_Output --
@@ -1925,8 +1925,6 @@ package body Atree is
             Write_Eol;
          end if;
       end New_Node_Debugging_Output;
-
-      pragma Inline (New_Node_Debugging_Output);
 
    --  Start of processing for New_Node
 

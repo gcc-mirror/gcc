@@ -748,17 +748,21 @@ finish_record_type (tree record_type,
     }
 
   /* At this point, the position and size of each field is known.  It was
-     either set before entry by a rep clause, or by laying out the type
-     above.  We now make a pass through the fields (in reverse order for
-     QUAL_UNION_TYPEs) to compute the Ada size; the GCC size and alignment
-     (for rep'ed records that are not padding types); and the mode (for
-     rep'ed records).  */
+     either set before entry by a rep clause, or by laying out the type above.
+
+     We now run a pass over the fields (in reverse order for QUAL_UNION_TYPEs)
+     to compute the Ada size; the GCC size and alignment (for rep'ed records
+     that are not padding types); and the mode (for rep'ed records).  We also
+     clear the DECL_BIT_FIELD indication for the cases we know have not been
+     handled yet, and adjust DECL_NONADDRESSABLE_P accordingly.  */
 
   if (code == QUAL_UNION_TYPE)
     fieldlist = nreverse (fieldlist);
 
   for (field = fieldlist; field; field = TREE_CHAIN (field))
     {
+      tree pos = bit_position (field);
+
       tree type = TREE_TYPE (field);
       tree this_size = DECL_SIZE (field);
       tree this_size_unit = DECL_SIZE_UNIT (field);
@@ -779,6 +783,16 @@ finish_record_type (tree record_type,
 	  && ! TYPE_CONTAINS_TEMPLATE_P (type)
 	  && TYPE_ADA_SIZE (type) != 0)
 	this_ada_size = TYPE_ADA_SIZE (type);
+
+      /* Clear DECL_BIT_FIELD for the cases layout_decl does not handle.  */
+      if (DECL_BIT_FIELD (field) && !STRICT_ALIGNMENT
+	  && value_factor_p (pos, BITS_PER_UNIT)
+	  && operand_equal_p (this_size, TYPE_SIZE (type), 0))
+	DECL_BIT_FIELD (field) = 0;
+
+      /* If we still have DECL_BIT_FIELD set at this point, we know the field
+	 is technically not addressable.  */
+      DECL_NONADDRESSABLE_P (field) |= DECL_BIT_FIELD (field);
 
       if (has_rep && ! DECL_BIT_FIELD (field))
 	TYPE_ALIGN (record_type)
@@ -812,9 +826,9 @@ finish_record_type (tree record_type,
 	     QUAL_UNION_TYPE, we need to take into account the previous size in
 	     the case of empty variants.  */
 	  ada_size
-	    = merge_sizes (ada_size, bit_position (field), this_ada_size,
+	    = merge_sizes (ada_size, pos, this_ada_size,
 			   TREE_CODE (type) == QUAL_UNION_TYPE, has_rep);
-	  size = merge_sizes (size, bit_position (field), this_size,
+	  size = merge_sizes (size, pos, this_size,
 			      TREE_CODE (type) == QUAL_UNION_TYPE, has_rep);
 	  size_unit
 	    = merge_sizes (size_unit, byte_position (field), this_size_unit,
@@ -1392,30 +1406,42 @@ create_field_decl (tree field_name,
   if (packed && TYPE_MODE (field_type) == BLKmode)
     DECL_ALIGN (field_decl) = BITS_PER_UNIT;
 
-  /* If a size is specified, use it.  Otherwise, see if we have a size
-     to use that may differ from the natural size of the object.  */
+  /* If a size is specified, use it.  Otherwise, if the record type is packed
+     compute a size to use, which may differ from the object's natural size.
+     We always set a size in this case to trigger the checks for bitfield
+     creation below, which is typically required when no position has been
+     specified.  */
   if (size != 0)
     size = convert (bitsizetype, size);
-  else if (packed)
+  else if (packed == 1)
     {
-      if (packed == 1 && ! operand_equal_p (rm_size (field_type),
-					    TYPE_SIZE (field_type), 0))
-	size = rm_size (field_type);
+      size = rm_size (field_type);
 
       /* For a constant size larger than MAX_FIXED_MODE_SIZE, round up to
-	 byte.  */
-      if (size != 0 && TREE_CODE (size) == INTEGER_CST
-	  && compare_tree_int (size, MAX_FIXED_MODE_SIZE) > 0)
-	size = round_up (size, BITS_PER_UNIT);
+         byte.  */
+      if (TREE_CODE (size) == INTEGER_CST
+          && compare_tree_int (size, MAX_FIXED_MODE_SIZE) > 0)
+        size = round_up (size, BITS_PER_UNIT);
     }
 
   /* Make a bitfield if a size is specified for two reasons: first if the size
      differs from the natural size.  Second, if the alignment is insufficient.
-     There are a number of ways the latter can be true.  But never make a
-     bitfield if the type of the field has a nonconstant size.  */
+     There are a number of ways the latter can be true.
 
+     We never make a bitfield if the type of the field has a nonconstant size,
+     or if it is claimed to be addressable, because no such entity requiring
+     bitfield operations should reach here.
+
+     We do *preventively* make a bitfield when there might be the need for it
+     but we don't have all the necessary information to decide, as is the case
+     of a field with no specified position in a packed record.
+
+     We also don't look at STRICT_ALIGNMENT here, and rely on later processing
+     in layout_decl or finish_record_type to clear the bit_field indication if
+     it is in fact not needed. */
   if (size != 0 && TREE_CODE (size) == INTEGER_CST
       && TREE_CODE (TYPE_SIZE (field_type)) == INTEGER_CST
+      && ! addressable
       && (! operand_equal_p (TYPE_SIZE (field_type), size, 0)
 	  || (pos != 0
 	      && ! value_zerop (size_binop (TRUNC_MOD_EXPR, pos,
@@ -1479,10 +1505,15 @@ create_field_decl (tree field_name,
   if (AGGREGATE_TYPE_P (field_type))
     addressable = 1;
 
-  /* Mark the decl as nonaddressable if it either is indicated so semantically
-     or if it is a bit field.  */
-  DECL_NONADDRESSABLE_P (field_decl)
-    = ! addressable || DECL_BIT_FIELD (field_decl);
+  /* Mark the decl as nonaddressable if it is indicated so semantically,
+     meaning we won't ever attempt to take the address of the field.
+
+     It may also be "technically" nonaddressable, meaning that even if we
+     attempt to take the field's address we will actually get the address of a
+     copy. This is the case for true bitfields, but the DECL_BIT_FIELD value
+     we have at this point is not accurate enough, so we don't account for
+     this here and let finish_record_type decide.  */
+  DECL_NONADDRESSABLE_P (field_decl) = ! addressable;
 
   return field_decl;
 }
@@ -1884,7 +1915,10 @@ end_subprog_body (void)
   if (function_nesting_depth > 1)
     ggc_push_context ();
 
-  rest_of_compilation (current_function_decl);
+  /* If we're only annotating types, don't actually compile this
+     function.  */
+  if (!type_annotate_only)
+    rest_of_compilation (current_function_decl);
 
   if (function_nesting_depth > 1)
     ggc_pop_context ();

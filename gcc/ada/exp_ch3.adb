@@ -46,6 +46,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch3;  use Sem_Ch3;
@@ -570,7 +571,7 @@ package body Exp_Ch3 is
       if Has_Non_Null_Base_Init_Proc (Comp_Type)
         or else Needs_Simple_Initialization (Comp_Type)
         or else Has_Task (Comp_Type)
-        or else (not Restrictions (No_Initialize_Scalars)
+        or else (not Restriction_Active (No_Initialize_Scalars)
                    and then Is_Public (A_Type)
                    and then Root_Type (A_Type) /= Standard_String
                    and then Root_Type (A_Type) /= Standard_Wide_String)
@@ -641,7 +642,7 @@ package body Exp_Ch3 is
    begin
       --  Nothing to do if there is no task hierarchy.
 
-      if Restrictions (No_Task_Hierarchy) then
+      if Restriction_Active (No_Task_Hierarchy) then
          return;
       end if;
 
@@ -1105,7 +1106,7 @@ package body Exp_Ch3 is
       --  through the outer routines.
 
       if Has_Task (Full_Type) then
-         if Restrictions (No_Task_Hierarchy) then
+         if Restriction_Active (No_Task_Hierarchy) then
 
             --  See comments in System.Tasking.Initialization.Init_RTS
             --  for the value 3 (should be rtsfindable constant ???)
@@ -1117,7 +1118,7 @@ package body Exp_Ch3 is
 
          Append_To (Args, Make_Identifier (Loc, Name_uChain));
 
-         --  Ada0Y (AI-287): In case of default initialized components
+         --  Ada 0Y (AI-287): In case of default initialized components
          --  with tasks, we generate a null string actual parameter.
          --  This is just a workaround that must be improved later???
 
@@ -1225,7 +1226,7 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            --  Ada0Y (AI-287) In case of default initialized components, we
+            --  Ada 0Y (AI-287) In case of default initialized components, we
             --  need to generate the corresponding selected component node
             --  to access the discriminant value. In other cases this is not
             --  required because we are inside the init proc and we use the
@@ -1322,7 +1323,7 @@ package body Exp_Ch3 is
    begin
       --  Nothing to do if there is no task hierarchy.
 
-      if Restrictions (No_Task_Hierarchy) then
+      if Restriction_Active (No_Task_Hierarchy) then
          return;
       end if;
 
@@ -1642,7 +1643,7 @@ package body Exp_Ch3 is
          First_Discr_Param := Next (First (Parameters));
 
          if Has_Task (Rec_Type) then
-            if Restrictions (No_Task_Hierarchy) then
+            if Restriction_Active (No_Task_Hierarchy) then
 
                --  See comments in System.Tasking.Initialization.Init_RTS
                --  for the value 3.
@@ -2366,7 +2367,7 @@ package body Exp_Ch3 is
          if Is_CPP_Class (Rec_Id) then
             return False;
 
-         elsif not Restrictions (No_Initialize_Scalars)
+         elsif not Restriction_Active (No_Initialize_Scalars)
            and then Is_Public (Rec_Id)
          then
             return True;
@@ -2485,6 +2486,7 @@ package body Exp_Ch3 is
    ----------------------------
 
    --  Generates the following subprogram:
+
    --    procedure Assign
    --     (Source,   Target   : Array_Type,
    --      Left_Lo,  Left_Hi, Right_Lo, Right_Hi : Index;
@@ -2492,6 +2494,7 @@ package body Exp_Ch3 is
    --    is
    --       Li1 : Index;
    --       Ri1 : Index;
+
    --    begin
    --       if Rev  then
    --          Li1 := Left_Hi;
@@ -2500,9 +2503,10 @@ package body Exp_Ch3 is
    --          Li1 := Left_Lo;
    --          Ri1 := Right_Lo;
    --       end if;
-   --
+
    --       loop
    --             Target (Li1) := Source (Ri1);
+
    --             if Rev then
    --                exit when Li2 = Left_Lo;
    --                Li2 := Index'pred (Li2);
@@ -2546,19 +2550,19 @@ package body Exp_Ch3 is
                     Make_Defining_Identifier (Loc,
                       Chars => Make_TSS_Name (Typ, TSS_Slice_Assign));
 
-      Lnn :  constant Entity_Id :=
-               Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
-      Rnn :  constant Entity_Id :=
-               Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
-      --  subscripts for left and right sides
+      Lnn : constant Entity_Id :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
+      Rnn : constant Entity_Id :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+      --  Subscripts for left and right sides
 
-      Decls  : List_Id;
-      Loops  : Node_Id;
-      Stats  : List_Id;
+      Decls : List_Id;
+      Loops : Node_Id;
+      Stats : List_Id;
 
    begin
 
-      --  Build declarations for indices.
+      --  Build declarations for indices
 
       Decls := New_List;
 
@@ -2576,7 +2580,7 @@ package body Exp_Ch3 is
 
       Stats := New_List;
 
-      --  Build initializations for indices.
+      --  Build initializations for indices
 
       declare
          F_Init : constant List_Id := New_List;
@@ -2626,7 +2630,7 @@ package body Exp_Ch3 is
                   Expressions => New_List (New_Occurrence_Of (Rnn, Loc))))),
           End_Label  => Empty);
 
-      --  Build the increment/decrement statements.
+      --  Build the increment/decrement statements
 
       declare
          F_Ass : constant List_Id := New_List;
@@ -2701,8 +2705,8 @@ package body Exp_Ch3 is
       Append_To (Stats, Loops);
 
       declare
-         Spec      : Node_Id;
-         Formals   : List_Id := New_List;
+         Spec    : Node_Id;
+         Formals : List_Id := New_List;
 
       begin
          Formals := New_List (
@@ -2766,7 +2770,7 @@ package body Exp_Ch3 is
    ------------------------------------
 
    --  Generates:
-   --
+
    --    function _Equality (X, Y : T) return Boolean is
    --    begin
    --       --  Compare discriminants
@@ -3136,9 +3140,8 @@ package body Exp_Ch3 is
                Next_Elmt (Elmt);
             end loop;
 
-            --  If the derived type itself is private with a full view,
-            --  then associate the full view with the inherited TSS_Elist
-            --  as well.
+            --  If the derived type itself is private with a full view, then
+            --  associate the full view with the inherited TSS_Elist as well.
 
             if Ekind (B_Id) in Private_Kind
               and then Present (Full_View (B_Id))
@@ -4013,7 +4016,7 @@ package body Exp_Ch3 is
 
       --  In normal mode, add the others clause with the test
 
-      if not Restrictions (No_Exception_Handlers) then
+      if not Restriction_Active (No_Exception_Handlers) then
          Append_To (Lst,
            Make_Case_Statement_Alternative (Loc,
              Discrete_Choices => New_List (Make_Others_Choice (Loc)),
@@ -4657,17 +4660,17 @@ package body Exp_Ch3 is
                 (Is_Incomplete_Or_Private_Type (Desig_Type)
                    and then No (Full_View (Desig_Type))
 
-               --  An exception is made for types defined in the run-time
-               --  because Ada.Tags.Tag itself is such a type and cannot
-               --  afford this unnecessary overhead that would generates a
-               --  loop in the expansion scheme...
+                  --  An exception is made for types defined in the run-time
+                  --  because Ada.Tags.Tag itself is such a type and cannot
+                  --  afford this unnecessary overhead that would generates a
+                  --  loop in the expansion scheme...
 
-                   and then not In_Runtime (Def_Id)
+                  and then not In_Runtime (Def_Id)
 
-               --  Another exception is if Restrictions (No_Finalization)
-               --  is active, since then we know nothing is controlled.
+                  --  Another exception is if Restrictions (No_Finalization)
+                  --  is active, since then we know nothing is controlled.
 
-                   and then not Restrictions (No_Finalization))
+                  and then not Restriction_Active (No_Finalization))
 
                --  If the designated type is not frozen yet, its controlled
                --  status must be retrieved explicitly.
@@ -5382,7 +5385,7 @@ package body Exp_Ch3 is
 
       --  We also skip these if finalization is not available
 
-      elsif Restrictions (No_Finalization) then
+      elsif Restriction_Active (No_Finalization) then
          null;
 
       elsif Etype (Tag_Typ) = Tag_Typ or else Controlled_Type (Tag_Typ) then
@@ -5696,7 +5699,7 @@ package body Exp_Ch3 is
       --  We also skip them if dispatching is not available.
 
       if not Is_Limited_Type (Tag_Typ)
-        and then not Restrictions (No_Finalization)
+        and then not Restriction_Active (No_Finalization)
       then
          if No (TSS (Tag_Typ, TSS_Stream_Read)) then
             Build_Record_Read_Procedure (Loc, Tag_Typ, Decl, Ent);
@@ -5831,7 +5834,7 @@ package body Exp_Ch3 is
 
       --  Skip this if finalization is not available
 
-      elsif Restrictions (No_Finalization) then
+      elsif Restriction_Active (No_Finalization) then
          null;
 
       elsif (Etype (Tag_Typ) = Tag_Typ or else Is_Controlled (Tag_Typ))

@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                             (ASCII Version)                              --
 --                                                                          --
---          Copyright (C) 1993-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -457,7 +457,6 @@ package Interfaces.COBOL is
       pragma Inline (To_Binary);
       pragma Inline (To_Decimal);
       pragma Inline (To_Display);
-      pragma Inline (To_Decimal);
       pragma Inline (To_Long_Binary);
       pragma Inline (Valid);
 

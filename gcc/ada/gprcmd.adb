@@ -61,7 +61,8 @@ procedure Gprcmd is
    --  If the file cannot be read, exit the process with an error code.
 
    procedure Check_Args (Condition : Boolean);
-   --  If Condition is false, print the usage, and exit the process.
+   --  If Condition is false, print command invoked, then the usage,
+   --  and exit the process.
 
    procedure Deps (Objext : String; File : String; GCC : Boolean);
    --  Process $(CC) dependency file. If GCC is True, add a rule so that make
@@ -109,6 +110,15 @@ procedure Gprcmd is
    procedure Check_Args (Condition : Boolean) is
    begin
       if not Condition then
+         Put_Line
+           (Standard_Error,
+            "bad call to gprcmd with" & Argument_Count'Img & " arguments.");
+         for J in 0 .. Argument_Count loop
+            Put (Standard_Error, Argument (J) & " ");
+         end loop;
+
+         New_Line (Standard_Error);
+
          Usage;
       end if;
    end Check_Args;
@@ -336,6 +346,8 @@ procedure Gprcmd is
                                 "post process dependency makefiles");
       Put_Line (Standard_Error, "  stamp       " &
                                 "copy file time stamp from file1 to file2");
+      Put_Line (Standard_Error, "  prefix      " &
+                                "get the prefix of the GNAT installation");
       OS_Exit (1);
    end Usage;
 
@@ -460,6 +472,11 @@ begin
                end if;
             end if;
          end;
+
+      else
+         --  Uknown command
+
+         Check_Args (False);
       end if;
    end;
 end Gprcmd;

@@ -902,7 +902,9 @@ procedure Gnatlink is
          end if;
 
          for J in Objs_Begin .. Objs_End loop
+
             --  Opening quote for GNU linker
+
             if Using_GNU_Linker then
                Status := Write (Tname_FD, Opening'Address, 1);
             end if;
@@ -924,7 +926,7 @@ procedure Gnatlink is
               Linker_Objects.Table (J);
          end loop;
 
-         --  handle GNU linker response file footer.
+         --  Handle GNU linker response file footer
 
          if Using_GNU_Linker then
             declare
@@ -1458,8 +1460,7 @@ begin
    --  on Unix. On non-Unix systems executables have a suffix, so the warning
    --  will not appear. However, do not warn in the case of a cross compiler.
 
-   --  Assume that if the executable name is not gnatlink, this is a cross
-   --  tool.
+   --  Assume this is a cross tool if the executable name is not gnatlink
 
    if Base_Name (Command_Name) = "gnatlink"
      and then Output_File_Name.all = "test"
@@ -1470,7 +1471,7 @@ begin
 
    --  Perform consistency checks
 
-   --  Transform the .ali file name into the binder output file name.
+   --  Transform the .ali file name into the binder output file name
 
    Make_Binder_File_Names : declare
       Fname     : constant String  := Base_Name (Ali_File_Name.all);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Targparm; use Targparm;
 with Sinfo;    use Sinfo;
@@ -914,7 +915,7 @@ package body Exp_Ch7 is
 
       return (Is_Class_Wide_Type (T)
                 and then not In_Finalization_Root (T)
-                and then not Restrictions (No_Finalization))
+                and then not Restriction_Active (No_Finalization))
         or else Is_Controlled (T)
         or else Has_Some_Controlled_Component (T)
         or else (Is_Concurrent_Type (T)
@@ -2207,7 +2208,7 @@ package body Exp_Ch7 is
          end if;
 
       elsif Is_Master then
-         if Restrictions (No_Task_Hierarchy) = False then
+         if Restriction_Active (No_Task_Hierarchy) = False then
             Append_To (Stmt, Build_Runtime_Call (Loc, RE_Complete_Master));
          end if;
 
@@ -2253,7 +2254,7 @@ package body Exp_Ch7 is
            and then Has_Entries (Pid)
          then
             if Abort_Allowed
-              or else Restrictions (No_Entry_Queue) = False
+              or else Restriction_Active (No_Entry_Queue) = False
               or else Number_Entries (Pid) > 1
             then
                Name := New_Reference_To (RTE (RE_Service_Entries), Loc);
@@ -2291,7 +2292,7 @@ package body Exp_Ch7 is
            or else (Has_Attach_Handler (Pid) and then not Restricted_Profile)
          then
             if Abort_Allowed
-              or else Restrictions (No_Entry_Queue) = False
+              or else Restriction_Active (No_Entry_Queue) = False
               or else Number_Entries (Pid) > 1
             then
                Unlock := New_Reference_To (RTE (RE_Unlock_Entries), Loc);

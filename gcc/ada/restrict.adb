@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,11 +59,11 @@ package body Restrict is
 
    function Abort_Allowed return Boolean is
    begin
-      if Restrictions (No_Abort_Statements)
-        and then Restriction_Parameters (Max_Asynchronous_Select_Nesting) = 0
+      if Restrictions.Set (No_Abort_Statements)
+        and then Restrictions.Set (Max_Asynchronous_Select_Nesting)
+        and then Restrictions.Value (Max_Asynchronous_Select_Nesting) = 0
       then
          return False;
-
       else
          return True;
       end if;
@@ -79,7 +79,7 @@ package body Restrict is
       --  Even in the error case it is a bit dubious, either gigi needs
       --  the table locked or it does not! ???
 
-      if Restrictions (No_Elaboration_Code)
+      if Restrictions.Set (No_Elaboration_Code)
         and then not Suppress_Restriction_Message (N)
       then
          Namet.Unlock;
@@ -110,13 +110,12 @@ package body Restrict is
          declare
             Fnam : constant File_Name_Type :=
                      Get_File_Name (U, Subunit => False);
-            R_Id : Restriction_Id;
 
          begin
             if not Is_Predefined_File_Name (Fnam) then
                return;
 
-            --  Ada child unit spec, needs checking against list
+            --  Predefined spec, needs checking against list
 
             else
                --  Pad name to 8 characters with blanks
@@ -133,30 +132,7 @@ package body Restrict is
                   if Name_Len = 8
                     and then Name_Buffer (1 .. 8) = Unit_Array (J).Filenm
                   then
-                     R_Id := Unit_Array (J).Res_Id;
-                     Violations (R_Id) := True;
-
-                     if Restrictions (R_Id) then
-                        declare
-                           S : constant String := Restriction_Id'Image (R_Id);
-
-                        begin
-                           Error_Msg_Unit_1 := U;
-
-                           Error_Msg_N
-                             ("|dependence on $ not allowed,", N);
-
-                           Name_Buffer (1 .. S'Last) := S;
-                           Name_Len := S'Length;
-                           Set_Casing (All_Lower_Case);
-                           Error_Msg_Name_1 := Name_Enter;
-                           Error_Msg_Sloc := Restrictions_Loc (R_Id);
-
-                           Error_Msg_N
-                             ("\|violates pragma Restriction (%) #", N);
-                           return;
-                        end;
-                     end if;
+                     Check_Restriction (Unit_Array (J).Res_Id, N);
                   end if;
                end loop;
             end if;
@@ -168,184 +144,205 @@ package body Restrict is
    -- Check_Restriction --
    -----------------------
 
-   --  Case of simple identifier (no parameter)
-
-   procedure Check_Restriction (R : Restriction_Id; N : Node_Id) is
+   procedure Check_Restriction
+     (R : Restriction_Id;
+      N : Node_Id;
+      V : Uint := Uint_Minus_1)
+   is
       Rimage : constant String := Restriction_Id'Image (R);
 
-   begin
-      Violations (R) := True;
+      VV : Integer;
+      --  V converted to integer form. If V is greater than Integer'Last,
+      --  it is reset to minus 1 (unknown value).
 
-      if (Restrictions (R) or Restriction_Warnings (R))
-        and then not Suppress_Restriction_Message (N)
-      then
-         --  Output proper message. If this is just a case of
-         --  a restriction warning, then we output a warning msg
+      procedure Update_Restrictions (Info : in out Restrictions_Info);
+      --  Update violation information in Info.Violated and Info.Count
 
-         if not Restrictions (R) then
-            Restriction_Msg
-              ("?violation of restriction %", Rimage, N);
+      -------------------------
+      -- Update_Restrictions --
+      -------------------------
 
-         --  If this is a real restriction violation, then generate
-         --  a non-serious message with appropriate location.
+      procedure Update_Restrictions (Info : in out Restrictions_Info) is
+      begin
+         --  If not violated, set as violated now
 
-         else
-            Error_Msg_Sloc := Restrictions_Loc (R);
+         if not Info.Violated (R) then
+            Info.Violated (R) := True;
 
-            --  If we have a location for the Restrictions pragma, output it
+            if R in All_Parameter_Restrictions then
+               if VV < 0 then
+                  Info.Unknown (R) := True;
+                  Info.Count (R) := 1;
+               else
+                  Info.Count (R) := VV;
+               end if;
+            end if;
 
-            if Error_Msg_Sloc > No_Location
-              or else Error_Msg_Sloc = System_Location
-            then
-               Restriction_Msg
-                 ("|violation of restriction %#", Rimage, N);
+         --  Otherwise if violated already and a parameter restriction,
+         --  update count by maximizing or summing depending on restriction.
 
-            --  Otherwise restriction was implicit (e.g. set by another pragma)
+         elsif R in All_Parameter_Restrictions then
+
+            --  If new value is unknown, result is unknown
+
+            if VV < 0 then
+               Info.Unknown (R) := True;
+
+            --  If checked by maximization, do maximization
+
+            elsif R in Checked_Max_Parameter_Restrictions then
+               Info.Count (R) := Integer'Max (Info.Count (R), VV);
+
+            --  If checked by adding, do add, checking for overflow
+
+            elsif R in Checked_Add_Parameter_Restrictions then
+               declare
+                  pragma Unsuppress (Overflow_Check);
+               begin
+                  Info.Count (R) := Info.Count (R) + VV;
+               exception
+                  when Constraint_Error =>
+                     Info.Count (R) := Integer'Last;
+                     Info.Unknown (R) := True;
+               end;
+
+            --  Should not be able to come here, known counts should only
+            --  occur for restrictions that are Checked_max or Checked_Sum.
 
             else
-               Restriction_Msg
-                 ("|violation of implicit restriction %", Rimage, N);
+               raise Program_Error;
             end if;
+         end if;
+      end Update_Restrictions;
+
+   --  Start of processing for Check_Restriction
+
+   begin
+      if UI_Is_In_Int_Range (V) then
+         VV := Integer (UI_To_Int (V));
+      else
+         VV := -1;
+      end if;
+
+      --  Count can only be specified in the checked val parameter case
+
+      pragma Assert (VV < 0 or else R in Checked_Val_Parameter_Restrictions);
+
+      --  Nothing to do if value of zero specified for parameter restriction
+
+      if VV = 0 then
+         return;
+      end if;
+
+      --  Update current restrictions
+
+      Update_Restrictions (Restrictions);
+
+      --  If in main extended unit, update main restrictions as well
+
+      if Current_Sem_Unit = Main_Unit
+        or else In_Extended_Main_Source_Unit (N)
+      then
+         Update_Restrictions (Main_Restrictions);
+      end if;
+
+      --  Nothing to do if restriction message suppressed
+
+      if Suppress_Restriction_Message (N) then
+         null;
+
+      --  If restriction not set, nothing to do
+
+      elsif not Restrictions.Set (R) then
+         null;
+
+      --  Here if restriction set, check for violation (either this is a
+      --  Boolean restriction, or a parameter restriction with a value of
+      --  zero and an unknown count, or a parameter restriction with a
+      --  known value that exceeds the restriction count).
+
+      elsif R in All_Boolean_Restrictions
+        or else (Restrictions.Unknown (R)
+                   and then Restrictions.Value (R) = 0)
+        or else Restrictions.Count (R) > Restrictions.Value (R)
+      then
+         Error_Msg_Sloc := Restrictions_Loc (R);
+
+         --  If we have a location for the Restrictions pragma, output it
+
+         if Error_Msg_Sloc > No_Location
+           or else Error_Msg_Sloc = System_Location
+         then
+            if Restriction_Warnings (R) then
+               Restriction_Msg ("|violation of restriction %#?", Rimage, N);
+            else
+               Restriction_Msg ("|violation of restriction %#", Rimage, N);
+            end if;
+
+         --  Otherwise we have the case of an implicit restriction
+         --  (e.g. a restriction implicitly set by another pragma)
+
+         else
+            Restriction_Msg
+              ("|violation of implicit restriction %", Rimage, N);
          end if;
       end if;
    end Check_Restriction;
 
-   --  Case where a parameter is present, with a count
+   ----------------------------------------
+   -- Cunit_Boolean_Restrictions_Restore --
+   ----------------------------------------
 
-   procedure Check_Restriction
-     (R : Restriction_Parameter_Id;
-      V : Uint;
-      N : Node_Id)
+   procedure Cunit_Boolean_Restrictions_Restore
+     (R : Save_Cunit_Boolean_Restrictions)
    is
    begin
-      if Restriction_Parameters (R) /= No_Uint
-        and then V > Restriction_Parameters (R)
-        and then not Suppress_Restriction_Message (N)
-      then
-         declare
-            S : constant String := Restriction_Parameter_Id'Image (R);
-         begin
-            Name_Buffer (1 .. S'Last) := S;
-            Name_Len := S'Length;
-            Set_Casing (All_Lower_Case);
-            Error_Msg_Name_1 := Name_Enter;
-            Error_Msg_Sloc := Restriction_Parameters_Loc (R);
-            Error_Msg_N ("|maximum value exceeded for restriction %#", N);
-         end;
-      end if;
-   end Check_Restriction;
-
-   --  Case where a parameter is present, no count given
-
-   procedure Check_Restriction
-     (R : Restriction_Parameter_Id;
-      N : Node_Id)
-   is
-   begin
-      if Restriction_Parameters (R) = Uint_0
-        and then not Suppress_Restriction_Message (N)
-      then
-         declare
-            S : constant String := Restriction_Parameter_Id'Image (R);
-         begin
-            Name_Buffer (1 .. S'Last) := S;
-            Name_Len := S'Length;
-            Set_Casing (All_Lower_Case);
-            Error_Msg_Name_1 := Name_Enter;
-            Error_Msg_Sloc := Restriction_Parameters_Loc (R);
-            Error_Msg_N ("|maximum value exceeded for restriction %#", N);
-         end;
-      end if;
-   end Check_Restriction;
-
-   -------------------------------------------
-   -- Compilation_Unit_Restrictions_Restore --
-   -------------------------------------------
-
-   procedure Compilation_Unit_Restrictions_Restore
-     (R : Save_Compilation_Unit_Restrictions)
-   is
-   begin
-      for J in Compilation_Unit_Restrictions loop
-         Restrictions (J) := R (J);
+      for J in Cunit_Boolean_Restrictions loop
+         Restrictions.Set (J) := R (J);
       end loop;
-   end Compilation_Unit_Restrictions_Restore;
+   end Cunit_Boolean_Restrictions_Restore;
 
-   ----------------------------------------
-   -- Compilation_Unit_Restrictions_Save --
-   ----------------------------------------
+   -------------------------------------
+   -- Cunit_Boolean_Restrictions_Save --
+   -------------------------------------
 
-   function Compilation_Unit_Restrictions_Save
-     return Save_Compilation_Unit_Restrictions
+   function Cunit_Boolean_Restrictions_Save
+     return Save_Cunit_Boolean_Restrictions
    is
-      R : Save_Compilation_Unit_Restrictions;
+      R : Save_Cunit_Boolean_Restrictions;
 
    begin
-      for J in Compilation_Unit_Restrictions loop
-         R (J) := Restrictions (J);
-         Restrictions (J) := False;
+      for J in Cunit_Boolean_Restrictions loop
+         R (J) := Restrictions.Set (J);
+         Restrictions.Set (J) := False;
       end loop;
 
       return R;
-   end Compilation_Unit_Restrictions_Save;
+   end Cunit_Boolean_Restrictions_Save;
 
    ------------------------
    -- Get_Restriction_Id --
    ------------------------
 
    function Get_Restriction_Id
-     (N    : Name_Id)
-      return Restriction_Id
+     (N : Name_Id) return Restriction_Id
    is
-      J : Restriction_Id;
-
    begin
       Get_Name_String (N);
       Set_Casing (All_Upper_Case);
 
-      J := Restriction_Id'First;
-      while J /= Not_A_Restriction_Id loop
+      for J in All_Restrictions loop
          declare
             S : constant String := Restriction_Id'Image (J);
-
          begin
-            exit when S = Name_Buffer (1 .. Name_Len);
+            if S = Name_Buffer (1 .. Name_Len) then
+               return J;
+            end if;
          end;
-
-         J := Restriction_Id'Succ (J);
       end loop;
 
-      return J;
+      return Not_A_Restriction_Id;
    end Get_Restriction_Id;
-
-   ----------------------------------
-   -- Get_Restriction_Parameter_Id --
-   ----------------------------------
-
-   function Get_Restriction_Parameter_Id
-     (N    : Name_Id)
-      return Restriction_Parameter_Id
-   is
-      J : Restriction_Parameter_Id;
-
-   begin
-      Get_Name_String (N);
-      Set_Casing (All_Upper_Case);
-
-      J := Restriction_Parameter_Id'First;
-      while J /= Not_A_Restriction_Parameter_Id loop
-         declare
-            S : constant String := Restriction_Parameter_Id'Image (J);
-
-         begin
-            exit when S = Name_Buffer (1 .. Name_Len);
-         end;
-
-         J := Restriction_Parameter_Id'Succ (J);
-      end loop;
-
-      return J;
-   end Get_Restriction_Parameter_Id;
 
    -------------------------------
    -- No_Exception_Handlers_Set --
@@ -353,7 +350,7 @@ package body Restrict is
 
    function No_Exception_Handlers_Set return Boolean is
    begin
-      return Restrictions (No_Exception_Handlers);
+      return Restrictions.Set (No_Exception_Handlers);
    end No_Exception_Handlers_Set;
 
    ------------------------
@@ -364,23 +361,36 @@ package body Restrict is
 
    function Restricted_Profile return Boolean is
    begin
-      return     Restrictions (No_Abort_Statements)
-        and then Restrictions (No_Asynchronous_Control)
-        and then Restrictions (No_Entry_Queue)
-        and then Restrictions (No_Task_Hierarchy)
-        and then Restrictions (No_Task_Allocators)
-        and then Restrictions (No_Dynamic_Priorities)
-        and then Restrictions (No_Terminate_Alternatives)
-        and then Restrictions (No_Dynamic_Interrupts)
-        and then Restrictions (No_Protected_Type_Allocators)
-        and then Restrictions (No_Local_Protected_Objects)
-        and then Restrictions (No_Requeue)
-        and then Restrictions (No_Task_Attributes)
-        and then Restriction_Parameters (Max_Asynchronous_Select_Nesting) =  0
-        and then Restriction_Parameters (Max_Task_Entries)                =  0
-        and then Restriction_Parameters (Max_Protected_Entries)           <= 1
-        and then Restriction_Parameters (Max_Select_Alternatives)         =  0;
+      return     Restrictions.Set (No_Abort_Statements)
+        and then Restrictions.Set (No_Asynchronous_Control)
+        and then Restrictions.Set (No_Entry_Queue)
+        and then Restrictions.Set (No_Task_Hierarchy)
+        and then Restrictions.Set (No_Task_Allocators)
+        and then Restrictions.Set (No_Dynamic_Priorities)
+        and then Restrictions.Set (No_Terminate_Alternatives)
+        and then Restrictions.Set (No_Dynamic_Interrupts)
+        and then Restrictions.Set (No_Protected_Type_Allocators)
+        and then Restrictions.Set (No_Local_Protected_Objects)
+        and then Restrictions.Set (No_Requeue_Statements)
+        and then Restrictions.Set (No_Task_Attributes)
+        and then Restrictions.Set (Max_Asynchronous_Select_Nesting)
+        and then Restrictions.Set (Max_Task_Entries)
+        and then Restrictions.Set (Max_Protected_Entries)
+        and then Restrictions.Set (Max_Select_Alternatives)
+        and then Restrictions.Value (Max_Asynchronous_Select_Nesting) =  0
+        and then Restrictions.Value (Max_Task_Entries)                =  0
+        and then Restrictions.Value (Max_Protected_Entries)           <= 1
+        and then Restrictions.Value (Max_Select_Alternatives)         =  0;
    end Restricted_Profile;
+
+   ------------------------
+   -- Restriction_Active --
+   ------------------------
+
+   function Restriction_Active (R : All_Restrictions) return Boolean is
+   begin
+      return Restrictions.Set (R);
+   end Restriction_Active;
 
    ---------------------
    -- Restriction_Msg --
@@ -430,25 +440,15 @@ package body Restrict is
    -------------------
 
    procedure Set_Ravenscar (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-
    begin
       Set_Restricted_Profile (N);
-      Restrictions (Boolean_Entry_Barriers)       := True;
-      Restrictions (No_Select_Statements)         := True;
-      Restrictions (No_Calendar)                  := True;
-      Restrictions (No_Entry_Queue)               := True;
-      Restrictions (No_Relative_Delay)            := True;
-      Restrictions (No_Task_Termination)          := True;
-      Restrictions (No_Implicit_Heap_Allocations) := True;
-
-      Restrictions_Loc (Boolean_Entry_Barriers)       := Loc;
-      Restrictions_Loc (No_Select_Statements)         := Loc;
-      Restrictions_Loc (No_Calendar)                  := Loc;
-      Restrictions_Loc (No_Entry_Queue)               := Loc;
-      Restrictions_Loc (No_Relative_Delay)            := Loc;
-      Restrictions_Loc (No_Task_Termination)          := Loc;
-      Restrictions_Loc (No_Implicit_Heap_Allocations) := Loc;
+      Set_Restriction (Boolean_Entry_Barriers,       N);
+      Set_Restriction (No_Select_Statements,         N);
+      Set_Restriction (No_Calendar,                  N);
+      Set_Restriction (No_Entry_Queue,               N);
+      Set_Restriction (No_Relative_Delay,            N);
+      Set_Restriction (No_Task_Termination,          N);
+      Set_Restriction (No_Implicit_Heap_Allocations, N);
    end Set_Ravenscar;
 
    ----------------------------
@@ -458,43 +458,107 @@ package body Restrict is
    --  This must be coordinated with Restricted_Profile
 
    procedure Set_Restricted_Profile (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-
    begin
-      Restrictions (No_Abort_Statements)          := True;
-      Restrictions (No_Asynchronous_Control)      := True;
-      Restrictions (No_Entry_Queue)               := True;
-      Restrictions (No_Task_Hierarchy)            := True;
-      Restrictions (No_Task_Allocators)           := True;
-      Restrictions (No_Dynamic_Priorities)        := True;
-      Restrictions (No_Terminate_Alternatives)    := True;
-      Restrictions (No_Dynamic_Interrupts)        := True;
-      Restrictions (No_Protected_Type_Allocators) := True;
-      Restrictions (No_Local_Protected_Objects)   := True;
-      Restrictions (No_Requeue)                   := True;
-      Restrictions (No_Task_Attributes)           := True;
+      --  Set Boolean restrictions for Restricted Profile
 
-      Restrictions_Loc (No_Abort_Statements)          := Loc;
-      Restrictions_Loc (No_Asynchronous_Control)      := Loc;
-      Restrictions_Loc (No_Entry_Queue)               := Loc;
-      Restrictions_Loc (No_Task_Hierarchy)            := Loc;
-      Restrictions_Loc (No_Task_Allocators)           := Loc;
-      Restrictions_Loc (No_Dynamic_Priorities)        := Loc;
-      Restrictions_Loc (No_Terminate_Alternatives)    := Loc;
-      Restrictions_Loc (No_Dynamic_Interrupts)        := Loc;
-      Restrictions_Loc (No_Protected_Type_Allocators) := Loc;
-      Restrictions_Loc (No_Local_Protected_Objects)   := Loc;
-      Restrictions_Loc (No_Requeue)                   := Loc;
-      Restrictions_Loc (No_Task_Attributes)           := Loc;
+      Set_Restriction (No_Abort_Statements,          N);
+      Set_Restriction (No_Asynchronous_Control,      N);
+      Set_Restriction (No_Entry_Queue,               N);
+      Set_Restriction (No_Task_Hierarchy,            N);
+      Set_Restriction (No_Task_Allocators,           N);
+      Set_Restriction (No_Dynamic_Priorities,        N);
+      Set_Restriction (No_Terminate_Alternatives,    N);
+      Set_Restriction (No_Dynamic_Interrupts,        N);
+      Set_Restriction (No_Protected_Type_Allocators, N);
+      Set_Restriction (No_Local_Protected_Objects,   N);
+      Set_Restriction (No_Requeue_Statements,        N);
+      Set_Restriction (No_Task_Attributes,           N);
 
-      Restriction_Parameters (Max_Asynchronous_Select_Nesting) := Uint_0;
-      Restriction_Parameters (Max_Task_Entries)                := Uint_0;
-      Restriction_Parameters (Max_Select_Alternatives)         := Uint_0;
+      --  Set parameter restrictions
 
-      if Restriction_Parameters (Max_Protected_Entries) /= Uint_0 then
-         Restriction_Parameters (Max_Protected_Entries) := Uint_1;
-      end if;
+      Set_Restriction (Max_Asynchronous_Select_Nesting, N, 0);
+      Set_Restriction (Max_Task_Entries,                N, 0);
+      Set_Restriction (Max_Select_Alternatives,         N, 0);
+      Set_Restriction (Max_Protected_Entries,           N, 1);
    end Set_Restricted_Profile;
+
+   ---------------------
+   -- Set_Restriction --
+   ---------------------
+
+   --  Case of Boolean restriction
+
+   procedure Set_Restriction
+     (R : All_Boolean_Restrictions;
+      N : Node_Id)
+   is
+   begin
+      Restrictions.Set (R) := True;
+
+      --  Set location, but preserve location of system
+      --  restriction for nice error msg with run time name
+
+      if Restrictions_Loc (R) /= System_Location then
+         Restrictions_Loc (R) := Sloc (N);
+      end if;
+
+      --  Record the restriction if we are in the main unit,
+      --  or in the extended main unit. The reason that we
+      --  test separately for Main_Unit is that gnat.adc is
+      --  processed with Current_Sem_Unit = Main_Unit, but
+      --  nodes in gnat.adc do not appear to be the extended
+      --  main source unit (they probably should do ???)
+
+      if Current_Sem_Unit = Main_Unit
+        or else In_Extended_Main_Source_Unit (N)
+      then
+         if not Restriction_Warnings (R) then
+            Main_Restrictions.Set (R) := True;
+         end if;
+      end if;
+   end Set_Restriction;
+
+   --  Case of parameter restriction
+
+   procedure Set_Restriction
+     (R : All_Parameter_Restrictions;
+      N : Node_Id;
+      V : Integer)
+   is
+   begin
+      if Restrictions.Set (R) then
+         if V < Restrictions.Value (R) then
+            Restrictions.Value (R) := V;
+            Restrictions_Loc (R) := Sloc (N);
+         end if;
+
+      else
+         Restrictions.Set (R) := True;
+         Restrictions.Value (R) := V;
+         Restrictions_Loc (R) := Sloc (N);
+      end if;
+
+      --  Record the restriction if we are in the main unit,
+      --  or in the extended main unit. The reason that we
+      --  test separately for Main_Unit is that gnat.adc is
+      --  processed with Current_Sem_Unit = Main_Unit, but
+      --  nodes in gnat.adc do not appear to be the extended
+      --  main source unit (they probably should do ???)
+
+      if Current_Sem_Unit = Main_Unit
+        or else In_Extended_Main_Source_Unit (N)
+      then
+         if Main_Restrictions.Set (R) then
+            if V < Main_Restrictions.Value (R) then
+               Main_Restrictions.Value (R) := V;
+            end if;
+
+         elsif not Restriction_Warnings (R) then
+            Main_Restrictions.Set (R) := True;
+            Main_Restrictions.Value (R) := V;
+         end if;
+      end if;
+   end Set_Restriction;
 
    ----------------------------------
    -- Suppress_Restriction_Message --
@@ -525,8 +589,9 @@ package body Restrict is
 
    function Tasking_Allowed return Boolean is
    begin
-      return Restriction_Parameters (Max_Tasks) /= 0
-        and then not Restrictions (No_Tasking);
+      return not Restrictions.Set (No_Tasking)
+        and then (not Restrictions.Set (Max_Tasks)
+                    or else Restrictions.Value (Max_Tasks) > 0);
    end Tasking_Allowed;
 
 end Restrict;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -205,12 +205,17 @@ package Lib.Writ is
    --  -- R  Restrictions --
    --  ---------------------
 
+   --  Two lines are generated to record the status of restrictions that can
+   --  be specified by pragma Restrictions. The first of these lines refers
+   --  to Restriction_Id values:
+
    --    R <<restriction-characters>>
 
-   --      This line records information regarding restrictions. The
-   --      parameter is a string of characters, one for each entry in
-   --      Restrict.Compilation_Unit_Restrictions, in order. There are
-   --      three settings possible settings for each restriction:
+   --      This line records information regarding restrictions that do
+   --      not take parameter values. Here "restriction-characters is a
+   --      string of characters, one for each value (in order) defined
+   --      in Restrict.All_Boolean_Restrictions. There are three possible
+   --      settings for each restriction:
 
    --        r   Restricted. Unit was compiled under control of a pragma
    --            Restrictions for the corresponding restriction. In
@@ -230,6 +235,58 @@ package Lib.Writ is
    --      i.e. to detect cases where one unit has "r" and another unit
    --      has "v", which is not permitted, since these restrictions
    --      are partition-wide.
+
+   --  The second R line refers to parameter restrictions:
+
+   --    R <<restriction-parameter-id-entries>>
+
+   --      The parameter is a string of entries, one for each value in
+   --      Restrict.All_Parameter_Restrictions. Each entry has two
+   --      components in sequence, the first indicating whether or not
+   --      there is a restriction, and the second indicating whether
+   --      or not the compiler detected violations. In the boolean case
+   --      it is not necessary to separate these, since if a restriction
+   --      is set, and violated, that is an error. But in the parameter
+   --      case, this is not true. For example, we can have a unit with
+   --      a pragma Restrictions (Max_Tasks => 4), where the compiler
+   --      can detect that there are exactly three tasks declared. Both
+   --      of these pieces of information must be passed to the binder.
+   --      The parameter of 4 is important in case the total number of
+   --      tasks in the partition is greater than 4. The parameter of
+   --      3 is important in case some other unit has a restrictions
+   --      pragma with Max_Tasks=>2.
+
+   --      The component for the presence of restriction has one of two
+   --      possible forms:
+
+   --         n   No pragma for this restriction is present in the
+   --             set of units for this ali file.
+
+   --         rN  At least one pragma for this restriction is present
+   --             in the set of units for this ali file. The value N
+   --             is the minimum parameter value encountered in any
+   --             such pragma. N is in the range of Integer (a value
+   --             larger than N'Last causes the pragma to be ignored).
+
+   --      The component for the violation detection has one of three
+   --      possible forms:
+
+   --         n   No violations were detected by the compiler
+
+   --         vN  A violation was detected. N is either the maximum or total
+   --             count of violations (depending on the checking type) in
+   --             all the units represented by the ali file). Note that
+   --             this setting is only allowed for restrictions that are
+   --             in Checked_[Max|Sum]_Parameter_Restrictions. The value
+   --             here is known to be exact by the compiler and is in the
+   --             range of Natural.
+
+   --         vN+ A violation was detected. The compiler cannot determine
+   --             the exact count of violations, but it is at least N.
+
+   --      There are no spaces in the line, so the entry for the example
+   --      in the header of this section for Max_Tasks would appear as
+   --      the string r4v3.
 
    --  ------------------------
    --  -- I Interrupt States --

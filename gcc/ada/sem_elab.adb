@@ -42,6 +42,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch7;  use Sem_Ch7;
@@ -1489,7 +1490,7 @@ package body Sem_Elab is
 
          if (Nkind (Original_Node (N)) = N_Accept_Statement
               or else Nkind (Original_Node (N)) = N_Selective_Accept)
-           and then Restrictions (No_Entry_Calls_In_Elaboration_Code)
+           and then Restriction_Active (No_Entry_Calls_In_Elaboration_Code)
          then
             return Abandon;
 
@@ -1929,7 +1930,8 @@ package body Sem_Elab is
          elsif Dynamic_Elaboration_Checks then
             if not Elaboration_Checks_Suppressed (Ent)
               and then not Cunit_SC
-              and then not Restrictions (No_Entry_Calls_In_Elaboration_Code)
+              and then
+                not Restriction_Active (No_Entry_Calls_In_Elaboration_Code)
             then
                --  Runtime elaboration check required. generate check of the
                --  elaboration Boolean for the unit containing the entity.

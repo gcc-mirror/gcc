@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -447,6 +447,29 @@ void
 __gnat_install_handler (void)
 {
   struct sigaction act;
+
+  /* stack-checking on this platform is performed by the back-end and conforms
+     to what the ABI *mandates* (DEC OSF/1 Calling standard for AXP systems,
+     chapter 6: Stack Limits in Multihtreaded Execution Environments).  This
+     does not include a "stack reserve" region, so nothing guarantees that
+     enough room remains on the current stack to propagate an exception when
+     a stack-overflow is signaled.  We deal with this by requesting the use of
+     an alternate stack region for signal handlers.
+
+     ??? The actual use of this alternate region depends on the act.sa_flags
+     including SA_ONSTACK below.  Care should be taken to update s-intman if
+     we want this to happen for tasks also.  */
+
+  static char sig_stack [8*1024];
+  /* 8K allocated here because 4K is not enough for the GCC/ZCX scheme.  */
+
+  struct sigaltstack ss;
+
+  ss.ss_sp = (void *) & sig_stack;
+  ss.ss_size = sizeof (sig_stack);
+  ss.ss_flags = 0;
+
+  sigaltstack (&ss, 0);
 
   /* Setup signal handler to map synchronous signals to appropriate
      exceptions. Make sure that the handler isn't interrupted by another

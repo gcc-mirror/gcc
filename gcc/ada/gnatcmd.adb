@@ -499,6 +499,7 @@ begin
          for Arg in Command_Arg + 1 .. Argument_Count loop
             declare
                The_Arg : constant String := Argument (Arg);
+
             begin
                --  Check if an argument file is specified
 
@@ -509,7 +510,7 @@ begin
                      Last     : Natural;
 
                   begin
-                     --  Open the file. Fail if the file cannot be found.
+                     --  Open the file and fail if the file cannot be found
 
                      begin
                         Open
@@ -707,6 +708,7 @@ begin
                         Fail ("-p and -P cannot be used together");
 
                      elsif Argv'Length = 2 then
+
                         --  There is space between -P and the project file
                         --  name. -P cannot be the last option.
 
@@ -794,10 +796,10 @@ begin
             Data : constant Prj.Project_Data :=
                      Prj.Projects.Table (Project);
 
-            Pkg  : constant Prj.Package_Id :=
-                              Prj.Util.Value_Of
-                                (Name        => Tool_Package_Name,
-                                 In_Packages => Data.Decl.Packages);
+            Pkg : constant Prj.Package_Id :=
+                    Prj.Util.Value_Of
+                      (Name        => Tool_Package_Name,
+                       In_Packages => Data.Decl.Packages);
 
             Element : Package_Element;
 
@@ -825,6 +827,7 @@ begin
                --  Pretty_Printer (for gnatpp) and Eliminate (for gnatelim)
                --  have an attributed Switches, an associative array, indexed
                --  by the name of the file.
+
                --  They also have an attribute Default_Switches, indexed
                --  by the name of the programming language.
 
@@ -1394,5 +1397,4 @@ exception
       else
          Set_Exit_Status (My_Exit_Status);
       end if;
-
 end GNATCmd;

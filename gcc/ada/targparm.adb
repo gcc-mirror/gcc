@@ -29,6 +29,7 @@ with Namet;  use Namet;
 with Opt;    use Opt;
 with Osint;  use Osint;
 with Output; use Output;
+with Uintp;  use Uintp;
 
 package body Targparm is
    use ASCII;
@@ -220,7 +221,7 @@ package body Targparm is
          elsif System_Text (P .. P + 20) = "pragma Restrictions (" then
             P := P + 21;
 
-            Rloop : for K in Partition_Restrictions loop
+            Rloop : for K in Partition_Boolean_Restrictions loop
                declare
                   Rname : constant String := Restriction_Id'Image (K);
 
@@ -234,7 +235,7 @@ package body Targparm is
                   end loop;
 
                   if System_Text (P + Rname'Length) = ')' then
-                     Restrictions_On_Target (K) := True;
+                     Restrictions_On_Target.Set (K) := True;
                      goto Line_Loop_Continue;
                   end if;
                end;
@@ -243,10 +244,10 @@ package body Targparm is
                null;
             end loop Rloop;
 
-            Ploop : for K in Restriction_Parameter_Id loop
+            Ploop : for K in All_Parameter_Restrictions loop
                declare
                   Rname : constant String :=
-                            Restriction_Parameter_Id'Image (K);
+                            All_Parameter_Restrictions'Image (K);
 
                begin
                   for J in Rname'Range loop
@@ -269,14 +270,23 @@ package body Targparm is
                         elsif System_Text (P) = '_' then
                            null;
                         elsif System_Text (P) = ')' then
-                           Restriction_Parameters_On_Target (K) := V;
-                           goto  Line_Loop_Continue;
+                           if UI_Is_In_Int_Range (V) then
+                              Restrictions_On_Target.Value (K) :=
+                                Integer (UI_To_Int (V));
+                              Restrictions_On_Target.Set (K) := True;
+                              goto Line_Loop_Continue;
+                           else
+                              exit Ploop;
+                           end if;
                         else
-                           goto Ploop_Continue;
+                           exit Ploop;
                         end if;
 
                         P := P + 1;
                      end loop;
+
+                  else
+                     exit Ploop;
                   end if;
                end;
 
@@ -287,7 +297,7 @@ package body Targparm is
             Set_Standard_Error;
             Write_Line
                ("fatal error: system.ads is incorrectly formatted");
-            Write_Str ("unrecognized restrictions pragma: ");
+            Write_Str ("unrecognized or incorrect restrictions pragma: ");
 
             while System_Text (P) /= ')'
                     and then

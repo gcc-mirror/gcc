@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch8;  use Sem_Ch8;
@@ -141,7 +142,7 @@ package body Exp_Ch11 is
          return;
       end if;
 
-      if Restrictions (No_Exception_Handlers) then
+      if Restriction_Active (No_Exception_Handlers) then
          return;
       end if;
 
@@ -953,8 +954,8 @@ package body Exp_Ch11 is
 
       --  Register_Exception (except'Unchecked_Access);
 
-      if not Restrictions (No_Exception_Handlers)
-        and then not Restrictions (No_Exception_Registration)
+      if not Restriction_Active (No_Exception_Handlers)
+        and then not Restriction_Active (No_Exception_Registration)
       then
          L := New_List (
                 Make_Procedure_Call_Statement (Loc,
@@ -1005,7 +1006,7 @@ package body Exp_Ch11 is
    procedure Expand_N_Handled_Sequence_Of_Statements (N : Node_Id) is
    begin
       if Present (Exception_Handlers (N))
-        and then not Restrictions (No_Exception_Handlers)
+        and then not Restriction_Active (No_Exception_Handlers)
       then
          Expand_Exception_Handlers (N);
       end if;
@@ -1135,7 +1136,7 @@ package body Exp_Ch11 is
             --  Build a C-compatible string in case of no exception handlers,
             --  since this is what the last chance handler is expecting.
 
-            if Restrictions (No_Exception_Handlers) then
+            if Restriction_Active (No_Exception_Handlers) then
 
                --  Generate an empty message if configuration pragma
                --  Suppress_Exception_Locations is set for this unit.
@@ -1330,7 +1331,7 @@ package body Exp_Ch11 is
          return;
       end if;
 
-      if Restrictions (No_Exception_Handlers) then
+      if Restriction_Active (No_Exception_Handlers) then
          return;
       end if;
 
@@ -1347,8 +1348,8 @@ package body Exp_Ch11 is
       --  The same consideration applies for No_Exception_Handlers (which
       --  is also set in High_Integrity_Mode).
 
-      if Restrictions (No_Exceptions)
-        or Restrictions (No_Exception_Handlers)
+      if Restriction_Active (No_Exceptions)
+        or Restriction_Active (No_Exception_Handlers)
       then
          return;
       end if;
@@ -1684,7 +1685,7 @@ package body Exp_Ch11 is
 
       --  Do not generate if no exceptions
 
-      if Restrictions (No_Exception_Handlers) then
+      if Restriction_Active (No_Exception_Handlers) then
          return;
       end if;
 
@@ -1716,7 +1717,7 @@ package body Exp_Ch11 is
 
       --  Do not generate if no exceptions
 
-      if Restrictions (No_Exception_Handlers) then
+      if Restriction_Active (No_Exception_Handlers) then
          return;
       end if;
 
@@ -1762,7 +1763,7 @@ package body Exp_Ch11 is
 
       --  Nothing to do if no exceptions
 
-      if Restrictions (No_Exception_Handlers) then
+      if Restriction_Active (No_Exception_Handlers) then
          return;
       end if;
 

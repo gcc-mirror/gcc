@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,58 +26,22 @@
 
 --  This package deals with the implementation of the Restrictions pragma
 
-with Rident;
+with Rident; use Rident;
 with Types;  use Types;
 with Uintp;  use Uintp;
 
 package Restrict is
 
-   type Restriction_Id is new Rident.Restriction_Id;
-   --  The type Restriction_Id defines the set of restriction identifiers,
-   --  which take no parameter (i.e. they are either present or not present).
-   --  The actual definition is in the separate package Rident, so that
-   --  it can easily be accessed by the binder without dragging in lots
-   --  of stuff.
+   Restrictions : Restrictions_Info;
+   --  This variable records restrictions found in any units in the main
+   --  extended unit, and in the case of restrictions checked for partition
+   --  consistency, restrictions found in any with'ed units, parent specs
+   --  etc, since we may as well check as much as we can at compile time.
+   --  These variables should not be referenced directly by clients. Instead
+   --  use Check_Restrictions to record a violation of a restriction, and
+   --  Restriction_Active to test if a given restriction is active.
 
-   subtype All_Restrictions is
-     Restriction_Id range
-       Restriction_Id (Rident.All_Restrictions'First) ..
-       Restriction_Id (Rident.All_Restrictions'Last);
-   --  All restriction identifiers
-
-   subtype Partition_Restrictions is
-     Restriction_Id range
-       Restriction_Id (Rident.Partition_Restrictions'First) ..
-       Restriction_Id (Rident.Partition_Restrictions'Last);
-   --  Range of restriction identifiers that are checked by the binder
-
-   subtype Compilation_Unit_Restrictions is
-     Restriction_Id range
-       Restriction_Id (Rident.Compilation_Unit_Restrictions'First) ..
-       Restriction_Id (Rident.Compilation_Unit_Restrictions'Last);
-   --  Range of restriction identifiers not checked by binder
-
-   type Restriction_Parameter_Id is new Rident.Restriction_Parameter_Id;
-   --  The type Restriction_Parameter_Id records cases where a parameter is
-   --  present in the corresponding pragma. The actual definition is in the
-   --  separate package Rident for consistency.
-
-   type Restrictions_Flags is array (Restriction_Id) of Boolean;
-   --  Type used for arrays indexed by Restriction_Id.
-
-   Restrictions : Restrictions_Flags := (others => False);
-   --  Corresponding entry is False if restriction is not active, and
-   --  True if the restriction is active, i.e. if a pragma Restrictions
-   --  has been seen anywhere. Note that we are happy to pick up any
-   --  restrictions pragmas in with'ed units, since we are required to
-   --  be consistent at link time, and we might as well find the error
-   --  at compile time. Clients must NOT use this array for checking to
-   --  see if a restriction is violated, instead it is required that the
-   --  Check_Restriction subprograms be used for this purpose. The only
-   --  legitimate direct use of this array is when the code is modified
-   --  as a result of the restriction in some way.
-
-   Restrictions_Loc : array (Restriction_Id) of Source_Ptr :=
+   Restrictions_Loc : array (All_Restrictions) of Source_Ptr :=
                        (others => No_Location);
    --  Locations of Restrictions pragmas for error message purposes.
    --  Valid only if corresponding entry in Restrictions is set. A value
@@ -85,46 +49,34 @@ package Restrict is
    --  pragma, and a value of System_Location is used for restrictions
    --  set from package Standard by the processing in Targparm.
 
-   Main_Restrictions : Restrictions_Flags := (others => False);
-   --  This variable saves the cumulative restrictions in effect compiling
-   --  any unit that is part of the extended main unit (i.e. the compiled
-   --  unit, its spec if any, and its subunits if any). The reason we keep
-   --  track of this is for the information that goes to the binder about
-   --  restrictions that are set. The binder will identify a unit that has
-   --  a restrictions pragma for error message purposes, and we do not want
-   --  to pick up a restrictions pragma in a with'ed unit for this purpose.
+   Main_Restrictions : Restrictions_Info;
+   --  This variable records only restrictions found in any units of the
+   --  main extended unit. These are the variables used for ali file output,
+   --  since we want the binder to be able to accurately diagnose inter-unit
+   --  restriction violations.
 
-   Violations : Restrictions_Flags := (others => False);
-   --  Corresponding entry is False if the restriction has not been
-   --  violated in the current main unit, and True if it has been violated.
-
-   Restriction_Warnings : Restrictions_Flags := (others => False);
+   Restriction_Warnings : Rident.Restriction_Flags;
    --  If one of these flags is set, then it means that violation of the
    --  corresponding restriction results only in a warning message, not
    --  in an error message, and the restriction is not otherwise enforced.
+   --  Note that the flags in Restrictions are set to indicate that the
+   --  restriction is set in this case, but Main_Restrictions is never
+   --  set if Restriction_Warnings is set, so this does not look like a
+   --  restriction to the binder.
 
-   Restriction_Parameters :
-     array (Restriction_Parameter_Id) of Uint := (others => No_Uint);
-   --  This array indicates the setting of restriction parameter identifier
-   --  values. All values are initially set to No_Uint indicating that the
-   --  parameter is not set, and are set to the appropriate non-negative
-   --  value if a Restrictions pragma specifies the corresponding
-   --  restriction parameter identifier with an appropriate value.
+   type Save_Cunit_Boolean_Restrictions is private;
+   --  Type used for saving and restoring compilation unit restrictions.
+   --  See Cunit_Boolean_Restrictions_[Save|Restore] subprograms.
 
-   Restriction_Parameters_Loc :
-     array (Restriction_Parameter_Id) of Source_Ptr;
-   --  Locations of Restrictions pragmas for error message purposes.
-   --  Valid only if corresponding entry in Restriction_Parameters is
-   --  set to a value other than No_Uint.
+   --  The following declarations establish a mapping between restriction
+   --  identifiers, and the names of corresponding restriction library units.
 
    type Unit_Entry is record
       Res_Id : Restriction_Id;
       Filenm : String (1 .. 8);
    end record;
 
-   type Unit_Array_Type is array (Positive range <>) of Unit_Entry;
-
-   Unit_Array : constant Unit_Array_Type := (
+   Unit_Array : constant array (Positive range <>) of Unit_Entry := (
      (No_Asynchronous_Control,    "a-astaco"),
      (No_Calendar,                "a-calend"),
      (No_Calendar,                "calendar"),
@@ -146,19 +98,12 @@ package Restrict is
      (No_Unchecked_Conversion,    "unchconv"),
      (No_Unchecked_Deallocation,  "a-uncdea"),
      (No_Unchecked_Deallocation,  "unchdeal"));
-   --  This array defines the mapping between restriction identifiers and
-   --  predefined language files containing units for which the identifier
-   --  forbids semantic dependence.
-
-   type Save_Compilation_Unit_Restrictions is private;
-   --  Type used for saving and restoring compilation unit restrictions.
-   --  See Compilation_Unit_Restrictions_[Save|Restore] subprograms.
 
    --  The following map has True for all GNAT pragmas. It is used to
    --  implement pragma Restrictions (No_Implementation_Restrictions)
    --  (which is why this restriction itself is excluded from the list).
 
-   Implementation_Restriction : Restrictions_Flags :=
+   Implementation_Restriction : array (All_Restrictions) of Boolean :=
      (Boolean_Entry_Barriers             => True,
       No_Calendar                        => True,
       No_Dynamic_Interrupts              => True,
@@ -173,7 +118,7 @@ package Restrict is
       No_Local_Protected_Objects         => True,
       No_Protected_Type_Allocators       => True,
       No_Relative_Delay                  => True,
-      No_Requeue                         => True,
+      No_Requeue_Statements              => True,
       No_Secondary_Stack                 => True,
       No_Select_Statements               => True,
       No_Standard_Storage_Pools          => True,
@@ -203,33 +148,20 @@ package Restrict is
    --  restriction (e.g. No_IO restricts the loading of unit Ada.Text_IO).
    --  If a restriction exists post error message at the given node.
 
-   procedure Check_Restriction (R : Restriction_Id; N : Node_Id);
+   procedure Check_Restriction
+     (R : Restriction_Id;
+      N : Node_Id;
+      V : Uint := Uint_Minus_1);
    --  Checks that the given restriction is not set, and if it is set, an
    --  appropriate message is posted on the given node. Also records the
-   --  violation in the violations array. Note that it is mandatory to
-   --  always use this routine to check if a restriction is violated. Such
-   --  checks must never be done directly by the caller, since otherwise
-   --  they are not properly recorded in the violations array.
-
-   procedure Check_Restriction
-     (R : Restriction_Parameter_Id;
-      V : Uint;
-      N : Node_Id);
-   --  Checks that the count in V does not exceed the maximum value of the
-   --  restriction parameter value corresponding to the given restriction
-   --  parameter identifier (if it has been set). If the count in V exceeds
-   --  the maximum, then post an error message on node N. We use this call
-   --  when we can tell the maximum usage at compile time. In other words,
-   --  we guarantee that if a call is made to this routine, then the front
-   --  end will make all necessary calls for the restriction parameter R
-   --  to ensure that we really know the maximum value used anywhere.
-
-   procedure Check_Restriction (R : Restriction_Parameter_Id; N : Node_Id);
-   --  Check that the maximum value of the restriction parameter corresponding
-   --  to the given restriction parameter identifier is not set to zero. If
-   --  it has been set to zero, post an error message on node N. We use this
-   --  call in cases where we can tell at compile time that the count must be
-   --  at least one, but we can't tell anything more.
+   --  violation in the appropriate internal arrays. Note that it is
+   --  mandatory to always use this routine to check if a restriction
+   --  is violated. Such checks must never be done directly by the caller,
+   --  since otherwise violations in the absence of restrictions are not
+   --  properly recorded. The value of V is relevant only for parameter
+   --  restrictions, and in this case indicates the exact count for the
+   --  violation. If the exact count is not known, V is left at its
+   --  default value of -1 which indicates an unknown count.
 
    procedure Check_Elaboration_Code_Allowed (N : Node_Id);
    --  Tests to see if elaboration code is allowed by the current restrictions
@@ -241,8 +173,8 @@ package Restrict is
    --  Equivalent to Check_Restriction (No_Implicit_Heap_Allocations, N).
    --  Provided for easy use by back end, which has to check this restriction.
 
-   function Compilation_Unit_Restrictions_Save
-     return Save_Compilation_Unit_Restrictions;
+   function Cunit_Boolean_Restrictions_Save
+     return Save_Cunit_Boolean_Restrictions;
    --  This function saves the compilation unit restriction settings, and
    --  resets them to False. This is used e.g. when compiling a with'ed
    --  unit to avoid incorrectly propagating restrictions. Note that it
@@ -252,30 +184,27 @@ package Restrict is
    --  required to be partition wide, because it allows the restriction
    --  violation message to be given at compile time instead of link time.
 
-   procedure Compilation_Unit_Restrictions_Restore
-     (R : Save_Compilation_Unit_Restrictions);
+   procedure Cunit_Boolean_Restrictions_Restore
+     (R : Save_Cunit_Boolean_Restrictions);
    --  This is the corresponding restore procedure to restore restrictions
-   --  previously saved by Compilation_Unit_Restrictions_Save.
+   --  previously saved by Cunit_Boolean_Restrictions_Save.
 
    function Get_Restriction_Id
-     (N    : Name_Id)
-      return Restriction_Id;
+     (N : Name_Id) return Restriction_Id;
    --  Given an identifier name, determines if it is a valid restriction
    --  identifier, and if so returns the corresponding Restriction_Id
    --  value, otherwise returns Not_A_Restriction_Id.
-
-   function Get_Restriction_Parameter_Id
-     (N    : Name_Id)
-      return Restriction_Parameter_Id;
-   --  Given an identifier name, determines if it is a valid restriction
-   --  parameter identifier, and if so returns the corresponding
-   --  Restriction_Parameter_Id value, otherwise returns
-   --  Not_A_Restriction_Parameter_Id.
 
    function No_Exception_Handlers_Set return Boolean;
    --  Test to see if current restrictions settings specify that no exception
    --  handlers are present. This function is called by Gigi when it needs to
    --  expand an AT END clean up identifier with no exception handler.
+
+   function Restriction_Active (R : All_Restrictions) return Boolean;
+   pragma Inline (Restriction_Active);
+   --  Determines if a given restriction is active. This call should only be
+   --  used where the compiled code depends on whether the restriction is
+   --  active. Always use Check_Restriction to record a violation.
 
    function Restricted_Profile return Boolean;
    --  Tests to see if tasking operations follow the GNAT restricted run time
@@ -285,6 +214,20 @@ package Restrict is
    --  Enables the set of restrictions for Ravenscar. N is the corresponding
    --  pragma node, which is used for error messages on any constructs that
    --  violate the profile.
+
+   procedure Set_Restriction
+     (R : All_Boolean_Restrictions;
+      N : Node_Id);
+   --  N is a node (typically a pragma node) that has the effect of setting
+   --  Boolean restriction R. The restriction is set in Restrictions, and
+   --  also in Main_Restrictions if this is the main unit.
+
+   procedure Set_Restriction
+     (R : All_Parameter_Restrictions;
+      N : Node_Id;
+      V : Integer);
+   --  Similar to the above, except that this is used for the case of a
+   --  parameter restriction, and the corresponding value V is given.
 
    procedure Set_Restricted_Profile (N : Node_Id);
    --  Enables the set of restrictions for pragma Restricted_Run_Time. N is
@@ -298,8 +241,8 @@ package Restrict is
    --  be non-zero.
 
 private
-   type Save_Compilation_Unit_Restrictions is
-     array (Compilation_Unit_Restrictions) of Boolean;
+   type Save_Cunit_Boolean_Restrictions is
+     array (Cunit_Boolean_Restrictions) of Boolean;
    --  Type used for saving and restoring compilation unit restrictions.
    --  See Compilation_Unit_Restrictions_[Save|Restore] subprograms.
 

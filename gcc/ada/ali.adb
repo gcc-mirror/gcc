@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,6 +119,13 @@ package body ALI is
       --  Ignore (X) is set to True if lines starting with X are to
       --  be ignored by Scan_ALI and skipped, and False if the lines
       --  are to be read and processed.
+
+      Restrictions_Initial : Rident.Restrictions_Info;
+      pragma Warnings (Off, Restrictions_Initial);
+      --  This variable, which should really be a constant (but that's not
+      --  allowed by the language) is used only for initialization, and the
+      --  reason we are declaring it is to get the default initialization
+      --  set for the object.
 
       Bad_ALI_Format : exception;
       --  Exception raised by Fatal_Error if Err is True
@@ -371,7 +378,6 @@ package body ALI is
          Skip_Space;
 
          V := 0;
-
          loop
             V := V * 10 + (Character'Pos (Getc) - Character'Pos ('0'));
             exit when At_End_Of_Field;
@@ -546,7 +552,7 @@ package body ALI is
         Normalize_Scalars          => False,
         Ofile_Full_Name            => Full_Object_File_Name,
         Queuing_Policy             => ' ',
-        Restrictions               => (others => ' '),
+        Restrictions               => Restrictions_Initial,
         Sfile                      => No_Name,
         Task_Dispatching_Policy    => ' ',
         Time_Slice_Value           => -1,
@@ -733,7 +739,7 @@ package body ALI is
                Queuing_Policy_Specified := Getc;
                ALIs.Table (Id).Queuing_Policy := Queuing_Policy_Specified;
 
-            --  Processing fir flags starting with S
+            --  Processing for flags starting with S
 
             elsif C = 'S' then
                C := Getc;
@@ -803,7 +809,7 @@ package body ALI is
 
       C := Getc;
 
-      --  Acquire restrictions line
+      --  Acquire first restrictions line
 
       if C /= 'R' then
          Fatal_Error;
@@ -815,18 +821,17 @@ package body ALI is
          Checkc (' ');
          Skip_Space;
 
-         for J in All_Restrictions loop
+         for R in All_Boolean_Restrictions loop
             C := Getc;
-            ALIs.Table (Id).Restrictions (J) := C;
 
             case C is
                when 'v' =>
-                  Restrictions (J) := 'v';
+                  ALIs.Table (Id).Restrictions.Violated (R) := True;
+                  Cumulative_Restrictions.Violated (R) := True;
 
                when 'r' =>
-                  if Restrictions (J) = 'n' then
-                     Restrictions (J) := 'r';
-                  end if;
+                  ALIs.Table (Id).Restrictions.Set (R) := True;
+                  Cumulative_Restrictions.Set (R) := True;
 
                when 'n' =>
                   null;
@@ -840,6 +845,109 @@ package body ALI is
       end if;
 
       C := Getc;
+
+      --  See if we have a second R line
+
+      if C /= 'R' then
+
+         --  If not, just ignore, and leave the restrictions variables
+         --  unchanged. This is useful for dealing with old format ALI
+         --  files with only one R line (this can be removed later on,
+         --  but is useful for transitional purposes).
+
+         null;
+
+         --  Here we have a second R line, ignore it if ignore flag set
+
+      elsif Ignore ('R') then
+         Skip_Line;
+         C := Getc;
+
+      --  Otherwise acquire second R line
+
+      else
+         Checkc (' ');
+         Skip_Space;
+
+         for RP in All_Parameter_Restrictions loop
+
+            --  Acquire restrictions pragma information
+
+            case Getc is
+               when 'n' =>
+                  null;
+
+               when 'r' =>
+                  ALIs.Table (Id).Restrictions.Set (RP) := True;
+
+                  declare
+                     N : constant Integer := Integer (Get_Nat);
+                  begin
+                     ALIs.Table (Id).Restrictions.Value (RP) := N;
+
+                     if Cumulative_Restrictions.Set (RP) then
+                        Cumulative_Restrictions.Value (RP) :=
+                          Integer'Min (Cumulative_Restrictions.Value (RP), N);
+                     else
+                        Cumulative_Restrictions.Set (RP) := True;
+                        Cumulative_Restrictions.Value (RP) := N;
+                     end if;
+                  end;
+
+               when others =>
+                  Fatal_Error;
+            end case;
+
+            --  Acquire restrictions violations information
+
+            case Getc is
+               when 'n' =>
+                  null;
+
+               when 'v' =>
+                  ALIs.Table (Id).Restrictions.Violated (RP) := True;
+                  Cumulative_Restrictions.Violated (RP) := True;
+
+                  declare
+                     N : constant Integer := Integer (Get_Nat);
+                     pragma Unsuppress (Overflow_Check);
+
+                  begin
+                     ALIs.Table (Id).Restrictions.Count (RP) := N;
+
+                     if RP in Checked_Max_Parameter_Restrictions then
+                        Cumulative_Restrictions.Count (RP) :=
+                          Integer'Max (Cumulative_Restrictions.Count (RP), N);
+                     else
+                        Cumulative_Restrictions.Count (RP) :=
+                          Cumulative_Restrictions.Count (RP) + N;
+                     end if;
+
+                  exception
+                     when Constraint_Error =>
+
+                        --  A constraint error comes from the addition in
+                        --  the else branch. We reset to the maximum and
+                        --  indicate that the real value is now unknown.
+
+                        Cumulative_Restrictions.Value (RP) := Integer'Last;
+                        Cumulative_Restrictions.Unknown (RP) := True;
+                  end;
+
+                  if Nextc = '+' then
+                     Skipc;
+                     ALIs.Table (Id).Restrictions.Unknown (RP) := True;
+                     Cumulative_Restrictions.Unknown (RP) := True;
+                  end if;
+
+               when others =>
+                  Fatal_Error;
+            end case;
+         end loop;
+
+         Skip_Eol;
+         C := Getc;
+      end if;
 
       --  Acquire 'I' lines if present
 
