@@ -1,3 +1,10 @@
+2001-09-10  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* include/jvm.h (_Jv_AllocRawObj): New prototype.
+	* boehm.cc (_Jv_AllocRawObj): Implement.
+	* nogc.cc (_Jv_AllocRawObj): Likewise.
+	* exception.cc (_Jv_Throw): Use _Jv_AllocRawObj, not GC_malloc.
+
 2001-09-06  Anthony Green  <green@redhat.com>
 
 	* java/util/ResourceBundle.java (tryLocalBundle): Eliminate

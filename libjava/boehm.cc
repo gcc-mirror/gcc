@@ -375,6 +375,14 @@ _Jv_AllocArray (jsize size, jclass klass)
   return obj;
 }
 
+/* Allocate space for a new non-Java object, which does not have the usual 
+   Java object header but may contain pointers to other GC'ed objects. */
+void *
+_Jv_AllocRawObj (jsize size)
+{
+  return (void *) GC_MALLOC (size);
+}
+
 static void
 call_finalizer (GC_PTR obj, GC_PTR client_data)
 {
