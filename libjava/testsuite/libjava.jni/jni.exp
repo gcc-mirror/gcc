@@ -13,7 +13,7 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
   # Find the generated header.
   lappend options "additional_flags=-I."
   # Find jni.h.
-  lappend options "additional_flags=-I$srcdir/../../include"
+  lappend options "additional_flags=-I$srcdir/../include"
 
   set x [prune_warnings [target_compile $file $soname executable $options]]
   if {$x != ""} {
