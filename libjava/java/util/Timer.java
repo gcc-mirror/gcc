@@ -293,6 +293,7 @@ public class Timer
     public synchronized void stop()
     {
       this.heap = null;
+      this.elements = 0;
       this.notify();
     }
 
