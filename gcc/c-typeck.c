@@ -3029,7 +3029,13 @@ build_unary_op (code, xarg, noconvert)
       break;
 
     case BIT_NOT_EXPR:
-      if (typecode != INTEGER_TYPE)
+      if (typecode == COMPLEX_TYPE)
+	{
+	  code = CONJ_EXPR;
+	  if (!noconvert)
+	    arg = default_conversion (arg);
+	}
+      else if (typecode != INTEGER_TYPE)
         errstring = "wrong type argument to bit-complement";
       else if (!noconvert)
 	arg = default_conversion (arg);
@@ -3039,6 +3045,15 @@ build_unary_op (code, xarg, noconvert)
       if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
 	    || typecode == COMPLEX_TYPE))
         errstring = "wrong type argument to abs";
+      else if (!noconvert)
+	arg = default_conversion (arg);
+      break;
+
+    case CONJ_EXPR:
+      /* Conjugating a real value is a no-op, but allow it anyway.  */
+      if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
+	    || typecode == COMPLEX_TYPE))
+	errstring = "wrong type argument to conjugation";
       else if (!noconvert)
 	arg = default_conversion (arg);
       break;
@@ -5800,6 +5815,7 @@ c_expand_return (retval)
       tree res = DECL_RESULT (current_function_decl);
       t = build (MODIFY_EXPR, TREE_TYPE (res),
 		 res, convert (TREE_TYPE (res), t));
+      TREE_SIDE_EFFECTS (t) = 1;
       expand_return (t);
       current_function_returns_value = 1;
     }
