@@ -501,7 +501,9 @@ dbxout_start_new_source_file (filename)
   n->file_number = next_file_number++;
   n->next_type_number = 1;
   current_file = n;
-  fprintf (asmfile, "%s \"%s\",%d,0,0,0\n", ASM_STABS_OP, filename, N_BINCL);
+  fprintf (asmfile, "%s ", ASM_STABS_OP);
+  output_quoted_string (asmfile, filename);
+  fprintf (asmfile, ",%d,0,0,0\n", N_BINCL);
 #endif
 }
 
