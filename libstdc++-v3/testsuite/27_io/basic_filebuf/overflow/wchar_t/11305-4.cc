@@ -31,8 +31,8 @@ void test04()
   locale loc(__gnu_test::try_named_locale("en_US.UTF-8"));
   fb.pubimbue(loc);
   fb.open("tmp_11405-4", ios_base::out);
-  wfilebuf::int_type n1 = fb.sputc(L'i');
-  wfilebuf::int_type n2 = fb.sputc(L'a');
+  wfilebuf::int_type n1 = fb.sputc(0x20000000);
+  wfilebuf::int_type n2 = fb.sputc(0x40000000);
   wfilebuf* f = fb.close();
   
   VERIFY( n1 != wfilebuf::traits_type::eof() );

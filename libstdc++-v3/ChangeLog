@@ -1,3 +1,11 @@
+2003-11-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1:
+	Fix, closely following the testcase included in the PR.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-2: Ditto.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-3: Ditto.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-4: Ditto.
+
 2003-11-13  Jonathan Wakely <redi@gcc.gnu.org>
 
 	* docs/html/17_intro/configury.html: XHTML tweak.
