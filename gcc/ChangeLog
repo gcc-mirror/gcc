@@ -1,3 +1,12 @@
+2004-01-17  J. Brobecker  <brobecker at gnat dot com>
+
+	* dwarf2out.c (is_subrange_type): Renamed from is_ada_subrange_type().
+	Remove checks for is_ada() and TREE_UNSIGNED.
+	(subrange_type_die): Emit a byte_size attribute if the subrange
+	type size is different from the base type size.
+	(modified_type_die): Replace call to is_ada_subrange_type() by
+	call to is_subrange_type().
+
 2004-01-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/sh/sh.c: Include ggc.h.

@@ -3703,7 +3703,7 @@ static void output_file_names (void);
 static dw_die_ref base_type_die (tree);
 static tree root_type (tree);
 static int is_base_type (tree);
-static bool is_ada_subrange_type (tree);
+static bool is_subrange_type (tree);
 static dw_die_ref subrange_type_die (tree, dw_die_ref);
 static dw_die_ref modified_type_die (tree, int, int, dw_die_ref);
 static int type_is_enum (tree);
@@ -7812,24 +7812,14 @@ simple_type_size_in_bits (tree type)
    emitted as a subrange type.  */
 
 static inline bool
-is_ada_subrange_type (tree type)
+is_subrange_type (tree type)
 {
-  /* We should use a subrange type in the following situations:
-     - For Ada modular types: These types are stored as integer subtypes
-       of an unsigned integer type;
-     - For subtypes of an Ada enumeration type: These types are stored
-       as integer subtypes of enumeral types.
-     
-     This subrange type is mostly for the benefit of debugger users.
-     A nameless type would therefore not be very useful, so no need
-     to generate a subrange type in these cases.  */
   tree subtype = TREE_TYPE (type);
 
-  if (is_ada ()
-      && TREE_CODE (type) == INTEGER_TYPE
+  if (TREE_CODE (type) == INTEGER_TYPE
       && subtype != NULL_TREE)
     {
-      if (TREE_CODE (subtype) == INTEGER_TYPE && TREE_UNSIGNED (subtype))
+      if (TREE_CODE (subtype) == INTEGER_TYPE)
         return true;
       if (TREE_CODE (subtype) == ENUMERAL_TYPE)
         return true;
@@ -7846,6 +7836,7 @@ subrange_type_die (tree type, dw_die_ref context_die)
   dw_die_ref subtype_die;
   dw_die_ref subrange_die;
   tree name = TYPE_NAME (type);
+  const HOST_WIDE_INT size_in_bytes = int_size_in_bytes (type);
 
   if (context_die == NULL)
     context_die = comp_unit_die;
@@ -7862,6 +7853,13 @@ subrange_type_die (tree type, dw_die_ref context_die)
       if (TREE_CODE (name) == TYPE_DECL)
         name = DECL_NAME (name);
       add_name_attribute (subrange_die, IDENTIFIER_POINTER (name));
+    }
+
+  if (int_size_in_bytes (TREE_TYPE (type)) != size_in_bytes)
+    {
+      /* The size of the subrange type and its base type do not match,
+         so we need to generate a size attribute for the subrange type.  */
+      add_AT_unsigned (subrange_die, DW_AT_byte_size, size_in_bytes);
     }
 
   if (TYPE_MIN_VALUE (type) != NULL)
@@ -7966,7 +7964,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 #endif
 	  item_type = TREE_TYPE (type);
 	}
-      else if (is_ada_subrange_type (type))
+      else if (is_subrange_type (type))
         mod_type_die = subrange_type_die (type, context_die);
       else if (is_base_type (type))
 	mod_type_die = base_type_die (type);
