@@ -1207,7 +1207,7 @@ default_function_array_conversion (tree exp)
 				    | (volatilep * TYPE_QUAL_VOLATILE));
 
       if (TREE_CODE (exp) == INDIRECT_REF)
-	return convert (TYPE_POINTER_TO (restype),
+	return convert (build_pointer_type (restype),
 			TREE_OPERAND (exp, 0));
 
       if (TREE_CODE (exp) == COMPOUND_EXPR)
