@@ -1,5 +1,5 @@
 # Makefile for GNU C++ compiler.
-#   Copyright (C) 1987, 88, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90-4, 1995 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -167,8 +167,8 @@ OBJDEPS = ../stamp-objlist ../c-common.o ../c-pragma.o
 
 compiler: ../cc1plus
 ../cc1plus: $(P) $(CXX_OBJS) $(OBJDEPS) $(LIBDEPS)
-	rm -f ../cc1plus
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o ../cc1plus \
+	rm -f ../cc1plus$(exeext)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	      $(CXX_OBJS) $(OBJS) $(LIBS)
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
