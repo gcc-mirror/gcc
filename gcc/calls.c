@@ -408,8 +408,20 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
   if (! call_insn)
     abort ();
 
-  /* Put the register usage information on the CALL.  */
-  CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
+  /* Put the register usage information on the CALL.  If there is already
+     some usage information, put ours at the end.  */
+  if (CALL_INSN_FUNCTION_USAGE (call_insn))
+    {
+      rtx link;
+
+      for (link = CALL_INSN_FUNCTION_USAGE (call_insn); XEXP (link, 1) != 0;
+	   link = XEXP (link, 1))
+	;
+
+      XEXP (link, 1) = call_fusage;
+    }
+  else
+    CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
 
   /* If this is a const call, then set the insn's unchanging bit.  */
   if (is_const)
