@@ -1,3 +1,8 @@
+2004-05-02  Josef Zlomek  <zlomekj@suse.cz>
+
+	* cfgrtl.c (cfg_layout_redirect_edge_and_branch): Print the debug
+	message before redirecting the edge.
+
 2004-05-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/15112
