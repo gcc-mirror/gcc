@@ -1,5 +1,14 @@
 2002-10-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/7754
+	* decl2.c (finish_anon_union): Do not expand anonymous unions when
+	procesing template functions.
+	* pt.c (tsubst_decl, case VAR_DECL): Try to complete the variable
+	type. Call layout_decl.
+	(tsubst_expr, case DECL_STMT): Handle anonymous unions.
+
+2002-10-02  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/7188.
 	* init.c (expand_member_init): Allow a FIELD_DECL to be passed in
 	directly.

@@ -1,5 +1,10 @@
 2002-10-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/7754
+	* g++.dg/template/union1.C: New test.
+
+2002-10-02  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/7188.
 	* testsuite/g++.dg/template/meminit1.C: New test.
 
