@@ -1,3 +1,7 @@
+2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ChangeLog, configure: Fix spelling errors.
+
 2001-10-20  Brendan Kehoe  <brendan@zen.org>
 
 	* MAINTAINERS: Tweak my address.
@@ -2835,7 +2839,7 @@ Wed Sep 10 21:29:54 1997  Jeffrey A Law  (law@cygnus.com)
 
 Wed Sep 10 15:19:22 1997  Jeffrey A Law  (law@cygnus.com)
 
-	* config.sub: Accept 'amigados' for backward compatability.
+	* config.sub: Accept 'amigados' for backward compatibility.
 
 Mon Sep  8 20:46:20 1997  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -5050,7 +5054,7 @@ Thu May 11 17:23:26 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 
 Tue May  9 15:52:05 1995  Michael Meissner  <meissner@cygnus.com>
 
-	* config.sub: Recognize powerpcle as the little endian varient of
+	* config.sub: Recognize powerpcle as the little endian variant of
 	the PowerPC.  Recgonize ppc as a PowerPC variant, and ppcle as a
 	powerpcle variant.  Convert pentium into i586, not i486.  Add p5
 	alias for i586.  Map new x86 variants p6, k5, nexgen into i586
@@ -7777,7 +7781,7 @@ Fri May  8 08:31:41 1992  K. Richard Pixley  (rich@cygnus.com)
 	* configure: print the "Building in" message only when building in
 	  other than "." AND verbose.
 
-	* configure: remove -s, rework -v to better accomodate guested
+	* configure: remove -s, rework -v to better accommodate guested
 	  configures.
 
 	* standards.texi: updated to 3 may, fixed librid <-> libdir typo.

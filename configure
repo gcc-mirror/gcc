@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.36 $"
+version="$Revision: 1.37 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -1295,7 +1295,7 @@ EOF
             esac
             # real copy now in ${subdir}/Makefile.tem
 
-            # prepend warning about editting, and a bunch of variables.
+            # prepend warning about editing, and a bunch of variables.
             rm -f ${Makefile}
             cat > ${Makefile} <<EOF
 # ${NO_EDIT}
