@@ -1,4 +1,8 @@
 2004-10-27  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("*subdf3_cc"): Replaced plus by minus.
+
+2004-10-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 	    patch originally created by Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR middle-end/14684
