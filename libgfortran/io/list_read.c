@@ -1496,6 +1496,10 @@ restart:
 
           len = nl->len;
           p = nl->mem_pos;
+
+          /* skip any blanks or tabs after the = */
+          eat_spaces ();
+ 
           switch (nl->type)
             {
             case BT_INTEGER:
