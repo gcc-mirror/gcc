@@ -1,12 +1,13 @@
-m4_include(../config/accross.m4)
-m4_include(../config/acx.m4)
-m4_include(../config/gettext-sister.m4)
-m4_include(../config/iconv.m4)
-m4_include(../config/lcmessage.m4)
-m4_include(../config/lib-ld.m4)
-m4_include(../config/lib-link.m4)
-m4_include(../config/lib-prefix.m4)
-m4_include(../config/progtest.m4)
+m4_include([../config/accross.m4])
+m4_include([../config/acx.m4])
+m4_include([../config/gettext-sister.m4])
+m4_include([../config/gcc-lib-path.m4])
+m4_include([../config/iconv.m4])
+m4_include([../config/lcmessage.m4])
+m4_include([../config/lib-ld.m4])
+m4_include([../config/lib-link.m4])
+m4_include([../config/lib-prefix.m4])
+m4_include([../config/progtest.m4])
 
 dnl See whether we need a declaration for a function.
 dnl The result is highly dependent on the INCLUDES passed in, so make sure
