@@ -1,10 +1,8 @@
 /* Generate information regarding function declarations and definitions based
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
-
-   Written by Ron Guilmette (rfg@netcom.com).
-
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1994 Free Software Foundation, Inc.
+   Contributed by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
 
@@ -521,7 +519,6 @@ gen_decl (decl, is_func_definition, style)
      formals_style style;
 {
   char* ret_val;
-  char* outer_modifier = "";
 
   if (DECL_NAME (decl))
     ret_val = IDENTIFIER_POINTER (DECL_NAME (decl));
