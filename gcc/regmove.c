@@ -679,7 +679,7 @@ optimize_reg_copy_3 (insn, dest, src)
       || ! find_reg_note (insn, REG_DEAD, src_reg)
       || REG_N_SETS (src_no) != 1)
     return;
-  for (p = PREV_INSN (insn); ! reg_set_p (src_reg, p); p = PREV_INSN (p))
+  for (p = PREV_INSN (insn); p && ! reg_set_p (src_reg, p); p = PREV_INSN (p))
     {
       if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
 	  || (GET_CODE (p) == NOTE
@@ -698,6 +698,9 @@ optimize_reg_copy_3 (insn, dest, src)
       if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 	continue;
     }
+  if (! p)
+    return;
+
   if (! (set = single_set (p))
       || GET_CODE (SET_SRC (set)) != MEM
       || SET_DEST (set) != src_reg)
