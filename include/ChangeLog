@@ -1,3 +1,8 @@
+2002-10-11  David O'Brien  <obrien@FreeBSD.org>
+
+	* getopt.h: getopt is in unistd.h.  The Single UNIX(tm) Specification,
+	Version 2 Copyright (c)1997 The Open Group
+
 2002-09-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libiberty.h (asprintf, vasprintf): Don't declare them if the
