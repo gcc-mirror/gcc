@@ -1,5 +1,12 @@
 2005-01-20  Richard Henderson  <rth@redhat.com>
 
+	PR target/19418
+	* config/i386/emmintrin.h (_mm_castpd_ps, _mm_castpd_si128): New.
+	(_mm_castps_pd, _mm_castps_si128): New.
+	(_mm_castsi128_ps, _mm_castsi128_pd): New.
+
+2005-01-20  Richard Henderson  <rth@redhat.com>
+
 	PR target/19530
 	* config/i386/mmintrin.h (_mm_cvtsi32_si64): Use
 	__builtin_ia32_vec_init_v2si.
