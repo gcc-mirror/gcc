@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -94,12 +94,10 @@ EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
-GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
-LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
 LIBUNWIND_FLAG = @LIBUNWIND_FLAG@
@@ -148,6 +146,77 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 CXX = @glibcpp_CXX@
 glibcpp_srcdir = @glibcpp_srcdir@
 glibcpp_builddir = @glibcpp_builddir@
+
+GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
+INCLUDES = -nostdinc++ $(GLIBCPP_INCLUDES) $(LIBSUPCXX_INCLUDES)
+
+# Standard C++ includes.
+std_srcdir = ${glibcpp_srcdir}/include/std
+std_builddir = .
+std_headers = \
+	${std_srcdir}/std_algorithm.h \
+	${std_srcdir}/std_bitset.h \
+	${std_srcdir}/std_complex.h \
+	${std_srcdir}/std_deque.h \
+	${std_srcdir}/std_fstream.h \
+	${std_srcdir}/std_functional.h \
+	${std_srcdir}/std_iomanip.h \
+	${std_srcdir}/std_ios.h \
+	${std_srcdir}/std_iosfwd.h \
+	${std_srcdir}/std_iostream.h \
+	${std_srcdir}/std_istream.h \
+	${std_srcdir}/std_iterator.h \
+	${std_srcdir}/std_limits.h \
+	${std_srcdir}/std_list.h \
+	${std_srcdir}/std_locale.h \
+	${std_srcdir}/std_map.h \
+	${std_srcdir}/std_memory.h \
+	${std_srcdir}/std_numeric.h \
+	${std_srcdir}/std_ostream.h \
+	${std_srcdir}/std_queue.h \
+	${std_srcdir}/std_set.h \
+	${std_srcdir}/std_sstream.h \
+	${std_srcdir}/std_stack.h \
+	${std_srcdir}/std_stdexcept.h \
+	${std_srcdir}/std_streambuf.h \
+	${std_srcdir}/std_string.h \
+	${std_srcdir}/std_utility.h \
+	${std_srcdir}/std_valarray.h \
+	${std_srcdir}/std_vector.h
+
+# Renamed at build time. 
+std_headers_rename = \
+	algorithm \
+	bitset \
+	complex \
+	deque \
+	fstream \
+	functional \
+	iomanip \
+	ios \
+	iosfwd \
+	iostream \
+	istream \
+	iterator \
+	limits \
+	list \
+	locale \
+	map \
+	memory \
+	numeric \
+	ostream \
+	queue \
+	set \
+	sstream \
+	stack \
+	stdexcept \
+	streambuf \
+	string \
+	utility \
+	valarray \
+	vector
+
 
 bits_srcdir = ${glibcpp_srcdir}/include/bits
 bits_builddir = ./bits
@@ -354,72 +423,6 @@ c_compatibility_headers = \
 @GLIBCPP_C_HEADERS_COMPATIBILITY_TRUE@c_compatibility_headers_extra = @GLIBCPP_C_HEADERS_COMPATIBILITY_TRUE@${c_compatibility_headers}
 @GLIBCPP_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
 
-std_srcdir = ${glibcpp_srcdir}/include/std
-std_builddir = .
-std_headers = \
-	${std_srcdir}/std_algorithm.h \
-	${std_srcdir}/std_bitset.h \
-	${std_srcdir}/std_complex.h \
-	${std_srcdir}/std_deque.h \
-	${std_srcdir}/std_fstream.h \
-	${std_srcdir}/std_functional.h \
-	${std_srcdir}/std_iomanip.h \
-	${std_srcdir}/std_ios.h \
-	${std_srcdir}/std_iosfwd.h \
-	${std_srcdir}/std_iostream.h \
-	${std_srcdir}/std_istream.h \
-	${std_srcdir}/std_iterator.h \
-	${std_srcdir}/std_limits.h \
-	${std_srcdir}/std_list.h \
-	${std_srcdir}/std_locale.h \
-	${std_srcdir}/std_map.h \
-	${std_srcdir}/std_memory.h \
-	${std_srcdir}/std_numeric.h \
-	${std_srcdir}/std_ostream.h \
-	${std_srcdir}/std_queue.h \
-	${std_srcdir}/std_set.h \
-	${std_srcdir}/std_sstream.h \
-	${std_srcdir}/std_stack.h \
-	${std_srcdir}/std_stdexcept.h \
-	${std_srcdir}/std_streambuf.h \
-	${std_srcdir}/std_string.h \
-	${std_srcdir}/std_utility.h \
-	${std_srcdir}/std_valarray.h \
-	${std_srcdir}/std_vector.h
-
-# Renamed at build time. 
-std_headers_rename = \
-	algorithm \
-	bitset \
-	complex \
-	deque \
-	fstream \
-	functional \
-	iomanip \
-	ios \
-	iosfwd \
-	iostream \
-	istream \
-	iterator \
-	limits \
-	list \
-	locale \
-	map \
-	memory \
-	numeric \
-	ostream \
-	queue \
-	set \
-	sstream \
-	stack \
-	stdexcept \
-	streambuf \
-	string \
-	utility \
-	valarray \
-	vector
-
-
 target_srcdir = ${glibcpp_srcdir}/@OS_INC_SRCDIR@
 target_builddir = ./${target_alias}/bits
 target_headers = \
@@ -473,6 +476,9 @@ uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 # target_headers_extra are taken out of the build tree staging area;
 # the rest are taken from the original source tree.
 gxx_include_dir = @gxx_include_dir@
+
+# By adding these files here, automake will remove them for 'make clean'
+CLEANFILES = *.pch stamp-std-precompile
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 DIST_COMMON =  Makefile.am Makefile.in
@@ -541,6 +547,7 @@ installdirs:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
@@ -591,6 +598,12 @@ stamp-std: ${std_headers}
 	  done) ;\
 	  echo `date` > stamp-std ;\
 	fi
+
+stamp-std-precompile: stamp-std
+	for h in ${std_headers_rename}; do \
+	  $(CXX) -Winvalid-pch -x c++-header $(INCLUDES) $${h}; \
+	done; \
+	echo `date` > stamp-std-precompile
 
 stamp-bits: ${bits_headers}
 	@if [ ! -d "${bits_builddir}" ]; then \
@@ -731,9 +744,6 @@ install-data-local:
 	for file in ${target_headers} ${target_headers_extra} \
 	 ${thread_target_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${target_builddir}; done
-
-# By adding these files here, automake will remove them for 'make clean'
-#CLEANFILES = ${allstamps} 
 
 # Stop implicit '.o' make rules from ever stomping on extensionless
 # headers, in the improbable case where some foolish, crack-addled
