@@ -1,3 +1,21 @@
+2004-05-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/testsuite_hooks.h (__gnu_test::conversion): New class.
+	* testsuite/23_containers/deque/14340.cc: New.
+	* testsuite/23_containers/list/14340.cc: New.
+	* testsuite/23_containers/map/14340.cc: New.
+	* testsuite/23_containers/multimap/14340.cc: New.
+	* testsuite/23_containers/multiset/14340.cc: New.
+	* testsuite/23_containers/set/14340.cc: New.
+	* testsuite/23_containers/vector/14340.cc: New.
+
+2004-05-18  Douglas Gregor   <gregod@cs.rpi.edu>
+
+	PR libstdc++/14340 
+	* include/debug/safe_iterator.h (_Safe_iterator converting 
+	constructor): Only allow declaration to instantiate when the 
+	incoming _Safe_iterator has exactly the right iterator type.
+
 2004-05-18  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/ext/enc_filebuf.h: Move concept-check macro to class scope.

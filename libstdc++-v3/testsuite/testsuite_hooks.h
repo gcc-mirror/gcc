@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Utility subroutines for the C++ library testsuite. 
 //
-// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -340,6 +340,24 @@ namespace __gnu_test
   inline bool
   operator==(const copy_tracker& lhs, const copy_tracker& rhs)
   { return lhs.id() == rhs.id(); }
+
+  // Class for checking required type conversions, implicit and
+  // explicit for given library data structures. 
+  template<typename _Container>
+    struct conversion
+    {
+      typedef typename _Container::const_iterator const_iterator;
+      
+      // Implicit conversion iterator to const_iterator.
+      static const_iterator
+      iterator_to_const_iterator()
+      {
+	_Container v;
+	const_iterator it = v.begin();
+	const_iterator end = v.end();
+	return it == end ? v.end() : it;
+      }
+    };
 } // namespace __gnu_test
 
 namespace std
