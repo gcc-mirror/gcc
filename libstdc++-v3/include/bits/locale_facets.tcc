@@ -647,11 +647,11 @@ namespace std
         __conv = "%Lf";
 
       // Stage 3: store results.
-      typedef typename __traits_type::int_type int_type;
+      typedef typename char_traits<_CharT>::int_type int_type;
       long double __ld;
       int __p = sscanf(__xtrc, __conv, &__ld);
       if (!(__err & ios_base::failbit) && __p 
-	  && static_cast<int_type>(__p) != __traits_type::eof())
+	  && static_cast<int_type>(__p) != char_traits<_CharT>::eof())
         __v = __ld;
 #endif
       else
