@@ -10137,9 +10137,10 @@ load_mems (loop)
     {
       /* Now, we need to replace all references to the previous exit
 	 label with the new one.  */
-      rtx_pair rr;
+      replace_label_data rr;
       rr.r1 = end_label;
       rr.r2 = label;
+      rr.update_label_nuses = true;
 
       for (p = loop->start; p != loop->end; p = NEXT_INSN (p))
 	{

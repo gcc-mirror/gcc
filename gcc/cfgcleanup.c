@@ -1271,10 +1271,10 @@ outgoing_edges_match (mode, bb1, bb2)
 	     the jump tables are same too. So disable crossjumping of blocks BB1
 	     and BB2 because when deleting the common insns in the end of BB1
 	     by flow_delete_block () the jump table would be deleted too.  */
-	  /* If LABEL2 is contained in BB1->END do not do anything
+	  /* If LABEL2 is referenced in BB1->END do not do anything
 	     because we would loose information when replacing
 	     LABEL1 by LABEL2 and then LABEL2 by LABEL1 in BB1->END.  */
-	  if (label1 != label2 && !subrtx_p (label2, bb1->end))
+	  if (label1 != label2 && !rtx_referenced_p (label2, bb1->end))
 	    {
 	      /* Set IDENTICAL to true when the tables are identical.  */
 	      bool identical = false;
@@ -1301,13 +1301,14 @@ outgoing_edges_match (mode, bb1, bb2)
 
 	      if (identical)
 		{
-		  rtx_pair rr;
+		  replace_label_data rr;
 		  bool match;
 
 		  /* Temporarily replace references to LABEL1 with LABEL2
 		     in BB1->END so that we could compare the instructions.  */
 		  rr.r1 = label1;
 		  rr.r2 = label2;
+		  rr.update_label_nuses = false;
 		  for_each_rtx (&bb1->end, replace_label, &rr);
 
 		  match = insns_match_p (mode, bb1->end, bb2->end);
@@ -1459,12 +1460,13 @@ try_crossjump_to_edge (mode, e1, e2)
 	  && tablejump_p (src2->end, &label2, &table2)
 	  && label1 != label2)
 	{
-	  rtx_pair rr;
+	  replace_label_data rr;
 	  rtx insn;
 
 	  /* Replace references to LABEL1 with LABEL2.  */
 	  rr.r1 = label1;
 	  rr.r2 = label2;
+	  rr.update_label_nuses = true;
 	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	    {
 	      /* Do not replace the label in SRC1->END because when deleting

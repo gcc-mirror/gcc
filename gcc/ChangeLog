@@ -1,3 +1,17 @@
+2003-03-15  Josef Zlomek  <zlomekj@suse.cz>
+
+	* rtl.h (subrtx_p): Renamed to rtx_referenced_p.
+	(rtx_pair): Added new element update_label_nuses, renamed to
+	replace_label_data.
+	* cfgcleanup.c (outgoing_edges_match, try_crossjump_to_edge): Use
+	replace_label_data instead of rtx_pair.
+	* loop.c (load_mems): Likewise.
+	* rtlanal.c (replace_label): Replace label in pool constants and in
+	INSN_LIST (in REG_LABEL note).
+	(subrtx_p): Renamed to rtx_referenced_p.
+	(subrtx_p_1): Renamed to rtx_referenced_p_1, compare the interior of
+	LABEL_REF with CODE_LABEL, traverse constants from pool.
+
 2003-03-15  Aldy Hernandez <aldyh@redhat.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
