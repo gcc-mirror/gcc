@@ -42,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #define HALF_PIC_NUMBER_REFS 0
 #define HALF_PIC_ENCODE(DECL)
 #define HALF_PIC_DECLARE(NAME)
-#define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it.")
+#define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it")
 #define HALF_PIC_ADDRESS_P(X) 0
 #define HALF_PIC_PTR(X) X
 #define HALF_PIC_FINISH(STREAM)
@@ -359,9 +359,9 @@ extern const int x86_epilogue_using_move, x86_decompose_lea;
   { "no-mix-sse-i387",		-MASK_MIX_SSE_I387,			      \
     N_("Do not use both SSE and i387 instruction sets for floating point arithmetics") },\
   { "128bit-long-double",	 MASK_128BIT_LONG_DOUBLE,		      \
-    N_("sizeof(long double) is 16.") },					      \
+    N_("sizeof(long double) is 16") },					      \
   { "96bit-long-double",	-MASK_128BIT_LONG_DOUBLE,		      \
-    N_("sizeof(long double) is 12.") },					      \
+    N_("sizeof(long double) is 12") },					      \
   { "64",			MASK_64BIT,				      \
     N_("Generate 64bit x86-64 code") },					      \
   { "32",			-MASK_64BIT,				      \

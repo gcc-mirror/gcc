@@ -407,7 +407,7 @@ or type the command `info -f g77 Copying'.\n\
     }
 
   if ((n_outfiles != 0) && (n_infiles == 0))
-    fatal ("No input files; unwilling to write output files");
+    fatal ("no input files; unwilling to write output files");
 
   /* If there are no input files, no need for the library.  */
   if (n_infiles == 0)

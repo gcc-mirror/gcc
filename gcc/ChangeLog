@@ -1,3 +1,42 @@
+2001-12-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-decl.c (grokdeclarator): Use ISO word.
+	* cppinit.c: Remove leading capital from diagnostic messages, as
+	per GNU coding standards.
+	* emit-rtl.c: Similarly.
+	* final.c: Similarly.
+	* gcc.c: Similarly.
+	* tradcpp.c: Similarly.
+	* config/arm/arm.c: Similarly.
+	* config/arm/arm.h: Similarly.
+	* config/avr/avr.c: Similarly.
+	* config/avr/avr.h: Similarly.
+	* config/c4x/c4x.c: Similarly.
+	* config/cris/cris.c: Similarly.
+	* config/cris/cris.h: Similarly.
+	* config/d30v/d30v.c: Similarly.
+	* config/dsp16xx/dsp16xx.c: Similarly.
+	* config/dsp16xx/dsp16xx.h: Similarly.
+	* config/h8300/h8300.c: Similarly.
+	* config/i386/i386.c: Similarly.
+	* config/i386/xm-djgpp.h: Similarly.
+	* config/i960/i960.h: Similarly.
+	* config/m32r/m32r.c: Similarly.
+	* config/m68hc11/m68hc11.c: Similarly.
+	* config/m88k/m88k.c: Similarly.
+	* config/m88k/m88k.h: Similarly.
+	* config/mcore/mcore.c: Similarly.
+	* config/mcore/mcore.h: Similarly.
+	* config/mips/mips.c: Similarly.
+	* config/mmix/mmix.c: Similarly.
+	* config/pa/pa.c: Similarly.
+	* config/rs6000/rs6000.c: Similarly.
+	* config/rs6000/sysv4.h: Similarly.
+	* config/s390/s390.c: Similarly.
+	* config/sparc/sparc.c: Similarly.
+	* config/v850/v850-c.c: Similarly.
+	* config/v850/v850.c: Similarly.
+
 2001-12-03  Zack Weinberg  <zack@codesourcery.com>
 
 	* rs6000.h (RETURN_IN_MEMORY): Cast result of

@@ -845,7 +845,7 @@ override_options ()
       if (!strcmp (ix86_cmodel_string, "small"))
 	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
       else if (flag_pic)
-	sorry ("Code model %s not supported in PIC mode", ix86_cmodel_string);
+	sorry ("code model %s not supported in PIC mode", ix86_cmodel_string);
       else if (!strcmp (ix86_cmodel_string, "32"))
 	ix86_cmodel = CM_32;
       else if (!strcmp (ix86_cmodel_string, "kernel") && !flag_pic)
@@ -864,12 +864,12 @@ override_options ()
 	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
     }
   if ((TARGET_64BIT == 0) != (ix86_cmodel == CM_32))
-    error ("Code model `%s' not supported in the %s bit mode.",
+    error ("code model `%s' not supported in the %s bit mode",
 	   ix86_cmodel_string, TARGET_64BIT ? "64" : "32");
   if (ix86_cmodel == CM_LARGE)
-    sorry ("Code model `large' not supported yet.");
+    sorry ("code model `large' not supported yet");
   if ((TARGET_64BIT != 0) != ((target_flags & MASK_64BIT) != 0))
-    sorry ("%i-bit mode not compiled in.",
+    sorry ("%i-bit mode not compiled in",
 	   (target_flags & MASK_64BIT) ? 64 : 32);
 
   if (ix86_arch_string != 0)
@@ -1023,9 +1023,9 @@ override_options ()
   if (TARGET_64BIT)
     {
       if (TARGET_ALIGN_DOUBLE)
-	error ("-malign-double makes no sense in the 64bit mode.");
+	error ("-malign-double makes no sense in the 64bit mode");
       if (TARGET_RTD)
-	error ("-mrtd calling convention not supported in the 64bit mode.");
+	error ("-mrtd calling convention not supported in the 64bit mode");
       /* Enable by default the SSE and MMX builtins.  */
       target_flags |= MASK_SSE2 | MASK_SSE | MASK_MMX | MASK_128BIT_LONG_DOUBLE;
      }
@@ -5394,7 +5394,7 @@ print_reg (x, code, file)
       switch (code)
 	{
 	  case 0:
-	    error ("Extended registers have no high halves\n");
+	    error ("extended registers have no high halves");
 	    break;
 	  case 1:
 	    fprintf (file, "r%ib", REGNO (x) - FIRST_REX_INT_REG + 8);
@@ -5409,7 +5409,7 @@ print_reg (x, code, file)
 	    fprintf (file, "r%i", REGNO (x) - FIRST_REX_INT_REG + 8);
 	    break;
 	  default:
-	    error ("Unsupported operand size for extended register.\n");
+	    error ("unsupported operand size for extended register");
 	    break;
 	}
       return;
@@ -9851,7 +9851,7 @@ ix86_attr_length_immediate_default (insn, shortform)
 		  len+=4;
 		  break;
 		default:
-		  fatal_insn ("Unknown insn mode", insn);
+		  fatal_insn ("unknown insn mode", insn);
 	      }
 	  }
       }

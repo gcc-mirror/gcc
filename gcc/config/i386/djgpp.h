@@ -200,8 +200,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-  { "no-bnu210", -MASK_BNU210, "Ignored (obsolete)." }, \
-  { "bnu210", MASK_BNU210, "Ignored (obsolete)." },
+  { "no-bnu210", -MASK_BNU210, "Ignored (obsolete)" }, \
+  { "bnu210", MASK_BNU210, "Ignored (obsolete)" },
 
 /* Warn that -mbnu210 is now obsolete.  */
 #undef  SUBTARGET_OVERRIDE_OPTIONS
@@ -210,7 +210,7 @@ do \
   { \
     if (target_flags & MASK_BNU210) \
       {	\
-        warning ("-mbnu210 is ignored (option is obsolete)."); \
+        warning ("-mbnu210 is ignored (option is obsolete)"); \
       }	\
   } \
 while (0)

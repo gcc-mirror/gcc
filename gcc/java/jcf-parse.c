@@ -682,7 +682,7 @@ load_class (class_or_name, verbose)
     }
 
   if (!class_loaded && verbose)
-    error ("Cannot find file for class %s", IDENTIFIER_POINTER (saved));
+    error ("cannot find file for class %s", IDENTIFIER_POINTER (saved));
 }
 
 /* Parse the .class file JCF. */
@@ -750,7 +750,7 @@ jcf_parse (jcf)
 	 -fforce-classes-archive-check was specified. */
       if (!jcf->right_zip
 	  && (!flag_emit_class_files || flag_force_classes_archive_check))
-	fatal_error ("The `java.lang.Object' that was found in `%s' didn't have the special zero-length `gnu.gcj.gcj-compiled' attribute. This generally means that your classpath is incorrectly set. Use `info gcj \"Input Options\"' to see the info page describing how to set the classpath.", jcf->filename);
+	fatal_error ("the `java.lang.Object' that was found in `%s' didn't have the special zero-length `gnu.gcj.gcj-compiled' attribute.  This generally means that your classpath is incorrectly set.  Use `info gcj \"Input Options\"' to see the info page describing how to set the classpath", jcf->filename);
     }
   else
     all_class_list = tree_cons (NULL_TREE,
@@ -1060,7 +1060,7 @@ yyparse ()
 	    {
 	      const char *saved_input_filename = input_filename;
 	      input_filename = value;
-	      warning ("source file seen twice on command line and will be compiled only once.");
+	      warning ("source file seen twice on command line and will be compiled only once");
 	      input_filename = saved_input_filename;
 	    }
 	  else

@@ -2297,7 +2297,7 @@ m32r_print_operand (file, x, code)
 
 	if (GET_CODE (x) != CONST_DOUBLE
 	    || GET_MODE_CLASS (GET_MODE (x)) != MODE_FLOAT)
-	  fatal_insn ("Bad insn for 'A'", x);
+	  fatal_insn ("bad insn for 'A'", x);
 	REAL_VALUE_FROM_CONST_DOUBLE (d, x);
 	REAL_VALUE_TO_DECIMAL (d, "%.20e", str);
 	fprintf (file, "%s", str);
@@ -2417,21 +2417,21 @@ m32r_print_operand (file, x, code)
       if (GET_CODE (addr) == PRE_INC)
 	{
 	  if (GET_CODE (XEXP (addr, 0)) != REG)
-	    fatal_insn ("Pre-increment address is not a register", x);
+	    fatal_insn ("pre-increment address is not a register", x);
 
 	  fprintf (file, "@+%s", reg_names[REGNO (XEXP (addr, 0))]);
 	}
       else if (GET_CODE (addr) == PRE_DEC)
 	{
 	  if (GET_CODE (XEXP (addr, 0)) != REG)
-	    fatal_insn ("Pre-decrement address is not a register", x);
+	    fatal_insn ("pre-decrement address is not a register", x);
 
 	  fprintf (file, "@-%s", reg_names[REGNO (XEXP (addr, 0))]);
 	}
       else if (GET_CODE (addr) == POST_INC)
 	{
 	  if (GET_CODE (XEXP (addr, 0)) != REG)
-	    fatal_insn ("Post-increment address is not a register", x);
+	    fatal_insn ("post-increment address is not a register", x);
 
 	  fprintf (file, "@%s+", reg_names[REGNO (XEXP (addr, 0))]);
 	}
@@ -2509,7 +2509,7 @@ m32r_print_operand_address (file, addr)
 	      fputs (reg_names[REGNO (base)], file);
 	    }
 	  else
-	    fatal_insn ("Bad address", addr);
+	    fatal_insn ("bad address", addr);
 	}
       else if (GET_CODE (base) == LO_SUM)
 	{
@@ -2525,12 +2525,12 @@ m32r_print_operand_address (file, addr)
 	  fputs (reg_names[REGNO (XEXP (base, 0))], file);
 	}
       else
-	fatal_insn ("Bad address", addr);
+	fatal_insn ("bad address", addr);
       break;
 
     case LO_SUM :
       if (GET_CODE (XEXP (addr, 0)) != REG)
-	fatal_insn ("Lo_sum not of register", addr);
+	fatal_insn ("lo_sum not of register", addr);
       if (small_data_operand (XEXP (addr, 1), VOIDmode))
 	fputs ("sda(", file);
       else

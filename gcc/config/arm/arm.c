@@ -584,13 +584,13 @@ arm_override_options ()
   
   if (TARGET_THUMB && !(insn_flags & FL_THUMB))
     {
-      warning ("target CPU does not support THUMB instructions.");
+      warning ("target CPU does not support THUMB instructions");
       target_flags &= ~ARM_FLAG_THUMB;
     }
 
   if (TARGET_APCS_FRAME && TARGET_THUMB)
     {
-      /* warning ("ignoring -mapcs-frame because -mthumb was used."); */
+      /* warning ("ignoring -mapcs-frame because -mthumb was used"); */
       target_flags &= ~ARM_FLAG_APCS_FRAME;
     }
 
@@ -598,13 +598,13 @@ arm_override_options ()
      from here where no function is being compiled currently.  */
   if ((target_flags & (THUMB_FLAG_LEAF_BACKTRACE | THUMB_FLAG_BACKTRACE))
       && TARGET_ARM)
-    warning ("enabling backtrace support is only meaningful when compiling for the Thumb.");
+    warning ("enabling backtrace support is only meaningful when compiling for the Thumb");
 
   if (TARGET_ARM && TARGET_CALLEE_INTERWORKING)
-    warning ("enabling callee interworking support is only meaningful when compiling for the Thumb.");
+    warning ("enabling callee interworking support is only meaningful when compiling for the Thumb");
 
   if (TARGET_ARM && TARGET_CALLER_INTERWORKING)
-    warning ("enabling caller interworking support is only meaningful when compiling for the Thumb.");
+    warning ("enabling caller interworking support is only meaningful when compiling for the Thumb");
 
   /* If interworking is enabled then APCS-32 must be selected as well.  */
   if (TARGET_INTERWORK)
@@ -643,7 +643,7 @@ arm_override_options ()
     arm_pic_register = 10;
   
   if (TARGET_APCS_FLOAT)
-    warning ("Passing floating point arguments in fp regs not yet supported");
+    warning ("passing floating point arguments in fp regs not yet supported");
   
   /* Initialise boolean versions of the flags, for use in the arm.md file.  */
   arm_fast_multiply = (insn_flags & FL_FAST_MULT) != 0;
@@ -672,7 +672,7 @@ arm_override_options ()
       else if (streq (target_fp_name, "3"))
 	arm_fpu_arch = FP_SOFT3;
       else
-	error ("Invalid floating point emulation option: -mfpe-%s",
+	error ("invalid floating point emulation option: -mfpe-%s",
 	       target_fp_name);
     }
   else
@@ -696,7 +696,7 @@ arm_override_options ()
       if (size == 8 || size == 32)
 	arm_structure_size_boundary = size;
       else
-	warning ("Structure size boundary can only be set to 8 or 32");
+	warning ("structure size boundary can only be set to 8 or 32");
     }
 
   if (arm_pic_register_string != NULL)
@@ -713,7 +713,7 @@ arm_override_options ()
 	  || pic_register == HARD_FRAME_POINTER_REGNUM
 	  || pic_register == STACK_POINTER_REGNUM
 	  || pic_register >= PC_REGNUM)
-	error ("Unable to use '%s' for PIC register", arm_pic_register_string);
+	error ("unable to use '%s' for PIC register", arm_pic_register_string);
       else
 	arm_pic_register = pic_register;
     }
@@ -9120,7 +9120,7 @@ arm_debugger_arg_offset (value, addr)
   if (value == 0)
     {
       debug_rtx (addr);
-      warning ("Unable to compute real location of stacked parameter");
+      warning ("unable to compute real location of stacked parameter");
       value = 8; /* XXX magic hack */
     }
 
@@ -10003,7 +10003,7 @@ thumb_expand_prologue ()
 
   if (IS_INTERRUPT (func_type))
     {
-      error ("Interrupt Service Routines cannot be coded in Thumb mode.");
+      error ("interrupt Service Routines cannot be coded in Thumb mode");
       return;
     }
 

@@ -173,7 +173,7 @@ extern const char *ia64_fixed_range_string;
 #define TARGET_OPTIONS \
 {									\
   { "fixed-range=", 	&ia64_fixed_range_string,			\
-      N_("Specify range of registers to make fixed.")},			\
+      N_("Specify range of registers to make fixed")},			\
 }
 
 /* Sometimes certain combinations of command options do not make sense on a

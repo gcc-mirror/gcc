@@ -259,7 +259,7 @@ i386_pe_mark_dllimport (decl)
     abort ();
   if (i386_pe_dllexport_name_p (oldname))
     {
-      error ("`%s' declared as both exported to and imported from a DLL.",
+      error ("`%s' declared as both exported to and imported from a DLL",
              IDENTIFIER_POINTER (DECL_NAME (decl)));
       return;
     }

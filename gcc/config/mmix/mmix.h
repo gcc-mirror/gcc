@@ -185,7 +185,7 @@ extern int target_flags;
   {"no-zero-extend",	-TARGET_MASK_ZERO_EXTEND,  ""},			\
   {"knuthdiv",		TARGET_MASK_KNUTH_DIVISION,			\
    N_("Generate divide results with reminder having the same sign as the\
- divisor (not the dividend).")},					\
+ divisor (not the dividend)")},						\
   {"no-knuthdiv",	-TARGET_MASK_KNUTH_DIVISION, ""},		\
   {"toplevel-symbols",	TARGET_MASK_TOPLEVEL_SYMBOLS,			\
    N_("Prepend global symbols with \":\" (for use with PREFIX)")},	\

@@ -201,7 +201,7 @@ override_options ()
 	    if (ok_p
 		&& (hard_regno_mode_ok[(int)mode1][regno]
 		    != hard_regno_mode_ok[(int)mode2][regno]))
-	      error ("Bad modes_tieable_p for register %s, mode1 %s, mode2 %s",
+	      error ("bad modes_tieable_p for register %s, mode1 %s, mode2 %s",
 		     reg_names[regno], GET_MODE_NAME (mode1),
 		     GET_MODE_NAME (mode2));
 	}
@@ -2668,7 +2668,7 @@ d30v_print_operand_address (stream, x)
       return;
     }
 
-  fatal_insn ("Bad insn to d30v_print_operand_address:", x);
+  fatal_insn ("bad insn to d30v_print_operand_address:", x);
 }
 
 
@@ -2685,7 +2685,7 @@ d30v_print_operand_memory_reference (stream, x)
   switch (GET_CODE (x))
     {
     default:
-      fatal_insn ("Bad insn to d30v_print_operand_memory_reference:", x);
+      fatal_insn ("bad insn to d30v_print_operand_memory_reference:", x);
       break;
 
     case SUBREG:
@@ -2746,7 +2746,7 @@ d30v_print_operand_memory_reference (stream, x)
       if (GET_CODE (x0) == REG && GPR_P (REGNO (x0)))
 	fprintf (stream, "%s%s", reg_names[REGNO (x0) + offset0], suffix);
       else
-	fatal_insn ("Bad insn to d30v_print_operand_memory_reference:", x);
+	fatal_insn ("bad insn to d30v_print_operand_memory_reference:", x);
     }
 
   fputs (",", stream);
@@ -2767,7 +2767,7 @@ d30v_print_operand_memory_reference (stream, x)
 					 GET_MODE (x1));
 	  x1 = SUBREG_REG (x1);
 	  if (GET_CODE (x1) != REG)
-	    fatal_insn ("Bad insn to d30v_print_operand_memory_reference:", x);
+	    fatal_insn ("bad insn to d30v_print_operand_memory_reference:", x);
 
 	  /* fall through */
 	case REG:
@@ -2785,7 +2785,7 @@ d30v_print_operand_memory_reference (stream, x)
 	  break;
 
 	default:
-	  fatal_insn ("Bad insn to d30v_print_operand_memory_reference:", x);
+	  fatal_insn ("bad insn to d30v_print_operand_memory_reference:", x);
 	}
     }
 
@@ -2853,7 +2853,7 @@ d30v_print_operand (stream, x, letter)
 
     case 'f':	/* Print a SF floating constant as an int */
       if (GET_CODE (x) != CONST_DOUBLE)
-	fatal_insn ("Bad insn to d30v_print_operand, 'f' modifier:", x);
+	fatal_insn ("bad insn to d30v_print_operand, 'f' modifier:", x);
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
       REAL_VALUE_TO_TARGET_SINGLE (rv, num);
@@ -2862,14 +2862,14 @@ d30v_print_operand (stream, x, letter)
 
     case 'A':	/* Print accumulator number without an `a' in front of it.  */
       if (GET_CODE (x) != REG || !ACCUM_P (REGNO (x)))
-	fatal_insn ("Bad insn to d30v_print_operand, 'A' modifier:", x);
+	fatal_insn ("bad insn to d30v_print_operand, 'A' modifier:", x);
 
       putc ('0' + REGNO (x) - ACCUM_FIRST, stream);
       break;
 
     case 'M':	/* Print a memory reference for ld/st */
       if (GET_CODE (x) != MEM)
-	fatal_insn ("Bad insn to d30v_print_operand, 'M' modifier:", x);
+	fatal_insn ("bad insn to d30v_print_operand, 'M' modifier:", x);
 
       d30v_print_operand_memory_reference (stream, XEXP (x, 0));
       break;
@@ -2923,7 +2923,7 @@ d30v_print_operand (stream, x, letter)
 	fputs ((letter == 'T') ? "tnz" : "tzr", stream);
 
       else
-	fatal_insn ("Bad insn to print_operand, 'F' or 'T' modifier:", x);
+	fatal_insn ("bad insn to print_operand, 'F' or 'T' modifier:", x);
       break;
 
     case 'B':	/* emit offset single bit to change */
@@ -2934,14 +2934,14 @@ d30v_print_operand (stream, x, letter)
 	fprintf (stream, "%d", 31 - log);
 
       else
-	fatal_insn ("Bad insn to print_operand, 'B' modifier:", x);
+	fatal_insn ("bad insn to print_operand, 'B' modifier:", x);
       break;
 
     case 'E':	/* Print u if this is zero extend, nothing if sign extend. */
       if (GET_CODE (x) == ZERO_EXTEND)
 	putc ('u', stream);
       else if (GET_CODE (x) != SIGN_EXTEND)
-	fatal_insn ("Bad insn to print_operand, 'E' modifier:", x);
+	fatal_insn ("bad insn to print_operand, 'E' modifier:", x);
       break;
 
     case 'R':	/* Return appropriate cmp instruction for relational test.  */
@@ -2959,7 +2959,7 @@ d30v_print_operand (stream, x, letter)
 	case GEU: fputs ("cmpuge", stream); break;
 
 	default:
-	  fatal_insn ("Bad insn to print_operand, 'R' modifier:", x);
+	  fatal_insn ("bad insn to print_operand, 'R' modifier:", x);
 	}
       break;
 
@@ -2968,7 +2968,7 @@ d30v_print_operand (stream, x, letter)
 	fprintf (stream, "%d", (int) (32 - INTVAL (x)));
 
       else
-	fatal_insn ("Bad insn to print_operand, 's' modifier:", x);
+	fatal_insn ("bad insn to print_operand, 's' modifier:", x);
       break;
 
     case 'S':	/* Subtract 32.  */
@@ -2976,7 +2976,7 @@ d30v_print_operand (stream, x, letter)
 	fprintf (stream, "%d", (int)(INTVAL (x) - 32));
 
       else
-	fatal_insn ("Bad insn to print_operand, 's' modifier:", x);
+	fatal_insn ("bad insn to print_operand, 's' modifier:", x);
       break;
 
 
@@ -3005,7 +3005,7 @@ d30v_print_operand (stream, x, letter)
 	d30v_print_operand_address (stream, x);
 
       else
-	fatal_insn ("Bad insn in d30v_print_operand, 0 case", x);
+	fatal_insn ("bad insn in d30v_print_operand, 0 case", x);
 
       return;
 
@@ -3013,7 +3013,7 @@ d30v_print_operand (stream, x, letter)
       {
 	char buf[80];
 
-	sprintf (buf, "Invalid asm template character '%%%c'", letter);
+	sprintf (buf, "invalid asm template character '%%%c'", letter);
 	fatal_insn (buf, x);
       }
     }
@@ -3404,7 +3404,7 @@ d30v_move_2words (operands, insn)
 	   && GPR_P (REGNO (operands[1])))
     return "st2w %1,%M0";
 
-  fatal_insn ("Bad call to d30v_move_2words", insn);
+  fatal_insn ("bad call to d30v_move_2words", insn);
 }
 
 

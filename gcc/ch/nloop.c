@@ -478,7 +478,7 @@ build_loop_iterator (user_var, start_exp, step_exp, end_exp,
 	ip->itype = DO_LOC_VARYING;
       else
 	{
-	  error ("Loop's IN expression is not a composite object");
+	  error ("loop's IN expression is not a composite object");
 	  return;
 	}
     }
@@ -814,7 +814,7 @@ declare_temps ()
 	      
 	      if (TREE_CODE (TREE_TYPE (array_type)) == BOOLEAN_TYPE)
 		{
-		  error ("Can't iterate through array of BOOL");
+		  error ("can't iterate through array of BOOL");
 		  ip->error_flag = 1;
 		  return ip->error_flag;
 		}

@@ -2527,7 +2527,7 @@ process_include (stackp, fbeg, flen, system_header_p, op)
     } else if (print_deps
 	       && print_deps <= (system_header_p
 				 || (system_include_depth > 0)))
-      warning ("No include path in which to find %.*s", flen, fbeg);
+      warning ("no include path in which to find %.*s", flen, fbeg);
     else
       error_from_errno (fname);
 

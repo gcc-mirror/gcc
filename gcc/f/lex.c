@@ -348,7 +348,7 @@ ffelex_backslash_ (int c, ffewhereColumnNumber col)
 
 	      m[0] = c;
 	      m[1] = '\0';
-	      ffebad_start_msg_lex ("Non-ANSI-C-standard escape sequence `\\%A' at %0",
+	      ffebad_start_msg_lex ("Non-ISO-C-standard escape sequence `\\%A' at %0",
 				    FFEBAD_severityPEDANTIC);
 	      ffelex_bad_here_ (0, line, column);
 	      ffebad_string (m);
@@ -704,7 +704,7 @@ ffelex_cfebackslash_ (int *use_d, int *d, FILE *finput)
       /* `\%' is used to prevent SCCS from getting confused.  */
     case '%':
       if (pedantic)
-	pedwarn ("non-ANSI escape sequence `\\%c'", c);
+	pedwarn ("non-ISO escape sequence `\\%c'", c);
       return c;
     }
   if (c >= 040 && c < 0177)
@@ -787,7 +787,7 @@ ffelex_cfelex_ (ffelexToken *xtoken, FILE *finput, int c)
 
 	    case EOF:
 	    case '\n':
-	      error ("Badly formed directive -- no closing quote");
+	      error ("badly formed directive -- no closing quote");
 	      done = TRUE;
 	      break;
 
@@ -1007,7 +1007,7 @@ ffelex_get_directive_line_ (char **text, FILE *finput)
 	  || c == EOF)
 	{
 	  if (looking_for != 0)
-	    error ("Bad directive -- missing close-quote");
+	    error ("bad directive -- missing close-quote");
 
 	  *p++ = '\0';
 	  *text = directive_buffer;
@@ -1328,7 +1328,7 @@ ffelex_hash_ (FILE *finput)
 	    {
 	      lineno = 1;
 	      input_filename = old_input_filename;
-	      error ("Use `#line ...' instead of `# ...' in first line");
+	      error ("use `#line ...' instead of `# ...' in first line");
 	    }
 
 	  if (num == 1)
@@ -1372,7 +1372,7 @@ ffelex_hash_ (FILE *finput)
 	{
 	  lineno = 1;
 	  input_filename = old_input_filename;
-	  error ("Use `#line ...' instead of `# ...' in first line");
+	  error ("use `#line ...' instead of `# ...' in first line");
 	}
       if (c == '\n' || c == EOF)
 	{

@@ -100,7 +100,7 @@ extern struct rtx_def *dsp16xx_lshrhi3_libcall;
 %{mmap3:m3_crt0.o%s}                          \
 %{mmap4:m4_crt0.o%s}                          \
 %{!mmap*: %{!ifile*: m4_crt0.o%s} %{ifile*:     \
-%eA -ifile option requires a -map option}}"
+%ea -ifile option requires a -map option}}"
 
 /* Specify the end file to link with */
 
@@ -109,7 +109,7 @@ extern struct rtx_def *dsp16xx_lshrhi3_libcall;
 %{mmap3:m3_crtn.o%s}                          \
 %{mmap4:m4_crtn.o%s}                          \
 %{!mmap*: %{!ifile*: m4_crtn.o%s} %{ifile*:     \
-%eA -ifile option requires a -map option}}"
+%ea -ifile option requires a -map option}}"
 
 
 /* Tell gcc where to look for the startfile */
@@ -1233,17 +1233,17 @@ extern struct dsp16xx_frame_info current_frame_info;
    for profiling a function entry.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)        \
-  internal_error ("Profiling not implemented yet.")
+  internal_error ("profiling not implemented yet")
 
 /* Output assembler code to FILE to initialize this source file's
    basic block profiling info, if that has not already been done.  */
 #define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
-  internal_error ("Profiling not implemented yet.")
+  internal_error ("profiling not implemented yet")
 
 /* Output assembler code to FILE to increment the entry-count for
    the BLOCKNO'th basic block in this source file.  */
 #define BLOCK_PROFILER(FILE, BLOCKNO)	        \
-  internal_error ("Profiling not implemented yet.")
+  internal_error ("profiling not implemented yet")
 
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
@@ -1254,7 +1254,7 @@ extern struct dsp16xx_frame_info current_frame_info;
 #define EXIT_IGNORE_STACK  (0)
 
 #define TRAMPOLINE_TEMPLATE(FILE) \
-  internal_error ("Trampolines not yet implemented");
+  internal_error ("trampolines not yet implemented");
 
 /* Length in units of the trampoline for entering a nested function.
    This is a dummy value  */
@@ -1266,7 +1266,7 @@ extern struct dsp16xx_frame_info current_frame_info;
    CXT is an RTX for the static chain value for the function.  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-  internal_error ("Trampolines not yet implemented");
+  internal_error ("trampolines not yet implemented");
 
 /* A C expression which is nonzero if a function must have and use a
    frame pointer. If its value is nonzero the functions will have a
@@ -1855,12 +1855,12 @@ const_section ()                                                   \
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code since it is used only for profiling  */
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)    \
-  internal_error ("Profiling not implemented yet.");
+  internal_error ("profiling not implemented yet");
 
 /* This is how to output an insn to pop a register from the stack.
    It need not be very fast code since it is used only for profiling  */
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)     \
-  internal_error ("Profiling not implemented yet."); 
+  internal_error ("profiling not implemented yet"); 
 
 /* OUTPUT OF DISPATCH TABLES */
 

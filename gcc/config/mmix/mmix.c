@@ -554,7 +554,7 @@ mmix_function_outgoing_value (valtype, func)
      swapped registers.)  */
 
   if (nregs > MMIX_MAX_REGS_FOR_VALUE)
-    internal_error ("Too large function value type, needs %d registers,\
+    internal_error ("too large function value type, needs %d registers,\
  have only %d registers for this", nregs, MMIX_MAX_REGS_FOR_VALUE);
 
   /* FIXME: Maybe we should handle structure values like this too
@@ -669,7 +669,7 @@ mmix_target_asm_function_prologue (stream, locals_size)
 
   /* Make sure we don't get an unaligned stack.  */
   if ((stack_space_to_allocate % 8) != 0)
-    internal_error ("Stack frame not a multiple of 8 bytes: %d",
+    internal_error ("stack frame not a multiple of 8 bytes: %d",
 		    stack_space_to_allocate);
 
   if (current_function_pretend_args_size)
@@ -1026,7 +1026,7 @@ mmix_target_asm_function_epilogue (stream, locals_size)
 
   /* Make sure we don't get an unaligned stack. */
   if ((stack_space_to_deallocate % 8) != 0)
-    internal_error ("Stack frame not a multiple of octabyte: %d",
+    internal_error ("stack frame not a multiple of octabyte: %d",
 		    stack_space_to_deallocate);
 
   /* We will add back small offsets to the stack pointer as we go.
@@ -1260,7 +1260,7 @@ mmix_setup_incoming_varargs (args_so_farp, mode, vartype, pretend_sizep,
       args_so_farp->now_varargs = 1;
     }
   else
-    internal_error ("Neither varargs or stdarg in mmix_setup_incoming_varargs");
+    internal_error ("neither varargs or stdarg in mmix_setup_incoming_varargs");
 
 
   /* We assume that one argument takes up one register here.  That should
@@ -1589,7 +1589,7 @@ mmix_canonicalize_comparison (codep, op0p, op1p)
       && INTVAL (*op1p) == 256)
     {
       /* FIXME: Remove when I know this trigs.  */
-      fatal_insn ("Oops, not debugged; fixing up value:", *op1p);
+      fatal_insn ("oops, not debugged; fixing up value:", *op1p);
       *codep = *codep == LT ? LE : *codep == LTU ? LEU : *codep
 	== GE ? GT : GTU;
       *op1p = GEN_INT (255);
@@ -2257,7 +2257,7 @@ mmix_print_operand (stream, x, code)
     case 'r':
       /* Store the register to output a constant to.  */
       if (! REG_P (x))
-	fatal_insn ("MMIX Internal: Expected a register, not this.", x);
+	fatal_insn ("MMIX Internal: Expected a register, not this", x);
       mmix_output_destination_register = REGNO (x);
       return;
 
@@ -2267,7 +2267,7 @@ mmix_print_operand (stream, x, code)
 	  && (GET_CODE (x) != CONST_DOUBLE
 	      || (GET_MODE (x) != VOIDmode && GET_MODE (x) != DFmode
 		  && GET_MODE (x) != SFmode)))
-	fatal_insn ("MMIX Internal: Expected a constant, not this.", x);
+	fatal_insn ("MMIX Internal: Expected a constant, not this", x);
       mmix_output_register_setting (stream,
 				    mmix_output_destination_register,
 				    mmix_intval (x), 0);

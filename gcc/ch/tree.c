@@ -109,7 +109,7 @@ layout_powerset_type (type)
 
   if (! discrete_type_p (domain))
     {
-      error ("Can only build a powerset from a discrete mode");
+      error ("can only build a powerset from a discrete mode");
       return error_mark_node;
     }
 

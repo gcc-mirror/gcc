@@ -160,10 +160,10 @@ Boston, MA 02111-1307, USA.  */
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC  \
     "%{!posix*:%{pg:-lgcrt0.o}%{!pg: \
-     %{p:%e-p profiling is no longer supported.  Use -pg instead.} \
+     %{p:%e-p profiling is no longer supported.  Use -pg instead} \
      %{!p:-lcrt0.o}}}\
      %{posix*:%{pg:-lgposixcrt0.o}%{!pg: \
-     %{p:%e-p profiling is no longer supported.  Use -pg instead.} \
+     %{p:%e-p profiling is no longer supported.  Use -pg instead} \
      %{!p:-lposixcrt0.o}}} \
      -lcrtbegin.o"
 

@@ -194,7 +194,7 @@ avr_override_options ()
 
   if (!t->name)
     {
-      fprintf (stderr, "Unknown MCU `%s' specified\nKnown MCU names:\n",
+      fprintf (stderr, "unknown MCU `%s' specified\nKnown MCU names:\n",
 	       avr_mcu_name);
       for (t = avr_mcu_types; t->name; t++)
 	fprintf (stderr,"   %s\n", t->name);
@@ -1039,7 +1039,7 @@ print_operand (file, x, code)
       else if (code == 'o')
 	{
 	  if (GET_CODE (addr) != PLUS)
-	    fatal_insn ("Bad address, not (reg+disp):", addr);
+	    fatal_insn ("bad address, not (reg+disp):", addr);
 
 	  print_operand (file, XEXP (addr, 1), 0);
 	}
@@ -1047,7 +1047,7 @@ print_operand (file, x, code)
 	{
 	  print_operand_address (file, XEXP (addr,0));
 	  if (REGNO (XEXP (addr, 0)) == REG_X)
-	    fatal_insn ("Internal compiler bug.\nBad address:"
+	    fatal_insn ("internal compiler error.  Bad address:"
 			,addr);
 	  fputc ('+', file);
 	  print_operand (file, XEXP (addr,1), code);
@@ -1060,7 +1060,7 @@ print_operand (file, x, code)
       long val;
       REAL_VALUE_TYPE rv;
       if (GET_MODE (x) != SFmode)
-	fatal_insn ("Internal compiler bug. Unknown mode:", x);
+	fatal_insn ("internal compiler error.  Unknown mode:", x);
       REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
       REAL_VALUE_TO_TARGET_SINGLE (rv, val);
       asm_fprintf (file, "0x%lx", val);
@@ -1768,7 +1768,7 @@ output_movhi (insn, operands, l)
       operands[1] = src;
       return "";
     }
-  fatal_insn ("Invalid insn:", insn);
+  fatal_insn ("invalid insn:", insn);
   return "";
 }
 
@@ -1805,7 +1805,7 @@ out_movqi_r_mr (insn, op, l)
 	{
 	  int disp = INTVAL (XEXP (x,1));
 	  if (REGNO (XEXP (x,0)) != REG_Y)
-	    fatal_insn ("Incorrect insn:",insn);
+	    fatal_insn ("incorrect insn:",insn);
 
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
 	    return *l = 3, (AS2 (adiw,r28,%o1-63) CR_TAB
@@ -1891,7 +1891,7 @@ out_movhi_r_mr (insn, op, l)
       if (disp > MAX_LD_OFFSET (GET_MODE (src)))
 	{
 	  if (REGNO (XEXP (base, 0)) != REG_Y)
-	    fatal_insn ("Incorrect insn:",insn);
+	    fatal_insn ("incorrect insn:",insn);
 	  
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
 	    return *l = 4, (AS2 (adiw,r28,%o1-62) CR_TAB
@@ -1940,7 +1940,7 @@ out_movhi_r_mr (insn, op, l)
   else if (GET_CODE (base) == PRE_DEC) /* (--R) */
     {
       if (reg_overlap_mentioned_p (dest, XEXP (base, 0)))
-	fatal_insn ("Incorrect insn:", insn);
+	fatal_insn ("incorrect insn:", insn);
 
       *l = 2;
       return (AS2 (ld,%B0,%1) CR_TAB
@@ -1949,7 +1949,7 @@ out_movhi_r_mr (insn, op, l)
   else if (GET_CODE (base) == POST_INC) /* (R++) */
     {
       if (reg_overlap_mentioned_p (dest, XEXP (base, 0)))
-	fatal_insn ("Incorrect insn:", insn);
+	fatal_insn ("incorrect insn:", insn);
 
       *l = 2;
       return (AS2 (ld,%A0,%1)  CR_TAB
@@ -1968,7 +1968,7 @@ out_movhi_r_mr (insn, op, l)
 	      AS2 (lds,%B0,%B1));
     }
   
-  fatal_insn ("Unknown move insn:",insn);
+  fatal_insn ("unknown move insn:",insn);
   return "";
 }
 
@@ -2047,7 +2047,7 @@ out_movsi_r_mr (insn, op, l)
       if (disp > MAX_LD_OFFSET (GET_MODE (src)))
 	{
 	  if (REGNO (XEXP (base, 0)) != REG_Y)
-	    fatal_insn ("Incorrect insn:",insn);
+	    fatal_insn ("incorrect insn:",insn);
 
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
 	    return *l = 6, (AS2 (adiw,r28,%o1-60) CR_TAB
@@ -2132,7 +2132,7 @@ out_movsi_r_mr (insn, op, l)
 		    AS2 (lds,%C0,%C1) CR_TAB
 		    AS2 (lds,%D0,%D1));
     
-  fatal_insn ("Unknown move insn:",insn);
+  fatal_insn ("unknown move insn:",insn);
   return "";
 }
 
@@ -2219,7 +2219,7 @@ out_movsi_mr_r (insn, op, l)
       if (disp > MAX_LD_OFFSET (GET_MODE (dest)))
 	{
 	  if (reg_base != REG_Y)
-	    fatal_insn ("Incorrect insn:",insn);
+	    fatal_insn ("incorrect insn:",insn);
 
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
 	    return *l = 6, (AS2 (adiw,r28,%o0-60) CR_TAB
@@ -2290,7 +2290,7 @@ out_movsi_mr_r (insn, op, l)
 		  AS2 (st,%0,%B1) CR_TAB
 		  AS2 (st,%0,%C1) CR_TAB
 		  AS2 (st,%0,%D1));
-  fatal_insn ("Unknown move insn:",insn);
+  fatal_insn ("unknown move insn:",insn);
   return "";
 }
 
@@ -2480,7 +2480,7 @@ output_movsisf(insn, operands, l)
       operands[1] = src;
       return "";
     }
-  fatal_insn ("Invalid insn:", insn);
+  fatal_insn ("invalid insn:", insn);
   return "";
 }
 
@@ -2517,7 +2517,7 @@ out_movqi_mr_r (insn, op, l)
 	{
 	  int disp = INTVAL (XEXP (x,1));
 	  if (REGNO (XEXP (x,0)) != REG_Y)
-	    fatal_insn ("Incorrect insn:",insn);
+	    fatal_insn ("incorrect insn:",insn);
 
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
 	    return *l = 3, (AS2 (adiw,r28,%o0-63) CR_TAB
@@ -2628,7 +2628,7 @@ out_movhi_mr_r (insn, op, l)
       if (disp > MAX_LD_OFFSET (GET_MODE (dest)))
 	{
 	  if (reg_base != REG_Y)
-	    fatal_insn ("Incorrect insn:",insn);
+	    fatal_insn ("incorrect insn:",insn);
 
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
 	    return *l = 4, (AS2 (adiw,r28,%o0-62) CR_TAB
@@ -2672,7 +2672,7 @@ out_movhi_mr_r (insn, op, l)
   else if (GET_CODE (base) == POST_INC) /* (R++) */
     return *l=2, (AS2 (st,%0,%A1)  CR_TAB
 		  AS2 (st,%0,%B1));
-  fatal_insn ("Unknown move insn:",insn);
+  fatal_insn ("unknown move insn:",insn);
   return "";
 }
 
@@ -2908,7 +2908,7 @@ out_shift_with_cnt (template, insn, operands, len, t_len)
 	}
     }
   else
-    fatal_insn ("Bad shift insn:", insn);
+    fatal_insn ("bad shift insn:", insn);
 
   if (second_label)
     {
@@ -3024,7 +3024,7 @@ ashlqi3_out (insn, operands, len)
 	}
     }
   else if (CONSTANT_P (operands[2]))
-    fatal_insn ("Internal compiler bug.\nIncorrect shift:", insn);
+    fatal_insn ("internal compiler error.  Incorrect shift:", insn);
 
   out_shift_with_cnt (AS1 (lsl,%0),
 		      insn, operands, len, 1);
@@ -3454,7 +3454,7 @@ ashrqi3_out (insn, operands, len)
 	}
     }
   else if (CONSTANT_P (operands[2]))
-    fatal_insn ("Internal compiler bug.\nIncorrect shift:", insn);
+    fatal_insn ("internal compiler error.  Incorrect shift:", insn);
 
   out_shift_with_cnt (AS1 (asr,%0),
 		      insn, operands, len, 1);
@@ -3834,7 +3834,7 @@ lshrqi3_out (insn, operands, len)
 	}
     }
   else if (CONSTANT_P (operands[2]))
-    fatal_insn ("Internal compiler bug.\nIncorrect shift:", insn);
+    fatal_insn ("internal compiler error.  Incorrect shift:", insn);
   
   out_shift_with_cnt (AS1 (lsr,%0),
 		      insn, operands, len, 1);
@@ -4699,8 +4699,8 @@ avr_handle_progmem_attribute (node, name, args, flags, no_add_attrs)
 	{
 	  if (DECL_INITIAL (*node) == NULL_TREE && !DECL_EXTERNAL (*node))
 	    {
-	      warning ("Only initialized variables can be placed into "
-		       "program memory area.");
+	      warning ("only initialized variables can be placed into "
+		       "program memory area");
 	      *no_add_attrs = true;
 	    }
 	}

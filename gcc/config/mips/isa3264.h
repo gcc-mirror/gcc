@@ -120,12 +120,12 @@ Boston, MA 02111-1307, USA.  */
   %{!mips1:%{!mips2:%{!mips32:%{!mlong32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}} \
 %{mabi=o64:\
  %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
-  %{mlong32:%e-mlong32 and -mlong64 can not both be specified.}} \
+  %{mlong32:%e-mlong32 and -mlong64 can not both be specified}} \
  %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int }} \
 %{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{mabi=meabi|!mabi=*:\
  %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
-  %{mlong32:%e-mlong32 and -mlong64 can not both be specified.}} \
+  %{mlong32:%e-mlong32 and -mlong64 can not both be specified}} \
  %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int }} \
 "
 
@@ -137,12 +137,12 @@ Boston, MA 02111-1307, USA.  */
   %{!mips3:%{!mips4:%{!mips5:%{!mips64:%{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}} \
 %{mabi=o64:\
  %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
-  %{mlong32:%e-mlong32 and -mlong64 can not both be specified.}} \
+  %{mlong32:%e-mlong32 and -mlong64 can not both be specified}} \
  %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int }} \
 %{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{mabi=meabi|!mabi=*:\
  %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
-  %{mlong32:%e-mlong32 and -mlong64 can not both be specified.}} \
+  %{mlong32:%e-mlong32 and -mlong64 can not both be specified}} \
  %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int }} \
 "
 #endif /* ISA */

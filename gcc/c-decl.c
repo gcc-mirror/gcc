@@ -4522,7 +4522,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	     Functions aren't allowed as array elements.  */
 	  if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 	      && (constp || volatilep))
-	    pedwarn ("ANSI C forbids const or volatile function types");
+	    pedwarn ("ISO C forbids const or volatile function types");
 #endif
 
 	  /* Build the array type itself, then merge any constancy or

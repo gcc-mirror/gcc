@@ -92,7 +92,7 @@ mark_current_function_as_interrupt ()
   
   if (current_function_decl ==  NULL_TREE)
     {
-      warning ("Cannot set interrupt attribute: no current function");
+      warning ("cannot set interrupt attribute: no current function");
       return;
     }
 
@@ -100,7 +100,7 @@ mark_current_function_as_interrupt ()
 
   if (name == NULL_TREE || TREE_CODE (name) != IDENTIFIER_NODE)
     {
-      warning ("Cannot set interrupt attribute: no such identifier");
+      warning ("cannot set interrupt attribute: no such identifier");
       return;
     }
   

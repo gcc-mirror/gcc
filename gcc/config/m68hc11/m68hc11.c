@@ -3025,7 +3025,7 @@ m68hc11_gen_movhi (insn, operands)
 	      else
 		{
 		  /* !!!! SCz wrong here.  */
-                  fatal_insn ("Move insn not handled", insn);
+                  fatal_insn ("move insn not handled", insn);
 		}
 	    }
 	  else
@@ -3245,7 +3245,7 @@ m68hc11_gen_movhi (insn, operands)
 	  break;
 
 	default:
-	  fatal_insn ("Invalid register in the move instruction", insn);
+	  fatal_insn ("invalid register in the move instruction", insn);
 	  break;
 	}
       return;
@@ -3279,7 +3279,7 @@ m68hc11_gen_movhi (insn, operands)
   /* Operand 1 must be a hard register.  */
   if (!H_REG_P (operands[1]))
     {
-      fatal_insn ("Invalid operand in the instruction", insn);
+      fatal_insn ("invalid operand in the instruction", insn);
     }
 
   reg = REGNO (operands[1]);
@@ -3329,7 +3329,7 @@ m68hc11_gen_movhi (insn, operands)
       break;
 
     default:
-      fatal_insn ("Invalid register in the move instruction", insn);
+      fatal_insn ("invalid register in the move instruction", insn);
       break;
     }
 }
@@ -3399,7 +3399,7 @@ m68hc11_gen_movqi (insn, operands)
 	      else
 		{
 		  /* !!!! SCz wrong here.  */
-                  fatal_insn ("Move insn not handled", insn);
+                  fatal_insn ("move insn not handled", insn);
 		}
 	    }
 	  else
@@ -3576,7 +3576,7 @@ m68hc11_gen_movqi (insn, operands)
 	  break;
 
 	default:
-	  fatal_insn ("Invalid register in the instruction", insn);
+	  fatal_insn ("invalid register in the instruction", insn);
 	  break;
 	}
     }
@@ -3602,14 +3602,14 @@ m68hc11_gen_movqi (insn, operands)
 	  break;
 
 	default:
-	  fatal_insn ("Invalid register in the move instruction", insn);
+	  fatal_insn ("invalid register in the move instruction", insn);
 	  break;
 	}
       return;
     }
   else
     {
-      fatal_insn ("Operand 1 must be a hard register", insn);
+      fatal_insn ("operand 1 must be a hard register", insn);
     }
 }
 
@@ -3626,7 +3626,7 @@ m68hc11_gen_rotate (code, insn, operands)
   
   if (GET_CODE (operands[2]) != CONST_INT
       || (!D_REG_P (operands[0]) && !DA_REG_P (operands[0])))
-    fatal_insn ("Invalid rotate insn", insn);
+    fatal_insn ("invalid rotate insn", insn);
 
   val = INTVAL (operands[2]);
   if (code == ROTATERT)
@@ -4046,7 +4046,7 @@ m68hc11_check_z_replacement (insn, info)
 
       if (this_insn_uses_z && this_insn_uses_ix && this_insn_uses_iy)
 	{
-	  fatal_insn ("Registers IX, IY and Z used in the same INSN", insn);
+	  fatal_insn ("registers IX, IY and Z used in the same INSN", insn);
 	}
 
       if (this_insn_uses_d)
@@ -4366,7 +4366,7 @@ m68hc11_check_z_replacement (insn, info)
 	{
           if (this_insn_uses_z)
             {
-              fatal_insn ("Cannot do z-register replacement", insn);
+              fatal_insn ("cannot do z-register replacement", insn);
             }
 	  return 0;
 	}
@@ -4671,7 +4671,7 @@ m68hc11_z_replacement (insn)
 	    {
 	      INSN_CODE (insn) = -1;
 	      if (!validate_replace_rtx (z_reg, replace_reg, insn))
-		fatal_insn ("Cannot do z-register replacement", insn);
+		fatal_insn ("cannot do z-register replacement", insn);
 	    }
 
 	  /* Likewise for (REG:QI Z).  */
@@ -4720,7 +4720,7 @@ m68hc11_z_replacement (insn)
 
       if (!validate_replace_rtx (z_reg, replace_reg, info.last))
 	{
-	  fatal_insn ("Invalid Z register replacement for insn", insn);
+	  fatal_insn ("invalid Z register replacement for insn", insn);
 	}
       insn = NEXT_INSN (info.last);
     }
@@ -4797,7 +4797,7 @@ m68hc11_reassign_regs (first)
 	}
       else
 	{
-	  printf ("Insn not handled by Z replacement:\n");
+	  printf ("insn not handled by Z replacement:\n");
 	  fflush (stdout);
 	  debug_rtx (insn);
 	}

@@ -2822,7 +2822,7 @@ really_grant_this (decl, granted_decls)
     }
 
   /* this nerver should happen */
-  error_with_decl (decl, "function \"really_grant_this\" called for `%s'.");
+  error_with_decl (decl, "function \"really_grant_this\" called for `%s'");
   return 1;
 }
 

@@ -180,10 +180,10 @@ DEFUN (main, (argc, argv),
   /* Check on bad usage */
   if (flag_find_main + flag_dump_class + flag_complexity > 1)
     fatal_error
-      ("Only one of `--print-main', `--list-class', and `--complexity' allowed");
+      ("only one of `--print-main', `--list-class', and `--complexity' allowed");
 
   if (output_file && !(out = fopen (output_file, "w")))
-    fatal_error ("Can't open output file `%s'", output_file);
+    fatal_error ("can't open output file `%s'", output_file);
 
   ft = ftell (out);
 
@@ -219,7 +219,7 @@ DEFUN (main, (argc, argv),
 	    reset_report ();
 	  }
 	else
-	  fatal_error ("File not found `%s'", argv [i]);
+	  fatal_error ("file not found `%s'", argv [i]);
       }
 
   /* Flush and close */

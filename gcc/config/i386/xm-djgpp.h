@@ -68,12 +68,12 @@ Boston, MA 02111-1307, USA.  */
            to try and figure out what's wrong.  */ \
         char *djgpp = getenv ("DJGPP"); \
         if (djgpp == NULL) \
-          fatal ("Environment variable DJGPP not defined."); \
+          fatal ("environment variable DJGPP not defined"); \
         else if (access (djgpp, R_OK) == 0) \
-          fatal ("Environment variable DJGPP points to missing file '%s'.", \
+          fatal ("environment variable DJGPP points to missing file '%s'", \
                  djgpp); \
         else \
-          fatal ("Environment variable DJGPP points to corrupt file '%s'.", \
+          fatal ("environment variable DJGPP points to corrupt file '%s'", \
                   djgpp); \
       } \
     standard_exec_prefix = update_path (standard_exec_prefix, NULL); \

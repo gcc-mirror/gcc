@@ -6871,7 +6871,7 @@ read_import_dir (wfl)
       static int first = 1;
       if (first)
 	{
-	  error ("Can't find default package `%s'. Check the CLASSPATH environment variable and the access to the archives.", package_name);
+	  error ("Can't find default package `%s'. Check the CLASSPATH environment variable and the access to the archives", package_name);
 	  java_error_count++;
 	  first = 0;
 	}
@@ -13543,7 +13543,7 @@ patch_binop (node, wfl_op1, wfl_op2)
 	      (TREE_CODE (op2) == INTEGER_CST &&
 	       ! TREE_INT_CST_LOW (op2)  && ! TREE_INT_CST_HIGH (op2))))
 	{
-	  parse_warning_context (wfl_operator, "Evaluating this expression will result in an arithmetic exception being thrown.");
+	  parse_warning_context (wfl_operator, "Evaluating this expression will result in an arithmetic exception being thrown");
 	  TREE_CONSTANT (node) = 0;
 	}
 	  

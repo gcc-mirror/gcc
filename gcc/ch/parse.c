@@ -223,7 +223,7 @@ end_function ()
 	  if (result_never_set
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (current_function_decl)))
 	      != VOID_TYPE)
-	    warning ("No RETURN or RESULT in procedure");
+	    warning ("no RETURN or RESULT in procedure");
 	  chill_expand_return (NULL_TREE, 1);
 	}
     }
@@ -2385,7 +2385,7 @@ parse_do_action (label)
     {
       push_handler ();
       parse_opt_actions ();
-      expect (OD, "Missing 'OD' after 'DO'");
+      expect (OD, "missing 'OD' after 'DO'");
       parse_opt_handler ();
       parse_opt_end_label_semi_colon (label);
       return;
@@ -2424,7 +2424,7 @@ parse_do_action (label)
   parse_opt_actions ();
   if (! ignoring)
     build_loop_end (); 
-  expect (OD, "Missing 'OD' after 'DO'");
+  expect (OD, "missing 'OD' after 'DO'");
   /* Note that the handler is inside the reach of the DO. */
   parse_opt_handler ();
   end_loop_scope (label);
@@ -2942,7 +2942,7 @@ parse_action ()
 
  no_handler_action:
   if (parse_opt_handler () != NULL_TREE && pass == 1)
-    error ("no handler is permitted on this action.");
+    error ("no handler is permitted on this action");
   parse_semi_colon ();
   return 1;
 
@@ -4326,7 +4326,7 @@ set_yydebug (value)
 #if YYDEBUG != 0
   yydebug = value;
 #else
-  warning ("YYDEBUG not defined.");
+  warning ("YYDEBUG not defined");
 #endif
 }
 #endif

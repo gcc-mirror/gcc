@@ -1088,7 +1088,7 @@ gen_realpart (mode, x)
       && REG_P (x)
       && REGNO (x) < FIRST_PSEUDO_REGISTER)
     internal_error
-      ("Can't access real part of complex value in hard register");
+      ("can't access real part of complex value in hard register");
   else if (WORDS_BIG_ENDIAN)
     return gen_highpart (mode, x);
   else

@@ -87,7 +87,7 @@ safe_satisfy_decl (decl, prev_chain)
 	    {
 	      if (!pointer_type_breaks_cycle)
 		{
-		  error_with_decl (decl, "Cycle: `%s' depends on ...");
+		  error_with_decl (decl, "cycle: `%s' depends on ...");
 		  cycle_error_print (prev_chain, decl);
 		  error_with_decl (decl, "  `%s'");
 		  return error_mark_node;

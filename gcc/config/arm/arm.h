@@ -253,7 +253,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #define CPP_INTERWORK_SPEC "						\
 %{mthumb-interwork:							\
-  %{mno-thumb-interwork: %eIncompatible interworking options}		\
+  %{mno-thumb-interwork: %eincompatible interworking options}		\
   -D__THUMB_INTERWORK__}						\
 %{!mthumb-interwork:%{!mno-thumb-interwork:%(cpp_interwork_default)}}	\
 "

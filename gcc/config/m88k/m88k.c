@@ -886,7 +886,7 @@ output_call (operands, addr)
 			   - 2);
 #if (MONITOR_GCC & 0x2) /* How often do long branches happen?  */
 	  if ((unsigned) (delta + 0x8000) >= 0x10000)
-	    warning ("Internal gcc monitor: short-branch(%x)", delta);
+	    warning ("internal gcc monitor: short-branch(%x)", delta);
 #endif
 
 	  /* Delete the jump.  */
@@ -2289,7 +2289,7 @@ m88k_debugger_offset (reg, offset)
 #if (MONITOR_GCC & 0x10) /* Watch for suspicious symbolic locations.  */
       if (! (GET_CODE (reg) == REG
 	     && REGNO (reg) >= FIRST_PSEUDO_REGISTER))
-	warning ("Internal gcc error: Can't express symbolic location");
+	warning ("internal gcc error: Can't express symbolic location");
 #endif
       return 0;
     }

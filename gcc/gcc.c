@@ -837,7 +837,7 @@ static struct compiler default_compilers[] =
     %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)", 0},
   {".h", "@c-header", 0},
   {"@c-header",
-   "%{!E:%eCompilation of header file requested} \
+   "%{!E:%ecompilation of header file requested} \
     %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)", 0},
   {".i", "@cpp-output", 0},
   {"@cpp-output",
@@ -1834,7 +1834,7 @@ read_specs (filename, main_p)
 	      if (new_filename)
 		read_specs (new_filename, FALSE);
 	      else if (verbose_flag)
-		notice ("Could not find specs file %s\n", p1);
+		notice ("could not find specs file %s\n", p1);
 	      continue;
 	    }
 	  else if (!strncmp (p1, "%rename", sizeof "%rename" - 1)
@@ -3989,7 +3989,7 @@ process_command (argc, argv)
     }
 
   if (n_infiles == last_language_n_infiles && spec_lang != 0)
-    error ("Warning: `-x %s' after last input file has no effect", spec_lang);
+    error ("warning: `-x %s' after last input file has no effect", spec_lang);
 
   switches[n_switches].part1 = 0;
   infiles[n_infiles].name = 0;
@@ -4255,7 +4255,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	switch (c = *p++)
 	  {
 	  case 0:
-	    fatal ("Invalid specification!  Bug in cc");
+	    fatal ("invalid specification!  Bug in cc");
 
 	  case 'b':
 	    obstack_grow (&obstack, input_basename, basename_length);
@@ -6222,7 +6222,7 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
 void
 fancy_abort ()
 {
-  fatal ("internal gcc abort.");
+  fatal ("internal gcc abort");
 }
 
 /* Output an error message and exit */

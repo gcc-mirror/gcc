@@ -1954,7 +1954,7 @@ expand_invoke (opcode, method_ref_index, nargs)
 				 method_name, method_signature);
   if (method == NULL_TREE)
     {
-      error ("Class '%s' has no method named '%s' matching signature '%s'",
+      error ("class '%s' has no method named '%s' matching signature '%s'",
 	     self_name,
 	     IDENTIFIER_POINTER (method_name),
 	     IDENTIFIER_POINTER (method_signature));
@@ -2254,13 +2254,13 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
     }
   else if (field_decl == NULL_TREE)
     {
-      error ("Missing field '%s' in '%s'",
+      error ("missing field '%s' in '%s'",
 	     IDENTIFIER_POINTER (field_name), self_name);
       is_error = 1;
     }
   else if (build_java_signature (TREE_TYPE (field_decl)) != field_signature)
     {
-      error ("Mismatching signature for field '%s' in '%s'",
+      error ("mismatching signature for field '%s' in '%s'",
 	     IDENTIFIER_POINTER (field_name), self_name);
       is_error = 1;
     }
@@ -2533,7 +2533,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 			  target, tmode, modifier);
 
     default:
-      internal_error ("Can't expand %s", tree_code_name [TREE_CODE (exp)]);
+      internal_error ("can't expand %s", tree_code_name [TREE_CODE (exp)]);
     }
 }
 
@@ -2754,7 +2754,7 @@ expand_byte_code (jcf, method)
 	  if (dead_code_index != -1)
 	    {
               /* We've just reached the end of a region of dead code.  */
-              warning ("Unreachable bytecode from %d to before %d",
+              warning ("unreachable bytecode from %d to before %d",
                        dead_code_index, PC);
               dead_code_index = -1;
             }
@@ -2791,7 +2791,7 @@ expand_byte_code (jcf, method)
   if (dead_code_index != -1)
     {
       /* We've just reached the end of a region of dead code.  */
-      warning ("Unreachable bytecode from %d to the end of the method", 
+      warning ("unreachable bytecode from %d to the end of the method", 
               dead_code_index);
     }
 }

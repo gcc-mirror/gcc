@@ -407,7 +407,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
   if (! java && ! class && java_buf.st_mtime > class_buf.st_mtime)
     {
       if (flag_newer)
-	warning ("Source file for class `%s' is newer than its matching class file. Source file `%s' used instead", classname, java_buffer);
+	warning ("source file for class `%s' is newer than its matching class file.  Source file `%s' used instead", classname, java_buffer);
       class = -1;
     }
 

@@ -1369,7 +1369,7 @@ shorten_branches (first)
 #ifdef ADJUST_INSN_LENGTH
       ADJUST_INSN_LENGTH (insn, insn_lengths[uid]);
       if (insn_lengths[uid] < 0)
-	fatal_insn ("Negative insn length", insn);
+	fatal_insn ("negative insn length", insn);
 #endif
     }
 
@@ -2925,7 +2925,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	    /* If we didn't split the insn, go away.  */
 	    if (new == insn && PATTERN (new) == body)
-	      fatal_insn ("Could not split insn", insn);
+	      fatal_insn ("could not split insn", insn);
 
 #ifdef HAVE_ATTR_length
 	    /* This instruction should have been split in shorten_branches,

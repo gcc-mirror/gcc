@@ -1532,7 +1532,7 @@ print_operand_address (file, addr)
   struct s390_address ad;
 
   if (!s390_decompose_address (addr, &ad, TRUE))
-    output_operand_lossage ("Cannot decompose address.\n");
+    output_operand_lossage ("cannot decompose address.\n");
  
   if (ad.disp)
     s390_output_symbolic_const (file, ad.disp);
@@ -2491,7 +2491,7 @@ s390_function_prologue (file, lsize)
   /* Check for too large size of local variables */
 
   if (lsize > 0x7fff0000)
-    fatal_error ("Total size of local variables exceeds architecture limit.");
+    fatal_error ("total size of local variables exceeds architecture limit");
 
   /* Profile code (-p, -a, -ax needs some literals).  */
 
