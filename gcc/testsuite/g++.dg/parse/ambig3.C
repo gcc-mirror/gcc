@@ -5,8 +5,17 @@
 template <int> struct A { static const int i = 1; };
 template <int> struct B {};
 
-template <typename> void foo(B<0>) {} // { dg-error "" }
+template <typename> int foo(B<0>)
+{
+  return 0;
+} 
 
-template <typename, int j> B<A<j>::i-1> foo(B<j>) { return B<0>(); } // { dg-error "" }
+template <typename, int j> B<A<j>::i-1> foo(B<j>)
+{
+  return B<0>();
+} 
 
-void bar() { foo<int>(B<0>()); } // { dg-error "ambiguous" }
+int main()
+{
+  return foo<int>(B<0>());
+} 

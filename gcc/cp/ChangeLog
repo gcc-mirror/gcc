@@ -1,3 +1,17 @@
+2005-03-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/19203, implement DR 214
+	* call.c (joust): Use more_specialized_fn.
+	* cp-tree.h (DEDUCE_ORDER): Remove.
+	(more_specialized): Replace with ...
+	(more_specialized_fn): ... this.
+	* pt.c (maybe_adjust_types_for_deduction): Remove DEDUCE_ORDER
+	case.
+	(type_unification_real): Remove DEDUCE_ORDER case.
+	(more_specialized): Replace with ...
+	(more_specialized_fn): ... this.  Implement DR 214.
+	(most_specialized_instantiation): Use get_bindings_real directly.
+
 2005-03-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/18644
