@@ -1,6 +1,7 @@
 /* Process declarations and variables for the GNU compiler for the
    Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1817,8 +1818,8 @@ start_java_method (fndecl)
     {
       tree parm_name = NULL_TREE, parm_decl;
       tree parm_type = TREE_VALUE (tem);
-      if (i >= DECL_MAX_LOCALS(fndecl))
-	fatal ("function has more parameters than local slots");
+      if (i >= DECL_MAX_LOCALS (fndecl))
+	abort ();
 
       parm_decl = build_decl (PARM_DECL, parm_name, parm_type);
       DECL_CONTEXT (parm_decl) = fndecl;

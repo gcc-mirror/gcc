@@ -2596,7 +2596,7 @@ pop_current_osb (ctxp)
   int to_return;
 
   if (ctxp->osb_depth < 0)
-    fatal ("osb stack underflow");
+    abort ();
   
   to_return = CURRENT_OSB (ctxp);
   ctxp->osb_depth--;
@@ -3167,7 +3167,7 @@ unreachable_stmt_error (node)
       parse_error_context (wfl_operator, "Unreachable statement");
     }
   else
-    fatal ("Can't get valid statement - unreachable_stmt_error");
+    abort ();
 }
 
 int
@@ -3467,8 +3467,7 @@ make_nested_class_name (cpc_list)
   /* Why is NO_DOLLAR_IN_LABEL defined? */
 #if 0
 #ifdef NO_DOLLAR_IN_LABEL
-  fatal ("make_nested_class_name: Can't use '$' as a separator "
-	 "for inner classes");
+  internal_error ("Can't use '$' as a separator for inner classes");
 #endif
 #endif
   obstack_1grow (&temporary_obstack, '$');
@@ -4985,7 +4984,7 @@ obtain_incomplete_type (type_name)
   else if (INCOMPLETE_TYPE_P (type_name))
     name = TYPE_NAME (type_name);
   else
-    fatal ("invalid type name - obtain_incomplete_type");
+    abort ();
 
   for (ptr = ctxp->incomplete_class; ptr; ptr = TREE_CHAIN (ptr))
     if (TYPE_NAME (ptr) == name)
@@ -5422,8 +5421,7 @@ java_complete_class ()
 	      break;
 
 	    default:
-	      fatal ("Can't handle patch code %d - java_complete_class",
-		     JDEP_KIND (dep));
+	      abort ();
 	    }
 	}
     }
@@ -6180,7 +6178,7 @@ java_check_regular_methods (class_decl)
   java_check_abstract_method_definitions (class_decl);
 
   if (!saw_constructor)
-    fatal ("No constructor found");
+    abort ();
 }
 
 /* Return a non zero value if the `throws' clause of METHOD (if any)
@@ -7723,7 +7721,7 @@ java_complete_expand_method (mdecl)
       /* Pop the exceptions and sanity check */
       POP_EXCEPTIONS();
       if (currently_caught_type_list)
-	fatal ("Exception list non empty - java_complete_expand_method");
+	abort ();
 
       if (flag_emit_xref)
 	DECL_FUNCTION_THROWS (mdecl) = exception_copy;
@@ -8736,7 +8734,9 @@ cut_identifier_in_qualified (wfl)
     if (!TREE_CHAIN (q))
       {
 	if (!previous)
-	  fatal ("Operating on a non qualified qualified WFL - cut_identifier_in_qualified");
+	  /* Operating on a non qualified qualified WFL.  */
+	  abort ();
+
 	TREE_CHAIN (previous) = NULL_TREE;
 	return TREE_PURPOSE (q);
       }
@@ -9580,7 +9580,7 @@ check_deprecation (wfl, decl)
 	  strcpy (the, "class");
 	  break;
 	default:
-	  fatal ("unexpected DECL code - check_deprecation");
+	  abort ();
 	}
       parse_warning_context 
 	(wfl, "The %s `%s' in class `%s' has been deprecated", 
@@ -10181,7 +10181,7 @@ patch_invoke (patch, method, args)
 	  break;
 
 	default:
-	  fatal ("internal error - unknown invocation_mode result");
+	  abort ();
 	}
 
       /* Ensure self_type is initialized, (invokestatic). FIXME */
@@ -10426,7 +10426,7 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
 	{
 	  lc = 1;
 	  if (!list)
-	    fatal ("finit$ not found in class -- find_applicable_accessible_methods_list");
+	    abort ();
 	}
 
       /* We must search all interfaces of this class */
@@ -11644,7 +11644,7 @@ java_complete_lhs (node)
 	  return field;
 	}
       else
-	fatal ("unimplemented java_complete_tree for COMPONENT_REF");
+	abort ();
       break;
 
     case THIS_EXPR:
@@ -11691,8 +11691,7 @@ java_complete_lhs (node)
       if ((nn = patch_string (node)))
 	node = nn;
       else
-	fatal ("No case for tree code `%s' - java_complete_tree\n",
-	       tree_code_name [TREE_CODE (node)]);
+	internal_error ("No case for %s", tree_code_name [TREE_CODE (node)]);
     }
   return node;
 }
@@ -11841,7 +11840,7 @@ lookup_name_in_blocks (name)
 
       /* Paranoid sanity check. To be removed */
       if (TREE_CODE (b) != BLOCK)
-	fatal ("non block expr function body - lookup_name_in_blocks");
+	abort ();
 
       for (current = BLOCK_EXPR_DECLS (b); current; 
 	   current = TREE_CHAIN (current))
@@ -12136,7 +12135,7 @@ check_final_variable_indirect_assignment (stmt)
 	if (TREE_CODE (decl) != FUNCTION_DECL)
 	  decl = TREE_OPERAND (TREE_OPERAND (decl, 0), 0);
 	if (TREE_CODE (decl) != FUNCTION_DECL)
-	  fatal ("Can't find FUNCTION_DECL in CALL_EXPR - check_final_variable_indirect_assignment");
+	  abort ();
 	if (DECL_FUNCTION_ALL_FINAL_INITIALIZED (decl))
 	  return 1;
 	if (DECL_FINIT_P (decl) || DECL_CONTEXT (decl) != current_class)
@@ -12861,8 +12860,8 @@ operator_string (node)
     case PREDECREMENT_EXPR:	/* Fall through */
     case POSTDECREMENT_EXPR: BUILD_OPERATOR_STRING ("--");
     default:
-      fatal ("unregistered operator %s - operator_string",
-	     tree_code_name [TREE_CODE (node)]);
+      internal_error ("unregistered operator %s",
+		      tree_code_name [TREE_CODE (node)]);
     }
   return NULL;
 #undef BUILD_OPERATOR_STRING
@@ -13561,8 +13560,7 @@ build_unaryop (op_token, op_location, op1)
     case MINUS_TK: op = NEGATE_EXPR; break;
     case NEG_TK: op = TRUTH_NOT_EXPR; break;
     case NOT_TK: op = BIT_NOT_EXPR; break;
-    default: fatal ("Unknown token `%d' for unary operator - build_unaryop",
-		    op_token);
+    default: abort ();
     }
 
   unaryop = build1 (op, NULL_TREE, op1);

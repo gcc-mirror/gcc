@@ -268,10 +268,10 @@ count_constant_pool_bytes (cpool)
 void
 write_constant_pool (cpool, buffer, length)
      CPool *cpool;
-     unsigned char* buffer;
+     unsigned char *buffer;
      int length;
 {
-  unsigned char* ptr = buffer;
+  unsigned char *ptr = buffer;
   int i = 1;
   jword *datap = &cpool->data[1];
   PUT2 (cpool->count);
@@ -311,8 +311,9 @@ write_constant_pool (cpool, buffer, length)
 	  break;
 	}
     }
+
   if (ptr != buffer + length)
-    fatal("internal error - incorrect constant pool");
+    abort ();
 }
 
 CPool *outgoing_cpool;

@@ -1,3 +1,12 @@
+Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_init_0): Call fatal_error instead of fatal.
+	* com.c (init_parse): Call fatal_io_error instead of
+	pfatal_with_name.
+	(ffecom_decode_include_option_): Make errors non-fatal.
+	* lex.c (ffelex_cfelex_, ffelex_get_directive_line_): Likewise.
+	(ffelex_hash_): Likewise.
+	
 Sat Jan 27 20:52:18 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in: Remove all dependencies on defaults.h.

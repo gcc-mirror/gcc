@@ -573,7 +573,7 @@ arm_override_options ()
     target_flags |= ARM_FLAG_APCS_FRAME;
   
   if (TARGET_APCS_REENT && flag_pic)
-    fatal ("-fpic and -mapcs-reent are incompatible");
+    error ("-fpic and -mapcs-reent are incompatible");
   
   if (TARGET_APCS_REENT)
     warning ("APCS reentrant code not supported.  Ignored");
@@ -621,7 +621,7 @@ arm_override_options ()
       else if (streq (target_fp_name, "3"))
 	arm_fpu_arch = FP_SOFT3;
       else
-	fatal ("Invalid floating point emulation option: -mfpe-%s",
+	error ("Invalid floating point emulation option: -mfpe-%s",
 	       target_fp_name);
     }
   else
@@ -9425,6 +9425,7 @@ is_called_in_ARM_mode (func)
 }
 
 /* The bits which aren't usefully expanded as rtl. */
+
 const char *
 thumb_unexpanded_epilogue ()
 {
@@ -9489,7 +9490,8 @@ thumb_unexpanded_epilogue ()
       if (mask == 0)
 	/* Oh dear!  We have no low registers into which we can pop
            high registers!  */
-	fatal ("No low registers available for popping high registers");
+	internal_error
+	  ("no low registers available for popping high registers");
       
       for (next_hi_reg = 8; next_hi_reg < 13; next_hi_reg++)
 	if (regs_ever_live[next_hi_reg] && !call_used_regs[next_hi_reg]
@@ -10066,7 +10068,7 @@ output_thumb_prologue (f)
 
 const char *
 thumb_load_double_from_address (operands)
-     rtx * operands;
+     rtx *operands;
 {
   rtx addr;
   rtx base;
@@ -10075,13 +10077,10 @@ thumb_load_double_from_address (operands)
   rtx arg2;
   
   if (GET_CODE (operands[0]) != REG)
-    fatal ("thumb_load_double_from_address: destination is not a register");
+    abort ();
   
   if (GET_CODE (operands[1]) != MEM)
-    {
-      debug_rtx (operands[1]);
-      fatal ("thumb_load_double_from_address: source is not a computed memory address");
-    }
+    abort ();
 
   /* Get the memory address.  */
   addr = XEXP (operands[1], 0);
@@ -10124,7 +10123,7 @@ thumb_load_double_from_address (operands)
 	base = arg1, offset = arg2;
   
       if (GET_CODE (base) != REG)
-	fatal ("thumb_load_double_from_address: base is not a register");
+	abort ();
 
       /* Catch the case of <address> = <reg> + <reg> */
       if (GET_CODE (offset) == REG)
@@ -10181,8 +10180,7 @@ thumb_load_double_from_address (operands)
       break;
       
     default:
-      debug_rtx (operands[1]);
-      fatal ("thumb_load_double_from_address: Unhandled address calculation");
+      abort ();
       break;
     }
   

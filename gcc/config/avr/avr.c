@@ -182,18 +182,18 @@ avr_override_options ()
 	       avr_mcu_name);
       for (t = avr_mcu_types; t->name; t++)
 	fprintf (stderr,"   %s\n", t->name);
-      fatal ("select right MCU name");
     }
 
   switch (t->arch)
     {
-      case AVR1:
-      default:
-	fatal ("MCU `%s' not supported", avr_mcu_name);
-      case AVR2: avr_enhanced_p = 0; avr_mega_p = 0; break;
-      case AVR3: avr_enhanced_p = 0; avr_mega_p = 1; break;
-      case AVR4: avr_enhanced_p = 1; avr_mega_p = 0; break;
-      case AVR5: avr_enhanced_p = 1; avr_mega_p = 1; break;
+    case AVR1:
+    default:
+      error ("MCU `%s' not supported", avr_mcu_name);
+      /* ... fall through ... */
+    case AVR2: avr_enhanced_p = 0; avr_mega_p = 0; break;
+    case AVR3: avr_enhanced_p = 0; avr_mega_p = 1; break;
+    case AVR4: avr_enhanced_p = 1; avr_mega_p = 0; break;
+    case AVR5: avr_enhanced_p = 1; avr_mega_p = 1; break;
     }
 
   if (optimize && !TARGET_NO_TABLEJUMP)
@@ -910,7 +910,7 @@ ptrreg_to_str (regno)
     case REG_Y: return "Y";
     case REG_Z: return "Z";
     default:
-      fatal ("register r%d isn't a pointer\n", regno);
+      abort ();
     }
   return NULL;
 }
@@ -933,10 +933,6 @@ cond_string (code)
 	return "pl";
       else
 	return "ge";
-    case GT:
-      fatal ("Internal compiler bug: command `bgt'");
-    case LE:
-      fatal ("Internal compiler bug: command `ble'");
     case LT:
       if (cc_prev_status.flags & CC_OVERFLOW_UNUSABLE)
 	return "mi";
@@ -944,10 +940,6 @@ cond_string (code)
 	return "lt";
     case GEU:
       return "sh";
-    case GTU:
-      fatal ("Internal compiler bug: command `bgtu'");
-    case LEU:
-      fatal ("Internal compiler bug: command `bleu'");
     case LTU:
       return "lo";
     default:
@@ -4532,7 +4524,7 @@ unique_section (decl, reloc)
 	prefix = ".text";
     }
   else 
-    fatal ("Strange situation: unique section is not a FUNCTION_DECL");
+    abort ();
 
   if (flag_function_sections)
     {
@@ -5009,7 +5001,7 @@ avr_normalize_condition (condition)
     case LEU:
       return LTU;
     default:
-      fatal ("Wrong condition: %s", GET_RTX_NAME (condition));
+      abort ();
     }
 }
 

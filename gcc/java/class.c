@@ -1,5 +1,6 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -692,9 +693,12 @@ add_method (this_class, access_flags, name, method_sig)
 {
   tree handle_class = CLASS_TO_HANDLE_TYPE (this_class);
   tree function_type, fndecl;
-  const unsigned char *sig = (const unsigned char*)IDENTIFIER_POINTER (method_sig);
+  const unsigned char *sig
+    = (const unsigned char *) IDENTIFIER_POINTER (method_sig);
+
   if (sig[0] != '(')
-    fatal ("bad method signature");
+    fatal_error ("bad method signature");
+
   function_type = get_type_from_signature (method_sig);
   fndecl = add_method_1 (handle_class, access_flags, name, function_type);
   set_java_signature (TREE_TYPE (fndecl), method_sig);
@@ -928,7 +932,8 @@ build_class_ref (type)
 	      else if (type == void_type_node)
                 prim_class_name = "java.lang.Void";
 	      else
-		fatal ("internal error - bad type to build_class_ref");
+		abort ();
+
 	      prim_class = lookup_class (get_identifier (prim_class_name));
 	      return build (COMPONENT_REF, NULL_TREE,
 			    prim_class, TYPE_identifier_node);
@@ -1000,8 +1005,8 @@ build_static_field_ref (fdecl)
 	  if (fld == fdecl)
 	    break;
 	  if (fld == NULL_TREE)
-	    fatal ("field '%s' not found in class",
-		   IDENTIFIER_POINTER (DECL_NAME (fdecl)));
+	    fatal_error ("field '%s' not found in class",
+			 IDENTIFIER_POINTER (DECL_NAME (fdecl)));
 	  if (FIELD_STATIC (fld))
 	    field_index++;
 	}

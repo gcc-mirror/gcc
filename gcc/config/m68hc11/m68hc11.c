@@ -1,5 +1,5 @@
 /* Subroutines for code generation on Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@worldnet.fr)
 
 This file is part of GNU CC.
@@ -761,7 +761,7 @@ m68hc11_emit_libcall (name, code, dmode, smode, noperands, operands)
       break;
 
     default:
-      fatal ("m68hc11_emit_libcall: Bad number of operands");
+      abort ();
     }
 
   insns = get_insns ();

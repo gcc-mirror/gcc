@@ -1,6 +1,6 @@
 /* Handle initialization things in C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2205,9 +2205,10 @@ build_java_class_ref (type)
     CL_suffix = get_identifier("class$");
   if (jclass_node == NULL_TREE)
     {
-      jclass_node = IDENTIFIER_GLOBAL_VALUE (get_identifier("jclass"));
+      jclass_node = IDENTIFIER_GLOBAL_VALUE (get_identifier ("jclass"));
       if (jclass_node == NULL_TREE)
-	fatal("call to Java constructor, while `jclass' undefined");
+	fatal_error ("call to Java constructor, while `jclass' undefined");
+
       jclass_node = TREE_TYPE (jclass_node);
     }
 
@@ -2222,7 +2223,7 @@ build_java_class_ref (type)
 	    break;
 	  }
       if (!field)
-	fatal ("Can't find class$");
+	internal_error ("Can't find class$");
     }
   else
     name = build_static_name (type, CL_suffix);
@@ -2398,7 +2399,9 @@ build_new_1 (exp)
       use_java_new = 1;
       alloc_decl = IDENTIFIER_GLOBAL_VALUE (get_identifier (alloc_name));
       if (alloc_decl == NULL_TREE)
-	fatal("call to Java constructor, while `%s' undefined", alloc_name);
+	fatal_error ("call to Java constructor with `%s' undefined",
+		     alloc_name);
+
       class_addr = build1 (ADDR_EXPR, jclass_node, class_decl);
       alloc_call = (build_function_call
 		    (alloc_decl,

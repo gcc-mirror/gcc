@@ -11855,7 +11855,7 @@ ffecom_init_0 ()
   /* Set up pointer types.  */
 
   if (ffecom_pointer_kind_ == FFEINFO_basictypeNONE)
-    fatal ("no INTEGER type can hold a pointer on this configuration");
+    fatal_error ("no INTEGER type can hold a pointer on this configuration");
   else if (0 && ffe_is_do_internal_checks ())
     fprintf (stderr, "Pointer type kt=%d\n", ffecom_pointer_kind_);
   ffetype_set_kind (ffeinfo_type (FFEINFO_basictypeINTEGER,
@@ -14608,7 +14608,7 @@ init_parse (filename)
   else
     finput = fopen (filename, "r");
   if (finput == 0)
-    pfatal_with_name (filename);
+    fatal_io_error ("can't open %s", filename);
 
 #ifdef IO_BUFFER_SIZE
   setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
@@ -16078,12 +16078,12 @@ ffecom_decode_include_option_ (char *spec)
       dirtmp = (struct file_name_list *)
 	xmalloc (sizeof (struct file_name_list));
       dirtmp->next = 0;		/* New one goes on the end */
-      if (spec[0] != 0)
-	dirtmp->fname = spec;
-      else
-	fatal ("Directory name must immediately follow -I option with no intervening spaces, as in `-Idir', not `-I dir'");
+      dirtmp->fname = spec;
       dirtmp->got_name_map = 0;
-      append_include_chain (dirtmp, dirtmp);
+      if (spec[0] == 0)
+	error ("Directory name must immediately follow -I");
+      else
+	append_include_chain (dirtmp, dirtmp);
     }
   return 1;
 }

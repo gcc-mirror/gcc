@@ -967,7 +967,8 @@ duplicate_eh_handlers (old_note_eh_region, new_note_eh_region, map)
 
   region = find_func_region (old_note_eh_region);
   if (region == -1)
-    fatal ("Cannot duplicate non-existant exception region.");
+    /* Cannot duplicate non-existant exception region.  */
+    abort ();
 
   /* duplicate_eh_handlers may have been called during a symbol remap. */
   new_region = find_func_region (new_note_eh_region);

@@ -1,3 +1,63 @@
+Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* diagnostic.h (set_internal_error_function): Renamed.
+	* toplev.h (internal_error): Renamed from fatal.
+	(pfatal_with_name): Deleted.
+	(fatal_io_error): Now has printf-style arguments.
+	* diagnostic.c (pfatal_with_name): Deleted.
+	(fatal_io_error): Rework to have args in printf-style.
+	(set_internal_error_function): Renamed from set_fatal_function.
+	(internal_error): Renamed from fatal.
+	(error_recursion, fancy_abort): Call internal_error instead of fatal.
+	* dwarf2out.c (get_cfa_from_loc_descr): Likewise.
+	* emit-rtl.c (gen_realpart, gen_imagpart): Likewise.
+	* expr.c (check_max_integer_computation_mode, expand_expr): Likewise.
+	* flow.c (verify_flow_info): Likewise.
+	* config/arm/arm.c (thumb_unexpanded_epilogue): Likewise.
+	* config/mips/mips.c (save_restore_insns): Likewise.
+
+	* except.c (duplicate_eh_handlers): Call abort instead of fatal.
+	* flow.c (verify_flow_info): Likewise.	
+	* config/arm/arm.c (thumb_load_double_from_address): Likewise.
+	* config/avr/avr.c (pttreg_to_str, unique_section): Likewise.
+	(avr_normalize_condition): Likewise.
+	* config/c4x/c4x.c (c4x_emit_libcall, c4x_valid_operands): Likewise.
+	* config/dsp16xx/dsp16xx.c (dsp16xx_reg_class_from_letter): Likewise.
+	(limit_reload_class, double_reg_to_memory): Likewise.
+	(print_operand_address, emit_1600_code_shift): Likewise.
+	(gen_tst_reg, gen_compare_reg): Likewise.
+	* config/m68hc11/m68hc11.c (m68hc11_emit_libcall): Likewise.
+	* config/dsp16xx/dsp16xx.c (dsp16xx_invalid_register_for_compare):
+	Deleted.
+	* config/dsp16xx/dsp16xx.md (unnamed cmphi): Call abort instead of it.
+
+	* c-parse.in (methoddef): Call fatal_error instead of fatal.
+	* objc/objc-act.c (build_ivar_chain): Likewise.
+	* dwarfout.c (dwarfout_init): Call fatal_io_error instead of
+	pfatal_with_name.
+	* graph.c (clean_graph_dump_file): Likewise.
+	* profile.c (init_branch_prob): Likewise.
+	* objc/objc-act.c (objc_init): Likewise.
+	
+	* config/arm/arm.c (arm_override_options): Make errors non-fatal.
+	* config/avr/avr.c (avr_override_options): Likewise.	
+	* config/c4x/c4x.c (c4x_expand_prologue): Likewise.
+	* config/dsp16xx/dsp16xx.c (function_prologue): Likewise.
+	* config/h8300/h8300.c (h8300_init_once): Likewise.
+	* config/mips/mips.c (override_options): Likewise.
+	* config/i386/i386.c (override_options): Likewise, rework.
+	* config/m68k/m68k.c (override_options): Likewise.
+
+	* config/dsp16xx/dsp16xx.c (print_operand): Call output_operand_lossage
+	instead of fatal.
+	* config/mips/mips.c (print_operand): Likewise.
+	* hash.c (hash_allocate): Don't check for failure returns from
+	obstack functions that can't fail.
+	(hash_table_init_n, hash_table_init): Likewise; also now return void.
+	* hash.h (hash_table_init_n, hash_table_init): Now return void.
+	* objc/objc_act.c (objc_check_decl): Remove unneeded fatal call.
+	(get_object_reference): Likewise.
+
 2001-02-04  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (all_cores): Add 710T, 720T, 740T, 940T, 9e,

@@ -458,6 +458,7 @@ static int ix86_fp_comparison_cost PARAMS ((enum rtx_code code));
 void
 override_options ()
 {
+  int i;
   /* Comes from final.c -- no real reason to change it.  */
 #define MAX_CODE_ALIGN 16
 
@@ -509,7 +510,6 @@ override_options ()
 
   if (ix86_arch_string != 0)
     {
-      int i;
       for (i = 0; i < pta_size; i++)
 	if (! strcmp (ix86_arch_string, processor_alias_table[i].name))
 	  {
@@ -518,13 +518,13 @@ override_options ()
 	    ix86_cpu = ix86_arch;
 	    break;
 	  }
+
       if (i == pta_size)
 	error ("bad value (%s) for -march= switch", ix86_arch_string);
     }
 
   if (ix86_cpu_string != 0)
     {
-      int i;
       for (i = 0; i < pta_size; i++)
 	if (! strcmp (ix86_cpu_string, processor_alias_table[i].name))
 	  {
@@ -547,10 +547,11 @@ override_options ()
   /* Validate registers in register allocation order.  */
   if (ix86_reg_alloc_order)
     {
-      int i, ch;
+      int  ch;
+
       for (i = 0; (ch = ix86_reg_alloc_order[i]) != '\0'; i++)
 	{
-	  int regno = 0;
+	  int regno = -1;
 
 	  switch (ch)
 	    {
@@ -562,53 +563,62 @@ override_options ()
 	    case 'D':	regno = 5;	break;
 	    case 'B':	regno = 6;	break;
 
-	    default:	fatal ("Register '%c' is unknown", ch);
+	    default:	error ("Register '%c' is unknown", ch);
 	    }
 
-	  if (regs_allocated[regno])
-	    fatal ("Register '%c' already specified in allocation order", ch);
+	  if (regno >= 0)
+	    {
+	      if (regs_allocated[regno])
+		error ("Register '%c' already specified in allocation order",
+		       ch);
 
-	  regs_allocated[regno] = 1;
+	      regs_allocated[regno] = 1;
+	    }
 	}
     }
 
   /* Validate -mregparm= value.  */
   if (ix86_regparm_string)
     {
-      ix86_regparm = atoi (ix86_regparm_string);
-      if (ix86_regparm < 0 || ix86_regparm > REGPARM_MAX)
-	fatal ("-mregparm=%d is not between 0 and %d",
-	       ix86_regparm, REGPARM_MAX);
+      i = atoi (ix86_regparm_string);
+      if (i < 0 || i > REGPARM_MAX)
+	error ("-mregparm=%d is not between 0 and %d", i, REGPARM_MAX);
+      else
+	ix86_regparm = i;
     }
 
   /* Validate -malign-loops= value, or provide default.  */
   ix86_align_loops = processor_target_table[ix86_cpu].align_loop;
   if (ix86_align_loops_string)
     {
-      ix86_align_loops = atoi (ix86_align_loops_string);
-      if (ix86_align_loops < 0 || ix86_align_loops > MAX_CODE_ALIGN)
-	fatal ("-malign-loops=%d is not between 0 and %d",
-	       ix86_align_loops, MAX_CODE_ALIGN);
+      i = atoi (ix86_align_loops_string);
+      if (i < 0 || i > MAX_CODE_ALIGN)
+	error ("-malign-loops=%d is not between 0 and %d", i, MAX_CODE_ALIGN);
+      else
+	ix86_align_loops = i;
     }
 
   /* Validate -malign-jumps= value, or provide default.  */
   ix86_align_jumps = processor_target_table[ix86_cpu].align_jump;
   if (ix86_align_jumps_string)
     {
-      ix86_align_jumps = atoi (ix86_align_jumps_string);
-      if (ix86_align_jumps < 0 || ix86_align_jumps > MAX_CODE_ALIGN)
-	fatal ("-malign-jumps=%d is not between 0 and %d",
-	       ix86_align_jumps, MAX_CODE_ALIGN);
+      i = atoi (ix86_align_jumps_string);
+      if (i < 0 || i > MAX_CODE_ALIGN)
+	error ("-malign-jumps=%d is not between 0 and %d", i, MAX_CODE_ALIGN);
+      else
+	ix86_align_jumps = i;
     }
 
   /* Validate -malign-functions= value, or provide default.  */
   ix86_align_funcs = processor_target_table[ix86_cpu].align_func;
   if (ix86_align_funcs_string)
     {
-      ix86_align_funcs = atoi (ix86_align_funcs_string);
-      if (ix86_align_funcs < 0 || ix86_align_funcs > MAX_CODE_ALIGN)
-	fatal ("-malign-functions=%d is not between 0 and %d",
-	       ix86_align_funcs, MAX_CODE_ALIGN);
+      i = atoi (ix86_align_funcs_string);
+      if (i < 0 || i > MAX_CODE_ALIGN)
+	error ("-malign-functions=%d is not between 0 and %d",
+	       i, MAX_CODE_ALIGN);
+      else
+	ix86_align_funcs = i;
     }
 
   /* Validate -mpreferred-stack-boundary= value, or provide default.
@@ -616,20 +626,22 @@ override_options ()
   ix86_preferred_stack_boundary = 128;
   if (ix86_preferred_stack_boundary_string)
     {
-      int i = atoi (ix86_preferred_stack_boundary_string);
+      i = atoi (ix86_preferred_stack_boundary_string);
       if (i < 2 || i > 31)
-	fatal ("-mpreferred-stack-boundary=%d is not between 2 and 31", i);
-      ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
+	error ("-mpreferred-stack-boundary=%d is not between 2 and 31", i);
+      else
+	ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
     }
 
   /* Validate -mbranch-cost= value, or provide default.  */
   ix86_branch_cost = processor_target_table[ix86_cpu].branch_cost;
   if (ix86_branch_cost_string)
     {
-      ix86_branch_cost = atoi (ix86_branch_cost_string);
-      if (ix86_branch_cost < 0 || ix86_branch_cost > 5)
-	fatal ("-mbranch-cost=%d is not between 0 and 5",
-	       ix86_branch_cost);
+      i = atoi (ix86_branch_cost_string);
+      if (i < 0 || i > 5)
+	error ("-mbranch-cost=%d is not between 0 and 5", i);
+      else
+	ix86_branch_cost = i;
     }
 
   /* Keep nonleaf frame pointers.  */

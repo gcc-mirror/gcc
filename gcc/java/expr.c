@@ -1,5 +1,6 @@
 /* Process expressions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -279,7 +280,7 @@ push_type (type)
      tree type;
 {
   if (! push_type_0 (type))
-    fatal ("stack overflow");
+    abort ();
 }
 
 static void
@@ -497,14 +498,17 @@ java_stack_pop (count)
   while (count > 0)
     {
       tree type, val;
+
       if (stack_pointer == 0)
-	fatal ("stack underflow");
+	abort ();
+
       type = stack_type_map[stack_pointer - 1];
       if (type == TYPE_SECOND)
 	{
 	  count--;
 	  if (stack_pointer == 1 || count <= 0)
-	    fatal ("stack underflow");
+	    abort ();
+
 	  type = stack_type_map[stack_pointer - 2];
 	}
       val = pop_value (type);
@@ -526,7 +530,8 @@ java_stack_swap ()
       || (type2 = stack_type_map[stack_pointer - 2]) == TYPE_UNKNOWN
       || type1 == TYPE_SECOND || type2 == TYPE_SECOND
       || TYPE_IS_WIDE (type1) || TYPE_IS_WIDE (type2))
-    fatal ("bad stack swap");
+    /* Bad stack swap.  */
+    abort ();
 
   flush_quick_stack ();
   decl1 = find_stack_slot (stack_pointer - 1, type1);
@@ -562,15 +567,18 @@ java_stack_dup (size, offset)
       if (type == TYPE_SECOND)
 	{
 	  if (src_index <= low_index)
-	    fatal ("dup operation splits 64-bit number");
+	    /* Dup operation splits 64-bit number.  */
+	    abort ();
+
 	  stack_type_map[dst_index] = type;
 	  src_index--;  dst_index--;
 	  type = stack_type_map[src_index];
 	  if (! TYPE_IS_WIDE (type))
-            fatal ("internal error - dup operation");
+	    abort ();
 	}
       else if (TYPE_IS_WIDE (type))
-	fatal ("internal error - dup operation");
+	abort ();
+
       if (src_index != dst_index)
 	{
 	  tree src_decl = find_stack_slot (src_index, type);
@@ -669,7 +677,7 @@ encode_newarray_type (type)
   else if (type == long_type_node)
     return 11;
   else
-    fatal ("Can't compute type code - patch_newarray");
+    abort ();
 }
 
 /* Build a call to _Jv_ThrowBadArrayIndex(), the
@@ -695,11 +703,14 @@ build_java_array_length_access (node)
 {
   tree type = TREE_TYPE (node);
   HOST_WIDE_INT length;
+
   if (!is_array_type_p (type))
-    fatal ("array length on a non-array reference");
+    abort ();
+
   length = java_array_type_length (type);
   if (length >= 0)
     return build_int_2 (length, 0);
+
   return fold (build1 (INDIRECT_REF,
 		       int_type_node,
 		       fold (build (PLUS_EXPR, ptr_type_node,
@@ -807,7 +818,7 @@ build_java_check_indexed_type (array_node, indexed_type)
   tree elt_type;
 
   if (!is_array_type_p (TREE_TYPE (array_node)))
-    fatal ("array indexing on a non-array reference");
+    abort ();
 
   elt_type = (TYPE_ARRAY_ELEMENT (TREE_TYPE (TREE_TYPE (array_node))));
 
@@ -819,7 +830,7 @@ build_java_check_indexed_type (array_node, indexed_type)
     return boolean_type_node;
 
   if (indexed_type != elt_type )
-    fatal ("type array element mismatch");
+    abort ();
   else
     return indexed_type;
 }
@@ -1041,7 +1052,8 @@ expand_java_pushc (ival, type)
       value = build_real (type, x);
     }
   else
-    fatal ("internal error in expand_java_pushc");
+    abort ();
+
   push_value (value);
 }
 
@@ -1257,7 +1269,7 @@ build_java_soft_divmod (op, type, op1, op2)
     }
 
   if (! call)
-    fatal ("Internal compiler error in build_java_soft_divmod");
+    abort ();
 		  
   call = build (CALL_EXPR, type,
 		build_address_of (call),
@@ -1733,8 +1745,8 @@ build_known_method_ref (method, method_type, self_type, method_signature, arg_li
 	  if (method == meth)
 	    break;
 	  if (meth == NULL_TREE)
-	    fatal ("method '%s' not found in class",
-		   IDENTIFIER_POINTER (DECL_NAME (method)));
+	    fatal_error ("method '%s' not found in class",
+			 IDENTIFIER_POINTER (DECL_NAME (method)));
 	  method_index++;
 	}
       method_index *= int_size_in_bytes (method_type_node);
@@ -1831,7 +1843,7 @@ build_invokeinterface (dtable, method)
 	  break;
 	}
       if (meth == NULL_TREE)
-        fatal ("internal error in build_invokeinterface");
+	abort ();
     }
 
   lookup_arg = tree_cons (NULL_TREE, dtable,
@@ -1858,7 +1870,8 @@ expand_invoke (opcode, method_ref_index, nargs)
   tree method_name = COMPONENT_REF_NAME (&current_jcf->cpool, method_ref_index);
   tree self_type = get_class_constant
     (current_jcf, COMPONENT_REF_CLASS_INDEX(&current_jcf->cpool, method_ref_index));
-  const char *self_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
+  const char *self_name
+    = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
   tree call, func, method, arg_list, method_type;
   tree cond = NULL_TREE;
 
@@ -1867,7 +1880,7 @@ expand_invoke (opcode, method_ref_index, nargs)
       load_class (self_type, 1);
       safe_layout_class (self_type);
       if (TREE_CODE (TYPE_SIZE (self_type)) == ERROR_MARK)
-	fatal ("failed to find class '%s'", self_name);
+	fatal_error ("failed to find class '%s'", self_name);
     }
   layout_class_methods (self_type);
 
@@ -2501,8 +2514,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
       return const0_rtx;
 
     default:
-      fatal ("Can't expand '%s' tree - java_lang_expand_expr",
-	     tree_code_name [TREE_CODE (exp)]);
+      internal_error ("Can't expand %s", tree_code_name [TREE_CODE (exp)]);
     }
 }
 

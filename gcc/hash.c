@@ -1,5 +1,5 @@
 /* hash.c -- hash table routines
-   Copyright (C) 1993, 1994, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1998, 2001 Free Software Foundation, Inc.
    Written by Steve Chamberlain <sac@cygnus.com>
 
 This file was lifted from BFD, the Binary File Descriptor library.
@@ -30,11 +30,11 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_free free
 
 /* The default number of entries to use when creating a hash table.  */
-#define DEFAULT_SIZE (1009)
+#define DEFAULT_SIZE 1009
 
 /* Create a new hash table, given a number of entries.  */
 
-boolean
+void
 hash_table_init_n (table, newfunc, hash, comp, size)
      struct hash_table *table;
      struct hash_entry *(*newfunc) PARAMS ((struct hash_entry *,
@@ -47,29 +47,19 @@ hash_table_init_n (table, newfunc, hash, comp, size)
   unsigned int alloc;
 
   alloc = size * sizeof (struct hash_entry *);
-  if (!obstack_begin (&table->memory, alloc))
-    {
-      error ("no memory");
-      return false;
-    }
+  obstack_begin (&table->memory, alloc);
   table->table = ((struct hash_entry **)
 		  obstack_alloc (&table->memory, alloc));
-  if (!table->table)
-    {
-      error ("no memory");
-      return false;
-    }
   memset ((PTR) table->table, 0, alloc);
   table->size = size;
   table->newfunc = newfunc;
   table->hash = hash;
   table->comp = comp;
-  return true;
 }
 
 /* Create a new hash table with the default number of entries.  */
 
-boolean
+void
 hash_table_init (table, newfunc, hash, comp)
      struct hash_table *table;
      struct hash_entry *(*newfunc) PARAMS ((struct hash_entry *,
@@ -78,7 +68,7 @@ hash_table_init (table, newfunc, hash, comp)
      unsigned long (*hash) PARAMS ((hash_table_key));
      boolean (*comp) PARAMS ((hash_table_key, hash_table_key));
 {
-  return hash_table_init_n (table, newfunc, hash, comp, DEFAULT_SIZE);
+  hash_table_init_n (table, newfunc, hash, comp, DEFAULT_SIZE);
 }
 
 /* Free a hash table.  */
@@ -108,23 +98,21 @@ hash_lookup (table, key, create, copy)
   hash = (*table->hash)(key);
 
   index = hash % table->size;
-  for (hashp = table->table[index];
-       hashp != (struct hash_entry *) NULL;
-       hashp = hashp->next)
-    {
-      if (hashp->hash == hash
-	  && (*table->comp)(hashp->key, key))
-	return hashp;
-    }
+  for (hashp = table->table[index]; hashp != 0; hashp = hashp->next)
+    if (hashp->hash == hash
+	&& (*table->comp)(hashp->key, key))
+      return hashp;
 
   if (! create)
-    return (struct hash_entry *) NULL;
+    return 0;
 
   hashp = (*table->newfunc) ((struct hash_entry *) NULL, table, key);
-  if (hashp == (struct hash_entry *) NULL)
-    return (struct hash_entry *) NULL;
+  if (hashp == 0)
+    return 0;
+
   if (copy)
     key = (*copy) (&table->memory, key);
+
   hashp->key = key;
   hashp->hash = hash;
   hashp->next = table->table[index];
@@ -135,14 +123,13 @@ hash_lookup (table, key, create, copy)
 
 /* Base method for creating a new hash table entry.  */
 
-/*ARGSUSED*/
 struct hash_entry *
 hash_newfunc (entry, table, p)
      struct hash_entry *entry;
      struct hash_table *table;
      hash_table_key p ATTRIBUTE_UNUSED;
 {
-  if (entry == (struct hash_entry *) NULL)
+  if (entry == 0)
     entry = ((struct hash_entry *)
 	     hash_allocate (table, sizeof (struct hash_entry)));
   return entry;
@@ -155,12 +142,7 @@ hash_allocate (table, size)
      struct hash_table *table;
      unsigned int size;
 {
-  PTR ret;
-
-  ret = obstack_alloc (&table->memory, size);
-  if (ret == NULL && size != 0)
-    error ("no memory");
-  return ret;
+  return obstack_alloc (&table->memory, size);
 }
 
 /* Traverse a hash table.  */
@@ -172,17 +154,12 @@ hash_traverse (table, func, info)
      PTR info;
 {
   unsigned int i;
+  struct hash_entry *p;
 
   for (i = 0; i < table->size; i++)
-    {
-      struct hash_entry *p;
-
-      for (p = table->table[i]; p != NULL; p = p->next)
-	{
-	  if (! (*func) (p, info))
-	    return;
-	}
-    }
+    for (p = table->table[i]; p != 0; p = p->next)
+      if (! (*func) (p, info))
+	return;
 }
 
 /* Hash a string.  Return a hash-code for the string.  */
@@ -206,6 +183,7 @@ string_hash (k)
       hash ^= hash >> 2;
       ++len;
     }
+
   hash += len + (len << 17);
   hash ^= hash >> 2;
 
@@ -227,18 +205,13 @@ string_compare (k1, k2)
 
 hash_table_key
 string_copy (memory, k)
-     struct obstack* memory;
+     struct obstack *memory;
      hash_table_key k;
 {
   char *new;
-  char *string = (char*) k;
+  char *string = (char *) k;
 
   new = (char *) obstack_alloc (memory, strlen (string) + 1);
-  if (!new)
-    {
-      error ("no memory");
-      return NULL;
-    }
   strcpy (new, string);
   
   return new;

@@ -1,5 +1,6 @@
 /* Handle types for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -52,8 +53,10 @@ set_local_type (slot, type)
 {
   int max_locals = DECL_MAX_LOCALS(current_function_decl);
   int nslots = TYPE_IS_WIDE (type) ? 2 : 1;
+
   if (slot < 0 || slot + nslots - 1 >= max_locals)
-    fatal ("invalid local variable index");
+    abort ();
+
   type_map[slot] = type;
   while (--nslots > 0)
     type_map[++slot] = void_type_node;
@@ -498,9 +501,11 @@ parse_signature_type (ptr, limit)
      const unsigned char **ptr, *limit;
 {
   tree type;
-  if ((*ptr) >= limit)
-    fatal ("bad signature string");
-  switch (*(*ptr))
+
+  if (*ptr >= limit)
+    abort ();
+
+  switch (**ptr)
     {
     case 'B':  (*ptr)++;  return byte_type_node;
     case 'C':  (*ptr)++;  return char_type_node;
@@ -523,7 +528,7 @@ parse_signature_type (ptr, limit)
 	for ( ; ; str++)
 	  {
 	    if (str >= limit)
-	      fatal ("bad signature string");
+	      abort ();
 	    if (*str == ';')
 	      break;
 	  }
@@ -532,7 +537,7 @@ parse_signature_type (ptr, limit)
 	break;
       }
     default:
-      fatal ("unrecognized signature string");
+      abort ();
     }
   return promote_type (type);
 }
@@ -560,7 +565,7 @@ parse_signature_string (sig_string, sig_length)
 	  argtype_list = tree_cons (NULL_TREE, argtype, argtype_list);
 	}
       if (str++, str >= limit)
-	fatal ("bad signature string");
+	abort ();
       result_type = parse_signature_type (&str, limit);
       argtype_list = chainon (nreverse (argtype_list), end_params_node);
       result_type = build_function_type (result_type, argtype_list);
@@ -696,7 +701,7 @@ build_java_signature (type)
 	  break;
 	bad_type:
 	default:
-	  fatal ("internal error - build_java_signature passed invalid type");
+	  abort ();
 	}
       TYPE_SIGNATURE (type) = sig;
     }
@@ -716,7 +721,7 @@ set_java_signature (type, sig)
   MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
   old_sig = TYPE_SIGNATURE (type);
   if (old_sig != NULL_TREE && old_sig != sig)
-    fatal ("internal error - set_java_signature");
+    abort ();
   TYPE_SIGNATURE (type) = sig;
 #if 0 /* careful about METHOD_TYPE */
   if (IDENTIFIER_SIGNATURE_TYPE (sig) == NULL_TREE && TREE_PERMANENT (type))

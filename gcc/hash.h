@@ -1,5 +1,5 @@
 /* Header file for generic hash table support.
-   Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997, 1998, 2001 Free Software Foundation, Inc.
    Written by Steve Chamberlain <sac@cygnus.com>
 
 This file was lifted from BFD, the Binary File Descriptor library.
@@ -76,7 +76,7 @@ struct hash_table
 };
 
 /* Initialize a hash table.  */
-extern boolean hash_table_init
+extern void hash_table_init
   PARAMS ((struct hash_table *,
 	   struct hash_entry *(*) (struct hash_entry *,
 				   struct hash_table *,
@@ -85,7 +85,7 @@ extern boolean hash_table_init
 	   boolean (*comp) (hash_table_key, hash_table_key)));
 
 /* Initialize a hash table specifying a size.  */
-extern boolean hash_table_init_n
+extern void hash_table_init_n
   PARAMS ((struct hash_table *,
 	   struct hash_entry *(*) (struct hash_entry *,
 				   struct hash_table *,

@@ -1,3 +1,58 @@
+Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* check-init.c (check_init): Call internal_error instead of fatal.
+	* expr.c (java_lang_expand_expr): Likewise.
+	* jcf-parse.c (get_constant): Likewise.
+	* mangle.c (java_mangle_decl): Likewise.
+	* parse.y (make_nested_class_name, java_complete_lhs): Likewise.
+	(operator_string): Likewise.
+	* check-init.c (check_init): Call abort instead of fatal.
+	* class.c (build_class_ref): Likewise.
+	* constants.c (write_constant_pool): Likewise.
+	* decl.c (start_java_method): Likewise.
+	* expr.c (push_type, java_stack_pop, java_stack_swap): Likewise.
+	(java_stack_dup, encode_newarray_type): Likewise.
+	(build_java_array_length_access): Likewise.
+	(build_java_check_indexed_type, expand_java_pushc): Likewise.
+	(build_java_soft_divmod, build_invokeinterface): Likewise.
+	* java-tree.h (INNER_CLASS_P): Likewise.
+	* jcf-parse.c (parse_signature, get_name_constant): Likewise.
+	(give_name_to_class, get_class_constant): Likewise.
+	* jcf-write.c (CHECK_PUT, CHECK_OP, get_access_flags): Likewise.
+	(find_constant_index, generate_bytecode_conditional): Likewise.
+	(generate_bytecode_insns, perform_relocations): Likewise.
+	* lex.c (java_unget_unicode, java_lex): Likewise.
+	* mangle.c (mangle_type, mangle_record_type): Likewise.
+	(mangle_pointer_type, mangle_array_type, init_mangling): Likewise.
+	(finish_mangling): Likewise.
+	* parse.h (MARK_FINAL_PARMS): Likewise.
+	* parse.y (pop_current_osb, unreachable_stmt_error): Likewise.
+	(obtain_incomplete_type, java_complete_class): Likewise.
+	(java_check_regular_methods, java_complete_expand_method): Likewise.
+	(cut_identifier_in_qualified, check_deprecation): Likewise.
+	(patch_invoke, find_applicable_accessible_methods_list): Likewise.
+	(java_complete_lhs, lookup_name_in_blocks): Likewise.
+	(check_final_variable_indirect_assignment, build_unaryop): Likewise.
+	* typeck.c (set_local_type, parse_signature_type): Likewise.
+	(parse_signature_string, build_java_signature): Likewise;
+	(set_java_signature): Likewise.
+	* verify.c (type_stack_dup, CHECK_PC_IN_RANGE): Likewise.
+	* class.c (add_method): Call fatal_error instead of fatal.
+	(build_static_field_ref): Likewise.
+	* expr.c (build_known_method_ref, expand_invoke): Likewise.
+	* jcf-parse.c (get_constant, jcf_parse): Likewise.
+	* lex.c (java_new_new_lexer): Likewise.
+	* jv-scan.c (main): Likewise.
+	(fatal_error): Renamed from fatal.
+	* jcf-parse.c (yyparse): Call fatal_io_error instead of
+	pfatal_with_name.
+	* jcf-parse.c (jcf_parse_source): Call fatal_io_error, not fatal.
+	(yyparse): Likewise.
+	* jcf-write.c (make_class_file_name, write_classfile): Likewise.
+	* lex.c (java_get_line_col): Likewise.
+	* jcf-parse.c (load_class): Make errors non-fatal.
+	* lex.c (byteswap_init, need_byteswap): Only #ifdef HAVE_ICONV.
+	
 2001-02-01  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* jvgenmain.c (class_mangling_suffix): Remove unused string.

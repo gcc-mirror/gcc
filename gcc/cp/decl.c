@@ -3867,7 +3867,9 @@ pushdecl (x)
 	  else if (TREE_CODE (t) == PARM_DECL)
 	    {
 	      if (DECL_CONTEXT (t) == NULL_TREE)
-		fatal ("parse errors have confused me too much");
+		/* This is probaby caused by too many errors, but calling
+		   abort will say that if errors have occurred.  */
+		abort ();
 
 	      /* Check for duplicate params.  */
 	      if (duplicate_decls (x, t))
@@ -5520,16 +5522,15 @@ build_typename_type (context, name, fullname, base_type)
 {
   tree t;
   tree d;
-  struct hash_entry* e;
+  struct hash_entry *e;
 
   static struct hash_table ht;
 
   if (!ht.table)
     {
       static struct hash_table *h = &ht;
-      if (!hash_table_init (&ht, &hash_newfunc, &typename_hash,
-			    &typename_compare))
-	fatal ("virtual memory exhausted");
+
+      hash_table_init (&ht, &hash_newfunc, &typename_hash, &typename_compare);
       ggc_add_tree_hash_table_root (&h, 1);
     }
 
@@ -6290,7 +6291,7 @@ init_decl_processing ()
   /* Check to see that the user did not specify an invalid combination
      of command-line options.  */
   if (flag_new_abi && !flag_vtable_thunks)
-    fatal ("the new ABI requires vtable thunks");
+    error ("the new ABI requires vtable thunks");
 
   /* Create all the identifiers we need.  */
   initialize_predefined_identifiers ();
@@ -7611,7 +7612,6 @@ check_initializer (decl, init)
 
       DECL_INITIAL (decl) = init;
 
-      /* This will keep us from needing to worry about our obstacks.  */
       my_friendly_assert (init != NULL_TREE, 149);
       init = NULL_TREE;
     }

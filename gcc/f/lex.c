@@ -1,5 +1,5 @@
 /* Implementation of Fortran lexer
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 2001 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -803,7 +803,7 @@ ffelex_cfelex_ (ffelexToken *xtoken, FILE *finput, int c)
 
 	    case EOF:
 	    case '\n':
-	      fatal ("Badly formed directive -- no closing quote");
+	      error ("Badly formed directive -- no closing quote");
 	      done = TRUE;
 	      break;
 
@@ -1036,7 +1036,7 @@ ffelex_get_directive_line_ (char **text, FILE *finput)
 	  || c == EOF)
 	{
 	  if (looking_for != 0)
-	    fatal ("Bad directive -- missing close-quote");
+	    error ("Bad directive -- missing close-quote");
 
 	  *p++ = '\0';
 	  *text = directive_buffer;
@@ -1366,7 +1366,7 @@ ffelex_hash_ (FILE *finput)
 	    {
 	      lineno = 1;
 	      input_filename = old_input_filename;
-	      fatal ("Use `#line ...' instead of `# ...' in first line");
+	      error ("Use `#line ...' instead of `# ...' in first line");
 	    }
 
 	  if (num == 1)
@@ -1410,7 +1410,7 @@ ffelex_hash_ (FILE *finput)
 	{
 	  lineno = 1;
 	  input_filename = old_input_filename;
-	  fatal ("Use `#line ...' instead of `# ...' in first line");
+	  error ("Use `#line ...' instead of `# ...' in first line");
 	}
     }
   else

@@ -1,6 +1,6 @@
 /* Implement classes and message passing for Objective C.
-   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GNU CC.
@@ -730,7 +730,7 @@ objc_init ()
       register char * const dumpname = concat (dumpname, ".decl", NULL);
       gen_declaration_file = fopen (dumpname, "w");
       if (gen_declaration_file == 0)
-	pfatal_with_name (dumpname);
+	fatal_io_error ("can't open %s", dumpname);
       free (dumpname);
     }
 
@@ -1088,10 +1088,7 @@ objc_check_decl (decl)
   if (TREE_CODE (type) == RECORD_TYPE
       && TREE_STATIC_TEMPLATE (type)
       && type != constant_string_type)
-    {
-      error_with_decl (decl, "`%s' cannot be statically allocated");
-      fatal ("statically allocated objects not supported");
-    }
+    error_with_decl (decl, "`%s' cannot be statically allocated");
 }
 
 void
@@ -1151,7 +1148,10 @@ get_object_reference (protocols)
 		gen_declaration (type, errbuf));
     }
   else
-    fatal ("Undefined type `id', please import <objc/objc.h>");
+    {
+      error ("Undefined type `id', please import <objc/objc.h>");
+      return error_mark_node;
+    }
 
   /* This clause creates a new pointer type that is qualified with
      the protocol specification...this info is used later to do more
@@ -2585,10 +2585,8 @@ build_ivar_chain (interface, copy)
         }
 
       if (super_interface == interface)
-        {
-          fatal ("Circular inheritance in interface declaration for `%s'",
-                 IDENTIFIER_POINTER (super_name));
-        }
+	fatal_error ("Circular inheritance in interface declaration for `%s'",
+		     IDENTIFIER_POINTER (super_name));
 
       interface = super_interface;
       my_name = CLASS_NAME (interface);

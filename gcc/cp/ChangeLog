@@ -1,3 +1,12 @@
+Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (pushdecl): Call abort instead of fatal.
+	* except.c (decl_is_java_type): Call fatal_error instead of fatal.
+	* init.c (build_new_1): Likewise.
+	(build_java_class_ref): Call internal_error and fatal_error, not fatal.
+	* decl.c (build_typename_type): hash_table_init now returns void.
+	decl.c (init_decl_processing): Make an error non-fatal.
+
 2001-02-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLASSTYPE_INTERFACE_UNKNOWN): Fix formatting.

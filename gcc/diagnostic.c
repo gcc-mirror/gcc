@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines for the GNU C compiler
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GNU CC.
@@ -1108,23 +1108,32 @@ fnotice VPARAMS ((FILE *file, const char *msgid, ...))
 }
 
 
-/* Print a fatal error message.  NAME is the text.
+/* Print a fatal I/O error message.  Argument are like printf.
    Also include a system error message based on `errno'.  */
 
 void
-pfatal_with_name (name)
-  const char *name;
+fatal_io_error VPARAMS ((const char *msgid, ...))
 {
-  fprintf (stderr, "%s: ", progname);
-  perror (name);
-  exit (FATAL_EXIT_CODE);
-}
+#ifndef ANSI_PROTOTYPES
+  const char *msgid;
+#endif
+  va_list ap;
+  output_state os;
 
-void
-fatal_io_error (name)
-  const char *name;
-{
-  verbatim ("%s: %s: I/O error\n", progname, name);
+  os = output_buffer_state (diagnostic_buffer);
+  VA_START (ap, msgid);
+
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (ap, const char *);
+#endif
+
+  output_printf (diagnostic_buffer, "%s: %s: ", progname, xstrerror (errno));
+  output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
+  output_buffer_text_cursor (diagnostic_buffer) = msgid;
+  output_format (diagnostic_buffer);
+  finish_diagnostic ();
+  output_buffer_state (diagnostic_buffer) = os;
+  va_end (ap);
   exit (FATAL_EXIT_CODE);
 }
 
@@ -1368,6 +1377,8 @@ error_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
   va_end (ap);
 }
 
+/* Report an error message.  The arguments are like that of printf.  */
+
 void
 error VPARAMS ((const char *msgid, ...))
 {
@@ -1389,22 +1400,49 @@ error VPARAMS ((const char *msgid, ...))
   va_end (ap);
 }
 
-/* Report a fatal error at the current line number.  Allow a front end to
-   intercept the message.  */
-
-static void (*fatal_function) PARAMS((const char *, va_list *));
-
-/* Set the function to call when a fatal error occurs.  */
+/* Likewise, except that the compilation is terminated after printing the
+   error message.  */
 
 void
-set_fatal_function (f)
+fatal_error VPARAMS ((const char *msgid, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  const char *msgid;
+#endif
+  va_list ap;
+  diagnostic_context dc;
+
+  VA_START (ap, msgid);
+
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (ap, const char *);
+#endif
+
+  set_diagnostic_context
+    (&dc, msgid, &ap, input_filename, lineno, /* warn = */ 0);
+  report_diagnostic (&dc);
+  va_end (ap);
+
+  fprintf (stderr, "compilation terminated.\n");
+  exit (FATAL_EXIT_CODE);
+}
+
+/* Report a compiler error at the current line number.  Allow a front end to
+   intercept the message.  */
+
+static void (*internal_error_function) PARAMS ((const char *, va_list *));
+
+/* Set the function to call when a compiler error occurs.  */
+
+void
+set_internal_error_function (f)
      void (*f) PARAMS ((const char *, va_list *));
 {
-  fatal_function = f;
+  internal_error_function = f;
 }
 
 void
-fatal VPARAMS ((const char *msgid, ...))
+internal_error VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
@@ -1424,15 +1462,16 @@ fatal VPARAMS ((const char *msgid, ...))
       exit (FATAL_EXIT_CODE);
     }
 
-  if (fatal_function != 0)
-    (*fatal_function) (_(msgid), &ap);
+  if (internal_error_function != 0)
+    (*internal_error_function) (_(msgid), &ap);
   
   set_diagnostic_context
     (&dc, msgid, &ap, input_filename, lineno, /* warn = */0);
   report_diagnostic (&dc);
   va_end (ap);
 
-  fprintf (stderr, "Please submit a full bug report, with preprocessed source if appropriate.\n");
+  fprintf (stderr, "Please submit a full bug report, ");
+  fprintf (stderr, "with preprocessed source if appropriate.\n");
   fprintf (stderr, "See %s for instructions.\n", GCCBUGURL);
   exit (FATAL_EXIT_CODE);
 }
@@ -1661,7 +1700,8 @@ error_recursion ()
   if (diagnostic_lock < 3)
     finish_diagnostic ();
 
-  fatal ("Internal compiler error: Error reporting routines re-entered.");
+  internal_error
+    ("Internal compiler error: Error reporting routines re-entered.");
 }
 
 /* Given a partial pathname as input, return another pathname that
@@ -1718,8 +1758,8 @@ fancy_abort (file, line, function)
      int line;
      const char *function;
 {
-  fatal ("Internal compiler error in %s, at %s:%d",
-	 function, trim_filename (file), line);
+  internal_error ("Internal compiler error in %s, at %s:%d",
+		  function, trim_filename (file), line);
 }
 
 /* Setup DC for reporting a diagnostic MESSAGE (an error or a WARNING),
