@@ -128,6 +128,7 @@ extern short *reg_renumber;	/* def in local_alloc.c */
 #define MASK_SHORT              0002	/* Compile with 16-bit `int' */
 #define MASK_AUTO_INC_DEC       0004
 #define MASK_M6811              0010
+#define MASK_M6812              0020
 #define MASK_M68S12             0040
 #define MASK_NO_DIRECT_MODE     0100
 #define MASK_MIN_MAX            0200

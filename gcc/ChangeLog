@@ -1,5 +1,9 @@
 2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.h (MASK_M6812): Define.
+
+2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.c (expand_prologue): Use push/pop to 
 	allocate 4-bytes of locals on 68HC11.
 	(expand_epilogue): Likewise.
