@@ -1,3 +1,7 @@
+2000-05-04  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.dg/noreturn-2.c: New test.
+
 2000-05-04  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp-opprec.c: New tests for operator precedence in the
