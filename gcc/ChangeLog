@@ -1,5 +1,10 @@
 Tue Jan 20 09:29:09 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in: Remove more bytecode stuff.
+	* expr.c, stmt.c, config/msdos/top.sed: Likewise.
+	* vax/xm-vms.h, winnt/config-nt.sed: Likewise.
+	* f/install.texi, objc/Make-lang.in: Likewise.
+
 	* Makefile.in: Remove all bytecode support.
 	(OBJS): Make sure last entry is a real object file, not EXTRA_OBJS.
 	* emit-rtl.c: Remove all bytecode support.
