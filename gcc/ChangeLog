@@ -1,3 +1,9 @@
+2004-10-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (andsi3): Add attribute "compare" for
+	andi./andis.
+	(anddi3): Same.
+
 2004-10-12  Tom Tromey  <tromey@redhat.com>
 
 	* doc/md.texi (Insn Canonicalizations): Removed extraneous quote.
