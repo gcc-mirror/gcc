@@ -7032,7 +7032,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  error ("invalid arg to `__builtin_return_address'");
 	  return const0_rtx;
 	}
-      else if (tree_int_cst_lt (TREE_VALUE (arglist), integer_zero_node))
+      else if (tree_int_cst_sgn (TREE_VALUE (arglist)) < 0)
 	{
 	  error ("invalid arg to `__builtin_return_address'");
 	  return const0_rtx;
