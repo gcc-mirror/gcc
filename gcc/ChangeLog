@@ -1,3 +1,8 @@
+2004-11-22  Dale Johannesen  <dalej@apple.com>
+
+	* config/darwin.h (JUMP_TABLES_IN_TEXT_SECTION):  Conditionalize
+	properly and comment.
+
 2004-11-22  James A. Morrison  <phython@gcc.gnu.org
 
 	* config/sparc/sparc.c: Include insn-codes.h and langhooks.h.
