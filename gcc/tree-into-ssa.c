@@ -111,7 +111,7 @@ static htab_t def_blocks;
 static VEC(tree_on_heap) *block_defs_stack;
 
 /* Basic block vectors used in this file ought to be allocated in the heap.  */
-DEF_VEC_MALLOC_P(basic_block);
+DEF_VEC_MALLOC_P(int);
 
 /* Global data to attach to the main dominator walk structure.  */
 struct mark_def_sites_global_data
@@ -503,40 +503,37 @@ find_idf (bitmap def_blocks, bitmap *dfs)
 {
   bitmap_iterator bi;
   unsigned bb_index;
-  VEC(basic_block) *work_stack;
+  VEC(int) *work_stack;
   bitmap phi_insertion_points;
 
-  work_stack = VEC_alloc (basic_block, n_basic_blocks);
+  work_stack = VEC_alloc (int, n_basic_blocks);
   phi_insertion_points = BITMAP_ALLOC (NULL);
 
   /* Seed the work list with all the blocks in DEF_BLOCKS.  */
   EXECUTE_IF_SET_IN_BITMAP (def_blocks, 0, bb_index, bi)
-    VEC_safe_push (basic_block, work_stack, BASIC_BLOCK (bb_index));
+    VEC_safe_push (int, work_stack, bb_index);
 
   /* Pop a block off the worklist, add every block that appears in
      the original block's DF that we have not already processed to
      the worklist.  Iterate until the worklist is empty.   Blocks
      which are added to the worklist are potential sites for
      PHI nodes.  */
-  while (VEC_length (basic_block, work_stack) > 0)
+  while (VEC_length (int, work_stack) > 0)
     {
-      basic_block bb = VEC_pop (basic_block, work_stack);
-      bb_index = bb->index;
+      bb_index = VEC_pop (int, work_stack);
       
       EXECUTE_IF_AND_COMPL_IN_BITMAP (dfs[bb_index], phi_insertion_points,
 				      0, bb_index, bi)
 	{
-	  bb = BASIC_BLOCK (bb_index);
-
 	  /* Use a safe push because if there is a definition of VAR
 	     in every basic block, then WORK_STACK may eventually have
 	     more than N_BASIC_BLOCK entries.  */
-	  VEC_safe_push (basic_block, work_stack, bb);
+	  VEC_safe_push (int, work_stack, bb_index);
 	  bitmap_set_bit (phi_insertion_points, bb_index);
 	}
     }
 
-  VEC_free (basic_block, work_stack);
+  VEC_free (int, work_stack);
 
   return phi_insertion_points;
 }
