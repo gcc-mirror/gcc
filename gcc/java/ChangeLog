@@ -2,6 +2,7 @@
 
 	* decl.c (end_java_method): Rename asynchronous_exceptions to
 	flag_non_call_exceptions.
+	* parse.y (source_end_java_method): Likewise.
 
 2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
