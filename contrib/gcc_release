@@ -123,17 +123,28 @@ build_sources() {
   contrib/gcc_update --touch
 
   # Obtain some documentation files from the wwwdocs module.
-  inform "Retrieving bugs.html and gnats.html"
+  inform "Retrieving HTML documentation"
   changedir "${WORKING_DIRECTORY}"
-  ${CVS} \
-       -z 9 export \
-	-r HEAD wwwdocs/htdocs/bugs.html wwwdocs/htdocs/gnats.html
-  cp ${WORKING_DIRECTORY}/wwwdocs/htdocs/bugs.html ${SOURCE_DIRECTORY}
-  cp ${WORKING_DIRECTORY}/wwwdocs/htdocs/gnats.html ${SOURCE_DIRECTORY}
+  for x in bugs gnats faq; do
+    (${CVS} export -r HEAD wwwdocs/htdocs/${x}.html && \
+     cp ${WORKING_DIRECTORY}/wwwdocs/htdocs/${x}.html \
+        ${SOURCE_DIRECTORY}) || \
+      error "Could not retrieve ${x}.html"
+  done
+
+  inform "Generating plain-text documentation from HTML"
+  changedir "${SOURCE_DIRECTORY}"
+  for file in *.html; do
+    newfile=`echo $file | sed -e 's/.html//' | tr "[:lower:]" "[:upper:]"`
+    (${ENV} TERM=vt100 lynx -dump $file \
+       | sed -e 's#file://localhost.*\(/[^/]*\)#http://gcc.gnu.org\1#g' \
+       > $newfile) || \
+     error "Could not regenerate documentation"
+  done
 
   # For a prerelease or real release, we need to generate additional
   # files not present in CVS.
-  changedir "gcc-${RELEASE}"
+  changedir "${SOURCE_DIRECTORY}"
   if [ $SNAPSHOT -ne 1 ]; then
     # Generate the documentation.
     inform "Building install docs"
@@ -281,7 +292,10 @@ upload_files() {
   # Copy the tar files to the FTP server.
   for x in gcc*.gz gcc*.bz2; do
     if [ -e ${x} ]; then
-      ${SCP} ${x} ${FTP_PATH} || \
+      # Make sure the file will be readable on the server.
+      chmod a+r ${x}
+      # Copy it.
+      ${SCP} -p ${x} ${FTP_PATH} || \
         error "Could not upload ${x}"
     fi
   done
@@ -361,8 +375,9 @@ FILE_LIST=""
 # Programs we use.
 
 BZIP2="${BZIP2:-bzip2}"
-CVS="${CVS:-cvs -f -Q}"
+CVS="${CVS:-cvs -f -Q -z9}"
 DIFF="${DIFF:-diff -Nrc3pad}"
+ENV="${ENV:-env}"
 GZIP="${GZIP:-gzip --best}"
 SCP="${SCP:-scp}"
 TAR="${TAR:-tar}"
