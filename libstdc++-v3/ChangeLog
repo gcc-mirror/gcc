@@ -1,3 +1,9 @@
+2000-12-09  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/auto_ptr.cc (test07): Remove test that tries
+	to copy-initialize an auto_ptr<Base> from an auto_ptr<Derived>; it
+	isn't supposed to work anymore.
+
 2000-12-09  Phil Edwards  <pme@sources.redhat.com>
 
 	Move the HTML-containing subdirs from 'docs' to 'docs/html'.
