@@ -1531,7 +1531,7 @@ extern void (*incomplete_decl_finalize_hook) ();
 extern char *perm_calloc			PROTO((int, long));
 extern tree get_set_constructor_bits		PROTO((tree, char*, int));
 extern tree get_set_constructor_bytes		PROTO((tree,
-						       HOST_WIDE_INT*, int));
+						       unsigned char*, int));
 
 /* In stmt.c */
 
