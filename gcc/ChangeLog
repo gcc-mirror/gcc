@@ -1,5 +1,8 @@
 2000-03-09  Jason Merrill  <jason@casey.cygnus.com>
 
+	* except.c (nothrow_function_p): If -fno-exceptions, just return.
+	(init_eh_nesting_info): Likewise.
+
 	* tree.h (struct tree_common): Rename raises_flag to nothrow_flag.
 	(TREE_NOTHROW): Rename from TREE_RAISES.
 	* toplev.c (rest_of_compilation): Set it.

@@ -2651,6 +2651,9 @@ nothrow_function_p ()
 {
   rtx insn;
 
+  if (! flag_exceptions)
+    return 1;
+
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (can_throw (insn))
       return 0;
@@ -3185,6 +3188,7 @@ in_same_eh_region (insn1, insn2)
    yet.  At some point in the future we can trim out handlers which we
    know cannot be called. (ie, if a block has an INT type handler,
    control will never be passed to an outer INT type handler).  */
+
 static void 
 process_nestinfo (block, info, nested_eh_region)
      int block;
@@ -3263,6 +3267,7 @@ process_nestinfo (block, info, nested_eh_region)
 /* This function will allocate and initialize an eh_nesting_info structure. 
    It returns a pointer to the completed data structure.  If there are
    no exception regions, a NULL value is returned.  */
+
 eh_nesting_info *
 init_eh_nesting_info ()
 {
@@ -3272,6 +3277,9 @@ init_eh_nesting_info ()
   eh_nesting_info *info;
   rtx insn;
   int x;
+
+  if (! flag_exceptions)
+    return 0;
 
   info = (eh_nesting_info *) xmalloc (sizeof (eh_nesting_info));
   info->region_index = (int *) xcalloc ((max_label_num () + 1), sizeof (int));
@@ -3343,6 +3351,7 @@ init_eh_nesting_info ()
    HANDLERS is the address of a pointer to a vector of handler_info pointers.
    Upon return, this will have the handlers which can be reached by block.
    This function returns the number of elements in the handlers vector.  */
+
 int 
 reachable_handlers (block, info, insn, handlers)
      int block;
