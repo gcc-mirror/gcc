@@ -1,3 +1,25 @@
+2004-11-06  Robert Schuster <thebohemian@gmx.net>
+
+	Fixes documentation and indentation
+	* java/beans/PropertyEditorSupport.java:
+	reworked initial API doc
+	(value): changed name from val
+
+2004-11-06  Robert Schuster <thebohemian@gmx.net>
+
+	Updates to 1.5
+	* java/beans/PropertyEditorSupport.java
+	(PropertyEditorSupport()): Changed modifier to public
+	(PropertyEditorSupport(Object): Changed modifier to public
+	(setSource): New method
+	(getSource): New method
+
+2004-11-06  Robert Schuster <thebohemian@gmx.net>
+
+	Fixes bug #10799
+	* java/beans/PropertyEditorSupport.java
+	(setValue): Fire property change event
+
 2004-11-03  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (_Jv_JNI_NewObjectArray): Fixed return type.
