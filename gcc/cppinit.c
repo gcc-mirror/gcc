@@ -1,6 +1,6 @@
 /* CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -805,6 +805,39 @@ init_standard_includes (pfile)
 
       memcpy (default_prefix, cpp_GCC_INCLUDE_DIR, default_len);
       default_prefix[default_len] = '\0';
+
+      for (p = cpp_include_defaults; p->fname; p++)
+	{
+	  /* Some standard dirs are only for C++.  */
+	  if (!p->cplusplus
+	      || (CPP_OPTION (pfile, cplusplus)
+		  && !CPP_OPTION (pfile, no_standard_cplusplus_includes)))
+	    {
+	      char *str;
+
+	      /* Should we be translating sysrooted dirs too?  Assume
+		 that iprefix and sysroot are mutually exclusive, for
+		 now.  */
+	      if (p->add_sysroot && CPP_OPTION (pfile, sysroot))
+		continue;
+
+	      /* Does this dir start with the prefix?  */
+	      if (!strncmp (p->fname, default_prefix, default_len))
+		{
+		  /* Yes; change prefix and add to search list.  */
+		  int flen = strlen (p->fname);
+		  int this_len = specd_len + flen - default_len;
+
+		  str = (char *) xmalloc (this_len + 1);
+		  memcpy (str, specd_prefix, specd_len);
+		  memcpy (str + specd_len,
+			  p->fname + default_len,
+			  flen - default_len + 1);
+
+		  append_include_chain (pfile, str, SYSTEM, p->cxx_aware);
+		}
+	    }
+	}
     }
 
   for (p = cpp_include_defaults; p->fname; p++)
@@ -819,21 +852,6 @@ init_standard_includes (pfile)
 	  /* Should this dir start with the sysroot?  */
 	  if (p->add_sysroot && CPP_OPTION (pfile, sysroot))
 	    str = concat (CPP_OPTION (pfile, sysroot), p->fname, NULL);
-
-	  /* Does this dir start with the prefix?  */
-	  else if (default_len
-		   && !strncmp (p->fname, default_prefix, default_len))
-	    {
-	      /* Yes; change prefix and add to search list.  */
-	      int flen = strlen (p->fname);
-	      int this_len = specd_len + flen - default_len;
-
-	      str = (char *) xmalloc (this_len + 1);
-	      memcpy (str, specd_prefix, specd_len);
-	      memcpy (str + specd_len,
-		      p->fname + default_len,
-		      flen - default_len + 1);
-	    }
 
 	  else
 	    str = update_path (p->fname, p->component);

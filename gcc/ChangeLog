@@ -1,3 +1,9 @@
+2003-11-19  Alan Modra  <amodra@bigpond.net.au>
+
+	Backport 2003-03-26  Alan Modra  <amodra@bigpond.net.au>
+	* cppinit.c (init_standard_includes): Add both "translated" and
+	non-translated header paths.
+
 2003-11-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	Fix links in online manuals.
