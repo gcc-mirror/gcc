@@ -13,6 +13,8 @@ import java.io.Serializable;
 import java.io.InputStream;
 import java.lang.reflect.*;
 import java.security.*;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -64,7 +66,26 @@ public final class Class implements Serializable
 
   public native Field getDeclaredField (String fieldName)
     throws NoSuchFieldException, SecurityException;
-  public native Field[] getDeclaredFields () throws SecurityException;
+
+  /**
+   * Get all the declared fields in this class, but not those inherited from
+   * superclasses. This returns an array of length 0 if there are no fields,
+   * including for primitive types. This does not return the implicit length
+   * field of arrays. A security check may be performed, with
+   * <code>checkMemberAccess(this, Member.DECLARED)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @return all declared fields in this class
+   * @throws SecurityException if the security check fails
+   * @since 1.1
+   */
+  public Field[] getDeclaredFields()
+  {
+    memberAccessCheck(Member.DECLARED);
+    return getDeclaredFields(false);
+  }
+
+  native Field[] getDeclaredFields (boolean publicOnly);
 
   private native Method _getDeclaredMethod (String methodName,
 					    Class[] parameterTypes);
@@ -101,8 +122,39 @@ public final class Class implements Serializable
     return fld;
   }
 
-  private native Field[] _getFields (Field[] result, int offset);
-  public native Field[] getFields () throws SecurityException;
+  /**
+   * Get all the public fields declared in this class or inherited from
+   * superclasses. This returns an array of length 0 if there are no fields,
+   * including for primitive types. This does not return the implicit length
+   * field of arrays. A security check may be performed, with
+   * <code>checkMemberAccess(this, Member.PUBLIC)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @return all public fields in this class
+   * @throws SecurityException if the security check fails
+   * @since 1.1
+   */
+  public Field[] getFields()
+  {
+    memberAccessCheck(Member.PUBLIC);
+    return internalGetFields();
+  }
+
+  /**
+   * Like <code>getFields()</code> but without the security checks.
+   */
+  private Field[] internalGetFields()
+  {
+    HashSet set = new HashSet();
+    set.addAll(Arrays.asList(getDeclaredFields(true)));
+    Class[] interfaces = getInterfaces();
+    for (int i = 0; i < interfaces.length; i++)
+      set.addAll(Arrays.asList(interfaces[i].internalGetFields()));
+    Class superClass = getSuperclass();
+    if (superClass != null)
+      set.addAll(Arrays.asList(superClass.internalGetFields()));
+    return (Field[])set.toArray(new Field[set.size()]);
+  }
 
   /**
    * Returns the <code>Package</code> in which this class is defined

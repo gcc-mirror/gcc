@@ -295,16 +295,32 @@ java::lang::Class::getDeclaredField (jstring name)
 }
 
 JArray<java::lang::reflect::Field *> *
-java::lang::Class::getDeclaredFields (void)
+java::lang::Class::getDeclaredFields (jboolean public_only)
 {
-  memberAccessCheck(java::lang::reflect::Member::DECLARED);
+  int size;
+  if (public_only)
+    {
+      size = 0;
+      for (int i = 0; i < field_count; ++i)
+	{
+	  _Jv_Field *field = &fields[i];
+	  if ((field->flags & java::lang::reflect::Modifier::PUBLIC))
+	    ++size;
+	}
+    }
+  else
+    size = field_count;
+
   JArray<java::lang::reflect::Field *> *result
     = (JArray<java::lang::reflect::Field *> *)
-    JvNewObjectArray (field_count, &java::lang::reflect::Field::class$, NULL);
+    JvNewObjectArray (size, &java::lang::reflect::Field::class$, NULL);
   java::lang::reflect::Field** fptr = elements (result);
   for (int i = 0;  i < field_count;  i++)
     {
       _Jv_Field *field = &fields[i];
+      if (public_only
+	  && ! (field->flags & java::lang::reflect::Modifier::PUBLIC))
+	continue;
       java::lang::reflect::Field* rfield = new java::lang::reflect::Field ();
       rfield->offset = (char*) field - (char*) fields;
       rfield->declaringClass = this;
@@ -459,60 +475,6 @@ java::lang::Class::getDeclaringClass (void)
   // Until we have inner classes, it makes sense to always return
   // NULL.
   return NULL;
-}
-
-jint
-java::lang::Class::_getFields (JArray<java::lang::reflect::Field *> *result,
-			       jint offset)
-{
-  int count = 0;
-  for (int i = 0;  i < field_count;  i++)
-    {
-      _Jv_Field *field = &fields[i];
-      if (! (field->getModifiers() & java::lang::reflect::Modifier::PUBLIC))
-	continue;
-      ++count;
-
-      if (result != NULL)
-	{
-	  java::lang::reflect::Field *rfield
-	    = new java::lang::reflect::Field ();
-	  rfield->offset = (char *) field - (char *) fields;
-	  rfield->declaringClass = this;
-	  rfield->name = _Jv_NewStringUtf8Const (field->name);
-	  (elements (result))[offset++] = rfield;
-	}
-    }
-  jclass superclass = getSuperclass();
-  if (superclass != NULL)
-    {
-      int s_count = superclass->_getFields (result, offset);
-      count += s_count;
-      offset += s_count;
-    }
-  for (int i = 0; i < interface_count; ++i)
-    {
-      int f_count = interfaces[i]->_getFields (result, offset);
-      count += f_count;
-      offset += f_count;
-    }
-  return count;
-}
-
-JArray<java::lang::reflect::Field *> *
-java::lang::Class::getFields (void)
-{
-  memberAccessCheck(java::lang::reflect::Member::PUBLIC);
-
-  int count = _getFields (NULL, 0);
-
-  JArray<java::lang::reflect::Field *> *result
-    = ((JArray<java::lang::reflect::Field *> *)
-       JvNewObjectArray (count, &java::lang::reflect::Field::class$, NULL));
-
-  _getFields (result, 0);
-
-  return result;
 }
 
 JArray<jclass> *
