@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@cygnus.com>.
 
    This file is part of GCC.
@@ -29,7 +29,7 @@
    to avoid register/deregister calls at DSO load/unload.  */
 
 #ifndef _GNU_SOURCE
-#define _GNU_SOURCE
+#define _GNU_SOURCE 1
 #endif
 #include "config.h"
 #include <stddef.h>

@@ -1,3 +1,8 @@
+2003-11-02  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/fde-glibc.c (_GNU_SOURCE): Define to 1 instead of
+	empty to avoid conflict with the definition from configure.
+
 2003-11-02  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/10817
