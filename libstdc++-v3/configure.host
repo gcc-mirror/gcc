@@ -15,8 +15,6 @@
 #   target_optspace       --enable-target-optspace ("yes", "no", "")
 
 # It sets the following shell variables:
-#   glibcpp_cflags         Special CFLAGS to use when building
-#   glibcpp_cxxflags       Special CXXFLAGS to use when building
 
 
 AM_RUNTESTFLAGS= 
@@ -25,17 +23,9 @@ AM_RUNTESTFLAGS=
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 
 
-DIVIDESPEC=-fuse-divide-subroutine
-
 case "${host}" in
-  i686-*|i586-*)
-       ;;
-  sparc-*)
-        ;;
   *)
-       ;;
+    ;;
 esac
 
-glibcpp_cflags="${glibcpp_cflags} ${libgcj_flags}"
-glibcpp_cxxflags="${glibcpp_cxxflags} ${libgcj_flags}"
 

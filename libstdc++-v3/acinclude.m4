@@ -133,12 +133,6 @@ LIB_AC_PROG_CXX
     AC_EXEEXT
   fi
 
-  # configure.host sets the following important variables
-  #        glibcpp_cflags    - host specific C compiler flags
-  #        glibcpp_cxxflags  - host specific C++ compiler flags
-  glibcpp_cflags=
-  glibcpp_cxxflags=
-
   . [$]{glibcpp_basedir}/configure.host
 
   case [$]{glibcpp_basedir} in
@@ -147,13 +141,8 @@ LIB_AC_PROG_CXX
   esac
 
   # This does for the target what configure.host does for the host.  In
-  # addition to modifying the same flags, it also sets up symlinks.
+  # addition to possibly modifying the same flags, it also sets up symlinks.
   GLIBCPP_CHECK_TARGET
-
-  GLIBCPP_CFLAGS="[$]{glibcpp_cflags}"
-  GLIBCPP_CXXFLAGS="[$]{glibcpp_cxxflags}"
-  AC_SUBST(GLIBCPP_CFLAGS)
-  AC_SUBST(GLIBCPP_CXXFLAGS)
 ])
 
 

@@ -1,3 +1,17 @@
+2001-02-28  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CONFIGURE):  Remove GLIBCPP_CFLAGS
+	  and GLIBCPP_CXXFLAGS as unused variables.
+	* configure.host:  Likewise.
+	* configure.target:  Likewise.
+	* aclocal.m4:  Regenerated.
+	* configure:  Regenerated.
+	* Makefile.in:  Regenerated.
+	* libio/Makefile.in:  Regenerated.
+	* libmath/Makefile.in:  Regenerated.
+	* libsupc++/Makefile.in:  Regenerated.
+	* src/Makefile.in:  Regenerated.
+
 2001-02-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/1886
