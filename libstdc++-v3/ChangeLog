@@ -1,3 +1,11 @@
+2004-12-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement is_reference.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_reference/is_reference.cc: New.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_reference/typedefs.cc: Likewise.
+
 2004-12-05  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/18837

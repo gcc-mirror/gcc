@@ -22,8 +22,8 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TR1_TYPE_TRAITS
-#define _TR1_TYPE_TRAITS 1
+#ifndef _TYPE_TRAITS
+#define _TYPE_TRAITS 1
 
 #include <bits/c++config.h>
 #include <cstddef>
@@ -102,8 +102,13 @@ namespace tr1
   template<typename _Tp>
     struct is_pointer;
   
+  template<typename>
+    struct is_reference
+    : public false_type { };
+
   template<typename _Tp>
-    struct is_reference;
+    struct is_reference<_Tp&>
+    : public true_type { };
   
   template<typename _Tp>
     struct is_member_object_pointer;
