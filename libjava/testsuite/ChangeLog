@@ -1,3 +1,8 @@
+2002-05-27  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* libjava.lang/PR6820.java: New file.
+	* libjava.lang/PR6820.out: New file.
+
 2002-05-23  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* libjava.lang/PR6729.java: New file.
