@@ -8,6 +8,7 @@
 	* config/abi/sparc-freebsd5/baseline_symbols.txt: New file.
 
 	* include/ext/mt_allocator.h: Portability.
+	* testsuite/testsuite_performance.h: Likewise.
 
 2003-06-23  Benjamin Kosnik  <bkoz@redhat.com>
 
