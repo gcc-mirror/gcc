@@ -5217,7 +5217,7 @@ emit_reload_insns (insn)
      can inherit the reloads.
 
      Update spill_reg_store for the reloads of this insn.
-     Copy the elements that were updated in the loop above.   */
+     Copy the elements that were updated in the loop above.  */
 
   for (j = 0; j < n_reloads; j++)
     {
