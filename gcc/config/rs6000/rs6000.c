@@ -2565,7 +2565,7 @@ legitimate_lo_sum_address_p (enum machine_mode mode, rtx x, int strict)
 
   if (TARGET_ELF || TARGET_MACHO)
     {
-      if (DEFAULT_ABI != ABI_AIX && flag_pic)
+      if (DEFAULT_ABI != ABI_AIX && DEFAULT_ABI != ABI_DARWIN && flag_pic)
 	return false;
       if (TARGET_TOC)
 	return false;
@@ -3056,36 +3056,30 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
   if (GET_CODE (x) == SYMBOL_REF
       && DEFAULT_ABI == ABI_DARWIN
       && !ALTIVEC_VECTOR_MODE (mode)
-      && flag_pic)
+      && (flag_pic || MACHO_DYNAMIC_NO_PIC_P)
+      /* Don't do this for TFmode, since the result isn't offsettable.  */
+      && mode != TFmode)
     {
-      /* Darwin load of floating point constant.  */
-      rtx offset = gen_rtx (CONST, Pmode,
-		    gen_rtx (MINUS, Pmode, x,
-		    gen_rtx (SYMBOL_REF, Pmode,
-			machopic_function_base_name ())));
-      x = gen_rtx (LO_SUM, GET_MODE (x),
-	    gen_rtx (PLUS, Pmode, pic_offset_table_rtx,
-		gen_rtx (HIGH, Pmode, offset)), offset);
+      if (flag_pic)
+	{
+	  rtx offset = gen_rtx_CONST (Pmode,
+			 gen_rtx_MINUS (Pmode, x,
+			   gen_rtx_SYMBOL_REF (Pmode,
+			     machopic_function_base_name ())));
+	  x = gen_rtx_LO_SUM (GET_MODE (x),
+		gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+		  gen_rtx_HIGH (Pmode, offset)), offset);
+	}
+      else
+	x = gen_rtx_LO_SUM (GET_MODE (x),
+              gen_rtx_HIGH (Pmode, x), x);
+
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
-		BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
-		opnum, (enum reload_type)type);
+		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
+		   opnum, (enum reload_type)type);
       *win = 1;
       return x;
     }
-   if (GET_CODE (x) == SYMBOL_REF
-       && DEFAULT_ABI == ABI_DARWIN
-       && !ALTIVEC_VECTOR_MODE (mode)
-       && MACHO_DYNAMIC_NO_PIC_P)
-     {
-       /* Darwin load of floating point constant.  */
-       x = gen_rtx (LO_SUM, GET_MODE (x),
-               gen_rtx (HIGH, Pmode, x), x);
-       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
-               BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
-               opnum, (enum reload_type)type);
-       *win = 1;
-       return x;
-     }
 #endif
   if (TARGET_TOC
       && constant_pool_expr_p (x)
