@@ -50,6 +50,7 @@
 #include "target-def.h"
 #include "langhooks.h"
 #include "reload.h"
+#include "cfglayout.h"
 
 #ifndef TARGET_NO_PROTOTYPE
 #define TARGET_NO_PROTOTYPE 0

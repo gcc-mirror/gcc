@@ -51,6 +51,7 @@ Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 #include "langhooks.h"
 #include <splay-tree.h>
+#include "cfglayout.h"
 
 /* Specify which cpu to schedule for.  */
 

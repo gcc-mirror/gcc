@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "hashtab.h"
 #include "langhooks.h"
+#include "cfglayout.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
