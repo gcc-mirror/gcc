@@ -5122,6 +5122,15 @@ Sat May 13 11:05:47 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* ifcvt.c (if_convert): Do not free NULL.
 
+2000-05-12  H.J. Lu  (hjl@gnu.org)
+
+	* gthr-dce.h: Add support for libobjc.
+	* gthr-posix.h: Likewise.
+	* gthr-solaris.h: Likewise.
+	* gthr-vxworks.h: Likewise.
+	* gthr-single.h: Likewise.
+	* gthr-win32.h: Likewise.
+
 2000-05-12  Nick Clifton  <nickc@cygnus.com>
 
 	* config/fr30/fr30.c (fr30_move_double): New function:  Emit code

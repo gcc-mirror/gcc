@@ -1140,23 +1140,23 @@ EOF
 fi
 
 
-# Determine the name of the GCC thread file.
+# Determine gthread FLAGS.
 
-echo $ac_n "checking for thread file""... $ac_c" 1>&6
-echo "configure:1147: checking for thread file" >&5
-if eval "test \"`echo '$''{'objc_cv_thread_file'+set}'`\" = set"; then
+echo $ac_n "checking for gthread FLAGS""... $ac_c" 1>&6
+echo "configure:1147: checking for gthread FLAGS" >&5
+if eval "test \"`echo '$''{'objc_cv_gthread_flags'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   if test -f "$r"/gcc/Makefile
 then
-  objc_cv_thread_file=`grep \^GCC_THREAD_FILE "$r"/gcc/Makefile | awk -F= '{ print $2 }'`
+  objc_cv_gthread_flags=`grep \^GTHREAD_FLAGS "$r"/gcc/Makefile | awk -F= '{ print $2 }'`
 else
   { echo "configure: error: not found" 1>&2; exit 1; }
 fi
 fi
 
-echo "$ac_t""$objc_cv_thread_file" 1>&6
-OBJC_THREAD_FILE=$objc_cv_thread_file
+echo "$ac_t""$objc_cv_gthread_flags" 1>&6
+GTHREAD_FLAGS=$objc_cv_gthread_flags
 
 
 # Check whether --enable-objc-gc or --disable-objc-gc was given.
@@ -1327,7 +1327,7 @@ s%@INSTALL_PROGRAM@%$INSTALL_PROGRAM%g
 s%@INSTALL_SCRIPT@%$INSTALL_SCRIPT%g
 s%@INSTALL_DATA@%$INSTALL_DATA%g
 s%@CPP@%$CPP%g
-s%@OBJC_THREAD_FILE@%$OBJC_THREAD_FILE%g
+s%@GTHREAD_FLAGS@%$GTHREAD_FLAGS%g
 s%@OBJC_BOEHM_GC@%$OBJC_BOEHM_GC%g
 
 CEOF
