@@ -1273,6 +1273,7 @@ build_array_ref (array, index)
 #define T_LD	&long_double_type_node
 #define T_C	&char_type_node
 #define T_V	&void_type_node
+#define T_W	&wchar_type_node
 
 typedef struct
 {
@@ -1299,8 +1300,10 @@ static format_char_info print_table[]
       { "oxX",		0,	T_UI,	T_UI,	T_UL,	NULL,	"-wp0#" },
       { "u",		0,	T_UI,	T_UI,	T_UL,	NULL,	"-wp0" },
       { "feEgG",	0,	T_D,	NULL,	NULL,	T_LD,	"-wp0 +#" },
-      { "c",		0,	T_I,	NULL,	NULL,	NULL,	"-w" },
-      { "s",		1,	T_C,	NULL,	NULL,	NULL,	"-wp" },
+      { "c",		0,	T_I,	NULL,	T_W,	NULL,	"-w" },
+      { "C",		0,	T_W,	NULL,	NULL,	NULL,	"-w" },
+      { "s",		1,	T_C,	NULL,	T_W,	NULL,	"-wp" },
+      { "S",		1,	T_W,	NULL,	NULL,	NULL,	"-wp" },
       { "p",		1,	T_V,	NULL,	NULL,	NULL,	"-" },
       { "n",		1,	T_I,	T_S,	T_L,	NULL,	"" },
       { NULL }
@@ -1311,7 +1314,10 @@ static format_char_info scan_table[]
       { "di",		1,	T_I,	T_S,	T_L,	NULL,	"*" },
       { "ouxX",		1,	T_UI,	T_US,	T_UL,	NULL,	"*" },	
       { "efgEG",	1,	T_F,	NULL,	T_D,	T_LD,	"*" },
-      { "s[c",		1,	T_C,	NULL,	NULL,	NULL,	"*" },
+      { "sc",		1,	T_C,	NULL,	T_W,	NULL,	"*" },
+      { "[",		1,	T_C,	NULL,	NULL,	NULL,	"*" },
+      { "C",		1,	T_W,	NULL,	NULL,	NULL,	"*" },
+      { "S",		1,	T_W,	NULL,	NULL,	NULL,	"*" },
       { "p",		2,	T_V,	NULL,	NULL,	NULL,	"*" },
       { "n",		1,	T_I,	T_S,	T_L,	NULL,	"" },
       { NULL }
