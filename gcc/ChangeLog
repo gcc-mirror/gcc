@@ -1,3 +1,8 @@
+2003-10-25  Eric Christopher  <echristo@redhat.com>
+
+	* function.c (purge_addressof_1): Add case for REG_RETVAL
+        notes when modes are unequal.
+
 2003-10-31  Jan Hubicka  <jh@suse.cz>
 
 	* i386-modes.def: Add XFmode format adjustment.
@@ -60,9 +65,9 @@
 	not necessarily because of __builtin_return_addr (0).
 	(s390_split_branches): Remove TEMP_REG and TEMP_USED arguments,
 	remove special handling of zSeries machines.
-	(s390_optimize_prolog): Remove TEMP_USED argument, treat the return 
+	(s390_optimize_prolog): Remove TEMP_USED argument, treat the return
 	register as a regular register on zSeries machines.
-	(s390_reorg): Adjust calls to s390_split_branches and 
+	(s390_reorg): Adjust calls to s390_split_branches and
 	s390_optimize_prolog.
 	(s390_frame_info): On zSeries machines, do not assume the return
 	register is always used.  Update regs_ever_live with current data
@@ -97,14 +102,14 @@
 	* target.h (struct gcc_target): Add build_builtin_va_list.
 	* tree.c (build_common_tree_nodes_2): Use it.
 
-	* config/alpha/alpha-protos.h, config/alpha/alpha.c, 
+	* config/alpha/alpha-protos.h, config/alpha/alpha.c,
 	config/alpha/alpha.h, config/alpha/unicosmk.h,
 	config/d30v/d30v-protos.h, config/d30v/d30v.c, config/d30v/d30v.h,
 	config/i386/i386-protos.h, config/i386/i386.c, config/i386/i386.h,
 	config/i860/i860-protos.h, config/i860/i860.c, config/i860/i860.h,
 	config/i960/i960-protos.h, config/i960/i960.c, config/i960/i960.h,
 	config/mips/iris6.h, config/mips/mips-protos.h, config/mips/mips.c,
-	config/mips/mips.h, config/rs6000/rs6000-protos.h, 
+	config/mips/mips.h, config/rs6000/rs6000-protos.h,
 	config/rs6000/rs6000.c, config/rs6000/rs6000.h,
 	config/s390/s390-protos.h, config/s390/s390.c, config/s390/s390.h,
 	config/sh/sh-protos.h, config/sh/sh.c, config/sh/sh.h,

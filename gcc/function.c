@@ -3085,7 +3085,10 @@ purge_addressof_1 (rtx *loc, rtx insn, int force, int store, int may_postpone,
 			 subregs.  */
 		      || (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
 			  && (GET_MODE_SIZE (GET_MODE (x))
-			      > GET_MODE_SIZE (GET_MODE (sub)))))
+			      > GET_MODE_SIZE (GET_MODE (sub))))
+		      || (GET_MODE_SIZE (GET_MODE (x))
+			  < GET_MODE_SIZE (GET_MODE (sub))))
+
 		    {
 		      *loc = gen_rtx_SUBREG (GET_MODE (x), sub, 0);
 		      return true;
