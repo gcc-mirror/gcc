@@ -2984,7 +2984,6 @@ int
 c_get_alias_set (t)
      tree t;
 {
-  static int next_set = 0;
   tree type;
 
   if (t == error_mark_node)
@@ -3060,6 +3059,6 @@ c_get_alias_set (t)
 
   /* TYPE is something we haven't seen before.  Put it in a new alias
      set.  */
-  TYPE_ALIAS_SET (type) = ++next_set;
+  TYPE_ALIAS_SET (type) = new_alias_set ();
   return TYPE_ALIAS_SET (type);
 }
