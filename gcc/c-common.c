@@ -2131,28 +2131,10 @@ c_apply_type_quals_to_decl (type_quals, decl)
 	  || !C_TYPE_OBJECT_OR_INCOMPLETE_P (TREE_TYPE (TREE_TYPE (decl))))
 	error ("invalid use of `restrict'");
       else if (flag_strict_aliasing)
-	{
-	  /* No two restricted pointers can point at the same thing.
-	     However, a restricted pointer can point at the same thing
-	     as an unrestricted pointer, if that unrestricted pointer
-	     is based on the restricted pointer.  So, we make the
-	     alias set for the restricted pointer a subset of the
-	     alias set for the type pointed to by the type of the
-	     decl.  */
-
-	  HOST_WIDE_INT pointed_to_alias_set
-	    = get_alias_set (TREE_TYPE (TREE_TYPE (decl)));
-
-	  if (pointed_to_alias_set == 0)
-	    /* It's not legal to make a subset of alias set zero.  */
-	    ;
-	  else
-	    {
-	      DECL_POINTER_ALIAS_SET (decl) = new_alias_set ();
-	      record_alias_subset  (pointed_to_alias_set,
-				    DECL_POINTER_ALIAS_SET (decl));
-	    }
-	}
+	/* Indicate we need to make a unique alias set for this pointer.
+	   We can't do it here because it might be pointing to an
+	   incomplete type.  */
+	DECL_POINTER_ALIAS_SET (decl) = -2;
     }
 }
 
