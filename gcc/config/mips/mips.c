@@ -5201,29 +5201,35 @@ function_prologue (file, size)
      exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
 
-  fputs ("\t.ent\t", file);
-  assemble_name (file, fnname);
-  fputs ("\n", file);
+  if (!flag_inhibit_size_directive)
+    {
+      fputs ("\t.ent\t", file);
+      assemble_name (file, fnname);
+      fputs ("\n", file);
+    }
 
   assemble_name (file, fnname);
   fputs (":\n", file);
 #endif
 
-  fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
-	   reg_names[ (frame_pointer_needed) ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM ],
-	   tsize,
-	   reg_names[31 + GP_REG_FIRST],
-	   current_frame_info.var_size,
-	   current_frame_info.num_gp,
-	   current_frame_info.num_fp,
-	   current_function_outgoing_args_size,
-	   current_frame_info.extra_size);
+  if (!flag_inhibit_size_directive)
+    {
+      fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
+	      reg_names[ (frame_pointer_needed) ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM ],
+	      tsize,
+	      reg_names[31 + GP_REG_FIRST],
+	      current_frame_info.var_size,
+	      current_frame_info.num_gp,
+	      current_frame_info.num_fp,
+	      current_function_outgoing_args_size,
+	      current_frame_info.extra_size);
 
-  fprintf (file, "\t.mask\t0x%08lx,%d\n\t.fmask\t0x%08lx,%d\n",
-	   current_frame_info.mask,
-	   current_frame_info.gp_save_offset,
-	   current_frame_info.fmask,
-	   current_frame_info.fp_save_offset);
+      fprintf (file, "\t.mask\t0x%08lx,%d\n\t.fmask\t0x%08lx,%d\n",
+	       current_frame_info.mask,
+	       current_frame_info.gp_save_offset,
+	       current_frame_info.fmask,
+	       current_frame_info.fp_save_offset);
+    }
 
   if (TARGET_ABICALLS && mips_abi == ABI_32)
     {
@@ -5464,9 +5470,12 @@ function_epilogue (file, size)
      exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
 
-  fputs ("\t.end\t", file);
-  assemble_name (file, fnname);
-  fputs ("\n", file);
+  if (!flag_inhibit_size_directive)
+    {
+      fputs ("\t.end\t", file);
+      assemble_name (file, fnname);
+      fputs ("\n", file);
+    }
 #endif
 
   if (TARGET_STATS)
