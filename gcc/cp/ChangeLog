@@ -1,3 +1,9 @@
+2004-09-28  Roger Sayle  <roger@eyesopen.com>
+
+	PR driver/17537
+	* g++spec.c (lang_specific_driver): Unrecognized libraries, other
+	than -lc and -lm, may require linking against libstc++.
+
 2004-09-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree.c: Fix a comment typo.
