@@ -1,3 +1,9 @@
+2001-10-29  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* mangle.c (find_compression_record_match): Don't match compression
+	records for package name elements unless they occur at the start of
+	the name. Fix for PR java/4717.
+
 2001-10-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* expr.c (expand_java_field_op): Don't special-case references to
