@@ -2555,7 +2555,7 @@ for machine in $build $host $target; do
 	alpha*-*-*)
 		case $machine in
 			alphaev56*)
-				target_cpu_default2="MASK_CPU_EV5|MASK_BYTE_OPS"
+				target_cpu_default2="MASK_CPU_EV5"
 				;;
 			alphaev5*)
 				target_cpu_default2="MASK_CPU_EV5"

@@ -1,5 +1,8 @@
 Tue Nov 25 10:00:42 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* configure.in (alphaev56*-*-*): Disable MASK_BYTE_OPS until
+	ev56 support works correctly.
+
 	* crtstuff.c (do_global_dtors_aux): Handle multiple calls better.
 
 Sun Nov 23 13:01:48 1997  Jeffrey A Law  (law@cygnus.com)
