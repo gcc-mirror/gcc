@@ -1,3 +1,10 @@
+2000-08-14  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.h (ASM_SPEC): Pass -mconstant-gp and -mauto-pic
+	to GNU as.  For Intel as, pass -M const_gp and -M no_plabel.
+	* config/ia64/linux.h (ASM_SPEC): Pass -mconstant-gp and -mauto-pic
+	to GNU as.
+
 2000-08-14  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (emit_group_load): Don't force constants into registers.
