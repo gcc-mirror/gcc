@@ -85,7 +85,7 @@ proc test_libio { srcfile compile_args inpfile resultfile exec_args } {
     }
 
     if [info exists TOOL_OPTIONS] {
-	lappend args "additional_options=$TOOL_OPTIONS"
+	lappend args "additional_flags=$TOOL_OPTIONS"
     }
 
     set gp [get_multilibs];
