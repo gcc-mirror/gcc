@@ -1,3 +1,8 @@
+2004-09-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/15498
+	* doc/invoke.texi (Environment Variables): Correct example locale.
+
 2004-09-14  Daniel Jacobowitz  <dan@debian.org>
 
 	* reload.c (find_reloads): Swap operand_loc pointers for
