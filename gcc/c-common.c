@@ -396,7 +396,10 @@ decl_attributes (node, attributes, prefix_attributes)
 	  if (TREE_CODE (decl) == FUNCTION_DECL
 	      && TREE_CODE (type) == FUNCTION_TYPE
 	      && decl_function_context (decl) == 0)
-	    DECL_STATIC_CONSTRUCTOR (decl) = 1;
+	    {
+	      DECL_STATIC_CONSTRUCTOR (decl) = 1;
+	      TREE_USED (decl) = 1;
+	    }
 	  else
 	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
 	  break;
@@ -405,7 +408,10 @@ decl_attributes (node, attributes, prefix_attributes)
 	  if (TREE_CODE (decl) == FUNCTION_DECL
 	      && TREE_CODE (type) == FUNCTION_TYPE
 	      && decl_function_context (decl) == 0)
-	    DECL_STATIC_DESTRUCTOR (decl) = 1;
+	    {
+	      DECL_STATIC_DESTRUCTOR (decl) = 1;
+	      TREE_USED (decl) = 1;
+	    }
 	  else
 	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
 	  break;
