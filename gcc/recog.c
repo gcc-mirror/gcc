@@ -484,11 +484,19 @@ validate_replace_rtx_1 (loc, from, to, object)
 
 #ifdef HAVE_extzv
 	  if (code == ZERO_EXTRACT)
-	    wanted_mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
+	    {
+	      wanted_mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
+	      if (wanted_mode == VOIDmode)
+		wanted_mode = word_mode;
+	    }
 #endif
 #ifdef HAVE_extv
 	  if (code == SIGN_EXTRACT)
-	    wanted_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
+	    {
+	      wanted_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
+	      if (wanted_mode == VOIDmode)
+		wanted_mode = word_mode;
+	    }
 #endif
 
 	  /* If we have a narrower mode, we can do something.  */

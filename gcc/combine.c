@@ -5605,27 +5605,45 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 #ifdef HAVE_insv
   if (in_dest)
     {
-      wanted_inner_reg_mode = insn_operand_mode[(int) CODE_FOR_insv][0];
-      pos_mode = insn_operand_mode[(int) CODE_FOR_insv][2];
-      extraction_mode = insn_operand_mode[(int) CODE_FOR_insv][3];
+      wanted_inner_reg_mode
+	= (insn_operand_mode[(int) CODE_FOR_insv][0] == VOIDmode
+	   ? word_mode
+	   : insn_operand_mode[(int) CODE_FOR_insv][0]);
+      pos_mode = (insn_operand_mode[(int) CODE_FOR_insv][2] == VOIDmode
+		  ? word_mode : insn_operand_mode[(int) CODE_FOR_insv][2]);
+      extraction_mode = (insn_operand_mode[(int) CODE_FOR_insv][3] == VOIDmode
+			 ? word_mode
+			 : insn_operand_mode[(int) CODE_FOR_insv][3]);
     }
 #endif
 
 #ifdef HAVE_extzv
   if (! in_dest && unsignedp)
     {
-      wanted_inner_reg_mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
-      pos_mode = insn_operand_mode[(int) CODE_FOR_extzv][3];
-      extraction_mode = insn_operand_mode[(int) CODE_FOR_extzv][0];
+      wanted_inner_reg_mode
+	= (insn_operand_mode[(int) CODE_FOR_extzv][1] == VOIDmode
+	   ? word_mode
+	   : insn_operand_mode[(int) CODE_FOR_extzv][1]);
+      pos_mode = (insn_operand_mode[(int) CODE_FOR_extzv][3] == VOIDmode
+		  ? word_mode : insn_operand_mode[(int) CODE_FOR_extzv][3]);
+      extraction_mode = (insn_operand_mode[(int) CODE_FOR_extzv][0] == VOIDmode
+			 ? word_mode
+			 : insn_operand_mode[(int) CODE_FOR_extzv][0]);
     }
 #endif
 
 #ifdef HAVE_extv
   if (! in_dest && ! unsignedp)
     {
-      wanted_inner_reg_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
-      pos_mode = insn_operand_mode[(int) CODE_FOR_extv][3];
-      extraction_mode = insn_operand_mode[(int) CODE_FOR_extv][0];
+      wanted_inner_reg_mode
+	= (insn_operand_mode[(int) CODE_FOR_extv][1] == VOIDmode
+	   ? word_mode
+	   : insn_operand_mode[(int) CODE_FOR_extv][1]);
+      pos_mode = (insn_operand_mode[(int) CODE_FOR_extv][3] == VOIDmode
+		  ? word_mode : insn_operand_mode[(int) CODE_FOR_extv][3]);
+      extraction_mode = (insn_operand_mode[(int) CODE_FOR_extv][0] == VOIDmode
+			 ? word_mode
+			 : insn_operand_mode[(int) CODE_FOR_extv][0]);
     }
 #endif
 
@@ -9762,12 +9780,16 @@ simplify_comparison (code, pop0, pop1)
 	      && (i = exact_log2 (INTVAL (XEXP (op0, 0)))) >= 0)
 	    {
 	      if (BITS_BIG_ENDIAN)
+		{
 #ifdef HAVE_extzv
-		i = (GET_MODE_BITSIZE
-		     (insn_operand_mode[(int) CODE_FOR_extzv][1]) - 1 - i);
+		  mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
+		  if (mode == VOIDmode)
+		    mode = word_mode;
+		  i = (GET_MODE_BITSIZE (mode) - 1 - i);
 #else
-	        i = BITS_PER_WORD - 1 - i;
+	          i = BITS_PER_WORD - 1 - i;
 #endif
+		}
 
 	      op0 = XEXP (op0, 2);
 	      op1 = GEN_INT (i);
