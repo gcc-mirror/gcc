@@ -1,5 +1,7 @@
 Sat Dec 26 06:31:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* flow.c (print_rtl_with_bb): Write insns in epilogue delay list.
+
 	* combine.c (simplify_set): Update SET_SRC after force_to_mode call.
 	If HAVE_conditional_arithmetic, make conditional if comparison
 	operator is arg of arithmetic.
