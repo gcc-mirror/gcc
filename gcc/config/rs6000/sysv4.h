@@ -127,11 +127,6 @@ do {									\
 			(TARGET_AIX_CALLS)     ? ABI_AIX_NODESC :	\
 						 ABI_V4);		\
 									\
-  /* CYGNUS LOCAL -fcombine-statics vs. -msdata */			\
-  if (TARGET_SDATA)							\
-    flag_combine_statics = 0;						\
-  /* END CYGNUS LOCAL -fcombine-statics vs. -msdata */			\
-									\
   if (TARGET_RELOCATABLE && TARGET_SDATA)				\
     {									\
       target_flags &= ~MASK_SDATA;					\
