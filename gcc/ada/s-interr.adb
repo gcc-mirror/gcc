@@ -707,18 +707,18 @@ package body System.Interrupts is
 
    task body Interrupt_Manager is
 
-      ----------------------
-      --  Local Variables --
-      ----------------------
+      ---------------------
+      -- Local Variables --
+      ---------------------
 
       Intwait_Mask  : aliased IMNG.Interrupt_Mask;
       Ret_Interrupt : Interrupt_ID;
       Old_Mask      : aliased IMNG.Interrupt_Mask;
       Old_Handler   : Parameterless_Handler;
 
-      ---------------------
-      --  Local Routines --
-      ---------------------
+      --------------------
+      -- Local Routines --
+      --------------------
 
       procedure Bind_Handler (Interrupt : Interrupt_ID);
       --  This procedure does not do anything if the Interrupt is blocked.

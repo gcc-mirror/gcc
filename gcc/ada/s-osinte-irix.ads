@@ -452,11 +452,12 @@ package System.OS_Interface is
       destructor : destructor_pointer) return int;
    pragma Import (C, pthread_key_create, "pthread_key_create");
 
-   ---------------------------------------------------------------
-   --  Non portable SGI 6.5 additions to the pthread interface  --
-   --  must be executed from within the context of a system     --
-   --  scope task                                               --
-   ---------------------------------------------------------------
+   -------------------
+   -- SGI Additions --
+   -------------------
+
+   --  Non portable SGI 6.5 additions to the pthread interface must be
+   --  executed from within the context of a system scope task.
 
    function pthread_setrunon_np (cpu : int) return int;
    pragma Import (C, pthread_setrunon_np, "pthread_setrunon_np");

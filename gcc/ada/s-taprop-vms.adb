@@ -61,7 +61,7 @@ with System.Soft_Links;
 --  Note that we do not use System.Tasking.Initialization directly since
 --  this is a higher level package that we shouldn't depend on. For example
 --  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Initialization
+--  System.Tasking.Restricted.Stages.
 
 with System.OS_Primitives;
 --  used for Delay_Modes
@@ -81,9 +81,9 @@ package body System.Task_Primitives.Operations is
 
    package SSL renames System.Soft_Links;
 
-   ------------------
-   --  Local Data  --
-   ------------------
+   ----------------
+   -- Local Data --
+   ----------------
 
    --  The followings are logically constants, but need to be initialized
    --  at run time.
@@ -706,9 +706,9 @@ package body System.Task_Primitives.Operations is
       end if;
    end Register_Foreign_Thread;
 
-   ----------------------
-   --  Initialize_TCB  --
-   ----------------------
+   --------------------
+   -- Initialize_TCB --
+   --------------------
 
    procedure Initialize_TCB (Self_ID : Task_Id; Succeeded : out Boolean) is
       Mutex_Attr : aliased pthread_mutexattr_t;

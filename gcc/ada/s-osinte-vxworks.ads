@@ -197,13 +197,13 @@ package System.OS_Interface is
    function tickGet return ULONG;
    pragma Import (C, tickGet, "tickGet");
 
-   -----------------------------------------------------
-   --  Convenience routine to convert between VxWorks --
-   --  priority and Ada priority.                     --
-   -----------------------------------------------------
+   ----------------------
+   -- Utility Routines --
+   ----------------------
 
    function To_VxWorks_Priority (Priority : in int) return int;
    pragma Inline (To_VxWorks_Priority);
+   --  Convenience routine to convert between VxWorks priority and Ada priority
 
    --------------------------
    -- VxWorks specific API --

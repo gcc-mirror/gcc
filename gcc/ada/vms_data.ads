@@ -1893,11 +1893,9 @@ package VMS_Data is
    --                               construction of box comments, as shown in
    --                               the following example:
    --
-   --
-   --                           ---------------------------
-   --                           -- This is a box comment --
-   --                           -- with two text lines.  --
-   --                           ---------------------------
+   --                               ---------------------------
+   --                               -- This is a box comment --
+   --                               ---------------------------
    --
    --      END                  Check end/exit labels.
    --                           Optional labels on end statements ending

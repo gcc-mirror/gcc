@@ -5658,9 +5658,9 @@ package body Sem_Prag is
                Source_Location);
          end Eliminate;
 
-         --------------------------
-         --  Explicit_Overriding --
-         --------------------------
+         -------------------------
+         -- Explicit_Overriding --
+         -------------------------
 
          when Pragma_Explicit_Overriding =>
             Check_Valid_Configuration_Pragma;

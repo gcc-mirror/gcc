@@ -35,9 +35,9 @@ with Ada.Unchecked_Deallocation;
 
 package body System.HTable is
 
-   --------------------
-   --  Static_HTable --
-   --------------------
+   -------------------
+   -- Static_HTable --
+   -------------------
 
    package body Static_HTable is
 

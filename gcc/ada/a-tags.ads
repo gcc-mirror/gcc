@@ -55,9 +55,9 @@ package Ada.Tags is
 
 private
 
-   ----------------------------------------------------------------
-   --  Abstract procedural interface for the GNAT dispatch table --
-   ----------------------------------------------------------------
+   ---------------------------------------------------------------
+   -- Abstract Procedural Interface For The GNAT Dispatch Table --
+   ---------------------------------------------------------------
 
    --  GNAT's Dispatch Table format is customizable in order to match the
    --  format used in another langauge. GNAT supports programs that use

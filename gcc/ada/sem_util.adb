@@ -2656,12 +2656,17 @@ package body Sem_Util is
       if Nkind (Decl) = N_Subprogram_Body then
          return Decl;
 
+      --  The below comment is bad, because it is possible for
+      --  Nkind (Decl) to be an N_Subprogram_Body_Stub ???
+
       else           --  Nkind (Decl) = N_Subprogram_Declaration
 
          if Present (Corresponding_Body (Decl)) then
             return Unit_Declaration_Node (Corresponding_Body (Decl));
 
-         else        --  imported subprogram.
+         --  Imported subprogram case
+
+         else
             return Empty;
          end if;
       end if;
@@ -2675,6 +2680,55 @@ package body Sem_Util is
    begin
       return Task_Body_Procedure (Declaration_Node (Root_Type (E)));
    end Get_Task_Body_Procedure;
+
+   -----------------------
+   -- Has_Access_Values --
+   -----------------------
+
+   function Has_Access_Values (T : Entity_Id) return Boolean is
+      Typ : constant Entity_Id := Underlying_Type (T);
+
+   begin
+      --  Case of a private type which is not completed yet. This can only
+      --  happen in the case of a generic format type appearing directly, or
+      --  as a component of the type to which this function is being applied
+      --  at the top level. Return False in this case, since we certainly do
+      --  not know that the type contains access types.
+
+      if No (Typ) then
+         return False;
+
+      elsif Is_Access_Type (Typ) then
+         return True;
+
+      elsif Is_Array_Type (Typ) then
+         return Has_Access_Values (Component_Type (Typ));
+
+      elsif Is_Record_Type (Typ) then
+         declare
+            Comp : Entity_Id;
+
+         begin
+            Comp := First_Entity (Typ);
+            while Present (Comp) loop
+               if (Ekind (Comp) = E_Component
+                     or else
+                   Ekind (Comp) = E_Discriminant)
+                 and then Has_Access_Values (Etype (Comp))
+               then
+                  return True;
+               end if;
+
+               Next_Entity (Comp);
+            end loop;
+         end;
+
+         return False;
+
+      else
+         return False;
+      end if;
+   end Has_Access_Values;
 
    ----------------------
    -- Has_Declarations --
@@ -4654,9 +4708,9 @@ package body Sem_Util is
       procedure Kill_Current_Values_For_Entity_Chain (E : Entity_Id);
       --  Clear current value for entity E and all entities chained to E
 
-      -------------------------------------------
-      --  Kill_Current_Values_For_Entity_Chain --
-      -------------------------------------------
+      ------------------------------------------
+      -- Kill_Current_Values_For_Entity_Chain --
+      ------------------------------------------
 
       procedure Kill_Current_Values_For_Entity_Chain (E : Entity_Id) is
          Ent : Entity_Id;
@@ -4992,7 +5046,6 @@ package body Sem_Util is
       end if;
 
       Formal := First_Formal (S);
-
       while Present (Formal) loop
 
          --  Match the formals in order. If the corresponding actual
@@ -5094,7 +5147,6 @@ package body Sem_Util is
             Actual := First (Actuals);
 
             while Present (Actual) loop
-
                if Nkind (Actual) = N_Parameter_Association
                  and then Actual /= Last
                  and then No (Next_Named_Actual (Actual))
@@ -5669,10 +5721,12 @@ package body Sem_Util is
 
    --  A transient scope is required when variable-sized temporaries are
    --  allocated in the primary or secondary stack, or when finalization
-   --  actions must be generated before the next instruction
+   --  actions must be generated before the next instruction.
 
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean is
       Typ : constant Entity_Id := Underlying_Type (Id);
+
+   --  Start of processing for Requires_Transient_Scope
 
    begin
       --  This is a private type which is not completed yet. This can only
@@ -5682,23 +5736,22 @@ package body Sem_Util is
       if No (Typ) then
          return False;
 
+      --  Do not expand transient scope for non-existent procedure return
+
       elsif Typ = Standard_Void_Type then
          return False;
 
-      --  The back-end has trouble allocating variable-size temporaries so
-      --  we generate them in the front-end and need a transient scope to
-      --  reclaim them properly
+      --  Elementary types do not require a transient scope
 
-      elsif not Size_Known_At_Compile_Time (Typ) then
-         return True;
+      elsif Is_Elementary_Type (Typ) then
+         return False;
 
-      --  Unconstrained discriminated records always require a variable
-      --  length temporary, since the length may depend on the variant.
+      --  Generally, indefinite subtypes require a transient scope, since the
+      --  back end cannot generate temporaries, since this is not a valid type
+      --  for declaring an object. It might be possible to relax this in the
+      --  future, e.g. by declaring the maximum possible space for the type.
 
-      elsif Is_Record_Type (Typ)
-        and then Has_Discriminants (Typ)
-        and then not Is_Constrained (Typ)
-      then
+      elsif Is_Indefinite_Subtype (Typ) then
          return True;
 
       --  Functions returning tagged types may dispatch on result so their
@@ -5710,13 +5763,53 @@ package body Sem_Util is
       then
          return True;
 
-      --  Unconstrained array types are returned on the secondary stack
+      --  Record type. OK if none of the component types requires a transient
+      --  scope. Note that we already know that this is a definite type (i.e.
+      --  has discriminant defaults if it is a discriminated record).
+
+      elsif Is_Record_Type (Typ) then
+         declare
+            Comp : Entity_Id;
+         begin
+            Comp := First_Entity (Typ);
+            while Present (Comp) loop
+               if Requires_Transient_Scope (Etype (Comp)) then
+                  return True;
+               else
+                  Next_Entity (Comp);
+               end if;
+            end loop;
+         end;
+
+         return False;
+
+      --  String literal types never require transient scope
+
+      elsif Ekind (Typ) = E_String_Literal_Subtype then
+         return False;
+
+      --  Array type. Note that we already know that this is a constrained
+      --  array, since unconstrained arrays will fail the indefinite test.
 
       elsif Is_Array_Type (Typ) then
-         return not Is_Constrained (Typ);
-      end if;
 
-      return False;
+         --  If component type requires a transient scope, the array does too
+
+         if Requires_Transient_Scope (Component_Type (Typ)) then
+            return True;
+
+         --  Otherwise, we only need a transient scope if the size is not
+         --  known at compile time.
+
+         else
+            return not Size_Known_At_Compile_Time (Typ);
+         end if;
+
+      --  All other cases do not require a transient scope
+
+      else
+         return False;
+      end if;
    end Requires_Transient_Scope;
 
    --------------------------
@@ -6573,7 +6666,7 @@ package body Sem_Util is
                  ("found function name, possibly missing Access attribute!",
                    Expr);
 
-         --  catch common error: a prefix or infix operator which is not
+         --  Catch common error: a prefix or infix operator which is not
          --  directly visible because the type isn't.
 
          elsif Nkind (Expr) in N_Op

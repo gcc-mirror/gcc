@@ -62,9 +62,9 @@ package body Ada.Numerics.Aux is
    pragma Inline (Is_Nan);
    pragma Inline (Reduce);
 
-   ---------------------------------
-   --  Basic Elementary Functions --
-   ---------------------------------
+   --------------------------------
+   -- Basic Elementary Functions --
+   --------------------------------
 
    --  This section implements a few elementary functions that are used to
    --  build the more complex ones. This ordering enables better inlining.

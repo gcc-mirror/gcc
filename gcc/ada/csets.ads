@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,9 +51,9 @@ pragma Elaborate_Body (Csets);
    --  do NOT pack this table, since we don't want the extra overhead of
    --  accessing a packed bit string.
 
-   -----------------------------------------------
-   --  Character Tables For Current Compilation --
-   -----------------------------------------------
+   ----------------------------------------------
+   -- Character Tables For Current Compilation --
+   ----------------------------------------------
 
    procedure Initialize;
    --  Routine to initialize following character tables, whose content depends

@@ -1110,8 +1110,10 @@ package body Sem_Ch13 is
                            and then
                         Size /= System_Storage_Unit * 8
                      then
+                        Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
                         Error_Msg_N
-                          ("size for primitive object must be power of 2", N);
+                          ("size for primitive object must be a power of 2"
+                            & " and at least ^", N);
                      end if;
                   end if;
 

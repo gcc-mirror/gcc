@@ -147,9 +147,9 @@ procedure Gnatmem is
    Tmp_Alloc   : Allocation;
    Quiet_Mode  : Boolean := False;
 
-   -------------------------------
-   --  Allocation roots sorting --
-   -------------------------------
+   ------------------------------
+   -- Allocation Roots Sorting --
+   ------------------------------
 
    Sort_Order : String (1 .. 3) := "nwh";
    --  This is the default order in which sorting criteria will be applied

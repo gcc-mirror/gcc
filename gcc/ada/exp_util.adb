@@ -327,9 +327,9 @@ package body Exp_Util is
       end if;
    end Build_Runtime_Call;
 
-   -----------------------------
-   --  Build_Task_Array_Image --
-   -----------------------------
+   ----------------------------
+   -- Build_Task_Array_Image --
+   ----------------------------
 
    --  This function generates the body for a function that constructs the
    --  image string for a task that is an array component. The function is

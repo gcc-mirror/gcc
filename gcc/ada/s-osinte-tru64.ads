@@ -285,9 +285,9 @@ package System.OS_Interface is
    pragma Inline (pthread_init);
    --  This is a dummy procedure to share some GNULLI files
 
-   ---------------------------
-   --  POSIX.1c  Section 3  --
-   ---------------------------
+   -------------------------
+   -- POSIX.1c  Section 3 --
+   -------------------------
 
    function sigwait
      (set : access sigset_t;
@@ -307,9 +307,9 @@ package System.OS_Interface is
       oset : sigset_t_ptr) return int;
    pragma Import (C, pthread_sigmask);
 
-   ----------------------------
-   --  POSIX.1c  Section 11  --
-   ----------------------------
+   --------------------------
+   -- POSIX.1c  Section 11 --
+   --------------------------
 
    function pthread_mutexattr_init (attr : access pthread_mutexattr_t)
      return int;
@@ -363,9 +363,9 @@ package System.OS_Interface is
       abstime : access timespec) return int;
    pragma Import (C, pthread_cond_timedwait, "__pthread_cond_timedwait");
 
-   ----------------------------
-   --  POSIX.1c  Section 13  --
-   ----------------------------
+   --------------------------
+   -- POSIX.1c  Section 13 --
+   --------------------------
 
    function pthread_mutexattr_setprotocol
      (attr     : access pthread_mutexattr_t;
@@ -410,9 +410,9 @@ package System.OS_Interface is
    function sched_yield return int;
    pragma Import (C, sched_yield);
 
-   ---------------------------
-   -- P1003.1c - Section 16 --
-   ---------------------------
+   --------------------------
+   -- P1003.1c  Section 16 --
+   --------------------------
 
    function pthread_attr_init (attributes : access pthread_attr_t)
      return int;

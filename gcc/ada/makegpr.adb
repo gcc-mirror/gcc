@@ -212,6 +212,15 @@ package body Makegpr is
       Hash       => Hash,
       Equal      => "=");
 
+   package X_Switches is new Table.Table
+     (Table_Component_Type => String_Access,
+      Table_Index_Type     => Integer,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 2,
+      Table_Increment      => 100,
+      Table_Name           => "Makegpr.X_Switches");
+   --  Table to store the -X switches to be passed to gnatmake
+
    Initial_Argument_Count : constant Positive := 20;
    type Boolean_Array is array (Positive range <>) of Boolean;
    type Booleans is access Boolean_Array;
@@ -304,6 +313,10 @@ package body Makegpr is
 
    Need_To_Relink : Boolean := False;
    --  True when an executable of a language other than Ada need to be linked
+
+   Global_Archive_Exists : Boolean := False;
+   --  True if there is a non empty global archive, to prevent creation
+   --  of such archives.
 
    Path_Option : String_Access;
    --  The path option switch, when supported
@@ -567,9 +580,9 @@ package body Makegpr is
                end if;
 
             --  For a non-library project, the only archive needed
-            --  is the one for the main project.
+            --  is the one for the main project, if there is one.
 
-            elsif Project = Main_Project then
+            elsif Project = Main_Project and then Global_Archive_Exists then
                Add_Argument
                  (Get_Name_String (Data.Object_Directory) &
                   Directory_Separator &
@@ -1157,11 +1170,6 @@ package body Makegpr is
       --  Archive needs to be rebuilt
 
       else
-         --  If the archive is built, then linking will need to occur
-         --  unconditionally.
-
-         Need_To_Relink := True;
-
          --  If archive already exists, first delete it
 
          --  Comment needed on why we discard result???
@@ -1208,86 +1216,100 @@ package body Makegpr is
             end if;
          end loop;
 
-         --  Spawn the archive builder (ar)
+         --  No need to create a global archive, if there is no object
+         --  file to put into.
 
-         Saved_Last_Argument := Last_Argument;
+         Global_Archive_Exists := Last_Argument > First_Object;
 
-         Last_Argument := First_Object + Max_In_Archives;
+         if Global_Archive_Exists then
+            --  If the archive is built, then linking will need to occur
+            --  unconditionally.
 
-         loop
-            if Last_Argument > Saved_Last_Argument then
-               Last_Argument := Saved_Last_Argument;
-            end if;
+            Need_To_Relink := True;
 
-            Display_Command (Archive_Builder, Archive_Builder_Path);
+            --  Spawn the archive builder (ar)
 
-            Spawn
-              (Archive_Builder_Path.all,
-               Arguments (1 .. Last_Argument),
-               Success);
+            Saved_Last_Argument := Last_Argument;
 
-            exit when not Success;
+            Last_Argument := First_Object + Max_In_Archives;
 
-            exit when Last_Argument = Saved_Last_Argument;
+            loop
+               if Last_Argument > Saved_Last_Argument then
+                  Last_Argument := Saved_Last_Argument;
+               end if;
 
-            Arguments (1) := r;
-            Arguments (3 .. Saved_Last_Argument - Last_Argument + 2) :=
-              Arguments (Last_Argument + 1 .. Saved_Last_Argument);
-            Saved_Last_Argument := Saved_Last_Argument - Last_Argument + 2;
-         end loop;
+               Display_Command (Archive_Builder, Archive_Builder_Path);
 
-         --  If the archive was built, run the archive indexer (ranlib)
-         --  if there is one.
+               Spawn
+                 (Archive_Builder_Path.all,
+                  Arguments (1 .. Last_Argument),
+                  Success);
 
-         if Success then
+               exit when not Success;
 
-            --  If the archive was built, run the archive indexer (ranlib),
+               exit when Last_Argument = Saved_Last_Argument;
+
+               Arguments (1) := r;
+               Arguments (3 .. Saved_Last_Argument - Last_Argument + 2) :=
+                 Arguments (Last_Argument + 1 .. Saved_Last_Argument);
+               Saved_Last_Argument := Saved_Last_Argument - Last_Argument + 2;
+            end loop;
+
+            --  If the archive was built, run the archive indexer (ranlib)
             --  if there is one.
 
-            if Archive_Indexer_Path /= null then
-               Last_Argument := 0;
-               Add_Argument (Archive_Name, True);
+            if Success then
 
-               Display_Command (Archive_Indexer, Archive_Indexer_Path);
+               --  If the archive was built, run the archive indexer (ranlib),
+               --  if there is one.
 
-               Spawn (Archive_Indexer_Path.all, Arguments (1 .. 1), Success);
+               if Archive_Indexer_Path /= null then
+                  Last_Argument := 0;
+                  Add_Argument (Archive_Name, True);
 
-               if not Success then
+                  Display_Command (Archive_Indexer, Archive_Indexer_Path);
 
-                  --  Running ranlib failed, delete the dependency file,
-                  --  if it exists.
+                  Spawn
+                    (Archive_Indexer_Path.all, Arguments (1 .. 1), Success);
 
-                  if Is_Regular_File (Archive_Dep_Name) then
-                     Delete_File (Archive_Dep_Name, Success);
+                  if not Success then
+
+                     --  Running ranlib failed, delete the dependency file,
+                     --  if it exists.
+
+                     if Is_Regular_File (Archive_Dep_Name) then
+                        Delete_File (Archive_Dep_Name, Success);
+                     end if;
+
+                     --  And report the error
+
+                     Report_Error
+                       ("running" & Archive_Indexer & " for project """,
+                        Get_Name_String (Data.Name),
+                        """ failed");
+                     return;
                   end if;
-
-                  --  And report the error
-
-                  Report_Error
-                    ("running" & Archive_Indexer & " for project """,
-                     Get_Name_String (Data.Name),
-                     """ failed");
-                  return;
                end if;
+
+               --  The archive was correctly built, create its dependency file
+
+               Create_Global_Archive_Dependency_File (Archive_Dep_Name);
+
+            --  Building the archive failed, delete dependency file if one
+            --  exists.
+
+            else
+               if Is_Regular_File (Archive_Dep_Name) then
+                  Delete_File (Archive_Dep_Name, Success);
+               end if;
+
+               --  And report the error
+
+               Report_Error
+                 ("building archive for project """,
+                  Get_Name_String (Data.Name),
+                  """ failed");
             end if;
-
-            --  The archive was correctly built, create its dependency file
-
-            Create_Global_Archive_Dependency_File (Archive_Dep_Name);
-
-         --  Building the archive failed, delete dependency file if one exists
-
-         else
-            if Is_Regular_File (Archive_Dep_Name) then
-               Delete_File (Archive_Dep_Name, Success);
-            end if;
-
-            --  And report the error
-
-            Report_Error
-              ("building archive for project """,
-               Get_Name_String (Data.Name),
-               """ failed");
          end if;
       end if;
    end Build_Global_Archive;
@@ -2316,6 +2338,12 @@ package body Makegpr is
       Add_Argument (Dash_P, True);
       Add_Argument (Get_Name_String (Data.Path_Name), True);
 
+      --  Add the -X switches, if any
+
+      for Index in 1 .. X_Switches.Last loop
+         Add_Argument (X_Switches.Table (Index), True);
+      end loop;
+
       --  If Mains_Specified is True, find the mains in package Mains
 
       if Mains_Specified then
@@ -3007,6 +3035,10 @@ package body Makegpr is
       Name_Len := 0;
       Add_Str_To_Name_Buffer ("compiler_command");
       Name_Compiler_Command := Name_Find;
+
+      --  Make sure the -X switch table is empty
+
+      X_Switches.Set_Last (0);
 
       --  Get the command line arguments
 
@@ -3807,7 +3839,7 @@ package body Makegpr is
          Osint.Fail
            ("switch -o not allowed within a -largs. Use -o directly.");
 
-      --  If current processor is not gprmake dirrectly, store the option in
+      --  If current processor is not gprmake directly, store the option in
       --  the appropriate table.
 
       elsif Current_Processor /= None then
@@ -3877,7 +3909,11 @@ package body Makegpr is
          then
             --  Is_External_Assignment has side effects when it returns True
 
-            null;
+            --  Record the -X switch, so that they can be passed to gnatmake,
+            --  if gnatmake is called.
+
+            X_Switches.Increment_Last;
+            X_Switches.Table (X_Switches.Last) := new String'(Arg);
 
          else
             Osint.Fail ("illegal option """, Arg, """");

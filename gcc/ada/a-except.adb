@@ -122,9 +122,9 @@ package body Ada.Exceptions is
 
    package Exception_Data is
 
-      ----------------------------------
-      --  Exception messages routines --
-      ----------------------------------
+      ---------------------------------
+      -- Exception messages routines --
+      ---------------------------------
 
       procedure Set_Exception_C_Msg
         (Id   : Exception_Id;

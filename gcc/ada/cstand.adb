@@ -145,7 +145,7 @@ package body CStand is
       Set_Ekind                      (E, E_Floating_Point_Type);
       Set_Etype                      (E, E);
       Init_Size                      (E, Siz);
-      Set_Prim_Alignment             (E);
+      Set_Elem_Alignment             (E);
       Init_Digits_Value              (E, Digs);
       Set_Float_Bounds               (E);
       Set_Is_Frozen                  (E);
@@ -171,7 +171,7 @@ package body CStand is
       Set_Ekind                      (E, E_Signed_Integer_Type);
       Set_Etype                      (E, E);
       Init_Size                      (E, Siz);
-      Set_Prim_Alignment             (E);
+      Set_Elem_Alignment             (E);
       Set_Integer_Bounds             (E, E, Lbound, Ubound);
       Set_Is_Frozen                  (E);
       Set_Is_Public                  (E);
@@ -358,7 +358,7 @@ package body CStand is
       Set_Etype          (Standard_Boolean, Standard_Boolean);
       Init_Esize         (Standard_Boolean, Standard_Character_Size);
       Init_RM_Size       (Standard_Boolean, 1);
-      Set_Prim_Alignment (Standard_Boolean);
+      Set_Elem_Alignment (Standard_Boolean);
 
       Set_Is_Unsigned_Type           (Standard_Boolean);
       Set_Size_Known_At_Compile_Time (Standard_Boolean);
@@ -480,7 +480,7 @@ package body CStand is
       Set_Etype          (Standard_Character, Standard_Character);
       Init_Esize         (Standard_Character, Standard_Character_Size);
       Init_RM_Size       (Standard_Character, 8);
-      Set_Prim_Alignment (Standard_Character);
+      Set_Elem_Alignment (Standard_Character);
 
       Set_Is_Unsigned_Type           (Standard_Character);
       Set_Is_Character_Type          (Standard_Character);
@@ -526,7 +526,7 @@ package body CStand is
       Set_Etype      (Standard_Wide_Character, Standard_Wide_Character);
       Init_Size      (Standard_Wide_Character, Standard_Wide_Character_Size);
 
-      Set_Prim_Alignment             (Standard_Wide_Character);
+      Set_Elem_Alignment             (Standard_Wide_Character);
       Set_Is_Unsigned_Type           (Standard_Wide_Character);
       Set_Is_Character_Type          (Standard_Wide_Character);
       Set_Is_Known_Valid             (Standard_Wide_Character);
@@ -636,7 +636,7 @@ package body CStand is
       Set_Etype          (Standard_Natural, Base_Type (Standard_Integer));
       Init_Esize         (Standard_Natural, Standard_Integer_Size);
       Init_RM_Size       (Standard_Natural, Standard_Integer_Size - 1);
-      Set_Prim_Alignment (Standard_Natural);
+      Set_Elem_Alignment (Standard_Natural);
       Set_Size_Known_At_Compile_Time
                          (Standard_Natural);
       Set_Integer_Bounds (Standard_Natural,
@@ -659,7 +659,7 @@ package body CStand is
       Set_Etype          (Standard_Positive, Base_Type (Standard_Integer));
       Init_Esize         (Standard_Positive, Standard_Integer_Size);
       Init_RM_Size       (Standard_Positive, Standard_Integer_Size - 1);
-      Set_Prim_Alignment (Standard_Positive);
+      Set_Elem_Alignment (Standard_Positive);
 
       Set_Size_Known_At_Compile_Time (Standard_Positive);
 
@@ -777,7 +777,7 @@ package body CStand is
       Set_Scope          (Standard_A_Char, Standard_Standard);
       Set_Etype          (Standard_A_Char, Standard_A_String);
       Init_Size          (Standard_A_Char, System_Address_Size);
-      Set_Prim_Alignment (Standard_A_Char);
+      Set_Elem_Alignment (Standard_A_Char);
 
       Set_Directly_Designated_Type (Standard_A_Char, Standard_Character);
       Make_Name     (Standard_A_Char, "access_character");
@@ -811,7 +811,7 @@ package body CStand is
       Set_Scope             (Any_Access, Standard_Standard);
       Set_Etype             (Any_Access, Any_Access);
       Init_Size             (Any_Access, System_Address_Size);
-      Set_Prim_Alignment    (Any_Access);
+      Set_Elem_Alignment    (Any_Access);
       Make_Name             (Any_Access, "an access type");
 
       Any_Character := New_Standard_Entity;
@@ -822,7 +822,7 @@ package body CStand is
       Set_Is_Character_Type (Any_Character);
       Init_Esize            (Any_Character, Standard_Character_Size);
       Init_RM_Size          (Any_Character, 8);
-      Set_Prim_Alignment    (Any_Character);
+      Set_Elem_Alignment    (Any_Character);
       Set_Scalar_Range      (Any_Character, Scalar_Range (Standard_Character));
       Make_Name             (Any_Character, "a character type");
 
@@ -840,7 +840,7 @@ package body CStand is
       Set_Etype             (Any_Boolean, Standard_Boolean);
       Init_Esize            (Any_Boolean, Standard_Character_Size);
       Init_RM_Size          (Any_Boolean, 1);
-      Set_Prim_Alignment    (Any_Boolean);
+      Set_Elem_Alignment    (Any_Boolean);
       Set_Is_Unsigned_Type  (Any_Boolean);
       Set_Scalar_Range      (Any_Boolean, Scalar_Range (Standard_Boolean));
       Make_Name             (Any_Boolean, "a boolean type");
@@ -859,7 +859,7 @@ package body CStand is
       Set_Scope             (Any_Discrete, Standard_Standard);
       Set_Etype             (Any_Discrete, Any_Discrete);
       Init_Size             (Any_Discrete, Standard_Integer_Size);
-      Set_Prim_Alignment    (Any_Discrete);
+      Set_Elem_Alignment    (Any_Discrete);
       Make_Name             (Any_Discrete, "a discrete type");
 
       Any_Fixed := New_Standard_Entity;
@@ -867,7 +867,7 @@ package body CStand is
       Set_Scope             (Any_Fixed, Standard_Standard);
       Set_Etype             (Any_Fixed, Any_Fixed);
       Init_Size             (Any_Fixed, Standard_Integer_Size);
-      Set_Prim_Alignment    (Any_Fixed);
+      Set_Elem_Alignment    (Any_Fixed);
       Make_Name             (Any_Fixed, "a fixed-point type");
 
       Any_Integer := New_Standard_Entity;
@@ -875,7 +875,7 @@ package body CStand is
       Set_Scope             (Any_Integer, Standard_Standard);
       Set_Etype             (Any_Integer, Standard_Long_Long_Integer);
       Init_Size             (Any_Integer, Standard_Long_Long_Integer_Size);
-      Set_Prim_Alignment    (Any_Integer);
+      Set_Elem_Alignment    (Any_Integer);
 
       Set_Integer_Bounds
         (Any_Integer,
@@ -889,7 +889,7 @@ package body CStand is
       Set_Scope             (Any_Modular, Standard_Standard);
       Set_Etype             (Any_Modular, Standard_Long_Long_Integer);
       Init_Size             (Any_Modular, Standard_Long_Long_Integer_Size);
-      Set_Prim_Alignment    (Any_Modular);
+      Set_Elem_Alignment    (Any_Modular);
       Set_Is_Unsigned_Type  (Any_Modular);
       Make_Name             (Any_Modular, "a modular type");
 
@@ -898,7 +898,7 @@ package body CStand is
       Set_Scope             (Any_Numeric, Standard_Standard);
       Set_Etype             (Any_Numeric, Standard_Long_Long_Integer);
       Init_Size             (Any_Numeric, Standard_Long_Long_Integer_Size);
-      Set_Prim_Alignment    (Any_Numeric);
+      Set_Elem_Alignment    (Any_Numeric);
       Make_Name             (Any_Numeric, "a numeric type");
 
       Any_Real := New_Standard_Entity;
@@ -906,7 +906,7 @@ package body CStand is
       Set_Scope             (Any_Real, Standard_Standard);
       Set_Etype             (Any_Real, Standard_Long_Long_Float);
       Init_Size             (Any_Real, Standard_Long_Long_Float_Size);
-      Set_Prim_Alignment    (Any_Real);
+      Set_Elem_Alignment    (Any_Real);
       Make_Name             (Any_Real, "a real type");
 
       Any_Scalar := New_Standard_Entity;
@@ -914,7 +914,7 @@ package body CStand is
       Set_Scope             (Any_Scalar, Standard_Standard);
       Set_Etype             (Any_Scalar, Any_Scalar);
       Init_Size             (Any_Scalar, Standard_Integer_Size);
-      Set_Prim_Alignment    (Any_Scalar);
+      Set_Elem_Alignment    (Any_Scalar);
       Make_Name             (Any_Scalar, "a scalar type");
 
       Any_String := New_Standard_Entity;
@@ -974,7 +974,7 @@ package body CStand is
       Set_Scope             (Standard_Unsigned, Standard_Standard);
       Set_Etype             (Standard_Unsigned, Standard_Unsigned);
       Init_Size             (Standard_Unsigned, Standard_Integer_Size);
-      Set_Prim_Alignment    (Standard_Unsigned);
+      Set_Elem_Alignment    (Standard_Unsigned);
       Set_Modulus           (Standard_Unsigned,
                               Uint_2 ** Standard_Integer_Size);
       Set_Is_Unsigned_Type  (Standard_Unsigned);
@@ -1023,7 +1023,7 @@ package body CStand is
       Set_Etype            (Universal_Fixed, Universal_Fixed);
       Set_Scope            (Universal_Fixed, Standard_Standard);
       Init_Size            (Universal_Fixed, Standard_Long_Long_Integer_Size);
-      Set_Prim_Alignment   (Universal_Fixed);
+      Set_Elem_Alignment   (Universal_Fixed);
       Set_Size_Known_At_Compile_Time
                            (Universal_Fixed);
 
@@ -1073,7 +1073,7 @@ package body CStand is
             Init_Size (Standard_Duration, 64);
          end if;
 
-         Set_Prim_Alignment (Standard_Duration);
+         Set_Elem_Alignment (Standard_Duration);
          Set_Delta_Value    (Standard_Duration, Delta_Val);
          Set_Small_Value    (Standard_Duration, Delta_Val);
          Set_Scalar_Range   (Standard_Duration,

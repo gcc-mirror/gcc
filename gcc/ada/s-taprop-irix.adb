@@ -75,7 +75,7 @@ with System.Soft_Links;
 --  Note that we do not use System.Tasking.Initialization directly since
 --  this is a higher level package that we shouldn't depend on. For example
 --  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Initialization
+--  System.Tasking.Restricted.Stages.
 
 with System.Program_Info;
 --  used for Default_Task_Stack
@@ -104,9 +104,9 @@ package body System.Task_Primitives.Operations is
 
    package SSL renames System.Soft_Links;
 
-   ------------------
-   --  Local Data  --
-   ------------------
+   ----------------
+   -- Local Data --
+   ----------------
 
    --  The followings are logically constants, but need to be initialized
    --  at run time.
@@ -120,7 +120,7 @@ package body System.Task_Primitives.Operations is
    --  Key used to find the Ada Task_Id associated with a thread
 
    Environment_Task_Id : Task_Id;
-   --  A variable to hold Task_Id for the environment task.
+   --  A variable to hold Task_Id for the environment task
 
    Locking_Policy : Character;
    pragma Import (C, Locking_Policy, "__gl_locking_policy");
@@ -130,7 +130,7 @@ package body System.Task_Primitives.Operations is
    Unblocked_Signal_Mask : aliased sigset_t;
 
    Foreign_Task_Elaborated : aliased Boolean := True;
-   --  Used to identified fake tasks (i.e., non-Ada Threads).
+   --  Used to identified fake tasks (i.e., non-Ada Threads)
 
    --------------------
    -- Local Packages --
@@ -140,7 +140,7 @@ package body System.Task_Primitives.Operations is
 
       procedure Initialize (Environment_Task : Task_Id);
       pragma Inline (Initialize);
-      --  Initialize various data needed by this package.
+      --  Initialize various data needed by this package
 
       function Is_Valid_Task return Boolean;
       pragma Inline (Is_Valid_Task);
@@ -148,23 +148,23 @@ package body System.Task_Primitives.Operations is
 
       procedure Set (Self_Id : Task_Id);
       pragma Inline (Set);
-      --  Set the self id for the current task.
+      --  Set the self id for the current task
 
       function Self return Task_Id;
       pragma Inline (Self);
-      --  Return a pointer to the Ada Task Control Block of the calling task.
+      --  Return a pointer to the Ada Task Control Block of the calling task
 
    end Specific;
 
    package body Specific is separate;
-   --  The body of this package is target specific.
+   --  The body of this package is target specific
 
    ---------------------------------
    -- Support for foreign threads --
    ---------------------------------
 
    function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id;
-   --  Allocate and Initialize a new ATCB for the current Thread.
+   --  Allocate and Initialize a new ATCB for the current Thread
 
    function Register_Foreign_Thread
      (Thread : Thread_Id) return Task_Id is separate;
@@ -176,7 +176,7 @@ package body System.Task_Primitives.Operations is
    function To_Address is new Unchecked_Conversion (Task_Id, System.Address);
 
    procedure Abort_Handler (Sig : Signal);
-   --  Signal handler used to implement asynchronous abort.
+   --  Signal handler used to implement asynchronous abort
 
    -------------------
    -- Abort_Handler --
@@ -440,7 +440,7 @@ package body System.Task_Primitives.Operations is
            (Self_ID.Common.LL.CV'Access, Self_ID.Common.LL.L'Access);
       end if;
 
-      --  EINTR is not considered a failure.
+      --  EINTR is not considered a failure
 
       pragma Assert (Result = 0 or else Result = EINTR);
    end Sleep;
@@ -506,9 +506,8 @@ package body System.Task_Primitives.Operations is
    -- Timed_Delay --
    -----------------
 
-   --  This is for use in implementing delay statements, so
-   --  we assume the caller is abort-deferred but is holding
-   --  no locks.
+   --  This is for use in implementing delay statements, so we assume
+   --  the caller is abort-deferred but is holding no locks.
 
    procedure Timed_Delay
      (Self_ID : Task_Id;
@@ -521,9 +520,9 @@ package body System.Task_Primitives.Operations is
       Result     : Interfaces.C.int;
 
    begin
-      --  Only the little window between deferring abort and
-      --  locking Self_ID is the reason we need to
-      --  check for pending abort and priority change below! :(
+      --  The little window between deferring abort and locking Self_ID is
+      --  the only reason we need to check for pending abort and priority
+      --  change below!
 
       SSL.Abort_Defer.all;
 
@@ -598,10 +597,11 @@ package body System.Task_Primitives.Operations is
       --  resolution of reading the clock. Even though this last value is
       --  only guaranteed to be 100 Hz, at least the Origin 200 appears to
       --  have a microsecond resolution or better.
+
       --  ??? We should figure out a method to return the right value on
       --  all SGI hardware.
 
-      return 0.000_001; --  Assume microsecond resolution of clock
+      return 0.000_001;
    end RT_Resolution;
 
    ------------
@@ -1121,8 +1121,9 @@ begin
       end loop;
 
       --  Pick the highest resolution Clock for Clock_Realtime
+
       --  ??? This code currently doesn't work (see c94007[ab] for example)
-      --
+
       --  if syssgi (SGI_CYCLECNTR_SIZE) = 64 then
       --     Real_Time_Clock_Id := CLOCK_SGI_CYCLE;
       --  else

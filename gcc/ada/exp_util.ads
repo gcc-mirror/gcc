@@ -320,7 +320,7 @@ package Exp_Util is
    --  Empty, then simply returns Cond1 (this allows the use of Empty to
    --  initialize a series of checks evolved by this routine, with a final
    --  result of Empty indicating that no checks were required). The Sloc
-   --  field of the constructed N_And_Then node is copied from Cond1.
+   --  field of the constructed N_Or_Else node is copied from Cond1.
 
    procedure Expand_Subtype_From_Expr
      (N             : Node_Id;

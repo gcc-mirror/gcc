@@ -74,7 +74,7 @@ with System.Soft_Links;
 --  Note that we do not use System.Tasking.Initialization directly since
 --  this is a higher level package that we shouldn't depend on. For example
 --  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Initialization
+--  System.Tasking.Restricted.Stages.
 
 with System.OS_Primitives;
 --  used for Delay_Modes
@@ -129,9 +129,9 @@ package body System.Task_Primitives.Operations is
    function To_Task_Id is new Unchecked_Conversion (System.Address, Task_Id);
    function To_Address is new Unchecked_Conversion (Task_Id, System.Address);
 
-   -------------------
-   --  Stack_Guard  --
-   -------------------
+   -----------------
+   -- Stack_Guard --
+   -----------------
 
    --  The underlying thread system sets a guard page at the
    --  bottom of a thread stack, so nothing is needed.
@@ -566,7 +566,6 @@ package body System.Task_Primitives.Operations is
       T.Common.Current_Priority := Prio;
       Result := pthread_setprio (T.Common.LL.Thread, Interfaces.C.int (Prio));
       pragma Assert (Result /= FUNC_ERR);
-
    end Set_Priority;
 
    ------------------
@@ -634,9 +633,9 @@ package body System.Task_Primitives.Operations is
       return null;
    end Register_Foreign_Thread;
 
-   ----------------------
-   --  Initialize_TCB  --
-   ----------------------
+   --------------------
+   -- Initialize_TCB --
+   --------------------
 
    procedure Initialize_TCB (Self_ID : Task_Id; Succeeded : out Boolean) is
       Result    : Interfaces.C.int;
@@ -942,7 +941,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result /= FUNC_ERR);
 
       if Result = FUNC_ERR then
-         raise Storage_Error;               --  Insufficient resources.
+         raise Storage_Error;               --  Insufficient resources
       end if;
    end Initialize_Athread_Library;
 

@@ -171,9 +171,9 @@ package body Sem_Warn is
       --  from another unit. This is true for entities in packages that are
       --  at the library level.
 
-      -----------------------
-      --  Missing_Subunits --
-      -----------------------
+      ----------------------
+      -- Missing_Subunits --
+      ----------------------
 
       function Missing_Subunits return Boolean is
          D : Node_Id;

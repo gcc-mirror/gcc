@@ -407,9 +407,9 @@ package System.OS_Interface is
      (newtype : int; oldtype : access int) return int;
    pragma Import (C, pthread_setcanceltype, "PTHREAD_SETCANCELTYPE");
 
-   ---------------------------
-   --  POSIX.1c  Section 3  --
-   ---------------------------
+   -------------------------
+   -- POSIX.1c  Section 3 --
+   -------------------------
 
    function pthread_lock_global_np return int;
    pragma Import (C, pthread_lock_global_np, "PTHREAD_LOCK_GLOBAL_NP");
@@ -417,9 +417,9 @@ package System.OS_Interface is
    function pthread_unlock_global_np return int;
    pragma Import (C, pthread_unlock_global_np, "PTHREAD_UNLOCK_GLOBAL_NP");
 
-   ----------------------------
-   --  POSIX.1c  Section 11  --
-   ----------------------------
+   --------------------------
+   -- POSIX.1c  Section 11 --
+   --------------------------
 
    function pthread_mutexattr_init
      (attr : access pthread_mutexattr_t) return int;
@@ -522,9 +522,9 @@ package System.OS_Interface is
 
    function sched_yield return int;
 
-   -----------------------------
-   --  P1003.1c - Section 16  --
-   -----------------------------
+   --------------------------
+   -- P1003.1c  Section 16 --
+   --------------------------
 
    function pthread_attr_init (attributes : access pthread_attr_t) return int;
    pragma Import (C, pthread_attr_init, "PTHREAD_ATTR_INIT");

@@ -30,7 +30,7 @@ with Csets;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl;
 with Namet;    use Namet;
-with Opt;
+with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;
 with Prj;      use Prj;
@@ -470,29 +470,32 @@ procedure GNATCmd is
       Success : Boolean;
 
    begin
-      if Project /= No_Project then
-         for Prj in 1 .. Projects.Last loop
-            if Projects.Table (Prj).Config_File_Temp then
-               if Opt.Verbose_Mode then
-                  Output.Write_Str ("Deleting temp configuration file """);
-                  Output.Write_Str (Get_Name_String
-                                      (Projects.Table (Prj).Config_File_Name));
-                  Output.Write_Line ("""");
+      if not Keep_Temporary_Files then
+         if Project /= No_Project then
+            for Prj in 1 .. Projects.Last loop
+               if Projects.Table (Prj).Config_File_Temp then
+                  if Verbose_Mode then
+                     Output.Write_Str ("Deleting temp configuration file """);
+                     Output.Write_Str
+                       (Get_Name_String
+                          (Projects.Table (Prj).Config_File_Name));
+                     Output.Write_Line ("""");
+                  end if;
+
+                  Delete_File
+                    (Name    => Get_Name_String
+                       (Projects.Table (Prj).Config_File_Name),
+                     Success => Success);
                end if;
+            end loop;
+         end if;
 
-               Delete_File
-                 (Name    => Get_Name_String
-                  (Projects.Table (Prj).Config_File_Name),
-                  Success => Success);
-            end if;
-         end loop;
-      end if;
+         --  If a temporary text file that contains a list of files for a tool
+         --  has been created, delete this temporary file.
 
-      --  If a temporary text file that contains a list of files for a tool
-      --  has been created, delete this temporary file.
-
-      if Temp_File_Name /= null then
-         Delete_File (Temp_File_Name.all, Success);
+         if Temp_File_Name /= null then
+            Delete_File (Temp_File_Name.all, Success);
+         end if;
       end if;
    end Delete_Temp_Config_Files;
 
@@ -919,7 +922,7 @@ procedure GNATCmd is
 
       for C in Command_List'Range loop
          if not Command_List (C).VMS_Only then
-            Put ("GNAT " & Command_List (C).Cname.all);
+            Put ("gnat " & To_Lower (Command_List (C).Cname.all));
             Set_Col (25);
             Put (Command_List (C).Unixcmd.all);
 
@@ -939,7 +942,7 @@ procedure GNATCmd is
       end loop;
 
       New_Line;
-      Put_Line ("Commands FIND, LIST, PRETTY, STUB, NETRIC and XREF accept " &
+      Put_Line ("Commands find, list, metric, pretty, stub and xref accept " &
                 "project file switches -vPx, -Pprj and -Xnam=val");
       New_Line;
    end Non_VMS_Usage;
@@ -966,6 +969,38 @@ begin
 
    VMS_Conv.Initialize;
 
+   --  Add the directory where the GNAT driver is invoked in front of the
+   --  path, if the GNAT driver is invoked with directory information.
+   --  Only do this if the platform is not VMS, where the notion of path
+   --  does not really exist.
+
+   if not OpenVMS then
+      declare
+         Command : constant String := Command_Name;
+
+      begin
+         for Index in reverse Command'Range loop
+            if Command (Index) = Directory_Separator then
+               declare
+                  Absolute_Dir : constant String :=
+                                   Normalize_Pathname
+                                     (Command (Command'First .. Index));
+
+                  PATH         : constant String :=
+                                   Absolute_Dir &
+                  Path_Separator &
+                  Getenv ("PATH").all;
+
+               begin
+                  Setenv ("PATH", PATH);
+               end;
+
+               exit;
+            end if;
+         end loop;
+      end;
+   end if;
+
    --  If on VMS, or if VMS emulation is on, convert VMS style /qualifiers,
    --  filenames and pathnames to Unix style.
 
@@ -982,10 +1017,23 @@ begin
          return;
       else
          begin
-            if Argument_Count > 1 and then Argument (1) = "-v" then
-               Opt.Verbose_Mode := True;
-               Command_Arg := 2;
-            end if;
+            loop
+               if Argument_Count > Command_Arg
+                 and then Argument (Command_Arg) = "-v"
+               then
+                  Verbose_Mode := True;
+                  Command_Arg := Command_Arg + 1;
+
+               elsif Argument_Count > Command_Arg
+                 and then Argument (Command_Arg) = "-dn"
+               then
+                  Keep_Temporary_Files := True;
+                  Command_Arg := Command_Arg + 1;
+
+               else
+                  exit;
+               end if;
+            end loop;
 
             The_Command := Real_Command_Type'Value (Argument (Command_Arg));
 
@@ -1623,7 +1671,7 @@ begin
             raise Normal_Exit;
          end if;
 
-         if Opt.Verbose_Mode then
+         if Verbose_Mode then
             Output.Write_Str (Exec_Path.all);
 
             for Arg in The_Args'Range loop

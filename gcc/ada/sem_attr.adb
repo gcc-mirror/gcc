@@ -250,7 +250,8 @@ package body Sem_Attr is
       --  two attribute expressions are present
 
       procedure Legal_Formal_Attribute;
-      --  Common processing for attributes Definite, and Has_Discriminants
+      --  Common processing for attributes Definite, Has_Access_Values,
+      --  and Has_Discriminants
 
       procedure Check_Integer_Type;
       --  Verify that prefix of attribute N is an integer type
@@ -2603,6 +2604,15 @@ package body Sem_Attr is
          Resolve (E1, P_Base_Type);
 
       -----------------------
+      -- Has_Access_Values --
+      -----------------------
+
+      when Attribute_Has_Access_Values =>
+         Check_Type;
+         Check_E0;
+         Set_Etype (N, Standard_Boolean);
+
+      -----------------------
       -- Has_Discriminants --
       -----------------------
 
@@ -4434,6 +4444,8 @@ package body Sem_Attr is
 
       elsif (Id = Attribute_Definite
                or else
+             Id = Attribute_Has_Access_Values
+               or else
              Id = Attribute_Has_Discriminants
                or else
              Id = Attribute_Type_Class
@@ -4541,10 +4553,13 @@ package body Sem_Attr is
       --  In addition Component_Size is possibly foldable, even though it
       --  can never be static.
 
-      --  Definite, Has_Discriminants, Type_Class and Unconstrained_Array are
-      --  again exceptions, because they apply as well to unconstrained types.
+      --  Definite, Has_Access_Values, Has_Discriminants, Type_Class, and
+      --  Unconstrained_Array are again exceptions, because they apply as
+      --  well to unconstrained types.
 
       elsif Id = Attribute_Definite
+              or else
+            Id = Attribute_Has_Access_Values
               or else
             Id = Attribute_Has_Discriminants
               or else
@@ -4946,6 +4961,15 @@ package body Sem_Attr is
       when Attribute_Fraction =>
          Fold_Ureal (N,
            Eval_Fat.Fraction (P_Root_Type, Expr_Value_R (E1)), Static);
+
+      -----------------------
+      -- Has_Access_Values --
+      -----------------------
+
+      when Attribute_Has_Access_Values =>
+         Rewrite (N, New_Occurrence_Of
+           (Boolean_Literals (Has_Access_Values (P_Root_Type)), Loc));
+         Analyze_And_Resolve (N, Standard_Boolean);
 
       -----------------------
       -- Has_Discriminants --

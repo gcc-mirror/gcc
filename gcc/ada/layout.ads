@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,10 +68,10 @@ package Layout is
    --  types, the RM_Size is simply set to zero. This routine also sets
    --  the Is_Constrained flag in Def_Id.
 
-   procedure Set_Prim_Alignment (E : Entity_Id);
-   --  The front end always sets alignments for primitive types by calling this
-   --  procedure. Note that we have to do this for discrete types (since the
-   --  Alignment attribute is static), so we might as well do it for all
-   --  scalar types, since the processing is the same.
+   procedure Set_Elem_Alignment (E : Entity_Id);
+   --  The front end always sets alignments for elementary types by calling
+   --  this procedure. Note that we have to do this for discrete types (since
+   --  the Alignment attribute is static), so we might as well do it for all
+   --  elementary types, since the processing is the same.
 
 end Layout;

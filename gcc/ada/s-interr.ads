@@ -122,25 +122,25 @@ package System.Interrupts is
      (Interrupt : Interrupt_ID)
      return       System.Address;
 
-   ---------------------------------
-   --  Interrupt entries services --
-   ---------------------------------
+   --------------------------------
+   -- Interrupt Entries Services --
+   --------------------------------
 
    --  Routines needed for Interrupt Entries
-   --  Attempt to bind an Entry to an Interrupt to which a Handler is
-   --  already attached will raise a Program_Error.
 
    procedure Bind_Interrupt_To_Entry
      (T       : System.Tasking.Task_Id;
       E       : System.Tasking.Task_Entry_Index;
       Int_Ref : System.Address);
+   --  Bind the given interrupt to the given entry. If the interrupt is
+   --  already bound to another entry, Program_Error will be raised.
 
    procedure Detach_Interrupt_Entries (T : System.Tasking.Task_Id);
    --  This procedure detaches all the Interrupt Entries bound to a task.
 
-   -------------------------------
-   --  POSIX.5 signals services --
-   -------------------------------
+   ------------------------------
+   -- POSIX.5 Signals Services --
+   ------------------------------
 
    --  Routines needed for POSIX dot5 POSIX_Signals
 
@@ -177,7 +177,7 @@ package System.Interrupts is
    --  This will make all the tasks in RTS blocked for the Interrupt.
 
    ----------------------
-   -- Protection types --
+   -- Protection Types --
    ----------------------
 
    --  Routines and types needed to implement Interrupt_Handler and

@@ -145,6 +145,7 @@ package body Snames is
      "target#" &
      "req#" &
      "obj_typecode#" &
+     "stub#" &
      "Oabs#" &
      "Oand#" &
      "Omod#" &
@@ -425,6 +426,7 @@ package body Snames is
      "first_bit#" &
      "fixed_value#" &
      "fore#" &
+     "has_access_values#" &
      "has_discriminants#" &
      "identity#" &
      "img#" &

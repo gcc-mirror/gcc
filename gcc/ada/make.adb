@@ -5626,7 +5626,7 @@ package body Make is
 
       Mains.Delete;
 
-      --  Add the directory where gnatmake is invoked in the front of the
+      --  Add the directory where gnatmake is invoked in front of the
       --  path, if gnatmake is invoked with directory information.
       --  Only do this if the platform is not VMS, where the notion of path
       --  does not really exist.

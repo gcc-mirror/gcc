@@ -8390,7 +8390,7 @@ Similarly, the size of type @code{Rec} is 40 bits
 (@code{Rec'Size} = @code{Rec'Value_Size} = 40), but
 the alignment is 4, so objects of this type will have
 their size increased to 64 bits so that it is a multiple
-of the alignment (in bits).  The reason for this decision, which is
+of the alignment (in bits).  This decision is
 in accordance with the specific Implementation Advice in RM 13.3(43):
 
 @quotation

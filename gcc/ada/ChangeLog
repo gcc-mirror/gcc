@@ -1,3 +1,131 @@
+2004-07-06  Vincent Celier  <celier@gnat.com>
+
+	* vms_conv.ads: Minor reformatting.
+	Alphabetical order for enumerated values of type Command_Type, to have
+	the command in alphabetical order for the usage.
+
+	* vms_conv.adb (Process_Argument): Set Keep_Temporary_Files to True for
+	the special qualifier /KEEP_TEMPORARY_FILES (minimum 6 characters).
+
+	* gnat_ugn.texi: Document new switch -dn for the GNAT driver.
+
+	* makegpr.adb (Global_Archive_Exists): New global Boolean variable
+	(Add_Archive_Path): Only add the global archive if there is one.
+	(Build_Global_Archive): Set Global_Archive_Exists depending if there is
+	or not any object file to put in the global archive, and don't build
+	a global archive if there is none.
+	(X_Switches): New table
+	(Compile_Link_With_Gnatmake): Pass to gnatmake the -X switches stored
+	in the X_Switches table, if any.
+	(Initialize): Make sure the X_Switches table is empty
+	(Scan_Arg): Record -X switches in table X_Switches
+
+	* opt.ads (Keep_Temporary_Files): New Boolean flag, defaulted to False.
+
+	* make.adb: Minor comment fix
+
+	* gnatname.adb (Gnatname): When not on VMS, and gnatname has been
+	invoked with directory information, add the directory in front of the
+	path.
+
+	* gnatchop.adb (Gnatchop): When not on VMS, and gnatchop has been
+	invoked with directory information, add the directory in front of the
+	path.
+
+	* gnatcmd.adb (Delete_Temp_Config_Files): Only delete temporary files
+	when Keep_Temporary_Files is False.
+	(GNATCmd): When not on VMS, and the GNAT driver has been invoked with
+	directory information, add the directory in front of the path.
+	When not on VMS, handle new switch -dn before the command to set
+	Keep_Temporary_Files to True.
+	(Non_VMS_Usage): Use lower case for the non VMS usage: this is valid
+	everywhere.
+
+	* gnatlink.adb (Gnatlink): When not on VMS, and gnatlink has been
+	invoked with directory information, add the directory in front of the
+	path.
+
+2004-07-06  Thomas Quinot  <quinot@act-europe.fr>
+
+	* snames.ads, snames.adb (Name_Stub): New name for the distributed
+	systems annex.
+
+	* rtsfind.ads: New RTE TC_Object, for DSA/PolyORB.
+	New RTEs RAS_Proxy_Type and RAS_Proxy_Type_Access, for DSA.
+
+	* g-socket.adb (To_Timeval): Fix incorrect conversion of
+	Selector_Duration to Timeval for the case of 0.0.
+
+	* exp_util.ads (Evolve_Or_Else): Fix overenthusiastic copy/paste of
+	documentation from Evolve_And_Then.
+
+2004-07-06  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* s-taprop-tru64.adb, s-taprop-os2.adb,
+	s-taprop-mingw.adb, s-taprop-posix.adb: Update comment.
+
+2004-07-06  Robert Dewar  <dewar@gnat.com>
+
+	* s-osinte-hpux.ads, s-osinte-freebsd.ads,
+	s-osinte-lynxos.ads, s-taprop-lynxos.adb, s-osinte-tru64.ads,
+	s-osinte-aix.ads, s-osinte-irix.ads, s-taprop-irix.adb,
+	s-interr-sigaction.adb, s-taprop-irix-athread.adb,
+	s-osinte-hpux-dce.adb, s-taprop-hpux-dce.adb,
+	s-taprop-linux.adb, s-taprop-dummy.adb, s-taprop-solaris.adb,
+	s-interr-vms.adb, s-osinte-vms.ads, s-taprop-vms.adb,
+	s-osinte-vxworks.ads, s-osprim-vxworks.adb, a-numaux-x86.adb,
+	a-except.adb, a-exexpr.adb, a-intsig.adb, a-tags.adb,
+	a-tags.ads, bindgen.ads, checks.adb, checks.adb,
+	csets.ads, einfo.ads, einfo.ads, elists.adb, exp_ch4.adb,
+	exp_ch7.adb, exp_dist.adb, exp_util.adb, freeze.adb,
+	g-dynhta.adb, gnatmem.adb, g-regexp.adb, inline.adb,
+	i-os2thr.ads, osint.adb, prj.adb, scng.adb, sem_cat.adb,
+	sem_ch10.adb, sem_ch12.adb, sem_ch4.adb, sem_ch7.adb,
+	sem_ch8.adb, sem_disp.adb, sem_prag.adb, sem_res.adb,
+	sem_type.adb, sem_type.ads, sem_warn.adb, s-ficobl.ads,
+	s-finimp.adb, s-htable.adb, sinfo.ads, sinput-l.ads,
+	s-interr.adb, s-interr.ads, sprint.adb, s-tarest.adb,
+	s-tasini.ads, s-taskin.ads, s-taskin.ads, uname.adb,
+	vms_data.ads: Minor reformatting,
+	Fix bad box comment format.
+
+	* gnat_rm.texi: Fix minor grammatical error
+
+	* sem_attr.adb, exp_attr.adb: New attribute Has_Access_Values
+
+	* sem_util.ads, sem_util.adb (Requires_Transient_Scope): Allow many
+	more cases of discriminated records to be recognized as not needing a
+	secondary stack.
+	(Has_Access_Values): New function.
+
+	* snames.h, snames.adb, snames.ads: New attribute Has_Access_Values
+
+	* cstand.adb, layout.ads, layout.adb, sem_ch13.ads: Change name
+	Set_Prim_Alignment to Set_Elem_Alignment (more accurate correspondence
+	with LRM terminology).
+	Change terminology in comments primitive type => elementary type.
+
+2004-07-06  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15602
+	* sem_ch7.adb (Unit_Requires_Body): For a generic package, the formal
+	parameters do not impose any requirements on the presence of a body.
+
+2004-07-06  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15593
+	* sem_ch12.adb (Analyze_Package_Instantiation): If the generic is not a
+	compilation unit and is in an open scope at the point of instantiation,
+	assume that a body may be present later.
+
+2004-07-06  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case 'Size):
+	Improve error message when specified size is not supported.
+
+	* sem_ch6.adb (Maybe_Primitive_Operation): A library-level subprogram
+	is never a primitive operation.
+
 2004-07-05  Andreas Schwab  <schwab@suse.de>
 
 	* ada-tree.h (TYPE_LEFT_JUSTIFIED_MODULAR_P): Use

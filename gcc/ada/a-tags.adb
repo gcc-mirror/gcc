@@ -221,9 +221,9 @@ package body Ada.Tags is
 
    end HTable_Subprograms;
 
-   --------------------
-   --  CW_Membership --
-   --------------------
+   -------------------
+   -- CW_Membership --
+   -------------------
 
    --  Canonical implementation of Classwide Membership corresponding to:
 

@@ -357,6 +357,10 @@ package Sem_Util is
    --  Task_Body_Procedure field from the corresponding task type
    --  declaration.
 
+   function Has_Access_Values (T : Entity_Id) return Boolean;
+   --  Returns true if type or subtype T is an access type, or has a
+   --  component (at any recursive level) that is an access type.
+
    function Has_Declarations (N : Node_Id) return Boolean;
    --  Determines if the node can have declarations
 

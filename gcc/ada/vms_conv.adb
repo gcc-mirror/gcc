@@ -26,6 +26,7 @@
 
 with Gnatvsn;
 with Hostparm;
+with Opt;
 with Osint; use Osint;
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
@@ -33,6 +34,15 @@ with Ada.Command_Line;        use Ada.Command_Line;
 with Ada.Text_IO;             use Ada.Text_IO;
 
 package body VMS_Conv is
+
+   Keep_Temps_Option : constant Item_Ptr :=
+                         new Item'
+                           (Id          => Id_Option,
+                            Name        =>
+                              new String'("/KEEP_TEMPORARY_FILES"),
+                            Next        => null,
+                            Command     => Undefined,
+                            Unix_String => null);
 
    Param_Count : Natural := 0;
    --  Number of parameter arguments so far
@@ -1288,13 +1298,21 @@ package body VMS_Conv is
                   raise Normal_Exit;
                end if;
 
-               --  Special handling for internal debugging switch /?
+            --  Special handling for internal debugging switch /?
 
             elsif Arg.all = "/?" then
                Display_Command := True;
                Output_File_Expected := False;
 
-               --  Copy -switch unchanged
+            --  Special handling of internal option /KEEP_TEMPORARY_FILES
+
+            elsif Arg'Length >= 7
+              and then Matching_Name
+                         (Arg.all, Keep_Temps_Option, True) /= null
+            then
+               Opt.Keep_Temporary_Files := True;
+
+            --  Copy -switch unchanged
 
             elsif Arg (Arg'First) = '-' then
                Place (' ');

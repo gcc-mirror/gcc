@@ -192,9 +192,9 @@ package body System.Interrupts is
 
    type Server_Task_Access is access Server_Task;
 
-   --------------------------------
-   --  Local Types and Variables --
-   --------------------------------
+   -------------------------------
+   -- Local Types and Variables --
+   -------------------------------
 
    type Entry_Assoc is record
       T : Task_Id;
@@ -406,8 +406,9 @@ package body System.Interrupts is
    -- Current_Handler --
    ---------------------
 
-   function Current_Handler (Interrupt : Interrupt_ID)
-     return Parameterless_Handler is
+   function Current_Handler
+     (Interrupt : Interrupt_ID) return Parameterless_Handler
+   is
    begin
       if Is_Reserved (Interrupt) then
          Raise_Exception (Program_Error'Identity, "Interrupt" &
@@ -626,9 +627,9 @@ package body System.Interrupts is
 
    task body Interrupt_Manager is
 
-      ---------------------
-      --  Local Routines --
-      ---------------------
+      --------------------
+      -- Local Routines --
+      --------------------
 
       procedure Unprotected_Exchange_Handler
         (Old_Handler : out Parameterless_Handler;
@@ -1079,8 +1080,7 @@ package body System.Interrupts is
    -------------------------------------
 
    function Has_Interrupt_Or_Attach_Handler
-     (Object : access Dynamic_Interrupt_Protection)
-      return   Boolean
+     (Object : access Dynamic_Interrupt_Protection) return Boolean
    is
       pragma Warnings (Off, Object);
 
@@ -1088,14 +1088,15 @@ package body System.Interrupts is
       return True;
    end Has_Interrupt_Or_Attach_Handler;
 
-   ----------------
-   --  Finalize  --
-   ----------------
+   --------------
+   -- Finalize --
+   --------------
 
    procedure Finalize (Object : in out Static_Interrupt_Protection) is
    begin
       --  ??? loop to be executed only when we're not doing library level
       --  finalization, since in this case all interrupt tasks are gone.
+
       if not Interrupt_Manager'Terminated then
          for N in reverse Object.Previous_Handlers'Range loop
             Interrupt_Manager.Attach_Handler
@@ -1115,8 +1116,7 @@ package body System.Interrupts is
    -------------------------------------
 
    function Has_Interrupt_Or_Attach_Handler
-     (Object : access Static_Interrupt_Protection)
-      return   Boolean
+     (Object : access Static_Interrupt_Protection) return Boolean
    is
       pragma Warnings (Off, Object);
    begin

@@ -538,14 +538,14 @@ package body Exp_Dist is
       end if;
    end Add_RACW_Features;
 
-   -------------------------------------------------
-   --  Add_RACW_Primitive_Declarations_And_Bodies --
-   -------------------------------------------------
+   ------------------------------------------------
+   -- Add_RACW_Primitive_Declarations_And_Bodies --
+   ------------------------------------------------
 
    procedure Add_RACW_Primitive_Declarations_And_Bodies
-     (Designated_Type : in Entity_Id;
-      Insertion_Node  : in Node_Id;
-      Decls           : in List_Id)
+     (Designated_Type : Entity_Id;
+      Insertion_Node  : Node_Id;
+      Decls           : List_Id)
    is
       --  Set sloc of generated declaration to be that of the
       --  insertion node, so the declarations are recognized as

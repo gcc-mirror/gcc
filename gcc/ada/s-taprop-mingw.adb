@@ -67,7 +67,7 @@ with System.Soft_Links;
 --  Note that we do not use System.Tasking.Initialization directly since
 --  this is a higher level package that we shouldn't depend on. For example
 --  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Initialization
+--  System.Tasking.Restricted.Stages.
 
 with System.OS_Primitives;
 --  used for Delay_Modes

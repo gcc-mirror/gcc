@@ -1847,9 +1847,9 @@ package body Sem_Ch4 is
       Operator_Check (N);
    end Analyze_Negation;
 
-   -------------------
-   --  Analyze_Null --
-   -------------------
+   ------------------
+   -- Analyze_Null --
+   ------------------
 
    procedure Analyze_Null (N : Node_Id) is
    begin
@@ -2134,9 +2134,9 @@ package body Sem_Ch4 is
       end if;
    end Analyze_One_Call;
 
-   ----------------------------
-   --  Analyze_Operator_Call --
-   ----------------------------
+   ---------------------------
+   -- Analyze_Operator_Call --
+   ---------------------------
 
    procedure Analyze_Operator_Call (N : Node_Id; Op_Id : Entity_Id) is
       Op_Name : constant Name_Id := Chars (Op_Id);

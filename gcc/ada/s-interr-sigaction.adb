@@ -255,9 +255,9 @@ package body System.Interrupts is
       return True;
    end Has_Interrupt_Or_Attach_Handler;
 
-   ----------------
-   --  Finalize  --
-   ----------------
+   --------------
+   -- Finalize --
+   --------------
 
    procedure Finalize (Object : in out Static_Interrupt_Protection) is
    begin

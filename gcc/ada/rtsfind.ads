@@ -1012,6 +1012,8 @@ package Rtsfind is
      RE_Get_Unique_Remote_Pointer,       -- System.Partition_Interface
      RE_RACW_Stub_Type,                  -- System.Partition_Interface
      RE_RACW_Stub_Type_Access,           -- System.Partition_Interface
+     RE_RAS_Proxy_Type,                  -- System.Partition_Interface
+     RE_RAS_Proxy_Type_Access,           -- System.Partition_Interface
      RE_Raise_Program_Error_Unknown_Tag, -- System.Partition_Interface
      RE_Register_Passive_Package,        -- System.Partition_Interface
      RE_Register_Receiving_Stub,         -- System.Partition_Interface
@@ -1158,6 +1160,7 @@ package Rtsfind is
      RE_TC_String,                       -- System.PolyORB_Interface,
      RE_TC_Struct,                       -- System.PolyORB_Interface,
      RE_TC_Union,                        -- System.PolyORB_Interface,
+     RE_TC_Object,                       -- System.PolyORB_Interface,
 
      RE_IS_Is1,                          -- System.Scalar_Values
      RE_IS_Is2,                          -- System.Scalar_Values
@@ -2089,6 +2092,8 @@ package Rtsfind is
      RE_Get_Unique_Remote_Pointer        => System_Partition_Interface,
      RE_RACW_Stub_Type                   => System_Partition_Interface,
      RE_RACW_Stub_Type_Access            => System_Partition_Interface,
+     RE_RAS_Proxy_Type                   => System_Partition_Interface,
+     RE_RAS_Proxy_Type_Access            => System_Partition_Interface,
      RE_Raise_Program_Error_Unknown_Tag  => System_Partition_Interface,
      RE_Register_Passive_Package         => System_Partition_Interface,
      RE_Register_Receiving_Stub          => System_Partition_Interface,
@@ -2223,6 +2228,7 @@ package Rtsfind is
      RE_TC_String                        => System_PolyORB_Interface,
      RE_TC_Struct                        => System_PolyORB_Interface,
      RE_TC_Union                         => System_PolyORB_Interface,
+     RE_TC_Object                        => System_PolyORB_Interface,
 
      RE_Global_Pool_Object               => System_Pool_Global,
 
