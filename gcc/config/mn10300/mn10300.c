@@ -36,6 +36,11 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "obstack.h"
 
+/* The size of the callee register save area.  Right now we save everything
+   on entry since it costs us nothing in code size.  It does cost us from a
+   speed standpoint, so we want to optimize this sooner or later.  */
+#define REG_SAVE_BYTES (16)
+
 /* Global registers known to hold the value zero.
 
    Normally we'd depend on CSE and combine to put zero into a
@@ -439,8 +444,8 @@ expand_prologue ()
   /* Determine if it is profitable to put the value zero into a register
      for the entire function.  If so, set ZERO_DREG and ZERO_AREG.  */
   if (regs_ever_live[2] || regs_ever_live[3]
-       || regs_ever_live[6] || regs_ever_live[7]
-       || frame_pointer_needed)
+      || regs_ever_live[6] || regs_ever_live[7]
+      || frame_pointer_needed)
     {
       int dreg_count, areg_count;
 
@@ -569,7 +574,7 @@ expand_epilogue ()
     }
   else if ((regs_ever_live[2] || regs_ever_live[3]
 	    || regs_ever_live[6] || regs_ever_live[7])
-	   && size + 16 > 255)
+	   && size + REG_SAVE_BYTES > 255)
     {
       emit_insn (gen_addsi3 (stack_pointer_rtx,
 			     stack_pointer_rtx,
@@ -585,7 +590,7 @@ expand_epilogue ()
   if (regs_ever_live[2] || regs_ever_live[3]
       || regs_ever_live[6] || regs_ever_live[7]
       || frame_pointer_needed)
-    emit_jump_insn (gen_return_internal_regs (GEN_INT (size + 16)));
+    emit_jump_insn (gen_return_internal_regs (GEN_INT (size + REG_SAVE_BYTES)));
   else
     {
       if (size)
@@ -689,7 +694,9 @@ secondary_reload_class (class, mode, in)
   if (GET_CODE (in) == MEM
       && (mode == QImode || mode == HImode)
       && (class == ADDRESS_REGS || class == SP_REGS))
-    return DATA_REGS;
+    {
+      return DATA_REGS;
+    }
 
   /* We can't directly load sp + const_int into a data register;
      we must use an address register as an intermediate.  */
@@ -705,9 +712,10 @@ secondary_reload_class (class, mode, in)
   if (GET_CODE (in) == PLUS
       && (XEXP (in, 0) == stack_pointer_rtx
 	  || XEXP (in, 1) == stack_pointer_rtx))
-    return DATA_REGS;
+    {
+      return DATA_REGS;
+    }
  
-
   /* Otherwise assume no secondary reloads are needed.  */
   return NO_REGS;
 }
@@ -723,7 +731,7 @@ initial_offset (from, to)
       if (regs_ever_live[2] || regs_ever_live[3]
 	  || regs_ever_live[6] || regs_ever_live[7]
 	  || frame_pointer_needed)
-	return 16;
+	return REG_SAVE_BYTES;
       else
 	return 0;
     }
@@ -736,7 +744,7 @@ initial_offset (from, to)
       if (regs_ever_live[2] || regs_ever_live[3]
 	  || regs_ever_live[6] || regs_ever_live[7]
 	  || frame_pointer_needed)
-	return (get_frame_size () + 16 
+	return (get_frame_size () + REG_SAVE_BYTES
 		+ (current_function_outgoing_args_size
 		   ? current_function_outgoing_args_size + 4 : 0)); 
       else
@@ -950,7 +958,10 @@ output_tst (operand, insn)
 	 If it's a call clobbered register, have we past a call?
 
 	 Make sure the register we find isn't the same as ourself;
-	 the mn10300 can't encode that.  */
+	 the mn10300 can't encode that.
+
+	 ??? reg_set_between_p return nonzero anytime we pass a CALL_INSN
+	 so the code to detect calls here isn't doing anything useful.  */
       if (REG_P (SET_DEST (set))
 	  && SET_SRC (set) == CONST0_RTX (GET_MODE (SET_DEST (set)))
 	  && !reg_set_between_p (SET_DEST (set), temp, insn)

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. Matsushita MN10300 series
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -209,7 +209,9 @@ extern struct rtx_def *zero_areg;
    class that represents their union.  */
    
 enum reg_class {
-  NO_REGS, DATA_REGS, ADDRESS_REGS, SP_REGS, DATA_OR_ADDRESS_REGS, SP_OR_ADDRESS_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
+  NO_REGS, DATA_REGS, ADDRESS_REGS, SP_REGS,
+  DATA_OR_ADDRESS_REGS, SP_OR_ADDRESS_REGS, 
+  GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -244,10 +246,9 @@ enum reg_class {
 #define REGNO_REG_CLASS(REGNO) \
   ((REGNO) < 4 ? DATA_REGS : \
    (REGNO) < 9 ? ADDRESS_REGS : \
-    (REGNO) == 9 ? SP_REGS: 0)
+    (REGNO) == 9 ? SP_REGS : 0)
 
 /* The class value for index registers, and the one for base regs.  */
-
 #define INDEX_REG_CLASS DATA_REGS
 #define BASE_REG_CLASS  SP_OR_ADDRESS_REGS
 
@@ -256,7 +257,7 @@ enum reg_class {
 #define REG_CLASS_FROM_LETTER(C) \
   ((C) == 'd' ? DATA_REGS : \
    (C) == 'a' ? ADDRESS_REGS : \
-   (C) == 'x' ? SP_REGS : NO_REGS)
+   (C) == 'y' ? SP_REGS : NO_REGS)
 
 /* Macros to check register numbers against specific register classes.  */
 
@@ -269,6 +270,10 @@ enum reg_class {
 #define REGNO_OK_FOR_BASE_P(regno) \
   (((regno) > 3 && regno < FIRST_PSEUDO_REGISTER)	\
    || (reg_renumber[regno] > 3 && reg_renumber[regno] < FIRST_PSEUDO_REGISTER))
+
+#define REGNO_OK_FOR_BIT_BASE_P(regno) \
+  (((regno) > 3 && regno < 10)	\
+   || (reg_renumber[regno] > 3 && reg_renumber[regno] < 10))
 
 #define REGNO_OK_FOR_INDEX_P(regno) \
   (((regno) >= 0 && regno < 4)	\
@@ -585,11 +590,11 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
     && GET_MODE (OP) == QImode					\
     && (CONSTANT_ADDRESS_P (XEXP (OP, 0))			\
 	|| (GET_CODE (XEXP (OP, 0)) == REG			\
-	    && REG_OK_FOR_BASE_P (XEXP (OP, 0))			\
+	    && REG_OK_FOR_BIT_BASE_P (XEXP (OP, 0))		\
 	    && XEXP (OP, 0) != stack_pointer_rtx)		\
 	|| (GET_CODE (XEXP (OP, 0)) == PLUS			\
 	    && GET_CODE (XEXP (XEXP (OP, 0), 0)) == REG		\
-	    && REG_OK_FOR_BASE_P (XEXP (XEXP (OP, 0), 0))	\
+	    && REG_OK_FOR_BIT_BASE_P (XEXP (XEXP (OP, 0), 0))	\
 	    && XEXP (XEXP (OP, 0), 0) != stack_pointer_rtx	\
 	    && GET_CODE (XEXP (XEXP (OP, 0), 1)) == CONST_INT	\
 	    && INT_8_BITS (INTVAL (XEXP (XEXP (OP, 0), 1))))))
@@ -618,16 +623,20 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X)  \
-  ((REGNO (X) >= 0 && REGNO(X) <= 3) || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  ((REGNO (X) >= 0 && REGNO(X) <= 3) || REGNO (X) >= 10)
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-  ((REGNO (X) >= 4 && REGNO(X) <= 9) || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  ((REGNO (X) >= 4 && REGNO(X) <= 9) || REGNO (X) >= 10)
+#define REG_OK_FOR_BIT_BASE_P(X) \
+  ((REGNO (X) >= 4 && REGNO(X) <= 9))
 #else
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
+/* Nonzero if X is a hard reg that can be used as a base reg.  */
+#define REG_OK_FOR_BIT_BASE_P(X) REGNO_OK_FOR_BIT_BASE_P (REGNO (X))
 #endif
 
 
