@@ -1591,6 +1591,7 @@ forward_declare_categories ()
 	  impent->class_decl
 	    = create_builtin_decl (VAR_DECL, objc_category_template,
 				   IDENTIFIER_POINTER (synth_id_with_class_suffix ("_OBJC_CATEGORY", objc_implementation_context)));
+	  TREE_PUBLIC (impent->class_decl) = 0;
 	}
     }
   objc_implementation_context = sav;
@@ -1975,7 +1976,7 @@ build_selector_reference_decl ()
 
   decl = build_decl (VAR_DECL, ident, selector_type);
   DECL_EXTERNAL (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
   TREE_USED (decl) = 1;
   TREE_READONLY (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
@@ -2190,7 +2191,7 @@ build_class_reference_decl ()
 
   decl = build_decl (VAR_DECL, ident, objc_class_type);
   DECL_EXTERNAL (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
   TREE_USED (decl) = 1;
   TREE_READONLY (decl) = 1;
   DECL_CONTEXT (decl) = 0;
@@ -2327,7 +2328,7 @@ build_objc_string_decl (section)
 
   decl = build_decl (VAR_DECL, ident, build_array_type (char_type_node, 0));
   DECL_EXTERNAL (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
   TREE_USED (decl) = 1;
   TREE_READONLY (decl) = 1;
   TREE_CONSTANT (decl) = 1;
@@ -3460,7 +3461,7 @@ synth_forward_declarations ()
 {
   tree sc_spec, decl_specs, an_id;
 
-  /* extern struct objc_class _OBJC_CLASS_<my_name>; */
+  /* static struct objc_class _OBJC_CLASS_<my_name>; */
 
   an_id = synth_id_with_class_suffix ("_OBJC_CLASS", objc_implementation_context);
 
@@ -3477,7 +3478,8 @@ synth_forward_declarations ()
 
   UOBJC_METACLASS_decl = define_decl (an_id, decl_specs);
   TREE_USED (UOBJC_METACLASS_decl) = 1;
-  DECL_ARTIFICIAL(UOBJC_METACLASS_decl) = 1;
+  DECL_ARTIFICIAL (UOBJC_METACLASS_decl) = 1;
+  TREE_PUBLIC (UOBJC_METACLASS_decl) = 0;
 
   /* Pre-build the following entities - for speed/convenience.  */
 
@@ -5226,7 +5228,7 @@ build_protocol_reference (p)
 {
   tree decl, ident, ptype;
 
-  /* extern struct objc_protocol _OBJC_PROTOCOL_<mumble>; */
+  /* static struct objc_protocol _OBJC_PROTOCOL_<mumble>; */
 
   ident = synth_id_with_class_suffix ("_OBJC_PROTOCOL", p);
   ptype
@@ -5240,7 +5242,7 @@ build_protocol_reference (p)
     {
       decl = build_decl (VAR_DECL, ident, ptype);
       DECL_EXTERNAL (decl) = 1;
-      TREE_PUBLIC (decl) = 1;
+      TREE_PUBLIC (decl) = 0;
       TREE_USED (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
 

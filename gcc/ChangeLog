@@ -1,5 +1,23 @@
 2003-07-17  Zack Weinberg  <zack@codesourcery.com>
 
+	* c-decl.c: Fix typos in several comments.  Remove all
+	#if 0 blocks; reindent as needed.  Remove unused argument
+	to declare_parm_level; all callers changed.
+	* c-parse.in: Update calls to declare_parm_level.  Avoid
+	issuing a double warning in some circumstances.
+	* c-typeck.c: Update calls to declare_parm_level.
+	* c-tree.h: Update prototype of declare_parm_level.
+
+	* c-pragma.c (apply_pragma_weak): Don't complain about a
+	redundant #pragma weak.
+
+	* objc/objc-act.c (forward_declare_categories,
+	build_selector_reference_decl, build_class_reference_decl,
+	build_objc_string_decl, synth_forward_declarations,
+	build_protocol_reference): Set TREE_PUBLIC on synthetic
+	forward decl to 0, consistent with eventual definition.
+	Correct comments to match.
+
 	* fixinc/inclhack.def (solaris_mutex_init_2): Escape braces
 	in regexp that don't form a range expression.
 	* fixinc/fixincl.def: Regenerate.

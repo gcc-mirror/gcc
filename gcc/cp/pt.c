@@ -10028,7 +10028,7 @@ get_bindings_real (tree fn,
 
 /* For most uses, we want to check the return type.  */
 
-tree 
+static tree 
 get_bindings (tree fn, tree decl, tree explicit_args)
 {
   return get_bindings_real (fn, decl, explicit_args, 1, DEDUCE_EXACT, -1);

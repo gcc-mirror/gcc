@@ -375,7 +375,7 @@ common_type (tree t1, tree t2)
 	   lists, argument by argument.  */
 
 	pushlevel (0);
-	declare_parm_level (1);
+	declare_parm_level ();
 
 	len = list_length (p1);
 	newargs = 0;

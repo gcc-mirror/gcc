@@ -83,26 +83,28 @@ static tree enum_next_value;
 static int enum_overflow;
 
 /* Parsing a function declarator leaves a list of parameter names
-   or a chain or parameter decls here.  */
+   or a chain of parameter decls here.  */
 
 static tree last_function_parms;
 
-/* Parsing a function declarator leaves here a chain of structure
-   and enum types declared in the parmlist.  */
+/* Parsing a function declarator leaves a chain of structure
+   and enum types declared in the parmlist here.  */
 
 static tree last_function_parm_tags;
 
 /* After parsing the declarator that starts a function definition,
-   `start_function' puts here the list of parameter names or chain of decls.
-   `store_parm_decls' finds it here.  */
+   `start_function' puts the list of parameter names or chain of decls here
+   for `store_parm_decls' to find.  */
 
 static tree current_function_parms;
 
 /* Similar, for last_function_parm_tags.  */
+
 static tree current_function_parm_tags;
 
 /* Similar, for the file and line that the prototype came from if this is
    an old-style definition.  */
+
 static location_t current_function_prototype_locus;
 
 /* The current statement tree.  */
@@ -401,13 +403,10 @@ kept_level_p (void)
 	  || current_binding_level->tags != 0);
 }
 
-/* Identify this binding level as a level of parameters.
-   DEFINITION_FLAG is 1 for a definition, 0 for a declaration.
-   But it turns out there is no way to pass the right value for
-   DEFINITION_FLAG, so we ignore it.  */
+/* Identify this binding level as a level of parameters.  */
 
 void
-declare_parm_level (int definition_flag ATTRIBUTE_UNUSED)
+declare_parm_level (void)
 {
   current_binding_level->parm_flag = 1;
 }
@@ -2659,14 +2658,6 @@ start_decl (tree declarator, tree declspecs, int initialized, tree attributes)
 
   if (initialized)
     {
-#if 0
-      /* Seems redundant with grokdeclarator.  */
-      if (current_binding_level != global_binding_level
-	  && DECL_EXTERNAL (decl)
-	  && TREE_CODE (decl) != FUNCTION_DECL)
-	warning ("declaration of `%s' has `extern' and is initialized",
-		 IDENTIFIER_POINTER (DECL_NAME (decl)));
-#endif
       DECL_EXTERNAL (decl) = 0;
       if (current_binding_level == global_binding_level)
 	TREE_STATIC (decl) = 1;
@@ -3019,17 +3010,6 @@ push_parm_decl (tree parm)
   decl = grokdeclarator (TREE_VALUE (TREE_PURPOSE (parm)),
 			 TREE_PURPOSE (TREE_PURPOSE (parm)), PARM, 0);
   decl_attributes (&decl, TREE_VALUE (parm), 0);
-
-#if 0
-  if (DECL_NAME (decl))
-    {
-      tree olddecl;
-      olddecl = lookup_name (DECL_NAME (decl));
-      if (pedantic && olddecl != 0 && TREE_CODE (olddecl) == TYPE_DECL)
-	pedwarn_with_decl (decl,
-			   "ISO C forbids parameter `%s' shadowing typedef");
-    }
-#endif
 
   decl = pushdecl (decl);
 
@@ -3930,14 +3910,6 @@ grokdeclarator (tree declarator, tree declspecs,
 	  if (pedantic && !COMPLETE_TYPE_P (type))
 	    pedwarn ("array type has incomplete element type");
 
-#if 0
-	  /* We shouldn't have a function type here at all!
-	     Functions aren't allowed as array elements.  */
-	  if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
-	      && (constp || volatilep))
-	    pedwarn ("ISO C forbids const or volatile function types");
-#endif
-
 	  /* Build the array type itself, then merge any constancy or
 	     volatility into the target type.  We must do it in this order
 	     to ensure that the TYPE_MAIN_VARIANT field of the array type
@@ -4303,10 +4275,6 @@ grokdeclarator (tree declarator, tree declspecs,
 	    type = build_array_type (c_build_qualified_type (TREE_TYPE (type),
 							     type_quals),
 				     TYPE_DOMAIN (type));
-#if 0
-	    /* Leave the field const or volatile as well.  */
-	    type_quals = TYPE_UNQUALIFIED;
-#endif
 	  }
 	decl = build_decl (FIELD_DECL, declarator, type);
 	DECL_NONADDRESSABLE_P (decl) = bitfield;
@@ -4410,9 +4378,6 @@ grokdeclarator (tree declarator, tree declspecs,
 							     type_quals),
 				     TYPE_DOMAIN (type));
 	    TYPE_ALIGN (type) = saved_align;
-#if 0 /* Leave the variable const or volatile as well.  */
-	    type_quals = TYPE_UNQUALIFIED;
-#endif
 	  }
 	else if (type_quals)
 	  type = c_build_qualified_type (type, type_quals);
@@ -4533,62 +4498,36 @@ grokparms (tree parms_info, int funcdef_flag)
     {
       tree parm;
       tree typelt;
-      /* We no longer test FUNCDEF_FLAG.
-	 If the arg types are incomplete in a declaration,
+      /* If the arg types are incomplete in a declaration,
 	 they must include undefined tags.
 	 These tags can never be defined in the scope of the declaration,
 	 so the types can never be completed,
 	 and no call can be compiled successfully.  */
-#if 0
-      /* In a fcn definition, arg types must be complete.  */
-      if (funcdef_flag)
-#endif
-	for (parm = last_function_parms, typelt = first_parm;
-	     parm;
-	     parm = TREE_CHAIN (parm))
-	  /* Skip over any enumeration constants declared here.  */
-	  if (TREE_CODE (parm) == PARM_DECL)
-	    {
-	      /* Barf if the parameter itself has an incomplete type.  */
-	      tree type = TREE_VALUE (typelt);
-	      if (type == error_mark_node)
-		continue;
-	      if (!COMPLETE_TYPE_P (type))
-		{
-		  if (funcdef_flag && DECL_NAME (parm) != 0)
-		    error ("parameter `%s' has incomplete type",
-			   IDENTIFIER_POINTER (DECL_NAME (parm)));
-		  else
-		    warning ("parameter has incomplete type");
-		  if (funcdef_flag)
-		    {
-		      TREE_VALUE (typelt) = error_mark_node;
-		      TREE_TYPE (parm) = error_mark_node;
-		    }
-		}
-#if 0
-	      /* This has been replaced by parm_tags_warning, which
-		 uses a more accurate criterion for what to warn
-		 about.  */
-	      else
-		{
-		  /* Now warn if is a pointer to an incomplete type.  */
-		  while (TREE_CODE (type) == POINTER_TYPE
-			 || TREE_CODE (type) == REFERENCE_TYPE)
-		    type = TREE_TYPE (type);
-		  type = TYPE_MAIN_VARIANT (type);
-		  if (!COMPLETE_TYPE_P (type))
-		    {
-		      if (DECL_NAME (parm) != 0)
-			warning ("parameter `%s' points to incomplete type",
-				 IDENTIFIER_POINTER (DECL_NAME (parm)));
-		      else
-			warning ("parameter points to incomplete type");
-		    }
-		}
-#endif
-	      typelt = TREE_CHAIN (typelt);
-	    }
+      for (parm = last_function_parms, typelt = first_parm;
+	   parm;
+	   parm = TREE_CHAIN (parm))
+	/* Skip over any enumeration constants declared here.  */
+	if (TREE_CODE (parm) == PARM_DECL)
+	  {
+	    /* Barf if the parameter itself has an incomplete type.  */
+	    tree type = TREE_VALUE (typelt);
+	    if (type == error_mark_node)
+	      continue;
+	    if (!COMPLETE_TYPE_P (type))
+	      {
+		if (funcdef_flag && DECL_NAME (parm) != 0)
+		  error ("parameter `%s' has incomplete type",
+			 IDENTIFIER_POINTER (DECL_NAME (parm)));
+		else
+		  warning ("parameter has incomplete type");
+		if (funcdef_flag)
+		  {
+		    TREE_VALUE (typelt) = error_mark_node;
+		    TREE_TYPE (parm) = error_mark_node;
+		  }
+	      }
+	    typelt = TREE_CHAIN (typelt);
+	  }
 
       return first_parm;
     }
@@ -5732,7 +5671,7 @@ start_function (tree declspecs, tree declarator, tree attributes)
   current_function_decl = pushdecl (decl1);
 
   pushlevel (0);
-  declare_parm_level (1);
+  declare_parm_level ();
 
   make_decl_rtl (current_function_decl, NULL);
 
@@ -5863,22 +5802,6 @@ store_parm_decls (void)
       /* Get the decls in their original chain order
 	 and record in the function.  */
       DECL_ARGUMENTS (fndecl) = getdecls ();
-
-#if 0
-      /* If this function takes a variable number of arguments,
-	 add a phony parameter to the end of the parm list,
-	 to represent the position of the first unnamed argument.  */
-      if (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (fndecl))))
-	  != void_type_node)
-	{
-	  tree dummy = build_decl (PARM_DECL, NULL_TREE, void_type_node);
-	  /* Let's hope the address of the unnamed parm
-	     won't depend on its type.  */
-	  TREE_TYPE (dummy) = integer_type_node;
-	  DECL_ARG_TYPE (dummy) = integer_type_node;
-	  DECL_ARGUMENTS (fndecl) = chainon (DECL_ARGUMENTS (fndecl), dummy);
-	}
-#endif
 
       /* Now pushdecl the enum constants.  */
       for (parm = others; parm; parm = next)
@@ -6142,12 +6065,6 @@ store_parm_decls (void)
 
   keep_next_if_subblocks = 1;
 
-  /* ??? This might be an improvement,
-     but needs to be thought about some more.  */
-#if 0
-  keep_next_level_flag = 1;
-#endif
-
   /* Write a record describing this function definition to the prototypes
      file (if requested).  */
 
@@ -6215,12 +6132,6 @@ finish_function (int nested, int can_defer_p)
       pushlevel (0);
       poplevel (1, 0, 1);
     }
-
-#if 0
-  /* This caused &foo to be of type ptr-to-const-function which then
-     got a warning when stored in a ptr-to-function variable.  */
-  TREE_READONLY (fndecl) = 1;
-#endif
 
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 

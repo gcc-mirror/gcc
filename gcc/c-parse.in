@@ -1842,7 +1842,7 @@ component_decl:
 	| declspecs_nosc_nots
 		{ if (pedantic)
 		    pedwarn ("ISO C forbids member declarations with no members");
-		  shadow_tag($1);
+		  shadow_tag_warned ($1, pedantic);
 		  $$ = NULL_TREE; }
 	| error
 		{ $$ = NULL_TREE; }
@@ -2482,7 +2482,7 @@ parmlist:
 	  maybe_attribute
 		{ pushlevel (0);
 		  clear_parm_order ();
-		  declare_parm_level (0); }
+		  declare_parm_level (); }
 	  parmlist_1
 		{ $$ = $3;
 		  parmlist_tags_warning ();
@@ -2604,7 +2604,7 @@ parmlist_or_identifiers:
 	  maybe_attribute
 		{ pushlevel (0);
 		  clear_parm_order ();
-		  declare_parm_level (1); }
+		  declare_parm_level (); }
 	  parmlist_or_identifiers_1
 		{ $$ = $3;
 		  parmlist_tags_warning ();

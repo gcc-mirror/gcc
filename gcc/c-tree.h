@@ -191,7 +191,7 @@ extern tree build_enumerator (tree, tree);
 extern void check_for_loop_decls (void);
 extern void clear_parm_order (void);
 extern int  complete_array_type (tree, tree, int);
-extern void declare_parm_level (int);
+extern void declare_parm_level (void);
 extern tree define_label (location_t, tree);
 extern void finish_decl (tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
