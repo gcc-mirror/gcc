@@ -1,5 +1,8 @@
 2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR target/13466
+	* config.gcc (powerpc-*-darwin): Remove overridden value of need_64bit_hwint.
+
 	* emit-rtl.c (copy_rtx_if_shared): Add comment about its use of
 	copy_rtx_if_shared_1.
 	(copy_rtx_if_shared_1): Add comment about what the function does.

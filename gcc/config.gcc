@@ -1681,8 +1681,6 @@ powerpc-*-darwin*)
 	tm_file="${tm_file} rs6000/darwin.h"
 	tmake_file="t-darwin t-slibgcc-darwin rs6000/t-darwin"
 	extra_headers=altivec.h
-	# override ppc default
-	need_64bit_hwint=
 	;;
 powerpc*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
