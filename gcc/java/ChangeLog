@@ -1,3 +1,9 @@
+2003-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR optimization/12547
+	* lang.c (java_tree_inlining_walk_subtrees): Just walk
+	BLOCK_EXPR_BODY directly.
+
 2003-11-12  Andrew Haley  <aph@redhat.com>
 
 	PR java/11045
