@@ -1,7 +1,7 @@
 /* CPP Library.
-   Copyright (C) 1986, 87, 89, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-6, 1997 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
-   Based on CCCP program by by Paul Rubin, June 1986
+   Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
 
 This program is free software; you can redistribute it and/or modify it
@@ -2892,6 +2892,11 @@ macroexpand (pfile, hp)
 		  while (p1 != l1 && is_space[*p1]) p1++;
 		  while (p1 != l1 && is_idchar[*p1])
 		    xbuf[totlen++] = *p1++;
+		  /* Delete any no-reexpansion marker that follows
+		     an identifier at the beginning of the argument
+		     if the argument is concatenated with what precedes it.  */
+		  if (p1[0] == '@' && p1[1] == '-')
+		    p1 += 2;
 		}
 	      if (ap->raw_after)
 		{
