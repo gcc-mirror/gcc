@@ -1,3 +1,7 @@
+2001-06-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/gcov.texi: Use more logical markup.
+
 2001-06-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* unroll.c (initial_reg_note_copy): Use PUT_REG_NOTE_KIND and
