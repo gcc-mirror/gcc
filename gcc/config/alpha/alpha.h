@@ -206,16 +206,15 @@ extern int target_flags;
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* Align loop starts for optimal branching. 
+/* Align loop starts for optimal branching.  */
 
-   Don't do this until they fix the assembler.  */
-
-/* #define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-  ASM_OUTPUT_ALIGN (FILE, 5)  */
+#define ASM_OUTPUT_LOOP_ALIGN(FILE) \
+  ASM_OUTPUT_ALIGN (FILE, 5) 
 
 /* This is how to align an instruction for optimal branching.
    On Alpha we'll get better performance by aligning on a quadword
    boundary.  */
+
 #define ASM_OUTPUT_ALIGN_CODE(FILE)	\
   ASM_OUTPUT_ALIGN ((FILE), 4)
 
@@ -243,7 +242,8 @@ extern int target_flags;
 /* Set this non-zero if unaligned move instructions are extremely slow.
 
    On the Alpha, they trap.  */
-/* #define SLOW_UNALIGNED_ACCESS 1  */
+
+#define SLOW_UNALIGNED_ACCESS 1
 
 /* Standard register usage.  */
 
@@ -256,7 +256,12 @@ extern int target_flags;
    We define all 32 integer registers, even though $31 is always zero,
    and all 32 floating-point registers, even though $f31 is also
    always zero.  We do not bother defining the FP status register and
-   there are no other registers.  */
+   there are no other registers. 
+
+   Since $31 is always zero, we will use register number 31 as the
+   argument pointer.  It will never appear in the generated code
+   because we will always be eliminating it in favor of the stack
+   poointer or frame pointer.  */
 
 #define FIRST_PSEUDO_REGISTER 64
 
@@ -301,7 +306,7 @@ extern int target_flags;
    $26			(return PC)
    $15			(frame pointer)
    $29			(global pointer)
-   $30, $31, $f31	(stack pointer and always zero)  */
+   $30, $31, $f31	(stack pointer and always zero/ap)  */
 
 #define REG_ALLOC_ORDER		\
   {33,					\
@@ -365,7 +370,7 @@ extern int target_flags;
 #define FRAME_POINTER_REQUIRED 0
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 15
+#define ARG_POINTER_REGNUM 31
 
 /* Register in which static-chain is passed to a function. 
 
@@ -563,14 +568,14 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    is at the high-address end of the local variables;
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
-#define FRAME_GROWS_DOWNWARD
+/* #define FRAME_GROWS_DOWNWARD */
 
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
    of the first local allocated.  */
 
-#define STARTING_FRAME_OFFSET (- current_function_pretend_args_size)
+#define STARTING_FRAME_OFFSET current_function_outgoing_args_size
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -584,18 +589,14 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 /* Offset of first parameter from the argument pointer register value.  */
 
-#define FIRST_PARM_OFFSET(FNDECL) (- current_function_pretend_args_size)
+#define FIRST_PARM_OFFSET(FNDECL) 0
 
 /* Definitions for register eliminations.
 
-   We have one register that can be eliminated on the Alpha.  The
+   We have two registers that can be eliminated on the i386.  First, the
    frame pointer register can often be eliminated in favor of the stack
-   pointer register.
-
-   In addition, we use the elimination mechanism to see if gp (r29) is needed.
-   Initially we assume that it isn't.  If it is, we spill it.  This is done
-   by making it an eliminable register.  It doesn't matter what we replace
-   it with, since it will never occur in the rtl at this point.  */
+   pointer register.  Secondly, the argument pointer register can always be
+   eliminated; it is replaced with either the stack or frame pointer. */
 
 /* This is an array of structures.  Each structure initializes one pair
    of eliminable registers.  The "from" register number is given first,
@@ -603,24 +604,24 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    in order of preference.  */
 
 #define ELIMINABLE_REGS				\
-{{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
- { 29, 0}}
+{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
+ { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},   \
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
    Frame pointer elimination is automatically handled.
 
-   We need gp (r29) if we have calls or load symbols
-   (tested in alpha_need_gp).
-
-   All other eliminations are valid since the cases where FP can't be
+   All eliminations are valid since the cases where FP can't be
    eliminated are already handled.  */
 
-#define CAN_ELIMINATE(FROM, TO) ((FROM) == 29 ? ! alpha_need_gp () : 1)
+#define CAN_ELIMINATE(FROM, TO) 1
 
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
 { if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
+    (OFFSET) = 0;							\
+  else									\
     (OFFSET) = (get_frame_size () + current_function_outgoing_args_size \
 		+ current_function_pretend_args_size			\
 		+ alpha_sa_size () + 15) & ~ 15;			\
@@ -664,6 +665,16 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 #define LIBCALL_VALUE(MODE)	\
    gen_rtx (REG, MODE,		\
 	    TARGET_FPREGS && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 : 0)
+
+/* The definition of this macro implies that there are cases where
+   a scalar value cannot be returned in registers.
+
+   For the Alpha, any structure or union type is returned in memory, as
+   are integers whose size is larger than 64 bits.  */
+
+#define RETURN_IN_MEMORY(TYPE) \
+  (TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE  \
+   || (TREE_CODE (TYPE) == INTEGER_TYPE && TYPE_PRECISION (TYPE) > 64))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
@@ -749,6 +760,50 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 ((CUM) < 6 && 6 < (CUM) + ALPHA_ARG_SIZE (MODE, TYPE, NAMED)	\
  ? 6 - (CUM) : 0)
 
+/* Perform any needed actions needed for a function that is receiving a
+   variable number of arguments. 
+
+   CUM is as above.
+
+   MODE and TYPE are the mode and type of the current parameter.
+
+   PRETEND_SIZE is a variable that should be set to the amount of stack
+   that must be pushed by the prolog to pretend that our caller pushed
+   it.
+
+   Normally, this macro will push all remaining incoming registers on the
+   stack and set PRETEND_SIZE to the length of the registers pushed. 
+
+   On the Alpha, we allocate space for all 12 arg registers, but only
+   push those that are remaining.
+
+   However, if NO registers need to be saved, don't allocate any space.
+   This is not only because we won't need the space, but because AP includes
+   the current_pretend_args_size and we don't want to mess up any
+   ap-relative addresses already made.  */
+
+#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
+{ if ((CUM) < 6)							\
+    {									\
+      if (! (NO_RTL))							\
+	{								\
+	  move_block_from_reg						\
+	    (16 + CUM,							\
+	     gen_rtx (MEM, BLKmode,					\
+		      plus_constant (virtual_incoming_args_rtx,		\
+				     ((CUM) - 6) * UNITS_PER_WORD)),	\
+	     6 - (CUM));						\
+	  move_block_from_reg						\
+	    (16 + 32 + CUM,						\
+	     gen_rtx (MEM, BLKmode,					\
+		      plus_constant (virtual_incoming_args_rtx,		\
+				     ((CUM) - 12) * UNITS_PER_WORD)),	\
+	     6 - (CUM));						\
+	 }								\
+      PRETEND_SIZE = 12 * UNITS_PER_WORD;				\
+    }									\
+}
+
 /* Generate necessary RTL for __builtin_saveregs().
    ARGLIST is the argument list; see expr.c.  */
 extern struct rtx_def *alpha_builtin_saveregs ();
@@ -762,12 +817,17 @@ extern struct rtx_def *alpha_compare_op0, *alpha_compare_op1;
 extern int alpha_compare_fp_p;
 
 /* This macro produces the initial definition of a function name.  On the
-   29k, we need to save the function name for the epilogue.  */
+   Alpha, we need to save the function name for the epilogue.  */
 
 extern char *alpha_function_name;
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)	\
- { fprintf (FILE, "\t.ent %s 2\n", NAME);		\
+ { int _level;						\
+   tree _context;					\
+   for (_level = -1, _context = (DECL); _context;	\
+	_context = DECL_CONTEXT (_context), _level++) \
+     ;							\
+   fprintf (FILE, "\t.ent %s %d\n", NAME, _level);	\
    ASM_OUTPUT_LABEL (FILE, NAME);			\
    alpha_function_name = NAME;				\
 }
@@ -1253,13 +1313,10 @@ extern char *current_function_name;
 /* Output at beginning of assembler file.  */
 
 #define ASM_FILE_START(FILE)					\
-{ extern char *version_string;					\
-  char *p, *after_dir = main_input_filename;			\
+{ char *p, *after_dir = main_input_filename;			\
 								\
-  fprintf (FILE, "\t.verstamp 10 0 ");				\
-  for (p = version_string; *p != ' ' && *p != 0; p++)		\
-    fprintf (FILE, "%c", *p == '.' ? ' ' : *p);			\
-  fprintf (FILE, "\n\t.set noreorder\n");			\
+  alpha_write_verstamp (FILE);					\
+  fprintf (FILE, "\t.set noreorder\n");				\
   fprintf (FILE, "\t.set noat\n");				\
   for (p = main_input_filename; *p; p++)			\
     if (*p == '/')						\
@@ -1305,6 +1362,16 @@ literal_section ()						\
 
 #define READONLY_DATA_SECTION	literal_section
 
+/* If we are referencing a function that is static or is known to be
+   in this file, make the SYMBOL_REF special.  We can use this to see
+   indicate that we can branch to this function without setting PV or
+   restoring GP.  */
+
+#define ENCODE_SECTION_INFO(DECL)  \
+  if (TREE_CODE (DECL) == FUNCTION_DECL			\
+      && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))) \
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
+
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
@@ -1312,7 +1379,7 @@ literal_section ()						\
 {"$0", "$1", "$2", "$3", "$4", "$5", "$6", "$7", "$8",		\
  "$9", "$10", "$11", "$12", "$13", "$14", "$15",		\
  "$16", "$17", "$18", "$19", "$20", "$21", "$22", "$23",	\
- "$24", "$25", "$26", "$27", "$28", "$29", "$30", "$31",	\
+ "$24", "$25", "$26", "$27", "$28", "$29", "$30", "AP",		\
  "$f0", "$f1", "$f2", "$f3", "$f4", "$f5", "$f6", "$f7", "$f8",	\
  "$f9", "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",		\
  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",\
