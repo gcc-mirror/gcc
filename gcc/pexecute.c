@@ -346,7 +346,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 
   fputs ("If {Failed} == 0\n", stdout);
   /* If being verbose, output a copy of the command.  It should be
-     accurate enough and escaped enough to be "clickable". */
+     accurate enough and escaped enough to be "clickable".  */
   if (flags & PEXECUTE_VERBOSE)
     {
       fputs ("\tEcho ", stdout);
