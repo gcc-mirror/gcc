@@ -1,3 +1,13 @@
+Sat Oct 17 05:21:31 1998  Ovidiu Predescu  <ovidiu@slip.net>
+
+	* objc-features.texi (Top): Changed the email address.
+	* objc-features.texi (Garbage Collection): Use @uref instead of @url.
+
+Mon Oct 11 21:25:27 1998  Ovidiu Predescu  <ovidiu@slip.net>
+
+	* encoding.c: Redefine get_inner_array_type to get the first entry
+ 	in the structure.
+
 Thu Oct  8 12:21:14 1998  Richard Frith-Macdonald <richard@brainstorm.co.uk>
 
 	* encoding.c (objc_skip_type_qualifiers): Handle _C_BYREF.
