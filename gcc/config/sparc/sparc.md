@@ -1,5 +1,5 @@
 ;;- Machine description for SPARC chip for GNU C compiler
-;;  Copyright (C) 1987, 88, 89, 92-96, 1997 Free Software Foundation, Inc.
+;;  Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 ;;  64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
 ;;  at Cygnus Support.
@@ -1804,7 +1804,9 @@
 
 (define_insn "*sethi_di_medium_pic"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(high:DI (match_operand 1 "sp64_medium_pic_operand" "")))]
+	(high:DI (match_operand 1 "sp64_medium_pic_operand" "")))
+  ;; The clobber is here because emit_move_sequence assumes the worst case.
+   (clobber (reg:DI 1))]
   "(TARGET_CM_MEDLOW || TARGET_CM_EMBMEDANY) && check_pic (1)"
   "sethi %%hi(%a1),%0"
   [(set_attr "type" "move")
