@@ -1,3 +1,8 @@
+Thu Nov 11 13:23:04 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* jump.c (jump_optimize_1): Avoid passing an rtx that is not an
+	operand as argument to expand_and or expand_binop.
+
 Thu Nov 11 02:21:16 1999  Rodney Brown <RodneyBrown@pmsc.com>
 
 	* xcoffout.c (xcoffout_source_file): Change ggc_add_root to
