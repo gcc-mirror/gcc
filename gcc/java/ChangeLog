@@ -1,3 +1,18 @@
+2000-07-21  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (java_complete_lhs): LOOP_EXPR:, SWITCH_EXPR: the node
+	or its first operand can be error marks.
+
+2000-07-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h (SET_TYPE_FOR_RESOLUTION): Use GET_CPC.
+	* parse.y (method_header): Likewise.
+
+2000-07-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (find_as_inner_class): Handle the case where the
+	enclosing context of an innerclass has been loaded as bytecode.
+
 2000-07-18  Jeff Sturm  <jeff.sturm@appnet.com>
 
 	* lang-specs.h: Added %(jc1) to java compiler options.

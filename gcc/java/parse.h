@@ -537,7 +537,7 @@ typedef struct _jdeplist {
   {									\
     tree returned_type;							\
     (CHAIN) = 0;							\
-    if (TREE_TYPE (ctxp->current_parsed_class) == object_type_node	\
+    if (TREE_TYPE (GET_CPC ()) == object_type_node			\
 	&& TREE_CODE (TYPE) == EXPR_WITH_FILE_LOCATION 			\
 	&& EXPR_WFL_NODE (TYPE) == unqualified_object_id_node)		\
       (TYPE) = object_type_node;					\
