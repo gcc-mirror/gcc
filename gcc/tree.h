@@ -3332,6 +3332,9 @@ extern tree build_fold_addr_expr (tree);
 extern tree build_fold_addr_expr_with_type (tree, tree);
 extern tree build_fold_indirect_ref (tree);
 
+extern bool tree_swap_operands_p (tree, tree, bool);
+extern enum tree_code swap_tree_comparison (enum tree_code);
+
 /* In builtins.c */
 extern tree fold_builtin (tree);
 extern enum built_in_function builtin_mathfn_code (tree);

@@ -1,3 +1,15 @@
+2004-06-15  Jeff Law  <law@redhat.com>
+
+	* fold-const.c (swap_tree_comparison): No longer static.
+	(tree_swap_operands_p): Similarly.  Return true if both operands
+	are SSA_NAMEs and the first operand has a higher version number than
+	the second operand.
+	* tree.h (swap_tree_comparison): Prototype.
+	(tree_swap_operands_p): Prototype.
+	* tree-ssa-operands.c (get_expr_operands): For commutative
+	operators and relational comparisons, canonicalize the
+	order of the operands.
+
 2004-06-15  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (lang_gimplify_stmt): Remove next_p argument.

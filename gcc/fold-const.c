@@ -92,7 +92,6 @@ static hashval_t size_htab_hash (const void *);
 static int size_htab_eq (const void *, const void *);
 static tree fold_convert_const (enum tree_code, tree, tree);
 static enum tree_code invert_tree_comparison (enum tree_code, bool);
-static enum tree_code swap_tree_comparison (enum tree_code);
 static enum comparison_code comparison_to_compcode (enum tree_code);
 static enum tree_code compcode_to_comparison (enum comparison_code);
 static tree combine_comparisons (enum tree_code, enum tree_code,
@@ -132,8 +131,6 @@ static tree fold_mathfn_compare (enum built_in_function, enum tree_code,
 static tree fold_inf_compare (enum tree_code, tree, tree, tree);
 static tree fold_div_compare (enum tree_code, tree, tree, tree);
 static bool reorder_operands_p (tree, tree);
-static bool tree_swap_operands_p (tree, tree, bool);
-
 static tree fold_negate_const (tree, tree);
 static tree fold_not_const (tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
@@ -2119,7 +2116,7 @@ invert_tree_comparison (enum tree_code code, bool honor_nans)
 /* Similar, but return the comparison that results if the operands are
    swapped.  This is safe for floating-point.  */
 
-static enum tree_code
+enum tree_code
 swap_tree_comparison (enum tree_code code)
 {
   switch (code)
@@ -5527,7 +5524,7 @@ reorder_operands_p (tree arg0, tree arg1)
    isn't.  If REORDER is true, only recommend swapping if we can
    evaluate the operands in reverse order.  */
 
-static bool
+bool
 tree_swap_operands_p (tree arg0, tree arg1, bool reorder)
 {
   STRIP_SIGN_NOPS (arg0);
@@ -5572,6 +5569,15 @@ tree_swap_operands_p (tree arg0, tree arg1, bool reorder)
   if (DECL_P (arg1))
     return 0;
   if (DECL_P (arg0))
+    return 1;
+
+  /* It is preferable to swap two SSA_NAME to ensure a canonical form
+     for commutative and comparison operators.  Ensuring a canonical
+     form allows the optimizers to find additional redundancies without
+     having to explicitly check for both orderings.  */
+  if (TREE_CODE (arg0) == SSA_NAME
+      && TREE_CODE (arg1) == SSA_NAME
+      && SSA_NAME_VERSION (arg0) > SSA_NAME_VERSION (arg1))
     return 1;
 
   return 0;

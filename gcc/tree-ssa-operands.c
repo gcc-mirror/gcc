@@ -1235,6 +1235,37 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
       || code == TRUTH_XOR_EXPR
       || code == COMPOUND_EXPR)
     {
+      tree op0 = TREE_OPERAND (expr, 0);
+      tree op1 = TREE_OPERAND (expr, 1);
+
+      /* If it would be profitable to swap the operands, then do so to
+	 canonicalize the statement, enabling better optimization.
+
+	 By placing canonicalization of such expressions here we
+	 transparently keep statements in canonical form, even
+	 when the statement is modified.  */
+      if (tree_swap_operands_p (op0, op1, false))
+	{
+	  /* For relationals we need to swap the operands and change
+	     the code.  */
+	  if (code == LT_EXPR
+	      || code == GT_EXPR
+	      || code == LE_EXPR
+	      || code == GE_EXPR)
+	    {
+	      TREE_SET_CODE (expr, swap_tree_comparison (code));
+	      TREE_OPERAND (expr, 0) = op1;
+	      TREE_OPERAND (expr, 1) = op0;
+	    }
+	  
+	  /* For a commutative operator we can just swap the operands.  */
+	  if (commutative_tree_code (code))
+	    {
+	      TREE_OPERAND (expr, 0) = op1;
+	      TREE_OPERAND (expr, 1) = op0;
+	    }
+	}
+
       get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags, prev_vops);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 1), flags, prev_vops);
       return;
