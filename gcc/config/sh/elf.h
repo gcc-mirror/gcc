@@ -58,6 +58,10 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_SPEC SH_ASM_SPEC
 #undef SUBTARGET_ASM_ISA_SPEC
 #define SUBTARGET_ASM_ISA_SPEC "\
+%{m2a:--isa=sh2a} \
+%{m2a-single:--isa=sh2a} \
+%{m2a-single-only:--isa=sh2a} \
+%{m2a-nofpu:--isa=sh2a-nofpu} \
 %{m5-compact*:--isa=SHcompact} %{m5-32media*:--isa=SHmedia --abi=32} \
 %{m5-64media*:--isa=SHmedia --abi=64}" ASM_ISA_DEFAULT_SPEC
 

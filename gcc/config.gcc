@@ -1757,6 +1757,10 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	sh4* | sh-superh-*)	sh_cpu_target=sh4 ;;
 	sh3e*)			sh_cpu_target=sh3e ;;
 	sh*-*-netbsd* | sh3*)	sh_cpu_target=sh3 ;;
+	sh2a_single_only*)	sh_cpu_target=sh2a-single-only ;;
+	sh2a_single*)		sh_cpu_target=sh2a-single ;;
+	sh2a_nofpu*)		sh_cpu_target=sh2a-nofpu ;;
+	sh2a*)			sh_cpu_target=sh2a ;;
 	sh2e*)			sh_cpu_target=sh2e ;;
 	sh2*)			sh_cpu_target=sh2 ;;
 	*)			sh_cpu_target=sh1 ;;
@@ -1765,6 +1769,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	case $sh_cpu_default in
 	sh5-64media-nofpu | sh5-64media | \
 	  sh5-32media-nofpu | sh5-32media | sh5-compact-nofpu | sh5-compact | \
+	  sh2a-single-only | sh2a-single | sh2a-nofpu | sh2a | \
 	  sh4a-single-only | sh4a-single | sh4a-nofpu | sh4a | sh4al | \
 	  sh4-single-only | sh4-single | sh4-nofpu | sh4 | \
 	  sh3e | sh3 | sh2e | sh2 | sh1) ;;
@@ -1779,7 +1784,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 		sh-superh-*)	sh_multilibs=m4,m4-single,m4-single-only,m4-nofpu ;;
 		sh*-*-linux*)	sh_multilibs=m1,m3e,m4 ;;
 		sh*-*-netbsd*)	sh_multilibs=m3,m3e,m4 ;;
-		*) sh_multilibs=m1,m2,m2e,m4,m4-single,m4-single-only ;;
+		*) sh_multilibs=m1,m2,m2e,m4,m4-single,m4-single-only,m2a,m2a-single ;;
 		esac
 	fi
 	target_cpu_default=SELECT_`echo ${sh_cpu_default}|tr a-z- A-Z_`
@@ -1790,6 +1795,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 		sh1 | sh2 | sh2e | sh3 | sh3e | \
 		sh4 | sh4-single | sh4-single-only | sh4-nofpu | \
 		sh4a | sh4a-single | sh4a-single-only | sh4a-nofpu | sh4al | \
+		sh2a | sh2a-single | sh2a-single-only | sh2a-nofpu | \
 		sh5-64media | sh5-64media-nofpu | \
 		sh5-32media | sh5-32media-nofpu | \
 		sh5-compact | sh5-compact-nofpu)
@@ -1803,7 +1809,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 		esac
 	done
 	if test x${enable_incomplete_targets} == xyes ; then
-		tm_defines="$tm_defines SUPPORT_SH1 SUPPORT_SH2E SUPPORT_SH4 SUPPORT_SH4_SINGLE SUPPORT_SH5_32MEDIA SUPPORT_SH5_32MEDIA_NOFPU SUPPORT_SH5_64MEDIA SUPPORT_SH5_64MEDIA_NOFPU"
+		tm_defines="$tm_defines SUPPORT_SH1 SUPPORT_SH2E SUPPORT_SH4 SUPPORT_SH4_SINGLE SUPPORT_SH2A SUPPORT_SH2A_SINGLE SUPPORT_SH5_32MEDIA SUPPORT_SH5_32MEDIA_NOFPU SUPPORT_SH5_64MEDIA SUPPORT_SH5_64MEDIA_NOFPU"
 	fi
 	use_fixproto=yes
 	;;
@@ -2483,12 +2489,15 @@ fi
 		"" | m1 | m2 | m2e | m3 | m3e | m4 | m4-single | m4-single-only | m4-nofpu )
 			# OK
 			;;
+		m2a | m2a-single | m2a-single-only | m2a-nofpu)
+			;;
 		m4a | m4a-single | m4a-single-only | m4a-nofpu | m4al)
 		        ;;
 		*)
 			echo "Unknown CPU used in --with-cpu=$with_cpu, known values:"  1>&2
 			echo "m1 m2 m2e m3 m3e m4 m4-single m4-single-only m4-nofpu" 1>&2
 			echo "m4a m4a-single m4a-single-only m4a-nofpu m4al" 1>&2
+			echo "m2a m2a-single m2a-single-only m2a-nofpu" 1>&2
 			exit 1
 			;;
 		esac

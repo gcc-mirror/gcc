@@ -22,15 +22,19 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 MULTILIB_ENDIAN = ml/mb
-MULTILIB_CPUS= $(ML_sh1)$(ML_sh2e)$(ML_sh2)$(ML_sh3e)$(ML_sh3)$(ML_sh4_nofpu)$(ML_sh4_single_only)$(ML_sh4_single)$(ML_sh4)$(ML_sh4a_nofpu)$(ML_sh4a_single_only)$(ML_sh4a_single)$(ML_sh4a)$(ML_m5_32media)$(ML_m5_32media_nofpu)$(ML_m5_compact)$(ML_m5_compact_nofpu)$(ML_m5_64media)$(ML_m5_64media_nofpu)
+MULTILIB_CPUS= $(ML_sh1)$(ML_sh2a)$(ML_sh2a_nofpu)$(ML_sh2a_single_only)$(ML_sh2a_single)$(ML_sh2e)$(ML_sh2)$(ML_sh3e)$(ML_sh3)$(ML_sh4_nofpu)$(ML_sh4_single_only)$(ML_sh4_single)$(ML_sh4)$(ML_sh4a_nofpu)$(ML_sh4a_single_only)$(ML_sh4a_single)$(ML_sh4a)$(ML_m5_32media)$(ML_m5_32media_nofpu)$(ML_m5_compact)$(ML_m5_compact_nofpu)$(ML_m5_64media)$(ML_m5_64media_nofpu)
 
 MULTILIB_OPTIONS= $(MULTILIB_ENDIAN) $(MULTILIB_CPUS:/=)
 MULTILIB_DIRNAMES= 
-#MULTILIB_MATCHES = m2=m3 m2e=m3e m2=m4-nofpu
+
+# The separate entries for m2a-nofpu and m2a-single-only with
+# duplicate base libraries are there to make sure we don't ever use an
+# m4* multilib for m2a or vice-versa; they are not compatible.  This
+# is why sh2a and sh2a-single need their own multilibs.
 MULTILIB_MATCHES = $(shell \
   multilibs="$(MULTILIB_OPTIONS)" ; \
-  for abi in m1,m2,m3,m4-nofpu,m4al,m4a-nofpu \
-             m2e,m3e,m4-single-only,m4a-single-only \
+  for abi in m1,m2,m3,m4-nofpu,m4al,m4a-nofpu m1,m2,m2a-nofpu \
+             m2e,m3e,m4-single-only,m4a-single-only m2e,m2a-single-only \
              m4-single,m4a-single m4,m4a \
              m5-32media,m5-compact,m5-32media \
              m5-32media-nofpu,m5-compact-nofpu,m5-32media-nofpu; do \
@@ -45,7 +49,7 @@ MULTILIB_MATCHES = $(shell \
   done)
 
 # SH1 only supports big endian.
-MULTILIB_EXCEPTIONS = ml/m1
+MULTILIB_EXCEPTIONS = ml/m1 ml/m2a*
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
@@ -62,3 +66,7 @@ gt-sh.h : s-gtype ; @true
 
 # These are not suitable for COFF.
 # EXTRA_MULTILIB_PARTS= crt1.o crti.o crtn.o crtbegin.o crtend.o
+
+# Local Variables:
+# mode: Makefile
+# End:

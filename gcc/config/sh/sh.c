@@ -1111,7 +1111,7 @@ prepare_scc_operands (enum rtx_code code)
       || (TARGET_SH2E && GET_MODE_CLASS (mode) == MODE_FLOAT))
     sh_compare_op1 = force_reg (mode, sh_compare_op1);
 
-  if (TARGET_SH4 && GET_MODE_CLASS (mode) == MODE_FLOAT)
+  if ((TARGET_SH4 || TARGET_SH2A) && GET_MODE_CLASS (mode) == MODE_FLOAT)
     (mode == SFmode ? emit_sf_insn : emit_df_insn)
      (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
 		gen_rtx_SET (VOIDmode, t_reg,
@@ -1156,7 +1156,7 @@ from_compare (rtx *operands, int code)
 			gen_rtx_REG (SImode, T_REG),
 			gen_rtx_fmt_ee (code, SImode,
 					sh_compare_op0, sh_compare_op1));
-  if (TARGET_SH4 && GET_MODE_CLASS (mode) == MODE_FLOAT)
+  if ((TARGET_SH4 || TARGET_SH2A) && GET_MODE_CLASS (mode) == MODE_FLOAT)
     {
       insn = gen_rtx_PARALLEL (VOIDmode,
 		      gen_rtvec (2, insn,
@@ -3066,6 +3066,10 @@ broken_move (rtx insn)
 			== SCRATCH))
 		&& GET_CODE (SET_DEST (pat)) == REG
 		&& FP_REGISTER_P (REGNO (SET_DEST (pat))))
+	  && ! (TARGET_SH2A
+		&& GET_MODE (SET_DEST (pat)) == SImode
+		&& GET_CODE (SET_SRC (pat)) == CONST_INT
+		&& CONST_OK_FOR_I20 (INTVAL (SET_SRC (pat))))
 	  && (GET_CODE (SET_SRC (pat)) != CONST_INT
 	      || ! CONST_OK_FOR_I08 (INTVAL (SET_SRC (pat)))))
 	return 1;
@@ -3810,6 +3814,10 @@ fixup_addr_diff_vecs (rtx first)
 	  if (GET_CODE (x) == LABEL_REF && XEXP (x, 0) == vec_lab)
 	    break;
 	}
+      /* FIXME: This is a bug in the optimizer, but it seems harmless
+	 to just avoid panicing.  */
+      if (!prev)
+	continue;
 
       /* Emit the reference label of the braf where it belongs, right after
 	 the casesi_jump_2 (i.e. braf).  */
@@ -4786,8 +4794,12 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
     {
       HOST_WIDE_INT align = STACK_BOUNDARY / BITS_PER_UNIT;
 
+/* This test is bogus, as output_stack_adjust is used to re-align the
+   stack.  */
+#if 0
       if (size % align)
 	abort ();
+#endif
 
       if (CONST_OK_FOR_ADD (size))
 	emit_fn (GEN_ADD3 (reg, reg, GEN_INT (size)));
@@ -4948,7 +4960,7 @@ push (int rn)
     x = gen_push_fpul ();
   else if (rn == FPSCR_REG)
     x = gen_push_fpscr ();
-  else if (TARGET_SH4 && TARGET_FMOVD && ! TARGET_FPU_SINGLE
+  else if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD && ! TARGET_FPU_SINGLE
 	   && FP_OR_XD_REGISTER_P (rn))
     {
       if (FP_REGISTER_P (rn) && (rn - FIRST_FP_REG) & 1)
@@ -4977,7 +4989,7 @@ pop (int rn)
     x = gen_pop_fpul ();
   else if (rn == FPSCR_REG)
     x = gen_pop_fpscr ();
-  else if (TARGET_SH4 && TARGET_FMOVD && ! TARGET_FPU_SINGLE
+  else if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD && ! TARGET_FPU_SINGLE
 	   && FP_OR_XD_REGISTER_P (rn))
     {
       if (FP_REGISTER_P (rn) && (rn - FIRST_FP_REG) & 1)
@@ -5095,11 +5107,11 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
   interrupt_handler = sh_cfun_interrupt_handler_p ();
 
   CLEAR_HARD_REG_SET (*live_regs_mask);
-  if (TARGET_SH4 && TARGET_FMOVD && interrupt_handler
+  if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD && interrupt_handler
       && regs_ever_live[FPSCR_REG])
     target_flags &= ~FPU_SINGLE_BIT;
   /* If we can save a lot of saves by switching to double mode, do that.  */
-  else if (TARGET_SH4 && TARGET_FMOVD && TARGET_FPU_SINGLE)
+  else if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD && TARGET_FPU_SINGLE)
     for (count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
       if (regs_ever_live[reg] && regs_ever_live[reg+1]
 	  && (! call_used_regs[reg] || (interrupt_handler && ! pragma_trapa))
@@ -5172,7 +5184,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	  SET_HARD_REG_BIT (*live_regs_mask, reg);
 	  count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
 
-	  if ((TARGET_SH4 || TARGET_SH5) && TARGET_FMOVD
+	  if ((TARGET_SH4 || TARGET_SH2A_DOUBLE || TARGET_SH5) && TARGET_FMOVD
 	      && GET_MODE_CLASS (REGISTER_NATURAL_MODE (reg)) == MODE_FLOAT)
 	    {
 	      if (FP_REGISTER_P (reg))
@@ -6194,7 +6206,7 @@ sh_builtin_saveregs (void)
   emit_move_insn (fpregs, XEXP (regbuf, 0));
   emit_insn (gen_addsi3 (fpregs, fpregs,
 			 GEN_INT (n_floatregs * UNITS_PER_WORD)));
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       rtx mem;
       for (regno = NPARM_REGS (DFmode) - 2; regno >= first_floatreg; regno -= 2)
@@ -6838,7 +6850,7 @@ sh_function_arg_advance (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 	}
     }
 
-  if (! (TARGET_SH4 || ca->renesas_abi)
+  if (! ((TARGET_SH4 || TARGET_SH2A) || ca->renesas_abi)
       || PASS_IN_REG_P (*ca, mode, type))
     (ca->arg_count[(int) GET_SH_ARG_CLASS (mode)]
      = (ROUND_REG (*ca, mode)
@@ -7565,7 +7577,10 @@ tertiary_reload_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 int
 fpscr_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  return (GET_CODE (op) == REG && REGNO (op) == FPSCR_REG
+  return (GET_CODE (op) == REG
+	  && (REGNO (op) == FPSCR_REG
+	      || (REGNO (op) >= FIRST_PSEUDO_REGISTER
+		  && !(reload_in_progress || reload_completed)))
 	  && GET_MODE (op) == PSImode);
 }
 

@@ -72,7 +72,7 @@ start:
 	LOAD_ADDR (___data, r26)
 	LOAD_ADDR (___rodata, r27)
 
-#if ! __SH4_NOFPU__
+#if ! __SH4_NOFPU__ && ! __SH2A_NOFPU__
 #if __SH5__ == 32
 	pt/l ___set_fpscr, tr0
 	movi	0, r4
@@ -116,12 +116,14 @@ start_l:
 	cmp/ge	r0,r1
 	bt	start_l
 
-#if defined (__SH2E__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
+#if ! __SH2A_NOFPU__
+#if defined (__SH2E__) || defined (__SH2A__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
 	mov.l set_fpscr_k, r1
 	jsr @r1
 	mov #0,r4
 	lds r3,fpscr
-#endif /*  defined (__SH2E__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) */
+#endif /*  defined (__SH2E__) || defined (__SH2A__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) */
+#endif /* ! __SH2A_NOFPU__ */
 
 	! arrange for exit to call fini
 	mov.l	atexit_k,r0
@@ -146,10 +148,12 @@ start_l:
 	nop
 
 	.align 2
-#if defined (__SH2E__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
+#if ! __SH2A_NOFPU__
+#if defined (__SH2E__) || defined (__SH2A__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
 set_fpscr_k:
 	.long	___set_fpscr
-#endif /*  defined (__SH2E__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) */
+#endif /*  defined (__SH2E__) || defined (__SH2A__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) */
+#endif /* ! __SH2A_NOFPU__ */
 
 stack_k:
 	.long	_stack	

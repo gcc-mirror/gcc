@@ -56,6 +56,11 @@ Boston, MA 02111-1307, USA.  */
 #define FMOVD_WORKS
 #endif
 
+#ifdef __SH2A__
+#undef FMOVD_WORKS
+#define FMOVD_WORKS
+#endif
+
 #if ! __SH5__
 #ifdef L_ashiftrt
 	.global	GLOBAL(ashiftrt_r4_0)
@@ -1936,7 +1941,8 @@ GLOBAL(moddi3):
 #endif /* L_moddi3 */
 
 #ifdef L_set_fpscr
-#if defined (__SH2E__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) || __SH5__ == 32
+#if !defined (__SH2A_NOFPU__)
+#if defined (__SH2E__) || defined (__SH2A__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) || __SH5__ == 32
 #ifdef __SH5__
 	.mode	SHcompact
 #endif
@@ -1960,7 +1966,7 @@ GLOBAL(set_fpscr):
 #ifndef FMOVD_WORKS
 	xor #16,r0
 #endif
-#if defined(__SH4__)
+#if defined(__SH4__) || defined (__SH2A_DOUBLE__)
 	swap.w r0,r3
 	mov.l r3,@(4,r1)
 #else /* defined (__SH2E__) || defined(__SH3E__) || defined(__SH4_SINGLE*__) */
@@ -1972,7 +1978,7 @@ GLOBAL(set_fpscr):
 #else
 	xor #24,r0
 #endif
-#if defined(__SH4__)
+#if defined(__SH4__) || defined (__SH2A_DOUBLE__)
 	swap.w r0,r2
 	rts
 	mov.l r2,@r1
@@ -2001,6 +2007,7 @@ LOCAL(set_fpscr_L1):
 #endif /* ELF */
 #endif /* NO_FPSCR_VALUES */
 #endif /* SH2E / SH3E / SH4 */
+#endif /* __SH2A_NOFPU__ */
 #endif /* L_set_fpscr */
 #ifdef L_ic_invalidate
 #if __SH5__ == 32
