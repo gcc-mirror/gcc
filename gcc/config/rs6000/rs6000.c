@@ -666,6 +666,10 @@ easy_fp_constant (op, mode)
   if (TARGET_SOFT_FLOAT && mode != DImode)
     return 1;
 
+  /* If we are using V.4 style PIC, consider all constants to be hard */
+  if (flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
+    return 0;
+
   if (mode == DFmode)
     {
       long k[2];
