@@ -1,3 +1,10 @@
+Sat Apr 17 17:33:30 1999  Craig Burley  <craig@jcb-sc.com>
+
+	From H.J. Lu <hjl@gnu.org>:
+        * Makefile.in (s-libi77): Depend on i77.
+        (s-libf77): Depend on i77.
+        (s-libu77): Depend on u77.
+
 Mon Apr 12 21:38:14 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	
 	* libF77/getenv_.c: Include stdlib.h.
