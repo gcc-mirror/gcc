@@ -1,5 +1,11 @@
 2003-03-09  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9373
+	* cp-lang.c (cxx_get_alias_set): Use alias set zero for
+	pointers to member functions.
+
+2003-03-09  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/8534
 	* g++.dg/opt/ptrmem1.C: New test.
 
