@@ -5658,14 +5658,15 @@ find_reloads_subreg_address (x, force_replace, opnum, type,
 		}
 	      XEXP (tem, 0) = plus_constant (XEXP (tem, 0), offset);
 	      PUT_MODE (tem, GET_MODE (x));
-	      x = tem;
-	      find_reloads_address (GET_MODE (x), &x, XEXP (x, 0), &XEXP (x, 0),
-				    opnum, ADDR_TYPE (type), ind_levels, insn);
+	      find_reloads_address (GET_MODE (tem), &tem, XEXP (tem, 0),
+				    &XEXP (tem, 0), opnum, ADDR_TYPE (type),
+				    ind_levels, insn);
 	      /* If this is not a toplevel operand, find_reloads doesn't see
 		 this substitution.  We have to emit a USE of the pseudo so
 		 that delete_output_reload can see it.  */
 	      if (replace_reloads && recog_operand[opnum] != x)
 		emit_insn_before (gen_rtx_USE (VOIDmode, SUBREG_REG (x)), insn);
+	      x = tem;
 	    }
 	}
     }
