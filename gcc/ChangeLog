@@ -1,3 +1,9 @@
+2003-04-01  Geoffrey Keating  <geoffk@apple.com>
+
+	* unwind-dw2-fde-darwin.c (DESTRUCTOR_MAY_BE_CALLED_LIVE): New.
+	(live_image_destructor): Reset image to initial state.
+	(examine_objects): Set DESTRUCTOR_MAY_BE_CALLED_LIVE.
+
 2003-04-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (input_operand): Accept bare

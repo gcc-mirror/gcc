@@ -86,12 +86,18 @@ enum {
   ALLOCED_IMAGE_MASK = 2,	/* The FDE entries were allocated by
 				   malloc, and must be freed.  This isn't
 				   used by newer libgcc versions.  */
-  IMAGE_IS_TEXT_MASK = 4	/* This image is in the TEXT segment.  */
+  IMAGE_IS_TEXT_MASK = 4,	/* This image is in the TEXT segment.  */
+  DESTRUCTOR_MAY_BE_CALLED_LIVE = 8  /* The destructor may be called on an
+					object that's part of the live
+					image list.  */
 };
 
-/* Delete any data we allocated on a live_images structure.
-   IMAGE has already been removed from the KEYMGR_GCC3_LIVE_IMAGE_LIST.
-   Called by KeyMgr (which will delete the struct after we return.)  */
+/* Delete any data we allocated on a live_images structure.  Either
+   IMAGE has already been removed from the
+   KEYMGR_GCC3_LIVE_IMAGE_LIST and the struct will be deleted
+   after we return, or that list is locked and we're being called
+   because this object might be about to be unloaded.  Called by
+   KeyMgr.  */
 
 static void 
 live_image_destructor (struct live_images *image)
@@ -105,7 +111,10 @@ live_image_destructor (struct live_images *image)
       image->object_info = NULL;
       if (image->examined_p & ALLOCED_IMAGE_MASK)
 	free (image->fde);
+      image->fde = NULL;
     }
+  image->examined_p = 0;
+  image->destructor = NULL;
 }
 
 /* Run through the list of live images.  If we can allocate memory,
@@ -165,7 +174,8 @@ examine_objects (void *pc, struct dwarf_eh_bases *bases, int dont_alloc)
 		image->destructor = live_image_destructor;
 		image->object_info = ob;
 		
-		image->examined_p |= EXAMINED_IMAGE_MASK;
+		image->examined_p |= (EXAMINED_IMAGE_MASK 
+				      | DESTRUCTOR_MAY_BE_CALLED_LIVE);
 	      }
 	    image->fde = real_fde;
 	    
