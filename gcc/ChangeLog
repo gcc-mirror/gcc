@@ -1,3 +1,11 @@
+1999-11-23  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* loop.c: Include "basic-block.h".
+	(try_copy_prop, replace_loop_reg): New functions.
+	(load_mems): Detect registers that just hold copies of the hoisted
+	mem, and call try_copy_prop to eliminate them.
+	* Makefile.in (loop.o): Update dependencies.
+
 Tue Nov 23 01:03:29 1999  Hans-Peter Nilsson  <hp@axis.com>
 
 	* Makefile.in (gencheck.o): Depend on gencheck.h.

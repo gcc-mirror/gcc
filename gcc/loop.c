@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "function.h"
 #include "expr.h"
+#include "basic-block.h"
 #include "insn-config.h"
 #include "insn-flags.h"
 #include "regs.h"
@@ -337,6 +338,8 @@ static void load_mems_and_recount_loop_regs_set PROTO((rtx, rtx, rtx,
 static void load_mems PROTO((rtx, rtx, rtx, rtx));
 static int insert_loop_mem PROTO((rtx *, void *));
 static int replace_loop_mem PROTO((rtx *, void *));
+static int replace_loop_reg PROTO((rtx *, void *));
+static void try_copy_prop PROTO((rtx, rtx, rtx, rtx, int));
 static int replace_label PROTO((rtx *, void *));
 
 typedef struct rtx_and_int {
@@ -9717,6 +9720,7 @@ load_mems (scan_start, end, loop_top, start)
   rtx end_label = NULL_RTX;
   /* Nonzero if the next instruction may never be executed.  */
   int next_maybe_never = 0;
+  int last_max_reg = max_reg_num ();
 
   if (loop_mems_idx == 0)
     return;
@@ -9756,6 +9760,7 @@ load_mems (scan_start, end, loop_top, start)
   /* Actually move the MEMs.  */
   for (i = 0; i < loop_mems_idx; ++i) 
     {
+      regset_head copies;
       int written = 0;
       rtx reg;
       rtx mem = loop_mems[i].mem;
@@ -9817,6 +9822,8 @@ load_mems (scan_start, end, loop_top, start)
 	   loop, but later discovered that we could not.  */
 	continue;
 
+      INIT_REG_SET (&copies);
+
       /* Allocate a pseudo for this MEM.  We set REG_USERVAR_P in
 	 order to keep scan_loop from moving stores to this MEM
 	 out of the loop just because this REG is neither a
@@ -9827,14 +9834,37 @@ load_mems (scan_start, end, loop_top, start)
 
       /* Now, replace all references to the MEM with the
 	 corresponding pesudos.  */
+      maybe_never = 0;
       for (p = next_insn_in_loop (scan_start, scan_start, end, loop_top);
 	   p != NULL_RTX;
 	   p = next_insn_in_loop (p, scan_start, end, loop_top))
 	{
 	  rtx_and_int ri;
-	  ri.r = p;
-	  ri.i = i;
-	  for_each_rtx (&p, replace_loop_mem, &ri);
+	  rtx set;
+
+	  if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+	    {
+	      /* See if this copies the mem into a register that isn't
+		 modified afterwards.  We'll try to do copy propagation
+		 a little further on.  */
+	      set = single_set (p);
+	      if (set
+		  /* @@@ This test is _way_ too conservative.  */
+		  && ! maybe_never
+		  && GET_CODE (SET_DEST (set)) == REG
+		  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
+		  && REGNO (SET_DEST (set)) < last_max_reg
+		  && VARRAY_INT (n_times_set, REGNO (SET_DEST (set))) == 1
+		  && rtx_equal_p (SET_SRC (set), loop_mems[i].mem))
+		SET_REGNO_REG_SET (&copies, REGNO (SET_DEST (set)));
+	      ri.r = p;
+	      ri.i = i;
+	      for_each_rtx (&p, replace_loop_mem, &ri);
+	    }
+
+	  if (GET_CODE (p) == CODE_LABEL
+	      || GET_CODE (p) == JUMP_INSN)
+	    maybe_never = 1;
 	}
 
       if (! apply_change_group ())
@@ -9842,6 +9872,7 @@ load_mems (scan_start, end, loop_top, start)
 	loop_mems[i].optimize = 0;
       else
 	{
+	  int j;
 	  rtx set;
 
 	  /* Load the memory immediately before START, which is
@@ -9874,6 +9905,16 @@ load_mems (scan_start, end, loop_top, start)
 	      print_rtl (loop_dump_stream, mem);
 	      fputc ('\n', loop_dump_stream);
 	    }
+
+	  /* Attempt a bit of copy propagation.  This helps untangle the
+	     data flow, and enables {basic,general}_induction_var to find
+	     more bivs/givs.  */
+	  EXECUTE_IF_SET_IN_REG_SET
+	    (&copies, FIRST_PSEUDO_REGISTER, j,
+	     {
+	       try_copy_prop (scan_start, loop_top, end, loop_mems[i].reg, j);
+	     });
+	  CLEAR_REG_SET (&copies);
 	}
     }
 
@@ -9898,6 +9939,51 @@ load_mems (scan_start, end, loop_top, start)
 	  if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == end_label)
 	    JUMP_LABEL (p) = label;
 	}
+    }
+}
+
+/* Try to replace every occurrence of pseudo REGNO with REPLACEMENT.
+   There must be exactly one insn that sets this pseudo; it will be
+   deleted if all replacements succeed and we can prove that the register
+   is not used after the loop.
+   The arguments SCAN_START, LOOP_TOP and END are as in load_mems.  */
+static void
+try_copy_prop (scan_start, loop_top, end, replacement, regno)
+     rtx scan_start, loop_top, end, replacement;
+     int regno;
+{
+  rtx init_insn = 0;
+  rtx insn;
+  for (insn = next_insn_in_loop (scan_start, scan_start, end, loop_top);
+       insn != NULL_RTX;
+       insn = next_insn_in_loop (insn, scan_start, end, loop_top))
+    {
+      rtx set;
+      rtx array[3] = { regno_reg_rtx[regno], replacement, insn };
+      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	continue;
+      set = single_set (insn);
+      if (set
+	  && GET_CODE (SET_DEST (set)) == REG
+	  && REGNO (SET_DEST (set)) == regno)
+	{
+	  if (init_insn)
+	    abort ();
+	  init_insn = insn;
+	}
+      for_each_rtx (&insn, replace_loop_reg, array);
+    }
+  if (! init_insn)
+    abort ();
+  if (apply_change_group ())
+    {
+      if (uid_luid[REGNO_LAST_UID (regno)] < INSN_LUID (end))
+	{
+	  PUT_CODE (init_insn, NOTE);
+	  NOTE_LINE_NUMBER (init_insn) = NOTE_INSN_DELETED;
+	}
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream, "  Replaced reg %d.\n", regno);
     }
 }
 
@@ -9945,6 +10031,28 @@ replace_loop_mem (mem, data)
 
   /* Actually replace the MEM.  */
   validate_change (insn, mem, loop_mems[i].reg, 1);
+
+  return 0;
+}
+
+/* Replace one register with another.  Called through for_each_rtx; PX points
+   to the rtx being scanned.  DATA is actually an array of three rtx's; the
+   first one is the one to be replaced, and the second one the replacement.
+   The third one is the current insn.  */
+
+static int
+replace_loop_reg (px, data)
+     rtx *px;
+     void *data;
+{
+  rtx x = *px;
+  rtx *array = (rtx *)data;
+
+  if (x == NULL_RTX)
+    return 0;
+
+  if (x == array[0])
+    validate_change (array[2], px, array[1], 1);
 
   return 0;
 }
