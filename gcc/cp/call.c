@@ -632,6 +632,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
+      tree tmp;
       flags |= LOOKUP_DESTRUCTOR;
       name = TREE_OPERAND (name, 0);
       if (parms)
@@ -642,8 +643,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
       if (! (name == TYPE_MAIN_VARIANT (basetype)
 	     || (IS_AGGR_TYPE (basetype)
 		 && name == constructor_name (basetype))
-	     || (TYPE_MAIN_VARIANT (basetype)
-		 == TYPE_MAIN_VARIANT (get_type_value (name)))))
+	     || ((tmp = get_type_value (name))
+		 && (TYPE_MAIN_VARIANT (basetype)
+		     == TYPE_MAIN_VARIANT (tmp)))))
 	{
 	  cp_error ("destructor name `~%D' does not match type `%T' of expression",
 		    name, basetype);

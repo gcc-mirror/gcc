@@ -2918,32 +2918,43 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	      || nvtbl == IDENTIFIER_GLOBAL_VALUE (DECL_NAME (vtbl)))
 	    {
 	      /* Dup it if it isn't in local scope yet.  */
-	      nvtbl = build_decl (VAR_DECL,
-				  DECL_NAME (vtbl),
-				  TYPE_MAIN_VARIANT (TREE_TYPE (BINFO_VTABLE (binfo))));
+	      nvtbl = build_decl
+		(VAR_DECL, DECL_NAME (vtbl),
+		 TYPE_MAIN_VARIANT (TREE_TYPE (BINFO_VTABLE (binfo))));
 	      DECL_ALIGN (nvtbl) = MAX (TYPE_ALIGN (double_type_node),
 					DECL_ALIGN (nvtbl));
 	      TREE_READONLY (nvtbl) = 0;
 	      DECL_ARTIFICIAL (nvtbl) = 1;
 	      nvtbl = pushdecl (nvtbl);
 	      init = NULL_TREE;
-	      cp_finish_decl (nvtbl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
-	      DECL_VIRTUAL_P (nvtbl) = 1;
-	      DECL_CONTEXT (nvtbl) = t;
+	      cp_finish_decl (nvtbl, init, NULL_TREE, 0,
+			      LOOKUP_ONLYCONVERTING);
+
+	      /* We don't set DECL_VIRTUAL_P and DECL_CONTEXT on nvtbl
+		 because they wouldn't be useful; everything that wants to
+		 look at the vtable will look at the decl for the normal
+		 vtable.  Setting DECL_CONTEXT also screws up
+		 decl_function_context.  */
+
 	      init = build (MODIFY_EXPR, TREE_TYPE (nvtbl),
 			    nvtbl, vtbl);
 	      TREE_SIDE_EFFECTS (init) = 1;
 	      expand_expr_stmt (init);
 	      /* Update the vtable pointers as necessary.  */
-	      ref = build_vfield_ref (build_indirect_ref (addr, NULL_PTR), DECL_CONTEXT (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))));
-	      expand_expr_stmt (build_modify_expr (ref, NOP_EXPR,
-						   build_unary_op (ADDR_EXPR, nvtbl, 0)));
+	      ref = build_vfield_ref
+		(build_indirect_ref (addr, NULL_PTR),
+		 DECL_CONTEXT (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))));
+	      expand_expr_stmt
+		(build_modify_expr (ref, NOP_EXPR,
+				    build_unary_op (ADDR_EXPR, nvtbl, 0)));
 	    }
 	  assemble_external (vtbl);
 	  aref = build_array_ref (vtbl, idx);
 	  naref = build_array_ref (nvtbl, idx);
-	  old_delta = build_component_ref (aref, delta_identifier, NULL_TREE, 0);
-	  new_delta = build_component_ref (naref, delta_identifier, NULL_TREE, 0);
+	  old_delta = build_component_ref (aref, delta_identifier,
+					   NULL_TREE, 0);
+	  new_delta = build_component_ref (naref, delta_identifier,
+					   NULL_TREE, 0);
 
 	  /* This is a upcast, so we have to add the offset for the
 	     virtual base.  */

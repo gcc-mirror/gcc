@@ -781,7 +781,15 @@ digest_init (type, init, tail)
 
   if (code == ARRAY_TYPE)
     {
-      tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+      tree typ1;
+
+      if (TREE_CODE (init) == TREE_LIST)
+	{
+	  error ("initializing array with parameter list");
+	  return error_mark_node;
+	}
+
+      typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       if ((typ1 == char_type_node
 	   || typ1 == signed_char_type_node
 	   || typ1 == unsigned_char_type_node
