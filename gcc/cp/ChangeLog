@@ -1,5 +1,8 @@
 1999-05-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* typeck.c (build_ptrmemfunc): Handle PTRMEM_CSTs carefully to
+	reveal optimization opportunities.
+
 	* pt.c (tsubst): Don't issue error messages when we're not
 	complaining, even if we see a qualified function type.
 	(check_cv_quals_for_unify): Don't allow a qualified function
