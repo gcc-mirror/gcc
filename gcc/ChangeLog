@@ -1,3 +1,7 @@
+Mon Feb  8 17:29:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (EXTRA_CONSTRAINT): Fix comment.
+
 Mon Feb  8 18:57:45 1999  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* c-typeck.c (check_init_type_bitfields): Use nonincremental
