@@ -105,7 +105,7 @@ esac
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 
 case "${target}" in
-   *-*-aix*)
+   *-*-aix4.[3456789]* | *-*-aix[56789]*)
      ATOMICITYH=$os_include_dir
      ;;
    *-*-irix*)
