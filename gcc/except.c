@@ -186,6 +186,7 @@ struct eh_region GTY(())
        we can match up fixup regions.  */
     struct eh_region_u_cleanup {
       tree exp;
+      struct eh_region *prev_try;
     } GTY ((tag ("ERT_CLEANUP"))) cleanup;
 
     /* The real region (by expression and by pointer) that fixup code
@@ -553,6 +554,7 @@ expand_eh_region_end_cleanup (handler)
   region->type = ERT_CLEANUP;
   region->label = gen_label_rtx ();
   region->u.cleanup.exp = handler;
+  region->u.cleanup.prev_try = cfun->eh->try_region;
 
   around_label = gen_label_rtx ();
   emit_jump (around_label);
@@ -2762,10 +2764,20 @@ reachable_handlers (insn)
       region = region->outer;
     }
 
-  for (; region; region = region->outer)
-    if (reachable_next_level (region, type_thrown, &info) >= RNL_CAUGHT)
-      break;
-
+  while (region)
+    {
+      if (reachable_next_level (region, type_thrown, &info) >= RNL_CAUGHT)
+	break;
+      /* If we have processed one cleanup, there is no point in
+	 processing any more of them.  Each cleanup will have an edge
+	 to the next outer cleanup region, so the flow graph will be
+	 accurate.  */
+      if (region->type == ERT_CLEANUP)
+	region = region->u.cleanup.prev_try;
+      else
+	region = region->outer;
+    }
+    
   return info.handlers;
 }
 
