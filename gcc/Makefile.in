@@ -2384,9 +2384,11 @@ install-info: doc installdirs lang.install-info
 	    $(INSTALL_DATA) $$f $(infodir)/$$f; \
 	done
 	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
+	  if [ -f $(infodir)/dir ] ; then \
 	    for f in cpp.info gcc.info; do \
 		install-info --dir-file=$(infodir)/dir $(infodir)/$$f; \
 	    done; \
+	  else true; fi; \
 	else true; fi;
 	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
 
