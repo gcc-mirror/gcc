@@ -75,7 +75,9 @@ struct induction
 				   even if further info is available.
 				   Both this and the above can be zero.  */
   unsigned ignore : 1;		/* 1 prohibits further processing of giv */
-  unsigned always_computable : 1;/* 1 if this set occurs each iteration */
+  unsigned always_computable : 1;/* 1 if this value is computable every
+				    iteration.  */
+  unsigned always_executed : 1; /* 1 if this set occurs each iteration.  */
   unsigned maybe_multiple : 1;	/* Only used for a biv and  1 if this biv
 				   update may be done multiple times per
 				   iteration. */
@@ -88,6 +90,8 @@ struct induction
   unsigned maybe_dead : 1;	/* 1 if this giv might be dead.  In that case,
 				   we won't use it to eliminate a biv, it
 				   would probably lose. */
+  unsigned auto_inc_opt : 1;	/* 1 if this giv had its increment output next
+				   to it to try to form an auto-inc address. */
   int lifetime;			/* Length of life of this giv */
   int times_used;		/* # times this giv is used. */
   rtx derive_adjustment;	/* If nonzero, is an adjustment to be
