@@ -398,6 +398,7 @@ thumb_reorg (first)
      rtx first;
 {
   rtx insn;
+  
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
       if (broken_move (insn))
@@ -540,6 +541,24 @@ thumb_reload_out_si (operands)
   abort ();
 }
 
+
+#ifdef THUMB_PE
+/* Return non-zero if FUNC is a naked function.  */
+
+static int
+arm_naked_function_p (func)
+     tree func;
+{
+  tree a;
+
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    abort ();
+
+  a = lookup_attribute ("naked", DECL_MACHINE_ATTRIBUTES (func));
+  return a != NULL_TREE;
+}
+#endif
+
 /* Return non-zero if FUNC must be entered in ARM mode.  */
 int
 is_called_in_ARM_mode (func)
@@ -552,7 +571,11 @@ is_called_in_ARM_mode (func)
   if (TARGET_CALLEE_INTERWORKING && TREE_PUBLIC (func))
     return TRUE;
 
+#ifdef THUMB_PE 
+  return lookup_attribute ("interfacearm", DECL_MACHINE_ATTRIBUTES (func)) != NULL_TREE;
+#else
   return FALSE;
+#endif
 }
 
 
@@ -968,6 +991,12 @@ output_return ()
   int regno;
   int live_regs_mask = 0;
 
+#ifdef THUMB_PE
+  /* If a function is naked, don't use the "return" insn.  */
+  if (arm_naked_function_p (current_function_decl))
+    return "";
+#endif
+
   return_used_this_function = 1;
 
   for (regno = 0; regno < 8; regno++)
@@ -1026,9 +1055,15 @@ thumb_function_prologue (f, frame_size)
   int store_arg_regs = 0;
   int regno;
 
+#ifdef THUMB_PE
+  if (arm_naked_function_p (current_function_decl))
+    return;
+#endif
+
   if (is_called_in_ARM_mode (current_function_decl))
     {
       char * name;
+      
       if (GET_CODE (DECL_RTL (current_function_decl)) != MEM)
 	abort();
       if (GET_CODE (XEXP (DECL_RTL (current_function_decl), 0)) != SYMBOL_REF)
@@ -1051,6 +1086,12 @@ thumb_function_prologue (f, frame_size)
 #define STUB_NAME ".real_start_of"
       
       asm_fprintf (f, "\t.code\t16\n");
+      
+#ifdef THUMB_PE
+      if (arm_dllexport_name_p (name))
+        name = ARM_STRIP_NAME_ENCODING (name);
+#endif        
+
       asm_fprintf (f, "\t.globl %s%U%s\n", STUB_NAME, name);
       asm_fprintf (f, "\t.thumb_func\n");
       asm_fprintf (f, "%s%U%s:\n", STUB_NAME, name);
@@ -1234,6 +1275,12 @@ thumb_expand_prologue ()
   int regno;
   int live_regs_mask;
 
+#ifdef THUMB_PE
+  /* Naked functions don't have prologues.  */
+  if (arm_naked_function_p (current_function_decl))
+    return;
+#endif
+  
   if (amount)
     {
       live_regs_mask = 0;
@@ -1296,6 +1343,12 @@ thumb_expand_epilogue ()
   HOST_WIDE_INT amount = (get_frame_size ()
 			  + current_function_outgoing_args_size);
   int regno;
+
+#ifdef THUMB_PE
+  /* Naked functions don't have epilogues.  */
+  if (arm_naked_function_p (current_function_decl))
+    return;
+#endif
 
   if (amount)
     {
@@ -1991,3 +2044,37 @@ thumb_override_options ()
       flag_pic = 0;
     }
 }
+
+#ifdef THUMB_PE
+/* Return nonzero if ATTR is a valid attribute for DECL.
+   ATTRIBUTES are any existing attributes and ARGS are the arguments
+   supplied with ATTR.
+
+   Supported attributes:
+
+   naked: don't output any prologue or epilogue code, the user is assumed
+   to do the right thing.
+
+   interfacearm: Always assume that this function will be entered in ARM
+   mode, not Thumb mode, and that the caller wishes to be returned to in
+   ARM mode.  */
+int
+arm_valid_machine_decl_attribute (decl, attr, args)
+     tree decl;
+     tree attr;
+     tree args;
+{
+  if (args != NULL_TREE)
+    return 0;
+  
+  if (is_attribute_p ("naked", attr))
+    if (TREE_CODE (decl) == FUNCTION_DECL)
+      return 1;
+  
+  if (is_attribute_p ("interfacearm", attr))
+    return TREE_CODE (decl) == FUNCTION_DECL;
+  
+  return 0;
+}
+#endif /* THUMB_PE */
+
