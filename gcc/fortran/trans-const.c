@@ -176,39 +176,27 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
     }
   else
     {
-      /* Note that mp_limb_t can be anywhere from short to long long,
-	 which gives us a nice variety of cases to choose from.  */
+      unsigned HOST_WIDE_INT words[2];
+      size_t count;
 
-      if (sizeof (mp_limb_t) == sizeof (HOST_WIDE_INT))
-	{
-	  low = mpz_getlimbn (i, 0);
-	  high = mpz_getlimbn (i, 1);
-	}
-      else if (sizeof (mp_limb_t) == 2 * sizeof (HOST_WIDE_INT))
-	{
-	  mp_limb_t limb0 = mpz_getlimbn (i, 0);
-	  int shift = (sizeof (mp_limb_t) - sizeof (HOST_WIDE_INT)) * CHAR_BIT;
-	  low = limb0;
-	  high = limb0 >> shift;
-	}
-      else if (sizeof (mp_limb_t) < sizeof (HOST_WIDE_INT))
-	{
-	  int shift = sizeof (mp_limb_t) * CHAR_BIT;
-	  int n, count = sizeof (HOST_WIDE_INT) / sizeof (mp_limb_t);
-	  for (low = n = 0; n < count; ++n)
-	    {
-	      low <<= shift;
-	      low |= mpz_getlimbn (i, n);
-	    }
-	  for (high = 0, n = count; n < 2*count; ++n)
-	    {
-	      high <<= shift;
-	      high |= mpz_getlimbn (i, n);
-	    }
-	}
+      /* Since we know that the value is not zero (mpz_fits_slong_p),
+	 we know that at one word will be written, but we don't know
+	 about the second.  It's quicker to zero the second word before
+	 that conditionally clear it later.  */
+      words[1] = 0;
 
-      /* By extracting limbs we constructed the absolute value of the
-	 desired number.  Negate if necessary.  */
+      /* Extract the absolute value into words.  */
+      mpz_export (words, &count, -1, sizeof (HOST_WIDE_INT), 0, 0, i);
+
+      /* We assume that all numbers are in range for its type, and that
+	 we never create a type larger than 2*HWI, which is the largest
+	 that the middle-end can handle.  */
+      assert (count == 1 || count == 2);
+
+      low = words[0];
+      high = words[1];
+
+      /* Negate if necessary.  */
       if (mpz_sgn (i) < 0)
 	{
 	  if (low == 0)
