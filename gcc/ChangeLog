@@ -1,3 +1,9 @@
+2004-08-26  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_ld_opcodes, xtensa_st_opcodes): Delete.
+	(xtensa_expand_block_move): Update comment.
+	(override_options): Remove initialization of xtensa_{ld,st}_opcodes.
+
 2004-08026  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/13506

@@ -84,9 +84,7 @@ char xtensa_hard_regno_mode_ok[(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
 /* Current frame size calculated by compute_frame_size.  */
 unsigned xtensa_current_frame_size;
 
-/* Tables of ld/st opcode names for block moves */
-const char *xtensa_ld_opcodes[(int) MAX_MACHINE_MODE];
-const char *xtensa_st_opcodes[(int) MAX_MACHINE_MODE];
+/* Largest block move to handle in-line.  */
 #define LARGEST_MOVE_RATIO 15
 
 /* Define the structure for the machine field in struct function.  */
@@ -1425,10 +1423,10 @@ xtensa_copy_incoming_a7 (rtx opnd)
 }
 
 
-/* Try to expand a block move operation to an RTL block move instruction.
-   If not optimizing or if the block size is not a constant or if the
-   block is small, the expansion fails and GCC falls back to calling
-   memcpy().
+/* Try to expand a block move operation to a sequence of RTL move
+   instructions.  If not optimizing, or if the block size is not a
+   constant, or if the block is too large, the expansion fails and GCC
+   falls back to calling memcpy().
 
    operands[0] is the destination
    operands[1] is the source
@@ -1774,14 +1772,6 @@ override_options (void)
 
   if (!TARGET_BOOLEANS && TARGET_HARD_FLOAT)
     error ("boolean registers required for the floating-point option");
-
-  /* Set up the tables of ld/st opcode names for block moves.  */
-  xtensa_ld_opcodes[(int) SImode] = "l32i";
-  xtensa_ld_opcodes[(int) HImode] = "l16ui";
-  xtensa_ld_opcodes[(int) QImode] = "l8ui";
-  xtensa_st_opcodes[(int) SImode] = "s32i";
-  xtensa_st_opcodes[(int) HImode] = "s16i";
-  xtensa_st_opcodes[(int) QImode] = "s8i";
 
   xtensa_char_to_class['q'] = SP_REG;
   xtensa_char_to_class['a'] = GR_REGS;
