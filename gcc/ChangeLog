@@ -1,3 +1,7 @@
+2001-05-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* i386/i386.h (CC1_CPU_SPEC): Clarify -m486 etc deprecation messages.
+
 2001-05-25  Richard Henderson  <rth@redhat.com>
 
 	* config.gcc (all gnu and linux): Use t-slibgcc-elf-ver with t-linux.
