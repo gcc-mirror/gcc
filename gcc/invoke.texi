@@ -120,7 +120,7 @@ in the following sections.
 -Wid-clash-@var{len}  -Wimplicit  -Wimport  -Winline
 -Wlarger-than-@var{len}  -Wmain  -Wmissing-declarations
 -Wmissing-prototypes  -Wnested-externs
--Wno-import  -Woverloaded-virtual -Wparentheses
+-Wno-import  -Wold-style-cast  -Woverloaded-virtual  -Wparentheses
 -Wpointer-arith  -Wredundant-decls  -Wreorder  -Wreturn-type  -Wshadow
 -Wsign-compare  -Wstrict-prototypes  -Wswitch  -Wsynth
 -Wtemplate-debugging  -Wtraditional  -Wtrigraphs
@@ -1124,7 +1124,8 @@ have meanings only for C++ programs:
 Do not assume @samp{inline} for functions defined inside a class scope.
 @xref{Optimize Options,,Options That Control Optimization}.
 
-@item -Woverloaded-virtual
+@item -Wold-style-cast
+@itemx -Woverloaded-virtual
 @itemx -Wtemplate-debugging
 Warnings that apply only to C++ programs.  @xref{Warning
 Options,,Options to Request or Suppress Warnings}.
@@ -1540,6 +1541,9 @@ Warn if an @code{extern} declaration is encountered within an function.
 @item -Winline
 Warn if a function can not be inlined, and either it was declared as inline,
 or else the @samp{-finline-functions} option was given.
+
+@item -Wold-style-cast
+Warn if an old-style (C-style) cast is used within a program.
 
 @item -Woverloaded-virtual
 @cindex overloaded virtual fn, warning
