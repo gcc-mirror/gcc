@@ -188,7 +188,6 @@ static void build_vtt (tree);
 static tree binfo_ctor_vtable (tree);
 static tree *build_vtt_inits (tree, tree, tree *, tree *);
 static tree dfs_build_secondary_vptr_vtt_inits (tree, void *);
-static tree dfs_ctor_vtable_bases_queue_p (tree, int, void *data);
 static tree dfs_fixup_binfo_vtbls (tree, void *);
 static int record_subobject_offset (tree, tree, splay_tree);
 static int check_subobject_offset (tree, tree, splay_tree);
@@ -205,12 +204,6 @@ static bool base_derived_from (tree, tree);
 static int empty_base_at_nonzero_offset_p (tree, tree, splay_tree);
 static tree end_of_base (tree);
 static tree get_vcall_index (tree, tree);
-
-/* Macros for dfs walking during vtt construction. See
-   dfs_ctor_vtable_bases_queue_p, dfs_build_secondary_vptr_vtt_inits
-   and dfs_fixup_binfo_vtbls.  */
-#define VTT_TOP_LEVEL_P(NODE) (TREE_LIST_CHECK (NODE)->common.unsigned_flag)
-#define VTT_MARKED_BINFO_P(NODE) TREE_USED (NODE)
 
 /* Variables shared between class.c and call.c.  */
 
@@ -6716,6 +6709,22 @@ binfo_ctor_vtable (tree binfo)
   return vt;
 }
 
+/* Data for secondary VTT initialization.  */
+typedef struct secondary_vptr_vtt_init_data_s
+{
+  /* Is this the primary VTT? */
+  bool top_level_p;
+
+  /* Current index into the VTT.  */
+  tree index;
+
+  /* TREE_LIST of initializers built up.  */
+  tree inits;
+
+  /* The type being constructed by this secondary VTT.  */
+  tree type_being_constructed;
+} secondary_vptr_vtt_init_data;
+
 /* Recursively build the VTT-initializer for BINFO (which is in the
    hierarchy dominated by T).  INITS points to the end of the initializer
    list to date.  INDEX is the VTT index where the next element will be
@@ -6725,12 +6734,13 @@ binfo_ctor_vtable (tree binfo)
    vtables for the BINFO-in-T variant.  */
 
 static tree *
-build_vtt_inits (tree binfo, tree t, tree* inits, tree* index)
+build_vtt_inits (tree binfo, tree t, tree *inits, tree *index)
 {
   int i;
   tree b;
   tree init;
   tree secondary_vptrs;
+  secondary_vptr_vtt_init_data data;
   int top_level_p = same_type_p (TREE_TYPE (binfo), t);
 
   /* We only need VTTs for subobjects with virtual bases.  */
@@ -6766,26 +6776,21 @@ build_vtt_inits (tree binfo, tree t, tree* inits, tree* index)
   /* Add secondary virtual pointers for all subobjects of BINFO with
      either virtual bases or reachable along a virtual path, except
      subobjects that are non-virtual primary bases.  */
-  secondary_vptrs = tree_cons (t, NULL_TREE, BINFO_TYPE (binfo));
-  TREE_TYPE (secondary_vptrs) = *index;
-  VTT_TOP_LEVEL_P (secondary_vptrs) = top_level_p;
-  VTT_MARKED_BINFO_P (secondary_vptrs) = 0;
+  data.top_level_p = top_level_p;
+  data.index = *index;
+  data.inits = NULL;
+  data.type_being_constructed = BINFO_TYPE (binfo);
   
-  dfs_walk_real (binfo,
-		 dfs_build_secondary_vptr_vtt_inits,
-		 NULL,
-	         dfs_ctor_vtable_bases_queue_p,
-		 secondary_vptrs);
-  VTT_MARKED_BINFO_P (secondary_vptrs) = 1;
-  dfs_walk (binfo, dfs_unmark, dfs_ctor_vtable_bases_queue_p,
-            secondary_vptrs);
+  dfs_walk_real (binfo, dfs_build_secondary_vptr_vtt_inits,
+		 NULL, unmarkedp, &data);
+  dfs_walk (binfo, dfs_unmark, markedp, 0);
 
-  *index = TREE_TYPE (secondary_vptrs);
+  *index = data.index;
 
   /* The secondary vptrs come back in reverse order.  After we reverse
      them, and add the INITS, the last init will be the first element
      of the chain.  */
-  secondary_vptrs = TREE_VALUE (secondary_vptrs);
+  secondary_vptrs = data.inits;
   if (secondary_vptrs)
     {
       *inits = nreverse (secondary_vptrs);
@@ -6793,8 +6798,9 @@ build_vtt_inits (tree binfo, tree t, tree* inits, tree* index)
       gcc_assert (*inits == NULL_TREE);
     }
 
-  /* Add the secondary VTTs for virtual bases.  */
   if (top_level_p)
+    /* Add the secondary VTTs for virtual bases in inheritance graph
+       order.  */
     for (b = TYPE_BINFO (BINFO_TYPE (binfo)); b; b = TREE_CHAIN (b))
       {
 	if (!BINFO_VIRTUAL_P (b))
@@ -6802,121 +6808,84 @@ build_vtt_inits (tree binfo, tree t, tree* inits, tree* index)
 	
 	inits = build_vtt_inits (b, t, inits, index);
       }
-
-  if (!top_level_p)
-    {
-      tree data = tree_cons (t, binfo, NULL_TREE);
-      VTT_TOP_LEVEL_P (data) = 0;
-      VTT_MARKED_BINFO_P (data) = 0;
-      
-      dfs_walk (binfo, dfs_fixup_binfo_vtbls,
-	        dfs_ctor_vtable_bases_queue_p,
-	        data);
-    }
+  else
+    /* Remove the ctor vtables we created.  */
+    dfs_walk (binfo, dfs_fixup_binfo_vtbls, 0, binfo);
 
   return inits;
 }
 
 /* Called from build_vtt_inits via dfs_walk.  BINFO is the binfo for the base
-   in most derived. DATA is a TREE_LIST who's TREE_CHAIN is the type of the
-   base being constructed whilst this secondary vptr is live.  The
-   TREE_TOP_LEVEL flag indicates that this is the primary VTT.  */
+   in most derived. DATA is a SECONDARY_VPTR_VTT_INIT_DATA structure.  */
 
 static tree
-dfs_build_secondary_vptr_vtt_inits (tree binfo, void *data)
+dfs_build_secondary_vptr_vtt_inits (tree binfo, void *data_)
 {
-  tree l; 
-  tree t;
-  tree init;
-  tree index;
-  int top_level_p;
+  secondary_vptr_vtt_init_data *data = (secondary_vptr_vtt_init_data *)data_;
 
-  l = (tree) data;
-  t = TREE_CHAIN (l);
-  top_level_p = VTT_TOP_LEVEL_P (l);
-  
   BINFO_MARKED (binfo) = 1;
 
   /* We don't care about bases that don't have vtables.  */
   if (!TYPE_VFIELD (BINFO_TYPE (binfo)))
     return NULL_TREE;
 
-  /* We're only interested in proper subobjects of T.  */
-  if (same_type_p (BINFO_TYPE (binfo), t))
+  /* We're only interested in proper subobjects of the type being
+     constructed.  */
+  if (same_type_p (BINFO_TYPE (binfo), data->type_being_constructed))
     return NULL_TREE;
 
   /* We're not interested in non-virtual primary bases.  */
   if (!BINFO_VIRTUAL_P (binfo) && BINFO_PRIMARY_P (binfo))
     return NULL_TREE;
 
-  /* If BINFO has virtual bases or is reachable via a virtual path
-     from T, it'll have a secondary vptr.  */
+  /* We're only interested in bases with virtual bases or reachable
+     via a virtual path from the type being constructed.  */
   if (!CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo))
-      && !binfo_via_virtual (binfo, t))
+      && !binfo_via_virtual (binfo, data->type_being_constructed))
     return NULL_TREE;
 
   /* Record the index where this secondary vptr can be found.  */
-  index = TREE_TYPE (l);
-  if (top_level_p)
+  if (data->top_level_p)
     {
       gcc_assert (!BINFO_VPTR_INDEX (binfo));
-      BINFO_VPTR_INDEX (binfo) = index;
-    }
-  TREE_TYPE (l) = size_binop (PLUS_EXPR, index, 
-			      TYPE_SIZE_UNIT (ptr_type_node));
+      BINFO_VPTR_INDEX (binfo) = data->index;
 
-  /* Add the initializer for the secondary vptr itself.  */
-  if (top_level_p && BINFO_VIRTUAL_P (binfo))
-    {
-      /* It's a primary virtual base, and this is not the construction
-         vtable. Find the base this is primary of in the inheritance graph,
-         and use that base's vtable now.  */
-      while (BINFO_PRIMARY_P (binfo))
-        binfo = BINFO_INHERITANCE_CHAIN (binfo);
+      if (BINFO_VIRTUAL_P (binfo))
+	{
+          /* It's a primary virtual base, and this is not a
+             construction vtable.  Find the base this is primary of in
+             the inheritance graph, and use that base's vtable
+             now.  */
+	  while (BINFO_PRIMARY_P (binfo))
+	    binfo = BINFO_INHERITANCE_CHAIN (binfo);
+	}
     }
-  init = binfo_ctor_vtable (binfo);
-  TREE_VALUE (l) = tree_cons (NULL_TREE, init, TREE_VALUE (l));
+  
+  /* Add the initializer for the secondary vptr itself.  */
+  data->inits = tree_cons (NULL_TREE, binfo_ctor_vtable (binfo), data->inits);
+
+  /* Advance the vtt index.  */
+  data->index = size_binop (PLUS_EXPR, data->index,
+			    TYPE_SIZE_UNIT (ptr_type_node));
 
   return NULL_TREE;
 }
 
-/* dfs_walk_real predicate for building vtables. DATA is a TREE_LIST,
-   VTT_MARKED_BINFO_P indicates whether marked or unmarked bases
-   should be walked.  TREE_PURPOSE is the TREE_TYPE that dominates the
-   hierarchy.  */
-
-static tree
-dfs_ctor_vtable_bases_queue_p (tree derived, int ix,
-			       void* data)
-{
-  tree binfo = BINFO_BASE_BINFO (derived, ix);
-  
-  if (!BINFO_MARKED (binfo) == VTT_MARKED_BINFO_P ((tree) data))
-    return NULL_TREE;
-  return binfo;
-}
-
-/* Called from build_vtt_inits via dfs_walk. After building constructor
-   vtables and generating the sub-vtt from them, we need to restore the
-   BINFO_VTABLES that were scribbled on.  DATA is a TREE_LIST whose
-   TREE_VALUE is the TREE_TYPE of the base whose sub vtt was generated.  */
+/* Called from build_vtt_inits via dfs_walk. After building
+   constructor vtables and generating the sub-vtt from them, we need
+   to restore the BINFO_VTABLES that were scribbled on.  DATA is the
+   binfo of the base whose sub vtt was generated.  */
 
 static tree
 dfs_fixup_binfo_vtbls (tree binfo, void* data)
 {
-  BINFO_MARKED (binfo) = 0;
-
-  /* We don't care about bases that don't have vtables.  */
-  if (!TYPE_VFIELD (BINFO_TYPE (binfo)))
-    return NULL_TREE;
+  tree vtable = BINFO_VTABLE (binfo);
 
   /* If we scribbled the construction vtable vptr into BINFO, clear it
      out now.  */
-  if (BINFO_VTABLE (binfo)
-      && TREE_CODE (BINFO_VTABLE (binfo)) == TREE_LIST
-      && (TREE_PURPOSE (BINFO_VTABLE (binfo)) 
-	  == TREE_VALUE ((tree) data)))
-    BINFO_VTABLE (binfo) = TREE_CHAIN (BINFO_VTABLE (binfo));
+  if (vtable && TREE_CODE (vtable) == TREE_LIST
+      && (TREE_PURPOSE (vtable) == (tree) data))
+    BINFO_VTABLE (binfo) = TREE_CHAIN (vtable);
 
   return NULL_TREE;
 }
