@@ -1,3 +1,9 @@
+2005-03-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* g++.dg/warn/weak1.C: Skip test on hppa*-*-hpux*.
+	* g++.dg/init/dso_handle1.C, gcc.dg/torture/builtin-noret-1.c,
+	gcc.dg/torture/builtin-noret-2.c: Require weak support.
+
 2005-03-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/warn/Wnvdtor.C: New test.
