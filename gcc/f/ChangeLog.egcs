@@ -1,3 +1,7 @@
+Sun Sep 14 12:35:20 1997  Fred Fish (fnf@ninemoons.com)
+
+	* proj.h (isascii): Provide a default definition if none is available.
+
 Thu Sep 11 19:26:10 1997  Dave Love <d.love@dl.ac.uk>
 
 	* config-lang.in: Remove the messages about possible build problems.
