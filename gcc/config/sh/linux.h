@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__sh__ -Dlinux -Asystem=posix"
+#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__sh__ -Dgnu_linux -Dlinux -Asystem=posix"
 
 #undef SUBTARGET_ASM_ENDIAN_SPEC
 #define SUBTARGET_ASM_ENDIAN_SPEC "%{!mb:-little}"

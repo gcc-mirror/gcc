@@ -1,6 +1,6 @@
 /* Xtensa Linux configuration.
    Derived from the configuration for GCC for Intel i386 running Linux.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,7 +52,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
  "-D__XTENSA__ -D__ELF__ -Acpu=xtensa -Amachine=xtensa \
-  -Dunix -Dlinux -Asystem=posix"
+  -Dunix -Dgnu_linux -Dlinux -Asystem=posix"
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."

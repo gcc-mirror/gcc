@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Alpha Linux-based GNU systems.
-   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 2002 Free Software Foundation, Inc.
    Contributed by Richard Henderson.
 
 This file is part of GNU CC.
@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-Dlinux -Dunix -Asystem=linux -D_LONGLONG -D__alpha__"
+  "-Dgnu_linux -Dlinux -Dunix -Asystem=linux -D_LONGLONG -D__alpha__"
 
 /* The GNU C++ standard library requires that these macros be defined.  */
 #undef CPLUSPLUS_CPP_SPEC

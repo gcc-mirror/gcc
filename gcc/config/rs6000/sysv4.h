@@ -1221,18 +1221,18 @@ do {						\
 #endif
 
 #ifdef USE_GNULIBC_1
-#define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__		\
-%{!undef:							\
-  %{!ansi:							\
-    %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			\
-    %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		\
+#define CPP_OS_LINUX_SPEC "-D__unix__ -D__gnu_linux__ -D__linux__ \
+%{!undef:							  \
+  %{!ansi:							  \
+    %{!std=*:-Dunix -D__unix -Dlinux -D__linux}	                  \
+    %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		  \
 -Asystem=unix -Asystem=posix"
 #else
-#define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__		\
-%{!undef:							\
-  %{!ansi:							\
-    %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			\
-    %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		\
+#define CPP_OS_LINUX_SPEC "-D__unix__ -D__gnu_linux__ -D__linux__ \
+%{!undef:							  \
+  %{!ansi:							  \
+    %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			  \
+    %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		  \
 -Asystem=unix -Asystem=posix %{pthread:-D_REENTRANT}"
 #endif
 
@@ -1256,9 +1256,9 @@ do {						\
   %{rdynamic:-export-dynamic} \
   %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
 
-#define CPP_OS_GNU_SPEC "-D__unix__ -D__GNU__	\
-%{!undef:					\
-  %{!ansi: -Dunix -D__unix}}			\
+#define CPP_OS_GNU_SPEC "-D__unix__ -Dgnu_hurd -D__GNU__	\
+%{!undef:					                \
+  %{!ansi: -Dunix -D__unix}}			                \
 -Asystem=gnu -Asystem=unix -Asystem=posix %{pthread:-D_REENTRANT}"
 
 /* NetBSD support.  */
