@@ -1849,6 +1849,9 @@ for machine in $build $host $target; do
 		tmake_file=alpha/t-vms
 		fixincludes=Makefile.in
 		;;
+	arc-*-elf*)
+		extra_parts="crtinit.o crtfini.o"
+		;;
 	arm-*-coff* | armel-*-coff*)
 		tm_file=arm/coff.h
 		tmake_file=arm/t-bare

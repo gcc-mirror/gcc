@@ -131,6 +131,37 @@
 	     : "r" ((USItype) (x)))
 #endif /* __a29k__ */
 
+#if defined (__arc__)
+#define add_ssaaaa(sh, sl, ah, al, bh, bl) \
+  __asm__ ("add.f	%1, %4, %5
+	adc	%0, %2, %3"						\
+	   : "=r" ((USItype) (sh)),					\
+	     "=&r" ((USItype) (sl))					\
+	   : "%r" ((USItype) (ah)),					\
+	     "rIJ" ((USItype) (bh)),					\
+	     "%r" ((USItype) (al)),					\
+	     "rIJ" ((USItype) (bl)))
+#define sub_ddmmss(sh, sl, ah, al, bh, bl) \
+  __asm__ ("sub.f	%1, %4, %5
+	sbc	%0, %2, %3"						\
+	   : "=r" ((USItype) (sh)),					\
+	     "=&r" ((USItype) (sl))					\
+	   : "r" ((USItype) (ah)),					\
+	     "rIJ" ((USItype) (bh)),					\
+	     "r" ((USItype) (al)),					\
+	     "rIJ" ((USItype) (bl)))
+/* Call libgcc1 routine.  */
+#define umul_ppmm(w1, w0, u, v) \
+do {									\
+  DIunion __w;								\
+  __w.ll = __umulsidi3 (u, v);						\
+  w1 = __w.s.high;							\
+  w0 = __w.s.low;							\
+} while (0)
+#define __umulsidi3 __umulsidi3
+UDItype __umulsidi3 (USItype, USItype);
+#endif
+
 #if defined (__arm__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("adds	%1, %4, %5
