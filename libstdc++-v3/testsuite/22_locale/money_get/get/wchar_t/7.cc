@@ -1,0 +1,70 @@
+// 2001-09-12 Benjamin Kosnik  <bkoz@redhat.com>
+
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// 22.2.6.1.1 money_get members
+
+#include <locale>
+#include <sstream>
+#include <testsuite_hooks.h>
+
+// We were appending to the string val passed by reference, instead
+// of constructing a temporary candidate, eventually copied into
+// val in case of successful parsing.
+void test07()
+{
+  using namespace std;
+  bool test = true;
+
+  typedef istreambuf_iterator<wchar_t> InIt;
+  InIt iend1, iend2, iend3;
+
+  locale loc_c = locale::classic();
+  wstring buffer1(L"123");
+  wstring buffer2(L"456");
+  wstring buffer3(L"Golgafrincham"); // From Nathan's original idea.
+
+  wstring val;
+
+  ios_base::iostate err;
+
+  const money_get<wchar_t,InIt>& mg = use_facet<money_get<wchar_t, InIt> >(loc_c);
+
+  wistringstream fmt1(buffer1);
+  InIt ibeg1(fmt1);
+  mg.get(ibeg1,iend1,false,fmt1,err,val);
+  VERIFY( val == buffer1 );
+
+  wistringstream fmt2(buffer2);
+  InIt ibeg2(fmt2);
+  mg.get(ibeg2,iend2,false,fmt2,err,val);
+  VERIFY( val == buffer2 );
+
+  val = buffer3;
+  wistringstream fmt3(buffer3);
+  InIt ibeg3(fmt3);
+  mg.get(ibeg3,iend3,false,fmt3,err,val);
+  VERIFY( val == buffer3 );
+}
+
+int main()
+{
+  test07();
+  return 0;
+}
