@@ -16,6 +16,26 @@
 	tree-ssa-pre.c, tree-ssa.c, tree-vectorizer.c, tree.def,
 	unwind-dw2-fde-darwin.c, var-tracking.c: Update copyright.
 
+	* config/darwin.c, config/darwin.h, config/freebsd-spec.h,
+	config/alpha/alpha.c, config/arm/vfp.md,
+	config/i386/emmintrin.h, config/i386/i386-modes.def,
+	config/i386/i386-protos.h, config/i386/i386.h,
+	config/i386/pmmintrin.h, config/i386/ppro.md,
+	config/i386/predicates.md, config/i386/xmmintrin.h,
+	config/i860/i860.c, config/ia64/ia64-modes.def,
+	config/ia64/ia64-protos.h, config/ia64/ia64.h,
+	config/ia64/ia64.md, config/ia64/itanium1.md,
+	config/ia64/itanium2.md, config/ia64/predicates.md,
+	config/iq2000/iq2000.h, config/mips/linux64.h,
+	config/rs6000/aix41.h, config/rs6000/aix43.h,
+	config/rs6000/aix52.h, config/rs6000/darwin-fallback.c,
+	config/rs6000/rs6000.c, config/rs6000/rs6000.h,
+	config/rs6000/spe.md, config/sh/sh.md, config/sparc/linux.h,
+	config/sparc/linux64.h, config/sparc/litecoff.h,
+	config/sparc/sp64-elf.h, config/sparc/sparc.c,
+	config/sparc/sparc.h, config/sparc/sparc.md,
+	config/sparc/sysv4-only.h: Update copyright.
+
 2005-01-18  Richard Henderson  <rth@redhat.com>
 
 	PR target/19496
