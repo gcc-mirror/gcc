@@ -300,7 +300,7 @@ static enum {dump_none, dump_only, dump_names, dump_definitions}
 static int debug_output = 0;
 
 /* Nonzero means pass #include lines through to the output,
-   even if they are ifdeffed out.  */
+   even if they are ifdefed out.  */
 static int dump_includes;
 
 /* Nonzero indicates special processing used by the pcp program.  The
@@ -4604,9 +4604,9 @@ absolute_filename (filename)
 
    Do only the simplifications allowed by Posix.
    It is OK to miss simplifications on non-Posix hosts,
-   since this merely leads to suboptimial results.  */
+   since this merely leads to suboptimal results.  */
 
-static size_t
+++ combine.c	Mon Dec  1 01:07:35 1997
 simplify_filename (filename)
      char *filename;
 {

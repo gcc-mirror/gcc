@@ -333,7 +333,7 @@ LIB1FUNCS_EXTRA =
 LIB2FUNCS_EXTRA = 
 
 # Default float.h source to use for cross-compiler.
-# This is overidden by configure.
+# This is overridden by configure.
 CROSS_FLOAT_H=$(srcdir)/config/float-@float_format@.h
 
 # Program to convert libraries.

@@ -2285,7 +2285,7 @@ do {							\
 #else
 /* In OSF/1 v3.2c, the assembler by default does not output file names which
    causes mips-tfile to fail.  Passing -g to the assembler fixes this problem.
-   ??? Stricly speaking, we only need -g if the user specifies -g.  Passing
+   ??? Strictly speaking, we need -g only if the user specifies -g.  Passing
    it always means that we get slightly larger than necessary object files
    if the user does not specify -g.  If we don't pass -g, then mips-tfile
    will need to be fixed to work in this case.  Pass -O0 since some

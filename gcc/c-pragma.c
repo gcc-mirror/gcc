@@ -65,7 +65,7 @@ handle_pragma_token (string, token)
 	  if (HANDLE_PRAGMA_WEAK)
 	    handle_pragma_weak (state, name, value);
 
-#endif /* HANDLE_PRAMA_WEAK */
+#endif /* HANDLE_PRAGMA_WEAK */
 	}
 
       type = state = ps_start;

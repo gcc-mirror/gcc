@@ -176,7 +176,7 @@ static struct processors all_procs[] =
   {"arm600",	PROCESSOR_ARM6, FL_CO_PROC | FL_MODE32 | FL_MODE26},
   {"arm610",	PROCESSOR_ARM6, FL_MODE32 | FL_MODE26},
   {"arm7",	PROCESSOR_ARM7, FL_CO_PROC | FL_MODE32 | FL_MODE26},
-  /* arm7m doesn't exist on its own, only in conjuction with D, (and I), but
+  /* arm7m doesn't exist on its own, only in conjunction with D, (and I), but
      those don't alter the code, so it is sometimes known as the arm7m */
   {"arm7m",	PROCESSOR_ARM7, (FL_CO_PROC | FL_FAST_MULT | FL_MODE32
 				 | FL_MODE26)},
@@ -3050,7 +3050,7 @@ gen_rotated_half_load (memref)
       base = XEXP (base, 0);
     }
 
-  /* If we aren't allowed to generate unalligned addresses, then fail.  */
+  /* If we aren't allowed to generate unaligned addresses, then fail.  */
   if (TARGET_SHORT_BY_BYTES
       && ((BYTES_BIG_ENDIAN ? 1 : 0) ^ ((offset & 2) == 0)))
     return NULL;
@@ -3075,7 +3075,7 @@ select_dominance_cc_mode (op, x, y, cond_or)
 
   /* Currently we will probably get the wrong result if the individual
      comparisons are not simple.  This also ensures that it is safe to
-     reverse a comparions if necessary.  */
+     reverse a comparison if necessary.  */
   if ((arm_select_cc_mode (cond1 = GET_CODE (x), XEXP (x, 0), XEXP (x, 1))
        != CCmode)
       || (arm_select_cc_mode (cond2 = GET_CODE (y), XEXP (y, 0), XEXP (y, 1))
@@ -3191,10 +3191,10 @@ arm_select_cc_mode (op, x, y)
 	  || GET_CODE (x) == ROTATERT))
     return CC_SWPmode;
 
-  /* This is a special case, that is used by combine to alow a 
-     comarison of a shifted byte load to be split into a zero-extend
+  /* This is a special case that is used by combine to allow a 
+     comparison of a shifted byte load to be split into a zero-extend
      followed by a comparison of the shifted integer (only valid for
-     equalities and unsigned inequalites.  */
+     equalities and unsigned inequalities).  */
   if (GET_MODE (x) == SImode
       && GET_CODE (x) == ASHIFT
       && GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) == 24
@@ -5940,7 +5940,7 @@ aof_data_section ()
 
 /* The AOF assembler is religiously strict about declarations of
    imported and exported symbols, so that it is impossible to declare
-   a function as imported near the begining of the file, and then to
+   a function as imported near the beginning of the file, and then to
    export it later on.  It is, however, possible to delay the decision
    until all the functions in the file have been compiled.  To get
    around this, we maintain a list of the imports and exports, and

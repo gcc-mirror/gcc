@@ -1758,7 +1758,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 
   /* Optionally warn about more than one declaration for the same name.  */
   if (errmsg == 0 && warn_redundant_decls && DECL_SOURCE_LINE (olddecl) != 0
-      /* Dont warn about a function declaration
+      /* Don't warn about a function declaration
 	 followed by a definition.  */
       && !(TREE_CODE (newdecl) == FUNCTION_DECL && DECL_INITIAL (newdecl) != 0
 	   && DECL_INITIAL (olddecl) == 0)

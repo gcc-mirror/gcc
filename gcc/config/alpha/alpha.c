@@ -1186,7 +1186,7 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
   /* EV5 costs are as given in alpha.md; exceptions are given here. */
   if (alpha_cpu == PROCESSOR_EV5)
     {
-      /* And the lord DEC sayeth:  "A special bypass provides an effective
+      /* And the lord DEC saith:  "A special bypass provides an effective
 	 latency of 0 cycles for an ICMP or ILOG insn producing the test
 	 operand of an IBR or CMOV insn." */
       if (recog_memoized (dep_insn) >= 0

@@ -7222,7 +7222,7 @@ simplify_and_const_int (x, mode, varop, constop)
 /* We let num_sign_bit_copies recur into nonzero_bits as that is useful.
    We don't let nonzero_bits recur into num_sign_bit_copies, because that
    is less useful.  We can't allow both, because that results in exponential
-   run time recusion.  There is a nullstone testcase that triggered
+   run time recursion.  There is a nullstone testcase that triggered
    this.  This macro avoids accidental uses of num_sign_bit_copies.  */
 #define num_sign_bit_copies()
 

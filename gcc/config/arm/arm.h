@@ -86,7 +86,7 @@ extern int frame_pointer_needed;
 #if TARGET_CPU_DEFAULT == TARGET_CPU_arm2
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_2__"
 #else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm6 || TARGET_CPU_DEFUALT == TARGET_CPU_arm610 || TARGET_CPU_DEFAULT == TARGET_CPU_arm7500fe
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm6 || TARGET_CPU_DEFAULT == TARGET_CPU_arm610 || TARGET_CPU_DEFAULT == TARGET_CPU_arm7500fe
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_3__"
 #else
 #if TARGET_CPU_DEFAULT == TARGET_CPU_arm7m
@@ -346,7 +346,7 @@ extern char *target_fp_name;
   {"apcs-float",		ARM_FLAG_APCS_FLOAT},	\
   {"no-apcs-float",	       -ARM_FLAG_APCS_FLOAT},	\
   {"apcs-reentrant",		ARM_FLAG_APCS_REENT},	\
-  {"no-apcs-rentrant",	       -ARM_FLAG_APCS_REENT},	\
+  {"no-apcs-reentrant",	       -ARM_FLAG_APCS_REENT},	\
   {"short-load-bytes",		ARM_FLAG_SHORT_BYTE},	\
   {"no-short-load-bytes",      -ARM_FLAG_SHORT_BYTE},	\
   {"short-load-words",	       -ARM_FLAG_SHORT_BYTE},	\
@@ -437,7 +437,7 @@ extern enum floating_point_type arm_fpu;
 /* What type of floating point instructions are available */
 extern enum floating_point_type arm_fpu_arch;
 
-/* Default floating point archtitecture.  Override in sub-target if
+/* Default floating point architecture.  Override in sub-target if
    necessary.  */
 #define FP_DEFAULT FP_SOFT2
 

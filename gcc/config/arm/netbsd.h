@@ -114,7 +114,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
    Normally GCC/arm uses a structure alignment of 32 for compatibility
    with armcc.  This means that structures are padded to a word
-   boundry.  However this causes problems with bugged NetBSD kernel
+   boundary.  However this causes problems with bugged NetBSD kernel
    code (possibly userland code as well - I have not checked every
    binary).  The nature of this bugged code is to rely on sizeof()
    returning the correct size of various structures rounded to the
@@ -130,7 +130,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
            structures containing shorts will be half word alinged.
            structures containing ints will be word aligned.
 
-      This means structures should be padded to a word boundry if
+      This means structures should be padded to a word boundary if
       alignment of 32 is required for byte structures etc.
       
    2. A potential performance penalty may exist if strings are no longer
