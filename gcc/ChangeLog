@@ -1,5 +1,7 @@
 Tue Nov  4 16:55:11 1997  Jim Wilson  <wilson@cygnus.com>
 
+	* integrate.c (save_for_inline_copying): Copy parm_reg_stack_loc.
+
 	* reload.c (find_reloads, case 'm' and 'o'): Reject HIGH constants.
 
 	* mips.c (mips_expand_epilogue): Emit blockage insn before call to
