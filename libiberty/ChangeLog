@@ -1,3 +1,7 @@
+2003-01-20  Josef Zlomek  <zlomekj@suse.cz>
+
+	* hashtab.c (htab_expand): Fix allocation of new entries.
+
 2002-11-19  Release Manager
 
 	* GCC 3.2.1 Released.

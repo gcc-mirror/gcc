@@ -302,22 +302,24 @@ htab_expand (htab)
   PTR *oentries;
   PTR *olimit;
   PTR *p;
+  size_t nsize;
 
   oentries = htab->entries;
   olimit = oentries + htab->size;
 
-  htab->size = higher_prime_number (htab->size * 2);
+  nsize = higher_prime_number (htab->size * 2);
 
   if (htab->return_allocation_failure)
     {
-      PTR *nentries = (PTR *) calloc (htab->size, sizeof (PTR *));
+      PTR *nentries = (PTR *) calloc (nsize, sizeof (PTR));
       if (nentries == NULL)
 	return 0;
       htab->entries = nentries;
     }
   else
-    htab->entries = (PTR *) xcalloc (htab->size, sizeof (PTR *));
+    htab->entries = (PTR *) xcalloc (nsize, sizeof (PTR));
 
+  htab->size = nsize;
   htab->n_elements -= htab->n_deleted;
   htab->n_deleted = 0;
 
