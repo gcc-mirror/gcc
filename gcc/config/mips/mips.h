@@ -1683,14 +1683,9 @@ do {							\
 
    On the Mips, we have 32 integer registers, 32 floating point
    registers, 8 condition code registers, and the special registers
-   hi, lo, hilo, and rap.  Afetr that we have 32 COP0 registers, 32
-   COP2 registers, and 32 COp3 registers.  (COP1 is the floating-point
-   processor.)  The 8 condition code registers are only used if
-   mips_isa >= 4.  The hilo register is only used in 64 bit mode.  It
-   represents a 64 bit value stored as two 32 bit values in the hi and
-   lo registers; this is the result of the mult instruction.  rap is a
-   pointer to the stack where the return address reg ($31) was stored.
-   This is needed for C++ exception handling.  */
+   hi and lo.  After that we have 32 COP0 registers, 32 COP2 registers,
+   and 32 COP3 registers.  (COP1 is the floating-point processor.)
+   The 8 condition code registers are only used if mips_isa >= 4.  */
 
 #define FIRST_PSEUDO_REGISTER 176
 
@@ -1711,7 +1706,7 @@ do {							\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,			\
+  0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,			\
   /* COP0 registers */							\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
@@ -1795,7 +1790,7 @@ do {							\
 #define FP_DBX_FIRST ((write_symbols == DBX_DEBUG) ? 38 : 32)
 
 #define MD_REG_FIRST 64
-#define MD_REG_LAST  66
+#define MD_REG_LAST  65
 #define MD_REG_NUM   (MD_REG_LAST - MD_REG_FIRST + 1)
 #define MD_DBX_FIRST (FP_DBX_FIRST + FP_REG_NUM)
 
@@ -1822,7 +1817,6 @@ do {							\
 #define AT_REGNUM	(GP_REG_FIRST + 1)
 #define HI_REGNUM	(MD_REG_FIRST + 0)
 #define LO_REGNUM	(MD_REG_FIRST + 1)
-#define HILO_REGNUM	(MD_REG_FIRST + 2)
 
 /* FPSW_REGNUM is the single condition code used if mips_isa < 4.  If
    mips_isa >= 4, it should not be used, and an arbitrary ST_REG
@@ -2002,14 +1996,12 @@ enum reg_class
   FP_REGS,			/* floating point registers */
   HI_REG,			/* hi register */
   LO_REG,			/* lo register */
-  HILO_REG,			/* hilo register pair for 64 bit mode mult */
   MD_REGS,			/* multiply/divide registers (hi/lo) */
   COP0_REGS,			/* generic coprocessor classes */
   COP2_REGS,
   COP3_REGS,
   HI_AND_GR_REGS,		/* union classes */
   LO_AND_GR_REGS,
-  HILO_AND_GR_REGS,
   HI_AND_FP_REGS,
   COP0_AND_GR_REGS,
   COP2_AND_GR_REGS,
@@ -2042,7 +2034,6 @@ enum reg_class
   "FP_REGS",								\
   "HI_REG",								\
   "LO_REG",								\
-  "HILO_REG",								\
   "MD_REGS",								\
   /* coprocessor registers */						\
   "COP0_REGS",								\
@@ -2050,7 +2041,6 @@ enum reg_class
   "COP3_REGS",								\
   "HI_AND_GR_REGS",							\
   "LO_AND_GR_REGS",							\
-  "HILO_AND_GR_REGS",							\
   "HI_AND_FP_REGS",							\
   "COP0_AND_GR_REGS",							\
   "COP2_AND_GR_REGS",							\
@@ -2085,14 +2075,12 @@ enum reg_class
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* floating registers*/	\
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },	/* hi register */	\
   { 0x00000000, 0x00000000, 0x00000002, 0x00000000, 0x00000000, 0x00000000 },	/* lo register */	\
-  { 0x00000000, 0x00000000, 0x00000004, 0x00000000, 0x00000000, 0x00000000 },	/* hilo register */	\
   { 0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000000, 0x00000000 },	/* mul/div registers */	\
   { 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000, 0x00000000 }, /* cop0 registers */ \
   { 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000 }, /* cop2 registers */ \
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff }, /* cop3 registers */ \
   { 0xffffffff, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },	/* union classes */     \
   { 0xffffffff, 0x00000000, 0x00000002, 0x00000000, 0x00000000, 0x00000000 },				\
-  { 0xffffffff, 0x00000000, 0x00000004, 0x00000000, 0x00000000, 0x00000000 },				\
   { 0x00000000, 0xffffffff, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },				\
   { 0xffffffff, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000, 0x00000000 },			\
   { 0xffffffff, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000 },	\
@@ -2186,7 +2174,6 @@ extern const enum reg_class mips_regno_to_class[];
    'h'	Hi register
    'l'	Lo register
    'x'	Multiply/divide registers
-   'a'	HILO_REG
    'z'	FP Status register
    'B'  Cop0 register
    'C'  Cop2 register
@@ -3312,7 +3299,8 @@ typedef struct mips_args {
   {"consttable_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
 				  CONST_DOUBLE, CONST }},		\
   {"fcc_register_operand",	{ REG, SUBREG }},			\
-  {"hilo_operand",		{ REG }},
+  {"hilo_operand",		{ REG }},				\
+  {"extend_operator",		{ ZERO_EXTEND, SIGN_EXTEND }},
 
 /* A list of predicates that do special things with modes, and so
    should not elicit warnings for VOIDmode match_operand.  */
@@ -3546,7 +3534,7 @@ typedef struct mips_args {
   "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",	\
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",	\
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",	\
-  "hi",   "lo",   "accum","$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",	\
+  "hi",   "lo",   "",     "$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",	\
   "$fcc5","$fcc6","$fcc7","$rap", "",     "",     "",     "",		\
   "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",\
   "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",\
