@@ -1,3 +1,18 @@
+2003-07-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c: Update commentary, adjust blank lines throughout.
+	(struct c_scope): Fix indentation.  Reorder members so
+	outer-context pointers come first, booleans last.
+	(duplicate_decls, define_label): Use a 'locus' variable for
+	diagnostic locations in a few more places.
+	(warn_if_shadowing): Un-split a conditional that fits on one line.
+	(c_init_decl_processing): No need to clear current_scope and
+	current_function_scope.
+	(start_decl): Merge if/else if statements with same action.
+	(push_parm_decl): Rename old_immediate_size_expand to use
+	save_foo convention; save/restore around entire function.
+	(grokdeclarator): Remove unnecessary braces.
+
 2003-07-28  Hans-Peter Nilsson  <hp@bitrange.com>
 	    Michael Culbertson  <Michael.J.Culbertson@wheaton.edu>
 
@@ -38,7 +53,7 @@ Mon Jul 28 20:13:06 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-07-27  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-	* fixinc/fixinc.svr4: Remove dead code.  Remove now-unnecessary 
+	* fixinc/fixinc.svr4: Remove dead code.  Remove now-unnecessary
 	cleanup of junk after #else and #endif directives.  Collapse repeated
 	clauses into for statment.
 
