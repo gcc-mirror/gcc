@@ -268,7 +268,7 @@ $(srcdir)/f/intdoc.texi: f/intdoc.c f/intdoc.in f/ansify.c f/intrin.def f/intrin
 	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) $(INCLUDES) -I./f \
 	   `echo $(srcdir)/f/intdoc.c | sed 's,^\./,,'` -o f/intdoc; \
 	  f/intdoc > $(srcdir)/f/intdoc.texi; \
-	  rm f/intdoc f/ansify f/intdoc.h0; \
+	  rm f/intdoc$(build_exeext) f/ansify$(build_exeext) f/intdoc.h0; \
 	else true; fi
 
 $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi
@@ -396,8 +396,8 @@ f77.uninstall: installdirs
 
 f77.mostlyclean:
 	-rm -f f/*$(objext)
-	-rm -f f/fini f/stamp-str f/str-*.h f/str-*.j
-	-rm -f f/intdoc f/ansify f/intdoc.h0
+	-rm -f f/fini$(build_exeext) f/stamp-str f/str-*.h f/str-*.j
+	-rm -f f/intdoc$(build_exeext) f/ansify$(build_exeext) f/intdoc.h0
 	-rm -f g77.aux g77.cps g77.ky g77.toc g77.vr g77.fn g77.kys \
 	       g77.pg g77.tp g77.vrs g77.cp g77.fns g77.log g77.pgs g77.tps 
 f77.clean:
@@ -411,8 +411,8 @@ f77.maintainer-clean:
 # Stage hooks:
 # The main makefile has already created stage?/f.
 
-G77STAGESTUFF = f/*$(objext) f/fini f/stamp-str f/str-*.h f/str-*.j \
-  lang-f77 g77spec.o g77version.o
+G77STAGESTUFF = f/*$(objext) f/fini$(build_exeext) f/stamp-str \
+  f/str-*.h f/str-*.j lang-f77 g77spec.o g77version.o
 
 f77.stage1: stage1-start
 	-if [ -f lang-f77 ]; then \
