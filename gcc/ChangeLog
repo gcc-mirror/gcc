@@ -1,5 +1,13 @@
 2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.h (TARGET_SWITCHES): Fix -mnominmax option;
+	recognize -mnorelax.
+	(reg_class): Add Z_OR_S_REGS to represent soft registers with Z
+	(REG_CLASS_NAMES): Add its name.
+	(REG_CLASS_CONTENTS): Define its content.
+
+2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/larith.asm (memcpy): Use ARG macro to access stack
 	parameters so that offsets are valid for far definition.
 	(__mulsi3): Likewise and use ret to return.
