@@ -4977,17 +4977,21 @@ ix86_expand_branch (code, label)
 	    return;
 	  }
 
-	/* Otherwise, if we are doing less-than, op1 is a constant and the
-	   low word is zero, then we can just examine the high word.  */
+	/* Otherwise, if we are doing less-than or greater-or-equal-than,
+	   op1 is a constant and the low word is zero, then we can just
+	   examine the high word.  */
 
-	if (GET_CODE (hi[1]) == CONST_INT && lo[1] == const0_rtx
-	    && (code == LT || code == LTU))
-	  {
-	    ix86_compare_op0 = hi[0];
-	    ix86_compare_op1 = hi[1];
-	    ix86_expand_branch (code, label);
-	    return;
-	  }
+	if (GET_CODE (hi[1]) == CONST_INT && lo[1] == const0_rtx)
+	  switch (code)
+	    {
+	    case LT: case LTU: case GE: case GEU:
+	      ix86_compare_op0 = hi[0];
+	      ix86_compare_op1 = hi[1];
+	      ix86_expand_branch (code, label);
+	      return;
+	    default:
+	      break;
+	    }
 
 	/* Otherwise, we need two or three jumps.  */
 
