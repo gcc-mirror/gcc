@@ -934,17 +934,15 @@ comptypes (t1, t2, strict)
   if (t2 == error_mark_node)
     return 0;
 
-  /* If this is a strict comparison with a sizetype, the actual types
-     won't be the same (since we need to set TYPE_IS_SIZETYPE, so verify
-     if they are both the same size and signedness.  */
-  if (strict == COMPARE_STRICT
-      && TREE_CODE (t2) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t2) 
-      && TREE_CODE (t1) == INTEGER_TYPE
-      && TREE_UNSIGNED (t1) == TREE_UNSIGNED (t2)
-      && TYPE_MODE (t1) == TYPE_MODE (t2)
-      && TYPE_MIN_VALUE (t1) == TYPE_MIN_VALUE (t2)
-      && TYPE_MAX_VALUE (t1) == TYPE_MAX_VALUE (t2))
-    return 1;
+  /* If either type is the internal version of sizetype, return the
+     language version.  */
+  if (TREE_CODE (t1) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t1)
+      && TYPE_DOMAIN (t1) != 0)
+    t1 = TYPE_DOMAIN (t1);
+
+  if (TREE_CODE (t2) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t2)
+      && TYPE_DOMAIN (t2) != 0)
+    t2 = TYPE_DOMAIN (t2);
 
   if (strict & COMPARE_RELAXED)
     {

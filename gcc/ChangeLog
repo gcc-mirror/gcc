@@ -1,3 +1,14 @@
+Thu Mar  2 13:29:46 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-common.c (c_common_nodes_and_builtins): Make sizetype_endlink
+	reference the language-equivalent of sizetype.
+	* c-typeck.c (comptypes): Treat sizetype like its language equivalent.
+	* fold-const.c (size_binop, size_diffop): Put back checks.
+	* gcse.c (dump_hash_table): Fix minor error in last change.
+	* stor-layout.c (set_sizetype): Set TYPE_DOMAIN of sizetype.
+	Clear TYPE_{NEXT,MAIN}_VARIANT and TYPE_{POINTER,REFERENCE}_to of
+	all sizetypes.
+
 Thu Mar  2 12:48:45 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (expand_call)  Do not attempt to combine stack adjustments

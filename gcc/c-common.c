@@ -3547,7 +3547,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 
   ptr_ftype = build_function_type (ptr_type_node, NULL_TREE);
   ptr_ftype_unsigned = build_function_type (ptr_type_node, unsigned_endlink);
-  sizetype_endlink = tree_cons (NULL_TREE, sizetype, endlink);
+  sizetype_endlink = tree_cons (NULL_TREE, TYPE_DOMAIN (sizetype), endlink);
   /* We realloc here because sizetype could be int or unsigned.  S'ok.  */
   ptr_ftype_sizetype = build_function_type (ptr_type_node, sizetype_endlink);
 
