@@ -1,0 +1,54 @@
+// 2004-09-23 Chris Jefferson <chris@bubblescope.net>
+
+// Copyright (C) 2004 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// tr1 additions to pair
+
+#include <tr1/utility>
+#include <testsuite_hooks.h>
+
+using namespace std;
+using namespace tr1;
+
+struct blank_class
+{ };
+
+int
+main()
+{
+  bool test __attribute__((unused)) = true;
+  typedef pair<int,int> test_pair_type;
+  VERIFY(tuple_size<test_pair_type>::value == 2);
+  // Test if tuple_element::type returns the correct type
+  blank_class blank;
+  tuple_element<0, pair<blank_class, int> >::type blank2 = blank;
+  tuple_element<1, pair<int ,blank_class> >::type blank3 = blank;
+  pair<int,int> test_pair(1, 2);
+  VERIFY(get<0>(test_pair) == 1);
+  VERIFY(get<1>(test_pair) == 2);
+  get<0>(test_pair) = 3;
+  get<1>(test_pair) = 4;
+  VERIFY(get<0>(test_pair) == 3);
+  VERIFY(get<1>(test_pair) == 4);
+
+  const pair<int,int> test_pair2(1,2);
+  VERIFY(get<0>(test_pair2) == 1);
+  VERIFY(get<1>(test_pair2) == 2);
+}
+

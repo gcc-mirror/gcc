@@ -18,18 +18,19 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// Chris Jefferson <chris@bubblescope.net>
-
-// This header is automatically generated: see maketuple.c for details.
-
 /** @file 
  *  This is a TR1 C++ Library header. 
  */
 
+// Chris Jefferson <chris@bubblescope.net>
+
+// This header is automatically generated: see maketuple.c for details.
+
 #ifndef _TUPLE
 #define _TUPLE 1
 
-#include<utility>
+#include <tr1/utility>
+#include <tr1/functional>
 
 namespace std
 {
@@ -1046,9 +1047,8 @@ namespace tr1
       { return __in._M_t9; }
     };
 
-  /* Returns a reference to the ith element of a tuple.
-   * Any const or non-const ref elements are returned with their original type
-   */
+  // Returns a reference to the ith element of a tuple.
+  // Any const or non-const ref elements are returned with their original type.
   template<int __i, typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
 		    typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
 		    typename _Tp8, typename _Tp9>
@@ -1063,9 +1063,8 @@ namespace tr1
 				     _Tp7, _Tp8, _Tp9> >::get_value(__t);
     }
 
-  /* Returns a const reference to the ith element of a tuple.
-   * Any const or non-const ref elements are returned with their original type
-   */
+  // Returns a const reference to the ith element of a tuple.
+  // Any const or non-const ref elements are returned with their original type.
   template<int __i, typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
 		    typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
 		    typename _Tp8, typename _Tp9>
@@ -1092,30 +1091,10 @@ namespace tr1
         return get<__i>(__t) == get<__i>(__u) &&
            __tuple_compare<0, __i+1, __j, _Tp, _Up>::__eq(__t, __u);
       }
-      static bool __neq(const _Tp& __t, const _Up& __u)
-      {
-        return get<__i>(__t) != get<__i>(__u) ||
-           __tuple_compare<0, __i+1, __j, _Tp, _Up>::__neq(__t, __u);
-      }
       static bool __less(const _Tp& __t, const _Up& __u)
       {
         return (get<__i>(__t) < get<__i>(__u)) || !(get<__i>(__u) < get<__i>(__t)) &&
            __tuple_compare<0, __i+1, __j, _Tp, _Up>::__less(__t, __u);
-      }
-      static bool __greater(const _Tp& __t, const _Up& __u)
-      {
-        return (get<__i>(__t) > get<__i>(__u)) || !(get<__i>(__u) > get<__i>(__t)) &&
-           __tuple_compare<0, __i+1, __j, _Tp, _Up>::__greater(__t, __u);
-      }
-      static bool __leq(const _Tp& __t, const _Up& __u)
-      {
-        return (get<__i>(__t) <= get<__i>(__u)) && (!(get<__i>(__u)<=get<__i>(__t)) ||
-        					   __tuple_compare<0, __i+1, __j, _Tp, _Up>::__leq(__t, __u));
-      }
-      static bool __geq(const _Tp& __t, const _Up& __u)
-      {
-        return (get<__i>(__t) >= get<__i>(__u)) && (!(get<__i>(__u)>=get<__i>(__t)) ||
-        					   __tuple_compare<0, __i+1, __j, _Tp, _Up>::__geq(__t, __u));
       }
     };
 
@@ -1124,15 +1103,7 @@ namespace tr1
     {
       static bool __eq(const _Tp&, const _Up&)
       { return true; }
-      static bool __neq(const _Tp&, const _Up&)
-      { return false; }
-      static bool __leq(const _Tp&, const _Up&)
-      { return true; }
-      static bool __geq(const _Tp&, const _Up&)
-      { return true; }
       static bool __less(const _Tp&, const _Up&)
-      { return false; }
-      static bool __greater(const _Tp&, const _Up&)
       { return false; }
     };
 
@@ -1146,30 +1117,12 @@ namespace tr1
 	     const tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8, _Up9>& __u)
   {
     typedef tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8,
-		  _Tp9> __t_tuple;
+		  _Tp9> _Tp;
     typedef tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8,
-		  _Up9> __u_tuple;
-    return __tuple_compare<tuple_size<__t_tuple>::value -
-     tuple_size<__u_tuple>::value, 0,
-      tuple_size<__t_tuple>::value, __t_tuple, __u_tuple>::__eq(__t, __u);
-  }
-
-  template<typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
-	   typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
-	   typename _Tp8, typename _Tp9, typename _Up0, typename _Up1,
-	   typename _Up2, typename _Up3, typename _Up4, typename _Up5,
-	   typename _Up6, typename _Up7, typename _Up8, typename _Up9>
-  bool
-  operator!=(const tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8, _Tp9>& __t,
-	     const tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8, _Up9>& __u)
-  {
-    typedef tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8,
-		  _Tp9> __t_tuple;
-    typedef tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8,
-		  _Up9> __u_tuple;
-    return __tuple_compare<tuple_size<__t_tuple>::value -
-     tuple_size<__u_tuple>::value, 0,
-      tuple_size<__t_tuple>::value, __t_tuple, __u_tuple>::__neq(__t, __u);
+		  _Up9> _Up;
+    return __tuple_compare<tuple_size<_Tp>::value -
+     tuple_size<_Tp>::value, 0,
+      tuple_size<_Tp>::value, _Tp, _Up>::__eq(__t, __u);
   }
 
   template<typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
@@ -1182,14 +1135,25 @@ namespace tr1
 	    const tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8, _Up9>& __u)
   {
     typedef tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8,
-		  _Tp9> __t_tuple;
+		  _Tp9> _Tp;
     typedef tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8,
-		  _Up9> __u_tuple;
-    return __tuple_compare<tuple_size<__t_tuple>::value -
-     tuple_size<__u_tuple>::value, 0,
-      tuple_size<__t_tuple>::value, __t_tuple, __u_tuple>::__less(__t, __u);
+		  _Up9> _Up;
+    return __tuple_compare<tuple_size<_Tp>::value -
+     tuple_size<_Tp>::value, 0,
+      tuple_size<_Tp>::value, _Tp, _Up>::__less(__t, __u);
   }
 
+  template<typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
+	   typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
+	   typename _Tp8, typename _Tp9, typename _Up0, typename _Up1,
+	   typename _Up2, typename _Up3, typename _Up4, typename _Up5,
+	   typename _Up6, typename _Up7, typename _Up8, typename _Up9>
+  bool
+  operator!=(const tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8, _Tp9>& __t,
+	     const tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8, _Up9>& __u)
+  {
+      return !(__t == __u);
+  }
   template<typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
 	   typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
 	   typename _Tp8, typename _Tp9, typename _Up0, typename _Up1,
@@ -1199,15 +1163,8 @@ namespace tr1
   operator>(const tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8, _Tp9>& __t,
 	    const tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8, _Up9>& __u)
   {
-    typedef tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8,
-		  _Tp9> __t_tuple;
-    typedef tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8,
-		  _Up9> __u_tuple;
-    return __tuple_compare<tuple_size<__t_tuple>::value -
-     tuple_size<__u_tuple>::value, 0,
-      tuple_size<__t_tuple>::value, __t_tuple, __u_tuple>::__greater(__t, __u);
+      return __u < __t;
   }
-
   template<typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
 	   typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
 	   typename _Tp8, typename _Tp9, typename _Up0, typename _Up1,
@@ -1217,15 +1174,8 @@ namespace tr1
   operator<=(const tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8, _Tp9>& __t,
 	     const tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8, _Up9>& __u)
   {
-    typedef tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8,
-		  _Tp9> __t_tuple;
-    typedef tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8,
-		  _Up9> __u_tuple;
-    return __tuple_compare<tuple_size<__t_tuple>::value -
-     tuple_size<__u_tuple>::value, 0,
-      tuple_size<__t_tuple>::value, __t_tuple, __u_tuple>::__leq(__t, __u);
+      return !(__u < __t);
   }
-
   template<typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
 	   typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
 	   typename _Tp8, typename _Tp9, typename _Up0, typename _Up1,
@@ -1235,53 +1185,8 @@ namespace tr1
   operator>=(const tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8, _Tp9>& __t,
 	     const tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8, _Up9>& __u)
   {
-    typedef tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8,
-		  _Tp9> __t_tuple;
-    typedef tuple<_Up0, _Up1, _Up2, _Up3, _Up4, _Up5, _Up6, _Up7, _Up8,
-		  _Up9> __u_tuple;
-    return __tuple_compare<tuple_size<__t_tuple>::value -
-     tuple_size<__u_tuple>::value, 0,
-      tuple_size<__t_tuple>::value, __t_tuple, __u_tuple>::__geq(__t, __u);
+      return !(__t < __u);
   }
-
-  // Provides a way to annotate that a reference to
-  // an object should be passed.
-  template<typename _Tp>
-    class reference_wrapper
-    {
-      _Tp& _M_data;
-      public:
-        typedef _Tp type;
-        explicit reference_wrapper(_Tp& __indata): _M_data(__indata)
-        { }
-
-        operator _Tp& () const
-        {
-	  return this->get();
-        }
-
-        _Tp&
-        get() const
-        {
-	  return _M_data;
-        }
-    };
-
-  // Denotes a reference should be taken to a variable.
-  template<typename _Tp>
-    reference_wrapper<_Tp>
-    ref(_Tp& __t)
-    {
-      return reference_wrapper<_Tp>(__t);
-    }
-
-  // Denotes a const reference should be taken to a variable.
-  template<typename _Tp>
-    reference_wrapper<_Tp const>
-    cref(const _Tp& __t)
-    {
-      return reference_wrapper<_Tp const>(__t);
-    }
 
   // Helper which adds a reference to a type when given a reference_wrapper
   template<typename _Tp>
@@ -1430,7 +1335,6 @@ namespace tr1
 
   // A class (and instance) which can be used in 'tie' when an element
   // of a tuple is not required
-
   struct swallow_assign
   {
     template<class T>
@@ -1439,7 +1343,7 @@ namespace tr1
       { return *this; }
   };
 
-  // TODO: Put this in some kind of shared file
+  // TODO: Put this in some kind of shared file.
   namespace
   {
     swallow_assign ignore;
@@ -1537,29 +1441,6 @@ namespace tr1
 		        ref(__t5), ref(__t6), ref(__t7), ref(__t8),
 		        ref(__t9));
     };
-
-  // Various functions which give std::pair a tuple-like interface.
-  template<class _Tp1, class _Tp2>
-    struct tuple_size<std::pair<_Tp1, _Tp2> >
-    { static const int value = 2; };
-
-  template<class _Tp1, class _Tp2>
-    struct tuple_element<0, std::pair<_Tp1, _Tp2> >
-    { typedef _Tp1 type; };
-
-  template<class _Tp1, class _Tp2>
-    struct tuple_element<1, std::pair<_Tp1, _Tp2> >
-    { typedef _Tp2 type; };
-
-  template<int _Int, class _Tp1, class _Tp2>
-    typename tuple_element<_Int, tuple<_Tp1, _Tp2> >::type
-    get(pair<_Tp1, _Tp2>& __in)
-    { return get<_Int>(tie(__in.first, __in.second)); }
-
-  template<int _Int, class _Tp1, class _Tp2>
-    typename tuple_element<_Int, tuple<_Tp1, _Tp2> >::type
-    get(const pair<_Tp1, _Tp2>& __in)
-    { return get<_Int>(tie(__in.first, __in.second)); }
 
 }
 }
