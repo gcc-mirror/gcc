@@ -861,6 +861,22 @@ EOF
 	  echo s390x-ibm-linux && exit 0
 	elif test "${UNAME_MACHINE}" = "x86_64"; then
 	  echo x86_64-unknown-linux-gnu && exit 0
+	elif test "${UNAME_MACHINE}" = "parisc64" -o "${UNAME_MACHINE}" = "hppa64"; then
+	  echo hppa64-unknown-linux-gnu && exit 0
+	elif test "${UNAME_MACHINE}" = "parisc" -o "${UNAME_MACHINE}" = "hppa"; then
+	  # Look for CPU level
+	  case `grep '^cpu[^a-z]*:' /proc/cpuinfo 2>/dev/null | cut -d' ' -f2` in
+	    PA7*)
+		echo hppa1.1-unknown-linux-gnu
+		;;
+	    PA8*)
+		echo hppa2.0-unknown-linux-gnu
+		;;
+	    *)
+		echo hppa-unknown-linux-gnu
+		;;
+	  esac
+	  exit 0
 	else
 	  # Either a pre-BFD a.out linker (linux-gnuoldld)
 	  # or one that does not give us useful --help.

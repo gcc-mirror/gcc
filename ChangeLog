@@ -1,3 +1,9 @@
+2001-04-13  Alan Modra  <amodra@one.net.au>
+
+	* config.guess: Add hppa64-linux support.  Note for next import that
+	this is already in the master file.
+	* configure.in: Likewise.  Accept `parisc' alias for `hppa'.
+
 2001-04-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ltconfig, ltmain.sh, libtool.m4, ltcf-c.sh, ltcf-cxx.sh,
