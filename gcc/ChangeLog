@@ -1,3 +1,9 @@
+2004-09-24  Devang Patel  <dpatel@apple.com>
+
+	* tree-if-conv.c (tree_if_convert_cond_expr0: Create temp. variable
+	only when necesssary.
+	(combine_blocks): Combine loop header and exit block.
+	
 2004-09-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* hooks.c (hook_tree_tree_bool_null): New.
