@@ -546,8 +546,7 @@ namespace std
 				  _ForwardIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename __type_traits<_ValueType>::has_trivial_copy_constructor
+      typedef typename __type_traits<_Tp>::has_trivial_copy_constructor
 	_Trivial;
       std::__fill<_Trivial>::fill(__first, __last, __value);
     }
@@ -622,8 +621,7 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _Tp>)
 
-      typedef typename iterator_traits<_OutputIterator>::value_type _ValueType;
-      typedef typename __type_traits<_ValueType>::has_trivial_copy_constructor
+      typedef typename __type_traits<_Tp>::has_trivial_copy_constructor
 	_Trivial;
       return std::__fill_n<_Trivial>::fill_n(__first, __n, __value);
     }

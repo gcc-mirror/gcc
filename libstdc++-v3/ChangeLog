@@ -1,5 +1,12 @@
 2004-06-25  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_algobase.h (fill, fill_n): Revert last
+	change: actually we need to copy construct an object of type
+	_Tp, not of type iterator_traits<>::value_type, therefore the
+	code is ok.
+
+2004-06-25  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_algobase.h (fill, fill_n): Tighten the
 	dispatch: use iterator_traits<>::value_type, not _Tp.
 
