@@ -3824,6 +3824,9 @@ rest_of_compilation (decl)
 	   });
 
 #ifdef STACK_REGS
+  if (stack_reg_dump)
+    open_dump_file (".stack", decl_printable_name (decl, 2));
+
   TIMEVAR (stack_reg_time, reg_to_stack (insns, rtl_dump_file));
 
   if (stack_reg_dump)
