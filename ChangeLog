@@ -1,3 +1,7 @@
+2002-07-15  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* MAINTAINERS: Fix typo in a maintainer email address.
+
 2002-07-11  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Remove two redundant tests.
