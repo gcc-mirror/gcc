@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -445,10 +445,10 @@ warn_about_normalization (cpp_reader *pfile,
       sz = cpp_spell_token (pfile, token, buf, false) - buf;
       if (NORMALIZE_STATE_RESULT (s) == normalized_C)
 	cpp_error_with_line (pfile, CPP_DL_WARNING, token->src_loc, 0,
-			     "`%.*s' is not in NFKC", sz, buf);
+			     "`%.*s' is not in NFKC", (int) sz, buf);
       else
 	cpp_error_with_line (pfile, CPP_DL_WARNING, token->src_loc, 0,
-			     "`%.*s' is not in NFC", sz, buf);
+			     "`%.*s' is not in NFC", (int) sz, buf);
     }
 }
 
