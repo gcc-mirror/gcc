@@ -386,7 +386,7 @@ ARM_FUNC_ALIAS aeabi_l2f floatdisf
 
 #if !defined (__VFP_FP__) && !defined(__SOFTFP__)
 
-LSYM(f0_ret)
+LSYM(f0_ret):
 	str	r0, [sp, #-4]!
 	ldfs	f0, [sp], #4
 	RETLDM

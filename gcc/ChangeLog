@@ -1,3 +1,8 @@
+2004-12-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/ieee754-sf.S (floatdisf): Fix label definition in FPA
+	compatibility code.
+
 2004-12-18  Roger Sayle  <roger@eyesopen.com>
 
 	* ifcvt.c (total_bb_rtx_cost): Rename function to cheap_bb_rtx_cost_p.
