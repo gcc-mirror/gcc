@@ -109,7 +109,7 @@ proc gcc_init { args } {
     if {[target_info needs_status_wrapper] != "" && \
 	    [target_info needs_status_wrapper] != "0" && \
 	    ![info exists gluefile]} {
-	set gluefile ${tmpdir}/testglue.o;
+	set gluefile ${tmpdir}/gcc-testglue.o;
 	set result [build_wrapper $gluefile];
 	if { $result != "" } {
 	    set gluefile [lindex $result 0];

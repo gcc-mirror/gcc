@@ -108,7 +108,7 @@ proc objc_init { args } {
 	set tmpdir /tmp
     }
     if { [target_info needs_status_wrapper]!="" && ![info exists gluefile] } {
-	set gluefile ${tmpdir}/testglue.o;
+	set gluefile ${tmpdir}/objc-testglue.o;
 	set result [build_wrapper $gluefile];
 	if { $result != "" } {
 	    set gluefile [lindex $result 0];
