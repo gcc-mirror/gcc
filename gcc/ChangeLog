@@ -11,6 +11,7 @@ Tue Sep  2 18:41:55 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* xm-svr4.h (SYS_SIGLIST_DECLARED): Define.
 	* xm-news.h (SYS_SIGLIST_DECLARED): Likewise.
+	* xm-sysv4.h (SYS_SIGLIST_DECLARED): Likewise.
 	* gcc.texi: Note that if you define sys_siglist that you should
 	also define SYS_SIGLIST_DECLARED.
 
