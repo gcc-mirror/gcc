@@ -1294,7 +1294,7 @@ c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) except.h \
 c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
     flags.h toplev.h $(EXPR_H)
 mbchar.o: mbchar.c $(CONFIG_H) system.h mbchar.h
-graph.o: graph.c $(CONFIG_H) system.h toplev.h flags.h output.h rtl.h \
+graph.o: graph.c $(CONFIG_H) system.h toplev.h flags.h output.h $(RTL_H) \
     hard-reg-set.h basic-block.h
 
 collect2$(exeext): collect2.o tlink.o hash.o cplus-dem.o underscore.o \
