@@ -1367,4 +1367,4 @@ ncrtn.o%s"
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
 
 /* Generate entries in .fixup for relocatable addresses.  */
-#define RELOCATABLE_NEEDS_FIXUP
+#define RELOCATABLE_NEEDS_FIXUP 1
