@@ -1,3 +1,13 @@
+2001-10-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Make-lang.in (CXX_OBJS): Added cp-lang.o.
+	(cp/cp-lang.o): New rule.
+	* cp-tree.h: Declare hooks.
+	* tree.c: Make hooks non-static.
+	(init_tree): Don't initialize hooks here.
+	* lex.c: Likewise.  Move definition of lang_hooks to...
+	* cp-lang.c: ... new file.
+
 2001-10-08  Richard Henderson  <rth@redhat.com>
 
 	* cp-tree.h (struct lang_decl_flags): Remove declared_inline.
