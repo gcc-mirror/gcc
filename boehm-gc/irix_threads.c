@@ -519,7 +519,7 @@ int GC_pthread_detach(pthread_t thread)
     LOCK();
     thread_gc_id = GC_lookup_thread(thread);
     UNLOCK();
-    result = REAL_FUNC(pthread_detach)(thread);
+    result = pthread_detach(thread);
     if (result == 0) {
       LOCK();
       thread_gc_id -> flags |= DETACHED;
@@ -599,7 +599,7 @@ GC_pthread_create(pthread_t *new_thread,
     si -> start_routine = start_routine;
     si -> arg = arg;
     LOCK();
-    if (!GC_initialized) GC_init();
+    if (!GC_is_initialized) GC_init();
     if (NULL == attr) {
         stack = 0;
 	(void) pthread_attr_init(&new_attr);
@@ -655,7 +655,7 @@ VOLATILE GC_bool GC_collecting = 0;
 #define SLEEP_THRESHOLD 3
 
 unsigned long GC_allocate_lock = 0;
-# define GC_TRY_LOCK() !GC_test_and_set(&GC_allocate_lock,1)
+# define GC_TRY_LOCK() !GC_test_and_set(&GC_allocate_lock)
 # define GC_LOCK_TAKEN GC_allocate_lock
 
 void GC_lock()

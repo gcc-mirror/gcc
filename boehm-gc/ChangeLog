@@ -1,3 +1,14 @@
+Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
+
+	* irix_threads.cc (GC_pthread_detach): Do not use REAL_FUNC.
+	(GC_pthread_create): Fix typo.
+	(GC_TRY_LOCK): Likewise.
+	* include/private/gc_locks.h (GC_test_and_set): Only take one
+	one argument.
+	(LOCK): Adjust appropriately.
+	* include/private/gc_priv.h (SIG_SUSPEND): Use SIGRTMIN if 
+	_SIGRTMIN is unavailable.
+
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* acinclude.m4: Allow for PWDCMD to override hardcoded pwd.
