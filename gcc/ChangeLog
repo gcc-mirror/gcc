@@ -1,5 +1,8 @@
 Wed Nov 18 16:31:28 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* reload.c (find_reloads_address_part): If have a CONST_INT, create
+	a new one before passing it to force_const_mem.
+
 	* reload.c (find_reloads_toplev): Pass &x instead of NULL_PTR in
 	find_reloads_address call.
 
