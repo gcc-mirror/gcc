@@ -453,7 +453,7 @@ finish_break_stmt ()
   if (processing_template_decl)
     add_tree (build_min_nt (BREAK_STMT));
   else if ( ! expand_exit_something ())
-    cp_error (ec_break_statement_not_within_loop_or_switch);
+    cp_error ("break statement not within loop or switch");
 }
 
 /* Finish a continue-statement.  */
@@ -465,7 +465,7 @@ finish_continue_stmt ()
   if (processing_template_decl)
     add_tree (build_min_nt (CONTINUE_STMT));
   else if (! expand_continue_loop (0))
-    cp_error (ec_continue_statement_not_within_a_loop);   
+    cp_error ("continue statement not within a loop");   
 }
 
 /* Begin a switch-statement.  */
@@ -735,7 +735,7 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
 	{
 	  if (cv_qualifier != NULL_TREE
 	      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
-	    cp_warning (ec_qualifier_ignored_on_asm,
+	    cp_warning ("%s qualifier ignored on asm",
 			IDENTIFIER_POINTER (cv_qualifier));
 	    
 	  c_expand_asm_operands (string, output_operands,
@@ -748,7 +748,7 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
       else
 	{
 	  if (cv_qualifier != NULL_TREE)
-	    cp_warning (ec_qualifier_ignored_on_asm,
+	    cp_warning ("%s qualifier ignored on asm",
 			IDENTIFIER_POINTER (cv_qualifier));
 	  expand_asm (string);
 	}
@@ -895,15 +895,15 @@ finish_this_expr ()
   else if (current_function_decl
 	   && DECL_STATIC_FUNCTION_P (current_function_decl))
     {
-      cp_error (ec_this_is_unavailable_for_static_member_functions);
+      error ("`this' is unavailable for static member functions");
       result = error_mark_node;
     }
   else
     {
       if (current_function_decl)
-	cp_error (ec_invalid_use_of_this_in_nonmember_function);
+	error ("invalid use of `this' in non-member function");
       else
-	cp_error (ec_invalid_use_of_this_at_top_level);
+	error ("invalid use of `this' at top level");
       result = error_mark_node;
     }
 
@@ -941,7 +941,7 @@ finish_object_call_expr (fn, object, args)
 	fn = DECL_NAME (fn);
       else
 	{
-	  cp_error (ec_calling_type_like_a_method, fn);
+	  cp_error ("calling type `%T' like a method", fn);
 	  return error_mark_node;
 	}
     }
@@ -961,7 +961,7 @@ finish_qualified_object_call_expr (fn, object, args)
 {
   if (IS_SIGNATURE (TREE_OPERAND (fn, 0)))
     {
-      cp_warning (ec_signature_name_in_scope_resolution_ignored);
+      warning ("signature name in scope resolution ignored");
       return finish_object_call_expr (TREE_OPERAND (fn, 1), object, args);
     }
   else
@@ -980,13 +980,13 @@ finish_pseudo_destructor_call_expr (object, scope, destructor)
      tree destructor;
 {
   if (scope && scope != destructor)
-    cp_error (ec_destructor_specifier_must_have_matching_names, 
+    cp_error ("destructor specifier `%T::~%T()' must have matching names", 
 	      scope, destructor);
 
   if ((scope == NULL_TREE || IDENTIFIER_GLOBAL_VALUE (destructor))
       && (TREE_CODE (TREE_TYPE (object)) !=
 	  TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (destructor)))))
-    cp_error (ec_is_not_of_type, object, destructor);
+    cp_error ("`%E' is not of type `%T'", object, destructor);
 
   return cp_convert (void_type_node, object);
 }
@@ -1159,7 +1159,7 @@ finish_template_type_parm (aggr, identifier)
     sorry ("signature as template type parameter");
   else if (aggr != class_type_node)
     {
-      cp_pedwarn (ec_template_type_parameters_must_use_the_keyword_class_or_typename);
+      pedwarn ("template type parameters must use the keyword `class' or `typename'");
       aggr = class_type_node;
     }
 
@@ -1459,19 +1459,19 @@ finish_base_specifier (access_specifier, base_class,
 
   if (base_class == NULL_TREE)
     {
-      cp_error (ec_invalid_base_class);
+      error ("invalid base class");
       type = error_mark_node;
     }
   else
     type = TREE_TYPE (base_class);
   if (current_aggr_is_signature && access_specifier)
-    cp_error (ec_access_and_source_specifiers_not_allowed_in_signature);
+    error ("access and source specifiers not allowed in signature");
   if (! is_aggr_type (type, 1))
     result = NULL_TREE;
   else if (current_aggr_is_signature
 	   && (! type) && (! IS_SIGNATURE (type)))
     {
-      cp_error (ec_class_name_not_allowed_as_base_signature);
+      error ("class name not allowed as base signature");
       result = NULL_TREE;
     }
   else if (current_aggr_is_signature)
@@ -1482,7 +1482,7 @@ finish_base_specifier (access_specifier, base_class,
     }
   else if (type && IS_SIGNATURE (type))
     {
-      cp_error (ec_signature_name_not_allowed_as_base_class);
+      error ("signature name not allowed as base class");
       result = NULL_TREE;
     }
   else

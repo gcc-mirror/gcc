@@ -221,7 +221,7 @@ lvalue_or_else (ref, string)
 {
   int win = lvalue_p (ref);
   if (! win)
-    cp_error (ec_nonlvalue_in_s, string);
+    error ("non-lvalue in %s", string);
   return win;
 }
 
@@ -755,7 +755,7 @@ layout_basetypes (rec, max)
       my_friendly_assert (TREE_TYPE (field) == basetype, 23897);
 
       if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
-	cp_warning (ec_direct_base_inaccessible_in_due_to_ambiguity,
+	cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
 		    basetype, rec);
 
       BINFO_OFFSET (base_binfo)
@@ -776,7 +776,7 @@ layout_basetypes (rec, max)
 	{
 	  tree basetype = BINFO_TYPE (vbase_types);
 	  if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
-	    cp_warning (ec_virtual_base_inaccessible_in_due_to_ambiguity,
+	    cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
 			basetype, rec);
 	}
     }
@@ -1240,7 +1240,7 @@ binfo_value (elem, type)
      tree type;
 {
   if (get_base_distance (elem, type, 0, (tree *)0) == -2)
-    cp_compiler_error (ec_base_class_s_ambiguous_in_binfo_value,
+    compiler_error ("base class `%s' ambiguous in binfo_value",
 		    TYPE_NAME_STRING (elem));
   if (elem == type)
     return TYPE_BINFO (type);

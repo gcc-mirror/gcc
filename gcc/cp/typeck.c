@@ -216,7 +216,7 @@ require_instantiated_type (type, exp, errval)
 {
   if (TREE_TYPE (exp) == NULL_TREE)
     {
-      cp_error (ec_argument_list_may_not_have_an_initializer_list);
+      error ("argument list may not have an initializer list");
       return errval;
     }
 
@@ -590,7 +590,7 @@ common_type (t1, t2)
 	return build_type_attribute_variant (t2, attributes);
       else
 	{
-	  cp_compiler_error (ec_common_type_called_with_uncommon_aggregate_types);
+	  compiler_error ("common_type called with uncommon aggregate types");
 	  return error_mark_node;
 	}
 
@@ -611,7 +611,7 @@ common_type (t1, t2)
 	  else
 	    {
 	      if (binfo_or_else (b2, b1) == NULL_TREE)
-		cp_compiler_error (ec_common_type_called_with_uncommon_method_types);
+		compiler_error ("common_type called with uncommon method types");
 	      basetype = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t1)));
 	    }
 
@@ -630,7 +630,7 @@ common_type (t1, t2)
 	  t1 = build_exception_variant (t3, raises);
 	}
       else
-        cp_compiler_error (ec_common_type_called_with_uncommon_method_types);
+        compiler_error ("common_type called with uncommon method types");
 
       return build_type_attribute_variant (t1, attributes);
 
@@ -646,7 +646,7 @@ common_type (t1, t2)
 	  else if (binfo_or_else (b2, b1))
 	    return build_type_attribute_variant (t1, attributes);
 	}
-      cp_compiler_error (ec_common_type_called_with_uncommon_member_types);
+      compiler_error ("common_type called with uncommon member types");
 
     default:
       return build_type_attribute_variant (t1, attributes);
@@ -1269,7 +1269,7 @@ comp_target_parms (parms1, parms2, strict)
 
   if (t1 == 0 && t2 != 0)
     {
-      cp_pedwarn (ec_prohibits_conversion_from_to,
+      cp_pedwarn ("ANSI C++ prohibits conversion from `(%#T)' to `(...)'",
 		  parms2);
       return self_promoting_args_p (t2);
     }
@@ -1470,19 +1470,19 @@ c_sizeof (type)
   if (code == FUNCTION_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	cp_pedwarn (ec_forbids_taking_the_sizeof_a_function_type);
+	pedwarn ("ANSI C++ forbids taking the sizeof a function type");
       return size_int (1);
     }
   if (code == METHOD_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	cp_pedwarn (ec_forbids_taking_the_sizeof_a_method_type);
+	pedwarn ("ANSI C++ forbids taking the sizeof a method type");
       return size_int (1);
     }
   if (code == VOID_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	cp_pedwarn (ec_forbids_taking_the_sizeof_a_void_type);
+	pedwarn ("ANSI C++ forbids taking the sizeof a void type");
       return size_int (1);
     }
   if (code == ERROR_MARK)
@@ -1507,13 +1507,13 @@ c_sizeof (type)
         In that case we should be able to do better.  */
   if (IS_SIGNATURE (type))
     {
-      cp_error (ec_sizeof_applied_to_a_signature_type);
+      error ("`sizeof' applied to a signature type");
       return size_int (0);
     }
 
   if (TYPE_SIZE (complete_type (type)) == 0)
     {
-      cp_error (ec_sizeof_applied_to_incomplete_type, type);
+      cp_error ("`sizeof' applied to incomplete type `%T'", type);
       return size_int (0);
     }
 
@@ -1536,7 +1536,7 @@ expr_sizeof (e)
 
   if (TREE_CODE (e) == COMPONENT_REF
       && DECL_BIT_FIELD (TREE_OPERAND (e, 1)))
-    cp_error (ec_sizeof_applied_to_a_bitfield);
+    error ("sizeof applied to a bit-field");
   /* ANSI says arrays and functions are converted inside comma.
      But we can't really convert them in build_compound_expr
      because that would break commas in lvalues.
@@ -1552,7 +1552,7 @@ expr_sizeof (e)
 	  && ((TREE_TYPE (t)
 	       && TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
 	      || is_overloaded_fn (t)))
-	cp_pedwarn (ec_forbids_taking_the_sizeof_a_function_type);
+	pedwarn ("ANSI C++ forbids taking the sizeof a function type");
     }
   return c_sizeof (TREE_TYPE (e));
 }
@@ -1610,7 +1610,7 @@ c_alignof (type)
         In that case we should be able to do better.  */
   if (IS_SIGNATURE (type))
     {
-      cp_error (ec_alignof_applied_to_a_signature_type);
+      error ("`__alignof' applied to a signature type");
       return size_int (1);
     }
 
@@ -1643,7 +1643,7 @@ decay_conversion (exp)
 
       if (type == unknown_type_node)
 	{
-	  cp_pedwarn (ec_assuming_on_overloaded_member_function);
+	  cp_pedwarn ("assuming & on overloaded member function");
 	  return build_unary_op (ADDR_EXPR, exp, 0);
 	}
     }
@@ -1670,7 +1670,7 @@ decay_conversion (exp)
 
   if (code == VOID_TYPE)
     {
-      cp_error (ec_void_value_not_ignored_as_it_ought_to_be);
+      error ("void value not ignored as it ought to be");
       return error_mark_node;
     }
   if (code == FUNCTION_TYPE)
@@ -1679,7 +1679,7 @@ decay_conversion (exp)
     }
   if (code == METHOD_TYPE)
     {
-      cp_pedwarn (ec_assuming_on, exp);
+      cp_pedwarn ("assuming & on `%E'", exp);
       return build_unary_op (ADDR_EXPR, exp, 0);
     }
   if (code == ARRAY_TYPE)
@@ -1715,7 +1715,7 @@ decay_conversion (exp)
       if (!lvalue_p (exp)
 	  && ! (TREE_CODE (exp) == CONSTRUCTOR && TREE_STATIC (exp)))
 	{
-	  cp_error (ec_invalid_use_of_nonlvalue_array);
+	  error ("invalid use of non-lvalue array");
 	  return error_mark_node;
 	}
 
@@ -1826,7 +1826,7 @@ string_conv_p (totype, exp, warn)
 
   /* This warning is not very useful, as it complains about printf.  */
   if (warn && warn_write_strings)
-    cp_warning (ec_deprecated_conversion_from_string_constant_to_char);
+    cp_warning ("deprecated conversion from string constant to `char *'");
 
   return 1;
 }
@@ -1844,13 +1844,13 @@ build_object_ref (datum, basetype, field)
     dtype = TREE_TYPE (dtype);
   if (! IS_AGGR_TYPE_CODE (TREE_CODE (dtype)))
     {
-      cp_error (ec_request_for_member_in_expression_of_nonaggregate_type,
+      cp_error ("request for member `%T::%D' in expression of non-aggregate type `%T'",
 		basetype, field, dtype);
       return error_mark_node;
     }
   else if (IS_SIGNATURE (basetype))
     {
-      cp_warning (ec_signature_name_in_scope_resolution_ignored);
+      warning ("signature name in scope resolution ignored");
       return build_component_ref (datum, field, NULL_TREE, 1);
     }
   else if (is_aggr_type (basetype, 1))
@@ -1983,7 +1983,7 @@ build_component_ref (datum, component, basetype_path, protect)
 			      basetype_path, protect));
 
     case TEMPLATE_DECL:
-      cp_error (ec_invalid_use_of, datum);
+      cp_error ("invalid use of %D", datum);
       datum = error_mark_node;
       break;
 
@@ -2021,7 +2021,7 @@ build_component_ref (datum, component, basetype_path, protect)
   if (! IS_AGGR_TYPE_CODE (code))
     {
       if (code != ERROR_MARK)
-	cp_error (ec_request_for_member_in_which_is_of_nonaggregate_type,
+	cp_error ("request for member `%D' in `%E', which is of non-aggregate type `%T'",
 		  component, datum, basetype);
       return error_mark_node;
     }
@@ -2033,13 +2033,13 @@ build_component_ref (datum, component, basetype_path, protect)
     {
       if (TYPE_IDENTIFIER (basetype) != TREE_OPERAND (component, 0))
 	{
-	  cp_error (ec_destructor_specifier_must_have_matching_names,
+	  cp_error ("destructor specifier `%T::~%T' must have matching names",
 		    basetype, TREE_OPERAND (component, 0));
 	  return error_mark_node;
 	}
       if (! TYPE_HAS_DESTRUCTOR (basetype))
 	{
-	  cp_error (ec_type_has_no_destructor, basetype);
+	  cp_error ("type `%T' has no destructor", basetype);
 	  return error_mark_node;
 	}
       return TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1);
@@ -2056,7 +2056,7 @@ build_component_ref (datum, component, basetype_path, protect)
     field = component;
   else if (TREE_CODE (component) == TYPE_DECL)
     {
-      cp_pedwarn (ec_invalid_use_of_type_decl_as_expression, component);
+      cp_pedwarn ("invalid use of type decl `%#D' as expression", component);
       return component;
     }
   else
@@ -2117,9 +2117,9 @@ build_component_ref (datum, component, basetype_path, protect)
 				    datum, fndecl);
 		    }
 		  if (access == access_protected_node)
-		    cp_error (ec_member_function_is_protected, fndecl);
+		    cp_error ("member function `%D' is protected", fndecl);
 		  else
-		    cp_error (ec_member_function_is_private, fndecl);
+		    cp_error ("member function `%D' is private", fndecl);
 		  return error_mark_node;
 		}
 	      else
@@ -2135,7 +2135,7 @@ build_component_ref (datum, component, basetype_path, protect)
 		}
 	    }
 
-	  cp_error (ec_has_no_member_named, basetype, name);
+	  cp_error ("`%#T' has no member named `%D'", basetype, name);
 	  return error_mark_node;
 	}
       else if (TREE_TYPE (field) == error_mark_node)
@@ -2144,7 +2144,7 @@ build_component_ref (datum, component, basetype_path, protect)
       if (TREE_CODE (field) != FIELD_DECL)
 	{
 	  if (TREE_CODE (field) == TYPE_DECL)
-	    cp_pedwarn (ec_invalid_use_of_type_decl_as_expression, field);
+	    cp_pedwarn ("invalid use of type decl `%#D' as expression", field);
 	  else if (DECL_RTL (field) != 0)
 	    mark_used (field);
 	  else
@@ -2171,7 +2171,7 @@ build_component_ref (datum, component, basetype_path, protect)
 	  tree addr = build_unary_op (ADDR_EXPR, datum, 0);
 	  if (integer_zerop (addr))
 	    {
-	      cp_error (ec_invalid_reference_to_ptr_use_ptrtomember_instead);
+	      error ("invalid reference to NULL ptr, use ptr-to-member instead");
 	      return error_mark_node;
 	    }
 	  if (VBASE_NAME_P (DECL_NAME (field)))
@@ -2300,16 +2300,16 @@ build_indirect_ref (ptr, errorstring)
   /* `pointer' won't be an error_mark_node if we were given a
      pointer to member, so it's cool to check for this here.  */
   else if (TYPE_PTRMEMFUNC_P (type))
-    cp_error (ec_invalid_use_of_s_on_pointer_to_member_function, errorstring);
+    error ("invalid use of `%s' on pointer to member function", errorstring);
   else if (TREE_CODE (type) == RECORD_TYPE
 	   && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type)))
-    cp_error (ec_cannot_dereference_signature_pointerreference);
+    error ("cannot dereference signature pointer/reference");
   else if (pointer != error_mark_node)
     {
       if (errorstring)
-	cp_error (ec_invalid_type_argument_of_s, errorstring);
+	error ("invalid type argument of `%s'", errorstring);
       else
-	cp_error (ec_invalid_type_argument);
+	error ("invalid type argument");
     }
   return error_mark_node;
 }
@@ -2333,7 +2333,7 @@ build_array_ref (array, idx)
 {
   if (idx == 0)
     {
-      cp_error (ec_subscript_missing_in_array_reference);
+      error ("subscript missing in array reference");
       return error_mark_node;
     }
 
@@ -2354,14 +2354,14 @@ build_array_ref (array, idx)
 	 must have done so deliberately.  */
       if (warn_char_subscripts
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (idx)) == char_type_node)
-	cp_warning (ec_array_subscript_has_type_char);
+	warning ("array subscript has type `char'");
 
       /* Apply default promotions *after* noticing character types.  */
       idx = default_conversion (idx);
 
       if (TREE_CODE (TREE_TYPE (idx)) != INTEGER_TYPE)
 	{
-	  cp_error (ec_array_subscript_is_not_an_integer);
+	  error ("array subscript is not an integer");
 	  return error_mark_node;
 	}
 
@@ -2390,7 +2390,7 @@ build_array_ref (array, idx)
 	}
 
       if (pedantic && !lvalue_p (array))
-	cp_pedwarn (ec_forbids_subscripting_nonlvalue_array);
+	pedwarn ("ANSI C++ forbids subscripting non-lvalue array");
 
       /* Note in C++ it is valid to subscript a `register' array, since
 	 it is valid to take the address of something with that
@@ -2401,7 +2401,7 @@ build_array_ref (array, idx)
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
 	  if (TREE_CODE (foo) == VAR_DECL && DECL_REGISTER (foo))
-	    cp_warning (ec_subscripting_array_declared_register);
+	    warning ("subscripting array declared `register'");
 	}
 
       type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (array)));
@@ -2441,12 +2441,12 @@ build_array_ref (array, idx)
 
     if (TREE_CODE (TREE_TYPE (ar)) != POINTER_TYPE)
       {
-	cp_error (ec_subscripted_value_is_neither_array_nor_pointer);
+	error ("subscripted value is neither array nor pointer");
 	return error_mark_node;
       }
     if (TREE_CODE (TREE_TYPE (ind)) != INTEGER_TYPE)
       {
-	cp_error (ec_array_subscript_is_not_an_integer);
+	error ("array subscript is not an integer");
 	return error_mark_node;
       }
 
@@ -2573,7 +2573,7 @@ build_x_function_call (function, params, decl)
 	  /* Call via a pointer to member function.  */
 	  if (decl == NULL_TREE)
 	    {
-	      cp_error (ec_pointer_to_member_function_called_but_not_in_class_scope);
+	      error ("pointer to member function called, but not in class scope");
 	      return error_mark_node;
 	    }
 	  /* What other type of POINTER_TYPE could this be? */
@@ -2597,7 +2597,7 @@ build_x_function_call (function, params, decl)
 	{
 	  if (current_class_type == NULL_TREE)
 	    {
-	      cp_error (ec_object_missing_in_call_to_method_s,
+	      error ("object missing in call to method `%s'",
 		     IDENTIFIER_POINTER (function));
 	      return error_mark_node;
 	    }
@@ -2629,7 +2629,7 @@ build_x_function_call (function, params, decl)
     {
       if (OVL_FUNCTION (function) == NULL_TREE)
 	{
-	  cp_error (ec_function_declared_overloaded_but_no_definitions_appear_with_which_to_resolve_it,
+	  cp_error ("function `%D' declared overloaded, but no definitions appear with which to resolve it?!?",
 		    TREE_PURPOSE (function));
 	  return error_mark_node;
 	}
@@ -2709,9 +2709,9 @@ build_x_function_call (function, params, decl)
 	{
 	  if (current_function_decl
 	      && DECL_STATIC_FUNCTION_P (current_function_decl))
-	    cp_error (ec_invalid_call_to_member_function_needing_this_in_static_member_function_scope);
+	    error ("invalid call to member function needing `this' in static member function scope");
 	  else
-	    cp_error (ec_pointer_to_member_function_called_but_not_in_class_scope);
+	    error ("pointer to member function called, but not in class scope");
 	  return error_mark_node;
 	}
       if (TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
@@ -2829,7 +2829,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       if (instance_ptr == error_mark_node
 	  && TREE_CODE (e1) != ADDR_EXPR
 	  && TREE_CODE (TREE_OPERAND (e1, 0)) != FUNCTION_DECL)
-	cp_error (ec_object_missing_in, function);
+	cp_error ("object missing in `%E'", function);
 
       function = e1;
     }
@@ -2867,7 +2867,7 @@ build_function_call_real (function, params, require_complete, flags)
 
       /* Convert anything with function type to a pointer-to-function.  */
       if (pedantic && DECL_MAIN_P (function))
-	cp_pedwarn (ec_forbids_calling_main_from_within_program);
+	pedwarn ("ANSI C++ forbids calling `main' from within program");
 
       /* Differs from default_conversion by not setting TREE_ADDRESSABLE
 	 (because calling an inline function does not mean the function
@@ -2892,7 +2892,7 @@ build_function_call_real (function, params, require_complete, flags)
 
   if (TYPE_PTRMEMFUNC_P (fntype))
     {
-      cp_error (ec_must_use_or_to_call_pointertomember_function_in,
+      cp_error ("must use .* or ->* to call pointer-to-member function in `%E (...)'",
 		function);
       return error_mark_node;
     }
@@ -2905,7 +2905,7 @@ build_function_call_real (function, params, require_complete, flags)
 	|| is_method
 	|| TREE_CODE (function) == TEMPLATE_ID_EXPR))
     {
-      cp_error (ec_cannot_be_used_as_a_function, function);
+      cp_error ("`%E' cannot be used as a function", function);
       return error_mark_node;
     }
 
@@ -3038,12 +3038,12 @@ convert_arguments (typelist, values, fndecl, flags)
 	{
 	  if (fndecl)
 	    {
-	      cp_error_at (ec_too_many_arguments_to_s, called_thing,
+	      cp_error_at ("too many arguments to %s `%+D'", called_thing,
 			   fndecl);
-	      cp_error (ec_at_this_point_in_file);
+	      error ("at this point in file");
 	    }
 	  else
-	    cp_error (ec_too_many_arguments_to_function);
+	    error ("too many arguments to function");
 	  /* In case anybody wants to know if this argument
 	     list is valid.  */
 	  if (result)
@@ -3063,10 +3063,10 @@ convert_arguments (typelist, values, fndecl, flags)
 	  if (TREE_CODE (val) == ADDR_EXPR)
 	    val = TREE_OPERAND (val, 0);
 	  if (really_overloaded_fn (val))
-	    cp_error (ec_insufficient_type_information_to_resolve_address_of_overloaded_function,
+	    cp_error ("insufficient type information to resolve address of overloaded function `%D'",
 		      DECL_NAME (get_first_fn (val)));
 	  else
-	    cp_error (ec_insufficient_type_information_in_parameter_list);
+	    error ("insufficient type information in parameter list");
 	  val = integer_zero_node;
 	}
       else if (TREE_CODE (val) == OFFSET_REF
@@ -3105,7 +3105,7 @@ convert_arguments (typelist, values, fndecl, flags)
 
 	  if (TYPE_SIZE (complete_type (type)) == 0)
 	    {
-	      cp_error (ec_parameter_type_of_called_function_is_incomplete);
+	      error ("parameter type of called function is incomplete");
 	      parmval = val;
 	    }
 	  else
@@ -3166,13 +3166,13 @@ convert_arguments (typelist, values, fndecl, flags)
 	{
 	  if (fndecl)
 	    {
-	      cp_error_at (ec_too_few_arguments, 
-			   called_thing,
-			   fndecl);
-	      cp_error (ec_at_this_point_in_file);
+	      char *buf = (char *)alloca (32 + strlen (called_thing));
+	      sprintf (buf, "too few arguments to %s `%%#D'", called_thing);
+	      cp_error_at (buf, fndecl);
+	      error ("at this point in file");
 	    }
 	  else
-	    cp_error (ec_too_few_arguments_to_function);
+	    error ("too few arguments to function");
 	  return error_mark_list;
 	}
     }
@@ -3245,7 +3245,7 @@ build_binary_op (code, arg1, arg2, convert_p)
    are done in the narrower type when that gives the same result).
    Constant folding is also done before the result is returned.
 
-   ERR_CODE is the code that determines what to say in error messages.
+   ERROR_CODE is the code that determines what to say in error messages.
    It is usually, but not always, the same as CODE.
 
    Note that the operands will never have enumeral types
@@ -3257,10 +3257,10 @@ build_binary_op (code, arg1, arg2, convert_p)
    multiple inheritance, and deal with pointer to member functions.  */
 
 tree
-build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
+build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
      enum tree_code code;
      tree orig_op0, orig_op1;
-     enum tree_code err_code;
+     enum tree_code error_code;
 {
   tree op0, op1;
   register enum tree_code code0, code1;
@@ -3380,9 +3380,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 	      || code1 == COMPLEX_TYPE))
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST && integer_zerop (op1))
-	    cp_warning (ec_division_by_zero_in_div, op0);
+	    cp_warning ("division by zero in `%E / 0'", op0);
 	  else if (TREE_CODE (op1) == REAL_CST && real_zerop (op1))
-	    cp_warning (ec_division_by_zero_in_div, op0);
+	    cp_warning ("division by zero in `%E / 0.'", op0);
 	      
 	  if (!(code0 == INTEGER_TYPE && code1 == INTEGER_TYPE))
 	    resultcode = RDIV_EXPR;
@@ -3437,9 +3437,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
       if (code1 == INTEGER_TYPE && integer_zerop (op1))
-	cp_warning (ec_division_by_zero_in_mod, op0);
+	cp_warning ("division by zero in `%E %% 0'", op0);
       else if (code1 == REAL_TYPE && real_zerop (op1))
-	cp_warning (ec_division_by_zero_in_mod, op0);
+	cp_warning ("division by zero in `%E %% 0.'", op0);
       
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
@@ -3474,7 +3474,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
 	      if (tree_int_cst_lt (op1, integer_zero_node))
-		cp_warning (ec_right_shift_count_is_negative);
+		warning ("right shift count is negative");
 	      else
 		{
 		  if (TREE_INT_CST_LOW (op1) | TREE_INT_CST_HIGH (op1))
@@ -3482,7 +3482,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 		  if (TREE_INT_CST_HIGH (op1) != 0
 		      || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
 			  >= TYPE_PRECISION (type0)))
-		    cp_warning (ec_right_shift_count_width_of_type);
+		    warning ("right shift count >= width of type");
 		}
 	    }
 	  /* Convert the shift-count to an integer, regardless of
@@ -3501,11 +3501,11 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
 	      if (tree_int_cst_lt (op1, integer_zero_node))
-		cp_warning (ec_left_shift_count_is_negative);
+		warning ("left shift count is negative");
 	      else if (TREE_INT_CST_HIGH (op1) != 0
 		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
 			   >= TYPE_PRECISION (type0)))
-		cp_warning (ec_left_shift_count_width_of_type);
+		warning ("left shift count >= width of type");
 	    }
 	  /* Convert the shift-count to an integer, regardless of
 	     size of value being shifted.  */
@@ -3524,12 +3524,12 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
 	      if (tree_int_cst_lt (op1, integer_zero_node))
-		cp_warning (ec_s_rotate_count_is_negative,
+		warning ("%s rotate count is negative",
 			 (code == LROTATE_EXPR) ? "left" : "right");
 	      else if (TREE_INT_CST_HIGH (op1) != 0
 		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
 			   >= TYPE_PRECISION (type0)))
-		cp_warning (ec_s_rotate_count_width_of_type,
+		warning ("%s rotate count >= width of type",
 			 (code == LROTATE_EXPR) ? "left" : "right");
 	    }
 	  /* Convert the shift-count to an integer, regardless of
@@ -3558,18 +3558,18 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 	    {
 	      if (pedantic && TREE_CODE (tt1) == FUNCTION_TYPE
 		  && tree_int_cst_lt (TYPE_SIZE (type0), TYPE_SIZE (type1)))
-		cp_pedwarn (ec_forbids_comparison_of_void_with_function_pointer);
+		pedwarn ("ANSI C++ forbids comparison of `void *' with function pointer");
 	      else if (TREE_CODE (tt1) == OFFSET_TYPE)
-		cp_pedwarn (ec_forbids_conversion_of_a_pointer_to_member_to_void);
+		pedwarn ("ANSI C++ forbids conversion of a pointer to member to `void *'");
 	    }
 	  else if (tt1 == void_type_node)
 	    {
 	      if (pedantic && TREE_CODE (tt0) == FUNCTION_TYPE
 		  && tree_int_cst_lt (TYPE_SIZE (type1), TYPE_SIZE (type0)))
-		cp_pedwarn (ec_forbids_comparison_of_void_with_function_pointer);
+		pedwarn ("ANSI C++ forbids comparison of `void *' with function pointer");
 	    }
 	  else
-	    cp_pedwarn (ec_comparison_of_distinct_pointer_types_and_lacks_a_cast,
+	    cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
 			type0, type1);
 
 	  if (result_type == NULL_TREE)
@@ -3584,12 +3584,12 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
-	  cp_error (ec_forbids_comparison_between_pointer_and_integer);
+	  error ("ANSI C++ forbids comparison between pointer and integer");
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
 	  result_type = type1;
-	  cp_error (ec_forbids_comparison_between_pointer_and_integer);
+	  error ("ANSI C++ forbids comparison between pointer and integer");
 	}
       else if (TYPE_PTRMEMFUNC_P (type0) && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
@@ -3705,7 +3705,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 	    result_type = common_type (type0, type1);
 	  else
 	    {
-	      cp_pedwarn (ec_comparison_of_distinct_pointer_types_and_lacks_a_cast,
+	      cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
 			  type0, type1);
 	      result_type = ptr_type_node;
 	    }
@@ -3726,7 +3726,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 	    result_type = common_type (type0, type1);
 	  else
 	    {
-	      cp_pedwarn (ec_comparison_of_distinct_pointer_types_and_lacks_a_cast,
+	      cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
 			  type0, type1);
 	      result_type = ptr_type_node;
 	    }
@@ -3740,12 +3740,12 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
-	  cp_pedwarn (ec_forbids_comparison_between_pointer_and_integer);
+	  pedwarn ("ANSI C++ forbids comparison between pointer and integer");
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
 	  result_type = type1;
-	  cp_pedwarn (ec_forbids_comparison_between_pointer_and_integer);
+	  pedwarn ("ANSI C++ forbids comparison between pointer and integer");
 	}
       break;
 
@@ -3909,7 +3909,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 	      && TYPE_MAIN_VARIANT (TREE_TYPE (orig_op0))
 	         != TYPE_MAIN_VARIANT (TREE_TYPE (orig_op1)))
 	    {
-	      cp_warning (ec_comparison_between_and, 
+	      cp_warning ("comparison between `%#T' and `%#T'", 
 			  TREE_TYPE (orig_op0), TREE_TYPE (orig_op1));
 	    }
 
@@ -3946,7 +3946,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 						signed_type (result_type)))))
 	    /* OK */;
 	  else
-	    cp_warning (ec_comparison_between_signed_and_unsigned);
+	    warning ("comparison between signed and unsigned");
 
 	  /* Warn if two unsigned values are being compared in a size
 	     larger than their original size, and one (and only one) is the
@@ -3991,7 +3991,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 		    {
 		      mask = (~ (HOST_WIDE_INT) 0) << bits;
 		      if ((mask & constant) != mask)
-			cp_warning (ec_comparison_of_promoted_unsigned_with_constant);
+			warning ("comparison of promoted ~unsigned with constant");
 		    }
 		}
 	      else if (unsignedp0 && unsignedp1
@@ -3999,7 +3999,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 			   < TYPE_PRECISION (result_type))
 		       && (TYPE_PRECISION (TREE_TYPE (primop1))
 			   < TYPE_PRECISION (result_type)))
-		cp_warning (ec_comparison_of_promoted_unsigned_with_unsigned);
+		warning ("comparison of promoted ~unsigned with unsigned");
 	    }
 	}
     }
@@ -4012,8 +4012,8 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
 
   if (!result_type)
     {
-      cp_error (ec_invalid_operands_and_to_binary,
-		TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), err_code);
+      cp_error ("invalid operands `%T' and `%T' to binary `%O'",
+		TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), error_code);
       return error_mark_node;
     }
 
@@ -4034,7 +4034,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, err_code)
        performed.  Note that pointer-difference and pointer-addition
        have already been handled above, and so we don't end up here in
        that case.  */
-    cp_warning (ec_used_in_arithmetic);
+    cp_warning ("NULL used in arithmetic");
 
   if (! converted)
     {
@@ -4083,25 +4083,25 @@ pointer_int_sum (resultcode, ptrop, intop)
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	cp_pedwarn (ec_forbids_using_pointer_of_type_void_in_arithmetic);
+	pedwarn ("ANSI C++ forbids using pointer of type `void *' in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	cp_pedwarn (ec_forbids_using_pointer_to_a_function_in_arithmetic);
+	pedwarn ("ANSI C++ forbids using pointer to a function in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == METHOD_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	cp_pedwarn (ec_forbids_using_pointer_to_a_method_in_arithmetic);
+	pedwarn ("ANSI C++ forbids using pointer to a method in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == OFFSET_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	cp_pedwarn (ec_forbids_using_pointer_to_a_member_in_arithmetic);
+	pedwarn ("ANSI C++ forbids using pointer to a member in arithmetic");
       size_exp = integer_one_node;
     }
   else
@@ -4175,13 +4175,13 @@ pointer_diff (op0, op1, ptrtype)
   if (pedantic || warn_pointer_arith)
     {
       if (TREE_CODE (target_type) == VOID_TYPE)
-	cp_pedwarn (ec_forbids_using_pointer_of_type_void_in_subtraction);
+	pedwarn ("ANSI C++ forbids using pointer of type `void *' in subtraction");
       if (TREE_CODE (target_type) == FUNCTION_TYPE)
-	cp_pedwarn (ec_forbids_using_pointer_to_a_function_in_subtraction);
+	pedwarn ("ANSI C++ forbids using pointer to a function in subtraction");
       if (TREE_CODE (target_type) == METHOD_TYPE)
-	cp_pedwarn (ec_forbids_using_pointer_to_a_method_in_subtraction);
+	pedwarn ("ANSI C++ forbids using pointer to a method in subtraction");
       if (TREE_CODE (target_type) == OFFSET_TYPE)
-	cp_pedwarn (ec_forbids_using_pointer_to_a_member_in_subtraction);
+	pedwarn ("ANSI C++ forbids using pointer to a member in subtraction");
     }
 
   /* First do the subtraction as integers;
@@ -4192,7 +4192,7 @@ pointer_diff (op0, op1, ptrtype)
 
   /* This generates an error if op1 is a pointer to an incomplete type.  */
   if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (op1))) == 0)
-    cp_error (ec_arithmetic_on_pointer_to_an_incomplete_type);
+    error ("arithmetic on pointer to an incomplete type");
 
   op1 = ((TREE_CODE (target_type) == VOID_TYPE
 	  || TREE_CODE (target_type) == FUNCTION_TYPE
@@ -4294,7 +4294,7 @@ build_x_unary_op (code, xarg)
   if (code == ADDR_EXPR)
     {
       if (TREE_CODE (xarg) == TARGET_EXPR)
-	cp_warning (ec_taking_address_of_temporary);
+	warning ("taking address of temporary");
     }
 
   return build_unary_op (code, xarg, 0);
@@ -4477,7 +4477,7 @@ build_unary_op (code, xarg, noconvert)
 
 	/* ARM $5.2.5 last annotation says this should be forbidden.  */
 	if (TREE_CODE (argtype) == ENUMERAL_TYPE)
-	  cp_pedwarn (ec_forbids_sing_an_enum,
+	  pedwarn ("ANSI C++ forbids %sing an enum",
 		   (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 		   ? "increment" : "decrement");
 	    
@@ -4487,14 +4487,14 @@ build_unary_op (code, xarg, noconvert)
 	  {
 	    enum tree_code tmp = TREE_CODE (TREE_TYPE (argtype));
 	    if (TYPE_SIZE (complete_type (TREE_TYPE (argtype))) == 0)
-	      cp_error (ec_cannot_s_a_pointer_to_incomplete_type,
+	      cp_error ("cannot %s a pointer to incomplete type `%T'",
 			((code == PREINCREMENT_EXPR
 			  || code == POSTINCREMENT_EXPR)
 			 ? "increment" : "decrement"), TREE_TYPE (argtype));
 	    else if ((pedantic || warn_pointer_arith)
 		     && (tmp == FUNCTION_TYPE || tmp == METHOD_TYPE
 			 || tmp == VOID_TYPE || tmp == OFFSET_TYPE))
-	      cp_pedwarn (ec_forbids_sing_a_pointer_of_type,
+	      cp_pedwarn ("ANSI C++ forbids %sing a pointer of type `%T'",
 			  ((code == PREINCREMENT_EXPR
 			    || code == POSTINCREMENT_EXPR)
 			   ? "increment" : "decrement"), argtype);
@@ -4519,7 +4519,7 @@ build_unary_op (code, xarg, noconvert)
 	    {
 	      tree incremented, modify, value, compound;
 	      if (! lvalue_p (arg) && pedantic)
-		cp_pedwarn (ec_cast_to_nonreference_type_used_as_lvalue);
+		pedwarn ("cast to non-reference type used as lvalue");
 	      arg = stabilize_reference (arg);
 	      if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
 		value = arg;
@@ -4554,7 +4554,7 @@ build_unary_op (code, xarg, noconvert)
 	  {
 	    if (code == POSTDECREMENT_EXPR || code == PREDECREMENT_EXPR)
 	      {
-		cp_error (ec_invalid_use_of_on_bool_variable, arg);
+		cp_error ("invalid use of `--' on bool variable `%D'", arg);
 		return error_mark_node;
 	      }
 #if 0
@@ -4599,7 +4599,7 @@ build_unary_op (code, xarg, noconvert)
 	}
       else if (pedantic && DECL_MAIN_P (arg))
 	/* ARM $3.4 */
-	cp_pedwarn (ec_taking_address_of_function_main);
+	pedwarn ("taking address of function `main'");
 
       /* Let &* cancel out to simplify resulting code.  */
       if (TREE_CODE (arg) == INDIRECT_REF)
@@ -4702,7 +4702,7 @@ build_unary_op (code, xarg, noconvert)
 	case FIX_ROUND_EXPR:
 	case FIX_CEIL_EXPR:
 	  if (! lvalue_p (arg) && pedantic)
-	    cp_pedwarn (ec_taking_the_address_of_a_cast_to_nonreference_type);
+	    pedwarn ("taking the address of a cast to non-reference type");
 	  break;
 	  
 	default:
@@ -4859,7 +4859,7 @@ unary_complex_lvalue (code, arg)
       if (TREE_CODE (t) == FUNCTION_DECL)
 	{
 	  if (DECL_DESTRUCTOR_P (t))
-	    cp_error (ec_taking_address_of_destructor);
+	    cp_error ("taking address of destructor");
 	  return build_unary_op (ADDR_EXPR, t, 0);
 	}
       if (TREE_CODE (t) == VAR_DECL)
@@ -4956,7 +4956,7 @@ mark_addressable (exp)
 	if (x == current_class_ptr)
 	  {
 	    if (! flag_this_is_variable)
-	      cp_error (ec_address_of_this_not_available);
+	      error ("address of `this' not available");
 	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later */
 	    put_var_into_stack (x);
 	    return 1;
@@ -4992,7 +4992,7 @@ mark_addressable (exp)
       case RESULT_DECL:
 	if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x)
 	    && !DECL_ARTIFICIAL (x) && extra_warnings)
-	  cp_warning (ec_address_requested_for_which_is_declared_register,
+	  cp_warning ("address requested for `%D', which is declared `register'",
 		      x);
 	put_var_into_stack (x);
 	TREE_ADDRESSABLE (x) = 1;
@@ -5054,7 +5054,7 @@ build_conditional_expr (ifexp, op1, op2)
   if (op1 == 0)
     {
       if (pedantic)
-	cp_pedwarn (ec_forbids_omitting_the_middle_term_of_a_expression);
+	pedwarn ("ANSI C++ forbids omitting the middle term of a ?: expression");
       ifexp = op1 = save_expr (ifexp);
     }
 
@@ -5141,18 +5141,18 @@ build_conditional_expr (ifexp, op1, op2)
     {
       if (code2 == ENUMERAL_TYPE)
 	{
-	  cp_error (ec_enumeral_mismatch_in_conditional_expression_vs,
+	  cp_error ("enumeral mismatch in conditional expression: `%T' vs `%T'",
 		    type1, type2);
 	  return error_mark_node;
 	}
       else if (extra_warnings && ! IS_AGGR_TYPE_CODE (code2)
 	       && type2 != type_promotes_to (type1))
-	cp_warning (ec_enumeral_and_nonenumeral_type_in_conditional_expression);
+	warning ("enumeral and non-enumeral type in conditional expression");
     }
   else if (extra_warnings
 	   && code2 == ENUMERAL_TYPE && ! IS_AGGR_TYPE_CODE (code1)
 	   && type1 != type_promotes_to (type2))
-    cp_warning (ec_enumeral_and_nonenumeral_type_in_conditional_expression);
+    warning ("enumeral and non-enumeral type in conditional expression");
 
   if (code1 != VOID_TYPE)
     {
@@ -5203,7 +5203,7 @@ build_conditional_expr (ifexp, op1, op2)
   else if (code1 == VOID_TYPE || code2 == VOID_TYPE)
     {
       if (pedantic && (code1 != VOID_TYPE || code2 != VOID_TYPE))
-	cp_pedwarn (ec_forbids_conditional_expr_with_only_one_void_side);
+	pedwarn ("ANSI C++ forbids conditional expr with only one void side");
       result_type = void_type_node;
     }
   else if (code1 == POINTER_TYPE && null_ptr_cst_p (op2))
@@ -5217,13 +5217,13 @@ build_conditional_expr (ifexp, op1, op2)
       else if (TYPE_MAIN_VARIANT (TREE_TYPE (type1)) == void_type_node)
 	{
 	  if (pedantic && TREE_CODE (type2) == FUNCTION_TYPE)
-	    cp_pedwarn (ec_forbids_conditional_expr_between_void_and_function_pointer);
+	    pedwarn ("ANSI C++ forbids conditional expr between `void *' and function pointer");
 	  result_type = qualify_type (type1, type2);
 	}
       else if (TYPE_MAIN_VARIANT (TREE_TYPE (type2)) == void_type_node)
 	{
 	  if (pedantic && TREE_CODE (type1) == FUNCTION_TYPE)
-	    cp_pedwarn (ec_forbids_conditional_expr_between_void_and_function_pointer);
+	    pedwarn ("ANSI C++ forbids conditional expr between `void *' and function pointer");
 	  result_type = qualify_type (type2, type1);
 	}
       /* C++ */
@@ -5236,7 +5236,7 @@ build_conditional_expr (ifexp, op1, op2)
 	{
 	  if (result_type == error_mark_node)
 	    {
-	      cp_error (ec_common_base_type_of_types_and_is_ambiguous,
+	      cp_error ("common base type of types `%T' and `%T' is ambiguous",
 			TREE_TYPE (type1), TREE_TYPE (type2));
 	      result_type = ptr_type_node;
 	    }
@@ -5245,7 +5245,7 @@ build_conditional_expr (ifexp, op1, op2)
 	      if (pedantic
 		  && result_type != TREE_TYPE (type1)
 		  && result_type != TREE_TYPE (type2))
-		cp_pedwarn (ec_and_converted_to_in_conditional_expression,
+		cp_pedwarn ("`%T' and `%T' converted to `%T *' in conditional expression",
 			    type1, type2, result_type);
 
 	      result_type = build_pointer_type (result_type);
@@ -5253,18 +5253,18 @@ build_conditional_expr (ifexp, op1, op2)
 	}
       else
 	{
-	  cp_pedwarn (ec_pointer_type_mismatch_in_conditional_expression);
+	  pedwarn ("pointer type mismatch in conditional expression");
 	  result_type = ptr_type_node;
 	}
     }
   else if (code1 == POINTER_TYPE && code2 == INTEGER_TYPE)
     {
-      cp_pedwarn (ec_pointerinteger_type_mismatch_in_conditional_expression);
+      pedwarn ("pointer/integer type mismatch in conditional expression");
       result_type = type1;
     }
   else if (code2 == POINTER_TYPE && code1 == INTEGER_TYPE)
     {
-      cp_pedwarn (ec_pointerinteger_type_mismatch_in_conditional_expression);
+      pedwarn ("pointer/integer type mismatch in conditional expression");
       result_type = type2;
     }
 
@@ -5274,7 +5274,7 @@ build_conditional_expr (ifexp, op1, op2)
 	 an aggregate value, try converting to a scalar type.  */
       if (code1 == RECORD_TYPE && code2 == RECORD_TYPE)
 	{
-	  cp_error (ec_aggregate_mismatch_in_conditional_expression_vs,
+	  cp_error ("aggregate mismatch in conditional expression: `%T' vs `%T'",
 		    type1, type2);
 	  return error_mark_node;
 	}
@@ -5292,12 +5292,12 @@ build_conditional_expr (ifexp, op1, op2)
 	  tmp = build_type_conversion (CONVERT_EXPR, tmp, op1, 0);
 	  if (tmp == NULL_TREE)
 	    {
-	      cp_error (ec_incompatible_types_and_in,
+	      cp_error ("incompatible types `%T' and `%T' in `?:'",
 			type1, type2);
 	      return error_mark_node;
 	    }
 	  if (tmp == error_mark_node)
-	    cp_error (ec_ambiguous_pointer_conversion);
+	    error ("ambiguous pointer conversion");
 	  else
 	    STRIP_NOPS (tmp);
 	  result_type = common_type (type2, TREE_TYPE (tmp));
@@ -5315,12 +5315,12 @@ build_conditional_expr (ifexp, op1, op2)
 	  tmp = build_type_conversion (CONVERT_EXPR, tmp, op2, 0);
 	  if (tmp == NULL_TREE)
 	    {
-	      cp_error (ec_incompatible_types_and_in,
+	      cp_error ("incompatible types `%T' and `%T' in `?:'",
 			type1, type2);
 	      return error_mark_node;
 	    }
 	  if (tmp == error_mark_node)
-	    cp_error (ec_ambiguous_pointer_conversion);
+	    error ("ambiguous pointer conversion");
 	  else
 	    STRIP_NOPS (tmp);
 	  result_type = common_type (type1, TREE_TYPE (tmp));
@@ -5330,7 +5330,7 @@ build_conditional_expr (ifexp, op1, op2)
 	result_type = void_type_node;
       else
 	{
-	  cp_error (ec_type_mismatch_in_conditional_expression);
+	  error ("type mismatch in conditional expression");
 	  return error_mark_node;
 	}
     }
@@ -5383,7 +5383,7 @@ build_x_compound_expr (list)
       if ((extra_warnings || warn_unused)
            && !(TREE_CODE (TREE_VALUE(list)) == CONVERT_EXPR
                 && TREE_TYPE (TREE_VALUE(list)) == void_type_node))
-        cp_warning (ec_lefthand_operand_of_comma_expression_has_no_effect);
+        warning("left-hand operand of comma expression has no effect");
     }
 #if 0 /* this requires a gcc backend patch to export warn_if_unused_value */
   else if (warn_unused)
@@ -5523,7 +5523,7 @@ build_static_cast (type, expr)
   if (ok)
     return build_c_cast (type, expr);
 
-  cp_error (ec_static_cast_from_to, intype, type);
+  cp_error ("static_cast from `%T' to `%T'", intype, type);
   return error_mark_node;
 }
 
@@ -5570,7 +5570,7 @@ build_reinterpret_cast (type, expr)
     {
       if (! real_lvalue_p (expr))
 	{
-	  cp_error (ec_reinterpret_cast_from_rvalue_to, intype, type);
+	  cp_error ("reinterpret_cast from `%T' rvalue to `%T'", intype, type);
 	  return error_mark_node;
 	}
       expr = build_unary_op (ADDR_EXPR, expr, 0);
@@ -5590,7 +5590,7 @@ build_reinterpret_cast (type, expr)
   else if (TREE_CODE (type) == INTEGER_TYPE && TYPE_PTR_P (intype))
     {
       if (TYPE_PRECISION (type) < TYPE_PRECISION (intype))
-	cp_pedwarn (ec_reinterpret_cast_from_to_loses_precision,
+	cp_pedwarn ("reinterpret_cast from `%T' to `%T' loses precision",
 		    intype, type);
     }
   else if ((TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
@@ -5604,7 +5604,7 @@ build_reinterpret_cast (type, expr)
 	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
     {
       if (! comp_ptr_ttypes_reinterpret (TREE_TYPE (type), TREE_TYPE (intype)))
-	cp_pedwarn (ec_reinterpret_cast_from_to_casts_away_const_or_volatile,
+	cp_pedwarn ("reinterpret_cast from `%T' to `%T' casts away const (or volatile)",
 		    intype, type);
 
       if (TREE_READONLY_DECL_P (expr))
@@ -5614,14 +5614,14 @@ build_reinterpret_cast (type, expr)
   else if ((TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype))
 	   || (TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype)))
     {
-      cp_pedwarn (ec_forbids_casting_between_pointers_to_functions_and_objects);
+      pedwarn ("ANSI C++ forbids casting between pointers to functions and objects");
       if (TREE_READONLY_DECL_P (expr))
 	expr = decl_constant_value (expr);
       return fold (build1 (NOP_EXPR, type, expr));
     }
   else
     {
-      cp_error (ec_reinterpret_cast_from_to, intype, type);
+      cp_error ("reinterpret_cast from `%T' to `%T'", intype, type);
       return error_mark_node;
     }
       
@@ -5673,7 +5673,7 @@ build_const_cast (type, expr)
     {
       if (! real_lvalue_p (expr))
 	{
-	  cp_error (ec_const_cast_from_rvalue_to, intype, type);
+	  cp_error ("const_cast from `%T' rvalue to `%T'", intype, type);
 	  return error_mark_node;
 	}
 
@@ -5689,7 +5689,7 @@ build_const_cast (type, expr)
 	   && comp_ptr_ttypes_const (TREE_TYPE (type), TREE_TYPE (intype)))
     return cp_convert (type, expr);
 
-  cp_error (ec_const_cast_from_to, intype, type);
+  cp_error ("const_cast from `%T' to `%T'", intype, type);
   return error_mark_node;
 }
 
@@ -5727,12 +5727,12 @@ build_c_cast (type, expr)
       if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
 	{
 	  if (pedantic)
-	    cp_pedwarn (ec_forbids_casting_to_an_array_type);
+	    pedwarn ("ANSI C++ forbids casting to an array type");
 	  type = build_pointer_type (TREE_TYPE (type));
 	}
       else
 	{
-	  cp_error (ec_forbids_casting_to_an_array_type);
+	  error ("ANSI C++ forbids casting to an array type");
 	  return error_mark_node;
 	}
     }
@@ -5740,13 +5740,13 @@ build_c_cast (type, expr)
   if (TREE_CODE (type) == FUNCTION_TYPE
       || TREE_CODE (type) == METHOD_TYPE)
     {
-      cp_error (ec_casting_to_function_type, type);
+      cp_error ("casting to function type `%T'", type);
       return error_mark_node;
     }
 
   if (IS_SIGNATURE (type))
     {
-      cp_error (ec_cast_specifies_signature_type);
+      error ("cast specifies signature type");
       return error_mark_node;
     }
 
@@ -5815,10 +5815,10 @@ build_c_cast (type, expr)
 	     softening them into pedwarns.  */
 	  if (TYPE_VOLATILE (TREE_TYPE (otype))
 	      && ! TYPE_VOLATILE (TREE_TYPE (type)))
-	    cp_warning (ec_cast_discards_volatile_from_pointer_target_type);
+	    warning ("cast discards `volatile' from pointer target type");
 	  if (TYPE_READONLY (TREE_TYPE (otype))
 	      && ! TYPE_READONLY (TREE_TYPE (type)))
-	    cp_warning (ec_cast_discards_const_from_pointer_target_type);
+	    warning ("cast discards `const' from pointer target type");
 	}
 
       /* Warn about possible alignment problems.  */
@@ -5828,7 +5828,7 @@ build_c_cast (type, expr)
 	  && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
 	  && TREE_CODE (TREE_TYPE (otype)) != FUNCTION_TYPE
 	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
-	cp_warning (ec_cast_increases_required_alignment_of_target_type);
+	warning ("cast increases required alignment of target type");
 
 #if 0
       /* We should see about re-enabling these, they seem useful to
@@ -5836,7 +5836,7 @@ build_c_cast (type, expr)
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype))
-	cp_warning (ec_cast_from_pointer_to_integer_of_different_size);
+	warning ("cast from pointer to integer of different size");
 
       if (TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == INTEGER_TYPE
@@ -5844,7 +5844,7 @@ build_c_cast (type, expr)
 	  /* Don't warn about converting 0 to pointer,
 	     provided the 0 was explicit--not cast or made by folding.  */
 	  && !(TREE_CODE (value) == INTEGER_CST && integer_zerop (value)))
-	cp_warning (ec_cast_to_pointer_from_integer_of_different_size);
+	warning ("cast to pointer from integer of different size");
 #endif
 
       if (TREE_CODE (type) == REFERENCE_TYPE)
@@ -5983,7 +5983,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	    lhs = member;
 	  else
 	    {
-	      cp_compiler_error (ec_invalid_static_class_member);
+	      compiler_error ("invalid static class member");
 	      return error_mark_node;
 	    }
 	}
@@ -6042,7 +6042,7 @@ build_modify_expr (lhs, modifycode, rhs)
       newrhs = build_binary_op (modifycode, lhs, rhs, 1);
       if (newrhs == error_mark_node)
 	{
-	  cp_error (ec_in_evaluation_of, modifycode,
+	  cp_error ("  in evaluation of `%Q(%#T, %#T)'", modifycode,
 		    TREE_TYPE (lhs), TREE_TYPE (rhs));
 	  return error_mark_node;
 	}
@@ -6076,7 +6076,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	/* WP 5.4.1:  The result is an lvalue if T is a reference type,
 	   otherwise the result is an rvalue.   */
 	if (! lvalue_p (lhs))
-	  cp_pedwarn (ec_forbids_cast_to_nonreference_type_used_as_lvalue);
+	  pedwarn ("ANSI C++ forbids cast to non-reference type used as lvalue");
 
 	result = build_modify_expr (inner_lhs, NOP_EXPR,
 				    cp_convert (TREE_TYPE (inner_lhs),
@@ -6143,7 +6143,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	  && DECL_NAME (current_function_decl) != NULL_TREE
 	  && (DECL_NAME (current_function_decl)
 	      != constructor_name (current_class_type)))
-	cp_warning (ec_assignment_to_this_not_in_constructor_or_destructor);
+	warning ("assignment to `this' not in constructor or destructor");
       current_function_just_assigned_this = 1;
     }
 
@@ -6197,14 +6197,14 @@ build_modify_expr (lhs, modifycode, rhs)
       
       if (! comptypes (lhstype, TREE_TYPE (rhs), 0))
 	{
-	  cp_error (ec_incompatible_types_in_assignment_of_to,
+	  cp_error ("incompatible types in assignment of `%T' to `%T'",
 		    TREE_TYPE (rhs), lhstype);
 	  return error_mark_node;
 	}
 
       /* Allow array assignment in compiler-generated code.  */
       if (pedantic && ! DECL_ARTIFICIAL (current_function_decl))
-	cp_pedwarn (ec_forbids_assignment_of_arrays);
+	pedwarn ("ANSI C++ forbids assignment of arrays");
 
       /* Have to wrap this in RTL_EXPR for two cases:
 	 in base or member initialization and if we
@@ -6241,7 +6241,7 @@ build_modify_expr (lhs, modifycode, rhs)
       if (lhs == DECL_RESULT (current_function_decl))
 	{
 	  if (DECL_INITIAL (lhs))
-	    cp_warning (ec_return_value_from_function_receives_multiple_initializations);
+	    warning ("return value from function receives multiple initializations");
 	  DECL_INITIAL (lhs) = newrhs;
 	}
     }
@@ -6388,7 +6388,7 @@ get_delta_difference (from, to, force)
   binfo = get_binfo (from, to, 1);
   if (binfo == error_mark_node)
     {
-      cp_error (ec_in_pointer_to_member_function_conversion);
+      error ("   in pointer to member function conversion");
       return delta;
     }
   if (binfo == 0)
@@ -6396,7 +6396,7 @@ get_delta_difference (from, to, force)
       if (!force)
 	{
 	  error_not_base_type (from, to);
-	  cp_error (ec_in_pointer_to_member_conversion);
+	  error ("   in pointer to member conversion");
 	  return delta;
 	}
       binfo = get_binfo (to, from, 1);
@@ -6406,9 +6406,9 @@ get_delta_difference (from, to, force)
 	{
 	  binfo = binfo_member (BINFO_TYPE (binfo),
 				CLASSTYPE_VBASECLASSES (from));
-	  cp_warning (ec_pointer_to_member_cast_to_virtual_base,
+	  cp_warning ("pointer to member cast to virtual base `%T'",
 		      BINFO_TYPE (binfo));
-	  cp_warning (ec_will_only_work_if_you_are_very_careful);
+	  warning ("  will only work if you are very careful");
 	}
       delta = BINFO_OFFSET (binfo);
       delta = cp_convert (ptrdiff_type_node, delta);
@@ -6422,12 +6422,12 @@ get_delta_difference (from, to, force)
     {
       if (force)
 	{
-	  cp_warning (ec_pointer_to_member_cast_from_virtual_base,
+	  cp_warning ("pointer to member cast from virtual base `%T'",
 		      BINFO_TYPE (binfo));
-	  cp_warning (ec_will_only_work_if_you_are_very_careful);
+	  warning ("  will only work if you are very careful");
 	}
       else
-	cp_error (ec_pointer_to_member_conversion_from_virtual_base,
+	cp_error ("pointer to member conversion from virtual base `%T'",
 		  BINFO_TYPE (binfo));
     }
 
@@ -6543,7 +6543,7 @@ build_ptrmemfunc (type, pfn, force)
       pfn_type = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn));
       if (!force
 	  && comp_target_types (type, pfn_type, 1) != 1)
-	cp_error (ec_conversion_to_from, type, pfn_type);
+	cp_error ("conversion to `%T' from `%T'", type, pfn_type);
 
       ndelta = cp_convert (ptrdiff_type_node, build_component_ref (pfn, delta_identifier, NULL_TREE, 0));
       ndelta2 = cp_convert (ptrdiff_type_node, DELTA2_FROM_PTRMEMFUNC (pfn));
@@ -6585,7 +6585,7 @@ build_ptrmemfunc (type, pfn, force)
 
   if (!force 
       && comp_target_types (type, TREE_TYPE (pfn), 0) != 1)
-    cp_error (ec_conversion_to_from, type, TREE_TYPE (pfn));
+    cp_error ("conversion to `%T' from `%T'", type, TREE_TYPE (pfn));
 
   /* Allow pointer to member conversions here.  */
   delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TREE_TYPE (pfn))),
@@ -6594,7 +6594,7 @@ build_ptrmemfunc (type, pfn, force)
   delta2 = build_binary_op (PLUS_EXPR, delta2, delta, 1);
 
   if (TREE_CODE (TREE_OPERAND (pfn, 0)) != FUNCTION_DECL)
-    cp_warning (ec_assuming_pointer_to_member_function_is_nonvirtual);
+    warning ("assuming pointer to member function is non-virtual");
 
   if (TREE_CODE (TREE_OPERAND (pfn, 0)) == FUNCTION_DECL
       && DECL_VINDEX (TREE_OPERAND (pfn, 0)))
@@ -6655,7 +6655,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 
   /* Issue warnings about peculiar, but legal, uses of NULL.  */
   if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
-    cp_warning (ec_converting_null_to_nonpointer_type);
+    cp_warning ("converting NULL to non-pointer type");
 
   if (coder == UNKNOWN_TYPE)
     rhs = instantiate_type (type, rhs, 1);
@@ -6712,7 +6712,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 
   if (coder == VOID_TYPE)
     {
-      cp_error (ec_void_value_not_ignored_as_it_ought_to_be);
+      error ("void value not ignored as it ought to be");
       return error_mark_node;
     }
   /* Arithmetic types all interconvert.  */
@@ -6725,10 +6725,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
       if (coder == REAL_TYPE && codel == INTEGER_TYPE)
 	{
 	  if (fndecl)
-	    cp_warning (ec_used_for_argument_of,
+	    cp_warning ("`%T' used for argument %P of `%D'",
 			rhstype, parmnum, fndecl);
 	  else
-	    cp_warning (ec_s_to_from, errtype, type, rhstype);
+	    cp_warning ("%s to `%T' from `%T'", errtype, type, rhstype);
 	}
       /* And we should warn if assigning a negative value to
 	 an unsigned variable.  */
@@ -6738,10 +6738,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	      && TREE_NEGATED_INT (rhs))
 	    {
 	      if (fndecl)
-		cp_warning (ec_negative_value_passed_as_argument_of,
+		cp_warning ("negative value `%E' passed as argument %P of `%D'",
 			    rhs, parmnum, fndecl);
 	      else
-		cp_warning (ec_s_of_negative_value_to,
+		cp_warning ("%s of negative value `%E' to `%T'",
 			    errtype, rhs, type);
 	    }
 	  overflow_warning (rhs);
@@ -6799,19 +6799,19 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	  if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
 	    {
 	      if (fndecl)
-		cp_pedwarn (ec_passing_as_argument_of_discards_const,
+		cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
 			    rhstype, parmnum, fndecl);
 	      else
-		cp_pedwarn (ec_s_to_from_discards_const,
+		cp_pedwarn ("%s to `%T' from `%T' discards const",
 			    errtype, type, rhstype);
 	    }
 	  if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
 	    {
 	      if (fndecl)
-		cp_pedwarn (ec_passing_as_argument_of_discards_volatile,
+		cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
 			    rhstype, parmnum, fndecl);
 	      else
-		cp_pedwarn (ec_s_to_from_discards_volatile,
+		cp_pedwarn ("%s to `%T' from `%T' discards volatile",
 			    errtype, type, rhstype);
 	    }
 	}
@@ -6829,12 +6829,12 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	  if (TYPE_MAIN_VARIANT (ttl) == void_type_node
 	      && TREE_CODE (ttr) == OFFSET_TYPE)
 	    {
-	      cp_error (ec_no_standard_conversion_from_to_void, ttr);
+	      cp_error ("no standard conversion from `%T' to `void *'", ttr);
 	      return error_mark_node;
 	    }
 
 	  if (ctt < 0 && TYPE_MAIN_VARIANT (ttl) != TYPE_MAIN_VARIANT (ttr))
-	    cp_pedwarn (ec_converting_to_is_a_contravariance_violation,
+	    cp_pedwarn ("converting `%T' to `%T' is a contravariance violation",
 			rhstype, type);
 
 	  if (TYPE_MAIN_VARIANT (ttl) != void_type_node
@@ -6842,10 +6842,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	      && ! null_ptr_cst_p (rhs))
 	    {
 	      if (coder == RECORD_TYPE)
-		cp_pedwarn (ec_implicit_conversion_of_signature_pointer_to_type,
+		cp_pedwarn ("implicit conversion of signature pointer to type `%T'",
 			    type);
 	      else
-		cp_pedwarn (ec_forbids_implicit_conversion_from_void_in_s,
+		pedwarn ("ANSI C++ forbids implicit conversion from `void *' in %s",
 			 errtype);
 	    }
 	  /* Const and volatile mean something different for function types,
@@ -6857,7 +6857,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		  && binfo_member (TYPE_OFFSET_BASETYPE (ttr),
 				   CLASSTYPE_VBASECLASSES (TYPE_OFFSET_BASETYPE (ttl))))
 		{
-		  cp_error (ec_s_between_pointer_to_members_converting_across_virtual_baseclasses, errtype);
+		  error ("%s between pointer to members converting across virtual baseclasses", errtype);
 		  return error_mark_node;
 		}
 	      else if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
@@ -6865,29 +6865,29 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		  if (string_conv_p (type, rhs, 1))
 		    /* converting from string constant to char *, OK.  */;
 		  else if (fndecl)
-		    cp_pedwarn (ec_passing_as_argument_of_discards_const,
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn (ec_s_to_from_discards_const,
+		    cp_pedwarn ("%s to `%T' from `%T' discards const",
 				errtype, type, rhstype);
 		}
 	      else if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
 		{
 		  if (fndecl)
-		    cp_pedwarn (ec_passing_as_argument_of_discards_volatile,
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn (ec_s_to_from_discards_volatile,
+		    cp_pedwarn ("%s to `%T' from `%T' discards volatile",
 				errtype, type, rhstype);
 		}
 	      else if (TREE_CODE (ttl) == TREE_CODE (ttr)
 		       && ! comp_target_types (type, rhstype, 1))
 		{
 		  if (fndecl)
-		    cp_pedwarn (ec_passing_as_argument_of_changes_signedness,
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' changes signedness",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn (ec_s_to_from_changes_signedness,
+		    cp_pedwarn ("%s to `%T' from `%T' changes signedness",
 				errtype, type, rhstype);
 		}
 	    }
@@ -6930,46 +6930,46 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	      if (add_quals)
 		{
 		  if (fndecl)
-		    cp_pedwarn (ec_passing_as_argument_of_adds_cvquals_without_intervening_const,
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' adds cv-quals without intervening `const'",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn (ec_s_to_from_adds_cvquals_without_intervening_const,
+		    cp_pedwarn ("%s to `%T' from `%T' adds cv-quals without intervening `const'",
 				errtype, type, rhstype);
 		}
 	      if (const_parity)
 		{
 		  if (fndecl)
-		    cp_pedwarn (ec_passing_as_argument_of_discards_const,
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn (ec_s_to_from_discards_const,
+		    cp_pedwarn ("%s to `%T' from `%T' discards const",
 				errtype, type, rhstype);
 		}
 	      if (volatile_parity)
 		{
 		  if (fndecl)
-		    cp_pedwarn (ec_passing_as_argument_of_discards_volatile,
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn (ec_s_to_from_discards_volatile,
+		    cp_pedwarn ("%s to `%T' from `%T' discards volatile",
 				errtype, type, rhstype);
 		}
 	      if (unsigned_parity > 0)
 		{
 		  if (fndecl)
-		    cp_pedwarn (ec_passing_as_argument_of_changes_signed_to_unsigned,
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' changes signed to unsigned",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn (ec_s_to_from_changes_signed_to_unsigned,
+		    cp_pedwarn ("%s to `%T' from `%T' changes signed to unsigned",
 				errtype, type, rhstype);
 		}
 	      else if (unsigned_parity < 0)
 		{
 		  if (fndecl)
-		    cp_pedwarn (ec_passing_as_argument_of_changes_unsigned_to_signed,
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' changes unsigned to signed",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_pedwarn (ec_s_to_from_changes_unsigned_to_signed,
+		    cp_pedwarn ("%s to `%T' from `%T' changes unsigned to signed",
 				errtype, type, rhstype);
 		}
 
@@ -6979,17 +6979,17 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		  || TREE_CODE (ttl) == METHOD_TYPE)
 		if (! comptypes (ttl, ttr, 0))
 		  {
-		    cp_warning (ec_conflicting_function_types_in_s, errtype);
-		    cp_warning (ec_t, type, rhstype);
+		    warning ("conflicting function types in %s:", errtype);
+		    cp_warning ("\t`%T' != `%T'", type, rhstype);
 		  }
 	    }
 	  else
 	    {
 	      if (fndecl)
-		cp_error (ec_passing_as_argument_of,
+		cp_error ("passing `%T' as argument %P of `%D'",
 			  rhstype, parmnum, fndecl);
 	      else
-		cp_error (ec_s_to_from, errtype, type, rhstype);
+		cp_error ("%s to `%T' from `%T'", errtype, type, rhstype);
 	      return error_mark_node;
 	    }
 	}
@@ -7002,10 +7002,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
       if (! (TREE_CODE (rhs) == INTEGER_CST && integer_zerop (rhs)))
 	{
 	  if (fndecl)
-	    cp_pedwarn (ec_passing_to_argument_of_lacks_a_cast,
+	    cp_pedwarn ("passing `%T' to argument %P of `%D' lacks a cast",
 			rhstype, parmnum, fndecl);
 	  else
-	    cp_pedwarn (ec_s_to_from_lacks_a_cast,
+	    cp_pedwarn ("%s to `%T' from `%T' lacks a cast",
 			errtype, type, rhstype);
 	}
       return cp_convert (type, rhs);
@@ -7018,10 +7018,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		       || IS_SIGNATURE_REFERENCE (rhstype)))))
     {
       if (fndecl)
-	cp_pedwarn (ec_passing_to_argument_of_lacks_a_cast,
+	cp_pedwarn ("passing `%T' to argument %P of `%D' lacks a cast",
 		    rhstype, parmnum, fndecl);
       else
-	cp_pedwarn (ec_s_to_from_lacks_a_cast,
+	cp_pedwarn ("%s to `%T' from `%T' lacks a cast",
 		    errtype, type, rhstype);
       return cp_convert (type, rhs);
     }
@@ -7048,10 +7048,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		 : comp_target_types (ttl, ttr, 1));
 
       if (ctt < 0)
-	cp_pedwarn (ec_converting_to_is_a_contravariance_violation,
+	cp_pedwarn ("converting `%T' to `%T' is a contravariance violation",
 		    ttr, ttl);
       else if (ctt == 0)
-	cp_error (ec_s_to_from, errtype, ttl, ttr);
+	cp_error ("%s to `%T' from `%T'", errtype, ttl, ttr);
 
       /* compatible pointer to member functions.  */
       return build_ptrmemfunc (ttl, rhs, 0);
@@ -7080,7 +7080,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	   && TYPE_PTRMEMFUNC_P (TREE_TYPE (rhs)))
     return cp_convert (type, rhs);
 
-  cp_error (ec_s_to_from, errtype, type, rhstype);
+  cp_error ("%s to `%T' from `%T'", errtype, type, rhstype);
   return error_mark_node;
 }
 
@@ -7170,9 +7170,9 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
       if (fndecl)
 	{
 	  if (warningcount > savew)
-	    cp_warning_at (ec_in_passing_argument_of, parmnum, fndecl);
+	    cp_warning_at ("in passing argument %P of `%+D'", parmnum, fndecl);
 	  else if (errorcount > savee)
-	    cp_error_at (ec_in_passing_argument_of, parmnum, fndecl);
+	    cp_error_at ("in passing argument %P of `%+D'", parmnum, fndecl);
 	}
       return rhs;
     }      
@@ -7204,7 +7204,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 	 avoid duplicate warnings on code like `const int I = NULL;
 	 f(I);'.  */
       if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
-	cp_warning (ec_converting_null_to_nonpointer_type);
+	cp_warning ("converting NULL to non-pointer type");
 
       if (TREE_READONLY_DECL_P (rhs))
 	rhs = decl_constant_value (rhs);
@@ -7293,7 +7293,7 @@ c_expand_return (retval)
   tree valtype = TREE_TYPE (result);
 
   if (TREE_THIS_VOLATILE (current_function_decl))
-    cp_warning (ec_function_declared_noreturn_has_a_return_statement);
+    warning ("function declared `noreturn' has a `return' statement");
 
   if (retval == error_mark_node)
     {
@@ -7310,7 +7310,7 @@ c_expand_return (retval)
   if (dtor_label)
     {
       if (retval)
-	cp_error (ec_returning_a_value_from_a_destructor);
+	error ("returning a value from a destructor");
 
       /* Can't just return from a destructor.  */
       expand_goto (dtor_label);
@@ -7334,7 +7334,7 @@ c_expand_return (retval)
 	    {
 	      if (DECL_NAME (DECL_RESULT (current_function_decl)) == NULL_TREE)
 		{
-		  cp_pedwarn (ec_return_with_no_value_in_function_returning_nonvoid);
+		  pedwarn ("`return' with no value, in function returning non-void");
 		  /* Clear this, so finish_function won't say that we
 		     reach the end of a non-void function (which we don't,
 		     we gave a return!).  */
@@ -7349,9 +7349,9 @@ c_expand_return (retval)
   else if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
       if (flag_this_is_variable)
-	cp_error (ec_return_from_a_constructor_use_this_instead);
+	error ("return from a constructor: use `this = ...' instead");
       else
-	cp_error (ec_returning_a_value_from_a_constructor);
+	error ("returning a value from a constructor");
       retval = current_class_ptr;
     }
 
@@ -7359,13 +7359,13 @@ c_expand_return (retval)
   if (warn_ecpp
       && DECL_NAME (current_function_decl) == ansi_opname[(int) MODIFY_EXPR]
       && retval != current_class_ref)
-    cp_warning (ec_operator_should_return_a_reference_to_this);
+    cp_warning ("`operator=' should return a reference to `*this'");
 
   if (valtype == NULL_TREE || TREE_CODE (valtype) == VOID_TYPE)
     {
       current_function_returns_null = 1;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
-	cp_pedwarn (ec_return_with_a_value_in_function_returning_void);
+	pedwarn ("`return' with a value, in function returning void");
       expand_return (retval);
       return;
     }
@@ -7383,7 +7383,7 @@ c_expand_return (retval)
     /* It's already done for us.  */;
   else if (TREE_TYPE (retval) == void_type_node)
     {
-      cp_pedwarn (ec_return_of_void_value_in_function_returning_nonvoid);
+      pedwarn ("return of void value in function returning non-void");
       expand_expr_stmt (retval);
       retval = 0;
     }
@@ -7440,19 +7440,19 @@ c_expand_return (retval)
 		{
 		  /* Get the target.  */
 		  whats_returned = TREE_OPERAND (whats_returned, 0);
-		  cp_warning (ec_returning_reference_to_temporary);
+		  warning ("returning reference to temporary");
 		}
 	    }
 
 	  if (TREE_CODE (whats_returned) == VAR_DECL && DECL_NAME (whats_returned))
 	    {
 	      if (TEMP_NAME_P (DECL_NAME (whats_returned)))
-		cp_warning (ec_reference_to_nonlvalue_returned);
+		warning ("reference to non-lvalue returned");
 	      else if (TREE_CODE (TREE_TYPE (whats_returned)) != REFERENCE_TYPE
 		       && ! TREE_STATIC (whats_returned)
 		       && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
 		       && !TREE_PUBLIC (whats_returned))
-		cp_warning_at (ec_reference_to_local_variable_returned, whats_returned);
+		cp_warning_at ("reference to local variable `%D' returned", whats_returned);
 	    }
 	}
       else if (TREE_CODE (retval) == ADDR_EXPR)
@@ -7464,7 +7464,7 @@ c_expand_return (retval)
 	      && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
 	      && !TREE_STATIC (whats_returned)
 	      && !TREE_PUBLIC (whats_returned))
-	    cp_warning_at (ec_address_of_local_variable_returned, whats_returned);
+	    cp_warning_at ("address of local variable `%D' returned", whats_returned);
 	}
     }
 
@@ -7514,7 +7514,7 @@ c_expand_start_case (exp)
 
   if (exp == NULL_TREE)
     {
-      cp_error (ec_switch_quantity_not_an_integer);
+      error ("switch quantity not an integer");
       exp = error_mark_node;
     }
   type = TREE_TYPE (exp);
@@ -7522,7 +7522,7 @@ c_expand_start_case (exp)
 
   if (code != INTEGER_TYPE && code != ENUMERAL_TYPE && code != ERROR_MARK)
     {
-      cp_error (ec_switch_quantity_not_an_integer);
+      error ("switch quantity not an integer");
       exp = error_mark_node;
     }
   else

@@ -181,9 +181,6 @@ int flag_init_priority = 1;
 int flag_init_priority;
 #endif
 
-/* Nonzero means show diagnostic codes when printing error messages.  */
-int flag_diag_codes;
-
 /* Nonzero means warn about implicit declarations.  */
 
 int warn_implicit = 1;
@@ -490,8 +487,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"check-new", &flag_check_new, 1},
   {"repo", &flag_use_repository, 1},
   {"for-scope", &flag_new_for_scope, 2},
-  {"weak", &flag_weak, 1},
-  {"diag-codes", &flag_diag_codes, 1}
+  {"weak", &flag_weak, 1}
 };
 
 /* Decode the string P as a language-specific option.
@@ -534,7 +530,7 @@ lang_decode_option (argc, argv)
 
       if (!strcmp (p, "handle-exceptions")
 	  || !strcmp (p, "no-handle-exceptions"))
-	cp_warning (ec_fhandleexceptions_has_been_renamed_to_fexceptions_and_is_now_on_by_default);
+	warning ("-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)");
 
       if (!strcmp (p, "memoize-lookups")
 	  || !strcmp (p, "no-memoize-lookups")
@@ -553,7 +549,7 @@ lang_decode_option (argc, argv)
 	       || !strcmp (p, "no-nonnull-objects")
 	       || !strcmp (p, "no-ansi-overloading"))
 	{
-	  cp_warning (ec_fs_is_no_longer_supported, p);
+	  warning ("-f%s is no longer supported", p);
 	  found = 1;
 	}
       else if (! strcmp (p, "alt-external-templates"))
@@ -606,7 +602,7 @@ lang_decode_option (argc, argv)
 		endp++;
 	      else
 		{
-		  cp_error (ec_invalid_option_s, p - 2);
+		  error ("Invalid option `%s'", p - 2);
 		  goto template_depth_lose;
 		}
 	    }
@@ -622,7 +618,7 @@ lang_decode_option (argc, argv)
 		endp++;
 	      else
 		{
-		  cp_error (ec_invalid_option_s, p - 2);
+		  error ("Invalid option `%s'", p - 2);
 		  goto mangling_version_lose;
 		}
 	    }
@@ -715,25 +711,6 @@ lang_decode_option (argc, argv)
 	warn_unknown_pragmas = setting * 2;
       else if (!strcmp (p, "non-template-friend"))
 	warn_nontemplate_friend = setting;
-      else if (!strncmp (p, "number-", strlen ("number-")))
-	{
-	  char *endp = p + strlen ("number-");
-	  while (*endp)
-	    {
-	      if (*endp >= '0' && *endp <= '9')
-		endp++;
-	      else 
-		{
-		  cp_error (ec_invalid_option_s, p - 2);
-		  endp = 0;
-		}
-	    }
-	  if (endp)
-	    {
-	      int warning_number = atoi (p + strlen ("number-"));
-	      cp_enable_warning (warning_number, setting);
-	    }
-	}
       else if (!strcmp (p, "comment"))
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "comments"))
@@ -804,7 +781,7 @@ grok_method_quals (ctype, function, quals)
       if (TREE_VALUE (quals) == ridpointers[(int)RID_CONST])
 	{
 	  if (TYPE_READONLY (ctype))
-	    cp_error (ec_duplicate_s_s,
+	    error ("duplicate `%s' %s",
 		   IDENTIFIER_POINTER (TREE_VALUE (quals)),
 		   (TREE_CODE (function) == FUNCTION_DECL
 		    ? "for member function" : "in type declaration"));
@@ -814,7 +791,7 @@ grok_method_quals (ctype, function, quals)
       else if (TREE_VALUE (quals) == ridpointers[(int)RID_VOLATILE])
 	{
 	  if (TYPE_VOLATILE (ctype))
-	    cp_error (ec_duplicate_s_s,
+	    error ("duplicate `%s' %s",
 		   IDENTIFIER_POINTER (TREE_VALUE (quals)),
 		   (TREE_CODE (function) == FUNCTION_DECL
 		    ? "for member function" : "in type declaration"));
@@ -860,13 +837,13 @@ warn_if_unknown_interface (decl)
 	  lineno = til->line;
 	  input_filename = til->file;
 	}
-      cp_warning (ec_template_instantiated_in_file_without_pragma_interface,
+      cp_warning ("template `%#D' instantiated in file without #pragma interface",
 		  decl);
       lineno = sl;
       input_filename = sf;
     }
   else
-    cp_warning_at (ec_template_defined_in_file_without_pragma_interface,
+    cp_warning_at ("template `%#D' defined in file without #pragma interface",
 		   decl);
 }
 
@@ -889,7 +866,7 @@ grok_x_components (specs, components)
 
       if (t == NULL_TREE)
 	{
-	  cp_error (ec_error_in_component_specification);
+	  error ("error in component specification");
 	  return NULL_TREE;
 	}
 
@@ -956,7 +933,7 @@ grok_x_components (specs, components)
 		    q = &TREE_CHAIN (*q);
 		}
 	      if (TYPE_METHODS (t))
-		cp_error (ec_an_anonymous_union_cannot_have_function_members);
+		error ("an anonymous union cannot have function members");
 
 	      p = &pending_inlines;
 	      for (; *p; *p = (*p)->next)
@@ -978,7 +955,7 @@ grok_x_components (specs, components)
 
 	default:
 	  if (t != void_type_node)
-	    cp_error (ec_empty_component_declaration);
+	    error ("empty component declaration");
 	  return NULL_TREE;
 	}
     }
@@ -1075,7 +1052,7 @@ grokclassfn (ctype, cname, function, flags, quals)
 
   if (fn_name == NULL_TREE)
     {
-      cp_error (ec_name_missing_for_member_function);
+      error ("name missing for member function");
       fn_name = get_identifier ("<anonymous>");
       DECL_NAME (function) = fn_name;
     }
@@ -1145,7 +1122,7 @@ grok_alignof (expr)
 
   if (TREE_CODE (expr) == COMPONENT_REF
       && DECL_BIT_FIELD (TREE_OPERAND (expr, 1)))
-    cp_error (ec_alignof_applied_to_a_bitfield);
+    error ("`__alignof__' applied to a bit-field");
 
   if (TREE_CODE (expr) == INDIRECT_REF)
     {
@@ -1197,7 +1174,7 @@ grok_array_decl (array_expr, index_exp)
     {
       /* Something has gone very wrong.  Assume we are mistakenly reducing
 	 an expression instead of a declaration.  */
-      cp_error (ec_parser_may_be_lost_is_there_a_missing_somewhere);
+      error ("parser may be lost: is there a '{' missing somewhere?");
       return NULL_TREE;
     }
 
@@ -1228,7 +1205,7 @@ grok_array_decl (array_expr, index_exp)
   i2 = build_expr_type_conversion (WANT_INT | WANT_ENUM, index_exp, 0);
 
   if ((p1 && i2) && (i1 && p2))
-    cp_error (ec_ambiguous_conversion_for_array_subscript);
+    error ("ambiguous conversion for array subscript");
 
   if (p1 && i2)
     array_expr = p1, index_exp = i2;
@@ -1236,13 +1213,13 @@ grok_array_decl (array_expr, index_exp)
     array_expr = p2, index_exp = i1;
   else
     {
-      cp_error (ec_invalid_types_for_array_subscript,
+      cp_error ("invalid types `%T[%T]' for array subscript",
 		type, TREE_TYPE (index_exp));
       return error_mark_node;
     }
 
   if (array_expr == error_mark_node || index_exp == error_mark_node)
-    cp_error (ec_ambiguous_conversion_for_array_subscript);
+    error ("ambiguous conversion for array subscript");
 
   return build_array_ref (array_expr, index_exp);
 }
@@ -1284,7 +1261,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 
   if (t == NULL_TREE || t == error_mark_node)
     {
-      cp_error (ec_type_argument_given_to_delete_expected_pointer,
+      cp_error ("type `%#T' argument given to `delete', expected pointer",
 		TREE_TYPE (exp));
       return error_mark_node;
     }
@@ -1292,7 +1269,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
   if (doing_vec == 2)
     {
       maxindex = build_binary_op (MINUS_EXPR, size, integer_one_node, 1);
-      cp_pedwarn (ec_anachronistic_use_of_array_size_in_vector_delete);
+      pedwarn ("anachronistic use of array size in vector delete");
     }
 
   type = TREE_TYPE (t);
@@ -1302,7 +1279,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
   /* You can't delete functions.  */
   if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {
-      cp_error (ec_cannot_delete_a_function);
+      error ("cannot delete a function");
       return error_mark_node;
     }
 
@@ -1310,7 +1287,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
   if (TREE_CODE (t) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (t, 0)) == VAR_DECL
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == ARRAY_TYPE)
-    cp_warning (ec_deleting_array, TREE_OPERAND (t, 0));
+    cp_warning ("deleting array `%#D'", TREE_OPERAND (t, 0));
 
   /* Deleting a pointer with the value zero is valid and has no effect.  */
   if (integer_zerop (t))
@@ -1357,7 +1334,7 @@ check_member_template (tmpl)
 	/* 14.5.2.2 [temp.mem]
 	   
 	   A local class shall not have member templates. */
-	cp_error (ec_declaration_of_member_template_in_local_class,
+	cp_error ("declaration of member template `%#D' in local class",
 		  decl);
       
       if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
@@ -1365,7 +1342,8 @@ check_member_template (tmpl)
 	  /* 14.5.2.3 [temp.mem]
 
 	     A member function template shall not be virtual.  */
-	  cp_error (ec_invalid_use_of_virtual_in_template_declaration_of,
+	  cp_error 
+	    ("invalid use of `virtual' in template declaration of `%#D'",
 	     decl);
 	  DECL_VIRTUAL_P (decl) = 0;
 	}
@@ -1375,7 +1353,7 @@ check_member_template (tmpl)
       DECL_IGNORED_P (tmpl) = 1;
     } 
   else
-    cp_error (ec_template_declaration_of, decl);
+    cp_error ("template declaration of `%#D'", decl);
 }
 
 /* Return true iff TYPE is a valid Java parameter or return type. */
@@ -1425,7 +1403,7 @@ check_java_method (ctype, method)
   tree ret_type = TREE_TYPE (TREE_TYPE (method));
   if (! acceptable_java_type (ret_type))
     {
-      cp_error (ec_ava_method_has_nonava_return_type,
+      cp_error ("Java method '%D' has non-Java return type `%T'",
 		method, ret_type);
       jerr++;
     }
@@ -1434,7 +1412,7 @@ check_java_method (ctype, method)
       tree type = TREE_VALUE (arg_types);
       if (! acceptable_java_type (type))
 	{
-	  cp_error (ec_ava_method_has_nonava_parameter_type,
+	  cp_error ("Java method '%D' has non-Java parameter type `%T'",
 		    method, type);
 	  jerr++;
 	}
@@ -1548,17 +1526,17 @@ check_classfn (ctype, function)
   if (methods != end)
     {
       tree fndecl = *methods;
-      cp_error (ec_prototype_for_does_not_match_any_in_class,
+      cp_error ("prototype for `%#D' does not match any in class `%T'",
 		function, ctype);
-      cp_error_at (ec_candidates, OVL_NEXT (fndecl) ? "s are" : " is",
+      cp_error_at ("candidate%s: %+#D", OVL_NEXT (fndecl) ? "s are" : " is",
 		   OVL_CURRENT (fndecl));
       while (fndecl = OVL_NEXT (fndecl), fndecl)
-	cp_error_at (ec_candidate_2, OVL_CURRENT(fndecl));
+	cp_error_at ("                %#D", OVL_CURRENT(fndecl));
     }
   else
     {
       methods = 0;
-      cp_error (ec_no_member_function_declared_in_class,
+      cp_error ("no `%#D' member function declared in class `%T'",
 		function, ctype);
     }
 
@@ -1638,7 +1616,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
   if (DECL_NAME (value) != NULL_TREE
       && IDENTIFIER_POINTER (DECL_NAME (value))[0] == '_'
       && ! strcmp (IDENTIFIER_POINTER (DECL_NAME (value)), "_vptr"))
-    cp_error (ec_member_conflicts_with_virtual_function_table_field_name,
+    cp_error ("member `%D' conflicts with virtual function table field name",
 	      value);
 
   /* Stash away type declarations.  */
@@ -1663,13 +1641,13 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
   if (IS_SIGNATURE (current_class_type)
       && TREE_CODE (value) != FUNCTION_DECL)
     {
-      cp_error (ec_field_declaration_not_allowed_in_signature);
+      error ("field declaration not allowed in signature");
       return void_type_node;
     }
 
   if (DECL_IN_AGGR_P (value))
     {
-      cp_error (ec_is_already_defined_in_the_class, value,
+      cp_error ("`%D' is already defined in the class %T", value,
 		  DECL_CONTEXT (value));
       return void_type_node;
     }
@@ -1682,7 +1660,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       if (IS_SIGNATURE (current_class_type)
 	  && TREE_CODE (value) == FUNCTION_DECL)
 	{
-	  cp_error (ec_function_declarations_cannot_have_initializers_in_signature);
+	  error ("function declarations cannot have initializers in signature");
 	  init = NULL_TREE;
 	}
       else if (TREE_CODE (value) == FUNCTION_DECL)
@@ -1728,7 +1706,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 		      && (TREE_CODE_CLASS (TREE_CODE (init)) != 'd'
 			  || DECL_EXTERNAL (init) == 0)))
 		{
-		  cp_error (ec_field_initializer_is_not_constant);
+		  error ("field initializer is not constant");
 		  init = error_mark_node;
 		}
 	    }
@@ -1750,8 +1728,8 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	tree olddecl = IDENTIFIER_LOCAL_VALUE (declarator);
 	if (decl_template_parm_p (olddecl))
 	  {
-	    cp_error (ec_redeclaration_of_template_parameter, declarator);
-	    cp_error_at (ec_previously_declared_here, olddecl);
+	    cp_error ("redeclaration of template parameter `%T'", declarator);
+	    cp_error_at (" previously declared here `%#D'", olddecl);
 	  }
       }
 
@@ -1783,9 +1761,9 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	{
 	  static int explanation = 0;
 	  
-	  cp_error (ec_initializer_invalid_for_static_member_with_constructor);
+	  error ("initializer invalid for static member with constructor");
 	  if (explanation++ == 0)
-	    cp_error (ec_you_really_want_to_initialize_it_separately);
+	    error ("(you really want to initialize it separately)");
 	  init = 0;
 	}
       /* Force the compiler to know when an uninitialized static
@@ -1834,7 +1812,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 
 #if 0 /* Just because a fn is declared doesn't mean we'll try to define it.  */
       if (current_function_decl && ! IS_SIGNATURE (current_class_type))
-	cp_error (ec_method_of_local_class_must_be_defined_in_class_body,
+	cp_error ("method `%#D' of local class must be defined in class body",
 		  value);
 #endif
 
@@ -1864,7 +1842,7 @@ grokbitfield (declarator, declspecs, width)
 
   if (TREE_CODE (value) == TYPE_DECL)
     {
-      cp_error (ec_cannot_declare_to_be_a_bitfield_type, value);
+      cp_error ("cannot declare `%D' to be a bitfield type", value);
       return NULL_TREE;
     }
 
@@ -1874,20 +1852,20 @@ grokbitfield (declarator, declspecs, width)
      check here.  */
   if (TREE_CODE (value) == FUNCTION_DECL)
     {
-      cp_error (ec_cannot_declare_bitfield_with_funcion_type,
+      cp_error ("cannot declare bitfield `%D' with funcion type",
 		DECL_NAME (value));
       return NULL_TREE;
     }
 
   if (IS_SIGNATURE (current_class_type))
     {
-      cp_error (ec_field_declaration_not_allowed_in_signature);
+      error ("field declaration not allowed in signature");
       return void_type_node;
     }
 
   if (DECL_IN_AGGR_P (value))
     {
-      cp_error (ec_is_already_defined_in_the_class, value,
+      cp_error ("`%D' is already defined in the class %T", value,
 		  DECL_CONTEXT (value));
       return void_type_node;
     }
@@ -1896,7 +1874,7 @@ grokbitfield (declarator, declspecs, width)
 
   if (TREE_STATIC (value))
     {
-      cp_error (ec_static_member_cannot_be_a_bitfield, value);
+      cp_error ("static member `%D' cannot be a bitfield", value);
       return NULL_TREE;
     }
   cp_finish_decl (value, NULL_TREE, NULL_TREE, 0, 0);
@@ -1987,11 +1965,11 @@ grok_function_init (decl, init)
   tree type = TREE_TYPE (decl);
 
   if (TREE_CODE (type) == FUNCTION_TYPE)
-    cp_error (ec_initializer_specified_for_nonmember_function, decl);
+    cp_error ("initializer specified for non-member function `%D'", decl);
 #if 0
   /* We'll check for this in finish_struct_1.  */
   else if (DECL_VINDEX (decl) == NULL_TREE)
-    cp_error (ec_initializer_specified_for_nonvirtual_method, decl);
+    cp_error ("initializer specified for non-virtual method `%D'", decl);
 #endif
   else if (integer_zerop (init))
     {
@@ -2019,7 +1997,7 @@ grok_function_init (decl, init)
 	}
     }
   else
-    cp_error (ec_invalid_initializer_for_virtual_method, decl);
+    cp_error ("invalid initializer for virtual method `%D'", decl);
 }
 
 void
@@ -2242,9 +2220,9 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
 	continue;
 
       if (TREE_PRIVATE (field))
-	cp_pedwarn_at (ec_private_member_in_anonymous_union, field);
+	cp_pedwarn_at ("private member `%#D' in anonymous union", field);
       else if (TREE_PROTECTED (field))
-	cp_pedwarn_at (ec_protected_member_in_anonymous_union, field);
+	cp_pedwarn_at ("protected member `%#D' in anonymous union", field);
 
       if (DECL_NAME (field) == NULL_TREE
 	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
@@ -2314,7 +2292,7 @@ finish_anon_union (anon_union_decl)
 
   if (public_p)
     {
-      cp_error (ec_global_anonymous_unions_must_be_declared_static);
+      error ("global anonymous unions must be declared static");
       return;
     }
 
@@ -2330,7 +2308,7 @@ finish_anon_union (anon_union_decl)
 	}
       else
 	{
-	  cp_warning (ec_anonymous_union_with_no_members);
+	  warning ("anonymous union with no members");
 	  return;
 	}
     }
@@ -2390,15 +2368,15 @@ coerce_new_type (type)
   if (TREE_CODE (type) == METHOD_TYPE)
     type = build_function_type (TREE_TYPE (type), TREE_CHAIN (TYPE_ARG_TYPES (type)));
   if (TREE_TYPE (type) != ptr_type_node)
-    e1 = 1, cp_error (ec_operator_new_must_return_type_void);
+    e1 = 1, error ("`operator new' must return type `void *'");
 
   /* Technically the type must be `size_t', but we may not know
      what that is.  */
   if (TYPE_ARG_TYPES (type) == NULL_TREE)
-    e1 = 1, cp_error (ec_operator_new_takes_type_size_t_parameter);
+    e1 = 1, error ("`operator new' takes type `size_t' parameter");
   else if (TREE_CODE (TREE_VALUE (TYPE_ARG_TYPES (type))) != INTEGER_TYPE
 	   || TYPE_PRECISION (TREE_VALUE (TYPE_ARG_TYPES (type))) != TYPE_PRECISION (sizetype))
-    e2 = 1, cp_error (ec_operator_new_takes_type_size_t_as_first_parameter);
+    e2 = 1, error ("`operator new' takes type `size_t' as first parameter");
   if (e2)
     type = build_function_type (ptr_type_node, tree_cons (NULL_TREE, sizetype, TREE_CHAIN (TYPE_ARG_TYPES (type))));
   else if (e1)
@@ -2423,11 +2401,11 @@ coerce_delete_type (type)
     }
 
   if (TREE_TYPE (type) != void_type_node)
-    e1 = 1, cp_error (ec_operator_delete_must_return_type_void);
+    e1 = 1, error ("`operator delete' must return type `void'");
 
   if (arg_types == NULL_TREE
       || TREE_VALUE (arg_types) != ptr_type_node)
-    e2 = 1, cp_error (ec_operator_delete_takes_type_void_as_first_parameter);
+    e2 = 1, error ("`operator delete' takes type `void *' as first parameter");
 
 #if 0
   if (arg_types
@@ -2439,14 +2417,14 @@ coerce_delete_type (type)
       tree t2 = TREE_VALUE (TREE_CHAIN (arg_types));
       if (TREE_CODE (t2) != INTEGER_TYPE
 	  || TYPE_PRECISION (t2) != TYPE_PRECISION (sizetype))
-	e3 = 1, cp_error (ec_second_argument_to_operator_delete_must_be_of_type_size_t);
+	e3 = 1, error ("second argument to `operator delete' must be of type `size_t'");
       else if (TREE_CHAIN (TREE_CHAIN (arg_types)) != void_list_node)
 	{
 	  e3 = 1;
 	  if (TREE_CHAIN (TREE_CHAIN (arg_types)))
-	    cp_error (ec_too_many_arguments_in_declaration_of_operator_delete);
+	    error ("too many arguments in declaration of `operator delete'");
 	  else
-	    cp_error (ec_invalid_in_specification_of_operator_delete);
+	    error ("`...' invalid in specification of `operator delete'");
 	}
     }
 
@@ -3003,7 +2981,7 @@ setup_initp ()
   if (! flag_init_priority)
     {
       for (t = static_aggregates_initp; t; t = TREE_CHAIN (t))
-	cp_warning (ec_init_priority_for_ignored_without_finitpriority,
+	cp_warning ("init_priority for `%#D' ignored without -finit-priority",
 		    TREE_VALUE (t));
       return;
     }
@@ -3684,7 +3662,7 @@ reparse_absdcl_as_casts (decl, expr)
 
       if (IS_SIGNATURE (type))
 	{
-	  cp_error (ec_cast_specifies_signature_type);
+	  error ("cast specifies signature type");
 	  return error_mark_node;
 	}
 
@@ -3705,7 +3683,7 @@ reparse_absdcl_as_casts (decl, expr)
     }
 
   if (warn_old_style_cast)
-    cp_warning (ec_use_of_oldstyle_cast);
+    warning ("use of old-style cast");
 
   return expr;
 }
@@ -4046,7 +4024,7 @@ check_cp_case_value (value)
   if (TREE_CODE (value) != INTEGER_CST
       && value != error_mark_node)
     {
-      cp_error (ec_case_label_does_not_reduce_to_an_integer_constant,
+      cp_error ("case label `%E' does not reduce to an integer constant",
 		value);
       value = error_mark_node;
     }
@@ -4210,10 +4188,10 @@ ambiguous_decl (name, old, new, flags)
 	  /* Some declarations are functions, some are not. */
           if (flags & LOOKUP_COMPLAIN)
             {
-              cp_error (ec_use_of_is_ambiguous, name);
-              cp_error_at (ec_first_declared_as_here,
+              cp_error ("use of `%D' is ambiguous", name);
+              cp_error_at ("  first declared as `%#D' here",
                            BINDING_VALUE (old));
-              cp_error_at (ec_also_declared_as_here, val);
+              cp_error_at ("  also declared as `%#D' here", val);
             }
 	  return error_mark_node;
 	}
@@ -4228,9 +4206,9 @@ ambiguous_decl (name, old, new, flags)
     {
       if (flags & LOOKUP_COMPLAIN)
         {
-          cp_error (ec_denotes_an_ambiguous_type,name);
-          cp_error_at (ec_first_type_here, BINDING_TYPE (old));
-          cp_error_at (ec_other_type_here, type);
+          cp_error ("`%D' denotes an ambiguous type",name);
+          cp_error_at ("  first type here", BINDING_TYPE (old));
+          cp_error_at ("  other type here", type);
         }
     }
   return old;
@@ -4317,7 +4295,7 @@ set_decl_namespace (decl, scope)
   scope = ORIGINAL_NAMESPACE (scope);
   
   if (!is_namespace_ancestor (current_namespace, scope))
-    cp_error (ec_declaration_of_not_in_a_namespace_surrounding,
+    cp_error ("declaration of `%D' not in a namespace surrounding `%D'",
 	      decl, scope);
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
   if (scope != current_namespace)
@@ -4342,7 +4320,7 @@ set_decl_namespace (decl, scope)
   else
     return;
  complain:
-  cp_error (ec_should_have_been_declared_inside,
+  cp_error ("`%D' should have been declared inside `%D'",
 	    decl, scope);
 } 
 
@@ -4445,9 +4423,9 @@ add_function (k, fn)
 	  {
 	    fn = f1; f1 = f2; f2 = fn;
 	  }
-	cp_error_at (ec_is_not_a_function, f1);
-	cp_error_at (ec_conflict_with, f2);
-	cp_error (ec_in_call_to, k->name);
+	cp_error_at ("`%D' is not a function,", f1);
+	cp_error_at ("  conflict with `%D'", f2);
+	cp_error ("  in call to `%D'", k->name);
 	return 1;
       }
     else
@@ -4715,7 +4693,7 @@ do_namespace_alias (alias, namespace)
   if (TREE_CODE (namespace) != NAMESPACE_DECL)
     {
       /* The parser did not find it, so it's not there. */
-      cp_error (ec_unknown_namespace, namespace);
+      cp_error ("unknown namespace `%D'", namespace);
       return;
     }
 
@@ -4777,7 +4755,7 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
 
   if (!BINDING_VALUE (decls) && !BINDING_TYPE (decls))
     {
-      cp_error (ec_not_declared, name);
+      cp_error ("`%D' not declared", name);
       return;
     }
 
@@ -4825,7 +4803,7 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
   *newtype = BINDING_TYPE (decls);
   if (oldtype && *newtype && oldtype != *newtype)
     {
-      cp_error (ec_using_directive_introduced_ambiguous_type,
+      cp_error ("using directive `%D' introduced ambiguous type `%T'",
 		name, oldtype);
       return;
     }
@@ -4892,13 +4870,13 @@ do_class_using_decl (decl)
   if (TREE_CODE (decl) != SCOPE_REF
       || TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (decl, 0))) != 't')
     {
-      cp_error (ec_usingdeclaration_for_nonmember_at_class_scope);
+      cp_error ("using-declaration for non-member at class scope");
       return NULL_TREE;
     }
   name = TREE_OPERAND (decl, 1);
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
-      cp_error (ec_usingdeclaration_for_destructor);
+      cp_error ("using-declaration for destructor");
       return NULL_TREE;
     }
   if (TREE_CODE (name) == TYPE_DECL)
@@ -4925,12 +4903,12 @@ do_using_directive (namespace)
   if (TREE_CODE (namespace) == IDENTIFIER_NODE)
     {
       /* Lookup in lexer did not find a namespace. */
-      cp_error (ec_namespace_undeclared, namespace);
+      cp_error ("namespace `%T' undeclared", namespace);
       return;
     }
   if (TREE_CODE (namespace) != NAMESPACE_DECL)
     {
-      cp_error (ec_is_not_a_namespace, namespace);
+      cp_error ("`%T' is not a namespace", namespace);
       return;
     }
   namespace = ORIGINAL_NAMESPACE (namespace);
@@ -4953,7 +4931,7 @@ check_default_args (x)
 	saw_def = 1;
       else if (saw_def)
 	{
-	  cp_error_at (ec_default_argument_missing_for_parameter_of,
+	  cp_error_at ("default argument missing for parameter %P of `%+#D'",
 		       i, x);
 	  break;
 	}
@@ -4998,9 +4976,9 @@ handle_class_head (aggr, scope, id)
     return id;
 
   if (scope)
-    cp_error (ec_does_not_have_a_nested_type_named, scope, id);
+    cp_error ("`%T' does not have a nested type named `%D'", scope, id);
   else
-    cp_error (ec_no_filescope_type_named, id);
+    cp_error ("no file-scope type named `%D'", id);
 
   id = xref_tag
     (aggr, make_anon_name (), 1);

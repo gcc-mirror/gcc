@@ -51,7 +51,7 @@ error_not_base_type (basetype, type)
 {
   if (TREE_CODE (basetype) == FUNCTION_DECL)
     basetype = DECL_CLASS_CONTEXT (basetype);
-  cp_error (ec_type_is_not_a_base_type_for_type, basetype, type);
+  cp_error ("type `%T' is not a base type for type `%T'", basetype, type);
   return error_mark_node;
 }
 
@@ -83,7 +83,7 @@ readonly_error (arg, string, soft)
      char *string;
      int soft;
 {
-  error_code ec;
+  char *fmt;
   void (*fn)();
 
   if (soft)
@@ -94,32 +94,32 @@ readonly_error (arg, string, soft)
   if (TREE_CODE (arg) == COMPONENT_REF)
     {
       if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
-	ec = ec_member_in_readonly_structure;
+        fmt = "%s of member `%D' in read-only structure";
       else
-	ec = ec_readonly_member;
-      (*fn) (ec, string, TREE_OPERAND (arg, 1));
+        fmt = "%s of read-only member `%D'";
+      (*fn) (fmt, string, TREE_OPERAND (arg, 1));
     }
   else if (TREE_CODE (arg) == VAR_DECL)
     {
       if (DECL_LANG_SPECIFIC (arg)
 	  && DECL_IN_AGGR_P (arg)
 	  && !TREE_STATIC (arg))
-	ec = ec_constant_field;
+	fmt = "%s of constant field `%D'";
       else
-	ec = ec_readonly_variable;
-      (*fn) (ec, string, arg);
+	fmt = "%s of read-only variable `%D'";
+      (*fn) (fmt, string, arg);
     }
   else if (TREE_CODE (arg) == PARM_DECL)
-    (*fn) (ec_readonly_parameter, string, arg);
+    (*fn) ("%s of read-only parameter `%D'", string, arg);
   else if (TREE_CODE (arg) == INDIRECT_REF
            && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 0))) == REFERENCE_TYPE
            && (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL
                || TREE_CODE (TREE_OPERAND (arg, 0)) == PARM_DECL))
-    (*fn) (ec_readonly_reference, string, TREE_OPERAND (arg, 0));
+    (*fn) ("%s of read-only reference `%D'", string, TREE_OPERAND (arg, 0));
   else if (TREE_CODE (arg) == RESULT_DECL)
-    (*fn) (ec_readonly_named_return_val, string, arg);
+    (*fn) ("%s of read-only named return value `%D'", string, arg);
   else	       
-    (*fn) (ec_readonly_location, string);
+    (*fn) ("%s of read-only location", string);
 }
 
 /* Print an error message for invalid use of a type which declares
@@ -161,22 +161,22 @@ abstract_virtuals_error (decl, type)
 	return;
 
       if (TREE_CODE (decl) == VAR_DECL)
-	cp_error (ec_cannot_declare_variable_to_be_of_type,
+	cp_error ("cannot declare variable `%D' to be of type `%T'",
 		    decl, type);
       else if (TREE_CODE (decl) == PARM_DECL)
-	cp_error (ec_cannot_declare_parameter_to_be_of_type,
+	cp_error ("cannot declare parameter `%D' to be of type `%T'",
 		    decl, type);
       else if (TREE_CODE (decl) == FIELD_DECL)
-	cp_error (ec_cannot_declare_field_to_be_of_type,
+	cp_error ("cannot declare field `%D' to be of type `%T'",
 		    decl, type);
       else if (TREE_CODE (decl) == FUNCTION_DECL
 	       && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	cp_error (ec_invalid_return_type_for_method, decl);
+	cp_error ("invalid return type for method `%#D'", decl);
       else if (TREE_CODE (decl) == FUNCTION_DECL)
-	cp_error (ec_invalid_return_type_for_function, decl);
+	cp_error ("invalid return type for function `%#D'", decl);
     }
   else
-    cp_error (ec_cannot_allocate_an_object_of_type, type);
+    cp_error ("cannot allocate an object of type `%T'", type);
 
   /* Only go through this once.  */
   if (TREE_PURPOSE (u) == NULL_TREE)
@@ -184,28 +184,28 @@ abstract_virtuals_error (decl, type)
       TREE_PURPOSE (u) = error_mark_node;
 
       if (has_abstract_virtuals)
-	cp_error (ec_since_the_following_virtual_functions_are_abstract);
+	error ("  since the following virtual functions are abstract:");
       tu = u;
       while (tu)
 	{
 	  if (DECL_ABSTRACT_VIRTUAL_P (TREE_VALUE (tu))
 	      && ! DECL_NEEDS_FINAL_OVERRIDER_P (TREE_VALUE (tu)))
-	    cp_error (ec_virtual, TREE_VALUE (tu));
+	    cp_error ("\t%#D", TREE_VALUE (tu));
 	  tu = TREE_CHAIN (tu);
 	}
 
       if (needs_final_overriders)
 	{
 	  if (has_abstract_virtuals)
-	    cp_error (ec_and_the_following_virtual_functions_need_a_final_overrider);
+	    error ("  and the following virtual functions need a final overrider:");
 	  else
-	    cp_error (ec_since_the_following_virtual_functions_need_a_final_overrider);
+	    error ("  since the following virtual functions need a final overrider:");
 	}
       tu = u;
       while (tu)
 	{
 	  if (DECL_NEEDS_FINAL_OVERRIDER_P (TREE_VALUE (tu)))
-	    cp_error (ec_virtual, TREE_VALUE (tu));
+	    cp_error ("\t%#D", TREE_VALUE (tu));
 	  tu = TREE_CHAIN (tu);
 	}
     }
@@ -214,12 +214,12 @@ abstract_virtuals_error (decl, type)
       if (has_abstract_virtuals)
 	{
 	  if (needs_final_overriders)
-	    cp_error (ec_since_type_has_abstract_virtual_functions_and_must_override_virtual_functions, type);
+	    cp_error ("  since type `%T' has abstract virtual functions and must override virtual functions", type);
 	  else
-	    cp_error (ec_since_type_has_abstract_virtual_functions, type);
+	    cp_error ("  since type `%T' has abstract virtual functions", type);
 	}
       else
-	cp_error (ec_since_type_must_override_virtual_functions, type);
+	cp_error ("  since type `%T' must override virtual functions", type);
     }
 }
 
@@ -238,22 +238,22 @@ signature_error (decl, type)
 	return;
 
       if (TREE_CODE (decl) == VAR_DECL)
-	cp_error (ec_cannot_declare_variable_to_be_of_signature_type,
+	cp_error ("cannot declare variable `%D' to be of signature type `%T'",
 		  decl, type);
       else if (TREE_CODE (decl) == PARM_DECL)
-	cp_error (ec_cannot_declare_parameter_to_be_of_signature_type,
+	cp_error ("cannot declare parameter `%D' to be of signature type `%T'",
 		  decl, type);
       else if (TREE_CODE (decl) == FIELD_DECL)
-	cp_error (ec_cannot_declare_field_to_be_of_signature_type,
+	cp_error ("cannot declare field `%D' to be of signature type `%T'",
 		  decl, type);
       else if (TREE_CODE (decl) == FUNCTION_DECL
 	       && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	cp_error (ec_invalid_return_type_for_method, decl);
+	cp_error ("invalid return type for method `%#D'", decl);
       else if (TREE_CODE (decl) == FUNCTION_DECL)
-	cp_error (ec_invalid_return_type_for_function, decl);
+	cp_error ("invalid return type for function `%#D'", decl);
     }
   else
-    cp_error (ec_cannot_allocate_an_object_of_signature_type, type);
+    cp_error ("cannot allocate an object of signature type `%T'", type);
 }
 
 /* Print an error message for invalid use of an incomplete type.
@@ -265,13 +265,15 @@ incomplete_type_error (value, type)
      tree value;
      tree type;
 {
+  char *errmsg = 0;
+
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
     return;
 
   if (value != 0 && (TREE_CODE (value) == VAR_DECL
 		     || TREE_CODE (value) == PARM_DECL))
-    cp_error (ec_has_incomplete_type, value);
+    cp_error ("`%D' has incomplete type", value);
   else
     {
     retry:
@@ -282,11 +284,11 @@ incomplete_type_error (value, type)
 	case RECORD_TYPE:
 	case UNION_TYPE:
 	case ENUMERAL_TYPE:
-	  cp_error (ec_invalid_use_of_undefined_type, type);
-	  return;
+	  errmsg = "invalid use of undefined type `%#T'";
+	  break;
 
 	case VOID_TYPE:
-	  cp_error (ec_invalid_use_of_void_expression);
+	  error ("invalid use of void expression");
 	  return;
 
 	case ARRAY_TYPE:
@@ -295,20 +297,22 @@ incomplete_type_error (value, type)
 	      type = TREE_TYPE (type);
 	      goto retry;
 	    }
-	  cp_error (ec_invalid_use_of_array_with_unspecified_bounds);
+	  error ("invalid use of array with unspecified bounds");
 	  return;
 
 	case OFFSET_TYPE:
-	  cp_error (ec_invalid_use_of_member_type_did_you_forget_the);
+	  error ("invalid use of member type (did you forget the `&' ?)");
 	  return;
 
 	case TEMPLATE_TYPE_PARM:
-	  cp_error (ec_invalid_use_of_template_type_parameter);
+	  error ("invalid use of template type parameter");
 	  return;
 
 	default:
 	  my_friendly_abort (108);
 	}
+
+      cp_error (errmsg, type);
     }
 }
 
@@ -382,16 +386,16 @@ my_friendly_abort (i)
 	  ack ("Please submit a full bug report to `egcs-bugs@cygnus.com'.");
 	}
       else
-	cp_error (ec_confused_by_earlier_errors_bailing_out);
+	error ("confused by earlier errors, bailing out");
       
       exit (34);
     }
   ++abortcount;
 
   if (i == 0)
-    cp_error (ec_nternal_compiler_error);
+    error ("Internal compiler error.");
   else
-    cp_error (ec_nternal_compiler_error_d, i);
+    error ("Internal compiler error %d.", i);
 
   fatal ("Please submit a full bug report to `egcs-bugs@cygnus.com'.");
 }
@@ -592,13 +596,13 @@ store_init_value (decl, init)
       if (TREE_CODE (init) == TREE_LIST
 	  && IS_SIGNATURE (type))
 	{
-	  cp_error (ec_constructor_syntax_cannot_be_used_with_signature_type,
+	  cp_error ("constructor syntax cannot be used with signature type `%T'",
 		    type);
 	  init = error_mark_node;
 	}
       else if (TREE_CODE (init) == TREE_LIST)
 	{
-	  cp_error (ec_constructor_syntax_used_but_no_constructor_declared_for_type, type);
+	  cp_error ("constructor syntax used, but no constructor declared for type `%T'", type);
 	  init = build_nt (CONSTRUCTOR, NULL_TREE, nreverse (init));
 	}
 #if 0
@@ -608,25 +612,25 @@ store_init_value (decl, init)
 
 	  /* Check that we're really an aggregate as ARM 8.4.1 defines it.  */
 	  if (CLASSTYPE_N_BASECLASSES (type))
-	    cp_error_at (ec_initializer_list_construction_invalid_for_derived_class_object, decl);
+	    cp_error_at ("initializer list construction invalid for derived class object `%D'", decl);
 	  if (CLASSTYPE_VTBL_PTR (type))
-	    cp_error_at (ec_initializer_list_construction_invalid_for_polymorphic_class_object, decl);
+	    cp_error_at ("initializer list construction invalid for polymorphic class object `%D'", decl);
 	  if (TYPE_NEEDS_CONSTRUCTING (type))
 	    {
-	      cp_error_at (ec_initializer_list_construction_invalid_for, decl);
-	      cp_error (ec_due_to_the_presence_of_a_constructor);
+	      cp_error_at ("initializer list construction invalid for `%D'", decl);
+	      error ("due to the presence of a constructor");
 	    }
 	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	    if (TREE_PRIVATE (field) || TREE_PROTECTED (field))
 	      {
-		cp_error_at (ec_initializer_list_construction_invalid_for, decl);
-		cp_error_at (ec_due_to_nonpublic_access_of_member, field);
+		cp_error_at ("initializer list construction invalid for `%D'", decl);
+		cp_error_at ("due to non-public access of member `%D'", field);
 	      }
 	  for (field = TYPE_METHODS (type); field; field = TREE_CHAIN (field))
 	    if (TREE_PRIVATE (field) || TREE_PROTECTED (field))
 	      {
-		cp_error_at (ec_initializer_list_construction_invalid_for, decl);
-		cp_error_at (ec_due_to_nonpublic_access_of_member, field);
+		cp_error_at ("initializer list construction invalid for `%D'", decl);
+		cp_error_at ("due to non-public access of member `%D'", field);
 	      }
 	}
 #endif
@@ -638,7 +642,7 @@ store_init_value (decl, init)
 	{
 	  if (TREE_CHAIN (init))
 	    {
-	      cp_warning (ec_comma_expression_used_to_initialize_return_value);
+	      warning ("comma expression used to initialize return value");
 	      init = build_compound_expr (init);
 	    }
 	  else
@@ -654,7 +658,7 @@ store_init_value (decl, init)
       else if (TREE_CODE (init) == TREE_LIST
 	       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	{
-	  cp_error (ec_cannot_initialize_arrays_using_this_syntax);
+	  error ("cannot initialize arrays using this syntax");
 	  return NULL_TREE;
 	}
       else
@@ -663,7 +667,7 @@ store_init_value (decl, init)
 	     
 	  if (TREE_CHAIN (init) != NULL_TREE)
 	    {
-	      cp_pedwarn (ec_initializer_list_being_treated_as_compound_expression);
+	      pedwarn ("initializer list being treated as compound expression");
 	      init = build_compound_expr (init);
 	    }
 	  else
@@ -716,7 +720,7 @@ store_init_value (decl, init)
 		    || IS_SIGNATURE_REFERENCE (type))))
 	{
 	  if (! TREE_CONSTANT (value) || ! TREE_STATIC (value))
-	    cp_pedwarn (ec_forbids_nonconstant_aggregate_initializer_expressions);
+	    pedwarn ("ANSI C++ forbids non-constant aggregate initializer expressions");
 	}
     }
 #endif
@@ -784,7 +788,7 @@ digest_init (type, init, tail)
 
       if (TREE_CODE (init) == TREE_LIST)
 	{
-	  cp_error (ec_initializing_array_with_parameter_list);
+	  error ("initializing array with parameter list");
 	  return error_mark_node;
 	}
 
@@ -803,14 +807,14 @@ digest_init (type, init, tail)
 	       != char_type_node)
 	      && TYPE_PRECISION (typ1) == BITS_PER_UNIT)
 	    {
-	      cp_error (ec_chararray_initialized_from_wide_string);
+	      error ("char-array initialized from wide string");
 	      return error_mark_node;
 	    }
 	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (string)))
 	       == char_type_node)
 	      && TYPE_PRECISION (typ1) != BITS_PER_UNIT)
 	    {
-	      cp_error (ec_intarray_initialized_from_nonwide_string);
+	      error ("int-array initialized from non-wide string");
 	      return error_mark_node;
 	    }
 
@@ -826,7 +830,7 @@ digest_init (type, init, tail)
 		 counted in the length of the constant, but in C++ this would
 		 be invalid.  */
 	      if (size < TREE_STRING_LENGTH (string))
-		cp_pedwarn (ec_initializerstring_for_array_of_chars_is_too_long);
+		pedwarn ("initializer-string for array of chars is too long");
 	    }
 	  return string;
 	}
@@ -846,17 +850,17 @@ digest_init (type, init, tail)
 	{
 	  if (element == 0)
 	    {
-	      cp_error (ec_initializer_for_scalar_variable_requires_one_element);
+	      error ("initializer for scalar variable requires one element");
 	      return error_mark_node;
 	    }
 	  init = element;
 	}
       while (TREE_CODE (init) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (init))
 	{
-	  cp_pedwarn (ec_braces_around_scalar_initializer_for, type);
+	  cp_pedwarn ("braces around scalar initializer for `%T'", type);
 	  init = CONSTRUCTOR_ELTS (init);
 	  if (TREE_CHAIN (init))
-	    cp_pedwarn (ec_ignoring_extra_initializers_for, type);
+	    cp_pedwarn ("ignoring extra initializers for `%T'", type);
 	  init = TREE_VALUE (init);
 	}
 
@@ -868,7 +872,7 @@ digest_init (type, init, tail)
 
   if (TYPE_SIZE (type) && ! TREE_CONSTANT (TYPE_SIZE (type)))
     {
-      cp_error (ec_variablesized_object_of_type_may_not_be_initialized,
+      cp_error ("variable-sized object of type `%T' may not be initialized",
 		type);
       return error_mark_node;
     }
@@ -877,7 +881,7 @@ digest_init (type, init, tail)
     {
       if (raw_constructor && TYPE_NON_AGGREGATE_CLASS (type))
 	{
-	  cp_error (ec_subobject_of_type_must_be_initialized_by_constructor_not_by,
+	  cp_error ("subobject of type `%T' must be initialized by constructor, not by `%E'",
 		    type, init);
 	  return error_mark_node;
 	}
@@ -904,7 +908,7 @@ digest_init (type, init, tail)
 	}
     }
 
-  cp_error (ec_invalid_initializer);
+  error ("invalid initializer");
   return error_mark_node;
 }
 
@@ -942,7 +946,7 @@ process_init_constructor (type, init, elts)
   if (elts)
     {
       if (warn_missing_braces)
-	cp_warning (ec_aggregate_has_a_partly_bracketed_initializer);
+	warning ("aggregate has a partly bracketed initializer");
       tail = *elts;
     }
   else
@@ -990,7 +994,7 @@ process_init_constructor (type, init, elts)
 				  || TREE_CODE (tail1) == TREE_LIST, 319);
 	      if (tail == tail1 && len < 0)
 		{
-		  cp_error (ec_nonempty_initializer_for_array_of_empty_elements);
+		  error ("non-empty initializer for array of empty elements");
 		  /* Just ignore what we were supposed to use.  */
 		  tail1 = NULL_TREE;
 		}
@@ -1097,19 +1101,19 @@ process_init_constructor (type, init, elts)
 	      members = expr_tree_cons (field, next1, members);
 	    }
 	  else if (TREE_READONLY (field))
-	    cp_error (ec_uninitialized_const_member_s,
+	    error ("uninitialized const member `%s'",
 		   IDENTIFIER_POINTER (DECL_NAME (field)));
 	  else if (TYPE_LANG_SPECIFIC (TREE_TYPE (field))
 		   && CLASSTYPE_READONLY_FIELDS_NEED_INIT (TREE_TYPE (field)))
-	    cp_error (ec_member_s_with_uninitialized_const_fields,
+	    error ("member `%s' with uninitialized const fields",
 		   IDENTIFIER_POINTER (DECL_NAME (field)));
 	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
-	    cp_error (ec_member_s_is_uninitialized_reference,
+	    error ("member `%s' is uninitialized reference",
 		   IDENTIFIER_POINTER (DECL_NAME (field)));
 	  /* Warn when some struct elements are implicitly initialized
 	      to zero.  */
 	  else if (extra_warnings)
-	    cp_warning (ec_missing_initializer_for_member_s,
+	    warning ("missing initializer for member `%s'",
 		     IDENTIFIER_POINTER (DECL_NAME (field)));
 	}
     }
@@ -1134,7 +1138,7 @@ process_init_constructor (type, init, elts)
 	    /* Handle the case of a call by build_c_cast.  */
 	    field = TREE_PURPOSE (tail), win = 1;
 	  else if (TREE_CODE (TREE_PURPOSE (tail)) != IDENTIFIER_NODE)
-	    cp_error (ec_index_value_instead_of_field_name_in_union_initializer);
+	    error ("index value instead of field name in union initializer");
 	  else
 	    {
 	      tree temp;
@@ -1146,7 +1150,7 @@ process_init_constructor (type, init, elts)
 	      if (temp)
 		field = temp, win = 1;
 	      else
-		cp_error (ec_no_field_s_in_union_being_initialized,
+		error ("no field `%s' in union being initialized",
 		       IDENTIFIER_POINTER (TREE_PURPOSE (tail)));
 	    }
 	  if (!win)
@@ -1154,7 +1158,7 @@ process_init_constructor (type, init, elts)
 	}
       else if (field == 0)
 	{
-	  cp_error (ec_union_with_no_named_members_cannot_be_initialized,
+	  cp_error ("union `%T' with no named members cannot be initialized",
 		    type);
 	  TREE_VALUE (tail) = error_mark_node;
 	}
@@ -1190,7 +1194,7 @@ process_init_constructor (type, init, elts)
   /* If arguments were specified as a constructor,
      complain unless we used all the elements of the constructor.  */
   else if (tail)
-    cp_pedwarn (ec_excess_elements_in_aggregate_initializer);
+    pedwarn ("excess elements in aggregate initializer");
 
   if (erroneous)
     return error_mark_node;
@@ -1317,7 +1321,7 @@ build_x_arrow (datum)
 
 	  if (value_member (TREE_TYPE (rval), types_memoized))
 	    {
-	      cp_error (ec_circular_pointer_delegation_detected);
+	      error ("circular pointer delegation detected");
 	      return error_mark_node;
 	    }
 	  else
@@ -1330,7 +1334,7 @@ build_x_arrow (datum)
 
       if (last_rval == NULL_TREE)
 	{
-	  cp_error (ec_base_operand_of_has_nonpointer_type, type);
+	  cp_error ("base operand of `->' has non-pointer type `%T'", type);
 	  return error_mark_node;
 	}
 
@@ -1349,9 +1353,9 @@ build_x_arrow (datum)
     return build_indirect_ref (last_rval, NULL_PTR);
 
   if (types_memoized)
-    cp_error (ec_result_of_operator_yields_nonpointer_result);
+    error ("result of `operator->()' yields non-pointer result");
   else
-    cp_error (ec_base_operand_of_is_not_a_pointer);
+    error ("base operand of `->' is not a pointer");
   return error_mark_node;
 }
 
@@ -1396,7 +1400,7 @@ build_m_component_ref (datum, component)
 
   if (TREE_CODE (type) != OFFSET_TYPE && TREE_CODE (type) != METHOD_TYPE)
     {
-      cp_error (ec_cannot_be_used_as_a_member_pointer_since_it_is_of_type, component, type);
+      cp_error ("`%E' cannot be used as a member pointer, since it is of type `%T'", component, type);
       return error_mark_node;
     }
 
@@ -1406,15 +1410,15 @@ build_m_component_ref (datum, component)
 
   if (! IS_AGGR_TYPE (objtype))
     {
-      cp_error (ec_cannot_apply_member_pointer_to, component, datum);
-      cp_error (ec_which_is_of_nonaggregate_type, objtype);
+      cp_error ("cannot apply member pointer `%E' to `%E'", component, datum);
+      cp_error ("which is of non-aggregate type `%T'", objtype);
       return error_mark_node;
     }
 
   binfo = get_binfo (TYPE_METHOD_BASETYPE (type), objtype, 1);
   if (binfo == NULL_TREE)
     {
-      cp_error (ec_member_type_incompatible_with_object_type,
+      cp_error ("member type `%T::' incompatible with object type `%T'",
 		TYPE_METHOD_BASETYPE (type), objtype);
       return error_mark_node;
     }
@@ -1451,7 +1455,7 @@ build_functional_cast (exp, parms)
 	  type = lookup_name (exp, 1);
 	  if (!type || TREE_CODE (type) != TYPE_DECL)
 	    {
-	      cp_error (ec_fails_to_be_a_typedef_or_builtin_type, exp);
+	      cp_error ("`%T' fails to be a typedef or built-in type", exp);
 	      return error_mark_node;
 	    }
 	  type = TREE_TYPE (type);
@@ -1467,7 +1471,7 @@ build_functional_cast (exp, parms)
 
   if (IS_SIGNATURE (type))
     {
-      cp_error (ec_signature_type_not_allowed_in_cast_or_constructor_expression);
+      error ("signature type not allowed in cast or constructor expression");
       return error_mark_node;
     }
 
@@ -1479,7 +1483,7 @@ build_functional_cast (exp, parms)
       else
 	{
 	  if (TREE_CHAIN (parms) != NULL_TREE)
-	    cp_pedwarn (ec_initializer_list_being_treated_as_compound_expression);
+	    pedwarn ("initializer list being treated as compound expression");
 	  parms = build_compound_expr (parms);
 	}
 
@@ -1495,7 +1499,7 @@ build_functional_cast (exp, parms)
 
   if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
     {
-      cp_error (ec_type_is_not_yet_defined, type);
+      cp_error ("type `%T' is not yet defined", type);
       return error_mark_node;
     }
 
@@ -1564,15 +1568,15 @@ report_case_error (code, type, new_value, old_value)
   if (code == 1)
     {
       if (new_value)
-	cp_error (ec_case_label_not_within_a_switch_statement);
+	error ("case label not within a switch statement");
       else
-	cp_error (ec_default_label_not_within_a_switch_statement);
+	error ("default label not within a switch statement");
     }
   else if (code == 2)
     {
       if (new_value == 0)
 	{
-	  cp_error (ec_multiple_default_labels_in_one_switch);
+	  error ("multiple default labels in one switch");
 	  return;
 	}
       if (TREE_CODE (new_value) == RANGE_EXPR)
@@ -1626,29 +1630,29 @@ report_case_error (code, type, new_value, old_value)
       else
 	{
 	  if (TREE_CODE (type) == ENUMERAL_TYPE)
-	    cp_error (ec_duplicate_label_s_in_switch_statement,
+	    error ("duplicate label `%s' in switch statement",
 		   enum_name_string (new_value, type));
 	  else
-	    cp_error (ec_duplicate_label_d_in_switch_statement,
+	    error ("duplicate label (%d) in switch statement",
 		   TREE_INT_CST_LOW (new_value));
 	}
     }
   else if (code == 3)
     {
       if (TREE_CODE (type) == ENUMERAL_TYPE)
-	cp_warning (ec_case_value_out_of_range_for_enum_s,
+	warning ("case value out of range for enum %s",
 		 TYPE_NAME_STRING (type));
       else
-	cp_warning (ec_case_value_out_of_range);
+	warning ("case value out of range");
     }
   else if (code == 4)
     {
       if (TREE_CODE (type) == ENUMERAL_TYPE)
-	cp_error (ec_range_values_s_and_s_reversed,
+	error ("range values `%s' and `%s' reversed",
 	       enum_name_string (new_value, type),
 	       enum_name_string (old_value, type));
       else
-	cp_error (ec_range_values_reversed);
+	error ("range values reversed");
     }
 }
 #endif
@@ -1659,5 +1663,5 @@ check_for_new_type (string, inptree)
      flagged_type_tree inptree;
 {
   if (pedantic && inptree.new_type_flag)
-    cp_pedwarn (ec_forbids_defining_types_within_s,string);
+    pedwarn ("ANSI C++ forbids defining types within %s",string);
 }

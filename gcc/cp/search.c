@@ -278,13 +278,13 @@ get_binfo (parent, binfo, protect)
 
   if (dist == -3)
     {
-      cp_error (ec_fields_of_are_inaccessible_in_due_to_private_inheritance,
+      cp_error ("fields of `%T' are inaccessible in `%T' due to private inheritance",
 		parent, type);
       return error_mark_node;
     }
   else if (dist == -2 && protect)
     {
-      cp_error (ec_type_is_ambiguous_base_class_for_type, parent,
+      cp_error ("type `%T' is ambiguous base class for type `%T'", parent,
 		type);
       return error_mark_node;
     }
@@ -884,7 +884,7 @@ lookup_field (xbasetype, name, protect, want_type)
      we know that binfo of a virtual base class will always == itself when
      found along any line.  (mrs)  */
 
-  error_code ec = ec_last_error_code;
+  char *errstr = 0;
 
 #if 0
   /* We cannot search for constructor/destructor names like this.  */
@@ -952,10 +952,20 @@ lookup_field (xbasetype, name, protect, want_type)
 	{
 	  if (TREE_PRIVATE (rval) | TREE_PROTECTED (rval))
 	    this_v = compute_access (basetype_path, rval);
-	  if (this_v == access_private_node)
-	    ec = ec_private_in_class;
-	  else if (this_v == access_protected_node)
-	    ec = ec_protected_in_class;
+	  if (TREE_CODE (rval) == CONST_DECL)
+	    {
+	      if (this_v == access_private_node)
+		errstr = "enum `%D' is a private value of class `%T'";
+	      else if (this_v == access_protected_node)
+		errstr = "enum `%D' is a protected value of class `%T'";
+	    }
+	  else
+	    {
+	      if (this_v == access_private_node)
+		errstr = "member `%D' is a private member of class `%T'";
+	      else if (this_v == access_protected_node)
+		errstr = "member `%D' is a protected member of class `%T'";
+	    }
 	}
 
       rval_binfo = basetype_path;
@@ -1064,7 +1074,7 @@ lookup_field (xbasetype, name, protect, want_type)
 	  else
 	    {
 	      /* This is ambiguous.  */
-	      ec = ec_ambiguous_member;
+	      errstr = "request for member `%D' is ambiguous";
 	      protect += 2;
 	      break;
 	    }
@@ -1099,10 +1109,10 @@ lookup_field (xbasetype, name, protect, want_type)
       }
 
     if (rval == NULL_TREE)
-      ec = ec_last_error_code;
+      errstr = 0;
 
     /* If this FIELD_DECL defines its own access level, deal with that.  */
-    if (rval && ec == ec_last_error_code
+    if (rval && errstr == 0
 	&& (protect & 1)
 	&& DECL_LANG_SPECIFIC (rval)
 	&& DECL_ACCESS (rval))
@@ -1118,7 +1128,7 @@ lookup_field (xbasetype, name, protect, want_type)
 	      new_v = compute_access (TREE_VALUE (TREE_CHAIN (*tp)), rval);
 	    if (this_v != access_default_node && new_v != this_v)
 	      {
-		ec = ec_conflicting_access;
+		errstr = "conflicting access to member `%D'";
 		this_v = access_default_node;
 	      }
 	    own_access = new_v;
@@ -1137,18 +1147,20 @@ lookup_field (xbasetype, name, protect, want_type)
   }
   search_stack = pop_search_level (search_stack);
 
-  if (ec == ec_last_error_code)
+  if (errstr == 0)
     {
       if (own_access == access_private_node)
-	ec = ec_member_private;
+	errstr = "member `%D' declared private";
       else if (own_access == access_protected_node)
-	ec = ec_member_protected;
+	errstr = "member `%D' declared protected";
       else if (this_v == access_private_node)
-	ec = TREE_PRIVATE (rval)
-	  ? ec_member_private : ec_member_in_private_base;
+	errstr = TREE_PRIVATE (rval)
+	  ? "member `%D' is private"
+	    : "member `%D' is from private base class";
       else if (this_v == access_protected_node)
-	ec = TREE_PROTECTED (rval)
-	  ? ec_member_protected : ec_member_in_protected_base;
+	errstr = TREE_PROTECTED (rval)
+	  ? "member `%D' is protected"
+	    : "member `%D' is from protected base class";
     }
 
  out:
@@ -1160,9 +1172,9 @@ lookup_field (xbasetype, name, protect, want_type)
       protect = 0;
     }
 
-  if (ec != ec_last_error_code && protect)
+  if (errstr && protect)
     {
-      cp_error (ec, name, type);
+      cp_error (errstr, name, type);
       rval = error_mark_node;
     }
 
@@ -1231,7 +1243,7 @@ lookup_nested_field (name, complain)
 			 enums in nested classes) when we do need to call
 			 this fn at parse time.  So, in those cases, we pass
 			 complain as a 0 and just return a NULL_TREE.  */
-		      cp_error (ec_assignment_to_nonstatic_member_of_enclosing_class,
+		      cp_error ("assignment to non-static member `%D' of enclosing class `%T'",
 				id, DECL_CONTEXT (t));
 		      /* Mark this for do_identifier().  It would otherwise
 			 claim that the variable was undeclared.  */
@@ -1355,7 +1367,7 @@ lookup_fnfields (basetype_path, name, complain)
   /* For now, don't try this.  */
   int protect = complain;
 
-  error_code ec = ec_last_error_code;
+  char *errstr = 0;
 
   if (complain == -1)
     {
@@ -1512,7 +1524,7 @@ lookup_fnfields (basetype_path, name, complain)
 	  else
 	    {
 	      /* This is ambiguous.  */
-	      ec = ec_ambiguous_member;
+	      errstr = "request for method `%D' is ambiguous";
 	      rvals = error_mark_node;
 	      break;
 	    }
@@ -1530,9 +1542,9 @@ lookup_fnfields (basetype_path, name, complain)
   }
   search_stack = pop_search_level (search_stack);
 
-  if (ec != ec_last_error_code && protect)
+  if (errstr && protect)
     {
-      cp_error (ec, name);
+      cp_error (errstr, name);
       rvals = error_mark_node;
     }
 
@@ -1842,21 +1854,21 @@ get_matching_virtual (binfo, fndecl, dtorp)
 
 		      if (pedantic && i == -1)
 			{
-			  cp_pedwarn_at (ec_invalid_covariant_return_type_for_must_be_pointer_or_reference_to_class, fndecl);
-			  cp_pedwarn_at (ec_overriding, tmp);
+			  cp_pedwarn_at ("invalid covariant return type for `%#D' (must be pointer or reference to class)", fndecl);
+			  cp_pedwarn_at ("  overriding `%#D'", tmp);
 			}
 		    }
 		  else if (IS_AGGR_TYPE_2 (brettype, drettype)
 			   && comptypes (brettype, drettype, 0))
 		    {
-		      cp_error (ec_invalid_covariant_return_type_must_use_pointer_or_reference);
-		      cp_error_at (ec_overriding, tmp);
-		      cp_error_at (ec_with, fndecl);
+		      error ("invalid covariant return type (must use pointer or reference)");
+		      cp_error_at ("  overriding `%#D'", tmp);
+		      cp_error_at ("  with `%#D'", fndecl);
 		    }
 		  else if (IDENTIFIER_ERROR_LOCUS (name) == NULL_TREE)
 		    {
-		      cp_error_at (ec_conflicting_return_type_specified_for_virtual_function, fndecl);
-		      cp_error_at (ec_overriding_definition_as, tmp);
+		      cp_error_at ("conflicting return type specified for virtual function `%#D'", fndecl);
+		      cp_error_at ("  overriding definition as `%#D'", tmp);
 		      SET_IDENTIFIER_ERROR_LOCUS (name, basetype);
 		    }
 		  break;
@@ -2434,7 +2446,7 @@ virtual_context (fndecl, t, vbase)
 	    }
 	}
       /* This shouldn't happen, I don't want errors! */
-      cp_warning (ec_recoverable_compiler_error_fixups_for_virtual_function);
+      warning ("recoverable compiler error, fixups for virtual function");
       return vbase;
     }
   while (path)
@@ -2697,7 +2709,7 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
 	  tree in_charge_node = lookup_name (in_charge_identifier, 0);
 	  if (! in_charge_node)
 	    {
-	      cp_warning (ec_recoverable_internal_compiler_error_nobodys_in_charge);
+	      warning ("recoverable internal compiler error, nobody's in charge!");
 	      in_charge_node = integer_zero_node;
 	    }
 	  in_charge_node = build_binary_op (EQ_EXPR, in_charge_node, integer_zero_node, 1);
@@ -2825,9 +2837,9 @@ envelope_add_decl (type, decl, values)
 	      || ! TREE_PRIVATE (value)))
 	/* Should figure out access control more accurately.  */
 	{
-	  cp_warning_at (ec_member_is_shadowed, value);
-	  cp_warning_at (ec_by_member_function, decl);
-	  cp_warning (ec_in_this_context);
+	  cp_warning_at ("member `%#D' is shadowed", value);
+	  cp_warning_at ("by member function `%#D'", decl);
+	  warning ("in this context");
 	}
 
       context = DECL_REAL_CONTEXT (value);

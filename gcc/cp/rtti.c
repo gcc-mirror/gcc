@@ -101,7 +101,7 @@ build_headof (exp)
 
   if (TREE_CODE (type) != POINTER_TYPE)
     {
-      cp_error (ec_headof_applied_to_nonpointer_type);
+      error ("`headof' applied to non-pointer type");
       return error_mark_node;
     }
   type = TREE_TYPE (type);
@@ -190,7 +190,7 @@ get_tinfo_fn_dynamic (exp)
 
   if (type_unknown_p (exp))
     {
-      cp_error (ec_typeid_of_overloaded_function);
+      error ("typeid of overloaded function");
       return error_mark_node;
     }
 
@@ -211,7 +211,7 @@ get_tinfo_fn_dynamic (exp)
 
       if (! flag_rtti)
 	{
-	  cp_warning (ec_taking_dynamic_typeid_of_object_without_frtti);
+	  warning ("taking dynamic typeid of object without -frtti");
 	  push_obstacks (&permanent_obstack, &permanent_obstack);
 	  init_rtti_processing ();
 	  pop_obstacks ();
@@ -401,7 +401,7 @@ get_typeid (type)
   
   if (! flag_rtti)
     {
-      cp_warning (ec_requesting_typeid_of_object_without_frtti);
+      warning ("requesting typeid of object without -frtti");
       push_obstacks (&permanent_obstack, &permanent_obstack);
       init_rtti_processing ();
       pop_obstacks ();
@@ -554,7 +554,7 @@ build_dynamic_cast_1 (type, expr)
 	      if (TREE_CODE (expr) == VAR_DECL
 		  && TREE_CODE (TREE_TYPE (expr)) == RECORD_TYPE)
 		{
-		  cp_warning (ec_dynamic_cast_of_to_can_never_succeed,
+		  cp_warning ("dynamic_cast of `%#D' to `%#T' can never succeed",
 			      expr, type);
 		  return throw_bad_cast ();
 		}
@@ -566,7 +566,7 @@ build_dynamic_cast_1 (type, expr)
 	      if (TREE_CODE (op) == VAR_DECL
 		  && TREE_CODE (TREE_TYPE (op)) == RECORD_TYPE)
 		{
-		  cp_warning (ec_dynamic_cast_of_to_can_never_succeed,
+		  cp_warning ("dynamic_cast of `%#D' to `%#T' can never succeed",
 			      expr, type);
 		  retval = build_int_2 (0, 0); 
 		  TREE_TYPE (retval) = type; 
@@ -650,7 +650,7 @@ build_dynamic_cast_1 (type, expr)
     }
 
  fail:
-  cp_error (ec_cannot_dynamic_cast_of_type_to_type,
+  cp_error ("cannot dynamic_cast `%E' (of type `%#T') to type `%#T'",
 	    expr, exprtype, type);
   return error_mark_node;
 }

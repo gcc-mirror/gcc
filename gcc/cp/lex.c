@@ -186,7 +186,7 @@ make_pointer_declarator (cv_qualifiers, target)
 {
   if (target && TREE_CODE (target) == IDENTIFIER_NODE
       && ANON_AGGRNAME_P (target))
-    cp_error (ec_type_name_expected_before_star);
+    error ("type name expected before `*'");
   target = build_parse_node (INDIRECT_REF, target);
   TREE_TYPE (target) = cv_qualifiers;
   return target;
@@ -208,16 +208,16 @@ make_reference_declarator (cv_qualifiers, target)
     {
       if (TREE_CODE (target) == ADDR_EXPR)
 	{
-	  cp_error (ec_cannot_declare_references_to_references);
+	  error ("cannot declare references to references");
 	  return target;
 	}
       if (TREE_CODE (target) == INDIRECT_REF)
 	{
-	  cp_error (ec_cannot_declare_pointers_to_references);
+	  error ("cannot declare pointers to references");
 	  return target;
 	}
       if (TREE_CODE (target) == IDENTIFIER_NODE && ANON_AGGRNAME_P (target))
-	  cp_error (ec_type_name_expected_before_amp);
+	  error ("type name expected before `&'");
     }
   target = build_parse_node (ADDR_EXPR, target);
   TREE_TYPE (target) = cv_qualifiers;
@@ -1082,7 +1082,7 @@ set_yydebug (value)
   extern int yydebug;
   yydebug = value;
 #else
-  cp_warning (ec_yydebug_not_defined);
+  warning ("YYDEBUG not defined.");
 #endif
 }
 
@@ -1293,7 +1293,7 @@ process_next_inline (t)
     yychar = yylex ();
   if (yychar != END_OF_SAVED_INPUT)
     {
-      cp_error (ec_parse_error_at_end_of_saved_function_text);
+      error ("parse error at end of saved function text");
 
       /* restore_pending_input will abort unless yychar is either
          END_OF_SAVED_INPUT or YYEMPTY; since we already know we're
@@ -1350,9 +1350,9 @@ consume_string (this_obstack, matching_char)
 	  int save_lineno = lineno;
 	  lineno = starting_lineno;
 	  if (matching_char == '"')
-	    cp_error (ec_end_of_file_encountered_inside_string_constant);
+	    error ("end of file encountered inside string constant");
 	  else
-	    cp_error (ec_end_of_file_encountered_inside_character_constant);
+	    error ("end of file encountered inside character constant");
 	  lineno = save_lineno;
 	  return;
 	}
@@ -1369,7 +1369,7 @@ consume_string (this_obstack, matching_char)
       if (c == '\n')
 	{
 	  if (pedantic)
-	    cp_pedwarn (ec_forbids_newline_in_string_constant);
+	    pedwarn ("ANSI C++ forbids newline in string constant");
 	  lineno++;
 	}
       obstack_1grow (this_obstack, c);
@@ -1660,7 +1660,7 @@ reinit_parse_for_block (pyychar, obstackp)
 	    {
 	      if (look_for_lbrac)
 		{
-		  cp_error (ec_function_body_for_constructor_missing);
+		  error ("function body for constructor missing");
 		  obstack_1grow (obstackp, '{');
 		  obstack_1grow (obstackp, '}');
 		  len += 2;
@@ -1877,7 +1877,7 @@ finish_defarg ()
     yychar = yylex ();
   if (yychar != END_OF_SAVED_INPUT)
     {
-      cp_error (ec_parse_error_at_end_of_saved_function_text);
+      error ("parse error at end of saved function text");
 
       /* restore_pending_input will abort unless yychar is either
          END_OF_SAVED_INPUT or YYEMPTY; since we already know we're
@@ -2105,10 +2105,10 @@ check_for_missing_semicolon (type)
       || end_of_file)
     {
       if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))
-	cp_error (ec_semicolon_missing_after_s_declaration,
+	error ("semicolon missing after %s declaration",
 	       TREE_CODE (type) == ENUMERAL_TYPE ? "enum" : "struct");
       else
-	cp_error (ec_semicolon_missing_after_declaration_of, type);
+	cp_error ("semicolon missing after declaration of `%T'", type);
       shadow_tag (build_tree_list (0, type));
     }
   /* Could probably also hack cases where class { ... } f (); appears.  */
@@ -2171,7 +2171,7 @@ skip_white_space (c)
 	  if (c == '\n')
 	    lineno++;
 	  else
-	    cp_error (ec_stray_in_program);
+	    error ("stray '\\' in program");
 	  c = getch ();
 	  break;
 
@@ -2328,7 +2328,7 @@ check_newline ()
 		 an explcit -Wunknown-pragmas has been given. */
 	      if (warn_unknown_pragmas > 1
 		  || (warn_unknown_pragmas && ! in_system_header))
-		cp_warning (ec_ignoring_pragma_s, token_buffer);
+		warning ("ignoring pragma: %s", token_buffer);
 	    }
 	  
 	  goto skipline;
@@ -2385,7 +2385,7 @@ check_newline ()
 	      if (token != STRING
 		  || TREE_CODE (yylval.ttype) != STRING_CST)
 		{
-		  cp_error (ec_invalid_ident);
+		  error ("invalid #ident");
 		  goto skipline;
 		}
 
@@ -2417,7 +2417,7 @@ check_newline ()
 	      goto skipline;
 	    }
 	}
-      cp_error (ec_undefined_or_invalid_directive);
+      error ("undefined or invalid # directive");
       goto skipline;
     }
 
@@ -2468,7 +2468,7 @@ linenum:
 
       if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
 	{
-	  cp_error (ec_invalid_line);
+	  error ("invalid #line");
 	  goto skipline;
 	}
 
@@ -2610,7 +2610,7 @@ linenum:
 		  if (c_header_level && --c_header_level == 0)
 		    {
 		      if (entering_c_header)
-			cp_warning (ec_badly_nested_headers_from_preprocessor);
+			warning ("badly nested C headers from preprocessor");
 		      --pending_lang_change;
 		    }
 		  in_system_header = entering_system_header;
@@ -2622,7 +2622,7 @@ linenum:
 		  debug_end_source_file (input_file_stack->line);
 		}
 	      else
-		cp_error (ec_lines_for_entering_and_leaving_files_dont_match);
+		error ("#-lines for entering and leaving files don't match");
 	    }
 	  else
 	    in_system_header = entering_system_header;
@@ -2633,7 +2633,7 @@ linenum:
 	c = EOF;
     }
   else
-    cp_error (ec_invalid_line);
+    error ("invalid #-line");
 
   /* skip the rest of this line.  */
  skipline:
@@ -2698,7 +2698,7 @@ readescape (ignore_ptr)
 	  nonnull = 1;
 	}
       if (! nonnull)
-	cp_error (ec_x_used_with_no_following_hex_digits);
+	error ("\\x used with no following hex digits");
       else if (count == 0)
 	/* Digits are all 0's.  Ok.  */
 	;
@@ -2706,7 +2706,7 @@ readescape (ignore_ptr)
 	       || (count > 1
 		   && ((1 << (TYPE_PRECISION (integer_type_node) - (count - 1) * 4))
 		       <= firstdig)))
-	cp_pedwarn (ec_hex_escape_out_of_range);
+	pedwarn ("hex escape out of range");
       return code;
 
     case '0':  case '1':  case '2':  case '3':  case '4':
@@ -2753,7 +2753,7 @@ readescape (ignore_ptr)
     case 'e':
     case 'E':
       if (pedantic)
-	cp_pedwarn (ec_nonstandard_escape_sequence_c, c);
+	pedwarn ("non-ANSI-standard escape sequence, `\\%c'", c);
       return 033;
 
     case '?':
@@ -2766,13 +2766,13 @@ readescape (ignore_ptr)
       /* `\%' is used to prevent SCCS from getting confused.  */
     case '%':
       if (pedantic)
-	cp_pedwarn (ec_unknown_escape_sequence_c, c);
+	pedwarn ("unknown escape sequence `\\%c'", c);
       return c;
     }
   if (c >= 040 && c < 0177)
-    cp_pedwarn (ec_unknown_escape_sequence_c, c);
+    pedwarn ("unknown escape sequence `\\%c'", c);
   else
-    cp_pedwarn (ec_unknown_escape_sequence_followed_by_char_code_0xx, c);
+    pedwarn ("unknown escape sequence: `\\' followed by char code 0x%x", c);
   return c;
 }
 
@@ -2899,7 +2899,7 @@ do_identifier (token, parsing, args)
 	my_friendly_abort (61);
       else
 	{
-	  cp_error (ec_invalid_use_of_member_from_base_class, field,
+	  cp_error ("invalid use of member `%D' from base class `%T'", field,
 		      DECL_FIELD_CONTEXT (field));
 	  id = error_mark_node;
 	  return id;
@@ -2943,7 +2943,7 @@ do_identifier (token, parsing, args)
       else if (IDENTIFIER_OPNAME_P (token))
 	{
 	  if (token != ansi_opname[ERROR_MARK])
-	    cp_error (ec_not_defined, token);
+	    cp_error ("`%D' not defined", token);
 	  id = error_mark_node;
 	}
       else if (in_call && ! flag_strict_prototype)
@@ -2952,7 +2952,7 @@ do_identifier (token, parsing, args)
 	}
       else if (current_function_decl == 0)
 	{
-	  cp_error (ec_was_not_declared_in_this_scope, token);
+	  cp_error ("`%D' was not declared in this scope", token);
 	  id = error_mark_node;
 	}
       else
@@ -2962,12 +2962,12 @@ do_identifier (token, parsing, args)
 	    {
 	      static int undeclared_variable_notice;
 
-	      cp_error (ec_undeclared_first_use_this_function, token);
+	      cp_error ("`%D' undeclared (first use this function)", token);
 
 	      if (! undeclared_variable_notice)
 		{
-		  cp_error (ec_ach_undeclared_identifier_is_reported_only_once);
-		  cp_error (ec_for_each_function_it_appears_in);
+		  error ("(Each undeclared identifier is reported only once");
+		  error ("for each function it appears in.)");
 		  undeclared_variable_notice = 1;
 		}
 	    }
@@ -2990,11 +2990,11 @@ do_identifier (token, parsing, args)
 	{
 	  if (!DECL_ERROR_REPORTED (id))
 	    {
-	      cp_warning (ec_name_lookup_of_s_changed,
+	      warning ("name lookup of `%s' changed",
 		       IDENTIFIER_POINTER (token));
-	      cp_warning_at (ec_matches_this_under_current_rules,
+	      cp_warning_at ("  matches this `%D' under current ANSI rules",
 			     shadowed);
-	      cp_warning_at (ec_matches_this_under_old_rules, id);
+	      cp_warning_at ("  matches this `%D' under old rules", id);
 	      DECL_ERROR_REPORTED (id) = 1;
 	    }
 	  id = shadowed;
@@ -3007,13 +3007,13 @@ do_identifier (token, parsing, args)
 	  if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (id)))
 	    {
 	      error (msg, IDENTIFIER_POINTER (token));
-	      cp_error_at (ec_cannot_use_obsolete_binding_at_because_it_has_a_destructor, id);
+	      cp_error_at ("  cannot use obsolete binding at `%D' because it has a destructor", id);
 	      id = error_mark_node;
 	    }
 	  else
 	    {
 	      pedwarn (msg, IDENTIFIER_POINTER (token));
-	      cp_pedwarn_at (ec_using_obsolete_binding_at, id);
+	      cp_pedwarn_at ("  using obsolete binding at `%D'", id);
 	    }
 	}
     }
@@ -3025,7 +3025,7 @@ do_identifier (token, parsing, args)
 	  /* Check access.  */
 	  tree access = compute_access (TYPE_BINFO (current_class_type), id);
 	  if (access == access_private_node)
-	    cp_error (ec_enum_is_private, id);
+	    cp_error ("enum `%D' is private", id);
 	  /* protected is OK, since it's an enum of `this'.  */
 	}
       if (!processing_template_decl
@@ -3104,7 +3104,7 @@ do_scoped_id (token, parsing)
       else
 	{
 	  if (IDENTIFIER_NAMESPACE_VALUE (token) != error_mark_node)
-	    cp_error (ec_undeclared_first_use_here, token);
+	    cp_error ("`::%D' undeclared (first use here)", token);
 	  id = error_mark_node;
 	  /* Prevent repeated error messages.  */
 	  SET_IDENTIFIER_NAMESPACE_VALUE (token, error_mark_node);
@@ -3226,9 +3226,9 @@ real_yylex ()
 
     case '$':
       if (! dollars_in_ident)
-	cp_error (ec_in_identifier);
+	error ("`$' in identifier");
       else if (pedantic)
-	cp_pedwarn (ec_in_identifier);
+	pedwarn ("`$' in identifier");
       dollar_seen = 1;
       goto letter;
 
@@ -3284,9 +3284,9 @@ real_yylex ()
 		if (c == '$')
 		  {
 		    if (! dollars_in_ident)
-		      cp_error (ec_in_identifier);
+		      error ("`$' in identifier");
 		    else if (pedantic)
-		      cp_pedwarn (ec_in_identifier);
+		      pedwarn ("`$' in identifier");
 		  }
 
 		if (p >= token_buffer + maxtoken)
@@ -3314,9 +3314,9 @@ real_yylex ()
 		if (c == '$')
 		  {
 		    if (! dollars_in_ident)
-		      cp_error (ec_in_identifier);
+		      error ("`$' in identifier");
 		    else if (pedantic)
-		      cp_pedwarn (ec_in_identifier);
+		      pedwarn ("`$' in identifier");
 		  }
 
 		if (p >= token_buffer + maxtoken)
@@ -3366,7 +3366,7 @@ real_yylex ()
 			 obstack.  */
 
 		      if (ptr->rid != RID_EXTERN)
-			cp_error (ec_invalid_modifier_s_for_language_string,
+			error ("invalid modifier `%s' for language string",
 			       ptr->name);
 		      real_yylex ();
 		      value = EXTERN_LANG_STRING;
@@ -3465,7 +3465,7 @@ real_yylex ()
 		    || TEMP_NAME_P (tmp)
 		    || ANON_AGGRNAME_P (tmp)
 		    || ANON_PARMNAME_P (tmp)))
-	      cp_warning (ec_identifier_name_s_conflicts_with_internal_naming_strategy,
+	      warning ("identifier name `%s' conflicts with GNU C++ internal naming strategy",
 		       token_buffer);
 #endif
 
@@ -3500,7 +3500,7 @@ real_yylex ()
 		value = ELLIPSIS;
 		goto done;
 	      }
-	    cp_error (ec_parse_error_at);
+	    error ("parse error at `..'");
 	  }
 	if (ISDIGIT (c1))
 	  {
@@ -3589,13 +3589,13 @@ real_yylex ()
 	    if (c == '.')
 	      {
 		if (base == 16)
-		  cp_error (ec_floating_constant_may_not_be_in_radix_16);
+		  error ("floating constant may not be in radix 16");
 		if (floatflag == TOO_MANY_POINTS)
 		  /* We have already emitted an error.  Don't need another.  */
 		  ;
 		else if (floatflag == AFTER_POINT)
 		  {
-		    cp_error (ec_malformed_floating_constant);
+		    error ("malformed floating constant");
 		    floatflag = TOO_MANY_POINTS;
 		    /* Avoid another error from atof by forcing all characters
 		       from here on to be ignored.  */
@@ -3622,7 +3622,7 @@ real_yylex ()
 			    value = ELLIPSIS;
 			    goto done;
 			  }
-			cp_error (ec_parse_error_at);
+			error ("parse error at `..'");
 		      }
 		    nextchar = c;
 		    token_buffer[1] = '\0';
@@ -3647,7 +3647,7 @@ real_yylex ()
 			floatflag = AFTER_POINT;
 			break;   /* start of exponent */
 		      }
-		    cp_error (ec_nondigits_in_number_and_not_hexadecimal);
+		    error ("nondigits in number and not hexadecimal");
 		    c = 0;
 		  }
 		else if (c >= 'a')
@@ -3688,10 +3688,10 @@ real_yylex ()
 	  }
 
 	if (numdigits == 0)
-	  cp_error (ec_numeric_constant_with_no_digits);
+	  error ("numeric constant with no digits");
 
 	if (largest_digit >= base)
-	  cp_error (ec_numeric_constant_contains_digits_beyond_the_radix);
+	  error ("numeric constant contains digits beyond the radix");
 
 	/* Remove terminating char from the token buffer and delimit the string */
 	*--p = 0;
@@ -3718,7 +3718,7 @@ real_yylex ()
 		    c = getch ();
 		  }
 		if (! ISDIGIT (c))
-		  cp_error (ec_floating_constant_exponent_has_no_digits);
+		  error ("floating constant exponent has no digits");
 	        while (ISDIGIT (c))
 		  {
 		    if (p >= token_buffer + maxtoken - 3)
@@ -3734,7 +3734,7 @@ real_yylex ()
 	    /* Convert string to a double, checking for overflow.  */
 	    if (setjmp (handler))
 	      {
-		cp_error (ec_floating_constant_out_of_range);
+		error ("floating constant out of range");
 		value = dconst0;
 	      }
 	    else
@@ -3757,21 +3757,21 @@ real_yylex ()
 		      {
 		      case 'f': case 'F':
 			if (fflag)
-			  cp_error (ec_more_than_one_f_in_numeric_constant);
+			  error ("more than one `f' in numeric constant");
 			fflag = 1;
 			break;
 
 		      case 'l': case 'L':
 			if (lflag)
-			  cp_error (ec_more_than_one_l_in_numeric_constant);
+			  error ("more than one `l' in numeric constant");
 			lflag = 1;
 			break;
 
 		      case 'i': case 'I':
 			if (imag)
-			  cp_error (ec_more_than_one_i_or_j_in_numeric_constant);
+			  error ("more than one `i' or `j' in numeric constant");
 			else if (pedantic)
-			  cp_pedwarn (ec_forbids_imaginary_numeric_constants);
+			  pedwarn ("ANSI C++ forbids imaginary numeric constants");
 			imag = 1;
 			break;
 
@@ -3796,7 +3796,7 @@ real_yylex ()
 		if (fflag)
 		  {
 		    if (lflag)
-		      cp_error (ec_both_f_and_l_in_floating_constant);
+		      error ("both `f' and `l' in floating constant");
 
 		    type = float_type_node;
 		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
@@ -3804,20 +3804,20 @@ real_yylex ()
 		       This is not pedwarn, become some people don't want
 		       an error for this.  */
 		    if (REAL_VALUE_ISINF (value) && pedantic)
-		      cp_warning (ec_floating_point_number_exceeds_range_of_float);
+		      warning ("floating point number exceeds range of `float'");
 		  }
 		else if (lflag)
 		  {
 		    type = long_double_type_node;
 		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
 		    if (REAL_VALUE_ISINF (value) && pedantic)
-		      cp_warning (ec_floating_point_number_exceeds_range_of_long_double);
+		      warning ("floating point number exceeds range of `long double'");
 		  }
 		else
 		  {
 		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
 		    if (REAL_VALUE_ISINF (value) && pedantic)
-		      cp_warning (ec_floating_point_number_exceeds_range_of_double);
+		      warning ("floating point number exceeds range of `double'");
 		  }
 
 		set_float_handler (NULL_PTR);
@@ -3830,7 +3830,7 @@ real_yylex ()
 		if (REAL_VALUES_LESS (dconst1, value)
 		    || REAL_VALUES_LESS (value, dconstm1))
 		  {
-		    cp_pedwarn (ec_floating_point_number_exceeds_range_of_s,
+		    pedwarn ("floating point number exceeds range of `%s'",
 			     IDENTIFIER_POINTER (TYPE_IDENTIFIER (type)));
 		    exceeds_double = 1;
 		  }
@@ -3866,7 +3866,7 @@ real_yylex ()
 		if (c == 'u' || c == 'U')
 		  {
 		    if (spec_unsigned)
-		      cp_error (ec_two_us_in_integer_constant);
+		      error ("two `u's in integer constant");
 		    spec_unsigned = 1;
 		  }
 		else if (c == 'l' || c == 'L')
@@ -3874,9 +3874,9 @@ real_yylex ()
 		    if (spec_long)
 		      {
 			if (spec_long_long)
-			  cp_error (ec_three_ls_in_integer_constant);
+			  error ("three `l's in integer constant");
 			else if (pedantic && ! in_system_header && warn_long_long)
-			  cp_pedwarn (ec_forbids_long_long_integer_constants);
+			  pedwarn ("ANSI C++ forbids long long integer constants");
 			spec_long_long = 1;
 		      }
 		    spec_long = 1;
@@ -3884,9 +3884,9 @@ real_yylex ()
 		else if (c == 'i' || c == 'j' || c == 'I' || c == 'J')
 		  {
 		    if (spec_imag)
-		      cp_error (ec_more_than_one_i_or_j_in_numeric_constant);
+		      error ("more than one `i' or `j' in numeric constant");
 		    else if (pedantic)
-		      cp_pedwarn (ec_forbids_imaginary_numeric_constants);
+		      pedwarn ("ANSI C++ forbids imaginary numeric constants");
 		    spec_imag = 1;
 		  }
 		else
@@ -3917,7 +3917,7 @@ real_yylex ()
 	      if (parts[i])
 		warn = 1;
 	    if (warn)
-	      cp_pedwarn (ec_integer_constant_out_of_range);
+	      pedwarn ("integer constant out of range");
 
 	    /* This is simplified by the fact that our constant
 	       is always positive.  */
@@ -3958,10 +3958,10 @@ real_yylex ()
 	      type = long_long_unsigned_type_node;
 
 	    if (!int_fits_type_p (yylval.ttype, type) && !warn)
-	      cp_pedwarn (ec_integer_constant_out_of_range);
+	      pedwarn ("integer constant out of range");
 
 	    if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
-	      cp_warning (ec_decimal_integer_constant_is_so_large_that_it_is_unsigned);
+	      warning ("decimal integer constant is so large that it is unsigned");
 
 	    if (spec_imag)
 	      {
@@ -3972,7 +3972,7 @@ real_yylex ()
 				     cp_convert (integer_type_node,
 						 yylval.ttype));
 		else
-		  cp_error (ec_complex_integer_constant_is_too_wide_for_complex_int);
+		  error ("complex integer constant is too wide for `__complex int'");
 	      }
 	    else
 	      TREE_TYPE (yylval.ttype) = type;
@@ -4018,7 +4018,7 @@ real_yylex ()
 		  goto tryagain;
 		if (width < HOST_BITS_PER_INT
 		    && (unsigned) c >= (1 << width))
-		  cp_pedwarn (ec_escape_sequence_out_of_range_for_character);
+		  pedwarn ("escape sequence out of range for character");
 #ifdef MAP_CHARACTER
 		if (ISPRINT (c))
 		  c = MAP_CHARACTER (c);
@@ -4027,7 +4027,7 @@ real_yylex ()
 	    else if (c == '\n')
 	      {
 		if (pedantic)
-		  cp_pedwarn (ec_forbids_newline_in_character_constant);
+		  pedwarn ("ANSI C forbids newline in character constant");
 		lineno++;
 	      }
 	    else
@@ -4076,7 +4076,7 @@ real_yylex ()
 		else
 		  {
 		    if (char_len == -1)
-		      cp_warning (ec_gnoring_invalid_multibyte_character);
+		      warning ("Ignoring invalid multibyte character");
 		    if (wide_flag)
 		      c = wc;
 #ifdef MAP_CHARACTER
@@ -4110,16 +4110,16 @@ real_yylex ()
 	  }
 
 	if (c != '\'')
-	  cp_error (ec_malformatted_character_constant);
+	  error ("malformatted character constant");
 	else if (chars_seen == 0)
-	  cp_error (ec_empty_character_constant);
+	  error ("empty character constant");
 	else if (num_chars > max_chars)
 	  {
 	    num_chars = max_chars;
-	    cp_error (ec_character_constant_too_long);
+	    error ("character constant too long");
 	  }
 	else if (chars_seen != 1 && warn_multichar)
-	  cp_warning (ec_multicharacter_character_constant);
+	  warning ("multi-character character constant");
 
 	/* If char type is signed, sign-extend the constant.  */
 	if (! wide_flag)
@@ -4179,12 +4179,12 @@ real_yylex ()
 		  goto skipnewline;
 		if (width < HOST_BITS_PER_INT
 		    && (unsigned) c >= (1 << width))
-		  cp_warning (ec_escape_sequence_out_of_range_for_character);
+		  warning ("escape sequence out of range for character");
 	      }
 	    else if (c == '\n')
 	      {
 		if (pedantic)
-		  cp_pedwarn (ec_forbids_newline_in_string_constant);
+		  pedwarn ("ANSI C++ forbids newline in string constant");
 		lineno++;
 	      }
 	    else
@@ -4205,7 +4205,7 @@ real_yylex ()
 		    c = getch ();
 		  }
 		if (char_len == -1)
-		  cp_warning (ec_gnoring_invalid_multibyte_character);
+		  warning ("Ignoring invalid multibyte character");
 		else
 		  {
 		    /* mbtowc sometimes needs an extra char before accepting */
@@ -4259,7 +4259,7 @@ real_yylex ()
 	  skipnewline:
 	    c = getch ();
 	    if (c == EOF) {
-		cp_error (ec_nterminated_string);
+		error ("Unterminated string");
 		break;
 	    }
 	  }
@@ -4408,7 +4408,7 @@ real_yylex ()
 		nextchar = c1;
 	      }
 	    if (pedantic)
-	      cp_pedwarn (ec_use_of_operator_s_is_not_standard,
+	      pedwarn ("use of `operator %s' is not standard C++",
 		       token_buffer);
 	    goto done;
 	  }
@@ -4772,13 +4772,13 @@ handle_cp_pragma (pname)
       token = real_yylex ();
       if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
 	{
-	  cp_error (ec_invalid_pragma_vtable);
+	  error ("invalid #pragma vtable");
 	  return -1;
 	}
 
       if (write_virtuals != 2)
 	{
-	  cp_warning (ec_use_e2_option_to_enable_pragma_vtable);
+	  warning ("use `+e2' option to enable #pragma vtable");
 	  return -1;
 	}
       pending_vtables
@@ -4787,7 +4787,7 @@ handle_cp_pragma (pname)
 			  pending_vtables);
       token = real_yylex ();
       if (token != END_OF_LINE)
-	cp_warning (ec_trailing_characters_ignored);
+	warning ("trailing characters ignored");
       return 1;
     }
   else if (! strcmp (pname, "unit"))
@@ -4796,12 +4796,12 @@ handle_cp_pragma (pname)
       token = real_yylex ();
       if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
 	{
-	  cp_error (ec_invalid_pragma_unit);
+	  error ("invalid #pragma unit");
 	  return -1;
 	}
       token = real_yylex ();
       if (token != END_OF_LINE)
-	cp_warning (ec_trailing_characters_ignored);
+	warning ("trailing characters ignored");
       return 1;
     }
   else if (! strcmp (pname, "interface"))
@@ -4818,7 +4818,7 @@ handle_cp_pragma (pname)
 	  if (token != STRING
 	      || TREE_CODE (yylval.ttype) != STRING_CST)
 	    {
-	      cp_error (ec_invalid_pragma_interface);
+	      error ("invalid `#pragma interface'");
 	      return -1;
 	    }
 	  main_filename = TREE_STRING_POINTER (yylval.ttype);
@@ -4826,7 +4826,7 @@ handle_cp_pragma (pname)
 	}
 
       if (token != END_OF_LINE)
-	cp_warning (ec_garbage_after_pragma_interface_ignored);
+	warning ("garbage after `#pragma interface' ignored");
 
 #ifndef NO_LINKAGE_HEURISTICS
       write_virtuals = 3;
@@ -4871,7 +4871,7 @@ handle_cp_pragma (pname)
 	  if (token != STRING
 	      || TREE_CODE (yylval.ttype) != STRING_CST)
 	    {
-	      cp_error (ec_invalid_pragma_implementation);
+	      error ("invalid `#pragma implementation'");
 	      return -1;
 	    }
 	  main_filename = TREE_STRING_POINTER (yylval.ttype);
@@ -4879,7 +4879,7 @@ handle_cp_pragma (pname)
 	}
 
       if (token != END_OF_LINE)
-	cp_warning (ec_garbage_after_pragma_implementation_ignored);
+	warning ("garbage after `#pragma implementation' ignored");
 
 #ifndef NO_LINKAGE_HEURISTICS
       if (write_virtuals == 3)
@@ -4912,7 +4912,7 @@ handle_cp_pragma (pname)
 	    }
 	}
       else
-	cp_error (ec_pragma_implementation_can_only_appear_at_toplevel);
+	error ("`#pragma implementation' can only appear at top-level");
       interface_only = 0;
 #if 1
       /* We make this non-zero so that we infer decl linkage
