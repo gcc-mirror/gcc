@@ -3565,15 +3565,23 @@ simplify_binary_operation (code, mode, op0, op1)
 	      && GET_MODE_CLASS (GET_MODE (op1)) == MODE_FLOAT)
 	    {
 	      REAL_VALUE_TYPE d;
+	      jmp_buf handler;
+	      int op1is2, op1ism1;
+
+	      if (setjmp (handler))
+		return 0;
+
+	      set_float_handler (handler);
 	      REAL_VALUE_FROM_CONST_DOUBLE (d, op1);
+	      op1is2 = REAL_VALUES_EQUAL (d, dconst2);
+	      op1ism1 = REAL_VALUES_EQUAL (d, dconstm1);
+	      set_float_handler (NULL_PTR);
 
 	      /* x*2 is x+x and x*(-1) is -x */
-	      if (REAL_VALUES_EQUAL (d, dconst2)
-		  && GET_MODE (op0) == mode)
+	      if (op1is2 && GET_MODE (op0) == mode)
 		return gen_rtx (PLUS, mode, op0, copy_rtx (op0));
 
-	      else if (REAL_VALUES_EQUAL (d, dconstm1)
-		       && GET_MODE (op0) == mode)
+	      else if (op1ism1 && GET_MODE (op0) == mode)
 		return gen_rtx (NEG, mode, op0);
 	    }
 	  break;
