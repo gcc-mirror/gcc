@@ -1926,8 +1926,6 @@ write_expression (tree expr)
 	    {
 	      template_args = TREE_OPERAND (member, 1);
 	      member = TREE_OPERAND (member, 0);
-	      if (TREE_CODE (member) == LOOKUP_EXPR)
-		member = TREE_OPERAND (member, 0);
 	    }
 	  else
 	    template_args = NULL_TREE;

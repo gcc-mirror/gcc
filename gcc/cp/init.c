@@ -1374,16 +1374,10 @@ build_offset_ref (tree type, tree name)
 	name = DECL_NAME (name);
       else
 	{
-	  if (TREE_CODE (name) == LOOKUP_EXPR)
-	    /* This can happen during tsubst'ing.  */
-	    name = TREE_OPERAND (name, 0);
-	  else
-	    {
-	      if (TREE_CODE (name) == COMPONENT_REF)
-		name = TREE_OPERAND (name, 1);
-	      if (TREE_CODE (name) == OVERLOAD)
-		name = DECL_NAME (OVL_CURRENT (name));
-	    }
+	  if (TREE_CODE (name) == COMPONENT_REF)
+	    name = TREE_OPERAND (name, 1);
+	  if (TREE_CODE (name) == OVERLOAD)
+	    name = DECL_NAME (OVL_CURRENT (name));
 	}
 
       my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 0);

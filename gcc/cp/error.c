@@ -956,10 +956,6 @@ dump_decl (tree t, int flags)
       }
       break;
 
-    case LOOKUP_EXPR:
-      dump_decl (TREE_OPERAND (t, 0), flags);
-      break;
-
     case LABEL_DECL:
       print_tree_identifier (scratch_buffer, DECL_NAME (t));
       break;
@@ -1955,10 +1951,6 @@ dump_expr (tree t, int flags)
       output_add_string (scratch_buffer, ">(");
       dump_expr (TREE_OPERAND (t, 0), flags);
       print_right_paren (scratch_buffer);
-      break;
-
-    case LOOKUP_EXPR:
-      print_tree_identifier (scratch_buffer, TREE_OPERAND (t, 0));
       break;
 
     case ARROW_EXPR:

@@ -8982,7 +8982,6 @@ grokfndecl (tree ctype,
               fns = TREE_OPERAND (fns, 1);
             }
 	  my_friendly_assert (TREE_CODE (fns) == IDENTIFIER_NODE
-	                      || TREE_CODE (fns) == LOOKUP_EXPR
 	                      || TREE_CODE (fns) == OVERLOAD, 20001120);
 	  DECL_TEMPLATE_INFO (decl) = tree_cons (fns, args, NULL_TREE);
 
@@ -9803,9 +9802,6 @@ grokdeclarator (tree declarator,
 	  case TEMPLATE_ID_EXPR:
 	      {
 		tree fns = TREE_OPERAND (decl, 0);
-
-		if (TREE_CODE (fns) == LOOKUP_EXPR)
-		  fns = TREE_OPERAND (fns, 0);
 
 		dname = fns;
 		if (TREE_CODE (dname) == COMPONENT_REF)

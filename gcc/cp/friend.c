@@ -333,8 +333,6 @@ do_friend (tree ctype, tree declarator, tree decl, tree parmdecls,
   if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
     {
       declarator = TREE_OPERAND (declarator, 0);
-      if (TREE_CODE (declarator) == LOOKUP_EXPR)
-	declarator = TREE_OPERAND (declarator, 0);
       if (is_overloaded_fn (declarator))
 	declarator = DECL_NAME (get_first_fn (declarator));
     }

@@ -1,3 +1,41 @@
+2003-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (LOOKUP_EXPR): Remove.
+	* cp-tree.h (cp_id_kind): Add CP_ID_KIND_UNQUALIFIED_DEPENDENT.
+	(LOOKUP_EXPR_GLOBAL): Remove.
+	(get_bindings): Remove.
+	(is_aggr_type_2): Remove.
+	* call.c (resolved_scoped_fn_name): Remove support for
+	LOOKUP_EXPR.
+	* decl.c (grokfndecl): Likewise.
+	(grokdeclarator): Likewise.
+	* error.c (dump_decl): Likewise.
+	(dump_expr): Likewise.
+	* friend.c (do_friend): Likewise.
+	* init.c (build_offset_ref): Likewise.
+	* lex.c (unqualified_fn_lookup_error): Use pedwarn.  Do not create
+	LOOKUP_EXPRs 
+	* mangle.c (write_expression): Remove support for LOOKUP_EXPR.
+	* parser.c (cp_parser_postfix_expression): Modify Koenig lookup
+	test.
+	* pt.c (get_bindings): Give it internal linkage.
+	(check_explicit_specialization): Remove support for LOOKUP_EXPR.
+	(lookup_template_function): Likewise.
+	(for_each_tempalte_parm_r): Likewise.
+	(tsubst_decl): Likewise.
+	(tsubst_qualified_id): Handle template template parameters.
+	(tsubst_copy): Remove support for LOOKUP_EXPR.
+	(tsubst_copy_and_build): Likewise.
+	(most_general_template): Likewise.
+	(value_dependent_expression_p): Likewise.
+	(type_dependent_expression_p): Note that IDENTIFIER_NODEs are
+	always dependent.
+	* semantics.c (perform_koenig_lookup): Do not create
+	IDENTIFIER_NODEs.
+	(finish_fname): Likewise.
+	(finish_id_expression): Likewise.
+	* tree.c (is_aggr_type_2): Remove.
+	
 2003-07-16  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/11531

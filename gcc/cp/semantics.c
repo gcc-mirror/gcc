@@ -1512,7 +1512,7 @@ perform_koenig_lookup (tree fn, tree args)
 	fn = unqualified_fn_lookup_error (identifier);
     }
   else
-    fn = build_min_nt (LOOKUP_EXPR, identifier);
+    fn = identifier;
 
   return fn;
 }
@@ -1819,7 +1819,7 @@ finish_fname (tree id)
   
   decl = fname_decl (C_RID_CODE (id), id);
   if (processing_template_decl)
-    decl = build_min_nt (LOOKUP_EXPR, DECL_NAME (decl));
+    decl = DECL_NAME (decl);
   return decl;
 }
 
@@ -2372,12 +2372,6 @@ finish_id_expression (tree id_expression,
 	 An id-expression is type-dependent if it contains an
 	 identifier that was declared with a dependent type.
 
-	 As an optimization, we could choose not to create a
-	 LOOKUP_EXPR for a name that resolved to a local variable in
-	 the template function that we are currently declaring; such a
-	 name cannot ever resolve to anything else.  If we did that we
-	 would not have to look up these names at instantiation time.
-
 	 The standard is not very specific about an id-expression that
 	 names a set of overloaded functions.  What if some of them
 	 have dependent types and some of them do not?  Presumably,
@@ -2469,8 +2463,8 @@ finish_id_expression (tree id_expression,
 	     constant when things are instantiated.  */
 	  if (constant_expression_p)
 	    *non_constant_expression_p = true;
-	  /* Create a LOOKUP_EXPR for other unqualified names.  */
-	  return build_min_nt (LOOKUP_EXPR, id_expression);
+	  *idk = CP_ID_KIND_UNQUALIFIED_DEPENDENT;
+	  return id_expression;
 	}
 
       /* Only certain kinds of names are allowed in constant
