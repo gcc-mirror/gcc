@@ -732,8 +732,7 @@ validate_replace_rtx (from, to, insn)
   return apply_change_group ();
 }
 
-/* Try replacing every occurrence of FROM in INSN with TO.  After all
-   changes have been made, validate by seeing if INSN is still valid.  */
+/* Try replacing every occurrence of FROM in INSN with TO.  */
 
 void
 validate_replace_rtx_group (from, to, insn)
@@ -758,6 +757,14 @@ validate_replace_src (from, to, insn)
   if (GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
     validate_replace_rtx_1 (&XEXP (SET_DEST (PATTERN (insn)), 0),
 			    from, to, insn);
+  else if (GET_CODE (SET_DEST (PATTERN (insn))) == ZERO_EXTRACT)
+    {
+      validate_replace_rtx_1 (&XEXP (SET_DEST (PATTERN (insn)), 1),
+			      from, to, insn);
+      validate_replace_rtx_1 (&XEXP (SET_DEST (PATTERN (insn)), 2),
+			      from, to, insn);
+    }
+
   return apply_change_group ();
 }
 
