@@ -19,7 +19,13 @@
    Include sys/types.h before signal.h, Apr 92.
    Support NO_LONG_DOUBLE_IO in f_define and f_rep; new fn fake_f_rep, Apr 92.
    Enclose -f output in #ifndef _FLOAT_H___, Richard Stallman, May 92.
+
    Add #undef before every #define, Jim Wilson, Dec 92.
+
+   Changes by Paul Eggert, installed Feb 93:
+   (fake_f_rep): Clear all of u, initially.  Make the ints in u unsigned.
+   (f_define): Use ordinary constants for long double
+   if it's same width as double.  Make __convert_long_double_i unsigned.
 
    COMPILING
    With luck and a following wind, just the following will work:
@@ -828,12 +834,13 @@ Procedure f_define(desc, extra, sort, name, precision, val, mark)
 	if (stdc) {
 #ifdef NO_LONG_DOUBLE_IO
 		static int union_defined = 0;
-		if (!strcmp(sort, "LDBL")) {
+		if (sizeof(double) != sizeof(Long_double)
+		    && !strcmp(sort, "LDBL")) {
 			if (!union_defined) {
 				printf("#ifndef __LDBL_UNION__\n");
 				printf("#define __LDBL_UNION__\n");
 				printf("union __convert_long_double {\n");
-				printf("  int __convert_long_double_i[4];\n");
+				printf("  unsigned __convert_long_double_i[4];\n");
 				printf("  long double __convert_long_double_d;\n");
 				printf("};\n");
 				printf("#endif\n");
@@ -909,7 +916,8 @@ int exponent(x, fract, exp) Long_double x; double *fract; int *exp; {
 
 char *fake_f_rep(type, val) char *type; Long_double val; {
 	static char buf[1024];
-	union { int i[4]; Long_double ld;} u;
+	union { unsigned int i[4]; Long_double ld;} u;
+	u.i[0] = u.i[1] = u.i[2] = u.i[3] = 0;
 	u.ld = val;
 	sprintf(buf, "(__extension__ ((union __convert_long_double) {0x%x, 0x%x, 0x%x, 0x%x}).__convert_long_double_d)",
 		u.i[0], u.i[1], u.i[2], u.i[3]);
