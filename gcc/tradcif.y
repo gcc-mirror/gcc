@@ -25,24 +25,17 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "defaults.h"
+#include "tradcpp.h"
 #include <setjmp.h>
 
-  int yylex PARAMS ((void));
-  void yyerror PARAMS ((const char *msgid));
-  extern void error   PARAMS ((const char *msgid, ...));
-  extern void warning PARAMS ((const char *msgid, ...));
-  extern struct hashnode *lookup PARAMS ((const unsigned char *, int, int));
+  static int yylex PARAMS ((void));
+  static void yyerror PARAMS ((const char *msgid));
 
-  int parse_number PARAMS ((int));
-  int parse_escape PARAMS ((char **));
-  int parse_c_expression PARAMS ((char *));
+  static int parse_number PARAMS ((int));
+  static int parse_escape PARAMS ((const char **));
 
-  int expression_value;
+  static int expression_value;
   static jmp_buf parse_return_error;
-
-  /* some external tables of character types */
-  extern unsigned char is_idstart[], is_idchar[];
-
 %}
 
 %union {
@@ -212,7 +205,7 @@ exp	:	exp '*' exp
 /* During parsing of a C expression, the pointer to the next character
    is in this variable.  */
 
-static char *lexptr;
+static const char *lexptr;
 
 /* Take care of parsing a number (anything that starts with a digit).
    Set yylval and return the token type; update lexptr.
@@ -220,11 +213,11 @@ static char *lexptr;
 
 /* maybe needs to actually deal with floating point numbers */
 
-int
+static int
 parse_number (olen)
      int olen;
 {
-  register char *p = lexptr;
+  register const char *p = lexptr;
   register long n = 0;
   register int c;
   register int base = 10;
@@ -315,12 +308,12 @@ static struct token tokentab2[] = {
 
 /* Read one token, getting characters through lexptr.  */
 
-int
+static int
 yylex ()
 {
   register int c;
   register int namelen;
-  register char *tokstart;
+  register const char *tokstart;
   register struct token *toktab;
 
  retry:
@@ -443,9 +436,9 @@ yylex ()
    If \ is followed by 000, we return 0 and leave the string pointer
    after the zeros.  A value of 0 does not mean end of string.  */
 
-int
+static int
 parse_escape (string_ptr)
-     char **string_ptr;
+     const char **string_ptr;
 {
   register int c = *(*string_ptr)++;
   switch (c)
@@ -538,7 +531,7 @@ parse_escape (string_ptr)
     }
 }
 
-void
+static void
 yyerror (s)
      const char *s;
 {
@@ -555,7 +548,7 @@ yyerror (s)
 
 int
 parse_c_expression (string)
-     char *string;
+     const char *string;
 {
   lexptr = string;
   
