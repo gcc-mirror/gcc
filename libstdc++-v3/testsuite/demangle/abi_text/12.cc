@@ -26,7 +26,7 @@
 // http://www.codesourcery.com/cxx-abi/abi.html#mangling
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // N::T<int, int>::mf(N::T<double, double>)
   verify_demangle("_ZN1N1TIiiE2mfES0_IddE", 

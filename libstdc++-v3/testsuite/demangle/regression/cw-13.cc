@@ -25,7 +25,7 @@
 // libcwd tests
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // cplus-dem CORE
   verify_demangle("_GLOBAL__I__Z2fnv", "global constructors keyed to fn()");

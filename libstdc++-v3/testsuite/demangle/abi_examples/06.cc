@@ -26,7 +26,7 @@
 // http://www.codesourcery.com/cxx-abi/abi-examples.html#mangling
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // class bar { };
   // void foo(bar) { };

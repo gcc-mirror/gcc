@@ -33,9 +33,9 @@ void test01()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_hk = __gnu_cxx_test::try_named_locale("en_HK");
-  locale loc_fr = __gnu_cxx_test::try_named_locale("fr_FR@euro");
-  locale loc_de  = __gnu_cxx_test::try_named_locale("de_DE");
+  locale loc_hk = __gnu_test::try_named_locale("en_HK");
+  locale loc_fr = __gnu_test::try_named_locale("fr_FR@euro");
+  locale loc_de  = __gnu_test::try_named_locale("de_DE");
   VERIFY( loc_c != loc_de );
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );

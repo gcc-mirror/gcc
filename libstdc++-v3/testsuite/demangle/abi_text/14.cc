@@ -26,7 +26,7 @@
 // http://www.codesourcery.com/cxx-abi/abi.html#mangling
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // std::_In::ward
   verify_demangle("_ZNSt3_In4wardE", "std::_In::ward");

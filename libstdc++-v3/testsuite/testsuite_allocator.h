@@ -38,7 +38,7 @@
 #include <cstddef>
 #include <limits>
 
-namespace __gnu_cxx_test
+namespace __gnu_test
 {
   class allocation_tracker
   {
@@ -169,7 +169,7 @@ namespace __gnu_cxx_test
     bool
     operator!=(const tracker_alloc<T1>&, const tracker_alloc<T2>&) throw()
     { return false; }
-}; // namespace __gnu_cxx_test
+}; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_ALLOCATOR_H
 

@@ -32,7 +32,7 @@ const char name_01[] = "seekoff-1io.tst";
 void test05() 
 {
   using namespace std;
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   typedef filebuf::int_type 	int_type;
   typedef filebuf::pos_type 	pos_type;

@@ -42,7 +42,7 @@
 #include <locale>
 #include <cxxabi.h>
 
-namespace __gnu_cxx_test
+namespace __gnu_test
 {
 #ifdef _GLIBCXX_MEM_LIMITS
   void 

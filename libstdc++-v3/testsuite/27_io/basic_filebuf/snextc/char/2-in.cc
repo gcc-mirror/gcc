@@ -32,7 +32,7 @@ const char name_01[] = "sgetc.txt"; // file with data in it
 void test05() 
 {
   using namespace std;
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
   typedef filebuf::int_type 	int_type;
   typedef filebuf::traits_type 	traits_type;
 

@@ -28,7 +28,7 @@
 namespace test 
 {
   using namespace std;
-  using __gnu_cxx_test::pod_char;
+  using __gnu_test::pod_char;
   typedef short type_t;
   template class fpos<type_t>;
   template class fpos<pod_char>;

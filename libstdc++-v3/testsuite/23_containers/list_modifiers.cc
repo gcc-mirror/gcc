@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-typedef __gnu_cxx_test::copy_tracker  T;
+typedef __gnu_test::copy_tracker  T;
 
 bool test = true;
 

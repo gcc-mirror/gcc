@@ -26,7 +26,7 @@
 // http://www.codesourcery.com/cxx-abi/abi-examples.html#mangling
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
  // int operator+(X&, X&) { };
   verify_demangle("_ZplR1XS0_", "operator+(X&, X&)"); // XXX

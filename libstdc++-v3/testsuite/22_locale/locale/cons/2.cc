@@ -170,7 +170,7 @@ void test01()
 
   // 3
   // explicit locale(const char* std_name)
-  locale loc06 = __gnu_cxx_test::try_named_locale("fr_FR");
+  locale loc06 = __gnu_test::try_named_locale("fr_FR");
   VERIFY (loc06 != loc01);  
   VERIFY (loc06 != loc02);  
   VERIFY (loc06.name() == "fr_FR");

@@ -26,7 +26,7 @@
 // http://www.codesourcery.com/cxx-abi/abi.html#mangling
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   verify_demangle("_ZNZN1N1fEiE1X1gEv", 
 		  "error code = -2: invalid mangled name");

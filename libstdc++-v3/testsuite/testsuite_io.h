@@ -33,7 +33,7 @@
 
 #include <fstream>
 
-namespace __gnu_cxx_test
+namespace __gnu_test
 {  
   // Used to verify the constraints/requirements on get and put areas
   // as defined in 
@@ -73,7 +73,7 @@ namespace __gnu_cxx_test
     }
     
   };
-}; // namespace __gnu_cxx_test
+}; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_IO_H
 

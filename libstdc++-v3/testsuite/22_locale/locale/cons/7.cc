@@ -35,7 +35,7 @@ test02()
 
   // construct a locale object with the specialized facet.
   locale		loc_c = locale::classic();
-  locale		loc_fr = __gnu_cxx_test::try_named_locale("fr_FR");
+  locale		loc_fr = __gnu_test::try_named_locale("fr_FR");
   locale 		loc_1(locale::classic(), 
 			      new numpunct_byname<char>("fr_FR"));
 

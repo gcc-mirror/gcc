@@ -25,7 +25,7 @@
 // libstdc++/7986
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // ICE on figmative float template parameters?
   /*

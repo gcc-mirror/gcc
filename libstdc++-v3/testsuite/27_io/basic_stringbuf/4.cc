@@ -30,8 +30,8 @@
 namespace test 
 {
   using namespace std;
-  using __gnu_cxx_test::pod_char;
-  typedef __gnu_cxx_test::tracker_alloc<char> alloc_type;
+  using __gnu_test::pod_char;
+  typedef __gnu_test::tracker_alloc<char> alloc_type;
   template class basic_stringbuf<char, char_traits<char>, alloc_type>;
 } // test
 

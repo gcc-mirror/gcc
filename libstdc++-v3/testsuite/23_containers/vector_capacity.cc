@@ -26,12 +26,12 @@
 #include <testsuite_allocator.h>
 #include <testsuite_hooks.h>
 
-using __gnu_cxx_test::copy_tracker;
-using __gnu_cxx_test::allocation_tracker;
-using __gnu_cxx_test::tracker_alloc;
-using __gnu_cxx_test::copy_constructor;
-using __gnu_cxx_test::assignment_operator;
-using __gnu_cxx_test::destructor;
+using __gnu_test::copy_tracker;
+using __gnu_test::allocation_tracker;
+using __gnu_test::tracker_alloc;
+using __gnu_test::copy_constructor;
+using __gnu_test::assignment_operator;
+using __gnu_test::destructor;
  
 template<typename T>
   struct A { };

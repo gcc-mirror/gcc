@@ -25,7 +25,7 @@
 // old libiberty tests for gnu-v3
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
   verify_demangle("St9bad_alloc", "std::bad_alloc");
   return 0;
 }

@@ -75,7 +75,7 @@
 # define unlink(x)
 #endif
 
-namespace __gnu_cxx_test
+namespace __gnu_test
 {
   // All macros are defined in GLIBCXX_CONFIGURE_TESTSUITE and imported
   // from c++config.h
@@ -147,7 +147,7 @@ namespace __gnu_cxx_test
     ~counter() { --count; }
   };
   
-#define assert_count(n)   VERIFY(__gnu_cxx_test::counter::count == n)
+#define assert_count(n)   VERIFY(__gnu_test::counter::count == n)
   
   // A (static) class for counting copy constructors and possibly throwing an
   // exception on a desired count.
@@ -300,7 +300,7 @@ namespace __gnu_cxx_test
   inline bool
   operator==(const copy_tracker& lhs, const copy_tracker& rhs)
   { return lhs.id() == rhs.id(); }
-} // namespace __gnu_cxx_test
+} // namespace __gnu_test
 
 namespace std
 {
@@ -309,13 +309,13 @@ namespace std
 
   // char_traits specialization
   template<>
-    struct char_traits<__gnu_cxx_test::pod_char>
+    struct char_traits<__gnu_test::pod_char>
     {
-      typedef __gnu_cxx_test::pod_char	char_type;
-      typedef __gnu_cxx_test::pod_int  	int_type;
+      typedef __gnu_test::pod_char	char_type;
+      typedef __gnu_test::pod_int  	int_type;
       typedef long 			pos_type;
       typedef unsigned long 		off_type;
-      typedef __gnu_cxx_test::state   	state_type;
+      typedef __gnu_test::state   	state_type;
       
       static void 
       assign(char_type& __c1, const char_type& __c2);

@@ -39,7 +39,7 @@
 void test02()
 {
   using namespace std;
-  using __gnu_cxx_test::pod_char;
+  using __gnu_test::pod_char;
 
   basic_stringstream<pod_char, char_traits<pod_char> > sstr;
   // 1

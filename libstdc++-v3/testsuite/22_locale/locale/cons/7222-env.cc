@@ -30,8 +30,8 @@ void test02()
 {
   bool test = true;
 
-  std::locale loc_1 = __gnu_cxx_test::try_named_locale("");
-  std::locale loc_2 = __gnu_cxx_test::try_named_locale("");
+  std::locale loc_1 = __gnu_test::try_named_locale("");
+  std::locale loc_2 = __gnu_test::try_named_locale("");
   VERIFY( loc_1 == loc_2 );
 }
  
