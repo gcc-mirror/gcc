@@ -3522,22 +3522,7 @@ package body Prj.Nmsc is
                   end if;
 
                   if Lib_Dir.Default then
-
-                     --  If the extending project is a virtual project, we
-                     --  put the error message in the library project that
-                     --  is extended, rather than in the extending all project.
-                     --  Of course, we cannot put it in the virtual extending
-                     --  project, because it has no source.
-
-                     if Data.Virtual then
-                        Error_Msg_Name_1 := Extended_Data.Name;
-
-                        Error_Msg
-                          (Project,
-                           "library project % cannot be virtually extended",
-                           Extended_Data.Location);
-
-                     else
+                     if not Data.Virtual then
                         Error_Msg
                           (Project,
                            "a project extending a library project must " &
