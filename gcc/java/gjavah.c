@@ -1987,7 +1987,7 @@ DEFUN(main, (argc, argv),
 	  break;
 
 	case OPT_MG:
-	  fprintf (stderr, "gcjh: `%s' option is unimplemented\n", argv[argi]);
+	  fprintf (stderr, "gcjh: `-MG' option is unimplemented\n");
 	  exit (1);
 
 	case OPT_MD:

@@ -1,3 +1,8 @@
+Fri Feb 25 18:41:31 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* gjavah.c (main): Avoid using `argi' to report unimplemented
+	options.
+
 Fri Feb 25 18:47:25 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns): TRY_FINALLY_EXPR:
