@@ -5,6 +5,9 @@ AUTOMAKE_OPTIONS = foreign subdir-objects
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
+## Needed because $(ZIP) is a relative path.
+MULTIBUILDTOP = ../../
+
 ## The compiler with whatever flags we want for both -c and -C
 ## compiles.
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated -fbootclasspath=$(BOOTCLASSPATH)
@@ -20,18 +23,24 @@ AM_GCJFLAGS = \
 
 BUILT_SOURCES = classes.stamp
 
-classes.stamp:	$(libsax_convenience_la_SOURCES)
+sax.jar: classes.stamp
+	find org -name '*.class' -print | $(ZIP) -cfME@ $@
+
+classes.stamp:	$(source_files)
 	here=`pwd`; cd $(srcdir); \
-	$(GCJ_WITH_FLAGS) -C -d $$here $(libsax_convenience_la_SOURCES)
+	$(GCJ_WITH_FLAGS) -C -d $$here $(source_files)
 	echo > classes.stamp
 
 mostlyclean-local:
 	-find . -name '*.class' | xargs rm
-	-rm classes.stamp
+	-rm classes.stamp sax.jar
 
-noinst_LTLIBRARIES = libsax_convenience.la
+toolexeclib_LTLIBRARIES = libsax-gcj.la
 
-libsax_convenience_la_SOURCES =	\
+libsax_gcj_la_SOURCES =	sax.jar
+libsax_gcj_la_GCJFLAGS = -findirect-dispatch
+
+source_files = \
 org/xml/sax/SAXNotSupportedException.java \
 org/xml/sax/helpers/NamespaceSupport.java \
 org/xml/sax/helpers/AttributesImpl.java	\

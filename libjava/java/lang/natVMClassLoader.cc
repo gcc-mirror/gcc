@@ -25,6 +25,7 @@ details.  */
 #include <java/lang/VMCompiler.h>
 #include <gnu/gcj/runtime/VMClassLoader.h>
 #include <gnu/gcj/runtime/SystemClassLoader.h>
+#include <gnu/gcj/runtime/BootClassLoader.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Class.h>
 #include <java/lang/Throwable.h>
@@ -66,9 +67,9 @@ java::lang::VMClassLoader::defineClass (java::lang::ClassLoader *loader,
       // until we're done loading.
       JvSynchronize sync (klass);
 
-      // Record the defining loader.  For the system class loader, we
-      // record NULL.
-      if (loader != java::lang::ClassLoader::systemClassLoader)
+      // Record the defining loader.  For the bootstrap class loader,
+      // we record NULL.
+      if (loader != bootLoader)
 	klass->loader = loader;
 
       if (name != 0)
@@ -122,11 +123,25 @@ java::lang::VMClassLoader::getPrimitiveClass (jchar type)
   return _Jv_FindClassFromSignature (sig, NULL);
 }
 
+void
+java::lang::VMClassLoader::initBootLoader(jstring libdir)
+{
+  bootLoader = new gnu::gcj::runtime::BootClassLoader(libdir);
+}
+
 jclass
 java::lang::VMClassLoader::loadClass(jstring name, jboolean resolve)
 {
-  _Jv_Utf8Const *utf = _Jv_makeUtf8Const (name);
-  jclass klass = _Jv_FindClassInCache (utf);
+  // We try the boot loader first, so that the endorsed directory
+  // overrides compiled-in classes.
+  jclass klass = NULL;
+  if (bootLoader)
+    klass = bootLoader->bootLoadClass(name);
+  if (! klass)
+    {
+      _Jv_Utf8Const *utf = _Jv_makeUtf8Const (name);
+      klass = _Jv_FindClassInCache (utf);
+    }
   if (klass)
     {
       // We never want to return a class without its supers linked.
