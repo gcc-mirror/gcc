@@ -1120,6 +1120,56 @@ alpha_write_verstamp (file)
   fprintf (file, "\n");
 #endif
 }
+
+/* Write code to add constant C to register number IN_REG (possibly 31)
+   and put the result into OUT_REG.  Write the code to FILE.  */
+
+static void
+add_long_const (file, c, in_reg, out_reg)
+     HOST_WIDE_INT c;
+     int in_reg, out_reg;
+     FILE *file;
+{
+  HOST_WIDE_INT low = (c & 0xffff) - 2 * (c & 0x8000);
+  HOST_WIDE_INT tmp1 = c - low;
+  HOST_WIDE_INT high = ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
+  HOST_WIDE_INT extra = 0;
+
+  /* We don't have code to write out constants larger than 32 bits.  */
+#if HOST_BITS_PER_LONG_INT == 64
+  if ((unsigned HOST_WIDE_INT) c >> 32 != 0)
+    abort ();
+#endif
+
+  /* If HIGH will be interpreted as negative, we must adjust it to do two
+     ldha insns.  Note that we will never be building a negative constant
+     here.  */
+
+  if (high & 0x8000)
+    {
+      extra = 0x4000;
+      tmp1 -= 0x40000000;
+      high = ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
+    }
+
+  if (low != 0)
+    {
+      if (low >= 0 && low < 255)
+	fprintf (file, "\taddq $%d,%d,$%d\n", in_reg, low, out_reg);
+      else
+	fprintf (file, "\tlda $%d,%d($%d)\n", out_reg, low, in_reg);
+      in_reg = out_reg;
+    }
+
+  if (extra)
+    {
+      fprintf (file, "\tldah $%d,%d($%d)\n", out_reg, extra, in_reg);
+      in_reg = out_reg;
+    }
+
+  if (high)
+    fprintf (file, "\tldah $%d,%d($%d)\n", out_reg, high, in_reg);
+}
 
 /* Write function prologue.  */
 
@@ -1131,9 +1181,11 @@ output_prolog (file, size)
   HOST_WIDE_INT frame_size = ((size + current_function_outgoing_args_size
 			       + current_function_pretend_args_size
 			       + alpha_sa_size () + 15) & ~15);
-  int reg_offset = size + current_function_outgoing_args_size;
+  HOST_WIDE_INT reg_offset = size + current_function_outgoing_args_size;
+  HOST_WIDE_INT start_reg_offset = reg_offset;
+  HOST_WIDE_INT actual_start_reg_offset = start_reg_offset;
   rtx insn;
-  int start_reg_offset = reg_offset;
+  int reg_offset_base_reg = 30;
   unsigned reg_mask = 0;
   int i;
 
@@ -1195,48 +1247,12 @@ output_prolog (file, size)
       /* Here we generate code to set R4 to SP + 4096 and set R5 to the
 	 number of 8192 byte blocks to probe.  We then probe each block
 	 in the loop and then set SP to the proper location.  If the
-	 amount remaining is > 4096, we have to do one more probe.
-
-	 This is complicated by the code we would generate if
-	 the number of blocks > 32767.  */
+	 amount remaining is > 4096, we have to do one more probe.  */
 
       HOST_WIDE_INT blocks = (frame_size + 4096) / 8192;
       HOST_WIDE_INT leftover = frame_size + 4096 - blocks * 8192;
-      HOST_WIDE_INT low = (blocks & 0xffff) - 2 * (blocks & 0x8000);
-      HOST_WIDE_INT tmp1 = blocks - low;
-      HOST_WIDE_INT high
-	= ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
-      HOST_WIDE_INT extra = 0;
-      int in_reg = 31;
 
-      /* If HIGH will be interpreted as negative, we must adjust it to
-	 do two ldha insns.  Note that we will never be building a negative
-	 constant here.  */
-
-      if (high & 0x8000)
-	{
-	  extra = 0x4000;
-	  tmp1 -= 0x40000000;
-	  high = ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
-	}
-
-      if (low != 0)
-	{
-	  if (low < 255)
-	    fprintf (file, "\tbis $31,%d,$5\n", low);
-	  else
-	    fprintf (file, "\tlda $5,%d($31)\n", low);
-	  in_reg = 5;
-	}
-
-      if (extra)
-	{
-	  fprintf (file, "\tldah $5,%d($%d)\n", extra, in_reg);
-	  in_reg = 5;
-	}
-
-      if (high)
-	fprintf (file, "\tldah $5,%d($%d)\n", high, in_reg);
+      add_long_const (file, blocks, 31, 5);
 
       fprintf (file, "\tlda $4,4096($30)\n");
       fprintf (file, "%s..sc:\n", alpha_function_name);
@@ -1255,12 +1271,22 @@ output_prolog (file, size)
 	   frame_pointer_needed ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM,
 	   frame_size, current_function_pretend_args_size);
     
+  /* If reg_offset is "close enough" to 2**15 that one of the offsets would
+     overflow a store instruction, compute the base of the register save
+     area into $28.  */
+  if (reg_offset >= 32768 - alpha_sa_size () && alpha_sa_size () != 0)
+    {
+      add_long_const (file, reg_offset, 30, 28);
+      reg_offset_base_reg = 28;
+      reg_offset = start_reg_offset = 0;
+    }
+
   /* Save register 26 if it is used or if any other register needs to
      be saved.  */
   if (regs_ever_live[26] || alpha_sa_size () != 0)
     {
       reg_mask |= 1 << 26;
-      fprintf (file, "\tstq $26,%d($30)\n", reg_offset);
+      fprintf (file, "\tstq $26,%d($%d)\n", reg_offset, reg_offset_base_reg);
       reg_offset += 8;
     }
 
@@ -1269,14 +1295,15 @@ output_prolog (file, size)
     if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i] && i != 26)
       {
 	reg_mask |= 1 << i;
-	fprintf (file, "\tstq $%d,%d($30)\n", i, reg_offset);
+	fprintf (file, "\tstq $%d,%d($%d)\n",
+		 i, reg_offset, reg_offset_base_reg);
 	reg_offset += 8;
       }
 
   /* Print the register mask and do floating-point saves.  */
   if (reg_mask)
     fprintf (file, "\t.mask 0x%x,%d\n", reg_mask,
-	     start_reg_offset - frame_size);
+	     actual_start_reg_offset - frame_size);
 
   start_reg_offset = reg_offset;
   reg_mask = 0;
@@ -1286,13 +1313,14 @@ output_prolog (file, size)
 	&& regs_ever_live[i + 32])
       {
 	reg_mask |= 1 << i;
-	fprintf (file, "\tstt $f%d,%d($30)\n", i, reg_offset);
+	fprintf (file, "\tstt $f%d,%d($%d)\n",
+		 i, reg_offset, reg_offset_base_reg);
 	reg_offset += 8;
       }
 
   /* Print the floating-point mask, if we've saved any fp register.  */
   if (reg_mask)
-    fprintf (file, "\t.fmask 0x%x,%d\n", reg_mask, start_reg_offset);
+    fprintf (file, "\t.fmask 0x%x,%d\n", reg_mask, actual_start_reg_offset);
 
   /* If we need a frame pointer, set it from the stack pointer.  Note that
      this must always be the last instruction in the prologue.  */
@@ -1314,7 +1342,9 @@ output_epilog (file, size)
   HOST_WIDE_INT frame_size = ((size + current_function_outgoing_args_size
 			       + current_function_pretend_args_size
 			       + alpha_sa_size () + 15) & ~15);
-  int reg_offset = size + current_function_outgoing_args_size;
+  HOST_WIDE_INT reg_offset = size + current_function_outgoing_args_size;
+  HOST_WIDE_INT frame_size_from_reg_save = frame_size - reg_offset;
+  int reg_offset_base_reg = 30;
   int i;
 
   /* If the last insn was a BARRIER, we don't have to write anything except
@@ -1329,11 +1359,21 @@ output_epilog (file, size)
       if (frame_pointer_needed)
 	fprintf (file, "\tbis $15,$15,$30\n");
 
+      /* If the register save area is out of range, put its address into
+	 $28.  */
+      if (reg_offset >= 32768 - alpha_sa_size () && alpha_sa_size () != 0)
+	{
+	  add_long_const (file, reg_offset, 30, 28);
+	  reg_offset_base_reg = 28;
+	  reg_offset = 0;
+	}
+
       /* Restore all the registers, starting with the return address
 	 register.  */
       if (regs_ever_live[26] || alpha_sa_size () != 0)
 	{
-	  fprintf (file, "\tldq $26,%d($30)\n", reg_offset);
+	  fprintf (file, "\tldq $26,%d($%d)\n",
+		   reg_offset, reg_offset_base_reg);
 	  reg_offset += 8;
 	}
 
@@ -1348,7 +1388,8 @@ output_epilog (file, size)
 	    if (i == FRAME_POINTER_REGNUM && frame_pointer_needed)
 	      fp_offset = reg_offset;
 	    else
-	      fprintf (file, "\tldq $%d,%d($30)\n", i, reg_offset);
+	      fprintf (file, "\tldq $%d,%d($%d)\n",
+		       i, reg_offset, reg_offset_base_reg);
 	    reg_offset += 8;
 	  }
 
@@ -1356,65 +1397,45 @@ output_epilog (file, size)
 	if (! fixed_regs[i + 32] && ! call_used_regs[i + 32]
 	    && regs_ever_live[i + 32])
 	  {
-	    fprintf (file, "\tldt $f%d,%d($30)\n", i, reg_offset);
+	    fprintf (file, "\tldt $f%d,%d($%d)\n",
+		     i, reg_offset, reg_offset_base_reg);
 	    reg_offset += 8;
 	  }
 
       /* If the stack size is large, compute the size of the stack into
 	 a register because the old FP restore, stack pointer adjust,
-	 and return are required to be consecutive instructions.  */
-      if (frame_size > 32767)
-	{
-	  HOST_WIDE_INT low
-	    = (frame_size & 0xffff) - 2 * (frame_size & 0x8000);
-	  HOST_WIDE_INT tmp1 = frame_size - low;
-	  HOST_WIDE_INT high
-	    = ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
-	  HOST_WIDE_INT extra = 0;
-	  int in_reg = 31;
-
-	  /* We haven't written code to handle frames > 4GB.  */
-#if HOST_BITS_PER_LONG_INT == 64
-	  if ((unsigned HOST_WIDE_INT) frame_size >> 32 != 0)
-	    abort ();
-#endif
-
-	  /* If HIGH will be interpreted as negative, we must adjust it to
-	     do two ldha insns.  Note that we will never be building a negative
-	     constant here.  */
-
-	  if (high & 0x8000)
-	    {
-	      extra = 0x4000;
-	      tmp1 -= 0x40000000;
-	      high = ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
-	    }
-
-	  if (low != 0)
-	    {
-	      fprintf (file, "\tlda $28,%d($%d)\n", low, in_reg);
-	      in_reg = 28;
-	    }
-
-	  if (extra)
-	    {
-	      fprintf (file, "\tldah $28,%d($%d)\n", extra, in_reg);
-	      in_reg = 28;
-	    }
-
-	  fprintf (file, "\tldah $28,%d($%d)\n", high, in_reg);
-	}
+	 and return are required to be consecutive instructions.  
+	 However, if the new stack pointer can be computed by adding the
+	 a constant to the start of the register save area, we can do
+	 it that way.  */
+      if (frame_size > 32767
+	  && ! (reg_offset_base_reg != 30
+		&& frame_size_from_reg_save < 32768))
+	add_long_const (file, frame_size, 31, 1);
 
       /* If we needed a frame pointer and we have to restore it, do it
-	 now.  */
-
+	 now.  This must be done in one instruction immediately
+	 before the SP update.  */
       if (frame_pointer_needed && regs_ever_live[FRAME_POINTER_REGNUM])
-	fprintf (file, "\tldq $15,%d($30)\n", fp_offset);
+	fprintf (file, "\tldq $15,%d($%d)\n", fp_offset, reg_offset_base_reg);
 
       /* Now update the stack pointer, if needed.  This must be done in
 	 one, stylized, instruction.  */
       if (frame_size > 32768)
-	fprintf (file, "\taddq $28,$30,$30\n");
+	{
+	  if (reg_offset_base_reg != 30
+	      && frame_size_from_reg_save < 32768)
+	    {
+	      if (frame_size_from_reg_save < 255)
+		fprintf (file, "\taddq $%d,%d,$30\n",
+			 reg_offset_base_reg, frame_size_from_reg_save);
+	      else
+		fprintf (file, "\tlda %30,%d($%d)\n",
+			 frame_size_from_reg_save, reg_offset_base_reg);
+	    }
+	  else
+	    fprintf (file, "\taddq $1,$30,$30\n");
+	}
       else if (frame_size != 0)
 	fprintf (file, "\tlda $30,%d($30)\n", frame_size);
 
