@@ -63,6 +63,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <sys/types.h>
 #include <signal.h>
 #include <errno.h>
+#include <ctype.h>
 
 #include "mf-runtime.h"
 #include "mf-impl.h"
@@ -685,6 +686,11 @@ __wrap_main (int argc, char* argv[])
       __mf_register (stdin,  sizeof (*stdin),  __MF_TYPE_STATIC, "stdin");
       __mf_register (stdout, sizeof (*stdout), __MF_TYPE_STATIC, "stdout");
       __mf_register (stderr, sizeof (*stderr), __MF_TYPE_STATIC, "stderr");
+
+      /* Make some effort to register ctype.h static arrays.  */
+      /* XXX: e.g., on Solaris, may need to register __ctype, _ctype, __ctype_mask, __toupper, etc. */
+      /* On modern Linux GLIBC, these are thread-specific and changeable, and are dealt
+         with in mf-hooks2.c.  */
     }
 
 #ifdef PIC
