@@ -1,3 +1,9 @@
+2003-12-02  Richard Henderson  <rth@redhat.com>
+
+        * rtl.h (PUT_CODE, PUT_MODE): Remove ENUM_BITFIELD cast.
+        * tree.h (TREE_SET_CODE): Likewise.
+        * recog.h (struct insn_operand_data): Move const after ENUM_BITFIELD.
+
 2003-12-02  Ben Elliston  <bje@wasabisystems.com>
 
 	* dbxstclass.h: Rename from this ..
