@@ -673,9 +673,9 @@ struct tree_type
 #define DECL_RTL(NODE) ((NODE)->decl.rtl)
 /* For PARM_DECL, holds an RTL for the stack slot or register
    where the data was actually passed.  */
-#define DECL_INCOMING_RTL(NODE) ((NODE)->decl.saved_insns)
+#define DECL_INCOMING_RTL(NODE) ((NODE)->decl.saved_insns.r)
 /* For FUNCTION_DECL, if it is inline, holds the saved insn chain.  */
-#define DECL_SAVED_INSNS(NODE) ((NODE)->decl.saved_insns)
+#define DECL_SAVED_INSNS(NODE) ((NODE)->decl.saved_insns.r)
 /* For FUNCTION_DECL for built-in function.  */
 #define DECL_FUNCTION_CODE(NODE) \
  ((enum built_in_function) (NODE)->decl.frame_size)
@@ -684,6 +684,8 @@ struct tree_type
 /* For FUNCTION_DECL, if it is inline,
    holds the size of the stack frame, as an integer.  */
 #define DECL_FRAME_SIZE(NODE) ((NODE)->decl.frame_size)
+/* For a FIELD_DECL, holds the size of the member as an integer.  */
+#define DECL_FIELD_SIZE(NODE) ((NODE)->decl.saved_insns.i)
 
 /* The DECL_VINDEX is used for FUNCTION_DECLS in two different ways.
    Before the struct containing the FUNCTION_DECL is laid out,
@@ -801,12 +803,15 @@ struct tree_decl
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
-     If built-in, this is the code for which built-in function.
-     For any other kind of decl, this is the alignment.  */
+     If built-in, this is the code for which built-in function.  */
   int frame_size;
-  struct rtx_def *saved_insns;	/* For FUNCTION_DECLs: points to insn that
-				   constitutes its definition on the
-				   permanent obstack.  */
+  /* For FUNCTION_DECLs: points to insn that constitutes its definition
+     on the permanent obstack.  For any other kind of decl, this is the
+     alignment.  */
+  union {
+    struct rtx_def *r;
+    int i;
+  } saved_insns;
   union tree_node *vindex;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_decl *lang_specific;

@@ -2552,8 +2552,9 @@ init_decl_processing ()
   /* In an ANSI C program, it is okay to supply built-in meanings
      for these functions, since applications cannot validly use them
      with any other meaning.
-     However, a traditional C program can do so.  */
-  if (!flag_traditional)
+     However, a traditional C program can do so.
+     Also, honor the -fno-builtin option.  */
+  if (!flag_traditional && !flag_no_builtin)
     {
       builtin_function ("abs", int_ftype_int, BUILT_IN_ABS, 0);
       builtin_function ("fabs", double_ftype_double, BUILT_IN_FABS, 0);
@@ -4431,7 +4432,7 @@ finish_struct (t, fieldlist)
 
   /* Install struct as DECL_CONTEXT of each field decl.
      Also process specified field sizes.
-     Set DECL_FRAME_SIZE to the specified size, or 0 if none specified.
+     Set DECL_FIELD_SIZE to the specified size, or 0 if none specified.
      The specified size is found in the DECL_INITIAL.
      Store 0 there, except for ": 0" fields (so we can find them
      and delete them, below).  */
@@ -4439,7 +4440,7 @@ finish_struct (t, fieldlist)
   for (x = fieldlist; x; x = TREE_CHAIN (x))
     {
       DECL_CONTEXT (x) = t;
-      DECL_FRAME_SIZE (x) = 0;
+      DECL_FIELD_SIZE (x) = 0;
 
       /* If any field is const, the structure type is pseudo-const.  */
       if (TREE_READONLY (x))
@@ -4514,7 +4515,7 @@ finish_struct (t, fieldlist)
 	{
 	  register int width = TREE_INT_CST_LOW (DECL_INITIAL (x));
 
-	  DECL_FRAME_SIZE (x) = width;
+	  DECL_FIELD_SIZE (x) = width;
 	  DECL_BIT_FIELD (x) = 1;
 	  DECL_INITIAL (x) = NULL;
 

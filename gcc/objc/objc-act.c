@@ -1282,7 +1282,7 @@ objc_copy_list (list, head)
 	 I create the situation it expects...s.naroff (7/23/89).
 	 */
       if (DECL_BIT_FIELD (tail) && DECL_INITIAL (tail) == 0)
-	DECL_INITIAL (tail) = build_int_2 (DECL_FRAME_SIZE (tail), 0);
+	DECL_INITIAL (tail) = build_int_2 (DECL_FIELD_SIZE (tail), 0);
 
       newlist = chainon (newlist, tail);
       list = TREE_CHAIN (list);
@@ -3866,7 +3866,7 @@ encode_field_decl (field_decl, str, format)
      int format;
 {
   if (DECL_BIT_FIELD (field_decl))
-    encode_bitfield (DECL_FRAME_SIZE (field_decl), str, format);
+    encode_bitfield (DECL_FIELD_SIZE (field_decl), str, format);
   else
     encode_type (TREE_TYPE (field_decl), str, format);
 }
