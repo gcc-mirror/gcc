@@ -1,3 +1,14 @@
+2004-01-29  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* parser.c (cp_parser_template_id): Parse tentatively `[:' after a 
+	template name as it was `<::' (digraph typo).
+	(cp_parser_nth_token_starts_template_argument_list_p): New function.
+	(cp_parser_id_expression): Use it.
+	(cp_parser_nested_name_specifier_opt): Likewise.
+	(cp_parser_template_name): Likewise.
+	(cp_parser_class_name): Likewise.
+	(cp_lexer_get_preprocessor_token): Use c_lex_with_flags.
+
 2004-01-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13883
