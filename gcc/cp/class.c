@@ -1569,15 +1569,12 @@ finish_base_struct (t, b)
       if (CLASSTYPE_COM_INTERFACE (basetype))
 	{
 	  CLASSTYPE_COM_INTERFACE (t) = 1;
-	  if (i > 0)
-	    cp_error
-	      ("COM interface type `%T' must be the leftmost base class",
-	       basetype);
 	}
       else if (CLASSTYPE_COM_INTERFACE (t) && i == 0)
 	{
-	  cp_error ("COM interface type `%T' with non-COM base class `%T'",
-		    t, basetype);
+	  cp_error 
+	    ("COM interface type `%T' with non-COM leftmost base class `%T'",
+	     t, basetype);
 	  CLASSTYPE_COM_INTERFACE (t) = 0;
 	}
 
