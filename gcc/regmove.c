@@ -188,10 +188,10 @@ discover_flags_reg (void)
 	 scratch or something.  We only care about hard regs.
 	 Moreover we don't like the notion of subregs of hard regs.  */
       if (GET_CODE (tmp) == SUBREG
-	  && GET_CODE (SUBREG_REG (tmp)) == REG
+	  && REG_P (SUBREG_REG (tmp))
 	  && REGNO (SUBREG_REG (tmp)) < FIRST_PSEUDO_REGISTER)
 	return pc_rtx;
-      found = (GET_CODE (tmp) == REG && REGNO (tmp) < FIRST_PSEUDO_REGISTER);
+      found = (REG_P (tmp) && REGNO (tmp) < FIRST_PSEUDO_REGISTER);
 
       return (found ? tmp : NULL_RTX);
     }
@@ -334,7 +334,7 @@ replacement_quality (rtx reg)
   int src_regno;
 
   /* Bad if this isn't a register at all.  */
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     return 0;
 
   /* If this register is not meant to get a hard register,
@@ -752,9 +752,9 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest, int old_max_uid)
      parameter when there is no frame pointer that is not allocated a register.
      For now, we just reject them, rather than incrementing the live length.  */
 
-  if (GET_CODE (src) == REG
+  if (REG_P (src)
       && REG_LIVE_LENGTH (REGNO (src)) > 0
-      && GET_CODE (dest) == REG
+      && REG_P (dest)
       && !RTX_UNCHANGING_P (dest)
       && REG_LIVE_LENGTH (REGNO (dest)) > 0
       && (set = single_set (insn)) != NULL_RTX
@@ -865,7 +865,7 @@ reg_is_remote_constant_p (rtx reg, rtx insn, rtx first)
 	continue;
       s = single_set (XEXP (p, 0));
       if (s != 0
-	  && GET_CODE (SET_DEST (s)) == REG
+	  && REG_P (SET_DEST (s))
 	  && REGNO (SET_DEST (s)) == REGNO (reg))
 	{
 	  /* The register is set in the same basic block.  */
@@ -881,7 +881,7 @@ reg_is_remote_constant_p (rtx reg, rtx insn, rtx first)
 	continue;
       s = single_set (p);
       if (s != 0
-	  && GET_CODE (SET_DEST (s)) == REG
+	  && REG_P (SET_DEST (s))
 	  && REGNO (SET_DEST (s)) == REGNO (reg))
 	{
 	  /* This is the instruction which sets REG.  If there is a
@@ -1087,13 +1087,13 @@ regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
 	  if (flag_expensive_optimizations && ! pass
 	      && (GET_CODE (SET_SRC (set)) == SIGN_EXTEND
 		  || GET_CODE (SET_SRC (set)) == ZERO_EXTEND)
-	      && GET_CODE (XEXP (SET_SRC (set), 0)) == REG
-	      && GET_CODE (SET_DEST (set)) == REG)
+	      && REG_P (XEXP (SET_SRC (set), 0))
+	      && REG_P (SET_DEST (set)))
 	    optimize_reg_copy_3 (insn, SET_DEST (set), SET_SRC (set));
 
 	  if (flag_expensive_optimizations && ! pass
-	      && GET_CODE (SET_SRC (set)) == REG
-	      && GET_CODE (SET_DEST (set)) == REG)
+	      && REG_P (SET_SRC (set))
+	      && REG_P (SET_DEST (set)))
 	    {
 	      /* If this is a register-register copy where SRC is not dead,
 		 see if we can optimize it.  If this optimization succeeds,
@@ -1142,7 +1142,7 @@ regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
 	      src = recog_data.operand[op_no];
 	      dst = recog_data.operand[match_no];
 
-	      if (GET_CODE (src) != REG)
+	      if (!REG_P (src))
 		continue;
 
 	      src_subreg = src;
@@ -1155,7 +1155,7 @@ regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
 				      src, SUBREG_BYTE (dst));
 		  dst = SUBREG_REG (dst);
 		}
-	      if (GET_CODE (dst) != REG
+	      if (!REG_P (dst)
 		  || REGNO (dst) < FIRST_PSEUDO_REGISTER)
 		continue;
 
@@ -1253,10 +1253,10 @@ regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
 	      dst = recog_data.operand[match_no];
 	      src = recog_data.operand[op_no];
 
-	      if (GET_CODE (src) != REG)
+	      if (!REG_P (src))
 		continue;
 
-	      if (GET_CODE (dst) != REG
+	      if (!REG_P (dst)
 		  || REGNO (dst) < FIRST_PSEUDO_REGISTER
 		  || REG_LIVE_LENGTH (REGNO (dst)) < 0
 		  || RTX_UNCHANGING_P (dst)
@@ -1779,7 +1779,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 			 hard register.  */
 		      && ! (dst_note && ! REG_N_CALLS_CROSSED (REGNO (dst))
 			    && single_set (p)
-			    && GET_CODE (SET_DEST (single_set (p))) == REG
+			    && REG_P (SET_DEST (single_set (p)))
 			    && (REGNO (SET_DEST (single_set (p)))
 				< FIRST_PSEUDO_REGISTER))
 		      /* We may only emit an insn directly after P if we

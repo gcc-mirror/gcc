@@ -382,7 +382,7 @@ remove_useless_values (void)
 enum machine_mode
 cselib_reg_set_mode (rtx x)
 {
-  if (GET_CODE (x) != REG)
+  if (!REG_P (x))
     return GET_MODE (x);
 
   if (REG_VALUES (REGNO (x)) == NULL
@@ -402,7 +402,7 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
   const char *fmt;
   int i;
 
-  if (GET_CODE (x) == REG || GET_CODE (x) == MEM)
+  if (REG_P (x) || MEM_P (x))
     {
       cselib_val *e = cselib_lookup (x, GET_MODE (x), 0);
 
@@ -410,7 +410,7 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
 	x = e->u.val_rtx;
     }
 
-  if (GET_CODE (y) == REG || GET_CODE (y) == MEM)
+  if (REG_P (y) || MEM_P (y))
     {
       cselib_val *e = cselib_lookup (y, GET_MODE (y), 0);
 
@@ -434,7 +434,7 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
 	  rtx t = l->loc;
 
 	  /* Avoid infinite recursion.  */
-	  if (GET_CODE (t) == REG || GET_CODE (t) == MEM)
+	  if (REG_P (t) || GET_CODE (t) == MEM)
 	    continue;
 	  else if (rtx_equal_for_cselib_p (t, y))
 	    return 1;
@@ -452,7 +452,7 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
 	{
 	  rtx t = l->loc;
 
-	  if (GET_CODE (t) == REG || GET_CODE (t) == MEM)
+	  if (REG_P (t) || GET_CODE (t) == MEM)
 	    continue;
 	  else if (rtx_equal_for_cselib_p (x, t))
 	    return 1;
@@ -884,7 +884,7 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
   if (GET_CODE (x) == VALUE)
     return CSELIB_VAL_PTR (x);
 
-  if (GET_CODE (x) == REG)
+  if (REG_P (x))
     {
       struct elt_list *l;
       unsigned int i = REGNO (x);
@@ -1030,7 +1030,7 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
 	    {
 	      rtx x = (*p)->loc;
 
-	      if (GET_CODE (x) == REG && REGNO (x) == i)
+	      if (REG_P (x) && REGNO (x) == i)
 		{
 		  unchain_one_elt_loc_list (p);
 		  break;
@@ -1146,7 +1146,7 @@ cselib_invalidate_rtx (rtx dest, rtx ignore ATTRIBUTE_UNUSED,
 	 || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SUBREG)
     dest = XEXP (dest, 0);
 
-  if (GET_CODE (dest) == REG)
+  if (REG_P (dest))
     cselib_invalidate_regno (REGNO (dest), GET_MODE (dest));
   else if (GET_CODE (dest) == MEM)
     cselib_invalidate_mem (dest);
@@ -1166,7 +1166,7 @@ cselib_invalidate_rtx (rtx dest, rtx ignore ATTRIBUTE_UNUSED,
 static void
 cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
 {
-  int dreg = GET_CODE (dest) == REG ? (int) REGNO (dest) : -1;
+  int dreg = REG_P (dest) ? (int) REGNO (dest) : -1;
 
   if (src_elt == 0 || side_effects_p (dest))
     return;
@@ -1274,7 +1274,7 @@ cselib_record_sets (rtx insn)
 	sets[i].dest = dest = XEXP (dest, 0);
 
       /* We don't know how to record anything but REG or MEM.  */
-      if (GET_CODE (dest) == REG
+      if (REG_P (dest)
 	  || (GET_CODE (dest) == MEM && cselib_record_memory))
         {
 	  rtx src = sets[i].src;
@@ -1303,7 +1303,7 @@ cselib_record_sets (rtx insn)
       for (i = 0; i < n_sets; i++)
 	{
 	  rtx dest = sets[i].dest;
-	  if (GET_CODE (dest) == REG || GET_CODE (dest) == MEM)
+	  if (REG_P (dest) || GET_CODE (dest) == MEM)
 	    {
 	      int j;
 	      for (j = i + 1; j < n_sets; j++)
@@ -1320,7 +1320,7 @@ cselib_record_sets (rtx insn)
   for (i = 0; i < n_sets; i++)
     {
       rtx dest = sets[i].dest;
-      if (GET_CODE (dest) == REG
+      if (REG_P (dest)
 	  || (GET_CODE (dest) == MEM && cselib_record_memory))
 	cselib_record_set (dest, sets[i].src_elt, sets[i].dest_addr_elt);
     }

@@ -821,7 +821,7 @@ df_ref_record (struct df *df, rtx reg, rtx *loc, rtx insn,
 {
   unsigned int regno;
 
-  if (GET_CODE (reg) != REG && GET_CODE (reg) != SUBREG)
+  if (!REG_P (reg) && GET_CODE (reg) != SUBREG)
     abort ();
 
   /* For the reg allocator we are interested in some SUBREG rtx's, but not
@@ -937,8 +937,8 @@ df_def_record_1 (struct df *df, rtx x, basic_block bb, rtx insn)
       flags |= DF_REF_READ_WRITE;
     }
 
-  if (GET_CODE (dst) == REG
-      || (GET_CODE (dst) == SUBREG && GET_CODE (SUBREG_REG (dst)) == REG))
+  if (REG_P (dst)
+      || (GET_CODE (dst) == SUBREG && REG_P (SUBREG_REG (dst))))
     df_ref_record (df, dst, loc, insn, DF_REF_REG_DEF, flags);
 }
 
@@ -1013,7 +1013,7 @@ df_uses_record (struct df *df, rtx *loc, enum df_ref_type ref_type,
       /* While we're here, optimize this case.  */
 
       /* In case the SUBREG is not of a REG, do not optimize.  */
-      if (GET_CODE (SUBREG_REG (x)) != REG)
+      if (!REG_P (SUBREG_REG (x)))
 	{
 	  loc = &SUBREG_REG (x);
 	  df_uses_record (df, loc, ref_type, bb, insn, flags);

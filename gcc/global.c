@@ -849,7 +849,7 @@ global_conflicts (void)
 			{
 			  rtx set = XVECEXP (PATTERN (insn), 0, i);
 			  if (GET_CODE (set) == SET
-			      && GET_CODE (SET_DEST (set)) != REG
+			      && !REG_P (SET_DEST (set))
 			      && !rtx_equal_p (reg, SET_DEST (set))
 			      && reg_overlap_mentioned_p (reg, SET_DEST (set)))
 			    used_in_output = 1;
@@ -896,11 +896,11 @@ expand_preferences (void)
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn)
 	&& (set = single_set (insn)) != 0
-	&& GET_CODE (SET_DEST (set)) == REG
+	&& REG_P (SET_DEST (set))
 	&& reg_allocno[REGNO (SET_DEST (set))] >= 0)
       for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	if (REG_NOTE_KIND (link) == REG_DEAD
-	    && GET_CODE (XEXP (link, 0)) == REG
+	    && REG_P (XEXP (link, 0))
 	    && reg_allocno[REGNO (XEXP (link, 0))] >= 0
 	    && ! CONFLICTP (reg_allocno[REGNO (SET_DEST (set))],
 			    reg_allocno[REGNO (XEXP (link, 0))]))
@@ -1465,7 +1465,7 @@ mark_reg_store (rtx reg, rtx setter, void *data ATTRIBUTE_UNUSED)
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
 
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     return;
 
   regs_set[n_regs_set++] = reg;
@@ -1522,7 +1522,7 @@ mark_reg_conflicts (rtx reg)
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
 
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     return;
 
   regno = REGNO (reg);
@@ -1625,9 +1625,9 @@ set_preference (rtx dest, rtx src)
   /* Get the reg number for both SRC and DEST.
      If neither is a reg, give up.  */
 
-  if (GET_CODE (src) == REG)
+  if (REG_P (src))
     src_regno = REGNO (src);
-  else if (GET_CODE (src) == SUBREG && GET_CODE (SUBREG_REG (src)) == REG)
+  else if (GET_CODE (src) == SUBREG && REG_P (SUBREG_REG (src)))
     {
       src_regno = REGNO (SUBREG_REG (src));
 
@@ -1643,9 +1643,9 @@ set_preference (rtx dest, rtx src)
   else
     return;
 
-  if (GET_CODE (dest) == REG)
+  if (REG_P (dest))
     dest_regno = REGNO (dest);
-  else if (GET_CODE (dest) == SUBREG && GET_CODE (SUBREG_REG (dest)) == REG)
+  else if (GET_CODE (dest) == SUBREG && REG_P (SUBREG_REG (dest)))
     {
       dest_regno = REGNO (SUBREG_REG (dest));
 
@@ -1746,7 +1746,7 @@ reg_becomes_live (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *regs_set)
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
 
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     return;
 
   regno = REGNO (reg);
@@ -1841,7 +1841,7 @@ build_insn_chain (rtx first)
 
 	      for (link = REG_NOTES (first); link; link = XEXP (link, 1))
 		if (REG_NOTE_KIND (link) == REG_DEAD
-		    && GET_CODE (XEXP (link, 0)) == REG)
+		    && REG_P (XEXP (link, 0)))
 		  reg_dies (REGNO (XEXP (link, 0)), GET_MODE (XEXP (link, 0)),
 			    c);
 
@@ -1863,7 +1863,7 @@ build_insn_chain (rtx first)
 
 	      for (link = REG_NOTES (first); link; link = XEXP (link, 1))
 		if (REG_NOTE_KIND (link) == REG_UNUSED
-		    && GET_CODE (XEXP (link, 0)) == REG)
+		    && REG_P (XEXP (link, 0)))
 		  reg_dies (REGNO (XEXP (link, 0)), GET_MODE (XEXP (link, 0)),
 			    c);
 	    }
@@ -2074,7 +2074,7 @@ mark_reg_change (rtx reg, rtx setter, void *data)
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
 
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     return;
 
   regno = REGNO (reg);

@@ -1378,7 +1378,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
     return;
 
   /* Do nothing for global register variables.  */
-  if (DECL_RTL_SET_P (decl) && GET_CODE (DECL_RTL (decl)) == REG)
+  if (DECL_RTL_SET_P (decl) && REG_P (DECL_RTL (decl)))
     {
       TREE_ASM_WRITTEN (decl) = 1;
       return;

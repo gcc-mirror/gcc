@@ -1467,7 +1467,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	  && (allows_mem
 	      || is_inout
 	      || (DECL_P (val)
-		  && GET_CODE (DECL_RTL (val)) == REG
+		  && REG_P (DECL_RTL (val))
 		  && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type))))
 	lang_hooks.mark_addressable (val);
 
@@ -1529,8 +1529,8 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
       if ((TREE_CODE (val) == INDIRECT_REF
 	   && allows_mem)
 	  || (DECL_P (val)
-	      && (allows_mem || GET_CODE (DECL_RTL (val)) == REG)
-	      && ! (GET_CODE (DECL_RTL (val)) == REG
+	      && (allows_mem || REG_P (DECL_RTL (val)))
+	      && ! (REG_P (DECL_RTL (val))
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
 	  || ! allows_reg
 	  || is_inout)
@@ -1639,7 +1639,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 		  else
 		    op = force_reg (TYPE_MODE (type), op);
 		}
-	      if (GET_CODE (op) == REG
+	      if (REG_P (op)
 		  || GET_CODE (op) == SUBREG
 		  || GET_CODE (op) == ADDRESSOF
 		  || GET_CODE (op) == CONCAT)
@@ -2333,7 +2333,7 @@ expand_end_stmt_expr (tree t)
       last_expr_alt_rtl = NULL_RTX;
       last_expr_type = void_type_node;
     }
-  else if (GET_CODE (last_expr_value) != REG && ! CONSTANT_P (last_expr_value))
+  else if (!REG_P (last_expr_value) && ! CONSTANT_P (last_expr_value))
     /* Remove any possible QUEUED.  */
     last_expr_value = protect_from_queue (last_expr_value, 0);
 
@@ -2679,7 +2679,7 @@ expand_return (tree retval)
 
   if (retval_rhs != 0
       && TYPE_MODE (TREE_TYPE (retval_rhs)) == BLKmode
-      && GET_CODE (result_rtl) == REG)
+      && REG_P (result_rtl))
     {
       int i;
       unsigned HOST_WIDE_INT bitpos, xbitpos;
@@ -2791,7 +2791,7 @@ expand_return (tree retval)
     }
   else if (retval_rhs != 0
 	   && !VOID_TYPE_P (TREE_TYPE (retval_rhs))
-	   && (GET_CODE (result_rtl) == REG
+	   && (REG_P (result_rtl)
 	       || (GET_CODE (result_rtl) == PARALLEL)))
     {
       /* Calculate the return value into a temporary (usually a pseudo
@@ -3320,7 +3320,7 @@ expand_decl (tree decl)
       if (DECL_RTL_SET_P (decl))
 	{
 	  if (GET_CODE (DECL_RTL (decl)) != MEM
-	      || GET_CODE (XEXP (DECL_RTL (decl), 0)) != REG)
+	      || !REG_P (XEXP (DECL_RTL (decl), 0)))
 	    abort ();
 	  oldaddr = XEXP (DECL_RTL (decl), 0);
 	}
@@ -3656,7 +3656,7 @@ expand_anon_union_decl (tree decl, tree cleanup, tree decl_elts)
 	  else
 	    SET_DECL_RTL (decl_elt, adjust_address_nv (x, mode, 0));
 	}
-      else if (GET_CODE (x) == REG)
+      else if (REG_P (x))
 	{
 	  if (mode == GET_MODE (x))
 	    SET_DECL_RTL (decl_elt, x);

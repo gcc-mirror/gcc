@@ -772,7 +772,7 @@ scan_loop (struct loop *loop, int flags)
 	    in_libcall++;
 	  if (! in_libcall
 	      && (set = single_set (p))
-	      && GET_CODE (SET_DEST (set)) == REG
+	      && REG_P (SET_DEST (set))
 #ifdef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
 	      && SET_DEST (set) != pic_offset_table_rtx
 #endif
@@ -877,7 +877,7 @@ scan_loop (struct loop *loop, int flags)
 	      else if (insert_temp
 		       && (optimize_size
 			   || ! can_copy_p (GET_MODE (SET_SRC (set)))
-			   || GET_CODE (SET_SRC (set)) == REG
+			   || REG_P (SET_SRC (set))
 			   || (CONSTANT_P (SET_SRC (set))
 			       && LEGITIMATE_CONSTANT_P (SET_SRC (set)))))
 		;
@@ -928,7 +928,7 @@ scan_loop (struct loop *loop, int flags)
 		      && ! side_effects_p (SET_SRC (set))
 		      && ! find_reg_note (p, REG_RETVAL, NULL_RTX)
 		      && (! SMALL_REGISTER_CLASSES
-			  || (! (GET_CODE (SET_SRC (set)) == REG
+			  || (! (REG_P (SET_SRC (set))
 				 && (REGNO (SET_SRC (set))
 				     < FIRST_PSEUDO_REGISTER))))
 		      /* This test is not redundant; SET_SRC (set) might be
@@ -1542,7 +1542,7 @@ combine_movables (struct loop_movables *movables, struct loop_regs *regs)
 			&& (GET_MODE_BITSIZE (GET_MODE (m->set_dest))
 			    >= GET_MODE_BITSIZE (GET_MODE (m1->set_dest)))))
 		   /* See if the source of M1 says it matches M.  */
-		   && ((GET_CODE (m1->set_src) == REG
+		   && ((REG_P (m1->set_src)
 			&& matched_regs[REGNO (m1->set_src)])
 		       || rtx_equal_for_loop_p (m->set_src, m1->set_src,
 						movables, regs))))
@@ -1677,7 +1677,7 @@ rtx_equal_for_loop_p (rtx x, rtx y, struct loop_movables *movables,
 
   /* If we have a register and a constant, they may sometimes be
      equal.  */
-  if (GET_CODE (x) == REG && regs->array[REGNO (x)].set_in_loop == -2
+  if (REG_P (x) && regs->array[REGNO (x)].set_in_loop == -2
       && CONSTANT_P (y))
     {
       for (m = movables->head; m; m = m->next)
@@ -1685,7 +1685,7 @@ rtx_equal_for_loop_p (rtx x, rtx y, struct loop_movables *movables,
 	    && rtx_equal_p (m->set_src, y))
 	  return 1;
     }
-  else if (GET_CODE (y) == REG && regs->array[REGNO (y)].set_in_loop == -2
+  else if (REG_P (y) && regs->array[REGNO (y)].set_in_loop == -2
 	   && CONSTANT_P (x))
     {
       for (m = movables->head; m; m = m->next)
@@ -2078,12 +2078,12 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 				 redundant stores that we have created.  */
 			      if (GET_CODE (next) == CALL_INSN
 				  && GET_CODE (body) == SET
-				  && GET_CODE (SET_DEST (body)) == REG
+				  && REG_P (SET_DEST (body))
 				  && (n = find_reg_note (temp, REG_EQUAL,
 							 NULL_RTX)))
 				{
 				  fn_reg = SET_SRC (body);
-				  if (GET_CODE (fn_reg) != REG)
+				  if (!REG_P (fn_reg))
 				    fn_reg = SET_DEST (body);
 				  fn_address = XEXP (n, 0);
 				  fn_address_insn = temp;
@@ -3273,7 +3273,7 @@ note_set_pseudo_multiple_uses (rtx x, rtx y ATTRIBUTE_UNUSED, void *data)
 	 || GET_CODE (x) == SUBREG)
     x = XEXP (x, 0);
 
-  if (GET_CODE (x) != REG || REGNO (x) < FIRST_PSEUDO_REGISTER)
+  if (!REG_P (x) || REGNO (x) < FIRST_PSEUDO_REGISTER)
     return;
 
   /* If we do not have usage information, or if we know the register
@@ -3470,7 +3470,7 @@ consec_sets_invariant_p (const struct loop *loop, rtx reg, int n_sets,
       this = 0;
       if (code == INSN
 	  && (set = single_set (p))
-	  && GET_CODE (SET_DEST (set)) == REG
+	  && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) == regno)
 	{
 	  this = loop_invariant_p (loop, SET_SRC (set));
@@ -3525,7 +3525,7 @@ find_single_use_in_loop (struct loop_regs *regs, rtx insn, rtx x)
 	 in SET_DEST because if a register is partially modified, it won't
 	 show up as a potential movable so we don't care how USAGE is set
 	 for it.  */
-      if (GET_CODE (SET_DEST (x)) != REG)
+      if (!REG_P (SET_DEST (x)))
 	find_single_use_in_loop (regs, insn, SET_DEST (x));
       find_single_use_in_loop (regs, insn, SET_SRC (x));
     }
@@ -3547,7 +3547,7 @@ find_single_use_in_loop (struct loop_regs *regs, rtx insn, rtx x)
 static void
 count_one_set (struct loop_regs *regs, rtx insn, rtx x, rtx *last_set)
 {
-  if (GET_CODE (x) == CLOBBER && GET_CODE (XEXP (x, 0)) == REG)
+  if (GET_CODE (x) == CLOBBER && REG_P (XEXP (x, 0)))
     /* Don't move a reg that has an explicit clobber.
        It's not worth the pain to try to do it correctly.  */
     regs->array[REGNO (XEXP (x, 0))].may_not_optimize = 1;
@@ -3560,7 +3560,7 @@ count_one_set (struct loop_regs *regs, rtx insn, rtx x, rtx *last_set)
 	     || GET_CODE (dest) == SIGN_EXTRACT
 	     || GET_CODE (dest) == STRICT_LOW_PART)
 	dest = XEXP (dest, 0);
-      if (GET_CODE (dest) == REG)
+      if (REG_P (dest))
 	{
 	  int i;
 	  int regno = REGNO (dest);
@@ -4517,7 +4517,7 @@ loop_bivs_init_find (struct loop *loop)
 	  && JUMP_LABEL (p) != 0
 	  && next_real_insn (JUMP_LABEL (p)) == next_real_insn (loop->end)
 	  && (test = get_condition_for_loop (loop, p)) != 0
-	  && GET_CODE (XEXP (test, 0)) == REG
+	  && REG_P (XEXP (test, 0))
 	  && REGNO (XEXP (test, 0)) < max_reg_before_loop
 	  && (bl = REG_IV_CLASS (ivs, REGNO (XEXP (test, 0)))) != 0
 	  && valid_initial_value_p (XEXP (test, 1), p, call_seen, loop->start)
@@ -4864,12 +4864,12 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 	 computational information.  If not, and this is a DEST_ADDR
 	 giv, at least we know that it's a pointer, though we don't know
 	 the alignment.  */
-      if (GET_CODE (v->new_reg) == REG
+      if (REG_P (v->new_reg)
 	  && v->giv_type == DEST_REG
 	  && REG_POINTER (v->dest_reg))
 	mark_reg_pointer (v->new_reg,
 			  REGNO_POINTER_ALIGN (REGNO (v->dest_reg)));
-      else if (GET_CODE (v->new_reg) == REG
+      else if (REG_P (v->new_reg)
 	       && REG_POINTER (v->src_reg))
 	{
 	  unsigned int align = REGNO_POINTER_ALIGN (REGNO (v->src_reg));
@@ -4881,8 +4881,8 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 
 	  mark_reg_pointer (v->new_reg, align);
 	}
-      else if (GET_CODE (v->new_reg) == REG
-	       && GET_CODE (v->add_val) == REG
+      else if (REG_P (v->new_reg)
+	       && REG_P (v->add_val)
 	       && REG_POINTER (v->add_val))
 	{
 	  unsigned int align = REGNO_POINTER_ALIGN (REGNO (v->add_val));
@@ -4893,7 +4893,7 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 
 	  mark_reg_pointer (v->new_reg, align);
 	}
-      else if (GET_CODE (v->new_reg) == REG && v->giv_type == DEST_ADDR)
+      else if (REG_P (v->new_reg) && v->giv_type == DEST_ADDR)
 	mark_reg_pointer (v->new_reg, 0);
 
       if (v->giv_type == DEST_ADDR)
@@ -5374,7 +5374,7 @@ check_insn_for_bivs (struct loop *loop, rtx p, int not_every_iteration,
 
   if (GET_CODE (p) == INSN
       && (set = single_set (p))
-      && GET_CODE (SET_DEST (set)) == REG)
+      && REG_P (SET_DEST (set)))
     {
       dest_reg = SET_DEST (set);
       if (REGNO (dest_reg) < max_reg_before_loop
@@ -5415,7 +5415,7 @@ check_insn_for_givs (struct loop *loop, rtx p, int not_every_iteration,
   /* Look for a general induction variable in a register.  */
   if (GET_CODE (p) == INSN
       && (set = single_set (p))
-      && GET_CODE (SET_DEST (set)) == REG
+      && REG_P (SET_DEST (set))
       && ! regs->array[REGNO (SET_DEST (set))].may_not_optimize)
     {
       rtx src_reg;
@@ -5498,7 +5498,7 @@ valid_initial_value_p (rtx x, rtx insn, int call_seen, rtx loop_start)
 
   /* Only consider pseudos we know about initialized in insns whose luids
      we know.  */
-  if (GET_CODE (x) != REG
+  if (!REG_P (x)
       || REGNO (x) >= max_reg_before_loop)
     return 0;
 
@@ -6580,9 +6580,9 @@ simplify_giv_expr (const struct loop *loop, rtx x, rtx *ext_val, int *benefit)
 
       /* Each argument must be either REG, PLUS, or MULT.  Convert REG to
 	 MULT to reduce cases.  */
-      if (GET_CODE (arg0) == REG)
+      if (REG_P (arg0))
 	arg0 = gen_rtx_MULT (mode, arg0, const1_rtx);
-      if (GET_CODE (arg1) == REG)
+      if (REG_P (arg1))
 	arg1 = gen_rtx_MULT (mode, arg1, const1_rtx);
 
       /* Now have PLUS + PLUS, PLUS + MULT, MULT + PLUS, or MULT + MULT.
@@ -6759,7 +6759,7 @@ simplify_giv_expr (const struct loop *loop, rtx x, rtx *ext_val, int *benefit)
       if (*ext_val == NULL_RTX)
 	{
 	  arg0 = simplify_giv_expr (loop, XEXP (x, 0), ext_val, benefit);
-	  if (arg0 && *ext_val == NULL_RTX && GET_CODE (arg0) == REG)
+	  if (arg0 && *ext_val == NULL_RTX && REG_P (arg0))
 	    {
 	      *ext_val = gen_rtx_fmt_e (GET_CODE (x), mode, arg0);
 	      return arg0;
@@ -7038,7 +7038,7 @@ consec_sets_giv (const struct loop *loop, int first_benefit, rtx p,
 
       if (code == INSN
 	  && (set = single_set (p))
-	  && GET_CODE (SET_DEST (set)) == REG
+	  && REG_P (SET_DEST (set))
 	  && SET_DEST (set) == dest_reg
 	  && (general_induction_var (loop, SET_SRC (set), &src_reg,
 				     add_val, mult_val, ext_val, 0,
@@ -7759,7 +7759,7 @@ loop_regs_update (const struct loop *loop ATTRIBUTE_UNUSED, rtx seq)
     {
       rtx set = single_set (insn);
 
-      if (set && GET_CODE (SET_DEST (set)) == REG)
+      if (set && REG_P (SET_DEST (set)))
 	record_base_value (REGNO (SET_DEST (set)), SET_SRC (set), 0);
 
       insn = NEXT_INSN (insn);
@@ -8144,7 +8144,7 @@ check_dbra_loop (struct loop *loop, int insn_count)
 	      {
 		rtx set = single_set (p);
 
-		if (set && GET_CODE (SET_DEST (set)) == REG
+		if (set && REG_P (SET_DEST (set))
 		    && REGNO (SET_DEST (set)) == bl->regno)
 		  /* An insn that sets the biv is okay.  */
 		  ;
@@ -8525,7 +8525,7 @@ check_dbra_loop (struct loop *loop, int insn_count)
 		    /* If this is a set of a GIV based on the reversed biv, any
 		       REG_EQUAL notes should still be correct.  */
 		    if (! set
-			|| GET_CODE (SET_DEST (set)) != REG
+			|| !REG_P (SET_DEST (set))
 			|| (size_t) REGNO (SET_DEST (set)) >= ivs->n_regs
 			|| REG_IV_TYPE (ivs, REGNO (SET_DEST (set))) != GENERAL_INDUCT
 			|| REG_IV_INFO (ivs, REGNO (SET_DEST (set)))->src_reg != bl->biv->src_reg)
@@ -8600,7 +8600,7 @@ maybe_eliminate_biv (const struct loop *loop, struct iv_class *bl,
 	      rtx last = XEXP (note, 0);
 	      rtx set = single_set (last);
 
-	      if (set && GET_CODE (SET_DEST (set)) == REG)
+	      if (set && REG_P (SET_DEST (set)))
 		{
 		  unsigned int regno = REGNO (SET_DEST (set));
 
@@ -8794,7 +8794,7 @@ maybe_eliminate_biv_1 (const struct loop *loop, rtx x, rtx insn,
 		&& (GET_CODE (v->add_val) == SYMBOL_REF
 		    || GET_CODE (v->add_val) == LABEL_REF
 		    || GET_CODE (v->add_val) == CONST
-		    || (GET_CODE (v->add_val) == REG
+		    || (REG_P (v->add_val)
 			&& REG_POINTER (v->add_val))))
 	      {
 		if (! biv_elimination_giv_has_0_offset (bl->biv, v, insn))
@@ -8859,7 +8859,7 @@ maybe_eliminate_biv_1 (const struct loop *loop, rtx x, rtx insn,
 		&& (GET_CODE (v->add_val) == SYMBOL_REF
 		    || GET_CODE (v->add_val) == LABEL_REF
 		    || GET_CODE (v->add_val) == CONST
-		    || (GET_CODE (v->add_val) == REG
+		    || (REG_P (v->add_val)
 			&& REG_POINTER (v->add_val)))
 		&& ! v->ignore && ! v->maybe_dead && v->always_computable
 		&& v->mode == mode)
@@ -8948,7 +8948,7 @@ maybe_eliminate_biv_1 (const struct loop *loop, rtx x, rtx insn,
 		  return 1;
 	      }
 	}
-      else if (GET_CODE (arg) == REG || GET_CODE (arg) == MEM)
+      else if (REG_P (arg) || GET_CODE (arg) == MEM)
 	{
 	  if (loop_invariant_p (loop, arg) == 1)
 	    {
@@ -9000,7 +9000,7 @@ maybe_eliminate_biv_1 (const struct loop *loop, rtx x, rtx insn,
 
 #if 0
 	  /* Otherwise the reg compared with had better be a biv.  */
-	  if (GET_CODE (arg) != REG
+	  if (!REG_P (arg)
 	      || REG_IV_TYPE (ivs, REGNO (arg)) != BASIC_INDUCT)
 	    return 0;
 
@@ -9102,7 +9102,7 @@ record_initial (rtx dest, rtx set, void *data ATTRIBUTE_UNUSED)
   struct loop_ivs *ivs = (struct loop_ivs *) data;
   struct iv_class *bl;
 
-  if (GET_CODE (dest) != REG
+  if (!REG_P (dest)
       || REGNO (dest) >= ivs->n_regs
       || REG_IV_TYPE (ivs, REGNO (dest)) != BASIC_INDUCT)
     return;
@@ -9131,7 +9131,7 @@ update_reg_last_use (rtx x, rtx insn)
      and hence this insn will never be the last use of x.
      ???? This comment is not correct.  See for example loop_givs_reduce.
      This may insert an insn before another new insn.  */
-  if (GET_CODE (x) == REG && REGNO (x) < max_reg_before_loop
+  if (REG_P (x) && REGNO (x) < max_reg_before_loop
       && INSN_UID (insn) < max_uid_for_loop
       && REGNO_LAST_LUID (REGNO (x)) < INSN_LUID (insn))
     {
@@ -9239,7 +9239,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 	  op0 = XEXP (op0, 0);
 	  continue;
 	}
-      else if (GET_CODE (op0) != REG)
+      else if (!REG_P (op0))
 	break;
 
       /* Go back to the previous insn.  Stop if it is not an INSN.  We also
@@ -9655,7 +9655,7 @@ loop_regs_scan (const struct loop *loop, int extra_size)
 	      rtx op, reg;
 
 	      if (GET_CODE (op = XEXP (link, 0)) == USE
-		  && GET_CODE (reg = XEXP (op, 0)) == REG
+		  && REG_P (reg = XEXP (op, 0))
 		  && rtx_varies_p (reg, 1))
 		regs->array[REGNO (reg)].may_not_optimize = 1;
 	    }
@@ -9889,7 +9889,7 @@ load_mems (const struct loop *loop)
 	      if (set
 		  /* @@@ This test is _way_ too conservative.  */
 		  && ! maybe_never
-		  && GET_CODE (SET_DEST (set)) == REG
+		  && REG_P (SET_DEST (set))
 		  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
 		  && REGNO (SET_DEST (set)) < last_max_reg
 		  && regs->array[REGNO (SET_DEST (set))].n_times_set == 1
@@ -9903,7 +9903,7 @@ load_mems (const struct loop *loop)
 		 to untangle things for the BIV detection code.  */
 	      if (set
 		  && ! maybe_never
-		  && GET_CODE (SET_SRC (set)) == REG
+		  && REG_P (SET_SRC (set))
 		  && REGNO (SET_SRC (set)) >= FIRST_PSEUDO_REGISTER
 		  && REGNO (SET_SRC (set)) < last_max_reg
 		  && regs->array[REGNO (SET_SRC (set))].n_times_set == 1
@@ -9954,7 +9954,7 @@ load_mems (const struct loop *loop)
 		{
 		  if (CONSTANT_P (equiv->loc))
 		    const_equiv = equiv;
-		  else if (GET_CODE (equiv->loc) == REG
+		  else if (REG_P (equiv->loc)
 			   /* Extending hard register lifetimes causes crash
 			      on SRC targets.  Doing so on non-SRC is
 			      probably also not good idea, since we most
@@ -10098,7 +10098,7 @@ try_copy_prop (const struct loop *loop, rtx replacement, unsigned int regno)
       /* Is this the initializing insn?  */
       set = single_set (insn);
       if (set
-	  && GET_CODE (SET_DEST (set)) == REG
+	  && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) == regno)
 	{
 	  if (init_insn)
@@ -10208,9 +10208,9 @@ try_swap_copy_prop (const struct loop *loop, rtx replacement,
       /* Search for the insn that copies REGNO to NEW_REGNO?  */
       if (INSN_P (insn)
 	  && (set = single_set (insn))
-	  && GET_CODE (SET_DEST (set)) == REG
+	  && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) == new_regno
-	  && GET_CODE (SET_SRC (set)) == REG
+	  && REG_P (SET_SRC (set))
 	  && REGNO (SET_SRC (set)) == regno)
 	break;
     }
@@ -10228,7 +10228,7 @@ try_swap_copy_prop (const struct loop *loop, rtx replacement,
 
       if (INSN_P (insn)
 	  && (prev_set = single_set (prev_insn))
-	  && GET_CODE (SET_DEST (prev_set)) == REG
+	  && REG_P (SET_DEST (prev_set))
 	  && REGNO (SET_DEST (prev_set)) == regno)
 	{
 	  /* We have:

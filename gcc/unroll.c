@@ -1460,7 +1460,7 @@ precondition_loop_p (const struct loop *loop, rtx *initial_value,
      against max_reg_before_loop to make sure that the register is in
      the range covered by loop_invariant_p.  If it isn't, then it is
      most likely a biv/giv which by definition are not invariant.  */
-  if ((GET_CODE (loop_info->final_value) == REG
+  if ((REG_P (loop_info->final_value)
        && REGNO (loop_info->final_value) >= max_reg_before_loop)
       || (GET_CODE (loop_info->final_value) == PLUS
 	  && REGNO (XEXP (loop_info->final_value, 0)) >= max_reg_before_loop)
@@ -1651,7 +1651,7 @@ calculate_giv_inc (rtx pattern, rtx src_insn, unsigned int regno)
 
   /* Check that the source register is the same as the register we expected
      to see as the source.  If not, something is seriously wrong.  */
-  if (GET_CODE (XEXP (SET_SRC (pattern), 0)) != REG
+  if (!REG_P (XEXP (SET_SRC (pattern), 0))
       || REGNO (XEXP (SET_SRC (pattern), 0)) != regno)
     {
       /* Some machines (e.g. the romp), may emit two add instructions for
@@ -1792,7 +1792,7 @@ copy_loop_body (struct loop *loop, rtx copy_start, rtx copy_end,
 	     SET_DEST to a new register.  */
 
 	  if ((set = single_set (insn))
-	      && GET_CODE (SET_DEST (set)) == REG
+	      && REG_P (SET_DEST (set))
 	      && addr_combined_regs[REGNO (SET_DEST (set))])
 	    {
 	      struct iv_class *bl;
@@ -1840,7 +1840,7 @@ copy_loop_body (struct loop *loop, rtx copy_start, rtx copy_end,
 
 			/* tv->dest_reg will be either a bare register,
 			   or else a register plus a constant.  */
-			if (GET_CODE (tv->dest_reg) == REG)
+			if (REG_P (tv->dest_reg))
 			  dest_reg = tv->dest_reg;
 			else
 			  dest_reg = XEXP (tv->dest_reg, 0);
@@ -1886,7 +1886,7 @@ copy_loop_body (struct loop *loop, rtx copy_start, rtx copy_end,
 	  dest_reg_was_split = 0;
 
 	  if ((set = single_set (insn))
-	      && GET_CODE (SET_DEST (set)) == REG
+	      && REG_P (SET_DEST (set))
 	      && splittable_regs[REGNO (SET_DEST (set))])
 	    {
 	      unsigned int regno = REGNO (SET_DEST (set));
@@ -2517,7 +2517,7 @@ find_splittable_regs (const struct loop *loop,
 	 PLUS, we don't know how to split it.  */
       for (v = bl->biv; biv_splittable && v; v = v->next_iv)
 	if ((tem = single_set (v->insn)) == 0
-	    || GET_CODE (SET_DEST (tem)) != REG
+	    || !REG_P (SET_DEST (tem))
 	    || REGNO (SET_DEST (tem)) != bl->regno
 	    || GET_CODE (SET_SRC (tem)) != PLUS)
 	  biv_splittable = 0;
@@ -2539,7 +2539,7 @@ find_splittable_regs (const struct loop *loop,
 		 register, or it isn't invariant, then we must create a new
 		 pseudo reg to hold the initial value of the biv.  */
 
-	      if (GET_CODE (bl->initial_value) == REG
+	      if (REG_P (bl->initial_value)
 		  && (REGNO (bl->initial_value) == bl->regno
 		      || REGNO (bl->initial_value) < FIRST_PSEUDO_REGISTER
 		      || ! loop_invariant_p (loop, bl->initial_value)))
@@ -2742,7 +2742,7 @@ find_splittable_givs (const struct loop *loop, struct iv_class *bl,
 
 	  if (splittable_regs[bl->regno])
 	    biv_initial_value = splittable_regs[bl->regno];
-	  else if (GET_CODE (bl->initial_value) != REG
+	  else if (!REG_P (bl->initial_value)
 		   || (REGNO (bl->initial_value) != bl->regno
 		       && REGNO (bl->initial_value) >= FIRST_PSEUDO_REGISTER))
 	    biv_initial_value = bl->initial_value;
@@ -2786,9 +2786,9 @@ find_splittable_givs (const struct loop *loop, struct iv_class *bl,
 		 is going before the loop start.  */
 	      if (unroll_type == UNROLL_COMPLETELY
 		  && GET_CODE (value) != CONST_INT
-		  && GET_CODE (value) != REG
+		  && !REG_P (value)
 		  && (GET_CODE (value) != PLUS
-		      || GET_CODE (XEXP (value, 0)) != REG
+		      || !REG_P (XEXP (value, 0))
 		      || GET_CODE (XEXP (value, 1)) != CONST_INT))
 		{
 		  rtx tem = gen_reg_rtx (v->mode);
@@ -2827,7 +2827,7 @@ find_splittable_givs (const struct loop *loop, struct iv_class *bl,
 	 a splittable register.  Don't need to do anything for address givs
 	 where this may not be a register.  */
 
-      if (GET_CODE (v->new_reg) == REG)
+      if (REG_P (v->new_reg))
 	{
 	  int count = 1;
 	  if (! v->ignore)
@@ -2844,7 +2844,7 @@ find_splittable_givs (const struct loop *loop, struct iv_class *bl,
 
 	  if (GET_CODE (v->dest_reg) == CONST_INT)
 	    regnum = -1;
-	  else if (GET_CODE (v->dest_reg) != REG)
+	  else if (!REG_P (v->dest_reg))
 	    regnum = REGNO (XEXP (v->dest_reg, 0));
 	  else
 	    regnum = REGNO (v->dest_reg);
@@ -3211,8 +3211,8 @@ subtract_reg_term (rtx op, rtx reg)
 static rtx
 find_common_reg_term (rtx op0, rtx op1)
 {
-  if ((GET_CODE (op0) == REG || GET_CODE (op0) == PLUS)
-      && (GET_CODE (op1) == REG || GET_CODE (op1) == PLUS))
+  if ((REG_P (op0) || GET_CODE (op0) == PLUS)
+      && (REG_P (op1) || GET_CODE (op1) == PLUS))
     {
       rtx op00;
       rtx op01;
@@ -3358,7 +3358,7 @@ loop_iterations (struct loop *loop)
   iteration_var = XEXP (comparison, 0);
   comparison_value = XEXP (comparison, 1);
 
-  if (GET_CODE (iteration_var) != REG)
+  if (!REG_P (iteration_var))
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
@@ -3420,7 +3420,7 @@ loop_iterations (struct loop *loop)
   /* Try swapping the comparison to identify a suitable iv.  */
   if (REG_IV_TYPE (ivs, REGNO (iteration_var)) != BASIC_INDUCT
       && REG_IV_TYPE (ivs, REGNO (iteration_var)) != GENERAL_INDUCT
-      && GET_CODE (comparison_value) == REG
+      && REG_P (comparison_value)
       && REGNO (comparison_value) < ivs->n_regs)
     {
       rtx temp = comparison_value;
@@ -3568,7 +3568,7 @@ loop_iterations (struct loop *loop)
      its value from the insns before the start of the loop.  */
 
   final_value = comparison_value;
-  if (GET_CODE (comparison_value) == REG
+  if (REG_P (comparison_value)
       && loop_invariant_p (loop, comparison_value))
     {
       final_value = loop_find_equiv_value (loop, comparison_value);
@@ -3713,7 +3713,7 @@ loop_iterations (struct loop *loop)
       /* If we have a REG, check to see if REG holds a constant value.  */
       /* ??? Other RTL, such as (neg (reg)) is possible here, but it isn't
 	 clear if it is worthwhile to try to handle such RTL.  */
-      if (GET_CODE (increment) == REG || GET_CODE (increment) == SUBREG)
+      if (REG_P (increment) || GET_CODE (increment) == SUBREG)
 	increment = loop_find_equiv_value (loop, increment);
 
       if (GET_CODE (increment) != CONST_INT)

@@ -69,7 +69,7 @@ flow_active_insn_p (rtx insn)
      function.  If we allow it to be skipped, we introduce the
      possibility for register livetime aborts.  */
   if (GET_CODE (PATTERN (insn)) == CLOBBER
-      && GET_CODE (XEXP (PATTERN (insn), 0)) == REG
+      && REG_P (XEXP (PATTERN (insn), 0))
       && REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))
     return true;
 

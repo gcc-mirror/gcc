@@ -857,7 +857,7 @@ set_reg_attrs_from_mem (rtx reg, rtx mem)
 void
 set_reg_attrs_for_parm (rtx parm_rtx, rtx mem)
 {
-  if (GET_CODE (parm_rtx) == REG)
+  if (REG_P (parm_rtx))
     set_reg_attrs_from_mem (parm_rtx, mem);
   else if (GET_CODE (parm_rtx) == PARALLEL)
     {
@@ -867,7 +867,7 @@ set_reg_attrs_for_parm (rtx parm_rtx, rtx mem)
       for (; i < XVECLEN (parm_rtx, 0); i++)
 	{
 	  rtx x = XVECEXP (parm_rtx, 0, i);
-	  if (GET_CODE (XEXP (x, 0)) == REG)
+	  if (REG_P (XEXP (x, 0)))
 	    REG_ATTRS (XEXP (x, 0))
 	      = get_reg_attrs (MEM_EXPR (mem),
 			       INTVAL (XEXP (x, 1)));
@@ -884,7 +884,7 @@ set_decl_rtl (tree t, rtx x)
   if (!x)
     return;
   /* For register, we maintain the reverse information too.  */
-  if (GET_CODE (x) == REG)
+  if (REG_P (x))
     REG_ATTRS (x) = get_reg_attrs (t, 0);
   else if (GET_CODE (x) == SUBREG)
     REG_ATTRS (SUBREG_REG (x))
@@ -918,7 +918,7 @@ set_decl_incoming_rtl (tree t, rtx x)
   if (!x)
     return;
   /* For register, we maintain the reverse information too.  */
-  if (GET_CODE (x) == REG)
+  if (REG_P (x))
     REG_ATTRS (x) = get_reg_attrs (t, 0);
   else if (GET_CODE (x) == SUBREG)
     REG_ATTRS (SUBREG_REG (x))
@@ -961,7 +961,7 @@ mark_user_reg (rtx reg)
       REG_USERVAR_P (XEXP (reg, 0)) = 1;
       REG_USERVAR_P (XEXP (reg, 1)) = 1;
     }
-  else if (GET_CODE (reg) == REG)
+  else if (REG_P (reg))
     REG_USERVAR_P (reg) = 1;
   else
     abort ();
@@ -1034,7 +1034,7 @@ subreg_hard_regno (rtx x, int check_mode)
   /* This is where we attempt to catch illegal subregs
      created by the compiler.  */
   if (GET_CODE (x) != SUBREG
-      || GET_CODE (reg) != REG)
+      || !REG_P (reg))
     abort ();
   base_regno = REGNO (reg);
   if (base_regno >= FIRST_PSEUDO_REGISTER)
@@ -1121,7 +1121,7 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
       else if (msize < xsize)
 	return gen_rtx_fmt_e (GET_CODE (x), mode, XEXP (x, 0));
     }
-  else if (GET_CODE (x) == SUBREG || GET_CODE (x) == REG
+  else if (GET_CODE (x) == SUBREG || REG_P (x)
 	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR
 	   || GET_CODE (x) == CONST_DOUBLE || GET_CODE (x) == CONST_INT)
     return simplify_gen_subreg (mode, x, innermode, offset);
@@ -1387,7 +1387,7 @@ operand_subword_force (rtx op, unsigned int offset, enum machine_mode mode)
     {
       /* If this is a register which can not be accessed by words, copy it
 	 to a pseudo register.  */
-      if (GET_CODE (op) == REG)
+      if (REG_P (op))
 	op = copy_to_reg (op);
       else
 	op = force_reg (mode, op);
@@ -2784,9 +2784,9 @@ make_safe_from (rtx x, rtx other)
  done:
   if ((GET_CODE (other) == MEM
        && ! CONSTANT_P (x)
-       && GET_CODE (x) != REG
+       && !REG_P (x)
        && GET_CODE (x) != SUBREG)
-      || (GET_CODE (other) == REG
+      || (REG_P (other)
 	  && (REGNO (other) < FIRST_PSEUDO_REGISTER
 	      || reg_mentioned_p (other, x))))
     {

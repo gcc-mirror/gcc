@@ -466,7 +466,7 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object)
      operands look similar.  */
 
   if (x == from
-      || (GET_CODE (x) == REG && GET_CODE (from) == REG
+      || (REG_P (x) && REG_P (from)
 	  && GET_MODE (x) == GET_MODE (from)
 	  && REGNO (x) == REGNO (from))
       || (GET_CODE (x) == GET_CODE (from) && GET_MODE (x) == GET_MODE (from)
@@ -755,9 +755,9 @@ find_single_use_1 (rtx dest, rtx *loc)
 	 need just check the source.  */
       if (GET_CODE (SET_DEST (x)) != CC0
 	  && GET_CODE (SET_DEST (x)) != PC
-	  && GET_CODE (SET_DEST (x)) != REG
+	  && !REG_P (SET_DEST (x))
 	  && ! (GET_CODE (SET_DEST (x)) == SUBREG
-		&& GET_CODE (SUBREG_REG (SET_DEST (x))) == REG
+		&& REG_P (SUBREG_REG (SET_DEST (x)))
 		&& (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
 		      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 		    == ((GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
@@ -783,7 +783,7 @@ find_single_use_1 (rtx dest, rtx *loc)
       if (fmt[i] == 'e')
 	{
 	  if (dest == XEXP (x, i)
-	      || (GET_CODE (dest) == REG && GET_CODE (XEXP (x, i)) == REG
+	      || (REG_P (dest) && REG_P (XEXP (x, i))
 		  && REGNO (dest) == REGNO (XEXP (x, i))))
 	    this_result = loc;
 	  else
@@ -802,8 +802,8 @@ find_single_use_1 (rtx dest, rtx *loc)
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    {
 	      if (XVECEXP (x, i, j) == dest
-		  || (GET_CODE (dest) == REG
-		      && GET_CODE (XVECEXP (x, i, j)) == REG
+		  || (REG_P (dest)
+		      && REG_P (XVECEXP (x, i, j))
 		      && REGNO (XVECEXP (x, i, j)) == REGNO (dest)))
 		this_result = loc;
 	      else
@@ -860,7 +860,7 @@ find_single_use (rtx dest, rtx insn, rtx *ploc)
     }
 #endif
 
-  if (reload_completed || reload_in_progress || GET_CODE (dest) != REG)
+  if (reload_completed || reload_in_progress || !REG_P (dest))
     return 0;
 
   for (next = next_nonnote_insn (insn);
@@ -1043,7 +1043,7 @@ register_operand (rtx op, enum machine_mode mode)
 	return general_operand (op, mode);
 
 #ifdef CANNOT_CHANGE_MODE_CLASS
-      if (GET_CODE (sub) == REG
+      if (REG_P (sub)
 	  && REGNO (sub) < FIRST_PSEUDO_REGISTER
 	  && REG_CANNOT_CHANGE_MODE_P (REGNO (sub), GET_MODE (sub), mode)
 	  && GET_MODE_CLASS (GET_MODE (sub)) != MODE_COMPLEX_INT
@@ -1067,7 +1067,7 @@ register_operand (rtx op, enum machine_mode mode)
 
   /* We don't consider registers whose class is NO_REGS
      to be a register operand.  */
-  return (GET_CODE (op) == REG
+  return (REG_P (op)
 	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 }
@@ -1090,7 +1090,7 @@ scratch_operand (rtx op, enum machine_mode mode)
     return 0;
 
   return (GET_CODE (op) == SCRATCH
-	  || (GET_CODE (op) == REG
+	  || (REG_P (op)
 	      && REGNO (op) < FIRST_PSEUDO_REGISTER));
 }
 
@@ -1209,7 +1209,7 @@ nonmemory_operand (rtx op, enum machine_mode mode)
 
   /* We don't consider registers whose class is NO_REGS
      to be a register operand.  */
-  return (GET_CODE (op) == REG
+  return (REG_P (op)
 	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 }
@@ -2303,7 +2303,7 @@ constrain_operands (int strict)
 
 	  if (GET_CODE (op) == SUBREG)
 	    {
-	      if (GET_CODE (SUBREG_REG (op)) == REG
+	      if (REG_P (SUBREG_REG (op))
 		  && REGNO (SUBREG_REG (op)) < FIRST_PSEUDO_REGISTER)
 		offset = subreg_regno_offset (REGNO (SUBREG_REG (op)),
 					      GET_MODE (SUBREG_REG (op)),
@@ -2415,7 +2415,7 @@ constrain_operands (int strict)
 		   but the hard reg is not in the class GENERAL_REGS.  */
 		if (strict < 0
 		    || GENERAL_REGS == ALL_REGS
-		    || GET_CODE (op) != REG
+		    || !REG_P (op)
 		    || (reload_in_progress
 			&& REGNO (op) >= FIRST_PSEUDO_REGISTER)
 		    || reg_fits_class_p (op, GENERAL_REGS, offset, mode))
@@ -2447,7 +2447,7 @@ constrain_operands (int strict)
 		else if (strict < 0 && CONSTANT_P (op))
 		  win = 1;
 		/* During reload, accept a pseudo  */
-		else if (reload_in_progress && GET_CODE (op) == REG
+		else if (reload_in_progress && REG_P (op)
 			 && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 		  win = 1;
 		break;
@@ -2517,7 +2517,7 @@ constrain_operands (int strict)
 			|| (strict < 0
 			    && !(CONSTANT_P (op) || GET_CODE (op) == MEM))
 			|| (reload_in_progress
-			    && !(GET_CODE (op) == REG
+			    && !(REG_P (op)
 				 && REGNO (op) >= FIRST_PSEUDO_REGISTER))))
 		  win = 1;
 		break;
@@ -2529,7 +2529,7 @@ constrain_operands (int strict)
 		    || (strict < 0
 			&& (CONSTANT_P (op) || GET_CODE (op) == MEM))
 		    /* During reload, accept a pseudo  */
-		    || (reload_in_progress && GET_CODE (op) == REG
+		    || (reload_in_progress && REG_P (op)
 			&& REGNO (op) >= FIRST_PSEUDO_REGISTER))
 		  win = 1;
 		break;
@@ -2544,10 +2544,10 @@ constrain_operands (int strict)
 		    {
 		      if (strict < 0
 			  || (strict == 0
-			      && GET_CODE (op) == REG
+			      && REG_P (op)
 			      && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 			  || (strict == 0 && GET_CODE (op) == SCRATCH)
-			  || (GET_CODE (op) == REG
+			  || (REG_P (op)
 			      && reg_fits_class_p (op, class, offset, mode)))
 		        win = 1;
 		    }
@@ -2562,7 +2562,7 @@ constrain_operands (int strict)
 				  into mem.  */
 			       || (strict < 0 && CONSTANT_P (op))
 			       /* During reload, accept a pseudo  */
-			       || (reload_in_progress && GET_CODE (op) == REG
+			       || (reload_in_progress && REG_P (op)
 				   && REGNO (op) >= FIRST_PSEUDO_REGISTER)))
 		    win = 1;
 		  else if (EXTRA_ADDRESS_CONSTRAINT (c, p)
@@ -2596,7 +2596,7 @@ constrain_operands (int strict)
 		 because we would often report failure when we have
 		 two memory operands, one of which was formerly a REG.  */
 	      if (earlyclobber[eopno]
-		  && GET_CODE (recog_data.operand[eopno]) == REG)
+		  && REG_P (recog_data.operand[eopno]))
 		for (opno = 0; opno < recog_data.n_operands; opno++)
 		  if ((GET_CODE (recog_data.operand[opno]) == MEM
 		       || recog_data.operand_type[opno] != OP_OUT)

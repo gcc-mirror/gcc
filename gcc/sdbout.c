@@ -790,7 +790,7 @@ sdbout_symbol (tree decl, int local)
 	 If DECL was from an inline function, then its rtl
 	 is not identically the rtl that was used in this
 	 particular compilation.  */
-      if (GET_CODE (value) == REG)
+      if (REG_P (value))
 	{
 	  regno = REGNO (value);
 	  if (regno >= FIRST_PSEUDO_REGISTER)
@@ -800,7 +800,7 @@ sdbout_symbol (tree decl, int local)
 	{
 	  while (GET_CODE (value) == SUBREG)
 	    value = SUBREG_REG (value);
-	  if (GET_CODE (value) == REG)
+	  if (REG_P (value))
 	    {
 	      if (REGNO (value) >= FIRST_PSEUDO_REGISTER)
 		return;
@@ -868,7 +868,7 @@ sdbout_symbol (tree decl, int local)
 	}
       else if (GET_CODE (value) == MEM
 	       && (GET_CODE (XEXP (value, 0)) == MEM
-		   || (GET_CODE (XEXP (value, 0)) == REG
+		   || (REG_P (XEXP (value, 0))
 		       && REGNO (XEXP (value, 0)) != HARD_FRAME_POINTER_REGNUM
 		       && REGNO (XEXP (value, 0)) != STACK_POINTER_REGNUM)))
 	/* If the value is indirect by memory or by a register
@@ -878,7 +878,7 @@ sdbout_symbol (tree decl, int local)
 	   so all we can do is output the variable as a pointer.  */
 	{
 	  PUT_SDB_DEF (name);
-	  if (GET_CODE (XEXP (value, 0)) == REG)
+	  if (REG_P (XEXP (value, 0)))
 	    {
 	      PUT_SDB_INT_VAL (DBX_REGISTER_NUMBER (REGNO (XEXP (value, 0))));
 	      PUT_SDB_SCL (C_REG);
@@ -903,12 +903,12 @@ sdbout_symbol (tree decl, int local)
 	}
       else if (GET_CODE (value) == MEM
 	       && ((GET_CODE (XEXP (value, 0)) == PLUS
-		    && GET_CODE (XEXP (XEXP (value, 0), 0)) == REG
+		    && REG_P (XEXP (XEXP (value, 0), 0))
 		    && GET_CODE (XEXP (XEXP (value, 0), 1)) == CONST_INT)
 		   /* This is for variables which are at offset zero from
 		      the frame pointer.  This happens on the Alpha.
 		      Non-frame pointer registers are excluded above.  */
-		   || (GET_CODE (XEXP (value, 0)) == REG)))
+		   || (REG_P (XEXP (value, 0)))))
 	{
 	  /* DECL_RTL looks like (MEM (PLUS (REG...) (CONST_INT...)))
 	     or (MEM (REG...)).  We want the value of that CONST_INT
@@ -1291,7 +1291,7 @@ sdbout_parms (tree parms)
 	    else
 	      current_sym_value = 0;
 
-	    if (GET_CODE (DECL_RTL (parms)) == REG
+	    if (REG_P (DECL_RTL (parms))
 		&& REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
 	      type = DECL_ARG_TYPE (parms);
 	    else
@@ -1330,7 +1330,7 @@ sdbout_parms (tree parms)
 	    PUT_SDB_TYPE (plain_type (type));
 	    PUT_SDB_ENDEF;
 	  }
-	else if (GET_CODE (DECL_RTL (parms)) == REG)
+	else if (REG_P (DECL_RTL (parms)))
 	  {
 	    rtx best_rtl;
 	    /* Parm passed in registers and lives in registers or nowhere.  */
@@ -1361,7 +1361,7 @@ sdbout_parms (tree parms)
 	       in which case we want the value of that CONST_INT,
 	       or (MEM (REG ...)) or (MEM (MEM ...)),
 	       in which case we use a value of zero.  */
-	    if (GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG
+	    if (REG_P (XEXP (DECL_RTL (parms), 0))
 		|| GET_CODE (XEXP (DECL_RTL (parms), 0)) == MEM)
 	      current_sym_value = 0;
 	    else
@@ -1399,7 +1399,7 @@ sdbout_reg_parms (tree parms)
 
 	/* Report parms that live in registers during the function
 	   but were passed in memory.  */
-	if (GET_CODE (DECL_RTL (parms)) == REG
+	if (REG_P (DECL_RTL (parms))
 	    && REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER
 	    && PARM_PASSED_IN_MEMORY (parms))
 	  {

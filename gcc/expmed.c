@@ -417,7 +417,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		   subregs results in Severe Tire Damage.  */
 		abort ();
 	    }
-	  if (GET_CODE (op0) == REG)
+	  if (REG_P (op0))
 	    op0 = gen_rtx_SUBREG (fieldmode, op0, byte_offset);
 	  else
 	    op0 = adjust_address (op0, fieldmode, offset);
@@ -472,7 +472,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       int icode = movstrict_optab->handlers[fieldmode].insn_code;
 
       /* Get appropriate low part of the value being stored.  */
-      if (GET_CODE (value) == CONST_INT || GET_CODE (value) == REG)
+      if (GET_CODE (value) == CONST_INT || REG_P (value))
 	value = gen_lowpart (fieldmode, value);
       else if (!(GET_CODE (value) == SYMBOL_REF
 		 || GET_CODE (value) == LABEL_REF
@@ -558,7 +558,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       if (offset != 0
 	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
 	{
-	  if (GET_CODE (op0) != REG)
+	  if (!REG_P (op0))
 	    {
 	      /* Since this is a destination (lvalue), we can't copy it to a
 		 pseudo.  We can trivially remove a SUBREG that does not
@@ -597,7 +597,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && !(bitsize == 1 && GET_CODE (value) == CONST_INT)
       /* Ensure insv's size is wide enough for this field.  */
       && (GET_MODE_BITSIZE (op_mode) >= bitsize)
-      && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+      && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
 	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode))))
     {
       int xbitpos = bitpos;
@@ -666,7 +666,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	/* We can't just change the mode, because this might clobber op0,
 	   and we will need the original value of op0 if insv fails.  */
 	xop0 = gen_rtx_SUBREG (maxmode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
-      if (GET_CODE (xop0) == REG && GET_MODE (xop0) != maxmode)
+      if (REG_P (xop0) && GET_MODE (xop0) != maxmode)
 	xop0 = gen_rtx_SUBREG (maxmode, xop0, 0);
 
       /* On big-endian machines, we count bits from the most significant.
@@ -768,7 +768,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
      and a field split across two bytes.
      Such cases are not supposed to be able to occur.  */
 
-  if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+  if (REG_P (op0) || GET_CODE (op0) == SUBREG)
     {
       if (offset != 0)
 	abort ();
@@ -866,7 +866,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
 
       if (GET_MODE (value) != mode)
 	{
-	  if ((GET_CODE (value) == REG || GET_CODE (value) == SUBREG)
+	  if ((REG_P (value) || GET_CODE (value) == SUBREG)
 	      && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (value)))
 	    value = gen_lowpart (mode, value);
 	  else
@@ -885,7 +885,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
   /* Now clear the chosen bits in OP0,
      except that if VALUE is -1 we need not bother.  */
 
-  subtarget = (GET_CODE (op0) == REG || ! flag_force_mem) ? op0 : 0;
+  subtarget = (REG_P (op0) || ! flag_force_mem) ? op0 : 0;
 
   if (! all_one)
     {
@@ -924,7 +924,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
   /* Make sure UNIT isn't larger than BITS_PER_WORD, we can only handle that
      much at a time.  */
-  if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+  if (REG_P (op0) || GET_CODE (op0) == SUBREG)
     unit = BITS_PER_WORD;
   else
     unit = MIN (MEM_ALIGN (op0), BITS_PER_WORD);
@@ -1013,7 +1013,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 					GET_MODE (SUBREG_REG (op0)));
 	  offset = 0;
 	}
-      else if (GET_CODE (op0) == REG)
+      else if (REG_P (op0))
 	{
 	  word = operand_subword_force (op0, offset, GET_MODE (op0));
 	  offset = 0;
@@ -1088,7 +1088,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       op0 = SUBREG_REG (op0);
     }
 
-  if (GET_CODE (op0) == REG
+  if (REG_P (op0)
       && mode == GET_MODE (op0)
       && bitnum == 0
       && bitsize == GET_MODE_BITSIZE (GET_MODE (op0)))
@@ -1239,7 +1239,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		   subregs results in Severe Tire Damage.  */
 		goto no_subreg_mode_swap;
 	    }
-	  if (GET_CODE (op0) == REG)
+	  if (REG_P (op0))
 	    op0 = gen_rtx_SUBREG (mode1, op0, byte_offset);
 	  else
 	    op0 = adjust_address (op0, mode1, offset);
@@ -1262,7 +1262,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       unsigned int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
       unsigned int i;
 
-      if (target == 0 || GET_CODE (target) != REG)
+      if (target == 0 || !REG_P (target))
 	target = gen_reg_rtx (mode);
 
       /* Indicate for flow that the entire target reg is being set.  */
@@ -1346,7 +1346,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       if (offset != 0
 	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
 	{
-	  if (GET_CODE (op0) != REG)
+	  if (!REG_P (op0))
 	    op0 = copy_to_reg (op0);
 	  op0 = gen_rtx_SUBREG (mode_for_size (BITS_PER_WORD, MODE_INT, 0),
 		                op0, (offset * UNITS_PER_WORD));
@@ -1362,7 +1362,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     {
       if (HAVE_extzv
 	  && (GET_MODE_BITSIZE (extzv_mode) >= bitsize)
-	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+	  && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
 		&& (bitsize + bitpos > GET_MODE_BITSIZE (extzv_mode))))
 	{
 	  unsigned HOST_WIDE_INT xbitpos = bitpos, xoffset = offset;
@@ -1430,7 +1430,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	     SImode). to make it acceptable to the format of extzv.  */
 	  if (GET_CODE (xop0) == SUBREG && GET_MODE (xop0) != maxmode)
 	    goto extzv_loses;
-	  if (GET_CODE (xop0) == REG && GET_MODE (xop0) != maxmode)
+	  if (REG_P (xop0) && GET_MODE (xop0) != maxmode)
 	    xop0 = gen_rtx_SUBREG (maxmode, xop0, 0);
 
 	  /* On big-endian machines, we count bits from the most significant.
@@ -1450,7 +1450,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
 	  if (GET_MODE (xtarget) != maxmode)
 	    {
-	      if (GET_CODE (xtarget) == REG)
+	      if (REG_P (xtarget))
 		{
 		  int wider = (GET_MODE_SIZE (maxmode)
 			       > GET_MODE_SIZE (GET_MODE (xtarget)));
@@ -1496,7 +1496,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     {
       if (HAVE_extv
 	  && (GET_MODE_BITSIZE (extv_mode) >= bitsize)
-	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+	  && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
 		&& (bitsize + bitpos > GET_MODE_BITSIZE (extv_mode))))
 	{
 	  int xbitpos = bitpos, xoffset = offset;
@@ -1558,7 +1558,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	     SImode) to make it acceptable to the format of extv.  */
 	  if (GET_CODE (xop0) == SUBREG && GET_MODE (xop0) != maxmode)
 	    goto extv_loses;
-	  if (GET_CODE (xop0) == REG && GET_MODE (xop0) != maxmode)
+	  if (REG_P (xop0) && GET_MODE (xop0) != maxmode)
 	    xop0 = gen_rtx_SUBREG (maxmode, xop0, 0);
 
 	  /* On big-endian machines, we count bits from the most significant.
@@ -1579,7 +1579,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
 	  if (GET_MODE (xtarget) != maxmode)
 	    {
-	      if (GET_CODE (xtarget) == REG)
+	      if (REG_P (xtarget))
 		{
 		  int wider = (GET_MODE_SIZE (maxmode)
 			       > GET_MODE_SIZE (GET_MODE (xtarget)));
@@ -1670,7 +1670,7 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
   unsigned int total_bits = BITS_PER_WORD;
   enum machine_mode mode;
 
-  if (GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
+  if (GET_CODE (op0) == SUBREG || REG_P (op0))
     {
       /* Special treatment for a bit field split across two registers.  */
       if (bitsize + bitpos > BITS_PER_WORD)
@@ -1732,7 +1732,7 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 	  tree amount = build_int_2 (bitpos, 0);
 	  /* Maybe propagate the target for the shift.  */
 	  /* But not if we will return it--could confuse integrate.c.  */
-	  rtx subtarget = (target != 0 && GET_CODE (target) == REG ? target : 0);
+	  rtx subtarget = (target != 0 && REG_P (target) ? target : 0);
 	  if (tmode != mode) subtarget = 0;
 	  op0 = expand_shift (RSHIFT_EXPR, mode, op0, amount, subtarget, 1);
 	}
@@ -1771,7 +1771,7 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
       tree amount
 	= build_int_2 (GET_MODE_BITSIZE (mode) - (bitsize + bitpos), 0);
       /* Maybe propagate the target for the shift.  */
-      rtx subtarget = (target != 0 && GET_CODE (target) == REG ? target : 0);
+      rtx subtarget = (target != 0 && REG_P (target) ? target : 0);
       op0 = expand_shift (LSHIFT_EXPR, mode, op0, amount, subtarget, 1);
     }
 
@@ -1868,7 +1868,7 @@ extract_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
   /* Make sure UNIT isn't larger than BITS_PER_WORD, we can only handle that
      much at a time.  */
-  if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+  if (REG_P (op0) || GET_CODE (op0) == SUBREG)
     unit = BITS_PER_WORD;
   else
     unit = MIN (MEM_ALIGN (op0), BITS_PER_WORD);
@@ -1902,7 +1902,7 @@ extract_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 					GET_MODE (SUBREG_REG (op0)));
 	  offset = 0;
 	}
-      else if (GET_CODE (op0) == REG)
+      else if (REG_P (op0))
 	{
 	  word = operand_subword_force (op0, offset, GET_MODE (op0));
 	  offset = 0;
@@ -3709,13 +3709,13 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	if (rem_flag)
 	  {
 	    remainder
-	      = GET_CODE (target) == REG ? target : gen_reg_rtx (compute_mode);
+	      = REG_P (target) ? target : gen_reg_rtx (compute_mode);
 	    quotient = gen_reg_rtx (compute_mode);
 	  }
 	else
 	  {
 	    quotient
-	      = GET_CODE (target) == REG ? target : gen_reg_rtx (compute_mode);
+	      = REG_P (target) ? target : gen_reg_rtx (compute_mode);
 	    remainder = gen_reg_rtx (compute_mode);
 	  }
 
@@ -3825,13 +3825,13 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 
 	    if (rem_flag)
 	      {
-		remainder = (GET_CODE (target) == REG
+		remainder = (REG_P (target)
 			     ? target : gen_reg_rtx (compute_mode));
 		quotient = gen_reg_rtx (compute_mode);
 	      }
 	    else
 	      {
-		quotient = (GET_CODE (target) == REG
+		quotient = (REG_P (target)
 			    ? target : gen_reg_rtx (compute_mode));
 		remainder = gen_reg_rtx (compute_mode);
 	      }
@@ -3922,13 +3922,13 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	      target = gen_reg_rtx (compute_mode);
 	    if (rem_flag)
 	      {
-		remainder= (GET_CODE (target) == REG
+		remainder= (REG_P (target)
 			    ? target : gen_reg_rtx (compute_mode));
 		quotient = gen_reg_rtx (compute_mode);
 	      }
 	    else
 	      {
-		quotient = (GET_CODE (target) == REG
+		quotient = (REG_P (target)
 			    ? target : gen_reg_rtx (compute_mode));
 		remainder = gen_reg_rtx (compute_mode);
 	      }
@@ -4884,7 +4884,7 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   /* If this failed, we have to do this with set/compare/jump/set code.  */
 
-  if (GET_CODE (target) != REG
+  if (!REG_P (target)
       || reg_mentioned_p (target, op0) || reg_mentioned_p (target, op1))
     target = gen_reg_rtx (GET_MODE (target));
 

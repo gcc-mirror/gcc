@@ -648,7 +648,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	    {
 	      /* Compare promoted variables in their promoted mode.  */
 	      if (SUBREG_PROMOTED_VAR_P (temp)
-		  && GET_CODE (XEXP (temp, 0)) == REG)
+		  && REG_P (XEXP (temp, 0)))
 		temp = XEXP (temp, 0);
 	      else
 		temp = copy_to_reg (temp);

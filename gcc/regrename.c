@@ -101,7 +101,7 @@ note_sets (rtx x, rtx set ATTRIBUTE_UNUSED, void *data)
   HARD_REG_SET *pset = (HARD_REG_SET *) data;
   unsigned int regno;
   int nregs;
-  if (GET_CODE (x) != REG)
+  if (!REG_P (x))
     return;
   regno = REGNO (x);
   nregs = hard_regno_nregs[regno][GET_MODE (x)];
@@ -836,7 +836,7 @@ build_def_use (basic_block bb)
 		rtx *loc = recog_data.operand_loc[i];
 		rtx op = *loc;
 
-		if (GET_CODE (op) == REG
+		if (REG_P (op)
 		    && REGNO (op) == ORIGINAL_REGNO (op)
 		    && (recog_data.operand_type[i] == OP_IN
 			|| recog_data.operand_type[i] == OP_INOUT))
@@ -926,7 +926,7 @@ build_def_use (basic_block bb)
 		    rtx op = *loc;
 		    enum reg_class class = recog_op_alt[i][alt].class;
 
-		    if (GET_CODE (op) == REG
+		    if (REG_P (op)
 			&& REGNO (op) == ORIGINAL_REGNO (op))
 		      continue;
 
@@ -1659,7 +1659,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	    continue;
 
 	  /* Don't replace in asms intentionally referencing hard regs.  */
-	  if (is_asm && GET_CODE (recog_data.operand[i]) == REG
+	  if (is_asm && REG_P (recog_data.operand[i])
 	      && (REGNO (recog_data.operand[i])
 		  == ORIGINAL_REGNO (recog_data.operand[i])))
 	    continue;

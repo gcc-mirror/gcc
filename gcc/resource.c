@@ -95,8 +95,8 @@ update_live_status (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
   int first_regno, last_regno;
   int i;
 
-  if (GET_CODE (dest) != REG
-      && (GET_CODE (dest) != SUBREG || GET_CODE (SUBREG_REG (dest)) != REG))
+  if (!REG_P (dest)
+      && (GET_CODE (dest) != SUBREG || !REG_P (SUBREG_REG (dest))))
     return;
 
   if (GET_CODE (dest) == SUBREG)
@@ -227,7 +227,7 @@ mark_referenced_resources (rtx x, struct resources *res,
       return;
 
     case SUBREG:
-      if (GET_CODE (SUBREG_REG (x)) != REG)
+      if (!REG_P (SUBREG_REG (x)))
 	mark_referenced_resources (SUBREG_REG (x), res, 0);
       else
 	{
@@ -765,7 +765,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
     case SUBREG:
       if (in_dest)
 	{
-	  if (GET_CODE (SUBREG_REG (x)) != REG)
+	  if (!REG_P (SUBREG_REG (x)))
 	    mark_set_resources (SUBREG_REG (x), res, in_dest, mark_type);
 	  else
 	    {
@@ -1038,7 +1038,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 	    {
 	      for (link = REG_NOTES (real_insn); link; link = XEXP (link, 1))
 		if (REG_NOTE_KIND (link) == REG_DEAD
-		    && GET_CODE (XEXP (link, 0)) == REG
+		    && REG_P (XEXP (link, 0))
 		    && REGNO (XEXP (link, 0)) < FIRST_PSEUDO_REGISTER)
 		  {
 		    unsigned int first_regno = REGNO (XEXP (link, 0));
@@ -1057,7 +1057,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 		 These notes will always be accurate.  */
 	      for (link = REG_NOTES (real_insn); link; link = XEXP (link, 1))
 		if (REG_NOTE_KIND (link) == REG_UNUSED
-		    && GET_CODE (XEXP (link, 0)) == REG
+		    && REG_P (XEXP (link, 0))
 		    && REGNO (XEXP (link, 0)) < FIRST_PSEUDO_REGISTER)
 		  {
 		    unsigned int first_regno = REGNO (XEXP (link, 0));

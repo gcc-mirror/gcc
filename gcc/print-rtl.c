@@ -212,7 +212,7 @@ print_rtx (rtx in_rtx)
 	   An exception is the third field of a NOTE, where it indicates
 	   that the field has several different valid contents.  */
       case '0':
-	if (i == 1 && GET_CODE (in_rtx) == REG)
+	if (i == 1 && REG_P (in_rtx))
 	  {
 	    if (REGNO (in_rtx) != ORIGINAL_REGNO (in_rtx))
 	      fprintf (outfile, " [%d]", ORIGINAL_REGNO (in_rtx));
@@ -395,10 +395,10 @@ print_rtx (rtx in_rtx)
 	    const char *name;
 
 #ifndef GENERATOR_FILE
-	    if (GET_CODE (in_rtx) == REG && value < FIRST_PSEUDO_REGISTER)
+	    if (REG_P (in_rtx) && value < FIRST_PSEUDO_REGISTER)
 	      fprintf (outfile, " %d %s", REGNO (in_rtx),
 		       reg_names[REGNO (in_rtx)]);
-	    else if (GET_CODE (in_rtx) == REG
+	    else if (REG_P (in_rtx)
 		     && value <= LAST_VIRTUAL_REGISTER)
 	      {
 		if (value == VIRTUAL_INCOMING_ARGS_REGNUM)
@@ -423,7 +423,7 @@ print_rtx (rtx in_rtx)
 	    else
 	      fprintf (outfile, " %d", value);
 
-	    if (GET_CODE (in_rtx) == REG && REG_ATTRS (in_rtx))
+	    if (REG_P (in_rtx) && REG_ATTRS (in_rtx))
 	      {
 		fputs (" [", outfile);
 		if (ORIGINAL_REGNO (in_rtx) != REGNO (in_rtx))

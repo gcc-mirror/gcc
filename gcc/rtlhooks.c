@@ -43,7 +43,7 @@ gen_lowpart_general (enum machine_mode mode, rtx x)
 
   if (result)
     return result;
-  else if (GET_CODE (x) == REG)
+  else if (REG_P (x))
     {
       /* Must be a hard reg that's not valid in MODE.  */
       result = gen_lowpart_common (mode, copy_to_reg (x));

@@ -729,9 +729,9 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
     {
       commutative_op = 1;
 
-      if (((target == 0 || GET_CODE (target) == REG)
-	   ? ((GET_CODE (op1) == REG
-	       && GET_CODE (op0) != REG)
+      if (((target == 0 || REG_P (target))
+	   ? ((REG_P (op1)
+	       && !REG_P (op0))
 	      || target == op1)
 	   : rtx_equal_p (op1, target))
 	  || GET_CODE (op0) == CONST_INT)
@@ -1225,11 +1225,11 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       xtarget = gen_reg_rtx (mode);
 
-      if (target == 0 || GET_CODE (target) != REG)
+      if (target == 0 || !REG_P (target))
 	target = xtarget;
 
       /* Indicate for flow that the entire target reg is being set.  */
-      if (GET_CODE (target) == REG)
+      if (REG_P (target))
 	emit_insn (gen_rtx_CLOBBER (VOIDmode, xtarget));
 
       /* Do the actual arithmetic.  */
@@ -1388,7 +1388,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       /* If the target is the same as one of the inputs, don't use it.  This
 	 prevents problems with the REG_EQUAL note.  */
       if (target == op0 || target == op1
-	  || (target != 0 && GET_CODE (target) != REG))
+	  || (target != 0 && !REG_P (target)))
 	target = 0;
 
       /* Multiply the two lower words to get a double-word product.
@@ -1945,7 +1945,7 @@ expand_vector_binop (enum machine_mode mode, optab binoptab, rtx op0,
 	     And storing with a SUBREG is only possible for the least
 	     significant part, hence we can't do it for big endian
 	     (unless we want to permute the evaluation order.  */
-	  if (GET_CODE (target) == REG
+	  if (REG_P (target)
 	      && (BYTES_BIG_ENDIAN
 		  ? subsize < UNITS_PER_WORD
 		  : ((i * subsize) % UNITS_PER_WORD) != 0))
@@ -2064,7 +2064,7 @@ expand_vector_unop (enum machine_mode mode, optab unoptab, rtx op0,
 	 And storing with a SUBREG is only possible for the least
 	 significant part, hence we can't do it for big endian
 	 (unless we want to permute the evaluation order.  */
-      if (GET_CODE (target) == REG
+      if (REG_P (target)
 	  && (BYTES_BIG_ENDIAN
 	      ?  subsize < UNITS_PER_WORD
 	      : ((i * subsize) % UNITS_PER_WORD) != 0))
@@ -2978,7 +2978,7 @@ expand_abs (enum machine_mode mode, rtx op0, rtx target,
 
   /* It is safe to use the target if it is the same
      as the source if this is also a pseudo register */
-  if (op0 == target && GET_CODE (op0) == REG
+  if (op0 == target && REG_P (op0)
       && REGNO (op0) >= FIRST_PSEUDO_REGISTER)
     safe = 1;
 
@@ -2986,7 +2986,7 @@ expand_abs (enum machine_mode mode, rtx op0, rtx target,
   if (target == 0 || ! safe
       || GET_MODE (target) != mode
       || (GET_CODE (target) == MEM && MEM_VOLATILE_P (target))
-      || (GET_CODE (target) == REG
+      || (REG_P (target)
 	  && REGNO (target) < FIRST_PSEUDO_REGISTER))
     target = gen_reg_rtx (mode);
 
@@ -3288,7 +3288,7 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
 {
   rtx prev, next, first, last, insn;
 
-  if (GET_CODE (target) != REG || reload_in_progress)
+  if (!REG_P (target) || reload_in_progress)
     return emit_insn (insns);
   else
     for (insn = insns; insn; insn = NEXT_INSN (insn))
@@ -3354,11 +3354,11 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
       next = NEXT_INSN (insn);
       add_insn (insn);
 
-      if (op1 && GET_CODE (op1) == REG)
+      if (op1 && REG_P (op1))
 	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_NO_CONFLICT, op1,
 					      REG_NOTES (insn));
 
-      if (op0 && GET_CODE (op0) == REG)
+      if (op0 && REG_P (op0))
 	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_NO_CONFLICT, op0,
 					      REG_NOTES (insn));
     }
@@ -3481,7 +3481,7 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
 
       next = NEXT_INSN (insn);
 
-      if (set != 0 && GET_CODE (SET_DEST (set)) == REG
+      if (set != 0 && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
 	  && (insn == insns
 	      || ((! INSN_P(insns)
@@ -4685,7 +4685,7 @@ expand_float (rtx to, rtx from, int unsignedp)
 
 	      /* Don't use TARGET if it isn't a register, is a hard register,
 		 or is the wrong mode.  */
-	      if (GET_CODE (target) != REG
+	      if (!REG_P (target)
 		  || REGNO (target) < FIRST_PSEUDO_REGISTER
 		  || GET_MODE (target) != fmode)
 		target = gen_reg_rtx (fmode);
@@ -4732,7 +4732,7 @@ expand_float (rtx to, rtx from, int unsignedp)
 	 unsigned operand, do it in a pseudo-register.  */
 
       if (GET_MODE (to) != fmode
-	  || GET_CODE (to) != REG || REGNO (to) < FIRST_PSEUDO_REGISTER)
+	  || !REG_P (to) || REGNO (to) < FIRST_PSEUDO_REGISTER)
 	target = gen_reg_rtx (fmode);
 
       /* Convert as signed integer to floating.  */

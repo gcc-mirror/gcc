@@ -1969,7 +1969,7 @@ noce_process_if_block (struct ce_if_block * ce_info)
   /* Only operate on register destinations, and even then avoid extending
      the lifetime of hard registers on small register class machines.  */
   orig_x = x;
-  if (GET_CODE (x) != REG
+  if (!REG_P (x)
       || (SMALL_REGISTER_CLASSES
 	  && REGNO (x) < FIRST_PSEUDO_REGISTER))
     {

@@ -307,7 +307,7 @@ static int may_trap_exp (rtx, int);
 
 /* Nonzero iff the address is comprised from at most 1 register.  */
 #define CONST_BASED_ADDRESS_P(x)			\
-  (GET_CODE (x) == REG					\
+  (REG_P (x)					\
    || ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS	\
 	|| (GET_CODE (x) == LO_SUM))			\
        && (CONSTANT_P (XEXP (x, 0))			\
@@ -1685,7 +1685,7 @@ find_set_reg_weight (rtx x)
   if (GET_CODE (x) == SET
       && register_operand (SET_DEST (x), VOIDmode))
     {
-      if (GET_CODE (SET_DEST (x)) == REG)
+      if (REG_P (SET_DEST (x)))
 	{
 	  if (!reg_mentioned_p (SET_DEST (x), SET_SRC (x)))
 	    return 1;

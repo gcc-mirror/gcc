@@ -1305,7 +1305,7 @@ check_live_1 (int src, rtx x)
       return 0;
     }
 
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     return 1;
 
   regno = REGNO (reg);
@@ -1382,7 +1382,7 @@ update_live_1 (int src, rtx x)
       return;
     }
 
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     return;
 
   /* Global registers are always live, so the code below does not apply

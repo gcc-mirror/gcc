@@ -1428,7 +1428,7 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
   function_section (current_function_decl);
 
 #if defined(ASM_OUTPUT_REG_PUSH)
-  if (sval && svrtx != NULL_RTX && GET_CODE (svrtx) == REG)
+  if (sval && svrtx != NULL_RTX && REG_P (svrtx))
     ASM_OUTPUT_REG_PUSH (file, REGNO (svrtx));
 #endif
 
@@ -1459,7 +1459,7 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
 #endif
 
 #if defined(ASM_OUTPUT_REG_PUSH)
-  if (sval && svrtx != NULL_RTX && GET_CODE (svrtx) == REG)
+  if (sval && svrtx != NULL_RTX && REG_P (svrtx))
     ASM_OUTPUT_REG_POP (file, REGNO (svrtx));
 #endif
 }
@@ -2275,8 +2275,8 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	if (final_sequence == 0
 	    && prescan >= 0
 	    && GET_CODE (insn) == INSN && GET_CODE (body) == SET
-	    && GET_CODE (SET_SRC (body)) == REG
-	    && GET_CODE (SET_DEST (body)) == REG
+	    && REG_P (SET_SRC (body))
+	    && REG_P (SET_DEST (body))
 	    && REGNO (SET_SRC (body)) == REGNO (SET_DEST (body)))
 	  break;
 #endif
@@ -2633,7 +2633,7 @@ alter_subreg (rtx *xp)
       if (new != 0)
 	*xp = new;
       /* Simplify_subreg can't handle some REG cases, but we have to.  */
-      else if (GET_CODE (y) == REG)
+      else if (REG_P (y))
 	{
 	  unsigned int regno = subreg_hard_regno (x, 1);
 	  *xp = gen_rtx_REG_offset (y, GET_MODE (x), regno, SUBREG_BYTE (x));
@@ -2899,7 +2899,7 @@ get_mem_expr_from_op (rtx op, int *paddressp)
 
   *paddressp = 0;
 
-  if (GET_CODE (op) == REG)
+  if (REG_P (op))
     return REG_EXPR (op);
   else if (GET_CODE (op) != MEM)
     return 0;
@@ -3218,7 +3218,7 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
   /* If X is a pseudo-register, abort now rather than writing trash to the
      assembler file.  */
 
-  if (x && GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER)
+  if (x && REG_P (x) && REGNO (x) >= FIRST_PSEUDO_REGISTER)
     abort ();
 
   PRINT_OPERAND (asm_out_file, x, code);
@@ -3756,7 +3756,7 @@ only_leaf_regs_used (void)
 
   if (current_function_uses_pic_offset_table
       && pic_offset_table_rtx != 0
-      && GET_CODE (pic_offset_table_rtx) == REG
+      && REG_P (pic_offset_table_rtx)
       && ! permitted_reg_in_leaf_functions[REGNO (pic_offset_table_rtx)])
     return 0;
 
@@ -3800,7 +3800,7 @@ leaf_renumber_regs_insn (rtx in_rtx)
      renumbered_regs would be 1 for an output-register;
      they  */
 
-  if (GET_CODE (in_rtx) == REG)
+  if (REG_P (in_rtx))
     {
       int newreg;
 

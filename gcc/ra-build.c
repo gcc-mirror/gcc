@@ -259,13 +259,13 @@ copy_insn_p (rtx insn, rtx *source, rtx *target)
      coalescing (the check for this is in remember_move() below).  */
   while (GET_CODE (d) == STRICT_LOW_PART)
     d = XEXP (d, 0);
-  if (GET_CODE (d) != REG
-      && (GET_CODE (d) != SUBREG || GET_CODE (SUBREG_REG (d)) != REG))
+  if (!REG_P (d)
+      && (GET_CODE (d) != SUBREG || !REG_P (SUBREG_REG (d))))
     return 0;
   while (GET_CODE (s) == STRICT_LOW_PART)
     s = XEXP (s, 0);
-  if (GET_CODE (s) != REG
-      && (GET_CODE (s) != SUBREG || GET_CODE (SUBREG_REG (s)) != REG))
+  if (!REG_P (s)
+      && (GET_CODE (s) != SUBREG || !REG_P (SUBREG_REG (s))))
     return 0;
 
   s_regno = (unsigned) REGNO (GET_CODE (s) == SUBREG ? SUBREG_REG (s) : s);
@@ -563,7 +563,7 @@ remember_move (rtx insn)
 	 Those would be difficult to coalesce (we would need to implement
 	 handling of all the subwebs in the allocator, including that such
 	 subwebs could be source and target of coalescing).  */
-      if (GET_CODE (s) == REG && GET_CODE (d) == REG)
+      if (REG_P (s) && REG_P (d))
 	{
 	  struct move *m = ra_calloc (sizeof (struct move));
 	  struct move_list *ml;
@@ -1204,7 +1204,7 @@ prune_hardregs_for_mode (HARD_REG_SET *s, enum machine_mode mode)
 static void
 init_one_web_common (struct web *web, rtx reg)
 {
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     abort ();
   /* web->id isn't initialized here.  */
   web->regno = REGNO (reg);
@@ -2476,7 +2476,7 @@ contains_pseudo (rtx x)
   int i;
   if (GET_CODE (x) == SUBREG)
     x = SUBREG_REG (x);
-  if (GET_CODE (x) == REG)
+  if (REG_P (x))
     {
       if (REGNO (x) >= FIRST_PSEUDO_REGISTER)
         return 1;
@@ -2806,7 +2806,7 @@ handle_asm_insn (struct df *df, rtx insn)
     for (i = 0; i < XVECLEN (pat, 0); i++)
       {
 	rtx t = XVECEXP (pat, 0, i);
-	if (GET_CODE (t) == CLOBBER && GET_CODE (XEXP (t, 0)) == REG
+	if (GET_CODE (t) == CLOBBER && REG_P (XEXP (t, 0))
 	    && REGNO (XEXP (t, 0)) < FIRST_PSEUDO_REGISTER)
 	  SET_HARD_REG_BIT (clobbered, REGNO (XEXP (t, 0)));
       }
@@ -2831,7 +2831,7 @@ handle_asm_insn (struct df *df, rtx insn)
 	     || GET_CODE (reg) == SIGN_EXTRACT
 	     || GET_CODE (reg) == STRICT_LOW_PART)
 	reg = XEXP (reg, 0);
-      if (GET_CODE (reg) != REG || REGNO (reg) < FIRST_PSEUDO_REGISTER)
+      if (!REG_P (reg) || REGNO (reg) < FIRST_PSEUDO_REGISTER)
 	continue;
 
       /* Search the web corresponding to this operand.  We depend on

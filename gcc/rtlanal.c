@@ -487,7 +487,7 @@ get_jump_table_offset (rtx insn, rtx *earliest)
     x = XEXP (x, 1);
 
   /* Search backwards and locate the expression stored in X.  */
-  for (old_x = NULL_RTX; GET_CODE (x) == REG && x != old_x;
+  for (old_x = NULL_RTX; REG_P (x) && x != old_x;
        old_x = x, x = find_last_value (x, &insn, NULL_RTX, 0))
     ;
 
@@ -505,7 +505,7 @@ get_jump_table_offset (rtx insn, rtx *earliest)
 	  if (y == pc_rtx || y == pic_offset_table_rtx)
 	    break;
 
-	  for (old_y = NULL_RTX; GET_CODE (y) == REG && y != old_y;
+	  for (old_y = NULL_RTX; REG_P (y) && y != old_y;
 	       old_y = y, y = find_last_value (y, &old_insn, NULL_RTX, 0))
 	    ;
 
@@ -518,7 +518,7 @@ get_jump_table_offset (rtx insn, rtx *earliest)
 
       x = XEXP (x, 1 - i);
 
-      for (old_x = NULL_RTX; GET_CODE (x) == REG && x != old_x;
+      for (old_x = NULL_RTX; REG_P (x) && x != old_x;
 	   old_x = x, x = find_last_value (x, &insn, NULL_RTX, 0))
 	;
     }
@@ -528,7 +528,7 @@ get_jump_table_offset (rtx insn, rtx *earliest)
     {
       x = XEXP (x, 0);
 
-      for (old_x = NULL_RTX; GET_CODE (x) == REG && x != old_x;
+      for (old_x = NULL_RTX; REG_P (x) && x != old_x;
 	   old_x = x, x = find_last_value (x, &insn, NULL_RTX, 0))
 	;
     }
@@ -540,7 +540,7 @@ get_jump_table_offset (rtx insn, rtx *earliest)
   /* Strip off the MEM.  */
   x = XEXP (x, 0);
 
-  for (old_x = NULL_RTX; GET_CODE (x) == REG && x != old_x;
+  for (old_x = NULL_RTX; REG_P (x) && x != old_x;
        old_x = x, x = find_last_value (x, &insn, NULL_RTX, 0))
     ;
 
@@ -557,7 +557,7 @@ get_jump_table_offset (rtx insn, rtx *earliest)
       old_insn = insn;
       y = XEXP (x, i);
 
-      for (old_y = NULL_RTX; GET_CODE (y) == REG && y != old_y;
+      for (old_y = NULL_RTX; REG_P (y) && y != old_y;
 	   old_y = y, y = find_last_value (y, &old_insn, NULL_RTX, 0))
 	;
 
@@ -602,7 +602,7 @@ global_reg_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
   switch (GET_CODE (x))
     {
     case SUBREG:
-      if (GET_CODE (SUBREG_REG (x)) == REG)
+      if (REG_P (SUBREG_REG (x)))
 	{
 	  if (REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
 	      && global_regs[subreg_regno (x)])
@@ -747,7 +747,7 @@ reg_mentioned_p (rtx reg, rtx in)
     {
       /* Compare registers by number.  */
     case REG:
-      return GET_CODE (reg) == REG && REGNO (in) == REGNO (reg);
+      return REG_P (reg) && REGNO (in) == REGNO (reg);
 
       /* These codes have no constituent expressions
 	 and are unique.  */
@@ -856,9 +856,9 @@ reg_referenced_p (rtx x, rtx body)
 	 it is mentioned in the destination.  */
       if (GET_CODE (SET_DEST (body)) != CC0
 	  && GET_CODE (SET_DEST (body)) != PC
-	  && GET_CODE (SET_DEST (body)) != REG
+	  && !REG_P (SET_DEST (body))
 	  && ! (GET_CODE (SET_DEST (body)) == SUBREG
-		&& GET_CODE (SUBREG_REG (SET_DEST (body))) == REG
+		&& REG_P (SUBREG_REG (SET_DEST (body)))
 		&& (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (body))))
 		      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 		    == ((GET_MODE_SIZE (GET_MODE (SET_DEST (body)))
@@ -966,7 +966,7 @@ reg_set_p (rtx reg, rtx insn)
 
 		 ??? Unless we could ensure that the CALL_INSN_FUNCTION_USAGE
 		 information holds all clobbered registers.  */
-	      && ((GET_CODE (reg) == REG
+	      && ((REG_P (reg)
 		   && REGNO (reg) < FIRST_PSEUDO_REGISTER)
 		  || GET_CODE (reg) == MEM
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
@@ -1319,7 +1319,7 @@ set_noop_p (rtx set)
       dst = SUBREG_REG (dst);
     }
 
-  return (GET_CODE (src) == REG && GET_CODE (dst) == REG
+  return (REG_P (src) && REG_P (dst)
 	  && REGNO (src) == REGNO (dst));
 }
 
@@ -1399,7 +1399,7 @@ find_last_value (rtx x, rtx *pinsn, rtx valid_to, int allow_hwreg)
 		 || ! modified_between_p (src, PREV_INSN (p), valid_to))
 		/* Reject hard registers because we don't usually want
 		   to use them; we'd rather use a pseudo.  */
-		&& (! (GET_CODE (src) == REG
+		&& (! (REG_P (src)
 		      && REGNO (src) < FIRST_PSEUDO_REGISTER) || allow_hwreg))
 	      {
 		*pinsn = p;
@@ -1463,7 +1463,7 @@ refers_to_regno_p (unsigned int regno, unsigned int endregno, rtx x,
     case SUBREG:
       /* If this is a SUBREG of a hard reg, we can see exactly which
 	 registers are being modified.  Otherwise, handle normally.  */
-      if (GET_CODE (SUBREG_REG (x)) == REG
+      if (REG_P (SUBREG_REG (x))
 	  && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER)
 	{
 	  unsigned int inner_regno = subreg_regno (x);
@@ -1483,11 +1483,11 @@ refers_to_regno_p (unsigned int regno, unsigned int endregno, rtx x,
 	     treat each word individually.  */
 	  && ((GET_CODE (SET_DEST (x)) == SUBREG
 	       && loc != &SUBREG_REG (SET_DEST (x))
-	       && GET_CODE (SUBREG_REG (SET_DEST (x))) == REG
+	       && REG_P (SUBREG_REG (SET_DEST (x)))
 	       && REGNO (SUBREG_REG (SET_DEST (x))) >= FIRST_PSEUDO_REGISTER
 	       && refers_to_regno_p (regno, endregno,
 				     SUBREG_REG (SET_DEST (x)), loc))
-	      || (GET_CODE (SET_DEST (x)) != REG
+	      || (!REG_P (SET_DEST (x))
 		  && refers_to_regno_p (regno, endregno, SET_DEST (x), loc))))
 	return 1;
 
@@ -1633,7 +1633,7 @@ note_stores (rtx x, void (*fun) (rtx, rtx, void *), void *data)
       rtx dest = SET_DEST (x);
 
       while ((GET_CODE (dest) == SUBREG
-	      && (GET_CODE (SUBREG_REG (dest)) != REG
+	      && (!REG_P (SUBREG_REG (dest))
 		  || REGNO (SUBREG_REG (dest)) >= FIRST_PSEUDO_REGISTER))
 	     || GET_CODE (dest) == ZERO_EXTRACT
 	     || GET_CODE (dest) == SIGN_EXTRACT
@@ -1768,7 +1768,7 @@ dead_or_set_p (rtx insn, rtx x)
   if (GET_CODE (x) == CC0)
     return 1;
 
-  if (GET_CODE (x) != REG)
+  if (!REG_P (x))
     abort ();
 
   regno = REGNO (x);
@@ -1818,7 +1818,7 @@ dead_or_set_regno_p (rtx insn, unsigned int test_regno)
 		   + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
 	dest = SUBREG_REG (dest);
 
-      if (GET_CODE (dest) != REG)
+      if (!REG_P (dest))
 	return 0;
 
       regno = REGNO (dest);
@@ -1849,7 +1849,7 @@ dead_or_set_regno_p (rtx insn, unsigned int test_regno)
 			   + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
 		dest = SUBREG_REG (dest);
 
-	      if (GET_CODE (dest) != REG)
+	      if (!REG_P (dest))
 		continue;
 
 	      regno = REGNO (dest);
@@ -1908,7 +1908,7 @@ find_regno_note (rtx insn, enum reg_note kind, unsigned int regno)
     if (REG_NOTE_KIND (link) == kind
 	/* Verify that it is a register, so that scratch and MEM won't cause a
 	   problem here.  */
-	&& GET_CODE (XEXP (link, 0)) == REG
+	&& REG_P (XEXP (link, 0))
 	&& REGNO (XEXP (link, 0)) <= regno
 	&& ((REGNO (XEXP (link, 0))
 	     + (REGNO (XEXP (link, 0)) >= FIRST_PSEUDO_REGISTER ? 1
@@ -1954,7 +1954,7 @@ find_reg_fusage (rtx insn, enum rtx_code code, rtx datum)
   if (! datum)
     abort ();
 
-  if (GET_CODE (datum) != REG)
+  if (!REG_P (datum))
     {
       rtx link;
 
@@ -2008,7 +2008,7 @@ find_regno_fusage (rtx insn, enum rtx_code code, unsigned int regno)
       rtx op, reg;
 
       if (GET_CODE (op = XEXP (link, 0)) == code
-	  && GET_CODE (reg = XEXP (op, 0)) == REG
+	  && REG_P (reg = XEXP (op, 0))
 	  && (regnote = REGNO (reg)) <= regno
 	  && regnote + hard_regno_nregs[regnote][GET_MODE (reg)] > regno)
 	return 1;
@@ -2632,7 +2632,7 @@ replace_regs (rtx x, rtx *reg_map, unsigned int nregs, int replace_dest)
 
     case SUBREG:
       /* Prevent making nested SUBREGs.  */
-      if (GET_CODE (SUBREG_REG (x)) == REG && REGNO (SUBREG_REG (x)) < nregs
+      if (REG_P (SUBREG_REG (x)) && REGNO (SUBREG_REG (x)) < nregs
 	  && reg_map[REGNO (SUBREG_REG (x))] != 0
 	  && GET_CODE (reg_map[REGNO (SUBREG_REG (x))]) == SUBREG)
 	{
@@ -2974,7 +2974,7 @@ regno_use_in (unsigned int regno, rtx x)
   int i, j;
   rtx tem;
 
-  if (GET_CODE (x) == REG && REGNO (x) == regno)
+  if (REG_P (x) && REGNO (x) == regno)
     return x;
 
   fmt = GET_RTX_FORMAT (GET_CODE (x));
@@ -3401,7 +3401,7 @@ find_first_parameter_load (rtx call_insn, rtx boundary)
   parm.nregs = 0;
   for (p = CALL_INSN_FUNCTION_USAGE (call_insn); p; p = XEXP (p, 1))
     if (GET_CODE (XEXP (p, 0)) == USE
-	&& GET_CODE (XEXP (XEXP (p, 0), 0)) == REG)
+	&& REG_P (XEXP (XEXP (p, 0), 0)))
       {
 	if (REGNO (XEXP (XEXP (p, 0), 0)) >= FIRST_PSEUDO_REGISTER)
 	  abort ();
@@ -3453,14 +3453,14 @@ keep_with_call_p (rtx insn)
 
   if (INSN_P (insn) && (set = single_set (insn)) != NULL)
     {
-      if (GET_CODE (SET_DEST (set)) == REG
+      if (REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) < FIRST_PSEUDO_REGISTER
 	  && fixed_regs[REGNO (SET_DEST (set))]
 	  && general_operand (SET_SRC (set), VOIDmode))
 	return true;
-      if (GET_CODE (SET_SRC (set)) == REG
+      if (REG_P (SET_SRC (set))
 	  && FUNCTION_VALUE_REGNO_P (REGNO (SET_SRC (set)))
-	  && GET_CODE (SET_DEST (set)) == REG
+	  && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
 	return true;
       /* There may be a stack pop just after the call and before the store
@@ -4224,7 +4224,7 @@ nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
 	   zero.  */
 	if (POINTERS_EXTEND_UNSIGNED > 0 && GET_MODE (x) == Pmode
 	    && (code == PLUS || code == MINUS)
-	    && GET_CODE (XEXP (x, 0)) == REG && REG_POINTER (XEXP (x, 0)))
+	    && REG_P (XEXP (x, 0)) && REG_POINTER (XEXP (x, 0)))
 	  nonzero &= GET_MODE_MASK (ptr_mode);
 #endif
       }
@@ -4674,7 +4674,7 @@ num_sign_bit_copies1 (rtx x, enum machine_mode mode, rtx known_x,
 	 sign bit copies.  */
       if (! POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
 	  && (code == PLUS || code == MINUS)
-	  && GET_CODE (XEXP (x, 0)) == REG && REG_POINTER (XEXP (x, 0)))
+	  && REG_P (XEXP (x, 0)) && REG_POINTER (XEXP (x, 0)))
 	result = MAX ((int) (GET_MODE_BITSIZE (Pmode)
 			     - GET_MODE_BITSIZE (ptr_mode) + 1),
 		      result);
