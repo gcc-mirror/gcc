@@ -170,6 +170,13 @@ extern "C" {
 #endif
 #endif
 
+#ifdef X86_64
+#if defined (__i386__)
+#undef X86_64
+#define X86
+#endif
+#endif
+
 #ifndef LIBFFI_ASM
 
 /* ---- Generic type definitions ----------------------------------------- */

@@ -214,35 +214,29 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
 
 static void ffi_prep_incoming_args_SYSV (char *stack, void **ret,
 					 void** args, ffi_cif* cif);
-static void ffi_closure_SYSV ();
-static void ffi_closure_raw_SYSV ();
+static void ffi_closure_SYSV (ffi_closure *)
+     __attribute__ ((regparm(1)));
+static void ffi_closure_raw_SYSV (ffi_raw_closure *)
+     __attribute__ ((regparm(1)));
 
-/* This function is jumped to by the trampoline, on entry, %ecx (a
- * caller-save register) holds the address of the closure.  
- * Clearly, this requires __GNUC__, so perhaps we should translate this
- * into an assembly file if this is to be distributed with ffi.
- */
+/* This function is jumped to by the trampoline */
 
 static void
-ffi_closure_SYSV ()
+ffi_closure_SYSV (closure)
+     ffi_closure *closure;
 {
   // this is our return value storage
   long double    res;
 
   // our various things...
-  void          *args;
   ffi_cif       *cif;
   void         **arg_area;
-  ffi_closure   *closure;
   unsigned short rtype;
   void          *resp = (void*)&res;
+  void *args = __builtin_dwarf_cfa ();
 
-  /* grab the trampoline context pointer */
-  asm ("movl %%ecx,%0" : "=r" (closure));
-  
   cif         = closure->cif;
   arg_area    = (void**) alloca (cif->nargs * sizeof (void*));  
-  asm ("leal 8(%%ebp),%0" : "=q" (args));  
 
   /* this call will initialize ARG_AREA, such that each
    * element in that array points to the corresponding 
@@ -330,11 +324,11 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
 ({ unsigned char *__tramp = (unsigned char*)(TRAMP); \
    unsigned int  __fun = (unsigned int)(FUN); \
    unsigned int  __ctx = (unsigned int)(CTX); \
-   unsigned int  __dis = __fun - ((unsigned int) __tramp + 10); \
-   *(unsigned char*) &__tramp[0] = 0xb9; \
-   *(unsigned int*)  &__tramp[1] = __ctx; \
-   *(unsigned char*) &__tramp[5] = 0xe9; \
-   *(unsigned int*)  &__tramp[6] = __dis; \
+   unsigned int  __dis = __fun - ((unsigned int) __tramp + FFI_TRAMPOLINE_SIZE); \
+   *(unsigned char*) &__tramp[0] = 0xb8; \
+   *(unsigned int*)  &__tramp[1] = __ctx; /* movl __ctx, %eax */ \
+   *(unsigned char *)  &__tramp[5] = 0xe9; \
+   *(unsigned int*)  &__tramp[6] = __dis; /* jmp __fun  */ \
  })
 
 
@@ -364,30 +358,23 @@ ffi_prep_closure (ffi_closure* closure,
 #if !FFI_NO_RAW_API
 
 static void
-ffi_closure_raw_SYSV ()
+ffi_closure_raw_SYSV (closure)
+     ffi_raw_closure *closure;
 {
   // this is our return value storage
   long double    res;
 
   // our various things...
-  void            *args;
   ffi_raw         *raw_args;
   ffi_cif         *cif;
-  ffi_raw_closure *closure;
   unsigned short   rtype;
   void            *resp = (void*)&res;
-
-  /* grab the trampoline context pointer */
-  asm ("movl %%ecx,%0" : "=r" (closure));
-
-  /* take the argument pointer */
-  asm ("leal 8(%%ebp),%0" : "=q" (args));  
 
   /* get the cif */
   cif = closure->cif;
 
   /* the SYSV/X86 abi matches the RAW API exactly, well.. almost */
-  raw_args = (ffi_raw*) args;
+  raw_args = (ffi_raw*) __builtin_dwarf_cfa ();
 
   (closure->fun) (cif, resp, raw_args, closure->user_data);
 
