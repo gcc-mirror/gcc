@@ -1,5 +1,6 @@
 /* VMS linker wrapper.
-   Copyright (C) 1996-2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
 
 This file is part of GNU CC.
@@ -37,6 +38,9 @@ typedef struct dsc {unsigned short len, mbz; char *adr; } Descr;
 
 /* File specification for vms-dwarf2.o.  */
 static char *vmsdwarf2spec = 0;
+
+/* File specification for vms-dwarf2eh.o.  */
+static char *vmsdwarf2ehspec = 0;
 
 /* verbose = 1 if -v passed.   */
 static int verbose = 0;
@@ -589,8 +593,11 @@ main (argc, argv)
 
 	  buff_len = strlen (buff);
 
-	  if (buff_len >= 13
-	      && strcasecmp (&buff[buff_len-13],"vms-dwarf2.o\n") == 0)
+	  if (buff_len >= 15
+	      && strcasecmp (&buff[buff_len - 15], "vms-dwarf2eh.o\n") == 0)
+	    vmsdwarf2ehspec = xstrdup (buff);
+	  else if (buff_len >= 13
+	      && strcasecmp (&buff[buff_len - 13],"vms-dwarf2.o\n") == 0)
 	    vmsdwarf2spec = xstrdup (buff);
 	  else if (is_cld)
 	    {
@@ -607,14 +614,22 @@ main (argc, argv)
     fprintf (optfile, "symbol_vector=(main=procedure)\n");
 #endif
 
+  if (vmsdwarf2ehspec)
+    {
+      fprintf (optfile, "case_sensitive=yes\n");
+      fprintf (optfile, "cluster=DWARF2eh,,,%s", vmsdwarf2ehspec);
+      fprintf (optfile, "collect=DWARF2eh,eh_frame\n");
+      fprintf (optfile, "case_sensitive=NO\n");
+    }
+
   if (debug && vmsdwarf2spec)
     {
       fprintf (optfile, "case_sensitive=yes\n");
       fprintf (optfile, "cluster=DWARF2debug,,,%s", vmsdwarf2spec);
       fprintf (optfile, "collect=DWARF2debug,debug_abbrev,debug_aranges,-\n");
       fprintf (optfile, " debug_frame,debug_info,debug_line,debug_loc,-\n");
-      fprintf (optfile,
-	       " debug_macinfo,debug_pubnames,debug_str,debug_zzzzzz\n");
+      fprintf (optfile, " debug_macinfo,debug_pubnames,debug_str,-\n");
+      fprintf (optfile, " debug_zzzzzz\n");
       fprintf (optfile, "case_sensitive=NO\n");
     }
 

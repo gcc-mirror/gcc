@@ -1,5 +1,12 @@
 2002-01-01  Douglas B Rupp  <rupp@gnat.com>
 
+	* config/alpha/vms.h (DWARF2_UNWIND_INFO, EH_RETURN_HANDLER_RTX,
+	LINK_EH_SPEC, MD_FALLBACK_FRAME_STATE_FOR): Define.
+	* config/alpha/t-vms (EXTRA_PARTS): Add vms-dwarf2eh.o
+	(vms-dwarf2eh.o): Add Makefile rule.
+	* config/alpha/vms-ld.c (main): Handle vms-dwarf2eh.o.
+	* config/alpha/vms-dwarf2eh.asm: New file.
+
 	* gcc.c (delete_if_ordinary): Delete all versions.
 
 2002-01-01  Hans-Peter Nilsson  <hp@bitrange.com>
