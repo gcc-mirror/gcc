@@ -885,6 +885,8 @@ template_arg_list:
 template_arg:
 	  type_id
 		{ $$ = groktypename ($1.t); }
+	| PTYPENAME
+		{ $$ = lastiddecl; }
 	| expr_no_commas  %prec ARITHCOMPARE
 	;
 

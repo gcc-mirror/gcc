@@ -1845,8 +1845,15 @@ hack_identifier (value, name)
 	}
     }
   else if (TREE_CODE (value) == NAMESPACE_DECL)
-    /* A namespace is not really expected here; this is likely illegal code. */
-    return value;
+    {
+      cp_error ("use of namespace `%D' as expression", value);
+      return error_mark_node;
+    }
+  else if (DECL_CLASS_TEMPLATE_P (value))
+    {
+      cp_error ("use of class template `%T' as expression", value);
+      return error_mark_node;
+    }
   else
     mark_used (value);
 

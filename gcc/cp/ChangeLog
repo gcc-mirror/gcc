@@ -1,3 +1,11 @@
+1998-06-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (hack_identifier): Complain about getting a namespace
+	or class template.
+	* typeck.c (decay_conversion): Remove check for namespaces.
+	* typeck2.c (incomplete_type_error): Likewise.
+	* parse.y (template_arg): Add PTYPENAME expansion.
+
 1998-06-16  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* decl.c (grokvardecl): Don't build external assembler names for 
