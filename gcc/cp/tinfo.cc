@@ -66,7 +66,7 @@ convert_to_base (void *addr, bool is_virtual, myint32 offset)
 bool std::type_info::
 operator== (const std::type_info& arg) const
 {
-  return (&arg == this) || (strcmp (name (), arg.name ()) == 0);
+  return (&arg == this) || (__builtin_strcmp (name (), arg.name ()) == 0);
 }
 
 extern "C" void

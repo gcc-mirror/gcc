@@ -1,3 +1,8 @@
+2000-04-06  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tinfo.cc (operator=): Use __builtin_strcmp.
+	* tinfo2.cc (before): Likewise.
+
 2000-04-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_decl_flags): Rename saved_inline to deferred.
