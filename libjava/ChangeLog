@@ -1,3 +1,14 @@
+2005-03-10  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* exception.cc: Remove stray MethodRef.h include.
+	* java/lang/natClass.cc: Likewise.
+	* gnu/gcj/runtime/MethodRef.java: Removed.
+	* gnu/gcj/runtime/StackTrace.java, gnu/gcj/runtime/natNameFinder.cc,
+	gnu/gcj/runtime/natStackTrace.cc: Really removed.
+	* java/lang/natRuntime.cc (_load): Remove unsed variable.
+	* Makefile.am (ordinary_java_source_files): Remove MethodRef.java.
+	* Makefile.in: Rebuilt.
+
 2005-03-10  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
@@ -12,7 +23,7 @@
 
 	New Stack Trace infrastructure.
 	* Makefile.am (libgcj0_convenience_la_SOURCES): Add stacktrace.cc.
-	(gnu/gcj/runtime/StackTrace.lo): Removed.
+	(gnu/gcj/runtime/StackTrace.java): Removed.
 	(ordinary_java_source_files): Remove obsolete files.
 	(nat_source_files): Remove obsolete files. Add natVMThrowable.cc.
 	* configure.host (fallback_backtrace_h): Set backtrace header
