@@ -13,7 +13,7 @@ class H{
 public:
 #endif
   template<template<class, class> class Caster, typename Source>
-  static H<Type> cast(const H<Source>& s); // gets bogus error - candidate - XFAIL *-*-*
+  static H<Type> cast(const H<Source>& s);
 
 #ifndef OK
   template <typename Target, typename Source>
@@ -26,10 +26,10 @@ template <class, class> class caster;
 
 template <typename Target, typename Source>
 H<Target> foo(const H<Source>& s){
-  return H<Target>::template cast<caster, Source>(s); // gets bogus error - no match - XFAIL *-*-*
+  return H<Target>::template cast<caster, Source>(s);
 }
 
 int main(){
   H<int> i;
-  foo<const int>(i); // gets bogus error - instantiated from here - XFAIL *-*-*
+  foo<const int>(i);
 }

@@ -65,6 +65,7 @@ Boston, MA 02111-1307, USA.  */
    Usage of DECL_LANG_FLAG_?:
    0: DECL_ERROR_REPORTED (in VAR_DECL).
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
+      DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
    3: DECL_IN_AGGR_P.
    4: DECL_MAYBE_TEMPLATE.
@@ -1812,6 +1813,12 @@ extern int flag_new_for_scope;
 
 /* This function may be a guiding decl for a template.  */
 #define DECL_MAYBE_TEMPLATE(NODE) DECL_LANG_FLAG_4 (NODE)
+
+/* Nonzero if this VAR_DECL or FUNCTION_DECL has already been
+   instantiated, i.e. its definition has been generated from the
+   pattern given in the the template.  */
+#define DECL_TEMPLATE_INSTANTIATED(NODE) DECL_LANG_FLAG_1(NODE)
+
 /* We know what we're doing with this decl now.  */
 #define DECL_INTERFACE_KNOWN(NODE) DECL_LANG_FLAG_5 (NODE)
 

@@ -2989,9 +2989,6 @@ duplicate_decls (newdecl, olddecl)
 			     DECL_TEMPLATE_RESULT (olddecl)))
 	cp_error ("invalid redeclaration of %D", newdecl);
       TREE_TYPE (olddecl) = TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl));
-      DECL_TEMPLATE_PARMS (olddecl) = DECL_TEMPLATE_PARMS (newdecl);
-      if (DECL_TEMPLATE_INFO (newdecl))
-	DECL_TEMPLATE_INFO (olddecl) = DECL_TEMPLATE_INFO (newdecl);
       DECL_TEMPLATE_SPECIALIZATIONS (olddecl) 
 	= chainon (DECL_TEMPLATE_SPECIALIZATIONS (olddecl),
 		   DECL_TEMPLATE_SPECIALIZATIONS (newdecl));
@@ -3123,11 +3120,7 @@ duplicate_decls (newdecl, olddecl)
       DECL_IN_AGGR_P (newdecl) = DECL_IN_AGGR_P (olddecl);
       DECL_ACCESS (newdecl) = DECL_ACCESS (olddecl);
       DECL_NONCONVERTING_P (newdecl) = DECL_NONCONVERTING_P (olddecl);
-      if (DECL_TEMPLATE_INFO (newdecl) == NULL_TREE)
-	{
-	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
-	  DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
-	}
+      DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
       olddecl_friend = DECL_FRIEND_P (olddecl);
     }
 

@@ -831,15 +831,22 @@ register_specialization (spec, tmpl, args)
 
 		       We transform the existing DECL in place so that
 		       any pointers to it become pointers to the
-		       updated declaration.  */
-		    duplicate_decls (spec, TREE_VALUE (s));
-		    return TREE_VALUE (s);
+		       updated declaration.  
+
+		       If there was a definition for the template, but
+		       not for the specialization, we want this to
+		       look as if there is no definition, and vice
+		       versa.  */
+		    DECL_INITIAL (fn) = NULL_TREE;
+		    duplicate_decls (spec, fn);
+
+		    return fn;
 		  }
 	      }
 	    else if (DECL_TEMPLATE_SPECIALIZATION (fn))
 	      {
-		duplicate_decls (spec, TREE_VALUE (s));
-		return TREE_VALUE (s);
+		duplicate_decls (spec, fn);
+		return fn;
 	      }
 	  }
       }
@@ -1369,7 +1376,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	    /* This is not really a declaration of a specialization.
 	       It's just the name of an instantiation.  But, it's not
 	       a request for an instantiation, either.  */
-	      SET_DECL_IMPLICIT_INSTANTIATION (decl);
+	    SET_DECL_IMPLICIT_INSTANTIATION (decl);
 
 	  /* Register this specialization so that we can find it
 	     again.  */
@@ -4247,16 +4254,30 @@ tsubst_friend_function (decl, args)
   if (DECL_NAMESPACE_SCOPE_P (new_friend))
     {
       tree old_decl;
-      tree new_friend_args;
+      tree new_friend_template_info;
+      tree new_friend_result_template_info;
+      int  new_friend_is_defn;
 
+      /* We must save some information from NEW_FRIEND before calling
+	 duplicate decls since that function will free NEW_FRIEND if
+	 possible.  */
+      new_friend_template_info = DECL_TEMPLATE_INFO (new_friend);
       if (TREE_CODE (new_friend) == TEMPLATE_DECL)
-	/* This declaration is a `primary' template.  */
-	DECL_PRIMARY_TEMPLATE (new_friend) = new_friend;
+	{
+	  /* This declaration is a `primary' template.  */
+	  DECL_PRIMARY_TEMPLATE (new_friend) = new_friend;
+	  
+	  new_friend_is_defn 
+	    = DECL_INITIAL (DECL_RESULT (new_friend)) != NULL_TREE;
+	  new_friend_result_template_info
+	    = DECL_TEMPLATE_INFO (DECL_RESULT (new_friend));
+	}
+      else
+	{
+	  new_friend_is_defn = DECL_INITIAL (new_friend) != NULL_TREE;
+	  new_friend_result_template_info = NULL_TREE;
+	}
 
-      /* We must save the DECL_TI_ARGS for NEW_FRIEND here because
-	 pushdecl may call duplicate_decls which will free NEW_FRIEND
-	 if possible.  */
-      new_friend_args = DECL_TI_ARGS (new_friend);
       old_decl = pushdecl_namespace_level (new_friend);
 
       if (old_decl != new_friend)
@@ -4295,36 +4316,55 @@ tsubst_friend_function (decl, args)
 	     when `C<int>' is instantiated.  Now, `f(int)' is defined
 	     in the class.  */
 
-	  if (TREE_CODE (old_decl) != TEMPLATE_DECL)
-	    /* duplicate_decls will take care of this case.  */
+	  if (!new_friend_is_defn)
+	    /* On the other hand, if the in-class declaration does
+	       *not* provide a definition, then we don't want to alter
+	       existing definitions.  We can just leave everything
+	       alone.  */
 	    ;
-	  else 
+	  else
 	    {
-	      tree t;
+	      /* Overwrite whatever template info was there before, if
+		 any, with the new template information pertaining to
+		 the declaration.  */
+	      DECL_TEMPLATE_INFO (old_decl) = new_friend_template_info;
 
-	      for (t = DECL_TEMPLATE_SPECIALIZATIONS (old_decl); 
-		   t != NULL_TREE;
-		   t = TREE_CHAIN (t))
+	      if (TREE_CODE (old_decl) != TEMPLATE_DECL)
+		/* duplicate_decls will take care of this case.  */
+		;
+	      else 
 		{
-		  tree spec = TREE_VALUE (t);
+		  tree t;
+		  tree new_friend_args;
+
+		  DECL_TEMPLATE_INFO (DECL_RESULT (old_decl)) 
+		    = new_friend_result_template_info;
+		    
+		  new_friend_args = TI_ARGS (new_friend_template_info);
+		  for (t = DECL_TEMPLATE_SPECIALIZATIONS (old_decl); 
+		       t != NULL_TREE;
+		       t = TREE_CHAIN (t))
+		    {
+		      tree spec = TREE_VALUE (t);
 		  
-		  DECL_TI_ARGS (spec) 
-		    = add_outermost_template_args (new_friend_args,
-						   DECL_TI_ARGS (spec));
-		  DECL_TI_ARGS (spec)
-		    = copy_to_permanent (DECL_TI_ARGS (spec));
-		}
+		      DECL_TI_ARGS (spec) 
+			= add_outermost_template_args (new_friend_args,
+						       DECL_TI_ARGS (spec));
+		      DECL_TI_ARGS (spec)
+			= copy_to_permanent (DECL_TI_ARGS (spec));
+		    }
 
-	      /* Now, since specializations are always supposed to
-		 hang off of the most general template, we must move
-		 them.  */
-	      t = most_general_template (old_decl);
-	      if (t != old_decl)
-		{
-		  DECL_TEMPLATE_SPECIALIZATIONS (t)
-		    = chainon (DECL_TEMPLATE_SPECIALIZATIONS (t),
-			       DECL_TEMPLATE_SPECIALIZATIONS (old_decl));
-		  DECL_TEMPLATE_SPECIALIZATIONS (old_decl) = NULL_TREE;
+		  /* Now, since specializations are always supposed to
+		     hang off of the most general template, we must move
+		     them.  */
+		  t = most_general_template (old_decl);
+		  if (t != old_decl)
+		    {
+		      DECL_TEMPLATE_SPECIALIZATIONS (t)
+			= chainon (DECL_TEMPLATE_SPECIALIZATIONS (t),
+				   DECL_TEMPLATE_SPECIALIZATIONS (old_decl));
+		      DECL_TEMPLATE_SPECIALIZATIONS (old_decl) = NULL_TREE;
+		    }
 		}
 	    }
 
@@ -5312,7 +5352,6 @@ tsubst_decl (t, args, type, in_decl)
 	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args, t);
 	DECL_MAIN_VARIANT (r) = r;
 	DECL_RESULT (r) = NULL_TREE;
-	DECL_INITIAL (r) = NULL_TREE;
 
 	TREE_STATIC (r) = 0;
 	TREE_PUBLIC (r) = TREE_PUBLIC (t);
@@ -8285,9 +8324,13 @@ regenerate_decl_from_template (decl, tmpl)
     }
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    /* Convince duplicate_decls to use the DECL_ARGUMENTS from the
-       new decl.  */ 
-    DECL_INITIAL (new_decl) = error_mark_node;
+    {
+      /* Convince duplicate_decls to use the DECL_ARGUMENTS from the
+	 new decl.  */ 
+      DECL_INITIAL (new_decl) = error_mark_node;
+      /* And don't complain about a duplicate definition.  */
+      DECL_INITIAL (decl) = NULL_TREE;
+    }
 
   /* The immediate parent of the new template is still whatever it was
      before, even though tsubst sets DECL_TI_TEMPLATE up as the most
@@ -8302,9 +8345,6 @@ regenerate_decl_from_template (decl, tmpl)
 
   /* Call duplicate decls to merge the old and new declarations.  */
   duplicate_decls (new_decl, decl);
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    DECL_INITIAL (new_decl) = NULL_TREE;
 
   /* Now, re-register the specialization.  */
   register_specialization (decl, gen_tmpl, args);
@@ -8332,8 +8372,7 @@ instantiate_decl (d)
   my_friendly_assert (TREE_CODE (d) == FUNCTION_DECL
 		      || TREE_CODE (d) == VAR_DECL, 0);
 
-  if ((TREE_CODE (d) == FUNCTION_DECL && DECL_INITIAL (d))
-      || (TREE_CODE (d) == VAR_DECL && !DECL_IN_AGGR_P (d)))
+  if (DECL_TEMPLATE_INSTANTIATED (d))
     /* D has already been instantiated.  It might seem reasonable to
        check whether or not D is an explict instantiation, and, if so,
        stop here.  But when an explicit instantiation is deferred
@@ -8398,9 +8437,6 @@ instantiate_decl (d)
 	 cannot restructure the loop to just keep going until we find
 	 a template with a definition, since that might go too far if
 	 a specialization was declared, but not defined.  */
-      my_friendly_assert (!(TREE_CODE (d) == FUNCTION_DECL
-			    && DECL_INITIAL (DECL_TEMPLATE_RESULT (td))),
-			  0);
       my_friendly_assert (!(TREE_CODE (d) == VAR_DECL
 			    && !DECL_IN_AGGR_P (DECL_TEMPLATE_RESULT (td))), 
 			  0); 
@@ -8483,6 +8519,7 @@ instantiate_decl (d)
     }
 
   regenerate_decl_from_template (d, td);
+  DECL_TEMPLATE_INSTANTIATED (d) = 1;
 
   /* We already set the file and line above.  Reset them now in case
      they changed as a result of calling regenerate_decl_from_template.  */

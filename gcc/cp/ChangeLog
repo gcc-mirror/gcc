@@ -1,3 +1,18 @@
+1998-11-16  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (DECL_TEMPLATE_INSTANTIATED): New macro.
+	* decl.c (duplicate_decls): Remove special-case code to deal with
+	template friends, and just do the obvious thing.
+	* pt.c (register_specialization): Tweak for clarity, and also to
+	clear DECL_INITIAL for an instantiation before it is merged with a
+	specialization.
+	(check_explicit_specialization): Fix indentation.
+	(tsubst_friend_function): Handle both definitions in friend
+	declaration and outside friend declarations.
+	(tsubst_decl): Don't clear DECL_INITIAL for an instantiation.
+	(regenerate_decl_from_template): Tweak accordingly.
+	(instantiate_decl): Likewise.
+	
 1998-11-16  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (cplus_expand_expr_stmt): Promote warning about naked
