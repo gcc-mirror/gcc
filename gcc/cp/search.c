@@ -145,8 +145,8 @@ static tree dfs_accessible_p PROTO ((tree, void *));
 static tree dfs_access_in_type PROTO ((tree, void *));
 static tree access_in_type PROTO ((tree, tree));
 static tree dfs_canonical_queue PROTO ((tree, void *));
-static tree dfs_assert_unmarked_P PROTO ((tree, void *));
-static tree assert_canonical_unmarked PROTO ((tree));
+static tree dfs_assert_unmarked_p PROTO ((tree, void *));
+static void assert_canonical_unmarked PROTO ((tree));
 
 /* Allocate a level of searching.  */
 
