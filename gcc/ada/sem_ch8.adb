@@ -3687,9 +3687,12 @@ package body Sem_Ch8 is
                then
 
                   --  Prefix may mention a package that is hidden by a local
-                  --  declaration: let the user know.
+                  --  declaration: let the user know. Scan the full homonym
+                  --  chain, the candidate package may be anywhere on it.
 
-                  if Present (Homonym (P_Name)) then
+                  if Present (Homonym (Current_Entity (P_Name))) then
+
+                     P_Name := Current_Entity (P_Name);
 
                      while Present (P_Name) loop
                         exit when Ekind (P_Name) = E_Package;

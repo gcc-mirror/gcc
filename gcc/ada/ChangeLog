@@ -1,3 +1,22 @@
+2001-12-11  Vincent Celier <celier@gnat.com>
+
+	* gnatcmd.adb:
+	Changed /COMPILE_ONLY to /ACTIONS=COMPILE
+	Changed /BIND_ONLY to /ACTIONS=BIND
+	Changed /LINK_ONLY to /ACTIONS=LINK
+	
+2001-12-11  Ed Schonberg  <schonber@gnat.com>
+
+	* sem_ch8.adb (Find_Selected_Component): improved search for a
+	candidate package in case of error.
+	
+	* sem_ch12.adb (Inline_Instance_Body): place head of use_clause
+	chain back on scope stack before reinstalling use clauses.
+	
+	* exp_ch5.adb (Expand_N_If_Statement): if Constant_Condition_Warnings
+	is enabled, do not kill the code for the condition, to preserve
+	warning.
+
 2001-12-11  Robert Dewar <dewar@gnat.com>
 
 	* checks.adb (Insert_Valid_Check): Apply validity check to expression 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.216 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -1895,7 +1895,10 @@ package body Exp_Ch5 is
          --  the Then statements
 
          else
-            Kill_Dead_Code (Condition (N));
+            if not Constant_Condition_Warnings then
+               Kill_Dead_Code (Condition (N));
+            end if;
+
             Kill_Dead_Code (Then_Statements (N));
 
             --  If there are no elsif statements, then we simply replace
