@@ -266,7 +266,7 @@ in the following sections.
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
--fgcse  -fgcse-lm  -fgcse-sm @gol
+-fgcse  -fgcse-lm  -fgcse-sm -floop-optimize -fcrossjumping @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
 -fmove-all-movables  -fno-default-inline  -fno-defer-pop @gol
@@ -3494,6 +3494,17 @@ When @option{-fgcse-sm} is enabled, A store motion pass is run after global comm
 subexpression elimination.  This pass will attempt to move stores out of loops.
 When used in conjunction with @option{-fgcse-lm}, loops containing a load/store sequence
 can be changed to a load before the loop and a store after the loop.
+
+@item -floop-optimize
+@opindex floop-optimize
+Perform loop optimizations: move constant expressions out of loops, simplify
+exit test conditions and optionally do strength-reduction and loop unrolling as
+well.
+
+@item -fcrossjumping
+@opindex crossjumping
+Perform cross-jumping transformation. This transformation unifies equivalent code and save code size. The
+resulting code may or may not perform better than without cross-jumping.
 
 @item -fdelete-null-pointer-checks
 @opindex fdelete-null-pointer-checks
