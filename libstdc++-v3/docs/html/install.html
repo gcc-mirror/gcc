@@ -14,7 +14,7 @@
 </head>
 <body>
 
-<h1 class="centered"><a name="top">libstdc++-v3 INSTALL</a></h1>
+<h1 class="centered"><a name="top">Getting started: configure, build, install</a></h1>
 
 <p class="fineprint"><em>
    The latest version of this document is always available at
@@ -312,36 +312,6 @@ se_NO.UTF-8         UTF-8
       the headers and library files will be moved under
       <code>lib/gcc-lib/</code> instead.
    </p>
-   <p>You can check the status of the build without installing it using</p>
-   <pre>
-   make check</pre>
-   <p>or you can check the status of the installed library using</p>
-   <pre>
-   make check-install</pre>
-   <p>in the <em>libbuilddir</em> directory.
-      These commands will create a 'testsuite' directory underneath
-      <em>libbuilddir</em> containing the results of the tests.  We are
-      interested in any strange failures of the testsuite; please see
-      <a href="faq/index.html#2_4">FAQ 2.4</a> for which files to examine.
-   </p>
-
-   <p> In addition, there are some testing options that are mostly of
-   interest to library maintainers and system integrators. As such,
-   these tests may not work on all cpu and host combinations. These
-   options include, but are not necessarily limited to, the following:
-   </p>
-
-   <p>The library ABI can be tested using</p>
-   <pre>
-   make check-abi</pre>
-
-   <p>The library can also be tested using a bash script, instead of
-   the default dejagnu test harness</p>
-   <pre>
-   make check-script</pre>
-   <p>or</p>
-   <pre>
-   make check-script-install</pre>
 
 <hr />
 <h2><a name="usage">Using the library</a></h2>
