@@ -29,26 +29,23 @@ Boston, MA 02111-1307, USA.  */
      a. `name' is the name for that pattern.  Nameless patterns are
      given a name.
 
-     b. `template' is the template for output of that insn,
+     b. `output' hold either the output template, an array of output
+     templates, or an output function.
 
-     c. `outfun' is the function that returns a template to use for output of
-     that insn.  This is used only in the cases where the template is not
-     constant.  These cases are specified by a * or @ at the beginning of the
-     template string in the machine description.  They are identified for the
-     sake of other parts of the compiler by a zero element in `template'.
-  
-     d. `genfun' is the function to generate a body for that pattern,
+     c. `genfun' is the function to generate a body for that pattern,
      given operands as arguments.
 
-     e. `n_operands' is the number of distinct operands in the pattern
+     d. `n_operands' is the number of distinct operands in the pattern
      for that insn,
 
-     f. `n_dups' is the number of match_dup's that appear in the insn's
+     e. `n_dups' is the number of match_dup's that appear in the insn's
      pattern.  This says how many elements of `recog_data.dup_loc' are
      significant after an insn has been recognized.
 
-     g. `n_alternatives' is the number of alternatives in the constraints
+     f. `n_alternatives' is the number of alternatives in the constraints
      of each pattern.
+
+     g. `output_format' tells what type of thing `output' is.
 
      h. `operand' is the base of an array of operand data for the insn.
 
@@ -144,6 +141,13 @@ static struct operand_data null_operand =
 static struct operand_data *odata = &null_operand;
 static struct operand_data **odata_end = &null_operand.next;
 
+/* Must match the constants in recog.h.  */
+
+#define INSN_OUTPUT_FORMAT_NONE         0       /* abort */
+#define INSN_OUTPUT_FORMAT_SINGLE       1       /* const char * */
+#define INSN_OUTPUT_FORMAT_MULTI        2       /* const char * const * */
+#define INSN_OUTPUT_FORMAT_FUNCTION     3       /* const char * (*)(...) */
+
 /* Record in this chain all information that we will output,
    associated with the code number of the insn.  */
 
@@ -151,14 +155,14 @@ struct data
 {
   struct data *next;
   char *name;
-  char *template;		/* string such as "movl %1,%0" */
+  char *template;
   int code_number;
   int index_number;
   int n_operands;		/* Number of operands this insn recognizes */
   int n_dups;			/* Number times match_dup appears in pattern */
   int n_alternatives;		/* Number of alternatives in each constraint */
-  char outfun;			/* Nonzero means this has an output function */
   int operand_number;		/* Operand index in the big array.  */
+  int output_format;		/* INSN_OUTPUT_FORMAT_*.  */
   struct operand_data operand[MAX_MAX_OPERANDS];
 };
 
@@ -172,7 +176,6 @@ static struct data *idata, **idata_end = &idata;
 static int have_constraints;
 
 
-static char * name_for_index PROTO((int));
 static void output_prologue PROTO((void));
 static void output_predicate_decls PROTO((void));
 static void output_operand_data PROTO((void));
@@ -353,15 +356,21 @@ output_insn_data ()
 	    printf ("    \"%s+%d\",\n", last_name, name_offset);
 	}
 
-      if (d->template)
-	printf ("    \"%s\",\n", d->template);
-      else
-	printf ("    0,\n");
-
-      if (d->outfun)
-	printf ("    output_%d,\n", d->code_number);
-      else
-	printf ("    0,\n");
+      switch (d->output_format)
+	{
+	case INSN_OUTPUT_FORMAT_NONE:
+	  printf ("    0,\n");
+	  break;
+	case INSN_OUTPUT_FORMAT_SINGLE:
+	  printf ("    \"%s\",\n", d->template);
+	  break;
+	case INSN_OUTPUT_FORMAT_MULTI:
+	case INSN_OUTPUT_FORMAT_FUNCTION:
+	  printf ("    output_%d,\n", d->code_number);
+	  break;
+	default:
+	  abort ();
+	}
 
       if (d->name && d->name[0] != '*')
 	printf ("    gen_%s,\n", d->name);
@@ -371,7 +380,8 @@ output_insn_data ()
       printf ("    &operand_data[%d],\n", d->operand_number);
       printf ("    %d,\n", d->n_operands);
       printf ("    %d,\n", d->n_dups);
-      printf ("    %d\n", d->n_alternatives);
+      printf ("    %d,\n", d->n_alternatives);
+      printf ("    %d\n", d->output_format);
 
       printf("  },\n");
     }
@@ -637,44 +647,39 @@ process_template (d, template)
   register char *cp;
   register int i;
 
-  /* We need to consider only the instructions whose assembler code template
-     starts with a * or @.  These are the ones where C code is run to decide
-     on a template to use.  So for all others just return now.  */
-
-  if (template[0] != '*' && template[0] != '@')
+  /* Templates starting with * contain straight code to be run.  */
+  if (template[0] == '*')
     {
-      d->template = template;
-      d->outfun = 0;
-      return;
+      d->template = 0;
+      d->output_format = INSN_OUTPUT_FORMAT_FUNCTION;
+
+      printf ("\nstatic const char *output_%d PROTO ((rtx *, rtx));\n",
+	      d->code_number);
+      puts ("\nstatic const char *");
+      printf ("output_%d (operands, insn)\n", d->code_number);
+      puts ("     rtx *operands ATTRIBUTE_UNUSED;");
+      puts ("     rtx insn ATTRIBUTE_UNUSED;");
+      puts ("{");
+
+      puts (template + 1);
+      puts ("}");
     }
 
-  d->template = 0;
-  d->outfun = 1;
-
-  printf ("\nstatic const char *output_%d PROTO ((rtx *, rtx));\n",
-	  d->code_number);
-  printf ("\nstatic const char *\n");
-  printf ("output_%d (operands, insn)\n", d->code_number);
-  printf ("     rtx *operands ATTRIBUTE_UNUSED;\n");
-  printf ("     rtx insn ATTRIBUTE_UNUSED;\n");
-  printf ("{\n");
-
   /* If the assembler code template starts with a @ it is a newline-separated
-     list of assembler code templates, one for each alternative.  So produce
-     a routine to select the correct one.  */
-
-  if (template[0] == '@')
+     list of assembler code templates, one for each alternative.  */
+  else if (template[0] == '@')
     {
+      d->template = 0;
+      d->output_format = INSN_OUTPUT_FORMAT_MULTI;
 
-      printf ("  static const char *const strings_%d[] = {\n",
-	      d->code_number);
+      printf ("\nstatic const char * const output_%d[] = {\n", d->code_number);
 
       for (i = 0, cp = &template[1]; *cp; )
 	{
 	  while (*cp == '\n' || *cp == ' ' || *cp== '\t')
 	    cp++;
 
-	  printf ("    \"");
+	  printf ("  \"");
 	  while (*cp != '\n' && *cp != '\0')
 	    {
 	      putchar (*cp);
@@ -685,29 +690,13 @@ process_template (d, template)
 	  i++;
 	}
 
-      printf ("  };\n");
-      printf ("  return strings_%d[which_alternative];\n", d->code_number);
-
-      if (i != d->n_alternatives)
-	fatal ("Insn pattern %d has %d alternatives but %d assembler choices",
-	       d->index_number, d->n_alternatives, i);
-
+      printf ("};\n");
     }
   else
     {
-      /* The following is done in a funny way to get around problems in
-	 VAX-11 "C" on VMS.  It is the equivalent of:
-	 printf ("%s\n", &template[1])); */
-      cp = &template[1];
-      while (*cp)
-	{
-	  putchar (*cp);
-	  cp++;
-	}
-      putchar ('\n');
+      d->template = template;
+      d->output_format = INSN_OUTPUT_FORMAT_SINGLE;
     }
-
-  printf ("}\n");
 }
 
 /* Check insn D for consistency in number of constraint alternatives.  */
@@ -849,7 +838,7 @@ gen_expand (insn)
   d->n_operands = max_opno + 1;
   d->n_dups = num_dups;
   d->template = 0;
-  d->outfun = 0;
+  d->output_format = INSN_OUTPUT_FORMAT_NONE;
 
   validate_insn_alternatives (d);
   place_operands (d);
@@ -889,7 +878,7 @@ gen_split (split)
   d->n_dups = 0;
   d->n_alternatives = 0;
   d->template = 0;
-  d->outfun = 0;
+  d->output_format = INSN_OUTPUT_FORMAT_NONE;
 
   place_operands (d);
 }

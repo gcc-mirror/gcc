@@ -1456,10 +1456,7 @@ output_delayed_branch (template, operands, insn)
       if (! constrain_operands (1))
 	fatal_insn_not_found (delay_insn);
 
-      template = insn_data[insn_code_number].template;
-      if (template == 0)
-	template = ((*insn_data[insn_code_number].outfun)
-		    (recog_data.operand, delay_insn));
+      template = get_insn_template (insn_code_number, delay_insn);
       output_asm_insn (template, recog_data.operand);
     }
   CC_STATUS_INIT;
@@ -1513,10 +1510,7 @@ output_delay_insn (delay_insn)
   /* Now get the template for what this insn would
      have been, without the branch.  */
 
-  template = insn_data[insn_code_number].template;
-  if (template == 0)
-    template = ((*insn_data[insn_code_number].outfun)
-		(recog_data.operand, delay_insn));
+  template = get_insn_template (insn_code_number, delay_insn);
   output_asm_insn (template, recog_data.operand);
   return "";
 }
