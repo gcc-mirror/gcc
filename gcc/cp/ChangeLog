@@ -1,3 +1,7 @@
+Fri May 15 00:46:05 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (start_decl): Use 'tem'.
+
 Thu May 14 16:30:47 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* exception.cc: Include eh-common.h.
