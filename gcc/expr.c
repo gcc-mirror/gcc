@@ -1183,9 +1183,6 @@ convert_modes (mode, oldmode, x, unsignedp)
 {
   register rtx temp;
 
-  if (GET_MODE (x) != VOIDmode)
-    oldmode = GET_MODE (x);
- 
   /* If FROM is a SUBREG that indicates that we have already done at least
      the required extension, strip it.  */
 
@@ -1194,6 +1191,9 @@ convert_modes (mode, oldmode, x, unsignedp)
       && SUBREG_PROMOTED_UNSIGNED_P (x) == unsignedp)
     x = gen_lowpart (mode, x);
 
+  if (GET_MODE (x) != VOIDmode)
+    oldmode = GET_MODE (x);
+ 
   if (mode == oldmode)
     return x;
 
