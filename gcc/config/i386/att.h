@@ -36,14 +36,14 @@ Boston, MA 02111-1307, USA.  */
 
 /* How to output an ASCII string constant.  */
 
-#define ASM_OUTPUT_ASCII(FILE, p, size) \
+#define ASM_OUTPUT_ASCII(FILE, PTR, SIZE)			\
 do								\
-{ int i = 0; 							\
-  while (i < (size))						\
+{ size_t i = 0, limit = (SIZE); 				\
+  while (i < limit)						\
     { if (i%10 == 0) { if (i!=0) fprintf ((FILE), "\n");	\
 		       fprintf ((FILE), "%s", ASM_BYTE_OP); }	\
       else fprintf ((FILE), ",");				\
-	fprintf ((FILE), "0x%x", ((p)[i++] & 0377)) ;}		\
+	fprintf ((FILE), "0x%x", ((PTR)[i++] & 0377)) ;}	\
       fprintf ((FILE), "\n");					\
 } while (0)
 

@@ -196,9 +196,9 @@ do { long l[2];						\
 
 #undef  ASM_OUTPUT_ASCII
 #define  ASM_OUTPUT_ASCII(FILE, P , SIZE)				\
-do {  int i;								\
+do {  size_t i, limit = (SIZE);						\
 	  fprintf ((FILE), "\t.ascii \"");				\
-	  for (i = 0; i < (SIZE); i++)					\
+	  for (i = 0; i < limit; i++)					\
 	    {								\
 	      register int c = (P)[i];					\
 	      if (i != 0 && (i / 200) * 200 == i)			\

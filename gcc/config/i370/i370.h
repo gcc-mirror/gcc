@@ -1232,11 +1232,11 @@ enum reg_class
 
 #define ASM_OUTPUT_ASCII(FILE, PTR, LEN)				\
 {									\
-  int i, j;								\
-  int c;								\
-  for (j = 0, i = 0; i < LEN; j++, i++)					\
+  size_t i, limit = (LEN);						\
+  int j;								\
+  for (j = 0, i = 0; i < limit; j++, i++)				\
     {									\
-      c = PTR[i];							\
+      int c = (PTR)[i];							\
       if (ISCNTRL (c) || c == '&')					\
 	{								\
 	  if (j % MVS_ASCII_TEXT_LENGTH != 0 )				\

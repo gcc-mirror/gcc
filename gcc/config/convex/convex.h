@@ -1312,9 +1312,9 @@ enum reg_class {
 /* This is how to output a string */
 
 #define ASM_OUTPUT_ASCII(FILE,STR,SIZE) do {				\
-  int i;								\
+  size_t i, limit = (SIZE);						\
   fprintf ((FILE), "\tds.b \"");					\
-  for (i = 0; i < (SIZE); i++) {					\
+  for (i = 0; i < limit; i++) {						\
       register int c = (STR)[i] & 0377;					\
       if (c >= ' ' && c < 0177 && c != '\\' && c != '"')		\
 	  putc (c, (FILE));						\

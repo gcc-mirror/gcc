@@ -549,11 +549,11 @@ do {					\
         output_addr_const (FILE, addr);					\
     }}
 
-#define	ASM_OUTPUT_ASCII(f, p, size)	\
-do { register int i;			\
+#define	ASM_OUTPUT_ASCII(f, p, SIZE)	\
+do { size_t i, limit = (SIZE);		\
   int inside;				\
   inside = FALSE;			\
-  for (i = 0; i < (size); i++) {	\
+  for (i = 0; i < limit; i++) {	\
     if (i % 8 == 0) {			\
       if (i != 0) {			\
 	if (inside)			\

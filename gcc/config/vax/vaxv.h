@@ -51,9 +51,9 @@ output_file_directive ((FILE), main_input_filename)
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
 do {							\
-  const unsigned char *s;				\
-  int i;						\
-  for (i = 0, s = (PTR); i < (LEN); s++, i++)		\
+  const unsigned char *s = (const unsigned char *)(PTR);\
+  size_t i, limit = (LEN);				\
+  for (i = 0; i < limit; s++, i++)		\
     {							\
       if ((i % 8) == 0)					\
 	fputs ("\n\t.byte\t", (FILE));			\

@@ -7,10 +7,10 @@
 
 #define ASCII_DATA_ASM_OP "\t.byte\t"
 #define	ASM_OUTPUT_ASCII(f, p, size)	\
-do { register unsigned i;		\
+do { register size_t i, limit = (size);	\
   int inside;				\
   inside = FALSE;			\
-  for (i = 0; i < (size); i++) {	\
+  for (i = 0; i < limit; i++) {	\
     if (i % 64 == 0) {			\
       if (i != 0) {			\
 	if (inside)			\

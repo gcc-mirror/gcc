@@ -216,10 +216,10 @@ do {									\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 do {								\
-  register int sp = 0, ch;					\
+  register size_t sp = 0, limit = (LEN);			\
   fprintf ((FILE), "%s", BYTE_ASM_OP);				\
   do {								\
-    ch = (PTR)[sp];						\
+    int ch = (PTR)[sp];						\
     if (ch > ' ' && ! (ch & 0x80) && ch != '\\')		\
       {								\
 	fprintf ((FILE), "'%c", ch);				\
@@ -228,7 +228,7 @@ do {								\
       {								\
 	fprintf ((FILE), "0x%x", ch);				\
       }								\
-    if (++sp < (LEN))						\
+    if (++sp < limit)						\
       {								\
 	if ((sp % 10) == 0)					\
 	  {							\
@@ -239,7 +239,7 @@ do {								\
 	    putc (',', (FILE));					\
 	  }							\
       }								\
-  } while (sp < (LEN));						\
+  } while (sp < limit);						\
   putc ('\n', (FILE));						\
 } while (0)
 
