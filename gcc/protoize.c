@@ -34,6 +34,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifndef __STDC__
 #define const
+#define volatile
 #endif
 
 #include "config.h"
@@ -147,8 +148,10 @@ extern int atoi ();
 extern int puts ();
 extern int fputs ();
 extern int fputc ();
-#if 0 /* Causes trouble on some systems that define setjmp as a macro.  */
+#ifndef setjmp
 extern int setjmp ();
+#endif
+#ifndef longjmp
 extern void longjmp ();
 #endif
 
@@ -267,7 +270,7 @@ static const int hash_mask = (HASH_TABLE_SIZE - 1);
 #define LOCAL_INCLUDE_DIR "/usr/local/include"
 #endif
 
-struct default_include { char *fname; int cplusplus; } include_defaults[]
+struct default_include { const char *fname; int cplusplus; } include_defaults[]
 #ifdef INCLUDE_DEFAULTS
   = INCLUDE_DEFAULTS;
 #else
@@ -445,7 +448,7 @@ static int errors = 0;
 
 /* File name to use for running gcc.  Allows GCC 2 to be named
    something other than gcc.  */
-static char *compiler_file_name = "gcc";
+static const char *compiler_file_name = "gcc";
 
 static int version_flag = 0;		/* Print our version number.  */
 static int quiet_flag = 0;		/* Don't print messages normally.  */
@@ -643,10 +646,25 @@ xfree (p)
 static char *
 savestring (input, size)
      const char *input;
-     int size;
+     unsigned size;
 {
   char *output = (char *) xmalloc (size + 1);
   strcpy (output, input);
+  return output;
+}
+
+/* Make a copy of the concatenation of INPUT1 and INPUT2.  */
+
+static char *
+savestring2 (input1, size1, input2, size2)
+     const char *input1;
+     unsigned size1;
+     const char *input2;
+     unsigned size2;
+{
+  char *output = (char *) xmalloc (size1 + size2 + 1);
+  strcpy (output, input1);
+  strcpy (&output[size1], input2);
   return output;
 }
 
@@ -969,7 +987,7 @@ file_excluded_p (name)
 static struct string_list *
 string_list_cons (string, rest)
      char *string;
-     struct string_list *rest;      
+     struct string_list *rest;
 {
   struct string_list *temp
     = (struct string_list *) xmalloc (sizeof (struct string_list));
@@ -1363,12 +1381,13 @@ shortpath (cwd, filename)
    we create a new file_info record to go with the filename, and we initialize
    that record with some reasonable values.  */
 
+/* FILENAME was const, but that causes a warning on AIX when calling stat.
+   That is probably a bug in AIX, but might as well avoid the warning.  */
+
 static file_info *
 find_file (filename, do_not_stat)
      char *filename;
      int do_not_stat;
-/* FILENAME was const, but that causes a warning on AIX when calling stat.
-   That is probably a bug in AIX, but might as well avoid the warning.  */
 {
   hash_table_entry *hash_entry_p;
 
@@ -1891,8 +1910,8 @@ munge_compile_params (params_list)
 {
   /* Build up the contents in a temporary vector
      that is so big that to has to be big enough.  */
-  char **temp_params
-    = (char **) alloca ((strlen (params_list) + 6) * sizeof (char *));
+  const char **temp_params
+    = (const char **) alloca ((strlen (params_list) + 6) * sizeof (char *));
   int param_count = 0;
   const char *param;
 
@@ -1971,9 +1990,10 @@ gen_aux_info_file (base_filename)
   compile_params[input_file_name_index] = shortpath (NULL, base_filename);
   /* Add .X to source file name to get aux-info file name.  */
   compile_params[aux_info_file_name_index]
-    = dupnstr (compile_params[input_file_name_index],
-	       (2 + strlen (compile_params[input_file_name_index])));
-  strcat (compile_params[aux_info_file_name_index], ".X");
+    = savestring2 (compile_params[input_file_name_index],
+	           strlen (compile_params[input_file_name_index]),
+		   ".X",
+		   2);
 
   if (!quiet_flag)
     fprintf (stderr, "%s: compiling `%s'\n",
@@ -2543,10 +2563,12 @@ find_extern_def (head, user)
 			 shortpath (NULL, file), user->line,
 			 needed+7);	/* Don't print "extern " */
               }
+#if 0
             else
               fprintf (stderr, "%s: %d: warning: no extern definition for `%s'\n",
 		       shortpath (NULL, file), user->line,
 		       user->hash_entry->symbol);
+#endif
         }
     }
   return extern_def_p;
@@ -2933,7 +2955,7 @@ other_variable_style_function (ansi_header)
 static void
 edit_fn_declaration (def_dec_p, clean_text_p)
      const def_dec_info *def_dec_p;
-     const char *VOLATILE clean_text_p;
+     const char *volatile clean_text_p;
 {
   const char *start_formals;
   const char *end_formals;
@@ -3948,7 +3970,7 @@ scan_for_missed_items (file_p)
 		    /* If we make it here, then we did not know about this
 		       function definition.  */
 
-		    fprintf (stderr, "%s: %d: warning: `%s' was #if 0\n",
+		    fprintf (stderr, "%s: %d: warning: `%s' excluded by preprocessing\n",
 			     shortpath (NULL, file_p->hash_entry->symbol),
 			     identify_lineno (id_start), func_name);
 		    fprintf (stderr, "%s: function definition not converted\n",
@@ -4010,7 +4032,7 @@ edit_file (hp)
           && !in_system_include_dir (convert_filename)
 #endif /* defined (UNPROTOIZE) */
           )
-        fprintf (stderr, "%s: file `%s' not converted\n",
+        fprintf (stderr, "%s: `%s' not converted\n",
 		 pname, shortpath (NULL, convert_filename));
       return;
     }
