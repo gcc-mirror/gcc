@@ -4279,7 +4279,8 @@ initializer_constant_valid_p (value, endtype)
     case CONSTRUCTOR:
       if ((TREE_CODE (TREE_TYPE (value)) == UNION_TYPE
 	   || TREE_CODE (TREE_TYPE (value)) == RECORD_TYPE)
-	  && TREE_CONSTANT (value))
+	  && TREE_CONSTANT (value)
+	  && CONSTRUCTOR_ELTS (value))
 	return
 	  initializer_constant_valid_p (TREE_VALUE (CONSTRUCTOR_ELTS (value)),
 					endtype);
