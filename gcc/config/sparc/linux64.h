@@ -39,7 +39,9 @@ Boston, MA 02111-1307, USA.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
-#if TARGET_CPU_DEFAULT == TARGET_CPU_v9 || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
+    || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
+    || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3
 /* A 64 bit v9 compiler with stack-bias,
    in a Medium/Low code model environment.  */
 
