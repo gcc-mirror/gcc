@@ -1,3 +1,7 @@
+Mon May 18 01:43:01 1998  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
+
+	* class.c (finish_struct_1): Use OVL_CURRENT in error message.
+
 Mon May 18 01:24:08 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (program_transform_name, objdir): Define.
