@@ -1627,7 +1627,8 @@ s-opinit : $(md_file) genopinit $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-opinit.c insn-opinit.c
 	touch s-opinit
 
-insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H) system.h toplev.h
+insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H) system.h toplev.h \
+  insn-config.h recog.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-extract.c
 
 insn-extract.c: s-extract ; @true

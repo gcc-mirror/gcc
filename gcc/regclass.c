@@ -665,6 +665,7 @@ static int loop_depth;
 
 static int loop_cost;
 
+static int n_occurrences	PROTO((int, char *));
 static void record_reg_classes	PROTO((int, int, rtx *, enum machine_mode *,
 				       char **, rtx));
 static int copy_cost		PROTO((rtx, enum machine_mode, 
@@ -707,6 +708,18 @@ regclass_init ()
   prefclass = 0;
 }
 
+/* Return the number of times character C occurs in string S.  */
+static int
+n_occurrences (c, s)
+     int c;
+     char *s;
+{
+  int n = 0;
+  while (*s)
+    n += (*s++ == c);
+  return n;
+}
+
 /* This is a pass of the compiler that scans all instructions
    and calculates the preferred class for each pseudo-register.
    This information can be accessed later by calling `reg_preferred_class'.
