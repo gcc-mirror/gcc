@@ -1,3 +1,14 @@
+2004-04-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<wchar_t>::_M_initialize_moneypunct): Prefer
+	_NL_MONETARY_DECIMAL_POINT_WC, _NL_MONETARY_THOUSANDS_SEP_WC,
+	and __MON_GROUPING to _NL_NUMERIC_DECIMAL_POINT_WC,
+	_NL_NUMERIC_THOUSANDS_SEP_WC, and GROUPING.
+	* config/locale/gnu/numeric_members.cc
+	(numpunct<char>::_M_initialize_numpunct): Prefer DECIMAL_POINT
+	and THOUSANDS_SEP to the deprecated RADIXCHAR and THOUSEP.
+
 2004-04-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Fixups for EDG front end.

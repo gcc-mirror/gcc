@@ -64,8 +64,8 @@ namespace std
       else
 	{
 	  // Named locale.
-	  _M_data->_M_decimal_point = *(__nl_langinfo_l(RADIXCHAR, __cloc));
-	  _M_data->_M_thousands_sep = *(__nl_langinfo_l(THOUSEP, __cloc));
+	  _M_data->_M_decimal_point = *(__nl_langinfo_l(DECIMAL_POINT, __cloc));
+	  _M_data->_M_thousands_sep = *(__nl_langinfo_l(THOUSANDS_SEP, __cloc));
 
 	  // Check for NULL, which implies no grouping.
 	  if (_M_data->_M_thousands_sep == '\0')
