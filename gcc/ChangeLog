@@ -1,5 +1,10 @@
 2004-11-18  Ben Elliston  <bje@au.ibm.com>
 
+	* doc/cfg.texi (Maintaining the CFG): Remove duplicated @item
+	element for bsi_prev; use @findex instead.
+
+2004-11-18  Ben Elliston  <bje@au.ibm.com>
+
 	* opts.h (add_input_filename): Remove extern declaration.
 	* opts.c (add_input_filename): Make static.
 
