@@ -3061,8 +3061,11 @@ force_const_mem (mode, x)
   /* Align the location counter as required by EXP's data type.  */
   align = GET_MODE_ALIGNMENT (mode == VOIDmode ? word_mode : mode);
 #ifdef CONSTANT_ALIGNMENT
-  align = CONSTANT_ALIGNMENT (make_tree ((*lang_hooks.types.type_for_mode)
-					 (mode, 0), x), align);
+  {
+    tree type = (*lang_hooks.types.type_for_mode) (mode, 0);
+    if (type != NULL_TREE)
+      align = CONSTANT_ALIGNMENT (make_tree (type, x), align);
+  }
 #endif
 
   pool_offset += (align / BITS_PER_UNIT) - 1;
