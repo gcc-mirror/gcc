@@ -5596,7 +5596,7 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
 	    highest = ready[n_ready - 1];
 	    ready[n_ready - 1] = insn;
 	    *insnp = highest;
-	    if (group_barrier_needed_p (insn))
+	    if (ia64_final_schedule && group_barrier_needed_p (insn))
 	      {
 		schedule_stop (sched_verbose ? dump : NULL);
 		sched_data.last_was_stop = 1;
