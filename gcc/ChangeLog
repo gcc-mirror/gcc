@@ -1,4 +1,9 @@
 2002-09-24  Adam Nemet  <anemet@lnxw.com>
+
+        * config/arm/arm.c (thumb_unexpanded_epilogue): Don't generate
+        epilogue for naked functions.
+
+2002-09-24  Adam Nemet  <anemet@lnxw.com>
             Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.h (THUMB_FUNCTION_PROFILER): Remove.
