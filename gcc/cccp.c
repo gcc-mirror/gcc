@@ -2934,9 +2934,7 @@ do { ip = &instack[indepth];		\
 	    ibp += 2;
 	  }
 	  c = *ibp++;
-	  /* ".." terminates a preprocessing number.  This is useless for C
-	     code but useful for preprocessing other things.  */
-	  if (!isalnum (c) && (c != '.' || *ibp == '.') && c != '_') {
+	  if (!is_idchar[c] && c != '.') {
 	    --ibp;
 	    break;
 	  }
