@@ -5238,56 +5238,71 @@
 ;; either before or after register allocation.
 
 (define_split
-  [(set (match_operator 0 "memop" [(match_operand:SI 1 "symbolic_operand" "")])
-	(match_operand 2 "reg_or_0_operand" ""))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+  [(set (match_operand 0 "splittable_symbolic_memory_operand" "")
+	(match_operand 1 "reg_or_0_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" ""))]
   "! flag_pic"
-  [(set (match_dup 3) (high:SI (match_dup 1)))
-   (set (match_op_dup 0 [(lo_sum:SI (match_dup 3) (match_dup 1))])
-	(match_dup 2))]
-  "")
-
-(define_split
-  [(set (match_operator 0 "memop"
-			[(match_operand:SI 1 "immediate_operand" "")])
-	(match_operand 2 "general_operand" ""))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
-  "flag_pic"
-  [(set (match_op_dup 0 [(match_dup 1)])
-	(match_dup 2))]
+  [(set (match_dup 2) (high:SI (match_dup 3)))
+   (set (match_dup 4) (match_dup 1))]
   "
 {
-  operands[1] = legitimize_pic_address (operands[1], GET_MODE (operands[0]),
-					operands[3]);
+  operands[3] = XEXP (operands[0], 0);
+  operands[4] = gen_rtx (MEM, GET_MODE (operands[0]),
+			 gen_rtx (LO_SUM, SImode, operands[2], operands[3]));
+  MEM_IN_STRUCT_P (operands[4]) = MEM_IN_STRUCT_P (operands[0]);
+  MEM_VOLATILE_P (operands[4]) = MEM_VOLATILE_P (operands[0]);
+  RTX_UNCHANGING_P (operands[4]) = RTX_UNCHANGING_P (operands[0]);
+}")
+
+(define_split
+  [(set (match_operand 0 "splittable_immediate_memory_operand" "")
+	(match_operand 1 "general_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" ""))]
+  "flag_pic"
+  [(set (match_dup 3) (match_dup 1))]
+  "
+{
+  rtx addr = legitimize_pic_address (XEXP (operands[0], 0),
+				     GET_MODE (operands[0]),
+				     operands[2]);
+  operands[3] = gen_rtx (MEM, GET_MODE (operands[0]), addr);
+  MEM_IN_STRUCT_P (operands[3]) = MEM_IN_STRUCT_P (operands[0]);
+  MEM_VOLATILE_P (operands[3]) = MEM_VOLATILE_P (operands[0]);
+  RTX_UNCHANGING_P (operands[3]) = RTX_UNCHANGING_P (operands[0]);
 }")
 
 (define_split
   [(set (match_operand 0 "register_operand" "")
-	(match_operator 1 "memop"
-			[(match_operand:SI 2 "immediate_operand" "")]))]
+	(match_operand 1 "splittable_immediate_memory_operand" ""))]
   "flag_pic"
-  [(set (match_dup 0)
-	(match_op_dup 1 [(match_dup 2)]))]
+  [(set (match_dup 0) (match_dup 2))]
   "
 {
-  operands[2] = legitimize_pic_address (operands[2], GET_MODE (operands[1]),
-					operands[0]);
+  rtx addr = legitimize_pic_address (XEXP (operands[1], 0),
+				     GET_MODE (operands[1]),
+				     operands[0]);
+  operands[2] = gen_rtx (MEM, GET_MODE (operands[1]), addr);
+  MEM_IN_STRUCT_P (operands[2]) = MEM_IN_STRUCT_P (operands[1]);
+  MEM_VOLATILE_P (operands[2]) = MEM_VOLATILE_P (operands[1]);
+  RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
 }")
 
 ;; Sign- and Zero-extend operations can have symbolic memory operands.
 
 (define_split
   [(set (match_operand 0 "register_operand" "")
-	(match_operator 1 "extend_op"
-			[(match_operator 2 "memop"
-					 [(match_operand:SI 3 "immediate_operand" "")])]))]
+	(match_operator 1 "extend_op" [(match_operand 2 "splittable_immediate_memory_operand" "")]))]
   "flag_pic"
-  [(set (match_dup 0)
-	(match_op_dup 1 [(match_op_dup 2 [(match_dup 3)])]))]
+  [(set (match_dup 0) (match_op_dup 1 [(match_dup 3)]))]
   "
 {
-  operands[3] = legitimize_pic_address (operands[3], GET_MODE (operands[2]),
-					operands[0]);
+  rtx addr = legitimize_pic_address (XEXP (operands[2], 0),
+				     GET_MODE (operands[2]),
+				     operands[0]);
+  operands[3] = gen_rtx (MEM, GET_MODE (operands[2]), addr);
+  MEM_IN_STRUCT_P (operands[3]) = MEM_IN_STRUCT_P (operands[2]);
+  MEM_VOLATILE_P (operands[3]) = MEM_VOLATILE_P (operands[2]);
+  RTX_UNCHANGING_P (operands[3]) = RTX_UNCHANGING_P (operands[2]);
 }")
 
 (define_split
