@@ -1,3 +1,28 @@
+Wed Jun 30 16:51:41 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* configure.in: Add arm-pe and thumb-pe targets.
+	* configure: Regenerate.
+
+	* thumb.c (arm_naked_function_p): New function: Determines if
+	a function is naked (has no gcc generated prologue/epilogue).
+	(is_called_in_ARM_mode): Return true if the func has the
+	interfacearm attribute.
+	(output_return): Do not generate a return for naked functions.
+	(thumb_function_prologue): Do not generate a prologue for
+	naked functions.
+	(thumb_expand_prologue): Do not generate a prologue for naked
+	functions. 
+	(thumb_expand_epilogue): Do not generate an epilogue for naked
+	functions.
+	(arm_valid_machine_decl_attribute): New function, copied from
+	arm.c:  Permit naked and interfacearm attributes.
+	
+	* config/arm/pe.c: New file: Support code for arm-pe target.
+	* config/arm/pe.h: New file: Header file for arm-pe target.
+	* config/arm/tpe.h: New file: Header file for thumb-pe target.
+	* config/arm/t-thumb-pe: New file: Makefile fragment for
+	thumb-pe target.
+	
 1999-07-01  Mark Kettenis  <kettenis@gnu.org>
 
 	* config/i386/gnu.h (CPP_SPEC): Define __PIC__ and __pic__ if
