@@ -1,3 +1,7 @@
+2004-05-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_bitset.h: Trivial formatting fixes.
+
 2004-05-14  Paolo Carlini  <pcarlini@suse.de>
 	    Ivan Godard  <igodard@pacbell.net>
 
