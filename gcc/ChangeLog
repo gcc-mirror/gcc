@@ -1,3 +1,7 @@
+Sat Jun 27 22:37:05 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (gencheck): Remove $(TREE_H) dependency.
+
 Sat Jun 27 20:20:00 1998  John Carr  <jfc@mit.edu>
 
 	* dsp16xx.h (FIRST_PSEUDO_REGISTER): Add parentheses to definition.

@@ -1334,12 +1334,12 @@ gcc.o: gcc.c $(CONFIG_H) system.h gansidecl.h multilib.h Makefile \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
 
 tree-check.h: s-check ; @true
-s-check : tree.def gencheck $(srcdir)/move-if-change
+s-check : gencheck $(srcdir)/move-if-change
 	./gencheck > tmp-check.h
 	$(srcdir)/move-if-change tmp-check.h tree-check.h
 	touch s-check
 
-gencheck : gencheck.o $(TREE_H) $(HOST_LIBDEPS)
+gencheck : gencheck.o tree.def $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 gencheck.o $(HOST_LIBS)
 
