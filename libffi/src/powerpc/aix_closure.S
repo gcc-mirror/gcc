@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
-   aix_closures.S - Copyright (c) 2002 Free Software Foundation, Inc.
-   based on darwin_closures.S 
+   aix_closure.S - Copyright (c) 2002 2003 Free Software Foundation, Inc.
+   based on darwin_closure.S 
   
    PowerPC Assembly glue.
 
@@ -106,24 +106,25 @@ ffi_closure_ASM:
 	/* 24 Bytes (Linkage Area) */
 	/* 32 Bytes (params) */
 	/* 104 Bytes (13*8 from FPR) */ 
-	/* 4 Bytes (result)
-	/* 164 Bytes */
+	/* 8 Bytes (result)
+	/* 168 Bytes */
 	
-	stwu r1,-164(r1)	/* skip over caller save area */
+	stwu r1,-176(r1)	/* skip over caller save area
+				keep stack aligned to 16  */
 
 /* we want to build up an area for the parameters passed */
 /* in registers (both floating point and integer) */
 	
-	/* we store gpr 3 to gpr 10 (aligned to 4) */
-	/* in the parents outgoing area		   */
-	stw   r3, 188(r1)
-	stw   r4, 192(r1)
-	stw   r5, 196(r1) 
-	stw   r6, 200(r1)
-	stw   r7, 204(r1)
-	stw   r8, 208(r1) 
-	stw   r9, 212(r1)
-	stw   r10, 216(r1)
+	/* we store gpr 3 to gpr 10 (aligned to 4)
+	in the parents outgoing area  */
+	stw   r3, 200(r1)
+	stw   r4, 204(r1)
+	stw   r5, 208(r1) 
+	stw   r6, 212(r1)
+	stw   r7, 216(r1)
+	stw   r8, 220(r1) 
+	stw   r9, 224(r1)
+	stw   r10, 228(r1)
 
 	/* next save fpr 1 to fpr 13 (aligned to 8) */
 	stfd  f1, 56(r1)
@@ -148,14 +149,14 @@ ffi_closure_ASM:
 	addi r4,r1,160
 	
 	/* now load up the pointer to the saved gpr registers */
-	addi r5,r1,188
+	addi r5,r1,200
 
 	/* now load up the pointer to the saved fpr registers */
 	addi r6,r1,56
 
 	/* now load up the pointer to the outgoing parameter  */
 	/* stack in the previous frame */
-	addi r7,r1,220
+	addi r7,r1,232
 	
 	/* make the call */
 	bl .ffi_closure_helper_DARWIN
@@ -243,7 +244,7 @@ L..58:
 /* case void / done	 */
 L..44:
 	
-	addi r1,r1,164		/* restore stack pointer */
+	addi r1,r1,176		/* restore stack pointer */
 	lwz r0,8(r1)		/* get return address */
 	mtlr r0			/* reset link register */
 	blr

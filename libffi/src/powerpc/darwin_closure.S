@@ -41,27 +41,28 @@ LFB1:
 	mflr r0			/* extract return address  */
 	stw r0, 8(r1)		/* save the return address  */
 LCFI0:	
-	/* 24 Bytes (Linkage Area) */
-	/* 32 Bytes (outgoing parameter area, always reserved) */
-	/* 104 Bytes (13*8 from FPR) */ 
-	/* 4 Bytes (result)
-	/* 164 Bytes */
+	/* 24 Bytes (Linkage Area)
+	   32 Bytes (outgoing parameter area, always reserved)
+	   104 Bytes (13*8 from FPR)	
+	   8 Bytes (result)
+	   168 Bytes  */
 	
-	stwu r1,-164(r1)	/* skip over caller save area  */
+	stwu r1,-176(r1)	/* skip over caller save area
+				keep stack aligned to 16  */
 LCFI1:		
 	/* we want to build up an area for the parameters passed
 	in registers (both floating point and integer)  */
 	
-	/* we store gpr 3 to gpr 10 (aligned to 4) */
-	/* in the parents outgoing area		   */
-	stw   r3, 188(r1)
-	stw   r4, 192(r1)
-	stw   r5, 196(r1) 
-	stw   r6, 200(r1)
-	stw   r7, 204(r1)
-	stw   r8, 208(r1) 
-	stw   r9, 212(r1)
-	stw   r10, 216(r1)
+	/* we store gpr 3 to gpr 10 (aligned to 4)
+	in the parents outgoing area  */
+	stw   r3, 200(r1)
+	stw   r4, 204(r1)
+	stw   r5, 208(r1) 
+	stw   r6, 212(r1)
+	stw   r7, 216(r1)
+	stw   r8, 220(r1) 
+	stw   r9, 224(r1)
+	stw   r10, 228(r1)
 
 	/* we save fpr 1 to fpr 13 (aligned to 8) */
 	stfd  f1, 56(r1)
@@ -85,15 +86,15 @@ LCFI1:
 	/* now load up the pointer to the result storage */
 	addi r4,r1,160
 	
-	/* now load up the pointer to the saved gpr registers */
-	addi r5,r1,188
+	/* now load up the pointer to the saved gpr registers  */
+	addi r5,r1,200
 
 	/* now load up the pointer to the saved fpr registers */
 	addi r6,r1,56
 
-	/* now load up the pointer to the outgoing parameter  */
-	/* stack in the previous frame */
-	addi r7,r1,220
+	/* now load up the pointer to the outgoing parameter
+	stack in the previous frame  */
+	addi r7,r1,232
 	
 	/* make the call */
 	bl L(_ffi_closure_helper_DARWIN)
@@ -182,9 +183,9 @@ LFE1:
 /* case void / done	 */
 .L44:
 	
-	addi r1,r1,164		/* restore stack pointer */
-	lwz r0,8(r1)		/* get return address */
-	mtlr r0			/* reset link register */
+	addi r1,r1,176		/* restore stack pointer  */
+	lwz r0,8(r1)		/* get return address  */
+	mtlr r0			/* reset link register  */
 	blr
 	
 /* END(ffi_closure_ASM)  */
@@ -223,7 +224,7 @@ LASFDE1:
 	.set	L$set$3,LCFI1-LCFI0
 	.long	L$set$3
 	.byte	0xe	; DW_CFA_def_cfa_offset
- 	.byte	164,1	; uleb128 164
+ 	.byte	176,1	; uleb128 176
 	.byte	0x4	; DW_CFA_advance_loc4
 	.set	L$set$4,LCFI0-LFB1
 	.long	L$set$4
