@@ -1,3 +1,7 @@
+Sat Oct  3 19:01:03 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/linux.h (CPP_PREDEFINES): Define __alpha__ for imake.
+
 Fri Oct  2 01:33:30 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* i386/winnt.c (i386_pe_asm_file_end): Check

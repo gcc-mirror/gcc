@@ -24,7 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-Dlinux -Dunix -Asystem(linux) -D_LONGLONG " SUB_CPP_PREDEFINES
+"-Dlinux -Dunix -Asystem(linux) -D_LONGLONG -D__alpha__" SUB_CPP_PREDEFINES
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} %{pg:-lc_p} %{!pg:-lc}"
