@@ -27,5 +27,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES "-D_IBMR2 -D_AIX -Asystem(unix) -Asystem(aix) -Acpu(rs6000) -Amachine(rs6000)"
 
 /* AIX 3.1 uses bit 15 in CROR as the magic nop.  */
-#undef RS6000_CROR_BIT_NUMBER
-#define RS6000_CROR_BIT_NUMBER 15
+#undef RS6000_CALL_GLUE
+#define RS6000_CALL_GLUE "cror 15,15,15"

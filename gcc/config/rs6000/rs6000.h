@@ -1843,9 +1843,9 @@ toc_section ()						\
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
-/* Bit number to use in cror after branch.  Different between AIX 3.2 and 
-   earlier systems.  */
-#define RS6000_CROR_BIT_NUMBER 31
+/* Text to write out after a CALL that may be replaced by glue code by
+   the loader.  This depends on the AIX version.  */
+#define RS6000_CALL_GLUE "cror 31,31,31"
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
