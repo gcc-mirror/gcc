@@ -1,3 +1,8 @@
+2004-01-13  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/netbsd-elf.h (REGISTER_NAMES): Add missing "argptr"
+	pseudo-register. 
+
 2004-01-13  Devang Patel <dpatel@apple.com
 
 	PR debug/7078
