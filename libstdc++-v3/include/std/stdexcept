@@ -1,0 +1,3 @@
+#ifndef _CPP_STDEXCEPT
+#include <bits/std_stdexcept.h>
+#endif

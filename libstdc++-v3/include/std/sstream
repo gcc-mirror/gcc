@@ -1,0 +1,3 @@
+#ifndef _CPP_SSTREAM
+#include <bits/std_sstream.h>
+#endif

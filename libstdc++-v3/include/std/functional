@@ -1,0 +1,3 @@
+#ifndef _CPP_FUNCTIONAL
+#include <bits/std_functional.h>
+#endif

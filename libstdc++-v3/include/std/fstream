@@ -1,0 +1,3 @@
+#ifndef _CPP_FSTREAM
+#include <bits/std_fstream.h>
+#endif

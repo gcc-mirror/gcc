@@ -1,0 +1,3 @@
+#ifndef _CPP_VECTOR
+#include <bits/std_vector.h>
+#endif

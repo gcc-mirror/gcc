@@ -1,0 +1,3 @@
+#ifndef _CPP_MEMORY
+#include <bits/std_memory.h>
+#endif
