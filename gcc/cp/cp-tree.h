@@ -2132,15 +2132,7 @@ extern void check_default_args			PROTO((tree));
 extern void mark_used				PROTO((tree));
 
 /* in except.c */
-extern tree protect_list;
-extern void expand_eh_region_start		PROTO((void));
-extern void expand_eh_region_end		PROTO((tree));
-extern void end_protect_partials		PROTO((void));
 extern void expand_exception_blocks		PROTO((void));
-extern void expand_start_try_stmts		PROTO((void));
-extern void expand_end_try_stmts		PROTO((void));
-extern void expand_start_all_catch		PROTO((void));
-extern void expand_end_all_catch		PROTO((void));
 extern void start_catch_block			PROTO((tree, tree));
 extern void end_catch_block			PROTO((void));
 extern void expand_throw			PROTO((tree));

@@ -1,3 +1,12 @@
+Wed Sep  4 17:16:09 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* except.c (expand_start_try_stmts): Move to except.c in the backend.
+	(expand_end_try_stmts): Remove.
+
+	* init.c (perform_member_init): Use add_partial_entry () instead
+	of directly manipulating lists.
+	(emit_base_init): Ditto.
+
 Thu Aug 22 01:09:22 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (start_function): Only check interface_* for templates

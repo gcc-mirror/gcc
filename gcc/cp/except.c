@@ -347,23 +347,6 @@ init_exception_processing ()
   saved_in_catch = lookup_name (get_identifier ("__eh_in_catch"), 0);
 }
 
-/* Call this on start of a try block.  */
-
-void
-expand_start_try_stmts ()
-{
-  if (! doing_eh (1))
-    return;
-
-  expand_eh_region_start ();
-}
-
-void
-expand_end_try_stmts ()
-{
-  expand_eh_region_end (integer_zero_node);
-}
-
 /* Build a type value for use at runtime for a type that is matched
    against by the exception handling system.  */
 
