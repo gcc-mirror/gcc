@@ -1,3 +1,8 @@
+2004-08-31  Matt Austern  <austern@apple.com>
+
+	* config/darwin.c (darwin_make_decl_one_only): Allocate section
+	names once per compilation, instead of once per symbol.
+	
 2004-08-31  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (build_subdir): New substitution.
