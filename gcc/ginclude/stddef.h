@@ -263,9 +263,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #ifndef __WINT_TYPE__
 #define __WINT_TYPE__ unsigned int
 #endif
-#ifndef __cplusplus
 typedef __WINT_TYPE__ wint_t;
-#endif
 #endif
 #endif
 
