@@ -181,7 +181,7 @@ do { register HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); \
 do { register HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); \
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       if (*scan_xp_++ != *scan_yp_++)) break;		\
+       if (*scan_xp_++ != *scan_yp_++) break;			\
      if (i == HARD_REG_SET_LONGS) goto TO; } while (0)
 
 #endif
