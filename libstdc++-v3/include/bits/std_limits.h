@@ -1770,9 +1770,9 @@ namespace std
       static const bool is_signed = true;
       static const bool is_integer = false;
       static const bool is_exact = false;
-      static const int radix = 2;
+      static const int radix = __glibcpp_float_radix;
       static float epsilon() throw()
-      { return __glibcpp_float_radix; }
+      { return __glibcpp_float_epsilon; }
       static float round_error() throw()
       { return __glibcpp_float_round_error; }
 

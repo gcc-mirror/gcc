@@ -1,3 +1,8 @@
+2001-09-12  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/std_limits.h (numeric_limits<float>::radix,
+	numeric_limits<float>::epsilon:  Fix thinko.
+
 2001-09-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in: Fix cross compiling math routines. Correct
