@@ -1,3 +1,8 @@
+Wed Dec 26 17:55:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/sparc/sparc.md (call struct patterns): Show starting
+	at two words long.
+
 2001-12-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (ASM_CPU_SPEC, CPP_CPU_SPEC): Add mcpu=405.
