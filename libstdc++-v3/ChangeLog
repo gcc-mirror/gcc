@@ -1,6 +1,10 @@
+2001-02-21  Phil Edwards  <pme@sources.redhat.com>
+
+	* tests_flags.in:  Remove -n flag from call to echo.
+
 2001-03-05  Laurynas Biveinis  <lauras@softhome.net>
 
-        * config/os/djgpp/ctype_base.h (ctype_base): Fix __to_type
+	* config/os/djgpp/ctype_base.h (ctype_base): Fix __to_type
 	definition. Replace enum with static const variables.
 		
 	* config/os/djgpp/ctype_inline.h (ctype<char>::is): Remove

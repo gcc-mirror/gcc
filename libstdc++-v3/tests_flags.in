@@ -157,5 +157,5 @@ case ${query} in
     ;;
 esac
 
-echo -n ${BUILD_DIR}:${SRC_DIR}:${PREFIX_DIR}:${CXX}:${CXXFLAGS}:${INCLUDES}:${LIBS}
+echo ${BUILD_DIR}:${SRC_DIR}:${PREFIX_DIR}:${CXX}:${CXXFLAGS}:${INCLUDES}:${LIBS}
 exit 0
