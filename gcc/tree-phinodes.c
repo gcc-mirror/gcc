@@ -354,7 +354,7 @@ add_phi_arg (tree *phi, tree def, edge e)
    removal by swapping the last alternative with the alternative we want to
    delete, then shrinking the vector.  */
 
-void
+static void
 remove_phi_arg_num (tree phi, int i)
 {
   int num_elem = PHI_NUM_ARGS (phi);

@@ -29,6 +29,9 @@
 	* tree-ssa.c (ssa_remove_edge): Don't call remove_phi_args.
 	(ssa_redirect_edge): Don't call remove_phi_arg_num.
 
+	* tree-phinodes.c (remove_phi_arg_num): Make it static.
+	* tree-flow.h: Remove the corresponding prototype.
+
 2004-11-23  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/cfg.texi (Maintaining the CFG): Use @ftable instead of
