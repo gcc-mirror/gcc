@@ -57,12 +57,16 @@
   %{mmvme135: mvme135-crt0.o} \
   %{mmvme162: mvme162-crt0.o}"
 
+ /* We must always include -lc at least once.  If we use a board specific
+    library, we must include -lc before and after the board specific
+    library.  */
 #undef  LIB_SPEC
 #define LIB_SPEC "\
-  %{mmvme135: -lc -lmvme135 -lc} \
-  %{mmvme162: -lc -lmvme162 -lc} \
-  %{midp: -lc -lidp -lc} \
-  %{mbcc: -lc -lbcc -lc}"
+  -lc \
+  %{mmvme135:-lmvme135 -lc} \
+  %{mmvme162:-lmvme162 -lc} \
+  %{midp:-lidp -lc} \
+  %{mbcc:-lbcc -lc}"
 
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
