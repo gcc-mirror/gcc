@@ -1,10 +1,19 @@
 2001-07-24  Joel Sherrill <joel@OARcorp.com>
 
-        * config.gcc (arm*-*-rtems*): Include crtinit.o and crtfini.o as
-        extra multilib parts like arm-elf.
-        (i960-*-coff*, i960-*-rtems): Should not use collect2.
-        (m68020-*-elf*, m68k-*-elf*, m68k-*-rtems*): Include crtinit.o and
-        crtfini.o as extra multilib parts.
+	* config/sparc/rtems.h (CPP_PREDEFINES): Remove redundant
+	-Acpu and -Amachine.h.
+	* config/sparc/rtemself.h (CPP_PREDEFINES): Likewise.
+	Corrected header to say ELF not a.out.
+	* config/sparc/sparc.h (CPP_CPU_SPEC): Define _SOFT_FLOAT 
+	when given -msoft-float.
+
+2001-07-24  Joel Sherrill <joel@OARcorp.com>
+
+	* config.gcc (arm*-*-rtems*): Include crtinit.o and crtfini.o as
+	extra multilib parts like arm-elf.
+	(i960-*-coff*, i960-*-rtems): Should not use collect2.
+	(m68020-*-elf*, m68k-*-elf*, m68k-*-rtems*): Include crtinit.o and
+	crtfini.o as extra multilib parts.
 
 2001-07-24  Joel Sherrill <joel@OARcorp.com>
 
