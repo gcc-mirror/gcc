@@ -304,7 +304,7 @@ cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 	  const cpp_string *str)
 {
   maybe_print_line (line);
-  fprintf (print.outf, "#ident \"%s\"\n", str->text);
+  fprintf (print.outf, "#ident %s\n", str->text);
   print.src_line++;
 }
 
