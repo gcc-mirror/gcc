@@ -1,3 +1,16 @@
+2004-02-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* 22_locale/collate/compare/wchar_t/2.cc: Change input-charset
+	from iso-8859-1 to ISO8859-1.
+	* 22_locale/collate/compare/wchar_t/wrapped_env.cc: Same.
+	* 22_locale/collate/compare/wchar_t/wrapped_locale.cc: Same.
+	* 22_locale/collate/hash/wchar_t/2.cc: Same.
+	* 22_locale/collate/hash/wchar_t/wrapped_env.cc: Same.
+	* 22_locale/collate/hash/wchar_t/wrapped_locale.cc: Same.
+	* 22_locale/collate/transform/wchar_t/2.cc: Same.
+	* 22_locale/collate/transform/wchar_t/wrapped_env.cc: Same.
+	* 22_locale/collate/transform/wchar_t/wrapped_locale.cc: Same.
+
 2004-02-26  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* testsuite/demangle/abi_examples/01.cc: Expect error -2.
