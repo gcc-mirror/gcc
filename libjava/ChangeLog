@@ -1,3 +1,8 @@
+2004-07-14  Michael Koch  <konqueror@gmx.de> 
+	    Matthias Klose  <doko@debian.org> 
+
+	* java/awt/im/InputContext.java: Initialze in, line.
+
 2004-07-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* interpret.cc (run): Correctly access libffi return values of
