@@ -1,3 +1,13 @@
+2001-12-01  Olivier Hainque <hainque@act-europe.fr>
+
+	* unroll.c (loop_iterations): Give up on jumps with null JUMP_LABEL
+	while scanning for multiple back edges.
+
+2001-12-01  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* ginclude/ppc-asm.h (JUMP_TARGET): New macro.
+	* config/rs6000/tramp.asm: Use it.
+
 2001-11-30  Stephane Carrez  <Stephane.Carrez@sun.com>
 
 	* config/sparc/sparc.c (DF_MODES_NO_S): Fix pr/3623, define to

@@ -3527,18 +3527,31 @@ loop_iterations (loop)
 
       do
 	{
-	  if (GET_CODE (temp) == JUMP_INSN
-	      /* Previous unrolling may have generated new insns not covered
-		 by the uid_luid array.  */
-	      && INSN_UID (JUMP_LABEL (temp)) < max_uid_for_loop
-	      /* Check if we jump back into the loop body.  */
-	      && INSN_LUID (JUMP_LABEL (temp)) > INSN_LUID (loop->top)
-	      && INSN_LUID (JUMP_LABEL (temp)) < INSN_LUID (loop->cont))
+	  if (GET_CODE (temp) == JUMP_INSN)
 	    {
-	      if (loop_dump_stream)
-		fprintf (loop_dump_stream,
-			 "Loop iterations: Loop has multiple back edges.\n");
-	      return 0;
+	      /* There are some kinds of jumps we can't deal with easily.  */
+	      if (JUMP_LABEL (temp) == 0)
+		{
+		  if (loop_dump_stream)
+		    fprintf
+		      (loop_dump_stream,
+		       "Loop iterations: Jump insn has null JUMP_LABEL.\n");
+		  return 0;
+		}
+
+	      if (/* Previous unrolling may have generated new insns not
+		     covered by the uid_luid array.  */
+		  INSN_UID (JUMP_LABEL (temp)) < max_uid_for_loop
+		  /* Check if we jump back into the loop body.  */
+		  && INSN_LUID (JUMP_LABEL (temp)) > INSN_LUID (loop->top)
+		  && INSN_LUID (JUMP_LABEL (temp)) < INSN_LUID (loop->cont))
+		{
+		  if (loop_dump_stream)
+		    fprintf 
+		      (loop_dump_stream,
+		       "Loop iterations: Loop has multiple back edges.\n");
+		  return 0;
+		}
 	    }
 	}
       while ((temp = PREV_INSN (temp)) != loop->cont);
