@@ -1,3 +1,9 @@
+2005-03-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/20368
+	* c-decl.c (start_function): Check for old_decl being
+	error_mark_node.
+
 2005-03-30 Mostafa Hagog <mustafa@il.ibm.com>
 
 	PR middle-end/20177

@@ -1,3 +1,9 @@
+2005-03-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/20368
+	* gcc.dg/pr20368-1.c, gcc.dg/pr20368-2.c, gcc.dg/pr20368-3.c: New
+	tests.
+
 2005-03-30  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/20249
