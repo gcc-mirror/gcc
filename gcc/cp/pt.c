@@ -4133,7 +4133,7 @@ for_each_template_parm_r (tp, walk_subtrees, d)
   switch (TREE_CODE (t))
     {
     case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_FLAG (t))
+      if (TYPE_PTRMEMFUNC_P (t))
 	break;
       /* Fall through.  */
 
