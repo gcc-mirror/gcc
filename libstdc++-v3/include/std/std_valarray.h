@@ -90,7 +90,7 @@ namespace std
 } // namespace std
 
 #include <bits/valarray_array.h>
-#include <bits/valarray_meta.h>
+#include <bits/valarray_before.h>
   
 namespace std
 {
@@ -229,7 +229,9 @@ namespace std
     { return _M_data[__i]; }
 
 } // std::
-      
+
+#include <bits/valarray_after.h>
+
 #include <bits/slice_array.h>
 #include <bits/gslice.h>
 #include <bits/gslice_array.h>

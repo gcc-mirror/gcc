@@ -97,7 +97,8 @@ bits_headers = \
 	${bits_srcdir}/type_traits.h \
 	${bits_srcdir}/valarray_array.h \
 	${bits_srcdir}/valarray_array.tcc \
-	${bits_srcdir}/valarray_meta.h \
+	${bits_srcdir}/valarray_before.h \
+	${bits_srcdir}/valarray_after.h \
 	${bits_srcdir}/vector.tcc
 
 backward_srcdir = ${glibcpp_srcdir}/include/backward
