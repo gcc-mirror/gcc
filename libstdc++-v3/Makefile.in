@@ -107,8 +107,9 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_CXX = @glibcpp_CXX@
 glibcpp_basedir = @glibcpp_basedir@
-glibcpp_expect = @glibcpp_expect@
-glibcpp_runtest = @glibcpp_runtest@
+glibcpp_builddir = @glibcpp_builddir@
+glibcpp_prefixdir = @glibcpp_prefixdir@
+glibcpp_srcdir = @glibcpp_srcdir@
 glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
@@ -137,50 +138,14 @@ MULTICLEAN = true
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
-AM_MAKEFLAGS = \
-	"AR_FLAGS=$(AR_FLAGS)" \
-	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
-	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
-	"CFLAGS=$(CFLAGS)" \
-	"CXXFLAGS=$(CXXFLAGS)" \
-	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
-	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
-	"INSTALL=$(INSTALL)" \
-	"INSTALL_DATA=$(INSTALL_DATA)" \
-	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
-	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
-	"LDFLAGS=$(LDFLAGS)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
-	"MAKE=$(MAKE)" \
-	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
-	"PICFLAG=$(PICFLAG)" \
-	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
-	"SHELL=$(SHELL)" \
-	"exec_prefix=$(exec_prefix)" \
-	"infodir=$(infodir)" \
-	"libdir=$(libdir)" \
-	"includedir=$(includedir)" \
-	"prefix=$(prefix)" \
-	"tooldir=$(tooldir)" \
-	"AR=$(AR)" \
-	"AS=$(AS)" \
-	"LD=$(LD)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"PICFLAG=$(PICFLAG)" \
-	"RANLIB=$(RANLIB)" \
-	"NM=$(NM)" \
-	"NM_FOR_BUILD=$(NM_FOR_BUILD)" \
-	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
-	"DESTDIR=$(DESTDIR)" \
-	"WERROR=$(WERROR)" 
+AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"includedir=$(includedir)" 	"prefix=$(prefix)" 	"tooldir=$(tooldir)" 	"AR=$(AR)" 	"AS=$(AS)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"NM=$(NM)" 	"NM_FOR_BUILD=$(NM_FOR_BUILD)" 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" 	"DESTDIR=$(DESTDIR)" 	"WERROR=$(WERROR)" 
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES =  tests_flags mkcheck
+CONFIG_CLEAN_FILES =  mkcheck testsuite_flags
 DIST_COMMON =  README ./stamp-h.in ChangeLog Makefile.am Makefile.in \
 acconfig.h acinclude.m4 aclocal.m4 config.h.in configure configure.in \
-mkcheck.in tests_flags.in
+mkcheck.in testsuite_flags.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -231,9 +196,9 @@ distclean-hdr:
 	-rm -f config.h
 
 maintainer-clean-hdr:
-tests_flags: $(top_builddir)/config.status tests_flags.in
-	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 mkcheck: $(top_builddir)/config.status mkcheck.in
+	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
+testsuite_flags: $(top_builddir)/config.status testsuite_flags.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -446,23 +411,24 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
-# Use $${builddir} instead of $(top_builddir) for arguments to "mkcheck"
-# because then the paths will be full pathnames, not relative
-# pathnames. (-Wl,--rpath seems to like this better.)
+# These two special 'check-script' rules use the bash script 'mkcheck'
+# to do testing. This script is not as portable as the dejagnu test
+# harness, and is thus off by default. It does produce interesting
+# output however, including various performance analysis items like
+# compile time, execution time, and binary size.
 check-script: $(top_builddir)/mkcheck
 	-(chmod + $(top_builddir)/mkcheck; \
-	  srcdir=`cd $(top_srcdir); pwd`; builddir=`pwd`; \
 	  test -d testsuite || (mkdir testsuite; chmod u+w testsuite); \
-	  cd testsuite; $${builddir}/mkcheck 0 $${builddir} $${srcdir})
+	  cd testsuite; \
+	  @glibcpp_builddir@/mkcheck 0)
 
 check-script-install: $(top_builddir)/mkcheck
 	-(chmod + $(top_builddir)/mkcheck; \
-	  srcdir=`cd $(top_srcdir); pwd`; builddir=`pwd`; \
 	  test -d testsuite || (mkdir testsuite; chmod u+w testsuite); \
 	  cd testsuite; \
-	  $${builddir}/mkcheck 1 $${builddir} $${srcdir} $(prefix))
+	  @glibcpp_builddir@/mkcheck 1)
 
-# These two rules seem messy.
+# These two rules might seem messy, but are hella worth it.
 doxygen:
 	-(srcdir=`cd ${top_srcdir}; pwd`; \
 	  outdir=`pwd`; \

@@ -129,10 +129,6 @@ LIB_AC_PROG_CXX
   AC_CHECK_TOOL(AS, as)
   AC_CHECK_TOOL(AR, ar)
   AC_CHECK_TOOL(RANLIB, ranlib, ranlib-not-found-in-path-error)
-  AC_CHECK_TOOL(glibcpp_expect, expect, expect-not-found-in-path-error)
-  AC_CHECK_TOOL(glibcpp_runtest, runtest, runtest-not-found-in-path-error)
-  AC_SUBST(glibcpp_expect)
-  AC_SUBST(glibcpp_runtest)
   AC_PROG_INSTALL
 
   AM_MAINTAINER_MODE
@@ -1593,6 +1589,12 @@ AC_DEFUN(GLIBCPP_EXPORT_INSTALL_INFO, [
 glibcpp_toolexecdir=no
 glibcpp_toolexeclibdir=no
 
+# Export build and source directories.
+tmp_builddir=`pwd`
+glibcpp_builddir=$tmp_builddir
+glibcpp_srcdir=${srcdir}
+glibcpp_prefixdir=${prefix}
+
 AC_MSG_CHECKING([for interface version number])
 libstdcxx_interface=$INTERFACE
 AC_MSG_RESULT($libstdcxx_interface)
@@ -1655,6 +1657,9 @@ fi
 AC_MSG_CHECKING([for install location])
 AC_MSG_RESULT($gxx_include_dir)
 
+AC_SUBST(glibcpp_builddir)
+AC_SUBST(glibcpp_srcdir)
+AC_SUBST(glibcpp_prefixdir)
 AC_SUBST(gxx_include_dir)
 AC_SUBST(glibcpp_toolexecdir)
 AC_SUBST(glibcpp_toolexeclibdir)
