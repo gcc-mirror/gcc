@@ -1103,8 +1103,6 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
 				  _ForwardIterator>)
-      __glibcxx_function_requires(_ConvertibleConcept<_Tp,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_function_requires(_EqualOpConcept<
 	    typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_requires_valid_range(__first, __last);
