@@ -1,3 +1,18 @@
+2003-12-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.h (TRAMPOLINE_TEMPLATE): Shorten sequence when generating PA
+	2.0 code.
+	(TRAMPOLINE_CODE_SIZE, MIN_CACHELINE_SIZE): New defines.
+	(INITIALIZE_TRAMPOLINE): Rework to pass line length, and aligned start
+	and end addresses to I and D cache instruction patterns.
+	* pa.md (anddi3, iordi3): Change predicates of operands 1 and 2 to
+	and_operand and ior_operand, respectively.  When generating 64-bit
+	code, only one operand needs to be a register operand.
+	(xordi3): Change predicates of operands 1 and 2 to register_operand.
+	(one_cmpldi2): Change predicate of operand 1 to register_operand.
+	(dcacheflush, icacheflush): Revise to flush an arbitrary number of
+	cache lines.
+
 2003-12-20  Josef Zlomek  <zlomekj@suse.cz>
 
 	PR optimization/13430, PR optimization/12322
