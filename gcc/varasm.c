@@ -2224,7 +2224,7 @@ compare_constant (const tree t1, const tree t2)
 	  if (get_set_constructor_bytes (t2, tmp2, len) != NULL_TREE)
 	    return 0;
 
-	  return memcmp (tmp1, tmp2, len) != 0;
+	  return memcmp (tmp1, tmp2, len) == 0;
 	}
       else
 	{
