@@ -779,8 +779,7 @@ TAGS: do-TAGS
 maybe-configure-build-[+module+]:
 configure-build-[+module+]:
 	@test ! -f $(BUILD_SUBDIR)/[+module+]/Makefile || exit 0; \
-	[ -d $(BUILD_SUBDIR)/[+module+] ] || \
-	  mkdir $(BUILD_SUBDIR)/[+module+];\
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/[+module+] ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	AR="$(AR_FOR_BUILD)"; export AR; \
@@ -950,15 +949,13 @@ maybe-configure-target-[+module+]:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/[+module+]/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/[+module+] ] || \
-	  mkdir $(TARGET_SUBDIR)/[+module+]; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/[+module+] ; \
 	rm -f $(TARGET_SUBDIR)/[+module+]/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/[+module+]/multilib.out
 
 configure-target-[+module+]: $(TARGET_SUBDIR)/[+module+]/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/[+module+]/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/[+module+] ] || \
-	  mkdir $(TARGET_SUBDIR)/[+module+];\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/[+module+] ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \

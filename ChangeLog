@@ -1,3 +1,11 @@
+2003-07-27  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Use 'mkinstalldirs' rather than 'mkdir' when
+	creating target and build subdirs to build all parent dirs as needed.
+	* Makefile.in: Rebuild.
+	* configure.in: Don't build dirs explicitly here.
+	* configure: Rebuild.
+
 2003-07-26  Paul Brook  <paul@nowt.org>
 
 	* MAINTAINERS (fortran 95): Add myself, Steven Bosscher and Toon Moene.

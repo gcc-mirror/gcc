@@ -17610,8 +17610,7 @@ TAGS: do-TAGS
 maybe-configure-build-fixincludes:
 configure-build-fixincludes:
 	@test ! -f $(BUILD_SUBDIR)/fixincludes/Makefile || exit 0; \
-	[ -d $(BUILD_SUBDIR)/fixincludes ] || \
-	  mkdir $(BUILD_SUBDIR)/fixincludes;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/fixincludes ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	AR="$(AR_FOR_BUILD)"; export AR; \
@@ -17679,8 +17678,7 @@ all-build-fixincludes: configure-build-fixincludes
 maybe-configure-build-libiberty:
 configure-build-libiberty:
 	@test ! -f $(BUILD_SUBDIR)/libiberty/Makefile || exit 0; \
-	[ -d $(BUILD_SUBDIR)/libiberty ] || \
-	  mkdir $(BUILD_SUBDIR)/libiberty;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/libiberty ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	AR="$(AR_FOR_BUILD)"; export AR; \
@@ -21962,15 +21960,13 @@ maybe-configure-target-libstdc++-v3:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libstdc++-v3/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libstdc++-v3 ] || \
-	  mkdir $(TARGET_SUBDIR)/libstdc++-v3; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libstdc++-v3 ; \
 	rm -f $(TARGET_SUBDIR)/libstdc++-v3/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
 
 configure-target-libstdc++-v3: $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libstdc++-v3/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/libstdc++-v3 ] || \
-	  mkdir $(TARGET_SUBDIR)/libstdc++-v3;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libstdc++-v3 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -22066,15 +22062,13 @@ maybe-configure-target-newlib:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/newlib/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/newlib ] || \
-	  mkdir $(TARGET_SUBDIR)/newlib; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/newlib ; \
 	rm -f $(TARGET_SUBDIR)/newlib/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/newlib/multilib.out
 
 configure-target-newlib: $(TARGET_SUBDIR)/newlib/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/newlib/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/newlib ] || \
-	  mkdir $(TARGET_SUBDIR)/newlib;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/newlib ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -22169,15 +22163,13 @@ maybe-configure-target-libf2c:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libf2c/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libf2c ] || \
-	  mkdir $(TARGET_SUBDIR)/libf2c; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libf2c ; \
 	rm -f $(TARGET_SUBDIR)/libf2c/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libf2c/multilib.out
 
 configure-target-libf2c: $(TARGET_SUBDIR)/libf2c/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libf2c/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/libf2c ] || \
-	  mkdir $(TARGET_SUBDIR)/libf2c;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libf2c ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -22272,15 +22264,13 @@ maybe-configure-target-libobjc:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libobjc/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libobjc ] || \
-	  mkdir $(TARGET_SUBDIR)/libobjc; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libobjc ; \
 	rm -f $(TARGET_SUBDIR)/libobjc/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libobjc/multilib.out
 
 configure-target-libobjc: $(TARGET_SUBDIR)/libobjc/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libobjc/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/libobjc ] || \
-	  mkdir $(TARGET_SUBDIR)/libobjc;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libobjc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -22375,15 +22365,13 @@ maybe-configure-target-libtermcap:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libtermcap/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libtermcap ] || \
-	  mkdir $(TARGET_SUBDIR)/libtermcap; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libtermcap ; \
 	rm -f $(TARGET_SUBDIR)/libtermcap/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libtermcap/multilib.out
 
 configure-target-libtermcap: $(TARGET_SUBDIR)/libtermcap/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libtermcap/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/libtermcap ] || \
-	  mkdir $(TARGET_SUBDIR)/libtermcap;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libtermcap ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -22474,15 +22462,13 @@ maybe-configure-target-winsup:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/winsup/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/winsup ] || \
-	  mkdir $(TARGET_SUBDIR)/winsup; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/winsup ; \
 	rm -f $(TARGET_SUBDIR)/winsup/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/winsup/multilib.out
 
 configure-target-winsup: $(TARGET_SUBDIR)/winsup/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/winsup/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/winsup ] || \
-	  mkdir $(TARGET_SUBDIR)/winsup;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/winsup ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -22577,15 +22563,13 @@ maybe-configure-target-libgloss:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libgloss/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libgloss ] || \
-	  mkdir $(TARGET_SUBDIR)/libgloss; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgloss ; \
 	rm -f $(TARGET_SUBDIR)/libgloss/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libgloss/multilib.out
 
 configure-target-libgloss: $(TARGET_SUBDIR)/libgloss/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libgloss/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/libgloss ] || \
-	  mkdir $(TARGET_SUBDIR)/libgloss;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgloss ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -22676,15 +22660,13 @@ maybe-configure-target-libiberty:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libiberty/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libiberty ] || \
-	  mkdir $(TARGET_SUBDIR)/libiberty; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libiberty ; \
 	rm -f $(TARGET_SUBDIR)/libiberty/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libiberty/multilib.out
 
 configure-target-libiberty: $(TARGET_SUBDIR)/libiberty/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libiberty/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/libiberty ] || \
-	  mkdir $(TARGET_SUBDIR)/libiberty;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libiberty ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -22779,15 +22761,13 @@ maybe-configure-target-gperf:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/gperf/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/gperf ] || \
-	  mkdir $(TARGET_SUBDIR)/gperf; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/gperf ; \
 	rm -f $(TARGET_SUBDIR)/gperf/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/gperf/multilib.out
 
 configure-target-gperf: $(TARGET_SUBDIR)/gperf/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/gperf/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/gperf ] || \
-	  mkdir $(TARGET_SUBDIR)/gperf;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/gperf ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -22882,15 +22862,13 @@ maybe-configure-target-examples:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/examples/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/examples ] || \
-	  mkdir $(TARGET_SUBDIR)/examples; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/examples ; \
 	rm -f $(TARGET_SUBDIR)/examples/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/examples/multilib.out
 
 configure-target-examples: $(TARGET_SUBDIR)/examples/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/examples/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/examples ] || \
-	  mkdir $(TARGET_SUBDIR)/examples;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/examples ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -22977,15 +22955,13 @@ maybe-configure-target-libffi:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libffi/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libffi ] || \
-	  mkdir $(TARGET_SUBDIR)/libffi; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi ; \
 	rm -f $(TARGET_SUBDIR)/libffi/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libffi/multilib.out
 
 configure-target-libffi: $(TARGET_SUBDIR)/libffi/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/libffi ] || \
-	  mkdir $(TARGET_SUBDIR)/libffi;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -23080,15 +23056,13 @@ maybe-configure-target-libjava:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libjava/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libjava ] || \
-	  mkdir $(TARGET_SUBDIR)/libjava; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libjava ; \
 	rm -f $(TARGET_SUBDIR)/libjava/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libjava/multilib.out
 
 configure-target-libjava: $(TARGET_SUBDIR)/libjava/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/libjava/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/libjava ] || \
-	  mkdir $(TARGET_SUBDIR)/libjava;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libjava ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -23184,15 +23158,13 @@ maybe-configure-target-zlib:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/zlib/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/zlib ] || \
-	  mkdir $(TARGET_SUBDIR)/zlib; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/zlib ; \
 	rm -f $(TARGET_SUBDIR)/zlib/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/zlib/multilib.out
 
 configure-target-zlib: $(TARGET_SUBDIR)/zlib/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/zlib/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/zlib ] || \
-	  mkdir $(TARGET_SUBDIR)/zlib;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/zlib ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -23287,15 +23259,13 @@ maybe-configure-target-boehm-gc:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/boehm-gc/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/boehm-gc ] || \
-	  mkdir $(TARGET_SUBDIR)/boehm-gc; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/boehm-gc ; \
 	rm -f $(TARGET_SUBDIR)/boehm-gc/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/boehm-gc/multilib.out
 
 configure-target-boehm-gc: $(TARGET_SUBDIR)/boehm-gc/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/boehm-gc/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/boehm-gc ] || \
-	  mkdir $(TARGET_SUBDIR)/boehm-gc;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/boehm-gc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -23390,15 +23360,13 @@ maybe-configure-target-qthreads:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/qthreads/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/qthreads ] || \
-	  mkdir $(TARGET_SUBDIR)/qthreads; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/qthreads ; \
 	rm -f $(TARGET_SUBDIR)/qthreads/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/qthreads/multilib.out
 
 configure-target-qthreads: $(TARGET_SUBDIR)/qthreads/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/qthreads/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/qthreads ] || \
-	  mkdir $(TARGET_SUBDIR)/qthreads;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/qthreads ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -23493,15 +23461,13 @@ maybe-configure-target-rda:
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/rda/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/rda ] || \
-	  mkdir $(TARGET_SUBDIR)/rda; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/rda ; \
 	rm -f $(TARGET_SUBDIR)/rda/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/rda/multilib.out
 
 configure-target-rda: $(TARGET_SUBDIR)/rda/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/rda/Makefile || exit 0; \
-	[ -d $(TARGET_SUBDIR)/rda ] || \
-	  mkdir $(TARGET_SUBDIR)/rda;\
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/rda ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \

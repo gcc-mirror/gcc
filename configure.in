@@ -192,26 +192,8 @@ else
   is_cross_compiler=yes
 fi	
 
-# Find the build and target subdirs.
+# Find the build and target subdir names.
 GCC_TOPLEV_SUBDIRS
-
-if test ! -d ${target_subdir} ; then
-  if mkdir ${target_subdir} ; then true
-  else
-    echo "'*** could not make ${PWD=`${PWDCMD-pwd}`}/${target_subdir}" 1>&2
-    exit 1
-  fi
-fi
-
-if test x"${build_alias}" != x"${host}" ; then
-  if test ! -d ${build_subdir} ; then
-    if mkdir ${build_subdir} ; then true
-    else
-      echo "'*** could not make ${PWD=`${PWDCMD-pwd}`}/${build_subdir}" 1>&2
-      exit 1
-    fi
-  fi
-fi
 
 # Skipdirs are removed silently.
 skipdirs=
