@@ -1,0 +1,28 @@
+# We need startup files for Solaris, since we don't get them with the system
+# FIXME:  Should include "gmon.o" when it is ported.
+
+EXTRA_PARTS=crt1.o crti.o crtn.o crtbegin.o crtend.o
+
+# we need to supply our own assembly versions of libgcc1.c files,
+# since the user may not have native 'cc' available
+
+LIBGCC1 = libgcc1.null
+
+# gmon build rule:
+gmon.o:	$(srcdir)/config/i386/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
+		-c $(srcdir)/config/i386/gmon-sol2.c -o gmon.o
+
+# Assemble startup files.
+# Apparently Sun believes that assembler files don't need comments, because no
+# single ASCII character is valid (tried them all).  So we manually strip out
+# the comments with sed.  This bug may only be in the Early Access releases.
+crt1.o: $(srcdir)/config/i386/sol2-c1.asm
+	sed -e '/^!/d' <$(srcdir)/config/i386/sol2-c1.asm >crt1.s
+	$(AS) -o crt1.o crt1.s
+crti.o: $(srcdir)/config/i386/sol2-ci.asm
+	sed -e '/^!/d' <$(srcdir)/config/i386/sol2-ci.asm >crti.s
+	$(AS) -o crti.o crti.s
+crtn.o: $(srcdir)/config/i386/sol2-cn.asm
+	sed -e '/^!/d' <$(srcdir)/config/i386/sol2-cn.asm >crtn.s
+	$(AS) -o crtn.o crtn.s
