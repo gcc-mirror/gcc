@@ -1,6 +1,17 @@
 2001-06-07  Loren J. Rittle  <ljrittle@acm.org>
 	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* libsupc++/eh_alloc.cc: Ensure that required macros are
+	defined before including gthr.h.  Ensure that we get the
+	version of gthr.h for which we know how to provide a
+	configuration.
+	* libsupc++/eh_globals.cc: Likewise.  And, bring the threading
+	code path into line with the current EH model.  Use std, where
+	appropriate.
+
+2001-06-07  Loren J. Rittle  <ljrittle@acm.org>
+	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* config/threads-no.h: Remove file.
 	* config/threads-posix.h: Remove file.
 
