@@ -49,7 +49,7 @@ ${AWK} '
 	result = "0"
 	for (j = 0; j < n_langs; j++) {
 	    regex = " " langs[j] " "
-	    gsub ( "+", "\\+", regex )
+	    gsub ( "\+", "\\+", regex )
 	    if (flags ~ regex)
 		result = result " | " macros[j]
 	}
