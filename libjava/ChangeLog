@@ -2,6 +2,7 @@
 
 	* README: Remove obsolete info. Update bug URL.
 	* THANKS: Updated.
+	* NEWS: Updated with news up to GCC 3.4 release.
 
 2004-07-28  Bryce McKinlay  <mckinlay@redhat.com>
 
