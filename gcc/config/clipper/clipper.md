@@ -206,7 +206,9 @@
     }
 
   return \"stord  %1,%0\";		/* f-> m */
-}")
+}"
+[(set_attr "type" "store,store")
+ (set_attr "cc" "clobber,unchanged")])
 
 
 (define_expand "movsf"
@@ -278,7 +280,8 @@
     return \"stors  %1,%0\";		/* f-> m */
 
   return \"storw   %1,%0\";		/* r -> m */
-}")
+}"
+[(set_attr "type" "store")])
 
 
 (define_expand "movdi"
@@ -389,6 +392,10 @@
   if (which_alternative == 2)
     {
       val = INTVAL (operands[1]);	/* known const ->reg */
+
+      if (val == -1)
+	return \"notq   $0,%0\";
+
       if (val < 0 || val >= 16)
 	return \"loadi  %1,%0\";
 
@@ -478,6 +485,7 @@
   "storb  %1,%0"
 [(set_attr "type" "store")])
 
+
 ;;
 ;; block move
 ;;
@@ -624,7 +632,7 @@
   ""
   "cnvwd  %1,%0")
 
-
+
 ;; Float-to-fix conversion insns.
 
 (define_insn "fix_truncsfsi2"
@@ -646,7 +654,8 @@
 	(plus:DF (match_operand:DF 1 "fp_reg_operand" "0")
 		 (match_operand:DF 2 "fp_reg_operand" "f")))]
   ""
-  "addd   %2,%0")
+  "addd   %2,%0"
+ [(set_attr "type" "fp")])
 
 
 (define_insn "addsf3"
@@ -654,7 +663,8 @@
 	(plus:SF (match_operand:SF 1 "fp_reg_operand" "0")
 		 (match_operand:SF 2 "fp_reg_operand" "f")))]
   ""
-  "adds   %2,%0")
+  "adds   %2,%0"
+ [(set_attr "type" "fp")])
 
 (define_insn "adddi3"
   [(set (match_operand:DI 0 "int_reg_operand" "=r")
@@ -678,16 +688,12 @@
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "int_reg_operand" "=r,r,r")
 	(plus:SI (match_operand:SI 1 "int_reg_operand" "%0,r,r")
-		 (match_operand:SI 2 "nonmemory_operand" "rn,0,rn")))]
+		 (match_operand:SI 2 "nonmemory_operand" "rn,0,r")))]
   ""
   "*
 {
   if (which_alternative == 2)		/* 3 address version */
-    {
-      if (GET_CODE (operands[2]) == CONST_INT)
-	return \"loada  %a2(%1),%0\";
-      return \"loada  [%2](%1),%0\";
-    }
+    return \"loada  [%2](%1),%0\";
 					/* 2 address version */
   if (GET_CODE (operands[2]) == CONST_INT)
     {
@@ -772,14 +778,16 @@
 	(minus:DF (match_operand:DF 1 "fp_reg_operand" "0")
 		  (match_operand:DF 2 "fp_reg_operand" "f")))]
   ""
-  "subd   %2,%0")
+  "subd   %2,%0"
+ [(set_attr "type" "fp")])
 
 (define_insn "subsf3"
   [(set (match_operand:SF 0 "fp_reg_operand" "=f")
 	(minus:SF (match_operand:SF 1 "fp_reg_operand" "0")
 		  (match_operand:SF 2 "fp_reg_operand" "f")))]
   ""
-  "subs   %2,%0")
+  "subs   %2,%0"
+ [(set_attr "type" "fp")])
 
 
 ;;- Multiply instructions.
@@ -789,14 +797,34 @@
 	(mult:DF (match_operand:DF 1 "fp_reg_operand" "0")
 		 (match_operand:DF 2 "fp_reg_operand" "f")))]
   ""
-  "muld   %2,%0")
+  "muld   %2,%0"
+ [(set_attr "type" "fp")])
 
 (define_insn "mulsf3"
   [(set (match_operand:SF 0 "fp_reg_operand" "=f")
 	(mult:SF (match_operand:SF 1 "fp_reg_operand" "0")
 		 (match_operand:SF 2 "fp_reg_operand" "f")))]
   ""
-  "muls   %2,%0")
+  "muls   %2,%0"
+ [(set_attr "type" "fp")])
+
+(define_insn "mulsidi3"
+  [(set (match_operand:DI 0 "int_reg_operand" "=r")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "int_reg_operand" "%0"))
+	         (sign_extend:DI (match_operand:SI 2 "int_reg_operand" "r"))))]
+  ""
+  "mulwx  %2,%0"
+[(set_attr "type" "arith")
+ (set_attr "cc" "clobber")])
+
+(define_insn "umulsidi3"
+  [(set (match_operand:DI 0 "int_reg_operand" "=r")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "int_reg_operand" "%0"))
+	         (zero_extend:DI (match_operand:SI 2 "int_reg_operand" "r"))))]
+  ""
+  "mulwux %2,%0"
+[(set_attr "type" "arith")
+ (set_attr "cc" "clobber")])
 
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "int_reg_operand" "=r")
@@ -807,7 +835,6 @@
  [(set_attr "type" "arith")
   (set_attr "cc" "clobber")])
 
-
 
 ;;- Divide and mod instructions.
 
@@ -816,14 +843,16 @@
 	(div:DF (match_operand:DF 1 "fp_reg_operand" "0")
 		(match_operand:DF 2 "fp_reg_operand" "f")))]
   ""
-  "divd   %2,%0")
+  "divd   %2,%0"
+ [(set_attr "type" "fp")])
 
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "fp_reg_operand" "=f")
 	(div:SF (match_operand:SF 1 "fp_reg_operand" "0")
 		(match_operand:SF 2 "fp_reg_operand" "f")))]
   ""
-  "divs   %2,%0")
+  "divs   %2,%0"
+ [(set_attr "type" "fp")])
 
 (define_insn "divsi3"
   [(set (match_operand:SI 0 "int_reg_operand" "=r")
@@ -899,13 +928,15 @@
   [(set (match_operand:DF 0 "fp_reg_operand" "=f")
 	(neg:DF (match_operand:DF 1 "fp_reg_operand" "f")))]
   ""
-  "negd   %1,%0")
+  "negd   %1,%0"
+ [(set_attr "type" "fp")])
 
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "fp_reg_operand" "=f")
 	(neg:SF (match_operand:SF 1 "fp_reg_operand" "f")))]
   ""
-  "negs   %1,%0")
+  "negs   %1,%0"
+ [(set_attr "type" "fp")])
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "int_reg_operand" "=r")
@@ -927,6 +958,33 @@
 ;; Right shift on the clipper works by negating the shift count,
 ;; then emitting a right shift with the shift count negated.  This means
 ;; that all actual shift counts in the RTL will be positive.
+
+(define_expand "ashrdi3"
+  [(set (match_operand:DI 0 "int_reg_operand" "")
+	(ashiftrt:DI (match_operand:DI 1 "int_reg_operand" "")
+	             (match_operand:SI 2 "nonmemory_operand" "")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+}")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "int_reg_operand" "=r")
+	(ashiftrt:DI (match_operand:DI 1 "int_reg_operand" "0")
+		     (match_operand:SI 2 "const_int_operand" "n")))]
+  ""
+  "shali  $%n2,%0"
+ [(set_attr "type" "arith")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "int_reg_operand" "=r")
+	(ashiftrt:DI (match_operand:DI 1 "int_reg_operand" "0")
+		     (neg:SI (match_operand:SI 2 "nonmemory_operand" "r"))))]
+  ""
+  "shal   %2,%0"
+ [(set_attr "type" "arith")])
 
 (define_expand "ashrsi3"
   [(set (match_operand:SI 0 "int_reg_operand" "")
@@ -955,6 +1013,21 @@
   "shaw   %2,%0"
  [(set_attr "type" "arith")])
 
+;;
+;; left shift
+;;
+
+(define_insn "ashldi3"
+  [(set (match_operand:DI 0 "int_reg_operand" "=r,r")
+	(ashift:DI (match_operand:DI 1 "int_reg_operand" "0,0")
+		   (match_operand:SI 2 "nonmemory_operand" "r,n")))]
+  ""
+  "@
+   shal   %2,%0
+   shali  %2,%0"
+ [(set_attr "type" "arith")])
+
+
 (define_insn "ashlsi3"
   [(set (match_operand:SI 0 "int_reg_operand" "=r,r")
 	(ashift:SI (match_operand:SI 1 "int_reg_operand" "0,0")
@@ -979,6 +1052,36 @@
 }"
 [(set_attr "type" "arith")])
 
+;;
+;; logical shift
+;;
+
+(define_expand "lshrdi3"
+  [(set (match_operand:DI 0 "int_reg_operand" "")
+	(lshiftrt:DI (match_operand:DI 1 "int_reg_operand" "")
+	             (match_operand:SI 2 "nonmemory_operand" "")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+}")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "int_reg_operand" "=r")
+	(lshiftrt:DI (match_operand:DI 1 "int_reg_operand" "0")
+		     (match_operand:SI 2 "const_int_operand" "n")))]
+  ""
+  "shlli  $%n2,%0"
+ [(set_attr "type" "arith")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "int_reg_operand" "=r")
+	(lshiftrt:DI (match_operand:DI 1 "int_reg_operand" "0")
+		     (neg:SI (match_operand:SI 2 "nonmemory_operand" "r"))))]
+  ""
+  "shll   %2,%0"
+ [(set_attr "type" "arith")])
 
 (define_expand "lshrsi3"
   [(set (match_operand:SI 0 "int_reg_operand" "")
@@ -1007,6 +1110,16 @@
   "shlw   %2,%0"
  [(set_attr "type" "arith")])
 
+(define_insn "lshldi3"
+  [(set (match_operand:DI 0 "int_reg_operand" "=r,r")
+	(lshift:DI (match_operand:DI 1 "int_reg_operand" "0,0")
+		   (match_operand:SI 2 "nonmemory_operand" "r,n")))]
+  ""
+  "@
+   shll   %2,%0
+   shlli  %2,%0"
+ [(set_attr "type" "arith")])
+
 (define_insn "lshlsi3"
   [(set (match_operand:SI 0 "int_reg_operand" "=r,r")
 	(lshift:SI (match_operand:SI 1 "int_reg_operand" "0,0")
@@ -1017,7 +1130,36 @@
    shli   %2,%0"
  [(set_attr "type" "arith")])
 
-;; rotate
+;;
+;; rotate insn
+;;
+(define_expand "rotrdi3"
+  [(set (match_operand:DI 0 "int_reg_operand" "")
+	(rotatert:DI (match_operand:DI 1 "int_reg_operand" "")
+	             (match_operand:SI 2 "nonmemory_operand" "")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+}")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "int_reg_operand" "=r")
+	(rotatert:DI (match_operand:DI 1 "int_reg_operand" "0")
+		     (match_operand:SI 2 "const_int_operand" "n")))]
+  ""
+  "rotli  $%n2,%0"
+ [(set_attr "type" "arith")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "int_reg_operand" "=r")
+	(rotatert:DI (match_operand:DI 1 "int_reg_operand" "0")
+		     (neg:SI (match_operand:SI 2 "nonmemory_operand" "r"))))]
+  ""
+  "rotl   %2,%0"
+ [(set_attr "type" "arith")])
+
 (define_expand "rotrsi3"
   [(set (match_operand:SI 0 "int_reg_operand" "")
 	(rotatert:SI (match_operand:SI 1 "int_reg_operand" "")
@@ -1045,6 +1187,16 @@
   "rotw   %2,%0"
  [(set_attr "type" "arith")])
 
+(define_insn "rotldi3"
+  [(set (match_operand:DI 0 "int_reg_operand" "=r,r")
+	(rotate:DI (match_operand:DI 1 "int_reg_operand" "0,0")
+		   (match_operand:SI 2 "nonmemory_operand" "r,n")))]
+  ""
+  "@
+   rotl   %2,%0
+   rotli  %2,%0"
+ [(set_attr "type" "arith")])
+
 (define_insn "rotlsi3"
   [(set (match_operand:SI 0 "int_reg_operand" "=r,r")
 	(rotate:SI (match_operand:SI 1 "int_reg_operand" "0,0")
@@ -1056,6 +1208,9 @@
  [(set_attr "type" "arith")])
 
 
+;;
+;; jump and branch insns
+;;
 (define_insn "jump"
   [(set (pc)
 	(label_ref (match_operand 0 "" "")))]
@@ -1215,62 +1370,13 @@
   (set_attr "cc" "unchanged")])
 
 
-;;
-;; define insns for loops
-;; subtract, test and branch are tied together and the test can be omitted
-;;
-
-;; while (--foo > 0)
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else
-	 (gt (plus:SI (match_operand:SI 0 "int_reg_operand" "+r")
-		      (const_int -1))
-	     (const_int 0))
-	 (label_ref (match_operand 1 "" ""))
-	 (pc)))
-   (set (match_dup 0)
-	(plus:SI (match_dup 0)
-		 (const_int -1)))]
-  ""
-  "subq   $1,%0\;brgt   %l1")
 
 ;; while (--foo >= 0)
 ;;
-;; this does not work and I don't know why
-;; gcc 2.3.3 says that is doesn't match its contraint ?!?
-;; the problem seem to be the "+r" constraint. "r" works, but is this okay??
+;; Combiners for 'decrement test and branch' do not work for clipper.
+;; These patters are jump_insns that do not allow output reloads and clipper
+;; can only decrement and test registers.
 ;;
-;;(define_insn ""
-;;  [(set (pc)
-;;	(if_then_else
-;;	 (ge (plus:SI (match_operand:SI 0 "int_reg_operand" "+r")
-;;		      (const_int -1))
-;;	     (const_int 0))
-;;	 (label_ref (match_operand 1 "" ""))
-;;	 (pc)))
-;;   (set (match_dup 0)
-;;	(plus:SI (match_dup 0)
-;;		 (const_int -1)))]
-;;  ""
-;;  "subq   $1,%0\;brge   %l1")
-
-
-;;  `while (foo--)'  ->  `while (--foo != -1)'.
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else
-	 (ne (match_operand:SI 0 "int_reg_operand" "+r")
-	     (const_int 0))
-	 (label_ref (match_operand 1 "" ""))
-	 (pc)))
-   (set (match_dup 0)
-	(plus:SI (match_dup 0)
-		 (const_int -1)))]
-  ""
-  "subq   $1,%0\;brgeu  %l1")
 
 
 ;;- Local variables:
