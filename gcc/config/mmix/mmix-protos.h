@@ -57,6 +57,7 @@ extern int mmix_shiftable_wyde_value PARAMS ((unsigned HOST_WIDEST_INT));
 extern void mmix_output_register_setting
   PARAMS ((FILE *, int, HOST_WIDEST_INT, int));
 extern void mmix_conditional_register_usage PARAMS ((void));
+extern int mmix_local_regno PARAMS ((int));
 extern int mmix_dbx_register_number PARAMS ((int));
 
 /* Things that need rtl.h, tree.h or real.h included, or in combination.  */
@@ -123,6 +124,9 @@ extern void mmix_print_operand_address PARAMS ((FILE *, rtx));
 extern int mmix_valid_comparison PARAMS ((RTX_CODE, enum machine_mode, rtx));
 extern rtx mmix_gen_compare_reg PARAMS ((enum rtx_code, rtx, rtx));
 extern void mmix_machine_dependent_reorg PARAMS ((rtx));
+extern void mmix_expand_prologue PARAMS ((void));
+extern void mmix_expand_epilogue PARAMS ((void));
+extern rtx mmix_get_hard_reg_initial_val PARAMS ((enum machine_mode, int));
 #endif /* RTX_CODE */
 
 extern int mmix_asm_preferred_eh_data_format PARAMS ((int, int));

@@ -52,9 +52,19 @@ Boston, MA 02111-1307, USA.  */
 
 /* We have no means to tell DWARF 2 about the register stack, so we need
    to store the return address on the stack if an exception can get into
-   this function.  FIXME: Narrow condition.  */
-#define MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS \
- (flag_exceptions && ! leaf_function_p ())
+   this function.  FIXME: Narrow condition.  Before any whole-function
+   analysis, regs_ever_live[] isn't initialized.  We know it's up-to-date
+   after reload_completed; it may contain incorrect information some time
+   before that.  Within a RTL sequence (after a call to start_sequence,
+   such as in RTL expanders), leaf_function_p doesn't see all insns
+   (perhaps any insn).  But regs_ever_live is up-to-date when
+   leaf_function_p () isn't, so we "or" them together to get accurate
+   information.  FIXME: Some tweak to leaf_function_p might be
+   preferrable.  */
+#define MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS			\
+ (flag_exceptions						\
+  && ((reload_completed && regs_ever_live[MMIX_rJ_REGNUM])	\
+      || !leaf_function_p ()))
 
 #define IS_MMIX_EH_RETURN_DATA_REG(REGNO)	\
  (current_function_calls_eh_return		\
@@ -68,11 +78,15 @@ Boston, MA 02111-1307, USA.  */
    registers.  In effect this makes unused call-saved registers to be used
    as call-clobbered registers.  The benefit comes from keeping the number
    of local registers (value of rL) low, since there's a cost of
-   increasing rL and clearing unused (unset) registers with lower numbers.  */
+   increasing rL and clearing unused (unset) registers with lower numbers.
+   Don't translate while outputting the prologue.  */
 #define MMIX_OUTPUT_REGNO(N)					\
  (TARGET_ABI_GNU 						\
   || (int) (N) < MMIX_RETURN_VALUE_REGNUM			\
   || (int) (N) > MMIX_LAST_STACK_REGISTER_REGNUM		\
+  || cfun == NULL 						\
+  || cfun->machine == NULL 					\
+  || cfun->machine->in_prologue					\
   ? (N) : ((N) - MMIX_RETURN_VALUE_REGNUM			\
 	   + cfun->machine->highest_saved_stack_register + 1))
 
@@ -110,10 +124,11 @@ static bool mmix_assemble_integer PARAMS ((rtx, unsigned int, int));
 static struct machine_function * mmix_init_machine_status PARAMS ((void));
 static void mmix_encode_section_info PARAMS ((tree, int));
 static const char *mmix_strip_name_encoding PARAMS ((const char *));
-
-extern void mmix_target_asm_function_prologue
+static void mmix_emit_sp_add PARAMS ((HOST_WIDE_INT offset));
+static void mmix_target_asm_function_prologue
   PARAMS ((FILE *, HOST_WIDE_INT));
-extern void mmix_target_asm_function_epilogue
+static void mmix_target_asm_function_end_prologue PARAMS ((FILE *));
+static void mmix_target_asm_function_epilogue
   PARAMS ((FILE *, HOST_WIDE_INT));
 
 
@@ -135,6 +150,9 @@ extern void mmix_target_asm_function_epilogue
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE mmix_target_asm_function_prologue
+
+#undef TARGET_ASM_FUNCTION_END_PROLOGUE
+#define TARGET_ASM_FUNCTION_END_PROLOGUE mmix_target_asm_function_end_prologue
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE mmix_target_asm_function_epilogue
@@ -241,11 +259,11 @@ mmix_conditional_register_usage ()
 
       /* Change the default from the mmixware ABI.  For the GNU ABI,
 	 $15..$30 are call-saved just as $0..$14.  There must be one
-	 call-clobbered local register for the "hole" describing number of
-	 saved local registers saved by PUSHJ/PUSHGO during the function
-	 call, receiving the return value at return.  So best is to use
-	 the highest, $31.  It's already marked call-clobbered for the
-	 mmixware ABI.  */
+	 call-clobbered local register for the "hole" that holds the
+	 number of saved local registers saved by PUSHJ/PUSHGO during the
+	 function call, receiving the return value at return.  So best is
+	 to use the highest, $31.  It's already marked call-clobbered for
+	 the mmixware ABI.  */
       for (i = 15; i <= 30; i++)
 	call_used_regs[i] = 0;
 
@@ -261,6 +279,17 @@ mmix_conditional_register_usage ()
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
       if (reg_names[i][0] == ':')
 	reg_names[i]++;
+}
+
+/* LOCAL_REGNO.
+   All registers that are part of the register stack and that will be
+   saved are local.  */
+
+int
+mmix_local_regno (regno)
+     int regno;
+{
+  return regno <= MMIX_LAST_STACK_REGISTER_REGNUM && !call_used_regs[regno];
 }
 
 /* PREFERRED_RELOAD_CLASS.
@@ -672,335 +701,25 @@ mmix_asm_preferred_eh_data_format (code, global)
   return DW_EH_PE_absptr;
 }
 
-/* Emit the function prologue.  For simplicity while the port is still
-   in a flux, we do it as text rather than the now preferred RTL way,
-   as (define_insn "function_prologue").
+/* Make a note that we've seen the beginning of of the prologue.  This
+   matters to whether we'll translate register numbers as calculated by
+   mmix_machine_dependent_reorg.  */
 
-   FIXME: Translate to RTL and/or optimize some of the DWARF 2 stuff.  */
-
-void
-mmix_target_asm_function_prologue (stream, locals_size)
-     FILE *stream;
-     HOST_WIDE_INT locals_size;
+static void
+mmix_target_asm_function_prologue (stream, framesize)
+     FILE *stream ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT framesize ATTRIBUTE_UNUSED;
 {
-  int regno;
-  int stack_space_to_allocate
-    = (current_function_outgoing_args_size
-       + current_function_pretend_args_size
-       + (int) locals_size + 7) & ~7;
-  int offset = -8;
-  int doing_dwarf = dwarf2out_do_frame ();
-  long cfa_offset = 0;
+  cfun->machine->in_prologue = 1;
+}
 
-  /* Guard our assumptions.  Very low priority FIXME.  */
-  if (locals_size != (int) locals_size)
-    error ("stack frame too big");
+/* Make a note that we've seen the end of the prologue.  */
 
-  /* Add room needed to save global non-register-stack registers.  */
-  for (regno = 255;
-       regno >= MMIX_FIRST_GLOBAL_REGNUM;
-       regno--)
-    /* Note that we assume that the frame-pointer-register is one of these
-       registers, in which case we don't count it here.  */
-    if ((((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	  && regs_ever_live[regno] && !call_used_regs[regno]))
-	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
-      stack_space_to_allocate += 8;
-
-  /* If we do have a frame-pointer, add room for it.  */
-  if (frame_pointer_needed)
-    stack_space_to_allocate += 8;
-
-  /* If we have a non-local label, we need to be able to unwind to it, so
-     store the current register stack pointer.  Also store the return
-     address if we do that.  */
-  if (MMIX_CFUN_HAS_LANDING_PAD)
-    stack_space_to_allocate += 16;
-  else if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
-    /* If we do have a saved return-address slot, add room for it.  */
-    stack_space_to_allocate += 8;
-
-  /* Make sure we don't get an unaligned stack.  */
-  if ((stack_space_to_allocate % 8) != 0)
-    internal_error ("stack frame not a multiple of 8 bytes: %d",
-		    stack_space_to_allocate);
-
-  if (current_function_pretend_args_size)
-    {
-      int mmix_first_vararg_reg
-	= (MMIX_FIRST_INCOMING_ARG_REGNUM
-	   + (MMIX_MAX_ARGS_IN_REGS
-	      - current_function_pretend_args_size / 8));
-
-      for (regno
-	     = MMIX_FIRST_INCOMING_ARG_REGNUM + MMIX_MAX_ARGS_IN_REGS - 1;
-	   regno >= mmix_first_vararg_reg;
-	   regno--)
-	{
-	  if (offset < 0)
-	    {
-	      int stack_chunk
-		= stack_space_to_allocate > (256 - 8)
-		? (256 - 8) : stack_space_to_allocate;
-
-	      fprintf (stream, "\tSUBU %s,%s,%d\n",
-		       reg_names[MMIX_STACK_POINTER_REGNUM],
-		       reg_names[MMIX_STACK_POINTER_REGNUM],
-		       stack_chunk);
-
-	      if (doing_dwarf)
-		{
-		  /* Each call to dwarf2out_def_cfa overrides the previous
-		     setting; they don't accumulate.  We must keep track
-		     of the offset ourselves.  */
-		  cfa_offset += stack_chunk;
-		  if (!frame_pointer_needed)
-		    dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-				       cfa_offset);
-		}
-	      offset += stack_chunk;
-	      stack_space_to_allocate -= stack_chunk;
-	    }
-
-	  fprintf (stream, "\tSTOU %s,%s,%d\n", reg_names[regno],
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   offset);
-
-	  /* These registers aren't actually saved (as in "will be
-	     restored"), so don't tell DWARF2 they're saved.  */
-
-	  offset -= 8;
-	}
-    }
-
-  /* Store the frame-pointer.  */
-
-  if (frame_pointer_needed)
-    {
-      if (offset < 0)
-	{
-	  /* Get 8 less than otherwise, since we need to reach offset + 8.  */
-	  int stack_chunk
-	    = stack_space_to_allocate > (256 - 8 - 8)
-	    ? (256 - 8 - 8) : stack_space_to_allocate;
-
-	  fprintf (stream, "\tSUBU %s,%s,%d\n",
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   stack_chunk);
-	  if (doing_dwarf)
-	    cfa_offset += stack_chunk;
-	  offset += stack_chunk;
-	  stack_space_to_allocate -= stack_chunk;
-	}
-
-      fprintf (stream, "\tSTOU %s,%s,%d\n\tADDU %s,%s,%d\n",
-	       reg_names[MMIX_FRAME_POINTER_REGNUM],
-	       reg_names[MMIX_STACK_POINTER_REGNUM],
-	       offset,
-	       reg_names[MMIX_FRAME_POINTER_REGNUM],
-	       reg_names[MMIX_STACK_POINTER_REGNUM],
-	       offset + 8);
-      if (doing_dwarf)
-	{
-	  /* If we're using the frame-pointer, then we just need this CFA
-	     definition basing on that value (often equal to the CFA).
-	     Further changes to the stack-pointer do not affect the
-	     frame-pointer, so we conditionalize them below on
-	     !frame_pointer_needed.  */
-	  dwarf2out_def_cfa ("", MMIX_FRAME_POINTER_REGNUM,
-			     -cfa_offset + offset + 8);
-
-	  dwarf2out_reg_save ("", MMIX_FRAME_POINTER_REGNUM,
-			      -cfa_offset + offset);
-	}
-
-      offset -= 8;
-    }
-
-  if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
-    {
-      /* Store the return-address, if one is needed on the stack.  We
-	 usually store it in a register when needed, but that doesn't work
-	 with -fexceptions.  */
-
-      if (offset < 0)
-	{
-	  /* Get 8 less than otherwise, since we need to reach offset + 8.  */
-	  int stack_chunk
-	    = stack_space_to_allocate > (256 - 8 - 8)
-	    ? (256 - 8 - 8) : stack_space_to_allocate;
-
-	  fprintf (stream, "\tSUBU %s,%s,%d\n",
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   stack_chunk);
-	  if (doing_dwarf)
-	    {
-	      cfa_offset += stack_chunk;
-	      if (!frame_pointer_needed)
-		dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-				   cfa_offset);
-	    }
-	  offset += stack_chunk;
-	  stack_space_to_allocate -= stack_chunk;
-	}
-
-      fprintf (stream, "\tGET $255,rJ\n\tSTOU $255,%s,%d\n",
-	       reg_names[MMIX_STACK_POINTER_REGNUM],
-	       offset);
-      if (doing_dwarf)
-	dwarf2out_return_save ("", -cfa_offset + offset);
-      offset -= 8;
-    }
-  else if (MMIX_CFUN_HAS_LANDING_PAD)
-    offset -= 8;
-
-  if (MMIX_CFUN_HAS_LANDING_PAD)
-    {
-      /* Store the register defining the numbering of local registers, so
-	 we know how long to unwind the register stack.  */
-
-      if (offset < 0)
-	{
-	  /* Get 8 less than otherwise, since we need to reach offset + 8.  */
-	  int stack_chunk
-	    = stack_space_to_allocate > (256 - 8 - 8)
-	    ? (256 - 8 - 8) : stack_space_to_allocate;
-
-	  fprintf (stream, "\tSUBU %s,%s,%d\n",
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   stack_chunk);
-	  offset += stack_chunk;
-	  stack_space_to_allocate -= stack_chunk;
-
-	  if (doing_dwarf)
-	    {
-	      cfa_offset += stack_chunk;
-	      if (!frame_pointer_needed)
-		dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-				 cfa_offset);
-	    }
-	}
-
-      /* We don't tell dwarf2 about this one; we just have it to unwind
-	 the register stack at landing pads.  FIXME: It's a kludge because
-	 we can't describe the effect of the PUSHJ and PUSHGO insns on the
-	 register stack at the moment.  Best thing would be to handle it
-	 like stack-pointer offsets.  Better: some hook into dwarf2out.c
-	 to produce DW_CFA_expression:s that specify the increment of rO,
-	 and unwind it at eh_return (preferred) or at the landing pad.
-	 Then saves to $0..$G-1 could be specified through that register.  */
-
-      fprintf (stream, "\tGET $255,rO\n\tSTOU $255,%s,%d\n",
-	       reg_names[MMIX_STACK_POINTER_REGNUM], offset);
-
-      offset -= 8;
-    }
-
-  /* After the return-address and the frame-pointer, we have the local
-     variables.  They're the ones that may have an "unaligned" size.  */
-  offset -= (locals_size + 7) & ~7;
-
-  /* Now store all registers that are global, i.e. not saved by the
-     register file machinery.
-
-     It is assumed that the frame-pointer is one of these registers, so it
-     is explicitly excluded in the count.  */
-
-  for (regno = 255;
-       regno >= MMIX_FIRST_GLOBAL_REGNUM;
-       regno--)
-    if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	 && regs_ever_live[regno] && ! call_used_regs[regno])
-	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
-      {
-	if (offset < 0)
-	  {
-	    int stack_chunk;
-
-	    /* Since the local variables go above, we may get a large
-	       offset here.  */
-	    if (offset < -248)
-	      {
-		/* We're not going to access the locals area in the
-		   prologue, so we'll just silently subtract the slab we
-		   will not access.  */
-		stack_chunk =
-		  stack_space_to_allocate > (256 - offset - 8)
-		  ? (256 - offset - 8) : stack_space_to_allocate;
-
-		mmix_output_register_setting (stream, 255, stack_chunk, 1);
-		fprintf (stream, "\tSUBU %s,%s,$255\n",
-			 reg_names[MMIX_STACK_POINTER_REGNUM],
-			 reg_names[MMIX_STACK_POINTER_REGNUM]);
-
-		if (doing_dwarf)
-		  {
-		    cfa_offset += stack_chunk;
-		    if (!frame_pointer_needed)
-		      dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-					 cfa_offset);
-		  }
-	      }
-	    else
-	      {
-		stack_chunk = stack_space_to_allocate > (256 - 8)
-		  ? (256 - 8) : stack_space_to_allocate;
-
-		fprintf (stream, "\tSUBU %s,%s,%d\n",
-			 reg_names[MMIX_STACK_POINTER_REGNUM],
-			 reg_names[MMIX_STACK_POINTER_REGNUM], stack_chunk);
-		if (doing_dwarf)
-		  {
-		    cfa_offset += stack_chunk;
-		    if (!frame_pointer_needed)
-		      dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-					 cfa_offset);
-		  }
-	      }
-
-	    offset += stack_chunk;
-	    stack_space_to_allocate -= stack_chunk;
-	  }
-
-	fprintf (stream, "\tSTOU %s,%s,%d\n", reg_names[regno],
-	       reg_names[MMIX_STACK_POINTER_REGNUM], offset);
-	if (doing_dwarf)
-	  dwarf2out_reg_save ("", regno, -cfa_offset + offset);
-	offset -= 8;
-      }
-
-  /* Finally, allocate room for outgoing args and local vars if room
-     wasn't allocated above.  This might be any number of bytes (well, we
-     assume it fits in a host-int).  */
-  if (stack_space_to_allocate)
-    {
-      if (stack_space_to_allocate < 256)
-	{
-	  fprintf (stream, "\tSUBU %s,%s,%d\n",
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   stack_space_to_allocate);
-	}
-      else
-	{
-	  mmix_output_register_setting (stream, 255,
-					stack_space_to_allocate, 1);
-	  fprintf (stream, "\tSUBU %s,%s,$255\n",
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   reg_names[MMIX_STACK_POINTER_REGNUM]);
-	}
-
-      if (doing_dwarf)
-	{
-	  cfa_offset += stack_space_to_allocate;
-	  if (!frame_pointer_needed)
-	    dwarf2out_def_cfa ("", MMIX_STACK_POINTER_REGNUM,
-			       cfa_offset);
-	}
-    }
+static void
+mmix_target_asm_function_end_prologue (stream)
+     FILE *stream ATTRIBUTE_UNUSED;
+{
+  cfun->machine->in_prologue = 0;
 }
 
 /* MACHINE_DEPENDENT_REORG.
@@ -1055,178 +774,8 @@ mmix_target_asm_function_epilogue (stream, locals_size)
      HOST_WIDE_INT locals_size;
 
 {
-  int regno;
-  int stack_space_to_deallocate
-    = (current_function_outgoing_args_size
-       + current_function_pretend_args_size
-       + (int) locals_size + 7) & ~7;
-
-  /* The assumption that locals_size fits in an int is asserted in
-     mmix_target_asm_function_prologue.  */
-
-  /* The first address to access is beyond the outgoing_args area.  */
-  int offset = current_function_outgoing_args_size;
-
-  rtx insn = get_last_insn ();
-
-  /* If the last insn was a BARRIER, we don't have to write any code,
-     then all returns were covered by "return" insns.  */
-  if (GET_CODE (insn) == NOTE)
-    insn = prev_nonnote_insn (insn);
-  if (insn
-      && (GET_CODE (insn) == BARRIER
-	  /* We must make sure that the insn really is a "return" and
-	     not a conditional branch.  Try to match the return exactly,
-	     and if it doesn't match, assume it is a conditional branch
-	     (and output an epilogue).  */
-	  || (GET_CODE (insn) == JUMP_INSN
-	      && GET_CODE (PATTERN (insn)) == RETURN)))
-    {
-      /* Emit an extra \n as is done with the normal epilogue.  */
-      fputc ('\n', stream);
-      return;
-    }
-
-  /* Add the space for global non-register-stack registers.
-     It is assumed that the frame-pointer register can be one of these
-     registers, in which case it is excluded from the count when needed.  */
-  for (regno = 255;
-       regno >= MMIX_FIRST_GLOBAL_REGNUM;
-       regno--)
-    if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	 && regs_ever_live[regno] && !call_used_regs[regno])
-	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
-      stack_space_to_deallocate += 8;
-
-  /* Add in the space for register stack-pointer.  If so, always add room
-     for the saved PC.  */
-  if (MMIX_CFUN_HAS_LANDING_PAD)
-    stack_space_to_deallocate += 16;
-  else if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
-    /* If we have a saved return-address slot, add it in.  */
-    stack_space_to_deallocate += 8;
-
-  /* Add in the frame-pointer.  */
-  if (frame_pointer_needed)
-    stack_space_to_deallocate += 8;
-
-  /* Make sure we don't get an unaligned stack.  */
-  if ((stack_space_to_deallocate % 8) != 0)
-    internal_error ("stack frame not a multiple of octabyte: %d",
-		    stack_space_to_deallocate);
-
-  /* We will add back small offsets to the stack pointer as we go.
-     First, we restore all registers that are global, i.e. not saved by
-     the register file machinery.  */
-
-  for (regno = MMIX_FIRST_GLOBAL_REGNUM;
-       regno <= 255;
-       regno++)
-    if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	 && regs_ever_live[regno] && !call_used_regs[regno])
-	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
-      {
-	if (offset > 255)
-	  {
-	    if (offset > 65535)
-	      {
-		/* There's better support for incrementing than
-		   decrementing, so we might be able to optimize this as
-		   we see a need.  */
-		mmix_output_register_setting (stream, 255, offset, 1);
-		fprintf (stream, "\tADDU %s,%s,$255\n",
-			 reg_names[MMIX_STACK_POINTER_REGNUM],
-			 reg_names[MMIX_STACK_POINTER_REGNUM]);
-	      }
-	    else
-	      fprintf (stream, "\tINCL %s,%d\n",
-		       reg_names[MMIX_STACK_POINTER_REGNUM], offset);
-
-	    stack_space_to_deallocate -= offset;
-	    offset = 0;
-	  }
-
-	fprintf (stream, "\tLDOU %s,%s,%d\n",
-		 reg_names[regno],
-		 reg_names[MMIX_STACK_POINTER_REGNUM],
-		 offset);
-	offset += 8;
-      }
-
-  /* Here is where the local variables were.  As in the prologue, they
-     might be of an unaligned size.  */
-  offset += (locals_size + 7) & ~7;
-
-
-  /* The saved register stack pointer is just below the frame-pointer
-     register.  We don't need to restore it "manually"; the POP
-     instruction does that.  */
-  if (MMIX_CFUN_HAS_LANDING_PAD)
-    offset += 16;
-  else if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
-    /* The return-address slot is just below the frame-pointer register.
-       We don't need to restore it because we don't really use it.  */
-    offset += 8;
-
-  /* Get back the old frame-pointer-value.  */
-  if (frame_pointer_needed)
-    {
-      if (offset > 255)
-	{
-	  if (offset > 65535)
-	    {
-	      /* There's better support for incrementing than
-		 decrementing, so we might be able to optimize this as
-		 we see a need.  */
-	      mmix_output_register_setting (stream, 255, offset, 1);
-	      fprintf (stream, "\tADDU %s,%s,$255\n",
-		       reg_names[MMIX_STACK_POINTER_REGNUM],
-		       reg_names[MMIX_STACK_POINTER_REGNUM]);
-	    }
-	  else
-	    fprintf (stream, "\tINCL %s,%d\n",
-		     reg_names[MMIX_STACK_POINTER_REGNUM], offset);
-
-	  stack_space_to_deallocate -= offset;
-	  offset = 0;
-	}
-
-      fprintf (stream, "\tLDOU %s,%s,%d\n",
-	       reg_names[MMIX_FRAME_POINTER_REGNUM],
-	       reg_names[MMIX_STACK_POINTER_REGNUM],
-	       offset);
-      offset += 8;
-    }
-
-  /* We do not need to restore pretended incoming args, just add back
-     offset to sp.  */
-  if (stack_space_to_deallocate > 65535)
-    {
-      /* There's better support for incrementing than decrementing, so
-	 we might be able to optimize this as we see a need.  */
-      mmix_output_register_setting (stream, 255,
-				    stack_space_to_deallocate, 1);
-      fprintf (stream, "\tADDU %s,%s,$255\n",
-	       reg_names[MMIX_STACK_POINTER_REGNUM],
-	       reg_names[MMIX_STACK_POINTER_REGNUM]);
-    }
-  else if (stack_space_to_deallocate != 0)
-    fprintf (stream, "\tINCL %s,%d\n",
-	     reg_names[MMIX_STACK_POINTER_REGNUM],
-	     stack_space_to_deallocate);
-
-  if (current_function_calls_eh_return)
-    /* Adjustment the (normal) stack-pointer to that of the receiver.
-       FIXME: It would be nice if we could also adjust the register stack
-       here, but we need to express it through DWARF 2 too.  */
-    fprintf (stream, "\tADDU %s,%s,%s\n",
-	     reg_names [MMIX_STACK_POINTER_REGNUM],
-	     reg_names [MMIX_STACK_POINTER_REGNUM],
-	     reg_names [MMIX_EH_RETURN_STACKADJ_REGNUM]);
-
-  /* The extra \n is so we have a blank line between the assembly code of
-     separate functions.  */
-  fprintf (stream, "\tPOP %d,0\n\n", MMIX_POP_ARGUMENT ());
+  /* Emit an \n for readability of the generated assembly.  */
+  fputc ('\n', stream);
 }
 
 /* ASM_OUTPUT_MI_THUNK.  */
@@ -2483,8 +2032,19 @@ mmix_dbx_register_number (regno)
 
    Now MMIX's own functions.  First the exported ones.  */
 
+/* Wrapper for get_hard_reg_initial_val since integrate.h isn't included
+   from insn-emit.c.  */
+
+rtx
+mmix_get_hard_reg_initial_val (mode, regno)
+     enum machine_mode mode;
+     int regno;
+{
+  return get_hard_reg_initial_val (mode, regno);
+}
+
 /* Non-zero when the function epilogue is simple enough that a single
-   "POP %d,0" should be used.  */
+   "POP %d,0" should be used even within the function.  */
 
 int
 mmix_use_simple_return ()
@@ -2518,6 +2078,360 @@ mmix_use_simple_return ()
     stack_space_to_allocate += 8;
 
   return stack_space_to_allocate == 0;
+}
+
+
+/* Expands the function prologue into RTX.  */
+
+void
+mmix_expand_prologue ()
+{
+  HOST_WIDE_INT locals_size = get_frame_size ();
+  int regno;
+  HOST_WIDE_INT stack_space_to_allocate
+    = (current_function_outgoing_args_size
+       + current_function_pretend_args_size
+       + locals_size + 7) & ~7;
+  HOST_WIDE_INT offset = -8;
+
+  /* Add room needed to save global non-register-stack registers.  */
+  for (regno = 255;
+       regno >= MMIX_FIRST_GLOBAL_REGNUM;
+       regno--)
+    /* Note that we assume that the frame-pointer-register is one of these
+       registers, in which case we don't count it here.  */
+    if ((((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
+	  && regs_ever_live[regno] && !call_used_regs[regno]))
+	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
+      stack_space_to_allocate += 8;
+
+  /* If we do have a frame-pointer, add room for it.  */
+  if (frame_pointer_needed)
+    stack_space_to_allocate += 8;
+
+  /* If we have a non-local label, we need to be able to unwind to it, so
+     store the current register stack pointer.  Also store the return
+     address if we do that.  */
+  if (MMIX_CFUN_HAS_LANDING_PAD)
+    stack_space_to_allocate += 16;
+  else if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
+    /* If we do have a saved return-address slot, add room for it.  */
+    stack_space_to_allocate += 8;
+
+  /* Make sure we don't get an unaligned stack.  */
+  if ((stack_space_to_allocate % 8) != 0)
+    internal_error ("stack frame not a multiple of 8 bytes: %d",
+		    stack_space_to_allocate);
+
+  if (current_function_pretend_args_size)
+    {
+      int mmix_first_vararg_reg
+	= (MMIX_FIRST_INCOMING_ARG_REGNUM
+	   + (MMIX_MAX_ARGS_IN_REGS
+	      - current_function_pretend_args_size / 8));
+
+      for (regno
+	     = MMIX_FIRST_INCOMING_ARG_REGNUM + MMIX_MAX_ARGS_IN_REGS - 1;
+	   regno >= mmix_first_vararg_reg;
+	   regno--)
+	{
+	  if (offset < 0)
+	    {
+	      HOST_WIDE_INT stack_chunk
+		= stack_space_to_allocate > (256 - 8)
+		? (256 - 8) : stack_space_to_allocate;
+
+	      mmix_emit_sp_add (-stack_chunk);
+	      offset += stack_chunk;
+	      stack_space_to_allocate -= stack_chunk;
+	    }
+
+	  /* These registers aren't actually saved (as in "will be
+	     restored"), so don't tell DWARF2 they're saved.  */
+	  emit_move_insn (gen_rtx_MEM (DImode,
+				       plus_constant (stack_pointer_rtx,
+						      offset)),
+			  gen_rtx_REG (DImode, regno));
+	  offset -= 8;
+	}
+    }
+
+  /* Store the frame-pointer.  */
+
+  if (frame_pointer_needed)
+    {
+      rtx insn;
+
+      if (offset < 0)
+	{
+	  /* Get 8 less than otherwise, since we need to reach offset + 8.  */
+	  HOST_WIDE_INT stack_chunk
+	    = stack_space_to_allocate > (256 - 8 - 8)
+	    ? (256 - 8 - 8) : stack_space_to_allocate;
+
+	  mmix_emit_sp_add (-stack_chunk);
+
+	  offset += stack_chunk;
+	  stack_space_to_allocate -= stack_chunk;
+	}
+
+      insn = emit_move_insn (gen_rtx_MEM (DImode,
+					  plus_constant (stack_pointer_rtx,
+							 offset)),
+			     hard_frame_pointer_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      insn = emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
+				    stack_pointer_rtx,
+				    GEN_INT (offset + 8)));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      offset -= 8;
+    }
+
+  if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
+    {
+      rtx tmpreg, retreg;
+      rtx insn;
+
+      /* Store the return-address, if one is needed on the stack.  We
+	 usually store it in a register when needed, but that doesn't work
+	 with -fexceptions.  */
+
+      if (offset < 0)
+	{
+	  /* Get 8 less than otherwise, since we need to reach offset + 8.  */
+	  HOST_WIDE_INT stack_chunk
+	    = stack_space_to_allocate > (256 - 8 - 8)
+	    ? (256 - 8 - 8) : stack_space_to_allocate;
+
+	  mmix_emit_sp_add (-stack_chunk);
+
+	  offset += stack_chunk;
+	  stack_space_to_allocate -= stack_chunk;
+	}
+
+      tmpreg = gen_rtx_REG (DImode, 255);
+      retreg = gen_rtx_REG (DImode, MMIX_rJ_REGNUM);
+
+      /* Dwarf2 code is confused by the use of a temporary register for
+	 storing the return address, so we have to express it as a note,
+	 which we attach to the actual store insn.  */
+      emit_move_insn (tmpreg, retreg);
+
+      insn = emit_move_insn (gen_rtx_MEM (DImode,
+					  plus_constant (stack_pointer_rtx,
+							 offset)),
+			     tmpreg);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      REG_NOTES (insn)
+	= gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+			     gen_rtx_SET (VOIDmode,
+					  gen_rtx_MEM (DImode,
+						       plus_constant (stack_pointer_rtx,
+								      offset)),
+					  retreg),
+			     REG_NOTES (insn));
+
+      offset -= 8;
+    }
+  else if (MMIX_CFUN_HAS_LANDING_PAD)
+    offset -= 8;
+
+  if (MMIX_CFUN_HAS_LANDING_PAD)
+    {
+      /* Store the register defining the numbering of local registers, so
+	 we know how long to unwind the register stack.  */
+
+      if (offset < 0)
+	{
+	  /* Get 8 less than otherwise, since we need to reach offset + 8.  */
+	  HOST_WIDE_INT stack_chunk
+	    = stack_space_to_allocate > (256 - 8 - 8)
+	    ? (256 - 8 - 8) : stack_space_to_allocate;
+
+	  mmix_emit_sp_add (-stack_chunk);
+
+	  offset += stack_chunk;
+	  stack_space_to_allocate -= stack_chunk;
+	}
+
+      /* We don't tell dwarf2 about this one; we just have it to unwind
+	 the register stack at landing pads.  FIXME: It's a kludge because
+	 we can't describe the effect of the PUSHJ and PUSHGO insns on the
+	 register stack at the moment.  Best thing would be to handle it
+	 like stack-pointer offsets.  Better: some hook into dwarf2out.c
+	 to produce DW_CFA_expression:s that specify the increment of rO,
+	 and unwind it at eh_return (preferred) or at the landing pad.
+	 Then saves to $0..$G-1 could be specified through that register.  */
+
+      emit_move_insn (gen_rtx_REG (DImode, 255),
+		      gen_rtx_REG (DImode,
+				   MMIX_rO_REGNUM));
+      emit_move_insn (gen_rtx_MEM (DImode,
+				   plus_constant (stack_pointer_rtx, offset)),
+		      gen_rtx_REG (DImode, 255));
+      offset -= 8;
+    }
+
+  /* After the return-address and the frame-pointer, we have the local
+     variables.  They're the ones that may have an "unaligned" size.  */
+  offset -= (locals_size + 7) & ~7;
+
+  /* Now store all registers that are global, i.e. not saved by the
+     register file machinery.
+
+     It is assumed that the frame-pointer is one of these registers, so it
+     is explicitly excluded in the count.  */
+
+  for (regno = 255;
+       regno >= MMIX_FIRST_GLOBAL_REGNUM;
+       regno--)
+    if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
+	 && regs_ever_live[regno] && ! call_used_regs[regno])
+	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
+      {
+	rtx insn;
+
+	if (offset < 0)
+	  {
+	    HOST_WIDE_INT stack_chunk
+	      = (stack_space_to_allocate > (256 - offset - 8)
+		 ? (256 - offset - 8) : stack_space_to_allocate);
+
+	    mmix_emit_sp_add (-stack_chunk);
+	    offset += stack_chunk;
+	    stack_space_to_allocate -= stack_chunk;
+	  }
+
+	insn = emit_move_insn (gen_rtx_MEM (DImode,
+					    plus_constant (stack_pointer_rtx,
+							   offset)),
+			       gen_rtx_REG (DImode, regno));
+	RTX_FRAME_RELATED_P (insn) = 1;
+	offset -= 8;
+      }
+
+  /* Finally, allocate room for outgoing args and local vars if room
+     wasn't allocated above.  */
+  if (stack_space_to_allocate)
+    mmix_emit_sp_add (-stack_space_to_allocate);
+}
+
+/* Expands the function epilogue into RTX.  */
+
+void
+mmix_expand_epilogue ()
+{
+  HOST_WIDE_INT locals_size = get_frame_size ();
+  int regno;
+  HOST_WIDE_INT stack_space_to_deallocate
+    = (current_function_outgoing_args_size
+       + current_function_pretend_args_size
+       + locals_size + 7) & ~7;
+
+  /* The assumption that locals_size fits in an int is asserted in
+     mmix_expand_prologue.  */
+
+  /* The first address to access is beyond the outgoing_args area.  */
+  int offset = current_function_outgoing_args_size;
+
+  /* Add the space for global non-register-stack registers.
+     It is assumed that the frame-pointer register can be one of these
+     registers, in which case it is excluded from the count when needed.  */
+  for (regno = 255;
+       regno >= MMIX_FIRST_GLOBAL_REGNUM;
+       regno--)
+    if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
+	 && regs_ever_live[regno] && !call_used_regs[regno])
+	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
+      stack_space_to_deallocate += 8;
+
+  /* Add in the space for register stack-pointer.  If so, always add room
+     for the saved PC.  */
+  if (MMIX_CFUN_HAS_LANDING_PAD)
+    stack_space_to_deallocate += 16;
+  else if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
+    /* If we have a saved return-address slot, add it in.  */
+    stack_space_to_deallocate += 8;
+
+  /* Add in the frame-pointer.  */
+  if (frame_pointer_needed)
+    stack_space_to_deallocate += 8;
+
+  /* Make sure we don't get an unaligned stack.  */
+  if ((stack_space_to_deallocate % 8) != 0)
+    internal_error ("stack frame not a multiple of octabyte: %d",
+		    stack_space_to_deallocate);
+
+  /* We will add back small offsets to the stack pointer as we go.
+     First, we restore all registers that are global, i.e. not saved by
+     the register file machinery.  */
+
+  for (regno = MMIX_FIRST_GLOBAL_REGNUM;
+       regno <= 255;
+       regno++)
+    if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
+	 && regs_ever_live[regno] && !call_used_regs[regno])
+	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
+      {
+	if (offset > 255)
+	  {
+	    mmix_emit_sp_add (offset);
+	    stack_space_to_deallocate -= offset;
+	    offset = 0;
+	  }
+
+	emit_move_insn (gen_rtx_REG (DImode, regno),
+			gen_rtx_MEM (DImode,
+				     plus_constant (stack_pointer_rtx,
+						    offset)));
+	offset += 8;
+      }
+
+  /* Here is where the local variables were.  As in the prologue, they
+     might be of an unaligned size.  */
+  offset += (locals_size + 7) & ~7;
+
+
+  /* The saved register stack pointer is just below the frame-pointer
+     register.  We don't need to restore it "manually"; the POP
+     instruction does that.  */
+  if (MMIX_CFUN_HAS_LANDING_PAD)
+    offset += 16;
+  else if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
+    /* The return-address slot is just below the frame-pointer register.
+       We don't need to restore it because we don't really use it.  */
+    offset += 8;
+
+  /* Get back the old frame-pointer-value.  */
+  if (frame_pointer_needed)
+    {
+      if (offset > 255)
+	{
+	  mmix_emit_sp_add (offset);
+
+	  stack_space_to_deallocate -= offset;
+	  offset = 0;
+	}
+
+      emit_move_insn (hard_frame_pointer_rtx,
+		      gen_rtx_MEM (DImode,
+				   plus_constant (stack_pointer_rtx,
+						  offset)));
+      offset += 8;
+    }
+
+  /* We do not need to restore pretended incoming args, just add back
+     offset to sp.  */
+  if (stack_space_to_deallocate != 0)
+    mmix_emit_sp_add (stack_space_to_deallocate);
+
+  if (current_function_calls_eh_return)
+    /* Adjust the (normal) stack-pointer to that of the receiver.
+       FIXME: It would be nice if we could also adjust the register stack
+       here, but we need to express it through DWARF 2 too.  */
+    emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+			   gen_rtx_REG (DImode,
+					MMIX_EH_RETURN_STACKADJ_REGNUM)));
 }
 
 /* Output an optimal sequence for setting a register to a specific
@@ -2883,6 +2797,48 @@ mmix_gen_compare_reg (code, x, y)
 }
 
 /* Local (static) helper functions.  */
+
+static void
+mmix_emit_sp_add (offset)
+     HOST_WIDE_INT offset;
+{
+  rtx insn;
+
+  if (offset < 0)
+    {
+      /* Negative stack-pointer adjustments are allocations and appear in
+	 the prologue only.  We mark them as frame-related so unwind and
+	 debug info is properly emitted for them.  */
+      if (offset > -255)
+	insn = emit_insn (gen_adddi3 (stack_pointer_rtx,
+				      stack_pointer_rtx,
+				      GEN_INT (offset)));
+      else
+	{
+	  rtx tmpr = gen_rtx_REG (DImode, 255);
+	  RTX_FRAME_RELATED_P (emit_move_insn (tmpr, GEN_INT (offset))) = 1;
+	  insn = emit_insn (gen_adddi3 (stack_pointer_rtx,
+					stack_pointer_rtx, tmpr));
+	}
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+  else
+    {
+      /* Positive adjustments are in the epilogue only.  Don't mark them
+	 as "frame-related" for unwind info.  */
+      if (CONST_OK_FOR_LETTER_P (offset, 'L'))
+	emit_insn (gen_adddi3 (stack_pointer_rtx,
+			       stack_pointer_rtx,
+			       GEN_INT (offset)));
+      else
+	{
+	  rtx tmpr = gen_rtx_REG (DImode, 255);
+	  emit_move_insn (tmpr, GEN_INT (offset));
+	  insn = emit_insn (gen_adddi3 (stack_pointer_rtx,
+					stack_pointer_rtx, tmpr));
+	}
+    }
+}
 
 /* Print operator suitable for doing something with a shiftable
    wyde.  The type of operator is passed as an asm output modifier.  */
