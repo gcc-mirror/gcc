@@ -1,3 +1,13 @@
+2003-11-27  Randolph Chung  <tausq@debian.org>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (hppa_profile_hook): Split gen_call_profiler into separate 
+	insns.  Use the regular call expander for the call to the profiler.
+	* pa.md (call_profiler): Delete.
+	(load_offset_label_address): New insn to load the address of the
+	current function for the profiler.
+	(lcla1, lcla2): New insns to output a code label and load its address.
+
 2003-11-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* final.c (final_scan_insn): Remove commented-out code.

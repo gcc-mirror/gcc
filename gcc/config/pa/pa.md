@@ -6152,34 +6152,47 @@
   DONE;
 }")
 
-;; Special because we use the value placed in %r2 by the bl instruction
-;; from within its delay slot to set the value for the 2nd parameter to
-;; the call.
-(define_insn "call_profiler"
-  [(call (mem:SI (match_operand 0 "call_operand_address" ""))
-	 (match_operand 1 "" ""))
-   (use (match_operand 2 "" ""))
-   (use (reg:SI 25))
-   (use (reg:SI 26))
-   (clobber (reg:SI 2))]
+; Used by hppa_profile_hook to load the starting address of the current
+; function; operand 1 contains the address of the label in operand 3
+(define_insn "load_offset_label_address"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (plus:SI (match_operand:SI 1 "register_operand" "r")
+		 (minus:SI (match_operand:SI 2 "" "")
+			   (label_ref:SI (match_operand 3 "" "")))))]
   ""
+  "ldo %2-%l3(%1),%0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "4")])
+
+; Output a code label and load its address.
+(define_insn "lcla1"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (label_ref:SI (match_operand 1 "" "")))
+   (const_int 0)]
+  "!TARGET_PA_20"
   "*
 {
-  rtx xoperands[3];
-
-  output_arg_descriptor (insn);
-
-  xoperands[0] = operands[0];
-  xoperands[1] = operands[2];
-  xoperands[2] = gen_label_rtx ();
-  output_asm_insn (\"{bl|b,l} %0,%%r2\;ldo %1-%2(%%r2),%%r25\", xoperands);
-
+  output_asm_insn (\"bl .+8,%0\;depi 0,31,2,%0\", operands);
   (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-			     CODE_LABEL_NUMBER (xoperands[2]));
+                                     CODE_LABEL_NUMBER (operands[1]));
   return \"\";
 }"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
+
+(define_insn "lcla2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (label_ref:SI (match_operand 1 "" "")))
+   (const_int 0)]
+  "TARGET_PA_20"
+  "*
+{
+  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
+                                     CODE_LABEL_NUMBER (operands[1]));
+  return \"mfia %0\";
+}"
+  [(set_attr "type" "move")
+   (set_attr "length" "4")])
 
 (define_insn "blockage"
   [(unspec_volatile [(const_int 2)] 0)]
