@@ -1,6 +1,6 @@
 static char junk[] = "\n@(#) LIBU77 VERSION 19970609\n";
 
-char __G77_LIBU77_VERSION__[] = "0.5.21-19970811";
+char __G77_LIBU77_VERSION__[] = "0.5.21";
 
 #include <stdio.h>
 
