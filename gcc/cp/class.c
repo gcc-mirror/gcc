@@ -5029,7 +5029,9 @@ finish_struct_1 (tree t)
   /* Build the VTT for T.  */
   build_vtt (t);
 
-  if (warn_nonvdtor && TYPE_POLYMORPHIC_P (t))
+  /* This warning does not make sense for Java classes, since they
+     cannot have destructors.  */
+  if (!TYPE_FOR_JAVA (t) && warn_nonvdtor && TYPE_POLYMORPHIC_P (t))
     {
       tree dtor;
 
