@@ -1,7 +1,7 @@
 2003-05-21  Loren James Rittle  <ljrittle@acm.org>
 
 	* config/sparc/freebsd.h (CPP_CPU64_DEFAULT_SPEC): Add -D__sparcv9
-	-D__sparc__ to match system compiler convention.
+	to match system compiler convention.
 
 2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
