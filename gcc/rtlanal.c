@@ -1,5 +1,5 @@
 /* Analyze RTL for C-Compiler
-   Copyright (C) 1987-1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -408,7 +408,7 @@ reg_set_between_p (reg, from_insn, to_insn)
 
   for (insn = NEXT_INSN (from_insn); insn != to_insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	&& reg_set_p (reg, PATTERN (insn)))
+	&& reg_set_p (reg, insn))
       return 1;
   return 0;
 }
