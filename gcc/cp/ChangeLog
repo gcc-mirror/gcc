@@ -1,5 +1,21 @@
 1999-12-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* optimize.c (inline_data): Remove fns_top.  Add scope_stmt.  Add
+	in_target_cleanup_p.
+	(remap_decl): New function.
+	(remap_block): Likewise.
+	(copy_scope_stmt): Likewise.
+	(copy_body_r): Use remap_decl and copy_scope_stmt.
+	(copy_body): Use VARRAY_TOP_TREE.
+	(initialize_inlined_parameters): Likewise.
+	(declare_return_variable): Likewise.
+	(inlinable_function_p): Check flag_inline_trees.
+	(expand_call_inline): Handle SCOPE_STMTs and TARGET_EXPRs
+	specially.  Use VARRAY_PUSH_TREE.  Create a BLOCK for the
+	parameters of the inlined function.
+	(optimize_function): Prevent recursion into partially complete
+	functions.
+	
 	* cp-tree.def (SCOPE_STMT): Take one operand.
 	* cp-tree.h (SCOPE_STMT_BLOCK): New macro.
 	(SCOPE_NULLIFIED_P): Redefine.

@@ -31,8 +31,6 @@
 
 /* To Do:
 
-   o Provide debugging information for inlined function bodies.  
-
    o In order to make inlining-on-trees work, we pessimized
      function-local static constants.  In particular, they are now
      always output, even when not addressed.  Fix this by treating
@@ -41,7 +39,10 @@
      are not needed.
      
    o Provide heuristics to clamp inlining of recursive template
-     calls?  */
+     calls?  
+
+   o It looks like the return label is not being placed in the optimal
+     place.  Shouldn't it come before the returned value?  */
    
 /* Data required for function inlining.  */
 
@@ -52,13 +53,16 @@ typedef struct inline_data
      inlining the body of `h', the stack will contain, `h', followed
      by `g', followed by `f'.  */
   varray_type fns;
-  /* The top of the FNS stack.  */
-  size_t fns_top;
+  /* The last SCOPE_STMT we have encountered.  */
+  tree scope_stmt;
   /* The label to jump to when a return statement is encountered.  */
   tree ret_label;
   /* The map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined.  */
   splay_tree decl_map;
+  /* Nonzero if we are currently within the cleanup for a
+     TARGET_EXPR.  */
+  int in_target_cleanup_p;
 } inline_data;
 
 /* Prototypes.  */
@@ -70,6 +74,163 @@ static tree copy_body PROTO((inline_data *));
 static tree expand_call_inline PROTO((tree *, int *, void *));
 static void expand_calls_inline PROTO((tree *, inline_data *));
 static int inlinable_function_p PROTO((tree, inline_data *));
+static tree remap_decl PROTO((tree, inline_data *));
+static void remap_block PROTO((tree, tree, inline_data *));
+static void copy_scope_stmt PROTO((tree *, int *, inline_data *));
+
+/* Remap DECL during the copying of the BLOCK tree for the function.
+   DATA is really an `inline_data *'.  */
+
+static tree
+remap_decl (decl, id)
+     tree decl;
+     inline_data *id;
+{
+  splay_tree_node n;
+  tree fn;
+
+  /* We only remap local variables in the current function.  */
+  fn = VARRAY_TOP_TREE (id->fns);
+  if (!nonstatic_local_decl_p (decl) || DECL_CONTEXT (decl) != fn)
+    return NULL_TREE;
+
+  /* See if we have remapped this declaration.  */
+  n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
+  /* If we didn't already have an equivalent for this declaration,
+     create one now.  */
+  if (!n)
+    {
+      tree t;
+      
+      /* Make a copy of the variable or label.  */
+      t = copy_decl_for_inlining (decl, fn, 
+				  VARRAY_TREE (id->fns, 0));
+      /* Remember it, so that if we encounter this local entity
+	 again we can reuse this copy.  */
+      n = splay_tree_insert (id->decl_map, 
+			     (splay_tree_key) decl, 
+			     (splay_tree_value) t);
+    }
+ 
+  return (tree) n->value;
+}
+
+/* Copy the SCOPE_STMT_BLOCK associated with SCOPE_STMT to contain
+   remapped versions of the variables therein.  And hook the new block
+   into the block-tree.  If non-NULL, the DECLS are declarations to
+   add to use instead of the BLOCK_VARS in the old block.  */
+
+static void
+remap_block (scope_stmt, decls, id)
+     tree scope_stmt;
+     tree decls;
+     inline_data *id;
+{
+  /* We cannot do this in the cleanup for a TARGET_EXPR since we do
+     not know whether or not expand_expr will actually write out the
+     code we put there.  If it does not, then we'll have more BLOCKs
+     than block-notes, and things will go awry.  At some point, we
+     should make the back-end handle BLOCK notes in a tidier way,
+     without requiring a strict correspondence to the block-tree; then
+     this check can go.  */
+  if (id->in_target_cleanup_p)
+    {
+      SCOPE_STMT_BLOCK (scope_stmt) = NULL_TREE;
+      return;
+    }
+
+  /* If this is the beginning of a scope, remap the associated BLOCK.  */
+  if (SCOPE_BEGIN_P (scope_stmt) && SCOPE_STMT_BLOCK (scope_stmt))
+    {
+      tree old_block;
+      tree new_block;
+      tree old_var;
+
+      /* Make the new block.  */
+      old_block = SCOPE_STMT_BLOCK (scope_stmt);
+      new_block = make_node (BLOCK);
+      TREE_USED (new_block) = TREE_USED (old_block);
+      BLOCK_ABSTRACT_ORIGIN (new_block) = old_block;
+      SCOPE_STMT_BLOCK (scope_stmt) = new_block;
+
+      /* Remap its variables.  */
+      for (old_var = decls ? decls : BLOCK_VARS (old_block); 
+	   old_var; 
+	   old_var = TREE_CHAIN (old_var))
+	{
+	  tree new_var;
+
+	  /* Remap the variable.  */
+	  new_var = remap_decl (old_var, id);
+	  if (!new_var)
+	    /* We didn't remap this variable, so we can't mess with
+	       its TREE_CHAIN.  */
+	    ;
+	  else
+	    {
+	      TREE_CHAIN (new_var) = BLOCK_VARS (new_block);
+	      BLOCK_VARS (new_block) = new_var;
+	    }
+	}
+      /* We put the BLOCK_VARS in reverse order; fix that now.  */
+      BLOCK_VARS (new_block) = nreverse (BLOCK_VARS (new_block));
+      /* Graft the new block into the tree.  */
+      insert_block_after_note (new_block, 
+			       (id->scope_stmt 
+				? SCOPE_STMT_BLOCK (id->scope_stmt)
+				: NULL_TREE),
+			       (id->scope_stmt
+				? SCOPE_BEGIN_P (id->scope_stmt) : 1),
+			       VARRAY_TREE (id->fns, 0));
+      /* Remember that this is now the last scope statement with
+	 an associated block.  */
+      id->scope_stmt = scope_stmt;
+      /* Remember the remapped block.  */
+      splay_tree_insert (id->decl_map,
+			 (splay_tree_key) old_block,
+			 (splay_tree_value) new_block);
+    }
+  /* If this is the end of a scope, set the SCOPE_STMT_BLOCK to be the
+     remapped block.  */
+  else if (SCOPE_END_P (scope_stmt) && SCOPE_STMT_BLOCK (scope_stmt))
+    {
+      splay_tree_node n;
+
+      /* Find this block in the table of remapped things.  */
+      n = splay_tree_lookup (id->decl_map, 
+			     (splay_tree_key) SCOPE_STMT_BLOCK (scope_stmt));
+      my_friendly_assert (n != NULL, 19991203);
+      SCOPE_STMT_BLOCK (scope_stmt) = (tree) n->value;
+
+      /* Remember that this is now the last scope statement with an
+	 associated block.  */
+      id->scope_stmt = scope_stmt;
+    }
+}
+
+/* Copy the SCOPE_STMT pointed to by TP.  */
+
+static void
+copy_scope_stmt (tp, walk_subtrees, id)
+     tree *tp;
+     int *walk_subtrees;
+     inline_data *id;
+{
+  tree block;
+
+  /* Remember whether or not this statement was nullified.  When
+     making a copy, copy_tree_r always sets SCOPE_NULLIFIED_P (and
+     doesn't copy the SCOPE_STMT_BLOCK) to free callers from having to
+     deal with copying BLOCKs if they do not wish to do so.  */
+  block = SCOPE_STMT_BLOCK (*tp);
+  /* Copy (and replace) the statement.  */
+  copy_tree_r (tp, walk_subtrees, NULL);
+  /* Restore the SCOPE_STMT_BLOCK.  */
+  SCOPE_STMT_BLOCK (*tp) = block;
+
+  /* Remap the associated block.  */
+  remap_block (*tp, NULL_TREE, id);
+}
 
 /* Called from copy_body via walk_tree.  DATA is really an
    `inline_data *'.  */
@@ -85,7 +246,7 @@ copy_body_r (tp, walk_subtrees, data)
 
   /* Set up.  */
   id = (inline_data *) data;
-  fn = VARRAY_TREE (id->fns, id->fns_top - 1);
+  fn = VARRAY_TOP_TREE (id->fns);
 
   /* All automatic variables should have a DECL_CONTEXT indicating
      what function they come from.  */
@@ -125,34 +286,22 @@ copy_body_r (tp, walk_subtrees, data)
      function.  */
   else if (nonstatic_local_decl_p (*tp) && DECL_CONTEXT (*tp) == fn)
     {
-      splay_tree_node n;
+      tree new_decl;
 
-      /* Look up the declaration.  */
-      n = splay_tree_lookup (id->decl_map, (splay_tree_key) *tp);
-
-      /* If we didn't already have an equivalent for this declaration,
-	 create one now.  */
-      if (!n)
-	{
-	  tree t;
-
-	  /* Make a copy of the variable or label.  */
-	  t = copy_decl_for_inlining (*tp, fn, 
-				      VARRAY_TREE (id->fns, 0));
-	  /* Remember it, so that if we encounter this local entity
-	     again we can reuse this copy.  */
-	  n = splay_tree_insert (id->decl_map, 
-				 (splay_tree_key) *tp, 
-				 (splay_tree_value) t);
-	}
-
+      /* Remap the declaration.  */
+      new_decl = remap_decl (*tp, id);
+      my_friendly_assert (new_decl != NULL_TREE, 19991203);
       /* Replace this variable with the copy.  */
-      *tp = (tree) n->value;
+      *tp = new_decl;
     }
   else if (TREE_CODE (*tp) == SAVE_EXPR)
     remap_save_expr (tp, id->decl_map, VARRAY_TREE (id->fns, 0));
   else if (TREE_CODE (*tp) == UNSAVE_EXPR)
     my_friendly_abort (19991113);
+  /* For a SCOPE_STMT, we must copy the associated block so that we
+     can write out debugging information for the inlined variables.  */
+  else if (TREE_CODE (*tp) == SCOPE_STMT && !id->in_target_cleanup_p)
+    copy_scope_stmt (tp, walk_subtrees, id);
   /* Otherwise, just copy the node.  Note that copy_tree_r already
      knows not to copy VAR_DECLs, etc., so this is safe.  */
   else
@@ -182,7 +331,7 @@ copy_body (id)
 {
   tree body;
 
-  body = DECL_SAVED_TREE (VARRAY_TREE (id->fns, id->fns_top - 1));
+  body = DECL_SAVED_TREE (VARRAY_TOP_TREE (id->fns));
   walk_tree (&body, copy_body_r, id);
 
   return body;
@@ -203,7 +352,7 @@ initialize_inlined_parameters (id, args)
   tree p;
 
   /* Figure out what the parameters are.  */
-  fn = VARRAY_TREE (id->fns, id->fns_top - 1);
+  fn = VARRAY_TOP_TREE (id->fns);
   parms = DECL_ARGUMENTS (fn);
 
   /* Start with no initializations whatsoever.  */
@@ -256,7 +405,7 @@ declare_return_variable (id, use_stmt)
      struct inline_data *id;
      tree *use_stmt;
 {
-  tree fn = VARRAY_TREE (id->fns, id->fns_top - 1);
+  tree fn = VARRAY_TOP_TREE (id->fns);
   tree result = DECL_RESULT (fn);
   tree var;
 
@@ -302,9 +451,12 @@ inlinable_function_p (fn, id)
   /* Assume it is not inlinable.  */
   inlinable = 0;
 
+  /* If we're not inlining things, then nothing is inlinable.  */
+  if (!flag_inline_trees)
+    ;
   /* If the function was not declared `inline', then we don't inline
      it.  */
-  if (!DECL_INLINE (fn))
+  else if (!DECL_INLINE (fn))
     ;
   /* If we don't have the function body available, we can't inline
      it.  */
@@ -330,7 +482,7 @@ inlinable_function_p (fn, id)
     {
       size_t i;
 
-      for (i = 0; i < id->fns_top; ++i)
+      for (i = 0; i < id->fns->elements_used; ++i)
 	if (VARRAY_TREE (id->fns, i) == fn)
 	  inlinable = 0;
     }
@@ -362,11 +514,47 @@ expand_call_inline (tp, walk_subtrees, data)
   tree expr;
   tree chain;
   tree fn;
+  tree scope_stmt;
   tree use_stmt;
   splay_tree st;
 
-  /* We're only interested in CALL_EXPRs.  */
-  t = *tp;
+  /* See what we've got.  */
+  id = (inline_data *) data;
+  t = *tp;  
+
+  /* Keep track of the last SCOPE_STMT we've seen.  */
+  if (TREE_CODE (t) == SCOPE_STMT)
+    {
+      if (SCOPE_STMT_BLOCK (t) && !id->in_target_cleanup_p)
+	id->scope_stmt = t;
+      return NULL_TREE;
+    }
+
+  /* Recurse, but letting recursive invocations know that we are
+     inside the body of a TARGET_EXPR.  */
+  if (TREE_CODE (*tp) == TARGET_EXPR)
+    {
+      int i;
+
+      /* We're walking our own subtrees.  */
+      *walk_subtrees = 0;
+
+      /* Actually walk over them.  This loop is the body of
+	 walk_trees, omitting the case where the TARGET_EXPR
+	 itself is handled.  */
+      for (i = first_rtl_op (TARGET_EXPR) - 1; i >= 0; --i)
+	{
+	  if (i == 2)
+	    ++id->in_target_cleanup_p;
+	  walk_tree (&TREE_OPERAND (*tp, i), expand_call_inline, data);
+	  if (i == 2)
+	    --id->in_target_cleanup_p;
+	}
+
+      return NULL_TREE;
+    }
+
+  /* From here on, we're only interested in CALL_EXPRs.  */
   if (TREE_CODE (t) != CALL_EXPR)
     return NULL_TREE;
 
@@ -378,7 +566,6 @@ expand_call_inline (tp, walk_subtrees, data)
 
   /* Don't try to inline functions that are not well-suited to
      inlining.  */
-  id = (inline_data *) data;
   if (!inlinable_function_p (fn, id))
     return NULL_TREE;
 
@@ -396,9 +583,7 @@ expand_call_inline (tp, walk_subtrees, data)
 
   /* Record the function we are about to inline so that we can avoid
      recursing into it.  */
-  if (id->fns_top > id->fns->num_elements)
-    VARRAY_GROW (id->fns, 2 * id->fns->num_elements);
-  VARRAY_TREE (id->fns, id->fns_top++) = fn;
+  VARRAY_PUSH_TREE (id->fns, fn);
 
   /* Local declarations will be replaced by their equivalents in this
      map.  */
@@ -409,6 +594,17 @@ expand_call_inline (tp, walk_subtrees, data)
   /* Initialize the parameters.  */
   STMT_EXPR_STMT (expr) 
     = initialize_inlined_parameters (id, TREE_OPERAND (t, 1));
+    
+  /* Create a block to put the parameters in.  We have to do this
+     after the parameters have been remapped because remapping
+     parameters is different from remapping ordinary variables.  */
+  scope_stmt = build_min_nt (SCOPE_STMT, DECL_INITIAL (fn));
+  SCOPE_BEGIN_P (scope_stmt) = 1;
+  SCOPE_NO_CLEANUPS_P (scope_stmt) = 1;
+  remap_block (scope_stmt, DECL_ARGUMENTS (fn), id);
+  TREE_CHAIN (scope_stmt) = STMT_EXPR_STMT (expr);
+  STMT_EXPR_STMT (expr) = scope_stmt;
+  id->scope_stmt = scope_stmt;
 
   /* Declare the return variable for the function.  */
   STMT_EXPR_STMT (expr)
@@ -419,6 +615,16 @@ expand_call_inline (tp, walk_subtrees, data)
      function itself.  */
   STMT_EXPR_STMT (expr)
     = chainon (STMT_EXPR_STMT (expr), copy_body (id));
+
+  /* Close the block for the parameters.  */
+  scope_stmt = build_min_nt (SCOPE_STMT, DECL_INITIAL (fn));
+  SCOPE_NO_CLEANUPS_P (scope_stmt) = 1;
+  my_friendly_assert (DECL_INITIAL (fn) 
+		      && TREE_CODE (DECL_INITIAL (fn)) == BLOCK,
+		      19991203);
+  remap_block (scope_stmt, NULL_TREE, id);
+  STMT_EXPR_STMT (expr)
+    = chainon (STMT_EXPR_STMT (expr), scope_stmt);
 
   /* Finally, mention the returned value so that the value of the
      statement-expression is the returned value of the function.  */
@@ -447,7 +653,7 @@ expand_call_inline (tp, walk_subtrees, data)
 
   /* Recurse into the body of the just inlined function.  */
   expand_calls_inline (tp, id);
-  --id->fns_top;
+  VARRAY_POP (id->fns);
 
   /* Don't walk into subtrees.  We've already handled them above.  */
   *walk_subtrees = 0;
@@ -479,14 +685,28 @@ optimize_function (fn)
   if (flag_inline_trees)
     {
       inline_data id;
+      tree prev_fn;
+      struct saved_scope *s;
 
       /* Clear out ID.  */
       bzero (&id, sizeof (id));
 
       /* Don't allow recursion into FN.  */
       VARRAY_TREE_INIT (id.fns, 32, "fns");
-      VARRAY_TREE (id.fns, id.fns_top++) = fn;
-
+      VARRAY_PUSH_TREE (id.fns, fn);
+      /* Or any functions that aren't finished yet.  */
+      prev_fn = NULL_TREE;
+      if (current_function_decl)
+	{
+	  VARRAY_PUSH_TREE (id.fns, current_function_decl);
+	  prev_fn = current_function_decl;
+	}
+      for (s = scope_chain; s; s = s->prev)
+	if (s->function_decl && s->function_decl != prev_fn)
+	  {
+	    VARRAY_PUSH_TREE (id.fns, s->function_decl);
+	    prev_fn = s->function_decl;
+	  }
       /* Replace all calls to inline functions with the bodies of those
 	 functions.  */
       expand_calls_inline (&DECL_SAVED_TREE (fn), &id);
