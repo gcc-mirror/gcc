@@ -1,3 +1,16 @@
+Sun Jun  7 14:04:34 1998  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (lang_init_options): New function.
+	* top.c (ffe_decode_option): Remove all trace of -fset-g77-defaults.
+	Set ffe_is_do_internal_checks_ with -version.
+	* lang-options.h: Likewise.
+	* lang-specs.h: Likewise.
+
+Fri Jun  5 15:53:17 1998  Per Bothner  <bothner@cygnus.com>
+
+	* g77spec.c (lang_specific_pre_link, lang_specific_extra_ofiles):
+	Define - update needed by gcc.c change.
+
 Fri May 15 01:44:22 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	* Make-lang.in (f77.mostlyclean): Add missing exeext.

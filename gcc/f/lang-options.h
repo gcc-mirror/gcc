@@ -29,7 +29,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
   "-fversion",
   "-fnull-version",
-  "-fset-g77-defaults",
 /*"-fident",*/
 /*"-fno-ident",*/
   "-ff66",

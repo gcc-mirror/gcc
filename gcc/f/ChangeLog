@@ -1,8 +1,3 @@
-Fri Jun  5 15:53:17 1998  Per Bothner  <bothner@cygnus.com>
-
-	* g77spec.c (lang_specific_pre_link, lang_specific_extra_ofiles):
-	Define - update needed by gcc.c change.
-
 Mon Jun  1 19:37:42 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_init_0): Fix setup of INTEGER(KIND=7)

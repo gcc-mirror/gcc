@@ -61,7 +61,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Externals defined here. */
 
 int flag_traditional;		/* Shouldn't need this (C front end only)! */
-bool ffe_is_do_internal_checks_ = TRUE;
+bool ffe_is_do_internal_checks_ = FALSE;
 bool ffe_is_90_ = FFETARGET_defaultIS_90;
 bool ffe_is_automatic_ = FFETARGET_defaultIS_AUTOMATIC;
 bool ffe_is_backslash_ = FFETARGET_defaultIS_BACKSLASH;
@@ -167,22 +167,12 @@ ffe_decode_option (char *opt)
   if (opt[1] == 'f')
     {
       if (strcmp (&opt[2], "version") == 0)
-	ffe_set_is_version (TRUE);
-      else if (strcmp (&opt[2], "null-version") == 0)
-	;			/* Someday generate program to print version
-				   info.  */
-      else if (strcmp (&opt[2], "set-g77-defaults") == 0)
 	{
-	  ffe_is_do_internal_checks_ = 0;
-#if BUILT_FOR_270	/* User must have applied patch (circa 2.7.2 and beyond). */
-#if 0
-	  flag_rerun_loop_opt = 1;
-#endif
-	  flag_move_all_movables = 1;
-	  flag_reduce_all_givs = 1;
-	  flag_argument_noalias = 2;
-#endif
+	  ffe_set_is_version (TRUE);
+	  ffe_is_do_internal_checks_ = TRUE;
 	}
+      else if (strcmp (&opt[2], "null-version") == 0)
+	;	/* Someday generate program to print version info.  */
       else if (strcmp (&opt[2], "ident") == 0)
 	ffe_set_is_ident (TRUE);
       else if (strcmp (&opt[2], "no-ident") == 0)

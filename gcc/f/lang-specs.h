@@ -52,7 +52,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	%c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} -traditional\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
 	%i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-    "%{!M:%{!MM:%{!E:f771 %{!pipe:%g.i} -fset-g77-defaults %(f771) \
+    "%{!M:%{!MM:%{!E:f771 %{!pipe:%g.i} %(f771) \
 		   %{!Q:-quiet} -dumpbase %b.F %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} \
 		   %{v:-version -fversion} %{pg:-p} %{p} %{f*} %{I*}\
@@ -67,7 +67,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    {"ratfor %{C} %{v}\
            %{C:%{!E:%eGNU C does not support -C without using -E}}\
            %{!E:%{!pipe:-o %g.f}}%{E:%W{o*}} %i |\n",
-    "%{!E:f771 %{!pipe:%g.f} -fset-g77-defaults %(f771) \
+    "%{!E:f771 %{!pipe:%g.f} %(f771) \
 	   %{!Q:-quiet} -dumpbase %b.r %{d*} %{m*} %{a}\
 	   %{g*} %{O*} %{W*} %{w} %{pedantic*} \
 	   %{v:-version -fversion} %{pg:-p} %{p} %{f*} %{I*}\
@@ -80,7 +80,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   {".f", {"@f77"}},
   {".for", {"@f77"}},
   {"@f77",
-   {"%{!M:%{!MM:%{!E:f771 %i -fset-g77-defaults %(f771) \
+   {"%{!M:%{!MM:%{!E:f771 %i %(f771) \
 		   %{!Q:-quiet} -dumpbase %b.f %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*}\
 		   %{v:-version -fversion} %{pg:-p} %{p} %{f*} %{I*}\
