@@ -588,6 +588,11 @@ extern void		sbss_section PARAMS ((void));
 #define ISA_HAS_CONDMOVE        (mips_isa == 4				\
 				 )
 
+/* ISA has just the integer condition move instructions (movn,movz) */
+#define ISA_HAS_INT_CONDMOVE     0
+
+
+
 /* ISA has the mips4 FP condition code instructions: FP-compare to CC,
    branch on CC, and move (both FP and non-FP) on CC. */
 #define ISA_HAS_8CC		(mips_isa == 4				\
