@@ -144,6 +144,9 @@ static tree dfs_accessible_queue_p PROTO ((tree, void *));
 static tree dfs_accessible_p PROTO ((tree, void *));
 static tree dfs_access_in_type PROTO ((tree, void *));
 static tree access_in_type PROTO ((tree, tree));
+static tree dfs_canonical_queue PROTO ((tree, void *));
+static tree dfs_assert_unmarked_P PROTO ((tree, void *));
+static tree assert_canonical_unmarked PROTO ((tree));
 
 /* Allocate a level of searching.  */
 
@@ -622,6 +625,38 @@ canonical_binfo (binfo)
 	  ? TYPE_BINFO (BINFO_TYPE (binfo)) : binfo);
 }
 
+/* A queue function that simply ensures that we walk into the
+   canonical versions of virtual bases.  */
+
+static tree
+dfs_canonical_queue (binfo, data)
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{
+  return canonical_binfo (binfo);
+}
+
+/* Called via dfs_walk from assert_canonical_unmarked.  */
+
+static tree
+dfs_assert_unmarked_p (binfo, data)
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{
+  my_friendly_assert (!BINFO_MARKED (binfo), 0);
+  return NULL_TREE;
+}
+
+/* Asserts that all the nodes below BINFO (using the canonical
+   versions of virtual bases) are unmarked.  */
+
+static void
+assert_canonical_unmarked (binfo)
+     tree binfo;
+{
+  dfs_walk (binfo, dfs_assert_unmarked_p, dfs_canonical_queue, 0);
+}
+
 /* If BINFO is marked, return a canonical version of BINFO.
    Otherwise, return NULL_TREE.  */
 
@@ -762,6 +797,7 @@ access_in_type (type, decl)
     each node with the most lenient access.  */
   dfs_walk_real (binfo, 0, dfs_access_in_type, shared_unmarked_p, decl);
   dfs_walk (binfo, dfs_unmark, shared_marked_p,  0);
+  assert_canonical_unmarked (binfo);
 
   return TREE_CHAIN (binfo);
 }
@@ -927,8 +963,11 @@ accessible_p (type, decl)
   t = dfs_walk (binfo, dfs_accessible_p, 
 		dfs_accessible_queue_p,
 		protected_ok ? &protected_ok : 0);
-  /* Clear any mark bits.  */
-  dfs_walk (binfo, dfs_unmark, shared_marked_p,  0);
+  /* Clear any mark bits.  Note that we have to walk the whole tree
+     here, since we have aborted the previous walk from some point
+     deep in the tree.  */
+  dfs_walk (binfo, dfs_unmark, dfs_canonical_queue,  0);
+  assert_canonical_unmarked (binfo);
 
   return t != NULL_TREE;
 }
