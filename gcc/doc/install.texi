@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.30 2001/06/21 00:03:47 jsm28 Exp $
+@comment $Id: install.texi,v 1.31 2001/06/21 15:25:54 shebs Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -546,7 +546,7 @@ their runtime libraries should be built. For a list of valid values for
 @var{langN} you can issue the following command in the
 @file{gcc} directory of your GCC source tree:@* @samp{grep language=
 */config-lang.in}@* Currently, you can use any of the following:
-@code{c++}, @code{f77}, @code{java} and @code{objc}.
+@code{c}, @code{c++}, @code{f77}, @code{java} and @code{objc}.
 @code{CHILL} is not currently maintained, and will almost
 certainly fail to compile.  Note that this switch does not work with
 EGCS 1.1.2 or older versions of egcs.  It is supported in GCC 2.95
