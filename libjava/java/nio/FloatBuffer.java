@@ -46,7 +46,7 @@ public abstract class FloatBuffer extends Buffer implements Comparable
 
   public static FloatBuffer allocateDirect(int capacity)
   {
-    return new FloatBufferImpl (capacity, 0, capacity);
+    throw new Error ("direct buffers not implemented");
   }
 
   public static FloatBuffer allocate(int capacity)

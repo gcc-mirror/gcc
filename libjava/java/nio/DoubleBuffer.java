@@ -46,7 +46,7 @@ public abstract class DoubleBuffer extends Buffer implements Comparable
 
   public static DoubleBuffer allocateDirect(int capacity)
   {
-    return new DoubleBufferImpl(capacity, 0, capacity);
+    throw new Error ("direct buffers are not implemented");
   }
 
   public static DoubleBuffer allocate(int capacity)
