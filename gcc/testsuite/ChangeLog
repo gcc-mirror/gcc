@@ -1,3 +1,10 @@
+2000-06-29  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/930529-1.x: New file.
+	* gcc.dg/920413-1.c: Adjust expexted warning text.
+	* gcc.dg/980217-1.c: Declare abort.
+	* gcc.dg/cpp/20000628-1a.h: Use a declaration instead of an asm.
+
 Thu Jun 29 09:42:40 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.f-torture/compile/20000629-1.f: New test.

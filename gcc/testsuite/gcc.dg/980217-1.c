@@ -3,6 +3,8 @@
 /* { dg-do run { target alpha*-*-* } } */
 /* { dg-options "-mieee -O2" } */
 
+extern void abort(void);
+
 typedef int int32_t __attribute__ ((__mode__ (  __SI__ ))) ;
 typedef union
 {
