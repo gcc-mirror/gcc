@@ -495,6 +495,7 @@ static int eh_region_from_symbol PARAMS ((rtx));
 extern struct obstack permanent_obstack;
 
 /* Generate a SYMBOL_REF for rethrow to use */
+
 static rtx
 create_rethrow_ref (region_num)
      int region_num;
@@ -566,7 +567,7 @@ top_label_entry (stack)
   return (*stack)->u.tlabel;
 }
 
-/* get an exception label. These must be on the permanent obstack */
+/* Get an exception label.  */
 
 rtx
 gen_exception_label ()
@@ -602,7 +603,8 @@ push_eh_entry (stack)
   stack->top = node;
 }
 
-/* push an existing entry onto a stack. */
+/* Push an existing entry onto a stack.  */
+
 static void
 push_entry (stack, entry)
      struct eh_stack *stack;
@@ -695,7 +697,7 @@ struct func_eh_entry
 {
   int range_number;   /* EH region number from EH NOTE insn's.  */
   rtx rethrow_label;  /* Label for rethrow.  */
-  int rethrow_ref;    /* Is rethrow referenced?  */
+  int rethrow_ref;    /* Is rethrow_label referenced?  */
   struct handler_info *handlers;
 };
 
@@ -969,6 +971,7 @@ duplicate_eh_handlers (old_note_eh_region, new_note_eh_region, map)
 
 
 /* Given a rethrow symbol, find the EH region number this is for. */
+
 static int 
 eh_region_from_symbol (sym)
      rtx sym;
@@ -984,6 +987,7 @@ eh_region_from_symbol (sym)
 
 /* Like find_func_region, but using the rethrow symbol for the region
    rather than the region number itself.  */
+
 static int
 find_func_region_from_symbol (sym)
      rtx sym;
@@ -995,12 +999,17 @@ find_func_region_from_symbol (sym)
    __rethrow as well. This performs the remap. If a symbol isn't foiund,
    the original one is returned. This is not an efficient routine,
    so don't call it on everything!! */
+
 rtx 
 rethrow_symbol_map (sym, map)
      rtx sym;
      rtx (*map) PARAMS ((rtx));
 {
   int x, y;
+
+  if (! flag_new_exceptions)
+    return sym;
+
   for (x = 0; x < current_func_eh_entry; x++)
     if (function_eh_regions[x].rethrow_label == sym)
       {
@@ -1020,6 +1029,10 @@ rethrow_symbol_map (sym, map)
       }
   return sym;
 }
+
+/* Returns nonzero if the rethrow label for REGION is referenced
+   somewhere (i.e. we rethrow out of REGION or some other region
+   masquerading as REGION).  */
 
 int 
 rethrow_used (region)
@@ -2011,7 +2024,7 @@ expand_rethrow (label)
 	  label = last_rethrow_symbol;
 	emit_library_call (rethrow_libfunc, 0, VOIDmode, 1, label, Pmode);
 	region = find_func_region (eh_region_from_symbol (label));
-	/* If the region is -1, it doesn't exist yet.  We should be
+	/* If the region is -1, it doesn't exist yet.  We shouldn't be
 	   trying to rethrow there yet.  */
 	if (region == -1)
 	  abort ();
@@ -2194,14 +2207,12 @@ output_exception_table_entry (file, n)
   int index = find_func_region (n);
   rtx rethrow;
   
- /* form and emit the rethrow label, if needed  */
-  rethrow = function_eh_regions[index].rethrow_label;
-  if (rethrow != NULL_RTX && !flag_new_exceptions)
-      rethrow = NULL_RTX;
-  if (rethrow != NULL_RTX && handler == NULL)
-    if (! function_eh_regions[index].rethrow_ref)
-      rethrow = NULL_RTX;
-
+  /* Form and emit the rethrow label, if needed  */
+  if (flag_new_exceptions
+      && (handler || function_eh_regions[index].rethrow_ref))
+    rethrow = function_eh_regions[index].rethrow_label;
+  else
+    rethrow = NULL_RTX;
 
   for ( ; handler != NULL || rethrow != NULL_RTX; handler = handler->next)
     {
@@ -2301,7 +2312,7 @@ output_exception_table ()
       if (i != 0)
         assemble_integer (const0_rtx, i , 1);
 
-      /* Generate the label for offset calculations on rethrows */
+      /* Generate the label for offset calculations on rethrows.  */
       ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", 0);
       assemble_label(buf);
     }
@@ -2318,7 +2329,7 @@ output_exception_table ()
   assemble_label(buf);
   assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
 
-  /* for binary compatability, the old __throw checked the second
+  /* For binary compatibility, the old __throw checked the second
      position for a -1, so we should output at least 2 -1's */
   if (! flag_new_exceptions)
     assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
@@ -2666,7 +2677,7 @@ scan_region (insn, n, delete_outer)
   /* Assume we can delete the region.  */
   int delete = 1;
 
-  /* Can't delete something which is rethrown to. */
+  /* Can't delete something which is rethrown from. */
   if (rethrow_used (n))
     delete = 0;
 
@@ -2783,9 +2794,10 @@ exception_optimize ()
     }
 }
 
-/* This function determines whether any of the exception regions in the
-   current function are targets of a rethrow or not, and set the 
-   reference flag according.  */
+/* This function determines whether the rethrow labels for any of the
+   exception regions in the current function are used or not, and set
+   the reference flag according.  */
+
 void
 update_rethrow_references ()
 {
@@ -2800,7 +2812,7 @@ update_rethrow_references ()
   saw_rethrow = (int *) xcalloc (current_func_eh_entry, sizeof (int));
 
   /* Determine what regions exist, and whether there are any rethrows
-     to those regions or not.  */
+     from those regions or not.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == CALL_INSN)
       {
@@ -3336,7 +3348,7 @@ reachable_handlers (block, info, insn, handlers)
   if (insn && GET_CODE (insn) == CALL_INSN)
     {
       /* RETHROWs specify a region number from which we are going to rethrow.
-	 This means we wont pass control to handlers in the specified
+	 This means we won't pass control to handlers in the specified
 	 region, but rather any region OUTSIDE the specified region.
 	 We accomplish this by setting block to the outer_index of the
 	 specified region.  */
