@@ -5490,8 +5490,10 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
      true for all smaller modes whether or not there is a SUBREG, but
      is not worth testing for with no SUBREG.  */
 
+  /* Note that GET_MODE (op0) may not equal MODE.  */
   if (code == EQ && GET_CODE (op0) == SUBREG
-      && GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0))))
+      && (GET_MODE_SIZE (GET_MODE (op0))
+	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))))
     {
       enum machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
       rtx tem = gen_lowpart_if_possible (inner_mode, op1);
@@ -5502,7 +5504,8 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
     }
 
   if (code == EQ && GET_CODE (op1) == SUBREG
-      && GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1))))
+      && (GET_MODE_SIZE (GET_MODE (op1))
+	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1)))))
     {
       enum machine_mode inner_mode = GET_MODE (SUBREG_REG (op1));
       rtx tem = gen_lowpart_if_possible (inner_mode, op0);
@@ -5515,9 +5518,14 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
   /* Similarly, if this is an NE comparison, and either is a SUBREG 
      making a smaller mode, we know the whole thing is also NE.  */
 
+  /* Note that GET_MODE (op0) may not equal MODE;
+     if we test MODE instead, we can get an infinite recursion
+     alternating between two modes each wider than MODE.  */
+
   if (code == NE && GET_CODE (op0) == SUBREG
       && subreg_lowpart_p (op0)
-      && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0))))
+      && (GET_MODE_SIZE (GET_MODE (op0))
+	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))))
     {
       enum machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
       rtx tem = gen_lowpart_if_possible (inner_mode, op1);
@@ -5529,7 +5537,8 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 
   if (code == NE && GET_CODE (op1) == SUBREG
       && subreg_lowpart_p (op1)
-      && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1))))
+      && (GET_MODE_SIZE (GET_MODE (op1))
+	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1)))))
     {
       enum machine_mode inner_mode = GET_MODE (SUBREG_REG (op1));
       rtx tem = gen_lowpart_if_possible (inner_mode, op0);
