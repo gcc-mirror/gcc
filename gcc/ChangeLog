@@ -1,3 +1,7 @@
+Wed May  5 20:28:32 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* install.texi (Header Dirs): s/GPLUS/GPLUSPLUS/.
+
 Wed May  5 23:44:15 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* unroll.c (copy_loop_body): Don't copy VTOP notes from copy_notes_from.
