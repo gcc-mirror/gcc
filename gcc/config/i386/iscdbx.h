@@ -1,7 +1,7 @@
 /* Definitions for Intel 386 running Interactive Unix System V,
    using dbx-in-coff encapsulation.
    Specifically, this is for recent versions that support POSIX.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -34,9 +34,10 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_SPEC \
   "%{!r:%{!z:svr3.ifile%s}%{z:svr3z.ifile%s}}\
    %{!shlib:%{posix:%{pg:mcrtp1.o%s}%{!pg:%{p:mcrtp1.o%s}%{!p:crtp1.o%s}}}\
-   %{!posix:%{pg:mcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}}\
+   %{Xp:%{pg:mcrtp1.o%s}%{!pg:%{p:mcrtp1.o%s}%{!p:crtp1.o%s}}}\
+   %{!posix:%{!Xp:%{pg:mcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}}}\
    %{p:-L/usr/lib/libp} %{pg:-L/usr/lib/libp}}\
-   %{shlib:%{posix:crtp1.o%s}%{!posix:crt1.o%s}}"
+   %{shlib:%{posix:crtp1.o%s}%{Xp:crtp1.o%s}%{!posix:%{!Xp:crt1.o%s}}}"
   
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC "crtn.o%s"
