@@ -3723,10 +3723,13 @@ debug_df_chain (struct df_link *link)
 }
 
 
+/* Perform the set operation OP1 OP OP2, using set representation REPR, and
+   storing the result in OP1.  */
+
 static void
 dataflow_set_a_op_b (enum set_representation repr,
 		     enum df_confluence_op op,
-		     void *rslt, void *op1, void *op2)
+		     void *op1, void *op2)
 {
   switch (repr)
     {
@@ -3734,11 +3737,11 @@ dataflow_set_a_op_b (enum set_representation repr,
       switch (op)
 	{
 	case DF_UNION:
-	  sbitmap_a_or_b (rslt, op1, op2);
+	  sbitmap_a_or_b (op1, op1, op2);
 	  break;
 
 	case DF_INTERSECTION:
-	  sbitmap_a_and_b (rslt, op1, op2);
+	  sbitmap_a_and_b (op1, op1, op2);
 	  break;
 
     	default:
@@ -3750,11 +3753,11 @@ dataflow_set_a_op_b (enum set_representation repr,
       switch (op)
 	{
 	case DF_UNION:
-	  bitmap_ior (rslt, op1, op2);
+	  bitmap_ior_into (op1, op2);
 	  break;
 
 	case DF_INTERSECTION:
-	  bitmap_and (rslt, op1, op2);
+	  bitmap_and_into (op1, op2);
 	  break;
 
     	default:
@@ -3815,7 +3818,7 @@ hybrid_search (basic_block bb, struct dataflow *dataflow,
 	    continue;							\
 									\
 	  dataflow_set_a_op_b (dataflow->repr, dataflow->conf_op,	\
-			       IN_SET[i], IN_SET[i],			\
+			       IN_SET[i],      			        \
 			       OUT_SET[e->E_ANTI_BB->index]);		\
 	}								\
 									\
