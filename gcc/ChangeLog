@@ -1,3 +1,8 @@
+Mon Jan 18 01:01:02 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* alias.c (base_alias_check): Add missing return for differing
+	symbols case.
+
 Mon Jan 18 00:36:13 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* mips-tdump.c (print_file_desc): Handle unknown filenames and
