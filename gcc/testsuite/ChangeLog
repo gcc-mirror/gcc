@@ -1,3 +1,8 @@
+2004-09-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/tree-ssa/loop-2.c: Avoid matching new-line in regexp.
+	* gcc.dg/tree-ssa/loop-4.c: Likewise.
+
 2004-09-25  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/pr15324.f90: Make array bounds consistent.
