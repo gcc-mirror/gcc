@@ -10957,6 +10957,9 @@ cp_parser_class_name (cp_parser *parser,
   /* PARSER->SCOPE can be cleared when parsing the template-arguments
      to a template-id, so we save it here.  */
   scope = parser->scope;
+  if (scope == error_mark_node)
+    return error_mark_node;
+  
   /* Any name names a type if we're following the `typename' keyword
      in a qualified name where the enclosing scope is type-dependent.  */
   typename_p = (typename_keyword_p && scope && TYPE_P (scope)

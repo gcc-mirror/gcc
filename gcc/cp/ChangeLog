@@ -1,3 +1,9 @@
+2003-08-07  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/5767
+	* parser.c (cp_parser_class_name): Return immediately when scope
+	is error_mark_node.
+
 2003-08-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* cp/Make-lang.in (cp/call.o): Add dependency for target.h.
