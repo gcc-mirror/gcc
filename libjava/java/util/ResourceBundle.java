@@ -65,7 +65,7 @@ baseName_<i>def. language</i>_<i>def. country</i>
 baseName_<i>def. language</i>
 baseName</pre>
  *
- * <p>A bundle is backed up by less specific bundles (omiting variant, country
+ * <p>A bundle is backed up by less specific bundles (omitting variant, country
  * or language). But it is not backed up by the default language locale.
  *
  * <p>If you provide a bundle for a given locale, say
@@ -239,7 +239,6 @@ public abstract class ResourceBundle
    */
   protected void setParent(ResourceBundle parent)
   {
-    // Shall we ignore the old parent?
     this.parent = parent;
   }
 
@@ -362,42 +361,59 @@ public abstract class ResourceBundle
         cache = new HashMap();
         resourceBundleCache.put(classLoader, cache);
       }
-    else
+    else if (cache.containsKey(name))
       {
-        Reference ref = (Reference) cache.get(name);
-        if (ref != null)
-          {
-            ResourceBundle rb = (ResourceBundle) ref.get();
-            if (rb != null)
-              // rb should already have the right parent, except if
-              // something very strange happened.
-              return rb;
-          }
+	Reference ref = (Reference) cache.get(name);
+	ResourceBundle result = null;
+	// If REF is null, that means that we added a `null' value to
+	// the hash map.  That means we failed to find the bundle
+	// previously, and we cached that fact.  The JDK does this, so
+	// it must be ok.
+	if (ref == null)
+	  throw new MissingResourceException("Bundle " + baseName
+					     + " not found",
+					     baseName, "");
+	else
+	  {
+	    ResourceBundle rb = (ResourceBundle) ref.get();
+	    if (rb != null)
+	      {
+		// RB should already have the right parent, except if
+		// something very strange happened.
+		return rb;
+	      }
+	    // If RB is null, then we previously found it but it was
+	    // collected.  So we try again.
+	  }
       }
 
+    // It is ok if this returns null.  We aren't required to have the
+    // base bundle.
     ResourceBundle baseBundle = tryBundle(baseName, emptyLocale,
                                           classLoader, null, cache);
-    if (baseBundle == null)
-      // JDK says, that if one provides a bundle base_en_UK, one
-      // must also provide the bundles base_en and base.
-      // This implies that if there is no bundle for base, there
-      // is no bundle at all.
-      throw new MissingResourceException("Bundle " + baseName + " not found",
-                                         baseName, "");
 
-    // Now use the default locale.
+    // Now use our locale, followed by the default locale.  We only
+    // need to try the default locale if our locale is different, and
+    // if our locale failed to yield a result other than the base
+    // bundle.
     ResourceBundle bundle = tryLocalBundle(baseName, locale,
                                            classLoader, baseBundle, cache);
     if (bundle == baseBundle && !locale.equals(Locale.getDefault()))
-      bundle = tryLocalBundle(baseName, Locale.getDefault(),
-                              classLoader, baseBundle, cache);
+      {
+	bundle = tryLocalBundle(baseName, Locale.getDefault(),
+				classLoader, baseBundle, cache);
+	// We need to record that the argument locale maps to the
+	// bundle we just found.  If we didn't find a bundle, record
+	// that instead.
+	if (bundle == null)
+	  cache.put(name, null);
+	else
+	  cache.put(name, new SoftReference(bundle));
+      }
 
-    // Check whether baseName_locale has been loaded; if not, map the
-    // "baseName" bundle to "baseName_locale" to avoid retrying to load
-    // baseName_locale.
-    Reference ref = (Reference) cache.get(name);
-    if (ref == null)
-      cache.put(name, new SoftReference(bundle));
+    if (bundle == null)
+      throw new MissingResourceException("Bundle " + baseName + " not found",
+					 baseName, "");
 
     return bundle;
   }
@@ -440,15 +456,28 @@ public abstract class ResourceBundle
                                                 HashMap cache)
   {
     // First look into the cache.
-    // XXX We should remove cleared references from the cache.
-    Reference ref = (Reference) cache.get(localizedName);
-    if (ref != null)
+    if (cache.containsKey(localizedName))
       {
-        ResourceBundle rb = (ResourceBundle) ref.get();
-        if (rb != null)
-          // rb should already have the right parent, except if
-          // something very strange happened.
-          return rb;
+	Reference ref = (Reference) cache.get(localizedName);
+	ResourceBundle result = null;
+	// If REF is null, that means that we added a `null' value to
+	// the hash map.  That means we failed to find the bundle
+	// previously, and we cached that fact.  The JDK does this, so
+	// it must be ok.
+	if (ref == null)
+	  return null;
+	else
+	  {
+	    ResourceBundle rb = (ResourceBundle) ref.get();
+	    if (rb != null)
+	      {
+		// RB should already have the right parent, except if
+		// something very strange happened.
+		return rb;
+	      }
+	    // If RB is null, then we previously found it but it was
+	    // collected.  So we try again.
+	  }
       }
 
     // foundBundle holds exact matches for the localizedName resource
@@ -470,30 +499,38 @@ public abstract class ResourceBundle
         // ignore them all
       }
     if (foundBundle == null)
-      try
-        {
-          InputStream is;
-          final String resourceName
-            = localizedName.replace('.', '/') + ".properties";
-          if (classloader == null)
-            is = ClassLoader.getSystemResourceAsStream(resourceName);
-          else
-            is = classloader.getResourceAsStream(resourceName);
-          if (is != null)
-            {
-              foundBundle = new PropertyResourceBundle(is);
-              foundBundle.parent = bundle;
-              foundBundle.locale = locale;
-            }
-        }
-      catch (IOException ex)
-        {
-        }
+      {
+	try
+	  {
+	    InputStream is;
+	    final String resourceName
+	      = localizedName.replace('.', '/') + ".properties";
+	    if (classloader == null)
+	      is = ClassLoader.getSystemResourceAsStream(resourceName);
+	    else
+	      is = classloader.getResourceAsStream(resourceName);
+	    if (is != null)
+	      {
+		foundBundle = new PropertyResourceBundle(is);
+		foundBundle.parent = bundle;
+		foundBundle.locale = locale;
+	      }
+	  }
+	catch (IOException ex)
+	  {
+	  }
+      }
 
-    if (foundBundle != null)
+    // Put the result into the hash table.  If we didn't find anything
+    // here, we record our parent bundle.  If we record `null' that means
+    // nothing, not even the base, was found.
+    if (foundBundle == null)
+      foundBundle = bundle;
+    if (foundBundle == null)
+      cache.put(localizedName, null);
+    else
       cache.put(localizedName, new SoftReference(foundBundle));
-
-    return foundBundle != null ? foundBundle : bundle;
+    return foundBundle;
   }
 
   /**
@@ -501,45 +538,50 @@ public abstract class ResourceBundle
    * locales with the same language.
    *
    * @param name the name
-   * @param locale the locale, that must be used exactly
+   * @param locale the locale
    * @param classloader the classloader
    * @param bundle the backup (parent) bundle
    * @return the resource bundle if it was loaded, otherwise the backup
    */
   private static final ResourceBundle tryLocalBundle(String baseName,
-                                                     Locale locale,
+						     Locale locale,
                                                      ClassLoader classloader,
                                                      ResourceBundle bundle,
                                                      HashMap cache)
   {
     final String language = locale.getLanguage();
+    final String country = locale.getCountry();
+    final String variant = locale.getVariant();
+
     StringBuffer sb = new StringBuffer(60);
+    sb.append(baseName);
+    sb.append('_');
 
     if (language.length() > 0)
       {
-        final String country = locale.getCountry();
-        sb.append(baseName).append('_').append(language);
-        String name = sb.toString();
-
-        if (country.length() != 0)
-          {
-            bundle = tryBundle(name, new Locale(language),
-                               classloader, bundle, cache);
-            sb.append('_').append(country);
-            name = sb.toString();
-
-            final String variant = locale.getVariant();
-
-            if (variant.length() != 0)
-              {
-                bundle = tryBundle(name, new Locale(language, country),
-                                   classloader, bundle, cache);
-                sb.append('_').append(variant);
-                name = sb.toString();
-              }
-          }
-        bundle = tryBundle(name, locale, classloader, bundle, cache);
+	sb.append(language);
+	bundle = tryBundle(sb.toString(), new Locale(language),
+			   classloader, bundle, cache);
       }
+    // If LANGUAGE was empty, we still need to try the other
+    // components, and the `_' is required.
+    sb.append('_');
+
+    if (country.length() > 0)
+      {
+	sb.append(country);
+	bundle = tryBundle(sb.toString(), new Locale(language, country),
+			   classloader, bundle, cache);
+      }
+    sb.append('_');
+
+    if (variant.length() > 0)
+      {
+	sb.append(variant);
+	bundle = tryBundle(sb.toString(), locale,
+			   classloader, bundle, cache);
+      }
+
     return bundle;
   }
-} // class ResourceBundle
+}
