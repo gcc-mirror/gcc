@@ -1,5 +1,8 @@
 2003-07-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* fixinc/inclhack.def (struct_sockaddr): Avoid "fixing" sockaddr_in
+	(on OpenBSD).
+
 	* fixinc/inclhack.def (gnu_types): Improve comment.
 
 2003-07-12  Andreas Jaeger  <aj@suse.de>

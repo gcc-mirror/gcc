@@ -2477,12 +2477,16 @@ fix = {
 /*
  *  IRIX 4.0.5 <rpc/auth.h> uses struct sockaddr
  *  in prototype without previous definition.
+ *
+ *  Don't fix OpenBSD, which uses struct sockaddr_in prototyping the same
+ *  function, and does define it.
  */
 fix = {
     hackname  = struct_sockaddr;
     files     = rpc/auth.h;
-    select    = "^.*authdes_create.*struct sockaddr";
+    select    = "^.*authdes_create.*struct sockaddr[^_]";
     bypass    = "<sys/socket\.h>";
+    bypass    = "struct sockaddr;\n";
     c_fix     = format;
     c_fix_arg = "struct sockaddr;\n%0";
     test_text = "extern AUTH* authdes_create( struct sockaddr* );";
