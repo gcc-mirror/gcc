@@ -1,3 +1,8 @@
+2003-10-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* src/mips/ffi.c: Use _ABIN32, _ABIO32 instead of external
+	_MIPS_SIM_NABI32, _MIPS_SIM_ABI32.
+
 2003-10-19  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* src/powerpc/ffi_darwin.c (ffi_prep_args): Declare bytes again.

@@ -1,3 +1,8 @@
+2003-10-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/cpu/mips/atomicity.h (__atomic_add): Use _ABIO32 instead
+	of external _MIPS_SIM_ABI32.
+
 2003-10-20  Phil Edwards  <phil@codesourcery.com>
 
 	* configure.ac:  Fix comment typo.

@@ -42,7 +42,7 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
     ("/* Inline exchange & add */\n\t"
      "1:\n\t"
      ".set	push\n\t"
-#if _MIPS_SIM == _MIPS_SIM_ABI32
+#if _MIPS_SIM == _ABIO32
      ".set	mips2\n\t"
 #endif
      "ll	%0,%3\n\t"
@@ -68,7 +68,7 @@ __atomic_add (volatile _Atomic_word *__mem, int __val)
     ("/* Inline atomic add */\n\t"
      "1:\n\t"
      ".set	push\n\t"
-#if _MIPS_SIM == _MIPS_SIM_ABI32
+#if _MIPS_SIM == _ABIO32
      ".set	mips2\n\t"
 #endif
      "ll	%0,%2\n\t"

@@ -81,7 +81,8 @@ Boston, MA 02111-1307, USA.  */
       }								\
      else							\
       {								\
-        builtin_define ("_MIPS_SIM=_MIPS_SIM_ABI32");		\
+	builtin_define ("_ABIO32=1");			\
+	builtin_define ("_MIPS_SIM=_ABIO32");		\
         builtin_define ("_MIPS_SZLONG=32");			\
         builtin_define ("_MIPS_SZPTR=32");			\
       }								\

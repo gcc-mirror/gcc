@@ -1,3 +1,8 @@
+2003-10-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* mips_sgi_mach_dep.s: Use _ABIO32 instead of external
+	_MIPS_SIM_ABI32.
+
 2003-10-18  Alan Modra  <amodra@bigpond.net.au>
 
 	* include/private/gcconfig.h (ALIGNMENT <powerpc linux>): Remove

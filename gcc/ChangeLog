@@ -1,3 +1,9 @@
+2003-10-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/linux.h (TARGET_OS_CPP_BUILTINS): Define _ABIO32.
+	Use it in _MIPS_SIM definition.
+	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Likewise.
+
 2003-10-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/i386/i386.c (print_reg): Abort if REGNO (x) is a
