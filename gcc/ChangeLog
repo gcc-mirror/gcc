@@ -1,3 +1,8 @@
+2003-10-22  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_function_possibly_inlined_p): Be conservative when
+	global info is not ready.
+
 2003-10-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/extend.texi: Mention H8S wherever H8/300H is mentioned.
