@@ -11196,6 +11196,8 @@ instantiate_decl (tree d, int defer_ok)
 	  if (!COMPLETE_TYPE_P (DECL_CONTEXT (d)))
 	    pop_nested_class ();
 	}
+      /* We're not deferring instantiation any more.  */
+      TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
@@ -11248,13 +11250,13 @@ instantiate_decl (tree d, int defer_ok)
       htab_delete (local_specializations);
       local_specializations = saved_local_specializations;
 
+      /* We're not deferring instantiation any more.  */
+      TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
+
       /* Finish the function.  */
       d = finish_function (0);
       expand_or_defer_fn (d);
     }
-
-  /* We're not deferring instantiation any more.  */
-  TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
 
   if (need_push)
     pop_from_top_level ();

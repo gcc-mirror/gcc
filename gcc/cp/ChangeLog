@@ -1,3 +1,9 @@
+2004-06-22  Jan Hubicka  <jh@suse.cz>
+
+	PR C++/14950
+	* pt.c (instantiate_decl): Clean TI_PENDING_TEMPLATE_FLAG before
+	expanding the function.
+
 2004-06-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/3518
