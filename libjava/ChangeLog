@@ -1,3 +1,8 @@
+2004-07-17  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/channels/FileChannelImpl.java
+	(finalize): Added javadoc.
+
 2004-07-17  Guilhem Lavaux <guilhem@kaffe.org>
 
 	* java/text/CollationElementIterator.java
