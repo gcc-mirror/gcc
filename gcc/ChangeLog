@@ -1,3 +1,9 @@
+2005-01-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/19221
+	* function.c (get_arg_pointer_save_area): Use entry_of_function
+	instead of get_insns.
+
 2005-01-01  Roger Sayle  <roger@eyesopen.com>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 	    James E. Wilson  <wilson@specifixinc.com>
