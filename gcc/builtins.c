@@ -1126,7 +1126,7 @@ expand_builtin_apply_args_1 (void)
 
   /* Save the arg pointer to the block.  */
   tem = copy_to_reg (virtual_incoming_args_rtx);
-#ifdef STACK_GROWS_DOWNWARDS
+#ifdef STACK_GROWS_DOWNWARD
   /* We need the pointer as the caller actually passed them to us, not
      as we might have pretended they were passed.  */
   tem = plus_constant (tem, current_function_pretend_args_size);
