@@ -1,3 +1,7 @@
+2005-02-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/compile/20050206-1.c: New test.
+
 2005-02-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/19768
