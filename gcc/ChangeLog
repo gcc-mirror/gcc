@@ -1,3 +1,9 @@
+2002-04-03  Jeffrey A Law  (law@redhat.com)
+            Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* combine.c (simplify_comparison): Avoid narrowing a comparison
+	with a paradoxical subreg when doing so would drop signficant bits.
+
 2002-04-02  Steve Ellcey  <sje@cup.hp.com>
 
 	* builtins.c (expand_builtin_prefetch): Force op0 pointer to Pmode
