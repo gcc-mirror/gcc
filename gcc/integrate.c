@@ -2157,11 +2157,7 @@ copy_rtx_and_substitute (rtx orig, struct inline_remap *map, int for_lhs)
 #endif
 
 	      temp = XEXP (temp, 0);
-
-#ifdef POINTERS_EXTEND_UNSIGNED
-	      if (GET_MODE (temp) != GET_MODE (orig))
-		temp = convert_memory_address (GET_MODE (orig), temp);
-#endif
+	      temp = convert_memory_address (GET_MODE (orig), temp);
 	      return temp;
 	    }
 	  else if (GET_CODE (constant) == LABEL_REF)

@@ -303,8 +303,6 @@ break_out_memory_refs (rtx x)
   return x;
 }
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-
 /* Given X, a memory address in ptr_mode, convert it to an address
    in Pmode, or vice versa (TO_MODE says which way).  We take advantage of
    the fact that pointers are not allowed to overflow by commuting arithmetic
@@ -312,11 +310,21 @@ break_out_memory_refs (rtx x)
    used.  */
 
 rtx
-convert_memory_address (enum machine_mode to_mode, rtx x)
+convert_memory_address (enum machine_mode to_mode ATTRIBUTE_UNUSED, 
+			rtx x)
 {
-  enum machine_mode from_mode = to_mode == ptr_mode ? Pmode : ptr_mode;
+#ifndef POINTERS_EXTEND_UNSIGNED
+  return x;
+#else /* defined(POINTERS_EXTEND_UNSIGNED) */
+  enum machine_mode from_mode;
   rtx temp;
   enum rtx_code code;
+
+  /* If X already has the right mode, just return it.  */
+  if (GET_MODE (x) == to_mode)
+    return x;
+
+  from_mode = to_mode == ptr_mode ? Pmode : ptr_mode;
 
   /* Here we handle some special cases.  If none of them apply, fall through
      to the default case.  */
@@ -381,8 +389,8 @@ convert_memory_address (enum machine_mode to_mode, rtx x)
 
   return convert_modes (to_mode, from_mode,
 			x, POINTERS_EXTEND_UNSIGNED);
+#endif /* defined(POINTERS_EXTEND_UNSIGNED) */
 }
-#endif
 
 /* Given a memory address or facsimile X, construct a new address,
    currently equivalent, that is stable: future stores won't change it.
@@ -434,10 +442,7 @@ memory_address (enum machine_mode mode, rtx x)
   if (GET_CODE (x) == ADDRESSOF)
     return x;
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (x) != Pmode)
-    x = convert_memory_address (Pmode, x);
-#endif
+  x = convert_memory_address (Pmode, x);
 
   /* By passing constant addresses thru registers
      we get a chance to cse them.  */
@@ -1419,11 +1424,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 					         stack_pointer_rtx,
 					         plus_constant (size, first)));
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-      if (GET_MODE (addr) != ptr_mode)
-	addr = convert_memory_address (ptr_mode, addr);
-#endif
-
+      addr = convert_memory_address (ptr_mode, addr);
       emit_library_call (stack_check_libfunc, LCT_NORMAL, VOIDmode, 1, addr,
 			 ptr_mode);
     }

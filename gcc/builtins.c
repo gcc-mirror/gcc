@@ -477,10 +477,7 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
   if (setjmp_alias_set == -1)
     setjmp_alias_set = new_alias_set ();
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (buf_addr) != Pmode)
-    buf_addr = convert_memory_address (Pmode, buf_addr);
-#endif
+  buf_addr = convert_memory_address (Pmode, buf_addr);
 
   buf_addr = force_reg (Pmode, force_operand (buf_addr, NULL_RTX));
 
@@ -661,10 +658,7 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
   if (setjmp_alias_set == -1)
     setjmp_alias_set = new_alias_set ();
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (buf_addr) != Pmode)
-    buf_addr = convert_memory_address (Pmode, buf_addr);
-#endif
+  buf_addr = convert_memory_address (Pmode, buf_addr);
 
   buf_addr = force_reg (Pmode, buf_addr);
 
@@ -807,10 +801,7 @@ expand_builtin_prefetch (tree arglist)
 	      insn_data[(int) CODE_FOR_prefetch].operand[0].mode))
 	  || (GET_MODE (op0) != Pmode))
 	{
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (op0) != Pmode)
-	    op0 = convert_memory_address (Pmode, op0);
-#endif
+	  op0 = convert_memory_address (Pmode, op0);
 	  op0 = force_reg (Pmode, op0);
 	}
       emit_insn (gen_prefetch (op0, op1, op2));
@@ -833,10 +824,7 @@ get_memory_rtx (tree exp)
   rtx addr = expand_expr (exp, NULL_RTX, ptr_mode, EXPAND_SUM);
   rtx mem;
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (addr) != Pmode)
-    addr = convert_memory_address (Pmode, addr);
-#endif
+  addr = convert_memory_address (Pmode, addr);
 
   mem = gen_rtx_MEM (BLKmode, memory_address (BLKmode, addr));
 
@@ -1193,10 +1181,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   rtx call_fusage = 0;
   rtx struct_value = targetm.calls.struct_value_rtx (cfun ? TREE_TYPE (cfun->decl) : 0, 0);
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (arguments) != Pmode)
-    arguments = convert_memory_address (Pmode, arguments);
-#endif
+  arguments = convert_memory_address (Pmode, arguments);
 
   /* Create a block where the return registers can be saved.  */
   result = assign_stack_local (BLKmode, apply_result_size (), -1);
@@ -1334,7 +1319,8 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   OK_DEFER_POP;
 
   /* Return the address of the result block.  */
-  return copy_addr_to_reg (XEXP (result, 0));
+  result = copy_addr_to_reg (XEXP (result, 0));
+  return convert_memory_address (ptr_mode, result);
 }
 
 /* Perform an untyped return.  */
@@ -1347,10 +1333,7 @@ expand_builtin_return (rtx result)
   rtx reg;
   rtx call_fusage = 0;
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (result) != Pmode)
-    result = convert_memory_address (Pmode, result);
-#endif
+  result = convert_memory_address (Pmode, result);
 
   apply_result_size ();
   result = gen_rtx_MEM (BLKmode, result);
@@ -2521,10 +2504,7 @@ expand_builtin_memcpy (tree arglist, rtx target, enum machine_mode mode)
 				      builtin_memcpy_read_str,
 				      (void *) src_str, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (dest_mem) != ptr_mode)
-	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
-#endif
+	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
 	}
 
@@ -2538,10 +2518,7 @@ expand_builtin_memcpy (tree arglist, rtx target, enum machine_mode mode)
       if (dest_addr == 0)
 	{
 	  dest_addr = force_operand (XEXP (dest_mem, 0), NULL_RTX);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (dest_addr) != ptr_mode)
-	    dest_addr = convert_memory_address (ptr_mode, dest_addr);
-#endif
+	  dest_addr = convert_memory_address (ptr_mode, dest_addr);
 	}
       return dest_addr;
     }
@@ -2620,10 +2597,7 @@ expand_builtin_mempcpy (tree arglist, rtx target, enum machine_mode mode,
 				      builtin_memcpy_read_str,
 				      (void *) src_str, dest_align, endp);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (dest_mem) != ptr_mode)
-	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
-#endif
+	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
 	}
 
@@ -2638,10 +2612,7 @@ expand_builtin_mempcpy (tree arglist, rtx target, enum machine_mode mode,
 	  dest_mem = move_by_pieces (dest_mem, src_mem, INTVAL (len_rtx),
 				     MIN (dest_align, src_align), endp);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (dest_mem) != ptr_mode)
-	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
-#endif
+	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
 	}
 
@@ -2877,10 +2848,7 @@ expand_builtin_strncpy (tree arglist, rtx target, enum machine_mode mode)
 			   builtin_strncpy_read_str,
 			   (void *) p, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (dest_mem) != ptr_mode)
-	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
-#endif
+	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
 	}
 
@@ -2998,10 +2966,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
 			   builtin_memset_gen_str,
 			   val_rtx, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (dest_mem) != ptr_mode)
-	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
-#endif
+	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
 	}
 
@@ -3022,10 +2987,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
 			   builtin_memset_read_str,
 			   &c, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (dest_mem) != ptr_mode)
-	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
-#endif
+	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
 	}
 
@@ -3038,10 +3000,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
       if (dest_addr == 0)
 	{
 	  dest_addr = force_operand (XEXP (dest_mem, 0), NULL_RTX);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (dest_addr) != ptr_mode)
-	    dest_addr = convert_memory_address (ptr_mode, dest_addr);
-#endif
+	  dest_addr = convert_memory_address (ptr_mode, dest_addr);
 	}
 
       return dest_addr;
@@ -4039,10 +3998,7 @@ expand_builtin_va_arg (tree valist, tree type)
 #endif
     }
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (addr) != Pmode)
-    addr = convert_memory_address (Pmode, addr);
-#endif
+  addr = convert_memory_address (Pmode, addr);
 
   result = gen_rtx_MEM (TYPE_MODE (type), addr);
   set_mem_alias_set (result, get_varargs_alias_set ());
@@ -4101,13 +4057,8 @@ expand_builtin_va_copy (tree arglist)
       size = expand_expr (TYPE_SIZE_UNIT (va_list_type_node), NULL_RTX,
 			  VOIDmode, EXPAND_NORMAL);
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-      if (GET_MODE (dstb) != Pmode)
-	dstb = convert_memory_address (Pmode, dstb);
-
-      if (GET_MODE (srcb) != Pmode)
-	srcb = convert_memory_address (Pmode, srcb);
-#endif
+      dstb = convert_memory_address (Pmode, dstb);
+      srcb = convert_memory_address (Pmode, srcb);
 
       /* "Dereference" to BLKmode memories.  */
       dstb = gen_rtx_MEM (BLKmode, dstb);
@@ -4190,11 +4141,7 @@ expand_builtin_alloca (tree arglist, rtx target)
 
   /* Allocate the desired space.  */
   result = allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT);
-
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (result) != ptr_mode)
-    result = convert_memory_address (ptr_mode, result);
-#endif
+  result = convert_memory_address (ptr_mode, result);
 
   return result;
 }

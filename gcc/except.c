@@ -2974,10 +2974,7 @@ expand_builtin_frob_return_addr (tree addr_tree)
 {
   rtx addr = expand_expr (addr_tree, NULL_RTX, ptr_mode, 0);
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (addr) != Pmode)
-    addr = convert_memory_address (Pmode, addr);
-#endif
+  addr = convert_memory_address (Pmode, addr);
 
 #ifdef RETURN_ADDR_OFFSET
   addr = force_reg (Pmode, addr);
@@ -2998,10 +2995,7 @@ expand_builtin_eh_return (tree stackadj_tree ATTRIBUTE_UNUSED,
 
 #ifdef EH_RETURN_STACKADJ_RTX
   tmp = expand_expr (stackadj_tree, cfun->eh->ehr_stackadj, VOIDmode, 0);
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (tmp) != Pmode)
-    tmp = convert_memory_address (Pmode, tmp);
-#endif
+  tmp = convert_memory_address (Pmode, tmp);
   if (!cfun->eh->ehr_stackadj)
     cfun->eh->ehr_stackadj = copy_to_reg (tmp);
   else if (tmp != cfun->eh->ehr_stackadj)
@@ -3009,10 +3003,7 @@ expand_builtin_eh_return (tree stackadj_tree ATTRIBUTE_UNUSED,
 #endif
 
   tmp = expand_expr (handler_tree, cfun->eh->ehr_handler, VOIDmode, 0);
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (tmp) != Pmode)
-    tmp = convert_memory_address (Pmode, tmp);
-#endif
+  tmp = convert_memory_address (Pmode, tmp);
   if (!cfun->eh->ehr_handler)
     cfun->eh->ehr_handler = copy_to_reg (tmp);
   else if (tmp != cfun->eh->ehr_handler)
