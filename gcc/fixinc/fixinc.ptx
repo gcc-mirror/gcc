@@ -96,13 +96,13 @@ if [ -r ${LIB}/$file ]; then
   # Use __gnuc_va_list in arg types in place of va_list.
   # On 386BSD use __gnuc_va_list instead of _VA_LIST_. We're hoping the
   # trailing parentheses and semicolon save all other systems from this.
-  # Define __va_list__ (something harmless and unused) instead of va_list.
+  # Define __not_va_list__ (something harmless and unused) instead of va_list.
   # Don't claim to have defined va_list.
   sed -e 's@ va_list @ __gnuc_va_list @' \
       -e 's@ va_list)@ __gnuc_va_list)@' \
       -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \
-      -e 's@ va_list@ __va_list__@' \
-      -e 's@\*va_list@*__va_list__@' \
+      -e 's@ va_list@ __not_va_list__@' \
+      -e 's@\*va_list@*__not_va_list__@' \
       -e 's@ __va_list)@ __gnuc_va_list)@' \
       -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \
       -e 's@VA_LIST@DUMMY_VA_LIST@' \
