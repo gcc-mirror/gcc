@@ -937,7 +937,7 @@ member_init:
 		{ $$ = expand_member_init (current_class_ref, $1,
 					   void_type_node); }
         | error
-                { $$ = NULL_TREE }
+                { $$ = NULL_TREE; }
 	;
 
 identifier:
