@@ -1,5 +1,14 @@
 1998-10-03  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl2.c (merge_functions): Remove duplicates.
+
+	* decl2.c: Add -f{no-,}implicit-inline-templates.
+	(lang_decode_option): Unset it if -frepo.
+	(import_export_decl): Check it.
+
+	* decl.c (lookup_name_real): Template parms also take precedence
+	over implicit typename.  Only warn if yylex.
+
 	* typeck.c (build_conditional_expr): Only fold if ifexp is an
 	INTEGER_CST.
 

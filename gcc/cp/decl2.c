@@ -173,6 +173,12 @@ int flag_alt_external_templates;
 
 int flag_implicit_templates = 1;
 
+/* Nonzero means that implicit instantiations of inline templates will be
+   emitted if needed, even if instantiations of non-inline templates
+   aren't.  */
+
+int flag_implicit_inline_templates = 1;
+
 /* Nonzero means allow numerical priorities on constructors.  */
 
 #ifdef USE_INIT_PRIORITY
@@ -474,6 +480,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"implement-inlines", &flag_implement_inlines, 1},
   {"external-templates", &flag_external_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
+  {"implicit-inline-templates", &flag_implicit_inline_templates, 1},
   {"init-priority", &flag_init_priority, 1},
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
@@ -2856,7 +2863,8 @@ import_export_decl (decl)
       DECL_NOT_REALLY_EXTERN (decl) = 1;
       if ((DECL_IMPLICIT_INSTANTIATION (decl)
 	   || DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl))
-	  && (flag_implicit_templates || DECL_THIS_INLINE (decl)))
+	  && (flag_implicit_templates
+	      || (flag_implicit_inline_templates && DECL_THIS_INLINE (decl))))
 	{
 	  if (!TREE_PUBLIC (decl))
 	    /* Templates are allowed to have internal linkage.  See 
@@ -4118,22 +4126,22 @@ add_using_namespace (user, used, indirect)
     add_using_namespace (TREE_PURPOSE (t), used, 1);
 }
 
-/* Combines two sets of overloaded functions into an OVERLOAD chain.
-   The first list becomes the tail of the result. */
+/* Combines two sets of overloaded functions into an OVERLOAD chain, removing
+   duplicates.  The first list becomes the tail of the result.
+
+   The algorithm is O(n^2).  */
 
 static tree
 merge_functions (s1, s2)
      tree s1;
      tree s2;
 {
-  if (TREE_CODE (s2) == OVERLOAD)
-    while (s2)
-      {
-	s1 = build_overload (OVL_FUNCTION (s2), s1);
-	s2 = OVL_CHAIN (s2);
-      }
-  else
-    s1 = build_overload (s2, s1);
+  for (; s2; s2 = OVL_NEXT (s2))
+    {
+      tree fn = OVL_CURRENT (s2);
+      if (! ovl_member (fn, s1))
+	s1 = build_overload (fn, s1);
+    }
   return s1;
 }
 
