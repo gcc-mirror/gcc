@@ -1,3 +1,8 @@
+2000-04-30  Richard Henderson  <rth@cygnus.com>
+
+	* ifcvt.c (dead_or_predicable): Manually squeeze non-movable notes
+	from the last insn in the sequence.
+
 2000-04-30  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplex.c (cpp_idcmp): New function.
