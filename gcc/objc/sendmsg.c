@@ -68,9 +68,7 @@ nil_method(id receiver, SEL op, ...)
 }
 
 /* Given a class and selector, return the selector's implementation.  */
-#ifndef i386
-__inline__ /* this is broken on i386... */
-#endif
+__inline__
 IMP
 get_imp (Class* class, SEL sel)
 {

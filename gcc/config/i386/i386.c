@@ -378,6 +378,7 @@ find_addr_reg (addr)
   abort ();
 }
 
+
 /* Output an insn to add the constant N to the register X.  */
 
 static void
@@ -404,6 +405,7 @@ asm_add (n, x)
     }
 }
 
+
 /* Output assembler code to perform a doubleword move insn
    with operands OPERANDS.  */
 
@@ -735,6 +737,199 @@ compadr:
 
   return "";
 }
+
+
+#define MAX_TMPS 2		/* max temporary registers used */
+
+/* Output the appropriate code to move push memory on the stack */
+
+char *
+output_move_pushmem (operands, insn, length, tmp_start, n_operands)
+     rtx operands[];
+     rtx insn;
+     int length;
+     int tmp_start;
+     int n_operands;
+{
+
+  struct {
+    char *load;
+    char *push;
+    rtx   xops[2];
+  } tmp_info[MAX_TMPS];
+
+  rtx src = operands[1];
+  int max_tmps = 0;
+  int offset = 0;
+  int stack_p = reg_overlap_mentioned_p (stack_pointer_rtx, src);
+  int stack_offset = 0;
+  int i, num_tmps;
+  rtx xops[1];
+
+  if (!offsettable_memref_p (src))
+    fatal_insn ("Source is not offsettable", insn);
+
+  if ((length & 3) != 0)
+    fatal_insn ("Pushing non-word aligned size", insn);
+
+  /* Figure out which temporary registers we have available */
+  for (i = tmp_start; i < n_operands; i++)
+    {
+      if (GET_CODE (operands[i]) == REG)
+	{
+	  if (reg_overlap_mentioned_p (operands[i], src))
+	    continue;
+
+	  tmp_info[ max_tmps++ ].xops[1] = operands[i];
+	  if (max_tmps == MAX_TMPS)
+	    break;
+	}
+    }
+
+  if (max_tmps == 0)
+    for (offset = length - 4; offset >= 0; offset -= 4)
+      {
+	xops[0] = adj_offsettable_operand (src, offset + stack_offset);
+	output_asm_insn (AS1(push%L0,%0), xops);
+	if (stack_p)
+	  stack_offset += 4;
+      }
+
+  else
+    for (offset = length - 4; offset >= 0; )
+      {
+	for (num_tmps = 0; num_tmps < max_tmps && offset >= 0; num_tmps++)
+	  {
+	    tmp_info[num_tmps].load    = AS2(mov%L0,%0,%1);
+	    tmp_info[num_tmps].push    = AS1(push%L0,%1);
+	    tmp_info[num_tmps].xops[0] = adj_offsettable_operand (src, offset + stack_offset);
+	    offset -= 4;
+	  }
+
+	for (i = 0; i < num_tmps; i++)
+	  output_asm_insn (tmp_info[i].load, tmp_info[i].xops);
+
+	for (i = 0; i < num_tmps; i++)
+	  output_asm_insn (tmp_info[i].push, tmp_info[i].xops);
+
+	if (stack_p)
+	  stack_offset += 4*num_tmps;
+      }
+
+  return "";
+}
+
+
+
+/* Output the appropriate code to move data between two memory locations */
+
+char *
+output_move_memory (operands, insn, length, tmp_start, n_operands)
+     rtx operands[];
+     rtx insn;
+     int length;
+     int tmp_start;
+     int n_operands;
+{
+  struct {
+    char *load;
+    char *store;
+    rtx   xops[3];
+  } tmp_info[MAX_TMPS];
+
+  rtx dest = operands[0];
+  rtx src  = operands[1];
+  rtx qi_tmp = NULL_RTX;
+  int max_tmps = 0;
+  int offset = 0;
+  int i, num_tmps;
+  rtx xops[3];
+
+  if (GET_CODE (dest) == MEM
+      && GET_CODE (XEXP (dest, 0)) == PRE_INC
+      && XEXP (XEXP (dest, 0), 0) == stack_pointer_rtx)
+    return output_move_pushmem (operands, insn, length, tmp_start, n_operands);
+
+  if (!offsettable_memref_p (src))
+    fatal_insn ("Source is not offsettable", insn);
+
+  if (!offsettable_memref_p (dest))
+    fatal_insn ("Destination is not offsettable", insn);
+
+  /* Figure out which temporary registers we have available */
+  for (i = tmp_start; i < n_operands; i++)
+    {
+      if (GET_CODE (operands[i]) == REG)
+	{
+	  if ((length & 1) != 0 && !qi_tmp && QI_REG_P (operands[i]))
+	    qi_tmp = operands[i];
+
+	  if (reg_overlap_mentioned_p (operands[i], dest))
+	    fatal_insn ("Temporary register overlaps the destination", insn);
+
+	  if (reg_overlap_mentioned_p (operands[i], src))
+	    fatal_insn ("Temporary register overlaps the source", insn);
+
+	  tmp_info[ max_tmps++ ].xops[2] = operands[i];
+	  if (max_tmps == MAX_TMPS)
+	    break;
+	}
+    }
+
+  if (max_tmps == 0)
+    fatal_insn ("No scratch registers were found to do memory->memory moves", insn);
+
+  if ((length & 1) != 0)
+    {
+      if (!qi_tmp)
+	fatal_insn ("No byte register found when moving odd # of bytes.", insn);
+    }
+
+  while (length > 1)
+    {
+      for (num_tmps = 0; num_tmps < max_tmps; num_tmps++)
+	{
+	  if (length >= 4)
+	    {
+	      tmp_info[num_tmps].load    = AS2(mov%L0,%1,%2);
+	      tmp_info[num_tmps].store   = AS2(mov%L0,%2,%0);
+	      tmp_info[num_tmps].xops[0] = adj_offsettable_operand (dest, offset);
+	      tmp_info[num_tmps].xops[1] = adj_offsettable_operand (src, offset);
+	      offset += 4;
+	      length -= 4;
+	    }
+	  else if (length >= 2)
+	    {
+	      tmp_info[num_tmps].load    = AS2(mov%W0,%1,%2);
+	      tmp_info[num_tmps].store   = AS2(mov%W0,%2,%0);
+	      tmp_info[num_tmps].xops[0] = adj_offsettable_operand (dest, offset);
+	      tmp_info[num_tmps].xops[1] = adj_offsettable_operand (src, offset);
+	      offset += 2;
+	      length -= 2;
+	    }
+	  else
+	    break;
+	}
+
+      for (i = 0; i < num_tmps; i++)
+	output_asm_insn (tmp_info[i].load, tmp_info[i].xops);
+
+      for (i = 0; i < num_tmps; i++)
+	output_asm_insn (tmp_info[i].store, tmp_info[i].xops);
+    }
+
+  if (length == 1)
+    {
+      xops[0] = adj_offsettable_operand (dest, offset);
+      xops[1] = adj_offsettable_operand (src, offset);
+      xops[2] = qi_tmp;
+      output_asm_insn (AS2(mov%B0,%1,%2), xops);
+      output_asm_insn (AS2(mov%B0,%2,%0), xops);
+    }
+
+  return "";
+}
+
 
 int
 standard_80387_constant_p (x)

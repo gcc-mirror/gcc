@@ -1704,6 +1704,8 @@ extern void output_op_from_reg ();
 extern void output_to_reg ();
 extern char *singlemove_string ();
 extern char *output_move_double ();
+extern char *output_move_memory ();
+extern char *output_move_pushmem ();
 extern int standard_80387_constant_p ();
 extern char *output_move_const_single ();
 extern int symbolic_operand ();
