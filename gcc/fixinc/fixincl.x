@@ -4010,13 +4010,13 @@ tSCC zUndefine_NullName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zUndefine_NullSelect0[] =
-       "^#[ \t]*define[ \t]*[ \t]NULL[ \t]";
+       "^#[ \t]*define[ \t]*[ \t]NULL[ \t\r]";
 
 /*
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zUndefine_NullBypass0[] =
-       "#[ \t]*(ifn|un)def[ \t]*[ \t]NULL($|[ \t])";
+       "#[ \t]*(ifn|un)def[ \t]*[ \t]NULL($|[ \t\r])";
 
 #define    UNDEFINE_NULL_TEST_CT  2
 tTestDesc aUndefine_NullTests[] = {
@@ -4027,7 +4027,7 @@ tTestDesc aUndefine_NullTests[] = {
  *  Fix Command Arguments for Undefine_Null
  */
 const char* apzUndefine_NullPatch[] = { "sed",
-    "-e", "/^#[ \t]*define[ \t][ \t]*NULL[ \t]/i\\\n\
+    "-e", "/^#[ \t]*define[ \t][ \t]*NULL[ \t\r]/i\\\n\
 #undef NULL\n",
     (char*)NULL };
 

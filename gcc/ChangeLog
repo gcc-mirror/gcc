@@ -1,3 +1,9 @@
+2000-02-26  Bruce Korb  <bkorb@gnu.org>
+
+	fixinc/inclhack.def(undefine_null): the bypass pattern needs to
+	match for DOS headers, too.
+	fixinc/inclhack.sh,fixincl.x: regen
+
 2000-02-26  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/elfos.h (ASM_OUTPUT_LABELREF): Don't define.  The default
