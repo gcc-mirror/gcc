@@ -4456,9 +4456,8 @@ output_type (type, containing_scope)
 		|| TREE_CODE (TYPE_CONTEXT (type)) == NAMESPACE_DECL)
 	    && !finalizing)
 	  {
-	    /* We can't do this for function-local types, and we don't need
-               to.  */
-	    if (TREE_PERMANENT (type))
+	    /* We don't need to do this for function-local types.  */
+	    if (! decl_function_context (TYPE_STUB_DECL (type)))
 	      add_incomplete_type (type);
 	    return;	/* EARLY EXIT!  Avoid setting TREE_ASM_WRITTEN.  */
 	  }
