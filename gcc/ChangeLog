@@ -1,3 +1,9 @@
+2004-06-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/15666
+	* c-decl.c (finish_decl): Use change_decl_assembler_name for the
+	builtin decl as well.
+
 2004-06-07  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/14649

@@ -2886,7 +2886,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	{
 	  tree builtin = built_in_decls [DECL_FUNCTION_CODE (decl)];
 	  SET_DECL_RTL (builtin, NULL_RTX);
-	  SET_DECL_ASSEMBLER_NAME (builtin, get_identifier (starred));
+	  change_decl_assembler_name (builtin, get_identifier (starred));
 #ifdef TARGET_MEM_FUNCTIONS
 	  if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMCPY)
 	    init_block_move_fn (starred);
