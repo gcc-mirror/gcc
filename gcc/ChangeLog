@@ -1,3 +1,9 @@
+2005-02-28  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/19874
+	* tree-ssa.c (tree_ssa_useless_type_conversion_1): A conversion
+	between different machine modes is never a "useless" conversion.
+
 2005-02-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/alpha/t-osf4, config/arm/t-netbsd, config/ia64/t-hpux
