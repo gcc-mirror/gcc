@@ -1,3 +1,9 @@
+1999-03-02  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (maybe_push_to_top_level): Always call
+	push_cp_function_context.
+	(pop_from_top_level): Always call pop_cp_function_context.
+
 1999-02-26  Nathan Sidwell  <nathan@acm.org>
 
 	* typeck.c (complete_type_or_else): Add VALUE arg, for helpful

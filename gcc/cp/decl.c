@@ -2198,8 +2198,7 @@ maybe_push_to_top_level (pseudo)
   struct binding_level *b = inner_binding_level;
   tree old_bindings = NULL_TREE;
 
-  if (current_function_decl)
-    push_cp_function_context (NULL_TREE);
+  push_cp_function_context (NULL_TREE);
 
   if (previous_class_type)
     old_bindings = store_bindings (previous_class_values, old_bindings);
@@ -2339,8 +2338,7 @@ pop_from_top_level ()
 
   free (s);
 
-  if (current_function_decl)
-    pop_cp_function_context (NULL_TREE);
+  pop_cp_function_context (NULL_TREE);
 }
 
 /* Push a definition of struct, union or enum tag "name".
