@@ -609,6 +609,8 @@ extern void clobber_return_register	PARAMS ((void));
 extern void use_return_register		PARAMS ((void));
 #endif
 
+extern rtx get_arg_pointer_save_area	PARAMS ((struct function *));
+
 extern void init_virtual_regs		PARAMS ((struct emit_status *));
 
 /* Called once, at initialization, to initialize function.c.  */

@@ -3490,16 +3490,9 @@ expand_nl_goto_receiver ()
 #endif
 	{
 	  /* Now restore our arg pointer from the address at which it
-	     was saved in our stack frame.
-	     If there hasn't be space allocated for it yet, make
-	     some now.  */
-	  if (arg_pointer_save_area == 0)
-	    arg_pointer_save_area
-	      = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
+	     was saved in our stack frame.  */
 	  emit_move_insn (virtual_incoming_args_rtx,
-			  /* We need a pseudo here, or else
-			     instantiate_virtual_regs_1 complains.  */
-			  copy_to_reg (arg_pointer_save_area));
+			  copy_to_reg (get_arg_pointer_save_area (cfun)));
 	}
     }
 #endif
