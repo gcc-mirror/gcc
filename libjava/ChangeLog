@@ -1,5 +1,11 @@
 2004-10-16  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/NIODatagramSocket.java,
+	gnu/java/nio/ServerSocketChannelImpl.java:
+	Reorganized import statements.
+
+2004-10-16  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/rmi/RMIMarshalledObjectOutputStream.java
 	gnu/java/rmi/rmic/RMIC.java,
 	gnu/java/rmi/server/RMIHashes.java,
