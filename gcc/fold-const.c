@@ -4695,6 +4695,49 @@ fold (expr)
 	  TREE_USED (t) = 1;
 	  return t;
 	}
+
+      /* Convert (T)(x & c) into (T)x & (T)c, if c is an integer
+	 constants (if x has signed type, the sign bit cannot be set
+	 in c).  This folds extension into the BIT_AND_EXPR.  */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (t))
+	  && TREE_CODE (TREE_OPERAND (t, 0)) == BIT_AND_EXPR
+	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 1)) == INTEGER_CST)
+	{
+	  tree and = TREE_OPERAND (t, 0);
+	  tree and0 = TREE_OPERAND (and, 0), and1 = TREE_OPERAND (and, 1);
+	  int change = 0;
+
+	  if (TREE_UNSIGNED (TREE_TYPE (and))
+	      || (TYPE_PRECISION (TREE_TYPE (t))
+		  <= TYPE_PRECISION (TREE_TYPE (and))))
+	    change = 1;
+	  else if (TYPE_PRECISION (TREE_TYPE (and1))
+		   <= HOST_BITS_PER_WIDE_INT
+		   && host_integerp (and1, 1))
+	    {
+	      unsigned HOST_WIDE_INT cst;
+
+	      cst = tree_low_cst (and1, 1);
+	      cst &= (HOST_WIDE_INT) -1
+		     << (TYPE_PRECISION (TREE_TYPE (and1)) - 1);
+	      change = (cst == 0);
+#ifdef LOAD_EXTEND_OP
+	      if (change
+		  && (LOAD_EXTEND_OP (TYPE_MODE (TREE_TYPE (and0)))
+		      == ZERO_EXTEND))
+		{
+		  tree uns = unsigned_type (TREE_TYPE (and0));
+		  and0 = convert (uns, and0);
+	  	  and1 = convert (uns, and1);
+		}
+#endif
+	    }
+	  if (change)
+	    return fold (build (BIT_AND_EXPR, TREE_TYPE (t),
+				convert (TREE_TYPE (t), and0),
+				convert (TREE_TYPE (t), and1)));
+	}
+
       if (!wins)
 	{
 	  TREE_CONSTANT (t) = TREE_CONSTANT (arg0);
