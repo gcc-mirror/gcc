@@ -604,14 +604,14 @@ static struct default_include {
        automatically in Makefile.in.  */
     { CROSS_INCLUDE_DIR, 0, 0 },
     /* This is another place that the target system's headers might be.  */
-    { TOOL_INCLUDE_DIR, 0, 1 },
+    { TOOL_INCLUDE_DIR, 0, 0 },
 #else /* not CROSS_COMPILE */
     /* This should be /usr/local/include and should come before
        the fixincludes-fixed header files.  */
     { LOCAL_INCLUDE_DIR, 0, 1 },
     /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
        Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
-    { TOOL_INCLUDE_DIR, 0, 1 },
+    { TOOL_INCLUDE_DIR, 0, 0 },
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
     { GCC_INCLUDE_DIR, 0, 0 },
