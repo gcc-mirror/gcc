@@ -1516,14 +1516,14 @@ redirect_with_delay_list_safe_p (jump, newlabel, delay_list)
 #ifdef ANNUL_IFFALSE_SLOTS
 	   (INSN_ANNULLED_BRANCH_P (jump)
 	    && INSN_FROM_TARGET_P (XEXP (li, 0)))
-	   ? eligible_for_annul_false (jump, i - 1, XEXP (li, 0), flags) :
+	   ? eligible_for_annul_false (jump, i, XEXP (li, 0), flags) :
 #endif
 #ifdef ANNUL_IFTRUE_SLOTS
 	   (INSN_ANNULLED_BRANCH_P (jump)
 	    && ! INSN_FROM_TARGET_P (XEXP (li, 0)))
-	   ? eligible_for_annul_true (jump, i - 1, XEXP (li, 0), flags) :
+	   ? eligible_for_annul_true (jump, i, XEXP (li, 0), flags) :
 #endif
-	   eligible_for_delay (jump, i - 1, XEXP (li, 0), flags)))
+	   eligible_for_delay (jump, i, XEXP (li, 0), flags)))
       break;
 
   return (li == NULL);
