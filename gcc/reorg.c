@@ -3196,7 +3196,7 @@ fill_simple_delay_slots (non_jumps_p)
 #ifdef HAVE_cc0
 		  /* Can't separate set of cc0 from its use.  */
 		  && ! (reg_mentioned_p (cc0_rtx, pat)
-			&& ! sets_cc0_p (cc0_rtx, pat))
+			&& ! sets_cc0_p (pat))
 #endif
 		  )
 		{
