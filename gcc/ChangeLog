@@ -1,3 +1,7 @@
+2000-11-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi (Contributing): Update URL for projects web page.
+
 2000-11-04  Neil Booth  <neilb@earthling.net>
 
         * cpplex.c (parse_string): Don't allow multiline strings in

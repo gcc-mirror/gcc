@@ -2834,7 +2834,7 @@ If you would like to work on improvements to GCC, please read
 @uref{http://gcc.gnu.org/contribute.html} and
 @uref{http://gcc.gnu.org/contributewhy.html} for information on how to
 make useful contributions and avoid duplication of effort.  Suggested
-projects are listed at @uref{http://gcc.gnu.org/projects.html}.
+projects are listed at @uref{http://gcc.gnu.org/projects/}.
 
 @node VMS
 @chapter Using GCC on VMS
