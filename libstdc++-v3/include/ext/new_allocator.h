@@ -82,7 +82,7 @@ namespace __gnu_cxx
 
       // __p is not permitted to be a null pointer.
       void
-      deallocate(pointer __p, size_type __n)
+      deallocate(pointer __p, size_type)
       { ::operator delete(__p); }
 
       size_type
