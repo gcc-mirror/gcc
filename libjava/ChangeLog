@@ -2,7 +2,7 @@
 
 	* java/lang/natSystem.cc (init_properties): Call new function
 	_Jv_platform_initProperties.
-	* win32 (_Jv_platform_initProperties): New function that adds Win32 
+	* win32.cc (_Jv_platform_initProperties): New function that adds Win32 
 	support for the System properties os.name, os.arch, os.version, 
 	user.name, user.home, and user.dir.
 	* include/posix.h, include/win32.h, posix.cc: New function
