@@ -880,7 +880,12 @@ cs-tm_p.h: Makefile
 	HEADERS="$(tm_p_file)" DEFINES="" TARGET_CPU_DEFAULT="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tm_p.h
 
-$(srcdir)/configure: $(srcdir)/configure.in
+# Don't automatically run autoconf, since configure.in might be accidentally
+# newer than configure.  Also, this writes into the source directory which
+# might be on a read-only file system.  If configured for maintainer mode
+# then do allow autoconf to be run.
+
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.in
 	(cd $(srcdir) && autoconf)
 
 gccbug:	$(srcdir)/gccbug.in
@@ -898,11 +903,14 @@ mklibgcc: $(srcdir)/mklibgcc.in
 # "echo timestamp" is used instead of touch to be consistent with other
 # packages that use autoconf (??? perhaps also to avoid problems with patch?).
 # ??? Newer versions have a maintainer mode that may be useful here.
-$(srcdir)/config.in: $(srcdir)/cstamp-h.in
-$(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
-	(cd $(srcdir) && autoheader)
-	@rm -f $(srcdir)/cstamp-h.in
-	echo timestamp > $(srcdir)/cstamp-h.in
+
+# Don't run autoheader automatically either.
+# Only run it if maintainer mode is enabled.
+@MAINT@ $(srcdir)/config.in: $(srcdir)/cstamp-h.in
+@MAINT@ $(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
+@MAINT@	(cd $(srcdir) && autoheader)
+@MAINT@	@rm -f $(srcdir)/cstamp-h.in
+@MAINT@	echo timestamp > $(srcdir)/cstamp-h.in
 auto-host.h: cstamp-h ; @true
 cstamp-h: config.in config.status
 	CONFIG_HEADERS=auto-host.h:config.in LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.status
