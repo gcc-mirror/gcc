@@ -2102,10 +2102,10 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(ashift:DI (const_int 1)
-		   (match_operand:SI 2 "register_operand" "r")))
+		   (match_operand:SI 1 "register_operand" "r")))
    (clobber (reg:SI 0))]
   ""
-  "subcc %2,32,%%g0\;addx %%g0,0,%R0\;xor %R0,1,%0\;sll %R0,%2,%R0\;sll %0,%2,%0"
+  "subcc %1,32,%%g0\;addx %%g0,0,%R0\;xor %R0,1,%0\;sll %R0,%1,%R0\;sll %0,%1,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "5")])
 
