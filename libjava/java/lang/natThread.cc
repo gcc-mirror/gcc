@@ -112,6 +112,7 @@ java::lang::Thread::holdsLock (jobject obj)
 void
 java::lang::Thread::interrupt (void)
 {
+  checkAccess ();
   natThread *nt = (natThread *) data;
   _Jv_ThreadInterrupt (nt->thread);
 }
@@ -321,6 +322,7 @@ java::lang::Thread::start (void)
 void
 java::lang::Thread::stop (java::lang::Throwable *)
 {
+  checkAccess ();
   throw new UnsupportedOperationException
     (JvNewStringLatin1 ("Thread.stop unimplemented"));
 }
