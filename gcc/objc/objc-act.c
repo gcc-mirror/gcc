@@ -55,7 +55,6 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 extern cpp_reader  parse_in;
 extern cpp_options parse_options;
-static int cpp_initialized;
 #endif
 
 /* This is the default way of generating a method name.  */
@@ -599,6 +598,9 @@ extern char *yy_cur;
 void
 lang_init_options ()
 {
+  cpp_reader_init (&parse_in);
+  parse_in.opts = &parse_options;
+  cpp_options_init (&parse_options);
 }
 
 void
@@ -690,15 +692,6 @@ lang_decode_option (argc, argv)
      char **argv;
 {
   char *p = argv[0];
-#if USE_CPPLIB
-  if (! cpp_initialized)
-    {
-      cpp_reader_init (&parse_in);
-      parse_in.opts = &parse_options;
-      cpp_options_init (&parse_options);
-      cpp_initialized = 1;
-    }
-#endif
   if (!strcmp (p, "-lang-objc"))
     doing_objc_thang = 1;
   else if (!strcmp (p, "-gen-decls"))
