@@ -1,3 +1,32 @@
+2004-06-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/rope (rope(_CharT, const allocator_type&)): Fix
+	to use _Data_allocate.
+	* include/ext/ropeimpl.h (rope<>::_S_leaf_concat_char_iter): Likewise.
+	(rope<>::_S_substring): Likewise.
+	(rope<>::rope(size_t, _CharT, const allocator_type&)): Likewise.
+	(rope<>::c_str()): Likewise.
+	(rope<>::replace_with_c_str()): Likewise.
+
+	* include/ext/ropeimpl.h (_Rope_iterator_base<>::_S_setbuf):
+	Correctly qualify _S_leaf, _S_function, etc., with _Rope_constants::,
+	not _RopeRep.
+	(_Rope_iterator_base<>::_S_setcache): Likewise.
+	(_Rope_iterator_base<>::_S_setcache_for_incr): Likewise.
+	(rope<>::_S_substring): Likewise.
+	(rope<>::_S_dump): Likewise.
+	(rope<>::_S_fetch_ptr): Likewise.
+	(rope<>::_S_compare): Likewise.
+	(rope<>::replace_with_c_str()): Likewise.		
+
+	* testsuite/ext/rope.cc: Rename to testsuite/ext/rope/1.cc.
+	* testsuite/ext/rope/2.cc: New.
+
+2004-06-16  Paolo Carlini  <pcarlini@suse.de>
+	    Matt Austern  <austern@apple.com>
+
+	* testsuite/ext/rope/3.cc: New.
+
 2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* acinclude.m4: Remove useless multilib configury.

@@ -75,14 +75,14 @@ void _Rope_iterator_base<_CharT,_Alloc>::_S_setbuf(
     size_t __pos = __x._M_current_pos;
 
     switch(__leaf->_M_tag) {
-	case _RopeRep::_S_leaf:
+	case _Rope_constants::_S_leaf:
 	    __x._M_buf_start =
 	      ((_Rope_RopeLeaf<_CharT,_Alloc>*)__leaf)->_M_data;
 	    __x._M_buf_ptr = __x._M_buf_start + (__pos - __leaf_pos);
 	    __x._M_buf_end = __x._M_buf_start + __leaf->_M_size;
 	    break;
-	case _RopeRep::_S_function:
-	case _RopeRep::_S_substringfn:
+	case _Rope_constants::_S_function:
+	case _Rope_constants::_S_substringfn:
 	    {
 		size_t __len = _S_iterator_buf_len;
 		size_t __buf_start_pos = __leaf_pos;
@@ -142,12 +142,12 @@ void _Rope_iterator_base<_CharT,_Alloc>::_S_setcache
 	++__curr_depth;
 	__path[__curr_depth] = __curr_rope;
 	switch(__curr_rope->_M_tag) {
-	  case _RopeRep::_S_leaf:
-	  case _RopeRep::_S_function:
-	  case _RopeRep::_S_substringfn:
+	  case _Rope_constants::_S_leaf:
+	  case _Rope_constants::_S_function:
+	  case _Rope_constants::_S_substringfn:
 	    __x._M_leaf_pos = __curr_start_pos;
 	    goto done;
-	  case _RopeRep::_S_concat:
+	  case _Rope_constants::_S_concat:
 	    {
 		_Rope_RopeConcatenation<_CharT,_Alloc>* __c =
 			(_Rope_RopeConcatenation<_CharT,_Alloc>*)__curr_rope;
@@ -225,7 +225,7 @@ void _Rope_iterator_base<_CharT,_Alloc>::_S_setcache_for_incr
     __current_node = __c->_M_right;
     __x._M_path_end[++__current_index] = __current_node;
     __dirns |= 1;
-    while (_RopeRep::_S_concat == __current_node->_M_tag) {
+    while (_Rope_constants::_S_concat == __current_node->_M_tag) {
 	++__current_index;
 	if (_S_path_cache_len == __current_index) {
 	    int __i;
@@ -322,7 +322,7 @@ inline void _Rope_RopeRep<_CharT,_Alloc>::_M_free_c_string()
     if (0 != __cstr) {
 	size_t __size = this->_M_size + 1;
 	_Destroy(__cstr, __cstr + __size);
-	_Data_deallocate(__cstr, __size);
+	this->_Data_deallocate(__cstr, __size);
     }
 }
 
@@ -406,7 +406,7 @@ rope<_CharT,_Alloc>::_S_leaf_concat_char_iter
 {
     size_t __old_len = __r->_M_size;
     _CharT* __new_data = (_CharT*)
-	__r->get_allocator().allocate(_S_rounded_up_size(__old_len + __len));
+      _Data_allocate(_S_rounded_up_size(__old_len + __len));
     _RopeLeaf* __result;
 
     uninitialized_copy_n(__r->_M_data, __old_len, __new_data);
@@ -679,7 +679,7 @@ rope<_CharT,_Alloc>::_S_substring(_RopeRep* __base,
 	__adj_endp1 = __endp1;
     }
     switch(__base->_M_tag) {
-	case _RopeRep::_S_concat:
+	case _Rope_constants::_S_concat:
 	    {
 		_RopeConcatenation* __c = (_RopeConcatenation*)__base;
 		_RopeRep* __left = __c->_M_left;
@@ -700,7 +700,7 @@ rope<_CharT,_Alloc>::_S_substring(_RopeRep* __base,
 		__result = _S_concat(__left_result, __right_result);
 		return __result;
 	    }
-	case _RopeRep::_S_leaf:
+	case _Rope_constants::_S_leaf:
 	    {
 		_RopeLeaf* __l = (_RopeLeaf*)__base;
 		_RopeLeaf* __result;
@@ -721,7 +721,7 @@ rope<_CharT,_Alloc>::_S_substring(_RopeRep* __base,
 #               endif
 		return __result;
 	    }
-	case _RopeRep::_S_substringfn:
+	case _Rope_constants::_S_substringfn:
 	    // Avoid introducing multiple layers of substring nodes.
 	    {
 		_RopeSubstring* __old = (_RopeSubstring*)__base;
@@ -738,7 +738,7 @@ rope<_CharT,_Alloc>::_S_substring(_RopeRep* __base,
 
 		} // *** else fall through: ***
 	    }
-	case _RopeRep::_S_function:
+	case _Rope_constants::_S_function:
 	    {
 		_RopeFunction* __f = (_RopeFunction*)__base;
 		_CharT* __section;
@@ -748,7 +748,7 @@ rope<_CharT,_Alloc>::_S_substring(_RopeRep* __base,
 
 		if (__result_len > __lazy_threshold) goto lazy;
 		__section = (_CharT*)
-       	__base->get_allocator().allocate(_S_rounded_up_size(__result_len));
+		  _Data_allocate(_S_rounded_up_size(__result_len));
 		try {
 		  (*(__f->_M_fn))(__start, __result_len, __section);
                 }
@@ -1010,7 +1010,7 @@ rope<_CharT,_Alloc>::_S_dump(_RopeRep* __r, int __indent)
     if (0 == __r) {
 	printf("NULL\n"); return;
     }
-    if (_RopeRep::_S_concat == __r->_M_tag) {
+    if (_Rope_constants::_S_concat == __r->_M_tag) {
 	_RopeConcatenation* __c = (_RopeConcatenation*)__r;
 	_RopeRep* __left = __c->_M_left;
 	_RopeRep* __right = __c->_M_right;
@@ -1031,13 +1031,13 @@ rope<_CharT,_Alloc>::_S_dump(_RopeRep* __r, int __indent)
 	char* __kind;
 
 	switch (__r->_M_tag) {
-	    case _RopeRep::_S_leaf:
+	    case _Rope_constants::_S_leaf:
 		__kind = "Leaf";
 		break;
-	    case _RopeRep::_S_function:
+	    case _Rope_constants::_S_function:
 		__kind = "Function";
 		break;
-	    case _RopeRep::_S_substringfn:
+	    case _Rope_constants::_S_substringfn:
 		__kind = "Function representing substring";
 		break;
 	    default:
@@ -1241,7 +1241,7 @@ rope<_CharT,_Alloc>::_S_fetch_ptr(_RopeRep* __r, size_type __i)
     for(;;) {
       if (__r->_M_ref_count > 1) return 0;
       switch(__r->_M_tag) {
-	case _RopeRep::_S_concat:
+        case _Rope_constants::_S_concat:
 	    {
 		_RopeConcatenation* __c = (_RopeConcatenation*)__r;
 		_RopeRep* __left = __c->_M_left;
@@ -1256,7 +1256,7 @@ rope<_CharT,_Alloc>::_S_fetch_ptr(_RopeRep* __r, size_type __i)
 		}
 	    }
 	    break;
-	case _RopeRep::_S_leaf:
+	case _Rope_constants::_S_leaf:
 	    {
 		_RopeLeaf* __l = (_RopeLeaf*)__r;
 		if (__l->_M_c_string != __l->_M_data && __l->_M_c_string != 0)
@@ -1269,8 +1269,8 @@ rope<_CharT,_Alloc>::_S_fetch_ptr(_RopeRep* __r, size_type __i)
 		}
 		return __l->_M_data + __i;
 	    }
-	case _RopeRep::_S_function:
-	case _RopeRep::_S_substringfn:
+	case _Rope_constants::_S_function:
+	case _Rope_constants::_S_substringfn:
 	    return 0;
       }
     }
@@ -1293,7 +1293,7 @@ rope<_CharT,_Alloc>::_S_compare (const _RopeRep* __left,
     if (0 == __left) return -1;
     __left_len = __left->_M_size;
     __right_len = __right->_M_size;
-    if (_RopeRep::_S_leaf == __left->_M_tag) {
+    if (_Rope_constants::_S_leaf == __left->_M_tag) {
 	_RopeLeaf* __l = (_RopeLeaf*) __left;
 	if (_RopeRep::_S_leaf == __right->_M_tag) {
 	    _RopeLeaf* __r = (_RopeLeaf*) __right;
@@ -1310,7 +1310,7 @@ rope<_CharT,_Alloc>::_S_compare (const _RopeRep* __left,
     } else {
 	const_iterator __lstart(__left, 0);
 	const_iterator __lend(__left, __left_len);
-	if (_RopeRep::_S_leaf == __right->_M_tag) {
+	if (_Rope_constants::_S_leaf == __right->_M_tag) {
 	    _RopeLeaf* __r = (_RopeLeaf*) __right;
 	    return lexicographical_compare_3way(
 				   __lstart, __lend,
@@ -1391,7 +1391,7 @@ rope<_CharT, _Alloc>::rope(size_t __n, _CharT __c,
     if (0 == __rest) {
 	__remainder = 0;
     } else {
-	__rest_buffer = __a.allocate(_S_rounded_up_size(__rest));
+        __rest_buffer = this->_Data_allocate(_S_rounded_up_size(__rest));
 	uninitialized_fill_n(__rest_buffer, __rest, __c);
 	_S_cond_store_eos(__rest_buffer[__rest]);
 	try {
@@ -1406,7 +1406,7 @@ rope<_CharT, _Alloc>::rope(size_t __n, _CharT __c,
     __remainder_rope._M_tree_ptr = __remainder;
     if (__exponent != 0) {
 	_CharT* __base_buffer =
-	  __a.allocate(_S_rounded_up_size(__exponentiate_threshold));
+	  this->_Data_allocate(_S_rounded_up_size(__exponentiate_threshold));
 	_RopeLeaf* __base_leaf;
 	rope __base_rope;
 	uninitialized_fill_n(__base_buffer, __exponentiate_threshold, __c);
@@ -1453,7 +1453,7 @@ const _CharT* rope<_CharT,_Alloc>::c_str() const {
     if (0 == __result)
       {
 	size_t __s = size();
-	__result = this->get_allocator().allocate(__s + 1);
+	__result = this->_Data_allocate(__s + 1);
 	_S_flatten(this->_M_tree_ptr, __result);
 	__result[__s] = _S_eos((_CharT*)0);
 	this->_M_tree_ptr->_M_c_string = __result;
@@ -1469,12 +1469,12 @@ const _CharT* rope<_CharT,_Alloc>::replace_with_c_str() {
         return _S_empty_c_str;
     }
     __GC_CONST _CharT* __old_c_string = this->_M_tree_ptr->_M_c_string;
-    if (_RopeRep::_S_leaf == this->_M_tree_ptr->_M_tag
+    if (_Rope_constants::_S_leaf == this->_M_tree_ptr->_M_tag
 	&& 0 != __old_c_string) {
 	return(__old_c_string);
     }
     size_t __s = size();
-    _CharT* __result = get_allocator().allocate(_S_rounded_up_size(__s));
+    _CharT* __result = this->_Data_allocate(_S_rounded_up_size(__s));
     _S_flatten(this->_M_tree_ptr, __result);
     __result[__s] = _S_eos((_CharT*)0);
     this->_M_tree_ptr->_M_unref_nonnil();
