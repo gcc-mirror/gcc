@@ -98,6 +98,9 @@ static void v_pedwarn_with_decl PARAMS ((tree, const char *, va_list));
 static void v_pedwarn_with_file_and_line PARAMS ((const char *, int,
 						  const char *, va_list));
 static void vsorry PARAMS ((const char *, va_list));
+static void verror PARAMS ((const char *, va_list));
+static void vwarning PARAMS ((const char *, va_list));
+static void vpedwarn PARAMS ((const char *, va_list));
 static void report_file_and_line PARAMS ((const char *, int, int));
 static void vnotice PARAMS ((FILE *, const char *, va_list));
 static void set_real_maximum_length PARAMS ((output_buffer *));
@@ -1092,7 +1095,7 @@ v_error_for_asm (insn, msgid, ap)
 
 /* Report an error at the current line number.  */
 
-void
+static void
 verror (msgid, ap)
      const char *msgid;
      va_list ap;
@@ -1180,7 +1183,7 @@ v_warning_for_asm (insn, msgid, ap)
 
 /* Report a warning at the current line number.  */
 
-void
+static void
 vwarning (msgid, ap)
      const char *msgid;
      va_list ap;
@@ -1191,7 +1194,7 @@ vwarning (msgid, ap)
 /* These functions issue either warnings or errors depending on
    -pedantic-errors.  */
 
-void
+static void
 vpedwarn (msgid, ap)
      const char *msgid;
      va_list ap;
