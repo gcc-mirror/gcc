@@ -10282,9 +10282,20 @@ finish_enum (enumtype, values)
     if (! flag_short_enums && precision < TYPE_PRECISION (integer_type_node))
       precision = TYPE_PRECISION (integer_type_node);
 
+
+    /*
+     *  The following code is unnecessary since the function 
+     *  type_promotes_to deals correctly with promotion of enums of 
+     *  underlying unsigned types to signed integer types.
+     *  Moreover, it causes an enum bitfield to require one more bit of
+     *  storage than defined by the ANSI/ISO C++ resolution section r.7.2
+     *  which defines the range of an enum. 
+     */
+#if 0
     /* Unlike the C frontend, we prefer signed types.  */
     if (unsignedp && int_fits_type_p (maxnode, type_for_size (precision, 0)))
       unsignedp = 0;
+#endif
 
     TYPE_PRECISION (enumtype) = precision;
     TYPE_SIZE (enumtype) = NULL_TREE;
