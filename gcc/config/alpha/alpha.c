@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -2083,8 +2083,18 @@ output_prolog (file, size)
 	     STACK_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM);
 
   /* Describe our frame.  */
-  fprintf (file, "\t.frame $%d,%d,$26,%d\n", 
-	   unwind_regno, frame_size, rsa_offset);
+  fprintf (file, "\t.frame $%d,", unwind_regno);
+
+  /* If the frame size is larger than an integer, print it as zero to
+     avoid an assembler error.  We won't be properly describing such a
+     frame, but that's the best we can do.  */
+  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+#if HOST_BITS_PER_WIDE_INT == 64
+	   frame_size >= (1l << 31) ? 0:
+#endif
+	   frame_size
+	   );
+  fprintf (file, ",$26,%d\n", rsa_offset);
 
   /* If we have to allocate space for outgoing args, do it now.  */
   if (current_function_outgoing_args_size != 0)
@@ -2229,7 +2239,7 @@ vms_valid_decl_attribute_p (decl, attributes, identifier, args)
 void
 output_prolog (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   HOST_WIDE_INT out_args_size
     = ALPHA_ROUND (current_function_outgoing_args_size);
@@ -2384,10 +2394,20 @@ output_prolog (file, size)
   /* Describe our frame.  */
   if (!flag_inhibit_size_directive)
     {
-      fprintf (file, "\t.frame $%d,%d,$26,%d\n", 
+      fprintf (file, "\t.frame $%d,",
 	       (frame_pointer_needed
-	        ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM),
-	       frame_size, current_function_pretend_args_size);
+	        ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM));
+
+      /* If the frame size is larger than an integer, print it as zero to
+	 avoid an assembler error.  We won't be properly describing such a
+	 frame, but that's the best we can do.  */
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+#if HOST_BITS_PER_WIDE_INT == 64
+	       frame_size >= (1l << 31) ? 0 :
+#endif
+	       frame_size
+	       );
+      fprintf (file, ",$26,%d\n", current_function_pretend_args_size);
     }
     
   /* Save register 26 if any other register needs to be saved.  */
@@ -2411,8 +2431,15 @@ output_prolog (file, size)
 
   /* Print the register mask and do floating-point saves.  */
   if (reg_mask && !flag_inhibit_size_directive)
-    fprintf (file, "\t.mask 0x%x,%d\n", reg_mask,
-	     actual_start_reg_offset - frame_size);
+    {
+      fprintf (file, "\t.mask 0x%x,", reg_mask);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+#if HOST_BITS_PER_WIDE_INT == 64
+	       frame_size >= (1l << 31) ? 0 :
+#endif
+	       actual_start_reg_offset - frame_size);
+      fprintf (file, "\n");
+    }
 
   start_reg_offset = reg_offset;
   reg_mask = 0;
@@ -2606,7 +2633,7 @@ alpha_output_filename (stream, name)
     }
 
   else if (name != current_function_file
-      && strcmp (name, current_function_file) != 0)
+	   && strcmp (name, current_function_file) != 0)
     {
       if (inside_function && ! TARGET_GAS)
 	fprintf (stream, "\t#.file\t%d ", num_source_filenames);
