@@ -1486,6 +1486,30 @@ fix = {
 
 
 /*
+ *  IRIX 6.5.1[78] <sys/socket.h> has a broken definition of socklen_t.
+ *  Various socket function prototypes use different types instead,
+ *  depending on the API in use (BSD, XPG4/5), but the socklen_t
+ *  definition doesn't reflect this (SGI Bug Id 864477, fixed in
+ *  IRIX 6.5.19).
+ */
+fix = {
+    hackname  = irix_socklen_t;
+    files     = sys/socket.h;
+    select    = "(#define _SOCKLEN_T\n)(typedef u_int32_t socklen_t;)";
+
+    mach      = "mips-sgi-irix6.5";
+    c_fix     = format;
+    c_fix_arg = "%1"
+    		"#if _NO_XOPEN4 && _NO_XOPEN5\n"
+    		"typedef int socklen_t;\n"
+		"#else\n"
+    		"%2\n"
+    		"#endif /* _NO_XOPEN4 && _NO_XOPEN5 */";
+
+    test_text = "#define _SOCKLEN_T\ntypedef u_int32_t socklen_t;";
+};
+
+/*
  *  IRIX 5.x's stdio.h declares some functions that take a va_list as
  *  taking char *.  However, GCC uses void * for va_list, so
  *  calling vfprintf with a va_list fails in C++.  */

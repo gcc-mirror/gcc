@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 146 fixup descriptions.
+ * This file contains 147 fixup descriptions.
  *
  * See README for more information.
  *
@@ -2539,6 +2539,48 @@ static tTestDesc aIrix_Limits_ConstTests[] = {
 static const char* apzIrix_Limits_ConstPatch[] = {
     "format",
     "extern __const ",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Irix_Socklen_T fix
+ */
+tSCC zIrix_Socklen_TName[] =
+     "irix_socklen_t";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zIrix_Socklen_TList[] =
+  "|sys/socket.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzIrix_Socklen_TMachs[] = {
+        "mips-sgi-irix6.5",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zIrix_Socklen_TSelect0[] =
+       "(#define _SOCKLEN_T\n\
+)(typedef u_int32_t socklen_t;)";
+
+#define    IRIX_SOCKLEN_T_TEST_CT  1
+static tTestDesc aIrix_Socklen_TTests[] = {
+  { TT_EGREP,    zIrix_Socklen_TSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Irix_Socklen_T
+ */
+static const char* apzIrix_Socklen_TPatch[] = {
+    "format",
+    "%1#if _NO_XOPEN4 && _NO_XOPEN5\n\
+typedef int socklen_t;\n\
+#else\n\
+%2\n\
+#endif /* _NO_XOPEN4 && _NO_XOPEN5 */",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5774,9 +5816,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          158
+#define REGEX_COUNT          159
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            146
+#define FIX_COUNT            147
 
 /*
  *  Enumerate the fixes
@@ -5844,6 +5886,7 @@ typedef enum {
     IP_MISSING_SEMI_FIXIDX,
     IRIX_ASM_APOSTROPHE_FIXIDX,
     IRIX_LIMITS_CONST_FIXIDX,
+    IRIX_SOCKLEN_T_FIXIDX,
     IRIX_STDIO_VA_LIST_FIXIDX,
     ISC_FMOD_FIXIDX,
     ISC_OMITS_WITH_STDC_FIXIDX,
@@ -6240,6 +6283,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzIrix_Limits_ConstMachs,
      IRIX_LIMITS_CONST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aIrix_Limits_ConstTests,   apzIrix_Limits_ConstPatch, 0 },
+
+  {  zIrix_Socklen_TName,    zIrix_Socklen_TList,
+     apzIrix_Socklen_TMachs,
+     IRIX_SOCKLEN_T_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aIrix_Socklen_TTests,   apzIrix_Socklen_TPatch, 0 },
 
   {  zIrix_Stdio_Va_ListName,    zIrix_Stdio_Va_ListList,
      apzIrix_Stdio_Va_ListMachs,

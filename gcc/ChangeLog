@@ -1,3 +1,14 @@
+2003-02-24  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	Fixes PR libgcj/9652.
+	Backport patch from mainline:
+	2003-02-12  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (irix_socklen_t): Fix broken IRIX 6.5.1[78]
+	socklen_t definition.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/sys/socket.h: New file.
+
 2003-02-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* regmove.c (optimize_reg_copy_1): Do not replace a hard register
