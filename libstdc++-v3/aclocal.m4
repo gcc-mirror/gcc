@@ -1053,13 +1053,31 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   --enable-clocale=MODEL  use MODEL target-speific locale package. [default=generic]
   ], 
   if test x$enable_clocale = xno; then
-     enable_clocale=generic
+     enable_clocale=no
   fi,
-     enable_clocale=generic)
+     enable_clocale=no)
 
   enable_clocale_flag=$enable_clocale
 
-  dnl Check if a valid locale package
+  dnl Probe for locale support if no specific model is specified.
+  dnl Default to "generic"
+  if test x$enable_clocale_flag = xno; then
+    case x${target_os} in
+      xlinux* | xgnu*)
+	AC_EGREP_CPP([ok], [
+        #include <features.h>
+        #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) 
+          ok
+        #endif
+        ], enable_clocale_flag=gnu, enable_clocale_flag=generic)
+        ;;
+      *)
+	enable_clocale_flag=generic
+	;;
+    esac
+  fi
+
+  dnl Set configure bits for specified locale package
   case x${enable_clocale_flag} in
     xgeneric)
       AC_MSG_RESULT(generic)
