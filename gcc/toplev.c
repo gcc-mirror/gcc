@@ -3900,9 +3900,6 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #if !defined(OS2) && !defined(VMS) && !defined(_WIN32)
   if (flag_print_mem)
     {
-#ifdef __alpha
-      char *sbrk ();
-#endif
       char *lim = (char *) sbrk (0);
 
       fprintf (stderr, "Data size %d.\n",
