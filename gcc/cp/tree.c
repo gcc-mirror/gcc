@@ -2141,6 +2141,41 @@ make_temp_vec (len)
   return node;
 }
 
+/* Build a wrapper around some pointer PTR so we can use it as a tree.  */
+
+tree
+build_ptr_wrapper (ptr)
+     void *ptr;
+{
+  tree t = make_node (WRAPPER);
+  WRAPPER_PTR (t) = ptr;
+  return t;
+}
+
+/* Same, but on the expression_obstack.  */
+
+tree
+build_expr_ptr_wrapper (ptr)
+     void *ptr;
+{
+  tree t;
+  push_expression_obstack ();
+  t = build_ptr_wrapper (ptr);
+  pop_obstacks ();
+  return t;
+}
+
+/* Build a wrapper around some integer I so we can use it as a tree.  */
+
+tree
+build_int_wrapper (i)
+     int i;
+{
+  tree t = make_node (WRAPPER);
+  WRAPPER_INT (t) = i;
+  return t;
+}
+
 void
 push_expression_obstack ()
 {

@@ -1,3 +1,22 @@
+Thu Apr 23 21:19:06 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.def: Add WRAPPER.  USER_CONV now only has two ops.
+	* cp-tree.h: Add WRAPPER support.
+	* call.c (add_candidate): Split out from add_*_candidate fns.
+	(build_over_call): Take the candidate instead of function and args.
+	Enforce access control here.  Emit overload warnings here.
+	(add_warning): New fn.
+	(joust): Add WARN parm.  If not set, call add_warning instead of
+	printing a warning.  Reenable some warnings.
+	(tourney): Pass it.
+	(convert_like): Adjust.
+	(build_new_op): Adjust.
+	(build_new_function_call): Adjust.
+	(build_user_type_conversion_1): Adjust.
+	(USER_CONV_FN): Adjust.
+	* tree.c (build_expr_wrapper, build_expr_ptr_wrapper, 
+	build_int_wrapper): New fns.
+
 Thu Apr 23 18:27:53 1998  Mark P. Mitchell  <mmitchell@usa.net>
 
 	* pt.c (unify): Fix typo in previous change.

@@ -173,6 +173,10 @@ DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
 /* XXX: could recycle some of the common fields */
 DEFTREECODE (CPLUS_BINDING, "binding", 'x', 2)
 
+/* A generic wrapper for something not tree that we want to include in
+   tree structure.  */
+DEFTREECODE (WRAPPER, "wrapper", 'x', 1)
+
 /* A whole bunch of tree codes for the initial, superficial parsing of
    templates.  */
 DEFTREECODE (LOOKUP_EXPR, "lookup_expr", 'e', 2)
@@ -208,6 +212,10 @@ DEFTREECODE (RETURN_INIT, "return_init", 'e', 2)
 DEFTREECODE (TRY_BLOCK, "try_stmt", 'e', 2)
 DEFTREECODE (HANDLER, "catch_stmt", 'e', 2)
 
+DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
+
+/* And some codes for expressing conversions for overload resolution.  */
+
 DEFTREECODE (IDENTITY_CONV, "identity_conv", 'e', 1)
 DEFTREECODE (LVALUE_CONV, "lvalue_conv", 'e', 1)
 DEFTREECODE (QUAL_CONV, "qual_conv", 'e', 1)
@@ -216,11 +224,9 @@ DEFTREECODE (PTR_CONV, "ptr_conv", 'e', 1)
 DEFTREECODE (PMEM_CONV, "pmem_conv", 'e', 1)
 DEFTREECODE (BASE_CONV, "base_conv", 'e', 1)
 DEFTREECODE (REF_BIND, "ref_bind", 'e', 1)
-DEFTREECODE (USER_CONV, "user_conv", 'e', 4)
+DEFTREECODE (USER_CONV, "user_conv", 'e', 2)
 DEFTREECODE (AMBIG_CONV, "ambig_conv", 'e', 1)
 DEFTREECODE (RVALUE_CONV, "rvalue_conv", 'e', 1)
-
-DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
 
 /*
 Local variables:

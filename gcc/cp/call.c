@@ -43,10 +43,10 @@ static tree build_new_method_call PROTO((tree, tree, tree, tree, int));
 static tree build_field_call PROTO((tree, tree, tree, tree));
 static tree find_scoped_type PROTO((tree, tree, tree));
 static struct z_candidate * tourney PROTO((struct z_candidate *));
-static int joust PROTO((struct z_candidate *, struct z_candidate *));
+static int joust PROTO((struct z_candidate *, struct z_candidate *, int));
 static int compare_qual PROTO((tree, tree));
 static int compare_ics PROTO((tree, tree));
-static tree build_over_call PROTO((tree, tree, tree, int));
+static tree build_over_call PROTO((struct z_candidate *, tree, int));
 static tree convert_default_arg PROTO((tree, tree));
 static tree convert_like PROTO((tree, tree));
 static void op_error PROTO((enum tree_code, enum tree_code, tree, tree,
@@ -664,6 +664,7 @@ struct z_candidate {
   int viable;
   tree basetype_path;
   tree template;
+  tree warnings;
   struct z_candidate *next;
 };
 
@@ -689,7 +690,9 @@ struct z_candidate {
 #define ICS_THIS_FLAG(NODE) TREE_LANG_FLAG_2 (NODE)
 #define ICS_BAD_FLAG(NODE) TREE_LANG_FLAG_3 (NODE)
 
-#define USER_CONV_FN(NODE) TREE_OPERAND (NODE, 1)
+#define USER_CONV_CAND(NODE) \
+  ((struct z_candidate *)WRAPPER_PTR (TREE_OPERAND (NODE, 1)))
+#define USER_CONV_FN(NODE) (USER_CONV_CAND (NODE)->fn)
 
 int
 null_ptr_cst_p (t)
@@ -1049,6 +1052,30 @@ implicit_conversion (to, from, expr, flags)
   return conv;
 }
 
+/* Add a new entry to the list of candidates.  Used by the add_*_candidate
+   functions.  */
+
+static struct z_candidate *
+add_candidate (candidates, fn, convs, viable)
+     struct z_candidate *candidates;
+     tree fn, convs;
+     int viable;
+{
+  struct z_candidate *cand
+    = (struct z_candidate *) scratchalloc (sizeof (struct z_candidate));
+
+  cand->fn = fn;
+  cand->convs = convs;
+  cand->second_conv = NULL_TREE;
+  cand->viable = viable;
+  cand->basetype_path = NULL_TREE;
+  cand->template = NULL_TREE;
+  cand->warnings = NULL_TREE;
+  cand->next = candidates;
+
+  return cand;
+}
+
 /* Create an overload candidate for the function or method FN called with
    the argument list ARGLIST and add it to CANDIDATES.  FLAGS is passed on
    to implicit_conversion.  */
@@ -1130,17 +1157,7 @@ add_function_candidate (candidates, fn, arglist, flags)
 	break;
       }
 
-  cand = (struct z_candidate *) scratchalloc (sizeof (struct z_candidate));
-
-  cand->fn = fn;
-  cand->convs = convs;
-  cand->second_conv = NULL_TREE;
-  cand->viable = viable;
-  cand->basetype_path = NULL_TREE;
-  cand->template = NULL_TREE;
-  cand->next = candidates;
-
-  return cand;
+  return add_candidate (candidates, fn, convs, viable);
 }
 
 /* Create an overload candidate for the conversion function FN which will
@@ -1207,17 +1224,7 @@ add_conv_candidate (candidates, fn, obj, arglist)
 	break;
       }
 
-  cand = (struct z_candidate *) scratchalloc (sizeof (struct z_candidate));
-
-  cand->fn = fn;
-  cand->convs = convs;
-  cand->second_conv = NULL_TREE;
-  cand->viable = viable;
-  cand->basetype_path = NULL_TREE;
-  cand->template = NULL_TREE;
-  cand->next = candidates;
-
-  return cand;
+  return add_candidate (candidates, fn, convs, viable);
 }
 
 static struct z_candidate *
@@ -1267,17 +1274,7 @@ build_builtin_candidate (candidates, fnname, type1, type2,
 	viable = 0;
     }      
 
-  cand = (struct z_candidate *) scratchalloc (sizeof (struct z_candidate));
-
-  cand->fn = fnname;
-  cand->convs = convs;
-  cand->second_conv = NULL_TREE;
-  cand->viable = viable;
-  cand->basetype_path = NULL_TREE;
-  cand->template = NULL_TREE;
-  cand->next = candidates;
-
-  return cand;
+  return add_candidate (candidates, fnname, convs, viable);
 }
 
 static int
@@ -2173,7 +2170,7 @@ build_user_type_conversion_1 (totype, expr, flags)
     (USER_CONV,
      (DECL_CONSTRUCTOR_P (cand->fn)
       ? totype : non_reference (TREE_TYPE (TREE_TYPE (cand->fn)))),
-     expr, cand->fn, cand->convs, cand->basetype_path);
+     expr, build_expr_ptr_wrapper (cand));
   ICS_USER_FLAG (cand->second_conv) = 1;
   if (cand->viable == -1)
     ICS_BAD_FLAG (cand->second_conv) = 1;
@@ -2287,7 +2284,7 @@ build_new_function_call (fn, args)
 	  && ! DECL_INITIAL (cand->fn))
 	add_maybe_template (cand->fn, templates);
 
-      return build_over_call (cand->fn, cand->convs, args, LOOKUP_NORMAL);
+      return build_over_call (cand, args, LOOKUP_NORMAL);
     }
 
   return build_function_call (fn, args);
@@ -2390,7 +2387,7 @@ build_object_call (obj, args)
     }
 
   if (DECL_NAME (cand->fn) == ansi_opname [CALL_EXPR])
-    return build_over_call (cand->fn, cand->convs, mem_args, LOOKUP_NORMAL);
+    return build_over_call (cand, mem_args, LOOKUP_NORMAL);
 
   obj = convert_like (TREE_VEC_ELT (cand->convs, 0), obj);
 
@@ -2719,9 +2716,6 @@ build_new_op (code, flags, arg1, arg2, arg3)
 			 : candidates->fn);
 	}
 
-      if (DECL_FUNCTION_MEMBER_P (cand->fn))
-	enforce_access (cand->basetype_path, cand->fn);
-
       /* Pedantically, normal function declarations are never considered
 	 to refer to template instantiations, so we only do this with
 	 -fguiding-decls.  */ 
@@ -2731,7 +2725,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	add_maybe_template (cand->fn, templates);
 
       return build_over_call
-	(cand->fn, cand->convs,
+	(cand,
 	 TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE
 	 ? mem_arglist : arglist,
 	 LOOKUP_NORMAL);
@@ -3045,9 +3039,10 @@ convert_like (convs, expr)
     {
     case USER_CONV:
       {
-	tree fn = TREE_OPERAND (convs, 1);
+	struct z_candidate *cand
+	  = WRAPPER_PTR (TREE_OPERAND (convs, 1));
+	tree fn = cand->fn;
 	tree args;
-	enforce_access (TREE_OPERAND (convs, 3), fn);
 
 	if (DECL_CONSTRUCTOR_P (fn))
 	  {
@@ -3061,9 +3056,7 @@ convert_like (convs, expr)
 	  }
 	else
 	  args = build_this (expr);
-	expr = build_over_call
-	  (TREE_OPERAND (convs, 1), TREE_OPERAND (convs, 2),
-	   args, LOOKUP_NORMAL);
+	expr = build_over_call (cand, args, LOOKUP_NORMAL);
 
 	/* If this is a constructor or a function returning an aggr type,
 	   we need to build up a TARGET_EXPR.  */
@@ -3147,15 +3140,26 @@ convert_default_arg (type, arg)
 }
 
 static tree
-build_over_call (fn, convs, args, flags)
-     tree fn, convs, args;
+build_over_call (cand, args, flags)
+     struct z_candidate *cand;
+     tree args;
      int flags;
 {
+  tree fn = cand->fn;
+  tree convs = cand->convs;
   tree converted_args = NULL_TREE;
   tree parm = TYPE_ARG_TYPES (TREE_TYPE (fn));
   tree conv, arg, val;
   int i = 0;
   int is_method = 0;
+
+  /* Give any warnings we noticed during overload resolution.  */
+  if (cand->warnings)
+    for (val = cand->warnings; val; val = TREE_CHAIN (val))
+      joust (cand, WRAPPER_PTR (TREE_VALUE (val)), 1);
+
+  if (DECL_FUNCTION_MEMBER_P (fn))
+    enforce_access (cand->basetype_path, fn);
 
   if (args && TREE_CODE (args) != TREE_LIST)
     args = build_scratch_list (NULL_TREE, args);
@@ -3588,7 +3592,6 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       return error_mark_node;
     }
 
-  enforce_access (cand->basetype_path, cand->fn);
   if (DECL_ABSTRACT_VIRTUAL_P (cand->fn)
       && instance == current_class_ref
       && DECL_CONSTRUCTOR_P (current_function_decl)
@@ -3613,7 +3616,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     add_maybe_template (cand->fn, templates);
 
   return build_over_call
-    (cand->fn, cand->convs,
+    (cand,
      TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE ? mem_args : args,
      flags);
 }
@@ -3939,7 +3942,6 @@ compare_ics (ics1, ics2)
   return 0;
 }
 
-#if 0
 /* The source type for this standard conversion sequence.  */
 
 static tree
@@ -3955,7 +3957,19 @@ source_type (t)
     }
   my_friendly_abort (1823);
 }
-#endif
+
+/* Note a warning about preferring WINNER to LOSER.  We do this by storing
+   a pointer to LOSER and re-running joust to produce the warning if WINNER
+   is actually used.  */
+
+static void
+add_warning (winner, loser)
+     struct z_candidate *winner, *loser;
+{
+  winner->warnings = expr_tree_cons (NULL_PTR,
+				     build_expr_ptr_wrapper (loser),
+				     winner->warnings);
+}
 
 /* Compare two candidates for overloading as described in
    [over.match.best].  Return values:
@@ -3965,8 +3979,9 @@ source_type (t)
       0: cand1 and cand2 are indistinguishable */
 
 static int
-joust (cand1, cand2)
+joust (cand1, cand2, warn)
      struct z_candidate *cand1, *cand2;
+     int warn;
 {
   int winner = 0;
   int i, off1 = 0, off2 = 0, len;
@@ -4014,7 +4029,6 @@ joust (cand1, cand2)
 
       if (comp != 0)
 	{
-#if 0 /* move this warning to tourney.  */
 	  if (warn_sign_promo
 	      && ICS_RANK (t1) + ICS_RANK (t2) == STD_RANK + PROMO_RANK
 	      && TREE_CODE (t1) == STD_CONV
@@ -4029,16 +4043,23 @@ joust (cand1, cand2)
 	    {
 	      tree type = TREE_TYPE (TREE_OPERAND (t1, 0));
 	      tree type1, type2;
+	      struct z_candidate *w, *l;
 	      if (comp > 0)
-		type1 = TREE_TYPE (t1), type2 = TREE_TYPE (t2);
+		type1 = TREE_TYPE (t1), type2 = TREE_TYPE (t2),
+		  w = cand1, l = cand2;
 	      else
-		type1 = TREE_TYPE (t2), type2 = TREE_TYPE (t1);
+		type1 = TREE_TYPE (t2), type2 = TREE_TYPE (t1),
+		  w = cand2, l = cand1;
 
-	      cp_warning ("passing `%T' chooses `%T' over `%T'",
-			  type, type1, type2);
-	      cp_warning ("  in call to `%D'", DECL_NAME (cand1->fn));
+	      if (warn)
+		{
+		  cp_warning ("passing `%T' chooses `%T' over `%T'",
+			      type, type1, type2);
+		  cp_warning ("  in call to `%D'", w->fn);
+		}
+	      else
+		add_warning (w, l);
 	    }
-#endif
 
 	  if (winner && comp != winner)
 	    {
@@ -4049,7 +4070,6 @@ joust (cand1, cand2)
 	}
     }
 
-#if 0 /* move this warning to tourney.  */
   /* warn about confusing overload resolution */
   if (winner && cand1->second_conv
       && ! DECL_CONSTRUCTOR_P (cand1->fn)
@@ -4063,14 +4083,18 @@ joust (cand1, cand2)
 	    w = cand1, l = cand2;
 	  else
 	    w = cand2, l = cand1;
-	  cp_warning ("choosing `%D' over `%D'", w->fn, l->fn);
-	  cp_warning ("  for conversion from `%T' to `%T'",
-		      TREE_TYPE (source_type (TREE_VEC_ELT (w->convs, 0))),
-		      TREE_TYPE (w->second_conv));
-	  cp_warning ("  because conversion sequence for `this' argument is better");
+	  if (warn)
+	    {
+	      cp_warning ("choosing `%D' over `%D'", w->fn, l->fn);
+	      cp_warning ("  for conversion from `%T' to `%T'",
+			  TREE_TYPE (source_type (TREE_VEC_ELT (w->convs, 0))),
+			  TREE_TYPE (w->second_conv));
+	      cp_warning ("  because conversion sequence for `this' argument is better");
+	    }
+	  else
+	    add_warning (w, l);
 	}
     }
-#endif
 
   if (winner)
     return winner;
@@ -4171,7 +4195,7 @@ tourney (candidates)
 
   for (challenger = champ->next; challenger; )
     {
-      fate = joust (champ, challenger);
+      fate = joust (champ, challenger, 0);
       if (fate == 1)
 	challenger = challenger->next;
       else
@@ -4196,7 +4220,7 @@ tourney (candidates)
   for (challenger = candidates; challenger != champ;
        challenger = challenger->next)
     {
-      fate = joust (champ, challenger);
+      fate = joust (champ, challenger, 0);
       if (fate != 1)
 	return 0;
     }

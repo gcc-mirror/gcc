@@ -5594,7 +5594,7 @@ template_decl_level (decl)
 
     default:
       my_friendly_abort (0);
-      break;
+      return 0;
     }
 }
 
