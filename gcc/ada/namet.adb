@@ -36,6 +36,7 @@
 --  which is created manually from namet.ads and namet.adb.
 
 with Debug;    use Debug;
+with Opt;      use Opt;
 with Output;   use Output;
 with Tree_IO;  use Tree_IO;
 with Widechar; use Widechar;
@@ -299,7 +300,20 @@ package body Namet is
               and then Name_Buffer (Old + 1) /= '_'
             then
                Old := Old + 1;
-               Insert_Character (Character'Val (Hex (2)));
+
+               --  If we have upper half encoding, then we have to set an
+               --  appropriate wide character sequence for this character.
+
+               if Upper_Half_Encoding then
+                  Widechar.Set_Wide (Char_Code (Hex (2)), New_Buf, New_Len);
+
+                  --  For other encoding methods, upper half characters can
+                  --  simply use their normal representation.
+
+               else
+                  Insert_Character (Character'Val (Hex (2)));
+               end if;
+
 
             --  WW (wide wide character insertion)
 
