@@ -1,5 +1,10 @@
 2003-04-22  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10428
+	* decl.c (check_elaborated_type_specifier): New function, split
+	out from ...
+	(xref_tag): ... here.  Use the new function in more places.
+
 	* rtti.c (throw_bad_typeid): Use build_cxx_call.
 
 2003-04-21  Mark Mitchell  <mark@codesourcery.com>

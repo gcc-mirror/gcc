@@ -12525,6 +12525,38 @@ tag_name (enum tag_types code)
     }
 }
 
+/* Name lookup in an elaborated-type-specifier (after the keyword
+   indicated by TAG_CODE) has found TYPE.  If the
+   elaborated-type-specifier is invalid, issue a diagnostic and return
+   error_mark_node; otherwise, return TYPE itself.  */
+
+static tree
+check_elaborated_type_specifier (enum tag_types tag_code,
+				 tree type)
+{
+  tree t;
+
+  t = follow_tag_typedef (type);
+
+  /* [dcl.type.elab] If the identifier resolves to a typedef-name or a
+     template type-parameter, the elaborated-type-specifier is
+     ill-formed.  */
+  if (!t)
+    {
+      error ("using typedef-name `%D' after `%s'",
+	     TYPE_NAME (type), tag_name (tag_code));
+      t = error_mark_node;
+    }
+  else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
+    {
+      error ("using template type parameter `%T' after `%s'",
+	     type, tag_name (tag_code));
+      t = error_mark_node;
+    }
+
+  return t;
+}
+
 /* Get the struct, enum or union (CODE says which) with tag NAME.
    Define the tag as a forward-reference if it is not defined.
 
@@ -12611,20 +12643,9 @@ xref_tag (enum tag_types tag_code, tree name, tree attributes,
     {
       if (t)
 	{
-	  ref = follow_tag_typedef (t);
-
-	  /* [dcl.type.elab] If the identifier resolves to a
-	     typedef-name or a template type-parameter, the
-	     elaborated-type-specifier is ill-formed.  */
-	  if (!ref)
-	    {
-	      pedwarn ("using typedef-name `%D' after `%s'",
-		       TYPE_NAME (t), tag_name (tag_code));
-	      ref = t;
-	    }
-	  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
-	    error ("using template type parameter `%T' after `%s'",
-		   t, tag_name (tag_code));
+	  ref = check_elaborated_type_specifier (tag_code, t);
+	  if (ref == error_mark_node)
+	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 	}
       else
 	ref = lookup_tag (code, name, b, 0);
@@ -12643,9 +12664,15 @@ xref_tag (enum tag_types tag_code, tree name, tree attributes,
 	       template, so we want this type.  */
 	    ref = DECL_TEMPLATE_RESULT (ref);
 
-	  if (ref && TREE_CODE (ref) == TYPE_DECL
-	      && TREE_CODE (TREE_TYPE (ref)) == code)
-	    ref = TREE_TYPE (ref);
+	  if (ref && TREE_CODE (ref) == TYPE_DECL)
+	    {
+	      ref = check_elaborated_type_specifier (tag_code, 
+						     TREE_TYPE (ref));
+	      if (ref == error_mark_node)
+		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
+	      if (ref && TREE_CODE (ref) != code)
+		ref = NULL_TREE;
+	    }
 	  else
 	    ref = NULL_TREE;
 	}
