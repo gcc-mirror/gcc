@@ -1,3 +1,7 @@
+2003-12-12  Steven Bosscher  <stevenb@suse.de>
+
+	* Makefile.in (opts.o, explow.o): Depend on langhooks.h
+
 2003-12-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* config.gcc <i[34567]86-*-darwin*>: Don't use fixproto.
