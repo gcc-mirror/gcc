@@ -10,9 +10,9 @@
    <meta name="DESCRIPTION" content="FAQ for the GNU libstdc++ effort." />
    <title>libstdc++-v3 FAQ</title>
 <link rel="StyleSheet" href="../lib3styles.css" />
-<!-- 
-  ** Locations of "the most recent snapshot is the Nth" text are 
-  ** answers 1_1, 1_4, 4_1.
+<!--
+  ** Locations of "the most recent snapshot is the Nth" text are
+  ** answers 1_1, .
 -->
 </head>
 <body>
@@ -55,7 +55,7 @@
       <ol>
          <li><a href="#2_1">How do I install libstdc++-v3?</a> </li>
          <li><a href="#2_2">[removed]</a> </li>
-         <li><a href="#2_3">What is this CVS thing that you keep 
+         <li><a href="#2_3">What is this CVS thing that you keep
                             mentioning?</a> </li>
          <li><a href="#2_4">How do I know if it works?</a> </li>
          <li><a href="#2_5">This library is HUGE!  And what's libsupc++?</a> </li>
@@ -127,8 +127,8 @@
 <!-- I suspect these will mostly be links to/into existing documents. -->
    <h2><a name="1_1">1.1 What is libstdc++-v3?</a></h2>
       <p>The GNU Standard C++ Library v3 is an
-         ongoing project to implement the ISO 14882 Standard C++ library 
-         as described in chapters 17 through 27 and annex D.  As the 
+         ongoing project to implement the ISO 14882 Standard C++ library
+         as described in chapters 17 through 27 and annex D.  As the
          library reaches stable plateaus, it is captured in a snapshot
          and released.  The latest release is
          <a href="http://gcc.gnu.org/libstdc++/index.html#download">the
@@ -137,7 +137,7 @@
          far the project has come, or just want the latest
          bleeding-edge code, the up-to-date source is available over
          anonymous CVS, and can even be browsed over the Web (see
-         <a href="#1_4">1.4</a> below). 
+         <a href="#1_4">1.4</a> below).
       </p>
       <p>The older libstdc++-v2 project is no longer maintained; the code
          has been completely replaced and rewritten.
@@ -145,7 +145,7 @@
          report bugs to your system vendor, not to the V3 list.
       </p>
       <p>A more formal description of the V3 goals can be found in the
-         official <a href="../17_intro/DESIGN">design document</a>. 
+         official <a href="../17_intro/DESIGN">design document</a>.
       </p>
 
 <hr />
@@ -156,11 +156,11 @@
          implementations are (as the Draft Standard used to say)
          &quot;incomplet and incorrekt,&quot; and many suffer from
          limitations of the compilers that use them.
-      </p> 
+      </p>
       <p>The GNU C/C++/FORTRAN/&lt;pick-a-language&gt; compiler
          (<code>gcc</code>, <code>g++</code>, etc) is widely considered to be
          one of the leading compilers in the world.  Its development
-         has recently been taken over by the 
+         has recently been taken over by the
          <a href="http://gcc.gnu.org/">GCC team</a>.  All of
          the rapid development and near-legendary
          <a href="http://gcc.gnu.org/gcc-3.0/buildstat.html">portability</a>
@@ -178,8 +178,8 @@
    <h2><a name="1_3">1.3 Who's in charge of it?</a></h2>
       <p>The libstdc++ project is contributed to by several developers
          all over the world, in the same way as GCC or Linux.
-         Benjamin Kosnik, Gabriel Dos Reis, Phil Edwards, Ulrich Drepper, 
-         Loren James Rittle, and Paolo Carlini are the lead maintainers of 
+         Benjamin Kosnik, Gabriel Dos Reis, Phil Edwards, Ulrich Drepper,
+         Loren James Rittle, and Paolo Carlini are the lead maintainers of
          the CVS archive.
       </p>
       <p>Development and discussion is held on the libstdc++ mailing
@@ -191,23 +191,22 @@
 
 <hr />
    <h2><a name="1_4">1.4 How do I get libstdc++?</a></h2>
-      <p>The fourteenth (and latest) snapshot of libstdc++-v3 is
-         <a href="http://gcc.gnu.org/libstdc++/index.html#download">available
-         via ftp</a>.
-      </p>
       <p>The <a href="http://gcc.gnu.org/libstdc++/">homepage</a>
          has instructions for retrieving the latest CVS sources, and for
          browsing the CVS sources over the web.
       </p>
+      <p>Stable versions of libstdc++-v3 are included with releases of
+         <a href="http://gcc.gnu.org/releases.html">the GCC compilers</a>.
+      </p>
       <p>The subset commonly known as the Standard Template Library
          (chapters 23 through 25, mostly) is adapted from the final release
          of the SGI STL.
-      </p> 
+      </p>
 
 <hr />
    <h2><a name="1_5">1.5 When is libstdc++ going to be finished?</a></h2>
-<!--      <p>Nathan Myers gave the best of all possible answers in <a 
-         href="http://www.deja.com/getdoc.xp?AN=469581698&fmt=text">a 
+<!--      <p>Nathan Myers gave the best of all possible answers in <a
+         href="http://www.deja.com/getdoc.xp?AN=469581698&fmt=text">a
          Usenet article</a>.</p>
 which is no longer available, thanks deja...-->
       <p>Nathan Myers gave the best of all possible answers, responding to a
@@ -224,7 +223,7 @@ which is no longer available, thanks deja...-->
          source code; anybody who is willing to help write
          documentation, for example, or has found a bug in code that
          we all thought was working, is more than welcome!
-      </p> 
+      </p>
 
 <hr />
    <h2><a name="1_7">1.7 What happened to libg++?  I need that!</a></h2>
@@ -254,7 +253,6 @@ which is no longer available, thanks deja...-->
          from libg++ might be extracted into an updated utilities library,
          but nobody has stated such a project yet.
       </p>
-      <!-- The advertisement, so to speak, might have to go.  Hmmmmm.  -->
       <p>(The <a href="http://www.boost.org/">Boost</a> site houses free
          C++ libraries that do varying things, and happened to be started
          by members of the Standards Committee.  Certain &quot;useful
@@ -317,7 +315,7 @@ which is no longer available, thanks deja...-->
          browse those files over CVSweb ahead of time to get a feel for
          what's required.  RELEASE-NOTES is located in the
          &quot;.../docs/17_intro/&quot; directory of the distribution.
-      </p> 
+      </p>
 
 <hr />
    <h2><a name="2_2">2.2 [removed]</a></h2>
@@ -332,9 +330,9 @@ which is no longer available, thanks deja...-->
          control packages.  It was selected for GNU projects because it's
          free (speech), free (beer), and very high quality.  The <a
          href="http://www.gnu.org/software/cvs/cvs.html">CVS entry in
-         the GNU software catalogue</a> has a better description as 
+         the GNU software catalogue</a> has a better description as
          well as a
-         <a href="http://www.cvshome.org/">link to the makers of CVS</a>. 
+         <a href="http://www.cvshome.org/">link to the makers of CVS</a>.
       </p>
       <p>The &quot;anonymous client checkout&quot; feature of CVS is
          similar to anonymous FTP in that it allows anyone to retrieve
@@ -349,7 +347,9 @@ which is no longer available, thanks deja...-->
    <h2><a name="2_4">2.4 How do I know if it works?</a></h2>
       <p>libstdc++-v3 comes with its own testsuite.  You do not need
          to actually install the library (&quot;<code>make
-         install</code>&quot;) to run the testsuite.
+         install</code>&quot;) to run the testsuite, but you do need
+         DejaGNU, as described
+         <a href="http://gcc.gnu.org/install/test.html">here</a>.
       </p>
       <p>To run the testsuite on the library after building it, use
          &quot;make check&quot; while in your build directory.  To run
@@ -362,7 +362,7 @@ which is no longer available, thanks deja...-->
       </p>
 
 <hr />
-   <h2><a name="2_5">2.4 This library is HUGE!  And what's libsupc++?</a></h2>
+   <h2><a name="2_5">2.5 This library is HUGE!  And what's libsupc++?</a></h2>
       <p>Usually the size of libraries on disk isn't noticeable.  When a
          link editor (or simply &quot;linker&quot;) pulls things from a
          static archive library, only the necessary object files are copied
@@ -431,7 +431,7 @@ which is no longer available, thanks deja...-->
          should, in theory, be usable under any ISO-compliant
          compiler.  It will still be targeted and optimized for
          GCC/g++, however.
-      </p> 
+      </p>
 
 <hr />
    <h2><a name="3_2">3.2 [removed]</a></h2>
@@ -510,17 +510,17 @@ which is no longer available, thanks deja...-->
          only available on the i486 and later.  So if you configured GCC
          to target, for example, i386-linux, but actually used the programs
          on an i686, then you would encounter no problems.  Only when
-         actually running the code on a i386 will the problem appear.  
+         actually running the code on a i386 will the problem appear.
       </p>
       <p>This is fixed in 3.2.2.
       </p>
 
 <hr />
    <h2><a name="3_8">3.8 Recent GNU/Linux glibc required?</a></h2>
-      <p>For 3.2.1 (shared library version 5.0.1) and later, the library
-         uses localization and formatting code from the system C library
-         (glibc) version 2.2.5.  That version of glibc is over a year old
-         and contains necessary bugfixes.  Many GNU/Linux distros make
+      <p>When running on GNU/Linux, libstdc++ 3.2.1 (shared library version
+         5.0.1) and later uses localization and formatting code from the system
+         C library (glibc) version 2.2.5.  That version of glibc is over a
+         year old and contains necessary bugfixes.  Many GNU/Linux distros make
          glibc version 2.3.x available now.
       </p>
       <p>The guideline is simple:  the more recent the C++ library, the
@@ -546,9 +546,9 @@ which is no longer available, thanks deja...-->
 <hr />
 <h1><a name="4_0">4.0 Known Bugs and Non-Bugs</a></h1>
    <em>Note that this section can get rapdily outdated -- such is the
-   nature of an open-source project.  For the latest information, join
-   the mailing list or look through recent archives.   The RELEASE-
-   NOTES and BUGS files are generally kept up-to-date.</em> 
+       nature of an open-source project.  For the latest information, join
+       the mailing list or look through recent archives.   The RELEASE-
+       NOTES and BUGS files are generally kept up-to-date.</em>
 
    <p>For 3.0.1, the most common &quot;bug&quot; is an apparently missing
       &quot;<code>../</code>&quot; in include/Makefile, resulting in files
@@ -579,59 +579,22 @@ which is no longer available, thanks deja...-->
    </p>
 
    <h2><a name="4_1">4.1 What works already?</a></h2>
-      <p>This is a verbatim clip from the &quot;Status&quot; section
+      <p>Short answer:  Pretty much everything <em>works</em> except for some
+         corner cases.  Also, localization is incomplete.  For whether it works
+         well, or as you expect it to work, see 5.2.
+      </p>
+      <p>Long answer:  See the docs/html/17_intro/CHECKLIST file, which is
+         badly outdated...
+      </p>
+      <p>What follows is a verbatim clip from the &quot;Status&quot; section
          of the RELEASE-NOTES for the latest snapshot.  For a list of
          fixed bugs, see that file.
-      </p> 
+      </p>
 
 <!-- Yeah, I meant that "verbatim clip" thing literally... :-)  -->
 
 <pre>
 New:
----
-(post 3.0.97)
-- more doxygen documentation
-- more named locale fixups
-- stdio_filebuf that takes fd, FILE
-- io performance tuning
-- allocation tuning, valgrind fixups
-- __cxa_demangle now supported
-(3.0.97)
-- more doxygen documentation.
-- more named locale bug fixes
-- support for symbol versioning when using GNU ld &gt;= 2.12
-- wide-io
-- tuning for executable size
-(3.0.96)
-- more doxygen documentation.
-- extensions moved out of namespace std
-- HPUX long long support
-- more string optimizations
-- support for NetBSD cross compiles
-- concept_check merge from boost
-- header simplification
-- named locale bug shakeout
-- thread testsuite
-(3.0.95)
-- add S390, m68k, x86-64 support.
-- doxygen documentation has been extended, including man pages.
-- verbose terminate handling has been added.
-- some libsupc++ tweaks
-- warnings for deprecated headers now active.
-- dejagnu testsuite preliminary documentation.
-- dejagnu testsuite default.
-- dejagnu testsuite cross compiler, multilib safe.
-- long long iostreams on by default, rework of ISO C99 support.
-- iterator re-write and testsuites.
-- container testsuites.
-- allocator revamp and testsuites.
-- more concept-checking work.
-- basic_string optimization and MT fixes.
-- new limits implementation.
-- update -fno-exceptions code, verify it works.
-- full named locale support fpr all facets, choice of gnu,
-  ieee_1003.1-200x (POSIX 2), or generic models. Full support depends
-  on target OS and underlying &quot;C&quot; library support.
 </pre>
 
 
@@ -713,8 +676,8 @@ New:
          reason is that the state flags are <strong>not</strong> cleared
          on a successful call to open().  The standard unfortunately did
          not specify behavior in this case, and to everybody's great sorrow,
-         the <a href="../ext/howto.html#5">proposed LWG resolution</a> (see
-         DR #22) is to leave the flags unchanged.  You must insert a call
+         the <a href="../ext/howto.html#5">proposed LWG resolution in
+         DR #22</a> is to leave the flags unchanged.  You must insert a call
          to <code>fs.clear()</code> between the calls to close() and open(),
          and then everything will work like we all expect it to work.
       </p>
@@ -738,16 +701,15 @@ New:
       </p>
       <p>If the headers are in <code>${prefix}/include/g++-3</code>, or if
          the installed library's name looks like <code>libstdc++-2.10.a</code>
-         or <code>libstdc++-libc6-2.10.so</code>,
-         then you are using the old libstdc++-v2 library, which is nonstandard
-         and unmaintained.  Do not report problems with -v2 to the -v3
-         mailing list.
+         or <code>libstdc++-libc6-2.10.so</code>, then you are using the old
+         libstdc++-v2 library, which is nonstandard and unmaintained.  Do not
+         report problems with -v2 to the -v3 mailing list.
       </p>
       <p>For GCC versions 3.0 and 3.1 the libstdc++-v3 header files are
-        installed in <code>${prefix}/include/g++-v3</code> (see the 'v'?). 
-        Starting with version 3.2 the headers are installed in
-        <code>${prefix}/include/c++/${version}</code> as this prevents
-        headers from previous versions being found by mistake.
+         installed in <code>${prefix}/include/g++-v3</code> (see the 'v'?).
+         Starting with version 3.2 the headers are installed in
+         <code>${prefix}/include/c++/${version}</code> as this prevents
+         headers from previous versions being found by mistake.
       </p>
       <p><a name="4_4_glibc"><strong>glibc</strong></a>
          If you're on a GNU/Linux system and have just upgraded to
@@ -787,13 +749,13 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          when compiling and linking:
       </p>
       <pre>
-    // compile the library components
+    // compile your library components
     g++ -fPIC -c a.cc
     g++ -fPIC -c b.cc
     ...
     g++ -fPIC -c z.cc
 
-    // create the library
+    // create your library
     g++ -fPIC -shared -rdynamic -o libfoo.so a.o b.o ... z.o
 
     // link the executable
@@ -826,7 +788,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          entry, it is a Good Thing if you can additionally create a small
          test program to test for the presence of the bug that your
          patch fixes.  Bugs have a way of being reintroduced; if an old
-         bug creeps back in, it will be caught immediately by the 
+         bug creeps back in, it will be caught immediately by the
          <a href="#2_4">testsuite</a> -- but only if such a test exists.
       </p>
 
@@ -903,7 +865,8 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
       <p>In particular, <code>string</code> is not from SGI and makes no
          use of their &quot;rope&quot; class (which is included as an
          optional extension), nor is <code>valarray</code> and some others.
-         Classes like <code>vector&lt;&gt;</code> are, however.
+         Classes like <code>vector&lt;&gt;</code> are, however we have
+         made significant changes to them since then.
       </p>
       <p>The FAQ for SGI's STL (one jump off of their main page) is
          recommended reading.
@@ -949,7 +912,6 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
       <p>This is a bit cleaner than defining typedefs for all the
          instantiations you might need.
       </p>
-
       <p>Extensions to the library have
          <a href="../ext/howto.html">their own page</a>.
       </p>
@@ -962,15 +924,21 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 <hr />
    <h2><a name="5_6">5.6 Is libstdc++-v3 thread-safe?</a></h2>
-      <p>When the system's libc is itself thread-safe, a non-generic
-         implementation of atomicity.h exists for the architecture, and gcc
-         itself reports a thread model other than single; libstdc++-v3
-         strives to be thread-safe.  The user-code must guard against
-         concurrent method calls which may access any particular library
-         object's state.  Typically, the application programmer may infer
-         what object locks must be held based on the objects referenced in
-         a method call.  Without getting into great detail, here is an
-         example which requires user-level locks:
+      <p>libstdc++-v3 strives to be thread-safe when all of the following
+         conditions are met:
+      </p>
+      <ul>
+       <li>The system's libc is itself thread-safe,</li>
+       <li><code>gcc -v</code> reports a thread model other than 'single',</li>
+       <li>[pre-3.3 only] a non-generic implementation of atomicity.h
+           exists for the architecture in question.</li>
+      </ul>
+      <p>The user-code must guard against concurrent method calls which may
+         access any particular library object's state.  Typically, the
+         application programmer may infer what object locks must be held
+         based on the objects referenced in a method call.  Without getting
+         into great detail, here is an example which requires user-level
+         locks:
       </p>
       <pre>
      library_class_a shared_object_a;
@@ -994,12 +962,12 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
        object_a.mutate ();
      } </pre>
       <p>All library objects are safe to use in a multithreaded program as
-         long as each thread carefully locks out access by any other thread
-         while it uses any object visible to another thread.  In general,
+         long as each thread carefully locks out access by any other
+         thread while it uses any object visible to another thread, i.e.,
+         treat library objects like any other shared resource.  In general,
          this requirement includes both read and write access to objects;
-         unless otherwise documented as safe, do not assume that two
-         threads may access a shared standard library object at the
-         same time.
+         unless otherwise documented as safe, do not assume that two threads
+         may access a shared standard library object at the same time.
       </p>
       <p>See chapters <a href="../17_intro/howto.html#3">17</a> (library
          introduction), <a href="../23_containers/howto.html#3">23</a>
@@ -1051,7 +1019,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          a &quot;free-standing implementation&quot; that doesn't include (much
          of) the standard library.  It is a good basis for the work to come.
       </p>
-      <p>A useful C++ ABI must also incorporate many details of the standard 
+      <p>A useful C++ ABI must also incorporate many details of the standard
          library implementation.  For a C ABI, the layouts of a few structs
          (such as FILE, stat, jmpbuf, and the like) and a few macros suffice.
          For C++, the details include the complete set of names of functions
@@ -1063,7 +1031,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          those details so that future bug fixes and optimizations don't
          force breaking the ABI.
       </p>
-      <p>There are ways to help isolate library implementation details from the 
+      <p>There are ways to help isolate library implementation details from the
          ABI, but they trade off against speed.  Library details used in
          inner loops (e.g., getchar) must be exposed and frozen for all
          time, but many others may reasonably be kept hidden from user code,
