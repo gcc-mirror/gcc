@@ -1110,7 +1110,7 @@ pushtag (name, type)
   /* Create a fake NULL-named TYPE_DECL node whose TREE_TYPE will be the
      tagged type we just added to the current binding level.  This fake
      NULL-named TYPE_DECL node helps dwarfout.c to know when it needs
-     to output a a representation of a tagged type, and it also gives
+     to output a representation of a tagged type, and it also gives
      us a convenient place to record the "scope start" address for the
      tagged type.  */
 
@@ -1246,7 +1246,7 @@ duplicate_decls (newdecl, olddecl)
 	 that isn't actually built in.  */
       if (!TREE_PUBLIC (newdecl))
 	{
-	  /* If you declare a it as static, the
+	  /* If you declare it as static, the
 	     default definition is overridden.  */
 	  return 0;
 	}

@@ -949,7 +949,7 @@ copy_node (node)
       break;
 
     case 'r':  /* a reference */
-    case 'e':  /* a expression */
+    case 'e':  /* an expression */
     case 's':  /* an expression with side effects */
     case '<':  /* a comparison expression */
     case '1':  /* a unary arithmetic expression */

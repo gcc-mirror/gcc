@@ -5795,7 +5795,7 @@ delete_output_reload (insn, j, output_reload_insn)
 
 
 /* Output reload-insns to reload VALUE into RELOADREG.
-   VALUE is a autoincrement or autodecrement RTX whose operand
+   VALUE is an autoincrement or autodecrement RTX whose operand
    is a register or memory location;
    so reloading involves incrementing that location.
 

@@ -1441,7 +1441,7 @@ check_aux_info (cond)
 }
 
 /* Given a pointer to the closing right parenthesis for a particular formals
-   list (in a aux_info file) find the corresponding left parenthesis and
+   list (in an aux_info file) find the corresponding left parenthesis and
    return a pointer to it.  */
 
 static const char *
