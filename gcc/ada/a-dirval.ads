@@ -42,6 +42,7 @@ private package Ada.Directories.Validity is
    function Is_Valid_Path_Name (Name : String) return Boolean;
    --  Returns True if Name is a valid path name
 
+   function Is_Path_Name_Case_Sensitive return Boolean;
+   --  Returns True if file and path names are case-sensitive
+
 end Ada.Directories.Validity;
-
-
