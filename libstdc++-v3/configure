@@ -4088,7 +4088,7 @@ else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -fr conftest*
-  ac_sectionLFflags=no
+  ac_sectionLDflags=no
 fi
 rm -fr conftest*
 fi
@@ -4899,7 +4899,7 @@ else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -fr conftest*
-  ac_sectionLFflags=no
+  ac_sectionLDflags=no
 fi
 rm -fr conftest*
 fi
@@ -5704,7 +5704,7 @@ else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -fr conftest*
-  ac_sectionLFflags=no
+  ac_sectionLDflags=no
 fi
 rm -fr conftest*
 fi
@@ -6831,7 +6831,7 @@ else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -fr conftest*
-  ac_sectionLFflags=no
+  ac_sectionLDflags=no
 fi
 rm -fr conftest*
 fi
