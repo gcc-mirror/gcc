@@ -717,7 +717,7 @@ compiler should generate code for by default.  This is currently
 only supported on some ports, specifically arm, powerpc, and
 SPARC@.  If configure does not recognize the model name (e.g.@: arm700,
 603e, or ultrasparc) you provide, please check the
-@command{gcc/config.gcc} script for a complete list of supported models.
+@file{gcc/config.gcc} script for a complete list of supported models.
 
 @item --enable-altivec
 Specify that the target supports AltiVec vector enhancements.  This
