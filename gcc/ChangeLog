@@ -1,3 +1,9 @@
+2003-03-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/7784
+	* reload.c (maybe_memory_address_p): New function.
+	(find_reloads_address): Use it instead of memory_address_p.
+
 2003-03-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.h (FUNCTION_VALUE_REGNO_P): Respect
