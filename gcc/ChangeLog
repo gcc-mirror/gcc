@@ -1,5 +1,9 @@
 2003-10-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* ifcvt.c (noce_try_addcc): Handle ifs with 'else' case.
+
+2003-10-17  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* combine.c (simplify_set): Do not clear out undobuf.other_insn
 	already set elsewhere.
 
