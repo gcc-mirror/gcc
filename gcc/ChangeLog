@@ -1,3 +1,9 @@
+2004-11-29  Richard Henderson  <rth@redhat.com>
+
+	PR target/17224
+	* config/ia64/predicates.md (sdata_symbolic_operand): Deny offsets
+	outside the referenced object.
+
 2004-11-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-if-conv.c (replace_phi_with_cond_modify_expr): Use
