@@ -915,12 +915,12 @@ _Jv_ClassReader::handleClassBegin
       // interfaces have java.lang.Object as super.
       if (access_flags & Modifier::INTERFACE)
 	{
-	  def->superclass = (jclass)&java::lang::Class::class$;
+	  def->superclass = (jclass)&java::lang::Object::class$;
 	}
 
       // FIXME: Consider this carefully!  
       else if (!_Jv_equalUtf8Consts (def->name,
-				     java::lang::Class::class$.name))
+				     java::lang::Object::class$.name))
 	{
 	  throw_no_class_def_found_error ("loading java.lang.Object");
 	}
