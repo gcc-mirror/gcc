@@ -1,3 +1,7 @@
+2003-02-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (a peephole2): New.
+
 Wed Feb 12 22:47:18 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (CRTSTUFF_CFLAGS): Add -fno-unit-at-a-time
