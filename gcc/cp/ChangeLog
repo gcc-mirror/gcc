@@ -1,3 +1,9 @@
+2003-02-24  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	PR c++/9778
+	* pt.c (tsubst_copy_and_build): For a templated function inside a
+	scope, process template arguments.
+
 2003-02-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9602

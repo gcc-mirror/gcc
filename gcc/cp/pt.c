@@ -8137,7 +8137,7 @@ tsubst_copy_and_build (t, args, complain, in_decl)
 	    if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
 	      name = build_nt (TEMPLATE_ID_EXPR,
 			       TREE_OPERAND (name, 0),
-			       TREE_OPERAND (name, 1));
+			       build_expr_from_tree (TREE_OPERAND (name, 1)));
 	    
 	    function = resolve_scoped_fn_name (TREE_OPERAND (function, 0),
 					       name);
