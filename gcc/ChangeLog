@@ -1,3 +1,12 @@
+2003-03-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reload.c (reload_adjust_reg_for_mode): New function.
+	(subst_reloads): Call it.
+	(operands_match_p): Adjust registers using HARD_REGNO_NREGS.
+	* reload.h (reload_adjust_reg_for_mode): Declare.
+	* reload1.c (emit_input_reload_insns, emit_output_reload_insns):
+	Call it.
+
 2003-03-03  James E Wilson  <wilson@tuliptree.org>
 
 	* optabs.c (add_equal_note): Delete SUBREG_REG use.

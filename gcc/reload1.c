@@ -6319,7 +6319,7 @@ emit_input_reload_insns (chain, rl, old, j)
      must always be a REG here.  */
 
   if (GET_MODE (reloadreg) != mode)
-    reloadreg = gen_rtx_REG (mode, REGNO (reloadreg));
+    reloadreg = reload_adjust_reg_for_mode (reloadreg, mode);
   while (GET_CODE (oldequiv) == SUBREG && GET_MODE (oldequiv) != mode)
     oldequiv = SUBREG_REG (oldequiv);
   if (GET_MODE (oldequiv) != VOIDmode
@@ -6568,8 +6568,8 @@ emit_input_reload_insns (chain, rl, old, j)
 			oldequiv = old, real_oldequiv = real_old;
 		      else
 			second_reload_reg
-			  = gen_rtx_REG (new_mode,
-					 REGNO (second_reload_reg));
+			  = reload_adjust_reg_for_mode (second_reload_reg,
+							new_mode);
 		    }
 		}
 	    }
@@ -6691,7 +6691,7 @@ emit_output_reload_insns (chain, rl, j)
     }
 
   if (GET_MODE (reloadreg) != mode)
-    reloadreg = gen_rtx_REG (mode, REGNO (reloadreg));
+    reloadreg = reload_adjust_reg_for_mode (reloadreg, mode);
 
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
 
@@ -6732,7 +6732,7 @@ emit_output_reload_insns (chain, rl, j)
 		= rld[secondary_reload].secondary_out_icode;
 
 	      if (GET_MODE (reloadreg) != mode)
-		reloadreg = gen_rtx_REG (mode, REGNO (reloadreg));
+		reloadreg = reload_adjust_reg_for_mode (reloadreg, mode);
 
 	      if (tertiary_icode != CODE_FOR_nothing)
 		{
