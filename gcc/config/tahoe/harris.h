@@ -18,7 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-#include "tahoe.h"
+#include "tahoe/tahoe.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dtahoe -Dunix -Dhcx"
