@@ -1,5 +1,11 @@
 2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_check_z_replacement): Take
+	into account pre/post increment decrement for 68HC12.
+	Fix other problems in replacement and fix call to reg_mentioned_p.
+
+2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/larith.asm (L_regs_frame): New for _.frame.
 	Put the soft registers in bss for 68HC12.
 	(L_regs_d3_4): New for _.d3 and _.d4.
