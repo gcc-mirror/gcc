@@ -1,7 +1,9 @@
 #! /bin/sh
-
 # depcomp - compile a program generating dependencies as side-effects
-# Copyright 1999, 2000 Free Software Foundation, Inc.
+
+scriptversion=2004-05-31.23
+
+# Copyright (C) 1999, 2000, 2003, 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,22 +27,45 @@
 
 # Originally written by Alexandre Oliva <oliva@dcc.unicamp.br>.
 
+case $1 in
+  '')
+     echo "$0: No command.  Try \`$0 --help' for more information." 1>&2
+     exit 1;
+     ;;
+  -h | --h*)
+    cat <<\EOF
+Usage: depcomp [--help] [--version] PROGRAM [ARGS]
+
+Run PROGRAMS ARGS to compile a file, generating dependencies
+as side-effects.
+
+Environment variables:
+  depmode     Dependency tracking mode.
+  source      Source file read by `PROGRAMS ARGS'.
+  object      Object file output by `PROGRAMS ARGS'.
+  DEPDIR      directory where to store dependencies.
+  depfile     Dependency file to output.
+  tmpdepfile  Temporary file to use when outputing dependencies.
+  libtool     Whether libtool is used (yes/no).
+
+Report bugs to <bug-automake@gnu.org>.
+EOF
+    exit 0
+    ;;
+  -v | --v*)
+    echo "depcomp $scriptversion"
+    exit 0
+    ;;
+esac
+
 if test -z "$depmode" || test -z "$source" || test -z "$object"; then
   echo "depcomp: Variables source, object and depmode must be set" 1>&2
   exit 1
 fi
-# `libtool' can also be set to `yes' or `no'.
 
-if test -z "$depfile"; then
-   base=`echo "$object" | sed -e 's,^.*/,,' -e 's,\.\([^.]*\)$,.P\1,'`
-   dir=`echo "$object" | sed 's,/.*$,/,'`
-   if test "$dir" = "$object"; then
-      dir=
-   fi
-   # FIXME: should be _deps on DOS.
-   depfile="$dir.deps/$base"
-fi
-
+# Dependencies for sub/bar.o or sub/bar.obj go into sub/.deps/bar.Po.
+depfile=${depfile-`echo "$object" |
+  sed 's|[^\\/]*$|'${DEPDIR-.deps}'/&|;s|\.\([^.]*\)$|.P\1|;s|Pobj$|Po|'`}
 tmpdepfile=${tmpdepfile-`echo "$depfile" | sed 's/\.\([^.]*\)$/.T\1/'`}
 
 rm -f "$tmpdepfile"
@@ -172,19 +197,25 @@ sgi)
 
 aix)
   # The C for AIX Compiler uses -M and outputs the dependencies
-  # in a .u file.  This file always lives in the current directory.
-  # Also, the AIX compiler puts `$object:' at the start of each line;
-  # $object doesn't have directory information.
-  stripped=`echo "$object" | sed -e 's,^.*/,,' -e 's/\(.*\)\..*$/\1/'`
+  # in a .u file.  In older versions, this file always lives in the
+  # current directory.  Also, the AIX compiler puts `$object:' at the
+  # start of each line; $object doesn't have directory information.
+  # Version 6 uses the directory in both cases.
+  stripped=`echo "$object" | sed 's/\(.*\)\..*$/\1/'`
   tmpdepfile="$stripped.u"
-  outname="$stripped.o"
   if test "$libtool" = yes; then
     "$@" -Wc,-M
   else
     "$@" -M
   fi
-
   stat=$?
+
+  if test -f "$tmpdepfile"; then :
+  else
+    stripped=`echo "$stripped" | sed 's,^.*/,,'`
+    tmpdepfile="$stripped.u"
+  fi
+
   if test $stat -eq 0; then :
   else
     rm -f "$tmpdepfile"
@@ -192,6 +223,7 @@ aix)
   fi
 
   if test -f "$tmpdepfile"; then
+    outname="$stripped.o"
     # Each line is of the form `foo.o: dependent.h'.
     # Do two passes, one to just change these to
     # `$object: dependent.h' and one to simply `dependent.h:'.
@@ -255,31 +287,40 @@ tru64)
    base=`echo "$object" | sed -e 's|^.*/||' -e 's/\.o$//' -e 's/\.lo$//'`
 
    if test "$libtool" = yes; then
+      # Dependencies are output in .lo.d with libtool 1.4.
+      # With libtool 1.5 they are output both in $dir.libs/$base.o.d
+      # and in $dir.libs/$base.o.d and $dir$base.o.d.  We process the
+      # latter, because the former will be cleaned when $dir.libs is
+      # erased.
       tmpdepfile1="$dir.libs/$base.lo.d"
-      tmpdepfile2="$dir.libs/$base.d"
+      tmpdepfile2="$dir$base.o.d"
+      tmpdepfile3="$dir.libs/$base.d"
       "$@" -Wc,-MD
    else
       tmpdepfile1="$dir$base.o.d"
       tmpdepfile2="$dir$base.d"
+      tmpdepfile3="$dir$base.d"
       "$@" -MD
    fi
 
    stat=$?
    if test $stat -eq 0; then :
    else
-      rm -f "$tmpdepfile1" "$tmpdepfile2"
+      rm -f "$tmpdepfile1" "$tmpdepfile2" "$tmpdepfile3"
       exit $stat
    fi
 
    if test -f "$tmpdepfile1"; then
       tmpdepfile="$tmpdepfile1"
-   else
+   elif test -f "$tmpdepfile2"; then
       tmpdepfile="$tmpdepfile2"
+   else
+      tmpdepfile="$tmpdepfile3"
    fi
    if test -f "$tmpdepfile"; then
       sed -e "s,^.*\.[a-z]*:,$object:," < "$tmpdepfile" > "$depfile"
-      # That's a space and a tab in the [].
-      sed -e 's,^.*\.[a-z]*:[ 	]*,,' -e 's,$,:,' < "$tmpdepfile" >> "$depfile"
+      # That's a tab and a space in the [].
+      sed -e 's,^.*\.[a-z]*:[	 ]*,,' -e 's,$,:,' < "$tmpdepfile" >> "$depfile"
    else
       echo "#dummy" > "$depfile"
    fi
@@ -292,7 +333,7 @@ tru64)
 
 dashmstdout)
   # Important note: in order to support this mode, a compiler *must*
-  # always write the proprocessed file to stdout, regardless of -o.
+  # always write the preprocessed file to stdout, regardless of -o.
   "$@" || exit $?
 
   # Remove the call to Libtool.
@@ -388,7 +429,7 @@ makedepend)
 
 cpp)
   # Important note: in order to support this mode, a compiler *must*
-  # always write the proprocessed file to stdout.
+  # always write the preprocessed file to stdout.
   "$@" || exit $?
 
   # Remove the call to Libtool.
@@ -430,7 +471,7 @@ cpp)
 
 msvisualcpp)
   # Important note: in order to support this mode, a compiler *must*
-  # always write the proprocessed file to stdout, regardless of -o,
+  # always write the preprocessed file to stdout, regardless of -o,
   # because we must use -o when running libtool.
   "$@" || exit $?
   IFS=" "
@@ -470,3 +511,12 @@ none)
 esac
 
 exit 0
+
+# Local Variables:
+# mode: shell-script
+# sh-indentation: 2
+# eval: (add-hook 'write-file-hooks 'time-stamp)
+# time-stamp-start: "scriptversion="
+# time-stamp-format: "%:y-%02m-%02d.%02H"
+# time-stamp-end: "$"
+# End:
