@@ -1984,19 +1984,8 @@ enum m32r_function_type
 { "large_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},
 
 /* Functions declared in m32r.c */
-#ifndef PROTO
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PROTO(ARGS) ARGS
-#else
-#define PROTO(ARGS) ()
-#endif
-#endif
-
-#ifdef BUFSIZ		/* stdio.h has been included, ok to use FILE * */
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
-#else
-#define STDIO_PROTO(ARGS) ()
-#endif
+#define XPROTO(ARGS) ()
+#define STDIO_XPROTO(ARGS) ()
 
 #ifndef TREE_CODE
 union tree_node;
@@ -2012,65 +2001,68 @@ struct rtx_def;
 #define Rtx rtx
 #endif
 
-extern void sbss_section			PROTO((void));
-extern void sdata_section			PROTO((void));
-extern void m32r_init				PROTO((void));
-extern int  m32r_valid_machine_decl_attribute	PROTO((Tree, Tree, Tree, Tree));
-extern int  m32r_comp_type_attributes		PROTO((Tree, Tree));
-extern void m32r_select_section			PROTO((Tree, int));
-extern void m32r_encode_section_info		PROTO((Tree));
-extern void m32r_init_expanders			PROTO((void));
-extern int  call_address_operand		PROTO((Rtx, int));
-extern int  call_operand			PROTO((Rtx, int));
-extern int  symbolic_operand			PROTO((Rtx, int));
-extern int  small_data_operand			PROTO((Rtx, int));
-extern int  addr24_operand			PROTO((Rtx, int));
-extern int  addr32_operand			PROTO((Rtx, int));
-extern int  call26_operand			PROTO((Rtx, int));
-extern int  seth_add3_operand			PROTO((Rtx, int));
-extern int  cmp_int16_operand			PROTO((Rtx, int));
-extern int  uint16_operand			PROTO((Rtx, int));
-extern int  reg_or_int16_operand		PROTO((Rtx, int));
-extern int  reg_or_uint16_operand		PROTO((Rtx, int));
-extern int  reg_or_cmp_nt16_operand		PROTO((Rtx, int));
-extern int  two_insn_const_operand		PROTO((Rtx, int));
-extern int  move_src_operand			PROTO((Rtx, int));
-extern int  move_double_src_operand		PROTO((Rtx, int));
-extern int  move_dest_operand			PROTO((Rtx, int));
-extern int  easy_di_const			PROTO((Rtx));
-extern int  easy_df_const			PROTO((Rtx));
-extern int  eqne_comparison_operator		PROTO((Rtx, int));
-extern int  signed_comparison_operator		PROTO((Rtx, int));
-extern int  memreg_operand			PROTO((Rtx, int));
-extern int  small_insn_p			PROTO((Rtx, int));
-extern int  large_insn_p			PROTO((Rtx, int));
-extern int  m32r_select_cc_mode			PROTO((int, Rtx, Rtx));
-extern Rtx  gen_compare				PROTO((int, Rtx, Rtx, int));
-extern Rtx  gen_split_move_double		PROTO((Rtx *));
-extern int  function_arg_partial_nregs		PROTO((CUMULATIVE_ARGS *,
+extern void sbss_section			XPROTO((void));
+extern void sdata_section			XPROTO((void));
+extern void m32r_init				XPROTO((void));
+extern int  m32r_valid_machine_decl_attribute	XPROTO((Tree, Tree, Tree, Tree));
+extern int  m32r_comp_type_attributes		XPROTO((Tree, Tree));
+extern void m32r_select_section			XPROTO((Tree, int));
+extern void m32r_encode_section_info		XPROTO((Tree));
+extern void m32r_init_expanders			XPROTO((void));
+extern int  call_address_operand		XPROTO((Rtx, enum machine_mode));
+extern int  call_operand			XPROTO((Rtx, enum machine_mode));
+extern int  symbolic_operand			XPROTO((Rtx, enum machine_mode));
+extern int  small_data_operand			XPROTO((Rtx, enum machine_mode));
+extern int  addr24_operand			XPROTO((Rtx, enum machine_mode));
+extern int  addr32_operand			XPROTO((Rtx, enum machine_mode));
+extern int  call26_operand			XPROTO((Rtx, enum machine_mode));
+extern int  seth_add3_operand			XPROTO((Rtx, enum machine_mode));
+extern int  cmp_int16_operand			XPROTO((Rtx, enum machine_mode));
+extern int  uint16_operand			XPROTO((Rtx, enum machine_mode));
+extern int  reg_or_int16_operand		XPROTO((Rtx, enum machine_mode));
+extern int  reg_or_uint16_operand		XPROTO((Rtx, enum machine_mode));
+extern int  reg_or_cmp_nt16_operand		XPROTO((Rtx, enum machine_mode));
+extern int  two_insn_const_operand		XPROTO((Rtx, enum machine_mode));
+extern int  move_src_operand			XPROTO((Rtx, enum machine_mode));
+extern int  move_double_src_operand		XPROTO((Rtx, enum machine_mode));
+extern int  move_dest_operand			XPROTO((Rtx, enum machine_mode));
+extern int  easy_di_const			XPROTO((Rtx));
+extern int  easy_df_const			XPROTO((Rtx));
+extern int  eqne_comparison_operator		XPROTO((Rtx, enum machine_mode));
+extern int  signed_comparison_operator		XPROTO((Rtx, enum machine_mode));
+extern int  memreg_operand			XPROTO((Rtx, enum machine_mode));
+extern int  small_insn_p			XPROTO((Rtx, enum machine_mode));
+extern int  large_insn_p			XPROTO((Rtx, enum machine_mode));
+extern int  m32r_select_cc_mode			XPROTO((int, Rtx, Rtx));
+extern Rtx  gen_compare				XPROTO((int, Rtx, Rtx, int));
+extern Rtx  gen_split_move_double		XPROTO((Rtx *));
+extern int  function_arg_partial_nregs		XPROTO((CUMULATIVE_ARGS *,
 						       int, Tree, int));
-extern void m32r_setup_incoming_varargs		PROTO((CUMULATIVE_ARGS *,
+extern void m32r_setup_incoming_varargs		XPROTO((CUMULATIVE_ARGS *,
 						       int, Tree, int *,
 						       int));
-extern struct rtx_def *m32r_va_arg		PROTO((Tree, Tree));
-extern int  m32r_address_code			PROTO((Rtx));
+extern struct rtx_def *m32r_va_arg		XPROTO((Tree, Tree));
+extern int  m32r_address_code			XPROTO((Rtx));
 extern enum m32r_function_type m32r_compute_function_type
-						PROTO((Tree));
-extern unsigned m32r_compute_frame_size		PROTO((int));
-extern int  m32r_first_insn_address		PROTO((void));
-extern void m32r_expand_prologue		PROTO((void));
-extern void m32r_output_function_prologue	STDIO_PROTO((FILE *, int));
-extern void m32r_output_function_epilogue	STDIO_PROTO((FILE *, int));
-extern void m32r_finalize_pic			PROTO((void));
-extern void m32r_initialize_trampoline		PROTO((Rtx, Rtx, Rtx));
-extern void m32r_asm_file_start			STDIO_PROTO((FILE *));
-extern void m32r_print_operand			STDIO_PROTO((FILE *, Rtx, int));
-extern void m32r_print_operand_address		STDIO_PROTO((FILE *, Rtx));
-extern int  zero_and_one			PROTO((Rtx, Rtx));
-extern int  conditional_move_operand		PROTO((Rtx, int));
-extern int  carry_compare_operand		PROTO((Rtx, int));
-extern char *emit_cond_move			PROTO((Rtx *, Rtx));
+						XPROTO((Tree));
+extern unsigned m32r_compute_frame_size		XPROTO((int));
+extern int  m32r_first_insn_address		XPROTO((void));
+extern void m32r_expand_prologue		XPROTO((void));
+extern void m32r_output_function_prologue	STDIO_XPROTO((FILE *, int));
+extern void m32r_output_function_epilogue	STDIO_XPROTO((FILE *, int));
+extern void m32r_finalize_pic			XPROTO((void));
+extern void m32r_initialize_trampoline		XPROTO((Rtx, Rtx, Rtx));
+extern void m32r_asm_file_start			STDIO_XPROTO((FILE *));
+extern void m32r_print_operand			STDIO_XPROTO((FILE *, Rtx, int));
+extern void m32r_print_operand_address		STDIO_XPROTO((FILE *, Rtx));
+extern int  zero_and_one			XPROTO((Rtx, Rtx));
+extern int  conditional_move_operand		XPROTO((Rtx, enum machine_mode));
+extern int  carry_compare_operand		XPROTO((Rtx, enum machine_mode));
+extern char *emit_cond_move			XPROTO((Rtx *, Rtx));
 
-extern char * m32r_output_block_move PROTO((Rtx, Rtx *));
-extern int    m32r_block_immediate_operand PROTO((Rtx, int));
-extern void   m32r_expand_block_move PROTO((Rtx *));
+extern char * m32r_output_block_move XPROTO((Rtx, Rtx *));
+extern int    m32r_block_immediate_operand XPROTO((Rtx, enum machine_mode));
+extern void   m32r_expand_block_move XPROTO((Rtx *));
+
+#undef XPROTO
+#undef STDIO_XPROTO
