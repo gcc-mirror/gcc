@@ -14,14 +14,12 @@ details.  */
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef HANDLE_SEGV
-#include <signal.h>
-#endif
 
 #pragma implementation "java-array.h"
 
 #include <cni.h>
 #include <jvm.h>
+#include <java-signal.h>
 
 #include <java/lang/Class.h>
 #include <java/lang/Runtime.h>
@@ -30,6 +28,7 @@ details.  */
 #include <java/lang/ThreadGroup.h>
 #include <java/lang/FirstThread.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
+#include <java/lang/ArithmeticException.h>
 #include <java/lang/ClassFormatError.h>
 #include <java/lang/ClassCastException.h>
 #include <java/lang/NegativeArraySizeException.h>
@@ -39,6 +38,7 @@ details.  */
 #include <java/lang/System.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/io/PrintStream.h>
+
 
 #define ObjectClass _CL_Q34java4lang6Object
 extern java::lang::Class ObjectClass;
@@ -426,19 +426,31 @@ _Jv_NewMultiArray (jclass array_type, jint dimensions, ...)
 
 
 
-#ifdef HANDLE_SEGV
-
+#ifdef HANDLE_SEGV 
 static java::lang::NullPointerException *nullp;
 
 static void
-catch_segv (int)
+catch_segv (int dummy)
 {
+  MAKE_THROW_FRAME(dummy);
   // Don't run `new' in a signal handler, so we always throw the same
-  // null pointer exception.
+  // exception.
   _Jv_Throw (nullp);
 }
+#endif
 
-#endif /* HANDLE_SEGV */
+#ifdef HANDLE_FPE
+static java::lang::ArithmeticException *arithexception;
+
+static void
+catch_fpe (int dummy)
+{
+  MAKE_THROW_FRAME(dummy);
+  // Don't run `new' in a signal handler, so we always throw the same
+  // exception.
+  _Jv_Throw (arithexception);
+}
+#endif
 
 class _Jv_PrimClass : public java::lang::Class
 {
@@ -560,14 +572,26 @@ static java::lang::Thread *main_thread;
 void
 JvRunMain (jclass klass, int argc, const char **argv)
 {
-#ifdef HANDLE_SEGV
-  nullp = new java::lang::NullPointerException ();
-
-  struct sigaction act;
-  act.sa_handler = catch_segv;
-  sigemptyset (&act.sa_mask);
-  act.sa_flags = 0;
-  sigaction (SIGSEGV, &act, NULL);
+#ifdef HANDLE_SEGV 
+  {
+    nullp = new java::lang::NullPointerException ();    
+    struct sigaction act;
+    act.sa_handler = catch_segv;
+    sigemptyset (&act.sa_mask);
+    act.sa_flags = 0;
+    sigaction (SIGSEGV, &act, NULL);
+  }
+#endif
+  
+#ifdef HANDLE_FPE
+  { 
+    arithexception = new java::lang::ArithmeticException ();
+    struct sigaction act;
+    act.sa_handler = catch_fpe;
+    sigemptyset (&act.sa_mask);
+    act.sa_flags = 0;
+    sigaction (SIGFPE, &act, NULL);
+  }
 #endif
 
   no_memory = new java::lang::OutOfMemoryError;

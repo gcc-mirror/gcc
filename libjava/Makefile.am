@@ -135,7 +135,7 @@ $(nat_files): %.o: %.cc
 	$(CXXCOMPILE) -c -o $@ $<
 
 $(nat_files) $(GCOBJS) $(THREADOBJS) $(libgcj_a_OBJECTS): \
-		include/config.h $(nat_headers)
+		include/config.h include/java-signal.h $(nat_headers)
 
 ## FIXME: GNU make.
 $(c_files): %.o: %.c

@@ -1,3 +1,14 @@
+1999-04-13  Andrew Haley  <aph@cygnus.com>
+
+        * include/i386-signal.h, include/default-signal.h: New files.   
+        * prims.cc (catch_segv): Call MAKE_THROW_FRAME in exception
+        handler.
+        (catch_fpe): New function.      
+        * configure.in: Make link to appropriate include/java-signal.h.
+        * configure: Rebuilt.
+        * Makefile.am: include/java-signal.h added to dependency list.
+        * Makefile.in: Rebuilt.
+
 1999-04-12  Urban Widmark <urban@svenskatest.se>
 
 	* java/io/DataInputStream.java (readLine): Corrected handling of
