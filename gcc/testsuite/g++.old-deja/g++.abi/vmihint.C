@@ -30,13 +30,13 @@ struct P2 : B, P1 {int m;};
 
 using namespace abi;
 
-int expect (int flags, type_info const &info)
+int expect (int flags, std::type_info const &info)
 {
-  __vmi_class_type_info const *ptr =
-      dynamic_cast <__vmi_class_type_info const *> (&info);
+  abi::__vmi_class_type_info const *ptr =
+      dynamic_cast <abi::__vmi_class_type_info const *> (&info);
   if (!ptr)
     return 0;
-  if (ptr->flags != flags)
+  if (ptr->__flags != flags)
     return 0;
   return 1;
 }

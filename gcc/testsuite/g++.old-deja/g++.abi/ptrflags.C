@@ -12,13 +12,13 @@ struct B;
 
 using namespace abi;
 
-int expect (int flags, type_info const &info)
+int expect (int flags, std::type_info const &info)
 {
-  __pbase_type_info const *ptr =
-      dynamic_cast <__pbase_type_info const *> (&info);
+  abi::__pbase_type_info const *ptr =
+      dynamic_cast <abi::__pbase_type_info const *> (&info);
   if (!ptr)
     return 0;
-  if (ptr->qualifier_flags != flags)
+  if (ptr->__qualifier_flags != flags)
     return 0;
   return 1;
 }

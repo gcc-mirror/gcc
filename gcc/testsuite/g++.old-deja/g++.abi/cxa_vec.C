@@ -62,7 +62,7 @@ void test0 ()
   if (!started)
     {
       started = true;
-      set_terminate (test0);
+      std::set_terminate (test0);
       
       ctor_count = dtor_count = 5;
       dtor_repeat = false;
@@ -95,7 +95,7 @@ void test1 ()
   if (!started)
     {
       started = true;
-      set_terminate (test1);
+      std::set_terminate (test1);
       
       ctor_count = dtor_count = 5;
       dtor_repeat = false;
@@ -129,7 +129,7 @@ void test2 ()
   if (!started)
     {
       started = true;
-      set_terminate (test2);
+      std::set_terminate (test2);
       ctor_count = dtor_count = 5;
       dtor_repeat = false;
       blocks = 0;
@@ -163,7 +163,7 @@ void test3 ()
   if (!started)
     {
       started = true;
-      set_terminate (test3);
+      std::set_terminate (test3);
       
       ctor_count = dtor_count = 5;
       dtor_repeat = false;
@@ -201,7 +201,7 @@ void test4 ()
   if (!started)
     {
       started = true;
-      set_terminate (test4);
+      std::set_terminate (test4);
       
       ctor_count = dtor_count = 5;
       dtor_repeat = false;

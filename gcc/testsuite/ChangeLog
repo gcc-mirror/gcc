@@ -1,3 +1,10 @@
+2000-11-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.abi/arraynew.C: Use `std' where necessary.
+	* g++.old-deja/g++.abi/cxa_vec.C: Likewise.
+	* g++.old-deja/g++.abi/ptrflags.C: Likewise.
+	* g++.old-deja/g++.abi/vmihint.C: Likewise.
+
 2000-11-15  Neil Booth  <neilb@earthling.net>
 
         gcc.dg/cpp/_Pragma1.c: Update.
