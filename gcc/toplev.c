@@ -2995,7 +2995,7 @@ rest_of_compilation (decl)
 	{
 	  /* We only want to perform unrolling once.  */
 	       
-	  loop_optimize (insns, rtl_dump_file, 0, 0);
+	  loop_optimize (insns, rtl_dump_file, 0);
 
 	  /* The first call to loop_optimize makes some instructions
 	     trivially dead.  We delete those instructions now in the
@@ -3007,7 +3007,7 @@ rest_of_compilation (decl)
 		  analysis code depends on this information.  */
 	  reg_scan (insns, max_reg_num (), 1);
 	}
-      loop_optimize (insns, rtl_dump_file, flag_unroll_loops, 1);
+      loop_optimize (insns, rtl_dump_file, (flag_unroll_loops ? LOOP_UNROLL : 0) | LOOP_BCT);
 
       close_dump_file (DFI_loop, print_rtl, insns);
       timevar_pop (TV_LOOP);

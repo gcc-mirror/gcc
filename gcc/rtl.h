@@ -1614,7 +1614,7 @@ extern void print_inline_rtx		PARAMS ((FILE *, rtx, int));
 extern void init_loop			PARAMS ((void));
 extern rtx libcall_other_reg		PARAMS ((rtx, rtx));
 #ifdef BUFSIZ
-extern void loop_optimize		PARAMS ((rtx, FILE *, int, int));
+extern void loop_optimize		PARAMS ((rtx, FILE *, int));
 #endif
 extern void record_excess_regs		PARAMS ((rtx, rtx, rtx *));
 
