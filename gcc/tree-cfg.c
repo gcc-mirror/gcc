@@ -3911,9 +3911,9 @@ tree_forwarder_block_p (basic_block bb)
   gcc_assert (bb != ENTRY_BLOCK_PTR);
 #endif
 
-  /* Now walk through the statements.  We can ignore labels, anything else
-     means this is not a forwarder block.  */
-  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+  /* Now walk through the statements backward.  We can ignore labels,
+     anything else means this is not a forwarder block.  */
+  for (bsi = bsi_last (bb); !bsi_end_p (bsi); bsi_next (&bsi))
     {
       tree stmt = bsi_stmt (bsi);
  
