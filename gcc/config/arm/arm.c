@@ -1631,15 +1631,15 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 		if (code == SET || code == MINUS)
 		  {
 		    new_src = (subtargets ? gen_reg_rtx (mode) : target);
-		    if (can_invert)
+		    if (can_invert && code != MINUS)
 		      temp1 = ~temp1;
 		  }
 		else
 		  {
-		    if (remainder || !subtargets)
-		      new_src = target;
-		    else
+		    if (remainder && subtargets)
 		      new_src = gen_reg_rtx (mode);
+		    else
+		      new_src = target;
 		    if (can_invert)
 		      temp1 = ~temp1;
 		    else if (can_negate)

@@ -1,3 +1,8 @@
+2002-01-11  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.c (arm_gen_constant): Correct test of 'remainder'
+	and 'subtargets'.
+
 2002-01-11  Andreas Jaeger  <aj@suse.de>,
 	    Brad Lucier <lucier@math.purdue.edu>
 
