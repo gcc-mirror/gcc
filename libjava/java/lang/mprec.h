@@ -51,7 +51,7 @@
 extern "C" {
 #endif
 
-/* ISO C9X int type declarations */
+/* ISO C99 int type declarations */
 
 #if !defined HAVE_INT32_DEFINED && defined HAVE_BSD_INT32_DEFINED
 typedef u_int32_t uint32_t;
