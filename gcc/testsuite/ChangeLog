@@ -1,3 +1,15 @@
+1999-05-08  Richard Henderson  <rth@cygnus.com>
+
+	* g++.old-deja/g++.benjamin/p12475.C: Use LONG_MAX to find
+	the constant to test.  Don't XFAIL 64-bit targets.
+
+	* g++.old-deja/g++.jason/thunk3.C: Don't XFAIL Alpha.
+	* g++.old-deja/g++.law/profile1.C: Likewise.
+
+	* g++.old-deja/g++.other/delete4.C: Define size_t; use it in all
+	operator new instances.
+	* g++.old-deja/g++.other/delete5.C: Likewise.
+
 1999-05-03  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/u77-test.f (main): Declare ABORT as

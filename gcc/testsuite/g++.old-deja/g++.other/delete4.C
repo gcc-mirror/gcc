@@ -9,22 +9,24 @@
 // specification is `throw()'. All other cases must return a non-null pointer
 // [expr.new/13].
 
-void *operator new(unsigned)
+typedef __SIZE_TYPE__ size_t;
+
+void *operator new(size_t)
 {
   return 0; // ERROR - cannot return NULL
 }
-void *operator new[](unsigned)
+void *operator new[](size_t)
 {
   return 0; // ERROR - cannot return NULL
 }
 
 struct X
 {
-  void *operator new(unsigned)
+  void *operator new(size_t)
   {
     return 0; // ERROR - cannot return NULL
   }
-  void *operator new[](unsigned)
+  void *operator new[](size_t)
   {
     return 0; // ERROR - cannot return NULL
   }
@@ -32,11 +34,11 @@ struct X
 
 struct Y
 {
-  void *operator new(unsigned) throw()
+  void *operator new(size_t) throw()
   {
     return 0; // ok
   }
-  void *operator new[](unsigned) throw()
+  void *operator new[](size_t) throw()
   {
     return 0; // ok
   }

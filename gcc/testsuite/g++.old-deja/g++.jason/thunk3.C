@@ -3,7 +3,7 @@
 //  support, because it doesn't support variadic functions.
 
 // Special g++ Options: -fvtable-thunks
-// excess errors test - XFAIL mips*-*-* alpha*-*-* rs6000-*-* powerpc-*-eabi m68k-*-coff m68k-motorola-sysv m88k-motorola-sysv3
+// excess errors test - XFAIL mips*-*-* rs6000-*-* powerpc-*-eabi m68k-*-coff m68k-motorola-sysv m88k-motorola-sysv3
 
 #include <stdarg.h>
 
