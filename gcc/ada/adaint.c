@@ -1543,7 +1543,19 @@ __gnat_portable_spawn (char *args[])
   int pid ATTRIBUTE_UNUSED;
 
 #if defined (MSDOS) || defined (_WIN32)
-  status = spawnvp (P_WAIT, args[0],(const char* const*)args);
+  /* args[0] must be quotes as it could contain a full pathname with spaces */
+  const char *args_0 = args[0];
+  args[0] = (char *)xmalloc (strlen (args_0) + 3);
+  strcpy (args[0], "\"");
+  strcat (args[0], args_0);
+  strcat (args[0], "\"");
+
+  status = spawnvp (P_WAIT, args_0, (const char* const*)args);
+
+  /* restore previous value */
+  free (args[0]);
+  args[0] = args_0;
+
   if (status < 0)
     return -1;
   else

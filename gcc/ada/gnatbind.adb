@@ -364,7 +364,8 @@ begin
 
    declare
       Shared_Libgnat_Default : Character;
-      pragma Import (C, Shared_Libgnat_Default, "shared_libgnat_default");
+      pragma Import
+        (C, Shared_Libgnat_Default, "__gnat_shared_libgnat_default");
 
       SHARED : constant Character := 'H';
       STATIC : constant Character := 'T';

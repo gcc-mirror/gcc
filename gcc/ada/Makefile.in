@@ -251,7 +251,7 @@ LIBIBERTY = ../../libiberty/libiberty.a
 # and the system's installed libraries.
 LIBS = $(LIBINTL) $(LIBIBERTY) $(SYSLIBS)
 LIBDEPS = $(LIBINTL_DEP) $(LIBIBERTY)
-TOOLS_LIBS = $(LIBGNAT) $(EXTRA_GNATTOOLS_OBJS) ../../../libiberty/libiberty.a $(SYSLIBS)
+TOOLS_LIBS = $(LIBGNAT) $(EXTRA_GNATTOOLS_OBJS) link.o ../../../libiberty/libiberty.a $(SYSLIBS)
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -299,7 +299,7 @@ Makefile: ../config.status $(srcdir)/Makefile.in $(srcdir)/../version.c
 
 # Lists of files for various purposes.
 
-GNATLINK_OBJS = gnatlink.o link.o \
+GNATLINK_OBJS = gnatlink.o \
  a-except.o ali.o alloc.o butil.o casing.o csets.o debug.o fmap.o fname.o gnatvsn.o \
  hostparm.o interfac.o i-c.o i-cstrin.o namet.o opt.o osint.o output.o rident.o \
  s-exctab.o s-secsta.o s-stalib.o s-stoele.o sdefault.o stylesw.o switch.o system.o \
@@ -308,7 +308,7 @@ GNATLINK_OBJS = gnatlink.o link.o \
 GNATMAKE_OBJS = a-except.o ctrl_c.o ali.o ali-util.o s-casuti.o \
  alloc.o atree.o binderr.o butil.o casing.o csets.o debug.o elists.o einfo.o\
  erroutc.o errutil.o err_vars.o fmap.o fname.o fname-uf.o fname-sf.o \
- gnatmake.o gnatvsn.o hostparm.o interfac.o i-c.o i-cstrin.o krunch.o lib.o link.o \
+ gnatmake.o gnatvsn.o hostparm.o interfac.o i-c.o i-cstrin.o krunch.o lib.o \
  make.o makeusg.o makeutl.o mlib.o mlib-fil.o mlib-prj.o mlib-tgt.o mlib-utl.o \
  namet.o nlists.o opt.o osint.o osint-m.o output.o \
  prj.o prj-attr.o prj-com.o prj-dect.o prj-env.o prj-err.o prj-ext.o prj-nmsc.o \
@@ -583,7 +583,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   a-intnam.ads<4zintnam.ads \
   s-osinte.ads<5zosinte.ads \
   s-parame.ads<5zparame.ads \
-  s-taspri.ads<5ztaspri.ads \
   s-vxwork.ads<5pvxwork.ads \
   a-taside.adb<1ataside.adb \
 
@@ -1660,7 +1659,7 @@ endif
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxaddr2line 
 	$(GNATLINK) -v vxaddr2line -o $@ --GCC="$(CC) $(ADA_INCLUDES)" $(CLIB)
 
-gnatmake-re: ../stamp-tools
+gnatmake-re: ../stamp-tools link.o
 	$(GNATMAKE) $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatmake --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatmake 
@@ -1673,7 +1672,7 @@ gnatlink-re: ../stamp-tools link.o
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatlink --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlink 
 	$(GNATLINK) -v gnatlink -o ../../gnatlinknew$(exeext) \
-		    --GCC="$(CC) $(ADA_INCLUDES)" link.o $(TOOLS_LIBS)
+		    --GCC="$(CC) $(ADA_INCLUDES)" $(TOOLS_LIBS)
 	$(MV)  ../../gnatlinknew$(exeext)  ../../gnatlink$(exeext)
   
 # Needs to be built with CC=gcc
@@ -1681,11 +1680,11 @@ gnatlink-re: ../stamp-tools link.o
 #  stamp target in the parent directory whenever gnat1 is rebuilt
 
 # Likewise for the tools
-../../gnatmake$(exeext): $(P) b_gnatm.o $(GNATMAKE_OBJS)
+../../gnatmake$(exeext): $(P) b_gnatm.o link.o $(GNATMAKE_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) \
 	      $(TOOLS_LIBS)
 
-../../gnatlink$(exeext): $(P) b_gnatl.o $(GNATLINK_OBJS)
+../../gnatlink$(exeext): $(P) b_gnatl.o link.o $(GNATLINK_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) \
 	      $(TOOLS_LIBS)
 

@@ -684,6 +684,15 @@ package body Sem_Ch3 is
          Access_Subprogram_Declaration
            (T_Name => Anon_Type,
             T_Def  => Access_To_Subprogram_Definition (N));
+
+         if Ekind (Anon_Type) = E_Access_Protected_Subprogram_Type then
+            Set_Ekind
+              (Anon_Type, E_Anonymous_Access_Protected_Subprogram_Type);
+         else
+            Set_Ekind
+              (Anon_Type, E_Anonymous_Access_Subprogram_Type);
+         end if;
+
          return Anon_Type;
       end if;
 
@@ -992,7 +1001,7 @@ package body Sem_Ch3 is
                                         (Access_Definition
                                           (Component_Definition (N))))
          then
-            T := Replace_Anonymous_Access_To_Protected_Subprogram (N);
+            T := Replace_Anonymous_Access_To_Protected_Subprogram (N, T);
          end if;
 
       else
@@ -2986,14 +2995,17 @@ package body Sem_Ch3 is
 
          --  Ada 0Y (AI-254)
 
-         if Present (Access_To_Subprogram_Definition
-                     (Access_Definition (Component_Def)))
-           and then Protected_Present (Access_To_Subprogram_Definition
-                                       (Access_Definition (Component_Def)))
-         then
-            Element_Type :=
-              Replace_Anonymous_Access_To_Protected_Subprogram (Def);
-         end if;
+         declare
+            CD : constant Node_Id :=
+                   Access_To_Subprogram_Definition
+                     (Access_Definition (Component_Def));
+         begin
+            if Present (CD) and then Protected_Present (CD) then
+               Element_Type :=
+                 Replace_Anonymous_Access_To_Protected_Subprogram
+                   (Def, Element_Type);
+            end if;
+         end;
 
       else
          pragma Assert (False);
@@ -3142,7 +3154,8 @@ package body Sem_Ch3 is
    ------------------------------------------------------
 
    function Replace_Anonymous_Access_To_Protected_Subprogram
-     (N : Node_Id) return Entity_Id
+     (N      : Node_Id;
+      Prev_E : Entity_Id) return Entity_Id
    is
       Loc : constant Source_Ptr := Sloc (N);
 
@@ -3184,17 +3197,23 @@ package body Sem_Ch3 is
       Decl := Make_Full_Type_Declaration (Loc,
                 Defining_Identifier => Anon,
                 Type_Definition   =>
-                  Access_To_Subprogram_Definition (Acc));
+                  Copy_Separate_Tree (Access_To_Subprogram_Definition (Acc)));
 
       Mark_Rewrite_Insertion (Decl);
 
       --  Insert the new declaration in the nearest enclosing scope
 
-      while not Has_Declarations (P) loop
+      while Present (P) and then not Has_Declarations (P) loop
          P := Parent (P);
       end loop;
 
-      Prepend (Decl, Declarations (P));
+      pragma Assert (Present (P));
+
+      if Nkind (P) = N_Package_Specification then
+         Prepend (Decl, Visible_Declarations (P));
+      else
+         Prepend (Decl, Declarations (P));
+      end if;
 
       --  Replace the anonymous type with an occurrence of the new declaration.
       --  In all cases the rewriten node does not have the null-exclusion
@@ -3221,6 +3240,7 @@ package body Sem_Ch3 is
       Analyze (Decl);
       Scope_Stack.Append (Curr_Scope);
 
+      Set_Original_Access_Type (Anon, Prev_E);
       return Anon;
    end Replace_Anonymous_Access_To_Protected_Subprogram;
 
@@ -11613,7 +11633,8 @@ package body Sem_Ch3 is
                                            (Discriminant_Type (Discr)))
             then
                Discr_Type :=
-                 Replace_Anonymous_Access_To_Protected_Subprogram (Discr);
+                 Replace_Anonymous_Access_To_Protected_Subprogram
+                   (Discr, Discr_Type);
             end if;
 
          else

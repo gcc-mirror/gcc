@@ -41,9 +41,6 @@ with System;
 
 package body MLib is
 
-   pragma Linker_Options ("link.o");
-   --  For run_path_option string.
-
    -------------------
    -- Build_Library --
    -------------------
@@ -296,7 +293,7 @@ package body MLib is
    function Linker_Library_Path_Option return String_Access is
 
       Run_Path_Option_Ptr : Interfaces.C.Strings.chars_ptr;
-      pragma Import (C, Run_Path_Option_Ptr, "run_path_option");
+      pragma Import (C, Run_Path_Option_Ptr, "__gnat_run_path_option");
       --  Pointer to string representing the native linker option which
       --  specifies the path where the dynamic loader should find shared
       --  libraries. Equal to null string if this system doesn't support it.

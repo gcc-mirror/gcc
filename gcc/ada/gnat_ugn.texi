@@ -12441,12 +12441,37 @@ When @command{gnatmake} detects that a project file
 is a library project file, it will check all immediate sources of the project
 and rebuild the library if any of the sources have been recompiled.
 
-When a library is built or rebuilt, an attempt is made to delete all
+Standard project files can import library project files. In such cases,
+the libraries will only be rebuild if some of its sources are recompiled
+because they are in the closure of some other source in an importing project.
+Sources of the library project files that are not in such a closure will
+not be checked, unless the full library is checked, because one of its sources
+needs to be recompiled.
+
+For instance, assume the project file @code{A} imports the library project file
+@code{L}. The immediate sources of A are @file{a1.adb}, @file{a2.ads} and
+@file{a2.adb}. The immediate sources of L are @file{l1.ads}, @file{l1.adb},
+@file{l2.ads}, @file{l2.adb}.
+
+If @file{l1.adb} has been modified, then the library associated with @code{L}
+will be rebuild when compiling all the immediate sources of @code{A} only
+if @file{a1.ads}, @file{a2.ads} or @file{a2.adb} includes a statement
+@code{"with L1;"}.
+
+To be sure that all the sources in the library associated with @code{L} are
+up to date, and that all the sources of parject @code{A} are also up to date,
+the following two commands needs to be used:
+
+@smallexample
+gnatmake -Pl.gpr
+gnatmake -Pa.gpr
+@end smallexample
+
+When a library is built or rebuilt, an attempt is made first to delete all
 files in the library directory.
 All @file{ALI} files will also be copied from the object directory to the
 library directory. To build executables, @command{gnatmake} will use the
-library rather than the individual object files. The copy of the @file{ALI}
-files are made read-only.
+library rather than the individual object files.
 
 
 @c **********************************************

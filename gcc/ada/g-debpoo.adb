@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -769,6 +769,11 @@ package body GNAT.Debug_Pools is
       end if;
 
       Unlock_Task.all;
+
+   exception
+      when others =>
+         Unlock_Task.all;
+         raise;
    end Allocate;
 
    ------------------
@@ -1056,6 +1061,11 @@ package body GNAT.Debug_Pools is
       end if;
 
       Unlock_Task.all;
+
+   exception
+      when others =>
+         Unlock_Task.all;
+         raise;
    end Free_Physically;
 
    ----------------
@@ -1166,6 +1176,11 @@ package body GNAT.Debug_Pools is
 
          Unlock_Task.all;
       end if;
+
+   exception
+      when others =>
+         Unlock_Task.all;
+         raise;
    end Deallocate;
 
    --------------------
@@ -1310,71 +1325,71 @@ package body GNAT.Debug_Pools is
 
       Put_Line ("");
 
-      Data := Backtrace_Htable.Get_First;
-      while Data /= null loop
-         if Data.Kind in Alloc .. Dealloc then
-            Elem :=
-              new Traceback_Htable_Elem'
-                   (Traceback => new Tracebacks_Array'(Data.Traceback.all),
-                    Count     => Data.Count,
-                    Kind      => Data.Kind,
-                    Total     => Data.Total,
-                    Next      => null);
-            Backtrace_Htable_Cumulate.Set (Elem);
+      if Display_Slots then
+         Data := Backtrace_Htable.Get_First;
+         while Data /= null loop
+            if Data.Kind in Alloc .. Dealloc then
+               Elem :=
+                 new Traceback_Htable_Elem'
+                      (Traceback => new Tracebacks_Array'(Data.Traceback.all),
+                       Count     => Data.Count,
+                       Kind      => Data.Kind,
+                       Total     => Data.Total,
+                       Next      => null);
+               Backtrace_Htable_Cumulate.Set (Elem);
 
-            if Cumulate then
-               if Data.Kind = Alloc then
-                  K := Indirect_Alloc;
-               else
-                  K := Indirect_Dealloc;
-               end if;
-
-               --  Propagate the direct call to all its parents
-
-               for T in Data.Traceback'First + 1 .. Data.Traceback'Last loop
-                  Elem := Backtrace_Htable_Cumulate.Get
-                    (Data.Traceback
-                       (T .. Data.Traceback'Last)'Unrestricted_Access);
-
-                  --  If not, insert it
-
-                  if Elem = null then
-                     Elem := new Traceback_Htable_Elem'
-                               (Traceback => new Tracebacks_Array'
-                                 (Data.Traceback (T .. Data.Traceback'Last)),
-                        Count     => Data.Count,
-                        Kind      => K,
-                        Total     => Data.Total,
-                        Next      => null);
-                     Backtrace_Htable_Cumulate.Set (Elem);
-
-                     --  Properly take into account that the subprograms
-                     --  indirectly called might be doing either allocations
-                     --  or deallocations. This needs to be reflected in the
-                     --  counts.
-
+               if Cumulate then
+                  if Data.Kind = Alloc then
+                     K := Indirect_Alloc;
                   else
-                     Elem.Count := Elem.Count + Data.Count;
+                     K := Indirect_Dealloc;
+                  end if;
 
-                     if K = Elem.Kind then
-                        Elem.Total := Elem.Total + Data.Total;
+                  --  Propagate the direct call to all its parents
 
-                     elsif Elem.Total > Data.Total then
-                        Elem.Total := Elem.Total - Data.Total;
+                  for T in Data.Traceback'First + 1 .. Data.Traceback'Last loop
+                     Elem := Backtrace_Htable_Cumulate.Get
+                       (Data.Traceback
+                          (T .. Data.Traceback'Last)'Unrestricted_Access);
+
+                     --  If not, insert it
+
+                     if Elem = null then
+                        Elem := new Traceback_Htable_Elem'
+                          (Traceback => new Tracebacks_Array'
+                             (Data.Traceback (T .. Data.Traceback'Last)),
+                           Count     => Data.Count,
+                           Kind      => K,
+                           Total     => Data.Total,
+                           Next      => null);
+                        Backtrace_Htable_Cumulate.Set (Elem);
+
+                        --  Properly take into account that the subprograms
+                        --  indirectly called might be doing either allocations
+                        --  or deallocations. This needs to be reflected in the
+                        --  counts.
 
                      else
-                        Elem.Kind  := K;
-                        Elem.Total := Data.Total - Elem.Total;
+                        Elem.Count := Elem.Count + Data.Count;
+
+                        if K = Elem.Kind then
+                           Elem.Total := Elem.Total + Data.Total;
+
+                        elsif Elem.Total > Data.Total then
+                           Elem.Total := Elem.Total - Data.Total;
+
+                        else
+                           Elem.Kind  := K;
+                           Elem.Total := Data.Total - Elem.Total;
+                        end if;
                      end if;
-                  end if;
-               end loop;
+                  end loop;
+               end if;
+
+               Data := Backtrace_Htable.Get_Next;
             end if;
+         end loop;
 
-            Data := Backtrace_Htable.Get_Next;
-         end if;
-      end loop;
-
-      if Display_Slots then
          Put_Line ("List of allocations/deallocations: ");
 
          Data := Backtrace_Htable_Cumulate.Get_First;
@@ -1397,6 +1412,8 @@ package body GNAT.Debug_Pools is
 
             Data := Backtrace_Htable_Cumulate.Get_Next;
          end loop;
+
+         Backtrace_Htable_Cumulate.Reset;
       end if;
 
       if Display_Leaks then
@@ -1421,8 +1438,6 @@ package body GNAT.Debug_Pools is
             Current := Header.Next;
          end loop;
       end if;
-
-      Backtrace_Htable_Cumulate.Reset;
    end Print_Info;
 
    ------------------

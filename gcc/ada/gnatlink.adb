@@ -158,7 +158,8 @@ procedure Gnatlink is
    --  Set to False if bind file is not to be compiled
 
    Object_List_File_Supported : Boolean;
-   pragma Import (C, Object_List_File_Supported, "objlist_file_supported");
+   pragma Import
+     (C, Object_List_File_Supported, "__gnat_objlist_file_supported");
    --  Predicate indicating whether the linker has an option whereby the
    --  names of object files can be passed to the linker in a file.
 
@@ -587,7 +588,7 @@ procedure Gnatlink is
       --  Projected number of bytes for the linker command line
 
       Link_Max : Integer;
-      pragma Import (C, Link_Max, "link_max");
+      pragma Import (C, Link_Max, "__gnat_link_max");
       --  Maximum number of bytes on the command line supported by the OS
       --  linker. Passed this limit the response file mechanism must be used
       --  if supported.
@@ -649,23 +650,24 @@ procedure Gnatlink is
       RB_Nfirst    : Integer;             -- Slice first index
 
       Run_Path_Option_Ptr : Interfaces.C.Strings.chars_ptr;
-      pragma Import (C, Run_Path_Option_Ptr, "run_path_option");
+      pragma Import (C, Run_Path_Option_Ptr, "__gnat_run_path_option");
       --  Pointer to string representing the native linker option which
       --  specifies the path where the dynamic loader should find shared
       --  libraries. Equal to null string if this system doesn't support it.
 
       Object_Library_Ext_Ptr : Interfaces.C.Strings.chars_ptr;
-      pragma Import (C, Object_Library_Ext_Ptr, "object_library_extension");
+      pragma Import
+        (C, Object_Library_Ext_Ptr, "__gnat_object_library_extension");
       --  Pointer to string specifying the default extension for
       --  object libraries, e.g. Unix uses ".a", VMS uses ".olb".
 
       Object_File_Option_Ptr : Interfaces.C.Strings.chars_ptr;
-      pragma Import (C, Object_File_Option_Ptr, "object_file_option");
+      pragma Import (C, Object_File_Option_Ptr, "__gnat_object_file_option");
       --  Pointer to a string representing the linker option which specifies
       --  the response file.
 
       Using_GNU_Linker : Boolean;
-      pragma Import (C, Using_GNU_Linker, "using_gnu_linker");
+      pragma Import (C, Using_GNU_Linker, "__gnat_using_gnu_linker");
       --  Predicate indicating whether this target uses the GNU linker. In
       --  this case we must output a GNU linker compatible response file.
 

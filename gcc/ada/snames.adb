@@ -119,6 +119,9 @@ package body Snames is
      "system#" &
      "text_io#" &
      "wide_text_io#" &
+     "no_dsa#" &
+     "glade_dsa#" &
+     "polyorb_dsa#" &
      "addr#" &
      "async#" &
      "get_active_partition_id#" &
