@@ -612,7 +612,8 @@ jcf_parse (jcf)
   if (main_class == NULL_TREE)
     main_class = current_class;
   if (! quiet_flag && TYPE_NAME (current_class))
-    fprintf (stderr, " class %s",
+    fprintf (stderr, " %s %s",
+	     (jcf->access_flags & ACC_INTERFACE) ? "interface" : "class", 
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))));
   if (CLASS_LOADED_P (current_class))
     return;
