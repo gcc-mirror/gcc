@@ -1512,7 +1512,10 @@ dbxout_symbol (decl, local)
 	    did_output = 1;
 	  }
 
-	if (tag_needed && TYPE_NAME (type) != 0
+	/* Don't output a tag if this is an incomplete type (TYPE_SIZE is
+	   zero).  This prevents the sun4 Sun OS 4.x dbx from crashing.  */ 
+
+	if (tag_needed && TYPE_NAME (type) != 0 && TYPE_SIZE (type) != 0
 	    && !TREE_ASM_WRITTEN (TYPE_NAME (type)))
 	  {
 	    /* For a TYPE_DECL with no name, but the type has a name,
