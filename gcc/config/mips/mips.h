@@ -2696,25 +2696,16 @@ extern struct mips_frame_info current_frame_info;
    PROMOTE_FUNCTION_RETURN, we must promote the mode just as
    PROMOTE_MODE does.  */
 
-#define LIBCALL_VALUE(MODE)						\
-  gen_rtx (REG,								\
-	   ((GET_MODE_CLASS (MODE) != MODE_INT				\
-	     || GET_MODE_SIZE (MODE) >= 4)				\
-	    ? (MODE)							\
-	    : SImode),							\
-	   ((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
-	     && (! TARGET_SINGLE_FLOAT					\
-		 || GET_MODE_SIZE (MODE) <= 4))				\
-	    ? FP_RETURN							\
-	    : GP_RETURN))
+#define LIBCALL_VALUE(MODE) \
+  mips_function_value (NULL_TREE, NULL, (MODE))
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 
-#define FUNCTION_VALUE(VALTYPE, FUNC) LIBCALL_VALUE (TYPE_MODE (VALTYPE))
-
+#define FUNCTION_VALUE(VALTYPE, FUNC) \
+  mips_function_value ((VALTYPE), (FUNC), VOIDmode)
 
 /* 1 if N is a possible register number for a function value.
    On the MIPS, R2 R3 and F0 F2 are the only register thus used.

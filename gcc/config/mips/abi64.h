@@ -99,9 +99,6 @@ Boston, MA 02111-1307, USA.  */
 	   && (FUNCTION_ARG_PADDING (MODE, TYPE)	\
 	       == (BYTES_BIG_ENDIAN ? upward : downward)))))
 
-#undef FUNCTION_VALUE
-#define FUNCTION_VALUE(VALTYPE, FUNC)	mips_function_value (VALTYPE, FUNC)
-
 #define STRICT_ARGUMENT_NAMING (mips_abi != ABI_32 && mips_abi != ABI_O64)
 
 /* A C expression that indicates when an argument must be passed by
