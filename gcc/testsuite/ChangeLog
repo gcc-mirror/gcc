@@ -1,7 +1,11 @@
+2002-03-12  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/20020312-1.c: New test case.
+
 2002-03-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/compile/20020304-1.c: New test case
-	(from PR c/5830). 
+	(from PR c/5830).
 
 2002-02-20  Release Manager
 
@@ -310,7 +314,7 @@ Mon Jul 16 12:21:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/load-2.m: New test.  From Nicola Pero
 	<n.pero@mi.flashnet.it>.
-	
+
 2001-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20010605-2.c: New test.
@@ -420,13 +424,13 @@ Mon Jul 16 12:21:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2001-05-23  David.Billinghurst <David.Billinghurst@riotinto.com>
 
-	* gcc.misc-tests/linkage.exp:  Pass appropriate flags to 
+	* gcc.misc-tests/linkage.exp:  Pass appropriate flags to
 	native compiler for irix6.5.
 
 Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* lib/g++.exp (g++_include_flags): Use args to compute
- 	get_multilibs.
+	get_multilibs.
 	(g++_link_flags): Likewise.
 	(g++_init): Pass TOOL_OPTIONS as arguments to two above functions.
 
@@ -440,10 +444,10 @@ Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 	STACK_SIZE;
 	* gcc.c-torture/compile/991214-2.c (HISTO_SIZE): Define according
 	to STACK_SIZE; Use it to define size of add_histo array.
-	* gcc.c-torture/compile/920723-1.c (GITT_SIZE): Define according 
+	* gcc.c-torture/compile/920723-1.c (GITT_SIZE): Define according
 	to STACK_SIZE.
 	(f): Use GITT_SIZE to define size of gitt local table.
-	* gcc.c-torture/compile/930621-1.c (BYTEMEM_SIZE): Define according 
+	* gcc.c-torture/compile/930621-1.c (BYTEMEM_SIZE): Define according
 	to STACK_SIZE; Use it to define size of bytemem array.
 
 2001-05-21  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
@@ -549,7 +553,7 @@ Mon May 14 20:26:20 2001  Mark P Mitchell  <mark@codesourcery.com>
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/20000724-1.c: Add a clobber of `esp'.
-	
+
 	* gcc.c-torture/execute/20010114-2.x: XFAIL it.
 	* gcc.c-torture/execute/20010123-1.x: Likewise.
 	* gcc.c-torture/execute/loop-2b.x: Likewise.
@@ -578,7 +582,7 @@ Mon May 14 20:26:20 2001  Mark P Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/vtgc1.C: XFAIL.
 	* g++.old-deja/g++.other/crash18.C: Likewise.
-	
+
 Thu Apr 26 11:13:27 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.dg/special/initp1.C: Moved here from g++.old-deja/g++.ext.
@@ -634,7 +638,7 @@ Thu Apr 26 11:13:27 2001  Jeffrey A Law  (law@cygnus.com)
 	* gcc.dg/wtr-conversion-1.c: Don't test for width changes.
 
 2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
-	
+
 	* g++.old-deja/g++.abi/primary3.C (main): Correct expected layout.
 	* g++.old-deja/g++.abi/crash1.C: New test.
 
@@ -739,7 +743,7 @@ Thu Apr 26 11:13:27 2001  Jeffrey A Law  (law@cygnus.com)
 	* g++.old-deja/g++.brendan/crash38.C: Same.
 	* g++.old-deja/g++.brendan/crash15.C (main): Same.
 	* g++.old-deja/g++.brendan/copy9.C: Same.
-	
+
 2001-04-04  Diego Novillo  <dnovillo@redhat.com>
 
 	* testsuite/gcc.c-torture/compile/20010404-1.c: New test.
@@ -808,7 +812,7 @@ Thu Apr 26 11:13:27 2001  Jeffrey A Law  (law@cygnus.com)
 2001-03-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* g++.old-deja/g++.other/eh4.C: New test.
-	
+
 2001-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/regstack.C: New test.

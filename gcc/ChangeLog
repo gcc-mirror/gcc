@@ -1,9 +1,16 @@
+2002-03-12  Andreas Jaeger  <aj@suse.de>
+
+	* config/alpha/alpha.c: Merge from mainline:
+	2001-07-25  Richard Henderson  <rth@redhat.com>
+	* config/alpha/alpha.c (alpha_emit_conditional_move): Always swap
+	GE/GT if it is an fp comparison.
+
 2002-03-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	preprocessor/3951
 	* cppinit.c (init_dependency_output): Take deps output file
 	from -o if none given with -MF.  Suppress normal output.
-	* gcc.c (cpp_unique_options): Have -M and -MM imply -E.	
+	* gcc.c (cpp_unique_options): Have -M and -MM imply -E.
 	* doc/cpp.texi, doc/invoke.texi: Update.
 
 2002-03-01  Zack Weinberg  <zack@codesourcery.com>
@@ -725,7 +732,7 @@ doc:
 
 2001-11-01  Richard Sandiford  <rsandifo@redhat.com>
 
- 	* config/mips/mips.c (save_restore_insns): Don't mark any register
+	* config/mips/mips.c (save_restore_insns): Don't mark any register
 	save slots as unchanging if current_function_calls_eh_return.
 
 2001-11-01  Kazu Hirata  <kazu@hxi.com>

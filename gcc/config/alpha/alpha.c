@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001 Free Software Foundation, Inc. 
+   2000, 2001, 2002 Free Software Foundation, Inc. 
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -1831,7 +1831,7 @@ alpha_emit_setcc (code)
       break;
 
     case GE:  case GT: case GEU:  case GTU:
-      /* These are normally need swapping, but for integer zero we have
+      /* These normally need swapping, but for integer zero we have
 	 special patterns that recognize swapped operands.  */
       if (!fp_p && op1 == const0_rtx)
 	break;
@@ -1922,8 +1922,9 @@ alpha_emit_conditional_move (cmp, mode)
 	  break;
 
 	case GE: case GT: case GEU: case GTU:
-	  /* These must be swapped.  */
-	  if (op1 == CONST0_RTX (cmp_mode))
+	  /* These normally need swapping, but for integer zero we have
+	     special patterns that recognize swapped operands.  */
+	  if (!fp_p && op1 == CONST0_RTX (cmp_mode))
 	    cmp_code = code, code = NE;
 	  else
 	    {
