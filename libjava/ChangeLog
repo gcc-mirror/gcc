@@ -1,3 +1,15 @@
+2004-07-17  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* acinclude.m4: Include no-executables.m4.
+	* aclocal.m4: Rebuild.
+	* configure.in: Convert to the autoconf 2.59 version of
+	of the no-executables hack, and also of the nonstandard CXX
+	hack and the multilibbed CC and CXX hack.  Change prerequisite
+	to autoconf 2.59.
+	* configure: Rebuild with autoconf 2.59.  (Woo-hoo!)
+	* Makefile.in, gcj/Makefile.in, include/Makefile.in,
+	testsuite/Makefile.in: Regenerate.
+
 2004-08-03  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc: Reindented.
