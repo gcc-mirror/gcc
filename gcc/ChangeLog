@@ -1,3 +1,7 @@
+2000-11-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* expr.c (do_compare_and_jump): Add missing TYPE_MODE in statement.
+
 2000-11-30  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* extend.texi: Update documentation for attributes.
