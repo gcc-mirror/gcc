@@ -177,8 +177,12 @@ print_operand (file, x, code)
 	      }
 
 	  case CONST_INT:
-	    print_operand_address (file, x);
-	    break;
+	    {
+	      rtx low, high;
+	      split_double (x, &low, &high);
+	      fprintf (file, "%ld", (long)INTVAL (low));
+	      break;
+	    }
 
 	  default:
 	    abort ();
@@ -231,11 +235,13 @@ print_operand (file, x, code)
 	      }
 
 	  case CONST_INT:
-	    if (INTVAL (x) < 0)
-	      print_operand_address (file, GEN_INT (-1));
- 	    else
-	      print_operand_address (file, GEN_INT (0));
-	    break;
+	    {
+	      rtx low, high;
+	      split_double (x, &low, &high);
+	      fprintf (file, "%ld", (long)INTVAL (high));
+	      break;
+	    }
+
 	  default:
 	    abort ();
 	  }
