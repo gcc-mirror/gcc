@@ -137,6 +137,7 @@ HOST_WIDEST_INT parse_escape PROTO((char **, HOST_WIDEST_INT));
 int check_assertion PROTO((U_CHAR *, int, int, struct arglist *));
 struct hashnode *lookup PROTO((U_CHAR *, int, int));
 void error PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void verror PROTO((const char *, va_list));
 void pedwarn PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
 void warning PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
 
@@ -1015,9 +1016,7 @@ yyerror VPROTO ((const char * msgid, ...))
   msgid = va_arg (args, const char *);
 #endif
 
-  fprintf (stderr, "error: ");
-  vfprintf (stderr, _(msgid), args);
-  fprintf (stderr, "\n");
+  verror (msgid, args);
   va_end (args);
   skip_evaluation = 0;
   longjmp (parse_return_error, 1);
