@@ -82,6 +82,7 @@ static void scan_out_logical_line PARAMS ((cpp_reader *pfile, cpp_macro *));
 static void check_output_buffer PARAMS ((cpp_reader *, size_t));
 static void push_replacement_text PARAMS ((cpp_reader *, cpp_hashnode *));
 static bool scan_parameters PARAMS ((cpp_reader *, cpp_macro *));
+static bool recursive_macro PARAMS ((cpp_reader *, cpp_hashnode *));
 static void save_replacement_text PARAMS ((cpp_reader *, cpp_macro *,
 					   unsigned int));
 static void maybe_start_funlike PARAMS ((cpp_reader *, cpp_hashnode *,
@@ -304,30 +305,31 @@ bool
 _cpp_read_logical_line_trad (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *buffer;
+  cpp_buffer *buffer = pfile->buffer;
 
-  buffer = pfile->buffer;
-  if (buffer->cur == buffer->rlimit)
+  do
     {
-      bool stop = true;
-
-      /* Don't pop the last buffer.  */
-      if (buffer->prev)
+      if (buffer->cur == buffer->rlimit)
 	{
-	  stop = buffer->return_at_eof;
-	  _cpp_pop_buffer (pfile);
+	  bool stop = true;
+
+	  /* Don't pop the last buffer.  */
+	  if (buffer->prev)
+	    {
+	      stop = buffer->return_at_eof;
+	      _cpp_pop_buffer (pfile);
+	    }
+
+	  if (stop)
+	    return false;
 	}
 
-      if (stop)
-	return false;
+      CUR (pfile->context) = buffer->cur;
+      RLIMIT (pfile->context) = buffer->rlimit;
+      scan_out_logical_line (pfile, NULL);
+      buffer->cur = CUR (pfile->context);
     }
-
-  CUR (pfile->context) = buffer->cur;
-  RLIMIT (pfile->context) = buffer->rlimit;
-  pfile->out.cur = pfile->out.base;
-  pfile->out.first_line = pfile->line;
-  scan_out_logical_line (pfile, NULL);
-  buffer->cur = CUR (pfile->context);
+  while (pfile->state.skipping);
 
   return true;
 }
@@ -384,6 +386,10 @@ scan_out_logical_line (pfile, macro)
   struct fun_macro fmacro;
 
   fmacro.buff = NULL;
+
+ start_logical_line:
+  pfile->out.cur = pfile->out.base;
+  pfile->out.first_line = pfile->line;
  new_context:
   context = pfile->context;
   cur = CUR (context);
@@ -483,8 +489,10 @@ scan_out_logical_line (pfile, macro)
 	      node = lex_identifier (pfile, cur - 1);
 
 	      if (node->type == NT_MACRO
+		  && !pfile->state.skipping
 		  && pfile->state.parsing_args != 2
-		  && !pfile->state.prevent_expansion)
+		  && !pfile->state.prevent_expansion
+		  && !recursive_macro (pfile, node))
 		{
 		  if (node->value.macro->fun_like)
 		    maybe_start_funlike (pfile, node, out, &fmacro);
@@ -582,10 +590,7 @@ scan_out_logical_line (pfile, macro)
 		 preprocessor lex the next token.  */
 	      pfile->buffer->cur = cur;
 	      if (_cpp_handle_directive (pfile, false /* indented */))
-		{
-		  cur = CUR (context);
-		  goto done;
-		}
+		goto start_logical_line;
 	    }
 	  break;
 
@@ -613,6 +618,48 @@ push_replacement_text (pfile, node)
   cpp_macro *macro = node->value.macro;
 
   _cpp_push_text_context (pfile, node, macro->exp.text, macro->count);
+}
+
+/* Returns TRUE if traditional macro recursion is detected.  */
+static bool
+recursive_macro (pfile, node)
+     cpp_reader *pfile;
+     cpp_hashnode *node;
+{
+  bool recursing = node->flags & NODE_DISABLED;
+
+  /* Object-like macros that are already expanding are necessarily
+     recursive.
+
+     However, it is possible to have traditional function-like macros
+     that are not infinitely recursive but recurse to any given depth.
+     Further, it is easy to construct examples that get ever longer
+     until the point they stop recursing.  So there is no easy way to
+     detect true recursion; instead we assume any expansion more than
+     20 deep since the first invocation of this macro must be
+     recursing.  */
+  if (recursing && node->value.macro->fun_like)
+    {
+      size_t depth = 0;
+      cpp_context *context = pfile->context;
+
+      do
+	{
+	  depth++;
+	  if (context->macro == node && depth > 20)
+	    break;
+	  context = context->prev;
+	}
+      while (context);
+      recursing = context != NULL;
+    }
+
+  if (recursing)
+    cpp_error (pfile, DL_ERROR,
+	       "detected recursion whilst expanding macro \"%s\"",
+	       NODE_NAME (node));
+
+  return recursing;
 }
 
 /* Push a context holding the replacement text of the macro NODE on
@@ -804,7 +851,6 @@ _cpp_create_trad_definition (pfile, macro)
   /* Skip leading whitespace in the replacement text.  */
   CUR (pfile->context) = skip_whitespace (pfile, CUR (pfile->context));
 
-  pfile->out.cur = pfile->out.base;
   pfile->state.prevent_expansion++;
   scan_out_logical_line (pfile, macro);
   pfile->state.prevent_expansion--;
