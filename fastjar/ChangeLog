@@ -1,5 +1,11 @@
 2000-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* configure.in (fastjar_warn_cflags): Set when using gcc.
+
+	* Makefile.am (AM_CFLAGS): Set to @fastjar_warn_cflags@.
+
+2000-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* compress.c: Include stdlib.h and compress.h.
 	(rcsid): Delete.
 	(report_str_error): Make static.

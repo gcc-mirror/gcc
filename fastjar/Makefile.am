@@ -48,3 +48,4 @@ grepjar_SOURCES = jargrep.c dostime.c compress.c pushback.c jartool.h zipfile.h 
 grepjar_LDADD = $(ZLIBS)
 grepjar_DEPENDENCIES = $(ZDEPS)
 
+AM_CFLAGS = @fastjar_warn_cflags@
