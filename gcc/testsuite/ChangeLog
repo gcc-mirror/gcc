@@ -1,3 +1,87 @@
+2003-01-09  Geoffrey Keating  <geoffk@apple.com>
+
+	Merge from pch-branch:
+
+	2002-12-23  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/cpp-1.h: New.
+	* gcc.dg/pch/cpp-1.c: New.
+	* gcc.dg/pch/cpp-2.h: New.
+	* gcc.dg/pch/cpp-2.c: New.
+
+	2002-11-19  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/except-1.h: New.
+	* gcc.dg/pch/except-1.c: New.
+
+	2002-11-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/pch.exp: Ensure that <test>.hp doesn't exist before
+	running test.
+	* gcc.dg/pch: Include *.hp not *.h.
+	* gcc.dg/pch/system-1.h: New.
+	* gcc.dg/pch/system-1.c: New.
+
+	2002-11-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/pch.exp: Compare .s files with/without PCH,
+	rather than trying to build and run a program using PCH.
+	* gcc.dg/pch: Remove dg-do commands from test files.
+	
+	2002-11-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/macro-3.c: New.
+	* gcc.dg/pch/macro-3.h: New.
+
+	2002-11-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/common-1.c: New.
+	* gcc.dg/pch/common-1.h: New.
+	* gcc.dg/pch/decl-1.c: New.
+	* gcc.dg/pch/decl-1.h: New.
+	* gcc.dg/pch/decl-2.c: New.
+	* gcc.dg/pch/decl-2.h: New.
+	* gcc.dg/pch/decl-3.c: New.
+	* gcc.dg/pch/decl-3.h: New.
+	* gcc.dg/pch/decl-4.c: New.
+	* gcc.dg/pch/decl-4.h: New.
+	* gcc.dg/pch/decl-5.c: New.
+	* gcc.dg/pch/decl-5.h: New.
+	* gcc.dg/pch/global-1.c: New.
+	* gcc.dg/pch/global-1.h: New.
+	* gcc.dg/pch/inline-1.c: New.
+	* gcc.dg/pch/inline-1.h: New.
+	* gcc.dg/pch/inline-2.c: New.
+	* gcc.dg/pch/inline-2.h: New.
+	* gcc.dg/pch/static-1.c: New.
+	* gcc.dg/pch/static-1.h: New.
+	* gcc.dg/pch/static-2.c: New.
+	* gcc.dg/pch/static-2.h: New.
+
+	2002-09-01  Geoffrey Keating  <geoffk@redhat.com>
+
+	* g++.dg/pch/pch.exp: Better handle failing testcases.
+	* gcc.dg/pch/pch.exp: Likewise.
+	* gcc.dg/pch/macro-1.c: New.
+	* gcc.dg/pch/macro-1.h: New.
+	* gcc.dg/pch/macro-2.c: New.
+	* gcc.dg/pch/macro-2.h: New.
+
+	2002-08-27  Geoffrey Keating  <geoffk@redhat.com>
+
+	* g++.dg/dg.exp: Treat files in pch/ specially.
+	* g++.dg/pch/pch.exp: New file.
+	* g++.dg/pch/empty.H: New file.
+	* g++.dg/pch/empty.C: New file.
+	* lib/g++-dg.exp (g++-dg-test): Add case for when $do_what is
+	"precompile".
+
+	* gcc.dg/pch/pch.exp: New file.
+	* gcc.dg/pch/empty.h: New file.
+	* gcc.dg/pch/empty.c: New file.
+	* lib/gcc-dg.exp (gcc-dg-test): Add case for when $do_what is
+	"precompile".
+
 2003-01-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.dg/template/friend14.C: New test.

@@ -34,7 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
-#include "ggc.h"
 
 static void construct_virtual_base (tree, tree);
 static void expand_aggr_init_1 PARAMS ((tree, tree, tree, tree, int));

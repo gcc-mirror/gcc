@@ -1,3 +1,11 @@
+2002-07-17  Geoffrey Keating  <geoffk@redhat.com>
+
+	* splay-tree.h (GTY): Define if undefined.
+	(splay_tree_allocate_fn): Return PTR for compatibility, not void *.
+	(struct splay_tree_node_s): Support gengtype.
+	(struct splay_tree_s): Likewise.  Make allocate_data a PTR,
+	not a void *.
+
 2002-11-23  Simon Burge  <simonb@wasabisystems.com>
 
 	* libiberty.h (basename): Add NetBSD to the list.

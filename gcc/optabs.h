@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -246,7 +246,7 @@ extern enum insn_code reload_in_optab[NUM_MACHINE_MODES];
 extern enum insn_code reload_out_optab[NUM_MACHINE_MODES];
 
 /* Contains the optab used for each rtx code.  */
-extern optab code_to_optab[NUM_RTX_CODE + 1];
+extern GTY(()) optab code_to_optab[NUM_RTX_CODE + 1];
 
 
 typedef rtx (*rtxfun) PARAMS ((rtx));

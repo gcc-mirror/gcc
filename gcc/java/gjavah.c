@@ -38,6 +38,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "javaop.h"
 #include "java-tree.h"
 #include "java-opcodes.h"
+#include "ggc.h"
 #include "hashtab.h"
 
 #include <getopt.h>

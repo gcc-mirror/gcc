@@ -301,6 +301,17 @@ a dependency output file as a side-effect of the compilation process.
 Like @option{-MD} except mention only user header files, not system
 -header files.
 
+@ifclear cppmanual
+@item -fpch-deps
+@opindex fpch-deps
+When using precompiled headers (@pxref{Precompiled Headers}), this flag
+will cause the dependency-output flags to also list the files from the
+precompiled header's dependencies.  If not specified only the
+precompiled header would be listed and not the files that were used to
+create it because those files are not consulted when a precompiled
+header is used.
+
+@end ifclear
 @item -x c
 @itemx -x c++
 @itemx -x objective-c

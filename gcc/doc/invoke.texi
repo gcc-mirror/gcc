@@ -141,6 +141,7 @@ only one of these two forms, whichever one is not the default.
 * Code Gen Options::    Specifying conventions for function calls, data layout
                         and register usage.
 * Environment Variables:: Env vars that affect GCC.
+* Precompiled Headers:: Compiling a header once, and using it many times.
 * Running Protoize::    Automatically adding or removing function prototypes.
 @end menu
 
@@ -220,7 +221,7 @@ in the following sections.
 -Wimplicit  -Wimplicit-int  @gol
 -Wimplicit-function-declaration @gol
 -Werror-implicit-function-declaration @gol
--Wimport  -Winline -Wno-endif-labels @gol
+-Wimport  -Winline  -Winvalid-pch  -Wno-endif-labels @gol
 -Wlarger-than-@var{len}  -Wlong-long @gol
 -Wmain  -Wmissing-braces @gol
 -Wmissing-format-attribute  -Wmissing-noreturn @gol
@@ -767,7 +768,7 @@ Objective-C source code.  Note that you must link with the library
 Objective-C source code which should not be preprocessed.
 
 @item @var{file}.h
-C header file (not to be compiled or linked).
+C or C++ header file to be turned into a precompiled header.
 
 @item @var{file}.cc
 @itemx @var{file}.cp
@@ -779,6 +780,10 @@ C header file (not to be compiled or linked).
 C++ source code which must be preprocessed.  Note that in @samp{.cxx},
 the last two letters must both be literally @samp{x}.  Likewise,
 @samp{.C} refers to a literal capital C@.
+
+@item @var{file}.hh
+@itemx @var{file}.H
+C++ header file to be turned into a precompiled header.
 
 @item @var{file}.f
 @itemx @var{file}.for
@@ -843,7 +848,7 @@ name suffix).  This option applies to all following input files until
 the next @option{-x} option.  Possible values for @var{language} are:
 @example
 c  c-header  cpp-output
-c++  c++-cpp-output
+c++  c++-header  c++-cpp-output
 objective-c  objc-cpp-output
 assembler  assembler-with-cpp
 ada
@@ -965,22 +970,24 @@ Display the version number and copyrights of the invoked GCC.
 @cindex suffixes for C++ source
 @cindex C++ source file suffixes
 C++ source files conventionally use one of the suffixes @samp{.C},
-@samp{.cc}, @samp{.cpp}, @samp{.CPP}, @samp{.c++}, @samp{.cp}, or @samp{.cxx};
+@samp{.cc}, @samp{.cpp}, @samp{.CPP}, @samp{.c++}, @samp{.cp}, or
+@samp{.cxx}; C++ header files often use @samp{.hh} or @samp{.H}; and
 preprocessed C++ files use the suffix @samp{.ii}.  GCC recognizes
 files with these names and compiles them as C++ programs even if you
-call the compiler the same way as for compiling C programs (usually with
-the name @command{gcc}).
+call the compiler the same way as for compiling C programs (usually
+with the name @command{gcc}).
 
 @findex g++
 @findex c++
 However, C++ programs often require class libraries as well as a
 compiler that understands the C++ language---and under some
-circumstances, you might want to compile programs from standard input,
-or otherwise without a suffix that flags them as C++ programs.
-@command{g++} is a program that calls GCC with the default language
-set to C++, and automatically specifies linking against the C++
-library.  On many systems, @command{g++} is also
-installed with the name @command{c++}.
+circumstances, you might want to compile programs or header files from
+standard input, or otherwise without a suffix that flags them as C++
+programs.  You might also like to precompile a C header file with a
+@samp{.h} extension to be used in C++ compilations.  @command{g++} is a
+program that calls GCC with the default language set to C++, and
+automatically specifies linking against the C++ library.  On many
+systems, @command{g++} is also installed with the name @command{c++}.
 
 @cindex invoking @command{g++}
 When you compile C++ programs, you may specify many of the same
@@ -2799,6 +2806,11 @@ code is to provide behavior which is selectable at compile-time.
 @item -Winline
 @opindex Winline
 Warn if a function can not be inlined and it was declared as inline.
+
+@item -Winvalid-pch
+@opindex Winvalid-pch
+Warn if a precompiled header (@pxref{Precompiled Headers}) is found in
+the search path but can't be used.
 
 @item -Wlong-long
 @opindex Wlong-long
@@ -10923,6 +10935,104 @@ preprocessor.
 @include cppenv.texi
 
 @c man end
+
+@node Precompiled Headers
+@section Using Precompiled Headers
+@cindex precompiled headers
+@cindex speed of compilation
+
+Often large projects have many header files that are included in every
+source file.  The time the compiler takes to process these header files
+over and over again can account for nearly all of the time required to
+build the project.  To make builds faster, GCC allows users to
+`precompile' a header file; then, if builds can use the precompiled
+header file they will be much faster.
+
+To create a precompiled header file, simply compile it as you would any
+other file, if necessary using the @option{-x} option to make the driver
+treat it as a C or C++ header file.  You will probably want to use a
+tool like @command{make} to keep the precompiled header up-to-date when
+the headers it contains change.
+
+A precompiled header file will be searched for when @code{#include} is
+seen in the compilation.  As it searches for the included file
+(@pxref{Search Path,,Search Path,cpp.info,The C Preprocessor}) the
+compiler looks for a precompiled header in each directory just before it
+looks for the include file in that directory.  The name searched for is
+the name specified in the @code{#include} with @samp{.pch} appended.  If
+the precompiled header file can't be used, it is ignored.
+
+For instance, if you have @code{#include "all.h"}, and you have
+@file{all.h.pch} in the same directory as @file{all.h}, then the
+precompiled header file will be used if possible, and the original
+header will be used otherwise.
+
+Alternatively, you might decide to put the precompiled header file in a
+directory and use @option{-I} to ensure that directory is searched
+before (or instead of) the directory containing the original header.
+Then, if you want to check that the precompiled header file is always
+used, you can put a file of the same name as the original header in this
+directory containing an @code{#error} command.
+
+This also works with @option{-include}.  So yet another way to use
+precompiled headers, good for projects not designed with precompiled
+header files in mind, is to simply take most of the header files used by
+a project, include them from another header file, precompile that header
+file, and @option{-include} the precompiled header.  If the header files
+have guards against multiple inclusion, they will be skipped because
+they've already been included (in the precompiled header).
+
+If you need to precompile the same header file for different
+languages, targets, or compiler options, you can instead make a
+@emph{directory} named like @file{all.h.pch}, and put each precompiled
+header in the directory.  (It doesn't matter what you call the files
+in the directory, every precompiled header in the directory will be
+considered.)  The first precompiled header encountered in the
+directory that is valid for this compilation will be used; they're
+searched in no particular order.
+
+There are many other possibilities, limited only by your imagination,
+good sense, and the constraints of your build system.
+
+A precompiled header file can be used only when these conditions apply:
+
+@itemize
+@item
+Only one precompiled header can be used in a particular compilation.
+@item
+A precompiled header can't be used once the first C token is seen.  You
+can have preprocessor directives before a precompiled header; you can
+even include a precompiled header from inside another header, so long as
+there are no C tokens before the @code{#include}.
+@item
+The precompiled header file must be produced for the same language as
+the current compilation.  You can't use a C precompiled header for a C++
+compilation.
+@item
+The precompiled header file must be produced by the same compiler
+version and configuration as the current compilation is using.
+The easiest way to guarantee this is to use the same compiler binary
+for creating and using precompiled headers.
+@item
+Any macros defined before the precompiled header (including with
+@option{-D}) must either be defined in the same way as when the
+precompiled header was generated, or must not affect the precompiled
+header, which usually means that the they don't appear in the
+precompiled header at all.
+@item
+Certain command-line options must be defined in the same way as when the
+precompiled header was generated.  At present, it's not clear which
+options are safe to change and which are not; the safest choice is to
+use exactly the same options when generating and using the precompiled
+header.
+@end itemize
+
+For all of these but the last, the compiler will automatically ignore
+the precompiled header if the conditions aren't met.  For the last item,
+some option changes will cause the precompiled header to be rejected,
+but not all incompatible option combinations have yet been found.  If
+you find a new incompatible combination, please consider filing a bug
+report, see @ref{Bugs}.
 
 @node Running Protoize
 @section Running Protoize

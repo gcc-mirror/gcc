@@ -1,3 +1,519 @@
+2003-01-09  Geoffrey Keating  <geoffk@apple.com>
+
+	Merge from pch-branch:
+
+	2003-01-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* ggc-page.c (ggc_pch_read): Update the statistics after a PCH
+	load.
+
+	2002-12-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* cpplib.c (count_registered_pragmas): New function.
+	(save_registered_pragmas): New function.
+	(_cpp_save_pragma_names): New function.
+	(restore_registered_pragmas): New function.
+	(_cpp_restore_pragma_names): New function.
+	* cpphash.h (_cpp_save_pragma_names): Prototype.
+	(_cpp_restore_pragma_names): Likewise.
+	* cpppch.c (struct save_macro_item): Split from save_macro_data.
+	(struct save_macro_data): New field 'saved_pragmas'.
+	(save_macros): Update for changes to struct save_macro_data.
+	(cpp_prepare_state): Call _cpp_save_pragma_names, update
+	for changes to struct save_macro_data.
+	(cpp_read_state): Call _cpp_restore_pragma_names, update
+	for changes to struct save_macro_data.
+
+	* cpppch.c (cpp_read_state): Restore the hashtable references
+	in the cpp_reader.
+	
+	* tree.h (built_in_decls): Mark for PCH.
+
+	* dbxout.c (lastfile): Don't mark for PCH.
+
+	* ggc.h: Document PCH calls into memory managers.
+
+	2002-12-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/invoke.texi (Precompiled Headers): Document the
+	directory form of PCH.
+	* cppfiles.c (validate_pch): New function.
+	(open_file_pch): Search suitably-named directories for PCH files.
+
+	2002-12-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/gty.texi (GTY Options): Document chain_next, chain_prev,
+	reorder options.
+	(Type Information): Mention that the information is also
+	used to implement PCH.
+	* doc/passes.texi (Passes): Improve documentation of
+	language-specific files.
+
+	2002-12-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* gengtype.c (struct write_types_data): Add reorder_note_routine field.
+	(struct walk_type_data): Add reorder_fn field.
+	(walk_type): Process 'reorder' option.
+	(write_types_process_field): Reorder parameters to gt_pch_note_object,
+	call reorder_note_routine.
+	(write_func_for_structure): Reorder parameters to gt_pch_note_object.
+	(ggc_wtd): Update for change to struct write_types_data.
+	(pch_wtd): Likewise.
+	* ggc.h (gt_pch_note_object): Reorder parameters.
+	(gt_handle_reorder): New definition.
+	(gt_pch_note_reorder): New prototype.
+	* ggc-common.c (struct ptr_data): Add reorder_fn.
+	(gt_pch_note_object): Reorder parameters.
+	(gt_pch_note_reorder): New.
+	(gt_pch_save): Call reorder_fn.
+	* stringpool.c (gt_pch_n_S): Update for change to gt_pch_note_object.
+
+	* dbxout.c (cwd): Don't mark for PCH.
+
+	2002-12-09  Geoffrey Keating  <geoffk@apple.com>
+
+	* gengtype.c (finish_root_table): Fix some warnings.
+	(write_root): Handle TYPE_STRING.
+	* ggc.h (gt_ggc_m_S): Add prototype.
+	* stringpool.c (gt_ggc_m_S): New function.
+
+	2002-11-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (dw2_string_counter): New.
+	(AT_string_form): Use it.
+	(same_dw_val_p): Update for removal of hashtable.h hash tables.
+
+	2002-11-22  Geoffrey Keating  <geoffk@apple.com>
+
+	* dbxout.c: Include gt-dbxout.h.
+	(lastfile): Mark for PCH/GGC.
+	(cwd): Likewise.
+	(struct typeinfo): Likewise.
+	(typevec): Likewise.
+	(typevec_len): Likewise.
+	(next_type_number): Likewise.
+	(struct dbx_file): Likewise.
+	(current_file): Likewise.
+	(next_file_number): Likewise.
+	(dbxout_init): Allocate typevec, struct dbx_file with GGC.
+	(dbxout_start_source_file): Allocate struct dbx_file with GGC.
+	(dbxout_end_source_file): Don't free struct dbx_file.
+	(dbxout_type): Use GGC to allocate typevec.
+	* Makefile.in (dbxout.o): Depend on gt-dbxout.h, $(GGC_H).
+	(GTFILES): Add dbxout.c.
+	(gt-dbxout.h): New rule.
+	
+	* Makefile.in (c-pch.o): Add debug.h as dependency.
+	* c-pch.c: Include debug.h.
+	(pch_init): Call start_source_file to keep nesting right.
+	(c_common_read_pch): Add orig_name parameter.  Call
+	start_source_file debug hook.  Call end_source_file debug hook.
+	* c-common.h (c_common_read_pch): Update prototype.
+	* cpplib.h (struct cpp_callbacks): Add fourth field to read_pch
+	callback.
+	* cppfiles.c (struct include_file): Add new field `header_name'.
+	(find_or_create_entry): Default it to `name'.
+	(open_file_pch): Set it to the original header file searched for.
+	(stack_include_file): Don't stack an empty buffer, just handle
+	PCH files immediately.  Pass header_name field to read_pch callback.
+
+	2002-11-19  Geoffrey Keating  <geoffk@apple.com>
+
+	* function.c (funcdef_no): Mark to be saved in a PCH.
+
+	2002-11-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* ggc-page.c (ggc_pch_read): Remove unused 'bmap_size'.
+
+	* cpppch.c (cpp_read_state): Correct size reallocated for 'defn'.
+
+	2002-11-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* optabs.h (code_to_optab): Add GTY marker.
+
+	2002-11-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (GTFILES): Add cpplib.h.
+	* c-common.h (struct c_common_identifier): Don't skip 'node' field.
+	* c-decl.c (build_compound_literal): Don't use var_labelno.
+	* cpplib.h (struct cpp_hashnode): Use gengtype to mark.
+	* dwarf2asm.c (dw2_force_const_mem): Don't use const_labelno.
+	* varasm.c (const_labelno): Use gengtype to mark.
+	(var_labelno): Likewise.
+	(in_section): Likewise.
+	(in_named_name): Likewise.
+	(struct in_named_entry): Likewise.
+	(in_named_htab): Likewise.
+	(set_named_section_flags): Use GGC to allocate struct in_named_entry.
+	(init_varasm_once): Use GGC to allocate in_named_htab.
+	* config/darwin.c (current_pic_label_num): Mark for PCH.
+
+	2002-11-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* ggc-simple.c (init_ggc_pch): New stub procedure.
+	(ggc_pch_count_object): Likewise.
+	(ggc_pch_total_size): Likewise.
+	(ggc_pch_this_base): Likewise.
+	(ggc_pch_alloc_object): Likewise.
+	(ggc_pch_prepare_write): Likewise.
+	(ggc_pch_write_object): Likewise
+	(ggc_pch_finish): Likewise.
+	(ggc_pch_read): Likewise.
+
+	2002-11-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-pch.c (c_common_write_pch): Write the macro definitions after
+	the GCed data.
+	(c_common_read_pch): Call cpp_prepare_state.  Restore the macro
+	definitions after the GCed data.
+	* cpplib.c (save_macros): New.
+	(reset_ht): New.
+	(cpp_write_pch_deps): Split out of cpp_write_pch.
+	(cpp_write_pch_state): Split out of cpp_write_pch.
+	(cpp_write_pch): Delete.
+	(struct save_macro_data): Delete.
+	(cpp_prepare_state): New.
+	(cpp_read_state): Erase and restore initial macro definitions.
+	* cpplib.h (struct save_macro_data): Forward-declare.
+	(cpp_write_pch_deps): Prototype.
+	(cpp_write_pch_state): Prototype.
+	(cpp_write_pch): Delete prototype.
+	(cpp_prepare_state): Prototype.
+	(cpp_read_state): Add fourth argument.
+
+	2002-11-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* gengtype.c (adjust_field_rtx_def): Don't use skip on valid fields.
+	(write_array): Remove warning.
+
+	* gengtype.c (contains_scalar_p): New.
+	(finish_root_table): Add the table to all languages, even if it's
+	empty.
+	(write_roots): Output gt_pch_scalar_rtab.
+	* ggc-common.c (gt_pch_save): Write out scalars.
+	(gt_pch_restore): Read scalars back.
+
+	* ggc-page.c (OBJECTS_IN_PAGE): New macro.
+	(struct page_entry): Delete pch_page field.
+	(ggc_recalculate_in_use_p): Use OBJECTS_IN_PAGE.
+	(clear_marks): Likewise.
+	(sweep_pages): Likewise.
+	(poison_pages): Likewise.
+	(ggc_print_statistics): Likewise.
+	(ggc_pch_read): Don't free objects read from a PCH.
+	Properly set up in_use_p and page_tails.
+
+	2002-10-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* gengtype.c (struct write_types_data): New.
+	(struct walk_type_data): Make `cookie' const; add extra
+	prev_val item; add `orig_s' field.
+	(walk_type): Update prev_val[3].
+	(write_types_process_field): New.
+	(write_func_for_structure): Take write_types_data structure.
+	(write_types): New.
+	(ggc_wtd): New.
+	(pch_wtd): New.
+	(write_types_local_process_field): New.
+	(gc_mark_process_field): Delete.
+	(write_local_func_for_structure): New.
+	(gc_mark_func_name): Delete.
+	(write_gc_types): Delete.
+	(write_local): New.
+	(finish_root_table): Don't include 'ggc_' in PFX.
+	(write_root): Rename from write_root.  Fill pchw field of structures.
+	(write_array): New.
+	(write_roots): Rename from write_gc_roots.  Split out to write_array.
+	Update to changes to other routines.  Write gt_pch_cache_rtab table.
+	(main): Write PCH walking routines.
+	* ggc-common.c: Include toplev.h, sys/mman.h.
+	(ggc_mark_roots): For cache hashtables, also mark the hash table
+	and the array of entries.
+	(saving_htab): New.
+	(struct ptr_data): New.
+	(POINTER_HASH): New.
+	(gt_pch_note_object): New.
+	(saving_htab_hash): New.
+	(saving_htab_eq): New.
+	(struct traversal_state): New.
+	(call_count): New.
+	(call_alloc): New.
+	(compare_ptr_data): New.
+	(relocate_ptrs): New.
+	(write_pch_globals): New.
+	(struct mmap_info): New.
+	(gt_pch_save): New.
+	(gt_pch_restore): New.
+	* ggc-page.c (ROUND_UP_VALUE): New.
+	(ROUND_UP): New.
+	(struct page_entry): Add field `pch_page'.
+	(init_ggc): Use ROUND_UP.
+	(struct ggc_pch_data): Declare.
+	(init_ggc_pch): New.
+	(ggc_pch_count_object): New.
+	(ggc_pch_total_size): New.
+	(ggc_pch_this_base): New.
+	(ggc_pch_alloc_object): New.
+	(ggc_pch_prepare_write): New.
+	(ggc_pch_write_object): New.
+	(ggc_pch_finish): New.
+	(ggc_pch_read): New.
+	* ggc.h (gt_pointer_operator): New.
+	(gt_note_pointers): New.
+	(gt_pch_note_object): New prototype.
+	(gt_pointer_walker): New.
+	(struct ggc_root_tab): Use gt_pointer_walker, add `pchw' field.
+	(LAST_GGC_ROOT_TAB): Update.
+	(gt_pch_cache_rtab): Declare.
+	(gt_pch_scalar_rtab): Declare.
+	(struct ggc_cache_tab): Use gt_pointer_walker, add `pchw' field.
+	(LAST_GGC_CACHE_TAB): Update.
+	(gt_pch_save_stringpool): Declare.
+	(gt_pch_restore_stringpool): Declare.
+	(gt_pch_p_S): Declare.
+	(gt_pch_n_S): Declare.
+	(struct ggc_pch_data): Forward-declare.
+	(init_ggc_pch): Declare.
+	(ggc_pch_count_object): Declare.
+	(ggc_pch_total_size): Declare.
+	(ggc_pch_this_base): Declare.
+	(ggc_pch_alloc_object): Declare.
+	(ggc_pch_prepare_write): Declare.
+	(ggc_pch_write_object): Declare.
+	(ggc_pch_finish): Declare.
+	(ggc_pch_read): Declare.
+	(gt_pch_save): Declare.
+	(gt_pch_restore): Declare.
+	* fold-const.c (size_int_type_wide): Allocate size_htab using GGC.
+	* emit-rtl.c (init_emit_once): Allocate const_int_htab,
+	const_double_htab, mem_attrs_htab using GGC.
+	* c-pch.c: Include ggc.h.
+	(pch_init): Allow reading PCH file back.
+	(c_common_write_pch): Call gt_pch_save.
+	(c_common_read_pch): Call gt_pch_restore.
+	* c-parse.in (init_reswords): Delete now-untrue comment.
+	Allocate ridpointers using GGC.
+	* c-objc-common.c (c_objc_common_finish_file): Write PCH before
+	calling expand_deferred_fns.
+	* c-common.h (ridpointers): Mark for GTY machinery.
+	* Makefile.in (stringpool.o): Update dependencies.
+	(c-pch.o): Update dependencies.
+	(ggc-common.o): Update dependencies.
+	* stringpool.c: Include gt-stringpool.h.
+	(gt_pch_p_S): New.
+	(gt_pch_n_S): New.
+	(struct string_pool_data): New.
+	(spd): New.
+	(gt_pch_save_stringpool): New.
+	(gt_pch_restore_stringpool): New.
+	* tree.c (init_ttree): Make type_hash_table allocated using GC.
+	
+	2002-10-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* gengtype.c (adjust_field_rtx_def): Don't pass size_t to printf.
+	(output_mangled_typename): Don't pass size_t to printf.
+
+	* tree.h (union tree_type_symtab): Add tag to `address' field.
+	(union tree_decl_u2): Add tag to 'i' field.
+	* varasm.c (union rtx_const_un): Add tags to all fields.
+	* gengtype.c (struct walk_type_data): New.
+	(output_escaped_param): Take struct walk_type_data parameter.
+	(write_gc_structure_fields): Delete.
+	(walk_type): New.
+	(write_gc_marker_routine_for_structure): Delete.
+	(write_func_for_structure): New.
+	(gc_mark_process_field): New.
+	(gc_mark_func_name): New.
+	(gc_counter): Delete.
+	(write_gc_types): Use write_func_for_structure.
+	(write_gc_roots): Use walk_type.
+
+	2002-10-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* ggc-common.c (ggc_mark_roots): Delete 'x'.
+	(ggc_splay_dont_free): Fix warning about unused 'x'.
+	(ggc_print_common_statistics): Remove warnings.
+
+	2002-10-01  Mike Stump  <mrs@apple.com>
+
+        * ggc-common.c (ggc_splay_alloc): Actually return the allocated area.
+        * gengtype.c (write_gc_structure_fields): Handle param[digit]_is.
+
+	2002-09-01  Geoffrey Keating  <geoffk@redhat.com>
+	    Catherine Moore  <clm@redhat.com>
+
+	* Makefile (c-pch.o): Update dependencies.
+	(LIBCPP_OBJS): Add cpppch.o.
+	(cpppch.o): New.
+	* c-common.c (c_common_init): Don't call pch_init here.
+	* c-common.h (c_common_read_pch): Update prototype.
+	* c-lex.c (c_common_parse_file): Call pch_init here.
+	* c-opts.c (COMMAND_LINE_OPTIONS): Add -Winvalid-pch, -fpch-deps.
+	(c_common_decode_option): Handle them.
+	* c-pch.c: Include c-pragma.h.
+	(save_asm_offset): Delete.
+	(pch_init): Move contents of save_asm_offset into here, call
+	cpp_save_state.
+	(c_common_write_pch): Call cpp_write_pch.
+	(c_common_valid_pch): Warn only when -Winvalid-pch.  Call
+	cpp_valid_state.
+	(c_common_read_pch): Add NAME parameter.  Call cpp_read_state.
+	* cppfiles.c (stack_include_file): Update for change to 
+	parameters of cb.read_pch.
+	* cpphash.h (struct cpp_reader): Add `savedstate' field.
+	* cpplib.h (struct cpp_options): Add `warn_invalid_pch' and
+	`restore_pch_deps' fields.
+	(struct cpp_callbacks): Add NAME parameter to `read_pch'.
+	(cpp_save_state): Prototype.
+	(cpp_write_pch): Prototype.
+	(cpp_valid_state): Prototype.
+	(cpp_read_state): Prototype.
+	* cpppch.c: New file.
+	* flags.h (version_flag): Remove prototype.
+	* mkdeps.c (deps_save): New.
+	(deps_restore): New.
+	* mkdeps.h (deps_save): Prototype.
+	(deps_restore): Prototype.
+	* toplev.c (late_init_hook): Delete.
+	(version_flag): Make static again.
+	(compile_file): Don't call late_init_hook.
+	* toplev.h (late_init_hook): Delete.
+	* doc/cppopts.texi: Document -fpch-deps.
+	* doc/invoke.texi (Warning Options): Document -Winvalid-pch.
+
+	2002-08-27  Geoffrey Keating  <geoffk@redhat.com>
+
+	* c-pch.c (c_common_write_pch): Rename from c_write_pch, change
+	callers.
+	(c_common_valid_pch): Rename from c_valid_pch, change callers.
+	(c_common_read_pch): Rename from c_read_pch, change callers.
+
+	* c-opts.c (COMMAND_LINE_OPTIONS): Allow -output-pch= to have
+	a space between it and its argument.
+
+	2002-08-24  Geoffrey Keating  <geoffk@redhat.com>
+
+	* c-pch.c: New file.
+	* toplev.h (late_init_hook): Declare.
+	* toplev.c (late_init_hook): Define.
+	(version_flag): Make globally visible.
+	(compile_file): Call late_init_hook.
+	(init_asm_output): Make output file seekable.
+	* gcc.c (default_compilers): Update c-header rule.
+	* flags.h (version_flag): Declare.
+	* cpplib.h (struct cpp_callbacks): Add 'valid_pch' and 'read_pch'
+	fields.
+	* cppfiles.c (struct include_file): Add 'pch' field.
+	(INCLUDE_PCH_P): New.
+	(open_file_pch): New.
+	(stack_include_file): Handle PCH files specially.
+	(find_include_file): Call open_file_pch instead of open_file.
+	(_cpp_read_file): Explain why open_file is used instead of
+	open_file_pch.
+	* c-opts.c (c_common_decode_option): Correct OPT__output_pch case.
+	* c-objc-common.c (c_objc_common_finish_file): Call c_write_pch.
+	* c-lex.c (init_c_lex): Set valid_pch and read_pch fields
+	in cpplib callbacks.
+	* c-common.c (pch_file): Correct comment.
+	(allow_pch): Define.
+	(c_common_init): Call pch_init.
+	* c-common.h (allow_pch): Declare.
+	(pch_init): Declare.
+	(c_valid_pch): Declare.
+	(c_read_pch): Declare.
+	(c_write_pch): Declare.
+	* Makefile.in (c-pch.o): New.
+	(C_AND_OBJC_OBJS): Add c-pch.o.
+	* doc/invoke.texi (Precompiled Headers): Add index entries,
+	complete truncated paragraph.
+
+	2002-08-17  Geoffrey Keating  <geoffk@redhat.com>
+
+	* c-common.c: (pch_file): Define.
+	* c-common.h (pch_file): Declare.
+	* c-opts.c (COMMAND_LINE_OPTIONS): Add --output-pch=.
+	(missing_arg): Require --output-pch= to have an argument.
+	(c_common_decode_option): Handle --output-pch=.
+	* gcc.c: Document new %V.
+	(default_compilers): Handle compiling C header files.
+	(do_spec_1): Implement %V.
+	(main): Handle "gcc foo.h" without trying to run linker.
+	* doc/invoke.texi (Invoking GCC): Add new menu item for PCH.
+	(Overall Options): Document what the driver does with header files,
+	document new -x option possibilities.
+	(Invoking G++): More documentation for PCH.
+	(Precompiled Headers): New.
+
+	2002-08-09  Geoffrey Keating  <geoffk@redhat.com>
+
+	* ggc.h: Don't include varray.h.  Rearrange functions to be more
+	organized.
+	(ggc_add_root): Delete.
+	(ggc_mark_rtx): Delete.
+	(ggc_mark_tree): Delete.
+	(struct ggc_statistics): Remove contents.
+	* ggc-common.c: Remove unneeded includes.
+	(struct ggc_root): Delete.
+	(roots): Delete.
+	(ggc_add_root): Delete.
+	(ggc_mark_roots): Don't mark `roots'.  Call ggc_mark_stringpool.
+	(ggc_print_common_statistics): Remove most of the contents.
+	* Makefile.in (GGC_H): No longer uses varray.h.
+	(ggc-common.o): Update dependencies.
+	(c-parse.o): Add varray.h to dependencies.
+	(c-common.o): Add varray.h.
+	* stringpool.c (mark_ident): Use mangled name for tree marker routine.
+	(mark_ident_hash): Rename to ggc_mark_stringpool.
+	(init_stringpool): Don't use ggc_add_root.
+	* c-parse.in: Include varray.h.
+	* c-common.c: Include varray.h.
+	* objc/Make-lang.in (objc-act.o): Add varray.h.
+	* objc/objc-act.c: Include varray.h.
+
+	2002-07-25  Geoffrey Keating  <geoffk@redhat.com>
+
+	* dwarf2out.c (dw_cfi_oprnd2_desc): Fix ISO-only function definition.
+	(dw_cfi_oprnd1_desc): Likewise.
+
+	2002-07-17  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/alpha/alpha.c (struct alpha_links): Use gengtype to mark;
+	move out of ifdef.
+	(alpha_links): Use gengtype to mark; move out of ifdef.
+	(mark_alpha_links_node): Delete.
+	(mark_alpha_links): Delete.
+	(alpha_need_linkage): Use GGC to allocate splay tree, struct
+	alpha_links, strings.  Don't use ggc_add_root.
+	* ggc-common.c (ggc_splay_alloc): New.
+	(ggc_splay_dont_free): New.
+	* ggc.h (ggc_mark_rtx): Update for changed name mangling.
+	(ggc_mark_tree): Likewise.
+	(splay_tree_new_ggc): New.
+	(ggc_splay_alloc): Declare.
+	(ggc_splay_dont_free): Declare.
+	* dwarf2asm.c: Include gt-dwarf2asm.h.
+	(mark_indirect_pool_entry): Delete.
+	(mark_indirect_pool): Delete.
+	(indirect_pool): Use gengtype to mark.
+	(dw2_force_const_mem): Don't use ggc_add_root.
+	* Makefile.in (dwarf2asm.o): Depend on gt-dwarf2asm.h.
+	(GTFILES): Add SPLAY_TREE_H, dwarf2asm.c.
+	(gt-dwarf2asm.h): Depend on s-gtype.
+
+	2002-07-08  Geoffrey Keating  <geoffk@redhat.com>
+
+	* tree.h (union tree_type_symtab): Mark `die' field.
+	* Makefile.in (dwarf2out.o): Update dependencies.
+	* dwarf2out.c: Use GGC to allocate all structures.  Convert to htab_t
+	hash tables.
+	(dw_cfi_oprnd1_desc): New function.
+	(dw_cfi_oprnd2_desc): New function.
+	(indirect_string_alloc): Delete.
+	(debug_str_do_hash): New function.
+	(debug_str_eq): New function.
+	(mark_limbo_die_list): Delete.
+	(dwarf2out_init): Don't call ggc_add_root.
+
 2003-01-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	The following changes are merged from itanium-sched-branch:
@@ -438,10 +954,10 @@
 	the generated code.
 	(write_automata): Call the new function.
 	
-
 Thu Jan  9 22:47:38 CET 2003  Jan Hubicka  <jh@suse.cz>
 
-	* i386.md (unit, prefix_0f, memory attributes): Hanlde sseicvt correctly.
+	* i386.md (unit, prefix_0f, memory attributes): Hanlde sseicvt
+	correctly.
 
 2003-01-09  Paolo Carlini  <pcarlini@unitus.it>
 

@@ -32,7 +32,6 @@
 #include "decl.h"
 #include "flags.h"
 #include "diagnostic.h"
-#include "ggc.h"
 #include "toplev.h"
 #include "output.h"
 
@@ -213,8 +212,8 @@ typedef struct cp_lexer GTY (())
 
 /* Prototypes.  */
 
-static cp_lexer *cp_lexer_new
-  PARAMS ((bool));
+static cp_lexer *cp_lexer_new_main
+  PARAMS ((void));
 static cp_lexer *cp_lexer_new_from_tokens
   PARAMS ((struct cp_token_cache *));
 static int cp_lexer_saving_tokens
@@ -292,29 +291,37 @@ static void cp_lexer_stop_debugging
 /* The stream to which debugging output should be written.  */
 static FILE *cp_lexer_debug_stream;
 
-/* Create a new C++ lexer.  If MAIN_LEXER_P is true the new lexer is
-   the main lexer -- i.e, the lexer that gets tokens from the
-   preprocessor.  Otherwise, it is a lexer that uses a cache of stored
-   tokens.  */
+/* Create a new main C++ lexer, the lexer that gets tokens from the
+   preprocessor.  */
 
 static cp_lexer *
-cp_lexer_new (bool main_lexer_p)
+cp_lexer_new_main (void)
 {
   cp_lexer *lexer;
+  cp_token first_token;
+
+  /* It's possible that lexing the first token will load a PCH file,
+     which is a GC collection point.  So we have to grab the first
+     token before allocating any memory.  */
+  cp_lexer_get_preprocessor_token (NULL, &first_token);
+  cpp_get_callbacks (parse_in)->valid_pch = NULL;
 
   /* Allocate the memory.  */
   lexer = (cp_lexer *) ggc_alloc_cleared (sizeof (cp_lexer));
 
   /* Create the circular buffer.  */
   lexer->buffer = ((cp_token *) 
-		   ggc_alloc (CP_TOKEN_BUFFER_SIZE * sizeof (cp_token)));
+		   ggc_calloc (CP_TOKEN_BUFFER_SIZE, sizeof (cp_token)));
   lexer->buffer_end = lexer->buffer + CP_TOKEN_BUFFER_SIZE;
 
-  /* There are no tokens in the buffer.  */
-  lexer->last_token = lexer->buffer;
+  /* There is one token in the buffer.  */
+  lexer->last_token = lexer->buffer + 1;
+  lexer->first_token = lexer->buffer;
+  lexer->next_token = lexer->buffer;
+  memcpy (lexer->buffer, &first_token, sizeof (cp_token));
 
   /* This lexer obtains more tokens by calling c_lex.  */
-  lexer->main_lexer_p = main_lexer_p;
+  lexer->main_lexer_p = true;
 
   /* Create the SAVED_TOKENS stack.  */
   VARRAY_INT_INIT (lexer->saved_tokens, CP_SAVED_TOKENS_SIZE, "saved_tokens");
@@ -339,15 +346,14 @@ cp_lexer_new_from_tokens (cp_token_cache *tokens)
   cp_token_block *block;
   ptrdiff_t num_tokens;
 
-  /* Create the lexer.  */
-  lexer = cp_lexer_new (/*main_lexer_p=*/false);
+  /* Allocate the memory.  */
+  lexer = (cp_lexer *) ggc_alloc_cleared (sizeof (cp_lexer));
 
   /* Create a new buffer, appropriately sized.  */
   num_tokens = 0;
   for (block = tokens->first; block != NULL; block = block->next)
     num_tokens += block->num_tokens;
-  lexer->buffer = ((cp_token *) 
-		   ggc_alloc (num_tokens * sizeof (cp_token)));
+  lexer->buffer = ((cp_token *) ggc_alloc (num_tokens * sizeof (cp_token)));
   lexer->buffer_end = lexer->buffer + num_tokens;
   
   /* Install the tokens.  */
@@ -364,6 +370,18 @@ cp_lexer_new_from_tokens (cp_token_cache *tokens)
   lexer->next_token = lexer->buffer;
   /* The buffer is full.  */
   lexer->last_token = lexer->first_token;
+
+  /* This lexer doesn't obtain more tokens.  */
+  lexer->main_lexer_p = false;
+
+  /* Create the SAVED_TOKENS stack.  */
+  VARRAY_INT_INIT (lexer->saved_tokens, CP_SAVED_TOKENS_SIZE, "saved_tokens");
+  
+  /* Create the STRINGS array.  */
+  VARRAY_TREE_INIT (lexer->string_tokens, 32, "strings");
+
+  /* Assume we are not debugging.  */
+  lexer->debugging_p = false;
 
   return lexer;
 }
@@ -610,7 +628,7 @@ cp_lexer_get_preprocessor_token (lexer, token)
   bool done;
 
   /* If this not the main lexer, return a terminating CPP_EOF token.  */
-  if (!lexer->main_lexer_p)
+  if (lexer != NULL && !lexer->main_lexer_p)
     {
       token->type = CPP_EOF;
       token->line_number = 0;
@@ -2472,9 +2490,14 @@ static cp_parser *
 cp_parser_new ()
 {
   cp_parser *parser;
+  cp_lexer *lexer;
+
+  /* cp_lexer_new_main is called before calling ggc_alloc because
+     cp_lexer_new_main might load a PCH file.  */
+  lexer = cp_lexer_new_main ();
 
   parser = (cp_parser *) ggc_alloc_cleared (sizeof (cp_parser));
-  parser->lexer = cp_lexer_new (/*main_lexer_p=*/true);
+  parser->lexer = lexer;
   parser->context = cp_parser_context_new (NULL);
 
   /* For now, we always accept GNU extensions.  */
@@ -14422,9 +14445,7 @@ cp_parser_late_parsing_for_member (parser, member_function)
       
       /* Set the current source position to be the location of the first
 	 token in the saved inline body.  */
-      cp_lexer_set_source_position_from_token 
-	(parser->lexer,
-	 cp_lexer_peek_token (parser->lexer));
+      (void) cp_lexer_peek_token (parser->lexer);
       
       /* Let the front end know that we going to be defining this
 	 function.  */
@@ -14477,8 +14498,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 
        /* Set the current source position to be the location of the
      	  first token in the default argument.  */
-      cp_lexer_set_source_position_from_token 
-	(parser->lexer, cp_lexer_peek_token (parser->lexer));
+      (void) cp_lexer_peek_token (parser->lexer);
 
        /* Local variable names (and the `this' keyword) may not appear
      	  in a default argument.  */
@@ -14996,6 +15016,8 @@ yyparse ()
   the_parser = cp_parser_new ();
   error_occurred = cp_parser_translation_unit (the_parser);
   the_parser = NULL;
+  
+  finish_file ();
 
   return error_occurred;
 }

@@ -4666,7 +4666,7 @@ init_asm_output (name)
       if (!strcmp (asm_file_name, "-"))
 	asm_out_file = stdout;
       else
-	asm_out_file = fopen (asm_file_name, "w");
+	asm_out_file = fopen (asm_file_name, "w+");
       if (asm_out_file == 0)
 	fatal_io_error ("can't open %s for writing", asm_file_name);
     }

@@ -112,6 +112,7 @@ static void sanitize_cpp_opts PARAMS ((void));
 
 #define COMMAND_LINE_OPTIONS						     \
   OPT("-help",                  CL_ALL,   OPT__help)			     \
+  OPT("-output-pch=",		CL_ALL | CL_ARG, OPT__output_pch)	     \
   OPT("C",                      CL_ALL,   OPT_C)			     \
   OPT("CC",                     CL_ALL,   OPT_CC)			     \
   OPT("E",			CL_ALL,   OPT_E)			     \
@@ -154,6 +155,7 @@ static void sanitize_cpp_opts PARAMS ((void));
   OPT("Wimplicit-function-declaration",	CL_C, OPT_Wimplicit_function_decl)   \
   OPT("Wimplicit-int",		CL_C,	  OPT_Wimplicit_int)		     \
   OPT("Wimport",                CL_ALL,   OPT_Wimport)			     \
+  OPT("Winvalid-pch",           CL_ALL,   OPT_Winvalid_pch)		     \
   OPT("Wlong-long",		CL_ALL,   OPT_Wlong_long)		     \
   OPT("Wmain",			CL_C,     OPT_Wmain)			     \
   OPT("Wmissing-braces",	CL_ALL,   OPT_Wmissing_braces)		     \
@@ -231,6 +233,7 @@ static void sanitize_cpp_opts PARAMS ((void));
   OPT("fnonnull-objects",	CL_CXX,   OPT_fnonnull_objects)		     \
   OPT("foperator-names",	CL_CXX,   OPT_foperator_names)		     \
   OPT("foptional-diags",	CL_CXX,   OPT_foptional_diags)		     \
+  OPT("fpch-deps",		CL_ALL,	  OPT_fpch_deps)		     \
   OPT("fpermissive",		CL_CXX,   OPT_fpermissive)		     \
   OPT("fpreprocessed",		CL_ALL,   OPT_fpreprocessed)		     \
   OPT("frepo",			CL_CXX,   OPT_frepo)			     \
@@ -343,6 +346,7 @@ missing_arg (opt_index)
 
   switch (cl_options[opt_index].opt_code)
     {
+    case OPT__output_pch:
     case OPT_Wformat_eq:
     case OPT_d:
     case OPT_fabi_version:
@@ -627,6 +631,10 @@ c_common_decode_option (argc, argv)
       print_help ();
       break;
 
+    case OPT__output_pch:
+      pch_file = arg;
+      break;
+
     case OPT_C:
       cpp_opts->discard_comments = 0;
       break;
@@ -830,6 +838,10 @@ c_common_decode_option (argc, argv)
 
     case OPT_Wimport:
       cpp_opts->warn_import = on;
+      break;
+
+    case OPT_Winvalid_pch:
+      cpp_opts->warn_invalid_pch = on;
       break;
 
     case OPT_Wlong_long:
@@ -1176,6 +1188,10 @@ c_common_decode_option (argc, argv)
 
     case OPT_foptional_diags:
       flag_optional_diags = on;
+      break;
+
+    case OPT_fpch_deps:
+      cpp_opts->restore_pch_deps = on;
       break;
 
     case OPT_fpermissive:

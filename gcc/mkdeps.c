@@ -291,3 +291,77 @@ deps_phony_targets (d, fp)
       putc ('\n', fp);
     }
 }
+
+/* Write out a deps buffer to a file, in a form that can be read back
+   with deps_restore.  Returns nonzero on error, in which case the
+   error number will be in errno.  */
+
+int
+deps_save (deps, f)
+     struct deps *deps;
+     FILE *f;
+{
+  unsigned int i;
+
+  /* The cppreader structure contains makefile dependences.  Write out this
+     structure.  */
+
+  /* The number of dependences.  */
+  if (fwrite (&deps->ndeps, sizeof (deps->ndeps), 1, f) != 1)
+      return -1;
+  /* The length of each dependence followed by the string.  */
+  for (i = 0; i < deps->ndeps; i++)
+    {
+      size_t num_to_write = strlen (deps->depv[i]);
+      if (fwrite (&num_to_write, sizeof (size_t), 1, f) != 1)
+          return -1;
+      if (fwrite (deps->depv[i], num_to_write, 1, f) != 1)
+          return -1;
+    }
+
+  return 0;
+}
+
+/* Read back dependency information written with deps_save into
+   the deps buffer.  The third argument may be NULL, in which case
+   the dependency information is just skipped, or it may be a filename,
+   in which case that filename is skipped.  */
+
+int
+deps_restore (deps, fd, self)
+     struct deps *deps;
+     FILE *fd;
+     const char *self;
+{
+  unsigned int i, count;
+  size_t num_to_read;
+  size_t buf_size = 512;
+  char *buf = (char *) xmalloc (buf_size);
+
+  /* Number of dependences.  */
+  if (fread (&count, 1, sizeof (count), fd) != sizeof (count))
+    return -1;
+
+  /* The length of each dependence string, followed by the string.  */
+  for (i = 0; i < count; i++)
+    {
+      /* Read in # bytes in string.  */
+      if (fread (&num_to_read, 1, sizeof (size_t), fd) != sizeof (size_t))
+	return -1;
+      if (buf_size < num_to_read + 1)
+	{
+	  buf_size = num_to_read + 1 + 127;
+	  buf = xrealloc (buf, buf_size);
+	}
+      if (fread (buf, 1, num_to_read, fd) != num_to_read)
+	return -1;
+      buf[num_to_read] = '\0';
+
+      /* Generate makefile dependencies from .pch if -nopch-deps.  */ 
+      if (self != NULL && strcmp (buf, self) != 0)
+        deps_add_dep (deps, buf);
+    }
+
+  free (buf);
+  return 0;
+}

@@ -53,6 +53,17 @@ extern void deps_add_dep	PARAMS ((struct deps *, const char *));
 extern void deps_write		PARAMS ((const struct deps *, FILE *,
 					 unsigned int));
 
+/* Write out a deps buffer to a file, in a form that can be read back
+   with deps_restore.  Returns nonzero on error, in which case the
+   error number will be in errno.  */
+extern int deps_save		PARAMS ((struct deps *, FILE *));
+
+/* Read back dependency information written with deps_save into
+   the deps buffer.  The third argument may be NULL, in which case
+   the dependency information is just skipped, or it may be a filename,
+   in which case that filename is skipped.  */
+extern int deps_restore		PARAMS ((struct deps *, FILE *, const char *));
+
 /* For each dependency *except the first*, emit a dummy rule for that
    file, causing it to depend on nothing.  This is used to work around
    the intermediate-file deletion misfeature in Make, in some

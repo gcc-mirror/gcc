@@ -1,5 +1,5 @@
 /* Simple garbage collection for the GNU compiler.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,6 +28,7 @@
 #include "flags.h"
 #include "varray.h"
 #include "ggc.h"
+#include "toplev.h"
 #include "timevar.h"
 #include "params.h"
 
@@ -490,16 +491,90 @@ ggc_print_statistics ()
 
   fprintf (stderr, "\n\
 Total internal data (bytes)\t%ld%c\n\
-Number of leaves in tree\t%d\n\
+Number of leaves in tree\t%lu\n\
 Average leaf depth\t\t%.1f\n",
 	   SCALE(G.objects * offsetof (struct ggc_mem, u)),
 	   LABEL(G.objects * offsetof (struct ggc_mem, u)),
-	   nleaf, (double)sumdepth / (double)nleaf);
+	   (unsigned long)nleaf, (double)sumdepth / (double)nleaf);
 
   /* Report overall memory usage.  */
   fprintf (stderr, "\n\
-Total objects allocated\t\t%d\n\
+Total objects allocated\t\t%ld\n\
 Total memory in GC arena\t%ld%c\n",
-	   G.objects,
+	   (unsigned long)G.objects,
 	   SCALE(G.allocated), LABEL(G.allocated));
+}
+
+struct ggc_pch_data *
+init_ggc_pch ()
+{
+  sorry ("Generating PCH files is not supported when using ggc-simple.c");
+  /* It could be supported, but the code is not yet written.  */
+  return NULL;
+}
+
+void 
+ggc_pch_count_object (d, x, size)
+     struct ggc_pch_data *d ATTRIBUTE_UNUSED;
+     void *x ATTRIBUTE_UNUSED;
+     size_t size ATTRIBUTE_UNUSED;
+{
+}
+     
+size_t
+ggc_pch_total_size (d)
+     struct ggc_pch_data *d ATTRIBUTE_UNUSED;
+{
+  return 0;
+}
+
+void
+ggc_pch_this_base (d, base)
+     struct ggc_pch_data *d ATTRIBUTE_UNUSED;
+     void *base ATTRIBUTE_UNUSED;
+{
+}
+
+
+char *
+ggc_pch_alloc_object (d, x, size)
+     struct ggc_pch_data *d ATTRIBUTE_UNUSED;
+     void *x ATTRIBUTE_UNUSED;
+     size_t size ATTRIBUTE_UNUSED;
+{
+  return NULL;
+}
+
+void 
+ggc_pch_prepare_write (d, f)
+     struct ggc_pch_data * d ATTRIBUTE_UNUSED;
+     FILE * f ATTRIBUTE_UNUSED;
+{
+}
+
+void
+ggc_pch_write_object (d, f, x, newx, size)
+     struct ggc_pch_data * d ATTRIBUTE_UNUSED;
+     FILE *f ATTRIBUTE_UNUSED;
+     void *x ATTRIBUTE_UNUSED;
+     void *newx ATTRIBUTE_UNUSED;
+     size_t size ATTRIBUTE_UNUSED;
+{
+}
+
+void
+ggc_pch_finish (d, f)
+     struct ggc_pch_data * d ATTRIBUTE_UNUSED;
+     FILE *f ATTRIBUTE_UNUSED;
+{
+}
+
+void
+ggc_pch_read (f, addr)
+     FILE *f ATTRIBUTE_UNUSED;
+     void *addr ATTRIBUTE_UNUSED;
+{
+  /* This should be impossible, since we won't generate any valid PCH
+     files for this configuration.  */
+  abort ();
 }

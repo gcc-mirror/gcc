@@ -10,7 +10,8 @@
 
 GCC uses some fairly sophisticated memory management techniques, which
 involve determining information about GCC's data structures from GCC's
-source code and using this information to perform garbage collection.
+source code and using this information to perform garbage collection and
+implement precompiled headers.
 
 A full C parser would be too overcomplicated for this task, so a limited
 subset of C is interpreted and special markers are used to determine
@@ -226,6 +227,39 @@ the structure that this fields points to is never defined, so long as
 this field is always @code{NULL}.  This is used to avoid requiring
 backends to define certain optional structures.  It doesn't work with
 language frontends.
+
+@findex chain_next
+@findex chain_prev
+@item chain_next
+@itemx chain_prev
+
+It's helpful for the type machinery to know if objects are often
+chained together in long lists; this lets it generate code that uses
+less stack space by iterating along the list instead of recursing down
+it.  @code{chain_next} is an expression for the next item in the list,
+@code{chain_prev} is an expression for the previous item.  The
+machinery requires that taking the next item of the previous item
+gives the original item.
+
+@findex reorder
+@item reorder
+
+Some data structures depend on the relative ordering of pointers.  If
+the type machinery needs to change that ordering, it will call the
+function referenced by the @code{reorder} option, before changing the
+pointers in the object that's pointed to by the field the option
+applies to.  The function must be of the type @code{void ()(void *,
+void *, gt_pointer_operator, void *)}.  The second parameter is the
+pointed-to object; the third parameter is a routine that, given a
+pointer, can update it to its new value.  The fourth parameter is a
+cookie to be passed to the third parameter.  The first parameter is
+the structure that contains the object, or the object itself if it is
+a structure.
+
+No data structure may depend on the absolute value of pointers.  Even
+relying on relative orderings and using @code{reorder} functions can
+be expensive.  It is better to depend on properties of the data, like
+an ID number or the hash of a string instead.
 
 @findex special
 @item special

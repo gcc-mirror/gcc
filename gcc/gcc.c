@@ -421,6 +421,7 @@ or with constant text in a single argument.
  %w	marks the argument containing or following the %w as the
 	"output file" of this compilation.  This puts the argument
 	into the sequence of arguments that %o will substitute later.
+ %V	indicates that this compilation produces no "output file".
  %W{...}
 	like %{...} but mark last argument supplied within
 	as a file to be deleted on failure.
@@ -914,9 +915,19 @@ static const struct compiler default_compilers[] =
     %(trad_capable_cpp) %(cpp_options) %(cpp_debug_options)", 0},
   {".h", "@c-header", 0},
   {"@c-header",
-   "%{!E:%ecompilation of header file requested} \
-    %(trad_capable_cpp) %(cpp_options) %(cpp_debug_options)",
-   0},
+   /* cc1 has an integrated ISO C preprocessor.  We should invoke the
+      external preprocessor if -save-temps is given.  */
+     "%{E|M|MM:%(trad_capable_cpp) %(cpp_options) %(cpp_debug_options)}\
+      %{!E:%{!M:%{!MM:\
+	  %{save-temps|traditional-cpp:%(trad_capable_cpp) \
+		%(cpp_options) %b.i \n\
+		    cc1 -fpreprocessed %b.i %(cc1_options)\
+                        -o %g.s %{!o*:--output-pch=%i.pch}\
+                        %W{o*:--output-pch=%*}%V}\
+	  %{!save-temps:%{!traditional-cpp:\
+		cc1 %(cpp_unique_options) %(cc1_options)\
+                    -o %g.s %{!o*:--output-pch=%i.pch}\
+                    %W{o*:--output-pch=%*}%V}}}}}", 0},
   {".i", "@cpp-output", 0},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0},
@@ -4765,6 +4776,10 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    this_is_library_file = 1;
 	    break;
 
+	  case 'V':
+	    outfiles[input_file_number] = NULL;
+	    break;
+
 	  case 'w':
 	    this_is_output_file = 1;
 	    break;
@@ -6079,6 +6094,7 @@ main (argc, argv)
   size_t i;
   int value;
   int linker_was_run = 0;
+  int num_linker_inputs = 0;
   char *explicit_link_files;
   char *specs_file;
   const char *p;
@@ -6516,9 +6532,15 @@ main (argc, argv)
 	error_count++;
     }
 
+  /* Determine if there are any linker input files.  */
+  num_linker_inputs = 0;
+  for (i = 0; (int) i < n_infiles; i++)
+    if (explicit_link_files[i] || outfiles[i] != NULL)
+      num_linker_inputs++;
+
   /* Run ld to link all the compiler output files.  */
 
-  if (error_count == 0)
+  if (num_linker_inputs > 0 && error_count == 0)
     {
       int tmp = execution_count;
 

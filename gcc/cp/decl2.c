@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
-#include "ggc.h"
 #include "timevar.h"
 #include "cpplib.h"
 #include "target.h"
@@ -2588,6 +2587,9 @@ finish_file ()
   /* Bad parse errors.  Just forget about it.  */
   if (! global_bindings_p () || current_class_type || decl_namespace_list)
     return;
+
+  if (pch_file)
+    c_common_write_pch ();
 
   /* Otherwise, GDB can get confused, because in only knows
      about source for LINENO-1 lines.  */

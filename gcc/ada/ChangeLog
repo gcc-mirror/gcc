@@ -1,3 +1,9 @@
+2003-01-09  Geoffrey Keating  <geoffk@apple.com>
+
+	* gnat_rm.texi: Remove RCS version number.
+
+	* ada-tree.h (union lang_tree_node): Add chain_next option.
+
 2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Make-lang.in (ada.install-info, ada.install-common,

@@ -3226,6 +3226,8 @@ clear_parm_order ()
   current_binding_level->parm_order = NULL_TREE;
 }
 
+static GTY(()) int compound_literal_number;
+
 /* Build a COMPOUND_LITERAL_EXPR.  TYPE is the type given in the compound
    literal, which may be an incomplete array type completed by the
    initializer; INIT is a CONSTRUCTOR that initializes the compound
@@ -3273,10 +3275,10 @@ build_compound_literal (type, init)
       /* This decl needs a name for the assembler output.  We also need
 	 a unique suffix to be added to the name.  */
       char *name;
-      extern int var_labelno;
 
-      ASM_FORMAT_PRIVATE_NAME (name, "__compound_literal", var_labelno);
-      var_labelno++;
+      ASM_FORMAT_PRIVATE_NAME (name, "__compound_literal", 
+			       compound_literal_number);
+      compound_literal_number++;
       DECL_NAME (decl) = get_identifier (name);
       DECL_DEFER_OUTPUT (decl) = 1;
       DECL_COMDAT (decl) = 1;

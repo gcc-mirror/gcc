@@ -587,7 +587,7 @@ REGS_H = regs.h varray.h $(MACHMODE_H)
 INTEGRATE_H = integrate.h varray.h
 LOOP_H = loop.h varray.h bitmap.h
 GCC_H = gcc.h version.h
-GGC_H = ggc.h varray.h gtype-desc.h
+GGC_H = ggc.h gtype-desc.h
 TIMEVAR_H = timevar.h timevar.def
 INSN_ATTR_H = insn-attr.h $(srcdir)/insn-addr.h $(srcdir)/varray.h
 C_COMMON_H = c-common.h $(SPLAY_TREE_H) $(CPPLIB_H)
@@ -739,7 +739,7 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
   c-convert.o c-aux-info.o c-common.o c-opts.o c-format.o c-semantics.o \
-  c-objc-common.o c-dump.o libcpp.a $(C_TARGET_OBJS)
+  c-objc-common.o c-dump.o c-pch.o libcpp.a $(C_TARGET_OBJS)
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o c-pretty-print.o $(C_AND_OBJC_OBJS)
@@ -1175,7 +1175,7 @@ c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) flags.h diagnostic.h $(TM_P_H)
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(GGC_H) intl.h $(C_TREE_H) input.h flags.h toplev.h output.h $(CPPLIB_H) \
-    gt-c-parse.h
+    varray.h gt-c-parse.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	       -c $(srcdir)/c-parse.c $(OUTPUT_OPTION)
 
@@ -1246,7 +1246,7 @@ tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h 
 c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(OBSTACK_H) $(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) \
 	$(GGC_H) $(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def $(TARGET_H) \
-	diagnostic.h except.h gt-c-common.h real.h langhooks.h
+	diagnostic.h except.h gt-c-common.h real.h langhooks.h varray.h
 c-pretty-print.o : c-pretty-print.c c-pretty-print.h pretty-print.h \
 	$(C_COMMON_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) real.h
 
@@ -1269,6 +1269,9 @@ c-semantics.o : c-semantics.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE
 
 c-dump.o : c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(C_TREE_H) tree-dump.h
+
+c-pch.o : c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(CPPLIB_H) $(TREE_H) \
+	c-common.h output.h toplev.h c-pragma.h $(GGC_H) debug.h
 
 # Language-independent files.
 
@@ -1349,18 +1352,17 @@ gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) varray.h 
 	libfuncs.h debug.h $(GGC_H) bitmap.h $(BASIC_BLOCK_H) hard-reg-set.h \
 	ssa.h cselib.h insn-addr.h
 
-ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
-	flags.h $(GGC_H) varray.h $(HASHTAB_H) $(TM_P_H) langhooks.h \
-	$(PARAMS_H)
+ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
+	$(HASHTAB_H) toplev.h
 
 ggc-simple.o: ggc-simple.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
 	flags.h $(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H)
 
 ggc-page.o: ggc-page.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
-	flags.h toplev.h $(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H)
+	flags.h toplev.h $(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H)
 
-stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-	$(OBSTACK_H) flags.h toplev.h $(GGC_H)
+stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+	$(TREE_H) $(GGC_H) gt-stringpool.h
 
 hashtable.o: hashtable.c hashtable.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(OBSTACK_H)
 
@@ -1466,11 +1468,12 @@ optabs.o : optabs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_
    toplev.h $(GGC_H) real.h $(TM_P_H) except.h gt-optabs.h $(BASIC_BLOCK_H)
 dbxout.o : dbxout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    flags.h $(REGS_H) debug.h $(TM_P_H) $(TARGET_H) function.h langhooks.h \
-   insn-config.h reload.h gstab.h xcoffout.h output.h dbxout.h toplev.h
+   insn-config.h reload.h gstab.h xcoffout.h output.h dbxout.h toplev.h \
+   $(GGC_H) gt-dbxout.h
 debug.o : debug.c debug.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 sdbout.o : sdbout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    flags.h function.h $(EXPR_H) output.h hard-reg-set.h $(REGS_H) real.h \
-   insn-config.h xcoffout.h c-pragma.h ggc.h $(TARGET_H) \
+   insn-config.h xcoffout.h c-pragma.h $(GGC_H) $(TARGET_H) \
    sdbout.h toplev.h $(TM_P_H) except.h debug.h langhooks.h gt-sdbout.h
 dwarfout.o : dwarfout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) dwarf.h flags.h insn-config.h reload.h output.h toplev.h $(TM_P_H) \
@@ -1480,7 +1483,7 @@ dwarf2out.o : dwarf2out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) 
    hard-reg-set.h $(REGS_H) $(EXPR_H) libfuncs.h toplev.h dwarf2out.h varray.h \
    $(GGC_H) except.h dwarf2asm.h $(TM_P_H) langhooks.h $(HASHTAB_H) gt-dwarf2out.h
 dwarf2asm.o : dwarf2asm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) flags.h $(RTL_H) \
-   $(TREE_H) output.h dwarf2asm.h $(TM_P_H) $(GGC_H)
+   $(TREE_H) output.h dwarf2asm.h $(TM_P_H) $(GGC_H) gt-dwarf2asm.h
 vmsdbgout.o : vmsdbgout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) flags.h output.h vmsdbg.h debug.h langhooks.h function.h $(TARGET_H)
 xcoffout.o : xcoffout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
@@ -1862,22 +1865,22 @@ s-preds: genpreds$(build_exeext) $(srcdir)/move-if-change
 	$(SHELL) $(srcdir)/move-if-change tmp-preds.h tm-preds.h
 	$(STAMP) s-preds
 
-GTFILES = $(srcdir)/location.h $(srcdir)/coretypes.h \
-  $(host_xm_file_list) $(tm_file_list) $(HASHTAB_H) \
+GTFILES = $(srcdir)/location.h $(srcdir)/coretypes.h $(srcdir)/cpplib.h \
+  $(host_xm_file_list) $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) \
   $(srcdir)/bitmap.h $(srcdir)/function.h  $(srcdir)/rtl.h $(srcdir)/optabs.h \
   $(srcdir)/tree.h $(srcdir)/libfuncs.h $(srcdir)/hashtable.h $(srcdir)/real.h \
   $(srcdir)/varray.h $(srcdir)/ssa.h $(srcdir)/insn-addr.h $(srcdir)/cselib.h \
+  $(srcdir)/basic-block.h $(srcdir)/location.h \
   $(srcdir)/c-common.h $(srcdir)/c-tree.h \
-  $(srcdir)/basic-block.h \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c \
-  $(srcdir)/dwarf2out.c $(srcdir)/emit-rtl.c \
-  $(srcdir)/except.c $(srcdir)/explow.c $(srcdir)/expr.c \
+  $(srcdir)/dbxout.c $(srcdir)/dwarf2out.c $(srcdir)/dwarf2asm.c \
+  $(srcdir)/emit-rtl.c $(srcdir)/except.c $(srcdir)/explow.c $(srcdir)/expr.c \
   $(srcdir)/fold-const.c $(srcdir)/function.c \
   $(srcdir)/gcse.c $(srcdir)/integrate.c $(srcdir)/lists.c $(srcdir)/optabs.c \
   $(srcdir)/profile.c $(srcdir)/ra-build.c $(srcdir)/regclass.c \
   $(srcdir)/reg-stack.c \
   $(srcdir)/sdbout.c $(srcdir)/stmt.c $(srcdir)/stor-layout.c \
-  $(srcdir)/tree.c $(srcdir)/varasm.c \
+  $(srcdir)/stringpool.c $(srcdir)/tree.c $(srcdir)/varasm.c \
   $(out_file) \
   @all_gtfiles@
 
@@ -1891,9 +1894,9 @@ gt-integrate.h gt-stmt.h gt-tree.h gt-varasm.h gt-emit-rtl.h : s-gtype; @true
 gt-explow.h gt-stor-layout.h gt-regclass.h gt-lists.h : s-gtype; @true
 gt-alias.h gt-cselib.h gt-fold-const.h gt-gcse.h gt-profile.h : s-gtype; @true
 gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h gt-dwarf2out.h : s-gtype ; @true
-gt-ra-build.h gt-reg-stack.h : s-gtype ; @true
+gt-ra-build.h gt-reg-stack.h gt-dwarf2asm.h gt-dbxout.h : s-gtype ; @true
 gt-c-common.h gt-c-decl.h gt-c-parse.h gt-c-pragma.h : s-gtype; @true
-gt-c-objc-common.h gtype-c.h gt-location.h : s-gtype ; @true
+gt-c-objc-common.h gtype-c.h gt-location.h gt-stringpool.h : s-gtype ; @true
 
 gtyp-gen.h: Makefile
 	echo "/* This file is machine generated.  Do not edit.  */" > tmp-gtyp.h
@@ -2215,7 +2218,7 @@ PREPROCESSOR_DEFINES = \
 
 LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o cpptrad.o \
 		cpphash.o cpperror.o cppinit.o cppdefault.o cppmain.o \
-		hashtable.o line-map.o mkdeps.o prefix.o mbchar.o
+		hashtable.o line-map.o mkdeps.o prefix.o mbchar.o cpppch.o
 
 LIBCPP_DEPS =	$(CPPLIB_H) cpphash.h line-map.h hashtable.h intl.h \
 		$(OBSTACK_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
@@ -2238,6 +2241,7 @@ cpphash.o:  cpphash.c  $(LIBCPP_DEPS)
 cpptrad.o:  cpptrad.c  $(LIBCPP_DEPS)
 cppfiles.o: cppfiles.c $(LIBCPP_DEPS) $(SPLAY_TREE_H) mkdeps.h
 cppinit.o:  cppinit.c  $(LIBCPP_DEPS) cppdefault.h mkdeps.h prefix.h
+cpppch.o:   cpppch.c   $(LIBCPP_DEPS) mkdeps.h
 
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) cppdefault.h \
 	Makefile

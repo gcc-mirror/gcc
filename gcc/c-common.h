@@ -121,7 +121,7 @@ enum rid
 
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
-extern tree *ridpointers;
+extern GTY ((length ("(int)RID_MAX"))) tree *ridpointers;
 
 /* Standard named or nameless data types of the C compiler.  */
 
@@ -177,7 +177,7 @@ enum c_tree_index
 struct c_common_identifier GTY(())
 {
   struct tree_common common;
-  struct cpp_hashnode GTY ((skip (""))) node;
+  struct cpp_hashnode node;
 };
 
 #define wchar_type_node			c_global_trees[CTI_WCHAR_TYPE]
@@ -360,13 +360,24 @@ struct c_lang_decl GTY(()) {
 
 extern c_language_kind c_language;
 
+/* Nonzero if we can read a PCH file now.  */
+
+extern int allow_pch;
+
 /* Switches common to the C front ends.  */
 
 /* Nonzero if prepreprocessing only.  */
+
 extern int flag_preprocess_only;
+
+/* The file name to which we should write a precompiled header, or
+   NULL if no header will be written in this compile.  */
+
+extern const char *pch_file;
 
 /* Nonzero if an ISO standard was selected.  It rejects macros in the
    user's namespace.  */
+
 extern int flag_iso;
 
 /* Nonzero whenever Objective-C functionality is being used.  */
@@ -374,6 +385,7 @@ extern int flag_objc;
 
 /* Nonzero if -undef was given.  It suppresses target built-in macros
    and assertions.  */
+
 extern int flag_undef;
 
 /* Nonzero means don't recognize the non-ANSI builtin functions.  */
@@ -1252,5 +1264,15 @@ struct c_fileinfo *get_fileinfo			PARAMS ((const char *));
 extern void dump_time_statistics		PARAMS ((void));
 
 extern int c_dump_tree				PARAMS ((void *, tree));
+
+extern void pch_init				PARAMS ((void));
+extern int c_common_valid_pch			PARAMS ((cpp_reader *pfile,
+							 const char *name,
+							 int fd));
+extern void c_common_read_pch			PARAMS ((cpp_reader *pfile,
+							 const char *name,
+							 int fd,
+							 const char *orig));
+extern void c_common_write_pch			PARAMS ((void));
 
 #endif /* ! GCC_C_COMMON_H */

@@ -60,14 +60,16 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   /* If nonzero, the user gave us the `-v' flag.  */
   int saw_verbose_flag = 0;
 
-  /* This will be 0 if we encounter a situation where we should not
-     link in libstdc++.  */
-  int library = 1;
+  /* This is a tristate:
+     -1 means we should not link in libstdc++
+     0  means we should link in libstdc++ if it is needed
+     1  means libstdc++ is needed and should be linked in.  */
+  int library = 0;
 
   /* The number of arguments being added to what's in argv, other than
      libraries.  We use this to track the number of times we've inserted
      -xc++/-xnone.  */
-  int added = 2;
+  int added = 0;
 
   /* Used to track options that take arguments, so we don't go wrapping
      those with -xc++/-xnone.  */
@@ -131,10 +133,10 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
       if (argv[i][0] == '-')
 	{
-	  if (library != 0 && (strcmp (argv[i], "-nostdlib") == 0
-			       || strcmp (argv[i], "-nodefaultlibs") == 0))
+	  if (strcmp (argv[i], "-nostdlib") == 0
+	      || strcmp (argv[i], "-nodefaultlibs") == 0)
 	    {
-	      library = 0;
+	      library = -1;
 	    }
 	  else if (strcmp (argv[i], "-lm") == 0
 		   || strcmp (argv[i], "-lmath") == 0
@@ -152,31 +154,37 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	  else if (strcmp (argv[i], "-pg") == 0 || strcmp (argv[i], "-p") == 0)
 	    saw_profile_flag++;
 	  else if (strcmp (argv[i], "-v") == 0)
-	    {
-	      saw_verbose_flag = 1;
-	      if (argc == 2)
-		{
-		  /* If they only gave us `-v', don't try to link
-		     in libg++.  */ 
-		  library = 0;
-		}
-	    }
+	    saw_verbose_flag = 1;
 	  else if (strncmp (argv[i], "-x", 2) == 0)
-	    saw_speclang = 1;
+	    {
+	      if (library == 0)
+		{
+		  const char * arg;
+		  if (argv[i][2] != '\0')
+		    arg = argv[i]+2;
+		  else if (argv[i+1] != NULL)
+		    arg = argv[i+1];
+		  else  /* Error condition, message will be printed later.  */
+		    arg = "";
+		  if (strcmp (arg, "c++") == 0
+		      || strcmp (arg, "c++-cpp-output") == 0)
+		    library = 1;
+		}
+	      saw_speclang = 1;
+	    }
 	  else if (((argv[i][2] == '\0'
 		     && (char *)strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
 		    || strcmp (argv[i], "-Xlinker") == 0
 		    || strcmp (argv[i], "-Tdata") == 0))
 	    quote = argv[i];
-	  else if (library != 0 && ((argv[i][2] == '\0'
-		     && (char *) strchr ("cSEM", argv[i][1]) != NULL)
-		    || strcmp (argv[i], "-MM") == 0
-		    || strcmp (argv[i], "-fsyntax-only") == 0))
+	  else if ((argv[i][2] == '\0'
+		    && (char *) strchr ("cSEM", argv[i][1]) != NULL)
+		   || strcmp (argv[i], "-MM") == 0
+		   || strcmp (argv[i], "-fsyntax-only") == 0)
 	    {
 	      /* Don't specify libraries if we won't link, since that would
 		 cause a warning.  */
-	      library = 0;
-	      added -= 2;
+	      library = -1;
 	    }
 	  else if (strcmp (argv[i], "-static-libgcc") == 0 
 		   || strcmp (argv[i], "-static") == 0)
@@ -195,15 +203,27 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      continue;
 	    }
 
-	  /* If the filename ends in .c or .i, put options around it.
+	  /* If the filename ends in .[chi], put options around it.
 	     But not if a specified -x option is currently active.  */
 	  len = strlen (argv[i]);
 	  if (len > 2
-	      && (argv[i][len - 1] == 'c' || argv[i][len - 1] == 'i')
+	      && (argv[i][len - 1] == 'c' 
+		  || argv[i][len - 1] == 'i'
+		  || argv[i][len - 1] == 'h')
 	      && argv[i][len - 2] == '.')
 	    {
 	      args[i] |= LANGSPEC;
 	      added += 2;
+	    }
+	  
+	  /* If we don't know that this is a header file, we might
+	     need to be linking in the libraries.  */
+	  if (library == 0)
+	    {
+	      if ((len <= 2 || strcmp (argv[i] + (len - 2), ".H") != 0)
+		  && (len <= 2 || strcmp (argv[i] + (len - 2), ".h") != 0)
+		  && (len <= 3 || strcmp (argv[i] + (len - 3), ".hh") != 0))
+		library = 1;
 	    }
 	}
     }
@@ -212,7 +232,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
     fatal ("argument to `%s' missing\n", quote);
 
   /* If we know we don't have to do anything, bail now.  */
-  if (! added && ! library)
+  if (! added && library <= 0)
     {
       free (args);
       return;
@@ -225,7 +245,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 #endif
 
   /* Make sure to have room for the trailing NULL argument.  */
-  num_args = argc + added + need_math + shared_libgcc + 1;
+  num_args = argc + added + need_math + shared_libgcc + (library > 0) + 1;
   arglist = (const char **) xmalloc (num_args * sizeof (char *));
 
   i = 0;
@@ -241,27 +261,37 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
       /* Make sure -lstdc++ is before the math library, since libstdc++
 	 itself uses those math routines.  */
-      if (!saw_math && (args[i] & MATHLIB) && library)
+      if (!saw_math && (args[i] & MATHLIB) && library > 0)
 	{
 	  --j;
 	  saw_math = argv[i];
 	}
 
-      if (!saw_libc && (args[i] & WITHLIBC) && library)
+      if (!saw_libc && (args[i] & WITHLIBC) && library > 0)
 	{
 	  --j;
 	  saw_libc = argv[i];
 	}
 
-      /* Wrap foo.c and foo.i files in a language specification to
+      /* Wrap foo.[chi] files in a language specification to
 	 force the gcc compiler driver to run cc1plus on them.  */
       if (args[i] & LANGSPEC)
 	{
 	  int len = strlen (argv[i]);
-	  if (argv[i][len - 1] == 'i')
-	    arglist[j++] = "-xc++-cpp-output";
-	  else
-	    arglist[j++] = "-xc++";
+	  switch (argv[i][len - 1])
+	    {
+	    case 'c':
+	      arglist[j++] = "-xc++";
+	      break;
+	    case 'i':
+	      arglist[j++] = "-xc++-cpp-output";
+	      break;
+	    case 'h':
+	      arglist[j++] = "-xc++-header";
+	      break;
+	    default:
+	      abort ();
+	    }
 	  arglist[j++] = argv[i];
 	  arglist[j] = "-xnone";
 	}
@@ -271,7 +301,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
     }
 
   /* Add `-lstdc++' if we haven't already done so.  */
-  if (library)
+  if (library > 0)
     {
       arglist[j++] = saw_profile_flag ? LIBSTDCXX_PROFILE : LIBSTDCXX;
       added_libraries++;
@@ -285,7 +315,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
     }
   if (saw_math)
     arglist[j++] = saw_math;
-  else if (library && need_math)
+  else if (library > 0 && need_math)
     {
       arglist[j++] = saw_profile_flag ? MATH_LIBRARY_PROFILE : MATH_LIBRARY;
       added_libraries++;

@@ -449,6 +449,10 @@ struct cpp_reader
   /* Used to save the original line number during traditional
      preprocessing.  */
   unsigned int saved_line;
+
+  /* A saved list of the defined macros, for dependency checking
+     of precompiled headers.  */
+  struct cpp_savedstate *savedstate;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.
@@ -542,6 +546,8 @@ extern void _cpp_maybe_push_include_file PARAMS ((cpp_reader *));
 extern int _cpp_test_assertion PARAMS ((cpp_reader *, unsigned int *));
 extern int _cpp_handle_directive PARAMS ((cpp_reader *, int));
 extern void _cpp_define_builtin	PARAMS ((cpp_reader *, const char *));
+extern char ** _cpp_save_pragma_names PARAMS ((cpp_reader *));
+extern void _cpp_restore_pragma_names PARAMS ((cpp_reader *, char **));
 extern void _cpp_do__Pragma	PARAMS ((cpp_reader *));
 extern void _cpp_init_directives PARAMS ((cpp_reader *));
 extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));

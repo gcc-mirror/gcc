@@ -1,0 +1,100 @@
+#   Copyright (C) 1997, 2002 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# GCC testsuite for precompiled header interaction,
+# that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+set old_dg_do_what_default "${dg-do-what-default}"
+
+# Main loop.
+foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
+    global runtests torture_without_loops dg-do-what-default
+
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $test] {
+	continue
+    }
+    set nshort [file tail [file dirname $test]]/[file tail $test]
+    set bname "[file rootname [file tail $test]]"
+
+    catch { file delete "$bname.hp.pch" }
+    catch { file delete "$bname.h.pch" }
+    catch { file delete "$bname.s" }
+    catch { file delete "$bname.s-pch" }
+    catch { file delete "$bname.hp" }
+
+    # We don't try to use the loop-optimizing options, since they are highly
+    # unlikely to make any difference to PCH.
+    foreach flags $torture_without_loops {
+	verbose "Testing $nshort, $flags" 1
+
+	# For the header files, the default is to precompile.
+	set dg-do-what-default precompile
+	dg-test -keep-output "[file rootname $test].h" $flags ""
+
+	# For the rest, the default is to compile to .s.
+	set dg-do-what-default compile
+
+	if { [ file exists "$bname.h.pch" ] } {
+	    # To ensure that the PCH is used, not the original header,
+	    # the actual PCH file is renamed to "<foo>.hp.pch".
+	    file rename "$bname.h.pch" "$bname.hp.pch"
+	    if { [ is_remote host ] } {
+		remote_download host "$bname.hp.pch"
+	    }
+
+	    dg-test -keep-output $test $flags "-I."
+	    file delete "$bname.hp.pch"
+	    if { [ file exists "$bname.s" ] } {
+		file rename "$bname.s" "$bname.s-pch"
+		if { [ is_remote host ] } {
+		    remote_upload host "[file rootname $test].h" "$bname.hp"
+		} else {
+		    file copy "[file rootname $test].h" "$bname.hp"
+		}
+		dg-test -keep-output $test $flags "-I."
+		remote_file host delete "$bname.hp"
+		set tmp [ diff "$bname.s" "$bname.s-pch" ]
+		if { $tmp == 0 } {
+		    untested "$nshort $flags assembly comparison"
+		} elseif { $tmp == 1 } {
+		    pass "$nshort $flags assembly comparison"
+		} else {
+		    fail "$nshort $flags assembly comparison"
+		}
+		file delete "$bname.s"
+		file delete "$bname.s-pch"
+	    } else {
+		untested "$nshort $flags assembly comparison"
+	    }
+
+	} else {
+	    untested $nshort
+	    untested "$nshort $flags assembly comparison"
+	}
+    }
+}
+
+set dg-do-what-default "$old_dg_do_what_default"
+
+# All done.
+dg-finish

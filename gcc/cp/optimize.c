@@ -31,7 +31,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "integrate.h"
 #include "toplev.h"
 #include "varray.h"
-#include "ggc.h"
 #include "params.h"
 #include "hashtab.h"
 #include "debug.h"

@@ -229,7 +229,7 @@ extern int flag_store_check;
 extern const char *current_encoding;
 
 /* The Java .class file that provides main_class;  the main input file. */
-extern struct JCF *current_jcf;
+extern GTY(()) struct JCF * current_jcf;
 
 typedef struct CPool constant_pool;
 
@@ -241,7 +241,7 @@ typedef struct CPool constant_pool;
 /* The cpool->data[i] for a ResolvedClass points to a RECORD_TYPE. */
 #define CONSTANT_ResolvedClass     (CONSTANT_Class+CONSTANT_ResolvedFlag)
 
-#define CPOOL_UTF(CPOOL, INDEX) ((tree) (CPOOL)->data[INDEX])
+#define CPOOL_UTF(CPOOL, INDEX) ((CPOOL)->data[INDEX].t)
 
 /* A NameAndType constant is represented as a TREE_LIST.
    The type is the signature string (as an IDENTIFIER_NODE).  */
@@ -686,7 +686,7 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
 #define nativecode_ptr_type_node ptr_type_node
 
 /* They need to be reset before processing each class */
-extern struct CPool *outgoing_cpool; 
+extern GTY(()) struct CPool *outgoing_cpool; 
 
 #define wfl_operator \
   java_global_trees[JTI_WFL_OPERATOR]
@@ -1066,8 +1066,8 @@ struct lang_decl GTY(())
 struct lang_type GTY(())
 {
   tree signature;
-  struct JCF * GTY ((skip (""))) jcf;
-  struct CPool * GTY ((skip (""))) cpool;
+  struct JCF * jcf;
+  struct CPool * cpool;
   tree cpool_data_ref;		/* Cached */
   tree finit_stmt_list;		/* List of statements finit$ will use */
   tree clinit_stmt_list;	/* List of statements <clinit> will use  */

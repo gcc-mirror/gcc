@@ -1,3 +1,93 @@
+2003-01-09  Geoffrey Keating  <geoffk@apple.com>
+
+	Merge from pch-branch:
+
+	2003-01-09  Geoffrey Keating  <geoffk@apple.com>
+
+	Merge to tag pch-merge-20030102:
+	
+	* semantics.c (finish_translation_unit): Don't call finish_file.
+	* parser.c: Don't include ggc.h.
+	(cp_lexer_new_main): Rename from cp_lexer_new, only create main lexer,
+	read first token here.  Don't allow PCH files after the first
+	token is read.
+	(cp_lexer_new_from_tokens): Duplicate functionality from cp_lexer_new.
+	(cp_lexer_get_preprocessor_token): Allow LEXER to be NULL.
+	(cp_parser_new): Call cp_lexer_new_main before allocating GCed memory.
+	(cp_parser_late_parsing_for_member): Don't duplicate call to
+	cp_lexer_set_source_position_from_token.
+	(cp_parser_late_parsing_default_args): Likewise.
+	(yyparse): Call finish_file after clearing the_parser.
+
+	2002-12-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* Make-lang.in: Remove $(GGC_H) from all dependencies.
+	(CXX_TREE_H): Add $(GGC_H).
+	* class.c: Don't include ggc.h. 
+	(field_decl_cmp): Make parameters be 'const void *' to match qsort.
+	(method_name_cmp): Likewise.
+	(resort_data): New variable.
+	(resort_field_decl_cmp): New.
+	(resort_method_name_cmp): New.
+	(resort_sorted_fields): New.
+	(resort_type_method_vec): New.
+	(finish_struct_methods): Delete cast.
+	(finish_struct_1): Delete cast.
+	* cp-tree.h: Include ggc.h.
+	(struct lang_type_class): Add reorder attribute to field `methods'.
+	(union lang_decl_u3): Add reorder attribute to field `sorted_fields'.
+	(resort_sorted_fields): New prototype.
+	(resort_type_method_vec): New prototype.
+	* call.c: Don't include ggc.h.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* init.c: Likewise.
+	* lex.c: Likewise.
+	* method.c: Likewise.
+	* optimize.c: Likewise.
+	* parse.y: Likewise.
+	* pt.c: Likewise.
+	* repo.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* spew.c: Likewise.
+	* tree.c: Likewise.
+
+	* lang-specs.h: Remove comment.
+
+	2002-12-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* cp-tree.h (struct operator_name_info_t): Mark for GTY machinery.
+	(operator_name_info): Mark to be saved for PCH, specify size.
+	(assignment_operator_name_info): Likewise.
+
+	2002-11-19  Geoffrey Keating  <geoffk@apple.com>
+
+	* decl.c (anon_cnt): Mark to be saved for PCH.
+
+	2002-10-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* lex.c  (init_reswords): Delete now-untrue comment.
+	Allocate ridpointers using GGC.
+
+	2002-10-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* cp-tree.h (union lang_decl_u2): Add tags to all fields.
+
+	* g++spec.c (lang_specific_driver): Don't include standard
+	libraries in `added'.
+
+	2002-08-27  Geoffrey Keating  <geoffk@redhat.com>
+
+	* decl2.c (finish_file): Call c_common_write_pch.
+	* Make-lang.in (CXX_C_OBJS): Add c-pch.o.
+
+	2002-08-17  Geoffrey Keating  <geoffk@redhat.com>
+
+	* g++spec.c (lang_specific_driver): Treat .h files as C++ header
+	files when using g++.
+	* lang-specs.h: Handle compiling C++ header files.
+
 2003-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (start_decl): Only check DECL_THREAD_LOCAL for VAR_DECLs.
