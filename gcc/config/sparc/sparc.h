@@ -33,7 +33,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_SPEC " %{pipe:-} %{fpic:-k} %{fPIC:-k}"
 
 /* Define macros to distinguish architectures.  */
-#define CPP_SPEC "%{msparclite:-D__sparclite__} %{mv8:-D__sparcv8__}"
+#define CPP_SPEC "%{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}"
 
 /* Prevent error on `-sun4' and `-target sun4' options.  */
 /* This used to translate -dalign to -malign, but that is no good
