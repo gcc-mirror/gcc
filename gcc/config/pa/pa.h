@@ -507,12 +507,11 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 /* Get reg_class from a letter such as appears in the machine description.  */
 
 #define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'r' ? GENERAL_REGS :					\
-   ((C) == 'f' ? (!TARGET_SNAKE ? FP_REGS : NO_REGS) :		\
-    ((C) == 'x' ? (TARGET_SNAKE ? SNAKE_FP_REGS : NO_REGS) :	\
-     ((C) == 'y' ? (TARGET_SNAKE ? HI_SNAKE_FP_REGS : NO_REGS) :\
-      ((C) == 'q' ? SHIFT_REGS :				\
-       ((C) == 'a' ? R1_REGS : NO_REGS))))))
+  ((C) == 'f' ? (!TARGET_SNAKE ? FP_REGS : NO_REGS) :		\
+   ((C) == 'x' ? (TARGET_SNAKE ? SNAKE_FP_REGS : NO_REGS) :	\
+    ((C) == 'y' ? (TARGET_SNAKE ? HI_SNAKE_FP_REGS : NO_REGS) :	\
+     ((C) == 'q' ? SHIFT_REGS :					\
+      ((C) == 'a' ? R1_REGS : NO_REGS)))))
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -1352,8 +1351,8 @@ while (0)
 #define REGISTER_MOVE_COST(CLASS1, CLASS2) \
  ((((CLASS1 == FP_REGS || CLASS1 == SNAKE_FP_REGS	\
      || CLASS1 == HI_SNAKE_FP_REGS)			\
-    && (CLASS2 == R1_REGS | CLASS2 == GENERAL_REGS))	\
-   || ((CLASS2 == R1_REGS | CLASS1 == GENERAL_REGS)	\
+    && (CLASS2 == R1_REGS || CLASS2 == GENERAL_REGS))	\
+   || ((CLASS1 == R1_REGS || CLASS1 == GENERAL_REGS)	\
        && (CLASS2 == FP_REGS || CLASS2 == SNAKE_FP_REGS	\
 	   || CLASS2 == HI_SNAKE_FP_REGS))) ? 6 : 2)	
 
