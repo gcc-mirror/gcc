@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
      file that contains only the method templates and "just win".  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "obstack.h"
 
 #include "tree.h"
@@ -38,10 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "defaults.h"
 #include "except.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */

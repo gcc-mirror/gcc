@@ -20,15 +20,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
-#include <sys/types.h>
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include "system.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "obstack.h"
-#include <ctype.h>
 
 typedef char* cp_printer ();
 

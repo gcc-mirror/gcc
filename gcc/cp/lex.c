@@ -26,9 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #define YYDEBUG 1
 
 #include "config.h"
-#include <sys/types.h>
-#include <stdio.h>
-#include <errno.h>
+#include "system.h"
 #include <setjmp.h>
 #include "input.h"
 #include "tree.h"
@@ -57,26 +55,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #else
 extern double atof ();
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-
-#ifdef NEED_DECLARATION_INDEX
-extern char *index ();
-#endif
-
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
-
-#ifndef errno
-extern int errno;		/* needed for VAX.  */
 #endif
 
 #define obstack_chunk_alloc xmalloc

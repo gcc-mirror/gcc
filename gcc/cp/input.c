@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
    lex.c for very minor efficiency gains (primarily in function
    inlining).  */
 
-#include <stdio.h>
+#include "system.h"
 
 extern FILE *finput;
 

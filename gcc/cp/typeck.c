@@ -30,17 +30,13 @@ Boston, MA 02111-1307, USA.  */
    like a strange sort of assignment).  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
 #include "expr.h"
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif
 
 extern void compiler_error ();
 

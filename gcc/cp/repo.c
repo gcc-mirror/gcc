@@ -26,28 +26,15 @@ Boston, MA 02111-1307, USA.  */
    explicit code.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "input.h"
 #include "obstack.h"
 
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#else
-extern char * getenv ();
-#endif
-
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
 extern char *getpwd PROTO((void));
 
 static tree repo_get_id PROTO((tree));
-static char *save_string PROTO((char *, int));
 static char *extract_string PROTO((char **));
 static char *get_base_filename PROTO((char *));
 static void open_repo_file PROTO((char *));
@@ -208,14 +195,6 @@ repo_template_instantiated (t, extern_p)
       if (id)
 	IDENTIFIER_REPO_CHOSEN (id) = 1;
     }
-}
-
-static char *
-save_string (s, len)
-     char *s;
-     int len;
-{
-  return obstack_copy0 (&temporary_obstack, s, len);
 }
 
 /* Parse a reasonable subset of shell quoting syntax.  */
