@@ -1,3 +1,7 @@
+2002-06-11  Jeffrey Law <law@redhat.com
+
+	* mips.c (embedded_pic_fnaddr_reg): Fix typo.
+
 2002-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md (movsi): Only use floating point
