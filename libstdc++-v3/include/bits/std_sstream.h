@@ -75,7 +75,7 @@ namespace std
       explicit 
       basic_stringbuf(const __string_type& __str,
 		      ios_base::openmode __mode = ios_base::in | ios_base::out)
-      : __streambuf_type(), _M_string(__str.c_str())
+      : __streambuf_type(), _M_string(__str.data(), __str.size())
       { _M_stringbuf_init(__mode); }
 
       // Get and set:
@@ -84,7 +84,7 @@ namespace std
       {
 	if (_M_mode & ios_base::out)
 	  {
-	    // This is the deal: _M_string.size() is value that
+	    // This is the deal: _M_string.size() is a value that
 	    // represents the size of the intial string that makes
 	    // _M_string, and may not be the correct size of the
 	    // current stringbuf internal buffer.
@@ -116,7 +116,7 @@ namespace std
 	// re-allocation of the internal string object, _M_string.
 	_M_buf_size = _M_string.size();
 
-	// NB: Start ostringstream buffers at 1024 bytes. This is an
+	// NB: Start ostringstream buffers at 512 bytes. This is an
 	// experimental value (pronounced "arbitrary" in some of the
 	// hipper english-speaking countries), and can be changed to
 	// suite particular needs.

@@ -43,9 +43,9 @@ namespace std
   template<class _CharT>
     struct char_traits;
   
-  template<> class char_traits<char>;
+  template<> struct char_traits<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
-  template<> class char_traits<wchar_t>;
+  template<> struct char_traits<wchar_t>;
 #endif
 
   template<typename _Alloc> 
