@@ -1,3 +1,9 @@
+2004-09-10  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/17024
+	* fold-const.c (fold_cond_expr_with_comparison): Handle unordered
+	floating point comparison operators.  Change aborts to gcc_asserts.
+
 2004-09-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* final.c (output_asm_insn): Correct problem with -fverbose-asm.

@@ -4162,10 +4162,17 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
     switch (comp_code)
       {
       case EQ_EXPR:
+      case UNEQ_EXPR:
 	tem = fold_convert (arg1_type, arg1);
 	return pedantic_non_lvalue (fold_convert (type, negate_expr (tem)));
       case NE_EXPR:
+      case LTGT_EXPR:
 	return pedantic_non_lvalue (fold_convert (type, arg1));
+      case UNGE_EXPR:
+      case UNGT_EXPR:
+	if (flag_trapping_math)
+	  break;
+	/* Fall through.  */
       case GE_EXPR:
       case GT_EXPR:
 	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
@@ -4173,6 +4180,10 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 			       (TREE_TYPE (arg1)), arg1);
 	tem = fold (build1 (ABS_EXPR, TREE_TYPE (arg1), arg1));
 	return pedantic_non_lvalue (fold_convert (type, tem));
+      case UNLE_EXPR:
+      case UNLT_EXPR:
+	if (flag_trapping_math)
+	  break;
       case LE_EXPR:
       case LT_EXPR:
 	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
@@ -4181,7 +4192,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 	tem = fold (build1 (ABS_EXPR, TREE_TYPE (arg1), arg1));
 	return negate_expr (fold_convert (type, tem));
       default:
-	gcc_unreachable ();
+	gcc_assert (TREE_CODE_CLASS (comp_code) == '<');
+	break;
       }
 
   /* A != 0 ? A : 0 is simply A, unless A is -0.  Likewise
@@ -4245,6 +4257,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 	  return pedantic_non_lvalue (fold_convert (type, arg1));
 	case LE_EXPR:
 	case LT_EXPR:
+	case UNLE_EXPR:
+	case UNLT_EXPR:
 	  /* In C++ a ?: expression can be an lvalue, so put the
 	     operand which will be used if they are equal first
 	     so that we can convert this back to the
@@ -4253,31 +4267,37 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 	    {
 	      comp_op0 = fold_convert (comp_type, comp_op0);
 	      comp_op1 = fold_convert (comp_type, comp_op1);
-	      tem = fold (build2 (MIN_EXPR, comp_type,
-				  (comp_code == LE_EXPR
-				   ? comp_op0 : comp_op1),
-				  (comp_code == LE_EXPR
-				   ? comp_op1 : comp_op0)));
+	      tem = (comp_code == LE_EXPR || comp_code == UNLE_EXPR)
+		    ? fold (build2 (MIN_EXPR, comp_type, comp_op0, comp_op1))
+		    : fold (build2 (MIN_EXPR, comp_type, comp_op1, comp_op0));
 	      return pedantic_non_lvalue (fold_convert (type, tem));
 	    }
 	  break;
 	case GE_EXPR:
 	case GT_EXPR:
+	case UNGE_EXPR:
+	case UNGT_EXPR:
 	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1))))
 	    {
 	      comp_op0 = fold_convert (comp_type, comp_op0);
 	      comp_op1 = fold_convert (comp_type, comp_op1);
-	      tem = fold (build2 (MAX_EXPR, comp_type,
-				  (comp_code == GE_EXPR
-				   ? comp_op0 : comp_op1),
-				  (comp_code == GE_EXPR
-				   ? comp_op1 : comp_op0)));
-	      tem = fold (build2 (MAX_EXPR, comp_type, comp_op0, comp_op1));
+	      tem = (comp_code == GE_EXPR || comp_code == UNGE_EXPR)
+		    ? fold (build2 (MAX_EXPR, comp_type, comp_op0, comp_op1))
+		    : fold (build2 (MAX_EXPR, comp_type, comp_op1, comp_op0));
 	      return pedantic_non_lvalue (fold_convert (type, tem));
 	    }
 	  break;
+	case UNEQ_EXPR:
+	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1))))
+	    return pedantic_non_lvalue (fold_convert (type, arg2));
+	  break;
+	case LTGT_EXPR:
+	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1))))
+	    return pedantic_non_lvalue (fold_convert (type, arg1));
+	  break;
 	default:
-	  gcc_unreachable ();
+	  gcc_assert (TREE_CODE_CLASS (comp_code) == '<');
+	  break;
 	}
     }
 

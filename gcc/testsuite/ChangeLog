@@ -1,3 +1,8 @@
+2004-09-10  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/17024
+	* gcc.dg/pr17024-1.c: New test case.
+
 2004-09-10  Eric Christopher  <echristo@redhat.com>
 
 	* gcc.dg/20040910-1.c: New test.
