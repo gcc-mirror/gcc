@@ -84,9 +84,6 @@ do {									\
 
 #define	ASM_STABN_OP	".stabd"
 
-#undef	SKIP_ASM_OP
-#define	SKIP_ASM_OP	".skip"
-
 #undef  ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(file, line)				\
 do									\

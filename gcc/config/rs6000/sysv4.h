@@ -658,17 +658,32 @@ extern int rs6000_pic_labelno;
 #define LOCAL_ASM_OP	".local"
 #endif
 
+#ifndef LCOMM_ASM_OP
+#define LCOMM_ASM_OP	".lcomm"
+#endif
+
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
   if (TARGET_SDATA && (SIZE) > 0 && (SIZE) <= g_switch_value)		\
-    sbss_section ();							\
+    {									\
+      sbss_section ();							\
+      ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));	\
+      ASM_OUTPUT_LABEL (FILE, NAME);					\
+      ASM_OUTPUT_SKIP (FILE, SIZE);					\
+      if (!flag_inhibit_size_directive && (SIZE) > 0)			\
+	{								\
+	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			\
+	  assemble_name (FILE, NAME);					\
+	  fprintf (FILE, ",%d\n",  SIZE);				\
+	}								\
+    }									\
   else									\
-    bss_section ();							\
-									\
-  ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));		\
-  ASM_OUTPUT_LABEL (FILE, NAME);					\
-  ASM_OUTPUT_SKIP (FILE, SIZE);						\
+    {									\
+      fprintf (FILE, "\t%s\t", LCOMM_ASM_OP);				\
+      assemble_name ((FILE), (NAME));					\
+      fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
+    }									\
 } while (0)
 
 /* Describe how to emit unitialized external linkage items  */
