@@ -1788,9 +1788,6 @@ sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
       && GET_CODE (PATTERN (NEXT_INSN (PREV_INSN (X)))) != SEQUENCE \
       && get_attr_needs_delay_slot (X) == NEEDS_DELAY_SLOT_YES)	\
     (LENGTH) += 2;
-
-/* Enable a bug fix for the shorten_branches pass.  */
-#define SHORTEN_WITH_ADJUST_INSN_LENGTH
 
 /* Define the codes that are matched by predicates in sh.c.  */
 #define PREDICATE_CODES \
