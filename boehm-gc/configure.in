@@ -13,9 +13,10 @@ AM_PROG_LIBTOOL
 
 dnl We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
-[  --with-target-subdir=SUBDIR      Configuring with a cross compiler])
+[  --with-target-subdir=SUBDIR
+                          configuring with a cross compiler])
 AC_ARG_WITH(cross-host,
-[  --with-cross-host=HOST           Configuring with a cross compiler])
+[  --with-cross-host=HOST  configuring with a cross compiler])
 
 AM_MAINTAINER_MODE
 # automake wants to see AC_EXEEXT.  But we don't need it.  And having
@@ -26,7 +27,7 @@ if test "x" = "y"; then
 fi
 
 AC_MSG_CHECKING([for threads package to use])
-AC_ARG_ENABLE(threads, [  --enable-threads=TYPE    choose threading package],
+AC_ARG_ENABLE(threads, [  --enable-threads=TYPE   choose threading package],
   THREADS=$enableval,
   dnl FIXME: figure out native threads to use here.
   THREADS=no)
@@ -96,7 +97,7 @@ AC_MSG_RESULT($THREADS)
 
 AC_ARG_ENABLE(java-gc,
 changequote(<<,>>)dnl
-<<  --enable-java-gc=TYPE    choose garbage collector [boehm]>>,
+<<  --enable-java-gc=TYPE   choose garbage collector [boehm]>>,
 changequote([,])
   GC=$enableval,
   GC=boehm)
@@ -112,7 +113,7 @@ dnl FIXME: this should not be a local option but a global target
 dnl system; at present there is no eCos target.
 TARGET_ECOS="no"
 AC_ARG_WITH(ecos,
-[  --with-ecos      Enable runtime eCos target support.],
+[  --with-ecos             enable runtime eCos target support],
 TARGET_ECOS="$with_ecos"
 )
 

@@ -17,7 +17,7 @@ MULTICLEAN = true
 ## Install a library built with a cross compiler in tooldir, not
 ## libdir.
 if USE_LIBDIR
-toolexeclibdir = $(libdir)
+toolexeclibdir = $(libdir)$(MULTISUBDIR)
 else
 toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)

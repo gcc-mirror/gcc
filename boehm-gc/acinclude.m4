@@ -8,7 +8,7 @@ AC_DEFUN(BOEHM_CONFIGURE,
 [
 dnl Default to --enable-multilib
 AC_ARG_ENABLE(multilib,
-[  --enable-multilib         build many library versions (default)],
+[  --enable-multilib       build many library versions (default)],
 [case "${enableval}" in
   yes) multilib=yes ;;
   no)  multilib=no ;;
