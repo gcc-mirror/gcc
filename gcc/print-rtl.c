@@ -607,7 +607,7 @@ print_rtx (rtx in_rtx)
 	  case LABEL_STATIC_ENTRY: fputs (" [entry]", outfile); break;
 	  case LABEL_GLOBAL_ENTRY: fputs (" [global entry]", outfile); break;
 	  case LABEL_WEAK_ENTRY: fputs (" [weak entry]", outfile); break;
-	  default: abort();
+	  default: gcc_unreachable ();
 	}
       break;
 

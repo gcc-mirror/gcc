@@ -2065,8 +2065,7 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
   switch (TREE_CODE (stmt))
     {
     case RETURN_EXPR:
-      if (TREE_CODE (TREE_OPERAND (stmt, 0)) != MODIFY_EXPR)
-	abort ();
+      gcc_assert (TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR);
       stmt = TREE_OPERAND (stmt, 0);
       /* FALLTHRU  */
 

@@ -1,3 +1,26 @@
+2005-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* params.c (set_param_value): Use gcc_assert & gcc_unreachable.
+	* passes.c (open_dump_file, rest_of_handle_final): Likewise.
+	* postreload-gcse.c (expr_equiv_p, oprs_unchanged_p,
+	hash_scan_set, reg_set_between_after_reload_p,
+	reg_used_between_after_reload_p, get_avail_load_store_reg,
+	eliminate_partially_redundant_load): Likewise.
+	* postreload.c (reload_cse_simplify_set,
+	reload_combine_note_use): Likewise.
+	* predict.c (predict_insn, expected_value_to_br_prob,
+	propagate_freq, expensive_function_p): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* profile.c (instrument_edges, instrument_values,
+	compute_branch_probabilities, branch_prob, union_groups,
+	tree_register_profile_hooks, rtl_register_profile_hooks): Likewise.
+	* protoize.c (in_system_include_dir, file_could_be_converted,
+	file_normally_convertible, gen_aux_info_file, seek_to_line,
+	do_cleaning): Likewise.
+	* tree-ssa-alias.c (collect_points_to_info_r): Likewise.
+	* tree-ssa-ccp.c (execute_fold_all_builtins): Likewise.
+	* tree-ssa-loop-ivopts.c (produce_memory_decl_rtl): Likewise.
+
 2005-04-03 Mostafa Hagog <mustafa@il.ibm.com>
 
 	* cfg.c (clear_bb_flags): Don't clear BB_DISABLE_SCHEDULE.

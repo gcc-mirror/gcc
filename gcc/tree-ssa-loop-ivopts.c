@@ -2348,8 +2348,8 @@ static rtx
 produce_memory_decl_rtl (tree obj, int *regno)
 {
   rtx x;
-  if (!obj)
-    abort ();
+  
+  gcc_assert (obj);
   if (TREE_STATIC (obj) || DECL_EXTERNAL (obj))
     {
       const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (obj));

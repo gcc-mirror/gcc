@@ -181,8 +181,7 @@ tree_predicted_by_p (basic_block bb, enum br_predictor predictor)
 static void
 predict_insn (rtx insn, enum br_predictor predictor, int probability)
 {
-  if (!any_condjump_p (insn))
-    abort ();
+  gcc_assert (any_condjump_p (insn));
   if (!flag_guess_branch_prob)
     return;
 
@@ -1440,8 +1439,7 @@ expected_value_to_br_prob (void)
       cond = simplify_rtx (cond);
 
       /* Turn the condition into a scaled branch probability.  */
-      if (cond != const_true_rtx && cond != const0_rtx)
-	abort ();
+      gcc_assert (cond == const_true_rtx || cond == const0_rtx);
       predict_insn_def (insn, PRED_BUILTIN_EXPECT,
 		        cond == const_true_rtx ? TAKEN : NOT_TAKEN);
     }
@@ -1610,9 +1608,8 @@ propagate_freq (struct loop *loop, bitmap tovisit)
 	{
 #ifdef ENABLE_CHECKING
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    if (bitmap_bit_p (tovisit, e->src->index)
-		&& !(e->flags & EDGE_DFS_BACK))
-	      abort ();
+	    gcc_assert (!bitmap_bit_p (tovisit, e->src->index)
+			|| (e->flags & EDGE_DFS_BACK));
 #endif
 
 	  FOR_EACH_EDGE (e, ei, bb->preds)
@@ -1756,8 +1753,7 @@ expensive_function_p (int threshold)
 
   /* We can not compute accurately for large thresholds due to scaled
      frequencies.  */
-  if (threshold > BB_FREQ_MAX)
-    abort ();
+  gcc_assert (threshold <= BB_FREQ_MAX);
 
   /* Frequencies are out of range.  This either means that function contains
      internal loop executing more than BB_FREQ_MAX times or profile feedback

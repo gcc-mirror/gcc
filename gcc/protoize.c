@@ -34,7 +34,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#undef abort
 #include "version.h"
 
 /* Include getopt.h for the sake of getopt_long.  */
@@ -641,8 +640,7 @@ in_system_include_dir (const char *path)
 {
   const struct default_include *p;
 
-  if (! IS_ABSOLUTE_PATH (path))
-    abort ();		/* Must be an absolutized filename.  */
+  gcc_assert (IS_ABSOLUTE_PATH (path));
 
   for (p = cpp_include_defaults; p->fname; p++)
     if (!strncmp (path, p->fname, strlen (p->fname))
@@ -679,10 +677,8 @@ file_could_be_converted (const char *path)
 	dir_last_slash = slash;
     }
 #endif
-    if (dir_last_slash)
-      *dir_last_slash = '\0';
-    else
-      abort ();  /* Should have been an absolutized filename.  */
+    gcc_assert (dir_last_slash);
+    *dir_last_slash = '\0';
   }
 
   if (access (path, W_OK))
@@ -723,10 +719,8 @@ file_normally_convertible (const char *path)
 	dir_last_slash = slash;
     }
 #endif
-    if (dir_last_slash)
-      *dir_last_slash = '\0';
-    else
-      abort ();  /* Should have been an absolutized filename.  */
+    gcc_assert (dir_last_slash);
+    *dir_last_slash = '\0';
   }
 
   if (access (path, R_OK))
@@ -1930,7 +1924,7 @@ gen_aux_info_file (const char *base_filename)
 	  }
 	return 1;
       }
-    abort ();
+    gcc_unreachable ();
   }
 }
 
@@ -2742,8 +2736,7 @@ check_source (int cond, const char *clean_p)
 static const char *
 seek_to_line (int n)
 {
-  if (n < last_known_line_number)
-    abort ();
+  gcc_assert (n >= last_known_line_number);
 
   while (n > last_known_line_number)
     {
@@ -3670,8 +3663,8 @@ do_cleaning (char *new_clean_text_base, const char *new_clean_text_limit)
 	    {
 	      if (!ISSPACE ((const unsigned char)*scan_p))
 		*scan_p = ' ';
-	      if (++scan_p >= new_clean_text_limit)
-		abort ();
+	      ++scan_p;
+	      gcc_assert (scan_p < new_clean_text_limit);
 	    }
 	  *scan_p++ = ' ';
 	  *scan_p = ' ';
@@ -3685,8 +3678,8 @@ do_cleaning (char *new_clean_text_base, const char *new_clean_text_limit)
 	    {
 	      if (!ISSPACE ((const unsigned char)*scan_p))
 		*scan_p = ' ';
-	      if (++scan_p >= new_clean_text_limit)
-		abort ();
+	      ++scan_p;
+	      gcc_assert (scan_p < new_clean_text_limit);
 	    }
 	  *scan_p++ = ' ';
 	  break;
@@ -3700,8 +3693,8 @@ do_cleaning (char *new_clean_text_base, const char *new_clean_text_limit)
 		scan_p[1] = ' ';
 	      if (!ISSPACE ((const unsigned char)*scan_p))
 		*scan_p = ' ';
-	      if (++scan_p >= new_clean_text_limit)
-		abort ();
+	      ++scan_p;
+	      gcc_assert (scan_p < new_clean_text_limit);
 	    }
 	  *scan_p++ = ' ';
 	  break;
@@ -3715,8 +3708,8 @@ do_cleaning (char *new_clean_text_base, const char *new_clean_text_limit)
 		scan_p[1] = ' ';
 	      if (!ISSPACE ((const unsigned char)*scan_p))
 		*scan_p = ' ';
-	      if (++scan_p >= new_clean_text_limit)
-		abort ();
+	      ++scan_p;
+	      gcc_assert (scan_p < new_clean_text_limit);
 	    }
 	  if (!ISSPACE ((const unsigned char)*scan_p))
 	    *scan_p = ' ';

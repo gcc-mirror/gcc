@@ -309,9 +309,8 @@ expr_equiv_p (const void *exp1p, const void *exp2p)
   struct expr *exp1 = (struct expr *) exp1p;
   struct expr *exp2 = (struct expr *) exp2p;
   int equiv_p = exp_equiv_p (exp1->expr, exp2->expr, 0, true);
-  if (equiv_p
-      && exp1->hash != exp2->hash)
-    abort ();
+  
+  gcc_assert (!equiv_p || exp1->hash == exp2->hash);
   return equiv_p;
 }
 
@@ -489,11 +488,8 @@ oprs_unchanged_p (rtx x, rtx insn, bool after_insn)
   switch (code)
     {
     case REG:
-#ifdef ENABLE_CHECKING
       /* We are called after register allocation.  */
-      if (REGNO (x) >= FIRST_PSEUDO_REGISTER)
-	abort ();
-#endif
+      gcc_assert (REGNO (x) < FIRST_PSEUDO_REGISTER);
       if (after_insn)
 	/* If the last CUID setting the insn is less than the CUID of
 	   INSN, then reg X is not changed in or after INSN.  */
@@ -741,11 +737,8 @@ hash_scan_set (rtx insn)
   if (JUMP_P (insn) || set_noop_p (pat))
     return;
 
-#ifdef ENABLE_CHEKCING
   /* We shouldn't have any EH_REGION notes post reload.  */
-  if (find_reg_note (insn, REG_EH_REGION, NULL_RTX))
-    abort ();
-#endif
+  gcc_assert (!find_reg_note (insn, REG_EH_REGION, NULL_RTX));
 
   if (REG_P (dest))
     {
@@ -856,11 +849,8 @@ reg_set_between_after_reload_p (rtx reg, rtx from_insn, rtx to_insn)
 {
   rtx insn;
 
-#ifdef ENABLE_CHECKING
   /* We are called after register allocation.  */
-  if (!REG_P (reg) || REGNO (reg) >= FIRST_PSEUDO_REGISTER)
-    abort ();
-#endif
+  gcc_assert (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER);
 
   if (from_insn == to_insn)
     return NULL_RTX;
@@ -893,11 +883,8 @@ reg_used_between_after_reload_p (rtx reg, rtx from_insn, rtx to_insn)
 {
   rtx insn;
 
-#ifdef ENABLE_CHECKING
   /* We are called after register allocation.  */
-  if (!REG_P (reg) || REGNO (reg) >= FIRST_PSEUDO_REGISTER)
-    abort ();
-#endif
+  gcc_assert (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER);
 
   if (from_insn == to_insn)
     return NULL_RTX;
@@ -947,11 +934,15 @@ reg_set_or_used_since_bb_start (rtx reg, basic_block bb, rtx up_to_insn)
 static rtx
 get_avail_load_store_reg (rtx insn)
 {
-  if (REG_P (SET_DEST (PATTERN (insn))))  /* A load.  */
+  if (REG_P (SET_DEST (PATTERN (insn))))
+    /* A load.  */
     return SET_DEST(PATTERN(insn));
-  if (REG_P (SET_SRC (PATTERN (insn))))  /* A store.  */
-    return SET_SRC (PATTERN (insn));
-  abort ();
+  else
+    {
+      /* A store.  */
+      gcc_assert (REG_P (SET_SRC (PATTERN (insn))));
+      return SET_SRC (PATTERN (insn));
+    }
 }
 
 /* Return nonzero if the predecessors of BB are "well behaved".  */
@@ -1044,8 +1035,9 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
 	{
 	  /* Check if the loaded register is not used.  */
 	  avail_insn = a_occr->insn;
-	  if (! (avail_reg = get_avail_load_store_reg (avail_insn)))
-	    abort ();
+	  avail_reg = get_avail_load_store_reg (avail_insn);
+	  gcc_assert (avail_reg);
+	  
 	  /* Make sure we can generate a move from register avail_reg to
 	     dest.  */
 	  extract_insn (gen_move_insn (copy_rtx (dest),
@@ -1116,8 +1108,7 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
       /* Set avail_reg to be the register having the value of the
 	 memory.  */
       avail_reg = get_avail_load_store_reg (avail_insn);
-      if (! avail_reg)
-	abort ();
+      gcc_assert (avail_reg);
 
       insert_insn_on_edge (gen_move_insn (copy_rtx (dest),
 					  copy_rtx (avail_reg)),
