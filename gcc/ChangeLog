@@ -1,3 +1,9 @@
+2004-07-15  Roman Zippel  <zippel@linux-m68k.org>
+
+	* combine.c (simplify_set): match the mode of the constant 0 with 
+	the tested operand to match the compare behaviour and the 
+	simplify_relational_operation() expectation.
+
 2004-07-15  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.md ("bunordered"): Disable for e500.
