@@ -1038,24 +1038,24 @@ maybeasm:
 
 initdcl:
 	  declarator maybeasm maybe_attribute '='
-		{ $<ttype>$ = start_decl ($1, current_declspecs, 1);
-		  decl_attributes ($<ttype>$, $3, prefix_attributes);
+		{ $<ttype>$ = start_decl ($1, current_declspecs, 1,
+					  $3, prefix_attributes);
 		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_init ();
 		  finish_decl ($<ttype>5, $6, $2); }
 	| declarator maybeasm maybe_attribute
-		{ tree d = start_decl ($1, current_declspecs, 0);
-		  decl_attributes (d, $3, prefix_attributes);
+		{ tree d = start_decl ($1, current_declspecs, 0,
+				       $3, prefix_attributes);
 		  finish_decl (d, NULL_TREE, $2); 
                 }
 	;
 
 notype_initdcl:
 	  notype_declarator maybeasm maybe_attribute '='
-		{ $<ttype>$ = start_decl ($1, current_declspecs, 1);
-		  decl_attributes ($<ttype>$, $3, prefix_attributes);
+		{ $<ttype>$ = start_decl ($1, current_declspecs, 1,
+					  $3, prefix_attributes);
 		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
@@ -1063,8 +1063,8 @@ notype_initdcl:
 		  decl_attributes ($<ttype>5, $3, prefix_attributes);
 		  finish_decl ($<ttype>5, $6, $2); }
 	| notype_declarator maybeasm maybe_attribute
-		{ tree d = start_decl ($1, current_declspecs, 0);
-		  decl_attributes (d, $3, prefix_attributes);
+		{ tree d = start_decl ($1, current_declspecs, 0,
+				       $3, prefix_attributes);
 		  finish_decl (d, NULL_TREE, $2); }
 	;
 /* the * rules are dummies to accept the Apollo extended syntax
