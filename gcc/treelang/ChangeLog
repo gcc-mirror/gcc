@@ -1,3 +1,9 @@
+2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in: Replace $(docdir) with doc.
+	(treelang.info, treelang.srcinfo): New rules.
+	(treelang.man, treelang.man): Dummy entries.
+
 2004-01-15  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (TREE_GENERATED): Delete reference to $(parsedir).

@@ -58,7 +58,7 @@ F77 f77: f771$(exeext)
   f77.install-normal \
   f77.install-common f77.install-man \
   f77.uninstall f77.mostlyclean f77.clean f77.distclean \
-  f77.maintainer-clean f77.rebuilt \
+  f77.maintainer-clean \
   f77.stage1 f77.stage2 f77.stage3 f77.stage4 \
   f77.stageprofile f77.stagefeedback
 
@@ -141,42 +141,40 @@ f77.all.build: g77$(exeext)
 f77.all.cross: g77-cross$(exeext)
 f77.start.encap: g77$(exeext)
 f77.rest.encap:
-f77.srcextra: 
+
+f77.srcinfo: doc/g77.info
+	-cp -p $^ $(srcdir)/doc
+f77.srcman: doc/g77.1
+	-cp -p $^ $(srcdir)/doc
+f77.srcextra: f/BUGS f/NEWS 
+	-cp -p $^ $(srcdir)/f
 
 f77.tags: force
 	cd $(srcdir)/f; etags -o TAGS.sub *.c *.h; \
 	etags --include TAGS.sub --include ../TAGS.sub
 
-info:: $(docobjdir)/g77.info
-dvi:: $(docobjdir)/g77.dvi
-generated-manpages:: $(docobjdir)/g77.1
+f77.info: doc/g77.info
+dvi:: doc/g77.dvi
+f77.man: doc/g77.1
 
 check-f77 : check-g77
 lang_checks += check-g77
 
 # g77 documentation.
-$(docobjdir)/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
-		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \
-		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
-		$(srcdir)/f/root.texi $(docdir)/include/fdl.texi \
-		$(docdir)/include/gpl.texi \
-		$(docdir)/include/funding.texi \
-		$(docdir)/include/gcc-common.texi \
-		stmp-docobjdir
-	if [ x$(BUILD_INFO) = xinfo ]; then \
+TEXI_G77_FILES = f/g77.texi f/bugs.texi f/ffe.texi f/invoke.texi \
+		 f/news.texi f/root.texi $(docdir)/include/fdl.texi \
+		 $(docdir)/include/gpl.texi $(docdir)/include/funding.texi \
+		 $(docdir)/include/gcc-common.texi $(srcdir)/f/intdoc.texi
+
+doc/g77.info: $(TEXI_G77_FILES)
+	if test "x$(BUILD_INFO)" = xinfo; then \
 	  rm -f $(@)*; \
-	  $(MAKEINFO) -I$(docdir)/include -I$(srcdir)/f -o $@ $<; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include -I$(srcdir)/f \
+            -o$@ $<; \
 	else true; fi
 
-$(docobjdir)/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
-		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \
-		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
-		$(srcdir)/f/root.texi $(docdir)/include/fdl.texi \
-		$(docdir)/include/gpl.texi \
-		$(docdir)/include/funding.texi \
-		$(docdir)/include/gcc-common.texi \
-		stmp-docobjdir
-	$(TEXI2DVI) -I $(srcdir)/f -I $(docdir)/include -o $@ $<
+doc/g77.dvi: $(TEXI_G77_FILES)
+	$(TEXI2DVI) -I $(srcdir)/f -I $(docdir)/include -I $(objdir)/f -o $@ $<
 
 .INTERMEDIATE: g77.pod
 g77.pod: f/invoke.texi
@@ -204,41 +202,43 @@ g77.pod: f/invoke.texi
 
 # If the documentation files depended on executables in the build
 # tree, there'd be no way to ship a source tree with the documentation
-# already generated such that `make' wouldn't attempt to rebuilt it.
+# already generated such that `make' wouldn't attempt to rebuild it.
 # So, we punt and arrange for the documentation files to depend on the
 # dependencies of the executables, not on the executables themselves.
 # But then, we have to build the executables explicitly in their build
 # rules.
 
-INTDOC_DEPS = $(srcdir)/f/intdoc.c $(srcdir)/f/intrin.h $(srcdir)/f/intrin.def
+INTDOC_DEPS = f/intdoc.c f/intrin.h f/intrin.def
 
-$(srcdir)/f/intdoc.texi: $(INTDOC_DEPS) $(srcdir)/f/intdoc.in
+$(srcdir)/f/intdoc.texi: $(INTDOC_DEPS) f/intdoc.in
 	$(MAKE) f/intdoc$(build_exeext)
 	f/intdoc$(build_exeext) > $(srcdir)/f/intdoc.texi
 
 f/intdoc$(build_exeext): $(INTDOC_DEPS) f/intdoc.h0 bconfig.h \
   $(SYSTEM_H) coretypes.h $(TM_H) $(BUILD_LIBDEPS)
-	  $(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) $(INCLUDES) \
-		  $(srcdir)/f/intdoc.c $(BUILD_LIBS) -o f/intdoc$(build_exeext)
+	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) $(INCLUDES) $< \
+	  $(BUILD_LIBS) -o $@
 
 f/intdoc.h0: f/intdoc.in f/ansify$(build_exeext)
-	f/ansify$(build_exeext) $(srcdir)/f/intdoc.in \
-		< $(srcdir)/f/intdoc.in > f/intdoc.h0
+	f/ansify$(build_exeext) $< < $< > $@
 
 f/ansify$(build_exeext): f/ansify.c bconfig.h $(SYSTEM_H) coretypes.h $(TM_H)
-	  $(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) $(INCLUDES) \
-	  	$(srcdir)/f/ansify.c -o f/ansify$(build_exeext)
+	  $(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) $(INCLUDES) $< \
+	  -o $@
 
-$(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi
-	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
-	  --no-validate -I../doc/include -o BUGS bugs0.texi
+f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+	  rm -f $(@)*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -D BUGSONLY --no-header --no-split \
+           --no-validate -I$(docdir)/include -I$(srcdir)/f -o $@ bugs0.texi; \
+	else true; fi
 
-$(srcdir)/f/NEWS: f/news0.texi f/news.texi f/root.texi
-	cd $(srcdir)/f; $(MAKEINFO) -D NEWSONLY --no-header --no-split \
-	  --no-validate -I../doc/include -o NEWS news0.texi
-
-f77.rebuilt: $(docobjdir)/g77.info $(srcdir)/f/BUGS \
-  $(srcdir)/f/NEWS 
+f/NEWS: f/news0.texi f/news.texi f/root.texi
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+	  rm -f $(@)*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -D NEWSONLY --no-header --no-split \
+           --no-validate -I$(docdir)/include -I$(srcdir)/f -o $@ news0.texi; \
+	else true; fi
 
 #
 # Install hooks:
@@ -266,12 +266,12 @@ f77.install-common: installdirs
 
 install-info:: $(DESTDIR)$(infodir)/g77.info
 
-f77.install-man: $(GENERATED_MANPAGES) installdirs
-	-if [ -f f771$(exeext) ] ; then \
-	  rm -f $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
-	  $(INSTALL_DATA) $(docobjdir)/g77.1 $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
-	  chmod a-x $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
-	else true; fi
+f77.install-man: installdirs $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext)
+
+$(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext): doc/g77.1
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
 f77.uninstall: installdirs
 	if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
@@ -290,7 +290,7 @@ f77.mostlyclean:
 	-rm -f f/*$(objext)
 	-rm -f f/*$(coverageexts)
 	-rm -f f/fini$(build_exeext) f/stamp-str f/str-*.h f/str-*.j
-	-rm -f f/intdoc$(build_exeext) f/ansify$(build_exeext) f/intdoc.h0
+	-rm -f f/BUGS f/NEWS
 	-rm -f g77.aux g77.cps g77.ky g77.toc g77.vr g77.fn g77.kys \
 	       g77.pg g77.tp g77.vrs g77.cp g77.fns g77.log g77.pgs g77.tps 
 f77.clean:
@@ -298,7 +298,8 @@ f77.clean:
 f77.distclean:
 	-rm -f f/Makefile
 f77.maintainer-clean:
-	-rm -f f/g77.info* f/g77.*aux f/TAGS f/TAGS.sub f/BUGS f/NEWS f/intdoc.texi
+	-rm -f $(srcdir)/f/BUGS $(srcdir)/f/TAGS $(srcdir)/f/TAGS.SUB
+	-rm -f $(srcdir)/f/NEWS $(srcdir)/f/intdoc.texi
 #
 # Stage hooks:
 # The main makefile has already created stage?/f.
