@@ -1,3 +1,27 @@
+2004-12-13  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/18002
+	PR middle-end/18424
+	Backport from mainline
+
+	2004-03-20  Richard Sandiford  <rsandifo@redhat.com>
+	* Makefile.in (dojump.o): Depend on $(GGC_H) and dojump.h.
+	(GTFILES): Add $(srcdir)/dojump.h.
+	(gt-dojump.h): New dependency.
+	* dojump.c (and_reg, and_test, shift_test): New static variables.
+	(prefer_and_bit_test): New function.
+	(do_jump): Use it to choose between (X & (1 << C)) and (X >> C) & 1.
+
+	2004-03-21  Andrew Pinski  <pinskia@gcc.gnu.org>
+	* dojump.c (prefer_and_bit_test): Fix which part of
+	the and_test is replaced.
+
+	2004-12-10  Roger Sayle  <roger@eyesopen.com>
+	* dojump.c (do_jump): When attempting to reverse the effects of
+	fold_single_bit_test, we need to STRIP_NOPS and narrowing type
+	conversions, and handle BIT_XOR_EXPR that's used to invert the
+	sense of the single bit test.
+
 2004-12-13  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/17930
