@@ -230,7 +230,7 @@ CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS
 CXXLD = $(CXX)
 HEADERS =  $(glibcppinstall_HEADERS)
 
-DIST_COMMON =  Makefile.am Makefile.in configure configure.in
+DIST_COMMON =  ChangeLog Makefile.am Makefile.in configure configure.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)

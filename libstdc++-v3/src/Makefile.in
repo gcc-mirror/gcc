@@ -195,8 +195,9 @@ libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD)
 @GXX_INCLUDE_DIR_TRUE@myincludep = @gxx_include_dir@
 @GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@myincludep = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
 @GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@myincludep = $(prefix)/include/g++-@libstdcxx_interface@
-
-targetincludep = @gxx_target_include_dir@
+@GXX_INCLUDE_DIR_TRUE@targetincludep = @gxx_include_dir@
+@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@targetincludep = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
+@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@targetincludep = @gxx_target_include_dir@
 
 # NB: As libio_headers may be empty, need this to make sure bash doesn't
 # choke on an empty for... loop by using libio_headers_install

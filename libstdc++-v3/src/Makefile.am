@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.62 2001/01/04 04:21:42 bkoz Exp $
+## $Id: Makefile.am,v 1.63 2001/01/10 17:24:11 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -225,15 +225,16 @@ $(top_builddir)/stamp-cshadow: $(top_srcdir)/mkinclosure \
 # Check for various configure bits that change where the headers get installed.
 if GXX_INCLUDE_DIR
 myincludep = @gxx_include_dir@
+targetincludep = @gxx_include_dir@
 else
 if VERSION_SPECIFIC_LIBS
 myincludep = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
+targetincludep = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
 else
 myincludep = $(prefix)/include/g++-@libstdcxx_interface@
-endif
-endif
-
 targetincludep = @gxx_target_include_dir@
+endif
+endif
 
 # We have our own special, ridiculously complicated installation routine
 # here, as automake/autoconf is currently brain-damaged when it comes

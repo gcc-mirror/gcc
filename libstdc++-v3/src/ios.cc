@@ -158,7 +158,7 @@ namespace std
 	new (&wcin) wistream(_M_wcin);
 	new (&wcerr) wostream(_M_wcerr);
 	new (&wclog) wostream(_M_wcerr);
-	wcin.tie(&cout);
+	wcin.tie(&wcout);
 	wcerr.flags(ios_base::unitbuf);
 #endif
 	ios_base::Init::_S_synced_with_stdio = true;
