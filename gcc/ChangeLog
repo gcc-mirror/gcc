@@ -1,5 +1,9 @@
 Wed Dec  1 16:51:22 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* combine.c (if_then_else_cond): Use const_true_rtx instead of
+	const1_rtx for return values in EQ/NE comparison against (const_int 0)
+	case.
+
 	* mn10300.c (REG_SAVE_BYTES): Allocate space for AM33 registers.
 	(asm_file_start): Emit .am33 into assembly file when compiling for
 	the AM33.

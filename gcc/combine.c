@@ -7037,8 +7037,8 @@ if_then_else_cond (x, ptrue, pfalse)
   if ((code == NE || code == EQ)
       && GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) == 0)
     {
-      *ptrue = (code == NE) ? const1_rtx : const0_rtx;
-      *pfalse = (code == NE) ? const0_rtx : const1_rtx;
+      *ptrue = (code == NE) ? const_true_rtx : const0_rtx;
+      *pfalse = (code == NE) ? const0_rtx : const_true_rtx;
       return XEXP (x, 0);
     }
 
