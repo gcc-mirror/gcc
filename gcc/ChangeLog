@@ -1,3 +1,7 @@
+2004-03-06  Richard Henderson  <rth@redhat.com>
+
+        * config/alpha/alpha.c (alpha_in_small_data_p): False for functions.
+
 2004-03-05  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("load_multiple", "*load_multiple_di",
