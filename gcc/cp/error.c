@@ -1534,6 +1534,12 @@ dump_expr (t, nop)
       OB_PUTS ("{unparsed}");
       break;
 
+    case TRY_CATCH_EXPR:
+    case WITH_CLEANUP_EXPR:
+    case CLEANUP_POINT_EXPR:
+      dump_expr (TREE_OPERAND (t, 0), nop);
+      break;
+
     case TREE_LIST:
       if (TREE_VALUE (t) && TREE_CODE (TREE_VALUE (t)) == FUNCTION_DECL)
 	{

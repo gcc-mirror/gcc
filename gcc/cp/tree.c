@@ -1545,6 +1545,8 @@ mapcar (t, func)
     case POSTINCREMENT_EXPR:
     case ARRAY_REF:
     case SCOPE_REF:
+    case TRY_CATCH_EXPR:
+    case WITH_CLEANUP_EXPR:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
@@ -1573,6 +1575,7 @@ mapcar (t, func)
     case TRUTH_NOT_EXPR:
     case NOP_EXPR:
     case COMPONENT_REF:
+    case CLEANUP_POINT_EXPR:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       return t;

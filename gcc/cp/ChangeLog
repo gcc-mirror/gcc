@@ -1,3 +1,8 @@
+Tue Dec 16 10:31:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (mapcar): Handle TRY_CATCH_EXPR et al.
+	* error.c (dump_expr): Likewise.
+
 Mon Dec 15 12:22:04 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (build_function_call_real): Remove "inline called before
