@@ -1,3 +1,10 @@
+2004-01-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/frv/frv.c: Don't mention deprecated macros in
+	comments.  Remove some target-independent comments about
+	target macros.
+	* config/frv/frv.h: Likewise.
+
 2004-01-29  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfghooks.c (split_block): Set probability and count of the
