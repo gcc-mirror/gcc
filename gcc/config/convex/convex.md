@@ -301,7 +301,7 @@
      operands[1] = force_reg (SImode, operands[1]);")
 
 (define_insn ""
-  [(set (strict_low_part (match_operand:SI 0 "general_operand" "=d,r,d,r,r,m"))
+  [(set (strict_low_part (match_operand:SI 0 "general_operand" "+d,r,d,r,r,m"))
 	(match_operand:SI 1 "general_operand" "d,r,Q,m,i,r"))]
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)"

@@ -1,3 +1,9 @@
+Tue Sep 12 08:53:57 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* convex.md: Use "+" instead of "=" for outputs wrapped in a
+	STRICT_LOW_PART.
+	* i370.md, i386.md, ns32k.md, sh.md, vax.md: Likewise.
+
 2000-09-12  Kazu Hirata  <kazu@hxi.com>
 
 	* unroll.c: Fix formatting.
