@@ -533,8 +533,9 @@ interface_of_p (tree type1, tree type2)
   int n, i;
   tree basetype_vec;
 
-  if (!(basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (type2))))
+  if (! TYPE_BINFO (type2))
     return 0;
+  basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (type2));
   n = TREE_VEC_LENGTH (basetype_vec);
   for (i = 0; i < n; i++)
     {

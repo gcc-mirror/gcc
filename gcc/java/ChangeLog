@@ -1,3 +1,7 @@
+2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* class.c (interface_of_p): Check for null TYPE_BINFO.
+
 2004-07-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (make_class): Do not create binfo here.
