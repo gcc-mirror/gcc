@@ -35,12 +35,12 @@
 	(build_binary_op): Likewise.
 	(dubious_conversion_warnings): Likewise.
 	(check_return_expr): Likewise.
-	
+
 2002-08-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (build_class_member_access_expr): Do not return
 	error_mark_node when no error has occurred.
-	
+
 2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* typeck.c (build_component_addr): Remove.
@@ -125,7 +125,7 @@
 	(build_ptrmemfunc): Likewise.
 	(pfn_from_ptrmemfunc): Likewise.
 	* typeck2.c (build_m_component_ref): Adjust comment.
-	
+
 2002-08-07  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in (CXX_C_OBJS): Update.
@@ -141,7 +141,7 @@
 2002-08-05  Geoffrey Keating  <geoffk@redhat.com>
 
 	* class.c: Don't include obstack.h.
-	(popclass): 
+	(popclass):
 	* decl2.c: Delete bogus comment.
 	* error.c: Don't include obstack.h.
 	* except.c: Likewise.
@@ -281,7 +281,7 @@
 	* typeck.c (build_x_function_call): Remove.
 	(build_static_case): Use build_special_member_call.
 	* typeck2.c (build_functional_cast): Likewise.
-	
+
 2002-07-30  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* lang-specs.h: Remove __GXX_ABI_VERSION, moved to gcc.c.
@@ -330,7 +330,7 @@
 	* cp-lang.c (LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING):
 	Define.
 	* cp-tree.h: Declare new fns.
-	
+
 2002-07-26  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cp-tree.h (flag_operator_names): Remove.
@@ -448,7 +448,7 @@
 
 	PR c++/3797
 	* decl.c (duplicate_decls): Don't propagate inlining parameters from
-	olddecl to newdecl when newdecl is a specialization of the 
+	olddecl to newdecl when newdecl is a specialization of the
 	instantiation olddecl.
 
 2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
@@ -479,11 +479,11 @@
 2002-07-10  Graham Stott  <graham.stott@btinternet.com>
 
 	* pt.c (template_parm_this_level_p, push_template_decl_real):
-	Pass depth as int pointer. 
+	Pass depth as int pointer.
 
 2002-07-11  Tim Josling  <tej@melbpc.org.au>
 
-	Remove front end hard coding from gengtype.c.  
+	Remove front end hard coding from gengtype.c.
 
 	* config-lang.in (gtfiles): Add files needed for this front end.
 
@@ -516,7 +516,7 @@
 	* parse.y (template_parm): Use check_template_template_default_arg.
 	* pt.c (check_explicit_specialization): Use constructor_name_p.
 	* semantics.c (check_template_template_default_arg): New function.
-	
+
 2002-07-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (can_complete_type_without_circularity): Add static to
@@ -542,7 +542,7 @@
 	(explicit_instantiation): Use it.
 	* pt.c (do_decl_instantiation): Accept a DECL, not a DECLARATOR
 	and DECLSPECS.
-	
+
 2002-07-07  Roger Sayle  <roger@eyesopen.com>
 
 	* error.c (dump_function_name): Use DECL_TEMPLATE_RESULT for
@@ -658,7 +658,7 @@
 	* typeck.c (build_object_ref): Adjust call to
 	build_x_component_ref.
 	(build_x_component_ref): Remove protect parameter.
-	
+
 2002-06-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_op_delete_call): Use BASELINK_FUNCTIONS.
@@ -680,7 +680,7 @@
 	(really_overlaoded_fn): Likewise.
 	(get_overloaded_fn): New function.'
 	(get_first_fn): USe BASELINK_FUNCTIONS.
-	
+
 2002-06-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (SCALAR_TYPE_P): New macro.
@@ -697,7 +697,7 @@
 	* search.c (at_class_scope_p): New function.
 	* semantics.c (finish_fname): Likewise.
 	(check_multiple_declarators): Use at_function_scope_p.
-	
+
 2002-06-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* parse.y (parse_scoped_id): New function.
@@ -707,7 +707,7 @@
 	* decl2.c (build_expr_from_tree): Adjust use of do_scoped_id.
 	* typeck2.c (add_exception_specifier): Use tree_cons, rather than
 	expanding it inline.
-	
+
 2002-06-23  Matt Thomas  <matt@3am-software.com>
 
 	* decl.c (finish_function): Change "#ifdef VMS_TARGET" to
