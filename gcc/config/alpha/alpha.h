@@ -2221,6 +2221,7 @@ do {									\
   output_end_prologue (FILE);						\
 									\
   /* Rely on the assembler to macro expand a large delta.  */		\
+  fprintf (FILE, "\t.set at\n");					\
   reg = aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))) ? 17 : 16;	\
   fprintf (FILE, "\tlda $%d,%ld($%d)\n", reg, (long)(DELTA), reg);	\
 									\
@@ -2237,6 +2238,7 @@ do {									\
       assemble_name (FILE, fn_name);					\
       fputc ('\n', FILE);						\
     }									\
+  fprintf (FILE, "\t.set noat\n");					\
 } while (0)
 
 
