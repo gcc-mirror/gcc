@@ -24,6 +24,22 @@ details.  */
 #define _Jv_platform_solib_prefix ""
 #define _Jv_platform_solib_suffix ".dll"
 
+// Separator for file name components.
+#define _Jv_platform_file_separator ((jchar) '\\')
+// Separator for path components.
+#define _Jv_platform_path_separator ((jchar) ';')
+
+// List of names for `JNI_OnLoad'.  On Win32, JNI_OnLoad is an
+// "stdcall" function taking two pointers (8 bytes) as arguments.  It
+// could also have been exported as "JNI_OnLoad@8" (MinGW) or
+// "_JNI_OnLoad@8" (MSVC).
+#define _Jv_platform_onload_names \
+    { "JNI_OnLoad", "JNI_OnLoad@8", "_JNI_OnLoad@8", NULL }
+
+// Type of libffi ABI used by JNICALL methods.  NOTE: This must agree
+// with the JNICALL definition in jni.h
+#define _Jv_platform_ffi_abi FFI_STDCALL
+
 #ifndef DISABLE_JAVA_NET
 
 // these errors cannot occur on Win32

@@ -1,3 +1,21 @@
+2003-03-16  Tom Tromey  <tromey@redhat.com>
+
+	* resolve.cc (ncode): Use _Jv_platform_ffi_abi.
+	Include platform.h.
+	* java/lang/natRuntime.cc (insertSystemProperties): Use
+	_Jv_platform_path_separator.
+	(nativeGetLibname): Use _Jv_platform_file_separator.
+	(_load): Use _Jv_platform_onload_names.
+	(onload_names): New global.
+	* include/win32.h (_Jv_platform_file_separator): New define.
+	(_Jv_platform_path_separator): Likewise.
+	(_Jv_platform_onload_names): Likewise.
+	(_Jv_platform_ffi_abi): Likewise.
+	* include/posix.h (_Jv_platform_file_separator): New define.
+	(_Jv_platform_path_separator): Likewise.
+	(_Jv_platform_onload_names): Likewise.
+	(_Jv_platform_ffi_abi): Likewise.
+
 2003-03-14  Hans Boehm  <Hans.Boehm@hp.com>
 
 	* java/lang/natObject.cc (JV_SYNC_HASH): replace signed % by &.

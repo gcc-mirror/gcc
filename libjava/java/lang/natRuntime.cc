@@ -140,6 +140,11 @@ java::lang::Runtime::gc (void)
   _Jv_RunGC ();
 }
 
+#ifdef USE_LTDL
+// List of names for JNI_OnLoad.
+static const char *onload_names[] = _Jv_platform_onload_names;
+#endif
+
 void
 java::lang::Runtime::_load (jstring path, jboolean do_search)
 {
@@ -221,19 +226,16 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
       throw new UnsatisfiedLinkError (str);
     }
 
-  void *onload = lt_dlsym (h, "JNI_OnLoad");
-
-#ifdef WIN32
-  // On Win32, JNI_OnLoad is an "stdcall" function taking two pointers
-  // (8 bytes) as arguments.  It could also have been exported as
-  // "JNI_OnLoad@8" (MinGW) or "_JNI_OnLoad@8" (MSVC).
-  if (onload == NULL)
+  // Search for JNI_OnLoad function.
+  void *onload = NULL;
+  const char **name = onload_names;
+  while (*name != NULL)
     {
-      onload = lt_dlsym (h, "JNI_OnLoad@8");
-      if (onload == NULL)
-	onload = lt_dlsym (h, "_JNI_OnLoad@8");
+      onload = lt_dlsym (h, *name);
+      if (onload != NULL)
+	break;
+      ++name;
     }
-#endif /* WIN32 */
 
   if (onload != NULL)
     {
@@ -570,11 +572,7 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
       if (classpath)
 	{
 	  sb->append (JvNewStringLatin1 (classpath));
-#ifdef WIN32
-	  sb->append ((jchar) ';');
-#else
-	  sb->append ((jchar) ':');
-#endif
+	  sb->append (_Jv_platform_path_separator);
 	}
       if (cp != NULL)
 	sb->append (cp);
@@ -632,14 +630,7 @@ java::lang::Runtime::nativeGetLibname (jstring pathname, jstring libname)
   java::lang::StringBuffer *sb = new java::lang::StringBuffer ();
   sb->append(pathname);
   if (pathname->length() > 0)
-    {
-      // FIXME: use platform function here.
-#ifdef WIN32
-      sb->append ((jchar) '\\');
-#else
-      sb->append ((jchar) '/');
-#endif
-    }
+    sb->append (_Jv_platform_file_separator);
 
   sb->append (JvNewStringLatin1 (_Jv_platform_solib_prefix));
   sb->append(libname);
