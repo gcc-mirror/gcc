@@ -1,3 +1,7 @@
+2004-08-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/uninit-H.c: Add _POWER to powerpc case.
+
 2004-08-20  Canqun Yang  <canqun@nudt.edu.cn>
 
 	PR fortran/17077
