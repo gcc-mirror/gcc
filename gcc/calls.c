@@ -2305,9 +2305,9 @@ expand_call (exp, target, ignore)
      This is most often true of sjlj-exceptions, which we couldn't
      tail-call to anyway.  */
 
-  if (!flag_optimize_sibling_calls
+  if (currently_expanding_call++ != 0
+      || !flag_optimize_sibling_calls
       || !rtx_equal_function_value_matters
-      || currently_expanding_call
       || !stmt_loop_nest_empty ()
       || any_pending_cleanups (1)
       || args_size.var)
@@ -2447,8 +2447,6 @@ expand_call (exp, target, ignore)
       pending_stack_adjust = save_pending_stack_adjust;
       stack_pointer_delta = save_stack_pointer_delta;
     }
-
-  currently_expanding_call++;
 
   if (profile_arc_flag && (flags & ECF_FORK_OR_EXEC))
     {
