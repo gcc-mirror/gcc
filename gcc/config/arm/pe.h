@@ -65,9 +65,18 @@
   N_("Ignore dllimport attribute for functions") },		\
 { "no-nop-fun-dllimport",	- TARGET_FLAG_NOP_FUN, "" },
 
+/* Defaulting to APCS-26 support is a legacy issue.   It has been done
+   that way for a long time, so changing it will probably break some
+   people's worlds.  Support for APCS-32 is now enabled as a multilib,
+   and at some point in the future APCS-32 may become the default.
+   Possibly when chips that support APCS-26 are no longer made.  */
+
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | TARGET_FLAG_NOP_FUN)
 
+#undef  MULTILIB_DEFAULTS
+#define MULTILIB_DEFAULTS \
+  { "marm", "mlittle-endian", "msoft-float", "mapcs-26", "mno-thumb-interwork" }  
 
 #undef  WCHAR_TYPE
 #define WCHAR_TYPE 	"short unsigned int"
@@ -92,7 +101,7 @@
 #define SUPPORTS_ONE_ONLY 1
 
 /* Switch into a generic section.  */
-#undef TARGET_ASM_NAMED_SECTION
+#undef  TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  default_pe_asm_named_section
 
 /* This outputs a lot of .req's to define alias for various registers.
