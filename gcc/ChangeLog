@@ -1,3 +1,9 @@
+2002-03-16  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md ("*movqi_68hc12"): Fix constraints, avoid
+	allocating QImode in address registers.
+	("*movqi_m68hc11"): Likewise.
+
 2002-03-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c (expand_expr): Revert previous change.
