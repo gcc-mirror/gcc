@@ -54,6 +54,9 @@
 /* GAS does not understand .ident so don't output anything for #ident.  */
 #undef ASM_OUTPUT_IDENT
 
+#undef ASM_LONG
+#define ASM_LONG "\t.long"
+
 /*
  * put const's in the text section
  */
