@@ -1779,7 +1779,7 @@ profile_function (file)
 void
 final_end_function (first, file, optimize)
      rtx first ATTRIBUTE_UNUSED;
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
      int optimize ATTRIBUTE_UNUSED;
 {
   app_disable ();

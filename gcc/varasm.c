@@ -35,10 +35,10 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
-#include "output.h"
 #include "hard-reg-set.h"
 #include "regs.h"
 #include "defaults.h"
+#include "output.h"
 #include "real.h"
 #include "toplev.h"
 #include "dbxout.h"
@@ -427,7 +427,7 @@ asm_output_aligned_bss (file, decl, name, size, align)
 
 #ifdef EH_FRAME_SECTION_ASM_OP
 void
-eh_frame_section ()
+eh_frame_section (void)
 {
   if (in_section != in_eh_frame)
     {

@@ -1518,7 +1518,7 @@ static void
 order_regs_for_reload (chain)
      struct insn_chain *chain;
 {
-  register int i, j;
+  int i;
   HARD_REG_SET used_by_pseudos;
   HARD_REG_SET used_by_pseudos2;
 
@@ -1541,14 +1541,14 @@ order_regs_for_reload (chain)
   CLEAR_REG_SET (&pseudos_counted);
 
   EXECUTE_IF_SET_IN_REG_SET
-    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, j,
+    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, i,
      {
-       count_pseudo (j);
+       count_pseudo (i);
      });
   EXECUTE_IF_SET_IN_REG_SET
-    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, j,
+    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, i,
      {
-       count_pseudo (j);
+       count_pseudo (i);
      });
   CLEAR_REG_SET (&pseudos_counted);
 }

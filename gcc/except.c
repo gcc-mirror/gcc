@@ -470,6 +470,7 @@ static void set_insn_eh_region	PARAMS ((rtx *, int));
 #ifdef DONT_USE_BUILTIN_SETJMP
 static void jumpif_rtx		PARAMS ((rtx, rtx));
 #endif
+static void find_exception_handler_labels_1 PARAMS ((rtx));
 static void mark_eh_node        PARAMS ((struct eh_node *));
 static void mark_eh_stack       PARAMS ((struct eh_stack *));
 static void mark_eh_queue       PARAMS ((struct eh_queue *));
@@ -483,7 +484,6 @@ static int find_func_region	PARAMS ((int));
 static int find_func_region_from_symbol PARAMS ((rtx));
 static void clear_function_eh_region PARAMS ((void));
 static void process_nestinfo	PARAMS ((int, eh_nesting_info *, int *));
-
 rtx expand_builtin_return_addr	PARAMS ((enum built_in_function, int, rtx));
 static void emit_cleanup_handler PARAMS ((struct eh_entry *));
 static int eh_region_from_symbol PARAMS ((rtx));
