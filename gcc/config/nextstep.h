@@ -241,7 +241,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	HANDLE_PRAGMA
 #define HANDLE_PRAGMA(finput, ch) \
-  return handle_pragma (finput, ch, &get_directive_line)
+  handle_pragma (finput, ch, &get_directive_line)
 
 /* Give methods pretty symbol names on NeXT. */
 
