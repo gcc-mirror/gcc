@@ -1,3 +1,8 @@
+2004-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* emit-rtl.c (change_address): Use XEXP (memref, 0) instead
+	of addr when creating MEM copy.
+
 2004-01-29  Devang Patel  <dpatel@apple.com>
 
 	* dwarf2out.c (gen_field_die): Do not equate decl number to die.
