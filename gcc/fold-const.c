@@ -2828,6 +2828,29 @@ pedantic_omit_one_operand (tree type, tree result, tree omitted)
 
   return pedantic_non_lvalue (t);
 }
+
+/* Return a tree for the case when the result of an expression is RESULT
+   converted to TYPE and OMITTED1 and OMITTED2 were previously operands
+   of the expression but are now not needed.
+
+   If OMITTED1 or OMITTED2 has side effects, they must be evaluated.
+   If both OMITTED1 and OMITTED2 have side effects, OMITTED1 is
+   evaluated before OMITTED2.  Otherwise, if neither has side effects,
+   just do the conversion of RESULT to TYPE.  */
+
+tree
+omit_two_operands (tree type, tree result, tree omitted1, tree omitted2)
+{
+  tree t = fold_convert (type, result);
+
+  if (TREE_SIDE_EFFECTS (omitted2))
+    t = build2 (COMPOUND_EXPR, type, omitted2, t);
+  if (TREE_SIDE_EFFECTS (omitted1))
+    t = build2 (COMPOUND_EXPR, type, omitted1, t);
+
+  return TREE_CODE (t) != COMPOUND_EXPR ? non_lvalue (t) : t;
+}
+
 
 /* Return a simplified tree node for the truth-negation of ARG.  This
    never alters ARG itself.  We assume that ARG is an operation that

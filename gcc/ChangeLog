@@ -1,3 +1,17 @@
+2004-06-12  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (omit_two_operands): New function.
+	* tree.h (omit_two_operands): Prototype here.
+	* builtins.c (fold_builtin_unordered_cmp): New function to lower
+	C99 unordered comparison builtins to the appropriate tree nodes.
+	(fold_builtin_1): Use fold_builtin_unordered_cmp to lower
+	BUILT_IN_ISGREATER, BUILT_IN_ISGREATEREQUAL, BUILT_IN_ISLESS,
+	BUILT_IN_ISLESSEQUAL and BUILT_IN_ISLESSGREATER.  Manually lower
+	BUILT_IN_ISUNORDERED comparisons to an UNORDERED_EXPR tree node.
+	(simplify_builtin_memcmp, simplify_builtin_strncmp,
+	simplify_builtin_strncat, simplify_builtin_strspn): Use the new
+	omit_two_operands function to build the required COMPOUND_EXPRs.
+
 2004-06-12  Steven Bosscher <stevenb@suse.de>,
 	    Andreas Jaeger  <aj@suse.de>
 

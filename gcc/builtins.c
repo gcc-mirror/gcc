@@ -168,6 +168,8 @@ static tree fold_builtin_toascii (tree);
 static tree fold_builtin_isdigit (tree);
 static tree fold_builtin_fabs (tree, tree);
 static tree fold_builtin_abs (tree, tree);
+static tree fold_builtin_unordered_cmp (tree, tree, enum tree_code,
+					enum tree_code);
 
 static tree simplify_builtin_memcmp (tree);
 static tree simplify_builtin_strcmp (tree);
@@ -7608,6 +7610,33 @@ fold_builtin_abs (tree arglist, tree type)
   return fold (build1 (ABS_EXPR, type, arg));
 }
 
+/* Fold a call to an unordered comparison function such as
+   __builtin_isgreater().  ARGLIST is the funtion's argument list
+   and TYPE is the functions return type.  UNORDERED_CODE and
+   ORDERED_CODE are comparison codes that give the opposite of
+   the desired result.  UNORDERED_CODE is used for modes that can
+   hold NaNs and ORDERED_CODE is used for the rest.  */
+
+static tree
+fold_builtin_unordered_cmp (tree arglist, tree type,
+			    enum tree_code unordered_code,
+			    enum tree_code ordered_code)
+{
+  enum tree_code code;
+  tree arg0, arg1;
+
+  if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+
+  code = MODE_HAS_NANS (TYPE_MODE (TREE_TYPE (arg0))) ? unordered_code
+						      : ordered_code;
+  return fold (build1 (TRUTH_NOT_EXPR, type,
+		       fold (build2 (code, type, arg0, arg1))));
+}
+
 /* Used by constant folding to eliminate some builtin calls early.  EXP is
    the CALL_EXPR of a call to a builtin function.  */
 
@@ -8159,6 +8188,28 @@ fold_builtin_1 (tree exp)
     case BUILT_IN_COPYSIGNF:
     case BUILT_IN_COPYSIGNL:
       return fold_builtin_copysign (arglist, type);
+
+    case BUILT_IN_ISGREATER:
+      return fold_builtin_unordered_cmp (arglist, type, UNLE_EXPR, LE_EXPR);
+    case BUILT_IN_ISGREATEREQUAL:
+      return fold_builtin_unordered_cmp (arglist, type, UNLT_EXPR, LT_EXPR);
+    case BUILT_IN_ISLESS:
+      return fold_builtin_unordered_cmp (arglist, type, UNGE_EXPR, GE_EXPR);
+    case BUILT_IN_ISLESSEQUAL:
+      return fold_builtin_unordered_cmp (arglist, type, UNGT_EXPR, GT_EXPR);
+    case BUILT_IN_ISLESSGREATER:
+      return fold_builtin_unordered_cmp (arglist, type, UNEQ_EXPR, EQ_EXPR);
+
+    case BUILT_IN_ISUNORDERED:
+      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+	{
+	  tree arg0 = TREE_VALUE (arglist);
+	  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+	  if (!MODE_HAS_NANS (TYPE_MODE (TREE_TYPE (arg0))))
+	    return omit_two_operands (type, integer_zero_node, arg0, arg1);
+	  return fold (build2 (UNORDERED_EXPR, type, arg0, arg1));
+	}
+      break;
 
     default:
       break;
@@ -8772,13 +8823,9 @@ simplify_builtin_memcmp (tree arglist)
 
   /* If the len parameter is zero, return zero.  */
   if (host_integerp (len, 1) && tree_low_cst (len, 1) == 0)
-    {
-      /* Evaluate and ignore arg1 and arg2 in case they have
-         side-effects.  */
-      return build2 (COMPOUND_EXPR, integer_type_node, arg1,
-		     build2 (COMPOUND_EXPR, integer_type_node,
-			     arg2, integer_zero_node));
-    }
+    /* Evaluate and ignore arg1 and arg2 in case they have side-effects.  */
+    return omit_two_operands (integer_type_node, integer_zero_node,
+			      arg1, arg2);
 
   p1 = c_getstr (arg1);
   p2 = c_getstr (arg2);
@@ -8913,13 +8960,9 @@ simplify_builtin_strncmp (tree arglist)
 
   /* If the len parameter is zero, return zero.  */
   if (integer_zerop (arg3))
-    {
-      /* Evaluate and ignore arg1 and arg2 in case they have
-	 side-effects.  */
-      return build2 (COMPOUND_EXPR, integer_type_node, arg1,
-		     build2 (COMPOUND_EXPR, integer_type_node,
-			     arg2, integer_zero_node));
-    }
+    /* Evaluate and ignore arg1 and arg2 in case they have side-effects.  */
+    return omit_two_operands (integer_type_node, integer_zero_node,
+			      arg1, arg2);
 
   /* If arg1 and arg2 are equal (and not volatile), return zero.  */
   if (operand_equal_p (arg1, arg2, 0))
@@ -9030,8 +9073,7 @@ simplify_builtin_strncat (tree arglist)
       /* If the requested length is zero, or the src parameter string
           length is zero, return the dst parameter.  */
       if (integer_zerop (len) || (p && *p == '\0'))
-	return build2 (COMPOUND_EXPR, TREE_TYPE (dst), src,
-		       build2 (COMPOUND_EXPR, integer_type_node, len, dst));
+        return omit_two_operands (TREE_TYPE (dst), dst, src, len);
 
       /* If the requested len is greater than or equal to the string
          length, call strcat.  */
@@ -9089,13 +9131,10 @@ simplify_builtin_strspn (tree arglist)
 
       /* If either argument is "", return 0.  */
       if ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))
-	{
-	  /* Evaluate and ignore both arguments in case either one has
-	     side-effects.  */
-	  return build2 (COMPOUND_EXPR, integer_type_node, s1,
-			 build2 (COMPOUND_EXPR, integer_type_node,
-				 s2, integer_zero_node));
-	}
+	/* Evaluate and ignore both arguments in case either one has
+	   side-effects.  */
+	return omit_two_operands (integer_type_node, integer_zero_node,
+				  s1, s2);
       return 0;
     }
 }

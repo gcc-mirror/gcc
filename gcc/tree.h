@@ -3508,6 +3508,7 @@ enum operand_equal_flag
 extern int operand_equal_p (tree, tree, unsigned int);
 
 extern tree omit_one_operand (tree, tree, tree);
+extern tree omit_two_operands (tree, tree, tree, tree);
 extern tree invert_truthvalue (tree);
 extern tree nondestructive_fold_unary_to_constant (enum tree_code, tree, tree);
 extern tree nondestructive_fold_binary_to_constant (enum tree_code, tree, tree, tree);
