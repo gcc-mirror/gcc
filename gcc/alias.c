@@ -122,6 +122,7 @@ static int nonlocal_referenced_p (rtx);
 static int nonlocal_set_p_1 (rtx *, void *);
 static int nonlocal_set_p (rtx);
 static void memory_modified_1 (rtx, rtx, void *);
+static void record_alias_subset (HOST_WIDE_INT, HOST_WIDE_INT);
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -595,7 +596,7 @@ new_alias_set (void)
    It is illegal for SUPERSET to be zero; everything is implicitly a
    subset of alias set zero.  */
 
-void
+static void
 record_alias_subset (HOST_WIDE_INT superset, HOST_WIDE_INT subset)
 {
   alias_set_entry superset_entry;
@@ -1562,7 +1563,7 @@ get_addr (rtx x)
     where SIZE is the size in bytes of the memory reference.  If ADDR
     is not modified by the memory reference then ADDR is returned.  */
 
-rtx
+static rtx
 addr_side_effect_eval (rtx addr, int size, int n_refs)
 {
   int offset = 0;
