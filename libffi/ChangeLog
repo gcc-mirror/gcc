@@ -1,3 +1,7 @@
+2002-04-28  David S. Miller  <davem@redhat.com>
+
+	* configure.in, configure: Fix SPARC test in previous change.
+
 2002-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (HAVE_AS_SPARC_UA_PCREL): Check for working
