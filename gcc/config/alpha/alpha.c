@@ -95,10 +95,13 @@ static void add_long_const	PROTO((FILE *, HOST_WIDE_INT, int, int, int));
 /* Compute the size of the save area in the stack.  */
 static void alpha_sa_mask	PROTO((unsigned long *imaskP,
 				       unsigned long *fmaskP));
-/* Strip type information.  */
-#define CURRENT_FUNCTION_ARGS_INFO  \
-(TARGET_OPEN_VMS ? current_function_args_info & 0xff \
- : current_function_args_info)
+
+/* Get the number of args of a function in one of two ways.  */
+#ifdef OPEN_VMS
+#define NUM_ARGS current_function_args_info.num_args
+#else
+#define NUM_ARGS current_function_args_info
+#endif
 
 /* Parse target option strings. */
 
@@ -1544,9 +1547,9 @@ alpha_builtin_saveregs (arglist)
 
   /* Compute the current position into the args, taking into account
      both registers and memory.  Both of these are already included in
-     current_function_args_info.  */
+     NUM_ARGS.  */
 
-  argsize = GEN_INT (CURRENT_FUNCTION_ARGS_INFO * UNITS_PER_WORD);
+  argsize = GEN_INT (NUM_ARGS * UNITS_PER_WORD);
 
   /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base up by 48,
      storing fp arg registers in the first 48 bytes, and the integer arg
@@ -1559,10 +1562,10 @@ alpha_builtin_saveregs (arglist)
 
   if (TARGET_OPEN_VMS)
     addr = plus_constant (virtual_incoming_args_rtx,
-			  CURRENT_FUNCTION_ARGS_INFO <= 5 + stdarg
+			  NUM_ARGS <= 5 + stdarg
 			  ? UNITS_PER_WORD : - 6 * UNITS_PER_WORD);
   else
-    addr = (CURRENT_FUNCTION_ARGS_INFO <= 5 + stdarg
+    addr = (NUM_ARGS <= 5 + stdarg
 	    ? plus_constant (virtual_incoming_args_rtx,
 			     6 * UNITS_PER_WORD)
 	    : plus_constant (virtual_incoming_args_rtx,
@@ -3103,46 +3106,39 @@ check_float_value (mode, d, overflow)
 
 #if OPEN_VMS
 
-void *
-function_arg (cum, mode, type, named)
-    CUMULATIVE_ARGS *cum;
-    enum machine_mode mode;
-    tree type;
-    int named;
+/* Return the VMS argument type corresponding to MODE.  */
+
+enum avms_arg_type
+alpha_arg_type (mode)
+     enum machine_mode mode;
 {
-  int arg;
-
-  if (mode == VOIDmode)		/* final call, return argument information  */
-    {
-      return GEN_INT (*cum);
-    }
-
-  arg = *cum & 0xff;
-
   switch (mode)
     {
-      case SFmode:
-	*cum |= (((TARGET_FLOAT_VAX)?1:4) << ((arg * 3)+8));      /* 4 = AI$K_AR_FS, IEEE single */
-        break;
-      case DFmode:
-        *cum |= (((TARGET_FLOAT_VAX)?3:5) << ((arg * 3)+8));      /* 5 = AI$K_AR_FT, IEEE double */
-        break;
-      case TFmode:
-        *cum |= (7 << ((arg * 3)+8));        /* 5 = AI$K_AR_FT, IEEE double */
-        break;
-      default:
-        break;
+    case SFmode:
+      return TARGET_FLOAT_VAX ? FF : FS;
+    case DFmode:
+      return TARGET_FLOAT_VAX ? FD : FT;
+    default:
+      return I64;
     }
-
-  return (arg < 6 && ! MUST_PASS_IN_STACK (mode, type)
-	 ? gen_rtx(REG, mode,
-		   (*cum & 0xff) + 16 + ((TARGET_FPREGS
-			  && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-			      || GET_MODE_CLASS (mode) == MODE_FLOAT))
-			 * 32))
-	 : 0);
 }
 
+/* Return an rtx for an integer representing the VMS Argument Information
+   register value.  */
+
+struct rtx_def *
+alpha_arg_info_reg_val (cum)
+     CUMULATIVE_ARGS cum;
+{
+  unsigned HOST_WIDE_INT regval = cum.num_args;
+  int i;
+
+  for (i = 0; i < 6; i++)
+    regval |= ((int) cum.atypes[i]) << (i * 3 + 8);
+
+  return GEN_INT (regval);
+}
+
 /* Structure to collect function names for final output
    in link section.  */
 
