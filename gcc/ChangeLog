@@ -4,6 +4,8 @@ Fri Dec 19 09:50:30 1997  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
 
 Fri Dec 19 09:39:48 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* i386/t-sol2 (CRTSTUFF_T_CFLAGS): Turn on the optimizer.
+
 	* stmt.c (warn_if_unused_value): Don't warn for TRY_CATCH_EXPR.
 
 	* stmt.c (expand_asm_operands): If an ASM has no outputs, then treat
