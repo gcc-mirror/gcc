@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
                             -D__GNUC_MINOR__=%v2} -D__cplusplus\
                             %{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
                             %{!fno-exceptions:-D__EXCEPTIONS}\
+			    %{fnew-abi:-D__GXX_ABI_VERSION=100}\
                             %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 			    %{ffast-math:-D__FAST_MATH__}\
 			    %{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
@@ -71,6 +72,7 @@ Boston, MA 02111-1307, USA.  */
 	-D__cplusplus\
 	%{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
 	%{!fno-exceptions:-D__EXCEPTIONS}\
+	%{fnew-abi:-D__GXX_ABI_VERSION=100}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
 	%{ffast-math:-D__FAST_MATH__}\
 	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
