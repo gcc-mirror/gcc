@@ -1,3 +1,8 @@
+2001-08-14  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	* libstdc++-v3/libmath/stubs.c: Fix PR/3988, replace
+	_GBLICPP_HAVE_LOGL with HAVE_LOGL
+
 2001-08-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (libtool_VERSION): Add.
