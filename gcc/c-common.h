@@ -600,6 +600,8 @@ extern tree strip_array_types                   PARAMS ((tree));
 /* GOTO_STMT accessor. This gives access to the label associated with
    a goto statement.  */
 #define GOTO_DESTINATION(NODE)  TREE_OPERAND (GOTO_STMT_CHECK (NODE), 0)
+/* True for goto created artifically by the compiler.  */
+#define GOTO_FAKE_P(NODE)	(TREE_LANG_FLAG_0 (GOTO_STMT_CHECK (NODE)))
 
 /* COMPOUND_STMT accessor. This gives access to the TREE_LIST of
    statements associated with a compound statement. The result is the

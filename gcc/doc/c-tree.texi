@@ -1278,6 +1278,7 @@ This predicate holds if the function an overloaded
 @findex FOR_BODY
 @tindex GOTO_STMT
 @findex GOTO_DESTINATION
+@findex GOTO_FAKE_P
 @tindex HANDLER
 @tindex IF_STMT
 @findex IF_COND
@@ -1511,11 +1512,13 @@ expressions.
 
 @item GOTO_STMT
 
-Used to represent a @code{goto} statement.  The @code{GOTO_DESTINATION}
-will usually be a @code{LABEL_DECL}.  However, if the ``computed
-goto'' extension has been used, the @code{GOTO_DESTINATION} will be an
-arbitrary expression indicating the destination.  This expression will
-always have pointer type.
+Used to represent a @code{goto} statement.  The @code{GOTO_DESTINATION} will
+usually be a @code{LABEL_DECL}.  However, if the ``computed goto'' extension
+has been used, the @code{GOTO_DESTINATION} will be an arbitrary expression
+indicating the destination.  This expression will always have pointer type.
+Additionally the @code{GOTO_FAKE_P} flag is set whenever the goto statement
+does not come from source code, but it is generated implicitly by the compiler.
+This is used for branch prediction.
 
 @item HANDLER
 

@@ -5912,9 +5912,7 @@ cse_insn (insn, libcall_insn)
 		/* Don't put a hard register source into the table if this is
 		   the last insn of a libcall.  In this case, we only need
 		   to put src_eqv_elt in src_elt.  */
-		if (GET_CODE (src) != REG
-		    || REGNO (src) >= FIRST_PSEUDO_REGISTER
-		    || ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
+		if (! find_reg_note (insn, REG_RETVAL, NULL_RTX))
 		  {
 		    struct table_elt *elt;
 
