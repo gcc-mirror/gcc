@@ -1982,44 +1982,41 @@ expand_call (exp, target, ignore)
   /* See if we can find a DECL-node for the actual function.
      As a result, decide whether this is a call to an integrable function.  */
 
-  p = TREE_OPERAND (exp, 0);
-  if (TREE_CODE (p) == ADDR_EXPR)
+  fndecl = get_callee_fndecl (exp);
+  if (fndecl)
     {
-      fndecl = TREE_OPERAND (p, 0);
-      if (TREE_CODE (fndecl) != FUNCTION_DECL)
-	fndecl = 0;
-      else
+      if (!flag_no_inline
+	  && fndecl != current_function_decl
+	  && DECL_INLINE (fndecl)
+	  && DECL_SAVED_INSNS (fndecl)
+	  && DECL_SAVED_INSNS (fndecl)->inlinable)
+	is_integrable = 1;
+      else if (! TREE_ADDRESSABLE (fndecl))
 	{
-	  if (!flag_no_inline
-	      && fndecl != current_function_decl
-	      && DECL_INLINE (fndecl)
-	      && DECL_SAVED_INSNS (fndecl)
-	      && DECL_SAVED_INSNS (fndecl)->inlinable)
-	    is_integrable = 1;
-	  else if (! TREE_ADDRESSABLE (fndecl))
+	  /* In case this function later becomes inlinable,
+	     record that there was already a non-inline call to it.
+
+	     Use abstraction instead of setting TREE_ADDRESSABLE
+	     directly.  */
+	  if (DECL_INLINE (fndecl) && warn_inline && !flag_no_inline
+	      && optimize > 0)
 	    {
-	      /* In case this function later becomes inlinable,
-		 record that there was already a non-inline call to it.
-
-		 Use abstraction instead of setting TREE_ADDRESSABLE
-		 directly.  */
-	      if (DECL_INLINE (fndecl) && warn_inline && !flag_no_inline
-		  && optimize > 0)
-		{
-		  warning_with_decl (fndecl, "can't inline call to `%s'");
-		  warning ("called from here");
-		}
-	      mark_addressable (fndecl);
+	      warning_with_decl (fndecl, "can't inline call to `%s'");
+	      warning ("called from here");
 	    }
-
-	  flags |= flags_from_decl_or_type (fndecl);
+	  mark_addressable (fndecl);
 	}
+
+      flags |= flags_from_decl_or_type (fndecl);
     }
 
   /* If we don't have specific function to call, see if we have a 
      attributes set in the type.  */
-  if (fndecl == 0)
-    flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
+  else
+    {
+      p = TREE_OPERAND (exp, 0);
+      flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
+    }
 
 #ifdef REG_PARM_STACK_SPACE
 #ifdef MAYBE_REG_PARM_STACK_SPACE
