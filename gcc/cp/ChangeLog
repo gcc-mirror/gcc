@@ -1,3 +1,8 @@
+1998-06-25  Richard Henderson  <rth@cygnus.com>
+
+	* method.c (emit_thunk): Set current_function_is_thunk for the
+	ASM_OUTPUT_MI_THUNK case as well.
+
 1998-06-23  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* exception.cc (__cplus_type_matcher): Get a match_info pointer
