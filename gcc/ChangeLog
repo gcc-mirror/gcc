@@ -1,3 +1,7 @@
+1998-04-23  Jim Wilson  <wilson@cygnus.com>
+
+	* c-aux-info.c (gen_type): Use DECL_NAME only for TYPE_DECL.
+
 Thu Apr 23 19:09:33 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* profile.c (tablejump_entry_p): New function.

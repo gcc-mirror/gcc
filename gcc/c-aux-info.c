@@ -361,7 +361,8 @@ gen_type (ret_val, t, style)
 {
   tree chain_p;
 
-  if (TYPE_NAME (t) && DECL_NAME (TYPE_NAME (t)))
+  /* If there is a typedef name for this type, use it.  */
+  if (TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
     data_type = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (t)));
   else
     {
