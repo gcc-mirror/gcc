@@ -2232,6 +2232,30 @@
   operands[6] = gen_rtx (GET_CODE (operands[1]), VOIDmode,
 			 operands[4], const0_rtx);
 }")
+
+;; We can convert such things as "a > 0xffff" to "t = a & 0xffff; t != 0".
+;; This eliminates one, and sometimes two, insns when the AND can be done
+;; with a ZAP.
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(match_operator 1 "comparison_operator"
+			[(match_operand:DI 2 "register_operand" "")
+			 (match_operand:DI 3 "const_int_operand" "")]))
+   (clobber (match_operand:DI 4 "register_operand" ""))]
+  "exact_log2 (INTVAL (operands[3]) + 1) >= 0
+   && (GET_CODE (operands[1]) == GTU
+       || GET_CODE (operands[1]) == LEU
+       || ((GET_CODE (operands[1]) == GT || GET_CODE (operands[1]) == LE)
+	   && extended_count (operands[2], DImode, 1) > 0))"
+  [(set (match_dup 4) (and:DI (match_dup 2) (match_dup 3)))
+   (set (match_dup 0) (match_dup 5))]
+  "
+{
+  operands[5] = gen_rtx (((GET_CODE (operands[1]) == GTU
+			   || GET_CODE (operands[1]) == GE)
+			  ? NE : LE),
+			 DImode, operands[4], const0_rtx);
+}")
 
 ;; Here are the CALL and unconditional branch insns.
 
