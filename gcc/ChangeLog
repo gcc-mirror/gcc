@@ -1,3 +1,7 @@
+2002-10-01  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/vax/elf.h (FUNCTION_PROFILER): Fix __mcount call.
+
 2002-10-01  Richard Henderson  <rth@redhat.com>
 
 	* calls.c (precompute_register_parameters): Force non-legitimate
