@@ -36,22 +36,21 @@
     typedef unsigned short 	mask;
     
     // Non-standard typedefs.
-    typedef unsigned char	__to_type;
+    typedef unsigned char *     __to_type;
 
-    enum
-    {
-      space = __dj_ISSPACE,	// Whitespace
-      print = __dj_ISPRINT,	// Printing
-      cntrl = __dj_ISCNTRL,	// Control character
-      upper = __dj_ISUPPER,	// UPPERCASE
-      lower = __dj_ISLOWER,	// lowercase
-      alpha = __dj_ISALPHA,	// Alphabetic
-      digit = __dj_ISDIGIT,	// Numeric
-      punct = __dj_ISPUNCT,     // Punctuation
-      xdigit = __dj_ISXDIGIT,   // Hexadecimal numeric
-      alnum = __dj_ISAL,        // Alphanumeric
-      graph = __dj_ISGRAPH	// Graphical
-    };
+    // NB: Offsets into ctype<char>::_M_table force a particular size
+    // on the mask type. Because of this, we don't use an enum.
+    static const mask space = __dj_ISSPACE;	// Whitespace
+    static const mask print = __dj_ISPRINT;	// Printing
+    static const mask cntrl = __dj_ISCNTRL;	// Control character
+    static const mask upper = __dj_ISUPPER;	// UPPERCASE
+    static const mask lower = __dj_ISLOWER;	// lowercase
+    static const mask alpha = __dj_ISALPHA;	// Alphabetic
+    static const mask digit = __dj_ISDIGIT;	// Numeric
+    static const mask punct = __dj_ISPUNCT;     // Punctuation
+    static const mask xdigit = __dj_ISXDIGIT;   // Hexadecimal numeric
+    static const mask alnum = __dj_ISALPHA;     // Alphanumeric
+    static const mask graph = __dj_ISGRAPH;	// Graphical
   };
 
 
