@@ -1168,7 +1168,7 @@ $(srcdir)/c-parse.y: c-parse.in
 
 c-decl.o : c-decl.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) $(C_TREE_H) \
     $(GGC_H) $(TARGET_H) c-lex.h flags.h function.h output.h $(EXPR_H) \
-    debug.h toplev.h intl.h $(TM_P_H) tree-inline.h
+    debug.h toplev.h intl.h $(TM_P_H) tree-inline.h $(TIMEVAR_H)
 c-typeck.o : c-typeck.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
     $(TARGET_H) flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h $(TM_P_H)
 c-lang.o : c-lang.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
@@ -1512,7 +1512,7 @@ cfganal.o : cfganal.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
 cfgbuild.o : cfgbuild.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    function.h except.h $(GGC_H) 
-cfgcleanup.o : cfgcleanup.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
+cfgcleanup.o : cfgcleanup.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TIMEVAR_H)\
    $(BASIC_BLOCK_H) hard-reg-set.h output.h flags.h $(RECOG_H) toplev.h $(GGC_H)
 cfgloop.o : cfgloop.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h

@@ -44,6 +44,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cpplib.h"
 #include "target.h"
 #include "debug.h"
+#include "timevar.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -6802,6 +6803,8 @@ c_expand_body (fndecl, nested_p)
   if (flag_syntax_only)
     return;
 
+  timevar_push (TV_EXPAND);
+
   if (flag_inline_trees)
     {
       /* First, cache whether the current function is inlinable.  Some
@@ -6952,6 +6955,7 @@ c_expand_body (fndecl, nested_p)
   if (nested_p)
     /* Return to the enclosing function.  */
     pop_function_context ();
+  timevar_pop (TV_EXPAND);
 }
 
 /* Check the declarations given in a for-loop for satisfying the C99

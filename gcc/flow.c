@@ -344,6 +344,7 @@ static void invalidate_mems_from_autoinc PARAMS ((struct propagate_block_info *,
 static void invalidate_mems_from_set	PARAMS ((struct propagate_block_info *,
 						 rtx));
 static void delete_dead_jumptables	PARAMS ((void));
+static void clear_log_links		PARAMS ((sbitmap));
 
 
 void
@@ -628,11 +629,18 @@ update_life_info (blocks, extent, prop_flags)
 
   tmp = INITIALIZE_REG_SET (tmp_head);
 
+  timevar_push ((extent == UPDATE_LIFE_LOCAL || blocks)
+		? TV_LIFE_UPDATE : TV_LIFE);
+
   /* Changes to the CFG are only allowed when
      doing a global update for the entire CFG.  */
   if ((prop_flags & PROP_ALLOW_CFG_CHANGES)
       && (extent == UPDATE_LIFE_LOCAL || blocks))
     abort ();
+
+  /* Clear log links in case we are asked to (re)compute them.  */
+  if (prop_flags & PROP_LOG_LINKS)
+    clear_log_links (blocks);
 
   /* For a global update, we go through the relaxation process again.  */
   if (extent != UPDATE_LIFE_LOCAL)
@@ -727,6 +735,8 @@ update_life_info (blocks, extent, prop_flags)
 				     }
 				 });
     }
+  timevar_pop ((extent == UPDATE_LIFE_LOCAL || blocks)
+	       ? TV_LIFE_UPDATE : TV_LIFE);
 }
 
 /* Free the variables allocated by find_basic_blocks.
@@ -4088,31 +4098,33 @@ count_or_remove_death_notes (blocks, kill)
 
   return count;
 }
-/* Clear LOG_LINKS fields of insns in a chain.
-   Also clear the global_live_at_{start,end} fields of the basic block
-   structures.  */
+/* Clear LOG_LINKS fields of insns in a selected blocks or whole chain
+   if blocks is NULL.  */
 
-void
-clear_log_links (insns)
-     rtx insns;
+static void
+clear_log_links (blocks)
+     sbitmap blocks;
 {
-  rtx i;
-  int b;
+  rtx insn;
+  int i;
 
-  for (i = insns; i; i = NEXT_INSN (i))
-    if (INSN_P (i))
-      LOG_LINKS (i) = 0;
-
-  for (b = 0; b < n_basic_blocks; b++)
+  if (!blocks)
     {
-      basic_block bb = BASIC_BLOCK (b);
-
-      bb->global_live_at_start = NULL;
-      bb->global_live_at_end = NULL;
+      rtx insn;
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	if (INSN_P (insn))
+	  free_EXPR_LIST_list (&LOG_LINKS (insn));
     }
-
-  ENTRY_BLOCK_PTR->global_live_at_end = NULL;
-  EXIT_BLOCK_PTR->global_live_at_start = NULL;
+  else
+    EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
+      {
+	basic_block bb = BASIC_BLOCK (i);
+	rtx insn;
+	for (insn = bb->head; insn != NEXT_INSN (bb->end);
+	     insn = NEXT_INSN (insn))
+	  if (INSN_P (insn))
+	    free_EXPR_LIST_list (&LOG_LINKS (insn));
+      });
 }
 
 /* Given a register bitmap, turn on the bits in a HARD_REG_SET that

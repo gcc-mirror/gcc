@@ -2885,7 +2885,8 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
    Whether or not a particular assembler allows us to enter such, I
    guess we'll have to see.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)       		\
-  (flag_pic ? (GLOBAL ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel		\
+  (flag_pic								\
+    ? (GLOBAL ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4\
    : DW_EH_PE_absptr)
 
 /* This is how to output the definition of a user-level label named NAME,

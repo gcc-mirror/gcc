@@ -1,3 +1,49 @@
+Sat Oct 20 12:01:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (find_sub_basic_blocks): Use sbitmap parameter.
+	* cfgbuild.c (find_bb_boundaries, compute_outgoing_frequencies):
+	Break out from ...
+	(find_sub_basic_blocks): ... here;
+	(find_many_sub_basic_blocks): New.
+	* recog.c (split_all_insns): Update find_sub_basic_blocks call.
+
+	* i386.h (ASM_PREFERRED_EH_DATA_FORMAT): Define sdata4.
+
+	* i386.c (ix86_va_arg): Kill indirect_p handling; fix aliasing issues.:
+
+	* i386.c (split_di, split_ti): Revamp to use simplify_subreg.
+
+	* timevar.def (TV_LIFE, TV_LIFE_UPDATE, TV_MODE_SWITCH): new.
+	* flow.c (update_life_info): Measure time.
+	* c-decl.c: Include timevar.h
+	(c_expand_body): Measure time.
+	* toplev.c (rest_of_compilation): Measure time of mode switching
+	separately.
+	* Makefile.in (c-decl.o, cfgcleanup.o): Add dependancy.
+
+	* toplev.c (flag_asynchronous_unwind_tables): New global variable.
+	(lang_independent_options): Add asynchronous-unwind-tables
+	(toplev_main): flag_asynchronous_unwind_tables implies
+	flag_unwind_tables.
+	* flags.h (flag_asynchronous_unwind_tables): Declare.
+	* dwarf2out.c (dwarf2out_stack_adjust): Take into account
+	flag_asynchronous_unwind_tables.
+	(output_call_frame_info): Likewise.
+	* invoke.texi (-fasynchronous-unwind-tables): Document.
+	* i386.c (optimization_options): Enable
+	flag_asynchronous_unwind_tables.
+
+	* i386.c (ix86_expand_setcc):  Always expect target to be QImode.
+	* i386.md (s* expanders): Destination is QImode.
+
+	* toplev.c (rest_of_compilation): Do not call clear_log_links.
+	* rtl.h (clear_log_links): Kill.
+	* flow.c (clear_log_links): Make static; accept blocks parameter;
+	do no clear life info.
+	(update_life_info): Call clear_log_links.
+
+	* cfganal.c (forwarder_block_p): Avoid active_insn_p calls.
+
 2001-10-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplex.c (handle_newline, skip_escaped_newlines,

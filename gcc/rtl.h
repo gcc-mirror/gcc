@@ -1481,7 +1481,6 @@ void free_EXPR_LIST_node 		PARAMS ((rtx));
 void free_INSN_LIST_node 		PARAMS ((rtx));
 rtx alloc_INSN_LIST			PARAMS ((rtx, rtx));
 rtx alloc_EXPR_LIST			PARAMS ((int, rtx, rtx));
-void clear_log_links                    PARAMS ((rtx));
 
 /* regclass.c */
 
