@@ -1377,13 +1377,13 @@ vect_strip_conversion (tree expr)
             a[j].b[i][j] = 0;
 	 
    For a[j].b[i][j], EXPR will be 'i * C_i + j * C_j + C'. 'i' cannot be 
-   subsituted, since its access_fn in the inner loop is i. 'j' will be 
+   substituted, since its access_fn in the inner loop is i. 'j' will be 
    substituted with 3. An INITIAL_OFFSET will be 'i * C_i + C`', where
    C` =  3 * C_j + C.
 
    Compute MISALIGN (the misalignment of the data reference initial access from
    its base) if possible. Misalignment can be calculated only if all the
-   variables can be substitued with constants, or if a variable is multiplied
+   variables can be substituted with constants, or if a variable is multiplied
    by a multiple of VECTYPE_ALIGNMENT. In the above example, since 'i' cannot
    be substituted, MISALIGN will be NULL_TREE in case that C_i is not a multiple
    of VECTYPE_ALIGNMENT, and C` otherwise. (We perform MISALIGN modulo 
@@ -4894,7 +4894,7 @@ vect_get_memtag_and_dr (tree memref, tree stmt, bool is_read,
    1.1.1- vect_get_base_and_offset():
       Calculate base, initial_offset, step and alignment.      
       For ARRAY_REFs and COMPONENT_REFs use call get_inner_reference.
-   2- vect_analyze_dependences(): apply dependece testing using ref_stmt.DR
+   2- vect_analyze_dependences(): apply dependence testing using ref_stmt.DR
    3- vect_analyze_drs_alignment(): check that ref_stmt.alignment is ok.
    4- vect_analyze_drs_access(): check that ref_stmt.step is ok.
 

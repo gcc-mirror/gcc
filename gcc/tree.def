@@ -32,7 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    These tree codes have been sorted so that the macros in tree.h that
    check for various tree codes are optimized into range checks.  This
-   gives a measureable performance improvement.  When adding a new
+   gives a measurable performance improvement.  When adding a new
    code, consider its placement in relation to the other codes.  */
 
 /* Any erroneous construct is parsed into a node of this type.
