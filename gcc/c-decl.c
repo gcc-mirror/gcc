@@ -2867,12 +2867,28 @@ finish_decl (decl, init, asmspec_tree)
 	TREE_USED (decl) = 1;
     }
 
-  /* If this is a function and an assembler name is specified, it isn't
-     builtin any more.  Also reset DECL_RTL so we can give it its new
-     name.  */
+  /* If this is a function and an assembler name is specified, reset DECL_RTL
+     so we can give it its new name.  Also, update built_in_decls if it
+     was a normal built-in.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && asmspec)
     {
-      DECL_BUILT_IN_CLASS (decl) = NOT_BUILT_IN;
+      if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	{
+	  tree builtin = built_in_decls [DECL_FUNCTION_CODE (decl)];
+	  SET_DECL_RTL (builtin, NULL_RTX);
+	  SET_DECL_ASSEMBLER_NAME (builtin, get_identifier (asmspec));
+#ifdef TARGET_MEM_FUNCTIONS
+	  if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMCPY)
+	    init_block_move_fn (asmspec);
+	  else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMSET)
+	    init_block_clear_fn (asmspec);
+#else
+	  if (DECL_FUNCTION_CODE (decl) == BUILT_IN_BCOPY)
+	    init_block_move_fn (asmspec);
+	  else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_BZERO)
+	    init_block_clear_fn (asmspec);
+#endif
+	}
       SET_DECL_RTL (decl, NULL_RTX);
       SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
     }

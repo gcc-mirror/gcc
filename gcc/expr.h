@@ -385,6 +385,9 @@ enum block_op_methods
   BLOCK_OP_CALL_PARM
 };
 
+extern void init_block_move_fn PARAMS ((const char *));
+extern void init_block_clear_fn PARAMS ((const char *));
+
 extern rtx emit_block_move PARAMS ((rtx, rtx, rtx, enum block_op_methods));
 
 /* Copy all or part of a value X into registers starting at REGNO.
