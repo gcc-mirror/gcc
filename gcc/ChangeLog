@@ -1,3 +1,7 @@
+2001-10-26  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (get_shift_alg): Remove redundant code.
+
 2001-10-26  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-typeck.c (convert_arguments): When comparing for enumeral
