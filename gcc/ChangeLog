@@ -1,5 +1,56 @@
 2003-06-04  Andreas Jaeger  <aj@suse.de>
 
+	* config/i386/uwin.h: Remove SUBTARGET_PROLOGUE.
+
+	* config/i386/i386.c (ix86_expand_prologue): Do not use
+	SUBTARGET_PROLOGUE.
+
+	* system.h: Poision SUBTARGET_PROLOGUE.
+
+	* config/arm/arm-protos.h: Remove unused rdate_section prototype.
+
+	* output.h: Remove TDESC_SECTION_ASM_OP and RDATA_SECTION_ASM_OP
+	dependend code.
+
+	* system.h: Poison TDESC_SECTION_ASM_OP and RDATA_SECTION_ASM_OP.
+
+	* system.h: Poison INSN_CACHE_DEPTH, INSN_CACHE_SIZE and
+	INSN_CACHE_LINE_WIDTH.
+
+	* libgcc2.c (INSN_CACHE_PLANE_SIZE): Removed.
+	(__clear_cache): Remove code dependend on INSN_CACHE_DEPTH,
+	INSN_CACHE_SIZE and INSN_CACHE_LINE_WIDTH.
+
+	* doc/tm.texi (Trampolines): Remove INSN_CACHE_DEPTH,
+	INSN_CACHE_SIZE and INSN_CACHE_LINE_WIDTH.
+	
+	* dbxout.c (dbxout_type): Remove usage of DBX_OUTPUT_ENUM.
+	(dbxout_symbol): Remove usage of DBX_OUTPUT_CONSTANT_SYMBOL.
+	(dbxout_block): Remove usage of DBX_OUTPUT_CATCH.
+	(dbxout_block): Remove usage of DBX_LBRAC_FIRST.
+	(dbxout_source_file): Remove usage of DBX_OUTPUT_SOURCE_FILENAME.
+	(dbxout_init): Remove test for DBX_WORKING_DIRECTORY.
+
+	* doc/tm.texi (DBX Options): Do not document DBX_LBRAC_FIRST,
+	DBX_OUTPUT_SOURCE_FILENAME and DBX_OUTPUT_ENUM and
+	DBX_WORKING_DIRECTORY.
+
+	* system.h: Poison DBX_LBRAC_FIRST, DBX_OUTPUT_ENUM,
+	DBX_OUTPUT_SOURCE_FILENAME and DBX_WORKING_DIRECTORY.
+
+	* config/frv/frv-protos.h: Remove unused const_section
+	declaration.
+	* config/vax/vax-protos.h: Likewise.
+
+	* output.h: Remove CONST_SECTION_ASM_OP usage.
+
+	* system.h: Poison CONST_SECTION_ASM_OP.
+
+	* crtstuff.c (__do_global_dtors_aux): Remove usage of CRT_GET_RFIB_TEXT
+	(frame_dummy): Likewise.
+	* unwind-dw2-fde-glibc.c (_Unwind_IteratePhdrCallback): Likewise.
+	* system.h: Poison CRT_GET_RFIB_TEXT.
+	
 	* collect2.c (is_ctor_dtor): Remove CFRONT_LOSSAGE dependend code.
 
 	* fix-header.c: Remove ADD_MISSING_EXTERN_C dependend variables.

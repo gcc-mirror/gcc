@@ -1,7 +1,7 @@
 /* Declarations for insn-output.c.  These functions are defined in recog.c,
    final.c, and varasm.c.
    Copyright (C) 1987, 1991, 1994, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -183,10 +183,6 @@ extern void dtors_section PARAMS ((void));
 extern void bss_section PARAMS ((void));
 #endif
 
-#ifdef CONST_SECTION_ASM_OP
-extern void const_section PARAMS ((void));
-#endif
-
 #ifdef INIT_SECTION_ASM_OP
 extern void init_section PARAMS ((void));
 #endif
@@ -199,20 +195,12 @@ extern void fini_section PARAMS ((void));
 extern void exports_section PARAMS ((void));
 #endif
 
-#ifdef TDESC_SECTION_ASM_OP
-extern void tdesc_section PARAMS ((void));
-#endif
-
 #ifdef DRECTVE_SECTION_ASM_OP
 extern void drectve_section PARAMS ((void));
 #endif
 
 #ifdef SDATA_SECTION_ASM_OP
 extern void sdata_section PARAMS ((void));
-#endif
-
-#ifdef RDATA_SECTION_ASM_OP
-extern void rdata_section PARAMS ((void));
 #endif
 
 /* Tell assembler to change to section NAME for DECL.

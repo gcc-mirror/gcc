@@ -439,10 +439,7 @@ dbxout_init (input_file_name)
   ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
 
   /* Put the current working directory in an N_SO symbol.  */
-#ifndef DBX_WORKING_DIRECTORY /* Only some versions of DBX want this,
-				 but GDB always does.  */
   if (use_gnu_debug_info_extensions)
-#endif
     {
       if (!cwd && (cwd = getpwd ()) && (!*cwd || cwd[strlen (cwd) - 1] != '/'))
 	cwd = concat (cwd, FILE_NAME_JOINER, NULL);
@@ -461,8 +458,6 @@ dbxout_init (input_file_name)
     }
 
 #ifdef DBX_OUTPUT_MAIN_SOURCE_FILENAME
-  /* This should NOT be DBX_OUTPUT_SOURCE_FILENAME. That
-     would give us an N_SOL, and we want an N_SO.  */
   DBX_OUTPUT_MAIN_SOURCE_FILENAME (asmfile, input_file_name);
 #else /* no DBX_OUTPUT_MAIN_SOURCE_FILENAME */
   /* We include outputting `Ltext:' here,
@@ -612,9 +607,6 @@ dbxout_source_file (file, filename)
 
   if (filename && (lastfile == 0 || strcmp (filename, lastfile)))
     {
-#ifdef DBX_OUTPUT_SOURCE_FILENAME
-      DBX_OUTPUT_SOURCE_FILENAME (file, filename);
-#else
       char ltext_label_name[100];
 
       ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext",
@@ -631,7 +623,6 @@ dbxout_source_file (file, filename)
 	text_section ();
       (*targetm.asm_out.internal_label) (file, "Ltext", source_label_number);
       source_label_number++;
-#endif
       lastfile = filename;
     }
 }
@@ -1720,9 +1711,6 @@ dbxout_type (type, full)
 	  CHARS (1);
 	  return;
 	}
-#ifdef DBX_OUTPUT_ENUM
-      DBX_OUTPUT_ENUM (asmfile, type);
-#else
       if (use_gnu_debug_info_extensions
 	  && TYPE_PRECISION (type) != TYPE_PRECISION (integer_type_node))
 	{
@@ -1752,7 +1740,6 @@ dbxout_type (type, full)
 
       putc (';', asmfile);
       CHARS (1);
-#endif
       break;
 
     case POINTER_TYPE:
@@ -2250,13 +2237,9 @@ dbxout_symbol (decl, local)
 		  || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
 		{
 		  HOST_WIDE_INT ival = tree_low_cst (DECL_INITIAL (decl), 0);
-#ifdef DBX_OUTPUT_CONSTANT_SYMBOL
-		  DBX_OUTPUT_CONSTANT_SYMBOL (asmfile, name, ival);
-#else
 		  fprintf (asmfile, "%s\"%s:c=i" HOST_WIDE_INT_PRINT_DEC
 			   "\",0x%x,0,0,0\n",
 			   ASM_STABS_OP, name, ival, N_LSYM);
-#endif
 		  return 1;
 		}
 	      else if (TREE_CODE (TREE_TYPE (decl)) == REAL_TYPE)
@@ -2968,9 +2951,6 @@ dbxout_block (block, depth, args)
 	{
 	  int did_output;
 
-#ifdef DBX_LBRAC_FIRST
-	  did_output = 1;
-#else
 	  /* In dbx format, the syms of a block come before the N_LBRAC.
 	     If nothing is output, we don't need the N_LBRAC, either.  */
 	  did_output = 0;
@@ -2978,7 +2958,6 @@ dbxout_block (block, depth, args)
 	    did_output = dbxout_syms (BLOCK_VARS (block));
 	  if (args)
 	    dbxout_reg_parms (args);
-#endif
 
 	  /* Now output an N_LBRAC symbol to represent the beginning of
 	     the block.  Use the block's tree-walk order to generate
@@ -2996,14 +2975,10 @@ dbxout_block (block, depth, args)
 		  tree decl = BLOCK_VARS (block);
 		  while (decl)
 		    {
-#ifdef DBX_OUTPUT_CATCH
-		      DBX_OUTPUT_CATCH (asmfile, decl, buf);
-#else
 		      fprintf (asmfile, "%s\"%s:C1\",%d,0,0,", ASM_STABS_OP,
 			       IDENTIFIER_POINTER (DECL_NAME (decl)), N_CATCH);
 		      assemble_name (asmfile, buf);
 		      fprintf (asmfile, "\n");
-#endif
 		      decl = TREE_CHAIN (decl);
 		    }
 		}
@@ -3020,15 +2995,6 @@ dbxout_block (block, depth, args)
 	      fprintf (asmfile, "\n");
 #endif
 	    }
-
-#ifdef DBX_LBRAC_FIRST
-	  /* On some weird machines, the syms of a block
-	     come after the N_LBRAC.  */
-	  if (debug_info_level != DINFO_LEVEL_TERSE || depth == 0)
-	    dbxout_syms (BLOCK_VARS (block));
-	  if (args)
-	    dbxout_reg_parms (args);
-#endif
 
 	  /* Output the subblocks.  */
 	  dbxout_block (BLOCK_SUBBLOCKS (block), depth + 1, NULL_TREE);
