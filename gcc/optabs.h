@@ -192,7 +192,6 @@ enum optab_index
   OTI_nearbyint,
   OTI_rint,
   OTI_lrint,
-  OTI_llrint,
   /* Tangent */
   OTI_tan,
   /* Inverse tangent */
@@ -320,7 +319,6 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define nearbyint_optab (optab_table[OTI_nearbyint])
 #define rint_optab (optab_table[OTI_rint])
 #define lrint_optab (optab_table[OTI_lrint])
-#define llrint_optab (optab_table[OTI_llrint])
 #define tan_optab (optab_table[OTI_tan])
 #define atan_optab (optab_table[OTI_atan])
 #define copysign_optab (optab_table[OTI_copysign])
