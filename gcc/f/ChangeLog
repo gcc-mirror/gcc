@@ -1,3 +1,7 @@
+2003-06-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* com.c (input_file_stack_tick): Delete redundant declaration.
+
 Thu Jun 26 07:06:29 2003  Neil Booth  <neil@daikokuya.co.uk>
 
 	* top.c (ffe_handle_option): Don't check for missing arguments.
@@ -45,8 +49,8 @@ Sat Jun 14 13:25:00 2003  Neil Booth  <neil@daikokuya.co.uk>
 2003-06-13  Richard Henderson  <rth@redhat.com>
 
 	PR debug/9864
-        * com.c (ffecom_sym_transform_): Install FFEINFO_whereGLOBAL
-        symbols in the global binding level.
+	* com.c (ffecom_sym_transform_): Install FFEINFO_whereGLOBAL
+	symbols in the global binding level.
 
 Sun Jun  8 15:42:09 2003  Neil Booth  <neil@daikokuya.co.uk>
 

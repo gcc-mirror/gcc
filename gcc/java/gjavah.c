@@ -52,7 +52,7 @@ FILE *out = NULL;
 static int found_error = 0;
 
 /* Nonzero if we're generating JNI output.  */
-static int flag_jni = 0;
+int flag_jni = 0;
 
 /* When nonzero, warn when source file is newer than matching class
    file.  */

@@ -15125,7 +15125,6 @@ static struct file_buf {
 } instack[INPUT_STACK_MAX];
 
 static int last_error_tick = 0;	   /* Incremented each time we print it.  */
-static int input_file_stack_tick = 0;  /* Incremented when status changes.  */
 
 /* Current nesting level of input sources.
    `instack[indepth]' is the level currently being read.  */
