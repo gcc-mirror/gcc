@@ -57,19 +57,23 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC "\
 %{!ansi:-D__EXTENSIONS__ -D_SGI_SOURCE -D_LONGLONG} \
-%{.S:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
 %{.cc:	-D_LANGUAGE_C_PLUS_PLUS} \
 %{.cxx:	-D_LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D_LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D_LANGUAGE_OBJECTIVE_C -D_LANGUAGE_C} \
-%{!.S: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}\
+%{.S:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.s:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{!.S:%{!.s: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}}\
 %{!mfp64: -D_MIPS_FPSET=16}%{mfp64: -D_MIPS_FPSET=32} \
 %{mips1: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
 %{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
 %{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
 %{!mips1: %{!mips2: %{!mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS1}}} \
 %{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
-%{!mlong64: -D_MIPS_SZLONG=32}%{mlong64: -D_MIPS_SZLONG=64}"
+%{!mlong64: -D_MIPS_SZLONG=32}%{mlong64: -D_MIPS_SZLONG=64} \
+%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+%{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{mips3:-U__mips -D__mips=3}"
 
 #undef LINK_SPEC
 #define LINK_SPEC "\
