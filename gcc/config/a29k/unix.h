@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU, Unix.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -28,7 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    for Unix systems.  */
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (1+2+8+64)
+#define TARGET_DEFAULT (1+2+16+128)
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dam29k -Da29k -Dam29000 -Asystem(unix) -Acpu(a29k) -Amachine(a29k)"
