@@ -1,3 +1,13 @@
+2003-10-16  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12540
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<wchar_t, true/false>::_M_initialize_moneypunct):
+	Don't leak memory if new throws.
+	* src/locale.cc (locale::locale(const char*)): In order not
+	to leak memory in case new throws, use a basic_string type
+	for __res too and avoid strdup.
+
 2003-10-14  Jeff Bailey  <jbailey@nisa.net>
 	
 	PR libstdc++/12562

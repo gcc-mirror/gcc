@@ -379,47 +379,60 @@ namespace std
 	  const char* __cnegsign = __nl_langinfo_l(__NEGATIVE_SIGN, __cloc);
 	  const char* __ccurr = __nl_langinfo_l(__INT_CURR_SYMBOL, __cloc);
 
-	  mbstate_t __state;
-	  size_t __len = strlen(__cpossign);
-	  if (__len)
+	  wchar_t* __wcs_ps = 0;
+	  wchar_t* __wcs_ns = 0;
+	  const char __nposn = *(__nl_langinfo_l(__INT_N_SIGN_POSN, __cloc));
+	  try
 	    {
-	      ++__len;
-	      memset(&__state, 0, sizeof(mbstate_t));
-	      wchar_t* __wcs = new wchar_t[__len];
-	      mbsrtowcs(__wcs, &__cpossign, __len, &__state);
-	      _M_data->_M_positive_sign = __wcs;
+	      mbstate_t __state;
+	      size_t __len = strlen(__cpossign);
+	      if (__len)
+		{
+		  ++__len;
+		  memset(&__state, 0, sizeof(mbstate_t));
+		  __wcs_ps = new wchar_t[__len];
+		  mbsrtowcs(__wcs_ps, &__cpossign, __len, &__state);
+		  _M_data->_M_positive_sign = __wcs_ps;
+		}
+	      else
+		_M_data->_M_positive_sign = L"";
+	      
+	      __len = strlen(__cnegsign);
+	      if (!__nposn)
+		_M_data->_M_negative_sign = L"()";
+	      else if (__len)
+		{ 
+		  ++__len;
+		  memset(&__state, 0, sizeof(mbstate_t));
+		  __wcs_ns = new wchar_t[__len];
+		  mbsrtowcs(__wcs_ns, &__cnegsign, __len, &__state);
+		  _M_data->_M_negative_sign = __wcs_ns;
+		}
+	      else
+		_M_data->_M_negative_sign = L"";
+	      
+	      // _Intl == true.
+	      __len = strlen(__ccurr);
+	      if (__len)
+		{
+		  ++__len;
+		  memset(&__state, 0, sizeof(mbstate_t));
+		  wchar_t* __wcs = new wchar_t[__len];
+		  mbsrtowcs(__wcs, &__ccurr, __len, &__state);
+		  _M_data->_M_curr_symbol = __wcs;
+		}
+	      else
+		_M_data->_M_curr_symbol = L"";
 	    }
-	  else
-	    _M_data->_M_positive_sign = L"";
-
-	  char __nposn = *(__nl_langinfo_l(__INT_N_SIGN_POSN, __cloc));
-	  __len = strlen(__cnegsign);
-	  if (!__nposn)
-	    _M_data->_M_negative_sign = L"()";
-	  else if (__len)
-	    { 
-	      ++__len;
-	      memset(&__state, 0, sizeof(mbstate_t));
-	      wchar_t* __wcs = new wchar_t[__len];
-	      mbsrtowcs(__wcs, &__cnegsign, __len, &__state);
-	      _M_data->_M_negative_sign = __wcs;
-	    }
-	  else
-	    _M_data->_M_negative_sign = L"";
-
-	  // _Intl == true.
-	  __len = strlen(__ccurr);
-	  if (__len)
+	  catch (...)
 	    {
-	      ++__len;
-	      memset(&__state, 0, sizeof(mbstate_t));
-	      wchar_t* __wcs = new wchar_t[__len];
-	      mbsrtowcs(__wcs, &__ccurr, __len, &__state);
-	      _M_data->_M_curr_symbol = __wcs;
-	    }
-	  else
-	    _M_data->_M_curr_symbol = L"";
-
+	      delete _M_data;
+	      _M_data = 0;
+	      delete __wcs_ps;
+	      delete __wcs_ns;	      
+	      __throw_exception_again;
+	    } 
+	  
 	  _M_data->_M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, 
 						      __cloc));
 	  char __pprecedes = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
@@ -442,18 +455,18 @@ namespace std
     }
 
   template<> 
-    void
-    moneypunct<wchar_t, false>::_M_initialize_moneypunct(__c_locale __cloc,
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2) 
-							 const char*)
+  void
+  moneypunct<wchar_t, false>::_M_initialize_moneypunct(__c_locale __cloc,
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+						       const char*)
 #else
-							 const char* __name)
+                                                       const char* __name)
 #endif
-    {
-      if (!_M_data)
-	_M_data = new __moneypunct_cache<wchar_t>;
+  {
+    if (!_M_data)
+      _M_data = new __moneypunct_cache<wchar_t>;
 
-      if (!__cloc)
+    if (!__cloc)
 	{
 	  // "C" locale
 	  _M_data->_M_decimal_point = L'.';
@@ -489,47 +502,60 @@ namespace std
 	  const char* __cnegsign = __nl_langinfo_l(__NEGATIVE_SIGN, __cloc);
 	  const char* __ccurr = __nl_langinfo_l(__CURRENCY_SYMBOL, __cloc);
 
-	  mbstate_t __state;
-	  size_t __len;
-	  __len = strlen(__cpossign);
-	  if (__len)
+	  wchar_t* __wcs_ps = 0;
+	  wchar_t* __wcs_ns = 0;
+	  const char __nposn = *(__nl_langinfo_l(__N_SIGN_POSN, __cloc));
+	  try
+            {
+              mbstate_t __state;
+              size_t __len;
+              __len = strlen(__cpossign);
+              if (__len)
+                {
+		  ++__len;
+		  memset(&__state, 0, sizeof(mbstate_t));
+		  __wcs_ps = new wchar_t[__len];
+		  mbsrtowcs(__wcs_ps, &__cpossign, __len, &__state);
+		  _M_data->_M_positive_sign = __wcs_ps;
+		}
+	      else
+		_M_data->_M_positive_sign = L"";
+	      
+	      __len = strlen(__cnegsign);
+	      if (!__nposn)
+		_M_data->_M_negative_sign = L"()";
+	      else if (__len)
+		{ 
+		  ++__len;
+		  memset(&__state, 0, sizeof(mbstate_t));
+		  __wcs_ns = new wchar_t[__len];
+		  mbsrtowcs(__wcs_ns, &__cnegsign, __len, &__state);
+		  _M_data->_M_negative_sign = __wcs_ns;
+		}
+	      else
+		_M_data->_M_negative_sign = L"";
+	      
+	      // _Intl == true.
+	      __len = strlen(__ccurr);
+	      if (__len)
+		{
+		  ++__len;
+		  memset(&__state, 0, sizeof(mbstate_t));
+		  wchar_t* __wcs = new wchar_t[__len];
+		  mbsrtowcs(__wcs, &__ccurr, __len, &__state);
+		  _M_data->_M_curr_symbol = __wcs;
+		}
+	      else
+		_M_data->_M_curr_symbol = L"";
+	    }
+          catch (...)
 	    {
-	      ++__len;
-	      memset(&__state, 0, sizeof(mbstate_t));
-	      wchar_t* __wcs = new wchar_t[__len];
-	      mbsrtowcs(__wcs, &__cpossign, __len, &__state);
-	      _M_data->_M_positive_sign = __wcs;
+	      delete _M_data;
+              _M_data = 0;
+	      delete __wcs_ps;
+	      delete __wcs_ns;	      
+              __throw_exception_again;
 	    }
-	  else
-	    _M_data->_M_positive_sign = L"";
-
-	  char __nposn = *(__nl_langinfo_l(__N_SIGN_POSN, __cloc));
-	  __len = strlen(__cnegsign);
-	  if (!__nposn)
-	    _M_data->_M_negative_sign = L"()";
-	  else if (__len)
-	    { 
-	      ++__len;
-	      memset(&__state, 0, sizeof(mbstate_t));
-	      wchar_t* __wcs = new wchar_t[__len];
-	      mbsrtowcs(__wcs, &__cnegsign, __len, &__state);
-	      _M_data->_M_negative_sign = __wcs;
-	    }
-	  else
-	    _M_data->_M_negative_sign = L"";
-
-	  // _Intl == true.
-	  __len = strlen(__ccurr);
-	  if (__len)
-	    {
-	      ++__len;
-	      memset(&__state, 0, sizeof(mbstate_t));
-	      wchar_t* __wcs = new wchar_t[__len];
-	      mbsrtowcs(__wcs, &__ccurr, __len, &__state);
-	      _M_data->_M_curr_symbol = __wcs;
-	    }
-	  else
-	    _M_data->_M_curr_symbol = L"";
 
 	  _M_data->_M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS, __cloc));
 	  char __pprecedes = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));
