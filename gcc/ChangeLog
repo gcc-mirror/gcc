@@ -1,3 +1,10 @@
+Fri Apr 24 04:42:35 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (sh_expand_prologue, in !SH3E code): Don't push an extra
+	register for stdarg functions.
+	* sh.h (current_function_varargs): Declare.
+	(FUNCTION_ARG): Ignore NAMED for stdarg functions.
+
 1998-04-23  Jim Wilson  <wilson@cygnus.com>
 
 	* frame.c, libgcc2.c (stdlib.h, unistd.h): Don't include when

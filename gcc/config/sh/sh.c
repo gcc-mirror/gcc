@@ -3488,9 +3488,9 @@ sh_expand_prologue ()
 	  for (i = 0; i < NPARM_REGS(SImode); i++)
 	    {
 	      int rn = NPARM_REGS(SImode) + FIRST_PARM_REG - i - 1;
-	      if (i > (NPARM_REGS(SImode) 
-		       - current_function_args_info.arg_count[(int) SH_ARG_INT]
-		       - current_function_varargs))
+	      if (i >= (NPARM_REGS(SImode) 
+			- current_function_args_info.arg_count[(int) SH_ARG_INT]
+			))
 		break;
 	      push (rn);
 	      extra_push += 4;
