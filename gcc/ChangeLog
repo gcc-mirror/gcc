@@ -1,3 +1,16 @@
+Fri Dec 13 21:07:18 2002  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/mn10300.c (print_operand) <case N>: Check
+	operand's range.  Print value directly, without aid from
+	output_address.
+	<case U>: New.
+	<case S>: Make sure argument to fprintf has the right type.
+	* config/mn10300/mn10300.h (OK_FOR_T): New macro.
+	(EXTRA_CONSTRAINT): Adjust.
+	* config/mn10300/mn10300.md: Add new all-QImode pattern for
+	bclr.  Use %U for immediate operands of bset and bclr.
+	(iorqi3): New expand, with insns for AM33 and mn10300.
+
 Fri Dec 13 16:02:27 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_register_operand): New function.
