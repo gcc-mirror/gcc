@@ -1857,6 +1857,7 @@ final (first, file, optimize, prescan)
 {
   register rtx insn;
   int max_line = 0;
+  int max_uid = 0;
 
   last_ignored_compare = 0;
   new_block = 1;
@@ -1901,8 +1902,16 @@ final (first, file, optimize, prescan)
   bzero (line_note_exists, max_line + 1);
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
-      line_note_exists[NOTE_LINE_NUMBER (insn)] = 1;
+    {
+      if (INSN_UID (insn) > max_uid)       /* find largest UID */
+        max_uid = INSN_UID (insn);
+      if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+        line_note_exists[NOTE_LINE_NUMBER (insn)] = 1;
+    }
+
+  /* Initialize insn_eh_region table if eh is being used. */
+  
+  init_insn_eh_region (first, max_uid);
 
   init_recog ();
 
@@ -1921,6 +1930,8 @@ final (first, file, optimize, prescan)
      if the last insn was a conditional branch.  */
   if (profile_block_flag && new_block)
     add_bb (file);
+
+  free_insn_eh_region ();
 }
 
 /* The final scan for one insn, INSN.
