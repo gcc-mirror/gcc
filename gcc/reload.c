@@ -104,6 +104,7 @@ a register with any other reload.  */
 #include "output.h"
 #include "function.h"
 #include "toplev.h"
+#include "params.h"
 
 #ifndef REGNO_MODE_OK_FOR_BASE_P
 #define REGNO_MODE_OK_FOR_BASE_P(REGNO, MODE) REGNO_OK_FOR_BASE_P (REGNO)
@@ -6383,6 +6384,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
   int need_stable_sp = 0;
   int nregs;
   int valuenregs;
+  int num = 0;
 
   if (goal == 0)
     regno = goalreg;
@@ -6423,6 +6425,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
   else
     return 0;
 
+  num = 0;
   /* Scan insns back from INSN, looking for one that copies
      a value into or out of GOAL.
      Stop and give up if we reach a label.  */
@@ -6430,7 +6433,9 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
   while (1)
     {
       p = PREV_INSN (p);
-      if (p == 0 || GET_CODE (p) == CODE_LABEL)
+      num++;
+      if (p == 0 || GET_CODE (p) == CODE_LABEL
+	  || num > PARAM_VALUE (PARAM_MAX_RELOAD_SEARCH_INSNS))
 	return 0;
 
       if (GET_CODE (p) == INSN

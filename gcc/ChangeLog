@@ -1,3 +1,12 @@
+2004-01-11  Jan Hubicka  <jh@suse.cz>
+
+	Partial fix for PR opt/10776
+	* Makefile.in (reload.o): Include param.h
+	* params.def (PARAM_MAX_RELOAD_SEARCH_INSNS): New parameter.
+	* reload.c: Include params.h.
+	(find_equiv_reg): Work limiting check.
+	* invoke.texi: Document.
+
 2004-01-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_symbolic_constant_p): Don't allow
