@@ -9,7 +9,7 @@ main ()
   a = (char *)&a;
 
   /* Change what 'a' is pointing to.  */
-  a[0] = 0;
+  a[0]++;
 
   /* If a's memory tag does not contain 'a' in its alias set, we will
      think that this predicate is superfluous and change it to
