@@ -2805,7 +2805,10 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
       if (arg->pass_on_stack)
 	stack_arg_under_construction++;
 #endif
-      arg->value = expand_expr (pval, partial ? NULL_RTX : arg->stack,
+      arg->value = expand_expr (pval,
+				(partial
+				 || TYPE_MODE (TREE_TYPE (pval)) != arg->mode)
+				? NULL_RTX : arg->stack,
 				VOIDmode, 0);
 
       /* If we are promoting object (or for any other reason) the mode
