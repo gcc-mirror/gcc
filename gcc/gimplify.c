@@ -588,8 +588,9 @@ static tree
 mostly_copy_tree_r (tree *tp, int *walk_subtrees, void *data)
 {
   enum tree_code code = TREE_CODE (*tp);
-  /* Don't unshare types, constants and SAVE_EXPR nodes.  */
+  /* Don't unshare types, decls, constants and SAVE_EXPR nodes.  */
   if (TREE_CODE_CLASS (code) == 't'
+      || TREE_CODE_CLASS (code) == 'd'
       || TREE_CODE_CLASS (code) == 'c'
       || code == SAVE_EXPR || code == TARGET_EXPR
       /* We can't do anything sensible with a BLOCK used as an expression,
@@ -632,26 +633,40 @@ static tree
 copy_if_shared_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 		  void *data ATTRIBUTE_UNUSED)
 {
+  tree t = *tp;
+  enum tree_code code = TREE_CODE (t);
+
+  /* Skip types, decls, and constants.  */
+  if (TREE_CODE_CLASS (code) == 't'
+      || TREE_CODE_CLASS (code) == 'd'
+      || TREE_CODE_CLASS (code) == 'c')
+    *walk_subtrees = 0;
+
+  /* Special-case BIND_EXPR.  We should never be copying these, therefore
+     we can omit examining BIND_EXPR_VARS.  Which also avoids problems with
+     double processing of the DECL_INITIAL, which could be seen via both
+     the BIND_EXPR_VARS and a DECL_STMT.  */
+  else if (code == BIND_EXPR)
+    {
+      if (TREE_VISITED (t))
+	abort ();
+      TREE_VISITED (t) = 1;
+      *walk_subtrees = 0;
+      walk_tree (&BIND_EXPR_BODY (t), copy_if_shared_r, NULL, NULL);
+    }
+
   /* If this node has been visited already, unshare it and don't look
      any deeper.  */
-  if (TREE_VISITED (*tp))
+  else if (TREE_VISITED (t))
     {
       walk_tree (tp, mostly_copy_tree_r, NULL, NULL);
       *walk_subtrees = 0;
     }
+
+  /* Otherwise, mark the tree as visited and keep looking.  */
   else
-    {
-    /* Otherwise, mark the tree as visited and keep looking.  */
-    TREE_VISITED (*tp) = 1;
-      if (TREE_CODE (*tp) == VA_ARG_EXPR)
-	{
-	  /* Mark any _DECL inside the operand as volatile to avoid the
-	     optimizers messing around with it. FIXME: Remove this once
-	     VA_ARG_EXPRs are properly lowered.  */
-	  walk_tree (&TREE_OPERAND (*tp, 0), mark_decls_volatile_r,
-		     NULL, NULL);
-	}
-    }
+    TREE_VISITED (t) = 1;
+
   return NULL_TREE;
 }
 
@@ -2472,6 +2487,7 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
 	  tree args, t, dest;
 
 	  t = TYPE_SIZE_UNIT (TREE_TYPE (*to_p));
+	  t = unshare_expr (t);
 	  args = tree_cons (NULL, t, NULL);
 	  t = build_addr_expr (*from_p);
 	  args = tree_cons (NULL, t, args);
