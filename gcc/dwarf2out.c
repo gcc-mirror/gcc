@@ -3145,7 +3145,7 @@ constant_size (value)
   log = log / 8;
   log = 1 << (floor_log2 (log) + 1);
 
-  return MIN (log, 4);
+  return log;
 }
 
 /* Return the size of a DIE, as it is represented in the
@@ -7198,9 +7198,11 @@ gen_subprogram_die (decl, context_die)
   register tree fn_arg_types;
   register tree outer_scope;
   register dw_die_ref old_die = lookup_decl_die (decl);
-  register int declaration = (current_function_decl != decl
-			      || context_die->die_tag == DW_TAG_structure_type
-			      || context_die->die_tag == DW_TAG_union_type);
+  register int declaration
+    = (current_function_decl != decl
+       || (context_die
+	   && (context_die->die_tag == DW_TAG_structure_type
+	       || context_die->die_tag == DW_TAG_union_type)));
 
   if (origin != NULL)
     {
@@ -8484,11 +8486,11 @@ dwarf2out_decl (decl)
       if (DECL_INITIAL (decl) == NULL_TREE)
 	return;
 
-      /* Ignore nested functions, since they will be written in decl_for_scope.
-	 ??? There was an old comment here about methods, which now need to
-	 be handled.  */
+      /* If we're a nested function, initially use a parent of NULL; if we're
+	 a plain function, this will be fixed up in decls_for_scope.  If
+	 we're a method, it will be ignored, since we already have a DIE.  */
       if (decl_function_context (decl))
-	return;
+	context_die = NULL;
 
       break;
 
