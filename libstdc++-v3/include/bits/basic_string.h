@@ -132,7 +132,7 @@ namespace std
       //   1. String really contains _M_length + 1 characters: due to 21.3.4
       //      must be kept null-terminated.
       //   2. _M_capacity >= _M_length
-      //      Allocated memory is always _M_capacity + (1 * sizeof(_CharT)).
+      //      Allocated memory is always (_M_capacity + 1) * sizeof(_CharT).
       //   3. _M_refcount has three states:
       //      -1: leaked, one reference, no ref-copies allowed, non-const.
       //       0: one reference, non-const.
@@ -196,10 +196,6 @@ namespace std
 	_CharT*
 	_M_refdata() throw()
 	{ return reinterpret_cast<_CharT*>(this + 1); }
-
-	_CharT&
-	operator[](size_type __s) throw()
-	{ return _M_refdata() [__s]; }
 
 	_CharT*
 	_M_grab(const _Alloc& __alloc1, const _Alloc& __alloc2)
@@ -1460,8 +1456,8 @@ namespace std
       /**
        *  @brief  Return const pointer to contents.
        *
-       *  This is a handle to internal data.  It may not be null-terminated.
-       *  Do not modify or dire things may happen.
+       *  This is a handle to internal data.  Do not modify or dire things may
+       *  happen.
       */
       const _CharT*
       data() const { return _M_data(); }
