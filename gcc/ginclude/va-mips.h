@@ -19,8 +19,6 @@
 #define __va_ellipsis
 #endif
 
-#define va_alist  __builtin_va_alist
-#define va_dcl    int __builtin_va_alist; __va_ellipsis
 #ifndef _VA_LIST_
 #define _VA_LIST_
 /* Make this a macro rather than a typedef, so we can undef any other defn.  */
@@ -35,6 +33,8 @@ typedef char * __va___list;
 #define va_start(AP, LASTARG) 						\
  (AP = ((char *) &(LASTARG) + __va_rounded_size (LASTARG)))
 #else
+#define va_alist  __builtin_va_alist
+#define va_dcl    int __builtin_va_alist; __va_ellipsis
 #define va_start(AP)  AP = (char *) &__builtin_va_alist
 #endif
 

@@ -9,9 +9,6 @@
 #define __va_ellipsis
 #endif
 
-#define	va_alist __builtin_va_alist
-#define	va_dcl	 char *__builtin_va_alist; __va_ellipsis
-
 /* The first element is the address of the first argument.
    The second element is the number of bytes skipped past so far.  */
 typedef unsigned va_list[2];	
@@ -28,6 +25,9 @@ typedef unsigned va_list[2];
 #define va_start(AP, LASTARG) ((AP)[1] = 0, \
 				*(AP) = (unsigned) __builtin_next_arg ())
 #else
+
+#define	va_alist __builtin_va_alist
+#define	va_dcl	 char *__builtin_va_alist; __va_ellipsis
 #define	va_start(AP) ((AP)[1] = 0, *(AP) = (unsigned) &va_alist)
 #endif
 
