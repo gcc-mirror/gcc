@@ -1,5 +1,19 @@
 2000-05-25  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* inc/cxxabi.h (__pbase_type_info): Define, based on
+	__pointer_type_info.
+	(__pointer_type_info): Derive from __pbase_type_info. Adjust.
+	(__pointer_to_member_type_info): Likewise.
+	* tinfo2.cc (__pbase_type_info::~__pbase_type_info): Implement.
+	(__pointer_to_member_type_info::__is_pointer_p): Remove.
+	(__pointer_type_info::__do_catch): Rename to ...
+	(__pbase_type_info::__do_catch): ... here. Adjust.
+	(__pbase_type_info::__pointer_catch): Implement.
+	(__pointer_type_info::__pointer_catch): Adjust.
+	(__pointer_to_member_type_info::__pointer_catch): Adjust.
+
+2000-05-25  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* tinfo.h (__user_type_info::contained_virtual_p): New
 	predicate.
 	* tinfo.cc (__user_type_info::do_upcast): Fix bug with diamond
