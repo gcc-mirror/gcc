@@ -51,10 +51,9 @@
 ;; fsqrt	floating point square root
 ;; multi	multiword sequence (or user asm statements)
 ;; nop		no operation
-;; pic		OSF/rose half pic load
 
 (define_attr "type"
-  "unknown,branch,jump,call,load,store,move,xfer,hilo,arith,darith,imul,idiv,icmp,fadd,fmul,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,multi,nop,pic"
+  "unknown,branch,jump,call,load,store,move,xfer,hilo,arith,darith,imul,idiv,icmp,fadd,fmul,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,multi,nop"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
@@ -65,7 +64,7 @@
 
 ;; whether or not an instruction has a mandatory delay slot
 (define_attr "dslot" "no,yes"
-  (if_then_else (eq_attr "type" "branch,jump,call,load,xfer,hilo,fcmp,pic")
+  (if_then_else (eq_attr "type" "branch,jump,call,load,xfer,hilo,fcmp")
 		(const_string "yes")
 		(const_string "no")))
 
@@ -129,11 +128,11 @@
 ;; Make the default case (PROCESSOR_DEFAULT) handle the worst case
 
 (define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load,pic") (eq_attr "cpu" "!r3000"))
+  (and (eq_attr "type" "load") (eq_attr "cpu" "!r3000"))
   3 0)
 
 (define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load,pic") (eq_attr "cpu" "r3000"))
+  (and (eq_attr "type" "load") (eq_attr "cpu" "r3000"))
   2 0)
 
 (define_function_unit "memory"   1 0 (eq_attr "type" "store") 1 0)
@@ -242,7 +241,7 @@
 ;; The following functional units do not use the cpu type, and use
 ;; much less memory in genattrtab.c.
 
-;; (define_function_unit "memory"   1 0 (eq_attr "type" "load,pic")                            3   0)
+;; (define_function_unit "memory"   1 0 (eq_attr "type" "load")                                3   0)
 ;; (define_function_unit "memory"   1 0 (eq_attr "type" "store")                               1   0)
 ;;       
 ;; (define_function_unit "fp_comp"  1 0 (eq_attr "type" "fcmp")                                2   0)
@@ -1454,11 +1453,11 @@ move\\t%0,%z4\\n\\
 ;;
 ;;  ....................
 
-(define_insn "fix_truncdfsi2_internal"
+(define_insn "fix_truncdfsi2"
   [(set (match_operand:SI 0 "general_operand" "=d,*f,R,o")
 	(fix:SI (match_operand:DF 1 "register_operand" "f,*f,f,f")))
-   (clobber (match_operand:SI 2 "register_operand" "d,*d,d,d"))
-   (clobber (match_operand:DF 3 "register_operand" "f,*f,f,f"))]
+   (clobber (match_scratch:SI 2 "=d,*d,d,d"))
+   (clobber (match_scratch:DF 3 "=f,*X,f,f"))]
   "TARGET_HARD_FLOAT"
   "*
 {
@@ -1476,28 +1475,14 @@ move\\t%0,%z4\\n\\
 }"
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")
-   (set_attr "length"	"14,12,13,14")])
+   (set_attr "length"	"11,9,10,11")])
 
 
-(define_expand "fix_truncdfsi2"
-  [(parallel [(set (match_operand:SI 0 "register_operand" "=d")
-		   (fix:SI (match_operand:DF 1 "register_operand" "f")))
-	      (clobber (match_dup 2))
-	      (clobber (match_dup 3))])]
-  "TARGET_HARD_FLOAT"
-  "
-{
-  operands[2] = gen_reg_rtx (SImode);	/* gp reg that saves FP status bits */
-  operands[3] = gen_reg_rtx (DFmode);	/* fp reg that gets the conversion */
-
-  /* Fall through and generate default code */
-}")
-
-(define_insn "fix_truncsfsi2_internal"
+(define_insn "fix_truncsfsi2"
   [(set (match_operand:SI 0 "general_operand" "=d,*f,R,o")
 	(fix:SI (match_operand:SF 1 "register_operand" "f,*f,f,f")))
-   (clobber (match_operand:SI 2 "register_operand" "d,*d,d,d"))
-   (clobber (match_operand:SF 3 "register_operand" "f,*f,f,f"))]
+   (clobber (match_scratch:SI 2 "=d,*d,d,d"))
+   (clobber (match_scratch:SF 3 "=f,*X,f,f"))]
   "TARGET_HARD_FLOAT"
   "*
 {
@@ -1515,22 +1500,7 @@ move\\t%0,%z4\\n\\
 }"
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"SF")
-   (set_attr "length"	"14,12,13,14")])
-
-
-(define_expand "fix_truncsfsi2"
-  [(parallel [(set (match_operand:SI 0 "register_operand" "=f")
-		   (fix:SI (match_operand:SF 1 "register_operand" "f")))
-	      (clobber (match_dup 2))
-	      (clobber (match_dup 3))])]
-  "TARGET_HARD_FLOAT"
-  "
-{
-  operands[2] = gen_reg_rtx (SImode);	/* gp reg that saves FP status bits */
-  operands[3] = gen_reg_rtx (SFmode);	/* fp reg that gets the conversion */
-
-  /* Fall through and generate default code */
-}")
+   (set_attr "length"	"11,9,10,11")])
 
 
 (define_insn "floatsidf2"
@@ -1548,6 +1518,7 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")
    (set_attr "length"	"3,4,3")])
+
 
 (define_insn "floatsisf2"
   [(set (match_operand:SF 0 "register_operand" "=f,f,f")
@@ -1608,6 +1579,7 @@ move\\t%0,%z4\\n\\
       DONE;
     }
 }")
+
 
 (define_expand "fixuns_truncsfsi2"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -1839,58 +1811,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "nonimmediate_operand" "")
 	(match_operand:SI 1 "general_operand" ""))]
   ""
-  "
-{
-  rtx op0 = operands[0];
-  rtx op1 = operands[1];
-
-  /* If this is a half-pic address being loaded, convert the address
-     into a load, so that scheduling and stuff works properly.  */
-
-  if (HALF_PIC_P()
-      && CONSTANT_P (op1)
-      && HALF_PIC_ADDRESS_P (op1))
-    {
-      rtx offset = const0_rtx;
-      rtx ptr;
-
-      if (GET_CODE (op1) == CONST)
-	op1 = eliminate_constant_term (XEXP (op1, 0), &offset);
-
-      ptr = HALF_PIC_PTR (op1);
-      if (GET_CODE (ptr) == SYMBOL_REF
-	  && GET_CODE (op1) == SYMBOL_REF
-	  && XSTR (ptr, 0) != XSTR (op1, 0))
-	{
-	  rtx mem = gen_rtx (MEM, Pmode, ptr);
-
-	  if (INTVAL (offset) == 0)
-	    emit_move_insn (op0, mem);
-
-	  else if (reload_in_progress)
-	    {
-	      emit_move_insn (op0, mem);
-	      emit_insn (gen_addsi3 (op0, op0, offset));
-	    }
-
-	  else
-	    {
-	      rtx reg = gen_reg_rtx (Pmode);
-
-	      if (!SMALL_INT (offset))
-		{
-		  rtx reg2 = gen_reg_rtx (Pmode);
-		  emit_move_insn (reg2, offset);
-		  offset = reg2;
-		}
-
-	      emit_move_insn (reg, mem);
-	      emit_insn (gen_addsi3 (op0, reg, offset));
-	    }
-	  DONE;
-	}
-    }
-}")
+  "")
 
 ;; The difference between these two is whether or not ints are allowed
 ;; in FP registers (off by default, use -mdebugh to enable).
@@ -1900,18 +1821,18 @@ move\\t%0,%z4\\n\\
 	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*fz,*d,*f,*R,*m,*f,*f,*d,*x"))]
   "TARGET_DEBUG_H_MODE"
   "* return mips_move_1word (operands, insn, TRUE);"
-  [(set_attr "type"	"move,pic,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo")
+  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"1,4,1,2,1,2,1,2,1,1,1,1,2,1,2,1,1")])
+   (set_attr "length"	"1,2,1,2,1,2,1,2,1,1,1,1,2,1,2,1,1")])
 
 (define_insn "movsi_internal2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*z,*d,*x")
 	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*z,*d,*x,*d"))]
   "!TARGET_DEBUG_H_MODE"
   "* return mips_move_1word (operands, insn, TRUE);"
-  [(set_attr "type"	"move,pic,arith,arith,load,load,store,store,xfer,xfer,hilo,hilo")
+  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,hilo,hilo")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"1,4,1,2,1,2,1,2,1,1,1,1")])
+   (set_attr "length"	"1,2,1,2,1,2,1,2,1,1,1,1")])
 
 
 ;; 16-bit Integer moves
