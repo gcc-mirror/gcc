@@ -53,27 +53,27 @@ struct file_name_list
 };
 #define ABSOLUTE_PATH ((struct file_name_list *)-1)
 
-/* This structure is used for the table of all includes.  It is
-   indexed by the `short name' (the name as it appeared in the
-   #include statement) which is stored in *nshort.  */
-struct ihash
+/* This structure is used for the table of all includes.  */
+struct include_file
 {
-  /* Next file with the same short name but a
-     different (partial) pathname). */
-  struct ihash *next_this_file;
-
-  /* Location of the file in the include search path.
-     Used for include_next and to detect redundant includes. */
-  struct file_name_list *foundhere;
-
-  unsigned int hash;		/* save hash value for future reference */
-  const char *nshort;		/* name of file as referenced in #include;
-				   points into name[]  */
+  const char *name;		/* actual path name of file */
   const cpp_hashnode *cmacro;	/* macro, if any, preventing reinclusion.  */
-  const char name[1];		/* (partial) pathname of file */
+  const struct file_name_list *foundhere;
+				/* location in search path where file was
+				   found, for #include_next */
+  int fd;			/* file descriptor possibly open on file */
+  unsigned char before;		/* file has been included before */
+  unsigned char sysp;		/* file is a system header */
 };
-typedef struct ihash IHASH;
-#define NEVER_REINCLUDE ((const cpp_hashnode *)-1)
+
+/* The cmacro works like this: If it's NULL, the file is to be
+   included again.  If it's NEVER_REREAD, the file is never to be
+   included again.  Otherwise it is a macro hashnode, and the file is
+   to be included again if the macro is not defined.  */
+#define NEVER_REREAD ((const cpp_hashnode *)-1)
+#define DO_NOT_REREAD(inc) \
+((inc)->cmacro && \
+ ((inc)->cmacro == NEVER_REREAD || (inc)->cmacro->type != T_VOID))
 
 /* Character classes.
    If the definition of `numchar' looks odd to you, please look up the
@@ -143,10 +143,11 @@ extern unsigned char _cpp_IStable[256];
 
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
 #define CPP_TRADITIONAL(PFILE) CPP_OPTION (PFILE, traditional)
-#define CPP_PEDANTIC(PFILE) \
-  (CPP_OPTION (PFILE, pedantic) && !CPP_BUFFER (PFILE)->system_header_p)
+#define CPP_IN_SYSTEM_HEADER(PFILE) (cpp_file_buffer (PFILE)->inc->sysp)
+#define CPP_PEDANTIC(PF) \
+  (CPP_OPTION (PF, pedantic) && !CPP_IN_SYSTEM_HEADER (PF))
 #define CPP_WTRADITIONAL(PF) \
-  (CPP_OPTION (PF, warn_traditional) && !CPP_BUFFER (PF)->system_header_p)
+  (CPP_OPTION (PF, warn_traditional) && !CPP_IN_SYSTEM_HEADER (PF))
 
 /* CPP_IS_MACRO_BUFFER is true if the buffer contains macro expansion.
    (Note that it is false while we're expanding macro *arguments*.) */
@@ -192,8 +193,8 @@ extern void _cpp_simplify_pathname	PARAMS ((char *));
 extern void _cpp_execute_include	PARAMS ((cpp_reader *, U_CHAR *,
 						 unsigned int, int,
 						 struct file_name_list *));
-extern void _cpp_init_include_hash	PARAMS ((cpp_reader *));
-extern const char *_cpp_fake_ihash	PARAMS ((cpp_reader *, const char *));
+extern void _cpp_init_include_table	PARAMS ((cpp_reader *));
+extern const char *_cpp_fake_include	PARAMS ((cpp_reader *, const char *));
 
 /* In cppexp.c */
 extern int _cpp_parse_expr		PARAMS ((cpp_reader *));
@@ -233,6 +234,10 @@ extern void _cpp_expand_token_space	PARAMS ((cpp_toklist *, unsigned int));
 extern int _cpp_handle_directive	PARAMS ((cpp_reader *));
 extern void _cpp_unwind_if_stack	PARAMS ((cpp_reader *, cpp_buffer *));
 extern void _cpp_check_directive        PARAMS ((cpp_toklist *, cpp_token *));
+
+/* Utility routines and macros.  */
+#define xnew(T)		(T *) xmalloc (sizeof(T))
+#define xnewvec(T, N)	(T *) xmalloc (sizeof(T) * (N))
 
 /* These are inline functions instead of macros so we can get type
    checking.  */

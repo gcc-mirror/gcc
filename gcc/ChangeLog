@@ -1,3 +1,40 @@
+2000-06-21  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c: Include splay-tree.h, not hashtab.h.
+	(redundant_include_p, make_IHASH, hash_IHASH, eq_IHASH): Delete.
+	(destroy_include_file_node): New.
+	(_cpp_init_include_hash): Rename _cpp_init_include_table.
+	Create a splay tree, not a hash table.
+	(open_include_file): Look up the path in the include table,
+	do the multiple include optimization here, etc.
+	(cpp_included): Walk the path.
+	(find_include_file): Just walk the path calling
+	open_include_file, or call it directly for an absolute path.
+	(_cpp_fake_ihash): Rename _cpp_fake_include and update for new
+	scheme.
+	(read_include_file): Update for new scheme.  Don't close the
+	file unless reading fails.
+	(_cpp_execute_include, cpp_read_file): Tweak for new scheme.
+
+	* cpphash.h (struct ihash, NEVER_REINCLUDE): Delete.
+	(struct include_file): New.
+	(NEVER_REREAD, DO_NOT_REREAD, CPP_IN_SYSTEM_HEADER): New
+	macros.
+	(CPP_PEDANTIC, CPP_WTRADITIONAL): Update.
+	Update prototypes.
+
+	* cppinit.c: Include splay-tree.h.
+	(cpp_reader_init, cpp_cleanup): Update.
+
+	* cpplib.h (struct cpp_buffer): Change ihash field to 
+	'struct include_file *inc'.  Remove system_header_p.
+	(struct cpp_reader): Change all_include_files to a
+	struct splay_tree_s *.
+
+	* cpplex.c: Update all references to cpp_buffer->ihash and/or
+	cpp_buffer->system_header_p.
+	(cpp_pop_buffer): Close file here, only if DO_NOT_REREAD.
+
 Wed Jun 21 11:05:48 2000  Martin Buchholz <martin@xemacs.org>
 
 	* invoke.texi (g++): "g++" is not a script anymore.
