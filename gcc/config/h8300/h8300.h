@@ -37,30 +37,40 @@ extern int cpu_type;
 extern const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 extern const char * const *h8_reg_names;
 
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#define CPP_PREDEFINES \
-"-D__LONG_MAX__=2147483647L -D__LONG_LONG_MAX__=2147483647L"
-
-#define CPP_SPEC \
-  "%{!mh:%{!ms:-D__H8300__}} %{mh:-D__H8300H__} %{ms:-D__H8300S__} \
-   %{!mh:%{!ms:-Acpu=h8300 -Amachine=h8300}} \
-   %{mh:-Acpu=h8300h -Amachine=h8300h} \
-   %{ms:-Acpu=h8300s -Amachine=h8300s} \
-   %{!mint32:-D__INT_MAX__=32767} %{mint32:-D__INT_MAX__=2147483647} \
-   %(subtarget_cpp_spec)"
-
-#define SUBTARGET_CPP_SPEC ""
+/* Target CPU builtins.  */
+#define TARGET_CPU_CPP_BUILTINS()			\
+  do							\
+    {							\
+      if (TARGET_H8300H)				\
+        {						\
+	  builtin_define ("__H8300H__");		\
+	  builtin_assert ("cpu=h8300h");		\
+	  builtin_assert ("machine=h8300h");		\
+	}						\
+      else if (TARGET_H8300S)				\
+        {						\
+	  builtin_define ("__H8300S__");		\
+	  builtin_assert ("cpu=h8300s");		\
+	  builtin_assert ("machine=h8300s");		\
+	}						\
+      else						\
+        {						\
+	  builtin_define ("__H8300__");			\
+	  builtin_assert ("cpu=h8300");			\
+	  builtin_assert ("machine=h8300");		\
+	}						\
+      if (TARGET_INT32)					\
+	builtin_define ("__INT_MAX__=2147483647");	\
+      else						\
+	builtin_define ("__INT_MAX__=32767");		\
+      builtin_define ("__LONG_MAX__=2147483647L");	\
+      builtin_define ("__LONG_LONG_MAX__=2147483647L");	\
+    }							\
+  while (0)
 
 #define LINK_SPEC "%{mh:-m h8300h} %{ms:-m h8300s}"
 
 #define LIB_SPEC "%{mrelax:-relax} %{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
-
-#define EXTRA_SPECS						\
-  { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },	\
-  SUBTARGET_EXTRA_SPECS
-
-#define SUBTARGET_EXTRA_SPECS
 
 /* Print subsidiary information on the compiler version in use.  */
 
