@@ -6439,8 +6439,8 @@ tsubst (t, args, complain, in_decl)
       {
 	tree e1 = tsubst (TREE_OPERAND (t, 0), args, complain,
 			  in_decl);
-	tree e2 = tsubst (TREE_OPERAND (t, 1), args, complain,
-			  in_decl);
+	tree e2 = tsubst_expr (TREE_OPERAND (t, 1), args, complain,
+			       in_decl);
 	if (e1 == error_mark_node || e2 == error_mark_node)
 	  return error_mark_node;
 
