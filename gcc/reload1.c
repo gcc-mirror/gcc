@@ -1653,7 +1653,11 @@ reload (first, global, dumpfile)
 			  max_groups[class]--;
 			  p = reg_class_superclasses[class];
 			  while (*p != LIM_REG_CLASSES)
-			    max_groups[(int) *p++]--;
+			    {
+			      if (group_size [(int) *p] <= group_size [class])
+				max_groups[(int) *p]--;
+			      p++;
+			    }
 
 			  /* Indicate both these regs are part of a group.  */
 			  SET_HARD_REG_BIT (counted_for_groups, j);
@@ -1768,8 +1772,12 @@ reload (first, global, dumpfile)
 			      max_groups[class]--;
 			      p = reg_class_superclasses[class];
 			      while (*p != LIM_REG_CLASSES)
-				max_groups[(int) *p++]--;
-
+				{
+				  if (group_size [(int) *p]
+				      <= group_size [class])
+				    max_groups[(int) *p]--;
+				  p++;
+				}
 			      break;
 			    }
 			}
@@ -2117,7 +2125,11 @@ count_possible_groups (group_size, group_mode, max_groups, class)
 	    max_groups[class]--;
 	    p = reg_class_superclasses[class];
 	    while (*p != LIM_REG_CLASSES)
-	      max_groups[(int) *p++]--;
+	      {
+		if (group_size [(int) *p] <= group_size [class])
+		  max_groups[(int) *p]--;
+		p++;
+	      }
 
 	    /* Don't count these registers again.  */
 	    for (j = 0; j < group_size[class]; j++)
