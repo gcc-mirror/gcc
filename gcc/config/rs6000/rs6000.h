@@ -1990,7 +1990,9 @@ toc_section ()						\
 #define STRIP_NAME_ENCODING(VAR,NAME)				\
   do								\
     {								\
-      if ((NAME)[0] == '*' || (NAME)[strlen (NAME) - 1] != ']')	\
+      if ((NAME)[0] == '*')					\
+	(VAR) = (NAME)+1;					\
+      else if ((NAME)[strlen (NAME) - 1] != ']')		\
 	(VAR) = (NAME);						\
       else							\
 	{							\
