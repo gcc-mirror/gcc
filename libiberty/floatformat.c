@@ -46,18 +46,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define NAN (0.0 / 0.0)
 #endif
 
-static unsigned long get_field PARAMS ((const unsigned char *,
-					enum floatformat_byteorders,
-					unsigned int,
-					unsigned int,
-					unsigned int));
-static int floatformat_always_valid PARAMS ((const struct floatformat *fmt,
-					     const char *from));
+static unsigned long get_field (const unsigned char *,
+                                enum floatformat_byteorders,
+                                unsigned int,
+                                unsigned int,
+                                unsigned int);
+static int floatformat_always_valid (const struct floatformat *fmt,
+                                     const char *from);
 
 static int
-floatformat_always_valid (fmt, from)
-     const struct floatformat *fmt ATTRIBUTE_UNUSED;
-     const char *from ATTRIBUTE_UNUSED;
+floatformat_always_valid (const struct floatformat *fmt ATTRIBUTE_UNUSED,
+                          const char *from ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -108,12 +107,10 @@ const struct floatformat floatformat_ieee_double_littlebyte_bigword =
   floatformat_always_valid
 };
 
-static int floatformat_i387_ext_is_valid PARAMS ((const struct floatformat *fmt, const char *from));
+static int floatformat_i387_ext_is_valid (const struct floatformat *fmt, const char *from);
 
 static int
-floatformat_i387_ext_is_valid (fmt, from)
-     const struct floatformat *fmt;
-     const char *from;
+floatformat_i387_ext_is_valid (const struct floatformat *fmt, const char *from)
 {
   /* In the i387 double-extended format, if the exponent is all ones,
      then the integer bit must be set.  If the exponent is neither 0
@@ -220,12 +217,8 @@ const struct floatformat floatformat_ia64_quad_little =
 /* Extract a field which starts at START and is LEN bits long.  DATA and
    TOTAL_LEN are the thing we are extracting it from, in byteorder ORDER.  */
 static unsigned long
-get_field (data, order, total_len, start, len)
-     const unsigned char *data;
-     enum floatformat_byteorders order;
-     unsigned int total_len;
-     unsigned int start;
-     unsigned int len;
+get_field (const unsigned char *data, enum floatformat_byteorders order,
+           unsigned int total_len, unsigned int start, unsigned int len)
 {
   unsigned long result;
   unsigned int cur_byte;
@@ -273,10 +266,8 @@ get_field (data, order, total_len, start, len)
    Store the double in *TO.  */
 
 void
-floatformat_to_double (fmt, from, to)
-     const struct floatformat *fmt;
-     const char *from;
-     double *to;
+floatformat_to_double (const struct floatformat *fmt,
+                       const char *from, double *to)
 {
   const unsigned char *ufrom = (const unsigned char *)from;
   double dto;
@@ -381,22 +372,18 @@ floatformat_to_double (fmt, from, to)
   *to = dto;
 }
 
-static void put_field PARAMS ((unsigned char *, enum floatformat_byteorders,
-			       unsigned int,
-			       unsigned int,
-			       unsigned int,
-			       unsigned long));
+static void put_field (unsigned char *, enum floatformat_byteorders,
+                       unsigned int,
+                       unsigned int,
+                       unsigned int,
+                       unsigned long);
 
 /* Set a field which starts at START and is LEN bits long.  DATA and
    TOTAL_LEN are the thing we are extracting it from, in byteorder ORDER.  */
 static void
-put_field (data, order, total_len, start, len, stuff_to_put)
-     unsigned char *data;
-     enum floatformat_byteorders order;
-     unsigned int total_len;
-     unsigned int start;
-     unsigned int len;
-     unsigned long stuff_to_put;
+put_field (unsigned char *data, enum floatformat_byteorders order,
+           unsigned int total_len, unsigned int start, unsigned int len,
+           unsigned long stuff_to_put)
 {
   unsigned int cur_byte;
   int cur_bitshift;
@@ -443,10 +430,8 @@ put_field (data, order, total_len, start, len, stuff_to_put)
    restrictions.  */
 
 void
-floatformat_from_double (fmt, from, to)
-     const struct floatformat *fmt;
-     const double *from;
-     char *to;
+floatformat_from_double (const struct floatformat *fmt,
+                         const double *from, char *to)
 {
   double dfrom;
   int exponent;
@@ -541,9 +526,7 @@ floatformat_from_double (fmt, from, to)
 /* Return non-zero iff the data at FROM is a valid number in format FMT.  */
 
 int
-floatformat_is_valid (fmt, from)
-     const struct floatformat *fmt;
-     const char *from;
+floatformat_is_valid (const struct floatformat *fmt, const char *from)
 {
   return fmt->is_valid (fmt, from);
 }
@@ -556,8 +539,7 @@ floatformat_is_valid (fmt, from)
 /* This is to be run on a host which uses IEEE floating point.  */
 
 void
-ieee_test (n)
-     double n;
+ieee_test (double n)
 {
   double result;
 
@@ -597,7 +579,7 @@ ieee_test (n)
 }
 
 int
-main ()
+main (void)
 {
   ieee_test (0.0);
   ieee_test (0.5);

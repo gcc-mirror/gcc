@@ -153,7 +153,7 @@ unsigned char _hex_value[_hex_array_size];
 #endif /* not ASCII */
 
 void
-hex_init ()
+hex_init (void)
 {
 #ifndef HEX_TABLE_INITIALIZED
   int i;

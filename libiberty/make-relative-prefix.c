@@ -95,14 +95,12 @@ relative prefix can be found, return @code{NULL}.
 
 #define DIR_UP ".."
 
-static char *save_string PARAMS ((const char *, int));
-static char **split_directories	PARAMS ((const char *, int *));
-static void free_split_directories PARAMS ((char **));
+static char *save_string (const char *, int);
+static char **split_directories	(const char *, int *);
+static void free_split_directories (char **);
 
 static char *
-save_string (s, len)
-     const char *s;
-     int len;
+save_string (const char *s, int len)
 {
   char *result = malloc (len + 1);
 
@@ -114,9 +112,7 @@ save_string (s, len)
 /* Split a filename into component directories.  */
 
 static char **
-split_directories (name, ptr_num_dirs)
-     const char *name;
-     int *ptr_num_dirs;
+split_directories (const char *name, int *ptr_num_dirs)
 {
   int num_dirs = 0;
   char **dirs;
@@ -201,8 +197,7 @@ split_directories (name, ptr_num_dirs)
 /* Release storage held by split directories.  */
 
 static void
-free_split_directories (dirs)
-     char **dirs;
+free_split_directories (char **dirs)
 {
   int i = 0;
 
@@ -223,10 +218,8 @@ free_split_directories (dirs)
    If no relative prefix can be found, return NULL.  */
 
 char *
-make_relative_prefix (progname, bin_prefix, prefix)
-     const char *progname;
-     const char *bin_prefix;
-     const char *prefix;
+make_relative_prefix (const char *progname,
+                      const char *bin_prefix, const char *prefix)
 {
   char **prog_dirs, **bin_dirs, **prefix_dirs;
   int prog_num, bin_num, prefix_num;

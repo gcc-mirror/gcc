@@ -15,17 +15,10 @@ returned.
 */
 
 #include <ansidecl.h>
-#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
-#else
-#define size_t unsigned long
-#endif
 
 PTR
-memchr (src_void, c, length)
-     register const PTR src_void;
-     int c;
-     size_t length;
+memchr (register const PTR src_void, int c, size_t length)
 {
   const unsigned char *src = (const unsigned char *)src_void;
   

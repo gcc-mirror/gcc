@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include "libiberty.h"
-extern int mkstemps PARAMS ((char *, int));
+extern int mkstemps (char *, int);
 
 /* '/' works just fine on MS-DOS based systems.  */
 #ifndef DIR_SEPARATOR
@@ -61,11 +61,10 @@ extern int mkstemps PARAMS ((char *, int));
    If success, DIR is returned.
    Otherwise NULL is returned.  */
 
-static inline const char *try PARAMS ((const char *, const char *));
+static inline const char *try (const char *, const char *);
 
 static inline const char *
-try (dir, base)
-     const char *dir, *base;
+try (const char *dir, const char *base)
 {
   if (base != 0)
     return base;
@@ -95,7 +94,7 @@ files in.
 */
 
 char *
-choose_tmpdir ()
+choose_tmpdir (void)
 {
   const char *base = 0;
   char *tmpdir;
@@ -146,8 +145,7 @@ string is @code{malloc}ed, and the temporary file has been created.
 */
 
 char *
-make_temp_file (suffix)
-     const char *suffix;
+make_temp_file (const char *suffix)
 {
   const char *base = choose_tmpdir ();
   char *temp_filename;

@@ -1,3 +1,11 @@
+2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* md5.h: Remove definition and uses of __P.
+	* dyn-string.h: Remove uses of PARAMS.
+	* fibheap.h: Likewise.
+	* floatformat.h: Likewise.
+	* hashtab.h: Likewise.
+
 2005-03-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* demangle.h: Remove uses of PARAMS.

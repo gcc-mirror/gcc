@@ -90,7 +90,7 @@ process started.
 */
 
 long
-get_run_time ()
+get_run_time (void)
 {
 #if defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
   struct rusage rusage;

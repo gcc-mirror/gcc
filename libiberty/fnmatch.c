@@ -65,10 +65,7 @@ extern int errno;
 /* Match STRING against the filename pattern PATTERN, returning zero if
    it matches, nonzero if not.  */
 int
-fnmatch (pattern, string, flags)
-     const char *pattern;
-     const char *string;
-     int flags;
+fnmatch (const char *pattern, const char *string, int flags)
 {
   register const char *p = pattern, *n = string;
   register unsigned char c;

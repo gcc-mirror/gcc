@@ -46,9 +46,7 @@ BUGS
 #include <sys/types.h>
 #include <sys/stat.h>
 
-int fdmatch (fd1, fd2)
-	int fd1;
-	int fd2;
+int fdmatch (int fd1, int fd2)
 {
   struct stat sbuf1;
   struct stat sbuf2;
