@@ -1,3 +1,10 @@
+2003-10-04  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/12206
+	* include/bits/fstream.tcc (imbue): In case a codecvt facet
+	is not available, set _M_codecvt = 0.
+	* testsuite/27_io/basic_filebuf/imbue/12206.cc: New.
+
 2003-10-02  Harald Boehme  <boehme@informatik.hu-berlin.de>
 
 	PR libstdc++/12451

@@ -671,6 +671,8 @@ namespace std
 	  this->_M_buf_locale = __loc;
 	  if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))
 	    _M_codecvt = &use_facet<__codecvt_type>(__loc);
+	  else
+	    _M_codecvt = 0;
 
 	  // NB This may require the reconversion of previously
 	  // converted chars. This in turn may cause the
