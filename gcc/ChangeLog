@@ -1,3 +1,9 @@
+Fri Aug 15 13:43:39 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* haifa-sched.c (debug_dependencies): Use GET_NOTE_INSN_NAME to
+	print out the names of the notes.  Print out the name of the insn
+	that is not a note, and not an {,CALL_,JUMP_}INSN.
+
 Wed Aug 13 01:03:37 1997  Doug Evans  <dje@canuck.cygnus.com>
 
 	* configure.in (haifa configury): Fix typo.
