@@ -1,3 +1,7 @@
+2004-12-29  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.h (gfc_case): fix typo in comment.
+
 2004-12-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de> 
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_ishft): Change to
