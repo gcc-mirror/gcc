@@ -44,7 +44,7 @@
 	
 2004-12-22  Janis Johnson  <janis187@us.ibm.com>
 
-	* lib/gcc-dg.exp (dg-xfail-if): Fix the flags compared against.
+	* lib/gcc-dg.exp (dg-skip-if): Fix the flags compared against.
 
 2004-12-22  Jan Beulich  <jbeulich@novell.com>
 
