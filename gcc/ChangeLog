@@ -1,3 +1,27 @@
+2004-08-26  Fariborz Jahanian  <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.h (HARD_REGNO_CALL_PART_CLOBBERED): Added 
+	TFmode as additional register mode cloberred by call.
+
+2004-08-26  Fariborz Jahanian  <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_libcall_value): Generate
+	parallel pattern for library call returning DImode in
+	mixed mode.
+
+2004-08-26  Fariborz Jahanian  <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.c (function_arg): Generate parallel
+	pattern for more split args.
+
+2004-08-26  Fariborz Jahanian  <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Call
+	either gen_movdi_di_update or gen_movdi_si_update depending on
+	target mode.
+	* config/rs6000/rs6000.md (movdi_update): Changed to movdi_<mode>_update,
+	to generate two versions.
+ 
 2004-08-26  Daniel Berlin  <dberlin@dberlin.org>
 
 	* Makefile.in (lambda-code.o): New.

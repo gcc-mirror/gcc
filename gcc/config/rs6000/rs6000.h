@@ -1016,7 +1016,7 @@ extern const char *rs6000_warn_altivec_long_switch;
 
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)	\
   ((TARGET_32BIT && TARGET_POWERPC64			\
-    && (MODE == DImode || MODE == DFmode)		\
+    && (GET_MODE_SIZE (MODE) > 4)  \
     && INT_REGNO_P (REGNO)) ? 1 : 0)
 
 #define ALTIVEC_VECTOR_MODE(MODE)	\
