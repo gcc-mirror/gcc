@@ -1,5 +1,30 @@
 1999-09-01  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/reflect/Modifier.java (ALL_FLAGS): New constant.
+	* resolve.cc: Removed constants defined by
+	java.lang.reflect.Modifier.
+	Include <java/lang/reflect/Modifier.h>.
+	(_Jv_ResolvePoolEntry): Use values from Modifier.
+	(_Jv_DetermineVTableIndex): Likewise.
+	(_Jv_PrepareClass): Likewise.
+	(ncode): Likewise.
+	* defineclass.cc (_Jv_ClassReader): Removed constants defined by
+	java.lang.reflect.Modifier.
+	Include <java/lang/reflect/Modifier.h>.
+	(checkExtends): Use values from Modifier.
+	(checkImplements): Likewise.
+	(handleField): Likewise.
+	(handleConstantValueAttribute): Likewise.
+	(handleFieldsEnd): Likewise.
+	(handleMethod ): Likewise.
+	(handleMethodsEnd): Likewise.
+	(handleClassBegin): Likewise.
+	* interpret.cc: Removed constants defined by
+	java.lang.reflect.Modifier.
+	(continue1): Use values from Modifier.
+	* java/lang/natClassLoader.cc: Removed constants defined by
+	java.lang.reflect.Modifier.
+
 	* java/lang/natClassLoader.cc (_Jv_NewClass): Use
 	JV_STATE_NOTHING, not `0'.
 	* java/lang/Class.h: Replaced JV_STATE_ defines with enum.

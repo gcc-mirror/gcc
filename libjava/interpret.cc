@@ -53,19 +53,6 @@ gnu::gcj::runtime::MethodInvocation::continue1 (gnu::gcj::RawData *,
 #define ClassError _CL_Q34java4lang5Error
 extern java::lang::Class ClassError;
 
-static const int PUBLIC       = 0x001;
-static const int PRIVATE      = 0x002;
-static const int PROTECTED    = 0x004;
-static const int STATIC       = 0x008;
-static const int FINAL        = 0x010;
-static const int SYNCHRONIZED = 0x020;
-static const int VOLATILE     = 0x040;
-static const int TRANSIENT    = 0x080;
-static const int NATIVE       = 0x100;
-static const int INTERFACE    = 0x200;
-static const int ABSTRACT     = 0x400;
-static const int ALL_FLAGS    = 0x7FF; 
-
 static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
 
 static void throw_internal_error (char *msg)
@@ -426,6 +413,8 @@ gnu::gcj::runtime::MethodInvocation::continue1 (gnu::gcj::RawData *meth,
 
 void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 {
+  using namespace java::lang::reflect;
+
   register _Jv_word      *sp                  = inv->sp;
   register unsigned char *pc PC_REGISTER_ASM  = inv->pc;
   _Jv_word               *locals              = inv->local_base ();
@@ -2001,7 +1990,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	_Jv_ResolvePoolEntry (defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
 
-	if ((field->flags & STATIC) == 0)
+	if ((field->flags & Modifier::STATIC) == 0)
 	  throw_incompatible_class_change_error 
 	    (JvNewStringLatin1 ("field no longer static"));
 
@@ -2048,7 +2037,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	_Jv_ResolvePoolEntry (defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
 
-	if ((field->flags & STATIC) != 0)
+	if ((field->flags & Modifier::STATIC) != 0)
 	  throw_incompatible_class_change_error 
 	    (JvNewStringLatin1 ("field is static"));
 
@@ -2104,7 +2093,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jclass type = field->type;
 
 	// ResolvePoolEntry cannot check this
-	if ((field->flags & STATIC) == 0)
+	if ((field->flags & Modifier::STATIC) == 0)
 	  throw_incompatible_class_change_error 
 	    (JvNewStringLatin1 ("field no longer static"));
 
@@ -2153,7 +2142,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	jclass type = field->type;
 
-	if ((field->flags & STATIC) != 0)
+	if ((field->flags & Modifier::STATIC) != 0)
 	  throw_incompatible_class_change_error 
 	    (JvNewStringLatin1 ("field is static"));
 

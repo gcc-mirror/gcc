@@ -205,19 +205,6 @@ java::lang::ClassLoader::findLoadedClass (jstring name)
   return _Jv_FindClassInCache (_Jv_makeUtf8Const (name), this);
 }
 
-static const int PUBLIC       = 0x001;
-static const int PRIVATE      = 0x002;
-static const int PROTECTED    = 0x004;
-static const int STATIC       = 0x008;
-static const int FINAL        = 0x010;
-static const int SYNCHRONIZED = 0x020;
-static const int VOLATILE     = 0x040;
-static const int TRANSIENT    = 0x080;
-static const int NATIVE       = 0x100;
-static const int INTERFACE    = 0x200;
-static const int ABSTRACT     = 0x400;
-static const int ALL_FLAGS    = 0x7FF; 
-
 
 /** This function does class-preparation for compiled classes.  
     NOTE: It contains replicated functionality from
