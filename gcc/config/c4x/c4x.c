@@ -3060,8 +3060,24 @@ symbolic_address_operand (op, mode)
 }
 
 
-/* Check src operand of two operand arithmetic instructions.  */
+/* Check dst operand of a move instruction.  */
+int
+dst_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == SUBREG
+      && mixed_subreg_operand (op, mode))
+    return 0;
 
+  if (REG_P (op))
+    return reg_operand (op, mode);
+
+  return memory_operand (op, mode);
+}
+
+
+/* Check src operand of two operand arithmetic instructions.  */
 int
 src_operand (op, mode)
      rtx op;

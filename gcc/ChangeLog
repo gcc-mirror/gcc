@@ -1,3 +1,12 @@
+Fri Oct 15 17:27:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (dst_operand): New.
+	(PREDICATE_CODES): Update.
+	* config/c4x/c4x.h (dst_operand): Declare it.
+	* config/c4x/c4x.md:  Define mode for each unspec usage.
+	(move patterns):  Use dst_operand predicate instead of src_operand.
+	(movqi_update, movqf_update): Delete.
+
 Thu Oct 14 18:48:54 1999  Richard Henderson  <rth@cygnus.com>
 
 	* recog.c (pmode_register_operand): New.
