@@ -459,4 +459,4 @@ extern const char *user_label_prefix;
 #endif
 /* Assign unique numbers to labels generated for profiling.  */
 
-int profile_label_no;
+extern int profile_label_no;

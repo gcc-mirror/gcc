@@ -205,6 +205,10 @@ char regs_ever_live[FIRST_PSEUDO_REGISTER];
 
 int frame_pointer_needed;
 
+/* Assign unique numbers to labels generated for profiling.  */
+
+int profile_label_no;
+
 /* Number of unmatched NOTE_INSN_BLOCK_BEG notes we have seen.  */
 
 static int block_depth;
