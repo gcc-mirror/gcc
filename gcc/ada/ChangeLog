@@ -1,3 +1,10 @@
+2005-03-07  James A. Morrison <phython@gcc.gnu.org>	
+            Laurent Guerby <laurent@guerby.net>
+
+	PR ada/20035
+	* system-linux-sparc.ads: New.
+	* Makefile.in: Add sparc linux entry.
+	
 2005-02-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR ada/19942
