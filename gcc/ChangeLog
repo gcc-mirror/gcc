@@ -1,3 +1,168 @@
+2002-02-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/i386/i386.md ("mmx_uavgv8qi3"): Use const_vector.
+	("mmx_uavgv4hi3"): Same.
+	("pmulhrwv4hi3"): Same.
+
+	* tree-inline.c (walk_tree): Handle vectors.
+
+	* c-common.c (constant_expression_warning): Handle vectors.
+	(overflow_warning): Same.
+
+	* sched-deps.c (sched_analyze_2): Handle vectors.
+
+	* rtlanal.c (rtx_unstable_p): Handle vectors.
+	(rtx_varies_p): Same.
+	(count_occurrences): Same.
+	(regs_set_between_p): Same.
+	(modified_between_p): Same.
+	(modified_in_p): Same.
+	(volatile_insn_p): Same.
+	(volatile_refs_p): Same.
+	(side_effects_p): Same.
+	(may_trap_p): Same.
+	(inequality_comparisons_p): Same.
+	(replace_regs): Same.
+	(computed_jump_p_1): Same.
+
+	* rtl.c (DEF_MACHMODE): Change all definitions to accept 8th
+	argument.
+	(inner_mode_array): New.
+	(copy_rtx): Handle vectors.
+	(copy_most_rtx): Same.
+	(rtx_equal_p): Same.
+	(get_mode_alignment): Adjust for vectors.
+
+	* resource.c (mark_referenced_resources): Handle vectors.
+	(mark_set_resources): Same.
+
+	* reload1.c (eliminate_regs): Handle vectors.
+	(elimination_effects): Same.
+	(scan_paradoxical_subregs): Same.
+
+	* reload.c (subst_reg_equivs): Handle vectors.
+
+	* regrename.c (scan_rtx): Handle vectors.
+
+	* regclass.c (reg_scan_mark_refs): Handle vectors.
+
+	* recog.c (find_single_use_1): Handle vectors.
+
+	* local-alloc.c (equiv_init_varies_p): Handle vectors.
+	(contains_replace_regs): Same.
+	(memref_referenced_p): Same.
+
+	* integrate.c (copy_rtx_and_substitute): Handle vectors.
+	(subst_constants): Same.
+
+	* genattrtab.c (attr_copy_rtx): Handle vectors.
+	(encode_units_mask): Same.
+	(clear_struct_flag): Same.
+	(count_sub_rtxs): Same.
+
+	* gcse.c (want_to_gcse_p): Handle vectors.
+	(oprs_unchanged_p): Same.
+	(hash_expr_1): Same.
+	(oprs_not_set_p): Same.
+	(expr_killed_p): Same.
+	(compute_transp): Same.
+	(store_ops_ok): Same.
+
+	* function.c (purge_addressof_1): Do not allow paradoxical subregs
+	of vectors.
+	(fixup_var_refs_1): Same.
+	(instantiate_virtual_regs_1): Same.
+
+	* fold-const.c (operand_equal_p): Handle vectors.
+	(fold): Same.
+	(rtl_expr_nonnegative_p): Same.
+
+	* flow.c (mark_used_regs): Handle vectors.
+
+	* df.c (df_uses_record): Handle vectors.
+
+	* cselib.c (cselib_subst_to_values): Handle vectors.
+	(cselib_mem_conflict_p): Same.
+	(hash_rtx): Same.
+
+	* cse.c (canon_reg): Handle vectors.
+	(fold_rt): Same.
+	(cse_process_notes): Same.
+	(count_reg_usage): Same.
+	(canon_hash): Same.
+
+	* alias.c (nonlocal_mentioned_p): Add case for CONST_VECTOR.
+
+	* combine.c (mark_used_regs_combine): Add case for CONST_VECTOR.
+
+	* emit-rtl.c (init_emit_once): Generate const0_rtx for vectors.
+	(gen_rtx): Handle CONST_VECTOR.
+	(gen_const_vector_0): New.
+	(copy_rtx_if_shared): CONST_VECTORs can be shared.
+	(reset_used_flags): Same.
+	(copy_insn_1): Same.
+	(initializer_constant_valid_p): Handle VECTOR_CST.
+
+	* doc/c-tree.texi (Expression trees): Document VECTOR_CST.
+
+	* doc/rtl.texi (Constants): Document const_vector.
+	(CONST0_RTX): Update for vectors.
+	(RTL sharing): Same.
+
+	* print-tree.c (print_node): Add case for VECTOR_CST.
+
+	* tree.h (TREE_VECTOR_CST_ELTS): New.
+	(struct tree_vector): New.
+	(union tree_node): Add vector node.
+	(build_vector): Add prototype.
+
+	* tree.def (VECTOR_CST): New.
+
+	* tree.c (build_vector): New.
+
+	* expmed.c (make_tree): Handle CONST_VECTOR.
+
+	* rtl.h (CONSTANT_P): CONST_VECTORs are constants too.
+	(CONST_VECTOR_ELT): New.
+	(CONST_VECTOR_NUNITS): New.
+
+	* machmode.h (GET_MODE_INNER): New.
+	(DEF_MACHMODE): Accept 8th arg.
+
+	* machmode.def: Add 8th argument for vector inner mode.
+	Add inner vector modes for vectors.
+
+	* rtl.def (VEC_CONST): Remove.
+	(CONST_VECTOR): New.
+
+	* expr.c (clear_storage): Allow vectors.
+	(is_zeros_p): Handle VECTOR_CST.
+
+	* varasm.c (output_constant_pool): Handle vectors.
+	(rtx_const): Add veclo and vechi fields.
+	(kind): Add RTX_VECTOR.
+	(decode_rtx_const): Add case for vector.
+
+	* config/rs6000/rs6000-protos.h: Add zero_constant.
+	
+	* config/rs6000/rs6000.c (rs6000_emit_move): Handle vector
+	constants.  Force easy vector constants into memory.
+	(easy_vector_constant): New.
+	(emit_easy_vector_constant): New.
+	(rs6000_legitimize_reload_address): Do not generate bad reloads on
+	darwin.
+
+	* config/rs6000/rs6000.md ("altivec_lvx"): Reflect what
+	instruction does.
+	("altivec_lvxl"): Same.
+	(altivec_lvebx): Same.
+	(altivec_lvehx): Same.
+	(altivec_lvewx): Same.
+	("*movv4si_const0"): New.
+	("*movv4sf_const0"): New.
+	("*movv8hi_const0"): New.
+	("*movv16qi_const0"): New.
+
 2002-02-18  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (notice_update_cc): Use
