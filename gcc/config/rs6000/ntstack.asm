@@ -1,4 +1,3 @@
-# CYGNUS LOCAL -- NT/WRS development, meissner
 # Allocate stack for NT, inserting stack probes every 4k pages
 
 	.file	"ntstack.asm"
@@ -41,4 +40,3 @@ __allocate_stack.b:
 
 __allocate_stack.e:
 FE_MOT_RESVD..__allocate_stack:
-# END CYGNUS LOCAL -- NT/WRS development, meissner
