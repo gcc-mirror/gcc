@@ -1,4 +1,4 @@
-Sat May 19 18:23:04 2001  Mark P Mitchell  <mark@codesourcery.com>
+Sat May 19 18:23:04 2001  Richard Henderson <rth@redhat.com>
 
 	* except.c (dw2_build_landing_pads): Use word_mode, not Pmode,
 	as ncessary.
