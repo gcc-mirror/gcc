@@ -1,3 +1,8 @@
+2001-03-12  Rodney Brown  <RodneyBrown@mynd.com>
+
+        * src/gen-num-limits.cc (traps) [SPECIALIZE_TRAPPING]: Add fflush
+        prior to trapping signal (UnixWare 7 workaround).
+
 2001-03-12  Craig Rodrigues  <rodrigc@mediaone.net>
 
 	* include/backward/hashtable.h: Same.
