@@ -1775,41 +1775,30 @@ out_movqi_r_mr (insn, op, l)
 	  int disp = INTVAL (XEXP (x,1));
 	  if (REGNO (XEXP (x,0)) != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
+
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
-	    {
-	      *l = 3;
-	      op[4] = XEXP (x, 1);
-	      return (AS2 (adiw, r28, %4-63) CR_TAB
-		      AS2 (ldd, %0,Y+63)  CR_TAB
-		      AS2 (sbiw, r28, %4-63));
-	    }
-	  else
-	    {
-	      *l = 5;
-	      op[4] = XEXP (x,1);
-	      return (AS2 (subi, r28, lo8(-%4))  CR_TAB
-		      AS2 (sbci, r29, hi8(-%4)) CR_TAB
-		      AS2 (ld, %0,Y)              CR_TAB
-		      AS2 (subi, r28, lo8(%4))   CR_TAB
-		      AS2 (sbci, r29, hi8(%4)));
-	    }
+	    return *l = 3, (AS2 (adiw,r28,%o1-63) CR_TAB
+			    AS2 (ldd,%0,Y+63)     CR_TAB
+			    AS2 (sbiw,r28,%o1-63));
+
+	  return *l = 5, (AS2 (subi,r28,lo8(-%o1)) CR_TAB
+			  AS2 (sbci,r29,hi8(-%o1)) CR_TAB
+			  AS2 (ld,%0,Y)            CR_TAB
+			  AS2 (subi,r28,lo8(%o1))  CR_TAB
+			  AS2 (sbci,r29,hi8(%o1)));
 	}
       else if (REGNO (XEXP (x,0)) == REG_X)
 	{
-	  op[4] = XEXP (x, 1);
 	  /* This is a paranoid case LEGITIMIZE_RELOAD_ADDRESS must exclude
 	     it but I have this situation with extremal optimizing options.  */
 	  if (reg_overlap_mentioned_p (dest, XEXP (x,0))
 	      || reg_unused_after (insn, XEXP (x,0)))
-	    {
-	      *l = 2;
-	      return (AS2 (adiw,r26,%4) CR_TAB
-		      AS2 (ld,%0,X));
-	    }
-	  *l = 3;
-	  return (AS2 (adiw,r26,%4) CR_TAB
-		  AS2 (ld,%0,X)     CR_TAB
-		  AS2 (sbiw,r26,%4));
+	    return *l = 2, (AS2 (adiw,r26,%o1) CR_TAB
+			    AS2 (ld,%0,X));
+
+	  return *l = 3, (AS2 (adiw,r26,%o1) CR_TAB
+			  AS2 (ld,%0,X)      CR_TAB
+			  AS2 (sbiw,r26,%o1));
 	}
       *l = 1;
       return AS2 (ldd,%0,%1);
@@ -1870,29 +1859,21 @@ out_movhi_r_mr (insn, op, l)
       
       if (disp > MAX_LD_OFFSET (GET_MODE (src)))
 	{
-	  op[4] = XEXP (base, 1);
-
 	  if (REGNO (XEXP (base, 0)) != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
 	  
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
-	    {
-	      *l = 4;
-	      return (AS2 (adiw,r28,%4-62) CR_TAB
-		      AS2 (ldd,%A0,Y+62)   CR_TAB
-		      AS2 (ldd,%B0,Y+63)   CR_TAB
-		      AS2 (sbiw,r28,%4-62));
-	    }
-	  else
-	    {
-	      *l = 6;
-	      return (AS2 (subi,r28,lo8(-%4)) CR_TAB
-		      AS2 (sbci,r29,hi8(-%4)) CR_TAB
-		      AS2 (ld,%A0,Y)          CR_TAB
-		      AS2 (ldd,%B0,Y+1)       CR_TAB
-		      AS2 (subi,r28,lo8(%4))  CR_TAB
-		      AS2 (sbci,r29,hi8(%4)));
-	    }
+	    return *l = 4, (AS2 (adiw,r28,%o1-62) CR_TAB
+			    AS2 (ldd,%A0,Y+62)    CR_TAB
+			    AS2 (ldd,%B0,Y+63)    CR_TAB
+			    AS2 (sbiw,r28,%o1-62));
+
+	  return *l = 6, (AS2 (subi,r28,lo8(-%o1)) CR_TAB
+			  AS2 (sbci,r29,hi8(-%o1)) CR_TAB
+			  AS2 (ld,%A0,Y)           CR_TAB
+			  AS2 (ldd,%B0,Y+1)        CR_TAB
+			  AS2 (subi,r28,lo8(%o1))  CR_TAB
+			  AS2 (sbci,r29,hi8(%o1)));
 	}
       if (reg_base == REG_X)
 	{
@@ -1900,31 +1881,17 @@ out_movhi_r_mr (insn, op, l)
 	     it but I have this situation with extremal
 	     optimization options.  */
 	  
-	  op[4] = XEXP (base, 1);
-	  
-	  if (reg_base == reg_dest)
-	    {
-	      *l = 4;
-	      return (AS2 (adiw,r26,%4)       CR_TAB
-		      AS2 (ld,__tmp_reg__,X+) CR_TAB
-		      AS2 (ld,%B0,X)          CR_TAB
-		      AS2 (mov,%A0,__tmp_reg__));
-	    }
-
-	  if (INTVAL (op[4]) == 63)
-	    {
-	      *l = 5;
-	      return (AS2 (adiw,r26,%4)   CR_TAB
-		      AS2 (ld,%A0,X+)     CR_TAB
-		      AS2 (ld,%B0,X)      CR_TAB
-		      AS2 (subi,r26,%4+1) CR_TAB
-		      AS2 (sbci,r27,0));
-	    }
 	  *l = 4;
-	  return (AS2 (adiw,r26,%4) CR_TAB
-		  AS2 (ld,%A0,X+)   CR_TAB
-		  AS2 (ld,%B0,X)    CR_TAB
-		  AS2 (sbiw,r26,%4+1));
+	  if (reg_base == reg_dest)
+	    return (AS2 (adiw,r26,%o1)      CR_TAB
+		    AS2 (ld,__tmp_reg__,X+) CR_TAB
+		    AS2 (ld,%B0,X)          CR_TAB
+		    AS2 (mov,%A0,__tmp_reg__));
+
+	  return (AS2 (adiw,r26,%o1) CR_TAB
+		  AS2 (ld,%A0,X+)    CR_TAB
+		  AS2 (ld,%B0,X)     CR_TAB
+		  AS2 (sbiw,r26,%o1+1));
 	}
 
       if (reg_base == reg_dest)
@@ -2050,28 +2017,23 @@ out_movsi_r_mr (insn, op, l)
 	{
 	  if (REGNO (XEXP (base, 0)) != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
+
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (src)))
-	    {
-	      op[4] = GEN_INT (disp - 60);
-	      return *l=6,(AS2 (adiw, r28, %4) CR_TAB
-			   AS2 (ldd, %A0,Y+60)       CR_TAB
-			   AS2 (ldd, %B0,Y+61)     CR_TAB
-			   AS2 (ldd, %C0,Y+62)     CR_TAB
-			   AS2 (ldd, %D0,Y+63)     CR_TAB
-			   AS2 (sbiw, r28, %4));
-	    }
-	  else
-	    {
-	      op[4] = XEXP (base, 1);
-	      return *l=8,(AS2 (subi, r28, lo8(-%4))  CR_TAB
-			   AS2 (sbci, r29, hi8(-%4)) CR_TAB
-			   AS2 (ld, %A0,Y)             CR_TAB
-			   AS2 (ldd, %B0,Y+1)          CR_TAB
-			   AS2 (ldd, %C0,Y+2)          CR_TAB
-			   AS2 (ldd, %D0,Y+3)          CR_TAB
-			   AS2 (subi, r28, lo8(%4))   CR_TAB
-			   AS2 (sbci, r29, hi8(%4)));
-	    }
+	    return *l = 6, (AS2 (adiw,r28,%o1-60) CR_TAB
+			    AS2 (ldd,%A0,Y+60)    CR_TAB
+			    AS2 (ldd,%B0,Y+61)    CR_TAB
+			    AS2 (ldd,%C0,Y+62)    CR_TAB
+			    AS2 (ldd,%D0,Y+63)    CR_TAB
+			    AS2 (sbiw,r28,%o1-60));
+
+	  return *l = 8, (AS2 (subi,r28,lo8(-%o1)) CR_TAB
+			  AS2 (sbci,r29,hi8(-%o1)) CR_TAB
+			  AS2 (ld,%A0,Y)           CR_TAB
+			  AS2 (ldd,%B0,Y+1)        CR_TAB
+			  AS2 (ldd,%C0,Y+2)        CR_TAB
+			  AS2 (ldd,%D0,Y+3)        CR_TAB
+			  AS2 (subi,r28,lo8(%o1))  CR_TAB
+			  AS2 (sbci,r29,hi8(%o1)));
 	}
 
       reg_base = true_regnum (XEXP (base, 0));
@@ -2227,28 +2189,23 @@ out_movsi_mr_r (insn, op, l)
 	{
 	  if (reg_base != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
+
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
-	    {
-	      op[4] = GEN_INT (disp - 60);
-	      return *l=6,(AS2 (adiw, r28, %4) CR_TAB
-			   AS2 (std, Y+60,%A1)       CR_TAB
-			   AS2 (std, Y+61,%B1)     CR_TAB
-			   AS2 (std, Y+62,%C1)     CR_TAB
-			   AS2 (std, Y+63,%D1)     CR_TAB
-			   AS2 (sbiw, r28, %4));
-	    }
-	  else
-	    {
-	      op[4] = XEXP (base, 1);
-	      return *l=8,(AS2 (subi, r28, lo8(-%4))  CR_TAB
-			   AS2 (sbci, r29, hi8(-%4)) CR_TAB
-			   AS2 (st, Y,%A1)             CR_TAB
-			   AS2 (std, Y+1,%B1)          CR_TAB
-			   AS2 (std, Y+2,%C1)          CR_TAB
-			   AS2 (std, Y+3,%D1)          CR_TAB
-			   AS2 (subi, r28, lo8(%4))   CR_TAB
-			   AS2 (sbci, r29, hi8(%4)));
-	    }
+	    return *l = 6, (AS2 (adiw,r28,%o0-60) CR_TAB
+			    AS2 (std,Y+60,%A1)    CR_TAB
+			    AS2 (std,Y+61,%B1)    CR_TAB
+			    AS2 (std,Y+62,%C1)    CR_TAB
+			    AS2 (std,Y+63,%D1)    CR_TAB
+			    AS2 (sbiw,r28,%o0-60));
+
+	  return *l = 8, (AS2 (subi,r28,lo8(-%o0)) CR_TAB
+			  AS2 (sbci,r29,hi8(-%o0)) CR_TAB
+			  AS2 (st,Y,%A1)           CR_TAB
+			  AS2 (std,Y+1,%B1)        CR_TAB
+			  AS2 (std,Y+2,%C1)        CR_TAB
+			  AS2 (std,Y+3,%D1)        CR_TAB
+			  AS2 (subi,r28,lo8(%o0))  CR_TAB
+			  AS2 (sbci,r29,hi8(%o0)));
 	}
       if (reg_base == REG_X)
 	{
@@ -2530,55 +2487,41 @@ out_movqi_mr_r (insn, op, l)
 	  int disp = INTVAL (XEXP (x,1));
 	  if (REGNO (XEXP (x,0)) != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
+
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
-	    {
-	      *l = 3;
-	      op[4] = XEXP (x, 1);
-	      return (AS2 (adiw, r28, %4-63) CR_TAB
-		      AS2 (std, Y+63,%1)        CR_TAB
-		      AS2 (sbiw, r28, %4-63));
-	    }
-	  else
-	    {
-	      *l = 5;
-	      op[4] = XEXP (x,1);
-	      return (AS2 (subi, r28, lo8(-%4))  CR_TAB
-		      AS2 (sbci, r29, hi8(-%4)) CR_TAB
-		      AS2 (st, Y,%1)              CR_TAB
-		      AS2 (subi, r28, lo8(%4))   CR_TAB
-		      AS2 (sbci, r29, hi8(%4)));
-	    }
+	    return *l = 3, (AS2 (adiw,r28,%o0-63) CR_TAB
+			    AS2 (std,Y+63,%1)     CR_TAB
+			    AS2 (sbiw,r28,%o0-63));
+
+	  return *l = 5, (AS2 (subi,r28,lo8(-%o0)) CR_TAB
+			  AS2 (sbci,r29,hi8(-%o0)) CR_TAB
+			  AS2 (st,Y,%1)            CR_TAB
+			  AS2 (subi,r28,lo8(%o0))  CR_TAB
+			  AS2 (sbci,r29,hi8(%o0)));
 	}
       else if (REGNO (XEXP (x,0)) == REG_X)
 	{
-	  op[4] = XEXP (x,1);
 	  if (reg_overlap_mentioned_p (src, XEXP (x, 0)))
 	    {
 	      if (reg_unused_after (insn, XEXP (x,0)))
-		{
-		  *l = 3;
-		  return (AS2 (mov,__tmp_reg__,%1) CR_TAB
-			  AS2 (adiw,r26,%4)        CR_TAB
-			  AS2 (st,X,__tmp_reg__));
-		}
-	      *l = 4;
-	      return (AS2 (mov,__tmp_reg__,%1) CR_TAB
-		      AS2 (adiw,r26,%4)        CR_TAB
-		      AS2 (st,X,__tmp_reg__)   CR_TAB
-		      AS2 (sbiw,r26,%4));
+		return *l = 3, (AS2 (mov,__tmp_reg__,%1) CR_TAB
+				AS2 (adiw,r26,%o0)       CR_TAB
+				AS2 (st,X,__tmp_reg__));
+
+	      return *l = 4, (AS2 (mov,__tmp_reg__,%1) CR_TAB
+			      AS2 (adiw,r26,%o0)       CR_TAB
+			      AS2 (st,X,__tmp_reg__)   CR_TAB
+			      AS2 (sbiw,r26,%o0));
 	    }
 	  else
 	    {
 	      if (reg_unused_after (insn, XEXP (x,0)))
-		{
-		  *l = 2;
-		  return (AS2 (adiw,r26,%4) CR_TAB
-			  AS2 (st,X,%1));
-		}
-	      *l = 3;
-	      return (AS2 (adiw,r26,%4) CR_TAB
-		      AS2 (st,X,%1)      CR_TAB
-		      AS2 (sbiw,r26,%4));
+		return *l = 2, (AS2 (adiw,r26,%o0) CR_TAB
+				AS2 (st,X,%1));
+
+	      return *l = 3, (AS2 (adiw,r26,%o0) CR_TAB
+			      AS2 (st,X,%1)      CR_TAB
+			      AS2 (sbiw,r26,%o0));
 	    }
 	}
       *l = 1;
@@ -2655,24 +2598,19 @@ out_movhi_mr_r (insn, op, l)
 	{
 	  if (reg_base != REG_Y)
 	    fatal_insn ("Incorrect insn:",insn);
+
 	  if (disp <= 63 + MAX_LD_OFFSET (GET_MODE (dest)))
-	    {
-	      op[4] = GEN_INT (disp - 62);
-	      return *l=4,(AS2 (adiw, r28, %4) CR_TAB
-			   AS2 (std, Y+62,%A1) CR_TAB
-			   AS2 (std, Y+63,%B1) CR_TAB
-			   AS2 (sbiw, r28, %4));
-	    }
-	  else
-	    {
-	      op[4] = XEXP (base, 1);
-	      return *l=6,(AS2 (subi, r28, lo8(-%4))  CR_TAB
-			   AS2 (sbci, r29, hi8(-%4)) CR_TAB
-			   AS2 (st, Y,%A1)           CR_TAB
-			   AS2 (std, Y+1,%B1)        CR_TAB
-			   AS2 (subi, r28, lo8(%4))  CR_TAB
-			   AS2 (sbci, r29, hi8(%4)));
-	    }
+	    return *l = 4, (AS2 (adiw,r28,%o0-62) CR_TAB
+			    AS2 (std,Y+62,%A1)    CR_TAB
+			    AS2 (std,Y+63,%B1)    CR_TAB
+			    AS2 (sbiw,r28,%o0-62));
+
+	  return *l = 6, (AS2 (subi,r28,lo8(-%o0)) CR_TAB
+			  AS2 (sbci,r29,hi8(-%o0)) CR_TAB
+			  AS2 (st,Y,%A1)           CR_TAB
+			  AS2 (std,Y+1,%B1)        CR_TAB
+			  AS2 (subi,r28,lo8(%o0))  CR_TAB
+			  AS2 (sbci,r29,hi8(%o0)));
 	}
       if (reg_base == REG_X)
 	{
