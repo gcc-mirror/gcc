@@ -2041,14 +2041,10 @@ mostlyclean: bytecode.mostlyclean lang.mostlyclean
 # Delete the temp files made in the course of building libgcc.a.
 	-rm -f tmplibgcc* tmpcopy xlimits.h libgcc1-test
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
-# Delete other temporary files.
-	-rm -f tmp-float.h tmp-gcc.xtar.gz
-	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1 tmp-SYSCALLS.s
-	-rm -f tmp-c-parse.y tmp-gperf.h
-	-rm -f tmp-specs t-float.h-cross tmp-xlimits.h
-	-rm -f tmp-fixtmp.c xsys-protos.hT
-# Delete the stamp files.
-	-rm -f s-* tmp-*
+# Delete other built files.
+	-rm -f t-float.h-cross xsys-protos.hT fp-bit.c dp-bit.c
+# Delete the stamp and temporary files.
+	-rm -f s-* tmp-* stamp-* stmp-*
 	-rm -f */stamp-* */tmp-*
 # Delete debugging dump files.
 	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
@@ -2085,9 +2081,8 @@ clean: mostlyclean bytecode.clean lang.clean
 	-if [ -f md.pre-cpp ]; then \
 	  rm -f md ; \
 	fi
-# Delete the include directory and timestamp files.
-	-rm -rf stmp-* stamp-* include
-	-rm -f */stmp-* */stamp-*
+# Delete the include directory.
+	-rm -rf include
 # Delete files used by the "multilib" facility (including libgcc subdirs).
 	-rm -f multilib.h tmpmultilib*
 	-if [ "x$(MULTILIB_DIRNAMES)" != x ] ; then \
