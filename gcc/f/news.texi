@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000
 
-@set last-update-news 2000-11-05
+@set last-update-news 2001-04-21
 
 @include root.texi
 
@@ -96,10 +96,9 @@ involve a combination of these elements.
 Note that two variants of @code{g77} are tracked below.
 The @code{egcs} variant is described vis-a-vis
 previous versions of @code{egcs} and/or
-an official FSF version,
-as appropriate.  Note that all such variants are now
-obsolete - the information is retained here only for 
-its historical value.
+an official FSF version, as appropriate.
+Note that all such variants are obsolete @emph{as of July 1999} -
+the information is retained here only for its historical value.
 
 Therefore, @code{egcs} versions sometimes have multiple listings
 to help clarify how they differ from other versions,
@@ -153,8 +152,40 @@ is available at
 
 The following information was last updated on @value{last-update-news}:
 
-@heading In development:
+@heading In prerelease, 0.5.26, @code{GCC} 3.0 versus @code{GCC} 2.95:
 @itemize @bullet
+@ifclear USERVISONLY
+@item
+When a REWIND was issued after a WRITE statement on an unformatted
+file, the implicit truncation was performed by copying the truncated
+file to /tmp and copying the result back.  This has been fixed by using
+the @code{ftruncate} OS function.  Thanks go to the GAMESS developers
+for bringing this to our attention.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
+It is not necessary anymore to use the option @code{-femulate-complex}
+to compile Fortran code using COMPLEX arithmetic, even on 64-bit machines
+(like the Alpha).  This will improve code generation.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
+INTRINSIC arithmetic functions are now treated as routines that do not
+depend on anything but their argument(s).  This enables further instruction
+scheduling, because it is known that they cannot read or modify arbitrary
+locations.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
+Upgrade to @code{libf2c} as of 2000-12-05.
+
+This fixes a bug where a namelist containing initialization of LOGICAL
+items and a variable starting with T or F would be read incorrectly.
+@end ifclear
+
 @ifclear USERVISONLY
 @item
 Using options @code{-g}, @code{-ggdb} or @code{-gdwarf[-2]} (where
