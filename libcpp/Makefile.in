@@ -207,14 +207,19 @@ update-po: $(CATALOGS:.gmo=.pox)
 	                else echo $(srcdir)/po/$(PACKAGE).pot; fi` -o $@
 
 # Rule for regenerating the message template.
+$(PACKAGE).pot: po/$(PACKAGE).pot
 po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 	-test -d $(srcdir)/po || mkdir $(srcdir)/po
 	$(XGETTEXT) --default-domain=$(PACKAGE) \
-	  --keyword=cpp_error,3 --keyword=cpp_errno,3 \
-	  --keyword=cpp_error_with_line,5 \
+	  --keyword=_ --keyword=N_ \
+	  --keyword=cpp_error:3 --keyword=cpp_errno:3 \
+	  --keyword=cpp_error_with_line:5 \
+	  --keyword=SYNTAX_ERROR --keyword=SYNTAX_ERROR2 \
 	  --copyright-holder="Free Software Foundation, Inc." \
 	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
-	  --language=c -o po/$(PACKAGE).pot $^
+	  --language=c -o po/$(PACKAGE).pot.tmp $^
+	sed 's:$(srcdir)/::g' <po/$(PACKAGE).pot.tmp >po/$(PACKAGE).pot
+	rm po/$(PACKAGE).pot.tmp
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
