@@ -4196,9 +4196,6 @@ simplify_set (x)
   if (GET_MODE_CLASS (mode) == MODE_INT)
     src = force_to_mode (src, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
 
-  /* Convert this into a field assignment operation, if possible.  */
-  x = make_field_assignment (x);
-
   /* If we are setting CC0 or if the source is a COMPARE, look for the use of
      the comparison result and try to simplify it unless we already have used
      undobuf.other_insn.  */
@@ -4435,7 +4432,15 @@ simplify_set (x)
     }
 #endif
 
-  return x;
+  /* If either SRC or DEST is a CLOBBER of (const_int 0), make this
+     whole thing fail.  */
+  if (GET_CODE (src) == CLOBBER && XEXP (src, 0) == const0_rtx)
+    return src;
+  else if (GET_CODE (dest) == CLOBBER && XEXP (dest, 0) == const0_rtx)
+    return dest;
+  else
+    /* Convert this into a field assignment operation, if possible.  */
+    return make_field_assignment (x);
 }
 
 /* Simplify, X, and AND, IOR, or XOR operation, and return the simplified
@@ -5631,6 +5636,11 @@ force_to_mode (x, mode, mask, reg, just_select)
   enum machine_mode op_mode;
   unsigned HOST_WIDE_INT fuller_mask, nonzero;
   rtx op0, op1, temp;
+
+  /* If this is a CALL, don't do anything.  Some of the code below
+     will do the wrong thing since the mode of a CALL is VOIDmode.  */
+  if (code == CALL)
+    return x;
 
   /* We want to perform the operation is its present mode unless we know
      that the operation is valid in MODE, in which case we do the operation
