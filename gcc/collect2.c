@@ -1164,7 +1164,7 @@ write_list_with_asm (stream, prefix, list)
 {
   while (list)
     {
-      fprintf (stream, "%sx%d asm (\"%s\");\n",
+      fprintf (stream, "%sx%d __asm__ (\"%s\");\n",
 	       prefix, list->sequence, list->name);
       list = list->next;
     }
