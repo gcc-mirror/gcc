@@ -1992,7 +1992,6 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 
   op1 = expand_expr (amount, NULL_RTX, VOIDmode, 0);
 
-#ifdef SHIFT_COUNT_TRUNCATED
   if (SHIFT_COUNT_TRUNCATED)
     {
       if (GET_CODE (op1) == CONST_INT
@@ -2004,7 +2003,6 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 	       && subreg_lowpart_p (op1))
 	op1 = SUBREG_REG (op1);
     }
-#endif
 
   if (op1 == const0_rtx)
     return shifted;

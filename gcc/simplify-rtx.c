@@ -1369,10 +1369,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	case LSHIFTRT:   case ASHIFTRT:
 	case ASHIFT:
 	case ROTATE:     case ROTATERT:
-#ifdef SHIFT_COUNT_TRUNCATED
 	  if (SHIFT_COUNT_TRUNCATED)
 	    l2 &= (GET_MODE_BITSIZE (mode) - 1), h2 = 0;
-#endif
 
 	  if (h2 != 0 || l2 >= GET_MODE_BITSIZE (mode))
 	    return 0;
@@ -2152,10 +2150,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
       if (arg1 < 0)
 	return 0;
 
-#ifdef SHIFT_COUNT_TRUNCATED
       if (SHIFT_COUNT_TRUNCATED)
 	arg1 %= width;
-#endif
 
       val = ((unsigned HOST_WIDE_INT) arg0) >> arg1;
       break;
@@ -2164,10 +2160,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
       if (arg1 < 0)
 	return 0;
 
-#ifdef SHIFT_COUNT_TRUNCATED
       if (SHIFT_COUNT_TRUNCATED)
 	arg1 %= width;
-#endif
 
       val = ((unsigned HOST_WIDE_INT) arg0) << arg1;
       break;
@@ -2176,10 +2170,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
       if (arg1 < 0)
 	return 0;
 
-#ifdef SHIFT_COUNT_TRUNCATED
       if (SHIFT_COUNT_TRUNCATED)
 	arg1 %= width;
-#endif
 
       val = arg0s >> arg1;
 

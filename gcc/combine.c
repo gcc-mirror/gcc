@@ -91,10 +91,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "target.h"
 
-#ifndef SHIFT_COUNT_TRUNCATED
-#define SHIFT_COUNT_TRUNCATED 0
-#endif
-
 /* Number of attempts to combine instructions in this function.  */
 
 static int combine_attempts;
