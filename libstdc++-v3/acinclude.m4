@@ -1013,14 +1013,14 @@ dnl Check to see if debugging libraries are to be built.
 dnl
 dnl GLIBCPP_ENABLE_DEBUG
 dnl
-dnl --enable-debug
+dnl --enable-libstdcxx-debug
 dnl builds a separate set of debugging libraries in addition to the
 dnl normal (shared, static) libstdc++ binaries.
 dnl
-dnl --disable-debug
+dnl --disable-libstdcxx-debug
 dnl builds only one (non-debug) version of libstdc++.
 dnl
-dnl --enable-debug-flags=FLAGS
+dnl --enable-libstdcxx-debug-flags=FLAGS
 dnl iff --enable-debug == yes, then use FLAGS to build the debug library.
 dnl
 dnl  +  Usage:  GLIBCPP_ENABLE_DEBUG[(DEFAULT)]
@@ -1028,19 +1028,19 @@ dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
 dnl       defaults to `no'.
 AC_DEFUN(GLIBCPP_ENABLE_DEBUG, [dnl
 define([GLIBCPP_ENABLE_DEBUG_DEFAULT], ifelse($1, yes, yes, no))dnl
-AC_ARG_ENABLE(debug,
+AC_ARG_ENABLE(libstdcxx_debug,
 changequote(<<, >>)dnl
-<<  --enable-debug          build extra debug library [default=>>GLIBCPP_ENABLE_DEBUG_DEFAULT],
+<<  --enable-libstdcxx-debug          build extra debug library [default=>>GLIBCPP_ENABLE_DEBUG_DEFAULT],
 changequote([, ])dnl
 [case "${enableval}" in
- yes) enable_debug=yes ;;
- no)  enable_debug=no ;;
+ yes) enable_libstdcxx_debug=yes ;;
+ no)  enable_libstdcxx_debug=no ;;
  *)   AC_MSG_ERROR([Unknown argument to enable/disable extra debugging]) ;;
  esac],
-enable_debug=GLIBCPP_ENABLE_DEBUG_DEFAULT)dnl
+enable_libstdcxx_debug=GLIBCPP_ENABLE_DEBUG_DEFAULT)dnl
 AC_MSG_CHECKING([for additional debug build])
-AC_MSG_RESULT($enable_debug)
-AM_CONDITIONAL(GLIBCPP_BUILD_DEBUG, test "$enable_debug" = yes)
+AC_MSG_RESULT($enable_libstdcxx_debug)
+AM_CONDITIONAL(GLIBCPP_BUILD_DEBUG, test "$enable_libstdcxx_debug" = yes)
 ])
 
 
@@ -1048,32 +1048,33 @@ dnl Check for explicit debug flags.
 dnl
 dnl GLIBCPP_ENABLE_DEBUG_FLAGS
 dnl
-dnl --enable-debug-flags='-O1'
+dnl --enable-libstdcxx-debug-flags='-O1'
 dnl is a general method for passing flags to be used when
 dnl building debug libraries with --enable-debug.
 dnl
-dnl --disable-debug-flags does nothing.
+dnl --disable-libstdcxx-debug-flags does nothing.
 dnl  +  Usage:  GLIBCPP_ENABLE_DEBUG_FLAGS(default flags)
 dnl       If "default flags" is an empty string (or "none"), the effect is
 dnl       the same as --disable or --enable=no.
 AC_DEFUN(GLIBCPP_ENABLE_DEBUG_FLAGS, [dnl
 define([GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT], ifelse($1,,, $1))dnl
-AC_ARG_ENABLE(debug_flags,
+AC_ARG_ENABLE(libstdcxx_debug_flags,
 changequote(<<, >>)dnl
-<<  --enable-debug-flags=FLAGS    pass compiler FLAGS when building debug
-	                library;[default=>>GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT],
+<<  --enable-libstdcxx-debug-flags=FLAGS    pass compiler FLAGS when building 
+                                            debug library;
+                                [default=>>GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT],
 changequote([, ])dnl
 [case "${enableval}" in
  none)  ;;
- -*) enable_debug_flags="${enableval}" ;;
+ -*) enable_libstdcxx_debug_flags="${enableval}" ;;
  *)   AC_MSG_ERROR([Unknown argument to extra debugging flags]) ;;
  esac],
-enable_debug_flags=GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT)dnl
+enable_libstdcxx_debug_flags=GLIBCPP_ENABLE_DEBUG_FLAGS_DEFAULT)dnl
 
 dnl Option parsed, now set things appropriately
-case x"$enable_debug" in
+case x"$enable_libstdcxx_debug" in
     xyes)
-        case "$enable_debug_flags" in
+        case "$enable_libstdcxx_debug_flags" in
 	  none)
             DEBUG_FLAGS="-g3 -O0";;
 	  -*) #valid input
@@ -1111,7 +1112,7 @@ define([GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT], ifelse($1,,, $1))dnl
 AC_MSG_CHECKING([for extra compiler flags for building])
 AC_ARG_ENABLE(cxx_flags,
 changequote(<<, >>)dnl
-<<  --enable-cxx-flags=FLAGS      pass compiler FLAGS when building library;
+<<  --enable-cxx-flags=FLAGS     pass compiler FLAGS when building library;
                                   [default=>>GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT],
 changequote([, ])dnl
 [case "x$enable_cxx_flags" in
@@ -1339,7 +1340,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   AC_MSG_CHECKING([for cstdio to use])
   AC_ARG_ENABLE(cstdio,
   [  --enable-cstdio         enable stdio for target io package.
-  --enable-cstdio=LIB     use LIB target-speific io package. [default=stdio]
+  --enable-cstdio=LIB     use LIB target-specific io package. [default=stdio]
   ],
   if test x$enable_cstdio = xno; then
      enable_cstdio=stdio
@@ -1378,55 +1379,55 @@ dnl Check to see if building and using a C++ precompiled header can be done.
 dnl
 dnl GLIBCPP_ENABLE_PCH
 dnl
-dnl --enable-pch=yes
+dnl --enable-libstdcxx-pch=yes
 dnl default, this shows intent to use stdc++.h.gch If it looks like it
 dnl may work, after some light-hearted attempts to puzzle out compiler
 dnl support, flip bits on in include/Makefile.am
 dnl
-dnl --disable-pch
+dnl --disable-libstdcxx-pch
 dnl turns off attempts to use or build stdc++.h.gch.
 dnl
 AC_DEFUN(GLIBCPP_ENABLE_PCH, [dnl
 define([GLIBCPP_ENABLE_PCH_DEFAULT], ifelse($1,,, $1))dnl
-AC_ARG_ENABLE(pch,
+AC_ARG_ENABLE(libstdcxx_pch,
 changequote(<<, >>)dnl
-<<  --enable-pch         build pre-compiled libstdc++ includes [default=>>GLIBCPP_ENABLE_PCH_DEFAULT],
+<<  --enable-libstdcxx-pch     build pre-compiled libstdc++ includes [default=>>GLIBCPP_ENABLE_PCH_DEFAULT],
 changequote([, ])dnl
 [case "${enableval}" in
- yes) enable_pch=yes ;;
- no)  enable_pch=no ;;
+ yes) enable_libstdcxx_pch=yes ;;
+ no)  enable_libstdcxx_pch=no ;;
  *)   AC_MSG_ERROR([Unknown argument to enable/disable PCH]) ;;
  esac],
-enable_pch=GLIBCPP_ENABLE_PCH_DEFAULT)dnl
+enable_libstdcxx_pch=GLIBCPP_ENABLE_PCH_DEFAULT)dnl
 
-  if test x$enable_pch = xyes; then
+  if test x$enable_libstdcxx_pch = xyes; then
     ac_test_CXXFLAGS="${CXXFLAGS+set}"
     ac_save_CXXFLAGS="$CXXFLAGS"
     CXXFLAGS='-Werror -Winvalid-pch -Wno-deprecated -x c++-header'
 
     AC_MSG_CHECKING([for compiler that seems to compile .gch files])
-    if test x${glibcpp_pch_comp+set} != xset; then
-      AC_CACHE_VAL(glibcpp_pch_comp, [
+    if test x${pch_comp+set} != xset; then
+      AC_CACHE_VAL(pch_comp, [
         AC_LANG_SAVE
         AC_LANG_CPLUSPLUS
         AC_TRY_COMPILE([#include <math.h>], ,
-                       [glibcpp_pch_comp=yes], [glibcpp_pch_comp=no])
+                       [pch_comp=yes], [pch_comp=no])
         AC_LANG_RESTORE
       ])
     fi
-    AC_MSG_RESULT([$glibcpp_pch_comp])
+    AC_MSG_RESULT([$pch_comp])
 
     CXXFLAGS="$ac_save_CXXFLAGS"
   fi
 
-  if test x"$enable_pch" = xyes && test x"$glibcpp_pch_comp" = xno; then
+  if test x"$enable_libstdcxx_pch" = xyes && test x"$pch_comp" = xno; then
     enable_pch=no
   fi
 
   AC_MSG_CHECKING([for enabled PCH])
-  AC_MSG_RESULT([$enable_pch])
+  AC_MSG_RESULT([$enable_libstdcxx_pch])
 
-  AM_CONDITIONAL(GLIBCPP_BUILD_PCH, test "$enable_pch" = yes)
+  AM_CONDITIONAL(GLIBCPP_BUILD_PCH, test "$enable_libstdcxx_pch" = yes)
   if test "$enable_pch" = yes; then
 	glibcpp_PCHFLAGS="-include bits/stdc++.h"
   else
