@@ -1,3 +1,8 @@
+2004-10-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17695
+	* g++.dg/debug/typedef2.C: New test.
+
 2004-10-29  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR fortran/13490

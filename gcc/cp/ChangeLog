@@ -1,3 +1,9 @@
+2004-10-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17695
+	* decl.c (grokdeclarator): Mark TYPE_DECLs as abstract when they
+	appear in a constructor/destructor that will be cloned.
+
 1004-10-28  Matt Austern  <austern@apple.com>
 
 	PR c++/14124

@@ -7619,6 +7619,14 @@ grokdeclarator (const cp_declarator *declarator,
 	    error ("%Jtypedef name may not be a nested-name-specifier", decl);
 	  if (!current_function_decl)
 	    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
+	  else if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (current_function_decl)
+		   || (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P 
+		       (current_function_decl)))
+	    /* The TYPE_DECL is "abstract" because there will be
+	       clones of this constructor/destructor, and there will
+	       be copies of this TYPE_DECL generated in those
+	       clones.  */
+	    DECL_ABSTRACT (decl) = 1;
 	}
 
       /* If the user declares "typedef struct {...} foo" then the
