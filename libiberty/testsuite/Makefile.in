@@ -49,7 +49,7 @@ check-cplus-dem: test-demangle $(srcdir)/demangle-expected
 	./test-demangle < $(srcdir)/demangle-expected
 
 TEST_COMPILE = $(CC) @DEFS@ $(LIBCFLAGS) -I.. -I$(INCDIR) $(HDEFINES)
-test-demangle: $(srcdir)/test-demangle.c
+test-demangle: $(srcdir)/test-demangle.c ../libiberty.a
 	$(TEST_COMPILE) -o test-demangle \
 		$(srcdir)/test-demangle.c ../libiberty.a
 
