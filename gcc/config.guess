@@ -219,7 +219,7 @@ EOF
 	case "${UNAME_MACHINE}" in
 	    9000/31? )            HP_ARCH=m68000 ;;
 	    9000/[34]?? )         HP_ARCH=m68k ;;
-	    9000/7?? | 9000/8?7 ) HP_ARCH=hppa1.1 ;;
+	    9000/7?? | 9000/8?[79] ) HP_ARCH=hppa1.1 ;;
 	    9000/8?? )            HP_ARCH=hppa1.0 ;;
 	esac
 	HPUX_REV=`echo ${UNAME_RELEASE}|sed -e 's/[^.]*.[0B]*//'`
@@ -255,13 +255,13 @@ EOF
 	rm -f dummy.c dummy
 	echo unknown-hitachi-hiuxwe2
 	exit 0 ;;
-    9000/7??:4.3bsd:*:* | 9000/8?7:4.3bsd:*:* )
+    9000/7??:4.3bsd:*:* | 9000/8?[79]:4.3bsd:*:* )
 	echo hppa1.1-hp-bsd
 	exit 0 ;;
     9000/8??:4.3bsd:*:*)
 	echo hppa1.0-hp-bsd
 	exit 0 ;;
-    hp7??:OSF1:*:* | hp8?7:OSF1:*:* )
+    hp7??:OSF1:*:* | hp8?[79]:OSF1:*:* )
 	echo hppa1.1-hp-osf
 	exit 0 ;;
     hp8??:OSF1:*:*)
