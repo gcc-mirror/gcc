@@ -1,3 +1,8 @@
+2004-03-02  Roche Nicolas <roche@act-europe.fr>
+
+	* Makefile.in (install-libgcc, install-multilib): Pass
+	mkinstalldirs var to libgcc.mk.
+
 2004-03-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* system.h (DBX_OUTPUT_STANDARD_TYPES): Poison.
