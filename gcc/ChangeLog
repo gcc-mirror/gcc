@@ -5,6 +5,9 @@ Tue Jun  8 05:47:48 1999  Richard Earnshaw (rearnsha@arm.com)
 
 Mon Jun  7 22:30:37 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* fixinc/inclhack.def (bad_lval): Remove bogus selector.
+	* fixinc/inclhack.sh, fixinc/fixincl.x, fixinc/fixincl.sh; Rebuilt.
+
 	* fixinc/inclhack.def (avoid_bool): Also catch
 	"typedef [unsigned] int bool".
 	* fixinc/inclhack.sh, fixinc/fixincl.x, fixinc/fixincl.sh: Rebuilt.
