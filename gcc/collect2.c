@@ -1002,7 +1002,9 @@ main (argc, argv)
   int first_file;
   int num_c_args	= argc+9;
 
+#ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
+#endif
   bindtextdomain (PACKAGE, localedir);
   textdomain (PACKAGE);
 

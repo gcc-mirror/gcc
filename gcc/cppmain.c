@@ -69,7 +69,9 @@ main (argc, argv)
   while (p != argv[0] && p[-1] != '/') --p;
   progname = p;
 
+#ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
+#endif
   bindtextdomain (PACKAGE, localedir);
   textdomain (PACKAGE);
 

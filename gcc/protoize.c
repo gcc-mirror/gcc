@@ -4555,7 +4555,9 @@ main (argc, argv)
   pname = strrchr (argv[0], '/');
   pname = pname ? pname+1 : argv[0];
 
+#ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
+#endif
   bindtextdomain (PACKAGE, localedir);
   textdomain (PACKAGE);
 

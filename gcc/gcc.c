@@ -4627,7 +4627,9 @@ main (argc, argv)
   while (p != argv[0] && p[-1] != '/' && p[-1] != DIR_SEPARATOR) --p;
   programname = p;
 
+#ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
+#endif
   bindtextdomain (PACKAGE, localedir);
   textdomain (PACKAGE);
 

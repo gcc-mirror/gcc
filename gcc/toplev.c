@@ -4576,7 +4576,9 @@ main (argc, argv)
   }
 #endif
 
+#ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
+#endif
   bindtextdomain (PACKAGE, localedir);
   textdomain (PACKAGE);
 
