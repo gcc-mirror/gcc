@@ -252,6 +252,12 @@ cp_dump_tree (di, t)
       dump_next_stmt (di, t);
       break;
 
+    case USING_STMT:
+      dump_stmt (di, t);
+      dump_child ("nmsp", USING_STMT_NAMESPACE (t));
+      dump_next_stmt (di, t);
+      break;
+      
     default:
       break;
     }
