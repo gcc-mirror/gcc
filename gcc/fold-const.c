@@ -3880,6 +3880,7 @@ fold (expr)
 	       && (! TREE_SIDE_EFFECTS (arg0) || current_function_decl != 0))
 	{
 	  tree test, true_value, false_value;
+	  tree lhs = 0, rhs = 0;
 
 	  if (TREE_CODE (arg1) == COND_EXPR)
 	    {
@@ -3902,26 +3903,37 @@ fold (expr)
 	     to make this SAVE_EXPR.  Since we do this optimization
 	     primarily to see if we do end up with constant and this
 	     SAVE_EXPR interferes with later optimizations, suppressing
-	     it when we can is important.  */
+	     it when we can is important.
 
-	  if (TREE_CODE (arg0) != SAVE_EXPR
+	     If we are not in a function, we can't make a SAVE_EXPR, so don't
+	     try to do so.  Don't try to see if the result is a constant
+	     if an arm is a COND_EXPR since we get exponential behavior
+	     in that case.  */
+
+	  if (TREE_CODE (arg0) != SAVE_EXPR && ! TREE_CONSTANT (arg0)
+	      && current_function_decl != 0
 	      && ((TREE_CODE (arg0) != VAR_DECL
 		   && TREE_CODE (arg0) != PARM_DECL)
 		  || TREE_SIDE_EFFECTS (arg0)))
 	    {
-	      tree lhs = fold (build (code, type, arg0, true_value));
-	      tree rhs = fold (build (code, type, arg0, false_value));
+	      if (TREE_CODE (true_value) != COND_EXPR)
+		lhs = fold (build (code, type, arg0, true_value));
 
-	      if (TREE_CONSTANT (lhs) || TREE_CONSTANT (rhs))
-		return fold (build (COND_EXPR, type, test, lhs, rhs));
+	      if (TREE_CODE (false_value) != COND_EXPR)
+		rhs = fold (build (code, type, arg0, false_value));
 
-	      if (current_function_decl != 0)
-		arg0 = save_expr (arg0);
+	      if ((lhs == 0 || ! TREE_CONSTANT (lhs))
+		  && (rhs == 0 || !TREE_CONSTANT (rhs)))
+		arg0 = save_expr (arg0), lhs = rhs = 0;
 	    }
 
-	  test = fold (build (COND_EXPR, type, test,
-			      fold (build (code, type, arg0, true_value)),
-			      fold (build (code, type, arg0, false_value))));
+	  if (lhs == 0)
+	    lhs = fold (build (code, type, arg0, true_value));
+	  if (rhs == 0)
+	    rhs = fold (build (code, type, arg0, false_value));
+
+	  test = fold (build (COND_EXPR, type, test, lhs, rhs));
+
 	  if (TREE_CODE (arg0) == SAVE_EXPR)
 	    return build (COMPOUND_EXPR, type,
 			  convert (void_type_node, arg0),
@@ -3939,6 +3951,7 @@ fold (expr)
 	       && (! TREE_SIDE_EFFECTS (arg1) || current_function_decl != 0))
 	{
 	  tree test, true_value, false_value;
+	  tree lhs = 0, rhs = 0;
 
 	  if (TREE_CODE (arg0) == COND_EXPR)
 	    {
@@ -3954,25 +3967,30 @@ fold (expr)
 	      false_value = convert (testtype, integer_zero_node);
 	    }
 
-	  if (TREE_CODE (arg1) != SAVE_EXPR
+	  if (TREE_CODE (arg1) != SAVE_EXPR && ! TREE_CONSTANT (arg0)
+	      && current_function_decl != 0
 	      && ((TREE_CODE (arg1) != VAR_DECL
 		   && TREE_CODE (arg1) != PARM_DECL)
 		  || TREE_SIDE_EFFECTS (arg1)))
 	    {
-	      tree lhs = fold (build (code, type, true_value, arg1));
-	      tree rhs = fold (build (code, type, false_value, arg1));
+	      if (TREE_CODE (true_value) != COND_EXPR)
+		lhs = fold (build (code, type, true_value, arg1));
 
-	      if (TREE_CONSTANT (lhs) || TREE_CONSTANT (rhs)
-		  || TREE_CONSTANT (arg1))
-		return fold (build (COND_EXPR, type, test, lhs, rhs));
+	      if (TREE_CODE (false_value) != COND_EXPR)
+		rhs = fold (build (code, type, false_value, arg1));
 
-	      if (current_function_decl != 0)
-		arg1 = save_expr (arg1);
+	      if ((lhs == 0 || ! TREE_CONSTANT (lhs))
+		  && (rhs == 0 || !TREE_CONSTANT (rhs)))
+		arg1 = save_expr (arg1), lhs = rhs = 0;
 	    }
 
-	  test = fold (build (COND_EXPR, type, test,
-			      fold (build (code, type, true_value, arg1)),
-			      fold (build (code, type, false_value, arg1))));
+	  if (lhs == 0)
+	    lhs = fold (build (code, type, true_value, arg1));
+
+	  if (rhs == 0)
+	    rhs = fold (build (code, type, false_value, arg1));
+
+	  test = fold (build (COND_EXPR, type, test, lhs, rhs));
 	  if (TREE_CODE (arg1) == SAVE_EXPR)
 	    return build (COMPOUND_EXPR, type,
 			  convert (void_type_node, arg1),
