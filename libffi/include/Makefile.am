@@ -9,5 +9,8 @@ hackdir=$(includedir)
 
 hack_DATA= ffi.h
 
-toollibffidir = @tool_include_dir@/libffi
+# Where generated headers like ffitarget.h get installed.
+gcc_version   := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+toollibffidir := $(libdir)/gcc/$(target_alias)/$(gcc_version)/include/libffi
+
 toollibffi_HEADERS = ffitarget.h
