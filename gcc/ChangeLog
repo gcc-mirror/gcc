@@ -1,3 +1,24 @@
+2004-03-28  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11-protos.h (m68hc11_page0_symbol_p): Declare.
+
+	* config/m68hc11/m68hc11.c (m68hc11_handle_page0_attribute): New.
+	(m68hc11_attribute_table): New attribute "page0" to mark a global
+	variable as being allocated from within page0 section.
+	(m68hc11_encode_label): New function.
+	(m68hc11_strip_name_encoding): New function.
+	(m68hc11_page0_symbol_p): New function.
+	(m68hc11_indirect_p): Accept global variables marked in page0.
+	(m68hc11_encode_section_info): Lookup "page0" attribute.
+
+	* config/m68hc11/m68hc11.h (EXTRA_CONSTRAINT): 'R' constraint also
+	represents access to page0 variables.
+
+	* config/m68hc11/m68hc11.md ("*logicalsi3_zexthi"): Use gen_rtx_REG.
+	("*logicalsi3_silshl16_zext"): Likewise.
+	("*ashldi3_const32"): Likewise.
+	(peephole2 ashift): Likewise.
+
 2004-03-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-tree.h (C_DECL_REGISTER): New.
