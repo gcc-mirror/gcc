@@ -1,3 +1,8 @@
+2000-02-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* varasm.c (initializer_constant_valid_p): Call
+	lang_expand_constant to	simplify the constant.
+
 2000-02-20  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def(stdio_va_list):
