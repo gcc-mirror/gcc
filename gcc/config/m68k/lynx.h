@@ -1,4 +1,4 @@
-/* Definitions for Motorola 680X0 running LynxOS.
+/* Definitions for Motorola 680x0 running LynxOS.
    Copyright (C) 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -18,6 +18,17 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "m68k/m68k.h"
+#include "m68k/m68k-coff.h"
+
+#undef CTORS_SECTION_ASM_OP
+#undef DTORS_SECTION_ASM_OP
+#undef ASM_OUTPUT_DESTRUCTOR
+#undef SELECT_RTX_SECTION
+
+#define BSS_SECTION_ASM_OP ".bss"
+
+#define ASM_LONG ".long"
+
 #include "lynx.h"
 
 /* See m68k.h.  7 means 68020 with 68881.  */
@@ -27,8 +38,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 /* Names to predefine in the preprocessor for this target machine.  */
+
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Dmc68000 -DM68K -DLynx -DIBITS32 -Asystem(unix) -Asystem(lynx)  -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dmc68000 -DM68K -DLynx -DIBITS32 -Asystem(unix) -Asystem(lynx) -Acpu(m68k) -Amachine(m68k)"
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 

@@ -22,3 +22,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -DI386 -DLynx -DIBITS32 -Asystem(unix) -Asystem(lynx) -Acpu(i386) -Amachine(i386)"
+
+/* This is how to output a reference to a user-level label named NAME.  */
+
+/* Override the svr3 convention of adding a leading underscore. */
+
+#undef ASM_OUTPUT_LABELREF
+#define ASM_OUTPUT_LABELREF(FILE,NAME) fprintf (FILE, "%s", NAME)
+
+/* Apparently LynxOS clobbers ebx when you call into the OS.  */
+
+#undef CALL_USED_REGISTERS
+#define CALL_USED_REGISTERS \
+/*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/ \
+{  1, 1, 1, 1, 0, 0, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,  1 }
