@@ -2117,6 +2117,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  break;
 
 	case NOTE_INSN_BASIC_BLOCK:
+#ifdef IA64_UNWIND_INFO
+	  IA64_UNWIND_EMIT (asm_out_file, insn);
+#endif
 	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s basic block %d\n",
 		     ASM_COMMENT_START, NOTE_BASIC_BLOCK (insn)->index);

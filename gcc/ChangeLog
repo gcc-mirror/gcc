@@ -7,6 +7,14 @@
 
 2001-03-27  Jim Wilson  <wilson@redhat.com>
 
+	* final.c (final_scan_insn, case NOTE_INSN_BASIC_BLOCK): Call
+	IA64_UNWIND_EMIT.
+	* config/ia64/ia64.c (block_num, need_copy_state): New static vars.
+	(process_epilogue): New static function.
+	(process_set): Call process_epilogue instead of emitting .restore
+	directly.
+	(process_for_unwind_directive): Handle NOTE_INSN_BASIC_BLOCK.
+
 	* flow.c (struct reg_cond_life_info): New fields orig_condition
 	and stores.
 	(init_propagate_block_info): Set new fields.
