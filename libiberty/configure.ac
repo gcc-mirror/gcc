@@ -546,7 +546,7 @@ AC_CONFIG_FILES([Makefile testsuite/Makefile])
 AC_CONFIG_COMMANDS([default],
   [[test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 if test -n "$CONFIG_FILES"; then
-  if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
+  if test -n "${with_target_subdir}"; then
     # FIXME: We shouldn't need to set ac_file
     ac_file=Makefile
     LD="${ORIGINAL_LD_FOR_MULTILIBS}"
@@ -557,7 +557,6 @@ fi]],
 host=${host}
 target=${target}
 with_target_subdir=${with_target_subdir}
-with_build_subdir=${with_build_subdir}
 with_multisubdir=${with_multisubdir}
 ac_configure_args="--enable-multilib ${ac_configure_args}"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
