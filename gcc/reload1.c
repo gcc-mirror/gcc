@@ -5494,12 +5494,12 @@ emit_reload_insns (insn)
 	     do this if the secondary register will be used as a scratch
 	     register.  */
 
-	  if (reload_secondary_reload[j] >= 0
-	      && reload_secondary_icode[j] == CODE_FOR_nothing
+	  if (reload_secondary_in_reload[j] >= 0
+	      && reload_secondary_in_icode[j] == CODE_FOR_nothing
 	      && optimize)
 	    oldequiv
 	      = find_equiv_reg (old, insn,
-				reload_reg_class[reload_secondary_reload[j]],
+				reload_reg_class[reload_secondary_in_reload[j]],
 				-1, NULL_PTR, 0, mode);
 #endif
 
@@ -5630,7 +5630,7 @@ emit_reload_insns (insn)
 	      /* We are not going to bother supporting the case where a
 		 incremented register can't be copied directly from
 		 OLDEQUIV since this seems highly unlikely.  */
-	      if (reload_secondary_reload[j] >= 0)
+	      if (reload_secondary_in_reload[j] >= 0)
 		abort ();
 	      /* Prevent normal processing of this reload.  */
 	      special = 1;
@@ -5702,15 +5702,15 @@ emit_reload_insns (insn)
 		 because we don't make such reloads when both the input and
 		 output need secondary reload registers.  */
 
-	      if (reload_secondary_reload[j] >= 0)
+	      if (reload_secondary_in_reload[j] >= 0)
 		{
-		  int secondary_reload = reload_secondary_reload[j];
+		  int secondary_reload = reload_secondary_in_reload[j];
 		  rtx real_oldequiv = oldequiv;
 		  rtx real_old = old;
 
 		  /* If OLDEQUIV is a pseudo with a MEM, get the real MEM
 		     and similarly for OLD.
-		     See comments in find_secondary_reload in reload.c.  */
+		     See comments in get_secondary_reload in reload.c.  */
 		  if (GET_CODE (oldequiv) == REG
 		      && REGNO (oldequiv) >= FIRST_PSEUDO_REGISTER
 		      && reg_equiv_mem[REGNO (oldequiv)] != 0)
@@ -5722,7 +5722,7 @@ emit_reload_insns (insn)
 		    real_old = reg_equiv_mem[REGNO (old)];
 
 		  second_reload_reg = reload_reg_rtx[secondary_reload];
-		  icode = reload_secondary_icode[j];
+		  icode = reload_secondary_in_icode[j];
 
 		  if ((old != oldequiv && ! rtx_equal_p (old, oldequiv))
 		      || (reload_in[j] != 0 && reload_out[j] != 0))
@@ -5792,12 +5792,12 @@ emit_reload_insns (insn)
 			  /* See if we need a scratch register to load the
 			     intermediate register (a tertiary reload).  */
 			  enum insn_code tertiary_icode
-			    = reload_secondary_icode[secondary_reload];
+			    = reload_secondary_in_icode[secondary_reload];
 
 			  if (tertiary_icode != CODE_FOR_nothing)
 			    {
 			      rtx third_reload_reg
-			        = reload_reg_rtx[reload_secondary_reload[secondary_reload]];
+			        = reload_reg_rtx[reload_secondary_in_reload[secondary_reload]];
 
 			      emit_insn ((GEN_FCN (tertiary_icode)
 					  (second_reload_reg, real_oldequiv,
@@ -6056,7 +6056,7 @@ emit_reload_insns (insn)
 	     one, since it will be stored into OUT.  We might need a secondary
 	     register only for an input reload, so check again here.  */
 
-	  if (reload_secondary_reload[j] >= 0)
+	  if (reload_secondary_out_reload[j] >= 0)
 	    {
 	      rtx real_old = old;
 
@@ -6069,13 +6069,13 @@ emit_reload_insns (insn)
 		  != NO_REGS))
 		{
 		  second_reloadreg = reloadreg;
-		  reloadreg = reload_reg_rtx[reload_secondary_reload[j]];
+		  reloadreg = reload_reg_rtx[reload_secondary_out_reload[j]];
 
 		  /* See if RELOADREG is to be used as a scratch register
 		     or as an intermediate register.  */
-		  if (reload_secondary_icode[j] != CODE_FOR_nothing)
+		  if (reload_secondary_out_icode[j] != CODE_FOR_nothing)
 		    {
-		      emit_insn ((GEN_FCN (reload_secondary_icode[j])
+		      emit_insn ((GEN_FCN (reload_secondary_out_icode[j])
 				  (real_old, second_reloadreg, reloadreg)));
 		      special = 1;
 		    }
@@ -6083,9 +6083,9 @@ emit_reload_insns (insn)
 		    {
 		      /* See if we need both a scratch and intermediate reload
 			 register.  */
-		      int secondary_reload = reload_secondary_reload[j];
+		      int secondary_reload = reload_secondary_out_reload[j];
 		      enum insn_code tertiary_icode
-			= reload_secondary_icode[secondary_reload];
+			= reload_secondary_out_icode[secondary_reload];
 		      rtx pat;
 
 		      if (GET_MODE (reloadreg) != mode)
@@ -6094,7 +6094,7 @@ emit_reload_insns (insn)
 		      if (tertiary_icode != CODE_FOR_nothing)
 			{
 			  rtx third_reloadreg
-			    = reload_reg_rtx[reload_secondary_reload[secondary_reload]];
+			    = reload_reg_rtx[reload_secondary_out_reload[secondary_reload]];
 			  pat = (GEN_FCN (tertiary_icode)
 				 (reloadreg, second_reloadreg, third_reloadreg));
 			}
