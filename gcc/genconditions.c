@@ -35,7 +35,7 @@
 #include "hashtab.h"
 #include "gensupport.h"
 
-/* so we can include except.h in the generated file */
+/* so we can include except.h in the generated file.  */
 static int saw_eh_return;
 
 static htab_t condition_table;

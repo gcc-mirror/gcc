@@ -11916,7 +11916,7 @@ gen_namespace_die (tree decl)
   dw_die_ref context_die = setup_namespace_context (decl, comp_unit_die);
 
   /* Namespace aliases have a DECL_ABSTRACT_ORIGIN of the namespace
-     they are an alias of. */
+     they are an alias of.  */
   if (DECL_ABSTRACT_ORIGIN (decl) == NULL)
     {
       /* Output a real namespace.  */

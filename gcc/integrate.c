@@ -1421,7 +1421,7 @@ copy_insn_list (rtx insns, struct inline_remap *map, rtx static_chain_value)
 		  gen_rtx_MEM (GET_MODE (static_chain_incoming_rtx),
 			       SET_DEST (set));
 
-	      /* emit the instruction in case it is used for something
+	      /* Emit the instruction in case it is used for something
 		 other than setting the static chain; if it's not used,
 		 it can always be removed as dead code */
 	      copy = emit_insn (copy_rtx_and_substitute (pattern, map, 0));

@@ -4691,7 +4691,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	      if (XEXP (x, 0) != current_function_internal_arg_pointer)
 		i = INTVAL (XEXP (XEXP (x, 0), 1));
 
-	      /* expand_call should ensure this */
+	      /* expand_call should ensure this.  */
 	      if (arg->locate.offset.var || GET_CODE (size_rtx) != CONST_INT)
 		abort ();
 

@@ -2349,7 +2349,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 		}
 	      else if (TREE_CODE (TREE_TYPE (decl)) == REAL_TYPE)
 		{
-		  /* don't know how to do this yet.  */
+		  /* Don't know how to do this yet.  */
 		}
 	      break;
 	    }

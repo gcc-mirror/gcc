@@ -468,7 +468,7 @@ estimate_probability (struct loops *loops_info)
 		   / exits);
 	}
       
-      /* Free basic blocks from get_loop_body. */
+      /* Free basic blocks from get_loop_body.  */
       free (bbs);
     }
 

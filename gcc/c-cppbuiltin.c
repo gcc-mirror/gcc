@@ -308,7 +308,7 @@ c_cpp_builtins (cpp_reader *pfile)
   if (flag_exceptions)
     cpp_define (pfile, "__EXCEPTIONS");
 
-  /* represents the C++ ABI version, always defined so it can be used while
+  /* Represents the C++ ABI version, always defined so it can be used while
      preprocessing C and assembler.  */
   if (flag_abi_version == 0)
     /* Use a very large value so that:
@@ -324,7 +324,7 @@ c_cpp_builtins (cpp_reader *pfile)
        "102".  */
     builtin_define_with_int_value ("__GXX_ABI_VERSION", 102);
   else
-    /* Newer versions have values 1002, 1003, ... */
+    /* Newer versions have values 1002, 1003, ....  */
     builtin_define_with_int_value ("__GXX_ABI_VERSION", 
 				   1000 + flag_abi_version);
 
