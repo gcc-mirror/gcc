@@ -1,3 +1,7 @@
+Wed Nov 10 09:42:39 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* hashtab.c: Include stdio.h.
+
 Mon Nov  8 09:23:41 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* hashtab.c (traverse_hash_table): Protect prototype with PARAMS.
