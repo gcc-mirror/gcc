@@ -1,3 +1,16 @@
+1998-09-24  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (language_lvalue_valid): Remove.
+	* decl.c (grokdeclarator): Don't disallow references to functions.
+	* tree.c (lvalue_p_1): New function, combining duplicated
+	code from ...
+	(lvalue_p): Use it.
+	(real_lvalue_p): Likewise.
+	* typeck.c (language_lvalue_valid): Remove.
+	(build_modify_expr): Treat FUNCTION_TYPEs as readonly, even though
+	they don't have TREE_READONLY set.
+	* typeck2.c (readonly_error): Add case for FUNCTION_DECLs.
+	
 1998-09-24  Benjamin Kosnik  <bkoz@loony.cygnus.com>
 
 	* spew.c (yylex): Give diagnostic.

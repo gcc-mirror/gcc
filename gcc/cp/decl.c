@@ -9744,18 +9744,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    }
 	  else if (TREE_CODE (declarator) == ADDR_EXPR)
 	    {
-	      if (TREE_CODE (type) == FUNCTION_TYPE)
-		{
-		  error ("cannot declare references to functions; use pointer to function instead");
-		  type = build_pointer_type (type);
-		}
+	      if (TREE_CODE (type) == VOID_TYPE)
+		error ("invalid type: `void &'");
 	      else
-		{
-		  if (TREE_CODE (type) == VOID_TYPE)
-		    error ("invalid type: `void &'");
-		  else
-		    type = build_reference_type (type);
-		}
+		type = build_reference_type (type);
 	    }
 	  else if (TREE_CODE (type) == METHOD_TYPE)
 	    {

@@ -40,20 +40,19 @@ static tree list_hash_lookup PROTO((int, int, int, int, tree, tree,
 				    tree));
 static void propagate_binfo_offsets PROTO((tree, tree));
 static int avoid_overlap PROTO((tree, tree));
+static int lvalue_p_1 PROTO((tree, int));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
-/* Return nonzero if REF is an lvalue valid for this language.
-   Lvalues can be assigned, unless they have TREE_READONLY.
-   Lvalues can have their address taken, unless they have DECL_REGISTER.  */
+/* Returns non-zero if REF is an lvalue.  If
+   TREAT_CLASS_RVALUES_AS_LVALUES is non-zero, rvalues of class type
+   are considered lvalues.  */
 
-int
-real_lvalue_p (ref)
+static int
+lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
      tree ref;
+     int treat_class_rvalues_as_lvalues;
 {
-  if (! language_lvalue_valid (ref))
-    return 0;
-  
   if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
     return 1;
 
@@ -71,7 +70,10 @@ real_lvalue_p (ref)
     case UNSAVE_EXPR:
     case TRY_CATCH_EXPR:
     case WITH_CLEANUP_EXPR:
-      return real_lvalue_p (TREE_OPERAND (ref, 0));
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      return lvalue_p_1 (TREE_OPERAND (ref, 0),
+			 treat_class_rvalues_as_lvalues);
 
     case STRING_CST:
       return 1;
@@ -85,7 +87,6 @@ real_lvalue_p (ref)
     case ARRAY_REF:
     case PARM_DECL:
     case RESULT_DECL:
-    case ERROR_MARK:
       if (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
 	  && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
 	return 1;
@@ -97,24 +98,43 @@ real_lvalue_p (ref)
     case OFFSET_REF:
       if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
 	return 1;
-      return real_lvalue_p (TREE_OPERAND (ref, 0))
-	&& real_lvalue_p (TREE_OPERAND (ref, 1));
+      return (lvalue_p_1 (TREE_OPERAND (ref, 0),
+			  treat_class_rvalues_as_lvalues)
+	      && lvalue_p_1 (TREE_OPERAND (ref, 1),
+			     treat_class_rvalues_as_lvalues));
       break;
 
     case COND_EXPR:
-      return (real_lvalue_p (TREE_OPERAND (ref, 1))
-	      && real_lvalue_p (TREE_OPERAND (ref, 2)));
+      return (lvalue_p_1 (TREE_OPERAND (ref, 1),
+			  treat_class_rvalues_as_lvalues)
+	      && lvalue_p_1 (TREE_OPERAND (ref, 2),
+			     treat_class_rvalues_as_lvalues));
 
     case MODIFY_EXPR:
       return 1;
 
     case COMPOUND_EXPR:
-      return real_lvalue_p (TREE_OPERAND (ref, 1));
+      return lvalue_p_1 (TREE_OPERAND (ref, 1),
+			    treat_class_rvalues_as_lvalues);
 
     case MAX_EXPR:
     case MIN_EXPR:
-      return (real_lvalue_p (TREE_OPERAND (ref, 0))
-	      && real_lvalue_p (TREE_OPERAND (ref, 1)));
+      return (lvalue_p_1 (TREE_OPERAND (ref, 0),
+			  treat_class_rvalues_as_lvalues)
+	      && lvalue_p_1 (TREE_OPERAND (ref, 1),
+			     treat_class_rvalues_as_lvalues));
+
+    case TARGET_EXPR:
+      return treat_class_rvalues_as_lvalues;
+
+    case CALL_EXPR:
+      return (treat_class_rvalues_as_lvalues
+	      && IS_AGGR_TYPE (TREE_TYPE (ref)));
+
+    case FUNCTION_DECL:
+      /* All functions (except non-static-member functions) are
+	 lvalues.  */
+      return !DECL_NONSTATIC_MEMBER_FUNCTION_P (ref);
 
     default:
       break;
@@ -123,92 +143,26 @@ real_lvalue_p (ref)
   return 0;
 }
 
+/* Return nonzero if REF is an lvalue valid for this language.
+   Lvalues can be assigned, unless they have TREE_READONLY, or unless
+   they are FUNCTION_DECLs.  Lvalues can have their address taken,
+   unless they have DECL_REGISTER.  */
+
+int
+real_lvalue_p (ref)
+     tree ref;
+{
+  return lvalue_p_1 (ref, /*treat_class_rvalues_as_lvalues=*/0);
+}
+
 /* This differs from real_lvalue_p in that class rvalues are considered
    lvalues.  */
+
 int
 lvalue_p (ref)
      tree ref;
 {
-  if (! language_lvalue_valid (ref))
-    return 0;
-  
-  if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
-    return 1;
-
-  if (ref == current_class_ptr && flag_this_is_variable <= 0)
-    return 0;
-
-  switch (TREE_CODE (ref))
-    {
-      /* preincrements and predecrements are valid lvals, provided
-	 what they refer to are valid lvals.  */
-    case PREINCREMENT_EXPR:
-    case PREDECREMENT_EXPR:
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
-    case COMPONENT_REF:
-    case SAVE_EXPR:
-    case UNSAVE_EXPR:
-    case TRY_CATCH_EXPR:
-    case WITH_CLEANUP_EXPR:
-      return lvalue_p (TREE_OPERAND (ref, 0));
-
-    case STRING_CST:
-      return 1;
-
-    case VAR_DECL:
-      if (TREE_READONLY (ref) && ! TREE_STATIC (ref)
-	  && DECL_LANG_SPECIFIC (ref)
-	  && DECL_IN_AGGR_P (ref))
-	return 0;
-    case INDIRECT_REF:
-    case ARRAY_REF:
-    case PARM_DECL:
-    case RESULT_DECL:
-    case ERROR_MARK:
-      if (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
-	  && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
-	return 1;
-      break;
-
-    case TARGET_EXPR:
-      return 1;
-
-    case CALL_EXPR:
-      if (IS_AGGR_TYPE (TREE_TYPE (ref)))
-	return 1;
-      break;
-
-      /* A currently unresolved scope ref.  */
-    case SCOPE_REF:
-      my_friendly_abort (103);
-    case OFFSET_REF:
-      if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
-	return 1;
-      return lvalue_p (TREE_OPERAND (ref, 0))
-	&& lvalue_p (TREE_OPERAND (ref, 1));
-      break;
-
-    case COND_EXPR:
-      return (lvalue_p (TREE_OPERAND (ref, 1))
-	      && lvalue_p (TREE_OPERAND (ref, 2)));
-
-    case MODIFY_EXPR:
-      return 1;
-
-    case COMPOUND_EXPR:
-      return lvalue_p (TREE_OPERAND (ref, 1));
-
-    case MAX_EXPR:
-    case MIN_EXPR:
-      return (lvalue_p (TREE_OPERAND (ref, 0))
-	      && lvalue_p (TREE_OPERAND (ref, 1)));
-
-    default:
-      break;
-    }
-
-  return 0;
+  return lvalue_p_1 (ref, /*treat_class_rvalues_as_lvalues=*/1);
 }
 
 /* Return nonzero if REF is an lvalue valid for this language;
