@@ -309,6 +309,7 @@ layout_record (rec)
 
   for (field = TYPE_FIELDS (rec); field; field = TREE_CHAIN (field))
     {
+      register int known_align = var_size ? var_align : const_size;
       register int desired_align;
 
       /* If FIELD is static, then treat it like a separate variable,
@@ -328,14 +329,11 @@ layout_record (rec)
 	continue;
 
       /* Lay out the field so we know what alignment it needs.
-	 For KNOWN_ALIGN, pass the number of bits from start of record
-	 or some divisor of it.  */
-
-      /* For a packed field, use the alignment as specified,
+	 For a packed field, use the alignment as specified,
 	 disregarding what the type would want.  */
       if (DECL_PACKED (field))
 	desired_align = DECL_ALIGN (field);
-      layout_decl (field, var_size ? var_align : const_size);
+      layout_decl (field, known_align);
       if (! DECL_PACKED (field))
 	desired_align = DECL_ALIGN (field);
       /* Some targets (i.e. VMS) limit struct field alignment
@@ -463,7 +461,16 @@ layout_record (rec)
       else if (var_size)
 	DECL_FIELD_BITPOS (field) = var_size;
       else
-	DECL_FIELD_BITPOS (field) = size_int (const_size);
+	{
+	  DECL_FIELD_BITPOS (field) = size_int (const_size);
+
+	  /* If this field ended up more aligned than we thought it
+	     would be (we approximate this by seeing if its position
+	     changed), lay out the field again; perhaps we can use an
+	     integral mode for it now.  */
+	  if (known_align != const_size)
+	    layout_decl (field, const_size);
+	}
 
       /* Now add size of this field to the size of the record.  */
 
