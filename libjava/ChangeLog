@@ -1,3 +1,16 @@
+2003-08-02  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/URL.java
+	(URL): Added paragraph about the
+	gnu.java.net.nocache_protocol_handlers property.
+	(ph_cache): Renamed from handlers to match classpath's implementation.
+	Reordered it with factory and serialVersionUID member variables.
+	(cache_handlers): New member variable.
+	(static): New static initializer to initialize cache_handlers from
+	gnu.java.net.nocache_protocol_handlers property.
+	(URL): Use ph_cache instead of handlers, reformatted some code to
+	match classpath's implementation.
+
 2003-08-01  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/11241:
