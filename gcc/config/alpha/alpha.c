@@ -2020,7 +2020,7 @@ alpha_output_filename (stream, name)
 	fprintf (stream, "\t#@stabs\n");
     }
 
-  else if (!TARGET_GAS && write_symbols == DBX_DEBUG)
+  else if (write_symbols == DBX_DEBUG)
     {
       ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
       fprintf (stream, "%s ", ASM_STABS_OP);
@@ -2052,7 +2052,7 @@ alpha_output_lineno (stream, line)
      FILE *stream;
      int line;
 {
-  if (TARGET_GAS && write_symbols == DBX_DEBUG)
+  if (write_symbols == DBX_DEBUG)
     {
       /* mips-tfile doesn't understand .stabd directives.  */
       ++sym_lineno;
