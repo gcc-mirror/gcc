@@ -1,3 +1,8 @@
+2001-01-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/execute/991228-1.c: Take word endianness into
+	account.
+
 2001-01-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/execute/builtin-complex-1.c: New test.
