@@ -3349,7 +3349,8 @@ final_giv_value (loop, v)
 	  /* Put the final biv value in tem.  */
 	  tem = gen_reg_rtx (v->mode);
 	  record_base_value (REGNO (tem), bl->biv->add_val, 0);
-	  emit_iv_add_mult (increment, GEN_INT (n_iterations),
+	  emit_iv_add_mult (extend_value_for_giv (v, increment),
+			    GEN_INT (n_iterations),
 			    extend_value_for_giv (v, bl->initial_value),
 			    tem, insert_before);
 
