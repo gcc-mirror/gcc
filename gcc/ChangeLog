@@ -1,5 +1,10 @@
 2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_check_z_replacement): Fix handling
+	68HC12 pre/post inc/dec side effects.
+
+2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.h (MASK_M6812): Define.
 
 2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>

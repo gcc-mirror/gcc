@@ -4338,7 +4338,13 @@ m68hc11_check_z_replacement (insn, info)
 		      info->z_died = 1;
 		      info->need_save_z = 0;
 		    }
-		  else
+		  else if (TARGET_M6812 && side_effects_p (src))
+                    {
+                      info->last = 0;
+                      info->must_restore_reg = 0;
+                      return 0;
+                    }
+                  else
 		    {
 		      info->save_before_last = 1;
 		    }
@@ -4415,7 +4421,13 @@ m68hc11_check_z_replacement (insn, info)
 		      info->z_died = 1;
 		      info->need_save_z = 0;
 		    }
-		  else
+		  else if (TARGET_M6812 && side_effects_p (src))
+                    {
+                      info->last = 0;
+                      info->must_restore_reg = 0;
+                      return 0;
+                    }
+                  else
 		    {
 		      info->save_before_last = 1;
 		    }
