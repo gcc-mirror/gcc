@@ -318,6 +318,14 @@ print_path (path)
   register int len = strlen (path);
   register int i;
 
+  if (len == 0)
+    {
+      /* Don't emit "pat", since we may try to take the address of it,
+	 which isn't what is intended.  */
+      printf("PATTERN (insn)");
+      return;
+    }
+
   /* We first write out the operations (XEXP or XVECEXP) in reverse
      order, then write "insn", then the indices in forward order.  */
 
