@@ -501,7 +501,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
    NAMESPACE_DECL corresponding to the innermost non-block scope.  */  
 
 tree
-current_scope ()
+current_scope (void)
 {
   /* There are a number of cases we need to be aware of here:
 			 current_class_type	current_function_decl
