@@ -3261,7 +3261,7 @@ s390_va_arg (valist, type)
 
   emit_cmp_and_jump_insns (expand_expr (reg, NULL_RTX, Pmode, EXPAND_NORMAL),
 			   GEN_INT (max_reg),
-			   GT, const1_rtx, Pmode, 0, 1, lab_false);
+			   GT, const1_rtx, Pmode, 0, lab_false);
 
   if (sav_ofs)
     t = build (PLUS_EXPR, ptr_type_node, sav, build_int_2 (sav_ofs, 0));

@@ -1,3 +1,11 @@
+2001-11-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* s390.c (s390_va_arg): Eliminate ALIGN parameter in call to
+	emit_cmp_and_jump_insns.
+
+	* stormy16.c (xstormy16_expand_builtin_va_arg,
+	xstormy16_expand_casesi): Likewise.
+
 Wed Nov 21 17:37:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (keep_stack_depressed): Major rework.
