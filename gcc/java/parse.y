@@ -8028,7 +8028,9 @@ java_complete_tree (node)
     {
       tree value = DECL_INITIAL (node);
       DECL_INITIAL (node) = NULL_TREE;
+      push_obstacks (&permanent_obstack, &permanent_obstack);
       value = fold_constant_for_init (value, node);
+      pop_obstacks ();
       DECL_INITIAL (node) = value;
       if (value != NULL_TREE)
 	return value;
@@ -8230,8 +8232,12 @@ java_complete_lhs (node)
 	  && JDECL_P (TREE_OPERAND (cn, 1))
 	  && FIELD_FINAL (TREE_OPERAND (cn, 1))
 	  && DECL_INITIAL (TREE_OPERAND (cn, 1)))
-	cn = fold_constant_for_init (DECL_INITIAL (TREE_OPERAND (cn, 1)),
-				     TREE_OPERAND (cn, 1));
+	{
+	  push_obstacks (&permanent_obstack, &permanent_obstack);
+	  cn = fold_constant_for_init (DECL_INITIAL (TREE_OPERAND (cn, 1)),
+				       TREE_OPERAND (cn, 1));
+	  pop_obstacks ();
+	}
 
       if (!TREE_CONSTANT (cn) && !flag_emit_xref)
 	{
@@ -8484,7 +8490,11 @@ java_complete_lhs (node)
 	  && TREE_CODE (nn) == VAR_DECL && TREE_STATIC (nn)
 	  && DECL_INITIAL (nn) != NULL_TREE)
 	{
-	  tree value = fold_constant_for_init (nn, nn);
+	  tree value;
+	  
+	  push_obstacks (&permanent_obstack, &permanent_obstack);
+	  value = fold_constant_for_init (nn, nn);
+	  pop_obstacks ();
 	  if (value != NULL_TREE)
 	    {
 	      tree type = TREE_TYPE (value);
@@ -10871,6 +10881,7 @@ array_constructor_check_entry (type, entry)
   new_value = NULL_TREE;
   wfl_value = TREE_VALUE (entry);
 
+  push_obstacks (&permanent_obstack, &permanent_obstack);
   value = java_complete_tree (TREE_VALUE (entry));
   /* patch_string return error_mark_node if arg is error_mark_node */
   if ((patched = patch_string (value)))
@@ -10886,7 +10897,8 @@ array_constructor_check_entry (type, entry)
   new_value = try_builtin_assignconv (wfl_operator, type, value);
   if (!new_value && (new_value = try_reference_assignconv (type, value)))
     type_value = promote_type (type);
-  
+
+  pop_obstacks ();
   /* Check and report errors */
   if (!new_value)
     {
