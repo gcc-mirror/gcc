@@ -21,14 +21,14 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_INFOMAP_H_)
-#define _INFOMAP_H_
+#ifndef INFOMAP_H
+#define INFOMAP_H
 
-#include "general.h"
+#include "info.h"
 
 #define ESC '\033'
 #define DEL '\177'
-#define TAB '\011'	
+#define TAB '\011'      
 #define RET '\r'
 #define LFD '\n'
 #define SPC ' '
@@ -79,4 +79,4 @@ extern void keymap_discard_keymap ();
 /* Initialize the info keymaps. */
 extern void initialize_info_keymaps ();
 
-#endif /* !_INFOMAP_H_ */
+#endif /* not INFOMAP_H */

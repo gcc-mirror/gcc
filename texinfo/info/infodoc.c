@@ -1,9 +1,7 @@
-/* infodoc.c -- Functions which build documentation nodes. */
+/* infodoc.c -- Functions which build documentation nodes.
+   $Id: infodoc.c,v 1.4 1997/07/25 21:08:40 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
-   stored in Info format.
-
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,9 +31,9 @@
 /* #define HELP_NODE_GETS_REGENERATED 1 */
 
 /* **************************************************************** */
-/*								    */
-/*			  Info Help Windows			    */
-/*								    */
+/*                                                                  */
+/*                        Info Help Windows                         */
+/*                                                                  */
 /* **************************************************************** */
 
 /* The name of the node used in the help window. */
@@ -49,10 +47,12 @@ static char *internal_info_help_node_contents = (char *)NULL;
 
 /* The static text which appears in the internal info help node. */
 static char *info_internal_help_text[] = {
-  "Basic Commands in Info Windows",
+  N_ ("Basic Commands in Info Windows"),
   "******************************",
   "",
-  "  h   Invoke the Info tutorial.",
+  "  h          Invoke the Info tutorial.",
+  "  CTRL-x 0   Quit this help.",
+  "  q          Quit Info altogether.",
   "",
   "Selecting other nodes:",
   "----------------------",
@@ -72,9 +72,8 @@ static char *info_internal_help_text[] = {
   "  b   Go to the beginning of this node.",
   "  e   Go to the end of this node.",
   "",
-  "\"Advanced\" commands:",
+  "Other commands:",
   "--------------------",
-  "  q   Quit Info.",
   "  1   Pick first item in node's menu.",
   "  2-9 Pick second ... ninth item in node's menu.",
   "  0   Pick last item in node's menu.",
@@ -82,7 +81,7 @@ static char *info_internal_help_text[] = {
   "      You may include a filename as well, as in (FILENAME)NODENAME.",
   "  s   Search through this Info file for a specified string,",
   "      and select the node in which the next occurrence is found.",
-  (char *)NULL
+  NULL
 };
 
 static char *where_is (), *where_is_internal ();
@@ -97,70 +96,70 @@ dump_map_to_message_buffer (prefix, map)
   for (i = 0; i < 256; i++)
     {
       if (map[i].type == ISKMAP)
-	{
-	  char *new_prefix, *keyname;
+        {
+          char *new_prefix, *keyname;
 
-	  keyname = pretty_keyname (i);
-	  new_prefix = (char *)
-	    xmalloc (3 + strlen (prefix) + strlen (keyname));
-	  sprintf (new_prefix, "%s%s%s ", prefix, *prefix ? " " : "", keyname);
+          keyname = pretty_keyname (i);
+          new_prefix = (char *)
+            xmalloc (3 + strlen (prefix) + strlen (keyname));
+          sprintf (new_prefix, "%s%s%s ", prefix, *prefix ? " " : "", keyname);
 
-	  dump_map_to_message_buffer (new_prefix, (Keymap)map[i].function);
-	  free (new_prefix);
-	}
+          dump_map_to_message_buffer (new_prefix, (Keymap)map[i].function);
+          free (new_prefix);
+        }
       else if (map[i].function)
-	{
-	  register int last;
-	  char *doc, *name;
+        {
+          register int last;
+          char *doc, *name;
 
-	  doc = function_documentation (map[i].function);
-	  name = function_name (map[i].function);
+          doc = function_documentation (map[i].function);
+          name = function_name (map[i].function);
 
-	  if (!*doc)
-	    continue;
+          if (!*doc)
+            continue;
 
-	  /* Find out if there is a series of identical functions, as in
-	     ea_insert (). */
-	  for (last = i + 1; last < 256; last++)
-	    if ((map[last].type != ISFUNC) ||
-		(map[last].function != map[i].function))
-	      break;
+          /* Find out if there is a series of identical functions, as in
+             ea_insert (). */
+          for (last = i + 1; last < 256; last++)
+            if ((map[last].type != ISFUNC) ||
+                (map[last].function != map[i].function))
+              break;
 
-	  if (last - 1 != i)
-	    {
-	      printf_to_message_buffer
-		("%s%s .. ", prefix, pretty_keyname (i));
-	      printf_to_message_buffer
-		("%s%s\t", prefix, pretty_keyname (last - 1));
-	      i = last - 1;
-	    }
-	  else
-	    printf_to_message_buffer ("%s%s\t", prefix, pretty_keyname (i));
+          if (last - 1 != i)
+            {
+              printf_to_message_buffer
+                ("%s%s .. ", prefix, pretty_keyname (i));
+              printf_to_message_buffer
+                ("%s%s\t", prefix, pretty_keyname (last - 1));
+              i = last - 1;
+            }
+          else
+            printf_to_message_buffer ("%s%s\t", prefix, pretty_keyname (i));
 
 #if defined (NAMED_FUNCTIONS)
-	  /* Print the name of the function, and some padding before the
-	     documentation string is printed. */
-	  {
-	    int length_so_far;
-	    int desired_doc_start = 40;	/* Must be multiple of 8. */
+          /* Print the name of the function, and some padding before the
+             documentation string is printed. */
+          {
+            int length_so_far;
+            int desired_doc_start = 40; /* Must be multiple of 8. */
 
-	    printf_to_message_buffer ("(%s)", name);
-	    length_so_far = message_buffer_length_this_line ();
+            printf_to_message_buffer ("(%s)", name);
+            length_so_far = message_buffer_length_this_line ();
 
-	    if ((desired_doc_start + strlen (doc)) >= the_screen->width)
-	      printf_to_message_buffer ("\n     ");
-	    else
-	      {
-		while (length_so_far < desired_doc_start)
-		  {
-		    printf_to_message_buffer ("\t");
-		    length_so_far += character_width ('\t', length_so_far);
-		  }
-	      }
-	  }
+            if ((desired_doc_start + strlen (doc)) >= the_screen->width)
+              printf_to_message_buffer ("\n     ");
+            else
+              {
+                while (length_so_far < desired_doc_start)
+                  {
+                    printf_to_message_buffer ("\t");
+                    length_so_far += character_width ('\t', length_so_far);
+                  }
+              }
+          }
 #endif /* NAMED_FUNCTIONS */
-	  printf_to_message_buffer ("%s\n", doc);
-	}
+          printf_to_message_buffer ("%s\n", doc);
+        }
     }
 }
 
@@ -184,7 +183,7 @@ create_internal_info_help_node ()
       initialize_message_buffer ();
 
       for (i = 0; info_internal_help_text[i]; i++)
-	printf_to_message_buffer ("%s\n", info_internal_help_text[i]);
+        printf_to_message_buffer ("%s\n", info_internal_help_text[i]);
 
       printf_to_message_buffer ("---------------------\n\n");
       printf_to_message_buffer ("The current search path is:\n");
@@ -199,34 +198,34 @@ create_internal_info_help_node ()
 #if defined (NAMED_FUNCTIONS)
       /* Get a list of the M-x commands which have no keystroke equivs. */
       for (i = 0; function_doc_array[i].func; i++)
-	{
-	  VFunction *func = function_doc_array[i].func;
+        {
+          VFunction *func = function_doc_array[i].func;
 
-	  if ((!where_is_internal (info_keymap, func)) &&
-	      (!where_is_internal (echo_area_keymap, func)))
-	    {
-	      if (!printed_one_mx)
-		{
-		  printf_to_message_buffer ("---------------------\n\n");
-		  printf_to_message_buffer
-		    ("The following commands can only be invoked via M-x:\n\n");
-		  printed_one_mx = 1;
-		}
+          if ((!where_is_internal (info_keymap, func)) &&
+              (!where_is_internal (echo_area_keymap, func)))
+            {
+              if (!printed_one_mx)
+                {
+                  printf_to_message_buffer ("---------------------\n\n");
+                  printf_to_message_buffer
+                    (_("The following commands can only be invoked via M-x:\n\n"));
+                  printed_one_mx = 1;
+                }
 
-	      printf_to_message_buffer
-		("M-x %s\n     %s\n",
-		 function_doc_array[i].func_name,
-		 replace_in_documentation (function_doc_array[i].doc));
-	    }
-	}
+              printf_to_message_buffer
+                ("M-x %s\n     %s\n",
+                 function_doc_array[i].func_name,
+                 replace_in_documentation (function_doc_array[i].doc));
+            }
+        }
 
       if (printed_one_mx)
-	printf_to_message_buffer ("\n");
+        printf_to_message_buffer ("\n");
 #endif /* NAMED_FUNCTIONS */
 
       printf_to_message_buffer
-	("%s", replace_in_documentation
-	 ("--- Use `\\[history-node]' or `\\[kill-node]' to exit ---\n"));
+        ("%s", replace_in_documentation
+         (_("--- Use `\\[history-node]' or `\\[kill-node]' to exit ---\n")));
       node = message_buffer_to_node ();
       internal_info_help_node_contents = node->contents;
     }
@@ -273,16 +272,16 @@ info_find_or_create_help_window ()
       int max = 0;
 
       for (window = windows; window; window = window->next)
-	{
-	  if (window->height > max)
-	    {
-	      max = window->height;
-	      eligible = window;
-	    }
-	}
+        {
+          if (window->height > max)
+            {
+              max = window->height;
+              eligible = window;
+            }
+        }
 
       if (!eligible)
-	return ((WINDOW *)NULL);
+        return ((WINDOW *)NULL);
     }
 #if !defined (HELP_NODE_GETS_REGENERATED)
   else
@@ -297,28 +296,28 @@ info_find_or_create_help_window ()
   if (!help_window)
     {
       /* Split the largest window into 2 windows, and show the help text
-	 in that window. */
+         in that window. */
       if (eligible->height > 30)
-	{
-	  active_window = eligible;
-	  help_window = window_make_window (internal_info_help_node);
-	}
+        {
+          active_window = eligible;
+          help_window = window_make_window (internal_info_help_node);
+        }
       else
-	{
-	  set_remembered_pagetop_and_point (active_window);
-	  window_set_node_of_window (active_window, internal_info_help_node);
-	  help_window = active_window;
-	}
+        {
+          set_remembered_pagetop_and_point (active_window);
+          window_set_node_of_window (active_window, internal_info_help_node);
+          help_window = active_window;
+        }
     }
   else
     {
       /* Case where help node always gets regenerated, and we have an
-	 existing window in which to place the node. */
+         existing window in which to place the node. */
       if (active_window != help_window)
-	{
-	  set_remembered_pagetop_and_point (active_window);
-	  active_window = help_window;
-	}
+        {
+          set_remembered_pagetop_and_point (active_window);
+          active_window = help_window;
+        }
       window_set_node_of_window (active_window, internal_info_help_node);
     }
   remember_window_and_node (help_window, help_window->node);
@@ -326,7 +325,7 @@ info_find_or_create_help_window ()
 }
 
 /* Create or move to the help window. */
-DECLARE_INFO_COMMAND (info_get_help_window, "Display help message")
+DECLARE_INFO_COMMAND (info_get_help_window, _("Display help message"))
 {
   WINDOW *help_window;
 
@@ -344,7 +343,7 @@ DECLARE_INFO_COMMAND (info_get_help_window, "Display help message")
 
 /* Show the Info help node.  This means that the "info" file is installed
    where it can easily be found on your system. */
-DECLARE_INFO_COMMAND (info_get_info_help_node, "Visit Info node `(info)Help'")
+DECLARE_INFO_COMMAND (info_get_info_help_node, _("Visit Info node `(info)Help'"))
 {
   NODE *node;
   char *nodename;
@@ -356,15 +355,15 @@ DECLARE_INFO_COMMAND (info_get_info_help_node, "Visit Info node `(info)Help'")
 
     for (win = windows; win; win = win->next)
       {
-	if (win->node && win->node->filename &&
-	    (strcasecmp
-	     (filename_non_directory (win->node->filename), "info") == 0) &&
-	    ((strcmp (win->node->nodename, "Help") == 0) ||
-	     (strcmp (win->node->nodename, "Help-Small-Screen") == 0)))
-	  {
-	    active_window = win;
-	    return;
-	  }
+        if (win->node && win->node->filename &&
+            (strcasecmp
+             (filename_non_directory (win->node->filename), "info") == 0) &&
+            ((strcmp (win->node->nodename, "Help") == 0) ||
+             (strcmp (win->node->nodename, "Help-Small-Screen") == 0)))
+          {
+            active_window = win;
+            return;
+          }
       }
   }
 
@@ -380,32 +379,32 @@ DECLARE_INFO_COMMAND (info_get_info_help_node, "Visit Info node `(info)Help'")
   if (!node)
     {
       if (info_recent_file_error)
-	info_error (info_recent_file_error);
+        info_error (info_recent_file_error);
       else
-	info_error (CANT_FILE_NODE, "Info", nodename);
+        info_error (CANT_FILE_NODE, "Info", nodename);
     }
   else
     {
       /* If the current window is very large (greater than 45 lines),
-	 then split it and show the help node in another window.
-	 Otherwise, use the current window. */
+         then split it and show the help node in another window.
+         Otherwise, use the current window. */
 
       if (active_window->height > 45)
-	active_window = window_make_window (node);
+        active_window = window_make_window (node);
       else
-	{
-	  set_remembered_pagetop_and_point (active_window);
-	  window_set_node_of_window (active_window, node);
-	}
+        {
+          set_remembered_pagetop_and_point (active_window);
+          window_set_node_of_window (active_window, node);
+        }
 
       remember_window_and_node (active_window, node);
     }
 }
 
 /* **************************************************************** */
-/*								    */
-/*		     Groveling Info Keymaps and Docs		    */
-/*								    */
+/*                                                                  */
+/*                   Groveling Info Keymaps and Docs                */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Return the documentation associated with the Info command FUNCTION. */
@@ -468,7 +467,7 @@ key_documentation (key, map)
     return ((char *)NULL);
 }
 
-DECLARE_INFO_COMMAND (describe_key, "Print documentation for KEY")
+DECLARE_INFO_COMMAND (describe_key, _("Print documentation for KEY"))
 {
   char keyname[50];
   int keyname_index = 0;
@@ -481,24 +480,24 @@ DECLARE_INFO_COMMAND (describe_key, "Print documentation for KEY")
 
   while (1)
     {
-      message_in_echo_area ("Describe key: %s", keyname);
+      message_in_echo_area (_("Describe key: %s"), keyname);
       keystroke = info_get_input_char ();
       unmessage_in_echo_area ();
 
       if (Meta_p (keystroke) && (!ISO_Latin_p || key < 160))
-	{
-	  if (map[ESC].type != ISKMAP)
-	    {
-	      window_message_in_echo_area
-		("ESC %s is undefined.", pretty_keyname (UnMeta (keystroke)));
-	      return;
-	    }
+        {
+          if (map[ESC].type != ISKMAP)
+            {
+              window_message_in_echo_area
+                (_("ESC %s is undefined."), pretty_keyname (UnMeta (keystroke)));
+              return;
+            }
 
-	  strcpy (keyname + keyname_index, "ESC ");
-	  keyname_index = strlen (keyname);
-	  keystroke = UnMeta (keystroke);
-	  map = (Keymap)map[ESC].function;
-	}
+          strcpy (keyname + keyname_index, "ESC ");
+          keyname_index = strlen (keyname);
+          keystroke = UnMeta (keystroke);
+          map = (Keymap)map[ESC].function;
+        }
 
       /* Add the printed representation of KEYSTROKE to our keyname. */
       rep = pretty_keyname (keystroke);
@@ -506,40 +505,40 @@ DECLARE_INFO_COMMAND (describe_key, "Print documentation for KEY")
       keyname_index = strlen (keyname);
 
       if (map[keystroke].function == (VFunction *)NULL)
-	{
-	  message_in_echo_area ("%s is undefined.", keyname);
-	  return;
-	}
+        {
+          message_in_echo_area (_("%s is undefined."), keyname);
+          return;
+        }
       else if (map[keystroke].type == ISKMAP)
-	{
-	  map = (Keymap)map[keystroke].function;
-	  strcat (keyname, " ");
-	  keyname_index = strlen (keyname);
-	  continue;
-	}
+        {
+          map = (Keymap)map[keystroke].function;
+          strcat (keyname, " ");
+          keyname_index = strlen (keyname);
+          continue;
+        }
       else
-	{
-	  char *message, *fundoc, *funname = "";
+        {
+          char *message, *fundoc, *funname = "";
 
 #if defined (NAMED_FUNCTIONS)
-	  funname = function_name (map[keystroke].function);
+          funname = function_name (map[keystroke].function);
 #endif /* NAMED_FUNCTIONS */
 
-	  fundoc = function_documentation (map[keystroke].function);
+          fundoc = function_documentation (map[keystroke].function);
 
-	  message = (char *)xmalloc
-	    (10 + strlen (keyname) + strlen (fundoc) + strlen (funname));
+          message = (char *)xmalloc
+            (10 + strlen (keyname) + strlen (fundoc) + strlen (funname));
 
 #if defined (NAMED_FUNCTIONS)
-	  sprintf (message, "%s (%s): %s.", keyname, funname, fundoc);
+          sprintf (message, "%s (%s): %s.", keyname, funname, fundoc);
 #else
-	  sprintf (message, "%s is defined to %s.", keyname, fundoc);
+          sprintf (message, _("%s is defined to %s."), keyname, fundoc);
 #endif /* !NAMED_FUNCTIONS */
 
-	  window_message_in_echo_area ("%s", message);
-	  free (message);
-	  break;
-	}
+          window_message_in_echo_area ("%s", message);
+          free (message);
+          break;
+        }
     }
 }
 
@@ -565,28 +564,28 @@ pretty_keyname (key)
   else if (Control_p (key))
     {
       switch (key)
-	{
-	case '\n': rep = "LFD"; break;
-	case '\t': rep = "TAB"; break;
-	case '\r': rep = "RET"; break;
-	case ESC:  rep = "ESC"; break;
+        {
+        case '\n': rep = "LFD"; break;
+        case '\t': rep = "TAB"; break;
+        case '\r': rep = "RET"; break;
+        case ESC:  rep = "ESC"; break;
 
-	default:
-	  sprintf (rep_buffer, "C-%c", UnControl (key));
-	  rep = rep_buffer;
-	}
+        default:
+          sprintf (rep_buffer, "C-%c", UnControl (key));
+          rep = rep_buffer;
+        }
     }
   else
     {
       switch (key)
-	{
-	case ' ': rep = "SPC"; break;
-	case DEL: rep = "DEL"; break;
-	default:
-	  rep_buffer[0] = key;
-	  rep_buffer[1] = '\0';
-	  rep = rep_buffer;
-	}
+        {
+        case ' ': rep = "SPC"; break;
+        case DEL: rep = "DEL"; break;
+        default:
+          rep_buffer[0] = key;
+          rep_buffer[1] = '\0';
+          rep = rep_buffer;
+        }
     }
   return (rep);
 }
@@ -609,39 +608,39 @@ replace_in_documentation (string)
     {
       /* Is this the start of a replaceable function name? */
       if (string[i] == '\\' && string[i + 1] == '[')
-	{
-	  char *fun_name, *rep;
-	  VFunction *function;
+        {
+          char *fun_name, *rep;
+          VFunction *function;
 
-	  /* Copy in the old text. */
-	  strncpy (result + next, string + start, i - start);
-	  next += (i - start);
-	  start = i + 2;
+          /* Copy in the old text. */
+          strncpy (result + next, string + start, i - start);
+          next += (i - start);
+          start = i + 2;
 
-	  /* Move to the end of the function name. */
-	  for (i = start; string[i] && (string[i] != ']'); i++);
+          /* Move to the end of the function name. */
+          for (i = start; string[i] && (string[i] != ']'); i++);
 
-	  fun_name = (char *)xmalloc (1 + i - start);
-	  strncpy (fun_name, string + start, i - start);
-	  fun_name[i - start] = '\0';
+          fun_name = (char *)xmalloc (1 + i - start);
+          strncpy (fun_name, string + start, i - start);
+          fun_name[i - start] = '\0';
 
-	  /* Find a key which invokes this function in the info_keymap. */
-	  function = named_function (fun_name);
+          /* Find a key which invokes this function in the info_keymap. */
+          function = named_function (fun_name);
 
-	  /* If the internal documentation string fails, there is a 
-	     serious problem with the associated command's documentation.
-	     We croak so that it can be fixed immediately. */
-	  if (!function)
-	    abort ();
+          /* If the internal documentation string fails, there is a 
+             serious problem with the associated command's documentation.
+             We croak so that it can be fixed immediately. */
+          if (!function)
+            abort ();
 
-	  rep = where_is (info_keymap, function);
-	  strcpy (result + next, rep);
-	  next = strlen (result);
+          rep = where_is (info_keymap, function);
+          strcpy (result + next, rep);
+          next = strlen (result);
 
-	  start = i;
-	  if (string[i])
-	    start++;
-	}
+          start = i;
+          if (string[i])
+            start++;
+        }
     }
   strcpy (result + next, string + start);
   return (result);
@@ -674,7 +673,7 @@ where_is (map, function)
       name = function_name (function);
 
       if (name)
-	sprintf (where_is_rep, "M-x %s", name);
+        sprintf (where_is_rep, "M-x %s", name);
 
       rep = where_is_rep;
     }
@@ -694,29 +693,29 @@ where_is_internal (map, function)
   for (i = 0; i < 256; i++)
     if ((map[i].type == ISFUNC) && map[i].function == function)
       {
-	sprintf (where_is_rep + where_is_rep_index, "%s", pretty_keyname (i));
-	return (where_is_rep);
+        sprintf (where_is_rep + where_is_rep_index, "%s", pretty_keyname (i));
+        return (where_is_rep);
       }
 
   /* Okay, search subsequent maps for this function. */
   for (i = 0; i < 256; i++)
     {
       if (map[i].type == ISKMAP)
-	{
-	  int saved_index = where_is_rep_index;
-	  char *rep;
+        {
+          int saved_index = where_is_rep_index;
+          char *rep;
 
-	  sprintf (where_is_rep + where_is_rep_index, "%s ",
-		   pretty_keyname (i));
+          sprintf (where_is_rep + where_is_rep_index, "%s ",
+                   pretty_keyname (i));
 
-	  where_is_rep_index = strlen (where_is_rep);
-	  rep = where_is_internal ((Keymap)map[i].function, function);
+          where_is_rep_index = strlen (where_is_rep);
+          rep = where_is_internal ((Keymap)map[i].function, function);
 
-	  if (rep)
-	    return (where_is_rep);
+          if (rep)
+            return (where_is_rep);
 
-	  where_is_rep_index = saved_index;
-	}
+          where_is_rep_index = saved_index;
+        }
     }
 
   return ((char *)NULL);
@@ -729,7 +728,7 @@ DECLARE_INFO_COMMAND (info_where_is,
 {
   char *command_name;
 
-  command_name = read_function_name ("Where is command: ", window);
+  command_name = read_function_name (_("Where is command: "), window);
 
   if (!command_name)
     {
@@ -744,27 +743,27 @@ DECLARE_INFO_COMMAND (info_where_is,
       function = named_function (command_name);
 
       if (function)
-	{
-	  char *location;
+        {
+          char *location;
 
-	  location = where_is (active_window->keymap, function);
+          location = where_is (active_window->keymap, function);
 
-	  if (!location)
-	    {
-	      info_error ("`%s' is not on any keys", command_name);
-	    }
-	  else
-	    {
-	      if (strncmp (location, "M-x ", 4) == 0)
-		window_message_in_echo_area
-		  ("%s can only be invoked via %s.", command_name, location);
-	      else
-		window_message_in_echo_area
-		  ("%s can be invoked via %s.", command_name, location);
-	    }
-	}
+          if (!location)
+            {
+              info_error (_("`%s' is not on any keys"), command_name);
+            }
+          else
+            {
+              if (strncmp (location, "M-x ", 4) == 0)
+                window_message_in_echo_area
+                  (_("%s can only be invoked via %s."), command_name, location);
+              else
+                window_message_in_echo_area
+                  (_("%s can be invoked via %s."), command_name, location);
+            }
+        }
       else
-	info_error ("There is no function named `%s'", command_name);
+        info_error (_("There is no function named `%s'"), command_name);
     }
 
   free (command_name);

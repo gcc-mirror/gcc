@@ -3,7 +3,7 @@
 /* This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,16 +21,10 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include "general.h"
+#include "info.h"
+
 #include "search.h"
 #include "nodes.h"
-
-#if !defined (NULL)
-#  define NULL 0x0
-#endif /* !NULL */
 
 /* The search functions take two arguments:
 
@@ -73,9 +67,9 @@ copy_binding (binding)
 
 
 /* **************************************************************** */
-/*								    */
-/*		   The Actual Searching Functions		    */
-/*								    */
+/*                                                                  */
+/*                 The Actual Searching Functions                   */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Search forwards or backwards for the text delimited by BINDING.
@@ -115,15 +109,15 @@ search_forward (string, binding)
 
   if (binding->flags & S_FoldCase)
     {
-      alternate = strdup (string);
+      alternate = xstrdup (string);
 
       for (i = 0; i < len; i++)
-	{
-	  if (islower (alternate[i]))
-	    alternate[i] = toupper (alternate[i]);
-	  else if (isupper (alternate[i]))
-	    alternate[i] = tolower (alternate[i]);
-	}
+        {
+          if (islower (alternate[i]))
+            alternate[i] = toupper (alternate[i]);
+          else if (isupper (alternate[i]))
+            alternate[i] = tolower (alternate[i]);
+        }
     }
 
   buff = binding->buffer + binding->start;
@@ -132,21 +126,21 @@ search_forward (string, binding)
   while (buff < (end - len))
     {
       for (i = 0; i < len; i++)
-	{
-	  c = buff[i];
+        {
+          c = buff[i];
 
-	  if ((c != string[i]) && (!alternate || c != alternate[i]))
-	    break;
-	}
+          if ((c != string[i]) && (!alternate || c != alternate[i]))
+            break;
+        }
 
       if (!string[i])
-	{
-	  if (alternate)
-	    free (alternate);
-	  if (binding->flags & S_SkipDest)
-	    buff += len;
-	  return ((long) (buff - binding->buffer));
-	}
+        {
+          if (alternate)
+            free (alternate);
+          if (binding->flags & S_SkipDest)
+            buff += len;
+          return ((long) (buff - binding->buffer));
+        }
 
       buff++;
     }
@@ -184,15 +178,15 @@ search_backward (input_string, binding)
 
   if (binding->flags & S_FoldCase)
     {
-      alternate = strdup (string);
+      alternate = xstrdup (string);
 
       for (i = 0; i < len; i++)
-	{
-	  if (islower (alternate[i]))
-	    alternate[i] = toupper (alternate[i]);
-	  else if (isupper (alternate[i]))
-	    alternate[i] = tolower (alternate[i]);
-	}
+        {
+          if (islower (alternate[i]))
+            alternate[i] = toupper (alternate[i]);
+          else if (isupper (alternate[i]))
+            alternate[i] = tolower (alternate[i]);
+        }
     }
 
   buff = binding->buffer + binding->start - 1;
@@ -201,23 +195,23 @@ search_backward (input_string, binding)
   while (buff > (end + len))
     {
       for (i = 0; i < len; i++)
-	{
-	  c = *(buff - i);
+        {
+          c = *(buff - i);
 
-	  if (c != string[i] && (alternate && c != alternate[i]))
-	    break;
-	}
+          if (c != string[i] && (alternate && c != alternate[i]))
+            break;
+        }
 
       if (!string[i])
-	{
-	  free (string);
-	  if (alternate)
-	    free (alternate);
+        {
+          free (string);
+          if (alternate)
+            free (alternate);
 
-	  if (binding->flags & S_SkipDest)
-	    buff -= len;
-	  return ((long) (1 + (buff - binding->buffer)));
-	}
+          if (binding->flags & S_SkipDest)
+            buff -= len;
+          return ((long) (1 + (buff - binding->buffer)));
+        }
 
       buff--;
     }
@@ -268,9 +262,9 @@ looking_at (string, binding)
 }
 
 /* **************************************************************** */
-/*								    */
-/*		      Small String Searches			    */
-/*								    */
+/*                                                                  */
+/*                    Small String Searches                         */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Function names that start with "skip" are passed a string, and return
@@ -346,37 +340,43 @@ skip_node_characters (string, newlines_okay)
   for (; string && (c = string[i]); i++)
     {
       if (paren)
-	{
-	  if (c == '(')
-	    paren++;
-	  else if (c == ')')
-	    paren--;
+        {
+          if (c == '(')
+            paren++;
+          else if (c == ')')
+            paren--;
 
-	  continue;
-	}
+          continue;
+        }
       
       /* If the character following the close paren is a space or period,
-	 then this node name has no more characters associated with it. */
+         then this node name has no more characters associated with it. */
       if (c == '\t' ||
-	  c == ','  ||
-	  c == INFO_TAGSEP ||
-	  ((!newlines_okay) && (c == '\n')) ||
-	  ((paren_seen && string[i - 1] == ')') &&
-	   (c == ' ' || c == '.')) ||
-	  (c == '.' &&
-	   ((!string[i + 1]) ||
-	    (whitespace_or_newline (string[i + 1])) ||
-	    (string[i + 1] == ')'))))
-	break;
+          c == ','  ||
+          c == INFO_TAGSEP ||
+          ((!newlines_okay) && (c == '\n')) ||
+          ((paren_seen && string[i - 1] == ')') &&
+           (c == ' ' || c == '.')) ||
+          (c == '.' &&
+           (
+#if 0
+/* This test causes a node name ending in a period, like `This.', not to
+   be found.  The trailing . is stripped.  This occurs in the jargon
+   file (`I see no X here.' is a node name).  */
+           (!string[i + 1]) ||
+#endif
+            (whitespace_or_newline (string[i + 1])) ||
+            (string[i + 1] == ')'))))
+        break;
     }
   return (i);
 }
 
 
 /* **************************************************************** */
-/*								    */
-/*		     Searching FILE_BUFFER's			    */
-/*								    */
+/*                                                                  */
+/*                   Searching FILE_BUFFER's                        */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Return the absolute position of the first occurence of a node separator in
@@ -397,11 +397,11 @@ find_node_separator (binding)
      table (if present) and the indirect tags table (if present). */
   for (i = binding->start; i < binding->end - 1; i++)
     if (((body[i] == INFO_FF && body[i + 1] == INFO_COOKIE) &&
-	 (body[i + 2] == '\n' ||
-	  (body[i + 2] == INFO_FF && body[i + 3] == '\n'))) ||
-	((body[i] == INFO_COOKIE) &&
-	 (body[i + 1] == '\n' ||
-	  (body[i + 1] == INFO_FF && body[i + 2] == '\n'))))
+         (body[i + 2] == '\n' ||
+          (body[i + 2] == INFO_FF && body[i + 3] == '\n'))) ||
+        ((body[i] == INFO_COOKIE) &&
+         (body[i + 1] == '\n' ||
+          (body[i + 1] == INFO_FF && body[i + 2] == '\n'))))
       return (i);
   return (-1);
 }
@@ -467,7 +467,7 @@ find_tags_table (binding)
       search.start += skip_node_separator (search.buffer + search.start);
 
       if (looking_at (TAGS_TABLE_BEG_LABEL, &search))
-	return (position);
+        return (position);
     }
   return (-1);
 }
@@ -482,8 +482,8 @@ find_node_in_binding (nodename, binding)
      char *nodename;
      SEARCH_BINDING *binding;
 {
-  register long position;
-  register int offset, namelen;
+  long position;
+  int offset, namelen;
   SEARCH_BINDING search;
 
   namelen = strlen (nodename);
@@ -501,19 +501,19 @@ find_node_in_binding (nodename, binding)
       offset = string_in_line (INFO_NODE_LABEL, search.buffer + search.start);
 
       if (offset == -1)
-	continue;
+        continue;
 
       search.start += offset;
       search.start += skip_whitespace (search.buffer + search.start);
       offset = skip_node_characters
-	(search.buffer + search.start, DONT_SKIP_NEWLINES);
+        (search.buffer + search.start, DONT_SKIP_NEWLINES);
 
       /* Notice that this is an exact match.  You cannot grovel through
-	 the buffer with this function looking for random nodes. */
+         the buffer with this function looking for random nodes. */
        if ((offset == namelen) &&
-	   (search.buffer[search.start] == nodename[0]) &&
-	   (strncmp (search.buffer + search.start, nodename, offset) == 0))
-	 return (position);
+           (search.buffer[search.start] == nodename[0]) &&
+           (strncmp (search.buffer + search.start, nodename, offset) == 0))
+         return (position);
     }
   return (-1);
 }

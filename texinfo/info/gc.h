@@ -1,9 +1,10 @@
-/* gc.h -- Functions for garbage collecting unused node contents. */
+/* gc.h -- Functions for garbage collecting unused node contents.
+   $Id: gc.h,v 1.2 1997/07/15 18:41:53 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
+   This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,8 +22,8 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_GC_H_)
-#define _GC_H_
+#ifndef INFO_GC_H
+#define INFO_GC_H
 
 /* Add POINTER to the list of garbage collectible pointers.  A pointer
    is not actually garbage collected until no info window contains a node
@@ -33,4 +34,4 @@ extern void add_gcable_pointer ();
    node->contents which are collectible, and free them. */
 extern void gc_pointers ();
 
-#endif /* !_GC_H_ */
+#endif /* not INFO_GC_H */

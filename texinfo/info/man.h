@@ -1,9 +1,10 @@
-/*  man.h: Defines and external function declarations for man.c */
+/* man.h: Defines and external function declarations for man.c.
+   $Id: man.h,v 1.2 1997/07/15 18:42:56 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
+   This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,8 +22,8 @@
 
    Author: Brian J. Fox (bfox@ai.mit.edu) Sat May  6 16:19:13 1995. */
 
-#if !defined (_MAN_H_)
-#define _MAN_H_
+#ifndef INFO_MAN_H
+#define INFO_MAN_H
 
 #define MANPAGE_FILE_BUFFER_NAME "*manpages*"
 
@@ -33,4 +34,4 @@ extern long locate_manpage_xref (/* NODE *node, long start, int dir */);
 extern REFERENCE **xrefs_of_manpage (/* NODE *node */);
 extern REFERENCE **manpage_xrefs_in_binding (/* NODE *node, SEARCH_BINDING *binding */);
 
-#endif /* !_MAN_H_ */
+#endif /* INFO_MAN_H */

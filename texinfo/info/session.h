@@ -21,10 +21,10 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_SESSION_H_)
-#define _SESSION_H_
+#if !defined (SESSION_H)
+#define SESSION_H
 
-#include "general.h"
+#include "info.h"
 #include "dribble.h"
 
 /* All commands that can be invoked from within info_session () receive
@@ -55,11 +55,11 @@ extern int info_scroll_behaviour;
 extern char *info_scroll_choices[];
 
 /* Values for info_scroll_behaviour. */
-#define IS_Continuous 0	/* Try to get first menu item, or failing that, the
-			   "Next:" pointer, or failing that, the "Up:" and
-			   "Next:" of the up. */
+#define IS_Continuous 0 /* Try to get first menu item, or failing that, the
+                           "Next:" pointer, or failing that, the "Up:" and
+                           "Next:" of the up. */
 #define IS_NextOnly   1 /* Try to get "Next:" menu item. */
-#define IS_PageOnly   2	/* Simply give up at the bottom of a node. */
+#define IS_PageOnly   2 /* Simply give up at the bottom of a node. */
 
 /* Utility functions found in session.c */
 extern void info_dispatch_on_key ();
@@ -143,4 +143,4 @@ extern void info_print_node ();
 /* Miscellaneous commands. */
 extern void info_abort_key (), info_quit (), info_do_lowercase_version ();
 
-#endif /* _SESSION_H_ */
+#endif /* SESSION_H */

@@ -1,6 +1,7 @@
 ;;; info.el --- info package for Emacs.
 
-;; Copyright (C) 1985, 1986, 1992, 1993, 1994 Free Software Foundation, Inc.
+;; Copyright (C) 1985, 86, 92, 93, 94, 95, 96, 97 Free Software
+;; Foundation, Inc.
 
 ;; Maintainer: FSF
 ;; Keywords: help
@@ -28,27 +29,39 @@
 
 ;;; Code:
 
+(defgroup info nil
+  "Info subsystem"
+  :group 'help
+  :group 'docs)
+
+
 (defvar Info-history nil
   "List of info nodes user has visited.
 Each element of list is a list (FILENAME NODENAME BUFFERPOS).")
 
-(defvar Info-enable-edit nil
+(defcustom Info-enable-edit nil
   "*Non-nil means the \\<Info-mode-map>\\[Info-edit] command in Info can edit the current node.
 This is convenient if you want to write info files by hand.
 However, we recommend that you not do this.
 It is better to write a Texinfo file and generate the Info file from that,
-because that gives you a printed manual as well.")
+because that gives you a printed manual as well."
+  :type 'boolean
+  :group 'info)
 
 (defvar Info-enable-active-nodes nil
   "Non-nil allows Info to execute Lisp code associated with nodes.
 The Lisp code is executed when the node is selected.")
 (put 'Info-enable-active-nodes 'risky-local-variable t)
 
-(defvar Info-fontify t
-  "*Non-nil enables highlighting and fonts in Info nodes.")
+(defcustom Info-fontify t
+  "*Non-nil enables highlighting and fonts in Info nodes."
+  :type 'boolean
+  :group 'info)
 
-(defvar Info-fontify-maximum-menu-size 30000
-  "*Maximum size of menu to fontify if `Info-fontify' is non-nil.")
+(defcustom Info-fontify-maximum-menu-size 30000
+  "*Maximum size of menu to fontify if `Info-fontify' is non-nil."
+  :type 'integer
+  :group 'info)
 
 (defvar Info-directory-list
   (let ((path (getenv "INFOPATH"))
@@ -98,9 +111,11 @@ source tree, the `info' directory in the source tree is used as the last
 element, in place of the installation Info directory.  This is useful
 when you run a version of Emacs without installing it.")
 
-(defvar Info-additional-directory-list nil
+(defcustom Info-additional-directory-list nil
   "List of additional directories to search for Info documentation files.
-These directories are not searched for merging the `dir' file.")
+These directories are not searched for merging the `dir' file."
+  :type '(repeat directory)
+  :group 'info)
 
 (defvar Info-current-file nil
   "Info file that Info is now looking at, or nil.
@@ -114,9 +129,12 @@ or nil if current info file is not split into subfiles.")
 (defvar Info-current-node nil
   "Name of node that Info is now looking at, or nil.")
 
-(defvar Info-tag-table-marker (make-marker)
+(defvar Info-tag-table-marker nil
   "Marker pointing at beginning of current Info file's tag table.
 Marker points nowhere if file has no tag table.")
+
+(defvar Info-tag-table-buffer nil
+  "Buffer used for indirect tag tables.")
 
 (defvar Info-current-file-completions nil
   "Cached completion list for current Info file.")
@@ -133,16 +151,26 @@ Marker points nowhere if file has no tag table.")
 	 (".z"       . "gunzip")
 	 (".inf"     . nil)
 	 (""         . nil))
-    '( (".info.Z"  . "uncompress")
-       (".info.Y"  . "unyabba")
-       (".info.gz" . "gunzip")
-       (".info.z"  . "gunzip")
-       (".info"    . nil)
-       (".Z"       . "uncompress")
-       (".Y"       . "unyabba")
-       (".gz"      . "gunzip")
-       (".z"       . "gunzip")
-       (""         . nil)))
+    '( (".info.Z".    "uncompress")
+       (".info.Y".    "unyabba")
+       (".info.gz".   "gunzip")
+       (".info.z".    "gunzip")
+       (".info".      nil)
+       ("-info.Z".   "uncompress")
+       ("-info.Y".   "unyabba")
+       ("-info.gz".  "gunzip")
+       ("-info.z".   "gunzip")
+       ("-info".     nil)
+       ("/index.Z".   "uncompress")
+       ("/index.Y".   "unyabba")
+       ("/index.gz".  "gunzip")
+       ("/index.z".   "gunzip")
+       ("/index".     nil)
+       (".Z".         "uncompress")
+       (".Y".         "unyabba")
+       (".gz".        "gunzip")
+       (".z".         "gunzip")
+       ("".           nil)))
   "List of file name suffixes and associated decoding commands.
 Each entry should be (SUFFIX . STRING); the file is given to
 the command as standard input.  If STRING is nil, no decoding is done.
@@ -301,7 +329,7 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 	    (cons (list Info-current-file Info-current-node (point))
 		  Info-history)))
   ;; Go into info buffer.
-  (switch-to-buffer "*info*")
+  (or (eq major-mode 'Info-mode) (pop-to-buffer "*info*"))
   (buffer-disable-undo (current-buffer))
   (or (eq major-mode 'Info-mode)
       (Info-mode))
@@ -316,7 +344,6 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 	      (setq Info-current-file nil
 		    Info-current-subfile nil
 		    Info-current-file-completions nil
-		    Info-index-alternatives nil
 		    buffer-file-name nil)
 	      (erase-buffer)
 	      (if (eq filename t)
@@ -325,12 +352,12 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 		(setq default-directory (file-name-directory filename)))
 	      (set-buffer-modified-p nil)
 	      ;; See whether file has a tag table.  Record the location if yes.
-	      (set-marker Info-tag-table-marker nil)
 	      (goto-char (point-max))
 	      (forward-line -8)
 	      ;; Use string-equal, not equal, to ignore text props.
-	      (or (string-equal nodename "*")
-		  (not (search-forward "\^_\nEnd tag table\n" nil t))
+	      (if (not (or (string-equal nodename "*")
+			   (not
+			    (search-forward "\^_\nEnd tag table\n" nil t))))
 		  (let (pos)
 		    ;; We have a tag table.  Find its beginning.
 		    ;; Is this an indirect file?
@@ -341,16 +368,21 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 			  (looking-at "(Indirect)\n"))
 			;; It is indirect.  Copy it to another buffer
 			;; and record that the tag table is in that buffer.
-			(save-excursion
-			  (let ((buf (current-buffer)))
-			    (set-buffer (get-buffer-create " *info tag table*"))
+			(let ((buf (current-buffer))
+			      (tagbuf
+			       (or Info-tag-table-buffer
+				   (generate-new-buffer " *info tag table*"))))
+			  (setq Info-tag-table-buffer tagbuf)
+			  (save-excursion
+			    (set-buffer tagbuf)
                             (buffer-disable-undo (current-buffer))
 			    (setq case-fold-search t)
 			    (erase-buffer)
-			    (insert-buffer-substring buf)
-			    (set-marker Info-tag-table-marker
-					(match-end 0))))
-		      (set-marker Info-tag-table-marker pos))))
+			    (insert-buffer-substring buf))
+			  (set-marker Info-tag-table-marker
+				      (match-end 0) tagbuf))
+		      (set-marker Info-tag-table-marker pos)))
+		(set-marker Info-tag-table-marker nil))
 	      (setq Info-current-file
 		    (if (eq filename t) "dir" filename))))
 	;; Use string-equal, not equal, to ignore text props.
@@ -365,18 +397,28 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 	    ;; read the proper subfile into this buffer.
 	    (if (marker-position Info-tag-table-marker)
 		(save-excursion
-		  (set-buffer (marker-buffer Info-tag-table-marker))
-		  (goto-char Info-tag-table-marker)
-		  (if (re-search-forward regexp nil t)
-		      (progn
-			(setq guesspos (read (current-buffer)))
-			;; If this is an indirect file,
-			;; determine which file really holds this node
-			;; and read it in.
-			(if (not (eq (current-buffer) (get-buffer "*info*")))
-			    (setq guesspos
-				  (Info-read-subfile guesspos))))
-		    (error "No such node: %s" nodename))))
+		  (let ((m Info-tag-table-marker)
+			found found-mode)
+		    (save-excursion
+		      (set-buffer (marker-buffer m))
+		      (goto-char m)
+		      (beginning-of-line) ;so re-search will work.
+		      (setq found (re-search-forward regexp nil t))
+		      (if found
+			  (setq guesspos (read (current-buffer))))
+		      (setq found-mode major-mode))
+		    (if found
+			(progn
+			  ;; If this is an indirect file, determine
+			  ;; which file really holds this node and
+			  ;; read it in.
+			  (if (not (eq found-mode 'Info-mode))
+			      ;; Note that the current buffer must be
+			      ;; the *info* buffer on entry to
+			      ;; Info-read-subfile.  Thus the hackery
+			      ;; above.
+			      (setq guesspos (Info-read-subfile guesspos))))
+		      (error "No such node: %s" nodename)))))
 	    (goto-char (max (point-min) (- guesspos 1000)))
 	    ;; Now search from our advised position (or from beg of buffer)
 	    ;; to find the actual node.
@@ -464,7 +506,8 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 			    Info-dir-file-attributes
 			    (cons (cons file attrs)
 				  Info-dir-file-attributes))))))
-	  (or (cdr dirs) (setq Info-dir-contents-directory (car dirs)))
+	  (or (cdr dirs) (setq Info-dir-contents-directory
+			       (file-name-as-directory (car dirs))))
 	  (setq dirs (cdr dirs))))
       
       (or buffers
@@ -548,30 +591,39 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
     (setq Info-dir-contents (buffer-string)))
   (setq default-directory Info-dir-contents-directory))
 
+;; Note that on entry to this function the current-buffer must be the
+;; *info* buffer; not the info tags buffer.
 (defun Info-read-subfile (nodepos)
-  (set-buffer (marker-buffer Info-tag-table-marker))
-  (goto-char (point-min))
-  (search-forward "\n\^_")
+  ;; NODEPOS is either a position (in the Info file as a whole,
+  ;; not relative to a subfile) or the name of a subfile.
   (let (lastfilepos
 	lastfilename)
-    (forward-line 2)
-    (catch 'foo
-      (while (not (looking-at "\^_"))
-	(if (not (eolp))
-	    (let ((beg (point))
-		  thisfilepos thisfilename)
-	      (search-forward ": ")
-	      (setq thisfilename  (buffer-substring beg (- (point) 2)))
-	      (setq thisfilepos (read (current-buffer)))
-	      ;; read in version 19 stops at the end of number.
-	      ;; Advance to the next line.
-	      (forward-line 1)
-	      (if (> thisfilepos nodepos)
-		  (throw 'foo t))
-	      (setq lastfilename thisfilename)
-	      (setq lastfilepos thisfilepos))
-	  (forward-line 1))))
-    (set-buffer (get-buffer "*info*"))
+    (if (numberp nodepos)
+	(save-excursion
+	  (set-buffer (marker-buffer Info-tag-table-marker))
+	  (goto-char (point-min))
+	  (search-forward "\n\^_")
+	  (forward-line 2)
+	  (catch 'foo
+	    (while (not (looking-at "\^_"))
+	      (if (not (eolp))
+		  (let ((beg (point))
+			thisfilepos thisfilename)
+		    (search-forward ": ")
+		    (setq thisfilename  (buffer-substring beg (- (point) 2)))
+		    (setq thisfilepos (read (current-buffer)))
+		    ;; read in version 19 stops at the end of number.
+		    ;; Advance to the next line.
+		    (forward-line 1)
+		    (if (> thisfilepos nodepos)
+			(throw 'foo t))
+		    (setq lastfilename thisfilename)
+		    (setq lastfilepos thisfilepos))
+		(forward-line 1)))))
+      (setq lastfilename nodepos)
+      (setq lastfilepos 0))
+    ;; Assume previous buffer is in Info-mode.
+    ;; (set-buffer (get-buffer "*info*"))
     (or (equal Info-current-subfile lastfilename)
 	(let ((buffer-read-only nil))
 	  (setq buffer-file-name nil)
@@ -582,7 +634,8 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 	  (setq Info-current-subfile lastfilename)))
     (goto-char (point-min))
     (search-forward "\n\^_")
-    (+ (- nodepos lastfilepos) (point))))
+    (if (numberp nodepos)
+	(+ (- nodepos lastfilepos) (point)))))
 
 ;; Select the info node that point is in.
 (defun Info-select-node ()
@@ -618,7 +671,7 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 (defun Info-set-mode-line ()
   (setq mode-line-buffer-identification
 	(concat
-	 "Info:  ("
+	 "  Info:  ("
 	 (if Info-current-file
 	     (file-name-nondirectory Info-current-file)
 	   "")
@@ -667,7 +720,7 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 (defun Info-read-node-name (prompt &optional default)
   (let* ((completion-ignore-case t)
 	 (completion-table (Info-build-node-completions))
-	 (nodename (completing-read prompt 'Info-read-node-name-1)))
+	 (nodename (completing-read prompt 'Info-read-node-name-1 nil t)))
     (if (equal nodename "")
 	(or default
 	    (Info-read-node-name prompt))
@@ -679,10 +732,10 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 	(save-excursion
 	  (save-restriction
 	    (if (marker-buffer Info-tag-table-marker)
-		(progn
-		  (set-buffer (marker-buffer Info-tag-table-marker))
+		(let ((marker Info-tag-table-marker))
+		  (set-buffer (marker-buffer marker))
 		  (widen)
-		  (goto-char Info-tag-table-marker)
+		  (goto-char marker)
 		  (while (re-search-forward "\nNode: \\(.*\\)\177" nil t)
 		    (setq compl
 			  (cons (list (buffer-substring (match-beginning 1)
@@ -727,6 +780,7 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 	(onode Info-current-node)
 	(ofile Info-current-file)
 	(opoint (point))
+	(ostart (window-start))
 	(osubfile Info-current-subfile))
     (save-excursion
       (save-restriction
@@ -739,27 +793,28 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
     (if (not found) ;can only happen in subfile case -- else would have erred
 	(unwind-protect
 	    (let ((list ()))
-	      (set-buffer (marker-buffer Info-tag-table-marker))
-	      (goto-char (point-min))
-	      (search-forward "\n\^_\nIndirect:")
-	      (save-restriction
-		(narrow-to-region (point)
-				  (progn (search-forward "\n\^_")
-					 (1- (point))))
+	      (save-excursion
+		(set-buffer (marker-buffer Info-tag-table-marker))
 		(goto-char (point-min))
-		(search-forward (concat "\n" osubfile ": "))
-		(beginning-of-line)
-		(while (not (eobp))
-		  (re-search-forward "\\(^.*\\): [0-9]+$")
-		  (goto-char (+ (match-end 1) 2))
-		  (setq list (cons (cons (read (current-buffer))
-					 (buffer-substring (match-beginning 1)
-							   (match-end 1)))
-				   list))
-		  (goto-char (1+ (match-end 0))))
-		(setq list (nreverse list)
-		      current (car (car list))
-		      list (cdr list)))
+		(search-forward "\n\^_\nIndirect:")
+		(save-restriction
+		  (narrow-to-region (point)
+				    (progn (search-forward "\n\^_")
+					   (1- (point))))
+		  (goto-char (point-min))
+		  (search-forward (concat "\n" osubfile ": "))
+		  (beginning-of-line)
+		  (while (not (eobp))
+		    (re-search-forward "\\(^.*\\): [0-9]+$")
+		    (goto-char (+ (match-end 1) 2))
+		    (setq list (cons (cons (read (current-buffer))
+					   (buffer-substring
+					    (match-beginning 1) (match-end 1)))
+				     list))
+		    (goto-char (1+ (match-end 0))))
+		  (setq list (nreverse list)
+			current (car (car list))
+			list (cdr list))))
 	      (while list
 		(message "Searching subfile %s..." (cdr (car list)))
 		(Info-read-subfile (car (car list)))
@@ -771,9 +826,10 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 		  (message "")
 		(signal 'search-failed (list regexp))))
 	  (if (not found)
-	      (progn (Info-read-subfile opoint)
+	      (progn (Info-read-subfile osubfile)
 		     (goto-char opoint)
-		     (Info-select-node)))))
+		     (Info-select-node)
+		     (set-window-start (selected-window) ostart)))))
     (widen)
     (goto-char found)
     (Info-select-node)
@@ -800,7 +856,7 @@ In standalone mode, \\<Info-mode-map>\\[Info-exit] exits Emacs itself."
 
 ;; Return the node name in the buffer following point.
 ;; ALLOWEDCHARS, if non-nil, goes within [...] to make a regexp
-;; saying which chas may appear in the node name.
+;; saying which chars may appear in the node name.
 (defun Info-following-node-name (&optional allowedchars)
   (skip-chars-forward " \t")
   (buffer-substring-no-properties
@@ -884,9 +940,18 @@ NAME may be an abbreviation of the reference name."
 	 ;; Record as a completion and perhaps as default.
 	 (if (eq default t) (setq default str))
 	 (if (eq alt-default t) (setq alt-default str))
-	 (setq completions
-	       (cons (cons str nil)
-		     completions))))
+	 ;; Don't add this string if it's a duplicate.
+	 ;; We use a loop instead of "(assoc str completions)" because
+	 ;; we want to do a case-insensitive compare.
+	 (let ((tail completions)
+	       (tem (downcase str)))
+	   (while (and tail
+		       (not (string-equal tem (downcase (car (car tail))))))
+	     (setq tail (cdr tail)))
+	   (or tail
+	       (setq completions
+		     (cons (cons str nil)
+			   completions))))))
      ;; If no good default was found, try an alternate.
      (or default
 	 (setq default alt-default))
@@ -1148,8 +1213,7 @@ N is the digit argument used to invoke this command."
   (interactive)
   (if Info-standalone
       (save-buffers-kill-emacs)
-    (switch-to-buffer (prog1 (other-buffer (current-buffer))
-			(bury-buffer (current-buffer))))))
+    (bury-buffer)))
 
 (defun Info-next-menu-item ()
   (interactive)
@@ -1222,9 +1286,15 @@ N is the digit argument used to invoke this command."
 
 (defun Info-scroll-up ()
   "Scroll one screenful forward in Info, considering all nodes as one sequence.
-Once you scroll far enough in a node that its menu appears on the screen,
-the next scroll moves into its first subnode.  When you scroll past
-the end of a node, that goes to the next node or back up to the parent node."
+Once you scroll far enough in a node that its menu appears on the screen
+but after point, the next scroll moves into its first subnode.
+
+When you scroll past the end of a node, that goes to the next node; if
+this node has no successor, it moves to the parent node's successor,
+and so on.  If point is inside the menu of a node, it moves to
+subnode indicated by the following menu item.  (That case won't
+normally result from this command, but can happen in other ways.)"
+
   (interactive)
   (if (or (< (window-start) (point-min))
 	  (> (window-start) (point-max)))
@@ -1363,7 +1433,7 @@ Give a blank topic name to go to the Index node itself."
   "Go to the next matching index item from the last `i' command."
   (interactive "p")
   (or Info-index-alternatives
-      (error "No previous `i' command in this file"))
+      (error "No previous `i' command"))
   (while (< num 0)
     (setq num (+ num (length Info-index-alternatives))))
   (while (> num 0)
@@ -1446,7 +1516,16 @@ SIG optional fourth argument, controls action on no match
     a string: signal an error, using that string."
   (save-excursion
     (goto-char pos)
-    (re-search-backward start (max (point-min) (- pos 200)) 'yes)
+    ;; First look for a match for START that goes across POS.
+    (while (and (not (bobp)) (> (point) (- pos (length start)))
+		(not (looking-at start)))
+      (forward-char -1))
+    ;; If we did not find one, search back for START
+    ;; (this finds only matches that end at or before POS).
+    (or (looking-at start)
+	(progn
+	  (goto-char pos)
+	  (re-search-backward start (max (point-min) (- pos 200)) 'yes)))
     (let (found)
       (while (and (re-search-forward all (min (point-max) (+ pos 200)) 'yes)
 		  (not (setq found (and (<= (match-beginning 0) pos)
@@ -1553,6 +1632,92 @@ If no reference to follow, moves to the next node, or up if none."
   (define-key Info-mode-map "\177" 'Info-scroll-down)
   (define-key Info-mode-map [mouse-2] 'Info-mouse-follow-nearest-node)
   )
+
+(defun Info-check-pointer (item)
+  ;; Non-nil if ITEM is present in this node.
+  (condition-case nil
+      (Info-extract-pointer item)
+    (error nil)))
+
+(easy-menu-define Info-mode-menu Info-mode-map
+  "Menu for info files."
+  '("Info"
+    ["Up" Info-up (Info-check-pointer "up")]
+    ["Next" Info-next (Info-check-pointer "next")]
+    ["Previous" Info-prev (Info-check-pointer "prev[ious]*")]
+    ("Menu item" ["You should never see this" report-emacs-bug t])
+    ("Reference" ["You should never see this" report-emacs-bug t])
+    ["Search..." Info-search t]
+    ["Goto node..." Info-goto-node t]
+    ["Last" Info-last Info-history]
+    ["Exit" Info-exit t]))
+
+(defvar Info-menu-last-node nil)
+;; Last node the menu was created for.
+
+(defun Info-menu-update ()
+  ;; Update the Info menu for the current node.
+  (condition-case nil
+      (if (or (not (eq major-mode 'Info-mode))
+	      (eq Info-current-node Info-menu-last-node))
+	  ()
+	;; Update menu menu.
+	(let* ((Info-complete-menu-buffer (current-buffer))
+	       (items (nreverse (condition-case nil
+				    (Info-complete-menu-item
+				     "" (lambda (e) t) t)
+				  (error nil))))
+	       entries current 
+	       (number 0))
+	  (while (and items (< number 9))
+	    (setq current (car items)
+		  items (cdr items)
+		  number (1+ number))
+	    (setq entries (cons `[,current 
+				  (Info-menu ,current)
+				  :keys ,(format "%d" number)]
+				entries)))
+	  (if items
+	      (setq entries (cons ["Other..." Info-menu t] entries)))
+	  (or entries
+	      (setq entries (list ["No menu" nil nil])))
+	  (easy-menu-change '("Info") "Menu item" (nreverse entries)))
+	;; Update reference menu.  Code stolen from `Info-follow-reference'.
+	(let ((items nil)
+	      str i entries current 
+	      (number 0))
+	  (save-excursion
+	    (goto-char (point-min))
+	    (while (re-search-forward "\\*note[ \n\t]*\\([^:]*\\):" nil t)
+	      (setq str (buffer-substring
+			 (match-beginning 1)
+			 (1- (point))))
+	      (setq i 0)
+	      (while (setq i (string-match "[ \n\t]+" str i))
+		(setq str (concat (substring str 0 i) " "
+				  (substring str (match-end 0))))
+		(setq i (1+ i)))
+	      (setq items
+		    (cons str items))))
+	  (while (and items (< number 9))
+	    (setq current (car items)
+		  items (cdr items)
+		  number (1+ number))
+	    (setq entries (cons `[,current 
+				  (Info-follow-reference ,current)
+				  t]
+				entries)))
+	  (if items
+	      (setq entries (cons ["Other..." Info-follow-reference t]
+				  entries)))
+	  (or entries
+	      (setq entries (list ["No references" nil nil])))
+	  (easy-menu-change '("Info") "Reference" (nreverse entries)))
+	;; Update last seen node.
+	(setq Info-menu-last-node (current-buffer)))
+    ;; Try to avoid entering infinite beep mode in case of errors.
+    (error (ding))))
+
 
 ;; Info mode is suitable only for specially formatted data.
 (put 'info-mode 'mode-class 'special)
@@ -1604,7 +1769,10 @@ Advanced commands:
   (kill-all-local-variables)
   (setq major-mode 'Info-mode)
   (setq mode-name "Info")
+  (setq tab-width 8)
   (use-local-map Info-mode-map)
+  (make-local-hook 'activate-menubar-hook)
+  (add-hook 'activate-menubar-hook 'Info-menu-update nil t)
   (set-syntax-table text-mode-syntax-table)
   (setq local-abbrev-table text-mode-abbrev-table)
   (setq case-fold-search t)
@@ -1613,9 +1781,12 @@ Advanced commands:
   (make-local-variable 'Info-current-subfile)
   (make-local-variable 'Info-current-node)
   (make-local-variable 'Info-tag-table-marker)
+  (setq Info-tag-table-marker (make-marker))
+  (make-local-variable 'Info-tag-table-buffer)
+  (setq Info-tag-table-buffer nil)
   (make-local-variable 'Info-history)
   (make-local-variable 'Info-index-alternatives)
-  (if (memq (framep (selected-frame)) '(x pc))
+  (if (memq (framep (selected-frame)) '(x pc w32))
       (progn
 	(make-face 'info-node)
 	(make-face 'info-menu-5)
@@ -1752,6 +1923,8 @@ the variable `Info-file-list-for-emacs'."
 	  ;; Get Info running, and pop to it in another window.
 	  (save-window-excursion
 	    (info))
+	  ;; FIXME It would be cool if this could use a buffer other
+	  ;; than *info*.
 	  (pop-to-buffer "*info*")
 	  (Info-find-node (car (car where))
 			  (car (cdr (car where))))
@@ -1786,12 +1959,14 @@ the variable `Info-file-list-for-emacs'."
 	  (t
 	   (Info-goto-emacs-command-node command)))))
 
-(defvar Info-title-face-alist
+(defcustom Info-title-face-alist
   '((?* bold underline)
     (?= bold-italic underline)
     (?- italic underline))
   "*Alist of face or list of faces to use for pseudo-underlined titles.
-The alist key is the character the title is underlined with (?*, ?= or ?-).")
+The alist key is the character the title is underlined with (?*, ?= or ?-)."
+  :type '(repeat (list character face face))
+  :group 'info)
 
 (defun Info-fontify-node ()
   (save-excursion
@@ -1840,6 +2015,17 @@ The alist key is the character the title is underlined with (?*, ?= or ?-).")
 	      (put-text-property (match-beginning 1) (match-end 1)
 				 'mouse-face 'highlight))))
       (set-buffer-modified-p nil))))
+
+
+;; When an Info buffer is killed, make sure the associated tags buffer
+;; is killed too.
+(defun Info-kill-buffer ()
+  (and (eq major-mode 'Info-mode)
+       Info-tag-table-buffer
+       (kill-buffer Info-tag-table-buffer)))
+
+(add-hook 'kill-buffer-hook 'Info-kill-buffer)
+  
 
 (provide 'info)
 

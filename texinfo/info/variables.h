@@ -1,9 +1,10 @@
-/* variables.h -- Description of user visible variables in Info. */
+/* variables.h -- Description of user visible variables in Info.
+   $Id: variables.h,v 1.3 1997/07/15 18:44:23 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
+   This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,8 +22,8 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_VARIABLES_H_)
-#define _VARIABLES_H_
+#ifndef INFO_VARIABLES_H
+#define INFO_VARIABLES_H
 
 /* A variable (in the Info sense) is an integer value with a user-visible
    name.  You may supply an array of strings to complete over when the
@@ -32,10 +33,10 @@
 
 /* Structure describing a user visible variable. */
 typedef struct {
-  char *name;			/* Polite name. */
-  char *doc;			/* Documentation string. */
-  int *value;			/* Address of value. */
-  char **choices;		/* Array of strings or NULL if numeric only. */
+  char *name;                   /* Polite name. */
+  char *doc;                    /* Documentation string. */
+  int *value;                   /* Address of value. */
+  char **choices;               /* Array of strings or NULL if numeric only. */
 } VARIABLE_ALIST;
 
 /* Read the name of an Info variable in the echo area and return the
@@ -61,4 +62,4 @@ extern int info_scroll_behaviour;
 extern int window_scroll_step;
 extern int ISO_Latin_p;
 
-#endif /* _VARIABLES_H_ */
+#endif /* not INFO_VARIABLES_H */

@@ -1,9 +1,7 @@
-/* display.c -- How to display Info windows. */
+/* display.c -- How to display Info windows.
+   $Id: display.c,v 1.6 1997/07/24 21:13:27 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
-   stored in Info format.
-
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,10 +19,7 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#include <stdio.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include "info.h"
 #include "display.h"
 
 extern int info_any_buffered_input_p (); /* Found in session.c. */
@@ -57,7 +52,7 @@ display_clear_display (display)
   register int i;
   register DISPLAY_LINE *display_line;
 
-  for (i = 0; display_line = display[i]; i++)
+  for (i = 0; (display_line = display[i]); i++)
     {
       display[i]->text[0] = '\0';
       display[i]->textlen = 0;
@@ -83,13 +78,13 @@ display_update_display (window)
     {
       /* Only re-display visible windows which need updating. */
       if (((win->flags & W_WindowVisible) == 0) ||
-	  ((win->flags & W_UpdateWindow) == 0) ||
-	  (win->height == 0))
-	continue;
+          ((win->flags & W_UpdateWindow) == 0) ||
+          (win->height == 0))
+        continue;
 
       display_update_one_window (win);
       if (display_was_interrupted_p)
-	break;
+        break;
     }
 
   /* Always update the echo area. */
@@ -102,12 +97,12 @@ void
 display_update_one_window (win)
      WINDOW *win;
 {
-  register char *nodetext;	/* Current character to display. */
+  register char *nodetext;      /* Current character to display. */
   register char *last_node_char; /* Position of the last character in node. */
-  register int i;		/* General use index. */
-  char *printed_line;		/* Buffer for a printed line. */
-  int pl_index = 0;		/* Index into PRINTED_LINE. */
-  int line_index = 0;		/* Number of lines done so far. */
+  register int i;               /* General use index. */
+  char *printed_line;           /* Buffer for a printed line. */
+  int pl_index = 0;             /* Index into PRINTED_LINE. */
+  int line_index = 0;           /* Number of lines done so far. */
   DISPLAY_LINE **display = the_display;
 
   /* If display is inhibited, that counts as an interrupted display. */
@@ -142,165 +137,165 @@ display_update_one_window (win)
       int replen;
 
       if (isprint (*nodetext))
-	{
-	  rep_temp[0] = *nodetext;
-	  replen = 1;
-	  rep_temp[1] = '\0';
-	  rep = rep_temp;
-	}
+        {
+          rep_temp[0] = *nodetext;
+          replen = 1;
+          rep_temp[1] = '\0';
+          rep = rep_temp;
+        }
       else
-	{
-	  if (*nodetext == '\r' || *nodetext == '\n')
-	    {
-	      replen = win->width - pl_index;
-	    }
-	  else
-	    {
-	      rep = printed_representation (*nodetext, pl_index);
-	      replen = strlen (rep);
-	    }
-	}
+        {
+          if (*nodetext == '\r' || *nodetext == '\n')
+            {
+              replen = win->width - pl_index;
+            }
+          else
+            {
+              rep = printed_representation (*nodetext, pl_index);
+              replen = strlen (rep);
+            }
+        }
 
       /* If this character can be printed without passing the width of
-	 the line, then stuff it into the line. */
+         the line, then stuff it into the line. */
       if (replen + pl_index < win->width)
-	{
-	  /* Optimize if possible. */
-	  if (replen == 1)
-	    {
-	      printed_line[pl_index++] = *rep;
-	    }
-	  else
-	    {
-	      for (i = 0; i < replen; i++)
-		printed_line[pl_index++] = rep[i];
-	    }
-	}
+        {
+          /* Optimize if possible. */
+          if (replen == 1)
+            {
+              printed_line[pl_index++] = *rep;
+            }
+          else
+            {
+              for (i = 0; i < replen; i++)
+                printed_line[pl_index++] = rep[i];
+            }
+        }
       else
-	{
-	  DISPLAY_LINE *entry;
+        {
+          DISPLAY_LINE *entry;
 
-	  /* If this character cannot be printed in this line, we have
-	     found the end of this line as it would appear on the screen.
-	     Carefully print the end of the line, and then compare. */
-	  if (*nodetext == '\n' || *nodetext == '\r' || *nodetext == '\t')
-	    {
-	      printed_line[pl_index] = '\0';
-	      rep_carried_over = (char *)NULL;
-	    }
-	  else
-	    {
-	      /* The printed representation of this character extends into
-		 the next line.  Remember the offset of the last character
-		 printed out of REP so that we can carry the character over
-		 to the next line. */
-	      for (i = 0; pl_index < (win->width - 1);)
-		printed_line[pl_index++] = rep[i++];
-	      
-	      rep_carried_over = rep + i;
+          /* If this character cannot be printed in this line, we have
+             found the end of this line as it would appear on the screen.
+             Carefully print the end of the line, and then compare. */
+          if (*nodetext == '\n' || *nodetext == '\r' || *nodetext == '\t')
+            {
+              printed_line[pl_index] = '\0';
+              rep_carried_over = (char *)NULL;
+            }
+          else
+            {
+              /* The printed representation of this character extends into
+                 the next line.  Remember the offset of the last character
+                 printed out of REP so that we can carry the character over
+                 to the next line. */
+              for (i = 0; pl_index < (win->width - 1);)
+                printed_line[pl_index++] = rep[i++];
+              
+              rep_carried_over = rep + i;
 
-	      /* If printing the last character in this window couldn't
-		 possibly cause the screen to scroll, place a backslash
-		 in the rightmost column. */
-	      if (1 + line_index + win->first_row < the_screen->height)
-		{
-		  if (win->flags & W_NoWrap)
-		    printed_line[pl_index++] = '$';
-		  else
-		    printed_line[pl_index++] = '\\';
-		}
-	      printed_line[pl_index] = '\0';
-	    }
+              /* If printing the last character in this window couldn't
+                 possibly cause the screen to scroll, place a backslash
+                 in the rightmost column. */
+              if (1 + line_index + win->first_row < the_screen->height)
+                {
+                  if (win->flags & W_NoWrap)
+                    printed_line[pl_index++] = '$';
+                  else
+                    printed_line[pl_index++] = '\\';
+                }
+              printed_line[pl_index] = '\0';
+            }
 
-	  /* We have the exact line as it should appear on the screen.
-	     Check to see if this line matches the one already appearing
-	     on the screen. */
-	  entry = display[line_index + win->first_row];
+          /* We have the exact line as it should appear on the screen.
+             Check to see if this line matches the one already appearing
+             on the screen. */
+          entry = display[line_index + win->first_row];
 
-	  /* If the screen line is inversed, then we have to clear
-	     the line from the screen first.  Why, I don't know. */
-	  if (entry->inverse)
-	    {
-	      terminal_goto_xy (0, line_index + win->first_row);
-	      terminal_clear_to_eol ();
-	      entry->inverse = 0;
-	      entry->text[0] = '\0';
-	      entry->textlen = 0;
-	    }
+          /* If the screen line is inversed, then we have to clear
+             the line from the screen first.  Why, I don't know. */
+          if (entry->inverse)
+            {
+              terminal_goto_xy (0, line_index + win->first_row);
+              terminal_clear_to_eol ();
+              entry->inverse = 0;
+              entry->text[0] = '\0';
+              entry->textlen = 0;
+            }
 
-	  /* Find the offset where these lines differ. */
-	  for (i = 0; i < pl_index; i++)
-	    if (printed_line[i] != entry->text[i])
-	      break;
+          /* Find the offset where these lines differ. */
+          for (i = 0; i < pl_index; i++)
+            if (printed_line[i] != entry->text[i])
+              break;
 
-	  /* If the lines are not the same length, or if they differed
-	     at all, we must do some redrawing. */
-	  if ((i != pl_index) || (pl_index != entry->textlen))
-	    {
-	      /* Move to the proper point on the terminal. */
-	      terminal_goto_xy (i, line_index + win->first_row);
+          /* If the lines are not the same length, or if they differed
+             at all, we must do some redrawing. */
+          if ((i != pl_index) || (pl_index != entry->textlen))
+            {
+              /* Move to the proper point on the terminal. */
+              terminal_goto_xy (i, line_index + win->first_row);
 
-	      /* If there is any text to print, print it. */
-	      if (i != pl_index)
-		terminal_put_text (printed_line + i);
+              /* If there is any text to print, print it. */
+              if (i != pl_index)
+                terminal_put_text (printed_line + i);
 
-	      /* If the printed text didn't extend all the way to the edge
-		 of the window, and text was appearing between here and the
-		 edge of the window, clear from here to the end of the line. */
-	      if ((pl_index < win->width && pl_index < entry->textlen) ||
-		  (entry->inverse))
-		terminal_clear_to_eol ();
+              /* If the printed text didn't extend all the way to the edge
+                 of the window, and text was appearing between here and the
+                 edge of the window, clear from here to the end of the line. */
+              if ((pl_index < win->width && pl_index < entry->textlen) ||
+                  (entry->inverse))
+                terminal_clear_to_eol ();
 
-	      fflush (stdout);
+              fflush (stdout);
 
-	      /* Update the display text buffer. */
-	      strcpy (entry->text + i, printed_line + i);
-	      entry->textlen = pl_index;
+              /* Update the display text buffer. */
+              strcpy (entry->text + i, printed_line + i);
+              entry->textlen = pl_index;
 
-	      /* Lines showing node text are not in inverse.  Only modelines
-		 have that distinction. */
-	      entry->inverse = 0;
-	    }
+              /* Lines showing node text are not in inverse.  Only modelines
+                 have that distinction. */
+              entry->inverse = 0;
+            }
 
-	  /* We have done at least one line.  Increment our screen line
-	     index, and check against the bottom of the window. */
-	  if (++line_index == win->height)
-	    break;
+          /* We have done at least one line.  Increment our screen line
+             index, and check against the bottom of the window. */
+          if (++line_index == win->height)
+            break;
 
-	  /* A line has been displayed, and the screen reflects that state.
-	     If there is typeahead pending, then let that typeahead be read
-	     now, instead of continuing with the display. */
-	  if (info_any_buffered_input_p ())
-	    {
-	      free (printed_line);
-	      display_was_interrupted_p = 1;
-	      return;
-	    }
+          /* A line has been displayed, and the screen reflects that state.
+             If there is typeahead pending, then let that typeahead be read
+             now, instead of continuing with the display. */
+          if (info_any_buffered_input_p ())
+            {
+              free (printed_line);
+              display_was_interrupted_p = 1;
+              return;
+            }
 
-	  /* Reset PL_INDEX to the start of the line. */
-	  pl_index = 0;
+          /* Reset PL_INDEX to the start of the line. */
+          pl_index = 0;
 
-	  /* If there are characters from REP left to print, stuff them
-	     into the buffer now. */
-	  if (rep_carried_over)
-	    for (; rep[pl_index]; pl_index++)
-	      printed_line[pl_index] = rep[pl_index];
+          /* If there are characters from REP left to print, stuff them
+             into the buffer now. */
+          if (rep_carried_over)
+            for (; rep[pl_index]; pl_index++)
+              printed_line[pl_index] = rep[pl_index];
 
-	  /* If this window has chosen not to wrap lines, skip to the end
-	     of the physical line in the buffer, and start a new line here. */
-	  if (pl_index && (win->flags & W_NoWrap))
-	    {
-	      char *begin;
+          /* If this window has chosen not to wrap lines, skip to the end
+             of the physical line in the buffer, and start a new line here. */
+          if (pl_index && (win->flags & W_NoWrap))
+            {
+              char *begin;
 
-	      pl_index = 0;
-	      printed_line[0] = '\0';
+              pl_index = 0;
+              printed_line[0] = '\0';
 
-	      begin = nodetext;
-	      
-	      while ((nodetext < last_node_char) && (*nodetext != '\n'))
-		nodetext++;
-	    }
-	}
+              begin = nodetext;
+              
+              while ((nodetext < last_node_char) && (*nodetext != '\n'))
+                nodetext++;
+            }
+        }
     }
 
  done_with_node_display:
@@ -313,13 +308,13 @@ display_update_one_window (win)
 
       /* If this line has text on it then make it go away. */
       if (entry && entry->textlen)
-	{
-	  entry->textlen = 0;
-	  entry->text[0] = '\0';
+        {
+          entry->textlen = 0;
+          entry->text[0] = '\0';
 
-	  terminal_goto_xy (0, line_index + win->first_row);
-	  terminal_clear_to_eol ();
-	}
+          terminal_goto_xy (0, line_index + win->first_row);
+          terminal_clear_to_eol ();
+        }
     }
 
   /* Finally, if this window has a modeline it might need to be redisplayed.
@@ -331,19 +326,19 @@ display_update_one_window (win)
       line_index = win->first_row + win->height;
 
       /* This display line must both be in inverse, and have the same
-	 contents. */
+         contents. */
       if ((!display[line_index]->inverse) ||
-	  (strcmp (display[line_index]->text, win->modeline) != 0))
-	{
-	  terminal_goto_xy (0, line_index);
-	  terminal_begin_inverse ();
-	  terminal_put_text (win->modeline);
-	  terminal_end_inverse ();
-	  strcpy (display[line_index]->text, win->modeline);
-	  display[line_index]->inverse = 1;
-	  display[line_index]->textlen = strlen (win->modeline);
-	  fflush (stdout);
-	}
+          (strcmp (display[line_index]->text, win->modeline) != 0))
+        {
+          terminal_goto_xy (0, line_index);
+          terminal_begin_inverse ();
+          terminal_put_text (win->modeline);
+          terminal_end_inverse ();
+          strcpy (display[line_index]->text, win->modeline);
+          display[line_index]->inverse = 1;
+          display[line_index]->textlen = strlen (win->modeline);
+          fflush (stdout);
+        }
     }
 
   /* Okay, this window doesn't need updating anymore. */
@@ -387,40 +382,40 @@ display_scroll_display (start, end, amount)
 
       /* Shift the lines to scroll right into place. */
       for (i = 0; i < (end - start); i++)
-	{
-	  temp = the_display[last - i];
-	  the_display[last - i] = the_display[end - i];
-	  the_display[end - i] = temp;
-	}
+        {
+          temp = the_display[last - i];
+          the_display[last - i] = the_display[end - i];
+          the_display[end - i] = temp;
+        }
 
       /* The lines have been shifted down in the buffer.  Clear all of the
-	 lines that were vacated. */
+         lines that were vacated. */
       for (i = start; i != (start + amount); i++)
-	{
-	  the_display[i]->text[0] = '\0';
-	  the_display[i]->textlen = 0;
-	  the_display[i]->inverse = 0;
-	}
+        {
+          the_display[i]->text[0] = '\0';
+          the_display[i]->textlen = 0;
+          the_display[i]->inverse = 0;
+        }
     }
 
   if (amount < 0)
     {
       last = start + amount;
       for (i = 0; i < (end - start); i++)
-	{
-	  temp = the_display[last + i];
-	  the_display[last + i] = the_display[start + i];
-	  the_display[start + i] = temp;
-	}
+        {
+          temp = the_display[last + i];
+          the_display[last + i] = the_display[start + i];
+          the_display[start + i] = temp;
+        }
 
       /* The lines have been shifted up in the buffer.  Clear all of the
-	 lines that are left over. */
+         lines that are left over. */
       for (i = end + amount; i != end; i++)
-	{
-	  the_display[i]->text[0] = '\0';
-	  the_display[i]->textlen = 0;
-	  the_display[i]->inverse = 0;
-	}
+        {
+          the_display[i]->text[0] = '\0';
+          the_display[i]->textlen = 0;
+          the_display[i]->inverse = 0;
+        }
     }
 }
 
@@ -434,9 +429,9 @@ display_scroll_line_starts (window, old_pagetop, old_starts, old_count)
      int old_pagetop, old_count;
      char **old_starts;
 {
-  register int i, old, new;	/* Indices into the line starts arrays. */
-  int last_new, last_old;	/* Index of the last visible line. */
-  int old_first, new_first;	/* Index of the first changed line. */
+  register int i, old, new;     /* Indices into the line starts arrays. */
+  int last_new, last_old;       /* Index of the last visible line. */
+  int old_first, new_first;     /* Index of the first changed line. */
   int unchanged_at_top = 0;
   int already_scrolled = 0;
 
@@ -466,39 +461,39 @@ display_scroll_line_starts (window, old_pagetop, old_starts, old_count)
   for (old = old_first + unchanged_at_top; old < last_old; old++)
     {
       for (new = new_first; new < last_new; new++)
-	if (old_starts[old] == window->line_starts[new])
-	  {
-	    /* Find the extent of the matching lines. */
-	    for (i = 0; (old + i) < last_old; i++)
-	      if (old_starts[old + i] != window->line_starts[new + i])
-		break;
+        if (old_starts[old] == window->line_starts[new])
+          {
+            /* Find the extent of the matching lines. */
+            for (i = 0; (old + i) < last_old; i++)
+              if (old_starts[old + i] != window->line_starts[new + i])
+                break;
 
-	    /* Scroll these lines if there are enough of them. */
-	    {
-	      int start, end, amount;
+            /* Scroll these lines if there are enough of them. */
+            {
+              int start, end, amount;
 
-	      start = (window->first_row
-		       + ((old + already_scrolled) - old_pagetop));
-	      amount = new - (old + already_scrolled);
-	      end = window->first_row + window->height;
+              start = (window->first_row
+                       + ((old + already_scrolled) - old_pagetop));
+              amount = new - (old + already_scrolled);
+              end = window->first_row + window->height;
 
-	      /* If we are shifting the block of lines down, then the last
-		 AMOUNT lines will become invisible.  Thus, don't bother
-		 scrolling them. */
-	      if (amount > 0)
-		end -= amount;
+              /* If we are shifting the block of lines down, then the last
+                 AMOUNT lines will become invisible.  Thus, don't bother
+                 scrolling them. */
+              if (amount > 0)
+                end -= amount;
 
-	      if ((end - start) > 0)
-		{
-		  display_scroll_display (start, end, amount);
+              if ((end - start) > 0)
+                {
+                  display_scroll_display (start, end, amount);
 
-		  /* Some lines have been scrolled.  Simulate the scrolling
-		     by offsetting the value of the old index. */
-		  old += i;
-		  already_scrolled += amount;
-		}
-	    }
-	  }
+                  /* Some lines have been scrolled.  Simulate the scrolling
+                     by offsetting the value of the old index. */
+                  old += i;
+                  already_scrolled += amount;
+                }
+            }
+          }
     }
 }
 
@@ -512,12 +507,13 @@ display_cursor_at_point (window)
   vpos = window_line_of_point (window) - window->pagetop + window->first_row;
   hpos = window_get_cursor_column (window);
   terminal_goto_xy (hpos, vpos);
+  fflush (stdout);
 }
 
 /* **************************************************************** */
-/*								    */
-/*		     Functions Static to this File		    */
-/*								    */
+/*                                                                  */
+/*                   Functions Static to this File                  */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Make a DISPLAY_LINE ** with width and height. */
@@ -552,7 +548,7 @@ free_display (display)
   if (!display)
     return;
 
-  for (i = 0; display_line = display[i]; i++)
+  for (i = 0; (display_line = display[i]); i++)
     {
       free (display_line->text);
       free (display_line);

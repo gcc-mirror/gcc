@@ -1,7 +1,7 @@
-/* multi.c -- Multitable stuff for makeinfo.
-   $Id: multi.c,v 1.1 1997/08/21 22:58:08 jason Exp $
+/* multi.c -- multitable stuff for makeinfo.
+   $Id: multi.c,v 1.9 1997/07/24 22:01:00 karl Exp $
 
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,10 +17,10 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
+#include "system.h"
 #include "makeinfo.h"
 
-#define MAXCOLS 100		/* remove this limit later @@ */
+#define MAXCOLS 100             /* remove this limit later @@ */
 
 
 /*
@@ -38,7 +38,7 @@
  * `select_output_environment' function switches from one output
  * environment to another.
  *
- * Environment #0 (i.e. element #0 of the table) is the regular
+ * Environment #0 (i.e., element #0 of the table) is the regular
  * environment that is used when we're not formatting a multitable.
  *
  * Environment #N (where N = 1,2,3,...) is the env. for column #N of
@@ -55,7 +55,7 @@ struct env
   int paragraph_is_open;
   int current_indent;
   int fill_column;
-} envs[MAXCOLS];		/* the environment table */
+} envs[MAXCOLS];                /* the environment table */
 
 /* index in environment table of currently selected environment */
 static int current_env_no;
@@ -67,6 +67,40 @@ static int last_column;
    to be drawn, separating rows and columns in the current multitable. */
 static int hsep, vsep;
 
+/* Output a row.  Have to keep `output_position' up-to-date for each
+   character we output, or the tags table will be off, leading to
+   chopped-off output files and undefined nodes (because they're in the
+   wrong file, etc.).  Perhaps it would be better to accumulate this
+   value somewhere and add it once at the end of the table, or return it
+   as the value, but this seems simplest.  */
+static void
+out_char (ch)
+    int ch;
+{
+  extern int output_position;
+  putc (ch, output_stream);
+  output_position++;
+}
+
+
+void
+draw_horizontal_separator ()
+{
+  int i, j, s;
+
+  for (s = 0; s < envs[0].current_indent; s++)
+    out_char (' ');
+  if (vsep)
+    out_char ('+');
+  for (i = 1; i <= last_column; i++) {
+    for (j = 0; j <= envs[i].fill_column; j++)
+      out_char ('-');
+    if (vsep)
+      out_char ('+');
+  }
+  out_char ('\n');
+}
+
 void
 do_multitable ()
 {
@@ -116,7 +150,7 @@ setup_multitable_parameters ()
   char *params = insertion_stack->item_function;
   int nchars;
   float columnfrac;
-  char command[200];
+  char command[200]; /* naughty, should be no fixed limits */
   int i = 1;
 
   /* We implement @hsep and @vsep even though TeX doesn't.
@@ -129,22 +163,32 @@ setup_multitable_parameters ()
       params++;
 
     if (*params == '@') {
-      sscanf (params, "%s%n", command, &nchars);
+      sscanf (params, "%200s", command);
+      nchars = strlen (command);
       params += nchars;
       if (strcmp (command, "@hsep") == 0)
-	hsep++;
+        hsep++;
       else if (strcmp (command, "@vsep") == 0)
-	vsep++;
+        vsep++;
       else if (strcmp (command, "@columnfractions") == 0) {
-	/* Clobber old environments and create new ones,
-	   starting at #1.  Environment #0 is the normal standard output,
-	   so we don't mess with it. */
-	for ( ; i <= MAXCOLS; i++) {
-	  if (sscanf (params, "%f%n", &columnfrac, &nchars) < 1)
-	    goto done;
-	  params += nchars;
-	  setup_output_environment (i, (int) (columnfrac * fill_column + .5));
-	}
+        /* Clobber old environments and create new ones, starting at #1.
+           Environment #0 is the normal output, so don't mess with it. */
+        for ( ; i <= MAXCOLS; i++) {
+          if (sscanf (params, "%f", &columnfrac) < 1)
+            goto done;
+          /* Unfortunately, can't use %n since some m68k-hp-bsd libc
+             doesn't support it.  So skip whitespace (preceding the
+             number) and then non-whitespace (the number).  */
+          while (*params && (*params == ' ' || *params == '\t'))
+            params++;
+          /* Hmm, but what what @columnfractions 3foo.  Well, I suppose
+             it's invalid input anyway.  */
+          while (*params && *params != ' ' && *params != '\t'
+                 && *params != '\n' && *params != '@')
+            params++;
+          setup_output_environment (i,
+                     (int) (columnfrac * (fill_column - current_indent) + .5));
+        }
       }
 
     } else if (*params == '{') {
@@ -154,18 +198,17 @@ setup_multitable_parameters ()
       }
       /* This gives us two spaces between columns.  Seems reasonable.
          Really should expand the text, though, so a template of
-         `@code{foo}' has a width of three, not ten.  Also have to match
-         braces, then.  */
+         `@code{foo}' has a width of five, not ten.  Also have to match
+         braces, then.  How to take into account current_indent here?  */
       setup_output_environment (i++, params++ - start);
       
     } else {
-      warning ("ignoring stray text `%s' after @multitable", params);
+      warning (_("ignoring stray text `%s' after @multitable"), params);
       break;
     }
   }
 
 done:
-
   flush_output ();
   inhibit_output_flushing ();
 
@@ -227,12 +270,12 @@ select_output_environment (n)
 }
 
 /* advance to the next environment number */
-int
+void
 nselect_next_environment ()
 {
   if (current_env_no >= last_column) {
-    line_error ("Too many columns in multitable item (max %d)", last_column);
-    return 1;
+    line_error (_("Too many columns in multitable item (max %d)"), last_column);
+    return;
   }
   select_output_environment (current_env_no + 1);
 }
@@ -240,31 +283,9 @@ nselect_next_environment ()
 
 static void output_multitable_row ();
 
-/* start a new item (row) of a multitable */
-multitable_item ()
-{
-  if (!multitable_active) {
-    /* impossible, I think. */
-    error ("multitable item not in active multitable");
-    exit (1);
-  }
-  if (current_env_no > 0) {
-    output_multitable_row ();
-  }
-  /* start at column 1 */
-  select_output_environment (1);
-  if (!output_paragraph) {
-    line_error ("Cannot select column #%d in multitable", current_env_no);
-    exit (FATAL);
-  }
-
-  init_column ();
-
-  return 0;
-}
-
 /* do anything needed at the beginning of processing a
    multitable column. */
+void
 init_column ()
 {
   /* don't indent 1st paragraph in the item */
@@ -274,27 +295,34 @@ init_column ()
   skip_whitespace ();
 }
 
-/* Output a row.  Have to keep `output_position' up-to-date for each
-   character we output, or the tags table will be off, leading to
-   chopped-off output files and undefined nodes (because they're in the
-   wrong file, etc.).  Perhaps it would be better to accumulate this
-   value somewhere and add it once at the end of the table, or return it
-   as the value, but this seems simplest.  */
-
-static void
-out_char (ch)
-    int ch;
+/* start a new item (row) of a multitable */
+int
+multitable_item ()
 {
-  extern int output_position;
-  putc (ch, output_stream);
-  output_position++;
-}
+  if (!multitable_active) {
+    /* impossible, I think. */
+    error (_("multitable item not in active multitable"));
+    exit (1);
+  }
+  if (current_env_no > 0) {
+    output_multitable_row ();
+  }
+  /* start at column 1 */
+  select_output_environment (1);
+  if (!output_paragraph) {
+    line_error (_("Cannot select column #%d in multitable"), current_env_no);
+    exit (FATAL);
+  }
 
+  init_column ();
+
+  return 0;
+}
 
 static void
 output_multitable_row ()
 {
-  int i, j, remaining;
+  int i, j, s, remaining;
 
   /* offset in the output paragraph of the next char needing
      to be output for that column. */
@@ -325,29 +353,34 @@ output_multitable_row ()
     /* first, see if there is any work to do */
     for (i = 1; i <= last_column; i++) {
       if (CHAR_ADDR (0) < envs[i].output_paragraph_offset) {
-	remaining = 1;
-	break;
+        remaining = 1;
+        break;
       }
     }
     if (!remaining)
       break;
-
+    
+    for (s = 0; s < envs[0].current_indent; s++)
+      out_char (' ');
+    
     if (vsep)
       out_char ('|');
 
     for (i = 1; i <= last_column; i++) {
+      for (s = 0; i < envs[i].current_indent; s++)
+        out_char (' ');
       for (j = 0; CHAR_ADDR (j) < envs[i].output_paragraph_offset; j++) {
-	if (CHAR_AT (j) == '\n')
-	  break;
-	out_char (CHAR_AT (j));
+        if (CHAR_AT (j) == '\n')
+          break;
+        out_char (CHAR_AT (j));
       }
-      offset[i] += j + 1;	/* skip last text plus skip the newline */
+      offset[i] += j + 1;       /* skip last text plus skip the newline */
       for (; j <= envs[i].fill_column; j++)
-	out_char (' ');
+        out_char (' ');
       if (vsep)
-	out_char ('|');	/* draw column separator */
+        out_char ('|'); /* draw column separator */
     }
-    out_char ('\n');	/* end of line */
+    out_char ('\n');    /* end of line */
   }
 
   if (hsep)
@@ -363,27 +396,12 @@ output_multitable_row ()
 #undef CHAR_AT
 #undef CHAR_ADDR
 
-int
-draw_horizontal_separator ()
-{
-  int i, j;
-  if (vsep)
-    out_char ('+');
-  for (i = 1; i <= last_column; i++) {
-    for (j = 0; j <= envs[i].fill_column; j++)
-      out_char ('-');
-    if (vsep)
-      out_char ('+');
-  }
-  out_char ('\n');
-}
-
 /* select a new column in current row of multitable */
 void
 cm_tab ()
 {
   if (!multitable_active)
-    error ("ignoring @tab outside of multitable");
+    error (_("ignoring @tab outside of multitable"));
   
   nselect_next_environment ();
   init_column ();
@@ -394,8 +412,6 @@ cm_tab ()
 void
 end_multitable ()
 {
-  int i;
-
   output_multitable_row ();
 
   /* Multitables cannot be nested.  Otherwise, we'd have to save the
@@ -409,10 +425,10 @@ end_multitable ()
   uninhibit_output_flushing ();
 
 #if 0
-  printf ("** Multicolumn output from last row:\n");
+  printf (_("** Multicolumn output from last row:\n"));
   for (i = 1; i <= last_column; i++) {
     select_output_environment (i);
-    printf ("* column #%d: output = %s\n", i, output_paragraph);
+    printf (_("* column #%d: output = %s\n"), i, output_paragraph);
   }
 #endif
 }

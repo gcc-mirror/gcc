@@ -1,9 +1,10 @@
-/* info.h -- Header file which includes all of the other headers. */
+/* info.h -- Header file which includes all of the other headers.
+   $Id: info.h,v 1.6 1997/07/15 18:34:15 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
+   This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,33 +22,86 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_INFO_H_)
-#define _INFO_H_
+#if !defined (INFO_H)
+#define INFO_H
 
-#include <stdio.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#if defined (HAVE_STRING_H)
-#include <string.h>
-#endif /* HAVE_STRING_H */
+/* We always want these, so why clutter up the compile command?  */
+#define HANDLE_MAN_PAGES
+#define NAMED_FUNCTIONS
+
+/* System dependencies.  */
+#include "system.h"
+
+/* Some of our other include files use these.  */
+typedef int Function ();
+typedef void VFunction ();
+typedef char *CFunction ();
+
+
 #include "filesys.h"
 #include "display.h"
 #include "session.h"
-#include "echo_area.h"
+#include "echo-area.h"
 #include "doc.h"
 #include "footnotes.h"
 #include "gc.h"
 
+#define info_toupper(x) (islower (x) ? toupper (x) : x)
+#define info_tolower(x) (isupper (x) ? tolower (x) : x)
+
+#if !defined (whitespace)
+#  define whitespace(c) ((c == ' ') || (c == '\t'))
+#endif /* !whitespace */
+
+#if !defined (whitespace_or_newline)
+#  define whitespace_or_newline(c) (whitespace (c) || (c == '\n'))
+#endif /* !whitespace_or_newline */
+
+/* Add POINTER to the list of pointers found in ARRAY.  SLOTS is the number
+   of slots that have already been allocated.  INDEX is the index into the
+   array where POINTER should be added.  GROW is the number of slots to grow
+   ARRAY by, in the case that it needs growing.  TYPE is a cast of the type
+   of object stored in ARRAY (e.g., NODE_ENTRY *. */
+#define add_pointer_to_array(pointer, idx, array, slots, grow, type) \
+  do { \
+    if (idx + 2 >= slots) \
+      array = (type *)(xrealloc (array, (slots += grow) * sizeof (type))); \
+    array[idx++] = (type)pointer; \
+    array[idx] = (type)NULL; \
+  } while (0)
+
+#define maybe_free(x) do { if (x) free (x); } while (0)
+
+#if !defined (zero_mem) && defined (HAVE_MEMSET)
+#  define zero_mem(mem, length) memset (mem, 0, length)
+#endif /* !zero_mem && HAVE_MEMSET */
+
+#if !defined (zero_mem) && defined (HAVE_BZERO)
+#  define zero_mem(mem, length) bzero (mem, length)
+#endif /* !zero_mem && HAVE_BZERO */
+
+#if !defined (zero_mem)
+#  define zero_mem(mem, length) \
+  do {                                  \
+        register int zi;                \
+        register unsigned char *place;  \
+                                        \
+        place = (unsigned char *)mem;   \
+        for (zi = 0; zi < length; zi++) \
+          place[zi] = 0;                \
+      } while (0)
+#endif /* !zero_mem */
+
+
 /* A structure associating the nodes visited in a particular window. */
 typedef struct {
-  WINDOW *window;		/* The window that this list is attached to. */
-  NODE **nodes;			/* Array of nodes visited in this window. */
-  int *pagetops;		/* For each node in NODES, the pagetop. */
-  long *points;			/* For each node in NODES, the point. */
-  int current;			/* Index in NODES of the current node. */
-  int nodes_index;		/* Index where to add the next node. */
-  int nodes_slots;		/* Number of slots allocated to NODES. */
+  WINDOW *window;               /* The window that this list is attached to. */
+  NODE **nodes;                 /* Array of nodes visited in this window. */
+  int *pagetops;                /* For each node in NODES, the pagetop. */
+  long *points;                 /* For each node in NODES, the point. */
+  int current;                  /* Index in NODES of the current node. */
+  int nodes_index;              /* Index where to add the next node. */
+  int nodes_slots;              /* Number of slots allocated to NODES. */
 } INFO_WINDOW;
 
 /* Array of structures describing for each window which nodes have been
@@ -78,23 +132,34 @@ extern int info_major_version, info_minor_version, info_patch_level;
 extern char *version_string ();
 
 /* Error message defines. */
-#define CANT_FIND_NODE	"Cannot find the node \"%s\"."
-#define CANT_FILE_NODE	"Cannot find the node \"(%s)%s\"."
-#define CANT_FIND_WIND	"Cannot find a window!"
-#define CANT_FIND_POINT	"Point doesn't appear within this window's node!"
-#define CANT_KILL_LAST	"Cannot delete the last window."
-#define NO_MENU_NODE	"No menu in this node."
-#define NO_FOOT_NODE	"No footnotes in this node."
-#define NO_XREF_NODE	"No cross references in this node."
-#define NO_POINTER	"No \"%s\" pointer for this node."
-#define UNKNOWN_COMMAND	"Unknown Info command `%c'.  `?' for help."
-#define TERM_TOO_DUMB	"Terminal type \"%s\" is not smart enough to run Info."
-#define AT_NODE_BOTTOM	"You are already at the last page of this node."
-#define AT_NODE_TOP	"You are already at the first page of this node."
-#define ONE_WINDOW	"Only one window."
-#define WIN_TOO_SMALL	"Resulting window would be too small."
-#define CANT_MAKE_HELP	\
-"There isn't enough room to make a help window.  Please delete a window."
+#define CANT_FIND_NODE  _("Cannot find the node \"%s\".")
+#define CANT_FILE_NODE  _("Cannot find the node \"(%s)%s\".")
+#define CANT_FIND_WIND  _("Cannot find a window!")
+#define CANT_FIND_POINT _("Point doesn't appear within this window's node!")
+#define CANT_KILL_LAST  _("Cannot delete the last window.")
+#define NO_MENU_NODE    _("No menu in this node.")
+#define NO_FOOT_NODE    _("No footnotes in this node.")
+#define NO_XREF_NODE    _("No cross references in this node.")
+#define NO_POINTER      _("No \"%s\" pointer for this node.")
+#define UNKNOWN_COMMAND _("Unknown Info command `%c'.  `?' for help.")
+#define TERM_TOO_DUMB   _("Terminal type \"%s\" is not smart enough to run Info.")
+#define AT_NODE_BOTTOM  _("You are already at the last page of this node.")
+#define AT_NODE_TOP     _("You are already at the first page of this node.")
+#define ONE_WINDOW      _("Only one window.")
+#define WIN_TOO_SMALL   _("Resulting window would be too small.")
+#define CANT_MAKE_HELP  \
+_("There isn't enough room to make a help window.  Please delete a window.")
 
-#endif /* !_INFO_H_ */
+
+/* Found in info-utils.c. */
+extern char *filename_non_directory ();
 
+#if !defined (BUILDING_LIBRARY)
+/* Found in session.c */
+extern int info_windows_initialized_p;
+
+/* Found in window.c. */
+extern void message_in_echo_area (), unmessage_in_echo_area ();
+#endif /* !BUILDING_LIBRARY */
+
+#endif /* !INFO_H */

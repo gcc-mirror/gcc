@@ -56,7 +56,7 @@ gc_pointers ()
   if (!info_windows || !gcable_pointers_index)
     return;
 
-  for (i = 0; iw = info_windows[i]; i++)
+  for (i = 0; (iw = info_windows[i]); i++)
     {
       for (j = 0; j < iw->nodes_index; j++)
 	{

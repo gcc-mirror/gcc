@@ -1,9 +1,10 @@
-/* nodes.h -- How we represent nodes internally. */
+/* nodes.h -- How we represent nodes internally.
+   $Id: nodes.h,v 1.5 1997/07/18 14:33:44 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
+   This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,15 +22,15 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_NODES_H_)
-#define _NODES_H_
+#if !defined (NODES_H)
+#define NODES_H
 
-#include "general.h"
+#include "info.h"
 
 /* **************************************************************** */
-/*								    */
-/*		      User Code Interface			    */
-/*								    */
+/*                                                                  */
+/*                    User Code Interface                           */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Callers generally only want the node itself.  This structure is used
@@ -41,45 +42,45 @@
    paths, so you might have: node->filename = "/usr/gnu/info/emacs-1",
    with node->parent = "/usr/gnu/info/emacs". */
 typedef struct {
-  char *filename;		/* The physical file containing this node. */
-  char *parent;			/* Non-null is the logical file name. */
-  char *nodename;		/* The name of this node. */
-  char *contents;		/* Characters appearing in this node. */
-  long nodelen;			/* The length of the CONTENTS member. */
-  int flags;			/* See immediately below. */
+  char *filename;               /* The physical file containing this node. */
+  char *parent;                 /* Non-null is the logical file name. */
+  char *nodename;               /* The name of this node. */
+  char *contents;               /* Characters appearing in this node. */
+  long nodelen;                 /* The length of the CONTENTS member. */
+  int flags;                    /* See immediately below. */
 } NODE;
 
 /* Defines that can appear in NODE->flags.  All informative. */
-#define N_HasTagsTable 0x01	/* This node was found through a tags table. */
-#define N_TagsIndirect 0x02	/* The tags table was an indirect one. */
-#define N_UpdateTags   0x04	/* The tags table is out of date. */
-#define N_IsCompressed 0x08	/* The file is compressed on disk. */
-#define N_IsInternal   0x10	/* This node was made by Info. */
-#define N_CannotGC     0x20	/* File buffer cannot be gc'ed. */
-#define N_IsManPage    0x40	/* This node is a Un*x manpage. */
+#define N_HasTagsTable 0x01     /* This node was found through a tags table. */
+#define N_TagsIndirect 0x02     /* The tags table was an indirect one. */
+#define N_UpdateTags   0x04     /* The tags table is out of date. */
+#define N_IsCompressed 0x08     /* The file is compressed on disk. */
+#define N_IsInternal   0x10     /* This node was made by Info. */
+#define N_CannotGC     0x20     /* File buffer cannot be gc'ed. */
+#define N_IsManPage    0x40     /* This node is a Un*x manpage. */
 
 /* **************************************************************** */
-/*								    */
-/*		       Internal Data Structures			    */
-/*								    */
+/*                                                                  */
+/*                     Internal Data Structures                     */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Some defines describing details about Info file contents. */
 
 /* String Constants. */
-#define INFO_FILE_LABEL			"File:"
-#define INFO_NODE_LABEL			"Node:"
-#define INFO_PREV_LABEL			"Prev:"
-#define INFO_ALTPREV_LABEL		"Previous:"
-#define INFO_NEXT_LABEL			"Next:"
-#define INFO_UP_LABEL			"Up:"
-#define INFO_MENU_LABEL			"\n* Menu:"
-#define INFO_MENU_ENTRY_LABEL		"\n* "
-#define INFO_XREF_LABEL			"*Note"
-#define TAGS_TABLE_END_LABEL		"\nEnd Tag Table"
-#define TAGS_TABLE_BEG_LABEL		"Tag Table:\n"
-#define INDIRECT_TAGS_TABLE_LABEL	"Indirect:\n"
-#define TAGS_TABLE_IS_INDIRECT_LABEL	"(Indirect)"
+#define INFO_FILE_LABEL                 "File:"
+#define INFO_NODE_LABEL                 "Node:"
+#define INFO_PREV_LABEL                 "Prev:"
+#define INFO_ALTPREV_LABEL              "Previous:"
+#define INFO_NEXT_LABEL                 "Next:"
+#define INFO_UP_LABEL                   "Up:"
+#define INFO_MENU_LABEL                 "\n* Menu:"
+#define INFO_MENU_ENTRY_LABEL           "\n* "
+#define INFO_XREF_LABEL                 "*Note"
+#define TAGS_TABLE_END_LABEL            "\nEnd Tag Table"
+#define TAGS_TABLE_BEG_LABEL            "Tag Table:\n"
+#define INDIRECT_TAGS_TABLE_LABEL       "Indirect:\n"
+#define TAGS_TABLE_IS_INDIRECT_LABEL    "(Indirect)"
 
 /* Character Constants. */
 #define INFO_COOKIE '\037'
@@ -94,10 +95,10 @@ typedef struct {
    member in the structure below simply contains the name of the current
    file.  The following structure describes a single node within a file. */
 typedef struct {
-  char *filename;		/* The file where this node can be found. */
-  char *nodename;		/* The node pointed to by this tag. */
-  long nodestart;		/* The offset of the start of this node. */
-  long nodelen;			/* The length of this node. */
+  char *filename;               /* The file where this node can be found. */
+  char *nodename;               /* The node pointed to by this tag. */
+  long nodestart;               /* The offset of the start of this node. */
+  long nodelen;                 /* The length of this node. */
 } TAG;
 
 /* The following structure is used to remember information about the contents
@@ -108,21 +109,21 @@ typedef struct {
    corresponding SLOTS member which says how many slots have been allocated
    (with malloc ()) for this array. */
 typedef struct {
-  char *filename;		/* The filename used to find this file. */
-  char *fullpath;		/* The full pathname of this info file. */
-  struct stat finfo;		/* Information about this file. */
-  char *contents;		/* The contents of this particular file. */
-  long filesize;		/* The number of bytes this file expands to. */
-  char **subfiles;		/* If non-null, the list of subfiles. */
-  TAG **tags;			/* If non-null, the indirect tags table. */
-  int tags_slots;		/* Number of slots allocated for TAGS. */
-  int flags;			/* Various flags.  Mimics of N_* flags. */
+  char *filename;               /* The filename used to find this file. */
+  char *fullpath;               /* The full pathname of this info file. */
+  struct stat finfo;            /* Information about this file. */
+  char *contents;               /* The contents of this particular file. */
+  long filesize;                /* The number of bytes this file expands to. */
+  char **subfiles;              /* If non-null, the list of subfiles. */
+  TAG **tags;                   /* If non-null, the indirect tags table. */
+  int tags_slots;               /* Number of slots allocated for TAGS. */
+  int flags;                    /* Various flags.  Mimics of N_* flags. */
 } FILE_BUFFER;
 
 /* **************************************************************** */
-/*								    */
-/*		    Externally Visible Functions		    */
-/*								    */
+/*                                                                  */
+/*                  Externally Visible Functions                    */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Array of FILE_BUFFER * which represents the currently loaded info files. */
@@ -165,4 +166,4 @@ extern char *info_recent_file_error;
 /* Create a new, empty file buffer. */
 extern FILE_BUFFER *make_file_buffer ();
 
-#endif /* !_NODES_H_ */
+#endif /* !NODES_H */

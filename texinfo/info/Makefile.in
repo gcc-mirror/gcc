@@ -1,232 +1,327 @@
-# Makefile for texinfo/info.	-*- Indented-Text -*-
-# $Id: Makefile.in,v 1.1 1997/08/21 22:57:59 jason Exp $
-# 
-# Copyright (C) 1993,96 Free Software Foundation, Inc.
+# Makefile.in generated automatically by automake 1.2 from Makefile.am
 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2, or (at your option)
-# any later version.
+# Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy, distribute and modify it.
 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
 
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-#### Start of system configuration section. ####
+SHELL = /bin/sh
 
 srcdir = @srcdir@
-VPATH  = $(srcdir):$(common)
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
 
-common = $(srcdir)/../libtxi
-util   = $(srcdir)/../util
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
 
-EXEEXT = @EXEEXT@
-CC = @CC@
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
 
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
 
-LN	= ln
-RM	= rm -f
-MKDIR	= mkdir
-MAKEINFO= ../makeinfo/makeinfo$(EXEEXT)
-
-DEFS = @DEFS@
-
-LDEFS = -DHANDLE_MAN_PAGES -DNAMED_FUNCTIONS=1 -DDEFAULT_INFOPATH='"$(DEFAULT_INFOPATH)"'
-
+NORMAL_INSTALL = true
+PRE_INSTALL = true
+POST_INSTALL = true
+NORMAL_UNINSTALL = true
+PRE_UNINSTALL = true
+POST_UNINSTALL = true
+CATALOGS = @CATALOGS@
+CATOBJEXT = @CATOBJEXT@
+CC = @CC@
+DATADIRNAME = @DATADIRNAME@
+EXEEXT = @EXEEXT@
+GENCAT = @GENCAT@
+GMOFILES = @GMOFILES@
+GMSGFMT = @GMSGFMT@
+GT_NO = @GT_NO@
+GT_YES = @GT_YES@
+INSTOBJEXT = @INSTOBJEXT@
+INTLDEPS = @INTLDEPS@
+INTLLIBS = @INTLLIBS@
+INTLOBJS = @INTLOBJS@
+MAINT = @MAINT@
+MAKEINFO = @MAKEINFO@
+MKINSTALLDIRS = @MKINSTALLDIRS@
+MSGFMT = @MSGFMT@
+PACKAGE = @PACKAGE@
+POFILES = @POFILES@
+POSUB = @POSUB@
+RANLIB = @RANLIB@
 TERMLIBS = @TERMLIBS@
-LIBS = $(TERMLIBS) -L../libtxi -ltxi @LIBS@
-LOADLIBES = $(LIBS)
+TEXCONFIG = @TEXCONFIG@
+TEXMF = @TEXMF@
+USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
+USE_NLS = @USE_NLS@
+VERSION = @VERSION@
+l = @l@
 
-SHELL = /bin/sh
+noinst_PROGRAMS = makedoc
 
-CFLAGS = @CFLAGS@
+# Use `ginfo' for building to avoid confusion with the standard `info'
+# target.  The install rule removes the `g' before applying any
+# user-specified name transformations.
+bin_PROGRAMS = ginfo
+transform = s/ginfo/info/; @program_transform_name@
+
+localedir = $(datadir)/locale
+
+# -I. for funs.h.
+INCLUDES = -I. -I$(top_srcdir)/lib -I../intl -DLOCALEDIR=\"$(localedir)\"
+LDADD = ../lib/libtxi.a @TERMLIBS@ @INTLLIBS@
+
+makedoc_SOURCES = makedoc.c
+ginfo_SOURCES = dir.c display.c display.h doc.c doc.h dribble.c dribble.h \
+  echo-area.c echo-area.h \
+  filesys.c filesys.h footnotes.c footnotes.h funs.h gc.c gc.h \
+  indices.c indices.h info-utils.c info-utils.h info.c info.h infodoc.c \
+  infomap.c infomap.h m-x.c man.c man.h nodemenu.c nodes.c nodes.h \
+  search.c search.h session.c session.h signals.c signals.h \
+  termdep.h terminal.c terminal.h tilde.c tilde.h \
+  variables.c variables.h window.c window.h
+
+EXTRA_DIST = README
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+bin_PROGRAMS =  ginfo$(EXEEXT)
+noinst_PROGRAMS =  makedoc$(EXEEXT)
+PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+ginfo_OBJECTS =  dir.o display.o doc.o dribble.o echo-area.o filesys.o \
+footnotes.o gc.o indices.o info-utils.o info.o infodoc.o infomap.o \
+m-x.o man.o nodemenu.o nodes.o search.o session.o signals.o terminal.o \
+tilde.o variables.o window.o
+ginfo_LDADD = $(LDADD)
+ginfo_DEPENDENCIES =  ../lib/libtxi.a
+ginfo_LDFLAGS = 
+makedoc_OBJECTS =  makedoc.o
+makedoc_LDADD = $(LDADD)
+makedoc_DEPENDENCIES =  ../lib/libtxi.a
+makedoc_LDFLAGS = 
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  README Makefile.am Makefile.in
 
-prefix = @prefix@
-exec_prefix = @exec_prefix@
-bindir = @bindir@
-# Prefix for each installed program, normally empty or `g'.
-binprefix = 
-# Prefix for each installed man page, normally empty or `g'.
-manprefix = 
-mandir = @mandir@/man1
-manext = 1
-infodir = @infodir@
-DEFAULT_INFOPATH= $(infodir):.
 
-#### End of system configuration section. ####
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-SRCS =	dir.c		display.c	echo_area.c	filesys.c \
-	info-utils.c	info.c		infodoc.c	infomap.c \
-	m-x.c		nodes.c		search.c	session.c \
-	signals.c	terminal.c	tilde.c		window.c \
-	xmalloc.c	indices.c	makedoc.c	nodemenu.c \
-	footnotes.c	dribble.c	variables.c	gc.c man.c \
-	clib.c
+TAR = tar
+GZIP = --best
+SOURCES = $(ginfo_SOURCES) $(makedoc_SOURCES)
+OBJECTS = $(ginfo_OBJECTS) $(makedoc_OBJECTS)
 
-HDRS =	display.h	doc.h		echo_area.h	filesys.h \
-	general.h	getopt.h	info-utils.h	info.h \
-	infomap.h	nodes.h		search.h 	session.h \
-	signals.h	termdep.h	terminal.h	tilde.h \
-	indices.h	window.h	footnotes.h	dribble.h \
-	variables.h	gc.h		clib.h
+default: all
 
-OBJS =	dir.o display.o doc.o echo_area.o filesys.o info-utils.o info.o \
-	infodoc.o infomap.o m-x.o nodes.o search.o session.o signals.o \
-	terminal.o tilde.o window.o indices.o xmalloc.o nodemenu.o \
-	footnotes.o dribble.o variables.o gc.o man.o clib.o
+.SUFFIXES:
+.SUFFIXES: .c .o
+$(srcdir)/Makefile.in: @MAINT@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --cygnus info/Makefile
 
-# The names of files which declare info commands.
-CMDFILES = $(srcdir)/session.c $(srcdir)/echo_area.c $(srcdir)/infodoc.c \
-	   $(srcdir)/m-x.c $(srcdir)/indices.c $(srcdir)/nodemenu.c \
-	   $(srcdir)/footnotes.c $(srcdir)/variables.c
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-# The name of the program which builds documentation structure from CMDFILES.
-MAKEDOC_OBJECTS = makedoc.o clib.o xmalloc.o
-MAKEDOC_SOURCE = makedoc.c clib.c xmalloc.c
 
-infofiles = info.info info-stnd.info
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "  $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`"; \
+	     $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
+	done
+
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
 
 .c.o:
-	$(CC) -c $(CPPFLAGS) $(LDEFS) $(DEFS) -I. -I$(srcdir) -I$(common) $(CFLAGS) $<
+	$(COMPILE) -c $<
 
-all: info$(EXEEXT) $(infofiles)
-sub-all: all
+mostlyclean-compile:
+	rm -f *.o core
 
-dvi: all-dvi
+clean-compile:
 
-install: all
-	$(INSTALL_PROGRAM) info$(EXEEXT) $(bindir)/$(binprefix)info$(EXEEXT)
-	-$(INSTALL_DATA) $(srcdir)/info.1 $(mandir)/$(manprefix)info.$(manext)
-	$(POST_INSTALL)
+distclean-compile:
+	rm -f *.tab.c
 
-install-info: 
-	-d=$(srcdir); test -f ./info.info && d=.; $(INSTALL_DATA) $$d/info.info $(infodir)/info.info
-	-d=$(srcdir); test -f ./info-stnd.info && d=.; $(INSTALL_DATA) $$d/info-stnd.info $(infodir)/info-stnd.info
-	../util/install-info --info-dir=$(infodir) $(infodir)/info.info
-	../util/install-info --info-dir=$(infodir) $(infodir)/info-stnd.info
+maintainer-clean-compile:
 
-uninstall:
-	$(RM) $(bindir)/info$(EXEEXT)
-	$(RM) $(infodir)/info.info
-	$(RM) $(infodir)/info-stnd.info
-	$(RM) $(mandir)/$(manprefix)info.$(manext)
+ginfo$(EXEEXT): $(ginfo_OBJECTS) $(ginfo_DEPENDENCIES)
+	@rm -f ginfo$(EXEEXT)
+	$(LINK) $(ginfo_LDFLAGS) $(ginfo_OBJECTS) $(ginfo_LDADD) $(LIBS)
 
-info$(EXEEXT): $(OBJS) ../libtxi/libtxi.a
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LOADLIBES)
+makedoc$(EXEEXT): $(makedoc_OBJECTS) $(makedoc_DEPENDENCIES)
+	@rm -f makedoc$(EXEEXT)
+	$(LINK) $(makedoc_LDFLAGS) $(makedoc_OBJECTS) $(makedoc_LDADD) $(LIBS)
 
-all-info: info.info info-stnd.info
+tags: TAGS
 
-info.info: info.texi
-	$(MAKEINFO) --no-split -I$(srcdir) info.texi
+ID: $(HEADERS) $(SOURCES)
+	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
 
-info-stnd.info: info-stnd.texi
-	$(MAKEINFO) --no-split -I$(srcdir) info-stnd.texi
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES)
+	tags=; \
+	here=`pwd`; \
+	test -z "$(ETAGS_ARGS)$(SOURCES)$(HEADERS)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $(SOURCES) $(HEADERS) -o $$here/TAGS)
 
-dvi all-dvi: info.dvi info-stnd.dvi
-info.dvi: info.texi
-	PATH="$(util):$${PATH}" TEXINPUTS="$(srcdir):$(common):$${TEXINPUTS}" texi2dvi $(srcdir)/info.texi
+mostlyclean-tags:
 
-info-stnd.dvi: info-stnd.texi
-	PATH="$(util):$${PATH}" TEXINPUTS="$(srcdir):$(common):$${TEXINPUTS}" texi2dvi $(srcdir)/info-stnd.texi
+clean-tags:
 
-makedoc$(EXEEXT): $(MAKEDOC_OBJECTS) ../libtxi/libtxi.a
-	$(CC) $(LDFLAGS) -o $@ $(MAKEDOC_OBJECTS) $(LOADLIBES)
+distclean-tags:
+	rm -f TAGS ID
 
-Makefile: $(srcdir)/Makefile.in ../config.status
-	cd ..; $(SHELL) config.status
+maintainer-clean-tags:
 
-clean:
-	$(RM) info$(EXEEXT) funs.h doc.c makedoc$(EXEEXT) $(OBJS) $(MAKEDOC_OBJECTS)
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-distclean: clean texclean
-	$(RM) Makefile config.status config.cache *~ core core.* *.core
-	$(RM) *.BAK makedoc-TAGS TAGS \#* *.info*
+subdir = info
 
-mostlyclean: clean
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  test -f $(distdir)/$$file \
+	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	  || cp -p $$d/$$file $(distdir)/$$file; \
+	done
+info:
+dvi:
+check: all
+	$(MAKE)
+installcheck:
+install-info:
+install-exec: install-binPROGRAMS
+	@$(NORMAL_INSTALL)
 
-realclean: distclean
-	$(RM) info.info info-stnd.info
+install-data: 
+	@$(NORMAL_INSTALL)
 
-TAGS: $(SRCS) makedoc-TAGS
-	etags $(SRCS)
-	cat makedoc-TAGS >>TAGS && $(RM) makedoc-TAGS
+install: install-exec install-data all
+	@:
 
-makedoc-TAGS: $(CMDFILES)
-	./makedoc -tags $(CMDFILES) >makedoc-TAGS
+uninstall: uninstall-binPROGRAMS
 
-texclean:
-	$(RM) *.toc *.aux *.log *.cp *.fn *.tp *.vr *.pg *.ky *.cps
-	$(RM) *.tps *.fns *.kys *.pgs *.vrs
+all: Makefile $(PROGRAMS)
 
-check: info
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
+installdirs:
+	$(mkinstalldirs)  $(bindir)
+
+
+mostlyclean-generic:
+	test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
+
+clean-generic:
+	test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	rm -f Makefile $(DISTCLEANFILES)
+	rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+
+maintainer-clean-generic:
+	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
+		mostlyclean-compile mostlyclean-tags \
+		mostlyclean-generic
+
+clean:  clean-binPROGRAMS clean-noinstPROGRAMS clean-compile clean-tags \
+		clean-generic mostlyclean
+
+distclean:  distclean-binPROGRAMS distclean-noinstPROGRAMS \
+		distclean-compile distclean-tags distclean-generic \
+		clean
+	rm -f config.status
+
+maintainer-clean:  maintainer-clean-binPROGRAMS \
+		maintainer-clean-noinstPROGRAMS \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-generic distclean
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+.PHONY: default mostlyclean-binPROGRAMS distclean-binPROGRAMS \
+clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
+install-binPROGRAMS mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
+clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info dvi installcheck \
+install-info install-exec install-data install uninstall all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+
 
 # The files `doc.c' and `funs.h' are created by ./makedoc run over the source
 # files which contain DECLARE_INFO_COMMAND.  `funs.h' is a header file
 # listing the functions found.  `doc.c' is a structure containing pointers
 # to those functions along with completable names and documentation strings.
-funs.h: makedoc$(EXEEXT) $(CMDFILES)
-	-@if test -f funs.h; then mv -f funs.h old-funs.h; fi; :
-	-@if test -f doc.c; then mv -f doc.c old-doc.c; fi; :
-	./makedoc$(EXEEXT) $(CMDFILES)
-	-@if cmp -s old-funs.h funs.h; then mv old-funs.h funs.h; \
-	  else $(RM) old-funs.h; fi; :
-	-@if cmp -s old-doc.c doc.c; then mv old-doc.c doc.c; \
-	  else $(RM) old-doc.c; fi; :
+# 
+# I do not know how to get this right.
+# BUILT_SOURCES = doc.c funs.h
+#
+#cmd_sources = $(srcdir)/session.c $(srcdir)/echo-area.c $(srcdir)/infodoc.c \
+#  $(srcdir)/m-x.c $(srcdir)/indices.c $(srcdir)/nodemenu.c \
+#  $(srcdir)/footnotes.c $(srcdir)/variables.c
+#
+#$(BUILTSOURCES): makedoc $(cmd_sources)
+#	./makedoc $(cmd_sources)
 
-doc.c: 		funs.h
-dribble.o:	dribble.c dribble.h
-display.o:	display.c
-echo_area.o:	echo_area.c
-filesys.o:	filesys.c
-info-utils.o:	info-utils.c
-info.o:		info.c filesys.h
-infodoc.o:	infodoc.c
-infomap.o:	infomap.c
-m-x.o:		m-x.c
-nodes.o:	nodes.c
-search.o:	search.c
-session.o:	session.c
-signals.o:	signals.c
-terminal.o:	terminal.c
-tilde.o:	tilde.c
-window.o:	window.c
-xmalloc.o:	xmalloc.c
-indices.o:	indices.c
-makedoc.o:	makedoc.c
-
-dir.o: 		dir.c
-display.o: 	nodes.h info-utils.h search.h
-display.o: 	terminal.h window.h display.h
-echo_area.o: 	info.h
-filesys.o: 	general.h tilde.h filesys.h
-footnotes.o: 	footnotes.h
-info-utils.o: 	info-utils.h nodes.h search.h
-info.o: 	info.h $(common)/getopt.h
-infodoc.o: 	info.h doc.h
-infomap.o: 	infomap.h funs.h
-gc.o:		info.h
-m-x.o: 		info.h
-nodes.o: 	search.h filesys.h
-nodes.o: 	nodes.h info-utils.h
-search.o: 	general.h search.h nodes.h
-session.o: 	info.h
-signals.o: 	info.h signals.h
-terminal.o: 	terminal.h termdep.h
-tilde.o: 	tilde.h
-variables.c: 	variables.h
-window.o: 	nodes.h window.h display.h
-window.o: 	info-utils.h search.h infomap.h
-
-# Prevent GNU make v3 from overflowing arg limit on SysV.
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
-
-# eof

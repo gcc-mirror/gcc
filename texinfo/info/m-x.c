@@ -1,9 +1,7 @@
-/* m-x.c -- Meta-X minibuffer reader. */
+/* m-x.c -- Meta-X minibuffer reader.
+   $Id: m-x.c,v 1.5 1997/07/24 21:28:00 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
-   stored in Info format.
-
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,9 +22,9 @@
 #include "info.h"
 
 /* **************************************************************** */
-/*								    */
-/*		       Reading Named Commands			    */
-/*								    */
+/*                                                                  */
+/*                     Reading Named Commands                       */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Read the name of an Info function in the echo area and return the
@@ -49,12 +47,12 @@ read_function_name (prompt, window)
       REFERENCE *entry;
 
       entry = (REFERENCE *)xmalloc (sizeof (REFERENCE));
-      entry->label = strdup (function_doc_array[i].func_name);
+      entry->label = xstrdup (function_doc_array[i].func_name);
       entry->nodename = (char *)NULL;
       entry->filename = (char *)NULL;
 
       add_pointer_to_array
-	(entry, array_index, array, array_slots, 200, REFERENCE *);
+        (entry, array_index, array, array_slots, 200, REFERENCE *);
     }
 
   line = info_read_completing_in_echo_area (window, prompt, array);
@@ -68,11 +66,11 @@ read_function_name (prompt, window)
 }
 
 DECLARE_INFO_COMMAND (describe_command,
-   "Read the name of an Info command and describe it")
+   _("Read the name of an Info command and describe it"))
 {
   char *line;
 
-  line = read_function_name ("Describe command: ", window);
+  line = read_function_name (_("Describe command: "), window);
 
   if (!line)
     {
@@ -83,22 +81,19 @@ DECLARE_INFO_COMMAND (describe_command,
   /* Describe the function named in "LINE". */
   if (*line)
     {
-      char *fundoc;
-      VFunction *fun;
-
-      fun = named_function (line);
+      VFunction *fun = named_function (line);
 
       if (!fun)
-	return;
+        return;
 
       window_message_in_echo_area ("%s: %s.",
-				   line, function_documentation (fun));
+                                   line, function_documentation (fun));
     }
   free (line);
 }
 
 DECLARE_INFO_COMMAND (info_execute_command,
-   "Read a command name in the echo area and execute it")
+   _("Read a command name in the echo area and execute it"))
 {
   char *line;
 
@@ -133,11 +128,11 @@ DECLARE_INFO_COMMAND (info_execute_command,
     VFunction *function;
 
     if ((active_window != the_echo_area) &&
-	(strncmp (line, "echo-area-", 10) == 0))
+        (strncmp (line, "echo-area-", 10) == 0))
       {
-	free (line);
-	info_error ("Cannot execute an `echo-area' command here.");
-	return;
+        free (line);
+        info_error (_("Cannot execute an `echo-area' command here."));
+        return;
       }
 
     function = named_function (line);
@@ -152,7 +147,7 @@ DECLARE_INFO_COMMAND (info_execute_command,
 
 /* Okay, now that we have M-x, let the user set the screen height. */
 DECLARE_INFO_COMMAND (set_screen_height,
-  "Set the height of the displayed window")
+  _("Set the height of the displayed window"))
 {
   int new_height;
 
@@ -165,24 +160,24 @@ DECLARE_INFO_COMMAND (set_screen_height,
 
       new_height = screenheight;
 
-      sprintf (prompt, "Set screen height to (%d): ", new_height);
+      sprintf (prompt, _("Set screen height to (%d): "), new_height);
 
       line = info_read_in_echo_area (window, prompt);
 
       /* If the user aborted, do that now. */
       if (!line)
-	{
-	  info_abort_key (active_window, count, 0);
-	  return;
-	}
+        {
+          info_abort_key (active_window, count, 0);
+          return;
+        }
 
       /* Find out what the new height is supposed to be. */
       if (*line)
-	new_height = atoi (line);
+        new_height = atoi (line);
 
       /* Clear the echo area if it isn't active. */
       if (!echo_area_is_active)
-	window_clear_echo_area ();
+        window_clear_echo_area ();
 
       free (line);
     }

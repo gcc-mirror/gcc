@@ -1,105 +1,323 @@
-# Makefile for GNU Texindex and other utilities.
-# $Id: Makefile.in,v 1.1 1997/08/21 22:58:12 jason Exp $
-# 
-# Copyright (C) 1990, 91, 92, 96 Free Software Foundation, Inc.
+# Makefile.in generated automatically by automake 1.2 from Makefile.am
 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2, or (at your option)
-# any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-#### Start of system configuration section. ####
-
-srcdir = @srcdir@
-VPATH  = $(srcdir):$(common)
-
-common = $(srcdir)/../libtxi
-
-EXEEXT = @EXEEXT@
-CC = @CC@
-INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-INSTALL_DATA = @INSTALL_DATA@
-
-LN	= ln
-RM	= rm -f
-MKDIR	= mkdir
-
-DEFS = @DEFS@
-LIBS = -L../libtxi -ltxi @LIBS@
-LOADLIBES = $(LIBS)
+# Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy, distribute and modify it.
 
 SHELL = /bin/sh
 
-CFLAGS = @CFLAGS@
-LDFLAGS = @LDFLAGS@
-
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+
 bindir = @bindir@
-# Prefix for each installed program, normally empty or `g'.
-binprefix = 
-# Prefix for each installed man page, normally empty or `g'.
-manprefix = 
-mandir = @mandir@/man1
-manext = 1
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
 infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
 
-#### End of system configuration section. ####
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
 
-all: texindex$(EXEEXT) install-info$(EXEEXT)
-sub-all: all
+top_builddir = ..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = true
+PRE_INSTALL = true
+POST_INSTALL = true
+NORMAL_UNINSTALL = true
+PRE_UNINSTALL = true
+POST_UNINSTALL = true
+CATALOGS = @CATALOGS@
+CATOBJEXT = @CATOBJEXT@
+CC = @CC@
+DATADIRNAME = @DATADIRNAME@
+EXEEXT = @EXEEXT@
+GENCAT = @GENCAT@
+GMOFILES = @GMOFILES@
+GMSGFMT = @GMSGFMT@
+GT_NO = @GT_NO@
+GT_YES = @GT_YES@
+INSTOBJEXT = @INSTOBJEXT@
+INTLDEPS = @INTLDEPS@
+INTLLIBS = @INTLLIBS@
+INTLOBJS = @INTLOBJS@
+MAINT = @MAINT@
+MAKEINFO = @MAKEINFO@
+MKINSTALLDIRS = @MKINSTALLDIRS@
+MSGFMT = @MSGFMT@
+PACKAGE = @PACKAGE@
+POFILES = @POFILES@
+POSUB = @POSUB@
+RANLIB = @RANLIB@
+TERMLIBS = @TERMLIBS@
+TEXCONFIG = @TEXCONFIG@
+TEXMF = @TEXMF@
+USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
+USE_NLS = @USE_NLS@
+VERSION = @VERSION@
+l = @l@
+
+bin_PROGRAMS = texindex
+bin_SCRIPTS = texi2dvi
+
+noinst_PROGRAMS = install-inf
+install_inf_SOURCES = install-info.c
+
+localedir = $(datadir)/locale
+INCLUDES = -I$(top_srcdir)/lib -I../intl -DLOCALEDIR=\"$(localedir)\"
+LDADD = ../lib/libtxi.a @INTLLIBS@
+
+EXTRA_DIST = README deref.c fixfonts gen-dir-node tex3patch texi2dvi \
+             update-info 
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+bin_PROGRAMS =  texindex$(EXEEXT)
+noinst_PROGRAMS =  install-inf$(EXEEXT)
+PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+texindex_SOURCES = texindex.c
+texindex_OBJECTS =  texindex.o
+texindex_LDADD = $(LDADD)
+texindex_DEPENDENCIES =  ../lib/libtxi.a
+texindex_LDFLAGS = 
+install_inf_OBJECTS =  install-info.o
+install_inf_LDADD = $(LDADD)
+install_inf_DEPENDENCIES =  ../lib/libtxi.a
+install_inf_LDFLAGS = 
+SCRIPTS =  $(bin_SCRIPTS)
+
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  README Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP = --best
+SOURCES = texindex.c $(install_inf_SOURCES)
+OBJECTS = texindex.o $(install_inf_OBJECTS)
+
+default: all
+
+.SUFFIXES:
+.SUFFIXES: .c .o
+$(srcdir)/Makefile.in: @MAINT@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --cygnus util/Makefile
+
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "  $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`"; \
+	     $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
+	done
+
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
 
 .c.o:
-	$(CC) -c $(CPPFLAGS) $(DEFS) -I. -I$(srcdir) -I$(common) $(CFLAGS) $<
+	$(COMPILE) -c $<
 
+mostlyclean-compile:
+	rm -f *.o core
 
-install: all
-	$(INSTALL_PROGRAM) texindex$(EXEEXT) $(bindir)/texindex$(EXEEXT)
-	$(INSTALL_PROGRAM) $(srcdir)/texi2dvi $(bindir)/texi2dvi
-	$(INSTALL_PROGRAM) install-info$(EXEEXT) $(bindir)/install-info$(EXEEXT)
+clean-compile:
 
-install-info:
+distclean-compile:
+	rm -f *.tab.c
+
+maintainer-clean-compile:
+
+texindex$(EXEEXT): $(texindex_OBJECTS) $(texindex_DEPENDENCIES)
+	@rm -f texindex$(EXEEXT)
+	$(LINK) $(texindex_LDFLAGS) $(texindex_OBJECTS) $(texindex_LDADD) $(LIBS)
+
+install-inf$(EXEEXT): $(install_inf_OBJECTS) $(install_inf_DEPENDENCIES)
+	@rm -f install-inf$(EXEEXT)
+	$(LINK) $(install_inf_LDFLAGS) $(install_inf_OBJECTS) $(install_inf_LDADD) $(LIBS)
+
+install-binSCRIPTS: $(bin_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(bindir)
+	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(INSTALL_SCRIPT) $$p $(bindir)/`echo $$p|sed '$(transform)'`$(EXEEXT)"; \
+	    $(INSTALL_SCRIPT) $$p $(bindir)/`echo $$p|sed '$(transform)'`$(EXEEXT); \
+	  else if test -f $(srcdir)/$$p; then \
+	    echo " $(INSTALL_SCRIPT) $(srcdir)/$$p $(bindir)/`echo $$p|sed '$(transform)'`$(EXEEXT)"; \
+	    $(INSTALL_SCRIPT) $(srcdir)/$$p $(bindir)/`echo $$p|sed '$(transform)'`$(EXEEXT); \
+	  else :; fi; fi; \
+	done
+
+uninstall-binSCRIPTS:
+	$(NORMAL_UNINSTALL)
+	list='$(bin_SCRIPTS)'; for p in $$list; do \
+	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
+	done
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES)
+	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES)
+	tags=; \
+	here=`pwd`; \
+	test -z "$(ETAGS_ARGS)$(SOURCES)$(HEADERS)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $(SOURCES) $(HEADERS) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = util
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  test -f $(distdir)/$$file \
+	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	  || cp -p $$d/$$file $(distdir)/$$file; \
+	done
+info:
 dvi:
+check: all
+	$(MAKE)
+installcheck:
+install-info:
+install-exec: install-binPROGRAMS install-binSCRIPTS install-exec-local
+	@$(NORMAL_INSTALL)
 
-uninstall:
-	rm -f $(bindir)/texindex$(EXEEXT) $(bindir)/texi2dvi $(bindir)/install-info$(EXEEXT)
+install-data: 
+	@$(NORMAL_INSTALL)
 
-Makefile: Makefile.in ../config.status
-	cd ..; $(SHELL) config.status
+install: install-exec install-data all
+	@:
 
-TAGS:
-	etags *.c *.h $(common)/getopt*.c $(common)/getopt.h
+uninstall: uninstall-binPROGRAMS uninstall-binSCRIPTS
 
-clean:
-	rm -f *.o a.out core core.* texindex install-info
+all: Makefile $(PROGRAMS) $(SCRIPTS)
 
-mostlyclean: clean
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
+installdirs:
+	$(mkinstalldirs)  $(bindir) $(bindir)
 
-distclean: clean
-	rm -f Makefile config.status
 
-realclean: distclean
-	rm -f TAGS
+mostlyclean-generic:
+	test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
-texindex: texindex.o ../libtxi/libtxi.a
-	$(CC) $(LDFLAGS) -o texindex texindex.o $(LOADLIBES)
+clean-generic:
+	test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
-texindex.o: texindex.c $(common)/getopt.h
+distclean-generic:
+	rm -f Makefile $(DISTCLEANFILES)
+	rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 
-install-info: install-info.o
-	$(CC) $(LDFLAGS) -o install-info install-info.o $(LOADLIBES)
+maintainer-clean-generic:
+	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
+		mostlyclean-compile mostlyclean-tags \
+		mostlyclean-generic
 
-install-info.o: install-info.c $(common)/getopt.h
+clean:  clean-binPROGRAMS clean-noinstPROGRAMS clean-compile clean-tags \
+		clean-generic mostlyclean
 
-# Prevent GNU make v3 from overflowing arg limit on SysV.
+distclean:  distclean-binPROGRAMS distclean-noinstPROGRAMS \
+		distclean-compile distclean-tags distclean-generic \
+		clean
+	rm -f config.status
+
+maintainer-clean:  maintainer-clean-binPROGRAMS \
+		maintainer-clean-noinstPROGRAMS \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-generic distclean
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+.PHONY: default mostlyclean-binPROGRAMS distclean-binPROGRAMS \
+clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
+install-binPROGRAMS mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
+clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile uninstall-binSCRIPTS install-binSCRIPTS tags \
+mostlyclean-tags distclean-tags clean-tags maintainer-clean-tags \
+distdir info dvi installcheck install-info install-exec install-data \
+install uninstall all installdirs mostlyclean-generic distclean-generic \
+clean-generic maintainer-clean-generic clean mostlyclean distclean \
+maintainer-clean
+
+
+install-exec-local: $(noinst_PROGRAMS)
+	$(mkinstalldirs) $(bindir)
+	$(INSTALL_PROGRAM) install-inf$(EXEEXT) $(bindir)/`echo install-info$(EXEEXT)|sed '$(transform)'`; \
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

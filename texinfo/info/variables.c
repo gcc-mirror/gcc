@@ -1,9 +1,10 @@
-/* variables.c -- How to manipulate user visible variables in Info. */
+/* variables.c -- How to manipulate user visible variables in Info.
+   $Id: variables.c,v 1.5 1997/07/18 14:34:23 karl Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
+   This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -25,9 +26,9 @@
 #include "variables.h"
 
 /* **************************************************************** */
-/*								    */
-/*		    User Visible Variables in Info		    */
-/*								    */
+/*                                                                  */
+/*                  User Visible Variables in Info                  */
+/*                                                                  */
 /* **************************************************************** */
 
 /* Choices used by the completer when reading a zero/non-zero value for
@@ -36,73 +37,75 @@ static char *on_off_choices[] = { "Off", "On", (char *)NULL };
 
 VARIABLE_ALIST info_variables[] = {
   { "automatic-footnotes",
-      "When \"On\", footnotes appear and disappear automatically",
+      N_("When \"On\", footnotes appear and disappear automatically"),
       &auto_footnotes_p, (char **)on_off_choices },
 
   { "automatic-tiling",
-      "When \"On\", creating or deleting a window resizes other windows",
+      N_("When \"On\", creating or deleting a window resizes other windows"),
       &auto_tiling_p, (char **)on_off_choices },
 
   { "visible-bell",
-      "When \"On\", flash the screen instead of ringing the bell",
+      N_("When \"On\", flash the screen instead of ringing the bell"),
       &terminal_use_visible_bell_p, (char **)on_off_choices },
 
   { "errors-ring-bell",
-      "When \"On\", errors cause the bell to ring",
+      N_("When \"On\", errors cause the bell to ring"),
       &info_error_rings_bell_p, (char **)on_off_choices },
 
   { "gc-compressed-files",
-      "When \"On\", Info garbage collects files which had to be uncompressed",
+      N_("When \"On\", Info garbage collects files which had to be uncompressed"),
       &gc_compressed_files, (char **)on_off_choices },
   { "show-index-match",
-      "When \"On\", the portion of the matched search string is highlighted",
+      N_("When \"On\", the portion of the matched search string is highlighted"),
       &show_index_match, (char **)on_off_choices },
 
   { "scroll-behaviour",
-      "Controls what happens when scrolling is requested at the end of a node",
+      N_("Controls what happens when scrolling is requested at the end of a node"),
       &info_scroll_behaviour, (char **)info_scroll_choices },
 
   { "scroll-step",
-      "The number lines to scroll when the cursor moves out of the window",
+      N_("The number lines to scroll when the cursor moves out of the window"),
       &window_scroll_step, (char **)NULL },
 
   { "ISO-Latin",
-      "When \"On\", Info accepts and displays ISO Latin characters",
+      N_("When \"On\", Info accepts and displays ISO Latin characters"),
       &ISO_Latin_p, (char **)on_off_choices },
 
   { (char *)NULL, (char *)NULL, (int *)NULL, (char **)NULL }
 };
 
-DECLARE_INFO_COMMAND (describe_variable, "Explain the use of a variable")
+DECLARE_INFO_COMMAND (describe_variable, _("Explain the use of a variable"))
 {
   VARIABLE_ALIST *var;
   char *description;
 
   /* Get the variable's name. */
-  var = read_variable_name ("Describe variable: ", window);
+  var = read_variable_name (_("Describe variable: "), window);
 
   if (!var)
     return;
 
-  description = (char *)xmalloc (20 + strlen (var->name) + strlen (var->doc));
+  description = (char *)xmalloc (20 + strlen (var->name)
+				 + strlen (_(var->doc)));
 
   if (var->choices)
     sprintf (description, "%s (%s): %s.",
-	     var->name, var->choices[*(var->value)], var->doc);
+             var->name, var->choices[*(var->value)], _(var->doc));
   else
-    sprintf (description, "%s (%d): %s.", var->name, *(var->value), var->doc);
+    sprintf (description, "%s (%d): %s.",
+	     var->name, *(var->value), _(var->doc));
 
   window_message_in_echo_area ("%s", description);
   free (description);
 }
 
-DECLARE_INFO_COMMAND (set_variable, "Set the value of an Info variable")
+DECLARE_INFO_COMMAND (set_variable, _("Set the value of an Info variable"))
 {
   VARIABLE_ALIST *var;
   char *line;
 
   /* Get the variable's name and value. */
-  var = read_variable_name ("Set variable: ", window);
+  var = read_variable_name (_("Set variable: "), window);
 
   if (!var)
     return;
@@ -113,86 +116,86 @@ DECLARE_INFO_COMMAND (set_variable, "Set the value of an Info variable")
 
     if (!var->choices)
       {
-	int potential_value;
+        int potential_value;
 
-	if (info_explicit_arg || count != 1)
-	  potential_value = count;
-	else
-	  potential_value = *(var->value);
+        if (info_explicit_arg || count != 1)
+          potential_value = count;
+        else
+          potential_value = *(var->value);
 
-	sprintf (prompt, "Set %s to value (%d): ",
-		 var->name, potential_value);
-	line = info_read_in_echo_area (active_window, prompt);
+        sprintf (prompt, _("Set %s to value (%d): "),
+                 var->name, potential_value);
+        line = info_read_in_echo_area (active_window, prompt);
 
-	/* If no error was printed, clear the echo area. */
-	if (!info_error_was_printed)
-	  window_clear_echo_area ();
+        /* If no error was printed, clear the echo area. */
+        if (!info_error_was_printed)
+          window_clear_echo_area ();
 
-	/* User aborted? */
-	if (!line)
-	  return;
+        /* User aborted? */
+        if (!line)
+          return;
 
-	/* If the user specified a value, get that, otherwise, we are done. */
-	canonicalize_whitespace (line);
-	if (*line)
-	  *(var->value) = atoi (line);
-	else
-	  *(var->value) = potential_value;
+        /* If the user specified a value, get that, otherwise, we are done. */
+        canonicalize_whitespace (line);
+        if (*line)
+          *(var->value) = atoi (line);
+        else
+          *(var->value) = potential_value;
 
-	free (line);
+        free (line);
       }
     else
       {
-	register int i;
-	REFERENCE **array = (REFERENCE **)NULL;
-	int array_index = 0;
-	int array_slots = 0;
+        register int i;
+        REFERENCE **array = (REFERENCE **)NULL;
+        int array_index = 0;
+        int array_slots = 0;
 
-	for (i = 0; var->choices[i]; i++)
-	  {
-	    REFERENCE *entry;
+        for (i = 0; var->choices[i]; i++)
+          {
+            REFERENCE *entry;
 
-	    entry = (REFERENCE *)xmalloc (sizeof (REFERENCE));
-	    entry->label = strdup (var->choices[i]);
-	    entry->nodename = (char *)NULL;
-	    entry->filename = (char *)NULL;
+            entry = (REFERENCE *)xmalloc (sizeof (REFERENCE));
+            entry->label = xstrdup (var->choices[i]);
+            entry->nodename = (char *)NULL;
+            entry->filename = (char *)NULL;
 
-	    add_pointer_to_array
-	      (entry, array_index, array, array_slots, 10, REFERENCE *);
-	  }
+            add_pointer_to_array
+              (entry, array_index, array, array_slots, 10, REFERENCE *);
+          }
 
-	sprintf (prompt, "Set %s to value (%s): ",
-		 var->name, var->choices[*(var->value)]);
+        sprintf (prompt, _("Set %s to value (%s): "),
+                 var->name, var->choices[*(var->value)]);
 
-	/* Ask the completer to read a variable value for us. */
-	line = info_read_completing_in_echo_area (window, prompt, array);
+        /* Ask the completer to read a variable value for us. */
+        line = info_read_completing_in_echo_area (window, prompt, array);
 
-	info_free_references (array);
+        info_free_references (array);
 
-	if (!echo_area_is_active)
-	  window_clear_echo_area ();
+        if (!echo_area_is_active)
+          window_clear_echo_area ();
 
-	/* User aborted? */
-	if (!line)
-	  {
-	    info_abort_key (active_window, 0, 0);
-	    return;
-	  }
+        /* User aborted? */
+        if (!line)
+          {
+            info_abort_key (active_window, 0, 0);
+            return;
+          }
 
-	/* User accepted default choice?  If so, no change. */
-	if (!*line)
-	  {
-	    free (line);
-	    return;
-	  }
+        /* User accepted default choice?  If so, no change. */
+        if (!*line)
+          {
+            free (line);
+            return;
+          }
 
-	/* Find the choice in our list of choices. */
-	for (i = 0; var->choices[i]; i++)
-	  if (strcmp (var->choices[i], line) == 0)
-	    break;
+        /* Find the choice in our list of choices. */
+        for (i = 0; var->choices[i]; i++)
+          if (strcmp (var->choices[i], line) == 0)
+            break;
 
-	if (var->choices[i])
-	  *(var->value) = i;
+        if (var->choices[i])
+          *(var->value) = i;
       }
   }
 }
@@ -259,13 +262,13 @@ make_variable_completions_array ()
     {
       REFERENCE *entry;
 
-      entry = (REFERENCE *)xmalloc (sizeof (REFERENCE));
-      entry->label = strdup (info_variables[i].name);
+      entry = (REFERENCE *) xmalloc (sizeof (REFERENCE));
+      entry->label = xstrdup (info_variables[i].name);
       entry->nodename = (char *)NULL;
       entry->filename = (char *)NULL;
 
       add_pointer_to_array
-	(entry, array_index, array, array_slots, 200, REFERENCE *);
+        (entry, array_index, array, array_slots, 200, REFERENCE *);
     }
 
   return (array);
