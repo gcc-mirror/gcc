@@ -1,3 +1,7 @@
+2003-01-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* src/powerpc/ppc_closure.S: Recode to fit shared libs.
+
 2003-01-28  Andrew Haley  <aph@redhat.com>
 
         * include/ffi.h.in: Enable FFI_CLOSURES for x86_64.

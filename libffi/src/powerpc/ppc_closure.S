@@ -1,14 +1,13 @@
 #define LIBFFI_ASM
 #include <powerpc/asm.h>
 
-.globl	ffi_closure_helper_SYSV
+        .file   "ppc_closure.S"
 
 ENTRY(ffi_closure_SYSV)
 .LFB1:
 	stwu %r1,-144(%r1)
 .LCFI0:
 	mflr %r0
-	stw %r31,140(%r1)
 .LCFI1:
 	stw %r0,148(%r1)
 
@@ -63,87 +62,136 @@ ENTRY(ffi_closure_SYSV)
         # look up the proper starting point in table 
 	# by using return type as offset
 	addi %r5,%r1,112   # get pointer to results area
-	addis %r4,0,.L60@ha  # get address of jump table
-	addi %r4,%r4,.L60@l
-	slwi %r3,%r3,2         # now multiply return type by 4
-	lwzx %r3,%r4,%r3         # get the contents of that table value
-	add %r3,%r3,%r4          # add contents of table to table address
+	bl .Lget_ret_type0_addr # get pointer to .Lret_type0 into LR
+	mflr %r4           # move to r4
+	slwi %r3,%r3,4     # now multiply return type by 16
+	add %r3,%r3,%r4    # add contents of table to table address
 	mtctr %r3
 	bctr               # jump to it
 .LFE1:
-	.align 2
-.L60:
-	.long .L44-.L60    # FFI_TYPE_VOID
-	.long .L50-.L60    # FFI_TYPE_INT
-	.long .L47-.L60    # FFI_TYPE_FLOAT
-	.long .L46-.L60    # FFI_TYPE_DOUBLE
-	.long .L46-.L60    # FFI_TYPE_LONGDOUBLE
-	.long .L56-.L60    # FFI_TYPE_UINT8
-	.long .L55-.L60    # FFI_TYPE_SINT8
-	.long .L58-.L60    # FFI_TYPE_UINT16
-	.long .L57-.L60    # FFI_TYPE_SINT16
-	.long .L50-.L60    # FFI_TYPE_UINT32
-	.long .L50-.L60    # FFI_TYPE_SINT32
-	.long .L48-.L60    # FFI_TYPE_UINT64
-	.long .L48-.L60    # FFI_TYPE_SINT64
-	.long .L44-.L60    # FFI_TYPE_STRUCT
-	.long .L50-.L60    # FFI_TYPE_POINTER
 
+# Each of the ret_typeX code fragments has to be exactly 16 bytes long
+# (4 instructions). For cache effectiveness we align to a 16 byte boundary
+# first.
+	.align 4
 
-# case double
-.L46:   
-        lfd %f1,0(%r5)
-	b .L44
+	nop
+	nop
+	nop
+.Lget_ret_type0_addr:
+	blrl
 
-# case float
-.L47:
+# case FFI_TYPE_VOID
+.Lret_type0:
+	b .Lfinish
+	nop
+	nop
+	nop
+
+# case FFI_TYPE_INT
+.Lret_type1:
+	lwz %r3,0(%r5)
+	b .Lfinish
+	nop
+	nop
+
+# case FFI_TYPE_FLOAT
+.Lret_type2:
 	lfs %f1,0(%r5)
-	b .L44
-	
-# case long long
-.L48:
+	b .Lfinish
+	nop
+	nop
+
+# case FFI_TYPE_DOUBLE
+.Lret_type3:
+        lfd %f1,0(%r5)
+	b .Lfinish
+	nop
+	nop
+
+# case FFI_TYPE_LONGDOUBLE
+.Lret_type4:
+        lfd %f1,0(%r5)
+	b .Lfinish
+	nop
+	nop
+
+# case FFI_TYPE_UINT8
+.Lret_type5:
+        lbz %r3,3(%r5)
+	b .Lfinish
+	nop
+	nop
+
+# case FFI_TYPE_SINT8
+.Lret_type6:
+	lbz %r3,3(%r5)
+	extsb %r3,%r3
+	b .Lfinish
+	nop
+
+# case FFI_TYPE_UINT16
+.Lret_type7:
+	lhz %r3,2(%r5)
+	b .Lfinish
+	nop
+	nop
+
+# case FFI_TYPE_SINT16
+.Lret_type8:
+	lha %r3,2(%r5)
+	b .Lfinish
+	nop
+	nop
+
+# case FFI_TYPE_UINT32
+.Lret_type9:
+	lwz %r3,0(%r5)
+	b .Lfinish
+	nop
+	nop
+
+# case FFI_TYPE_SINT32
+.Lret_type10:
+	lwz %r3,0(%r5)
+	b .Lfinish
+	nop
+	nop
+
+# case FFI_TYPE_UINT64
+.Lret_type11:
 	lwz %r3,0(%r5)
 	lwz %r4,4(%r5)
-	b .L44
-	
-# case default / int32 / pointer
-.L50:
+	b .Lfinish
+	nop
+
+# case FFI_TYPE_SINT64
+.Lret_type12:
 	lwz %r3,0(%r5)
-	b .L44
+	lwz %r4,4(%r5)
+	b .Lfinish
+	nop
+
+# case FFI_TYPE_STRUCT
+.Lret_type13:
+	b .Lfinish
+	nop
+	nop
+	nop
+
+# case FFI_TYPE_POINTER
+.Lret_type14:
+	lwz %r3,0(%r5)
+	b .Lfinish
+	nop
+	nop
+
+# case done	
+.Lfinish:
 	
-# case signed int8	
-.L55:
-	addi %r5,%r5,3
-	lbz %r3,0(%r5)
-	extsb %r3,%r3
-	b .L44
-
-# case unsigned int8	
-.L56:
-	addi %r5,%r5,3
-        lbz %r3,0(%r5)
-	b .L44
-
-# case signed int16
-.L57:
-	addi %r5,%r5,2
-	lhz %r3,0(%r5)
-	extsh %r3,%r3
-	b .L44
-
-#case unsigned int16
-.L58:	
-	addi %r5,%r5,2
-	lhz %r3,0(%r5)
-
-# case void / done	
-.L44:
-	
-	lwz %r11,0(%r1)
-	lwz %r0,4(%r11)
+	lwz %r0,148(%r1)
 	mtlr %r0
-	lwz %r31,-4(%r11)
-	mr %r1,%r11
+	addi %r1,%r1,144
 	blr
 END(ffi_closure_SYSV)
 
