@@ -1,3 +1,14 @@
+Thu May 30 19:54:30 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* lcm.c (output.h): #include.
+	(compute_earliest): Remove hack to treat renumbered EXIT_BLOCK
+	as an ordinary block.
+	(optimize_mode_switching): Don't pretend that the exit block is
+	an ordinary block, or handle sucessors of entry block specially.
+	Instead, split edges from entry block and to exit block, and
+	put a computing definition on the thus gained post-entry-block,
+	and a need on the pre-exit-block.
+
 Thu May 30 20:28:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gengenrtl.c (type_from_format, accessor_from_format): Support 'B'.

@@ -59,6 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-config.h"
 #include "recog.h"
 #include "basic-block.h"
+#include "output.h"
 #include "tm_p.h"
 
 /* We want target macros for the mode switching code to be able to refer
@@ -207,11 +208,7 @@ compute_earliest (edge_list, n_exprs, antin, antout, avout, kill, earliest)
 	sbitmap_copy (earliest[x], antin[succ->index]);
       else
         {
-	  /* We refer to the EXIT_BLOCK index, instead of testing for
-	     EXIT_BLOCK_PTR, so that EXIT_BLOCK_PTR's index can be
-	     changed so as to pretend it's a regular block, so that
-	     its antin can be taken into account.  */
-	  if (succ->index == EXIT_BLOCK)
+	  if (succ == EXIT_BLOCK_PTR)
 	    sbitmap_zero (earliest[x]);
 	  else
 	    {
@@ -1027,43 +1024,54 @@ optimize_mode_switching (file)
   int n_entities;
   int max_num_modes = 0;
   bool emited = false;
+  basic_block post_entry, pre_exit ATTRIBUTE_UNUSED;
 
   clear_bb_flags ();
-#ifdef NORMAL_MODE
-  /* Increment last_basic_block before allocating bb_info.  */
-  last_basic_block++;
-#endif
 
   for (e = N_ENTITIES - 1, n_entities = 0; e >= 0; e--)
     if (OPTIMIZE_MODE_SWITCHING (e))
       {
-	/* Create the list of segments within each basic block.  */
+	int entry_exit_extra = 0;
+
+	/* Create the list of segments within each basic block.
+	   If NORMAL_MODE is defined, allow for two extra
+	   blocks split from the entry and exit block. */
+#ifdef NORMAL_MODE
+	entry_exit_extra = 2;
+#endif
 	bb_info[n_entities]
-	  = (struct bb_info *) xcalloc (last_basic_block, sizeof **bb_info);
+	  = (struct bb_info *) xcalloc (last_basic_block + entry_exit_extra,
+					sizeof **bb_info);
 	entity_map[n_entities++] = e;
 	if (num_modes[e] > max_num_modes)
 	  max_num_modes = num_modes[e];
       }
 
-#ifdef NORMAL_MODE
-  /* Decrement it back in case we return below.  */
-  last_basic_block--;
-#endif
-
   if (! n_entities)
     return 0;
 
 #ifdef NORMAL_MODE
-  /* We're going to pretend the EXIT_BLOCK is a regular basic block,
-     so that switching back to normal mode when entering the
-     EXIT_BLOCK isn't optimized away.  We do this by incrementing the
-     basic block count, growing the VARRAY of basic_block_info and
-     appending the EXIT_BLOCK_PTR to it.  */
-  last_basic_block++;
-  if (VARRAY_SIZE (basic_block_info) < last_basic_block)
-    VARRAY_GROW (basic_block_info, last_basic_block);
-  BASIC_BLOCK (last_basic_block - 1) = EXIT_BLOCK_PTR;
-  EXIT_BLOCK_PTR->index = last_basic_block - 1;
+  {
+    /* Split the edge from the entry block and the fallthrough edge to the
+       exit block, so that we can note that there NORMAL_MODE is supplied /
+       required.  */
+    edge eg;
+    post_entry = split_edge (ENTRY_BLOCK_PTR->succ);
+    /* The only non-call predecessor at this stage is a block with a
+       fallthrough edge; there can be at most one, but there could be
+       none at all, e.g. when exit is called.  */
+    for (pre_exit = 0, eg = EXIT_BLOCK_PTR->pred; eg; eg = eg->pred_next)
+      if (eg->flags & EDGE_FALLTHRU)
+	{
+	  regset live_at_end = eg->src->global_live_at_end;
+
+	  if (pre_exit)
+	    abort ();
+	  pre_exit = split_edge (eg);
+	  COPY_REG_SET (pre_exit->global_live_at_start, live_at_end);
+	  COPY_REG_SET (pre_exit->global_live_at_end, live_at_end);
+	}
+  }
 #endif
 
   /* Create the bitmap vectors.  */
@@ -1124,7 +1132,7 @@ optimize_mode_switching (file)
 	  /* Check for blocks without ANY mode requirements.  */
 	  if (last_mode == no_mode)
 	    {
-	      ptr = new_seginfo (no_mode, insn, bb->index, live_now);
+	      ptr = new_seginfo (no_mode, bb->end, bb->index, live_now);
 	      add_seginfo (info + bb->index, ptr);
 	    }
 	}
@@ -1134,36 +1142,21 @@ optimize_mode_switching (file)
 
 	if (mode != no_mode)
 	  {
-	    edge eg;
+	    bb = post_entry;
 
-	    for (eg = ENTRY_BLOCK_PTR->succ; eg; eg = eg->succ_next)
-	      {
-		bb = eg->dest;
+	    /* By always making this nontransparent, we save
+	       an extra check in make_preds_opaque.  We also
+	       need this to avoid confusing pre_edge_lcm when
+	       antic is cleared but transp and comp are set.  */
+	    RESET_BIT (transp[bb->index], j);
 
-	        /* By always making this nontransparent, we save
-		   an extra check in make_preds_opaque.  We also
-		   need this to avoid confusing pre_edge_lcm when
-		   antic is cleared but transp and comp are set.  */
-		RESET_BIT (transp[bb->index], j);
+	    /* Insert a fake computing definition of MODE into entry
+	       blocks which compute no mode. This represents the mode on
+	       entry.  */
+	    info[bb->index].computing = mode;
 
-		/* If the block already has MODE, pretend it
-		   has none (because we don't need to set it),
-		   but retain whatever mode it computes.  */
-		if (info[bb->index].seginfo->mode == mode)
-		  info[bb->index].seginfo->mode = no_mode;
-
-		/* Insert a fake computing definition of MODE into entry
-		   blocks which compute no mode. This represents the mode on
-		   entry.  */
-		else if (info[bb->index].computing == no_mode)
-		  {
-		    info[bb->index].computing = mode;
-		    info[bb->index].seginfo->mode = no_mode;
-		  }
-	      }
-
-	    bb = EXIT_BLOCK_PTR;
-	    info[bb->index].seginfo->mode = mode;
+	    if (pre_exit)
+	      info[pre_exit->index].seginfo->mode = mode;
 	  }
       }
 #endif /* NORMAL_MODE */
@@ -1288,62 +1281,10 @@ optimize_mode_switching (file)
       free_edge_list (edge_list);
     }
 
-#ifdef NORMAL_MODE
-  /* Restore the special status of EXIT_BLOCK.  */
-  last_basic_block--;
-  VARRAY_POP (basic_block_info);
-  EXIT_BLOCK_PTR->index = EXIT_BLOCK;
-#endif
-
   /* Now output the remaining mode sets in all the segments.  */
   for (j = n_entities - 1; j >= 0; j--)
     {
       int no_mode = num_modes[entity_map[j]];
-
-#ifdef NORMAL_MODE
-      if (bb_info[j][last_basic_block].seginfo->mode != no_mode)
-	{
-	  edge eg;
-	  struct seginfo *ptr = bb_info[j][last_basic_block].seginfo;
-
-	  for (eg = EXIT_BLOCK_PTR->pred; eg; eg = eg->pred_next)
-	    {
-	      rtx mode_set;
-
-	      if (bb_info[j][eg->src->index].computing == ptr->mode)
-		continue;
-
-	      start_sequence ();
-	      EMIT_MODE_SET (entity_map[j], ptr->mode, ptr->regs_live);
-	      mode_set = gen_sequence ();
-	      end_sequence ();
-
-	      /* Do not bother to insert empty sequence.  */
-	      if (GET_CODE (mode_set) == SEQUENCE
-		  && !XVECLEN (mode_set, 0))
-		continue;
-
-	      /* If this is an abnormal edge, we'll insert at the end of the
-		 previous block.  */
-	      if (eg->flags & EDGE_ABNORMAL)
-		{
-		  emited = true;
-		  if (GET_CODE (eg->src->end) == JUMP_INSN)
-		    emit_insn_before (mode_set, eg->src->end);
-		  else if (GET_CODE (eg->src->end) == INSN)
-		    emit_insn_after (mode_set, eg->src->end);
-		  else
-		    abort ();
-		}
-	      else
-		{
-		  need_commit = 1;
-		  insert_insn_on_edge (mode_set, eg);
-		}
-	    }
-
-	}
-#endif
 
       FOR_EACH_BB_REVERSE (bb)
 	{
@@ -1393,8 +1334,12 @@ optimize_mode_switching (file)
   if (need_commit)
     commit_edge_insertions ();
 
+#ifdef NORMAL_MODE
+  cleanup_cfg (CLEANUP_NO_INSN_DEL);
+#else
   if (!need_commit && !emited)
     return 0;
+#endif
 
   max_regno = max_reg_num ();
   allocate_reg_info (max_regno, FALSE, FALSE);
