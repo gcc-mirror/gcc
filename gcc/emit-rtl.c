@@ -857,6 +857,13 @@ gen_lowpart (mode, x)
 
   if (result)
     return result;
+  else if (GET_CODE (x) == REG)
+    {
+      /* Must be a hard reg that's not valid in MODE.  */
+      result = gen_lowpart_common (mode, copy_to_reg (x));
+      if (result == 0)
+	abort ();
+    }
   else if (GET_CODE (x) == MEM)
     {
       /* The only additional case we can do is MEM.  */
