@@ -857,10 +857,10 @@ function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    recog.h output.h
 stmt.o : stmt.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-config.h insn-codes.h hard-reg-set.h expr.h loop.h recog.h
-expr.o : expr.c $(CONFIG_H) $(RTL_H) $(TREE_H) gvarargs.h flags.h function.h  \
+expr.o : expr.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h insn-config.h recog.h output.h typeclass.h
 calls.o : calls.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h expr.h insn-codes.h \
-   insn-flags.h
+   insn-flags.h gvarargs.h 
 expmed.o : expmed.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h  \
    insn-flags.h insn-config.h insn-codes.h expr.h recog.h real.h
 explow.o : explow.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h hard-reg-set.h \
