@@ -1639,6 +1639,8 @@ bss_section ()								\
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
 
+/* Jump tables are executable code and live in the TEXT section on the PA.  */
+
 /* This is how to output an element of a case-vector that is relative.
    (The HP-PA does not use such vectors,
    but we must define this macro anyway.)  */
