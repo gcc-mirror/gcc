@@ -363,7 +363,7 @@ extern int target_flags;
   SUBTARGET_EXTRA_SPECS
 
 #if TARGET_CPU_DEFAULT & HARD_SH4_BIT
-#define SUBTARGET_ASM_RELAX_SPEC "%{!m[1235]*:-isa=sh4}"
+#define SUBTARGET_ASM_RELAX_SPEC "%{!m1:%{!m2:%{!m3*:%{!m5*:-isa=sh4}}}}"
 #else
 #define SUBTARGET_ASM_RELAX_SPEC "%{m4*:-isa=sh4}"
 #endif
