@@ -1,5 +1,9 @@
 2004-02-25  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* doc/contrib.texi: Add an entry for myself.
+
+2004-02-25  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* config.gcc: Add comment describing extra_gcc_objs.
 	i[34567]86-*-cygwin*): Replace host_extra_gcc_objs with extra_gcc_objs.
 	* configure.ac (extra_gcc_objs): New substitution variable.
