@@ -603,6 +603,11 @@ c4x_function_arg (cum, mode, type, named)
       cum->init = 1;
     }
 
+  /* This marks the last argument.  We don't need to pass this through
+     to the call insn.  */
+  if (type == void_type_node)
+    return 0;
+
   if (! TARGET_MEMPARM 
       && named 
       && type
@@ -742,7 +747,8 @@ c4x_assembler_function_p ()
   tree type;
 
   type = TREE_TYPE (current_function_decl);
-  return lookup_attribute ("assembler", TYPE_ATTRIBUTES (type)) != NULL;
+  return (lookup_attribute ("assembler", TYPE_ATTRIBUTES (type)) != NULL)
+    || (lookup_attribute ("naked", TYPE_ATTRIBUTES (type)) != NULL);
 }
 
 

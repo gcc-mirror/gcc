@@ -1,3 +1,8 @@
+2000-04-02  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_function_arg): Check for void_type_node
+ 	before checking MUST_PASS_IN_STACK.
+
 2000-04-02  Neil Booth <NeilB@earthling.net>
 
 	* cppexp.c:  New FINISHED dummy token.  Combine operator initial
