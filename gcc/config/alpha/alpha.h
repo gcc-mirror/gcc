@@ -691,7 +691,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS)		\
   (CONSTANT_P (X) && (X) != const0_rtx && (X) != CONST0_RTX (GET_MODE (X)) \
-   ? ((CLASS) == FLOAT_REGS ? NO_REGS : GENERAL_REGS)			\
+   ? ((CLASS) == FLOAT_REGS || (CLASS) == NO_REGS ? NO_REGS : GENERAL_REGS)\
    : (CLASS))
 
 /* Loading and storing HImode or QImode values to and from memory
