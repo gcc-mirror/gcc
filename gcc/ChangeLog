@@ -1,5 +1,7 @@
 Wed Dec  5 06:26:27 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.h (tree, rtx): Remove no-longer-needed definitions.
+
 	* function.c (keep_stack_depressed): Refine check for register
 	clobbered over call.
 
