@@ -121,8 +121,29 @@ public final class Class implements Serializable
   private static final native String getSignature (Class[] parameterTypes,
 						   boolean is_construtor);
 
-  public native Method getMethod (String methodName, Class[] parameterTypes)
-    throws NoSuchMethodException, SecurityException;
+  public native Method _getMethod (String methodName, Class[] parameterTypes);
+
+  public Method getMethod (String methodName, Class[] parameterTypes)
+    throws NoSuchMethodException, SecurityException
+  {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      {
+	sm.checkMemberAccess(this, Member.PUBLIC);
+	Package p = getPackage();
+	if (p != null)
+	  sm.checkPackageAccess(p.getName());
+      }
+
+    if ("<init>".equals(methodName) || "<clinit>".equals(methodName))
+      throw new NoSuchMethodException(methodName);
+
+    Method m = _getMethod(methodName, parameterTypes);
+    if (m == null)
+      throw new NoSuchMethodException (methodName);
+    return m;
+  }
+
   private native int _getMethods (Method[] result, int offset);
   public native Method[] getMethods () throws SecurityException;
 
