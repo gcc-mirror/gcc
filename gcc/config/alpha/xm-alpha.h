@@ -59,4 +59,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern void *malloc (), *realloc (), *sbrk (), *calloc (), *alloca ();
 
+#ifndef inhibit_libc
 #include "string.h"
+#endif
