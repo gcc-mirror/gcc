@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992, 93-8, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-7, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -81,6 +81,9 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=604: -D_ARCH_PPC} \
 %{mcpu=604e: -D_ARCH_PPC} \
 %{mcpu=620: -D_ARCH_PPC} \
+%{mcpu=740: -D_ARCH_PPC} \
+%{mcpu=750: -D_ARCH_PPC} \
+%{mcpu=801: -D_ARCH_PPC} \
 %{mcpu=821: -D_ARCH_PPC} \
 %{mcpu=823: -D_ARCH_PPC} \
 %{mcpu=860: -D_ARCH_PPC}"
@@ -134,6 +137,8 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=604: -mppc} \
 %{mcpu=604e: -mppc} \
 %{mcpu=620: -mppc} \
+%{mcpu=740: -mppc} \
+%{mcpu=750: -mppc} \
 %{mcpu=821: -mppc} \
 %{mcpu=823: -mppc} \
 %{mcpu=860: -mppc}"
@@ -391,15 +396,18 @@ extern int target_flags;
 
 /* Processor type.  Order must match cpu attribute in MD file.  */
 enum processor_type
- {PROCESSOR_RIOS1,
-  PROCESSOR_RIOS2,
-  PROCESSOR_MPCCORE,
-  PROCESSOR_PPC403,
-  PROCESSOR_PPC601,
-  PROCESSOR_PPC603,
-  PROCESSOR_PPC604,
-  PROCESSOR_PPC604e,
-  PROCESSOR_PPC620};
+ {
+   PROCESSOR_RIOS1,
+   PROCESSOR_RIOS2,
+   PROCESSOR_MPCCORE,
+   PROCESSOR_PPC403,
+   PROCESSOR_PPC601,
+   PROCESSOR_PPC603,
+   PROCESSOR_PPC604,
+   PROCESSOR_PPC604e,
+   PROCESSOR_PPC620,
+   PROCESSOR_PPC750
+ };
 
 extern enum processor_type rs6000_cpu;
 
@@ -854,6 +862,14 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 #define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
   (COST) = rs6000_adjust_cost (INSN,LINK,DEP_INSN,COST)
+
+/* A C statement (sans semicolon) to update the integer scheduling priority
+   INSN_PRIORITY (INSN).  Reduce the priority to execute the INSN earlier,
+   increase the priority to execute INSN later.  Do not define this macro if
+   you do not need to adjust the scheduling priorities of insns.  */
+
+#define ADJUST_PRIORITY(INSN)						\
+  INSN_PRIORITY (INSN) = rs6000_adjust_priority (INSN, INSN_PRIORITY (INSN))
 
 /* Define this macro to change register usage conditional on target flags.
    Set MQ register fixed (already call_used) if not POWER architecture
@@ -2280,6 +2296,7 @@ do {                                                                    \
       case PROCESSOR_PPC601:						\
         return COSTS_N_INSNS (5);					\
       case PROCESSOR_PPC603:						\
+      case PROCESSOR_PPC750:						\
         return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
 		? COSTS_N_INSNS (5)					\
 		: INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
@@ -2315,6 +2332,8 @@ do {                                                                    \
       case PROCESSOR_PPC604e:						\
       case PROCESSOR_PPC620:						\
 	return COSTS_N_INSNS (20);					\
+      case PROCESSOR_PPC750:						\
+        return COSTS_N_INSNS (19);					\
       }									\
   case FFS:								\
     return COSTS_N_INSNS (4);						\
@@ -3169,15 +3188,15 @@ do {									\
 /* Define the codes that are matched by predicates in rs6000.c.  */
 
 #define PREDICATE_CODES						\
-  {"short_cint_operand", {CONST_INT}},				\
-  {"u_short_cint_operand", {CONST_INT}},			\
+  {"short_cint_operand", {CONST_INT, CONSTANT_P_RTX}},		\
+  {"u_short_cint_operand", {CONST_INT, CONSTANT_P_RTX}},	\
   {"non_short_cint_operand", {CONST_INT}},			\
   {"gpc_reg_operand", {SUBREG, REG}},				\
   {"cc_reg_operand", {SUBREG, REG}},				\
-  {"reg_or_short_operand", {SUBREG, REG, CONST_INT}}, 		\
+  {"reg_or_short_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
-  {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}}, 	\
-  {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}}, 		\
+  {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
+  {"reg_or_cint_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},		\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
@@ -3186,11 +3205,12 @@ do {									\
   {"volatile_mem_operand", {MEM}},				\
   {"offsettable_addr_operand", {REG, SUBREG, PLUS}},		\
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},	\
-  {"add_operand", {SUBREG, REG, CONST_INT}},			\
+  {"add_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
   {"non_add_cint_operand", {CONST_INT}},			\
-  {"and_operand", {SUBREG, REG, CONST_INT}},			\
-  {"and64_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
-  {"logical_operand", {SUBREG, REG, CONST_INT}}, 		\
+  {"and_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+  {"and64_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX,	\
+		     CONST_DOUBLE}},				\
+  {"logical_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
   {"non_logical_cint_operand", {CONST_INT}},			\
   {"mask_operand", {CONST_INT}},				\
   {"mask64_operand", {CONST_INT, CONST_DOUBLE}},		\
@@ -3198,7 +3218,7 @@ do {									\
   {"fpmem_operand", {REG}},					\
   {"call_operand", {SYMBOL_REF, REG}},				\
   {"current_file_function_operand", {SYMBOL_REF}},		\
-  {"input_operand", {SUBREG, MEM, REG, CONST_INT, 		\
+  {"input_operand", {SUBREG, MEM, REG, CONST_INT, CONSTANT_P_RTX, \
 		     CONST_DOUBLE, SYMBOL_REF}}, 		\
   {"load_multiple_operation", {PARALLEL}},			\
   {"store_multiple_operation", {PARALLEL}},			\
@@ -3306,6 +3326,7 @@ extern void output_ascii ();
 extern void rs6000_gen_section_name ();
 extern void output_function_profiler ();
 extern int rs6000_adjust_cost ();
+extern int rs6000_adjust_priority ();
 extern void rs6000_trampoline_template ();
 extern int rs6000_trampoline_size ();
 extern void rs6000_initialize_trampoline ();
