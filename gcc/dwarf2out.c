@@ -12975,13 +12975,13 @@ dwarf2out_finish (input_filename)
      we'll see the end of an include file before the beginning.  */
   reverse_all_dies (comp_unit_die);
 
+  if (flag_eliminate_unused_debug_types)
+    prune_unused_types ();
+
   /* Generate separate CUs for each of the include files we've seen.
      They will go into limbo_die_list.  */
   if (flag_eliminate_dwarf2_dups)
     break_out_includes (comp_unit_die);
-
-  if (flag_eliminate_unused_debug_types)
-    prune_unused_types ();
 
   /* Traverse the DIE's and add add sibling attributes to those DIE's
      that have children.  */
