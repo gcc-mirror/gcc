@@ -133,7 +133,7 @@ struct JNINativeInterface
   void     (*FatalError)                   (JNIEnv *, const char *);
 
   jint     (*PushLocalFrame)		   (JNIEnv *, jint);
-  jobject  (*PopLocalFrame)		   (JNIEnv *, jobject result);
+  jobject  (*PopLocalFrame)		   (JNIEnv *, jobject);
 
   jobject  (*NewGlobalRef)                 (JNIEnv *, jobject);
   void     (*DeleteGlobalRef)              (JNIEnv *, jobject);
@@ -537,6 +537,9 @@ private:
 
   /* The class of the current native method.  */
   jclass klass;
+
+  /* The chain of local frames.  */
+  struct _Jv_JNI_LocalFrame *locals;
 
 public:
   jclass GetSuperclass (jclass cl)

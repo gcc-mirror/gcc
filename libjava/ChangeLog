@@ -1,3 +1,47 @@
+2000-01-31  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (_Jv_MallocUnchecked): New function.
+	(main_init): Call _Jv_JNI_Init.
+	* include/jvm.h (_Jv_MallocUnchecked): Declare.
+	(_Jv_JNI_Init): Declare.
+	* jni.cc: Include Hashtable.h, OutOfMemoryError.h, Integer.h,
+	<string.h>.
+	(_Jv_JNI_NewGlobalRef): New function.
+	(_Jv_JNI_DeleteGlobalRef): New function.
+	(_Jv_JNI_DeleteLocalRef): New function.
+	(_Jv_JNI_conversion_call): Initialize and clear local reference
+	frame.
+	(_Jv_JNI_NewLocalRef): New function.
+	(struct _Jv_JNI_LocalFrame): New structure.
+	(_Jv_JNI_PushLocalFrame): New function.
+	(_Jv_JNI_EnsureLocalCapacity): New function.
+	(FRAME_SIZE): New define.
+	(_Jv_JNI_GetStringChars): Mark string, not characters.
+	(_Jv_JNI_ReleaseStringChars): Unmark string, not characters.
+	(_Jv_JNI_GetPrimitiveArrayElements): Mark array, not elements.
+	(_Jv_JNI_ReleasePrimitiveArrayElements): Unmark array, not
+	elements.
+	(_Jv_JNI_DefineClass): Make return value a local ref.
+	(_Jv_JNI_FindClass): Likewise.
+	(_Jv_JNI_GetSuperclass): Likewise.
+	(_Jv_JNI_ExceptionOccurred): Likewise.
+	(_Jv_JNI_AllocObject): Likewise.
+	(_Jv_JNI_GetObjectClass): Likewise.
+	(_Jv_JNI_CallAnyMethodV): Likewise.
+	(_Jv_JNI_NewString): Likewise.
+	(_Jv_JNI_NewStringUTF): Likewise.
+	(_Jv_JNI_NewObjectArray): Likewise.
+	(_Jv_JNI_GetObjectArrayElement): Likewise.
+	(_Jv_JNI_ToReflectedField): Likewise.
+	(_Jv_JNI_ToReflectedMethod): Likewise.
+	(_Jv_JNIFunctions): Updated table for new functions.
+	(_Jv_JNI_Init): New function.
+	(mark_for_gc): Wrote.
+	(unmark_for_gc): Wrote.
+	* include/jni.h (struct JNINativeInterface): Removed name from
+	PopLocalFrame parameter.
+	(class _Jv_JNIEnv): Added `locals' field.
+
 Mon Jan 31 00:43:15 2000  Anthony Green  <green@redhat.com>
 
 	* gnu/gcj/convert/natIconv.cc (read): Minor fixes.
