@@ -1,3 +1,9 @@
+2004-09-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/c-tree.texi (TRUTH_NOT_EXPR, TRUTH_ANDIF_EXPR,
+	TRUTH_ORIF_EXPR, TRUTH_AND_EXPR, TRUTH_OR_EXPR,
+	TRUTH_XOR_EXPR): Mention the restriction on types.
+
 2004-09-22  Matt Austern  <austern@apple.com>
 
 	* config/darwin.c (darwin_make_decl_one_only)

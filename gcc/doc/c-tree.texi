@@ -1908,7 +1908,9 @@ type.  The only operand is the value to be complemented.
 
 @item TRUTH_NOT_EXPR
 These nodes represent logical negation, and will always have integral
-(or boolean) type.  The operand is the value being negated.
+(or boolean) type.  The operand is the value being negated.  The type
+of the operand and that of the result are always of @code{BOOLEAN_TYPE}
+or @code{INTEGER_TYPE}.
 
 @item PREDECREMENT_EXPR
 @itemx PREINCREMENT_EXPR
@@ -2024,8 +2026,8 @@ type.
 These nodes represent logical and and logical or, respectively.  These
 operators are not strict; i.e., the second operand is evaluated only if
 the value of the expression is not determined by evaluation of the first
-operand.  The type of the operands, and the result type, is always of
-boolean or integral type.
+operand.  The type of the operands and that of the result are always of
+@code{BOOLEAN_TYPE} or @code{INTEGER_TYPE}.
 
 @item TRUTH_AND_EXPR
 @itemx TRUTH_OR_EXPR
@@ -2034,7 +2036,8 @@ These nodes represent logical and, logical or, and logical exclusive or.
 They are strict; both arguments are always evaluated.  There are no
 corresponding operators in C or C++, but the front end will sometimes
 generate these expressions anyhow, if it can tell that strictness does
-not matter.
+not matter.  The type of the operands and that of the result are
+always of @code{BOOLEAN_TYPE} or @code{INTEGER_TYPE}.
 
 @itemx PLUS_EXPR
 @itemx MINUS_EXPR
