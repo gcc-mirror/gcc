@@ -253,12 +253,6 @@ struct lang_id2 GTY(())
   tree error_locus;
 };
 
-typedef struct flagged_type_tree_s GTY(())
-{
-  tree t;
-  int new_type_flag;
-} flagged_type_tree;
-
 typedef struct template_parm_index_s GTY(())
 {
   struct tree_common common;
@@ -4433,7 +4427,6 @@ extern tree build_scoped_ref			(tree, tree, tree *);
 extern tree build_x_arrow			(tree);
 extern tree build_m_component_ref		(tree, tree);
 extern tree build_functional_cast		(tree, tree);
-extern void check_for_new_type			(const char *, flagged_type_tree);
 extern tree add_exception_specifier             (tree, tree, int);
 extern tree merge_exception_specifiers          (tree, tree);
 
