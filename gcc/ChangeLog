@@ -1,5 +1,10 @@
 2003-12-18  Richard Henderson  <rth@redhat.com>
 
+	* genrecog.c (print_host_wide_int): New.
+	(write_switch, write_cond): Use it.
+
+2003-12-18  Richard Henderson  <rth@redhat.com>
+
 	* c-decl.c (check_bitfield_type_and_width): Remove enum special
 	case suppression of pedwarn.
 	* system.h (ENUM_BITFIELD): Use __extension__.
