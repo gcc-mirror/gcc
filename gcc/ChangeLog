@@ -1,3 +1,8 @@
+2001-06-04  Loren J. Rittle  <ljrittle@acm.org>
+
+	* doc/install.texi: Update FreeBSD information.  Generalize
+	and update information for alpha-based platforms using ELF.
+
 2001-06-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* c-decl.c (get_parm_info): Use INTEGRAL_TYPE_P.
