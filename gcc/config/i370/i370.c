@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for System/370.
-   Copyright (C) 1989, 1993, 1995, 1997, 1998, 1999, 2000
+   Copyright (C) 1989, 1993, 1995, 1997, 1998, 1999, 2000, 2002
    Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for OS/390 LanguageEnvironment C by Dave Pitts (dpitts@cozx.com)
@@ -52,7 +52,7 @@ extern FILE *asm_out_file;
    The first_ref_page is the page on which the true first ref appears.
    The label_addr is an estimate of its location in the current routine,
    The label_first & last_ref are estimates of where the earliest and
-      latest references to this label occur.                                     */
+      latest references to this label occur.  */
 
 typedef struct label_node
   {
@@ -442,7 +442,7 @@ i370_label_scan ()
        here += tablejump_offset;
        INSN_ADDRESSES (INSN_UID (insn)) = here;
 
-       /* check to see if this insn is a label ... */
+       /* check to see if this insn is a label ...  */
        if (CODE_LABEL == code)
          {
            int labelno = CODE_LABEL_NUMBER (insn);
@@ -469,7 +469,7 @@ i370_label_scan ()
 
            /* If there is no label for this jump, then this
               had better be a ADDR_VEC or an ADDR_DIFF_VEC
-              and there had better be a vector of labels.   */
+              and there had better be a vector of labels.  */
            if (!label) 
              {
                int j;
@@ -610,7 +610,7 @@ mvs_get_label (id)
 {
   label_node_t *lp;
 
-  /* first, lets see if we already go one, if so, use that. */
+  /* first, lets see if we already go one, if so, use that.  */
   for (lp = label_anchor; lp; lp = lp->label_next)
     {
       if (lp->label_id == id) return lp;
@@ -655,7 +655,7 @@ mvs_add_label (id)
   if ((-1 != lp->first_ref_page) && 
       (lp->first_ref_page != mvs_page_num)) 
     {
-      /* Yep; the first label_ref was on a different page. */
+      /* Yep; the first label_ref was on a different page.  */
       mvs_need_base_reload ++;
       return;
     }
@@ -776,7 +776,7 @@ mvs_check_page (file, code, lit)
       fprintf (assembler_source, "\tDROP\t%d\n", BASE_REGISTER);
       mvs_page_num++;
       /* Safe to use BASR not BALR, since we are
-       * not switching addressing mode here ... */
+       * not switching addressing mode here ...  */
       fprintf (assembler_source, "\tBASR\t%d,0\n", BASE_REGISTER);
       fprintf (assembler_source, "PG%d\tEQU\t*\n", mvs_page_num);
       fprintf (assembler_source, "\tUSING\t*,%d\n", BASE_REGISTER);
@@ -812,7 +812,7 @@ mvs_check_page (file, code, lit)
       fprintf (assembler_source, "\t.LTORG\n");
       fprintf (assembler_source, "\t.balign\t4\n");
 
-      /* we continue execution here ... */
+      /* we continue execution here ...  */
       fprintf (assembler_source, ".LPGE%d:\n", mvs_page_num);
       fprintf (assembler_source, "\t.DROP\t%d\n", BASE_REGISTER);
       mvs_page_num++;
@@ -863,7 +863,7 @@ mvs_function_check (name)
   return 0;
 }
 
-/* Generate a hash for a given key. */
+/* Generate a hash for a given key.  */
 
 #ifdef LONGEXTERNAL
 static int
@@ -1460,7 +1460,7 @@ i370_output_function_prologue (f, frame_size)
 
   fprintf (f, "\t.using\t.,r15\n");
 
-  /* Branch to exectuable part of prologue. */
+  /* Branch to exectuable part of prologue.  */
   fprintf (f, "\tB\t.LFENT%03d\n", function_label_index);
 
   /* write the length of the stackframe */
@@ -1483,7 +1483,7 @@ i370_output_function_prologue (f, frame_size)
   fprintf (f, "\tLR\tr11,r2\n");
 
   /* store callee stack pointer at 8(sp) */
-  /* fprintf (f, "\tST\tsp,8(,r3)\n ");  wasted cycles, no one uses this ... */
+  /* fprintf (f, "\tST\tsp,8(,r3)\n ");  wasted cycles, no one uses this ...  */
 
   /* backchain -- store caller sp at 4(callee_sp)  */
   fprintf (f, "\tST\tr3,4(,sp)\n ");
@@ -1517,7 +1517,7 @@ i370_output_function_prologue (f, frame_size)
    The function epilogue should not depend on the current stack
    pointer!  It should use the frame pointer only.  This is mandatory
    because of alloca; we also take advantage of it to omit stack
-   adjustments before returning. */
+   adjustments before returning.  */
 
 static void
 i370_output_function_epilogue (file, l)

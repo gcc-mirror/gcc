@@ -1,3 +1,10 @@
+2002-01-20  Kazu Hirata  <kazu@hxi.com>
+
+	* config/i370/i370.c: Fix comment formatting.
+	* config/i370/i370.h: Likewise.
+	* config/i370/i370.md: Likewise.
+	* config/i370/linux.h: Likewise.
+
 Sun Jan 20 18:40:14 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (loc_descriptor_from_tree): Add TRUTH_*_EXPR cases.

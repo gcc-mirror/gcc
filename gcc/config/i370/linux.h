@@ -30,10 +30,10 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* hack alert define to get dbx/gdb/dwarf to compile  */
-/* problem is that host float format is not target float format. */
+/* problem is that host float format is not target float format.  */
 /* define REAL_ARITHMETIC for software emulation of float to
  * int conversion.  This seems to have somethings to do with 
- * cross-compiling ... */
+ * cross-compiling ...  */
 #define REAL_ARITHMETIC
 
 /* Include system common definitions */
@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-DGCC -Dgcc -D__ELF__ -Dunix -Dlinux -Asystem=posix -Acpu=i370 -Amachine=i370"
 
-/* Options for this target machine. */
+/* Options for this target machine.  */
 
 #define LIBGCC_SPEC "libgcc.a%s"
 
