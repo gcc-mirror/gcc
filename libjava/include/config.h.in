@@ -206,9 +206,6 @@
 /* Define if you have the gmtime_r function.  */
 #undef HAVE_GMTIME_R
 
-/* Define if you have the iconv function.  */
-#undef HAVE_ICONV
-
 /* Define if you have the inet_addr function.  */
 #undef HAVE_INET_ADDR
 
@@ -376,6 +373,15 @@
 
 /* Required define if using POSIX threads */
 #undef _POSIX_PTHREAD_SEMANTICS
+
+/* Define if hash synchronization is in use */
+#undef JV_HASH_SYNCHRONIZATION
+
+/* Define if you have the iconv() function. */
+#undef HAVE_ICONV
+
+/* Define as const if the declaration of iconv() needs const. */
+#undef ICONV_CONST
 
 /* Required define if using POSIX threads */
 #undef _REENTRANT
