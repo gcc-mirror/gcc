@@ -144,8 +144,12 @@ extern int target_flags;
   {"padstruct", PADSTRUCT_BIT},    		\
   {"relax",	RELAX_BIT},			\
   {"space", 	SPACE_BIT},			\
+  SUBTARGET_SWITCHES                            \
   {"",   	TARGET_DEFAULT} 		\
 }
+
+/* This are meant to be redefined in the host dependent files */
+#define SUBTARGET_SWITCHES
 
 #define TARGET_DEFAULT  (0)
 

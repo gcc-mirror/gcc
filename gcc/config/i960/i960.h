@@ -269,6 +269,7 @@ extern int target_flags;
     {"no-old-align", -(TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN)}, \
     {"link-relax", 0},					\
     {"no-link-relax", 0},				\
+    SUBTARGET_SWITCHES                                                  \
     { "", TARGET_DEFAULT}}
 
 /* Override conflicting target switch options.

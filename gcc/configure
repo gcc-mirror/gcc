@@ -3667,6 +3667,11 @@ for machine in $build $host $target; do
 		tm_file=sh/elf.h
 		float_format=sh
 		;;
+	sh-*-rtems*)
+		tmake_file="sh/t-sh t-rtems"
+		tm_file=sh/rtems.h
+		float_format=sh
+		;;
 	sh-*-*)
 		float_format=sh
 		;;
