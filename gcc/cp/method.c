@@ -957,8 +957,8 @@ implicitly_declare_fn (kind, type, const_p)
   tree declspecs = NULL_TREE;
   tree fn, args = NULL_TREE;
   tree raises = empty_except_spec;
-  tree argtype;
   int retref = 0;
+  int has_parm = 0;
   tree name = constructor_name (TYPE_IDENTIFIER (type));
 
   switch (kind)
@@ -977,40 +977,33 @@ implicitly_declare_fn (kind, type, const_p)
       break;
 
     case sfk_copy_constructor:
-    {
-      struct copy_data data;
-      
-      if (const_p)
-	type = build_qualified_type (type, TYPE_QUAL_CONST);
-      argtype = build_reference_type (type);
-      args = tree_cons (NULL_TREE,
-			build_tree_list (hash_tree_chain (argtype, NULL_TREE),
-					 get_identifier ("_ctor_arg")),
-			void_list_node);
-      data.name = NULL;
-      data.quals = const_p ? TYPE_QUAL_CONST : 0;
-      raises = synthesize_exception_spec (type, &locate_copy, &data);
-      break;
-    }
     case sfk_assignment_operator:
     {
       struct copy_data data;
+      tree argtype;
       
-      retref = 1;
-      declspecs = build_tree_list (NULL_TREE, type);
+      has_parm = 1;
+      data.name = NULL;
+      data.quals = 0;
+      if (kind == sfk_assignment_operator)
+        {
+          retref = 1;
+          declspecs = build_tree_list (NULL_TREE, type);
 
+          name = ansi_assopname (NOP_EXPR);
+          data.name = name;
+        }
       if (const_p)
-	type = build_qualified_type (type, TYPE_QUAL_CONST);
-
-      name = ansi_assopname (NOP_EXPR);
-
+        {
+          data.quals = TYPE_QUAL_CONST;
+          type = build_qualified_type (type, TYPE_QUAL_CONST);
+        }
+    
       argtype = build_reference_type (type);
-      args = tree_cons (NULL_TREE,
-			build_tree_list (hash_tree_chain (argtype, NULL_TREE),
-					 get_identifier ("_ctor_arg")),
-			void_list_node);
-      data.name = name;
-      data.quals = const_p ? TYPE_QUAL_CONST : 0;
+      args = build_tree_list (hash_tree_chain (argtype, NULL_TREE),
+			      get_identifier ("_ctor_arg"));
+      args = tree_cons (NULL_TREE, args, void_list_node);
+      
       raises = synthesize_exception_spec (type, &locate_copy, &data);
       break;
     }
@@ -1022,10 +1015,13 @@ implicitly_declare_fn (kind, type, const_p)
 
   {
     tree declarator = make_call_declarator (name, args, NULL_TREE, raises);
+    
     if (retref)
       declarator = build_nt (ADDR_EXPR, declarator);
 
     fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE, NULL_TREE);
+    if (has_parm)
+      TREE_USED (FUNCTION_FIRST_USER_PARM (fn)) = 1;
   }
 
   my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 20000408);
