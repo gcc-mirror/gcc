@@ -742,6 +742,17 @@ is_pseudo_reg (rtl)
 	      && (REGNO (XEXP (rtl, 0)) >= FIRST_PSEUDO_REGISTER)));
 }
 
+/* Return non-zero if the given type node represents a tagged type.  */
+
+inline int
+is_tagged_type (type)
+     register tree type;
+{
+  register enum tree_code code = TREE_CODE (type);
+
+  return (code == RECORD_TYPE || code == UNION_TYPE || code == ENUMERAL_TYPE);
+}
+
 static char *
 dwarf_tag_name (tag)
      register unsigned tag;
@@ -2501,9 +2512,7 @@ member_attribute (context)
 
   /* Generate this attribute only for members in C++.  */
 
-  if (context != NULL
-      && (TREE_CODE (context) == RECORD_TYPE
-	  || TREE_CODE (context) == UNION_TYPE))
+  if (context != NULL && is_tagged_type (context))
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_member);
       sprintf (label, TYPE_NAME_FMT, TYPE_UID (context));
@@ -3637,21 +3646,10 @@ pend_type (type)
 
 /* Return non-zero if it is legitimate to output DIEs to represent a
    given type while we are generating the list of child DIEs for some
-   DIE associated with a given scope.
+   DIE (e.g. a function or lexical block DIE) associated with a given scope.
 
-   This function returns non-zero if *either* of the following two conditions
-   is satisfied:
-
-	 o	the type actually belongs to the given scope (as evidenced
-		by its TYPE_CONTEXT value), or
-
-	 o	the type is anonymous, and the `scope' in question is *not*
-		a RECORD_TYPE or UNION_TYPE.
-
-   In theory, we should be able to generate DIEs for anonymous types
-   *anywhere* (since the scope of an anonymous type is irrelevant)
-   however svr4 SDB doesn't want to see other type DIEs within the
-   lists of child DIEs for a TAG_structure_type or TAG_union_type DIE.
+   See the comments within the function for a description of when it is
+   considered legitimate to output DIEs for various kinds of types.
 
    Note that TYPE_CONTEXT(type) may be NULL (to indicate global scope)
    or it may point to a BLOCK node (for types local to a block), or to a
@@ -3673,28 +3671,38 @@ pend_type (type)
    It order to delay the production of DIEs representing types of formal
    parameters, callers of this function supply `fake_containing_scope' as
    the `scope' parameter to this function.  Given that fake_containing_scope
-   is *not* the containing scope for *any* other type, the desired effect
-   is achieved, i.e. output of DIEs representing types is temporarily
-   suspended, and any type DIEs which would have been output otherwise
-   are instead placed onto the pending_types_list.  Later on, we can force
-   these (temporarily pended) types to be output simply by calling
+   is a tagged type which is *not* the containing scope for *any* other type,
+   the desired effect is achieved, i.e. output of DIEs representing types
+   is temporarily suspended, and any type DIEs which would have otherwise
+   been output are instead placed onto the pending_types_list.  Later on,
+   we force these (temporarily pended) types to be output simply by calling
    `output_pending_types_for_scope' with an actual argument equal to the
    true scope of the types we temporarily pended.
 */
 
-static int
+inline int
 type_ok_for_scope (type, scope)
     register tree type;
     register tree scope;
 {
-  return (TYPE_CONTEXT (type) == scope
-	  || (TYPE_NAME (type) == NULL
-	      && TREE_CODE (scope) != RECORD_TYPE
-	      && TREE_CODE (scope) != UNION_TYPE));
+  /* Tagged types (i.e. struct, union, and enum types) must always be
+     output only in the scopes where they actually belong (or else the
+     scoping of their own tag names and the scoping of their member
+     names will be incorrect).  Non-tagged-types on the other hand can
+     generally be output anywhere, except that svr4 SDB really doesn't
+     want to see them nested within struct or union types, so here we
+     say it is always OK to immediately output any such a (non-tagged)
+     type, so long as we are not within such a context.  Note that the
+     only kinds of non-tagged types which we will be dealing with here
+     (for C and C++ anyway) will be array types and function types.  */
+
+  return is_tagged_type (type)
+	 ? (TYPE_CONTEXT (type) == scope)
+	 : (scope == NULL_TREE || ! is_tagged_type (scope));
 }
 
 /* Output any pending types (from the pending_types list) which we can output
-   now (given the limitations of the scope that we are working on now).
+   now (taking into account the scope that we are working on now).
 
    For each type output, remove the given type from the pending_types_list
    *before* we try to output it.
@@ -3953,6 +3961,12 @@ output_type (type, containing_scope)
 		    output_decl (func_member, type);
 		}
 	    }
+
+	    /* RECORD_TYPEs and UNION_TYPEs are themselves scopes (at least
+	       in C++) so we must now output any nested pending types which
+	       are local just to this RECORD_TYPE or UNION_TYPE.  */
+
+	    output_pending_types_for_scope (type);
 
 	    end_sibling_chain ();	/* Terminate member chain.  */
 	  }
