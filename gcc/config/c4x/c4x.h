@@ -2372,14 +2372,20 @@ asm_fprintf (FILE, "%s%d:\n", PREFIX, NUM)
 
 #define PRINT_OPERAND_ADDRESS(FILE, X) c4x_print_operand_address(FILE, X)
 
-/* Define this macro if you want to implement any pragmas.  If defined, it
-   should be a C expression to be executed when #pragma is seen.  The
-   argument STREAM is the stdio input stream from which the source
-   text can be read.  CH is the first character after the #pragma.  The
-   result of the expression is the terminating character found
-   (newline or EOF).  */
-#define HANDLE_PRAGMA(GETC, UNGETC, NAME) \
-  c4x_handle_pragma (GETC, UNGETC, NAME)
+/* C4x specific pragmas.  */
+#define REGISTER_TARGET_PRAGMAS(PFILE) do {				\
+  cpp_register_pragma (PFILE, 0, "CODE_SECTION", c4x_pr_CODE_SECTION);	\
+  cpp_register_pragma (PFILE, 0, "DATA_SECTION", c4x_pr_DATA_SECTION);	\
+  cpp_register_pragma (PFILE, 0, "FUNC_CANNOT_INLINE", c4x_pr_ignored);	\
+  cpp_register_pragma (PFILE, 0, "FUNC_EXT_CALLED", c4x_pr_ignored);	\
+  cpp_register_pragma (PFILE, 0, "FUNC_IS_PURE", c4x_pr_FUNC_IS_PURE);	\
+  cpp_register_pragma (PFILE, 0, "FUNC_IS_SYSTEM", c4x_pr_ignored);	\
+  cpp_register_pragma (PFILE, 0, "FUNC_NEVER_RETURNS",			\
+		       c4x_pr_FUNC_NEVER_RETURNS);			\
+  cpp_register_pragma (PFILE, 0, "FUNC_NO_GLOBAL_ASG", c4x_pr_ignored);	\
+  cpp_register_pragma (PFILE, 0, "FUNC_NO_IND_ASG", c4x_pr_ignored);	\
+  cpp_register_pragma (PFILE, 0, "INTERRUPT", c4x_pr_INTERRUPT);	\
+} while (0)
 
 #define SET_DEFAULT_DECL_ATTRIBUTES(DECL, ATTRIBUTES) \
   c4x_set_default_attributes (DECL, &ATTRIBUTES)

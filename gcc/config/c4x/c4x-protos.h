@@ -22,6 +22,9 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_C4X_PROTOS_H
+#define GCC_C4X_PROTOS_H
+
 extern void c4x_override_options PARAMS ((void));
 
 extern void c4x_optimization_options PARAMS ((int, int));
@@ -290,3 +293,14 @@ extern enum machine_mode c4x_caller_save_map[];
 
 extern int c4x_rpts_cycles;	        /* Max cycles for RPTS.  */
 extern int c4x_cpu_version;		/* Cpu version C30/31/32/40/44.  */
+
+#ifdef _C_PRAGMA_H
+extern void c4x_pr_CODE_SECTION		PARAMS ((cpp_reader *));
+extern void c4x_pr_DATA_SECTION		PARAMS ((cpp_reader *));
+extern void c4x_pr_FUNC_IS_PURE		PARAMS ((cpp_reader *));
+extern void c4x_pr_FUNC_NEVER_RETURNS	PARAMS ((cpp_reader *));
+extern void c4x_pr_INTERRUPT		PARAMS ((cpp_reader *));
+extern void c4x_pr_ignored		PARAMS ((cpp_reader *));
+#endif
+
+#endif

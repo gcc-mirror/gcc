@@ -21,6 +21,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_I370_PROTOS_H
+#define GCC_I370_PROTOS_H
+
 #ifdef RTX_CODE
 extern int i370_branch_dest PARAMS ((rtx));
 extern int i370_branch_length PARAMS ((rtx));
@@ -46,3 +49,9 @@ extern int mvs_check_alias PARAMS ((const char *, char *));
 extern void i370_function_prolog PARAMS ((FILE *, int));
 extern void check_label_emit PARAMS ((void));
 extern void mvs_free_label_list PARAMS ((void));
+
+#ifdef _C_PRAGMA_H
+extern void i370_pr_map PARAMS ((cpp_reader *));
+#endif
+
+#endif

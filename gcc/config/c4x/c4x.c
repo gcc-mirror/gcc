@@ -45,6 +45,9 @@
 #include "recog.h"
 #include "c-tree.h"
 #include "ggc.h"
+#include "cpplib.h"
+#include "c-lex.h"
+#include "c-pragma.h"
 #include "c4x-protos.h"
 
 rtx smulhi3_libfunc;
@@ -182,6 +185,7 @@ static int c4x_valid_operands PARAMS ((enum rtx_code, rtx *,
 static int c4x_arn_reg_operand PARAMS ((rtx, enum machine_mode, unsigned int));
 static int c4x_arn_mem_operand PARAMS ((rtx, enum machine_mode, unsigned int));
 static void c4x_check_attribute PARAMS ((const char *, tree, tree, tree *));
+static int c4x_parse_pragma PARAMS ((const char *, tree *, tree *));
 
 /* Called to register all of our global variables with the garbage
    collector.  */
@@ -287,7 +291,7 @@ c4x_override_options ()
 
 void
 c4x_optimization_options (level, size)
-     int level;
+     int level ATTRIBUTE_UNUSED;
      int size ATTRIBUTE_UNUSED;
 {
   /* Scheduling before register allocation can screw up global
@@ -4383,123 +4387,112 @@ c4x_operand_subword (op, i, validate_address, mode)
 
    */
 
-int
-c4x_handle_pragma (p_getc, p_ungetc, pname)
-     int (* p_getc) PARAMS ((void));
-     void (* p_ungetc) PARAMS ((int)) ATTRIBUTE_UNUSED;
-     char *pname;
+/* Parse a C4x pragma, of the form ( function [, "section"] ) \n.
+   FUNC is loaded with the IDENTIFIER_NODE of the function, SECT with
+   the STRING_CST node of the string.  If SECT is null, then this
+   pragma doesn't take a section string.  Returns 0 for a good pragma,
+   -1 for a malformed pragma.  */
+#define BAD(msgid, arg) do { warning (msgid, arg); return -1; } while (0)
+
+static int
+c4x_parse_pragma (name, func, sect)
+     const char *name;
+     tree *func;
+     tree *sect;
 {
-  int i;
-  int c;
-  int namesize;
-  char *name;
-  tree func;
-  tree sect = NULL_TREE;
-  tree new;
+  tree f, s, x;
 
-  c = p_getc ();
-  while (c == ' ' || c == '\t') c = p_getc ();
-  if (c != '(')
-    return 0;
+  if (c_lex (&x) != CPP_OPEN_PAREN)
+    BAD ("missing '(' after '#pragma %s' - ignored", name);
 
-  c = p_getc ();
-  while (c == ' ' || c == '\t') c = p_getc ();
-  if (! (ISALPHA(c) || c == '_' || c == '$' || c == '@'))
-    return 0;
+  if (c_lex (&f) != CPP_NAME)
+    BAD ("missing function name in '#pragma %s' - ignored", name);
 
-  i = 0;
-  namesize = 16;
-  name = xmalloc (namesize);
-  while (ISALNUM (c) || c == '_' || c == '$' || c == '@')
+  if (sect)
     {
-      if (i >= namesize-1)
-	{
-	  namesize += 16;
-	  name = xrealloc (name, namesize);
-	}
-      name[i++] = c;
-      c = p_getc ();
+      if (c_lex (&x) != CPP_COMMA)
+	BAD ("malformed '#pragma %s' - ignored", name);
+      if (c_lex (&s) != CPP_STRING)
+	BAD ("missing section name in '#pragma %s' - ignored", name);
+      *sect = s;
     }
-  name[i] = 0;
-  func = get_identifier (name);
-  free (name);
-  
-  if (strcmp (pname, "CODE_SECTION") == 0
-      || strcmp (pname, "DATA_SECTION") == 0)
-    {
-      while (c == ' ' || c == '\t') c = p_getc ();
-      if (c != ',')
-        return 0;
 
-      c = p_getc ();
-      while (c == ' ' || c == '\t') c = p_getc ();
-      if (c != '"')
-        return 0;
+  if (c_lex (&x) != CPP_CLOSE_PAREN)
+    BAD ("missing ')' for '#pragma %s' - ignored", name);
 
-      i = 0;
-      namesize = 16;
-      name = xmalloc (namesize);
-      c = p_getc ();
-      while (c != '"' && c != '\n' && c != '\r' && c != EOF)
-        {
-          if (i >= namesize-1)
-	    {
-	      namesize += 16;
-	      name = xrealloc (name, namesize);
-	    }
-          name[i++] = c;
-          c = p_getc ();
-        }
-      name[i] = 0;
-      sect = build_string (i, name);
-      free (name);
-      sect = build_tree_list (NULL_TREE, sect);
-      
-      if (c != '"')
-        return 0;
-      c = p_getc ();
-    }
-  while (c == ' ' || c == '\t') c = p_getc ();
-  if (c != ')')
-    return 0;
-  
-  new = build_tree_list (func, sect);
-  if (strcmp (pname, "CODE_SECTION") == 0)
-    code_tree = chainon (code_tree, new);
-  
-  else if (strcmp (pname, "DATA_SECTION") == 0)
-    data_tree = chainon (data_tree, new);
-  
-  else if (strcmp (pname, "FUNC_CANNOT_INLINE") == 0)
-      ; /* Ignore.  */
-  
-  else if (strcmp (pname, "FUNC_EXT_CALLED") == 0)
-      ; /* Ignore.  */
-  
-  else if (strcmp (pname, "FUNC_IS_PURE") == 0)
-     pure_tree = chainon (pure_tree, new);
-  
-  else if (strcmp (pname, "FUNC_IS_SYSTEM") == 0)
-      ; /* Ignore.  */
-  
-  else if (strcmp (pname, "FUNC_NEVER_RETURNS") == 0)
-    noreturn_tree = chainon (noreturn_tree, new);
-  
-  else if (strcmp (pname, "FUNC_NO_GLOBAL_ASG") == 0)
-      ; /* Ignore.  */
-  
-  else if (strcmp (pname, "FUNC_NO_IND_ASG") == 0)
-      ; /* Ignore.  */
-  
-  else if (strcmp (pname, "INTERRUPT") == 0)
-    interrupt_tree = chainon (interrupt_tree, new);
-  
-  else
-    return 0;
-  
-  return 1;
+  if (c_lex (&x) != CPP_EOF)
+    warning ("junk at end of '#pragma %s'", name);
+
+  *func = f;
+  return 0;
 }
 
+void
+c4x_pr_CODE_SECTION (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree func, sect;
+
+  if (c4x_parse_pragma ("CODE_SECTION", &func, &sect))
+    return;
+  code_tree = chainon (code_tree,
+		       build_tree_list (func,
+					build_tree_list (NULL_TREE, sect)));
+}
+
+void
+c4x_pr_DATA_SECTION (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree func, sect;
+
+  if (c4x_parse_pragma ("DATA_SECTION", &func, &sect))
+    return;
+  data_tree = chainon (data_tree,
+		       build_tree_list (func,
+					build_tree_list (NULL_TREE, sect)));
+}
+
+void
+c4x_pr_FUNC_IS_PURE (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree func;
+
+  if (c4x_parse_pragma ("FUNC_IS_PURE", &func, 0))
+    return;
+  pure_tree = chainon (pure_tree, build_tree_list (func, NULL_TREE));
+}
+
+void
+c4x_pr_FUNC_NEVER_RETURNS (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree func;
+
+  if (c4x_parse_pragma ("FUNC_NEVER_RETURNS", &func, 0))
+    return;
+  noreturn_tree = chainon (noreturn_tree, build_tree_list (func, NULL_TREE));
+}
+
+void
+c4x_pr_INTERRUPT (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree func;
+
+  if (c4x_parse_pragma ("INTERRUPT", &func, 0))
+    return;
+  interrupt_tree = chainon (interrupt_tree, build_tree_list (func, NULL_TREE));
+}
+
+/* Used for FUNC_CANNOT_INLINE, FUNC_EXT_CALLED, FUNC_IS_SYSTEM,
+   FUNC_NO_GLOBAL_ASG, and FUNC_NO_IND_ASG.  */
+void
+c4x_pr_ignored (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+}
 
 struct name_list
 {

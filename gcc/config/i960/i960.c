@@ -42,6 +42,9 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "recog.h"
 #include "toplev.h"
+#include "cpplib.h"
+#include "c-pragma.h"
+#include "c-lex.h"
 #include "tm_p.h"
 
 /* Save the operands last given to a compare for use when we
@@ -88,8 +91,86 @@ static int ret_label = 0;
 
 /* Handle pragmas for compatibility with Intel's compilers.  */
 
-/* ??? This is incomplete, since it does not handle all pragmas that the
-   intel compilers understand.  */
+/* NOTE: ic960 R3.0 pragma align definition:
+
+   #pragma align [(size)] | (identifier=size[,...])
+   #pragma noalign [(identifier)[,...]]
+     
+   (all parens are optional)
+     
+   - size is [1,2,4,8,16]
+   - noalign means size==1
+   - applies only to component elements of a struct (and union?)
+   - identifier applies to structure tag (only)
+   - missing identifier means next struct
+     
+   - alignment rules for bitfields need more investigation.
+
+   This implementation only handles the case of no identifiers.  */
+
+void
+i960_pr_align (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree number;
+  enum cpp_ttype type;
+  int align;
+
+  type = c_lex (&number);
+  if (type == CPP_OPEN_PAREN)
+    type = c_lex (&number);
+  if (type == CPP_NAME)
+    {
+      warning ("sorry, not implemented: #pragma align NAME=SIZE");
+      return;
+    }
+  if (type != CPP_NUMBER)
+    {
+      warning ("malformed #pragma align - ignored");
+      return;
+    }
+
+  align = TREE_INT_CST_LOW (number);
+  switch (align)
+    {
+    case 0:
+      /* Return to last alignment.  */
+      align = i960_last_maxbitalignment / 8;
+      /* Fall through.  */
+    case 16:
+    case 8:
+    case 4:
+    case 2:
+    case 1:
+      i960_last_maxbitalignment = i960_maxbitalignment;
+      i960_maxbitalignment = align * 8;
+      break;
+      
+    default:
+      /* Silently ignore bad values.  */
+      break;
+    }
+}
+
+void
+i960_pr_noalign (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  enum cpp_ttype type;
+  tree number;
+
+  type = c_lex (&number);
+  if (type == CPP_OPEN_PAREN)
+    type = c_lex (&number);
+  if (type == CPP_NAME)
+    {
+      warning ("sorry, not implemented: #pragma noalign NAME");
+      return;
+    }
+
+  i960_last_maxbitalignment = i960_maxbitalignment;
+  i960_maxbitalignment = 8;
+}
 
 int
 process_pragma (p_getc, p_ungetc, pname)
@@ -132,40 +213,7 @@ process_pragma (p_getc, p_ungetc, pname)
 
   align = atoi (buf);
 
-  switch (align)
-    {
-    case 0:
-      /* Return to last alignment.  */
-      align = i960_last_maxbitalignment / 8;
-      /* Fall through.  */
-    case 16:
-    case 8:
-    case 4:
-    case 2:
-    case 1:
-      i960_last_maxbitalignment = i960_maxbitalignment;
-      i960_maxbitalignment = align * 8;
-      break;
-      
-    default:
-      /* Silently ignore bad values.  */
-      break;
-    }
   
-  /* NOTE: ic960 R3.0 pragma align definition:
-     
-     #pragma align [(size)] | (identifier=size[,...])
-     #pragma noalign [(identifier)[,...]]
-     
-     (all parens are optional)
-     
-     - size is [1,2,4,8,16]
-     - noalign means size==1
-     - applies only to component elements of a struct (and union?)
-     - identifier applies to structure tag (only)
-     - missing identifier means next struct
-     
-     - alignment rules for bitfields need more investigation  */
   
   return 1;
 }

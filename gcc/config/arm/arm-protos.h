@@ -20,11 +20,12 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_ARM_PROTOS_H
+#define GCC_ARM_PROTOS_H
+
 extern void   arm_override_options	PARAMS ((void));
 extern int    use_return_insn		PARAMS ((int));
 extern int    arm_regno_class 		PARAMS ((int));
-extern int    arm_process_pragma	PARAMS ((int (*)(void), void (*) (int),
-						char *));
 extern void   arm_finalize_pic		PARAMS ((void));
 extern int    arm_volatile_func		PARAMS ((void));
 extern const char * arm_output_epilogue	PARAMS ((int));
@@ -194,3 +195,11 @@ extern int  arm_dllimport_p 		PARAMS ((tree));
 extern void arm_mark_dllexport 		PARAMS ((tree));
 extern void arm_mark_dllimport 		PARAMS ((tree));
 #endif
+
+#ifdef _C_PRAGMA_H  /* included from code that cares about pragmas */
+extern void arm_pr_long_calls		PARAMS ((cpp_reader *));
+extern void arm_pr_no_long_calls	PARAMS ((cpp_reader *));
+extern void arm_pr_long_calls_off	PARAMS ((cpp_reader *));
+#endif
+
+#endif /* GCC_ARM_PROTOS_H */

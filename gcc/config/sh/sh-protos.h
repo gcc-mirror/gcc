@@ -21,6 +21,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_SH_PROTOS_H
+#define GCC_SH_PROTOS_H
+
 #ifdef RTX_CODE
 extern struct rtx_def *sh_builtin_saveregs PARAMS ((void));
 extern struct rtx_def *prepare_scc_operands PARAMS ((enum rtx_code));
@@ -122,3 +125,11 @@ extern int fldi_ok PARAMS ((void));
 #ifdef HARD_CONST
 extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));
 #endif
+
+#ifdef _C_PRAGMA_H
+extern void sh_pr_interrupt PARAMS ((cpp_reader *));
+extern void sh_pr_trapa PARAMS ((cpp_reader *));
+extern void sh_pr_nosave_low_regs PARAMS ((cpp_reader *));
+#endif
+
+#endif /* sh-protos.h */

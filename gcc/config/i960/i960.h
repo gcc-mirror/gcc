@@ -131,7 +131,10 @@ Boston, MA 02111-1307, USA.  */
   fprintf (asm_out_file, "\t.type\t0x%x;", A)
 
 /* Handle pragmas for compatibility with Intel's compilers.  */
-#define HANDLE_PRAGMA(GET, UNGET, NAME) process_pragma (GET, UNGET, NAME)
+#define REGISTER_TARGET_PRAGMAS(PFILE) do {			\
+  cpp_register_pragma (PFILE, 0, "align", i960_pr_align);	\
+  cpp_register_pragma (PFILE, 0, "noalign", i960_pr_noalign);	\
+} while (0)
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 

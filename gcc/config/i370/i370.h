@@ -147,14 +147,9 @@ extern int mvs_function_name_length;
 #endif
 
 #ifdef TARGET_HLASM
-/* Define this macro if you want to implement any pragmas.  If defined, it
-   is a C expression to be executed when #pragma is seen.  The
-   argument FILE is the stdio input stream from which the source
-   text can be read.  CH is the first character after the #pragma.  The
-   result of the expression is the terminating character found
-   (newline or EOF).  */
-#define HANDLE_PRAGMA(GETC, UNGETC, NAME) \
-  handle_pragma ((GETC), (UNGETC), (NAME))
+/* HLASM requires #pragma map.  */
+#define REGISTER_TARGET_PRAGMAS(PFILE) \
+  cpp_register_pragma (PFILE, 0, "map", i370_pr_map)
 #endif /* TARGET_HLASM */
 
 /* Define maximum length of page minus page escape overhead.  */

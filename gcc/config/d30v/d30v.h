@@ -19,6 +19,8 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_D30V_H
+
 /* D30V specific macros */
 
 /* Align an address */
@@ -5955,15 +5957,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    is to pretend that the file's contents are enclosed in `extern "C" {...}'.  */
 /* #define NO_IMPLICIT_EXTERN_C */
 
-/* Define this macro if you want to implement any pragmas.  If defined, it
-   should be a C statement to be executed when `#pragma' is seen.  The argument
-   STREAM is the stdio input stream from which the source text can be read.
-
-   It is generally a bad idea to implement new uses of `#pragma'.  The only
-   reason to define this macro is for compatibility with other compilers that
-   do support `#pragma' for the sake of any user programs which already use it.  */
-/* #define HANDLE_PRAGMA(STREAM) */
-
 /* Define this macro to handle System V style pragmas (particularly #pack).
 
    Defined in svr4.h.  */
@@ -6081,3 +6074,5 @@ extern const char *d30v_cond_exec_string;
 
 /* Indicate how many instructions can be issued at the same time.  */
 #define ISSUE_RATE 2
+
+#endif /* GCC_D30V_H */

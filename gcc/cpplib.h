@@ -28,7 +28,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 extern "C" {
 #endif
 
+/* For complex reasons, cpp_reader is also typedefed in c-pragma.h.  */
+#ifndef _C_PRAGMA_H
 typedef struct cpp_reader cpp_reader;
+#endif
 typedef struct cpp_buffer cpp_buffer;
 typedef struct cpp_options cpp_options;
 typedef struct cpp_printer cpp_printer;
