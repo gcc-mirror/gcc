@@ -1,6 +1,11 @@
+2004-08-12  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/lib1funcs.asm (ARM_FUNC_ALIAS): Also alias _L__name.
+	(aeabi_uidivmod, aeabi_idivmod): Provide thumb implementation.
+
 2004-08-12  David Daney  <ddaney@avtrex.com>
 
-        * java/gcj.texi:  Add subsection on signal usage.
+	* java/gcj.texi:  Add subsection on signal usage.
 
 2004-08-12  David Edelsohn  <edelsohn@gnu.org>
 
