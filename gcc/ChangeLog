@@ -1,3 +1,7 @@
+2003-04-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* reload1.c: Revert my previous patch on 2002-04-17.
+
 2003-04-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Prefer "bug fix" over "bugfix".
