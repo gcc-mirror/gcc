@@ -3296,69 +3296,21 @@ static rtx
 expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
 		       enum machine_mode mode)
 {
-  tree arg1, arg2, len;
-  const char *p1, *p2;
-
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
-
-  arg1 = TREE_VALUE (arglist);
-  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-  len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-
-  /* If the len parameter is zero, return zero.  */
-  if (integer_zerop (len))
+  else
     {
-      /* Evaluate and ignore arg1 and arg2 in case they have
-         side-effects.  */
-      expand_expr (arg1, const0_rtx, VOIDmode, EXPAND_NORMAL);
-      expand_expr (arg2, const0_rtx, VOIDmode, EXPAND_NORMAL);
-      return const0_rtx;
-    }
-
-  /* If both arguments are equal (and not volatile), return zero.  */
-  if (operand_equal_p (arg1, arg2, 0))
-    {
-      /* Evaluate and ignore len in case it has side-effects.  */
-      expand_expr (len, const0_rtx, VOIDmode, EXPAND_NORMAL);
-      return const0_rtx;
-    }
-
-  p1 = c_getstr (arg1);
-  p2 = c_getstr (arg2);
-
-  /* If all arguments are constant, and the value of len is not greater
-     than the lengths of arg1 and arg2, evaluate at compile-time.  */
-  if (host_integerp (len, 1) && p1 && p2
-      && compare_tree_int (len, strlen (p1) + 1) <= 0
-      && compare_tree_int (len, strlen (p2) + 1) <= 0)
-    {
-      const int r = memcmp (p1, p2, tree_low_cst (len, 1));
-
-      return (r < 0 ? constm1_rtx : (r > 0 ? const1_rtx : const0_rtx));
-    }
-
-  /* If len parameter is one, return an expression corresponding to
-     (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
-  if (integer_onep (len))
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
-      tree ind1 =
-      fold (build1 (CONVERT_EXPR, integer_type_node,
-		    build1 (INDIRECT_REF, cst_uchar_node,
-			    fold_convert (cst_uchar_ptr_node, arg1))));
-      tree ind2 =
-      fold (build1 (CONVERT_EXPR, integer_type_node,
-		    build1 (INDIRECT_REF, cst_uchar_node,
-			    fold_convert (cst_uchar_ptr_node, arg2))));
-      tree result = fold (build2 (MINUS_EXPR, integer_type_node, ind1, ind2));
-      return expand_expr (result, target, mode, EXPAND_NORMAL);
+      tree result = fold_builtin_memcmp (arglist);
+      if (result)
+	return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
 
 #if defined HAVE_cmpmemsi || defined HAVE_cmpstrsi
   {
+    tree arg1 = TREE_VALUE (arglist);
+    tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+    tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result;
     rtx insn;
@@ -3453,49 +3405,21 @@ static rtx
 expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
 {
   tree arglist = TREE_OPERAND (exp, 1);
-  tree arg1, arg2;
-  const char *p1, *p2;
 
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
-
-  arg1 = TREE_VALUE (arglist);
-  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-
-  /* If both arguments are equal (and not volatile), return zero.  */
-  if (operand_equal_p (arg1, arg2, 0))
-    return const0_rtx;
-
-  p1 = c_getstr (arg1);
-  p2 = c_getstr (arg2);
-
-  if (p1 && p2)
+  else
     {
-      const int i = strcmp (p1, p2);
-      return (i < 0 ? constm1_rtx : (i > 0 ? const1_rtx : const0_rtx));
-    }
-
-  /* If either arg is "", return an expression corresponding to
-     (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
-  if ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
-      tree ind1 =
-	fold (build1 (CONVERT_EXPR, integer_type_node,
-		      build1 (INDIRECT_REF, cst_uchar_node,
-			      fold_convert (cst_uchar_ptr_node, arg1))));
-      tree ind2 =
-	fold (build1 (CONVERT_EXPR, integer_type_node,
-		      build1 (INDIRECT_REF, cst_uchar_node,
-			      fold_convert (cst_uchar_ptr_node, arg2))));
-      tree result = fold (build2 (MINUS_EXPR, integer_type_node, ind1, ind2));
-      return expand_expr (result, target, mode, EXPAND_NORMAL);
+      tree result = fold_builtin_strcmp (arglist);
+      if (result)
+	return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
 
 #ifdef HAVE_cmpstrsi
   if (HAVE_cmpstrsi)
   {
+    tree arg1 = TREE_VALUE (arglist);
+    tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
     tree len, len1, len2;
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result, insn;
@@ -3598,64 +3522,15 @@ static rtx
 expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
 {
   tree arglist = TREE_OPERAND (exp, 1);
-  tree arg1, arg2, arg3;
-  const char *p1, *p2;
 
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
-
-  arg1 = TREE_VALUE (arglist);
-  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-  arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-
-  /* If the len parameter is zero, return zero.  */
-  if (integer_zerop (arg3))
+  else
     {
-      /* Evaluate and ignore arg1 and arg2 in case they have
-	 side-effects.  */
-      expand_expr (arg1, const0_rtx, VOIDmode, EXPAND_NORMAL);
-      expand_expr (arg2, const0_rtx, VOIDmode, EXPAND_NORMAL);
-      return const0_rtx;
-    }
-
-  /* If arg1 and arg2 are equal (and not volatile), return zero.  */
-  if (operand_equal_p (arg1, arg2, 0))
-    {
-      /* Evaluate and ignore arg3 in case it has side-effects.  */
-      expand_expr (arg3, const0_rtx, VOIDmode, EXPAND_NORMAL);
-      return const0_rtx;
-    }
-
-  p1 = c_getstr (arg1);
-  p2 = c_getstr (arg2);
-
-  /* If all arguments are constant, evaluate at compile-time.  */
-  if (host_integerp (arg3, 1) && p1 && p2)
-    {
-      const int r = strncmp (p1, p2, tree_low_cst (arg3, 1));
-      return (r < 0 ? constm1_rtx : (r > 0 ? const1_rtx : const0_rtx));
-    }
-
-  /* If len == 1 or (either string parameter is "" and (len >= 1)),
-      return (*(const u_char*)arg1 - *(const u_char*)arg2).  */
-  if (host_integerp (arg3, 1)
-      && (tree_low_cst (arg3, 1) == 1
-	  || (tree_low_cst (arg3, 1) > 1
-	      && ((p1 && *p1 == '\0') || (p2 && *p2 == '\0')))))
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
-      tree ind1 =
-	fold (build1 (CONVERT_EXPR, integer_type_node,
-		      build1 (INDIRECT_REF, cst_uchar_node,
-			      fold_convert (cst_uchar_ptr_node, arg1))));
-      tree ind2 =
-	fold (build1 (CONVERT_EXPR, integer_type_node,
-		      build1 (INDIRECT_REF, cst_uchar_node,
-			      fold_convert (cst_uchar_ptr_node, arg2))));
-      tree result = fold (build2 (MINUS_EXPR, integer_type_node, ind1, ind2));
-      return expand_expr (result, target, mode, EXPAND_NORMAL);
+      tree result = fold_builtin_strncmp (arglist);
+      if (result)
+	return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
 
   /* If c_strlen can determine an expression for one of the string
@@ -3664,6 +3539,9 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
 #ifdef HAVE_cmpstrsi
   if (HAVE_cmpstrsi)
   {
+    tree arg1 = TREE_VALUE (arglist);
+    tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+    tree arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
     tree len, len1, len2;
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result, insn;

@@ -1,3 +1,8 @@
+2004-10-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_memcmp, expand_builtin_strcmp,
+	expand_builtin_strncmp): Delete duplicate code.
+
 2004-10-02  Frank Ch. Eigler  <fche@redhat.com>
 
 	* tree-mudflap.c (mf_build_check_statement_for): Reorganize to
