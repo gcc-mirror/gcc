@@ -1,5 +1,19 @@
 2001-12-16  Tom Tromey  <tromey@redhat.com>
 
+	For PR libgcj/5103:
+	* include/jvm.h (__GCJ_JNI_IMPL__): Define.
+	* include/config.h.in: Rebuilt.
+	* configure: Rebuilt.
+	* configure.in: Define JV_HAVE_INTTYPES_H if inttypes.h found.
+	Added comment for HAVE_DLOPEN to avoid autoheader error.
+	* gcj/libgcj-config.h.in (JV_HAVE_INTTYPES_H): Added.
+	* include/jni.h: Include <gcj/libgcj-config.h>.  Don't include
+	CNI-specific headers if we are compiling ordinary JNI code with a
+	C++ compiler.  Include <inttypes.h> and JNIWeakRef.h when
+	appropriate.
+	* jni.cc: Don't include JNIWeakRef.h.
+	(__GCJ_JNI_IMPL__): Don't define.
+
 	For PR java/5088:
 	* java/lang/natClassLoader.cc (_Jv_InitNewClassFields): New
 	function.

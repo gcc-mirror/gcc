@@ -11,6 +11,12 @@ details.  */
 #ifndef __JAVA_JVM_H__
 #define __JAVA_JVM_H__
 
+// Define this before including jni.h.
+// jni.h is included by jvmpi.h, which might be included.  We define
+// this unconditionally because it is convenient and it lets other
+// files include jni.h without difficulty.
+#define __GCJ_JNI_IMPL__
+
 #include <gcj/javaprims.h>
 
 #include <java-assert.h>
@@ -358,6 +364,7 @@ bool _Jv_VerifyIdentifier (_Jv_Utf8Const *);
 bool _Jv_ClassNameSamePackage (_Jv_Utf8Const *name1, _Jv_Utf8Const *name2);
 
 #ifdef ENABLE_JVMPI
+
 #include "jvmpi.h"
 
 extern void (*_Jv_JVMPI_Notify_OBJECT_ALLOC) (JVMPI_Event *event);

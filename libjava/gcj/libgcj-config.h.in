@@ -3,3 +3,6 @@
 
 /* Define if hash synchronization is in use.  */
 #undef JV_HASH_SYNCHRONIZATION
+
+/* Define if <inttypes.h> is available.  */
+#undef JV_HAVE_INTTYPES_H

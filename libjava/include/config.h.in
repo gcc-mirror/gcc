@@ -148,8 +148,6 @@
 /* Define if you have dladdr() */
 #undef HAVE_DLADDR
 
-/* Define if yo have dlopen(). */
-#undef HAVE_DLOPEN
  
 /* Define if getuid() and friends are missing.  */
 #undef NO_GETUID
@@ -393,4 +391,13 @@
 
 /* Define if struct hostent_data is defined in netdb.h */
 #undef HAVE_STRUCT_HOSTENT_DATA
+
+/* Define if dlopen is available */
+#undef HAVE_DLOPEN
+
+/* Define if <inttypes.h> is available */
+#undef HAVE_INTTYPES_H
+
+/* Define if <inttypes.h> is available */
+#undef JV_HAVE_INTTYPES_H
 
