@@ -1,3 +1,13 @@
+2002-03-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/ostream.tcc (ostream::operator<<(_CharT)): Always
+	allocate at least a byte.
+
+	* testsuite/18_support/numeric_limits.cc (test_extrema): Make
+	debugger-friendly.
+	* testsuite/27_io/streambuf.cc (test07): Fix.
+	(test06): Enable.
+
 2002-03-27  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/Intro.3:  Date tweak.
