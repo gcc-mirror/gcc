@@ -445,13 +445,15 @@ layout_decl (decl, known_align)
 		do_type_align (type, decl);
 	      else
 #endif
+		{
 #ifdef EMPTY_FIELD_BOUNDARY
-		if (EMPTY_FIELD_BOUNDARY > DECL_ALIGN (decl))
-		  {
-		    DECL_ALIGN (decl) = EMPTY_FIELD_BOUNDARY;
-		    DECL_USER_ALIGN (decl) = 0;
-		  }
+		  if (EMPTY_FIELD_BOUNDARY > DECL_ALIGN (decl))
+		    {
+		      DECL_ALIGN (decl) = EMPTY_FIELD_BOUNDARY;
+		      DECL_USER_ALIGN (decl) = 0;
+		    }
 #endif
+		}
 	    }
 
 	  /* See if we can use an ordinary integer mode for a bit-field.
