@@ -2730,7 +2730,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 
 #define PREDICATE_CODES							   \
   {"any_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,		   \
-		   LABEL_REF, SUBREG, REG, MEM}},			   \
+		   LABEL_REF, SUBREG, REG, MEM, PARALLEL}},		   \
   {"zero_constant", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	   \
 		    LABEL_REF, SUBREG, REG, MEM}},			   \
   {"short_cint_operand", {CONST_INT}},					   \
