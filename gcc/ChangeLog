@@ -1,3 +1,10 @@
+Thu Jun 24 22:54:05 1999  David Edelsohn  <edelsohn@gnu.org>
+                          Jeff Law <law@cygnus.com>
+
+	* rs6000.md (movdf_hardfloat32): Revert previous patch.
+	Handle LO_SUM the same as offsettable in cases 1 and 2.
+	* rs6000.c (find_addr_reg): Revert previous patch.
+
 Thu Jun 24 22:43:12 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* system.h (strstr): New external function declaration.
