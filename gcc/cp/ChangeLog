@@ -4,7 +4,7 @@ Wed Nov 12 11:04:33 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	(mark_class_instantiated): If we support one_only but not weak 
 	symbols, don't mark this as known.
 
-	* init.c (build_new): Handle cookies in EH cleanup.
+	* init.c (build_new): Handle vec delete in EH cleanup.
 
 Wed Nov 12 08:11:55 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
