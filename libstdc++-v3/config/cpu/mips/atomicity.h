@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations.
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,9 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
     ("/* Inline exchange & add */\n\t"
      "1:\n\t"
      ".set	push\n\t"
+#if _MIPS_SIM == _MIPS_SIM_ABI32
      ".set	mips2\n\t"
+#endif
      "ll	%0,%3\n\t"
      "addu	%1,%4,%0\n\t"
      "sc	%1,%2\n\t"
@@ -66,7 +68,9 @@ __atomic_add (volatile _Atomic_word *__mem, int __val)
     ("/* Inline atomic add */\n\t"
      "1:\n\t"
      ".set	push\n\t"
+#if _MIPS_SIM == _MIPS_SIM_ABI32
      ".set	mips2\n\t"
+#endif
      "ll	%0,%2\n\t"
      "addu	%0,%3,%0\n\t"
      "sc	%0,%1\n\t"
