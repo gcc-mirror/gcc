@@ -860,7 +860,10 @@ redirect_edge_and_branch (e, target)
       /* If the insn doesn't go where we think, we're confused.  */
       if (JUMP_LABEL (insn) != old_label)
 	abort ();
-      redirect_jump (insn, block_label (target), 0);
+      /* If the substitution doesn't succeed, die.  This can happen
+	 if the back end emitted unrecognizable instructions.  */
+      if (! redirect_jump (insn, block_label (target), 0))
+	abort ();
     }
 
   if (rtl_dump_file)
