@@ -602,6 +602,23 @@ declare_return_variable (id, use_stmt)
 		     (splay_tree_key) result,
 		     (splay_tree_value) var);
 
+  if (DECL_SAVED_FUNCTION_DATA (fn))
+    {
+      tree nrv = DECL_SAVED_FUNCTION_DATA (fn)->x_return_value;
+      if (nrv)
+	{
+	  /* We have a named return value; copy the name and source
+	     position so we can get reasonable debugging information, and
+	     register the return variable as its equivalent.  */
+	  DECL_NAME (var) = DECL_NAME (nrv);
+	  DECL_SOURCE_FILE (var) = DECL_SOURCE_FILE (nrv);
+	  DECL_SOURCE_LINE (var) = DECL_SOURCE_LINE (nrv);
+	  splay_tree_insert (id->decl_map,
+			     (splay_tree_key) nrv,
+			     (splay_tree_value) var);
+	}
+    }
+
   /* Build the USE_STMT.  */
   *use_stmt = build_stmt (EXPR_STMT, var);
 

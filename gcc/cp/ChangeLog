@@ -1,3 +1,17 @@
+2001-08-07  Jason Merrill  <jason_merrill@redhat.com>
+
+	Support named return value optimization for inlines, too.
+	* decl.c (finish_function): Nullify returns here.
+	* semantics.c (genrtl_start_function): Not here.
+	(cp_expand_stmt): Don't mess with CLEANUP_STMTs.
+	(nullify_returns_r): No longer static.  Just clear RETURN_EXPR.
+	Also nullify the CLEANUP_STMT for the nrv.
+	* cp-tree.h: Declare it.
+	* optimize.c (declare_return_variable): Replace the nrv with the
+	return variable.
+	* typeck.c (check_return_expr): Be more flexible on alignment check.
+	Ignore cv-quals when checking for a matching type.
+
 2001-08-09  Richard Henderson  <rth@redhat.com>
 
 	* decl2.c (finish_objects): Use target hooks instead of

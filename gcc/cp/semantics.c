@@ -50,7 +50,6 @@
 
 static tree maybe_convert_cond PARAMS ((tree));
 static tree simplify_aggr_init_exprs_r PARAMS ((tree *, int *, void *));
-static tree nullify_returns_r PARAMS ((tree *, int *, void *));
 static void deferred_type_access_control PARAMS ((void));
 static void emit_associated_thunks PARAMS ((tree));
 static void genrtl_try_block PARAMS ((tree));
@@ -2196,11 +2195,7 @@ cp_expand_stmt (t)
   switch (TREE_CODE (t))
     {
     case CLEANUP_STMT:
-      if (CLEANUP_DECL (t)
-	  && CLEANUP_DECL (t) == current_function_return_value)
-	/* Don't destroy the chosen named return value.  */;
-      else
-	genrtl_decl_cleanup (CLEANUP_DECL (t), CLEANUP_EXPR (t));
+      genrtl_decl_cleanup (CLEANUP_DECL (t), CLEANUP_EXPR (t));
       break;
 
     case CTOR_STMT:
@@ -2504,20 +2499,27 @@ expand_body (fn)
   timevar_pop (TV_EXPAND);
 }
 
-/* Helper function for walk_tree, used by genrtl_start_function to override
-   all the RETURN_STMTs for the named return value optimization.  */
+/* Helper function for walk_tree, used by finish_function to override all
+   the RETURN_STMTs and pertinent CLEANUP_STMTs for the named return
+   value optimization.  */
 
-static tree
+tree
 nullify_returns_r (tp, walk_subtrees, data)
      tree *tp;
      int *walk_subtrees;
-     void *data ATTRIBUTE_UNUSED;
+     void *data;
 {
-  /* No need to walk into types.  */
+  tree nrv = (tree) data;
+
+  /* No need to walk into types.  There wouldn't be any need to walk into
+     non-statements, except that we have to consider STMT_EXPRs.  */
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
   else if (TREE_CODE (*tp) == RETURN_STMT)
-    RETURN_NULLIFIED_P (*tp) = 1;
+    RETURN_EXPR (*tp) = NULL_TREE;
+  else if (TREE_CODE (*tp) == CLEANUP_STMT
+	   && CLEANUP_DECL (*tp) == nrv)
+    CLEANUP_EXPR (*tp) = NULL_TREE;
 
   /* Keep iterating.  */
   return NULL_TREE;
@@ -2601,21 +2603,9 @@ genrtl_start_function (fn)
      cleanup-generated temporaries.  */
   expand_start_bindings (2);
 
-  /* Set up the named return value optimization, if we can.  */
-  if (current_function_return_value
-      && current_function_return_value != error_mark_node)
-    {
-      tree r = current_function_return_value;
-      /* This is only worth doing for fns that return in memory--and
-	 simpler, since we don't have to worry about promoted modes.  */
-      if (aggregate_value_p (TREE_TYPE (TREE_TYPE (fn))))
-	{
-	  COPY_DECL_RTL (DECL_RESULT (fn), r);
-	  DECL_ALIGN (r) = DECL_ALIGN (DECL_RESULT (fn));
-	  walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
-					nullify_returns_r, NULL_TREE);
-	}
-    }
+  /* Give our named return value the same RTL as our RESULT_DECL.  */
+  if (current_function_return_value)
+    COPY_DECL_RTL (DECL_RESULT (fn), current_function_return_value);
 }
 
 /* Finish generating the RTL for FN.  */
