@@ -993,14 +993,13 @@ pp_cxx_simple_type_specifier (cxx_pretty_printer *pp, tree t)
 static void
 pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
 {
-  pp_c_type_qualifier_list (pp_c_base (pp), t);
-
   switch (TREE_CODE (t))
     {
     case TEMPLATE_DECL:
     case TEMPLATE_TYPE_PARM:
     case TYPE_DECL:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
+      pp_c_type_qualifier_list (pp_c_base (pp), t);
       pp_cxx_simple_type_specifier (pp, t);
       break;
 
