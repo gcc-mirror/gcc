@@ -58224,9 +58224,12 @@ _ACEOF
 
 
 
+
+
+
 for ac_header in nan.h ieeefp.h endian.h sys/isa_defs.h \
       machine/endian.h machine/param.h sys/machine.h sys/types.h \
-      fp.h locale.h float.h inttypes.h
+      fp.h float.h endian.h inttypes.h locale.h float.h stdint.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -60998,11 +61001,47 @@ _ACEOF
 
 
     cat >>confdefs.h <<\_ACEOF
+#define HAVE_ACOSF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_ASINF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_ATANF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_ATAN2F 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_CEILF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
 #define HAVE_COPYSIGN 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
 #define HAVE_COPYSIGNF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_COSF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_COSHF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_EXPF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_FABSF 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
@@ -61014,7 +61053,19 @@ _ACEOF
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
+#define HAVE_FLOORF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_FMODF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
 #define HAVE_FREXPF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_HYPOT 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
@@ -61038,6 +61089,34 @@ _ACEOF
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
+#define HAVE_LOGF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_LOG10F 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_MODFF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_SIGNBIT 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_SIGNBITF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_SINF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_SINHF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
 #define HAVE_SINCOS 1
 _ACEOF
 
@@ -61045,9 +61124,73 @@ _ACEOF
 #define HAVE_SINCOSF 1
 _ACEOF
 
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_SQRTF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_TANF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_TANHF 1
+_ACEOF
+
     if test x"long_double_math_on_this_cpu" = x"yes"; then
       cat >>confdefs.h <<\_ACEOF
+#define HAVE_ACOSL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_ASINL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_ATANL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_ATAN2L 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_CEILL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_COPYSIGNL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_COSL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_COSHL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_EXPL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_FABSL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
 #define HAVE_FINITEL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_FLOORL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_FMODL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_FREXPL 1
 _ACEOF
 
       cat >>confdefs.h <<\_ACEOF
@@ -61060,6 +61203,50 @@ _ACEOF
 
       cat >>confdefs.h <<\_ACEOF
 #define HAVE_ISNANL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_LOGL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_LOG10L 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_MODFL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_POWL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_SIGNBITL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_SINL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_SINHL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_SINCOSL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_SQRTL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_TANL 1
+_ACEOF
+
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_TANHL 1
 _ACEOF
 
     fi
