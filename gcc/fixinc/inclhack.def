@@ -576,6 +576,35 @@ fix = {
 
 
 /*
+ *  pthread.h on AIX 4.3.3 tries to define a macro without whitspace
+ *  which violates a requirement of ISO C.
+ */
+fix = {
+    hackname  = aix_pthread;
+    files     = "pthread.h";
+    select    = "(#define [A-Za-z_0-9]+)(\\\\\n[^A-Za-z_0-9 \t\n(])";
+    c_fix     = format;
+    c_fix_arg = "%1 %2";
+    test_text = "#define PTHREAD_MUTEX_INITIALIZER\\\n{";
+};
+
+
+/*
+ *  sys/machine.h on AIX 4.3.3 puts whitespace between a \ and a newline
+ *  in an otherwise harmless (and #ifed out) macro definition
+ */
+fix = {
+    hackname  = aix_sysmachine;
+    files     = sys/machine.h;
+    select    = "\\\\ +\n";
+    c_fix     = format;
+    c_fix_arg = "\\\n";
+    test_text = "#define FOO \\\n"
+    " bar \\ \n baz \\ \n bat";
+};
+
+
+/*
  *  sys/wait.h on AIX 3.2.5 puts the declaration of wait3 before the
  *  definition of struct rusage, so the prototype added by fixproto fails.
  */
