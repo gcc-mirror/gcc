@@ -8681,8 +8681,6 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  rtx dest;
-
   if (operands[0])		/* eliminate unused code warnings */
     {
       if (TARGET_MIPS16)

@@ -799,8 +799,10 @@ extern int ceil_log2			PROTO((unsigned HOST_WIDE_INT));
 #define plus_constant_for_output(X,C)  \
   plus_constant_for_output_wide (X, (HOST_WIDE_INT) (C))
 
+/* In explow.c */
 extern rtx plus_constant_wide		 PROTO((rtx, HOST_WIDE_INT));
 extern rtx plus_constant_for_output_wide PROTO((rtx, HOST_WIDE_INT));
+extern void optimize_save_area_alloca	PROTO((rtx));
 
 extern rtx gen_rtx			PVPROTO((enum rtx_code,
 						 enum machine_mode, ...));
@@ -1306,6 +1308,9 @@ extern void dump_combine_total_stats	PROTO ((FILE *));
 #ifdef BUFSIZ
 extern void schedule_insns		PROTO ((FILE *));
 #endif
+#ifdef HAIFA
+extern void fix_sched_param		PROTO ((char *, char *));
+#endif
 
 /* In print-rtl.c */
 extern void debug_rtx			PROTO ((rtx));
@@ -1333,6 +1338,7 @@ extern void preserve_rtl_expr_result			PROTO ((rtx));
 extern void mark_temp_addr_taken			PROTO ((rtx));
 extern void update_temp_slot_address			PROTO ((rtx, rtx));
 extern void use_variable_after				PROTO ((rtx, rtx));
+extern void purge_addressof				PROTO ((rtx));
 
 /* In reload.c */
 extern int operands_match_p		PROTO ((rtx, rtx));
@@ -1404,6 +1410,11 @@ extern rtx expand_mult_highpart		PROTO ((enum machine_mode, rtx,
 						unsigned HOST_WIDE_INT, rtx,
 						int, int));
 
+/* In gcse.c */
+#ifdef BUFSIZ
+extern void gcse_main			PROTO ((rtx, FILE *));
+#endif
+
 /* In global.c */
 extern void mark_elimination		PROTO ((int, int));
 #ifdef BUFSIZ
@@ -1422,6 +1433,16 @@ extern void regclass_init		PROTO ((void));
 extern void regclass			PROTO ((rtx, int));
 extern void reg_scan			PROTO ((rtx, int, int));
 extern void fix_register		PROTO ((char *, int, int));
+
+/* In regmove.c */
+#ifdef BUFSIZ
+extern void regmove_optimize		PROTO ((rtx, int, FILE *));
+#endif
+
+/* In reorg.c */
+#ifdef BUFSIZ
+extern void dbr_schedule		PROTO ((rtx, FILE *));
+#endif
 
 /* In optabs.c */
 extern void init_optabs			PROTO ((void));
@@ -1445,6 +1466,10 @@ extern void init_caller_save		PROTO ((void));
 
 /* In profile.c */
 extern void init_branch_prob		PROTO ((char *));
+#ifdef BUFSIZ
+extern void branch_prob			PROTO ((rtx, FILE *));
+extern void end_branch_prob		PROTO ((FILE *));
+#endif
 extern void output_func_start_profiler	PROTO ((void));
 
 /* In reg-stack.c */

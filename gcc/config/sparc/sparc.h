@@ -3261,6 +3261,7 @@ extern int symbolic_operand ();
 extern int text_segment_operand ();
 extern int ultrasparc_adjust_cost ();
 extern int uns_small_int ();
+extern int v8plus_regcmp_op ();
 extern int v8plus_regcmp_p ();
 extern int v9_regcmp_op ();
 extern int v9_regcmp_p ();

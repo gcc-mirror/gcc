@@ -1,3 +1,58 @@
+Mon Jun  8 20:57:40 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (varasm.o): Depend on dbxout.h.
+	(cse.o): Depend on toplev.h and output.h.
+	(gcse.o): Depend on output.h.
+
+	* mips.c: Include system.h and toplev.h and remove redundant code.
+	Include output.h after tree.h so all its prototypes get activated.
+	* mips.md (table_jump): Remove unused variable `dest'.
+
+	* sparc.h: Add prototype for `v8plus_regcmp_op'.
+
+	* crtstuff.c (fini_dummy, init_dummy): Mark function definitions
+	with __attribute__ ((__unused__)).
+	(__frame_dummy): Provide prototype before use, wrap it with
+	EH_FRAME_SECTION_ASM_OP.
+
+	* cse.c: Move inclusion of <setjmp.h> above local headers.
+  	Include toplev.h and output.h.
+
+	* dbxout.h: Add prototype for `dbxout_begin_function'.
+
+	* final.c (final_scan_insn): Wrap variable `max_skip' in macro
+	ASM_OUTPUT_MAX_SKIP_ALIGN.
+
+	* gcse.c: Include system.h and output.h.
+	(dump_cuid_table, dump_rd_table, dump_cprop_data, dump_pre_data):
+	Make extern instead of static.
+	(compute_can_copy): Only declare variables `reg' and `insn' when
+ 	AVOID_CCMODE_COPIES is not defined.
+	(record_set_info): Mark parameter `setter' with ATTRIBUTE_UNUSED.
+	(hash_scan_clobber): Likewise for `x' and `insn'.
+	(hash_scan_call): Likewise.
+	(record_last_set_info): Likewise for `setter'.
+	(mark_call): Likewise for `pat'.
+	(pre_insert_insn): Wrap variable `note' in macro HAVE_cc0.
+
+	* libgcc2.c (__bb_init_prg): Replace bzero with memset and fix the
+ 	length parameter so that it multiplies the number of elements by
+ 	the sizeof(element).
+
+	* output.h: Add prototype for `weak_finish'.
+
+	* recog.h: Likewise for `validate_replace_src'.
+
+	* rtl.h: Likewise for `optimize_save_area_alloca',
+ 	`fix_sched_param', `purge_addressof', `gcse_main',
+ 	`regmove_optimize', `dbr_schedule', `branch_prob' and
+ 	`end_branch_prob'.
+
+	* toplev.h: Likewise for `set_float_handler' and
+ 	`output_quoted_string'.
+
+	* varasm.c: Include dbxout.h.
+
 Mon Jun  8 18:12:06 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* mips.c (mips_secondary_reload_class): Use gp_reg_p instead of

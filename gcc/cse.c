@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 /* stdio.h must precede rtl.h for FFS.  */
 #include "system.h"
+#include <setjmp.h>
 
 #include "rtl.h"
 #include "regs.h"
@@ -31,8 +32,8 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "recog.h"
 #include "expr.h"
-
-#include <setjmp.h>
+#include "toplev.h"
+#include "output.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
