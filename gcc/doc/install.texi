@@ -2278,7 +2278,7 @@ The version of binutils installed in @file{/usr/bin} is known to work unless
 otherwise specified in any per-architecture notes.  However, binutils
 2.12.1 or greater is known to improve overall testsuite results.
 
-FreeBSD 1 is no longer supported.
+Support for FreeBSD 1 was discontinued in GCC 3.2.
 
 For FreeBSD 2 or any mutant a.out versions of FreeBSD 3: All
 configuration support and files as shipped with GCC 2.95 are still in
@@ -2331,7 +2331,7 @@ longer a multiple of 2 bytes.
 <hr />
 @end html
 @heading @anchor{hppa*-hp-hpux*}hppa*-hp-hpux*
-HP-UX version 9 or older is no longer supported.
+Support for HP-UX version 9 and older was discontinued in GCC 3.4.
 
 We @emph{highly} recommend using gas/binutils 2.8 or newer on all hppa
 platforms; you may encounter a variety of problems when using the HP
@@ -2646,7 +2646,7 @@ is required to build GCC. For GCC 3.3 and later, this is the default.
 <!-- rs6000-ibm-aix*, powerpc-ibm-aix* -->
 @end html
 @heading @anchor{*-ibm-aix*}*-ibm-aix*
-AIX version 3 or older is no longer supported.
+Support for AIX version 3 and older was discontinued in GCC 3.4.
 
 AIX Make frequently has problems with GCC makefiles.  GNU Make 3.79.1 or
 newer is recommended to build on this platform.

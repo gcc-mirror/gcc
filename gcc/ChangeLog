@@ -1,3 +1,9 @@
+2003-09-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Add the specific versions of GCC
+	where support for FreeBSD 1, HP-UX version 9 and older, and AIX
+	version 3 and older was discontinued.
+	
 2003-09-19	Joel Sherrill <joel@oarcorp.com>
 
 	* config/m68k/t-m68kbare, config/m68k/t-rtems: Change 68681 to
