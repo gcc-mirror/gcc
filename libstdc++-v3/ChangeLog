@@ -1,3 +1,8 @@
+2004-04-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::deallocate):
+	The critical section is actually very small, only two assignments.
+
 2004-04-04  Paolo Carlini  <pcarlini@suse.de>
 	    Petur Runolfsson  <peturr02@ru.is>
 

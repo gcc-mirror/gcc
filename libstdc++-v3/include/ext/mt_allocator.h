@@ -430,20 +430,18 @@ namespace __gnu_cxx
 					   * _S_options._M_freelist_headroom)
 	      && __remove > static_cast<long>(__bin._M_free[__thread_id]))
 	    {
-	      __gthread_mutex_lock(__bin._M_mutex);
 	      _Block_record* __tmp = __bin._M_first[__thread_id];
 	      _Block_record* __first = __tmp;
 	      __remove /= _S_options._M_freelist_headroom;
 	      const long __removed = __remove;
-	      while (__remove > 1)
-		{
-		  __tmp = __tmp->_M_next;
-		  --__remove;
-		}
+	      while (__remove-- > 1)
+		__tmp = __tmp->_M_next;
 	      __bin._M_first[__thread_id] = __tmp->_M_next;
+	      __bin._M_free[__thread_id] -= __removed;
+
+	      __gthread_mutex_lock(__bin._M_mutex);
 	      __tmp->_M_next = __bin._M_first[0];
 	      __bin._M_first[0] = __first;
-	      __bin._M_free[__thread_id] -= __removed;
 	      __gthread_mutex_unlock(__bin._M_mutex);
 	    }
 	  
