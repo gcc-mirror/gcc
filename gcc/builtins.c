@@ -731,7 +731,6 @@ get_memory_rtx (exp)
 #endif
 
   mem = gen_rtx_MEM (BLKmode, memory_address (BLKmode, addr));
-  set_mem_attributes (mem, exp, 0);
 
   /* Get an expression we can use to find the attributes to assign to MEM.
      If it is an ADDR_EXPR, use the operand.  Otherwise, dereference it if
@@ -742,14 +741,17 @@ get_memory_rtx (exp)
     exp = TREE_OPERAND (exp, 0);
 
   if (TREE_CODE (exp) == ADDR_EXPR)
-    exp = TREE_OPERAND (exp, 0);
+    {
+      exp = TREE_OPERAND (exp, 0);
+      set_mem_attributes (mem, exp, 0);
+    }
   else if (POINTER_TYPE_P (TREE_TYPE (exp)))
-    exp = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (exp)), exp);
-  else
-    return mem;
+    {
+      exp = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (exp)), exp);
+      /* memcpy, memset and other builtin stringops can alias with anything.  */
+      set_mem_alias_set (mem, 0);
+    }
 
-  /* memcpy, memset and other builtin stringops can alias with anything.  */
-  set_mem_alias_set (mem, 0);
   return mem;
 }
 

@@ -1,3 +1,8 @@
+Sat Nov  3 10:37:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* builtins.c (get_memory_rtx): Properly set MEM alias set and
+	attributes.
+
 2001-11-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/extend.texi, doc/gcc.texi, doc/install.texi, doc/tm.texi:
