@@ -255,7 +255,7 @@ proc search_for { file pattern } {
 # to more than 14 chars.
 #
 proc c-torture { args } {
-    global srcdir subdir
+    global srcdir subdir compiler_conditional_xfail_data
 
     set src [lindex $args 0];
     if { [llength $args] > 1 } {

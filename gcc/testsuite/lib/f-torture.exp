@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -131,7 +131,7 @@ proc f-torture-compile { src option } {
 # to more than 14 chars.
 #
 proc f-torture-execute { src } {
-    global tmpdir tool srcdir output 
+    global tmpdir tool srcdir output compiler_conditional_xfail_data
 
     # Check for alternate driver.
     if [file exists [file rootname $src].x] {
@@ -169,6 +169,13 @@ proc f-torture-execute { src } {
 	if [info exists torture_compile_xfail] {
 	    setup_xfail $torture_compile_xfail
 	}
+
+	# torture_execute_before_{compile,execute} can be set by the .x script
+	# (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+
 	remote_file build delete $executable
 	verbose "Testing $testcase, $option" 1
 
@@ -234,7 +241,11 @@ proc f-torture-execute { src } {
 	if [info exists torture_execute_xfail] {
 	    setup_xfail $torture_execute_xfail
 	}
-	
+
+	if [info exists torture_eval_before_execute] {
+            set ignore_me [eval $torture_eval_before_execute]
+	}
+
 	set result [g77_load "$executable" "" ""]
 	set status [lindex $result 0];
 	set output [lindex $result 1];
@@ -273,7 +284,7 @@ proc search_for { file pattern } {
 # to more than 14 chars.
 #
 proc f-torture { args } {
-    global srcdir subdir
+    global srcdir subdir compiler_conditional_xfail_data
 
     set src [lindex $args 0];
     if { [llength $args] > 1 } {
@@ -311,6 +322,11 @@ proc f-torture { args } {
 	# torture_compile_xfail is set by the .x script (if present)
 	if [info exists torture_compile_xfail] {
 	    setup_xfail $torture_compile_xfail
+	}
+
+	# torture_execute_before_compile is set by the .x script (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
 	}
 
 	f-torture-compile $src "$option $options"
