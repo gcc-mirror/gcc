@@ -1,3 +1,16 @@
+1998-10-04  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/overload5.C: New test; initialize variable
+ 	with pointer to template function, for which no argument deduction
+ 	is possible
+
+	* g++.old-deja/g++.pt/overload4.C: New test; passing pointer to
+	specialization of template function as argument to template
+	function
+
+	* g++.old-deja/g++.other/access2.C: New test; Inner class
+	shouldn't have privileged access to Outer's names
+
 1998-10-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/friend34.C: New test; name injection of
