@@ -10,7 +10,7 @@ void alpha_ep_extbl_i_eq_0()
 {
   unsigned int rb, ra, rc;
 
-  rb  = (((unsigned int)(pars) >> 27)) & 0x1fUL;
+  rb  = (((unsigned long)(pars) >> 27)) & 0x1fUL;
   ra  = (((unsigned int)(pars) >> 5)) & 0x1fUL;
   rc  = (((unsigned int)(pars) >> 0)) & 0x1fUL;
   {
