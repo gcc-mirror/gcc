@@ -1,3 +1,10 @@
+2004-05-11  Paul Brook  <paul@codesourcery.com>
+
+	* flags.h (flag_short_enums): Update comment.
+	* opts.c (decode_options): Set flag_short_enums to 2.
+	* toplev.c (flag_short_enums): Update comment.
+	(process_options): Call default_short_enums target hook.
+
 2004-05-11  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	PR target/14063

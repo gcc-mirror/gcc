@@ -244,7 +244,8 @@ extern int flag_print_asm_name;
 
 extern int flag_signed_char;
 
-/* Nonzero means give an enum type only as many bytes as it needs.  */
+/* Nonzero means give an enum type only as many bytes as it needs.  A value
+   of 2 means it has not yet been initialized.  */
 
 extern int flag_short_enums;
 
