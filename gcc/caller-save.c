@@ -191,10 +191,11 @@ init_caller_save ()
   test_mem = gen_rtx_MEM (VOIDmode, address);
   savepat = gen_rtx_SET (VOIDmode, test_mem, test_reg);
   restpat = gen_rtx_SET (VOIDmode, test_reg, test_mem);
-  saveinsn = emit_insn (savepat);
-  restinsn = emit_insn (restpat);
 
   start_sequence ();
+
+  saveinsn = emit_insn (savepat);
+  restinsn = emit_insn (restpat);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (mode = 0 ; mode < MAX_MACHINE_MODE; mode++)
