@@ -3893,6 +3893,11 @@ dbr_schedule (first, file)
   flag_no_peephole = old_flag_no_peephole;
 #endif
 
+  /* If the current function has no insns other than the prologue and 
+     epilogue, then do not try to fill any delay slots.  */
+  if (n_basic_blocks == 0)
+    return;
+
   /* Find the highest INSN_UID and allocate and initialize our map from
      INSN_UID's to position in code.  */
   for (max_uid = 0, insn = first; insn; insn = NEXT_INSN (insn))
