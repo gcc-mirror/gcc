@@ -1,3 +1,7 @@
+Tue Sep 30 16:07:58 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* except.c (find_exception_handler_labels): Correct argument to free.
+
 Tue Sep 30 11:00:00 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* except.c (find_exception_handler_labels): Free LABELS when we're
