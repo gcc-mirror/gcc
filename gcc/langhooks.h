@@ -40,8 +40,6 @@ struct lang_hooks_for_tree_inlining
   int (*disregard_inline_limits) (tree);
   tree (*add_pending_fn_decls) (void *, tree);
   int (*auto_var_in_fn_p) (tree, tree);
-  tree (*copy_res_decl_for_inlining) (tree, tree, tree,
-				      void *, int *, tree);
   int (*anon_aggr_type_p) (tree);
   bool (*var_mod_type_p) (tree, tree);
   int (*start_inlining) (tree);

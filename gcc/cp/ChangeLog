@@ -1,3 +1,9 @@
+2004-07-16  Richard Henderson  <rth@redhat.com>
+
+	* cp-lang.c (LANG_HOOKS_TREE_INLINING_COPY_RES_DECL_FOR_INLINING): Die.
+	* cp-tree.h (cp_copy_res_decl_for_inlining): Remove.
+	* tree.c (cp_copy_res_decl_for_inlining): Remove.
+
 2004-07-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (finish_struct_bits): Use for loop.
