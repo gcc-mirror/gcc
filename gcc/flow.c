@@ -2941,9 +2941,10 @@ print_rtl_with_bb (outf, rtx_first)
 	      putc ('\n', outf);
 	    }
 
-	  if (in_bb_p[ INSN_UID(tmp_rtx)] == NOT_IN_BB
+	  if (in_bb_p[INSN_UID(tmp_rtx)] == NOT_IN_BB
 	      && GET_CODE (tmp_rtx) != NOTE
-	      && GET_CODE (tmp_rtx) != BARRIER)
+	      && GET_CODE (tmp_rtx) != BARRIER
+	      && ! obey_regdecls)
 	    fprintf (outf, ";; Insn is not within a basic block\n");
 	  else if (in_bb_p[ INSN_UID(tmp_rtx)] == IN_MULTIPLE_BB)
 	    fprintf (outf, ";; Insn is in multiple basic blocks\n");
