@@ -1,3 +1,10 @@
+Sun May 30 14:43:37 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* fixincl.c: Replace local include scheme with #includes of 
+	gansidecl.h and system.h.
+	* procopen.c:  Likewise.
+	* server.c:  Likewise.
+
 Sun May 30 14:18:40 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* function.h (cleanup_label, frame_offset): Declare.
