@@ -1,3 +1,8 @@
+Tue Nov 30 15:20:52 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.md (neg?f2_if): Split "r" and "f" to separate alternatives.
+	(abs?f2_if): Likewise.
+
 1999-11-30  Alex Samuel  <samuel@codesourcery.com>
 
 	* ggc.h (ggc_test_and_set_mark): New macro.
