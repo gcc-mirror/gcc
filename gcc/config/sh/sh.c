@@ -189,8 +189,8 @@ static void output_stack_adjust PARAMS ((int, rtx, int, rtx (*) (rtx)));
 static rtx frame_insn PARAMS ((rtx));
 static rtx push PARAMS ((int));
 static void pop PARAMS ((int));
-static void push_regs PARAMS ((HOST_WIDE_INT *));
-static void calc_live_regs PARAMS ((int *, HOST_WIDE_INT *));
+static void push_regs PARAMS ((HARD_REG_SET *));
+static int calc_live_regs PARAMS ((HARD_REG_SET *));
 static void mark_use PARAMS ((rtx, rtx *));
 static HOST_WIDE_INT rounded_frame_size PARAMS ((int));
 static rtx mark_constant_pool_use PARAMS ((rtx));
@@ -4659,7 +4659,7 @@ pop (rn)
 
 static void
 push_regs (mask)
-     HOST_WIDE_INT *mask;
+     HARD_REG_SET *mask;
 {
   int i;
 
@@ -4667,23 +4667,22 @@ push_regs (mask)
      candidates for the return delay slot when there are no general
      registers pushed.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (i != PR_REG && mask[i / 32] & (1 << (i % 32)))
+    if (i != PR_REG && TEST_HARD_REG_BIT (*mask, i))
       push (i);
-  if (mask[PR_REG / 32] & (1 << (PR_REG % 32)))
+  if (TEST_HARD_REG_BIT (*mask, PR_REG))
     push (PR_REG);
 }
 
 /* Work out the registers which need to be saved, both as a mask and a
-   count of saved words.
+   count of saved words.  Return the count.
 
    If doing a pragma interrupt function, then push all regs used by the
    function, and if we call another function (we can tell by looking at PR),
    make sure that all the regs it clobbers are safe too.  */
 
-static void
-calc_live_regs (count_ptr, live_regs_mask)
-     int *count_ptr;
-     HOST_WIDE_INT *live_regs_mask;
+static int
+calc_live_regs (live_regs_mask)
+     HARD_REG_SET *live_regs_mask;
 {
   int reg;
   int count;
@@ -4693,7 +4692,7 @@ calc_live_regs (count_ptr, live_regs_mask)
   interrupt_handler = sh_cfun_interrupt_handler_p ();
 
   for (count = 0; 32 * count < FIRST_PSEUDO_REGISTER; count++)
-    live_regs_mask[count] = 0;
+    CLEAR_HARD_REG_SET (*live_regs_mask);
   /* If we can save a lot of saves by switching to double mode, do that.  */
   if (TARGET_SH4 && TARGET_FMOVD && TARGET_FPU_SINGLE)
     for (count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
@@ -4752,7 +4751,7 @@ calc_live_regs (count_ptr, live_regs_mask)
 		     || reg == EH_RETURN_DATA_REGNO (2)
 		     || reg == EH_RETURN_DATA_REGNO (3)))))
 	{
-	  live_regs_mask[reg / 32] |= 1 << (reg % 32);
+	  SET_HARD_REG_BIT (*live_regs_mask, reg);
 	  count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
 
 	  if ((TARGET_SH4 || TARGET_SH5) && TARGET_FMOVD
@@ -4762,7 +4761,7 @@ calc_live_regs (count_ptr, live_regs_mask)
 		{
 		  if (! TARGET_FPU_SINGLE && ! regs_ever_live[reg ^ 1])
 		    {
-		      live_regs_mask[(reg ^ 1) / 32] |= 1 << ((reg ^ 1) % 32);
+		      SET_HARD_REG_BIT (*live_regs_mask, (reg ^ 1));
 		      count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg ^ 1));
 		    }
 		}
@@ -4775,7 +4774,7 @@ calc_live_regs (count_ptr, live_regs_mask)
 	}
     }
 
-  *count_ptr = count;
+  return count;
 }
 
 /* Code to generate prologue and epilogue sequences */
@@ -4817,7 +4816,7 @@ sh_media_register_for_return ()
 void
 sh_expand_prologue ()
 {
-  HOST_WIDE_INT live_regs_mask[(FIRST_PSEUDO_REGISTER + 31) / 32];
+  HARD_REG_SET live_regs_mask;
   int d, i;
   int d_rounding = 0;
   int save_flags = target_flags;
@@ -4909,7 +4908,7 @@ sh_expand_prologue ()
   if (sp_switch)
     emit_insn (gen_sp_switch_1 ());
 
-  calc_live_regs (&d, live_regs_mask);
+  d = calc_live_regs (&live_regs_mask);
   /* ??? Maybe we could save some switching if we can move a mode switch
      that already happens to be at the function start into the prologue.  */
   if (target_flags != save_flags)
@@ -4940,7 +4939,7 @@ sh_expand_prologue ()
 	 sh_expand_epilogue, but also sh_set_return_address.  */
       for (align = 1; align >= 0; align--)
 	for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
-	  if (live_regs_mask[i/32] & (1 << (i % 32)))
+	  if (TEST_HARD_REG_BIT (live_regs_mask, i))
 	    {
 	      enum machine_mode mode = REGISTER_NATURAL_MODE (i);
 	      int reg = i;
@@ -4948,7 +4947,7 @@ sh_expand_prologue ()
 
 	      if (mode == SFmode && (i % 2) == 1
 		  && ! TARGET_FPU_SINGLE && FP_REGISTER_P (i)
-		  && (live_regs_mask[(i ^ 1) / 32] & (1 << ((i ^ 1) % 32))))
+		  && (TEST_HARD_REG_BIT (live_regs_mask, (i ^ 1))))
 		{
 		  mode = DFmode;
 		  i--;
@@ -5069,7 +5068,7 @@ sh_expand_prologue ()
 	abort ();
     }
   else
-    push_regs (live_regs_mask);
+    push_regs (&live_regs_mask);
 
   if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     {
@@ -5138,14 +5137,14 @@ sh_expand_prologue ()
 void
 sh_expand_epilogue ()
 {
-  HOST_WIDE_INT live_regs_mask[(FIRST_PSEUDO_REGISTER + 31) / 32];
+  HARD_REG_SET live_regs_mask;
   int d, i;
   int d_rounding = 0;
 
   int save_flags = target_flags;
   int frame_size;
 
-  calc_live_regs (&d, live_regs_mask);
+  d = calc_live_regs (&live_regs_mask);
 
   if (TARGET_SH5 && d % (STACK_BOUNDARY / BITS_PER_UNIT))
     d_rounding = ((STACK_BOUNDARY / BITS_PER_UNIT)
@@ -5206,7 +5205,7 @@ sh_expand_epilogue ()
 	 alignment.  */
       for (align = 0; align <= 1; align++)
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (live_regs_mask[i/32] & (1 << (i % 32)))
+	  if (TEST_HARD_REG_BIT (live_regs_mask, i))
 	    {
 	      enum machine_mode mode = REGISTER_NATURAL_MODE (i);
 	      int reg = i;
@@ -5214,7 +5213,7 @@ sh_expand_epilogue ()
 
 	      if (mode == SFmode && (i % 2) == 0
 		  && ! TARGET_FPU_SINGLE && FP_REGISTER_P (i)
-		  && (live_regs_mask[(i ^ 1) / 32] & (1 << ((i ^ 1) % 32))))
+		  && (TEST_HARD_REG_BIT (live_regs_mask, (i ^ 1))))
 		{
 		  mode = DFmode;
 		  i++;
@@ -5336,13 +5335,13 @@ sh_expand_epilogue ()
     }
   else
     d = 0;
-  if (live_regs_mask[PR_REG / 32] & (1 << (PR_REG % 32)))
+  if (TEST_HARD_REG_BIT (live_regs_mask, PR_REG))
     pop (PR_REG);
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       int j = (FIRST_PSEUDO_REGISTER - 1) - i;
 
-      if (j != PR_REG && live_regs_mask[j / 32] & (1 << (j % 32)))
+      if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j))
 	pop (j);
     }
  finish:
@@ -5367,7 +5366,7 @@ sh_expand_epilogue ()
   /* PR_REG will never be live in SHmedia mode, and we don't need to
      USE PR_MEDIA_REG, since it will be explicitly copied to TR0_REG
      by the return pattern.  */
-  if (live_regs_mask[PR_REG / 32] & (1 << (PR_REG % 32)))
+  if (TEST_HARD_REG_BIT (live_regs_mask, PR_REG))
     emit_insn (gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, PR_REG)));
 }
 
@@ -5396,17 +5395,17 @@ void
 sh_set_return_address (ra, tmp)
      rtx ra, tmp;
 {
-  HOST_WIDE_INT live_regs_mask[(FIRST_PSEUDO_REGISTER + 31) / 32];
+  HARD_REG_SET live_regs_mask;
   int d;
   int d_rounding = 0;
   int pr_reg = TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG;
   int pr_offset;
 
-  calc_live_regs (&d, live_regs_mask);
+  d = calc_live_regs (&live_regs_mask);
 
   /* If pr_reg isn't life, we can set it (or the register given in
      sh_media_register_for_return) directly.  */
-  if ((live_regs_mask[pr_reg / 32] & (1 << (pr_reg % 32))) == 0)
+  if (! TEST_HARD_REG_BIT (live_regs_mask, pr_reg))
     {
       rtx rr;
 
@@ -5446,13 +5445,13 @@ sh_set_return_address (ra, tmp)
 	 alignment.  */
       for (align = 0; align <= 1; align++)
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (live_regs_mask[i/32] & (1 << (i % 32)))
+	  if (TEST_HARD_REG_BIT (live_regs_mask, i))
 	    {
 	      enum machine_mode mode = REGISTER_NATURAL_MODE (i);
 
 	      if (mode == SFmode && (i % 2) == 0
 		  && ! TARGET_FPU_SINGLE && FP_REGISTER_P (i)
-		  && (live_regs_mask[(i ^ 1) / 32] & (1 << ((i ^ 1) % 32))))
+		  && (TEST_HARD_REG_BIT (live_regs_mask, (i ^ 1))))
 		{
 		  mode = DFmode;
 		  i++;
@@ -5931,8 +5930,8 @@ initial_elimination_offset (from, to)
   int save_flags = target_flags;
   int copy_flags;
 
-  HOST_WIDE_INT live_regs_mask[(FIRST_PSEUDO_REGISTER + 31) / 32];
-  calc_live_regs (&regs_saved, live_regs_mask);
+  HARD_REG_SET live_regs_mask;
+  regs_saved = calc_live_regs (&live_regs_mask);
   regs_saved += SHMEDIA_REGS_STACK_ADJUST ();
   if (TARGET_SH5 && regs_saved % (STACK_BOUNDARY / BITS_PER_UNIT))
     regs_saved_rounding = ((STACK_BOUNDARY / BITS_PER_UNIT)
@@ -5968,7 +5967,7 @@ initial_elimination_offset (from, to)
 	  n += total_auto_space;
 
 	  /* If it wasn't saved, there's not much we can do.  */
-	  if ((live_regs_mask[pr_reg / 32] & (1 << (pr_reg % 32))) == 0)
+	  if (! TEST_HARD_REG_BIT (live_regs_mask, pr_reg))
 	    return n;
 
 	  target_flags = copy_flags;
@@ -5979,14 +5978,13 @@ initial_elimination_offset (from, to)
 	     need 8-byte alignment.  */
 	  for (align = 1; align >= 0; align--)
 	    for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
-	      if (live_regs_mask[i/32] & (1 << (i % 32)))
+	      if (TEST_HARD_REG_BIT (live_regs_mask, i))
 		{
 		  enum machine_mode mode = REGISTER_NATURAL_MODE (i);
 
 		  if (mode == SFmode && (i % 2) == 1
 		      && ! TARGET_FPU_SINGLE && FP_REGISTER_P (i)
-		      && (live_regs_mask[(i ^ 1) / 32]
-			  & (1 << ((i ^ 1) % 32))))
+		      && TEST_HARD_REG_BIT (live_regs_mask, (i ^ 1)))
 		    {
 		      mode = DFmode;
 		      i--;
