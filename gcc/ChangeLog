@@ -1,3 +1,10 @@
+Mon May 17 07:23:34 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.def (TYPE_NONCOPIED_PARTS): Revise documentation to match
+        reality.
+        * expr.c (init_noncopied_parts): Don't generate initializers for
+        parts that don't need them.
+
 Mon May 17 02:56:35 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
