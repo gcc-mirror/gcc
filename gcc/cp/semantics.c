@@ -1060,6 +1060,10 @@ finish_stmt_expr (rtl_expr, expr)
       /* Make a BIND_EXPR for the BLOCK already made.  */
       if (building_stmt_tree ())
 	{
+	  /* If the last thing in the statement-expression was not an
+	     expression-statement, then it has type `void'.  */
+	  if (!last_expr_type)
+	    last_expr_type = void_type_node;
 	  result = build_min (STMT_EXPR, last_expr_type, last_tree);
 	  /* FIXME: Do we need this?  */
 	  TREE_SIDE_EFFECTS (result) = 1;
