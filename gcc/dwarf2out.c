@@ -283,8 +283,8 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 #endif
 #endif
 
-#ifndef FRAME_SECTION
-#define FRAME_SECTION		".debug_frame"
+#ifndef DEBUG_FRAME_SECTION
+#define DEBUG_FRAME_SECTION	".debug_frame"
 #endif
 
 #ifndef FUNC_BEGIN_LABEL
@@ -1762,7 +1762,7 @@ output_call_frame_info (for_eh)
       assemble_label ("__FRAME_BEGIN__");
     }
   else
-    ASM_OUTPUT_SECTION (asm_out_file, FRAME_SECTION);
+    ASM_OUTPUT_SECTION (asm_out_file, DEBUG_FRAME_SECTION);
 
   /* Output the CIE.  */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
@@ -1884,7 +1884,7 @@ output_call_frame_info (for_eh)
 	dw2_asm_output_delta (4, l1, "__FRAME_BEGIN__", "FDE CIE offset");
       else
 	dw2_asm_output_offset (DWARF_OFFSET_SIZE,
-			       stripattributes (FRAME_SECTION),
+			       stripattributes (DEBUG_FRAME_SECTION),
 			       "FDE CIE offset");
 
       if (for_eh)
