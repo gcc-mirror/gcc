@@ -1,3 +1,64 @@
+2003-03-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (init_error): Use C90 prototype style.
+	(dump_scope): Likewise.
+	(dump_qualifiers): Likewise.
+	(dump_template_argument): Likewise.
+	(dump_template_argument_list): Likewise.
+	(dump_template_parameter): Likewise.
+	(dump_template_bindings): Likewise.
+	(dump_type): Likewise.
+	(dump_typename): Likewise.
+	(class_key_or_enum): Likewise.
+	(dump_aggr_type): Likewise.
+	(dump_type_prefix): Likewise.
+	(dump_type_suffix): Likewise.
+	(dump_global_iord): Likewise.
+	(dump_simple_decl): Likewise.
+	(dump_decl): Likewise.
+	(dump_template_decl): Likewise.
+	(dump_function_decl): Likewise.
+	(dump_parameters): Likewise.
+	(dump_exception_spec): Likewise.
+	(dump_function_name): Likewise.
+	(dump_template_parms): Likewise.
+	(dump_char): Likewise.
+	(dump_expr_list): Likewise.
+	(dump_expr): Likewise.
+	(dump_binary_op): Likewise.
+	(dump_unary_op): Likewise.
+	(type_as_string): Likewise.
+	(expr_as_string): Likewise.
+	(decl_as_string): Likewise.
+	(context_as_string): Likewise.
+	(lang_decl_name): Likewise.
+	(cp_file_of): Likewise.
+	(cp_line_of): Likewise.
+	(decl_to_string): Likewise.
+	(expr_to_string): Likewise.
+	(fndecl_to_string): Likewise.
+	(code_to_string): Likewise.
+	(language_to_string): Likewise.
+	(parm_to_string): Likewise.
+	(op_to_string): Likewise.
+	(type_to_string): Likewise.
+	(assop_to_string): Likewise.
+	(args_to_string): Likewise.
+	(cv_to_string): Likewise.
+	(cxx_print_error_function): Likewise.
+	(cp_diagnostic_starter): Likewise.
+	(cp_diagnostic_finalizer): Likewise.
+	(cp_print_error_function): Likewise.
+	(function_category): Likewise.
+	(print_instantiation_full_context): Likewise.
+	(print_instantiation_partial_context): Likewise.
+	(maybe_print_instantiation_context): Likewise.
+	(print_instantiation_context): Likewise.
+	(cp_printer): Likewise.
+	(print_integer): Likewise.
+	(print_non_consecutive_character): Likewise.
+	(locate_error): Likewise.
+
 2003-03-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9965
