@@ -483,6 +483,9 @@ typedef struct _jdeplist {
      (LINE) = (V) >> 12;			\
      (COL) = (V) & 0xfff;			\
    }
+/* Add X to the column number information */
+#define EXPR_WFL_ADD_COL(V, X)					\
+  (V) = (((V) & 0xfffff000) | ((((V) & 0xfff) + (X)) & 0xfff))
 
 /* Build a WFL for expression nodes */
 #define BUILD_EXPR_WFL(NODE, WFL)					\
@@ -586,6 +589,10 @@ typedef struct _jdeplist {
 
 /* Macro to access the osb (opening square bracket) count */
 #define CURRENT_OSB(C) (C)->osb_number [(C)->osb_depth]
+
+/* Macro for the xreferencer */
+#define DECL_END_SOURCE_LINE(DECL)       DECL_FRAME_SIZE (DECL)
+#define DECL_INHERITED_SOURCE_LINE(DECL) DECL_FIELD_SIZE (DECL)
      
 /* Parser context data structure. */
 struct parser_ctxt {
