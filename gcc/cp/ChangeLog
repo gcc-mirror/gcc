@@ -1,3 +1,9 @@
+Wed Dec 17 17:08:52 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* pt.c (instantiate_class_template): Don't do injection when
+ 	processing_template_decl is true, as pollutes current_binding_level 
+        for base classes.
+
 Wed Dec 17 21:17:39 1997  Peter Schmid <schmid@ltoi.iap.physik.tu-darmstadt.de>
 
 	* pt.c (maybe_fold_nontype_arg): Add prototype.

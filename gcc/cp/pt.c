@@ -1956,18 +1956,22 @@ instantiate_class_template (type)
     for (; d; d = TREE_CHAIN (d))
       TREE_VALUE (d) = xref_tag_from_type (TREE_VALUE (d), NULL_TREE, 1);
 
-    d = tsubst (DECL_TEMPLATE_INJECT (template), args,
+    /* This does injection for friend functions. */
+    if (!processing_template_decl)
+      {
+	d = tsubst (DECL_TEMPLATE_INJECT (template), args,
 		TREE_VEC_LENGTH (args), NULL_TREE);
 
-    for (; d; d = TREE_CHAIN (d))
-      {
-	tree t = TREE_VALUE (d);
+	for (; d; d = TREE_CHAIN (d))
+	  {
+	    tree t = TREE_VALUE (d);
 
-	if (TREE_CODE (t) == TYPE_DECL)
-	  /* Already injected.  */;
-	else
-	  pushdecl (t);
-      }
+	    if (TREE_CODE (t) == TYPE_DECL)
+	      /* Already injected.  */;
+	    else
+	      pushdecl (t);
+	  }
+      } 
   }
 
   if (! uses_template_parms (type))
