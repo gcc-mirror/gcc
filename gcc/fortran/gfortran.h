@@ -185,7 +185,7 @@ extern mstring intrinsic_operators[];
 /* Arithmetic results.  */
 typedef enum
 { ARITH_OK = 1, ARITH_OVERFLOW, ARITH_UNDERFLOW, ARITH_NAN,
-  ARITH_DIV0, ARITH_0TO0, ARITH_INCOMMENSURATE
+  ARITH_DIV0, ARITH_0TO0, ARITH_INCOMMENSURATE, ARITH_ASYMMETRIC
 }
 arith;
 
@@ -1100,7 +1100,7 @@ gfc_expr;
 typedef struct
 {
   /* Values really representable by the target.  */
-  mpz_t huge, min_int, max_int;
+  mpz_t huge, pedantic_min_int, min_int, max_int;
 
   int kind, radix, digits, bit_size, range;
 
