@@ -1,5 +1,11 @@
 2003-07-23  Steve Ellcey  <sje@cup.hp.com>
 
+	* config/cpu/hppa/atomicity.h: Change
+	_GLIBCXX_INST_GLIBCXX_ATOMICITY_LOCK to _GLIBCXX_INST_ATOMICITY_LOCK
+	to match misc-inst.cc
+
+2003-07-23  Steve Ellcey  <sje@cup.hp.com>
+
 	* include/c_std/cmath.tcc: Use _GLIBCXX_ prefix on file guard.
 	* include/c_std/std_cctype.h: Ditto.
 	* include/c_std/std_cerrno.h: Ditto.
