@@ -62,7 +62,7 @@ INSTOBJEXT = @INSTOBJEXT@
 	$(COMPILE) $<
 
 .po.pox:
-	$(MAKE) $(srcdir)/$(PACKAGE).pot
+	$(MAKE) $(PACKAGE).pot
 	$(MSGMERGE) $< $(srcdir)/$(PACKAGE).pot -o $*.pox
 
 .po.mo:
@@ -79,7 +79,7 @@ INSTOBJEXT = @INSTOBJEXT@
 
 all: all-@USE_NLS@
 
-all-yes: $(srcdir)/cat-id-tbl.c $(CATALOGS)
+all-yes: cat-id-tbl.c $(CATALOGS)
 all-no:
 
 $(srcdir)/$(PACKAGE).pot: $(POTFILES)
@@ -90,8 +90,8 @@ $(srcdir)/$(PACKAGE).pot: $(POTFILES)
 	   || ( rm -f $(srcdir)/$(PACKAGE).pot \
 		&& mv $(PACKAGE).po $(srcdir)/$(PACKAGE).pot )
 
-$(srcdir)/cat-id-tbl.c: $(srcdir)/stamp-cat-id; @:
-$(srcdir)/stamp-cat-id: $(srcdir)/$(PACKAGE).pot
+$(srcdir)/cat-id-tbl.c: stamp-cat-id; @:
+$(srcdir)/stamp-cat-id: $(PACKAGE).pot
 	rm -f cat-id-tbl.tmp
 	sed -f ../intl/po2tbl.sed $(srcdir)/$(PACKAGE).pot \
 		| sed -e "s/@PACKAGE NAME@/$(PACKAGE)/" > cat-id-tbl.tmp
@@ -180,8 +180,7 @@ uninstall:
 
 check: all
 
-cat-id-tbl.o: $(srcdir)/cat-id-tbl.c $(top_srcdir)/intl/libgettext.h
-	$(COMPILE) $(srcdir)/cat-id-tbl.c
+cat-id-tbl.o: ../intl/libgettext.h
 
 dvi info tags TAGS ID:
 
@@ -197,7 +196,7 @@ distclean: clean
 maintainer-clean: distclean
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
-	rm -f $(GMOFILES) cat-id-tbl.c stamp-cat-id
+	rm -f $(GMOFILES)
 
 distdir = ../$(PACKAGE)-$(VERSION)/$(subdir)
 dist distdir: update-po $(DISTFILES)
@@ -208,7 +207,7 @@ dist distdir: update-po $(DISTFILES)
 	done
 
 update-po: Makefile
-	$(MAKE) $(srcdir)/$(PACKAGE).pot
+	$(MAKE) $(PACKAGE).pot
 	PATH=`pwd`/../src:$$PATH; \
 	cd $(srcdir); \
 	catalogs='$(CATALOGS)'; \
