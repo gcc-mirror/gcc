@@ -1,3 +1,8 @@
+Wed May 13 17:38:35 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expmed.c (expand_mult): Use 0 as add_target if should preserve
+	subexpressions.
+
 Mon May 11 17:26:06 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* dwarf2out.c: Undo most recent change.
