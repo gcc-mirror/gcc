@@ -4189,15 +4189,19 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    warning ("array type has incomplete element type");
 #endif
 
-	  /* Build the array type itself.
-	     Merge any constancy or volatility into the target type.  */
-
 #if 0  /* We shouldn't have a function type here at all!
 	  Functions aren't allowed as array elements.  */
 	  if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 	      && (constp || volatilep))
 	    pedwarn ("ANSI C forbids const or volatile function types");
 #endif
+
+	  /* Build the array type itself, then merge any constancy or
+	     volatility into the target type.  We must do it in this order
+	     to ensure that the TYPE_MAIN_VARIANT field of the array type
+	     is set correctly.  */
+
+	  type = build_array_type (type, itype);
 	  if (constp || volatilep)
 	    type = c_build_type_variant (type, constp, volatilep);
 
@@ -4207,7 +4211,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  volatilep = 0;
 #endif
 
-	  type = build_array_type (type, itype);
 	  if (size_varies)
 	    C_TYPE_VARIABLE_SIZE (type) = 1;
 	}
