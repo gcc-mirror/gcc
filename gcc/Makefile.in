@@ -1358,7 +1358,7 @@ bytecode.distclean bytecode.clean:	bytecode.mostlyclean
 	-rm -f bi-arity bi-opcode bi-opname bi-lexer
 
 bytecode.realclean: bytecode.clean
-	-rm -f bi-parser.c bi-lexer.c bi-parser.h
+	-rm -f bi-parser.c bi-parser.h
 
 
 # Remake cpp and protoize.
