@@ -30,13 +30,8 @@ Boston, MA 02111-1307, USA.  */
   { "driver_default_abi_self_spec", DRIVER_DEFAULT_ABI_SELF_SPEC },
 #define DRIVER_SELF_SPECS \
 "%{!EB:%{!EL:%(endian_spec)}}", \
-"%{mabi-fake-default:%{!mabi=*:-mabi=32}}", \
 "%(driver_default_abi_self_spec)", \
 "%{!mips*:%{!march=*:%{mabi=32:-mips1}%{mabi=n32|mabi=64:-mips3}}}"
-
-#undef SUBTARGET_TARGET_SWITCHES
-#define SUBTARGET_TARGET_SWITCHES \
-  { "abi-fake-default", 0, N_("Same as -mabi=32, just trickier") },
 
 #undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC "\
