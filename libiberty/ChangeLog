@@ -1,3 +1,10 @@
+2003-12-22  Daniel Jacobowitz  <drow@mvista.com>
+
+	PR debug/13272
+	* Makefile.in (lbasename.o): Depend on filenames.h.
+	* lbasename.c: Include "filenames.h" instead of defining
+	its macros locally.
+
 2003-12-22  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (CP_DYNAMIC_ARRAYS): Define if compiler supports
