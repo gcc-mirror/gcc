@@ -1,3 +1,7 @@
+Wed Mar  3 17:16:52 1999  Stephen L Moshier  <moshier@mediaone.net>
+
+	* objc/sendmsg.c (gen_rtx_MEM): Add dummy definition.
+
 Mon Feb 22 08:57:38 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case CONVERT_EXPR): If converting to
