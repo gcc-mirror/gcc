@@ -1,3 +1,7 @@
+Wed Aug 25 14:00:18 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-common.c (combine_strings): Always set TREE_CONSTANT.
+
 Wed Aug 25 15:27:22 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* combine.c (nonzero_bits) : Allow single-ly set registers to be
