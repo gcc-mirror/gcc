@@ -681,7 +681,7 @@ do_include_common (cpp_reader *pfile, enum include_type type)
     return;
 
   /* Prevent #include recursion.  */
-  if (pfile->line_maps.depth >= CPP_STACK_MAX)
+  if (pfile->line_table->depth >= CPP_STACK_MAX)
     cpp_error (pfile, CPP_DL_ERROR, "#include nested too deeply");
   else
     {
@@ -900,7 +900,7 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 		     const char *to_file, unsigned int file_line,
 		     unsigned int sysp)
 {
-  pfile->map = linemap_add (&pfile->line_maps, reason, sysp,
+  pfile->map = linemap_add (pfile->line_table, reason, sysp,
 			    pfile->line, to_file, file_line);
 
   if (pfile->cb.file_change)
@@ -1907,7 +1907,7 @@ cpp_get_callbacks (cpp_reader *pfile)
 const struct line_maps *
 cpp_get_line_maps (cpp_reader *pfile)
 {
-  return &pfile->line_maps;
+  return pfile->line_table;
 }
 
 /* Copy the given callbacks structure to our own.  */

@@ -714,7 +714,7 @@ LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = @FORBUILD@/libiberty/libiberty.a
 
 # Dependencies on the intl and portability libraries.
-LIBDEPS= $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP)
+LIBDEPS= $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) libcpp.a
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
@@ -722,7 +722,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = @LIBS@ $(LIBIBERTY) $(LIBINTL) $(LIBICONV)
+LIBS = @LIBS@ libcpp.a $(LIBIBERTY) $(LIBINTL) $(LIBICONV)
 
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
@@ -839,7 +839,7 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
   c-convert.o c-aux-info.o c-common.o c-opts.o c-format.o c-semantics.o \
   c-incpath.o cppdefault.o c-ppoutput.o c-cppbuiltin.o prefix.o \
-  c-objc-common.o c-dump.o c-pch.o libcpp.a $(C_TARGET_OBJS)
+  c-objc-common.o c-dump.o c-pch.o $(C_TARGET_OBJS)
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o c-pretty-print.o stub-objc.o $(C_AND_OBJC_OBJS)
@@ -2571,7 +2571,7 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos$(build_
 fix-header$(build_exeext): fix-header.o scan-decls.o scan.o xsys-protos.h \
            c-incpath.o cppdefault.o prefix.o $(LIBDEPS) libcpp.a
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ fix-header.o \
-	c-incpath.o cppdefault.o scan-decls.o prefix.o scan.o libcpp.a $(LIBS)
+	c-incpath.o cppdefault.o scan-decls.o prefix.o scan.o $(LIBS)
 
 fix-header.o: fix-header.c $(OBSTACK_H) scan.h \
 	xsys-protos.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) $(CPPLIB_H)
