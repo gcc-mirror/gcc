@@ -2307,7 +2307,7 @@ refers_to_mem_p (x, base, start, end)
       /* refers_to_mem_p is never called with varying addresses. 
 	 If the base addresses are not equal, there is no chance
 	 of the memory addresses conflicting.  */
-      if (mybase != base)
+      if (! rtx_equal_p (mybase, base))
 	return 0;
 
       return myend > start && mystart < end;
