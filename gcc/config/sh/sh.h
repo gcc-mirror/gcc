@@ -642,7 +642,7 @@ do {									\
   OFFSET = initial_elimination_offset ((FROM), (TO))
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM	16
+#define ARG_POINTER_REGNUM	AP_REG
 
 /* Register in which the static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM	13
@@ -2205,7 +2205,7 @@ do { char dstr[30];					\
 	      char name[32];						\
 	      /* LPCS stands for Label for PIC Call Site.  */		\
 	      ASM_GENERATE_INTERNAL_LABEL				\
-		(name, "LPCS", XINT (XVECEXP ((X), 0, 0), 0));		\
+		(name, "LPCS", INTVAL (XVECEXP ((X), 0, 0)));		\
 	      assemble_name ((STREAM), name);				\
 	    }								\
 	    break;							\
