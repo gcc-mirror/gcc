@@ -21,6 +21,33 @@ Boston, MA 02111-1307, USA.  */
 
 #include "i386/sysv4.h"
 
+/* We use stabs-in-elf for debugging, because that is what the native
+   toolchain uses.  */
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+#if ! GAS_REJECTS_MINUS_S
+
+/*
+  Changed from config/svr4.h in the following ways:
+
+  - Removed -Yd (neither the sun bundled assembler nor gas accept it).
+  - Added "-s" so that stabs are not discarded.
+*/
+
+#undef ASM_SPEC
+#define ASM_SPEC \
+  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s"
+
+#else /* GAS_REJECTS_MINUS_S */
+
+/* Same as above, except for -s, unsupported by GNU as.  */
+#undef ASM_SPEC
+#define ASM_SPEC \
+  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*}"
+
+#endif /* GAS_REJECTS_MINUS_S */
+
 /* The Solaris 2.0 x86 linker botches alignment of code sections.
    It tries to align to a 16 byte boundary by padding with 0x00000090
    ints, rather than 0x90 bytes (nop).  This generates trash in the
