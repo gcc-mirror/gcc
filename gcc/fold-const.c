@@ -98,10 +98,8 @@ static tree fold_truthop (enum tree_code, tree, tree, tree);
 static tree optimize_minmax_comparison (tree);
 static tree extract_muldiv (tree, tree, enum tree_code, tree);
 static tree extract_muldiv_1 (tree, tree, enum tree_code, tree);
-static tree strip_compound_expr (tree, tree);
 static int multiple_of_p (tree, tree, tree);
 static tree constant_boolean_node (int, tree);
-static int count_cond (tree, int);
 static tree fold_binary_op_with_conditional_arg (enum tree_code, tree, tree,
 						 tree, int);
 static bool fold_real_zero_addition_p (tree, tree, int);
@@ -4738,40 +4736,6 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
   return 0;
 }
 
-/* If T contains a COMPOUND_EXPR which was inserted merely to evaluate
-   S, a SAVE_EXPR, return the expression actually being evaluated.   Note
-   that we may sometimes modify the tree.  */
-
-static tree
-strip_compound_expr (tree t, tree s)
-{
-  enum tree_code code = TREE_CODE (t);
-
-  /* See if this is the COMPOUND_EXPR we want to eliminate.  */
-  if (code == COMPOUND_EXPR && TREE_CODE (TREE_OPERAND (t, 0)) == CONVERT_EXPR
-      && TREE_OPERAND (TREE_OPERAND (t, 0), 0) == s)
-    return TREE_OPERAND (t, 1);
-
-  /* See if this is a COND_EXPR or a simple arithmetic operator.   We
-     don't bother handling any other types.  */
-  else if (code == COND_EXPR)
-    {
-      TREE_OPERAND (t, 0) = strip_compound_expr (TREE_OPERAND (t, 0), s);
-      TREE_OPERAND (t, 1) = strip_compound_expr (TREE_OPERAND (t, 1), s);
-      TREE_OPERAND (t, 2) = strip_compound_expr (TREE_OPERAND (t, 2), s);
-    }
-  else if (TREE_CODE_CLASS (code) == '1')
-    TREE_OPERAND (t, 0) = strip_compound_expr (TREE_OPERAND (t, 0), s);
-  else if (TREE_CODE_CLASS (code) == '<'
-	   || TREE_CODE_CLASS (code) == '2')
-    {
-      TREE_OPERAND (t, 0) = strip_compound_expr (TREE_OPERAND (t, 0), s);
-      TREE_OPERAND (t, 1) = strip_compound_expr (TREE_OPERAND (t, 1), s);
-    }
-
-  return t;
-}
-
 /* Return a node which has the indicated constant VALUE (either 0 or
    1), and is of the indicated TYPE.  */
 
@@ -4792,25 +4756,6 @@ constant_boolean_node (int value, tree type)
     }
 }
 
-/* Utility function for the following routine, to see how complex a nesting of
-   COND_EXPRs can be.  EXPR is the expression and LIMIT is a count beyond which
-   we don't care (to avoid spending too much time on complex expressions.).  */
-
-static int
-count_cond (tree expr, int lim)
-{
-  int ctrue, cfalse;
-
-  if (TREE_CODE (expr) != COND_EXPR)
-    return 0;
-  else if (lim <= 0)
-    return 0;
-
-  ctrue = count_cond (TREE_OPERAND (expr, 1), lim - 1);
-  cfalse = count_cond (TREE_OPERAND (expr, 2), lim - 1 - ctrue);
-  return MIN (lim, 1 + ctrue + cfalse);
-}
-
 /* Transform `a + (b ? x : y)' into `b ? (a + x) : (a + y)'.
    Transform, `a + (x < y)' into `(x < y) ? (a + 1) : (a + 0)'.  Here
    CODE corresponds to the `+', COND to the `(b ? x : y)' or `(x < y)'
@@ -4827,52 +4772,12 @@ fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
   tree test, true_value, false_value;
   tree lhs = NULL_TREE;
   tree rhs = NULL_TREE;
-  /* In the end, we'll produce a COND_EXPR.  Both arms of the
-     conditional expression will be binary operations.  The left-hand
-     side of the expression to be executed if the condition is true
-     will be pointed to by TRUE_LHS.  Similarly, the right-hand side
-     of the expression to be executed if the condition is true will be
-     pointed to by TRUE_RHS.  FALSE_LHS and FALSE_RHS are analogous --
-     but apply to the expression to be executed if the conditional is
-     false.  */
-  tree *true_lhs;
-  tree *true_rhs;
-  tree *false_lhs;
-  tree *false_rhs;
-  /* These are the codes to use for the left-hand side and right-hand
-     side of the COND_EXPR.  Normally, they are the same as CODE.  */
-  enum tree_code lhs_code = code;
-  enum tree_code rhs_code = code;
-  /* And these are the types of the expressions.  */
-  tree lhs_type = type;
-  tree rhs_type = type;
-  int save = 0;
 
-  if (TREE_CODE (cond) != COND_EXPR
-      && TREE_CODE_CLASS (code) == '<')
+  /* This transformation is only worthwhile if we don't have to wrap
+     arg in a SAVE_EXPR, and the operation can be simplified on atleast
+     one of the branches once its pushed inside the COND_EXPR.  */
+  if (!TREE_CONSTANT (arg))
     return NULL_TREE;
-
-  if (TREE_CODE (arg) == COND_EXPR
-      && count_cond (cond, 25) + count_cond (arg, 25) > 25)
-    return NULL_TREE;
-
-  if (TREE_SIDE_EFFECTS (arg)
-      && (lang_hooks.decls.global_bindings_p () != 0
-	  || CONTAINS_PLACEHOLDER_P (arg)))
-    return NULL_TREE;
-
-  if (cond_first_p)
-    {
-      true_rhs = false_rhs = &arg;
-      true_lhs = &true_value;
-      false_lhs = &false_value;
-    }
-  else
-    {
-      true_lhs = false_lhs = &arg;
-      true_rhs = &true_value;
-      false_rhs = &false_value;
-    }
 
   if (TREE_CODE (cond) == COND_EXPR)
     {
@@ -4881,28 +4786,11 @@ fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
       false_value = TREE_OPERAND (cond, 2);
       /* If this operand throws an expression, then it does not make
 	 sense to try to perform a logical or arithmetic operation
-	 involving it.  Instead of building `a + throw 3' for example,
-	 we simply build `a, throw 3'.  */
+	 involving it.  */
       if (VOID_TYPE_P (TREE_TYPE (true_value)))
-	{
-	  if (! cond_first_p)
-	    {
-	      lhs_code = COMPOUND_EXPR;
-	      lhs_type = void_type_node;
-	    }
-	  else
-	    lhs = true_value;
-	}
+	lhs = true_value;
       if (VOID_TYPE_P (TREE_TYPE (false_value)))
-	{
-	  if (! cond_first_p)
-	    {
-	      rhs_code = COMPOUND_EXPR;
-	      rhs_type = void_type_node;
-	    }
-	  else
-	    rhs = false_value;
-	}
+	rhs = false_value;
     }
   else
     {
@@ -4912,60 +4800,15 @@ fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
       false_value = fold_convert (testtype, integer_zero_node);
     }
 
-  /* If ARG is complex we want to make sure we only evaluate it once.  Though
-     this is only required if it is volatile, it might be more efficient even
-     if it is not.  However, if we succeed in folding one part to a constant,
-     we do not need to make this SAVE_EXPR.  Since we do this optimization
-     primarily to see if we do end up with constant and this SAVE_EXPR
-     interferes with later optimizations, suppressing it when we can is
-     important.
-
-     If we are not in a function, we can't make a SAVE_EXPR, so don't try to
-     do so.  Don't try to see if the result is a constant if an arm is a
-     COND_EXPR since we get exponential behavior in that case.  */
-
-  if (saved_expr_p (arg))
-    save = 1;
-  else if (lhs == 0 && rhs == 0
-	   && !TREE_CONSTANT (arg)
-	   && lang_hooks.decls.global_bindings_p () == 0
-	   && ((TREE_CODE (arg) != VAR_DECL && TREE_CODE (arg) != PARM_DECL)
-	       || TREE_SIDE_EFFECTS (arg)))
-    {
-      if (TREE_CODE (true_value) != COND_EXPR)
-	lhs = fold (build (lhs_code, lhs_type, *true_lhs, *true_rhs));
-
-      if (TREE_CODE (false_value) != COND_EXPR)
-	rhs = fold (build (rhs_code, rhs_type, *false_lhs, *false_rhs));
-
-      if ((lhs == 0 || ! TREE_CONSTANT (lhs))
-	  && (rhs == 0 || !TREE_CONSTANT (rhs)))
-	{
-	  arg = save_expr (arg);
-	  lhs = rhs = 0;
-	  save = saved_expr_p (arg);
-	}
-    }
-
   if (lhs == 0)
-    lhs = fold (build (lhs_code, lhs_type, *true_lhs, *true_rhs));
+    lhs = fold (cond_first_p ? build2 (code, type, true_value, arg)
+			     : build2 (code, type, arg, true_value));
   if (rhs == 0)
-    rhs = fold (build (rhs_code, rhs_type, *false_lhs, *false_rhs));
+    rhs = fold (cond_first_p ? build2 (code, type, false_value, arg)
+			     : build2 (code, type, arg, false_value));
 
-  test = fold (build (COND_EXPR, type, test, lhs, rhs));
-
-  /* If ARG involves a SAVE_EXPR, we need to ensure it is evaluated
-     ahead of the COND_EXPR we made.  Otherwise we would have it only
-     evaluated in one branch, with the other branch using the result
-     but missing the evaluation code.  Beware that the save_expr call
-     above might not return a SAVE_EXPR, so testing the TREE_CODE
-     of ARG is not enough to decide here.  */
-  if (save)
-    return build (COMPOUND_EXPR, type,
-		  fold_convert (void_type_node, arg),
-		  strip_compound_expr (test, arg));
-  else
-    return fold_convert (type, test);
+  test = fold (build3 (COND_EXPR, type, test, lhs, rhs));
+  return fold_convert (type, test);
 }
 
 
