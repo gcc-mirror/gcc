@@ -22,7 +22,7 @@
 # The makefile built from this file lives in the fixinc subdirectory.
 # Its purpose is to build the any-platforms fixinc.sh script.
 
-FIXINC_DEFS = -DIN_GCC $(CFLAGS) $(CPPFLAGS) $(INCLUDES)
+FIXINC_DEFS = -DIN_GCC $(WARN_CFLAGS) $(CFLAGS) $(CPPFLAGS) $(INCLUDES)
 
 target=@target@
 # Directory where sources are, from where we are.
