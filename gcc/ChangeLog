@@ -1,3 +1,13 @@
+Fri Apr  2 12:19:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (*db): Enable pattern if TARGET_LOOP_UNSIGNED
+	is non-zero.
+	(movstrqi_small, movstrqi_large, *cmpstrqi): Add + modifier to address
+ 	register constraints.
+	(*movhi_clobber+1): Modify splitter pattern to handle destination
+	register that is used in the source address.
+	(*xorhi3_clobber): Replace AND with XOR in call to legitimize_operands.
+
 Fri Apr  2 12:16:15 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h: Added more comments.

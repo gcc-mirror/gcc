@@ -4553,7 +4553,7 @@
         (plus:QI (match_dup 0)
                  (const_int -1)))
    (clobber (reg:CC_NOOV 21))]
-  "TARGET_DB && find_reg_note (insn, REG_NONNEG, 0)"
+  "TARGET_DB && (find_reg_note (insn, REG_NONNEG, 0) || TARGET_LOOP_UNSIGNED)"
   "*
   if (which_alternative == 0)
     return \"dbu%#\\t%0,%l1\";
@@ -4705,8 +4705,8 @@
 ; operand 4 is a scratch register
 
 (define_insn "movstrqi_small"
-  [(set (mem:BLK (match_operand:QI 0 "addr_reg_operand" "a"))
-        (mem:BLK (match_operand:QI 1 "addr_reg_operand" "a")))
+  [(set (mem:BLK (match_operand:QI 0 "addr_reg_operand" "+a"))
+        (mem:BLK (match_operand:QI 1 "addr_reg_operand" "+a")))
    (use (match_operand:QI 2 "immediate_operand" "i"))
    (use (match_operand:QI 3 "immediate_operand" ""))
    (clobber (match_operand:QI 4 "ext_low_reg_operand" "=&q"))
@@ -4734,8 +4734,8 @@
   [(set_attr "type" "multi")])
 
 (define_insn "movstrqi_large"
-  [(set (mem:BLK (match_operand:QI 0 "addr_reg_operand" "a"))
-        (mem:BLK (match_operand:QI 1 "addr_reg_operand" "a")))
+  [(set (mem:BLK (match_operand:QI 0 "addr_reg_operand" "+a"))
+        (mem:BLK (match_operand:QI 1 "addr_reg_operand" "+a")))
    (use (match_operand:QI 2 "immediate_operand" "i"))
    (use (match_operand:QI 3 "immediate_operand" ""))
    (clobber (match_operand:QI 4 "ext_low_reg_operand" "=&q"))
@@ -4804,8 +4804,8 @@
 
 (define_insn "*cmpstrqi"
   [(set (match_operand:QI 0 "ext_reg_operand" "=d")
-        (compare:QI (mem:BLK (match_operand:QI 1 "addr_reg_operand" "a"))
-                    (mem:BLK (match_operand:QI 2 "addr_reg_operand" "a"))))
+        (compare:QI (mem:BLK (match_operand:QI 1 "addr_reg_operand" "+a"))
+                    (mem:BLK (match_operand:QI 2 "addr_reg_operand" "+a"))))
    (use (match_operand:QI 3 "immediate_operand" "i"))
    (use (match_operand:QI 4 "immediate_operand" ""))
    (clobber (match_operand:QI 5 "std_reg_operand" "=&c"))
@@ -5397,6 +5397,20 @@
   "#"
   [(set_attr "type" "multi,multi")])
 
+; This will fail miserably if the destination register is used in the 
+; source memory address.
+; The usual strategy in this case is to swap the order of insns we emit,
+; however, this will fail if we have an autoincrement memory address.
+; For example:
+; ldi *ar0++, ar0
+; ldi *ar0++, ar1
+;
+; We could convert this to
+; ldi *ar0(1), ar1
+; ldi *ar0, ar0
+;
+; However, things are likely to be very screwed up if we get this.
+
 (define_split
   [(set (match_operand:HI 0 "src_operand" "")
 	(match_operand:HI 1 "src_operand" ""))]
@@ -5404,12 +5418,23 @@
    && (reg_operand (operands[0], HImode)
        || reg_operand (operands[1], HImode)
        || stik_const_operand (operands[1], HImode))"
-  [(set (match_dup 2) (match_dup 3))
-   (set (match_dup 4) (match_dup 5))]
+  [(set (match_dup 2) (match_dup 4))
+   (set (match_dup 3) (match_dup 5))]
   "operands[2] = c4x_operand_subword (operands[0], 0, 1, HImode);
-   operands[3] = c4x_operand_subword (operands[1], 0, 1, HImode);
-   operands[4] = c4x_operand_subword (operands[0], 1, 1, HImode);
-   operands[5] = c4x_operand_subword (operands[1], 1, 1, HImode);")
+   operands[3] = c4x_operand_subword (operands[0], 1, 1, HImode);
+   operands[4] = c4x_operand_subword (operands[1], 0, 1, HImode);
+   operands[5] = c4x_operand_subword (operands[1], 1, 1, HImode);
+   if (reg_overlap_mentioned_p (operands[2], operands[5]))
+     {
+	/* Swap order of move insns.  */
+	rtx tmp;
+	tmp = operands[2];
+        operands[2] =operands[3];
+        operands[3] = tmp;
+	tmp = operands[4];
+        operands[4] =operands[5];
+        operands[5] = tmp;        
+     }")
 
 
 (define_insn "extendqihi2"
@@ -5737,7 +5762,7 @@
                            (match_operand:HI 2 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "legitimize_operands (AND, operands, HImode);")
+  "legitimize_operands (XOR, operands, HImode);")
 
 
 (define_insn "*xorhi3_clobber"
