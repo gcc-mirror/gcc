@@ -1,3 +1,8 @@
+2004-01-25  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	PR bootstrap/13853
+	* cfgcleanup.c (try_optimize_cfg): Explicitly test against 0.
+
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/lib1funcs.asm (divnorm, modnorm): Optimize by
