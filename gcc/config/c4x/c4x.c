@@ -1432,7 +1432,7 @@ c4x_emit_libcall_mulhi (rtx libcall, enum rtx_code code,
 
 
 int
-c4x_check_legit_addr (enum machine_mode mode, rtx addr, int strict)
+c4x_legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
 {
   rtx base = NULL_RTX;		/* Base register (AR0-AR7).  */
   rtx indx = NULL_RTX;		/* Index register (IR0,IR1).  */
@@ -1471,7 +1471,9 @@ c4x_check_legit_addr (enum machine_mode mode, rtx addr, int strict)
 	    || (GET_CODE (op1) != PLUS && GET_CODE (op1) != MINUS))
 	  return 0;
 	base = XEXP (op1, 0);
-	if (base != op0)
+	if (! REG_P (base))
+	    return 0;
+	if (REGNO (base) != REGNO (op0))
 	  return 0;
 	if (REG_P (XEXP (op1, 1)))
 	  indx = XEXP (op1, 1);

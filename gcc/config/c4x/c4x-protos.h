@@ -68,7 +68,7 @@ extern void c4x_init_builtins (void);
 #ifdef RTX_CODE
 extern struct rtx_def *c4x_gen_compare_reg (enum rtx_code, rtx, rtx);
 
-extern int c4x_check_legit_addr (enum machine_mode, rtx, int);
+extern int c4x_legitimate_address_p (enum machine_mode, rtx, int);
 
 extern int c4x_hard_regno_mode_ok (unsigned int, enum machine_mode);
 

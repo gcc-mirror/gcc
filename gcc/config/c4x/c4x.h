@@ -1259,7 +1259,7 @@ CUMULATIVE_ARGS;
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
 {									\
-  if (c4x_check_legit_addr (MODE, X, 0))				\
+  if (c4x_legitimate_address_p (MODE, X, 0))				\
     goto ADDR;								\
 }
 
@@ -1275,7 +1275,7 @@ CUMULATIVE_ARGS;
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
 {									\
-  if (c4x_check_legit_addr (MODE, X, 1))				\
+  if (c4x_legitimate_address_p (MODE, X, 1))				\
     goto ADDR;								\
 }
 
