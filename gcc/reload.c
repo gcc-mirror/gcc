@@ -1263,6 +1263,18 @@ push_reload (in, out, inloc, outloc, class,
 						+ HARD_REGNO_NREGS (regno,
 								    inmode)),
 					       PATTERN (this_insn), inloc)
+	    /* If this is also an output reload, IN cannot be used as
+	       the reload register if it is set in this insn unless IN
+	       is also OUT.  */
+	    && (out == 0 || in == out
+		|| ! hard_reg_set_here_p (regno,
+					  (regno
+					   + HARD_REGNO_NREGS (regno,
+							       inmode)),
+					  PATTERN (this_insn)))
+	    /* ??? Why is this code so different from the previous?
+	       Is there any simple coherent way to describe the two together?
+	       What's going on here.  */
 	    && (in != out
 		|| (GET_CODE (in) == SUBREG
 		    && (((GET_MODE_SIZE (GET_MODE (in)) + (UNITS_PER_WORD - 1))
