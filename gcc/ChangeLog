@@ -1,5 +1,13 @@
 2002-01-28  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300-protos.h: Update the prototype of
+	output_simode_bld.
+	* config/h8300/h8300.c (output_simode_bld): Remove an argumen
+	'log2'.
+	* config/h8300/h8300.md: Adjust to the new prototype.
+
+2002-01-28  Kazu Hirata  <kazu@hxi.com>
+
 	* conifg/h8300/h8300.c (h8300_adjust_insn_length): Remove
 	redundant code.
 

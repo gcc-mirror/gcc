@@ -3061,9 +3061,8 @@ h8300_encode_label (decl)
 }
 
 const char *
-output_simode_bld (bild, log2, operands)
+output_simode_bld (bild, operands)
      int bild;
-     int log2;
      rtx operands[];
 {
   /* Clear the destination register.  */
@@ -3071,10 +3070,6 @@ output_simode_bld (bild, log2, operands)
     output_asm_insn ("sub.l\t%S0,%S0", operands);
   else
     output_asm_insn ("sub.w\t%e0,%e0\n\tsub.w\t%f0,%f0", operands);
-
-  /* Get the bit number we want to load.  */
-  if (log2)
-    operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
 
   /* Now output the bit load or bit inverse load, and store it in
      the destination.  */
