@@ -1,3 +1,9 @@
+Sat Oct 20 07:27:14 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* toplev.h (struct lang_hooks): HONOR_READONLY now bool.
+	* main.c: Include config.h and system.h, but not ansidecl.h.
+	* Makefile.in (main.o): Update accordingly.
+
 Sat Oct 20 12:05:31 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (SSE_REGPARM_MAX): Set to 8 for x86_64.

@@ -167,7 +167,7 @@ struct lang_hooks
   void (*post_options) PARAMS ((void));
 
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
-  int honor_readonly;
+  bool honor_readonly;
 
   struct lang_hooks_for_tree_inlining tree_inlining;
 

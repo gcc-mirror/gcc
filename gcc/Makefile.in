@@ -1373,7 +1373,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) function.h \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c $(srcdir)/toplev.c
-main.o : main.c toplev.h
+main.o : main.c $(CONFIG_H) $(SYSTEM_H) toplev.h
 
 rtl-error.o: rtl-error.c system.h $(RTL_H) $(INSN_ATTR_H) insn-config.h \
    input.h toplev.h intl.h diagnostic.h $(CONFIG_H)
