@@ -18,8 +18,8 @@ foo (int i, int j, enum e ei, enum e ej, enum e ek, enum e el,
     case 4: return 3;
     default: break;
     }
-  switch (ei)
-    { /* { dg-warning "switch missing default case" } */
+  switch (ei) /* { dg-warning "switch missing default case" } */
+    {
     }
   switch (ej)
     {

@@ -19,9 +19,9 @@ foo (int i, int j, enum e ei, enum e ej, enum e ek, enum e el,
     case 4: return 3;
     default: break;
     }
-  switch (ei)
-    { /* { dg-warning "enumeration value `e1' not handled in switch" "enum e1" } */
-    } /* { dg-warning "enumeration value `e2' not handled in switch" "enum e2" { target *-*-* } 23 } */
+  switch (ei) /* { dg-warning "enumeration value `e1' not handled in switch" "enum e1" } */
+    { /* { dg-warning "enumeration value `e2' not handled in switch" "enum e2" { target *-*-* } 22 } */
+    }
   switch (ej)
     { /* { dg-warning "enumeration value `e1' not handled in switch" "enum e1" { target *-*-* } 28 } */
     default: break;
