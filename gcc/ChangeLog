@@ -1,3 +1,7 @@
+2003-09-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* intl.h (N_): Remove parentheses.
+
 2003-09-03  Bernardo Innocenti  <bernie@develer.com>
 
 	* config.gcc (m68k-*-linux*): Remove definition of LINUX_DEFAULT_ELF.

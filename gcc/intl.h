@@ -48,7 +48,7 @@ extern size_t gcc_gettext_width (const char *);
 #endif
 
 #ifndef N_
-# define N_(msgid) (msgid)
+# define N_(msgid) msgid
 #endif
 
 #endif /* intl.h */
