@@ -1305,18 +1305,22 @@ ix86_comparison_operator (op, mode)
       return 1;
     case LT: case GE:
       inmode = GET_MODE (XEXP (op, 0));
-      if (inmode == CCmode || inmode == CCGCmode
+      if (inmode == CCmode || inmode == CCGCmode || inmode == CCRCmode
 	  || inmode == CCGOCmode || inmode == CCNOmode)
 	return 1;
       return 0;
-    case LTU: case GTU: case LEU: case ORDERED: case UNORDERED: case GEU:
+    case LTU: case GTU:
       inmode = GET_MODE (XEXP (op, 0));
-      if (inmode == CCmode)
+      return inmode == CCmode;
+    case LEU: case ORDERED: case UNORDERED: case GEU:
+      inmode = GET_MODE (XEXP (op, 0));
+      if (inmode == CCmode || inmode == CCRCmode)
 	return 1;
       return 0;
     case GT: case LE:
       inmode = GET_MODE (XEXP (op, 0));
-      if (inmode == CCmode || inmode == CCGCmode || inmode == CCNOmode)
+      if (inmode == CCmode || inmode == CCGCmode || inmode == CCNOmode
+	  || inmode == CCRCmode)
 	return 1;
       return 0;
     default:
@@ -3108,21 +3112,22 @@ put_condition_code (code, mode, reverse, fp, file)
       suffix = "ne";
       break;
     case GT:
-      if (mode != CCmode && mode != CCNOmode && mode != CCGCmode)
+      if (mode != CCmode && mode != CCNOmode && mode != CCGCmode
+	  && mode != CCRCmode)
 	abort ();
       suffix = "g";
       break;
     case GTU:
       /* ??? Use "nbe" instead of "a" for fcmov losage on some assemblers.
 	 Those same assemblers have the same but opposite losage on cmov.  */
-      if (mode != CCmode)
+      if (mode != CCmode && mode != CCRCmode)
 	abort ();
       suffix = fp ? "nbe" : "a";
       break;
     case LT:
       if (mode == CCNOmode || mode == CCGOCmode)
 	suffix = "s";
-      else if (mode == CCmode || mode == CCGCmode)
+      else if (mode == CCmode || mode == CCGCmode || mode == CCRCmode)
 	suffix = "l";
       else
 	abort ();
@@ -3135,26 +3140,33 @@ put_condition_code (code, mode, reverse, fp, file)
     case GE:
       if (mode == CCNOmode || mode == CCGOCmode)
 	suffix = "ns";
-      else if (mode == CCmode || mode == CCGCmode)
+      else if (mode == CCmode || mode == CCGCmode || mode == CCRCmode)
 	suffix = "ge";
       else
 	abort ();
       break;
     case GEU:
       /* ??? As above.  */
-      if (mode != CCmode)
+      if (mode != CCmode && mode != CCRCmode)
 	abort ();
-      suffix = fp ? "nb" : "ae";
+      if (mode == CCRCmode)
+	suffix = "be";
+      else
+	suffix = fp ? "nb" : "ae";
       break;
     case LE:
-      if (mode != CCmode && mode != CCGCmode && mode != CCNOmode)
+      if (mode != CCmode && mode != CCGCmode && mode != CCNOmode
+	  && mode != CCRCmode)
 	abort ();
       suffix = "le";
       break;
     case LEU:
       if (mode != CCmode)
 	abort ();
-      suffix = "be";
+      if (mode == CCRCmode)
+	suffix = fp ? "nb" : "ae";
+      else
+        suffix = "be";
       break;
     case UNORDERED:
       suffix = "p";
@@ -4552,6 +4564,13 @@ ix86_match_ccmode (insn, req_mode)
 	return 0;
       break;
     case CCmode:
+      if (req_mode == CCRCmode)
+	return 0;
+      goto no_carry;
+    case CCRCmode:
+      if (req_mode == CCmode)
+	return 0;
+    no_carry:
       if (req_mode == CCGCmode)
 	return 0;
       /* FALLTHRU */
@@ -4683,10 +4702,13 @@ ix86_cc_mode (code, op0, op1)
     case NE:			/* ZF!=0 */
       return CCZmode;
       /* Codes needing carry flag.  */
-    case GEU:			/* CF=0 */
-    case GTU:			/* CF=0 & ZF=0 */
     case LTU:			/* CF=1 */
     case LEU:			/* CF=1 | ZF=1 */
+      return CCmode;
+    case GEU:			/* CF=0 */
+    case GTU:			/* CF=0 & ZF=0 */
+      if (GET_CODE (op1) == NEG)
+	return CCRCmode;
       return CCmode;
       /* Codes possibly doable only with sign flag when
          comparing against zero.  */
@@ -6145,8 +6167,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 
   /* Avoid branch in fixing the byte.  */
   tmpreg = gen_lowpart (QImode, tmpreg);
-  emit_insn (gen_addqi3_cc (tmpreg, tmpreg, tmpreg));
-  emit_insn (gen_subsi3_carry (out, out, GEN_INT (3)));
+  emit_insn (gen_addqi3_ccrc (tmpreg, tmpreg, tmpreg));
+  emit_insn (gen_subsi3_carry_rc (out, out, GEN_INT (3)));
 
   emit_label (end_0_label);
 }
