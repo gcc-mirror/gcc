@@ -2170,10 +2170,7 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
 
-  if (flag_unsafe_math_optimizations
-      && ! flag_errno_math
-      && ! optimize_size
-      && TREE_CODE (arg1) == REAL_CST
+  if (TREE_CODE (arg1) == REAL_CST
       && ! TREE_CONSTANT_OVERFLOW (arg1))
     {
       REAL_VALUE_TYPE cint;
@@ -2183,13 +2180,21 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
       c = TREE_REAL_CST (arg1);
       n = real_to_integer (&c);
       real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
-      if (real_identical (&c, &cint)
-	  && powi_cost (n) <= POWI_MAX_MULTS)
+      if (real_identical (&c, &cint))
 	{
-          enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-          rtx op = expand_expr (arg0, subtarget, VOIDmode, 0);
-          op = force_reg (mode, op);
-          return expand_powi (op, mode, n);
+	  /* If the exponent is -1, 0, 1 or 2, then expand_powi is exact.
+	     Otherwise, check the number of multiplications required.
+	     Note that pow never sets errno for an integer exponent.  */
+	  if ((n >= -1 && n <= 2)
+	      || (flag_unsafe_math_optimizations
+		  && ! optimize_size
+		  && powi_cost (n) <= POWI_MAX_MULTS))
+	    {
+	      enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+	      rtx op = expand_expr (arg0, subtarget, VOIDmode, 0);
+	      op = force_reg (mode, op);
+	      return expand_powi (op, mode, n);
+	    }
 	}
     }
   return expand_builtin_mathfn_2 (exp, target, NULL_RTX);
@@ -6244,28 +6249,6 @@ fold_builtin (tree exp)
 		return fold (build (RDIV_EXPR, type,
 				    build_real (type, dconst1),
 				    arg0));
-
-	      /* Optimize pow(x,2.0) = x*x.  */
-	      if (REAL_VALUES_EQUAL (c, dconst2)
-		  && (*lang_hooks.decls.global_bindings_p) () == 0
-		  && ! CONTAINS_PLACEHOLDER_P (arg0))
-		{
-		  arg0 = save_expr (arg0);
-		  return fold (build (MULT_EXPR, type, arg0, arg0));
-		}
-
-	      /* Optimize pow(x,-2.0) = 1.0/(x*x).  */
-	      if (flag_unsafe_math_optimizations
-		  && REAL_VALUES_EQUAL (c, dconstm2)
-		  && (*lang_hooks.decls.global_bindings_p) () == 0
-		  && ! CONTAINS_PLACEHOLDER_P (arg0))
-		{
-		  arg0 = save_expr (arg0);
-		  return fold (build (RDIV_EXPR, type,
-				      build_real (type, dconst1),
-				      fold (build (MULT_EXPR, type,
-						   arg0, arg0))));
-		}
 
 	      /* Optimize pow(x,0.5) = sqrt(x).  */
 	      if (flag_unsafe_math_optimizations
