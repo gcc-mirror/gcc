@@ -1,3 +1,14 @@
+2003-02-21  Phil Edwards  <pme@gcc.gnu.org>
+
+	* config/cpu/generic/atomicity.h (_Atomic_add_mutex):  Fix declaration.
+	(_GLIBCPP_NEED_GENERIC_MUTEX):  Define for this file.
+	(_Atomic_add_mutex_once, __gthread_atomic_add_mutex_once):  Declare
+	when we don't have static mutex initialization.
+	(__exchange_and_add):  Use _Atomic_add_mutex_once.
+	* src/misc-inst.cc:  Definitions of all the above.
+	* config/linker-map.gnu:  Also export locking symbols needed for the
+	generic atomicity.h case.
+
 2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Propagate ORIGINAL_LD_FOR_MULTILIBS to

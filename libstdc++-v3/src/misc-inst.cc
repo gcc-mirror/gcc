@@ -87,3 +87,21 @@ namespace std
      string*, __false_type);
 #endif
 } // namespace std
+
+#ifdef _GLIBCPP_NEED_GENERIC_MUTEX
+namespace __gnu_cxx
+{
+#ifdef __GTHREAD_MUTEX_INIT
+  __gthread_mutex_t _Atomic_add_mutex = __GTHREAD_MUTEX_INIT;
+#else
+  // generic atomicity.h without static initialization
+  __gthread_mutex_t _Atomic_add_mutex;
+  __gthread_once_t _Atomic_add_mutex_once = __GTHREAD_ONCE_INIT;
+  void __gthread_atomic_add_mutex_once()
+  {
+    __GTHREAD_MUTEX_INIT_FUNCTION (&_Atomic_add_mutex);
+  }
+#endif
+} // namespace __gnu_cxx
+#endif // _GLIBCPP_NEED_GLOBAL_MUTEX
+

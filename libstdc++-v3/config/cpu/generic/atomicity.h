@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: Generic version  -*- C++ -*-
 
-// Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,24 +32,35 @@
 
 #include <bits/gthr.h>
 
+#define _GLIBCPP_NEED_GENERIC_MUTEX
+
 typedef int _Atomic_word;
 
 namespace __gnu_cxx
 {
-  __gthread_mutex_t _Atomic_add_mutex __attribute__ ((__weak__))
-                                                      = __GTHREAD_MUTEX_INIT;
+  extern __gthread_mutex_t _Atomic_add_mutex;
+
+#ifndef __GTHREAD_MUTEX_INIT
+  extern __gthread_once_t _Atomic_add_mutex_once;
+  extern void __gthread_atomic_add_mutex_once();
+#endif
 }
 
 static inline _Atomic_word
 __attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 {
-   _Atomic_word __result;
+#ifndef __GTHREAD_MUTEX_INIT
+  __gthread_once (&__gnu_cxx::_Atomic_add_mutex_once,
+                  __gnu_cxx::__gthread_atomic_add_mutex_once);
+#endif
 
-   __gthread_mutex_lock (&__gnu_cxx::_Atomic_add_mutex);
+  _Atomic_word __result;
 
-   __result = *__mem;
-   *__mem += __val;
+  __gthread_mutex_lock (&__gnu_cxx::_Atomic_add_mutex);
+
+  __result = *__mem;
+  *__mem += __val;
 
   __gthread_mutex_unlock (&__gnu_cxx::_Atomic_add_mutex);
   return __result;

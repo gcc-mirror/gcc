@@ -252,6 +252,16 @@ GLIBCPP_3.2.1 {
 
 GLIBCPP_3.2.2 {
 
+  global:
+
+    extern "C++"
+    {
+      # Needed only when generic cpu's atomicity.h is in use.
+      __gnu_cxx::_Atomic_add_mutex;
+      __gnu_cxx::_Atomic_add_mutex_once;
+      __gnu_cxx::__gthread_atomic_add_mutex_once
+    };
+
   _ZNSt24__default_alloc_templateILb1ELi0EE12_S_force_newE;
 
 } GLIBCPP_3.2.1;
