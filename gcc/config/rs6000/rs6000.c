@@ -5120,11 +5120,19 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			 include the portion actually in registers here.  */
 		      enum machine_mode rmode = TARGET_32BIT ? SImode : DImode;
 		      rtx off;
+		      int i=0;
+                      if (align_words + n_words > GP_ARG_NUM_REG 
+                          && (TARGET_32BIT && TARGET_POWERPC64))
+                      /* Not all of the arg fits in gprs.  Say that it goes in memory too,
+                         using a magic NULL_RTX component. Also see comment in 
+			 rs6000_mixed_function_arg for why the normal 
+			 function_arg_partial_nregs scheme doesn't work in this case. */
+                        rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx);
 		      do
 			{
 			  r = gen_rtx_REG (rmode,
 					   GP_ARG_MIN_REG + align_words);
-			  off = GEN_INT (k * GET_MODE_SIZE (rmode));
+			  off = GEN_INT (i++ * GET_MODE_SIZE (rmode));
 			  rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, r, off);
 			}
 		      while (++align_words < GP_ARG_NUM_REG && --n_words != 0);
@@ -11383,9 +11391,11 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	      if (TARGET_UPDATE)
 		{
 		  rtx nsrc = simplify_gen_subreg (reg_mode, src, mode, 0);
-		  emit_insn (TARGET_32BIT
-			     ? gen_movsi_update (breg, breg, delta_rtx, nsrc)
-			     : gen_movdi_update (breg, breg, delta_rtx, nsrc));
+                  emit_insn (TARGET_32BIT
+                             ? (TARGET_POWERPC64
+                                ? gen_movdi_si_update (breg, breg, delta_rtx, nsrc)
+                                : gen_movsi_update (breg, breg, delta_rtx, nsrc))
+                             : gen_movdi_di_update (breg, breg, delta_rtx, nsrc));
 		  used_update = true;
 		}
 	      else
@@ -12583,7 +12593,7 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, int copy_r12)
       insn = emit_insn (TARGET_32BIT
 			? gen_movsi_update (stack_reg, stack_reg,
 					    todec, stack_reg)
-			: gen_movdi_update (stack_reg, stack_reg,
+			: gen_movdi_di_update (stack_reg, stack_reg, 
 					    todec, stack_reg));
     }
   else
@@ -17519,6 +17529,20 @@ rtx
 rs6000_libcall_value (enum machine_mode mode)
 {
   unsigned int regno;
+
+  if (TARGET_32BIT && TARGET_POWERPC64 && mode == DImode)
+    {
+      /* Long long return value need be split in -mpowerpc64, 32bit ABI.  */
+      return gen_rtx_PARALLEL (DImode,
+	gen_rtvec (2,
+		   gen_rtx_EXPR_LIST (VOIDmode,
+				      gen_rtx_REG (SImode, GP_ARG_RETURN),
+				      const0_rtx),
+		   gen_rtx_EXPR_LIST (VOIDmode,
+				      gen_rtx_REG (SImode,
+						   GP_ARG_RETURN + 1),
+				      GEN_INT (4))));
+    }
 
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
 	   && TARGET_HARD_FLOAT && TARGET_FPRS)
