@@ -1,3 +1,12 @@
+1999-06-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (expand_aggr_vbase_init): Add flag parameter.
+	(build_partial_cleanup_for): Remove, inlining into ..
+	(expand_cleanup_for_base): ... here.  Take flag parameter.
+	(emit_base_init): Pass the in_chrg parameter to
+	emit_aggr_vbase_init. 
+	(emit_aggr_vbase_init): Pass it to expand_cleanup_for_base.
+	
 1999-06-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (import_export_decl): Use same_type_p, rather than

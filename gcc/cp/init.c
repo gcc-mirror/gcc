@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 tree current_base_init_list, current_member_init_list;
 
 static void expand_aggr_vbase_init_1 PROTO((tree, tree, tree, tree));
-static void expand_aggr_vbase_init PROTO((tree, tree, tree, tree));
+static void expand_aggr_vbase_init PROTO((tree, tree, tree, tree, tree));
 static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int));
 static void expand_default_init PROTO((tree, tree, tree, tree, int));
 static tree build_vec_delete_1 PROTO((tree, tree, tree, tree, tree,
@@ -55,12 +55,11 @@ static tree build_builtin_delete_call PROTO((tree));
 static int member_init_ok_or_else PROTO((tree, tree, const char *));
 static void expand_virtual_init PROTO((tree, tree));
 static tree sort_member_init PROTO((tree));
-static tree build_partial_cleanup_for PROTO((tree));
 static tree initializing_context PROTO((tree));
 static void expand_vec_init_try_block PROTO((tree));
 static void expand_vec_init_catch_clause PROTO((tree, tree, tree, tree));
 static tree build_java_class_ref PROTO((tree));
-static void expand_cleanup_for_base PROTO((tree));
+static void expand_cleanup_for_base PROTO((tree, tree));
 
 /* Cache the identifier nodes for the magic field of a new cookie.  */
 static tree nc_nelts_field_id;
@@ -479,17 +478,6 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
   *vbase_ptr = vbases;
 }
 
-/* Perform partial cleanups for a base for exception handling.  */
-
-static tree
-build_partial_cleanup_for (binfo)
-     tree binfo;
-{
-  return build_scoped_method_call
-    (current_class_ref, binfo, dtor_identifier,
-     build_expr_list (NULL_TREE, integer_zero_node));
-}
-
 /* Perform whatever initializations have yet to be done on the base
    class of the class variable.  These actions are in the global
    variable CURRENT_BASE_INIT_LIST.  Such an action could be
@@ -555,7 +543,7 @@ emit_base_init (t, immediately)
 
       expand_start_cond (first_arg, 0);
       expand_aggr_vbase_init (t_binfo, current_class_ref, current_class_ptr,
-			      vbase_init_list);
+			      vbase_init_list, first_arg);
       expand_end_cond ();
     }
 
@@ -594,7 +582,7 @@ emit_base_init (t, immediately)
 	  free_temp_slots ();
 	}
 
-      expand_cleanup_for_base (base_binfo);
+      expand_cleanup_for_base (base_binfo, NULL_TREE);
       rbase_init_list = TREE_CHAIN (rbase_init_list);
     }
 
@@ -758,11 +746,14 @@ expand_virtual_init (binfo, decl)
 
 /* If an exception is thrown in a constructor, those base classes already
    constructed must be destroyed.  This function creates the cleanup
-   for BINFO, which has just been constructed.  */
+   for BINFO, which has just been constructed.  If FLAG is non-NULL,
+   it is a DECL which is non-zero when this base needs to be
+   destroyed.  */
 
 static void
-expand_cleanup_for_base (binfo)
+expand_cleanup_for_base (binfo, flag)
      tree binfo;
+     tree flag;
 {
   tree expr;
 
@@ -772,7 +763,16 @@ expand_cleanup_for_base (binfo)
   /* All cleanups must be on the function_obstack.  */
   push_obstacks_nochange ();
   resume_temporary_allocation ();
-  expr = build_partial_cleanup_for (binfo);
+
+  /* Call the destructor.  */
+  expr = (build_scoped_method_call
+	  (current_class_ref, binfo, dtor_identifier,
+	   build_expr_list (NULL_TREE, integer_zero_node)));
+  if (flag)
+    expr = fold (build (COND_EXPR, void_type_node,
+			truthvalue_conversion (flag),
+			expr, integer_zero_node));
+
   pop_obstacks ();
   add_partial_entry (expr);
 }
@@ -805,11 +805,12 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
    INIT_LIST is list of initialization for constructor to perform.  */
 
 static void
-expand_aggr_vbase_init (binfo, exp, addr, init_list)
+expand_aggr_vbase_init (binfo, exp, addr, init_list, flag)
      tree binfo;
      tree exp;
      tree addr;
      tree init_list;
+     tree flag;
 {
   tree type = BINFO_TYPE (binfo);
 
@@ -828,7 +829,7 @@ expand_aggr_vbase_init (binfo, exp, addr, init_list)
 	  expand_aggr_vbase_init_1 (vbases, exp,
 				    TREE_OPERAND (TREE_VALUE (tmp), 0),
 				    init_list);
-	  expand_cleanup_for_base (vbases);
+	  expand_cleanup_for_base (vbases, flag);
 	}
     }
 }
