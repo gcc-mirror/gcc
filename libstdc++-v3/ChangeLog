@@ -1,5 +1,10 @@
 2004-02-06  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale/facets.tcc (money_get::do_get(string_type&)):
+	Minor tweak to a comment.
+
+2004-02-06  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (money_get::do_get(string_type&)):
 	Thousands-sep are always optional; thousands-sep are not allowed
 	after the decimal_point.

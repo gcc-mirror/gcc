@@ -1254,7 +1254,7 @@ namespace std
 		else if (__c == __d && !__testdecfound)
 		  {
 		    // If no grouping chars are seen, no grouping check
-		    // is applied. Therefore __found_grouping is adjusted
+		    // is applied. Therefore __grouping_tmp is adjusted
 		    // only if decimal_point comes after some thousands_sep.
 		    if (__grouping_tmp.size())
 		      __grouping_tmp += static_cast<char>(__sep_pos);
