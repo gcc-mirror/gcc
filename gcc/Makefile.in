@@ -74,7 +74,7 @@ XCFLAGS =
 TCFLAGS =
 CFLAGS = -g
 STAGE1_CFLAGS = -g @stage1_cflags@
-BOOT_CFLAGS = -g -O2 -funroll-loops -fpeel-loops
+BOOT_CFLAGS = -g -O2
 
 # Flags to determine code coverage. When coverage is disabled, this will
 # contain the optimization flags, as you normally want code coverage
