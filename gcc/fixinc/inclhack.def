@@ -832,7 +832,8 @@ fix = {
     select    = "define[ \t]+[A-Z0-9_]+CTRL\\([a-zA-Z],";
     c_fix     = char_macro_def;
     c_fix_arg = "CTRL";
-    test_text = "#define BSD43_CTRL(n, x) (('n'<<8)+x)";
+    test_text = "#define BSD43_CTRL(n, x) (('n'<<8)+x)\n"
+                "#define _CTRL(c) ('c'&037)";
 };
 
 fix = {
@@ -840,7 +841,7 @@ fix = {
     select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
     c_fix     = char_macro_use;
     c_fix_arg = "CTRL";
-    test_text = "#define TIOCFOO BSD43_CTRL(T, 1)";
+    test_text = "#define TCTRLFOO BSD43_CTRL(T, 1)";
 };
 
 
@@ -1097,7 +1098,9 @@ fix = {
                 "\\( *[^,']";
     c_fix     = char_macro_use;
     c_fix_arg = "IO";
-    test_text = "#define TIOCFOO BSD43__IOWR(T, 1)";
+    test_text = "#define TIOCFOO BSD43__IOWR(T, 1)\n"
+                "#define TIOCFOO \\\\\n"
+                "BSD43__IOWR(T, 1) /* Some are multi-line */";
 };
 
 
@@ -1792,22 +1795,6 @@ fix = {
     test     = " -x /bin/sony";
     test     = " ! -z \"`if /bin/sony ; then echo true ; fi`\"";
     sed      = "s/__ctype/_ctype/g";
-};
-#endif
-
-
-/*
- *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
- */
-#ifdef SONY
-fix = {
-    hackname = sony_stdio;
-    files    = stdio.h;
-    test     = " -x /bin/sony";
-    test     = " ! -z \"`if /bin/sony ; then echo true ; fi`\"";
-    sed      = "s/__filbuf/_filbuf/g\n"
-               "s/__flsbuf/_flsbuf/g\n"
-               "s/__iob/_iob/g";
 };
 #endif
 
@@ -2719,9 +2706,9 @@ fix = {
     select   = "in_port_t";
 #ifndef SVR5
 	mach = "*-*-sysv4*";
-	mach = "i[34567]86-*-sysv5*";
-	mach = "i[34567]86-*-udk*";
-	mach = "i[34567]86-*-solaris2.[0-4]";
+	mach = "i?86-*-sysv5*";
+	mach = "i?86-*-udk*";
+	mach = "i?86-*-solaris2.[0-4]";
 	mach = "powerpcle-*-solaris2.[0-4]";
 	mach = "sparc-*-solaris2.[0-4]";
 #endif /* SVR5 */

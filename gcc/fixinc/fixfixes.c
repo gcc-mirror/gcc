@@ -24,7 +24,7 @@ Here are the rules:
 4.  Do not read anything from stdin.  It is closed.
 
 5.  Write to stderr only in the event of a reportable error
-    In such an event, call "exit(1)".
+    In such an event, call "exit (EXIT_FAILURE)".
 
 6.  You have access to the fixDescList entry for the fix in question.
     This may be useful, for example, if there are interesting strings
@@ -58,6 +58,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
+
+tSCC zNeedsArg[] = "fixincl error:  `%s' needs %s argument (c_fix_arg[%d])\n";
+
+#define EXIT_BROKEN  3
 
 typedef struct {
     const char*  fix_name;
@@ -192,7 +196,6 @@ format_write (format, text, av)
  */
 FIX_PROC_HEAD( format_fix )
 {
-  tSCC  zBad[] = "fixincl error:  `%s' needs %s c_fix_arg\n";
   tCC*  pz_pat = p_fixd->patch_args[2];
   tCC*  pz_fmt = p_fixd->patch_args[1];
   const char *p;
@@ -204,8 +207,8 @@ FIX_PROC_HEAD( format_fix )
    */
   if (pz_fmt == (tCC*)NULL)
     {
-      fprintf( stderr, zBad, p_fixd->fix_name, "replacement-format" );
-      exit( 3 );
+      fprintf( stderr, zNeedsArg, p_fixd->fix_name, "replacement format", 0 );
+      exit (EXIT_BROKEN);
     }
 
   /*
@@ -220,8 +223,8 @@ FIX_PROC_HEAD( format_fix )
         {
           if (ct-- <= 0)
             {
-              fprintf( stderr, zBad, p_fixd->fix_name, "search-text" );
-              exit( 3 );
+              fprintf( stderr, zNeedsArg, p_fixd->fix_name, "search text", 1 );
+              exit (EXIT_BROKEN);
             }
 
           if (pTD->type == TT_EGREP)
@@ -271,71 +274,72 @@ FIX_PROC_HEAD( char_macro_use_fix )
 {
   /* This regexp looks for a traditional-syntax #define (# in column 1)
      of an object-like macro.  */
-  static const char zPatFmt[] =
-#ifdef __STDC__
-    /*
-     *  Match up to the replacement text
-     */
-    "^#[ \t]*define[ \t]+[_A-Za-z][_A-Za-z0-9]*[ \t]+"
-    /*
-     *  Match the replacement macro name and openening parenthesis
-     */
-    "[_A-Z][_A-Z0-9]*%s[A-Z]*\\("
-    /*
-     *  Match the single character that must be single-quoted,
-     *  plus some other non-name type character
-     */
-    "([A-Za-z])[^a-zA-Z0-9_]"
-#else
-    /*
-     *  Indecipherable gobbeldygook:
-     */
-
-    "^#[ \t]*define[ \t]+[_A-Za-z][_A-Za-z0-9]*[ \t]+[_A-Z][_A-Z0-9]*\
-%s[A-Z]*\\(([A-Za-z])[^a-zA-Z0-9_]"
-#endif
-    ;
-
-# define SUB_PAT_CT 1
-  char *pz_pat;
-
+  static const char pat[] =
+    "^#[ \t]*define[ \t]+[_A-Za-z][_A-Za-z0-9]*[ \t]+";
   static regex_t re;
 
-  regmatch_t rm[SUB_PAT_CT+1];
+  const char* str = p_fixd->patch_args[1];
+  regmatch_t rm[1];
+  const char *p, *limit;
+  size_t len;
 
-  if (p_fixd->patch_args[1] == NULL)
+  if (str == NULL)
     {
-      fprintf (stderr, "%s needs macro-name-string argument",
-              p_fixd->fix_name);
-      exit(3);
+      fprintf (stderr, zNeedsArg, p_fixd->fix_name, "ioctl type", 0);
+      exit (EXIT_BROKEN);
     }
 
-  asprintf (&pz_pat, zPatFmt, p_fixd->patch_args[1]);
-  if (!pz_pat)
+  len = strlen (str);
+  compile_re (pat, &re, 1, "macro pattern", "char_macro_use_fix");
+
+  for (p = text;
+       regexec (&re, p, 1, rm, 0) == 0;
+       p = limit + 1)
     {
-      fprintf( stderr, "Virtual memory exhausted\n" );
-      exit(3);
+      /* p + rm[0].rm_eo is the first character of the macro replacement.
+	 Find the end of the macro replacement, and the STR we were
+	 sent to look for within the replacement.  */
+      p += rm[0].rm_eo;
+      limit = p - 1;
+      do
+	{
+	  limit = strchr (limit + 1, '\n');
+	  if (!limit)
+	    goto done;
+	}
+      while (limit[-1] == '\\');
+
+      do
+	{
+	  if (*p == str[0] && !strncmp (p+1, str+1, len-1))
+	    goto found;
+	}
+      while (++p < limit - len);
+      /* Hit end of line.  */
+      continue;
+
+    found:
+      /* Found STR on this line.  If the macro needs fixing,
+	 the next few chars will be whitespace or uppercase,
+	 then an open paren, then a single letter.  */
+      while ((isspace (*p) || isupper (*p)) && p < limit) p++;
+      if (*p++ != '(')
+	continue;
+      if (!isalpha (*p))
+	continue;
+      if (isalnum (p[1]) || p[1] == '_')
+	continue;
+
+      /* Splat all preceding text into the output buffer,
+	 quote the character at p, then proceed.  */
+      fwrite (text, 1, p - text, stdout);
+      putchar ('\'');
+      putchar (*p);
+      putchar ('\'');
+      text = p + 1;
     }
-
-  compile_re (pz_pat, &re, 1, "macro pattern", "char_macro_use_fix");
-  free (pz_pat);
-
-  while (regexec (&re, text, SUB_PAT_CT+1, rm, 0) == 0)
-    {
-      const char* pz = text + rm[1].rm_so;
-
-      /*
-       *  Write up to, but not including, the character we must quote
-       */
-      fwrite( text, 1, rm[1].rm_so, stdout );
-      fputc( '\'', stdout );
-      fputc( *(pz++), stdout );
-      fputc( '\'', stdout );
-      text = pz;
-    }
-
+ done:
   fputs (text, stdout);
-# undef SUB_PAT_CT
 }
 
 
@@ -352,107 +356,88 @@ FIX_PROC_HEAD( char_macro_use_fix )
    you provide as the `c_fix_arg' argument.  */
 FIX_PROC_HEAD( char_macro_def_fix )
 {
-  static const char zPatFmt[] =
-#ifdef __STDC__
-    /*
-     *  Find a #define name and opening parenthesis
-     */
-    "^#[ \t]*define[ \t]+[_A-Z][A-Z0-9_]*%s[A-Z]*\\("
-    /*
-     *  The next character must match a later one
-     */
-    "([a-zA-Z])"  /* rm[1] */
-    /*
-     *  now match over a comma, the argument list, intervening white space
-     *  an opening parenthesis, and on through a single quote character
-     */
-    "[ \t]*,[^)]*\\)[ \t]+\\([^']*'"
-    /*
-     *  Match the character that must match the remembered char above
-     */
-    "([a-zA-Z])'"  /* rm[2] */
-#else
-    /*
-     *  Indecipherable gobbeldygook:
-     */
-
-    "^#[ \t]*define[ \t]+[_A-Z][A-Z0-9_]*%s[A-Z]*\\(\
-([a-zA-Z])[ \t]*,[^)]*\\)[ \t]+\\([^']*'([a-zA-Z])'"
-#endif
-    ;
-
-  char *pz_pat;
-
+  /* This regexp looks for any traditional-syntax #define (# in column 1).  */
+  static const char pat[] =
+    "^#[ \t]*define[ \t]+";
   static regex_t re;
-# define SUB_PAT_CT 2
-  regmatch_t rm[SUB_PAT_CT+1];
-  const char *p;
-  int  rerr;
 
-  if (p_fixd->patch_args[1] == NULL)
+  const char* str = p_fixd->patch_args[1];
+  regmatch_t rm[1];
+  const char *p, *limit;
+  char arg;
+  size_t len;
+
+  if (str == NULL)
     {
-      fprintf (stderr, "%s needs macro-name-string argument",
-              p_fixd->fix_name);
-      exit(3);
+      fprintf (stderr, zNeedsArg, p_fixd->fix_name, "ioctl type", 0);
+      exit (EXIT_BROKEN);
     }
 
-  asprintf (&pz_pat, zPatFmt, p_fixd->patch_args[1]);
-  if (!pz_pat)
+  len = strlen (str);
+  compile_re (pat, &re, 1, "macro pattern", "fix_char_macro_defines");
+
+  for (p = text;
+       regexec (&re, p, 1, rm, 0) == 0;
+       p = limit + 1)
     {
-      fprintf (stderr, "Virtual memory exhausted\n");
-      exit(3);
+      /* p + rm[0].rm_eo is the first character of the macro name.
+	 Find the end of the macro replacement, and the STR we were
+	 sent to look for within the name.  */
+      p += rm[0].rm_eo;
+      limit = p - 1;
+      do
+	{
+	  limit = strchr (limit + 1, '\n');
+	  if (!limit)
+	    goto done;
+	}
+      while (limit[-1] == '\\');
+
+      do
+	{
+	  if (*p == str[0] && !strncmp (p+1, str+1, len-1))
+	    goto found;
+	  p++;
+	}
+      while (isalpha (*p) || isalnum (*p) || *p == '_');
+      /* Hit end of macro name without finding the string.  */
+      continue;
+
+    found:
+      /* Found STR in this macro name.  If the macro needs fixing,
+	 there may be a few uppercase letters, then there will be an
+	 open paren with _no_ intervening whitespace, and then a
+	 single letter.  */
+      while (isupper (*p) && p < limit) p++;
+      if (*p++ != '(')
+	continue;
+      if (!isalpha (*p))
+	continue;
+      if (isalnum (p[1]) || p[1] == '_')
+	continue;
+
+      /* The character at P is the one to look for in the following
+	 text.  */
+      arg = *p;
+      p += 2;
+
+      while (p < limit)
+	{
+	  if (p[-1] == '\'' && p[0] == arg && p[1] == '\'')
+	    {
+	      /* Remove the quotes from this use of ARG.  */
+	      p--;
+	      fwrite (text, 1, p - text, stdout);
+	      putchar (arg);
+	      p += 3;
+	      text = p;
+	    }
+	  else
+	    p++;
+	}
     }
-
-  compile_re (pz_pat, &re, 1, "macro pattern", "char_macro_def_fix");
-
-#ifdef DEBUG
-  if ((rerr = regexec (&re, text, SUB_PAT_CT+1, rm, 0)) != 0)
-    {
-      fprintf( stderr, "Match error %d:\n%s\n", rerr, pz_pat );
-      exit(3);
-    }
-#endif
-
-  free (pz_pat);
-  
-  while ((rerr = regexec (&re, text, SUB_PAT_CT+1, rm, 0)) == 0)
-    {
-      const char* pz = text + rm[2].rm_so;
-
-      /*
-       *  Write up to, but not including, the opening single quote.
-       */
-      fwrite( text, 1, rm[2].rm_so-1, stdout );
-
-      /*
-       *  The character inside the single quotes must match the
-       *  first single-character macro argument
-       */
-      if (text[ rm[1].rm_so ] != *pz)
-        {
-          /*
-           *  Advance text past what we have written out and continue
-           */
-          text = pz-1;
-          continue;
-        }
-
-      /*
-       *  emit the now unquoted character
-       */
-      putchar( *pz );
-
-      /*
-       *  Point text to the character after the closing single quote
-       */
-      text = pz+2;
-    }
-
-  /*
-   *  Emit the rest of the text
-   */
+ done:
   fputs (text, stdout);
-# undef SUB_PAT_CT
 }
 
 /* Fix for machine name #ifdefs that are not in the namespace reserved
@@ -636,9 +621,9 @@ apply_fix( p_fixd, filname )
         break;
       if (--ct <= 0)
         {
-          fprintf (stderr, "fixincludes error:  the `%s' fix is unknown\n",
+          fprintf (stderr, "fixincl error:  the `%s' fix is unknown\n",
                    fixname );
-          exit (3);
+          exit (EXIT_BROKEN);
         }
       pfe++;
     }

@@ -1,6 +1,7 @@
 2000-05-30  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/tests/*:  Added expected result files for fixinc's make check
+	* fixinc/fixfixes(char_macro_*_fix): Restore original algorithm
 
 2000-05-30  Richard Henderson  <rth@cygnus.com>
 
