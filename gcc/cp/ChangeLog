@@ -1,3 +1,8 @@
+2003-03-28  Mike Stump  <mrs@apple.com>
+
+	* error.c (dump_expr): Add 0x to printed hex numbers to make
+	output match source code better.
+
 2003-03-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10218
