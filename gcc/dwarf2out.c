@@ -11292,8 +11292,9 @@ dwarf2out_finish ()
       add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
     }
 
-  add_AT_lbl_offset (comp_unit_die, DW_AT_stmt_list,
-		     debug_line_section_label);
+  if (debug_info_level >= DINFO_LEVEL_NORMAL)
+    add_AT_lbl_offset (comp_unit_die, DW_AT_stmt_list,
+		       debug_line_section_label);
 
 #if 0 /* unimplemented */
   if (debug_info_level >= DINFO_LEVEL_VERBOSE && primary)
