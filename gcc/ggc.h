@@ -23,6 +23,16 @@
 /* Symbols are marked with `ggc' for `gcc gc' so as not to interfere with
    an external gc library that might be linked in.  */
 
+/* These structures are defined in various headers throughout the
+   compiler.  However, rather than force everyone who includes this
+   header to include all the headers in which they are declared, we
+   just forward-declare them here.  */
+struct label_node;
+struct eh_status;
+struct emit_status;
+struct stmt_status;
+struct varasm_status;
+
 /* Startup */
 
 extern void init_ggc PROTO ((void));
@@ -61,12 +71,15 @@ void lang_mark_tree PROTO ((union tree_node *));
 /* And similarly to free that data when the tree node is released.  */
 void lang_cleanup_tree PROTO ((union tree_node *));
 
+/* The FALSE_LABEL_STACK, declared in except.h, has
+   language-dependent semantics.  Each front-end should define this
+   function appropriately.  */
+void lang_mark_false_label_stack PROTO ((struct label_node *));
+
 /* Mark functions for various structs scattered about.  */
 
-void mark_temp_slot PROTO ((void *));
-void mark_function_chain PROTO ((void *));
-void mark_eh_state PROTO ((void *));
-void mark_stmt_state PROTO ((void *));
-void mark_emit_state PROTO ((void *));
-void mark_varasm_state PROTO ((void *));
+void mark_eh_state PROTO ((struct eh_status *));
+void mark_stmt_state PROTO ((struct stmt_status *));
+void mark_emit_state PROTO ((struct emit_status *));
+void mark_varasm_state PROTO ((struct varasm_status *));
 void mark_optab PROTO ((void *));

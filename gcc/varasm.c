@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "obstack.h"
 #include "c-pragma.h"
+#include "ggc.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -186,6 +187,7 @@ static void asm_output_bss		PROTO((FILE *, tree, char *, int, int));
 static void asm_output_aligned_bss	PROTO((FILE *, tree, char *, int, int));
 #endif
 #endif /* BSS_SECTION_ASM_OP */
+static void mark_pool_constant          PROTO((struct pool_constant *));
 
 static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
@@ -3184,6 +3186,29 @@ init_varasm_status (f)
   p->x_first_pool = p->x_last_pool = 0;
   p->x_pool_offset = 0;
   p->x_const_double_chain = 0;
+}
+
+/* Mark PC for GC.  */
+
+static void 
+mark_pool_constant (pc)
+     struct pool_constant *pc;
+{
+  while (pc)
+    {
+      ggc_mark_rtx (pc->constant);
+      pc = pc->next;
+    }
+}
+
+/* Mark P for GC.  */
+
+void
+mark_varasm_state (p)
+  struct varasm_status *p;
+{
+  mark_pool_constant (p->x_first_pool);
+  ggc_mark_rtx (p->x_const_double_chain);
 }
 
 /* Clear out all parts of our state in F that can safely be discarded

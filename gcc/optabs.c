@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "recog.h"
 #include "reload.h"
+#include "ggc.h"
 
 /* Each optab contains info on how this target machine
    can perform a particular operation
@@ -4342,6 +4343,18 @@ init_floating_libfuncs (optable, opname, suffix)
   init_libfuncs (optable, SFmode, TFmode, opname, suffix);
 }
 
+/* Mark ARG (which is really an OPTAB *) for GC.  */
+
+void
+mark_optab (arg)
+     void *arg;
+{
+  optab o = *(optab *) arg;
+  int i;
+
+  for (i = 0; i < NUM_MACHINE_MODES; ++i)
+    ggc_mark_rtx (o->handlers[i].libfunc);
+}
 
 /* Call this once to initialize the contents of the optabs
    appropriately for the current target machine.  */
@@ -4679,6 +4692,10 @@ init_optabs ()
   /* Allow the target to add more libcalls or rename some, etc.  */
   INIT_TARGET_OPTABS;
 #endif
+
+  /* Add these GC roots.  */
+  ggc_add_root (optab_table, OTI_MAX, sizeof(optab), mark_optab);
+  ggc_add_rtx_root (libfunc_table, LTI_MAX);
 }
 
 #ifdef BROKEN_LDEXP

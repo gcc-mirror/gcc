@@ -41,3 +41,12 @@ lang_cleanup_tree (t)
      only included in compilers for languages that don't support GC.  */
   abort ();
 }
+
+void
+lang_mark_false_label_stack (l)
+     struct label_node *l ATTRIBUTE_UNUSED;
+{
+  /* If this function is called, we are doing GC.  But, this file is
+     only included in compilers for languages that don't support GC.  */
+  abort ();
+}

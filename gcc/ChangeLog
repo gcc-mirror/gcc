@@ -1,3 +1,53 @@
+Sat Sep  4 19:26:25 1999  Richard Henderson  <rth@cygnus.com>
+	                  Bernd Schmidt <bernds@cygnus.co.uk>
+			  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (tree.o): Depend on ggc.h.
+	(varasm.o): Likewise.
+	(function.o): Likewise.
+	(stmt.o): Likewise.
+	(except.o): Likewise.
+	(optabs.o): Likewise.
+	(emit-rtl.o): Likewise.
+	* emit-rtl.c: Include ggc.h.
+	(sequence_element_free_list): Remove, and all references.
+	(mark_sequence): New functions.
+	(mark_emit_state): New function.
+	* except.c: Include ggc.h.
+	(mark_eh_node, mark_eh_stack, mark_eh_queue): New functions.
+	(mark_tree_label_node): New functions.
+	(mark_eh_state): New function.
+	* function.c: Include ggc.h.
+	(mark_temp_slot, mark_function_chain): New functions.
+	(mark_function_state): New function.
+	(init_function_once): New function.
+	* function.h (init_function_once): New function.
+	* ggc-callbacks.c (lang_mark_false_label_stack): New function.
+	* ggc.h (label_node): Declare.
+	(eh_status, emit_status, stmt_status, varasm_status): Likewise.
+	(lang_mark_false_label_stack): New function.
+	(mark_temp_slot): Remove declaration.
+	(mark_function_chain): Likewise.
+	(mark_eh_state): Adjust prototype.
+	(mark_stmt_state, mark_emit_state, mark_varasm_state, mark_optab):
+	Likewise.
+	* optabs.c: Include ggc.h.
+	(mark_optab): New function.
+	(init_optabs): Add gc roots.
+	* stmt.c: Include ggc.h.
+	(mark_cond_nesting, mark_loop_nesting): New functions.
+	(mark_block_nesting, mark_case_nesting, mark_goto_fixup): Likewise.
+	(mark_stmt_state): New function.
+	* toplev.c (compile_file): Call init_function_once.
+	* tree.c: Include ggc.h.
+	(type_hash): Move declaration earlier in file.
+	(TYPE_HASH_SIZE, type_hash_table): Likewise.
+	(init_obstacks): Add gc roots.
+	(mark_type_hash): New function.
+	* varasm.c: Include ggc.h.
+	(mark_pool_constant): New function.
+	(mark_varasm_state): New function.
+	
 Sat Sep  4 22:28:56 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ggc-simple.c (ggc_root, ggc_collect): Wrap prototype with PROTO.

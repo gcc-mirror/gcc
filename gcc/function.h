@@ -558,6 +558,9 @@ extern rtx get_first_block_beg		PROTO((void));
 
 extern void init_virtual_regs		PROTO((struct emit_status *));
 
+/* Called once, at initialization, to initialize function.c.  */
+extern void init_function_once          PROTO((void));
+
 #ifdef rtx
 #undef rtx
 #endif

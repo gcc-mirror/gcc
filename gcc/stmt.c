@@ -52,6 +52,7 @@ Boston, MA 02111-1307, USA.  */
 #include "machmode.h"
 #include "toplev.h"
 #include "output.h"
+#include "ggc.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -425,11 +426,150 @@ static void emit_jump_if_reachable	PROTO((rtx));
 static void emit_case_nodes		PROTO((rtx, case_node_ptr, rtx, tree));
 static int add_case_node		PROTO((tree, tree, tree, tree *));
 static struct case_node *case_tree2list	PROTO((case_node *, case_node *));
+static void mark_cond_nesting           PROTO((struct nesting *));
+static void mark_loop_nesting           PROTO((struct nesting *));
+static void mark_block_nesting          PROTO((struct nesting *));
+static void mark_case_nesting           PROTO((struct nesting *));
+static void mark_goto_fixup             PROTO((struct goto_fixup *));
+
 
 void
 using_eh_for_cleanups ()
 {
   using_eh_for_cleanups_p = 1;
+}
+
+/* Mark N (known to be a cond-nesting) for GC.  */
+
+static void
+mark_cond_nesting (n)
+     struct nesting *n;
+{
+  while (n)
+    {
+      ggc_mark_rtx (n->exit_label);
+      ggc_mark_rtx (n->data.cond.endif_label);
+      ggc_mark_rtx (n->data.cond.next_label);
+
+      n = n->next;
+    }
+}
+
+/* Mark N (known to be a loop-nesting) for GC.  */
+
+static void
+mark_loop_nesting (n)
+     struct nesting *n;
+{
+
+  while (n)
+    {
+      ggc_mark_rtx (n->exit_label);
+      ggc_mark_rtx (n->data.loop.start_label);
+      ggc_mark_rtx (n->data.loop.end_label);
+      ggc_mark_rtx (n->data.loop.alt_end_label);
+      ggc_mark_rtx (n->data.loop.continue_label);
+
+      n = n->next;
+    }
+}
+
+/* Mark N (known to be a block-nesting) for GC.  */
+
+static void
+mark_block_nesting (n)
+     struct nesting *n;
+{
+  while (n)
+    {
+      struct label_chain *l;
+
+      ggc_mark_rtx (n->exit_label);
+      ggc_mark_rtx (n->data.block.stack_level);
+      ggc_mark_rtx (n->data.block.first_insn);
+      ggc_mark_tree (n->data.block.cleanups);
+      ggc_mark_tree (n->data.block.outer_cleanups);
+
+      for (l = n->data.block.label_chain; l != NULL; l = l->next)
+	ggc_mark_tree (l->label);
+
+      ggc_mark_rtx (n->data.block.last_unconditional_cleanup);
+
+      /* ??? cleanup_ptr never points outside the stack, does it?  */
+
+      n = n->next;
+    }
+}
+
+/* Mark N (known to be a case-nesting) for GC.  */
+
+static void
+mark_case_nesting (n)
+     struct nesting *n;
+{
+  while (n)
+    {
+      struct case_node *node;
+
+      ggc_mark_rtx (n->exit_label);
+      ggc_mark_rtx (n->data.case_stmt.start);
+
+      node = n->data.case_stmt.case_list;
+      while (node)
+	{
+	  ggc_mark_tree (node->low);
+	  ggc_mark_tree (node->high);
+	  ggc_mark_tree (node->code_label);
+	  node = node->right;
+	}
+
+      ggc_mark_tree (n->data.case_stmt.default_label);
+      ggc_mark_tree (n->data.case_stmt.index_expr);
+      ggc_mark_tree (n->data.case_stmt.nominal_type);
+
+      n = n->next;
+    }
+}
+
+/* Mark G for GC.  */
+
+static void
+mark_goto_fixup (g)
+     struct goto_fixup *g;
+{
+  while (g)
+    {
+      ggc_mark_rtx (g->before_jump);
+      ggc_mark_tree (g->target);
+      ggc_mark_tree (g->context);
+      ggc_mark_rtx (g->target_rtl);
+      ggc_mark_rtx (g->stack_level);
+      ggc_mark_tree (g->cleanup_list_list);
+
+      g = g->next;
+    }
+}
+
+/* Mark P for GC.  */
+
+void
+mark_stmt_state (p)
+     struct stmt_status *p;
+{
+  if (p == 0)
+    return;
+
+  mark_block_nesting (p->x_block_stack);
+  mark_cond_nesting (p->x_cond_stack);
+  mark_loop_nesting (p->x_loop_stack);
+  mark_case_nesting (p->x_case_stack);
+
+  ggc_mark_tree (p->x_last_expr_type);
+  /* last_epxr_value is only valid if last_expr_type is nonzero.  */
+  if (p->x_last_expr_type)
+    ggc_mark_rtx (p->x_last_expr_value);
+
+  mark_goto_fixup (p->x_goto_fixup_chain);
 }
 
 void

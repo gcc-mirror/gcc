@@ -408,6 +408,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "intl.h"
 #include "obstack.h"
+#include "ggc.h"
 
 /* One to use setjmp/longjmp method of generating code for exception
    handling.  */
@@ -467,6 +468,10 @@ static void set_insn_eh_region	PROTO((rtx *, int));
 #ifdef DONT_USE_BUILTIN_SETJMP
 static void jumpif_rtx		PROTO((rtx, rtx));
 #endif
+static void mark_eh_node        PROTO((struct eh_node *));
+static void mark_eh_stack       PROTO((struct eh_stack *));
+static void mark_eh_queue       PROTO((struct eh_queue *));
+static void mark_tree_label_node PROTO ((struct label_node *));
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 
@@ -2333,7 +2338,76 @@ check_exception_handler_labels ()
     }
 
 }
-
+
+/* Mark the children of NODE for GC.  */
+
+static void
+mark_eh_node (node)
+     struct eh_node *node;
+{
+  while (node)
+    {
+      if (node->entry)
+	{
+	  ggc_mark_rtx (node->entry->outer_context);
+	  ggc_mark_rtx (node->entry->exception_handler_label);
+	  ggc_mark_tree (node->entry->finalization);
+	}
+      node = node ->chain;
+    }
+}
+
+/* Mark S for GC.  */
+
+static void
+mark_eh_stack (s)
+     struct eh_stack *s;
+{
+  if (s)
+    mark_eh_node (s->top);
+}
+
+/* Mark Q for GC.  */
+
+static void
+mark_eh_queue (q)
+     struct eh_queue *q;
+{
+  if (q)
+    mark_eh_node (q->head);
+}
+
+/* Mark NODE for GC.  A label_node contains a union containing either
+   a tree or an rtx.  This label_node will contain a tree.  */
+
+static void
+mark_tree_label_node (node)
+     struct label_node *node;
+{
+  while (node)
+    {
+      ggc_mark_tree (node->u.tlabel);
+      node = node->chain;
+    }
+}
+
+/* Mark EH for GC.  */
+
+void
+mark_eh_state (eh)
+     struct eh_status *eh;
+{
+  mark_eh_stack (&eh->x_ehstack);
+  mark_eh_queue (&eh->x_ehqueue);
+  ggc_mark_rtx (eh->x_catch_clauses);
+
+  lang_mark_false_label_stack (eh->x_false_label_stack);
+  mark_tree_label_node (eh->x_caught_return_label_stack);
+
+  ggc_mark_tree (eh->x_protect_list);
+  ggc_mark_rtx (eh->ehc);
+}
+
 /* This group of functions initializes the exception handling data
    structures at the start of the compilation, initializes the data
    structures at the start of a function, and saves and restores the
