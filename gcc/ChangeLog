@@ -23,6 +23,9 @@
 	information after SUBREGs are eliminated by optimizations in
 	this pass if PROMOTE_FUNCTION_RETURN.
 
+	* config/sparc/sparc.h (ASM_DECLARE_REGISTER_GLOBAL): Document
+	.register declaration. Don't use variables with __ prefixes.
+
 Mon Dec  6 12:24:52 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (optimize_bit_field_compare): Only use one mode

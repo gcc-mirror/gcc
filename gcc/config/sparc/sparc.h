@@ -1834,25 +1834,38 @@ do {									\
 } while (0)
 
 /* Output the special assembly code needed to tell the assembler some
-   register is used as global register variable.  */
+   register is used as global register variable.  
+
+   SPARC 64bit psABI declares registers %g2 and %g3 as application
+   registers and %g6 and %g7 as OS registers.  Any object using them
+   should declare (for %g2/%g3 has to, for %g6/%g7 can) that it uses them
+   and how they are used (scratch or some global variable).
+   Linker will then refuse to link together objects which use those
+   registers incompatibly.
+
+   Unless the registers are used for scratch, two different global
+   registers cannot be declared to the same name, so in the unlikely
+   case of a global register variable occupying more than one register
+   we prefix the second and following registers with .gnu.part1. etc.  */
+
+extern char sparc_hard_reg_printed[8];
 
 #ifdef HAVE_AS_REGISTER_PSEUDO_OP
 #define ASM_DECLARE_REGISTER_GLOBAL(FILE, DECL, REGNO, NAME)		\
 do {									\
   if (TARGET_ARCH64)							\
     {									\
-      int __end = HARD_REGNO_NREGS ((REGNO), DECL_MODE (decl)) + (REGNO); \
-      int __reg;							\
-      extern char sparc_hard_reg_printed[8];				\
-      for (__reg = (REGNO); __reg < 8 && __reg < __end; __reg++)	\
-	if ((__reg & ~1) == 2 || (__reg & ~1) == 6)			\
+      int end = HARD_REGNO_NREGS ((REGNO), DECL_MODE (decl)) + (REGNO); \
+      int reg;								\
+      for (reg = (REGNO); reg < 8 && reg < end; reg++)			\
+	if ((reg & ~1) == 2 || (reg & ~1) == 6)				\
 	  {								\
-	    if (__reg == (REGNO))					\
-	      fprintf ((FILE), "\t.register\t%%g%d, %s\n", __reg, (NAME)); \
+	    if (reg == (REGNO))						\
+	      fprintf ((FILE), "\t.register\t%%g%d, %s\n", reg, (NAME)); \
 	    else							\
 	      fprintf ((FILE), "\t.register\t%%g%d, .gnu.part%d.%s\n",	\
-		       __reg, __reg - (REGNO), (NAME));			\
-	    sparc_hard_reg_printed[__reg] = 1;				\
+		       reg, reg - (REGNO), (NAME));			\
+	    sparc_hard_reg_printed[reg] = 1;				\
 	  }								\
     }									\
 } while (0)
