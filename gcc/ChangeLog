@@ -1,3 +1,7 @@
+Sun Jan 25 22:14:28 1998  Richard Henderson  <rth@cygnus.com>
+
+	* toplev.c (get_run_time): Make sure each case gets its variables.
+
 Sun Jan 25 22:10:21 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (build_xm_file): Add auto-config.h if host=build.
