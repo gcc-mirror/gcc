@@ -841,6 +841,7 @@ java/lang/reflect/InvocationTargetException.java \
 java/lang/reflect/Member.java \
 java/lang/reflect/Method.java \
 java/lang/reflect/Modifier.java	\
+java/lang/reflect/ReflectPermission.java \
 java/io/BlockDataException.java	\
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
@@ -859,9 +860,11 @@ java/io/EOFException.java \
 java/io/Externalizable.java \
 java/io/File.java \
 java/io/FileDescriptor.java \
+java/io/FileFilter.java \
 java/io/FileInputStream.java \
 java/io/FileNotFoundException.java \
 java/io/FileOutputStream.java \
+java/io/FilePermission.java \
 java/io/FileReader.java	\
 java/io/FileWriter.java	\
 java/io/FilenameFilter.java \

@@ -1,3 +1,11 @@
+2000-11-18  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added new files.
+	* java/lang/reflect/ReflectPermission.java: New class.
+	* java/io/FileFilter.java: From Classpath
+	* java/io/FilePermission.java: From Classpath.
+
 2000-11-17  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/reflect/AccessibleObject.java (isAccessible,
