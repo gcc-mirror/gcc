@@ -1,5 +1,5 @@
 /* ColorUIResource.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,26 +37,78 @@ exception statement from your version. */
 
 
 package javax.swing.plaf;
+
 import java.awt.Color;
+
+
 /**
- * STUBBED
+ * A Color that is marked as <code>UIResource</code>, which indicates that
+ * the color has been installed by a pluggable LookAndFeel. Such colors
+ * are replaced when the LookAndFeel changes.
+ *
+ * @see java.awt.Color
+ *
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class ColorUIResource extends Color implements UIResource
+public class ColorUIResource
+  extends Color
+  implements UIResource
 {
+  /**
+   * Constructs a <code>ColorUIResource</code> using the specified
+   * red, green, and blue values, which must be given as integers in
+   * the range of 0-255. The alpha channel value will default to 255,
+   * meaning that the color is fully opaque.
+   *
+   * @param r the red intensity, which must be in the range [0 .. 255].
+   * @param g the green intensity, which must be in the range [0 .. 255].
+   * @param b the blue intensity, which must be in the range [0 .. 255].
+   */
+  public ColorUIResource(int r, int g, int b)
+  {
+    super(r, g, b);
+  }
+
+
+  /**
+   * Consructs a <code>ColorUIResource</code> using the specified
+   * RGB value. The blue value is in bits 0-7, green in bits 8-15, and
+   * red in bits 16-23. The other bits are ignored. The alpha value is set
+   * to 255, meaning that the color is fully opaque.
+   *
+   * @param rgb the rgb value, as discussed above.
+   */
+  public ColorUIResource(int rgb)
+  {
+    super(rgb);
+  }
+
+
+  /**
+   * Constructs a <code>ColorUIResource</code> using the specified
+   * red, green, and blue intensities, which must be given as floats in
+   * the range of 0-1. The alpha channel value will default to 1.0f,
+   * meaning that the color is fully opaque.
+   *
+   * @param r the red intensity, which must be in the range [0.0 .. 1.0].
+   * @param g the green intensity, which must be in the range [0.0 .. 1.0].
+   * @param b the blue intensity, which must be in the range [0.0 .. 1.0].
+   */
+  public ColorUIResource(float r, float g, float b)
+  {
+    super(r, g, b);
+  }
+
+
+  /**
+   * Constructs a <code>ColorUIResource</code>, using the intensities
+   * of another color.
+   *
+   * @param c the color whose intensities will be considered when
+   *        constructing this <code>ColorUIResource</code>.
+   */
   public ColorUIResource(Color c)
   {
     super(c.getRGB());
   }
-  public ColorUIResource(float r, float g, float b)
-  {
-    super(r, g, b, 1.0f);
-  }
-  public ColorUIResource(int rgb)
-  {
-    super(rgb, false);
-  }
-  public ColorUIResource(int r, int g, int b)
-  {
-    super(r, g, b, 255);
-  }
-} // class ColorUIResource
+}

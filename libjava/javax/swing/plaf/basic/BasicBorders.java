@@ -42,18 +42,22 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.io.Serializable;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JPopupMenu;
+import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.plaf.UIResource;
 import javax.swing.plaf.BorderUIResource;
+import javax.swing.text.JTextComponent;
 
 
 /**
@@ -245,9 +249,175 @@ public class BasicBorders
   {
     UIDefaults defaults;
 
+    /* See comment in methods above for why this border is not shared. */
     defaults = UIManager.getLookAndFeelDefaults();
     return new MenuBarBorder(defaults.getColor("MenuBar.shadow"),
                              defaults.getColor("MenuBar.highlight"));
+  }
+
+
+  /**
+   * Returns a border for drawing a one-pixel thick border around
+   * split panes that are interrupted where the divider joins the
+   * border.
+   *
+   * <p>The colors of the border are retrieved from the
+   * <code>UIDefaults</code> of the currently active look and feel
+   * using the keys <code>&#x201c;SplitPane.darkShadow&#x201d;</code> and
+   * <code>&#x201c;SplitPane.highlight&#x201d;</code>.
+   *   
+   * <p><img src="BasicBorders.SplitPaneBorder-1.png" width="520"
+   * height="200" alt="[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
+   *
+   * <p><img src="BasicBorders.SplitPaneBorder-2.png" width="520"
+   * height="200" alt="[A screen shot for JSplitPane.VERTICAL_SPLIT]" />
+   *
+   * @return a {@link #SplitPaneBorder}.
+   *
+   * @see javax.swing.JSplitPane
+   * @see #getSplitPaneDividerBorder()
+   */
+  public static Border getSplitPaneBorder()
+  {
+    UIDefaults defaults;
+
+    /* See comment in methods above for why this border is not shared. */
+    defaults = UIManager.getLookAndFeelDefaults();
+    return new SplitPaneBorder(defaults.getColor("SplitPane.highlight"),
+                               defaults.getColor("SplitPane.darkShadow"));
+  }
+
+
+  /**
+   * Returns a border for drawing a one-pixel thick border around
+   * the divider of split panes.
+   *
+   * <p>The colors of the edges that are adjacent to the child components
+   * of the <code>JSplitPane</code> are retrieved from the
+   * <code>UIDefaults</code> of the currently active look and feel
+   * using the keys <code>&#x201c;SplitPane.darkShadow&#x201d;</code> and
+   * <code>&#x201c;SplitPane.highlight&#x201d;</code>. The color of the
+   * other two edges is the background color of the divider.
+   *
+   * <p><img src="BasicBorders.SplitPaneDividerBorder-1.png" width="520"
+   * height="200" alt="[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
+   *
+   * @return an instance of <code>SplitPaneDividerBorder</code>, which is
+   *         not a public API class of this package.
+   *
+   * @see javax.swing.JSplitPane
+   * @see javax.swing.plaf.basic.BasicSplitPaneDivider
+   * @see #getSplitPaneBorder()
+   *
+   * @since 1.3
+   */
+  public static Border getSplitPaneDividerBorder()
+  {
+    UIDefaults defaults;
+
+    /* See comment in methods above for why this border is not shared. */
+    defaults = UIManager.getLookAndFeelDefaults();
+    return new SplitPaneDividerBorder(
+      defaults.getColor("SplitPane.highlight"),
+      defaults.getColor("SplitPane.darkShadow"));
+  }
+
+
+  /**
+   * Returns a border for drawing a border around a text field
+   * that makes the field appear as etched into the surface.
+   *
+   * <p>The colors of the border are retrieved from the
+   * <code>UIDefaults</code> of the currently active look and feel
+   * using the keys <code>&#x201c;TextField.shadow&#x201d;</code>,
+   * <code>&#x201c;TextField.darkShadow&#x201d;</code>,
+   * <code>&#x201c;TextField.light&#x201d;</code>, and
+   * <code>&#x201c;TextField.highlight&#x201d;</code>.
+   *
+   * <p><img src="BasicBorders.FieldBorder-1.png" width="500"
+   * height="200" alt="[A screen shot of a border returned by
+   * this method]" />
+   *
+   * @return an instance of
+   * {@link javax.swing.plaf.basic.BasicBorders$FieldBorder}.
+   *
+   * @see javax.swing.JTextField
+   * @see javax.swing.text.JTextComponent
+   */
+  public static Border getTextFieldBorder()
+  {
+    UIDefaults defaults;
+
+    /* See comment in methods above for why this border is not shared. */
+    defaults = UIManager.getLookAndFeelDefaults();
+    return new FieldBorder(
+      defaults.getColor("TextField.shadow"),
+      defaults.getColor("TextField.darkShadow"),
+      defaults.getColor("TextField.light"),
+      defaults.getColor("TextField.highlight"));
+  }
+  
+
+  /**
+   * Returns a two-pixel thick, green
+   * <code>LineBorderUIResource</code>.  This is so ugly that look and
+   * feels better use different borders for their progress bars, or
+   * they will look really terrible.
+   *
+   * <p><img src="BasicBorders-1.png" width="120" height="80"
+   * alt="[A screen shot of a border returned by this method]" />
+   */
+  public static Border getProgressBarBorder()
+  {
+    /* There does not seem to exist a way to parametrize the color
+     * or thickness of the border through UIDefaults.
+     */
+    return new BorderUIResource.LineBorderUIResource(Color.green, 2);
+  }
+
+
+  /**
+   * Returns a border that is composed of a raised bevel border and a
+   * one-pixel thick line border.
+   *
+   * <p><img src="BasicBorders-2.png" width="300" height="200"
+   * alt="[A screen shot of a border returned by this method]" />
+   *
+   * <p>The colors of the border are retrieved from the
+   * <code>UIDefaults</code> of the currently active look and feel
+   * using the keys <code>&#x201c;InternalFrame.borderShadow&#x201d;</code>,
+   * <code>&#x201c;InternalFrame.borderDarkShadow&#x201d;</code>,
+   * <code>&#x201c;InternalFrame.borderLight&#x201d;</code>,
+   * <code>&#x201c;InternalFrame.borderHighlight&#x201d;</code>, and
+   * (for the inner one-pixel thick line)
+   * <code>&#x201c;InternalFrame.borderColor&#x201d;</code>.
+   */
+  public static Border getInternalFrameBorder()
+  {
+    UIDefaults defaults;
+    Color shadow, darkShadow, highlight, lightHighlight, line;
+
+    /* See comment in methods above for why this border is not shared. */
+    defaults = UIManager.getLookAndFeelDefaults();
+    
+    shadow = defaults.getColor("InternalFrame.borderShadow");
+    darkShadow = defaults.getColor("InternalFrame.borderDarkShadow");
+    highlight = defaults.getColor("InternalFrame.borderLight");
+    lightHighlight = defaults.getColor("InternalFrame.borderHighlight");
+    line = defaults.getColor("InternalFrame.borderColor");
+
+    return new BorderUIResource.CompoundBorderUIResource(
+      /* outer border */
+      new BorderUIResource.BevelBorderUIResource(
+        BevelBorder.RAISED,
+        (highlight != null) ? highlight : Color.lightGray,
+        (lightHighlight != null) ? lightHighlight : Color.white,
+        (darkShadow != null) ? darkShadow : Color.black,
+        (shadow != null) ? shadow : Color.gray),
+
+      /* inner border */
+      new BorderUIResource.LineBorderUIResource(
+        (line != null) ? line : Color.lightGray));
   }
 
 
@@ -442,15 +612,172 @@ public class BasicBorders
   }
   
   
+  /**
+   * A border that makes its enclosed component appear as lowered
+   * into the surface. Typically used for text fields.
+   *
+   * <p><img src="BasicBorders.FieldBorder-1.png" width="500"
+   * height="200" alt="[A screen shot of this border]" />
+   *
+   * @see javax.swing.plaf.basic.BasicGraphicsUtils#drawEtchedRect
+   *
+   * @author Sascha Brawer (brawer@dandelis.ch)
+   */
   public static class FieldBorder
+    extends AbstractBorder
+    implements UIResource
   {
+    /**
+     * Determined using the <code>serialver</code> tool
+     * of Apple/Sun JDK 1.3.1 on MacOS X 10.1.5.
+     */
+    static final long serialVersionUID = 949220756998454908L;
+
+
+    /**
+     * The color for drawing the outer half of the top and left
+     * edges.
+     */
+    protected Color shadow;
+
+
+    /**
+     * The color for drawing the inner half of the top and left
+     * edges.
+     */
+    protected Color darkShadow;
+
+
+    /**
+     * The color for drawing the inner half of the bottom and right
+     * edges.
+     */
+    protected Color highlight;
+
+
+    /**
+     * The color for drawing the outer half of the bottom and right
+     * edges.
+     */
+    protected Color lightHighlight;
+
+
+    /**
+     * Constructs a new border for drawing a text field in the Basic
+     * look and feel.
+     *
+     * @param shadow the color for drawing the outer half
+     *        of the top and left edges.
+     *
+     * @param darkShadow the color for drawing the inner half
+     *        of the top and left edges.
+     *
+     * @param highlight the color for drawing the inner half
+     *        of the bottom and right edges.
+     *
+     * @param lightHighlight the color for drawing the outer half
+     *        of the bottom and right edges.
+     */
     public FieldBorder(Color shadow, Color darkShadow,
                        Color highlight, Color lightHighlight)
     {
+      /* These colors usually come from the UIDefaults of the current
+       * look and feel. Use fallback values if the colors are not
+       * supplied.  The API specification is silent about what
+       * behavior is expected for null colors, so users should not
+       * rely on this fallback (which is why it is not documented in
+       * the above Javadoc).
+       */
+      this.shadow = (shadow != null) ? shadow : Color.gray;
+      this.darkShadow = (darkShadow != null) ? darkShadow : Color.black;
+      this.highlight = (highlight != null) ? highlight : Color.lightGray;
+      this.lightHighlight = (lightHighlight != null)
+        ? lightHighlight : Color.white;
     }
-  } // class FieldBorder
+
+    
+    /**
+     * Paints the FieldBorder around a given component.
+     *
+     * @param c the component whose border is to be painted.
+     * @param g the graphics for painting.
+     * @param x the horizontal position for painting the border.
+     * @param y the vertical position for painting the border.
+     * @param width the width of the available area for painting the border.
+     * @param height the height of the available area for painting the border.
+     *
+     * @see javax.swing.plaf.basic.BasicGraphicsUtils#drawEtchedRect
+     */
+    public void paintBorder(Component c, Graphics  g,
+                            int x, int y, int width, int height)
+    {
+      BasicGraphicsUtils.drawEtchedRect(g, x, y, width, height,
+                                        shadow, darkShadow,
+                                        highlight, lightHighlight);
+    }
+    
+    
+    /**
+     * Measures the width of this border.
+     *
+     * @param c the component whose border is to be measured.
+     *        If <code>c</code> is an instance of {@link
+     *        javax.swing.text.JTextComponent}, its margin is
+     *        added to the border size.
+     *
+     * @return an Insets object whose <code>left</code>,
+     *         <code>right</code>, <code>top</code> and
+     *         <code>bottom</code> fields indicate the width of the
+     *         border at the respective edge.
+     *
+     * @see #getBorderInsets(java.awt.Component, java.awt.Insets)
+     */
+    public Insets getBorderInsets(Component c)
+    {
+      return getBorderInsets(c, null);
+    }
 
 
+    /**
+     * Measures the width of this border, storing the results into a
+     * pre-existing Insets object.
+     *
+     * @param c the component whose border is to be measured.
+     *        If <code>c</code> is an instance of {@link
+     *        javax.swing.text.JTextComponent}, its margin is
+     *        added to the border size.
+     *
+     * @param insets an Insets object for holding the result values.
+     *        After invoking this method, the <code>left</code>,
+     *        <code>right</code>, <code>top</code> and
+     *        <code>bottom</code> fields indicate the width of the
+     *        border at the respective edge.
+     *
+     * @return the same object that was passed for <code>insets</code>.
+     *
+     * @see #getBorderInsets()
+     */
+    public Insets getBorderInsets(Component c, Insets insets)
+    {
+      if (insets == null)
+        insets = new Insets(2, 2, 2, 2);
+      else
+        insets.top = insets.left = insets.bottom = insets.right = 2;
+
+      if (c instanceof JTextComponent)
+      {
+        Insets margin = ((JTextComponent) c).getMargin();
+        insets.top += margin.top;
+        insets.left += margin.left;
+        insets.bottom += margin.bottom;
+        insets.right += margin.right;
+      }
+
+      return insets;
+    }
+  }
+  
+  
   /**
    * An invisible, but spacing border whose margin is determined
    * by calling the <code>getMargin()</code> method of the enclosed
@@ -512,8 +839,9 @@ public class BasicBorders
      * determine the existence of this method, this would be slow on
      * many virtual machines. Therefore, the current implementation
      * knows about {@link javax.swing.AbstractButton#getMargin()},
-     * {@link javax.swing.JPopupMenu#getMargin()}, and {@link
-     * javax.swing.JToolBar#getMargin()}. If <code>c</code> is an
+     * {@link javax.swing.JPopupMenu#getMargin()}, {@link
+     * javax.swing.JToolBar#getMargin()}, and {@link
+     * javax.swing.text.JTextComponent}. If <code>c</code> is an
      * instance of a known class, the respective
      * <code>getMargin()</code> method is called to determine the
      * correct margin. Otherwise, a zero-width margin is returned.
@@ -536,7 +864,9 @@ public class BasicBorders
         margin = ((JPopupMenu) c).getMargin();
       else if (c instanceof JToolBar)
         margin = ((JToolBar) c).getMargin();
-
+      else if (c instanceof JTextComponent)
+        margin = ((JTextComponent) c).getMargin();
+      
       if (margin == null)
         insets.top = insets.left = insets.bottom = insets.right = 0;
       else
@@ -862,15 +1192,496 @@ public class BasicBorders
   }
 
 
+  /**
+   * A one-pixel thick border for rollover buttons, for example in
+   * tool bars.
+   *
+   * @since 1.4
+   * @author Sascha Brawer (brawer@dandelis.ch)
+   */
   public static class RolloverButtonBorder
+    extends ButtonBorder
   {
-  } // class RolloverButtonBorder
+    /**
+     * Determined using the <code>serialver</code> tool
+     * of Sun JDK 1.4.1_01 on GNU/Linux 2.4.20 for x86.
+     */
+    static final long serialVersionUID = 1976364864896996846L;
+
+
+    /**
+     * Constructs a new border for drawing a roll-over button
+     * in the Basic look and feel.
+     *
+     * @param shadow the shadow color.
+     * @param darkShadow a darker variant of the shadow color.
+     * @param highlight the highlight color.
+     * @param lightHighlight a brighter variant of the highlight  color.
+     */
+    public RolloverButtonBorder(Color shadow, Color darkShadow,
+                                Color highlight, Color lightHighlight)
+    {
+      super(shadow, darkShadow, highlight, lightHighlight);
+    }
+
+
+    /**
+     * Paints the border around a rollover button.  If <code>c</code>
+     * is not an {@link javax.swing.AbstractButton} whose model
+     * returns <code>true</code> for {@link
+     * javax.swing.ButtonModel#isRollver}, nothing gets painted at
+     * all.
+     *
+     * @param c the button whose border is to be painted.
+     * @param g the graphics for painting.
+     * @param x the horizontal position for painting the border.
+     * @param y the vertical position for painting the border.
+     * @param width the width of the available area for painting the border.
+     * @param height the height of the available area for painting the border.
+     */
+    public void paintBorder(Component c, Graphics  g,
+                            int x, int y, int width, int height)
+    {
+      ButtonModel bmodel = null;
+      boolean drawPressed;
+      Color oldColor = g.getColor();
+      int x2, y2;
+
+      if (c instanceof AbstractButton)
+        bmodel = ((AbstractButton) c).getModel();
+
+      /* Draw nothing if c is not a rollover button. */
+      if ((bmodel == null) || !bmodel.isRollover())
+        return;
+
+      /* Draw nothing if the mouse is pressed, but outside the button. */
+      if (bmodel.isPressed() && !bmodel.isArmed())
+        return;
+
+      drawPressed = bmodel.isSelected() || bmodel.isPressed();
+      x2 = x + width - 1;
+      y2 = y + height - 1;
+
+      try
+      {
+        g.setColor(drawPressed ? shadow : lightHighlight);
+        g.drawLine(x, y, x2 - 1, y);     // top edge
+        g.drawLine(x, y + 1, x, y2 - 1); // left edge
+
+        g.setColor(drawPressed ? lightHighlight : shadow);
+        g.drawLine(x, y2, x2, y2);       // bottom edge
+        g.drawLine(x2, y, x2, y2 - 1);   // right edge
+      }
+      finally
+      {
+        g.setColor(oldColor);
+      }
+    }
+  }
+
+
+  /**
+   * A border for JSplitPanes in the Basic look and feel. The divider
+   * in the middle of the JSplitPane has its own border class, of which
+   * an instance can be obtained with {@link #getSplitPaneDividerBorder()}.
+   *
+   * <p><img src="BasicBorders.SplitPaneBorder-1.png" width="520"
+   * height="200" alt="[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
+   *
+   * <p><img src="BasicBorders.SplitPaneBorder-2.png" width="520"
+   * height="200" alt="[A screen shot for JSplitPane.VERTICAL_SPLIT]" />
+   *
+   * <p>In contrast to the other borders of the Basic look and feel,
+   * this class is not serializable. While this might be unintended,
+   * GNU Classpath follows the specification in order to be fully
+   * compatible with the Sun reference implementation.
+   *
+   * <p>In the Sun JDK, the bottom edge of the divider also gets
+   * painted if the orientation of the enclosed JSplitPane is
+   * <code>JSplitPane.VERTICAL_SPLIT</code> (at least in versions
+   * 1.3.1 and 1.4.1).  GNU Classpath does not replicate this bug. A
+   * report has been filed with Sun (review ID 188773).
+   *
+   * <p>Note that the bottom left pixel of the border has a different
+   * color depending on the orientation of the enclosed JSplitPane.
+   * Although this is visually inconsistent, Classpath replicates the
+   * appearance of the Sun reference implementation. A bug report has
+   * been filed with Sun (review ID 188774).
+   *
+   * @see {@link #getSplitPaneBorder()}
+   * @see {@link #getSplitPaneDividerBorder()}
+   *
+   * @author Sascha Brawer (brawer@dandelis.ch)
+   */
   public static class SplitPaneBorder
+    implements Border, UIResource
   {
+    /**
+     * Indicates that the top edge shall be not be painted
+     * by {@link #paintRect(java.awt.Graphics, int, int, int, int, int)}.
+     */
+    private static final int SUPPRESS_TOP = 1;
+
+
+    /**
+     * Indicates that the left edge shall be not be painted
+     * by {@link #paintRect(java.awt.Graphics, int, int, int, int, int)}.
+     */
+    private static final int SUPPRESS_LEFT = 2;
+
+
+    /**
+     * Indicates that the bottom edge shall be not be painted
+     * by {@link #paintRect(java.awt.Graphics, int, int, int, int, int)}.
+     */
+    private static final int SUPPRESS_BOTTOM = 4;
+
+
+    /**
+     * Indicates that the right edge shall be not be painted
+     * by {@link #paintRect(java.awt.Graphics, int, int, int, int, int)}.
+     */
+    private static final int SUPPRESS_RIGHT = 8;
+
+
+    /**
+     * The color for drawing the bottom and right edges of the border.
+     */
+    protected Color highlight;
+
+
+    /**
+     * The color for drawing the top and left edges of the border.
+     */
+    protected Color shadow;
+
+
+    /**
+     * Constructs a new border for drawing a JSplitPane in the Basic
+     * look and feel.  The divider in the middle of the JSplitPane has
+     * its own border class, <code>SplitPaneDividerBorder</code>.
+     *
+     * @param shadow the shadow color.
+     * @param highlight the highlight color.
+     */
     public SplitPaneBorder(Color highlight, Color shadow)
     {
+      /* These colors usually come from the UIDefaults of the current
+       * look and feel. Use fallback values if the colors are not
+       * supplied.  The API specification is silent about what
+       * behavior is expected for null colors, so users should not
+       * rely on this fallback (which is why it is not documented in
+       * the above Javadoc).
+       */
+      this.shadow = (shadow != null) ? shadow : Color.black;
+      this.highlight = (highlight != null) ? highlight : Color.white;
     }
-  } // class SplitPaneBorder
+
+
+    /**
+     * Paints the border around a <code>JSplitPane</code>.
+     *
+     * <p><img src="BasicBorders.SplitPaneBorder-1.png" width="520"
+     * height="200" alt="[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
+     *
+     * <p><img src="BasicBorders.SplitPaneBorder-2.png" width="520"
+     * height="200" alt="[A screen shot for JSplitPane.VERTICAL_SPLIT]" />
+     *
+     * @param c the <code>JSplitPane</code> whose border is to be painted.
+     * @param g the graphics for painting.
+     * @param x the horizontal position for painting the border.
+     * @param y the vertical position for painting the border.
+     * @param width the width of the available area for painting the border.
+     * @param height the height of the available area for painting the border.
+     */
+    public void paintBorder(Component c, Graphics  g,
+                            int x, int y, int width, int height)
+    {
+      JSplitPane splitPane;
+      Component content;
+
+      if (!(c instanceof JSplitPane))
+        return;
+
+      splitPane = (JSplitPane) c;
+      switch (splitPane.getOrientation())
+      {
+      case JSplitPane.HORIZONTAL_SPLIT:
+        if ((content = splitPane.getLeftComponent()) != null)
+          paintRect(g, SUPPRESS_RIGHT, true, x, y, content.getBounds());
+        if ((content = splitPane.getRightComponent()) != null)
+          paintRect(g, SUPPRESS_LEFT, true, x, y, content.getBounds());
+        break;
+
+      case JSplitPane.VERTICAL_SPLIT:
+        if ((content = splitPane.getTopComponent()) != null)
+          paintRect(g, SUPPRESS_BOTTOM, false, x, y, content.getBounds());
+        if ((content = splitPane.getBottomComponent()) != null)
+          paintRect(g, SUPPRESS_TOP, false, x, y, content.getBounds());
+        break;
+      }
+    }
+
+
+    /**
+     * Paints a border around a child of a <code>JSplitPane</code>,
+     * omitting some of the edges.
+     *
+     * @param g the graphics for painting.
+     *
+     * @param suppress a bit mask indicating the set of suppressed
+     *        edges, for example <code>SUPPRESS_TOP | SUPPRESS_RIGHT</code>.
+     *
+     * @param x the x coordinate of the SplitPaneBorder.
+     *
+     * @param y the y coordinate of the SplitPaneBorder.
+     *
+     * @param shadeBottomLeftPixel <code>true</code> to paint the
+     *        bottom left pixel in the shadow color,
+     *        <code>false</code> for the highlight color. The Basic
+     *        look and feel uses the highlight color for the bottom
+     *        left pixel of the border of a JSplitPane whose
+     *        orientation is VERTICAL_SPLIT, and the shadow color
+     *        otherwise. While this might be a strange distinction,
+     *        Classpath tries to look identical to the reference
+     *        implementation. A bug report has been filed with Sun;
+     *        its review ID is 188774. We currently replicate the
+     *        Sun behavior.
+     *
+     * @param rect the bounds of the child of JSplitPane whose
+     *        border is to be painted.
+     */
+    private void paintRect(Graphics g, int suppress,
+                           boolean shadeBottomLeftPixel,
+                           int x, int y,
+                           Rectangle rect)
+    {
+      if (rect == null)
+        return;
+
+      /* On each edge, the border exceeds the enclosed child by one
+       * pixel. See the image "BasicBorders.SplitPaneBorder-1.png" in
+       * the directory "doc-files".
+       */
+      x += rect.x - 1;
+      y += rect.y - 1;
+      int right = x + rect.width + 1;
+      int bottom = y + rect.height + 1;
+      
+      Color oldColor = g.getColor();
+      try
+      {
+        g.setColor(shadow);
+        if ((suppress & SUPPRESS_TOP) == 0)
+          g.drawLine(x, y, right, y);
+        if ((suppress & SUPPRESS_LEFT) == 0)
+          g.drawLine(x, y, x, bottom);
+        else
+          g.drawLine(x, bottom, x, bottom); // one pixel
+
+        g.setColor(highlight);
+        if ((suppress & SUPPRESS_BOTTOM) == 0)
+          g.drawLine(x + (shadeBottomLeftPixel ? 1 : 0), bottom, right, bottom);
+        else if (!shadeBottomLeftPixel)
+          g.drawLine(x, bottom, x, bottom); // one pixel
+
+        if ((suppress & SUPPRESS_RIGHT) == 0)
+          g.drawLine(right, y, right, bottom);
+      }
+      finally
+      {
+        g.setColor(oldColor);
+      }
+    }
+
+    
+    /**
+     * Measures the width of this border.
+     *
+     * @param c the component whose border is to be measured, usually
+     *        an instance of {@link javax.swing.JSplitPane}.
+     *
+     * @return an Insets object whose <code>left</code>,
+     *         <code>right</code>, <code>top</code> and
+     *         <code>bottom</code> fields indicate the width of the
+     *         border at the respective edge.
+     */
+    public Insets getBorderInsets(Component c)
+    {
+      return new Insets(1, 1, 1, 1);
+    }
+
+
+    /**
+     * Determines whether this border fills every pixel in its area
+     * when painting.
+     *
+     * @return <code>false</code> because this border does not
+     *         paint over the pixels where the divider joins
+     *         the border.
+     */
+    public boolean isBorderOpaque()
+    {
+      /* Strangely, the Sun implementation (tested with JDK 1.3.1 and
+       * 1.4.1_01) seems to always return true. It could be a bug,
+       * but without knowing the details of their implementation, it is
+       * hard to decide.
+       */
+      return false;
+    }
+  }
+
+
+  /**
+   * A border for the divider inside a JSplitPane.
+   *
+   * <p><img src="BasicBorders.SplitPaneDividerBorder-1.png"
+   * width="520" height="200" alt="[A screen shot of this border]" />
+   *
+   * @author Sascha Brawer (brawer@dandelis.ch)
+   */
+  private static class SplitPaneDividerBorder
+    implements Border, UIResource, Serializable
+  {
+    /**
+     * The highlight color, which is drawn on the left or top edge
+     * depending on the orientation of the JSplitPanel.
+     */
+    protected Color highlight;
+
+
+    /**
+     * The highlight color, which is drawn on the right or bottom edge
+     * depending on the orientation of the JSplitPanel.
+     */
+    protected Color shadow;
+
+
+    /**
+     * Constructs a new border for drawing the divider of a JSplitPane
+     * in the Basic look and feel.  The outer parts of the JSplitPane have
+     * their own border class, <code>SplitPaneBorder</code>.
+     *
+     * @param shadow the shadow color.
+     * @param highlight the highlight color.
+     */
+    public SplitPaneDividerBorder(Color highlight, Color shadow)
+    {
+      this.highlight = (highlight != null) ? highlight : Color.white;
+      this.shadow = (shadow != null) ? shadow : Color.black;
+    }
+
+
+    /**
+     * Paints the border around the divider of a <code>JSplitPane</code>.
+     *
+     * <p><img src="BasicBorders.SplitPaneDividerBorder-1.png" width="520"
+     * height="200" alt="[A picture that shows which pixels get painted
+     * in what color]" />
+     *
+     * @param c the <code>JSplitPane</code> whose divider&#x2019;s border
+     *        is to be painted.
+     * @param g the graphics for painting.
+     * @param x the horizontal position for painting the border.
+     * @param y the vertical position for painting the border.
+     * @param width the width of the available area for painting the border.
+     * @param height the height of the available area for painting the border.
+     */
+    public void paintBorder(Component c, Graphics  g,
+                            int x, int y, int width, int height)
+    {
+      Color oldColor, dcol;
+      int x2, y2;
+      JSplitPane sp;
+
+      sp = getSplitPane(c);
+      if (sp == null)
+        return;
+
+      x2 = x + width - 1;
+      y2 = y + height - 1;
+      oldColor = g.getColor();
+      dcol = c.getBackground();
+      try
+      {
+        switch (sp.getOrientation())
+        {
+        case JSplitPane.HORIZONTAL_SPLIT:
+          g.setColor(dcol);
+          g.drawLine(x + 1, y, x2 - 1, y);
+          g.drawLine(x + 1, y2, x2 - 1, y2);
+          g.setColor(sp.getLeftComponent() != null ? highlight : dcol);
+          g.drawLine(x, y, x, y2);
+          g.setColor(sp.getRightComponent() != null ? shadow : dcol);
+          g.drawLine(x2, y, x2, y2);
+          break;
+
+        case JSplitPane.VERTICAL_SPLIT:
+          g.setColor(dcol);
+          g.drawLine(x, y + 1, x, y2 - 1);
+          g.drawLine(x2, y + 1, x2, y2 - 1);
+          g.setColor(sp.getTopComponent() != null ? highlight : dcol);
+          g.drawLine(x, y, x2, y);
+          g.setColor(sp.getBottomComponent() != null ? shadow : dcol);
+          g.drawLine(x, y2, x2, y2);
+          break;
+        }
+      }
+      finally
+      {
+        g.setColor(oldColor);
+      }
+    }
+
+
+    /**
+     * Measures the width of this border.
+     *
+     * @param c the component whose border is to be measured, usually
+     *        an instance of {@link javax.swing.JSplitPane}.
+     *
+     * @return an Insets object whose <code>left</code>,
+     *         <code>right</code>, <code>top</code> and
+     *         <code>bottom</code> fields indicate the width of the
+     *         border at the respective edge.
+     */
+    public Insets getBorderInsets(Component c)
+    {
+      return new Insets(1, 1, 1, 1);
+    }
+
+
+    /**
+     * Determines whether this border fills every pixel in its area
+     * when painting.
+     *
+     * @return <code>true</code> if both highlight and shadow
+     *         color are fully opaque.
+     */
+    public boolean isBorderOpaque()
+    {
+      return (highlight.getAlpha() == 255) && (shadow.getAlpha() == 255);
+    }
+
+    
+    /**
+     * Determines the JSplitPane whose divider is being painted.
+     *
+     * @param c an instance of BasicSplitPaneDivider.
+     *
+     * @return a <code>JSplitPane</code>, or <code>null</code> if
+     *         <code>c</code> is not an instance of {@link
+     *         javax.swing.plaf.basic.BasicSplitPaneDivider}.
+     */
+    private JSplitPane getSplitPane(Component c)
+    {
+      if (c instanceof BasicSplitPaneDivider)
+        return (((BasicSplitPaneDivider) c).getBasicSplitPaneUI())
+          .getSplitPane();
+      else
+        return null;
+    }
+  }
 
 
   /**

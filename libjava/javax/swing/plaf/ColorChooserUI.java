@@ -1,5 +1,5 @@
 /* ColorChooserUI.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,22 +38,23 @@ exception statement from your version. */
 package javax.swing.plaf;
 
 /**
- * ColorChooserUI
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JColorChooser</code>.
+ *
+ * @see javax.swing.JColorChooser
+ *
+ * @author Andrew Selkirk
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ColorChooserUI extends ComponentUI {
+public abstract class ColorChooserUI
+  extends ComponentUI
+{
+  /**
+   * Constructs a ColorChooserUI.
+   */
+  public ColorChooserUI()
+  {
+    /* The constructor does not do anything. */
+  }
+}
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor ColorChooserUI
-	 */
-	public ColorChooserUI() {
-		// TODO
-	} // ColorChooserUI()
-
-
-} // ColorChooserUI

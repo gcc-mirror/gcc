@@ -37,52 +37,60 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
-// Imports
-import javax.swing.*;
+import javax.swing.JComboBox;
 
 /**
- * ComboBoxUI
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JButton</code>.
+ *
+ * @see javax.swing.JComboBox
+ *
+ * @author Andrew Selkirk
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ComboBoxUI extends ComponentUI {
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor ComboBoxUI
-	 */
-	public ComboBoxUI() {
-		// TODO
-	} // ComboBoxUI()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * setPopupVisible
-	 * @param combobox TODO
-	 * @param visible TODO
-	 */
-	public abstract void setPopupVisible(JComboBox combobox, boolean visible);
-
-	/**
-	 * isPopupVisible
-	 * @param combobox TODO
-	 * @returns boolean
-	 */
-	public abstract boolean isPopupVisible(JComboBox combobox);
-
-	/**
-	 * isFocusTraversable
-	 * @param combobox TODO
-	 * @returns boolean
-	 */
-	public abstract boolean isFocusTraversable(JComboBox combobox);
+public abstract class ComboBoxUI
+  extends ComponentUI
+{
+  /**
+   * Constructs a new <code>ComboBoxUI</code>.
+   */
+  public ComboBoxUI()
+  {
+  }
+  
+  
+  /**
+   * Sets the visibility of the popup button.
+   *
+   * @param c the <code>JComboBox</code> whose popup
+   *        is shown or hidden.
+   *
+   * @param visible <code>true</code> to show the popup, <code>false</code>
+   *        to hide it.
+   */
+  public abstract void setPopupVisible(JComboBox c, boolean visible);
 
 
-} // ComboBoxUI
+  /**
+   * Determines whether the popup button is currently visible.
+   *
+   * @param c the <code>JComboBox</code> whose popup visibility
+   *        is retrieved.
+   *
+   * @return <code>true</code> if the popup button is currently
+   *         visible, <code>false</code> otherwise.
+   */
+  public abstract boolean isPopupVisible(JComboBox c);
+  
+  
+  /**
+   * Determines whether the combo box can receive input focus.
+   *
+   * @param c <code>JComboBox</code> whose focus traversability
+   *        is to be retrieved.
+   *
+   * @returns <code>true</code> if <code>c</code> can receive
+   *          input focus, <code>false</code> otherwise.
+   */
+  public abstract boolean isFocusTraversable(JComboBox c);
+}

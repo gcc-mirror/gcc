@@ -1,5 +1,5 @@
 /* ActionMapUIResource.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,26 +37,28 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
-// Imports
-import javax.swing.*;
+import javax.swing.ActionMap;
+
 
 /**
- * ActionMapUIResource
- * @author	Andrew Selkirk
- * @version	1.0
+ * An <code>ActionMap</code> that implements the {@link UIResource}
+ * interface to indicate that it belongs to a pluggable
+ * LookAndFeel.
+ *
+ * @see javax.swing.ActionMap
+ *
+ * @author Andrew Selkirk
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class ActionMapUIResource extends ActionMap implements UIResource {
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor ActionMapUIResource
-	 */
-	public ActionMapUIResource() {
-		// TODO
-	} // ActionMapUIResource()
-
-
-} // ActionMapUIResource
+public class ActionMapUIResource
+  extends ActionMap
+  implements UIResource
+{
+  /**
+   * Constructs a new ActionMapUIResource.
+   */
+  public ActionMapUIResource()
+  {
+    /* The constructor does nothing. */
+  }
+}

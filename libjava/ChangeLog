@@ -1,5 +1,26 @@
 2003-06-24  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/Timer.java,
+	javax/swing/plaf/ActionMapUIResource.java,
+	javax/swing/plaf/ButtonUI.java,
+	javax/swing/plaf/ColorChooserUI.java,
+	javax/swing/plaf/ColorUIResource.java,
+	javax/swing/plaf/ComboBoxUI.java,
+	javax/swing/plaf/ComponentInputMapUIResource.java,
+	javax/swing/plaf/basic/BasicBorders.java:
+	New versions from classpath.
+	* javax/swing/plaf/basic/BasicSplitPaneDivider.java.
+	javax/swing/plaf/basic/BasicSplitPaneUI.java:
+	New file from classpath.
+	* javax/swing/plaf/basic/doc-files/BasicBorders-1.png,
+	javax/swing/plaf/basic/doc-files/BasicBorders-2.png,
+	javax/swing/plaf/basic/doc-files/BasicBorders.FieldBorder-1.png,
+	javax/swing/plaf/doc-files/ComponentUI-1.dia,
+	javax/swing/plaf/doc-files/ComponentUI-1.png:
+	New binary files from classpath.
+
+2003-06-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/LineNumberReader.java
 	(skip): Dont do line number accounting here as this is already done in
 	read(), simplified.

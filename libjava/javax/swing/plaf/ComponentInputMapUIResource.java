@@ -1,5 +1,5 @@
 /* ComponentInputMapUIResource.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,28 +37,34 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
-// Imports
-import javax.swing.*;
+import javax.swing.ComponentInputMap;
+import javax.swing.JComponent;
+
 
 /**
- * ComponentInputMapUIResource
- * @author	Andrew Selkirk
- * @version	1.0
+ * A <code>ComponentInputMap</code> that implements the {@link UIResource}
+ * interface to indicate that it belongs to a pluggable
+ * LookAndFeel.
+ *
+ * @see javax.swing.ComponentInputMap
+ * @see javax.swing.InputMap
+ *
+ * @author Andrew Selkirk
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class ComponentInputMapUIResource extends ComponentInputMap implements UIResource {
+public class ComponentInputMapUIResource
+  extends ComponentInputMap
+  implements UIResource
+{
+  /**
+   * Constructs a new <code>ComponentInputMapUIResource</code>.
+   *
+   * @param component the <code>JComponent</code> associated with
+   *        this <code>InputMap</code>.
+   */
+  public ComponentInputMapUIResource(JComponent component)
+  {
+    super(component);
+  }
+}
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor ComponentInputMapUIResource
-	 * @param component TODO
-	 */
-	public ComponentInputMapUIResource(JComponent component) {
-		super(component);
-		// TODO
-	} // ComponentInputMapUIResource()
-
-
-} // ComponentInputMapUIResource
