@@ -1969,7 +1969,7 @@ registers of @var{class} are needed for spill registers.
 
 The default value of this macro returns 1 if @var{class} has exactly one
 register and zero otherwise.  On most machines, this default should be
-used.  Only define this macro to some other expression if pseudo
+used.  Only define this macro to some other expression if pseudos
 allocated by @file{local-alloc.c} end up in memory because their hard
 registers were needed for spill registers.  If this macro returns nonzero
 for those classes, those pseudos will only be allocated by
