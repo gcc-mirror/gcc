@@ -12592,6 +12592,9 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 		 libcall sequence, don't add the notes.  */
 	      else if (XEXP (note, 0) == from_insn)
 		tem = place = 0;
+	      /* Don't add the dangling REG_RETVAL note.  */
+	      else if (! tem)
+		place = 0;
 	    }
 	  break;
 
@@ -12609,6 +12612,9 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 		 libcall sequence, don't add the notes.  */
 	      else if (XEXP (note, 0) == from_insn)
 		tem = place = 0;
+	      /* Don't add the dangling REG_LIBCALL note.  */
+	      else if (! tem)
+		place = 0;
 	    }
 	  break;
 
