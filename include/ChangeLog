@@ -1,3 +1,7 @@
+Fri Oct 15 01:47:51 1999  Vladimir Makarov  <vmakarov@loony.cygnus.com>
+
+	* hashtab.h: New file.
+
 1999-10-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ansidecl.h (HAVE_GCC_VERSION): New macro.  Use it instead of
