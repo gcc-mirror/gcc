@@ -143,8 +143,9 @@ const char *const tree_code_name[] = {
 
 /* Number of bits in int and char - accessed by front end.  */
 
-unsigned int tree_code_int_size = 0;
-unsigned int tree_code_char_size = 0;
+unsigned int tree_code_int_size = SIZEOF_INT * HOST_BITS_PER_CHAR;
+
+unsigned int tree_code_char_size = HOST_BITS_PER_CHAR;
 
 /* Return the tree stuff for this type TYPE_NUM.  */
 
@@ -327,7 +328,8 @@ tree_code_create_function_initial (tree prev_saved,
 
   /* Prepare creation of rtl for a new function.  */
 
-  resultdecl = DECL_RESULT (fn_decl) = build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (TREE_TYPE (fn_decl)));
+  resultdecl = DECL_RESULT (fn_decl) 
+    = build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (TREE_TYPE (fn_decl)));
   DECL_CONTEXT (DECL_RESULT (fn_decl)) = fn_decl;
   DECL_SOURCE_LOCATION (resultdecl) = loc;
 
@@ -779,6 +781,8 @@ tree
 tree_code_get_numeric_type (unsigned int size1, unsigned int sign1)
 {
   tree ret1;
+  if (!size1)
+    abort ();
   if (size1 == tree_code_int_size)
     {
       if (sign1)

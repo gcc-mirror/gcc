@@ -81,7 +81,8 @@ void print_token (FILE * file, unsigned int type ATTRIBUTE_UNUSED, YYSTYPE value
 static struct prod_token_parm_item *reverse_prod_list (struct prod_token_parm_item *old_first);
 static void ensure_not_void (unsigned int type, struct prod_token_parm_item* name);
 static int check_type_match (int type_num, struct prod_token_parm_item *exp);
-static int get_common_type (struct prod_token_parm_item *type1, struct prod_token_parm_item *type2);
+static int get_common_type (struct prod_token_parm_item *type1,
+                            struct prod_token_parm_item *type2);
 static struct prod_token_parm_item *make_integer_constant (struct prod_token_parm_item* value);
 static struct prod_token_parm_item *make_plus_expression
   (struct prod_token_parm_item* tok, struct prod_token_parm_item* op1,
@@ -306,7 +307,8 @@ storage typename NAME LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS SEMICOLON {
         abort ();
       this_parms->tp.par.variable_name = this_parm_var->tp.pro.main_token->tp.tok.chars;
       this_parms->category = parameter_category;
-      this_parms->type = NUMERIC_TYPE (( (struct prod_token_parm_item*)EXPRESSION_TYPE (this_parm_var)));
+      this_parms->type = NUMERIC_TYPE 
+        (( (struct prod_token_parm_item*)EXPRESSION_TYPE (this_parm_var)));
       if (last_parms)
         {
           last_parms->tp.par.next = this_parms;

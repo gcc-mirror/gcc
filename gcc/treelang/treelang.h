@@ -62,7 +62,8 @@ struct token_part GTY(())
 
 /* Definitions for fields in production.  */
 #define NESTING_LEVEL(a) a->tp.pro.info[0]  /* Level used for variable definitions.  */
-#define NUMERIC_TYPE(a)  a->tp.pro.info[1]  /* Numeric type used in type definitions and expressions.  */
+/* Numeric type used in type definitions and expressions.  */
+#define NUMERIC_TYPE(a)  a->tp.pro.info[1]  
 #define SUB_COUNT 5
 #define SYMBOL_TABLE_NAME(a) (a->tp.pro.sub[0]) /* Name token.  */
 #define EXPRESSION_TYPE(a) (a->tp.pro.sub[1]) /* Type identifier.  */
@@ -71,7 +72,8 @@ struct token_part GTY(())
 #define VARIABLE(a) (a->tp.pro.sub[2]) /* Parameter variable ptr.  */
 #define VAR_INIT(a) (a->tp.pro.sub[2]) /* Variable init.  */
 #define OP2(a) (a->tp.pro.sub[3]) /* Exp operand2.  */
-#define FIRST_PARMS(a) (a->tp.pro.sub[3]) /* Function parameters linked via struct tree_parameter_list.  */
+/* Function parameters linked via struct tree_parameter_list.  */
+#define FIRST_PARMS(a) (a->tp.pro.sub[3])
 #define OP3(a) (a->tp.pro.sub[4]) /* Exp operand3.  */
 #define STORAGE_CLASS_TOKEN(a) (a->tp.pro.sub[4]) /* Storage class token.  */
 #define STORAGE_CLASS(a) a->tp.pro.flag1 /* Values in treetree.h.  */
