@@ -1,3 +1,12 @@
+Wed Oct 17 00:21:31 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.c (free_edge): Break out from ....
+	(remove_edge): ... here.
+	(clear_edges): Use free_edge.
+
+	* att.h (ASM_QUAD): Add comment.
+	* bsd.h, sco5.h, sun386.h (ASM_QUAD): Define.
+
 Wed Oct 17 00:01:02 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (split_ti): New function.

@@ -59,6 +59,9 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_LONG
 #define ASM_LONG			"\t.long\t"
 
+#undef ASM_QUAD
+#define ASM_QUAD "\t.quad\t"  /* Should not be used for 32bit compilation.  */
+
 #undef TYPE_ASM_OP
 #define TYPE_ASM_OP			"\t.type\t"
 

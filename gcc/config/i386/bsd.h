@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_BYTE_OP "\t.byte\t"
 #define ASM_SHORT "\t.word\t"
 #define ASM_LONG "\t.long\t"
+#define ASM_QUAD "\t.quad\t"  /* Should not be used for 32bit compilation.  */
 
 /* Output at beginning of assembler file.
    ??? I am skeptical of this -- RMS.  */
