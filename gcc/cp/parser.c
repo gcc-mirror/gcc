@@ -13807,7 +13807,8 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
       /* Issue an error message.  */
       error ("named return values are no longer supported");
       /* Skip tokens until we reach the start of the function body.  */
-      while (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
+      while (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE)
+	     && cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
 	cp_lexer_consume_token (parser->lexer);
     }
   /* The `extern' in `extern "C" void f () { ... }' does not apply to
