@@ -9941,7 +9941,7 @@ arm_expand_prologue (void)
   int fp_offset = 0;
   int saved_pretend_args = 0;
   int saved_regs = 0;
-  unsigned int args_to_push;
+  unsigned HOST_WIDE_INT args_to_push;
   arm_stack_offsets *offsets;
 
   func_type = arm_current_func_type ();
