@@ -36,8 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "function.h"
 #include "toplev.h"
-#include "cpplib.h"
-#include "c-lex.h"
 #include "ggc.h"
 #include "integrate.h"
 #include "tm_p.h"

@@ -116,7 +116,6 @@ and
 along with header files
 @file{c-common.h},
 @file{c-dump.h},
-@file{c-lex.h},
 and
 @file{c-pragma.h},
 are also used for all of the above languages.

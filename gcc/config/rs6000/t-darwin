@@ -20,8 +20,7 @@ darwin.o: $(srcdir)/config/darwin.c $(CONFIG_H) $(SYSTEM_H) $(RTL_BASE_H) \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 darwin-c.o: $(srcdir)/config/darwin-c.c $(CONFIG_H) $(SYSTEM_H) \
-	    $(TREE_H) $(C_TREE_H) c-lex.h c-pragma.h toplev.h cpplib.h \
-	    $(TM_P_H)
+	    $(TREE_H) $(C_TREE_H) c-pragma.h toplev.h cpplib.h $(TM_P_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 # Build the libraries for both hard and soft floating point

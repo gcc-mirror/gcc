@@ -34,12 +34,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "diagnostic.h"
 #include "tm_p.h"
 #include "obstack.h"
-#include "c-lex.h"
 #include "cpplib.h"
 #include "target.h"
 #include "langhooks.h"
 #include "except.h"		/* For USING_SJLJ_EXCEPTIONS.  */
-cpp_reader *parse_in;		/* Declared in c-lex.h.  */
+
+cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
 /* We let tm.h override the types used here, to handle trivial differences
    such as the choice of unsigned int or long unsigned int for size_t.
@@ -359,6 +359,9 @@ static void check_nonnull_arg		PARAMS ((void *, tree,
 static bool nonnull_check_p		PARAMS ((tree, unsigned HOST_WIDE_INT));
 static bool get_nonnull_operand		PARAMS ((tree,
 						 unsigned HOST_WIDE_INT *));
+void builtin_define_std PARAMS ((const char *));
+static void builtin_define_with_value PARAMS ((const char *, const char *,
+					       int));
 
 /* Table of machine-independent attributes common to all C-like languages.  */
 const struct attribute_spec c_common_attribute_table[] =
@@ -4401,6 +4404,8 @@ cb_register_builtins (pfile)
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
 # define preprocessing_asm_p() (cpp_get_options (pfile)->lang == CLK_ASM)
+# define builtin_define(TXT) cpp_define (pfile, TXT)
+# define builtin_assert(TXT) cpp_assert (pfile, TXT)
   TARGET_CPU_CPP_BUILTINS ();
   TARGET_OS_CPP_BUILTINS ();
 }
@@ -4451,7 +4456,7 @@ builtin_define_std (macro)
 /* Pass an object-like macro and a value to define it to.  The third
    parameter says whether or not to turn the value into a string
    constant.  */
-void
+static void
 builtin_define_with_value (macro, expansion, is_str)
      const char *macro;
      const char *expansion;

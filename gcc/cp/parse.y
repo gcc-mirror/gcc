@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "cp-tree.h"
 #include "lex.h"
-#include "c-lex.h"		/* For YYDEBUG definition.  */
+#include "c-pragma.h"		/* For YYDEBUG definition.  */
 #include "output.h"
 #include "except.h"
 #include "toplev.h"

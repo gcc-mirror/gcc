@@ -29,7 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "toplev.h"
 #include "ggc.h"
-#include "c-lex.h"
 #include "c-common.h"
 #include "output.h"
 #include "tm_p.h"

@@ -569,7 +569,7 @@ GCC_H = gcc.h version.h
 GGC_H = ggc.h varray.h
 TIMEVAR_H = timevar.h timevar.def
 INSN_ATTR_H = insn-attr.h $(srcdir)/insn-addr.h $(srcdir)/varray.h
-C_COMMON_H = c-common.h $(SPLAY_TREE_H)
+C_COMMON_H = c-common.h $(SPLAY_TREE_H) $(CPPLIB_H)
 C_TREE_H = c-tree.h $(C_COMMON_H)
 SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h
 PREDICT_H = predict.h predict.def
@@ -1141,7 +1141,7 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 
 c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) flags.h \
     diagnostic.h $(TM_P_H)
-c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h $(GGC_H) intl.h \
+c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) $(GGC_H) intl.h \
     $(C_TREE_H) input.h flags.h $(SYSTEM_H) toplev.h output.h $(CPPLIB_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	       -c $(srcdir)/c-parse.c $(OUTPUT_OPTION)
@@ -1164,13 +1164,13 @@ $(srcdir)/c-parse.y: c-parse.in
 	$(SHELL) $(srcdir)/move-if-change tmp-c-parse.y $(srcdir)/c-parse.y
 
 c-decl.o : c-decl.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) $(C_TREE_H) \
-    $(GGC_H) $(TARGET_H) c-lex.h flags.h function.h output.h $(EXPR_H) \
+    $(GGC_H) $(TARGET_H) flags.h function.h output.h $(EXPR_H) \
     debug.h toplev.h intl.h $(TM_P_H) tree-inline.h $(TIMEVAR_H) c-pragma.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
     $(TARGET_H) flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h $(TM_P_H)
 c-lang.o : c-lang.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
     langhooks.h $(LANGHOOKS_DEF_H) c-common.h
-c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) c-lex.h \
+c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) \
     debug.h $(C_TREE_H) c-common.h \
     c-pragma.h input.h intl.h flags.h toplev.h output.h \
     mbchar.h $(CPPLIB_H) $(EXPR_H) $(TM_P_H)
@@ -1240,7 +1240,7 @@ c-format.o : c-format.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) langhooks.h \
 	$(C_COMMON_H) flags.h toplev.h intl.h diagnostic.h
 
 c-semantics.o : c-semantics.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
-	c-lex.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
+	flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
 	$(EXPR_H) $(PREDICT_H)
 
 # Language-independent files.
