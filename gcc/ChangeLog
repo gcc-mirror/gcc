@@ -1,3 +1,8 @@
+2003-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.h (CANNOT_CHANGE_MODE_CLASS): Require
+        TARGET_SPE for SPE_VECTOR_MODE.
+
 2003-05-31  Aldy Hernandez  <aldyh@redhat.com>
 
         * toplev.c (botch): Remove.
