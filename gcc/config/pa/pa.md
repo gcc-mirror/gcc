@@ -446,8 +446,48 @@
  }"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "2,3")])
- 
-;; Conditionals
+
+;;; Experimental conditional move
+
+(define_insn "cmov"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+        (if_then_else:SI
+	 (match_operator 5 "comparison_operator"
+                         [(match_operand:SI 3 "register_operand" "r,r")
+			  (match_operand:SI 4 "arith5_operand" "rL,rL")])
+         (match_operand:SI 1 "arith11_operand" "0,rI")
+         (match_operand:SI 2 "arith11_operand" "rI,0")))]
+  ""
+  "*
+{
+  if (GET_CODE (operands[4]) == CONST_INT)
+    {
+      if (! (GET_CODE (operands[5]) == EQ || GET_CODE (operands[5]) == NE))
+	PUT_CODE (operands[5], reverse_relop (GET_CODE (operands[5])));
+      output_asm_insn (\"comiclr,%C5 %4,%3,0\", operands);
+    }
+  else
+    output_asm_insn (\"comclr,%C5 %3,%4,0\", operands);
+  if (which_alternative == 0)
+    {
+      if (GET_CODE (operands[2]) == CONST_INT)
+	output_asm_insn (\"ldi %2,%0\", operands);
+      else 
+	output_asm_insn (\"copy %2,%0\", operands);
+    }
+  else
+    {
+      if (GET_CODE (operands[1]) == CONST_INT)
+	output_asm_insn (\"ldi %1,%0\", operands);
+      else 
+	output_asm_insn (\"copy %1,%0\", operands);
+    }
+  return \"\";
+}"
+  [(set_attr "type" "multi,multi")
+   (set_attr "length" "2,2")])
+
+;; Conditional Branches
 
 (define_expand "beq"
   [(set (pc)
@@ -758,46 +798,6 @@
   DONE;
 }")
 
-;;; Experimental
-
-(define_insn "cmov"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-        (if_then_else:SI
-	 (match_operator 5 "comparison_operator"
-                         [(match_operand:SI 3 "register_operand" "r,r")
-			  (match_operand:SI 4 "arith5_operand" "rL,rL")])
-         (match_operand:SI 1 "arith11_operand" "0,rI")
-         (match_operand:SI 2 "arith11_operand" "rI,0")))]
-  ""
-  "*
-{
-  if (GET_CODE (operands[4]) == CONST_INT)
-    {
-      if (! (GET_CODE (operands[5]) == EQ || GET_CODE (operands[5]) == NE))
-	PUT_CODE (operands[5], reverse_relop (GET_CODE (operands[5])));
-      output_asm_insn (\"comiclr,%C5 %4,%3,0\", operands);
-    }
-  else
-    output_asm_insn (\"comclr,%C5 %3,%4,0\", operands);
-  if (which_alternative == 0)
-    {
-      if (GET_CODE (operands[2]) == CONST_INT)
-	output_asm_insn (\"ldo %2(0),%0\", operands);
-      else 
-	output_asm_insn (\"copy %2,%0\", operands);
-    }
-  else
-    {
-      if (GET_CODE (operands[1]) == CONST_INT)
-	output_asm_insn (\"ldo %1(0),%0\", operands);
-      else 
-	output_asm_insn (\"copy %1,%0\", operands);
-    }
-  return \"\";
-}"
-  [(set_attr "type" "multi,multi")
-   (set_attr "length" "2,2")])
-
 (define_insn ""
   [(set (match_operand:SI 0 "fp_reg_operand" "=fx")
 	(match_operand:SI 1 "short_memory_operand" "T"))]
@@ -826,21 +826,72 @@
    (set_attr "length" "1")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,r,Q,*q,!*r,!fx,!fx")
-	(match_operand:SI 1 "move_operand" "rM,Q,rM,rM,!fxy,!*r,!fx"))]
+  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*r,!fx,!fx")
+	(match_operand:SI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fx"))]
   "register_operand (operands[0], SImode)
    || reg_or_0_operand (operands[1], SImode)"
   "@
    copy %r1,%0
+   ldi %1,%0
+   ldil l'%1,%0
+   zdepi %Z1,%0
    ldw%M1 %1,%0
    stw%M0 %r1,%0
    mtsar %r1
    fstws %1,-16(30)\;ldw -16(30),%0
    stw %1,-16(30)\;fldws -16(30),%0
    fcpy,sgl %1,%0"
-  [(set_attr "type" "move,load,store,move,load,fpload,fpalu")
-   (set_attr "length" "1,1,1,1,2,2,1")])
+  [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
+   (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
+
+;; Load indexed.  We don't use unscaled modes since they can't be used
+;; unless we can tell which of the registers is the base and which is
+;; the index, due to PA's idea of segment selection using the top bits
+;; of the base register.
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(mem:SI (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
+				  (const_int 4))
+			 (match_operand:SI 2 "register_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "ldwx,s %1(0,%2),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "1")])
+
+;; Load or store with base-register modification.
+
+(define_insn ""
+  [(set (match_operand:SI 3 "register_operand" "=r")
+	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "0")
+			 (match_operand:SI 2 "pre_cint_operand" ""))))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "*
+{
+  if (INTVAL (operands[2]) < 0)
+    return \"ldwm %2(0,%0),%3\";
+  return \"ldws,mb %2(0,%0),%3\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "1")])
+
+(define_insn ""
+  [(set (mem:SI (plus:SI (match_operand:SI 1 "register_operand" "0")
+			 (match_operand:SI 2 "pre_cint_operand" "")))
+	(match_operand:SI 3 "reg_or_0_operand" "rM"))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "*
+{
+  if (INTVAL (operands[2]) < 0)
+    return \"stwm %r3,%2(0,%0)\";
+  return \"stws,mb %r3,%2(0,%0)\";
+}"
+  [(set_attr "type" "store")
+   (set_attr "length" "1")])
 
 ;; For pic
 (define_insn ""
@@ -865,35 +916,6 @@
 "
   [(set_attr "type" "multi")
    (set_attr "length" "3")])
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "const_int_operand" ""))]
-  "INT_14_BITS (operands[1]) || (INTVAL (operands[1]) & 0x7ff) == 0"
-  "*
-{
-  if (INT_14_BITS (operands[1]))
-    return \"ldo %1(0),%0\";
-  else
-    return \"ldil L'%1,%0\";
-}"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "depi_cint_operand" ""))]
-  ""
-  "*
-{
-  rtx xoperands[4];
-  xoperands[0] = operands[0];
-  compute_xdepi_operands_from_integer (INTVAL (operands[1]), xoperands);
-  output_asm_insn (\"zdepi %1,%2,%3,%0\", xoperands);
-  return \"\";
-}"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
 
 ;; For kernel code always use addil; else we can lose due to a linker
 ;; bug involving absolute symbols and "ldil;add" style relocations
@@ -931,19 +953,9 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
-;; The following two patterns should be for using ldil to load constants
-;; (which include addresses of read_only_operands)
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand 1 "" "")))]
-  "check_pic (1)"
-  "ldil L'%G1,%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(high:HI (match_operand 1 "" "")))]
   "check_pic (1)"
   "ldil L'%G1,%0"
   [(set_attr "type" "move")
@@ -966,8 +978,6 @@
 		   (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "ldo R'%G2(%1),%0"
-  ;; Need to set length for this arith insn because operand2
-  ;; is not an "arith_operand".
   [(set_attr "length" "1")])
 
 (define_expand "movhi"
@@ -981,46 +991,61 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,Q,!*r,!fx,!fx")
-	(match_operand:HI 1 "move_operand" "rM,Q,rM,fx,*r,!fx"))]
+  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*r,!fx,!fx")
+	(match_operand:HI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fx"))]
   "register_operand (operands[0], HImode)
    || reg_or_0_operand (operands[1], HImode)"
   "@
    copy %r1,%0
+   ldi %1,%0
+   ldil l'%1,%0
+   zdepi %Z1,%0
    ldh%M1 %1,%0
    sth%M0 %r1,%0
+   mtsar %r1
    fstws %1,-16(30)\;ldw -16(30),%0
    stw %1,-16(30)\;fldws -16(30),%0
    fcpy,sgl %1,%0"
-  [(set_attr "type" "move,load,store,load,fpload,fpalu")
-   (set_attr "length" "1,1,1,2,2,1")])
+  [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
+   (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(match_operand:HI 1 "const_int_operand" ""))]
-  "INT_14_BITS (operands[1]) || (INTVAL (operands[1]) & 0x7ff) == 0"
-  "*
-{
-  if (INT_14_BITS (operands[1]))
-    return \"ldo %1(0),%0\";
-  else
-    return \"ldil L'%1,%0\";
-}"
-  [(set_attr "type" "move")
+	(mem:HI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
+				  (const_int 2))
+			 (match_operand:SI 1 "register_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "ldhx,s %2(0,%1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "1")])
+
+(define_insn ""
+  [(set (match_operand:HI 3 "register_operand" "=r")
+	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "0")
+			 (match_operand:SI 2 "int5_operand" "L"))))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "ldhs,mb %2(0,%0),%3"
+  [(set_attr "type" "load")
+   (set_attr "length" "1")])
+
+(define_insn ""
+  [(set (mem:HI (plus:SI (match_operand:SI 1 "register_operand" "0")
+			 (match_operand:SI 2 "int5_operand" "L")))
+	(match_operand:HI 3 "reg_or_0_operand" "rM"))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "sths,mb %r3,%2(0,%0)"
+  [(set_attr "type" "store")
    (set_attr "length" "1")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(match_operand:HI 1 "depi_cint_operand" ""))]
-  ""
-  "*
-{
-  rtx xoperands[4];
-  xoperands[0] = operands[0];
-  compute_xdepi_operands_from_integer (INTVAL (operands[1]), xoperands);
-  output_asm_insn (\"zdepi %1,%2,%3,%0\", xoperands);
-  return \"\";
-}"
+	(high:HI (match_operand 1 "" "")))]
+  "check_pic (1)"
+  "ldil L'%G1,%0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
@@ -1043,86 +1068,45 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,Q,!*r,!fx,!fx")
-	(match_operand:QI 1 "move_operand" "rM,Q,rM,fx,*r,fx"))]
+  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*r,!fx,!fx")
+	(match_operand:QI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fx"))]
   "register_operand (operands[0], QImode)
    || reg_or_0_operand (operands[1], QImode)"
   "@
    copy %r1,%0
+   ldi %1,%0
+   ldil l'%1,%0
+   zdepi %Z1,%0
    ldb%M1 %1,%0
    stb%M0 %r1,%0
+   mtsar %r1
    fstws %1,-16(30)\;ldw -16(30),%0
    stw %1,-16(30)\;fldws -16(30),%0
    fcpy,sgl %1,%0"
-  [(set_attr "type" "move,load,store,load,fpload,fpalu")
-   (set_attr "length" "1,1,1,2,2,1")])
+  [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
+   (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
 
 (define_insn ""
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(match_operand:QI 1 "immediate_operand" "J"))]
+  [(set (match_operand:QI 3 "register_operand" "=r")
+	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "0")
+			 (match_operand:SI 2 "int5_operand" "L"))))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldo %1(0),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn ""
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(subreg:QI (lo_sum:SI (match_operand:QI 1 "register_operand" "r")
-			      (match_operand 2 "immediate_operand" "i")) 0))]
-  ""
-  "ldo R'%G2(%1),%0"
-  [(set_attr "length" "1")])
-
-;; Sneaky ways of using index modes
-;; We don't use unscaled modes since they can't be used unless we can tell
-;; which of the registers is the base and which is the index, due to PA's
-;; idea of segment selection using the top bits of the base register.
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-				  (const_int 4))
-			 (match_operand:SI 2 "register_operand" "r"))))]
-  "! TARGET_DISABLE_INDEXING"
-  "ldwx,s %1(0,%2),%0"
+  "ldbs,mb %2(0,%0),%3"
   [(set_attr "type" "load")
    (set_attr "length" "1")])
 
-; this will never match
-;(define_insn ""
-;  [(set (match_operand:SI 0 "register_operand" "=r")
-;	(mem:SI (match_operand:SI 1 "register_operand" "+r")))
-;   (set (match_dup 1)
-;	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
-;			  (const_int 4))
-;		 (match_dup 1)))]
-;  "! TARGET_DISABLE_INDEXING"
-;  "ldwx,sm %2(0,%1),%0"
-;  [(set_attr "type" "load")
-;   (set_attr "length" "1")])
-
 (define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(mem:HI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
-				  (const_int 2))
-			 (match_operand:SI 1 "register_operand" "r"))))]
-  "! TARGET_DISABLE_INDEXING"
-  "ldhx,s %2(0,%1),%0"
-  [(set_attr "type" "load")
+  [(set (mem:QI (plus:SI (match_operand:SI 1 "register_operand" "0")
+			 (match_operand:SI 2 "int5_operand" "L")))
+	(match_operand:QI 3 "reg_or_0_operand" "rM"))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "stbs,mb %r3,%2(0,%0)"
+  [(set_attr "type" "store")
    (set_attr "length" "1")])
-
-; this will never match
-;(define_insn ""
-;  [(set (match_operand:HI 0 "register_operand" "=r")
-;	(mem:HI (match_operand:SI 1 "register_operand" "+r")))
-;   (set (match_dup 1)
-;	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
-;			  (const_int 2))
-;		 (match_dup 1)))]
-;  "! TARGET_DISABLE_INDEXING"
-;  "ldhx,sm %2(0,%1),%0"
-;  [(set_attr "type" "load")
-;   (set_attr "length" "1")])
 
 ;; The definition of this insn does not really explain what it does,
 ;; but it should suffice
@@ -1301,9 +1285,9 @@
 
       operands[0] = operand_subword (op0, 0, 0, DImode);
       if (INTVAL (op1) < 0)
-	output_asm_insn (\"ldo -1(0),%0\", operands);
+	output_asm_insn (\"ldi -1,%0\", operands);
       else
-	output_asm_insn (\"ldo 0(0),%0\", operands);
+	output_asm_insn (\"ldi 0,%0\", operands);
       return \"\";
     }
   else if (GET_CODE (op1) == CONST_DOUBLE)
@@ -1750,8 +1734,8 @@
 
 ;; The mulsi3 insns set up registers for the millicode call.
 (define_expand "mulsi3"
-  [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
-   (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
+  [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
+   (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
    (parallel [(set (reg:SI 29) (mult:SI (reg:SI 26) (reg:SI 25)))
 	      (clobber (match_operand:SI 3 "register_operand" ""))
 	      (clobber (reg:SI 26))
@@ -1795,8 +1779,8 @@
 
 ;;; Division and mod.
 (define_expand "divsi3"
-  [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
-   (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
+  [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
+   (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
    (parallel [(set (reg:SI 29) (div:SI (reg:SI 26) (reg:SI 25)))
 	      (clobber (match_operand:SI 3 "register_operand" ""))
 	      (clobber (reg:SI 26))
@@ -1840,8 +1824,8 @@
  [(set_attr "type" "milli")])
 
 (define_expand "udivsi3"
-  [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
-   (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
+  [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
+   (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
    (parallel [(set (reg:SI 29) (udiv:SI (reg:SI 26) (reg:SI 25)))
 	      (clobber (match_operand:SI 3 "register_operand" ""))
 	      (clobber (reg:SI 26))
@@ -1885,8 +1869,8 @@
  [(set_attr "type" "milli")])
 
 (define_expand "modsi3"
-  [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
-   (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
+  [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
+   (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
    (parallel [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
 	      (clobber (match_operand:SI 3 "register_operand" ""))
 	      (clobber (reg:SI 26))
@@ -1926,8 +1910,8 @@
   [(set_attr "type" "milli")])
 
 (define_expand "umodsi3"
-  [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
-   (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
+  [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
+   (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
    (parallel [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
 	      (clobber (match_operand:SI 3 "register_operand" ""))
 	      (clobber (reg:SI 26))
@@ -2186,7 +2170,7 @@
   [(set (match_operand:SF 0 "register_operand" "=fx")
 	(neg:SF (match_operand:SF 1 "register_operand" "fx")))]
   ""
-  "fsub,sgl 0, %1,%0"
+  "fsub,sgl 0,%1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "absdf2"
@@ -2383,9 +2367,7 @@
     return \"shd %1,%1,%2,%0\";
   else
     return \"vshd %1,%1,%0\";
-}"
-  [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+}")
 
 (define_insn "rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2396,9 +2378,7 @@
 {
   operands[2] = gen_rtx (CONST_INT, VOIDmode, (32 - INTVAL (operands[2])) & 31);
   return \"shd %1,%1,%2,%0\";
-}"
-  [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+}")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
