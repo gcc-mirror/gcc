@@ -495,7 +495,7 @@ esac
 
 # Decode manufacturer-specific aliases for certain operating systems.
 
-if [ "$os" ]
+if [ x"$os" != x"" ]
 then
 case $os in
 	# -solaris* is a basic system type, with this one exception.
