@@ -1,3 +1,9 @@
+2001-03-01  Bernd Schmidt  <bernds@redhat.com>
+
+	Fix a problem introduced by Kenner's Feb 18 change.
+	* toplev.c (rest_of_compilation): Disable flag_cse_follow_jumps and
+	flag_cse_skip_blocks only temporarily, not for ever.
+
 Thu Mar  1 09:49:58 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (emit_move_sequence): Verify operand0 is a hard register
