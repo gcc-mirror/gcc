@@ -1693,7 +1693,7 @@ layout_class (this_class)
 	  return;
 	}
       if (TYPE_SIZE (this_class) == NULL_TREE)
-	push_super_field (this_class, super_class);
+	push_super_field (this_class, maybe_super_class);
     }
 
   for (field = TYPE_FIELDS (this_class);

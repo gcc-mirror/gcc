@@ -5277,7 +5277,11 @@ jdep_resolve_class (dep)
     {
       tree inner = TREE_TYPE (decl);
       if (! CLASS_LOADED_P (inner))
-	safe_layout_class (inner);
+	{
+	  safe_layout_class (inner);
+	  if (TYPE_SIZE (inner) == error_mark_node)
+	    TYPE_SIZE (inner) = NULL_TREE;
+	}
       check_inner_class_access (decl, JDEP_ENCLOSING (dep), JDEP_WFL (dep));
     }
   return decl;

@@ -1,3 +1,10 @@
+2001-03-21  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* class.c (layout_class): Fixed push_super_field's second
+	argument. Fixes PR java/2333.
+	(jdep_resolve_class): Reset TYPE_SIZE if `error_mark_node', it's
+	too early to lay innerclasses out.
+
 2001-03-20  Tom Tromey  <tromey@redhat.com>
 
 	* lex.c (java_read_unicode): Only accept leading `u's.
