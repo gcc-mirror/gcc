@@ -1,3 +1,9 @@
+2004-06-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/install.texi (Prerequisites): Update documentation of
+	required versions of autoconf and automake.  Remove mention of
+	libf2c.
+
 2004-06-11  Jason Merrill  <jason@redhat.com>
 
 	* config/sparc/sparc.c (sparc_gimplify_va_arg): New fn.
