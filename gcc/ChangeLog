@@ -4,6 +4,10 @@ Tue Oct 26 23:15:03 1999  Mark Mitchell  <mark@codesourcery.com>
 
 Tue Oct 26 23:29:18 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* alias.c: Update comments for ADDRESS.
+	(nonlocal_reference_p): Look inside the ADDRESS to determine if
+	it is a local memory reference.
+
 	* c-typeck.c (build_function_call): Check that the built-in
 	function is of class BUILT_IN_NORMAL before trying to recongize
 	it as BUILT_IN_ABS.

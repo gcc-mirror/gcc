@@ -121,12 +121,16 @@ static int nonlocal_reference_p         PROTO((rtx));
 
    A base address can be an ADDRESS, SYMBOL_REF, or LABEL_REF.  ADDRESS
    expressions represent certain special values: function arguments and
-   the stack, frame, and argument pointers.  The contents of an address
-   expression are not used (but they are descriptive for debugging);
-   only the address and mode matter.  Pointer equality, not rtx_equal_p,
-   determines whether two ADDRESS expressions refer to the same base
-   address.  The mode determines whether it is a function argument or
-   other special value. */
+   the stack, frame, and argument pointers.  
+
+   The contents of an ADDRESS is not normally used, the mode of the
+   ADDRESS determines whether the ADDRESS is a function argument or some
+   other special value.  Pointer equality, not rtx_equal_p, determines whether
+   two ADDRESS expressions refer to the same base address.
+
+   The only use of the contents of an ADDRESS is for determining if the
+   current function performs nonlocal memory memory references for the
+   purposes of marking the function as a constant function.  */
 
 static rtx *reg_base_value;
 static rtx *new_reg_base_value;
@@ -1422,8 +1426,19 @@ nonlocal_reference_p (x)
       base = find_base_term (XEXP (x, 0));
       if (base)
 	{
-	  /* Stack references are local.  */
-	  if (GET_CODE (base) == ADDRESS && GET_MODE (base) == Pmode)
+	  /* A Pmode ADDRESS could be a reference via the structure value
+	     address or static chain.  Such memory references are nonlocal.
+
+	     Thus, we have to examine the contents of the ADDRESS to find
+	     out if this is a local reference or not.  */
+	  if (GET_CODE (base) == ADDRESS
+	      && GET_MODE (base) == Pmode
+	      && (XEXP (base, 0) == stack_pointer_rtx
+		  || XEXP (base, 0) == arg_pointer_rtx
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+		  || XEXP (base, 0) == hard_frame_pointer_rtx
+#endif
+		  || XEXP (base, 0) == frame_pointer_rtx))
 	    return 0;
 	  /* Constants in the function's constant pool are constant.  */
 	  if (GET_CODE (base) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (base))
