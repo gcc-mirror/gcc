@@ -1,5 +1,5 @@
 /* URLConnection.java -- Abstract superclass for reading from URL's
-   Copyright (C) 1998, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -1047,5 +1047,4 @@ public abstract class URLConnection
     dateFormat3 = new SimpleDateFormat("EEE MMM d hh:mm:ss yyyy", locale);
     dateformats_initialized = true;
   }
-} // class URLConnection
-
+}
