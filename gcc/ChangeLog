@@ -1,5 +1,9 @@
 2004-09-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* basic-block.h: Fix a comment typo.
+
+2004-09-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* optabs.c, optabs.h: Fix comment typos.
 
 2004-09-28  Eric Botcazou  <ebotcazou@act-europe.fr>
