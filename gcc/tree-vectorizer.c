@@ -1224,12 +1224,14 @@ vect_set_dump_settings (void)
     }
 
   /* User didn't specify verbosity level:  */
-  if (dump_flags & TDF_DETAILS)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     vect_verbosity_level = REPORT_DETAILS;
-  else if (dump_flags & TDF_STATS)
+  else if (dump_file && (dump_flags & TDF_STATS))
     vect_verbosity_level = REPORT_UNVECTORIZED_LOOPS;
   else
     vect_verbosity_level = REPORT_NONE;
+
+  gcc_assert (dump_file || vect_verbosity_level == REPORT_NONE);
 }
 
 
