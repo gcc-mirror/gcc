@@ -7,14 +7,14 @@
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
 
-#ifndef FIXINC_BROKEN_ASSERT_STDLIB_CHECK
-#define FIXINC_BROKEN_ASSERT_STDLIB_CHECK 1
+#ifndef FIXINC_WRAP_ASSERT_H_BROKEN_ASSERT_STDLIB
+#define FIXINC_WRAP_ASSERT_H_BROKEN_ASSERT_STDLIB 1
 
 #ifdef __cplusplus
 #include <stdlib.h>
 #endif
-#ifndef FIXINC_BROKEN_ASSERT_STDIO_CHECK
-#define FIXINC_BROKEN_ASSERT_STDIO_CHECK 1
+#ifndef FIXINC_WRAP_ASSERT_H_BROKEN_ASSERT_STDIO
+#define FIXINC_WRAP_ASSERT_H_BROKEN_ASSERT_STDIO 1
 
 #include <stdio.h>
 
@@ -38,6 +38,6 @@ extern FILE* stderr;
 extern void exit ( int );
 #endif  /* BROKEN_ASSERT_STDLIB_CHECK */
 
-#endif  /* FIXINC_BROKEN_ASSERT_STDIO_CHECK */
+#endif  /* FIXINC_WRAP_ASSERT_H_BROKEN_ASSERT_STDIO */
 
-#endif  /* FIXINC_BROKEN_ASSERT_STDLIB_CHECK */
+#endif  /* FIXINC_WRAP_ASSERT_H_BROKEN_ASSERT_STDLIB */
