@@ -1,3 +1,21 @@
+1999-09-29  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (class_cache_obstack, class_obstack): Remove.
+	(init_class_processing): Don't initialize class_obstack.
+	(push_cache_obstack): Remove.
+	(pushclass): Don't call it.
+	* cp-tree.h: Remove prototype for push_cache_obstack.
+	* decl.c (decl_obstack, decl_stack, push_decl_level): Remove.
+	(pushlevel_class): Don't push_decl_level.
+	(poplevel_class): Don't pop_stack_level.
+	(push_class_level_binding): Don't push_cache_obstack.
+	(init_decl_processing): Don't intialize decl_obstack.
+	* search.c (push_class_decls): Don't push_cache_obstack.
+	* tree.c (list_hash_add): Put hash node on permanent_obstack.
+	(hash_tree_cons): Don't mess with obstacks.
+	(print_lang_statistics): Don't print stats for class_obstack and
+	decl_obstack.
+
 1999-09-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* dump.c (dequeue_and_dump): Dump DECL_EXTERNAL.

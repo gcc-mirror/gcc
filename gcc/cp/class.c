@@ -72,9 +72,6 @@ typedef struct class_stack_node {
 static int current_class_stack_size;
 static class_stack_node_t current_class_stack;
 
-/* The obstack on which the cached class declarations are kept.  */
-static struct obstack class_cache_obstack;
-
 struct base_info;
 
 static tree get_vfield_name PROTO((tree));
@@ -1055,8 +1052,6 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
   *phv = pending_hard_virtuals;
 }
 
-/* Obstack on which to build the vector of class methods.  */
-struct obstack class_obstack;
 extern struct obstack *current_obstack;
 
 /* Add method METHOD to class TYPE.
@@ -4412,8 +4407,6 @@ init_class_processing ()
   access_public_virtual_node = build_int_2 (5, 0);
   access_protected_virtual_node = build_int_2 (6, 0);
   access_private_virtual_node = build_int_2 (7, 0);
-
-  gcc_obstack_init (&class_obstack);
 }
 
 /* Set current scope to NAME. CODE tells us if this is a
@@ -4493,12 +4486,6 @@ pushclass (type, modify)
     {
       /* Forcibly remove any old class remnants.  */
       invalidate_class_lookup_cache ();
-
-      /* Now, free the obstack on which we cached all the values.  */
-      if (class_cache_firstobj)
-	obstack_free (&class_cache_obstack, class_cache_firstobj);
-      class_cache_firstobj 
-	= (char*) obstack_finish (&class_cache_obstack);
     }
 
   /* If we're about to enter a nested class, clear
@@ -5244,27 +5231,6 @@ print_class_statistics ()
 	       n_vtable_entries, n_vtable_elems);
     }
 #endif
-}
-
-/* Push an obstack which is sufficiently long-lived to hold such class
-   decls that may be cached in the previous_class_values list. The
-   effect is undone by pop_obstacks.  */
-
-void
-push_cache_obstack ()
-{
-  static int cache_obstack_initialized;
-
-  if (!cache_obstack_initialized)
-    {
-      gcc_obstack_init (&class_cache_obstack);
-      class_cache_firstobj 
-	= (char*) obstack_finish (&class_cache_obstack);
-      cache_obstack_initialized = 1;
-    }
-
-  push_obstacks_nochange ();
-  current_obstack = &class_cache_obstack;
 }
 
 /* Build a dummy reference to ourselves so Derived::Base (and A::A) works,

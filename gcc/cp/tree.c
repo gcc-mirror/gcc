@@ -398,7 +398,7 @@ break_out_calls (exp)
 }
 
 extern struct obstack *current_obstack;
-extern struct obstack permanent_obstack, class_obstack;
+extern struct obstack permanent_obstack;
 extern struct obstack *saveable_obstack;
 extern struct obstack *expression_obstack;
 
@@ -1110,7 +1110,7 @@ list_hash_add (hashcode, list)
 {
   register struct list_hash *h;
 
-  h = (struct list_hash *) obstack_alloc (&class_obstack, sizeof (struct list_hash));
+  h = (struct list_hash *) obstack_alloc (&permanent_obstack, sizeof (struct list_hash));
   h->hashcode = hashcode;
   h->list = list;
   h->next = list_hash_table[hashcode % TYPE_HASH_SIZE];
@@ -1129,7 +1129,6 @@ tree
 hash_tree_cons (purpose, value, chain)
      tree purpose, value, chain;
 {
-  struct obstack *ambient_obstack = current_obstack;
   tree t;
   int hashcode = 0;
 
@@ -1141,15 +1140,12 @@ hash_tree_cons (purpose, value, chain)
 	return t;
     }
 
-  current_obstack = &class_obstack;
-
   t = tree_cons (purpose, value, chain);
 
   /* If this is a new list, record it for later reuse.  */
   if (! debug_no_list_hash)
     list_hash_add (hashcode, t);
 
-  current_obstack = ambient_obstack;
   return t;
 }
 
@@ -2040,9 +2036,6 @@ extern int depth_reached;
 void
 print_lang_statistics ()
 {
-  extern struct obstack decl_obstack;
-  print_obstack_statistics ("class_obstack", &class_obstack);
-  print_obstack_statistics ("decl_obstack", &decl_obstack);
   print_search_statistics ();
   print_class_statistics ();
 #ifdef GATHER_STATISTICS
