@@ -4296,7 +4296,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      && t->unique == (c != 'g'))
 		    break;
 
-		/* Make a new association if needed.  %u and %j require one.  */
+		/* Make a new association if needed.  %u and %j
+		   require one.  */
 		if (t == 0 || c == 'u' || c == 'j')
 		  {
 		    if (t == 0)
@@ -4306,7 +4307,13 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			temp_names = t;
 		      }
 		    t->length = suffix_length;
-		    t->suffix = save_string (suffix, suffix_length);
+		    if (saved_suffix)
+		      {
+			t->suffix = saved_suffix;
+			saved_suffix = NULL;
+		      }
+		    else
+		      t->suffix = save_string (suffix, suffix_length);
 		    t->unique = (c != 'g');
 		    temp_filename = make_temp_file (t->suffix);
 		    temp_filename_length = strlen (temp_filename);
