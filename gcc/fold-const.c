@@ -2936,8 +2936,7 @@ invert_truthvalue (tree arg)
   switch (code)
     {
     case INTEGER_CST:
-      return fold_convert (type,
-			   build_int_cst (NULL_TREE, integer_zerop (arg)));
+      return constant_boolean_node (integer_zerop (arg), type);
 
     case TRUTH_AND_EXPR:
       return build2 (TRUTH_OR_EXPR, type,
