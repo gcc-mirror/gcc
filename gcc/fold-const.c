@@ -2613,7 +2613,10 @@ merge_component_references (code, truth_type, lhs, rhs)
   if (l_const == 0)
     {
       if (ll_bitsize != lr_bitsize || rl_bitsize != rr_bitsize
-	  || ll_unsignedp != lr_unsignedp || rl_unsignedp != rr_unsignedp)
+	  || ll_unsignedp != lr_unsignedp || rl_unsignedp != rr_unsignedp
+	  /* Make sure the two fields on the right
+	     correspond to the left without being swapped.  */
+	  || ll_bitpos - rl_bitpos != lr_bitpos - rr_bitpos)
 	return 0;
 
       first_bit = MIN (lr_bitpos, rr_bitpos);
