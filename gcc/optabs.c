@@ -1534,6 +1534,11 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 		}
 	      emit_move_insn (target_piece, newx);
 	    }
+	  else
+	    {
+	      if (x != target_piece)
+		emit_move_insn (target_piece, x);
+	    }
 
 	  carry_in = carry_out;
 	}

@@ -1,3 +1,8 @@
+2005-03-23  DJ Delorie  <dj@redhat.com>
+
+	* optabs.c (expand_binop): Make sure the first subword's result
+	gets stored.
+
 2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-common.c (c_common_truthvalue_conversion): Adjust comment.
