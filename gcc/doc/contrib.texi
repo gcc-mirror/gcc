@@ -38,15 +38,35 @@ Alasdair Baird for various bugfixes.
 Gerald Baumgartner added the signature extension to the C++ front end.
 
 @item
+Godmar Back for his Java improvements and encouragement.
+
+@item
+Scott Bambrough for help porting the Java compiler.
+
+@item
+Jon Beniston for his Win32 port of Java.
+
+@item
+Geoff Berry for his Java object serialization work and various patches.
+
+@item
+Eric Blake for helping to make gcj and libgcj conform to the
+specifications.
+
+@item
+Hans-J. Boehm for his @uref{http://www.hpl.hp.com/personal/Hans_Boehm/gc/,,
+garbage collector}, IA-64 libffi port, and other Java work.
+
+@item
 Neil Booth for work on cpplib, lang hooks, debug hooks and other
 miscellaneous clean-ups.
 
 @item
 Per Bothner for his direction via the steering committee and various
 improvements to our infrastructure for supporting new languages.  Chill
-and Java front end implementations.  Initial implementations of
-cpplib, fix-header, config.guess, libio, and past C++ library
-(libg++) maintainer.
+front end implementation.  Initial implementations of
+cpplib, fix-header, config.guess, libio, and past C++ library (libg++)
+maintainer.  Dreaming up, designing and implementing much of gcj.
 
 @item
 Devon Bowen helped port GCC to the Tahoe.
@@ -67,6 +87,9 @@ Christian Bruel for improvements to local store elimination.
 Herman A.J. ten Brugge for various fixes.
 
 @item
+Joerg Brunsmann for Java compiler hacking and help with the GCJ FAQ.
+
+@item
 Joe Buck for his direction via the steering committee.
 
 @item
@@ -80,14 +103,27 @@ John Carr for his alias work, SPARC hacking, infrastructure improvements,
 previous contributions to the steering committee, loop optimizations, etc.
 
 @item
-Steve Chamberlain wrote the support for the Hitachi SH and H8 processors
-and the PicoJava processor.
+Steve Chamberlain for support for the Hitachi SH and H8 processors
+and the PicoJava processor, and for GCJ config fixes.
+
+@item
+Glenn Chambers for help with the GCJ FAQ.
+
+@item
+John-Marc Chandonia for various libgcj patches.
 
 @item
 Scott Christley for his Objective-C contributions.
 
 @item
+Eric Christopher for his Java porting help and clean-ups.
+
+@item
 Branko Cibej for more warning contributions.
+
+@item
+The @uref{http://www.classpath.org,,GNU Classpath project}
+for all of their merged runtime code.
 
 @item
 Nick Clifton for arm, mcore, fr30, v850, m32r work, @option{--help}, and other random
@@ -109,6 +145,9 @@ Ian Dall for major improvements to the NS32k port.
 @item
 Dario Dariol contributed the four varieties of sample programs
 that print a copy of their source.
+
+@item
+Mo DeJong for gcj and libgcj bug fixes.
 
 @item
 Ulrich Drepper for his work on the C++ runtime libraries, glibc,
@@ -143,11 +182,17 @@ and SPARC work.
 Fred Fish for BeOS support and Ada fixes.
 
 @item
+Ivan Fontes Garcia for the Portugese translation of the GCJ FAQ.
+
+@item
 Peter Gerwinski for various bugfixes and the Pascal front end.
 
 @item
 Kaveh Ghazi for his direction via the steering committee and
 amazing work to make @samp{-W -Wall} useful.
+
+@item
+John Gilmore for a donation to the FSF earmarked improving GNU Java.
 
 @item
 Judy Goldberg for c++ contributions.
@@ -160,6 +205,9 @@ via the steering committee.
 
 @item
 Anthony Green for his @option{-Os} contributions and Java front end work.
+
+@item
+Stu Grossman for gdb hacking, allowing GCJ developers to debug our code.
 
 @item
 Michael K. Gschwind contributed the port to the PDP-11.
@@ -175,7 +223,7 @@ Bruno Haible for improvements in the runtime overhead for EH, new
 warnings and assorted bugfixes.
 
 @item
-Andrew Haley for his Java work.
+Andrew Haley for his amazing Java compiler and library efforts.
 
 @item
 Chris Hanson assisted in making GCC work on HP-UX for the 9000 series 300.
@@ -222,7 +270,8 @@ Andreas Jaeger for various fixes to the MIPS port
 
 @item
 Jakub Jelinek for his SPARC work and sibling call optimizations as well
-as lots of bug fixes and test cases.
+as lots of bug fixes and test cases, and for improving the Java build
+system.
 
 @item
 Janis Johnson for ia64 testing and fixes and for her quality improvement
@@ -230,6 +279,10 @@ sidetracks.
 
 @item
 J. Kean Johnston for OpenServer support.
+
+@item
+Tim Josling for the sample language treelang based originally on Richard
+Kenner's "``toy'' language".
 
 @item
 Klaus Kaempf for his ongoing work to make alpha-vms a viable target.
@@ -299,11 +352,15 @@ Ted Lemon wrote parts of the RTL reader and printer.
 Kriang Lerdsuwanakij for improvements to demangler and various c++ fixes.
 
 @item
-Warren Levy major work on libgcj (Java Runtime Library) and random
-work on the Java front end.
+Warren Levy for tremendous work on libgcj (Java Runtime Library) and
+random work on the Java front end.
 
 @item
 Alain Lichnewsky ported GCC to the MIPS CPU.
+
+@item
+Oskar Liljeblad for hacking on AWT and his many Java bug reports and
+patches.
 
 @item
 Robert Lipe for OpenServer support, new testsuites, testing, etc.
@@ -331,12 +388,24 @@ Andrew MacLeod for his ongoing work in building a real EH system,
 various code generation improvements, work on the global optimizer, etc.
 
 @item
-Vladimir Makarov for hacking some ugly i960 problems, PowerPC
-hacking improvements to compile-time performance and overall knowledge
-and direction in the area of instruction scheduling.
+Vladimir Makarov for hacking some ugly i960 problems, PowerPC hacking
+improvements to compile-time performance, overall knowledge and
+direction in the area of instruction scheduling, and design and
+implementation of the automaton based instruction scheduler.
 
 @item
 Bob Manson for his behind the scenes work on dejagnu.
+
+@item
+All of the Mauve project
+@uref{http://sources.redhat.com/cgi-bin/cvsweb.cgi/~checkout~/mauve/THANKS?rev=1.2&cvsroot=mauve&only_with_tag=HEAD,,contributors},
+for Java test code.
+
+@item
+Bryce McKinlay for numerous gcj and libgcj fixes and improvements.
+
+@item
+Adam Megacz for his work on the Win32 port of GCJ.
 
 @item
 Michael Meissner for LRS framework, ia32, m32r, v850, m88k, MIPS,
@@ -375,6 +444,9 @@ services, ftp services, etc etc.
 Catherine Moore for fixing various ugly problems we have sent her
 way, including the haifa bug which was killing the Alpha & PowerPC
 Linux kernels.
+
+@item
+Mike Moreton for his various Java patches.
 
 @item
 David Mosberger-Tang for various Alpha improvements.
@@ -422,13 +494,15 @@ Melissa O'Neill for various NeXT fixes.
 
 @item
 Rainer Orth for random MIPS work, including improvements to our o32
-ABI support, improvements to dejagnu's MIPS support, etc.
+ABI support, improvements to dejagnu's MIPS support, Java configuration
+clean-ups and porting work, etc.
 
 @item
 Paul Petersen wrote the machine description for the Alliant FX/8.
 
 @item
-Alexandre Petit-Bianco for his Java work.
+Alexandre Petit-Bianco for implementing much of the Java compiler and
+continued Java maintainership.
 
 @item
 Matthias Pfaller for major improvements to the NS32k port.
@@ -445,6 +519,9 @@ libraries.
 @item
 Ken Raeburn for various improvements to checker, MIPS ports and various
 cleanups in the compiler.
+
+@item
+Rolf W. Rasmussen for hacking on AWT.
 
 @item
 David Reese of Sun Microsystems contributed to the Solaris on PowerPC
@@ -480,6 +557,9 @@ Juha Sarlin for improvements to the H8 code generator.
 Greg Satz assisted in making GCC work on HP-UX for the 9000 series 300.
 
 @item
+Bradley Schatz for his work on the GCJ FAQ.
+
+@item
 Peter Schauer wrote the code to allow debugging to work on the Alpha.
 
 @item
@@ -489,6 +569,9 @@ William Schelter did most of the work on the Intel 80386 support.
 Bernd Schmidt for various code generation improvements and major
 work in the reload pass as well a serving as release manager for
 GCC 2.95.3.
+
+@item
+Jason Schroeder for jcf-dump patches.
 
 @item
 Andreas Schwab for his work on the m68k port.
@@ -538,8 +621,14 @@ Jonathan Stone wrote the machine description for the Pyramid computer.
 Graham Stott for various infrastructure improvements.
 
 @item
+John Stracke for his Java HTTP protocol fixes.
+
+@item
 Mike Stump for his Elxsi port, g++ contributions over the years and more
 recently his vxworks contributions
+
+@item
+Jeff Sturm for Java porting help, bug fixes, and encouragement.
 
 @item
 Shigeya Suzuki for this fixes for the bsdi platforms.
@@ -559,12 +648,15 @@ Philipp Thomas for random bugfixes throughout the compiler
 
 @item
 Kresten Krab Thorup wrote the run time support for the Objective-C
-language.
+language and the fantastic Java bytecode interpreter.
 
 @item
 Michael Tiemann for random bugfixes, the first instruction scheduler,
 initial C++ support, function integration, NS32k, SPARC and M88k
 machine description work, delay slot scheduling.
+
+@item
+Andreas Tobler for his work porting libgcj to Darwin.
 
 @item
 Teemu Torma for thread safe exception handling support.
@@ -574,7 +666,8 @@ Leonard Tower wrote parts of the parser, RTL generator, and RTL
 definitions, and of the VAX machine description.
 
 @item
-Tom Tromey for internationalization support and his Java work.
+Tom Tromey for internationalization support and for his many Java
+contributions and libgcj maintainership.
 
 @item
 Lassi Tuura for improvements to config.guess to determine HP processor
@@ -597,6 +690,16 @@ value range propagation and other work, WE32k port.
 
 @item
 Zack Weinberg for major work on cpplib and various other bugfixes.
+
+@item
+Matt Welsh for help with Linux Threads support in GCJ.
+
+@item
+Urban Widmark for help fixing java.io.
+
+@item
+Mark Wielaard for new Java library code and his work integrating with
+Classpath.
 
 @item
 Dale Wiles helped port GCC to the Tahoe.
@@ -622,6 +725,9 @@ description for the Tron architecture (specifically, the Gmicro).
 @item
 Kevin Zachmann helped ported GCC to the Tahoe.
 
+@item
+Gilles Zunino for help porting Java to Irix.
+
 @end itemize
 
 
@@ -630,10 +736,34 @@ testing GCC:
 
 @itemize @bullet
 @item
+Michael Abd-El-Malek
+
+@item
+Thomas Arend
+
+@item
+Bonzo Armstrong
+
+@item
+Steven Ashe
+
+@item
+Chris Baldwin
+
+@item
 David Billinghurst
 
 @item
+Jim Blandy
+
+@item
+Stephane Bortzmeyer
+
+@item
 Horst von Brand
+
+@item
+Frank Braun
 
 @item
 Rodney Brown
@@ -645,10 +775,34 @@ Joe Buck
 Craig Burley
 
 @item
+Sidney Cadot
+
+@item
+Bradford Castalia
+
+@item
+Ralph Doncaster
+
+@item
 Ulrich Drepper
 
 @item
 David Edelsohn
+
+@item
+Richard Emberson
+
+@item
+Graham Fawcett
+
+@item
+Robert A. French
+
+@item
+Mark K. Gardner
+
+@item
+Charles-Antoine Gauthier
 
 @item
 Yung Shing Gene
@@ -657,10 +811,34 @@ Yung Shing Gene
 Kaveh Ghazi
 
 @item
+Simon Gornall
+
+@item
+Fred Gray
+
+@item
+John Griffin
+
+@item
+Patrik Hagglund
+
+@item
+Phil Hargett
+
+@item
+Amancio Hasty
+
+@item
+Bryan W. Headley
+
+@item
 Kate Hedstrom
 
 @item
 Richard Henderson
+
+@item
+Kevin B. Hendricks
 
 @item
 Manfred Hollstein
@@ -669,7 +847,19 @@ Manfred Hollstein
 Kamil Iskra
 
 @item
+Joep Jansen
+
+@item
 Christian Joensson
+
+@item
+David Kidd
+
+@item
+Tobias Kuipers
+
+@item
+Anand Krishnaswamy
 
 @item
 Jeff Law
@@ -699,16 +889,37 @@ Matthias Klose
 Martin Knoblauch
 
 @item
+Jesse Macnish
+
+@item
 David Miller
 
 @item
 Toon Moene
 
 @item
+Stefan Morrell
+
+@item
+Anon A. Mous
+
+@item
 Matthias Mueller
 
 @item
+Pekka Nikander
+
+@item
 Alexandre Oliva
+
+@item
+Jon Olson
+
+@item
+Magnus Persson
+
+@item
+Chris Pollard
 
 @item
 Richard Polton
@@ -717,7 +928,22 @@ Richard Polton
 David Rees
 
 @item
+Paul Reilly
+
+@item
+Tom Reilly
+
+@item
 Loren J. Rittle
+
+@item
+Torsten Rueger
+
+@item
+Danny Sadinoff
+
+@item
+Marc Schifer
 
 @item
 Peter Schmid
@@ -732,10 +958,22 @@ Vin Shelton
 Franz Sirl
 
 @item
+Tim Souder
+
+@item
 Mike Stump
 
 @item
+Adam Sulmicki
+
+@item
+Gregory Warnes
+
+@item
 Carlo Wood
+
+@item
+David E. Young
 
 @item
 And many others
