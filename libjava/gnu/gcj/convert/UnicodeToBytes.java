@@ -8,7 +8,7 @@ details.  */
 
 package gnu.gcj.convert; 
  
-public abstract class UnicodeToBytes
+public abstract class UnicodeToBytes extends IOConverter
 {
   /** Buffer to emit bytes to.
    * The locations buf[count] ... buf[buf.length-1] are available. */
@@ -22,7 +22,7 @@ public abstract class UnicodeToBytes
     // Test (defaultEncodingClass == null) again in case of race condition.
     if (defaultEncodingClass == null)
       {
-	String encoding = System.getProperty("file.encoding");
+	String encoding = canonicalize (System.getProperty("file.encoding"));
 	String className = "gnu.gcj.convert.Output_"+encoding;
 	try
 	  {
@@ -58,7 +58,7 @@ public abstract class UnicodeToBytes
   public static UnicodeToBytes getEncoder (String encoding)
     throws java.io.UnsupportedEncodingException
   {
-    String className = "gnu.gcj.convert.Output_"+encoding;
+    String className = "gnu.gcj.convert.Output_" + canonicalize (encoding);
     Class encodingClass;
     try 
       { 
@@ -69,6 +69,8 @@ public abstract class UnicodeToBytes
       { 
 	try
 	  {
+	    // We pass the original name to iconv and let it handle
+	    // its own aliasing.
 	    return new Output_iconv (encoding);
 	  }
 	catch (Throwable _)
