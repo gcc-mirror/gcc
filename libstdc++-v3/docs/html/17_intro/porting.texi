@@ -110,7 +110,7 @@ standard target triplet; e.g., the @code{solaris2.8} in
 @code{sparc-sun-solaris2.8}.
 
 The first file to create in this directory, should be called
-@file{bits/os_defines.h}.  This file contains basic macro definitions
+@file{os_defines.h}.  This file contains basic macro definitions
 that are required to allow the C++ library to work with your C library.
 This file should provide macro definitions for @code{__off_t},
 @code{__off64_t}, and @code{__ssize_t}.  Typically, this just looks
@@ -161,7 +161,7 @@ this:
 #endif
 @end example
 
-We recommend copying an existing @file{bits/os_defines.h} to use as a
+We recommend copying an existing @file{os_defines.h} to use as a
 starting point.
 
 @c ---------------------------------------------------------------------
@@ -204,20 +204,20 @@ appropriate for your chip.
 The library requires that you provide three header files to implement
 character classification, analogous to that provided by the C libraries
 @file{<ctype.h>} header.  You can model these on the files provided in
-@file{config/os/generic/bits}.  However, these files will almost
+@file{config/os/generic}.  However, these files will almost
 certainly need some modification.
 
-The first file to write is @file{bits/ctype_base.h}.  This file provides
+The first file to write is @file{ctype_base.h}.  This file provides
 some very basic information about character classification.  The libstdc++-v3
 library assumes that your C library implements @file{<ctype.h>} by using
 a table (indexed by character code) containing integers, where each of
 these integers is a bit-mask indicating whether the character is
-upper-case, lower-case, alphabetic, etc.  The @file{bits/ctype_base.h}
+upper-case, lower-case, alphabetic, etc.  The @file{ctype_base.h}
 file gives the type of the integer, and the values of the various bit
 masks.  You will have to peer at your own @file{<ctype.h>} to figure out
 how to define the values required by this file.
 
-The @file{bits/ctype_base.h} header file does not need include guards.
+The @file{ctype_base.h} header file does not need include guards.
 It should contain a single @code{struct} definition called
 @code{ctype_base}.  This @code{struct} should contain two type
 declarations, and one enumeration declaration, like this example, taken
@@ -259,9 +259,9 @@ The enumeration should give definitions for all the values in the above
 example, using the values from your native @file{<ctype.h>}.  They can
 be given symbolically (as above), or numerically, if you prefer.  You do
 not have to include @file{<ctype.h>} in this header; it will always be
-included before @file{bits/ctype_base.h} is included.
+included before @file{ctype_base.h} is included.
 
-The next file to write is @file{bits/ctype_noninline.h}, which also does
+The next file to write is @file{ctype_noninline.h}, which also does
 not require include guards.  This file defines a few member functions
 that will be included in @file{include/bits/locale_facets.h}.  The first
 function that must be written is the @code{ctype<char>::ctype}
@@ -337,7 +337,7 @@ ctype<char>::do_tolower(char* __low, const char* __high) const
 @}
 @end example
 
-You must also provide the @file{bits/ctype_inline.h} file, which
+You must also provide the @file{ctype_inline.h} file, which
 contains a few more functions.  On most systems, you can just copy
 @file{config/os/generic/ctype_inline.h} and use it on your system.
 
@@ -416,11 +416,11 @@ If you want to provide custom, safe, versions of these functions, there
 are two distinct approaches.  One is to provide a version for your CPU,
 using assembly language constructs.  The other is to use the
 thread-safety primitives in your operating system.  In either case, you
-make a file called @file{bits/atomicity.h}, and the variable
+make a file called @file{atomicity.h}, and the variable
 @code{ATOMICITYH} must point to this file.
 
 If you are using the assembly-language approach, put this code in
-@file{config/cpu/<chip>/bits/atomicity.h}, where chip is the name of
+@file{config/cpu/<chip>/atomicity.h}, where chip is the name of
 your processor (@pxref{CPU}).  No additional changes are necessary to
 locate the file in this case; @code{ATOMICITYH} will be set by default.
 
@@ -438,7 +438,7 @@ the appropriate @code{os_include_dir}.  For examples of this approach,
 see the @file{atomicity.h} file for AIX.
 
 With those bits out of the way, you have to actually write
-@file{bits/atomicity.h} itself.  This file should be wrapped in an
+@file{atomicity.h} itself.  This file should be wrapped in an
 include guard named @code{_BITS_ATOMICITY_H}.  It should define one
 type, and two functions.  
 
