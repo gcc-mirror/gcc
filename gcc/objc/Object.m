@@ -315,6 +315,14 @@ extern int errno;
   return self;
 }
 
++ (int)streamVersion: (TypedStream*)aStream
+{
+  if (aStream->mode == OBJC_READONLY)
+    return objc_get_stream_class_version (aStream, self);
+  else
+    return class_get_version (self);
+}
+
 // These are used to write or read the instance variables 
 // declared in this particular part of the object.  Subclasses
 // should extend these, by calling [super read/write: aStream]
@@ -333,9 +341,9 @@ extern int errno;
   return self;
 }
 
-- awake: (TypedStream*)aStream
+- awake
 {
-  // [super awake: aStream];
+  // [super awake];
   return self;
 }
 
