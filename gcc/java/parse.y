@@ -1,6 +1,6 @@
 /* Source code parsing and tree node generation for the GNU compiler
    for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -7723,9 +7723,7 @@ java_complete_expand_methods (class_decl)
 
       if (METHOD_NATIVE (decl))
  	{
- 	  tree body;
-	  current_function_decl = decl;
-	  body = build_jni_stub (decl);
+ 	  tree body = build_jni_stub (decl);
  	  BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (decl)) = body;
  	}
 
