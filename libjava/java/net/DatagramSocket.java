@@ -429,36 +429,38 @@ public class DatagramSocket
   }
 
   /**
-   * Connects the datagram socket to a specified address/port.
-   *
-   * @param address The address to connect to.
-   * @param port The port to connect to.
+   * This method connects this socket to the specified address and port.
+   * When a datagram socket is connected, it will only send or receive
+   * packets to and from the host to which it is connected. A multicast
+   * socket that is connected may only send and not receive packets.
+   * 
+   * @param address The address to connect this socket to.
+   * @param port The port to connect this socket to.
    *
    * @exception SocketException If an error occurs.
-   * @exception IllegalArgumentException If address is null
-   * or the port number is illegal.
+   * @exception IllegalArgumentException If address or port are invalid.
    * @exception SecurityException If the caller is not allowed to send
-   * datagrams to and receive datagrams from the address and port.
+   * datagrams to or receive from this address and port.
    *
    * @since 1.2
    */
   public void connect(InetAddress address, int port)
   {
     if (address == null)
-      throw new IllegalArgumentException ("Address may not be null");
+      throw new IllegalArgumentException ("Connect address may not be null");
 
     if ((port < 1) || (port > 65535))
-      throw new IllegalArgumentException ("Port number is illegal");
+      throw new IllegalArgumentException ("Port number is illegal: " + port);
 
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
-      sm.checkAccept(address.getHostName (), port);
+      sm.checkConnect(address.getHostName(), port);
 
     try
       {
-    impl.connect (address, port);
-    remoteAddress = address;
-    remotePort = port;
+        impl.connect (address, port);
+        remoteAddress = address;
+        remotePort = port;
       }
     catch (SocketException e)
       {
@@ -466,8 +468,10 @@ public class DatagramSocket
   }
 
   /**
-   * Disconnects the datagram socket.
-   *
+   * This method disconnects this socket from the address/port it was
+   * conencted to.  If the socket was not connected in the first place,
+   * this method does nothing.
+   * 
    * @since 1.2
    */
   public void disconnect()
@@ -476,8 +480,11 @@ public class DatagramSocket
   }
 
   /**
-   * Receive a datagram packet.
-   *
+   * Reads a datagram packet from the socket.  Note that this method
+   * will block until a packet is received from the network.  On return,
+   * the passed in <code>DatagramPacket</code> is populated with the data
+   * received and all the other information about the packet.
+   * 
    * @param p The datagram packet to put the incoming data into.
    * 
    * @exception IOException If an error occurs.
@@ -511,7 +518,8 @@ public class DatagramSocket
   }
 
   /**
-   * Sends a datagram packet.
+   * Sends the specified packet.  The host and port to which the packet
+   * are to be sent should be set inside the packet.
    *
    * @param p The datagram packet to send.
    *

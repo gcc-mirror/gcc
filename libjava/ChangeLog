@@ -1,5 +1,13 @@
 2003-02-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/DatagramSocket.java
+	(connect): Merged with classpath.
+	(disconnect): Merged documentation with classpath.
+	(receice): Merged documentation with classpath.
+	(send): Merged documentation with classpath.
+	
+2003-02-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/dnd/DragSourceContext.java
 	(addDragSourceListener): Added documentation.
 	* java/awt/dnd/DragSourceDragEvent.java
