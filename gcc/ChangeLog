@@ -1,3 +1,10 @@
+2004-07-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.md (return): Rewrite length formula.
+	* config/sparc/sparc.c (output_return): Pass 1 as 5th
+	argument to final_scan_insn when in a delay slot.
+	(output_sibcall): Likewise.
+
 2004-07-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_cpp_interwork): New variable.
