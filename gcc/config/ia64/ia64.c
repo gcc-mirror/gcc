@@ -8542,6 +8542,7 @@ ia64_output_mi_thunk (file, thunk, delta, vcall_offset, function)
      instruction scheduling worth while.  Note that use_thunk calls
      assemble_start_function and assemble_end_function.  */
 
+  insn_locators_initialize ();
   emit_all_insn_group_barriers (NULL);
   insn = get_insns ();
   shorten_branches (insn);

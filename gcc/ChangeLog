@@ -1,3 +1,12 @@
+2003-06-15  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_output_mi_thunk_osf): Call
+	insn_locators_initialize.
+	* config/ia64/ia64.c (ia64_output_mi_thunk): Likewise.
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Likewise.
+	* config/sparc/sparc.c (sparc_output_mi_thunk): Likewise.
+	* config/sh/sh.c (sh_output_mi_thunk): Do it later.
+
 2003-06-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c (expand_builtin_expect_jump): Remove redundant

@@ -8322,7 +8322,6 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   int did_load = 0;
   rtx scratch0, scratch1, scratch2;
 
-  insn_locators_initialize ();
   reload_completed = 1;
   no_new_pseudos = 1;
   current_function_uses_only_leaf_regs = 1;
@@ -8438,9 +8437,11 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   use_reg (&CALL_INSN_FUNCTION_USAGE (sibcall), this);
   emit_barrier ();
 
-    /* Run just enough of rest_of_compilation to do scheduling and get
+  /* Run just enough of rest_of_compilation to do scheduling and get
      the insns emitted.  Note that use_thunk calls
      assemble_start_function and assemble_end_function.  */
+
+  insn_locators_initialize ();
   insns = get_insns ();
 
   if (optimize > 0 && flag_schedule_insns_after_reload)
