@@ -7107,16 +7107,18 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      end_sequence ();
 	      emit_jump_insn_before (tem, loop_end);
 
+	      for (tem = PREV_INSN (loop_end);
+		   tem && GET_CODE (tem) != JUMP_INSN;
+		   tem = PREV_INSN (tem))
+		;
+
+	      if (tem)
+		JUMP_LABEL (tem) = XEXP (jump_label, 0);
+
 	      if (nonneg)
 		{
-		  for (tem = PREV_INSN (loop_end);
-		       tem && GET_CODE (tem) != JUMP_INSN;
-		       tem = PREV_INSN (tem))
-		    ;
 		  if (tem)
 		    {
-		      JUMP_LABEL (tem) = XEXP (jump_label, 0);
-
 		      /* Increment of LABEL_NUSES done above.  */
 		      /* Register is now always nonnegative,
 			 so add REG_NONNEG note to the branch.  */

@@ -1,3 +1,11 @@
+Thu Nov 26 17:49:29 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* loop.c (check_dbra_loop): Update JUMP_LABEL field of jump insn
+	when loop reversed.
+
+	* unroll.c (precondition_loop_p): Return loop_initial_value
+	for initial_value instead of loop_iteration_var.
+
 Thu Nov 26 17:15:38 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md: Fix minor formatting problems.  Update docs.
