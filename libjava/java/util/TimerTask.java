@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -58,74 +58,77 @@ package java.util;
  * @since 1.3
  * @author Mark Wielaard (mark@klomp.org)
  */
-public abstract class TimerTask implements Runnable {
+public abstract class TimerTask implements Runnable
+{
+  /**
+   * If positive the next time this task should be run.
+   * If negative this TimerTask is canceled or executed for the last time.
+   */
+  long scheduled;
 
-    /**
-     * If positive the next time this task should be run.
-     * If negative this TimerTask is canceled or executed for the last time.
-     */
-    long scheduled;
+  /**
+   * If positive the last time this task was run.
+   * If negative this TimerTask has not yet been scheduled.
+   */
+  long lastExecutionTime;
 
-    /**
-     * If positive the last time this task was run.
-     * If negative this TimerTask has not yet been scheduled.
-     */
-    long lastExecutionTime;
+  /**
+   * If positive the number of milliseconds between runs of this task.
+   * If -1 this task doesn't have to be run more then once.
+   */
+  long period;
 
-    /**
-     * If positive the number of milliseconds between runs of this task.
-     * If -1 this task doesn't have to be run more then once.
-     */
-    long period;
+  /**
+   * If true the next time this task should be run is relative to
+   * the last scheduled time, otherwise it can drift in time.
+   */
+  boolean fixed;
 
-    /**
-     * If true the next time this task should be run is relative to
-     * the last scheduled time, otherwise it can drift in time.
-     */
-    boolean fixed;
+  /**
+   * Creates a TimerTask and marks it as not yet scheduled.
+   */
+  protected TimerTask()
+  {
+    this.scheduled = 0;
+    this.lastExecutionTime = -1;
+  }
 
-    /**
-     * Creates a TimerTask and marks it as not yet scheduled.
-     */
-    protected TimerTask() {
-        this.scheduled = 0;
-        this.lastExecutionTime = -1;
-    }
+  /**
+   * Marks the task as canceled and prevents any further execution.
+   * Returns true if the task was scheduled for any execution in the future
+   * and this cancel operation prevents that execution from happening.
+   * <p>
+   * A task that has been canceled can never be scheduled again.
+   * <p>
+   * In this implementation the TimerTask it is possible that the Timer does
+   * keep a reference to the TimerTask until the first time the TimerTask
+   * is actually scheduled. But the reference will disappear immediatly when
+   * cancel is called from within the TimerTask run method.
+   */
+  public boolean cancel()
+  {
+    boolean prevented_execution = (this.scheduled >= 0);
+    this.scheduled = -1;
+    return prevented_execution;
+  }
 
-    /**
-     * Marks the task as canceled and prevents any further execution.
-     * Returns true if the task was scheduled for any execution in the future
-     * and this cancel operation prevents that execution from happening.
-     * <p>
-     * A task that has been canceled can never be scheduled again.
-     * <p>
-     * In this implementation the TimerTask it is possible that the Timer does
-     * keep a reference to the TimerTask until the first time the TimerTask
-     * is actually scheduled. But the reference will disappear immediatly when
-     * cancel is called from within the TimerTask run method.
-     */
-    public boolean cancel() {
-        boolean prevented_execution = (this.scheduled >= 0);
-        this.scheduled = -1;
-        return prevented_execution;
-    }
+  /**
+   * Method that is called when this task is scheduled for execution.
+   */
+  public abstract void run();
 
-    /**
-     * Method that is called when this task is scheduled for execution.
-     */
-    public abstract void run();
-
-    /**
-     * Returns the last time this task was scheduled or (when called by the
-     * task from the run method) the time the current execution of the task
-     * was scheduled. When the task has not yet run the return value is
-     * undefined.
-     * <p>
-     * Can be used (when the task is scheduled at fixed rate) to see the
-     * difference between the requested schedule time and the actual time
-     * that can be found with <code>System.currentTimeMillis()</code>.
-     */
-    public long scheduledExecutionTime() {
-        return lastExecutionTime;
-    }
+  /**
+   * Returns the last time this task was scheduled or (when called by the
+   * task from the run method) the time the current execution of the task
+   * was scheduled. When the task has not yet run the return value is
+   * undefined.
+   * <p>
+   * Can be used (when the task is scheduled at fixed rate) to see the
+   * difference between the requested schedule time and the actual time
+   * that can be found with <code>System.currentTimeMillis()</code>.
+   */
+  public long scheduledExecutionTime()
+  {
+    return lastExecutionTime;
+  }
 }

@@ -1,5 +1,9 @@
 2001-02-17  Mark Wielaard <mark@klomp.org>
 
+	* java/util/TimerTask.java: New version from Classpath.
+
+2001-02-17  Mark Wielaard <mark@klomp.org>
+
 	Remerge with Classpath
 	(changes by Bryce McKinlay  <bryce@albatross.co.nz>)
 	* java/io/DataInputStream.java (readBoolean): Use convertToBoolean().
