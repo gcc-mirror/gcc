@@ -1,3 +1,8 @@
+2003-05-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/linux64.h (LIB_SPEC): Add missing -lc and correct
+	-lthread to -lpthread.
+
 2003-05-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (c_common_decode_option): Don't accept dollars
