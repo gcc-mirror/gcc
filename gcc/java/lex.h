@@ -92,6 +92,7 @@ struct java_error {
 
 typedef struct _java_lc {
   int line;
+  int prev_col;
   int col;
 } java_lc;
 
