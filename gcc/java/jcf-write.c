@@ -112,7 +112,7 @@ struct jcf_block
 {
   /* For blocks that that are defined, the next block (in pc order).
      For blocks that are not-yet-defined the end label of a LABELED_BLOCK_EXPR
-     or a cleanup expression (from a WITH_CLEANUP_EXPR),
+     or a cleanup expression (from a TRY_FINALLY_EXPR),
      this is the next (outer) such end label, in a stack headed by
      labeled_blocks in jcf_partial. */
   struct jcf_block *next;
@@ -1348,7 +1348,7 @@ generate_bytecode_conditional (exp, true_label, false_label,
     abort ();
 }
 
-/* Call pending cleanups i.e. those for surrounding CLEANUP_POINT_EXPRs
+/* Call pending cleanups i.e. those for surrounding TRY_FINAL_EXPRs.
    but only as far out as LIMIT (since we are about to jump to the
    emit label that is LIMIT). */
 
@@ -2279,78 +2279,6 @@ generate_bytecode_insns (exp, target, state)
       }
       break;
 
-    case CLEANUP_POINT_EXPR:
-      {
-	struct jcf_block *save_labeled_blocks = state->labeled_blocks;
-	int can_complete = CAN_COMPLETE_NORMALLY (TREE_OPERAND (exp, 0));
-	generate_bytecode_insns (TREE_OPERAND (exp, 0), IGNORE_TARGET, state);
-	if (target != IGNORE_TARGET)
-	  abort ();
-	while (state->labeled_blocks != save_labeled_blocks)
-	  {
-	    struct jcf_block *finished_label = NULL;
-	    tree return_link;
-	    tree exception_type = build_pointer_type (throwable_type_node);
-	    tree exception_decl = build_decl (VAR_DECL, NULL_TREE,
-					      exception_type);
-	    struct jcf_block *end_label = get_jcf_label_here (state);
-	    struct jcf_block *label = state->labeled_blocks;
-	    struct jcf_handler *handler;
-	    tree cleanup = label->u.labeled_block;
-	    state->labeled_blocks = label->next;
-	    state->num_finalizers--;
-	    if (can_complete)
-	      {
-		finished_label = gen_jcf_label (state);
-		emit_jsr (label, state);
-		emit_goto (finished_label, state);
-		if (! CAN_COMPLETE_NORMALLY (cleanup))
-		  can_complete = 0;
-	      }
-	    handler = alloc_handler (label->v.start_label, end_label, state);
-	    handler->type = NULL_TREE;
-	    localvar_alloc (exception_decl, state);
-	    NOTE_PUSH (1);
-            emit_store (exception_decl, state);
-	    emit_jsr (label, state);
-	    emit_load (exception_decl, state);
-	    RESERVE (1);
-	    OP1 (OPCODE_athrow);
-	    NOTE_POP (1);
-
-	    /* The finally block. */
-	    return_link = build_decl (VAR_DECL, NULL_TREE,
-				      return_address_type_node);
-	    define_jcf_label (label, state);
-	    NOTE_PUSH (1);
-	    localvar_alloc (return_link, state);
-	    emit_store (return_link, state);
-	    generate_bytecode_insns (cleanup, IGNORE_TARGET, state);
-	    maybe_wide (OPCODE_ret, DECL_LOCAL_INDEX (return_link), state);
-	    localvar_free (return_link, state);
-	    localvar_free (exception_decl, state);
-	    if (finished_label != NULL)
-	      define_jcf_label (finished_label, state);
-	  }
-      }
-      break;
-
-    case WITH_CLEANUP_EXPR:
-      {
-	struct jcf_block *label;
-	generate_bytecode_insns (TREE_OPERAND (exp, 0), IGNORE_TARGET, state);
-	label = gen_jcf_label (state);
-	label->pc = PENDING_CLEANUP_PC;
-	label->next = state->labeled_blocks;
-	state->labeled_blocks = label;
-	state->num_finalizers++;
-	label->u.labeled_block = TREE_OPERAND (exp, 1);
-	label->v.start_label = get_jcf_label_here (state);
-	if (target != IGNORE_TARGET)
-	  abort ();
-      }
-      break;
-
     case TRY_EXPR:
       {
 	tree try_clause = TREE_OPERAND (exp, 0);
@@ -2383,6 +2311,7 @@ generate_bytecode_insns (exp, target, state)
 	define_jcf_label (finished_label, state);
       }
       break;
+
     case TRY_FINALLY_EXPR:
       {
 	struct jcf_block *finished_label,

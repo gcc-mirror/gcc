@@ -1,5 +1,13 @@
 2001-12-03  Per Bothner  <per@bothner.com>
 
+	* decl.c (complete_start_java_method):  Now generate TRY_FINALLY_EXPR
+	instead of CLEANUP_POINT_EXPR and WITH_CLEANUP_EXPR.
+	* jcf-write.c (generate_bytecode_insns):  Remove support for
+	CLEANUP_POINT_EXPR and WITH_CLEANUP_EXPR as they are no longer used.
+	* check-init.c (check_init):  Likewise.
+
+2001-12-03  Per Bothner  <per@bothner.com>
+
 	* verify.c (subroutine_nesting):  New function.
 	(verify_jvm_instructions):  Use it to fix logic for checking that
 	we're done with the current subroutine.
