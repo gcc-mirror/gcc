@@ -4583,9 +4583,16 @@ main (argc, argv)
 #endif
   pname = pname ? pname+1 : argv[0];
 
+/* LC_CTYPE determines the character set used by the terminal so it has be set
+   to output messages correctly.  */
+
 #ifdef HAVE_LC_MESSAGES
+  setlocale (LC_CTYPE, "");
   setlocale (LC_MESSAGES, "");
+#else
+  setlocale (LC_ALL, "");
 #endif
+
   (void) bindtextdomain (PACKAGE, localedir);
   (void) textdomain (PACKAGE);
 
