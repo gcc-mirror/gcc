@@ -1,5 +1,5 @@
-2002-06-03  Marc Espie <espie@openbsd.org>
-        * config/cpu/m68k/bits/atomicity.h(__exchange_and_add):  Fix inline     
+2002-06-03  Marc Espie  <espie@openbsd.org>
+        * config/cpu/m68k/bits/atomicity.h(__exchange_and_add): Fix inline
         assembly for old assemblers.                                            
 
 2002-05-31  Marcus Meissner  <meissner@suse.de>
@@ -14,10 +14,10 @@
 	to 64 for hppa 64-bit port.
 	(__glibcpp_long_double_bits): Define to 64 for all hppa ports.
 
-2002-05-30	Marc Espie <espie@openbsd.org>
+2002-05-30  Marc Espie  <espie@openbsd.org>
 
-	* configure.in:  Always check for sys/types.h.
-	* configure:  Regenerate.
+	* configure.in: Always check for sys/types.h.
+	* configure: Regenerate.
 
 2002-05-28  Nick Clifton  <nickc@cambridge.redhat.com>
 
