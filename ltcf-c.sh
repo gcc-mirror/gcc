@@ -57,7 +57,7 @@ if test "$with_gnu_ld" = yes; then
 
   # See if GNU ld supports shared libraries.
   case "$host_os" in
-  aix3* | aix4*)
+  aix3* | aix4* | aix5*)
     # On AIX, the GNU linker is very broken
     ld_shlibs=no
     cat <<EOF 1>&2
@@ -251,7 +251,7 @@ else
     fi
     ;;
 
-  aix4*)
+  aix4* | aix5*)
     hardcode_libdir_flag_spec='${wl}-b ${wl}nolibpath ${wl}-b ${wl}libpath:$libdir:/usr/lib:/lib'
     hardcode_libdir_separator=':'
     if test "$with_gcc" = yes; then
@@ -575,7 +575,7 @@ else
   else
     # PORTME Check for PIC flags for the system compiler.
     case "$host_os" in
-    aix3* | aix4*)
+    aix3* | aix4* | aix5*)
      # All AIX code is PIC.
       ac_cv_prog_cc_static='-bnso -bI:/lib/syscalls.exp'
       ;;
