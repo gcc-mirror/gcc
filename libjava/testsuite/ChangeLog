@@ -1,3 +1,8 @@
+2003-04-16  Andrew Haley  <aph@redhat.com>
+
+	* libjava.lang/Throw_2.java (main): Make a successful test produce
+	some output.
+
 2003-03-10  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.lang/initfield.java: New file.
