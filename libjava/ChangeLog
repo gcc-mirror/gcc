@@ -1,3 +1,13 @@
+2004-04-30  Ranjit Mathew  <rmathew@hotmail.com>
+            Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_compile_c_to_so): Use
+	additional option "-Wmissing-prototypes" for compiling C sources.
+	Print actual filename for pass/fail rather than $name.c.
+	* testsuite/libjava.jni/PR15133.java: New testcase file.
+	* testsuite/libjava.jni/PR15133.c: Likewise.
+	* testsuite/libjava.jni/PR15133.out: Likewise.
+
 2004-04-30  Roger Sayle  <roger@eyesopen.com>
 
 	* testsuite/libjava.lang/MathBuiltin.java: Add tests for acos, asin,

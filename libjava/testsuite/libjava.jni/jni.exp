@@ -21,12 +21,21 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
       set so_extension "so"
       set so_flag "-shared"
   }
-  set name [file rootname [file tail $file]]
+  set filename [file tail $file]
+  set name [file rootname $filename]
   set soname lib${name}.${so_extension}
 
   lappend options "additional_flags=${so_flag} -fPIC"
   # Find the generated header.
   lappend options "additional_flags=-I. -I.."
+
+  # Ensure that the generated header has correct prototypes.
+  set cfile [file rootname $file].c
+  if { [file exists $cfile]} {
+    # This option is only valid for C sources.
+    lappend options "additional_flags=-Wmissing-prototypes"
+  }
+
   # Find jni.h.
   lappend options "additional_flags=-I$srcdir/../include"
 
@@ -34,11 +43,11 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
 	   [target_compile $file $soname executable $options]]
   if {$x != ""} {
     verbose "target_compile failed: $x" 2
-    fail "$name.c compilation"
+    fail "$filename compilation"
     return 0
   }
 
-  pass "$name.c compilation"
+  pass "$filename compilation"
   return 1
 }
 
