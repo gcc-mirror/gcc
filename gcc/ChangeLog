@@ -1,3 +1,8 @@
+2001-06-22  Toshiyasu Morita  (toshiyasu.morita@hsa.hitachi.com)
+
+	* predict.c: (expected_value_to_br_prob): Check for const_true_rtx
+	instead of const1_rtx for true case.
+
 2001-06-22  David Mosberger  <davidm@hpl.hp.com>
 
 	* config/ia64/crtfastmath.c: New file.
