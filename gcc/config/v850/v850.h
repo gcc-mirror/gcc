@@ -83,137 +83,11 @@
   builtin_assert( "cpu=v850" );			\
 } while(0)
 
-/* Run-time compilation parameters selecting different hardware subsets.  */
-
-extern int target_flags;
-
-/* Target flags bits, see below for an explanation of the bits.  */
-#define MASK_GHS		0x00000001
-#define MASK_LONG_CALLS		0x00000002
-#define MASK_EP			0x00000004
-#define MASK_PROLOG_FUNCTION	0x00000008
-#define MASK_DEBUG		0x40000000
-
-#define MASK_CPU                0x00000030
-#define MASK_V850               0x00000010
-#define MASK_V850E              0x00000020
-#define MASK_SMALL_SLD          0x00000040
-
-#define MASK_BIG_SWITCH		0x00000100
-#define MASK_NO_APP_REGS        0x00000200
-#define MASK_DISABLE_CALLT      0x00000400
-#define MASK_STRICT_ALIGN       0x00000800
-
-#define MASK_US_BIT_SET         0x00001000
-#define MASK_US_MASK_SET        0x00002000
-
-/* Macros used in the machine description to test the flags.  */
-
-/* The GHS calling convention support doesn't really work,
-   mostly due to a lack of documentation.  Outstanding issues:
-
-     * How do varargs & stdarg really work.  How to they handle
-     passing structures (if at all).
-
-     * Doubles are normally 4 byte aligned, except in argument
-     lists where they are 8 byte aligned.  Is the alignment
-     in the argument list based on the first parameter,
-     first stack parameter, etc etc.
-
-     * Passing/returning of large structures probably isn't the same
-     as GHS.  We don't have enough documentation on their conventions
-     to be compatible.
-
-     * Tests of TARGET_SETUP_INCOMING_VARARGS need to be made runtime checks
-     since it depends on TARGET_GHS.  */
-#define TARGET_GHS (target_flags & MASK_GHS)
- 
-/* Don't do PC-relative calls, instead load the address of the target
-   function into a register and perform a register indirect call.  */
-#define TARGET_LONG_CALLS (target_flags & MASK_LONG_CALLS)
-
-/* Whether to optimize space by using ep (r30) for pointers with small offsets
-   in basic blocks.  */
-#define TARGET_EP (target_flags & MASK_EP)
-
-/* Whether to call out-of-line functions to save registers or not.  */
-#define TARGET_PROLOG_FUNCTION (target_flags & MASK_PROLOG_FUNCTION)
-
-#define TARGET_V850    		((target_flags & MASK_CPU) == MASK_V850)
-
-/* Whether to emit 2 byte per entry or 4 byte per entry switch tables.  */
-#define TARGET_BIG_SWITCH (target_flags & MASK_BIG_SWITCH)
-
-/* General debug flag.  */
-#define TARGET_DEBUG 		(target_flags & MASK_DEBUG)
-#define TARGET_V850E   		((target_flags & MASK_V850E) == MASK_V850E)
-
-#define TARGET_US_BIT_SET	(target_flags & MASK_US_BIT_SET)
-
-/* Whether to assume that the SLD.B and SLD.H instructions only have small
-   displacement fields, thus allowing the generated code to run on any of
-   the V850 range of processors.  */
-#define TARGET_SMALL_SLD 	(target_flags & MASK_SMALL_SLD)
-
-/* True if callt will not be used for function prolog & epilog.  */
-#define TARGET_DISABLE_CALLT 	(target_flags & MASK_DISABLE_CALLT)
-
-/* False if r2 and r5 can be used by the compiler.  True if r2
-   and r5 are to be fixed registers (for compatibility with GHS).  */
-#define TARGET_NO_APP_REGS  	(target_flags & MASK_NO_APP_REGS)
-
-#define TARGET_STRICT_ALIGN 	(target_flags & MASK_STRICT_ALIGN)
-
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-
-#define TARGET_SWITCHES							\
-  {{ "ghs",			 MASK_GHS, N_("Support Green Hills ABI") }, \
-   { "no-ghs",			-MASK_GHS, "" },			\
-   { "long-calls",		 MASK_LONG_CALLS, 			\
-       				N_("Prohibit PC relative function calls") },\
-   { "no-long-calls",		-MASK_LONG_CALLS, "" },			\
-   { "ep",			 MASK_EP,				\
-                                N_("Reuse r30 on a per function basis") }, \
-   { "no-ep",			-MASK_EP, "" },				\
-   { "prolog-function",		 MASK_PROLOG_FUNCTION, 			\
-       				N_("Use stubs for function prologues") }, \
-   { "no-prolog-function",	-MASK_PROLOG_FUNCTION, "" },		\
-   { "space",			 MASK_EP | MASK_PROLOG_FUNCTION, 	\
-       				N_("Same as: -mep -mprolog-function") }, \
-   { "debug",			 MASK_DEBUG, N_("Enable backend debugging") }, \
-   { "v850",		 	 MASK_V850,				\
-                                N_("Compile for the v850 processor") },	\
-   { "v850",		 	 -(MASK_V850 ^ MASK_CPU), "" },		\
-   { "v850e1",			 MASK_V850E, N_("Compile for v850e1 processor") }, \
-   { "v850e1",		        -(MASK_V850E ^ MASK_CPU), "" }, /* Make sure that the other bits are cleared.  */ \
-   { "v850e",			 MASK_V850E, N_("Compile for v850e processor") }, \
-   { "v850e",		        -(MASK_V850E ^ MASK_CPU), "" }, /* Make sure that the other bits are cleared.  */ \
-   { "small-sld",		 MASK_SMALL_SLD, N_("Enable the use of the short load instructions") },	\
-   { "no-small-sld",		-MASK_SMALL_SLD, "" },			\
-   { "disable-callt",            MASK_DISABLE_CALLT, 			\
-       				N_("Do not use the callt instruction") },   \
-   { "no-disable-callt",        -MASK_DISABLE_CALLT, "" },             	\
-   { "US-bit-set",		 (MASK_US_BIT_SET | MASK_US_MASK_SET), "" },	\
-   { "no-US-bit-set",		-MASK_US_BIT_SET, "" },			\
-   { "no-US-bit-set",		 MASK_US_MASK_SET, "" },		\
-   { "app-regs",                -MASK_NO_APP_REGS, ""  },               \
-   { "no-app-regs",              MASK_NO_APP_REGS, 			\
-       				N_("Do not use registers r2 and r5") }, \
-   { "strict-align",             MASK_STRICT_ALIGN,			\
-				N_("Enforce strict alignment") },       \
-   { "no-strict-align",         -MASK_STRICT_ALIGN, "" },		\
-   { "big-switch",		 MASK_BIG_SWITCH, 			\
-       				N_("Use 4 byte entries in switch tables") },\
-   { "",			 MASK_DEFAULT, ""}}
+#define MASK_CPU (MASK_V850 | MASK_V850E)
 
 /* Information about the various small memory areas.  */
 struct small_memory_info {
   const char *name;
-  const char *value;
   long max;
   long physical_max;
 };
@@ -229,30 +103,6 @@ enum small_memory_type {
 };
 
 extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
-
-#define TARGET_OPTIONS							\
-{									\
-  { "tda=",	&small_memory[ (int)SMALL_MEMORY_TDA ].value,		\
-      N_("Set the max size of data eligible for the TDA area"), 0},	\
-  { "tda-",	&small_memory[ (int)SMALL_MEMORY_TDA ].value, "", 0},	\
-  { "sda=",	&small_memory[ (int)SMALL_MEMORY_SDA ].value, 		\
-      N_("Set the max size of data eligible for the SDA area"), 0},	\
-  { "sda-",	&small_memory[ (int)SMALL_MEMORY_SDA ].value, "", 0},	\
-  { "zda=",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value, 		\
-      N_("Set the max size of data eligible for the ZDA area"), 0},	\
-  { "zda-",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value, "", 0},	\
-}
-
-/* Sometimes certain combinations of command options do not make
-   sense on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
-
-   Don't use this macro to turn on various extra optimizations for
-   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
-#define OVERRIDE_OPTIONS override_options ()
-
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
@@ -400,14 +250,14 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    0,  1,  3,  4,  5, 30, 32, 33	/* fixed registers */		\
 }
 
-/* If TARGET_NO_APP_REGS is not defined then add r2 and r5 to
+/* If TARGET_APP_REGS is not defined then add r2 and r5 to
    the pool of fixed registers. See PR 14505.  */
 #define CONDITIONAL_REGISTER_USAGE  \
 {                                                       \
-  if (TARGET_NO_APP_REGS)                               \
+  if (!TARGET_APP_REGS)                                 \
     {                                                   \
-     fixed_regs[2] = 1;  call_used_regs[2] = 1;         \
-     fixed_regs[5] = 1;  call_used_regs[5] = 1;         \
+      fixed_regs[2] = 1;  call_used_regs[2] = 1;        \
+      fixed_regs[5] = 1;  call_used_regs[5] = 1;        \
     }                                                   \
 }
 

@@ -35,7 +35,6 @@ extern void   zdata_section                 (void);
 extern void   rozdata_section               (void);
 extern void   zbss_section                  (void);
 extern int    v850_handle_pragma            (int (*)(void), void (*)(int), char *);
-extern void   override_options              (void);
 extern int    compute_register_save_size    (long *);
 extern int    compute_frame_size            (int, long *);
 extern void   v850_init_expanders           (void);
