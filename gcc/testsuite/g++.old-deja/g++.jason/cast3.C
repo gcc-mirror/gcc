@@ -10,7 +10,7 @@ struct string
   ~string ();
 };
 
-string _cook(const   string     raw, bool for_postscript)
+void _cook(const   string     raw, bool for_postscript)
 {
   unsigned char c = (unsigned) ((string &)raw)[1];
 }
