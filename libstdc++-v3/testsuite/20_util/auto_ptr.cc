@@ -261,12 +261,13 @@ test07()
   reset_count_struct reset;
 
   drain(source<A>());
-  drain<A>(source<B>());
+  // The resolution of core issue 84, now a DR, breaks this call.
+  // drain<A>(source<B>());
   drain(source<B>());
-  VERIFY( A::ctor_count == 3 );
-  VERIFY( A::dtor_count == 3 );
-  VERIFY( B::ctor_count == 2 );
-  VERIFY( B::dtor_count == 2 );
+  VERIFY( A::ctor_count == 2 );
+  VERIFY( A::dtor_count == 2 );
+  VERIFY( B::ctor_count == 1 );
+  VERIFY( B::dtor_count == 1 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -288,4 +289,3 @@ main()
 
   return 0;
 }
-
