@@ -1481,7 +1481,7 @@ cant_combine_insn_p (insn)
    Here I1 and I2 appear earlier than I3.
    I1 can be zero; then we combine just I2 into I3.
 
-   It we are combining three insns and the resulting insn is not recognized,
+   If we are combining three insns and the resulting insn is not recognized,
    try splitting it into two insns.  If that happens, I2 and I3 are retained
    and I1 is pseudo-deleted by turning it into a NOTE.  Otherwise, I1 and I2
    are pseudo-deleted.

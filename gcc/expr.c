@@ -6234,7 +6234,7 @@ expand_expr (exp, target, tmode, modifier)
 			       copy_rtx (XEXP (DECL_RTL (exp), 0)));
 
       /* If we got something, return it.  But first, set the alignment
-	 the address is a register.  */
+	 if the address is a register.  */
       if (temp != 0)
 	{
 	  if (GET_CODE (temp) == MEM && GET_CODE (XEXP (temp, 0)) == REG)
