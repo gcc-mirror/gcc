@@ -1,3 +1,24 @@
+2004-10-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-tree.h (enum c_typespec_kind, struct c_typespec,
+	parser_xref_tag): New.
+	(struct c_declspecs): Add tag_defined_p.  Adjust definition of
+	typedef_p.
+	(declspecs_add_type): Adjust prototypes.
+	* c-parse.in (%union): Add tstype.
+	(typespec_nonattr, typespec_attr, typespec_reserved_nonattr,
+	typespec_reserved_attr, typespec_nonreserved_nonattr,
+	structsp_attr, structsp_nonattr): Change to tstype.  Update
+	actions.
+	* c-decl.c (build_null_declspecs): Initialize tag_defined_p.
+	(declspecs_add_type): Update to take struct c_typespec argument.
+	Set tag_defined_p and typedef_p as appropriate.
+	(xref_tag): Rename to parser_xref_tag and replace by wrapper.
+	Update to return struct c_typespec.
+	(shadow_tag_warned): Don't let empty declarations with qualifiers
+	or storage class specifiers redeclare a tag if a previous
+	declaration is visible.
+
 2004-10-13  Richard Henderson  <rth@redhat.com>
 
 	PR debug/15860

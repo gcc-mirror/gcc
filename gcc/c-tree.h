@@ -131,6 +131,39 @@ struct c_expr
   enum tree_code original_code;
 };
 
+/* A kind of type specifier.  Note that this information is currently
+   only used to distinguish tag definitions, tag references and typeof
+   uses.  */
+enum c_typespec_kind {
+  /* A reserved keyword type specifier.  */
+  ctsk_resword,
+  /* A reference to a tag, previously declared, such as "struct foo".
+     This includes where the previous declaration was as a different
+     kind of tag, in which case this is only valid if shadowing that
+     tag in an inner scope.  */
+  ctsk_tagref,
+  /* A reference to a tag, not previously declared in a visible
+     scope.  */
+  ctsk_tagfirstref,
+  /* A definition of a tag such as "struct foo { int a; }".  */
+  ctsk_tagdef,
+  /* A typedef name.  */
+  ctsk_typedef,
+  /* An ObjC-specific kind of type specifier.  */
+  ctsk_objc,
+  /* A typeof specifier.  */
+  ctsk_typeof
+};
+
+/* A type specifier: this structure is created in the parser and
+   passed to declspecs_add_type only.  */
+struct c_typespec {
+  /* What kind of type specifier this is.  */
+  enum c_typespec_kind kind;
+  /* The specifier itself.  */
+  tree spec;
+};
+
 /* A storage class specifier.  */
 enum c_storage_class {
   csc_none,
@@ -178,8 +211,12 @@ struct c_declspecs {
      specifiers to be handled separately from storage class
      specifiers.)  */
   BOOL_BITFIELD non_sc_seen_p : 1;
-  /* Whether the type is specified by a typedef.  */
+  /* Whether the type is specified by a typedef or typeof name.  */
   BOOL_BITFIELD typedef_p : 1;
+  /* Whether a struct, union or enum type either had its content
+     defined by a type specifier in the list or was the first visible
+     declaration of its tag.  */
+  BOOL_BITFIELD tag_defined_p : 1;
   /* Whether the type is explicitly "signed" or specified by a typedef
      whose type is explicitly "signed".  */
   BOOL_BITFIELD explicit_signed_p : 1;
@@ -371,6 +408,7 @@ extern tree start_struct (enum tree_code, tree);
 extern void store_parm_decls (void);
 extern void store_parm_decls_from (struct c_arg_info *);
 extern tree xref_tag (enum tree_code, tree);
+extern struct c_typespec parser_xref_tag (enum tree_code, tree);
 extern int c_expand_decl (tree);
 extern struct c_parm *build_c_parm (struct c_declspecs *, tree,
 				    struct c_declarator *);
@@ -383,7 +421,8 @@ extern struct c_declarator *make_pointer_declarator (struct c_declspecs *,
 						     struct c_declarator *);
 extern struct c_declspecs *build_null_declspecs (void);
 extern struct c_declspecs *declspecs_add_qual (struct c_declspecs *, tree);
-extern struct c_declspecs *declspecs_add_type (struct c_declspecs *, tree);
+extern struct c_declspecs *declspecs_add_type (struct c_declspecs *,
+					       struct c_typespec);
 extern struct c_declspecs *declspecs_add_scspec (struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_attrs (struct c_declspecs *, tree);
 extern struct c_declspecs *finish_declspecs (struct c_declspecs *);

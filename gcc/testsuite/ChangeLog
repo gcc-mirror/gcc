@@ -1,3 +1,7 @@
+2004-10-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/c99-tag-3.c, gcc.dg/declspec-14.c: New tests.
+
 2004-10-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/17984

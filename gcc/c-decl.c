@@ -2696,8 +2696,6 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 {
   bool found_tag = false;
 
-  pending_invalid_xref = 0;
-
   if (declspecs->type && !declspecs->default_int_p && !declspecs->typedef_p)
     {
       tree value = declspecs->type;
@@ -2721,8 +2719,29 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 		  warned = 1;
 		}
 	    }
+	  else if (!declspecs->tag_defined_p
+		   && declspecs->storage_class != csc_none)
+	    {
+	      if (warned != 1)
+		pedwarn ("empty declaration with storage class specifier "
+			 "does not redeclare tag");
+	      warned = 1;
+	      pending_xref_error ();
+	    }
+	  else if (!declspecs->tag_defined_p
+		   && (declspecs->const_p
+		       || declspecs->volatile_p
+		       || declspecs->restrict_p))
+	    {
+	      if (warned != 1)
+		pedwarn ("empty declaration with type qualifier "
+			 "does not redeclare tag");
+	      warned = 1;
+	      pending_xref_error ();
+	    }
 	  else
 	    {
+	      pending_invalid_xref = 0;
 	      t = lookup_tag (code, name, 1);
 
 	      if (t == 0)
@@ -2746,6 +2765,8 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
       pedwarn ("useless type name in empty declaration");
       warned = 1;
     }
+
+  pending_invalid_xref = 0;
 
   if (declspecs->inline_p)
     {
@@ -4877,11 +4898,13 @@ get_parm_info (bool ellipsis)
 }
 
 /* Get the struct, enum or union (CODE says which) with tag NAME.
-   Define the tag as a forward-reference if it is not defined.  */
+   Define the tag as a forward-reference if it is not defined.
+   Return a c_typespec structure for the type specifier.  */
 
-tree
-xref_tag (enum tree_code code, tree name)
+struct c_typespec
+parser_xref_tag (enum tree_code code, tree name)
 {
+  struct c_typespec ret;
   /* If a cross reference is requested, look up the type
      already defined for this tag and return it.  */
 
@@ -4897,8 +4920,12 @@ xref_tag (enum tree_code code, tree name)
      this would not work properly if we return the reference found.
      (For example, with "struct foo" in an outer scope, "union foo;"
      must shadow that tag with a new one of union type.)  */
+  ret.kind = (ref ? ctsk_tagref : ctsk_tagfirstref);
   if (ref && TREE_CODE (ref) == code)
-    return ref;
+    {
+      ret.spec = ref;
+      return ret;
+    }
 
   /* If no such tag is yet defined, create a forward-reference node
      and record it as the "definition".
@@ -4921,7 +4948,18 @@ xref_tag (enum tree_code code, tree name)
 
   pushtag (name, ref);
 
-  return ref;
+  ret.spec = ref;
+  return ret;
+}
+
+/* Get the struct, enum or union (CODE says which) with tag NAME.
+   Define the tag as a forward-reference if it is not defined.
+   Return a tree for the type.  */
+
+tree
+xref_tag (enum tree_code code, tree name)
+{
+  return parser_xref_tag (code, name).spec;
 }
 
 /* Make sure that the tag NAME is defined *in the current scope*
@@ -6643,6 +6681,7 @@ build_null_declspecs (void)
   ret->storage_class = csc_none;
   ret->non_sc_seen_p = false;
   ret->typedef_p = false;
+  ret->tag_defined_p = false;
   ret->explicit_signed_p = false;
   ret->deprecated_p = false;
   ret->default_int_p = false;
@@ -6698,8 +6737,9 @@ declspecs_add_qual (struct c_declspecs *specs, tree qual)
    returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_type (struct c_declspecs *specs, tree type)
+declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 {
+  tree type = spec.spec;
   specs->non_sc_seen_p = true;
   if (TREE_DEPRECATED (type))
     specs->deprecated_p = true;
@@ -6975,7 +7015,13 @@ declspecs_add_type (struct c_declspecs *specs, tree type)
 	specs->type = TREE_TYPE (t);
     }
   else if (TREE_CODE (type) != ERROR_MARK)
-    specs->type = type;
+    {
+      if (spec.kind == ctsk_tagdef || spec.kind == ctsk_tagfirstref)
+	specs->tag_defined_p = true;
+      if (spec.kind == ctsk_typeof)
+	specs->typedef_p = true;
+      specs->type = type;
+    }
 
   return specs;
 }

@@ -101,8 +101,8 @@ do {									\
 %union {long itype; tree ttype; void *otype; struct c_expr exprtype;
 	struct c_arg_info *arginfotype; struct c_declarator *dtrtype;
 	struct c_type_name *typenametype; struct c_parm *parmtype;
-	struct c_declspecs *dsptype; enum tree_code code;
-	location_t location; }
+	struct c_declspecs *dsptype; struct c_typespec tstype;
+	enum tree_code code; location_t location; }
 
 /* All identifiers that are not reserved words
    and are not declared typedefs in the current block */
@@ -202,9 +202,9 @@ do {									\
 %type <dsptype> declspecs_ts_nosa declspecs_nots_nosa
 %type <dsptype> declspecs_nosc_ts declspecs_nosc_nots declspecs_nosc declspecs
 %type <dsptype> maybe_type_quals_attrs
-%type <ttype> typespec_nonattr typespec_attr
-%type <ttype> typespec_reserved_nonattr typespec_reserved_attr
-%type <ttype> typespec_nonreserved_nonattr
+%type <tstype> typespec_nonattr typespec_attr
+%type <tstype> typespec_reserved_nonattr typespec_reserved_attr
+%type <tstype> typespec_nonreserved_nonattr
 %type <ttype> offsetof_member_designator
 
 %type <ttype> scspec SCSPEC STATIC TYPESPEC TYPE_QUAL maybe_volatile
@@ -226,7 +226,7 @@ do {									\
 %type <dtrtype> parm_declarator_starttypename parm_declarator_nostarttypename
 %type <dtrtype> array_declarator
 
-%type <ttype> structsp_attr structsp_nonattr
+%type <tstype> structsp_attr structsp_nonattr
 %type <ttype> component_decl_list component_decl_list2
 %type <ttype> component_decl components components_notype component_declarator
 %type <ttype> component_notype_declarator
@@ -1262,7 +1262,9 @@ typespec_attr:
 
 typespec_reserved_nonattr:
 	  TYPESPEC
-		{ OBJC_NEED_RAW_IDENTIFIER (1);	}
+		{ OBJC_NEED_RAW_IDENTIFIER (1);
+		  $$.kind = ctsk_resword;
+		  $$.spec = $1; }
 	| structsp_nonattr
 	;
 
@@ -1274,17 +1276,21 @@ typespec_nonreserved_nonattr:
 	  TYPENAME
 		{ /* For a typedef name, record the meaning, not the name.
 		     In case of `foo foo, bar;'.  */
-		  $$ = lookup_name ($1); }
+		  $$.kind = ctsk_typedef;
+		  $$.spec = lookup_name ($1); }
 @@ifobjc
 	| CLASSNAME protocolrefs
-		{ $$ = objc_get_protocol_qualified_type ($1, $2); }
+		{ $$.kind = ctsk_objc;
+		  $$.spec = objc_get_protocol_qualified_type ($1, $2); }
 	| OBJECTNAME protocolrefs
-		{ $$ = objc_get_protocol_qualified_type ($1, $2); }
+		{ $$.kind = ctsk_objc;
+		  $$.spec = objc_get_protocol_qualified_type ($1, $2); }
 
 /* Make "<SomeProtocol>" equivalent to "id <SomeProtocol>"
    - nisse@lysator.liu.se */
         | non_empty_protocolrefs
-                { $$ = objc_get_protocol_qualified_type (NULL_TREE, $1); }
+                { $$.kind = ctsk_objc;
+		  $$.spec = objc_get_protocol_qualified_type (NULL_TREE, $1); }
 @@end_ifobjc
 	| typeof '(' expr ')'
 		{ skip_evaluation--;
@@ -1292,11 +1298,17 @@ typespec_nonreserved_nonattr:
 		  if (TREE_CODE ($3.value) == COMPONENT_REF
 		      && DECL_C_BIT_FIELD (TREE_OPERAND ($3.value, 1)))
 		    error ("%<typeof%> applied to a bit-field");
-		  $$ = TREE_TYPE ($3.value);
-		  pop_maybe_used (variably_modified_type_p ($$, NULL_TREE)); }
+		  $$.kind = ctsk_typeof;
+		  $$.spec = TREE_TYPE ($3.value);
+		  pop_maybe_used (variably_modified_type_p ($$.spec,
+							    NULL_TREE)); }
 	| typeof '(' typename ')'
-		{ skip_evaluation--; in_typeof--; $$ = groktypename ($3);
-		  pop_maybe_used (variably_modified_type_p ($$, NULL_TREE)); }
+		{ skip_evaluation--;
+		  in_typeof--;
+		  $$.kind = ctsk_typeof;
+		  $$.spec = groktypename ($3);
+		  pop_maybe_used (variably_modified_type_p ($$.spec,
+							    NULL_TREE)); }
 	;
 
 /* typespec_nonreserved_attr does not exist.  */
@@ -1639,47 +1651,55 @@ enum_head:
 
 structsp_attr:
 	  struct_head identifier '{'
-		{ $$ = start_struct (RECORD_TYPE, $2);
+		{ $<ttype>$ = start_struct (RECORD_TYPE, $2);
 		  /* Start scope of tag before parsing components.  */
 		}
 	  component_decl_list '}' maybe_attribute
-		{ $$ = finish_struct ($<ttype>4, nreverse ($5),
-				      chainon ($1, $7)); }
+		{ $$.spec = finish_struct ($<ttype>4, nreverse ($5),
+					   chainon ($1, $7));
+		  $$.kind = ctsk_tagdef; }
 	| struct_head '{' component_decl_list '}' maybe_attribute
-		{ $$ = finish_struct (start_struct (RECORD_TYPE, NULL_TREE),
-				      nreverse ($3), chainon ($1, $5));
+		{ $$.spec = finish_struct (start_struct (RECORD_TYPE,
+							 NULL_TREE),
+					   nreverse ($3), chainon ($1, $5));
+		  $$.kind = ctsk_tagdef;
 		}
 	| union_head identifier '{'
-		{ $$ = start_struct (UNION_TYPE, $2); }
+		{ $<ttype>$ = start_struct (UNION_TYPE, $2); }
 	  component_decl_list '}' maybe_attribute
-		{ $$ = finish_struct ($<ttype>4, nreverse ($5),
-				      chainon ($1, $7)); }
+		{ $$.spec = finish_struct ($<ttype>4, nreverse ($5),
+					   chainon ($1, $7));
+		  $$.kind = ctsk_tagdef; }
 	| union_head '{' component_decl_list '}' maybe_attribute
-		{ $$ = finish_struct (start_struct (UNION_TYPE, NULL_TREE),
-				      nreverse ($3), chainon ($1, $5));
+		{ $$.spec = finish_struct (start_struct (UNION_TYPE,
+							 NULL_TREE),
+					   nreverse ($3), chainon ($1, $5));
+		  $$.kind = ctsk_tagdef;
 		}
 	| enum_head identifier '{'
-		{ $$ = start_enum ($2); }
+		{ $<ttype>$ = start_enum ($2); }
 	  enumlist maybecomma_warn '}' maybe_attribute
-		{ $$ = finish_enum ($<ttype>4, nreverse ($5),
-				    chainon ($1, $8)); }
+		{ $$.spec = finish_enum ($<ttype>4, nreverse ($5),
+					 chainon ($1, $8));
+		  $$.kind = ctsk_tagdef; }
 	| enum_head '{'
-		{ $$ = start_enum (NULL_TREE); }
+		{ $<ttype>$ = start_enum (NULL_TREE); }
 	  enumlist maybecomma_warn '}' maybe_attribute
-		{ $$ = finish_enum ($<ttype>3, nreverse ($4),
-				    chainon ($1, $7)); }
+		{ $$.spec = finish_enum ($<ttype>3, nreverse ($4),
+					 chainon ($1, $7));
+		  $$.kind = ctsk_tagdef; }
 	;
 
 structsp_nonattr:
 	  struct_head identifier
-		{ $$ = xref_tag (RECORD_TYPE, $2); }
+		{ $$ = parser_xref_tag (RECORD_TYPE, $2); }
 	| union_head identifier
-		{ $$ = xref_tag (UNION_TYPE, $2); }
+		{ $$ = parser_xref_tag (UNION_TYPE, $2); }
 	| enum_head identifier
-		{ $$ = xref_tag (ENUMERAL_TYPE, $2);
+		{ $$ = parser_xref_tag (ENUMERAL_TYPE, $2);
 		  /* In ISO C, enumerated types can be referred to
 		     only if already defined.  */
-		  if (pedantic && !COMPLETE_TYPE_P ($$))
+		  if (pedantic && !COMPLETE_TYPE_P ($$.spec))
 		    pedwarn ("ISO C forbids forward references to %<enum%> types"); }
 	;
 
