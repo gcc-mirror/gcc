@@ -1748,8 +1748,7 @@ maybe_layout_super_class (super_class, this_class)
 {
   if (TREE_CODE (super_class) == RECORD_TYPE)
     {
-      if (!CLASS_LOADED_P (super_class) 
-	  && CLASS_FROM_SOURCE_P (super_class))
+      if (!CLASS_LOADED_P (super_class) && CLASS_FROM_SOURCE_P (super_class))
 	safe_layout_class (super_class);
       if (!CLASS_LOADED_P (super_class))
 	load_class (super_class, 1);

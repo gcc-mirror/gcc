@@ -3265,10 +3265,8 @@ build_unresolved_array_type (type_or_wfl)
 		 IDENTIFIER_POINTER (EXPR_WFL_NODE (type_or_wfl)),
 		 IDENTIFIER_LENGTH (EXPR_WFL_NODE (type_or_wfl)));
   ptr = obstack_finish (&temporary_obstack);
-  return build_expr_wfl (get_identifier (ptr),
-			 EXPR_WFL_FILENAME (type_or_wfl),
-			 EXPR_WFL_LINENO (type_or_wfl),
-			 EXPR_WFL_COLNO (type_or_wfl));
+  EXPR_WFL_NODE (type_or_wfl) = get_identifier (ptr);
+  return type_or_wfl;
 }
 
 static void
@@ -3303,7 +3301,8 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
        - Can't be imported by a single type import
        - Can't already exists in the package */
   if (IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (raw_name)
-      && (node = find_name_in_single_imports (raw_name)))
+      && (node = find_name_in_single_imports (raw_name))
+      && !CPC_INNER_P ())
     {
       parse_error_context 
 	(cl, "%s name `%s' clashes with imported type `%s'",
@@ -4260,14 +4259,18 @@ method_header (flags, type, mdecl, throws)
      int flags;
      tree type, mdecl, throws;
 {
-  tree meth = TREE_VALUE (mdecl);
-  tree id = TREE_PURPOSE (mdecl);
   tree type_wfl = NULL_TREE;
   tree meth_name = NULL_TREE;
   tree current, orig_arg, this_class = NULL;
+  tree id, meth;
   int saved_lineno;
   int constructor_ok = 0, must_chain;
   int count;
+
+  if (mdecl == error_mark_node)
+    return error_mark_node;
+  meth = TREE_VALUE (mdecl);
+  id = TREE_PURPOSE (mdecl);
   
   check_modifiers_consistency (flags);
 
@@ -4664,6 +4667,9 @@ method_declarator (id, list)
   jdep *jdep;
 
   patch_stage = JDEP_NO_PATCH;
+
+  if (GET_CPC () == error_mark_node)
+    return error_mark_node;
 
   /* If we're dealing with an inner class constructor, we hide the
      this$<n> decl in the name field of its parameter declaration.  We
@@ -5391,7 +5397,10 @@ resolve_class (enclosing, class_type, decl, cl)
   while (name[0] == '[')
     name++;
   if (base != name)
-    TYPE_NAME (class_type) = get_identifier (name);
+    {
+      TYPE_NAME (class_type) = get_identifier (name);
+      WFL_STRIP_BRACKET (cl, cl);
+    }
 
   /* 2- Resolve the bare type */
   if (!(resolved_type_decl = do_resolve_class (enclosing, class_type, 
@@ -5562,7 +5571,7 @@ resolve_and_layout (something, cl)
      tree something;
      tree cl;
 {
-  tree decl;
+  tree decl, decl_type;
 
   /* Don't do that on the current class */
   if (something == current_class)
@@ -5605,13 +5614,14 @@ resolve_and_layout (something, cl)
     return NULL_TREE;
 
   /* Resolve and layout if necessary */
-  layout_class_methods (TREE_TYPE (decl));
-  /* Check methods, but only once */
-  if (CLASS_FROM_SOURCE_P (TREE_TYPE (decl)) 
-      && !CLASS_LOADED_P (TREE_TYPE (decl)))
-    CHECK_METHODS (decl);
-  if (TREE_TYPE (decl) != current_class && !CLASS_LOADED_P (TREE_TYPE (decl)))
-    safe_layout_class (TREE_TYPE (decl));
+  decl_type = TREE_TYPE (decl);
+  layout_class_methods (decl_type);
+  /* Check methods */
+  if (CLASS_FROM_SOURCE_P (decl_type))
+    java_check_methods (decl);
+  /* Layout the type if necessary */ 
+  if (decl_type != current_class && !CLASS_LOADED_P (decl_type))
+    safe_layout_class (decl_type);
 
   return decl;
 }
@@ -5955,6 +5965,23 @@ check_method_types_complete (decl)
       return 0;
 
   return 1;
+}
+
+/* Visible interface to check methods contained in CLASS_DECL */
+
+void
+java_check_methods (class_decl)
+     tree class_decl;
+{
+  if (CLASS_METHOD_CHECKED_P (TREE_TYPE (class_decl)))
+    return;
+
+  if (CLASS_INTERFACE (class_decl))
+    java_check_abstract_methods (class_decl);
+  else
+    java_check_regular_methods (class_decl);
+  
+  CLASS_METHOD_CHECKED_P (TREE_TYPE (class_decl)) = 1;
 }
 
 /* Check all the methods of CLASS_DECL. Methods are first completed
@@ -7288,7 +7315,7 @@ java_layout_classes ()
   /* Then check the methods of all parsed classes */
   for (current = ctxp->gclass_list; current; current = TREE_CHAIN (current))
     if (CLASS_FROM_SOURCE_P (TREE_TYPE (TREE_VALUE (current))))
-      CHECK_METHODS (TREE_VALUE (current));
+      java_check_methods (TREE_VALUE (current));
   java_parse_abort_on_error ();
 
   for (current = ctxp->gclass_list; current; current = TREE_CHAIN (current))
@@ -8951,8 +8978,10 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	     instantiation using a primary qualified by a `new' */
 	  RESTORE_THIS_AND_CURRENT_CLASS;
 
-	  /* EH check */
-	  if (location)
+	  /* EH check. No check on access$<n> functions */
+	  if (location 
+	      && !OUTER_FIELD_ACCESS_IDENTIFIER_P 
+	            (DECL_NAME (current_function_decl)))
 	    check_thrown_exceptions (location, ret_decl);
 
 	  /* If the previous call was static and this one is too,
@@ -10988,6 +11017,8 @@ java_complete_lhs (node)
       /* Multiple instance of a case label bearing the same
 	 value is checked during code generation. The case
 	 expression is allright so far. */
+      if (TREE_CODE (cn) == VAR_DECL)
+	cn = DECL_INITIAL (cn);
       TREE_OPERAND (node, 0) = cn;
       TREE_TYPE (node) = void_type_node;
       CAN_COMPLETE_NORMALLY (node) = 1;
@@ -12035,6 +12066,19 @@ patch_assignment (node, wfl_op1, wfl_op2)
 	  else
 	    lvalue = build (COMPOUND_EXPR, lhs_type, check, lvalue);
 	}
+    }
+
+  /* Final locals can be used as case values in switch
+     statement. Prepare them for this eventuality. */
+  if (TREE_CODE (lvalue) == VAR_DECL 
+      && LOCAL_FINAL (lvalue)
+      && TREE_CONSTANT (new_rhs)
+      && IDENTIFIER_LOCAL_VALUE (DECL_NAME (lvalue))
+      && JINTEGRAL_TYPE_P (TREE_TYPE (lvalue))
+      )
+    {
+      TREE_CONSTANT (lvalue) = 1;
+      DECL_INITIAL (lvalue) = new_rhs;
     }
 
   TREE_OPERAND (node, 0) = lvalue;

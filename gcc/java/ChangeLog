@@ -1,3 +1,31 @@
+2000-08-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (maybe_layout_super_class): Fixed indentation.
+	* java-tree.h (CLASS_METHOD_CHECKED_P): New macro.
+	(java_check_methods): New function declaration.
+	* jcf-parse.c (get_constant): Let `char_len' go up to 3. Use `str'
+	instead of `str_ptr'.
+	* jcf-write.c (generate_bytecode_insns): Emit number the of args
+	of a `invokeinterface' at the right time.
+	* parse.h (WFL_STRIP_BRACKET): New macro.
+	(SET_TYPE_FOR_RESOLUTION): Use it.
+	* parse.y (build_unresolved_array_type): Reuse `type_or_wfl.'
+	(check_class_interface_creation): Don't check for cross package
+	innerclass name clashes.
+	(method_header): Behave properly if MDECL is `error_mark_node.'
+	(method_declarator): Return `error_mark_node' if bogus current
+	class.
+	(resolve_class): Apply WFL_STRIP_BRACKET on `cl' if necessary.
+	(resolve_and_layout): New local `decl_type', set and used. Call
+	java_check_methods.
+	(java_check_methods): New method.
+	(java_layout_classes): Use it.
+	(resolve_qualified_expression_name): No EH check necessary in
+	access$<n>.
+	(java_complete_lhs): Use VAR_DECL's DECL_INITIAL when evaluating
+	`case' statement.
+	(patch_assignment): Set DECL_INITIAL on integral final local.
+
 2000-08-07  Alexandre Petit-Bianco  <apbianco@cygnus.com
 
 	* parse.y (build_dot_class_method_invocation): Changed parameter
