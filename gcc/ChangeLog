@@ -1,5 +1,9 @@
 2003-09-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Remove --with-elf, which doesn't work.
+	* configure: Regenerate.
+	* config.gcc: Remove references to $elf, which does nothing.
+
 	* config/i386/xm-vsta.h: Remove xm-file believed useless.
 	* config.build (i386-vsta): Remove reference to it.
 	* config.host (i386-vsta): Remove reference to it.

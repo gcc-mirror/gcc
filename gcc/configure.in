@@ -460,12 +460,6 @@ AC_ARG_WITH(stabs,
 stabs="$with_stabs",
 stabs=no)
 
-# With ELF
-AC_ARG_WITH(elf,
-[  --with-elf              arrange to use ELF instead of host debug format],
-elf="$with_elf",
-elf=no)
-
 # Determine whether or not multilibs are enabled.
 AC_ARG_ENABLE(multilib,
 [  --enable-multilib       enable library support for multiple ABIs],

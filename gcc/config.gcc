@@ -339,8 +339,6 @@ case $machine in
 	# support are matched above and just set $cpu_type.
 	tm_file="${cpu_type}/gnu.h"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
-	# GNU always uses ELF.
-	elf=yes
 	# GNU tools are the only tools.
 	gnu_ld=yes
 	gas=yes
@@ -836,7 +834,6 @@ i370-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h i370/linux.h i370/i370.h"
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	# broken_install=yes
-	elf=yes
 	;;
 i[34567]86-*-darwin*)
 	tm_file="${tm_file} i386/darwin.h"
