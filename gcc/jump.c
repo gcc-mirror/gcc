@@ -2122,12 +2122,6 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
    followed by a jump to the exit of the loop.  Then delete the unconditional
    jump after INSN.
 
-   Note that it is possible we can get confused here if the jump immediately
-   after the loop start branches outside the loop but within an outer loop.
-   If we are near the exit of that loop, we will copy its exit test.  This
-   will not generate incorrect code, but could suppress some optimizations.
-   However, such cases are degenerate loops anyway.
-
    Return 1 if we made the change, else 0.
 
    This is only safe immediately after a regscan pass because it uses the
@@ -2168,9 +2162,19 @@ duplicate_loop_exit_test (loop_start)
 	case CALL_INSN:
 	  return 0;
 	case NOTE:
+	  /* We could be in front of the wrong NOTE_INSN_LOOP_END if there is
+	     a jump immediately after the loop start that branches outside
+	     the loop but within an outer loop, near the exit test.
+	     If we copied this exit test and created a phony
+	     NOTE_INSN_LOOP_VTOP, this could make instructions immediately
+	     before the exit test look like these could be safely moved
+	     out of the loop even if they actually may be never executed.
+	     This can be avoided by checking here for NOTE_INSN_LOOP_CONT.  */
+
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT)
 	    return 0;
 	  break;
 	case JUMP_INSN:
