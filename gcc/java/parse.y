@@ -12080,8 +12080,8 @@ java_complete_lhs (tree node)
 	  /* When we have a primitype type, or a string and we're not
              emitting a class file, we actually don't want to generate
              anything for the assignment. */
-	  if (value != NULL_TREE &&
-	      (JPRIMITIVE_TYPE_P (TREE_TYPE (value)) ||
+	  if (value != NULL_TREE && 
+	      (JPRIMITIVE_TYPE_P (TREE_TYPE (value)) || 
 	       (TREE_TYPE (value) == string_ptr_type_node &&
 		! flag_emit_class_files)))
 	    {
@@ -16089,7 +16089,11 @@ fold_constant_for_init (tree node, tree context)
       if (val == NULL_TREE || ! TREE_CONSTANT (val))
 	return NULL_TREE;
       TREE_OPERAND (node, 0) = val;
-      return patch_unaryop (node, op0);
+      val = patch_unaryop (node, op0);
+      if (! TREE_CONSTANT (val))
+	return NULL_TREE;
+      return val;
+
       break;
 
     case COND_EXPR:
