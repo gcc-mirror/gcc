@@ -590,10 +590,13 @@ extern int g_switch_set;
 
 extern int align_loops;
 extern int align_loops_log;
+extern int align_loops_max_skip;
 extern int align_jumps;
 extern int align_jumps_log;
+extern int align_jumps_max_skip;
 extern int align_labels;
 extern int align_labels_log;
+extern int align_labels_max_skip;
 extern int align_functions;
 extern int align_functions_log;
 

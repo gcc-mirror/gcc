@@ -1,3 +1,13 @@
+Sun Nov 11 01:26:00 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* final.c (*_MAX_SKIP): Use *_max_skip variables.
+	* flags.h (align_loops_max_skip, align_jumps_max_skip,
+	align_labels_max_skip): New global variables.
+	* toplev.c (align_loops_max_skip, align_jumps_max_skip,
+	align_labels_max_skip): New global variables.
+	(toplev_main): Set new variables.
+	* i386.c (override_options): Set max_skip values.
+
 2001-11-10  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/tm.texi (Label Output): Document ASM_OUTPUT_LABEL_REF.
