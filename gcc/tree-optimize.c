@@ -95,6 +95,8 @@ clear_decl_rtl (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
 void
 tree_rest_of_compilation (tree fndecl, bool nested_p)
 {
+  location_t saved_loc;
+
   timevar_push (TV_EXPAND);
 
   if (flag_unit_at_a_time && !cgraph_global_info_ready)
@@ -102,6 +104,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
+  saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (fndecl);
   init_function_start (fndecl);
 
@@ -231,6 +234,8 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 
       DECL_ARGUMENTS (fndecl) = 0;
     }
+
+  input_location = saved_loc;
 
   timevar_pop (TV_EXPAND);
 }

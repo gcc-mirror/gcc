@@ -2845,7 +2845,6 @@ emit_associated_thunks (tree fn)
 void
 expand_body (tree fn)
 {
-  location_t saved_loc;
   tree saved_function;
   
   /* Compute the appropriate object-file linkage for inline
@@ -2862,7 +2861,6 @@ expand_body (tree fn)
     return;
 
   /* ??? When is this needed?  */
-  saved_loc = input_location;
   saved_function = current_function_decl;
 
   timevar_push (TV_INTEGRATION);
@@ -2872,7 +2870,6 @@ expand_body (tree fn)
   tree_rest_of_compilation (fn, function_depth > 1);
 
   current_function_decl = saved_function;
-  input_location = saved_loc;
 
   extract_interface_info ();
 

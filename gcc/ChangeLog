@@ -1,3 +1,8 @@
+2003-09-17  Richard Henderson  <rth@redhat.com>
+
+	* tree-optimize.c (tree_rest_of_compilation): Save and restore
+	input_location.
+
 2003-09-17  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config/rs6000/sysv4.h (LIB_LINUX_SPEC): Give -lpthread before -lc.
