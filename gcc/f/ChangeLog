@@ -1,3 +1,9 @@
+Wed May 26 14:25:07 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi, news.texi, root.texi, version.c: Start renaming
+	EGCS 1.2 to GCC 2.95, and start using 0.5.25 to designate
+	the version of g77 within GCC 2.95.
+
 Wed May 26 11:45:21 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Rename -fsubscript-check to -fbounds-check and

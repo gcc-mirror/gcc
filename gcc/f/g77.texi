@@ -13808,8 +13808,16 @@ the source code of @code{g77} and rebuilding.
 How to do this depends on the version of @code{g77}:
 
 @table @code
-@item EGCS-1.0
-@itemx FSF
+@item G77 0.5.24 (EGCS 1.1)
+@itemx G77 0.5.25 (EGCS 1.2)
+Change the @code{lang_init_options} routine in @file{egcs/gcc/f/com.c}.
+
+(Note that these versions of @code{g77}
+perform internal consistency checking automatically
+when the @samp{-fversion} option is specified.)
+
+@item G77 0.5.23
+@itemx G77 0.5.24 (EGCS 1.0)
 Change the way @code{f771} handles the @samp{-fset-g77-defaults}
 option, which is always provided as the first option when
 called by @code{g77} or @code{gcc}.
@@ -13833,14 +13841,6 @@ It is in @file{@value{path-g77}/lang-specs.h} that @samp{-fset-g77-defaults},
 even when the user has not explicitly specified them.
 Other ``internal'' options such as @samp{-quiet} also
 are passed via this mechanism.
-
-@item EGCS-1.1
-@itemx EGCS-1.2
-Change the @code{lang_init_options} routine in @file{egcs/gcc/f/com.c}.
-
-(Note that these versions of @code{g77}
-perform internal consistency checking automatically
-when the @samp{-fversion} option is specified.)
 @end table
 
 @node Projects

@@ -1,3 +1,8 @@
+Wed May 26 14:26:35 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libF77/Version.c, libI77/Version.c, libU77/Version.c:
+	Use 0.5.24 to designate the version of g77 within GCC 2.95.
+
 Thu May 20 03:20:59 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (AC_EXEEXT): Remove call.  
