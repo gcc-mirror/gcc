@@ -3,7 +3,7 @@
 
 class Wtransf {};
 
-const Wtransf Identity2k;
+const Wtransf Identity2 = Wtransf ();
 
 class HELPER {
    public:
