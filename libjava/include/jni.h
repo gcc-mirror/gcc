@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -240,12 +240,6 @@ typedef union jvalue
   jobject  l;
 } jvalue;
 
-#ifdef __cplusplus
-typedef void * (*_Jv_func) (...);
-#else
-typedef void * (*_Jv_func) ();
-#endif
-
 /* This structure is used when registering native methods.  */
 typedef struct
 {
@@ -256,10 +250,10 @@ typedef struct
 
 struct JNINativeInterface
 {
-  _Jv_func reserved0;
-  _Jv_func reserved1;
-  _Jv_func reserved2;
-  _Jv_func reserved3;
+  void *reserved0;
+  void *reserved1;
+  void *reserved2;
+  void *reserved3;
 
   jint     (JNICALL *GetVersion)                   (JNIEnv *);
   jclass   (JNICALL *DefineClass)                  (JNIEnv *, const char *,
@@ -1574,9 +1568,9 @@ public:
 
 struct JNIInvokeInterface
 {
-  _Jv_func reserved0;
-  _Jv_func reserved1;
-  _Jv_func reserved2;
+  void *reserved0;
+  void *reserved1;
+  void *reserved2;
 
   jint (JNICALL *DestroyJavaVM)         (JavaVM *);
   jint (JNICALL *AttachCurrentThread)   (JavaVM *, void **, void *);
