@@ -1,3 +1,8 @@
+Thu Sep 17 01:57:07 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (JAVA_OBJS): Add memmove.o
+	(memmove.o): New target & rules.
+
 Mon Sep 14 10:14:47 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in: Add many missing dependencies.

@@ -180,7 +180,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 #
 JAVA_OBJS = parse.o class.o decl.o expr.o constants.o lang.o typeck.o \
   except.o verify.o zextract.o jcf-io.o jcf-parse.o mangle.o jcf-write.o \
-  buffer.o
+  buffer.o memmove.o
 
 JAVA_OBJS_LITE = parse-scan.o jv-scan.o
 
@@ -210,6 +210,11 @@ compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
+
+memmove.o: $(srcdir)/../../libiberty/memmove.c
+	rm -f memmove.c
+	$(LN_S) $(srcdir)/../../libiberty/memmove.c memmove.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) memmove.c
 
 native: config.status ../jc1$(exeext)
 
