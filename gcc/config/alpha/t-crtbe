@@ -1,0 +1,9 @@
+# Effectively disable the crtbegin/end rules using crtstuff.c
+T = disable
+
+# Assemble startup files.
+crtbegin.o: $(srcdir)/config/alpha/crtbegin.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crtbegin.o -x assembler $(srcdir)/config/alpha/crtbegin.asm
+
+crtend.o: $(srcdir)/config/alpha/crtend.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crtend.o -x assembler $(srcdir)/config/alpha/crtend.asm
