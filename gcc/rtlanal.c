@@ -1,6 +1,6 @@
 /* Analyze RTL for C-Compiler
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1867,7 +1867,7 @@ find_reg_fusage (insn, code, datum)
            link;
 	   link = XEXP (link, 1))
         if (GET_CODE (XEXP (link, 0)) == code
-	    && rtx_equal_p (datum, SET_DEST (XEXP (link, 0))))
+	    && rtx_equal_p (datum, XEXP (XEXP (link, 0), 0)))
           return 1;
     }
   else

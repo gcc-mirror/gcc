@@ -1,3 +1,8 @@
+2002-01-09  Kazu Hirata  <kazu@hxi.com>
+
+	* rtlanal.c (find_reg_fusage): Use XEXP instead of SET_DEST
+	to extract items in the expr_list chain.
+
 2002-01-09  Richard Henderson  <rth@redhat.com>
 
 	* config/vax/vax.c (vax_rtx_cost): Never abort.
