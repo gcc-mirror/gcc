@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.48 $"
+version="$Revision: 1.49 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -697,7 +697,7 @@ fi
 if test -f skip-this-dir; then
 	# Perform the same cleanup as the trap handler, minus the "exit 1" of course,
 	# and reset the trap handler.
-	trap 0
+	trap '' 0
 	rm -rf Makefile* ${tmpdir}
 	# Execute the final clean-up actions
 	${config_shell} skip-this-dir
@@ -1596,7 +1596,7 @@ fi
 # Perform the same cleanup as the trap handler, minus the "exit 1" of course,
 # and reset the trap handler.
 rm -rf ${tmpdir}
-trap 0
+trap '' 0
 
 exit 0
 
