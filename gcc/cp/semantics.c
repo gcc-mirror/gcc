@@ -2486,19 +2486,8 @@ finish_id_expression (tree id_expression,
 	      *non_constant_expression_p = true;
 	    }
 	}
-
-      if (scope)
-	{
-	  decl = (adjust_result_of_qualified_name_lookup 
-		  (decl, scope, current_class_type));
-	  if (TREE_CODE (decl) == FIELD_DECL || BASELINK_P (decl))
-	    *qualifying_class = scope;
-	  else if (!processing_template_decl)
-	    decl = convert_from_reference (decl);
-	  else if (TYPE_P (scope))
-	    decl = build (SCOPE_REF, TREE_TYPE (decl), scope, decl);
-	}
-      else if (TREE_CODE (decl) == NAMESPACE_DECL)
+      
+      if (TREE_CODE (decl) == NAMESPACE_DECL)
 	{
 	  error ("use of namespace `%D' as expression", decl);
 	  return error_mark_node;
@@ -2516,6 +2505,25 @@ finish_id_expression (tree id_expression,
 	  print_candidates (decl);
 	  return error_mark_node;
 	}
+
+      /* Mark variable-like entities as used.  Functions are similarly
+	 marked either below or after overload resolution.  */
+      if (TREE_CODE (decl) == VAR_DECL
+	  || TREE_CODE (decl) == PARM_DECL
+	  || TREE_CODE (decl) == RESULT_DECL)
+	mark_used (decl);
+
+      if (scope)
+	{
+	  decl = (adjust_result_of_qualified_name_lookup 
+		  (decl, scope, current_class_type));
+	  if (TREE_CODE (decl) == FIELD_DECL || BASELINK_P (decl))
+	    *qualifying_class = scope;
+	  else if (!processing_template_decl)
+	    decl = convert_from_reference (decl);
+	  else if (TYPE_P (scope))
+	    decl = build (SCOPE_REF, TREE_TYPE (decl), scope, decl);
+	}
       else if (TREE_CODE (decl) == FIELD_DECL)
 	decl = finish_non_static_data_member (decl, current_class_ref,
 					      /*qualifying_scope=*/NULL_TREE);
@@ -2525,7 +2533,10 @@ finish_id_expression (tree id_expression,
 
 	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
 	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
-	  
+
+	  if (!really_overloaded_fn (decl))
+	    mark_used (first_fn);
+
 	  if (TREE_CODE (first_fn) == FUNCTION_DECL
 	      && DECL_FUNCTION_MEMBER_P (first_fn))
 	    {
@@ -2533,9 +2544,6 @@ finish_id_expression (tree id_expression,
 	      decl = maybe_dummy_object (DECL_CONTEXT (first_fn), 0);
 	      return finish_class_member_access_expr (decl, id_expression);
 	    }
-	  else if (!really_overloaded_fn (decl))
-	    /* not really overloaded function */
-	    mark_used (first_fn);
 	}
       else
 	{
@@ -2565,8 +2573,6 @@ finish_id_expression (tree id_expression,
 	      path = currently_open_derived_class (DECL_CONTEXT (decl));
 	      perform_or_defer_access_check (TYPE_BINFO (path), decl);
 	    }
-	  
-	  mark_used (decl);
 	  
 	  if (! processing_template_decl)
 	    decl = convert_from_reference (decl);

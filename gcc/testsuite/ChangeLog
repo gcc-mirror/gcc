@@ -1,3 +1,8 @@
+2003-07-28  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/11530
+	* g++.dg/opt/call1.C: New test.
+
 2003-07-28  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/11667

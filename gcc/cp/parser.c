@@ -3428,10 +3428,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	return postfix_expression;
     }
 
-  /* Remember that there was a reference to this entity.  */
-  if (DECL_P (postfix_expression))
-    mark_used (postfix_expression);
-
   /* Keep looping until the postfix-expression is complete.  */
   while (true)
     {

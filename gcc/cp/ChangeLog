@@ -1,5 +1,12 @@
 2003-07-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11530
+	* parser.c (cp_parser_postfix_expression): Do not call mark_used.
+	* semantics.c (finish_id_expression): Call mark_used for all
+	declarations.
+
+2003-07-28  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/11667
 	* call.c (standard_conversion): Allow all integral->enumeral
 	conversions, after marking them as bad.
