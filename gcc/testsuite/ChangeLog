@@ -1,3 +1,7 @@
+Tue Oct 15 14:22:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.dg/weak/typeof-2.c: For SH targets, return before baz3 test.
+
 Mon Oct 14 20:37:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-ssetype-[1-5].c: New tests.
