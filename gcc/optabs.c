@@ -1923,40 +1923,86 @@ expand_vector_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
      int unsignedp;
      enum optab_methods methods;
 {
-  enum machine_mode submode;
-  int elts, subsize, i;
+  enum machine_mode submode, tmode;
+  int size, elts, subsize, subbitsize, i;
   rtx t, a, b, res, seq;
   enum mode_class class;
 
   class = GET_MODE_CLASS (mode);
 
+  size =  GET_MODE_SIZE (mode);
   submode = GET_MODE_INNER (mode);
-  subsize = GET_MODE_UNIT_SIZE (mode);
-  elts = GET_MODE_NUNITS (mode);
 
-  if (!target)
-    target = gen_reg_rtx (mode);
-
-  start_sequence ();
-
-  /* FIXME: Optimally, we should try to do this in narrower vector
-     modes if available.  E.g. When trying V8SI, try V4SI, else
-     V2SI, else decay into SI.  */
+  /* Search for the widest vector mode with the same inner mode that is
+     still narrower than MODE and that allows to open-code this operator.
+     Note, if we find such a mode and the handler later decides it can't
+     do the expansion, we'll be called recursively with the narrower mode.  */
+  for (tmode = GET_CLASS_NARROWEST_MODE (class);
+       GET_MODE_SIZE (tmode) < GET_MODE_SIZE (mode);
+       tmode = GET_MODE_WIDER_MODE (tmode))
+    {
+      if (GET_MODE_INNER (tmode) == GET_MODE_INNER (mode)
+	  && binoptab->handlers[(int) tmode].insn_code != CODE_FOR_nothing)
+	submode = tmode;
+    }
 
   switch (binoptab->code)
     {
+    case AND:
+    case IOR:
+    case XOR:
+      tmode = int_mode_for_mode (mode);
+      if (tmode != BLKmode)
+	submode = tmode;
     case PLUS:
     case MINUS:
     case MULT:
     case DIV:
+      subsize = GET_MODE_SIZE (submode);
+      subbitsize = GET_MODE_BITSIZE (submode);
+      elts = size / subsize;
+
+      /* If METHODS is OPTAB_DIRECT, we don't insist on the exact mode,
+	 but that we operate on more than one element at a time.  */
+      if (subsize == GET_MODE_UNIT_SIZE (mode) && methods == OPTAB_DIRECT)
+	return 0;
+
+      start_sequence ();
+
+      /* Errors can leave us with a const0_rtx as operand.  */
+      if (GET_MODE (op0) != mode)
+	op0 = copy_to_mode_reg (mode, op0);
+      if (GET_MODE (op1) != mode)
+	op1 = copy_to_mode_reg (mode, op1);
+
+      if (!target)
+	target = gen_reg_rtx (mode);
+
       for (i = 0; i < elts; ++i)
 	{
-	  t = simplify_gen_subreg (submode, target, mode,
-				   i * subsize);
-	  a = simplify_gen_subreg (submode, op0, mode,
-				   i * subsize);
-	  b = simplify_gen_subreg (submode, op1, mode,
-				   i * subsize);
+	  /* If this is part of a register, and not the first item in the
+	     word, we can't store using a SUBREG - that would clobber
+	     previous results.
+	     And storing with a SUBREG is only possible for the least
+	     significant part, hence we can't do it for big endian
+	     (unless we want to permute the evaluation order.  */
+	  if (GET_CODE (target) == REG
+	      && (BYTES_BIG_ENDIAN
+		  ? subsize < UNITS_PER_WORD
+		  : ((i * subsize) % UNITS_PER_WORD) != 0))
+	    t = NULL_RTX;
+	  else
+	    t = simplify_gen_subreg (submode, target, mode, i * subsize);
+	  if (CONSTANT_P (op0))
+	    a = simplify_gen_subreg (submode, op0, mode, i * subsize);
+	  else
+	    a = extract_bit_field (op0, subbitsize, i * subbitsize, unsignedp,
+				   NULL_RTX, submode, submode, size);
+	  if (CONSTANT_P (op1))
+	    b = simplify_gen_subreg (submode, op1, mode, i * subsize);
+	  else
+	    b = extract_bit_field (op1, subbitsize, i * subbitsize, unsignedp,
+				   NULL_RTX, submode, submode, size);
 
 	  if (binoptab->code == DIV)
 	    {
@@ -1974,7 +2020,11 @@ expand_vector_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  if (res == 0)
 	    break;
 
-	  emit_move_insn (t, res);
+	  if (t)
+	    emit_move_insn (t, res);
+	  else
+	    store_bit_field (target, subbitsize, i * subbitsize, submode, res,
+			     size);
 	}
       break;
 
@@ -1999,31 +2049,83 @@ expand_vector_unop (mode, unoptab, op0, target, unsignedp)
      rtx target;
      int unsignedp;
 {
-  enum machine_mode submode;
-  int elts, subsize, i;
+  enum machine_mode submode, tmode;
+  int size, elts, subsize, subbitsize, i;
   rtx t, a, res, seq;
 
+  size =  GET_MODE_SIZE (mode);
   submode = GET_MODE_INNER (mode);
-  subsize = GET_MODE_UNIT_SIZE (mode);
-  elts = GET_MODE_NUNITS (mode);
+
+  /* Search for the widest vector mode with the same inner mode that is
+     still narrower than MODE and that allows to open-code this operator.
+     Note, if we find such a mode and the handler later decides it can't
+     do the expansion, we'll be called recursively with the narrower mode.  */
+  for (tmode = GET_CLASS_NARROWEST_MODE (GET_MODE_CLASS (mode));
+       GET_MODE_SIZE (tmode) < GET_MODE_SIZE (mode);
+       tmode = GET_MODE_WIDER_MODE (tmode))
+    {
+      if (GET_MODE_INNER (tmode) == GET_MODE_INNER (mode)
+	  && unoptab->handlers[(int) tmode].insn_code != CODE_FOR_nothing)
+	submode = tmode;
+    }
+  /* If there is no negate operation, try doing a subtract from zero.  */
+  if (unoptab == neg_optab && GET_MODE_CLASS (submode) == MODE_INT)
+    {    
+      rtx temp;
+      temp = expand_binop (mode, sub_optab, CONST0_RTX (mode), op0,
+                           target, unsignedp, OPTAB_DIRECT);
+      if (temp)
+	return temp;
+    }
+
+  if (unoptab == one_cmpl_optab)
+    {
+      tmode = int_mode_for_mode (mode);
+      if (tmode != BLKmode)
+	submode = tmode;
+    }
+
+  subsize = GET_MODE_SIZE (submode);
+  subbitsize = GET_MODE_BITSIZE (submode);
+  elts = size / subsize;
+
+  /* Errors can leave us with a const0_rtx as operand.  */
+  if (GET_MODE (op0) != mode)
+    op0 = copy_to_mode_reg (mode, op0);
 
   if (!target)
     target = gen_reg_rtx (mode);
 
   start_sequence ();
 
-  /* FIXME: Optimally, we should try to do this in narrower vector
-     modes if available.  E.g. When trying V8SI, try V4SI, else
-     V2SI, else decay into SI.  */
-
   for (i = 0; i < elts; ++i)
     {
-      t = simplify_gen_subreg (submode, target, mode, i * subsize);
-      a = simplify_gen_subreg (submode, op0, mode, i * subsize);
+      /* If this is part of a register, and not the first item in the
+	 word, we can't store using a SUBREG - that would clobber
+	 previous results.
+	 And storing with a SUBREG is only possible for the least
+	 significant part, hence we can't do it for big endian
+	 (unless we want to permute the evaluation order.  */
+      if (GET_CODE (target) == REG
+	  && (BYTES_BIG_ENDIAN
+	      ?  subsize < UNITS_PER_WORD
+	      : ((i * subsize) % UNITS_PER_WORD) != 0))
+	t = NULL_RTX;
+      else
+	t = simplify_gen_subreg (submode, target, mode, i * subsize);
+      if (CONSTANT_P (op0))
+	a = simplify_gen_subreg (submode, op0, mode, i * subsize);
+      else
+	a = extract_bit_field (op0, subbitsize, i * subbitsize, unsignedp,
+			       t, submode, submode, size);
 
       res = expand_unop (submode, unoptab, a, t, unsignedp);
 
-      emit_move_insn (t, res);
+      if (t)
+	emit_move_insn (t, res);
+      else
+	store_bit_field (target, subbitsize, i * subbitsize, submode, res,
+			 size);
     }
 
   seq = get_insns ();

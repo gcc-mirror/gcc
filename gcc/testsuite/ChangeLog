@@ -1,3 +1,8 @@
+Wed Jul  3 10:25:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.c-torture/execute/simd-1.c (main): Also test &, |, ^, ~.
+	* gcc.c-torture/execute/simd-2.c (main): Likewise.
+
 2002-07-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/cpp/tr-warn2.c: Use traditional C style function definitions.
