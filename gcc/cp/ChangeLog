@@ -1,3 +1,7 @@
+1999-10-01  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (decay_conversion): Strip cv-quals from non-class rvalues.
+
 1999-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_decl): If the type of a template instantiation is
