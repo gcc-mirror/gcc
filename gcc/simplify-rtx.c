@@ -109,7 +109,7 @@ static void simplify_binary_is2orm1	PARAMS ((PTR));
 
 
 /* Negate a CONST_INT rtx, truncating (because a conversion from a
-   maximally negative number can overflow). */
+   maximally negative number can overflow).  */
 static rtx
 neg_const_int (mode, i)
      enum machine_mode mode;

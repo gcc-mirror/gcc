@@ -1,5 +1,16 @@
 2001-12-28  Kazu Hirata  <kazu@hxi.com>
 
+	* except.c: Fix comment formatting.
+	* flags.h: Likewise.
+	* flow.c: Likewise.
+	* predict.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* system.h: Likewise.
+	* vmsdbg.h: Likewise.
+	* vmsdbgout.c: Likewise.
+
+2001-12-28  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.md: Fix formatting.
 
 2001-12-28  Geoff Keating  <geoffk@redhat.com>

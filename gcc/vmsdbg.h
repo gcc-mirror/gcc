@@ -52,11 +52,11 @@ typedef struct _DST_HEADER
 } DST_HEADER;
 #define DST_K_DST_HEADER_SIZE sizeof 4
 
-/* Language type codes. */
+/* Language type codes.  */
 typedef enum _DST_LANGUAGE {DST_K_FORTRAN = 1, DST_K_C = 7, DST_K_ADA = 9,
 			    DST_K_UNKNOWN = 10, DST_K_CXX = 15} DST_LANGUAGE;
 
-/* Module header (a module is the result of a single compilation). */
+/* Module header (a module is the result of a single compilation).  */
 
 typedef struct _DST_MODULE_BEGIN
 {
@@ -93,7 +93,7 @@ typedef struct _DST_MODULE_END
 } DST_MODULE_END;
 #define DST_K_MODEND_SIZE sizeof 4
 
-/* Routine header. */
+/* Routine header.  */
 
 typedef struct _DST_ROUTINE_BEGIN
 {
@@ -122,7 +122,7 @@ typedef struct _DST_ROUTINE_END
 } DST_ROUTINE_END;
 #define DST_K_RTNEND_SIZE 9
 
-/* Block header. */
+/* Block header.  */
 
 typedef struct _DST_BLOCK_BEGIN
 {
@@ -133,7 +133,7 @@ typedef struct _DST_BLOCK_BEGIN
 } DST_BLOCK_BEGIN;
 #define DST_K_BLKBEG_SIZE 10
 
-/* Block trailer. */
+/* Block trailer.  */
 
 typedef struct _DST_BLOCK_END
 {

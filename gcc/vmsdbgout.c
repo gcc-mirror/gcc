@@ -86,7 +86,7 @@ dst_file_info_entry;
 #define PTR_SIZE 4 /* Must be 32 bits for VMS debug info */
 #endif
 
-/* Pointer to an structure of filenames referenced by this compilation unit. */
+/* Pointer to an structure of filenames referenced by this compilation unit.  */
 static dst_file_info_ref file_info_table;
 
 /* Total number of entries in the table (i.e. array) pointed to by
@@ -524,7 +524,7 @@ restart:
 
 /* Output the debug header HEADER.  Also output COMMENT if flag_verbose_asm is
    set.  Return the header size.  Just return the size if DOSIZEONLY is
-   non-zero. */
+   non-zero.  */
 
 static int
 write_debug_header (header, comment, dosizeonly)
@@ -556,7 +556,7 @@ write_debug_header (header, comment, dosizeonly)
 
 /* Output the address of SYMBOL.  Also output COMMENT if flag_verbose_asm is
    set.  Return the address size.  Just return the size if DOSIZEONLY is
-   non-zero. */
+   non-zero.  */
 
 static int
 write_debug_addr (symbol, comment, dosizeonly)
@@ -577,7 +577,7 @@ write_debug_addr (symbol, comment, dosizeonly)
 
 /* Output the single byte DATA1.  Also output COMMENT if flag_verbose_asm is
    set.  Return the data size.  Just return the size if DOSIZEONLY is
-   non-zero. */
+   non-zero.  */
 
 static int
 write_debug_data1 (data1, comment, dosizeonly)
@@ -598,7 +598,7 @@ write_debug_data1 (data1, comment, dosizeonly)
 
 /* Output the single word DATA2.  Also output COMMENT if flag_verbose_asm is
    set.  Return the data size.  Just return the size if DOSIZEONLY is
-   non-zero. */
+   non-zero.  */
 
 static int
 write_debug_data2 (data2, comment, dosizeonly)
@@ -618,7 +618,7 @@ write_debug_data2 (data2, comment, dosizeonly)
 }
 
 /* Output double word DATA4.  Also output COMMENT if flag_verbose_asm is set.
-   Return the data size.  Just return the size if DOSIZEONLY is non-zero. */
+   Return the data size.  Just return the size if DOSIZEONLY is non-zero.  */
 
 static int
 write_debug_data4 (data4, comment, dosizeonly)
@@ -659,7 +659,7 @@ write_debug_data8 (data8, comment, dosizeonly)
 
 /* Output the difference between LABEL1 and LABEL2.  Also output COMMENT if
    flag_verbose_asm is set.  Return the data size.  Just return the size if
-   DOSIZEONLY is non-zero. */
+   DOSIZEONLY is non-zero.  */
 
 static int
 write_debug_delta4 (label1, label2, comment, dosizeonly)
@@ -681,7 +681,7 @@ write_debug_delta4 (label1, label2, comment, dosizeonly)
 
 /* Output a character string STRING.  Also write COMMENT if flag_verbose_asm is
    set.  Return the string length.  Just return the length if DOSIZEONLY is
-   non-zero. */
+   non-zero.  */
 
 static int
 write_debug_string (string, comment, dosizeonly)
@@ -701,7 +701,7 @@ write_debug_string (string, comment, dosizeonly)
 }
 
 /* Output a module begin header and return the header size.  Just return the
-   size if DOSIZEONLY is non-zero. */
+   size if DOSIZEONLY is non-zero.  */
 
 static int
 write_modbeg (dosizeonly)
@@ -715,7 +715,7 @@ write_modbeg (dosizeonly)
   int prodnamelen;
   int totsize = 0;
 
-  /* Assumes primary filename has Unix syntax file spec. */
+  /* Assumes primary filename has Unix syntax file spec.  */
   module_name = xstrdup (basename ((char *) primary_filename));
 
   m = strrchr (module_name, '.');
@@ -765,7 +765,7 @@ write_modbeg (dosizeonly)
 }
 
 /* Output a module end trailer and return the trailer size.   Just return
-   the size if DOSIZEONLY is non-zero. */
+   the size if DOSIZEONLY is non-zero.  */
 
 static int
 write_modend (dosizeonly)
@@ -785,7 +785,7 @@ write_modend (dosizeonly)
 }
 
 /* Output a routine begin header routine RTNNUM and return the header size.
-   Just return the size if DOSIZEONLY is non-zero. */
+   Just return the size if DOSIZEONLY is non-zero.  */
 
 static int
 write_rtnbeg (rtnnum, dosizeonly)
@@ -883,7 +883,7 @@ write_rtnbeg (rtnnum, dosizeonly)
 }
 
 /* Output a routine end trailer for routine RTNNUM and return the header size.
-   Just return the size if DOSIZEONLY is non-zero. */
+   Just return the size if DOSIZEONLY is non-zero.  */
 
 static int
 write_rtnend (rtnnum, dosizeonly)
@@ -1058,7 +1058,7 @@ write_pclines (dosizeonly)
 
 /* Output a source correlation for file FILEID using information saved in
    FILE_INFO_ENTRY and return the size.  Just return the size if DOSIZEONLY is
-   non-zero. */
+   non-zero.  */
 
 static int
 write_srccorr (fileid, file_info_entry, dosizeonly)
@@ -1249,7 +1249,7 @@ write_srccorr (fileid, file_info_entry, dosizeonly)
 }
 
 /* Output all the source correlation entries and return the size.  Just return
-   the size if DOSIZEONLY is non-zero. */
+   the size if DOSIZEONLY is non-zero.  */
 
 static int
 write_srccorrs (dosizeonly)
@@ -1393,7 +1393,7 @@ vmsdbgout_begin_function (decl)
 static char fullname_buff [4096];
 
 /* Return the full file specification for FILENAME.  The specification must be
-   in VMS syntax in order to be processed by VMS Debug. */
+   in VMS syntax in order to be processed by VMS Debug.  */
 
 static char *
 full_name (filename)
@@ -1706,7 +1706,7 @@ vmsdbgout_finish (input_filename)
 
   /* Output debugging information.
      Warning! Do not change the name of the .vmsdebug section without
-     changing it in the assembler also. */
+     changing it in the assembler also.  */
   named_section (NULL_TREE, ".vmsdebug", 0);
   ASM_OUTPUT_ALIGN (asm_out_file, 0);
 
