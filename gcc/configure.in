@@ -2311,6 +2311,11 @@ for machine in $build $host $target; do
 	sparc-*-bsd*)
 		tm_file=sparc/bsd.h
 		;;
+	sparc-*-elf*)
+		tm_file="sparc/sol2.h libgloss.h"
+		tmake_file=sparc/t-sparcbare
+		float_format=i128
+		;;
 	sparc-*-linux-gnuaout*)		# Sparc's running Linux, a.out
 		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		tm_file=sparc/linux-aout.h
