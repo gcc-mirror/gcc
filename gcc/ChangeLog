@@ -1,3 +1,9 @@
+2001-07-05  Brad Lucier <lucier@math.purdue.edu>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/invoke.texi (Optimize Options): Document that -fgcse may
+	cause programs using computed gotos to run more slowly.
+
 2001-07-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific): Markup, spelling and typo fixes.

@@ -3157,6 +3157,9 @@ function inlining, and register renaming.  It also turns on the
 @option{-fforce-mem} option on all machines and frame pointer elimination
 on machines where doing so does not interfere with debugging.
 
+Please note the warning under @option{-fgcse} about
+invoking @option{-O2} on programs that use computed gotos.
+
 @item -O3
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified by
@@ -3401,6 +3404,11 @@ Run the loop optimizer twice.
 @opindex fgcse
 Perform a global common subexpression elimination pass.
 This pass also performs global constant and copy propagation.
+
+@emph{Note:} When compiling a program using computed gotos, a GCC
+extension, you may get better runtime performance if you disable
+the global common subexpression elmination pass by adding
+@option{-fno-gcse} to the command line.
 
 @item -fdelete-null-pointer-checks
 @opindex fdelete-null-pointer-checks
