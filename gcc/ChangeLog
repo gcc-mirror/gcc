@@ -1,3 +1,16 @@
+2005-04-05  Ian Lance Taylor  <ian@airs.com>
+
+	PR debug/9963
+	* config/i386/cygming.h (ASM_OUTPUT_EXTERNAL): Pass DECL to
+	i386_pe_record_external_function.
+	(i386_pe_record_external_function): Update declaration.
+	* config/i386/winnt.c (struct extern_list): Add decl field.
+	(i386_pe_record_external_function): Add decl parameter.
+	(i386_pe_file_end): Check TREE_ASM_WRITTEN on decl, not
+	identifier.
+	* config/i386/i386-protos.h (i386_pe_record_external_function):
+	Update declaration.
+
 2005-04-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m68k/m68k-protos.h: Add a prototype for
