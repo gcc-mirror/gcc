@@ -1,5 +1,6 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004
+   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -107,6 +108,7 @@ static void m68k_hp320_file_start (void);
 #endif
 static void m68k_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree);
+static rtx m68k_struct_value_rtx (tree, int);
 static bool m68k_interrupt_function_p (tree func);
 static tree m68k_handle_fndecl_attribute (tree *node, tree name,
 					  tree args, int flags,
@@ -191,6 +193,12 @@ int m68k_last_compare_had_fp_operands;
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m68k_attribute_table
+
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX m68k_struct_value_rtx
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -3495,4 +3503,13 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     }
 
   output_asm_insn (fmt, xops);
+}
+
+/* Worker function for TARGET_STRUCT_VALUE_RTX.  */
+
+static rtx
+m68k_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+		       int incoming ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (Pmode, M68K_STRUCT_VALUE_REGNUM);
 }
