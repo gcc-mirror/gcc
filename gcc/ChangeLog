@@ -1,3 +1,29 @@
+2004-02-18  Per Bothner  <per@bothner.com>
+
+	* cpphash.h (struct cpp_buffer):  Restore return_at_eof field.  This
+	partly reverts my 2003-10-01 change, because we're back to logically
+	including <command line> inside the main line.
+	* cpplex.c (_cpp_get_fresh_line):  Check return_at_eof field.
+	* cppmacro.c (cpp_scan_nooutput):  Set return_at_eof of current buffer.
+	Fixes PR preprocessor/14103.
+
+	* cppfiles.c (_cpp_stack_include):  When appropriate decrement
+	line_table's highest_location, fixing LAST_SOURCE_LINE_LOCATION.
+	(cpp_push_include):  Don't need to increment pfile's line field.
+	* line-map.h (LAST_SOURCE_LINE_LOCATION):  Only decrement by 1.
+
+	* c-ppoutput.c (print struct):  New first_time field.
+	(init_pp_output):  Set print.first_time.
+	(pp_file_change):  Use print.first_time, rather than MAIN_FILE_P,
+	which is set also for (say) <command line>.  Clear print.first_time.
+
+	* cppfiles.c (struct _cpp_file):  Comment and type for pch field
+	does not match the code, so fix both.
+	(should_stack_file):  Inline include_pch_p function.
+	(include_pch_p):  Remove pointless function.
+
+	* cpphash.h (struct cpp_buffer):  Remove unused search_cached field.
+
 2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (four define_peephole2's): Use

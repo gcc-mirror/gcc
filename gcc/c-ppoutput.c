@@ -36,6 +36,7 @@ static struct
   const cpp_token *source;	/* Source token for spacing.  */
   int src_line;			/* Line number currently being written.  */
   unsigned char printed;	/* Nonzero if something output at line.  */
+  bool first_time;		/* pp_file_change hasn't been called yet. */
 } print;
 
 /* General output routines.  */
@@ -118,6 +119,7 @@ init_pp_output (FILE *out_stream)
   print.printed = 0;
   print.prev = 0;
   print.outf = out_stream;
+  print.first_time = 1;
 }
 
 /* Writes out the preprocessed file, handling spacing and paste
@@ -365,12 +367,12 @@ pp_file_change (const struct line_map *map)
 
   if (map != NULL)
     {
-      /* First time?  */
-      if (MAIN_FILE_P (map))
+      if (print.first_time)
 	{
 	  /* Avoid printing foo.i when the main file is foo.c.  */
 	  if (!cpp_get_options (parse_in)->preprocessed)
 	    print_line (map->start_location, flags);
+	  print.first_time = 0;
 	}
       else
 	{
