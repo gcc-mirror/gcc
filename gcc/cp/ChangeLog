@@ -1,3 +1,11 @@
+2005-01-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* class.c (abort_fndecl_addr): New variable.
+	(build_vtbl_initializer): If we have a pure virtual function
+	share the abort function's address.
+	Include gt-cp-class.h at the end.
+	* config-lang.in (gtfiles): Add cp/class.c.
+
 2005-01-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* cxx-pretty-print.c (pp_cxx_statement): Add prototype. Make static.
