@@ -1,3 +1,11 @@
+2000-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-decl.c (define_label): Call warning_with_file_and_line and
+	error_with_file_and_line instead of plain warning or error.
+
+	* c-parse.in (label): Use save_filename/save_lineno to ensure
+	correct values for calls to define_label.
+
 2000-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* calls.c (expand_call): Don't create a VAR_DECL just to throw it

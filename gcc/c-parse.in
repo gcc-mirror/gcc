@@ -1951,14 +1951,14 @@ label:	  CASE expr_no_commas ':'
 		  genrtl_case_label(CASE_LOW(case_label_tree), CASE_HIGH(case_label_tree));
 		  position_after_white_space ();
 		}
-	| identifier ':' maybe_attribute
-		{ tree label = define_label (input_filename, lineno, $1);
+	| identifier ':' save_filename save_lineno maybe_attribute
+		{ tree label = define_label ($3, $4, $1);
 		  stmt_count++;
 		  emit_nop ();
 		  if (label)
 		    {
 		      expand_label (label);
-		      decl_attributes (label, $3, NULL_TREE);
+		      decl_attributes (label, $5, NULL_TREE);
 		    }
 		  position_after_white_space (); }
 	;

@@ -2747,12 +2747,14 @@ define_label (filename, line, name)
     }
 
   if (warn_traditional && !in_system_header && lookup_name (name))
-    warning ("traditional C lacks a separate namespace for labels, identifier `%s' conflicts",
-	     IDENTIFIER_POINTER (name));
+    warning_with_file_and_line (filename, line,
+				"traditional C lacks a separate namespace for labels, identifier `%s' conflicts",
+				IDENTIFIER_POINTER (name));
 
   if (DECL_INITIAL (decl) != 0)
     {
-      error ("duplicate label `%s'", IDENTIFIER_POINTER (name));
+      error_with_file_and_line (filename, line, "duplicate label `%s'",
+				IDENTIFIER_POINTER (name));
       return 0;
     }
   else
