@@ -4,3 +4,5 @@
 
 /* Sony has a funny name for this symbol.  */
 #define sys_siglist _sys_siglist
+#undef SYS_SIGLIST_DECLARED
+#define SYS_SIGLIST_DECLARED

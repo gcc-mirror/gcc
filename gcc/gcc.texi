@@ -3752,6 +3752,9 @@ as @code{_sys_siglist}.  On these systems, you can define
 @code{sys_siglist} as a macro which expands into the name actually
 provided.
 
+If you define @code{sys_siglist}, you should also define
+@code{SYS_SIGLIST_DECLARED}.
+
 @findex NO_STAB_H
 @item NO_STAB_H
 Define this if your system does not have the include file
