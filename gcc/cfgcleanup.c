@@ -775,12 +775,12 @@ merge_blocks_move_successor_nojumps (a, b)
   /* Restore the real end of b.  */
   b->end = real_b_end;
 
-  /* Now blocks A and B are contiguous.  Merge them.  */
-  merge_blocks_nomove (a, b);
-
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "Moved block %d after %d and merged.\n",
 	     b->index, a->index);
+
+  /* Now blocks A and B are contiguous.  Merge them.  */
+  merge_blocks_nomove (a, b);
 }
 
 /* Attempt to merge basic blocks that are potentially non-adjacent.
