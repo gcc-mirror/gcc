@@ -1,3 +1,7 @@
+2000-04-18  Stan Cox  <scox@cygnus.com>
+
+	* gengenrtl.c (genlegend): Fix misspelling.
+
 2000-04-18  Robert Lipe  <robertlipe@usa.net>
 
 	* configure.in (ENUM_BITFIELDS_ARE_UNSIGNED): Added.  Check that
