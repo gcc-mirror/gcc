@@ -5424,9 +5424,9 @@ gen_input_reload (reloadreg, in, before_insn)
 	 is recognized and matches its constraints.  If so, it can be used.
 
 	 It might be better not to actually emit the insn unless it is valid,
-	 but we need to pass the insn as an operand to `recog' and it is
-	 simpler to emit and then delete the insn if not valid than to
-	 dummy things up.  */
+	 but we need to pass the insn as an operand to `recog' and
+	 `insn_extract'and it is simpler to emit and then delete the insn if
+	 not valid than to dummy things up.  */
 
       rtx move_operand, other_operand, insn;
       int code;
@@ -5621,6 +5621,10 @@ inc_for_reload (reloadreg, value, inc_amount, insn)
   rtx incloc = XEXP (value, 0);
   /* Nonzero if increment after copying.  */
   int post = (GET_CODE (value) == POST_DEC || GET_CODE (value) == POST_INC);
+  rtx prev = PREV_INSN (insn);
+  rtx inc;
+  rtx add_insn;
+  int code;
 
   /* No hard register is equivalent to this register after
      inc/dec operation.  If REG_LAST_RELOAD_REG were non-zero,
@@ -5632,78 +5636,71 @@ inc_for_reload (reloadreg, value, inc_amount, insn)
   if (GET_CODE (value) == PRE_DEC || GET_CODE (value) == POST_DEC)
     inc_amount = - inc_amount;
 
-  /* First handle preincrement, which is simpler.  */
+  inc = gen_rtx (CONST_INT, VOIDmode, inc_amount);
+
+  /* If this is post-increment, first copy the location to the reload reg.  */
+  if (post)
+    emit_insn_before (gen_move_insn (reloadreg, incloc), insn);
+
+  /* See if we can directly increment INCLOC.  Use a method similar to that
+     in gen_input_reload.  */
+
+  add_insn = emit_insn_before (gen_rtx (SET, VOIDmode, incloc,
+					gen_rtx (PLUS, GET_MODE (incloc),
+						 incloc, inc)), insn);
+							  
+  code = recog_memoized (add_insn);
+  if (code >= 0)
+    {
+      insn_extract (add_insn);
+      if (constrain_operands (code, 1))
+	{
+	  /* If this is a pre-increment and we have incremented the value
+	     where it lives, copy the incremented value to RELOADREG to
+	     be used as an address.  */
+
+	  if (! post)
+	    emit_insn_before (gen_move_insn (reloadreg, incloc), insn);
+	  return NEXT_INSN (prev);
+	}
+    }
+
+  if (PREV_INSN (add_insn))
+    NEXT_INSN (PREV_INSN (add_insn)) = NEXT_INSN (add_insn);
+  if (NEXT_INSN (add_insn))
+    PREV_INSN (NEXT_INSN (add_insn)) = PREV_INSN (add_insn);
+
+  /* If couldn't do the increment directly, must increment in RELOADREG.
+     The way we do this depends on whether this is pre- or post-increment.
+     For pre-increment, copy INCLOC to the reload register, increment it
+     there, then save back.  */
+
   if (! post)
     {
-      /* If incrementing a register, assume we can
-	 output an insn to increment it directly.  */
-      if (GET_CODE (incloc) == REG
-	  && (REGNO (incloc) < FIRST_PSEUDO_REGISTER
-	      || reg_renumber[REGNO (incloc)] >= 0))
-	{
-	  rtx first_new
-	    = emit_insn_before (gen_add2_insn (incloc,
-					       gen_rtx (CONST_INT, VOIDmode,
-							inc_amount)),
-				insn);
-	  emit_insn_before (gen_move_insn (reloadreg, incloc), insn);
-	  return first_new;
-	}
-      else
-	/* Else we must not assume we can increment the location directly
-	   (even though on many target machines we can);
-	   copy it to the reload register, increment there, then save back.  */
-	{
-	  rtx first_new
-	    = emit_insn_before (gen_move_insn (reloadreg, incloc), insn);
-	  emit_insn_before (gen_add2_insn (reloadreg,
-					   gen_rtx (CONST_INT, VOIDmode,
-						    inc_amount)),
-			    insn);
-	  emit_insn_before (gen_move_insn (incloc, reloadreg), insn);
-	  return first_new;
-	}
+      emit_insn_before (gen_move_insn (reloadreg, incloc), insn);
+      emit_insn_before (gen_add2_insn (reloadreg, inc), insn);
+      emit_insn_before (gen_move_insn (incloc, reloadreg), insn);
     }
-  /* Postincrement.
-     Because this might be a jump insn or a compare, and because RELOADREG
-     may not be available after the insn in an input reload,
-     we must do the incrementation before the insn being reloaded for.  */
   else
     {
-      /* Copy the value, then increment it.  */
-      rtx first_new
-	= emit_insn_before (gen_move_insn (reloadreg, incloc), insn);
+      /* Postincrement.
+	 Because this might be a jump insn or a compare, and because RELOADREG
+	 may not be available after the insn in an input reload, we must do
+	 the incrementation before the insn being reloaded for.
 
-      /* If incrementing a register, assume we can
-	 output an insn to increment it directly.  */
-      if (GET_CODE (incloc) == REG
-	  && (REGNO (incloc) < FIRST_PSEUDO_REGISTER
-	      || reg_renumber[REGNO (incloc)] >= 0))
-	{
-	  emit_insn_before (gen_add2_insn (incloc,
-					   gen_rtx (CONST_INT, VOIDmode,
-						    inc_amount)),
-			    insn);
-	}
-      else
-	/* Else we must not assume we can increment INCLOC
-	   (even though on many target machines we can);
-	   increment the copy in the reload register,
-	   save that back, then decrement the reload register
-	   so it has the original value.  */
-	{
-	  emit_insn_before (gen_add2_insn (reloadreg,
-					   gen_rtx (CONST_INT, VOIDmode,
-						    inc_amount)),
-			    insn);
-	  emit_insn_before (gen_move_insn (incloc, reloadreg), insn);
-	  emit_insn_before (gen_add2_insn (reloadreg,
-					   gen_rtx (CONST_INT, VOIDmode,
-						    -inc_amount)),
-			    insn);
-	}
-      return first_new;
+	 We have already copied INCLOC to RELOADREG.  Increment the copy in
+	 RELOADREG, save that back, then decrement RELOADREG so it has
+	 the original value.  */
+
+      emit_insn_before (gen_add2_insn (reloadreg, inc), insn);
+      emit_insn_before (gen_move_insn (incloc, reloadreg), insn);
+      emit_insn_before (gen_add2_insn (reloadreg,
+				       gen_rtx (CONST_INT, VOIDmode,
+						-inc_amount)),
+			insn);
     }
+
+  return NEXT_INSN (prev);
 }
 
 /* Return 1 if we are certain that the constraint-string STRING allows
@@ -5743,9 +5740,9 @@ constraint_accepts_reg_p (string, reg)
       default:
 	/* Any reg in specified class wins for this alternative.  */
 	{
-	  int class = REG_CLASS_FROM_LETTER (c);
+	  enum reg_class class = REG_CLASS_FROM_LETTER (c);
 
-	  if (TEST_HARD_REG_BIT (reg_class_contents[class], regno))
+	  if (TEST_HARD_REG_BIT (reg_class_contents[(int) class], regno))
 	    value = 1;
 	}
       }
