@@ -200,6 +200,7 @@ private:
   friend _Jv_Method *_Jv_GetMethodLocal (jclass klass, _Jv_Utf8Const *name,
 					 _Jv_Utf8Const *signature);
   friend jboolean _Jv_IsAssignableFrom(jclass, jclass);
+  friend jboolean _Jv_InterfaceAssignableFrom (jclass, jclass);
   friend void *_Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, 
 					     int method_idx);
 
