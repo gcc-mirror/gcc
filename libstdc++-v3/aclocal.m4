@@ -1250,8 +1250,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
   dnl Check if a valid I/O package
   case x${enable_cstdio_flag} in
-    xlibio | x | xno | xnone | xyes)
-      # default
+    xlibio)
       CSTDIO_H=config/c_io_libio.h
       CSTDIO_CC=config/c_io_libio.cc
       AC_MSG_RESULT(libio)
@@ -1306,12 +1305,17 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
          fi
       fi
       ;;
-    xstdio)
+    xstdio | x | xno | xnone | xyes)
+      # default
       CSTDIO_H=config/c_io_stdio.h
       CSTDIO_CC=config/c_io_stdio.cc
       AC_MSG_RESULT(stdio)
 
+      # We're not using stdio.
       need_libio=no
+      need_wlibio=no
+      # Wide characters are not supported with this package.
+      enable_c_mbchar=no
       ;;
     *)
       echo "$enable_cstdio is an unknown io package" 1>&2

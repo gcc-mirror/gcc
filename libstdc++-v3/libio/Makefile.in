@@ -122,24 +122,15 @@ LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 
-INCLUDES = \
-	-nostdinc++ \
-	-I$(top_builddir)/include -I$(GLIBCPP_INCLUDE_DIR) \
-	$(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
+INCLUDES =  	-nostdinc++ 	-I$(top_builddir)/include -I$(GLIBCPP_INCLUDE_DIR) 	$(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 
-libio_headers = \
-        libio.h libioP.h iolibio.h
+libio_headers =          libio.h libioP.h iolibio.h
 
-@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_SRCS = \
-@GLIBCPP_NEED_LIBIO_TRUE@\
-@GLIBCPP_NEED_LIBIO_TRUE@	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c iofclose.c \
-@GLIBCPP_NEED_LIBIO_TRUE@    iofopen.c stdio.c
-@GLIBCPP_NEED_LIBIO_FALSE@LIBIO_SRCS = \
-@GLIBCPP_NEED_WLIBIO_TRUE@LIBIO_WSRCS = \
-@GLIBCPP_NEED_WLIBIO_TRUE@\
-@GLIBCPP_NEED_WLIBIO_TRUE@	wfiledoalloc.c wfileops.c wgenops.c iofwide.c
-@GLIBCPP_NEED_WLIBIO_FALSE@LIBIO_WSRCS = \
+@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_SRCS = 	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c iofclose.c     iofopen.c stdio.c
+@GLIBCPP_NEED_LIBIO_FALSE@LIBIO_SRCS = 
+@GLIBCPP_NEED_WLIBIO_TRUE@LIBIO_WSRCS = 	wfiledoalloc.c wfileops.c wgenops.c iofwide.c
+@GLIBCPP_NEED_WLIBIO_FALSE@LIBIO_WSRCS = 
 
 EXTRA_DIST = iostreamP.h
 
@@ -193,7 +184,7 @@ DIST_COMMON =  ChangeLog Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 SOURCES = $(libio_la_SOURCES)
 OBJECTS = $(libio_la_OBJECTS)
@@ -302,7 +293,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
