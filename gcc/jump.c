@@ -103,19 +103,16 @@ int can_reach_end;
 
 static int cross_jump_death_matters = 0;
 
-static int duplicate_loop_exit_test ();
-void redirect_tablejump ();
-static int delete_labelref_insn ();
-static void mark_jump_label ();
-void delete_jump ();
-void delete_computation ();
-static void delete_from_jump_chain ();
-static int tension_vector_labels ();
-static void find_cross_jump ();
-static void do_cross_jump ();
-static int jump_back_p ();
-
-extern rtx gen_jump ();
+static int duplicate_loop_exit_test	PROTO((rtx));
+static void find_cross_jump		PROTO((rtx, rtx, int, rtx *, rtx *));
+static void do_cross_jump		PROTO((rtx, rtx, rtx));
+static int jump_back_p			PROTO((rtx, rtx));
+static int tension_vector_labels	PROTO((rtx, int));
+static void mark_jump_label		PROTO((rtx, rtx, int));
+static void delete_computation		PROTO((rtx));
+static void delete_from_jump_chain	PROTO((rtx));
+static int delete_labelref_insn		PROTO((rtx, rtx, int));
+static void redirect_tablejump		PROTO((rtx, rtx));
 
 /* Delete no-op jumps and optimize jumps to jumps
    and jumps around jumps.
@@ -210,8 +207,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
      also make a chain of all returns.  */
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if ((GET_CODE (insn) == JUMP_INSN || GET_CODE (insn) == INSN
-	 || GET_CODE (insn) == CALL_INSN)
+    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 	&& ! INSN_DELETED_P (insn))
       {
 	mark_jump_label (PATTERN (insn), insn, cross_jump);
@@ -3081,13 +3077,8 @@ mark_jump_label (x, insn, cross_jump)
 		    || ! (GET_CODE (next) == JUMP_INSN
 			  && (GET_CODE (PATTERN (next)) == ADDR_VEC
 			      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC)))
-		  {
-		    REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, label,
-						REG_NOTES (insn));
-		    /* Record in the note whether label is nonlocal.  */
-		    LABEL_REF_NONLOCAL_P (REG_NOTES (insn))
-		      = LABEL_REF_NONLOCAL_P (x);
-		  }
+		  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, label,
+					      REG_NOTES (insn));
 	      }
 	  }
 	return;
@@ -3147,7 +3138,7 @@ delete_jump (insn)
    On machines with CC0, if CC0 is used in this insn, we may be able to
    delete the insn that set it.  */
 
-void
+static void
 delete_computation (insn)
      rtx insn;
 {
@@ -3361,8 +3352,7 @@ delete_insn (insn)
     {
       register RTX_CODE code;
       while (next != 0
-	     && ((code = GET_CODE (next)) == INSN
-		 || code == JUMP_INSN || code == CALL_INSN
+	     && (GET_RTX_CLASS (code = GET_CODE (next)) == 'i'
 		 || code == NOTE
 		 || (code == CODE_LABEL && INSN_DELETED_P (next))))
 	{
@@ -3677,7 +3667,7 @@ redirect_exp (loc, olabel, nlabel, insn)
    before the jump references that label and delete it and logical successors
    too.  */
 
-void
+static void
 redirect_tablejump (jump, nlabel)
      rtx jump, nlabel;
 {
