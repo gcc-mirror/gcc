@@ -5,7 +5,7 @@
 typedef void (*voidfunc) __P((void));
 
 static void
-DEFUN_VOID(_IO_register_cleanup)
+_IO_register_cleanup ()
 {
   atexit ((voidfunc)_IO_cleanup);
   _IO_cleanup_registration_needed = 0;

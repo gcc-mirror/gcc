@@ -119,9 +119,11 @@ extern double atof();
    *errp|=2 if we an invalid character. */
 
 int
-DEFUN(_IO_vfscanf, (fp, fmt0, ap, errp),
-      register _IO_FILE *fp AND char const *fmt0
-      AND _IO_va_list ap AND int *errp)
+_IO_vfscanf (fp, fmt0, ap, errp)
+     _IO_FILE *fp;
+     char const *fmt0;
+     _IO_va_list ap;
+     int *errp;
 {
 	register const u_char *fmt = (const u_char *)fmt0;
 	register int c;		/* character from format, or conversion */
@@ -696,8 +698,9 @@ done:
  * considered part of the scanset.
  */
 static const u_char *
-DEFUN(__sccl, (tab, fmt),
-      register char *tab AND register const u_char *fmt)
+__sccl (tab, fmt)
+     char *tab;
+     const u_char *fmt;
 {
 	register int c, n, v;
 

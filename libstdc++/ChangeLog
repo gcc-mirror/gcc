@@ -1,3 +1,9 @@
+1997-09-15 02:37  Ulrich Drepper  <drepper@cygnus.com>
+
+	* config/linux.mt: New file.  Make sure _PTHREADS is defined
+	if necessary.
+	* configure.in: Find linux.mt file.
+
 Thu Sep 11 15:03:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/bastring.h (class basic_string): Add global scope to

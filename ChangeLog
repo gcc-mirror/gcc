@@ -1,3 +1,12 @@
+1997-09-15 02:37  Ulrich Drepper  <drepper@cygnus.com>
+
+	* config/mt-linux: Define CXXFLAGS to make sure -fvtable-thunks is
+	used.
+	* configure.in: Name Linux target fragment.
+
+	* configure: Rewrite so that project Makefile fragment is inserted
+	first and appears last in the resulting Makefile.
+
 Thu Sep 11 16:40:46 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* Makefile.in (local-distclean): Also remove mh-frag mt-frag.

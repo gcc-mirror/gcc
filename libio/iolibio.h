@@ -32,6 +32,11 @@ extern int _IO_sprintf __P((char *, const char*, ...));
 extern int _IO_ungetc __P((int, _IO_FILE*));
 extern int _IO_vsscanf __P((const char *, const char *, _IO_va_list));
 extern int _IO_vsprintf __P((char*, const char*, _IO_va_list));
+
+struct obstack;
+extern int _IO_obstack_vprintf __P ((struct obstack *, const char *,
+                                    _IO_va_list));
+extern int _IO_obstack_printf __P ((struct obstack *, const char *, ...));
 #ifndef _IO_pos_BAD
 #define _IO_pos_BAD ((_IO_fpos_t)(-1))
 #endif

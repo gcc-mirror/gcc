@@ -162,7 +162,7 @@ static _IO_pos_t _IO_sb_seekpos(_IO_FILE *fp, _IO_pos_t pos, int mode)
 
 static int _IO_sb_pbackfail(_IO_FILE *fp, int ch)
 { return ((streambuf*)fp)->pbackfail(ch); }
-static void _IO_sb_finish(_IO_FILE *fp)
+static void _IO_sb_finish(_IO_FILE *fp, int)
 { ((streambuf*)fp)->~streambuf(); }
 static _IO_ssize_t _IO_sb_read(_IO_FILE *fp, void *buf, _IO_ssize_t n)
 { return ((streambuf*)fp)->sys_read((char*)buf, n); }
@@ -207,13 +207,22 @@ struct _IO_jump_t _IO_streambuf_jumps = {
 
 streambuf::streambuf(int flags)
 {
+#ifdef _IO_MTSAFE_IO
+  _lock = new _IO_lock_t;
+#endif
   _IO_init(this, flags);
 #if !_IO_UNIFIED_JUMPTABLES
   _jumps = &_IO_streambuf_jumps;
 #endif
 }
 
-streambuf::~streambuf() { _IO_default_finish(this,0); }
+streambuf::~streambuf()
+{
+  _IO_default_finish(this,0);
+#ifdef _IO_MTSAFE_IO
+  delete _lock;
+#endif
+}
 
 streampos
 streambuf::seekoff(streamoff, _seek_dir, int /*=ios::in|ios::out*/)

@@ -68,6 +68,10 @@ extern int _IO_dup2 __P ((int fd, int fd2));
 #define _IO__exit _exit
 #endif
 
+#ifndef _IO_close
+#define _IO_close close
+#endif
+
 struct _IO_proc_file
 {
   struct _IO_FILE_plus file;

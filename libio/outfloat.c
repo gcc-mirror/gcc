@@ -24,6 +24,7 @@ the executable file might be covered by the GNU General Public License. */
 
 #include "libioP.h"
 
+#ifdef _IO_USE_DTOA
 /* Format floating-point number and print them.
    Return number of chars printed, or EOF on error.
 
@@ -33,10 +34,15 @@ the executable file might be covered by the GNU General Public License. */
 */
 
 int
-DEFUN(_IO_outfloat, (value, sb, type, width, precision, flags,
-		     sign_mode, fill),
-      double value AND _IO_FILE *sb AND int type AND int width
-      AND int precision AND int flags AND int sign_mode AND int fill)
+_IO_outfloat (value, sb, type, width, precision, flags, sign_mode, fill)
+     double value;
+     _IO_FILE *sb;
+     int type;
+     int width;
+     int precision;
+     int flags;
+     int sign_mode;
+     int fill;
 {
   int count = 0;
 #define PUT(x) do {if (_IO_putc(x, sb) < 0) goto error; count++;} while (0)
@@ -202,3 +208,4 @@ DEFUN(_IO_outfloat, (value, sb, type, width, precision, flags,
  error:
   return EOF;
 }
+#endif

@@ -41,6 +41,11 @@ if [ "${shared}" = "yes" ]; then
   esac
 fi
 
+# Make sure the right flags are defined for multi-threading.
+case "${target}" in
+  *-*-linux-gnu)	frags="${frags} linux.mt" ;;
+esac
+
 for frag in ${frags}; do
   frag=${srcdir}/config/$frag
   if [ -f ${frag} ]; then

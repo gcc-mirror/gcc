@@ -169,10 +169,48 @@ extern int vsnprintf __P ((char *, size_t, const char *, _IO_va_list));
 extern int __underflow __P((struct _IO_FILE*));
 extern int __overflow __P((struct _IO_FILE*, int));
 
+/* Handle locking of streams.  */
+#if defined _REENTRANT || defined _THREAD_SAFE
+extern void clearerr_locked __P ((FILE *));
+extern void clearerr_unlocked __P ((FILE *));
+extern int feof_locked __P ((FILE *));
+extern int feof_unlocked __P ((FILE *));
+extern int ferror_locked __P ((FILE*));
+extern int ferror_unlocked __P ((FILE*));
+extern int fileno_locked __P ((FILE *));
+extern int fileno_unlocked __P ((FILE *));
+extern void flockfile __P ((FILE *));
+extern void funlockfile __P ((FILE *));
+extern int ftrylockfile __P ((FILE *));
+extern int fclose_unlocked __P ((FILE *));
+extern int fflush_locked __P ((FILE *));
+extern int fflush_unlocked __P ((FILE *));
+extern size_t fread_unlocked __P ((void *, size_t, size_t, FILE *));
+extern size_t fwrite_unlocked __P ((const void *, size_t, size_t, FILE *));
+
+extern int fputc_locked __P ((int, FILE*));
+extern int fputc_unlocked __P ((int, FILE*));
+extern int getc_locked __P ((FILE *));
+extern int getc_unlocked __P ((FILE *));
+extern int getchar_locked __P ((void));
+extern int getchar_unlocked __P ((void));
+extern int putc_locked __P ((int, FILE *));
+extern int putc_unlocked __P ((int, FILE *));
+extern int putchar_locked __P ((int));
+extern int putchar_unlocked __P ((int));
+
+# define getc_unlocked(fp) _IO_getc_unlocked (fp)
+# define getc_locked(fp) _IO_getc (fp)
+# define getchar_unlocked() _IO_getc_unlocked (stdin)
+# define getchar_locked() _IO_getc (stdin)
+# define putchar_unlocked(c) _IO_putc_unlocked (c, stdout)
+# define putchar_locked(c) _IO_putc (c, stdout)
+#endif /* __USE_REENTRANT */
+
 #define getc(fp) _IO_getc(fp)
 #define putc(c, fp) _IO_putc(c, fp)
-#define putchar(c) putc(c, stdout)
-#define getchar() getc(stdin)
+#define putchar(c) _IO_putc(c, stdout)
+#define getchar() _IO_getc(stdin)
 
 #ifdef __cplusplus
 }

@@ -25,8 +25,9 @@ the executable file might be covered by the GNU General Public License. */
 #include "libioP.h"
 
 int
-DEFUN(_IO_ignore, (fp, n),
-      register _IO_FILE *fp AND _IO_size_t n)
+_IO_ignore (fp, n)
+     _IO_FILE *fp;
+     _IO_size_t n;
 {
   register _IO_size_t more = n;
   for (;;)

@@ -1,6 +1,7 @@
-Tue Sep 16 00:40:23 1997  Jeffrey A Law  (law@cygnus.com)
+Tue Sep 16 09:18:52 1997  Jason Merrill  (jason@cygnus.com)
 
-	* version.c: Bump for snapshot.
+	* expr.c (expand_expr, case TARGET_EXPR): Call mark_addressable
+	again for the slot after we give it RTL.
 
 Tue Sep 16 00:13:20 1997  Nick Clifton  <nickc@cygnus.com>
 

@@ -10,8 +10,8 @@ extern char* _IO_strerror __P((int));
 #endif
 
 void
-DEFUN(_IO_perror, (s),
-      const char *s)
+_IO_perror (s)
+     const char *s;
 {
   char *error = _IO_strerror (errno);
 
