@@ -1,3 +1,10 @@
+2003-01-28  Andrew Haley  <aph@redhat.com>
+
+	* include/ffi.h.in: Enable FFI_CLOSURES for x86_64.
+	* src/x86/ffi64.c (ffi_prep_closure): New.
+	(ffi_closure_UNIX64_inner): New.
+	* src/x86/unix64.S (ffi_closure_UNIX64): New.
+
 2003-01-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (toolexecdir, toolexeclibdir): Set and AC_SUBST.
