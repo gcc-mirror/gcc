@@ -1,5 +1,11 @@
 2001-10-17  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (secdir): New macro.
+	(install-data-local): Install new data files.
+	* java/security/classpath.security: New file.
+	* java/security/libgcj.security: New file.
+
 	* java/security/Security.java (loadProviders): Added `vendor'
 	argument.
 	Load both `classpath' and `java.vm.name' providers.
