@@ -1,6 +1,17 @@
+2003-01-25  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (UNSPEC_BU): New constants.
+	(UNSPEC_RPTS, UNSPEC_LSH, UNSPEC_CMPHI, UNSPEC_RCPF): Likewise.
+	(UNSPEC_RND, UNSPEC_RPTB_FILL, UNSPEC_LOADHF_INT): Likewise.
+	(UNSPEC_STOREHF_INT, UNSPEC_RSQRF, UNSPEC_LOADQF_INT): Likewise.
+	(UNSPEC_STOREQF_INT, UNSPEC_LDIV, UNSPEC_PUSH_ST):  Likewise.
+	(UNSPEC_POP_ST, UNSPEC_PUSH_DP, UNSPEC_POP_DP):  Likewise.
+	(UNSPEC_POPQI, UNSPEC_POPQF, UNSPEC_ANDN_ST):  Likewise.
+	(UNSPEC_RPTB_INIT, UNSPEC_TOIEEE, UNSPEC_FRIEEE):  Likewise.
+
 Fri Jan 24 23:44:12 CET 2003  Jan Hubicka  <jh@suse.cz>
 
-	* emit-rtl.c (reg_attrs_htab): New static variable.
+: New static variable.
 	(reg_attrs_htab_hash, reg_attrs_htab_eq, get_reg_attrs): New static
 	functions.
 	(reg_rtx): Do not maintain regno_decl.
