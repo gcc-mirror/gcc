@@ -2971,7 +2971,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       if (TREE_CODE (to) == COMPONENT_REF
 	  && TREE_READONLY (TREE_OPERAND (to, 1)))
 	{
-	  if (offset = 0)
+	  if (offset == 0)
 	    to_rtx = copy_rtx (to_rtx);
 
 	  RTX_UNCHANGING_P (to_rtx) = 1;
