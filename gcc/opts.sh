@@ -65,6 +65,7 @@ ${AWK} '
         if (flags ~ " Separate ") result = result " | CL_SEPARATE"
         if (flags ~ " RejectNegative ") result = result " | CL_REJECT_NEGATIVE"
         if (flags ~ " UInteger ") result = result " | CL_UINTEGER"
+        if (flags ~ " Undocumented ") result = result " | CL_UNDOCUMENTED"
 	sub( "^0 \\| ", "", result )
 	return result
     }
