@@ -4683,7 +4683,7 @@ data.  For instance, you can write
 @smallexample
 static const int table[] = @{
    __builtin_constant_p (EXPRESSION) ? (EXPRESSION) : -1,
-   /* ... */
+   /* @dots{} */
 @};
 @end smallexample
 
@@ -4759,7 +4759,7 @@ for (i = 0; i < n; i++)
     a[i] = a[i] + b[i];
     __builtin_prefetch (&a[i+j], 1, 1);
     __builtin_prefetch (&b[i+j], 0, 1);
-    /* ... */
+    /* @dots{} */
   @}
 @end smallexample
 

@@ -2660,7 +2660,7 @@ definition used does not matter.
 
 This macro defines the operation used when something is pushed
 on the stack.  In RTL, a push operation will be
-@code{(set (mem (STACK_PUSH_CODE (reg sp))) ...)}
+@code{(set (mem (STACK_PUSH_CODE (reg sp))) @dots{})}
 
 The choices are @code{PRE_DEC}, @code{POST_DEC}, @code{PRE_INC},
 and @code{POST_INC}.  Which of these is correct depends on
