@@ -629,7 +629,7 @@ public:
   }
 
   bool test(size_t __pos) const {
-    if (__pos > _Nb)
+    if (__pos >= _Nb)
       __STL_THROW(out_of_range("bitset"));
 
     return _Unchecked_test(__pos);
