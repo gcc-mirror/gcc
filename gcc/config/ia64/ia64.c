@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "tm_p.h"
+#include "langhooks.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -975,6 +976,21 @@ ia64_move_ok (dst, src)
     return src == const0_rtx;
   else
     return GET_CODE (src) == CONST_DOUBLE && CONST_DOUBLE_OK_FOR_G (src);
+}
+
+/* Return 0 if we are doing C++ code.  This optimization fails with
+   C++ because of GNAT c++/6685.  */
+
+int
+addp4_optimize_ok (op1, op2)
+     rtx op1, op2;
+{
+
+  if (!strcmp (lang_hooks.name, "GNU C++"))
+    return 0;
+
+  return (basereg_operand (op1, GET_MODE(op1)) !=
+	  basereg_operand (op2, GET_MODE(op2)));
 }
 
 /* Check if OP is a mask suitible for use with SHIFT in a dep.z instruction.
