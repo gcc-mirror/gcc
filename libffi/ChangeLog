@@ -1,3 +1,13 @@
+2003-08-02  Alan Modra  <amodra@bigpond.net.au>
+
+	* src/powerpc/ffi.c (ffi_prep_args64): Modify for changed gcc
+	structure passing.
+	(ffi_closure_helper_LINUX64): Likewise.
+	* src/powerpc/linux64.S: Remove code writing to parm save area.
+	* src/powerpc/linux64_closure.S (ffi_closure_LINUX64): Use return
+	address in lr from ffi_closure_helper_LINUX64 call to calculate
+	table address.  Optimize function tail.
+
 2003-07-28  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* src/sparc/ffi.c: Handle all floating point registers.
