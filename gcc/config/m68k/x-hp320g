@@ -18,5 +18,7 @@ LIBGCC1 = libgcc1.conv
 # Alas, we don't know where these programs can be found.
 # We can only guess.
 AR=/usr/local/gnubin/ar
+RANLIB=/usr/local/gnubin/ranlib
+RANLIB_TEST = [ -f /usr/local/gnubin/ranlib ]
 
 LIBCONVERT=/usr/local/bin/hpxt
