@@ -505,6 +505,9 @@ rest.encap: $(LIBGCC) stmp-headers $(STMP_FIXPROTO) $(EXTRA_PARTS)
 native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
+# Note that it would be nice to move the dependency on g++
+# into the C++ rule, but that needs a little bit of work
+# to do the right thing within all.cross.
 C c: cc1
 C++ c++: cc1plus
 # The next two ought to depend on objc-runtime, but that doesn't work yet.
@@ -862,6 +865,8 @@ cp-xref.o : cp-xref.c $(CONFIG_H) $(CPLUS_TREE_H) input.h
 cp-pt.o : cp-pt.c $(CONFIG_H) $(CPLUS_TREE_H) cp-decl.h cp-parse.h
 cp-error.o : cp-error.c $(CONFIG_H) $(CPLUS_TREE_H)
 cp-errfn.o : cp-errfn.c $(CONFIG_H) $(CPLUS_TREE_H)
+
+g++.o : g++.c $(CONFIG_H) gvarargs.h
 
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
 ld: collect2
@@ -1563,7 +1568,7 @@ objc-headers: stmp-fixinc
 
 # Files related to the fixproto script.
 
-deduced.h: $(srcdir)/scan-types.sh
+deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	CC="$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -Iinclude -I${SYSTEM_HEADER_DIR}"; \
 	  export CC; \
 	  $(srcdir)/scan-types.sh >tmp-deduced.h
@@ -1572,7 +1577,7 @@ deduced.h: $(srcdir)/scan-types.sh
 gen-protos: gen-protos.o scan.o
 	${HOST_CC} -o gen-protos gen-protos.o scan.o
 
-xsys-protos.h: $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
+xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
 	cat deduced.h $(srcdir)/sys-protos.h > fixtmp.c
 	$(GCC_FOR_TARGET) fixtmp.c -E \
 	  | sed -e 's/	/ /g' -e 's/ *(/ (/g' -e 's/ [ ]*/ /g' -e 's/( )/()/' \
@@ -1584,8 +1589,19 @@ fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_OBSTACK)
 
 fix-header.o: xsys-protos.h
 
+# stmp-fixproto depends on this, not on fix-header directly.
+# The idea is to make sure fix-header gets built,
+# but not rerun fixproto after each stage
+# just because fix-header's mtime has changed.
+fixhdr.ready: fix-header
+	-if [ -f fixhdr.ready ] ; then \
+		true; \
+	else \
+		touch fixhdr.ready; \
+	fi
+
 # stmp-headers is to make sure fixincludes has already finished.
-stmp-fixproto: fix-header xsys-protos.h fixproto stmp-headers
+stmp-fixproto: fixhdr.ready xsys-protos.h fixproto stmp-headers
 	CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
 	  ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR)
 	touch stmp-fixproto
@@ -1681,6 +1697,7 @@ clean: mostlyclean bytecode.clean
 	fi
 # Delete the include directory.
 	-rm -rf stmp-* fixinc.ready include objc-headers
+	-rm -rf fixhdr.ready
 
 # Delete all files that users would normally create
 # while building and installing GCC.
