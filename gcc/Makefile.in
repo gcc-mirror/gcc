@@ -2876,11 +2876,16 @@ site.exp: ./config.status Makefile
 		-e '1,/^## All variables above are.*##/ d' >> site.exp
 	-@rm -f ./tmp?
 
-CHECK_TARGETS = check-gcc @check_languages@
+CHECK_TARGETS = check-gcc check-fixinc @check_languages@
 
 check-c++ : check-g++
 check-f77 : check-g77
 check-java :
+
+check-fixinc :
+	if (autogen --ver=v) > /dev/null 2>&1 ; \
+	then cd fixinc && $(MAKE) check ; \
+	else true ; fi
 
 check: $(CHECK_TARGETS)
 
