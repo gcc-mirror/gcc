@@ -1,3 +1,7 @@
+2005-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/nonnull-3.c: Also test __builtin_strndup.
+
 2005-03-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/g++.exp (g++_link_flags): Use gcc-set-multilib-library-path.
