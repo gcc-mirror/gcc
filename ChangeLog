@@ -1,3 +1,10 @@
+2003-07-20  Phil Edwards  <pme@gcc.gnu.org>
+
+	* install-sh:  Update to newer upstream versions (associated with
+	aclocal 1.7).
+	* mkinstalldirs:  Likewise.
+	* missing:  Likewise, plus $1Help2man -> $1 typo fix.
+
 2003-07-16  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	* MAINTAINERS: Move self from Bug database only accounts
