@@ -84,6 +84,7 @@ static int apply_result_size (void);
 static rtx result_vector (int, rtx);
 #endif
 static rtx expand_builtin_setjmp (tree, rtx);
+static void expand_builtin_update_setjmp_buf (rtx);
 static void expand_builtin_prefetch (tree);
 static rtx expand_builtin_apply_args (void);
 static rtx expand_builtin_apply_args_1 (void);
@@ -736,6 +737,40 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
       else if (GET_CODE (insn) == CALL_INSN)
 	break;
     }
+}
+
+/* __builtin_update_setjmp_buf is passed a pointer to an array of five words
+   (not all will be used on all machines) that was passed to __builtin_setjmp.
+   It updates the stack pointer in that block to correspond to the current
+   stack pointer.  */
+
+static void
+expand_builtin_update_setjmp_buf (rtx buf_addr)
+{
+  enum machine_mode sa_mode = Pmode;
+  rtx stack_save;
+
+
+#ifdef HAVE_save_stack_nonlocal
+  if (HAVE_save_stack_nonlocal)
+    sa_mode = insn_data[(int) CODE_FOR_save_stack_nonlocal].operand[0].mode;
+#endif
+#ifdef STACK_SAVEAREA_MODE
+  sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
+#endif
+
+  stack_save
+    = gen_rtx_MEM (sa_mode,
+		   memory_address
+		   (sa_mode,
+		    plus_constant (buf_addr, 2 * GET_MODE_SIZE (Pmode))));
+
+#ifdef HAVE_setjmp
+  if (HAVE_setjmp)
+    emit_insn (gen_setjmp ());
+#endif
+
+  emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
 }
 
 /* Expand a call to __builtin_prefetch.  For a target that does not support
@@ -5620,6 +5655,19 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	  expand_builtin_longjmp (buf_addr, value);
 	  return const0_rtx;
 	}
+
+      /* This updates the setjmp buffer that is its argument with the value
+	 of the current stack pointer.  */
+    case BUILT_IN_UPDATE_SETJMP_BUF:
+      if (validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
+	{
+	  rtx buf_addr
+	    = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
+
+	  expand_builtin_update_setjmp_buf (buf_addr);
+	  return const0_rtx;
+	}
+      break;
 
     case BUILT_IN_TRAP:
       expand_builtin_trap ();
