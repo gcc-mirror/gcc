@@ -155,6 +155,9 @@ public class LineNumberReader extends BufferedReader
     */
   public void mark(int readLimit) throws IOException
   {
+    if (readLimit < 0)
+      throw new IllegalArgumentException("Read-ahead limit is negative");
+
     synchronized (lock)
       {
 	// This is basically the same as BufferedReader.mark.
@@ -265,9 +268,17 @@ public class LineNumberReader extends BufferedReader
     * @return The actual number of chars read, or -1 if end of stream
     *
     * @exception IOException If an error occurs.
+    * @exception NullPointerException If buf is null (in any case).
+    * @exception IndexOutOfBoundsException If buffer parameters (offset and
+    * count) lies outside of the buffer capacity.
     */
   public int read(char[] buf, int offset, int count) throws IOException
   {
+    if (buf == null)
+      throw new NullPointerException();
+    if (offset + count > buf.length || offset < 0)
+      throw new IndexOutOfBoundsException();
+
     if (count <= 0)
       {
 	if (count < 0)
@@ -376,14 +387,17 @@ public class LineNumberReader extends BufferedReader
     */
   public long skip (long count) throws IOException
   {
-    if (count <= 0)
+    if (count < 0)
+      throw new IllegalArgumentException("skip() value is negative");
+    if (count == 0)
       return 0;
 
     int skipped;
-    
+    char[] buf = new char[1];
+   
     for (skipped = 0; skipped < count; skipped++)
       {
-        int ch = read();
+        int ch = read(buf, 0, 1);
 
         if (ch < 0)
           break;

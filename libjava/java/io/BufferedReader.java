@@ -460,12 +460,19 @@ public class BufferedReader extends Reader
     boolean eof = false;
     for (;;)
       {
-	int ch = read();
-	if (ch < 0)
+	// readLine should block. So we must not return until a -1 is reached.
+	if (pos >= limit)
 	  {
-	    eof = true;
-	    break;
+	    // here count == 0 isn't sufficient to give a failure.
+	    int count = fill();
+	    if (count < 0)
+	      {
+		eof = true;
+		break;
+	      }
+	    continue;
 	  }
+	int ch = buffer[pos++];
 	if (ch == '\n' || ch == '\r')
 	  {
 	    // Check here if a '\r' was the last char in the buffer; if so,
