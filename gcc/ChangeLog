@@ -1,3 +1,41 @@
+Sun Jul 25 19:32:58 1999  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.c (num_insns_constant_wide): Correct
+	for type promotion.
+	(add_operand): Get test correct for 64-bit HOST_WIDE_INT.
+	(non_add_cint_operand): Likewise.
+	(logical_operand): Likewise.
+	(non_logical_cint_operand): Likewise.
+	(print_operand): Correct printf()s for 64-bit HOST_WIDE_INT.
+	(print_operand_address): Correct printf() for 64-bit HOST_WIDE_INT.
+	(rs6000_select_rtx_section): Suppress warning.
+	(small_data_operand): Suppress warning.
+	(rs6000_got_register): Suppress warning.
+	* config/rs6000/rs6000.md (andsi3): HOST_WIDE_INT is a signed
+	type, so `J' is generally the wrong constraint for a SImode value;
+	use `L' instead.
+	(andsi3_internal2): Likewise.
+	(andsi3_internal3): Likewise.
+	(iorsi3_internal1): Likewise.
+	(xorsi3_internal1): Likewise.
+	(movsi): Likewise.
+	(movsf_softfloat): Likewise.
+	various unnamed compare insns: Likewise.
+	(movsi+2): Preserve sign bits of SImode constant.
+	(floatsidf2_internal+1): Sign-extend SImode constant correctly.
+	(movdf+1): Preserve high bits of DFmode constant.
+	(movdi_32+1): Sign-extend properly.
+	various unnamed compare insns: Sign-extend properly.
+
+	* unroll.c (loop_iterations): Convert HOST_WIDE_INT to unsigned
+	properly for mode.
+	* expmed.c (expand_mult_highpart): Convert HOST_WIDE_INT from unsigned
+	properly for mode.
+	(expand_divmod): Likewise.
+	* optabs.c (expand_fix): Keep HOST_WIDE_INT constants properly signed.
+	(expand_binop): Sometimes there is work to do when changing
+	the mode of a CONST_INT.
+
 Sun Aug  1 12:55:31 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* stmt.c (emit_filename, emit_lineno, expr_stmts_for_value,
