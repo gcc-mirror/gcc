@@ -1,3 +1,8 @@
+2003-10-12  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR optimization/8750
+	* gcc.c-torture/execute/20031012-1.c: New test case.
+
 2003-10-11  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/string-opt-8.c: Don't test optimizations
@@ -16,7 +21,7 @@
 
 	* gcc.c-torture/compile/20031011-1.c: New test.
 
-Sat Oct 11 12:26:16 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-10-11  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/other/first-global.C: New test.
 
@@ -12876,12 +12881,12 @@ Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
 	* gcc.c-torture/execute/20000917-1.c: New test.
 	* gcc.c-torture/execute/20000917-1.x: XFAIL.
 
-Sat 16-Sep-2000 08:14:58 BST  Neil Booth  <NeilB@earthling.net>
+2000-09-16  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp/macro2.c: Testcase for multi-context arguments
 	in nested macro bug.
 
-Fri 15-Sep-2000 06:50:11 BST  Neil Booth  <NeilB@earthling.net>
+2000-09-15  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp/paste10.c: Testcase for PASTE_LEFT buglet.
 
