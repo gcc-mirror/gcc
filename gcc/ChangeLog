@@ -9,6 +9,11 @@ Tue Sep  2 18:09:39 1997  Jim Wilson  <wilson@cygnus.com>
 
 Tue Sep  2 18:41:55 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* xm-svr4.h (SYS_SIGLIST_DECLARED): Define.
+	* xm-news.h (SYS_SIGLIST_DECLARED): Likewise.
+	* gcc.texi: Note that if you define sys_siglist that you should
+	also define SYS_SIGLIST_DECLARED.
+
 	* mn10200.h (INITIALIZE_TRAMPOLINE): PC relative instructions
 	are relative to the next instruction, not the current instruction.
 
