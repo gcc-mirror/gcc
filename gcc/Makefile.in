@@ -732,7 +732,7 @@ OBJS =									\
  dependence.o diagnostic.o doloop.o dominance.o dwarf2asm.o dwarf2out.o	\
  dwarfout.o emit-rtl.o except.o explow.o expmed.o expr.o final.o flow.o	\
  fold-const.o function.o gcse.o genrtl.o ggc-common.o global.o graph.o	\
- haifa-sched.o hash.o hashtab.o ifcvt.o insn-attrtab.o insn-emit.o	\
+ haifa-sched.o hash.o ifcvt.o insn-attrtab.o insn-emit.o		\
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	\
  integrate.o intl.o jump.o lcm.o lists.o local-alloc.o loop.o mbchar.o	\
  optabs.o params.o predict.o print-rtl.o print-tree.o profile.o real.o	\
