@@ -714,14 +714,14 @@ _cpp_get_fresh_line (pfile)
 			       "no newline at end of file");
 	}
  
-      if (buffer->return_at_eof)
-	{
-	  buffer->return_at_eof = false;
-	  return false;
-	}
-
       if (!buffer->prev)
 	return false;
+
+      if (buffer->return_at_eof)
+	{
+	  _cpp_pop_buffer (pfile);
+	  return false;
+	}
 
       _cpp_pop_buffer (pfile);
     }
