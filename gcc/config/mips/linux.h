@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* If we don't set MASK_ABICALLS, we can't default to PIC.  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_ABICALLS|MASK_GAS)
+#define TARGET_DEFAULT MASK_ABICALLS
 
 #define TARGET_OS_CPP_BUILTINS()				\
     do {							\

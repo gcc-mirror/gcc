@@ -79,10 +79,8 @@ Boston, MA 02111-1307, USA.  */
    allocate and deallocate the top part of the frame.
 
    The value in the !mips16 case must be a SMALL_OPERAND and must
-   preserve the maximum stack alignment.  It could really be 0x7ff0,
-   but SGI's assemblers implement daddiu $sp,$sp,-0x7ff0 as a
-   multi-instruction addu sequence.  Use 0x7fe0 to work around this.  */
-#define MIPS_MAX_FIRST_STACK_STEP (TARGET_MIPS16 ? 0x100 : 0x7fe0)
+   preserve the maximum stack alignment.  */
+#define MIPS_MAX_FIRST_STACK_STEP (TARGET_MIPS16 ? 0x100 : 0x7ff0)
 
 /* True if INSN is a mips.md pattern or asm statement.  */
 #define USEFUL_INSN_P(INSN)						\
@@ -180,7 +178,6 @@ static void mips_set_architecture (const struct mips_cpu_info *);
 static void mips_set_tune (const struct mips_cpu_info *);
 static struct machine_function *mips_init_machine_status (void);
 static void print_operand_reloc (FILE *, rtx, const char **);
-static bool mips_assemble_integer (rtx, unsigned int, int);
 #if TARGET_IRIX
 static void irix_output_external_libcall (rtx);
 #endif
@@ -208,8 +205,6 @@ static void mips_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 static int symbolic_expression_p (rtx);
 static void mips_select_rtx_section (enum machine_mode, rtx,
 				     unsigned HOST_WIDE_INT);
-static void mips_select_section (tree, int, unsigned HOST_WIDE_INT)
-				  ATTRIBUTE_UNUSED;
 static bool mips_in_small_data_p (tree);
 static int mips_fpr_return_fields (tree, tree *);
 static bool mips_return_in_msb (tree);
@@ -613,8 +608,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
-#undef TARGET_ASM_INTEGER
-#define TARGET_ASM_INTEGER mips_assemble_integer
+#undef TARGET_ASM_ALIGNED_DI_OP
+#define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE mips_output_function_prologue
@@ -4063,20 +4058,6 @@ override_options (void)
 	warning ("-G is incompatible with PIC code which is the default");
     }
 
-  /* The MIPS and SGI o32 assemblers expect small-data variables to
-     be declared before they are used.  Although we once had code to
-     do this, it was very invasive and fragile.  It no longer seems
-     worth the effort.  */
-  if (!TARGET_EXPLICIT_RELOCS && !TARGET_GAS)
-    mips_section_threshold = 0;
-
-  /* We switch to small data sections using ".section", which the native
-     o32 irix assemblers don't understand.  Disable -G accordingly.
-     We must do this regardless of command-line options since otherwise
-     the compiler would abort.  */
-  if (!targetm.have_named_sections)
-    mips_section_threshold = 0;
-
   /* mips_split_addresses is a half-way house between explicit
      relocations and the traditional assembler macros.  It can
      split absolute 32-bit symbolic constants into a high/lo_sum
@@ -4087,19 +4068,12 @@ override_options (void)
 
      Although this code should work for -O0, it has traditionally
      been treated as an optimization.  */
-  if (TARGET_GAS && !TARGET_MIPS16 && TARGET_SPLIT_ADDRESSES
+  if (!TARGET_MIPS16 && TARGET_SPLIT_ADDRESSES
       && optimize && !flag_pic
       && !ABI_HAS_64BIT_SYMBOLS)
     mips_split_addresses = 1;
   else
     mips_split_addresses = 0;
-
-  /* Explicit relocations for "old" ABIs are a GNU extension.  Unless
-     the user has said otherwise, assume that they are not available
-     with assemblers other than gas.  */
-  if (!TARGET_NEWABI && !TARGET_GAS
-      && (target_flags_explicit & MASK_EXPLICIT_RELOCS) == 0)
-    target_flags &= ~MASK_EXPLICIT_RELOCS;
 
   /* -mvr4130-align is a "speed over size" optimization: it usually produces
      faster code, but at the expense of more nops.  Enable it at -O3 and
@@ -4646,14 +4620,14 @@ print_operand (FILE *file, rtx op, int letter)
 
 	case '{':
 	  if (set_volatile++ == 0)
-	    fprintf (file, "%s.set\tvolatile\n\t", TARGET_MIPS_AS ? "" : "#");
+	    fputs ("#.set\tvolatile\n\t", file);
 	  break;
 
 	case '}':
 	  if (set_volatile == 0)
 	    error ("internal error: %%} found without a %%{ in assembler pattern");
 	  else if (--set_volatile == 0)
-	    fprintf (file, "\n\t%s.set\tnovolatile", (TARGET_MIPS_AS) ? "" : "#");
+	    fputs ("\n\t#.set\tnovolatile", file);
 
 	  break;
 
@@ -4869,26 +4843,6 @@ print_operand_address (FILE *file, rtx x)
   abort ();
 }
 
-/* Target hook for assembling integer objects.  It appears that the Irix
-   6 assembler can't handle 64-bit decimal integers, so avoid printing
-   such an integer here.  */
-
-static bool
-mips_assemble_integer (rtx x, unsigned int size, int aligned_p)
-{
-  if ((TARGET_64BIT || TARGET_GAS) && size == 8 && aligned_p)
-    {
-      fputs ("\t.dword\t", asm_out_file);
-      if (HOST_BITS_PER_WIDE_INT < 64 || GET_CODE (x) != CONST_INT)
-	output_addr_const (asm_out_file, x);
-      else
-	print_operand (asm_out_file, x, 'X');
-      fputc ('\n', asm_out_file);
-      return true;
-    }
-  return default_assemble_integer (x, size, aligned_p);
-}
-
 /* When using assembler macros, keep track of all of small-data externs
    so that mips_file_end can emit the appropriate declarations for them.
 
@@ -4958,15 +4912,12 @@ mips_output_filename (FILE *stream, const char *name)
       num_source_filenames += 1;
       current_function_file = name;
       ASM_OUTPUT_FILENAME (stream, num_source_filenames, name);
-      /* This tells mips-tfile that stabs will follow.  */
-      if (!TARGET_GAS && write_symbols == DBX_DEBUG)
-	fprintf (stream, "\t#@stabs\n");
     }
 
   else if (write_symbols == DBX_DEBUG)
     {
       ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
-      fprintf (stream, "%s", ASM_STABS_OP);
+      fputs ("\t.stabs\t", stream);
       output_quoted_string (stream, name);
       fprintf (stream, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
     }
@@ -4991,8 +4942,8 @@ mips_output_lineno (FILE *stream, int line)
   if (write_symbols == DBX_DEBUG)
     {
       ++sym_lineno;
-      fprintf (stream, "%sLM%d:\n%s%d,0,%d,%sLM%d\n",
-	       LOCAL_LABEL_PREFIX, sym_lineno, ASM_STABN_OP, N_SLINE, line,
+      fprintf (stream, "%sLM%d:\n\t.stabn\t%d,0,%d,%sLM%d\n",
+	       LOCAL_LABEL_PREFIX, sym_lineno, N_SLINE, line,
 	       LOCAL_LABEL_PREFIX, sym_lineno);
     }
   else
@@ -5087,15 +5038,7 @@ mips_file_start (void)
 {
   default_file_start ();
 
-  /* Versions of the MIPS assembler before 2.20 generate errors if a branch
-     inside of a .set noreorder section jumps to a label outside of the .set
-     noreorder section.  Revision 2.20 just set nobopt silently rather than
-     fixing the bug.  */
-
-  if (TARGET_MIPS_AS && optimize && flag_delayed_branch)
-    fprintf (asm_out_file, "\t.set\tnobopt\n");
-
-  if (TARGET_GAS && !TARGET_IRIX)
+  if (!TARGET_IRIX)
     {
       /* Generate a special section to describe the ABI switches used to
 	 produce the resultant binary.  This used to be done by the assembler
@@ -5212,9 +5155,8 @@ mips_file_end (void)
     }
 }
 
-/* Implement ASM_OUTPUT_ALIGNED_DECL_COMMON.  This is usually the same as
-   the elfos.h version, but we also need to handle -muninit-const-in-rodata
-   and the limitations of the SGI o32 assembler.  */
+/* Implement ASM_OUTPUT_ALIGNED_DECL_COMMON.  This is usually the same as the
+   elfos.h version, but we also need to handle -muninit-const-in-rodata.  */
 
 void
 mips_output_aligned_decl_common (FILE *stream, tree decl, const char *name,
@@ -5237,7 +5179,6 @@ mips_output_aligned_decl_common (FILE *stream, tree decl, const char *name,
 			   size);
     }
   else
-    /* The SGI o32 assembler doesn't accept an alignment.  */
     mips_declare_common_object (stream, name, "\n\t.comm\t",
 				size, align, true);
 }
@@ -5862,12 +5803,6 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
   const char *fnname;
   HOST_WIDE_INT tsize = cfun->machine->frame.total_size;
 
-  /* ??? When is this really needed?  At least the GNU assembler does not
-     need the source filename more than once in the file, beyond what is
-     emitted by the debug information.  */
-  if (!TARGET_GAS)
-    ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
-
 #ifdef SDB_DEBUGGING_INFO
   if (debug_info_level != DINFO_LEVEL_TERSE && write_symbols == SDB_DEBUG)
     ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl), 0);
@@ -6480,31 +6415,11 @@ mips_select_rtx_section (enum machine_mode mode, rtx x,
 	  && mips_section_threshold > 0)
 	named_section (0, ".sdata", 0);
       else if (flag_pic && symbolic_expression_p (x))
-	{
-	  if (targetm.have_named_sections)
-	    named_section (0, ".data.rel.ro", 3);
-	  else
-	    data_section ();
-	}
+	named_section (0, ".data.rel.ro", 3);
       else
 	mergeable_constant_section (mode, align, 0);
     }
 }
-
-/* Choose the section to use for DECL.  RELOC is true if its value contains
-   any relocatable expression.  */
-
-static void
-mips_select_section (tree decl, int reloc,
-		     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
-{
-  if (targetm.have_named_sections)
-    default_elf_select_section (decl, reloc, align);
-  else
-    /* The native irix o32 assembler doesn't support named sections.  */
-    default_select_section (decl, reloc, align);
-}
-
 
 /* Implement TARGET_IN_SMALL_DATA_P.  Return true if it would be safe to
    access DECL using %gp_rel(...)($gp).  */
