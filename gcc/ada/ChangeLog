@@ -1,3 +1,20 @@
+2001-12-12  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch12.adb (Save_Entity_Descendant): Use syntactic field names 
+	on known node types, rather than untyped fields. Further cleanups.
+	
+2001-12-12  Robert Dewar <dewar@gnat.com>
+
+	* sem_ch12.adb:
+	(Save_Entity_Descendant): Minor comment update.
+	(Copy_Generic_Node): Deal with incorrect reference to Associated_Node
+	 of an N_Attribute_Reference node. As per note below, this does not 
+	eliminate need for Associated_Node in attribute ref nodes.
+	(Associated_Node): Documentation explicitly mentions attribute 
+	reference nodes, since this field is used in such nodes.
+	
+	* sem_ch12.adb (Associated_Node): Minor documentation cleanup.
+
 2001-12-12  Robert Dewar <dewar@gnat.com>
 
 	* s-stalib.adb: Add more comments on with statements being needed
