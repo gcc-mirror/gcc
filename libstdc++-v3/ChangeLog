@@ -1,3 +1,15 @@
+2000-09-12  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* testsuite/22_locale/global_templates.cc (test01): Add negative
+	tests for use_facet.
+
+	* bits/localefwd.h (locale::operator()): Minor tweaks.
+	* bits/locale_facets.tcc (locale::operator()): Same.
+	* testsuite/22_locale/operators.cc: New file.
+
+	* testsuite/22_locale/facet.cc (output_iterator): Remove
+	gnu_input_iterator, gnu_output_iterator.
+
 2000-09-11  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_GNU_MAKE): Remove test != "0". 

@@ -54,8 +54,8 @@ namespace std
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     bool
-    locale::operator()(const basic_string<_CharT,_Traits,_Alloc>& __s1,
-                       const basic_string<_CharT,_Traits,_Alloc>& __s2) const
+    locale::operator()(const basic_string<_CharT, _Traits, _Alloc>& __s1,
+                       const basic_string<_CharT, _Traits, _Alloc>& __s2) const
     {
       // XXX should not need to qualify here.
       // typedef collate<_CharT> __collate_type;
