@@ -1,5 +1,7 @@
 2002-03-24  Richard Henderson  <rth@redhat.com>
 
+	* unroll.c (unroll_loop): Zero label_map.
+
 	* gcse.c: Include except.h.
 	* Makefile.in (gcse.o): Update.
 
