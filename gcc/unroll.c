@@ -3744,7 +3744,18 @@ loop_iterations (loop)
 	  for (biv_inc = bl->biv; biv_inc; biv_inc = biv_inc->next_iv)
 	    {
 	      if (loop_insn_first_p (v->insn, biv_inc->insn))
-		offset -= INTVAL (biv_inc->add_val);
+		{
+		  if (REG_P (biv_inc->add_val))
+		    {
+		      if (loop_dump_stream)
+			fprintf (loop_dump_stream,
+				 "Loop iterations: Basic induction var add_val is REG %d.\n",
+				 REGNO (biv_inc->add_val));
+			return 0;
+		    }
+
+		  offset -= INTVAL (biv_inc->add_val);
+		}
 	    }
 	}
       if (loop_dump_stream)

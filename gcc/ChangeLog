@@ -1,5 +1,8 @@
 2002-02-27  Graham Stott  <grahams@redhat.com>
 
+	* unroll.c (loop_iterations): Return 0 if the add_val for
+	a BIV is REG.
+
 	* final.c (output_operand_lossage): Constify PFX_STR.
 
 	* df.c (df_insn_refs_record): Use XEXP (x, 0) for USE.
