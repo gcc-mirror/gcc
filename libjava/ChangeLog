@@ -1,5 +1,8 @@
 2001-09-02  Tom Tromey  <tromey@redhat.com>
 
+	* java/security/spec/AlgorithmParameterSpec.java,
+	java/security/spec/KeySpec.java: Re-merged with Classpath.
+
 	* gcj/javaprims.h: Regenerated class list.
 	* java/lang/IllegalThreadStateException.java,
 	java/lang/InstantiationException.java: Minor comment tweaks to
