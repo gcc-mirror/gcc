@@ -1,3 +1,7 @@
+2000-12-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* texinfo: Remove directory from GCC.
+
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* COPYING: Update to current
