@@ -4178,11 +4178,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
        &&
       (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == ENUMERAL_TYPE
        || codel == COMPLEX_TYPE))
-    /* Don't use convert_and_check here.  If the input has type int
-       and did not overflow, and we are converting it here to a short,
-       we don't want an error.  A warning would be okay, but it's too risky now
-       to add an option to convert_and_check to get just warnings.  */
-    return convert (type, rhs);
+    return convert_and_check (type, rhs);
   /* Conversion to a union from its member types.  */
   else if (codel == UNION_TYPE)
     {
