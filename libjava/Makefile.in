@@ -799,7 +799,10 @@ java/text/SimpleDateFormat.java	\
 java/text/StringCharacterIterator.java \
 java/util/AbstractCollection.java \
 java/util/AbstractList.java \
+java/util/AbstractMap.java \
+java/util/AbstractSequentialList.java \
 java/util/AbstractSet.java \
+java/util/ArrayList.java \
 java/util/Arrays.java \
 java/util/BasicMapEntry.java \
 java/util/BitSet.java \
@@ -815,6 +818,7 @@ java/util/Enumeration.java \
 java/util/EventListener.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
+java/util/HashMap.java \
 java/util/Hashtable.java \
 java/util/Iterator.java	\
 java/util/List.java \
@@ -833,9 +837,13 @@ java/util/Random.java \
 java/util/ResourceBundle.java \
 java/util/Set.java \
 java/util/SimpleTimeZone.java \
+java/util/SortedMap.java \
+java/util/SortedSet.java \
 java/util/Stack.java \
 java/util/StringTokenizer.java \
 java/util/TimeZone.java	\
+java/util/Timer.java \
+java/util/TimerTask.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
 java/util/jar/Attributes.java \
@@ -1429,26 +1437,30 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/text/RuleBasedCollator.P .deps/java/text/SimpleDateFormat.P \
 .deps/java/text/StringCharacterIterator.P \
 .deps/java/util/AbstractCollection.P .deps/java/util/AbstractList.P \
-.deps/java/util/AbstractSet.P .deps/java/util/Arrays.P \
-.deps/java/util/BasicMapEntry.P .deps/java/util/BitSet.P \
-.deps/java/util/Bucket.P .deps/java/util/Calendar.P \
-.deps/java/util/Collection.P .deps/java/util/Comparator.P \
+.deps/java/util/AbstractMap.P .deps/java/util/AbstractSequentialList.P \
+.deps/java/util/AbstractSet.P .deps/java/util/ArrayList.P \
+.deps/java/util/Arrays.P .deps/java/util/BasicMapEntry.P \
+.deps/java/util/BitSet.P .deps/java/util/Bucket.P \
+.deps/java/util/Calendar.P .deps/java/util/Collection.P \
+.deps/java/util/Comparator.P \
 .deps/java/util/ConcurrentModificationException.P \
 .deps/java/util/Date.P .deps/java/util/Dictionary.P \
 .deps/java/util/EmptyStackException.P .deps/java/util/Enumeration.P \
 .deps/java/util/EventListener.P .deps/java/util/EventObject.P \
-.deps/java/util/GregorianCalendar.P .deps/java/util/Hashtable.P \
-.deps/java/util/Iterator.P .deps/java/util/List.P \
-.deps/java/util/ListIterator.P .deps/java/util/ListResourceBundle.P \
-.deps/java/util/Locale.P .deps/java/util/Map.P \
-.deps/java/util/MissingResourceException.P \
+.deps/java/util/GregorianCalendar.P .deps/java/util/HashMap.P \
+.deps/java/util/Hashtable.P .deps/java/util/Iterator.P \
+.deps/java/util/List.P .deps/java/util/ListIterator.P \
+.deps/java/util/ListResourceBundle.P .deps/java/util/Locale.P \
+.deps/java/util/Map.P .deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
 .deps/java/util/PropertyPermission.P \
 .deps/java/util/PropertyResourceBundle.P .deps/java/util/Random.P \
 .deps/java/util/ResourceBundle.P .deps/java/util/Set.P \
-.deps/java/util/SimpleTimeZone.P .deps/java/util/Stack.P \
+.deps/java/util/SimpleTimeZone.P .deps/java/util/SortedMap.P \
+.deps/java/util/SortedSet.P .deps/java/util/Stack.P \
 .deps/java/util/StringTokenizer.P .deps/java/util/TimeZone.P \
+.deps/java/util/Timer.P .deps/java/util/TimerTask.P \
 .deps/java/util/TooManyListenersException.P .deps/java/util/Vector.P \
 .deps/java/util/jar/Attributes.P .deps/java/util/jar/JarEntry.P \
 .deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \

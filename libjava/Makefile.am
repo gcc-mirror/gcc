@@ -1030,7 +1030,10 @@ java/text/SimpleDateFormat.java	\
 java/text/StringCharacterIterator.java \
 java/util/AbstractCollection.java \
 java/util/AbstractList.java \
+java/util/AbstractMap.java \
+java/util/AbstractSequentialList.java \
 java/util/AbstractSet.java \
+java/util/ArrayList.java \
 java/util/Arrays.java \
 java/util/BasicMapEntry.java \
 java/util/BitSet.java \
@@ -1046,6 +1049,7 @@ java/util/Enumeration.java \
 java/util/EventListener.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
+java/util/HashMap.java \
 java/util/Hashtable.java \
 java/util/Iterator.java	\
 java/util/List.java \
@@ -1064,9 +1068,13 @@ java/util/Random.java \
 java/util/ResourceBundle.java \
 java/util/Set.java \
 java/util/SimpleTimeZone.java \
+java/util/SortedMap.java \
+java/util/SortedSet.java \
 java/util/Stack.java \
 java/util/StringTokenizer.java \
 java/util/TimeZone.java	\
+java/util/Timer.java \
+java/util/TimerTask.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
 java/util/jar/Attributes.java \
