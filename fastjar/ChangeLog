@@ -1,3 +1,12 @@
+2002-09-10  Matthias Klose  <doko@debian.org>
+
+	* fastjar.texi: New.
+	* Makefile.am: Support building info docs and manpages.
+	* Makefile.in: Regenerated.
+	* configure.in: Set gcc_version.
+	* configure: Regenerated.
+	* jargrep.c: Update usage and help strings.
+
 2002-09-09  Tom Tromey  <tromey@redhat.com>
 
 	* jartool.c (mkdir): Define.
