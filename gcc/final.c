@@ -345,7 +345,6 @@ end_final (filename)
 			align2, 1);
 
       /* Count of the # of basic blocks or # of instrumented arcs.  */
-      if (profile_block_flag)
       assemble_integer (GEN_INT (profile_block_flag
 				 ? count_basic_blocks
 				 : count_instrumented_edges),
