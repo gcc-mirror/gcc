@@ -1,3 +1,7 @@
+2001-12-04  Geert Bosch <bosch@gnat.com>
+
+	*  einfo.h, sinfo.h, treeprs.ads: Regenerate.
+
 2001-12-04  Robert Dewar <dewar@gnat.com>
 
 	* errout.adb (Error_Msg): Ignore attempt to put error msg at junk 
