@@ -1,3 +1,8 @@
+2002-04-25  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.h (FUNCTION_OK_FOR_SIBCALL): Add back check
+	for DECL being NULL.
+
 2002-04-25  Eric Botcazou  <ebotcazou@multimania.com>
 
 	* c-decl.c (grokdeclarator): Remove outdated ??? note

@@ -1930,7 +1930,9 @@ do {									\
    void) and then nothing else happens.  Such a sibling call would look
    valid without the added check here.  */
 #define FUNCTION_OK_FOR_SIBCALL(DECL) \
-	(! TARGET_FLAT && (TARGET_ARCH64 || ! current_function_returns_struct))
+	(DECL \
+	 && ! TARGET_FLAT \
+	 && (TARGET_ARCH64 || ! current_function_returns_struct))
 
 /* Generate RTL to flush the register windows so as to make arbitrary frames
    available.  */
