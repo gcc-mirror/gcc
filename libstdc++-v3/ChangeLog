@@ -1,3 +1,21 @@
+2004-11-26  Paolo Carlini  <pcarlini@suse.de>
+
+	DR 243. get and getline when sentry reports failure [WP]
+	* include/bits/istream.tcc (istream<>::get, istream<>::getline):
+	Store a null character only if the array has a non-zero size.
+	* src/istream.cc (istream<char>::getline, istream<wchar_t>::getline):
+	Likewise.
+	* testsuite/27_io/basic_istream/get/char/3.cc: New.
+	* testsuite/27_io/basic_istream/getline/char/6.cc: New.
+	* testsuite/27_io/basic_istream/getline/wchar_t/6.cc: New.
+	* docs/html/ext/howto.html: Add an entry for DR 243.
+
+	* testsuite/27_io/basic_istream/getline/wchar_t/1.cc: New.
+	* testsuite/27_io/basic_istream/getline/wchar_t/2.cc: New.
+	* testsuite/27_io/basic_istream/getline/wchar_t/3.cc: New.
+	* testsuite/27_io/basic_istream/getline/wchar_t/4.cc: New.
+	* testsuite/27_io/basic_istream/getline/wchar_t/5.cc: New.
+
 2004-11-25  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure: Regenerate for libtool reversion.
@@ -15,7 +33,6 @@
 	* po/Makefile.in: Likewise.
 	* src/Makefile.in: Likewise.
 	* testsuite/Makefile.in: Likewise.
-
 
 2004-11-24  Jonathan Wakely  <redi@kayari.org>
 
@@ -101,67 +118,6 @@
 	* docs/doxygen/run_doxygen: Print arguments.
 
 	* docs/doxygen/user.cfg.in: Tweaks.
-	
-2004-11-19  Jonathan Wakely  <redi@gcc.gnu.org>
-
-	* include/bits/basic_string.h, include/bits/locale_classes.h,
-	include/bits/valarray_after.h, include/bits/valarray_before.h,
-	include/ext/stdio_sync_filebuf.h, include/std/std_algorithm.h,
-	include/std/std_functional.h, include/std/std_memory.h,
-	include/std/std_numeric.h: Doxygen fixes.
-
-2004-11-19  Paolo Carlini  <pcarlini@suse.de>
-
-	* testsuite/22_locale/time_get/get_date/char/1.cc: In the checks
-	use, more correctly (and consistently with other testcases) the
-	return value of the facet (the iterator arguments are by value).
-	* testsuite/22_locale/time_get/get_date/char/12791.cc: Likewise.
-	* testsuite/22_locale/time_get/get_date/wchar_t/1.cc: Likewise.
-	* testsuite/22_locale/time_get/get_date/wchar_t/12791.cc: Likewise.
-	* testsuite/22_locale/time_get/get_monthname/char/1.cc: Likewise.
-	* testsuite/22_locale/time_get/get_monthname/wchar_t/1.cc: Likewise.
-	* testsuite/22_locale/time_get/get_time/char/1.cc: Likewise.
-	* testsuite/22_locale/time_get/get_time/wchar_t/1.cc: Likewise.
-	* testsuite/22_locale/time_get/get_weekday/char/1.cc: Likewise.
-	* testsuite/22_locale/time_get/get_weekday/wchar_t/1.cc: Likewise.
-	* testsuite/22_locale/time_get/get_year/char/1.cc: Likewise.
-	* testsuite/22_locale/time_get/get_year/wchar_t/1.cc: Likewise.
-
-2004-11-19  Jonathan Wakely  <redi@gcc.gnu.org>
-
-	* Makefile.am (doxygen, doxygen-maint, doxygen-man): Remove extra '$'
-	from host_alias variable.
-	* Makefile.in: Regenerate.
-
-2004-11-19  Chris Jefferson  <chris@bubblescope.net>
-
-	* include/bits/stl_list.h (list::back, list::back const):
-	Don't decrement temporary.
-
-2004-11-19  Paolo Carlini  <pcarlini@suse.de>
-
-	* include/bits/stl_deque.h (deque::front, deque::front const,
-	deque::back, deque::back const): Slightly tweak for stylistic
-	consistency.
-
-2004-11-18  Paolo Carlini  <pcarlini@suse.de>
-
-	* testsuite/26_numerics/numeric/sum_diff.cc: Use VERIFY.
-	* testsuite/ext/array_allocator/1.cc: Likewise.
-	* testsuite/ext/array_allocator/2.cc: Likewise.
-	* testsuite/ext/array_allocator/3.cc: Likewise.
-	* testsuite/ext/enc_filebuf/char/13598.cc: Likewise.
-
-2004-11-18  Paolo Carlini  <pcarlini@suse.de>
-
-	* include/bits/locale_facets.tcc (num_get<>::do_get(void*&)):
-	If the failbit is set, don't set it again.
-	(money_get<>::_M_extract): Minor stylistic tweak: consistently
-	with the other functions, take care of eofbit at the end.
-
-2004-11-18  Paolo Carlini  <pcarlini@suse.de>
-
-	DR 434. bitset::to_string() hard to use [Ready]
 
 2004-11-19  Jonathan Wakely  <redi@gcc.gnu.org>
 

@@ -533,7 +533,10 @@ namespace std
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
 	}
-      *__s = char_type();
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 243. get and getline when sentry reports failure.
+      if (__n > 0)
+	*__s = char_type();
       if (!_M_gcount)
 	__err |= ios_base::failbit;
       if (__err)
@@ -621,7 +624,10 @@ namespace std
           catch(...)
             { this->_M_setstate(ios_base::badbit); }
         }
-      *__s = char_type();
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 243. get and getline when sentry reports failure.
+      if (__n > 0)
+	*__s = char_type();
       if (!_M_gcount)
         __err |= ios_base::failbit;
       if (__err)
