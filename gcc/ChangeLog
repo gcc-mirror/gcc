@@ -1,3 +1,7 @@
+2001-08-02  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in, mklibgcc.in: Revert mkinstalldirs change.
+
 2001-08-02  Lars Brinkhoff  <lars@nocrew.org>
 
 	* combine.c, config.gcc, cse.c, defaults.h, real.c, reload.c,
