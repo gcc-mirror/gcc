@@ -2737,7 +2737,7 @@ readescape (ignore_ptr)
 /* Value is 1 (or 2) if we should try to make the next identifier look like
    a typename (when it may be a local variable or a class variable).
    Value is 0 if we treat this name in a default fashion.  */
-int looking_for_typename = 0;
+int looking_for_typename;
 
 #ifdef __GNUC__
 __inline

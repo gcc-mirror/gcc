@@ -3937,9 +3937,9 @@ ambiguous_decl (name, old, new)
       else
 	{
 	  /* Some declarations are functions, some are not. */
-	  cp_error ("ambiguous definition `%D' used", name);
-	  cp_error_at ("first definition here", BINDING_VALUE (old));
-	  cp_error_at ("other definition here", BINDING_VALUE (new));
+	  cp_error ("use of `%D' is ambiguous", name);
+	  cp_error_at ("  first declared as `%#D' here", BINDING_VALUE (old));
+	  cp_error_at ("  also declared as `%#D' here", BINDING_VALUE (new));
 	  return error_mark_node;
 	}
     }
@@ -4239,6 +4239,15 @@ arg_assoc_class (k, type)
 	    && decl_namespace (TREE_VALUE (list)) == context)
 	  if (add_function (k, TREE_VALUE (list)))
 	    return 1;
+
+  /* Process template arguments.  */
+  if (CLASSTYPE_TEMPLATE_INFO (type))
+    {
+      list = innermost_args (CLASSTYPE_TI_ARGS (type), 0);
+      for (i = 0; i < TREE_VEC_LENGTH (list); ++i)
+	arg_assoc (k, TREE_VEC_ELT (list, i));
+    }
+
   return 0;
 }
 
@@ -4316,6 +4325,9 @@ arg_assoc (k, n)
      struct arg_lookup* k;
      tree n;
 {
+  if (n == error_mark_node)
+    return 0;
+
   if (TREE_CODE_CLASS (TREE_CODE (n)) == 't')
     return arg_assoc_type (k, n);
 
@@ -4324,7 +4336,7 @@ arg_assoc (k, n)
 
   if (TREE_CODE (n) == ADDR_EXPR)
     n = TREE_OPERAND (n, 0);
-  if (TREE_CODE (n) == TREE_LIST)
+  while (TREE_CODE (n) == TREE_LIST)
     n = TREE_VALUE (n);
 
   my_friendly_assert (TREE_CODE (n) == OVERLOAD, 980715);
