@@ -361,6 +361,7 @@ static int combinable_i3pat	PROTO((rtx, rtx *, rtx, rtx, int, rtx *));
 static int contains_muldiv	PROTO((rtx));
 static rtx try_combine		PROTO((rtx, rtx, rtx));
 static void undo_all		PROTO((void));
+static void undo_commit		PROTO((void));
 static rtx *find_split_point	PROTO((rtx *, rtx));
 static rtx subst		PROTO((rtx, rtx, rtx, int, int));
 static rtx combine_simplify_rtx	PROTO((rtx, enum machine_mode, int, int));
@@ -495,7 +496,6 @@ combine_instructions (f, nregs)
   combine_merges = 0;
   combine_extras = 0;
   combine_successes = 0;
-  undobuf.undos = undobuf.previous_undos = 0;
 
   combine_max_regno = nregs;
 
@@ -716,6 +716,16 @@ combine_instructions (f, nregs)
   free (reg_last_set_nonzero_bits);
   free (reg_last_set_sign_bit_copies);
   free (uid_cuid);
+
+  {
+    struct undo *undo, *next;
+    for (undo = undobuf.frees; undo; undo = next)
+      {
+	next = undo->next;
+	free (undo);
+      }
+    undobuf.frees = 0;
+  }
 
   total_attempts += combine_attempts;
   total_merges += combine_merges;
@@ -1461,8 +1471,6 @@ try_combine (i3, i2, i1)
     return 0;
 
   combine_attempts++;
-
-  undobuf.undos = undobuf.previous_undos = 0;
   undobuf.other_insn = 0;
 
   /* Save the current high-water-mark so we can free storage if we didn't
@@ -2620,6 +2628,7 @@ try_combine (i3, i2, i1)
   }
 
   combine_successes++;
+  undo_commit ();
 
   /* Clear this here, so that subsequent get_last_value calls are not
      affected.  */
@@ -2659,6 +2668,24 @@ undo_all ()
      affected.  */
   subst_prev_insn = NULL_RTX;
 }
+
+/* We've committed to accepting the changes we made.  Move all
+   of the undos to the free list.  */
+
+static void
+undo_commit ()
+{
+  struct undo *undo, *next;
+
+  for (undo = undobuf.undos; undo; undo = next)
+    {
+      next = undo->next;
+      undo->next = undobuf.frees;
+      undobuf.frees = undo;
+    }
+  undobuf.undos = undobuf.previous_undos = 0;
+}
+
 
 /* Find the innermost point within the rtx at LOC, possibly LOC itself,
    where we have an arithmetic expression and return that point.  LOC will

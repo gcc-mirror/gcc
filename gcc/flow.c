@@ -2466,8 +2466,7 @@ life_analysis (f, nregs, file, remove_dead_code)
   if (file)
     dump_flow_info (file);
 
-  BITMAP_FREE (uid_volatile);
-  free (uid_volatile);
+  BITMAP_XFREE (uid_volatile);
   free_basic_block_vars (1);
 }
 
@@ -2940,6 +2939,7 @@ life_analysis_1 (f, nregs, flags)
     blocks = sbitmap_alloc (n_basic_blocks);
     sbitmap_ones (blocks);
     calculate_global_regs_live (blocks, blocks, flags & PROP_SCAN_DEAD_CODE);
+    sbitmap_free (blocks);
   }
 
   /* The only pseudos that are live at the beginning of the function are

@@ -119,13 +119,24 @@ extern void debug_bitmap PROTO((bitmap));
   bitmap_initialize ((bitmap) xmalloc (sizeof (bitmap_head)))
 
 /* Do any cleanup needed on a bitmap when it is no longer used.  */
-#define BITMAP_FREE(BITMAP)					\
-do {				\
-  if (BITMAP)			\
-    {				\
-      bitmap_clear (BITMAP);	\
-      (BITMAP) = 0;		\
-    }									\
+#define BITMAP_FREE(BITMAP)			\
+do {						\
+  if (BITMAP)					\
+    {						\
+      bitmap_clear (BITMAP);			\
+      (BITMAP) = 0;				\
+    }						\
+} while (0)
+
+/* Do any cleanup needed on an xmalloced bitmap when it is no longer used.  */
+#define BITMAP_XFREE(BITMAP)			\
+do {						\
+  if (BITMAP)					\
+    {						\
+      bitmap_clear (BITMAP);			\
+      free (BITMAP);				\
+      (BITMAP) = 0;				\
+    }						\
 } while (0)
 
 /* Do any one-time initializations needed for bitmaps.  */
