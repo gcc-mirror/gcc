@@ -1,3 +1,9 @@
+2004-11-23  Chris Jefferson  <chris@bubblescope.net>
+
+	* testsuite/testsuite_iterators.h: New.
+        * testsuite/25_algorithms/search_n/iterator.cc: New.
+        * testsuite/performance/25_algorithms/search_n.cc: New.
+
 2004-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* testsuite/lib/libstdc++.exp: Use new procs in target-libpath.exp.
