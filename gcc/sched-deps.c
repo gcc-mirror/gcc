@@ -1095,7 +1095,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
   /* Add dependencies if a scheduling barrier was found.  */
   if (schedule_barrier_found)
     {
-      rtx u, pending, pending_mem;
+      rtx u;
 
       for (i = 0; i < deps->max_reg; i++)
 	{

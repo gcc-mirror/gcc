@@ -63,9 +63,6 @@ struct pending_inline *pending_inlines;
 
 static void do_build_assign_ref PARAMS ((tree));
 static void do_build_copy_constructor PARAMS ((tree));
-#if HOST_BITS_PER_WIDE_INT >= 64
-static void build_mangled_C99_name PARAMS ((int));
-#endif
 static tree synthesize_exception_spec PARAMS ((tree, tree (*) (tree, void *), void *));
 static tree locate_dtor PARAMS ((tree, void *));
 static tree locate_ctor PARAMS ((tree, void *));
