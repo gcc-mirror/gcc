@@ -172,7 +172,9 @@ static void do_jump_by_parts_equality PARAMS ((tree, rtx, rtx));
 static void do_compare_and_jump	PARAMS ((tree, enum rtx_code, enum rtx_code,
 					 rtx, rtx));
 static rtx do_store_flag	PARAMS ((tree, rtx, enum machine_mode, int));
+#ifdef PUSH_ROUNDING
 static void emit_single_push_insn PARAMS ((enum machine_mode, rtx, tree));
+#endif
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -1387,13 +1389,12 @@ convert_modes (mode, oldmode, x, unsignedp)
 #define MOVE_MAX_PIECES   MOVE_MAX
 #endif
 
-/* Generate several move instructions to copy LEN bytes
-   from block FROM to block TO.  (These are MEM rtx's with BLKmode).
-   The caller must pass FROM and TO
-    through protect_from_queue before calling.
+/* Generate several move instructions to copy LEN bytes from block FROM to
+   block TO.  (These are MEM rtx's with BLKmode).  The caller must pass FROM
+   and TO through protect_from_queue before calling.
 
-   When TO is NULL, the emit_single_push_insn is used to push the
-   FROM to stack.
+   If PUSH_ROUNDING is defined and TO is NULL, emit_single_push_insn is
+   used to push FROM to the stack.
 
    ALIGN is maximum alignment we can assume.  */
 
@@ -1600,7 +1601,13 @@ move_by_pieces_1 (genfun, mode, data)
       if (data->to)
 	emit_insn ((*genfun) (to1, from1));
       else
-	emit_single_push_insn (mode, from1, NULL);
+	{
+#ifdef PUSH_ROUNDING
+	  emit_single_push_insn (mode, from1, NULL);
+#else
+	  abort ();
+#endif
+	}
 
       if (HAVE_POST_INCREMENT && data->explicit_inc_to > 0)
 	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (size)));
@@ -3144,14 +3151,16 @@ get_push_address (size)
   return copy_to_reg (temp);
 }
 
+#ifdef PUSH_ROUNDING
+
 /* Emit single push insn.  */
+
 static void
 emit_single_push_insn (mode, x, type)
      rtx x;
      enum machine_mode mode;
      tree type;
 {
-#ifdef PUSH_ROUNDING
   rtx dest_addr;
   unsigned rounded_size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
   rtx dest;
@@ -3196,10 +3205,8 @@ emit_single_push_insn (mode, x, type)
       set_mem_alias_set (dest, 0);
     }
   emit_move_insn (dest, x);
-#else
-  abort();
-#endif
 }
+#endif
 
 /* Generate code to push X onto the stack, assuming it has mode MODE and
    type TYPE.
