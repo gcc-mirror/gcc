@@ -2790,6 +2790,12 @@ expand_eh_return ()
     return;
 
   eh_regs (&reg1, &reg2, &reg3, 1);
+#ifdef POINTERS_EXTEND_UNSIGNED
+  eh_return_context = convert_memory_address (Pmode, eh_return_context);
+  eh_return_stack_adjust = 
+      convert_memory_address (Pmode, eh_return_stack_adjust);
+  eh_return_handler = convert_memory_address (Pmode, eh_return_handler);
+#endif
   emit_move_insn (reg1, eh_return_context);
   emit_move_insn (reg2, eh_return_stack_adjust);
   emit_move_insn (reg3, eh_return_handler);
