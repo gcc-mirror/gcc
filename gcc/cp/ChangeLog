@@ -1,3 +1,8 @@
+1999-09-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (binfo_for_vtable): Use CLASSTYPE_VFIELD_PARENT.
+	(dfs_bfv_queue_p, dfs_bfv_helper, struct bfv_info): Remove.
+
 1999-09-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (tree.o): Depend on ggc.h.
@@ -1010,10 +1015,10 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	
 1999-08-13  Gavin Romig-Koch  <gavin@cygnus.com>
 
-	cp-tree.h (init_cplus_unsave): New.
+	* cp-tree.h (init_cplus_unsave): New.
 	(cplus_unsave_expr_now): New.
-	lex.c (init_parse): Call init_cplus_unsave.
-	tree.c (init_cplus_unsave): New.
+	* lex.c (init_parse): Call init_cplus_unsave.
+	* tree.c (init_cplus_unsave): New.
 	(cplus_unsave_expr_now): New.
 
 1999-08-13  Mark Mitchell  <mark@codesourcery.com>
@@ -1194,9 +1199,6 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	* tree.c (cp_build_qualified_type_real): Simplify handling here.
 
 1999-08-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
-
-        * decl.c: Remove redundant prototype for `print_error_function'.
-        (lang_print_error_function): Constify a char*.
 
         * lex.c (lang_identify): Likewise.
 
@@ -1614,7 +1616,6 @@ Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 	
 1999-07-24  Richard Henderson  <rth@cygnus.com>
 
-	* decl.c (ptr_type_node, va_list_type_node): New.
 	* gxx.gperf (__builtin_va_arg): New.
 	* parse.y (VA_ARG): New token.
 	(unary_expr): Recognize it.

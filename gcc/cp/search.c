@@ -131,8 +131,6 @@ static tree dfs_walk_real PROTO ((tree,
 				  tree (*) (tree, void *),
 				  tree (*) (tree, void *),
 				  void *));
-static tree dfs_bfv_queue_p PROTO ((tree, void *));
-static tree dfs_bfv_helper PROTO ((tree, void *));
 static tree get_virtuals_named_this_r PROTO ((tree, void *));
 static tree context_for_name_lookup PROTO ((tree));
 static tree canonical_binfo PROTO ((tree));
@@ -3270,55 +3268,30 @@ types_overlap_p (empty_type, next_type)
   return oi.found_overlap;
 }
 
-struct bfv_info {
-  tree vbases;
-  tree var;
-};
-
-static tree
-dfs_bfv_queue_p (binfo, data)
-     tree binfo;
-     void *data;
-{
-  struct bfv_info *bfvi = (struct bfv_info *) data;
-
-  /* Use the real virtual base class objects, not the placeholders in
-     the usual hierarchy.  */
-  if (TREE_VIA_VIRTUAL (binfo))
-    return binfo_member (BINFO_TYPE (binfo), bfvi->vbases);
-  
-  return binfo;
-}
-
-/* Passed to dfs_walk_real by binfo_for_vtable; determine if bvtable
-   comes from BINFO.  */
-
-static tree
-dfs_bfv_helper (binfo, data)
-     tree binfo;
-     void *data;
-{
-  struct bfv_info *bfvi = (struct bfv_info *) data;
-
-  if (BINFO_VTABLE (binfo) == bfvi->var)
-    return binfo;
-  return NULL_TREE;
-}
-
 /* Given a vtable VAR, determine which binfo it comes from.  */
 
 tree
 binfo_for_vtable (var)
      tree var;
 {
-  tree type;
-  struct bfv_info bfvi;
+  tree binfo = TYPE_BINFO (DECL_CONTEXT (var));
+  tree binfos;
+  int i;
 
-  type = DECL_CONTEXT (var);
-  bfvi.vbases = CLASSTYPE_VBASECLASSES (type);
-  bfvi.var = var;
-  return dfs_walk_real (TYPE_BINFO (type),
-			0, dfs_bfv_helper, dfs_bfv_queue_p, &bfvi);
+  while (1)
+    {
+      binfos = BINFO_BASETYPES (binfo);
+      if (binfos == NULL_TREE)
+	break;
+
+      i = CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      if (i == -1)
+	break;
+
+      binfo = TREE_VEC_ELT (binfos, i);
+    }
+
+  return binfo;
 }
 
 /* Returns 1 iff BINFO is from a direct or indirect virtual base.  */
