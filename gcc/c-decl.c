@@ -723,6 +723,10 @@ c_decode_option (p)
     ; /* cpp handles this one.  */
   else if (!strcmp (p, "-Wno-trigraphs"))
     ; /* cpp handles this one.  */
+  else if (!strcmp (p, "-Wundef"))
+    ; /* cpp handles this one.  */
+  else if (!strcmp (p, "-Wno-undef"))
+    ; /* cpp handles this one.  */
   else if (!strcmp (p, "-Wimport"))
     ; /* cpp handles this one.  */
   else if (!strcmp (p, "-Wno-import"))
