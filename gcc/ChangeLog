@@ -1,3 +1,11 @@
+2003-06-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/install.texi (--with-gnu-as): Mention SPARC/Solaris and
+	SPARC64/Solaris as platforms where --with-gnu-as makes a difference.
+	(--with-as): Add @anchor.
+	(--with-gnu-ld): Fix typo.
+	(--with-ld): Add @uref to --with-as.
+
 2003-06-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* flow.c (initialize_uninitialized_subregs): Use
