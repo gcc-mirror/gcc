@@ -20,7 +20,7 @@ void foo(int a, ...)
   if (a != 2)
     abort ();
   v = va_arg (args, vector unsigned int);
-  if (memcmp (&v, &v2, sizeof (v) != 0))
+  if (memcmp (&v, &v2, sizeof (v)) != 0)
     abort ();
   va_end (args);
 }
@@ -28,7 +28,7 @@ void foo(int a, ...)
 int main(void)
 {
   foo (1, (vector unsigned int){10,11,12,13}, 2,
-       (vector unsigned int){14,15,16,17});
+       (vector unsigned int){20,21,22,23});
   return 0;
 }
 
