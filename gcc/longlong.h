@@ -201,8 +201,8 @@
 	     "%rM" ((USItype)(al)),					\
 	     "rM" ((USItype)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("sub %5,%4,%1
-	subb %3,%2,%0"							\
+  __asm__ ("sub %4,%5,%1
+	subb %2,%3,%0"							\
 	   : "=r" ((USItype)(sh)),					\
 	     "=&r" ((USItype)(sl))					\
 	   : "rM" ((USItype)(ah)),					\
