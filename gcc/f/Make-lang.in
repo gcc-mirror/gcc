@@ -286,22 +286,26 @@ stmp-f2c.h: \
   $(GCC_PARTS)
 # The make "stage?" in compiler spec. is fully qualified as above
 	rm -f stmp-f2c.h
-	top=`pwd`; \
+	case "$(LANGUAGES)" in \
+	*f77*) top=`pwd`; \
 	src=`cd $(srcdir); pwd`; \
 	  cd f/runtime; \
 	  CC="`case '$(GCC_FOR_TARGET)' in \
 	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
 	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
 	  $(F77_FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) \
-	  $${src}/f/runtime/configure --srcdir=$${src}/f/runtime
-	top=`pwd`; \
+	  $${src}/f/runtime/configure --srcdir=$${src}/f/runtime ;; \
+	esac
+	case "$(LANGUAGES)" in \
+	*f77*) top=`pwd`; \
 	src=`cd $(srcdir); pwd`; \
 	  cd f/runtime/libU77; \
 	  CC="`case '$(GCC_FOR_TARGET)' in \
 	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
 	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
 	  $(F77_FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) \
-	  $${src}/f/runtime/libU77/configure --srcdir=$${src}/f/runtime/libU77
+	  $${src}/f/runtime/libU77/configure --srcdir=$${src}/f/runtime/libU77 ;; \
+	esac
 	touch stmp-f2c.h
 
 # Support parallel build.
