@@ -9,6 +9,10 @@
 	different modes so that we don't introduce SUBREGs into memory
 	addresses.
 
+	2001-02-02  Philip Blundell  <philb@gnu.org>
+	* arm/linux-elf.h (MAKE_DECL_ONE_ONLY, UNIQUE_SECTION_P): Define.
+	(UNIQUE_SECTION): Define.                                  
+
 2001-03-30  Bernd Schmidt  <bernds@redhat.com>
 
 	* jump.c (delete_barrier_successors): Fix error in last change.
