@@ -1,3 +1,8 @@
+2004-01-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20030123-1.c: Add -fno-omit-frame-pointer option.  Do not
+	clobber frame pointer register in asm statement.
+
 2004-01-21  Falk Hueffner  <falk@debian.org>
 
 	* gcc.c-torture/compile/20040121-1.c: New test.
