@@ -8,6 +8,13 @@
 	update docs for -b option.
 
 2002-06-10  Tim Josling  <tej@melbpc.org.au>
+
+	* configure.in (remaining_languages_check): 
+	Added check that all languages specified were found. 
+	Exit if not found. Previous behaviour was silent failure.
+	* configure: Regenerated.
+
+2002-06-10  Tim Josling  <tej@melbpc.org.au>
  
          First steps to making treelang documentation compliant, based on
 	 instructions in sourcebuild.texi. Also add to gcc.c list of
