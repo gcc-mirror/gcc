@@ -1,5 +1,8 @@
 Mon Jan  1 21:28:29 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config.gcc (sparc64-wrs-vxworks*): New case.
+	* config/sparc/vxsparc64.h, config/sparc/t-vxsparc64: New files.
+
 	* config/sparc/sparc.c (sparc_override_options): Do support different
 	pointer and architecture size.
 	* config/sparc/sparc.h (MIN_UNITS_PER_WORD): Always 4.
