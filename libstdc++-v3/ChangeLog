@@ -1,3 +1,9 @@
+2002-05-10  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (enable_symvers): Quote $LD.
+	* aclocal.m4: Regenerate.
+	* configure: Likewise.
+
 2002-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Append all
