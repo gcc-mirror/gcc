@@ -4458,6 +4458,7 @@ defaults.
 
 These @samp{-m} options are defined for the i386 family of computers:
 
+@table @code
 @item -mcpu=@var{cpu type}
 Assume the defaults for the machine type @var{cpu type} when scheduling
 instructions.  The choices for @var{cpu type} are: @samp{i386},
