@@ -460,6 +460,11 @@ int flag_keep_inline_functions;
 
 int flag_no_inline;
 
+/* Nonzero means that we should emit static const variables
+   regardless of whether or not optimization is turned on.  */
+
+int flag_keep_static_consts = 1;
+
 /* Nonzero means we should be saving declaration info into a .X file.  */
 
 int flag_gen_aux_info = 0;
@@ -575,6 +580,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"inline-functions", &flag_inline_functions, 1},
   {"keep-inline-functions", &flag_keep_inline_functions, 1},
   {"inline", &flag_no_inline, 0},
+  {"keep-static-consts", &flag_keep_static_consts, 1},
   {"syntax-only", &flag_syntax_only, 1},
   {"shared-data", &flag_shared_data, 1},
   {"caller-saves", &flag_caller_saves, 1},
@@ -2360,7 +2366,8 @@ compile_file (name)
 
 	    /* Don't write out static consts, unless we still need them.
 
-	       We also keep static consts if not optimizing (for debugging).
+	       We also keep static consts if not optimizing (for debugging),
+	       unless the user specified -fno-keep-static-consts.
 	       ??? They might be better written into the debug information.
 	       This is possible when using DWARF.
 
@@ -2385,7 +2392,7 @@ compile_file (name)
 	    if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
 		&& (! TREE_READONLY (decl)
 		    || TREE_PUBLIC (decl)
-		    || !optimize
+		    || (!optimize && flag_keep_static_consts)
 		    || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
 	      {
 		reconsider = 1;
