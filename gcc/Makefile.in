@@ -868,7 +868,7 @@ libgcc1.conv: libgcc1.a
 # Use this as value of LIBGCC1 to inhibit use of libgcc1.c entirely.
 # Make an empty file instead.
 libgcc1.null: $(GCC_PASSES)
-	echo "__foo () {}" > dummy.c
+	echo "void __foo () {}" > dummy.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) -c dummy.c
 	$(OLDAR) $(OLDAR_FLAGS) libgcc1.null dummy$(objext)
 	rm -f dummy$(objext) dummy.c

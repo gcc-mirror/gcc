@@ -1,3 +1,7 @@
+Sun Mar 29 00:42:21 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (libgcc1.null): Make return type for __foo void.
+
 Sat Mar 28 14:37:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.h: Add declarations for many functions defined in pa.c.
