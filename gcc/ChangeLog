@@ -1,3 +1,11 @@
+2004-04-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/13985
+	* cfgloopmanip.c (fix_loop_placements): New prototype.
+	Call fix_bb_placements on the preheader of loops that have
+	been reparented.
+	(remove_path): Adjust call to fix_loop_placements.
+
 2004-04-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/darwin7.h: New file.
@@ -241,7 +249,7 @@
 	to "Not triggered by any -O level" section.  Adjust commentary
 	accordingly.
 
-2004-04-20  Anil Paranjpe   <anilp1@kpitcummins.com>
+2004-04-20  Anil Paranjpe <anilp1@kpitcummins.com>
 
 	* toplev.c (compile_file): Move targetm.asm_out.file_end call to end.
 

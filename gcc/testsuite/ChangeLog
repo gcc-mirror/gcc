@@ -1,3 +1,7 @@
+2004-04-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/loop-3.c: New test.
+
 2004-04-23  Daniel Jacobowitz  <drow@mvista.com>
 
 	* gcc.c-torture/execute/simd-5.c: New test.
