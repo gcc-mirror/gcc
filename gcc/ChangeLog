@@ -1,3 +1,8 @@
+Mon May 31 00:46:17 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* alias.c (find_base_term): Improve handling of addresses
+	constructed from binary operations.
+
 Sun May 30 14:29:17 1999  Eric Raskin (ehr@listworks.com)
 
 	* dgux.h (STARTFILE_SPEC): Fix incorrectly matched curly-braces.
