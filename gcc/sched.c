@@ -3451,7 +3451,12 @@ update_flow_info (notes, first, last, orig_insn)
 
 	case REG_LABEL:
 	  /* Should be moved to the new insn(s) which use the label.  */
-	  abort ();
+	  for (insn = first; insn != NEXT_INSN (last); insn = NEXT_INSN (insn))
+	    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+		&& reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
+	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL,
+					  XEXP (note, 0), REG_NOTES (insn));
+	  break;
 
 	case REG_CC_SETTER:
 	case REG_CC_USER:
