@@ -1,3 +1,10 @@
+2004-08-09  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (sdiv_pow2_cheap, smod_pow2_cheap): Change type to bool.
+	(init_expmed): Fix potential overrun problem with "all.reg".
+	(expand_sdiv2_pow2): Add an alternate implementation for signed
+	division, if the target provides a suitable conditional move insn.
+
 2004-08-09  Paul Brook  <paul@codesourcery.com>
 	Richard Henderson  <rth@redhat.com>
 
