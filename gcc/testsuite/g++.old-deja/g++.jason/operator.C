@@ -2,7 +2,7 @@
 // Build don't link:
 // Special g++ Options:
 
-typedef unsigned long size_t;
+typedef __SIZE_TYPE__ size_t;
 
 struct A {
   int operator?:(int a, int b);	   // WARNING - 
