@@ -998,10 +998,7 @@ expand_throw (exp)
 	}
 
       if (TREE_CODE (TREE_TYPE (exp)) == POINTER_TYPE)
-	{
-	  throw_type = build_eh_type (exp);
-	  exp = build_reinterpret_cast (ptr_type_node, exp);
-	}
+	throw_type = build_eh_type (exp);
       else
 	{
 	  tree object, ptr;
@@ -1074,6 +1071,10 @@ expand_throw (exp)
 
 	  exp = ptr;
 	}
+
+      /* Cast EXP to `void *' so that it will match the prototype for
+	 __cp_push_exception.  */
+      exp = build_reinterpret_cast (ptr_type_node, exp);
 
       if (cleanup == NULL_TREE)
 	{
