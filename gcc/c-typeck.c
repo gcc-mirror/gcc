@@ -1466,8 +1466,7 @@ build_component_ref (tree datum, tree component)
 
       if (!field)
 	{
-	  error ("%s has no member named %qs",
-		 code == RECORD_TYPE ? "structure" : "union",
+	  error ("%qT has no member named %qs", type,
 		 IDENTIFIER_POINTER (component));
 	  return error_mark_node;
 	}
