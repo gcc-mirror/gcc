@@ -3746,11 +3746,11 @@ subst (x, from, to, in_dest, unique_copy)
 	 means that we only care about the low bits of the result.
 
 	 However, on most machines (those with BYTE_LOADS_ZERO_EXTEND
-	 not defined), we cannot perform a narrower operation that
-	 requested since the high-order bits will be undefined.  On
-	 machine where BYTE_LOADS_ZERO_EXTEND are defined, however, this
-	 transformation is safe as long as M1 and M2 have the same number
-	 of words.  */
+	 and BYTES_LOADS_SIGN_EXTEND not defined), we cannot perform a
+	 narrower operation that requested since the high-order bits will
+	 be undefined.  On machine where BYTE_LOADS_*_EXTEND is defined,
+	 however, this transformation is safe as long as M1 and M2 have
+	 the same number of words.  */
  
       if (GET_CODE (SET_SRC (x)) == SUBREG
 	  && subreg_lowpart_p (SET_SRC (x))
@@ -3759,7 +3759,7 @@ subst (x, from, to, in_dest, unique_copy)
 	       / UNITS_PER_WORD)
 	      == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x))))
 		   + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
-#ifndef BYTE_LOADS_ZERO_EXTEND
+#if ! defined(BYTE_LOADS_ZERO_EXTEND) && ! defined (BYTE_LOADS_SIGN_EXTEND)
 	  && (GET_MODE_SIZE (GET_MODE (SET_SRC (x)))
 	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x)))))
 #endif
@@ -5581,11 +5581,11 @@ simplify_and_const_int (x, mode, varop, constop)
 	case SUBREG:
 	  if (subreg_lowpart_p (varop)
 	      /* We can ignore the effect this SUBREG if it narrows the mode
-		 or, on machines where byte operations zero extend, if the
+		 or, on machines where byte operations extend, if the
 		 constant masks to zero all the bits the mode doesn't have.  */
 	      && ((GET_MODE_SIZE (GET_MODE (varop))
 		   < GET_MODE_SIZE (GET_MODE (SUBREG_REG (varop))))
-#ifdef BYTE_LOADS_ZERO_EXTEND
+#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
 		  || (0 == (constop
 			    & GET_MODE_MASK (GET_MODE (varop))
 			    & ~ GET_MODE_MASK (GET_MODE (SUBREG_REG (varop)))))
@@ -6048,7 +6048,7 @@ significant_bits (x, mode)
 	      <= HOST_BITS_PER_WIDE_INT))
 	{
 	  significant &= significant_bits (SUBREG_REG (x), mode);
-#ifndef BYTE_LOADS_ZERO_EXTEND
+#if ! defined(BYTE_LOADS_ZERO_EXTEND) && ! defined(BYTE_LOADS_SIGN_EXTEND)
 	  /* On many CISC machines, accessing an object in a wider mode
 	     causes the high-order bits to become undefined.  So they are
 	     not known to be zero.  */
@@ -6161,6 +6161,12 @@ num_sign_bit_copies (x, mode)
 	return num_sign_bit_copies (tem, mode);
       break;
 
+#ifdef BYTE_LOADS_SIGN_EXTEND
+    case MEM:
+      /* Some RISC machines sign-extend all loads of smaller than a word.  */
+      return MAX (1, bitwidth - GET_MODE_BITSIZE (GET_MODE (x)) + 1);
+#endif
+
     case CONST_INT:
       /* If the constant is negative, take its 1's complement and remask.
 	 Then see how many zero bits we have.  */
@@ -6179,6 +6185,19 @@ num_sign_bit_copies (x, mode)
 			  - (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x)))
 			     - bitwidth)));
 	}
+
+#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+      /* For paradoxical SUBREGs, just look inside since, on machines with
+	 one of these defined, we assume that operations are actually 
+	 performed on the full register.  Note that we are passing MODE
+	 to the recursive call, so the number of sign bit copies will
+	 remain relative to that mode, not the inner mode.  */
+
+      if (GET_MODE_SIZE (GET_MODE (x))
+	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+	return num_sign_bit_copies (SUBREG_REG (x), mode);
+#endif
+
       break;
 
     case SIGN_EXTRACT:
