@@ -7674,11 +7674,10 @@ dfs_accumulate_vtbl_inits (binfo, orig_binfo, rtti_binfo, t, l)
 	 1) We are in the same place.
 	 2) We are a primary base within a lost primary virtual base of
 	 RTTI_BINFO.
-	 3) We are not primary to anything else in RTTI_BINFO.  */
+	 3) We are primary to something not a base of RTTI_BINFO.  */
 	  
       tree b = BINFO_PRIMARY_BASE_OF (binfo);
       tree last = NULL_TREE;
-      tree primary = NULL_TREE;
 
       /* First, look through the bases we are primary to for RTTI_BINFO
 	 or a virtual base.  */
@@ -7702,14 +7701,12 @@ dfs_accumulate_vtbl_inits (binfo, orig_binfo, rtti_binfo, t, l)
       if (b == rtti_binfo
 	  || (b && binfo_for_vbase (BINFO_TYPE (b),
 				    BINFO_TYPE (rtti_binfo))))
-	primary = last;
-      /* Otherwise, this is case 3 and we get our own.  */
+	/* Just set our BINFO_VTABLE to point to LAST, as we may not have
+	   set LAST's BINFO_VTABLE yet.  We'll extract the actual vptr in
+	   binfo_ctor_vtable after everything's been set up.  */
+	vtbl = last;
 
-      if (primary)
-	/* We're the primary of some binfo that we may not have
-	   met in the inheritance graph walk of RTTI_BINFO.  Just
-	   point to it.  */
-	vtbl = primary;
+      /* Otherwise, this is case 3 and we get our own.  */
     }
   else if (!BINFO_NEW_VTABLE_MARKED (orig_binfo, BINFO_TYPE (rtti_binfo)))
     return inits;
