@@ -2605,7 +2605,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	 and function-inlining gets confused by this.  */
       && ((REG_P (target) && REG_FUNCTION_VALUE_P (target))
 	  /* Don't clobber an operand while doing a multi-step calculation.  */
-	  || (rem_flag
+	  || ((rem_flag || op1_is_constant)
 	      && (reg_mentioned_p (target, op0)
 		  || (GET_CODE (op0) == MEM && GET_CODE (target) == MEM)))
 	  || reg_mentioned_p (target, op1)
