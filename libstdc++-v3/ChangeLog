@@ -1,3 +1,16 @@
+2005-03-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Improve handling
+	of compilers not in the build directory.
+	(libstdc++_wchar_t): New variable.
+	(libstdc++_threads): Likewise.
+	(libstdc++_test_objs): Likewise.
+	(v3_target_compile): Use libstdc++_test_objs.
+	(v3-list-tests): Remove.
+	(listdc++_build_support): New function.
+	* testsuite/libstdc++-dg/normal.exp: Rework to dynamically
+	generate list of tests.
+	
 2005-03-21  Chris Jefferson  <chris@bubblescope.net>
 
 	PR libstdc++/20577
