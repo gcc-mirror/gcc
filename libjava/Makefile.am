@@ -477,6 +477,7 @@ inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	gnu/java/net/PlainSocketImpl$$SocketOutputStream.h
 
 nat_headers = $(ordinary_nat_headers) $(inner_nat_headers)
+nat_headers_install = $(ordinary_nat_headers)
 
 x_nat_headers = $(x_java_source_files:.java=.h)
 
@@ -580,7 +581,7 @@ install-data-local:
 ## We use a GNU make trick here so that we don't go over the command
 ## length limit of some shells.
 	@echo Creating list of headers to install...
-	@: $(call write_entries_to_file,$(nat_headers) $(extra_headers),tmp-ilist)
+	@: $(call write_entries_to_file,$(nat_headers_install) $(extra_headers),tmp-ilist)
 	@cat tmp-ilist | while read f; do \
 	  d="`echo $$f | sed -e 's,/[^/]*$$,,'`"; \
 	  $(mkinstalldirs) $(DESTDIR)$(includedir)/$$d; \
@@ -596,6 +597,14 @@ install-data-local:
 	  echo " $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f"; \
 	  $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f; \
 	done
+## Install inner class headers.
+	$(INSTALL_DATA) 'java/io/ObjectOutputStream$$PutField.h' $(DESTDIR)$(includedir)/java/io/
+	$(INSTALL_DATA) 'java/io/ObjectInputStream$$GetField.h' $(DESTDIR)$(includedir)/java/io/
+	$(INSTALL_DATA) 'java/lang/reflect/Proxy$$ProxyData.h' $(DESTDIR)$(includedir)/java/lang/reflect/
+	$(INSTALL_DATA) 'java/lang/reflect/Proxy$$ProxyType.h' $(DESTDIR)$(includedir)/java/lang/reflect/
+	$(INSTALL_DATA) 'gnu/java/net/PlainSocketImpl$$SocketInputStream.h' $(DESTDIR)$(includedir)/gnu/java/net/
+	$(INSTALL_DATA) 'gnu/java/net/PlainSocketImpl$$SocketOutputStream.h' $(DESTDIR)$(includedir)/gnu/java/net/
+	
 	$(INSTALL_DATA) $(srcdir)/java/util/logging/logging.properties $(DESTDIR)$(propdir)/logging.properties
 
 ## ################################################################
