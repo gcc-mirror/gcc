@@ -167,6 +167,7 @@ static void slpeel_update_phis_for_duplicate_loop
 static void slpeel_update_phi_nodes_for_guard (edge, struct loop *);
 static void slpeel_make_loop_iterate_ntimes (struct loop *, tree, tree, tree);
 static edge slpeel_add_loop_guard (basic_block, tree, basic_block);
+static bool slpeel_can_duplicate_loop_p (struct loop *, edge);
 static void allocate_new_names (bitmap);
 static void rename_use_op (use_operand_p);
 static void rename_def_op (def_operand_p, tree);
@@ -217,8 +218,7 @@ static bool vect_get_first_index (tree, tree *);
 static bool vect_can_force_dr_alignment_p (tree, unsigned int);
 static struct data_reference * vect_analyze_pointer_ref_access 
   (tree, tree, bool);
-static bool vect_analyze_loop_with_symbolic_num_of_iters 
-  (tree niters, struct loop *loop);
+static bool vect_can_advance_ivs_p (struct loop *);
 static tree vect_get_base_and_bit_offset
   (struct data_reference *, tree, tree, loop_vec_info, tree *, bool*);
 static struct data_reference * vect_analyze_pointer_ref_access
@@ -799,83 +799,37 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb)
 }
 
 
-/* This function verifies that certain restrictions apply to LOOP.  */
+/* This function verifies that the following restrictions apply to LOOP:
+   (1) it is innermost
+   (2) it consists of exactly 2 basic blocks - header, and an empty latch.
+   (3) it is single entry, single exit
+   (4) its exit condition is the last stmt in the header
+   (5) E is the entry/exit edge of LOOP.
+ */
 
 static bool
-slpeel_verify_loop_for_duplication (struct loop *loop,
-				    bool update_first_loop_count, edge e)
+slpeel_can_duplicate_loop_p (struct loop *loop, edge e)
 {
   edge exit_e = loop->exit_edges [0];
   edge entry_e = loop_preheader_edge (loop);
+  tree orig_cond = get_loop_exit_condition (loop);
+  block_stmt_iterator loop_exit_bsi = bsi_last (exit_e->src);
 
-  /* We duplicate only innermost loops.  */
-  if (loop->inner)
-    {
-      if (vect_debug_stats (loop) || vect_debug_details (loop))	
-	  fprintf (dump_file,
-		   "Loop duplication failed. Loop is not innermost.\n");
-      return false;
-    }
+  if (any_marked_for_rewrite_p ())
+    return false;
 
-  /* Only loops with 1 exit.  */
-  if (loop->num_exits != 1)
-    {
-      if (vect_debug_stats (loop) || vect_debug_details (loop))	
-	  fprintf (dump_file,
-		   "More than one exit from loop.\n");
-      return false;
-    }
-
-  /* Only loops with 1 entry.  */
-  if (loop->num_entries != 1)
-    {
-      if (vect_debug_stats (loop) || vect_debug_details (loop))	
-	  fprintf (dump_file,
-		   "More than one exit from loop.\n");
-      return false;
-    }
-
-  /* All loops has outers, the only case loop->outer is NULL is for
-     the function itself.  */
-  if (!loop->outer)
-    {
-      if (vect_debug_stats (loop) || vect_debug_details (loop))	
-	  fprintf (dump_file,
-		   "Loop is outer-most loop.\n");
-      return false;
-    }
-  
-  /* Verify that new IV can be created and loop condition 
-     can be changed to make first loop iterate first_niters times.  */
-  if (!update_first_loop_count)
-    {
-      tree orig_cond = get_loop_exit_condition (loop);
-      block_stmt_iterator loop_exit_bsi = bsi_last (exit_e->src);
-      
-      if (!orig_cond)
-	{
-	  if (vect_debug_stats (loop) || vect_debug_details (loop))	
-	    fprintf (dump_file,
-		     "Loop has no exit condition.\n");
-	  return false;
-	}
-      if (orig_cond != bsi_stmt (loop_exit_bsi))
-	{
-	  if (vect_debug_stats (loop) || vect_debug_details (loop))	
-	    fprintf (dump_file,
-		     "Loop exit condition is not loop header last stmt.\n");
-	  return false;
-	}
-    }
-
-  /* Make sure E is either an entry or an exit edge.  */
-  if (e != exit_e && e != entry_e)
-    {
-      if (vect_debug_stats (loop) || vect_debug_details (loop))	
-	fprintf (dump_file,
-		 "E is not loop entry or exit edge.\n");
-      return false;
-    }
+  if (loop->inner
+      /* All loops have an outer scope; the only case loop->outer is NULL is for
+         the function itself.  */
+      || !loop->outer
+      || loop->num_nodes != 2
+      || !empty_block_p (loop->latch)
+      || loop->num_exits != 1
+      || loop->num_entries != 1
+      /* Verify that new loop exit condition can be trivially modified.  */
+      || (!orig_cond || orig_cond != bsi_stmt (loop_exit_bsi))
+      || (e != exit_e && e != entry_e))
+    return false;
 
   return true;
 }
@@ -949,10 +903,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops,
   basic_block pre_header_bb;
   edge exit_e = loop->exit_edges [0];
 
-  gcc_assert (!any_marked_for_rewrite_p ());
-
-  if (!slpeel_verify_loop_for_duplication (loop, update_first_loop_count, e))
-      return NULL;
+  if (!slpeel_can_duplicate_loop_p (loop, e))
+    return NULL;
 
   /* We have to initialize cfg_hooks. Then, when calling 
    cfg_hooks->split_edge, the function tree_split_edge 
@@ -3595,27 +3547,30 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
     }
   LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
 
-  
-  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) 
-      && vect_debug_details (NULL))
-    fprintf (dump_file, 
-	"vectorization_factor = %d, niters = " HOST_WIDE_INT_PRINT_DEC,
-	vectorization_factor, LOOP_VINFO_INT_NITERS (loop_vinfo));
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) && vect_debug_details (NULL))
+    fprintf (dump_file,
+        "vectorization_factor = %d, niters = " HOST_WIDE_INT_PRINT_DEC,
+        vectorization_factor, LOOP_VINFO_INT_NITERS (loop_vinfo));
 
-  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0)
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      || LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0)
     {
-      /* In this case we have to generate epilog loop, that 
-	 can be done only for loops with one entry edge.  */
-      if (LOOP_VINFO_LOOP (loop_vinfo)->num_entries != 1
-	  || !(LOOP_VINFO_LOOP (loop_vinfo)->pre_header))
-	{
-	  if (vect_debug_stats (loop) || vect_debug_details (loop))
-	    fprintf (dump_file, "not vectorized: more than one entry.");
-	  return false;
-	}
+      if (vect_debug_stats (loop) || vect_debug_details (loop))
+        fprintf (dump_file, "epilog loop required.");
+      if (!vect_can_advance_ivs_p (loop))
+        {
+          if (vect_debug_stats (loop) || vect_debug_details (loop))
+            fprintf (dump_file, "not vectorized: can't create epilog loop 1.");
+          return false;
+        }
+      if (!slpeel_can_duplicate_loop_p (loop, loop->exit_edges[0]))
+        {
+          if (vect_debug_stats (loop) || vect_debug_details (loop))
+            fprintf (dump_file, "not vectorized: can't create epilog loop 2.");
+          return false;
+        }
     }
-  
+
   return true;
 }
 
@@ -4358,9 +4313,7 @@ vect_compute_data_refs_alignment (loop_vec_info loop_vinfo)
    FOR NOW: we assume that whatever versioning/peeling takes place, only the
    original loop is to be vectorized; Any other loops that are created by
    the transformations performed in this pass - are not supposed to be
-   vectorized. This restriction will be relaxed.
-
-   FOR NOW: No transformation is actually performed. TODO.  */
+   vectorized. This restriction will be relaxed.  */
 
 static void
 vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
@@ -5347,46 +5300,21 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 }
 
 
-/* Function vect_analyze_loop_with_symbolic_num_of_iters.
+/* Function vect_can_advance_ivs_p
 
    In case the number of iterations that LOOP iterates in unknown at compile 
    time, an epilog loop will be generated, and the loop induction variables 
    (IVs) will be "advanced" to the value they are supposed to take just before 
-   the epilog loop. Here we check that the access function of the loop IVs
+   the epilog loop.  Here we check that the access function of the loop IVs
    and the expression that represents the loop bound are simple enough.
    These restrictions will be relaxed in the future.  */
 
 static bool 
-vect_analyze_loop_with_symbolic_num_of_iters (tree niters, 
-					      struct loop *loop)
+vect_can_advance_ivs_p (struct loop *loop)
 {
   basic_block bb = loop->header;
   tree phi;
 
-  if (vect_debug_details (NULL))
-    fprintf (dump_file, 
-	     "\n<<vect_analyze_loop_with_symbolic_num_of_iters>>\n");
-  
-  if (chrec_contains_undetermined (niters))
-    {
-      if (vect_debug_details (NULL))
-        fprintf (dump_file, "Infinite number of iterations.");
-      return false;
-    }
-
-  if (!niters)
-    {
-      if (vect_debug_details (NULL))
-        fprintf (dump_file, "niters is NULL pointer.");
-      return false;
-    }
-
-  if (vect_debug_details (NULL))
-    {
-      fprintf (dump_file, "Symbolic number of iterations is ");
-      print_generic_expr (dump_file, niters, TDF_DETAILS);
-    }
-   
   /* Analyze phi functions of the loop header.  */
 
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
@@ -5440,13 +5368,16 @@ vect_analyze_loop_with_symbolic_num_of_iters (tree niters,
 	return false;  
     }
 
-  return  true;
+  return true;
 }
 
 
 /* Function vect_get_loop_niters.
 
-   Determine how many iterations the loop is executed.  */
+   Determine how many iterations the loop is executed.
+   If an expression that represents the number of iterations
+   can be constructed, place it in NUMBER_OF_ITERATIONS.
+   Return the loop exit condition.  */
 
 static tree
 vect_get_loop_niters (struct loop *loop, tree *number_of_iterations)
@@ -5490,13 +5421,16 @@ vect_analyze_loop_form (struct loop *loop)
   loop_vec_info loop_vinfo;
   tree loop_cond;
   tree number_of_iterations = NULL;
+  bool rescan = false;
 
   if (vect_debug_details (loop))
     fprintf (dump_file, "\n<<vect_analyze_loop_form>>\n");
 
   if (loop->inner
       || !loop->single_exit
-      || loop->num_nodes != 2)
+      || loop->num_nodes != 2
+      || EDGE_COUNT (loop->header->preds) != 2
+      || loop->num_entries != 1)
     {
       if (vect_debug_stats (loop) || vect_debug_details (loop))	
 	{
@@ -5507,6 +5441,10 @@ vect_analyze_loop_form (struct loop *loop)
 	    fprintf (dump_file, "multiple exits.");
 	  else if (loop->num_nodes != 2)
 	    fprintf (dump_file, "too many BBs in loop.");
+	  else if (EDGE_COUNT (loop->header->preds) != 2)
+            fprintf (dump_file, "too many incoming edges.");
+          else if (loop->num_entries != 1)
+            fprintf (dump_file, "too many entries.");
 	}
 
       return NULL;
@@ -5521,6 +5459,27 @@ vect_analyze_loop_form (struct loop *loop)
       if (vect_debug_stats (loop) || vect_debug_details (loop))
         fprintf (dump_file, "not vectorized: unexpectd loop form.");
       return NULL;
+    }
+
+  /* Make sure we have a preheader basic block.  */
+  if (!loop->pre_header)
+    {
+      rescan = true;
+      loop_split_edge_with (loop_preheader_edge (loop), NULL);
+    }
+    
+  /* Make sure there exists a single-predecessor exit bb:  */
+  if (EDGE_COUNT (loop->exit_edges[0]->dest->preds) != 1)
+    {
+      rescan = true;
+      loop_split_edge_with (loop->exit_edges[0], NULL);
+    }
+    
+  if (rescan)
+    {
+      flow_loop_scan (loop, LOOP_ALL);
+      /* Flow loop scan does not update loop->single_exit field.  */
+      loop->single_exit = loop->exit_edges[0];
     }
 
   if (empty_block_p (loop->header))
@@ -5546,33 +5505,24 @@ vect_analyze_loop_form (struct loop *loop)
       return NULL;
     }
 
+  if (chrec_contains_undetermined (number_of_iterations))
+    {
+      if (vect_debug_details (NULL))
+        fprintf (dump_file, "Infinite number of iterations.");
+      return false;
+    }
+
   loop_vinfo = new_loop_vec_info (loop);
   LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
+
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
     {
-      if (vect_debug_stats (loop) || vect_debug_details (loop))
-	fprintf (dump_file, "loop bound unknown.");
-
-      /* Unknown loop bound.  */
-      if (!vect_analyze_loop_with_symbolic_num_of_iters 
-					(number_of_iterations, loop))
-	{
-          if (vect_debug_stats (loop) || vect_debug_details (loop))
-	    fprintf (dump_file, 
-		     "not vectorized: can't determine loop bound.");
-	  return NULL;
-	}
-      else
-	{
-	  /* We need only one loop entry for unknown loop bound support.  */
-	  if (loop->num_entries != 1 || !loop->pre_header)
-	    {	      
-	      if (vect_debug_stats (loop) || vect_debug_details (loop))
-		fprintf (dump_file, 
-			 "not vectorized: more than one loop entry.");
-	      return NULL;
-	    }
-	}
+      if (vect_debug_details (loop))
+        {
+          fprintf (dump_file, "loop bound unknown.\n");
+          fprintf (dump_file, "Symbolic number of iterations is ");
+          print_generic_expr (dump_file, number_of_iterations, TDF_DETAILS);
+        }
     }
   else
   if (LOOP_VINFO_INT_NITERS (loop_vinfo) == 0)
@@ -5739,6 +5689,10 @@ vectorize_loops (struct loops *loops)
       return;
     }
 
+#ifdef ENABLE_CHECKING
+  verify_loop_closed_ssa ();
+#endif
+
   compute_immediate_uses (TDFA_USE_OPS, need_imm_uses_for);
 
   /*  ----------- Analyze loops. -----------  */
@@ -5785,13 +5739,6 @@ vectorize_loops (struct loops *loops)
     }
 
   rewrite_into_ssa (false);
-  if (!bitmap_empty_p (vars_to_rename))
-    {
-      /* The rewrite of ssa names may cause violation of loop closed ssa
-         form invariants.  TODO -- avoid these rewrites completely.
-         Information in virtual phi nodes is sufficient for it.  */
-      rewrite_into_loop_closed_ssa (); 
-    }
-  rewrite_into_loop_closed_ssa (); 
+  rewrite_into_loop_closed_ssa (); /* FORNOW */
   bitmap_clear (vars_to_rename);
 }

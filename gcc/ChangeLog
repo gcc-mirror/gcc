@@ -1,5 +1,27 @@
 2004-11-19  Dorit Naishlos  <dorit@il.ibm.com>
 
+	* tree-vectorizer.c (slpeel_can_duplicate_loop_p): New name for function
+	previously called verify_loop_for_duplication. All conditions compacted
+	into one compound condition. Removed debug dumps.
+	(vect_analyze_loop_with_symbolic_num_of_iters): Removed. Some of the
+	functionality moved to vect_can_advance_ivs_p, and some to
+	vect_analyze_loop_form.
+	(vect_can_advance_ivs_p): New function. Contains functionality that was
+	taken out of vect_analyze_loop_with_symbolic_num_of_iters.
+	(slpeel_tree_peel_loop_to_edge): Call slpeel_can_duplicate_loop_p.
+	(vect_analyze_operations): Call vect_can_advance_ivs_p and
+	slpeel_can_duplicate_loop_p.
+	(vect_get_loop_niters): Added documentation.
+	(vect_analyze_loop_form): Check the loop entry always - not only in case
+	of unknown loop bound. Create preheader and exit bb if necessary. Apply
+	a check that used to take place in
+	vect_analyze_loop_with_symbolic_num_of_iters.
+	(vectorize_loops): Call verify_loop_closed_ssa under ENABLE_CHECKING.
+	Remove redundant call to rewrite_into_loop_closed_ssa.
+	(vect_compute_data_refs_alignment): Removed obsolete comment.
+
+2004-11-19  Dorit Naishlos  <dorit@il.ibm.com>
+
 	* tree-vectorizer.c (slpeel_tree_peel_loop_to_edge): New name for
 	function previously called tree_duplicate_loop_to_edge.
 	(slpeel_tree_duplicate_loop_to_edge_cfg): New name for function
