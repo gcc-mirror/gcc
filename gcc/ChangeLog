@@ -1,3 +1,7 @@
+2003-09-11  Mike Stump  <mrs@apple.com>
+
+	* c-lex.c (fe_file_change): Don't transform to_line with SOURCE_LINE.
+
 2003-09-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (fold_builtin_logarithm): if N can't be truncated to
