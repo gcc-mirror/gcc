@@ -14527,12 +14527,7 @@ supplied configuration pragmas.
 The @code{gnatlbr} command has the form
 
 @smallexample
-@ifclear vms
-$ gnatlbr --[create | set | delete]=directory --config=file
-@end ifclear
-@ifset vms
 $ GNAT LIBRARY /[CREATE | SET | DELETE]=directory [/CONFIG=file]
-@end ifset
 @end smallexample
 
 @node Switches for gnatlbr
@@ -14542,26 +14537,26 @@ $ GNAT LIBRARY /[CREATE | SET | DELETE]=directory [/CONFIG=file]
 @code{gnatlbr} recognizes the following switches:
 
 @table @code
-@item ^--create^/CREATE^=directory
-@cindex @code{^--create^/CREATE^=directory} (@code{gnatlbr})
+@item /CREATE=directory
+@cindex @code{/CREATE=directory} (@code{gnatlbr})
      Create the new run-time library in the specified directory.
 
-@item ^--set^/SET^=directory
-@cindex @code{^--set^/SET^=directory} (@code{gnatlbr})
+@item /SET=directory
+@cindex @code{/SET=directory} (@code{gnatlbr})
      Make the library in the specified directory the current run-time
      library.
 
-@item ^--delete^/DELETE^=directory
-@cindex @code{^--delete^/DELETE^=directory} (@code{gnatlbr})
+@item /DELETE=directory
+@cindex @code{/DELETE=directory} (@code{gnatlbr})
      Delete the run-time library in the specified directory.
 
-@item ^--config^/CONFIG^=file
-@cindex @code{^--config^/CONFIG^=file} (@code{gnatlbr})
-     With ^--create^/CREATE^:
+@item /CONFIG=file
+@cindex @code{/CONFIG=file} (@code{gnatlbr})
+     With /CREATE:
      Use the configuration pragmas in the specified file when building
      the library.
 
-     With ^--set^/SET^:
+     With /SET:
      Use the configuration pragmas in the specified file when compiling.
 
 @end table
@@ -14754,7 +14749,7 @@ The unit contains a pragma Remote_Call_Interface.
 
 @noindent
 Example of using the verbose switch. Note how the source and
-object paths are affected by the ^-I^/SEARCH^ switch.
+object paths are affected by the -I switch.
 
 @smallexample
 $ gnatls -v -I.. demo1.o
@@ -24605,7 +24600,7 @@ optimization is enabled. You can use the
 @code{-O@var{n}} switch, where @var{n} is an integer from 0 to 3,
 @end ifclear
 @ifset vms
-@code{^-O^/OPTIMIZE^}
+@code{/OPTIMIZE}
 @end ifset
 on the @code{gcc} command line to control the optimization level:
 
