@@ -123,41 +123,17 @@ static sbitmap ssa_edges;
 #define PHI_PARMS(x) XVEC (SET_SRC (x), 0)
 #define EIE(x,y) EDGE_INDEX (edges, x, y)
 
-rtx first_phi_node              PARAMS ((basic_block));
 static void visit_phi_node             PARAMS ((rtx, basic_block));
 static void visit_expression           PARAMS ((rtx, basic_block));
 static void defs_to_undefined          PARAMS ((rtx));
 static void defs_to_varying            PARAMS ((rtx));
 static void examine_flow_edges         PARAMS ((void));
+static int mark_references             PARAMS ((rtx *, void *));
 static void follow_def_use_chains      PARAMS ((void));
 static void optimize_unexecutable_edges PARAMS ((struct edge_list *, sbitmap));
 static void ssa_ccp_substitute_constants PARAMS ((void));
 static void ssa_ccp_df_delete_unreachable_insns PARAMS ((void));
-
-/* Return the first PHI node in a basic block.  This routine knows
-   what INSNs can start a basic block and what can validly follow
-   them up to the first PHI node.
-
-   If the INSN chain or block structures are incorrect, then the behavior
-   of this routine is undefined.  verify_flow_info will normally catch
-   these problems in a more graceful manner.  */
-rtx
-first_phi_node (block)
-     basic_block block;
-{
-  rtx insn = block->head;
-
-  /* Eat the optional CODE_LABEL at the start of the block.  */
-  if (GET_CODE (insn) == CODE_LABEL)
-    insn = NEXT_INSN (insn);
-
-  /* Eat the mandatory NOTE_INSN_BASIC_BLOCK.  */
-  if (!NOTE_INSN_BASIC_BLOCK_P (insn) || NOTE_BASIC_BLOCK (insn) != block)
-    abort ();
-
-  /* If there is a PHI node in this block, then it will be the next insn.  */
-  return NEXT_INSN (insn);
-}
+static void ssa_fast_dce PARAMS ((struct df *));
 
 /* Loop through the PHI_NODE's parameters for BLOCK and compare their
    lattice values to determine PHI_NODE's lattice value.  */
@@ -638,7 +614,7 @@ examine_flow_edges (void)
 
       /* Always simulate PHI nodes, even if we have simulated this block
 	 before.  Note that all PHI nodes are consecutive within a block.  */
-      for (curr_phi_node = first_phi_node (succ_block);
+      for (curr_phi_node = first_insn_after_basic_block_note (succ_block);
 	   PHI_NODE_P (curr_phi_node);
 	   curr_phi_node = NEXT_INSN (curr_phi_node))
 	visit_phi_node (curr_phi_node, succ_block);
@@ -751,7 +727,7 @@ optimize_unexecutable_edges (edges, executable_edges)
 	     the PHI nodes in the target block.  */
 	  if (edge->dest != EXIT_BLOCK_PTR)
 	    {
-	      rtx insn = first_phi_node (edge->dest);
+	      rtx insn = first_insn_after_basic_block_note (edge->dest);
 
 	      while (PHI_NODE_P (insn))
 		{
@@ -840,7 +816,7 @@ optimize_unexecutable_edges (edges, executable_edges)
 static void
 ssa_ccp_substitute_constants ()
 {
-  int i;
+  unsigned int i;
 
   for (i = FIRST_PSEUDO_REGISTER; i < VARRAY_SIZE (ssa_definition); i++)
     {
@@ -1159,8 +1135,6 @@ ssa_fast_dce (df)
       found_use = 0;
       for (curruse = df->regs[reg].uses; curruse; curruse = curruse->next)
 	{
-	  rtx useinsn;
-
 	  if (curruse->ref
 	      && DF_REF_INSN (curruse->ref)
 	      && ! INSN_DELETED_P (DF_REF_INSN (curruse->ref))
