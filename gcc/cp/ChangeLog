@@ -1,3 +1,16 @@
+2001-07-05  Jason Merrill  <jason_merrill@redhat.com>
+
+	* cvt.c (convert_lvalue): New fn.
+	* cp-tree.h: Declare it.
+	* method.c (do_build_assign_ref): Use it.
+	(do_build_copy_constructor): Convert parm to base types
+	before calling base constructors.
+
+	* typeck.c (check_return_expr): Check DECL_ALIGN instead of
+	DECL_USER_ALIGN.  Check flag_elide_constructors instead of
+	optimize.
+	* semantics.c (cp_expand_stmt): Don't destroy the named return value.
+
 2001-07-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* optimize.c (optimize_inline_calls): New function, broken out
