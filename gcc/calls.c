@@ -551,7 +551,7 @@ expand_call (exp, target, ignore)
 #endif
 
   rtx old_stack_level = 0;
-  int old_pending_adj;
+  int old_pending_adj = 0;
   int old_stack_arg_under_construction;
   int old_inhibit_defer_pop = inhibit_defer_pop;
   tree old_cleanups = cleanups_this_call;
