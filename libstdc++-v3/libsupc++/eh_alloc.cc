@@ -98,7 +98,7 @@ __cxa_allocate_exception(std::size_t thrown_size)
   void *ret;
 
   thrown_size += sizeof (__cxa_exception);
-  ret = malloc (thrown_size);
+  ret = std::malloc (thrown_size);
 
   if (! ret)
     {
@@ -158,5 +158,5 @@ __cxa_free_exception(void *vptr)
 #endif
     }
   else
-    free (ptr - sizeof (__cxa_exception));
+    std::free (ptr - sizeof (__cxa_exception));
 }
