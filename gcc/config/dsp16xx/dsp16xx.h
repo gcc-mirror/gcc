@@ -1455,7 +1455,7 @@ extern struct dsp16xx_frame_info current_frame_info;
 /* Define this macro as a C expression which is nonzero if accessing less
    than a word of memory (i.e a char or short) is no faster than accessing
    a word of memory, i.e if such access require more than one instruction
-   or if ther is no difference in cost between byte and (aligned) word
+   or if there is no difference in cost between byte and (aligned) word
    loads.  */
 #define SLOW_BYTE_ACCESS 1
 
