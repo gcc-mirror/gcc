@@ -385,7 +385,7 @@ get_tinfo_fn (type)
   DECL_ARTIFICIAL (d) = 1;
   DECL_NOT_REALLY_EXTERN (d) = 1;
   SET_DECL_TINFO_FN_P (d);
-  TREE_TYPE (name) = copy_to_permanent (type);
+  TREE_TYPE (name) = type;
 
   pushdecl_top_level (d);
   make_function_rtl (d);
@@ -703,7 +703,7 @@ build_dynamic_cast (type, expr)
     return error_mark_node;
   
   if (processing_template_decl)
-    return build_min (DYNAMIC_CAST_EXPR, copy_to_permanent (type), expr);
+    return build_min (DYNAMIC_CAST_EXPR, type, expr);
 
   return convert_from_reference (build_dynamic_cast_1 (type, expr));
 }

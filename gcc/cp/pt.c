@@ -2604,7 +2604,7 @@ push_template_decl_real (decl, is_friend)
   if (primary)
     DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
 
-  info = perm_tree_cons (tmpl, copy_to_permanent (args), NULL_TREE);
+  info = perm_tree_cons (tmpl, args, NULL_TREE);
 
   if (DECL_IMPLICIT_TYPEDEF_P (decl))
     {
@@ -3801,7 +3801,6 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       if (arglist2 == error_mark_node)
 	return error_mark_node;
 
-      arglist2 = copy_to_permanent (arglist2);
       TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (parm)
 	= perm_tree_cons (template2, arglist2, NULL_TREE);
       TYPE_SIZE (parm) = 0;
@@ -4059,7 +4058,6 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	    my_friendly_abort (0);
 	}
 
-      arglist = copy_to_permanent (arglist);
       SET_TYPE_TEMPLATE_INFO (t,
 			      tree_cons (found, arglist, NULL_TREE));  
       DECL_TEMPLATE_INSTANTIATIONS (template) 
@@ -4706,8 +4704,6 @@ tsubst_friend_function (decl, args)
 		      DECL_TI_ARGS (spec) 
 			= add_outermost_template_args (new_friend_args,
 						       DECL_TI_ARGS (spec));
-		      DECL_TI_ARGS (spec)
-			= copy_to_permanent (DECL_TI_ARGS (spec));
 		    }
 
 		  /* Now, since specializations are always supposed to
@@ -5018,11 +5014,6 @@ instantiate_class_template (type)
   TYPE_FOR_JAVA (type) = TYPE_FOR_JAVA (pattern); /* For libjava's JArray<T> */
   if (ANON_AGGR_TYPE_P (pattern))
     SET_ANON_AGGR_TYPE_P (type);
-
-  /* We must copy the arguments to the permanent obstack since
-     during the tsubst'ing below they may wind up in the
-     DECL_TI_ARGS of some instantiated member template.  */
-  args = copy_to_permanent (args);
 
   if (TYPE_BINFO_BASETYPES (pattern))
     {
@@ -5778,9 +5769,6 @@ tsubst_decl (t, args, type, in_decl)
 		break;
 	      }
 
-	    /* We're going to need to keep the ARGVEC, so we copy it
-	       here.  */
-	    argvec = copy_to_permanent (argvec);
 	    pop_momentary ();
 
 	    /* Here, we deal with the peculiar case:
@@ -5900,9 +5888,6 @@ tsubst_decl (t, args, type, in_decl)
 	   case mentioned above where GEN_TMPL is NULL.  */
 	if (gen_tmpl)
 	  {
-	    /* The ARGVEC was built on the momentary obstack.  Make it
-	       permanent now.  */
-	    argvec = copy_to_permanent (argvec);
 	    DECL_TEMPLATE_INFO (r) 
 	      = perm_tree_cons (gen_tmpl, argvec, NULL_TREE);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
@@ -6412,8 +6397,6 @@ tsubst (t, args, complain, in_decl)
 	  }
 
 	max = fold (build_binary_op (MINUS_EXPR, max, integer_one_node));
-	if (!TREE_PERMANENT (max) && !allocation_temporary_p ())
-	  max = copy_to_permanent (max);
 	return build_index_type (max);
       }
 
@@ -7561,7 +7544,6 @@ instantiate_template (tmpl, targ_ptr)
 	    }
 	}
     }
-  targ_ptr = copy_to_permanent (targ_ptr);
 
   /* substitute template parameters */
   fndecl = tsubst (DECL_RESULT (gen_tmpl), targ_ptr, /*complain=*/1, gen_tmpl);
@@ -8534,7 +8516,7 @@ unify (tparms, targs, parm, arg, strict)
       else
 	return 1;
 
-      TREE_VEC_ELT (targs, idx) = copy_to_permanent (arg);
+      TREE_VEC_ELT (targs, idx) = arg;
       return 0;
 
     case POINTER_TYPE:

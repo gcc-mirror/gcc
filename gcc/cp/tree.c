@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 
 static tree bot_manip PROTO((tree));
-static tree perm_manip PROTO((tree));
 static tree build_cplus_array_type_1 PROTO((tree, tree));
 static void list_hash_add PROTO((int, tree));
 static int list_hash PROTO((tree, tree, tree));
@@ -1504,10 +1503,6 @@ build_exception_variant (type, raises)
 
   /* Need to build a new variant.  */
   v = build_type_copy (type);
-
-  if (raises && ! TREE_PERMANENT (raises))
-    raises = copy_to_permanent (raises);
-
   TYPE_RAISES_EXCEPTIONS (v) = raises;
   return v;
 }
@@ -2030,55 +2025,6 @@ mapcar (t, func)
   return NULL_TREE;
 }
 
-/* Returns T if T is allocated on the permanent obstack, NULL_TREE
-   otherwise.  */
-
-tree
-permanent_p (t)
-     tree t;
-{
-  return TREE_PERMANENT (t) ? t : NULL_TREE;
-}
-
-static tree
-perm_manip (t)
-     tree t;
-{
-  if (TREE_PERMANENT (t))
-    return t;
-
-  /* Support `void f () { extern int i; A<&i> a; }' */
-  if ((TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == FUNCTION_DECL)
-      && TREE_PUBLIC (t))
-    {
-      t = copy_node (t);
-
-      /* copy_rtx won't make a new SYMBOL_REF, so call make_decl_rtl again.  */
-      DECL_RTL (t) = 0;
-      make_decl_rtl (t, NULL_PTR, 1);
-
-      return t;
-    }
-  return NULL_TREE;
-}
-
-/* Assuming T is a node built bottom-up, make it all exist on
-   permanent obstack, if it is not permanent already.  */
-
-tree
-copy_to_permanent (t)
-     tree t;
-{
-  if (t == NULL_TREE || TREE_PERMANENT (t))
-    return t;
-
-  push_permanent_obstack ();
-  t = mapcar (t, perm_manip);
-  pop_obstacks ();
-
-  return t;
-}
-
 #ifdef GATHER_STATISTICS
 extern int depth_reached;
 #endif
@@ -2214,7 +2160,7 @@ build_min_nt VPROTO((enum tree_code code, ...))
   for (i = 0; i < length; i++)
     {
       tree x = va_arg (p, tree);
-      TREE_OPERAND (t, i) = copy_to_permanent (x);
+      TREE_OPERAND (t, i) = x;
     }
 
   va_end (p);
@@ -2249,13 +2195,13 @@ build_min VPROTO((enum tree_code code, tree tt, ...))
 
   t = make_node (code);
   length = tree_code_length[(int) code];
-  TREE_TYPE (t) = copy_to_permanent (tt);
+  TREE_TYPE (t) = tt;
   TREE_COMPLEXITY (t) = lineno;
 
   for (i = 0; i < length; i++)
     {
       tree x = va_arg (p, tree);
-      TREE_OPERAND (t, i) = copy_to_permanent (x);
+      TREE_OPERAND (t, i) = x;
     }
 
   va_end (p);
@@ -2273,8 +2219,8 @@ min_tree_cons (purpose, value, chain)
   register struct obstack *ambient_obstack = current_obstack;
   current_obstack = &permanent_obstack;
 
-  node = tree_cons (copy_to_permanent (purpose),
-		    copy_to_permanent (value), chain);
+  node = tree_cons (purpose, value, chain);
+
   current_obstack = ambient_obstack;
   return node;
 }

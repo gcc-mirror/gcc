@@ -3676,8 +3676,6 @@ extern int is_aggr_type_2			PROTO((tree, tree));
 extern const char *lang_printable_name		PROTO((tree, int));
 extern tree build_exception_variant		PROTO((tree, tree));
 extern tree copy_template_template_parm		PROTO((tree));
-extern tree copy_to_permanent			PROTO((tree));
-extern tree permanent_p                         PROTO((tree));
 extern void print_lang_statistics		PROTO((void));
 extern void __eprintf
 	PROTO((const char *, const char *, unsigned, const char *));
