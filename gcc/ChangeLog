@@ -1,3 +1,41 @@
+Mon Oct  4 21:47:31 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genrecog.c (struct decision_test): New.
+	(struct decision): Remove test-related members, sort the rest by size.
+	(IS_SPLIT): Simplify.
+	(new_decision, new_decision_test): New.
+	(add_to_sequence): Use them.  No special handling for args of
+	non-MATCH codes.
+	(maybe_both_true): Renamed from not_both_true; return sense changed.
+	(maybe_both_true_1, maybe_both_true_2): New.  Broken out
+	of maybe_both_true and adjusted for decision_test.
+	(position_merit): Remove.
+	(nodes_identical, nodes_identical_1): New, broken out of merge_trees.
+	(merge_accept_insn): New, broken out of merge_trees.
+	(merge_trees): Use them.  No special case for c_test; no node
+	splitting; use test type instead of position_merit.
+	(factor_tests): New.
+	(simplify_tests): New.
+	(break_out_subroutines): Don't write code now.
+	(find_afterward): New.
+	(write_afterward, write_switch, write_cond): New.
+	(write_action, is_unconditional): New.
+	(write_node): New.  Use them.
+	(write_tree_1): Rewrite.  Use the new functions above.
+	(write_tree): Remove afterward processing.
+	(write_subroutine): Simplify function variant emission.
+	(write_subroutines): New.
+	(same_codes, clear_codes): Remove.
+	(same_modes, clear_modes): Remove.
+	(write_header): New, broken out of main.
+	(make_insn_sequence): Use new_decision and new_decision_test.
+	(process_tree): New, broken out of main.
+	(main): Adjust for merge_trees interface change. 
+	Don't #define operands in the output file.
+	(record_insn_name): New, broken out of make_insn_sequence.
+	(debug_decision_2, debug_decision_1, debug_decision_0): New.
+	(debug_decision): New.
+
 1999-10-04 21:58 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* resource.c (find_free_register): Mark class_str argument const.
