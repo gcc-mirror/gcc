@@ -1282,9 +1282,17 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 }
 
 /* Define this if some processing needs to be done immediately before
-   emitting code for an insn. */
+   emitting code for an insn.
 
-/* #define FINAL_PRESCAN_INSN(INSN,OPERANDS,NOPERANDS) */
+   For the RS/6000, we check if there is a dead PRE_INC value.  If so,
+   replace it with a normal displacement.  This is done in case the
+   output of the load insn duplicates the register being incremented.
+   That produces an insn that isn't valid for PowerPC.  */
+
+#define FINAL_PRESCAN_INSN(INSN,OPERANDS,NOPERANDS)	\
+  if (find_reg_note (INSN, REG_INC, NULL_RTX)		\
+      && find_reg_note (INSN, REG_DEAD, NULL_RTX))	\
+    rs6000_convert_preincs (PATTERN (INSN), INSN);
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
