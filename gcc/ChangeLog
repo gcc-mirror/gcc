@@ -1,3 +1,12 @@
+Tue Aug 25 19:17:59 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (sparc_absnegfloat_split_legitimate): New
+	function.
+	* config/sparc/sparc.h: Declare it.
+	* config/sparc/sparc.md (float abs/neg splits): Use it.
+	(all other splits): Handle SUBREGs properly where necessary.
+	(unnamed (1<<x)-1 V8PLUS pattern): Disable for now.
+
 Tue Aug 25 19:48:46 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reorg.c (fill_simple_delay_slots): Do not abort if we encounter

@@ -3243,6 +3243,7 @@ extern void sparc_emit_set_const32 ();
 extern void sparc_emit_set_const64 ();
 extern void sparc_emit_set_symbolic_const64 ();
 extern int sparc_splitdi_legitimate ();
+extern int sparc_absnegfloat_split_legitimate ();
 
 extern char *output_cbranch ();
 extern char *output_return ();

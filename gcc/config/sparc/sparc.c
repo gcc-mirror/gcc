@@ -4743,7 +4743,7 @@ order_regs_for_local_alloc ()
    mem<-->reg splits to be run.  */
 
 int
-sparc_splitdi_legitimate(reg, mem)
+sparc_splitdi_legitimate (reg, mem)
      rtx reg;
      rtx mem;
 {
@@ -4764,6 +4764,27 @@ sparc_splitdi_legitimate(reg, mem)
     return 0;
 
   /* Success.  */
+  return 1;
+}
+
+/* Return 1 if x and y are some kind of REG and they refer to
+   different hard registers.  This test is guarenteed to be
+   run after reload.  */
+
+int
+sparc_absnegfloat_split_legitimate (x, y)
+     rtx x, y;
+{
+  if (GET_CODE (x) == SUBREG)
+    x = alter_subreg (x);
+  if (GET_CODE (x) != REG)
+    return 0;
+  if (GET_CODE (y) == SUBREG)
+    y = alter_subreg (y);
+  if (GET_CODE (y) != REG)
+    return 0;
+  if (REGNO (x) == REGNO (y))
+    return 0;
   return 1;
 }
 
