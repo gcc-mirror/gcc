@@ -1,3 +1,8 @@
+2001-07-26  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/extratokens.c: Fix.
+	* gcc.dg/cpp/skipping2.c: New tests.
+
 2001-07-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gcc.c-torture/execute/20010724-1.c: New file.

@@ -43,8 +43,9 @@ struct if_stack
   struct if_stack *next;
   cpp_lexer_pos pos;		/* line and column where condition started */
   const cpp_hashnode *mi_cmacro;/* macro name for #ifndef around entire file */
-  unsigned char was_skipping;	/* Value of pfile->skipping before this if.  */
-  int type;			/* type of last directive seen in this group */
+  bool skip_elses;		/* Can future #else / #elif be skipped?  */
+  bool was_skipping;		/* If were skipping on entry.  */
+  int type;			/* Most recent conditional, for diagnostics.  */
 };
 
 /* Values for the origin field of struct directive.  KANDR directives
@@ -220,8 +221,6 @@ static void
 start_directive (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *buffer = pfile->buffer;
-
   /* Setup in-directive state.  */
   pfile->state.in_directive = 1;
   pfile->state.save_comments = 0;
@@ -232,10 +231,6 @@ start_directive (pfile)
   /* Don't save directive tokens for external clients.  */
   pfile->la_saved = pfile->la_write;
   pfile->la_write = 0;
-
-  /* Turn off skipping.  */
-  buffer->was_skipping = pfile->skipping;
-  pfile->skipping = 0;
 }
 
 /* Called when leaving a directive, _Pragma or command-line directive.  */
@@ -244,12 +239,6 @@ end_directive (pfile, skip_line)
      cpp_reader *pfile;
      int skip_line;
 {
-  cpp_buffer *buffer = pfile->buffer;
-
-  /* Restore pfile->skipping before skip_rest_of_line, so that e.g.
-     __VA_ARGS__ in the rest of the directive doesn't warn.  */
-  pfile->skipping = buffer->was_skipping;
-
   /* We don't skip for an assembler #.  */
   if (skip_line)
     skip_rest_of_line (pfile);
@@ -270,7 +259,6 @@ _cpp_handle_directive (pfile, indented)
      cpp_reader *pfile;
      int indented;
 {
-  cpp_buffer *buffer = pfile->buffer;
   const directive *dir = 0;
   cpp_token dname;
   int skip = 1;
@@ -293,7 +281,7 @@ _cpp_handle_directive (pfile, indented)
 	 skipped conditional groups.  Complain about this form if
 	 we're being pedantic, but not if this is regurgitated input
 	 (preprocessed or fed back in by the C++ frontend).  */
-      if (! buffer->was_skipping && CPP_OPTION (pfile, lang) != CLK_ASM)
+      if (! pfile->state.skipping && CPP_OPTION (pfile, lang) != CLK_ASM)
 	{
 	  dir = &dtable[T_LINE];
 	  pfile->state.line_extension = 1;
@@ -361,7 +349,7 @@ _cpp_handle_directive (pfile, indented)
 
 	  /* If we are skipping a failed conditional group, all
 	     non-conditional directives are ignored.  */
-	  if (! buffer->was_skipping || (dir->flags & COND))
+	  if (! pfile->state.skipping || (dir->flags & COND))
 	    {
 	      /* Issue -pedantic warnings for extensions.   */
 	      if (CPP_PEDANTIC (pfile) && dir->origin == EXTENSION)
@@ -376,7 +364,7 @@ _cpp_handle_directive (pfile, indented)
 	    }
 	}
     }
-  else if (dname.type != CPP_EOF && ! buffer->was_skipping)
+  else if (dname.type != CPP_EOF && ! pfile->state.skipping)
     {
       /* An unknown directive.  Don't complain about it in assembly
 	 source: we don't know where the comments are, and # may
@@ -1256,7 +1244,7 @@ do_ifdef (pfile)
 {
   int skip = 1;
 
-  if (! pfile->buffer->was_skipping)
+  if (! pfile->state.skipping)
     {
       const cpp_hashnode *node = lex_macro_node (pfile);
 
@@ -1277,7 +1265,7 @@ do_ifndef (pfile)
   int skip = 1;
   const cpp_hashnode *node = 0;
 
-  if (! pfile->buffer->was_skipping)
+  if (! pfile->state.skipping)
     {
       node = lex_macro_node (pfile);
       if (node)
@@ -1302,7 +1290,7 @@ do_if (pfile)
   int skip = 1;
   const cpp_hashnode *cmacro = 0;
 
-  if (! pfile->buffer->was_skipping)
+  if (! pfile->state.skipping)
     {
       /* Controlling macro of #if ! defined ()  */
       pfile->mi_ind_cmacro = 0;
@@ -1336,16 +1324,17 @@ do_else (pfile)
 	}
       ifs->type = T_ELSE;
 
-      /* Buffer->was_skipping is 1 if all conditionals in this chain
-	 have been false, 2 if a conditional has been true.  */
-      if (! ifs->was_skipping && buffer->was_skipping != 2)
-	buffer->was_skipping = ! buffer->was_skipping;
+      /* Skip any future (erroneous) #elses or #elifs.  */
+      pfile->state.skipping = ifs->skip_elses;
+      ifs->skip_elses = true;
 
       /* Invalidate any controlling macro.  */
       ifs->mi_cmacro = 0;
-    }
 
-  check_eol (pfile);
+      /* Only check EOL if was not originally skipping.  */
+      if (!ifs->was_skipping)
+	check_eol (pfile);
+    }
 }
 
 /* handle a #elif directive by not changing if_stack either.  see the
@@ -1370,23 +1359,23 @@ do_elif (pfile)
 	}
       ifs->type = T_ELIF;
 
-      /* Don't evaluate #elif if our higher level is skipping.  */
-      if (! ifs->was_skipping)
+      /* Only evaluate this if we aren't skipping elses.  During
+	 evaluation, set skipping to false to get lexer warnings.  */
+      if (ifs->skip_elses)
+	pfile->state.skipping = 1;
+      else
 	{
-	  /* Buffer->was_skipping is 1 if all conditionals in this
-	     chain have been false, 2 if a conditional has been true.  */
-	  if (buffer->was_skipping == 1)
-	    buffer->was_skipping = ! _cpp_parse_expr (pfile);
-	  else
-	    buffer->was_skipping = 2;
-
-	  /* Invalidate any controlling macro.  */
-	  ifs->mi_cmacro = 0;
+	  pfile->state.skipping = 0;
+	  pfile->state.skipping = ! _cpp_parse_expr (pfile);
+	  ifs->skip_elses = ! pfile->state.skipping;
 	}
+
+      /* Invalidate any controlling macro.  */
+      ifs->mi_cmacro = 0;
     }
 }
 
-/* #endif pops the if stack and resets pfile->skipping.  */
+/* #endif pops the if stack and resets pfile->state.skipping.  */
 
 static void
 do_endif (pfile)
@@ -1399,6 +1388,10 @@ do_endif (pfile)
     cpp_error (pfile, "#endif without #if");
   else
     {
+      /* Only check EOL if was not originally skipping.  */
+      if (!ifs->was_skipping)
+	check_eol (pfile);
+
       /* If potential control macro, we go back outside again.  */
       if (ifs->next == 0 && ifs->mi_cmacro)
 	{
@@ -1407,14 +1400,12 @@ do_endif (pfile)
 	}
 
       buffer->if_stack = ifs->next;
-      buffer->was_skipping = ifs->was_skipping;
+      pfile->state.skipping = ifs->was_skipping;
       obstack_free (&pfile->buffer_ob, ifs);
     }
-
-  check_eol (pfile);
 }
 
-/* Push an if_stack entry and set pfile->skipping accordingly.
+/* Push an if_stack entry and set pfile->state.skipping accordingly.
    If this is a #ifndef starting at the beginning of a file,
    CMACRO is the macro name tested by the #ifndef.  */
 
@@ -1431,14 +1422,15 @@ push_conditional (pfile, skip, type, cmacro)
   ifs = xobnew (&pfile->buffer_ob, struct if_stack);
   ifs->pos = pfile->directive_pos;
   ifs->next = buffer->if_stack;
-  ifs->was_skipping = buffer->was_skipping;
+  ifs->skip_elses = pfile->state.skipping || !skip;
+  ifs->was_skipping = pfile->state.skipping;
   ifs->type = type;
   if (pfile->mi_state == MI_OUTSIDE && pfile->mi_cmacro == 0)
     ifs->mi_cmacro = cmacro;
   else
     ifs->mi_cmacro = 0;
 
-  buffer->was_skipping = skip;
+  pfile->state.skipping = skip;
   buffer->if_stack = ifs;
 }
 
