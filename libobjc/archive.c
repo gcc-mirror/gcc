@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
-#include "config.h"
+#include "tconfig.h"
 #include "runtime.h"
 #include "typedstream.h"
 #include "encoding.h"
