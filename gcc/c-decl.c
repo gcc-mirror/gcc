@@ -4826,23 +4826,23 @@ finish_struct (t, fieldlist)
       /* Detect and ignore out of range field width.  */
       if (DECL_INITIAL (x))
 	{
-	  register int width = TREE_INT_CST_LOW (DECL_INITIAL (x));
+	  unsigned HOST_WIDE_INT width = TREE_INT_CST_LOW (DECL_INITIAL (x));
 
-	  if (width < 0)
+	  if (tree_int_cst_lt (DECL_INITIAL (x), integer_zero_node))
 	    {
 	      DECL_INITIAL (x) = NULL;
 	      error_with_decl (x, "negative width in bit-field `%s'");
+	    }
+	  else if (TREE_INT_CST_HIGH (DECL_INITIAL (x)) != 0
+		   || width > TYPE_PRECISION (TREE_TYPE (x)))
+	    {
+	      DECL_INITIAL (x) = NULL;
+	      pedwarn_with_decl (x, "width of `%s' exceeds its type");
 	    }
 	  else if (width == 0 && DECL_NAME (x) != 0)
 	    {
 	      error_with_decl (x, "zero width for bit-field `%s'");
 	      DECL_INITIAL (x) = NULL;
-	    }
-	  else if (width > TYPE_PRECISION (TREE_TYPE (x))
-		   || TREE_INT_CST_HIGH (DECL_INITIAL (x)) != 0)
-	    {
-	      DECL_INITIAL (x) = NULL;
-	      pedwarn_with_decl (x, "width of `%s' exceeds its type");
 	    }
 	}
 
