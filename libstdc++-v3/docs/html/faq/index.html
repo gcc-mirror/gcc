@@ -45,6 +45,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</a>.</p>
          <li><a href="#2_3">What is this CVS thing that you keep 
                             mentioning?</a>
          <li><a href="#2_4">How do I know if it works?</a>
+         <li><a href="#2_5">This library is HUGE!  And what's libsupc++?</a>
       </ol>
 
    <li><a href="#3_0">Platform-Specific Issues</a>
@@ -53,6 +54,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</a>.</p>
                             favorite compiler&gt;?</a>
          <li><a href="#3_2">[removed]</a>
          <li><a href="#3_3">Building under DEC OSF kills the assembler</a>
+         <li><a href="#3_4">I can't use 'long long' on Solaris</a>
       </ol>
 
    <li><a href="#4_0">Known Bugs and Non-Bugs</a>
@@ -321,6 +323,56 @@ which is no longer available, thanks deja...-->
       </p>
 
 <hr>
+   <h2><a name="2_5">2.4 This library is HUGE!  And what's libsupc++?</a></h2>
+      <p>Usually the size of libraries on disk isn't noticeable.  When a
+         link editor (or simply &quot;linker&quot;) pulls things from a
+         static archive library, only the necessary object files are copied
+         into your executable, not the entire library.  Unfortunately, even
+         if you only need a single function or variable from an object file,
+         the entire object file is extracted.  (There's nothing unique to C++
+         or libstdc++-v3 about this; it's just common behavior, given here
+         for background reasons.)
+      </p>
+      <p>Some of the object files which make up libstdc++.a are rather large.
+         If you create a statically-linked executable with
+         <code> -static</code>, those large object files are suddenly part
+         of your executable.  Historically the best way around this was to
+         only place a very few functions (often only a single one) in each
+         source/object file; then extracting a single function is the same
+         as extracting a single .o file.  For libstdc++-v3 this is only
+         possible to a certain extent; the object files in question contain
+         template classes and template functions, pre-instantiated, and
+         splitting those up causes severe maintenance headaches.
+      </p>
+      <p>It's not a bug, and it's not really a problem.  Nevertheless, some
+         people don't like it, so here are two pseudo-solutions:
+      </p>
+      <p>If the only functions from libstdc++.a which you need are language
+         support functions (those listed in
+         <a href="../18_support/howto.html">clause 18</a> of the standard,
+         e.g., <code>new</code> and <code>delete</code>), then try linking
+         against <code>libsupc++.a</code> (usually specifying
+         <code>-lsupc++</code> when calling g++ for the final link step will
+         do it).  This library contains only those support routines, one per
+         object file.  But if you are using anything from the rest of the
+         library, such as IOStreams or vectors, then you'll still need
+         pieces from <code>libstdc++.a</code>.
+      </p>
+      <p>The second method is one we hope to incorporate into the library
+         build process.  Some platforms can place each function and variable
+         into its own section in a .o file.  The GNU linker can then perform
+         garbage collection on unused sections; this reduces the situation
+         to only copying needed functions into the executable, as before,
+         but all happens automatically.
+      </p>
+      <p>Unfortunately the garbage collection in GNU ld is buggy; sections
+         (corresponding to functions and variables) which <em>are</em> used
+         are mistakenly removed, leading to horrible crashes when your
+         executable starts up.  For the time being, this feature is not used
+         when building the library.
+      </p>
+
+<hr>
 <h1><a name="3_0">3.0 Platform-Specific Issues</a></h1>
    <h2><a name="3_1">3.1 Can libstdc++-v3 be used with &lt;my
                          favorite compiler&gt;?</a></h2>
@@ -364,6 +416,18 @@ which is no longer available, thanks deja...-->
       </p>
 
 <hr>
+   <h2><a name="3_4">3.4 I can't use 'long long' on Solaris</a></h2>
+      <p>By default we try to support the C99 <code>long long</code> type.
+         This requires that certain functions from your C library be present.
+      </p>
+      <p>Up through release 3.0.2 the tests performed were too general, and
+         this feature was disabled when it did not need to be.  The most
+         commonly reported platform affected was Solaris.
+      </p>
+      <p>This has been fixed for 3.0.3 and onwards.
+      </p>
+
+<hr>
 <h1><a name="4_0">4.0 Known Bugs and Non-Bugs</a></h1>
    <em>Note that this section can get rapdily outdated -- such is the
    nature of an open-source project.  For the latest information, join
@@ -380,10 +444,9 @@ which is no longer available, thanks deja...-->
       specifically the part about configuring in a separate build directory,
       and how strongly recommended it is.  Building in the source directory
       is fragile, is rarely tested, and tends to break, as in this case.
-      Work has already gone into the source tree to make this less painful
-      for the next release.
+      This was fixed for 3.0.2.
    </p>
-   <p><strong>Please do not report this as a bug.  We know about it.</strong>
+   <p><strong>Please do not report these as bugs.  We know about them.</strong>
       Reporting this -- or any other problem that's already been fixed --
       hinders the development of GCC, because we have to take time to
       respond to your report.  Thank you.
