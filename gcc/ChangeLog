@@ -1,5 +1,10 @@
 2001-05-24  Philip Blundell  <philb@gnu.org>
 
+	* doc/install.texi (arm*-*-linux-gnu): Say that binutils 2.10 is
+	required.
+
+2001-05-24  Philip Blundell  <philb@gnu.org>
+
 	* config/arm/arm.c (output_return_instruction): Correctly handle
 	interworking and interrupt functions.
 
