@@ -524,6 +524,10 @@ static struct file_name_list *dont_repeat_files = 0;
    around the entire contents, and ->control_macro gives the macro name.  */
 static struct file_name_list *all_include_files = 0;
 
+/* Directory prefix that should replace `/usr' in the standard
+   include file directories.  */
+static char *include_prefix;
+
 /* Global list of strings read in from precompiled files.  This list
    is kept in the order the strings are read in, with new strings being
    added at the end through stringlist_tailp.  We use this list to output
@@ -1001,6 +1005,12 @@ main (argc, argv)
 	    fatal ("Filename missing after -imacros option");
 	  else
 	    pend_files[i] = argv[i+1], i++;
+	}
+	if (!strcmp (argv[i], "-iprefix")) {
+	  if (i + 1 == argc)
+	    fatal ("Filename missing after -iprefix option");
+	  else
+	    include_prefix = argv[++i];
 	}
 	/* Add directory to end of path for includes.  */
 	if (!strcmp (argv[i], "-idirafter")) {
@@ -1511,7 +1521,7 @@ main (argc, argv)
      tack on the standard include file dirs to the specified list */
   if (!no_standard_includes) {
     struct default_include *p = include_defaults;
-    char *specd_prefix = getenv ("GCC_EXEC_PREFIX");
+    char *specd_prefix = include_prefix;
     char *default_prefix = savestring (GCC_INCLUDE_DIR);
     int default_len = 0;
     /* Remove the `include' from /usr/local/lib/gcc.../include.  */
