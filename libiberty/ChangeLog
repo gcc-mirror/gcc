@@ -1,3 +1,8 @@
+2003-09-24  Daniel Jacobowitz  <drow@mvista.com>
+
+	* configure.in: Use AC_PROG_CPP_WERROR.
+	* configure: Regenerated.
+
 2003-09-22  Andrew Cagney  <cagney@redhat.com>
 
 	* floatformat.c (floatformat_i387_ext_is_valid): New function.
