@@ -7405,7 +7405,7 @@ ix86_set_move_mem_attrs_1 (x, dstref, srcref, dstreg, srcreg)
 				   dstreg, srcreg);
       else if (*format_ptr == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  ix86_set_move_mem_attrs_1 (XVECEXP (x, i, j), dstref, srcreg,
+	  ix86_set_move_mem_attrs_1 (XVECEXP (x, i, j), dstref, srcref,
 				     dstreg, srcreg);
     }
 }

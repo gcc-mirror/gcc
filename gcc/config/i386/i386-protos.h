@@ -140,6 +140,8 @@ extern enum reg_class ix86_preferred_reload_class PARAMS ((rtx,
 							   enum reg_class));
 extern int ix86_memory_move_cost PARAMS ((enum machine_mode, enum reg_class,
 					  int));
+extern void ix86_set_move_mem_attrs PARAMS ((rtx, rtx, rtx, rtx, rtx));
+
 
 #ifdef TREE_CODE
 extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));
@@ -151,8 +153,6 @@ extern rtx ix86_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int))
 #endif
 
 #endif
-
-extern void ix86_set_move_mem_attrs PARAMS ((rtx, rtx, rtx, rtx, rtx));
 
 #ifdef TREE_CODE
 extern int ix86_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
