@@ -241,7 +241,7 @@ namespace std
   { return _M_data[__i]; }
 
   template<typename _Tp>
-  _Tp&
+  inline _Tp&
   valarray<_Tp>::operator[] (size_t __i)
   { return _M_data[__i]; }
 
