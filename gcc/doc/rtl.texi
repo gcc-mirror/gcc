@@ -2378,7 +2378,7 @@ rest of the register receives an undefined value.  Likewise, if
 the mode of the register, the rest of the register can be changed in
 an undefined way.
 
-If @var{lval} is a @code{strict_low_part} or @code{zero_extract} 
+If @var{lval} is a @code{strict_low_part} or @code{zero_extract}
 of a @code{subreg}, then the part of the register specified by the
 machine mode of the @code{subreg} is given the value @var{x} and
 the rest of the register is not changed.
@@ -2462,7 +2462,7 @@ trouble to describe the values that are stored, but it is essential to
 inform the compiler that the registers will be altered, lest it
 attempt to keep data in them across the string instruction.
 
-If @var{x} is @code{(mem:BLK (const_int 0))} or 
+If @var{x} is @code{(mem:BLK (const_int 0))} or
 @code{(mem:BLK (scratch))}, it means that all memory
 locations must be presumed clobbered.  If @var{x} is a @code{parallel},
 it has the same meaning as a @code{parallel} in a @code{set} expression.

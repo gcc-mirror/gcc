@@ -211,12 +211,12 @@ Unconditional branches are normally not interesting.
 
 @end table
 
-@command{gcov} should be run with the current directory the same as that 
-when you invoked the compiler. Otherwise it will not be able to locate 
-the source files. @command{gcov} produces files called 
-@file{@var{mangledname}.gcov} in the current directory. These contain 
-the coverage information of the source file they correspond to. 
-One @file{.gcov} file is produced for each source file containing code, 
+@command{gcov} should be run with the current directory the same as that
+when you invoked the compiler. Otherwise it will not be able to locate
+the source files. @command{gcov} produces files called
+@file{@var{mangledname}.gcov} in the current directory. These contain
+the coverage information of the source file they correspond to.
+One @file{.gcov} file is produced for each source file containing code,
 which was compiled to produce the data files. The @var{mangledname} part
 of the output file name is usually simply the source file name, but can
 be something more complicated if the @samp{-l} or @samp{-p} options are
@@ -280,12 +280,12 @@ Here is a sample:
 function main called 1 returned 1 blocks executed 75%
         1:    4:@{
         1:    5:  int i, total;
-        -:    6:  
+        -:    6:
         1:    7:  total = 0;
-        -:    8:  
+        -:    8:
        11:    9:  for (i = 0; i < 10; i++)
        10:   10:    total += i;
-        -:   11:  
+        -:   11:
         1:   12:  if (total != 45)
     #####:   13:    printf ("Failure\n");
         -:   14:  else
@@ -310,14 +310,14 @@ function main called 1 returned 1 blocks executed 75%
         1:    4:@{
         1:    4-block  0
         1:    5:  int i, total;
-        -:    6:  
+        -:    6:
         1:    7:  total = 0;
-        -:    8:  
+        -:    8:
        11:    9:  for (i = 0; i < 10; i++)
        11:    9-block  0
        10:   10:    total += i;
        10:   10-block  0
-        -:   11:  
+        -:   11:
         1:   12:  if (total != 45)
         1:   12-block  0
     #####:   13:    printf ("Failure\n");
@@ -369,14 +369,14 @@ Here is a sample of a resulting @file{tmp.c.gcov} file:
 function main called 1 returned 1 blocks executed 75%
         1:    4:@{
         1:    5:  int i, total;
-        -:    6:  
+        -:    6:
         1:    7:  total = 0;
-        -:    8:  
+        -:    8:
        11:    9:  for (i = 0; i < 10; i++)
 branch  0 taken 91% (fallthrough)
 branch  1 taken 9%
        10:   10:    total += i;
-        -:   11:  
+        -:   11:
         1:   12:  if (total != 45)
 branch  0 taken 0% (fallthrough)
 branch  1 taken 100%

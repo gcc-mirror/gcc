@@ -974,7 +974,7 @@ type @code{Derived<T>*}, so is obviously dependent), or using
 into scope by a @code{using}-declaration.
 
 Another, similar example involves calling member functions of a base
-class: 
+class:
 
 @smallexample
   template <typename T> struct Base @{

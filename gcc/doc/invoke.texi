@@ -1460,7 +1460,7 @@ inlined by default.
 @opindex Wabi
 Warn when G++ generates code that is probably not compatible with the
 vendor-neutral C++ ABI.  Although an effort has been made to warn about
-all such cases, there are probably some cases that are not warned about, 
+all such cases, there are probably some cases that are not warned about,
 even though G++ is generating incompatible code.  There may also be
 cases where warnings are emitted even though the code that is generated
 will be compatible.
@@ -1484,7 +1484,7 @@ struct B : public A @{ int f2 : 1; @};
 
 @noindent
 In this case, G++ will place @code{B::f2} into the same byte
-as@code{A::f1}; other compilers will not.  You can avoid this problem 
+as@code{A::f1}; other compilers will not.  You can avoid this problem
 by explicitly padding @code{A} so that its size is a multiple of the
 byte size on your platform; that will cause G++ and other compilers to
 layout @code{B} identically.
@@ -1521,7 +1521,7 @@ union too small by the number of bits in an @code{int}.
 
 @item
 Empty classes can be placed at incorrect offsets.  For example:
- 
+
 @smallexample
 struct A @{@};
 
@@ -1614,7 +1614,7 @@ Item 23:  Don't try to return a reference when you must return an object.
 
 @end itemize
 
-Also warn about violations of the following style guidelines from 
+Also warn about violations of the following style guidelines from
 Scott Meyers' @cite{More Effective C++} book:
 
 @itemize @bullet
@@ -1772,17 +1772,17 @@ used.
 
 @item -fno-nil-receivers
 @opindex -fno-nil-receivers
-Assume that all Objective-C message dispatches (e.g., 
-@code{[receiver message:arg]}) in this translation unit ensure that the receiver 
-is not @code{nil}.  This allows for more efficient entry points in the runtime to be 
-used.  Currently, this option is only available in conjunction with 
+Assume that all Objective-C message dispatches (e.g.,
+@code{[receiver message:arg]}) in this translation unit ensure that the receiver
+is not @code{nil}.  This allows for more efficient entry points in the runtime to be
+used.  Currently, this option is only available in conjunction with
 the NeXT runtime on Mac OS X 10.3 and later.
 
 @item -fobjc-exceptions
 @opindex -fobjc-exceptions
-Enable syntactic support for structured exception handling in Objective-C, 
-similar to what is offered by C++ and Java.  Currently, this option is only 
-available in conjunction with the NeXT runtime on Mac OS X 10.3 and later. 
+Enable syntactic support for structured exception handling in Objective-C,
+similar to what is offered by C++ and Java.  Currently, this option is only
+available in conjunction with the NeXT runtime on Mac OS X 10.3 and later.
 
 @smallexample
   @@try @{
@@ -1811,15 +1811,15 @@ available in conjunction with the NeXT runtime on Mac OS X 10.3 and later.
 @end smallexample
 
 The @code{@@throw} statement may appear anywhere in an Objective-C or
-Objective-C++ program; when used inside of a @code{@@catch} block, the 
-@code{@@throw} may appear without an argument (as shown above), in which case 
+Objective-C++ program; when used inside of a @code{@@catch} block, the
+@code{@@throw} may appear without an argument (as shown above), in which case
 the object caught by the @code{@@catch} will be rethrown.
 
 Note that only (pointers to) Objective-C objects may be thrown and
 caught using this scheme.  When an object is thrown, it will be caught
 by the nearest @code{@@catch} clause capable of handling objects of that type,
-analogously to how @code{catch} blocks work in C++ and Java.  A 
-@code{@@catch(id @dots{})} clause (as shown above) may also be provided to catch 
+analogously to how @code{catch} blocks work in C++ and Java.  A
+@code{@@catch(id @dots{})} clause (as shown above) may also be provided to catch
 any and all Objective-C exceptions not caught by previous @code{@@catch}
 clauses (if any).
 
@@ -1833,7 +1833,7 @@ There are several caveats to using the new exception mechanism:
 
 @itemize @bullet
 @item
-Although currently designed to be binary compatible with @code{NS_HANDLER}-style 
+Although currently designed to be binary compatible with @code{NS_HANDLER}-style
 idioms provided by the @code{NSException} class, the new
 exceptions can only be used on Mac OS X 10.3 (Panther) and later
 systems, due to additional functionality needed in the (NeXT) Objective-C
@@ -1841,13 +1841,13 @@ runtime.
 
 @item
 As mentioned above, the new exceptions do not support handling
-types other than Objective-C objects.   Furthermore, when used from 
+types other than Objective-C objects.   Furthermore, when used from
 Objective-C++, the Objective-C exception model does not interoperate with C++
 exceptions at this time.  This means you cannot @code{@@throw} an exception
-from Objective-C and @code{catch} it in C++, or vice versa 
+from Objective-C and @code{catch} it in C++, or vice versa
 (i.e., @code{throw @dots{} @@catch}).
 @end itemize
- 
+
 The @option{-fobjc-exceptions} switch also enables the use of synchronization
 blocks for thread-safe execution:
 
@@ -1860,7 +1860,7 @@ blocks for thread-safe execution:
 Upon entering the @code{@@synchronized} block, a thread of execution shall
 first check whether a lock has been placed on the corresponding @code{guard}
 object by another thread.  If it has, the current thread shall wait until
-the other thread relinquishes its lock.  Once @code{guard} becomes available, 
+the other thread relinquishes its lock.  Once @code{guard} becomes available,
 the current thread will place its own lock on it, execute the code contained in
 the @code{@@synchronized} block, and finally relinquish the lock (thereby
 making @code{guard} available to other threads).
@@ -1875,10 +1875,10 @@ to be unlocked properly.
 Emit a special marker instructing @command{ld(1)} not to statically link in
 the resulting object file, and allow @command{dyld(1)} to load it in at
 run time instead.  This is used in conjunction with the Fix-and-Continue
-debugging mode, where the object file in question may be recompiled and 
+debugging mode, where the object file in question may be recompiled and
 dynamically reloaded in the course of program execution, without the need
 to restart the program itself.  Currently, Fix-and-Continue functionality
-is only available in conjunction with the NeXT runtime on Mac OS X 10.3 
+is only available in conjunction with the NeXT runtime on Mac OS X 10.3
 and later.
 
 @item -fzero-link
@@ -1888,7 +1888,7 @@ to @code{objc_getClass("@dots{}")} (when the name of the class is known at
 compile time) with static class references that get initialized at load time,
 which improves run-time performance.  Specifying the @option{-fzero-link} flag
 suppresses this behavior and causes calls to @code{objc_getClass("@dots{}")}
-to be retained.  This is useful in Zero-Link debugging mode, since it allows 
+to be retained.  This is useful in Zero-Link debugging mode, since it allows
 for individual class implementations to be modified during program execution.
 
 @item -gen-decls
@@ -1923,7 +1923,7 @@ being used.
 @opindex Wundeclared-selector
 Warn if a @code{@@selector(@dots{})} expression referring to an
 undeclared selector is found.  A selector is considered undeclared if no
-method with that name has been declared before the 
+method with that name has been declared before the
 @code{@@selector(@dots{})} expression, either explicitly in an
 @code{@@interface} or @code{@@protocol} declaration, or implicitly in
 an @code{@@implementation} section.  This option always performs its
@@ -2158,7 +2158,7 @@ requiring a non-null value by the @code{nonnull} function attribute.
 @option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
 can be disabled with the @option{-Wno-nonnull} option.
 
-@item -Winit-self @r{(C, C++, and Objective-C only)} 
+@item -Winit-self @r{(C, C++, and Objective-C only)}
 @opindex Winit-self
 Warn about uninitialized variables which are initialized with themselves.
 Note this option can only be used with the @option{-Wuninitialized} option,
@@ -2940,7 +2940,7 @@ code is to provide behavior which is selectable at compile-time.
 @opindex Winline
 Warn if a function can not be inlined and it was declared as inline.
 Even with this option, the compiler will not warn about failures to
-inline functions declared in system headers.  
+inline functions declared in system headers.
 
 The compiler uses a variety of heuristics to determine whether or not
 to inline a function.  For example, the compiler takes into account
@@ -3600,7 +3600,7 @@ With @option{-O}, the compiler tries to reduce code size and execution
 time, without performing any optimizations that take a great deal of
 compilation time.
 
-@option{-O} turns on the following optimization flags: 
+@option{-O} turns on the following optimization flags:
 @gccoptlist{-fdefer-pop @gol
 -fmerge-constants @gol
 -fthread-jumps @gol
@@ -3774,7 +3774,7 @@ use inlining heavily such as those based on recursive templates with C++.
 
 Inlining is actually controlled by a number of parameters, which may be
 specified individually by using @option{--param @var{name}=@var{value}}.
-The @option{-finline-limit=@var{n}} option sets some of these parameters 
+The @option{-finline-limit=@var{n}} option sets some of these parameters
 as follows:
 
 @table @gcctabopt
@@ -4085,9 +4085,9 @@ of stalled insns into the ready list, during the second scheduling pass.
 
 @item -fsched-stalled-insns-dep=@var{n}
 @opindex fsched-stalled-insns-dep
-Define how many insn groups (cycles) will be examined for a dependency 
-on a stalled insn that is candidate for premature removal from the queue 
-of stalled insns.  Has an effect only during the second scheduling pass, 
+Define how many insn groups (cycles) will be examined for a dependency
+on a stalled insn that is candidate for premature removal from the queue
+of stalled insns.  Has an effect only during the second scheduling pass,
 and only if @option{-fsched-stalled-insns} is used and its value is not zero.
 
 @item -fsched2-use-superblocks
@@ -4096,7 +4096,7 @@ When scheduling after register allocation, do use superblock scheduling
 algorithm.  Superblock scheduling allows motion across basic block boundaries
 resulting on faster schedules.  This option is experimental, as not all machine
 descriptions used by GCC model the CPU closely enough to avoid unreliable
-results from the algorithm. 
+results from the algorithm.
 
 This only makes sense when scheduling after register allocation, i.e.@: with
 @option{-fschedule-insns2} or at @option{-O2} or higher.
@@ -4513,7 +4513,7 @@ file  The information in this data file is very dependent on the
 structure of the generated code, so you must use the same source code
 and the same optimization options for both compilations.
 
-With @option{-fbranch-probabilities}, GCC puts a 
+With @option{-fbranch-probabilities}, GCC puts a
 @samp{REG_BR_PROB} note on each @samp{JUMP_INSN} and @samp{CALL_INSN}.
 These can be used to improve optimization.  Currently, they are only
 used in one place: in @file{reorg.c}, instead of guessing which path a
@@ -4598,7 +4598,7 @@ the loop is entered. This is done using the old loop unroller whose loop
 recognition is based on notes from frontend.  This usually makes programs run more slowly.
 @option{-fold-unroll-all-loops} implies the same options as
 @option{-fold-unroll-loops}.
- 
+
 @item -funswitch-loops
 @opindex funswitch-loops
 Move branches with loop invariant conditions out of the loop, with duplicates
@@ -4704,7 +4704,7 @@ needlessly consume memory and resources.
 @item max-inline-insns-single
 Several parameters control the tree inliner used in gcc.
 This number sets the maximum number of instructions (counted in gcc's
-internal representation) in a single function that the tree inliner 
+internal representation) in a single function that the tree inliner
 will consider for inlining.  This only affects functions declared
 inline and methods implemented in a class declaration (C++).
 The default value is 500.
@@ -4737,7 +4737,7 @@ The default value is 150.
 
 @item max-inline-insns-rtl
 For languages that use the RTL inliner (this happens at a later stage
-than tree inlining), you can set the maximum allowable size (counted 
+than tree inlining), you can set the maximum allowable size (counted
 in RTL instructions) for the RTL inliner with this parameter.
 The default value is 600.
 
@@ -5644,12 +5644,12 @@ returns the pathname.  If it does not exist, it returns the second argument.
 This way, @code{if-exists-else} can be used to select one file or another,
 based on the existence of the first.  Here is a small example of its usage:
 
-@smallexample 
+@smallexample
 *startfile:
 crt0%O%s %:if-exists(crti%O%s) \
 %:if-exists-else(crtbeginT%O%s crtbegin%O%s)
 @end smallexample
-@end table 
+@end table
 
 @item %@{@code{S}@}
 Substitutes the @code{-S} switch, if that switch was given to GCC@.
@@ -5724,7 +5724,7 @@ jim.d         -bar -boggle
 
 If @code{S} was given to GCC, substitutes @code{X}; else if @code{T} was
 given to GCC, substitutes @code{Y}; else substitutes @code{D}.  There can
-be as many clauses as you need.  This may be combined with @code{.}, 
+be as many clauses as you need.  This may be combined with @code{.},
 @code{!}, @code{|}, and @code{*} as needed.
 
 
@@ -6081,7 +6081,7 @@ when the compiler is configured for 68HC12-based systems.
 @itemx -m68hcs12
 @opindex m68S12
 @opindex m68hcs12
-Generate output for a 68HCS12.  
+Generate output for a 68HCS12.
 
 @item -mauto-incdec
 @opindex mauto-incdec
@@ -6245,7 +6245,7 @@ the rules of the ABI@.
 @option{-mimpure-text}, used in addition to @option{-shared}, tells
 the compiler to not pass @option{-z text} to the linker when linking a
 shared object.  Using this option, you can link position-dependent
-code into a shared object.  
+code into a shared object.
 
 @option{-mimpure-text} suppresses the ``relocations remain against
 allocatable but non-writable sections'' linker error message.
@@ -7310,10 +7310,10 @@ libraries.
 
 @item -mprioritize-restricted-insns=@var{priority}
 @opindex mprioritize-restricted-insns
-This option controls the priority that is assigned to 
-dispatch-slot restricted instructions during the second scheduling 
-pass.  The argument @var{priority} takes the value @var{0/1/2} to assign 
-@var{no/highest/second-highest} priority to dispatch slot restricted 
+This option controls the priority that is assigned to
+dispatch-slot restricted instructions during the second scheduling
+pass.  The argument @var{priority} takes the value @var{0/1/2} to assign
+@var{no/highest/second-highest} priority to dispatch slot restricted
 instructions.
 
 @item -msched-costly-dep=@var{dependence_type}
@@ -7321,12 +7321,12 @@ instructions.
 This option controls which dependences are considered costly
 by the target during instruction scheduling.  The argument
 @var{dependence_type} takes one of the following values:
-@var{no}: no dependence is costly, 
-@var{all}: all dependences are costly, 
+@var{no}: no dependence is costly,
+@var{all}: all dependences are costly,
 @var{true_store_to_load}: a true dependence from store to load is costly,
 @var{store_to_load}: any dependence from store to load is costly,
 @var{number}: any dependence which latency >= @var{number} is costly.
- 
+
 @item -minsert-sched-nops=@var{scheme}
 @opindex minsert-sched-nops
 This option controls which nop insertion scheme will be used during
@@ -7338,7 +7338,7 @@ according to the scheduler's grouping.
 @var{regroup_exact}: Insert nops to force costly dependent insns into
 separate groups.  Insert exactly as many nops as needed to force an insn
 to a new group, according to the estimated processor grouping.
-@var{number}: Insert nops to force costly dependent insns into 
+@var{number}: Insert nops to force costly dependent insns into
 separate groups.  Insert @var{number} nops to force an insn to a new group.
 
 @item -mcall-sysv
@@ -7563,8 +7563,8 @@ These options are defined for all architectures running the Darwin operating
 system.  They are useful for compatibility with other Mac OS compilers.
 
 @table @gcctabopt
-@item -all_load    
-@opindex all_load   
+@item -all_load
+@opindex all_load
 Loads all members of static archive libraries.
 See man ld(1) for more information.
 
@@ -7578,7 +7578,7 @@ to be fatal.
 Causes the output file to be marked such that the dynamic linker will
 bind all undefined references when the file is loaded or launched.
 
-@item -bundle     
+@item -bundle
 @opindex bundle
 Produce a Mach-o bundle format file.
 See man ld(1) for more information.
@@ -7591,63 +7591,63 @@ output file being linked. See man ld(1) for more information.
 @item -allowable_client  @var{client_name}
 @itemx -arch_only
 
-@itemx -client_name       
+@itemx -client_name
 @itemx -compatibility_version
-@itemx -current_version    
+@itemx -current_version
 @itemx -dependency-file
-@itemx -dylib_file    
+@itemx -dylib_file
 @itemx -dylinker_install_name
 @itemx -dynamic
-@itemx -dynamiclib   
-@itemx -exported_symbols_list  
+@itemx -dynamiclib
+@itemx -exported_symbols_list
 @itemx -filelist
-@itemx -flat_namespace   
+@itemx -flat_namespace
 @itemx -force_cpusubtype_ALL
-@itemx -force_flat_namespace   
+@itemx -force_flat_namespace
 @itemx -headerpad_max_install_names
-@itemx -image_base  
+@itemx -image_base
 @itemx -init
 @itemx -install_name
 @itemx -keep_private_externs
 @itemx -multi_module
-@itemx -multiply_defined      
-@itemx -multiply_defined_unused      
-@itemx -noall_load  
+@itemx -multiply_defined
+@itemx -multiply_defined_unused
+@itemx -noall_load
 @itemx -nofixprebinding
 @itemx -nomultidefs
-@itemx -noprebind     
+@itemx -noprebind
 @itemx -noseglinkedit
-@itemx -pagezero_size    
+@itemx -pagezero_size
 @itemx -prebind
 @itemx -prebind_all_twolevel_modules
 @itemx -private_bundle
 @itemx -read_only_relocs
-@itemx -sectalign  
-@itemx -sectobjectsymbols    
+@itemx -sectalign
+@itemx -sectobjectsymbols
 @itemx -whyload
-@itemx -seg1addr 
+@itemx -seg1addr
 @itemx -sectcreate
 @itemx -sectobjectsymbols
 @itemx -sectorder
 @itemx -seg_addr_table
 @itemx -seg_addr_table_filename
 @itemx -seglinkedit
-@itemx -segprot   
+@itemx -segprot
 @itemx -segs_read_only_addr
 @itemx -segs_read_write_addr
-@itemx -single_module   
+@itemx -single_module
 @itemx -static
 @itemx -sub_library
-@itemx -sub_umbrella 
+@itemx -sub_umbrella
 @itemx -twolevel_namespace
 @itemx -umbrella
 @itemx -undefined
 @itemx -unexported_symbols_list
 @itemx -weak_reference_mismatches
-@itemx -whatsloaded  
+@itemx -whatsloaded
 
 @opindex allowable_client
-@opindex arch_only    
+@opindex arch_only
 @opindex client_name
 @opindex compatibility_version
 @opindex current_version
@@ -7657,35 +7657,35 @@ output file being linked. See man ld(1) for more information.
 @opindex dynamic
 @opindex dynamiclib
 @opindex exported_symbols_list
-@opindex filelist  
-@opindex flat_namespace    
+@opindex filelist
+@opindex flat_namespace
 @opindex force_cpusubtype_ALL
 @opindex force_flat_namespace
 @opindex headerpad_max_install_names
 @opindex image_base
-@opindex init     
+@opindex init
 @opindex install_name
 @opindex keep_private_externs
-@opindex multi_module   
+@opindex multi_module
 @opindex multiply_defined
-@opindex multiply_defined_unused   
-@opindex noall_load  
+@opindex multiply_defined_unused
+@opindex noall_load
 @opindex nofixprebinding
-@opindex nomultidefs   
+@opindex nomultidefs
 @opindex noprebind
-@opindex noseglinkedit      
+@opindex noseglinkedit
 @opindex pagezero_size
 @opindex prebind
 @opindex prebind_all_twolevel_modules
-@opindex private_bundle 
+@opindex private_bundle
 @opindex read_only_relocs
-@opindex sectalign   
-@opindex sectobjectsymbols    
-@opindex whyload  
+@opindex sectalign
+@opindex sectobjectsymbols
+@opindex whyload
 @opindex seg1addr
-@opindex sectcreate       
-@opindex sectobjectsymbols 
-@opindex sectorder     
+@opindex sectcreate
+@opindex sectobjectsymbols
+@opindex sectorder
 @opindex seg_addr_table
 @opindex seg_addr_table_filename
 @opindex seglinkedit
@@ -8213,7 +8213,7 @@ Use all SSE extensions enabled by @option{-msse2} as well as the new
 SSE extensions in Prescott New Instructions. @option{-mpni} also
 enables 2 builtin functions, @code{__builtin_ia32_monitor} and
 @code{__builtin_ia32_mwait}, for new instructions @code{monitor} and
-@code{mwait}. 
+@code{mwait}.
 
 @item sse,387
 Attempt to utilize both instruction sets at once.  This effectively double the
@@ -8292,22 +8292,22 @@ without that switch.
 @itemx -m128bit-long-double
 @opindex m96bit-long-double
 @opindex m128bit-long-double
-These switches control the size of @code{long double} type. The i386 
-application binary interface specifies the size to be 96 bits, 
+These switches control the size of @code{long double} type. The i386
+application binary interface specifies the size to be 96 bits,
 so @option{-m96bit-long-double} is the default in 32 bit mode.
 
 Modern architectures (Pentium and newer) would prefer @code{long double}
-to be aligned to an 8 or 16 byte boundary.  In arrays or structures 
-conforming to the ABI, this would not be possible.  So specifying a 
+to be aligned to an 8 or 16 byte boundary.  In arrays or structures
+conforming to the ABI, this would not be possible.  So specifying a
 @option{-m128bit-long-double} will align @code{long double}
 to a 16 byte boundary by padding the @code{long double} with an additional
-32 bit zero. 
+32 bit zero.
 
 In the x86-64 compiler, @option{-m128bit-long-double} is the default choice as
 its ABI specifies that @code{long double} is to be aligned on 16 byte boundary.
- 
+
 Notice that neither of these options enable any extra precision over the x87
-standard of 80 bits for a @code{long double}. 
+standard of 80 bits for a @code{long double}.
 
 @strong{Warning:} if you override the default value for your target ABI, the
 structures and arrays containing @code{long double} will change their size as
@@ -9569,7 +9569,7 @@ the compiler.  This setting is the default.
 @item -mno-app-regs
 @opindex mno-app-regs
 This option will cause r2 and r5 to be treated as fixed registers.
-  
+
 @item -mv850e1
 @opindex mv850e1
 Specify that the target processor is the V850E1.  The preprocessor
@@ -10116,9 +10116,9 @@ targets default to @option{-m64}.
 @itemx -mesa
 @opindex mzarch
 @opindex mesa
-When @option{-mzarch} is specified, generate code using the 
-instructions available on z/Architecture. 
-When @option{-mesa} is specified, generate code using the 
+When @option{-mzarch} is specified, generate code using the
+instructions available on z/Architecture.
+When @option{-mesa} is specified, generate code using the
 instructions available on ESA/390. Note that @option{-mesa} is
 not possible with @option{-m64}.
 When generating code compliant to the GNU/Linux for S/390 ABI,
