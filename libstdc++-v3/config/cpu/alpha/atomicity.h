@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: Alpha version  -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,7 @@ typedef int _Atomic_word;
 
 static inline _Atomic_word
 __attribute__ ((__unused__))
-__exchange_and_add (volatile _Atomic_word* __mem, int __val)
+__exchange_and_add(volatile _Atomic_word* __mem, int __val)
 {
   register int __result, __tmp;
 
@@ -58,7 +58,7 @@ __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 
 static inline void
 __attribute__ ((__unused__))
-__atomic_add (volatile _Atomic_word* __mem, int __val)
+__atomic_add(volatile _Atomic_word* __mem, int __val)
 {
   register _Atomic_word __result;
 

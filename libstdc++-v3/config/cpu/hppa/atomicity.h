@@ -42,7 +42,7 @@ template volatile int __Atomicity_lock<0>::_S_atomicity_lock;
 
 static inline int
 __attribute__ ((__unused__))
-__exchange_and_add (volatile _Atomic_word* __mem, int __val)
+__exchange_and_add(volatile _Atomic_word* __mem, int __val)
 {
   _Atomic_word result;
   int tmp;
@@ -67,7 +67,7 @@ __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 
 static inline void
 __attribute__ ((__unused__))
-__atomic_add (_Atomic_word* __mem, int __val)
+__atomic_add(_Atomic_word* __mem, int __val)
 {
   int tmp;
   volatile int& lock = __Atomicity_lock<0>::_S_atomicity_lock;

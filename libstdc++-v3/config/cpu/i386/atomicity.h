@@ -32,20 +32,20 @@
 
 typedef int _Atomic_word;
 
-template <int __inst>
-struct __Atomicity_lock
-{
-  static volatile _Atomic_word _S_atomicity_lock;
-};
+template<int __inst>
+  struct __Atomicity_lock
+  {
+    static volatile _Atomic_word _S_atomicity_lock;
+  };
 
-template <int __inst>
+template<int __inst>
 volatile _Atomic_word __Atomicity_lock<__inst>::_S_atomicity_lock = 0;
 
 template volatile _Atomic_word __Atomicity_lock<0>::_S_atomicity_lock;
 
 static inline _Atomic_word 
 __attribute__ ((__unused__))
-__exchange_and_add (volatile _Atomic_word *__mem, int __val)
+__exchange_and_add(volatile _Atomic_word* __mem, int __val)
 {
   register _Atomic_word __result, __tmp = 1;
 
@@ -67,9 +67,9 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
 
 static inline void
 __attribute__ ((__unused__))
-__atomic_add (volatile _Atomic_word* __mem, int __val)
+__atomic_add(volatile _Atomic_word* __mem, int __val)
 {
-  __exchange_and_add (__mem, __val);
+  __exchange_and_add(__mem, __val);
 }
 
 #endif /* atomicity.h */

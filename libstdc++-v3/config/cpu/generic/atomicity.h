@@ -48,30 +48,30 @@ namespace __gnu_cxx
 
 static inline _Atomic_word
 __attribute__ ((__unused__))
-__exchange_and_add (volatile _Atomic_word* __mem, int __val)
+__exchange_and_add(volatile _Atomic_word* __mem, int __val)
 {
 #ifndef __GTHREAD_MUTEX_INIT
-  __gthread_once (&__gnu_cxx::_Atomic_add_mutex_once,
-                  __gnu_cxx::__gthread_atomic_add_mutex_once);
+  __gthread_once(&__gnu_cxx::_Atomic_add_mutex_once,
+		 __gnu_cxx::__gthread_atomic_add_mutex_once);
 #endif
 
   _Atomic_word __result;
 
-  __gthread_mutex_lock (&__gnu_cxx::_Atomic_add_mutex);
+  __gthread_mutex_lock(&__gnu_cxx::_Atomic_add_mutex);
 
   __result = *__mem;
   *__mem += __val;
 
-  __gthread_mutex_unlock (&__gnu_cxx::_Atomic_add_mutex);
+  __gthread_mutex_unlock(&__gnu_cxx::_Atomic_add_mutex);
   return __result;
 }
 
 
 static inline void
 __attribute__ ((__unused__))
-__atomic_add (volatile _Atomic_word* __mem, int __val)
+__atomic_add(volatile _Atomic_word* __mem, int __val)
 {
-  (void) __exchange_and_add (__mem, __val);
+  (void) __exchange_and_add(__mem, __val);
 }
 
 #endif /* atomicity.h */
