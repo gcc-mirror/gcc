@@ -198,7 +198,7 @@ public class ByteArrayOutputStream extends OutputStream
   // Resize buffer to accommodate new bytes.
   private void resize (int add)
   {
-    if (count + add >= buf.length)
+    if (count + add > buf.length)
       {
 	int newlen = buf.length * 2;
 	if (count + add > newlen)

@@ -1,3 +1,8 @@
+2003-11-08  Jeff Sturm  <jsturm@one-point.com>
+
+	* java/io/ByteArrayOutputStream.java (resize):
+	Fix off-by-one error.
+
 2003-11-08  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* gnu/gcj/xlib/XAnyEvent.java (XAnyEvent): Make constructor
