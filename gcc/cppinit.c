@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986, 87, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-98, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1310,23 +1310,23 @@ cpp_handle_option (pfile, argc, argv)
       case 'l':
 	if (! strcmp (argv[i], "-lang-c"))
 	  opts->cplusplus = 0, opts->cplusplus_comments = 1, opts->c89 = 0,
-	    opts->c9x = 1, opts->objc = 0;
+	    opts->c99 = 1, opts->objc = 0;
 	if (! strcmp (argv[i], "-lang-c89"))
 	  {
 	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
-	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
+	    opts->c89 = 1, opts->c99 = 0, opts->objc = 0;
 	    opts->trigraphs = 1;
 	    new_pending_define (opts, "__STRICT_ANSI__");
 	  }
 	if (! strcmp (argv[i], "-lang-c++"))
 	  opts->cplusplus = 1, opts->cplusplus_comments = 1, opts->c89 = 0,
-	    opts->c9x = 0, opts->objc = 0;
+	    opts->c99 = 0, opts->objc = 0;
 	if (! strcmp (argv[i], "-lang-objc"))
 	  opts->cplusplus = 0, opts->cplusplus_comments = 1, opts->c89 = 0,
-	    opts->c9x = 0, opts->objc = 1;
+	    opts->c99 = 0, opts->objc = 1;
 	if (! strcmp (argv[i], "-lang-objc++"))
 	  opts->cplusplus = 1, opts->cplusplus_comments = 1, opts->c89 = 0,
-	    opts->c9x = 0, opts->objc = 1;
+	    opts->c99 = 0, opts->objc = 1;
 	if (! strcmp (argv[i], "-lang-asm"))
 	  opts->lang_asm = 1;
 	if (! strcmp (argv[i], "-lang-fortran"))
@@ -1346,26 +1346,27 @@ cpp_handle_option (pfile, argc, argv)
 	if (!strcmp (argv[i], "-std=gnu89"))
 	  {
 	    opts->cplusplus = 0, opts->cplusplus_comments = 1;
-	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
+	    opts->c89 = 1, opts->c99 = 0, opts->objc = 0;
 	  }
-	else if (!strcmp (argv[i], "-std=gnu9x"))
+	else if (!strcmp (argv[i], "-std=gnu9x")
+		 || !strcmp (argv[i], "-std=gnu99"))
 	  {
 	    opts->cplusplus = 0, opts->cplusplus_comments = 1;
-	    opts->c89 = 0, opts->c9x = 1, opts->objc = 0;
+	    opts->c89 = 0, opts->c99 = 1, opts->objc = 0;
 	    new_pending_define (opts, "__STDC_VERSION__=199901L");
 	  }
 	else if (!strcmp (argv[i], "-std=iso9899:1990")
 		 || !strcmp (argv[i], "-std=c89"))
 	  {
 	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
-	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
+	    opts->c89 = 1, opts->c99 = 0, opts->objc = 0;
 	    opts->trigraphs = 1;
 	    new_pending_define (opts, "__STRICT_ANSI__");
 	  }
 	else if (!strcmp (argv[i], "-std=iso9899:199409"))
 	  {
 	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
-	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
+	    opts->c89 = 1, opts->c99 = 0, opts->objc = 0;
 	    opts->trigraphs = 1;
 	    new_pending_define (opts, "__STRICT_ANSI__");
 	    new_pending_define (opts, "__STDC_VERSION__=199409L");
@@ -1376,7 +1377,7 @@ cpp_handle_option (pfile, argc, argv)
 		 || !strcmp (argv[i], "-std=c99"))
 	  {
 	    opts->cplusplus = 0, opts->cplusplus_comments = 1;
-	    opts->c89 = 0, opts->c9x = 1, opts->objc = 0;
+	    opts->c89 = 0, opts->c99 = 1, opts->objc = 0;
 	    opts->trigraphs = 1;
 	    new_pending_define (opts, "__STRICT_ANSI__");
 	    new_pending_define (opts, "__STDC_VERSION__=199901L");
@@ -1717,8 +1718,8 @@ Switches:\n\
   -lang-fortran		    Assume that the input sources are in Fortran\n\
   -lang-chill               Assume that the input sources are in Chill\n\
   -std=<std name>           Specify the conformance standard; one of:\n\
-                            gnu89, gnu9x, c89, c9x, iso9899:1990,\n\
-                            iso9899:199409, iso9899:199x\n\
+                            gnu89, gnu99, c89, c99, iso9899:1990,\n\
+                            iso9899:199409, iso9899:1999\n\
   -+                        Allow parsing of C++ style features\n\
   -w                        Inhibit warning messages\n\
   -Wtrigraphs               Warn if trigraphs are encountered\n\

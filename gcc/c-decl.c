@@ -324,9 +324,9 @@ int flag_no_nonansi_builtin;
 
 int flag_traditional;
 
-/* Nonzero means use the ISO C9x dialect of C.  */
+/* Nonzero means use the ISO C99 dialect of C.  */
 
-int flag_isoc9x = 0;
+int flag_isoc99 = 0;
 
 /* Nonzero means that we have builtin functions, and main is an int */
 
@@ -508,11 +508,11 @@ c_decode_option (argc, argv)
 	 recognize:
 	 -std=iso9899:1990	same as -ansi
 	 -std=iso9899:199409	ISO C as modified in amend. 1
-	 -std=iso9899:199x	ISO C 9x
+	 -std=iso9899:1999	ISO C 99
 	 -std=c89		same as -std=iso9899:1990
-	 -std=c9x		same as -std=iso9899:199x
+	 -std=c99		same as -std=iso9899:1999
 	 -std=gnu89		default, iso9899:1990 + gnu extensions
-	 -std=gnu9x		iso9899:199x + gnu extensions
+	 -std=gnu99		iso9899:1999 + gnu extensions
       */
       const char *argstart = &p[5];
 
@@ -524,7 +524,7 @@ c_decode_option (argc, argv)
 	  flag_writable_strings = 0;
 	  flag_no_asm = 1;
 	  flag_no_nonansi_builtin = 1;
-	  flag_isoc9x = 0;
+	  flag_isoc99 = 0;
 	}
       else if (!strcmp (argstart, "iso9899:199409"))
 	{
@@ -532,13 +532,15 @@ c_decode_option (argc, argv)
 	  goto iso_1990;
 	}
       else if (!strcmp (argstart, "iso9899:199x")
-	       || !strcmp (argstart, "c9x"))
+	       || !strcmp (argstart, "iso9899:1999")
+	       || !strcmp (argstart, "c9x")
+	       || !strcmp (argstart, "c99"))
 	{
 	  flag_traditional = 0;
 	  flag_writable_strings = 0;
 	  flag_no_asm = 1;
 	  flag_no_nonansi_builtin = 1;
-	  flag_isoc9x = 1;
+	  flag_isoc99 = 1;
 	}
       else if (!strcmp (argstart, "gnu89"))
 	{
@@ -546,15 +548,15 @@ c_decode_option (argc, argv)
 	  flag_writable_strings = 0;
 	  flag_no_asm = 0;
 	  flag_no_nonansi_builtin = 0;
-	  flag_isoc9x = 0;
+	  flag_isoc99 = 0;
 	}
-      else if (!strcmp (argstart, "gnu9x"))
+      else if (!strcmp (argstart, "gnu9x") || !strcmp (argstart, "gnu99"))
 	{
 	  flag_traditional = 0;
 	  flag_writable_strings = 0;
 	  flag_no_asm = 0;
 	  flag_no_nonansi_builtin = 0;
-	  flag_isoc9x = 1;
+	  flag_isoc99 = 1;
 	}
       else
 	error ("unknown C standard `%s'", argstart);
@@ -3915,12 +3917,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  && ! (specbits & (1 << (int) RID_TYPEDEF) && initialized)
 	  && ! in_system_header)
 	{
-	  /* Issue a warning if this is an ISO C 9x program or if -Wreturn-type
+	  /* Issue a warning if this is an ISO C 99 program or if -Wreturn-type
 	     and this is a function, or if -Wimplicit; prefer the former
 	     warning since it is more explicit.  */
 	  if ((warn_implicit_int || warn_return_type) && funcdef_flag)
 	    warn_about_return_type = 1;
-	  else if (warn_implicit_int || flag_isoc9x)
+	  else if (warn_implicit_int || flag_isoc99)
 	    warning ("type defaults to `int' in declaration of `%s'", name);
 	}
 
