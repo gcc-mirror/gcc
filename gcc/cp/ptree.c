@@ -48,19 +48,19 @@ cxx_print_decl (FILE *file, tree node, int indent)
       && DECL_PENDING_INLINE_INFO (node))
     {
       fprintf (file, " pending-inline-info ");
-      fprintf (file, HOST_PTR_PRINTF, DECL_PENDING_INLINE_INFO (node));
+      fprintf (file, HOST_PTR_PRINTF, (void *) DECL_PENDING_INLINE_INFO (node));
     }
   if (TREE_CODE (node) == TYPE_DECL
       && DECL_SORTED_FIELDS (node))
     {
       fprintf (file, " sorted-fields ");
-      fprintf (file, HOST_PTR_PRINTF, DECL_SORTED_FIELDS (node));
+      fprintf (file, HOST_PTR_PRINTF, (void *) DECL_SORTED_FIELDS (node));
     }
   if ((TREE_CODE (node) == FUNCTION_DECL || TREE_CODE (node) == VAR_DECL)
       && DECL_TEMPLATE_INFO (node))
     {
       fprintf (file, " template-info ");
-      fprintf (file, HOST_PTR_PRINTF,  DECL_TEMPLATE_INFO (node));
+      fprintf (file, HOST_PTR_PRINTF, (void *) DECL_TEMPLATE_INFO (node));
     }
 }
 
