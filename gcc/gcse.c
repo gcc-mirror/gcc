@@ -1919,7 +1919,11 @@ hash_scan_insn (insn, set_p, in_libcall_block)
      what's been modified.  */
 
   if (GET_CODE (pat) == SET && ! in_libcall_block)
-    hash_scan_set (pat, insn, set_p);
+    {
+      /* Ignore obvious no-ops.  */
+      if (SET_SRC (pat) != SET_DEST (pat))
+	hash_scan_set (pat, insn, set_p);
+    }
   else if (GET_CODE (pat) == PARALLEL)
     {
       int i;
