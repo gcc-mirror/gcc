@@ -50,27 +50,6 @@ extern char *update_path PARAMS ((char *, char *));
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
-/* Find the largest host integer type and set its size and type.
-   Watch out: on some crazy hosts `long' is shorter than `int'.  */
-
-#ifndef HOST_WIDE_INT
-# if HAVE_INTTYPES_H
-#  include <inttypes.h>
-#  define HOST_WIDE_INT intmax_t
-# else
-#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
-       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
-#   define HOST_WIDE_INT int
-#  else
-#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
-       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
-#   define HOST_WIDE_INT long
-#  else
-#   define HOST_WIDE_INT long long
-#  endif
-#  endif
-# endif
-#endif
 
 /* By default, colon separates directories in a path.  */
 #ifndef PATH_SEPARATOR
@@ -2932,7 +2911,7 @@ do_include (pfile, keyword, unused1, unused2)
   int before;  /* included before? */
   long flen;
   char *fbeg, *fend;
-  struct file_name_list *srcdir = 0;  /* for "" includes */
+  cpp_buffer *fp;
 
   enum cpp_token token;
 
@@ -3015,48 +2994,39 @@ do_include (pfile, keyword, unused1, unused2)
       cpp_error (pfile, "empty file name in `#%s'", keyword->name);
       return 0;
     }
+
+  search_start = 0;
+
+  for (fp = CPP_BUFFER (pfile);
+       fp != CPP_NULL_BUFFER (pfile);
+       fp = CPP_PREV_BUFFER (fp))
+    if (fp->fname != NULL)
+      break;
+
+  if (fp == CPP_NULL_BUFFER (pfile))
+    fp = NULL;
   
   /* For #include_next, skip in the search path
      past the dir in which the containing file was found.  */
   if (skip_dirs)
     {
-      cpp_buffer *fp = CPP_BUFFER (pfile);
-      for (; fp != CPP_NULL_BUFFER (pfile); fp = CPP_PREV_BUFFER (fp))
-	if (fp->fname != NULL)
-	  {
-	    /* Don't skip anything if the containing file was found
-	       by an absolute path. */
-	    if (fp->ihash->foundhere == ABSOLUTE_PATH)
-	      search_start = angle_brackets
-		  ? CPP_OPTIONS (pfile)->bracket_include
-		  : CPP_OPTIONS (pfile)->quote_include;
-	    else
-	      search_start = fp->ihash->foundhere->next;
-	    break;
-	  }
+      if (fp)
+	search_start = fp->ihash->foundhere->next;
     }
   else
-    search_start = angle_brackets
-	? CPP_OPTIONS (pfile)->bracket_include
-	: CPP_OPTIONS (pfile)->quote_include;
-
-  /* For "" includes when ignore_srcdir is off, tack the actual directory
-     of the current file onto the beginning of the search path.
-     The block must be permanently allocated since it may wind up
-     in the include hash. */
-  if (!angle_brackets 
-      && search_start == CPP_OPTIONS (pfile)->quote_include
-      && !CPP_OPTIONS (pfile)->ignore_srcdir)
     {
-      srcdir = (struct file_name_list *)
-	  xmalloc (sizeof (struct file_name_list));
-      srcdir->next = CPP_OPTIONS (pfile)->quote_include;
-      srcdir->name = CPP_BUFFER (pfile)->dir;
-      srcdir->nlen = CPP_BUFFER (pfile)->dlen;
-      srcdir->sysp = 0;
-      srcdir->name_map = NULL;
-
-      search_start = srcdir;
+      if (angle_brackets)
+	search_start = CPP_OPTIONS (pfile)->bracket_include;
+      else
+        {
+	  if (!CPP_OPTIONS (pfile)->ignore_srcdir)
+	    {
+	      if (fp)
+		search_start = fp->actual_dir;
+	    }
+	  else
+	    search_start = CPP_OPTIONS (pfile)->quote_include;
+	}
     }
 
   if (!search_start)
@@ -3067,10 +3037,6 @@ do_include (pfile, keyword, unused1, unused2)
 
   fd = find_include_file (pfile, fbeg, search_start, &ihash, &before);
 
-  if (srcdir
-      && (ihash == (struct include_hash *)-1 || srcdir != ihash->foundhere))
-    free (srcdir);
-  
   if (fd == -2)
     return 0;
   
@@ -3128,8 +3094,8 @@ do_include (pfile, keyword, unused1, unused2)
   /* Handle -H option.  */
   if (CPP_OPTIONS(pfile)->print_include_names)
     {
-      cpp_buffer *buf = CPP_BUFFER (pfile);
-      while ((buf = CPP_PREV_BUFFER (buf)) != CPP_NULL_BUFFER (pfile))
+      fp = CPP_BUFFER (pfile);
+      while ((fp = CPP_PREV_BUFFER (fp)) != CPP_NULL_BUFFER (pfile))
 	putc ('.', stderr);
       fprintf (stderr, " %s\n", ihash->name);
     }
@@ -3282,7 +3248,7 @@ convert_string (pfile, result, in, limit, handle_escapes)
 	  if (handle_escapes)
 	    {
 	      char *bpc = (char *) in;
-	      int i = (U_CHAR) cpp_parse_escape (pfile, &bpc);
+	      int i = (U_CHAR) cpp_parse_escape (pfile, &bpc, 0x00ffU);
 	      in = (U_CHAR *) bpc;
 	      if (i >= 0)
 		*result++ = (U_CHAR)c;
@@ -5380,6 +5346,7 @@ cpp_reader_init (pfile)
   pfile->timebuf = NULL;
   pfile->only_seen_white = 1;
   pfile->buffer = CPP_NULL_BUFFER(pfile);
+  pfile->actual_dirs = NULL;
 }
 
 static struct cpp_pending *

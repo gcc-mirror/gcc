@@ -72,6 +72,14 @@ struct arglist {
 #define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
 #endif
 
+#define MAX_CHAR_TYPE_MASK (MAX_CHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT \
+			    ? (~ (~ (HOST_WIDE_INT) 0 << MAX_CHAR_TYPE_SIZE)) \
+			    : ~ (HOST_WIDE_INT) 0)
+
+#define MAX_WCHAR_TYPE_MASK (MAX_WCHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT \
+			     ? ~ (~ (HOST_WIDE_INT) 0 << MAX_WCHAR_TYPE_SIZE) \
+			     : ~ (HOST_WIDE_INT) 0)
+
 /* Yield nonzero if adding two numbers with A's and B's signs can yield a
    number with SUM's sign, where A, B, and SUM are all C integers.  */
 #define possible_sum_sign(a, b, sum) ((((a) ^ (b)) | ~ ((a) ^ (sum))) < 0)
@@ -100,28 +108,6 @@ static long right_shift PARAMS ((cpp_reader *, long, int, unsigned long));
    following operand should be short-circuited instead of evaluated.  */
 #define SKIP_OPERAND 8
 /*#define UNSIGNEDP 16*/
-
-/* Find the largest host integer type and set its size and type.
-   Watch out: on some crazy hosts `long' is shorter than `int'.  */
-
-#ifndef HOST_WIDE_INT
-# if HAVE_INTTYPES_H
-#  include <inttypes.h>
-#  define HOST_WIDE_INT intmax_t
-# else
-#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
-       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
-#   define HOST_WIDE_INT int
-#  else
-#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
-       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
-#   define HOST_WIDE_INT long
-#  else
-#   define HOST_WIDE_INT long long
-#  endif
-#  endif
-# endif
-#endif
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
@@ -275,7 +261,7 @@ cpp_lex (pfile, skip_evaluation)
      cpp_reader *pfile;
      int skip_evaluation;
 {
-  register int c;
+  register HOST_WIDE_INT c;
   register struct token *toktab;
   enum cpp_token token;
   struct operation op;
@@ -359,7 +345,9 @@ cpp_lex (pfile, skip_evaluation)
 	  {
 	    if (c == '\\')
 	      {
-		c = cpp_parse_escape (pfile, (char **) &ptr);
+		c = cpp_parse_escape (pfile, (char **) &ptr,
+				      wide_flag ? MAX_WCHAR_TYPE_MASK
+				      		: MAX_CHAR_TYPE_MASK);
 		if (width < HOST_BITS_PER_INT
 		  && (unsigned) c >= (unsigned)(1 << width))
 		    cpp_pedwarn (pfile,
@@ -480,10 +468,11 @@ cpp_lex (pfile, skip_evaluation)
    If \ is followed by 000, we return 0 and leave the string pointer
    after the zeros.  A value of 0 does not mean end of string.  */
 
-int
-cpp_parse_escape (pfile, string_ptr)
+HOST_WIDE_INT
+cpp_parse_escape (pfile, string_ptr, result_mask)
      cpp_reader *pfile;
      char **string_ptr;
+     HOST_WIDE_INT result_mask;
 {
   register int c = *(*string_ptr)++;
   switch (c)
@@ -494,7 +483,7 @@ cpp_parse_escape (pfile, string_ptr)
       return TARGET_BS;
     case 'e':
     case 'E':
-      if (CPP_PEDANTIC (pfile))
+      if (CPP_OPTIONS (pfile)->pedantic)
 	cpp_pedwarn (pfile, "non-ANSI-standard escape sequence, `\\%c'", c);
       return 033;
     case 'f':
@@ -522,7 +511,7 @@ cpp_parse_escape (pfile, string_ptr)
     case '6':
     case '7':
       {
-	register int i = c - '0';
+	register HOST_WIDE_INT i = c - '0';
 	register int count = 0;
 	while (++count < 3)
 	  {
@@ -535,17 +524,17 @@ cpp_parse_escape (pfile, string_ptr)
 		break;
 	      }
 	  }
-	if ((i & ~((1 << MAX_CHAR_TYPE_SIZE) - 1)) != 0)
+	if (i != (i & result_mask))
 	  {
-	    i &= (1 << MAX_CHAR_TYPE_SIZE) - 1;
-	    cpp_pedwarn (pfile,
-			  "octal character constant does not fit in a byte");
+	    i &= result_mask;
+	    cpp_pedwarn (pfile, "octal escape sequence out of range");
 	  }
 	return i;
       }
     case 'x':
       {
-	register unsigned i = 0, overflow = 0, digits_found = 0, digit;
+	register unsigned HOST_WIDE_INT i = 0, overflow = 0;
+	register int digits_found = 0, digit;
 	for (;;)
 	  {
 	    c = *(*string_ptr)++;
@@ -566,11 +555,10 @@ cpp_parse_escape (pfile, string_ptr)
 	  }
 	if (!digits_found)
 	  cpp_error (pfile, "\\x used with no following hex digits");
-	if (overflow | (i & ~((1 << BITS_PER_UNIT) - 1)))
+	if (overflow | (i != (i & result_mask)))
 	  {
-	    i &= (1 << BITS_PER_UNIT) - 1;
-	    cpp_pedwarn (pfile,
-			 "hex character constant does not fit in a byte");
+	    i &= result_mask;
+	    cpp_pedwarn (pfile, "hex escape sequence out of range");
 	  }
 	return i;
       }

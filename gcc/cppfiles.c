@@ -42,6 +42,7 @@ static char *remap_filename 		PROTO ((cpp_reader *, char *,
 						struct file_name_list *));
 static long safe_read			PROTO ((int, char *, int));
 static void simplify_pathname		PROTO ((char *));
+static struct file_name_list *actual_directory PROTO ((cpp_reader *, char *));
 
 #if 0
 static void hack_vms_include_specification PROTO ((char *));
@@ -422,11 +423,6 @@ find_include_file (pfile, fname, search_start, ihash, before)
 
   /* Search directory path, trying to open the file. */
 
-  /* The first entry in the search list may be a buffer-specific entry,
-     and its directory name may be longer than max_include_len.  Adjust
-     as appropriate. */
- if (pfile->max_include_len < search_start->nlen)
-    pfile->max_include_len = search_start->nlen;
   len = strlen (fname);
   name = xmalloc (len + pfile->max_include_len + 2 + INCLUDE_LEN_FUDGE);
 
@@ -690,34 +686,11 @@ finclude (pfile, fd, ihash)
   fp->colno = 1;
   fp->cleanup = file_cleanup;
 
-  /* The ->dir field is only used when ignore_srcdir is not in effect;
+  /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
      see do_include */
   if (!CPP_OPTIONS (pfile)->ignore_srcdir)
-    {
-      char *last_slash;
-      fp->dir = savestring (fp->fname);
-      last_slash = rindex (fp->dir, '/');
-      if (last_slash)
-        {
-	  if (last_slash == fp->dir)
-	    {
-	      fp->dlen = 1;
-	      last_slash[1] = '\0';
-	    }
-	  else
-	    {
-	      fp->dlen = last_slash - fp->dir;
-	      *last_slash = '\0';
-	    }
-	}
-      else
-        {
-	  fp->dir[0] = '.';
-	  fp->dir[1] = '\0';
-	  fp->dlen = 1;
-	}
-    }
-
+    fp->actual_dir = actual_directory (pfile, fp->fname);
+	
   if (S_ISREG (st.st_mode))
     {
       st_size = (size_t) st.st_size;
@@ -788,6 +761,60 @@ finclude (pfile, fd, ihash)
  fail:
   close (fd);
   return 0;
+}
+
+static struct file_name_list *
+actual_directory (pfile, fname)
+     cpp_reader *pfile;
+     char *fname;
+{
+  char *last_slash, *dir;
+  size_t dlen;
+  struct file_name_list *x;
+  
+  dir = savestring (fname);
+  last_slash = rindex (dir, '/');
+  if (last_slash)
+    {
+      if (last_slash == dir)
+        {
+	  dlen = 1;
+	  last_slash[1] = '\0';
+	}
+      else
+	{
+	  dlen = last_slash - dir;
+	  *last_slash = '\0';
+	}
+    }
+  else
+    {
+      dir[0] = '.';
+      dir[1] = '\0';
+      dlen = 1;
+    }
+
+  if (dlen > pfile->max_include_len)
+    pfile->max_include_len = dlen;
+
+  for (x = pfile->actual_dirs; x; x = x->alloc)
+    if (!strcmp (x->name, dir))
+      {
+	free (dir);
+	return x;
+      }
+
+  /* Not found, make a new one. */
+  x = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
+  x->name = dir;
+  x->nlen = dlen;
+  x->next = CPP_OPTIONS (pfile)->quote_include;
+  x->alloc = pfile->actual_dirs;
+  x->sysp = 0;
+  x->name_map = NULL;
+
+  pfile->actual_dirs = x;
+  return x;
 }
 
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
