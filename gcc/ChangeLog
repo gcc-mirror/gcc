@@ -1,5 +1,10 @@
 2001-05-30  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cpplex.c (_cpp_lex_token): Revert patch of 16 May 2001
+	so that we do accept comments in preprocessed input.
+
+2001-05-30  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cpphash.c (alloc_node): Cast allocated pointer.
 
 2001-05-30  Gordon Sadler <gbsadler1@lcisp.com>
