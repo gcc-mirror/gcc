@@ -1,3 +1,8 @@
+2002-07-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/os/solaris/solaris2.5/ctype_base.h (ctype_base): Fix
+	print to match vendor <ctype.h>.
+
 2002-07-15  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/faq/index.html:  Fix download links.
