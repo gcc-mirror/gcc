@@ -1,3 +1,9 @@
+2000-01-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/g++.exp (g++init): Use g++, not xgcc, to invoke the C++
+	compiler.
+	(tool_option_proc): Fix typo.
+	
 2000-01-24  Geoff Keating  <geoffk@cygnus.com>
 
 	* gcc.dg/special/ecos.exp (gcsec-1.c): Check the version

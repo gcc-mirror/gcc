@@ -1,3 +1,8 @@
+2000-01-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (CXX_FOR_TARGET): Use g++, not xgcc, to invoke
+	the C++ compiler.
+
 Wed Jan 12 18:00:26 2000  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* configure.in: Fix typo in last change.
