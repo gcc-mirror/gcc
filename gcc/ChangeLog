@@ -1,3 +1,9 @@
+Thu Oct  1 17:58:25 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* dwarf2out.c (expand_builtin_dwarf_reg_size): Use
+	FIRST_PSEUDO_REGISTER as upper bound for last_end, not an
+	arbitrary constant.
+
 Thu Oct  1 17:57:14 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c: Improve interworking support.

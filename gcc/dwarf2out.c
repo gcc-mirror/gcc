@@ -642,7 +642,7 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
     }
   else
     {
-      int last_end = 100;
+      int last_end = FIRST_PSEUDO_REGISTER;
       --n_ranges;
       t = build_int_2 (ranges[n_ranges].size, 0);
       do
