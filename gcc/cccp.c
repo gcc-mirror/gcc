@@ -452,6 +452,10 @@ static int warn_stringify;
 
 static int warn_trigraphs;
 
+/* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
+
+int warn_undef;
+
 /* Nonzero means warn if #import is used.  */
 
 static int warn_import = 1;
@@ -1546,6 +1550,10 @@ main (argc, argv)
 	  warn_stringify = 1;
 	else if (!strcmp (argv[i], "-Wno-traditional"))
 	  warn_stringify = 0;
+	else if (!strcmp (argv[i], "-Wundef"))
+	  warn_undef = 1;
+	else if (!strcmp (argv[i], "-Wno-undef"))
+	  warn_undef = 0;
 	else if (!strcmp (argv[i], "-Wimport"))
 	  warn_import = 1;
 	else if (!strcmp (argv[i], "-Wno-import"))
