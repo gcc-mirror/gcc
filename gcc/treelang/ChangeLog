@@ -1,3 +1,8 @@
+2003-06-08  Andreas Jaeger  <aj@suse.de>
+
+	* Make-lang.in: Update.
+	* treetree.c: Include opts.h. Define cl_options_count and cl_options.
+
 2003-06-08  Tim Josling  <tej@melbpc.org.au>
 
 	* treetree.c (c_lex): Add fake routine to satisfy RS6000 backend.

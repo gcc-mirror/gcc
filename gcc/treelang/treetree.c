@@ -73,7 +73,10 @@
 
 #include "treelang.h"
 #include "treetree.h"
+#include "opts.h"
 
+const unsigned int cl_options_count;
+const struct cl_option cl_options[1];
 extern int option_main;
 extern char **file_names;
 
