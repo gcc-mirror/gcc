@@ -159,6 +159,19 @@ extern int in_text_section		PROTO((void));
 extern void eh_frame_section		PROTO ((void));
 #endif
 
+#ifdef CTORS_SECTION_ASM_OP
+extern void ctors_section PARAMS ((void));
+#endif
+
+#ifdef DTORS_SECTION_ASM_OP
+extern void dtors_section PARAMS ((void));
+#endif
+
+#ifdef BSS_SECTION_ASM_OP
+extern void bss_section PARAMS ((void));
+#endif
+
+
 #ifdef TREE_CODE
 /* Tell assembler to change to section NAME for DECL.
    If DECL is NULL, just switch to section NAME.

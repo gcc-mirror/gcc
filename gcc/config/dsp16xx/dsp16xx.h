@@ -72,7 +72,6 @@ extern void function_epilogue ();
 extern int  dsp1600_comparison_reverse ();
 extern void double_reg_from_memory ();
 extern void double_reg_to_memory ();
-extern void bss_section ();
 extern struct rtx_def *dsp16xx_function_arg ();
 extern void dsp16xx_function_arg_advance ();
 extern enum rtx_code next_cc_user_code ();

@@ -288,7 +288,6 @@ fini_section ()							\
 void									\
 const_section ()							\
 {									\
-  extern void text_section();						\
   if (!USE_CONST_SECTION)						\
     text_section();							\
   else if (in_section != in_const)					\

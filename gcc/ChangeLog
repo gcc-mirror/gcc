@@ -1,3 +1,24 @@
+Sun Oct 24 15:35:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* output.h (ctors_section, dtors_section, bss_section): Prototype.
+
+	* alpha/alpha-interix.h (text_section): Delete prototype.
+	* alpha/elf.h (text_section): Likewise.
+	* arm/linux-elf.h (text_section): Likewise.
+	* arm/linux-telf.h (text_section): Likewise.
+	* c4x/c4x.h (text_section): Likewise.
+	* dsp16xx/dsp16xx.h (bss_section): Likewise.
+	* elfos.h (text_section): Likewise.
+	* i386/aix386ng.h (text_section): Likewise.
+	* i386/i386-interix.h (text_section): Likewise.
+	* i386/sco5.h (text_section): Likewise.
+	* i386/svr3gas.h (text_section): Likewise.
+	* nextstep.h (text_section): Likewise.
+	* psos.h (text_section): Likewise.
+	* ptx4.h (text_section): Likewise.
+	* svr3.h (text_section): Likewise.
+	* svr4.h (text_section, ctors_section, dtors_section): Likewise.
+
 Sun Oct 24 15:20:59 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* final.c (peephole): Delete prototype.
