@@ -9,9 +9,8 @@
 #     for example the comparison insn takes 0.0 as an operand, the
 #     combiner is able to see all intermediate instructions simultaneously
 #     and can make the optimization.
-if { [istarget "powerpc-*-*"] || [istarget "rs6000-*-*"] \
-     || [istarget "mips*-*-*"] || [istarget "xtensa-*-*"] \
-     || [istarget "sh-*-*"] || [istarget "mmix-*-*"] \
+if { [istarget "mips*-*-*"] || [istarget "xtensa-*-*"] \
+     || [istarget "sh-*-*"] \
      || [istarget "arm*-*-*"] || [istarget "strongarm*-*-*"] \
      || [istarget "xscale*-*-*"] } {
     return 1
