@@ -1,3 +1,7 @@
+Fri Sep 03 09:31:10 BST 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.other/deref1.C: New test.
+
 Thu Sep 02 09:27:34 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/ambig2.C: New test.
