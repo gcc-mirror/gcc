@@ -161,16 +161,21 @@ public class ZipFile implements ZipConstants
     return is;
   }
 
-  public String getName () { return name; }
+  public String getName ()
+  {
+    return name;
+  }
 
-  public int size () {
+  public int size ()
+  {
     if (entries == null)
       throw new IllegalStateException("ZipFile already closed");
     else
       return numEntries;
   }
 
-  protected void finalize () throws IOException {
+  protected void finalize () throws IOException
+  {
     close();
   }
 

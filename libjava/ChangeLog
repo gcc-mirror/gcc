@@ -1,8 +1,33 @@
+2000-08-28  Tom Tromey  <tromey@cygnus.com>
+
+	* gnu/gcj/awt/BitMaskExtent.java, gnu/gcj/awt/Buffers.java,
+	gnu/gcj/awt/ComponentDataBlitOp.java,
+	gnu/gcj/awt/GLightweightPeer.java, java/awt/Graphics2D.java,
+	java/awt/RenderingHints.java, java/awt/color/ColorSpace.java,
+	java/awt/color/ICC_ColorSpace.java,
+	java/awt/color/ICC_Profile.java,
+	java/awt/image/BufferedImage.java, java/awt/image/ColorModel.java,
+	java/awt/image/ComponentColorModel.java,
+	java/awt/image/ComponentSampleModel.java,
+	java/awt/image/DataBuffer.java,
+	java/awt/image/DataBufferByte.java,
+	java/awt/image/DataBufferInt.java,
+	java/awt/image/DataBufferUShort.java,
+	java/awt/image/DirectColorModel.java,
+	java/awt/image/IndexColorModel.java,
+	java/awt/image/PackedColorModel.java, java/awt/image/Raster.java,
+	java/awt/image/RasterOp.java, java/awt/image/SampleModel.java,
+	java/awt/image/SinglePixelPackedSampleModel.java,
+	java/awt/image/WritableRaster.java, java/util/zip/ZipFile.java:
+	Removed Latin-1 copyright symbols.
+	* java/util/zip/ZipFile.java: Indentation fixes.
+
 2000-08-27  Mark Wielaard  <mark@klomp.org>
 
-	* java/util/zip/ZipFile.java: Implement OPEN_DELETE mode, new constructor,
-	close can delete the file, finalize calls close.
-	* java/util/jar/JarFile.java: Constructor that takes mode now calls super.
+	* java/util/zip/ZipFile.java: Implement OPEN_DELETE mode, new
+	constructor, close can delete the file, finalize calls close.
+	* java/util/jar/JarFile.java: Constructor that takes mode now
+	calls super.
 
 2000-08-27  Anthony Green  <green@redhat.com>
 
