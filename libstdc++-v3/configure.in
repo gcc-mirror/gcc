@@ -12,9 +12,6 @@ ORIGINAL_LD_FOR_MULTILIBS=$LD
 
 PACKAGE=libstdc++
 AC_SUBST(PACKAGE)
-# For typical GNU versioning info, format is MAJOR.MINOR.MICRO
-release_VERSION=3.1.1
-AC_SUBST(release_VERSION)
 # For libtool versioning info, format is CURRENT:REVISION:AGE
 libtool_VERSION=4:1:0
 AC_SUBST(libtool_VERSION)
@@ -377,9 +374,6 @@ if test "${multilib}" = "yes"; then
 else
   multilib_arg=
 fi
-
-# Needed so that g++ can find the correct include subdir automatically.
-INTERFACE=v3
 
 # Export all the install information
 GLIBCPP_EXPORT_INSTALL_INFO
