@@ -12,10 +12,10 @@
 void
 __out_of_range (const char *s)
 {
-  throw out_of_range (s);
+  throw std::out_of_range (s);
 }
 
 void __length_error (const char *s)
 {
-  throw length_error (s);
+  throw std::length_error (s);
 }
