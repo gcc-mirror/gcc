@@ -437,19 +437,23 @@ public class ArrayList extends AbstractList
 
   /**
    * Removes all elements in the half-open interval [fromIndex, toIndex).
-   * You asked for it if you call this with invalid arguments.
+   * Does nothing when toIndex is equal to fromIndex.
    *
    * @param fromIndex the first index which will be removed
    * @param toIndex one greater than the last index which will be removed
+   * @throws IndexOutOfBoundsException if fromIndex &gt; toIndex
    */
   protected void removeRange(int fromIndex, int toIndex)
   {
-    if (fromIndex != toIndex)
+    int change = toIndex - fromIndex;
+    if (change > 0)
       {
         modCount++;
         System.arraycopy(data, toIndex, data, fromIndex, size - toIndex);
-        size -= toIndex - fromIndex;
+        size -= change;
       }
+    else if (change < 0)
+      throw new IndexOutOfBoundsException();
   }
 
   /**

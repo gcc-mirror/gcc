@@ -1,3 +1,8 @@
+2002-04-05  Mark Wielaard <mark@klomp.org>
+
+	* java/util/ArrayList.jva (removeRange): If toIndex == fromIndex do
+	nothing, if toIndex < fromIndex throw IndexOutIfBoundsException.
+
 2002-04-04  Adam Megacz <adam@xwt.org>
 
 	* include/win32.h (_Jv_platform_close_on_exec): added inline
