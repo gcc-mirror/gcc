@@ -2614,28 +2614,6 @@ c_common_truthvalue_conversion (tree expr)
   if (TREE_CODE (expr) == FUNCTION_DECL)
     expr = build_unary_op (ADDR_EXPR, expr, 0);
 
-#if 0 /* This appears to be wrong for C++.  */
-  /* These really should return error_mark_node after 2.4 is stable.
-     But not all callers handle ERROR_MARK properly.  */
-  switch (TREE_CODE (TREE_TYPE (expr)))
-    {
-    case RECORD_TYPE:
-      error ("struct type value used where scalar is required");
-      return truthvalue_false_node;
-
-    case UNION_TYPE:
-      error ("union type value used where scalar is required");
-      return truthvalue_false_node;
-
-    case ARRAY_TYPE:
-      error ("array type value used where scalar is required");
-      return truthvalue_false_node;
-
-    default:
-      break;
-    }
-#endif /* 0 */
-
   switch (TREE_CODE (expr))
     {
     case EQ_EXPR:
@@ -2686,15 +2664,15 @@ c_common_truthvalue_conversion (tree expr)
     case COMPLEX_EXPR:
       return build_binary_op ((TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
 			       ? TRUTH_OR_EXPR : TRUTH_ORIF_EXPR),
-		c_common_truthvalue_conversion (TREE_OPERAND (expr, 0)),
-		c_common_truthvalue_conversion (TREE_OPERAND (expr, 1)),
+		(*lang_hooks.truthvalue_conversion) (TREE_OPERAND (expr, 0)),
+		(*lang_hooks.truthvalue_conversion) (TREE_OPERAND (expr, 1)),
 			      0);
 
     case NEGATE_EXPR:
     case ABS_EXPR:
     case FLOAT_EXPR:
       /* These don't change whether an object is nonzero or zero.  */
-      return c_common_truthvalue_conversion (TREE_OPERAND (expr, 0));
+      return (*lang_hooks.truthvalue_conversion) (TREE_OPERAND (expr, 0));
 
     case LROTATE_EXPR:
     case RROTATE_EXPR:
@@ -2702,15 +2680,15 @@ c_common_truthvalue_conversion (tree expr)
 	 we can't ignore them if their second arg has side-effects.  */
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1)))
 	return build (COMPOUND_EXPR, truthvalue_type_node, TREE_OPERAND (expr, 1),
-		      c_common_truthvalue_conversion (TREE_OPERAND (expr, 0)));
+		      (*lang_hooks.truthvalue_conversion) (TREE_OPERAND (expr, 0)));
       else
-	return c_common_truthvalue_conversion (TREE_OPERAND (expr, 0));
+	return (*lang_hooks.truthvalue_conversion) (TREE_OPERAND (expr, 0));
 
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
       return fold (build (COND_EXPR, truthvalue_type_node, TREE_OPERAND (expr, 0),
-		c_common_truthvalue_conversion (TREE_OPERAND (expr, 1)),
-		c_common_truthvalue_conversion (TREE_OPERAND (expr, 2))));
+		(*lang_hooks.truthvalue_conversion) (TREE_OPERAND (expr, 1)),
+		(*lang_hooks.truthvalue_conversion) (TREE_OPERAND (expr, 2))));
 
     case CONVERT_EXPR:
       /* Don't cancel the effect of a CONVERT_EXPR from a REFERENCE_TYPE,
@@ -2723,7 +2701,7 @@ c_common_truthvalue_conversion (tree expr)
       /* If this is widening the argument, we can ignore it.  */
       if (TYPE_PRECISION (TREE_TYPE (expr))
 	  >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (expr, 0))))
-	return c_common_truthvalue_conversion (TREE_OPERAND (expr, 0));
+	return (*lang_hooks.truthvalue_conversion) (TREE_OPERAND (expr, 0));
       break;
 
     case MINUS_EXPR:
@@ -2772,8 +2750,8 @@ c_common_truthvalue_conversion (tree expr)
       return (build_binary_op
 	      ((TREE_SIDE_EFFECTS (expr)
 		? TRUTH_OR_EXPR : TRUTH_ORIF_EXPR),
-	c_common_truthvalue_conversion (build_unary_op (REALPART_EXPR, t, 0)),
-	c_common_truthvalue_conversion (build_unary_op (IMAGPART_EXPR, t, 0)),
+	(*lang_hooks.truthvalue_conversion) (build_unary_op (REALPART_EXPR, t, 0)),
+	(*lang_hooks.truthvalue_conversion) (build_unary_op (IMAGPART_EXPR, t, 0)),
 	       0));
     }
 

@@ -1,3 +1,29 @@
+2004-02-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/11658
+	PR c/13994
+	* Makefile.in (c-parse.o, c-convert.o, c-typeck.o): Depend
+	on langhooks.h.
+	* objc/Make-lang.in (objc-parse.o): Depend on langhooks.h.
+	* c-parse.in, c-convert.c, c-typeck.c, objc/objc-act.c:
+	Include langhooks.h.  Replace c_common_truthvalue_conversion
+	with the truthvalue_conversion language hook throughout.
+	(expr_no_commas): Call default_conversion before save_expr
+	for the first term of the production 'x ? : y'.
+	* c-common.c (c_common_truthvalue_conversion): Remove
+	obsolete block.  Invoke recursively the hook instead
+	of this function.
+	* c-convert.c (convert): handle ERROR_MARK_NODE.
+	* c-typeck.c (build_binary_op): handle ERROR_MARK_NODE
+	returned by the truthvalue_conversion language hook.
+	* c-lang.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Use
+	c_objc_common_truthvalue_conversion.
+	* c-objc-common.c (c_objc_common_truthvalue_conversion):
+	New function.
+	* c-tree.h (c_objc_common_truthvalue_conversion): Declare it.
+	* objc/objc-lang.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Use
+	c_objc_common_truthvalue_conversion.
+
 2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/c4x/c4x.h (FUNCTION_VALUE): Use gen_rtx_REG instead

@@ -237,6 +237,7 @@ extern void merge_translation_unit_decls (void);
 extern int c_disregard_inline_limits (tree);
 extern int c_cannot_inline_tree_fn (tree *);
 extern bool c_objc_common_init (void);
+extern tree c_objc_common_truthvalue_conversion (tree expr);
 extern int c_missing_noreturn_ok_p (tree);
 extern void c_objc_common_finish_file (void);
 extern int defer_fn (tree);
