@@ -1,5 +1,10 @@
 // Build don't link:
-// Origin: j_bouis@hotmail.com
+// We tried to create a temporary of unknown size and crashed.
 
-enum { FOO = 3 };
-int* arr = new int[FOO];
+extern int a1[];
+extern int a2[];
+int foo(int p)
+{
+  int x = (p ? a1 : a2)[1];
+  return x;
+}
