@@ -1,3 +1,8 @@
+2002-06-05  Loren J. Rittle <ljrittle@acm.org>
+
+	* ltmain.sh: Detect and handle object name conflicts while
+	piecewise linking a static library.
+
 2002-05-14  Release Manager
 
 	* GCC 3.1 Released.
