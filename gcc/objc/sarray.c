@@ -46,7 +46,6 @@ const char* __objc_sparse3_id = "3 level sparse indices";
 
 #ifdef __alpha__
 const void *memcpy (void*, const void*, size_t);
-void free (const void*);
 #endif
 
 /* This function removes any structures left over from free operations
