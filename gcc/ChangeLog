@@ -1,3 +1,13 @@
+Thu Aug 30 16:22:41 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* config.gcc (h8300-*-elf*): New case.
+	* h8300.h (CPP_SPEC): Add subtarget_cpp_spec.
+	(SUBTARGET_CPP_SPEC): Define.
+	(EXTRA_SPECS): Define.
+	(SUBTARGET_EXTRA_SPECS): Define.
+	* config/h8300/crti.asm, config/h8300/crtn.asm: New files.
+	* config/h8300/elf.h, config/h8300/t-elf: Likewise.
+
 Thu Aug 30 18:50:37 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* t-h8300 (LIB1ASMFUNCS): Add _fixunssfdi and _fixunssfsi_asm.
