@@ -19,7 +19,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 /* Include common aspects of all 386 Unix assemblers.  */
-#include "unx386.h"
+#include "i386/unix.h"
 
 #define TARGET_VERSION fprintf (stderr, " (80386, Sun syntax)");
 
