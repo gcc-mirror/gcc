@@ -1,7 +1,5 @@
 /* Operating system specific defines to be used when targeting GCC for
-   hosting on Windows32, using GNU tools and the Windows32 API Library,
-   as distinct from winnt.h, which is used to build GCC for use with a
-   windows style library and tool set and uses the Microsoft tools.
+   hosting on Windows32, using GNU tools and the Windows32 API Library.
    This variant uses CRTDLL.DLL insted of MSVCRTDLL.DLL.
    Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
