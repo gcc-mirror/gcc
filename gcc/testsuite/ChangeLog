@@ -1,3 +1,8 @@
+2004-01-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/17154
+	* g++.dg/template/using9.C: New test.
+
 2005-01-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/19258

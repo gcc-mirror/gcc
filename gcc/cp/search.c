@@ -1,7 +1,7 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -470,13 +470,10 @@ lookup_field_1 (tree type, tree name, bool want_type)
 	     the compiler cannot handle that.  Once the class is
 	     defined, USING_DECLs are purged from TYPE_FIELDS; see
 	     handle_using_decl.  However, we make special efforts to
-	     make using-declarations in template classes work
-	     correctly.  */
-	  if (CLASSTYPE_TEMPLATE_INFO (type)
-	      && !CLASSTYPE_USE_TEMPLATE (type)
-	      && !TREE_TYPE (field))
-	    ;
-	  else
+	     make using-declarations in class templates and class
+	     template partial specializations work correctly noticing
+	     that dependent USING_DECL's do not have TREE_TYPE set.  */
+	  if (TREE_TYPE (field))
 	    continue;
 	}
 
