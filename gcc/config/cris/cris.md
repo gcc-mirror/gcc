@@ -321,7 +321,7 @@
 ;; of zeros starting at bit 0).
 
 ;; SImode.  This mode is the only one needed, since gcc automatically
-;; extends subregs for lower-size modes.  FIXME: Add test-case.
+;; extends subregs for lower-size modes.  FIXME: Add testcase.
 (define_insn "*btst"
   [(set (cc0)
 	(zero_extract
@@ -884,7 +884,7 @@
   return \"clear.b [%2=%0%S1]\";
 }")
 
-;; To appease test-case gcc.c-torture/execute/920501-2.c (and others) at
+;; To appease testcase gcc.c-torture/execute/920501-2.c (and others) at
 ;; -O0, we need a movdi as a temporary measure.  Here's how things fail:
 ;;  A cmpdi RTX needs reloading (global):
 ;;    (insn 185 326 186 (set (cc0)
@@ -3812,7 +3812,7 @@
 
       /* It might be that code can be generated that jumps to 0 (or to a
 	 specific address).  Don't abort on that.  At least there's a
-	 test-case.  */
+	 testcase.  */
       if (CONSTANT_ADDRESS_P (op0) && GET_CODE (op0) != CONST_INT)
 	{
 	  if (no_new_pseudos)
@@ -3879,7 +3879,7 @@
 
       /* It might be that code can be generated that jumps to 0 (or to a
 	 specific address).  Don't abort on that.  At least there's a
-	 test-case.  */
+	 testcase.  */
       if (CONSTANT_ADDRESS_P (op1) && GET_CODE (op1) != CONST_INT)
 	{
 	  if (no_new_pseudos)
@@ -4673,7 +4673,7 @@
 ;; to keep changes local to their cause.
 ;;
 ;; Do not add patterns that you do not know will be matched.
-;; Please also add a self-contained test-case.
+;; Please also add a self-contained testcase.
 
 ;; We have trouble with and:s and shifts.  Maybe something is broken in
 ;; gcc?  Or it could just be that bit-field insn expansion is a bit

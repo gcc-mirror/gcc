@@ -1,3 +1,10 @@
+2003-06-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* g++.old-deja/g++.niklas/README: Fix spelling for "testcase".
+	* g++.old-deja/g++.other/access2.C: Likewise.
+	* g++.old-deja/g++.other/decl2.C: Likewise.
+	* gcc.c-torture/execute/20020615-1.c: Likewise.
+
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
         PR c++/4933
@@ -17,6 +24,7 @@
         PR c++/11106
         * g++.dg/other/error5.C: New test.
 
+>>>>>>> 1.2819
 2003-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/format/gcc_diag-1.c: New test.

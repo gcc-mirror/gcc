@@ -1789,7 +1789,7 @@ cris_notice_update_cc (exp, insn)
 {
   /* Check if user specified "-mcc-init" as a bug-workaround.  FIXME:
      TARGET_CCINIT does not work; we must set CC_REVERSED as below.
-     Several test-cases will otherwise fail, for example
+     Several testcases will otherwise fail, for example
      gcc.c-torture/execute/20000217-1.c -O0 and -O1.  */
   if (TARGET_CCINIT)
     {
