@@ -1,3 +1,8 @@
+2002-06-17  Richard Henderson  <rth@redhat.com>
+
+	PR target/6922
+	* expmed.c (make_tree): Handle SIGN_EXTEND/ZERO_EXTEND.
+
 Mon Jun 17 00:31:46 CEST 2002  Jan Hubicka  <jH@suse.cz>
 
 	* i386-protos.h (x86_field_alignment): Declare.

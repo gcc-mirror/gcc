@@ -4136,6 +4136,12 @@ make_tree (type, x)
 			    build (TRUNC_DIV_EXPR, t,
 				   make_tree (t, XEXP (x, 0)),
 				   make_tree (t, XEXP (x, 1)))));
+
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+      t = type_for_mode (GET_MODE (XEXP (x, 0)), GET_CODE (x) == ZERO_EXTEND);
+      return fold (convert (type, make_tree (t, XEXP (x, 0))));
+
    default:
       t = make_node (RTL_EXPR);
       TREE_TYPE (t) = type;
