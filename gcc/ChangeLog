@@ -1,3 +1,34 @@
+2000-10-31  Jan Hubicka  <jh@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.h: Clarify CCNOmode description in comment.
+	(EXTRA_CC_MODES): Remove CCRCmode.
+	* config/i386/i386.c (ix86_comparison_operator): Remove CCRCmode.
+	(put_condition_code, ix86_match_ccmode): Likewise.
+	(ix86_cc_mode): Likewise.  Fix comment.
+	(ix86_expand_strlensi_unroll_1): *rc patterns are gone.
+	* config/i386/i386.md: Add unspec 12 description.
+	(adddi3 split): Use unspec 12 instead of CCRCmode.
+	(addsi3_carry_rc): Remove.
+	(addsi3_cc, addqi3_cc): New patterns.
+	(addsi_3): Swap operands, match CCZmode.
+	(addsi_4): Rewritten.
+	(addsi_5): Renamed from addsi_6.
+	(addsi_6): Removed.
+	(addhi_3): Swap operands, match CCZmode.
+	(addhi_4): Rewritten.
+	(addhi_5): Renamed from addhi_6.
+	(addhi_6): Removed.
+	(addqi_3): Swap operands, match CCZmode.
+	(addqi_4): Rewritten.
+	(addqi_5): Renamed from addqi_6.  Use =q constraint for clobber.
+	(subsi3_carry_rc): Removed.
+	(iorqi_3): Use =q constraint for clobber.
+	(xorqi_cc_2): Likewise.
+	(negdi2_1 split): Don't use CCRCmode, use ltu instead of gtu.
+	(x86_movsicc_0_m1_rc): Removed.
+	(cmp?i peepholes): Remove neg.  Use CCGCmode instead of CCRCmode.
+
 2000-10-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-typeck.c (build_unary_op): If pedantic, pedwarn for increment

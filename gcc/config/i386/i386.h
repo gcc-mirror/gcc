@@ -2478,8 +2478,8 @@ while (0)
    equality comparisons are being done. 
    
    Add CCNO to indicate comparisons against zero that requires
-   No Overflow.  Sign bit test is used instead and thus
-   can be used to form "a&b>0" type of tests.
+   Overflow flag to be unset.  Sign bit test is used instead and
+   thus can be used to form "a&b>0" type of tests.
 
    Add CCGC to indicate comparisons agains zero that allows
    unspecified garbage in the Carry flag.  This mode is used
@@ -2490,14 +2490,10 @@ while (0)
    mode is used to simulate comparisons of (a-b) and (a+b)
    against zero using sub/cmp/add operations.
 
-   Add CCZ to indicate that only the Zero flag is valid.  
-
-   Add CCRC to indicate that carry flag is valid, but reversed.
-*/
+   Add CCZ to indicate that only the Zero flag is valid.  */
 
 #define EXTRA_CC_MODES \
 	CC(CCGCmode, "CCGC") \
-	CC(CCRCmode, "CCRC") \
 	CC(CCGOCmode, "CCGOC") \
 	CC(CCNOmode, "CCNO") \
 	CC(CCZmode, "CCZ") \
