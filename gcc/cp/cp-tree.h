@@ -1388,7 +1388,8 @@ struct lang_type
 /* The number of virtual functions defined for this
    _CLASSTYPE node.  */
 #define CLASSTYPE_VSIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->vsize)
-/* The virtual base classes that this type uses.  */
+/* The direct and indirect virtual base classes that this type uses in
+   depth-first left-to-right order.  */
 #define CLASSTYPE_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->vbases)
 /* The virtual function pointer fields that this type contains.  */
 #define CLASSTYPE_VFIELDS(NODE) (TYPE_LANG_SPECIFIC(NODE)->vfields)
@@ -4012,7 +4013,6 @@ extern tree build_cplus_method_type		PROTO((tree, tree, tree));
 extern tree build_cplus_staticfn_type		PROTO((tree, tree, tree));
 extern tree build_cplus_array_type		PROTO((tree, tree));
 extern int layout_basetypes			PROTO((tree, int));
-extern tree build_base_fields			PROTO((tree));
 extern tree hash_tree_cons			PROTO((tree, tree, tree));
 extern tree hash_tree_chain			PROTO((tree, tree));
 extern tree hash_chainon			PROTO((tree, tree));

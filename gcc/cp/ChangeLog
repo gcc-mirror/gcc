@@ -1,5 +1,22 @@
 1999-12-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (check_field_decls): Don't return a value.
+	(avoid_overlap): Moved here from tree.c.
+	(build_base_fields): Likewise.
+	(check_bases): New function, split out from finish_base_struct.
+	(check_bases_and_members): New function, split out from finish_struct_1.
+	(struct base_info): Remove cant_have_default_ctor,
+	cant_have_const_ctor, cant_have_asn_ref.
+	(finish_base_struct): Split semantic analysis into check_bases.
+	(finish_struct_methods): Fix bogus assertion.
+	(check_field_decls): Call finish_struct_anon here.
+	(build_vbase_pointer_fields): Use CLASSTYPE_N_BASECLASSES.
+	(finish_struct_1): Use check_bases_and_members.  Reorganize.
+	* cp-tree.h (CLASSTYPE_VBASECLASSES): Improve documentation.
+	(build_base_fields): Don't declare.
+	* tree.c (avoid_overlap): Remove.
+	(build_base_fields): Likewise.
+	
 	* optimize.c (struct inline_data): Remove scope_stmt.
 	(remap_block): Don't use insert_block_after_note.  Don't update
 	scope_stmt.
