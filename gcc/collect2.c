@@ -690,8 +690,10 @@ main (argc, argv)
   char *full_ld_suffix	= ld_suffix;
   char *real_ld_suffix	= "real-ld";
   char *full_real_ld_suffix = real_ld_suffix;
+#if 0
   char *gld_suffix	= "gld";
   char *full_gld_suffix	= gld_suffix;
+#endif
   char *nm_suffix	= "nm";
   char *full_nm_suffix	= nm_suffix;
   char *gnm_suffix	= "gnm";
@@ -800,11 +802,13 @@ main (argc, argv)
   strcat (full_real_ld_suffix, "-");
   strcat (full_real_ld_suffix, real_ld_suffix);
 
+#if 0
   full_gld_suffix
     = xcalloc (strlen (gld_suffix) + strlen (target_machine) + 2, 1);
   strcpy (full_gld_suffix, target_machine);
   strcat (full_gld_suffix, "-");
   strcat (full_gld_suffix, gld_suffix);
+#endif
 
   full_nm_suffix
     = xcalloc (strlen (nm_suffix) + strlen (target_machine) + 2, 1);
@@ -833,12 +837,14 @@ main (argc, argv)
 
   /* Try to discover a valid linker/nm/strip to use.  */
 
+#if 0
   /* Search the (target-specific) compiler dirs for `gld'.  */
   ld_file_name = find_a_file (&cpath, gld_suffix);
   /* Search the ordinary system bin directories
      for `gld' (if native linking) or `TARGET-gld' (if cross).  */
   if (ld_file_name == 0)
     ld_file_name = find_a_file (&path, full_gld_suffix);
+#endif
   /* Likewise for `real-ld'.  */
   if (ld_file_name == 0)
     ld_file_name = find_a_file (&cpath, real_ld_suffix);
