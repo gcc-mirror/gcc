@@ -237,7 +237,7 @@ independent_of_stmt_p (tree expr, tree at, block_stmt_iterator bsi)
       if (!e)
 	abort ();
 
-      expr = phi_element_for_edge (at, e)->def;
+      expr = PHI_ARG_DEF_FROM_EDGE (at, e);
     }
 
   /* Unmark the blocks.  */
@@ -340,7 +340,7 @@ propagate_through_phis (tree var, edge e)
   tree phi;
 
   for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
-    if (phi_element_for_edge (phi, e)->def == var)
+    if (PHI_ARG_DEF_FROM_EDGE (phi, e) == var)
       return PHI_RESULT (phi);
 
   return var;

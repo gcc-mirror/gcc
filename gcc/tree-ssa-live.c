@@ -294,7 +294,7 @@ create_ssa_var_map (int flags)
 {
   block_stmt_iterator bsi;
   basic_block bb;
-  tree *dest, *use;
+  tree dest, use;
   tree stmt;
   stmt_ann_t ann;
   vuse_optype vuses;
@@ -351,22 +351,22 @@ create_ssa_var_map (int flags)
 	  uses = USE_OPS (ann);
 	  for (x = 0; x < NUM_USES (uses); x++)
 	    {
-	      use = USE_OP_PTR (uses, x);
-	      register_ssa_partition (map, *use, true);
+	      use = USE_OP (uses, x);
+	      register_ssa_partition (map, use, true);
 
 #if defined ENABLE_CHECKING
-	      SET_BIT (used_in_real_ops, var_ann (SSA_NAME_VAR (*use))->uid);
+	      SET_BIT (used_in_real_ops, var_ann (SSA_NAME_VAR (use))->uid);
 #endif
 	    }
 
 	  defs = DEF_OPS (ann);
 	  for (x = 0; x < NUM_DEFS (defs); x++)
 	    {
-	      dest = DEF_OP_PTR (defs, x);
-	      register_ssa_partition (map, *dest, false);
+	      dest = DEF_OP (defs, x);
+	      register_ssa_partition (map, dest, false);
 
 #if defined ENABLE_CHECKING
-	      SET_BIT (used_in_real_ops, var_ann (SSA_NAME_VAR (*dest))->uid);
+	      SET_BIT (used_in_real_ops, var_ann (SSA_NAME_VAR (dest))->uid);
 #endif
 	    }
 
@@ -1393,22 +1393,22 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 
 	  if (!is_a_copy)
 	    {
-	      tree *var_p;
+	      tree var;
 
 	      defs = DEF_OPS (ann);
 	      num = NUM_DEFS (defs);
 	      for (x = 0; x < num; x++)
 		{
-		  var_p = DEF_OP_PTR (defs, x);
-		  add_conflicts_if_valid (tpa, graph, map, live, *var_p);
+		  var = DEF_OP (defs, x);
+		  add_conflicts_if_valid (tpa, graph, map, live, var);
 		}
 
 	      uses = USE_OPS (ann);
 	      num = NUM_USES (uses);
 	      for (x = 0; x < num; x++)
 		{
-		  var_p = USE_OP_PTR (uses, x);
-		  set_if_valid (map, live, *var_p);
+		  var = USE_OP (uses, x);
+		  set_if_valid (map, live, var);
 		}
 	    }
 	}

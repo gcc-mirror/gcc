@@ -203,9 +203,9 @@ make_phi_node (tree var, int len)
   TREE_SET_CODE (phi, PHI_NODE);
   PHI_ARG_CAPACITY (phi) = len;
   if (TREE_CODE (var) == SSA_NAME)
-    PHI_RESULT (phi) = var;
+    SET_PHI_RESULT (phi, var);
   else
-    PHI_RESULT (phi) = make_ssa_name (var, phi);
+    SET_PHI_RESULT (phi, make_ssa_name (var, phi));
 
   return phi;
 }
@@ -278,7 +278,7 @@ resize_phi_node (tree *phi, int len)
                                                                                 
   for (i = old_len; i < len; i++)
     {
-      PHI_ARG_DEF (new_phi, i) = NULL_TREE;
+      SET_PHI_ARG_DEF (new_phi, i, NULL_TREE);
       PHI_ARG_EDGE (new_phi, i) = NULL;
       PHI_ARG_NONZERO (new_phi, i) = false;
     }
@@ -365,7 +365,7 @@ add_phi_arg (tree *phi, tree def, edge e)
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (*phi)) = 1;
     }
 
-  PHI_ARG_DEF (*phi, i) = def;
+  SET_PHI_ARG_DEF (*phi, i, def);
   PHI_ARG_EDGE (*phi, i) = e;
   PHI_ARG_NONZERO (*phi, i) = false;
   PHI_NUM_ARGS (*phi)++;
@@ -408,13 +408,13 @@ remove_phi_arg_num (tree phi, int i)
      with the element we want to delete.  */
   if (i != num_elem - 1)
     {
-      PHI_ARG_DEF (phi, i) = PHI_ARG_DEF (phi, num_elem - 1);
+      SET_PHI_ARG_DEF (phi, i, PHI_ARG_DEF (phi, num_elem - 1));
       PHI_ARG_EDGE (phi, i) = PHI_ARG_EDGE (phi, num_elem - 1);
       PHI_ARG_NONZERO (phi, i) = PHI_ARG_NONZERO (phi, num_elem - 1);
     }
 
   /* Shrink the vector and return.  */
-  PHI_ARG_DEF (phi, num_elem - 1) = NULL_TREE;
+  SET_PHI_ARG_DEF (phi, num_elem - 1, NULL_TREE);
   PHI_ARG_EDGE (phi, num_elem - 1) = NULL;
   PHI_ARG_NONZERO (phi, num_elem - 1) = false;
   PHI_NUM_ARGS (phi)--;

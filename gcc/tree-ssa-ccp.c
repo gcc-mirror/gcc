@@ -389,15 +389,16 @@ substitute_and_fold (void)
 	  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
 	    {
 	      value *new_val;
-	      tree *orig_p = &PHI_ARG_DEF (phi, i);
+	      use_operand_p orig_p = PHI_ARG_DEF_PTR (phi, i);
+	      tree orig = USE_FROM_PTR (orig_p);
 
-	      if (! SSA_VAR_P (*orig_p))
+	      if (! SSA_VAR_P (orig))
 		break;
 
-	      new_val = get_value (*orig_p);
+	      new_val = get_value (orig);
 	      if (new_val->lattice_val == CONSTANT
-		  && may_propagate_copy (*orig_p, new_val->const_val))
-		*orig_p = new_val->const_val;
+		  && may_propagate_copy (orig, new_val->const_val))
+		SET_USE (orig_p, new_val->const_val);
 	    }
 	}
 
@@ -948,7 +949,7 @@ ccp_fold (tree stmt)
 
 	  /* Restore operands to their original form.  */
 	  for (i = 0; i < NUM_USES (uses); i++)
-	    *(USE_OP_PTR (uses, i)) = orig[i];
+	    SET_USE_OP (uses, i, orig[i]);
 	  free (orig);
 	}
     }
@@ -1422,14 +1423,15 @@ replace_uses_in (tree stmt, bool *replaced_addresses_p)
   uses = STMT_USE_OPS (stmt);
   for (i = 0; i < NUM_USES (uses); i++)
     {
-      tree *use = USE_OP_PTR (uses, i);
-      value *val = get_value (*use);
+      use_operand_p use = USE_OP_PTR (uses, i);
+      value *val = get_value (USE_FROM_PTR (use));
 
       if (val->lattice_val == CONSTANT)
 	{
-	  *use = val->const_val;
+	  SET_USE (use, val->const_val);
 	  replaced = true;
-	  if (POINTER_TYPE_P (TREE_TYPE (*use)) && replaced_addresses_p)
+	  if (POINTER_TYPE_P (TREE_TYPE (USE_FROM_PTR (use))) 
+	      && replaced_addresses_p)
 	    *replaced_addresses_p = true;
 	}
     }

@@ -116,7 +116,8 @@ static void elim_create (elim_graph, int);
 static void eliminate_phi (edge, int, elim_graph);
 static tree_live_info_p coalesce_ssa_name (var_map, int);
 static void assign_vars (var_map);
-static bool replace_variable (var_map, tree *, tree *);
+static bool replace_use_variable (var_map, use_operand_p, tree *);
+static bool replace_def_variable (var_map, def_operand_p, tree *);
 static void eliminate_virtual_phis (void);
 static void coalesce_abnormal_edges (var_map, conflict_graph, root_var_p);
 static void print_exprs (FILE *, const char *, tree, const char *, tree,
@@ -922,25 +923,25 @@ assign_vars (var_map map)
 }
 
 
-/* Replace *P with whatever variable it has been rewritten to based on the 
-   partitions in MAP.  EXPR is an optional expression vector over SSA versions
-   which is used to replace *P with an expression instead of a variable.  
+/* Replace use operand P with whatever variable it has been rewritten to based 
+   on the partitions in MAP.  EXPR is an optional expression vector over SSA 
+   versions which is used to replace P with an expression instead of a variable.
    If the stmt is changed, return true.  */ 
 
 static inline bool
-replace_variable (var_map map, tree *p, tree *expr)
+replace_use_variable (var_map map, use_operand_p p, tree *expr)
 {
   tree new_var;
-  tree var = *p;
+  tree var = USE_FROM_PTR (p);
 
   /* Check if we are replacing this variable with an expression.  */
   if (expr)
     {
-      int version = SSA_NAME_VERSION (*p);
+      int version = SSA_NAME_VERSION (var);
       if (expr[version])
         {
 	  tree new_expr = TREE_OPERAND (expr[version], 1);
-	  *p = new_expr;
+	  SET_USE (p, new_expr);
 	  /* Clear the stmt's RHS, or GC might bite us.  */
 	  TREE_OPERAND (expr[version], 1) = NULL_TREE;
 	  return true;
@@ -950,7 +951,43 @@ replace_variable (var_map map, tree *p, tree *expr)
   new_var = var_to_partition_to_var (map, var);
   if (new_var)
     {
-      *p = new_var;
+      SET_USE (p, new_var);
+      set_is_used (new_var);
+      return true;
+    }
+  return false;
+}
+
+
+/* Replace def operand DEF_P with whatever variable it has been rewritten to 
+   based on the partitions in MAP.  EXPR is an optional expression vector over
+   SSA versions which is used to replace DEF_P with an expression instead of a 
+   variable.  If the stmt is changed, return true.  */ 
+
+static inline bool
+replace_def_variable (var_map map, def_operand_p def_p, tree *expr)
+{
+  tree new_var;
+  tree var = DEF_FROM_PTR (def_p);
+
+  /* Check if we are replacing this variable with an expression.  */
+  if (expr)
+    {
+      int version = SSA_NAME_VERSION (var);
+      if (expr[version])
+        {
+	  tree new_expr = TREE_OPERAND (expr[version], 1);
+	  SET_DEF (def_p, new_expr);
+	  /* Clear the stmt's RHS, or GC might bite us.  */
+	  TREE_OPERAND (expr[version], 1) = NULL_TREE;
+	  return true;
+	}
+    }
+
+  new_var = var_to_partition_to_var (map, var);
+  if (new_var)
+    {
+      SET_DEF (def_p, new_var);
       set_is_used (new_var);
       return true;
     }
@@ -1832,7 +1869,7 @@ rewrite_trees (var_map map, tree *values)
 	  use_optype uses;
 	  def_optype defs;
 	  tree stmt = bsi_stmt (si);
-	  tree *use_p = NULL;
+	  use_operand_p use_p;
 	  int remove = 0, is_copy = 0;
 	  stmt_ann_t ann;
 
@@ -1850,7 +1887,7 @@ rewrite_trees (var_map map, tree *values)
 	  for (i = 0; i < num_uses; i++)
 	    {
 	      use_p = USE_OP_PTR (uses, i);
-	      if (replace_variable (map, use_p, values))
+	      if (replace_use_variable (map, use_p, values))
 	        changed = true;
 	    }
 
@@ -1871,18 +1908,16 @@ rewrite_trees (var_map map, tree *values)
 	    {
 	      for (i = 0; i < num_defs; i++)
 		{
-		  tree *def_p = DEF_OP_PTR (defs, i);
+		  def_operand_p def_p = DEF_OP_PTR (defs, i);
 
-		  if (replace_variable (map, def_p, NULL))
+		  if (replace_def_variable (map, def_p, NULL))
 		    changed = true;
 
 		  /* If both SSA_NAMEs coalesce to the same variable,
 		     mark the now redundant copy for removal.  */
 		  if (is_copy
 		      && num_uses == 1
-		      && use_p
-		      && def_p
-		      && (*def_p == *use_p))
+		      && (DEF_FROM_PTR (def_p) == USE_OP (uses, 0)))
 		    remove = 1;
 		}
 	      if (changed)
@@ -2074,7 +2109,7 @@ rewrite_vars_out_of_ssa (bitmap vars)
 		      SSA_NAME_DEF_STMT (new_name) = copy;
 
 		      /* Now make the argument reference our new SSA_NAME.  */
-		      PHI_ARG_DEF (phi, i) = new_name;
+		      SET_PHI_ARG_DEF (phi, i, new_name);
 
 		      /* Queue the statement for insertion.  */
 		      bsi_insert_on_edge (PHI_ARG_EDGE (phi, i), copy);
