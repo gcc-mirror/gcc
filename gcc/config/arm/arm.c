@@ -10390,7 +10390,7 @@ arm_expand_prologue (void)
 		    {
 		      insn = emit_sfm (reg + 1, start_reg - reg);
 		      RTX_FRAME_RELATED_P (insn) = 1;
-		      saved_regs += (reg - start_reg) * 12;
+		      saved_regs += (start_reg - reg) * 12;
 		    }
 		  start_reg = reg - 1;
 		}
@@ -10399,7 +10399,7 @@ arm_expand_prologue (void)
 	  if (start_reg != reg)
 	    {
 	      insn = emit_sfm (reg + 1, start_reg - reg);
-	      saved_regs += (reg - start_reg) * 12;
+	      saved_regs += (start_reg - reg) * 12;
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	}
