@@ -1,3 +1,9 @@
+2004-06-02  Ziemowit Laski  <zlaski@apple.com>
+
+	* lib/objc.exp (objc_target_compile): When running tests on
+	Darwin (Mac OS X), inform the linker about '-framework
+	'Foundation'.
+
 2004-06-02  Eric Christopher  <echristo@redhat.com>
 
 	* gcc.c-torture/compile/20040602-1.c: New.
