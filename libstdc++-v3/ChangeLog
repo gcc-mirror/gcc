@@ -1,3 +1,10 @@
+2003-03-06  Jerry Quinn  <jlquinn@optonline.net>
+
+	* src/ios.cc (ios_base::_M_init): Remove _M_word_size.
+	(ios_base::ios_base): Set _M_word, _M_word_size.
+	(ios_base::~ios_base): Remove redundant test.
+	* testsuite/27_io/ios_base_storage.cc (test03): New.
+
 2003-03-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* src/strstream.cc, include/bits/basic_string.tcc: Remove
