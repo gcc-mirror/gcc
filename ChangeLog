@@ -1,3 +1,8 @@
+2001-06-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* config-ml.in (powerpc-*-* | rs6000-*-*): Allow aix64 and pthread
+	multilibs to be disabled.
+
 2001-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config.guess: Import CVS version 1.195.
