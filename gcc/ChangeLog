@@ -1,3 +1,19 @@
+Tue Jan 16 22:23:04 2001  Alan Modra (alan@linuxcare.com.au)
+
+	* config/pa/pa.h (PIC_OFFSET_TABLE_REGNUM_SAVED): Remove.
+	(machine_function): Define.
+	(PIC_OFFSET_TABLE_SAVE_RTX) : Define.
+	* config/pa/pa.c (pa_init_machine_status, pa_mark_machine_status,
+	pa_free_machine_status): New functions.
+	(override_options): Set {init,mark,free}_machine_status to above.
+	(hppa_expand_prologue): Use PIC_OFFSET_TABLE_SAVE_RTX instead of
+	PIC_OFFSET_TABLE_REGNUM_SAVED.
+	* config/pa/pa.md: Use PIC_OFFSET_TABLE_SAVE_RTX instead of
+	PIC_OFFSET_TABLE_REGNUM_SAVED throughout.
+	* config/pa/pa32-regs.h (CONDITIONAL_REGISTER_USAGE): Remove
+	references to PIC_OFFSET_TABLE_REGNUM_SAVED.
+	* config/pa/pa64-regs.h (CONDITIONAL_REGISTER_USAGE): Likewise.
+
 2001-01-15  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.in (gcov.1): Protect against texi2pod/pod2man failing.

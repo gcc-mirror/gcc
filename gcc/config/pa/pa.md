@@ -5735,18 +5735,12 @@
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
-      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
-	       gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
       if (TARGET_64BIT)
 	use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), arg_pointer_rtx);
 
       /* After each call we must restore the PIC register, even if it
-	 doesn't appear to be used.
-
-         This will set regs_ever_live for the callee saved register we
-	 stored the PIC register in.  */
-      emit_move_insn (pic_offset_table_rtx,
-		      gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
+	 doesn't appear to be used.  */
+      emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
     }
   DONE;
 }")
@@ -5915,18 +5909,12 @@
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
-      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
-	       gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
       if (TARGET_64BIT)
 	use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), arg_pointer_rtx);
 
       /* After each call we must restore the PIC register, even if it
-	 doesn't appear to be used.
-
-         This will set regs_ever_live for the callee saved register we
-	 stored the PIC register in.  */
-      emit_move_insn (pic_offset_table_rtx,
-		      gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
+	 doesn't appear to be used.  */
+      emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
     }
   DONE;
 }")
@@ -6096,16 +6084,10 @@
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
-      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
-	       gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
 
       /* After each call we must restore the PIC register, even if it
-	 doesn't appear to be used.
-
-         This will set regs_ever_live for the callee saved register we
-	 stored the PIC register in.  */
-      emit_move_insn (pic_offset_table_rtx,
-		      gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
+	 doesn't appear to be used.  */
+      emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
     }
   DONE;
 }")
@@ -6158,16 +6140,10 @@
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
-      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
-	       gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
 
       /* After each call we must restore the PIC register, even if it
-	 doesn't appear to be used.
-
-         This will set regs_ever_live for the callee saved register we
-	 stored the PIC register in.  */
-      emit_move_insn (pic_offset_table_rtx,
-		      gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
+	 doesn't appear to be used.  */
+      emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
     }
   DONE;
 }")
