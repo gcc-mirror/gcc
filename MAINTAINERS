@@ -97,6 +97,7 @@ sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
 RTEMS Ports		Joel Sherrill		joel@oarcorp.com
 VxWorks ports		Zack Weinberg		zack@codesourcery.com
 VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
+windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
 
 			Various Maintainers
 
@@ -157,7 +158,6 @@ config.sub/config.guess	Ben Elliston		config-patches@gnu.org
 basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pthomas@suse.de
 diagnostic messages	Gabriel Dos Reis	gdr@integrable-solutions.net
-windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
 libiberty		DJ Delorie		dj@redhat.com
 libiberty		Ian Lance Taylor	ian@wasabisystems.com
 build machinery (*.in)	DJ Delorie		dj@redhat.com
