@@ -1,3 +1,9 @@
+2004-12-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18738
+	* g++.dg/template/typename8.C: New test.
+	* g++.dg/parse/friend2.C: Tweak error message.
+
 2004-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.c-torture/20041214-1.c: New test.

@@ -1939,9 +1939,8 @@ cp_parser_non_integral_constant_expression (cp_parser  *parser,
   return false;
 }
 
-/* Emit a diagnostic for an invalid type name. Consider also if it is
-   qualified or not and the result of a lookup, to provide a better
-   message.  */
+/* Emit a diagnostic for an invalid type name.  SCOPE is the
+   qualifying scope (or NULL, if none) for ID.  */
 
 static void
 cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
@@ -9647,7 +9646,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	}
 
       /* For a `typename', we needn't call xref_tag.  */
-      if (tag_type == typename_type)
+      if (tag_type == typename_type 
+	  && TREE_CODE (parser->scope) != NAMESPACE_DECL)
 	return cp_parser_make_typename_type (parser, parser->scope,
 					     identifier);
       /* Look up a qualified name in the usual way.  */
@@ -9655,9 +9655,6 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	{
 	  tree decl;
 
-	  /* In an elaborated-type-specifier, names are assumed to name
-	     types, so we set IS_TYPE to TRUE when calling
-	     cp_parser_lookup_name.  */
 	  decl = cp_parser_lookup_name (parser, identifier,
 					tag_type,
 					/*is_template=*/false,
@@ -9692,7 +9689,9 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
 	  if (TREE_CODE (decl) != TYPE_DECL)
 	    {
-	      error ("expected type-name");
+	      cp_parser_diagnose_invalid_type_name (parser, 
+						    parser->scope,
+						    identifier);
 	      return error_mark_node;
 	    }
 

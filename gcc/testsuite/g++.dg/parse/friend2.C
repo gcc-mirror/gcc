@@ -10,7 +10,7 @@ namespace NS {
 }
 
 template <class T> class X {
-  friend class NS::C;	// { dg-error "expected|friend" }
+  friend class NS::C;	// { dg-error "template|friend" }
 };
 
 X<int> c;

@@ -2669,15 +2669,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
       return error_mark_node;
     }
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
-
-  if (TREE_CODE (context) == NAMESPACE_DECL)
-    {
-      /* We can get here from typename_sub0 in the explicit_template_type
-	 expansion.  Just fail.  */
-      if (complain & tf_error)
-	error ("no class template named %q#T in %q#T", name, context);
-      return error_mark_node;
-    }
+  gcc_assert (TYPE_P (context));
 
   if (!dependent_type_p (context)
       || currently_open_class (context))
@@ -9048,6 +9040,8 @@ grok_op_properties (tree decl, int friendp, bool complain)
   return ok;
 }
 
+/* Return a string giving the keyword associate with CODE.  */
+
 static const char *
 tag_name (enum tag_types code)
 {
@@ -9058,9 +9052,11 @@ tag_name (enum tag_types code)
     case class_type:
       return "class";
     case union_type:
-      return "union ";
+      return "union";
     case enum_type:
       return "enum";
+    case typename_type:
+      return "typename";
     default:
       gcc_unreachable ();
     }
@@ -9106,7 +9102,8 @@ check_elaborated_type_specifier (enum tag_types tag_code,
      In other words, the only legitimate declaration to use in the
      elaborated type specifier is the implicit typedef created when
      the type is declared.  */
-  else if (!DECL_IMPLICIT_TYPEDEF_P (decl))
+  else if (!DECL_IMPLICIT_TYPEDEF_P (decl)
+	   && tag_code != typename_type)
     {
       error ("using typedef-name %qD after %qs", decl, tag_name (tag_code));
       cp_error_at ("%qD has a previous declaration here", decl);
@@ -9114,14 +9111,16 @@ check_elaborated_type_specifier (enum tag_types tag_code,
     }
   else if (TREE_CODE (type) != RECORD_TYPE
 	   && TREE_CODE (type) != UNION_TYPE
-	   && tag_code != enum_type)
+	   && tag_code != enum_type
+	   && tag_code != typename_type)
     {
       error ("%qT referred to as %qs", type, tag_name (tag_code));
       cp_error_at ("%qT has a previous declaration here", type);
       return error_mark_node;
     }
   else if (TREE_CODE (type) != ENUMERAL_TYPE
-	   && tag_code == enum_type)
+	   && tag_code == enum_type
+	   && tag_code != typename_type)
     {
       error ("%qT referred to as enum", type);
       cp_error_at ("%qT has a previous declaration here", type);
