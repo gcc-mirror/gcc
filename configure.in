@@ -25,13 +25,6 @@ AC_ARG_PROGRAM
 
 sinclude(config/acx.m4)
 
-# clear some things potentially inherited from environment.
-
-enable_libstdcxx_v3=yes
-floating_point=default
-gas=default
-x11=default
-
 ### we might need to use some other shell than /bin/sh for running subshells
 ### If we are on Windows, search for the shell.  This will permit people
 ### to not have /bin/sh, but to be able to see /SOME/PATH/sh configure
@@ -290,22 +283,22 @@ case "${host}" in
     ;;
   i[[3456]]86-*-go32* | i[[3456]]86-*-msdosdjgpp*)
     noconfigdirs="tcl tk expect dejagnu send-pr uudecode guile itcl tix gnuserv libffi"
-	;;
+    ;;
   i[[3456]]86-*-mingw32*)
     # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl tix gnuserv"
-     noconfigdirs="expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool"
-	;;
+    noconfigdirs="expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool"
+    ;;
   i[[3456]]86-*-beos*)
-     noconfigdirs="$noconfigdirs tk itcl tix libgui gdb"
-     ;;
+    noconfigdirs="$noconfigdirs tk itcl tix libgui gdb"
+    ;;
   *-*-cygwin*)
-     noconfigdirs="autoconf automake send-pr rcs guile perl"
+    noconfigdirs="autoconf automake send-pr rcs guile perl"
     ;;
   *-*-netbsd*)
     noconfigdirs="rcs"
     ;;
   ppc*-*-pe)
-     noconfigdirs="patch diff make tk tcl expect dejagnu autoconf automake texinfo bison send-pr gprof rcs guile perl itcl tix gnuserv"
+    noconfigdirs="patch diff make tk tcl expect dejagnu autoconf automake texinfo bison send-pr gprof rcs guile perl itcl tix gnuserv"
     ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs tk itcl tix libgui gdb dejagnu readline"
@@ -518,7 +511,7 @@ case "${target}" in
     # This section makes it possible to build newlib natively on linux.
     # If we are using a cross compiler then don't configure newlib.
     if test x${is_cross_compiler} != xno ; then
-         noconfigdirs="$noconfigdirs target-newlib"
+      noconfigdirs="$noconfigdirs target-newlib"
     fi
     noconfigdirs="$noconfigdirs target-libgloss"
     # If we are not using a cross compiler, do configure newlib.
@@ -568,8 +561,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   i[[3456]]86-*-beos*)
-     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
-     ;;
+    noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
+    ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
     noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
     ;;
@@ -649,7 +642,7 @@ case "${target}" in
     ;;
   mipstx39-*-*)
     noconfigdirs="$noconfigdirs gprof ${libgcj}"   # same as generic mips
-   ;;
+    ;;
   mips*-*-linux*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
@@ -735,19 +728,19 @@ esac
 # go away some day.
 # NB:  embedded tabs in this IF block -- do not untabify
 if test x"${enable_languages+set}" != xset; then
-	if test x"${LANGUAGES+set}" = xset; then
-		enable_languages="${LANGUAGES}"
-		echo configure.in: warning: setting LANGUAGES is deprecated, use --enable-languages instead 1>&2
-	else
-		enable_languages=all
-	fi
+  if test x"${LANGUAGES+set}" = xset; then
+    enable_languages="${LANGUAGES}"
+      echo configure.in: warning: setting LANGUAGES is deprecated, use --enable-languages instead 1>&2
+  else
+    enable_languages=all
+  fi
 else
-	if test x"${enable_languages}" = x ||
-	   test x"${enable_languages}" = xyes;
-	then
-		echo configure.in: --enable-languages needs at least one language argument 1>&2
-		exit 1
-	fi
+  if test x"${enable_languages}" = x ||
+     test x"${enable_languages}" = xyes;
+     then
+    echo configure.in: --enable-languages needs at least one language argument 1>&2
+    exit 1
+  fi
 fi
 enable_languages=`echo "${enable_languages}" | sed -e 's/[[ 	,]][[ 	,]]*/,/g' -e 's/,$//'`
 
@@ -756,64 +749,60 @@ enable_languages=`echo "${enable_languages}" | sed -e 's/[[ 	,]][[ 	,]]*/,/g' -e
 # front ends it requires, even if some are required indirectly.
 for lang in ${srcdir}/gcc/*/config-lang.in ..
 do
-   case $lang in
-    ..)
-       ;;
+  case $lang in
+    ..) ;;
     # The odd quoting in the next line works around
     # an apparent bug in bash 1.12 on linux.
-    ${srcdir}/gcc/[[*]]/config-lang.in)
-       ;;
+    ${srcdir}/gcc/[[*]]/config-lang.in) ;;
     *)
-       lang_alias=`sed -n -e 's,^language=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^language=\([[^ 	]]*\).*$,\1,p' $lang`
-       this_lang_requires=`sed -n -e 's,^lang_requires=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^lang_requires=\([[^ 	]]*\).*$,\1,p' $lang`
-       for other in $this_lang_requires
-       do
-	  case ,${enable_languages}, in
-	   *,$other,*)
-	      ;;
-	   *,all,*)
-	      ;;
-	   *,$lang_alias,*)
-	      echo " \`$other' language required by \`$lang_alias'; enabling" 1>&2
-	      enable_languages="$enable_languages,$other"
-	      ;;
-	  esac
-       done
-       ;;
-   esac
+      lang_alias=`sed -n -e 's,^language=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^language=\([[^ 	]]*\).*$,\1,p' $lang`
+      this_lang_requires=`sed -n -e 's,^lang_requires=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^lang_requires=\([[^ 	]]*\).*$,\1,p' $lang`
+      for other in $this_lang_requires
+      do
+        case ,${enable_languages}, in
+	  *,$other,*) ;;
+	  *,all,*) ;;
+	  *,$lang_alias,*)
+	    echo " \`$other' language required by \`$lang_alias'; enabling" 1>&2
+	    enable_languages="$enable_languages,$other"
+	    ;;
+	esac
+      done
+      ;;
+  esac
 done
 
 subdirs=
 for lang in ${srcdir}/gcc/*/config-lang.in ..
 do
-	case $lang in
-	..) ;;
-	# The odd quoting in the next line works around
-	# an apparent bug in bash 1.12 on linux.
-	${srcdir}/gcc/[[*]]/config-lang.in) ;;
-	*)
-	  lang_alias=`sed -n -e 's,^language=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^language=\([[^ 	]]*\).*$,\1,p' $lang`
-	  this_lang_libs=`sed -n -e 's,^target_libs=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^target_libs=\([[^ 	]]*\).*$,\1,p' $lang`
-	  this_lang_dirs=`sed -n -e 's,^lang_dirs=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^lang_dirs=\([[^ 	]]*\).*$,\1,p' $lang`
-	  build_by_default=`sed -n -e 's,^build_by_default=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^build_by_default=\([[^ 	]]*\).*$,\1,p' $lang`
-	  if test "x$lang_alias" = x
-	  then
-		echo "$lang doesn't set \$language." 1>&2
-		exit 1
-	  fi
-	  case ${build_by_default},${enable_languages}, in
-	  *,$lang_alias,*) add_this_lang=yes ;;
-	  no,*) add_this_lang=no ;;
-	  *,all,*) add_this_lang=yes ;;
-	  *) add_this_lang=no ;;
-	  esac
-	  if test x"${add_this_lang}" = xyes; then
-	      eval target_libs='"$target_libs "'\"$this_lang_libs\"
-	  else
-	      eval noconfigdirs='"$noconfigdirs "'\"$this_lang_libs $this_lang_dirs\"
-	  fi
-	  ;;
-	esac
+  case $lang in
+    ..) ;;
+    # The odd quoting in the next line works around
+    # an apparent bug in bash 1.12 on linux.
+    ${srcdir}/gcc/[[*]]/config-lang.in) ;;
+    *)
+      lang_alias=`sed -n -e 's,^language=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^language=\([[^ 	]]*\).*$,\1,p' $lang`
+      this_lang_libs=`sed -n -e 's,^target_libs=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^target_libs=\([[^ 	]]*\).*$,\1,p' $lang`
+      this_lang_dirs=`sed -n -e 's,^lang_dirs=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^lang_dirs=\([[^ 	]]*\).*$,\1,p' $lang`
+      build_by_default=`sed -n -e 's,^build_by_default=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^build_by_default=\([[^ 	]]*\).*$,\1,p' $lang`
+      if test "x$lang_alias" = x
+         then
+        echo "$lang doesn't set \$language." 1>&2
+        exit 1
+      fi
+      case ${build_by_default},${enable_languages}, in
+        *,$lang_alias,*) add_this_lang=yes ;;
+        no,*) add_this_lang=no ;;
+        *,all,*) add_this_lang=yes ;;
+        *) add_this_lang=no ;;
+      esac
+      if test x"${add_this_lang}" = xyes; then
+        eval target_libs='"$target_libs "'\"$this_lang_libs\"
+      else
+        eval noconfigdirs='"$noconfigdirs "'\"$this_lang_libs $this_lang_dirs\"
+      fi
+      ;;
+  esac
 done
 
 # Remove the entries in $skipdirs and $noconfigdirs from $configdirs and

@@ -818,70 +818,70 @@ TAGS: do-TAGS
 maybe-configure-build-[+module+]:
 configure-build-[+module+]:
 	@test ! -f $(BUILD_SUBDIR)/[+module+]/Makefile || exit 0; \
-	    [ -d $(BUILD_SUBDIR)/[+module+] ] || \
-		mkdir $(BUILD_SUBDIR)/[+module+];\
-	    r=`${PWD}`; export r; \
-	    s=`cd $(srcdir); ${PWD}`; export s; \
-	    AR="$(AR_FOR_BUILD)"; export AR; \
-	    AS="$(AS_FOR_BUILD)"; export AS; \
-	    CC="$(CC_FOR_BUILD)"; export CC; \
-	    CFLAGS="$(CFLAGS_FOR_BUILD)"; export CFLAGS; \
-	    CXX="$(CXX_FOR_BUILD)"; export CXX; \
-	    CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
-	    GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
-	    DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
-	    LD="$(LD_FOR_BUILD)"; export LD; \
-            LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
-	    NM="$(NM_FOR_BUILD)"; export NM; \
-	    RANLIB="$(RANLIB_FOR_BUILD)"; export RANLIB; \
-	    WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES; \
-	    echo Configuring in $(BUILD_SUBDIR)/[+module+]; \
-	    cd "$(BUILD_SUBDIR)/[+module+]" || exit 1; \
-	    case $(srcdir) in \
-	    /* | [A-Za-z]:[\\/]*) \
-	      topdir=$(srcdir) ;; \
-	    *) \
-	      case "$(BUILD_SUBDIR)" in \
+	[ -d $(BUILD_SUBDIR)/[+module+] ] || \
+	  mkdir $(BUILD_SUBDIR)/[+module+];\
+	r=`${PWD}`; export r; \
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	AR="$(AR_FOR_BUILD)"; export AR; \
+	AS="$(AS_FOR_BUILD)"; export AS; \
+	CC="$(CC_FOR_BUILD)"; export CC; \
+	CFLAGS="$(CFLAGS_FOR_BUILD)"; export CFLAGS; \
+	CXX="$(CXX_FOR_BUILD)"; export CXX; \
+	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
+	GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
+	DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
+	LD="$(LD_FOR_BUILD)"; export LD; \
+	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
+	NM="$(NM_FOR_BUILD)"; export NM; \
+	RANLIB="$(RANLIB_FOR_BUILD)"; export RANLIB; \
+	WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES; \
+	echo Configuring in $(BUILD_SUBDIR)/[+module+]; \
+	cd "$(BUILD_SUBDIR)/[+module+]" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(BUILD_SUBDIR)" in \
 	      .) topdir="../$(srcdir)" ;; \
 	      *) topdir="../../$(srcdir)" ;; \
-	      esac ;; \
-	    esac; \
-	    if [ "$(srcdir)" = "." ] ; then \
-	      if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-		if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
-		  if [ -f Makefile ]; then \
-		    if $(MAKE) distclean; then \
-		      true; \
-		    else \
-		      exit 1; \
-		    fi; \
-		  else \
-		    true; \
-		  fi; \
-		else \
-		  exit 1; \
-		fi; \
+	    esac ;; \
+	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
+	    if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
+	      if [ -f Makefile ]; then \
+	        if $(MAKE) distclean; then \
+	          true; \
+	        else \
+	          exit 1; \
+	        fi; \
 	      else \
-		true; \
+	        true; \
 	      fi; \
-	      srcdiroption="--srcdir=."; \
-	      libsrcdir="."; \
 	    else \
-	      srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	      libsrcdir="$$s/[+module+]"; \
+	      exit 1; \
 	    fi; \
-	    rm -f no-such-file || : ; \
-	    CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	      $(BUILD_CONFIGARGS) $${srcdiroption} \
-	      --with-build-subdir="$(BUILD_SUBDIR)" \
-	      || exit 1
+	  else \
+	    true; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
+	  srcdiroption="--srcdir=$${topdir}/[+module+]"; \
+	  libsrcdir="$$s/[+module+]"; \
+	fi; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(BUILD_CONFIGARGS) $${srcdiroption} \
+	  --with-build-subdir="$(BUILD_SUBDIR)" \
+	  || exit 1
 
 .PHONY: all-build-[+module+] maybe-all-build-[+module+]
 maybe-all-build-[+module+]:
 all-build-[+module+]: configure-build-[+module+]
 	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  (cd $(BUILD_SUBDIR)/[+module+] && $(MAKE) all)
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	(cd $(BUILD_SUBDIR)/[+module+] && $(MAKE) all)
 [+ ENDFOR build_modules +]
 
 # --------------------------------------
@@ -932,12 +932,12 @@ configure-[+module+]:
 maybe-all-[+module+]:
 all-[+module+]: configure-[+module+]
 	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
-	    IF with_x 
-	      +] $(X11_FLAGS_TO_PASS)[+ 
-	    ENDIF with_x +] all)
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
+	  IF with_x 
+	    +] $(X11_FLAGS_TO_PASS)[+ 
+	  ENDIF with_x +] all)
 
 [+ IF no_check +]
 .PHONY: check-[+module+]
@@ -947,24 +947,24 @@ check-[+module+]:
 # This module is only tested in a native toolchain.
 check-[+module+]:
 	@if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
-	    r=`${PWD}`; export r; \
-	    s=`cd $(srcdir); ${PWD}`; export s; \
-	    $(SET_LIB_PATH) \
-	    (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
-	      IF with_x 
-	        +] $(X11_FLAGS_TO_PASS)[+ 
-	      ENDIF with_x +] check); \
-	fi
-[+ ELSE check +]
-.PHONY: check-[+module+]
-check-[+module+]:
-	@r=`${PWD}`; export r; \
+	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	    IF with_x 
 	      +] $(X11_FLAGS_TO_PASS)[+ 
-	    ENDIF with_x +] check)
+	    ENDIF with_x +] check); \
+	fi
+[+ ELSE check +]
+.PHONY: check-[+module+]
+check-[+module+]:
+	@r=`${PWD}`; export r; \
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
+	  IF with_x 
+	    +] $(X11_FLAGS_TO_PASS)[+ 
+	  ENDIF with_x +] check)
 [+ ENDIF no_check +]
 
 [+ IF no_install +]
@@ -976,12 +976,12 @@ install-[+module+]:
 maybe-install-[+module+]:
 install-[+module+]: installdirs
 	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
-	    IF with_x 
-	      +] $(X11_FLAGS_TO_PASS)[+ 
-	    ENDIF with_x +] install)
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
+	  IF with_x 
+	    +] $(X11_FLAGS_TO_PASS)[+ 
+	  ENDIF with_x +] install)
 [+ ENDIF no_install +]
 [+ ENDFOR host_modules +]
 
@@ -995,89 +995,89 @@ maybe-configure-target-[+module+]:
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/[+module+]/multilib.out: multilib.out
 	@[ -d $(TARGET_SUBDIR)/[+module+] ] || \
-	    mkdir $(TARGET_SUBDIR)/[+module+]; \
+	  mkdir $(TARGET_SUBDIR)/[+module+]; \
 	rm -f $(TARGET_SUBDIR)/[+module+]/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/[+module+]/multilib.out
 
 configure-target-[+module+]: $(TARGET_SUBDIR)/[+module+]/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/[+module+]/Makefile || exit 0; \
-	    [ -d $(TARGET_SUBDIR)/[+module+] ] || \
-		mkdir $(TARGET_SUBDIR)/[+module+];\
-	    r=`${PWD}`; export r; \
-	    s=`cd $(srcdir); ${PWD}`; export s; \
-	    $(SET_LIB_PATH) \
-	    AR="$(AR_FOR_TARGET)"; export AR; \
-	    AS="$(AS_FOR_TARGET)"; export AS; \
-	    CC="$(CC_FOR_TARGET)"; export CC; \
-	    CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	    CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \[+ 
-	IF raw_cxx +]
-	    CXX_FOR_TARGET="$(RAW_CXX_FOR_TARGET)"; export CXX_FOR_TARGET; \
-	    CXX="$(RAW_CXX_FOR_TARGET)"; export CXX; \[+ 
-	ELSE normal_cxx +]
-	    CXX="$(CXX_FOR_TARGET)"; export CXX; \[+ 
-	ENDIF raw_cxx +]
-	    CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	    GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
-	    DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
-	    LD="$(LD_FOR_TARGET)"; export LD; \
-            LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
-	    NM="$(NM_FOR_TARGET)"; export NM; \
-	    RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
-	    WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
-	    echo Configuring in $(TARGET_SUBDIR)/[+module+]; \
-	    cd "$(TARGET_SUBDIR)/[+module+]" || exit 1; \
-	    case $(srcdir) in \
-	    /* | [A-Za-z]:[\\/]*) \
-	      topdir=$(srcdir) ;; \
-	    *) \
-	      case "$(TARGET_SUBDIR)" in \
+	[ -d $(TARGET_SUBDIR)/[+module+] ] || \
+	  mkdir $(TARGET_SUBDIR)/[+module+];\
+	r=`${PWD}`; export r; \
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	AR="$(AR_FOR_TARGET)"; export AR; \
+	AS="$(AS_FOR_TARGET)"; export AS; \
+	CC="$(CC_FOR_TARGET)"; export CC; \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \[+ 
+IF raw_cxx +]
+	CXX_FOR_TARGET="$(RAW_CXX_FOR_TARGET)"; export CXX_FOR_TARGET; \
+	CXX="$(RAW_CXX_FOR_TARGET)"; export CXX; \[+ 
+ELSE normal_cxx +]
+	CXX="$(CXX_FOR_TARGET)"; export CXX; \[+ 
+ENDIF raw_cxx +]
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
+	LD="$(LD_FOR_TARGET)"; export LD; \
+	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
+	NM="$(NM_FOR_TARGET)"; export NM; \
+	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
+	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
+	echo Configuring in $(TARGET_SUBDIR)/[+module+]; \
+	cd "$(TARGET_SUBDIR)/[+module+]" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(TARGET_SUBDIR)" in \
 	      .) topdir="../$(srcdir)" ;; \
 	      *) topdir="../../$(srcdir)" ;; \
-	      esac ;; \
-	    esac; \
-	    if [ "$(srcdir)" = "." ] ; then \
-	      if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-		if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
-		  if [ -f Makefile ]; then \
-		    if $(MAKE) distclean; then \
-		      true; \
-		    else \
-		      exit 1; \
-		    fi; \
-		  else \
-		    true; \
-		  fi; \
-		else \
-		  exit 1; \
-		fi; \
+	    esac ;; \
+	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
+	    if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
+	      if [ -f Makefile ]; then \
+	        if $(MAKE) distclean; then \
+	          true; \
+	        else \
+	          exit 1; \
+	        fi; \
 	      else \
-		true; \
+	        true; \
 	      fi; \
-	      srcdiroption="--srcdir=."; \
-	      libsrcdir="."; \
 	    else \
-	      srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	      libsrcdir="$$s/[+module+]"; \
+	      exit 1; \
 	    fi; \
-	    rm -f no-such-file || : ; \
-	    CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	      $(TARGET_CONFIGARGS) $${srcdiroption} \
-	      --with-target-subdir="$(TARGET_SUBDIR)" \
-	      || exit 1
+	  else \
+	    true; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
+	  srcdiroption="--srcdir=$${topdir}/[+module+]"; \
+	  libsrcdir="$$s/[+module+]"; \
+	fi; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) $${srcdiroption} \
+	  --with-target-subdir="$(TARGET_SUBDIR)" \
+	  || exit 1
 
 .PHONY: all-target-[+module+] maybe-all-target-[+module+]
 maybe-all-target-[+module+]:
 all-target-[+module+]: configure-target-[+module+]
 	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd $(TARGET_SUBDIR)/[+module+] && \
-	    $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
-	       IF raw_cxx 
-	         +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
-	       ENDIF raw_cxx 
-	    +] all)
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/[+module+] && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
+	    IF raw_cxx 
+	  +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
+	    ENDIF raw_cxx 
+	  +] all)
 [+ IF no_check +]
 # Dummy target for uncheckable module.
 .PHONY: check-target-[+module+]
@@ -1086,14 +1086,14 @@ check-target-[+module+]:
 .PHONY: check-target-[+module+]
 check-target-[+module+]:
 	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd $(TARGET_SUBDIR)/[+module+] && \
-	    $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
-	       IF raw_cxx 
-	         +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
-	       ENDIF raw_cxx 
-	    +] check)
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/[+module+] && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
+	    IF raw_cxx 
+	      +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
+	    ENDIF raw_cxx 
+	  +] check)
 [+ ENDIF no_check +]
 [+ IF no_install +]
 .PHONY: install-target-[+module+] maybe-install-target-[+module+]
@@ -1105,10 +1105,10 @@ install-target-[+module+]:
 maybe-install-target-[+module+]:
 install-target-[+module+]: installdirs
 	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd $(TARGET_SUBDIR)/[+module+] && \
-	    $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/[+module+] && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
 [+ ENDIF no_install +]
 [+ ENDFOR target_modules +]
 
@@ -1201,14 +1201,17 @@ bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean b
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	case "$@" in \
 	  *bootstrap4-lean ) \
-			msg="Comparing stage3 and stage4 of the compiler"; \
-	  		compare=compare3-lean ;; \
-	  *bootstrap4 ) msg="Comparing stage3 and stage4 of the compiler"; \
-	  		compare=compare3 ;; \
-	  *-lean )	msg="Comparing stage2 and stage3 of the compiler"; \
-	  		compare=compare-lean ;; \
-	  * )		msg="Comparing stage2 and stage3 of the compiler"; \
-	  		compare=compare ;; \
+	    msg="Comparing stage3 and stage4 of the compiler"; \
+	    compare=compare3-lean ;; \
+	  *bootstrap4 ) \
+	    msg="Comparing stage3 and stage4 of the compiler"; \
+	    compare=compare3 ;; \
+	  *-lean ) \
+	    msg="Comparing stage2 and stage3 of the compiler"; \
+	    compare=compare-lean ;; \
+	  * ) \
+	    msg="Comparing stage2 and stage3 of the compiler"; \
+	    compare=compare ;; \
 	esac; \
 	$(SET_LIB_PATH) \
 	echo "$$msg"; \
