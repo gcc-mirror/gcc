@@ -1,5 +1,9 @@
 2002-10-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8067
+	* decl.c (maybe_inject_for_scope_var): Ignore __FUNCTION__ and
+	related variables.
+
 	PR c++/7679
 	* spew.c (next_token): Do not return an endless stream of
 	END_OF_SAVED_INPUT tokens.

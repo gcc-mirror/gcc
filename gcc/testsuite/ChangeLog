@@ -1,3 +1,8 @@
+2002-10-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8067
+	* g++.dg/lookup/pretty1.C: New test.
+
 2002-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20021023-1.c: New test.
