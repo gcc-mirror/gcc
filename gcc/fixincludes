@@ -1021,6 +1021,17 @@ then
   ln -s ${INPUT}/multimedia/audio_hdr.h ${LIB}/multimedia 2>/dev/null
 fi
 
+# These files on Ultrix 4.2 put comments around instances of #endif
+# __mips.  When the sed expression turns that into #endif /* __mips */
+# the comment ends prematurely.
+for file in sys/audit.h sys/signal.h; do
+  if [ -r ${LIB}/${file} ]; then
+    echo Fixing $file, early comment termination
+    sed -e 's|^#endif /\*.*\*/|#endif|g' ${LIB}/${file} > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  fi
+done
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`
