@@ -1,3 +1,10 @@
+2001-03-03  David O'Brien  <obrien@FreeBSD.org>
+	
+	from 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
+	* c-parse.gperf, c-gperf.h: Delete.
+	(c-gperf.h was accidently re-added to the CVS repo in the rev 1.16 commit
+	 by tromey)
+
 2001-03-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* fixinc/fixlib.h (t_bool): Add identifier `t_bool' in typedef.
