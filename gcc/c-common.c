@@ -223,13 +223,12 @@ decl_attributes (decl, attributes)
 	/* We can't set DECL_PACKED for a VAR_DECL, because the bit is
 	   used for DECL_REGISTER.  It wouldn't mean anything anyway.  */
 	else
-	  warning_with_decl (decl, "`packed' attribute ignore");
-
+	  warning_with_decl (decl, "`packed' attribute ignored");
       }
-    else if (TREE_VALUE (a) == get_identifier ("noreturn")
-	     || TREE_VALUE (a) == get_identifier ("__noreturn__")
-	     || TREE_VALUE (a) == get_identifier ("volatile")
-	     || TREE_VALUE (a) == get_identifier ("__volatile__"))
+    else if (name == get_identifier ("noreturn")
+	     || name == get_identifier ("__noreturn__")
+	     || name == get_identifier ("volatile")
+	     || name == get_identifier ("__volatile__"))
       {
 	if (TREE_CODE (decl) == FUNCTION_DECL)
 	  TREE_THIS_VOLATILE (decl) = 1;
@@ -240,11 +239,14 @@ decl_attributes (decl, attributes)
 	      (build_type_variant (TREE_TYPE (type),
 				   TREE_READONLY (TREE_TYPE (type)), 1));
 	else
-	  warning_with_decl (decl, "`%s' attribute ignored",
-			     IDENTIFIER_POINTER (TREE_VALUE (a)));
+	  warning_with_decl (decl,
+			     (IDENTIFIER_POINTER (name)[0] == 'n'
+			      || IDENTIFIER_POINTER (name)[2] == 'n')
+			     ? "`noreturn' attribute ignored"
+			     : "`volatile' attribute ignored");
       }
-    else if (TREE_VALUE (a) == get_identifier ("const")
-	     || TREE_VALUE (a) == get_identifier ("__const__"))
+    else if (name == get_identifier ("const")
+	     || name == get_identifier ("__const__"))
       {
 	if (TREE_CODE (decl) == FUNCTION_DECL)
 	  TREE_READONLY (decl) = 1;
@@ -257,8 +259,8 @@ decl_attributes (decl, attributes)
 	else
 	  warning_with_decl (decl, "`const' attribute ignored");
       }
-    else if (TREE_VALUE (a) == get_identifier ("transparent_union")
-	     || TREE_VALUE (a) == get_identifier ("__transparent_union__"))
+    else if (name == get_identifier ("transparent_union")
+	     || name == get_identifier ("__transparent_union__"))
       {
 	if (TREE_CODE (decl) == PARM_DECL
 	    && TREE_CODE (type) == UNION_TYPE
@@ -298,7 +300,7 @@ decl_attributes (decl, attributes)
 	DECL_STATIC_DESTRUCTOR (decl) = 1;
       }
     else if (TREE_CODE (name) != TREE_LIST)
-     {
+      {
 #ifdef VALID_MACHINE_ATTRIBUTE
 	if (VALID_MACHINE_ATTRIBUTE (type, new_attr, name))
 	  { 
@@ -309,14 +311,14 @@ decl_attributes (decl, attributes)
 		  goto found_attr;
 
 	    new_attr = tree_cons (NULL_TREE, name, new_attr);
-found_attr:;
+	  found_attr:;
 	  }
 	else
 #endif
 	  warning ("`%s' attribute directive ignored",
 		   IDENTIFIER_POINTER (name));
-     }
-    else if ( args = TREE_CHAIN(name),
+      }
+    else if ( args = TREE_CHAIN (name),
 	      (!strcmp (IDENTIFIER_POINTER (name = TREE_PURPOSE (name)), "mode")
 	       || !strcmp (IDENTIFIER_POINTER (name), "__mode__"))
 	      && list_length (args) == 1
@@ -344,9 +346,9 @@ found_attr:;
 	      mode = (enum machine_mode) i;
 
 	if (mode == VOIDmode)
-	  error_with_decl (decl, "unknown machine mode `%s'", specified_name);
+	  error ("unknown machine mode `%s'", specified_name);
 	else if ((typefm = type_for_mode (mode, TREE_UNSIGNED (type))) == 0)
-	  error_with_decl (decl, "no data type for mode `%s'", specified_name);
+	  error ("no data type for mode `%s'", specified_name);
 	else
 	  {
 	    TREE_TYPE (decl) = type = typefm;
@@ -517,9 +519,22 @@ found_attr:;
 	record_function_format (DECL_NAME (decl), DECL_ASSEMBLER_NAME (decl),
 				is_scan, format_num, first_arg_num);
       }
+#ifdef VALID_MACHINE_ATTRIBUTE
+    else if (VALID_MACHINE_ATTRIBUTE (type, new_attr, TREE_VALUE (a)))
+      { 
+	register tree atlist;
+
+	for (atlist = new_attr; atlist; atlist = TREE_CHAIN (atlist))
+	  if (TREE_VALUE (atlist) == TREE_VALUE (a))
+	    goto found_attr2;
+
+	new_attr = tree_cons (NULL_TREE, TREE_VALUE (a), new_attr);
+      found_attr2:;
+      }
+#endif
     else
-	warning ("`%s' attribute directive ignored",
-                       IDENTIFIER_POINTER (name));
+      warning ("`%s' attribute directive ignored",
+	       IDENTIFIER_POINTER (name));
 
   TREE_TYPE (decl) = build_type_attribute_variant (type, new_attr);
 }
