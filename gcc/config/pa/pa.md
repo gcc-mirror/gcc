@@ -5513,10 +5513,28 @@
 ;; from within its delay slot to set the value for the 2nd parameter to
 ;; the call.
 (define_insn "call_profiler"
-  [(unspec_volatile [(const_int 0)] 0)
-   (use (match_operand:SI 0 "const_int_operand" ""))]
+  [(call (mem:SI (match_operand 0 "call_operand_address" ""))
+	 (match_operand 1 "" ""))
+   (use (match_operand 2 "" ""))
+   (use (reg:SI 25))
+   (use (reg:SI 26))
+   (clobber (reg:SI 2))]
   ""
-  "{bl|b,l} _mcount,%%r2\;ldo %0(%%r2),%%r25"
+  "*
+{
+  rtx xoperands[3];
+
+  output_arg_descriptor (insn);
+
+  xoperands[0] = operands[0];
+  xoperands[1] = operands[2];
+  xoperands[2] = gen_label_rtx ();
+  output_asm_insn (\"{bl|b,l} %0,%%r2\;ldo %1-%2(%%r2),%%r25\", xoperands);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+			     CODE_LABEL_NUMBER (xoperands[2]));
+  return \"\";
+}"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 

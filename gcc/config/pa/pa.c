@@ -76,9 +76,6 @@ enum architecture_type pa_arch;
 /* String to hold which architecture we are generating code for.  */
 const char *pa_arch_string;
 
-/* Set by the FUNCTION_PROFILER macro. */
-int hp_profile_labelno;
-
 /* Counts for the number of callee-saved general and floating point
    registers which were saved by the current function's prologue.  */
 static int gr_saved, fr_saved;
@@ -169,11 +166,6 @@ override_options ()
    {
       warning ("PIC code generation is not compatible with fast indirect calls\n");
    }
-
-  if (flag_pic && profile_flag)
-    {
-      warning ("PIC code generation is not compatible with profiling\n");
-    }
 
   if (! TARGET_GAS && write_symbols != NO_DEBUG)
     {
@@ -2886,8 +2878,6 @@ compute_frame_size (size, fregs_live)
   return (fsize + STACK_BOUNDARY - 1) & ~(STACK_BOUNDARY - 1);
 }
 
-rtx hp_profile_label_rtx;
-static char hp_profile_label_name[8];
 void
 output_function_prologue (file, size)
      FILE *file;
@@ -2903,7 +2893,7 @@ output_function_prologue (file, size)
      to output the assembler directives which denote the start
      of a function.  */
   fprintf (file, "\t.CALLINFO FRAME=%d", actual_fsize);
-  if (regs_ever_live[2] || profile_flag)
+  if (regs_ever_live[2])
     fputs (",CALLS,SAVE_RP", file);
   else
     fputs (",NO_CALLS", file);
@@ -2926,12 +2916,6 @@ output_function_prologue (file, size)
     fprintf (file, ",ENTRY_FR=%d", fr_saved + 11);
 
   fputs ("\n\t.ENTRY\n", file);
-
-  /* Horrid hack.  emit_function_prologue will modify this RTL in
-     place to get the expected results.  */
-  if (profile_flag)
-    ASM_GENERATE_INTERNAL_LABEL (hp_profile_label_name, "LP",
-				 hp_profile_labelno);
 
   /* If we're using GAS and not using the portable runtime model, then
      we don't need to accumulate the total number of code bytes.  */
@@ -2983,7 +2967,7 @@ hppa_expand_prologue()
   /* Save RP first.  The calling conventions manual states RP will
      always be stored into the caller's frame at sp-20 or sp - 16
      depending on which ABI is in use.  */
-  if (regs_ever_live[2] || profile_flag)
+  if (regs_ever_live[2])
     store_reg (2, TARGET_64BIT ? -16 : -20, STACK_POINTER_REGNUM);
 
   /* Allocate the local frame and set up the frame pointer if needed.  */
@@ -3030,10 +3014,7 @@ hppa_expand_prologue()
 	     and allocating the stack frame at the same time.   If so, just
 	     make a note of it and defer allocating the frame until saving
 	     the callee registers.  */
-	  if (VAL_14_BITS_P (actual_fsize)
-	      && local_fsize == 0
-	      && ! profile_flag
-	      && ! flag_pic)
+	  if (VAL_14_BITS_P (actual_fsize) && local_fsize == 0)
 	    merge_sp_adjust_with_store = 1;
 	  /* Can not optimize.  Adjust the stack frame by actual_fsize
 	     bytes.  */
@@ -3042,77 +3023,6 @@ hppa_expand_prologue()
 			    STACK_POINTER_REGNUM,
 			    actual_fsize);
 	}
-
-      /* The hppa calling conventions say that %r19, the pic offset
-	 register, is saved at sp - 32 (in this function's frame)
-	 when generating PIC code.  FIXME:  What is the correct thing
-	 to do for functions which make no calls and allocate no
-	 frame?  Do we need to allocate a frame, or can we just omit
-	 the save?   For now we'll just omit the save.  */
-      if (flag_pic && !TARGET_64BIT)
-	store_reg (PIC_OFFSET_TABLE_REGNUM, -32, STACK_POINTER_REGNUM);
-    }
-
-  /* Profiling code.
-
-     Instead of taking one argument, the counter label, as most normal
-     mcounts do, _mcount appears to behave differently on the HPPA.  It
-     takes the return address of the caller, the address of this routine,
-     and the address of the label.  Also, it isn't magic, so
-     argument registers have to be preserved.  */
-  if (profile_flag)
-    {
-      int pc_offset, i, arg_offset, basereg, offsetadj;
-
-      pc_offset = 4 + (frame_pointer_needed
-		       ? (VAL_14_BITS_P (actual_fsize) ? 12 : 20)
-		       : (VAL_14_BITS_P (actual_fsize) ? 4 : 8));
-
-      /* When the function has a frame pointer, use it as the base
-	 register for saving/restore registers.  Else use the stack
-	 pointer.  Adjust the offset according to the frame size if
-	 this function does not have a frame pointer.  */
-
-      basereg = frame_pointer_needed ? FRAME_POINTER_REGNUM
-				     : STACK_POINTER_REGNUM;
-      offsetadj = frame_pointer_needed ? 0 : actual_fsize;
-
-      /* Horrid hack.  emit_function_prologue will modify this RTL in
-	 place to get the expected results.   sprintf here is just to
-	 put something in the name.  */
-      sprintf(hp_profile_label_name, "LP$%04d", -1);
-      hp_profile_label_rtx = gen_rtx_SYMBOL_REF (Pmode,
-						 hp_profile_label_name);
-      if (current_function_returns_struct)
-	store_reg (STRUCT_VALUE_REGNUM, - 12 - offsetadj, basereg);
-      if (current_function_needs_context)
-	store_reg (STATIC_CHAIN_REGNUM, - 16 - offsetadj, basereg);
-
-      for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
-	if (regs_ever_live [i])
-	  {
-	    store_reg (i, arg_offset, basereg);
-	    /* Deal with arg_offset not fitting in 14 bits.  */
-	    pc_offset += VAL_14_BITS_P (arg_offset) ? 4 : 8;
-	  }
-
-      emit_move_insn (gen_rtx_REG (word_mode, 26), gen_rtx_REG (word_mode, 2));
-      emit_move_insn (tmpreg, gen_rtx_HIGH (Pmode, hp_profile_label_rtx));
-      emit_move_insn (gen_rtx_REG (Pmode, 24),
-		      gen_rtx_LO_SUM (Pmode, tmpreg, hp_profile_label_rtx));
-      /* %r25 is set from within the output pattern.  */
-      emit_insn (gen_call_profiler (GEN_INT (- pc_offset - 20)));
-
-      /* Restore argument registers.  */
-      for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
-	if (regs_ever_live [i])
-	  load_reg (i, arg_offset, basereg);
-
-      if (current_function_returns_struct)
-	load_reg (STRUCT_VALUE_REGNUM, -12 - offsetadj, basereg);
-
-      if (current_function_needs_context)
-	load_reg (STATIC_CHAIN_REGNUM, -16 - offsetadj, basereg);
     }
 
   /* Normal register save.
@@ -3159,6 +3069,15 @@ hppa_expand_prologue()
 			STACK_POINTER_REGNUM,
 			actual_fsize);
     }
+
+  /* The hppa calling conventions say that %r19, the pic offset
+     register, is saved at sp - 32 (in this function's frame)
+     when generating PIC code.  FIXME:  What is the correct thing
+     to do for functions which make no calls and allocate no
+     frame?  Do we need to allocate a frame, or can we just omit
+     the save?   For now we'll just omit the save.  */
+  if (flag_pic && actual_fsize != 0 && !TARGET_64BIT)
+    store_reg (PIC_OFFSET_TABLE_REGNUM, -32, STACK_POINTER_REGNUM);
 
   /* Align pointer properly (doubleword boundary).  */
   offset = (offset + 7) & ~7;
@@ -3235,7 +3154,7 @@ hppa_expand_epilogue ()
   /* Try to restore RP early to avoid load/use interlocks when
      RP gets used in the return (bv) instruction.  This appears to still
      be necessary even when we schedule the prologue and epilogue. */
-  if (regs_ever_live [2] || profile_flag)
+  if (regs_ever_live [2])
     {
       ret_off = TARGET_64BIT ? -16 : -20;
       if (frame_pointer_needed)
@@ -3357,9 +3276,94 @@ void hppa_init_pic_save ()
   insn = gen_rtx_SET (VOIDmode, PIC_OFFSET_TABLE_SAVE_RTX, picreg);
 
   /* Emit the insn at the beginning of the function after the prologue.  */
-  push_topmost_sequence ();
-  emit_insn_after (insn, last_parm_insn ? last_parm_insn : get_insns ());
-  pop_topmost_sequence ();
+  if (tail_recursion_reentry)
+    emit_insn_before (insn, tail_recursion_reentry);
+  else
+    /* We must have been called via PROFILE_HOOK.  */
+    emit_insn (insn);
+}
+
+void
+hppa_profile_hook (label_no)
+     int label_no ATTRIBUTE_UNUSED;
+{
+  rtx call_insn;
+
+  /* No profiling for inline functions.  We don't want extra calls to
+     _mcount when the inline function is expanded.  Even if that made
+     sense, it wouldn't work here as there is no function label for
+     the inline expansion.  */
+  if (DECL_INLINE (cfun->decl))
+    return;
+
+  if (TARGET_64BIT)
+    emit_move_insn (arg_pointer_rtx,
+		    gen_rtx_PLUS (word_mode, virtual_outgoing_args_rtx,
+				  GEN_INT (64)));
+
+  if (flag_pic && PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
+    hppa_init_pic_save ();
+
+  emit_move_insn (gen_rtx_REG (word_mode, 26), gen_rtx_REG (word_mode, 2));
+
+#ifndef NO_PROFILE_COUNTERS
+  {
+    rtx count_label_rtx, addr, r24;
+    char label_name[16];
+
+    ASM_GENERATE_INTERNAL_LABEL (label_name, "LP", label_no);
+    count_label_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label_name));
+
+    if (flag_pic)
+      {
+	rtx tmpreg;
+
+	current_function_uses_pic_offset_table = 1;
+	tmpreg = gen_rtx_REG (Pmode, 1);
+	emit_move_insn (tmpreg,
+			gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+				      gen_rtx_HIGH (Pmode, count_label_rtx)));
+	addr = gen_rtx_MEM (Pmode,
+			    gen_rtx_LO_SUM (Pmode, tmpreg, count_label_rtx));
+      }
+    else
+      {
+	rtx tmpreg = gen_rtx_REG (Pmode, 1);
+	emit_move_insn (tmpreg, gen_rtx_HIGH (Pmode, count_label_rtx));
+	addr = gen_rtx_LO_SUM (Pmode, tmpreg, count_label_rtx);
+      }
+    r24 = gen_rtx_REG (Pmode, 24);
+    emit_move_insn (r24, addr);
+
+    /* %r25 is set from within the output pattern.  */
+    call_insn =
+      emit_call_insn (gen_call_profiler (gen_rtx_SYMBOL_REF (Pmode, "_mcount"),
+					 GEN_INT (TARGET_64BIT ? 24 : 12),
+					 XEXP (DECL_RTL (cfun->decl), 0)));
+
+    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), r24);
+  }
+#else
+    /* %r25 is set from within the output pattern.  */
+  call_insn =
+    emit_call_insn (gen_call_profiler (gen_rtx_SYMBOL_REF (Pmode, "_mcount"),
+				       GEN_INT (TARGET_64BIT ? 16 : 8),
+				       XEXP (DECL_RTL (cfun->decl), 0)));
+#endif
+
+  /* Indicate the _mcount call cannot throw, nor will it execute a
+     non-local goto.  */
+  REG_NOTES (call_insn)
+    = gen_rtx_EXPR_LIST (REG_EH_REGION, constm1_rtx, REG_NOTES (call_insn));
+
+  if (flag_pic)
+    {
+      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
+      if (TARGET_64BIT)
+	use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), arg_pointer_rtx);
+
+      emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
+    }
 }
 
 /* Fetch the return address for the frame COUNT steps up from
@@ -3475,7 +3479,6 @@ hppa_can_use_return_insn_p ()
 {
   return (reload_completed
 	  && (compute_frame_size (get_frame_size (), 0) ? 0 : 1)
-	  && ! profile_flag
 	  && ! regs_ever_live[2]
 	  && ! frame_pointer_needed);
 }
@@ -7098,7 +7101,6 @@ pa_add_gc_roots ()
 {
   ggc_add_rtx_root (&hppa_compare_op0, 1);
   ggc_add_rtx_root (&hppa_compare_op1, 1);
-  ggc_add_rtx_root (&hp_profile_label_rtx, 1);
   ggc_add_root (&deferred_plabels, 1, sizeof (&deferred_plabels),
 		&mark_deferred_plabels);
 }

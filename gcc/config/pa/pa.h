@@ -883,16 +883,13 @@ extern enum cmp_type hppa_branch_type;
 #define FUNCTION_PROLOGUE(FILE, SIZE) \
   output_function_prologue (FILE, SIZE)
 
-/* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.
+/* On HPPA, we emit profiling code as rtl via PROFILE_HOOK rather than
+   as assembly via FUNCTION_PROFILER.  */
 
-   Because HPUX _mcount is so different, we actually emit the
-   profiling code in function_prologue. This just stores LABELNO for
-   that. */
+#define FUNCTION_PROFILER(FILE, LABEL) /* nothing */
 
-#define PROFILE_BEFORE_PROLOGUE
-#define FUNCTION_PROFILER(FILE, LABELNO) \
-{ extern int hp_profile_labelno; hp_profile_labelno = (LABELNO);}
+#define PROFILE_HOOK(label_no) hppa_profile_hook (label_no)
+void hppa_profile_hook PARAMS ((int label_no));
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
@@ -1834,8 +1831,6 @@ while (0)
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii ((FILE), (P), (SIZE))
 
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)
 /* This is how to output an element of a case-vector that is absolute.
    Note that this method makes filling these branch delay slots
    impossible.  */
