@@ -1,36 +1,33 @@
+Sun May 10 17:09:20 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (fold_range_test, fold): If need to make SAVE_EXPR
+	to do optimization, suppress if contains_placeholder_p.
+
 Thu May  7 18:14:31  Paul Eggert  <eggert@twinsun.com>
 
-	* dwarf2out.c: Don't assume that `.section ".text"' causes the
-	assembler to treat .text as a label for the start of that section,
-	as this assumption is false for Solaris 2.x `as'.  Instead, output
+	* dwarf2out.c: Don't assume `.section ".text"' causes assembler to
+	treat .text as label for start of section; instead, output
 	`.section ".text"; .LLtext0:' and use .LLtext0 in label contexts.
-
-	(ABBREV_LABEL, DEBUG_INFO_LABEL, DEBUG_LINE_LABEL, TEXT_LABEL):
-	New macros.
-	(abbrev_label, debug_info_label, debug_line_label, text_label):
-	New vars.
+	(ABBREV_LABEL, DEBUG_INFO_LABEL, DEBUG_LINE_LABEL, TEXT_LABEL): New.
+	(abbrev_label, debug_info_label, debug_line_label, text_label): New.
 	(dwarf2out_init): Initialize the vars.  Output defn for text_label.
 	(dwarf2out_finish): Output defns for the other 3 vars.
-
 	(dw_val_node): Rename val_section to val_section_label, as it's
 	now a label, not a section.
 	(add_AT_section_offset): Arg is now a label, not a section.
-	(print_die, output_die, output_compilation_unit_header,
-	output_pubnames, output_aranges, output_line_info,
-	dwarf2out_finish): In label contexts, output the section label,
-	not the section.
-
+	(print_die): In label contexts, output section label, not section.
+	(output_die, output_compilation_unit_header): Likewise.
+	(output_{pubnames,aranges,line_info}, dwarf2out_finish): Likewise.
 
 	* fixinc.wrap: Renamed from fixinc.math.  Put wrapper around
-	curses.h if it contains `typedef char bool;', as suggested by
-	Manfred Hollstein <manfred@s-direktnet.de>.
+	curses.h if it contains `typedef char bool;'.
 
-	* configure.in (arm-*-netbsd*, i[34567]86-*-freebsdelf*,
-	i[34567]86-*-freebsd*, i[34567]86-*-netbsd*,
-	i[34567]86-*-solaris2*, m68k-*-netbsd*, mips-dec-netbsd*,
-	ns32k-pc532-netbsd*, powerpcle-*-solaris2*, sparc-*-netbsd*,
-	sparc-*-solaris2*, vax-*-netbsd*): Rename fixinc.math to
-	fixinc.wrap.
+	* configure.in (arm-*-netbsd*): Rename fixinc.math to fixinc.wrap.
+	(i[34567]86-*-freebsdelf*, i[34567]86-*-freebsd*): Likewise.
+	(i[34567]86-*-netbsd*, i[34567]86-*-solaris2*): Likewise.
+	(m68k-*-netbsd*, mips-dec-netbsd*, ns32k-pc532-netbsd*): Likewise.
+	(powerpcle-*-solaris2*, sparc-*-netbsd*, sparc-*-solaris2*): Likewise.
+	(vax-*-netbsd*): Likewie.
 
 Wed May  6 06:44:28 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
