@@ -1,3 +1,9 @@
+Thu Jun 3 07:48 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/inclhack.def(Io_Def_Quotes): corrected sed expression
+	* fixinc/fixincl.x: regenerate
+	* fixinc/inclhack.sh: regenerate
+
 Thu Jun  3 22:27:50 1999  Robert Lipe  <robertlipe@usa.net>
 
 	* i386/udk.h (LINK_SPEC): Correct linker search path for

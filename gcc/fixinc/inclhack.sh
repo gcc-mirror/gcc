@@ -1056,7 +1056,8 @@ extern "C" {\
     then infile=${file}
     else infile=${DESTFILE} ; fi 
 
-    sed -e 's/\([ 	]*[ 	](_|DES)IO[A-Z]*[ 	]*(\)\([^,'\'']\),/\1'\''\2'\'',/' \
+    sed -e 's/\([ 	]*[ 	]_IO[A-Z]*[ 	]*(\)\([^,'\'']\),/\1'\''\2'\'',/' \
+        -e 's/\([ 	]*[ 	]DESIO[A-Z]*[ 	]*(\)\([^,'\'']\),/\1'\''\2'\'',/' \
         -e '/#[ 	]*define[ 	]*[ 	]_IO/s/'\''\([cgxtf]\)'\''/\1/g' \
         -e '/#[ 	]*define[ 	]*[ 	]DESIOC/s/'\''\([cdgx]\)'\''/\1/g' \
           < $infile > ${DESTDIR}/fixinc.tmp

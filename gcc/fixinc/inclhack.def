@@ -567,7 +567,8 @@ fix = {
 fix = {
     hackname = io_def_quotes;
     select = "[ \t]*[ \t](_|DES)IO[A-Z]*[ \t]*\\( *[^,']";
-    sed = "s/\\([ \t]*[ \t](_|DES)IO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/";
+    sed = "s/\\([ \t]*[ \t]_IO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/";
+    sed = "s/\\([ \t]*[ \t]DESIO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/";
     sed = "/#[ \t]*define[ \t]*[ \t]_IO/"       "s/'\\([cgxtf]\\)'/\\1/g";
     sed = "/#[ \t]*define[ \t]*[ \t]DESIOC/"    's/\'\([cdgx]\)\'/\1/g';
 };

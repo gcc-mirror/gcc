@@ -1079,7 +1079,8 @@ tTestDesc aIo_Def_QuotesTests[] = {
  *  Fix Command Arguments for Io_Def_Quotes
  */
 const char* apzIo_Def_QuotesPatch[] = { "sed",
-    "-e", "s/\\([ \t]*[ \t](_|DES)IO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/",
+    "-e", "s/\\([ \t]*[ \t]_IO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/",
+    "-e", "s/\\([ \t]*[ \t]DESIO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/",
     "-e", "/#[ \t]*define[ \t]*[ \t]_IO/s/'\\([cgxtf]\\)'/\\1/g",
     "-e", "/#[ \t]*define[ \t]*[ \t]DESIOC/s/'\\([cdgx]\\)'/\\1/g",
     (char*)NULL };
