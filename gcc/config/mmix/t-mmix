@@ -1,0 +1,20 @@
+# See "Target Fragment" in GCC info.  That same order is used here.
+LIBGCC1 =
+
+# libgcc1-test doesn't work.  There's critical stuff in crti and crtn and
+# we know the result of running libgcc1-test anyway.
+LIBGCC1_TEST =
+CROSS_LIBGCC1 =
+
+TARGET_LIBGCC2_CFLAGS = -mlibfuncs -Dinhibit_libc -O2
+
+EXTRA_MULTILIB_PARTS = crti.o crtn.o crtbegin.o crtend.o
+
+MULTILIB_OPTIONS = mabi=gnu
+MULTILIB_DIRNAMES = gnuabi
+
+$(T)crti.o: $(srcdir)/config/mmix/crti.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crti.o -x assembler-with-cpp $(srcdir)/config/mmix/crti.asm
+
+$(T)crtn.o: $(srcdir)/config/mmix/crtn.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler-with-cpp $(srcdir)/config/mmix/crtn.asm
