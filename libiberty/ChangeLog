@@ -1,3 +1,7 @@
+2001-02-16  Loren J. Rittle  <ljrittle@acm.org>
+
+	* cplus-dem.c (main): Initialize style.
+
 2001-02-02  Phil Edwards  <pme@sources.redhat.com>
 
 	* COPYING.LIB:  Update to LGPL 2.1 from the FSF.
