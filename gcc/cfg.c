@@ -327,7 +327,7 @@ unchecked_make_edge (basic_block src, basic_block dst, int flags)
    edge cache CACHE.  Return the new edge, NULL if already exist.  */
 
 edge
-cached_make_edge (sbitmap *edge_cache, basic_block src, basic_block dst, int flags)
+cached_make_edge (sbitmap edge_cache, basic_block src, basic_block dst, int flags)
 {
   if (edge_cache == NULL
       || src == ENTRY_BLOCK_PTR
@@ -335,11 +335,11 @@ cached_make_edge (sbitmap *edge_cache, basic_block src, basic_block dst, int fla
     return make_edge (src, dst, flags);
 
   /* Does the requested edge already exist?  */
-  if (! TEST_BIT (edge_cache[src->index], dst->index))
+  if (! TEST_BIT (edge_cache, dst->index))
     {
       /* The edge does not exist.  Create one and update the
 	 cache.  */
-      SET_BIT (edge_cache[src->index], dst->index);
+      SET_BIT (edge_cache, dst->index);
       return unchecked_make_edge (src, dst, flags);
     }
 
