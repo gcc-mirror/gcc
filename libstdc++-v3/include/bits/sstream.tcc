@@ -47,8 +47,8 @@ namespace std
     pbackfail(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      const bool __testeof = 
-	traits_type::eq_int_type(__c, traits_type::eof());
+      const bool __testeof = traits_type::eq_int_type(__c,
+						      traits_type::eof());
       const bool __testpos = this->_M_in_beg < this->_M_in_cur; 
       
       // Try to put back __c into input sequence in one of three ways.
@@ -85,8 +85,8 @@ namespace std
       if (__builtin_expect(!__testout, false))
 	return traits_type::eof();
 
-      const bool __testeof =
-	traits_type::eq_int_type(__c, traits_type::eof());
+      const bool __testeof = traits_type::eq_int_type(__c,
+						      traits_type::eof());
       if (__builtin_expect(__testeof, false))
 	return traits_type::not_eof(__c);
 
