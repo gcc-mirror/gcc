@@ -1,5 +1,9 @@
 2004-10-30  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* simplify.c (twos_complement): Calculate mask in GMP arithmetic.
+
+2004-10-30  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* trans.c (gfc_trans_code): Set global locus after recursing. Fix
 	comment typo.
 
