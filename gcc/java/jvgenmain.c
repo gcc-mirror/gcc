@@ -27,6 +27,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "obstack.h"
+#include "gansidecl.h"
 
 const char main_method_prefix[] = "main__";
 const char main_method_suffix[] = "Pt6JArray1ZPQ34java4lang6String";
