@@ -1,3 +1,35 @@
+2001-05-10  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/GregorianCalendar.java: Imported from Classpath.
+	* gnu/java/locale/LocaleInformation_nl.java: New file from
+	Classpath.
+	* gnu/java/locale/LocaleInformation_en.java: Likewise.
+	* gnu/java/locale/LocaleInformation_de.java: Likewise.
+	* gnu/java/locale/LocaleInformation.java: Likewise.
+	* natGregorianCalendar.cc: Removed.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Removed
+	natGregorianCalendar.cc.
+
+2001-05-10  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/SimpleDateFormat.java (computeCenturyStart): New
+	method.
+	(defaultCenturyStart): Use it.
+	(readObject): Likewise.
+	(SimpleDateFormat): Clear the calendar.  Set the grouping on the
+	number format.
+	(parse): Copy the calendar before modifying it.  Correctly handle
+	the time zone.
+
+	* java/util/Calendar.java (clear): Set field value(s) to 0.
+
+2001-05-10  Jeff Sturm  <jsturm@one-point.com>
+
+	* Calendar.java (get): Clear areFieldsSet if requested field
+	is not set.
+	(set): Unset fields that depend on new value.
+
 2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/Class.h (_Jv_Self): New union type.

@@ -62,8 +62,7 @@ public class SimpleDateFormat extends DateFormat
 
   private transient Vector tokens;
   private DateFormatSymbols formatData;  // formatData
-  private Date defaultCenturyStart = 
-    new Date(System.currentTimeMillis() - (80*365*24*60*60*1000));
+  private Date defaultCenturyStart = computeCenturyStart ();
   private String pattern;
   private int serialVersionOnStream = 1; // 0 indicates JDK1.1.3 or earlier
   private static final long serialVersionUID = 4774881970558875024L;
@@ -79,8 +78,7 @@ public class SimpleDateFormat extends DateFormat
     stream.defaultReadObject();
     if (serialVersionOnStream < 1)
       {
-        defaultCenturyStart =
-	  new Date(System.currentTimeMillis() - (80*365*24*60*60*1000));
+        defaultCenturyStart = computeCenturyStart ();
 	serialVersionOnStream = 1;
       }
 
@@ -161,11 +159,14 @@ public class SimpleDateFormat extends DateFormat
     super();
     Locale locale = Locale.getDefault();
     calendar = new GregorianCalendar(locale);
+    calendar.clear ();
     tokens = new Vector();
     formatData = new DateFormatSymbols(locale);
-    pattern = formatData.dateFormats[DEFAULT]+' '+formatData.timeFormats[DEFAULT];
+    pattern = (formatData.dateFormats[DEFAULT] + ' '
+	       + formatData.timeFormats[DEFAULT]);
     compileFormat(pattern);
     numberFormat = NumberFormat.getInstance(locale);
+    numberFormat.setGroupingUsed (false);
   }
   
   /**
@@ -185,20 +186,24 @@ public class SimpleDateFormat extends DateFormat
   {
     super();
     calendar = new GregorianCalendar(locale);
+    calendar.clear ();
     tokens = new Vector();
     formatData = new DateFormatSymbols(locale);
     compileFormat(pattern);
     this.pattern = pattern;
     numberFormat = NumberFormat.getInstance(locale);
+    numberFormat.setGroupingUsed (false);
   }
 
   /**
    * Creates a date formatter using the specified pattern. The
    * specified DateFormatSymbols will be used when formatting.
    */
-  public SimpleDateFormat(String pattern, DateFormatSymbols formatData) {
+  public SimpleDateFormat(String pattern, DateFormatSymbols formatData)
+  {
     super();
     calendar = new GregorianCalendar();
+    calendar.clear ();
     // FIXME: XXX: Is it really necessary to set the timezone?
     // The Calendar constructor is supposed to take care of this.
     calendar.setTimeZone(TimeZone.getDefault());
@@ -207,6 +212,7 @@ public class SimpleDateFormat extends DateFormat
     compileFormat(pattern);
     this.pattern = pattern;
     numberFormat = NumberFormat.getInstance();
+    numberFormat.setGroupingUsed (false);
   }
 
   // What is the difference between localized and unlocalized?  The
@@ -377,7 +383,8 @@ public class SimpleDateFormat extends DateFormat
    * appending to the specified StringBuffer.  The input StringBuffer
    * is returned as output for convenience.
    */
-  public StringBuffer format(Date date, StringBuffer buffer, FieldPosition pos) {
+  public StringBuffer format(Date date, StringBuffer buffer, FieldPosition pos)
+  {
     String temp;
     Calendar theCalendar = (Calendar) calendar.clone();
     theCalendar.setTime(date);
@@ -507,7 +514,10 @@ public class SimpleDateFormat extends DateFormat
     int fmt_index = 0;
     int fmt_max = pattern.length();
 
-    calendar.clear();
+    // We copy the Calendar because if we don't we will modify it and
+    // then this.equals() will no longer have the desired result.
+    Calendar theCalendar = (Calendar) calendar.clone ();
+    theCalendar.clear();
     int quote_start = -1;
     for (; fmt_index < fmt_max; ++fmt_index)
       {
@@ -553,7 +563,6 @@ public class SimpleDateFormat extends DateFormat
 	boolean is_numeric = true;
 	String[] match = null;
 	int offset = 0;
-	int zone_number = 0;
 	switch (ch)
 	  {
 	  case 'd':
@@ -626,6 +635,7 @@ public class SimpleDateFormat extends DateFormat
 	    // We need a special case for the timezone, because it
 	    // uses a different data structure than the other cases.
 	    is_numeric = false;
+	    // We don't actually use this; see below.
 	    calendar_field = Calendar.DST_OFFSET;
 	    String[][] zoneStrings = formatData.getZoneStrings();
 	    int zoneCount = zoneStrings.length;
@@ -642,11 +652,11 @@ public class SimpleDateFormat extends DateFormat
 		  }
 		if (k != strings.length)
 		  {
-		    if (k > 2)
-		      ;		// FIXME: dst.
-		    zone_number = 0; // FIXME: dst.
-		    // FIXME: raw offset to SimpleTimeZone const.
-		    calendar.setTimeZone(new SimpleTimeZone (1, strings[0]));
+		    found_zone = true;
+		    TimeZone tz = TimeZone.getTimeZone (strings[0]);
+		    theCalendar.setTimeZone (tz);
+		    theCalendar.clear (Calendar.DST_OFFSET);
+		    theCalendar.clear (Calendar.ZONE_OFFSET);
 		    pos.setIndex(index + strings[k].length());
 		    break;
 		  }
@@ -690,20 +700,38 @@ public class SimpleDateFormat extends DateFormat
 	    value = i;
 	  }
 	else
-	  value = zone_number;
+	  value = 0;
 
 	// Assign the value and move on.
-	calendar.set(calendar_field, value);
+	if (calendar_field != Calendar.DST_OFFSET)
+	  theCalendar.set(calendar_field, value);
       }
 
     try
       {
-        return calendar.getTime();
+        return theCalendar.getTime();
       }
     catch (IllegalArgumentException x)
       {
         pos.setErrorIndex(pos.getIndex());
 	return null;
       }
+  }
+
+  // Compute the start of the current century as defined by
+  // get2DigitYearStart.
+  private Date computeCenturyStart ()
+  {
+    // Compute the current year.  We assume a year has 365 days.  Then
+    // compute 80 years ago, and finally reconstruct the number of
+    // milliseconds.  We do this computation in this strange way
+    // because it lets us easily truncate the milliseconds, seconds,
+    // etc, which don't matter and which confuse
+    // SimpleDateFormat.equals().
+    long now = System.currentTimeMillis ();
+    now /= 365L * 24L * 60L * 60L * 1000L;
+    now -= 80;
+    now *= 365L * 24L * 60L * 60L * 1000L;
+    return new Date (now);
   }
 }

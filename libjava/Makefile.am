@@ -1335,7 +1335,6 @@ java/net/natInetAddress.cc \
 java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
 java/text/natCollator.cc \
-java/util/natGregorianCalendar.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 

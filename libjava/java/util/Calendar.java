@@ -1,5 +1,5 @@
 /* java.util.Calendar
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,7 +54,7 @@ import java.io.*;
  *
  * When computing the date from time fields, it may happen, that there
  * are either two few fields set, or some fields are inconsistent.  This
- * cases will handled in a calender specific way.  Missing fields are
+ * cases will handled in a calendar specific way.  Missing fields are
  * replaced by the fields of the epoch: 1970 January 1 00:00. <br>
  *
  * To understand, how the day of year is computed out of the fields
@@ -356,7 +356,7 @@ public abstract class Calendar implements Serializable, Cloneable
   private static final String bundleName = "gnu.java.locale.Calendar";
 
   /**
-   * Constructs a new Calender with the default time zone and the default
+   * Constructs a new Calendar with the default time zone and the default
    * locale.
    */
   protected Calendar()
@@ -365,7 +365,7 @@ public abstract class Calendar implements Serializable, Cloneable
   }
 
   /**
-   * Constructs a new Calender with the given time zone and the given
+   * Constructs a new Calendar with the given time zone and the given
    * locale.
    * @param zone a time zone.
    * @param locale a locale.
@@ -483,7 +483,7 @@ public abstract class Calendar implements Serializable, Cloneable
   }
 
   /**
-   * Sets this Calender's time to the given Date.  All time fields
+   * Sets this Calendar's time to the given Date.  All time fields
    * are invalidated by this method.
    */
   public final void setTime(Date date)
@@ -503,7 +503,7 @@ public abstract class Calendar implements Serializable, Cloneable
   }
 
   /**
-   * Sets this Calender's time to the given Time.  All time fields
+   * Sets this Calendar's time to the given Time.  All time fields
    * are invalidated by this method.
    * @param time the time in milliseconds since the epoch
    */
@@ -522,6 +522,9 @@ public abstract class Calendar implements Serializable, Cloneable
    */
   public final int get(int field)
   {
+    // If the requested field is invalid, force all fields to be recomputed.
+    if (!isSet[field])
+      areFieldsSet = false;
     complete();
     return fields[field];
   }
@@ -551,6 +554,29 @@ public abstract class Calendar implements Serializable, Cloneable
     isTimeSet = false;
     fields[field] = value;
     isSet[field] = true;
+    switch (field)
+      {
+      case YEAR:
+      case MONTH:
+      case DATE:
+	isSet[WEEK_OF_YEAR] = false;
+	isSet[DAY_OF_YEAR] = false;
+	isSet[WEEK_OF_MONTH] = false;
+	isSet[DAY_OF_WEEK] = false;
+	isSet[DAY_OF_WEEK_IN_MONTH] = false;
+	break;
+      case AM_PM:
+	isSet[HOUR_OF_DAY] = false;
+	break;
+      case HOUR_OF_DAY:
+	isSet[AM_PM] = false;
+	isSet[HOUR] = false;
+	break;
+      case HOUR:
+	isSet[AM_PM] = false;
+	isSet[HOUR_OF_DAY] = false;
+	break;
+      }
   }
 
   /**
@@ -568,6 +594,11 @@ public abstract class Calendar implements Serializable, Cloneable
     fields[MONTH] = month;
     fields[DATE] = date;
     isSet[YEAR] = isSet[MONTH] = isSet[DATE] = true;
+    isSet[WEEK_OF_YEAR] = false;
+    isSet[DAY_OF_YEAR] = false;
+    isSet[WEEK_OF_MONTH] = false;
+    isSet[DAY_OF_WEEK] = false;
+    isSet[DAY_OF_WEEK_IN_MONTH] = false;
   }
 
   /**
@@ -584,6 +615,8 @@ public abstract class Calendar implements Serializable, Cloneable
     fields[HOUR_OF_DAY] = hour;
     fields[MINUTE] = minute;
     isSet[HOUR_OF_DAY] = isSet[MINUTE] = true;
+    isSet[AM_PM] = false;
+    isSet[HOUR] = false;
   }
 
   /**
@@ -611,7 +644,10 @@ public abstract class Calendar implements Serializable, Cloneable
     isTimeSet = false;
     areFieldsSet = false;
     for (int i = 0; i < FIELD_COUNT; i++)
-      isSet[i] = false;
+      {
+	isSet[i] = false;
+	fields[i] = 0;
+      }
   }
 
   /**
@@ -623,6 +659,7 @@ public abstract class Calendar implements Serializable, Cloneable
     isTimeSet = false;
     areFieldsSet = false;
     isSet[field] = false;
+    fields[field] = 0;
   }
 
   /**
@@ -647,7 +684,7 @@ public abstract class Calendar implements Serializable, Cloneable
   }
 
   /**
-   * Compares the given calender with this.  
+   * Compares the given calendar with this.  
    * @param o the object to that we should compare.
    * @return true, if the given object is a calendar, that represents
    * the same time (but doesn't neccessary have the same fields).
@@ -670,10 +707,10 @@ public abstract class Calendar implements Serializable, Cloneable
   }
 
   /**
-   * Compares the given calender with this.  
+   * Compares the given calendar with this.  
    * @param o the object to that we should compare.
    * @return true, if the given object is a calendar, and this calendar
-   * represents a smaller time than the calender o.
+   * represents a smaller time than the calendar o.
    * @exception ClassCastException if o is not an calendar.
    * @since JDK1.2 you don't need to override this method
    */
@@ -683,10 +720,10 @@ public abstract class Calendar implements Serializable, Cloneable
   }
 
   /**
-   * Compares the given calender with this.  
+   * Compares the given calendar with this.  
    * @param o the object to that we should compare.
    * @return true, if the given object is a calendar, and this calendar
-   * represents a bigger time than the calender o.
+   * represents a bigger time than the calendar o.
    * @exception ClassCastException if o is not an calendar.
    * @since JDK1.2 you don't need to override this method
    */
@@ -866,7 +903,7 @@ public abstract class Calendar implements Serializable, Cloneable
    * @since jdk1.2
    */
   // FIXME: XXX: Not abstract in JDK 1.2.
-  // public abstract int getActualMinimum(int field);
+  public abstract int getActualMinimum(int field);
 
   /**
    * Gets the actual maximum value that is allowed for the specified field.
@@ -876,7 +913,7 @@ public abstract class Calendar implements Serializable, Cloneable
    * @since jdk1.2
    */
   // FIXME: XXX: Not abstract in JDK 1.2.
-  // public abstract int getActualMaximum(int field);
+  public abstract int getActualMaximum(int field);
 
   /**
    * Return a clone of this object.
