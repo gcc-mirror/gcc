@@ -78,7 +78,7 @@
 # error
 #endif
 
-#if defined __unix__
+#if defined __unix__ || defined _AIX
 # if !#system(unix)
 #  error
 # endif
