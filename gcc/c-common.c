@@ -845,8 +845,16 @@ decl_attributes (node, attributes, prefix_attributes)
 			     "`%s' defined both normally and as an alias");
 	  else if (decl_function_context (decl) == 0)
 	    {
-	      tree id = get_identifier (TREE_STRING_POINTER
-					(TREE_VALUE (args)));
+	      tree id;
+
+	      id = TREE_VALUE (args);
+	      if (TREE_CODE (id) != STRING_CST)
+		{
+		  error ("alias arg not a string");
+		  break;
+		}
+	      id = get_identifier (TREE_STRING_POINTER (id));
+
 	      if (TREE_CODE (decl) == FUNCTION_DECL)
 		DECL_INITIAL (decl) = error_mark_node;
 	      else

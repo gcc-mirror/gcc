@@ -1,3 +1,8 @@
+Tue Aug 18 23:48:30 1998  Richard Henderson <rth@cygnus.com>
+
+	* c-common.c (decl_attributes): Issue an error if the argument
+	to alias is not a string.
+
 Tue Aug 18 13:05:59 BST 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.c (arm_override_options): Remove lie about ignoring PIC flag.
