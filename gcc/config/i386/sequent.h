@@ -23,8 +23,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "bsd386.h"
 
-/* By default, don't use IEEE compatible arithmetic
-   because the assembler can't handle that.
+/* By default, don't use IEEE compatible arithmetic comparisons
+   because the assembler can't handle the fucom insn.
    Return float values in the 387.
    (TARGET_80387 | TARGET_FLOAT_RETURNS_IN_80387) */
 
