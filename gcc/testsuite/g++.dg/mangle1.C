@@ -1,7 +1,6 @@
 // Test for mangling of simple testcase involving construction vtables.
 
 // { dg-do compile }
-// { dg-options "-fno-inline" }
 
 struct A {
   virtual void f () { }

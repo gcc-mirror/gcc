@@ -478,7 +478,6 @@ lang_f_options[] =
   {"gnu-keywords", &flag_no_gnu_keywords, 0},
   {"handle-exceptions", &flag_exceptions, 1},
   {"honor-std", &flag_honor_std, 1},
-  {"huge-objects", &flag_huge_objects, 1},
   {"implement-inlines", &flag_implement_inlines, 1},
   {"implicit-inline-templates", &flag_implicit_inline_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
@@ -491,7 +490,6 @@ lang_f_options[] =
   {"rtti", &flag_rtti, 1},
   {"stats", &flag_detailed_statistics, 1},
   {"use-cxa-atexit", &flag_use_cxa_atexit, 1},
-  {"vtable-thunks", &flag_vtable_thunks, 1},
   {"weak", &flag_weak, 1}
 };
 
@@ -503,6 +501,7 @@ static const char * const unsupported_options[] = {
   "cond-mismatch",
   "enum-int-equiv",
   "guiding-decls",
+  "huge-objects",
   "labels-ok",
   "new-abi",
   "nonnull-objects",
@@ -510,6 +509,7 @@ static const char * const unsupported_options[] = {
   "strict-prototype",
   "this-is-variable",
   "vtable-gc",
+  "vtable-thunks",
   "xref"
 };
 

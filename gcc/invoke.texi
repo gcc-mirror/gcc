@@ -172,13 +172,13 @@ in the following sections.
 -fno-enforce-eh-specs  -fexternal-templates @gol
 -falt-external-templates @gol
 -ffor-scope  -fno-for-scope  -fno-gnu-keywords  -fhonor-std @gol
--fhuge-objects  -fno-implicit-templates @gol
+-fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
 -fno-implement-inlines  -fms-extensions @gol
 -fno-nonansi-builtins  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -frepo  -fno-rtti  -fstats  -ftemplate-depth-@var{n} @gol
--fuse-cxa-atexit  -fvtable-thunks  -fno-weak  -nostdinc++ @gol
+-fuse-cxa-atexit  -fvtable-gc  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -Wctor-dtor-privacy @gol
 -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wno-deprecated @gol
@@ -1309,16 +1309,6 @@ by default, ignore @code{namespace-declarations},
 @code{using-declarations}, @code{using-directives}, and
 @code{namespace-names}, if they involve @code{std}.
 
-@item -fhuge-objects
-Support virtual function calls for objects that exceed the size
-representable by a @samp{short int}.  Users should not use this flag by
-default; if you need to use it, the compiler will tell you so.
-
-This flag is not useful when compiling with -fvtable-thunks.
-
-Like all options that change the ABI, all C++ code, @emph{including
-libgcc} must be built with the same setting of this option.
-
 @item -fno-implicit-templates
 Never emit code for non-inline templates which are instantiated
 implicitly (i.e. by use); only emit code for explicit instantiations.
@@ -1389,24 +1379,8 @@ This option is required for fully standards-compliant handling of static
 destructors, but will only work if your C library supports
 @code{__cxa_atexit}.
 
-@item -fvtable-thunks
-Use @samp{thunks} to implement the virtual function dispatch table
-(@samp{vtable}).  The traditional (cfront-style) approach to
-implementing vtables was to store a pointer to the function and two
-offsets for adjusting the @samp{this} pointer at the call site.  Newer
-implementations store a single pointer to a @samp{thunk} function which
-does any necessary adjustment and then calls the target function.
-
-This option also enables a heuristic for controlling emission of
-vtables; if a class has any non-inline virtual functions, the vtable
-will be emitted in the translation unit containing the first one of
-those.
-
-Like all options that change the ABI, all C++ code, @emph{including
-libgcc.a} must be built with the same setting of this option.
-
 @item -fno-weak
-Do not use weak symbol support, even if it is provied by the linker.
+Do not use weak symbol support, even if it is provided by the linker.
 By default, G++ will use weak symbols if they are available.  This
 option exists only for testing, and should not be used by end-users;
 it will result in inferior code and has no benefits.  This option may
@@ -1486,7 +1460,8 @@ but disables the helpful warning.
 @item -Wold-style-cast (C++ only)
 Warn if an old-style (C-style) cast is used within a C++ program.  The
 new-style casts (@samp{static_cast}, @samp{reinterpret_cast}, and
-@samp{const_cast}) are less vulnerable to unintended effects.
+@samp{const_cast}) are less vulnerable to unintended effects, and much
+easier to grep for.
 
 @item -Woverloaded-virtual (C++ only)
 @cindex overloaded virtual fn, warning
@@ -3359,7 +3334,7 @@ If @var{n} is not specified, use a machine-dependent default.
 @item -fssa
 Perform optimizations in static single assignment form.  Each function's
 flow graph is translated into SSA form, optimizations are performed, and
-the flow graph is translated back from SSA form.  User's should not
+the flow graph is translated back from SSA form.  Users should not
 specify this option, since it is not yet ready for production use.
 
 @item -fdce
@@ -8069,7 +8044,7 @@ exceptions.  For some targets, this implies GNU CC will generate frame
 unwind information for all functions, which can produce significant data
 size overhead, although it does not affect execution.  If you do not
 specify this option, GNU CC will enable it by default for languages like
-C++ which normally require exception handling, and disable itfor
+C++ which normally require exception handling, and disable it for
 languages like C that do not normally require it.  However, you may need
 to enable this option when compiling C code that needs to interoperate
 properly with exception handlers written in C++.  You may also wish to
@@ -8122,7 +8097,7 @@ shared between processes running the same program, while private data
 exists in one copy per process.
 
 @item -fno-common
-Allocate even uninitialized global variables in the data section of the
+In C, allocate even uninitialized global variables in the data section of the
 object file, rather than generating them as common blocks.  This has the
 effect that if the same variable is declared (without @code{extern}) in
 two different compilations, you will get an error when you link them.

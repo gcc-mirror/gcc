@@ -1,5 +1,4 @@
 // Build don't link:
-// Special g++ Options: -fvtable-thunks
 
 struct C1
 {
