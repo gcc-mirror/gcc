@@ -52,7 +52,6 @@ objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 cpplib/cccp		Dave Brolley		brolley@cygnus.com
 cpplib/cccp		Per Bothner		per@bothner.com
 cpplib/cccp		Zack Weinberg		zack@wolery.cumb.org
-fixincludes		Ian Taylor		ian@cygnus.com
 alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@cygnus.com
 scheduler (+ haifa)	Jim Wilson		wilson@cygnus.com
@@ -120,6 +119,7 @@ Mike Stump					mrs@windriver.com
 Tom Tromey					tromey@cygnus.com
 John Wehle					john@feith.com
 Martin v. Löwis					loewis@informatik.hu-berlin.de
+Ian Taylor					ian@zembu.com
 
 * Indicates folks we need to get Kerberos/ssh accounts ready so they
 can write in the source tree
