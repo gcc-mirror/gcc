@@ -1,5 +1,8 @@
 2004-07-27  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gimplify.c (maybe_with_size_expr): If already have WITH_SIZE_EXPR,
+	don't make another one.
+
 	PR optimization/15077
 	* function.h (struct function): Add field saved_static_chain_decl.
 	Fix comment for static_chain_decl.
