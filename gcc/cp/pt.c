@@ -11797,6 +11797,19 @@ build_non_dependent_expr (tree expr)
      types.  */
   if (TREE_CODE (expr) == OVERLOAD)
     return expr;
+
+  if (TREE_CODE (expr) == COND_EXPR)
+    return build (COND_EXPR,
+		  TREE_TYPE (expr),
+		  TREE_OPERAND (expr, 0),
+		  build_non_dependent_expr (TREE_OPERAND (expr, 1)),
+		  build_non_dependent_expr (TREE_OPERAND (expr, 2)));
+  if (TREE_CODE (expr) == COMPOUND_EXPR)
+    return build (COMPOUND_EXPR,
+		  TREE_TYPE (expr),
+		  TREE_OPERAND (expr, 0),
+		  build_non_dependent_expr (TREE_OPERAND (expr, 1)));
+      
   /* Otherwise, build a NON_DEPENDENT_EXPR.  
 
      REFERENCE_TYPEs are not stripped for expressions in templates
