@@ -5351,6 +5351,7 @@ new_insn_dead_notes (pat, insn, first, last, orig_first_insn, orig_last_insn)
 
   if (GET_CODE (dest) == REG)
     {
+#if 0
       /* If the original insns already used this register, we may not
          add new notes for it.  One example for a replacement that
          needs this test is when a multi-word memory access with
@@ -5370,6 +5371,17 @@ new_insn_dead_notes (pat, insn, first, last, orig_first_insn, orig_last_insn)
 	 REG_DEAD notes. This can probably be accurately done by
 	 calling mark_referenced_resources() on the old stream before
 	 replacing the old insns.  */
+      /* ??? The conclusion reached here -- that we can't add DEAD notes
+	 when the register is preexisting -- is false.  I can't envision
+	 a sequence postulated above that wouldn't be properly handled
+	 by the code below.  In the meantime, consider the 1->2 split
+
+	    (set (reg:SI 100) (ne:SI (reg:SI 100) (const_int 0)))
+	 to
+	    (set (reg:CC icc) (compare:CC (reg:SI 100) (const_int 0)))
+	    (set (reg:SI 100) (ne:SI (reg:CC icc) (const_int 0)))
+
+	 We do in fact need a new DEAD note on the first insn for reg 100.  */
 
       for (tem = orig_first_insn; tem != NULL_RTX; tem = NEXT_INSN (tem))
 	{
@@ -5379,6 +5391,7 @@ new_insn_dead_notes (pat, insn, first, last, orig_first_insn, orig_last_insn)
 	  if (tem == orig_last_insn)
 	    break;
 	}
+#endif
 
       /* So it's a new register, presumably only used within this
 	 group of insns. Find the last insn in the set of new insns
