@@ -1,6 +1,6 @@
 // Special g++ Options: -O2
 
-#include <iostream>
+#include <iostream.h>
 
 ostream& foo (char *x, ostream &y)
 {

@@ -1,10 +1,10 @@
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 4 Oct 1999 <nathan@acm.org>
 
 // Make sure we can deal with POD aggregate in va_args
 
 #include <stdarg.h>
-extern void abort ();
+extern "C" void abort ();
 
 struct X {int m;};
 struct Y {int a; int b; int c; int d; int e; int f;};

@@ -13,7 +13,7 @@ class Class
         class Err : public ostream
         {
         public:
-                Err(void) : ostream() { }
+                Err(void) : ostream(NULL) { }
                 ~Err(void) { }
         };
 public:

@@ -31,6 +31,5 @@ ostream& operator<< (ostream& out, const Vector<char>&)
 int main()
 {
   Vector<char> vc;
-  ostream out;
-  out << vc;
+  cout << vc;
 }

@@ -12,6 +12,6 @@ extern "C" void* alloca( __SIZE_TYPE__ );
 extern "C" int printf (const char *, ...);
 
 void* junk() {
-  return alloca(10);
+  return std::alloca(10);
 }
 main() { printf ("PASS\n");}
