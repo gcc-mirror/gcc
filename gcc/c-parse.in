@@ -50,7 +50,6 @@ end ifc
 #include "output.h"
 #include "toplev.h"
 #include "ggc.h"
-#include "diagnostic.h"  
   
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
@@ -3528,14 +3527,6 @@ init_reswords ()
       C_IS_RESERVED_WORD (id) = 1;
       ridpointers [(int) reswords[i].rid] = id;
     }
-}
-
-void
-finish_parse ()
-{
-  cpp_finish (parse_in);
-  /* Call to cpp_destroy () omitted for performance reasons.  */
-  errorcount += cpp_errors (parse_in);
 }
 
 #define NAME(type) cpp_type2name (type)

@@ -49,6 +49,7 @@ struct string_option
 };
 
 static const char *java_init PARAMS ((const char *));
+static void java_finish PARAMS ((void));
 static void java_init_options PARAMS ((void));
 static int java_decode_option PARAMS ((int, char **));
 static void put_decl_string PARAMS ((const char *, int));
@@ -199,6 +200,8 @@ static int dependency_tracking = 0;
 #define LANG_HOOKS_NAME "GNU Java"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT java_init
+#undef LANG_HOOKS_FINISH
+#define LANG_HOOKS_FINISH java_finish
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS java_init_options
 #undef LANG_HOOKS_DECODE_OPTION
@@ -508,8 +511,8 @@ java_init (filename)
   return filename;
 }
 
-void
-finish_parse ()
+static void
+java_finish ()
 {
   jcf_dependency_write ();
 }

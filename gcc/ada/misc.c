@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision: 1.11 $
+ *                             $Revision: 1.12 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -192,7 +192,7 @@ yyparse ()
    it cannot decode. This routine returns 1 if it is successful, otherwise
    it returns 0. */
 
-int
+static int
 gnat_decode_option (argc, argv)
      int argc ATTRIBUTE_UNUSED;
      char **argv;
@@ -251,7 +251,7 @@ gnat_decode_option (argc, argv)
 
 /* Initialize for option processing.  */
 
-void
+static void
 gnat_init_options ()
 {
   /* Initialize gnat_argv with save_argv size */
@@ -393,6 +393,9 @@ gnat_init (filename)
 #if defined(MIPS_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO)
   dwarf2out_set_demangle_name_func (convert_ada_name_to_qualified_name);
 #endif
+
+  if (filename == 0)
+    filename = "";
 
   return filename;
 }
@@ -877,11 +880,6 @@ insert_code_for (gnat_node)
       end_sequence ();
       emit_insns_after (insns, RTL_EXPR_RTL (get_gnu_tree (gnat_node)));
     }
-}
-
-void
-finish_parse ()
-{
 }
 
 #if 0

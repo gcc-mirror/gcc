@@ -1,3 +1,8 @@
+2001-11-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* lex.c (cxx_finish): Call c_common_finish.
+	(finish_parse): Remove.
+
 2001-11-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* decl.c (create_array_type_for_decl): Check if NAME is NULL_TREE

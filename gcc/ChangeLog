@@ -1,3 +1,22 @@
+2001-11-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (c-parse.o, c-common.o): Update dependencies.
+	* c-common.c: Include diagnostic.h.
+	(c_common_finish): New.
+	* c-common.h (c_common_finish): New.
+	* c-lang.c (LANG_HOOKS_FINISH): Override.
+	* c-parse.in: Don't include diagnostic.h.
+	(finish_parse): Remove.
+	* langhooks.h: Update comments.
+	* toplev.c (lang_dependent_init): New prototype.
+	(finalize): New.
+	(compile_file): Split cleanup code out to finalize.
+	(lang_dependent_init): Stop if lang_hooks.init fails.
+	(toplev_main): Update.
+	* tree.h (finish_parse): Remove.
+objc:
+	* objc-act.c (LANG_HOOKS_FINISH): Override.
+
 Sat Nov 17 23:30:44 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config/alpha/t-vms (LIB2FUNCS_EXTRA): Add vms_tramp.asm.

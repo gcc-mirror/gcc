@@ -165,8 +165,9 @@ static void general_init PARAMS ((char *));
 static void parse_options_and_default_flags PARAMS ((int, char **));
 static void process_options PARAMS ((void));
 static void lang_independent_init PARAMS ((void));
-static void lang_dependent_init PARAMS ((const char *));
+static int lang_dependent_init PARAMS ((const char *));
 static void init_asm_output PARAMS ((const char *));
+static void finalize PARAMS ((void));
 
 static void set_target_switch PARAMS ((const char *));
 static const char *decl_name PARAMS ((tree, int));
@@ -2168,7 +2169,7 @@ compile_file ()
   timevar_pop (TV_PARSE);
 
   if (flag_syntax_only)
-    goto finish_syntax;
+    return;
 
   globals = getdecls ();
 
@@ -2250,19 +2251,6 @@ compile_file ()
 	     IDENT_ASM_OP, version_string);
 #endif
 
-  /* Language-specific end of compilation actions.  */
- finish_syntax:
-  (*lang_hooks.finish) ();
-
-  /* Close the dump files.  */
-
-  if (flag_gen_aux_info)
-    {
-      fclose (aux_info_file);
-      if (errorcount)
-	unlink (aux_info_file_name);
-    }
-
   if (optimize > 0 && open_dump_file (DFI_combine, NULL))
     {
       timevar_push (TV_DUMP);
@@ -2270,45 +2258,6 @@ compile_file ()
       close_dump_file (DFI_combine, NULL, NULL_RTX);
       timevar_pop (TV_DUMP);
     }
-
-  /* Close non-debugging input and output files.  Take special care to note
-     whether fclose returns an error, since the pages might still be on the
-     buffer chain while the file is open.  */
-
-  finish_parse ();
-
-  if (ferror (asm_out_file) != 0)
-    fatal_io_error ("error writing to %s", asm_file_name);
-  if (fclose (asm_out_file) != 0)
-    fatal_io_error ("error closing %s", asm_file_name);
-
-  /* Do whatever is necessary to finish printing the graphs.  */
-  if (graph_dump_format != no_graph)
-    {
-      int i;
-
-      for (i = 0; i < (int) DFI_MAX; ++i)
-	if (dump_file[i].initialized && dump_file[i].graph_dump_p)
-	  {
-	    char seq[16];
-	    char *suffix;
-
-	    sprintf (seq, ".%02d.", i);
-	    suffix = concat (seq, dump_file[i].extension, NULL);
-	    finish_graph_dump_file (dump_base_name, suffix);
-	    free (suffix);
-	  }
-    }
-
-  if (mem_report)
-    {
-      ggc_print_statistics ();
-      stringpool_statistics ();
-      dump_tree_statistics ();
-    }
-
-  /* Free up memory for the benefit of leak detectors.  */
-  free_reg_info ();
 }
 
 /* This is called from various places for FUNCTION_DECL, VAR_DECL,
@@ -5112,8 +5061,8 @@ lang_independent_init ()
   expand_dummy_function_end ();
 }
 
-/* Language-dependent initialization.  */
-static void
+/* Language-dependent initialization.  Returns non-zero on success.  */
+static int
 lang_dependent_init (name)
      const char *name;
 {
@@ -5125,10 +5074,11 @@ lang_dependent_init (name)
      not done yet.  This routine must return the original filename
      (e.g. foo.i -> foo.c) so can correctly initialize debug output.  */
   name = (*lang_hooks.init) (name);
+  if (name == NULL)
+    return 0;
 
-  if (name)
-    name = ggc_strdup (name);
-
+  /* Is this duplication necessary?  */
+  name = ggc_strdup (name);
   main_input_filename = input_filename = name;
   init_asm_output (name);
 
@@ -5154,6 +5104,65 @@ lang_dependent_init (name)
   (*debug_hooks->init) (name);
 
   timevar_pop (TV_SYMOUT);
+
+  return 1;
+}
+
+/* Clean up: close opened files, etc.  */
+
+static void
+finalize ()
+{
+  /* Close the dump files.  */
+  if (flag_gen_aux_info)
+    {
+      fclose (aux_info_file);
+      if (errorcount)
+	unlink (aux_info_file_name);
+    }
+
+  /* Close non-debugging input and output files.  Take special care to note
+     whether fclose returns an error, since the pages might still be on the
+     buffer chain while the file is open.  */
+
+  if (asm_out_file)
+    {
+      if (ferror (asm_out_file) != 0)
+	fatal_io_error ("error writing to %s", asm_file_name);
+      if (fclose (asm_out_file) != 0)
+	fatal_io_error ("error closing %s", asm_file_name);
+    }
+
+  /* Do whatever is necessary to finish printing the graphs.  */
+  if (graph_dump_format != no_graph)
+    {
+      int i;
+
+      for (i = 0; i < (int) DFI_MAX; ++i)
+	if (dump_file[i].initialized && dump_file[i].graph_dump_p)
+	  {
+	    char seq[16];
+	    char *suffix;
+
+	    sprintf (seq, ".%02d.", i);
+	    suffix = concat (seq, dump_file[i].extension, NULL);
+	    finish_graph_dump_file (dump_base_name, suffix);
+	    free (suffix);
+	  }
+    }
+
+  if (mem_report)
+    {
+      ggc_print_statistics ();
+      stringpool_statistics ();
+      dump_tree_statistics ();
+    }
+
+  /* Free up memory for the benefit of leak detectors.  */
+  free_reg_info ();
+
+  /* Language-specific end of compilation actions.  */
+  (*lang_hooks.finish) ();
 }
 
 /* Entry point of cc1, cc1plus, jc1, f771, etc.
@@ -5179,8 +5188,6 @@ toplev_main (argc, argv)
   if (exit_after_options)
     return (SUCCESS_EXIT_CODE);
 
-  /* Start timing total execution time.  */
-
   /* The bulk of command line switch processing.  */
   process_options ();
 
@@ -5193,10 +5200,11 @@ toplev_main (argc, argv)
      hashes etc.  */
   lang_independent_init ();
 
-  /* Language-dependent initialization.  */
-  lang_dependent_init (filename);
+  /* Language-dependent initialization.  Returns true on success.  */
+  if (lang_dependent_init (filename))
+    compile_file ();
 
-  compile_file ();
+  finalize ();
 
   /* Stop timing and print the times.  */
   timevar_stop (TV_TOTAL);

@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "expr.h"
 #include "c-common.h"
+#include "diagnostic.h"
 #include "tm_p.h"
 #include "obstack.h"
 #include "c-lex.h"
@@ -3887,6 +3888,17 @@ c_common_lang_init (filename)
     c_init_attributes ();
 
   return filename;
+}
+
+/* Common finish hook for the C, ObjC and C++ front ends.  */
+void
+c_common_finish ()
+{
+  cpp_finish (parse_in);
+
+  /* For performance, avoid tearing down cpplib's internal structures.
+     Call cpp_errors () instead of cpp_destroy ().  */
+  errorcount += cpp_errors (parse_in);
 }
 
 static void

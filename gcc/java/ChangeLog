@@ -1,3 +1,8 @@
+2001-11-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* lang.c (finish_parse): Rename to java_finish.
+	(LANG_HOOKS_FINISH, java_finish): New.
+
 2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* decl.c (init_decl_processing): Rename java_init_decl_processing.
