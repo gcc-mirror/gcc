@@ -2885,6 +2885,9 @@ expand_body (tree fn)
   /* ??? When is this needed?  */
   saved_function = current_function_decl;
 
+  /* Emit any thunks that should be emitted at the same time as FN.  */
+  emit_associated_thunks (fn);
+
   timevar_push (TV_INTEGRATION);
   optimize_function (fn);
   timevar_pop (TV_INTEGRATION);
@@ -2894,9 +2897,6 @@ expand_body (tree fn)
   current_function_decl = saved_function;
 
   extract_interface_info ();
-
-  /* Emit any thunks that should be emitted at the same time as FN.  */
-  emit_associated_thunks (fn);
 
   /* If this function is marked with the constructor attribute, add it
      to the list of functions to be called along with constructors
