@@ -31,7 +31,7 @@
 #ifndef _CPP_BACKWARD_HASHTABLE_H
 #define _CPP_BACKWARD_HASHTABLE_H 1
 
-#include <bits/stl_hashtable.h>
+#include <ext/stl_hashtable.h>
 #include "algo.h"
 #include "alloc.h"
 #include "vector.h"
