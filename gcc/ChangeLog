@@ -1,3 +1,8 @@
+2000-09-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/mcore/mcore.c: Fix compile time warnings.
+	* config/mcore/mcore-protos.h: Fix compile time warnings. 
+
 2000-09-20  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* configure.in: Correct test of gcc_cv_glibc.
