@@ -751,7 +751,7 @@ mem_alloc_r_at (unix_stream * s, int *len, gfc_offset where)
 
   s->logical_offset = where + *len;
 
-  n = (where - s->buffer_offset) - s->active;
+  n = s->buffer_offset + s->active - where;
   if (*len > n)
     *len = n;
 

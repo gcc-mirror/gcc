@@ -1,5 +1,11 @@
 2004-08-31  Paul Brook  <paul@codesourcery.com>
 
+	* io/transfer.c (read_sf): Rename uinty to readlen.  Detect EOF.
+	(finalize_transfer): Move setjmp after namlist IO.
+	* io/unix.c (mem_alloc_r_at): Calculate remaining length correctly.
+
+2004-08-31  Paul Brook  <paul@codesourcery.com>
+
 	* list_read.c (eat_separator): Set at_eo when a '/' is seen.
 
 2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>

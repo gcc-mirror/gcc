@@ -1,5 +1,9 @@
 2004-08-31  Paul Brook  <paul@codesourcery.com>
 
+	* gfortran.dg/eof_1.f90: New test.
+
+2004-08-31  Paul Brook  <paul@codesourcery.com>
+
 	* gfortran.dg/list_read_1.f90: New file.
 
 2004-08-30  Mark Mitchell  <mark@codesourcery.com>
