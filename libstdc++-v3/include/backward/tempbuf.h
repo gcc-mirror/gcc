@@ -65,11 +65,11 @@
 #include <bits/type_traits.h>  
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
-#include <bits/stl_tempbuf.h>
+#include <ext/memory>
 
-using std::get_temporary_buffer;
-using std::return_temporary_buffer;
-using std::temporary_buffer;
+using __gnu_cxx::get_temporary_buffer;
+using __gnu_cxx::return_temporary_buffer;
+using __gnu_cxx::temporary_buffer;
 
 #endif /* _CPP_BACKWARD_TEMPBUF_H */
 

@@ -1,3 +1,16 @@
+2002-01-04  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/stl_tree.h (rb_tree):  Move to...
+	* include/ext/rb_tree:  ...here, new file.
+	* include/Makefile.am (ext_headers):  Add new file.
+	* include/Makefile.in:  Regenerate.
+	* include/bits/stl_tempbuf.h (get_temporary_buffer + helper,
+	return_temporary_buffer, struct temporary_buffer):  Move to...
+	* include/ext/memory:  ...here.
+	* testsuite/ext/headers.cc:  Include <ext/rb_tree>.
+	* include/backward/tempbuf.h:  Include <ext/memory>, tweak.
+	* include/backward/tree.h:  Include <ext/rb_tree), tweak.
+
 2002-01-03  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/stl_numeric.h (power + helpers, iota):  Move to...

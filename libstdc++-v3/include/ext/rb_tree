@@ -1,6 +1,6 @@
-// Temporary buffer implementation -*- C++ -*-
+// rb_tree extension -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  *
  *
- * Copyright (c) 1996,1997
+ * Copyright (c) 1996
  * Silicon Graphics Computer Systems, Inc.
  *
  * Permission to use, copy, modify, distribute and sell this software
@@ -53,85 +53,34 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file stl_tempbuf.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
+#ifndef _EXT_RB_TREE
+#define _EXT_RB_TREE
 
-#ifndef __GLIBCPP_INTERNAL_TEMPBUF_H
-#define __GLIBCPP_INTERNAL_TEMPBUF_H
+#pragma GCC system_header
+#include <bits/stl_tree.h>
 
-namespace std
+namespace __gnu_cxx
 {
+using std::_Rb_tree;
+using std::allocator;
 
-template <class _ForwardIterator, class _Tp>
-class _Temporary_buffer {
-private:
-  ptrdiff_t  _M_original_len;
-  ptrdiff_t  _M_len;
-  _Tp*       _M_buffer;
+// Class rb_tree is not part of the C++ standard.  It is provided for
+// compatibility with the HP STL.
 
-  void _M_allocate_buffer() {
-    _M_original_len = _M_len;
-    _M_buffer = 0;
+template <class _Key, class _Value, class _KeyOfValue, class _Compare,
+          class _Alloc = allocator<_Value> >
+struct rb_tree : public _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
+{
+  typedef _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc> _Base;
+  typedef typename _Base::allocator_type allocator_type;
 
-    if (_M_len > (ptrdiff_t)(INT_MAX / sizeof(_Tp)))
-      _M_len = INT_MAX / sizeof(_Tp);
-
-    while (_M_len > 0) {
-      _M_buffer = (_Tp*) malloc(_M_len * sizeof(_Tp));
-      if (_M_buffer)
-        break;
-      _M_len /= 2;
-    }
-  }
-
-  void _M_initialize_buffer(const _Tp&, __true_type) {}
-  void _M_initialize_buffer(const _Tp& val, __false_type) {
-    uninitialized_fill_n(_M_buffer, _M_len, val);
-  }
-
-public:
-  ptrdiff_t size() const { return _M_len; }
-  ptrdiff_t requested_size() const { return _M_original_len; }
-  _Tp* begin() { return _M_buffer; }
-  _Tp* end() { return _M_buffer + _M_len; }
-
-  _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last) {
-    // Workaround for a __type_traits bug in the pre-7.3 compiler.
-    typedef typename __type_traits<_Tp>::has_trivial_default_constructor
-            _Trivial;
-
-    try {
-      _M_len = distance(__first, __last);
-      _M_allocate_buffer();
-      if (_M_len > 0)
-        _M_initialize_buffer(*__first, _Trivial());
-    }
-    catch(...)
-      { 
-	free(_M_buffer); 
-	_M_buffer = 0; 
-	_M_len = 0;
-	__throw_exception_again; 
-      }
-  }
- 
-  ~_Temporary_buffer() {  
-    _Destroy(_M_buffer, _M_buffer + _M_len);
-    free(_M_buffer);
-  }
-
-private:
-  // Disable copy constructor and assignment operator.
-  _Temporary_buffer(const _Temporary_buffer&) {}
-  void operator=(const _Temporary_buffer&) {}
+  rb_tree(const _Compare& __comp = _Compare(),
+          const allocator_type& __a = allocator_type())
+    : _Base(__comp, __a) {}
+  
+  ~rb_tree() {}
 };
-    
-} // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_TEMPBUF_H */
+} // namespace __gnu_cxx
 
-// Local Variables:
-// mode:C++
-// End:
+#endif /* _EXT_RB_TREE */

@@ -179,6 +179,7 @@ ext_headers = \
 	${ext_srcdir}/iterator \
 	${ext_srcdir}/memory \
 	${ext_srcdir}/numeric \
+	${ext_srcdir}/rb_tree \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/slist \
