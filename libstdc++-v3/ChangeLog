@@ -1,5 +1,12 @@
 2002-10-28  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* testsuite/thread/pthread5.cc: Include <unistd.h>
+	if _GLIBCPP_HAVE_UNISTD_H is defined.
+	(main): Only use pthread_attr_setscope if
+	_POSIX_THREAD_PRIORITY_SCHEDULING is defined.
+
+2002-10-28  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* testsuite/thread/pthread1.cc: Enable on *-*-netbsd*.
 	* testsuite/thread/pthread2.cc: Likewise.
 	* testsuite/thread/pthread3.cc: Likewise.
