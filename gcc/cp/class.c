@@ -1109,7 +1109,7 @@ handle_using_decl (tree using_decl, tree t)
   binfo = lookup_base (t, ctype, ba_any, NULL);
   if (! binfo)
     {
-      error_not_base_type (t, ctype);
+      error_not_base_type (ctype, t);
       return;
     }
   

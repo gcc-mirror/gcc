@@ -9871,7 +9871,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 	  if (declarator == error_mark_node)
 	    break;
 	  
-	  if (TREE_CODE (declarator) == SCOPE_REF)
+	  if (TREE_CODE (declarator) == SCOPE_REF
+	      && !current_scope ())
 	    {
 	      tree scope = TREE_OPERAND (declarator, 0);
 
