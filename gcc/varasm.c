@@ -779,7 +779,7 @@ set_user_assembler_name (tree decl, const char *name)
 int
 decode_reg_name (const char *asmspec)
 {
-  if (asmspec != 0)
+  if (asmspec != 0 && strlen (asmspec) != 0)
     {
       int i;
 
