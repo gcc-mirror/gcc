@@ -1,3 +1,7 @@
+2003-12-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* emit-rtl.c (copy_rtx_if_shared_1): Fix warning.
+
 2003-12-10  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	Backport from mainline (fixes unreported regression):

@@ -2642,7 +2642,7 @@ repeat:
 	 because it looks safe and profitable in one context, but
 	 in some other context it creates unrecognizable RTL.  */
       if (CONSTANT_ADDRESS_P (XEXP (x, 0)))
-	return x;
+	return;
 
       break;
 
