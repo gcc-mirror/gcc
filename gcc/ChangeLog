@@ -1,3 +1,8 @@
+Wed Dec  4 15:20:54 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (force_nonfallthru_and_redirect):  Allow abnormal edge
+	to be forced into nonfallthru.
+
 2002-12-03  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/t-netbsd (USER_H): Set to $(EXTRA_HEADERS).
