@@ -5810,7 +5810,7 @@ following_call (insn)
   /* Check for CALL_INSNs and millicode calls.  */
   if (insn
       && ((GET_CODE (insn) == CALL_INSN
-	   && get_attr_type (inns) != TYPE_DYNCALL)
+	   && get_attr_type (insn) != TYPE_DYNCALL)
 	  || (GET_CODE (insn) == INSN
 	      && GET_CODE (PATTERN (insn)) != SEQUENCE
 	      && GET_CODE (PATTERN (insn)) != USE
