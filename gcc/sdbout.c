@@ -1065,8 +1065,9 @@ sdbout_field_types (type)
      tree type;
 {
   tree tail;
+
   for (tail = TYPE_FIELDS (type); tail; tail = TREE_CHAIN (tail))
-    if (TREE_CODE (TREE_TYPE (tail)) == POINTER_TYPE)
+    if (POINTER_TYPE_P (TREE_TYPE (tail)))
       sdbout_one_type (TREE_TYPE (TREE_TYPE (tail)));
     else
       sdbout_one_type (TREE_TYPE (tail));
