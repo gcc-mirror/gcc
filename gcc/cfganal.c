@@ -348,7 +348,7 @@ flow_call_edges_add (blocks)
 	      if (e)
 		blocks_split++;
 
-	      make_edge (NULL, bb, EXIT_BLOCK_PTR, EDGE_FAKE);
+	      make_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
 	    }
 	  if (insn == bb->head)
 	    break;
@@ -762,7 +762,7 @@ add_noreturn_fake_exit_edges ()
 
   for (x = 0; x < n_basic_blocks; x++)
     if (BASIC_BLOCK (x)->succ == NULL)
-      make_edge (NULL, BASIC_BLOCK (x), EXIT_BLOCK_PTR, EDGE_FAKE);
+      make_single_succ_edge (BASIC_BLOCK (x), EXIT_BLOCK_PTR, EDGE_FAKE);
 }
 
 /* This function adds a fake edge between any infinite loops to the
@@ -794,7 +794,7 @@ connect_infinite_loops_to_exit ()
       unvisited_block = flow_dfs_compute_reverse_execute (&dfs_ds);
       if (!unvisited_block)
 	break;
-      make_edge (NULL, unvisited_block, EXIT_BLOCK_PTR, EDGE_FAKE);
+      make_edge (unvisited_block, EXIT_BLOCK_PTR, EDGE_FAKE);
       flow_dfs_compute_reverse_add_bb (&dfs_ds, unvisited_block);
     }
 

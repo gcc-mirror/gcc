@@ -305,7 +305,11 @@ extern void connect_infinite_loops_to_exit	PARAMS ((void));
 extern int flow_call_edges_add		PARAMS ((sbitmap));
 extern rtx flow_delete_insn		PARAMS ((rtx));
 extern void flow_delete_insn_chain	PARAMS ((rtx, rtx));
-extern void make_edge			PARAMS ((sbitmap *, basic_block,
+extern edge cached_make_edge		PARAMS ((sbitmap *, basic_block,
+						 basic_block, int));
+extern edge make_edge			PARAMS ((basic_block,
+						 basic_block, int));
+extern edge make_single_succ_edge	PARAMS ((basic_block,
 						 basic_block, int));
 extern void remove_edge			PARAMS ((edge));
 extern void redirect_edge_succ		PARAMS ((edge, basic_block));
