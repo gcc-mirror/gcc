@@ -1,3 +1,8 @@
+2001-09-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (EXTRA_TARGET_FLAGS): Pass RANLIB_FOR_TARGET for
+	RANLIB.
+
 2001-09-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (AS_FOR_TARGET, LD_FOR_TARGET,
