@@ -1,3 +1,7 @@
+2003-11-15  Tom Tromey  <tromey@redhat.com>
+
+	* gjavah.c (print_stub_or_jni): Pass `env' to FatalError.
+
 2003-11-12  Jason Merrill  <jason@redhat.com>
 
 	PR optimization/12547

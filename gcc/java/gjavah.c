@@ -1597,7 +1597,7 @@ print_stub_or_jni (FILE* stream, JCF* jcf, int name_index,
       if (stubs)
 	{
 	  if (flag_jni)
-	    fputs ("\n{\n  (*env)->FatalError (\"", stream);
+	    fputs ("\n{\n  (*env)->FatalError (env, \"", stream);
 	  else
 	    fputs ("\n{\n  throw new ::java::lang::UnsupportedOperationException (JvNewStringLatin1 (\"", stream);
 	  print_name_for_stub_or_jni (stream, jcf, name_index,
