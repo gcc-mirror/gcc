@@ -1,6 +1,6 @@
 /* RTL simplification functions for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1910,6 +1910,23 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	      && ! side_effects_p (op0)
 	      && GET_MODE_CLASS (mode) != MODE_CC)
 	    return const0_rtx;
+
+	  /* Transform (and (extend X) C) into (zero_extend (and X C)) if
+	     there are no non-zero bits of C outside of X's mode.  */
+	  if ((GET_CODE (op0) == SIGN_EXTEND
+	       || GET_CODE (op0) == ZERO_EXTEND)
+	      && GET_CODE (trueop1) == CONST_INT
+	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	      && (~GET_MODE_MASK (GET_MODE (XEXP (op0, 0)))
+		  & INTVAL (trueop1)) == 0)
+	    {
+	      enum machine_mode imode = GET_MODE (XEXP (op0, 0));
+	      tem = simplify_gen_binary (AND, imode, XEXP (op0, 0),
+					 gen_int_mode (INTVAL (trueop1),
+						       imode));
+	      return simplify_gen_unary (ZERO_EXTEND, mode, tem, imode);
+	    }
+
 	  /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,
 	     ((A & N) + B) & M -> (A + B) & M
 	     Similarly if (N & M) == 0,
