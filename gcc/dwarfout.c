@@ -4359,6 +4359,17 @@ output_decl (decl, containing_scope)
   if (TREE_CODE (decl) == ERROR_MARK)
     return;
 
+  /* If a structure is declared within an initialization, e.g. as the
+     operand of a sizeof, then it will not have a name.  We don't want
+     to output a DIE for it, as the tree nodes are in the temporary obstack */
+
+  if ((TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
+       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE)
+      && ((DECL_NAME (decl) == 0 && TYPE_NAME (TREE_TYPE (decl)) == 0)
+	  || (TYPE_FIELDS (TREE_TYPE (decl)) 
+	      && (TREE_CODE (TYPE_FIELDS (TREE_TYPE (decl))) == ERROR_MARK))))
+    return;
+  
   /* If this ..._DECL node is marked to be ignored, then ignore it.
      But don't ignore a function definition, since that would screw
      up our count of blocks, and that it turn will completely screw up the
