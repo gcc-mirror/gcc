@@ -1,3 +1,14 @@
+2003-03-04  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+        * cp-tree.h (cxx_saved_binding): Declare.
+        (struct saved_scope): Adjust type of field 'old_binding'.
+        * decl.c (cxx_saved_binding_make): New macro.
+        (struct cxx_saved_binding): Define.
+        (store_bindings): Adjust prototype.  Use cxx_saved_binding to save
+        C++ bindings. 
+        (maybe_push_to_top_level): Adjust local variable type.
+        (pop_from_top_level): Likewise.
+	
 2003-03-04  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (c++.tags): New target.
