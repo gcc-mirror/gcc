@@ -2583,9 +2583,9 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    case SHIFT_ASHIFTRT:
 	      info->special = "mov.b\t%z0,%w0\n\tbld\t#7,%w0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0";
 	      info->shift1  = "shar.b\t%w0";
- 	      goto end;
- 	    }
- 	}
+	      goto end;
+	    }
+	}
       else if ((TARGET_H8300H && count == 24)
 	       || (TARGET_H8300S && 24 <= count && count <= 25))
 	{
