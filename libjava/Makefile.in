@@ -1762,8 +1762,9 @@ clean-local:
 	$(GCJCOMPILE) -o $@ $<
 
 $(nat_files) $(x_nat_files): %.lo: %.cc
-	@echo '$(LTCXXCOMPILE) -c -o $@ $<'; \
-	$(LTCXXCOMPILE) -MD -MT $@ -MF $*.d -c -o $@ $<
+	@echo '$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<'; \
+	$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<
+	@-mv $(@:.lo=.pp) $(@:.lo=.d)
 
 $(c_files): %.lo: %.c
 	$(LTCOMPILE) -c -o $@ $<

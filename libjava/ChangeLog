@@ -1,3 +1,9 @@
+2001-12-02  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* Makefile.am (nat_files, x_nat_files): Make sure the dependencies
+	don't get deleted if compilation fails.
+	* Makefile.in: Rebuilt.
+
 2001-11-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.am (nat_headers, x_nat_headers): Depend on .class files, not
