@@ -107,6 +107,7 @@
 #undef HAVE_READDIR_R
 #undef HAVE_GETHOSTBYNAME_R
 #undef HAVE_GETHOSTBYADDR_R
+#undef HAVE_FTRUNCATE
 
 /* Define if you want a bytecode interpreter.  */
 #undef INTERPRETER

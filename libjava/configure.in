@@ -507,7 +507,7 @@ else
    AC_CHECK_FUNCS(nl_langinfo setlocale)
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
    AC_CHECK_FUNCS(inet_pton uname inet_ntoa)
-   AC_CHECK_FUNCS(fork execvp pipe sigaction)
+   AC_CHECK_FUNCS(fork execvp pipe sigaction ftruncate)
    AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h) 
    AC_CHECK_FUNC(backtrace, [
      case "$host" in

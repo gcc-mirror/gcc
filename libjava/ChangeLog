@@ -1,5 +1,13 @@
 2002-08-29  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/natFileDescriptorPosix.cc (setLength): Handle case where
+	ftruncate is missing.
+	* configure, include/config.h.in: Rebuilt.
+	* acconfig.h (HAVE_FTRUNCATE): Mention.
+	* configure.in: Check for ftruncate.
+
+2002-08-29  Tom Tromey  <tromey@redhat.com>
+
 	* include/jvm.h (struct _Jv_frame_info): New structure.
 	* gnu/gcj/runtime/natNameFinder.cc: Include StringBuffer.h,
 	java-interp.h.
