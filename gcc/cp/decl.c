@@ -9356,16 +9356,22 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	}
       else
 	{
-	  if (! pedantic && ! warn_return_type
-	      && funcdef_flag
-	      && MAIN_NAME_P (dname)
-	      && ctype == NULL_TREE
-	      && in_namespace == NULL_TREE
-	      && current_namespace == global_namespace)
-	    /* Let `main () { }' slide, since it's so common.  */;
-	  else
+	  /* We handle `main' specially here, because 'main () { }' is so
+	     common.  With no options, it is allowed.  With -Wreturn-type,
+	     it is a warning.  It is only an error with -pedantic-errors.  */
+	  int is_main = (funcdef_flag
+			 && MAIN_NAME_P (dname)
+			 && ctype == NULL_TREE
+			 && in_namespace == NULL_TREE
+			 && current_namespace == global_namespace);
+
+	  if (pedantic || ! is_main)
 	    cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type",
 			dname);
+	  else if (warn_return_type)
+	    cp_warning ("ANSI C++ forbids declaration `%D' with no type",
+			dname);
+
 	  type = integer_type_node;
 	}
     }

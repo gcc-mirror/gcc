@@ -1,3 +1,9 @@
+1999-01-16  Jason Merrill  <jason@yorick.cygnus.com>
+	    Manfred Hollstein <manfred@s-direktnet.de>
+
+	* decl.c (grokdeclarator): Don't make 'main(){}' an error with only
+	-Wreturn-type.
+
 1999-01-16  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (struct lang_type): Added has_mutable flag.
