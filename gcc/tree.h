@@ -115,18 +115,6 @@ enum built_in_function
 
 typedef union tree_node *tree;
 
-#define NULL_TREE (tree) NULL
-
-/* Define a generic NULL if one hasn't already been defined.  */
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#ifndef NULL_PTR
-#define NULL_PTR (char *) NULL
-#endif
-
 /* Every kind of tree node starts with this structure,
    so all nodes have these fields.
 
@@ -929,6 +917,36 @@ union tree_node
   struct tree_block block;
  };
 
+/* Add prototype support.  */
+#ifndef PROTO
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define PROTO(ARGS) ARGS
+#else
+#define PROTO(ARGS) ()
+#endif
+#endif
+
+
+#define NULL_TREE (tree) NULL
+
+/* Define a generic NULL if one hasn't already been defined.  */
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+#ifndef GENERIC_PTR
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define GENERIC_PTR void *
+#else
+#define GENERIC_PTR char *
+#endif
+#endif
+
+#ifndef NULL_PTR
+#define NULL_PTR ((GENERIC_PTR)0)
+#endif
+
 /* Format for global names of constructor and destructor functions.  */
 #ifndef NO_DOLLAR_IN_LABEL
 #define CONSTRUCTOR_NAME_FORMAT "_GLOBAL_$I$%s"
@@ -945,77 +963,106 @@ union tree_node
 #define floor_log2(N) floor_log2_wide ((HOST_WIDE_INT) (N))
 #endif
 
-extern char *oballoc ();
-extern char *permalloc ();
-extern char *savealloc ();
-extern char *xmalloc ();
+#if 0
+/* At present, don't prototype xrealloc, since all of the callers don't
+   cast their pointers to char *, and all of the xrealloc's don't use
+   void * yet.  */
+extern char *xrealloc			PROTO((void *, unsigned));
+#else
 extern char *xrealloc ();
-extern void free ();
+#endif
+
+extern char *oballoc			PROTO((int));
+extern char *permalloc			PROTO((int));
+extern char *savealloc			PROTO((int));
+extern char *xmalloc			PROTO((unsigned));
+extern void free			PROTO((void *));
 
 /* Lowest level primitive for allocating a node.
    The TREE_CODE is the only argument.  Contents are initialized
    to zero except for a few of the common fields.  */
 
-extern tree make_node ();
+extern tree make_node			PROTO((enum tree_code));
 
 /* Make a copy of a node, with all the same contents except
    for TREE_PERMANENT.  (The copy is permanent
    iff nodes being made now are permanent.)  */
 
-extern tree copy_node ();
+extern tree copy_node			PROTO((tree));
 
 /* Make a copy of a chain of TREE_LIST nodes.  */
 
-extern tree copy_list ();
+extern tree copy_list			PROTO((tree));
 
 /* Make a TREE_VEC.  */
 
-extern tree make_tree_vec ();
+extern tree make_tree_vec		PROTO((int));
 
 /* Return the (unique) IDENTIFIER_NODE node for a given name.
    The name is supplied as a char *.  */
 
-extern tree get_identifier ();
+extern tree get_identifier		PROTO((char *));
 
 /* Construct various types of nodes.  */
 
 #define build_int_2(LO,HI)  \
   build_int_2_wide ((HOST_WIDE_INT) (LO), (HOST_WIDE_INT) (HI))
 
-extern tree build_int_2_wide ();
-extern tree build_real ();
-extern tree build_real_from_string ();
-extern tree build_real_from_int_cst ();
-extern tree build_complex ();
-extern tree build_string ();
-extern tree build (), build1 ();
-extern tree build_nt (), build_parse_node ();
-extern tree build_tree_list (), build_decl_list ();
-extern tree build_op_identifier ();
-extern tree build_decl ();
-extern tree build_block ();
+#if 0
+/* We cannot define prototypes for the variable argument functions,
+   since they have not been ANSI-fied, and an ANSI compiler would
+   complain when compiling the definition of these functions.  */
+
+extern tree build			PROTO((enum tree_code, tree, ...));
+extern tree build_nt			PROTO((enum tree_code, ...));
+extern tree build_parse_node		PROTO((enum tree_code, ...));
+#else
+extern tree build ();
+extern tree build_nt ();
+extern tree build_parse_node ();
+#endif
+
+extern tree build_int_2_wide		PROTO((HOST_WIDE_INT, HOST_WIDE_INT));
+extern tree build_real			PROTO((tree, REAL_VALUE_TYPE));
+extern tree build_real_from_int_cst 	PROTO((tree, tree));
+extern tree build_complex		PROTO((tree, tree));
+extern tree build_string		PROTO((int, char *));
+extern tree build1			PROTO((enum tree_code, tree, tree));
+extern tree build_tree_list		PROTO((tree, tree));
+extern tree build_decl_list		PROTO((tree, tree));
+extern tree build_decl			PROTO((enum tree_code, tree, tree));
+extern tree build_block			PROTO((tree, tree, tree, tree, tree));
 
 /* Construct various nodes representing data types.  */
 
-extern tree make_signed_type ();
-extern tree make_unsigned_type ();
-extern tree signed_or_unsigned_type ();
-extern void fixup_unsigned_type ();
-extern tree build_pointer_type ();
-extern tree build_reference_type ();
-extern tree build_index_type (), build_index_2_type ();
-extern tree build_array_type ();
-extern tree build_function_type ();
-extern tree build_method_type ();
-extern tree build_offset_type ();
-extern tree build_complex_type ();
-extern tree array_type_nelts ();
+extern tree make_signed_type		PROTO((int));
+extern tree make_unsigned_type		PROTO((int));
+extern tree signed_or_unsigned_type 	PROTO((int, tree));
+extern void fixup_unsigned_type		PROTO((tree));
+extern tree build_pointer_type		PROTO((tree));
+extern tree build_reference_type 	PROTO((tree));
+extern tree build_index_type		PROTO((tree));
+extern tree build_index_2_type		PROTO((tree, tree));
+extern tree build_array_type		PROTO((tree, tree));
+extern tree build_function_type		PROTO((tree, tree));
+extern tree build_method_type		PROTO((tree, tree));
+extern tree build_offset_type		PROTO((tree, tree));
+extern tree build_complex_type		PROTO((tree));
+extern tree array_type_nelts		PROTO((tree));
 
-/* Construct expressions, performing type checking.  */
+/* Construct expressions, performing type checking.
+   GCC and G++ use different calling sequences for build_binary_op,
+   and build_indirect_ref, so don't include a prototype here.  */
 
 extern tree build_binary_op ();
 extern tree build_indirect_ref ();
-extern tree build_unary_op ();
+extern tree build_unary_op		PROTO((enum tree_code, tree, int));
+
+/* From expmed.c.  Since rtl.h is included after tree.h, we can't
+   put the prototype here.  Rtl.h does declare the prototype if
+   tree.h had been included.  */
+
+extern tree make_tree ();
 
 /* Given a type node TYPE, and CONSTP and VOLATILEP, return a type
    for the same kind of data as TYPE describes.
@@ -1024,25 +1071,25 @@ extern tree build_unary_op ();
    so that duplicate variants are never made.
    Only main variants should ever appear as types of expressions.  */
 
-extern tree build_type_variant ();
+extern tree build_type_variant		PROTO((tree, int, int));
 
 /* Make a copy of a type node.  */
 
-extern tree build_type_copy ();
+extern tree build_type_copy		PROTO((tree));
 
 /* Given a ..._TYPE node, calculate the TYPE_SIZE, TYPE_SIZE_UNIT,
    TYPE_ALIGN and TYPE_MODE fields.
    If called more than once on one node, does nothing except
    for the first time.  */
 
-extern void layout_type ();
+extern void layout_type			PROTO((tree));
 
 /* Given a hashcode and a ..._TYPE node (for which the hashcode was made),
    return a canonicalized ..._TYPE node, so that duplicates are not made.
    How the hash code is computed is up to the caller, as long as any two
    callers that could hash identical-looking type nodes agree.  */
 
-extern tree type_hash_canon ();
+extern tree type_hash_canon		PROTO((int, tree));
 
 /* Given a VAR_DECL, PARM_DECL, RESULT_DECL or FIELD_DECL node,
    calculates the DECL_SIZE, DECL_SIZE_UNIT, DECL_ALIGN and DECL_MODE
@@ -1052,7 +1099,7 @@ extern tree type_hash_canon ();
    be starting at (in bits).  Zero means it can be assumed aligned
    on any boundary that may be needed.  */
 
-extern void layout_decl ();
+extern void layout_decl			PROTO((tree, unsigned));
 
 /* Fold constants as much as possible in an expression.
    Returns the simplified expression.
@@ -1060,20 +1107,19 @@ extern void layout_decl ();
    if the argument itself cannot be simplified, its
    subexpressions are not changed.  */
 
-extern tree fold ();
+extern tree fold			PROTO((tree));
 
 /* Return an expr equal to X but certainly not valid as an lvalue.  */
 
-extern tree non_lvalue ();
+extern tree non_lvalue			PROTO((tree));
 
-extern tree convert ();
-extern tree size_in_bytes ();
-extern int int_size_in_bytes ();
-extern tree size_binop ();
-extern tree size_int ();
-extern tree round_up ();
-extern tree get_pending_sizes ();
-extern tree get_permanent_types (), get_temporary_types ();
+extern tree convert			PROTO((tree, tree));
+extern tree size_in_bytes		PROTO((tree));
+extern int int_size_in_bytes		PROTO((tree));
+extern tree size_binop			PROTO((enum tree_code, tree, tree));
+extern tree size_int			PROTO((unsigned));
+extern tree round_up			PROTO((tree, int));
+extern tree get_pending_sizes		PROTO((void));
 
 /* Type for sizes of data-type.  */
 
@@ -1083,70 +1129,62 @@ extern tree sizetype;
    by making the last node in X point to Y.
    Returns X, except if X is 0 returns Y.  */
 
-extern tree chainon ();
+extern tree chainon			PROTO((tree, tree));
 
 /* Make a new TREE_LIST node from specified PURPOSE, VALUE and CHAIN.  */
 
-extern tree tree_cons (), perm_tree_cons (), temp_tree_cons ();
-extern tree saveable_tree_cons (), decl_tree_cons ();
+extern tree tree_cons			PROTO((tree, tree, tree));
+extern tree perm_tree_cons		PROTO((tree, tree, tree));
+extern tree temp_tree_cons		PROTO((tree, tree, tree));
+extern tree saveable_tree_cons		PROTO((tree, tree, tree));
+extern tree decl_tree_cons		PROTO((tree, tree, tree));
 
 /* Return the last tree node in a chain.  */
 
-extern tree tree_last ();
+extern tree tree_last			PROTO((tree));
 
 /* Reverse the order of elements in a chain, and return the new head.  */
 
-extern tree nreverse ();
-
-/* Make a copy of a chain of tree nodes.  */
-
-extern tree copy_chain ();
+extern tree nreverse			PROTO((tree));
 
 /* Returns the length of a chain of nodes
    (number of chain pointers to follow before reaching a null pointer).  */
 
-extern int list_length ();
+extern int list_length			PROTO((tree));
 
 /* integer_zerop (tree x) is nonzero if X is an integer constant of value 0 */
 
-extern int integer_zerop ();
+extern int integer_zerop		PROTO((tree));
 
 /* integer_onep (tree x) is nonzero if X is an integer constant of value 1 */
 
-extern int integer_onep ();
+extern int integer_onep			PROTO((tree));
 
 /* integer_all_onesp (tree x) is nonzero if X is an integer constant
    all of whose significant bits are 1.  */
 
-extern int integer_all_onesp ();
+extern int integer_all_onesp		PROTO((tree));
 
 /* integer_pow2p (tree x) is nonzero is X is an integer constant with
    exactly one bit 1.  */
 
-extern int integer_pow2p ();
-
-/* type_unsigned_p (tree x) is nonzero if the type X is an unsigned type
-   (all of its possible values are >= 0).
-   If X is a pointer type, the value is 1.
-   If X is a real type, the value is 0.  */
-
-extern int type_unsigned_p ();
+extern int integer_pow2p		PROTO((tree));
 
 /* staticp (tree x) is nonzero if X is a reference to data allocated
    at a fixed address in memory.  */
 
-extern int staticp ();
+extern int staticp			PROTO((tree));
 
 /* Gets an error if argument X is not an lvalue.
    Also returns 1 if X is an lvalue, 0 if not.  */
 
-extern int lvalue_or_else ();
+extern int lvalue_or_else		PROTO((tree, char *));
 
 /* save_expr (EXP) returns an expression equivalent to EXP
    but it can be used multiple times within context CTX
    and only evaluate EXP once.  */
 
-extern tree save_expr ();
+extern tree save_expr			PROTO((tree));
 
 /* variable_size (EXP) is like save_expr (EXP) except that it
    is for the special case of something that is part of a
@@ -1154,86 +1192,82 @@ extern tree save_expr ();
    to compute the value at the right time when the data type
    belongs to a function parameter.  */
 
-extern tree variable_size ();
+extern tree variable_size		PROTO((tree));
 
 /* stabilize_reference (EXP) returns an reference equivalent to EXP
    but it can be used multiple times
    and only evaluate the subexpressions once.  */
 
-extern tree stabilize_reference ();
+extern tree stabilize_reference		PROTO((tree));
 
 /* Return EXP, stripped of any conversions to wider types
    in such a way that the result of converting to type FOR_TYPE
    is the same as if EXP were converted to FOR_TYPE.
    If FOR_TYPE is 0, it signifies EXP's type.  */
 
-extern tree get_unwidened ();
+extern tree get_unwidened		PROTO((tree, tree));
 
 /* Return OP or a simpler expression for a narrower value
    which can be sign-extended or zero-extended to give back OP.
    Store in *UNSIGNEDP_PTR either 1 if the value should be zero-extended
    or 0 if the value should be sign-extended.  */
 
-extern tree get_narrower ();
+extern tree get_narrower		PROTO((tree, int *));
 
 /* Given MODE and UNSIGNEDP, return a suitable type-tree
    with that mode.
    The definition of this resides in language-specific code
    as the repertoire of available types may vary.  */
 
-extern tree type_for_mode ();
+extern tree type_for_mode		PROTO((enum machine_mode, int));
 
 /* Given PRECISION and UNSIGNEDP, return a suitable type-tree
    for an integer type with at least that precision.
    The definition of this resides in language-specific code
    as the repertoire of available types may vary.  */
 
-extern tree type_for_size ();
+extern tree type_for_size		PROTO((unsigned, int));
 
 /* Given an integer type T, return a type like T but unsigned.
    If T is unsigned, the value is T.
    The definition of this resides in language-specific code
    as the repertoire of available types may vary.  */
 
-extern tree unsigned_type ();
+extern tree unsigned_type		PROTO((tree));
 
 /* Given an integer type T, return a type like T but signed.
    If T is signed, the value is T.
    The definition of this resides in language-specific code
    as the repertoire of available types may vary.  */
 
-extern tree signed_type ();
+extern tree signed_type			PROTO((tree));
 
 /* This function must be defined in the language-specific files.
    expand_expr calls it to build the cleanup-expression for a TARGET_EXPR.
    This is defined in a language-specific file.  */
 
-extern tree maybe_build_cleanup ();
-
-/* Return the floating type node for a given floating machine mode.  */
-
-extern tree get_floating_type ();
+extern tree maybe_build_cleanup		PROTO((tree));
 
 /* Given an expression EXP that may be a COMPONENT_REF or an ARRAY_REF,
    look for nested component-refs or array-refs at constant positions
    and find the ultimate containing object, which is returned.  */
 
-extern tree get_inner_reference ();
+extern tree get_inner_reference		PROTO((tree, int *, int *, tree *, enum machine_mode *, int *, int *));
 
 /* Return the FUNCTION_DECL which provides this _DECL with its context,
    or zero if none.  */
-extern tree decl_function_context ();
+extern tree decl_function_context 	PROTO((tree));
 
 /* Return the RECORD_TYPE or UNION_TYPE which provides this _DECL
    with its context, or zero if none.  */
-extern tree decl_type_context ();
+extern tree decl_type_context		PROTO((tree));
 
 /* Given the FUNCTION_DECL for the current function,
    return zero if it is ok for this function to be inline.
    Otherwise return a warning message with a single %s
    for the function's name.  */
 
-extern char *function_cannot_inline_p ();
+extern char *function_cannot_inline_p 	PROTO((tree));
 
 /* Declare commonly used variables for tree structure.  */
 
@@ -1303,75 +1337,77 @@ extern int all_types_permanent;
 
 extern char *(*decl_printable_name) ();
 
-/* In expmed.c */
-extern tree make_tree ();
-
 /* In stmt.c */
 
-extern tree expand_start_stmt_expr ();
-extern tree expand_end_stmt_expr ();
-extern void expand_expr_stmt (), clear_last_expr ();
-extern void expand_label (), expand_goto (), expand_asm ();
-extern void expand_start_cond (), expand_end_cond ();
-extern void expand_start_else (), expand_start_elseif ();
-extern struct nesting *expand_start_loop ();
-extern struct nesting *expand_start_loop_continue_elsewhere ();
-extern void expand_loop_continue_here ();
-extern void expand_end_loop ();
-extern int expand_continue_loop ();
-extern int expand_exit_loop (), expand_exit_loop_if_false ();
-extern int expand_exit_something ();
+extern tree expand_start_stmt_expr		PROTO((void));
+extern tree expand_end_stmt_expr		PROTO((tree));
+extern void expand_expr_stmt			PROTO((tree));
+extern void clear_last_expr			PROTO((void));
+extern void expand_label			PROTO((tree));
+extern void expand_goto				PROTO((tree));
+extern void expand_asm				PROTO((tree));
+extern void expand_start_cond			PROTO((tree, int));
+extern void expand_end_cond			PROTO((void));
+extern void expand_start_else			PROTO((void));
+extern void expand_start_elseif			PROTO((tree));
+extern struct nesting *expand_start_loop 	PROTO((int));
+extern struct nesting *expand_start_loop_continue_elsewhere 	PROTO((int));
+extern void expand_loop_continue_here		PROTO((void));
+extern void expand_end_loop			PROTO((void));
+extern int expand_continue_loop			PROTO((struct nesting *));
+extern int expand_exit_loop			PROTO((struct nesting *));
+extern int expand_exit_loop_if_false		PROTO((struct nesting *, tree));
+extern int expand_exit_something		PROTO((void));
 
-extern void expand_start_delayed_expr ();
-extern tree expand_end_delayed_expr ();
-extern void expand_emit_delayed_expr ();
-
-extern void expand_null_return (), expand_return ();
-extern void expand_start_bindings (), expand_end_bindings ();
-extern tree last_cleanup_this_contour ();
-extern void expand_start_case (), expand_end_case ();
-extern int pushcase (), pushcase_range ();
-extern void expand_start_function (), expand_end_function ();
+extern void expand_null_return			PROTO((void));
+extern void expand_return			PROTO((tree));
+extern void expand_start_bindings		PROTO((int));
+extern void expand_end_bindings			PROTO((tree, int, int));
+extern tree last_cleanup_this_contour		PROTO((void));
+extern void expand_start_case			PROTO((int, tree, tree, char *));
+extern void expand_end_case			PROTO((tree));
+extern int pushcase				PROTO((tree, tree, tree *));
+extern int pushcase_range			PROTO((tree, tree, tree, tree *));
 
 /* In fold-const.c */
 
-extern tree invert_truthvalue ();
+extern tree invert_truthvalue			PROTO((tree));
 
 /* The language front-end must define these functions.  */
 
 /* Function of no arguments for initializing lexical scanning.  */
-extern void init_lex ();
+extern void init_lex				PROTO((void));
 /* Function of no arguments for initializing the symbol table.  */
-extern void init_decl_processing ();
+extern void init_decl_processing		PROTO((void));
 
 /* Functions called with no arguments at the beginning and end or processing
    the input source file.  */
-extern void lang_init ();
-extern void lang_finish ();
+extern void lang_init				PROTO((void));
+extern void lang_finish				PROTO((void));
 
 /* Function called with no arguments to parse and compile the input.  */
-extern int yyparse ();
+extern int yyparse				PROTO((void));
 /* Function called with option as argument
    to decode options starting with -f or -W or +.
    It should return nonzero if it handles the option.  */
-extern int lang_decode_option ();
+extern int lang_decode_option			PROTO((char *));
 
 /* Functions for processing symbol declarations.  */
 /* Function to enter a new lexical scope.
    Takes one argument: always zero when called from outside the front end.  */
-extern void pushlevel ();
+extern void pushlevel				PROTO((int));
 /* Function to exit a lexical scope.  It returns a BINDING for that scope.
    Takes three arguments:
      KEEP -- nonzero if there were declarations in this scope.
      REVERSE -- reverse the order of decls before returning them.
      FUNCTIONBODY -- nonzero if this level is the body of a function.  */
-extern tree poplevel ();
+extern tree poplevel				PROTO((int, int, int));
 /* Function to add a decl to the current scope level.
    Takes one argument, a decl to add.
    Returns that decl, or, if the same symbol is already declared, may
    return a different decl for that name.  */
-extern tree pushdecl ();
+extern tree pushdecl				PROTO((tree));
 /* Function to return the chain of decls so far in the current scope level.  */
-extern tree getdecls ();
+extern tree getdecls				PROTO((void));
 /* Function to return the chain of structure tags in the current scope level.  */
-extern tree gettags ();
+extern tree gettags				PROTO((void));
