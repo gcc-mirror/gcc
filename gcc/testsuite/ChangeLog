@@ -1,5 +1,10 @@
 2003-08-26  Roger Sayle  <roger@eyesopen.com>
 
+	PR middle-end/12002
+	* g77.f-torture/compile/12002.f: New test case.
+
+2003-08-26  Roger Sayle  <roger@eyesopen.com>
+
 	* gcc.dg/20030826-1.c: New test case.
 
 2003-08-26  Matt Kraai  <kraai@alumni.cmu.edu>

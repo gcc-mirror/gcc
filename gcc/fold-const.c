@@ -5713,7 +5713,8 @@ fold (tree expr)
 	    return non_lvalue (convert (type, arg1));
 
 	  /* Convert x+x into x*2.0.  */
-	  if (operand_equal_p (arg0, arg1, 0))
+	  if (operand_equal_p (arg0, arg1, 0)
+	      && SCALAR_FLOAT_TYPE_P (type))
 	    return fold (build (MULT_EXPR, type, arg0,
 				build_real (type, dconst2)));
 
