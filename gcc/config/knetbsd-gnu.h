@@ -1,6 +1,7 @@
-/* Definitions for Intel 386 running GNU/KFreeBSD systems with ELF format.
-   Copyright (C) 2002 Free Software Foundation, Inc.
-   Contributed by Bruno Haible.
+/* Definitions for kNetBSD-based GNU systems with ELF format
+   Copyright (C) 2004
+   Free Software Foundation, Inc.
+   Contributed by Robert Millan.
 
 This file is part of GCC.
 
@@ -19,17 +20,17 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (i386 KFreeBSD/ELF)");
+#undef LINUX_TARGET_OS_CPP_BUILTINS    
+#define LINUX_TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__NetBSD_kernel__");	\
+	builtin_define ("__GLIBC__");		\
+	builtin_define_std ("unix");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=posix");	\
+    }						\
+  while (0)
 
-/* FIXME: Is a KFreeBSD-specific fallback mechanism necessary?  */
-#undef MD_FALLBACK_FRAME_STATE_FOR
-
-#undef LINK_SPEC
-#define LINK_SPEC "-m elf_i386_fbsd %{shared:-shared} \
-  %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
-	%{static:-static}}}"
+#undef DYNAMIC_LINKER
+#define DYNAMIC_LINKER "/lib/ld.so.1"

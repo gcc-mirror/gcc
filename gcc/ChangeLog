@@ -1,3 +1,17 @@
+2004-06-23  Robert Millan  <robertmh@gnu.org>
+
+	* config.gcc: Merge kfreebsd*-gnu with linux* and add knetbsd*-gnu.
+	* config/i386/linux.h: Allow overriding of LINK_EMULATION,
+	  DYNAMIC_LINKER and register names in sc_ structure.
+	* config/kfreebsd-gnu.h: New. kfreebsd-gnu followup for linux.h.
+	* config/i386/kfreebsd-gnu.h: New. Ditto for i386-kfreebsd-gnu.
+	* config/knetbsd-gnu.h: New. Ditto for knetbsd-gnu.
+	* config/i386/knetbsd-gnu.h: New. Ditto for i386-knetbsd-gnu.
+
+	* config/kfreebsdgnu.h: Remove.
+	* config/t-kfreebsd-gnu: Likewise.
+	* config/i386/kfreebsdgnu.h: Likewise.
+
 2004-06-23  Eric Christopher  <echristo@redhat.com>
 
 	* fold-const.c (make_range): Cleanup type checking through function.
