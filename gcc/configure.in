@@ -1,7 +1,7 @@
 # configure.in for GNU CC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -172,6 +172,7 @@ GCC_NEED_DECLARATION(free)
 GCC_NEED_DECLARATION(index)
 GCC_NEED_DECLARATION(rindex)
 GCC_NEED_DECLARATION(getenv)
+GCC_NEED_DECLARATION(sbrk)
 
 AC_DECL_SYS_SIGLIST
 
