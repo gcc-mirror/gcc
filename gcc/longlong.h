@@ -993,8 +993,8 @@ UDItype __umulsidi3 (USItype, USItype);
 #define UMUL_TIME 5
 #endif
 
-#if defined (__sparc__) && !defined (__sparc_v9__) && !defined(__arch64__) \
-    && !defined(__sparc_v9) && W_TYPE_SIZE == 32
+#if defined (__sparc__) && !defined (__arch64__) && !defined (__sparcv9) \
+    && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("addcc %r4,%5,%1
 	addx %r2,%3,%0"							\
@@ -1180,10 +1180,10 @@ UDItype __umulsidi3 (USItype, USItype);
 #define UDIV_TIME (3+7*32)	/* 7 instructions/iteration. 32 iterations. */
 #endif /* __sparclite__ */
 #endif /* __sparc_v8__ */
-#endif /* __sparc__ */
+#endif /* sparc32 */
 
-#if (defined (__sparc_v9__) || (defined (__sparc__) && defined (__arch64__)) \
-    || defined (__sparcv9)) && W_TYPE_SIZE == 64
+#if ((defined (__sparc__) && defined (__arch64__)) || defined (__sparcv9)) \
+    && W_TYPE_SIZE == 64
 #define add_ssaaaa(sh, sl, ah, al, bh, bl)				\
   __asm__ ("addcc %r4,%5,%1
   	    add %r2,%3,%0
@@ -1246,7 +1246,7 @@ UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #define UMUL_TIME 96
 #define UDIV_TIME 230
-#endif /* __sparc_v9__ */
+#endif /* sparc64 */
 
 #if defined (__vax__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \

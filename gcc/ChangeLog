@@ -39,6 +39,14 @@ Tue Dec 14 12:07:29 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 	macros on TARGET_ARCH32. sparc.h has macros good enough for sparc64.
 	* config/sparc/sol2.h (MACHINE_STATE_*): Likewise.
 
+	* config/sparc/xm-sp64.h: Avoid using __sparc_v9__ when testing
+	for sparc64.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/xm-sysv4-64.h: Likewise.
+	* config/float-sparc.h: Likewise.
+	* glimits.h: Likewise.
+	* longlong.h: Likewise.
+
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* combine.c (combine_simplify_rtx): Don't make shared rtl.

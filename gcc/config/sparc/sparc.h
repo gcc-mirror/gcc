@@ -35,11 +35,11 @@ Boston, MA 02111-1307, USA.  */
    runtime selection.  */
 #ifdef SPARC_BI_ARCH
 #ifdef IN_LIBGCC2
-#if defined(__sparcv9) || defined(__sparcv_v9) || defined(__arch64__)
+#if defined(__sparcv9) || defined(__arch64__)
 #define TARGET_ARCH32 0
 #else
 #define TARGET_ARCH32 1
-#endif /* V9 sparc */
+#endif /* sparc64 */
 #else
 #define TARGET_ARCH32 (! TARGET_64BIT)
 #endif /* IN_LIBGCC2 */
