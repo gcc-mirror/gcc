@@ -108,6 +108,11 @@ ml_realsrcdir=${srcdir}
 ml_verbose=--verbose
 for option in ${ac_configure_args}
 do
+  # strip single quotes surrounding individual options
+  case $option in
+  \'*\') eval option=$option ;;
+  esac
+
   case $option in
   --*) ;;
   -*) option=-$option ;;

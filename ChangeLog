@@ -1,3 +1,8 @@
+2005-01-12  David Edelsohn  <edelsohn@gnu.org>
+
+	PR bootstrap/18033
+	* config-ml.in: Eval option if surrounded by single quotes.
+
 2005-01-06  Laurent GUERBY <laurent@guerby.net>
 
 	* MAINTAINERS: Update my email address.
