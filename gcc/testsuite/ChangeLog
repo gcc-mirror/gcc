@@ -1,3 +1,7 @@
+2003-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/nonnull-3.c: New test.
+
 2003-05-04  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/Wtrigraphs.c: Update.
