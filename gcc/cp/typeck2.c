@@ -133,6 +133,12 @@ abstract_virtuals_error (decl, type)
   tree u;
   tree tu;
 
+  if (processing_template_decl)
+    /* If we are processing a template, TYPE may be a template
+       class where CLASSTYPE_PURE_VIRTUALS always contains
+       inline friends.  */
+    return 0;
+
   if (!CLASS_TYPE_P (type) || !CLASSTYPE_PURE_VIRTUALS (type))
     return 0;
 
