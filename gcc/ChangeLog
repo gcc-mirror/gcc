@@ -1,3 +1,12 @@
+2001-11-25  Daniel Berlin  <dan@cgsoftware.com>
+
+	* df.c: Add prototypes for hybrid_search_bitmap and
+	hybrid_search_sbitmap. 
+	(hybrid_search_bitmap): New function.
+	(hybrid_search_sbitmap): New function.
+	(iterative_dataflow_sbitmap): Change to use hybrid_search_sbitmap.
+	(iterative_dataflow_bitmap): Ditto.
+	
 2001-11-25  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md (peephole2): New peephole2 to optimize
