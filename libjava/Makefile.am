@@ -114,7 +114,7 @@ libgcj.zip: $(java_source_files)
 	    $(subst $(srcdir)/,,$?)
 	-@rm -f libgcj.zip
 ## Note that we explicitly want to include directory information.
-	$(ZIP) -r libgcj java -n .class -i '*.class' -i '*/'
+	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files)
 CLEANFILES = libgcj.zip $(class_files)
