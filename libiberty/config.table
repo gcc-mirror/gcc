@@ -39,6 +39,7 @@ if [ "${shared}" = "yes" ]; then
     powerpc*-*-aix*)	;;
     powerpc*-*-*)	frag=mh-ppcpic ;;
     sparc*-*-*)		frag=mh-sparcpic ;;
+    s390*-*-*)		frag=mh-s390pic ;;
     *)			frag=mh-${host_cpu}pic ;;
   esac
   if [ -n "${frag}" ]; then
