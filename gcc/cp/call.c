@@ -4045,8 +4045,7 @@ convert_default_arg (type, arg, fn, parmnum)
       arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
 					"default argument", fn, parmnum);
       if (PROMOTE_PROTOTYPES
-	  && (TREE_CODE (type) == INTEGER_TYPE
-	      || TREE_CODE (type) == ENUMERAL_TYPE)
+	  && INTEGRAL_TYPE_P (type)
 	  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 	arg = default_conversion (arg);
     }
@@ -4157,8 +4156,7 @@ build_over_call (cand, args, flags)
 	}
 
       if (PROMOTE_PROTOTYPES
-	  && (TREE_CODE (type) == INTEGER_TYPE
-	      || TREE_CODE (type) == ENUMERAL_TYPE)
+	  && INTEGRAL_TYPE_P (type)
 	  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 	val = default_conversion (val);
       converted_args = tree_cons (NULL_TREE, val, converted_args);

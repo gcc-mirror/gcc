@@ -5895,8 +5895,7 @@ tsubst_decl (t, args, type)
 
 	DECL_CONTEXT (r) = NULL_TREE;
 	if (PROMOTE_PROTOTYPES
-	    && (TREE_CODE (type) == INTEGER_TYPE
-		|| TREE_CODE (type) == ENUMERAL_TYPE)
+	    && INTEGRAL_TYPE_P (type)
 	    && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
 	  DECL_ARG_TYPE (r) = integer_type_node;
 	if (TREE_CHAIN (t))
