@@ -2340,7 +2340,7 @@ static bool
 assign_parm_is_stack_parm (struct assign_parm_data_all *all,
 			   struct assign_parm_data_one *data)
 {
-  /* Trivially true if we've no incomming register.  */
+  /* Trivially true if we've no incoming register.  */
   if (data->entry_parm == NULL)
     ;
   /* Also true if we're partially in registers and partially not,
