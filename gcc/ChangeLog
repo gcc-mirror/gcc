@@ -1,5 +1,10 @@
 2003-02-08  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* optabs.c (expand_unop): Widen clz properly when clz is done
+	via libcall.
+
+2003-02-08  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/clzsi2.c: Replace "GNU CC" with "GCC".
 	* config/h8300/crti.asm: Likewise.
 	* config/h8300/crtn.asm: Likewise.

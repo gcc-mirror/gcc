@@ -2722,6 +2722,14 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 	      temp = expand_unop (wider_mode, unoptab, xop0, NULL_RTX,
 				  unsignedp);
 
+	      /* If we are generating clz using wider mode, adjust the
+		 result.  */
+	      if (unoptab == clz_optab && temp != 0)
+		temp = expand_binop (wider_mode, sub_optab, temp,
+				     GEN_INT (GET_MODE_BITSIZE (wider_mode)
+					      - GET_MODE_BITSIZE (mode)),
+				     target, true, OPTAB_DIRECT);
+
 	      if (temp)
 		{
 		  if (class != MODE_INT)
