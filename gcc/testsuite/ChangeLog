@@ -1,3 +1,8 @@
+2005-02-07  Leehod Baruch  <leehod@il.ibm.com> 
+	    Dorit Naishlos  <dorit@il.ibm.com>
+	
+	* testsuite/gcc.dg/vect/vect.exp: Add -ftree-vectorizer-verbose=3.
+
 2005-02-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/compile/20050206-1.c: New test.

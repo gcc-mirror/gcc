@@ -266,6 +266,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-nrv -fdump-tree-vect @gol
 -fdump-tree-sra@r{[}-@var{n}@r{]} @gol
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
+-ftree-vectorizer-verbose=@var{n} @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
 -feliminate-unused-debug-symbols -fmem-report -fprofile-arcs -ftree-based-profiling @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
@@ -3881,6 +3882,13 @@ made by appending @file{.vect} to the source file name.
 @opindex fdump-tree-all
 Enable all the available tree dumps with the flags provided in this option.
 @end table
+
+@item -ftree-vectorizer-verbose=@var{n}
+@opindex ftree-vectorizer-verbose
+This option controls the amount of debugging output the vectorizer prints.
+This information is written to standard error, unless @option{-fdump-tree-all}
+or @option{-fdump-tree-vect} is specified, in which case it is output to the
+usual dump listing file, @file{.vect}.
 
 @item -frandom-seed=@var{string}
 @opindex frandom-string

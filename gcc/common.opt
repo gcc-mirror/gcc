@@ -916,6 +916,10 @@ ftree-vectorize
 Common Report Var(flag_tree_vectorize)
 Enable loop vectorization on trees
 
+ftree-vectorizer-verbose=
+Common RejectNegative Joined
+-ftree-vectorizer-verbose=<number>   Set the verbosity level of the vectorizer
+
 ; -fverbose-asm causes extra commentary information to be produced in
 ; the generated assembly code (to make it more readable).  This option
 ; is generally only of use to those who actually need to read the

@@ -1,3 +1,85 @@
+2005-02-07  Leehod Baruch  <leehod@il.ibm.com>
+	    Dorit Naishlos  <dorit@il.ibm.com>
+
+	* doc/invoke.texi (ftree-vectorizer-verbose): New.
+	* opts.c (OPT_ftree_vectorizer_verbose_): New case for switch.
+	* common.opt (ftree-vectorizer-verbose): New Flag for the vectorizer
+	was added.
+	* tree.h (vect_set_verbosity_level): New extern function declaration
+	added.
+	* tree-vectorizer.h (verbosity_levels): New enum type.
+	* tree-vectorizer.c (vect_debug_stats): Function removed.
+	(vect_debug_details): Likewise.
+	(vect_verbosity_level): Global variable was defined and initialized.
+	(vect_dump): Global variable definition.
+	(vect_print_dump_info): New function.
+	(vect_set_dump_settings): New function.
+	(vect_set_verbosity_level): New function.
+	(vectorize_loops): Add call to vect_set_dump_settings.
+
+	(slpeel_make_loop_iterate_ntimes): Dump condition was changed.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Likewise.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+
+	(vect_analyze_offset_expr): Call to vect_print_dump_info with
+	appropriate verbosity level instead of call to vect_debug_details 
+	or vect_debug_stats. 
+	(vect_get_base_and_offset):
+	(vect_create_addr_base_for_vector_ref):
+	(get_vectype_for_scalar_type):
+	(vect_create_data_ref_ptr):
+	(vect_init_vector):
+	(vect_get_vec_def_for_operand):
+	(vect_finish_stmt_generation):
+	(vectorizable_assignment):
+	(vectorizable_operation):
+	(vectorizable_store):
+	(vectorizable_load):
+	(vect_transform_stmt):
+	(vect_update_ivs_after_vectorizer):
+	(vect_do_peeling_for_loop_bound):
+	(vect_update_inits_of_drs):
+	(vect_do_peeling_for_alignment):
+	(vect_transform_loop):
+	(vect_is_simple_use):
+	(vect_analyze_operations):
+	(vect_is_simple_iv_evolution):
+	(vect_analyze_scalar_cycles):
+	(vect_analyze_data_ref_dependence):
+	(vect_analyze_data_ref_dependences):
+	(vect_compute_data_ref_alignment):
+	(vect_enhance_data_refs_alignment):
+	(vect_analyze_data_refs_alignment):
+	(vect_analyze_data_ref_access):
+	(vect_analyze_data_ref_accesses):
+	(vect_analyze_pointer_ref_access):
+	(vect_get_memtag_and_dr):
+	(vect_analyze_data_refs):
+	(vect_mark_relevant):
+	(vect_stmt_relevant_p):
+	(vect_mark_stmts_to_be_vectorized):
+	(vect_can_advance_ivs_p):
+	(vect_get_loop_niters):
+	(vect_analyze_loop_form):
+	(vect_analyze_loop):
+	(vectorize_loops): Likewise.
+
+	(vect_do_peeling_for_loop_bound): Dump format slightly changed.
+	(vect_update_inits_of_drs):
+	(vect_do_peeling_for_alignment):
+	(vect_transform_loop):
+	(vect_analyze_operations):
+	(vect_analyze_scalar_cycles):
+	(vect_analyze_data_ref_dependences):
+	(vect_analyze_data_refs_alignment):
+	(vect_analyze_data_ref_accesses):
+	(vect_analyze_data_refs):
+	(vect_mark_stmts_to_be_vectorized):
+	(vect_get_loop_niters):
+	(vect_analyze_loop_form):
+	(vect_analyze_loop): Likewise. 
+	(vect_mark_stmts_to_be_vectorized): Add call to print_generic_expr.
+
 2005-02-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR bootstrap/19796

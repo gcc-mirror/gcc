@@ -945,6 +945,10 @@ common_handle_option (size_t scode, const char *arg, int value)
       stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (arg));
       break;
 
+    case OPT_ftree_vectorizer_verbose_:
+      vect_set_verbosity_level (arg);
+      break;
+
     case OPT_ftls_model_:
       if (!strcmp (arg, "global-dynamic"))
 	flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
