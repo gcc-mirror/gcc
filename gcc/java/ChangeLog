@@ -1,3 +1,14 @@
+2004-06-17  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Fixes PR java/13948
+	* parse.y (java_layout_seen_class_methods): Ensure class is loaded
+	before trying to lay out its methods.
+	* jcf-parse.c (read_class): Track parsed files using canonical paths
+	obtained via lrealpath from libiberty.
+	(java_parse_file): Likewise.
+	(parse_source_file_1): Rename formal parameter to reflect its
+	modified purpose. Minor formatting fix.
+
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* class.c (emit_register_classes): Make the function uninlinable,
