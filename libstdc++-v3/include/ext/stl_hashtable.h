@@ -564,7 +564,7 @@ bool operator==(const hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>& __ht1,
   typedef typename hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>::_Node _Node;
   if (__ht1._M_buckets.size() != __ht2._M_buckets.size())
     return false;
-  for (int __n = 0; __n < __ht1._M_buckets.size(); ++__n) {
+  for (size_t __n = 0; __n < __ht1._M_buckets.size(); ++__n) {
     _Node* __cur1 = __ht1._M_buckets[__n];
     _Node* __cur2 = __ht2._M_buckets[__n];
     for ( ; __cur1 && __cur2 && __cur1->_M_val == __cur2->_M_val;
