@@ -1,3 +1,26 @@
+2003-09-12  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mcore/mcore-protos.h (mcore_r15_operand_p): Declare.
+	(mcore_secondary_reload_class): Declare.
+	(mcore_output_inline_const_forced): Remove.
+	* config/mcore/mcore.md (movsi): Remove the code that forced
+	non-inlineable constants into a register if the target was r15
+	or the stack pointer.  Remove constant restrictions from the main
+	define_insn.  Remove r <- I, r <- M and r <- N alternatives in favor
+	of an r <- P alternative.  Remove fallback define_insn for reload.
+	(movhi, movqi): Use gen_lowpart rather than gen_SUBREG.  Remove reload
+	define_insn.  Use mcore_output_move in the remaining define_insn.
+	Adjust condition and constraints in the way as for movsi.
+	(movdi): Always split unacceptable constants into two.  Use
+	simplify_gen_subreg instead of operand_subword{,_force}.
+	* config/mcore/mcore.c (mcore_output_inline_const_forced): Remove.
+	(mcore_output_move): Support HImode and QImode moves as well.
+	(mcore_m15_operand_p): New function.
+	(mcore_reload_class): Use it to detect cases where LRW_REGS are better.
+	(mcore_secondary_reload_class): New function.
+	* config/mcore/mcore.h (SECONDARY_RELOAD_CLASS): Redefine in
+	terms of mcore_secondary_reload_class.
+
 2003-09-11  Mike Stump  <mrs@apple.com>
 
 	* c-lex.c (fe_file_change): Don't transform to_line with SOURCE_LINE.

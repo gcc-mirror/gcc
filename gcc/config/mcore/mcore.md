@@ -1226,100 +1226,19 @@
 {
   if (GET_CODE (operands[0]) == MEM)
     operands[1] = force_reg (SImode, operands[1]);
-  else if (CONSTANT_P (operands[1])
-	   && (GET_CODE (operands[1]) != CONST_INT
-	       || (   ! CONST_OK_FOR_I (INTVAL (operands[1]))
-		   && ! CONST_OK_FOR_M (INTVAL (operands[1]))
-		   && ! CONST_OK_FOR_N (INTVAL (operands[1]))
-                   && (! TARGET_HARDLIT ||
-                       ! mcore_const_ok_for_inline (INTVAL (operands[1])))))
-	   && ! reload_completed
-	   && ! reload_in_progress
-	   && GET_CODE (operands[0]) == REG
-	   && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
-	   && (REGNO (operands[0]) == STACK_POINTER_REGNUM
-	       || REGNO (operands[0]) == LK_REG))
-    operands[1] = force_reg (SImode, operands[1]);
 }")
 
-;;; Must put a/i before r/r so that it will be preferred when the dest is
-;;; a hard register.  Must put a/R before r/m.
-;;; DO WE NEED a/i ANYMORE?
-
 (define_insn ""
-  [(set (match_operand:SI 0 "mcore_general_movdst_operand" "=r,r,r,a,r,r,a,r,m")
-	(match_operand:SI 1 "mcore_general_movsrc_operand"  "I,M,N,i,r,c,R,m,r"))]
+  [(set (match_operand:SI 0 "mcore_general_movdst_operand" "=r,r,a,r,a,r,m")
+	(match_operand:SI 1 "mcore_general_movsrc_operand"  "r,P,i,c,R,m,r"))]
   "(register_operand (operands[0], SImode)
-       || register_operand (operands[1], SImode))
-   && ! (CONSTANT_P (operands[1])
-         && (GET_CODE (operands[1]) != CONST_INT
-	     || (   ! CONST_OK_FOR_I (INTVAL (operands[1]))
-                 && ! CONST_OK_FOR_M (INTVAL (operands[1]))
-                 && ! CONST_OK_FOR_N (INTVAL (operands[1]))))
-	 && GET_CODE (operands[0]) == REG
-	 && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
-         && (REGNO (operands[0]) == STACK_POINTER_REGNUM
-	     || REGNO (operands[0]) == LK_REG))"
+    || register_operand (operands[1], SImode))"
   "* return mcore_output_move (insn, operands, SImode);"
-  [(set_attr "type" "move,move,move,move,move,move,load,load,store")])
+  [(set_attr "type" "move,move,move,move,load,load,store")])
 
-;; This is to work around a bug in reload.
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "immediate_operand" "i"))]
-  "((reload_in_progress || reload_completed)
-   && CONSTANT_P (operands[1])
-   && GET_CODE (operands[1]) == CONST_INT
-   && ! CONST_OK_FOR_I (INTVAL (operands[1]))
-   && ! CONST_OK_FOR_M (INTVAL (operands[1]))
-   && ! CONST_OK_FOR_N (INTVAL (operands[1]))
-   && GET_CODE (operands[0]) == REG
-   && REGNO (operands[0]) == LK_REG)"
-  "* return mcore_output_inline_const_forced (insn, operands, SImode);"
-  [(set_attr "type" "load")])
-
-;; (define_expand "reload_insi"
-;;   [(parallel [(match_operand:SI 0 "register_operand" "=r")
-;; 	      (match_operand:SI 1 "general_operand"  "")
-;; 	      (match_operand:DI 2 "register_operand" "=&r")])]
-;;   ""
-;;   "
-;;   {
-;;     if (CONSTANT_P (operands[1])
-;;        && GET_CODE (operands[1]) == CONST_INT
-;;        && ! CONST_OK_FOR_I (INTVAL (operands[1]))
-;;        && ! CONST_OK_FOR_M (INTVAL (operands[1]))
-;;        && ! CONST_OK_FOR_N (INTVAL (operands[1]))
-;;        && GET_CODE (operands[0]) == REG
-;;        && (REGNO (operands[0]) == STACK_POINTER_REGNUM
-;;           || REGNO (operands[0]) == LK_REG))
-;;       {
-;;         rtx tmp;
-;; 
-;; 	if (   REGNO (operands[2]) == REGNO (operands[0])
-;;             || REGNO (operands[2]) == STACK_POINTER_REGNUM
-;; 	    || REGNO (operands[2]) == LK_REG)
-;;           tmp = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
-;; 	else
-;;           tmp = gen_rtx_REG (SImode, REGNO (operands[2]));
-;; 	
-;;         emit_insn (gen_movsi (tmp, operands[1]));
-;;         emit_insn (gen_movsi (operands[0], tmp));
-;;         DONE;
-;;       }
-;;     emit_insn (gen_movsi (operands[0], operands[1]));
-;;     DONE;
-;;   }"
-;; )
-			       
-	    
-			       
 ;;
 ;; HImode
 ;;
-
-;;; ??? This isn't guaranteed to work.  It should be more like the SImode
-;;; patterns.
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "general_operand" "")
@@ -1338,73 +1257,17 @@
     {
       rtx reg = gen_reg_rtx (SImode);
       emit_insn (gen_movsi (reg, operands[1]));
-      operands[1] = gen_rtx (SUBREG, HImode, reg, 0);
+      operands[1] = gen_lowpart (HImode, reg);
     }
 }")
   
 (define_insn ""
-  [(set (match_operand:HI 0 "mcore_general_movdst_operand" "=r,r,r,r,r,r,m")
-	(match_operand:HI 1 "mcore_general_movsrc_operand"  "r,I,M,N,c,m,r"))]
+  [(set (match_operand:HI 0 "mcore_general_movdst_operand" "=r,r,a,r,r,m")
+	(match_operand:HI 1 "mcore_general_movsrc_operand"  "r,P,i,c,m,r"))]
   "(register_operand (operands[0], HImode)
-       || register_operand (operands[1], HImode))
-   && (GET_CODE (operands[1]) != CONST_INT
-       || CONST_OK_FOR_M (INTVAL (operands[1]))
-       || CONST_OK_FOR_N (INTVAL (operands[1]))
-       || CONST_OK_FOR_I (INTVAL (operands[1])))"
-  "@
-	mov	%0,%1
-	movi	%0,%1
-	bgeni	%0,%P1
-	bmaski	%0,%N1
-	mvc	%0
-	ld.h	%0,%1
-	st.h	%1,%0"
-  [(set_attr "type" "move,move,move,move,move,load,store")])
-
-;; Like movhi, but the const_int source can't be synthesized in
-;; a single-instruction.  Fall back to the same things that 
-;; are done for movsi in such cases.  Presumes that we can
-;; modify any parts of the register that we wish.
-
-(define_insn ""
-  [(set (match_operand:HI 0 "mcore_general_movdst_operand" "=r,a")
-	(match_operand:HI 1 "const_int_operand"  "P,i"))]
-  "GET_CODE (operands[1]) == CONST_INT
-    && INTVAL (operands[1]) > 127 && INTVAL (operands[1]) < 65536"
-  "*
-{
-  if (GET_CODE (operands[0])== REG && REGNO (operands[0]) == 15
-      && !mcore_const_ok_for_inline (INTVAL (operands[1])))
-    {
-      /* mcore_output_move would generate lrw r15 -- a forbidden combo */
-      return mcore_output_inline_const_forced (insn, operands, SImode);
-    }
-  else
-    return mcore_output_move (insn, operands, SImode);
-}"
-  [(set_attr "type" "move")])
-
-
-;; if we're still looking around for things to use, here's a last
-;; ditch effort that just calls the move. We only let this happen
-;; if we're in the reload pass.
-;;
-(define_insn ""
-  [(set (match_operand:HI 0 "mcore_general_movdst_operand" "=r,a")
-	(match_operand:HI 1 "const_int_operand"  "P,i"))]
-  "reload_in_progress || reload_completed"
-  "*
-{
-  if (GET_CODE (operands[0])== REG && REGNO (operands[0]) == 15
-      && !mcore_const_ok_for_inline (INTVAL (operands[1])))
-    {
-      /* mcore_output_move would generate lrw r15 -- a forbidden combo */
-      return mcore_output_inline_const_forced (insn, operands, SImode);
-    }
-  else
-    return mcore_output_move (insn, operands, HImode);
-}"
-  [(set_attr "type" "move")])
+    || register_operand (operands[1], HImode))"
+  "* return mcore_output_move (insn, operands, HImode);"
+  [(set_attr "type" "move,move,move,move,load,store")])
 
 ;;
 ;; QImode
@@ -1427,67 +1290,18 @@
     {
       rtx reg = gen_reg_rtx (SImode);
       emit_insn (gen_movsi (reg, operands[1]));
-      operands[1] = gen_rtx (SUBREG, QImode, reg, 0);
+      operands[1] = gen_lowpart (QImode, reg);
     }
 }")
   
 (define_insn ""
-  [(set (match_operand:QI 0 "mcore_general_movdst_operand" "=r,r,r,r,r,r,m")
-	(match_operand:QI 1 "mcore_general_movsrc_operand"  "r,I,M,N,c,m,r"))]
+  [(set (match_operand:QI 0 "mcore_general_movdst_operand" "=r,r,a,r,r,m")
+	(match_operand:QI 1 "mcore_general_movsrc_operand"  "r,P,i,c,m,r"))]
   "(register_operand (operands[0], QImode)
-       || register_operand (operands[1], QImode))
-   && (GET_CODE (operands[1]) != CONST_INT
-       || CONST_OK_FOR_M (INTVAL (operands[1]))
-       || CONST_OK_FOR_N (INTVAL (operands[1]))
-       || CONST_OK_FOR_I (INTVAL (operands[1])))"
-  "@
-	mov	%0,%1
-	movi	%0,%1
-	bgeni	%0,%P1
-	bmaski	%0,%N1
-	mvc	%0
-	ld.b	%0,%1
-	st.b	%1,%0" 
-   [(set_attr "type" "move,move,move,move,move,load,store")])
+    || register_operand (operands[1], QImode))"
+  "* return mcore_output_move (insn, operands, QImode);"
+   [(set_attr "type" "move,move,move,move,load,store")])
 
-;; cover the case where the constant is 128..255; this isn't handled
-;; in the above case. We could if we wanted to mess with adding a 
-;; new constraint class like M,N,I.
-(define_insn ""
-  [(set (match_operand:QI 0 "mcore_general_movdst_operand" "=r")
-	(match_operand:QI 1 "const_int_operand"  ""))]
-  "GET_CODE (operands[1]) == CONST_INT
-    && INTVAL (operands[1]) > 127 && INTVAL (operands[1]) < 256"
-  "*
-{
-   /* have a constant in range 128..255; have to do 2 insns; we can
-    * do this with a movi followed by a bseti
-    */
-   operands[2] = GEN_INT (INTVAL (operands[1]) & 0x7f);
-   return \"movi\\t%0,%2\;bseti\\t%0,7\";
-}"
-  [(set_attr "type" "move")])
-
-;; if we're still looking around for things to use, here's a last
-;; ditch effort that just calls the move. We only let this happen
-;; if we're in the reload pass.
-;;
-(define_insn ""
-  [(set (match_operand:QI 0 "mcore_general_movdst_operand" "=r,a")
-	(match_operand:QI 1 "const_int_operand"  "P,i"))]
-  "(reload_in_progress || reload_completed)"
-  "*
-{
-  if (GET_CODE (operands[0])== REG && REGNO (operands[0]) == 15
-      && ! mcore_const_ok_for_inline (INTVAL (operands[1])))
-    {
-      /* mcore_output_move would generate lrw r15 -- a forbidden combo */
-      return mcore_output_inline_const_forced (insn, operands, SImode);
-    }
-  else
-    return mcore_output_move (insn, operands, QImode);
-}"
-  [(set_attr "type" "move")])
 
 ;; DImode
 
@@ -1502,15 +1316,12 @@
   else if (GET_CODE (operands[1]) == CONST_INT
            && ! CONST_OK_FOR_I (INTVAL (operands[1]))
 	   && ! CONST_OK_FOR_M (INTVAL (operands[1]))
-	   && ! CONST_OK_FOR_N (INTVAL (operands[1]))
-	   && ! reload_completed
-	   && ! reload_in_progress
-	   && GET_CODE (operands[0]) == REG)
+	   && ! CONST_OK_FOR_N (INTVAL (operands[1])))
     {
-      emit_move_insn (operand_subword (operands[0], 0, 1, DImode),
-	   	      operand_subword_force (operands[1], 0, DImode));
-      emit_move_insn (operand_subword (operands[0], 1, 1, DImode),
-	  	      operand_subword_force (operands[1], 1, DImode));
+      int i;
+      for (i = 0; i < UNITS_PER_WORD * 2; i += UNITS_PER_WORD)
+        emit_move_insn (simplify_gen_subreg (SImode, operands[0], DImode, i),
+		        simplify_gen_subreg (SImode, operands[1], DImode, i));
       DONE;
     }
 }")
