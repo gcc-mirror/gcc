@@ -1,3 +1,84 @@
+
+2002-04-11  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.in, configure.in: Sync with binutils, entries
+	follow...
+
+2002-02-01  Mo DeJong  <supermo@bayarea.net>
+
+	* Makefile.in: Add all-tix to deps for all-snavigator
+	so that tix is built when building snavigator.
+
+2002-01-11  Steve Ellcey  <sje@cup.hp.com>
+
+	* configure.in (ia64*-*-hpux*): New target for IA64 HP-UX,
+	ld and gdb are not supported.
+
+2002-01-07  Mark Salter  <msalter@redhat.com>
+
+	* configure.in: Remove target-bsp and target-cygmon from arm builds.
+	Allow target-libgloss to be built for arm, strongarm, and xscale.
+
+2001-12-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* configure.in (FLAGS_FOR_TARGET): Remove -nostdinc and -isystem
+	options for i[3456]86-pc-linux* native builds.
+
+2001-11-20  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* Makefile.in (do-proto-toplev): Use msgfmt to generate .gmo
+	files from .po files for a distribution.
+
+2001-09-03  Jeff Holcomb  <jeffh@redhat.com>
+
+	* configure.in: Enable libstdc++-v3 for h8300 targets.
+
+2001-06-19  Alan Modra  <amodra@bigpond.net.au>
+
+	* Makefile.in (VER): If AM_INIT_AUTOMAKE uses BFD_VERSION, get
+	version from bfd/.
+
+Fri Jun  8 11:14:02 2001  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* Makefile.in (VER): When present, extract the version number from
+	the file version.in.
+
+2001-05-24  Tom Rix <trix@redhat.com>
+
+	* configure.in : enable ld for aix
+
+2001-02-09  Martin Schwidefsky  <schwidefsky@de.ibm.com>
+
+	* config.guess: Add linux target for S/390.
+
+2000-11-07  Philip Blundell  <pb@futuretv.com>
+
+	* Makefile.in (ETC_SUPPORT): Also add configbuild.* and configdev.*.
+
+2000-11-03  Philip Blundell  <pb@futuretv.com>
+
+	* Makefile.in (ETC_SUPPORT): Add configure.texi and associated info
+	files.
+
+2001-01-15  Ben Elliston  <bje@redhat.com>
+
+	* configure.in (host_tools): Add sid.
+	Always configure cgen.
+
+2000-11-24  Nick Clifton  <nickc@redhat.com>
+
+	* configure.in (c4x, c5x, tic54x): Move after ARM targets.
+
+
+2000-08-20  Doug Evans  <dje@casey.transmeta.com>
+
+	* Makefile.in (ALL_MODULES): Add all-cgen.
+	(CROSS_CHECK_MODULES,INSTALL_MODULES,CLEAN_MODULES): Similarily.
+	(all-cgen): New target.
+	(all-opcodes,all-sim): Depend on all-cgen.
+	* configure.in (host_tools): Add cgen.
+	Only configure cgen if --enable-cgen-maint.
+
 2002-04-09  Loren J. Rittle <ljrittle@acm.org>
 
 	* configure.in: Add *-*-freebsd* configurations.
