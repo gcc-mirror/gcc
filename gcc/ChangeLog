@@ -1,5 +1,18 @@
 2000-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* config/arm/arm-protos.h: PROTO -> PARAMS.
+	* config/arm/arm.c: Likewise.
+	* config/c4x/c4x.c: Likewise.
+	* config/fr30/fr30-protos.h: Likewise.
+	* config/nextstep.c: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pj/pj.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/v850/v850-protos.h: Likewise.
+	* config/v850/v850.c: Likewise.
+
+2000-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* i370-protos.h: New file.
 
 	* i370.c: Include tm_p.h.  Fix compile time warnings.

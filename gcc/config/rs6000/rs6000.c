@@ -112,7 +112,7 @@ int rs6000_debug_arg;		/* debug argument handling */
 /* Flag to say the TOC is initialized */
 int toc_initialized;
 
-static void rs6000_add_gc_roots PROTO ((void));
+static void rs6000_add_gc_roots PARAMS ((void));
 
 
 /* Default register names.  */

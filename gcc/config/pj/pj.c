@@ -107,8 +107,8 @@ rtx pj_cmp_op0;
 rtx pj_cmp_op1;
 enum machine_mode pj_cmp_mode;
 
-static void pj_output_rval PROTO ((rtx, enum machine_mode, rtx));
-static void pj_output_store_into_lval PROTO ((enum machine_mode mode, rtx op));
+static void pj_output_rval PARAMS ((rtx, enum machine_mode, rtx));
+static void pj_output_store_into_lval PARAMS ((enum machine_mode mode, rtx op));
 
 /* These vectors turn a register number into an offset from the vars
    pointer register.  */
@@ -132,8 +132,8 @@ int pj_stuff_on_line;
  %X              - address constant.
  %<alpha><digit> - operand <digit> passed to pj_print_operand with code <alpha>.  */
 
-static void pj_printf
-VPROTO ((const char *template, ...))
+static void
+pj_printf VPARAMS ((const char *template, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *template;

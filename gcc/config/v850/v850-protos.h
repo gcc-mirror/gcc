@@ -22,61 +22,61 @@ Boston, MA 02111-1307, USA.  */
    compilcations.  */
 #define Mmode enum machine_mode
 
-extern void   expand_prologue               PROTO ((void));
-extern void   expand_epilogue               PROTO ((void));
-extern void   sdata_section                 PROTO ((void));
-extern void   rosdata_section               PROTO ((void));
-extern void   sbss_section                  PROTO ((void));
-extern void   tdata_section                 PROTO ((void));
-extern void   zdata_section                 PROTO ((void));
-extern void   rozdata_section               PROTO ((void));
-extern void   zbss_section                  PROTO ((void));
-extern int    v850_handle_pragma            PROTO ((int (*)(void), void (*)(int), char *));
-extern void   asm_file_start                PROTO ((FILE *));
-extern void   override_options              PROTO ((void));
-extern int    compute_register_save_size    PROTO ((long *));
-extern int    compute_frame_size            PROTO ((int, long *));
+extern void   expand_prologue               PARAMS ((void));
+extern void   expand_epilogue               PARAMS ((void));
+extern void   sdata_section                 PARAMS ((void));
+extern void   rosdata_section               PARAMS ((void));
+extern void   sbss_section                  PARAMS ((void));
+extern void   tdata_section                 PARAMS ((void));
+extern void   zdata_section                 PARAMS ((void));
+extern void   rozdata_section               PARAMS ((void));
+extern void   zbss_section                  PARAMS ((void));
+extern int    v850_handle_pragma            PARAMS ((int (*)(void), void (*)(int), char *));
+extern void   asm_file_start                PARAMS ((FILE *));
+extern void   override_options              PARAMS ((void));
+extern int    compute_register_save_size    PARAMS ((long *));
+extern int    compute_frame_size            PARAMS ((int, long *));
 
 #ifdef RTX_CODE
-extern void   print_operand                 PROTO ((FILE *, rtx, int ));
-extern void   print_operand_address         PROTO ((FILE *, rtx));
-extern int    const_costs                   PROTO ((rtx, enum rtx_code));
-extern char * output_move_double            PROTO ((rtx *));
-extern char * output_move_single            PROTO ((rtx *));
-extern void   v850_reorg                    PROTO ((rtx));
-extern void   notice_update_cc              PROTO ((rtx, rtx));
-extern char * construct_save_jarl           PROTO ((rtx));
-extern char * construct_restore_jr          PROTO ((rtx));
+extern void   print_operand                 PARAMS ((FILE *, rtx, int ));
+extern void   print_operand_address         PARAMS ((FILE *, rtx));
+extern int    const_costs                   PARAMS ((rtx, enum rtx_code));
+extern char * output_move_double            PARAMS ((rtx *));
+extern char * output_move_single            PARAMS ((rtx *));
+extern void   v850_reorg                    PARAMS ((rtx));
+extern void   notice_update_cc              PARAMS ((rtx, rtx));
+extern char * construct_save_jarl           PARAMS ((rtx));
+extern char * construct_restore_jr          PARAMS ((rtx));
 #ifdef HAVE_MACHINE_MODES
-extern int    ep_memory_operand             PROTO ((rtx, Mmode, int));
-extern int    reg_or_0_operand              PROTO ((rtx, Mmode));
-extern int    reg_or_int5_operand           PROTO ((rtx, Mmode));
-extern int    call_address_operand          PROTO ((rtx, Mmode));
-extern int    movsi_source_operand          PROTO ((rtx, Mmode));
-extern int    power_of_two_operand          PROTO ((rtx, Mmode));
-extern int    not_power_of_two_operand      PROTO ((rtx, Mmode));
-extern int    special_symbolref_operand     PROTO ((rtx, Mmode));
-extern int    pattern_is_ok_for_prologue    PROTO ((rtx, Mmode));
-extern int    pattern_is_ok_for_epilogue    PROTO ((rtx, Mmode));
-extern int    register_is_ok_for_epilogue   PROTO ((rtx, Mmode));
+extern int    ep_memory_operand             PARAMS ((rtx, Mmode, int));
+extern int    reg_or_0_operand              PARAMS ((rtx, Mmode));
+extern int    reg_or_int5_operand           PARAMS ((rtx, Mmode));
+extern int    call_address_operand          PARAMS ((rtx, Mmode));
+extern int    movsi_source_operand          PARAMS ((rtx, Mmode));
+extern int    power_of_two_operand          PARAMS ((rtx, Mmode));
+extern int    not_power_of_two_operand      PARAMS ((rtx, Mmode));
+extern int    special_symbolref_operand     PARAMS ((rtx, Mmode));
+extern int    pattern_is_ok_for_prologue    PARAMS ((rtx, Mmode));
+extern int    pattern_is_ok_for_epilogue    PARAMS ((rtx, Mmode));
+extern int    register_is_ok_for_epilogue   PARAMS ((rtx, Mmode));
 #ifdef TREE_CODE
-extern rtx    function_arg                  PROTO ((CUMULATIVE_ARGS *, Mmode, tree, int));
-extern rtx    v850_va_arg                   PROTO ((tree, tree));
+extern rtx    function_arg                  PARAMS ((CUMULATIVE_ARGS *, Mmode, tree, int));
+extern rtx    v850_va_arg                   PARAMS ((tree, tree));
 #endif
 #endif
 #endif /* TREE_CODE */
 
 #ifdef TREE_CODE
-extern int    v850_valid_machine_decl_attribute  PROTO ((tree, tree, tree));
-extern void   v850_encode_data_area         PROTO ((tree));
-extern void   v850_set_default_decl_attr    PROTO ((tree));
-extern int    v850_interrupt_function_p     PROTO ((tree));
-extern void   v850_output_aligned_bss       PROTO ((FILE *, tree, char *, int, int));
-extern void   v850_output_common            PROTO ((FILE *, tree, char *, int, int));
-extern void   v850_output_local             PROTO ((FILE *, tree, char *, int, int));
-extern v850_data_area v850_get_data_area    PROTO ((tree));
+extern int    v850_valid_machine_decl_attribute  PARAMS ((tree, tree, tree));
+extern void   v850_encode_data_area         PARAMS ((tree));
+extern void   v850_set_default_decl_attr    PARAMS ((tree));
+extern int    v850_interrupt_function_p     PARAMS ((tree));
+extern void   v850_output_aligned_bss       PARAMS ((FILE *, tree, char *, int, int));
+extern void   v850_output_common            PARAMS ((FILE *, tree, char *, int, int));
+extern void   v850_output_local             PARAMS ((FILE *, tree, char *, int, int));
+extern v850_data_area v850_get_data_area    PARAMS ((tree));
 #ifdef HAVE_MACHINE_MODES
-extern int    function_arg_partial_nregs    PROTO ((CUMULATIVE_ARGS *, Mmode, tree, int));
+extern int    function_arg_partial_nregs    PARAMS ((CUMULATIVE_ARGS *, Mmode, tree, int));
 #endif
 #endif
 

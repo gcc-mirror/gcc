@@ -4223,8 +4223,8 @@ c4x_operand_subword (op, i, validate_address, mode)
 
 int
 c4x_handle_pragma (p_getc, p_ungetc, pname)
-     int (* p_getc) PROTO ((void));
-     void (* p_ungetc) PROTO ((int)) ATTRIBUTE_UNUSED;
+     int (* p_getc) PARAMS ((void));
+     void (* p_ungetc) PARAMS ((int)) ATTRIBUTE_UNUSED;
      char *pname;
 {
   int i;
