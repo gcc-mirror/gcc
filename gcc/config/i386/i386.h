@@ -2101,7 +2101,7 @@ while (0)
    lifetimes.  */
 
 #define ADDRESS_COST(RTX) \
-  ix86_address_cost (x)
+  ix86_address_cost (RTX)
 
 /* A C expression for the cost of moving data from a register in class FROM to
    one in class TO.  The classes are expressed using the enumeration values
