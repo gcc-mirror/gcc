@@ -1,3 +1,8 @@
+Mon Sep 20 06:56:32 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/sparc/sol2.h (LINK_SPEC): Avoid the duplication of
+	-YP when both -p and -pg are present.  From i386/sol2.h.
+
 Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* Makefile.in (distclean): Delete tm_p.h.
