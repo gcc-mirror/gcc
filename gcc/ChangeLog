@@ -1,3 +1,9 @@
+2005-03-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/predicates.md (easy_fp_constant): Return 0 for
+	SFmode and DFmode before reload when
+	flag_unsafe_math_optimizations not enabled.
+
 2005-03-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/i386/darwin.h (TARGET_SUBTARGET_DEFAULT): Add

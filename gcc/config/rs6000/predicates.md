@@ -219,8 +219,15 @@
       long k[2];
       REAL_VALUE_TYPE rv;
 
-      if (TARGET_E500_DOUBLE)
-	return 0;
+      /* Force constants to memory before reload to utilize
+	 compress_float_constant.
+	 Avoid this when flag_unsafe_math_optimizations is enabled
+	 because RDIV division to reciprocal optimization is not able
+	 to regenerate the division.  */
+      if (TARGET_E500_DOUBLE
+          || (!reload_in_progress && !reload_completed
+	      && !flag_unsafe_math_optimizations))
+        return 0;
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
@@ -233,6 +240,15 @@
     {
       long l;
       REAL_VALUE_TYPE rv;
+
+      /* Force constants to memory before reload to utilize
+	 compress_float_constant.
+	 Avoid this when flag_unsafe_math_optimizations is enabled
+	 because RDIV division to reciprocal optimization is not able
+	 to regenerate the division.  */
+      if (!reload_in_progress && !reload_completed
+          && !flag_unsafe_math_optimizations)
+	return 0;
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_SINGLE (rv, l);
