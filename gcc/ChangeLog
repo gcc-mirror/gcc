@@ -1,3 +1,13 @@
+Sat Sep 27 11:02:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-decl.c (init_decl_processing): Add __builtin_dwarf_reg_size.
+	* tree.h (built_in_function): Likewise.
+	* expr.c (expand_builtin): Likewise.
+	* except.h: Likewise.
+	* dwarf2out.c (expand_builtin_dwarf_reg_size): New fn.
+	* libgcc2.c (copy_reg): New fn.
+	(__throw): Use it.
+
 Fri Sep 26 08:54:59 1997  Paul Eggert  <eggert@twinsun.com>
 
 	* c-typeck.c (build_binary_op): Warn about comparing signed vs
