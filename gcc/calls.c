@@ -2012,9 +2012,7 @@ expand_call (exp, target, ignore)
   /* If we don't have specific function to call, see if we have a 
      attributes set in the type.  */
   if (fndecl == 0)
-    {
-      flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
-    }
+    flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
 
 #ifdef REG_PARM_STACK_SPACE
 #ifdef MAYBE_REG_PARM_STACK_SPACE
