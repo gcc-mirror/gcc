@@ -1,3 +1,12 @@
+2002-05-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+config/alpha:
+	* alpha.h (TARGET_CPU_CPP_BUILTINS): Define __IEEE_FP
+	and __IEEE_FP_INEXACT as appropriate.
+	(CPLUSPLUS_CPP_SPEC): Don't define __cplusplus.
+	(CPP_SPEC): Remove ieee defines.
+	* freebsd.h, netbsd.h: Remove ieee defines and cpp_cpu.
+
 2002-05-14  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_save_reg): Make regno unsigned.

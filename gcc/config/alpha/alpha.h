@@ -63,14 +63,16 @@ Boston, MA 02111-1307, USA.  */
 	    builtin_define ("__alpha_ev4__");		\
 	    builtin_assert ("cpu=ev4");			\
 	  }						\
-    } while (0)
+	if (TARGET_IEEE || TARGET_IEEE_WITH_INEXACT)	\
+	  builtin_define ("__IEEE_FP");			\
+	if (TARGET_IEEE_WITH_INEXACT)			\
+	  builtin_define ("__IEEE_FP_INEXACT");		\
+} while (0)
 
 /* For C++ we need to ensure that __LANGUAGE_C_PLUS_PLUS is defined independent
    of the source file extension.  */
-#define CPLUSPLUS_CPP_SPEC "\
--D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus \
-%(cpp) \
-"
+#define CPLUSPLUS_CPP_SPEC "-D__LANGUAGE_C_PLUS_PLUS__\
+ -D__LANGUAGE_C_PLUS_PLUS %(cpp)"
 
 /* Write out the correct language type definition for the header files.  
    Unless we have assembler language, write out the symbols for C.  */
@@ -78,9 +80,7 @@ Boston, MA 02111-1307, USA.  */
 %{!undef:\
 %{.S:-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY }}\
 %{.m:-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C }\
-%{!.S:%{!.cc:%{!.cxx:%{!.cpp:%{!.cp:%{!.c++:%{!.C:%{!.m:-D__LANGUAGE_C__ -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C }}}}}}}}}\
-%{mieee:-D_IEEE_FP }\
-%{mieee-with-inexact:-D_IEEE_FP -D_IEEE_FP_INEXACT }}\
+%{!.S:%{!.cc:%{!.cxx:%{!.cpp:%{!.cp:%{!.c++:%{!.C:%{!.m:-D__LANGUAGE_C__ -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C }}}}}}}}}}\
 %(cpp_subtarget)"
 
 #ifndef CPP_SUBTARGET_SPEC
