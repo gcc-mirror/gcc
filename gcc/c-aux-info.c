@@ -27,8 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "c-tree.h"
 
-extern char *xmalloc ();
-
 enum formals_style_enum {
   ansi,
   k_and_r_names,
