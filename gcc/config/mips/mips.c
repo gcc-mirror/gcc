@@ -3833,6 +3833,11 @@ mips_pad_arg_upward (enum machine_mode mode, tree type)
       : GET_MODE_CLASS (mode) == MODE_INT)
     return false;
 
+  /* Big-endian o64 pads floating-point arguments downward.  */
+  if (mips_abi == ABI_O64)
+    if (type != 0 ? FLOAT_TYPE_P (type) : GET_MODE_CLASS (mode) == MODE_FLOAT)
+      return false;
+
   /* Other types are padded upward for o32, o64, n32 and n64.  */
   if (mips_abi != ABI_EABI)
     return true;
