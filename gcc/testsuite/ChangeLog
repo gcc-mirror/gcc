@@ -1,3 +1,8 @@
+2002-10-06  Andreas Jaeger  <aj@suse.de>
+
+	PR target/7559
+	* gcc.dg/20021006-1.c: New test.
+
 2002-10-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/7804
@@ -13,7 +18,7 @@
 
 	PR c++/7931
 	* g++.dg/template/ptrmem3.C: New test.
-	
+
 	PR c++/7754
 	* g++.dg/template/union1.C: New test.
 
@@ -71,7 +76,7 @@
 
 	* g++.dg/abi/empty7.C: New test.
 	* g++.dg/init/pm2.C: Likewise.
-	
+
 2002-09-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/rtti/crash1.C: New test.
