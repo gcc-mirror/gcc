@@ -1,5 +1,5 @@
 /* PipedReader.java -- Input stream that reads from an output stream
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,23 +67,10 @@ private static final int PIPE_SIZE = 2048;
   */
 private static int pipe_size;
 
-/**
-  * This variable indicates whether or not the <code>read()</code> method will attempt
-  * return a short count if this will possibly keep the stream from blocking.  
-  * The default for this is <code>false</code> because that is what what the JDK seems
-  * to imply in its javadocs.  We set this to <code>false</code> if the system 
-  * property <code>gnu.java.io.try_not_to_block</code> is set.
-  */
-private static boolean try_not_to_block = false;
-
 static
 {
   pipe_size =  Integer.getInteger("gnu.java.io.PipedReader.pipe_size",
                                   PIPE_SIZE).intValue();
-
-  String block_prop = System.getProperty("gnu.java.io.try_not_to_block");
-  if (block_prop != null)
-    try_not_to_block = true;
 }
 
 /*************************************************************************/
@@ -192,13 +179,12 @@ connect(PipedWriter src) throws IOException
   if (closed)
     throw new IOException("Stream is closed and cannot be reopened");
 
-  synchronized (lock) {
+  synchronized (lock)
+    {
+      src.connect(this);
 
-  src.connect(this);
-
-  ever_connected = true;
-
-  } // synchronized
+      ever_connected = true;
+    } // synchronized
 }
 
 /*************************************************************************/
@@ -212,12 +198,11 @@ connect(PipedWriter src) throws IOException
 public void
 close() throws IOException
 {
-  synchronized (lock) {
-
-  closed = true;
-  notifyAll();
-
-  } // synchronized
+  synchronized (lock)
+    {
+      closed = true;
+      notifyAll();
+    } // synchronized
 }
 
 /*************************************************************************/
@@ -290,118 +275,116 @@ read(char[] buf, int offset, int len) throws IOException
   if (!ever_connected)
     throw new IOException("Not connected"); 
 
-  synchronized (lock) {
-
-  int chars_read = 0;
-  for (;;)
+  synchronized (lock)
     {
-      // If there are chars, take them
-      if (in != -1)
-        {
-          int desired_chars = len - chars_read;
+      int chars_read = 0;
+      for (;;)
+	{
+	  // If there are chars, take them
+	  if (in != -1)
+	    {
+	      int desired_chars = len - chars_read;
 
-          // We are in a "wrap" condition
-          if (out > in)
-            {
-              if (desired_chars > (pipe_size - out))
-                {
-                  if (in == 0)
-                    desired_chars = (pipe_size - out) - 1;
-                  else
-                    desired_chars = pipe_size - out;
+	      // We are in a "wrap" condition
+	      if (out > in)
+		{
+		  if (desired_chars > (pipe_size - out))
+		    {
+		      if (in == 0)
+			desired_chars = (pipe_size - out) - 1;
+		      else
+			desired_chars = pipe_size - out;
 
-                  System.arraycopy(buffer, out, buf, offset + chars_read,
-                                   desired_chars);
+		      System.arraycopy(buffer, out, buf, offset + chars_read,
+				       desired_chars);
 
-                  chars_read += desired_chars;
-                  out += desired_chars;
-                  desired_chars = len - chars_read;
+		      chars_read += desired_chars;
+		      out += desired_chars;
+		      desired_chars = len - chars_read;
 
-                  if (out == pipe_size)
-                    out = 0;
+		      if (out == pipe_size)
+			out = 0;
 
-                  notifyAll();
-                }
-              else
-                {
-                  if ((out + desired_chars) == in)
-                    --desired_chars;
+		      notifyAll();
+		    }
+		  else
+		    {
+		      if ((out + desired_chars) == in)
+			--desired_chars;
 
-                  if (((out + desired_chars) == pipe_size) && (in == 0)) 
-                    desired_chars = (pipe_size - out) - 1;
+		      if (((out + desired_chars) == pipe_size) && (in == 0)) 
+			desired_chars = (pipe_size - out) - 1;
 
-                  System.arraycopy(buffer, out, buf, offset + chars_read,
-                                   desired_chars); 
+		      System.arraycopy(buffer, out, buf, offset + chars_read,
+				       desired_chars); 
 
-                  chars_read += desired_chars;
-                  out += desired_chars;
-                  desired_chars = len - chars_read;
+		      chars_read += desired_chars;
+		      out += desired_chars;
+		      desired_chars = len - chars_read;
 
-                  if (out == pipe_size)
-                    out = 0;
+		      if (out == pipe_size)
+			out = 0;
 
-                  notifyAll();
-                }
-            }
+		      notifyAll();
+		    }
+		}
  
-          // We are in a "no wrap" or condition (can also be fall through
-          // from above
-          if (in > out)
-            {
-              if (desired_chars >= ((in - out) - 1))
-                desired_chars = (in - out) - 1;
+	      // We are in a "no wrap" or condition (can also be fall through
+	      // from above
+	      if (in > out)
+		{
+		  if (desired_chars >= ((in - out) - 1))
+		    desired_chars = (in - out) - 1;
 
-              System.arraycopy(buffer, out, buf, offset + chars_read, 
-                               desired_chars);
+		  System.arraycopy(buffer, out, buf, offset + chars_read, 
+				   desired_chars);
 
-              chars_read += desired_chars;
-              out += desired_chars;
-              desired_chars = len - chars_read;
+		  chars_read += desired_chars;
+		  out += desired_chars;
+		  desired_chars = len - chars_read;
 
-              if (out == pipe_size)
-                out = 0;
+		  if (out == pipe_size)
+		    out = 0;
 
-              notifyAll();
-            }
-        }
+		  notifyAll();
+		}
+	    }
 
-      // If we are done, return
-      if (chars_read == len)
-        return(chars_read);
+	  // If we are done, return
+	  if (chars_read == len)
+	    return(chars_read);
 
-      // Return a short count if necessary
-      if (chars_read < len)
-        if (try_not_to_block)
-           return(chars_read);
+	  // Return a short count if necessary
+	  if (chars_read > 0 && chars_read < len)
+	    return(chars_read);
 
-      // Handle the case where the end of stream was encountered.
-      if (closed)
-        {
-          // We never let in == out so there might be one last char
-          // available that we have not copied yet.
-          if (in != -1)
-            {
-              buf[offset + chars_read] = buffer[out];
-              in = -1;
-              ++out;
-              ++chars_read;
-            }
+	  // Handle the case where the end of stream was encountered.
+	  if (closed)
+	    {
+	      // We never let in == out so there might be one last char
+	      // available that we have not copied yet.
+	      if (in != -1)
+		{
+		  buf[offset + chars_read] = buffer[out];
+		  in = -1;
+		  ++out;
+		  ++chars_read;
+		}
 
-          if (chars_read != 0)
-            return(chars_read);
-          else
-            return(-1);
-        }
+	      if (chars_read != 0)
+		return(chars_read);
+	      else
+		return(-1);
+	    }
 
-      // Wait for a char to be read
-      try
-        {
-          wait();
-        }
-      catch(InterruptedException e) { ; }
-    } 
-
-  } // synchronized
+	  // Wait for a char to be read
+	  try
+	    {
+	      wait();
+	    }
+	  catch(InterruptedException e) { ; }
+	} 
+    } // synchronized
 }
 
 /*************************************************************************/
@@ -424,95 +407,95 @@ write(char[] buf, int offset, int len) throws IOException
   if (len <= 0)
     return;
 
-  synchronized (lock) {
-
-  int total_written = 0;
-  while (total_written < len)
+  synchronized (lock)
     {
-      // If we are not at the end of the buffer with out = 0
-      if (!((in == (buffer.length - 1)) && (out == 0)))
-        {
-          // This is the "no wrap" situation
-          if ((in - 1) >= out)
-            {
-              int chars_written = 0;
-              if ((buffer.length - in) > (len - total_written))
-                chars_written = (len - total_written);
-              else if (out == 0)
-                chars_written = (buffer.length - in) - 1;
-              else 
-                chars_written = (buffer.length - in);
+      int total_written = 0;
+      while (total_written < len)
+	{
+	  // If we are not at the end of the buffer with out = 0
+	  if (!((in == (buffer.length - 1)) && (out == 0)))
+	    {
+	      // This is the "no wrap" situation
+	      if ((in - 1) >= out)
+		{
+		  int chars_written = 0;
+		  if ((buffer.length - in) > (len - total_written))
+		    chars_written = (len - total_written);
+		  else if (out == 0)
+		    chars_written = (buffer.length - in) - 1;
+		  else 
+		    chars_written = (buffer.length - in);
 
-              if (chars_written > 0) 
-                System.arraycopy(buf, offset + total_written, buffer, in, 
-                                 chars_written);
-              total_written += chars_written;
-              in += chars_written;
+		  if (chars_written > 0) 
+		    System.arraycopy(buf, offset + total_written, buffer, in, 
+				     chars_written);
+		  total_written += chars_written;
+		  in += chars_written;
 
-              if (in == buffer.length)
-                in = 0;
+		  if (in == buffer.length)
+		    in = 0;
 
-              notifyAll();
-            }
-          // This is the "wrap" situtation
-          if ((out > in) && (total_written != len))
-            {
-              int chars_written = 0;
+		  notifyAll();
+		}
+	      // This is the "wrap" situtation
+	      if ((out > in) && (total_written != len))
+		{
+		  int chars_written = 0;
 
-              // Do special processing if we are at the beginning
-              if (in == -1)
-                {
-                  in = 0;
+		  // Do special processing if we are at the beginning
+		  if (in == -1)
+		    {
+		      in = 0;
 
-                  if (buffer.length > len)
-                    chars_written = len;
-                  else
-                    chars_written = buffer.length - 1;
-                }
-              else if (((out - in) - 1) < (len - total_written))
-                {
-                  chars_written = (out - in) - 1;
-                }
-              else
-                {
-                  chars_written = len - total_written;
-                }
+		      if (buffer.length > len)
+			chars_written = len;
+		      else
+			chars_written = buffer.length - 1;
+		    }
+		  else if (((out - in) - 1) < (len - total_written))
+		    {
+		      chars_written = (out - in) - 1;
+		    }
+		  else
+		    {
+		      chars_written = len - total_written;
+		    }
 
-              // If the buffer is full, wait for it to empty out
-              if ((out - 1) == in)
-                {
-                  try
-                    {         
-                      wait(); 
-                    }
-                  catch (InterruptedException e) 
-                    { 
-                      continue; 
-                    }
-                }
+		  // If the buffer is full, wait for it to empty out
+		  if ((out - 1) == in)
+		    {
+		      try
+			{         
+			  wait(); 
+			}
+		      catch (InterruptedException e) 
+			{ 
+			  continue; 
+			}
+		    }
 
-              System.arraycopy(buf, offset + total_written, buffer, in,
-                               chars_written);
-              total_written += chars_written;
-              in += chars_written;
+		  System.arraycopy(buf, offset + total_written, buffer, in,
+				   chars_written);
+		  total_written += chars_written;
+		  in += chars_written;
 
-              if (in == buffer.length)
-                in = 0;
+		  if (in == buffer.length)
+		    in = 0;
 
-              notifyAll();
-            }
-        }
-      // Wait for some reads to occur before we write anything.
-      else
-        {
-          try
-            {
-              wait();
-            }
-          catch (InterruptedException e) { ; }
-        }
-    }
-  } // synchronized
+		  notifyAll();
+		}
+	    }
+	  // Wait for some reads to occur before we write anything.
+	  else
+	    {
+	      try
+		{
+		  wait();
+		}
+	      catch (InterruptedException e) { ; }
+	    }
+	}
+    } // synchronized
 }
 
 } // class PipedReader

@@ -1,5 +1,5 @@
 /* PipedInputStream.java -- Input stream that reads from an output stream
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,23 +67,10 @@ protected static final int PIPE_SIZE = 2048;
   */
 private static int pipe_size;
 
-/**
-  * This variable indicates whether or not the <code>read()</code> method will attempt
-  * return a short count if this will possibly keep the stream from blocking.  
-  * The default for this is <code>false</code> because that is what what the JDK seems
-  * to imply in its javadocs.  We set this to <code>false</code> if the system 
-  * property <code>gnu.java.io.try_not_to_block</code> is set.
-  */
-private static boolean try_not_to_block = false;
-
 static
 {
   pipe_size = Integer.getInteger("gnu.java.io.PipedInputStream.pipe_size",
                                  PIPE_SIZE).intValue();
-
-  String block_prop = System.getProperty("gnu.java.io.try_not_to_block");
-  if (block_prop != null)
-    try_not_to_block = true;
 }
 
 /*************************************************************************/
@@ -373,9 +360,8 @@ read(byte[] buf, int offset, int len) throws IOException
         return(bytes_read);
 
       // Return a short count if necessary
-      if (bytes_read < len)
-        if (try_not_to_block)
-           return(bytes_read);
+      if (bytes_read > 0 && bytes_read < len)
+	return(bytes_read);
 
       // Handle the case where the end of stream was encountered.
       if (closed)
