@@ -25,16 +25,6 @@ typedef size_t Xsize_t;
 #elif defined(__SIZE_TYPE__)
 typedef __SIZE_TYPE__ Xsize_t;
 #endif
-#ifdef ptrdiff_t
-typedef ptrdiff_t Xptrdiff_t;
-#elif defined(__PTRDIFF_TYPE__)
-typedef __PTRDIFF_TYPE__ Xptrdiff_t;
-#endif
-#ifdef wchar_t
-typedef wchar_t Xwchar_t;
-#elif defined(__WCHAR_TYPE__)
-typedef __WCHAR_TYPE__ Xwchar_t;
-#endif
 #ifdef va_list
 typedef va_list XXXva_list;
 #endif
@@ -46,7 +36,7 @@ else
 fi
 tr '	' ' ' <TMP >dummy.out
 
-for TYPE in dev_t clock_t fpos_t gid_t ino_t mode_t nlink_t off_t pid_t ptrdiff_t size_t ssize_t time_t uid_t va_list wchar_t int32_t uint_32_t ; do
+for TYPE in dev_t clock_t fpos_t gid_t ino_t mode_t nlink_t off_t pid_t size_t ssize_t time_t uid_t va_list int32_t uint_32_t ; do
     IMPORTED=`eval 'echo $'"$TYPE"`
     if [ -n "${IMPORTED}" ] ; then
 	eval "$TYPE='$IMPORTED"
@@ -84,11 +74,11 @@ cat <<!EOF!
 #define ${macro_prefix}nlink_t ${nlink_t-int /* default */}
 #define ${macro_prefix}off_t ${off_t-long /* default */}
 #define ${macro_prefix}pid_t ${pid_t-int /* default */}
-#define ${macro_prefix}ptrdiff_t ${ptrdiff_t-long int /* default */}
-#define ${macro_prefix}size_t ${size_t-unsigned long /* default */}
+#define ${macro_prefix}ptrdiff_t __PTRDIFF_TYPE__
+#define ${macro_prefix}size_t __SIZE_TYPE__
 #define ${macro_prefix}time_t ${time_t-int /* default */}
 #define ${macro_prefix}uid_t ${uid_t-int /* default */}
-#define ${macro_prefix}wchar_t ${wchar_t-int /* default */}
+#define ${macro_prefix}wchar_t __WCHAR_TYPE__
 #define ${macro_prefix}int32_t ${int32_t-int /* default */}
 #define ${macro_prefix}uint32_t ${uint32_t-unsigned int /* default */}
 !EOF!
