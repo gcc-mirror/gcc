@@ -1,3 +1,9 @@
+2004-12-03  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (HOSTHOOKS_DEF_H): Define.
+	(ggc-common.o): Depend on $(HOSTHOOKS_DEF_H).
+	(host-default.o): Likewise.
+
 2004-12-03  Eric Christopher  <echristo@redhat.com>
 
 	* config/stormy16/stormy16.md (pushqi, popqi, pushhi,
