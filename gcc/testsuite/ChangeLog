@@ -1,3 +1,9 @@
+2004-07-02  David Billinghurst  (David.Billinghurst@riotinto.com)
+
+	PR fortran/16290
+	* gfortran.fortran-torture/execute/intrinsic_set_exponent.f90
+	Allow for cases without denormalized floating point numbers.
+
 2004-07-01  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/1027
