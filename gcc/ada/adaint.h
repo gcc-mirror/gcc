@@ -147,6 +147,8 @@ extern void   __gnat_set_binary_mode		   (int);
 extern void   __gnat_set_text_mode		   (int);
 extern char  *__gnat_ttyname			   (int);
 extern int    __gnat_lseek			   (int, long, int);
+extern int    __gnat_dup			   (int);
+extern int    __gnat_dup2			   (int, int);
 
 #ifdef __MINGW32__
 extern void   __gnat_plist_init                    (void);
