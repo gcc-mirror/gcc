@@ -1046,7 +1046,7 @@ profile_function (file)
   ASM_OUTPUT_INTERNAL_LABEL (file, "LP", profile_label_no);
   assemble_integer (const0_rtx, LONG_TYPE_SIZE / BITS_PER_UNIT, 1);
 
-  text_section ();
+  function_section (current_function_decl);
 
 #if defined(STRUCT_VALUE_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
   if (sval)
