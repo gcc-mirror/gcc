@@ -213,13 +213,9 @@ STATIC void *__JCR_LIST__[]
    in one DSO or the main program is not used in another object.  The
    dynamic linker takes care of this.  */
 
-/* XXX Ideally the following should be implemented using
-       __attribute__ ((__visibility__ ("hidden")))
-   but the __attribute__ support is not yet there.  */
 #ifdef HAVE_GAS_HIDDEN
-asm (".hidden\t__dso_handle");
+extern void *__dso_handle __attribute__ ((__visibility__ ("hidden")));
 #endif
-
 #ifdef CRTSTUFFS_O
 void *__dso_handle = &__dso_handle;
 #else

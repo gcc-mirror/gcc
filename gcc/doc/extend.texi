@@ -2198,7 +2198,7 @@ The @code{alias} attribute causes the declaration to be emitted as an
 alias for another symbol, which must be specified.  For instance,
 
 @smallexample
-void __f () @{ /* do something */; @}
+void __f () @{ /* @r{Do something.} */; @}
 void f () __attribute__ ((weak, alias ("__f")));
 @end smallexample
 
@@ -2206,6 +2206,19 @@ declares @samp{f} to be a weak alias for @samp{__f}.  In C++, the
 mangled name for the target must be used.
 
 Not all target machines support this attribute.
+
+@item visibility ("@var{visibility_type}")
+@cindex @code{visibility} attribute
+The @code{visibility} attribute on ELF targets causes the declaration
+to be emitted with hidden, protected or internal visibility.
+
+@smallexample
+void __attribute__ ((visibility ("protected")))
+f () @{ /* @r{Do something.} */; @}
+int i __attribute__ ((visibility ("hidden")));
+@end smallexample
+
+Not all ELF targets support this attribute.
 
 @item regparm (@var{number})
 @cindex functions that are passed arguments in registers on the 386

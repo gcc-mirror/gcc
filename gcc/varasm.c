@@ -5160,6 +5160,25 @@ assemble_alias (decl, target)
 #endif
 }
 
+/* Emit an assembler directive to set symbol for DECL visibility to
+   VISIBILITY_TYPE.  */
+
+void
+assemble_visibility (decl, visibility_type)
+     tree decl;
+     const char *visibility_type ATTRIBUTE_UNUSED;
+{
+  const char *name;
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+#ifdef HAVE_GAS_HIDDEN
+  fprintf (asm_out_file, "\t.%s\t%s\n", visibility_type, name);
+#else
+  warning ("visibility attribute not supported in this configuration; ignored");
+#endif
+}
+
 /* Returns 1 if the target configuration supports defining public symbols
    so that one of them will be chosen at link time instead of generating a
    multiply-defined symbol error, whether through the use of weak symbols or
