@@ -1,3 +1,7 @@
+2004-08-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/compat/struct-layout-1.exp: Fix error message typo.
+
 2004-08-03  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/redecl-5.c: New test.

@@ -132,7 +132,7 @@ if { $status == 0 } then {
 	warning "Could not execute gcc.dg/compat/struct-layout-1 generator"
     }
 } else {
-    warning "Could not compiler gcc.dg/compat/struct-layout-1 generator"
+    warning "Could not compile gcc.dg/compat/struct-layout-1 generator"
 }
 
 # Restore the original compiler under test.
