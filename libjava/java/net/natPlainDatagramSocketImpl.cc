@@ -287,9 +287,6 @@ java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *p)
 
   if (::sendto (fnum, (char *) dbytes, p->getLength(), 0, ptr, len) >= 0)
     return;
- error:
-  char* strerr = strerror (errno);
-  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
 }
 
 void
@@ -420,9 +417,6 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
 
   if (::setsockopt (fnum, level, opname, ptr, len) == 0)
     return;
- error:
-  char* strerr = strerror (errno);
-  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
 }
 
 void

@@ -1,3 +1,15 @@
+2000-09-05  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* gnu/gcj/convert/natIconv.cc (read): Remove unused local.
+	(write): Ditto.
+	* gnu/gcj/runtime/FileDeleter.java (deleteOnExitNow): Check for null
+	stack. Synchronize.
+	* java/lang/fdlibm.h: #undef __P if previously defined.
+	* java/lang/natSystem.cc (currentTimeMillis): Remove unused local.
+	* java/net/natPlainDatagramSocketImpl.cc (send): Remove unreachable 
+	block.
+	(mcastGrp): Ditto.
+
 2000-09-04  Tom Tromey  <tromey@cygnus.com>
 
 	* java/util/zip/ZipFile.java (ZipFile): Delete file when opened in

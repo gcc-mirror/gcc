@@ -140,8 +140,6 @@ java::lang::System::arraycopy (jobject src, jint src_offset,
 jlong
 java::lang::System::currentTimeMillis (void)
 {
-  jlong r;
-
   struct timeval tv;
   _Jv_gettimeofday (&tv);
   return (jlong) tv.tv_sec * 1000 + tv.tv_usec / 1000;
