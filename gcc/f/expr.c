@@ -309,7 +309,8 @@ static ffebld ffeexpr_reduced_ugly1log_ (ffebld reduced, ffeexprExpr_ op,
 static ffebld ffeexpr_reduced_ugly2_ (ffebld reduced, ffeexprExpr_ l,
 				      ffeexprExpr_ op, ffeexprExpr_ r);
 static ffebld ffeexpr_reduced_ugly2log_ (ffebld reduced, ffeexprExpr_ l,
-					 ffeexprExpr_ op, ffeexprExpr_ r);
+					 ffeexprExpr_ op, ffeexprExpr_ r,
+					 bool *);
 static ffelexHandler ffeexpr_find_close_paren_ (ffelexToken t,
 						ffelexHandler after);
 static ffelexHandler ffeexpr_nil_finished_ (ffelexToken t);
@@ -8802,6 +8803,7 @@ ffeexpr_reduce_ (void)
   ffebld expr;
   ffebld left_expr;
   bool submag = FALSE;
+  bool bothlogical;
 
   operand = ffeexpr_stack_->exprstack;
   assert (operand != NULL);
@@ -8993,37 +8995,58 @@ ffeexpr_reduce_ (void)
 	  reduced = ffebld_new_and (left_expr, expr);
 	  if (ffe_is_ugly_logint ())
 	    reduced = ffeexpr_reduced_ugly2log_ (reduced, left_operand, operator,
-						 operand);
+						 operand, &bothlogical);
 	  reduced = ffeexpr_reduced_bool2_ (reduced, left_operand, operator,
 					    operand);
 	  reduced = ffeexpr_collapse_and (reduced, operator->token);
+	  if (ffe_is_ugly_logint() && bothlogical)
+	    reduced = ffeexpr_convert (reduced, left_operand->token,
+				       operator->token,
+				       FFEINFO_basictypeLOGICAL,
+				       FFEINFO_kindtypeLOGICALDEFAULT, 0,
+				       FFETARGET_charactersizeNONE,
+				       FFEEXPR_contextLET);
 	  break;
 
 	case FFEEXPR_operatorOR_:
 	  reduced = ffebld_new_or (left_expr, expr);
 	  if (ffe_is_ugly_logint ())
 	    reduced = ffeexpr_reduced_ugly2log_ (reduced, left_operand, operator,
-						 operand);
+						 operand, &bothlogical);
 	  reduced = ffeexpr_reduced_bool2_ (reduced, left_operand, operator,
 					    operand);
 	  reduced = ffeexpr_collapse_or (reduced, operator->token);
+	  if (ffe_is_ugly_logint() && bothlogical)
+	    reduced = ffeexpr_convert (reduced, left_operand->token,
+				       operator->token,
+				       FFEINFO_basictypeLOGICAL,
+				       FFEINFO_kindtypeLOGICALDEFAULT, 0,
+				       FFETARGET_charactersizeNONE,
+				       FFEEXPR_contextLET);
 	  break;
 
 	case FFEEXPR_operatorXOR_:
 	  reduced = ffebld_new_xor (left_expr, expr);
 	  if (ffe_is_ugly_logint ())
 	    reduced = ffeexpr_reduced_ugly2log_ (reduced, left_operand, operator,
-						 operand);
+						 operand, &bothlogical);
 	  reduced = ffeexpr_reduced_bool2_ (reduced, left_operand, operator,
 					    operand);
 	  reduced = ffeexpr_collapse_xor (reduced, operator->token);
+	  if (ffe_is_ugly_logint() && bothlogical)
+	    reduced = ffeexpr_convert (reduced, left_operand->token,
+				       operator->token,
+				       FFEINFO_basictypeLOGICAL,
+				       FFEINFO_kindtypeLOGICALDEFAULT, 0,
+				       FFETARGET_charactersizeNONE,
+				       FFEEXPR_contextLET);
 	  break;
 
 	case FFEEXPR_operatorEQV_:
 	  reduced = ffebld_new_eqv (left_expr, expr);
 	  if (ffe_is_ugly_logint ())
 	    reduced = ffeexpr_reduced_ugly2log_ (reduced, left_operand, operator,
-						 operand);
+						 operand, NULL);
 	  reduced = ffeexpr_reduced_bool2_ (reduced, left_operand, operator,
 					    operand);
 	  reduced = ffeexpr_collapse_eqv (reduced, operator->token);
@@ -9033,7 +9056,7 @@ ffeexpr_reduce_ (void)
 	  reduced = ffebld_new_neqv (left_expr, expr);
 	  if (ffe_is_ugly_logint ())
 	    reduced = ffeexpr_reduced_ugly2log_ (reduced, left_operand, operator,
-						 operand);
+						 operand, NULL);
 	  reduced = ffeexpr_reduced_bool2_ (reduced, left_operand, operator,
 					    operand);
 	  reduced = ffeexpr_collapse_neqv (reduced, operator->token);
@@ -10514,7 +10537,7 @@ ffeexpr_reduced_ugly2_ (ffebld reduced, ffeexprExpr_ l, ffeexprExpr_ op,
 
 static ffebld
 ffeexpr_reduced_ugly2log_ (ffebld reduced, ffeexprExpr_ l, ffeexprExpr_ op,
-			   ffeexprExpr_ r)
+			   ffeexprExpr_ r, bool *bothlogical)
 {
   ffeinfo linfo, rinfo;
   ffeinfoBasictype lbt, rbt;
@@ -10592,6 +10615,32 @@ ffeexpr_reduced_ugly2log_ (ffebld reduced, ffeexprExpr_ l, ffeexprExpr_ op,
 	}
       /* else Leave it alone. */
     }
+
+  if (lbt == FFEINFO_basictypeLOGICAL)
+    {
+      ffebld_set_left (reduced,
+		       ffeexpr_convert (ffebld_left (reduced),
+					l->token, op->token,
+					FFEINFO_basictypeINTEGER,
+					FFEINFO_kindtypeINTEGERDEFAULT, 0,
+					FFETARGET_charactersizeNONE,
+					FFEEXPR_contextLET));
+    }
+
+  if (rbt == FFEINFO_basictypeLOGICAL)
+    {
+      ffebld_set_right (reduced,
+			ffeexpr_convert (ffebld_right (reduced),
+					 r->token, op->token,
+					 FFEINFO_basictypeINTEGER,
+					 FFEINFO_kindtypeINTEGERDEFAULT, 0,
+					 FFETARGET_charactersizeNONE,
+					 FFEEXPR_contextLET));
+    }
+
+  if (bothlogical != NULL)
+    *bothlogical = (lbt == FFEINFO_basictypeLOGICAL
+		    && rbt == FFEINFO_basictypeLOGICAL);
 
   return reduced;
 }
