@@ -575,7 +575,7 @@ __gnat_machine_state_length (void)
 /* __gnat_initialize (HPUX Version) */
 /************************************/
 
-#elif defined (hpux)
+#elif defined (__hpux__)
 
 #include <signal.h>
 
@@ -824,28 +824,25 @@ static LONG WINAPI __gnat_error_handler (PEXCEPTION_POINTERS);
 static LONG WINAPI
 __gnat_error_handler (PEXCEPTION_POINTERS info)
 {
-  static int recurse;
   struct Exception_Data *exception;
   const char *msg;
 
   switch (info->ExceptionRecord->ExceptionCode)
     {
     case EXCEPTION_ACCESS_VIOLATION:
-      /* If the failing address isn't maximally-aligned or if we've
-	 recursed, this is a program error.  */
+      /* If the failing address isn't maximally-aligned or if the page
+	 before the faulting page is not accessible, this is a program error.
+      */
       if ((info->ExceptionRecord->ExceptionInformation[1] & 3) != 0
-	  || recurse)
+	  || IsBadCodePtr
+	  ((void *)(info->ExceptionRecord->ExceptionInformation[1] + 4096)))
 	{
 	  exception = &program_error;
 	  msg = "EXCEPTION_ACCESS_VIOLATION";
 	}
       else
 	{
-	  /* See if the page before the faulting page is accessible.  Do that
-	     by trying to access it. */
-	  recurse++;
-	  * ((volatile char *) (info->ExceptionRecord->ExceptionInformation[1]
-				+ 4096));
+	  /* otherwise it is a stack overflow  */
 	  exception = &storage_error;
 	  msg = "stack overflow (or erroneous memory access)";
 	}
@@ -931,7 +928,6 @@ __gnat_error_handler (PEXCEPTION_POINTERS info)
       msg = "unhandled signal";
     }
 
-  recurse = 0;
   Raise_From_Signal_Handler (exception, msg);
   return 0; /* This is never reached, avoid compiler warning */
 }
