@@ -528,10 +528,12 @@ check_format_info (info, params)
   tree cur_param;
   tree cur_type;
   tree wanted_type;
+  tree first_fillin_param;
   char *format_chars;
   format_char_info *fci;
   static char message[132];
   char flag_chars[8];
+  int has_operand_number = 0;
 
   /* Skip to format argument.  If the argument isn't available, there's
      no work for us to do; prototype checking will catch the problem.  */
@@ -577,13 +579,15 @@ check_format_info (info, params)
       params = TREE_CHAIN (params);
       ++arg_num;
     }
+
+  first_fillin_param = params;
   while (1)
     {
       if (*format_chars == 0)
 	{
 	  if (format_chars - TREE_STRING_POINTER (format_tree) != format_length)
 	    warning ("embedded `\\0' in format");
-	  if (info->first_arg_num != 0 && params != 0)
+	  if (info->first_arg_num != 0 && params != 0 && ! has_operand_number)
 	    warning ("too many arguments for format");
 	  return;
 	}
@@ -611,6 +615,34 @@ check_format_info (info, params)
 	}
       else
 	{
+	  /* See if we have a number followed by a dollar sign.  If we do,
+	     it is an operand number, so set PARAMS to that operand.  */
+	  if (*format_chars >= '0' && *format_chars <= '9')
+	    {
+	      char *p = format_chars;
+
+	      while (*p >= '0' && *p++ <= '9')
+		;
+
+	      if (*p == '$')
+		{
+		  int opnum = atoi (format_chars);
+
+		  params = first_fillin_param;
+		  format_chars = p + 1;
+		  has_operand_number = 1;
+
+		  for (i = 1; i < opnum && params != 0; i++)
+		    params = TREE_CHAIN (params);
+
+		  if (opnum == 0 || params == 0)
+		    {
+		      warning ("operand number out of range in format");
+		      return;
+		    }
+		}
+	    }
+
 	  while (*format_chars != 0 && index (" +#0-", *format_chars) != 0)
 	    {
 	      if (index (flag_chars, *format_chars) != 0)
