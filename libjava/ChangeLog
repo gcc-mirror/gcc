@@ -1,3 +1,9 @@
+2001-02-19  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/Integer.java (getInteger): Return default argument if
+	property is not set. Don't call decode with null argument.
+	* java/lang/Long.java (getLong): Likewise.
+
 2001-02-16  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/TreeSet.java (clone): Made subclass safe, use 
