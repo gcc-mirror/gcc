@@ -97,7 +97,7 @@ Tue Nov 20 11:56:12 2001  Douglas B. Rupp  <rupp@gnat.com>
 	* rs6000.h: ... to here.
 	* rs6000.md (movtf, extenddftf2, extendsftf2, trunctfdf2,
 	trunctfsf2, floatditf2, floatsitf2, fix_trunctfdi2,
-	fix_trunctfsi2, negtf2, abstf2, nabstf2): New patterns.
+	fix_trunctfsi2, negtf2, abstf2, nabstf2, cmptf): New patterns.
 
 Tue Nov 20 06:41:38 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
