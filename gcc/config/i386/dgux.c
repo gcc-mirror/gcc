@@ -22,9 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #include <time.h>
 #include "i386/i386.c"
 
-
-extern char *version_string;
-
 struct lang_independent_option
 {
   char *string;

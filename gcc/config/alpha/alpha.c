@@ -44,7 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 
 /* External data.  */
-extern char *version_string;
 extern int rtx_equal_function_value_matters;
 
 /* Specify which cpu to schedule for. */

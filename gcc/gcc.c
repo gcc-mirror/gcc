@@ -189,8 +189,6 @@ static struct obstack collect_obstack;
 static struct rusage rus, prus;
 #endif
 
-extern char *version_string;
-
 /* Forward declaration for prototypes.  */
 struct path_prefix;
 

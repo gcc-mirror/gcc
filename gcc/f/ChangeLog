@@ -1,3 +1,7 @@
+Tue Feb 15 11:14:17 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g77spec.c: Don't declare `version_string'.
+
 Sat Feb  5 23:27:25 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c (mark_tracker_head, mark_binding_level): Protoize.

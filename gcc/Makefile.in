@@ -752,7 +752,7 @@ CONFIG_H =
 MACHMODE_H = machmode.h machmode.def
 RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H)
 RTL_H = $(RTL_BASE_H) genrtl.h
-TREE_H = tree.h real.h tree.def $(MACHMODE_H) tree-check.h
+TREE_H = tree.h real.h tree.def $(MACHMODE_H) tree-check.h version.h
 BASIC_BLOCK_H = basic-block.h bitmap.h sbitmap.h varray.h
 DEMANGLE_H = $(srcdir)/../include/demangle.h
 RECOG_H = recog.h
@@ -1371,7 +1371,7 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(COLLECT2_OBJS) $(LIBS)
 
 collect2.o : collect2.c $(CONFIG_H) system.h gstab.h intl.h \
-	$(srcdir)/../include/obstack.h $(DEMANGLE_H) collect2.h
+	$(srcdir)/../include/obstack.h $(DEMANGLE_H) collect2.h version.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
 	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
@@ -1412,6 +1412,8 @@ c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h \
 	$(EXPR_H)
 
 # Language-independent files.
+
+gcc.h: version.h
 
 DRIVER_DEFINES = \
   -DSTANDARD_STARTFILE_PREFIX=\"$(unlibsubdir)/\" \
@@ -1638,7 +1640,7 @@ $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) ggc.h \
 mips-tfile: mips-tfile.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tfile.o version.o $(LIBS)
 
-mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H) system.h
+mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H) system.h version.h
 
 mips-tdump: mips-tdump.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tdump.o version.o $(LIBS)
@@ -2017,7 +2019,7 @@ PREPROCESSOR_DEFINES = \
 # We use $(libsubdir)/$(unlibsubdir) to match the
 # -iprefix argument which gcc will pass if GCC_EXEC_PREFIX is used.
 cccp.o: cccp.c $(CONFIG_H) intl.h pcp.h version.c config.status system.h \
-           mbchar.h prefix.h Makefile.in
+           mbchar.h prefix.h Makefile.in version.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(PREPROCESSOR_DEFINES) \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
@@ -2040,14 +2042,14 @@ cppmain.o: cppmain.c $(CONFIG_H) cpplib.h intl.h system.h
 
 cppulp.o:  cppulp.c  $(CONFIG_H) system.h output.h
 cpplib.o:  cpplib.c  $(CONFIG_H) cpplib.h intl.h system.h cpphash.h
-cpphash.o: cpphash.c $(CONFIG_H) cpplib.h intl.h system.h cpphash.h
+cpphash.o: cpphash.c $(CONFIG_H) cpplib.h intl.h system.h cpphash.h version.h
 cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h intl.h system.h
 cpperror.o: cpperror.c $(CONFIG_H) cpplib.h intl.h system.h
 cppexp.o:   cppexp.c   $(CONFIG_H) cpplib.h intl.h system.h
 cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h intl.h system.h
 
 cppinit.o:  cppinit.c $(CONFIG_H) cpplib.h intl.h system.h \
-		cpphash.h prefix.h output.h Makefile
+		cpphash.h prefix.h output.h Makefile version.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(PREPROCESSOR_DEFINES) \
 	  -c `echo $(srcdir)/cppinit.c | sed 's,^\./,,'`
@@ -2066,13 +2068,13 @@ unprotoize$(exeext): unprotoize.o $(PROTO_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ unprotoize.o $(PROTO_OBJS) $(LIBS)
 
 protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h \
-   Makefile
+   Makefile version.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
 	  $(srcdir)/protoize.c
 
 unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
-   $(CONFIG_H) system.h Makefile
+   $(CONFIG_H) system.h Makefile version.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
 	  $(srcdir)/unprotoize.c

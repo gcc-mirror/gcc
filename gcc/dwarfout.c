@@ -106,7 +106,6 @@ extern time_t time PARAMS ((time_t *)); /* FIXME: use NEED_DECLARATION_TIME */
        && decl == TYPE_STUB_DECL (TREE_TYPE (decl))))
 
 extern int flag_traditional;
-extern char *version_string;
 
 /* Maximum size (in bytes) of an artificially generated label.	*/
 

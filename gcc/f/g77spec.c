@@ -96,8 +96,6 @@ static int g77_newargc;
 static char **real_g77_newargv;
 static const char **g77_newargv;
 
-extern char *version_string;
-
 /* --- This comes from gcc.c (2.8.1) verbatim: */
 
 /* This defines which switch letters take arguments.  */

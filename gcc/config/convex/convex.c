@@ -472,7 +472,6 @@ asm_declare_function_name (file, name, decl)
 
   const char *p;
   char c;
-  extern char *version_string;
   static char vers[4];
   int i;
   

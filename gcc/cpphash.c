@@ -27,6 +27,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "system.h"
 #include "cpplib.h"
 #include "cpphash.h"
+#include "version.h"
 #undef abort
 
 static unsigned int hashf	  PARAMS ((const U_CHAR *, int));
@@ -44,8 +45,6 @@ static void special_symbol	 PARAMS ((HASHNODE *, cpp_reader *));
 #define SKIP_WHITE_SPACE(p) do { while (is_hspace(*p)) p++; } while (0)
 #define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->data != NULL)
 #define FORWARD(N) CPP_FORWARD (CPP_BUFFER (pfile), (N))
-
-extern char *version_string;
 
 /* The arglist structure is built by create_definition to tell
    collect_expansion where the argument names begin.  That

@@ -52,6 +52,7 @@ Boston, MA 02111-1307, USA.  */
 #include "demangle.h"
 #include "obstack.h"
 #include "intl.h"
+#include "version.h"
 
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
@@ -183,8 +184,6 @@ enum pass {
   PASS_LIB,			        /* looking for shared libraries */
   PASS_SECOND				/* with constructors linked in */
 };
-
-extern char *version_string;
 
 int vflag;				/* true if -v */
 static int rflag;			/* true if -r */

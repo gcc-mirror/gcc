@@ -53,7 +53,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "java-tree.h"
 
-#include "version.c"
+#include "version.h"
 
 #include <getopt.h>
 

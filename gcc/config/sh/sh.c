@@ -74,7 +74,6 @@ int current_function_anonymous_args;
 
 /* Global variables from toplev.c and final.c that are used within, but
    not declared in any header file.  */
-extern char *version_string;
 extern int *insn_addresses;
 
 /* Global variables for machine-dependent things. */

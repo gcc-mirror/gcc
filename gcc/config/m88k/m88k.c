@@ -41,7 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "tm_p.h"
 
-extern char *version_string;
 extern int flag_traditional;
 extern FILE *asm_out_file;
 

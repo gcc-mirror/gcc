@@ -30,7 +30,6 @@ extern char	call_used_regs[];
 extern int	may_call_alloca;
 extern char   **save_argv;
 extern int	target_flags;
-extern char    *version_string;
 
 /* MIPS external variables defined in mips.c.  */
 

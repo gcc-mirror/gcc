@@ -2126,7 +2126,6 @@ limbo_die_node;
    language, and compiler version.  */
 
 extern int flag_traditional;
-extern char *version_string;
 
 /* Fixed size portion of the DWARF compilation unit header.  */
 #define DWARF_COMPILE_UNIT_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 3)

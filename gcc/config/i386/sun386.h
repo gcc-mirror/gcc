@@ -57,7 +57,6 @@ do								\
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) \
   do {							\
-    extern char *version_string;			\
     {							\
       int len = strlen (main_input_filename);		\
       char *na = main_input_filename + len;		\
