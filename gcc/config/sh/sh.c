@@ -1158,7 +1158,7 @@ shl_and_kind (left_rtx, mask_rtx, attrp)
       if (i > right)
 	break;
       cost = (i != 0) + (CONST_OK_FOR_I (mask >> i) ? 2 : 3)
-	+ (can_ext ? ext_shift_insns : shift_insns)[left];
+	+ (can_ext ? ext_shift_insns : shift_insns)[left + i];
       if (cost < best_cost)
 	{
 	  best = 4 - can_ext;
