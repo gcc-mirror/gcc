@@ -1,3 +1,18 @@
+2001-07-01  Stephen M. Webb <stephen@bregmasoft.com>
+
+	* include/bits/stl_construct.h (construct): Remove.
+      	(destroy): Remove.
+      	(__destroy): Replaced by use of iterator_traits.
+	* include/bits/stl_deque.h: replaced HP iterator functions with
+	iterator_traits.
+        (construct): changed to _Construct.
+	(destroy): changed to _Destroy.
+	* include/bits/stl_tempbuf.h: Same.
+	* include/bits/stl_tree.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/backward/iterator.h (construct): moved definition to here.
+	(destroy): Same.
+
 2001-06-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc (locale::combine): Clone _Impl.

@@ -552,11 +552,12 @@ protected:
 
 protected:
 
-  _Link_type _M_create_node(const value_type& __x)
+  _Link_type
+  _M_create_node(const value_type& __x)
   {
     _Link_type __tmp = _M_get_node();
     __STL_TRY {
-      construct(&__tmp->_M_value_field, __x);
+      _Construct(&__tmp->_M_value_field, __x);
     }
     __STL_UNWIND(_M_put_node(__tmp));
     return __tmp;
@@ -571,9 +572,10 @@ protected:
     return __tmp;
   }
 
-  void destroy_node(_Link_type __p)
+  void
+  destroy_node(_Link_type __p)
   {
-    destroy(&__p->_M_value_field);
+    _Destroy(&__p->_M_value_field);
     _M_put_node(__p);
   }
 

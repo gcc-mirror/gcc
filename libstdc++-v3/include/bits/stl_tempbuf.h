@@ -149,7 +149,7 @@ public:
   }
  
   ~_Temporary_buffer() {  
-    destroy(_M_buffer, _M_buffer + _M_len);
+    _Destroy(_M_buffer, _M_buffer + _M_len);
     free(_M_buffer);
   }
 
