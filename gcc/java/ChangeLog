@@ -1,3 +1,8 @@
+2003-12-03  Zack Weinberg  <zack@codesourcery.com>
+
+	* lex.h: Check both HAVE_ICONV and HAVE_ICONV_H before
+	including iconv.h.
+
 2003-12-03  Ralph Loader  <rcl@ihug.co.nz>
 
 	PR java/12374:
@@ -7,7 +12,7 @@
 	RESOLVE_EXPRESSION_NAME_P as it isn't used anywhere else.
 	* java-tree.h: Remove RESOLVE_EXPRESSION_NAME_P as it isn't
 	used.
-	
+
 2003-12-01  Jeff Sturm  <jsturm@one-point.com>
 
 	Fix PR java/13237
@@ -93,7 +98,7 @@
 2003-11-17  Andrew Haley  <aph@redhat.com>
 
 	* java-tree.h (LOCAL_VAR_OUT_OF_SCOPE_P): New.
-	(struct lang_decl_var:freed): New variable. 
+	(struct lang_decl_var:freed): New variable.
 	* decl.c (poplevel): Mark local vars that have gone out of scope.
 	(push_jvm_slot): Don't use the RTL of a var that has gone out of
 	scope.
@@ -305,7 +310,7 @@
 	(atable_syms_decl): New.
 	(enum java_tree_index): Add JTI_ATABLE_METHODS, JTI_ATABLE_DECL,
 	JTI_ATABLE_SYMS_DECL.  Rename JTI_METHOD_SYMBOL* to JTI_SYMBOL*.
-	(symbol_*type): Rename method_symbol* to symbol*type.	
+	(symbol_*type): Rename method_symbol* to symbol*type.
 	(emit_offset_symbol_table): Delete.
 	(emit_symbol_table): New.
 	(get_symbol_table_index): New.
@@ -322,7 +327,7 @@
 	(emit_symbol_table): Rename from emit_offset_symbol_table.
 	Parameterize to allow re-use by different types of symbol table.
 	(build_symbol_entry): Renamed from build_method_symbols_entry.
-	
+
 2003-09-30  Roger Sayle  <roger@eyesopen.com>
 
 	* jcf-write.c (generate_bytecode_insns): Implement evaluate-once
@@ -385,17 +390,17 @@
 
 2003-09-21  Richard Henderson  <rth@redhat.com>
 
-	* class.c, decl.c, jcf-parse.c, jcf-write.c, parse.y, 
+	* class.c, decl.c, jcf-parse.c, jcf-write.c, parse.y,
 	resource.c: Revert.
 
 2003-09-21  Richard Henderson  <rth@redhat.com>
 
-	* class.c, decl.c, jcf-parse.c, jcf-write.c, parse.y, 
+	* class.c, decl.c, jcf-parse.c, jcf-write.c, parse.y,
 	resource.c: Update for DECL_SOURCE_LOCATION rename and change to const.
 
 2003-09-20  Richard Henderson  <rth@redhat.com>
 
-        * check-init.c, class.c, decl.c, expr.c: Use %J in diagnostics.
+	* check-init.c, class.c, decl.c, expr.c: Use %J in diagnostics.
 
 2003-09-18  Roger Sayle  <roger@eyesopen.com>
 
@@ -421,18 +426,18 @@
 
 2003-09-16  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
-	* class.c (add_miranda_methods): Ensure super-interfaces are laid 
+	* class.c (add_miranda_methods): Ensure super-interfaces are laid
 	out. Fix for PR java/12254.
 
 2003-09-11  Richard Henderson  <rth@redhat.com>
 
-        * parse.y (source_end_java_method): Update for new
-        cgraph_finalize_function argument.
+	* parse.y (source_end_java_method): Update for new
+	cgraph_finalize_function argument.
 
 2003-09-09  Richard Henderson  <rth@redhat.com>
 
-        * parse.y (source_end_java_method): Update call to
-        cgraph_finalize_function.
+	* parse.y (source_end_java_method): Update call to
+	cgraph_finalize_function.
 
 2003-09-03  Jeff Sturm  <jsturm@one-point.com>
 
@@ -480,8 +485,8 @@
 
 2003-08-20  Andrew Haley  <aph@redhat.com>
 
-        * except.c (prepare_eh_table_type): Use new encoding for exception
-        handlers when using -fno-assume-compiled.
+	* except.c (prepare_eh_table_type): Use new encoding for exception
+	handlers when using -fno-assume-compiled.
 
 2003-08-13  Tom Tromey  <tromey@redhat.com>
 

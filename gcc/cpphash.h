@@ -25,7 +25,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "hashtable.h"
 
-#ifdef HAVE_ICONV
+#if defined HAVE_ICONV_H && defined HAVE_ICONV
 #include <iconv.h>
 #else
 #define HAVE_ICONV 0
