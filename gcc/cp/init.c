@@ -2331,7 +2331,7 @@ build_new_1 (exp)
       tree args;
 
       args = tree_cons (NULL_TREE, size, placement);
-      fnname = ansi_opname[code];
+      fnname = ansi_opname (code);
 
       if (use_global_new)
 	rval = (build_new_function_call 

@@ -1012,8 +1012,11 @@ extern tree current_function_return_value;
 extern tree global_namespace;
 
 extern tree ridpointers[];
-extern tree ansi_opname[];
-extern tree ansi_assopname[];
+
+#define ansi_opname(CODE) \
+  (operator_name_info[(int) (CODE)].identifier)
+#define ansi_assopname(CODE) \
+  (assignment_operator_name_info[(int) (CODE)].identifier)
 
 /* Nonzero means `$' can be in an identifier.  */
 
@@ -1864,7 +1867,8 @@ struct lang_decl_flags
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
   unsigned tinfo_fn_p : 1;
-  unsigned dummy : 4;
+  unsigned assignment_operator_p : 1;
+  unsigned dummy : 3;
 
   tree context;
 
@@ -1903,15 +1907,21 @@ struct lang_decl
   /* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
   tree cloned_function;
 
-  /* In a FUNCTION_DECL, this is VTT_PARM.  */
-  tree vtt_parm;
-
   union
   {
     tree sorted_fields;
     struct pending_inline *pending_inline_info;
     struct language_function *saved_language_function;
   } u;
+
+  union {
+    /* In an overloaded operator, this is the value of
+       DECL_OVERLOADED_OPERATOR_P.  */
+    enum tree_code operator_code;
+    /* In a maybe-in-charge constructor or destructor, this is
+       DECL_VTT_PARM.  */
+    tree vtt_parm;
+  } u2;
 };
 
 /* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
@@ -1997,7 +2007,7 @@ struct lang_decl
 /* In a maybe-in-charge constructor or destructor, this is the VTT
    parameter.  It's not actually on the DECL_ARGUMENTS list.  */
 #define DECL_VTT_PARM(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->vtt_parm)
+  (DECL_LANG_SPECIFIC (NODE)->u2.vtt_parm)
 
 /* If there's a DECL_VTT_PARM, this is a magic variable that indicates
    whether or not the VTT parm should be used.  In a subobject
@@ -2017,9 +2027,24 @@ struct lang_decl
 #define DECL_CONV_FN_P(NODE) \
   (IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)))
 
-/* Non-zero if NODE is an overloaded operator.  */
-#define DECL_OVERLOADED_OPERATOR_P(NODE)	\
-  (IDENTIFIER_OPNAME_P (DECL_NAME ((NODE))))
+/* Set the overloaded operator code for NODE to CODE.  */
+#define SET_OVERLOADED_OPERATOR_CODE(NODE, CODE) \
+  (DECL_LANG_SPECIFIC (NODE)->u2.operator_code = (CODE))
+
+/* If NODE is an overloaded operator, then this returns the TREE_CODE
+   associcated with the overloaded operator.
+   DECL_ASSIGNMENT_OPERATOR_P must also be checked to determine
+   whether or not NODE is an assignment operator.  If NODE is not an
+   overloaded operator, ERROR_MARK is returned.  Since the numerical
+   value of ERROR_MARK is zero, this macro can be used as a predicate
+   to test whether or not NODE is an overloaded operator.  */
+#define DECL_OVERLOADED_OPERATOR_P(NODE)       		\
+  (IDENTIFIER_OPNAME_P (DECL_NAME ((NODE)))		\
+   ? DECL_LANG_SPECIFIC (NODE)->u2.operator_code : ERROR_MARK)
+
+/* Non-zero if NODE is an assignment operator.  */
+#define DECL_ASSIGNMENT_OPERATOR_P(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.assignment_operator_p)
 
 /* For FUNCTION_DECLs: nonzero means that this function is a
    constructor or a destructor with an extra in-charge parameter to
@@ -2040,7 +2065,7 @@ struct lang_decl
 
 /* Nonzero if NODE is an overloaded `operator delete[]' function.  */
 #define DECL_ARRAY_DELETE_OPERATOR_P(NODE) \
-  (DECL_NAME (NODE) == ansi_opname[(int) VEC_DELETE_EXPR])
+  (DECL_OVERLOADED_OPERATOR_P (NODE) == VEC_DELETE_EXPR)
 
 /* Nonzero for _DECL means that this decl appears in (or will appear
    in) as a member in a RECORD_TYPE or UNION_TYPE node.  It is also for
@@ -3794,10 +3819,22 @@ enum tree_string_flags
 };
 
 /* in lex.c  */
-/* Indexed by TREE_CODE, these tables give C-looking names to
-   operators represented by TREE_CODES.  For example,
-   opname_tab[(int) MINUS_EXPR] == "-".  */
-extern const char **opname_tab, **assignop_tab;
+
+typedef struct operator_name_info_t
+{
+  /* The IDENTIFIER_NODE for the operator.  */
+  tree identifier;
+  /* The name of the operator.  */
+  const char *name;
+  /* The mangled name of the operator.  */
+  const char *mangled_name;
+} operator_name_info_t;
+
+/* A mapping from tree codes to operator name information.  */
+extern operator_name_info_t operator_name_info[];
+/* Similar, but for assignment operators.  */
+extern operator_name_info_t assignment_operator_name_info[];
+
 
 /* in call.c */
 extern int check_dtor_name			PARAMS ((tree, tree));
@@ -3959,11 +3996,9 @@ extern tree unqualified_namespace_lookup	PARAMS ((tree, int, tree *));
 extern int  lookup_using_namespace              PARAMS ((tree, tree, tree, tree, int, tree *));
 extern int  qualified_lookup_using_namespace    PARAMS ((tree, tree, tree, int));
 extern tree build_library_fn			PARAMS ((tree, tree));
-extern tree build_cp_library_fn			PARAMS ((tree, tree));
 extern tree build_library_fn_ptr		PARAMS ((const char *, tree));
 extern tree build_cp_library_fn_ptr		PARAMS ((const char *, tree));
 extern tree push_library_fn			PARAMS ((tree, tree));
-extern tree push_cp_library_fn			PARAMS ((tree, tree));
 extern tree push_void_library_fn		PARAMS ((tree, tree));
 extern tree push_throw_library_fn		PARAMS ((tree, tree));
 extern void init_decl_processing		PARAMS ((void));
@@ -4184,7 +4219,6 @@ extern tree make_pointer_declarator		PARAMS ((tree, tree));
 extern tree make_reference_declarator		PARAMS ((tree, tree));
 extern tree make_call_declarator		PARAMS ((tree, tree, tree, tree));
 extern void set_quals_and_spec			PARAMS ((tree, tree, tree));
-extern const char *operator_name_string		PARAMS ((tree));
 extern void lang_init				PARAMS ((void));
 extern void lang_finish				PARAMS ((void));
 #if 0
@@ -4234,7 +4268,6 @@ extern int cp_type_qual_from_rid                PARAMS ((tree));
 extern void init_method				PARAMS ((void));
 extern char *build_overload_name		PARAMS ((tree, int, int));
 extern tree build_static_name			PARAMS ((tree, tree));
-extern tree build_decl_overload			PARAMS ((tree, tree, int));
 extern tree build_decl_overload_real            PARAMS ((tree, tree, tree, tree,
 						       tree, int)); 
 extern void set_mangled_name_for_decl           PARAMS ((tree));

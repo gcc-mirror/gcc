@@ -1960,7 +1960,7 @@ grok_function_init (decl, init)
 	}
 #endif
       DECL_PURE_VIRTUAL_P (decl) = 1;
-      if (DECL_NAME (decl) == ansi_opname [(int) MODIFY_EXPR])
+      if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
 	{
 	  tree parmtype
 	    = TREE_VALUE (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl))));

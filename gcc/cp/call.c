@@ -2257,7 +2257,7 @@ print_z_candidates (candidates)
     {
       if (TREE_CODE (candidates->fn) == IDENTIFIER_NODE)
 	{
-	  if (candidates->fn == ansi_opname [COND_EXPR])
+	  if (TREE_VEC_LENGTH (candidates->convs) == 3)
 	    cp_error ("%s %D(%T, %T, %T) <builtin>", str, candidates->fn,
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)),
@@ -2609,7 +2609,7 @@ build_object_call (obj, args)
       return error_mark_node;
     }
 
-  fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname [CALL_EXPR], 1);
+  fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname (CALL_EXPR), 1);
   if (fns == error_mark_node)
     return error_mark_node;
 
@@ -2689,7 +2689,7 @@ build_object_call (obj, args)
      function, we must be careful not to unconditionally look at
      DECL_NAME here.  */
   if (TREE_CODE (cand->fn) == FUNCTION_DECL
-      && DECL_NAME (cand->fn) == ansi_opname [CALL_EXPR])
+      && DECL_OVERLOADED_OPERATOR_P (cand->fn) == CALL_EXPR)
     return build_over_call (cand, mem_args, LOOKUP_NORMAL);
 
   obj = convert_like_with_context
@@ -2705,8 +2705,12 @@ op_error (code, code2, arg1, arg2, arg3, problem)
      tree arg1, arg2, arg3;
      const char *problem;
 {
-  const char * opname
-    = (code == MODIFY_EXPR ? assignop_tab [code2] : opname_tab [code]);
+  const char * opname;
+
+  if (code == MODIFY_EXPR)
+    opname = assignment_operator_name_info[code2].name;
+  else
+    opname = operator_name_info[code].name;
 
   switch (code)
     {
@@ -2987,7 +2991,7 @@ build_conditional_expr (arg1, arg2, arg3)
       candidates = add_builtin_candidates (candidates, 
 					   COND_EXPR, 
 					   NOP_EXPR,
-					   ansi_opname[COND_EXPR],
+					   ansi_opname (COND_EXPR),
 					   args,
 					   LOOKUP_NORMAL);
 
@@ -3166,10 +3170,10 @@ build_new_op (code, flags, arg1, arg2, arg3)
     {
       code2 = TREE_CODE (arg3);
       arg3 = NULL_TREE;
-      fnname = ansi_assopname[code2];
+      fnname = ansi_assopname (code2);
     }
   else
-    fnname = ansi_opname[code];
+    fnname = ansi_opname (code);
 
   switch (code)
     {
@@ -3314,7 +3318,8 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	     one, then we fall back to the old way of doing things.  */
 	  if (flags & LOOKUP_COMPLAIN)
 	    cp_pedwarn ("no `%D (int)' declared for postfix `%s', trying prefix operator instead",
-			fnname, opname_tab [code]);
+			fnname, 
+			operator_name_info[code].name);
 	  if (code == POSTINCREMENT_EXPR)
 	    code = PREINCREMENT_EXPR;
 	  else
@@ -3354,7 +3359,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
     {
       extern int warn_synth;
       if (warn_synth
-	  && fnname == ansi_opname[MODIFY_EXPR]
+	  && fnname == ansi_assopname (NOP_EXPR)
 	  && DECL_ARTIFICIAL (cand->fn)
 	  && candidates->next
 	  && ! candidates->next->next)
@@ -3516,7 +3521,7 @@ build_op_delete_call (code, addr, size, flags, placement)
     return error_mark_node;
 
   type = TREE_TYPE (TREE_TYPE (addr));
-  fnname = ansi_opname[code];
+  fnname = ansi_opname (code);
 
   if (IS_AGGR_TYPE (type) && ! (flags & LOOKUP_GLOBAL))
     /* In [class.free]
@@ -4137,7 +4142,7 @@ build_over_call (cand, args, flags)
 	  return address;
 	}
     }
-  else if (DECL_NAME (fn) == ansi_opname[MODIFY_EXPR]
+  else if (DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR
 	   && copy_args_p (fn)
 	   && TYPE_HAS_TRIVIAL_ASSIGN_REF (DECL_CONTEXT (fn)))
     {
@@ -5123,7 +5128,7 @@ joust (cand1, cand2, warn)
       /* Kludge around broken overloading rules whereby
 	 Integer a, b; test ? a : b; is ambiguous, since there's a builtin
 	 that takes references and another that takes values.  */
-      if (cand1->fn == ansi_opname[COND_EXPR])
+      if (DECL_OVERLOADED_OPERATOR_P (cand1->fn) == COND_EXPR)
 	{
 	  tree c1 = TREE_VEC_ELT (cand1->convs, 1);
 	  tree c2 = TREE_VEC_ELT (cand2->convs, 1);

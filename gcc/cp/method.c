@@ -520,12 +520,10 @@ mangle_expression (value)
     {
       int i;
       int operands = TREE_CODE_LENGTH (TREE_CODE (value));
-      tree id;
       const char *name;
 
-      id = ansi_opname [(int) TREE_CODE (value)];
-      my_friendly_assert (id != NULL_TREE, 0);
-      name = IDENTIFIER_POINTER (id);
+      name = operator_name_info[TREE_CODE (value)].mangled_name;
+      my_friendly_assert (name != NULL, 0);
       if (name[0] != '_' || name[1] != '_')
 	/* On some erroneous inputs, we can get here with VALUE a
 	   LOOKUP_EXPR.  In that case, the NAME will be the
@@ -1576,31 +1574,47 @@ build_static_name (context, name)
    of a class (including a static member) and 2 if the declaration is
    for a constructor.  */
 tree 
-build_decl_overload_real (dname, parms, ret_type, tparms, targs,
+build_decl_overload_real (decl, parms, ret_type, tparms, targs,
 			  for_method) 
-     tree dname;
+     tree decl;
      tree parms;
      tree ret_type;
      tree tparms;
      tree targs;
      int for_method;
 {
-  const char *name = IDENTIFIER_POINTER (dname);
+  const char *name;
+  enum tree_code operator_code;
 
-  /* member operators new and delete look like methods at this point.  */
-  if (! for_method && current_namespace == global_namespace
-      && parms != NULL_TREE && TREE_CODE (parms) == TREE_LIST
-      && TREE_CHAIN (parms) == void_list_node)
+  operator_code = DECL_OVERLOADED_OPERATOR_P (decl);
+  if (!DECL_CONV_FN_P (decl) && operator_code)
     {
-      if (dname == ansi_opname[(int) DELETE_EXPR])
-	return get_identifier ("__builtin_delete");
-      else if (dname == ansi_opname[(int) VEC_DELETE_EXPR])
-	return get_identifier ("__builtin_vec_delete");
-      if (dname == ansi_opname[(int) NEW_EXPR])
-	return get_identifier ("__builtin_new");
-      else if (dname == ansi_opname[(int) VEC_NEW_EXPR])
-	return get_identifier ("__builtin_vec_new");
+      /* member operators new and delete look like methods at this
+         point.  */
+      if (! for_method && CP_DECL_CONTEXT (decl) == global_namespace
+	  && parms != NULL_TREE && TREE_CODE (parms) == TREE_LIST
+	  && TREE_CHAIN (parms) == void_list_node)
+	switch (operator_code)
+	  {
+	  case DELETE_EXPR:
+	    return get_identifier ("__builtin_delete");
+	  case VEC_DELETE_EXPR:
+	    return get_identifier ("__builtin_vec_delete");
+	  case NEW_EXPR:
+	    return get_identifier ("__builtin_new");
+	  case VEC_NEW_EXPR:
+	    return get_identifier ("__builtin_vec_new");
+	  default:
+	    break;
+	  }
+
+      if (DECL_ASSIGNMENT_OPERATOR_P (decl))
+	name = assignment_operator_name_info[(int) operator_code].mangled_name;
+      else
+	name = operator_name_info[(int) operator_code].mangled_name;
     }
+  else
+    name = IDENTIFIER_POINTER (DECL_NAME (decl));
 
   start_squangling ();
   OB_INIT ();
@@ -1618,15 +1632,12 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
       build_template_parm_names (tparms, targs);
       OB_PUTC ('_');
     }
-  else if (!for_method && current_namespace == global_namespace)
-    /* XXX this works only if we call this in the same namespace
-       as the declaration. Unfortunately, we don't have the _DECL,
-       only its name */
+  else if (!for_method && CP_DECL_CONTEXT (decl) == global_namespace)
     OB_PUTC ('F');
 
-  if (!for_method && current_namespace != global_namespace)
+  if (!for_method && CP_DECL_CONTEXT (decl) != global_namespace)
     /* qualify with namespace */
-    build_qualified_name (current_namespace);
+    build_qualified_name (CP_DECL_CONTEXT (decl));
 
   if (parms == NULL_TREE)
     OB_PUTC ('e');
@@ -1639,7 +1650,7 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 	  /* Allocate typevec array.  */
 	  size_t typevec_size = list_length (parms);
           maxtype = 0;
-	  if (!for_method && current_namespace != global_namespace)
+	  if (!for_method && CP_DECL_CONTEXT (decl) != global_namespace)
 	    /* The namespace of a global function needs one slot.  */
 	    typevec_size++;
 	  VARRAY_TREE_INIT (typevec, typevec_size, "typevec");
@@ -1668,11 +1679,11 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 	{
 	  /* the namespace qualifier for a global function 
 	     will count as type */
-	  if (current_namespace != global_namespace
+	  if (CP_DECL_CONTEXT (decl) != global_namespace
 	      && !flag_do_squangling)
 	    {
 	      my_friendly_assert (maxtype < VARRAY_SIZE (typevec), 387);
-	      VARRAY_TREE (typevec, maxtype) = current_namespace;
+	      VARRAY_TREE (typevec, maxtype) = CP_DECL_CONTEXT (decl);
 	      maxtype++;
 	    }
 	  build_mangled_name (parms, 0, 0);
@@ -1694,29 +1705,8 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
   end_squangling ();
   {
     tree n = get_identifier (obstack_base (&scratch_obstack));
-    if (IDENTIFIER_OPNAME_P (dname))
-      IDENTIFIER_OPNAME_P (n) = 1;
     return n;
   }
-}
-
-/* Change the name of a function definition so that it may be
-   overloaded. NAME is the name of the function to overload,
-   PARMS is the parameter list (which determines what name the
-   final function obtains).
-
-   FOR_METHOD is 1 if this overload is being performed
-   for a method, rather than a function type.  It is 2 if
-   this overload is being performed for a constructor.  */
-
-tree
-build_decl_overload (dname, parms, for_method)
-     tree dname;
-     tree parms;
-     int for_method;
-{
-  return build_decl_overload_real (dname, parms, NULL_TREE, NULL_TREE,
-				   NULL_TREE, for_method); 
 }
 
 /* Set the mangled name (DECL_ASSEMBLER_NAME) for DECL.  */
@@ -1746,9 +1736,10 @@ set_mangled_name_for_decl (decl)
 			0);
 
   DECL_ASSEMBLER_NAME (decl)
-    = build_decl_overload (DECL_NAME (decl), parm_types, 
-			   DECL_FUNCTION_MEMBER_P (decl)
-			   + DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl));
+    = build_decl_overload_real (decl, parm_types, NULL_TREE,
+				NULL_TREE, NULL_TREE,
+				DECL_FUNCTION_MEMBER_P (decl)
+				+ DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl));
 }
 
 /* Build an overload name for the type expression TYPE.  */
@@ -1760,7 +1751,7 @@ build_typename_overload (type)
   tree id;
 
   OB_INIT ();
-  OB_PUTID (ansi_opname[(int) TYPE_EXPR]);
+  OB_PUTS (OPERATOR_TYPENAME_FORMAT);
   nofold = 1;
   start_squangling ();
   build_mangled_name (type, 0, 1);
@@ -2367,7 +2358,7 @@ do_build_assign_ref (fndecl)
 	    (build_reference_type (basetype), parm,
 	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 	  p = convert_from_reference (p);
-	  p = build_member_call (basetype, ansi_opname [MODIFY_EXPR],
+	  p = build_member_call (basetype, ansi_assopname (NOP_EXPR),
 				 build_tree_list (NULL_TREE, p));
 	  finish_expr_stmt (p);
 	}
@@ -2467,7 +2458,7 @@ synthesize_method (fndecl)
   store_parm_decls ();
   clear_last_expr ();
 
-  if (DECL_NAME (fndecl) == ansi_opname[MODIFY_EXPR])
+  if (DECL_OVERLOADED_OPERATOR_P (fndecl) == NOP_EXPR)
     {
       do_build_assign_ref (fndecl);
       need_body = 0;
@@ -2550,7 +2541,7 @@ implicitly_declare_fn (kind, type, const_p)
       if (const_p)
 	type = build_qualified_type (type, TYPE_QUAL_CONST);
 
-      name = ansi_opname [(int) MODIFY_EXPR];
+      name = ansi_assopname (NOP_EXPR);
 
       argtype = build_reference_type (type);
       args = tree_cons (NULL_TREE,

@@ -6836,15 +6836,15 @@ check_return_expr (retval)
     current_function_returns_null = 1;
 
   /* Only operator new(...) throw(), can return NULL [expr.new/13].  */
-  if ((DECL_NAME (current_function_decl) == ansi_opname[(int) NEW_EXPR]
-       || DECL_NAME (current_function_decl) == ansi_opname[(int) VEC_NEW_EXPR])
+  if ((DECL_OVERLOADED_OPERATOR_P (current_function_decl) == NEW_EXPR
+       || DECL_OVERLOADED_OPERATOR_P (current_function_decl) == VEC_NEW_EXPR)
       && !TYPE_NOTHROW_P (TREE_TYPE (current_function_decl))
       && null_ptr_cst_p (retval))
     cp_warning ("`operator new' should throw an exception, not return NULL");
 
   /* Effective C++ rule 15.  See also start_function.  */
   if (warn_ecpp
-      && DECL_NAME (current_function_decl) == ansi_opname[(int) MODIFY_EXPR]
+      && DECL_NAME (current_function_decl) == ansi_assopname(NOP_EXPR)
       && retval != current_class_ref)
     cp_warning ("`operator=' should return a reference to `*this'");
 
