@@ -374,6 +374,7 @@ save_call_clobbered_regs (insn_mode)
   for (b = 0; b < n_basic_blocks; b++)
     {
       regset regs_live = basic_block_live_at_start[b];
+      rtx prev_block_last = PREV_INSN (basic_block_head[b]);
       REGSET_ELT_TYPE bit;
       int offset, i, j;
       int regno;
@@ -490,6 +491,9 @@ save_call_clobbered_regs (insn_mode)
 				  ? insn : NEXT_INSN (insn)), 0,
 				  regno, insn_mode, MOVE_MAX / UNITS_PER_WORD);
 
+      /* If we added any insns at the start of the block, update the start
+	 of the block to point at those insns.  */
+      basic_block_head[b] = NEXT_INSN (prev_block_last);
     }
 }
 
