@@ -1,4 +1,4 @@
-2002-03-30  Hans-Peter Nilsson  <hp@bitrange.com>
+2002-03-31  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/crti.asm (_init): Register _fini with atexit.
 	* config/mmix/crtn.asm (_fini): Add omitted "POP 0,0".
