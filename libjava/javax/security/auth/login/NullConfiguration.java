@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.security.auth.login;
 
-import javax.security.auth.AuthPermission;
-
 final class NullConfiguration extends Configuration
 {
 
