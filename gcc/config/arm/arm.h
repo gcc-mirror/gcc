@@ -127,10 +127,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #endif
 #endif
 
-#ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES  "-Acpu=arm -Amachine=arm"
-#endif
-
+#undef  CPP_SPEC
 #define CPP_SPEC "\
 %(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) \
 %(cpp_endian) %(subtarget_cpp_spec) %(cpp_isa) %(cpp_interwork)"
@@ -140,6 +137,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* Set the architecture define -- if -march= is set, then it overrides
    the -mcpu= setting.  */
 #define CPP_CPU_ARCH_SPEC "\
+-Acpu=arm -Amachine=arm \
 %{march=arm2:-D__ARM_ARCH_2__} \
 %{march=arm250:-D__ARM_ARCH_2__} \
 %{march=arm3:-D__ARM_ARCH_2__} \

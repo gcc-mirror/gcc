@@ -578,6 +578,10 @@ arm-semi-aof | armel-semi-aof)
 	tm_file="arm/semiaof.h arm/aof.h arm/arm.h"
 	tmake_file=arm/t-semi
 	;;
+arm*-*-freebsd*|strongarm*-*-freebsd*)
+	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h arm/aout.h arm/freebsd.h arm/arm.h"
+	tmake_file="${tmake_file} arm/t-strongarm-elf"
+	;;
 arm*-*-netbsd*)
 	tm_file="arm/aout.h arm/arm.h netbsd.h arm/netbsd.h"
 	tmake_file="t-netbsd arm/t-netbsd"
