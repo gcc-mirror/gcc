@@ -1,3 +1,7 @@
+2002-01-22  Krister Walfridsson  <cato@df.lth.se>
+
+	* dependence.c (build_def_use): Remove array_idx.
+
 2002-01-22  Roger Sayle  <roger@eyesopen.com>
 	    Richard Henderson  <rth@redhat.com>
 
