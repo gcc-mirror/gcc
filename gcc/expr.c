@@ -4150,7 +4150,12 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
      access in case EXP is in memory.  */
   if (mode == VOIDmode && *pbitsize != 0 && *pbitpos % *pbitsize == 0)
     {
-      mode = mode_for_size (*pbitsize, MODE_INT, 0);
+      mode = mode_for_size (*pbitsize,
+			    (TYPE_MODE (TREE_TYPE (orig_exp)) == BLKmode
+			     ? MODE_INT
+			     : GET_MODE_CLASS (TYPE_MODE
+					       (TREE_TYPE (orig_exp)))),
+			    0);
       if (mode == BLKmode)
 	mode = VOIDmode;
     }
