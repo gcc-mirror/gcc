@@ -20,8 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Written by Jeffrey Hsu <hsu@cygnus.com> */
 
-extern tree convert_to_boolean (tree, tree);
-extern tree convert_to_char (tree, tree);
 extern tree convert_to_integer (tree type, tree expr);
 extern tree convert_to_real (tree type, tree expr);
 extern tree convert_to_pointer (tree type, tree expr);

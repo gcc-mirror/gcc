@@ -1,3 +1,13 @@
+2004-12-17  Andrew Haley  <aph@redhat.com>
+
+	PR java/18931
+	* typeck.c (convert): Use a CONVERT_EXPR when converting to
+	BOOLEAN_TYPE or CHAR_TYPE.
+	(convert_to_boolean, convert_to_char) : Remove.
+	* convert.h (convert_to_boolean, convert_to_char) : Remove.
+	* expr.c (expand_load_internal): Do type conversion if type is not
+	as required.
+	
 2004-12-13  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/18459
@@ -51,7 +61,7 @@
 	range we're demoting.
 
 2004-12-03  Andrew Haley  <aph@redhat.com>
-
+	
 	PR java/18697 
 	* class.c (layout_class_method): Don't fail to override a method
 	simply because it has DECL_ARTIFICIAL set.
