@@ -228,8 +228,15 @@ tree
 make_call_declarator (target, parms, cv_qualifiers, exception_specification)
      tree target, parms, cv_qualifiers, exception_specification;
 {
-  target = build_parse_node (CALL_EXPR, target, parms, cv_qualifiers);
-  TREE_TYPE (target) = exception_specification;
+  target = build_parse_node (CALL_EXPR, target, 
+			     /* Both build_parse_node and
+				decl_tree_cons build on the
+				temp_decl_obstack.  */
+			     decl_tree_cons (parms, cv_qualifiers, NULL_TREE),
+			     /* The third operand is really RTL.  We
+				shouldn't put anything there.  */
+			     NULL_TREE);
+  CALL_DECLARATOR_EXCEPTION_SPEC (target) = exception_specification;
   return target;
 }
 
@@ -237,8 +244,8 @@ void
 set_quals_and_spec (call_declarator, cv_qualifiers, exception_specification)
      tree call_declarator, cv_qualifiers, exception_specification;
 {
-  TREE_OPERAND (call_declarator, 2) = cv_qualifiers;
-  TREE_TYPE (call_declarator) = exception_specification;
+  CALL_DECLARATOR_QUALS (call_declarator) = cv_qualifiers;
+  CALL_DECLARATOR_EXCEPTION_SPEC (call_declarator) = exception_specification;
 }
 
 /* Build names and nodes for overloaded operators.  */

@@ -1,3 +1,17 @@
+1999-08-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CALL_DECLARATOR_PARMS): New macro.
+	(CALL_DECLARATOR_QUALS): Likewise.
+	(CALL_DECARATOR_EXCEPTION_SPEC): Likewise.
+	* decl.c (grokdeclarator): Adjust to use them.
+	* decl2.c (grokfield): Likewise.
+	(reparse_absdcl_as_casts): Likewise.
+	* lex.c (make_call_declarator): Likewise.
+	(set_quals_and_spec): Likewise.
+	* pt.c (tsubst): Likewise.
+	* tree.c (mapcar): Remove special hack to handle third operand of
+	a CALL_EXPR.
+
 1999-08-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CAN_HAVE_FULL_LANG_DECL_P): New macro.

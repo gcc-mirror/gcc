@@ -2150,6 +2150,18 @@ extern int flag_new_for_scope;
 #define STMT_LINENO(NODE)			\
   (TREE_COMPLEXITY ((NODE)))
 
+/* The parameters for a call-declarator.  */
+#define CALL_DECLARATOR_PARMS(NODE) \
+  (TREE_PURPOSE (TREE_OPERAND ((NODE), 1)))
+
+/* The cv-qualifiers for a call-declarator.  */
+#define CALL_DECLARATOR_QUALS(NODE) \
+  (TREE_VALUE (TREE_OPERAND ((NODE), 1)))
+
+/* The exception-specification for a call-declarator.  */
+#define CALL_DECLARATOR_EXCEPTION_SPEC(NODE) \
+  (TREE_TYPE ((NODE)))
+
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types { record_type, class_type, union_type, enum_type };
 

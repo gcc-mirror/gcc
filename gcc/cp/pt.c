@@ -6800,15 +6800,16 @@ tsubst (t, args, complain, in_decl)
       {
 	tree e1 = tsubst (TREE_OPERAND (t, 0), args, complain,
 			  in_decl);
-	tree e2 = tsubst_call_declarator_parms (TREE_OPERAND (t, 1), args, 
-						complain, in_decl);
-	tree e3 = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree e2 = (tsubst_call_declarator_parms
+		   (CALL_DECLARATOR_PARMS (t), args, complain, in_decl));
+	tree e3 = tsubst (CALL_DECLARATOR_EXCEPTION_SPEC (t), args,
+			  complain, in_decl);
 
 	if (e1 == error_mark_node || e2 == error_mark_node 
 	    || e3 == error_mark_node)
 	  return error_mark_node;
 
-	return make_call_declarator (e1, e2, TREE_OPERAND (t, 2), e3);
+	return make_call_declarator (e1, e2, CALL_DECLARATOR_QUALS (t), e3);
       }
 
     case SCOPE_REF:
