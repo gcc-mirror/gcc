@@ -1,3 +1,7 @@
+2003-01-01  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.compile/pr8955.java: New test, for PR java/8955.
+
 2002-12-19  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jacks/jacks.xfail: Updated.
