@@ -1,3 +1,8 @@
+2004-02-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md: Remove explicit (set_attr "cc"
+	"clobber").
+
 2004-02-15  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.h (PRINT_OPERAND_PUNCT_VALID_P): Restore support for
