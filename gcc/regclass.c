@@ -44,8 +44,8 @@ Boston, MA 02111-1307, USA.  */
 #define REGISTER_MOVE_COST(x, y) 2
 #endif
 
-static void init_reg_sets_1	PROTO((void));
-static void init_reg_modes	PROTO((void));
+static void init_reg_sets_1	PARAMS ((void));
+static void init_reg_modes	PARAMS ((void));
 
 /* If we have auto-increment or auto-decrement and we can have secondary
    reloads, we are not allowed to use classes requiring secondary
@@ -717,19 +717,19 @@ static struct reg_pref *reg_pref_buffer;
 
 static int loop_cost;
 
-static rtx scan_one_insn	PROTO((rtx, int));
-static void record_operand_costs PROTO((rtx, struct costs *, struct reg_pref *));
-static void dump_regclass	PROTO((FILE *));
-static void record_reg_classes	PROTO((int, int, rtx *, enum machine_mode *,
+static rtx scan_one_insn	PARAMS ((rtx, int));
+static void record_operand_costs PARAMS ((rtx, struct costs *, struct reg_pref *));
+static void dump_regclass	PARAMS ((FILE *));
+static void record_reg_classes	PARAMS ((int, int, rtx *, enum machine_mode *,
 				       char *, const char **, rtx,
 				       struct costs *, struct reg_pref *));
-static int copy_cost		PROTO((rtx, enum machine_mode, 
+static int copy_cost		PARAMS ((rtx, enum machine_mode, 
 				       enum reg_class, int));
-static void record_address_regs	PROTO((rtx, enum reg_class, int));
+static void record_address_regs	PARAMS ((rtx, enum reg_class, int));
 #ifdef FORBIDDEN_INC_DEC_CLASSES
-static int auto_inc_dec_reg_p	PROTO((rtx, enum machine_mode));
+static int auto_inc_dec_reg_p	PARAMS ((rtx, enum machine_mode));
 #endif
-static void reg_scan_mark_refs	PROTO((rtx, rtx, int, int));
+static void reg_scan_mark_refs	PARAMS ((rtx, rtx, int, int));
 
 /* Return the reg_class in which pseudo reg number REGNO is best allocated.
    This function is sometimes called before the info has been computed.

@@ -74,7 +74,7 @@ static int directory_specified_p PARAMS ((const char *));
 static int file_excluded_p PARAMS ((const char *));
 static char *unexpand_if_needed PARAMS ((const char *));
 static char *abspath PARAMS ((const char *, const char *));
-static int is_abspath PVPROTO ((const char *));
+static int is_abspath PARAMS ((const char *));
 static void check_aux_info PARAMS ((int));
 static const char *find_corresponding_lparen PARAMS ((const char *));
 static int referenced_file_is_newer PARAMS ((const char *, time_t));

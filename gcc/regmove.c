@@ -41,11 +41,11 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "toplev.h"
 
-static int optimize_reg_copy_1	PROTO((rtx, rtx, rtx));
-static void optimize_reg_copy_2	PROTO((rtx, rtx, rtx));
-static void optimize_reg_copy_3	PROTO((rtx, rtx, rtx));
-static rtx gen_add3_insn	PROTO((rtx, rtx, rtx));
-static void copy_src_to_dest	PROTO((rtx, rtx, rtx, int));
+static int optimize_reg_copy_1	PARAMS ((rtx, rtx, rtx));
+static void optimize_reg_copy_2	PARAMS ((rtx, rtx, rtx));
+static void optimize_reg_copy_3	PARAMS ((rtx, rtx, rtx));
+static rtx gen_add3_insn	PARAMS ((rtx, rtx, rtx));
+static void copy_src_to_dest	PARAMS ((rtx, rtx, rtx, int));
 static int *regmove_bb_head;
 
 struct match {
@@ -55,19 +55,19 @@ struct match {
   int early_clobber[MAX_RECOG_OPERANDS];
 };
 
-static rtx discover_flags_reg PROTO((void));
-static void mark_flags_life_zones PROTO((rtx));
-static void flags_set_1 PROTO((rtx, rtx, void *));
+static rtx discover_flags_reg PARAMS ((void));
+static void mark_flags_life_zones PARAMS ((rtx));
+static void flags_set_1 PARAMS ((rtx, rtx, void *));
 
-static int try_auto_increment PROTO((rtx, rtx, rtx, rtx, HOST_WIDE_INT, int));
-static int find_matches PROTO((rtx, struct match *));
-static int fixup_match_1 PROTO((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
+static int try_auto_increment PARAMS ((rtx, rtx, rtx, rtx, HOST_WIDE_INT, int));
+static int find_matches PARAMS ((rtx, struct match *));
+static int fixup_match_1 PARAMS ((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
 ;
-static int reg_is_remote_constant_p PROTO((rtx, rtx, rtx));
-static int stable_and_no_regs_but_for_p PROTO((rtx, rtx, rtx));
-static int regclass_compatible_p PROTO((int, int));
-static int replacement_quality PROTO((rtx));
-static int fixup_match_2 PROTO((rtx, rtx, rtx, rtx, FILE *));
+static int reg_is_remote_constant_p PARAMS ((rtx, rtx, rtx));
+static int stable_and_no_regs_but_for_p PARAMS ((rtx, rtx, rtx));
+static int regclass_compatible_p PARAMS ((int, int));
+static int replacement_quality PARAMS ((rtx));
+static int fixup_match_2 PARAMS ((rtx, rtx, rtx, rtx, FILE *));
 
 /* Return non-zero if registers with CLASS1 and CLASS2 can be merged without
    causing too much register allocation problems.  */

@@ -637,8 +637,8 @@ extern void	pfatal_with_name
 extern void	fancy_abort	__proto((void)) ATTRIBUTE_NORETURN;
        void	botch		__proto((const char *)) ATTRIBUTE_NORETURN;
 
-extern void	fatal		PVPROTO((const char *format, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-extern void	error		PVPROTO((const char *format, ...)) ATTRIBUTE_PRINTF_1;
+extern void	fatal		PARAMS ((const char *format, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+extern void	error		PARAMS ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
 
 #ifndef MIPS_DEBUGGING_INFO
 
@@ -4801,7 +4801,7 @@ copy_object __proto((void))
 
 /* Ye olde main program.  */
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)
@@ -5554,7 +5554,7 @@ free_thead (ptr)
 
 /*VARARGS*/
 void
-fatal VPROTO((const char *format, ...))
+fatal VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *format;
@@ -5584,7 +5584,7 @@ fatal VPROTO((const char *format, ...))
 
 /*VARARGS*/
 void
-error VPROTO((const char *format, ...))
+error VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char *format;
