@@ -167,13 +167,26 @@ extern int target_flags;
 /* Define this if most significant byte of a word is the lowest numbered.  */
 #define BYTES_BIG_ENDIAN 0
 
-/* Define this if most significant word of a multiword number is numbered.  */
+/* Define this if most significant word of a multiword number is first.  */
 #define WORDS_BIG_ENDIAN 1
+
+/* Define that floats are in VAX order, not high word first as for ints. */
+#define FLOAT_WORDS_BIG_ENDIAN 0
 
 /* Width of a word, in units (bytes). 
 
    UNITS OR BYTES - seems like units */
 #define UNITS_PER_WORD 2
+
+/* This machine doesn't use IEEE floats.  */
+/* Because the pdp11 (at least Unix) convention for 32 bit ints is
+   big endian, opposite for what you need for float, the vax float
+   conversion routines aren't actually used directly.  But the underlying
+   format is indeed the vax/pdp11 float format.  */
+#define TARGET_FLOAT_FORMAT VAX_FLOAT_FORMAT
+
+extern const struct real_format pdp11_f_format;
+extern const struct real_format pdp11_d_format;
 
 /* Maximum sized of reasonable data type 
    DImode or Dfmode ...*/
@@ -446,8 +459,8 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
    operand as its first argument and the constraint letter as its
    second operand.
 
-   `Q'	is for memory references using take more than 1 instruction.
-   `R'	is for memory references which take 1 word for the instruction.  */
+   `Q'	is for memory references that require an extra word after the opcode.
+   `R'	is for memory references which are encoded within the opcode.  */
 
 #define EXTRA_CONSTRAINT(OP,CODE)					\
   ((GET_CODE (OP) != MEM) ? 0						\
@@ -678,7 +691,7 @@ extern int may_call_alloca;
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
-#define MAX_REGS_PER_ADDRESS 2
+#define MAX_REGS_PER_ADDRESS 1
 
 /* Recognize any constant value that is a valid address.  */
 
@@ -687,7 +700,8 @@ extern int may_call_alloca;
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-#define LEGITIMATE_CONSTANT_P(X) (TARGET_FPU? 1: !(GET_CODE(X) == CONST_DOUBLE))
+#define LEGITIMATE_CONSTANT_P(X)                                        \
+  (GET_CODE (X) != CONST_DOUBLE || legitimate_const_double_p (X))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -1078,9 +1092,11 @@ extern struct rtx_def *cc0_reg_rtx;
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != SImode)	\
-    { char buf[30];							\
-      real_to_decimal (buf, CONST_DOUBLE_REAL_VALUE (X), sizeof (buf), 0, 1); \
-      fprintf (FILE, "$0F%s", buf); }					\
+    { REAL_VALUE_TYPE r;						\
+      long sval[2];							\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_TARGET_DOUBLE (r, sval);				\
+      fprintf (FILE, "$%#o", sval[0] >> 16); }				\
   else { putc ('$', FILE); output_addr_const_pdp11 (FILE, X); }}
 
 /* Print a memory address as an operand to reference that memory location.  */

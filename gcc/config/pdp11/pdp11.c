@@ -51,6 +51,90 @@ Boston, MA 02111-1307, USA.  */
    defined in tm.h */
 int current_first_parm_offset;
 
+/* Routines to encode/decode pdp11 floats */
+static void encode_pdp11_f (const struct real_format *fmt,
+			    long *, const REAL_VALUE_TYPE *);
+static void decode_pdp11_f (const struct real_format *,
+			    REAL_VALUE_TYPE *, const long *);
+static void encode_pdp11_d (const struct real_format *fmt,
+			    long *, const REAL_VALUE_TYPE *);
+static void decode_pdp11_d (const struct real_format *,
+			    REAL_VALUE_TYPE *, const long *);
+
+/* These two are taken from the corresponding vax descriptors
+   in real.c, changing only the encode/decode routine pointers.  */
+const struct real_format pdp11_f_format =
+  {
+    encode_pdp11_f,
+    decode_pdp11_f,
+    2,
+    1,
+    24,
+    24,
+    -127,
+    127,
+    15,
+    false,
+    false,
+    false,
+    false,
+    false
+  };
+
+const struct real_format pdp11_d_format =
+  {
+    encode_pdp11_d,
+    decode_pdp11_d,
+    2,
+    1,
+    56,
+    56,
+    -127,
+    127,
+    15,
+    false,
+    false,
+    false,
+    false,
+    false
+  };
+
+static void
+encode_pdp11_f (const struct real_format *fmt ATTRIBUTE_UNUSED, long *buf,
+		const REAL_VALUE_TYPE *r)
+{
+  (*vax_f_format.encode) (fmt, buf, r);
+  buf[0] = ((buf[0] >> 16) & 0xffff) | ((buf[0] & 0xffff) << 16);
+}
+
+static void
+decode_pdp11_f (const struct real_format *fmt ATTRIBUTE_UNUSED,
+		REAL_VALUE_TYPE *r, const long *buf)
+{
+  long tbuf;
+  tbuf = ((buf[0] >> 16) & 0xffff) | ((buf[0] & 0xffff) << 16);
+  (*vax_f_format.decode) (fmt, r, &tbuf);
+}
+
+static void
+encode_pdp11_d (const struct real_format *fmt ATTRIBUTE_UNUSED, long *buf,
+		const REAL_VALUE_TYPE *r)
+{
+  (*vax_d_format.encode) (fmt, buf, r);
+  buf[0] = ((buf[0] >> 16) & 0xffff) | ((buf[0] & 0xffff) << 16);
+  buf[1] = ((buf[1] >> 16) & 0xffff) | ((buf[1] & 0xffff) << 16);
+}
+
+static void
+decode_pdp11_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
+		REAL_VALUE_TYPE *r, const long *buf)
+{
+  long tbuf[2];
+  tbuf[0] = ((buf[0] >> 16) & 0xffff) | ((buf[0] & 0xffff) << 16);
+  tbuf[1] = ((buf[1] >> 16) & 0xffff) | ((buf[1] & 0xffff) << 16);
+  (*vax_d_format.decode) (fmt, r, tbuf);
+}
+
 /* This is where the condition code register lives.  */
 /* rtx cc0_reg_rtx; - no longer needed? */
 
@@ -683,22 +767,12 @@ output_move_quad (rtx *operands)
     {
       if (GET_CODE (operands[1]) == CONST_DOUBLE)
 	{
-	    /* floats only. not yet supported!
-
-	     -- compute it into PDP float format, - internally,
-	     just use IEEE and ignore possible problems ;-)
-
-	     we might get away with it !!!! */
-
-	    abort();
-	    
-#ifndef HOST_WORDS_BIG_ENDIAN
-	  latehalf[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
-	  operands[1] = GEN_INT	(CONST_DOUBLE_HIGH (operands[1]));
-#else /* HOST_WORDS_BIG_ENDIAN */
-	  latehalf[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
-	  operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
-#endif /* HOST_WORDS_BIG_ENDIAN */
+	  REAL_VALUE_TYPE r;
+	  long dval[2];
+	  REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+	  REAL_VALUE_TO_TARGET_DOUBLE (r, dval);
+	  latehalf[1] = GEN_INT (dval[1]);
+	  operands[1] = GEN_INT	(dval[0]);
 	}
       else if (GET_CODE(operands[1]) == CONST_INT)
 	{
@@ -1589,6 +1663,21 @@ legitimate_address_p (enum machine_mode mode, rtx address)
     return 1;
 
 /* #undef REG_OK_STRICT */
+}
+
+/* This function checks whether a real value can be encoded as
+   a literal, i.e., addressing mode 27.  In that mode, real values
+   are one word values, so the remaining 48 bits have to be zero.  */
+int
+legitimate_const_double_p (rtx address)
+{
+  REAL_VALUE_TYPE r;
+  long sval[2];
+  REAL_VALUE_FROM_CONST_DOUBLE (r, address);
+  REAL_VALUE_TO_TARGET_DOUBLE (r, sval);
+  if ((sval[0] & 0xffff) == 0 && sval[1] == 0)
+    return 1;
+  return 0;
 }
 
 /* A copy of output_addr_const modified for pdp11 expression syntax.
