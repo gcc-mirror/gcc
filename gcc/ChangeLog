@@ -1,3 +1,9 @@
+Wed Mar 10 19:04:31 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (fp_arith_reg_operand): Actually test if reg is suitable
+	for FP arithmetic.  Changed caller.
+	* sh.md (subsf3, subsf_i): Use fp_arith_reg_operand.
+
 Wed Mar 10 18:56:31 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (choose_reload_regs): When inheriting from the frame
