@@ -183,7 +183,7 @@ public class MatteBorder
    * at the left and right edge, the icon height for the top and
    * bottom edge.
    *
-   * <p><img src="doc-files/MatteBorder-6.png" width="500" height="150"
+   * <p><img src="doc-files/MatteBorder-6.png" width="379" height="150"
    * alt="[A picture of a MatteBorder made by this constructor]" />
    *
    * @param tileIcon an icon for tiling the border area.

@@ -1,3 +1,16 @@
+2003-09-25  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/font/FontRenderContext.java (getTransform): Return
+	copy of internal transform object. Add Javadoc.
+	* java/awt/geom/Rectangle2D.java (getPathIterator): Use the same
+	winding rule as Sun J2SE.
+	* javax/swing/border/MatteBorder.java (MatteBorder(Icon)): Docfix.
+
+2003-09-25  Ingo Proetel  <proetel@aicas.com>
+
+	* java/rmi/Naming.java:
+	Added comments, now accepts pseudo protocol "rmi".
+
 2003-09-25  Guilhem Lavaux  <guilhem@kaffe.org>
 
 	* java/text/DecimalFormat.java (format): Don't immediatly round
