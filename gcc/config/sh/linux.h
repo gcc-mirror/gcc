@@ -1,5 +1,5 @@
 /* Definitions for SH running Linux-based GNU systems using ELF
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Kazumoto Kojima <kkojima@rr.iij4u.or.jp>
 
 This file is part of GNU CC.
@@ -162,7 +162,7 @@ do { \
 #endif /* defined (__SH5__) */
 
 #if defined (__SH5__) && __SH5__ != 32
-/* MD_FALLBACK_FRAME_STATE_FOR is not yet defiened for SHMEDIA.  */
+/* MD_FALLBACK_FRAME_STATE_FOR is not yet defined for SHMEDIA.  */
 #else /* defined (__SH5__) && __SH5__ != 32 */
 
 #if defined (__SH3E__) || defined (__SH4__) || defined (__SH5__)

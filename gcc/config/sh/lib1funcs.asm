@@ -2520,7 +2520,7 @@ LOCAL(ia_main_table):
 	Its execution time is linear on the
 	number of registers that actually have to be copied, and it is
 	optimized for structures larger than 64 bits, as opposed to
-	invidivual `long long' arguments.  See sh.h for details on the
+	individual `long long' arguments.  See sh.h for details on the
 	actual bit pattern.  */
 	
 	.global	GLOBAL(GCC_shcompact_incoming_args)

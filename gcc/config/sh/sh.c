@@ -6663,7 +6663,7 @@ sh_1el_vec (v, mode)
   if (GET_CODE (v) != CONST_VECTOR
       || (GET_MODE (v) != mode && mode != VOIDmode))
     return 0;
-  /* Determine numbers of last and of least significat elements.  */
+  /* Determine numbers of last and of least significant elements.  */
   last = XVECLEN (v, 0) - 1;
   least = TARGET_LITTLE_ENDIAN ? 0 : last;
   if (GET_CODE (XVECEXP (v, 0, least)) != CONST_INT)
@@ -6878,7 +6878,7 @@ expand_df_binop (fun, operands)
 }
 
 /* ??? gcc does flow analysis strictly after common subexpression
-   elimination.  As a result, common subespression elimination fails
+   elimination.  As a result, common subexpression elimination fails
    when there are some intervening statements setting the same register.
    If we did nothing about this, this would hurt the precision switching
    for SH4 badly.  There is some cse after reload, but it is unable to
@@ -7619,7 +7619,7 @@ sh_initialize_trampoline (tramp, fnaddr, cxt)
       rtx quad0 = gen_reg_rtx (DImode), cxtload = gen_reg_rtx (DImode);
       rtx quad1 = gen_reg_rtx (DImode), quad2 = gen_reg_rtx (DImode);
       /* movi 0,r1: 0xcc000010 shori 0,r1: c8000010  concatenated,
-	 rotated 10 right, and higer 16 bit of every 32 selected.  */
+	 rotated 10 right, and higher 16 bit of every 32 selected.  */
       rtx movishori
 	= force_reg (V2HImode, (simplify_gen_subreg
 				(V2HImode, GEN_INT (0x4330432), SImode, 0)));

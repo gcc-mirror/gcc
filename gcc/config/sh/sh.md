@@ -227,7 +227,7 @@
 ;; fpconv_media	SHmedia single precision floating point conversions
 ;; fstore_media	SHmedia floating point register store instructions
 ;; gettr_media	SHmedia gettr instruction
-;; invalidate_line_media SHmedia invaldiate_line sequence
+;; invalidate_line_media SHmedia invalidate_line sequence
 ;; jump_media	SHmedia unconditional branch instructions
 ;; load_media	SHmedia general register load instructions
 ;; pt_media	SHmedia pt instruction (expanded by assembler)
@@ -236,7 +236,7 @@
 ;; mcmp_media	SHmedia multimedia compare, absolute, saturating ops
 ;; mac_media	SHmedia mac-style fixed point operations
 ;; d2mpy_media	SHmedia: two 32 bit integer multiplies
-;; atrans	SHmedia approximate transcendential functions
+;; atrans	SHmedia approximate transcendental functions
 ;; ustore_media	SHmedia unaligned stores
 ;; nil		no-op move, will be deleted.
 
@@ -1252,7 +1252,7 @@
 ; the udivsi3 libcall has the same name, we must consider all registers
 ; clobbered that are in the union of the registers clobbered by the
 ; shmedia and the shcompact implementation.  Note, if the shcompact
-; implemenation actually used shcompact code, we'd need to clobber
+; implementation actually used shcompact code, we'd need to clobber
 ; also r23 and fr23.
 (define_insn "udivsi3_i1_media"
   [(set (match_operand:SI 0 "register_operand" "=z")
@@ -1418,7 +1418,7 @@
 ; the sdivsi3 libcall has the same name, we must consider all registers
 ; clobbered that are in the union of the registers clobbered by the
 ; shmedia and the shcompact implementation.  Note, if the shcompact
-; implemenation actually used shcompact code, we'd need to clobber
+; implementation actually used shcompact code, we'd need to clobber
 ; also r22, r23 and fr23.
 (define_insn "divsi3_i1_media"
   [(set (match_operand:SI 0 "register_operand" "=z")
@@ -10596,8 +10596,8 @@
   "issue+load_store")
 
 ;; We don't model all pipeline stages; we model the issue ('D') stage
-;; inasmuch as we allow only two instructions to issue simultanously,
-;; and CO instructions prevent any simultanous issue of another instruction.
+;; inasmuch as we allow only two instructions to issue simultaneously,
+;; and CO instructions prevent any simultaneous issue of another instruction.
 ;; (This uses pipe_01 and pipe_02).
 ;; Double issue of EX insns is prevented by using the int unit in the EX stage.
 ;; Double issue of EX / BR insns is prevented by using the int unit /
@@ -10610,7 +10610,7 @@
 ;; (except in the cases outlined above), nor to describe the FS stage after
 ;; the F2 stage.
 
-;; Other MT  group intructions(1 step operations)
+;; Other MT  group instructions(1 step operations)
 ;; Group:	MT
 ;; Latency: 	1
 ;; Issue Rate: 	1
