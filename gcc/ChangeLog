@@ -1,3 +1,7 @@
+Tue Feb  8 07:53:55 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (addqi3_cc): Fix contraints.
+
 Tue Feb  8 01:39:45 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* function.c (emit_return_into_block): Wrap in #ifdef HAVE_return.
