@@ -142,7 +142,7 @@ namespace std
       }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template <class _InIterator>
+    template <typename _InIterator>
       _CharT*
       basic_string<_CharT, _Traits, _Alloc>::
       _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a, 
@@ -391,7 +391,7 @@ namespace std
 	  || _M_rep()->_M_is_shared() || __new_size > capacity())
 	{
 	  // Must reallocate.
-	  allocator_type __a = get_allocator();
+	  const allocator_type __a = get_allocator();
 	  // See below (_S_create) for the meaning and value of these
 	  // constants.
 	  const size_type __pagesize = 4096;
@@ -439,7 +439,7 @@ namespace std
 	  // Make sure we don't shrink below the current size
 	  if (__res < this->size())
 	    __res = this->size();
-	  allocator_type __a = get_allocator();
+	  const allocator_type __a = get_allocator();
 	  _CharT* __tmp = _M_rep()->_M_clone(__a, __res - this->size());
 	  _M_rep()->_M_dispose(__a);
 	  _M_data(__tmp);
@@ -598,34 +598,6 @@ namespace std
 	return _M_replace_safe(__i1 - _M_ibegin(), __n1, __s._M_data(),
 			       __s.size());
       }
-
-  // This helper doesn't buffer internally and can be used in "safe" situations,
-  // i.e., when source and destination ranges are known to not overlap.
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>&
-    basic_string<_CharT, _Traits, _Alloc>::
-    _M_replace_safe(size_type __pos1, size_type __n1, const _CharT* __s,
-		    size_type __n2)
-    {
-      _M_mutate(__pos1, __n1, __n2);
-      if (__n2)
-	traits_type::copy(_M_data() + __pos1, __s, __n2);
-      return *this;
-    }
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>&
-    basic_string<_CharT, _Traits, _Alloc>::
-    _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2,
-		   _CharT __c)
-    {
-      if (this->max_size() - (this->size() - __n1) < __n2)
-	__throw_length_error("basic_string::_M_replace_aux");
-      _M_mutate(__pos1, __n1, __n2);
-      if (__n2)
-	traits_type::assign(_M_data() + __pos1, __n2, __c);
-      return *this;
-    }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&

@@ -1,5 +1,14 @@
 2004-01-25  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h (_M_replace_aux, _M_replace_safe):
+	Define inline here.
+	* include/bits/basic_string.tcc (_M_replace_aux, _M_replace_safe):
+	Move inline.
+
+	* include/bits/basic_string.tcc: Very minor tweaks.
+
+2004-01-25  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/performance/string_append.cc: Increase number
 	of iterations.
 
