@@ -130,10 +130,17 @@ void _ZN2S42s1Ev ();
 // IA-64 uses function descriptors not function pointers in its vtables.
 #if defined __ia64__
 #define CMP_VPTR(A, B)	(*(void **)(A) == *(void **)(B))
+#ifdef _LP64
 #define INC_VPTR(A)	((A) += 2)
+#define INC_VDATA(A,N)	((A) += (N))
+#else
+#define INC_VPTR(A)	((A) += 4)
+#define INC_VDATA(A,N)	((A) += 2*(N))
+#endif
 #else
 #define CMP_VPTR(A, B)	(*(A) == (ptrdiff_t)(B))
 #define INC_VPTR(A)	((A) += 1)
+#define INC_VDATA(A,N)	((A) += (N))
 #endif
 
 int main ()
@@ -145,18 +152,22 @@ int main ()
   // Set vtbl to point at the beginning of S4's primary vtable.
   vptr = (ptrdiff_t **) &s4;
   vtbl = *vptr;
-  vtbl -= 5;
+  INC_VDATA (vtbl, -5);
 
-  if (*vtbl++ != ((char*) (S0*) &s4) - (char*) &s4)
+  if (*vtbl != ((char*) (S0*) &s4) - (char*) &s4)
     return 1;
-  if (*vtbl++ != ((char*) (S1*) &s4) - (char*) &s4)
+  INC_VDATA (vtbl, 1);
+  if (*vtbl != ((char*) (S1*) &s4) - (char*) &s4)
     return 2;
-  if (*vtbl++ != ((char*) (S2*) &s4) - (char*) &s4)
+  INC_VDATA (vtbl, 1);
+  if (*vtbl != ((char*) (S2*) &s4) - (char*) &s4)
     return 3;
-  if (*vtbl++ != 0)
+  INC_VDATA (vtbl, 1);
+  if (*vtbl != 0)
     return 4;
+  INC_VDATA (vtbl, 1);
   // Skip the RTTI entry.
-  vtbl++;
+  INC_VDATA (vtbl, 1);
   if (! CMP_VPTR (vtbl, &_ZN2S32s3Ev))
     return 5;
   INC_VPTR (vtbl);
@@ -164,21 +175,26 @@ int main ()
     return 6;
   INC_VPTR (vtbl);
   // The S1 vbase offset.
-  if (*vtbl++ != 0)
+  if (*vtbl != 0)
     return 7;
+  INC_VDATA (vtbl, 1);
   // The S4::s1 vcall offset is negative; once you convert to S2, you
   // have to convert to S4 to find the final overrider.
-  if (*vtbl++ != ((char*) &s4 - (char*) (S2*) &s4))
+  if (*vtbl != ((char*) &s4 - (char*) (S2*) &s4))
     return 8;
-  if (*vtbl++ != 0)
+  INC_VDATA (vtbl, 1);
+  if (*vtbl != 0)
     return 9;
-  if (*vtbl++ != 0)
+  INC_VDATA (vtbl, 1);
+  if (*vtbl != 0)
     return 10;
+  INC_VDATA (vtbl, 1);
   // Now we're at the S2 offset to top entry.
-  if (*vtbl++ != ((char*) &s4 - (char*) (S2*) &s4))
+  if (*vtbl != ((char*) &s4 - (char*) (S2*) &s4))
     return 11;
+  INC_VDATA (vtbl, 1);
   // Skip the RTTI entry.
-  vtbl++;
+  INC_VDATA (vtbl, 1);
   // Skip the remaining virtual functions -- they are thunks.
   INC_VPTR (vtbl);
   INC_VPTR (vtbl);

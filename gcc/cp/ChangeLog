@@ -1,3 +1,12 @@
+2002-06-13  Jessica Han  <jessica@cup.hp.com>
+
+	* class.c (build_vtable): Use TARGET_VTABLE_ENTRY_ALIGN.
+	(build_vtbl_initializer): Honor TARGET_VTABLE_DATA_ENTRY_DISTANCE.
+	(build_vbase_offset_vtbl_entries): Likewise.
+	* rtti.c (build_headof): Likewise.
+	(get_tinfo_decl_dynamic): Likewise.
+	(create_pseudo_type_info): Likewise.
+
 2002-06-12  Stan Shebs  <shebs@apple.com>
 
 	* mpw-config.in: Remove file, no longer used.

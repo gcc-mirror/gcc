@@ -342,8 +342,21 @@ while (0)
    function descriptors instead.  The value of this macro says how
    many words wide the descriptor is (normally 2).  It is assumed
    that the address of a function descriptor may be treated as a
-   pointer to a function.  */
-#define TARGET_VTABLE_USES_DESCRIPTORS 2
+   pointer to a function.
+
+   For reasons known only to HP, the vtable entries (as opposed to
+   normal function descriptors) are 16 bytes wide in 32-bit mode as
+   well, even though the 3rd and 4th words are unused.  */
+#define TARGET_VTABLE_USES_DESCRIPTORS (TARGET_ILP32 ? 4 : 2)
+
+/* Due to silliness in the HPUX linker, vtable entries must be
+   8-byte aligned even in 32-bit mode.  Rather than create multiple
+   ABIs, force this restriction on everyone else too.  */
+#define TARGET_VTABLE_ENTRY_ALIGN  64
+
+/* Due to the above, we need extra padding for the data entries below 0
+   to retain the alignment of the descriptors.  */
+#define TARGET_VTABLE_DATA_ENTRY_DISTANCE (TARGET_ILP32 ? 2 : 1)
 
 /* Layout of Source Language Data Types */
 
@@ -1454,9 +1467,14 @@ do {									\
 do {									\
   if ((PART) == 0)							\
     {									\
-      fputs ("\tdata16.ua @iplt(", FILE);				\
+      if (TARGET_ILP32)							\
+        fputs ("\tdata8.ua @iplt(", FILE);				\
+      else								\
+        fputs ("\tdata16.ua @iplt(", FILE);				\
       assemble_name (FILE, XSTR (XEXP (DECL_RTL (DECL), 0), 0));	\
       fputs (")\n", FILE);						\
+      if (TARGET_ILP32)							\
+	fputs ("\tdata8.ua 0\n", FILE);					\
     }									\
 } while (0)
 

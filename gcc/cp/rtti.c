@@ -102,7 +102,7 @@ build_headof (exp)
   exp = save_expr (exp);
 
   /* The offset-to-top field is at index -2 from the vptr.  */
-  index = build_int_2 (-2, -1);
+  index = build_int_2 (-2 * TARGET_VTABLE_DATA_ENTRY_DISTANCE, -1);
 
   offset = build_vtbl_ref (build_indirect_ref (exp, NULL), index);
 
@@ -181,7 +181,7 @@ get_tinfo_decl_dynamic (exp)
       tree index;
 
       /* The RTTI information is at index -1.  */
-      index = integer_minus_one_node;
+      index = build_int_2 (-1 * TARGET_VTABLE_DATA_ENTRY_DISTANCE, -1);
       t = build_vtbl_ref (exp, index);
       TREE_TYPE (t) = build_pointer_type (tinfo_decl_type);
       return t;
@@ -1180,12 +1180,11 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
   vtable_decl = build_unary_op (ADDR_EXPR, vtable_decl, 0);
 
   /* We need to point into the middle of the vtable.  */
-  vtable_decl = build (PLUS_EXPR,
-		       TREE_TYPE (vtable_decl),
-		       vtable_decl,
-		       size_binop (MULT_EXPR,
-				   size_int (2),
-				   TYPE_SIZE_UNIT (vtable_entry_type)));
+  vtable_decl
+    = build (PLUS_EXPR, TREE_TYPE (vtable_decl), vtable_decl,
+	     size_binop (MULT_EXPR,
+			 size_int (2 * TARGET_VTABLE_DATA_ENTRY_DISTANCE),
+			 TYPE_SIZE_UNIT (vtable_entry_type)));
   TREE_CONSTANT (vtable_decl) = 1;
 
   /* First field is the pseudo type_info base class. */
