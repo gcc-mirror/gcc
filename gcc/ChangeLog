@@ -1,3 +1,9 @@
+2003-06-06  James E Wilson  <wilson@tuliptree.org>
+
+	PR inline-asm/10890
+	* reload1.c (merge_assigned_reloads): Abort only if two reloads have
+	different in fields.
+
 2003-06-06  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Make $(target_subdir) correspond with top level usage.
