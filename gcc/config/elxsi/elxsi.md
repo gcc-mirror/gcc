@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Elxsi Version
-;;  Copyright (C) 1987, 1988, 1992, 1994 Free Software Foundation, Inc.
+;;  Copyright (C) 1987, 1988, 1992, 1994, 2000 Free Software Foundation, Inc.
 ;;  Contributed by Mike Stump <mrs@cygnus.com> in 1988, and is the first
 ;;  64 bit port of GNU CC.
 ;;  Based upon the VAX port.
@@ -525,6 +525,8 @@
       else
         return \"stin.64\\t%n1,%0\";
     }
+  else
+    abort();
 ")
 
 (define_insn "movsi"
