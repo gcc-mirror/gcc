@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vax version.
-   Copyright (C) 1987, 88, 91, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -445,7 +445,8 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
+   SIZE is an int: how many units of temporary storage to allocate,
+   adjusted by STARTING_FRAME_OFFSET to accomodate vms.h.
    Refer to the array `regs_ever_live' to determine which registers
    to save; `regs_ever_live[I]' is nonzero if register number I
    is ever used in the function.  This macro is responsible for
@@ -454,14 +455,15 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 #define FUNCTION_PROLOGUE(FILE, SIZE)     \
 { register int regno;						\
   register int mask = 0;					\
+  register int size = SIZE - STARTING_FRAME_OFFSET;		\
   extern char call_used_regs[];					\
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)	\
     if (regs_ever_live[regno] && !call_used_regs[regno])	\
        mask |= 1 << regno;					\
   fprintf (FILE, "\t.word 0x%x\n", mask);			\
   MAYBE_VMS_FUNCTION_PROLOGUE(FILE)				\
-  if ((SIZE) >= 64) fprintf (FILE, "\tmovab %d(sp),sp\n", -SIZE);\
-  else if (SIZE) fprintf (FILE, "\tsubl2 $%d,sp\n", (SIZE)); }
+  if ((size) >= 64) fprintf (FILE, "\tmovab %d(sp),sp\n", -size);\
+  else if (size) fprintf (FILE, "\tsubl2 $%d,sp\n", (size)); }
 
 /* vms.h redefines this.  */
 #define MAYBE_VMS_FUNCTION_PROLOGUE(FILE)
