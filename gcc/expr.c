@@ -3447,27 +3447,49 @@ expand_assignment (to, from, want_value, suggest_reg)
 			       TYPE_MODE (integer_type_node));
 	}
 
-      result = store_field (to_rtx, bitsize, bitpos, mode1, from,
-			    (want_value
-			     /* Spurious cast makes HPUX compiler happy.  */
-			     ? (enum machine_mode) TYPE_MODE (TREE_TYPE (to))
-			     : VOIDmode),
-			    unsignedp,
-			    /* Required alignment of containing datum.  */
-			    alignment,
-			    int_size_in_bytes (TREE_TYPE (tem)),
-			    get_alias_set (to));
-      preserve_temp_slots (result);
-      free_temp_slots ();
-      pop_temp_slots ();
+      /* If this is a varying-length object, we must get the address of
+	 the source and do an explicit block move.  */
+      if (bitsize < 0)
+	{
+	  unsigned int from_align;
+	  rtx from_rtx = expand_expr_unaligned (from, &from_align);
+	  rtx inner_to_rtx
+	    = change_address (to_rtx, VOIDmode,
+			      plus_constant (XEXP (to_rtx, 0),
+					     bitpos / BITS_PER_UNIT));
 
-      /* If the value is meaningful, convert RESULT to the proper mode.
-	 Otherwise, return nothing.  */
-      return (want_value ? convert_modes (TYPE_MODE (TREE_TYPE (to)),
-					  TYPE_MODE (TREE_TYPE (from)),
-					  result,
-					  TREE_UNSIGNED (TREE_TYPE (to)))
-	      : NULL_RTX);
+	  emit_block_move (inner_to_rtx, from_rtx, expr_size (from),
+			   MIN (alignment, from_align) / BITS_PER_UNIT);
+	  free_temp_slots ();
+	  pop_temp_slots ();
+	  return to_rtx;
+	}
+      else
+	{
+	  result = store_field (to_rtx, bitsize, bitpos, mode1, from,
+				(want_value
+				 /* Spurious cast for HPUX compiler.  */
+				 ? ((enum machine_mode)
+				    TYPE_MODE (TREE_TYPE (to)))
+				 : VOIDmode),
+				unsignedp,
+				/* Required alignment of containing datum.  */
+				alignment,
+				int_size_in_bytes (TREE_TYPE (tem)),
+				get_alias_set (to));
+
+	  preserve_temp_slots (result);
+	  free_temp_slots ();
+	  pop_temp_slots ();
+
+	  /* If the value is meaningful, convert RESULT to the proper mode.
+	     Otherwise, return nothing.  */
+	  return (want_value ? convert_modes (TYPE_MODE (TREE_TYPE (to)),
+					      TYPE_MODE (TREE_TYPE (from)),
+					      result,
+					      TREE_UNSIGNED (TREE_TYPE (to)))
+		  : NULL_RTX);
+	}
     }
 
   /* If the rhs is a function call and its value is not an aggregate,
