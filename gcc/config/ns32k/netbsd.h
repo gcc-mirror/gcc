@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
 /* 32532 spec says it can handle any alignment.  Rumor from tm-ns32k.h
    tells this might not be actually true (but it's for 32032, perhaps
    National has fixed the bug for 32532).  You might have to change this
-   if the bug still exists. */
+   if the bug still exists.  */
 
 #undef STRICT_ALIGNMENT
 #define STRICT_ALIGNMENT 0

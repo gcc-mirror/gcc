@@ -710,7 +710,7 @@ objc_section_init (void)			\
 
 /* Emit an assembler directive to set visibility for a symbol.  Used
    to support visibility attribute and Darwin's private extern
-   feature. */
+   feature.  */
 #undef TARGET_ASM_ASSEMBLE_VISIBILITY
 #define TARGET_ASM_ASSEMBLE_VISIBILITY darwin_assemble_visibility
 

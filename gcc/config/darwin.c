@@ -82,7 +82,7 @@ machopic_classify_ident (tree ident)
 		     && name[5] == '_'));
   tree temp;
 
-  /* The PIC base symbol is always defined. */
+  /* The PIC base symbol is always defined.  */
   if (! strcmp (name, "<pic base>"))
     return MACHOPIC_DEFINED_DATA;
 
@@ -245,7 +245,7 @@ machopic_output_function_base_name (FILE *file)
 {
   const char *current_name;
 
-  /* If dynamic-no-pic is on, we should not get here. */
+  /* If dynamic-no-pic is on, we should not get here.  */
   if (MACHO_DYNAMIC_NO_PIC_P)
     abort ();
   current_name =

@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define this to be a string constant containing `-D' options to define the
    predefined macros that identify this machine and system.  These macros will
-   be predefined unless the `-ansi' option is specified. */
+   be predefined unless the `-ansi' option is specified.  */
 
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
@@ -661,7 +661,7 @@ enum reg_class
    - if the type has variable size
    - if the type is marked as addressable (it is required to be constructed
      into the stack)
-   - if the type is a structure or union. */
+   - if the type is a structure or union.  */
 
 #define MUST_PASS_IN_STACK(MODE, TYPE)				\
    (((MODE) == BLKmode)						\
@@ -801,7 +801,7 @@ enum reg_class
 #define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, RETURN_VALUE_REGNUM)
 
 /* A C expression that is nonzero if REGNO is the number of a hard register in
-   which the values of called function may come back. */
+   which the values of called function may come back.  */
 
 #define FUNCTION_VALUE_REGNO_P(REGNO) ((REGNO) == RETURN_VALUE_REGNUM)
 

@@ -2034,7 +2034,7 @@ m32r_output_function_prologue (FILE * file, HOST_WIDE_INT size)
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
-   and regs. */
+   and regs.  */
 
 static void
 m32r_output_function_epilogue (FILE * file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
@@ -2724,7 +2724,7 @@ emit_cond_move (rtx * operands, rtx insn ATTRIBUTE_UNUSED)
 }
 
 /* Returns true if the registers contained in the two
-   rtl expressions are different. */
+   rtl expressions are different.  */
 
 int
 m32r_not_same_reg (rtx a, rtx b)

@@ -1525,7 +1525,7 @@ ia64_split_tmode (rtx out[2], rtx in, bool reversed, bool dead)
 	      {
 		/* Again the postmodify cannot be made to match, but
 		   in this case it's more efficient to get rid of the
-		   postmodify entirely and fix up with an add insn. */
+		   postmodify entirely and fix up with an add insn.  */
 		out[1] = adjust_automodify_address (in, DImode, base, 8);
 		fixup = gen_adddi3 (base, base,
 				    GEN_INT (INTVAL (XEXP (offset, 1)) - 8));
@@ -6827,7 +6827,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
   initiate_bundle_state_table ();
   index_to_bundle_states = xmalloc ((insn_num + 2)
 				    * sizeof (struct bundle_state *));
-  /* First (forward) pass -- generation of bundle states. */
+  /* First (forward) pass -- generation of bundle states.  */
   curr_state = get_free_bundle_state ();
   curr_state->insn = NULL;
   curr_state->before_nops_num = 0;
@@ -7424,7 +7424,7 @@ ia64_ld_address_bypass_p (rtx producer, rtx consumer)
 
 /* The following function returns TRUE if INSN produces address for a
    load/store insn.  We will place such insns into M slot because it
-   decreases its latency time. */
+   decreases its latency time.  */
 
 int
 ia64_produce_address_p (rtx insn)

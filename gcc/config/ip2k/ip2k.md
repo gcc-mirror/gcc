@@ -975,7 +975,7 @@
 		        0xff & ~mask);
 
 	  if (CONSTANT_P (operands[3]))
-	  /* Constant can just be or-ed in. */
+	  /* Constant can just be or-ed in.  */
 	    {
 	      p += sprintf (p, \"mov\\tw,#$%2.2x\;or\\t%%0,w\",
 		            (int) (INTVAL (operands[3]) << pos) & mask & 0xff);
@@ -984,7 +984,7 @@
 
 	  p += sprintf (p, \"mov\\tw,%%3\;\"); /* Value to deposit */
 
-	  /* Shift and mask the value before OR-ing into the destination. */
+	  /* Shift and mask the value before OR-ing into the destination.  */
 
           if (pos != 0)
 	    p += sprintf (p, \"mulu\\tw,#%d\;\", 1<<pos);
@@ -1084,7 +1084,7 @@
      {
        /* It is not impossible to wind up with two constants here.
           If we simply emit the ashl, we'll generate unrecognizable
-	  instructions. */
+	  instructions.  */
        if (! nonimmediate_operand (operands[1], HImode))
          operands[1] = copy_to_mode_reg (HImode, operands[1]);
        emit_insn (gen_ashlhi3 (operands[0], operands[1], const1_rtx));

@@ -543,7 +543,7 @@ register_move_cost (enum reg_class CLASS1, enum reg_class CLASS2)
 
 #if 0
 /* We made the insn definitions copy from floating point to general
-  registers via the stack. */
+  registers via the stack.  */
 int
 secondary_memory_needed (enum reg_class CLASS1,
 			 enum reg_class CLASS2,
@@ -558,7 +558,7 @@ secondary_memory_needed (enum reg_class CLASS1,
 
 /* TARGET_ADDRESS_COST calls this.  This function is not optimal
    for the 32032 & 32332, but it probably is better than
-   the default. */
+   the default.  */
 
 static int
 ns32k_address_cost (rtx operand)
@@ -882,7 +882,7 @@ expand_block_move (rtx operands[])
 	      /* Use movmd. It is slower than multiple movd's but more
 		 compact. It is also slower than movsd for large copies
 		 but causes less registers reloading so is better than movsd
-		 for small copies. */
+		 for small copies.  */
 	      rtx src, dest;
 	      dest = copy_addr_to_reg (XEXP (operands[0], 0));
 	      src = copy_addr_to_reg (XEXP (operands[1], 0));

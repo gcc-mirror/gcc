@@ -1165,7 +1165,7 @@ output_block_move (rtx *operands)
   output_asm_insn ("bla %5,%2,.Lm%3", xoperands);
   output_asm_insn ("adds %0,%2,%6", xoperands);
   output_asm_insn ("\n.Lm%3:", xoperands);	    /* Label for bla above.  */
-  output_asm_insn ("\n.Ls%3:",  xoperands);	    /* Loop start label. */
+  output_asm_insn ("\n.Ls%3:",  xoperands);	    /* Loop start label.  */
   output_asm_insn ("adds %5,%6,%6", xoperands);
 
   /* NOTE:  The code here which is supposed to handle the cases where the

@@ -32,7 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* __xtensa_libgcc_window_spill: This function flushes out all but the
    current register window.  This is used to set up the stack so that
-   arbitrary frames can be accessed. */
+   arbitrary frames can be accessed.  */
 
 	.align	4
 	.global	__xtensa_libgcc_window_spill
@@ -91,7 +91,7 @@ __xtensa_nonlocal_goto:
 	   function.  This can be extracted from the high bits of the
 	   return address, initially in a0.  As the unwinding
 	   proceeds, the window size is taken from the value of a0
-	   saved _two_ frames below the current frame. */
+	   saved _two_ frames below the current frame.  */
 
 	addi	a5, sp, -16		# a5 = prev - save area
 	l32i	a6, a5, 4
@@ -112,7 +112,7 @@ __xtensa_nonlocal_goto:
 	   current sp so they will be reloaded when the return from this
 	   function underflows.  We don't have to worry about exceptions
 	   while updating the current save area, because the windows have
-	   already been flushed. */
+	   already been flushed.  */
 
 	addi	a4, sp, -16		# a4 = save area of this function
 	l32i	a6, a5, 0
@@ -125,7 +125,7 @@ __xtensa_nonlocal_goto:
 	s32i	a7, a4, 12
 	
 	/* Set return address to goto handler.  Use the window size bits
-	   from the return address two frames below the target. */
+	   from the return address two frames below the target.  */
 	extui	a8, a8, 30, 2		# get window size from return addr.
 	slli	a3, a3, 2		# get goto handler addr. << 2
 	ssai	2
@@ -149,7 +149,7 @@ __xtensa_nonlocal_goto:
    At least one IHI instruction is needed for each i-cache line which may
    be touched by the trampoline.  An ISYNC instruction is also needed to
    make sure that the modified instructions are loaded into the instruction
-   fetch buffer. */
+   fetch buffer.  */
 
 #define TRAMPOLINE_SIZE 59
 

@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 
-/* Structure describing stack frame layout. */
+/* Structure describing stack frame layout.  */
 struct m68k_frame
 {
   /* Stack pointer to frame pointer offset.  */

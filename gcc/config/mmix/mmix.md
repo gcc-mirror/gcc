@@ -871,7 +871,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
     = mmix_gen_compare_reg (LE, mmix_compare_op0, mmix_compare_op1);
 
   /* The head comment of optabs.c:can_compare_p says we're required to
-     implement this, so we have to clean up the mess here. */
+     implement this, so we have to clean up the mess here.  */
   if (operands[1] == NULL_RTX)
     {
       /* FIXME: Watch out for sharing/unsharing of rtx:es.  */
@@ -893,7 +893,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
     = mmix_gen_compare_reg (GE, mmix_compare_op0, mmix_compare_op1);
 
   /* The head comment of optabs.c:can_compare_p says we're required to
-     implement this, so we have to clean up the mess here. */
+     implement this, so we have to clean up the mess here.  */
   if (operands[1] == NULL_RTX)
     {
       /* FIXME: Watch out for sharing/unsharing of rtx:es.  */

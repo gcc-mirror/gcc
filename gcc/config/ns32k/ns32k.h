@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
       else if (TARGET_32081)				\
 	builtin_define ("__ns32081__");			\
 							\
-      /* Misc. */					\
+      /* Misc.  */					\
       if (TARGET_RTD)					\
 	builtin_define ("__RTD__");			\
 							\
@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
 /* ABSOLUTE PREFIX, IMMEDIATE_PREFIX and EXTERNAL_PREFIX can be defined
    to cover most NS32k addressing syntax variations.  This way we don't
    need to redefine long macros in all the tm.h files for just slight
-   variations in assembler syntax. */
+   variations in assembler syntax.  */
 
 #ifndef ABSOLUTE_PREFIX
 #define ABSOLUTE_PREFIX '@'
@@ -360,10 +360,10 @@ while (0)
 /* NS32000 pc is not overloaded on a register.  */
 /* #define PC_REGNUM */
 
-/* Register to use for pushing function arguments. */
+/* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM 25
 
-/* Base register for access to local variables of the function. */
+/* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM 24
 
 
@@ -383,7 +383,7 @@ while (0)
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output. */
+   for any hard reg, then this must be 0 for correct output.  */
 
 #define MODES_TIEABLE_P(MODE1, MODE2)					\
   ((FLOAT_MODE_P(MODE1) && FLOAT_MODE_P(MODE2)				\
@@ -1102,13 +1102,13 @@ __transfer_from_trampoline ()		\
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.
    HI mode is more efficient but the range is not wide enough for
-   all programs. */
+   all programs.  */
 #define CASE_VECTOR_MODE SImode
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 #define CASE_VECTOR_PC_RELATIVE 1
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
@@ -1264,7 +1264,7 @@ __transfer_from_trampoline ()		\
 /* This is how to output an assembler line defining an external/static
    address which is not in tree format (for collect.c).  */
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 #define USER_LABEL_PREFIX "_"
 
 /* This is how to output an insn to push a register on the stack.
