@@ -2819,7 +2819,7 @@ encode_method_prototype (method_decl, func_decl)
   tree parms;
   int stack_size, i;
   tree user_args;
-  int max_parm_end = 0;
+  HOST_WIDE_INT max_parm_end = 0;
   char buf[40];
   tree result;
 
@@ -2835,9 +2835,8 @@ encode_method_prototype (method_decl, func_decl)
   for (parms = DECL_ARGUMENTS (func_decl); parms;
        parms = TREE_CHAIN (parms))
     {
-      int parm_end = (forwarding_offset (parms)
-		      + (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (parms)))
-			 / BITS_PER_UNIT));
+      HOST_WIDE_INT parm_end = (forwarding_offset (parms)
+				+ int_size_in_bytes (parms));
 
       if (!offset_is_register && max_parm_end < parm_end)
 	max_parm_end = parm_end;
@@ -3822,9 +3821,7 @@ build_ivar_list_initializer (type, field_decl)
       ivar
 	= tree_cons
 	  (NULL_TREE,
-	   build_int_2 ((TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field_decl))
-			 / BITS_PER_UNIT),
-			0),
+	   build_int_2 ((int_bit_position (field_decl) / BITS_PER_UNIT), 0),
 	   ivar);
 
       initlist = tree_cons (NULL_TREE, 
@@ -4489,9 +4486,7 @@ generate_shared_structures ()
     = build_shared_structure_initializer
       (TREE_TYPE (decl),
        root_expr, super_expr, name_expr,
-       build_int_2 ((TREE_INT_CST_LOW (TYPE_SIZE (objc_class_template))
-		    / BITS_PER_UNIT),
-		    0),
+       convert (integer_type_node, TYPE_SIZE_UNIT (objc_class_template)),
        2 /*CLS_META*/,
        UOBJC_CLASS_METHODS_decl,
        UOBJC_CLASS_VARIABLES_decl,
@@ -4509,11 +4504,9 @@ generate_shared_structures ()
       (TREE_TYPE (decl),
        build_unary_op (ADDR_EXPR, UOBJC_METACLASS_decl, 0),
        super_expr, name_expr,
-       build_int_2
-       ((TREE_INT_CST_LOW
-	 (TYPE_SIZE (CLASS_STATIC_TEMPLATE (implementation_template)))
-	 / BITS_PER_UNIT),
-	0),
+       convert (integer_type_node,
+		TYPE_SIZE_UNIT (CLASS_STATIC_TEMPLATE
+				(implementation_template))),
        1 /*CLS_FACTORY*/,
        UOBJC_INSTANCE_METHODS_decl,
        UOBJC_INSTANCE_VARIABLES_decl,
@@ -6726,8 +6719,7 @@ encode_type (type, curtype, format)
 
   if (code == INTEGER_TYPE)
     {
-      if (TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)) == 0
-	  && TREE_INT_CST_HIGH (TYPE_MIN_VALUE (type)) == 0)
+      if (integer_zerop (TYPE_MIN_VALUE (type)))
 	{
 	  /* Unsigned integer types.  */
 
@@ -6802,8 +6794,7 @@ encode_complete_bitfield (int position, tree type, int size)
 
   if (code == INTEGER_TYPE)
     {
-      if (TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)) == 0
-	  && TREE_INT_CST_HIGH (TYPE_MIN_VALUE (type)) == 0)
+      if (integer_zerop (TYPE_MIN_VALUE (type)))
 	{
 	  /* Unsigned integer types.  */
 
@@ -6865,16 +6856,16 @@ encode_field_decl (field_decl, curtype, format)
   if (flag_next_runtime)
     {
       if (DECL_BIT_FIELD (field_decl))
-	encode_bitfield (TREE_INT_CST_LOW (DECL_SIZE (field_decl)));
+	encode_bitfield (tree_low_cst (DECL_SIZE (field_decl), 1));
       else
 	encode_type (TREE_TYPE (field_decl), curtype, format);
     }
   else
     {
       if (DECL_BIT_FIELD (field_decl))
-	encode_complete_bitfield (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field_decl)),
+	encode_complete_bitfield (int_bit_position (field_decl),
 				  DECL_BIT_FIELD_TYPE (field_decl),
-				  TREE_INT_CST_LOW (DECL_SIZE (field_decl)));
+				  tree_low_cst (DECL_SIZE (field_decl), 1));
       else
 	encode_type (TREE_TYPE (field_decl), curtype, format);
     }
@@ -7294,7 +7285,7 @@ encode_method_def (func_decl)
 {
   tree parms;
   int stack_size;
-  int max_parm_end = 0;
+  HOST_WIDE_INT max_parm_end = 0;
   char buffer[40];
   tree result;
 
@@ -7307,11 +7298,10 @@ encode_method_def (func_decl)
   for (parms = DECL_ARGUMENTS (func_decl); parms;
        parms = TREE_CHAIN (parms))
     {
-      int parm_end = (forwarding_offset (parms)
-		      + (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (parms)))
-			 / BITS_PER_UNIT));
+      HOST_WIDE_INT parm_end = (forwarding_offset (parms)
+				+ int_size_in_bytes (TREE_TYPE (parms)));
 
-      if (!offset_is_register && parm_end > max_parm_end)
+      if (! offset_is_register && parm_end > max_parm_end)
 	max_parm_end = parm_end;
     }
 

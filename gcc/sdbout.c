@@ -607,12 +607,14 @@ plain_type_1 (type, level)
 	if (sdb_n_dims < SDB_MAX_DIM)
 	  sdb_dims[sdb_n_dims++]
 	    = (TYPE_DOMAIN (type)
-	       && TYPE_MAX_VALUE (TYPE_DOMAIN (type))
-	       && TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INTEGER_CST
-	       && TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) == INTEGER_CST
-	       ? (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
-		  - TREE_INT_CST_LOW (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) + 1)
+	       && TYPE_MIN_VALUE (TYPE_DOMAIN (type)) != 0
+	       && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != 0
+	       && host_integerp (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0)
+	       && host_integerp (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0)
+	       ? (tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0)
+		  - tree_low_cst (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0) + 1)
 	       : 0);
+
 	return PUSH_DERIVED_LEVEL (DT_ARY, m);
       }
 
@@ -1089,8 +1091,8 @@ sdbout_field_types (type)
        below.  */
     if (TREE_CODE (tail) == FIELD_DECL
 	&& DECL_NAME (tail) != 0
-	&& TREE_CODE (DECL_SIZE (tail)) == INTEGER_CST
-	&& TREE_CODE (DECL_FIELD_BITPOS (tail)) == INTEGER_CST)
+	&& ! host_integerp (DECL_SIZE (tail), 1)
+	&& ! host_integerp (bit_position (tail), 0))
       {
 	if (POINTER_TYPE_P (TREE_TYPE (tail)))
 	  sdbout_one_type (TREE_TYPE (TREE_TYPE (tail)));
@@ -1239,7 +1241,7 @@ sdbout_one_type (type)
 
 		CONTIN;
 		PUT_SDB_DEF (IDENTIFIER_POINTER (child_type_name));
-		PUT_SDB_INT_VAL (TREE_INT_CST_LOW (BINFO_OFFSET (child)));
+		PUT_SDB_INT_VAL (tree_low_cst (BINFO_OFFSET (child), 0));
 		PUT_SDB_SCL (member_scl);
 		sdbout_type (BINFO_TYPE (child));
 		PUT_SDB_ENDEF;
@@ -1250,13 +1252,14 @@ sdbout_one_type (type)
 
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
-	    {
-	      PUT_SDB_DEF (IDENTIFIER_POINTER (TREE_PURPOSE (tem)));
-	      PUT_SDB_INT_VAL (TREE_INT_CST_LOW (TREE_VALUE (tem)));
-	      PUT_SDB_SCL (C_MOE);
-	      PUT_SDB_TYPE (T_MOE);
-	      PUT_SDB_ENDEF;
-	    }
+	    if (host_integerp (TREE_VALUE (tem), 0))
+	      {
+		PUT_SDB_DEF (IDENTIFIER_POINTER (TREE_PURPOSE (tem)));
+		PUT_SDB_INT_VAL (tree_low_cst (TREE_VALUE (tem), 0));
+		PUT_SDB_SCL (C_MOE);
+		PUT_SDB_TYPE (T_MOE);
+		PUT_SDB_ENDEF;
+	      }
 
 	else			/* record or union type */
 	  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
@@ -1268,8 +1271,8 @@ sdbout_one_type (type)
 	       Also omit non FIELD_DECL nodes that GNU C++ may put here.  */
 	    if (TREE_CODE (tem) == FIELD_DECL
 		&& DECL_NAME (tem) != 0
-		&& TREE_CODE (DECL_SIZE (tem)) == INTEGER_CST
-		&& TREE_CODE (DECL_FIELD_BITPOS (tem)) == INTEGER_CST)
+		&& host_integerp (DECL_SIZE (tem), 1)
+		&& host_integerp (bit_position (tem), 0))
 	      {
 		char *name;
 
@@ -1278,15 +1281,14 @@ sdbout_one_type (type)
 		PUT_SDB_DEF (name);
 		if (DECL_BIT_FIELD_TYPE (tem))
 		  {
-		    PUT_SDB_INT_VAL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (tem)));
+		    PUT_SDB_INT_VAL (int_bit_position (tem));
 		    PUT_SDB_SCL (C_FIELD);
 		    sdbout_type (DECL_BIT_FIELD_TYPE (tem));
-		    PUT_SDB_SIZE (TREE_INT_CST_LOW (DECL_SIZE (tem)));
+		    PUT_SDB_SIZE (tree_low_cst (DECL_SIZE (tem), 1));
 		  }
 		else
 		  {
-		    PUT_SDB_INT_VAL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (tem))
-				     / BITS_PER_UNIT);
+		    PUT_SDB_INT_VAL (int_bit_position (tem) / BITS_PER_UNIT);
 		    PUT_SDB_SCL (member_scl);
 		    sdbout_type (TREE_TYPE (tem));
 		  }

@@ -401,11 +401,9 @@ push_promoted_type (name, actual_type)
   tree in_min = TYPE_MIN_VALUE (actual_type);
   tree in_max = TYPE_MAX_VALUE (actual_type);
 #endif
-  TYPE_MIN_VALUE (type) = build_int_2 (TREE_INT_CST_LOW (in_min),
-				       TREE_INT_CST_HIGH (in_min));
+  TYPE_MIN_VALUE (type) = copy_node (in_min);
   TREE_TYPE (TYPE_MIN_VALUE (type)) = type;
-  TYPE_MAX_VALUE (type) = build_int_2 (TREE_INT_CST_LOW (in_max),
-				       TREE_INT_CST_HIGH (in_max));
+  TYPE_MAX_VALUE (type) = copy_node (in_max);
   TREE_TYPE (TYPE_MAX_VALUE (type)) = type;
   TYPE_PRECISION (type) = TYPE_PRECISION (int_type_node);
   layout_type (type);

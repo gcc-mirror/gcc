@@ -524,8 +524,7 @@ get_base_offset (binfo, parent)
     
       FORMAT_VBASE_NAME (name, t);
       field = lookup_field (parent, get_identifier (name), 0, 0);
-      offset = size_binop (FLOOR_DIV_EXPR, 
-    		           DECL_FIELD_BITPOS (field), 
+      offset = size_binop (FLOOR_DIV_EXPR, bit_position (field), 
     		           bitsize_int (BITS_PER_UNIT));
       offset = convert (sizetype, offset);
     }

@@ -635,7 +635,7 @@ build_vbase_path (code, type, expr, path, nonnull)
   else
     offset = BINFO_OFFSET (last);
 
-  if (TREE_INT_CST_LOW (offset))
+  if (! integer_zerop (offset))
     {
       /* Bash types to make the backend happy.  */
       offset = cp_convert (type, offset);
@@ -691,8 +691,8 @@ build_vtable_entry (delta, vcall_index, entry)
       HOST_WIDE_INT idelta;
       HOST_WIDE_INT ivindex;
 
-      idelta = TREE_INT_CST_LOW (delta);
-      ivindex = TREE_INT_CST_LOW (vcall_index);
+      idelta = tree_low_cst (delta, 0);
+      ivindex = tree_low_cst (vcall_index, 0);
       if ((idelta || ivindex) 
 	  && ! DECL_PURE_VIRTUAL_P (TREE_OPERAND (entry, 0)))
 	{
@@ -908,7 +908,7 @@ get_vfield_offset (binfo)
 {
   tree tmp
     = size_binop (FLOOR_DIV_EXPR,
-		  DECL_FIELD_BITPOS (TYPE_VFIELD (BINFO_TYPE (binfo))),
+		  bit_position (TYPE_VFIELD (BINFO_TYPE (binfo))),
 		  bitsize_int (BITS_PER_UNIT));
 
   return size_binop (PLUS_EXPR, convert (sizetype, tmp),
@@ -3111,7 +3111,8 @@ dfs_modify_vtables (binfo, data)
 	  tree overrider;
 	  tree vindex;
 	  tree delta;
-	  unsigned HOST_WIDE_INT i;
+	  HOST_WIDE_INT vindex_val, i;
+
 
 	  /* Find the function which originally caused this vtable
 	     entry to be present.  */
@@ -3121,7 +3122,8 @@ dfs_modify_vtables (binfo, data)
 	  fn = skip_rtti_stuff (TYPE_BINFO (BINFO_TYPE (b)),
 				BINFO_TYPE (b),
 				&i);
-	  while (i < TREE_INT_CST_LOW (vindex))
+	  vindex_val = tree_low_cst (vindex, 0);
+	  while (i < vindex_val)
 	    {
 	      fn = TREE_CHAIN (fn);
 	      ++i;
@@ -3685,7 +3687,7 @@ check_bitfield_decl (field)
       if (DECL_INITIAL (field))
 	{
 	  DECL_INITIAL (field) = NULL_TREE;
-	  DECL_SIZE (field) = bitsize_int (TREE_INT_CST_LOW (w));
+	  DECL_SIZE (field) = convert (bitsizetype, w);
 	  DECL_BIT_FIELD (field) = 1;
 
 	  if (integer_zerop (w))
@@ -4268,12 +4270,10 @@ build_base_field (rli, binfo, empty_p, base_align, v)
 	 here.  */
       *base_align = MAX (*base_align, DECL_ALIGN (decl));
       DECL_SIZE (decl)
-	= size_int (MAX ((HOST_WIDE_INT) TREE_INT_CST_LOW (DECL_SIZE (decl)),
-			 (int) (*base_align)));
+	= size_binop (MAX_EXPR, DECL_SIZE (decl), bitsize_int (*base_align));
       DECL_SIZE_UNIT (decl)
-	= size_int (MAX (((HOST_WIDE_INT) TREE_INT_CST_LOW
-			  (DECL_SIZE_UNIT (decl))),
-			 (int) *base_align / BITS_PER_UNIT));
+	= size_binop (MAX_EXPR, DECL_SIZE_UNIT (decl),
+		      size_int (*base_align / BITS_PER_UNIT));
     }
 
   if (!integer_zerop (DECL_SIZE (decl)))
@@ -4768,10 +4768,11 @@ layout_virtual_bases (t)
      tree t;
 {
   tree vbase;
-  int dsize;
+  unsigned HOST_WIDE_INT dsize;
 
   /* DSIZE is the size of the class without the virtual bases.  */
-  dsize = TREE_INT_CST_LOW (TYPE_SIZE (t));
+  dsize = tree_low_cst (TYPE_SIZE (t), 1);
+
   /* Make every class have alignment of at least one.  */
   TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), BITS_PER_UNIT);
 
@@ -4800,7 +4801,7 @@ layout_virtual_bases (t)
 	/* Every virtual baseclass takes a least a UNIT, so that we can
 	   take it's address and get something different for each base.  */
 	dsize += MAX (BITS_PER_UNIT,
-		      TREE_INT_CST_LOW (CLASSTYPE_SIZE (basetype)));
+		      tree_low_cst (CLASSTYPE_SIZE (basetype), 0));
       }
 
   /* Make sure that all of the CLASSTYPE_VBASECLASSES have their
@@ -5038,7 +5039,7 @@ layout_class_type (t, empty_p, has_virtual_p,
    For C++, we must handle the building of derived classes.
    Also, C++ allows static class members.  The way that this is
    handled is to keep the field name where it is (as the DECL_NAME
-   of the field), and place the overloaded decl in the DECL_FIELD_BITPOS
+   of the field), and place the overloaded decl in the bit position
    of the field.  layout_record and layout_union will know about this.
 
    More C++ hair: inline functions have text in their
@@ -5124,7 +5125,7 @@ finish_struct_1 (t)
 
       DECL_FIELD_CONTEXT (vfield) = t;
       DECL_FIELD_BITPOS (vfield)
-	= size_binop (PLUS_EXPR, offset, DECL_FIELD_BITPOS (vfield));
+	= size_binop (PLUS_EXPR, offset, bit_position (vfield));
       TYPE_VFIELD (t) = vfield;
     }
 
@@ -6538,7 +6539,7 @@ dump_class_hierarchy (binfo, indent)
 	   (unsigned long) binfo,
 	   type_as_string (binfo, TS_PLAIN));
   fprintf (stderr, HOST_WIDE_INT_PRINT_DEC,
-	   TREE_INT_CST_LOW (BINFO_OFFSET (binfo)));
+	   tree_low_cst (BINFO_OFFSET (binfo), 0));
   fprintf (stderr, " %s\n",
 	   BINFO_PRIMARY_MARKED_P (binfo) ? "primary" : "");
 

@@ -12350,7 +12350,7 @@ xref_tag (code_type_node, name, globalize)
       code_type_node = TREE_VALUE (code_type_node);
     }
 
-  tag_code = (enum tag_types) TREE_INT_CST_LOW (code_type_node);
+  tag_code = (enum tag_types) tree_low_cst (code_type_node, 1);
   switch (tag_code)
     {
     case record_type:
@@ -12578,7 +12578,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
   tree base;
 
   int i, len;
-  enum tag_types tag_code = (enum tag_types) TREE_INT_CST_LOW (code_type_node);
+  enum tag_types tag_code = (enum tag_types) tree_low_cst (code_type_node, 1);
 
   if (tag_code == union_type)
     {

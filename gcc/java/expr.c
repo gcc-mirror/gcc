@@ -693,8 +693,7 @@ java_array_data_offset (array)
   if (data_fld == NULL_TREE)
     return size_in_bytes (array_type);
   else
-    return build_int_2 (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (data_fld))
-			/ BITS_PER_UNIT, 0);
+    return build_int_2 (int_bit_position (data_fld) / BITS_PER_UNIT, 0);
 }
 
 /* Implement array indexing (either as l-value or r-value).
@@ -788,8 +787,8 @@ build_newarray (atype_value, length)
 {
   tree type
     = build_java_array_type (decode_newarray_type (atype_value),
-			     TREE_CODE (length) == INTEGER_CST
-			     ? (HOST_WIDE_INT) TREE_INT_CST_LOW (length) : -1);
+			     host_integerp (length, 0) == INTEGER_CST
+			     ? tree_low_cst (length, 0) : -1);
 
   return build (CALL_EXPR, promote_type (type),
 		build_address_of (soft_newarray_node),
@@ -809,8 +808,8 @@ build_anewarray (class_type, length)
 {
   tree type
     = build_java_array_type (class_type,
-			     TREE_CODE (length) == INTEGER_CST
-			     ? (HOST_WIDE_INT) TREE_INT_CST_LOW (length) : -1);
+			     host_integerp (length, 0)
+			     ? tree_low_cst (length, 0) : -1);
 
   return build (CALL_EXPR, promote_type (type),
 		build_address_of (soft_anewarray_node),
@@ -1646,14 +1645,15 @@ build_invokevirtual (dtable, method)
   tree func;
   tree nativecode_ptr_ptr_type_node
     = build_pointer_type (nativecode_ptr_type_node);
-  int method_index = TREE_INT_CST_LOW (DECL_VINDEX (method));
+  tree method_index = convert (sizetype, DECL_VINDEX (method));
+
   /* Add one to skip "class" field of dtable, and one to skip unused
      vtable entry (for C++ compatibility). */
-  method_index += 2;
-  method_index
-    *= int_size_in_bytes (nativecode_ptr_ptr_type_node);
-  func = fold (build (PLUS_EXPR, nativecode_ptr_ptr_type_node,
-		      dtable, build_int_2 (method_index, 0)));
+  method_index = size_binop (PLUS_EXPR, method_index, size_int (2));
+  method_index = size_binop (MULT_EXPR, method_index,
+			     TYPE_SIZE_UNIT (nativecode_ptr_ptr_type_node));
+  func = fold (build (PLUS_EXPR, nativecode_ptr_ptr_type_node, dtable,
+		      convert (nativecode_ptr_ptr_type_node, method_index)));
   func = build1 (INDIRECT_REF, nativecode_ptr_type_node, func);
 
   return func;
