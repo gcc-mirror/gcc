@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "tree.h"
-#include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "real.h"
@@ -46,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "timevar.h"
 #include "target.h"
 #include "target-def.h"
+#include "tm_p.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -5478,32 +5478,6 @@ ia64_emit_insn_before (insn, before)
   emit_insn_before (insn, before);
 }
 
-#if 0
-/* Generate a nop insn of the given type.  Note we never generate L type
-   nops.  */
-
-static rtx
-gen_nop_type (t)
-     enum attr_type t;
-{
-  switch (t)
-    {
-    case TYPE_M:
-      return gen_nop_m ();
-    case TYPE_I:
-      return gen_nop_i ();
-    case TYPE_B:
-      return gen_nop_b ();
-    case TYPE_F:
-      return gen_nop_f ();
-    case TYPE_X:
-      return gen_nop_x ();
-    default:
-      abort ();
-    }
-}
-#endif
-
 /* When rotating a bundle out of the issue window, insert a bundle selector
    insn in front of it.  DUMP is the scheduling dump file or NULL.  START
    is either 0 or 3, depending on whether we want to emit a bundle selector
@@ -5568,8 +5542,8 @@ cycle_end_fill_slots (dump)
 	  if (slot > sched_data.split)
 	    abort ();
 	  if (dump)
-	    fprintf (dump, "// Packet needs %s, have %s\n", type_names[packet->t[slot]],
-		     type_names[t]);
+	    fprintf (dump, "// Packet needs %s, have %s\n",
+		     type_names[packet->t[slot]], type_names[t]);
 	  sched_data.types[slot] = packet->t[slot];
 	  sched_data.insns[slot] = 0;
 	  sched_data.stopbit[slot] = 0;
@@ -5581,15 +5555,22 @@ cycle_end_fill_slots (dump)
 
 	  slot++;
 	}
+
       /* Do _not_ use T here.  If T == TYPE_A, then we'd risk changing the
 	 actual slot type later.  */
       sched_data.types[slot] = packet->t[slot];
       sched_data.insns[slot] = tmp_insns[i];
       sched_data.stopbit[slot] = 0;
       slot++;
+
       /* TYPE_L instructions always fill up two slots.  */
       if (t == TYPE_L)
-	slot++;
+	{
+	  sched_data.types[slot] = packet->t[slot];
+	  sched_data.insns[slot] = 0;
+	  sched_data.stopbit[slot] = 0;
+	  slot++;
+	}
     }
 
   /* This isn't right - there's no need to pad out until the forced split;
@@ -6065,6 +6046,7 @@ static void
 maybe_rotate (dump)
      FILE *dump;
 {
+  cycle_end_fill_slots (dump);
   if (sched_data.cur == 6)
     rotate_two_bundles (dump);
   else if (sched_data.cur >= 3)
@@ -6115,7 +6097,7 @@ nop_cycles_until (clock_var, dump)
 	  for (i = sched_data.cur; i < split; i++)
 	    {
 	      rtx t = sched_emit_insn (gen_nop_type (sched_data.packet->t[i]));
-	      sched_data.types[i] = sched_data.packet->t[sched_data.cur];
+	      sched_data.types[i] = sched_data.packet->t[i];
 	      sched_data.insns[i] = t;
 	      sched_data.stopbit[i] = 0;
 	    }
@@ -6129,7 +6111,7 @@ nop_cycles_until (clock_var, dump)
 	  for (i = sched_data.cur; i < 6; i++)
 	    {
 	      rtx t = sched_emit_insn (gen_nop_type (sched_data.packet->t[i]));
-	      sched_data.types[i] = sched_data.packet->t[sched_data.cur];
+	      sched_data.types[i] = sched_data.packet->t[i];
 	      sched_data.insns[i] = t;
 	      sched_data.stopbit[i] = 0;
 	    }
