@@ -1,3 +1,8 @@
+2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	* global.c (find_reg): Check HARD_REGNO_NREGS before kicking
+	out another register.
+
 2002-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* combine.c (force_to_mode): Only replace with (not Y) if all bits in fuller_mask
