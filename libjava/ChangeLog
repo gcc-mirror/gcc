@@ -1,5 +1,9 @@
 2000-07-20  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass): Only
+	initialize String fields for interpreted classes.  Fixes bug
+	reported by Hans Boehm.
+
 	* java/io/File.java (getParentFile): New method, from Classpath
 	via Oskar Liljeblad.
 
