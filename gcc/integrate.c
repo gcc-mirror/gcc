@@ -2690,6 +2690,7 @@ subst_constants (loc, insn, map, memonly)
 	case 'w':
 	case 'n':
 	case 't':
+	case 'B':
 	  break;
 
 	case 'E':
