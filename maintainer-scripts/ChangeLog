@@ -1,5 +1,7 @@
 2004-05-13  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* update_version (ADD_BRANCHES): Remove tree-ssa-20020619-branch.
+
 	* gcc_release (DIFF): Remove -3 option.
 
 2003-07-26  Paul Brook  <paul@nowt.org>
