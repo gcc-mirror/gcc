@@ -1,3 +1,14 @@
+Wed Oct 28 16:46:07 1998  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+    
+	* function.c (purge_addressof_1): Instead of aborting when a
+	bitfield insertion as a replacement for (MEM (ADDRESSOF)) does not
+	work just put the ADDRESSOF on stack.  Otherwise remember all such
+	successfull replacements, so that exactly the same replacements
+	can be made on the REG_NOTEs.  Remove the special case for CALL
+	insns again.
+	(purge_addressof_replacements): New variable.
+	(purge_addressof): Clear it at end.
+
 Wed Oct 28 14:06:49 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarfout.c (dwarfout_file_scope_decl): If DECL_CONTEXT, don't abort
