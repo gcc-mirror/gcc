@@ -217,11 +217,10 @@ layout_decl (decl, known_align)
   if (code == FIELD_DECL && DECL_BIT_FIELD (decl))
     {
       /* This is a bit-field.  We don't know how to handle
-	 them except for integers and enums, and front end should
+	 them except for integral types, and front ends should
 	 never generate them otherwise.  */
 
-      if (! (TREE_CODE (type) == INTEGER_TYPE
-	     || TREE_CODE (type) == ENUMERAL_TYPE))
+      if (! INTEGRAL_TYPE_P (type))
 	abort ();
 
       if (spec_size == 0 && DECL_NAME (decl) != 0)
