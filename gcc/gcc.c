@@ -142,10 +142,14 @@ extern int execv (), execvp ();
 
 #define MIN_FATAL_STATUS 1
 
-/* Flag saying to print the full filename of libgcc.a
+/* Flag saying to print the full filename of this file
    as found through our usual search mechanism.  */
 
-static int print_libgcc_file_name;
+static char *print_file_name = NULL;
+
+/* As print_file_name, but search for executable file. */
+
+static char *print_prog_name = NULL;
 
 /* Flag indicating whether we should print the command and arguments */
 
@@ -772,6 +776,8 @@ struct option_map option_map[] =
    {"--pedantic-errors", "-pedantic-errors", 0},
    {"--save-temps", "-save-temps", 0},
    {"--print-libgcc-file-name", "-print-libgcc-file-name", 0},
+   {"--print-file-name", "-print-file-name=", "aj"},
+   {"--print-prog-name", "-print-prog-name=", "aj"},
    {"--static", "-static", 0},
    {"--shared", "-shared", 0},
    {"--symbolic", "-symbolic", 0},
@@ -2326,9 +2332,11 @@ process_command (argc, argv)
 	  exit (0);
 	}
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
-	{
-	  print_libgcc_file_name = 1;
-	}
+	  print_file_name = "libgcc.a";
+      else if (! strncmp (argv[i], "-print-file-name=", 17))
+	  print_file_name = argv[i] + 17;
+      else if (! strncmp (argv[i], "-print-prog-name=", 17))
+	  print_prog_name = argv[i] + 17;
       else if (! strcmp (argv[i], "-Xlinker"))
 	{
 	  /* Pass the argument of this option to the linker when we link.  */
@@ -2566,6 +2574,10 @@ process_command (argc, argv)
       else if (! strncmp (argv[i], "-Wa,", 4))
 	;
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
+	;
+      else if (! strncmp (argv[i], "-print-file-name=", 17))
+	;
+      else if (! strncmp (argv[i], "-print-prog-name=", 17))
 	;
       else if (argv[i][0] == '+' && argv[i][1] == 'e')
 	{
@@ -3995,13 +4007,20 @@ main (argc, argv)
     if (! switches[i].valid)
       error ("unrecognized option `-%s'", switches[i].part1);
 
-  if (print_libgcc_file_name)
+  /* Obey some of the options.  */
+
+  if (print_file_name)
     {
-      printf ("%s\n", find_file ("libgcc.a"));
+      printf ("%s\n", find_file (print_file_name));
       exit (0);
     }
 
-  /* Obey some of the options.  */
+  if (print_prog_name)
+    {
+      char *newname = find_a_file (&exec_prefix, print_prog_name, X_OK);
+      printf ("%s\n", (newname ? newname : print_prog_name));
+      exit (0);
+    }
 
   if (verbose_flag)
     {
