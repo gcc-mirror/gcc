@@ -1,3 +1,8 @@
+Mon Feb 28 14:21:15 2000  Catherine Moore  <clm@cygnus.com>
+
+	* config/pa/som.h (MAKE_DECL_ONE_ONLY): Define.
+ 	(ASM_WEAKEN_LABEL): Define.
+ 
 Mon Feb 28 13:07:19 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (store_constructor): Do not emit USE.

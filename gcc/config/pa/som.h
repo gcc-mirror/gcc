@@ -377,3 +377,11 @@ do {						\
 
 /* The .align directive in the HP assembler allows up to a 32 alignment.  */
 #define MAX_OFILE_ALIGNMENT 32768
+
+#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+
+/* This is how we tell the assembler that a symbol is weak.  */
+
+#define ASM_WEAKEN_LABEL(FILE,NAME) \
+  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
+       fputc ('\n', FILE); } while (0)
