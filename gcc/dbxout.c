@@ -646,7 +646,9 @@ dbxout_type_fields (type)
 	  /* Continue the line if necessary,
 	     but not before the first field.  */
 	  if (tem != TYPE_FIELDS (type))
-	    CONTIN;
+	    {
+	      CONTIN;
+	    }
 
 	  if (use_gnu_debug_info_extensions
 	      && flag_minimal_debug
@@ -1427,7 +1429,9 @@ dbxout_type (type, full, show_arg_types)
 	  fprintf (asmfile, ",");
 	  CHARS (20 + IDENTIFIER_LENGTH (TREE_PURPOSE (tem)));
 	  if (TREE_CHAIN (tem) != 0)
-	    CONTIN;
+	    {
+	      CONTIN;
+	    }
 	}
       putc (';', asmfile);
       CHARS (1);
