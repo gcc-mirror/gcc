@@ -687,7 +687,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    /* AltiVec registers.  */			   \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   0						   \
+   1						   \
 }
 
 /* 1 for registers not available across function calls.
@@ -706,7 +706,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    /* AltiVec registers.  */			   \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   0						   \
+   1						   \
 }
 
 
@@ -923,12 +923,12 @@ extern int rs6000_debug_arg;		/* debug argument handling */
     global_regs[PIC_OFFSET_TABLE_REGNUM]				\
       = fixed_regs[PIC_OFFSET_TABLE_REGNUM]				\
         = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
+  if (! TARGET_ALTIVEC)							\
+    for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)		\
+      fixed_regs[i] = call_used_regs[i] = 1;				\
   if (TARGET_ALTIVEC_ABI)						\
-    {									\
-      fixed_regs[VRSAVE_REGNO] = call_used_regs[VRSAVE_REGNO] = 1;	\
-      for (i = FIRST_ALTIVEC_REGNO; i < FIRST_ALTIVEC_REGNO + 20; ++i)	\
-        call_used_regs[i] = 1;						\
-    }									\
+    for (i = FIRST_ALTIVEC_REGNO; i < FIRST_ALTIVEC_REGNO + 20; ++i)	\
+      call_used_regs[i] = 1;						\
 }
 
 /* Specify the registers used for certain standard purposes.
@@ -1068,7 +1068,7 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000ff0, 0x00000000 }, /* CR_REGS */	     \
   { 0xffffffff, 0x00000000, 0x0000ffff, 0x00000000 }, /* NON_FLOAT_REGS */   \
   { 0x00000000, 0x00000000, 0x00010000, 0x00000000 }, /* XER_REGS */	     \
-  { 0xffffffff, 0xffffffff, 0xffffffff, 0x0001ffff }  /* ALL_REGS */	     \
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0x0003ffff }  /* ALL_REGS */	     \
 }
 
 /* The same information, inverted:

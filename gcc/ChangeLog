@@ -1,3 +1,11 @@
+2001-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+        * rs6000.h (REG_CLASS_CONTENTS): Add VRSAVE bit to ALL_REGS.
+	(CONDITIONAL_REGISTER_USAGE): Disable AltiVec registers unless
+	generating altivec code.
+	(FIXED_REGISTERS): VRSAVE is fixed.
+	(CALL_USED_REGISTERS): VRSAVE is call used.
+
 2001-11-08  Jason Eckhardt  <jle@rice.edu>
 
 	* config/mips/mips.c (mips_output_conditional_branch): Do not hard
