@@ -1,5 +1,8 @@
 2004-07-23  Janis Johnson  <janis187@us.ibm.com>
 
+	* config/rs6000/altivec.h (vec_stvewx, vec_stvehx, vec_stvebx): Use
+	specific pointer types.
+
 	* config/rs6000/altivec.h (vec_vadduwm): (vec_vadduwm, vec_vadduhm,
 	vec_vaddubm, vec_vsubuwm, vec_vsubuhm, vec_vsububm): Fix types used
 	for vector bool and/or vector pixel, add C++ and C missing support.
