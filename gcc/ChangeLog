@@ -1,3 +1,9 @@
+Tue May  9 16:30:27 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (expand_call): Reorganize somewhat in order
+	to avoid unnecesary recalculation inside loop and make
+	tail call failure code cleaner.
+	
 Tue May  9 06:30:20 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (nonlocal_reference_p): Minor reformatting.
