@@ -2445,8 +2445,9 @@ do {                                                                    \
 /* Assume by default that we do not have the Solaris-specific conversion
    routines nor 64-bit integer multiply and divide routines.  */
 
-#define SUN_CONVERSION_LIBFUNCS 0
-#define SUN_INTEGER_MULTIPLY_64 0
+#define SUN_CONVERSION_LIBFUNCS 	0
+#define DITF_CONVERSION_LIBFUNCS	0
+#define SUN_INTEGER_MULTIPLY_64 	0
 
 /* Compute extra cost of moving data between one register class
    and another.  */

@@ -2009,7 +2009,7 @@ sparc-*-elf*)
 	;;
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux sparc/t-crtfm"
+	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-crtfm"
 	;;
 sparc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h sparc/rtemself.h rtems.h"

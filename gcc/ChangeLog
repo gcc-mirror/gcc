@@ -1,5 +1,18 @@
 2004-04-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/sparc.h (DITF_CONVERSION_LIBFUNCS): Define to 0.
+	* config/sparc/linux.h (DITF_CONVERSION_LIBFUNCS): Redefine to 1.
+	* config/sparc/linux64.h (DITF_CONVERSION_LIBFUNCS): Redefine to 1.
+	* config/sparc/sol2.h (DITF_CONVERSION_LIBFUNCS): Redefine to 1.
+	(SOLARIS_CONVERSION_LIBFUNCS): Rename to SUN_CONVERSION_LIBFUNCS.
+	* config/sparc/sparc.c (sparc_init_libfuncs): Initialize optabs
+	with _Q_qtoll, _Q_qtoull and _Q_lltoq if DITF_CONVERSION_LIBFUNCS.
+	* config.gcc (sparc-*-linux*): Revert 2004-03-23 change.
+	* config/sparc/t-linux64 (TARGET_LIBGCC2_CFLAGS): Likewise.
+	* config/sparc/t-linux: Removed.
+
+2004-04-01  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/14755
 	* fold-const.c (fold) <EQ_EXPR>: Properly compute newconst in
 	"bitfld++ == const" to "++bitfld == const + incr" transformations.

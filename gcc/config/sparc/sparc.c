@@ -8620,6 +8620,13 @@ sparc_init_libfuncs (void)
       set_conv_libfunc (ufix_optab,   SImode, TFmode, "_Q_qtou");
       set_conv_libfunc (sfloat_optab, TFmode, SImode, "_Q_itoq");
 
+      if (DITF_CONVERSION_LIBFUNCS)
+	{
+	  set_conv_libfunc (sfix_optab,   DImode, TFmode, "_Q_qtoll");
+	  set_conv_libfunc (ufix_optab,   DImode, TFmode, "_Q_qtoull");
+	  set_conv_libfunc (sfloat_optab, TFmode, DImode, "_Q_lltoq");
+	}
+
       if (SUN_CONVERSION_LIBFUNCS)
 	{
 	  set_conv_libfunc (sfix_optab, DImode, SFmode, "__ftoll");
