@@ -2127,7 +2127,22 @@ emit_ldst (store_p, regno, mode, offset)
      int offset;
 {
   rtx reg = gen_rtx (REG, mode, regno);
-  rtx mem = gen_rtx (MEM, mode, plus_constant (stack_pointer_rtx, offset));
+  rtx mem;
+
+  if (SMALL_INTVAL (offset))
+    {
+      mem = gen_rtx (MEM, mode, plus_constant (stack_pointer_rtx, offset));
+    }
+  else
+    {
+      /* offset is too large for immediate index must use register */
+
+      rtx disp = gen_rtx (CONST_INT, VOIDmode, offset);
+      rtx temp = gen_rtx (REG, SImode, TEMP_REGNUM);
+      rtx regi = gen_rtx (PLUS, SImode, stack_pointer_rtx, temp);
+      emit_move_insn (temp, disp);
+      mem = gen_rtx (MEM, mode, regi);
+    }
 
   if (store_p)
     emit_move_insn (mem, reg);
