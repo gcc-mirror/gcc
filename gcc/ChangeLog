@@ -1,3 +1,7 @@
+2003-03-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/rs6000/8540.md: Use presence_set instead of absence_set.
+
 2003-03-26  Richard Henderson  <rth@redhat.com>
 
 	* c-decl.c (finish_function): Always defer if DECL_DECLARED_INLINE_P.
