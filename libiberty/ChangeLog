@@ -1,3 +1,11 @@
+2001-11-12  Jim Meyering  <meyering@lucent.com>
+
+	* obstack.c (_): Honor the setting of ENABLE_NLS.  Otherwise,
+	this code would end up calling gettext even in packages built
+	with --disable-nls.
+	* getopt.c (_): Likewise.
+	* regex.c (_): Likewise.
+
 2001-11-03  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure.in: Cope with missing makeinfo.
