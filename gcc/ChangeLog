@@ -1,3 +1,11 @@
+2004-05-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/gcc.texi, doc/gccint.texi, doc/include/gcc-common.texi:
+	Update based on printed manual.  Enable setting of offsets for
+	FSFPRINT and move it to gcc-common.texi.
+	* doc/gcc.texi: Update FSF printing details.
+	* doc/gccint.texi: Remove FSF printing details.
+
 2004-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/linux64.h (OPTION_DEFAULT_SPECS): If SPARC_BI_ARCH,

@@ -23,23 +23,6 @@
 
 @c %**end of header
 
-@c Use with @@smallbook.
-
-@c Cause even numbered pages to be printed on the left hand side of
-@c the page and odd numbered pages to be printed on the right hand
-@c side of the page.  Using this, you can print on both sides of a
-@c sheet of paper and have the text on the same part of the sheet.
-
-@c The text on right hand pages is pushed towards the right hand
-@c margin and the text on left hand pages is pushed toward the left
-@c hand margin.
-@c (To provide the reverse effect, set bindingoffset to -0.75in.)
-
-@c @tex
-@c \global\bindingoffset=0.75in
-@c \global\normaloffset =0.75in
-@c @end tex
-
 @copying
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
@@ -69,10 +52,6 @@ included in the section entitled ``GNU Free Documentation License''.
 @end direntry
 This file documents the internals of the GNU compilers.
 @sp 1
-Published by the Free Software Foundation@*
-59 Temple Place - Suite 330@*
-Boston, MA 02111-1307 USA
-@sp 1
 @insertcopying
 @end ifnottex
 
@@ -80,25 +59,15 @@ Boston, MA 02111-1307 USA
 @titlepage
 @center @titlefont{GNU Compiler Collection Internals}
 @sp 2
-@center Richard M. Stallman
+@center by Richard M. Stallman and the GCC Developer Community
 @sp 3
-@center Last updated 28 December 2002
+@center Last updated 23 May 2004
 @sp 1
 
 @center for GCC @value{version-GCC}
 @page
 @vskip 0pt plus 1filll
 For GCC Version @value{version-GCC}@*
-@sp 1
-Published by the Free Software Foundation @*
-59 Temple Place---Suite 330@*
-Boston, MA 02111-1307, USA@*
-Last printed April, 1998.@*
-Printed copies are available for $50 each.@*
-@c Update this ISBN when printing a new edition.
-@ifset FSFPRINT
-ISBN 1-882114-37-X
-@end ifset
 @sp 1
 @insertcopying
 @end titlepage
