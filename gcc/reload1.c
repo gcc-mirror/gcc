@@ -290,7 +290,7 @@ static struct insn_chain *insns_need_reload;
    in favor of another.   If there is more than one way of eliminating a
    particular register, the most preferred should be specified first.  */
 
-static struct elim_table
+struct elim_table
 {
   int from;			/* Register number to be eliminated.  */
   int to;			/* Register number used as replacement.  */
@@ -307,7 +307,17 @@ static struct elim_table
 				   register corresponding to a pseudo
 				   assigned to the reg to be eliminated.  */
   rtx to_rtx;			/* REG rtx for the replacement.  */
-} reg_eliminate[] =
+};
+
+static struct elim_table * reg_eliminate = 0;
+
+/* This is an intermediate structure to initialize the table.  It has
+   exactly the members provided by ELIMINABLE_REGS. */
+static struct elim_table_1
+{
+  int from;
+  int to;
+} reg_eliminate_1[] =
 
 /* If a set of eliminable registers was specified, define the table from it.
    Otherwise, default to the normal case of the frame pointer being
@@ -319,7 +329,7 @@ static struct elim_table
   {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}};
 #endif
 
-#define NUM_ELIMINABLE_REGS (sizeof reg_eliminate / sizeof reg_eliminate[0])
+#define NUM_ELIMINABLE_REGS (sizeof reg_eliminate_1/sizeof reg_eliminate_1[0])
 
 /* Record the number of pending eliminations that have an offset not equal
    to their initial offset.  If non-zero, we use a new copy of each
@@ -3611,7 +3621,18 @@ static void
 init_elim_table ()
 {
   struct elim_table *ep;
+#ifdef ELIMINABLE_REGS
+  struct elim_table_1 *ep1;
+#endif
 
+  if (!reg_eliminate)
+    {
+      reg_eliminate = (struct elim_table *)
+	xmalloc(sizeof(struct elim_table) * NUM_ELIMINABLE_REGS);
+      bzero ((PTR) reg_eliminate,
+	     sizeof(struct elim_table) * NUM_ELIMINABLE_REGS);
+    }
+  
   /* Does this function require a frame pointer?  */
 
   frame_pointer_needed = (! flag_omit_frame_pointer
@@ -3629,13 +3650,18 @@ init_elim_table ()
   num_eliminable = 0;
 
 #ifdef ELIMINABLE_REGS
-  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+  for (ep = reg_eliminate, ep1 = reg_eliminate_1;
+       ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++, ep1++)
     {
+      ep->from = ep1->from;
+      ep->to = ep1->to;
       ep->can_eliminate = ep->can_eliminate_previous
 	= (CAN_ELIMINATE (ep->from, ep->to)
 	   && ! (ep->to == STACK_POINTER_REGNUM && frame_pointer_needed));
     }
 #else
+  reg_eliminate[0].from = reg_eliminate_1[0].from;
+  reg_eliminate[0].to = reg_eliminate_1[0].to;
   reg_eliminate[0].can_eliminate = reg_eliminate[0].can_eliminate_previous
     = ! frame_pointer_needed;
 #endif

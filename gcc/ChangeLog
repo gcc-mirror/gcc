@@ -1,3 +1,14 @@
+Wed Nov  4 17:25:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* reload1.c (ELIMINABLE_REGS, NUM_ELIMINABLE_REGS): Introduce an
+ 	intermediate structure which has exactly the members provided by
+ 	ELIMINABLE_REGS.  Define NUM_ELIMINABLE_REGS in terms of the
+ 	static intermediate structure.
+	
+	(init_elim_table): Xmalloc() `reg_eliminate', and initialize it
+ 	from the intermediate structure.  Do the same analogous fix in
+ 	the case where ELIMINABLE_REGS is not defined.
+
 Tue Nov  3 20:50:03 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.h (SELECT_SECTION): Fix thinko.
