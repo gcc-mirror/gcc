@@ -2068,9 +2068,35 @@ ISO C.
 
 @itemize @bullet
 @item
-Macro arguments occurring within string constants in the macro body.
-These would substitute the argument in traditional C, but are part of
-the constant in ISO C.
+Macro parameters that appear within string literals in the macro body.
+In traditional C macro replacement takes place within string literals,
+but does not in ISO C.
+
+@item
+In traditional C, some preprocessor directives did not exist.
+Traditional preprocessors would only consider a line to be a directive
+if the @samp{#} appeared in column 1 on the line.  Therefore
+@samp{-Wtraditional} warns about directives that traditional C
+understands but would ignore because the @samp{#} does not appear as the
+first character on the line.  It also suggests you hide directives like
+@samp{#pragma} not understood by traditional C by indenting them.  Some
+traditional implementations would not recognise @samp{#elif}, so it
+suggests avoiding it altogether.
+
+@item
+A function-like macro that appears without arguments.
+
+@item
+The unary plus operator.
+
+@item
+The `U' integer constant suffix, or the `F' or `L' floating point
+constant suffixes.  (Traditonal C does support the `L' suffix on integer
+constants.)  Note, these suffixes appear in macros defined in the system
+headers of most modern systems, e.g. the _MIN/_MAX macros in limits.h.
+Use of these macros can lead to spurious warnings as they do not
+necessarily reflect whether the code in question is any less portable to
+traditional C given that suitable backup definitions are provided.
 
 @item
 A function declared external in one block and then used after the end of
@@ -2093,12 +2119,6 @@ typically represent bit patterns, are not warned about.
 Usage of ISO string concatenation is detected.
 
 @item
-A function macro appears without arguments.
-
-@item
-The unary plus operator.
-
-@item
 Initialization of automatic aggregates.
 
 @item
@@ -2111,15 +2131,6 @@ omitted.  This is done under the assumption that the zero initializer in
 user code appears conditioned on e.g. @code{__STDC__} to avoid missing
 initializer warnings and relies on default initialization to zero in the
 traditional C case.
-
-@item
-The `U' integer constant suffix, or the `F' or `L' floating point
-constant suffixes.  (Traditonal C does support the `L' suffix on integer
-constants.)  Note, these suffixes appear in macros defined in the system
-headers of most modern systems, e.g. the _MIN/_MAX macros in limits.h.
-Use of these macros can lead to spurious warnings as they do not
-necessarily reflect whether the code in question is any less portable to
-traditional C given that suitable backup definitions are provided.
 @end itemize
 
 @item -Wundef

@@ -1,3 +1,7 @@
+2001-02-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpp.texi, invoke.texi: Update -Wtraditional documentation.
+
 2001-02-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.c (output_far_jump): Don't use braf on SH1.  Emit
