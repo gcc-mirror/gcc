@@ -1,3 +1,7 @@
+2003-06-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/format/asm_fprintf-1.c: New test.
+
 2003-06-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/gcc-defs.exp (additional_sources): New variable.
