@@ -1,3 +1,8 @@
+2000-11-13  DJ Delorie  <dj@redhat.com>
+
+	* config/mn10300/mn10300.md (store_movm): Note which registers are
+	really used or clobbered.
+
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-parse.in (ends_in_label): Remove from %union and %type.
