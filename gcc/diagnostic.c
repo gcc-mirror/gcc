@@ -39,56 +39,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "langhooks-def.h"
 
-#define output_text_length(BUFFER) (BUFFER)->line_length
-#define is_starting_newline(BUFFER) (output_text_length (BUFFER) == 0)
-#define line_wrap_cutoff(BUFFER) (BUFFER)->state.maximum_length
-#define prefix_was_emitted_for(BUFFER) (BUFFER)->state.emitted_prefix_p
-
-/* Format an integer given by va_arg (ARG, type-specifier T) where
-   type-specifier is a precision modifier as indicated by PREC.  F is
-   a string used to construct the appropriate format-specifier.  */
-#define output_integer_with_precision(BUFFER, ARG, PREC, T, F)  \
-  do                                                            \
-    switch (PREC)                                               \
-      {                                                         \
-      case 0:                                                   \
-        output_formatted_scalar                                 \
-          (BUFFER, "%" F, va_arg (ARG, T));                     \
-        break;                                                  \
-                                                                \
-      case 1:                                                   \
-        output_formatted_scalar                                 \
-          (BUFFER, "%l" F, va_arg (ARG, long T));               \
-        break;                                                  \
-                                                                \
-      case 2:                                                   \
-        output_formatted_scalar                                 \
-          (BUFFER, "%ll" F, va_arg (ARG, long long T));         \
-        break;                                                  \
-                                                                \
-      default:                                                  \
-        break;                                                  \
-      }                                                         \
-  while (0)
-
 
 /* Prototypes.  */
-static void output_flush (output_buffer *);
-static void output_do_verbatim (output_buffer *, text_info *);
-static void output_buffer_to_stream (output_buffer *);
-static void output_format (output_buffer *, text_info *);
-static void output_indent (output_buffer *);
-
-static char *build_message_string (const char *, ...)
-     ATTRIBUTE_PRINTF_1;
-static void format_with_decl (output_buffer *, text_info *, tree);
-static void diagnostic_for_decl (diagnostic_context *, diagnostic_info *,
-				 tree);
-static void set_real_maximum_length (output_buffer *);
-static void output_append_r (output_buffer *, const char *, int);
-static void wrap_text (output_buffer *, const char *, const char *);
-static void maybe_wrap_text (output_buffer *, const char *, const char *);
-static void output_clear_data (output_buffer *);
+static char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 static void default_diagnostic_starter (diagnostic_context *,
 					diagnostic_info *);
@@ -116,482 +69,6 @@ with preprocessed source if appropriate.\n\
 See %s for instructions.\n"
 
 
-/* Subroutine of output_set_maximum_length.  Set up BUFFER's
-   internal maximum characters per line.  */
-static void
-set_real_maximum_length (output_buffer *buffer)
-{
-  /* If we're told not to wrap lines then do the obvious thing.  In case
-   we'll emit prefix only once per diagnostic message, it is appropriate
-  not to increase unnecessarily the line-length cut-off.  */
-  if (!output_is_line_wrapping (buffer)
-      || output_prefixing_rule (buffer) == DIAGNOSTICS_SHOW_PREFIX_ONCE
-      || output_prefixing_rule (buffer) == DIAGNOSTICS_SHOW_PREFIX_NEVER)
-    line_wrap_cutoff (buffer) = output_line_cutoff (buffer);
-  else
-    {
-      int prefix_length = buffer->state.prefix ?
-        strlen (buffer->state.prefix) : 0;
-      /* If the prefix is ridiculously too long, output at least
-         32 characters.  */
-      if (output_line_cutoff (buffer) - prefix_length < 32)
-	line_wrap_cutoff (buffer) = output_line_cutoff (buffer) + 32;
-      else
-	line_wrap_cutoff (buffer) = output_line_cutoff (buffer);
-    }
-}
-
-/* Sets the number of maximum characters per line BUFFER can output
-   in line-wrapping mode.  A LENGTH value 0 suppresses line-wrapping.  */
-void
-output_set_maximum_length (output_buffer *buffer, int length)
-{
-  output_line_cutoff (buffer) = length;
-  set_real_maximum_length (buffer);
-}
-
-/* Sets BUFFER's PREFIX.  */
-void
-output_set_prefix (output_buffer *buffer, const char *prefix)
-{
-  buffer->state.prefix = prefix;
-  set_real_maximum_length (buffer);
-  prefix_was_emitted_for (buffer) = false;
-  output_indentation (buffer) = 0;
-}
-
-/*  Return a pointer to the last character emitted in the output
-    BUFFER area.  A NULL pointer means no character available.  */
-const char *
-output_last_position (const output_buffer *buffer)
-{
-  const char *p = NULL;
-
-  if (obstack_base (&buffer->obstack) != obstack_next_free (&buffer->obstack))
-    p = ((const char *) obstack_next_free (&buffer->obstack)) - 1;
-  return p;
-}
-
-/* Free BUFFER's prefix, a previously malloc'd string.  */
-void
-output_destroy_prefix (output_buffer *buffer)
-{
-  if (buffer->state.prefix != NULL)
-    {
-      free ((char *) buffer->state.prefix);
-      buffer->state.prefix = NULL;
-    }
-}
-
-/* Zero out any text output so far in BUFFER.  */
-void
-output_clear_message_text (output_buffer *buffer)
-{
-  obstack_free (&buffer->obstack, obstack_base (&buffer->obstack));
-  output_text_length (buffer) = 0;
-}
-
-/* Zero out any formatting data used so far by BUFFER.  */
-static void
-output_clear_data (output_buffer *buffer)
-{
-  prefix_was_emitted_for (buffer) = false;
-  output_indentation (buffer) = 0;
-}
-
-/* Construct an output BUFFER with PREFIX and of MAXIMUM_LENGTH
-   characters per line.  */
-void
-init_output_buffer (output_buffer *buffer, const char *prefix,
-		    int maximum_length)
-{
-  memset (buffer, 0, sizeof (output_buffer));
-  obstack_init (&buffer->obstack);
-  output_buffer_attached_stream (buffer) = stderr;
-  output_line_cutoff (buffer) = maximum_length;
-  output_prefixing_rule (buffer) = diagnostic_prefixing_rule (global_dc);
-  output_set_prefix (buffer, prefix);
-  output_text_length (buffer) = 0;
-  output_clear_data (buffer);
-}
-
-/* Reinitialize BUFFER.  */
-void
-output_clear (output_buffer *buffer)
-{
-  output_clear_message_text (buffer);
-  output_clear_data (buffer);
-}
-
-/* Finishes constructing a NULL-terminated character string representing
-   the BUFFERed message.  */
-const char *
-output_finalize_message (output_buffer *buffer)
-{
-  obstack_1grow (&buffer->obstack, '\0');
-  return output_message_text (buffer);
-}
-
-/* Return the amount of characters BUFFER can accept to
-   make a full line.  */
-int
-output_space_left (const output_buffer *buffer)
-{
-  return line_wrap_cutoff (buffer) - output_text_length (buffer);
-}
-
-/* Write out BUFFER's prefix.  */
-void
-output_emit_prefix (output_buffer *buffer)
-{
-  if (buffer->state.prefix != NULL)
-    {
-      switch (output_prefixing_rule (buffer))
-	{
-	default:
-	case DIAGNOSTICS_SHOW_PREFIX_NEVER:
-	  break;
-
-	case DIAGNOSTICS_SHOW_PREFIX_ONCE:
-	  if (prefix_was_emitted_for (buffer))
-	    {
-	      output_indent (buffer);
-	      break;
-	    }
-	  output_indentation (buffer) += 3;
-	  /* Fall through.  */
-
-	case DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE:
-	  {
-	    int prefix_length = strlen (buffer->state.prefix);
-	    output_append_r (buffer, buffer->state.prefix, prefix_length);
-	    prefix_was_emitted_for (buffer) = true;
-	  }
-	  break;
-	}
-    }
-}
-
-/* Have BUFFER start a new line.  */
-void
-output_add_newline (output_buffer *buffer)
-{
-  obstack_1grow (&buffer->obstack, '\n');
-  output_text_length (buffer) = 0;
-}
-
-/* Appends a character to BUFFER.  */
-void
-output_add_character (output_buffer *buffer, int c)
-{
-  if (output_is_line_wrapping (buffer) && output_space_left (buffer) <= 0)
-    output_add_newline (buffer);
-  obstack_1grow (&buffer->obstack, c);
-  ++output_text_length (buffer);
-}
-
-/* Adds a space to BUFFER.  */
-void
-output_add_space (output_buffer *buffer)
-{
-  if (output_is_line_wrapping (buffer) && output_space_left (buffer) <= 0)
-    {
-      output_add_newline (buffer);
-      return;
-    }
-  obstack_1grow (&buffer->obstack, ' ');
-  ++output_text_length (buffer);
-}
-
-/* These functions format an INTEGER into BUFFER as suggested by their
-   names.  */
-void
-output_decimal (output_buffer *buffer, int i)
-{
-  output_formatted_scalar (buffer, "%d", i);
-}
-
-void
-output_host_wide_integer (output_buffer *buffer, HOST_WIDE_INT i)
-{
-  output_formatted_scalar (buffer, HOST_WIDE_INT_PRINT_DEC, i);
-}
-
-static inline void
-output_pointer (output_buffer *buffer, void *p)
-{
-  output_formatted_scalar (buffer, HOST_PTR_PRINTF, p);
-}
-
-/* Append to BUFFER a string specified by its STARTING character
-   and LENGTH.  */
-static void
-output_append_r (output_buffer *buffer, const char *start, int length)
-{
-  obstack_grow (&buffer->obstack, start, length);
-  output_text_length (buffer) += length;
-}
-
-/* Append a string delimited by START and END to BUFFER.  No wrapping is
-   done.  However, if beginning a new line then emit BUFFER->state.prefix
-   and skip any leading whitespace if appropriate.  The caller must ensure
-   that it is safe to do so.  */
-void
-output_append (output_buffer *buffer, const char *start, const char *end)
-{
-  /* Emit prefix and skip whitespace if we're starting a new line.  */
-  if (is_starting_newline (buffer))
-    {
-      output_emit_prefix (buffer);
-      if (output_is_line_wrapping (buffer))
-	while (start != end && *start == ' ')
-	  ++start;
-    }
-  output_append_r (buffer, start, end - start);
-}
-
-/* Insert enough spaces into BUFFER to bring the column position to
-   the current indentation level, assuming that a newline has just
-   been written to the buffer.  */
-static void
-output_indent (output_buffer *buffer)
-{
-  int n = output_indentation (buffer);
-  int i;
-
-  for (i = 0; i < n; ++i)
-    output_add_character (buffer, ' ');
-}
-
-/* Wrap a text delimited by START and END into BUFFER.  */
-static void
-wrap_text (output_buffer *buffer, const char *start, const char *end)
-{
-  bool is_wrapping = output_is_line_wrapping (buffer);
-
-  while (start != end)
-    {
-      /* Dump anything bordered by whitespaces.  */
-      {
-	const char *p = start;
-	while (p != end && *p != ' ' && *p != '\n')
-	  ++p;
-	if (is_wrapping && p - start >= output_space_left (buffer))
-	  output_add_newline (buffer);
-	output_append (buffer, start, p);
-	start = p;
-      }
-
-      if (start != end && *start == ' ')
-	{
-	  output_add_space (buffer);
-	  ++start;
-	}
-      if (start != end && *start == '\n')
-	{
-	  output_add_newline (buffer);
-	  ++start;
-	}
-    }
-}
-
-/* Same as wrap_text but wrap text only when in line-wrapping mode.  */
-static void
-maybe_wrap_text (output_buffer *buffer, const char *start, const char *end)
-{
-  if (output_is_line_wrapping (buffer))
-    wrap_text (buffer, start, end);
-  else
-    output_append (buffer, start, end);
-}
-
-
-/* Append a STRING to BUFFER; the STRING might be line-wrapped if in
-   appropriate mode.  */
-void
-output_add_string (output_buffer *buffer, const char *str)
-{
-  maybe_wrap_text (buffer, str, str + (str ? strlen (str) : 0));
-}
-
-/* Append an identifier ID to BUFFER.  */
-void
-output_add_identifier (output_buffer *buffer, tree id)
-{
-  output_append (buffer, IDENTIFIER_POINTER (id),
-		 IDENTIFIER_POINTER (id) + IDENTIFIER_LENGTH (id));
-}
-
-/* Flush the content of BUFFER onto the attached stream,
-   and reinitialize.  */
-
-static void
-output_buffer_to_stream (output_buffer *buffer)
-{
-  const char *text = output_finalize_message (buffer);
-  fputs (text, output_buffer_attached_stream (buffer));
-  output_clear_message_text (buffer);
-}
-
-/* Format a message pointed to by TEXT.  The following format specifiers are
-   recognized as being language independent:
-   %d, %i: (signed) integer in base ten.
-   %u: unsigned integer in base ten.
-   %o: unsigned integer in base eight.
-   %x: unsigned integer in base sixteen.
-   %ld, %li, %lo, %lu, %lx: long versions of the above.
-   %lld, %lli, %llo, %llu, %llx: long long versions.
-   %wd, %wi, %wo, %wu, %wx: HOST_WIDE_INT versions.
-   %c: character.
-   %s: string.
-   %p: pointer.
-   %m: strerror(text->err_no) - does not consume a value from args_ptr.
-   %%: `%'.
-   %*.s: a substring the length of which is specified by an integer.
-   %H: location_t.  */
-static void
-output_format (output_buffer *buffer, text_info *text)
-{
-  for (; *text->format_spec; ++text->format_spec)
-    {
-      int precision = 0;
-      bool wide = false;
-
-      /* Ignore text.  */
-      {
-	const char *p = text->format_spec;
-	while (*p && *p != '%')
-	  ++p;
-	wrap_text (buffer, text->format_spec, p);
-        text->format_spec = p;
-      }
-
-      if (*text->format_spec == '\0')
-	break;
-
-      /* We got a '%'.  Parse precision modifiers, if any.  */
-      switch (*++text->format_spec)
-        {
-        case 'w':
-          wide = true;
-          ++text->format_spec;
-          break;
-
-        case 'l':
-          do
-            ++precision;
-          while (*++text->format_spec == 'l');
-          break;
-
-        default:
-          break;
-        }
-      /* We don't support precision behond that of "long long".  */
-      if (precision > 2)
-        abort();
-
-      switch (*text->format_spec)
-	{
-	case 'c':
-	  output_add_character (buffer, va_arg (*text->args_ptr, int));
-	  break;
-
-	case 'd':
-	case 'i':
-          if (wide)
-            output_formatted_scalar
-              (buffer, HOST_WIDE_INT_PRINT_DEC,
-               va_arg (*text->args_ptr, HOST_WIDE_INT));
-          else
-            output_integer_with_precision
-              (buffer, *text->args_ptr, precision, int, "d");
-	  break;
-
-	case 'o':
-          if (wide)
-            output_formatted_scalar
-              (buffer, "%" HOST_WIDE_INT_PRINT "o",
-               va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
-          else
-            output_integer_with_precision
-              (buffer, *text->args_ptr, precision, unsigned, "u");
-	  break;
-
-	case 's':
-	  output_add_string (buffer, va_arg (*text->args_ptr, const char *));
-	  break;
-
-        case 'p':
-          output_pointer (buffer, va_arg (*text->args_ptr, void *));
-          break;
-
-	case 'u':
-          if (wide)
-            output_formatted_scalar
-              (buffer, HOST_WIDE_INT_PRINT_UNSIGNED,
-               va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
-          else
-            output_integer_with_precision
-              (buffer, *text->args_ptr, precision, unsigned, "u");
-	  break;
-
-	case 'x':
-          if (wide)
-            output_formatted_scalar
-              (buffer, HOST_WIDE_INT_PRINT_HEX,
-               va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
-          else
-            output_integer_with_precision
-              (buffer, *text->args_ptr, precision, unsigned, "x");
-	  break;
-
-	case 'm':
-	  output_add_string (buffer, xstrerror (text->err_no));
-	  break;
-
-	case '%':
-	  output_add_character (buffer, '%');
-	  break;
-
-        case 'H':
-          {
-            const location_t *locus = va_arg (*text->args_ptr, location_t *);
-            output_add_string (buffer, "file '");
-            output_add_string (buffer, locus->file);
-            output_add_string (buffer, "', line ");
-            output_decimal (buffer, locus->line);
-          }
-          break;
-
-	case '.':
-	  {
-	    int n;
-	    const char *s;
-	    /* We handle no precision specifier but `%.*s'.  */
-	    if (*++text->format_spec != '*')
-	      abort ();
-	    else if (*++text->format_spec != 's')
-	      abort ();
-	    n = va_arg (*text->args_ptr, int);
-	    s = va_arg (*text->args_ptr, const char *);
-	    output_append (buffer, s, s + n);
-	  }
-	  break;
-
-	default:
-	  if (!buffer->format_decoder
-              || !(*buffer->format_decoder) (buffer, text))
-	    {
-	      /* Hmmm.  The front-end failed to install a format translator
-                 but called us with an unrecognized format.  Or, maybe, the
-                 translated string just contains an invalid format, or
-                 has formats in the wrong order.  Sorry.  */
-	      abort ();
-	    }
-	}
-    }
-}
-
 /* Return a malloc'd string containing MSG formatted a la printf.  The
    caller is responsible for freeing the memory.  */
 static char *
@@ -614,127 +91,31 @@ file_name_as_prefix (const char *f)
   return build_message_string ("%s: ", f);
 }
 
-/* Format a message into BUFFER a la printf.  */
-void
-output_printf (struct output_buffer *buffer, const char *msgid, ...)
-{
-  text_info text;
-  va_list ap;
-
-  va_start (ap, msgid);
-  text.err_no = errno;
-  text.args_ptr = &ap;
-  text.format_spec = _(msgid);
-  output_format (buffer, &text);
-  va_end (ap);
-}
-
-/* Print a message relevant to the given DECL.  */
-static void
-format_with_decl (output_buffer *buffer, text_info *text, tree decl)
-{
-  const char *p;
-
-  /* Do magic to get around lack of varargs support for insertion
-     of arguments into existing list.  We know that the decl is first;
-     we ass_u_me that it will be printed with "%s".  */
-  for (p = text->format_spec; *p; ++p)
-    {
-      if (*p == '%')
-	{
-	  if (*(p + 1) == '%')
-	    ++p;
-	  else if (*(p + 1) != 's')
-	    abort ();
-	  else
-	    break;
-	}
-    }
-
-  /* Print the left-hand substring.  */
-  maybe_wrap_text (buffer, text->format_spec, p);
-
-  if (*p == '%')		/* Print the name.  */
-    {
-      const char *const n = (DECL_NAME (decl)
-			     ? (*lang_hooks.decl_printable_name) (decl, 2)
-			     : _("((anonymous))"));
-      output_add_string (buffer, n);
-      while (*p)
-	{
-	  ++p;
-	  if (ISALPHA (*(p - 1) & 0xFF))
-	    break;
-	}
-    }
-
-  if (*p)			/* Print the rest of the message.  */
-    {
-      text->format_spec = p;
-      output_format (buffer, text);
-    }
-}
-
-/* Flush the content of BUFFER onto the attached stream.  */
-static void
-output_flush (output_buffer *buffer)
-{
-  output_buffer_to_stream (buffer);
-  output_clear_data (buffer);
-  fputc ('\n', output_buffer_attached_stream (buffer));
-  fflush (output_buffer_attached_stream (buffer));
-}
-
-/* Helper subroutine of output_verbatim and verbatim. Do the appropriate
-   settings needed by BUFFER for a verbatim formatting.  */
-static void
-output_do_verbatim (output_buffer *buffer, text_info *text)
-{
-  diagnostic_prefixing_rule_t rule = output_prefixing_rule (buffer);
-  int line_cutoff = output_line_cutoff (buffer);
-
-  /* Set verbatim mode.  */
-  output_prefixing_rule (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
-  output_line_cutoff (buffer) = 0;
-  /* Do the actual formatting.  */
-  output_format (buffer, text);
-  /* Restore previous settings.  */
-  output_prefixing_rule (buffer) = rule;
-  output_line_cutoff (buffer) = line_cutoff;
-}
-
-/* Output MESSAGE verbatim into BUFFER.  */
-void
-output_verbatim (output_buffer *buffer, const char *msgid, ...)
-{
-  text_info text;
-  va_list ap;
-
-  va_start (ap, msgid);
-  text.err_no = errno;
-  text.args_ptr = &ap;
-  text.format_spec = _(msgid);
-  output_do_verbatim (buffer, &text);
-  va_end (ap);
-}
 
 
 /* Initialize the diagnostic message outputting machinery.  */
 void
 diagnostic_initialize (diagnostic_context *context)
 {
-  memset (context, 0, sizeof *context);
-  obstack_init (&context->buffer.obstack);
-
+  /* Allocate a basic pretty-printer.  Clients will replace this a
+     much more elaborated pretty-printer if they wish.  */
+  context->printer = xmalloc (sizeof (pretty_printer));
+  pp_construct (context->printer, NULL, 0);
   /* By default, diagnostics are sent to stderr.  */
-  output_buffer_attached_stream (&context->buffer) = stderr;
-
+  context->printer->buffer->stream = stderr;
   /* By default, we emit prefixes once per message.  */
-  diagnostic_prefixing_rule (context) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
+  context->printer->prefixing_rule = DIAGNOSTICS_SHOW_PREFIX_ONCE;
 
+  memset (context->diagnostic_count, 0, sizeof context->diagnostic_count);
+  context->warnings_are_errors_message = warnings_are_errors;
+  context->abort_on_error = false;
+  context->internal_error = NULL;
   diagnostic_starter (context) = default_diagnostic_starter;
   diagnostic_finalizer (context) = default_diagnostic_finalizer;
-  context->warnings_are_errors_message = warnings_are_errors;
+  context->last_module = 0;
+  context->last_function = NULL;
+  context->lock = 0;
+  context->x_data = NULL;
 }
 
 /* Returns true if the next format specifier in TEXT is a format specifier
@@ -797,13 +178,6 @@ diagnostic_build_prefix (diagnostic_info *diagnostic)
                             _(diagnostic_kind_text[diagnostic->kind]));
 }
 
-void
-diagnostic_flush_buffer (diagnostic_context *context)
-{
-  output_buffer_to_stream (&context->buffer);
-  fflush (output_buffer_attached_stream (&context->buffer));
-}
-
 /* Count a diagnostic.  Return true if the message should be printed.  */
 static bool
 diagnostic_count_diagnostic (diagnostic_context *context,
@@ -852,8 +226,8 @@ diagnostic_count_diagnostic (diagnostic_context *context,
 
       if (context->warnings_are_errors_message)
         {
-	  output_verbatim (&context->buffer,
-                           "%s: warnings being treated as errors\n", progname);
+	  pp_verbatim (context->printer,
+                       "%s: warnings being treated as errors\n", progname);
           context->warnings_are_errors_message = false;
         }
 
@@ -917,7 +291,7 @@ announce_function (tree decl)
       else
 	verbatim (" %s", (*lang_hooks.decl_printable_name) (decl, 2));
       fflush (stderr);
-      output_needs_newline (&global_dc->buffer) = true;
+      global_dc->printer->need_newline = true;
       diagnostic_set_last_function (global_dc);
     }
 }
@@ -929,29 +303,29 @@ lhd_print_error_function (diagnostic_context *context, const char *file)
 {
   if (diagnostic_last_function_changed (context))
     {
-      const char *old_prefix = output_prefix (&context->buffer);
+      const char *old_prefix = context->printer->prefix;
       char *new_prefix = file ? build_message_string ("%s: ", file) : NULL;
 
-      output_set_prefix (&context->buffer, new_prefix);
+      pp_set_prefix (context->printer, new_prefix);
 
       if (current_function_decl == NULL)
-	output_add_string (&context->buffer, _("At top level:"));
+	pp_string (context->printer, _("At top level:"));
       else
 	{
 	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
-	    output_printf
-	      (&context->buffer, "In member function `%s':",
+	    pp_printf
+	      (context->printer, "In member function `%s':",
 	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
 	  else
-	    output_printf
-	      (&context->buffer, "In function `%s':",
+	    pp_printf
+	      (context->printer, "In function `%s':",
 	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
 	}
-      output_add_newline (&context->buffer);
+      pp_newline (context->printer);
 
       diagnostic_set_last_function (context);
-      output_buffer_to_stream (&context->buffer);
-      context->buffer.state.prefix = old_prefix;
+      pp_flush (context->printer);
+      context->printer->prefix = old_prefix;
       free ((char*) new_prefix);
     }
 }
@@ -972,23 +346,23 @@ diagnostic_report_current_module (diagnostic_context *context)
 {
   struct file_stack *p;
 
-  if (output_needs_newline (&context->buffer))
+  if (pp_needs_newline (context->printer))
     {
-      output_add_newline (&context->buffer);
-      output_needs_newline (&context->buffer) = false;
+      pp_newline (context->printer);
+      pp_needs_newline (context->printer) = false;
     }
 
   if (input_file_stack && diagnostic_last_module_changed (context))
     {
       p = input_file_stack;
-      output_verbatim (&context->buffer,
-		       "In file included from %s:%d",
-		       p->location.file, p->location.line);
+      pp_verbatim (context->printer,
+                   "In file included from %s:%d",
+                   p->location.file, p->location.line);
       while ((p = p->next) != NULL)
-	output_verbatim (&context->buffer,
-			 ",\n                 from %s:%d",
-			 p->location.file, p->location.line);
-      output_verbatim (&context->buffer, ":\n");
+	pp_verbatim (context->printer,
+                     ",\n                 from %s:%d",
+                     p->location.file, p->location.line);
+      pp_verbatim (context->printer, ":\n");
       diagnostic_set_last_module (context);
     }
 }
@@ -998,14 +372,14 @@ default_diagnostic_starter (diagnostic_context *context,
 			    diagnostic_info *diagnostic)
 {
   diagnostic_report_current_function (context);
-  output_set_prefix (&context->buffer, diagnostic_build_prefix (diagnostic));
+  pp_set_prefix (context->printer, diagnostic_build_prefix (diagnostic));
 }
 
 static void
 default_diagnostic_finalizer (diagnostic_context *context,
 			      diagnostic_info *diagnostic __attribute__((unused)))
 {
-  output_destroy_prefix (&context->buffer);
+  pp_destroy_prefix (context->printer);
 }
 
 /* Report a diagnostic message (an error or a warning) as specified by
@@ -1024,31 +398,9 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   if (diagnostic_count_diagnostic (context, diagnostic))
     {
       (*diagnostic_starter (context)) (context, diagnostic);
-      output_format (&context->buffer, &diagnostic->message);
+      pp_format_text (context->printer, &diagnostic->message);
       (*diagnostic_finalizer (context)) (context, diagnostic);
-      output_flush (&context->buffer);
-      diagnostic_action_after_output (context, diagnostic);
-    }
-
-  context->lock--;
-}
-
-/* Report a diagnostic MESSAGE at the declaration DECL.
-   MSG is a format string which uses %s to substitute the declaration
-   name; subsequent substitutions are a la output_format.  */
-static void
-diagnostic_for_decl (diagnostic_context *context,
-		     diagnostic_info *diagnostic, tree decl)
-{
-  if (context->lock++ && diagnostic->kind < DK_SORRY)
-    error_recursion (context);
-
-  if (diagnostic_count_diagnostic (context, diagnostic))
-    {
-      (*diagnostic_starter (context)) (context, diagnostic);
-      format_with_decl (&context->buffer, &diagnostic->message, decl);
-      (*diagnostic_finalizer (context)) (context, diagnostic);
-      output_flush (&context->buffer);
+      pp_flush (context->printer);
       diagnostic_action_after_output (context, diagnostic);
     }
 
@@ -1114,8 +466,8 @@ verbatim (const char *msgid, ...)
   text.err_no = errno;
   text.args_ptr = &ap;
   text.format_spec = _(msgid);
-  output_do_verbatim (&global_dc->buffer, &text);
-  output_buffer_to_stream (&global_dc->buffer);
+  pp_format_verbatim (global_dc->printer, &text);
+  pp_flush (global_dc->printer);
   va_end (ap);
 }
 
@@ -1234,61 +586,6 @@ internal_error (const char *msgid, ...)
   real_abort ();
 }
 
-/* Variants of some of the above, which make reference to a particular
-   DECL node.  These are deprecated.  */
-
-void
-warning_with_decl (tree decl, const char *msgid, ...)
-{
-  diagnostic_info diagnostic;
-  va_list ap;
-
-  va_start (ap, msgid);
-
-  /* Do not issue a warning about a decl which came from a system header,
-     unless -Wsystem-headers.  */
-  if (DECL_IN_SYSTEM_HEADER (decl) && !warn_system_headers)
-    return;
-
-  diagnostic_set_info (&diagnostic, msgid, &ap,
-                       DECL_SOURCE_LOCATION (decl), DK_WARNING);
-  diagnostic_for_decl (global_dc, &diagnostic, decl);
-  va_end (ap);
-}
-
-void
-pedwarn_with_decl (tree decl, const char *msgid, ...)
-{
-  diagnostic_info diagnostic;
-  va_list ap;
-
-  va_start (ap, msgid);
-
-  /* Do not issue a warning about a decl which came from a system header,
-     unless -Wsystem-headers.  */
-  if (DECL_IN_SYSTEM_HEADER (decl) && !warn_system_headers)
-    return;
-
-  diagnostic_set_info (&diagnostic, msgid, &ap,
-                       DECL_SOURCE_LOCATION (decl), pedantic_error_kind ());
-  diagnostic_for_decl (global_dc, &diagnostic, decl);
-
-  va_end (ap);
-}
-
-void
-error_with_decl (tree decl, const char *msgid, ...)
-{
-  diagnostic_info diagnostic;
-  va_list ap;
-
-  va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap,
-                       DECL_SOURCE_LOCATION (decl), DK_ERROR);
-  diagnostic_for_decl (global_dc, &diagnostic, decl);
-  va_end (ap);
-}
-
 /* Special case error functions.  Most are implemented in terms of the
    above, or should be.  */
 
@@ -1351,7 +648,7 @@ static void
 error_recursion (diagnostic_context *context)
 {
   if (context->lock < 3)
-    output_flush (&context->buffer);
+    pp_flush (context->printer);
 
   fnotice (stderr,
 	   "Internal compiler error: Error reporting routines re-entered.\n");

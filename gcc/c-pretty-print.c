@@ -74,6 +74,9 @@ static void pp_c_type_id (c_pretty_printer, tree);
 static void pp_c_storage_class_specifier (c_pretty_printer, tree);
 static void pp_c_function_specifier (c_pretty_printer, tree);
 
+#define pp_buffer(PP) pp_base (PP)->buffer
+#define pp_newline(PP) (pp_newline) (pp_base (PP))
+
 
 /* Declarations.  */
 
@@ -248,9 +251,9 @@ pp_c_init_declarator (c_pretty_printer pp, tree t)
   pp_declarator (pp, t);
   if (DECL_INITIAL (t))
     {
-      pp_whitespace (pp);
+      pp_space (pp);
       pp_equal (pp);
-      pp_whitespace (pp);
+      pp_space (pp);
       pp_c_initializer (pp, DECL_INITIAL (t));
     }
 }
@@ -336,9 +339,9 @@ pp_c_char (c_pretty_printer ppi, int c)
       break;
     default:
       if (ISPRINT (c))
-	pp_character (ppi, c);
+	pp_character (&ppi->base, c);
       else
-	pp_format_scalar (ppi, "\\%03o", (unsigned) c);
+	pp_scalar (ppi, "\\%03o", (unsigned) c);
       break;
     }
 }
@@ -1038,7 +1041,7 @@ pp_c_assignment_expression (c_pretty_printer ppi, tree e)
       pp_c_unary_expression (ppi, TREE_OPERAND (e, 0));
       pp_c_maybe_whitespace (ppi);
       pp_equal (ppi);
-      pp_whitespace (ppi);
+      pp_space (ppi);
       pp_c_assignment_expression (ppi, TREE_OPERAND (e, 1));
     }
   else
@@ -1234,7 +1237,7 @@ pp_c_statement (c_pretty_printer ppi, tree stmt)
 
     case IF_STMT:
       pp_c_identifier (ppi, "if");
-      pp_whitespace (ppi);
+      pp_space (ppi);
       pp_c_left_paren (ppi);
       pp_c_expression (ppi, IF_COND (stmt));
       pp_right_paren (ppi);
@@ -1258,7 +1261,7 @@ pp_c_statement (c_pretty_printer ppi, tree stmt)
     case SWITCH_STMT:
       pp_newline (ppi);
       pp_c_identifier (ppi, "switch");
-      pp_whitespace (ppi);
+      pp_space (ppi);
       pp_c_left_paren (ppi);
       pp_c_expression (ppi, SWITCH_COND (stmt));
       pp_right_paren (ppi);
@@ -1269,7 +1272,7 @@ pp_c_statement (c_pretty_printer ppi, tree stmt)
 
     case WHILE_STMT:
       pp_c_identifier (ppi, "while");
-      pp_whitespace (ppi);
+      pp_space (ppi);
       pp_c_left_paren (ppi);
       pp_c_expression (ppi, WHILE_COND (stmt));
       pp_right_paren (ppi);
@@ -1284,7 +1287,7 @@ pp_c_statement (c_pretty_printer ppi, tree stmt)
       pp_statement (ppi, DO_BODY (stmt));
       pp_newline_and_indent (ppi, -3);
       pp_c_identifier (ppi, "while");
-      pp_whitespace (ppi);
+      pp_space (ppi);
       pp_c_left_paren (ppi);
       pp_c_expression (ppi, DO_COND (stmt));
       pp_c_right_paren (ppi);
@@ -1294,7 +1297,7 @@ pp_c_statement (c_pretty_printer ppi, tree stmt)
 
     case FOR_STMT:
       pp_c_identifier (ppi, "for");
-      pp_whitespace (ppi);
+      pp_space (ppi);
       pp_c_left_paren (ppi);
       pp_statement (ppi, FOR_INIT_STMT (stmt));
       pp_c_whitespace (ppi);
@@ -1364,20 +1367,20 @@ pp_c_statement (c_pretty_printer ppi, tree stmt)
 	pp_c_identifier (ppi, is_extended ? "__asm__" : "asm");
 	if (has_volatile_p)
 	  pp_c_identifier (ppi, "__volatile__");
-	pp_whitespace (ppi);
+	pp_space (ppi);
 	pp_c_left_paren (ppi);
 	pp_c_string_literal (ppi, ASM_STRING (stmt));
 	if (is_extended)
 	  {
-	    pp_whitespace (ppi);
+	    pp_space (ppi);
 	    pp_separate_with (ppi, ':');
 	    if (ASM_OUTPUTS (stmt))
 	      pp_c_expression (ppi, ASM_OUTPUTS (stmt));
-	    pp_whitespace (ppi);
+	    pp_space (ppi);
 	    pp_separate_with (ppi, ':');
 	    if (ASM_INPUTS (stmt))
 	      pp_c_expression (ppi, ASM_INPUTS (stmt));
-	    pp_whitespace (ppi);
+	    pp_space (ppi);
 	    pp_separate_with (ppi, ':');
 	    if (ASM_CLOBBERS (stmt))
 	      pp_c_expression (ppi, ASM_CLOBBERS (stmt));
@@ -1389,7 +1392,7 @@ pp_c_statement (c_pretty_printer ppi, tree stmt)
 
     case FILE_STMT:
       pp_c_identifier (ppi, "__FILE__");
-      pp_whitespace (ppi);
+      pp_space (ppi);
       pp_equal (ppi);
       pp_c_whitespace (ppi);
       pp_c_identifier (ppi, FILE_STMT_FILENAME (stmt));

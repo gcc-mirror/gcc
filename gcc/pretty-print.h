@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -22,7 +22,47 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_PRETTY_PRINT_H
 #define GCC_PRETTY_PRINT_H
 
-#include "diagnostic.h"
+#include "obstack.h"
+#include "input.h"
+
+/* The type of a text to be formatted according a format specification
+   along with a list of things.  */
+typedef struct
+{
+  const char *format_spec;
+  va_list *args_ptr;
+  int err_no;  /* for %m */
+} text_info;
+
+/* How often diagnostics are prefixed by their locations:
+   o DIAGNOSTICS_SHOW_PREFIX_NEVER: never - not yet supported;
+   o DIAGNOSTICS_SHOW_PREFIX_ONCE: emit only once;
+   o DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE: emit each time a physical
+   line is started.  */
+typedef enum
+{
+  DIAGNOSTICS_SHOW_PREFIX_ONCE       = 0x0,
+  DIAGNOSTICS_SHOW_PREFIX_NEVER      = 0x1,
+  DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE = 0x2
+} diagnostic_prefixing_rule_t;
+
+/* The output buffer datatype.  This is best seen as an abstract datatype
+   whose fields should not be accessed directly by clients.  */
+typedef struct 
+{
+  /* The obstack where the text is built up.  */  
+  struct obstack obstack;
+
+  /* Where to output formatted text.  */
+  FILE *stream;
+
+  /* The amount of characters output so far.  */  
+  int line_length;
+
+  /* This must be large enough to hold any printed integer or
+     floating-point value.  */
+  char digit_buffer[128];
+} output_buffer;
 
 /* The type of pretty-printer flags passed to clients.  */
 typedef unsigned int pp_flags;
@@ -32,69 +72,163 @@ typedef enum
   pp_none, pp_before, pp_after
 } pp_padding;
 
+/* The type of a hook that formats client-specific data onto a pretty_pinter.
+   A client-supplied formatter returns true if everything goes well,
+   otherwise it returns false.  */
+typedef struct pretty_print_info pretty_printer;
+typedef bool (*printer_fn) (pretty_printer *, text_info *);
+
+/* Client supplied function used to decode formats.  */
+#define pp_format_decoder(PP) pp_base (PP)->format_decoder
+
+/* TRUE if a newline character needs to be added before further
+   formatting.  */
+#define pp_needs_newline(PP)  pp_base (PP)->need_newline 
+
+/* Maximum characters per line in automatic line wrapping mode.
+   Zero means don't wrap lines.  */
+#define pp_line_cutoff(PP)  pp_base (PP)->ideal_maximum_length
+
+/* True if PRETTY-PTINTER is in line-wrapping mode.  */
+#define pp_is_wrapping_line(PP) (pp_line_cutoff (PP) > 0)
+
+/* Prefixing rule used in formatting a diagnostic message.  */
+#define pp_prefixing_rule(PP)  pp_base (PP)->prefixing_rule
+
+/* The amount of whitespace to be emitted when starting a new line.  */
+#define pp_indentation(PP) pp_base (PP)->indent_skip
+
+/* The data structure that contains the bare minimum required to do
+   proper pretty-printing.  Clients may derived from this structure
+   and add additional fields they need.  */
 struct pretty_print_info
 {
   /* Where we print external representation of ENTITY.  */
   output_buffer *buffer;
+
+  /* The prefix for each new line.  */
+  const char *prefix;
+
   pp_flags flags;
+  
   /* Where to put whitespace around the entity being formatted.  */
   pp_padding padding;
+  
+  /* The real upper bound of number of characters per line, taking into
+     account the case of a very very looong prefix.  */  
+  int maximum_length;
+
+  /* The ideal upper bound of number of characters per line, as suggested
+     by front-end.  */  
+  int ideal_maximum_length;
+
+  /* Indentation count.  */
+  int indent_skip;
+
+  /* Current prefixing rule.  */
+  diagnostic_prefixing_rule_t prefixing_rule;
+
+  /* If non-NULL, this function formats a TEXT into the BUFFER.  When called,
+     TEXT->format_spec points to a format code.  FORMAT_DECODER should call
+     pp_string (and related functions) to add data to the BUFFER.
+     FORMAT_DECODER can read arguments from *TEXT->args_pts using VA_ARG.
+     If the BUFFER needs additional characters from the format string, it
+     should advance the TEXT->format_spec as it goes.  When FORMAT_DECODER
+     returns, TEXT->format_spec should point to the last character processed.
+  */
+  printer_fn format_decoder;
+
+  /* Nonzero if current PREFIX was emitted at least once.  */
+  bool emitted_prefix;
+
+  /* Nonzero means one should emit a newline before outputting anything.  */
+  bool need_newline;
 };
 
-#define pp_left_paren(PPI)      output_add_character (pp_buffer (PPI), '(')
-#define pp_right_paren(PPI)     output_add_character (pp_buffer (PPI), ')')
-#define pp_left_bracket(PPI)    output_add_character (pp_buffer (PPI), '[')
-#define pp_right_bracket(PPI)   output_add_character (pp_buffer (PPI), ']')
-#define pp_left_brace(PPI)      output_add_character (pp_buffer (PPI), '{')
-#define pp_right_brace(PPI)     output_add_character (pp_buffer (PPI), '}')
-#define pp_semicolon(PPI)       output_add_character (pp_buffer (PPI), ';')
-#define pp_comma(PPI)           output_add_string (pp_buffer (PPI), ", ")
-#define pp_dot(PPI)             output_add_character (pp_buffer (PPI), '.')
-#define pp_colon(PPI)           output_add_character (pp_buffer (PPI), ':')
-#define pp_colon_colon(PPI)     output_add_string (pp_buffer (PPI), "::")
-#define pp_arrow(PPI)           output_add_string (pp_buffer (PPI), "->")
-#define pp_equal(PPI)           output_add_character (pp_buffer (PPI), '=')
-#define pp_question(PPI)        output_add_character (pp_buffer (PPI), '?')
-#define pp_bar(PPI)             output_add_character (pp_buffer (PPI), '|')
-#define pp_carret(PPI)          output_add_character (pp_buffer (PPI), '^')
-#define pp_ampersand(PPI)       output_add_character (pp_buffer (PPI), '&')
-#define pp_less(PPI)            output_add_character (pp_buffer (PPI), '<')
-#define pp_greater(PPI)         output_add_character (pp_buffer (PPI), '>')
-#define pp_plus(PPI)            output_add_character (pp_buffer (PPI), '+')
-#define pp_minus(PPI)           output_add_character (pp_buffer (PPI), '-')
-#define pp_star(PPI)            output_add_character (pp_buffer (PPI), '*')
-#define pp_slash(PPI)           output_add_character (pp_buffer (PPI), '/')
-#define pp_modulo(PPI)          output_add_character (pp_buffer (PPI), '%')
-#define pp_exclamation(PPI)     output_add_character (pp_buffer (PPI), '!')
-#define pp_complement(PPI)      output_add_character (pp_buffer (PPI), '~')
-#define pp_quote(PPI)           output_add_character (pp_buffer (PPI), '\'')
-#define pp_backquote(PPI)       output_add_character (pp_buffer (PPI), '`')
-#define pp_doublequote(PPI)     output_add_character (pp_buffer (PPI), '"')
-#define pp_newline(PPI)         output_add_newline (pp_buffer (PPI))
-#define pp_character(PPI, C)    output_add_character (pp_buffer (PPI), C)
-#define pp_whitespace(PPI)      output_add_space (pp_buffer (PPI))
-#define pp_indentation(PPI)     output_indentation (pp_buffer (PPI))
-#define pp_newline_and_indent(PPI, N) \
-  do {                                \
-    pp_indentation (PPI) += N;        \
-    pp_newline (PPI);                 \
+#define pp_space(PP)            pp_character (pp_base (PP), ' ')
+#define pp_left_paren(PP)       pp_character (pp_base (PP), '(')
+#define pp_right_paren(PP)      pp_character (pp_base (PP), ')')
+#define pp_left_bracket(PP)     pp_character (pp_base (PP), '[')
+#define pp_right_bracket(PP)    pp_character (pp_base (PP), ']')
+#define pp_left_brace(PP)       pp_character (pp_base (PP), '{')
+#define pp_right_brace(PP)      pp_character (pp_base (PP), '}')
+#define pp_semicolon(PP)        pp_character (pp_base (PP), ';')
+#define pp_comma(PP)            pp_string (pp_base (PP), ", ")
+#define pp_dot(PP)              pp_character (pp_base (PP), '.')
+#define pp_colon(PP)            pp_character (pp_base (PP), ':')
+#define pp_colon_colon(PP)      pp_string (pp_base (PP), "::")
+#define pp_arrow(PP)            pp_string (pp_base (PP), "->")
+#define pp_equal(PP)            pp_character (pp_base (PP), '=')
+#define pp_question(PP)         pp_character (pp_base (PP), '?')
+#define pp_bar(PP)              pp_character (pp_base (PP), '|')
+#define pp_carret(PP)           pp_character (pp_base (PP), '^')
+#define pp_ampersand(PP)        pp_character (pp_base (PP), '&')
+#define pp_less(PP)             pp_character (pp_base (PP), '<')
+#define pp_greater(PP)          pp_character (pp_base (PP), '>')
+#define pp_plus(PP)             pp_character (pp_base (PP), '+')
+#define pp_minus(PP)            pp_character (pp_base (PP), '-')
+#define pp_star(PP)             pp_character (pp_base (PP), '*')
+#define pp_slash(PP)            pp_character (pp_base (PP), '/')
+#define pp_modulo(PP)           pp_character (pp_base (PP), '%')
+#define pp_exclamation(PP)      pp_character (pp_base (PP), '!')
+#define pp_complement(PP)       pp_character (pp_base (PP), '~')
+#define pp_quote(PP)            pp_character (pp_base (PP), '\'')
+#define pp_backquote(PP)        pp_character (pp_base (PP), '`')
+#define pp_doublequote(PP)      pp_character (pp_base (PP), '"')
+#define pp_newline_and_indent(PP, N) \
+  do {                               \
+    pp_indentation (PP) += N;        \
+    pp_newline (PP);                 \
   } while (0)
-#define pp_separate_with(PPI, C) \
-   do {                          \
-     pp_character (PPI, C);      \
-     pp_whitespace (PPI);        \
+#define pp_separate_with(PP, C)     \
+   do {                             \
+     pp_character (pp_base (PP), C);\
+     pp_space (PP);                 \
    } while (0)
-#define pp_format_scalar(PPI, F, S) \
-   output_formatted_scalar (pp_buffer (PPI), F, S)
-#define pp_wide_integer(PPI, I) \
-   pp_format_scalar (PPI, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
-#define pp_pointer(PPI, P) pp_format_scalar (PPI, "%p", p)
+#define pp_scalar(PP, FORMAT, SCALAR)	                            \
+  do								    \
+    {								    \
+      sprintf (pp_base (PP)->buffer->digit_buffer, FORMAT, SCALAR); \
+      pp_string (pp_base (PP), pp_base (PP)->buffer->digit_buffer); \
+    }								    \
+  while (0)
+#define pp_decimal_int(PP, I)  pp_scalar (PP, "%d", I)
+#define pp_wide_integer(PP, I) \
+   pp_scalar (PP, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
+#define pp_pointer(PP, P)      pp_scalar (PP, "%p", P)
 
-#define pp_identifier(PPI, ID)  output_add_string (pp_buffer (PPI), ID)
-#define pp_tree_identifier(PPI, T) pp_identifier(PPI, IDENTIFIER_POINTER (T))
+#define pp_identifier(PP, ID)  pp_string (pp_base (PP), ID)
+#define pp_tree_identifier(PP, T)                      \
+  pp_append_text(pp_base (PP), IDENTIFIER_POINTER (T), \
+                 IDENTIFIER_POINTER (T) + IDENTIFIER_LENGTH (T))
 
-#define pp_unsupported_tree(PPI, T) \
-  output_verbatim (pp_buffer(PPI), "#`%s' not supported by %s#",\
+#define pp_unsupported_tree(PP, T) \
+  pp_verbatim (pp_base (PP), "#`%s' not supported by %s#",\
                    tree_code_name[(int) TREE_CODE (T)], __FUNCTION__)
+
+
+/* Clients that directly derive from pretty_printer need to override
+   this macro to return a pointer to the base pretty_printer structrure.  */
+#define pp_base(PP) (PP)
+
+extern void pp_construct (pretty_printer *, const char *, int);
+extern void pp_set_line_maximum_length (pretty_printer *, int);
+extern void pp_set_prefix (pretty_printer *, const char *);
+extern void pp_destroy_prefix (pretty_printer *);
+extern int pp_remaining_character_count_for_line (pretty_printer *);
+extern void pp_clear_output_area (pretty_printer *);
+extern const char *pp_formatted_text (pretty_printer *);
+extern const char *pp_last_position_in_text (const pretty_printer *);
+extern void pp_emit_prefix (pretty_printer *);
+extern void pp_append_text (pretty_printer *, const char *, const char *);
+extern void pp_printf (pretty_printer *, const char *, ...) ATTRIBUTE_PRINTF_2;
+extern void pp_verbatim (pretty_printer *, const char *, ...);
+extern void pp_flush (pretty_printer *);
+extern void pp_format_text (pretty_printer *, text_info *);
+extern void pp_format_verbatim (pretty_printer *, text_info *);
+
+extern void pp_newline (pretty_printer *);
+extern void pp_character (pretty_printer *, int);
+extern void pp_string (pretty_printer *, const char *);
 
 #endif /* GCC_PRETTY_PRINT_H */

@@ -1,3 +1,75 @@
+2003-07-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Remove pedwarn_with_decl, warning_with_decl and error_with_decl
+	from GCC. 
+	* calls.c (try_to_integrate): Don't use xxx_with_decl.
+	(expand_call): Likewise.
+	* dwarfout.c (output_reg_number): Likewise.
+	* expr.c (expand_expr): Likewise.
+	* function.c (assign_temp): Likewise.
+	(uninitialized_vars_warning): Likewise.
+	(setjmp_args_warning): Likewise.
+	(expand_function_end): Likewise.
+	* stmt.c (fixup_gotos): Likewise.
+	(warn_about_unused_variables): Likewise.
+	(expand_end_bindings): Likewise.
+	* stor-layout.c (layout_decl): Likewise.
+	(place_field): Likewise.
+	* toplev.c (check_global_declarations): Likewise.
+	(rest_of_handle_inlining): Likewise.
+	(default_tree_printer): New function.
+	(general_init): Initialize diagnostic machinery before routing
+	signals to the ICE machinery.  Set default tree printer.
+	* toplev.h (pedwarn_with_decl): Remove declaration.
+	(warning_with_decl): Likewise.
+	(error_with_decl): Likewise.
+	(pedwarn): Remove attribute for the time being. 
+	* tree-inline.c (expand_call_inline): Don't use xxx_with_decl.
+	* varasm.c (named_section): Likewise.
+	(make_decl_rtl): Likewise.
+	(assemble_variable): Likewise.
+	(merge_weak): Likewise.
+	(declare_weak): Likewise.
+
+	* diagnostic.h: Move non-diagnostic stuff into pretty-print.h.
+	* diagnostic.c: Move non-diagnostic stuff into pretty-print.c.
+	(format_with_decl): Remove.
+	(diagnostic_for_decl): Likewise.
+	(pedwarn_with_decl): Likewise.
+	(warning_with_decl): Likewise.
+	(error_with_decl): Likewise.
+	(diagnostic_initialize): Adjust.
+	(diagnostic_count_diagnostic): Likewise.
+	(announce_function): Likewise.
+	(lhd_print_error_function): Likewise.
+	(diagnostic_report_current_module): Likewise.
+	(default_diagnostic_starter): Likewise.
+	(diagnostic_report_diagnostic): Likewise.
+	(default_diagnostic_finalizer): Likewise.
+	(verbatim): Likewise.
+	(error): Likewise.
+	(warning): Likewise.
+	* opts.c (common_handle_option): Likewise.
+	* pretty-print.c: New file.
+	* c-pretty-print.h (pp_base): Override.
+	* c-pretty-print.c: Adjust use of macros throughout.
+	(pp_buffer): New macro.
+	(pp_newline): Likewise.
+	* c-objc-common.c (c_tree_printer): Adjust prototype. Tidy.
+	* Makefile.in (DIAGNOSTIC_H): New variable.
+	(c-errors.o): Use it.
+	(c-objc-common.o): Likewise.
+	(c-common.o): Likewise.
+	(c-opts.o): Likewise.
+	(c-format.o): Likewise.
+	(diagnostic.o): Likewise.
+	(opts.o): Likewise.
+	(toplev.o): Likewise.
+	(rtl-error.o): Likewise.
+	(dwarf2out.o): Likewise.
+	(jump.o): Likewise.
+	(pretty-print.o): New rule.
+
 2003-07-24  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.def (BUILT_IN_PRINTF, BUILT_IN_FPRINTF): Changed from
