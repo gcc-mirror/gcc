@@ -673,10 +673,9 @@ static const char *link_libgcc_spec = LINK_LIBGCC_SPEC;
 static const char *trad_capable_cpp =
 "%{traditional|ftraditional|traditional-cpp:trad}cpp0";
 
-static const char *cpp_options =
+static const char *cpp_unique_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\
- %{std*} %{nostdinc*}\
- %{C} %{v} %{I*} %{P} %{$} %I\
+ %{nostdinc*} %{C} %{v} %{I*} %{P} %{$} %I\
  %{MD:-M -MF %W{!o: %b.d}%W{o*:%.d%*}}\
  %{MMD:-MM -MF %W{!o: %b.d}%W{o*:%.d%*}}\
  %{M} %{MM} %W{MF*} %{MG} %{MP} %{MQ*} %{MT*} %{M|MD|MM|MMD:%{o*:-MQ %*}}\
@@ -686,12 +685,17 @@ static const char *cpp_options =
  %{fno-inline|O0|!O*:-D__NO_INLINE__} %{ffast-math:-D__FAST_MATH__}\
  %{fshort-wchar:-U__WCHAR_TYPE__ -D__WCHAR_TYPE__=short\\ unsigned\\ int}\
  %{ffreestanding:-D__STDC_HOSTED__=0} %{fno-hosted:-D__STDC_HOSTED__=0}\
- %{!ffreestanding:%{!fno-hosted:-D__STDC_HOSTED__=1}}\
+ %{!ffreestanding:%{!fno-hosted:-D__STDC_HOSTED__=1}} %{remap}\
+ %{g3:-dD} %{H} %C %{D*&U*&A*} %{i*} %Z %i\
+ %{E:%{!M*:%W{o*}}}";
+
+/* This contains cpp options which are common with cc1_options and are passed
+   only when preprocessing only to avoid duplication.  */
+static const char *cpp_options =
+"%(cpp_unique_options) %{std*} %{d*} %{W*} %{w} %{pedantic*}\
  %{fshow-column} %{fno-show-column}\
  %{fleading-underscore} %{fno-leading-underscore}\
- %{fno-operator-names} %{ftabstop=*} %{remap}\
- %{g3:-dD} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*&U*&A*} %{i*} %Z %i\
- %{E:%{!M*:%W{o*}}}";
+ %{fno-operator-names} %{ftabstop=*}";
 
 /* NB: This is shared amongst all front-ends.  */
 static const char *cc1_options =
@@ -840,7 +844,7 @@ static const struct compiler default_compilers[] =
 		tradcpp0 -lang-c %{ansi:-std=c89} %(cpp_options) %{!pipe:%g.i} |\n\
 		    cc1 -fpreprocessed %{!pipe:%g.i} %(cc1_options)}\
 	    %{!traditional:%{!ftraditional:%{!traditional-cpp:\
-		cc1 -lang-c %{ansi:-std=c89} %(cpp_options) %(cc1_options)}}}}\
+		cc1 -lang-c %{ansi:-std=c89} %(cpp_unique_options) %(cc1_options)}}}}\
         %{!fsyntax-only:%(invoke_as)}}}}", 0},
   {"-",
    "%{!E:%e-E required when input is from standard input}\
@@ -1367,6 +1371,7 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("invoke_as",		&invoke_as),
   INIT_STATIC_SPEC ("cpp",			&cpp_spec),
   INIT_STATIC_SPEC ("cpp_options",		&cpp_options),
+  INIT_STATIC_SPEC ("cpp_unique_options",	&cpp_unique_options),
   INIT_STATIC_SPEC ("trad_capable_cpp",		&trad_capable_cpp),
   INIT_STATIC_SPEC ("cc1",			&cc1_spec),
   INIT_STATIC_SPEC ("cc1_options",		&cc1_options),

@@ -1317,12 +1317,14 @@ parse_option (input)
 
 /* Handle one command-line option in (argc, argv).
    Can be called multiple times, to handle multiple sets of options.
+   If ignore is non-zero, this will ignore unrecognized -W* options.
    Returns number of strings consumed.  */
 int
-cpp_handle_option (pfile, argc, argv)
+cpp_handle_option (pfile, argc, argv, ignore)
      cpp_reader *pfile;
      int argc;
      char **argv;
+     int ignore;
 {
   int i = 0;
   struct cpp_pending *pend = CPP_OPTION (pfile, pending);
@@ -1733,6 +1735,8 @@ cpp_handle_option (pfile, argc, argv)
 	    CPP_OPTION (pfile, warnings_are_errors) = 0;
 	  else if (!strcmp (argv[i], "-Wno-system-headers"))
 	    CPP_OPTION (pfile, warn_system_headers) = 0;
+	  else if (! ignore)
+	    return i;
 	  break;
  	}
     }
@@ -1754,7 +1758,7 @@ cpp_handle_options (pfile, argc, argv)
 
   for (i = 0; i < argc; i += strings_processed)
     {
-      strings_processed = cpp_handle_option (pfile, argc - i, argv + i);
+      strings_processed = cpp_handle_option (pfile, argc - i, argv + i, 1);
       if (strings_processed == 0)
 	break;
     }
