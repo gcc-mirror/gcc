@@ -1157,10 +1157,7 @@ setup_vtbl_ptr (member_init_list, base_init_list)
      tree base_init_list;
 {
   my_friendly_assert (doing_semantic_analysis_p (), 19990919);
-
-  /* If we've already done this, break.  */
-  if (vtbls_set_up_p)
-    abort ();
+  my_friendly_assert (!vtbls_set_up_p, 20011220);
 
   if (processing_template_decl)
     add_stmt (build_min_nt (CTOR_INITIALIZER,

@@ -2376,9 +2376,8 @@ build_user_type_conversion_1 (totype, expr, flags)
   /* We represent conversion within a hierarchy using RVALUE_CONV and
      BASE_CONV, as specified by [over.best.ics]; these become plain
      constructor calls, as specified in [dcl.init].  */
-  if (IS_AGGR_TYPE (fromtype) && IS_AGGR_TYPE (totype)
-      && DERIVED_FROM_P (totype, fromtype))
-    abort ();
+  my_friendly_assert (!IS_AGGR_TYPE (fromtype) || !IS_AGGR_TYPE (totype)
+		      || !DERIVED_FROM_P (totype, fromtype), 20011226);
 
   if (IS_AGGR_TYPE (totype))
     ctors = lookup_fnfields (TYPE_BINFO (totype),
@@ -2400,11 +2399,11 @@ build_user_type_conversion_1 (totype, expr, flags)
       t = build_int_2 (0, 0);
       TREE_TYPE (t) = build_pointer_type (totype);
       args = build_tree_list (NULL_TREE, expr);
-      if (DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors))
-	  || DECL_HAS_VTT_PARM_P (OVL_CURRENT (ctors)))
-	/* We should never try to call the abstract or base constructor
-	   from here.  */
-	abort ();
+      /* We should never try to call the abstract or base constructor
+	 from here.  */
+      my_friendly_assert (!DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors))
+			  && !DECL_HAS_VTT_PARM_P (OVL_CURRENT (ctors)),
+			  20011226);
       args = tree_cons (NULL_TREE, t, args);
     }
   for (; ctors; ctors = OVL_NEXT (ctors))

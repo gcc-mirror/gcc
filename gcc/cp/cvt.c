@@ -485,8 +485,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       intype = TREE_TYPE (expr);
     }
 
-  if (TREE_CODE (intype) == REFERENCE_TYPE)
-    my_friendly_abort (364);
+  my_friendly_assert (TREE_CODE (intype) != REFERENCE_TYPE, 364);
 
   intype = TYPE_MAIN_VARIANT (intype);
 
