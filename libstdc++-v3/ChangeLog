@@ -1,5 +1,8 @@
 2001-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
+	* src/gen-num-limits.cc (signal_adapter): Overloaded to match
+	signal_func with an unspecified argument list.
+
 	Add Irix 5.2, 6.3 support.
 	* config/os/irix/bits: Renamed to...
 	* config/os/irix/irix6.5/bits: this.
