@@ -86,6 +86,20 @@ extern char *current_function_original_name;
 	fprintf (FILE, ":\n");						\
   } while (0)
 
+/* This says how to output an assembler line
+   to define a local common symbol.
+   The difference from svr3.h is we don't limit align to 2.  */
+
+#undef ASM_OUTPUT_LOCAL
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
+  do {							\
+    int align = exact_log2 (ROUNDED);			\
+    data_section ();					\
+    ASM_OUTPUT_ALIGN ((FILE), align == -1 ? 2 : align);	\
+    ASM_OUTPUT_LABEL ((FILE), (NAME));			\
+    fprintf ((FILE), "\t.set .,.+%u\n", (ROUNDED));	\
+  } while (0)
+
 /* The routine used to output string literals.
 
 #define ASCII_DATA_ASM_OP	".byte"
