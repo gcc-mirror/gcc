@@ -1,5 +1,8 @@
 1998-09-04  Mark Mitchell  <mark@markmitchell.com>
 
+	* inc/typeinfo (type_info::type_info(const char*)): Make
+	`explicit'.
+
 	* cp-tree.h (hash_tree_cons_simple): New macro.
 	* pt.c (tsubst_arg_types): New function.  Use hash_tree_cons.
 	(coerce_template_parms): Use make_temp_vec, instead of

@@ -17,7 +17,7 @@ private:
   type_info (const type_info&);
 
 protected:
-  type_info (const char *n): _name (n) { }
+  explicit type_info (const char *n): _name (n) { }
 
   const char *_name;
 
