@@ -7427,11 +7427,6 @@ declaration, but before the declaration proper.
 If defined, a C statement that assigns default attributes to
 newly defined @var{decl}.
 
-@findex SET_DEFAULT_SECTION_NAME
-@item SET_DEFAULT_SECTION_NAME (@var{decl})
-If defined, a C statement that assigns a section name to the newly
-created @var{decl}.
-
 @findex DOLLARS_IN_IDENTIFIERS
 @item DOLLARS_IN_IDENTIFIERS
 Define this macro to control use of the character @samp{$} in identifier

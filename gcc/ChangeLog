@@ -1,3 +1,11 @@
+Thu Oct  1 10:42:27 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* c-decl.c (start_function): Add invocation of
+	SET_DEFAULT_DECL_ATTRIBUTES, if defined.
+
+	* tm.texi: Remove description of non-existant macro
+	SET_DEFAULT_SECTION_NAME.
+
 Wed Sep 30 22:27:53 1998  Robert Lipe  <robertl@dgii.com>
 
 	* config.sub: Recognize i[34567]86-pc-udk as new target.

@@ -6618,6 +6618,10 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       pushclass (context, 2);
     }
 
+#ifdef SET_DEFAULT_DECL_ATTRIBUTES
+  SET_DEFAULT_DECL_ATTRIBUTES (decl, attributes);
+#endif
+  
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   cplus_decl_attributes (decl, attributes, prefix_attributes);
 
@@ -6660,7 +6664,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
      data segment.  */
   DECL_COMMON (tem) = flag_conserve_space || ! TREE_PUBLIC (tem);
 #endif
-
+  
   if (! processing_template_decl)
     start_decl_1 (tem);
 
@@ -12390,6 +12394,10 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
      error_mark_node is replaced below (in poplevel) with the BLOCK.  */
   DECL_INITIAL (decl1) = error_mark_node;
 
+#ifdef SET_DEFAULT_DECL_ATTRIBUTES
+  SET_DEFAULT_DECL_ATTRIBUTES (decl1, attributes);
+#endif
+  
   /* This function exists in static storage.
      (This does not mean `static' in the C sense!)  */
   TREE_STATIC (decl1) = 1;
@@ -12533,6 +12541,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
   if (attrs)
     cplus_decl_attributes (decl1, NULL_TREE, attrs);
+  
   make_function_rtl (decl1);
 
   /* Promote the value to int before returning it.  */

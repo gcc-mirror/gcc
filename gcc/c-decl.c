@@ -6423,6 +6423,10 @@ start_function (declspecs, declarator, prefix_attributes, attributes, nested)
      except for defining how to inline.  So set DECL_EXTERNAL in that case.  */
   DECL_EXTERNAL (decl1) = current_extern_inline;
 
+#ifdef SET_DEFAULT_DECL_ATTRIBUTES
+  SET_DEFAULT_DECL_ATTRIBUTES (decl1, attributes);
+#endif
+  
   /* This function exists in static storage.
      (This does not mean `static' in the C sense!)  */
   TREE_STATIC (decl1) = 1;
