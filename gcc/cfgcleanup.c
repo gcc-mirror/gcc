@@ -1044,10 +1044,10 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
   while (true)
     {
       /* Ignore notes.  */
-      while (!active_insn_p (i1) && i1 != bb1->head)
+      while (!INSN_P (i1) && i1 != bb1->head)
 	i1 = PREV_INSN (i1);
 
-      while (!active_insn_p (i2) && i2 != bb2->head)
+      while (!INSN_P (i2) && i2 != bb2->head)
 	i2 = PREV_INSN (i2);
 
       if (i1 == bb1->head || i2 == bb2->head)
@@ -1056,8 +1056,8 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
       if (!insns_match_p (mode, i1, i2))
 	break;
 
-      /* Don't begin a cross-jump with a USE or CLOBBER insn.  */
-      if (active_insn_p (i1))
+      /* Don't begin a cross-jump with a NOTE insn.  */
+      if (INSN_P (i1))
 	{
 	  /* If the merged insns have different REG_EQUAL notes, then
 	     remove them.  */
@@ -1096,13 +1096,13 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
      Two, it keeps line number notes as matched as may be.  */
   if (ninsns)
     {
-      while (last1 != bb1->head && !active_insn_p (PREV_INSN (last1)))
+      while (last1 != bb1->head && !INSN_P (PREV_INSN (last1)))
 	last1 = PREV_INSN (last1);
 
       if (last1 != bb1->head && GET_CODE (PREV_INSN (last1)) == CODE_LABEL)
 	last1 = PREV_INSN (last1);
 
-      while (last2 != bb2->head && !active_insn_p (PREV_INSN (last2)))
+      while (last2 != bb2->head && !INSN_P (PREV_INSN (last2)))
 	last2 = PREV_INSN (last2);
 
       if (last2 != bb2->head && GET_CODE (PREV_INSN (last2)) == CODE_LABEL)
