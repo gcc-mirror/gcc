@@ -1,3 +1,9 @@
+2004-08-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac: Replace _GCC_TOPLEV_NONCANONICAL_TARGET with
+	ACX_NONCANONICAL_TARGET; remove now-unneeded AC_SUBST.
+	* configure: Regenerate.
+
 2004-08-16  Stan Shebs  <shebs@apple.com>
 
 	Basic support for 64-bit Darwin.
