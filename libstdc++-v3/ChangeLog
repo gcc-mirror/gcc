@@ -1,5 +1,9 @@
 2005-02-11  Janis Johnson  <janis187@us.ibm.com>
 
+	* testsuite/26_numerics/complex/13450.cc: Fix XFAIL selector.
+	* testsuite/26_numerics/complex/complex_value.cc: Ditto.
+	* testsuite/26_numerics/complex/pow.cc: Ditto.
+
 	* testsuite/lib/libstdc++.exp: Load target-supports-dg.exp.
 	* testsuite/26_numerics/complex/13450.cc: XFAIL for broken_cplxf_arg.
 	* testsuite/26_numerics/complex/complex_value.cc: Ditto.
