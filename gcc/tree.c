@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1742,19 +1742,19 @@ int_size_in_bytes (type)
   size = TREE_INT_CST_LOW (TYPE_SIZE (type));
   return (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
 }
-
-/* Return, as an INTEGER_CST node, the number of elements for
-   TYPE (which is an ARRAY_TYPE) minus one. 
-   This counts only elements of the top array.  */
+
+/* Return, as a tree node, the number of elements for TYPE (which is an
+   ARRAY_TYPE) minus one. This counts only elements of the top array.  */
 
 tree
 array_type_nelts (type)
      tree type;
 {
   tree index_type = TYPE_DOMAIN (type);
-  return (tree_int_cst_equal (TYPE_MIN_VALUE (index_type), integer_zero_node)
+
+  return (integer_zerop (TYPE_MIN_VALUE (index_type))
 	  ? TYPE_MAX_VALUE (index_type)
-	  : fold (build (MINUS_EXPR, integer_type_node,
+	  : fold (build (MINUS_EXPR, TREE_TYPE (TYPE_MAX_VALUE (index_type)),
 			 TYPE_MAX_VALUE (index_type),
 			 TYPE_MIN_VALUE (index_type))));
 }
@@ -2867,10 +2867,9 @@ build_function_type (value_type, arg_types)
   register tree t;
   int hashcode;
 
-  if (TREE_CODE (value_type) == FUNCTION_TYPE
-      || TREE_CODE (value_type) == ARRAY_TYPE)
+  if (TREE_CODE (value_type) == FUNCTION_TYPE)
     {
-      error ("function return type cannot be function or array");
+      error ("function return type cannot be function");
       value_type = integer_type_node;
     }
 
@@ -3268,7 +3267,7 @@ decl_function_context (decl)
 }
 
 /* Return the innermost context enclosing DECL that is
-   a RECORD_TYPE or UNION_TYPE, or zero if none.
+   a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE, or zero if none.
    TYPE_DECLs and FUNCTION_DECLs are transparent to this function.  */
 
 tree
@@ -3280,7 +3279,8 @@ decl_type_context (decl)
   while (context)
     {
       if (TREE_CODE (context) == RECORD_TYPE
-	  || TREE_CODE (context) == UNION_TYPE)
+	  || TREE_CODE (context) == UNION_TYPE
+	  || TREE_CODE (context) == QUAL_UNION_TYPE)
 	return context;
       if (TREE_CODE (context) == TYPE_DECL
 	  || TREE_CODE (context) == FUNCTION_DECL)
