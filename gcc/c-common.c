@@ -291,7 +291,7 @@ combine_strings (strings)
 	wide_flag = 1;
     }
 
-  /* Compute the number of elements, for the array type.  */ 
+  /* Compute the number of elements, for the array type.  */
   nchars = wide_flag ? length / wchar_bytes : length;
 
   /* Create the array type for the string constant.
@@ -408,7 +408,7 @@ decl_attributes (node, attributes, prefix_attributes)
       tree args = TREE_VALUE (a);
       int i;
       enum attrs id;
-      
+
       for (i = 0; i < attrtab_idx; i++)
 	if (attrtab[i].name == name)
 	  break;
@@ -469,7 +469,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	    TREE_THIS_VOLATILE (decl) = 1;
 	  else if (TREE_CODE (type) == POINTER_TYPE
 		   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
-	    TREE_TYPE (decl) = type 
+	    TREE_TYPE (decl) = type
 	      = build_pointer_type
 		(build_type_variant (TREE_TYPE (type),
 				     TREE_READONLY (TREE_TYPE (type)), 1));
@@ -480,7 +480,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	case A_UNUSED:
 	  if (is_type)
 	    TREE_USED (type) = 1;
-	  else if (TREE_CODE (decl) == PARM_DECL 
+	  else if (TREE_CODE (decl) == PARM_DECL
 		   || TREE_CODE (decl) == VAR_DECL
 		   || TREE_CODE (decl) == FUNCTION_DECL)
 	    TREE_USED (decl) = 1;
@@ -594,7 +594,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	       || TREE_CODE (decl) == VAR_DECL)
 	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
 	    {
-	      if (TREE_CODE (decl) == VAR_DECL 
+	      if (TREE_CODE (decl) == VAR_DECL
 		  && current_function_decl != NULL_TREE
 		  && ! TREE_STATIC (decl))
 		error_with_decl (decl,
@@ -630,7 +630,7 @@ decl_attributes (node, attributes, prefix_attributes)
 		   || TREE_CODE (align_expr) == CONVERT_EXPR
 		   || TREE_CODE (align_expr) == NON_LVALUE_EXPR)
 	      align_expr = TREE_OPERAND (align_expr, 0);
-	  
+
 	    if (TREE_CODE (align_expr) != INTEGER_CST)
 	      {
 		error ("requested alignment is not a constant");
@@ -663,14 +663,14 @@ decl_attributes (node, attributes, prefix_attributes)
 	    enum format_type format_type;
 	    tree argument;
 	    int arg_num;
-	
+
 	    if (TREE_CODE (decl) != FUNCTION_DECL)
 	      {
 		error_with_decl (decl,
 			 "argument format specified for non-function `%s'");
 		continue;
 	      }
-	
+
 	    if (TREE_CODE (format_type_id) != IDENTIFIER_NODE)
 	      {
 		error ("unrecognized format specifier");
@@ -679,7 +679,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	    else
 	      {
 		char *p = IDENTIFIER_POINTER (format_type_id);
-		
+
 		if (!strcmp (p, "printf") || !strcmp (p, "__printf__"))
 		  format_type = printf_format_type;
 		else if (!strcmp (p, "scanf") || !strcmp (p, "__scanf__"))
@@ -766,14 +766,14 @@ decl_attributes (node, attributes, prefix_attributes)
 	    tree format_num_expr = TREE_VALUE (args);
 	    int format_num, arg_num;
 	    tree argument;
-	
+
 	    if (TREE_CODE (decl) != FUNCTION_DECL)
 	      {
 		error_with_decl (decl,
 			 "argument format specified for non-function `%s'");
 		continue;
 	      }
-	
+
 	    /* Strip any conversions from the first arg number and verify it
 	       is a constant.  */
 	    while (TREE_CODE (format_num_expr) == NOP_EXPR
@@ -960,6 +960,7 @@ strip_attrs (specs_attrs)
 #define T_D	&double_type_node
 #define T_LD	&long_double_type_node
 #define T_C	&char_type_node
+#define T_UC	&unsigned_char_type_node
 #define T_V	&void_type_node
 #define T_W	&wchar_type_node
 #define T_ST    &sizetype
@@ -970,6 +971,9 @@ typedef struct {
   /* Type of argument if no length modifier is used.  */
   tree *nolen;
   /* Type of argument if length modifier for shortening is used.
+     If NULL, then this modifier is not allowed.  */
+  tree *hhlen;
+  /* Type of argument if length modifier for shortening to byte if used.
      If NULL, then this modifier is not allowed.  */
   tree *hlen;
   /* Type of argument if length modifier `l' is used.
@@ -989,31 +993,31 @@ typedef struct {
 } format_char_info;
 
 static format_char_info print_char_table[] = {
-  { "di",	0,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_ST,	"-wp0 +"	},
-  { "oxX",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	"-wp0#"		},
-  { "u",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	"-wp0"		},
+  { "di",	0,	T_I,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_ST,	"-wp0 +"	},
+  { "oxX",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	"-wp0#"		},
+  { "u",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	"-wp0"		},
 /* A GNU extension.  */
-  { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "feEgGaA",	0,	T_D,	NULL,	NULL,	NULL,	T_LD,	NULL,	"-wp0 +#"	},
-  { "c",	0,	T_I,	NULL,	T_W,	NULL,	NULL,	NULL,	"-w"		},
-  { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "s",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	NULL,	"-wp"		},
-  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "n",	1,	T_I,	T_S,	T_L,	T_LL,	NULL,	NULL,	""		},
+  { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
+  { "feEgGaA",	0,	T_D,	NULL,	NULL,	NULL,	NULL,	T_LD,	NULL,	"-wp0 +#"	},
+  { "c",	0,	T_I,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"-w"		},
+  { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
+  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"-wp"		},
+  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
+  { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
+  { "n",	1,	T_I,	NULL,	T_S,	T_L,	T_LL,	NULL,	NULL,	""		},
   { NULL }
 };
 
 static format_char_info scan_char_table[] = {
-  { "di",	1,	T_I,	T_S,	T_L,	T_LL,	T_LL,	NULL,	"*"	},
-  { "ouxX",	1,	T_UI,	T_US,	T_UL,	T_ULL,	T_ULL,	NULL,	"*"	},	
-  { "efgEGaA",	1,	T_F,	NULL,	T_D,	NULL,	T_LD,	NULL,	"*"	},
-  { "sc",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	NULL,	"*a"	},
-  { "[",	1,	T_C,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
-  { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "n",	1,	T_I,	T_S,	T_L,	T_LL,	NULL,	NULL,	""	},
+  { "di",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	T_LL,	NULL,	"*"	},
+  { "ouxX",	1,	T_UI,	T_UC,	T_US,	T_UL,	T_ULL,	T_ULL,	NULL,	"*"	},
+  { "efgEGaA",	1,	T_F,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	"*"	},
+  { "sc",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"*a"	},
+  { "[",	1,	T_C,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
+  { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "n",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	NULL,	NULL,	""	},
   { NULL }
 };
 
@@ -1026,19 +1030,19 @@ static format_char_info scan_char_table[] = {
    'G' - other GNU extensions  */
 
 static format_char_info time_char_table[] = {
-  { "y", 		0, NULL, NULL, NULL, NULL, NULL, NULL, "2EO-_0w" },
-  { "D", 		0, NULL, NULL, NULL, NULL, NULL, NULL, "2" },
-  { "g", 		0, NULL, NULL, NULL, NULL, NULL, NULL, "2O-_0w" },
-  { "cx", 		0, NULL, NULL, NULL, NULL, NULL, NULL, "3E" },
-  { "%RTXnrt",		0, NULL, NULL, NULL, NULL, NULL, NULL, "" },
-  { "P",		0, NULL, NULL, NULL, NULL, NULL, NULL, "G" },
-  { "HIMSUWdemw",	0, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow" },
-  { "Vju",		0, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow" },
-  { "Gklsz",		0, NULL, NULL, NULL, NULL, NULL, NULL, "-_0OGw" },
-  { "ABZa",		0, NULL, NULL, NULL, NULL, NULL, NULL, "^#" },
-  { "p",		0, NULL, NULL, NULL, NULL, NULL, NULL, "#" },
-  { "bh",		0, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
-  { "CY",		0, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOw" },
+  { "y", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2EO-_0w" },
+  { "D", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2" },
+  { "g", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2O-_0w" },
+  { "cx", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "3E" },
+  { "%RTXnrt",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "" },
+  { "P",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "G" },
+  { "HIMSUWdemw",	0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow" },
+  { "Vju",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow" },
+  { "Gklsz",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0OGw" },
+  { "ABZa",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^#" },
+  { "p",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "#" },
+  { "bh",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
+  { "CY",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOw" },
   { NULL }
 };
 
@@ -1071,7 +1075,7 @@ static void check_format_info		PROTO((function_format_info *, tree));
    included or not), since it is common to call printf without
    including <stdio.h>.  There shouldn't be a problem with this,
    since ANSI reserves these function names whether you include the
-   header file or not.  In any case, the checking is harmless. 
+   header file or not.  In any case, the checking is harmless.
 
    Also initialize the name of function that modify the format string for
    internationalization purposes.  */
@@ -1434,7 +1438,7 @@ check_format_info (info, params)
 		  flag_chars[i] = 0;
 		}
 	    }
-	  /* "If the space and + flags both appear, 
+	  /* "If the space and + flags both appear,
 	     the space flag will be ignored."  */
 	  if (index (flag_chars, ' ') != 0
 	      && index (flag_chars, '+') != 0)
@@ -1536,9 +1540,17 @@ check_format_info (info, params)
 	    }
 	  else
 	    length_char = 0;
+	  if (length_char == 'h' && *format_chars == 'h')
+	    {
+	      length_char = 'H', format_chars++;
+	      /* FIXME: Is allowed in ISO C 9x.  */
+	      if (pedantic)
+		warning ("ANSI C does not support the `hh' length modifier");
+	    }
 	  if (length_char == 'l' && *format_chars == 'l')
 	    {
 	      length_char = 'q', format_chars++;
+	      /* FIXME: Is allowed in ISO C 9x.  */
 	      if (pedantic)
 		warning ("ANSI C does not support the `ll' length modifier");
 	    }
@@ -1651,6 +1663,7 @@ check_format_info (info, params)
       switch (length_char)
 	{
 	default: wanted_type = fci->nolen ? *(fci->nolen) : 0; break;
+	case 'H': wanted_type = fci->hhlen ? *(fci->hhlen) : 0; break;
 	case 'h': wanted_type = fci->hlen ? *(fci->hlen) : 0; break;
 	case 'l': wanted_type = fci->llen ? *(fci->llen) : 0; break;
 	case 'q': wanted_type = fci->qlen ? *(fci->qlen) : 0; break;
@@ -1747,7 +1760,7 @@ check_format_info (info, params)
 	{
 	  register char *this;
 	  register char *that;
-  
+
 	  this = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (wanted_type)));
 	  that = 0;
 	  if (TREE_CODE (cur_type) != ERROR_MARK
@@ -2587,7 +2600,7 @@ truthvalue_conversion (expr)
 		      truthvalue_conversion (TREE_OPERAND (expr, 0)));
       else
 	return truthvalue_conversion (TREE_OPERAND (expr, 0));
-      
+
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
       return fold (build (COND_EXPR, boolean_type_node, TREE_OPERAND (expr, 0),
@@ -2638,7 +2651,7 @@ truthvalue_conversion (expr)
       if (warn_parentheses && C_EXP_ORIGINAL_CODE (expr) == MODIFY_EXPR)
 	warning ("suggest parentheses around assignment used as truth value");
       break;
-      
+
     default:
       break;
     }
