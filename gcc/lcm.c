@@ -858,8 +858,6 @@ struct bb_info
 static sbitmap *antic;
 static sbitmap *transp;
 static sbitmap *comp;
-static sbitmap *delete;
-static sbitmap *insert;
 
 static struct seginfo * new_seginfo (int, rtx, int, HARD_REG_SET);
 static void add_seginfo (struct bb_info *, struct seginfo *);
@@ -1138,6 +1136,8 @@ optimize_mode_switching (FILE *file)
   for (i = 0; i < max_num_modes; i++)
     {
       int current_mode[N_ENTITIES];
+      sbitmap *delete;
+      sbitmap *insert;
 
       /* Set the anticipatable and computing arrays.  */
       sbitmap_vector_zero (antic, last_basic_block);
@@ -1248,6 +1248,8 @@ optimize_mode_switching (FILE *file)
 	      }
 	}
 
+      sbitmap_vector_free (delete);
+      sbitmap_vector_free (insert);
       clear_aux_for_edges ();
       free_edge_list (edge_list);
     }
@@ -1298,8 +1300,6 @@ optimize_mode_switching (FILE *file)
   sbitmap_vector_free (antic);
   sbitmap_vector_free (transp);
   sbitmap_vector_free (comp);
-  sbitmap_vector_free (delete);
-  sbitmap_vector_free (insert);
 
   if (need_commit)
     commit_edge_insertions ();
