@@ -784,13 +784,18 @@ determine_specialization (template_id, decl, targs_out,
      int need_member_template;
      int complain;
 {
-  tree fns = TREE_OPERAND (template_id, 0);
-  tree targs_in = TREE_OPERAND (template_id, 1);
+  tree fns, targs_in;
   tree templates = NULL_TREE;
   tree fn;
   int i;
 
   *targs_out = NULL_TREE;
+
+  if (template_id == error_mark_node)
+    return error_mark_node;
+
+  fns = TREE_OPERAND (template_id, 0);
+  targs_in = TREE_OPERAND (template_id, 1);
 
   if (fns == error_mark_node)
     return error_mark_node;
@@ -1084,7 +1089,10 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	    lookup_template_function (fns, NULL_TREE);
 	}
 
-      if (TREE_CODE (TREE_OPERAND (declarator, 0)) == LOOKUP_EXPR) 
+      if (declarator == error_mark_node)
+	return error_mark_node;
+
+      if (TREE_CODE (TREE_OPERAND (declarator, 0)) == LOOKUP_EXPR)
 	{
 	  /* A friend declaration.  We can't do much, because we don't
 	   know what this resolves to, yet.  */

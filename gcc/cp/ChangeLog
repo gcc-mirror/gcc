@@ -1,3 +1,12 @@
+1998-06-12  Brendan Kehoe  <brendan@cygnus.com>
+
+	* pt.c (check_explicit_specialization): If DECLARATOR turned into
+	an error_mark_node from lookup_template_function, return the same.
+	(determine_specialization): Also make sure TEMPLATE_ID isn't an
+	error_mark_node, before we try to read its operands.
+	* decl.c (grokdeclarator): If we got an error_mark_node from
+	check_explicit_specialization, just return it right back.
+
 1998-06-12  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (instantiate_type): Don't treat template-ids that don't
