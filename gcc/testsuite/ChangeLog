@@ -1,3 +1,7 @@
+2003-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/builtin-constant.x: Only expect failure at -O1.
+
 2003-01-27  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	PR c++/47
