@@ -1,3 +1,9 @@
+2000-01-30  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (negtf2, abstf2): Fix word order thinko.
+	(extendsftf2): New.
+	(trunctfsf2): Avoid intermediate rounding errors.
+
 2000-01-30  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (find_position): Drop 'colp' argument, return the

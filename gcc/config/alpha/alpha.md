@@ -1808,18 +1808,18 @@
   move = 1;
   if (rtx_equal_p (operands[0], operands[2]))
     move = 0;
-  else if (rtx_equal_p (operands[0], operands[3]))
+  else if (rtx_equal_p (operands[1], operands[2]))
     move = -1;
 
   if (move < 0)
-    emit_move_insn (operands[1], operands[3]);
+    emit_move_insn (operands[0], operands[2]);
 
   tmp = gen_rtx_NOT (DImode, operands[4]);
-  tmp = gen_rtx_AND (DImode, tmp, operands[2]);
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], tmp));
+  tmp = gen_rtx_AND (DImode, tmp, operands[3]);
+  emit_insn (gen_rtx_SET (VOIDmode, operands[1], tmp));
 	
   if (move > 0)
-    emit_move_insn (operands[1], operands[3]);
+    emit_move_insn (operands[0], operands[2]);
   DONE;
 }")
 
@@ -1873,16 +1873,16 @@
   move = 1;
   if (rtx_equal_p (operands[0], operands[2]))
     move = 0;
-  else if (rtx_equal_p (operands[0], operands[3]))
+  else if (rtx_equal_p (operands[1], operands[2]))
     move = -1;
 
   if (move < 0)
-    emit_move_insn (operands[1], operands[3]);
+    emit_move_insn (operands[0], operands[2]);
 
-  emit_insn (gen_xordi3 (operands[0], operands[2], operands[4]));
+  emit_insn (gen_xordi3 (operands[1], operands[3], operands[4]));
 	
   if (move > 0)
-    emit_move_insn (operands[1], operands[3]);
+    emit_move_insn (operands[0], operands[2]);
   DONE;
 }")
 
@@ -2179,6 +2179,18 @@
    st%- %1,%0"
   [(set_attr "type" "fcpys,fld,fst")])
 
+(define_expand "extendsftf2"
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:SF 1 "general_operand" ""))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "
+{
+  rtx tmp = gen_reg_rtx (DFmode);
+  emit_insn (gen_extendsfdf2 (tmp, operands[1]));
+  emit_insn (gen_extenddftf2 (operands[0], tmp));
+  DONE;
+}")
+
 (define_expand "extenddftf2"
   [(use (match_operand:TF 0 "register_operand" ""))
    (use (match_operand:DF 1 "general_operand" ""))]
@@ -2207,19 +2219,30 @@
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (FLOAT_TRUNCATE, operands); DONE;")
 
-;; ??? This isn't quite right, as rounding isn't correct.  But it's
-;; extremely tortureous to do this correctly with the functionality
-;; availible in the library.
-
 (define_expand "trunctfsf2"
   [(use (match_operand:SF 0 "register_operand" ""))
    (use (match_operand:TF 1 "general_operand" ""))]
   "TARGET_HAS_XFLOATING_LIBS"
   "
 {
-  rtx tmp = gen_reg_rtx (DFmode);
-  emit_insn (gen_trunctfdf2 (tmp, operands[1]));
-  emit_insn (gen_truncdfsf2 (operands[0], tmp));
+  rtx tmpf, sticky, arg, lo, hi;
+
+  tmpf = gen_reg_rtx (DFmode);
+  sticky = gen_reg_rtx (DImode);
+  arg = copy_to_mode_reg (TFmode, operands[1]);
+  lo = gen_lowpart (DImode, arg);
+  hi = gen_highpart (DImode, arg);
+
+  /* Convert the low word of the TFmode value into a sticky rounding bit,
+     then or it into the low bit of the high word.  This leaves the sticky
+     bit at bit 48 of the fraction, which is representable in DFmode,
+     which prevents rounding error in the final conversion to SFmode.  */
+
+  emit_insn (gen_rtx_SET (VOIDmode, sticky, 
+			  gen_rtx_LTU (DImode, const0_rtx, lo)));
+  emit_insn (gen_iordi3 (hi, hi, sticky));
+  emit_insn (gen_trunctfdf2 (tmpf, arg));
+  emit_insn (gen_truncdfsf2 (operands[0], tmpf));
   DONE;
 }")
 
