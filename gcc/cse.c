@@ -6676,6 +6676,10 @@ cse_set_around_loop (rtx x, rtx insn, rtx loop_start)
 			  }
 			else
 			  {
+			    if (CONSTANT_P (SET_SRC (set))
+				&& ! find_reg_equal_equiv_note (insn))
+			      set_unique_reg_note (insn, REG_EQUAL,
+						   SET_SRC (set));
 			    if (control_flow_insn_p (p))
 			      /* p can cause a control flow transfer so it
 				 is the last insn of a basic block.  We can't
