@@ -3698,7 +3698,12 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	 since we are saying that the high bits don't matter.  */
       if (CONSTANT_P (SUBREG_REG (x)) && GET_MODE (SUBREG_REG (x)) == VOIDmode
 	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (op0_mode))
-	return SUBREG_REG (x);
+	{
+	  if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
+	      && (WORDS_BIG_ENDIAN || SUBREG_WORD (x) != 0))
+	    return operand_subword (SUBREG_REG (x), SUBREG_WORD (x), 0, mode);
+	  return SUBREG_REG (x);
+	}
 
       /* Note that we cannot do any narrowing for non-constants since
 	 we might have been counting on using the fact that some bits were
@@ -7112,6 +7117,12 @@ if_then_else_cond (x, ptrue, pfalse)
 	   && 0 != (cond0 = if_then_else_cond (SUBREG_REG (x),
 					       &true0, &false0)))
     {
+      if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
+	  && (WORDS_BIG_ENDIAN || SUBREG_WORD (x) != 0))
+	{
+	  true0 = operand_subword (true0, SUBREG_WORD (x), 0, mode);
+	  false0 = operand_subword (false0, SUBREG_WORD (x), 0, mode);
+	}
       *ptrue = force_to_mode (true0, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
       *pfalse
 	= force_to_mode (false0, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
