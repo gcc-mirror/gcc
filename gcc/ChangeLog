@@ -1,3 +1,9 @@
+2003-02-18  Roger Sayle  <roger@eyesopen.com>
+
+	* sbitmap.c (sbitmap_resize): New function.
+	* sbitmap.h (sbitmap_resize): Prototype here.
+	* recog.c (split_all_insns): Use sbitmap_resize.
+
 2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*zero_extendhisi2_h8300): Fix the

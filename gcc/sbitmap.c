@@ -1,5 +1,5 @@
 /* Simple bitmaps.
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,6 +43,64 @@ sbitmap_alloc (n_elms)
   amt = (sizeof (struct simple_bitmap_def)
 	 + bytes - sizeof (SBITMAP_ELT_TYPE));
   bmap = (sbitmap) xmalloc (amt);
+  bmap->n_bits = n_elms;
+  bmap->size = size;
+  bmap->bytes = bytes;
+  return bmap;
+}
+
+/* Resize a simple bitmap BMAP to N_ELMS bits.  If increasing the
+   size of BMAP, clear the new bits to zero if the DEF argument
+   is zero, and set them to one otherwise.  */
+
+sbitmap
+sbitmap_resize (bmap, n_elms, def)
+     sbitmap bmap;
+     unsigned int n_elms;
+     int def;
+{
+  unsigned int bytes, size, amt;
+  unsigned int last_bit;
+
+  size = SBITMAP_SET_SIZE (n_elms);
+  bytes = size * sizeof (SBITMAP_ELT_TYPE);
+  if (bytes > bmap->bytes)
+    {
+      amt = (sizeof (struct simple_bitmap_def)
+	    + bytes - sizeof (SBITMAP_ELT_TYPE));
+      bmap = (sbitmap) xrealloc ((PTR) bmap, amt);
+    }
+
+  if (n_elms > bmap->n_bits)
+    {
+      if (def)
+	{
+	  memset ((PTR) (bmap->elms + bmap->size), -1, bytes - bmap->bytes);
+
+	  /* Set the new bits if the original last element.  */
+	  last_bit = bmap->n_bits % SBITMAP_ELT_BITS;
+	  if (last_bit)
+	    bmap->elms[bmap->size - 1]
+	      |= ~((SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit));
+
+	  /* Clear the unused bit in the new last element.  */
+	  last_bit = n_elms % SBITMAP_ELT_BITS;
+	  if (last_bit)
+	    bmap->elms[size - 1]
+	      &= (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
+	}
+      else
+	memset ((PTR) (bmap->elms + bmap->size), 0, bytes - bmap->bytes);
+    }
+  else if (n_elms < bmap->n_bits)
+    {
+      /* Clear the surplus bits in the last word. */
+      last_bit = n_elms % SBITMAP_ELT_BITS;
+      if (last_bit)
+	bmap->elms[size - 1]
+	  &= (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
+    }
+
   bmap->n_bits = n_elms;
   bmap->size = size;
   bmap->bytes = bytes;
