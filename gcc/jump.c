@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -55,9 +55,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "hard-reg-set.h"
 #include "regs.h"
-#include "expr.h"
 #include "insn-config.h"
 #include "insn-flags.h"
+#include "expr.h"
 #include "real.h"
 
 /* ??? Eventually must record somehow the labels used by jumps
