@@ -70,7 +70,7 @@ struct __cxa_exception
   int handlerSwitchValue;
   const unsigned char *actionRecord;
   const unsigned char *languageSpecificData;
-  void *catchTemp;
+  _Unwind_Ptr catchTemp;
   void *adjustedPtr;
 
   // The generic exception header.  Must be last.

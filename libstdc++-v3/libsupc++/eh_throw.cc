@@ -42,7 +42,10 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
 
   // If we haven't been caught by a foreign handler, then this is
   // some sort of unwind error.  In that case just die immediately.
-  if (code != _URC_FOREIGN_EXCEPTION_CAUGHT)
+  // _Unwind_DeleteException in the HP-UX IA64 libunwind library
+  //  returns _URC_NO_REASON and not _URC_FOREIGN_EXCEPTION_CAUGHT
+  // like the GCC _Unwind_DeleteException function does.
+  if (code != _URC_FOREIGN_EXCEPTION_CAUGHT && code != _URC_NO_REASON)
     __terminate (header->terminateHandler);
 
   if (header->exceptionDestructor)

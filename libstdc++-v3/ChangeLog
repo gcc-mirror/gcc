@@ -1,3 +1,12 @@
+2002-08-15  Steve Ellcey  <sje@cup.hp.com>
+
+	* libsupc++/unwind-cxx.h (__cxa_exception): Change catchTemp
+	type from void* to _Unwind_Ptr.
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION):
+	Do not cast landing_pad or base_of_encoded_value to (void *).
+	* libsupc++/eh_throw.cc (__gxx_exception_cleanup):
+	Accept _URC_NO_REASON as a valid reason code.
+
 2002-08-14  Jonathan Wakely  <jw@kayari.org>
 
 	* docs/html/22_locale/messages.html:  Use HTML entities for
