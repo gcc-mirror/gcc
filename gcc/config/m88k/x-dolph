@@ -1,6 +1,6 @@
 INSTALL = cp
 
 # Green Hills C on Dolphin UNIX System V/88 Release 3.2  Version 3.5/5.60 does
-# not proviede alloca.
+# not provide alloca.
 
 ALLOCA=alloca.o
