@@ -1,3 +1,7 @@
+2003-02-16  Mark Wielaard  <mark@klomp.org>
+
+	* libjava.mauve/xfails: Add Class.reflect2 and String.getBytes FAILs.
+
 2003-02-15  Mark Wielaard  <mark@klomp.org>
 
        * lib/libjava.exp (test_libjava_from_javac): Use regsub not string map.
