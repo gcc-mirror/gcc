@@ -106,7 +106,7 @@ proc verify-branches { testcase file } {
 		# All percentages in the current list should have been seen.
 		if {[llength $shouldbe] != 0} {
 		    if { $failed == 0 } {
-		        set bmessage "expected percentages not found: $shouldbe"
+		        set bmessage "expected branch percentages not found: $shouldbe"
 		    }
 		    incr failed
 		    set shouldbe ""
@@ -148,7 +148,7 @@ proc verify-branches { testcase file } {
 		# All percentages in the list should have been seen by now.
 		if {[llength $shouldbe] != 0} {
 		    if { $failed == 0 } {
-			set bmessage "expected percentages not found: $shouldbe"
+			set bmessage "expected branch percentages not found: $shouldbe"
 		    }
 		    incr failed
 		}
@@ -159,12 +159,91 @@ proc verify-branches { testcase file } {
     # All percentages in the list should have been seen.
     if {[llength $shouldbe] != 0} {
 	if { $failed == 0 } {
-	    set bmessage "expected percentages not found: $shouldbe"
+	    set bmessage "expected branch percentages not found: $shouldbe"
 	}
 	incr failed
     }
     close $fd
     return [list $failed $bmessage]
+}
+
+#
+# verify-calls -- check that call return percentages are as expected
+#
+# TESTCASE is the name of the test.
+# FILE is the name of the gcov output file.
+#
+# Checks are based on comments in the source file.  This means to look for
+# call return percentages 50, 20, 33:
+#     /* returns(50, 20, 33) */
+# This means that all specified percentages should have been seen by now:
+#     /* returns(end) */
+# All specified percentages must also be seen by the next returns(n) or
+# by the end of the file.
+#
+# Each check depends on the compiler having generated the expected
+# call instructions.  Don't check for calls that are inserted by the
+# compiler or that might be inlined.
+#
+proc verify-calls { testcase file } {
+    global cmessage
+    global subdir
+    set failed 0
+    set cmessage ""
+    set shouldbe ""
+    set fd [open $file r]
+    while { [gets $fd line] >= 0 } {
+	if [regexp "returns" $line] {
+	    verbose "Processing returns line: $line" 3
+	    if [regexp "returns\\((\[0-9 \]+)\\)" "$line" all new_shouldbe] {
+		# All percentages in the current list should have been seen.
+		if {[llength $shouldbe] != 0} {
+		    if { $failed == 0 } {
+		        set cmessage "expected return percentages not found: $shouldbe"
+		    }
+		    incr failed
+		    set shouldbe ""
+		}
+	        # Record the percentages to check for.
+		set shouldbe $new_shouldbe
+	    } elseif [regexp "call \[0-9\]+ returns = (-\[0-9\]+)%" "$line" all returns] {
+		# Percentages should never be negative.
+		if { $failed == 0 } {
+		    set cmessage "negative percentage: $returns"
+		}
+		incr failed
+	    } elseif [regexp "call \[0-9\]+ returns = (\[0-9\]+)%" "$line" all returns] {
+		# For branches we check that percentages are not greater than
+		# 100 but call return percentages can be, as for setjmp(), so
+		# don't count that as an error.
+		#
+		# If this percentage is one to check for then remove it
+		# from the list.  It's normal to ignore some reports.
+		set i [lsearch $shouldbe $returns]
+		if {$i != -1} {
+		    set shouldbe [lreplace $shouldbe $i $i]
+		}
+	    } elseif [regexp "returns\\(end\\)" "$line"] {
+		# All percentages in the list should have been seen by now.
+		if {[llength $shouldbe] != 0} {
+		    if { $failed == 0 } {
+			set cmessage "expected return percentages not found: $shouldbe"
+		    }
+		    incr failed
+		}
+		set shouldbe ""
+	    }
+	}
+    }
+    # All percentages in the list should have been seen.
+    if {[llength $shouldbe] != 0} {
+	if { $failed == 0 } {
+	    set cmessage "expected return percentages not found: $shouldbe"
+	}
+	incr failed
+    }
+    close $fd
+    return [list $failed $cmessage]
 }
 
 # Called by dg-final to run gcov and analyze the results.
@@ -202,30 +281,37 @@ proc run-gcov { args } {
     set lfailed [lindex $loutput 0]
     set lmessage [lindex $loutput 1]
 
-    # If we asked for branch information check that it is correct.
+    # If we asked for branch and call information, check that it is correct.
     if [regexp -- "-b" $args] {
 	set boutput [verify-branches $testcase $testcase.gcov]
 	set bfailed [lindex $boutput 0]
 	set bmessage [lindex $boutput 1]
+	set coutput [verify-calls $testcase $testcase.gcov]
+	set cfailed [lindex $coutput 0]
+	set cmessage [lindex $coutput 1]
     } else {
 	set bfailed 0
 	set bmessage ""
+	set cfailed 0
+	set cmessage ""
     }
 
     clean-gcov $testcase
 
     # Report whether the gcov test passed or failed.  If there were
     # multiple failures then the message is a summary.
-    set tfailed [expr $lfailed + $bfailed]
+    set tfailed [expr $lfailed + [expr $bfailed + $cfailed]]
     if { $tfailed > 0 } {
 	if { $tfailed == 1 } {
-	    set vmessage "$lmessage$bmessage"
-	} elseif { $bfailed == 0 } {
+	    set vmessage "$lmessage$bmessage$cmessage"
+	} elseif { $bfailed == 0 && $cfailed == 0 } {
 	    set vmessage "$lfailed failures in line counts"
-	} elseif { $lfailed == 0 } {
+	} elseif { $lfailed == 0 && $cfailed == 0 } {
 	    set vmessage "$bfailed failures in branch percentages"
+	} elseif { $lfailed == 0 && $bfailed == 0 } {
+	    set vmessage "$cfailed failures in return percentages"
 	} else {
-	    set vmessage "$lfailed failures in line counts, $bfailed in branch percentages"
+	    set vmessage "$lfailed failures in line counts, $bfailed in branch percentages, $cfailed in return percentages"
 	}
 	fail "$subdir/$testcase gcov: $vmessage"
     } else {
