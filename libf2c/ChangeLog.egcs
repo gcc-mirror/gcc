@@ -1,3 +1,7 @@
+Tue Jul 14 21:35:30 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* Makefile.in (all): Invoke $(MAKE) instead of just make.
+
 Tue Jul 14 02:16:34 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* libU77/Makefile.in (ALL_CFLAGS): Add -I$(F2C_H_DIR).
