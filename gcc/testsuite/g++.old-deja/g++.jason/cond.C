@@ -17,6 +17,22 @@ int main()
       char j;
     }
 
+  while (int i = 0)		// ERROR - XFAIL *-*-*
+    {
+      int i;			// ERROR - XFAIL *-*-*
+    }
+
+  for (; int i = 0; )		// ERROR - XFAIL *-*-*
+    {
+      int i;			// ERROR - XFAIL *-*-*
+    }
+
+  switch (int i = 0)		// ERROR - XFAIL *-*-*
+    {
+    default:
+      int i;			// ERROR - XFAIL *-*-*
+    }
+
   if (struct A { operator int () { return 1; } } *foo = new A) // ERROR - 
     ;
 
