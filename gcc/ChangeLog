@@ -1,3 +1,7 @@
+2001-12-17  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c: Remove is_gpr_return_reg prototype.
+
 2001-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* doc/cppinternals.texi: Update.
