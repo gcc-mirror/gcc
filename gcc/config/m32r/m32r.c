@@ -590,7 +590,7 @@ int
 call26_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (flag_pic)
-    return 0;
+    return 1;
 
   if (GET_CODE (op) == SYMBOL_REF)
     return SYMBOL_REF_MODEL (op) != M32R_MODEL_LARGE;
