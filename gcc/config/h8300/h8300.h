@@ -126,7 +126,7 @@ do {				\
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive
    but a CALL with constant address is cheap.  */
-#define NO_FUNCTION_CSE
+/* #define NO_FUNCTION_CSE */
 
 /* Target machine storage layout */
 
@@ -541,9 +541,8 @@ enum reg_class {
 
 /* 1 if N is a possible register number for function argument passing.
    On the H8, no registers are used in this way.  */
-/* ??? What about TARGET_QUICKCALL? */
 
-#define FUNCTION_ARG_REGNO_P(N) 0
+#define FUNCTION_ARG_REGNO_P(N) (TARGET_QUICKCALL ? N < 3 : 0)
 
 /* Register in which address to store a structure value
    is passed to a function.  */
@@ -551,8 +550,8 @@ enum reg_class {
 #define STRUCT_VALUE 0
 
 /* Return true if X should be returned in memory.  */
-/* ??? This will return small structs in regs.  */
-#define RETURN_IN_MEMORY(X) (GET_MODE_SIZE (TYPE_MODE (X)) > 4)
+#define RETURN_IN_MEMORY(X) \
+  (TYPE_MODE (X) == BLKmode || GET_MODE_SIZE (TYPE_MODE (X)) > 4)
 
 /* When defined, the compiler allows registers explicitly used in the
    rtl to be used as spill registers but prevents the compiler from
@@ -1342,3 +1341,4 @@ do { char dstr[30];					\
 /* Declarations for functions used in insn-output.c.  */
 char *emit_a_shift ();
 int h8300_funcvec_function_p ();
+char *output_adds_subs();

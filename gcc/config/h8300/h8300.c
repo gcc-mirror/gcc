@@ -431,6 +431,89 @@ call_insn_operand (op, mode)
   return 0;
 }
 
+int
+adds_subs_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == CONST_INT)
+    {
+      if (INTVAL (op) <= 4 && INTVAL (op) >= 0)
+	return 1;
+      if (INTVAL (op) >= -4 && INTVAL (op) <= 0)
+	return 1;
+      if (TARGET_H8300H
+	  && INTVAL (op) != 7
+	  && (INTVAL (op) <= 8 || INTVAL (op) >= 0))
+	return 1;
+      if (TARGET_H8300H
+	  && INTVAL (op) != -7
+	  && (INTVAL (op) >= -8 || INTVAL (op) <= 0))
+	return 1;
+    }
+  return 0;
+}
+
+char *
+output_adds_subs (operands)
+     rtx *operands;
+{
+  int val = INTVAL (operands[2]);
+
+  /* First get the value into the range -4..4 inclusive.
+
+     The only way it can be out of this range is when TARGET_H8300H
+     is true, thus it is safe to use adds #4 and subs #4.  */
+  if (val > 4)
+    {
+      output_asm_insn ("adds #4,%A0", operands);
+      val -= 4;
+    }
+
+  if (val < -4)
+    {
+      output_asm_insn ("subs #4,%A0", operands);
+      val += 4;
+    }
+
+  /* Handle case were val == 4 or val == -4 and we're compiling
+     for TARGET_H8300H.  */
+  if (TARGET_H8300H && val == 4)
+    return "adds #4,%A0";
+
+  if (TARGET_H8300H && val == -4)
+    return "subs #4,%A0";
+
+  if (val > 2)
+    {
+      output_asm_insn ("adds #2,%A0", operands);
+      val -= 2;
+    }
+
+  if (val < -2)
+    {
+      output_asm_insn ("subs #2,%A0", operands);
+      val += 2;
+    }
+
+  /* val should be one or two now.  */
+  if (val == 2)
+    return "adds #2,%A0";
+
+  if (val == -2)
+    return "subs #2,%A0";
+
+  /* val should be one now.  */
+  if (val == 1)
+    return "adds #1,%A0";
+
+  if (val == -1)
+    return "subs #1,%A0";
+
+  /* In theory, this can't happen.  */
+  abort ();
+}
+
 /* Return true if OP is a valid call operand, and OP represents
    an operand for a small call (4 bytes instead of 6 bytes).  */
 
