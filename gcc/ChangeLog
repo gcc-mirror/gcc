@@ -1,3 +1,7 @@
+2003-06-25  Josef Zlomek  <zlomekj@suse.cz>
+
+	* dwarf2out.c (gen_field_die): Return if type of decl is error mark.
+
 2003-06-25  Neil Booth  <neil@daikokuya.co.uk>
 
 	* opts.c (common_handle_option): Add missing break;s.
