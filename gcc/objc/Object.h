@@ -52,9 +52,13 @@ typedef char *STR;                              /* String alias */
 
 @class Protocol;
 typedef struct objc_typed_stream TypedStream;
-typedef void* arglist_t;
 
 #endif /* not __objc_INCLUDE_GNU */
+
+#ifndef __AF_FRAME
+typedef struct __gnuc_af_frame *af_frame;
+#define __AF_FRAME
+#endif
 
 /*
  * All classes are derived from Object.  As such,
@@ -119,8 +123,8 @@ typedef void* arglist_t;
 - perform:(SEL)aSel with:anObject1 with:anObject2;
 
         /* Forwarding */
-- forward:(SEL)aSel :(arglist_t)argFrame;
-- performv:(SEL)aSel :(arglist_t)argFrame;
+- forward:(SEL)aSel :(af_frame)argFrame;
+- performv:(SEL)aSel :(af_frame)argFrame;
 
         /* Posing */
 + poseAs:(Class*)aClassObject;

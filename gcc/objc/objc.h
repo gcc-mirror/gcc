@@ -440,36 +440,12 @@ IMP objc_msg_lookup_super(Super_t super, SEL sel);
 typedef void* retval_t;		/* return value */
 typedef void(*apply_t)(void);	/* function pointer */
 
-#ifndef __object_INCLUDE_GNU
-
-#if defined(REG_ARGS) || defined(STACK_ARGS) 
-
-typedef struct {
-  char* arg_pointer;
-#ifdef STRUCT_RETURN
-  void* struct_return;
+#ifndef __AF_FRAME
+typedef struct __gnuc_af_frame *af_frame;
+#define __AF_FRAME
 #endif
-#ifdef REG_ARGS
-  void* regs[2];
-#endif
-} *arglist_t;
 
-#ifdef REG_ARGS
-#define __objc_frame_receiver(FRAME)  (FRAME)->regs[0]
-#define __objc_frame_selector(FRAME)  ((SEL)(FRAME)->regs[1])
-
-#else
-#define __objc_frame_receiver(FRAME) ((id*)(FRAME)->arg_pointer)[0]
-#define __objc_frame_selector(FRAME) ((SEL*)(FRAME)->arg_pointer)[1]
-#endif
-#else
-
-typedef void* arglist_t;
-
-#endif
-#endif /* not __object_INCLUDE_GNU */
-
-retval_t objc_msg_sendv(id, SEL, size_t, arglist_t);
+retval_t objc_msg_sendv(id, SEL, size_t, af_frame);
 
 #ifdef __OBJC__
 
