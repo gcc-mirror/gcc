@@ -1,5 +1,7 @@
 1999-07-13  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* template5.C: New test.
+
 	* template4.C: New test.
 
 	* expr1.C: New test.
