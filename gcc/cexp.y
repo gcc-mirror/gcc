@@ -460,13 +460,13 @@ yylex ()
 {
   register int c;
   register int namelen;
-  register char *tokstart;
+  register unsigned char *tokstart;
   register struct token *toktab;
   int wide_flag;
 
  retry:
 
-  tokstart = lexptr;
+  tokstart = (unsigned char *) lexptr;
   c = *tokstart;
   /* See if it is a special token of length 2.  */
   if (! keyword_parsing)
@@ -522,7 +522,7 @@ yylex ()
 	else if (c == '\'')
 	  break;
       }
-      yylval.name.address = (U_CHAR *) tokstart;
+      yylval.name.address = tokstart;
       yylval.name.length = lexptr - start_ptr;
       return NAME;
     }
@@ -677,7 +677,7 @@ yylex ()
 	else if (c == '"')
 	  break;
       }
-      yylval.name.address = (U_CHAR *) tokstart;
+      yylval.name.address = tokstart;
       yylval.name.length = lexptr - start_ptr;
       return NAME;
     }
@@ -716,7 +716,7 @@ yylex ()
   }
   
   lexptr += namelen;
-  yylval.name.address = (U_CHAR *) tokstart;
+  yylval.name.address = tokstart;
   yylval.name.length = namelen;
   return NAME;
 }
