@@ -865,6 +865,116 @@ LSYM(Lover12):
 	
 #endif /* L_dvmd_lnx */
 /* ------------------------------------------------------------------------ */
+/* Dword shift operations.  */
+/* All the following Dword shift variants rely on the fact that
+	shft xxx, Reg
+   is in fact done as
+	shft xxx, (Reg & 255)
+   so for Reg value in (32...63) and (-1...-31) we will get zero (in the
+   case of logical shifts) or the sign (for asr).  */
+
+#ifdef __ARMEB__
+#define al	r1
+#define ah	r0
+#else
+#define al	r0
+#define ah	r1
+#endif
+
+#ifdef L_lshrdi3
+
+	FUNC_START lshrdi3
+
+#ifdef __thumb__
+	lsr	al, r2
+	mov	r3, ah
+	lsr	ah, r2
+	mov	ip, r3
+	sub	r2, #32
+	lsr	r3, r2
+	orr	al, r3
+	neg	r2, r2
+	mov	r3, ip
+	lsl	r3, r2
+	orr	al, r3
+	RET
+#else
+	subs	r3, r2, #32
+	rsb	ip, r2, #32
+	movmi	al, al, lsr r2
+	movpl	al, ah, lsr r3
+	orrmi	al, al, ah, lsl ip
+	mov	ah, ah, lsr r2
+	RET
+#endif
+	FUNC_END lshrdi3
+
+#endif
+	
+#ifdef L_ashrdi3
+	
+	FUNC_START ashrdi3
+#ifdef __thumb__
+	lsr	al, r2
+	mov	r3, ah
+	asr	ah, r2
+	sub	r2, #32
+	@ If r2 is negative at this point the following step would OR
+	@ the sign bit into all of AL.  That's not what we want...
+	bmi	1f
+	mov	ip, r3
+	asr	r3, r2
+	orr	al, r3
+	mov	r3, ip
+1:
+	neg	r2, r2
+	lsl	r3, r2
+	orr	al, r3
+	RET
+#else
+	subs	r3, r2, #32
+	rsb	ip, r2, #32
+	movmi	al, al, lsr r2
+	movpl	al, ah, asr r3
+	orrmi	al, al, ah, lsl ip
+	mov	ah, ah, asr r2
+	RET
+#endif
+
+	FUNC_END ashrdi3
+
+#endif
+
+#ifdef L_ashldi3
+
+	FUNC_START ashldi3
+#ifdef __thumb__
+	lsl	ah, r2
+	mov	r3, al
+	lsl	al, r2
+	mov	ip, r3
+	sub	r2, #32
+	lsl	r3, r2
+	orr	ah, r3
+	neg	r2, r2
+	mov	r3, ip
+	lsr	r3, r2
+	orr	ah, r3
+	RET
+#else
+	subs	r3, r2, #32
+	rsb	ip, r2, #32
+	movmi	ah, ah, lsl r2
+	movpl	ah, al, lsl r3
+	orrmi	ah, ah, al, lsr ip
+	mov	al, al, lsl r2
+	RET
+#endif
+	FUNC_END ashldi3
+
+#endif
+
+/* ------------------------------------------------------------------------ */
 /* These next two sections are here despite the fact that they contain Thumb 
    assembler because their presence allows interworked code to be linked even
    when the GCC library is this one.  */
