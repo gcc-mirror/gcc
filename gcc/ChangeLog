@@ -1,5 +1,12 @@
 2004-07-03  Richard Henderson  <rth@redhat.com>
 
+	PR tree-optimization/16341
+	* tree-sra.c (sra_walk_function): Increment to next stmt before
+	processing the current stmt.
+	(sra_insert_after): Always use BSI_SAME_STMT.
+
+2004-07-03  Richard Henderson  <rth@redhat.com>
+
 	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Don't fold
 	fp plus with minus.
 
