@@ -441,7 +441,25 @@ do {									\
 #define FIRST_XD_REG XD0_REG
 #define LAST_XD_REG  (FIRST_XD_REG + 7)
 
-#define SPECIAL_REG(REGNO) \
+#define GENERAL_REGISTER_P(REGNO) \
+  ((REGNO) >= FIRST_GENERAL_REG && (REGNO) <= LAST_GENERAL_REG)
+
+#define GENERAL_OR_AP_REGISTER_P(REGNO) \
+  (GENERAL_REGISTER_P (REGNO) || ((REGNO) == AP_REG))
+
+#define FP_REGISTER_P(REGNO) \
+  ((REGNO) >= FIRST_FP_REG && (REGNO) <= LAST_FP_REG)
+
+#define XD_REGISTER_P(REGNO) \
+  ((REGNO) >= FIRST_XD_REG && (REGNO) <= LAST_XD_REG)
+
+#define FP_OR_XD_REGISTER_P(REGNO) \
+  (FP_REGISTER_P (REGNO) || XD_REGISTER_P (REGNO))
+
+#define FP_ANY_REGISTER_P(REGNO) \
+  (FP_REGISTER_P (REGNO) || XD_REGISTER_P (REGNO) || (REGNO) == FPUL_REG)
+
+#define SPECIAL_REGISTER_P(REGNO) \
   ((REGNO) == GBR_REG || (REGNO) == T_REG \
    || (REGNO) == MACH_REG || (REGNO) == MACL_REG)
 
@@ -500,7 +518,7 @@ do {									\
    On the SH all but the XD regs are UNITS_PER_WORD bits wide.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE) \
-   ((REGNO) >= FIRST_XD_REG && (REGNO) <= LAST_XD_REG \
+   (XD_REGISTER_P (REGNO) \
     ? (GET_MODE_SIZE (MODE) / (2 * UNITS_PER_WORD)) \
     : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)) \
 
@@ -517,16 +535,16 @@ do {									\
    and a secondary reload to reload from / to general regs; that
    seems to be a loosing proposition.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)		\
-  (SPECIAL_REG (REGNO) ? (MODE) == SImode	\
+  (SPECIAL_REGISTER_P (REGNO) ? (MODE) == SImode \
    : (REGNO) == FPUL_REG ? (MODE) == SImode || (MODE) == SFmode	\
-   : (REGNO) >= FIRST_FP_REG && (REGNO) <= LAST_FP_REG && (MODE) == SFmode \
+   : FP_REGISTER_P (REGNO) && (MODE) == SFmode \
    ? 1 \
-   : (REGNO) >= FIRST_FP_REG && (REGNO) <= LAST_FP_REG \
+   : FP_REGISTER_P (REGNO) \
    ? ((MODE) == SFmode \
       || (TARGET_SH3E && (MODE) == SCmode) \
       || (((TARGET_SH4 && (MODE) == DFmode) || (MODE) == DCmode) \
 	  && (((REGNO) - FIRST_FP_REG) & 1) == 0)) \
-   : (REGNO) >= FIRST_XD_REG && (REGNO) <= LAST_XD_REG \
+   : XD_REGISTER_P (REGNO) \
    ? (MODE) == DFmode \
    : (REGNO) == PR_REG ? 0			\
    : (REGNO) == FPSCR_REG ? (MODE) == PSImode \
@@ -815,10 +833,10 @@ extern enum reg_class reg_class_from_letter[];
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X) \
   ((((((CLASS) == FP_REGS || (CLASS) == FP0_REGS			\
 	|| (CLASS) == DF_REGS)						\
-      && (GET_CODE (X) == REG && REGNO (X) <= AP_REG))			\
+      && (GET_CODE (X) == REG && GENERAL_OR_AP_REGISTER_P (REGNO (X))))	\
      || (((CLASS) == GENERAL_REGS || (CLASS) == R0_REGS)		\
 	 && GET_CODE (X) == REG						\
-	 && REGNO (X) >= FIRST_FP_REG && REGNO (X) <= LAST_FP_REG))	\
+	 && FP_REGISTER_P (REGNO (X))))					\
     && MODE == SFmode)							\
    ? FPUL_REGS								\
    : ((CLASS) == FPUL_REGS						\
@@ -829,7 +847,7 @@ extern enum reg_class reg_class_from_letter[];
 		  || system_reg_operand (X, VOIDmode)))))		\
    ? GENERAL_REGS							\
    : (((CLASS) == MAC_REGS || (CLASS) == PR_REGS)			\
-      && GET_CODE (X) == REG && REGNO (X) > SP_REG			\
+      && GET_CODE (X) == REG && ! GENERAL_REGISTER_P (REGNO (X))	\
       && (CLASS) != REGNO_REG_CLASS (REGNO (X)))			\
    ? GENERAL_REGS : NO_REGS)
 
@@ -1265,7 +1283,8 @@ extern int current_function_anonymous_args;
    has been allocated, which happens in local-alloc.c.  */
 
 #define REGNO_OK_FOR_BASE_P(REGNO) \
-  ((REGNO) < PR_REG || (unsigned) reg_renumber[(REGNO)] < PR_REG)
+  (GENERAL_OR_AP_REGISTER_P (REGNO) \
+   || GENERAL_OR_AP_REGISTER_P (reg_renumber[(REGNO)]))
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
   ((REGNO) == R0_REG || (unsigned) reg_renumber[(REGNO)] == R0_REG)
 
@@ -1297,7 +1316,7 @@ extern int current_function_anonymous_args;
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-  (REGNO (X) <= AP_REG || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  (GENERAL_OR_AP_REGISTER_P (REGNO (X)) || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */

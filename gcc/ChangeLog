@@ -1,3 +1,13 @@
+Fri Nov 24 19:54:36 2000  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.h (GENERAL_REGISTER_P,
+	GENERAL_OR_AP_REGISTER_P, FP_REGISTER_P, XD_REGISTER_P,
+	FP_OR_XD_REGISTER_P, FP_ANY_REGISTER_P): New macros.  Use them
+	all over.
+	(SPECIAL_REG): Renamed to SPECIAL_REGISTER_P.
+	* config/sh/sh.c: Use new macros.
+	* config/sh/sh.md: Likewise.
+
 Fri Nov 24 19:46:16 2000  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md: Clobber MACH_REG and MACL_REG in SImode,

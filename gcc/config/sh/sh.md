@@ -2794,8 +2794,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))
    (clobber (match_scratch:SI 3 "X"))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
-   && true_regnum (operands[0]) >= FIRST_FP_REG
-   && true_regnum (operands[1]) >= FIRST_FP_REG"
+   && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))
+   && FP_OR_XD_REGISTER_P (true_regnum (operands[1]))"
   [(const_int 0)]
   "
 {
@@ -2813,7 +2813,7 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))
    (clobber (match_scratch:SI 3 "X"))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
-   && true_regnum (operands[0]) >= FIRST_FP_REG
+   && FP_OR_XD_REGISTER_P (operands[0])
    && find_regno_note (insn, REG_DEAD, true_regnum (operands[1]))"
   [(const_int 0)]
   "
@@ -2839,7 +2839,7 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))
    (clobber (match_scratch:SI 3 "X"))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
-   && true_regnum (operands[0]) >= FIRST_FP_REG"
+   && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))"
   [(const_int 0)]
   "
 {
@@ -2880,7 +2880,7 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))
    (clobber (match_scratch:SI 3 "X"))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
-   && true_regnum (operands[1]) >= FIRST_FP_REG"
+   && FP_OR_XD_REGISTER_P (true_regnum (operands[1]))"
   [(const_int 0)]
   "
 {
@@ -4967,9 +4967,10 @@
    (set (mem:SF (match_dup 0))
 	(match_operand:SF 2 "general_movsrc_operand" ""))]
   "REGNO (operands[0]) == 0
-   && ((GET_CODE (operands[2]) == REG && REGNO (operands[2]) >= FIRST_FP_REG)
+   && ((GET_CODE (operands[2]) == REG
+        && FP_OR_XD_REGISTER_P (REGNO (operands[2])))
        || (GET_CODE (operands[2]) == SUBREG
-	   && REGNO (SUBREG_REG (operands[2])) >= FIRST_FP_REG))
+	   && FP_OR_XD_REGISTER_P (REGNO (SUBREG_REG (operands[2])))))
    && reg_unused_after (operands[0], insn)"
   "fmov{.s|}	%2,@(%0,%1)")
 
@@ -4980,9 +4981,10 @@
 
 	(mem:SF (match_dup 0)))]
   "REGNO (operands[0]) == 0
-   && ((GET_CODE (operands[2]) == REG && REGNO (operands[2]) >= FIRST_FP_REG)
+   && ((GET_CODE (operands[2]) == REG
+	&& FP_OR_XD_REGISTER_P (REGNO (operands[2])))
        || (GET_CODE (operands[2]) == SUBREG
-	   && REGNO (SUBREG_REG (operands[2])) >= FIRST_FP_REG))
+	   && FP_OR_XD_REGISTER_P (REGNO (SUBREG_REG (operands[2])))))
    && reg_unused_after (operands[0], insn)"
   "fmov{.s|}	@(%0,%1),%2")
 
