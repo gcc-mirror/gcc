@@ -82,7 +82,7 @@ struct directive
 static void skip_rest_of_line	PARAMS ((cpp_reader *));
 static void check_eol		PARAMS ((cpp_reader *));
 static void run_directive	PARAMS ((cpp_reader *, int,
-					 const char *, unsigned int,
+					 const char *, size_t,
 					 const char *));
 static int glue_header_name	PARAMS ((cpp_reader *, cpp_token *));
 static int  parse_include	PARAMS ((cpp_reader *, cpp_token *));
