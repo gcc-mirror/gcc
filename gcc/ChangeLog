@@ -1,3 +1,17 @@
+Sat Apr 25 17:55:54 1998  John Carr  <jfc@mit.edu>
+
+	* alias.c (alias_invariant): New variable.
+	(record_base_value): New argument INVARIANT.
+	(memrefs_conflict_p): If a register has an entry in the alias_invariant
+	array, try substituting that value for the register.
+
+	* rtl.h: Declare record_base_value.
+
+	* loop.c, unroll.c: Update callers of record_base_value.
+
+	* alias.c (find_base_value, find_base_term): SIGN_EXTEND and
+	ZERO_EXTEND do not affect base values.
+
 Fri Apr 24 15:57:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* dbxout.c (dbxout_type): Fix typo.

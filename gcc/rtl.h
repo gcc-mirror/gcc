@@ -1402,4 +1402,6 @@ extern void init_alias_once		PROTO ((void));
 extern void init_alias_analysis		PROTO ((void));
 extern void end_alias_analysis		PROTO ((void));
 
+extern void record_base_value		PROTO ((int, rtx, int));
+
 #endif /* _RTL_H */
