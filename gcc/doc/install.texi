@@ -293,7 +293,8 @@ systems' @command{tar} programs will also work, only try GNU
 Necessary when modifying @file{configure.in}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.  Most
 directories require autoconf 2.13 (exactly), but @file{libiberty},
-@file{fastjar}, and @file{libstdc++-v3} require autoconf 2.57 (exactly).
+@file{fastjar}, @file{libstdc++-v3}, and @file{gcc} require
+autoconf 2.57 (exactly).
 
 @item automake versions 1.4-p? and 1.7.?
 
