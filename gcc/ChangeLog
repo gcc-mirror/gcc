@@ -1,3 +1,8 @@
+Tue Mar 13 22:22:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (handled_component_p, can_address_p): New functions.
+	(get_alias_set): Use them.
+
 2001-03-13  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/ia64.c (find_gr_spill): Subtract frame_pointer_needed
