@@ -67,7 +67,9 @@ void operator delete(void* p) throw()
 }
 
 typedef std::string value_t;
-typedef __gnu_cxx::__per_type_pool_policy<value_t, false> policy_type;
+using __gnu_cxx::__pool;
+using __gnu_cxx::__per_type_pool_policy;
+typedef __per_type_pool_policy<value_t, __pool, false> policy_type;
 typedef __gnu_cxx::__mt_alloc<value_t, policy_type> allocator_type;
 typedef std::char_traits<value_t> traits_type;
 typedef std::list<value_t, allocator_type> list_type;

@@ -29,10 +29,14 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   typedef __gnu_test::pod_int value_type;
+
+  using __gnu_cxx::__pool;
+  using __gnu_cxx::__common_pool_policy;
+
 #ifdef __GTHREADS
-  typedef __gnu_cxx::__common_pool_policy<true> policy_type;
+  typedef __common_pool_policy<__pool, true> policy_type;
 #else
-  typedef __gnu_cxx::__common_pool_policy<false> policy_type;
+  typedef __common_pool_policy<__pool, false> policy_type;
 #endif
   typedef __gnu_cxx::__mt_alloc<value_type, policy_type> allocator_type;
   typedef __gnu_cxx::__pool_base::_Tune tune_type;
