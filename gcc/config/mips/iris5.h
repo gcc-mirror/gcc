@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #define ABICALLS_ASM_OP ".option pic2"
 
+#include "mips/iris3.h"
+#include "mips/mips.h"
 #include "mips/iris4.h"
 
 /* Irix 5 doesn't use COFF, so disable special COFF handling in collect2.c.  */
