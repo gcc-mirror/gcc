@@ -2002,55 +2002,55 @@ msgstr "Operandennummer mit unterdrückter Zuweisung angegeben"
 
 #: c-format.c:2097
 msgid "operand number specified for format taking no argument"
-msgstr ""
+msgstr "Operandennummer angegeben für Format ohne Argumente"
 
 #: c-format.c:2211
 #, c-format
 msgid "writing through null pointer (arg %d)"
-msgstr ""
+msgstr "Schreiben mit Null-Zeiger (Argument %d)"
 
 #: c-format.c:2220
 #, c-format
 msgid "reading through null pointer (arg %d)"
-msgstr ""
+msgstr "Lesen mit Null-Zeiger (Argument %d)"
 
 #: c-format.c:2240
 #, c-format
 msgid "writing into constant object (arg %d)"
-msgstr ""
+msgstr "Schreiben in konstantes Objekt (Argument %d)"
 
 #: c-format.c:2250
 #, c-format
 msgid "extra type qualifiers in format argument (arg %d)"
-msgstr ""
+msgstr "Zusätzliche Typqualifizierer in Format-Argument (Argument %d)"
 
 #: c-format.c:2257
 #, c-format
 msgid "format argument is not a pointer (arg %d)"
-msgstr ""
+msgstr "Format-Argument ist kein Zeiger (Argument %d)"
 
 #: c-format.c:2259
 #, c-format
 msgid "format argument is not a pointer to a pointer (arg %d)"
-msgstr ""
+msgstr "Format-Argument ist kein Zeiger auf einen Zeiger (Argument %d)"
 
 #: c-format.c:2330
 msgid "pointer"
-msgstr ""
+msgstr "Zeiger"
 
 #: c-format.c:2332
 msgid "different type"
-msgstr ""
+msgstr "anderer Typ"
 
 #: c-format.c:2353
 #, c-format
 msgid "%s is not type %s (arg %d)"
-msgstr ""
+msgstr "%s ist nicht vom Typ %s (Argument %d)"
 
 #: c-format.c:2356
 #, c-format
 msgid "%s format, %s arg (arg %d)"
-msgstr ""
+msgstr "%s Format, %s Argument (Argument %d)"
 
 #: c-lex.c:153
 msgid "YYDEBUG not defined"
@@ -2058,130 +2058,130 @@ msgstr "YYDEBUG ist nicht definiert"
 
 #: c-lex.c:293
 msgid "badly nested C headers from preprocessor"
-msgstr ""
+msgstr "Schlecht geschachtelte C-Header vom Präprozessor"
 
 #: c-lex.c:336
 #, c-format
 msgid "ignoring #pragma %s %s"
-msgstr ""
+msgstr "Ignoriere #pragma %s %s"
 
 #: c-lex.c:386
 #, c-format
 msgid "universal-character-name '\\U%08x' not valid in identifier"
-msgstr ""
+msgstr "Universeller Zeichenname »\\U%08x« nicht gültig in Bezeichner"
 
 #: c-lex.c:632
 #, c-format
 msgid "universal-character-name '\\u%04x' not valid in identifier"
-msgstr ""
+msgstr "Universeller Zeichenname »\\u%04x« nicht gültig in Bezeichner"
 
 #: c-lex.c:695
 #, c-format
 msgid "stray '%c' in program"
-msgstr ""
+msgstr "Verirrtes »%c« im Programm"
 
 #: c-lex.c:697
 #, c-format
 msgid "stray '\\%o' in program"
-msgstr ""
+msgstr "Verirrtes »\\%o« im Programm"
 
 #: c-lex.c:854
 msgid "this decimal constant is unsigned only in ISO C90"
-msgstr ""
+msgstr "Diese Dezimalkonstante ist nur in ISO-C90 vorzeichenlos"
 
 #: c-lex.c:857
 msgid "this decimal constant would be unsigned in ISO C90"
-msgstr ""
+msgstr "Diese Dezimalkonstante wäre in ISO-C90 vorzeichenlos"
 
 #: c-lex.c:873
 #, c-format
 msgid "integer constant is too large for \"%s\" type"
-msgstr ""
+msgstr "Ganzzahlkonstante ist zu groß für »%s«-Typ"
 
 #: c-lex.c:941
 #, c-format
 msgid "floating constant exceeds range of \"%s\""
-msgstr ""
+msgstr "Fließkommakonstante überschreitet Wertebereich von »%s«"
 
 #: c-lex.c:977 cpplex.c:330 cpplex.c:668 cpplex.c:1942
 msgid "ignoring invalid multibyte character"
-msgstr "ungültiges Multibyte-Zeichen wird ignoriert"
+msgstr "Ungültiges Multibyte-Zeichen wird ignoriert"
 
 #: c-opts.c:355
 #, c-format
 msgid "missing argument to \"-%s\""
-msgstr ""
+msgstr "Fehlendes Argument für »-%s«"
 
 #: c-opts.c:359
 #, c-format
 msgid "no class name specified with \"-%s\""
-msgstr ""
+msgstr "Kein Klassenname mit »-%s« angegeben"
 
 #: c-opts.c:366
 #, c-format
 msgid "missing filename after \"-%s\""
-msgstr ""
+msgstr "Fehlender Dateiname hinter »-%s«"
 
 #: c-opts.c:371
 #, c-format
 msgid "missing target after \"-%s\""
-msgstr ""
+msgstr "Fehlendes Ziel hinter »-%s«"
 
 #: c-opts.c:505
 #, c-format
 msgid "options array incorrectly sorted: %s is before %s"
-msgstr ""
+msgstr "Optionenliste falsch sortiert: %s kommt vor %s"
 
 #: c-opts.c:550
 #, c-format
 msgid "too many filenames given.  Type %s --help for usage"
-msgstr ""
+msgstr "Zu viele Dateinamen angegeben. Geben sie »%s --help« ein für Hilfe"
 
 #: c-opts.c:937
 msgid "-Wno-strict-prototypes is not supported in C++"
-msgstr ""
+msgstr "-Wno-strict-prototypes wird in C++ nicht unterstützt"
 
 #: c-opts.c:1017
 #, c-format
 msgid "switch \"%s\" is no longer supported"
-msgstr ""
+msgstr "Option »%s« wird nicht mehr unterstützt"
 
 #: c-opts.c:1033
 #, c-format
 msgid "switch \"%s\" is deprecated, please see documentation for details"
-msgstr ""
+msgstr "Option »%s« ist veraltet, schauen sie in die Dokumentation für Details"
 
 #: c-opts.c:1153
 msgid "-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)"
-msgstr ""
+msgstr "-fhandle-exceptions wurde in -fexceptions umbenannt (und ist nun voreingestellt)"
 
 #: c-opts.c:1273
 msgid "output filename specified twice"
-msgstr ""
+msgstr "Ausgabedatei doppelt angegeben"
 
 #: c-opts.c:1387
 msgid "-Wformat-y2k ignored without -Wformat"
-msgstr ""
+msgstr "-Wformat-y2k wird ohne -Wformat ignoriert"
 
 #: c-opts.c:1389
 msgid "-Wformat-extra-args ignored without -Wformat"
-msgstr ""
+msgstr "-Wformat-extra-args wird ohne -Wformat ignoriert"
 
 #: c-opts.c:1391
 msgid "-Wformat-zero-length ignored without -Wformat"
-msgstr ""
+msgstr "-Wformat-zero-length wird ohne -Wformat ignoriert"
 
 #: c-opts.c:1393
 msgid "-Wformat-nonliteral ignored without -Wformat"
-msgstr ""
+msgstr "-Wformat-nonliteral wird ohne -Wformat ignoriert"
 
 #: c-opts.c:1395
 msgid "-Wformat-security ignored without -Wformat"
-msgstr ""
+msgstr "-Wformat-security wird ohne -Wformat ignoriert"
 
 #: c-opts.c:1397
 msgid "-Wmissing-format-attribute ignored without -Wformat"
-msgstr ""
+msgstr "-Wmissing-format-attribute wird ohne -Wformat ignoriert"
 
 #: c-opts.c:1419
 #, c-format
@@ -2191,17 +2191,17 @@ msgstr "Ausgabedatei »%s« wird geöffnet"
 #: c-opts.c:1474
 #, c-format
 msgid "opening dependency file %s"
-msgstr ""
+msgstr "Abhängigkeitsdatei »%s« wird geöffnet"
 
 #: c-opts.c:1484
 #, c-format
 msgid "closing dependency file %s"
-msgstr ""
+msgstr "Abhängigkeitsdatei »%s« wird geschlossen"
 
 #: c-opts.c:1487
 #, c-format
 msgid "when writing output to %s"
-msgstr ""
+msgstr "beim Schreiben der Ausgabe nach %s"
 
 #: c-opts.c:1567
 msgid "to generate dependencies you must specify either -M or -MM"
@@ -2210,7 +2210,7 @@ msgstr "Um Abhängigkeiten zu erzeugen müssen Sie entweder -M oder -MM angeben"
 #: c-opts.c:1715
 #, c-format
 msgid "\"-%c%s%s\" is valid for %s but not for %s"
-msgstr ""
+msgstr "\"-%c%s%s\" ist gültig für %s, aber nicht für %s"
 
 #. To keep the lines from getting too long for some compilers, limit
 #. to about 500 characters (6 lines) per chunk.
@@ -2224,6 +2224,17 @@ msgid ""
 "  -iwithprefixbefore <dir>  Add <dir> to the end of the main include path\n"
 "  -isystem <dir>            Add <dir> to the start of the system include path\n"
 msgstr ""
+"Optionen:\n"
+"  -include <Datei>          Inhalt von <Datei> vor anderen Dateien einfügen\n"
+"  -imacros <Datei>          Die Definition von Makros in <Datei> akzeptieren\n"
+"  -iprefix <Pfad>           <Pfad> als Präfix für die nächsten beiden Optionen\n"
+"                            angeben\n"
+"  -iwithprefix <Verz>       <Verz> zum Ende des System-Einfüge-Pfades\n"
+"                            hinzufügen\n"
+"  -iwithprefixbefore <Verz> <Verz> zum das Ende des Haupt-Einfüge-Pfades\n"
+"                            hinzufügen\n"
+"  -isystem <Verz>           <Verz> zum Anfang des System-Einfüge-Pfades\n"
+"                            hinzufügen\n"
 
 #: c-opts.c:1735
 msgid ""
@@ -2235,6 +2246,17 @@ msgid ""
 "  -nostdinc++               Do not search system include directories for C++\n"
 "  -o <file>                 Put output into <file>\n"
 msgstr ""
+"  -idirafter <Verz>         <Verz> zum Ende des System-Einfüge-Pfades\n"
+"                             hinzufügen\n"
+"  -I <Verz>                 <Verz> zum Anfang des Haupt-Einfüge-Pfades\n"
+"                             hinzufügen\n"
+"  -I-                       Feineinstellung des Einfügepfades; siehe info-\n"
+"                             Seiten\n"
+"  -nostdinc                 Keine System-Einfüge-Verzeichnisse durchsuchen\n"
+"                             (-isystem Verzeichnisse werden aber verwendet)\n"
+"  -nostdinc++               Keine System-Einfüge-Verzeichnisse nach C++\n"
+"                             durchsuchen\n"
+"  -o <Datei>                Ausgabe in <Datei> leiten\n"
 
 #: c-opts.c:1744
 msgid ""
@@ -2246,6 +2268,13 @@ msgid ""
 "  -W[no-]trigraphs          Warn if trigraphs are encountered\n"
 "  -W[no-]comment{s}         Warn if one comment starts inside another\n"
 msgstr ""
+"  -trigraphs                ISO-C-»Trigraphs« unterstützen\n"
+"  -std=<Name>               Standardkonformität angeben; eines von:\n"
+"                             gnu89, gnu99, c89, c99, iso9899:1990,\n"
+"                             iso9899:199409, iso9899:1999, c++98\n"
+"  -w                        Warnungen unterdrücken\n"
+"  -W[no-]trigraphs          Warnungen bei »Trigraphs«\n"
+"  -W[no-]comment{s}         Warnungen bei geschachtelten Kommentaren\n"
 
 #: c-opts.c:1753
 msgid ""
@@ -2253,6 +2282,11 @@ msgid ""
 "  -W[no-]undef              Warn if an undefined macro is used by #if\n"
 "  -W[no-]import             Warn about the use of the #import directive\n"
 msgstr ""
+"  -W[no-]traditional        Warnungen bei Merkmalen von traditionellem C\n"
+"  -W[no-]undef              Warnungen bei Verwendung undefinierter Makros\n"
+"                             mit #if\n"
+"  -W[no-]import             Warnungen über die Verwendung der Direktive\n"
+"                             #import\n"
 
 #: c-opts.c:1758
 msgid ""
@@ -2260,6 +2294,9 @@ msgid ""
 "  -W[no-]system-headers     Do not suppress warnings from system headers\n"
 "  -W[no-]all                Enable most preprocessor warnings\n"
 msgstr ""
+"  -W[no-]error              Alle Warnungen als Fehler behandeln\n"
+"  -W[no-]system-headers     Keine Warnungen von System-Headern unterdrücken\n"
+"  -W[no-]all                Die meisten Präprozessorwarnungen einschalten\n"
 
 #: c-opts.c:1763
 msgid ""
@@ -2270,6 +2307,14 @@ msgid ""
 "  -MF <file>                Write dependency output to the given file\n"
 "  -MG                       Treat missing header file as generated files\n"
 msgstr ""
+"  -M                        Make-Abhängigkeiten generieren\n"
+"  -MM                       Wie -M, aber System-Header ignorieren\n"
+"  -MD                       Make-Abhängigkeiten generieren und kompilieren\n"
+"  -MMD                      Wie -MD, aber System-Header ignorieren\n"
+"  -MF <Datei>               Abhängigkeiten-Ausgabe in die angegebene Datei\n"
+"                             schreiben\n"
+"  -MG                       Fehlende Header-Dateien als generierte Dateien\n"
+"                             behandeln\n"
 
 #: c-opts.c:1771
 msgid ""
@@ -2277,6 +2322,9 @@ msgid ""
 "  -MQ <target>              Add a MAKE-quoted target\n"
 "  -MT <target>              Add an unquoted target\n"
 msgstr ""
+"  -MP\t\t\t    Generiere falsche (phony) Ziele für Header\n"
+"  -MQ <Ziel>                MAKE-zitiertes Ziel hinzufügen\n"
+"  -MT <Ziel>                Ein unzitiertes Ziel hinzufügen\n"
 
 #: c-opts.c:1776
 msgid ""
@@ -2287,6 +2335,12 @@ msgid ""
 "  -U<macro>                 Undefine <macro> \n"
 "  -v                        Display the version number\n"
 msgstr ""
+"  -D<Makro>                 <Makro> mit Wert \"1\" definieren\n"
+"  -D<Makro>=<Wert>          <Makro> mit Wert <Wert> definieren\n"
+"  -A<Frage>=<Antwort>       Die <Antwort> auf <Frage> annehmen\n"
+"  -A-<Frage>=<Antwort>      Die <Antwort> auf <Frage> abschalten\n"
+"  -U<Makro>                 <Makro> löschen\n"
+"  -v                        Version anzeigen\n"
 
 #: c-opts.c:1784
 msgid ""
@@ -2297,6 +2351,13 @@ msgid ""
 "  -dN                       As -dD except that only the names are preserved\n"
 "  -dI                       Include #include directives in the output\n"
 msgstr ""
+"  -H                        Namen von Header-Dateien anzeigen wenn sie\n"
+"                             verwendet werden\n"
+"  -C                        Kommentare nicht streichen\n"
+"  -dM                       Am Ende eine Liste von Makrodefinitionen anzeigen\n"
+"  -dD                       Makrodefinitionen in der Ausgabe bewahren\n"
+"  -dN                       Wie -dD nur dass die Namen bewahrt werden\n"
+"  -dI                       #include-Anweisungen in die Ausgabe einfügen\n"
 
 #: c-opts.c:1792
 msgid ""
@@ -2306,6 +2367,11 @@ msgid ""
 "  -remap                    Remap file names when including files\n"
 "  --help                    Display this information\n"
 msgstr ""
+"  -f[no-]preprocessed       Eingabedatei als bereits vorverarbeitet behandeln\n"
+"  -ftabstop=<Zahl>          Tabulatorenabstand für Spaltenmeldungen\n"
+"  -P                        Keine #line-Direktiven generieren\n"
+"  -remap                    Dateinamen beim Einfügen neu abbilden\n"
+"  --help                    Diese Information anzeigen\n"
 
 #. Like YYERROR but do call yyerror.
 #: c-parse.y:55 parse.y:48 objc-parse.y:55
@@ -2314,55 +2380,55 @@ msgstr "Syntaxfehler"
 
 #: /usr/share/bison/bison.simple:179
 msgid "syntax error: cannot back up"
-msgstr ""
+msgstr "Syntaxfehler: Kann nicht zurücksetzen"
 
 #: c-parse.y:325 objc-parse.y:346
 msgid "ISO C forbids an empty source file"
-msgstr "ISO C erlaubt keine leeren Quelldateien"
+msgstr "ISO-C erlaubt keine leeren Quelldateien"
 
 #: c-parse.y:366 c-typeck.c:6916 objc-parse.y:388
 msgid "argument of `asm' is not a constant string"
-msgstr ""
+msgstr "Argument von »asm« ist keine konstante Zeichenkette"
 
 #: c-parse.y:374 objc-parse.y:396
 msgid "ISO C forbids data definition with no type or storage class"
-msgstr ""
+msgstr "ISO-C verbietet Datendefinition ohne Typ und Speicherklasse"
 
 #: c-parse.y:376 objc-parse.y:398
 msgid "data definition has no type or storage class"
-msgstr ""
+msgstr "Datendefinition hat keinen Typ oder Speicherklasse"
 
 #: c-parse.y:389 objc-parse.y:411
 msgid "ISO C does not allow extra `;' outside of a function"
-msgstr ""
+msgstr "ISO-C erlaubt kein extra »;« außerhalb einer Funktion"
 
 #: c-parse.y:449 cppexp.c:1312
 msgid "traditional C rejects the unary plus operator"
-msgstr ""
+msgstr "Traditionelles C weist den unären Plus-Operator zurück"
 
 #: c-parse.y:496 objc-parse.y:518
 msgid "`sizeof' applied to a bit-field"
-msgstr ""
+msgstr "»sizeof«-Operator auf ein Bitfeld angewendet"
 
 #: c-parse.y:583 objc-parse.y:605
 msgid "ISO C forbids omitting the middle term of a ?: expression"
-msgstr ""
+msgstr "ISO-C verbietet das Weglassen des mittleren Terms eines ?:-Ausdruckes"
 
 #: c-parse.y:632 objc-parse.y:654
 msgid "ISO C89 forbids compound literals"
-msgstr ""
+msgstr "ISO-C89 verbietet zusammengesetzte Literale"
 
 #: c-parse.y:646 objc-parse.y:668
 msgid "ISO C forbids braced-groups within expressions"
-msgstr ""
+msgstr "ISO-C verbietet geklammerte Gruppen innerhalb von Ausrücken"
 
 #: c-parse.y:677 objc-parse.y:699
 msgid "first argument to __builtin_choose_expr not a constant"
-msgstr ""
+msgstr "Das erste Argument für __builtin_choose_expr ist keine Konstante"
 
 #: c-parse.y:721 objc-parse.y:767
 msgid "traditional C rejects ISO C style function definitions"
-msgstr ""
+msgstr "Traditionelles C weist Funktionsdefinitionen im ISO-C-Stil zurück"
 
 #: c-parse.y:985 c-parse.y:991 c-parse.y:997 c-parse.y:1003 c-parse.y:1024
 #: c-parse.y:1030 c-parse.y:1036 c-parse.y:1042 c-parse.y:1075 c-parse.y:1081
@@ -2378,79 +2444,79 @@ msgstr "»%s« ist nicht am Beginn einer Deklaration"
 
 #: c-parse.y:1441 objc-parse.y:1496
 msgid "ISO C forbids empty initializer braces"
-msgstr ""
+msgstr "ISO-C verbietet leere Initialisierungsklammern"
 
 #: c-parse.y:1455 objc-parse.y:1510
 msgid "ISO C89 forbids specifying subobject to initialize"
-msgstr ""
+msgstr "ISO-C89 verbietet die Angabe von zu initialisierenden Unterobjekten"
 
 #: c-parse.y:1458 objc-parse.y:1513
 msgid "obsolete use of designated initializer without `='"
-msgstr ""
+msgstr "Veraltete Verwendung einer bestimmten Initialisierung ohne »=«"
 
 #: c-parse.y:1462 objc-parse.y:1517
 msgid "obsolete use of designated initializer with `:'"
-msgstr ""
+msgstr "Veraltete Verwendung einer bestimmten Initialisierung mit »:«"
 
 #: c-parse.y:1489 objc-parse.y:1544
 msgid "ISO C forbids specifying range of elements to initialize"
-msgstr ""
+msgstr "ISO-C verbietet die Angabe eines zu initialisierenden Wertebereiches"
 
 #: c-parse.y:1497 c-parse.y:1528 objc-parse.y:1552 objc-parse.y:1583
 msgid "ISO C forbids nested functions"
-msgstr "ISO C verbietet verschachtelte Funktionen"
+msgstr "ISO-C verbietet verschachtelte Funktionen"
 
 #: c-parse.y:1703 objc-parse.y:1760
 msgid "ISO C forbids forward references to `enum' types"
-msgstr ""
+msgstr "ISO-C verbietet Vorwärts-Referenzen auf »enum«-Typen"
 
 #: c-parse.y:1715 parse.y:2411 objc-parse.y:1772
 msgid "comma at end of enumerator list"
-msgstr ""
+msgstr "Komma am Ende der Aufzählungsliste"
 
 #: c-parse.y:1723 objc-parse.y:1780
 msgid "no semicolon at end of struct or union"
-msgstr ""
+msgstr "Kein Semikolon am Ende von »struct« oder »union«"
 
 #: c-parse.y:1732 objc-parse.y:1789 objc-parse.y:2864
 msgid "extra semicolon in struct or union specified"
-msgstr ""
+msgstr "Zusätzliches Semikolon in »struct« oder »union« angegeben"
 
 #: c-parse.y:1745 objc-parse.y:1816
 msgid "ISO C doesn't support unnamed structs/unions"
-msgstr ""
+msgstr "ISO-C unterstützt keine namenlosen structs/unions"
 
 #: c-parse.y:1754 objc-parse.y:1825
 msgid "ISO C forbids member declarations with no members"
-msgstr ""
+msgstr "ISO-C verbietet Member-Deklarationen ohne Member"
 
 #: c-parse.y:1913 objc-parse.y:1984
 msgid "deprecated use of label at end of compound statement"
-msgstr ""
+msgstr "Veraltete Verwendung einer Marke am Ende einer Verbundanweisung"
 
 #: c-parse.y:1930 objc-parse.y:2001
 msgid "ISO C89 forbids mixed declarations and code"
-msgstr ""
+msgstr "ISO-C89 verbietet gemischte Deklarationen und Kode"
 
 #: c-parse.y:2005 objc-parse.y:2080
 msgid "ISO C forbids label declarations"
-msgstr ""
+msgstr "ISO-C verbietet Markendeklarationen"
 
 #: c-parse.y:2055 parse.y:1638 objc-parse.y:2130
 msgid "braced-group within expression allowed only inside a function"
-msgstr ""
+msgstr "Geklammerte Gruppe innerhalb Ausdruck nur in Funktion erlaubt"
 
 #: c-parse.y:2182 objc-parse.y:2257
 msgid "empty body in an else-statement"
-msgstr ""
+msgstr "Leerer Körper in einer else-Anweisung"
 
 #: c-parse.y:2303 objc-parse.y:2378
 msgid "ISO C forbids `goto *expr;'"
-msgstr "ISO C verbietet »goto *expr;«"
+msgstr "ISO-C verbietet »goto *expr;«"
 
 #: c-parse.y:2403 objc-parse.y:2478
 msgid "ISO C forbids forward parameter declarations"
-msgstr ""
+msgstr "ISO-C verbietet Vorwärtsdeklaration für Parameter"
 
 #. Gcc used to allow this as an extension.  However, it does
 #. not work for all targets, and thus has been disabled.
@@ -2460,23 +2526,23 @@ msgstr ""
 #. correctly.
 #: c-parse.y:2429 objc-parse.y:2504
 msgid "ISO C requires a named argument before `...'"
-msgstr ""
+msgstr "ISO-C erfordert ein benanntes Argument vor »...«"
 
 #: c-parse.y:2526 objc-parse.y:2601
 msgid "`...' in old-style identifier list"
-msgstr ""
+msgstr "»...« in einer Bezeichnerliste alten Stils"
 
 #: /usr/share/bison/bison.simple:795
 msgid "parse error; also virtual memory exhausted"
-msgstr ""
+msgstr "Fehler beim Parsen; auch virtueller Speicher verbraucht"
 
 #: /usr/share/bison/bison.simple:799 cp/spew.c:364
 msgid "parse error"
-msgstr ""
+msgstr "Fehler beim Parsen"
 
 #: /usr/share/bison/bison.simple:924
 msgid "parser stack overflow"
-msgstr ""
+msgstr "Parser-Keller-Überlauf"
 
 #: c-parse.y:2838 cp/spew.c:1525 objc-parse.y:3537
 #, c-format
@@ -2496,12 +2562,12 @@ msgstr "%s vor %s'\\x%x'"
 #: c-parse.y:2850 cp/spew.c:1542 objc-parse.y:3549
 #, c-format
 msgid "%s before string constant"
-msgstr ""
+msgstr "%s vor Zeichenkettenkonstante"
 
 #: c-parse.y:2852 cp/spew.c:1544 objc-parse.y:3551
 #, c-format
 msgid "%s before numeric constant"
-msgstr ""
+msgstr "%s vor numerischer Konstante"
 
 #: c-parse.y:2854 objc-parse.y:3553
 #, c-format
@@ -2511,342 +2577,342 @@ msgstr "%s vor \"%s\""
 #: c-parse.y:2856 objc-parse.y:3555
 #, c-format
 msgid "%s before '%s' token"
-msgstr ""
+msgstr "%s vor »%s«"
 
 #: c-parse.y:2921
 msgid "traditional C rejects string concatenation"
-msgstr ""
+msgstr "Traditionelles C weist Stringverkettung zurück"
 
 #: c-parse.y:3047 objc-parse.y:3779
 #, c-format
 msgid "syntax error at '%s' token"
-msgstr ""
+msgstr "Syntaxfehler bei »%s«"
 
 #: c-pragma.c:107
 msgid "#pragma pack (pop) encountered without matching #pragma pack (push, <n>)"
-msgstr ""
+msgstr "#pragma pack (pop) gefunden ohne passendes #pragma pack (push, <n>)"
 
 #: c-pragma.c:125
 #, c-format
 msgid "#pragma pack(pop, %s) encountered without matching #pragma pack(push, %s, <n>)"
-msgstr ""
+msgstr "#pragma pack(pop, %s) gefunden ohne passendes #pragma pack(push, %s, <n>)"
 
 #: c-pragma.c:145
 msgid "#pragma pack(push[, id], <n>) is not supported on this target"
-msgstr ""
+msgstr "#pragma pack(push[, id], <n>) wird von diesem Ziel nicht unterstützt"
 
 #: c-pragma.c:147
 msgid "#pragma pack(pop[, id], <n>) is not supported on this target"
-msgstr ""
+msgstr "#pragma pack(pop[, id], <n>) wird von diesem Ziel nicht unterstützt"
 
 #: c-pragma.c:167
 msgid "missing '(' after '#pragma pack' - ignored"
-msgstr ""
+msgstr "Fehlendes »(« hinter »#pragma pack« - ignoriert"
 
 #: c-pragma.c:180 c-pragma.c:230
 msgid "malformed '#pragma pack' - ignored"
-msgstr ""
+msgstr "Falsch geformtes »#pragma pack« - ignoriert"
 
 #: c-pragma.c:185
 msgid "malformed '#pragma pack(push[, id], <n>)' - ignored"
-msgstr ""
+msgstr "Falsch geformtes »#pragma pack(push[, id], <n>)« - ignoriert"
 
 #: c-pragma.c:187
 msgid "malformed '#pragma pack(pop[, id])' - ignored"
-msgstr ""
+msgstr "Falsch geformtes »#pragma pack(pop[, id])« - ignoriert"
 
 #: c-pragma.c:196
 #, c-format
 msgid "unknown action '%s' for '#pragma pack' - ignored"
-msgstr ""
+msgstr "Unbekannte Aktion »%s« für »#pragma pack« - ignoriert"
 
 #: c-pragma.c:233
 msgid "junk at end of '#pragma pack'"
-msgstr ""
+msgstr "Ausschuss am Ende von »#pragma pack«"
 
 #: c-pragma.c:247
 #, c-format
 msgid "alignment must be a small power of two, not %d"
-msgstr ""
+msgstr "Ausrichtung muss eine kleine Zweierpotenz sein, nicht %d"
 
 #: c-pragma.c:280
 #, c-format
 msgid "applying #pragma weak `%s' after first use results in unspecified behavior"
-msgstr ""
+msgstr "Anwendung von #pragma weak »%s« nach erster Benutzung führt zu nicht spezifiziertem Verhalten"
 
 #: c-pragma.c:328 c-pragma.c:333
 msgid "malformed #pragma weak, ignored"
-msgstr ""
+msgstr "Falsch geformtes #pragma weak, ignoriert"
 
 #: c-pragma.c:337
 msgid "junk at end of #pragma weak"
-msgstr ""
+msgstr "Ausschuss am Ende von #pragma weak"
 
 #: c-pragma.c:372 c-pragma.c:377
 msgid "malformed #pragma redefine_extname, ignored"
-msgstr ""
+msgstr "Falsch geformtes #pragma redefine_extname, ignoriert"
 
 #: c-pragma.c:382
 msgid "junk at end of #pragma redefine_extname"
-msgstr ""
+msgstr "Ausschuss am Ende von #pragma redefine_extname"
 
 #: c-pragma.c:389 c-pragma.c:470
 msgid "#pragma redefine_extname conflicts with declaration"
-msgstr ""
+msgstr "#pragma redefine_extname steht in Konflikt mit Deklaration"
 
 #: c-pragma.c:420
 msgid "malformed #pragma extern_prefix, ignored"
-msgstr ""
+msgstr "Falsch geformtes #pragma extern_prefix, ignoriert"
 
 #: c-pragma.c:425
 msgid "junk at end of #pragma extern_prefix"
-msgstr ""
+msgstr "Ausschuss am Ende von #pragma extern_prefix"
 
 #: c-pragma.c:457
 msgid "asm declaration conflicts with previous rename"
-msgstr ""
+msgstr "asm-Deklaration steht in Konflikt mit vorheriger Umbenennung"
 
 #: c-semantics.c:565
 msgid "break statement not within loop or switch"
-msgstr ""
+msgstr "break-Anweisung nicht innerhalb einer Schleife oder »switch«"
 
 #: c-semantics.c:583
 msgid "continue statement not within a loop"
-msgstr ""
+msgstr "continue-Anweisung nicht innerhalb einer Schleife"
 
 #: c-semantics.c:678
 msgid "destructor needed for `%#D'"
-msgstr ""
+msgstr "Destruktor für »%#D« benötigt"
 
 #: c-semantics.c:679
 msgid "where case label appears here"
-msgstr ""
+msgstr "wobei die case-Marke hier auftritt"
 
 #: c-semantics.c:682
 msgid "(enclose actions of previous case statements requiring destructors in their own scope.)"
-msgstr ""
+msgstr "(schließen sie Aktionen vorheriger case-Anweisungen, die Destruktoren benötigen, in ihrem eigenen Gültigkeitsbereich ein)"
 
 #: c-semantics.c:725 c-typeck.c:6942 cp/semantics.c:897
 #, c-format
 msgid "%s qualifier ignored on asm"
-msgstr ""
+msgstr "%s-Qualifizierer für asm ignoriert"
 
 #: c-typeck.c:123
 #, c-format
 msgid "`%s' has an incomplete type"
-msgstr ""
+msgstr "»%s« hat unvollständigen Typ"
 
 #: c-typeck.c:145 cp/call.c:2865
 msgid "invalid use of void expression"
-msgstr ""
+msgstr "Falsche Benutzung eines void-Ausdruckes"
 
 #: c-typeck.c:153
 msgid "invalid use of flexible array member"
-msgstr ""
+msgstr "Falsche Benutzung eines flexiblen Feld-Members"
 
 #: c-typeck.c:159
 msgid "invalid use of array with unspecified bounds"
-msgstr ""
+msgstr "Falsche Benutzung eines Feldes mit unbekannten Grenzen"
 
 #: c-typeck.c:167
 #, c-format
 msgid "invalid use of undefined type `%s %s'"
-msgstr ""
+msgstr "Falsche Benutzung des undefinierten Typs »%s %s«"
 
 #. If this type has a typedef-name, the TYPE_NAME is a TYPE_DECL.
 #: c-typeck.c:171
 #, c-format
 msgid "invalid use of incomplete typedef `%s'"
-msgstr ""
+msgstr "Falsche Benutzung des unvollständigen typedef »%s«"
 
 #: c-typeck.c:424 c-typeck.c:438
 msgid "function types not truly compatible in ISO C"
-msgstr ""
+msgstr "Funktionstypen nicht wirklich kompatibel in ISO-C"
 
 #: c-typeck.c:603
 msgid "types are not quite compatible"
-msgstr ""
+msgstr "Typen nicht sehr kompatibel"
 
 #: c-typeck.c:757 c-typeck.c:2687
 msgid "arithmetic on pointer to an incomplete type"
-msgstr ""
+msgstr "Arithmetik mit Zeiger auf unvollständigen Typen"
 
 #: c-typeck.c:1136
 #, c-format
 msgid "%s has no member named `%s'"
-msgstr ""
+msgstr "%s hat keinen Member »%s«"
 
 #: c-typeck.c:1172
 #, c-format
 msgid "request for member `%s' in something not a structure or union"
-msgstr ""
+msgstr "Anfrage nach Member »%s« in etwas, was keine Struktur oder union ist"
 
 #: c-typeck.c:1204
 msgid "dereferencing pointer to incomplete type"
-msgstr ""
+msgstr "Dereferenzierung eines Zeigers auf unvollständigen Typen"
 
 #: c-typeck.c:1208
 msgid "dereferencing `void *' pointer"
-msgstr ""
+msgstr "Dereferenzierung eines »void *« Zeigers"
 
 #: c-typeck.c:1225 cp/typeck.c:2369
 #, c-format
 msgid "invalid type argument of `%s'"
-msgstr ""
+msgstr "Falsches Typ-Argument von »%s«"
 
 #: c-typeck.c:1244 cp/typeck.c:2395
 msgid "subscript missing in array reference"
-msgstr ""
+msgstr "Index fehlt in Feldreferenz"
 
 #: c-typeck.c:1265 cp/typeck.c:2437
 msgid "array subscript has type `char'"
-msgstr ""
+msgstr "Feldindex hat Typ »char«"
 
 #: c-typeck.c:1273 c-typeck.c:1362 cp/typeck.c:2444 cp/typeck.c:2523
 msgid "array subscript is not an integer"
-msgstr ""
+msgstr "Feldindex ist keine Ganzzahl"
 
 #: c-typeck.c:1306
 msgid "ISO C forbids subscripting `register' array"
-msgstr ""
+msgstr "ISO-C verbietet, ein »register«-Array zu indizieren"
 
 #: c-typeck.c:1308
 msgid "ISO C90 forbids subscripting non-lvalue array"
-msgstr ""
+msgstr "ISO-C90 verbietet, ein Nicht-L-Wert-Feld zu indizieren"
 
 #: c-typeck.c:1341
 msgid "subscript has type `char'"
-msgstr ""
+msgstr "Index hat Typ »char«"
 
 #: c-typeck.c:1357 cp/typeck.c:2518
 msgid "subscripted value is neither array nor pointer"
-msgstr ""
+msgstr "Indizierter Wert ist weder ein Feld noch ein Zeiger"
 
 #: c-typeck.c:1411
 #, c-format
 msgid "`%s' undeclared here (not in a function)"
-msgstr ""
+msgstr "»%s« ist hier nicht deklariert (nicht in einer Funktion)"
 
 #: c-typeck.c:1418
 #, c-format
 msgid "`%s' undeclared (first use in this function)"
-msgstr ""
+msgstr "»%s« nicht deklariert (erste Benutzung in dieser Funktion)"
 
 #: c-typeck.c:1423
 msgid "(Each undeclared identifier is reported only once"
-msgstr ""
+msgstr "(Jeder nicht deklarierte Bezeichner wird nur einmal aufgeführt"
 
 #: c-typeck.c:1424
 msgid "for each function it appears in.)"
-msgstr ""
+msgstr "für jede Funktion in der er auftritt.)"
 
 #: c-typeck.c:1441
 #, c-format
 msgid "local declaration of `%s' hides instance variable"
-msgstr ""
+msgstr "Lokale Deklaration von »%s« versteckt Instanzvariable"
 
 #: c-typeck.c:1518
 msgid "called object is not a function"
-msgstr ""
+msgstr "Gerufenes Objekt ist keine Funktion"
 
 #: c-typeck.c:1604 cp/typeck.c:2829
 msgid "too many arguments to function"
-msgstr ""
+msgstr "Zu viele Argumente für Funktion"
 
 #: c-typeck.c:1625
 #, c-format
 msgid "type of formal parameter %d is incomplete"
-msgstr ""
+msgstr "Typ des formalen Parameters %d ist unvollständig"
 
 #: c-typeck.c:1638
 #, c-format
 msgid "%s as integer rather than floating due to prototype"
-msgstr ""
+msgstr "%s als Ganzzahl statt Fließkomma aufgrund des Prototyps"
 
 #: c-typeck.c:1641
 #, c-format
 msgid "%s as integer rather than complex due to prototype"
-msgstr ""
+msgstr "%s als Ganzzahl statt komplex aufgrund des Prototyps"
 
 #: c-typeck.c:1644
 #, c-format
 msgid "%s as complex rather than floating due to prototype"
-msgstr ""
+msgstr "%s als komplex statt Fließkomma aufgrund des Prototyps"
 
 #: c-typeck.c:1647
 #, c-format
 msgid "%s as floating rather than integer due to prototype"
-msgstr ""
+msgstr "%s als Fließkomma statt Ganzzahl aufgrund des Prototyps"
 
 #: c-typeck.c:1650
 #, c-format
 msgid "%s as complex rather than integer due to prototype"
-msgstr ""
+msgstr "%s als komplex statt Ganzzahl aufgrund des Prototyps"
 
 #: c-typeck.c:1653
 #, c-format
 msgid "%s as floating rather than complex due to prototype"
-msgstr ""
+msgstr "%s als Gließkomma statt komplex aufgrund des Prototyps"
 
 #: c-typeck.c:1663
 #, c-format
 msgid "%s as `float' rather than `double' due to prototype"
-msgstr ""
+msgstr "%s als »float« statt »double« aufgrund des Prototyps"
 
 #: c-typeck.c:1681
 #, c-format
 msgid "%s with different width due to prototype"
-msgstr ""
+msgstr "%s mit anderer Breite aufgrund des Prototyps"
 
 #: c-typeck.c:1715
 #, c-format
 msgid "%s as unsigned due to prototype"
-msgstr ""
+msgstr "%s als vorzeichenlos aufgrund des Prototyps"
 
 #: c-typeck.c:1717
 #, c-format
 msgid "%s as signed due to prototype"
-msgstr ""
+msgstr "%s als vorzeichenbehaftet aufgrund des Prototyps"
 
 #: c-typeck.c:1751 cp/typeck.c:2933
 msgid "too few arguments to function"
-msgstr ""
+msgstr "Zu wenige Argumente für Funktion"
 
 #: c-typeck.c:1793
 msgid "suggest parentheses around + or - inside shift"
-msgstr ""
+msgstr "Klammern um + oder - innerhalb von Schiebeoperation empfohlen"
 
 #: c-typeck.c:1800
 msgid "suggest parentheses around && within ||"
-msgstr ""
+msgstr "Klammern um && innerhalb von || empfohlen"
 
 #: c-typeck.c:1809
 msgid "suggest parentheses around arithmetic in operand of |"
-msgstr ""
+msgstr "Klammern um Arithmetik in Operand von | empfohlen"
 
 #: c-typeck.c:1812
 msgid "suggest parentheses around comparison in operand of |"
-msgstr ""
+msgstr "Klammern um Vergleich in Operand von | empfohlen"
 
 #: c-typeck.c:1821
 msgid "suggest parentheses around arithmetic in operand of ^"
-msgstr ""
+msgstr "Klammern um Arithmetik in Operand von ^ empfohlen"
 
 #: c-typeck.c:1824
 msgid "suggest parentheses around comparison in operand of ^"
-msgstr ""
+msgstr "Klammern um Vergleich in Operand von ^ empfohlen"
 
 #: c-typeck.c:1831
 msgid "suggest parentheses around + or - in operand of &"
-msgstr ""
+msgstr "Klammern um + oder - in Operand von & empfohlen"
 
 #: c-typeck.c:1834
 msgid "suggest parentheses around comparison in operand of &"
-msgstr ""
+msgstr "Klammern um Vergleich in Operand von & empfohlen"
 
 #: c-typeck.c:1841
 msgid "comparisons like X<=Y<=Z do not have their mathematical meaning"
-msgstr ""
+msgstr "Vergleiche wie X<=Y<=Z haben nicht ihre mathematische Bedeutung"
 
 #: c-typeck.c:2001 c-typeck.c:2036
 msgid "division by zero"
@@ -2854,119 +2920,119 @@ msgstr "Teilung durch Null"
 
 #: c-typeck.c:2081 cp/typeck.c:3194
 msgid "right shift count is negative"
-msgstr ""
+msgstr "Rechts-Schiebe-Weite ist negativ"
 
 #: c-typeck.c:2088 cp/typeck.c:3200
 msgid "right shift count >= width of type"
-msgstr ""
+msgstr "Rechts-Schiebe-Weite >= Breite des Typs"
 
 #: c-typeck.c:2109 cp/typeck.c:3219
 msgid "left shift count is negative"
-msgstr ""
+msgstr "Links-Schiebe-Weite ist negativ"
 
 #: c-typeck.c:2112 cp/typeck.c:3221
 msgid "left shift count >= width of type"
-msgstr ""
+msgstr "Links-Schiebe-Weite >= Breite des Typs"
 
 #: c-typeck.c:2133
 msgid "shift count is negative"
-msgstr ""
+msgstr "Schiebeweite ist negativ"
 
 #: c-typeck.c:2135
 msgid "shift count >= width of type"
-msgstr ""
+msgstr "Schiebeweite >= Breite des Typs"
 
 #: c-typeck.c:2152 cp/typeck.c:3256
 msgid "comparing floating point with == or != is unsafe"
-msgstr ""
+msgstr "Vergleich von Fließkomma mit == oder != ist unsicher"
 
 #: c-typeck.c:2178 c-typeck.c:2184
 msgid "ISO C forbids comparison of `void *' with function pointer"
-msgstr ""
+msgstr "ISO-C verbietet Vergleich von »void *« mit Funktionszeiger"
 
 #: c-typeck.c:2187 c-typeck.c:2227 c-typeck.c:2255
 msgid "comparison of distinct pointer types lacks a cast"
-msgstr ""
+msgstr "In Vergleich verschiedener Zeigertypen fehlt Typkonvertierung"
 
 #: c-typeck.c:2201 c-typeck.c:2206 c-typeck.c:2275 c-typeck.c:2280
 msgid "comparison between pointer and integer"
-msgstr ""
+msgstr "Vergleich zwischen Zeiger und Ganzzahl"
 
 #: c-typeck.c:2222 c-typeck.c:2250
 msgid "ISO C forbids ordered comparisons of pointers to functions"
-msgstr ""
+msgstr "ISO-C verbietet geordnete Vergleiche zwischen Zeigern auf Funktionen"
 
 #: c-typeck.c:2247
 msgid "comparison of complete and incomplete pointers"
-msgstr ""
+msgstr "Vergleich von vollständigen und unvollständigen Zeigern"
 
 #: c-typeck.c:2263 c-typeck.c:2270
 msgid "ordered comparison of pointer with integer zero"
-msgstr ""
+msgstr "Geordneter Vergleich von Zeiger mit Ganzzahlnull"
 
 #: c-typeck.c:2294 cp/typeck.c:3389
 msgid "unordered comparison on non-floating point argument"
-msgstr ""
+msgstr "Ungeordneter Vergleich mit Nicht-Fließkomma-Argument"
 
 #: c-typeck.c:2505
 msgid "comparison between signed and unsigned"
-msgstr ""
+msgstr "Vergleich zwischen vorzeichenbehaftet und vorzeichenlos"
 
 #: c-typeck.c:2551 cp/typeck.c:3633
 msgid "comparison of promoted ~unsigned with constant"
-msgstr ""
+msgstr "Vergleich von weitergegebenem ~unsigned mit Konstante"
 
 #: c-typeck.c:2559 cp/typeck.c:3641
 msgid "comparison of promoted ~unsigned with unsigned"
-msgstr ""
+msgstr "Vergleich von weitergegebenem ~unsigned mit unsigned"
 
 #: c-typeck.c:2639
 msgid "pointer of type `void *' used in subtraction"
-msgstr ""
+msgstr "Zeiger des Typs »void *« in Subtraktion verwendet"
 
 #: c-typeck.c:2641
 msgid "pointer to a function used in subtraction"
-msgstr ""
+msgstr "Zeiger auf eine Funktion in Subtraktion verwendet"
 
 #: c-typeck.c:2738
 msgid "wrong type argument to unary plus"
-msgstr ""
+msgstr "Argument falschen Typs für unäres Plus"
 
 #: c-typeck.c:2751
 msgid "wrong type argument to unary minus"
-msgstr ""
+msgstr "Argument falschen Typs für unäres Minus"
 
 #: c-typeck.c:2768
 msgid "ISO C does not support `~' for complex conjugation"
-msgstr ""
+msgstr "ISO-C unterstützt nicht »~« für komplexe Konjugation"
 
 #: c-typeck.c:2774
 msgid "wrong type argument to bit-complement"
-msgstr ""
+msgstr "Argument falschen Typs für Bit-Komplement"
 
 #: c-typeck.c:2783
 msgid "wrong type argument to abs"
-msgstr ""
+msgstr "Argument falschen Typs für abs"
 
 #: c-typeck.c:2795
 msgid "wrong type argument to conjugation"
-msgstr ""
+msgstr "Argument falschen Typs für Konjugation"
 
 #: c-typeck.c:2809
 msgid "wrong type argument to unary exclamation mark"
-msgstr ""
+msgstr "Argument falschen Typs für unäres Ausrufungszeichen"
 
 #: c-typeck.c:2852
 msgid "ISO C does not support `++' and `--' on complex types"
-msgstr ""
+msgstr "ISO-C unterstützt kein »++« und »--« für komplexe Typen"
 
 #: c-typeck.c:2867 c-typeck.c:2899
 msgid "wrong type argument to increment"
-msgstr ""
+msgstr "Argument falschen Typs für Inkrementierung"
 
 #: c-typeck.c:2869 c-typeck.c:2901
 msgid "wrong type argument to decrement"
-msgstr ""
+msgstr "Argument falschen Typs für Dekrementierung"
 
 #: c-typeck.c:2890
 msgid "increment of pointer to unknown structure"
