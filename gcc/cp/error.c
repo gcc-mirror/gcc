@@ -1463,6 +1463,7 @@ dump_expr (tree t, int flags)
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
+    case RDIV_EXPR:
       dump_binary_op ("/", t, flags);
       break;
 
