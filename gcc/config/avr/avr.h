@@ -216,7 +216,7 @@ extern int avr_asm_only_p;
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) avr_hard_regno_mode_ok(REGNO, MODE)
 
-#define MODES_TIEABLE_P(MODE1, MODE2) 0
+#define MODES_TIEABLE_P(MODE1, MODE2) 1
 
 enum reg_class {
   NO_REGS,
