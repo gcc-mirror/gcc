@@ -3749,8 +3749,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  if (size)
 	    {
 	      /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-	      while (TREE_CODE (size) == NON_LVALUE_EXPR)
-		size = TREE_OPERAND (size, 0);
+	      STRIP_NOPS (size);
 
 	      if (TREE_CODE (TREE_TYPE (size)) != INTEGER_TYPE
 		  && TREE_CODE (TREE_TYPE (size)) != ENUMERAL_TYPE)
