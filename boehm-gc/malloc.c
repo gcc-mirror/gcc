@@ -52,7 +52,7 @@ register ptr_t *opp;
 	  lw = GC_size_map[lb];
 #	else
 	  lw = ALIGNED_WORDS(lb);
-	  if (lw == 0) lw = 1;
+	  if (lw == 0) lw = MIN_WORDS;
 #       endif
 	opp = &(kind -> ok_freelist[lw]);
         if( (op = *opp) == 0 ) {

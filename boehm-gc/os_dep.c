@@ -144,20 +144,37 @@
 #endif
 
 #if defined(SEARCH_FOR_DATA_START)
-  /* The following doesn't work if the GC is in a dynamic library.	*/
   /* The I386 case can be handled without a search.  The Alpha case	*/
   /* used to be handled differently as well, but the rules changed	*/
   /* for recent Linux versions.  This seems to be the easiest way to	*/
   /* cover all versions.						*/
-  ptr_t GC_data_start;
 
-  extern char * GC_copyright[];  /* Any data symbol would do. */
+# ifdef LINUX
+#   pragma weak __data_start
+    extern int __data_start;
+#   pragma weak data_start
+    extern int data_start;
+# endif /* LINUX */
+  extern int _end;
+
+  ptr_t GC_data_start;
 
   void GC_init_linux_data_start()
   {
     extern ptr_t GC_find_limit();
 
-    GC_data_start = GC_find_limit((ptr_t)GC_copyright, FALSE);
+#   ifdef LINUX
+      /* Try the easy approaches first:	*/
+      if (&__data_start != 0) {
+	  GC_data_start = (ptr_t)(&__data_start);
+	  return;
+      }
+      if (&data_start != 0) {
+	  GC_data_start = (ptr_t)(&data_start);
+	  return;
+      }
+#   endif /* LINUX */
+    GC_data_start = GC_find_limit((ptr_t)(&_end), FALSE);
   }
 #endif
 

@@ -324,6 +324,7 @@ finalization_mark_proc * mp;
     struct finalizable_object * curr_fo, * prev_fo;
     int index;
     struct finalizable_object *new_fo;
+    hdr *hhdr;
     DCL_LOCK_STATE;
 
 #   ifdef THREADS
@@ -402,6 +403,19 @@ finalization_mark_proc * mp;
 #	endif
         return;
     }
+    GET_HDR(base, hhdr);
+    if (0 == hhdr) {
+      /* We won't collect it, hence finalizer wouldn't be run. */
+      /* This is changed for gcj, but it will be in version 6.0 of the	*/
+      /* standard collector distribution.  It costs virtually nothing	*/
+      /* here, but it's expensive to check in the hash synchronization	*/
+      /* code, where it matters.		-HB			*/
+#     ifdef THREADS
+          UNLOCK();
+    	  ENABLE_SIGNALS();
+#     endif
+      return;
+    }
 #   ifdef THREADS
       new_fo = (struct finalizable_object *)
     	GC_generic_malloc_inner(sizeof(struct finalizable_object),NORMAL);
@@ -413,7 +427,7 @@ finalization_mark_proc * mp;
         new_fo -> fo_hidden_base = (word)HIDE_POINTER(base);
 	new_fo -> fo_fn = fn;
 	new_fo -> fo_client_data = (ptr_t)cd;
-	new_fo -> fo_object_size = GC_size(base);
+	new_fo -> fo_object_size = hhdr -> hb_sz;
 	new_fo -> fo_mark_proc = mp;
 	fo_set_next(new_fo, fo_head[index]);
 	GC_fo_entries++;

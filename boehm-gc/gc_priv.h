@@ -890,6 +890,18 @@ extern GC_warn_proc GC_current_warn_proc;
 #   define SMALL_OBJ(bytes) ((bytes) <= WORDS_TO_BYTES(MAXOBJSZ))
 #   define ADD_SLOP(bytes) (bytes)
 # endif
+# ifndef MIN_WORDS
+    /* MIN_WORDS is the size of the smallest allocated object.	*/
+    /* 1 and 2 are the only valid values.			*/
+    /* 2 must be used if:					*/
+    /* - GC_gcj_malloc can be used for objects of requested	*/
+    /*   size smaller than 2 words				*/
+#   if defined(GC_GCJ_SUPPORT)
+#     define MIN_WORDS 2   	/* Smallest allocated object.	*/
+#   else
+#     define MIN_WORDS 1
+#   endif
+# endif
 
 
 /*

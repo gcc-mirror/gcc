@@ -1116,11 +1116,20 @@
 #       define CPP_WORDSZ 64
 	/* This should really be done through /proc, but that	*/
 	/* requires we run on an IA64 kernel.			*/
-#       define STACKBOTTOM ((ptr_t) 0xa000000000000000l)
+	/* The following works on NUE and older kernels:	*/
+/* #       define STACKBOTTOM ((ptr_t) 0xa000000000000000l)	*/
+	/* This does not work on NUE:				*/
+#       define LINUX_STACKBOTTOM
 	/* We also need the base address of the register stack	*/
-	/* backing store.  There is probably a better way to	*/
-	/* get that, too ...					*/
-#	define BACKING_STORE_BASE ((ptr_t) 0x9fffffff80000000l)
+	/* backing store.  There should be a better way to get	*/
+	/* this:						*/
+#	define APPROX_BS_BASE ((word)GC_stackbottom-0x80000000)
+	/* We round to the next multiple of 1 MB, to compensate	*/
+	/* for the fact that the stack base is displaced by	*/
+	/* the environment, etc.				*/
+#	define BACKING_STORE_BASE \
+		(ptr_t)((APPROX_BS_BASE + 0xfffff) & ~0xfffff)
+
 #	if 1
 #	    define SEARCH_FOR_DATA_START
 #	    define DATASTART GC_data_start
