@@ -47,6 +47,7 @@ See the next chapter for information on the C header file.
                            predication.
 * Constant Definitions::Defining symbolic constants that can be used in the
                         md file.
+* Macros::              Using macros to generate patterns from a template.
 @end menu
 
 @node Overview
@@ -6419,4 +6420,273 @@ You could write:
 
 The constants that are defined with a define_constant are also output
 in the insn-codes.h header file as #defines.
+@end ifset
+@ifset INTERNALS
+@node Macros
+@section Macros
+@cindex macros in @file{.md} files
+
+Ports often need to define similar patterns for more than one machine
+mode or for more than one rtx code.  GCC provides some simple macro
+facilities to make this process easier.
+
+@menu
+* Mode Macros::         Generating variations of patterns for different modes.
+* Code Macros::         Doing the same for codes.
+@end menu
+
+@node Mode Macros
+@subsection Mode Macros
+@cindex mode macros in @file{.md} files
+
+Ports often need to define similar patterns for two or more different modes.
+For example:
+
+@itemize @bullet
+@item
+If a processor has hardware support for both single and double
+floating-point arithmetic, the @code{SFmode} patterns tend to be
+very similar to the @code{DFmode} ones.
+
+@item
+If a port uses @code{SImode} pointers in one configuration and
+@code{DImode} pointers in another, it will usually have very similar
+@code{SImode} and @code{DImode} patterns for manipulating pointers.
+@end itemize
+
+Mode macros allow several patterns to be instantiated from one
+@file{.md} file template.  They can be used with any type of
+rtx-based construct, such as a @code{define_insn},
+@code{define_split}, or @code{define_peephole2}.
+
+@menu
+* Defining Mode Macros:: Defining a new mode macro.
+* String Substitutions:: Combining mode macros with string substitutions
+* Examples::             Examples
+@end menu
+
+@node Defining Mode Macros
+@subsubsection Defining Mode Macros
+@findex define_mode_macro
+
+The syntax for defining a mode macro is:
+
+@smallexample
+(define_mode_macro @var{name} [(@var{mode1} "@var{cond1}") ... (@var{moden} "@var{condn}")])
+@end smallexample
+
+This allows subsequent @file{.md} file constructs to use the mode suffix
+@code{:@var{name}}.  Every construct that does so will be expanded
+@var{n} times, once with every use of @code{:@var{name}} replaced by
+@code{:@var{mode1}}, once with every use replaced by @code{:@var{mode2}},
+and so on.  In the expansion for a particular @var{modei}, every
+C condition will also require that @var{condi} be true.
+
+For example:
+
+@smallexample
+(define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+@end smallexample
+
+defines a new mode suffix @code{:P}.  Every construct that uses
+@code{:P} will be expanded twice, once with every @code{:P} replaced
+by @code{:SI} and once with every @code{:P} replaced by @code{:DI}.
+The @code{:SI} version will only apply if @code{Pmode == SImode} and
+the @code{:DI} version will only apply if @code{Pmode == DImode}.
+
+As with other @file{.md} conditions, an empty string is treated
+as ``always true''.  @code{(@var{mode} "")} can also be abbreviated
+to @code{@var{mode}}.  For example:
+
+@smallexample
+(define_mode_macro GPR [SI (DI "TARGET_64BIT")])
+@end smallexample
+
+means that the @code{:DI} expansion only applies if @code{TARGET_64BIT}
+but that the @code{:SI} expansion has no such constraint.
+
+Macros are applied in the order they are defined.  This can be
+significant if two macros are used in a construct that requires
+string substitutions.  @xref{String Substitutions}.
+
+@node String Substitutions
+@subsubsection String Substitution in Mode Macros
+@findex define_mode_attr
+
+If an @file{.md} file construct uses mode macros, each version of the
+construct will often need slightly different strings.  For example:
+
+@itemize @bullet
+@item
+When a @code{define_expand} defines several @code{add@var{m}3} patterns
+(@pxref{Standard Names}), each expander will need to use the
+appropriate mode name for @var{m}.
+
+@item
+When a @code{define_insn} defines several instruction patterns,
+each instruction will often use a different assembler mnemonic.
+@end itemize
+
+GCC supports such variations through a system of ``mode attributes''.
+There are two standard attributes: @code{mode}, which is the name of
+the mode in lower case, and @code{MODE}, which is the same thing in
+upper case.  You can define other attributes using:
+
+@smallexample
+(define_mode_attr @var{name} [(@var{mode1} "@var{value1}") ... (@var{moden} "@var{valuen}")])
+@end smallexample
+
+where @var{name} is the name of the attribute and @var{valuei}
+is the value associated with @var{modei}.
+
+When GCC replaces some @var{:macro} with @var{:mode}, it will
+scan each string in the pattern for sequences of the form
+@code{<@var{macro}:@var{attr}>}, where @var{attr} is the name of
+a mode attribute.  If the attribute is defined for @var{mode}, the
+whole @code{<...>} sequence will be replaced by the appropriate
+attribute value.
+
+For example, suppose an @file{.md} file has:
+
+@smallexample
+(define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+(define_mode_attr load [(SI "lw") (DI "ld")])
+@end smallexample
+
+If one of the patterns that uses @code{:P} contains the string
+@code{"<P:load>\t%0,%1"}, the @code{SI} version of that pattern
+will use @code{"lw\t%0,%1"} and the @code{DI} version will use
+@code{"ld\t%0,%1"}.
+
+The @code{@var{macro}:} prefix may be omitted, in which case the
+substitution will be attempted for every macro expansion.
+
+@node Examples
+@subsubsection Mode Macro Examples
+
+Here is an example from the MIPS port.  It defines the following
+modes and attributes (among others):
+
+@smallexample
+(define_mode_macro GPR [SI (DI "TARGET_64BIT")])
+(define_mode_attr d [(SI "") (DI "d")])
+@end smallexample
+
+and uses the following template to define both @code{subsi3}
+and @code{subdi3}:
+
+@smallexample
+(define_insn "sub<mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+        (minus:GPR (match_operand:GPR 1 "register_operand" "d")
+                   (match_operand:GPR 2 "register_operand" "d")))]
+  ""
+  "<d>subu\t%0,%1,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+@end smallexample
+
+This is exactly equivalent to:
+
+@smallexample
+(define_insn "subsi3"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+        (minus:SI (match_operand:SI 1 "register_operand" "d")
+                  (match_operand:SI 2 "register_operand" "d")))]
+  ""
+  "subu\t%0,%1,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
+
+(define_insn "subdi3"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+        (minus:DI (match_operand:DI 1 "register_operand" "d")
+                  (match_operand:DI 2 "register_operand" "d")))]
+  ""
+  "dsubu\t%0,%1,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "DI")])
+@end smallexample
+
+@node Code Macros
+@subsection Code Macros
+@cindex code macros in @file{.md} files
+@findex define_code_macro
+@findex define_code_attr
+
+Code macros operate in a similar way to mode macros.  @xref{Mode Macros}.
+
+The construct:
+
+@smallexample
+(define_code_macro @var{name} [(@var{code1} "@var{cond1}") ... (@var{coden} "@var{condn}")])
+@end smallexample
+
+defines a pseudo rtx code @var{name} that can be instantiated as
+@var{codei} if condition @var{condi} is true.  Each @var{codei}
+must have the same rtx format.  @xref{RTL Classes}.
+
+As with mode macros, each pattern that uses @var{name} will be
+expanded @var{n} times, once with all uses of @var{name} replaced by
+@var{code1}, once with all uses replaced by @var{code2}, and so on.
+@xref{Defining Mode Macros}.
+
+It is possible to define attributes for codes as well as for modes.
+There are two standard code attributes: @code{code}, the name of the
+code in lower case, and @code{CODE}, the name of the code in upper case.
+Other attributes are defined using:
+
+@smallexample
+(define_code_attr @var{name} [(@var{code1} "@var{value1}") ... (@var{coden} "@var{valuen}")])
+@end smallexample
+
+Here's an example of code macros in action, taken from the MIPS port:
+
+@smallexample
+(define_code_macro any_cond [unordered ordered unlt unge uneq ltgt unle ungt
+                             eq ne gt ge lt le gtu geu ltu leu])
+
+(define_expand "b<code>"
+  [(set (pc)
+        (if_then_else (any_cond:CC (cc0)
+                                   (const_int 0))
+                      (label_ref (match_operand 0 ""))
+                      (pc)))]
+  ""
+@{
+  gen_conditional_branch (operands, <CODE>);
+  DONE;
+@})
+@end smallexample
+
+This is equivalent to:
+
+@smallexample
+(define_expand "bunordered"
+  [(set (pc)
+        (if_then_else (unordered:CC (cc0)
+                                    (const_int 0))
+                      (label_ref (match_operand 0 ""))
+                      (pc)))]
+  ""
+@{
+  gen_conditional_branch (operands, UNORDERED);
+  DONE;
+@})
+
+(define_expand "bordered"
+  [(set (pc)
+        (if_then_else (ordered:CC (cc0)
+                                  (const_int 0))
+                      (label_ref (match_operand 0 ""))
+                      (pc)))]
+  ""
+@{
+  gen_conditional_branch (operands, ORDERED);
+  DONE;
+@})
+
+...
+@end smallexample
+
 @end ifset

@@ -1,5 +1,45 @@
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* read-rtl.c (map_value, mapping, macro_group): New structures.
+	(BELLWETHER_CODE): New macro.
+	(modes, codes, bellwether_codes): New variables.
+	(find_mode, uses_mode_macro_p, apply_mode_macro, find_code)
+	(uses_code_macro_p, apply_code_macro, apply_macro_to_string)
+	(apply_macro_to_rtx, uses_macro_p, add_condition_to_string)
+	(add_condition_to_rtx, apply_macro_traverse, add_mapping)
+	(add_map_value, initialize_macros): New functions.
+	(def_hash, def_hash_eq_p): Generalize to anything that points to,
+	or starts with, a char * field.
+	(find_macro, read_mapping, check_code_macro): New functions.
+	(read_rtx_1): New, split out from read_rtx.  Handle the new
+	define_{mode,code}_{macro,attr} constructs.  Use find_macro
+	to parse the name of a code or mode.  Use BELLWETHER_CODE to
+	extract the format and to choose a suitable code for rtx_alloc.
+	Modify recursive invocations to use read_rtx_1.
+	(read_rtx): Call initialize_macros.  Apply code and mode macros
+	to the rtx returned by read_rtx_1.  Cache everything after the
+	first macro expansion for subsequent read_rtx calls.
+	* doc/md.texi: Document new .md constructs.
+	* config/mips/mips.md (GPR): New mode macro.
+	(d, si8_di5): New mode attributes.
+	(any_cond): New code macro.
+	(add[sd]i3): Redefine using :GPR.
+	(*add[sd]i3): Likewise, renaming from add[sd]i3_internal.
+	(*add[sd]i3_sp[12], *add<mode>3_mips16): Redefine using :GPR, naming
+	previously unnamed MIPS16 patterns.
+	(*addsi3_extended): Renamed from addsi3_internal_2.  Fix overly long
+	lines.  Don't match (plus (const_int 0) ...).
+	(*addsi3_extended_mips16): Name previously unnamed MIPS16 pattern.
+	Use a define_split to generate the addition.
+	(sub[sd]i3): Redefine using :GPR.  Turn subsi3 into a define_insn.
+	(subsi3_internal): Delete.
+	(*subsi3_extended): Renamed from subsi3_internal_2.
+	(bunordered, bordered, bunlt, bunge, buneq, bltgt, bunle, bungt)
+	(beq, bne, bgt, bge, blt, ble, bgtu, bgeu, bltu, bleu): Redefine
+	using an any_cond template.
+
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* read-rtl.c (read_rtx): Tidy use of format_ptr.
 
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
