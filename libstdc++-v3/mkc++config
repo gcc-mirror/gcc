@@ -21,15 +21,19 @@ fi
 
 BASE_H="$SRC_DIR/include/bits/c++config"
 IN_H="$BUILD_DIR/config.h"
-OUT_H="$BUILD_DIR/bits/c++config.h"
+OUT_H="$BUILD_DIR/include/bits/c++config.h"
 
 if [ ! -f $IN_H ]; then
   echo "necessary file $IN_H not found, exiting"
   exit 1
 fi
 
-if [ ! -d "$BUILD_DIR/bits" ]; then
-  mkdir  "$BUILD_DIR/bits"
+if [ ! -d "$BUILD_DIR/include" ]; then
+  mkdir  "$BUILD_DIR/include"
+fi
+
+if [ ! -d "$BUILD_DIR/include/bits" ]; then
+  mkdir  "$BUILD_DIR/include/bits"
 fi
 
 

@@ -57,7 +57,7 @@ fi
 top_srcdir=@top_srcdir@
 C_DIR="`basename @C_INCLUDE_DIR@`"
 if [ $WHICH != "1" ]; then
-  INC_PATH="@CSHADOW_FLAGS@ -I$BUILD_DIR -I$BUILD_DIR/libio \
+  INC_PATH="@CSHADOW_FLAGS@ -I$BUILD_DIR/include -I$BUILD_DIR/libio \
     -I$SRC_DIR/include/std  -I$SRC_DIR/include/$C_DIR \
     -I$SRC_DIR/include -I$SRC_DIR/libsupc++ -I$SRC_DIR/libio \
     -I$SRC_DIR/testsuite"

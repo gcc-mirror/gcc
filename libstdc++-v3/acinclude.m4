@@ -821,7 +821,7 @@ AC_DEFUN(GLIBCPP_CHECK_OS, [
         ;;
     esac
     AC_MSG_RESULT($os_include_dir)
-    AC_LINK_FILES($os_include_dir/bits/os_defines.h, bits/os_defines.h)
+    AC_LINK_FILES($os_include_dir/bits/os_defines.h, include/bits/os_defines.h)
 ])
 
 
@@ -972,10 +972,12 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
       AC_MSG_WARN("Using default ctype headers.")
     fi
 
-    AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, bits/ctype_base.h)
-    AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, bits/ctype_inline.h)
+    AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, 
+    include/bits/ctype_base.h)
+    AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, 
+    include/bits/ctype_inline.h)
     AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
-    bits/ctype_noninline.h)
+    include/bits/ctype_noninline.h)
   ])
 ])
 
@@ -1335,7 +1337,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
       exit 1
       ;;
   esac
-  AC_LINK_FILES($CSTDIO_H, bits/c++io.h)
+  AC_LINK_FILES($CSTDIO_H, include/bits/c++io.h)
   AC_LINK_FILES($CSTDIO_CC, src/c++io.cc)
 
   # 2000-08-04 bkoz hack
@@ -1409,7 +1411,7 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   esac
   AC_MSG_RESULT($THREADH)
 
-  AC_LINK_FILES(config/$THREADH, bits/c++threads.h)
+  AC_LINK_FILES(config/$THREADH, include/bits/c++threads.h)
   if test $THREADH != threads-no.h; then
     AC_DEFINE(_GLIBCPP_USE_THREADS)
   fi
@@ -1436,7 +1438,7 @@ AC_DEFUN(GLIBCPP_ENABLE_ATOMICITY, [
         ;;
     esac
     AC_MSG_RESULT($ATOMICITYH/bits/atomicity.h)
-    AC_LINK_FILES($ATOMICITYH/bits/atomicity.h, bits/atomicity.h)
+    AC_LINK_FILES($ATOMICITYH/bits/atomicity.h, include/bits/atomicity.h)
 ])
 
 
