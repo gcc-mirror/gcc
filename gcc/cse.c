@@ -3354,7 +3354,7 @@ fold_rtx (x, insn)
 	 lets us fold switch statements on the VAX.  */
       {
 	rtx next;
-	if (tablejump_p (insn, &next, NULL))
+	if (insn && tablejump_p (insn, &next, NULL))
 	  return gen_rtx_LABEL_REF (Pmode, next);
       }
       break;

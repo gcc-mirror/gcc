@@ -1,3 +1,7 @@
+2003-04-04  Richard Henderson  <rth@redhat.com>
+
+	* cse.c (fold_rtx): Fix 03-30 change; do check insn non-null.
+
 2003-04-04  Loren James Rittle  <ljrittle@acm.org>
 
 	* fixinc/inclhack.def (bsd_stdio_attrs_conflict): New.
