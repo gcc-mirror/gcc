@@ -2583,10 +2583,13 @@ subst (x, from, to, in_dest, unique_copy)
 	}
 
       /* For a constant, try to pick up the part we want.  Handle a full
-	 word and low-order part.  */
+	 word and low-order part.  Only do this if we are narrowing
+	 the constant; if it is being widened, we have no idea what
+	 the extra bits will have been set to.  */
 
       if (CONSTANT_P (SUBREG_REG (x)) && op0_mode != VOIDmode
 	  && GET_MODE_SIZE (mode) == UNITS_PER_WORD
+	  && GET_MODE_SIZE (op0_mode) < UNITS_PER_WORD
 	  && GET_MODE_CLASS (mode) == MODE_INT)
 	{
 	  temp = operand_subword (SUBREG_REG (x), SUBREG_WORD (x),
@@ -2595,7 +2598,8 @@ subst (x, from, to, in_dest, unique_copy)
 	    return temp;
 	}
 	
-      if (CONSTANT_P (SUBREG_REG (x)) && subreg_lowpart_p (x))
+      if (CONSTANT_P (SUBREG_REG (x)) && subreg_lowpart_p (x)
+	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (op0_mode))
 	return gen_lowpart_for_combine (mode, SUBREG_REG (x));
 
       /* If we are narrowing the object, we need to see if we can simplify
