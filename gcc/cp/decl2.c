@@ -1242,7 +1242,10 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
       return t;
     }
 
-  t = stabilize_reference (convert_from_reference (exp));
+  t = exp;
+  if (TREE_CODE (t) == OFFSET_REF)
+    t = resolve_offset_ref (t);
+  t = stabilize_reference (convert_from_reference (t));
   type = TREE_TYPE (t);
   code = TREE_CODE (type);
 
@@ -1270,15 +1273,14 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
   if (code == POINTER_TYPE)
     {
 #if 0
-      /* As of Valley Forge, you can delete a pointer to constant.  */
-      /* You can't delete a pointer to constant.  */
+      /* As of Valley Forge, you can delete a pointer to const.  */
       if (TREE_READONLY (TREE_TYPE (type)))
 	{
 	  error ("`const *' cannot be deleted");
 	  return error_mark_node;
 	}
 #endif
-      /* You also can't delete functions.  */
+      /* You can't delete functions.  */
       if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
 	{
 	  error ("cannot delete a function");
