@@ -4248,7 +4248,10 @@ __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       ((vector float) __builtin_altivec_vaddfp ((vector float) a1, (vector float) a2)), \
     __altivec_link_error_invalid_argument ())))))))))))))
 
-#define vec_addc(a1, a2) ((vector unsigned int) __builtin_altivec_vaddcuw ((vector signed int) a1, (vector signed int) a2))
+#define vec_addc(a1, a2) \
+__ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
+  ((vector unsigned int) __builtin_altivec_vaddcuw ((vector signed int) a1, (vector signed int) a2)), \
+  __altivec_link_error_invalid_argument ())
 
 #define vec_adds(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
