@@ -1080,11 +1080,15 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 				  gen_rtx (CONST_INT, VOIDmode, \
 						      high_int << 16)), 0),\
 		     gen_rtx (CONST_INT, VOIDmode, low_int));	\
+      goto WIN;							\
     }								\
   else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG \
 	   && GET_CODE (XEXP (X, 1)) != CONST_INT) 		\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), 0));		\
+    {								\
+      (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
+		     force_reg (SImode, force_operand (XEXP (X, 1), 0))); \
+      goto WIN;							\
+    }								\
 }
 
 /* Go to LABEL if ADDR (a legitimate address expression)
@@ -1814,6 +1818,7 @@ bss_section ()						\
 #define PREDICATE_CODES \
   {"short_cint_operand", {CONST_INT}},				\
   {"u_short_cint_operand", {CONST_INT}},			\
+  {"non_short_cint_operand", {CONST_INT}},			\
   {"gen_reg_operand", {SUBREG, REG}},				\
   {"cc_reg_operand", {SUBREG, REG}},				\
   {"reg_or_short_operand", {SUBREG, REG, CONST_INT}},		\
@@ -1825,8 +1830,11 @@ bss_section ()						\
   {"fp_reg_or_mem_operand", {SUBREG, MEM, REG}},		\
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},	\
   {"add_operand", {SUBREG, REG, CONST_INT}},			\
+  {"non_add_cint_operand", {CONST_INT}},			\
   {"and_operand", {SUBREG, REG, CONST_INT}},			\
+  {"non_and_cint_operand", {CONST_INT}},			\
   {"logical_operand", {SUBREG, REG, CONST_INT}},		\
+  {"non_logical_cint_operand", {CONST_INT}},			\
   {"mask_operand", {CONST_INT}},				\
   {"call_operand", {SYMBOL_REF, REG}},				\
   {"input_operand", {SUBREG, MEM, REG, CONST_INT}},		\
