@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-common.h"
 #include "output.h"
 #include "tm_p.h"
+#include "target.h"
 
 #define GCC_BAD(msgid) do { warning (msgid); return; } while (0)
 #define GCC_BAD2(msgid, arg) do { warning (msgid, arg); return; } while (0)
@@ -350,11 +351,43 @@ maybe_apply_pragma_weak (tree decl ATTRIBUTE_UNUSED)
 }
 #endif /* HANDLE_PRAGMA_WEAK */
 
+/* GCC supports two #pragma directives for renaming the external
+   symbol associated with a declaration (DECL_ASSEMBLER_NAME), for
+   compatibility with the Solaris and Tru64 system headers.  GCC also
+   has its own notation for this, __asm__("name") annotations.
+
+   Corner cases of these features and their interaction:
+
+   1) Both pragmas silently apply only to declarations with external
+      linkage (that is, TREE_PUBLIC || DECL_EXTERNAL).  Asm labels
+      do not have this restriction.
+
+   2) In C++, both #pragmas silently apply only to extern "C" declarations.
+      Asm labels do not have this restriction.
+
+   3) If any of the three ways of changing DECL_ASSEMBLER_NAME is
+      applied to a decl whose DECL_ASSEMBLER_NAME is already set, and the
+      new name is different, a warning issues and the name does not change.
+
+   4) The "source name" for #pragma redefine_extname is the DECL_NAME,
+      *not* the DECL_ASSEMBLER_NAME.
+
+   5) If #pragma extern_prefix is in effect and a declaration occurs
+      with an __asm__ name, the #pragma extern_prefix is silently
+      ignored for that declaration.
+
+   6) If #pragma extern_prefix and #pragma redefine_extname apply to
+      the same declaration, whichever triggered first wins, and a warning
+      is issued.  (We would like to have #pragma redefine_extname always
+      win, but it can appear either before or after the declaration, and
+      if it appears afterward, we have no way of knowing whether a modified
+      DECL_ASSEMBLER_NAME is due to #pragma extern_prefix.)  */
+
 static GTY(()) tree pending_redefine_extname;
 
 static void handle_pragma_redefine_extname (cpp_reader *);
 
-/* #pragma redefined_extname oldname newname */
+/* #pragma redefine_extname oldname newname */
 static void
 handle_pragma_redefine_extname (cpp_reader *dummy ATTRIBUTE_UNUSED)
 {
@@ -362,43 +395,66 @@ handle_pragma_redefine_extname (cpp_reader *dummy ATTRIBUTE_UNUSED)
   enum cpp_ttype t;
 
   if (c_lex (&oldname) != CPP_NAME)
-    {
-      warning ("malformed #pragma redefine_extname, ignored");
-      return;
-    }
+    GCC_BAD ("malformed #pragma redefine_extname, ignored");
   if (c_lex (&newname) != CPP_NAME)
-    {
-      warning ("malformed #pragma redefine_extname, ignored");
-      return;
-    }
+    GCC_BAD ("malformed #pragma redefine_extname, ignored");
   t = c_lex (&x);
   if (t != CPP_EOF)
     warning ("junk at end of #pragma redefine_extname");
 
-  decl = identifier_global_value (oldname);
-  if (decl && (TREE_CODE (decl) == FUNCTION_DECL
-	       || TREE_CODE (decl) == VAR_DECL))
+  if (!flag_mudflap && !targetm.handle_pragma_redefine_extname)
     {
-      if (DECL_ASSEMBLER_NAME_SET_P (decl)
-	  && DECL_ASSEMBLER_NAME (decl) != newname)
-        warning ("#pragma redefine_extname conflicts with declaration");
-      change_decl_assembler_name (decl, newname);
+      if (warn_unknown_pragmas > in_system_header)
+	warning ("#pragma redefine_extname not supported on this target");
+      return;
+    }
+
+  decl = identifier_global_value (oldname);
+  if (decl
+      && (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
+      && (TREE_CODE (decl) == FUNCTION_DECL
+	  || TREE_CODE (decl) == VAR_DECL)
+      && has_c_linkage (decl))
+    {
+      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	{
+	  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+	  name = targetm.strip_name_encoding (name);
+
+	  if (strcmp (name, IDENTIFIER_POINTER (newname)))
+	    warning ("#pragma redefine_extname ignored due to conflict with "
+		     "previous rename");
+	}
+      else
+	change_decl_assembler_name (decl, newname);
     }
   else
-    add_to_renaming_pragma_list(oldname, newname);
+    /* We have to add this to the rename list even if there's already
+       a global value that doesn't meet the above criteria, because in
+       C++ "struct foo {...};" puts "foo" in the current namespace but
+       does *not* conflict with a subsequent declaration of a function
+       or variable foo.  See g++.dg/other/pragma-re-2.C.  */
+    add_to_renaming_pragma_list (oldname, newname);
 }
 
+/* This is called from here and from ia64.c.  */
 void
 add_to_renaming_pragma_list (tree oldname, tree newname)
 {
+  tree previous = purpose_member (oldname, pending_redefine_extname);
+  if (previous)
+    {
+      if (TREE_VALUE (previous) != newname)
+	warning ("#pragma redefine_extname ignored due to conflict with "
+		 "previous #pragma redefine_extname");
+      return;
+    }
+  
   pending_redefine_extname
     = tree_cons (oldname, newname, pending_redefine_extname);
 }
 
 static GTY(()) tree pragma_extern_prefix;
-
-#ifdef HANDLE_PRAGMA_EXTERN_PREFIX
-static void handle_pragma_extern_prefix (cpp_reader *);
 
 /* #pragma extern_prefix "prefix" */
 static void
@@ -408,18 +464,17 @@ handle_pragma_extern_prefix (cpp_reader *dummy ATTRIBUTE_UNUSED)
   enum cpp_ttype t;
 
   if (c_lex (&prefix) != CPP_STRING)
-    {
-      warning ("malformed #pragma extern_prefix, ignored");
-      return;
-    }
+    GCC_BAD ("malformed #pragma extern_prefix, ignored");
   t = c_lex (&x);
   if (t != CPP_EOF)
     warning ("junk at end of #pragma extern_prefix");
 
-  /* Note that the length includes the null terminator.  */
-  pragma_extern_prefix = (TREE_STRING_LENGTH (prefix) > 1 ? prefix : NULL);
+  if (targetm.handle_pragma_extern_prefix)
+    /* Note that the length includes the null terminator.  */
+    pragma_extern_prefix = (TREE_STRING_LENGTH (prefix) > 1 ? prefix : NULL);
+  else if (warn_unknown_pragmas > in_system_header)
+    warning ("#pragma extern_prefix not supported on this target");
 }
-#endif
 
 /* Hook from the front ends to apply the results of one of the preceding
    pragmas that rename variables.  */
@@ -427,56 +482,88 @@ handle_pragma_extern_prefix (cpp_reader *dummy ATTRIBUTE_UNUSED)
 tree
 maybe_apply_renaming_pragma (tree decl, tree asmname)
 {
-  tree oldname;
+  tree *p, t;
 
-  /* Copied from the check in set_decl_assembler_name.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      || (TREE_CODE (decl) == VAR_DECL 
-          && (TREE_STATIC (decl) 
-              || DECL_EXTERNAL (decl) 
-              || TREE_PUBLIC (decl))))
-    oldname = DECL_ASSEMBLER_NAME (decl);
-  else
+  /* The renaming pragmas are only applied to declarations with
+     external linkage.  */
+  if ((TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
+      || (!TREE_PUBLIC (decl) && !DECL_EXTERNAL (decl))
+      || !has_c_linkage (decl))
     return asmname;
 
-  /* If the name begins with a *, that's a sign of an asmname attached to
-     a previous declaration.  */
-  if (IDENTIFIER_POINTER (oldname)[0] == '*')
+  /* If the DECL_ASSEMBLER_NAME is already set, it does not change,
+     but we may warn about a rename that conflicts.  */
+  if (DECL_ASSEMBLER_NAME_SET_P (decl))
     {
-      const char *oldasmname = IDENTIFIER_POINTER (oldname) + 1;
-      if (asmname && strcmp (TREE_STRING_POINTER (asmname), oldasmname) != 0)
-	warning ("asm declaration conflicts with previous rename");
-      asmname = build_string (strlen (oldasmname), oldasmname);
+      const char *oldname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      oldname = targetm.strip_name_encoding (oldname);
+
+      if (asmname && strcmp (TREE_STRING_POINTER (asmname), oldname))
+	  warning ("asm declaration ignored due to "
+		   "conflict with previous rename");
+
+      /* Take any pending redefine_extname off the list.  */
+      for (p = &pending_redefine_extname; (t = *p); p = &TREE_CHAIN (t))
+	if (DECL_NAME (decl) == TREE_PURPOSE (t))
+	  {
+	    /* Only warn if there is a conflict.  */
+	    if (strcmp (IDENTIFIER_POINTER (TREE_VALUE (t)), oldname))
+	      warning ("#pragma redefine_extname ignored due to "
+		       "conflict with previous rename");
+
+	    *p = TREE_CHAIN (t);
+	    break;
+	  }
+      return 0;
     }
 
-  {
-    tree *p, t;
+  /* Find out if we have a pending #pragma redefine_extname.  */
+  for (p = &pending_redefine_extname; (t = *p); p = &TREE_CHAIN (t))
+    if (DECL_NAME (decl) == TREE_PURPOSE (t))
+      {
+	tree newname = TREE_VALUE (t);
+	*p = TREE_CHAIN (t);
 
-    for (p = &pending_redefine_extname; (t = *p) ; p = &TREE_CHAIN (t))
-      if (oldname == TREE_PURPOSE (t))
-	{
-	  const char *newname = IDENTIFIER_POINTER (TREE_VALUE (t));
+	/* If we already have an asmname, #pragma redefine_extname is
+ 	   ignored (with a warning if it conflicts).  */
+	if (asmname)
+	  {
+	    if (strcmp (TREE_STRING_POINTER (asmname),
+			IDENTIFIER_POINTER (newname)) != 0)
+	      warning ("#pragma redefine_extname ignored due to "
+		       "conflict with __asm__ declaration");
+	    return asmname;
+	  }
 
-	  if (asmname && strcmp (TREE_STRING_POINTER (asmname), newname) != 0)
-            warning ("#pragma redefine_extname conflicts with declaration");
-	  *p = TREE_CHAIN (t);
+	/* Otherwise we use what we've got; #pragma extern_prefix is
+	   silently ignored.  */
+	return build_string (IDENTIFIER_LENGTH (newname),
+			     IDENTIFIER_POINTER (newname));
+      }
 
-	  return build_string (strlen (newname), newname);
-	}
-  }
+  /* If we've got an asmname, #pragma extern_prefix is silently ignored.  */
+  if (asmname)
+    return asmname;
 
-#ifdef HANDLE_PRAGMA_EXTERN_PREFIX
-  if (pragma_extern_prefix && !asmname)
+  /* If #pragma extern_prefix is in effect, apply it.  */
+  if (pragma_extern_prefix)
     {
-      char *x = concat (TREE_STRING_POINTER (pragma_extern_prefix),
-			IDENTIFIER_POINTER (oldname), NULL);
-      asmname = build_string (strlen (x), x);
-      free (x);
-      return asmname;
-    }
-#endif
+      const char *prefix = TREE_STRING_POINTER (pragma_extern_prefix);
+      size_t plen = TREE_STRING_LENGTH (pragma_extern_prefix) - 1;
 
-  return asmname;
+      const char *id = IDENTIFIER_POINTER (DECL_NAME (decl));
+      size_t ilen = IDENTIFIER_LENGTH (DECL_NAME (decl));
+	
+      char *newname = alloca (plen + ilen + 1);
+
+      memcpy (newname,        prefix, plen);
+      memcpy (newname + plen, id, ilen + 1);
+
+      return build_string (plen + ilen, newname);
+    }
+
+  /* Nada.  */
+  return 0;
 }
 
 /* Front-end wrapper for pragma registration to avoid dragging
@@ -498,15 +585,9 @@ init_pragma (void)
 #ifdef HANDLE_PRAGMA_WEAK
   c_register_pragma (0, "weak", handle_pragma_weak);
 #endif
-#ifdef HANDLE_PRAGMA_REDEFINE_EXTNAME
+
   c_register_pragma (0, "redefine_extname", handle_pragma_redefine_extname);
-#else
-  if (flag_mudflap)
-    c_register_pragma (0, "redefine_extname", handle_pragma_redefine_extname);
-#endif
-#ifdef HANDLE_PRAGMA_EXTERN_PREFIX
   c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);
-#endif
 
 #ifdef REGISTER_TARGET_PRAGMAS
   REGISTER_TARGET_PRAGMAS ();

@@ -314,3 +314,9 @@ c_objc_common_truthvalue_conversion (tree expr)
   return c_common_truthvalue_conversion (expr);
 }
 
+/* In C and ObjC, all decls have "C" linkage.  */
+bool
+has_c_linkage (tree decl ATTRIBUTE_UNUSED)
+{
+  return true;
+}

@@ -1381,8 +1381,9 @@ c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_
     $(C_TREE_H) $(FLAGS_H) toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(FLAGS_H) toplev.h $(C_COMMON_H) real.h
-c-pragma.o: c-pragma.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
-    function.h c-pragma.h toplev.h output.h $(GGC_H) $(TM_P_H) $(C_COMMON_H) gt-c-pragma.h
+c-pragma.o: c-pragma.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
+    $(TREE_H) function.h c-pragma.h toplev.h output.h $(GGC_H) $(TM_P_H) \
+    $(C_COMMON_H) $(TARGET_H) gt-c-pragma.h
 graph.o: graph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(FLAGS_H) output.h \
     $(RTL_H) function.h hard-reg-set.h $(BASIC_BLOCK_H) graph.h
 sbitmap.o: sbitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(FLAGS_H) \
@@ -1424,8 +1425,8 @@ c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)		\
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 
 c-cppbuiltin.o : c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(TREE_H) version.h $(C_COMMON_H) c-pragma.h $(FLAGS_H) toplev.h langhooks.h \
-	output.h except.h real.h $(TM_P_H)
+	$(TREE_H) version.h $(C_COMMON_H) c-pragma.h $(FLAGS_H) toplev.h \
+	langhooks.h output.h except.h real.h $(TARGET_H) $(TM_P_H)
 
 # A file used by all variants of C and some other languages.
 

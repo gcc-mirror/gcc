@@ -841,7 +841,10 @@ nothrow_libfn_p (tree fn)
     /* Can't be a C library function.  */
     return 0;
 
-  id = DECL_ASSEMBLER_NAME (fn);
+  /* Being a C library function, DECL_ASSEMBLER_NAME == DECL_NAME
+     unless the system headers are playing rename tricks, and if
+     they are, we don't want to be confused by them.  */
+  id = DECL_NAME (fn);
   return !!libc_name_p (IDENTIFIER_POINTER (id), IDENTIFIER_LENGTH (id));
 }
 

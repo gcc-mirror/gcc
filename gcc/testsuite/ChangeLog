@@ -1,6 +1,12 @@
+2004-06-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.dg/expr/enum1.C, g++.dg/opt/const3.C: Declare abort with
+	extern "C".
+	* g++.dg/other/pragma-re-1.C: Add comments.
+
 2004-06-19  Bud Davis  <bdavis9659@comcast.net>
- 
-        PR gfortran/16080
+
+	PR gfortran/16080
 	* gfortran.fortran-torture/execute/read_null_string.f90: New file.
 
 2004-06-19  Andrew Pinski  <pinskia@physics.uc.edu>

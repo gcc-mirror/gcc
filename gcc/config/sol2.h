@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #undef	WINT_TYPE_SIZE
 #define	WINT_TYPE_SIZE BITS_PER_WORD
 
-#define HANDLE_PRAGMA_REDEFINE_EXTNAME 1
+#define TARGET_HANDLE_PRAGMA_REDEFINE_EXTNAME 1
 
 /* ??? Note: in order for -compat-bsd to work fully,
    we must somehow arrange to fixincludes /usr/ucbinclude
@@ -60,7 +60,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("sun");			\
 	builtin_define ("__svr4__");			\
 	builtin_define ("__SVR4");			\
-	builtin_define ("__PRAGMA_REDEFINE_EXTNAME");	\
 	builtin_assert ("system=unix");			\
 	builtin_assert ("system=svr4");			\
 	/* For C++ we need to add some additional macro	\
@@ -196,6 +195,7 @@ extern void __enable_execute_stack (void *);				\
 void									\
 __enable_execute_stack (void *addr)					\
 {									\
+  extern int mprotect(void *, size_t, int);				\
   if (!need_enable_exec_stack)						\
     return;								\
   else {								\

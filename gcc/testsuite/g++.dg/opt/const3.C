@@ -5,7 +5,7 @@
 // { dg-do run }
 // { dg-options "-O2" }
 
-extern void abort(void);
+extern "C" void abort(void);
 
 typedef __SIZE_TYPE__ size_t;
 

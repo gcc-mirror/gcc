@@ -1,6 +1,6 @@
 // { dg-do run }
 
-void abort();
+extern "C" void abort();
 int main()
 {
     enum { shelf = 4 } t = shelf;

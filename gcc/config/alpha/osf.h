@@ -41,7 +41,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("__digital__");			\
 	builtin_define ("__arch64__");			\
 	builtin_define ("_LONGLONG");			\
-	builtin_define ("__PRAGMA_EXTERN_PREFIX");	\
 	builtin_assert ("system=unix");			\
 	builtin_assert ("system=xpg4");			\
 	/* Tru64 UNIX V5 has a 16 byte long		\
@@ -211,4 +210,4 @@ __enable_execute_stack (void *addr)					\
 
 /* Handle #pragma extern_prefix.  Technically only needed for Tru64 5.x,
    but easier to manipulate preprocessor bits from here.  */
-#define HANDLE_PRAGMA_EXTERN_PREFIX 1
+#define TARGET_HANDLE_PRAGMA_EXTERN_PREFIX 1

@@ -71,20 +71,6 @@ init_method (void)
 {
   init_mangle ();
 }
-
-
-/* Set the mangled name (DECL_ASSEMBLER_NAME) for DECL.  */
-
-void
-set_mangled_name_for_decl (tree decl)
-{
-  if (processing_template_decl)
-    /* There's no need to mangle the name of a template function.  */
-    return;
-
-  mangle_decl (decl);
-}
-
 
 /* Return a this or result adjusting thunk to FUNCTION.  THIS_ADJUSTING
    indicates whether it is a this or result adjusting thunk.
