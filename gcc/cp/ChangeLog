@@ -1,3 +1,9 @@
+2005-02-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/20028
+	* class.c (finish_struct): Initialize TYPE_SIZE_UNIT of a
+	template along with TYPE_SIZE.
+
 2005-02-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (reshape_init): Use explicit quotes in error message

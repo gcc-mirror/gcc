@@ -1,6 +1,7 @@
 /* Functions related to building classes and their related objects.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005
+     Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -5217,6 +5218,7 @@ finish_struct (tree t, tree attributes)
     {
       finish_struct_methods (t);
       TYPE_SIZE (t) = bitsize_zero_node;
+      TYPE_SIZE_UNIT (t) = size_zero_node;
     }
   else
     finish_struct_1 (t);
