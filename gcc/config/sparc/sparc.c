@@ -139,7 +139,7 @@ struct sparc_cpu_select sparc_select[] =
   { (char *)0,	"default",	1,	1 },
   { (char *)0,	"-mcpu=",	1,	1 },
   { (char *)0,	"-mtune=",	1,	0 },
-  { 0, 0 }
+  { 0, 0, 0, 0 }
 };
 
 /* CPU type.  This is set from TARGET_CPU_DEFAULT and -m{cpu,tune}=xxx.  */
@@ -176,7 +176,7 @@ sparc_override_options ()
     { TARGET_CPU_supersparc, "supersparc" },
     { TARGET_CPU_v9, "v9" },
     { TARGET_CPU_ultrasparc, "ultrasparc" },
-    { 0 }
+    { 0, 0 }
   };
   struct cpu_default *def;
   /* Table of values for -m{cpu,tune}=.  */
@@ -202,7 +202,7 @@ sparc_override_options ()
     { "v9",         PROCESSOR_V9, MASK_ISA, MASK_V9 },
     /* TI ultrasparc */
     { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA, MASK_V9 },
-    { 0 }
+    { 0, 0, 0, 0 }
   };
   struct cpu_table *cpu;
   struct sparc_cpu_select *sel;
@@ -1878,7 +1878,7 @@ mem_aligned_8 (mem)
      assumption.  */
 
   /* See what register we use in the address.  */
-  base = 0;
+  base = offset = 0;
   if (GET_CODE (addr) == PLUS)
     {
       if (GET_CODE (XEXP (addr, 0)) == REG
@@ -3659,6 +3659,7 @@ output_function_prologue (file, size, leaf_function)
 	  base = frame_base_name;
 	}
 
+      n_regs = 0;
       if (TARGET_EPILOGUE && ! leaf_function)
 	/* ??? Originally saved regs 0-15 here.  */
 	n_regs = save_regs (file, 0, 8, base, offset, 0, real_offset);
@@ -3684,7 +3685,7 @@ output_function_prologue (file, size, leaf_function)
 void
 output_function_epilogue (file, size, leaf_function)
      FILE *file;
-     int size;
+     int size ATTRIBUTE_UNUSED;
      int leaf_function;
 {
   char *ret;
@@ -3731,6 +3732,7 @@ output_function_epilogue (file, size, leaf_function)
 	  base = frame_base_name;
 	}
 
+      n_regs = 0;
       if (TARGET_EPILOGUE && ! leaf_function)
 	/* ??? Originally saved regs 0-15 here.  */
 	n_regs = restore_regs (file, 0, 8, base, offset, 0);
@@ -3867,8 +3869,9 @@ output_function_epilogue (file, size, leaf_function)
 void
 init_cumulative_args (cum, fntype, libname, indirect)
      CUMULATIVE_ARGS *cum;
-     tree fntype, libname;
-     int indirect;
+     tree fntype;
+     tree libname ATTRIBUTE_UNUSED;
+     int indirect ATTRIBUTE_UNUSED;
 {
   cum->words = 0;
   cum->prototype_p = fntype && TYPE_ARG_TYPES (fntype);
@@ -4515,10 +4518,10 @@ function_arg_partial_nregs (cum, mode, type, named)
 
 int
 function_arg_pass_by_reference (cum, mode, type, named)
-     const CUMULATIVE_ARGS *cum;
+     const CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   if (TARGET_ARCH32)
     {
@@ -4667,7 +4670,7 @@ function_value (type, mode, incoming_p)
 
 rtx
 sparc_builtin_saveregs (arglist)
-     tree arglist;
+     tree arglist ATTRIBUTE_UNUSED;
 {
   int first_reg = current_function_args_info.words;
   rtx address;
@@ -6408,7 +6411,7 @@ sparc_flat_epilogue_delay_slots ()
 int
 sparc_flat_eligible_for_epilogue_delay (trial, slot)
      rtx trial;
-     int slot;
+     int slot ATTRIBUTE_UNUSED;
 {
   rtx pat = PATTERN (trial);
 
