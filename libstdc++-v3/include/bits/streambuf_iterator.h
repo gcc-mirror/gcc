@@ -72,7 +72,7 @@ namespace std
       // NB: This implementation assumes the "end of stream" value
       // is EOF, or -1.
       mutable streambuf_type*	_M_sbuf;
-      int_type			_M_c;
+      mutable int_type		_M_c;
 
     public:
       ///  Construct end of input stream iterator.
@@ -157,10 +157,11 @@ namespace std
 	int_type __ret = __eof;
 	if (_M_sbuf)
 	  {
-	    if (!traits_type::eq_int_type(_M_c, __eof))
+	    if (!traits_type::eq_int_type(_M_c, __eof)
+		|| !traits_type::eq_int_type((_M_c = _M_sbuf->sgetc()),
+					     __eof))
 	      __ret = _M_c;
-	    else if (traits_type::eq_int_type((__ret = _M_sbuf->sgetc()),
-					      __eof))
+	    else
 	      _M_sbuf = 0;
 	  }
 	return __ret;

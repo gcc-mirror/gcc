@@ -102,7 +102,7 @@ void test01()
   tim_get.get_monthname(is_it06, end, iss, errorstate, &time06);
   VERIFY( time06.tm_mon == 4 );
   VERIFY( errorstate == ios_base::failbit );
-  VERIFY( *is_it05 == L'l' );
+  VERIFY( *is_it06 == L'l' );
 }
 
 int main()
