@@ -1999,7 +1999,7 @@ largest_union_member (type)
   tree f, type_size = TYPE_SIZE (type);
 
   for (f = TYPE_FIELDS (type); f; f = TREE_CHAIN (f))
-    if (simple_cst_equal (DECL_SIZE (f), type_size))
+    if (simple_cst_equal (DECL_SIZE (f), type_size) == 1)
       return f;
 
   /* We should always find one.  */
