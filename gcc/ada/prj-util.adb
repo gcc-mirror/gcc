@@ -255,7 +255,7 @@ package body Prj.Util is
      (Name                    : Name_Id;
       Attribute_Or_Array_Name : Name_Id;
       In_Package              : Package_Id)
-      return                   Variable_Value
+      return                    Variable_Value
    is
       The_Array     : Array_Element_Id;
       The_Attribute : Variable_Value := Nil_Variable_Value;
@@ -315,11 +315,12 @@ package body Prj.Util is
       return      Array_Element_Id
    is
       Current : Array_Id := In_Arrays;
-      The_Array : Array_Data;
+      The_Array          : Array_Data;
 
    begin
       while Current /= No_Array loop
          The_Array := Arrays.Table (Current);
+
          if The_Array.Name = Name then
             return The_Array.Value;
          else
@@ -341,8 +342,8 @@ package body Prj.Util is
    begin
       while Current /= No_Package loop
          The_Package := Packages.Table (Current);
-         exit when The_Package.Name /= No_Name and then
-           The_Package.Name = Name;
+         exit when The_Package.Name /= No_Name
+           and then The_Package.Name = Name;
          Current := The_Package.Next;
       end loop;
 

@@ -4,6 +4,10 @@
 
 2001-10-26  Robert Dewar <dewar@gnat.com>
 
+	* prj-util.adb: Minor reformatting
+
+2001-10-26  Robert Dewar <dewar@gnat.com>
+
 	* prj-attr.adb: Minor reformatting throughout
 
 2001-10-26  Robert Dewar <dewar@gnat.com>
