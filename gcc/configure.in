@@ -2591,10 +2591,10 @@ if test $in_tree_ld = yes ; then
     gcc_cv_ld_ro_rw_mix=read-write
   fi
 elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
-  echo '.section "myfoosect", "a"' > conftest1.s
-  echo '.section "myfoosect", "aw"' > conftest2.s
+  echo '.section myfoosect, "a"' > conftest1.s
+  echo '.section myfoosect, "aw"' > conftest2.s
   echo '.byte 1' >> conftest2.s
-  echo '.section "myfoosect", "a"' > conftest3.s
+  echo '.section myfoosect, "a"' > conftest3.s
   echo '.byte 0' >> conftest3.s
   if $gcc_cv_as -o conftest1.o conftest1.s > /dev/null 2>&1 \
      && $gcc_cv_as -o conftest2.o conftest2.s > /dev/null 2>&1 \
