@@ -1,3 +1,9 @@
+2004-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/18951
+	* builtins.c (expand_builtin_mathfn, expand_builtin_mathfn_2): Avoid
+	using arguments passed to save_expr after that call.
+
 2004-12-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/18730
