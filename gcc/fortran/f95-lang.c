@@ -750,9 +750,9 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_ROUNDF, "roundf", true);
 
   /* These are used to implement the ** operator.  */
-  gfc_define_builtin ("__builtin_pow", mfunc_double[0], 
+  gfc_define_builtin ("__builtin_pow", mfunc_double[1], 
 		      BUILT_IN_POW, "pow", true);
-  gfc_define_builtin ("__builtin_powf", mfunc_float[0], 
+  gfc_define_builtin ("__builtin_powf", mfunc_float[1], 
 		      BUILT_IN_POWF, "powf", true);
 
   /* Other builtin functions we use.  */
