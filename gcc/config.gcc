@@ -69,6 +69,10 @@
 #			makefile-fragments, if different from
 #			"$cpu_type/t-$cpu_type".
 #
+#  extra_modes          The name of the file containing a list of extra
+#                       machine modes, if necessary and different from
+#                       "$cpu_type/$cpu_type-modes.def".
+#
 #  float_format		Set to the symbolic name for the floating-point
 #			formats used for this machine, if different from
 #			"i64".  Used to derive a header file name to
@@ -286,6 +290,11 @@ tm_file=${cpu_type}/${cpu_type}.h
 if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-protos.h
 then
 	tm_p_file=${cpu_type}/${cpu_type}-protos.h
+fi
+extra_modes=
+if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-modes.def
+then
+	extra_modes=${cpu_type}/${cpu_type}-modes.def
 fi
 
 case $machine in
@@ -2201,6 +2210,7 @@ s390x-*-linux*)
 	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"
 	tm_p_file=s390/s390-protos.h
 	md_file=s390/s390.md
+	extra_modes=s390/s390-modes.def
 	out_file=s390/s390.c
 	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux s390/t-linux64"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
@@ -2582,18 +2592,21 @@ strongarm-*-elf*)
 	tmake_file=arm/t-strongarm-elf
 	out_file=arm/arm.c
 	md_file=arm/arm.md
+	extra_modes=arm/arm-modes.def
 	;;
 strongarm-*-coff*)
 	tm_file="arm/semi.h arm/aout.h arm/coff.h arm/strongarm-coff.h arm/arm.h"
 	tmake_file=arm/t-strongarm-coff
 	out_file=arm/arm.c
 	md_file=arm/arm.md
+	extra_modes=arm/arm-modes.def
 	;;
 strongarm-*-pe)
 	tm_file="arm/semi.h arm/aout.h arm/coff.h arm/strongarm-coff.h arm/arm.h arm/pe.h arm/strongarm-pe.h"
 	tmake_file=arm/t-strongarm-pe
 	out_file=arm/arm.c
 	md_file=arm/arm.md
+	extra_modes=arm/arm-modes.def
 	extra_objs=pe.o
 	;;
 thumb*-*-*)
@@ -2667,12 +2680,14 @@ xscale-*-elf)
 	tmake_file=arm/t-xscale-elf
 	out_file=arm/arm.c
 	md_file=arm/arm.md
+	extra_modes=arm/arm-modes.def
 	;;
 xscale-*-coff)
 	tm_file="arm/semi.h arm/aout.h arm/coff.h arm/xscale-coff.h arm/arm.h"
 	tmake_file=arm/t-xscale-coff
 	out_file=arm/arm.c
 	md_file=arm/arm.md
+	extra_modes=arm/arm-modes.def
 	;;
 xstormy16-*-elf)
 	# For historical reasons, the target files omit the 'x'.

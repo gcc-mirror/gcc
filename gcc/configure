@@ -5078,11 +5078,11 @@ if test x$thread_file = x; then
 fi
 
 # Look for a file containing extra machine modes.
-if test -f $srcdir/config/${cpu_type}/${cpu_type}-modes.def; then
-  extra_modes_file='$(srcdir)/config/'${cpu_type}/${cpu_type}-modes.def
+if test -n "$extra_modes" && test -f $srcdir/config/$extra_modes; then
+  extra_modes_file='$(srcdir)'/config/${extra_modes}
   
   cat >> confdefs.h <<EOF
-#define EXTRA_MODES_FILE "${cpu_type}/${cpu_type}-modes.def"
+#define EXTRA_MODES_FILE "$extra_modes"
 EOF
 
   cat >> confdefs.h <<\EOF

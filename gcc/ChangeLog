@@ -1,16 +1,24 @@
+2002-06-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.gcc: Make the name of the extra-modes file adjustable
+	by target stanzas.
+	(s390x, strongarm, xscale stanzas): Use this facility.
+	* configure.in: Update to match.
+	* configure: Regenerate.
+
 2002-06-11  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_emit_minmax): Treat unsigned
-        max/mins as unsigned GE compares.
+	* config/rs6000/rs6000.c (rs6000_emit_minmax): Treat unsigned
+	max/mins as unsigned GE compares.
 
 2002-06-11  Jason Thorpe  <thorpej@wasabisystems.com>
 
-	* config.gcc (vax-*-bsd*): Add vax/bsd.h to ${tm_file}. 
+	* config.gcc (vax-*-bsd*): Add vax/bsd.h to ${tm_file}.
 	* config/vax/bsd.h: New file.
 	* config/vax/netbsd.h: Add missing notice.
-	(CPP_PREDEFINES): Remove.  
-	(TARGET_OS_CPP_BUILTINS): Define.  
-	(CPP_SPEC): Use NETBSD_CPP_SPEC.   
+	(CPP_PREDEFINES): Remove.
+	(TARGET_OS_CPP_BUILTINS): Define.
+	(CPP_SPEC): Use NETBSD_CPP_SPEC.
 	* config/vax/openbsd.h: Update copyright years.
 	(CPP_PREDEFINES): Remove.
 	(TARGET_OS_CPP_BUILTINS): Define.
@@ -97,7 +105,7 @@ Wed Jun 12 01:50:28 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	match semantics.
 	* diagnostic.c: Adjust calls to diagnostic_count_error through out.
 	(diagnostic_count_diagnostic): Make aware of other kinds of
-	diagnostics. 
+	diagnostics.
 	(diagnostic_initialize): Initialize warnings_are_errors_message field.
 
 2002-06-11  Tom Tromey  <tromey@redhat.com>
@@ -115,7 +123,7 @@ Wed Jun 12 01:50:28 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-06-11  Richard Henderson  <rth@redhat.com>
 
-	* defaults.h (EH_FRAME_SECTION_NAME): Don't define if 
+	* defaults.h (EH_FRAME_SECTION_NAME): Don't define if
 	DWARF2_UNWIND_INFO is false.
 
 2002-06-11  Bob Wilson  <bob.wilson@acm.org>
@@ -181,19 +189,19 @@ Tue Jun 11 21:53:37 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md (reload_base, ltorg): Remove.
-	* s390.c (s390_stop_dump_lit_p, s390_dump_literal_pool, 
+	* s390.c (s390_stop_dump_lit_p, s390_dump_literal_pool,
 	s390_asm_output_pool_prologue, s390_pool_start_insn): Remove.
-	* s390-protos.h (s390_stop_dump_lit_p, s390_dump_literal_pool, 
+	* s390-protos.h (s390_stop_dump_lit_p, s390_dump_literal_pool,
 	s390_asm_output_pool_prologue): Likewise.
 	* s390.h (s390_pool_start_insn): Likewise.
 
-	* s390.c (s390_output_symbolic_const): Remove support for 
+	* s390.c (s390_output_symbolic_const): Remove support for
 	old-style pool chunks.
 	(s390_function_epilogue): Likewise.
-	(s390_output_constant_pool): Likewise.  Also, fix incorrect 
+	(s390_output_constant_pool): Likewise.  Also, fix incorrect
 	alignment for 64-bit literal pools.
 	(print_operand_address): Remove 'y' and 'Y' format flags.
-	* s390.h (ASM_OUTPUT_POOL_PROLOGUE): Remove support for 
+	* s390.h (ASM_OUTPUT_POOL_PROLOGUE): Remove support for
 	old-style pool chunks.
 	(ASM_OUTPUT_SPECIAL_POOL_ENTRY): Likewise.
 	(ASM_OUTPUT_POOL_EPILOGUE): Remove.
@@ -202,23 +210,23 @@ Tue Jun 11 21:53:37 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* s390.c (consttable_operand): New function.
 	* s390-protos.h (consttable_operand): Declare it.
 	* s390.h (PREDICATE_CODES): Add consttable_operand.
-	* s390.md (consttable_qi, consttable_hi, consttable_si, consttable_di, 
-	consttable_sf, consttable_df, pool_start_31, pool_end_31, 
+	* s390.md (consttable_qi, consttable_hi, consttable_si, consttable_di,
+	consttable_sf, consttable_df, pool_start_31, pool_end_31,
 	pool_start_64, pool_end_64, reload_base, reload_base2): New insns.
 	* s390.c (struct constant, struct constant_pool): New data types.
 	(constant_modes, gen_consttable): New variables.
-	(s390_start_pool, s390_end_pool, s390_add_pool, 
+	(s390_start_pool, s390_end_pool, s390_add_pool,
 	s390_dump_pool, s390_free_pool): New functions.
-	(s390_chunkify_pool): Completely reimplement literal pool 
+	(s390_chunkify_pool): Completely reimplement literal pool
 	overflow handling.
 
 	* s390.c (s390_pool_overflow): New variable.
 	* s390.h (s390_pool_overflow): Declare it.
-	* s390.md (cjump, icjump): Use it to adapt length for out-of-range 
+	* s390.md (cjump, icjump): Use it to adapt length for out-of-range
 	jumps in literal pool overflow situations.
 
 	* s390.c (s390_decompose_address): Accept new-style pool chunk offsets.
-	(s390_frame_info): Account for possible use of RETURN_REGNUM 
+	(s390_frame_info): Account for possible use of RETURN_REGNUM
 	by new literal pool overflow code.
 	(s390_emit_prologue): Likewise.
 
@@ -340,7 +348,7 @@ Tue Jun 11 21:53:37 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* combine.c (try_combine): Expect insn lists from split generator.
 	* reorg.c (relax_delay_slots): Emit SEQUENCE into insn list by
 	hand.
-	
+
 2002-06-11  Roger Sayle  <roger@eyesopen.com>
 	    Andreas Jaeger <aj@suse.de>
 
@@ -348,7 +356,7 @@ Tue Jun 11 21:53:37 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-06-11  Andreas Schwab  <schwab@suse.de>
 
-	* config/m68k/m68k.h (PREDICATE_CODES): Define. 
+	* config/m68k/m68k.h (PREDICATE_CODES): Define.
 
 2002-06-11  Eric Christopher  <echristo@redhat.com>
 
@@ -690,7 +698,7 @@ Mon Jun 10 18:02:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-06-10  Tim Josling  <tej@melbpc.org.au>
 
-         First steps to making treelang documentation compliant, based on
+	 First steps to making treelang documentation compliant, based on
 	 instructions in sourcebuild.texi. Also add to gcc.c list of
 	 default languages.
 
