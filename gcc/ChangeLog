@@ -1,3 +1,23 @@
+2004-07-02  Daniel Berlin  <dberlin@dberlin.org)
+
+	* tree-ssa-pre.c (bitmap_set_t): New.
+	(bb_value_sets): avail_out is now a bitmap_set_t.
+	(bitmap_find_leader): New function.
+	(bitmap_value_insert_into_set): Ditto.
+	(bitmap_set_copy): Ditto.
+	(bitmap_value_replace_in_set): Ditto.
+	(bitmap_set_contains_value): Ditto.
+	(bitmap_set_new): Ditto.
+	(bitmap_set_pool): New pool.
+	(find_or_generate_expression): Use bitmap_ functions on AVAIL sets.
+	(insert_aux): Ditto.
+	(add_to_sets): Ditto.
+	(compute_avail): Ditto
+	(eliminate): Ditto.
+	(init_pre): Ditto.
+	(fini_pre): Ditto.
+	(execute_pre): Ditto.
+
 2004-07-02  Roger Sayle  <roger@eyesopen.com>
 
 	* config/rs6000/rs6000.c (struct processor_costs): New structure

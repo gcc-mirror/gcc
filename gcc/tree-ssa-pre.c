@@ -47,19 +47,16 @@ Boston, MA 02111-1307, USA.  */
 
 /* TODO:
    
-   1. Implement load value numbering.
-   2. Speed up insert_aux so that we can use it all the time.  It
-      spends most of it's time in quadratic value replacement.
-   3. Avail sets can be shared by making an avail_find_leader that
+   1. Avail sets can be shared by making an avail_find_leader that
       walks up the dominator tree and looks in those avail sets.
       This might affect code optimality, it's unclear right now.
-   4. Load motion can be performed by value numbering the loads the
+   2. Load motion can be performed by value numbering the loads the
       same as we do other expressions.  This requires iterative
       hashing the vuses into the values.  Right now we simply assign
       a new value every time we see a statement with a vuse.
-   5. Strength reduction can be performed by anticipating expressions
+   3. Strength reduction can be performed by anticipating expressions
       we can repair later on.
-   6. Our canonicalization of expressions during lookups don't take
+   4. Our canonicalization of expressions during lookups don't take
       constants into account very well.  In particular, we don't fold
       anywhere, so we can get situations where we stupidly think
       something is a new value (a + 1 + 1 vs a + 2).  This is somewhat
@@ -166,7 +163,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* Representation of sets:
 
-   Sets are represented as doubly linked lists kept in topological
+   There are currently two types of sets used, hopefully to be unified soon.
+   The AVAIL sets do not need to be sorted in any particular order,
+   and thus, are simply represented as two bitmaps, one that keeps
+   track of values present in the set, and one that keeps track of
+   expressions present in the set.
+   
+   The other sets are represented as doubly linked lists kept in topological
    order, with an optional supporting bitmap of values present in the
    set.  The sets represent values, and the elements can be values or
    expressions.  The elements can appear in different sets, but each
@@ -220,6 +223,15 @@ typedef struct value_set
   
 } *value_set_t;
 
+
+/* An unordered bitmap set.  One bitmap tracks values, the other,
+   expressions. */
+typedef struct bitmap_set
+{
+  bitmap expressions;
+  bitmap values;
+} *bitmap_set_t;
+
 /* All of the following sets, except for TMP_GEN, are indexed.
    TMP_GEN is only ever iterated over, we never check what values
    exist in it.  */
@@ -240,7 +252,7 @@ typedef struct bb_value_sets
 
   /* The AVAIL_OUT set, which represents which values are available in
      a given basic block.  */
-  value_set_t avail_out;
+  bitmap_set_t avail_out;
 
   /* The ANTIC_IN set, which represents which values are anticiptable
      in a given basic block.  */
@@ -273,21 +285,29 @@ static struct
   int phis;
 } pre_stats;
 
+
+static tree bitmap_find_leader (bitmap_set_t, tree);
 static tree find_leader (value_set_t, tree);
 static void value_insert_into_set (value_set_t, tree);
+static void bitmap_value_insert_into_set (bitmap_set_t, tree);
+static void bitmap_value_replace_in_set (bitmap_set_t, tree);
 static void insert_into_set (value_set_t, tree);
+static void bitmap_set_copy (bitmap_set_t, bitmap_set_t);
+static bool bitmap_set_contains_value (bitmap_set_t, tree);
+static bitmap_set_t bitmap_set_new (void);
 static value_set_t set_new  (bool);
 static bool is_undefined_value (tree);
 static tree create_expression_by_pieces (basic_block, tree, tree);
+
 
 /* We can add and remove elements and entries to and from sets
    and hash tables, so we use alloc pools for them.  */
 
 static alloc_pool value_set_pool;
+static alloc_pool bitmap_set_pool;
 static alloc_pool value_set_node_pool;
 static alloc_pool binary_node_pool;
 static alloc_pool unary_node_pool;
-
 
 /* The phi_translate_table caches phi translations for a given
    expression and predecessor.  */
@@ -454,6 +474,19 @@ value_insert_into_set_bitmap (value_set_t set, tree v)
 }
 
 
+/* Create a new bitmap set and return it.  */
+
+static bitmap_set_t 
+bitmap_set_new (void)
+{
+  bitmap_set_t ret = pool_alloc (bitmap_set_pool);
+  ret->expressions = BITMAP_GGC_ALLOC ();
+  ret->values = BITMAP_GGC_ALLOC ();
+  bitmap_clear (ret->expressions);
+  bitmap_clear (ret->values);
+  return ret;
+}
+
 /* Create a new set.  */
 
 static value_set_t
@@ -468,6 +501,23 @@ set_new  (bool indexed)
   return ret;
 }
 
+/* Insert an expression, EXPR, into a bitmapped set.  */
+
+static void
+bitmap_insert_into_set (bitmap_set_t set, tree expr)
+{
+  tree val;
+  /* XXX: For now, we only let SSA_NAMES into the bitmap sets.  */
+  if (TREE_CODE (expr) != SSA_NAME)
+    abort ();
+  val = get_value_handle (expr);
+  
+  if (val == NULL)
+    abort ();
+
+  bitmap_set_bit (set->values, VALUE_HANDLE_ID (val));
+  bitmap_set_bit (set->expressions, SSA_NAME_VERSION (expr));
+}
 
 /* Insert EXPR into SET.  */
 
@@ -498,6 +548,15 @@ insert_into_set (value_set_t set, tree expr)
       set->tail->next = newnode;
       set->tail = newnode;
     }
+}
+
+/* Copy a bitmapped set ORIG, into bitmapped set DEST.  */
+
+static void
+bitmap_set_copy (bitmap_set_t dest, bitmap_set_t orig)
+{
+  bitmap_copy (dest->expressions, orig->expressions);
+  bitmap_copy (dest->values, orig->values);
 }
 
 /* Copy the set ORIG to the set DEST.  */
@@ -564,26 +623,38 @@ set_contains_value (value_set_t set, tree val)
   return value_exists_in_set_bitmap (set, val);
 }
 
-/* Replace the leader for the value LOOKFOR in SET with EXPR.  */
+/* Return true if bitmapped set SET contains the value VAL.  */
+
+static bool
+bitmap_set_contains_value (bitmap_set_t set, tree val)
+{
+  if (is_gimple_min_invariant (val))
+    return true;
+  return bitmap_bit_p (set->values, VALUE_HANDLE_ID (val));
+}
+
+/* Replace an instance of value LOOKFOR with expression EXPR in SET.  */
 
 static void
-set_replace_value (value_set_t set, tree lookfor, tree expr)
+bitmap_set_replace_value (bitmap_set_t set, tree lookfor, tree expr)
 {
-  value_set_node_t node = set->head;
-
-  /* The lookup is probably more expensive than walking the linked
-     list when we have only a small number of nodes.  */
-  if (!set_contains_value (set, lookfor))
+  value_set_t exprset;
+  value_set_node_t node;
+  if (is_gimple_min_invariant (lookfor))
     return;
-
-  for (node = set->head;
-       node;
-       node = node->next)
+  if (!bitmap_set_contains_value (set, lookfor))
+    return;
+  exprset = VALUE_HANDLE_EXPR_SET (lookfor);
+  for (node = exprset->head; node; node = node->next)
     {
-      if (get_value_handle (node->expr) == lookfor)
+      if (TREE_CODE (node->expr) == SSA_NAME)
 	{
-	  node->expr = expr;
-	  return;
+	  if (bitmap_bit_p (set->expressions, SSA_NAME_VERSION (node->expr)))
+	    {
+	      bitmap_clear_bit (set->expressions, SSA_NAME_VERSION (node->expr));
+	      bitmap_set_bit (set->expressions, SSA_NAME_VERSION (expr));
+	      return;
+	    }
 	}
     }
 }
@@ -641,16 +712,27 @@ set_equal (value_set_t a, value_set_t b)
   return true;
 }
 
-/* Replace the value for EXPR in SET with EXPR.  */
+/* Replace an instance of EXPR's VALUE with EXPR in SET.  */
+
 static void
-value_replace_in_set (value_set_t set, tree expr)
+bitmap_value_replace_in_set (bitmap_set_t set, tree expr)
 {
   tree val = get_value_handle (expr);
+  bitmap_set_replace_value (set, val, expr);
+}
 
-  if (set->length == 0)
+/* Insert EXPR into SET if EXPR's value is not already present in
+   SET.  */
+
+static void
+bitmap_value_insert_into_set (bitmap_set_t set, tree expr)
+{
+  tree val = get_value_handle (expr);
+  if (is_gimple_min_invariant (val))
     return;
   
-  set_replace_value (set, val, expr);
+  if (!bitmap_set_contains_value (set, val))
+    bitmap_insert_into_set (set, expr);
 }
 
 /* Insert the value for EXPR into SET, if it doesn't exist already.  */
@@ -670,6 +752,29 @@ value_insert_into_set (value_set_t set, tree expr)
 }
 
 
+/* Print out SET to OUTFILE.  */
+
+static void
+bitmap_print_value_set (FILE *outfile, bitmap_set_t set,
+			const char *setname, int blockindex)
+{
+  fprintf (outfile, "%s[%d] := { ", setname, blockindex);
+  if (set)
+    {
+      int i;
+      EXECUTE_IF_SET_IN_BITMAP (set->expressions, 0, i,
+      {
+	print_generic_expr (outfile, ssa_name (i), 0);
+	
+	fprintf (outfile, " (");
+	print_generic_expr (outfile, get_value_handle (ssa_name (i)), 0);
+	fprintf (outfile, ") ");
+	if (bitmap_last_set_bit (set->expressions) != i)
+	  fprintf (outfile, ", ");
+      });
+    }
+  fprintf (outfile, " }\n");
+}
 /* Print out the value_set SET to OUTFILE.  */
 
 static void
@@ -851,6 +956,32 @@ phi_translate_set (value_set_t dest, value_set_t set, basic_block pred,
     } 
 }
 
+/* Find the leader for a value (i.e., the name representing that
+   value) in a given set, and return it.  Return NULL if no leader is
+   found.  */
+
+static tree
+bitmap_find_leader (bitmap_set_t set, tree val)
+{
+  if (val == NULL)
+    return NULL;
+  
+  if (is_gimple_min_invariant (val))
+    return val;
+  if (bitmap_set_contains_value (set, val))
+    {
+      int i;
+      EXECUTE_IF_SET_IN_BITMAP (set->expressions, 0, i,
+      {
+	if (get_value_handle (ssa_name (i)) == val)
+	  return ssa_name (i);
+      });
+      
+    }
+  return NULL;
+}
+
+	
 /* Find the leader for a value (i.e., the name representing that
    value) in a given set, and return it.  Return NULL if no leader is
    found.  */
@@ -1129,7 +1260,7 @@ static tree
 find_or_generate_expression (basic_block block, tree expr, tree stmts)
 {
   tree genop;
-  genop = find_leader (AVAIL_OUT (block), expr);
+  genop = bitmap_find_leader (AVAIL_OUT (block), expr);
   /* Depending on the order we process DOM branches in, the value
      may not have propagated to all the dom children yet during
      this iteration.  In this case, the value will always be in
@@ -1225,7 +1356,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
   v = get_value_handle (expr);
   vn_add (name, v, NULL);
   insert_into_set (NEW_SETS (block), name);
-  value_insert_into_set (AVAIL_OUT (block), name);
+  bitmap_value_insert_into_set (AVAIL_OUT (block), name);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {				    
       fprintf (dump_file, "Inserted ");
@@ -1266,7 +1397,7 @@ insert_aux (basic_block block)
 	  while (e)
 	    {
 	      insert_into_set (NEW_SETS (block), e->expr);
-	      value_replace_in_set (AVAIL_OUT (block), e->expr);
+	      bitmap_value_replace_in_set (AVAIL_OUT (block), e->expr);
 	      e = e->next;
 	    }
 	  if (block->pred->pred_next)
@@ -1292,7 +1423,7 @@ insert_aux (basic_block block)
 		      val = get_value_handle (node->expr);
 		      if (set_contains_value (PHI_GEN (block), val))
 			continue; 
-		      if (set_contains_value (AVAIL_OUT (dom), val))
+		      if (bitmap_set_contains_value (AVAIL_OUT (dom), val))
 			{
 			  if (dump_file && (dump_flags & TDF_DETAILS))
 			    fprintf (dump_file, "Found fully redundant value\n");
@@ -1329,8 +1460,8 @@ insert_aux (basic_block block)
 			  vprime = get_value_handle (eprime);
 			  if (!vprime)
 			    abort ();			  
-			  edoubleprime = find_leader (AVAIL_OUT (bprime),
-						      vprime);
+			  edoubleprime = bitmap_find_leader (AVAIL_OUT (bprime),
+							     vprime);
 			  if (edoubleprime == NULL)
 			    {
 			      avail[bprime->index] = eprime;
@@ -1396,8 +1527,8 @@ insert_aux (basic_block block)
 					     PHI_RESULT (temp));
 			  else
 #endif
-			    value_replace_in_set (AVAIL_OUT (block), 
-						 PHI_RESULT (temp));
+			    bitmap_value_replace_in_set (AVAIL_OUT (block), 
+							 PHI_RESULT (temp));
 			  for (pred = block->pred;
 			       pred;
 			       pred = pred->pred_next)
@@ -1443,7 +1574,7 @@ insert (void)
   bool new_stuff = true;
   basic_block bb;
   int num_iterations = 0;
-
+  
   FOR_ALL_BB (bb)
     NEW_SETS (bb) = set_new (true);
   
@@ -1482,7 +1613,7 @@ is_undefined_value (tree expr)
 
 static inline void
 add_to_sets (tree var, tree expr, vuse_optype vuses, value_set_t s1,
-	     value_set_t s2)
+	     bitmap_set_t s2)
 {
   tree val = vn_lookup_or_add (expr, vuses);
 
@@ -1494,7 +1625,7 @@ add_to_sets (tree var, tree expr, vuse_optype vuses, value_set_t s1,
     vn_add (var, val, vuses);
 
   insert_into_set (s1, var);
-  value_insert_into_set (s2, var);
+  bitmap_value_insert_into_set (s2, var);
 }
 
 
@@ -1529,10 +1660,14 @@ create_value_expr_from (tree expr, basic_block block, vuse_optype vuses)
   for (i = 0; i < TREE_CODE_LENGTH (code); i++)
     {
       tree op = TREE_OPERAND (expr, i);
-      tree val = vn_lookup_or_add (op, vuses);
-      if (!is_undefined_value (op))
-	value_insert_into_set (EXP_GEN (block), op);
-      TREE_OPERAND (vexpr, i) = val;
+      if (op != NULL)
+	{
+	  tree val = vn_lookup_or_add (op, vuses);
+	  if (!is_undefined_value (op))
+	    value_insert_into_set (EXP_GEN (block), op);
+	  TREE_TYPE (val) = TREE_TYPE (TREE_OPERAND (vexpr, i));
+	  TREE_OPERAND (vexpr, i) = val;
+	}
     }
 
   return vexpr;
@@ -1568,7 +1703,7 @@ compute_avail (basic_block block)
 	      tree def = default_def (param);
 	      val = vn_lookup_or_add (def, NULL);
 	      insert_into_set (TMP_GEN (block), def);
-	      value_insert_into_set (AVAIL_OUT (block), def);
+	      bitmap_value_insert_into_set (AVAIL_OUT (block), def);
 	    }
 	}
     }
@@ -1582,7 +1717,7 @@ compute_avail (basic_block block)
 	 its immediate dominator.  */
       dom = get_immediate_dominator (CDI_DOMINATORS, block);
       if (dom)
-	set_copy (AVAIL_OUT (block), AVAIL_OUT (dom));
+	bitmap_set_copy (AVAIL_OUT (block), AVAIL_OUT (dom));
 
       /* Generate values for PHI nodes.  */
       for (phi = phi_nodes (block); phi; phi = PHI_CHAIN (phi))
@@ -1618,9 +1753,10 @@ compute_avail (basic_block block)
 	      if (TREE_CODE_CLASS (TREE_CODE (rhs)) == '1'
 		  || TREE_CODE_CLASS (TREE_CODE (rhs)) == '2')
 		{
-		  /* For binary and unary expressions, create a duplicate
-		     expression with the operands replaced with the value
-		     handles of the original RHS.  */
+		  /* For binary, unary, and reference expressions,
+		     create a duplicate expression with the operands
+		     replaced with the value handles of the original
+		     RHS.  */
 		  tree newt = create_value_expr_from (rhs, block, vuses);
 		  add_to_sets (lhs, newt, vuses, TMP_GEN (block),
 			       AVAIL_OUT (block));
@@ -1699,7 +1835,7 @@ eliminate (void)
 	      tree sprime;
 	      vuse_optype vuses = STMT_VUSE_OPS (stmt);
 
-	      sprime = find_leader (AVAIL_OUT (b), vn_lookup (lhs, vuses));
+	      sprime = bitmap_find_leader (AVAIL_OUT (b), vn_lookup (lhs, vuses));
 	      if (sprime 
 		  && sprime != lhs
 		  && (TREE_CODE (*rhs_p) != SSA_NAME
@@ -1744,6 +1880,8 @@ init_pre (void)
 				     expr_pred_trans_eq, free);
   value_set_pool = create_alloc_pool ("Value sets",
 				      sizeof (struct value_set), 30);
+  bitmap_set_pool = create_alloc_pool ("Bitmap sets",
+				       sizeof (struct bitmap_set), 30);
   value_set_node_pool = create_alloc_pool ("Value set nodes",
 				           sizeof (struct value_set_node), 30);
   calculate_dominance_info (CDI_POST_DOMINATORS);
@@ -1758,7 +1896,7 @@ init_pre (void)
       EXP_GEN (bb) = set_new (true);
       PHI_GEN (bb) = set_new (true);
       TMP_GEN (bb) = set_new (false);
-      AVAIL_OUT (bb) = set_new (true);
+      AVAIL_OUT (bb) = bitmap_set_new ();
     }
 }
 
@@ -1771,6 +1909,7 @@ fini_pre (void)
   basic_block bb;
 
   free_alloc_pool (value_set_pool);
+  free_alloc_pool (bitmap_set_pool);
   free_alloc_pool (value_set_node_pool);
   free_alloc_pool (binary_node_pool);
   free_alloc_pool (unary_node_pool);
@@ -1806,7 +1945,8 @@ execute_pre (bool do_fre)
 	{
 	  print_value_set (dump_file, EXP_GEN (bb), "exp_gen", bb->index);
 	  print_value_set (dump_file, TMP_GEN (bb), "tmp_gen", bb->index);
-	  print_value_set (dump_file, AVAIL_OUT (bb), "avail_out", bb->index);
+	  bitmap_print_value_set (dump_file, AVAIL_OUT (bb), "avail_out", 
+				  bb->index);
 	}
     }
 
