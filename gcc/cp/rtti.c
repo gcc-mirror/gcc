@@ -68,10 +68,11 @@ static tree dfs_class_hint_unmark PARAMS ((tree, void *));
 static int class_hint_flags PARAMS((tree));
 static tree class_initializer PARAMS((tree, tree, tree));
 static tree synthesize_tinfo_var PARAMS((tree, tree));
-static tree create_real_tinfo_var PARAMS((tree, tree, tree, int));
+static tree create_real_tinfo_var PARAMS((tree, tree, tree, tree, int));
 static tree create_pseudo_type_info PARAMS((const char *, int, ...));
 static tree get_vmi_pseudo_type_info PARAMS((int));
 static void create_tinfo_types PARAMS((void));
+static int typeinfo_in_lib_p PARAMS((tree));
 
 static int doing_runtime = 0;
 
@@ -394,7 +395,7 @@ tinfo_name (type)
    returned decl, to save the decl.  To use the decl call
    tinfo_from_decl.  You must arrange that the decl is mark_used, if
    actually use it --- decls in vtables are only used if the vtable is
-   output.  */
+   output.  */ 
 
 tree
 get_tinfo_decl (type)
@@ -443,7 +444,8 @@ get_tinfo_decl (type)
       TREE_STATIC (d) = 1;
       DECL_EXTERNAL (d) = 1;
       TREE_PUBLIC (d) = 1;
-      comdat_linkage (d);
+      if (flag_weak || !typeinfo_in_lib_p (d))
+	comdat_linkage (d);
       DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
       cp_finish_decl (d, NULL_TREE, NULL_TREE, 0);
 
@@ -1327,7 +1329,7 @@ tinfo_base_init (desc, target)
     tree name_string = tinfo_name (target);
 
     if (flag_new_abi)
-      name_name = mangle_typeinfo_for_type (target);
+      name_name = mangle_typeinfo_string_for_type (target);
     else
       name_name = build_overload_with_type (tinfo_var_id, target);
     name_decl = build_lang_decl (VAR_DECL, name_name, name_type);
@@ -1347,6 +1349,7 @@ tinfo_base_init (desc, target)
       DECL_ASSEMBLER_NAME (name_decl) = DECL_NAME (name_decl);
     DECL_INITIAL (name_decl) = name_string;
     cp_finish_decl (name_decl, name_string, NULL_TREE, 0);
+    pushdecl_top_level (name_decl);
   }
   
   if (TINFO_VTABLE_DECL (desc))
@@ -1538,6 +1541,34 @@ class_initializer (desc, target, trail)
   return init;  
 }
 
+/* Returns non-zero if the typeinfo for type should be placed in 
+   the runtime library.  */
+
+static int
+typeinfo_in_lib_p (type)
+     tree type;
+{
+  /* The typeinfo objects for `T*' and `const T*' are in the runtime
+     library for simple types T.  */
+  if (TREE_CODE (type) == POINTER_TYPE
+      && (CP_TYPE_QUALS (TREE_TYPE (type)) == TYPE_QUAL_CONST
+	  || CP_TYPE_QUALS (TREE_TYPE (type)) == TYPE_UNQUALIFIED))
+    type = TREE_TYPE (type);
+
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE:
+    case BOOLEAN_TYPE:
+    case CHAR_TYPE:
+    case REAL_TYPE:
+    case VOID_TYPE:
+      return 1;
+    
+    default:
+      return 0;
+    }
+}
+
 /* Generate a pseudo_type_info VAR_DECL suitable for the supplied
    TARGET_TYPE and given the REAL_NAME. This is the structure expected by
    the runtime, and therefore has additional fields.  If we need not emit a
@@ -1565,14 +1596,7 @@ synthesize_tinfo_var (target_type, real_name)
         }
       else
         {
-          int code = TREE_CODE (TREE_TYPE (target_type));
-          
-          if ((CP_TYPE_QUALS (TREE_TYPE (target_type)) | TYPE_QUAL_CONST)
-              == TYPE_QUAL_CONST
-              && (code == INTEGER_TYPE || code == BOOLEAN_TYPE
-                  || code == CHAR_TYPE || code == REAL_TYPE
-                  || code == VOID_TYPE)
-              && !doing_runtime)
+          if (typeinfo_in_lib_p (target_type) && !doing_runtime)
             /* These are in the runtime.  */
             return NULL_TREE;
           var_type = ptr_desc_type_node;
@@ -1675,23 +1699,23 @@ synthesize_tinfo_var (target_type, real_name)
           var_init = class_initializer (var_type, target_type, base_inits);
         }
       break;
-    case INTEGER_TYPE:
-    case BOOLEAN_TYPE:
-    case CHAR_TYPE:
-    case REAL_TYPE:
-    case VOID_TYPE:
-      if (!doing_runtime)
-        /* These are guaranteed to be in the runtime.  */
-        return NULL_TREE;
-      var_type = bltn_desc_type_node;
-      var_init = generic_initializer (var_type, target_type);
-      break;
+
     default:
+      if (typeinfo_in_lib_p (target_type))
+	{
+	  if (!doing_runtime)
+	    /* These are guaranteed to be in the runtime.  */
+	    return NULL_TREE;
+	  var_type = bltn_desc_type_node;
+	  var_init = generic_initializer (var_type, target_type);
+	  break;
+	}
       my_friendly_abort (20000117);
     }
   
   
-  return create_real_tinfo_var (real_name, TINFO_PSEUDO_TYPE (var_type),
+  return create_real_tinfo_var (target_type,
+				real_name, TINFO_PSEUDO_TYPE (var_type),
                                 var_init, non_public);
 }
 
@@ -1699,7 +1723,8 @@ synthesize_tinfo_var (target_type, real_name)
    make this variable public (comdat). */
 
 static tree
-create_real_tinfo_var (name, type, init, non_public)
+create_real_tinfo_var (target_type, name, type, init, non_public)
+     tree target_type;
      tree name;
      tree type;
      tree init;
@@ -1725,7 +1750,8 @@ create_real_tinfo_var (name, type, init, non_public)
   if (!non_public)
     {
       TREE_PUBLIC (decl) = 1;
-      comdat_linkage (decl);
+      if (flag_weak || !typeinfo_in_lib_p (target_type))
+	comdat_linkage (decl);
     }
   DECL_ASSEMBLER_NAME (decl) = name;
   DECL_INITIAL (decl) = init;

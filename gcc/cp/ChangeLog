@@ -1,3 +1,23 @@
+2001-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CLASSTYPE_INTERFACE_UNKNOWN): Fix formatting.
+	Document.
+	(CLASSTYPE_INTERFACE_KNOWN): Likewise.
+	(SET_CLASSTYPE_INTERFACE_UNKNOWN_X): Likewise.
+	(SET_CLASSTYPE_INTERFACE_UNKNOWN): Likewise.
+	(SET_CLASSTYPE_INTERFACE_KNOWN): Likewise.
+	* decl.c (maybe_commonize_var): Use the new name-mangling where
+	appropriate.
+	* decl2.c (comdat_linkage): Enhance comments.  Make all
+	compiler-generated things static, if COMDAT is not available.
+	(get_tinfo_decl): Do not make typeinfo objects that belong in the
+	library COMDAT.
+	(tinfo_base_init): Use the correct mangled name for typeinfo
+	strings, and push them into the global scope.
+	(typeinfo_in_lib_p): New function.
+	(synthesize_tinfo_var): Use it.
+	(create_real_tinfo_var): Likewise.
+	
 2001-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (push_class_binding): Use context_for_name_lookup instead

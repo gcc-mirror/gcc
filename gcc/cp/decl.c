@@ -7517,8 +7517,13 @@ maybe_commonize_var (decl)
 	     which we can't if it has been initialized.  */
 
 	  if (TREE_PUBLIC (decl))
-	    DECL_ASSEMBLER_NAME (decl)
-	      = build_static_name (current_function_decl, DECL_NAME (decl));
+	    {
+	      if (flag_new_abi)
+		DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+	      else
+		DECL_ASSEMBLER_NAME (decl)
+		  = build_static_name (current_function_decl, DECL_NAME (decl));
+	    }
 	  else
 	    {
 	      cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);

@@ -1615,12 +1615,23 @@ struct lang_type
    `#pragma interface', and it is not included in its implementation file.  */
 #define CLASSTYPE_INTERFACE_ONLY(NODE) (TYPE_LANG_SPECIFIC(NODE)->interface_only)
 
-/* Same as above, but for classes whose purpose we do not know.  */
-#define CLASSTYPE_INTERFACE_UNKNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->interface_unknown)
-#define CLASSTYPE_INTERFACE_KNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->interface_unknown == 0)
-#define SET_CLASSTYPE_INTERFACE_UNKNOWN_X(NODE,X) (TYPE_LANG_SPECIFIC(NODE)->interface_unknown = !!(X))
-#define SET_CLASSTYPE_INTERFACE_UNKNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->interface_unknown = 1)
-#define SET_CLASSTYPE_INTERFACE_KNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->interface_unknown = 0)
+/* True if we have already determined whether or not vtables, VTTs,
+   typeinfo, and other similar per-class data should be emitted in
+   this translation unit.  This flag does not indicate whether or not
+   these items should be emitted; it only indicates that we know one
+   way or the other.  */
+#define CLASSTYPE_INTERFACE_KNOWN(NODE) \
+  (TYPE_LANG_SPECIFIC(NODE)->interface_unknown == 0)
+/* The opposite of CLASSTYPE_INTERFANCE_KNOWN.  */
+#define CLASSTYPE_INTERFACE_UNKNOWN(NODE) \
+  (TYPE_LANG_SPECIFIC(NODE)->interface_unknown)
+
+#define SET_CLASSTYPE_INTERFACE_UNKNOWN_X(NODE,X) \
+  (TYPE_LANG_SPECIFIC(NODE)->interface_unknown = !!(X))
+#define SET_CLASSTYPE_INTERFACE_UNKNOWN(NODE) \
+  (TYPE_LANG_SPECIFIC(NODE)->interface_unknown = 1)
+#define SET_CLASSTYPE_INTERFACE_KNOWN(NODE) \
+  (TYPE_LANG_SPECIFIC(NODE)->interface_unknown = 0)
 
 /* Nonzero if a _DECL node requires us to output debug info for this class.  */
 #define CLASSTYPE_DEBUG_REQUESTED(NODE) (TYPE_LANG_SPECIFIC(NODE)->debug_requested)
