@@ -1671,11 +1671,12 @@ cons_up_default_function (type, full_name, kind)
       break;
 
     case 5:
-      type = build_type_variant (type, 1, 0);
-      /* Fall through...  */
     case 6:
       retref = 1;
       declspecs = build_decl_list (NULL_TREE, type);
+
+      if (kind == 5)
+	type = build_type_variant (type, 1, 0);
 
       name = ansi_opname [(int) MODIFY_EXPR];
 
@@ -1894,7 +1895,10 @@ get_last_nonwhite_on_line ()
 
 int linemode;
 
-int handle_cp_pragma ();
+#ifdef HANDLE_SYSV_PRAGMA
+static int handle_sysv_pragma ();
+#endif
+static int handle_cp_pragma ();
 
 int
 check_newline ()
@@ -3004,18 +3008,6 @@ real_yylex ()
 
 	/* If we did not find a keyword, look for an identifier
 	   (or a typename).  */
-
-	if (strcmp ("catch", token_buffer) == 0
-	    || strcmp ("throw", token_buffer) == 0
-	    || strcmp ("try", token_buffer) == 0)
-	  {
-	    static int did_warn = 0;
-	    if (! did_warn  && ! flag_exceptions)
-	      {
-		pedwarn ("`catch', `throw', and `try' are all C++ reserved words");
-		did_warn = 1;
-	      }
-	  }
 
 	if (value == IDENTIFIER || value == TYPESPEC)
 	  GNU_xref_ref (current_function_decl, token_buffer);
@@ -4259,7 +4251,7 @@ yyerror (string)
   error (buf, token_buffer);
 }
 
-int
+static int
 handle_cp_pragma (pname)
      char *pname;
 {
@@ -4444,7 +4436,7 @@ handle_cp_pragma (pname)
 /* This function has to be in this file, in order to get at
    the token types.  */
 
-int
+static int
 handle_sysv_pragma (finput, token)
      FILE *finput;
      register int token;

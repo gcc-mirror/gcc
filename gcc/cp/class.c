@@ -3046,6 +3046,7 @@ finish_struct_1 (t, warn_anon)
   tree access_decls = NULL_TREE;
   int aggregate = 1;
   int empty = 1;
+  int has_pointers = 0;
 
   if (warn_anon && code != UNION_TYPE && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
     pedwarn ("anonymous class type not used to declare any objects");
@@ -3334,6 +3335,9 @@ finish_struct_1 (t, warn_anon)
 	    }
 	}
 
+      if (TREE_CODE (TREE_TYPE (x)) == POINTER_TYPE)
+	has_pointers = 1;
+
       /* If any field is const, the structure type is pseudo-const.  */
       if (TREE_READONLY (x))
 	{
@@ -3579,6 +3583,22 @@ finish_struct_1 (t, warn_anon)
 						     &has_virtual, dtor, t);
 	  nonprivate_method = 1;
 	}
+    }
+
+  /* Effective C++ rule 11.  */
+  if (has_pointers && extra_warnings
+      && ! (TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
+    {
+      cp_warning ("`%#T' has pointer data members", t);
+      
+      if (! TYPE_HAS_INIT_REF (t))
+	{
+	  cp_warning ("  but does not override `%T(const %T&)'", t, t);
+	  if (! TYPE_HAS_ASSIGN_REF (t))
+	    cp_warning ("  or `operator=(const %T&)'", t);
+	}
+      else if (! TYPE_HAS_ASSIGN_REF (t))
+	cp_warning ("  but does not override `operator=(const %T&)'", t);
     }
 
   TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);

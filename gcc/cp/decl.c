@@ -483,6 +483,7 @@ tree signed_size_zero_node;
 
 /* Allocate a level of searching.  */
 
+static
 struct stack_level *
 push_decl_level (stack, obstack)
      struct stack_level *stack;
@@ -762,7 +763,7 @@ suspend_binding_level ()
   }
 }
 
-void
+static void
 resume_binding_level (b)
      struct binding_level *b;
 {
@@ -841,7 +842,7 @@ toplevel_bindings_p ()
 
 /* Nonzero if this is a namespace scope.  */
 
-int
+static int
 namespace_bindings_p ()
 {
   return current_binding_level->namespace_p;
@@ -879,7 +880,7 @@ declare_pseudo_global_level ()
   current_binding_level->pseudo_global = 1;
 }
 
-void
+static void
 declare_namespace_level ()
 {
   current_binding_level->namespace_p = 1;
@@ -2351,7 +2352,7 @@ warn_extern_redeclared_static (newdecl, olddecl)
 
 int
 duplicate_decls (newdecl, olddecl)
-     register tree newdecl, olddecl;
+     tree newdecl, olddecl;
 {
   extern struct obstack permanent_obstack;
   unsigned olddecl_uid = DECL_UID (olddecl);
@@ -2679,11 +2680,12 @@ duplicate_decls (newdecl, olddecl)
 	  TREE_TYPE (olddecl) = build_exception_variant (newtype,
 							 TYPE_RAISES_EXCEPTIONS (oldtype));
 
-	  if (! compexcepttypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl)))
+	  if ((pedantic || ! DECL_IN_SYSTEM_HEADER (olddecl))
+	      && ! compexcepttypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl)))
 	    {
-	      cp_error ("declaration of `%D' throws different exceptions...",
+	      cp_pedwarn ("declaration of `%D' throws different exceptions",
 			newdecl);
-	      cp_error_at ("...from previous declaration here", olddecl);
+	      cp_pedwarn_at ("previous declaration here", olddecl);
 	    }
 	}
       TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = newtype;
@@ -4275,7 +4277,7 @@ make_typename_type (context, name)
    If PREFER_TYPE is -2, we're being called from yylex(). (UGLY)
    Otherwise we prefer non-TYPE_DECLs.  */
 
-tree
+static tree
 lookup_name_real (name, prefer_type, nonclass)
      tree name;
      int prefer_type, nonclass;
@@ -4897,6 +4899,9 @@ init_decl_processing ()
   void_ftype_ptr
     = build_function_type (void_type_node,
  			   tree_cons (NULL_TREE, ptr_type_node, endlink));
+  void_ftype_ptr
+    = build_exception_variant (void_ftype_ptr,
+			       tree_cons (NULL_TREE, NULL_TREE, NULL_TREE));
 
   float_ftype_float
     = build_function_type (float_type_node,
@@ -5658,8 +5663,6 @@ groktypename (typename)
 /* Set this to zero to debug not using the temporary obstack
    to parse initializers.  */
 int debug_temp_inits = 1;
-
-void start_decl_1 ();
 
 tree
 start_decl (declarator, declspecs, initialized)
@@ -10145,6 +10148,31 @@ grok_op_properties (decl, virtualp, friendp)
 	      else
 		cp_error ("`%D' must take either one or two arguments", decl);
 	    }
+
+	  /* More Effective C++ rule 6.  */
+	  if (extra_warnings
+	      && (name == ansi_opname[(int) POSTINCREMENT_EXPR]
+		  || name == ansi_opname[(int) POSTDECREMENT_EXPR]))
+	    {
+	      tree arg = TREE_VALUE (argtypes);
+	      tree ret = TREE_TYPE (TREE_TYPE (decl));
+	      if (methodp || TREE_CODE (arg) == REFERENCE_TYPE)
+		arg = TREE_TYPE (arg);
+	      arg = TYPE_MAIN_VARIANT (arg);
+	      if (list_length (argtypes) == 2)
+		{
+		  if (TREE_CODE (ret) != REFERENCE_TYPE
+		      || !comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (ret)),
+				     arg, 1))
+		    cp_warning ("prefix `%D' should return `%T'", decl,
+				build_reference_type (arg));
+		}
+	      else
+		{
+		  if (!comptypes (TYPE_MAIN_VARIANT (ret), arg, 1))
+		    cp_warning ("postfix `%D' should return `%T'", decl, arg);
+		}
+	    }
 	}
       else if (unary_op_p (name))
 	{
@@ -10165,7 +10193,25 @@ grok_op_properties (decl, virtualp, friendp)
 	      else
 		cp_error ("`%D' must take exactly two arguments", decl);
 	    }
+
+	  /* More Effective C++ rule 7.  */
+	  if (extra_warnings
+	      && (name == ansi_opname [TRUTH_ANDIF_EXPR]
+		  || name == ansi_opname [TRUTH_ORIF_EXPR]
+		  || name == ansi_opname [COMPOUND_EXPR]))
+	    cp_warning ("user-defined `%D' always evaluates both arguments",
+			decl);
 	}
+
+      /* Effective C++ rule 23.  */
+      if (extra_warnings
+	  && list_length (argtypes) == 3
+	  && (name == ansi_opname [PLUS_EXPR]
+	      || name == ansi_opname [MINUS_EXPR]
+	      || name == ansi_opname [TRUNC_DIV_EXPR]
+	      || name == ansi_opname [MULT_EXPR])
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == REFERENCE_TYPE)
+	cp_warning ("`%D' should return by value", decl);
 
       /* 13.4.0.8 */
       if (argtypes)
@@ -10464,6 +10510,13 @@ xref_basetypes (code_type_node, name, ref, binfo)
 		cp_error ("duplicate base type `%T' invalid", basetype);
 	      continue;
 	    }
+
+	  /* Effective C++ rule 14.  The case of virtual functions but
+	     non-virtual dtor is handled in finish_struct_1.  */
+	  if (warn_nonvdtor && ! TYPE_VIRTUAL_P (basetype)
+	      && TYPE_HAS_DESTRUCTOR (basetype))
+	    cp_warning ("base class `%#T' has a non-virtual destructor",
+			basetype);
 
 	  /* Note that the BINFO records which describe individual
 	     inheritances are *not* shared in the lattice!  They
@@ -10989,6 +11042,12 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
   if (warn_about_return_type)
     warning ("return-type defaults to `int'");
+
+  /* Effective C++ rule 15.  See also c_expand_return.  */
+  if (extra_warnings
+      && DECL_NAME (decl1) == ansi_opname[(int) MODIFY_EXPR]
+      && TREE_TYPE (fntype) == void_type_node)
+    cp_warning ("`operator=' should return a reference to `*this'");
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in poplevel) with the BLOCK.  */
@@ -12045,11 +12104,7 @@ start_method (declspecs, declarator)
     return NULL_TREE;
 
   if (IS_SIGNATURE (current_class_type))
-    {
-      IS_DEFAULT_IMPLEMENTATION (fndecl) = 1;
-      /* In case we need this info later.  */
-      HAS_DEFAULT_IMPLEMENTATION (current_class_type) = 1;
-    }
+    IS_DEFAULT_IMPLEMENTATION (fndecl) = 1;
 
   if (DECL_IN_AGGR_P (fndecl))
     {

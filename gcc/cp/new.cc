@@ -4,3 +4,5 @@
 
 #pragma implementation "new"
 #include "new"
+
+const nothrow_t nothrow = { };

@@ -58,9 +58,10 @@ CXX_EXTRA_HEADERS = $(srcdir)/cp/inc/typeinfo $(srcdir)/cp/inc/exception \
 	$(srcdir)/cp/inc/new $(srcdir)/cp/inc/new.h
 
 # Extra code to include in libgcc2.
-CXX_LIB2FUNCS = tinfo.o tinfo2.o new.o exception.o
-CXX_LIB2SRCS = $(srcdir)/cp/new.cc $(srcdir)/cp/exception.cc \
-	$(srcdir)/cp/tinfo.cc $(srcdir)/cp/tinfo2.cc $(srcdir)/cp/tinfo.h
+CXX_LIB2FUNCS = tinfo.o tinfo2.o new.o new1.o new2.o exception.o
+CXX_LIB2SRCS = $(srcdir)/cp/new.cc $(srcdir)/cp/new1.cc $(srcdir)/cp/new2.cc \
+	$(srcdir)/cp/exception.cc $(srcdir)/cp/tinfo.cc \
+	$(srcdir)/cp/tinfo2.cc $(srcdir)/cp/tinfo.h
 
 # Define the names for selecting c++ in LANGUAGES.
 # Note that it would be nice to move the dependency on g++
@@ -125,9 +126,9 @@ cc1plus: $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o c-pragma.o
 
 # Build hooks:
 
-c++.all.build: g++ $(DEMANGLER_PROG)
-c++.all.cross: g++-cross $(DEMANGLER_PROG)
-c++.start.encap: g++
+c++.all.build: g++$(exeext) $(DEMANGLER_PROG)
+c++.all.cross: g++-cross$(exeext) $(DEMANGLER_PROG)
+c++.start.encap: g++$(exeext)
 c++.rest.encap: $(DEMANGLER_PROG)
 
 c++.info:
@@ -146,6 +147,12 @@ exception.o: cc1plus $(srcdir)/cp/exception.cc
 new.o: cc1plus $(srcdir)/cp/new.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new.cc
+new1.o: cc1plus $(srcdir)/cp/new1.cc
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
+	  -c $(srcdir)/cp/new1.cc
+new2.o: cc1plus $(srcdir)/cp/new2.cc
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
+	  -c $(srcdir)/cp/new2.cc
 
 # We want to update cplib2.txt if any of the source files change...
 cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS) cplib2.ready

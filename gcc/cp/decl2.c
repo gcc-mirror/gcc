@@ -1698,7 +1698,11 @@ copy_assignment_arg_p (parmtype, virtualp)
     parmtype = TREE_TYPE (parmtype);
 
   if ((TYPE_MAIN_VARIANT (parmtype) == current_class_type)
-      || (virtualp && DERIVED_FROM_P (parmtype, current_class_type)))
+#if 0
+      /* Non-standard hack to support old Booch components.  */
+      || (! virtualp && DERIVED_FROM_P (parmtype, current_class_type))
+#endif
+      )
     return 1;
 
   return 0;
@@ -1972,16 +1976,6 @@ get_temp_regvar (type, init)
   return decl;
 }
 
-/* Make the macro TEMP_NAME_P available to units which do not
-   include c-tree.h.  */
-
-int
-temp_name_p (decl)
-     tree decl;
-{
-  return TEMP_NAME_P (decl);
-}
-
 /* Finish off the processing of a UNION_TYPE structure.
    If there are static members, then all members are
    static, and must be laid out together.  If the
@@ -2224,8 +2218,10 @@ coerce_delete_type (type)
       type = build_function_type (TREE_TYPE (type), TREE_CHAIN (arg_types));
       arg_types = TREE_CHAIN (arg_types);
     }
+
   if (TREE_TYPE (type) != void_type_node)
     e1 = 1, error ("`operator delete' must return type `void'");
+
   if (arg_types == NULL_TREE
       || TREE_VALUE (arg_types) != ptr_type_node)
     e2 = 1, error ("`operator delete' takes type `void *' as first parameter");
@@ -2249,8 +2245,10 @@ coerce_delete_type (type)
 	    error ("`...' invalid in specification of `operator delete'");
 	}
     }
+
   if (e3)
-    arg_types = tree_cons (NULL_TREE, ptr_type_node, build_tree_list (NULL_TREE, sizetype));
+    arg_types = tree_cons (NULL_TREE, ptr_type_node,
+			   build_tree_list (NULL_TREE, sizetype));
   else if (e3 |= e2)
     {
       if (arg_types == NULL_TREE)
@@ -2663,7 +2661,7 @@ extern tree maybe_templates;
 extern struct obstack permanent_obstack;
 extern tree get_id_2 ();
 
-tree
+static tree
 get_sentry (base)
      tree base;
 {

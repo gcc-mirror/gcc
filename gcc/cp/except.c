@@ -223,8 +223,6 @@ do_function_call (func, params, return_type)
 
 /* ========================================================================= */
 
-extern tree auto_function PROTO((tree, tree, enum built_in_function));
-
 /* sets up all the global eh stuff that needs to be initialized at the
    start of compilation.
 
@@ -531,7 +529,8 @@ expand_start_catch_block (declspecs, declarator)
    code to handle jumping back to the correct place, and for emitting
    the label to jump to if this catch block didn't match.  */
 
-void expand_end_catch_block ()
+void
+expand_end_catch_block ()
 {
   rtx start_region_label_rtx;
   rtx end_region_label_rtx;
@@ -1070,7 +1069,6 @@ expand_throw (exp)
 	}
       else
 	{
-	  rtx cleanup_insns;
 	  tree object;
 
 	  /* Make a copy of the thrown object.  WP 15.1.5  */
@@ -1088,12 +1086,9 @@ expand_throw (exp)
 	  object = build_reinterpret_cast (TREE_TYPE (exp), saved_throw_value);
 	  object = build_indirect_ref (object, NULL_PTR);
 	  cleanup = maybe_build_cleanup_and_delete (object);
-	  if (cleanup)
-	    expand_expr (cleanup, const0_rtx, VOIDmode, 0);
-	  cleanup_insns = get_insns ();
 	  end_sequence ();
 
-	  if (cleanup && cleanup_insns)
+	  if (cleanup)
 	    {
 	      cleanup = start_anon_func ();
 

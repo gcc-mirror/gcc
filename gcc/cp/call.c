@@ -82,7 +82,7 @@ rank_for_overload (x, y)
 
 /* Compare two candidates, argument by argument.  */
 
-int
+static int
 rank_for_ideal (x, y)
      struct candidate *x, *y;
 {
@@ -627,7 +627,7 @@ convert_harshness (type, parmtype, parm)
 /* A clone of build_type_conversion for checking user-defined conversions in
    overload resolution.  */
 
-int
+static int
 user_harshness (type, parmtype)
      register tree type, parmtype;
 {
@@ -2935,7 +2935,7 @@ null_ptr_cst_p (t)
   return 0;
 }
 
-tree
+static tree
 build_conv (code, type, from)
      enum tree_code code;
      tree type, from;
@@ -2967,7 +2967,7 @@ build_conv (code, type, from)
   return t;
 }
 
-tree
+static tree
 non_reference (t)
      tree t;
 {
@@ -2976,7 +2976,7 @@ non_reference (t)
   return t;
 }
 
-tree
+static tree
 strip_top_quals (t)
      tree t;
 {
@@ -2989,7 +2989,7 @@ strip_top_quals (t)
    TO, if any.  For proper handling of null pointer constants, you must
    also pass the expression EXPR to convert from.  */
 
-tree
+static tree
 standard_conversion (to, from, expr)
      tree to, from, expr;
 {
@@ -3158,7 +3158,7 @@ standard_conversion (to, from, expr)
    Currently does not distinguish in the generated trees between binding to
    an lvalue and a temporary.  Should it?  */
 
-tree
+static tree
 reference_binding (rto, rfrom, expr, flags)
      tree rto, rfrom, expr;
      int flags;
@@ -3218,7 +3218,7 @@ reference_binding (rto, rfrom, expr, flags)
    FLAGS are the usual overloading flags.  Only LOOKUP_NO_CONVERSION is
    significant.  */
 
-tree
+static tree
 implicit_conversion (to, from, expr, flags)
      tree to, from, expr;
      int flags;
@@ -3498,7 +3498,7 @@ build_builtin_candidate (candidates, fnname, type1, type2,
   return cand;
 }
 
-int
+static int
 is_complete (t)
      tree t;
 {
@@ -3841,15 +3841,10 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
       break;
 
     case COND_EXPR:
-#if 0
       /* Kludge around broken overloading rules whereby
 	 bool ? const char& : enum is ambiguous
 	 (between int and const char&).  */
-      /* Not needed for compiles without -pedantic, since the rank compare
-	 in joust will pick the int promotion.  Let's just leave this out
-	 for now.  */
       flags |= LOOKUP_NO_TEMP_BIND;
-#endif
 
       /* Extension: Support ?: of enumeral type.  Hopefully this will not
          be an extension for long.  */
@@ -4124,7 +4119,7 @@ splice_viable (cands)
   return cands;
 }
 
-tree
+static tree
 build_this (obj)
      tree obj;
 {
@@ -4306,8 +4301,15 @@ build_new_function_call (fn, args, obj)
       tree templates = NULL_TREE;
 
       for (t = args; t; t = TREE_CHAIN (t))
-	if (TREE_VALUE (t) == error_mark_node)
-	  return error_mark_node;
+	{
+	  if (TREE_VALUE (t) == error_mark_node)
+	    return error_mark_node;
+	  else if (TREE_CODE (TREE_TYPE (TREE_VALUE (t))) == VOID_TYPE)
+	    {
+	      error ("invalid use of void expression");
+	      return error_mark_node;
+	    }
+	}
 	
       for (t = TREE_VALUE (fn); t; t = DECL_CHAIN (t))
 	{
@@ -5190,6 +5192,12 @@ build_new_method_call (instance, name, args, basetype_path, flags)
   struct z_candidate *candidates = 0, *cand;
   tree basetype, mem_args, fns, instance_ptr;
   tree pretty_name;
+  tree user_args = args;
+
+  /* If there is an extra argument for controlling virtual bases,
+     remove it for error reporting.  */
+  if (flags & LOOKUP_HAS_IN_CHARGE)
+    user_args = TREE_CHAIN (args);
 
   for (fns = args; fns; fns = TREE_CHAIN (fns))
     if (TREE_VALUE (fns) == error_mark_node)
@@ -5284,7 +5292,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       if (flags & LOOKUP_SPECULATIVELY)
 	return NULL_TREE;
       cp_error ("no matching function for call to `%T::%D (%A)%V'", basetype,
-		pretty_name, args, TREE_TYPE (TREE_TYPE (instance_ptr)));
+		pretty_name, user_args, TREE_TYPE (TREE_TYPE (instance_ptr)));
       print_z_candidates (candidates);
       return error_mark_node;
     }
@@ -5293,7 +5301,8 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 
   if (cand == 0)
     {
-      cp_error ("call of overloaded `%D(%A)' is ambiguous", pretty_name, args);
+      cp_error ("call of overloaded `%D(%A)' is ambiguous", pretty_name,
+		user_args);
       print_z_candidates (candidates);
       return error_mark_node;
     }

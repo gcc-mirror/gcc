@@ -587,7 +587,12 @@ emit_base_init (t, immediately)
       if (TREE_PURPOSE (rbase_init_list))
 	init = TREE_VALUE (rbase_init_list);
       else if (TYPE_NEEDS_CONSTRUCTING (BINFO_TYPE (base_binfo)))
-	init = NULL_TREE;
+	{
+	  init = NULL_TREE;
+	  if (extra_warnings && copy_args_p (current_function_decl))
+	    cp_warning ("base class `%#T' should be explicitly initialized in the copy constructor",
+			BINFO_TYPE (base_binfo));
+	}
 
       if (init != void_list_node)
 	{
@@ -673,6 +678,11 @@ emit_base_init (t, immediately)
 	  init = DECL_INITIAL (member);
 
 	  from_init_list = 0;
+
+	  /* Effective C++ rule 12.  */
+	  if (extra_warnings && init == NULL_TREE
+	      && TREE_CODE (TREE_TYPE (member)) != ARRAY_TYPE)
+	    cp_warning ("`%D' should be initialized in the member initialization list", member);	    
 	}
 
       perform_member_init (member, name, init, from_init_list);
