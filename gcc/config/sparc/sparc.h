@@ -1015,7 +1015,10 @@ extern union tree_node *current_function_decl;
    This takes 16 insns: 2 shifts & 2 ands (to split up addresses), 4 sethi
    (to load in opcodes), 4 iors (to merge address and opcodes), and 4 writes
    (to store insns).  This is a bit excessive.  Perhaps a different
-   mechanism would be better here.  */
+   mechanism would be better here.
+
+   Emit 3 FLUSH instructions (UNSPEC_VOLATILE 2) to synchonize the data
+   and instruction caches.  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
@@ -1046,6 +1049,15 @@ extern union tree_node *current_function_decl;
   emit_move_insn (tem, g1_ori);						\
   emit_insn (gen_iorsi3 (low_cxt, low_cxt, tem));			\
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 16)), low_cxt);\
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,			\
+		      gen_rtvec (1, plus_constant (TRAMP, 0)),		\
+		      2));						\
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,			\
+		      gen_rtvec (1, plus_constant (TRAMP, 8)),		\
+		      2));						\
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,			\
+		      gen_rtvec (1, plus_constant (TRAMP, 16)),		\
+		      2));						\
 }
 
 /* Generate necessary RTL for __builtin_saveregs().
