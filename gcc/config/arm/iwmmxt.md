@@ -92,8 +92,8 @@
 )
 
 (define_insn "*iwmmxt_movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m,z,r,?z,m,z")
-	(match_operand:SI 1 "general_operand"      "rI,K,mi,r,r,z,m,z,z"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m,z,r,?z,Uy,z")
+	(match_operand:SI 1 "general_operand"      "rI,K,mi,r,r,z,Uy,z,z"))]
   "TARGET_REALLY_IWMMXT
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"

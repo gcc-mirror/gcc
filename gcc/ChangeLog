@@ -1,3 +1,7 @@
+2005-01-22  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md: Use "Uy" constraint for wcgr load/stores.
+
 2005-01-21  Mark Dettinger  <dettinge@de.ibm.com>
 
 	* config/s390/s390.c (struct processor_costs): New fields 
