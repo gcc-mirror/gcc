@@ -98,8 +98,8 @@ typedef bitmap_iterator reg_set_iterator;
 /* Loop over all registers in REGSET1 and REGSET2, starting with MIN, setting
    REGNUM to the register number and executing CODE for all registers that are
    set in the first regset and not set in the second.  */
-#define EXECUTE_IF_AND_COMPL_IN_REG_SET(REGSET, MIN, REGNUM, RSI)	\
-  EXECUTE_IF_AND_COMPL_IN_BITMAP (REGSET, MIN, REGNUM, RSI)
+#define EXECUTE_IF_AND_COMPL_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, RSI) \
+  EXECUTE_IF_AND_COMPL_IN_BITMAP (REGSET1, REGSET2, MIN, REGNUM, RSI)
 
 /* Loop over all registers in REGSET1 and REGSET2, starting with MIN, setting
    REGNUM to the register number and executing CODE for all registers that are
