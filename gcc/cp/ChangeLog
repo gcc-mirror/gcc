@@ -1,3 +1,7 @@
+2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cp-tree.h (FILE_FUNCTION_PREFIX_LEN): Remove.
+
 2002-07-23  Gabriel Dos Reis  <gdr@nerim.net>
 
 	Fix PR/7363:

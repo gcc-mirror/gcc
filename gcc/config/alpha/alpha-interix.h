@@ -148,15 +148,3 @@ while (0)
   fprintf (FILE, "\t.globl\t__fltused\n");			\
   ASM_OUTPUT_SOURCE_FILENAME (FILE, main_input_filename);	\
 }
-
-/* The current Interix assembler (consistent with the DEC documentation)
-   uses a=b NOT .set a,b; .set is for assembler options.  */
-#undef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
-#define ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL(FILE, SY, HI, LO)    	\
- do {									\
-  assemble_name (FILE, SY);						\
-  fputc ('=', FILE);							\
-  assemble_name (FILE, HI);						\
-  fputc ('-', FILE);							\
-  assemble_name (FILE, LO);						\
- } while (0)

@@ -4364,8 +4364,6 @@ dump_tree_statistics ()
   (*lang_hooks.print_statistics) ();
 }
 
-#define FILE_FUNCTION_PREFIX_LEN 9
-
 #define FILE_FUNCTION_FORMAT "_GLOBAL__%s_%s"
 
 /* Appends 6 random characters to TEMPLATE to (hopefully) avoid name
