@@ -1,3 +1,7 @@
+2004-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/md.texi (cbranchmode4): New.
+
 2004-03-02  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips16.S: Change fixsfsi and fixdfsi to

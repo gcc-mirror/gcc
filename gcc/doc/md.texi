@@ -2994,6 +2994,13 @@ tested, should also use the above mechanism.  @xref{Jump Patterns}.
 The above discussion also applies to the @samp{mov@var{mode}cc} and
 @samp{s@var{cond}} patterns.
 
+@cindex @code{cbranch@var{mode}4} instruction pattern
+@item @samp{cbranch@var{mode}4}
+Conditional branch instruction combined with a compare instruction.
+Operand 0 is a comparison operator.  Operand 1 and operand 2 are the
+first and second operands of the comparison, respectively.  Operand 3
+is a @code{label_ref} that refers to the label to jump to.
+
 @cindex @code{jump} instruction pattern
 @item @samp{jump}
 A jump inside a function; an unconditional branch.  Operand 0 is the
