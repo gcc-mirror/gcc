@@ -1,3 +1,7 @@
+2001-11-14  Roger Sayle <roger@eyesopen.com>
+
+	* fold-const.c (fold): Optimize strlen comparisons against zero.
+
 2001-11-14  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc (sparc64-wrs-vxworks*, sparc-*-netbsd*, sparc-*-openbsd*,
