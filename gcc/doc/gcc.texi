@@ -178,7 +178,7 @@ included in the section entitled ``GNU Free Documentation License''.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 14 June 2001
+@center Last updated 22 June 2001
 @sp 1
 @c The version number appears five times more in this file.
 
@@ -3171,7 +3171,9 @@ with @option{-d} options.
 @itemize @bullet
 @item
 Parsing.  This pass reads the entire text of a function definition,
-constructing a high level tree representation.
+constructing a high level tree representation.  (Because of the semantic
+analysis that takes place during this pass, it does more than is
+formally considered to be parsing.)
 
 The tree representation does not entirely follow C syntax, because it is
 intended to support other languages as well.
@@ -3192,15 +3194,17 @@ particular, the internals are covered in @xref{Top, ,Cpplib internals, cppintern
 
 @c Avoiding overfull is tricky here.
 The source files to parse C are
-@file{c-parse.in},
-@file{c-decl.c},
-@file{c-typeck.c},
 @file{c-aux-info.c},
 @file{c-convert.c},
-and @file{c-lang.c}
-along with header files
-@file{c-lex.h}, and
-@file{c-tree.h}.
+@file{c-decl.c},
+@file{c-errors.c},
+@file{c-lang.c},
+@file{c-parse.in},
+and
+@file{c-typeck.c},
+along with a header file
+@file{c-tree.h}
+and some files shared with Objective-C and C++.
 
 The source files for parsing C++ are in @file{cp/}.
 They are @file{parse.y},
@@ -3220,7 +3224,22 @@ They are @file{objc-parse.y}, @file{objc-act.c}, @file{objc-tree.def}, and
 @file{objc-act.h}.  Certain C-specific files are used for this as
 well.
 
-The file @file{c-common.c} is also used for all of the above languages.
+The files
+@file{c-common.c},
+@file{c-common.def},
+@file{c-dump.c},
+@file{c-format.c},
+@file{c-lex.c},
+@file{c-pragma.c},
+and
+@file{c-semantics.c},
+along with header files
+@file{c-common.h},
+@file{c-dump.h},
+@file{c-lex.h},
+and
+@file{c-pragma.h},
+are also used for all of the above languages.
 
 
 @cindex Tree optimization
