@@ -297,9 +297,12 @@ static int
 fde_unencoded_compare (struct object *ob __attribute__((unused)),
 		       fde *x, fde *y)
 {
-  if (x->pc_begin > y->pc_begin)
+  _Unwind_Ptr x_ptr = *(_Unwind_Ptr *) x->pc_begin;
+  _Unwind_Ptr y_ptr = *(_Unwind_Ptr *) y->pc_begin;
+
+  if (x_ptr > y_ptr)
     return 1;
-  if (x->pc_begin < y->pc_begin)
+  if (x_ptr < y_ptr)
     return -1;
   return 0;
 }
