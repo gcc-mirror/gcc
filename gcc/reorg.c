@@ -1635,7 +1635,7 @@ check_annul_list_true_false (annul_true_p, delay_list)
      int annul_true_p;
      rtx delay_list;
 {
-  rtx temp, trial;
+  rtx temp;
 
   if (delay_list)
     {
@@ -1692,6 +1692,7 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
   rtx new_delay_list = 0;
   int must_annul = *pannul_p;
   int i;
+  int used_annul = 0;
 
   /* We can't do anything if there are more delay slots in SEQ than we
      can handle, or if we don't know that it will be a taken branch.
@@ -2002,7 +2003,8 @@ try_merge_delay_insns (insn, thread)
 	    }
 	  else
 	    {
-	      /* Keep track of the set/referenced resources for 
+	      /* Keep track of the set/referenced resources for the delay
+		 slots of any trial insns we encounter.  */
               mark_set_resources (dtrial, &set, 0, 1);
               mark_referenced_resources (dtrial, &needed, 1);
 	    }
