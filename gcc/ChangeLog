@@ -1,3 +1,8 @@
+2002-05-17  kaz Kojima  <kkojima@rr.iij4u.or.jp>
+
+	* config/sh/sh.h (ENCODE_SECTION_INFO): Consider MODULE_LOCAL_P
+	when encoding visibility into SYMBOL_REF_FLAG.
+
 2002-05-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* expr.c (force_operand): Fix reversed move.
