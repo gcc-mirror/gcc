@@ -4951,6 +4951,7 @@ make_compound_operation (x, in_code)
   enum rtx_code next_code;
   int i, count;
   rtx new = 0;
+  rtx tem;
   char *fmt;
 
   /* Select the code to be used in recursive calls.  Once we are inside an
@@ -4974,9 +4975,12 @@ make_compound_operation (x, in_code)
       if (in_code == MEM && GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) < HOST_BITS_PER_WIDE_INT
 	  && INTVAL (XEXP (x, 1)) >= 0)
-	new = gen_rtx_combine (MULT, mode, XEXP (x, 0),
-			       GEN_INT ((HOST_WIDE_INT) 1
-					<< INTVAL (XEXP (x, 1))));
+	{
+	  new = make_compound_operation (XEXP (x, 0), next_code);
+	  new = gen_rtx_combine (MULT, mode, new,
+				 GEN_INT ((HOST_WIDE_INT) 1
+					  << INTVAL (XEXP (x, 1))));
+	}
       break;
 
     case AND:
@@ -4989,20 +4993,24 @@ make_compound_operation (x, in_code)
 	 is a logical right shift, make an extraction.  */
       if (GET_CODE (XEXP (x, 0)) == LSHIFTRT
 	  && (i = exact_log2 (INTVAL (XEXP (x, 1)) + 1)) >= 0)
-	new = make_extraction (mode, XEXP (XEXP (x, 0), 0), 0,
-			       XEXP (XEXP (x, 0), 1), i, 1,
-			       0, in_code == COMPARE);
+	{
+	  new = make_compound_operation (XEXP (XEXP (x, 0), 0), next_code);
+	  new = make_extraction (mode, new, 0, XEXP (XEXP (x, 0), 1), i, 1,
+				 0, in_code == COMPARE);
+	}
 
       /* Same as previous, but for (subreg (lshiftrt ...)) in first op.  */
       else if (GET_CODE (XEXP (x, 0)) == SUBREG
 	       && subreg_lowpart_p (XEXP (x, 0))
 	       && GET_CODE (SUBREG_REG (XEXP (x, 0))) == LSHIFTRT
 	       && (i = exact_log2 (INTVAL (XEXP (x, 1)) + 1)) >= 0)
-	new = make_extraction (GET_MODE (SUBREG_REG (XEXP (x, 0))),
-			       XEXP (SUBREG_REG (XEXP (x, 0)), 0), 0,
-			       XEXP (SUBREG_REG (XEXP (x, 0)), 1), i, 1,
-			       0, in_code == COMPARE);
-
+	{
+	  new = make_compound_operation (XEXP (SUBREG_REG (XEXP (x, 0)), 0),
+					 next_code);
+	  new = make_extraction (GET_MODE (SUBREG_REG (XEXP (x, 0))), new, 0,
+				 XEXP (SUBREG_REG (XEXP (x, 0)), 1), i, 1,
+				 0, in_code == COMPARE);
+	}
 
       /* If we are have (and (rotate X C) M) and C is larger than the number
 	 of bits in M, this is an extraction.  */
@@ -5011,10 +5019,13 @@ make_compound_operation (x, in_code)
 	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	       && (i = exact_log2 (INTVAL (XEXP (x, 1)) + 1)) >= 0
 	       && i <= INTVAL (XEXP (XEXP (x, 0), 1)))
-	new = make_extraction (mode, XEXP (XEXP (x, 0), 0),
-			       (GET_MODE_BITSIZE (mode)
-				- INTVAL (XEXP (XEXP (x, 0), 1))),
-			       NULL_RTX, i, 1, 0, in_code == COMPARE);
+	{
+	  new = make_compound_operation (XEXP (XEXP (x, 0), 0), next_code);
+	  new = make_extraction (mode, new,
+				 (GET_MODE_BITSIZE (mode)
+				  - INTVAL (XEXP (XEXP (x, 0), 1))),
+				 NULL_RTX, i, 1, 0, in_code == COMPARE);
+	}
 
       /* On machines without logical shifts, if the operand of the AND is
 	 a logical shift and our mask turns off all the propagated sign
@@ -5033,7 +5044,9 @@ make_compound_operation (x, in_code)
 	  mask >>= INTVAL (XEXP (XEXP (x, 0), 1));
 	  if ((INTVAL (XEXP (x, 1)) & ~mask) == 0)
 	    SUBST (XEXP (x, 0),
-		   gen_rtx_combine (ASHIFTRT, mode, XEXP (XEXP (x, 0), 0),
+		   gen_rtx_combine (ASHIFTRT, mode,
+				    make_compound_operation (XEXP (XEXP (x, 0), 0),
+							     next_code),
 				    XEXP (XEXP (x, 0), 1)));
 	}
 
@@ -5042,14 +5055,19 @@ make_compound_operation (x, in_code)
 	 If it doesn't end up being a ZERO_EXTEND, we will ignore it unless
 	 we are in a COMPARE.  */
       else if ((i = exact_log2 (INTVAL (XEXP (x, 1)) + 1)) >= 0)
-	new = make_extraction (mode, XEXP (x, 0), 0, NULL_RTX, i, 1,
-			       0, in_code == COMPARE);
+	new = make_extraction (mode,
+			       make_compound_operation (XEXP (x, 0),
+							next_code),
+			       0, NULL_RTX, i, 1, 0, in_code == COMPARE);
 
       /* If we are in a comparison and this is an AND with a power of two,
 	 convert this into the appropriate bit extract.  */
       else if (in_code == COMPARE
 	       && (i = exact_log2 (INTVAL (XEXP (x, 1)))) >= 0)
-	new = make_extraction (mode, XEXP (x, 0), i, NULL_RTX, 1, 1, 0, 1);
+	new = make_extraction (mode,
+			       make_compound_operation (XEXP (x, 0),
+							next_code),
+			       i, NULL_RTX, 1, 1, 0, 1);
 
       break;
 
@@ -5061,7 +5079,10 @@ make_compound_operation (x, in_code)
 	  && mode_width <= HOST_BITS_PER_WIDE_INT
 	  && (nonzero_bits (XEXP (x, 0), mode) & (1 << (mode_width - 1))) == 0)
 	{
-	  new = gen_rtx_combine (ASHIFTRT, mode, XEXP (x, 0), XEXP (x, 1));
+	  new = gen_rtx_combine (ASHIFTRT, mode,
+				 make_compound_operation (XEXP (x, 0),
+							  next_code),
+				 XEXP (x, 1));
 	  break;
 	}
 
@@ -5074,11 +5095,14 @@ make_compound_operation (x, in_code)
 	  && GET_CODE (XEXP (x, 0)) == ASHIFT
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) >= INTVAL (XEXP (XEXP (x, 0), 1)))
-	new = make_extraction (mode, XEXP (XEXP (x, 0), 0),
-			       (INTVAL (XEXP (x, 1))
-				- INTVAL (XEXP (XEXP (x, 0), 1))),
-			       NULL_RTX, mode_width - INTVAL (XEXP (x, 1)),
-			       code == LSHIFTRT, 0, in_code == COMPARE);
+	{
+	  new = make_compound_operation (XEXP (XEXP (x, 0), 0), next_code);
+	  new = make_extraction (mode, new,
+				 (INTVAL (XEXP (x, 1))
+				  - INTVAL (XEXP (XEXP (x, 0), 1))),
+				 NULL_RTX, mode_width - INTVAL (XEXP (x, 1)),
+				 code == LSHIFTRT, 0, in_code == COMPARE);
+	}
 
       /* Similarly if we have (ashifrt (OP (ashift foo C1) C3) C2).  In these
 	 cases, we are better off returning a SIGN_EXTEND of the operation.  */
@@ -5100,9 +5124,10 @@ make_compound_operation (x, in_code)
 	    = (INTVAL (XEXP (XEXP (x, 0), 1))
 	       >> INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)));
 
+	  new = make_compound_operation (XEXP (XEXP (XEXP (x, 0), 0), 0),
+					 next_code);
 	  new = make_extraction (mode,
-				 gen_binary (GET_CODE (XEXP (x, 0)), mode,
-					     XEXP (XEXP (XEXP (x, 0), 0), 0),
+				 gen_binary (GET_CODE (XEXP (x, 0)), mode, new,
 					     GEN_INT (newop1)),
 				 (INTVAL (XEXP (x, 1))
 				  - INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))),
@@ -5116,14 +5141,29 @@ make_compound_operation (x, in_code)
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ASHIFT
 	  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) >= INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)))
-	new = make_extraction (mode,
-			       gen_unary (GET_CODE (XEXP (x, 0)), mode,
-					  XEXP (XEXP (XEXP (x, 0), 0), 0)),
-			       (INTVAL (XEXP (x, 1))
-				- INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))),
-			       NULL_RTX, mode_width - INTVAL (XEXP (x, 1)),
-			       code == LSHIFTRT, 0, in_code == COMPARE);
+	{
+	  new = make_compound_operation (XEXP (XEXP (XEXP (x, 0), 0), 0),
+					 next_code);
+	  new = make_extraction (mode,
+				 gen_unary (GET_CODE (XEXP (x, 0)), mode,
+					    new, 0),
+				 (INTVAL (XEXP (x, 1))
+				  - INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))),
+				 NULL_RTX, mode_width - INTVAL (XEXP (x, 1)),
+				 code == LSHIFTRT, 0, in_code == COMPARE);
+	}
       break;
+
+    case SUBREG:
+      /* Call ourselves recursively on the inner expression.  If we are
+	 narrowing the object and it has a different RTL code from
+	 what it originally did, do this SUBREG as a force_to_mode.  */
+
+      tem = make_compound_operation (SUBREG_REG (x), next_code);
+      if (GET_CODE (tem) != GET_CODE (SUBREG_REG (x))
+	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (tem))
+	  && subreg_lowpart_p (x))
+	return force_to_mode (tem, mode, GET_MODE_BITSIZE (mode), NULL_RTX);
     }
 
   if (new)
