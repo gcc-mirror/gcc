@@ -149,7 +149,7 @@ static void initialize_argument_information	PROTO ((int,
 							struct arg_data *,
 							struct args_size *,
 							int, tree, tree,
-							CUMULATIVE_ARGS,
+							CUMULATIVE_ARGS *,
 							int, rtx *, int *,
 							int *, int *));
 
@@ -869,7 +869,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
      int n_named_args;
      tree actparms;
      tree fndecl;
-     CUMULATIVE_ARGS args_so_far;
+     CUMULATIVE_ARGS *args_so_far;
      int reg_parm_stack_space;
      rtx *old_stack_level;
      int *old_pending_adj;
@@ -938,7 +938,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 	   && contains_placeholder_p (TYPE_SIZE (type)))
 	  || TREE_ADDRESSABLE (type)
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
-	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, TYPE_MODE (type),
+	  || FUNCTION_ARG_PASS_BY_REFERENCE (*args_so_far, TYPE_MODE (type),
 					     type, argpos < n_named_args)
 #endif
 	  )
@@ -947,7 +947,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
              references instead of making a copy.  */
 	  if (current_function_is_thunk
 #ifdef FUNCTION_ARG_CALLEE_COPIES
-	      || (FUNCTION_ARG_CALLEE_COPIES (args_so_far, TYPE_MODE (type),
+	      || (FUNCTION_ARG_CALLEE_COPIES (*args_so_far, TYPE_MODE (type),
 					     type, argpos < n_named_args)
 		  /* If it's in a register, we must make a copy of it too.  */
 		  /* ??? Is this a sufficient test?  Is there a better one? */
@@ -1034,12 +1034,12 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 
       args[i].unsignedp = unsignedp;
       args[i].mode = mode;
-      args[i].reg = FUNCTION_ARG (args_so_far, mode, type,
+      args[i].reg = FUNCTION_ARG (*args_so_far, mode, type,
 				  argpos < n_named_args);
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
       if (args[i].reg)
 	args[i].partial
-	  = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode, type,
+	  = FUNCTION_ARG_PARTIAL_NREGS (*args_so_far, mode, type,
 					argpos < n_named_args);
 #endif
 
@@ -1113,7 +1113,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
       /* Increment ARGS_SO_FAR, which has info about which arg-registers
 	 have been used, etc.  */
 
-      FUNCTION_ARG_ADVANCE (args_so_far, TYPE_MODE (type), type,
+      FUNCTION_ARG_ADVANCE (*args_so_far, TYPE_MODE (type), type,
 			    argpos < n_named_args);
     }
 }
@@ -1761,7 +1761,7 @@ expand_call (exp, target, ignore)
   /* Build up entries inthe ARGS array, compute the size of the arguments
      into ARGS_SIZE, etc.  */
   initialize_argument_information (num_actuals, args, &args_size, n_named_args,
-				   actparms, fndecl, args_so_far,
+				   actparms, fndecl, &args_so_far,
 				   reg_parm_stack_space, &old_stack_level,
 				   &old_pending_adj, &must_preallocate,
 				   &is_const);
