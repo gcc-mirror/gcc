@@ -1485,7 +1485,6 @@ copy_rtx_if_shared (orig)
     case JUMP_INSN:
     case CALL_INSN:
     case NOTE:
-    case LABEL_REF:
     case BARRIER:
       /* The chain of insns is not being copied.  */
       return x;
