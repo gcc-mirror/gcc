@@ -653,13 +653,13 @@ interpret_float (const cpp_token *token, unsigned int flags)
   real_from_string (&real, copy);
   real_convert (&real, TYPE_MODE (type), &real);
 
-  /* A diagnostic is required for "soft" overflow by some ISO C
-     testsuites.  This is not pedwarn, because some people don't want
-     an error for this.
-     ??? That's a dubious reason... is this a mandatory diagnostic or
-     isn't it?   -- zw, 2001-08-21.  */
+  /* Both C and C++ require a diagnostic for a floating constant
+     outside the range of representable values of its type.  Since we
+     have __builtin_inf* to produce an infinity, it might now be
+     appropriate for this to be a mandatory pedwarn rather than
+     conditioned on -pedantic.  */
   if (REAL_VALUE_ISINF (real) && pedantic)
-    warning ("floating constant exceeds range of %<%s%>", type_name);
+    pedwarn ("floating constant exceeds range of %<%s%>", type_name);
 
   /* Create a node with determined type and value.  */
   value = build_real (type, real);
