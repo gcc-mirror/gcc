@@ -1,3 +1,9 @@
+2001-05-22  Anthony Green  <green@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Tweak canadian cross test, and don't redefine GCJ
+	for cross builds.
+
 2001-05-21  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* configure.host (EXCEPTIONSPEC): Revert broken patch that removed
