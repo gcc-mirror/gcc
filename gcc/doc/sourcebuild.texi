@@ -979,10 +979,13 @@ and call return percentages.  All of these checks are requested via
 commands that appear in comments in the test's source file.
 Commands to check line counts are processed by default.
 Commands to check branch percentages and call return percentages are
-processed if there is a file with the same basename as the source
-file and a suffix @file{.x} that contains a line
-@code{set gcov_verify_branches 1} or @code{set gcov_verify_calls 1},
-respectively.
+processed if the @command{run-gcov} command has arguments @code{branches}
+or @code{calls}, respectively.  For example, the following specifies
+checking both, as well as passing @code{-b} to @command{gcov}:
+
+@smallexample
+@{ dg-final @{ run-gcov branches calls @{ -b sourcefile @} @} @}
+@end smallexample
 
 A line count command appears within a comment on the source line
 that is expected to get the specified count and has the form
