@@ -28,12 +28,9 @@ extern int yydebug;
 
 extern struct cpp_reader* parse_in;
 
-#ifdef HANDLE_SYSV_PRAGMA
-#if ((defined (ASM_WEAKEN_LABEL) && defined (ASM_OUTPUT_WEAK_ALIAS)) \
-     || defined (ASM_WEAKEN_DECL))
 #define HANDLE_PRAGMA_WEAK SUPPORTS_WEAK
-#endif
 
+#ifdef HANDLE_SYSV_PRAGMA
 /* We always support #pragma pack for SYSV pragmas.  */
 #ifndef HANDLE_PRAGMA_PACK
 #define HANDLE_PRAGMA_PACK 1
