@@ -1,5 +1,9 @@
 2000-09-18  Richard Henderson  <rth@cygnus.com>
 
+	* combine.c (if_then_else_cond): Canonicalize BImode true to
+	STORE_FLAG_VALUE.
+	* explow.c (trunc_int_for_mode): Likewise.
+
 	* combine.c (combine_simplify_rtx): Use gen_unary to distribute
 	the NOT for De Morgan's rule.
 	* simplify-rtx.c (simplify_unary_operation): Simplify a BImode NOT

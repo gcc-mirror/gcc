@@ -52,6 +52,10 @@ trunc_int_for_mode (c, mode)
 {
   int width = GET_MODE_BITSIZE (mode);
 
+  /* Canonicalize BImode to 0 and STORE_FLAG_VALUE.  */
+  if (mode == BImode)
+    return c & 1 ? STORE_FLAG_VALUE : 0;
+
   /* We clear out all bits that don't belong in MODE, unless they and our
      sign bit are all one.  So we get either a reasonable negative
      value or a reasonable unsigned value.  */
