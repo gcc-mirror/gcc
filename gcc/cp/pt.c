@@ -2400,7 +2400,7 @@ do_pending_expansions ()
       if (i->interface == 1)
 	/* OK, it was an implicit instantiation.  */
 	{
-	  if (SUPPORTS_WEAK)
+	  if (flag_weak)
 	    DECL_WEAK (t) = 1;
 	  else
 	    TREE_PUBLIC (t) = 0;
@@ -2533,6 +2533,8 @@ do_function_instantiation (declspecs, declarator, storage)
       fn = IDENTIFIER_GLOBAL_VALUE (name),
       fn && DECL_TEMPLATE_INSTANTIATION (fn))
     result = fn;
+  else if (fn && DECL_CONTEXT (fn))
+    ;
   else if (name = DECL_NAME (decl), fn = IDENTIFIER_GLOBAL_VALUE (name), fn)
     {
       for (fn = get_first_fn (fn); fn; fn = DECL_CHAIN (fn))

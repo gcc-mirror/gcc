@@ -311,6 +311,7 @@ convert_to_pointer_force (type, expr)
    value we have to begin with is in ARG.
 
    FLAGS controls how we manage access checking.
+   INDIRECT_BIND in FLAGS controls how any temporarys are generated.
    CHECKCONST controls if we report error messages on const subversion.  */
 static tree
 build_up_reference (type, arg, flags, checkconst)
@@ -589,7 +590,15 @@ build_up_reference (type, arg, flags, checkconst)
     {
       tree temp;
 
-      if (TREE_CODE (targ) == CALL_EXPR && IS_AGGR_TYPE (argtype))
+      if (flags&INDIRECT_BIND)
+	{
+	  tree slot = build (VAR_DECL, argtype);
+	  layout_decl (slot, 0);
+	  rval = build (TARGET_EXPR, argtype, slot, arg, 0);
+	  rval = build1 (ADDR_EXPR, type, rval);
+	  goto done;
+	}
+      else if (TREE_CODE (targ) == CALL_EXPR && IS_AGGR_TYPE (argtype))
 	{
 	  temp = build_cplus_new (argtype, targ, 1);
 	  if (TREE_CODE (temp) == WITH_CLEANUP_EXPR)
@@ -1634,8 +1643,13 @@ build_expr_type_conversion (desires, expr, complain)
     }
 
   if (winner)
-    return build_type_conversion_1 (TREE_VALUE (winner), basetype, expr,
-				    TREE_PURPOSE (winner), 1);
+    {
+      tree type = TREE_VALUE (winner);
+      if (TREE_CODE (type) == REFERENCE_TYPE)
+	type = TREE_TYPE (type);
+      return build_type_conversion_1 (type, basetype, expr,
+				      TREE_PURPOSE (winner), 1);
+    }
 
   return NULL_TREE;
 }

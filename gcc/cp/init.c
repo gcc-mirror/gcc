@@ -43,6 +43,8 @@ Boston, MA 02111-1307, USA.  */
    line.  Perhaps this was not intended.  */
 tree current_base_init_list, current_member_init_list;
 
+extern tree cleanups_this_call;
+
 void emit_base_init ();
 void check_base_init ();
 static void expand_aggr_vbase_init ();
@@ -160,6 +162,13 @@ perform_member_init (member, name, init, explicit, protect_list)
 {
   tree decl;
   tree type = TREE_TYPE (member);
+  extern int temp_slot_level;
+  extern int target_temp_slot_level; 
+  tree old_cleanups = cleanups_this_call;
+  int old_temp_level = target_temp_slot_level;
+  push_temp_slots ();
+  push_temp_slots ();
+  target_temp_slot_level = temp_slot_level;
 
   if (TYPE_NEEDS_CONSTRUCTING (type)
       || (init && TYPE_HAS_CONSTRUCTOR (type)))
@@ -219,7 +228,16 @@ perform_member_init (member, name, init, explicit, protect_list)
 	  expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 	}
     }
-  expand_cleanups_to (NULL_TREE);
+  expand_cleanups_to (old_cleanups);
+  pop_temp_slots ();
+  pop_temp_slots ();
+  target_temp_slot_level = old_temp_level;
+  /* There might something left from building the trees.  */
+  if (cleanups_this_call)
+    {
+      expand_cleanups_to (NULL_TREE);
+    }
+  free_temp_slots ();
 
   if (TYPE_NEEDS_DESTRUCTOR (type))
     {
@@ -577,11 +595,28 @@ emit_base_init (t, immediately)
 
       if (init != void_list_node)
 	{
+	  extern int temp_slot_level;
+	  extern int target_temp_slot_level; 
+	  tree old_cleanups = cleanups_this_call;
+	  int old_temp_level = target_temp_slot_level;
+	  push_temp_slots ();
+	  push_temp_slots ();
+	  target_temp_slot_level = temp_slot_level;
+
 	  member = convert_pointer_to_real (base_binfo, current_class_decl);
 	  expand_aggr_init_1 (base_binfo, 0,
 			      build_indirect_ref (member, NULL_PTR), init,
 			      BINFO_OFFSET_ZEROP (base_binfo), LOOKUP_NORMAL);
-	  expand_cleanups_to (NULL_TREE);
+	  expand_cleanups_to (old_cleanups);
+	  pop_temp_slots ();
+	  pop_temp_slots ();
+	  target_temp_slot_level = old_temp_level;
+	  /* There might something left from building the trees.  */
+	  if (cleanups_this_call)
+	    {
+	      expand_cleanups_to (NULL_TREE);
+	    }
+	  free_temp_slots ();
 	}
 
       if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo)))
@@ -749,11 +784,30 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
 {
   tree init = purpose_member (binfo, init_list);
   tree ref = build_indirect_ref (addr, NULL_PTR);
+
+  extern int temp_slot_level;
+  extern int target_temp_slot_level; 
+  tree old_cleanups = cleanups_this_call;
+  int old_temp_level = target_temp_slot_level;
+  push_temp_slots ();
+  push_temp_slots ();
+  target_temp_slot_level = temp_slot_level;
+
   if (init)
     init = TREE_VALUE (init);
   /* Call constructors, but don't set up vtables.  */
   expand_aggr_init_1 (binfo, exp, ref, init, 0, LOOKUP_COMPLAIN);
-  expand_cleanups_to (NULL_TREE);
+
+  expand_cleanups_to (old_cleanups);
+  pop_temp_slots ();
+  pop_temp_slots ();
+  target_temp_slot_level = old_temp_level;
+  /* There might something left from building the trees.  */
+  if (cleanups_this_call)
+    {
+      expand_cleanups_to (NULL_TREE);
+    }
+  free_temp_slots ();
 }
 
 /* Initialize this object's virtual base class pointers.  This must be
@@ -818,8 +872,7 @@ do_member_init (s_id, name, init)
 /* Function to give error message if member initialization specification
    is erroneous.  FIELD is the member we decided to initialize.
    TYPE is the type for which the initialization is being performed.
-   FIELD must be a member of TYPE, or the base type from which FIELD
-   comes must not need a constructor.
+   FIELD must be a member of TYPE.
    
    MEMBER_NAME is the name of the member.  */
 
@@ -831,21 +884,10 @@ member_init_ok_or_else (field, type, member_name)
 {
   if (field == error_mark_node)
     return 0;
-  if (field == NULL_TREE)
+  if (field == NULL_TREE || DECL_CONTEXT (field) != type)
     {
       cp_error ("class `%T' does not have any field named `%s'", type,
 		member_name);
-      return 0;
-    }
-  if (DECL_CONTEXT (field) != type
-      && TYPE_NEEDS_CONSTRUCTING (DECL_CONTEXT (field)))
-    {
-      if (current_function_decl && DECL_CONSTRUCTOR_P (current_function_decl))
-	cp_error ("initialization of `%D' inside constructor for `%T'",
-		  field, type);
-      else
-	cp_error ("member `%D' comes from base class needing constructor",
-		  field);
       return 0;
     }
   if (TREE_STATIC (field))
@@ -958,6 +1000,12 @@ expand_member_init (exp, name, init)
 	      error ("base class `%s' already initialized",
 		     IDENTIFIER_POINTER (name));
 	      return;
+	    }
+
+	  if (warn_reorder && current_member_init_list)
+	    {
+	      warning ("base initializer for `%s'", IDENTIFIER_POINTER (name));
+	      warning ("   will be re-ordered to precede member initializations");
 	    }
 
 	  base_init = build_tree_list (name, init);
@@ -1354,12 +1402,15 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 		}
 	      else
 		{
+#if 0
+		  /* This causes testcase return2.C to fail.  */
 		  init = TREE_OPERAND (init, 1);
 		  init = build (CALL_EXPR, init_type,
 				TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), 0);
 		  TREE_SIDE_EFFECTS (init) = 1;
 		    if (init_list)
 		      TREE_VALUE (init_list) = init;
+#endif
 		}
 	    }
 
@@ -1508,7 +1559,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 		    cp_error ("ambiguity between conversion to `%T' and constructor",
 			      type);
 		  else
-		    expand_assignment (exp, rval, 0, 0);
+		    expand_aggr_init_1 (binfo, true_exp, exp, rval, alias_this, flags);
 		  return;
 		}
 	    }
@@ -1920,7 +1971,7 @@ build_offset_ref (cname, name)
       if (TREE_CODE (t) == TYPE_DECL || TREE_CODE (t) == VAR_DECL
 	  || TREE_CODE (t) == CONST_DECL)
 	{
-	  TREE_USED (t) = 1;
+	  mark_used (t);
 	  return t;
 	}
       if (TREE_CODE (t) == FIELD_DECL)
@@ -2010,7 +2061,7 @@ build_offset_ref (cname, name)
 		  error ("in this context");
 		  return error_mark_node;
 		}
-	      assemble_external (t);
+	      mark_used (t);
 	      return build (OFFSET_REF, TREE_TYPE (t), decl, t);
 	    }
 
@@ -2037,8 +2088,10 @@ build_offset_ref (cname, name)
 		  || ! allocation_temporary_p ()))
 	    fnfields = copy_list (fnfields);
 
+#if 0
 	  for (t = TREE_VALUE (fnfields); t; t = DECL_CHAIN (t))
 	    assemble_external (t);
+#endif
 
 	  t = build_tree_list (error_mark_node, fnfields);
 	  TREE_TYPE (t) = build_offset_type (type, unknown_type_node);
@@ -2070,8 +2123,7 @@ build_offset_ref (cname, name)
      values can be returned without further ado.  */
   if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == CONST_DECL)
     {
-      assemble_external (t);
-      TREE_USED (t) = 1;
+      mark_used (t);
       return t;
     }
 

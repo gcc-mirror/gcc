@@ -1658,6 +1658,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
     }
   /* We already know whether it's needed or not for vec delete.  */
   else if (name == ansi_opname[(int) VEC_DELETE_EXPR]
+	   && TYPE_LANG_SPECIFIC (TREE_TYPE (instance))
 	   && ! TYPE_VEC_DELETE_TAKES_SIZE (TREE_TYPE (instance)))
     TREE_CHAIN (parms) = NULL_TREE;
 
@@ -2464,17 +2465,13 @@ build_method_call (instance, name, parms, basetype_path, flags)
     return build_signature_method_call (basetype, instance, function, parms);
 
   function = DECL_MAIN_VARIANT (function);
-  /* Declare external function if necessary. */
-  assemble_external (function);
+  mark_used (function);
 
-#if 1
   /* Is it a synthesized method that needs to be synthesized?  */
-  if (DECL_ARTIFICIAL (function) && ! flag_no_inline
-      && ! DECL_INITIAL (function)
+  if (DECL_ARTIFICIAL (function) && ! DECL_INITIAL (function)
       /* Kludge: don't synthesize for default args.  */
       && current_function_decl)
     synthesize_method (function);
-#endif
 
   if (pedantic && DECL_THIS_INLINE (function) && ! DECL_ARTIFICIAL (function)
        && ! DECL_INITIAL (function) && ! DECL_PENDING_INLINE_INFO (function))
@@ -2670,7 +2667,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
     if (TREE_CODE (function) == FUNCTION_DECL)
       {
 	is_constructor = DECL_CONSTRUCTOR_P (function);
-	TREE_USED (function) = 1;
 	function = default_conversion (function);
       }
     else

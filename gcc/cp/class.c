@@ -424,7 +424,6 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
      tree *ptr_to_instptr, instance;
      tree idx;
 {
-  extern int building_cleanup;
   tree vtbl, aref;
   tree basetype = TREE_TYPE (instance);
 
@@ -481,7 +480,7 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
 
   /* Save the intermediate result in a SAVE_EXPR so we don't have to
      compute each component of the virtual function pointer twice.  */ 
-  if (!building_cleanup && TREE_CODE (aref) == INDIRECT_REF)
+  if (TREE_CODE (aref) == INDIRECT_REF)
     TREE_OPERAND (aref, 0) = save_expr (TREE_OPERAND (aref, 0));
 
   if (flag_vtable_thunks)
@@ -1720,8 +1719,14 @@ finish_struct_bits (t, max_has_virtual)
   /* If this type has a copy constructor, force its mode to be BLKmode, and
      force its TREE_ADDRESSABLE bit to be nonzero.  This will cause it to
      be passed by invisible reference and prevent it from being returned in
-     a register.  */
-  if (! TYPE_HAS_TRIVIAL_INIT_REF (t))
+     a register.
+
+     Also do this if the class has BLKmode but can still be returned in
+     registers, since function_cannot_inline_p won't let us inline
+     functions returning such a type.  This affects the HP-PA.  */
+  if (! TYPE_HAS_TRIVIAL_INIT_REF (t)
+      || (TYPE_MODE (t) == BLKmode && ! aggregate_value_p (t)
+	  && CLASSTYPE_NON_AGGREGATE (t)))
     {
       tree variants;
       if (TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
@@ -1812,15 +1817,14 @@ grow_method (fn, method_vec_ptr)
    us to reduce search time in places like `build_method_call' to
    consider only reasonably likely functions.  */
 
-static tree
+tree
 finish_struct_methods (t, fn_fields, nonprivate_method)
      tree t;
      tree fn_fields;
      int nonprivate_method;
 {
   tree method_vec;
-  tree save_fn_fields = tree_cons (NULL_TREE, NULL_TREE, fn_fields);
-  tree lastp;
+  tree save_fn_fields = fn_fields;
   tree name = constructor_name (t);
   int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
 
@@ -1837,7 +1841,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
   /* First fill in entry 0 with the constructors, and the next few with
      type conversion operators (if any).  */
 
-  for (lastp = save_fn_fields; fn_fields; fn_fields = TREE_CHAIN (lastp))
+  for (; fn_fields; fn_fields = TREE_CHAIN (fn_fields))
     {
       tree fn_name = DECL_NAME (fn_fields);
       if (fn_name == NULL_TREE)
@@ -1887,26 +1891,17 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 
 	  grow_method (fn_fields, &method_vec);
 	}
-      else
-	{
-	  lastp = fn_fields;
-	  continue;
-	}
-
-      TREE_CHAIN (lastp) = TREE_CHAIN (fn_fields);
-      TREE_CHAIN (fn_fields) = NULL_TREE;
     }
 
-  fn_fields = TREE_CHAIN (save_fn_fields);
-  while (fn_fields)
+  fn_fields = save_fn_fields;
+  for (; fn_fields; fn_fields = TREE_CHAIN (fn_fields))
     {
-      tree nextp;
       tree fn_name = DECL_NAME (fn_fields);
       if (fn_name == NULL_TREE)
 	fn_name = name;
 
-      nextp = TREE_CHAIN (fn_fields);
-      TREE_CHAIN (fn_fields) = NULL_TREE;
+      if (fn_name == name || IDENTIFIER_TYPENAME_P (fn_name))
+	continue;
 
       if (fn_name == ansi_opname[(int) MODIFY_EXPR])
 	{
@@ -1922,7 +1917,6 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	}
 
       grow_method (fn_fields, &method_vec);
-      fn_fields = nextp;
     }
 
   TREE_VEC_LENGTH (method_vec) = (tree *)obstack_next_free (&class_obstack)
@@ -2005,6 +1999,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	obstack_free (current_obstack, baselink_vec);
     }
 
+#if 0
   /* Now add the methods to the TYPE_METHODS of T, arranged in a chain.  */
   {
     tree x, last_x = NULL_TREE;
@@ -2040,6 +2035,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
   }
 
   TYPE_METHODS (t) = method_vec;
+#endif
 
   return method_vec;
 }
@@ -2765,7 +2761,7 @@ finish_struct_1 (t, warn_anon)
   tree name = TYPE_IDENTIFIER (t);
   enum tree_code code = TREE_CODE (t);
   tree fields = TYPE_FIELDS (t);
-  tree fn_fields = CLASSTYPE_METHODS (t);
+  tree fn_fields = TYPE_METHODS (t);
   tree x, last_x, method_vec;
   int needs_virtual_dtor;
   int all_virtual;
@@ -2920,7 +2916,7 @@ finish_struct_1 (t, warn_anon)
   else
     all_virtual = 0;
 
-  for (x = CLASSTYPE_METHODS (t); x; x = TREE_CHAIN (x))
+  for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
     {
       GNU_xref_member (current_class_name, x);
 
@@ -3197,7 +3193,7 @@ finish_struct_1 (t, warn_anon)
 	{
 	  tree type = TREE_TYPE (x);
 
-	  if (TREE_CODE (type) == ARRAY_TYPE)
+	  while (TREE_CODE (type) == ARRAY_TYPE)
 	    type = TREE_TYPE (type);
 
 	  if (TYPE_LANG_SPECIFIC (type) && ! ANON_UNION_P (x)
@@ -3681,19 +3677,6 @@ finish_struct_1 (t, warn_anon)
 	      }
 	  }
 	}
-
-      /* Now fixup any virtual function entries from virtual bases
-	 that have different deltas.  */
-      vbases = CLASSTYPE_VBASECLASSES (t);
-      while (vbases)
-	{
-	  /* We might be able to shorten the amount of work we do by
-	     only doing this for vtables that come from virtual bases
-	     that have differing offsets, but don't want to miss any
-	     entries.  */
-	  fixup_vtable_deltas (vbases, 1, t);
-	  vbases = TREE_CHAIN (vbases);
-	}
     }
 
   /* Set up the DECL_FIELD_BITPOS of the vfield if we need to, as we
@@ -3736,6 +3719,27 @@ finish_struct_1 (t, warn_anon)
 			  TREE_VALUE (pending_hard_virtuals));
       pending_hard_virtuals = TREE_CHAIN (pending_hard_virtuals);
     }
+  
+  if (TYPE_USES_VIRTUAL_BASECLASSES (t))
+    {
+      tree vbases;
+      /* Now fixup any virtual function entries from virtual bases
+	 that have different deltas.  This has to come after we do the
+	 pending hard virtuals, as we might have a function that comes
+	 from multiple virtual base instances that is only overridden
+	 by a hard virtual above.  */
+      vbases = CLASSTYPE_VBASECLASSES (t);
+      while (vbases)
+	{
+	  /* We might be able to shorten the amount of work we do by
+	     only doing this for vtables that come from virtual bases
+	     that have differing offsets, but don't want to miss any
+	     entries.  */
+	  fixup_vtable_deltas (vbases, 1, t);
+	  vbases = TREE_CHAIN (vbases);
+	}
+    }
+
   doing_hard_virtuals = 0;
 
   /* Under our model of GC, every C++ class gets its own virtual
@@ -4045,8 +4049,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
      tree list_of_fieldlists;
      int warn_anon;
 {
-  tree fields = NULL_TREE, fn_fields, *tail;
-  tree *tail_user_methods = &CLASSTYPE_METHODS (t);
+  tree fields = NULL_TREE;
+  tree *tail = &TYPE_METHODS (t);
   tree name = TYPE_NAME (t);
   tree x, last_x = NULL_TREE;
   enum access_type access;
@@ -4071,7 +4075,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   if (IS_SIGNATURE (t))
     append_signature_fields (list_of_fieldlists);
 
-  tail = &fn_fields;
   if (last_x && list_of_fieldlists)
     TREE_CHAIN (last_x) = TREE_VALUE (list_of_fieldlists);
 
@@ -4130,11 +4133,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	    {
 	      if (last_x)
 		TREE_CHAIN (last_x) = TREE_CHAIN (x);
-	      /* Link x onto end of fn_fields and CLASSTYPE_METHODS. */
+	      /* Link x onto end of TYPE_METHODS. */
 	      *tail = x;
 	      tail = &TREE_CHAIN (x);
-	      *tail_user_methods = x;
-	      tail_user_methods = &DECL_NEXT_METHOD (x);
 	      continue;
 	    }
 
@@ -4167,12 +4168,12 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     }
 
   *tail = NULL_TREE;
-  *tail_user_methods = NULL_TREE;
   TYPE_FIELDS (t) = fields;
 
   if (0 && processing_template_defn)
     {
-      CLASSTYPE_METHOD_VEC (t) = finish_struct_methods (t, fn_fields, 1);
+      CLASSTYPE_METHOD_VEC (t)
+	= finish_struct_methods (t, TYPE_METHODS (t), 1);
       return t;
     }
   else
@@ -4671,6 +4672,7 @@ instantiate_type (lhstype, rhs, complain)
 		  return error_mark_node;
 		return build_vfn_ref (&base_ptr, base, DECL_VINDEX (function));
 	      }
+	    mark_used (function);
 	    return function;
 	  }
 
@@ -4687,6 +4689,7 @@ instantiate_type (lhstype, rhs, complain)
 	if (field)
 	  {
 	    TREE_OPERAND (rhs, 1) = field;
+	    mark_used (field);
 	    return rhs;
 	  }
 
@@ -4760,7 +4763,10 @@ instantiate_type (lhstype, rhs, complain)
 	      if (! comptypes (lhstype, TREE_TYPE (elem), 1))
 		elem = DECL_CHAIN (elem);
 	      else
-		return elem;
+		{
+		  mark_used (elem);
+		  return elem;
+		}
 
 	    /* No exact match found, look for a compatible template.  */
 	    {
@@ -4815,6 +4821,7 @@ instantiate_type (lhstype, rhs, complain)
 		      }
 		    return error_mark_node;
 		  }
+		mark_used (save_elem);
 		return save_elem;
 	      }
 	    if (complain)
@@ -4848,7 +4855,10 @@ instantiate_type (lhstype, rhs, complain)
 	    elem = TREE_VALUE (baselink);
 	    while (elem)
 	      if (comptypes (lhstype, TREE_TYPE (elem), 1))
-		return elem;
+		{
+		  mark_used (elem);
+		  return elem;
+		}
 	      else
 		elem = DECL_CHAIN (elem);
 	  }
@@ -4874,6 +4884,7 @@ instantiate_type (lhstype, rhs, complain)
 		      error ("ambiguous overload for overloaded method requested");
 		    return error_mark_node;
 		  }
+		mark_used (save_elem);
 		return save_elem;
 	      }
 	    name = DECL_NAME (TREE_VALUE (rhs));

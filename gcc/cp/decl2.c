@@ -36,7 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #include "decl.h"
 #include "lex.h"
 #include "output.h"
-#include "defaults.h"
 
 extern tree get_file_function_name ();
 extern tree cleanups_this_call;
@@ -369,6 +368,12 @@ int flag_check_new;
 
 int flag_new_for_scope = 1;
 
+/* Nonzero if we want to emit defined symbols with common-like linkage as
+   weak symbols where possible, in order to conform to C++ semantics.
+   Otherwise, emit them as local symbols.  */
+
+int flag_weak = 1;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -416,7 +421,8 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"operator-names", &flag_operator_names, 1},
   {"check-new", &flag_check_new, 1},
   {"repo", &flag_use_repository, 1},
-  {"for-scope", &flag_new_for_scope, 2}
+  {"for-scope", &flag_new_for_scope, 2},
+  {"weak", &flag_weak, 1}
 };
 
 /* Decode the string P as a language-specific option.
@@ -906,7 +912,7 @@ grokclassfn (ctype, cname, function, flags, quals)
 	      /* Mark the artificial `__in_chrg' parameter as "artificial".  */
 	      SET_DECL_ARTIFICIAL (parm);
 	      DECL_ARG_TYPE (parm) = integer_type_node;
-	      DECL_REGISTER (parm) = 1;
+	      TREE_READONLY (parm) = 1;
 	      TREE_CHAIN (parm) = last_function_parms;
 	      last_function_parms = parm;
 	    }
@@ -948,18 +954,11 @@ grokclassfn (ctype, cname, function, flags, quals)
       buf[len] = '\0';
       strcat (buf, dbuf);
       DECL_ASSEMBLER_NAME (function) = get_identifier (buf);
-      parm = build_decl (PARM_DECL, in_charge_identifier, const_integer_type);
+      parm = build_decl (PARM_DECL, in_charge_identifier, integer_type_node);
       /* Mark the artificial `__in_chrg' parameter as "artificial".  */
       SET_DECL_ARTIFICIAL (parm);
-      TREE_USED (parm) = 1;
-#if 0
-      /* We don't need to mark the __in_chrg parameter itself as `const'
- 	 since its type is already `const int'.  In fact we MUST NOT mark
- 	 it as `const' cuz that will screw up the debug info (causing it
- 	 to say that the type of __in_chrg is `const const int').  */
       TREE_READONLY (parm) = 1;
-#endif
-      DECL_ARG_TYPE (parm) = const_integer_type;
+      DECL_ARG_TYPE (parm) = integer_type_node;
       /* This is the same chain as DECL_ARGUMENTS (...).  */
       TREE_CHAIN (last_function_parms) = parm;
 
@@ -2030,7 +2029,7 @@ constructor_name_full (thing)
   if (IS_AGGR_TYPE_CODE (TREE_CODE (thing)))
     {
       if (TYPE_WAS_ANONYMOUS (thing) && TYPE_HAS_CONSTRUCTOR (thing))
-	thing = DECL_NAME (TREE_VEC_ELT (TYPE_METHODS (thing), 0));
+	thing = DECL_NAME (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (thing), 0));
       else
 	thing = TYPE_NAME (thing);
     }
@@ -2479,6 +2478,8 @@ coerce_delete_type (type)
   return type;
 }
 
+extern tree abort_fndecl;
+
 static void
 mark_vtable_entries (decl)
      tree decl;
@@ -2489,16 +2490,12 @@ mark_vtable_entries (decl)
 
   for (; entries; entries = TREE_CHAIN (entries))
     {
-      tree fnaddr = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries));
+      tree fnaddr = (flag_vtable_thunks ? TREE_VALUE (entries) 
+		     : FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries)));
       tree fn = TREE_OPERAND (fnaddr, 0);
       TREE_ADDRESSABLE (fn) = 1;
-      if (DECL_ABSTRACT_VIRTUAL_P (fn))
-	{
-	  extern tree abort_fndecl;
-	  if (flag_vtable_thunks)
-	    fnaddr = TREE_VALUE (entries);
-	  TREE_OPERAND (fnaddr, 0) = fn = abort_fndecl;
-	}
+      if (DECL_LANG_SPECIFIC (fn) && DECL_ABSTRACT_VIRTUAL_P (fn))
+	TREE_OPERAND (fnaddr, 0) = fn = abort_fndecl;
       assemble_external (fn);
     }
 }
@@ -2541,8 +2538,8 @@ import_export_vtable (decl, type, final)
       if (! found && ! final)
 	{
 	  tree method;
-	  for (method = CLASSTYPE_METHODS (type); method != NULL_TREE;
-	       method = DECL_NEXT_METHOD (method))
+	  for (method = TYPE_METHODS (type); method != NULL_TREE;
+	       method = TREE_CHAIN (method))
 	    if (DECL_VINDEX (method) != NULL_TREE
 		&& ! DECL_THIS_INLINE (method)
 		&& ! DECL_ABSTRACT_VIRTUAL_P (method))
@@ -2558,7 +2555,7 @@ import_export_vtable (decl, type, final)
 	  if (TREE_PUBLIC (decl))
 	    cp_error ("all virtual functions redeclared inline");
 #endif
-	  if (SUPPORTS_WEAK)
+	  if (flag_weak)
 	    DECL_WEAK (decl) = 1;
 	  else
 	    TREE_PUBLIC (decl) = 0;
@@ -2597,8 +2594,8 @@ finish_prevtable_vardecl (prev, vars)
       && ! CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
     {
       tree method;
-      for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
-	   method = DECL_NEXT_METHOD (method))
+      for (method = TYPE_METHODS (ctype); method != NULL_TREE;
+	   method = TREE_CHAIN (method))
 	{
 	  if (DECL_VINDEX (method) != NULL_TREE
 	      && !DECL_THIS_INLINE (method)
@@ -2782,7 +2779,7 @@ import_export_inline (decl)
     {
       if (DECL_IMPLICIT_INSTANTIATION (decl) && flag_implicit_templates)
 	{
-	  if (SUPPORTS_WEAK)
+	  if (flag_weak)
 	    DECL_WEAK (decl) = 1;
 	  else
 	    TREE_PUBLIC (decl) = 0;
@@ -2799,19 +2796,39 @@ import_export_inline (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
 		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
 	}
-      else if (SUPPORTS_WEAK)
+      else if (flag_weak)
 	DECL_WEAK (decl) = 1;
       else
 	TREE_PUBLIC (decl) = 0;
     }
   else if (DECL_C_STATIC (decl))
     TREE_PUBLIC (decl) = 0;
-  else if (SUPPORTS_WEAK)
+  else if (flag_weak)
     DECL_WEAK (decl) = 1;
   else
     TREE_PUBLIC (decl) = 0;
 
   DECL_INTERFACE_KNOWN (decl) = 1;
+}
+
+tree
+build_cleanup (decl)
+     tree decl;
+{
+  tree temp;
+  tree type = TREE_TYPE (decl);
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    temp = decl;
+  else
+    {
+      mark_addressable (decl);
+      temp = build1 (ADDR_EXPR, build_pointer_type (type), decl);
+    }
+  temp = build_delete (TREE_TYPE (temp), temp,
+		       integer_two_node,
+		       LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
+  return temp;
 }
 
 extern int parse_time, varconst_time;
@@ -2895,14 +2912,12 @@ finish_file ()
     {
       tree decl = TREE_VALUE (vars);
       tree type = TREE_TYPE (decl);
-      if (TYPE_NEEDS_DESTRUCTOR (type))
+      if (TYPE_NEEDS_DESTRUCTOR (type) && ! TREE_STATIC (vars))
 	{
 	  needs_cleaning = 1;
-	  needs_messing_up = 1;
 	  break;
 	}
-      else
-	needs_messing_up |= TYPE_NEEDS_CONSTRUCTING (type);
+
       vars = TREE_CHAIN (vars);
     }
 
@@ -2930,23 +2945,10 @@ finish_file ()
       tree type = TREE_TYPE (decl);
       tree temp = TREE_PURPOSE (vars);
 
-      if (TYPE_NEEDS_DESTRUCTOR (type))
+      if (TYPE_NEEDS_DESTRUCTOR (type) && ! TREE_STATIC (vars))
 	{
-	  if (TREE_STATIC (vars))
-	    expand_start_cond (build_binary_op (NE_EXPR, temp, integer_zero_node, 1), 0);
-	  if (TREE_CODE (type) == ARRAY_TYPE)
-	    temp = decl;
-	  else
-	    {
-	      mark_addressable (decl);
-	      temp = build1 (ADDR_EXPR, build_pointer_type (type), decl);
-	    }
-	  temp = build_delete (TREE_TYPE (temp), temp,
-			       integer_two_node, LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
+	  temp = build_cleanup (decl);
 	  expand_expr_stmt (temp);
-
-	  if (TREE_STATIC (vars))
-	    expand_end_cond ();
 	}
     }
 
@@ -2987,9 +2989,15 @@ finish_file ()
 
       while (vars)
 	{
+	  extern int temp_slot_level;
+	  extern int target_temp_slot_level; 
 	  tree decl = TREE_VALUE (vars);
 	  tree init = TREE_PURPOSE (vars);
 	  tree old_cleanups = cleanups_this_call;
+	  int old_temp_level = target_temp_slot_level;
+	  push_temp_slots ();
+	  push_temp_slots ();
+	  target_temp_slot_level = temp_slot_level;
 
 	  /* If this was a static attribute within some function's scope,
 	     then don't initialize it here.  Also, don't bother
@@ -3024,7 +3032,6 @@ finish_file ()
 						TREE_VEC_ELT (init, 1),
 						TREE_VEC_ELT (init, 2), 0),
 			       const0_rtx, VOIDmode, 0);
-		  free_temp_slots ();
 		}
 	      else
 		expand_assignment (decl, init, 0, 0);
@@ -3037,14 +3044,12 @@ finish_file ()
 		{
 		  /* a `new' expression at top level.  */
 		  expand_expr (decl, const0_rtx, VOIDmode, 0);
-		  free_temp_slots ();
 		  if (TREE_CODE (init) == TREE_VEC)
 		    {
 		      expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
 						    TREE_VEC_ELT (init, 1),
 						    TREE_VEC_ELT (init, 2), 0),
 				   const0_rtx, VOIDmode, 0);
-		      free_temp_slots ();
 		    }
 		  else
 		    expand_aggr_init (build_indirect_ref (decl, NULL_PTR), init, 0, 0);
@@ -3053,9 +3058,14 @@ finish_file ()
 	  else if (decl == error_mark_node)
 	    ;
 	  else my_friendly_abort (22);
-	  vars = TREE_CHAIN (vars);
+
 	  /* Cleanup any temporaries needed for the initial value.  */
 	  expand_cleanups_to (old_cleanups);
+	  pop_temp_slots ();
+	  pop_temp_slots ();
+	  target_temp_slot_level = old_temp_level;
+
+	  vars = TREE_CHAIN (vars);
 	}
 
       for (; static_ctors; static_ctors = TREE_CHAIN (static_ctors))
@@ -3508,4 +3518,12 @@ check_default_args (x)
 	  break;
 	}
     }
+}
+
+void
+mark_used (decl)
+     tree decl;
+{
+  TREE_USED (decl) = 1;
+  assemble_external (decl);
 }

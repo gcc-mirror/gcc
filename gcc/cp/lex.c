@@ -883,13 +883,16 @@ yyprint (file, yychar, yylval)
 static int *reduce_count;
 int *token_count;
 
+#if 0
 #define REDUCE_LENGTH (sizeof (yyr2) / sizeof (yyr2[0]))
 #define TOKEN_LENGTH (256 + sizeof (yytname) / sizeof (yytname[0]))
+#endif
 
 int *
 init_parse ()
 {
 #ifdef GATHER_STATISTICS
+#ifdef REDUCE_LENGTH
   reduce_count = (int *)malloc (sizeof (int) * (REDUCE_LENGTH + 1));
   bzero (reduce_count, sizeof (int) * (REDUCE_LENGTH + 1));
   reduce_count += 1;
@@ -897,10 +900,12 @@ init_parse ()
   bzero (token_count, sizeof (int) * (TOKEN_LENGTH + 1));
   token_count += 1;
 #endif
+#endif
   return token_count;
 }
 
 #ifdef GATHER_STATISTICS
+#ifdef REDUCE_LENGTH
 void
 yyhook (yyn)
      int yyn;
@@ -922,11 +927,13 @@ token_cmp (p, q)
   return token_count[*q] - token_count[*p];
 }
 #endif
+#endif
 
 void
 print_parse_statistics ()
 {
 #ifdef GATHER_STATISTICS
+#ifdef REDUCE_LENGTH
 #if YYDEBUG != 0
   int i;
   int maxlen = REDUCE_LENGTH;
@@ -967,6 +974,7 @@ print_parse_statistics ()
 	       index, yyrline[index], reduce_count[index]);
     }
   fprintf (stderr, "\n");
+#endif
 #endif
 #endif
 }
@@ -2590,6 +2598,10 @@ linenum:
 	      p->name = input_filename;
 	      input_file_stack = p;
 	      input_file_stack_tick++;
+#ifdef DBX_DEBUGGING_INFO
+	      if (write_symbols == DBX_DEBUG)
+		dbxout_start_new_source_file (input_filename);
+#endif
 #ifdef DWARF_DEBUGGING_INFO
 	      if (debug_info_level == DINFO_LEVEL_VERBOSE
 		  && write_symbols == DWARF_DEBUG)
@@ -2627,6 +2639,10 @@ linenum:
 		  input_file_stack = p->next;
 		  free (p);
 		  input_file_stack_tick++;
+#ifdef DBX_DEBUGGING_INFO
+		  if (write_symbols == DBX_DEBUG)
+		    dbxout_resume_previous_source_file ();
+#endif
 #ifdef DWARF_DEBUGGING_INFO
 		  if (debug_info_level == DINFO_LEVEL_VERBOSE
 		      && write_symbols == DWARF_DEBUG)
@@ -2872,6 +2888,9 @@ do_identifier (token)
 {
   register tree id = lastiddecl;
 
+  if (IDENTIFIER_OPNAME_P (token))
+    id = lookup_name (token, 0);
+
   if (yychar == YYEMPTY)
     yychar = yylex ();
   /* Scope class declarations before global
@@ -2920,7 +2939,14 @@ do_identifier (token)
 	  if (id && id != error_mark_node && TREE_TYPE (id) == error_mark_node)
 	    return id;
 	}
-      if (yychar == '(' || yychar == LEFT_RIGHT)
+
+      if (IDENTIFIER_OPNAME_P (token))
+	{
+	  if (token != ansi_opname[ERROR_MARK])
+	    cp_error ("operator %O not defined", token);
+	  id = error_mark_node;
+	}
+      else if (yychar == '(' || yychar == LEFT_RIGHT)
 	{
 	  id = implicitly_declare (token);
 	}
@@ -4360,7 +4386,9 @@ real_yylex ()
 done:
 /*  yylloc.last_line = lineno; */
 #ifdef GATHER_STATISTICS
+#ifdef REDUCE_LENGTH
   token_count[value] += 1;
+#endif
 #endif
 
   return value;

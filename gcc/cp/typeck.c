@@ -1766,7 +1766,7 @@ build_component_ref (datum, component, basetype_path, protect)
 			  my_friendly_assert (datum != error_mark_node, 310);
 			  fndecl = build_vfn_ref (&addr, datum, DECL_VINDEX (fndecl));
 			}
-		      assemble_external (fndecl);
+		      mark_used (fndecl);
 		      return fndecl;
 		    }
 		  if (access == access_protected)
@@ -1781,8 +1781,10 @@ build_component_ref (datum, component, basetype_path, protect)
                      not matter unless we're actually calling the function.  */
 		  tree t;
 
+#if 0
 		  for (t = TREE_VALUE (fndecls); t; t = DECL_CHAIN (t))
 		    assemble_external (t);
+#endif
 
 		  t = build_tree_list (error_mark_node, fndecls);
 		  TREE_TYPE (t) = build_offset_type (basetype,
@@ -1809,9 +1811,10 @@ build_component_ref (datum, component, basetype_path, protect)
 	      cp_error ("invalid use of type decl `%#D' as expression", field);
 	      return error_mark_node;
 	    }
- 	  if (DECL_RTL (field) != 0)
-	    assemble_external (field);
-	  TREE_USED (field) = 1;
+	  else if (DECL_RTL (field) != 0)
+	    mark_used (field);
+	  else
+	    TREE_USED (field) = 1;
 	  return field;
 	}
     }
@@ -2347,7 +2350,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 
 	  /* Save the intermediate result in a SAVE_EXPR so we don't have to
 	     compute each component of the virtual function pointer twice.  */ 
-	  if (/* !building_cleanup && */ TREE_CODE (aref) == INDIRECT_REF)
+	  if (TREE_CODE (aref) == INDIRECT_REF)
 	    TREE_OPERAND (aref, 0) = save_expr (TREE_OPERAND (aref, 0));
       
 	  delta = build_binary_op (PLUS_EXPR,
@@ -2400,7 +2403,7 @@ build_function_call_real (function, params, require_complete, flags)
       GNU_xref_call (current_function_decl,
 		     IDENTIFIER_POINTER (name ? name
 					 : TYPE_IDENTIFIER (DECL_CLASS_CONTEXT (function))));
-      assemble_external (function);
+      mark_used (function);
       fndecl = function;
 
       /* Convert anything with function type to a pointer-to-function.  */
@@ -2426,8 +2429,7 @@ build_function_call_real (function, params, require_complete, flags)
       if (DECL_INLINE (function))
 	{
 	  /* Is it a synthesized method that needs to be synthesized?  */
-	  if (DECL_ARTIFICIAL (function) && ! flag_no_inline
-	      && ! DECL_INITIAL (function)
+	  if (DECL_ARTIFICIAL (function) && ! DECL_INITIAL (function)
 	      /* Kludge: don't synthesize for default args.  */
 	      && current_function_decl)
 	    synthesize_method (function);
@@ -2438,11 +2440,7 @@ build_function_call_real (function, params, require_complete, flags)
 	  function = build1 (ADDR_EXPR, build_pointer_type (fntype), function);
 	}
       else
-	{
-	  assemble_external (function);
-	  TREE_USED (function) = 1;
-	  function = default_conversion (function);
-	}
+	function = default_conversion (function);
     }
   else
     {
@@ -2718,7 +2716,8 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 		type = integer_type_node;
 #endif
-	      parmval = convert_for_initialization (return_loc, type, val, flags,
+	      parmval = convert_for_initialization (return_loc, type, val,
+						    flags|INDIRECT_BIND,
 						    "argument passing", fndecl, i);
 #ifdef PROMOTE_PROTOTYPES
 	      if ((TREE_CODE (type) == INTEGER_TYPE
@@ -3554,6 +3553,17 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  tree primop0 = get_narrower (op0, &unsignedp0);
 	  tree primop1 = get_narrower (op1, &unsignedp1);
 
+	  /* Check for comparison of different enum types. */
+	  if (flag_int_enum_equivalence == 0 
+	      && TREE_CODE (TREE_TYPE (orig_op0)) == ENUMERAL_TYPE 
+	      && TREE_CODE (TREE_TYPE (orig_op1)) == ENUMERAL_TYPE 
+	      && TYPE_MAIN_VARIANT (TREE_TYPE (orig_op0))
+	         != TYPE_MAIN_VARIANT (TREE_TYPE (orig_op1)))
+	    {
+	      cp_warning ("comparison between `%#T' and `%#T'", 
+			  TREE_TYPE (orig_op0), TREE_TYPE (orig_op1));
+	    }
+
 	  /* Give warnings for comparisons between signed and unsigned
 	     quantities that may fail.  */
 	  /* Do the checking based on the original operand trees, so that
@@ -4068,7 +4078,7 @@ build_unary_op (code, xarg, noconvert)
 	  case FIX_ROUND_EXPR:
 	  case FIX_CEIL_EXPR:
 	    {
-	      tree incremented, modify, value;
+	      tree incremented, modify, value, compound;
 	      if (! lvalue_p (arg) && pedantic)
 		pedwarn ("cast to non-reference type used as lvalue");
 	      arg = stabilize_reference (arg);
@@ -4081,8 +4091,13 @@ build_unary_op (code, xarg, noconvert)
 				    ? PLUS_EXPR : MINUS_EXPR),
 				   argtype, value, inc);
 	      TREE_SIDE_EFFECTS (incremented) = 1;
+
 	      modify = build_modify_expr (arg, NOP_EXPR, incremented);
-	      return build (COMPOUND_EXPR, TREE_TYPE (arg), modify, value);
+	      compound = build (COMPOUND_EXPR, TREE_TYPE (arg), modify, value);
+
+	      /* Eliminate warning about unused result of + or -. */
+	      TREE_NO_UNUSED_WARNING (compound) = 1;
+	      return compound;
 	    }
 	  }
 
@@ -4549,8 +4564,6 @@ mark_addressable (exp)
 	TREE_ADDRESSABLE (x) = 1;
 	TREE_USED (x) = 1;
 	TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (x)) = 1;
-	if (asm_out_file)
-	  assemble_external (x);
 	return 1;
 
       default:
@@ -5563,8 +5576,18 @@ tree
 expand_target_expr (t)
      tree t;
 {
+  extern int temp_slot_level;
+  extern int target_temp_slot_level;
+  int old_temp_level = target_temp_slot_level;
+
   tree xval = make_node (RTL_EXPR);
   rtx rtxval;
+
+  /* Any TARGET_EXPR temps live only as long as the outer temp level.
+     Since they are preserved in this new inner level, we know they
+     will make it into the outer level.  */
+  push_temp_slots ();
+  target_temp_slot_level = temp_slot_level;
 
   do_pending_stack_adjust ();
   start_sequence_for_rtl_expr (xval);
@@ -5576,6 +5599,10 @@ expand_target_expr (t)
   end_sequence ();
   RTL_EXPR_RTL (xval) = rtxval;
   TREE_TYPE (xval) = TREE_TYPE (t);
+
+  pop_temp_slots ();
+  target_temp_slot_level = old_temp_level;
+
   return xval;
 }
 

@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/types.h>
 #include <signal.h>
 #include "obstack.h"
+#include "defaults.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -266,6 +267,11 @@ tree vtbl_type_node;
    has been done, just before any base class destroying will be done.  */
 
 tree dtor_label;
+
+/* In a destructor, the last insn emitted after the start of the
+   function and the parms.  */
+
+rtx last_dtor_insn;
 
 /* In a constructor, the point at which we are ready to return
    the pointer to the initialized object.  */
@@ -1092,15 +1098,30 @@ poplevel (keep, reverse, functionbody)
     block = make_node (BLOCK);
   if (block != NULL_TREE)
     {
-      BLOCK_VARS (block) = decls;
-      BLOCK_TYPE_TAGS (block) = tags;
-      BLOCK_SUBBLOCKS (block) = subblocks;
-      /* If we created the block earlier on, and we are just diddling it now,
-	 then it already should have a proper BLOCK_END_NOTE value associated
-	 with it, so avoid trashing that.  Otherwise, for a new block, install
-	 a new BLOCK_END_NOTE value.  */
-      if (! block_previously_created)
-	remember_end_note (block);
+      if (block_previously_created)
+	{
+	  if (decls || tags || subblocks)
+	    {
+	      if (BLOCK_VARS (block) || BLOCK_TYPE_TAGS (block) || BLOCK_SUBBLOCKS (block))
+		{
+		  warning ("internal compiler error: debugging info corrupted");
+		}
+	      BLOCK_VARS (block) = decls;
+	      BLOCK_TYPE_TAGS (block) = tags;
+	      /* Recover from too many blocks by chaining them together. */
+	      BLOCK_SUBBLOCKS (block) = chainon (BLOCK_SUBBLOCKS (block), subblocks);
+	    }
+	  /* If we created the block earlier on, and we are just diddling it now, then
+	     it already should have a proper BLOCK_END_NOTE value associated with it.  */
+	}
+      else
+	{
+	  BLOCK_VARS (block) = decls;
+	  BLOCK_TYPE_TAGS (block) = tags;
+	  BLOCK_SUBBLOCKS (block) = subblocks;
+	  /* Otherwise, for a new block, install a new BLOCK_END_NOTE value.  */
+	  remember_end_note (block);
+	}
     }
 
   /* In each subblock, record that this is its superior.  */
@@ -1700,7 +1721,7 @@ push_namespace (name)
   extern tree current_namespace;
   tree old_id = get_namespace_id ();
   char *buf;
-  tree d = make_node (NAMESPACE_DECL);
+  tree d;
 
   if (! name)
     {
@@ -1708,12 +1729,11 @@ push_namespace (name)
       name = get_unique_name ();
     }
 
-  DECL_NAME (d) = name;
-  DECL_ASSEMBLER_NAME (d) = name;
-  /* pushdecl wants to check the size of it to see if it is incomplete... */
-  TREE_TYPE (d) = void_type_node;
+  d = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
+
   /* Mark them as external, so redeclaration_error_message doesn't think
      they are duplicates. */
+
   DECL_EXTERNAL (d) = 1;
   d = pushdecl (d);
 
@@ -1722,12 +1742,10 @@ push_namespace (name)
       /* This is new for this compilation unit.  */
       pushlevel (0);
       declare_namespace_level ();
-      NAMESPACE_LEVEL (d) = (tree)current_binding_level;
+      NAMESPACE_LEVEL (d) = current_binding_level;
     }
   else
-    {
-      resume_level ((struct binding_level*)NAMESPACE_LEVEL (d));
-    }
+    resume_level (NAMESPACE_LEVEL (d));
 
   /* This code is just is bit old now... */ 
   current_namespace = tree_cons (NULL_TREE, name, current_namespace);
@@ -2400,8 +2418,20 @@ decls_match (newdecl, olddecl)
 	types_match = TREE_TYPE (newdecl) == NULL_TREE;
       else if (TREE_TYPE (newdecl) == NULL_TREE)
 	types_match = 0;
+      /* Qualifiers must match, and they may be present on either, the type
+	 or the decl.  */
+      else if ((TREE_READONLY (newdecl)
+		|| TYPE_READONLY (TREE_TYPE (newdecl)))
+	       == (TREE_READONLY (olddecl)
+		   || TYPE_READONLY (TREE_TYPE (olddecl)))
+	       && (TREE_THIS_VOLATILE (newdecl)
+		    || TYPE_VOLATILE (TREE_TYPE (newdecl)))
+		   == (TREE_THIS_VOLATILE (olddecl)
+		       || TYPE_VOLATILE (TREE_TYPE (olddecl))))
+	types_match = comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (newdecl)),
+				 TYPE_MAIN_VARIANT (TREE_TYPE (olddecl)), 1);
       else
-	types_match = comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl), 1);
+	types_match = 0;
     }
 
   return types_match;
@@ -2722,8 +2752,6 @@ duplicate_decls (newdecl, olddecl)
 	DECL_CLASS_CONTEXT (newdecl) = DECL_CLASS_CONTEXT (olddecl);
       if (DECL_CHAIN (newdecl) == NULL_TREE)
 	DECL_CHAIN (newdecl) = DECL_CHAIN (olddecl);
-      if (DECL_NEXT_METHOD (newdecl) == NULL_TREE)
-	DECL_NEXT_METHOD (newdecl) = DECL_NEXT_METHOD (olddecl);
       if (DECL_PENDING_INLINE_INFO (newdecl) == (struct pending_inline *)0)
 	DECL_PENDING_INLINE_INFO (newdecl) = DECL_PENDING_INLINE_INFO (olddecl);
       DECL_STATIC_CONSTRUCTOR (newdecl) |= DECL_STATIC_CONSTRUCTOR (olddecl);
@@ -2888,7 +2916,7 @@ duplicate_decls (newdecl, olddecl)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
-      DECL_C_STATIC (newdecl) = DECL_C_STATIC (olddecl);
+      DECL_C_STATIC (newdecl) |= DECL_C_STATIC (olddecl);
       DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
       DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
     }
@@ -3379,7 +3407,7 @@ pushdecl (x)
 	      if (b->parm_flag == 1)
 		cp_error ("declaration of `%#D' shadows a parameter", name);
 	    }
-	  else if (oldlocal != NULL_TREE && b->is_for_scope
+	  else if (warn_shadow && oldlocal != NULL_TREE && b->is_for_scope
 		   && !DECL_DEAD_FOR_LOCAL (oldlocal))
 	    {
 	      warning ("variable `%s' shadows local",
@@ -4173,6 +4201,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
 		    /* Definition isn't the kind we were looking for.  */
 		    cp_error ("`%#D' redeclared as %C", TREE_VALUE (tail),
 			      form);
+		    return NULL_TREE;
 		  }
 		return TREE_VALUE (tail);
 	      }
@@ -4208,6 +4237,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
 				{
 				  cp_error ("`%#D' redeclared as %C in class scope",
 					    TREE_VALUE (tail), form);
+				  return NULL_TREE;
 				}
 			      return TREE_VALUE (tail);
 			    }
@@ -4689,9 +4719,6 @@ push_overloaded_decl_1 (x)
 {
   push_overloaded_decl (x, 0);
 }
-
-#define builtin_function(NAME, TYPE, CODE, LIBNAME) \
-  define_function (NAME, TYPE, CODE, (void (*)())pushdecl, LIBNAME)
 
 #ifdef __GNUC__
 __inline
@@ -5230,21 +5257,21 @@ init_decl_processing ()
 #if 0
   /* Support for these has not been written in either expand_builtin
      or build_function_call.  */
-  builtin_function ("__builtin_div", default_ftype, BUILT_IN_DIV, 0);
-  builtin_function ("__builtin_ldiv", default_ftype, BUILT_IN_LDIV, 0);
+  builtin_function ("__builtin_div", default_ftype, BUILT_IN_DIV, NULL_PTR);
+  builtin_function ("__builtin_ldiv", default_ftype, BUILT_IN_LDIV, NULL_PTR);
   builtin_function ("__builtin_ffloor", double_ftype_double, BUILT_IN_FFLOOR,
-		    0);
-  builtin_function ("__builtin_fceil", double_ftype_double, BUILT_IN_FCEIL, 0);
+		    NULL_PTR);
+  builtin_function ("__builtin_fceil", double_ftype_double, BUILT_IN_FCEIL, NULL_PTR);
   builtin_function ("__builtin_fmod", double_ftype_double_double,
-		    BUILT_IN_FMOD, 0);
+		    BUILT_IN_FMOD, NULL_PTR);
   builtin_function ("__builtin_frem", double_ftype_double_double,
-		    BUILT_IN_FREM, 0);
+		    BUILT_IN_FREM, NULL_PTR);
   builtin_function ("__builtin_memset", ptr_ftype_ptr_int_int, BUILT_IN_MEMSET,
-		    0);
+		    NULL_PTR);
   builtin_function ("__builtin_getexp", double_ftype_double, BUILT_IN_GETEXP,
-		    0);
+		    NULL_PTR);
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN,
-		    0);
+		    NULL_PTR);
 #endif
 
   /* C++ extensions */
@@ -5299,7 +5326,7 @@ init_decl_processing ()
      real gc code.  */
   if (flag_gc)
     {
-      builtin_function ("__gc_main", default_function_type, NOT_BUILT_IN, 0);
+      builtin_function ("__gc_main", default_function_type, NOT_BUILT_IN, NULL_PTR);
       pushdecl (lookup_name (get_identifier ("__gc_main"), 0));
     }
 
@@ -5553,6 +5580,8 @@ init_decl_processing ()
     }
   if (flag_cadillac)
     init_cadillac ();
+  if (! SUPPORTS_WEAK)
+    flag_weak = 0;
 
   /* Create the global bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
   declare_function_name ();
@@ -6819,7 +6848,11 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	}
       else if (! toplev)
 	{
+	  extern int temp_slot_level;
+	  extern int target_temp_slot_level;
 	  tree old_cleanups = cleanups_this_call;
+	  int old_temp_level = target_temp_slot_level;
+
 	  /* This is a declared decl which must live until the
 	     end of the binding contour.  It may need a cleanup.  */
 
@@ -6854,6 +6887,10 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		}
 	    }
 
+	  push_temp_slots ();
+	  push_temp_slots ();
+	  target_temp_slot_level = temp_slot_level;
+
 	  if (DECL_SIZE (decl) && type != error_mark_node)
 	    {
 	      /* Compute and store the initial value.  */
@@ -6883,6 +6920,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	    }
 	  /* Cleanup any temporaries needed for the initial value.  */
 	  expand_cleanups_to (old_cleanups);
+	  pop_temp_slots ();
+	  pop_temp_slots ();
+	  target_temp_slot_level = old_temp_level;
 	}
     finish_end0:
 
@@ -6961,7 +7001,6 @@ expand_static_init (decl, init)
      tree init;
 {
   tree oldstatic = value_member (decl, static_aggregates);
-  tree old_cleanups;
 
   if (oldstatic)
     {
@@ -6973,6 +7012,11 @@ expand_static_init (decl, init)
       /* Emit code to perform this initialization but once.  */
       tree temp;
 
+      extern int temp_slot_level;
+      extern int target_temp_slot_level;
+      tree old_cleanups;
+      int old_temp_level;
+
       /* Remember this information until end of file. */
       push_obstacks (&permanent_obstack, &permanent_obstack);
 
@@ -6982,6 +7026,11 @@ expand_static_init (decl, init)
       expand_start_cond (build_binary_op (EQ_EXPR, temp,
 					  integer_zero_node, 1), 0);
       old_cleanups = cleanups_this_call;
+      old_temp_level = target_temp_slot_level;
+      push_temp_slots ();
+      push_temp_slots ();
+      target_temp_slot_level = temp_slot_level;
+
       expand_assignment (temp, integer_one_node, 0, 0);
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
 	  || (init && TREE_CODE (init) == TREE_LIST))
@@ -6994,6 +7043,44 @@ expand_static_init (decl, init)
 
       /* Cleanup any temporaries needed for the initial value.  */
       expand_cleanups_to (old_cleanups);
+      pop_temp_slots ();
+      pop_temp_slots ();
+      target_temp_slot_level = old_temp_level;
+
+      if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
+	{
+	  tree cleanup, fcall;
+	  static tree Atexit = 0;
+	  if (Atexit == 0)
+	    {
+	      tree atexit_fndecl, PFV, pfvlist;
+	      /* Remember this information until end of file. */
+	      push_obstacks (&permanent_obstack, &permanent_obstack);
+	      PFV = build_pointer_type (build_function_type
+					(void_type_node, void_list_node));
+
+	      pfvlist = tree_cons (NULL_TREE, PFV, void_list_node);
+
+	      push_lang_context (lang_name_c);
+	      atexit_fndecl = 
+		builtin_function ("atexit",
+				  build_function_type (void_type_node,
+						       pfvlist),
+				  NOT_BUILT_IN, NULL_PTR);
+	      Atexit = default_conversion (atexit_fndecl);
+	      pop_lang_context ();
+	      pop_obstacks ();
+	    }
+	      
+	  cleanup = start_anon_func ();
+	  expand_expr_stmt (build_cleanup (decl));
+	  end_anon_func ();
+	  mark_addressable (cleanup);
+	  cleanup = build_unary_op (ADDR_EXPR, cleanup, 0);
+	  fcall = build_function_call (Atexit, tree_cons (NULL_TREE, cleanup, NULL_TREE));
+	  expand_expr_stmt (fcall);
+	}
+
       expand_end_cond ();
       if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
 	{
@@ -9439,6 +9526,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	  {
 	    int publicp = 0;
 
+	    /* We catch the others as conflicts with the builtin
+	       typedefs.  */
+	    if (friendp && declarator == ridpointers[(int) RID_SIGNED])
+	      {
+		cp_error ("function `%D' cannot be declared friend",
+			  declarator);
+		friendp = 0;
+	      }
+
 	    if (friendp == 0)
 	      {
 		if (ctype == NULL_TREE)
@@ -11667,6 +11763,7 @@ store_parm_decls ()
       if (insns)
 	store_in_parms (insns);
     }
+  last_dtor_insn = get_last_insn ();
 }
 
 /* Bind a name and initialization to the return value of
@@ -11793,6 +11890,7 @@ finish_function (lineno, call_poplevel, nested)
       tree in_charge_node = lookup_name (in_charge_identifier, 0);
       tree virtual_size;
       int ok_to_optimize_dtor = 0;
+      int empty_dtor = get_last_insn () == last_dtor_insn;
 
       if (current_function_assigns_this)
 	cond = build (NE_EXPR, boolean_type_node,
@@ -11805,7 +11903,7 @@ finish_function (lineno, call_poplevel, nested)
 	     whether `this' is NULL in some cases.  */
 	  if ((flag_this_is_variable & 1) == 0)
 	    ok_to_optimize_dtor = 1;
-	  else if (get_last_insn () == get_first_nonparm_insn ())
+	  else if (empty_dtor)
 	    ok_to_optimize_dtor
 	      = (n_baseclasses == 0
 		 || (n_baseclasses == 1
@@ -11926,12 +12024,25 @@ finish_function (lineno, call_poplevel, nested)
 
       start_sequence ();
 
-      /* Make all virtual function table pointers in non-virtual base
-	 classes point to CURRENT_CLASS_TYPE's virtual function
-	 tables.  */
-      expand_direct_vtbls_init (binfo, binfo, 1, 0, current_class_decl);
-      if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-	expand_indirect_vtbls_init (binfo, C_C_D, current_class_decl, 0);
+      /* If the dtor is empty, and we know there is not possible way we could
+	 use any vtable entries, before they are possibly set by a base class
+	 dtor, we don't have to setup the vtables, as we know that any base
+	 class dtoring will set up any vtables it needs.  We avoid MI,
+	 because one base class dtor can do a virtual dispatch to an
+	 overridden function that would need to have a non-related vtable set
+	 up, we cannot avoid setting up vtables in that case.  We could
+	 change this to see if there is just one vtable.  */
+      if (! empty_dtor || TYPE_USES_COMPLEX_INHERITANCE (current_class_type))
+	{
+	  /* Make all virtual function table pointers in non-virtual base
+	     classes point to CURRENT_CLASS_TYPE's virtual function
+	     tables.  */
+	  expand_direct_vtbls_init (binfo, binfo, 1, 0, current_class_decl);
+
+	  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
+	    expand_indirect_vtbls_init (binfo, C_C_D, current_class_decl, 0);
+	}
+
       if (! ok_to_optimize_dtor)
 	{
 	  cond = build_binary_op (NE_EXPR,
@@ -12490,15 +12601,6 @@ hack_incomplete_structures (type)
     }
 }
 
-/* Nonzero if presently building a cleanup.  Needed because
-   SAVE_EXPRs are not the right things to use inside of cleanups.
-   They are only ever evaluated once, where the cleanup
-   might be evaluated several times.  In this case, a later evaluation
-   of the cleanup might fill in the SAVE_EXPR_RTL, and it will
-   not be valid for an earlier cleanup.  */
-
-int building_cleanup;
-
 /* If DECL is of a type which needs a cleanup, build that cleanup here.
    We don't build cleanups if just going for syntax checking, since
    fixup_cleanups does not know how to not handle them.
@@ -12514,8 +12616,6 @@ maybe_build_cleanup (decl)
     {
       int temp = 0, flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
       tree rval;
-      int old_building_cleanup = building_cleanup;
-      building_cleanup = 1;
 
       if (TREE_CODE (decl) != PARM_DECL)
 	temp = suspend_momentary ();
@@ -12540,10 +12640,11 @@ maybe_build_cleanup (decl)
 	rval = build_compound_expr (tree_cons (NULL_TREE, rval,
 					       build_tree_list (NULL_TREE, build_vbase_delete (type, decl))));
 
+      /* Since this is a cleanup, UNSAVE it now.  */
+      rval = unsave_expr (rval);
+
       if (TREE_CODE (decl) != PARM_DECL)
 	resume_momentary (temp);
-
-      building_cleanup = old_building_cleanup;
 
       return rval;
     }
@@ -12563,6 +12664,14 @@ void
 cplus_expand_expr_stmt (exp)
      tree exp;
 {
+  extern int temp_slot_level;
+  extern int target_temp_slot_level; 
+  tree old_cleanups = cleanups_this_call;
+  int old_temp_level = target_temp_slot_level;
+  push_temp_slots ();
+  push_temp_slots ();
+  target_temp_slot_level = temp_slot_level;
+
   if (TREE_TYPE (exp) == unknown_type_node)
     {
       if (TREE_CODE (exp) == ADDR_EXPR || TREE_CODE (exp) == TREE_LIST)
@@ -12590,7 +12699,16 @@ cplus_expand_expr_stmt (exp)
 
   /* Clean up any pending cleanups.  This happens when a function call
      returns a cleanup-needing value that nobody uses.  */
-  expand_cleanups_to (NULL_TREE);
+  expand_cleanups_to (old_cleanups);
+  pop_temp_slots ();
+  pop_temp_slots ();
+  target_temp_slot_level = old_temp_level;
+  /* There might something left from building the trees.  */
+  if (cleanups_this_call)
+    {
+      expand_cleanups_to (NULL_TREE);
+    }
+  free_temp_slots ();
 }
 
 /* When a stmt has been parsed, this function is called.
@@ -12679,6 +12797,7 @@ struct cp_function
   tree shadowed_labels;
   tree ctor_label;
   tree dtor_label;
+  rtx last_dtor_insn;
   tree protect_list;
   tree base_init_list;
   tree member_init_list;
@@ -12717,6 +12836,7 @@ push_cp_function_context (context)
   p->binding_level = current_binding_level;
   p->ctor_label = ctor_label;
   p->dtor_label = dtor_label;
+  p->last_dtor_insn = last_dtor_insn;
   p->assigns_this = current_function_assigns_this;
   p->just_assigned_this = current_function_just_assigned_this;
   p->parms_stored = current_function_parms_stored;
@@ -12768,6 +12888,7 @@ pop_cp_function_context (context)
   current_binding_level = p->binding_level;
   ctor_label = p->ctor_label;
   dtor_label = p->dtor_label;
+  last_dtor_insn = p->last_dtor_insn;
   protect_list = p->protect_list;
   current_function_assigns_this = p->assigns_this;
   current_function_just_assigned_this = p->just_assigned_this;
