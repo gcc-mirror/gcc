@@ -1,5 +1,8 @@
 2004-04-19  Andrew PInski  <pinskia@physics.uc.edu>
 
+	* builtins.c (fold_builtin_cabs): Remove fndecl parameter.
+	(fold_builtin): Update caller to match.
+
 	PR bootstrap/15009
 	* bb-reorder.c (fix_up_fall_thru_edges): Init cond_jump.
 
