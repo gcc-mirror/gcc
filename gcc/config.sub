@@ -129,6 +129,9 @@ case $basic_machine in
 	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
 	      | sh-* | powerpc-* | sparc64-*)
 		;;
+	# Recognize names of some NetBSD ports.
+	amiga-* | hp300-* | mac68k-* | sun3-* | pmax-*)
+		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
 	3b1 | 7300 | 7300-att | att-7300 | pc7300 | safari | unixpc)
@@ -378,7 +381,14 @@ case $basic_machine in
 		basic_machine=m68k-tti
 		;;
         pc532)
-		basic_machine=ns32k-pc532
+		case $os in
+		    -netbsd*)
+			basic_machine=pc532-unknown
+			;;
+		    *)
+			basic_machine=ns32k-pc532
+			;;
+		esac
 		;;
 	pentium-*)
 		# We will change tis to say i586 once there has been
