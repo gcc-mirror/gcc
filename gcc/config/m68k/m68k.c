@@ -262,7 +262,6 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
   int num_saved_regs = 0;
   HOST_WIDE_INT fsize = (size + 3) & -4;
   HOST_WIDE_INT cfa_offset = INCOMING_FRAME_SP_OFFSET;
-  HOST_WIDE_INT cfa_store_offset = cfa_offset;
   
   /* If the stack limit is a symbol, we can check it here,
      before actually allocating the space.  */
@@ -330,11 +329,10 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	{
 	  char *l;
           l = (char *) dwarf2out_cfi_label ();   
-	  cfa_store_offset += 4;
-	  cfa_offset = cfa_store_offset;
-	  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, -cfa_store_offset);
+	  cfa_offset += 4;
+	  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, -cfa_offset);
 	  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, cfa_offset);
-	  cfa_store_offset += fsize;
+	  cfa_offset += fsize;
 	}
     }
   else if (fsize)
@@ -406,8 +404,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	}
       if (dwarf2out_do_frame ())
 	{
-	  cfa_store_offset += fsize + 4;
-	  cfa_offset = cfa_store_offset;
+	  cfa_offset += fsize + 4;
 	  dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
 	}
     }
@@ -431,16 +428,13 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	      char *l = (char *) dwarf2out_cfi_label ();
 	      int n_regs;
 
-	      cfa_store_offset += num_saved_regs * 12;
+	      cfa_offset += num_saved_regs * 12;
 	      if (! frame_pointer_needed)
-		{
-		  cfa_offset = cfa_store_offset;
-		  dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
-		}
+		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
 	      for (regno = 16, n_regs = 0; regno < 24; regno++)
 		if (mask & (1 << (regno - 16)))
 		  dwarf2out_reg_save (l, regno,
-				      -cfa_store_offset + n_regs++ * 12);
+				      -cfa_offset + n_regs++ * 12);
 	    }
 	}
       mask = 0;
@@ -495,13 +489,10 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	      {
 		char *l = (char *) dwarf2out_cfi_label ();
 
-		cfa_store_offset += 4;
+		cfa_offset += 4;
  		if (! frame_pointer_needed)
- 		  {
- 		    cfa_offset = cfa_store_offset;
- 		    dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
- 		  }
- 		dwarf2out_reg_save (l, 15 - i, -cfa_store_offset);
+ 		  dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+ 		dwarf2out_reg_save (l, 15 - i, -cfa_offset);
 	      }
 	  }
     }
@@ -547,16 +538,13 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	  char *l = (char *) dwarf2out_cfi_label ();
 	  int n_regs;
 
-	  cfa_store_offset += num_saved_regs * 4;
+	  cfa_offset += num_saved_regs * 4;
 	  if (! frame_pointer_needed)
-	    {
-	      cfa_offset = cfa_store_offset;
-	      dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
-	    }
+	    dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
 	  for (regno = 0, n_regs = 0; regno < 16; regno++)
 	    if (mask & (1 << (15 - regno)))
 	      dwarf2out_reg_save (l, regno,
-				  -cfa_store_offset + n_regs++ * 4);
+				  -cfa_offset + n_regs++ * 4);
 	}
     }
   if (flag_pic && current_function_uses_pic_offset_table)

@@ -1,3 +1,8 @@
+2003-09-08  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.c (m68k_output_function_prologue): Simplify
+	by removing redundant variable cfa_store_offset.
+
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* langhooks-def.h (lhd_register_builtin_type): New function.
