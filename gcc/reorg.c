@@ -236,6 +236,12 @@ stop_search_p (insn, labels_p)
   if (insn == 0)
     return 1;
 
+  /* If the insn can throw an exception that is caught within the function,
+     it may effectively perform a jump from the viewpoint of the function.
+     Therefore act like for a jump.  */
+  if (can_throw_internal (insn))
+    return 1;
+
   switch (GET_CODE (insn))
     {
     case NOTE:

@@ -1,4 +1,9 @@
+2003-09-21  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+
+	* g++.dg/eh/delayslot1.C: New test.
+
 2003-09-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* g++.dg/init/array11.C: Change unsigned to __SIZE_TYPE__
 	so that it will not complain on LP64 targets.
 

@@ -1,4 +1,10 @@
-2003-09-19	Joel Sherrill <joel@oarcorp.com>
+2003-09-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/12301
+	* reorg.c (stop_search_p): Return 1 for insns that can
+	throw internally.
+
+2003-09-19  Joel Sherrill <joel@oarcorp.com>
 
 	* config/m68k/t-m68kbare, config/m68k/t-rtems: Change 68681 to
 	68881.
@@ -17411,3 +17417,4 @@ cp:
 	* mips.h (FUNCTION_ARG_REGNO_P): Fix parentheses.
 
 See ChangeLog.7 for earlier changes.
+
