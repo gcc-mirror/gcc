@@ -17,6 +17,14 @@ Thu Dec  9 11:36:24 MET 1999 Jan Hubicka  <hubicka@freesoft.cz>
 	* genmultilib: Accept | as alternative separator within a set in
 	MULTILIB_OPTIONS.
 
+	* config/sparc/sparc.h (PROMOTE_FOR_CALL_ONLY): Define.
+
+	* calls.c (precompute_arguments): Make sure initial_value contains
+	value pseudo which CSE expects.
+	* cse.c (struct set): New entry orig_src.
+	(cse_insn): Set it early on entry, use it for libcall EQUIV note
+	replacement.
+
 Wed Dec  8 22:24:15 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (count_basic_blocks): Don't add (use (const_int 0)) insns.
