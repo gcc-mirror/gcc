@@ -1,3 +1,10 @@
+2000-09-07  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.am (Thread.h): Don't be friends with native threads 
+	functions.
+	* Makefile.in: Rebuilt.
+	* java/lang/Thread.java (interrupt_flag): Make package-private.
+
 2000-09-06  Jeff Sturm  <jeff.sturm@appnet.com>
 
 	* include/jvm.h (_Jv_HashCode): Cast object ptr to `unsigned long'
