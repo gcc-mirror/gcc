@@ -3458,6 +3458,18 @@ The option @samp{-dc} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.combine}
 to the input file name.
 
+@cindex register movement
+@item
+Register movement (@file{regmove.c}). This pass looks for cases where
+matching constraints would force an instruction to need a reload, and
+this reload would be a register to register move.  It them attempts
+to change the registers used by the instruction to avoid the move
+instruction.
+
+The option @samp{-dN} causes a debugging dump of the RTL code after
+this pass.  This dump file's name is made by appending @samp{.regmove}
+to the input file name.
+
 @cindex instruction scheduling
 @cindex scheduling, instruction
 @item

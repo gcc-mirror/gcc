@@ -1,5 +1,7 @@
 Sat Apr  3 16:22:59 1999  Toshiyasu Morita  (tm@netcom.com)
 
+	* gcc.texi: Add info on regmove pass
+
 	* regmove.c (fixup_match_1): Consistently evaluate
 	HAVE_POST_INCREMENT and HAVE_POST_DECREMENT.
 
