@@ -1075,25 +1075,6 @@ ip2k_set_compare (x, y)
      rtx x;
      rtx y;
 {
-  /* If we're doing a DImode compare then force any CONST_INT second
-     operand to be CONST_DOUBLE.  */
-  if (GET_MODE (x) == DImode && GET_CODE (y) == CONST_INT)
-    {
-      rtx value;
-      size_t i;
-
-      value = rtx_alloc (CONST_DOUBLE);
-      PUT_MODE (value, VOIDmode);
-
-      CONST_DOUBLE_LOW (value) = INTVAL (y);
-      CONST_DOUBLE_HIGH (value) = INTVAL (y) > 0 ? 0 : -1;
-
-      for (i = 2; i < (sizeof CONST_DOUBLE_FORMAT - 1); i++)
-	XWINT (value, i) = 0;
-      
-      y = value;
-    }
-  
   ip2k_compare_operands[0] = x;
   ip2k_compare_operands[1] = y;
   return "";
@@ -1675,6 +1656,8 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
   int imm_cmp = 0;
   int can_use_skip = 0;
   rtx ninsn;
+  HOST_WIDE_INT const_low;
+  HOST_WIDE_INT const_high;
 
   operands[2] = label;
 
@@ -2332,10 +2315,10 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	    {
 	      if (INTVAL (operands[0]) == 0)
 		{
-                  OUT_AS2 (mov, w, %A0);
-                  OUT_AS2 (or, w, %B0);
-                  OUT_AS2 (or, w, %C0);
-                  OUT_AS2 (or, w, %D0);
+                  OUT_AS2 (mov, w, %A1);
+                  OUT_AS2 (or, w, %B1);
+                  OUT_AS2 (or, w, %C1);
+                  OUT_AS2 (or, w, %D1);
 		  OUT_AS1 (snz,);
 	          OUT_AS1 (page, %2);
 	          OUT_AS1 (jmp, %2);
@@ -2377,10 +2360,10 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	    {
 	      if (INTVAL (operands[0]) == 0)
 	        {
-                  OUT_AS2 (mov, w, %A0);
-                  OUT_AS2 (or, w, %B0);
-                  OUT_AS2 (or, w, %C0);
-                  OUT_AS2 (or, w, %D0);
+                  OUT_AS2 (mov, w, %A1);
+                  OUT_AS2 (or, w, %B1);
+                  OUT_AS2 (or, w, %C1);
+                  OUT_AS2 (or, w, %D1);
 		  OUT_AS1 (sz,);
 	          OUT_AS1 (page, %2);
 	          OUT_AS1 (jmp, %2);
@@ -2465,6 +2448,16 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
       break;
 
     case DImode:
+      if (GET_CODE (operands[1]) == CONST_INT)
+	{
+	  const_low = INTVAL (operands[1]);
+	  const_high = (const_low >= 0) - 1;
+	}
+      else if (GET_CODE (operands[1]) == CONST_DOUBLE)
+	{
+	  const_low = CONST_DOUBLE_LOW (operands[1]);
+	  const_high = CONST_DOUBLE_HIGH (operands[1]);
+	}
       switch (code)
         {
 	case EQ:
@@ -2519,14 +2512,14 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	      {
 		if (imm_cmp)
 		  {
-		    s = (CONST_DOUBLE_HIGH (operands[1]) >> 24) & 0xff;
-		    t = (CONST_DOUBLE_HIGH (operands[1]) >> 16) & 0xff;
-		    u = (CONST_DOUBLE_HIGH (operands[1]) >> 8) & 0xff;
-		    v = CONST_DOUBLE_HIGH (operands[1]) & 0xff;
-		    w = (CONST_DOUBLE_LOW (operands[1]) >> 24) & 0xff;
-		    x = (CONST_DOUBLE_LOW (operands[1]) >> 16) & 0xff;
-		    y = (CONST_DOUBLE_LOW (operands[1]) >> 8) & 0xff;
-		    z = CONST_DOUBLE_LOW (operands[1]) & 0xff;
+		    s = (const_high >> 24) & 0xff;
+		    t = (const_high >> 16) & 0xff;
+		    u = (const_high >> 8) & 0xff;
+		    v = const_high & 0xff;
+		    w = (const_low >> 24) & 0xff;
+		    x = (const_low >> 16) & 0xff;
+		    y = (const_low >> 8) & 0xff;
+		    z = const_low & 0xff;
 		  }
 
 		OUT_AS2 (mov, w, %S1);
@@ -2648,14 +2641,14 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	      {
 		if (imm_cmp)
 		  {
-		    s = (CONST_DOUBLE_HIGH (operands[1]) >> 24) & 0xff;
-		    t = (CONST_DOUBLE_HIGH (operands[1]) >> 16) & 0xff;
-		    u = (CONST_DOUBLE_HIGH (operands[1]) >> 8) & 0xff;
-		    v = CONST_DOUBLE_HIGH (operands[1]) & 0xff;
-		    w = (CONST_DOUBLE_LOW (operands[1]) >> 24) & 0xff;
-		    x = (CONST_DOUBLE_LOW (operands[1]) >> 16) & 0xff;
-		    y = (CONST_DOUBLE_LOW (operands[1]) >> 8) & 0xff;
-		    z = CONST_DOUBLE_LOW (operands[1]) & 0xff;
+		    s = (const_high >> 24) & 0xff;
+		    t = (const_high >> 16) & 0xff;
+		    u = (const_high >> 8) & 0xff;
+		    v = const_high & 0xff;
+		    w = (const_low >> 24) & 0xff;
+		    x = (const_low >> 16) & 0xff;
+		    y = (const_low >> 8) & 0xff;
+		    z = const_low & 0xff;
 		  }
 
 		OUT_AS2 (mov, w, %S1);
@@ -2734,13 +2727,11 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	  if (imm_sub)
 	    {
 	      /* > 0xffffffffffffffff never suceeds!  */
-	      if (((CONST_DOUBLE_HIGH (operands[1]) & 0xffffffff)
-		   != 0xffffffff)
-		  || ((CONST_DOUBLE_LOW (operands[1]) & 0xffffffff)
-		      != 0xffffffff))
+	      if (((const_high & 0xffffffff) != 0xffffffff)
+		  || ((const_low & 0xffffffff) != 0xffffffff))
 		{
-	          operands[3] = GEN_INT (CONST_DOUBLE_LOW (operands[1]) + 1);
-		  operands[4] = GEN_INT (CONST_DOUBLE_HIGH (operands[1])
+	          operands[3] = GEN_INT (const_low + 1);
+		  operands[4] = GEN_INT (const_high
 					 + (INTVAL (operands[3]) ? 0 : 1));
 	          OUT_AS2 (mov, w, %D3);
 	          OUT_AS2 (sub, w, %Z0);
@@ -2790,27 +2781,38 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	case GEU:
 	  if (imm_sub)
 	    {
-	      if ((CONST_DOUBLE_HIGH (operands[0]) == 0)
-		  && (CONST_DOUBLE_LOW (operands[0]) == 0))
+	      HOST_WIDE_INT const_low0;
+	      HOST_WIDE_INT const_high0;
+	      
+	      if (GET_CODE (operands[0]) == CONST_INT)
 		{
-                  OUT_AS2 (mov, w, %S0);
-                  OUT_AS2 (or, w, %T0);
-                  OUT_AS2 (or, w, %U0);
-                  OUT_AS2 (or, w, %V0);
-                  OUT_AS2 (or, w, %W0);
-                  OUT_AS2 (or, w, %X0);
-                  OUT_AS2 (or, w, %Y0);
-                  OUT_AS2 (or, w, %Z0);
+		  const_low0 = INTVAL (operands[0]);
+		  const_high0 = (const_low >= 0) - 1;
+		}
+	      else if (GET_CODE (operands[0]) == CONST_DOUBLE)
+		{
+		  const_low0 = CONST_DOUBLE_LOW (operands[0]);
+		  const_high0 = CONST_DOUBLE_HIGH (operands[0]);
+		}
+	      
+	      if (const_high0 == 0 && const_low0 == 0)
+		{
+                  OUT_AS2 (mov, w, %S1);
+                  OUT_AS2 (or, w, %T1);
+                  OUT_AS2 (or, w, %U1);
+                  OUT_AS2 (or, w, %V1);
+                  OUT_AS2 (or, w, %W1);
+                  OUT_AS2 (or, w, %X1);
+                  OUT_AS2 (or, w, %Y1);
+                  OUT_AS2 (or, w, %Z1);
 		  OUT_AS1 (snz,);
 	          OUT_AS1 (page, %2);
 	          OUT_AS1 (jmp, %2);
 		}
 	      else
 	        {
-	          operands[3] = GEN_INT (CONST_DOUBLE_LOW (operands[0]) - 1);
-		  operands[4] = GEN_INT (CONST_DOUBLE_HIGH (operands[0])
-					 - (CONST_DOUBLE_LOW (operands[0])
-					    ? 1 : 0));
+	          operands[3] = GEN_INT (const_low0 - 1);
+		  operands[4] = GEN_INT (const_high0 - (const_low0 ? 1 : 0));
 	          OUT_AS2 (mov, w, %D3);
 	          OUT_AS2 (sub, w, %Z1);
 	          OUT_AS2 (mov, w, %C3);
@@ -2859,27 +2861,38 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	case LTU:
 	  if (imm_sub)
 	    {
-	      if ((CONST_DOUBLE_HIGH (operands[0]) == 0)
-		  && (CONST_DOUBLE_LOW (operands[0]) == 0))
+	      HOST_WIDE_INT const_low0;
+	      HOST_WIDE_INT const_high0;
+	      
+	      if (GET_CODE (operands[0]) == CONST_INT)
 		{
-                  OUT_AS2 (mov, w, %S0);
-                  OUT_AS2 (or, w, %T0);
-                  OUT_AS2 (or, w, %U0);
-                  OUT_AS2 (or, w, %V0);
-                  OUT_AS2 (or, w, %W0);
-                  OUT_AS2 (or, w, %X0);
-                  OUT_AS2 (or, w, %Y0);
-                  OUT_AS2 (or, w, %Z0);
+		  const_low0 = INTVAL (operands[0]);
+		  const_high0 = (const_low >= 0) - 1;
+		}
+	      else if (GET_CODE (operands[0]) == CONST_DOUBLE)
+		{
+		  const_low0 = CONST_DOUBLE_LOW (operands[0]);
+		  const_high0 = CONST_DOUBLE_HIGH (operands[0]);
+		}
+	      
+	      if (const_high0 == 0 && const_low0 == 0)
+		{
+                  OUT_AS2 (mov, w, %S1);
+                  OUT_AS2 (or, w, %T1);
+                  OUT_AS2 (or, w, %U1);
+                  OUT_AS2 (or, w, %V1);
+                  OUT_AS2 (or, w, %W1);
+                  OUT_AS2 (or, w, %X1);
+                  OUT_AS2 (or, w, %Y1);
+                  OUT_AS2 (or, w, %Z1);
 		  OUT_AS1 (sz,);
 	          OUT_AS1 (page, %2);
 	          OUT_AS1 (jmp, %2);
 		}
 	      else
 	        {
-	          operands[3] = GEN_INT (CONST_DOUBLE_LOW (operands[0]) - 1);
-		  operands[4] = GEN_INT (CONST_DOUBLE_HIGH (operands[0])
-					 - (CONST_DOUBLE_LOW (operands[0])
-					    ? 1 : 0));
+	          operands[3] = GEN_INT (const_low0 - 1);
+		  operands[4] = GEN_INT (const_high0 - (const_low0 ? 1 : 0));
 	          OUT_AS2 (mov, w, %D3);
 	          OUT_AS2 (sub, w, %Z1);
 	          OUT_AS2 (mov, w, %C3);
@@ -2928,10 +2941,8 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	case LEU:
 	  if (imm_sub)
 	    {
-	      if (((CONST_DOUBLE_HIGH (operands[1]) & 0xffffffff)
-		   == 0xffffffff)
-		  && ((CONST_DOUBLE_LOW (operands[1]) & 0xffffffff)
-		      == 0xffffffff))
+	      if (((const_high & 0xffffffff) == 0xffffffff)
+		  && ((const_low & 0xffffffff) == 0xffffffff))
 	        {
 		  /* <= 0xffffffffffffffff always suceeds.  */
 		  OUT_AS1 (page, %2);
@@ -2939,8 +2950,8 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 		}
 	      else
 		{
-	          operands[3] = GEN_INT (CONST_DOUBLE_LOW (operands[1]) + 1);
-		  operands[4] = GEN_INT (CONST_DOUBLE_HIGH (operands[1])
+	          operands[3] = GEN_INT (const_low + 1);
+		  operands[4] = GEN_INT (const_high
 					 + (INTVAL (operands[3]) ? 0 : 1));
 	          OUT_AS2 (mov, w, %D3);
 	          OUT_AS2 (sub, w, %Z0);
