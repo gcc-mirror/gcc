@@ -2258,19 +2258,32 @@
 }")
 
 (define_expand "extendhisi2_mem"
-  [(set (match_dup 2) (zero_extend:SI (mem:QI (match_operand:HI 1 "" ""))))
+  [(set (match_dup 2) (zero_extend:SI (match_operand:HI 1 "" "")))
    (set (match_dup 3)
-	(zero_extend:SI (mem:QI (plus:SI (match_dup 1) (const_int 1)))))
+	(zero_extend:SI (match_dup 7)))
    (set (match_dup 6) (ashift:SI (match_dup 4) (const_int 24)))
    (set (match_operand:SI 0 "" "")
 	(ior:SI (ashiftrt:SI (match_dup 6) (const_int 16)) (match_dup 5)))]
   ""
   "
+{
+  rtx mem1, mem2;
+  rtx addr = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
+
+  mem1 = gen_rtx (MEM, QImode, addr);
+  MEM_VOLATILE_P (mem1) = MEM_VOLATILE_P (operands[1]);
+  MEM_IN_STRUCT_P (mem1) = MEM_IN_STRUCT_P (operands[1]);
+  RTX_UNCHANGING_P (mem1) = RTX_UNCHANGING_P (operands[1]);
+  mem2 = gen_rtx (MEM, QImode, plus_constant (addr, 1));
+  MEM_VOLATILE_P (mem2) = MEM_VOLATILE_P (operands[1]);
+  MEM_IN_STRUCT_P (mem2) = MEM_IN_STRUCT_P (operands[1]);
+  RTX_UNCHANGING_P (mem2) = RTX_UNCHANGING_P (operands[1]);
   operands[0] = gen_lowpart (SImode, operands[0]);
-  operands[1] = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
+  operands[1] = mem1;
   operands[2] = gen_reg_rtx (SImode);
   operands[3] = gen_reg_rtx (SImode);
   operands[6] = gen_reg_rtx (SImode);
+  operands[7] = mem2;
 
   if (BYTES_BIG_ENDIAN)
     {
@@ -2282,6 +2295,7 @@
       operands[4] = operands[3];
       operands[5] = operands[2];
     }
+}
 ")
 
 (define_insn "*extendhisi_insn"
@@ -2371,6 +2385,7 @@
 
     operands[3] = gen_rtx (REG, SImode, REGNO (operands[0]));
     operands[2] = gen_rtx (MEM, QImode, operands[3]);
+    MEM_VOLATILE_P (operands[2]) = MEM_VOLATILE_P (operands[1]);
     MEM_IN_STRUCT_P (operands[2]) = MEM_IN_STRUCT_P (operands[1]);
     RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
     operands[1] = XEXP (operands[1], 0);
@@ -2435,6 +2450,7 @@
     HOST_WIDE_INT offset;
 
     operands[2] = gen_rtx (MEM, QImode, operands[0]);
+    MEM_VOLATILE_P (operands[2]) = MEM_VOLATILE_P (operands[1]);
     MEM_IN_STRUCT_P (operands[2]) = MEM_IN_STRUCT_P (operands[1]);
     RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
     operands[1] = XEXP (operands[1], 0);
@@ -2845,9 +2861,14 @@
 		      && REGNO_POINTER_ALIGN (REGNO (base)) >= 4)
 		    {
 		      HOST_WIDE_INT new_offset = INTVAL (offset) & ~2;
+		      rtx new;
 
-		      emit_insn (gen_movsi (reg, gen_rtx (MEM, SImode,
-					   plus_constant (base, new_offset))));
+		      new = gen_rtx (MEM, SImode,
+				     plus_constant (base, new_offset));
+		      MEM_VOLATILE_P (new) = MEM_VOLATILE_P (operands[1]);
+		      MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (operands[1]);
+		      RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
+		      emit_insn (gen_movsi (reg, new));
 		      if (((INTVAL (offset) & 2) != 0)
 			  ^ (BYTES_BIG_ENDIAN ? 1 : 0))
 			{
@@ -2874,21 +2895,25 @@
 		      && REGNO_POINTER_ALIGN (REGNO (base)) >= 4)
 		    {
 		      rtx reg = gen_reg_rtx (SImode);
-		      rtx new_mem;
+		      rtx new;
 
 		      if ((INTVAL (offset) & 2) == 2)
 			{
 			  HOST_WIDE_INT new_offset = INTVAL (offset) ^ 2;
-			  new_mem = gen_rtx (MEM, SImode,
-					     plus_constant (base, new_offset));
-
-			  emit_insn (gen_movsi (reg, new_mem));
+			  new = gen_rtx (MEM, SImode,
+					 plus_constant (base, new_offset));
+			  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (operands[1]);
+			  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (operands[1]);
+			  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
+			  emit_insn (gen_movsi (reg, new));
 			}
 		      else
 			{
-			  new_mem = gen_rtx (MEM, SImode,
-					     XEXP (operands[1], 0));
-			  emit_insn (gen_rotated_loadsi (reg, new_mem));
+			  new = gen_rtx (MEM, SImode, XEXP (operands[1], 0));
+			  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (operands[1]);
+			  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (operands[1]);
+			  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
+			  emit_insn (gen_rotated_loadsi (reg, new));
 			}
 
 		      operands[1] = gen_lowpart (HImode, reg);
@@ -2936,17 +2961,30 @@
 [(set_attr "type" "load")])
 
 (define_expand "movhi_bytes"
-  [(set (match_dup 2) (zero_extend:SI (mem:QI (match_operand:HI 1 "" ""))))
+  [(set (match_dup 2) (zero_extend:SI (match_operand:HI 1 "" "")))
    (set (match_dup 3)
-	(zero_extend:SI (mem:QI (plus:SI (match_dup 1) (const_int 1)))))
+	(zero_extend:SI (match_dup 6)))
    (set (match_operand:SI 0 "" "")
 	 (ior:SI (ashift:SI (match_dup 4) (const_int 8)) (match_dup 5)))]
   ""
   "
+{
+  rtx mem1, mem2;
+  rtx addr = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
+
+  mem1 = gen_rtx (MEM, QImode, addr);
+  MEM_VOLATILE_P (mem1) = MEM_VOLATILE_P (operands[1]);
+  MEM_IN_STRUCT_P (mem1) = MEM_IN_STRUCT_P (operands[1]);
+  RTX_UNCHANGING_P (mem1) = RTX_UNCHANGING_P (operands[1]);
+  mem2 = gen_rtx (MEM, QImode, plus_constant (addr, 1));
+  MEM_VOLATILE_P (mem2) = MEM_VOLATILE_P (operands[1]);
+  MEM_IN_STRUCT_P (mem2) = MEM_IN_STRUCT_P (operands[1]);
+  RTX_UNCHANGING_P (mem2) = RTX_UNCHANGING_P (operands[1]);
   operands[0] = gen_lowpart (SImode, operands[0]);
-  operands[1] = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
+  operands[1] = mem1;
   operands[2] = gen_reg_rtx (SImode);
   operands[3] = gen_reg_rtx (SImode);
+  operands[6] = mem2;
 
   if (BYTES_BIG_ENDIAN)
     {
@@ -2958,6 +2996,7 @@
       operands[4] = operands[3];
       operands[5] = operands[2];
     }
+}
 ")
 
 (define_expand "movhi_bigend"

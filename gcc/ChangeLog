@@ -1,3 +1,10 @@
+Sat Jul 11 02:59:08 1998  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (extendhisi2_mem, movhi, movhi_bytes): Propagate the volatile
+	and structure attribute flags to MEMs generated.
+	(splits for sign-extended HI & QI mode from memory):  Also propagate 
+	the volatile flag.
+
 Fri Jul 10 19:06:59 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* varray.h: Include system.h if it hasn't already been included
