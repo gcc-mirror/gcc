@@ -1,5 +1,14 @@
 2002-06-27  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* configure.in (INTERFACE): Remove.
+	(release_VERSION): Remove.
+	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Change include placement.
+	(libstdcxx_interface): Change. Use gcc methods to determine version.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2002-06-27  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* acinclude.m4: Fix last checkin.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
