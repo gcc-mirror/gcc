@@ -1,3 +1,8 @@
+2004-04-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* version.c (version_string): Mark as prerelease.
+	* doc/include/gcc-common.texi: Bump version number.
+
 2004-04-18  Release Manager
 
 	* GCC 3.4.0 released.
