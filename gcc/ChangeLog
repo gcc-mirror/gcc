@@ -1,3 +1,8 @@
+2000-03-29  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/mkfixinc.sh: Initially set the variable "fixincludes"
+	to a non-file
+
 Wed Mar 29 15:08:01 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	Convert ACCUMULATE_OUTGOING_ARGS to an expression.

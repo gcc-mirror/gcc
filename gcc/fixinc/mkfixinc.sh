@@ -10,7 +10,7 @@ fi
 target=../fixinc.sh
 
 echo constructing ${target} for $machine
-fixincludes="${target}"
+fixincludes="${machine}"
 
 case $machine in
 	i[34567]86-*-linux-gnu*)
