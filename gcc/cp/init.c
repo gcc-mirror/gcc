@@ -2713,13 +2713,7 @@ build_new (placement, decl, init, use_global_new)
       /* FIXME: handle placement delete.  */
       if (flag_exceptions && ! placement)
 	{
-	  tree cleanup;
-
-	  if (use_cookie)
-	    cleanup = build (MINUS_EXPR, TREE_TYPE (alloc_expr),
-			     alloc_expr, BI_header_size);
-	  else
-	    cleanup = alloc_expr;
+	  tree cleanup = alloc_expr;
 
 	  if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
 	      && (TYPE_GETS_DELETE (true_type) & (1 << has_array)))
