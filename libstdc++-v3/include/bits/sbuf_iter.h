@@ -39,7 +39,7 @@ namespace std
 
   template<typename _CharT, typename _Traits>
     class ostreambuf_iterator
-#if 0      // XXX this is standard:
+#if 1      // XXX this is standard:
     : public iterator<output_iterator_tag, _CharT, void, void, void>
 #else
     : public output_iterator

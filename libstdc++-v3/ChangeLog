@@ -1,3 +1,65 @@
+2001-04-02  Phil Edwards  <pme@sources.redhat.com>
+
+	New concept checking implementation.
+	* docs/html/19_diagnostics/howto.html:  Document.
+	* docs/html/17_intro/concept_check.diff:  New file, for reference.
+	* include/bits/boost_concept_check.h:  New file from Boost.
+	* include/bits/c++config:  Update comments.
+
+	* include/bits/concept_check.h:  New file.
+	* include/bits/concept_checks.h:  Removed.
+	* include/bits/container_concepts.h:  Removed.
+	* include/bits/sequence_concepts.h:  Removed.
+	* include/bits/stl_iterator_base.h:  Removed; split into...
+	* include/bits/stl_iterator_base_funcs.h:  ...this new file...
+	* include/bits/stl_iterator_base_types.h:  ...and this new file.
+
+	* include/bits/sbuf_iter.h:  Update to use new implementation.
+	* include/bits/std_iterator.h:  Likewise.
+	* include/bits/std_memory.h:  Likewise.
+	* include/bits/stl_algo.h:  Likewise.
+	* include/bits/stl_algobase.h:  Likewise.
+	* include/bits/stl_construct.h:  Likewise.
+	* include/bits/stl_deque.h:  Likewise.
+	* include/bits/stl_heap.h:  Likewise.
+	* include/bits/stl_list.h:  Likewise.
+	* include/bits/stl_map.h:  Likewise.
+	* include/bits/stl_multimap.h:  Likewise.
+	* include/bits/stl_multiset.h:  Likewise.
+	* include/bits/stl_numeric.h:  Likewise.
+	* include/bits/stl_queue.h:  Likewise.
+	* include/bits/stl_set.h:  Likewise.
+	* include/bits/stl_stack.h:  Likewise.
+	* include/bits/stl_uninitialized.h:  Likewise.
+	* include/bits/stl_vector.h:  Likewise.
+	* include/ext/hash_map:  Likewise.
+	* include/ext/hash_set:  Likewise.
+	* include/ext/slist:  Likewise.
+	* include/ext/stl_hashtable.h:  Likewise.
+
+	* src/Makefile.am (base_headers):  Update list of headers.
+	* Makefile.in:  Regenerated.
+	* src/Makefile.in:  Regenerated.
+	* libio/Makefile.in:  Regenerated.
+	* libmath/Makefile.in:  Regenerated.
+	* libsupc++/Makefile.in:  Regenerated.
+	* testsuite/Makefile.in:  Regenerated.
+
+	* docs/html/install.html:  Update contact information.
+	* docs/html/17_intro/howto.html:  Ditto.
+	* docs/html/18_support/howto.html:  Ditto.
+	* docs/html/20_util/howto.html:  Ditto.
+	* docs/html/21_strings/howto.html:  Ditto.
+	* docs/html/22_locale/howto.html:  Ditto.
+	* docs/html/23_containers/howto.html:  Ditto.
+	* docs/html/24_iterators/howto.html:  Ditto.
+	* docs/html/25_algorithms/howto.html:  Ditto.
+	* docs/html/26_numerics/howto.html:  Ditto.
+	* docs/html/27_io/howto.html:  Ditto.
+	* docs/html/faq/index.html:  Ditto, plus info on new checking code.
+	* docs/html/ext/howto.html:  Ditto, plus info on new checking code.
+	* docs/html/faq/index.txt:  Regenerated.
+
 2001-04-02  Zack Weinberg  <zackw@stanford.edu>
 
 	* testsuite/lib/libstdc++.exp (dg-test): Annotate result

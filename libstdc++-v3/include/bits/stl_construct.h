@@ -81,7 +81,7 @@ __destroy(_ForwardIterator __first, _ForwardIterator __last, _Tp*)
 
 template <class _ForwardIterator>
 inline void _Destroy(_ForwardIterator __first, _ForwardIterator __last) {
-  __destroy(__first, __last, __VALUE_TYPE(__first));
+  __destroy(__first, __last, __value_type(__first));
 }
 
 inline void _Destroy(char*, char*) {}

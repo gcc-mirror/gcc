@@ -62,11 +62,14 @@ template <class _RandomAccessIterator>
 inline void 
 push_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
 {
-  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
-  __STL_REQUIRES(typename iterator_traits<_RandomAccessIterator>::value_type,
-                 _LessThanComparable);
+  // concept requirements
+  glibcpp_function_requires(Mutable_RandomAccessIteratorConcept<
+        _RandomAccessIterator>);
+  glibcpp_function_requires(LessThanComparableConcept<
+        typename iterator_traits<_RandomAccessIterator>::value_type>);
+
   __push_heap_aux(__first, __last,
-                  __DISTANCE_TYPE(__first), __VALUE_TYPE(__first));
+                  __distance_type(__first), __value_type(__first));
 }
 
 template <class _RandomAccessIterator, class _Distance, class _Tp, 
@@ -100,9 +103,12 @@ inline void
 push_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
           _Compare __comp)
 {
-  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
+  // concept requirements
+  glibcpp_function_requires(Mutable_RandomAccessIteratorConcept<
+        _RandomAccessIterator>);
+
   __push_heap_aux(__first, __last, __comp,
-                  __DISTANCE_TYPE(__first), __VALUE_TYPE(__first));
+                  __distance_type(__first), __value_type(__first));
 }
 
 template <class _RandomAccessIterator, class _Distance, class _Tp>
@@ -141,17 +147,20 @@ __pop_heap_aux(_RandomAccessIterator __first, _RandomAccessIterator __last,
                _Tp*)
 {
   __pop_heap(__first, __last - 1, __last - 1, 
-             _Tp(*(__last - 1)), __DISTANCE_TYPE(__first));
+             _Tp(*(__last - 1)), __distance_type(__first));
 }
 
 template <class _RandomAccessIterator>
 inline void pop_heap(_RandomAccessIterator __first, 
                      _RandomAccessIterator __last)
 {
-  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
-  __STL_REQUIRES(typename iterator_traits<_RandomAccessIterator>::value_type,
-                 _LessThanComparable);
-  __pop_heap_aux(__first, __last, __VALUE_TYPE(__first));
+  // concept requirements
+  glibcpp_function_requires(Mutable_RandomAccessIteratorConcept<
+        _RandomAccessIterator>);
+  glibcpp_function_requires(LessThanComparableConcept<
+        typename iterator_traits<_RandomAccessIterator>::value_type>);
+
+  __pop_heap_aux(__first, __last, __value_type(__first));
 }
 
 template <class _RandomAccessIterator, class _Distance,
@@ -194,7 +203,7 @@ __pop_heap_aux(_RandomAccessIterator __first,
                _RandomAccessIterator __last, _Tp*, _Compare __comp)
 {
   __pop_heap(__first, __last - 1, __last - 1, _Tp(*(__last - 1)), __comp,
-             __DISTANCE_TYPE(__first));
+             __distance_type(__first));
 }
 
 template <class _RandomAccessIterator, class _Compare>
@@ -202,8 +211,11 @@ inline void
 pop_heap(_RandomAccessIterator __first,
          _RandomAccessIterator __last, _Compare __comp)
 {
-  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
-  __pop_heap_aux(__first, __last, __VALUE_TYPE(__first), __comp);
+  // concept requirements
+  glibcpp_function_requires(Mutable_RandomAccessIteratorConcept<
+        _RandomAccessIterator>);
+
+  __pop_heap_aux(__first, __last, __value_type(__first), __comp);
 }
 
 template <class _RandomAccessIterator, class _Tp, class _Distance>
@@ -226,11 +238,14 @@ template <class _RandomAccessIterator>
 inline void 
 make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
 {
-  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
-  __STL_REQUIRES(typename iterator_traits<_RandomAccessIterator>::value_type,
-                 _LessThanComparable);
+  // concept requirements
+  glibcpp_function_requires(Mutable_RandomAccessIteratorConcept<
+        _RandomAccessIterator>);
+  glibcpp_function_requires(LessThanComparableConcept<
+        typename iterator_traits<_RandomAccessIterator>::value_type>);
+
   __make_heap(__first, __last,
-              __VALUE_TYPE(__first), __DISTANCE_TYPE(__first));
+              __value_type(__first), __distance_type(__first));
 }
 
 template <class _RandomAccessIterator, class _Compare,
@@ -256,17 +271,23 @@ inline void
 make_heap(_RandomAccessIterator __first, 
           _RandomAccessIterator __last, _Compare __comp)
 {
-  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
+  // concept requirements
+  glibcpp_function_requires(Mutable_RandomAccessIteratorConcept<
+        _RandomAccessIterator>);
+
   __make_heap(__first, __last, __comp,
-              __VALUE_TYPE(__first), __DISTANCE_TYPE(__first));
+              __value_type(__first), __distance_type(__first));
 }
 
 template <class _RandomAccessIterator>
 void sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
 {
-  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
-  __STL_REQUIRES(typename iterator_traits<_RandomAccessIterator>::value_type,
-                 _LessThanComparable);
+  // concept requirements
+  glibcpp_function_requires(Mutable_RandomAccessIteratorConcept<
+        _RandomAccessIterator>);
+  glibcpp_function_requires(LessThanComparableConcept<
+        typename iterator_traits<_RandomAccessIterator>::value_type>);
+
   while (__last - __first > 1)
     pop_heap(__first, __last--);
 }
@@ -276,7 +297,10 @@ void
 sort_heap(_RandomAccessIterator __first,
           _RandomAccessIterator __last, _Compare __comp)
 {
-  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
+  // concept requirements
+  glibcpp_function_requires(Mutable_RandomAccessIteratorConcept<
+        _RandomAccessIterator>);
+
   while (__last - __first > 1)
     pop_heap(__first, __last--, __comp);
 }

@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 19</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:54 pme Exp $ -->
+<!-- $Id: howto.html,v 1.2 2001/03/25 00:01:56 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -26,7 +26,7 @@
 <UL>
    <LI><A HREF="#1">Adding data to exceptions</A>
    <LI><A HREF="#2">Exception class hierarchy diagram</A>
-   <LI><A HREF="#3">Concept checkers</A>
+   <LI><A HREF="#3">Concept checkers -- <STRONG>new and improved!</STRONG></A>
 </UL>
 
 <HR>
@@ -67,58 +67,44 @@
    </P>
 
 <HR>
-<H2><A NAME="3">Concept checkers</A></H2>
-   <P>First the good news, then the bad news.</P>
-   <P><STRONG>Good news:</STRONG>  As part of their 3.3 release, SGI
-      added some nifty macros which
-      perform assertions on type properties.  For example, the Standard
-      requires that types passed as template parameters to <TT>vector</TT>
-      be &quot;Assignable&quot; (which means what you think it means).
+<H2><A NAME="3">Concept checkers -- <STRONG>new and improved!</STRONG></A></H2>
+   <P>Better taste!  Less fat!  Literally!</P>
+   <P>In 1999, SGI added <EM>concept checkers</EM> to their implementation
+      of the STL:  code which checked the template parameters of
+      instantiated pieces of the STL, in order to insure that the parameters
+      being used met the requirements of the standard.  For example,
+      the Standard requires that types passed as template parameters to
+      <TT>vector</TT> be &quot;Assignable&quot; (which means what you think
+      it means).  The checking was done during compilation, and none of
+      the code was executed at runtime.
    </P>
-   <P>The concept checkers allow the source code for <TT>vector</TT> to
-      declare
-      <PRE>
-   __STL_CLASS_REQUIRES(_Tp, _Assignable);
-      </PRE>inside the template.  <TT>_Tp</TT> is the element type of the
-      vector, and <TT>_Assignable</TT> is the concept to be checked (it is
-      defined in some back-end header files).  When you instantiate
-      <TT>vector&lt;MyType&gt;</TT>, compile-time checking can be done on
-      whether MyType meets the requirements for vectors.
+   <P>Unfortunately, the size of the compiler files grew significantly
+      as a result.  The checking code itself was cumbersome.  And bugs
+      were found in it on more than one occasion.
    </P>
-   <P>Most (all?) of the containers and sequences are capable of performing
-      concept checking during compilation, not just vector.
+   <P>The primary author of the checking code, Jeremy Siek, had already
+      started work on a replcement implementation.  The new code has been
+      formally reviewed and accepted into
+      <A HREF="http://www.boost.org/libs/concept_check/concept_check.htm">the
+      Boost libraries</A>, and we are pleased to incorporate it into the
+      GNU C++ library.
    </P>
-   <P>If a concept is violated (thus causing a compilation failure), the
-      error messages printed by the compiler will be of the form
-      <PRE>
-   _STL_ERROR::__<EM>foo</EM>_violation
-      </PRE> where <EM>foo</EM> is a description of the precise violation.
-      For example, if a type is required to support the preincrement
-      operator but doesn't, then you will see
-      _STL_ERROR::__postincrement_operator_requirement_violation, which
-      should give you a hint as to the nature of the problem.
+   <P>The new version imposes a much smaller space overhead on the generated
+      object file.  The checks are also cleaner and easier to read and
+      understand.
    </P>
-   <P>Other names might be seen for more specific errors, for example,
-      _ERROR_IN_STL_CONTAINER::__begin_iterator_accessor_requirement_violation.
+   <P>Concept checking can be disabled when you build your code, for example,
+      to save space during a production build.  Just define (via -D or
+      #define) any of the macros
+      <TT>_GLIBCPP_NO_CONCEPT_CHECKS (yes, with the leading underscore),
+      <TT>_STL_NO_CONCEPT_CHECKS</TT> (also with the leading underscore),
+      or <TT>NDEBUG</TT>.  The first macro is specifically for this
+      feature, the second is the disabling macro for the replaced SGI
+      version (some code may assume SGI's version is in use), and the third
+      is the usual macro to disable <TT>assert()</TT>, which is often turned
+      off for production builds.
    </P>
-   <P>You will probably also see other errors as the malformed code is
-      actually used.  The concept checking error messages should be printed
-      before the others, so start at the top and work your way down.
-   </P>
-   <P><STRONG>Bad news:</STRONG>  The current checking code is somewhat
-      messy.  It results in no runtime overhead, but there is a space
-      penalty (sometimes a very large one) in the generated code.  And the
-      code itself has bugs.
-   </P>
-   <P>Concept checking can be disabled when you build your code.  Just
-      define (via -D or #define) the macro
-      <TT>_STL_NO_CONCEPT_CHECKS</TT> (yes, with the leading underscore).
-      In fact, this may already be defined in the library by default,
-      depending on what decision we come to.
-   </P>
-   <P><STRONG>More good news:</STRONG>  Replacement code has already been
-      written by the same author of the original code.  It's available at
-      Boost and we hope to integrate it into the library.
+
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
@@ -129,9 +115,8 @@
 <HR>
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
-<A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:54 pme Exp $
+<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
+<BR> $Id: howto.html,v 1.2 2001/03/25 00:01:56 pme Exp $
 </EM></P>
 
 

@@ -20,7 +20,7 @@
 #include <bits/stl_algobase.h>
 #include <bits/stl_alloc.h>
 #include <bits/stl_construct.h>
-#include <bits/stl_iterator_base.h> //for iterator_traits
+#include <bits/stl_iterator_base_types.h> //for iterator_traits
 #include <bits/stl_tempbuf.h>
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_raw_storage_iter.h>

@@ -19,7 +19,7 @@
 #ifndef __SGI_STL_INTERNAL_SLIST_H
 #define __SGI_STL_INTERNAL_SLIST_H
 
-#include <bits/concept_checks.h>
+#include <bits/concept_check.h>
 
 namespace std
 { 
@@ -257,9 +257,8 @@ _Slist_base<_Tp,_Alloc>::_M_erase_after(_Slist_node_base* __before_first,
 template <class _Tp, class _Alloc = allocator<_Tp> >
 class slist : private _Slist_base<_Tp,_Alloc>
 {
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
+  // concept requirements
+  glibcpp_class_requires(_Tp, SGIAssignableConcept);
 
 private:
   typedef _Slist_base<_Tp,_Alloc> _Base;

@@ -32,8 +32,7 @@
 #define __SGI_STL_INTERNAL_HASH_SET_H
 
 #include <ext/stl_hashtable.h>
-
-#include <bits/concept_checks.h>
+#include <bits/concept_check.h>
 
 namespace std
 {
@@ -54,11 +53,10 @@ operator==(const hash_set<_Value,_HashFcn,_EqualKey,_Alloc>& __hs1,
 template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_set
 {
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Value, _Assignable);
-  __STL_CLASS_UNARY_FUNCTION_CHECK(_HashFcn, size_t, _Value);
-  __STL_CLASS_BINARY_FUNCTION_CHECK(_EqualKey, bool, _Value, _Value);
+  // concept requirements
+  glibcpp_class_requires(_Value, SGIAssignableConcept);
+  glibcpp_class_requires3(_HashFcn, size_t, _Value, UnaryFunctionConcept);
+  glibcpp_class_requires3(_EqualKey, _Value, _Value, BinaryPredicateConcept);
 
 private:
   typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>, 
@@ -206,11 +204,10 @@ operator==(const hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs1,
 template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_multiset
 {
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Value, _Assignable);
-  __STL_CLASS_UNARY_FUNCTION_CHECK(_HashFcn, size_t, _Value);
-  __STL_CLASS_BINARY_FUNCTION_CHECK(_EqualKey, bool, _Value, _Value);
+  // concept requirements
+  glibcpp_class_requires(_Value, SGIAssignableConcept);
+  glibcpp_class_requires3(_HashFcn, size_t, _Value, UnaryFunctionConcept);
+  glibcpp_class_requires3(_EqualKey, _Value, _Value, BinaryPredicateConcept);
 
 private:
   typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>, 

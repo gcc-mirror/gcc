@@ -31,7 +31,8 @@
 #include <bits/c++config.h>
 #include <bits/std_cstddef.h>
 #include <bits/std_iosfwd.h>
-#include <bits/stl_iterator_base.h>
+#include <bits/stl_iterator_base_types.h>
+#include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_iterator.h>
 
 #endif /* _CPP_ITERATOR */

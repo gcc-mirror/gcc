@@ -31,7 +31,7 @@
 #ifndef __SGI_STL_INTERNAL_MULTIMAP_H
 #define __SGI_STL_INTERNAL_MULTIMAP_H
 
-#include <bits/concept_checks.h>
+#include <bits/concept_check.h>
 
 namespace std
 {
@@ -52,11 +52,11 @@ inline bool operator<(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
                       const multimap<_Key,_Tp,_Compare,_Alloc>& __y);
 
 template <class _Key, class _Tp, class _Compare, class _Alloc>
-class multimap {
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
-  __STL_CLASS_BINARY_FUNCTION_CHECK(_Compare, bool, _Key, _Key);
+class multimap
+{
+  // concept requirements
+  glibcpp_class_requires(_Tp, SGIAssignableConcept);
+  glibcpp_class_requires4(_Compare, bool, _Key, _Key, BinaryFunctionConcept);
 
 public:
 

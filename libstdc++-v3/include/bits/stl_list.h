@@ -31,7 +31,7 @@
 #ifndef __SGI_STL_INTERNAL_LIST_H
 #define __SGI_STL_INTERNAL_LIST_H
 
-#include <bits/concept_checks.h>
+#include <bits/concept_check.h>
 
 namespace std
 {
@@ -198,10 +198,10 @@ _List_base<_Tp,_Alloc>::clear()
 }
 
 template <class _Tp, class _Alloc = allocator<_Tp> >
-class list : protected _List_base<_Tp, _Alloc> {
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
+class list : protected _List_base<_Tp, _Alloc>
+{
+  // concept requirements
+  glibcpp_class_requires(_Tp, SGIAssignableConcept);
 
   typedef _List_base<_Tp, _Alloc> _Base;
 protected:

@@ -31,7 +31,7 @@
 #ifndef __SGI_STL_INTERNAL_SET_H
 #define __SGI_STL_INTERNAL_SET_H
 
-#include <bits/concept_checks.h>
+#include <bits/concept_check.h>
 
 namespace std
 {
@@ -52,15 +52,14 @@ inline bool operator<(const set<_Key,_Compare,_Alloc>& __x,
 
 
 template <class _Key, class _Compare, class _Alloc>
-class set {
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Key, _Assignable);
-  __STL_CLASS_BINARY_FUNCTION_CHECK(_Compare, bool, _Key, _Key);
+class set
+{
+  // concept requirements
+  glibcpp_class_requires(_Key, SGIAssignableConcept);
+  glibcpp_class_requires4(_Compare, bool, _Key, _Key, BinaryFunctionConcept);
 
 public:
   // typedefs:
-
   typedef _Key     key_type;
   typedef _Key     value_type;
   typedef _Compare key_compare;

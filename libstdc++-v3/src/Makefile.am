@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.79 2001/03/28 01:19:42 aoliva Exp $
+## $Id: Makefile.am,v 1.80 2001/03/31 20:15:43 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -80,7 +80,8 @@ base_headers = \
 	bits/streambuf.tcc bits/basic_file.h \
 	bits/locale_facets.h bits/locale_facets.tcc bits/localefwd.h \
 	bits/stl_pthread_alloc.h bits/pthread_allocimpl.h \
-	bits/stl_threads.h bits/stl_iterator_base.h \
+	bits/stl_threads.h \
+	bits/stl_iterator_base_types.h bits/stl_iterator_base_funcs.h \
 	bits/std_bitset.h bits/std_deque.h bits/std_functional.h \
 	bits/std_iterator.h bits/std_list.h \
 	bits/std_map.h bits/std_memory.h bits/std_numeric.h \
@@ -91,12 +92,11 @@ base_headers = \
 	bits/stl_heap.h bits/stl_iterator.h bits/stl_list.h bits/stl_map.h \
 	bits/stl_multimap.h bits/stl_multiset.h bits/stl_numeric.h \
 	bits/stl_pair.h bits/stl_queue.h bits/stl_raw_storage_iter.h \
-	bits/stl_relops.h bits/stl_set.h \
-	bits/stl_stack.h bits/stl_tempbuf.h \
+	bits/stl_relops.h bits/stl_set.h bits/stl_stack.h bits/stl_tempbuf.h \
 	bits/stl_tree.h bits/stl_uninitialized.h bits/stl_vector.h \
 	bits/stl_bvector.h bits/type_traits.h bits/std_algorithm.h \
-	bits/concept_checks.h bits/container_concepts.h \
-	bits/sequence_concepts.h bits/stl_construct.h
+	bits/stl_construct.h bits/boost_concept_check.h bits/concept_check.h
+
 
 backward_headers = \
 	backward/complex.h backward/iomanip.h backward/istream.h \
@@ -299,8 +299,12 @@ tmp-libstdc++.INC: Makefile
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion call for it. (ie, --enable-debug)
+#
+# The no-implicit-templates flag will generate unresolved references to
+# the concept-checking symbols.  So we must disable the checks while
+# actually building the library.
 AM_CXXFLAGS = \
-	-fno-implicit-templates \
+	-fno-implicit-templates -D_GLIBCPP_NO_CONCEPT_CHECKS \
 	$(LIBSUPCXX_CXXFLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
