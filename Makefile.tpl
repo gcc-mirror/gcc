@@ -1292,7 +1292,7 @@ all-bootstrap: maybe-all-libiberty maybe-all-texinfo maybe-all-bison maybe-all-b
 
 # Host modules specific to gdb.
 # GDB needs to know that the simulator is being built.
-configure-gdb: maybe-configure-tcl maybe-configure-tk maybe-configure-sim
+configure-gdb: maybe-configure-itcl maybe-configure-tcl maybe-configure-tk maybe-configure-sim
 GDB_TK = @GDB_TK@
 all-gdb: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-mmalloc maybe-all-readline maybe-all-bison maybe-all-byacc maybe-all-sim $(gdbnlmrequirements) $(GDB_TK)
 install-gdb: maybe-install-tcl maybe-install-tk maybe-install-itcl maybe-install-tix maybe-install-libgui
