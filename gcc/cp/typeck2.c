@@ -352,19 +352,14 @@ ack (s, v, v2)
    59 is, so they can understand how to work around it, should they
    ever run into it.
 
-   Note, there will be no more calls in the C++ front end to abort,
-   because the C++ front end is so unreliable still.  The C front end
-   can get away with calling abort, because for most of the calls to
-   abort on most machines, it, I suspect, can be proven that it is
-   impossible to ever call abort.  The same is not yet true for C++,
-   one day, maybe it will be.
-
    We used to tell people to "fix the above error[s] and try recompiling
    the program" via a call to fatal, but that message tended to look
    silly.  So instead, we just do the equivalent of a call to fatal in the
-   same situation (call exit).  */
+   same situation (call exit).
 
-/* First used: 0 (reserved), Last used: 369.  Free: */
+   We used to assign sequential numbers for the aborts; now we use an
+   encoding of the date the abort was added, since that has more meaning
+   when we only see the error message.  */
 
 static int abortcount = 0;
 

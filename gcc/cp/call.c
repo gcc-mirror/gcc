@@ -2513,73 +2513,10 @@ build_new_op (code, flags, arg1, arg2, arg3)
     {
     case NEW_EXPR:
     case VEC_NEW_EXPR:
-      {
-	tree rval;
-
-	arglist = scratch_tree_cons (NULL_TREE, arg2, arg3);
-	if (flags & LOOKUP_GLOBAL)
-	  return build_new_function_call
-	    (lookup_function_nonclass (fnname, arglist), arglist);
-
-	/* FIXME */
-	rval = build_method_call
-	  (build_indirect_ref (build1 (NOP_EXPR, arg1, error_mark_node),
-			       "new"),
-	   fnname, arglist, NULL_TREE, flags);
-	if (rval == error_mark_node)
-	  /* User might declare fancy operator new, but invoke it
-	     like standard one.  */
-	  return rval;
-
-	TREE_TYPE (rval) = arg1;
-	return rval;
-      }
-
     case VEC_DELETE_EXPR:
     case DELETE_EXPR:
-      {
-	tree rval;
-
-	if (flags & LOOKUP_GLOBAL)
-	  {
-	    arglist = build_scratch_list (NULL_TREE, arg1);
-	    return build_new_function_call
-	      (lookup_function_nonclass (fnname, arglist), arglist);
-	  }    
-
-	arglist = scratch_tree_cons (NULL_TREE, arg1, build_scratch_list (NULL_TREE, arg2));
-
-	arg1 = TREE_TYPE (arg1);
-
-	/* This handles the case where we're trying to delete
-	   X (*a)[10];
-	   a=new X[5][10];
-	   delete[] a; */
-	   
-	if (TREE_CODE (TREE_TYPE (arg1)) == ARRAY_TYPE)
-	  {
-	    /* Strip off the pointer and the array.  */
-	    arg1 = TREE_TYPE (TREE_TYPE (arg1));
-
-	    while (TREE_CODE (arg1) == ARRAY_TYPE)
-		arg1 = (TREE_TYPE (arg1));
-
-	    arg1 = build_pointer_type (arg1);
-	  }
-
-	/* FIXME */
-	rval = build_method_call
-	  (build_indirect_ref (build1 (NOP_EXPR, arg1,
-				       error_mark_node),
-			       NULL_PTR),
-	   fnname, arglist, NULL_TREE, flags);
-#if 0
-	/* This can happen when operator delete is protected.  */
-	my_friendly_assert (rval != error_mark_node, 250);
-	TREE_TYPE (rval) = void_type_node;
-#endif
-	return rval;
-      }
+      /* Use build_op_new_call and build_op_delete_call instead. */
+      my_friendly_abort (981018);
 
     case CALL_EXPR:
       return build_object_call (arg1, arg2);
@@ -2898,10 +2835,8 @@ build_op_new_call (code, type, args, flags)
   if (IS_AGGR_TYPE (type) && ! (flags & LOOKUP_GLOBAL)
       && (TYPE_GETS_NEW (type) & (1 << (code == VEC_NEW_EXPR))))
     {
-      tree dummy = build1 (NOP_EXPR, build_pointer_type (type),
-			   error_mark_node);
-      dummy = build_indirect_ref (dummy, "new");
-      return build_method_call (dummy, fnname, args, NULL_TREE, flags);
+      return build_method_call (build_dummy_object (type),
+				fnname, args, NULL_TREE, flags);
     }
   else
     return build_new_function_call 
@@ -3716,8 +3651,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       && value_member (cand->fn, get_abstract_virtuals (basetype)))
     cp_error ("abstract virtual `%#D' called from constructor", cand->fn);
   if (TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE
-      && TREE_CODE (instance_ptr) == NOP_EXPR
-      && TREE_OPERAND (instance_ptr, 0) == error_mark_node)
+      && is_dummy_object (instance_ptr))
     cp_error ("cannot call member function `%D' without object", cand->fn);
 
   if (DECL_VINDEX (cand->fn) && ! (flags & LOOKUP_NONVIRTUAL)

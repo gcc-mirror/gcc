@@ -5596,6 +5596,8 @@ tsubst (t, args, in_decl)
 		  return arg;
 	      }
 	  }
+	else
+	  my_friendly_abort (981018);
 
 	if (level == 1)
 	  /* This can happen during the attempted tsubst'ing in
@@ -5990,6 +5992,7 @@ tsubst_copy (t, args, in_decl)
     case CONST_CAST_EXPR:
     case STATIC_CAST_EXPR:
     case DYNAMIC_CAST_EXPR:
+    case NOP_EXPR:
       return build1
 	(code, tsubst (TREE_TYPE (t), args, in_decl),
 	 tsubst_copy (TREE_OPERAND (t, 0), args, in_decl));

@@ -2629,3 +2629,56 @@ member_p (decl)
   tree ctx = DECL_CONTEXT (decl);
   return (ctx && TREE_CODE_CLASS (TREE_CODE (ctx)) == 't');
 }
+
+/* Create a placeholder for member access where we don't actually have an
+   object that the access is against.  */
+
+tree
+build_dummy_object (type)
+     tree type;
+{
+  tree decl = build1 (NOP_EXPR, build_pointer_type (type), error_mark_node);
+  return build_indirect_ref (decl, NULL_PTR);
+}
+
+/* We've gotten a reference to a member of TYPE.  Return *this if appropriate,
+   or a dummy object otherwise.  If BINFOP is non-0, it is filled with the
+   binfo path from current_class_type to TYPE, or 0.  */
+
+tree
+maybe_dummy_object (type, binfop)
+     tree type;
+     tree *binfop;
+{
+  tree decl, context;
+
+  if (current_class_type
+      && get_base_distance (type, current_class_type, 0, binfop) != -1)
+    context = current_class_type;
+  else
+    {
+      /* Reference from a nested class member function.  */
+      context = type;
+      if (binfop)
+	*binfop = TYPE_BINFO (type);
+    }
+
+  if (current_class_ref && context == current_class_type)
+    decl = current_class_ref;
+  else
+    decl = build_dummy_object (context);
+
+  return decl;
+}
+
+/* Returns 1 if OB is a placeholder object, or a pointer to one.  */
+
+int
+is_dummy_object (ob)
+     tree ob;
+{
+  if (TREE_CODE (ob) == INDIRECT_REF)
+    ob = TREE_OPERAND (ob, 0);
+  return (TREE_CODE (ob) == NOP_EXPR
+	  && TREE_OPERAND (ob, 0) == error_mark_node);
+}

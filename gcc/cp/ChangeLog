@@ -1,3 +1,36 @@
+1998-10-19  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Revamp references to member functions.
+	* method.c (hack_identifier): Call build_component_ref for a
+	reference to a member function.
+	* typeck.c (build_component_ref): Only return a single function 
+	if it's static.  Otherwise, return a COMPONENT_REF.
+	(build_x_function_call): Handle a COMPONENT_REF.
+	(build_unary_op): Handle all unknown-type things.
+	* decl2.c (arg_assoc): Handle COMPONENT_REF.
+	* class.c (instantiate_type): Complain if the function we get is a
+	nonstatic member function.  Remove code for finding "compatible"
+	functions.
+	* pt.c (tsubst_copy): Handle NOP_EXPR.
+	* tree.c (build_dummy_object): New fn.
+	(maybe_dummy_object): New fn.
+	(is_dummy_object): New fn.
+	* cp-tree.h: Declare them.
+	* cvt.c (cp_convert_to_pointer): Use maybe_dummy_object.
+	* error.c (dump_expr, case OFFSET_REF): Use is_dummy_object.
+	* init.c (build_member_call): Use maybe_dummy_object and
+	is_dummy_object.
+	(build_offset_ref): Use maybe_dummy_object.
+	(resolve_offset_ref): Use is_dummy_object.
+	* typeck.c (build_x_function_call): Call build_dummy_object.
+	(unary_complex_lvalue): Call is_dummy_object.
+
+	* typeck.c (build_component_addr): Make sure field is a field.
+
+	* call.c (build_new_op): Delete obsolete code.
+
+	* pt.c (tsubst, TEMPLATE*PARM*): Abort if we don't have any args.
+
 1998-10-18  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (validate_nonmember_using_decl): Fix using-directives of
