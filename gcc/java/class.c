@@ -1285,7 +1285,7 @@ make_method_value (mdecl)
 	     iter != NULL_TREE;
 	     iter = TREE_CHAIN (iter))
 	  {
-	    tree sig = build_java_signature (TREE_VALUE (iter));
+	    tree sig = DECL_NAME (TYPE_NAME (TREE_VALUE (iter)));
 	    tree utf8
 	      = build_utf8_ref (unmangle_classname (IDENTIFIER_POINTER (sig),
 						    IDENTIFIER_LENGTH (sig)));
