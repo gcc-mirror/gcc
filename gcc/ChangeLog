@@ -5,6 +5,12 @@
 
 2004-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-sra.c (struct sra_walk_fns): Init function now returns bool.
+	(sra_walk_modify_expr): Allow init function to fail.
+	(scan_init): Now returns bool.
+	(generate_element_init): If can't understand INIT, return false.
+	(scalarize_init): Return false if generate_element_init does.
+	
 	* tree-pretty-print.c (dump_generic_node, case ARRAY_TYPE): Properly
 	print bounds.
 

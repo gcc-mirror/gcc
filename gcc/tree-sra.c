@@ -569,8 +569,9 @@ struct sra_walk_fns
 		block_stmt_iterator *bsi);
 
   /* Invoked when ELT is initialized from a constant.  VALUE may be NULL,
-     in which case it should be treated as an empty CONSTRUCTOR.  */
-  void (*init) (struct sra_elt *elt, tree value, block_stmt_iterator *bsi);
+     in which case it should be treated as an empty CONSTRUCTOR.  Return
+     false if we found a case we couldn't handle.  */
+  bool (*init) (struct sra_elt *elt, tree value, block_stmt_iterator *bsi);
 
   /* Invoked when we have a copy between one scalarizable reference ELT
      and one non-scalarizable reference OTHER.  IS_OUTPUT is true if ELT
@@ -769,21 +770,21 @@ sra_walk_modify_expr (tree expr, block_stmt_iterator *bsi,
     {
       /* If this is an assignment from a constant, or constructor, then
 	 we have access to all of the elements individually.  Invoke INIT.  */
-      if (TREE_CODE (rhs) == COMPLEX_EXPR
-	  || TREE_CODE (rhs) == COMPLEX_CST
-	  || TREE_CODE (rhs) == CONSTRUCTOR)
-	fns->init (lhs_elt, rhs, bsi);
+      if ((TREE_CODE (rhs) == COMPLEX_EXPR
+	   || TREE_CODE (rhs) == COMPLEX_CST
+	   || TREE_CODE (rhs) == CONSTRUCTOR)
+	  && fns->init (lhs_elt, rhs, bsi))
+	;
 
       /* If this is an assignment from read-only memory, treat this as if
 	 we'd been passed the constructor directly.  Invoke INIT.  */
       else if (TREE_CODE (rhs) == VAR_DECL
 	       && TREE_STATIC (rhs)
 	       && TREE_READONLY (rhs)
-	       && targetm.binds_local_p (rhs))
-	{
-	  if (DECL_INITIAL (rhs) != error_mark_node)
-	    fns->init (lhs_elt, DECL_INITIAL (rhs), bsi);
-	}
+	       && targetm.binds_local_p (rhs)
+	       && DECL_INITIAL (rhs)
+	       && fns->init (lhs_elt, DECL_INITIAL (rhs), bsi))
+	;
 
       /* If this is a copy from a non-scalarizable lvalue, invoke LDST.
 	 The lvalue requirement prevents us from trying to directly scalarize
@@ -933,11 +934,12 @@ scan_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
   rhs_elt->n_copies += 1;
 }
 
-static void
+static bool
 scan_init (struct sra_elt *lhs_elt, tree rhs ATTRIBUTE_UNUSED,
 	   block_stmt_iterator *bsi ATTRIBUTE_UNUSED)
 {
   lhs_elt->n_copies += 1;
+  return true;
 }
 
 static void
@@ -1511,15 +1513,19 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
 /* Generate a set of assignment statements in *LIST_P to set all instantiated
    elements under ELT with the contents of the initializer INIT.  In addition,
    mark all assigned elements VISITED; this allows easy coordination with
-   generate_element_zero.  */
+   generate_element_zero.  Return false if we found a case we couldn't
+   handle.  */
 
-static void
+static bool
 generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
 {
+  bool result = true;
   enum tree_code init_code;
   struct sra_elt *sub;
   tree t;
 
+  /* We can be passed DECL_INITIAL of a static variable.  It might have a
+     conversion, which we strip off here.  */
   STRIP_USELESS_TYPE_CONVERSION (init);
   init_code = TREE_CODE (init);
 
@@ -1531,7 +1537,7 @@ generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
 	  append_to_statement_list (t, list_p);
 	  elt->visited = true;
 	}
-      return;
+      return result;
     }
 
   switch (init_code)
@@ -1546,7 +1552,7 @@ generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
 	  else
 	    t = (init_code == COMPLEX_EXPR
 		 ? TREE_OPERAND (init, 1) : TREE_IMAGPART (init));
-	  generate_element_init (sub, t, list_p);
+	  result &= generate_element_init (sub, t, list_p);
 	}
       break;
 
@@ -1556,13 +1562,15 @@ generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
 	  sub = lookup_element (elt, TREE_PURPOSE (t), NULL, NO_INSERT);
 	  if (sub == NULL)
 	    continue;
-	  generate_element_init (sub, TREE_VALUE (t), list_p);
+	  result &= generate_element_init (sub, TREE_VALUE (t), list_p);
 	}
       break;
 
     default:
-      abort ();
+      result = false;
     }
+
+  return result;
 }
 
 /* Insert STMT on all the outgoing edges out of BB.  Note that if BB
@@ -1752,22 +1760,26 @@ scalarize_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
 /* Scalarize an INIT.  To recap, this is an assignment to a scalarizable
    reference from some form of constructor: CONSTRUCTOR, COMPLEX_CST or
    COMPLEX_EXPR.  If RHS is NULL, it should be treated as an empty
-   CONSTRUCTOR.  */
+   CONSTRUCTOR.  Return false if we didn't handle this case.  */
 
-static void
+static bool
 scalarize_init (struct sra_elt *lhs_elt, tree rhs, block_stmt_iterator *bsi)
 {
+  bool result = true;
   tree list = NULL;
 
   /* Generate initialization statements for all members extant in the RHS.  */
   if (rhs)
-    generate_element_init (lhs_elt, rhs, &list);
+    result = generate_element_init (lhs_elt, rhs, &list);
 
   /* CONSTRUCTOR is defined such that any member not mentioned is assigned
      a zero value.  Initialize the rest of the instantiated elements.  */
   generate_element_zero (lhs_elt, &list);
-  if (list == NULL)
-    return;
+
+  /* If we didn't generate anything or couldn't handle this case return.
+     Say which it was.  */
+  if (!result || list == NULL)
+    return result;
 
   if (lhs_elt->use_block_copy)
     {
@@ -1784,6 +1796,8 @@ scalarize_init (struct sra_elt *lhs_elt, tree rhs, block_stmt_iterator *bsi)
       mark_all_v_defs (bsi_stmt (*bsi));
       sra_replace (bsi, list);
     }
+
+  return true;
 }
 
 /* A subroutine of scalarize_ldst called via walk_tree.  Set TREE_NO_TRAP
