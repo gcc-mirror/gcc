@@ -1,3 +1,8 @@
+2005-02-16  Stan Shebs  <shebs@apple.com>
+
+	* config.gcc (powerpc-*-darwin*): Use fragment for Darwin 8 or later.
+	* config/rs6000/t-darwin8: New, for 64-bit multilib.
+
 2005-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Document required
