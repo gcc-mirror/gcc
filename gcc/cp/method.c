@@ -1375,7 +1375,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
     case VEC_NEW_EXPR:
     case NEW_EXPR:
       {
-	tree args = tree_cons (NULL_TREE, xarg2, arg3);
+	tree args = expr_tree_cons (NULL_TREE, xarg2, arg3);
 	fnname = ansi_opname[(int) code];
 	if (flags & LOOKUP_GLOBAL)
 	  return build_overload_call (fnname, args, flags & LOOKUP_COMPLAIN);
@@ -1401,7 +1401,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 	fnname = ansi_opname[(int) code];
 	if (flags & LOOKUP_GLOBAL)
 	  return build_overload_call (fnname,
-				      build_tree_list (NULL_TREE, xarg1),
+				      build_expr_list (NULL_TREE, xarg1),
 				      flags & LOOKUP_COMPLAIN);
 	arg1 = TREE_TYPE (xarg1);
 
@@ -1425,8 +1425,8 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 	  (build_indirect_ref (build1 (NOP_EXPR, arg1,
 				       error_mark_node),
 			       NULL_PTR),
-	   fnname, tree_cons (NULL_TREE, xarg1,
-			       build_tree_list (NULL_TREE, xarg2)),
+	   fnname, expr_tree_cons (NULL_TREE, xarg1,
+			       build_expr_list (NULL_TREE, xarg2)),
 	   NULL_TREE, flags);
 #if 0
 	/* This can happen when operator delete is protected.  */
@@ -1604,25 +1604,25 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
     }
   else if (code == COND_EXPR)
     {
-      parms = tree_cons (NULL_TREE, xarg2, build_tree_list (NULL_TREE, arg3));
+      parms = expr_tree_cons (NULL_TREE, xarg2, build_expr_list (NULL_TREE, arg3));
       rval = build_method_call (xarg1, fnname, parms, NULL_TREE, flags);
     }
   else if (code == METHOD_CALL_EXPR)
     {
       /* must be a member function.  */
-      parms = tree_cons (NULL_TREE, xarg2, arg3);
+      parms = expr_tree_cons (NULL_TREE, xarg2, arg3);
       return build_method_call (xarg1, fnname, parms, NULL_TREE,
 				LOOKUP_NORMAL);
     }
   else if (fields1)
     {
-      parms = build_tree_list (NULL_TREE, xarg2);
+      parms = build_expr_list (NULL_TREE, xarg2);
       rval = build_method_call (xarg1, fnname, parms, NULL_TREE, flags);
     }
   else
     {
-      parms = tree_cons (NULL_TREE, xarg1,
-			 build_tree_list (NULL_TREE, xarg2));
+      parms = expr_tree_cons (NULL_TREE, xarg1,
+			 build_expr_list (NULL_TREE, xarg2));
       rval = build_overload_call (fnname, parms, flags);
     }
 
@@ -1919,9 +1919,9 @@ emit_thunk (thunk_fndecl)
     t = build_int_2 (delta, -1 * (delta < 0));
     TREE_TYPE (t) = signed_type (sizetype);
     t = fold (build (PLUS_EXPR, TREE_TYPE (a), a, t));
-    t = tree_cons (NULL_TREE, t, NULL_TREE);
+    t = expr_tree_cons (NULL_TREE, t, NULL_TREE);
     for (a = TREE_CHAIN (a); a; a = TREE_CHAIN (a))
-      t = tree_cons (NULL_TREE, a, t);
+      t = expr_tree_cons (NULL_TREE, a, t);
     t = nreverse (t);
     t = build_call (function, TREE_TYPE (TREE_TYPE (function)), t);
     c_expand_return (t);
@@ -2102,7 +2102,7 @@ do_build_assign_ref (fndecl)
 	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 	  p = convert_from_reference (p);
 	  p = build_member_call (basetype, ansi_opname [MODIFY_EXPR],
-				 build_tree_list (NULL_TREE, p));
+				 build_expr_list (NULL_TREE, p));
 	  expand_expr_stmt (p);
 	}
       for (; fields; fields = TREE_CHAIN (fields))

@@ -1446,7 +1446,7 @@ check_classfn (ctype, function)
 			/* This function might be an instantiation
 			   or specialization of fndecl.  */
 			templates = 
-			  tree_cons (NULL_TREE, fndecl, templates);
+			  scratch_tree_cons (NULL_TREE, fndecl, templates);
 		    }
 #endif
 		  fndecl = DECL_CHAIN (fndecl);
@@ -1462,7 +1462,7 @@ check_classfn (ctype, function)
 	       the names don't match, there is some specialization
 	       occurring.  */
 	    templates = 
-	      tree_cons (NULL_TREE, fndecl, templates);
+	      scratch_tree_cons (NULL_TREE, fndecl, templates);
 	}
     }
 
@@ -2217,7 +2217,7 @@ finish_anon_union (anon_union_decl)
       DECL_INITIAL (decl) = NULL_TREE;
       /* If there's a cleanup to do, it belongs in the
 	 TREE_PURPOSE of the following TREE_LIST.  */
-      elems = tree_cons (NULL_TREE, decl, elems);
+      elems = scratch_tree_cons (NULL_TREE, decl, elems);
       TREE_TYPE (elems) = type;
     }
   if (static_p)
@@ -3598,7 +3598,7 @@ build_expr_from_tree (t)
 	chain = TREE_CHAIN (t);
 	if (chain && chain != void_type_node)
 	  chain = build_expr_from_tree (chain);
-	return tree_cons (purpose, value, chain);
+	return expr_tree_cons (purpose, value, chain);
       }
 
     case COMPONENT_REF:
@@ -3645,7 +3645,7 @@ reparse_decl_as_expr (type, decl)
 {
   decl = build_expr_from_tree (decl);
   if (type)
-    return build_functional_cast (type, build_tree_list (NULL_TREE, decl));
+    return build_functional_cast (type, build_expr_list (NULL_TREE, decl));
   else
     return decl;
 }

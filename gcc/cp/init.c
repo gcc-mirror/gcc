@@ -173,7 +173,7 @@ perform_member_init (member, name, init, explicit)
       /* Since `init' is already a TREE_LIST on the current_member_init_list,
 	 only build it into one if we aren't already a list.  */
       if (init != NULL_TREE && TREE_CODE (init) != TREE_LIST)
-	init = build_tree_list (NULL_TREE, init);
+	init = build_expr_list (NULL_TREE, init);
 
       decl = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
 
@@ -489,7 +489,7 @@ build_partial_cleanup_for (binfo)
 {
   return build_scoped_method_call
     (current_class_ref, binfo, dtor_identifier,
-     build_tree_list (NULL_TREE, integer_zero_node));
+     build_expr_list (NULL_TREE, integer_zero_node));
 }
 
 /* Perform whatever initializations have yet to be done on the base
@@ -1287,14 +1287,14 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
       return;
     }
   else
-    parms = build_tree_list (NULL_TREE, init);
+    parms = build_expr_list (NULL_TREE, init);
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
       if (true_exp == exp)
-	parms = tree_cons (NULL_TREE, integer_one_node, parms);
+	parms = expr_tree_cons (NULL_TREE, integer_one_node, parms);
       else
-	parms = tree_cons (NULL_TREE, integer_zero_node, parms);
+	parms = expr_tree_cons (NULL_TREE, integer_zero_node, parms);
       flags |= LOOKUP_HAS_IN_CHARGE;
     }
 
@@ -1549,7 +1549,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 		{
 		  /* See if there is a constructor for``type'' that takes a
 		     ``ttype''-typed object.  */
-		  tree parms = build_tree_list (NULL_TREE, init);
+		  tree parms = build_expr_list (NULL_TREE, init);
 		  tree as_cons = NULL_TREE;
 		  if (TYPE_HAS_CONSTRUCTOR (type))
 		    as_cons = build_method_call (exp, ctor_identifier,
@@ -2508,7 +2508,7 @@ build_new (placement, decl, init, use_global_new)
     {
       rval = build_builtin_call (build_pointer_type (true_type),
 				 has_array ? BIVN : BIN,
-				 build_tree_list (NULL_TREE, size));
+				 build_expr_list (NULL_TREE, size));
       TREE_CALLS_NEW (rval) = 1;
     }
 
@@ -2538,8 +2538,8 @@ build_new (placement, decl, init, use_global_new)
       rval = cp_convert (build_pointer_type (true_type), rval);
       TREE_CALLS_NEW (rval) = 1;
       TREE_SIDE_EFFECTS (rval) = 1;
-      rval = build_compound_expr (tree_cons (NULL_TREE, exp1,
-					     build_tree_list (NULL_TREE, rval)));
+      rval = build_compound_expr (expr_tree_cons (NULL_TREE, exp1,
+					     build_expr_list (NULL_TREE, rval)));
     }
 
   if (rval == error_mark_node)
@@ -2590,7 +2590,7 @@ build_new (placement, decl, init, use_global_new)
 
 	  if (rval && TYPE_USES_VIRTUAL_BASECLASSES (true_type))
 	    {
-	      init = tree_cons (NULL_TREE, integer_one_node, init);
+	      init = expr_tree_cons (NULL_TREE, integer_one_node, init);
 	      flags |= LOOKUP_HAS_IN_CHARGE;
 	    }
 
@@ -2717,7 +2717,7 @@ build_new (placement, decl, init, use_global_new)
 
   if (pending_sizes)
     rval = build_compound_expr (chainon (pending_sizes,
-					 build_tree_list (NULL_TREE, rval)));
+					 build_expr_list (NULL_TREE, rval)));
 
   return rval;
 }
@@ -2785,7 +2785,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 						   1));
       /* This is the real size */
       virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
-      body = build_tree_list (NULL_TREE,
+      body = build_expr_list (NULL_TREE,
 			      build_x_delete (ptype, base_tbd,
 					      2 | use_global_delete,
 					      virtual_size));
@@ -2797,24 +2797,24 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
   else
     body = NULL_TREE;
 
-  body = tree_cons (NULL_TREE,
+  body = expr_tree_cons (NULL_TREE,
 		    build_delete (ptype, tbase, auto_delete,
 				  LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1),
 		    body);
 
-  body = tree_cons (NULL_TREE,
+  body = expr_tree_cons (NULL_TREE,
 		    build_modify_expr (tbase, NOP_EXPR, build (MINUS_EXPR, ptype, tbase, size_exp)),
 		    body);
 
-  body = tree_cons (NULL_TREE,
+  body = expr_tree_cons (NULL_TREE,
 		    build (EXIT_EXPR, void_type_node,
 			   build (EQ_EXPR, boolean_type_node, base, tbase)),
 		    body);
 
   loop = build (LOOP_EXPR, void_type_node, build_compound_expr (body));
 
-  loop = tree_cons (NULL_TREE, tbase_init,
-		    tree_cons (NULL_TREE, loop, NULL_TREE));
+  loop = expr_tree_cons (NULL_TREE, tbase_init,
+		    expr_tree_cons (NULL_TREE, loop, NULL_TREE));
   loop = build_compound_expr (loop);
 
  no_destructor:
@@ -2855,8 +2855,8 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 
   if (loop && deallocate_expr != integer_zero_node)
     {
-      body = tree_cons (NULL_TREE, loop,
-			tree_cons (NULL_TREE, deallocate_expr, NULL_TREE));
+      body = expr_tree_cons (NULL_TREE, loop,
+			expr_tree_cons (NULL_TREE, deallocate_expr, NULL_TREE));
       body = build_compound_expr (body);
     }
   else
@@ -3158,7 +3158,7 @@ build_x_delete (type, addr, which_delete, virtual_size)
     rval = build_opfncall (code, LOOKUP_NORMAL, addr, virtual_size, NULL_TREE);
   else
     rval = build_builtin_call (void_type_node, use_vec_delete ? BIVD : BID,
-			       build_tree_list (NULL_TREE, addr));
+			       build_expr_list (NULL_TREE, addr));
   return rval;
 }
 
@@ -3209,7 +3209,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	{
 	  /* Call the builtin operator delete.  */
 	  return build_builtin_call (void_type_node, BID,
-				     build_tree_list (NULL_TREE, addr));
+				     build_expr_list (NULL_TREE, addr));
 	}
       if (TREE_SIDE_EFFECTS (addr))
 	addr = save_expr (addr);
@@ -3267,7 +3267,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
       /* Call the builtin operator delete.  */
       return build_builtin_call (void_type_node, BID,
-				 build_tree_list (NULL_TREE, addr));
+				 build_expr_list (NULL_TREE, addr));
     }
 
   /* Below, we will reverse the order in which these calls are made.
@@ -3284,7 +3284,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  tree cond = fold (build (BIT_AND_EXPR, integer_type_node,
 				   auto_delete, integer_one_node));
 	  tree call = build_builtin_call
-	    (void_type_node, BID, build_tree_list (NULL_TREE, addr));
+	    (void_type_node, BID, build_expr_list (NULL_TREE, addr));
 
 	  cond = fold (build (COND_EXPR, void_type_node, cond,
 			      call, void_zero_node));
@@ -3298,7 +3298,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	passed_auto_delete = auto_delete;
 
       expr = build_method_call
-	(ref, dtor_identifier, build_tree_list (NULL_TREE, passed_auto_delete),
+	(ref, dtor_identifier, build_expr_list (NULL_TREE, passed_auto_delete),
 	 NULL_TREE, flags);
 
       if (do_delete)
@@ -3337,14 +3337,14 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  cond = build (COND_EXPR, void_type_node,
 			build (BIT_AND_EXPR, integer_type_node, auto_delete, integer_one_node),
 			build_builtin_call (void_type_node, BID,
-					    build_tree_list (NULL_TREE, addr)),
+					    build_expr_list (NULL_TREE, addr)),
 			void_zero_node);
 	}
       else
 	cond = NULL_TREE;
 
       if (cond)
-	exprstmt = build_tree_list (NULL_TREE, cond);
+	exprstmt = build_expr_list (NULL_TREE, cond);
 
       if (base_binfo
 	  && ! TREE_VIA_VIRTUAL (base_binfo)
@@ -3359,8 +3359,8 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
 	  expr = build_scoped_method_call
 	    (ref, base_binfo, dtor_identifier,
-	     build_tree_list (NULL_TREE, this_auto_delete));
-	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
+	     build_expr_list (NULL_TREE, this_auto_delete));
+	  exprstmt = expr_tree_cons (NULL_TREE, expr, exprstmt);
 	}
 
       /* Take care of the remaining baseclasses.  */
@@ -3373,9 +3373,9 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
 	  expr = build_scoped_method_call
 	    (ref, base_binfo, dtor_identifier,
-	     build_tree_list (NULL_TREE, integer_zero_node));
+	     build_expr_list (NULL_TREE, integer_zero_node));
 
-	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
+	  exprstmt = expr_tree_cons (NULL_TREE, expr, exprstmt);
 	}
 
       for (member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
@@ -3387,7 +3387,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	      tree this_member = build_component_ref (ref, DECL_NAME (member), NULL_TREE, 0);
 	      tree this_type = TREE_TYPE (member);
 	      expr = build_delete (this_type, this_member, integer_two_node, flags, 0);
-	      exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
+	      exprstmt = expr_tree_cons (NULL_TREE, expr, exprstmt);
 	    }
 	}
 
@@ -3414,7 +3414,7 @@ build_vbase_delete (type, decl)
     {
       tree this_addr = convert_force (build_pointer_type (BINFO_TYPE (vbases)),
 				      addr, 0);
-      result = tree_cons (NULL_TREE,
+      result = expr_tree_cons (NULL_TREE,
 			  build_delete (TREE_TYPE (this_addr), this_addr,
 					integer_zero_node,
 					LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0),

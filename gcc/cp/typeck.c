@@ -2417,7 +2417,7 @@ build_x_function_call (function, params, decl)
       decl_addr = build_unary_op (ADDR_EXPR, decl, 0);
       function = get_member_function_from_ptrfunc (&decl_addr,
 						   TREE_OPERAND (function, 1));
-      params = tree_cons (NULL_TREE, decl_addr, params);
+      params = expr_tree_cons (NULL_TREE, decl_addr, params);
       return build_function_call (function, params);
     }
 
@@ -2467,7 +2467,7 @@ build_x_function_call (function, params, decl)
 	}
       else
 	decl = build_c_cast (ctypeptr, decl);
-      params = tree_cons (NULL_TREE, decl, params);
+      params = expr_tree_cons (NULL_TREE, decl, params);
     }
 
   return build_function_call (function, params);
@@ -2870,7 +2870,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	  if (parmval == error_mark_node)
 	    return error_mark_node;
 
-	  result = tree_cons (NULL_TREE, parmval, result);
+	  result = expr_tree_cons (NULL_TREE, parmval, result);
 	}
       else
 	{
@@ -2881,17 +2881,17 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	      && (TYPE_PRECISION (TREE_TYPE (val))
 		  < TYPE_PRECISION (double_type_node)))
 	    /* Convert `float' to `double'.  */
-	    result = tree_cons (NULL_TREE, cp_convert (double_type_node, val), result);
+	    result = expr_tree_cons (NULL_TREE, cp_convert (double_type_node, val), result);
 	  else if (TYPE_LANG_SPECIFIC (TREE_TYPE (val))
 		   && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (val)))
 	    {
 	      cp_warning ("cannot pass objects of type `%T' through `...'",
 			  TREE_TYPE (val));
-	      result = tree_cons (NULL_TREE, val, result);
+	      result = expr_tree_cons (NULL_TREE, val, result);
 	    }
 	  else
 	    /* Convert `short' and `char' to full-size `int'.  */
-	    result = tree_cons (NULL_TREE, default_conversion (val), result);
+	    result = expr_tree_cons (NULL_TREE, default_conversion (val), result);
 	}
 
       if (typetail)
@@ -2936,7 +2936,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	      if (parmval == error_mark_node)
 		return error_mark_node;
 
-	      result = tree_cons (0, parmval, result);
+	      result = expr_tree_cons (0, parmval, result);
 	      typetail = TREE_CHAIN (typetail);
 	      /* ends with `...'.  */
 	      if (typetail == NULL_TREE)
@@ -5146,7 +5146,7 @@ build_x_compound_expr (list)
   result = build_opfncall (COMPOUND_EXPR, LOOKUP_NORMAL,
 			   TREE_VALUE (list), TREE_VALUE (rest), NULL_TREE);
   if (result)
-    return build_x_compound_expr (tree_cons (NULL_TREE, result, TREE_CHAIN (rest)));
+    return build_x_compound_expr (expr_tree_cons (NULL_TREE, result, TREE_CHAIN (rest)));
 
   if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)))
     {
@@ -5163,8 +5163,8 @@ build_x_compound_expr (list)
     warn_if_unused_value (TREE_VALUE(list));
 #endif
 
-  return build_compound_expr (tree_cons (NULL_TREE, TREE_VALUE (list),
-					 build_tree_list (NULL_TREE, build_x_compound_expr (rest))));
+  return build_compound_expr (expr_tree_cons (NULL_TREE, TREE_VALUE (list),
+					 build_expr_list (NULL_TREE, build_x_compound_expr (rest))));
 }
 
 /* Given a list of expressions, return a compound expression
@@ -5248,7 +5248,7 @@ build_static_cast (type, expr)
   if (IS_AGGR_TYPE (type))
     return build_cplus_new
       (type, (build_method_call
-	      (NULL_TREE, ctor_identifier, build_tree_list (NULL_TREE, expr),
+	      (NULL_TREE, ctor_identifier, build_expr_list (NULL_TREE, expr),
 	       TYPE_BINFO (type), LOOKUP_NORMAL)));
 
   expr = decay_conversion (expr);
@@ -5795,7 +5795,7 @@ build_modify_expr (lhs, modifycode, rhs)
       else
 	{
 	  result = build_method_call (lhs, ctor_identifier,
-				      build_tree_list (NULL_TREE, rhs),
+				      build_expr_list (NULL_TREE, rhs),
 				      TYPE_BINFO (lhstype), LOOKUP_NORMAL);
 	  if (result == NULL_TREE)
 	    return error_mark_node;
@@ -6093,7 +6093,7 @@ build_modify_expr (lhs, modifycode, rhs)
       if (TREE_SIDE_EFFECTS (lhs))
 	cond = build_compound_expr (tree_cons
 				    (NULL_TREE, lhs,
-				     build_tree_list (NULL_TREE, cond)));
+				     build_expr_list (NULL_TREE, cond)));
 
       /* Cannot have two identical lhs on this one tree (result) as preexpand
 	 calls will rip them out and fill in RTL for them, but when the
@@ -6257,18 +6257,18 @@ build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
   if (pfn)
     {
       u = build_nt (CONSTRUCTOR, NULL_TREE,
-		    tree_cons (pfn_identifier, pfn, NULL_TREE));
+		    expr_tree_cons (pfn_identifier, pfn, NULL_TREE));
     }
   else
     {
       u = build_nt (CONSTRUCTOR, NULL_TREE,
-		    tree_cons (delta2_identifier, delta2, NULL_TREE));
+		    expr_tree_cons (delta2_identifier, delta2, NULL_TREE));
     }
 
   u = build_nt (CONSTRUCTOR, NULL_TREE,
-		tree_cons (NULL_TREE, delta,
-			   tree_cons (NULL_TREE, idx,
-				      tree_cons (NULL_TREE, u, NULL_TREE))));
+		expr_tree_cons (NULL_TREE, delta,
+			   expr_tree_cons (NULL_TREE, idx,
+				      expr_tree_cons (NULL_TREE, u, NULL_TREE))));
 
   return digest_init (type, u, (tree*)0);
 #else
@@ -6287,14 +6287,14 @@ build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
     {
       allconstant = TREE_CONSTANT (pfn);
       allsimple = !! initializer_constant_valid_p (pfn, TREE_TYPE (pfn));
-      u = tree_cons (pfn_field, pfn, NULL_TREE);
+      u = expr_tree_cons (pfn_field, pfn, NULL_TREE);
     }
   else
     {
       delta2 = convert_and_check (delta_type_node, delta2);
       allconstant = TREE_CONSTANT (delta2);
       allsimple = !! initializer_constant_valid_p (delta2, TREE_TYPE (delta2));
-      u = tree_cons (delta2_field, delta2, NULL_TREE);
+      u = expr_tree_cons (delta2_field, delta2, NULL_TREE);
     }
 
   delta = convert_and_check (delta_type_node, delta);
@@ -6306,9 +6306,9 @@ build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
       && initializer_constant_valid_p (idx, TREE_TYPE (idx));
 
   u = build (CONSTRUCTOR, subtype, NULL_TREE, u);
-  u = tree_cons (delta_field, delta,
-		 tree_cons (idx_field, idx,
-			    tree_cons (pfn_or_delta2_field, u, NULL_TREE)));
+  u = expr_tree_cons (delta_field, delta,
+		 expr_tree_cons (idx_field, idx,
+			    expr_tree_cons (pfn_or_delta2_field, u, NULL_TREE)));
   u = build (CONSTRUCTOR, type, NULL_TREE, u);
   TREE_CONSTANT (u) = allconstant;
   TREE_STATIC (u) = allconstant && allsimple;
@@ -7036,7 +7036,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 	  if (TYPE_HAS_INIT_REF (type))
 	    {
 	      tree init = build_method_call (exp, ctor_identifier,
-					     build_tree_list (NULL_TREE, rhs),
+					     build_expr_list (NULL_TREE, rhs),
 					     TYPE_BINFO (type), LOOKUP_NORMAL);
 
 	      if (init == error_mark_node)

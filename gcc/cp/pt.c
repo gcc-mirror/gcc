@@ -380,7 +380,7 @@ determine_explicit_specialization (template_id, type, targs_out,
       if (list_length (TREE_OPERAND (template_id, 1)) > DECL_NTPARMS (fn))
 	continue;
 
-      targs = make_tree_vec (DECL_NTPARMS (fn));
+      targs = make_scratch_vec (DECL_NTPARMS (fn));
 
       /* We allow incomplete unification here, because we are going to
 	 check all the functions. */
@@ -417,7 +417,7 @@ determine_explicit_specialization (template_id, type, targs_out,
 		}
 	    }
 
-	  matching_fns = tree_cons (fn, targs, matching_fns);
+	  matching_fns = scratch_tree_cons (fn, targs, matching_fns);
 	}
     }
 
@@ -3438,6 +3438,7 @@ instantiate_template (tmpl, targ_ptr)
 	}
       TREE_VEC_ELT (targ_ptr, i) = copy_to_permanent (t);
     }
+  targ_ptr = copy_to_permanent (targ_ptr);
 
   if (DECL_TEMPLATE_INFO (tmpl) && DECL_TI_ARGS (tmpl))
     targ_ptr = add_to_template_args (DECL_TI_ARGS (tmpl), targ_ptr);
@@ -3491,10 +3492,10 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type, strict)
     {
       /* This is a template conversion operator.  Use the return types
          as well as the argument types.  */
-      fn_arg_types = tree_cons (NULL_TREE, 
+      fn_arg_types = scratch_tree_cons (NULL_TREE, 
 				TREE_TYPE (TREE_TYPE (fn)),
 				fn_arg_types);
-      decl_arg_types = tree_cons (NULL_TREE,
+      decl_arg_types = scratch_tree_cons (NULL_TREE,
 				  return_type,
 				  decl_arg_types);
     }
@@ -3653,7 +3654,7 @@ type_unification_real (tparms, targs, parms, args, nsubsts, subr,
 	      nsubsts = 0;
 	      ntparms = DECL_NTPARMS (arg);
 	      targs = (tree *) alloca (sizeof (tree) * ntparms);
-	      parm = tree_cons (NULL_TREE, parm, NULL_TREE);
+	      parm = expr_tree_cons (NULL_TREE, parm, NULL_TREE);
 	      return 
 		type_unification (DECL_INNERMOST_TEMPLATE_PARMS (arg), 
 				  targs,
@@ -4029,7 +4030,7 @@ get_bindings (fn, decl)
      tree fn, decl;
 {
   int ntparms = DECL_NTPARMS (fn);
-  tree targs = make_tree_vec (ntparms);
+  tree targs = make_scratch_vec (ntparms);
   int i;
 
   i = fn_type_unification (fn, NULL_TREE, targs, 

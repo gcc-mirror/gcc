@@ -1,8 +1,15 @@
+Tue Oct 14 11:46:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (scratchalloc, build_scratch_list, make_scratch_vec,
+	scratch_tree_cons): Define as macros for now.
+	* call.c, class.c, cvt.c, decl.c, decl2.c, except.c, expr.c, init.c, 
+	lex.c, method.c, parse.y, pt.c, rtti.c, search.c, tree.c, typeck.c,
+	typeck2.c: Use them and the expression_obstack variants.
+
 Mon Oct 13 17:41:26 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
- 	* decl.c (store_return_init): Allow classes with explicit ctors to
-	be used with the named return values extension.
-
+	* decl.c (store_return_init): Allow classes with explicit ctors to
+ 	be used with the named return values extension.
 
 Fri Oct 10 12:21:11 1997  Jason Merrill  <jason@yorick.cygnus.com>
 

@@ -112,7 +112,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	       parameter value.  */
 	    mark_addressable (slot);
 	    if (TREE_PERMANENT (args))
-	      args = tree_cons (0, build1 (ADDR_EXPR, type, slot),
+	      args = expr_tree_cons (0, build1 (ADDR_EXPR, type, slot),
 				TREE_CHAIN (args));
 	    else
 	      TREE_VALUE (args) = build1 (ADDR_EXPR, type, slot);
