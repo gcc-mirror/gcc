@@ -1,3 +1,7 @@
+2000-11-29  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.f-torture/execute/20001111.x: Test fixed - remove XFAIL.
+
 2000-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/string-opt-5.c: Add some strcmp and strncpy
