@@ -1,5 +1,6 @@
 /* Java(TM) language-specific utility routines.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -340,7 +341,7 @@ lang_decode_option (argc, argv)
       dependency_tracking |= DEPEND_ENABLE;
       return 1;
     }
-  else if (strcmp (p, "-MA") == 0)
+  else if (strcmp (p, "-MP") == 0)
     {
       jcf_dependency_print_dummies ();
       return 1;

@@ -73,8 +73,7 @@ munge (filename)
 	  break;
 
 	case '$':
-	  /* '$' is quoted by doubling it. This can mishandle things
-	     like "$(" but there's no easy fix.  */
+	  /* '$' is quoted by doubling it.  */
 	  len++;
 	  break;
 	}
@@ -172,13 +171,14 @@ deps_free (d)
   free (d);
 }
 
+/* Adds a target T.  We make a copy, so it need not be a permanent
+   string.  QUOTE is true if the string should be quoted.  */
 void
-deps_add_target (d, t)
+deps_add_target (d, t, quote)
      struct deps *d;
      const char *t;
+     int quote;
 {
-  t = munge (t);  /* Also makes permanent copy.  */
-
   if (d->ntargets == d->targets_size)
     {
       d->targets_size *= 2;
@@ -186,11 +186,17 @@ deps_add_target (d, t)
 			     d->targets_size * sizeof (const char *));
     }
 
+  if (quote)
+    t = munge (t);  /* Also makes permanent copy.  */
+  else
+    t = xstrdup (t);
+
   d->targetv[d->ntargets++] = t;
 }
 
 /* Sets the default target if none has been given already.  An empty
-   string as the default target in interpreted as stdin.  */
+   string as the default target in interpreted as stdin.  The string
+   is quoted for MAKE.  */
 void
 deps_add_default_target (d, tgt)
      struct deps *d;
@@ -203,7 +209,7 @@ deps_add_default_target (d, tgt)
     return;
 
   if (tgt[0] == '\0')
-    deps_add_target (d, "-");
+    deps_add_target (d, "-", 1);
   else
     {
       tgt = base_name (tgt);
@@ -220,7 +226,7 @@ deps_add_default_target (d, tgt)
 	strcpy (suffix, OBJECT_SUFFIX);
       else
 	strcat (o, OBJECT_SUFFIX);
-      deps_add_target (d, o);
+      deps_add_target (d, o, 1);
     }
 }
 
@@ -293,7 +299,7 @@ deps_write (d, fp, colmax)
 }
   
 void
-deps_dummy_targets (d, fp)
+deps_phony_targets (d, fp)
      const struct deps *d;
      FILE *fp;
 {
@@ -301,6 +307,7 @@ deps_dummy_targets (d, fp)
 
   for (i = 1; i < d->ndeps; i++)
     {
+      putc ('\n', fp);
       fputs (d->depv[i], fp);
       putc (':', fp);
       putc ('\n', fp);

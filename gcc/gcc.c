@@ -584,7 +584,7 @@ static const char *cpp_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\
  %{std*} %{nostdinc*}\
  %{C} %{v} %{I*} %{P} %{$} %I\
- %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} %{MT}\
+ %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} %{MP} %{MT}\
  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
  %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\

@@ -1,3 +1,10 @@
+2001-01-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* lang.c (lang_decode_option): Change -MA to -MP.
+	* jcf-depend.c (jcf_dependency_add_target, jcf_dependency_set_target):
+	Update to new prototype; do quote targets.
+	(jcf_dependency_write): Update.
+
 2000-12-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Shorten primitive array allocation path:

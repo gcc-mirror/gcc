@@ -3476,14 +3476,38 @@ files into a single dependency file suitable for using with the
 Like @samp{-MD} except mention only user header files, not system
 header files.
 
+@item -MP
+@findex -MP
+This option instructs CPP to add a phony target for each dependency
+other than the main file, causing each to depend on nothing.  These
+dummy rules work around errors MAKE gives if you remove header files
+without updating the Makefile to match.
+
+This is typical output:-
+
+@smallexample
+/tmp/test.o: /tmp/test.c /tmp/test.h
+
+/tmp/test.h:
+@end smallexample
+
 @item -MT @var{target}
 @findex -MT
 By default CPP uses the base file name and appends the object suffix,
 normally ``.o'', to it to obtain the name of the target for dependency
-generation.  With @samp{-MT} you can specify one or more of your own
-targets; doing so overrides the default.
+generation.  With @samp{-MT} you can specify a target yourself,
+overriding the default one.
 
-The targets are output in the order they appear on the command line.
+If you want multiple targets, you can specify them as a single argument
+to @samp{-MT}, or use multiple @samp{-MT} options.
+
+The targets you specify are output in the order they appear on the
+command line, and, unlike the default target, are not quoted for MAKE.
+This allows you to do things like, for example,
+
+@smallexample
+-MT '$(objpfx)foo.o $(objpfx)foo.os $(objpfx)foo.op'
+@end smallexample
 
 @item -H
 @findex -H
