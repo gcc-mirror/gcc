@@ -980,7 +980,10 @@ cfg_layout_duplicate_bb (bb, e)
   new_bb->flags = bb->flags;
   for (s = bb->succ; s; s = s->succ_next)
     {
-      n = make_edge (new_bb, s->dest, s->flags);
+      /* Since we are creating edges from a new block to successors
+	 of another block (which therefore are known to be disjoint), there
+	 is no need to actually check for duplicated edges.  */
+      n = unchecked_make_edge (new_bb, s->dest, s->flags);
       n->probability = s->probability;
       if (new_count)
 	/* Take care for overflows!  */
