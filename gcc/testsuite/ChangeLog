@@ -1,3 +1,7 @@
+2000-12-26  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.c-torture/compile/20001226-1.c: New test.
+
 2000-12-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/compile/20001222-1.c: New test.
