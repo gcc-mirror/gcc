@@ -431,7 +431,12 @@ get_secondary_mem (x, mode)
   if (! mem_valid)
     find_reloads_address (mode, NULL_PTR, XEXP (loc, 0), &XEXP (loc, 0), x, 0);
 
-  secondary_memlocs_elim[(int) mode] = loc;
+  /* If the address was not valid to begin with, we can not save it, because
+     there is no guarantee that the reloads needed to make it valid will
+     occur before every use of this address.  */
+
+  else
+    secondary_memlocs_elim[(int) mode] = loc;
 
   return loc;
 }
