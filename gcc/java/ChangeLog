@@ -1,5 +1,10 @@
 2002-03-12  Tom Tromey  <tromey@redhat.com>
 
+	* jcf-parse.c (get_constant) [CONSTANT_String]: String values are
+	UTF-8, not UCS-2.  Fixes PR java/5923.
+
+2002-03-12  Tom Tromey  <tromey@redhat.com>
+
 	* parse.y (qualify_ambiguous_name): Handle case where QUAL_WFL is
 	a call_expr wrapped in a convert.  Fixes PR java/5848.
 
