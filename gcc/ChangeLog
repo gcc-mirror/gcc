@@ -1,3 +1,9 @@
+Wed Dec  9 06:25:12 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* protoize.c: Remove extraneous #endif.
+	Remove redundant declarations and includes.
+	(fatal): New function, from gen*.c.
+
 Wed Dec  9 06:16:26 1998  Craig Burley  (burley@gnu.ai.mit.edu)
 
 	* fold-const.c (multiple_of_p): New function.
