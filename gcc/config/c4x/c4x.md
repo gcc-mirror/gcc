@@ -4647,7 +4647,7 @@
               (use (reg:QI 26))
               (clobber (reg:CC_NOOV 21))])]
   ""
-  "if (1)
+  "if (0)
      {
         /* The C30 maximum iteration count for DB is 2^24.  */
 	if (!TARGET_DB)
