@@ -1,3 +1,15 @@
+Fri Mar 30 00:21:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_setcc): Support 64bit.
+	(ix86_expand_int_movcc): Likewise.
+	* i386.md (movdicc_rex64, x86_movsicc_0_m1_rex64, movdicc_c_rex64):
+	New patterns.
+
+	* i386.md (allocate_stack_worker): Turn to expander.
+	(allocate_stack_worker_1, allocate_stack_worker_rex64): New insns.
+
+	* i386.c (print_reg): Do not print x86_64 style regs on IA-32
+
 2001-03-29  Richard Henderson  <rth@redhat.com>
 
 	* libgcc2.c [L__main]: Include unwind-dw2-fde.h instead of frame.h.

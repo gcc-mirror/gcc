@@ -3798,6 +3798,8 @@ print_reg (x, code, file)
      from the normal registers.  */
   if (REX_INT_REG_P (x))
     {
+      if (!TARGET_64BIT)
+	abort ();
       switch (code)
 	{
 	  case 5:
@@ -3837,7 +3839,7 @@ print_reg (x, code, file)
     case 4:
     case 12:
       if (! ANY_FP_REG_P (x))
-	putc (code == 8 ? 'r' : 'e', file);
+	putc (code == 8 && TARGET_64BIT ? 'r' : 'e', file);
       /* FALLTHRU */
     case 16:
     case 2:
@@ -6112,7 +6114,8 @@ ix86_expand_setcc (code, dest)
   rtx second_test, bypass_test;
   int type;
 
-  if (GET_MODE (ix86_compare_op0) == DImode)
+  if (GET_MODE (ix86_compare_op0) == DImode
+      && !TARGET_64BIT)
     return 0; /* FAIL */
 
   /* Three modes of generation:
@@ -6229,6 +6232,7 @@ ix86_expand_int_movcc (operands)
      HImode insns, we'd be swallowed in word prefix ops.  */
 
   if (GET_MODE (operands[0]) != HImode
+      && GET_MODE (operands[0]) != DImode
       && GET_CODE (operands[2]) == CONST_INT
       && GET_CODE (operands[3]) == CONST_INT)
     {
@@ -6362,28 +6366,46 @@ ix86_expand_int_movcc (operands)
 				 ix86_compare_op1, VOIDmode, 0, 1);
 
 	  nops = 0;
+	  /* On x86_64 the lea instruction operates on Pmode, so we need to get arithmetics
+	     done in proper mode to match.  */
 	  if (diff == 1)
-	      tmp = out;
+	    {
+	      if (Pmode != SImode)
+		tmp = gen_lowpart (Pmode, out);
+	      else
+		tmp = out;
+	    }
 	  else
 	    {
-	      tmp = gen_rtx_MULT (SImode, out, GEN_INT (diff & ~1));
+	      rtx out1;
+	      if (Pmode != SImode)
+	        out1 = gen_lowpart (Pmode, out);
+	      else
+		out1 = out;
+	      tmp = gen_rtx_MULT (Pmode, out1, GEN_INT (diff & ~1));
 	      nops++;
 	      if (diff & 1)
 		{
-		  tmp = gen_rtx_PLUS (SImode, tmp, out);
+		  tmp = gen_rtx_PLUS (Pmode, tmp, out1);
 		  nops++;
 		}
 	    }
 	  if (cf != 0)
 	    {
-	      tmp = gen_rtx_PLUS (SImode, tmp, GEN_INT (cf));
+	      tmp = gen_rtx_PLUS (Pmode, tmp, GEN_INT (cf));
 	      nops++;
 	    }
-	  if (tmp != out)
+	  if (tmp != out
+	      && (GET_CODE (tmp) != SUBREG || SUBREG_REG (tmp) != out))
 	    {
-	      if (nops == 0)
-		emit_move_insn (out, tmp);
-	      else if (nops == 1)
+	      if (Pmode != SImode)
+	        tmp = gen_rtx_SUBREG (SImode, tmp, 0);
+
+	      /* ??? We should to take care for outputing non-lea arithmetics
+	         for Pmode != SImode case too, but it is quite tricky and not
+	         too important, since all TARGET_64BIT machines support real
+	         conditional moves.  */
+	      if (nops == 1 && Pmode == SImode)
 		{
 		  rtx clob;
 
