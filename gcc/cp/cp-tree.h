@@ -1124,10 +1124,6 @@ extern int flag_access_control;
 
 extern int flag_check_new;
 
-/* Nonnull if we want to dump class heirarchies. */
-
-extern const char *flag_dump_class_layout;
-
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
