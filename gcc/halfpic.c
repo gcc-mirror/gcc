@@ -216,10 +216,9 @@ half_pic_encode (decl)
 #ifdef HALF_PIC_DEBUG
   if (HALF_PIC_DEBUG)
     {
-      if (HALF_PIC_DEBUG)
-	fprintf (stderr, "\n========== Half_pic_encode %.*s\n",
-		 IDENTIFIER_LENGTH (asm_name),
-		 IDENTIFIER_POINTER (asm_name));
+      fprintf (stderr, "\n========== Half_pic_encode %.*s\n",
+	       IDENTIFIER_LENGTH (asm_name),
+	       IDENTIFIER_POINTER (asm_name));
       debug_tree (decl);
     }
 #endif
