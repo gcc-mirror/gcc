@@ -60,7 +60,7 @@ case $os in
 	-dec* | -mips* | -sequent* | -encore* | -pc532* | -sgi* | -sony* | \
 	-att* | -7300* | -3300* | -delta* | -motorola* | -sun[234]* | \
 	-unicom* | -ibm* | -next* | -hp | -isi* | -apollo | -altos* | \
-	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -osf* | \
+	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | \
 	-c[123]* | -convex* | -sun | -crds | -omron* | -dg | -ultra | -tti* | \
 	-harris | -dolphin)
 		os=
@@ -459,10 +459,10 @@ case $os in
 	      | -nindy* | -vxworks* | -ebmon* | -hds* | -m88kbcs*)
 		;;
 	-osfrose*)
-		os=-osf
+		os=-osfrose
 		;;
 	-osf*)
-		os=-bsd
+		os=-osf
 		;;
 	-dynix*)
 		os=-bsd
