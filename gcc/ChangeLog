@@ -1,3 +1,8 @@
+2001-08-17  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/invoke.texi (Optimize Options): The default for 
+	-finline-limit is 600.
+
 2001-08-16  Joel Sherrill <joel@OARcorp.com>
 
 	* config/rs6000/rtems.h: Set STARTFILE_DEFAULT_SPEC and

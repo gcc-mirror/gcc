@@ -3281,7 +3281,8 @@ allows the control of this limit for functions that are explicitly marked as
 inline (ie marked with the inline keyword or defined within the class
 definition in c++).  @var{n} is the size of functions that can be inlined in
 number of pseudo instructions (not counting parameter handling).  The default
-value of @var{n} is 10000.  Increasing this value can result in more inlined code at
+value of @var{n} is 600.
+Increasing this value can result in more inlined code at
 the cost of compilation time and memory consumption.  Decreasing usually makes
 the compilation faster and less code will be inlined (which presumably
 means slower programs).  This option is particularly useful for programs that
