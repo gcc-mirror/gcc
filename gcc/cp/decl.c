@@ -224,7 +224,7 @@ tree sizet_ftype_string;
 tree int_ftype_cptr_cptr_sizet;
 
 /* C++ extensions */
-tree memptr_type, vtable_entry_type;
+tree vtable_entry_type;
 tree delta_type_node;
 tree __t_desc_type_node, __i_desc_type_node, __m_desc_type_node;
 tree __t_desc_array_type, __i_desc_array_type, __m_desc_array_type;
@@ -530,9 +530,6 @@ struct binding_level
 
     /* Same, for IDENTIFIER_TYPE_VALUE.  */
     tree type_shadowed;
-
-    /* Same, for IDENTIFIER_GLOBAL_VALUE for overloaded functions.  */
-    tree overloads_shadowed;
 
     /* For each level (except not the global one),
        a chain of BLOCK nodes for all the levels
@@ -1025,9 +1022,6 @@ poplevel (keep, reverse, functionbody)
   for (link = current_binding_level->type_shadowed;
        link; link = TREE_CHAIN (link))
     IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
-  for (link = current_binding_level->overloads_shadowed;
-       link; link = TREE_CHAIN (link))
-    IDENTIFIER_GLOBAL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
 
   /* If the level being exited is the top level of a function,
      check over all the labels.  */
@@ -1232,9 +1226,11 @@ pushlevel_class ()
   while (current_binding_level->parm_flag == 2);
 }
 
-/* ...and a poplevel for class declarations.  */
+/* ...and a poplevel for class declarations.  FORCE is used to force
+   clearing out of CLASS_VALUEs after a class definition.  */
 tree
-poplevel_class ()
+poplevel_class (force)
+     int force;
 {
   register struct binding_level *level = class_binding_level;
   tree block = NULL_TREE;
@@ -1250,7 +1246,7 @@ poplevel_class ()
      shouldn't even be used when current_class_type isn't set, and second,
      if we don't touch it here, we're able to use the caching effect if the
      next time we're entering a class scope, it is the same class.  */
-  if (current_class_depth != 1)
+  if (current_class_depth != 1 || force)
     for (shadowed = level->class_shadowed;
 	 shadowed;
 	 shadowed = TREE_CHAIN (shadowed))
@@ -1779,10 +1775,7 @@ pushtag (name, type, globalize)
 	  if (b->parm_flag != 2
 	      || TYPE_SIZE (current_class_type) != NULL_TREE)
 	    {
-	      if (current_lang_name == lang_name_cplusplus)
-		d = lookup_nested_type (type, cdecl);
-	      else
-		d = NULL_TREE;
+	      d = lookup_nested_type (type, cdecl);
 
 	      if (d == NULL_TREE)
 		{
@@ -1854,7 +1847,7 @@ pushtag (name, type, globalize)
 	    }
 	  TYPE_NAME (type) = d;
 
-	  if (context == NULL_TREE || current_lang_name != lang_name_cplusplus)
+	  if (context == NULL_TREE)
 	    /* Non-nested class.  */
 	    DECL_NESTED_TYPENAME (d) = name;
 	  else if (context && TREE_CODE (context) == FUNCTION_DECL)
@@ -1980,10 +1973,10 @@ decls_match (newdecl, olddecl)
 	 is METHOD_TYPE.  Change that to FUNCTION_TYPE, and
 	 proceed.  */
       if (TREE_CODE (f1) == METHOD_TYPE && DECL_STATIC_FUNCTION_P (olddecl))
-	revert_static_member_fn (&f1, &newdecl, &p1);
+	revert_static_member_fn (&newdecl, &f1, &p1);
       else if (TREE_CODE (f2) == METHOD_TYPE
 	       && DECL_STATIC_FUNCTION_P (newdecl))
-	revert_static_member_fn (&f2, &olddecl, &p2);
+	revert_static_member_fn (&olddecl, &f2, &p2);
 
       /* Here we must take care of the case where new default
 	 parameters are specified.  Also, warn if an old
@@ -2154,29 +2147,29 @@ duplicate_decls (newdecl, olddecl)
   else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	   && (DECL_BUILT_IN (olddecl) || DECL_BUILT_IN_NONANSI (olddecl))
 	   && DECL_ASSEMBLER_NAME (newdecl) == DECL_ASSEMBLER_NAME (olddecl))
+    /* Redeclaring a builtin as another function is handled in
+       push_overloaded_decl.  */
     {
       /* If you declare a built-in or predefined function name as static,
 	 the old definition is overridden,
 	 but optionally warn this was a bad choice of name.  */
       if (! TREE_PUBLIC (newdecl))
-	{
-	  if (warn_shadow)
-	    cp_warning ("shadowing %s function `%#D'",
-			DECL_BUILT_IN (olddecl) ? "built-in" : "library",
-			newdecl);
-	  /* Discard the old built-in function.  */
-	}
-      else if (! types_match)
+	if (warn_shadow)
+	  cp_warning ("shadowing %s function `%#D'",
+		      DECL_BUILT_IN (olddecl) ? "built-in" : "library",
+		      newdecl);
+      /* Likewise, if the built-in is not ansi, then programs can override
+         it even globally without an error.  */
+      else if (! DECL_BUILT_IN (olddecl))
+	cp_warning ("library function `%#D' redeclared as non-function `%#D'",
+		    olddecl, newdecl);
+      else
 	{
 	  cp_warning ("declaration of `%#D'", newdecl);
 	  cp_warning ("conflicts with built-in declaration `%#D'",
 		      olddecl);
 	}
-      if (TREE_CODE (newdecl) != FUNCTION_DECL)
-	return 0;
-
-      if (! types_match)
-	TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
+      return 0;
     }
   else if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
     {
@@ -2211,8 +2204,15 @@ duplicate_decls (newdecl, olddecl)
 			newdecl);
 	      cp_error_at ("previous declaration `%#D' here", olddecl);
 	    }
-	  
-	  return 0;
+
+	  if (compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
+			 TYPE_ARG_TYPES (TREE_TYPE (olddecl)), 2))
+	    {
+	      cp_error ("new declaration `%#D'", newdecl);
+	      cp_error_at ("ambiguates old declaration `%#D'", olddecl);
+	    }
+	  else
+	    return 0;
 	}
 
       /* Already complained about this, so don't do so again.  */
@@ -2333,7 +2333,7 @@ duplicate_decls (newdecl, olddecl)
   /* Optionally warn about more than one declaration for the same name,
      but don't warn about a function declaration followed by a definition.  */
   if (warn_redundant_decls
-      && DECL_SOURCE_LINE (olddecl) != 0
+      && ! DECL_ARTIFICIAL (olddecl)
       && !(new_defines_function && DECL_INITIAL (olddecl) == NULL_TREE)
       /* Don't warn about extern decl followed by (tentative) definition.  */
       && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl)))
@@ -2490,6 +2490,14 @@ duplicate_decls (newdecl, olddecl)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
+      if (! types_match)
+	{
+	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);
+	  DECL_ASSEMBLER_NAME (olddecl) = DECL_ASSEMBLER_NAME (newdecl);
+	  DECL_ARGUMENTS (olddecl) = DECL_ARGUMENTS (newdecl);
+	  DECL_RESULT (olddecl) = DECL_RESULT (newdecl);
+	  DECL_RTL (olddecl) = DECL_RTL (newdecl);
+	}
       if (new_defines_function)
 	/* If defining a function declared with other language
 	   linkage, use the previously declared language linkage.  */
@@ -2630,10 +2638,9 @@ pushdecl (x)
     nglobals = len;
 #endif
 
-  /* Don't change DECL_CONTEXT of virtual methods.  */
   if (x != current_function_decl
-      && (TREE_CODE (x) != FUNCTION_DECL
-	  || !DECL_VIRTUAL_P (x))
+      /* Don't change DECL_CONTEXT of virtual methods.  */
+      && (TREE_CODE (x) != FUNCTION_DECL || !DECL_VIRTUAL_P (x))
       && ! DECL_CONTEXT (x))
     DECL_CONTEXT (x) = current_function_decl;
   /* A local declaration for a function doesn't constitute nesting.  */
@@ -2660,10 +2667,7 @@ pushdecl (x)
       char *file;
       int line;
 
-      if (DECL_EXTERNAL (x))
-	t = lookup_name (name, 0);
-      else
-	t = lookup_name_current_level (name);
+      t = lookup_name_current_level (name);
       if (t == error_mark_node)
 	{
 	  /* error_mark_node is 0 for a while during initialization!  */
@@ -2956,7 +2960,7 @@ pushdecl (x)
 	  /* Maybe warn if shadowing something else.  */
 	  else if (warn_shadow && !DECL_EXTERNAL (x)
 		   /* No shadow warnings for internally generated vars.  */
-		   && DECL_SOURCE_LINE (x) != 0
+		   && ! DECL_ARTIFICIAL (x)
 		   /* No shadow warnings for vars made for inlining.  */
 		   && ! DECL_FROM_INLINE (x))
 	    {
@@ -2997,7 +3001,7 @@ pushdecl (x)
     {
       if (current_class_name)
 	{
-	  if (!DECL_NESTED_TYPENAME (x))
+	  if (!DECL_NESTED_TYPENAME (TYPE_NAME (TREE_TYPE (x))))
 	    set_nested_typename (x, current_class_name, DECL_NAME (x),
 				 TREE_TYPE (x));
 	}
@@ -3173,10 +3177,10 @@ overloaded_globals_p (list)
   return 0;
 }
 
-/* DECL is a FUNCTION_DECL which may have other definitions already in place.
-   We get around this by making IDENTIFIER_GLOBAL_VALUE (DECL_NAME (DECL))
-   point to a list of all the things that want to be referenced by that name.
-   It is then up to the users of that name to decide what to do with that
+/* DECL is a FUNCTION_DECL which may have other definitions already in
+   place.  We get around this by making the value of the identifier point
+   to a list of all the things that want to be referenced by that name.  It
+   is then up to the users of that name to decide what to do with that
    list.
 
    DECL may also be a TEMPLATE_DECL, with a FUNCTION_DECL in its DECL_RESULT
@@ -3191,80 +3195,89 @@ push_overloaded_decl (decl, forgettable)
      int forgettable;
 {
   tree orig_name = DECL_NAME (decl);
-  tree glob = IDENTIFIER_GLOBAL_VALUE (orig_name);
+  tree old;
+  int doing_global = (global_bindings_p () || ! forgettable
+		      || flag_traditional || pseudo_global_level_p ());
 
-  if (glob)
+  if (doing_global)
     {
+      old = IDENTIFIER_GLOBAL_VALUE (orig_name);
+      if (old && TREE_CODE (old) == FUNCTION_DECL
+	  && (DECL_BUILT_IN (old) || DECL_BUILT_IN_NONANSI (old)))
+	{
+	  if (! decls_match (decl, old)
+	      && (DECL_LANGUAGE (decl) == lang_c
+		  || compparms (TYPE_ARG_TYPES (TREE_TYPE (decl)),
+				TYPE_ARG_TYPES (TREE_TYPE (old)), 2)))
+	    {
+	      cp_warning ("declaration of `%#D'", decl);
+	      cp_warning ("conflicts with built-in declaration `%#D'", old);
+	    }
+	  old = NULL_TREE;
+	}
+    }
+  else
+    {
+      old = IDENTIFIER_LOCAL_VALUE (orig_name);
+      
+      if (! purpose_member (orig_name, current_binding_level->shadowed))
+	{
+	  current_binding_level->shadowed
+	    = tree_cons (orig_name, old, current_binding_level->shadowed);
+	  old = NULL_TREE;
+	}
+    }
+
+  if (old)
+    {
+#if 0
       /* We cache the value of builtin functions as ADDR_EXPRs
 	 in the name space.  Convert it to some kind of _DECL after
 	 remembering what to forget.  */
-      if (TREE_CODE (glob) == ADDR_EXPR)
-	glob = TREE_OPERAND (glob, 0);
-
-      else if (TREE_CODE (decl) == TEMPLATE_DECL)
+      if (TREE_CODE (old) == ADDR_EXPR)
+	old = TREE_OPERAND (old, 0);
+      else
+#endif
+      if (TREE_CODE (old) == VAR_DECL)
 	{
-	  tree tmp;
-
-	  for (tmp = get_first_fn (glob); tmp; tmp = DECL_CHAIN (tmp))
-	    if (decl == tmp || duplicate_decls (decl, tmp))
-	      return decl;
-	}
-      else if (TREE_CODE (glob) == VAR_DECL)
-	{
-	  cp_error_at ("previous non-function declaration `%#D'", glob);
+	  cp_error_at ("previous non-function declaration `%#D'", old);
 	  cp_error ("conflicts with function declaration `%#D'", decl);
 	  return error_mark_node;
 	}
-      else if (TREE_CODE (glob) == TYPE_DECL)
+      else if (TREE_CODE (old) == TYPE_DECL)
 	{
-	  tree t = TREE_TYPE (glob);
+	  tree t = TREE_TYPE (old);
 	  if (IS_AGGR_TYPE (t) && warn_shadow)
 	    cp_warning ("`%#D' hides constructor for `%#T'", decl, t);
 	}
-      else if (is_overloaded_fn (glob))
+      else if (is_overloaded_fn (old))
         {
           tree tmp;
 	  
-	  for (tmp = get_first_fn (glob); tmp; tmp = DECL_CHAIN (tmp))
-	    {
-	      if (decl == tmp || duplicate_decls (decl, tmp))
-		return tmp;
-	      /* Avoid doing things about built-ins, since duplicate_decls
-		 will have given warnings/errors for them.  */
-	      if (!DECL_BUILT_IN (tmp) && !DECL_BUILT_IN_NONANSI (tmp)
-		  && compparms (TYPE_ARG_TYPES (TREE_TYPE (decl)),
-				TYPE_ARG_TYPES (TREE_TYPE (tmp)), 2))
-		{
-		  cp_error ("new declaration `%#D'", decl);
-		  cp_error_at ("ambiguates old declaration `%#D'", tmp);
-		}
-	    }
+	  for (tmp = get_first_fn (old); tmp; tmp = DECL_CHAIN (tmp))
+	    if (decl == tmp || duplicate_decls (decl, tmp))
+	      return tmp;
 	}
     }
 
-  if (forgettable
-      && ! flag_traditional
-      && (glob == NULL_TREE || TREE_PERMANENT (glob) == 1)
-      && !global_bindings_p ()
-      && !pseudo_global_level_p ())
-    current_binding_level->overloads_shadowed
-      = tree_cons (orig_name, glob,
-		   current_binding_level->overloads_shadowed);
-
-  if (glob || TREE_CODE (decl) == TEMPLATE_DECL)
+  if (old || TREE_CODE (decl) == TEMPLATE_DECL)
     {
-      if (glob && is_overloaded_fn (glob))
-	DECL_CHAIN (decl) = get_first_fn (glob);
+      if (old && is_overloaded_fn (old))
+	DECL_CHAIN (decl) = get_first_fn (old);
       else
 	DECL_CHAIN (decl) = NULL_TREE;
-      glob = tree_cons (orig_name, decl, NULL_TREE);
-      TREE_TYPE (glob) = unknown_type_node;
+      old = tree_cons (orig_name, decl, NULL_TREE);
+      TREE_TYPE (old) = unknown_type_node;
     }
   else
     /* orig_name is not ambiguous.  */
-    glob = decl;
-  
-  IDENTIFIER_GLOBAL_VALUE (orig_name) = glob;
+    old = decl;
+
+  if (doing_global)
+    IDENTIFIER_GLOBAL_VALUE (orig_name) = old;
+  else
+    IDENTIFIER_LOCAL_VALUE (orig_name) = old;
+
   return decl;
 }
 
@@ -3530,7 +3543,7 @@ define_label (filename, line, name)
 			   of internal entities.  They can't be accessed,
 			   and they should be cleaned up
 			   by the time we get to the label.  */
-			&& DECL_SOURCE_LINE (new_decls) != 0
+			&& ! DECL_ARTIFICIAL (new_decls)
 			&& ((DECL_INITIAL (new_decls) != NULL_TREE
 			     && DECL_INITIAL (new_decls) != error_mark_node)
 			    || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (new_decls))))
@@ -3849,9 +3862,9 @@ lookup_nested_type (type, context)
    Otherwise we prefer non-TYPE_DECLs.  */
 
 tree
-lookup_name (name, prefer_type)
+lookup_name_real (name, prefer_type, nonclass)
      tree name;
-     int prefer_type;
+     int prefer_type, nonclass;
 {
   register tree val;
   int yylex = 0;
@@ -3879,10 +3892,29 @@ lookup_name (name, prefer_type)
 	  else if (! IS_AGGR_TYPE (got_scope))
 	    /* Someone else will give an error about this if needed. */
 	    val = NULL_TREE;
+	  else if (TYPE_BEING_DEFINED (got_scope))
+	    {
+	      val = IDENTIFIER_CLASS_VALUE (name);
+	      if (val && DECL_CONTEXT (val) != got_scope)
+		{
+		  struct binding_level *b = class_binding_level;
+		  for (val = NULL_TREE; b; b = b->level_chain)
+		    {
+		      tree t = purpose_member (name, b->class_shadowed);
+		      if (t && TREE_VALUE (t)
+			  && DECL_CONTEXT (TREE_VALUE (t)) == got_scope)
+			{
+			  val = TREE_VALUE (t);
+			  break;
+			}
+		    }
+		}
+	      if (val == NULL_TREE
+		  && CLASSTYPE_LOCAL_TYPEDECLS (got_scope))
+		val = lookup_field (got_scope, name, 0, 1);
+	    }
 	  else if (got_scope == current_class_type)
 	    val = IDENTIFIER_CLASS_VALUE (name);
-	  else if (TYPE_BEING_DEFINED (got_scope))
-	    val = lookup_nested_tag (got_scope, name);
 	  else
 	    val = lookup_field (got_scope, name, 0, 0);
 
@@ -3895,21 +3927,19 @@ lookup_name (name, prefer_type)
     val = IDENTIFIER_LOCAL_VALUE (name);
   /* In C++ class fields are between local and global scope,
      just before the global scope.  */
-  else if (current_class_type)
+  else if (current_class_type && ! nonclass)
     {
       val = IDENTIFIER_CLASS_VALUE (name);
       if (val == NULL_TREE
-	  && TYPE_SIZE (current_class_type) == NULL_TREE
+	  && TYPE_BEING_DEFINED (current_class_type)
 	  && CLASSTYPE_LOCAL_TYPEDECLS (current_class_type))
+	/* Try to find values from base classes if we are presently
+	   defining a type.  We are presently only interested in
+	   TYPE_DECLs.  */
 	{
-	  /* Try to find values from base classes
-	     if we are presently defining a type.
-	     We are presently only interested in TYPE_DECLs.  */
 	  val = lookup_field (current_class_type, name, 0, 1);
-	  if (val == error_mark_node)
-	    return val;
-	  if (val && TREE_CODE (val) != TYPE_DECL)
-	    val = NULL_TREE;
+	  if (val)
+	    pushdecl_class_level (val);
 	}
 
       /* yylex() calls this with -2, since we should never start digging for
@@ -3946,6 +3976,21 @@ lookup_name (name, prefer_type)
     }
 
   return val;
+}
+
+tree
+lookup_name_nonclass (name)
+     tree name;
+{
+  return lookup_name_real (name, 0, 1);
+}
+
+tree
+lookup_name (name, prefer_type)
+     tree name;
+     int prefer_type;
+{
+  return lookup_name_real (name, prefer_type, 0);
 }
 
 /* Similar to `lookup_name' but look only at current binding level.  */
@@ -4654,34 +4699,40 @@ init_decl_processing ()
       pushdecl (lookup_name (get_identifier ("__gc_main"), 0));
     }
 
-  /* Simplify life by making a "memptr_type".  Give its
-     fields names so that the debugger can use them.  */
-
-  memptr_type = make_lang_type (RECORD_TYPE);
-  fields[0] = build_lang_field_decl (FIELD_DECL, delta_identifier,
-				     delta_type_node);
-  fields[1] = build_lang_field_decl (FIELD_DECL, index_identifier,
-				     delta_type_node);
-  fields[2] = build_lang_field_decl (FIELD_DECL, pfn_identifier,
-				     ptr_type_node);
-  finish_builtin_type (memptr_type, VTBL_PTR_TYPE, fields, 2,
-		       double_type_node);
-
-  /* Make this part of an invisible union.  */
-  fields[3] = copy_node (fields[2]);
-  TREE_TYPE (fields[3]) = delta_type_node;
-  DECL_NAME (fields[3]) = delta2_identifier;
-  DECL_MODE (fields[3]) = TYPE_MODE (delta_type_node);
-  DECL_SIZE (fields[3]) = TYPE_SIZE (delta_type_node);
-  TREE_UNSIGNED (fields[3]) = 0;
-  TREE_CHAIN (fields[2]) = fields[3];
-  memptr_type = build_type_variant (memptr_type, 1, 0);
-  record_builtin_type (RID_MAX, VTBL_PTR_TYPE, memptr_type);
-
   if (flag_vtable_thunks)
-    vtable_entry_type = ptr_type_node;
+    {
+      /* Make sure we get a unique function type, so we can give
+	 its pointer type a name.  (This wins for gdb.) */
+      tree vfunc_type = make_node (FUNCTION_TYPE);
+      TREE_TYPE (vfunc_type) = integer_type_node;
+      TYPE_ARG_TYPES (vfunc_type) = NULL_TREE;
+      layout_type (vfunc_type);
+
+      vtable_entry_type = build_pointer_type (vfunc_type);
+    }
   else
-    vtable_entry_type = memptr_type;
+    {
+      vtable_entry_type = make_lang_type (RECORD_TYPE);
+      fields[0] = build_lang_field_decl (FIELD_DECL, delta_identifier,
+					 delta_type_node);
+      fields[1] = build_lang_field_decl (FIELD_DECL, index_identifier,
+					 delta_type_node);
+      fields[2] = build_lang_field_decl (FIELD_DECL, pfn_identifier,
+					 ptr_type_node);
+      finish_builtin_type (vtable_entry_type, VTBL_PTR_TYPE, fields, 2,
+			   double_type_node);
+
+      /* Make this part of an invisible union.  */
+      fields[3] = copy_node (fields[2]);
+      TREE_TYPE (fields[3]) = delta_type_node;
+      DECL_NAME (fields[3]) = delta2_identifier;
+      DECL_MODE (fields[3]) = TYPE_MODE (delta_type_node);
+      DECL_SIZE (fields[3]) = TYPE_SIZE (delta_type_node);
+      TREE_UNSIGNED (fields[3]) = 0;
+      TREE_CHAIN (fields[2]) = fields[3];
+      vtable_entry_type = build_type_variant (vtable_entry_type, 1, 0);
+    }
+  record_builtin_type (RID_MAX, VTBL_PTR_TYPE, vtable_entry_type);
 
   vtbl_type_node
     = build_array_type (vtable_entry_type, NULL_TREE);
@@ -6625,7 +6676,8 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
       grok_ctor_properties (ctype, decl);
       if (check == 0 && ! current_function_decl)
 	{
-	  /* FIXME: this should only need to look at IDENTIFIER_GLOBAL_VALUE.  */
+	  /* FIXME: this should only need to look at
+             IDENTIFIER_GLOBAL_VALUE.  */
 	  tmp = lookup_name (DECL_ASSEMBLER_NAME (decl), 0);
 	  if (tmp == NULL_TREE)
 	    IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl)) = decl;
@@ -9515,8 +9567,7 @@ grok_op_properties (decl, virtualp, friendp)
       /* When the compiler encounters the definition of A::operator new, it
 	 doesn't look at the class declaration to find out if it's static.  */
       if (methodp)
-	revert_static_member_fn (&TREE_TYPE (decl), &decl,
-				 &TYPE_ARG_TYPES (TREE_TYPE (decl)));
+	revert_static_member_fn (&decl, NULL, NULL);
      
       /* Take care of function decl if we had syntax errors.  */
       if (argtypes == NULL_TREE)
@@ -9531,8 +9582,7 @@ grok_op_properties (decl, virtualp, friendp)
 	   || name == ansi_opname[(int) VEC_DELETE_EXPR])
     {
       if (methodp)
-	revert_static_member_fn (&TREE_TYPE (decl), &decl,
-				 &TYPE_ARG_TYPES (TREE_TYPE (decl)));
+	revert_static_member_fn (&decl, NULL, NULL);
      
       if (argtypes == NULL_TREE)
 	TREE_TYPE (decl) =
@@ -9554,7 +9604,7 @@ grok_op_properties (decl, virtualp, friendp)
       /* An operator function must either be a non-static member function
 	 or have at least one parameter of a class, a reference to a class,
 	 an enumeration, or a reference to an enumeration.  13.4.0.6 */
-      if (! methodp)
+      if (! methodp || DECL_STATIC_FUNCTION_P (decl))
 	{
 	  if (OPERATOR_TYPENAME_P (name)
 	      || name == ansi_opname[(int) CALL_EXPR]
@@ -9565,6 +9615,9 @@ grok_op_properties (decl, virtualp, friendp)
 	  else
 	    {
 	      tree p = argtypes;
+
+	      if (DECL_STATIC_FUNCTION_P (decl))
+		cp_error ("`%D' must be either a non-static member function or a non-member function", decl);
 
 	      if (p)
 		for (; TREE_VALUE (p) != void_type_node ; p = TREE_CHAIN (p))
@@ -12119,20 +12172,30 @@ deactivate_exception_cleanups ()
 }
 
 /* Change a static member function definition into a FUNCTION_TYPE, instead
-   of the METHOD_TYPE that we create when it's originally parsed.  */
-void
-revert_static_member_fn (fn, decl, argtypes)
-     tree *fn, *decl, *argtypes;
-{
-  tree tmp, function = *fn;
+   of the METHOD_TYPE that we create when it's originally parsed.
 
-  *argtypes = TREE_CHAIN (*argtypes);
-  tmp = build_function_type (TREE_TYPE (function), *argtypes);
+   WARNING: DO NOT pass &TREE_TYPE (decl) to FN or &TYPE_ARG_TYPES
+   (TREE_TYPE (decl)) to ARGTYPES, as doing so will corrupt the types of
+   other decls.  Either pass the addresses of local variables or NULL.  */
+
+void
+revert_static_member_fn (decl, fn, argtypes)
+     tree *decl, *fn, *argtypes;
+{
+  tree tmp;
+  tree function = fn ? *fn : TREE_TYPE (*decl);
+  tree args = argtypes ? *argtypes : TYPE_ARG_TYPES (function);
+
+  args = TREE_CHAIN (args);
+  tmp = build_function_type (TREE_TYPE (function), args);
   tmp = build_type_variant (tmp, TYPE_READONLY (function),
 			    TYPE_VOLATILE (function));
   tmp = build_exception_variant (TYPE_METHOD_BASETYPE (function), tmp,
 				 TYPE_RAISES_EXCEPTIONS (function));
   TREE_TYPE (*decl) = tmp;
-  *fn = tmp;
   DECL_STATIC_FUNCTION_P (*decl) = 1;
+  if (fn)
+    *fn = tmp;
+  if (argtypes)
+    *argtypes = args;
 }

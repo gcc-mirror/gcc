@@ -781,6 +781,7 @@ grokclassfn (ctype, cname, function, flags, quals)
   tree fn_name = DECL_NAME (function);
   tree arg_types;
   tree parm;
+  tree qualtype;
 
   if (fn_name == NULL_TREE)
     {
@@ -790,7 +791,9 @@ grokclassfn (ctype, cname, function, flags, quals)
     }
 
   if (quals)
-    ctype = grok_method_quals (ctype, function, quals);
+    qualtype = grok_method_quals (ctype, function, quals);
+  else
+    qualtype = ctype;
 
   arg_types = TYPE_ARG_TYPES (TREE_TYPE (function));
   if (TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
@@ -812,7 +815,7 @@ grokclassfn (ctype, cname, function, flags, quals)
 		 of virtual baseclasses or not.  */
 	      parm = build_decl (PARM_DECL, in_charge_identifier, integer_type_node);
 	      /* Mark the artificial `__in_chrg' parameter as "artificial".  */
-	      DECL_SOURCE_LINE (parm) = 0;
+	      SET_DECL_ARTIFICIAL (parm);
 	      DECL_ARG_TYPE (parm) = integer_type_node;
 	      DECL_REGISTER (parm) = 1;
 	      TREE_CHAIN (parm) = last_function_parms;
@@ -822,7 +825,7 @@ grokclassfn (ctype, cname, function, flags, quals)
 
       parm = build_decl (PARM_DECL, this_identifier, type);
       /* Mark the artificial `this' parameter as "artificial".  */
-      DECL_SOURCE_LINE (parm) = 0;
+      SET_DECL_ARTIFICIAL (parm);
       DECL_ARG_TYPE (parm) = type;
       /* We can make this a register, so long as we don't
 	 accidentally complain if someone tries to take its address.  */
@@ -865,7 +868,7 @@ grokclassfn (ctype, cname, function, flags, quals)
       DECL_ASSEMBLER_NAME (function) = get_identifier (buf);
       parm = build_decl (PARM_DECL, in_charge_identifier, const_integer_type);
       /* Mark the artificial `__in_chrg' parameter as "artificial".  */
-      DECL_SOURCE_LINE (parm) = 0;
+      SET_DECL_ARTIFICIAL (parm);
       TREE_USED (parm) = 1;
 #if 0
       /* We don't need to mark the __in_chrg parameter itself as `const'
@@ -878,7 +881,7 @@ grokclassfn (ctype, cname, function, flags, quals)
       /* This is the same chain as DECL_ARGUMENTS (...).  */
       TREE_CHAIN (last_function_parms) = parm;
 
-      TREE_TYPE (function) = build_cplus_method_type (ctype, void_type_node,
+      TREE_TYPE (function) = build_cplus_method_type (qualtype, void_type_node,
 						      arg_types);
       TYPE_HAS_DESTRUCTOR (ctype) = 1;
     }
@@ -891,7 +894,7 @@ grokclassfn (ctype, cname, function, flags, quals)
 	  arg_types = hash_tree_chain (integer_type_node,
 				       TREE_CHAIN (arg_types));
 	  TREE_TYPE (function)
-	    = build_cplus_method_type (ctype,
+	    = build_cplus_method_type (qualtype,
 				       TREE_TYPE (TREE_TYPE (function)),
 				       arg_types);
 	  arg_types = TYPE_ARG_TYPES (TREE_TYPE (function));
@@ -901,7 +904,8 @@ grokclassfn (ctype, cname, function, flags, quals)
 
       if (TREE_CODE (TREE_TYPE (function)) == FUNCTION_TYPE)
 	/* Only true for static member functions.  */
-	these_arg_types = hash_tree_chain (TYPE_POINTER_TO (ctype), arg_types);
+	these_arg_types = hash_tree_chain (TYPE_POINTER_TO (qualtype),
+					   arg_types);
 
       DECL_ASSEMBLER_NAME (function)
 	= build_decl_overload (fn_name, these_arg_types,
@@ -1211,6 +1215,8 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
   if (TREE_CODE (value) == TYPE_DECL)
     {
       DECL_NONLOCAL (value) = 1;
+      DECL_CONTEXT (value) = current_class_type;
+      DECL_CLASS_CONTEXT (value) = current_class_type;
       CLASSTYPE_LOCAL_TYPEDECLS (current_class_type) = 1;
       pushdecl_class_level (value);
       return value;
@@ -2739,7 +2745,7 @@ finish_file ()
   vars = build_decl (TYPE_DECL, get_identifier (" @%$#@!"), integer_type_node);
 #endif
   DECL_IGNORED_P (vars) = 1;
-  DECL_SOURCE_LINE (vars) = 0;
+  SET_DECL_ARTIFICIAL (vars);
   pushdecl (vars);
 #endif
 

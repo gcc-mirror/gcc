@@ -80,6 +80,8 @@ void yyerror ();
    error message if the user supplies an empty conditional expression.  */
 static char *cond_stmt_keyword;
 
+static int doing_explicit;
+
 /* Nonzero if we have an `extern "C"' acting as an extern specifier.  */
 int have_extern_spec;
 int used_extern_spec;
@@ -262,7 +264,7 @@ empty_parms ()
 %type <ttype> qualified_type_name complete_type_name notype_identifier
 %type <ttype> complex_type_name nested_name_specifier_1
 %type <itype> nomods_initdecls nomods_initdcl0
-%type <ttype> new_initializer new_placement
+%type <ttype> new_initializer new_placement specialization
 
 /* in order to recognize aggr tags as defining and thus shadowing. */
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
@@ -542,6 +544,7 @@ datadef:
         | declmods ';'
 	  { pedwarn ("empty declaration"); }
 	| explicit_instantiation ';'
+		{ doing_explicit = 0; }
 	| typed_declspecs ';'
 	  {
 	    tree t = $<ttype>$;
@@ -778,11 +781,16 @@ identifier_defn:
 	| PTYPENAME_DEFN
 	;
 
+do_explicit: TEMPLATE %prec EMPTY
+	{ doing_explicit = 1; }
+	;
+
 explicit_instantiation:
-	  TEMPLATE aggr template_type
-		{ do_type_instantiation ($3); }
-	| TEMPLATE typed_declspecs declarator
+	  do_explicit specialization template_instantiation
+		{ do_type_instantiation ($3 ? $3 : $2); }
+	| do_explicit typed_declspecs declarator
 		{ do_function_instantiation ($2, $3); }
+	| do_explicit error
 	;
 
 template_type:
@@ -797,8 +805,8 @@ template_type_name:
 		{ $$ = lookup_template_class ($$, $3, NULL_TREE); }
 	;
 
-tmpl.2: %prec EMPTY
-	/* Always do expansion if it hasn't been done already. */
+tmpl.2: 
+	  /* empty */ %prec EMPTY
 		{ $$ = instantiate_class_template ($<ttype>0, 1); }
 	;
 
@@ -2212,6 +2220,15 @@ aggr:	  AGGR
 		{ error ("no body nor ';' separates two class, struct or union declarations"); }
 	;
 
+specialization:
+	  aggr template_type_name ';'
+		{ 
+		  yyungetc (';', 1); current_aggr = $$; $$ = $2; 
+		  if (doing_explicit)
+		    instantiate_class_template ($$, 1);
+		}
+	;
+
 named_class_head_sans_basetype:
 	  aggr identifier
 		{ current_aggr = $$; $$ = $2; }
@@ -2227,6 +2244,7 @@ named_class_head_sans_basetype:
 		  overload_template_name ($$, 0); }
 	| aggr template_type_name ':'
 		{ yyungetc (':', 1); goto aggr2; }
+	| specialization
 	;
 
 named_class_head_sans_basetype_defn:
@@ -4137,7 +4155,7 @@ operator_name:
 		{ $$ = ansi_opname[VEC_NEW_EXPR]; }
 	| operator DELETE '[' ']'
 		{ $$ = ansi_opname[VEC_DELETE_EXPR]; }
-	/* Should we be pushing into class scope to parse this?  */
+	/* Names here should be looked up in class scope ALSO.  */
 	| operator typed_typespecs conversion_declarator
 		{ $$ = grokoptypename ($2, $3); }
 	| operator error

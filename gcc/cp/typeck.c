@@ -2114,28 +2114,35 @@ get_member_function_from_ptrfunc (instance_ptrptr, instance, function)
 	return instance;
 
       vtbl = convert_pointer_to (ptr_type_node, instance);
-      vtbl = build (PLUS_EXPR,
-		    build_pointer_type (build_pointer_type (memptr_type)),
-		    vtbl, convert (sizetype, delta2));
+      vtbl
+	= build (PLUS_EXPR,
+		 build_pointer_type (build_pointer_type (vtable_entry_type)),
+		 vtbl, convert (sizetype, delta2));
       vtbl = build_indirect_ref (vtbl, NULL_PTR);
       aref = build_array_ref (vtbl, size_binop (MINUS_EXPR,
 						index,
 						integer_one_node));
-      aref = save_expr (aref);
+      if (! flag_vtable_thunks)
+	{
+	  aref = save_expr (aref);
 
-      /* Save the intermediate result in a SAVE_EXPR so we don't have to
-	 compute each component of the virtual function pointer twice.  */ 
-     if (/* !building_cleanup && */ TREE_CODE (aref) == INDIRECT_REF)
-	TREE_OPERAND (aref, 0) = save_expr (TREE_OPERAND (aref, 0));
+	  /* Save the intermediate result in a SAVE_EXPR so we don't have to
+	     compute each component of the virtual function pointer twice.  */ 
+	  if (/* !building_cleanup && */ TREE_CODE (aref) == INDIRECT_REF)
+	    TREE_OPERAND (aref, 0) = save_expr (TREE_OPERAND (aref, 0));
       
-      delta = build (PLUS_EXPR, integer_type_node,
-		     build_conditional_expr (e1, build_component_ref (aref, delta_identifier, 0, 0), integer_zero_node),
-		     delta);
+	  delta = build (PLUS_EXPR, integer_type_node,
+			 build_conditional_expr (e1, build_component_ref (aref, delta_identifier, 0, 0), integer_zero_node),
+			 delta);
+	}
 
       *instance_ptrptr = build (PLUS_EXPR, TREE_TYPE (*instance_ptrptr),
 				*instance_ptrptr,
 				convert (integer_type_node, delta));
-      e2 = build_component_ref (aref, pfn_identifier, 0, 0);
+      if (flag_vtable_thunks)
+	e2 = aref;
+      else
+	e2 = build_component_ref (aref, pfn_identifier, 0, 0);
 
       e3 = PFN_FROM_PTRMEMFUNC (function);
       TREE_TYPE (e2) = TREE_TYPE (e3);
@@ -5502,10 +5509,16 @@ build_modify_expr (lhs, modifycode, rhs)
   /* check to see if there is an assignment to `this' */
   if (lhs == current_class_decl)
     {
-      if (flag_this_is_variable > 0
-	  && DECL_NAME (current_function_decl) != NULL_TREE
-	  && current_class_name != DECL_NAME (current_function_decl))
-	warning ("assignment to `this' not in constructor or destructor");
+      if (DECL_NAME (current_function_decl) != NULL_TREE)
+	{
+	  /* ARM 18.3.3 and draft standard section C.11 say that assigning
+	     something to this is an anachronism.  */
+	  if (pedantic)
+	    warning ("anachronistic assignment to `this' pointer");
+	  else if (flag_this_is_variable > 0
+		   && current_class_name != DECL_NAME (current_function_decl))
+	    warning ("assignment to `this' not in constructor or destructor");
+	}
       current_function_just_assigned_this = 1;
     }
 
@@ -5670,7 +5683,7 @@ build_modify_expr (lhs, modifycode, rhs)
     {
       /* Allow array assignment in compiler-generated code.  */
       if ((pedantic || flag_ansi)
-	  && ! DECL_SYNTHESIZED (current_function_decl))
+	  && ! DECL_ARTIFICIAL (current_function_decl))
 	pedwarn ("ANSI C++ forbids assignment between arrays");
 
       /* Have to wrap this in RTL_EXPR for two cases:
@@ -6600,7 +6613,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 	    {
 	      tree init = build_method_call (exp, constructor_name_full (type),
 					     build_tree_list (NULL_TREE, rhs),
-					     NULL_TREE, LOOKUP_NORMAL);
+					     TYPE_BINFO (type), LOOKUP_NORMAL);
 
 	      if (init == error_mark_node)
 		return error_mark_node;

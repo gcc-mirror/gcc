@@ -813,7 +813,7 @@ compute_access (basetype_path, field)
     PUBLIC_RETURN;
 
   /* Member found immediately within object.  */
-  if (BINFO_INHERITANCE_CHAIN (basetype_path) == NULL_TREE || static_mem)
+  if (BINFO_INHERITANCE_CHAIN (basetype_path) == NULL_TREE)
     {
       /* Are we (or an enclosing scope) friends with the class that has
          FIELD? */
@@ -847,7 +847,8 @@ compute_access (basetype_path, field)
   types = basetype_path;
   via_protected = 0;
   access = access_default;
-  protected_ok = 0;
+  protected_ok = static_mem && current_class_type
+    && ACCESSIBLY_DERIVED_FROM_P (BINFO_TYPE (types), current_class_type);
 
   while (1)
     {
@@ -1024,7 +1025,6 @@ lookup_field (xbasetype, name, protect, want_type)
      we know that binfo of a virtual base class will always == itself when
      found along any line.  (mrs)  */
 
-  /* Things for memoization.  */
   char *errstr = 0;
 
   /* Set this to nonzero if we don't know how to compute
@@ -1209,7 +1209,11 @@ lookup_field (xbasetype, name, protect, want_type)
 
       if (nval || lookup_fnfields_here (type, name)>=0)
 	{
-	  if (rval_binfo && hides (rval_binfo_h, binfo_h))
+	  if (nval && nval == rval && SHARED_MEMBER_P (nval))
+	    {
+	      /* This is ok, the member found is the same [class.ambig] */
+	    }
+	  else if (rval_binfo && hides (rval_binfo_h, binfo_h))
 	    {
 	      /* This is ok, the member found is in rval_binfo, not
 		 here (binfo). */
@@ -1476,7 +1480,6 @@ lookup_fnfields (basetype_path, name, complain)
   /* For now, don't try this.  */
   int protect = complain;
 
-  /* Things for memoization.  */
   char *errstr = 0;
 
   /* Set this to nonzero if we don't know how to compute
@@ -1578,11 +1581,6 @@ lookup_fnfields (basetype_path, name, complain)
 	  TREE_TYPE (entry) = NULL_TREE;
 	}
 
-      if (errstr && protect)
-	{
-	  error (errstr, IDENTIFIER_POINTER (name), TYPE_NAME_STRING (type));
-	  return error_mark_node;
-	}
       return rvals;
     }
   rval = NULL_TREE;
@@ -1697,7 +1695,7 @@ lookup_fnfields (basetype_path, name, complain)
 	  else
 	    {
 	      /* This is ambiguous. */
-	      errstr = "request for member `%s' is ambiguous";
+	      errstr = "request for method `%D' is ambiguous";
 	      rvals = error_mark_node;
 	      break;
 	    }
@@ -1733,7 +1731,7 @@ lookup_fnfields (basetype_path, name, complain)
 
   if (errstr && protect)
     {
-      error (errstr, IDENTIFIER_POINTER (name), TYPE_NAME_STRING (type));
+      cp_error (errstr, name);
       rvals = error_mark_node;
     }
 
@@ -1946,7 +1944,8 @@ get_matching_virtual (binfo, fndecl, dtorp)
 		  if (IDENTIFIER_ERROR_LOCUS (name) == NULL_TREE
 		      && ! comptypes (TREE_TYPE (TREE_TYPE (tmp)), drettype, 1))
 		    {
-		      cp_error ("conflicting return type specified for virtual function `%D'", fndecl);
+		      cp_error ("conflicting return type specified for virtual function `%#D'", fndecl);
+		      cp_error ("overriding definition as `%#D'", tmp);
 		      SET_IDENTIFIER_ERROR_LOCUS (name, basetype);
 		    }
 		  break;
@@ -2368,7 +2367,7 @@ dfs_debug_mark (binfo)
   /* We cannot rely on some alien method to solve our problems,
      so we must write out the debug info ourselves.  */
   if (write_symbols != DWARF_DEBUG)
-    DECL_IGNORED_P (TYPE_NAME (t)) = 0;
+    TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
   if (! TREE_ASM_WRITTEN (TYPE_NAME (t)))
     rest_of_type_compilation (t, global_bindings_p ());
 }
@@ -3174,28 +3173,4 @@ reinit_search_statistics ()
   n_calls_get_base_type = 0;
   n_outer_fields_searched = 0;
   n_contexts_saved = 0;
-}
-
-tree
-lookup_nested_tag (type, name)
-     tree type, name;
-{
-  tree tags = CLASSTYPE_TAGS (type);
-
-  for (; tags; tags = TREE_CHAIN (tags))
-    {
-      /* The TREE_PURPOSE of an enum tag (which becomes a member of the
-	 enclosing class) is set to the name for the enum type.  So, if
-	 name is `bar', and we strike `baz' for `enum bar { baz }', then
-	 this test will be true.  */
-      if (TREE_PURPOSE (tags) == name)
-	break;
-    }
-  if (tags)
-    return TYPE_NAME (TREE_VALUE (tags));
-
-  if (TYPE_CONTEXT (type))
-    return lookup_nested_tag (TYPE_CONTEXT (type), name);
-
-  return NULL_TREE;
 }

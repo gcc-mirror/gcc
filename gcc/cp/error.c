@@ -500,7 +500,7 @@ tree
 ident_fndecl (t)
      tree t;
 {
-  tree n = IDENTIFIER_GLOBAL_VALUE (t);
+  tree n = lookup_name (t, 0);
 
   if (TREE_CODE (n) == FUNCTION_DECL)
     return n;

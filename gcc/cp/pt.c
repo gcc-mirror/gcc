@@ -1314,7 +1314,7 @@ tsubst (t, args, nargs, in_decl)
 	      tree decls;
 	      int got_it = 0;
 
-	      decls = IDENTIFIER_GLOBAL_VALUE (r);
+	      decls = lookup_name (r, 0);
 	      if (decls == NULL_TREE)
 		/* no match */;
 	      else if (TREE_CODE (decls) == TREE_LIST)
@@ -1624,8 +1624,7 @@ instantiate_template (tmpl, targ_ptr)
       && DECL_STATIC_FUNCTION_P (fndecl))
     {
       tree olddecl = DECL_RESULT (tmpl);
-      revert_static_member_fn (&TREE_TYPE (olddecl), &DECL_RESULT (tmpl),
-			       &TYPE_ARG_TYPES (TREE_TYPE (olddecl)));
+      revert_static_member_fn (&DECL_RESULT (tmpl), NULL, NULL);
       /* Chop off the this pointer that grokclassfn so kindly added
 	 for us (it didn't know yet if the fn was static or not).  */
       DECL_ARGUMENTS (olddecl) = TREE_CHAIN (DECL_ARGUMENTS (olddecl));
