@@ -1,3 +1,8 @@
+2002-04-25  Eric Botcazou  <ebotcazou@multimania.com>
+
+	* c-decl.c (grokdeclarator): Remove outdated ??? note
+	on invalid declaration of flexible array members.
+
 2002-04-25  Richard Henderson  <rth@redhat.com>
 
 	* doc/invoke.texi: Document -gdwarf{,-2} vs debug level.
