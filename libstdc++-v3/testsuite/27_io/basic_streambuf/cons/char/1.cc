@@ -31,69 +31,12 @@
 
 #include <streambuf>
 #include <testsuite_hooks.h>
-
-class testbuf : public std::streambuf
-{
-public:
-
-  // Typedefs:
-  typedef std::streambuf::traits_type traits_type;
-  typedef std::streambuf::char_type char_type;
-
-  testbuf(): std::streambuf() 
-  { }
-
-  bool
-  check_pointers()
-  { 
-    bool test __attribute__((unused)) = true;
-    VERIFY( this->eback() == NULL );
-    VERIFY( this->gptr() == NULL );
-    VERIFY( this->egptr() == NULL );
-    VERIFY( this->pbase() == NULL );
-    VERIFY( this->pptr() == NULL );
-    VERIFY( this->epptr() == NULL );
-    return test;
-  }
-
-  int_type 
-  pub_uflow() 
-  { return (this->uflow()); }
-
-  int_type 
-  pub_overflow(int_type __c = traits_type::eof()) 
-  { return (this->overflow(__c)); }
-
-  int_type 
-  pub_pbackfail(int_type __c) 
-  { return (this->pbackfail(__c)); }
-
-  void 
-  pub_setg(char* beg, char* cur, char *end) 
-  { this->setg(beg, cur, end); }
-
-  void 
-  pub_setp(char* beg, char* end) 
-  { this->setp(beg, end); }
-
-protected:
-  int_type 
-  underflow() 
-  { 
-    int_type __retval = traits_type::eof();
-    if (this->gptr() < this->egptr())
-      __retval = traits_type::not_eof(0); 
-    return __retval;
-  }
-};
+#include <testsuite_io.h>
 
 void test01()
 {
-  typedef testbuf::traits_type traits_type;
-  typedef testbuf::int_type int_type;
-
   bool test __attribute__((unused)) = true;
-  testbuf buf01;
+  __gnu_test::constraint_streambuf buf01;
 
   // 27.5.2.1 basic_streambuf ctors
   // default ctor initializes 

@@ -111,8 +111,8 @@ namespace std
       */
       explicit
       basic_stringbuf(ios_base::openmode __mode = ios_base::in | ios_base::out)
-      : __streambuf_type(), _M_mode(), _M_string()
-      { _M_stringbuf_init(__mode); }
+      : __streambuf_type(), _M_mode(__mode), _M_string()
+      { }
 
       /**
        *  @brief  Starts with an existing string buffer.
@@ -140,8 +140,7 @@ namespace std
       __string_type
       str() const
       {
-	const bool __testout = this->_M_mode & ios_base::out;
-	if (__testout)
+	if (this->pptr())
 	  {
 	    // The current egptr() may not be the actual string end.
 	    if (this->pptr() > this->egptr())
@@ -169,7 +168,7 @@ namespace std
       }
 
     protected:
-      // Common initialization code for both ctors goes here.
+      // Common initialization code goes here.
       /**
        *  @if maint
        *  @doctodo
@@ -277,9 +276,8 @@ namespace std
       _M_update_egptr()
       {
 	const bool __testin = this->_M_mode & ios_base::in;
-	const bool __testout = this->_M_mode & ios_base::out;
 
-	if (__testout && this->pptr() > this->egptr())
+	if (this->pptr() && this->pptr() > this->egptr())
 	  if (__testin)
 	    this->setg(this->eback(), this->gptr(), this->pptr());
 	  else
