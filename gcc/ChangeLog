@@ -1,3 +1,8 @@
+Fri Jul 24 14:20:26 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.md (movqi, movhi, movsi, movsf): Correctly handle
+	CONST_DOUBLE source.
+
 Fri Jul 24 11:17:04 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/thumb.c (thumb_print_operand): Decode %_ in asm
