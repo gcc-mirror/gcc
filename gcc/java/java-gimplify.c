@@ -247,17 +247,11 @@ java_gimplify_new_array_init (tree exp)
   tree values = CONSTRUCTOR_ELTS (init);
 
   tree array_ptr_type = build_pointer_type (array_type);
-  tree block = build0 (BLOCK, array_ptr_type);
-  tree tmp = build_decl (VAR_DECL, get_identifier ("<tmp>"), array_ptr_type);
-  tree array = build_decl (VAR_DECL, get_identifier ("<array>"),
-			   array_ptr_type);
+  tree tmp = create_tmp_var (array_ptr_type, "array");
   tree body = build2 (MODIFY_EXPR, array_ptr_type, tmp,
 		      build_new_array (element_type, length));
 
   int index = 0;
-
-  DECL_CONTEXT (array) = current_function_decl;
-  DECL_CONTEXT (tmp) = current_function_decl;
 
   /* FIXME: try to allocate array statically?  */
   while (values != NULL_TREE)
@@ -276,12 +270,7 @@ java_gimplify_new_array_init (tree exp)
       values = TREE_CHAIN (values);
     }
 
-  body = build2 (COMPOUND_EXPR, array_ptr_type, body,
-		 build2 (MODIFY_EXPR, array_ptr_type, array, tmp));
-  TREE_CHAIN (tmp) = array;
-  BLOCK_VARS (block) = tmp;
-  BLOCK_EXPR_BODY (block) = body;
-  return java_gimplify_block (block);
+  return build2 (COMPOUND_EXPR, array_ptr_type, body, tmp);
 }
 
 static tree
