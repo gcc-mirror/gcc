@@ -219,7 +219,7 @@ public final class Connection extends HttpURLConnection
     // Send request including any request properties that were set.
     String requestFile = url.getFile();
     outputWriter.print(getRequestMethod() + " "
-		       + requestFile.length() != 0 ? requestFile : "/";
+		       + (requestFile.length() != 0 ? requestFile : "/")
                        + " HTTP/1.1\r\n");
 
     // Set additional HTTP headers.
