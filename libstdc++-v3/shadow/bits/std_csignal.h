@@ -34,9 +34,9 @@
 #ifndef _CPP_CSIGNAL
 #define _CPP_CSIGNAL 1
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <signal.h>
       typedef void (*_CPP_CSIGFUN_capture)(int);  // a C function pointer
@@ -52,60 +52,60 @@
     const int _CPP_SIGSEGV_capture = SIGSEGV;
     const int _CPP_SIGTERM_capture = SIGTERM;
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 #  undef sig_atomic_t
 #  undef raise
 #  undef signal
 #  undef SIG_DFL
 #  define SIG_DFL \
-     reinterpret_cast<void (*)(int)>(::_C_Swamp::_CPP_SIG_DFL_capture)
+     reinterpret_cast<void (*)(int)>(::_C_legacy::_CPP_SIG_DFL_capture)
 #  undef SIG_ERR
 #  define SIG_ERR \
-     reinterpret_cast<void (*)(int)>(::_C_Swamp::_CPP_SIG_ERR_capture)
+     reinterpret_cast<void (*)(int)>(::_C_legacy::_CPP_SIG_ERR_capture)
 #  undef SIG_IGN
 #  define SIG_IGN \
-     reinterpret_cast<void (*)(int)>(::_C_Swamp::_CPP_SIG_IGN_capture)
+     reinterpret_cast<void (*)(int)>(::_C_legacy::_CPP_SIG_IGN_capture)
 #  undef SIGABRT
-#  define SIGABRT ::_C_Swamp::_CPP_SIGABRT_capture
+#  define SIGABRT ::_C_legacy::_CPP_SIGABRT_capture
 #  undef SIGFPE
-#  define SIGFPE  ::_C_Swamp::_CPP_SIGFPE_capture 
+#  define SIGFPE  ::_C_legacy::_CPP_SIGFPE_capture 
 #  undef SIGILL
-#  define SIGILL  ::_C_Swamp::_CPP_SIGILL_capture
+#  define SIGILL  ::_C_legacy::_CPP_SIGILL_capture
 #  undef SIGINT
-#  define SIGINT  ::_C_Swamp::_CPP_SIGINT_capture
+#  define SIGINT  ::_C_legacy::_CPP_SIGINT_capture
 #  undef SIGSEGV
-#  define SIGSEGV ::_C_Swamp::_CPP_SIGSEGV_capture
+#  define SIGSEGV ::_C_legacy::_CPP_SIGSEGV_capture
 #  undef SIGTERM
-#  define SIGTERM ::_C_Swamp::_CPP_SIGTERM_capture
+#  define SIGTERM ::_C_legacy::_CPP_SIGTERM_capture
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
-      typedef ::_C_Swamp::_CPP_sig_atomic_t_capture sig_atomic_t;
+  namespace _C_legacy {
+    namespace _C_shadow {
+      typedef ::_C_legacy::_CPP_sig_atomic_t_capture sig_atomic_t;
     }
   }
   namespace std {
 
     // Adopt C names into std::
-    using ::_C_Swamp::_C_Shadow::sig_atomic_t;
-    using ::_C_Swamp::raise;
+    using ::_C_legacy::_C_shadow::sig_atomic_t;
+    using ::_C_legacy::raise;
 
     inline void (*signal(int __sig, void (* __fun)(int)))(int)
       { return reinterpret_cast<void (*)(int)>(
-          ::_C_Swamp::signal(__sig,
-	    reinterpret_cast< ::_C_Swamp::_CPP_CSIGFUN_capture>(__fun)));
+          ::_C_legacy::signal(__sig,
+	    reinterpret_cast< ::_C_legacy::_CPP_CSIGFUN_capture>(__fun)));
       }
 
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
       using ::std::signal;
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif
 

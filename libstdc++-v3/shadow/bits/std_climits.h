@@ -34,14 +34,14 @@
 #ifndef _CPP_CLIMITS
 #define _CPP_CLIMTIS	1
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <limits.h>
     }
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
   // Note: there is not much for this wrapper to do besides hiding 
   // vendor-extension names and (perhaps) replacing one or other
@@ -53,12 +53,12 @@
   namespace std {
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif
 

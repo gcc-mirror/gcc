@@ -34,7 +34,7 @@
 # include <bits/generic_shadow.h>
 # undef _SHADOW_NAME
 
-# ifndef _IN_C_SWAMP_
+# ifndef _IN_C_LEGACY_
   using ::std::acos;
   using ::std::asin;
   using ::std::atan;

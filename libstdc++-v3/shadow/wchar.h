@@ -34,7 +34,7 @@
 # include <bits/generic_shadow.h>
 # undef _SHADOW_NAME
 
-# ifndef _IN_C_SWAMP_
+# ifndef _IN_C_LEGACY_
   using ::std::size_t;  /* handled in <cstddef> */
   using ::std::wint_t;
   using ::std::mbstate_t;
@@ -104,6 +104,6 @@
   using ::std::wcsrchr;
   using ::std::wcsspn;
 # define _INCLUDED_CPP_WCHAR_H_ 1
-# endif /* _IN_C_SWAMP_ */
+# endif /* _IN_C_LEGACY_ */
 
 #endif /* _INCLUDED_CPP_WCHAR_H_ */

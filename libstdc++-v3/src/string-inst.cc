@@ -63,6 +63,7 @@ namespace std
   template S::basic_string(S const&);
   template S::_Rep* S::_Rep::_S_create(size_t, S::allocator_type const&);
   template void S::_Rep::_M_destroy(S::allocator_type const&) throw();
+  template void __destroy_aux(S*, S*, __false_type);
 #endif
 
 #ifdef CTORNC
@@ -287,7 +288,7 @@ namespace std
     const char* 
     string::_S_find(const char* __beg, const char* __end, char __c)
     { 
-      char* __retval = strchr(__beg, __c); 
+      const char* __retval = strchr(__beg, __c); 
       return (__retval ? __retval : __end);
     }
 #else

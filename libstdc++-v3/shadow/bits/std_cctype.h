@@ -33,9 +33,9 @@
 #ifndef _CPP_CCTYPE
 #define _CPP_CCTYPE 1
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <ctype.h>
     }
@@ -55,8 +55,8 @@
     inline int _CPP_tolower_capture(int c) { return tolower (c); }
     inline int _CPP_toupper_capture(int c) { return toupper (c); }
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 # undef isalnum
 # undef isalpha
@@ -84,44 +84,44 @@
 # undef _X
 #endif
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
   namespace std {
 
     inline int isalnum(int __c)
-      { return ::_C_Swamp::_CPP_isalnum_capture (__c); }
+      { return ::_C_legacy::_CPP_isalnum_capture (__c); }
     inline int isalpha (int __c)
-      { return ::_C_Swamp::_CPP_isalpha_capture (__c); }
+      { return ::_C_legacy::_CPP_isalpha_capture (__c); }
     inline int iscntrl (int __c)
-      { return ::_C_Swamp::_CPP_iscntrl_capture (__c); }
+      { return ::_C_legacy::_CPP_iscntrl_capture (__c); }
     inline int isdigit (int __c)
-      { return ::_C_Swamp::_CPP_isdigit_capture (__c); }
+      { return ::_C_legacy::_CPP_isdigit_capture (__c); }
     inline int isgraph (int __c)
-      { return ::_C_Swamp::_CPP_isgraph_capture (__c); }
+      { return ::_C_legacy::_CPP_isgraph_capture (__c); }
     inline int islower (int __c)
-      { return ::_C_Swamp::_CPP_islower_capture (__c); }
+      { return ::_C_legacy::_CPP_islower_capture (__c); }
     inline int isprint (int __c)
-      { return ::_C_Swamp::_CPP_isprint_capture (__c); }
+      { return ::_C_legacy::_CPP_isprint_capture (__c); }
     inline int ispunct (int __c)
-      { return ::_C_Swamp::_CPP_ispunct_capture (__c); }
+      { return ::_C_legacy::_CPP_ispunct_capture (__c); }
     inline int isspace (int __c)
-      { return ::_C_Swamp::_CPP_isspace_capture (__c); }
+      { return ::_C_legacy::_CPP_isspace_capture (__c); }
     inline int isupper (int __c)
-      { return ::_C_Swamp::_CPP_isupper_capture (__c); }
+      { return ::_C_legacy::_CPP_isupper_capture (__c); }
     inline int isxdigit (int __c)
-      { return ::_C_Swamp::_CPP_isxdigit_capture (__c); }
+      { return ::_C_legacy::_CPP_isxdigit_capture (__c); }
 
     inline int tolower (int __c)
-      { return ::_C_Swamp::_CPP_tolower_capture (__c); }
+      { return ::_C_legacy::_CPP_tolower_capture (__c); }
     inline int toupper (int __c)
-      { return ::_C_Swamp::_CPP_toupper_capture (__c); }
+      { return ::_C_legacy::_CPP_toupper_capture (__c); }
 
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
       using ::std::isalnum;
       using ::std::isalpha;
       using ::std::iscntrl;
@@ -138,6 +138,6 @@
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif

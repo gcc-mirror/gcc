@@ -319,7 +319,7 @@ namespace std
         {
           __valid = false;
           char __c = *__beg;
-	  char* __p = strchr(__fmt->_S_literals, __c);
+	  const char* __p = strchr(__fmt->_S_literals, __c);
 	  
 	  // NB: strchr returns true for __c == 0x0
 	  if (__p && __c)

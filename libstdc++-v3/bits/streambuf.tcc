@@ -211,7 +211,7 @@ namespace std {
   // standard. If so, then checks for __ios being zero would be
   // necessary.
   template<typename _CharT, typename _Traits>
-    static streamsize
+    streamsize
     _S_copy_streambufs(basic_ios<_CharT, _Traits>& __ios,
 		       basic_streambuf<_CharT, _Traits>* __sbin,
 		       basic_streambuf<_CharT, _Traits>* __sbout) 

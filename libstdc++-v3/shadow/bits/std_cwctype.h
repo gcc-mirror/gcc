@@ -38,9 +38,9 @@
 
 # include <bits/std_cwchar.h>  /* pick up wint_t, WEOF */
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <wctype.h>
     }
@@ -49,8 +49,8 @@
 
     // XXX probably should capture defs of the "is" functions.
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 # undef size_t  /* handled in <cstddef> */
 # undef wchar_t
@@ -80,39 +80,39 @@
 # undef iscodeset2
 # undef iscodeset3
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
-      typedef ::_C_Swamp::_CPP_wctype_t_capture wctype_t;
-      typedef ::_C_Swamp::_CPP_wctrans_t_capture wctrans_t;
+  namespace _C_legacy {
+    namespace _C_shadow {
+      typedef ::_C_legacy::_CPP_wctype_t_capture wctype_t;
+      typedef ::_C_legacy::_CPP_wctrans_t_capture wctrans_t;
     }
   }
   namespace std {
-    using ::_C_Swamp::_C_Shadow::wctype_t;
-    using ::_C_Swamp::_C_Shadow::wctrans_t;
+    using ::_C_legacy::_C_shadow::wctype_t;
+    using ::_C_legacy::_C_shadow::wctrans_t;
 
     // XXX probably should capture these to inlines.
-    using ::_C_Swamp::iswalpha;
-    using ::_C_Swamp::iswupper;
-    using ::_C_Swamp::iswlower;
-    using ::_C_Swamp::iswdigit;
-    using ::_C_Swamp::iswxdigit;
-    using ::_C_Swamp::iswalnum;
-    using ::_C_Swamp::iswspace;
-    using ::_C_Swamp::iswpunct;
-    using ::_C_Swamp::iswprint;
-    using ::_C_Swamp::iswgraph;
-    using ::_C_Swamp::iswcntrl;
-    using ::_C_Swamp::iswctype;
-    using ::_C_Swamp::towlower;
-    using ::_C_Swamp::towupper;
+    using ::_C_legacy::iswalpha;
+    using ::_C_legacy::iswupper;
+    using ::_C_legacy::iswlower;
+    using ::_C_legacy::iswdigit;
+    using ::_C_legacy::iswxdigit;
+    using ::_C_legacy::iswalnum;
+    using ::_C_legacy::iswspace;
+    using ::_C_legacy::iswpunct;
+    using ::_C_legacy::iswprint;
+    using ::_C_legacy::iswgraph;
+    using ::_C_legacy::iswcntrl;
+    using ::_C_legacy::iswctype;
+    using ::_C_legacy::towlower;
+    using ::_C_legacy::towupper;
 
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif

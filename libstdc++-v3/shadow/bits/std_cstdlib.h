@@ -40,9 +40,9 @@
 
 # include <bits/std_cstddef.h>  /* pick up NULL, size_t */
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <stdlib.h>
       typedef int (*_C_cmp_fun_ptr)(const void*, const void*);  // C fn ptr
@@ -56,9 +56,9 @@
     typedef div_t   _CPP_div_t_capture;
     typedef ldiv_t  _CPP_ldiv_t_capture;
 
-    namespace _C_Shadow { 
+    namespace _C_shadow { 
     }
-  } // close namespace ::_C_Swamp::
+  } // close namespace ::_C_legacy::
 
 #  undef size_t
 #  undef wchar_t
@@ -69,13 +69,13 @@
 // #  undef  NULL
 // #  define NULL         0
 #  undef  EXIT_SUCCESS
-#  define EXIT_SUCCESS (::_C_Swamp::_CPP_EXIT_SUCCESS_capture)
+#  define EXIT_SUCCESS (::_C_legacy::_CPP_EXIT_SUCCESS_capture)
 #  undef  EXIT_FAILURE
-#  define EXIT_FAILURE (::_C_Swamp::_CPP_EXIT_FAILURE_capture)
+#  define EXIT_FAILURE (::_C_legacy::_CPP_EXIT_FAILURE_capture)
 #  undef  RAND_MAX
-#  define RAND_MAX     (::_C_Swamp::_CPP_RAND_MAX_capture)
+#  define RAND_MAX     (::_C_legacy::_CPP_RAND_MAX_capture)
 #  undef  MB_CUR_MAX
-#  define MB_CUR_MAX   (::_C_Swamp::_CPP_MB_CUR_MAX_capture())
+#  define MB_CUR_MAX   (::_C_legacy::_CPP_MB_CUR_MAX_capture())
 
 #  undef atof
 #  undef atoi
@@ -106,39 +106,39 @@
 #  undef mbstowcs
 #  undef wcstombs
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
       // these come from <cstddef>
-      // typedef ::_C_Swamp::_CPP_size_t_capture  size_t;
-      // typedef ::_C_Swamp::_CPP_wchar_t_capture wchar_t;
+      // typedef ::_C_legacy::_CPP_size_t_capture  size_t;
+      // typedef ::_C_legacy::_CPP_wchar_t_capture wchar_t;
     }
   }
   namespace std {
 
     // Adopt C names into std::
-    // using ::_C_Swamp::_C_Shadow::size_t;  
-    // using ::_C_Swamp::_C_Shadow::wchar_t;
+    // using ::_C_legacy::_C_shadow::size_t;  
+    // using ::_C_legacy::_C_shadow::wchar_t;
 
-    typedef ::_C_Swamp::_CPP_div_t_capture _CPP_div_t;
+    typedef ::_C_legacy::_CPP_div_t_capture _CPP_div_t;
     struct div_t  : _CPP_div_t {};
-    typedef ::_C_Swamp::_CPP_ldiv_t_capture _CPP_ldiv_t;
+    typedef ::_C_legacy::_CPP_ldiv_t_capture _CPP_ldiv_t;
     struct ldiv_t : _CPP_ldiv_t {};
     // note: div_t and ldiv_t are still POD types 
 
     // EXIT_SUCCESS, EXIT_FAILURE, RAND_MAX, MB_CUR_MAX, NULL
 
-    using ::_C_Swamp::atof;
-    using ::_C_Swamp::atoi;
-    using ::_C_Swamp::atol;
-    using ::_C_Swamp::strtod;
-    using ::_C_Swamp::strtol;
-    using ::_C_Swamp::strtoul;
-    using ::_C_Swamp::rand;
-    using ::_C_Swamp::srand;
-    using ::_C_Swamp::calloc;
-    using ::_C_Swamp::free;
-    using ::_C_Swamp::malloc;
-    using ::_C_Swamp::realloc;
+    using ::_C_legacy::atof;
+    using ::_C_legacy::atoi;
+    using ::_C_legacy::atol;
+    using ::_C_legacy::strtod;
+    using ::_C_legacy::strtol;
+    using ::_C_legacy::strtoul;
+    using ::_C_legacy::rand;
+    using ::_C_legacy::srand;
+    using ::_C_legacy::calloc;
+    using ::_C_legacy::free;
+    using ::_C_legacy::malloc;
+    using ::_C_legacy::realloc;
     void abort();     // XXX must define this correctly for C++.
 
 #define _FUN_OVERLOAD_BUG
@@ -146,7 +146,7 @@
     //  but not if declared void f(int (*)(void)).
 
 #if !defined(__GNUC__) || !defined(_FUN_OVERLOAD_BUG)
-    using ::_C_Swamp::atexit;     // XXX must redefine this one!
+    using ::_C_legacy::atexit;     // XXX must redefine this one!
 #endif
     int atexit(void (*)());       // XXX must define this.
       // More precisely, we need an extern "C" atexit() that
@@ -156,30 +156,30 @@
       //   be marked to be called using the proper convention.
 
     void exit(int __i)   // XXX must define correctly for C++, like atexit().
-      { ::_C_Swamp::exit(__i); }
+      { ::_C_legacy::exit(__i); }
 
-    using ::_C_Swamp::getenv;
-    using ::_C_Swamp::system;
+    using ::_C_legacy::getenv;
+    using ::_C_legacy::system;
 
     // XXX note that the raw conversion between C and C++ function 
     // pointers may not be portable to some targets; those targets need
     // a forwarding function.
 
 #if !defined(__GNUC__) || !defined(_FUN_OVERLOAD_BUG)
-    using ::_C_Swamp::bsearch;  // overload
+    using ::_C_legacy::bsearch;  // overload
 #endif
     inline void* bsearch(const void* __key, const void* __base, size_t __n, 
 		  size_t __size, int (*__cmp)(const void*, const void*))
-      { return ::_C_Swamp::bsearch(__key,__base,__n,__size,
-          reinterpret_cast< ::_C_Swamp::_C_cmp_fun_ptr>(__cmp)); }  // XXX
+      { return ::_C_legacy::bsearch(__key,__base,__n,__size,
+          reinterpret_cast< ::_C_legacy::_C_cmp_fun_ptr>(__cmp)); }  // XXX
 
 #if !defined(__GNUC__) || !defined(_FUN_OVERLOAD_BUG)
-    using ::_C_Swamp::qsort;    // overload
+    using ::_C_legacy::qsort;    // overload
 #endif
     inline void qsort(void* __base, size_t __n, size_t __size,
 	              int (*__cmp)(const void*, const void*)) 
-      { return ::_C_Swamp::qsort(__base,__n,__size,
-          reinterpret_cast< ::_C_Swamp::_C_cmp_fun_ptr>(__cmp)); }  // XXX
+      { return ::_C_legacy::qsort(__base,__n,__size,
+          reinterpret_cast< ::_C_legacy::_C_cmp_fun_ptr>(__cmp)); }  // XXX
 
 
     inline int abs(int __x) 
@@ -191,16 +191,16 @@
     inline ldiv_t ldiv(long __num, long __den)
       { _ldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
 
-    using ::_C_Swamp::mblen;
-    using ::_C_Swamp::mbtowc;;
-    using ::_C_Swamp::wctomb;
-    using ::_C_Swamp::mbstowcs;
-    using ::_C_Swamp::wcstombs;
+    using ::_C_legacy::mblen;
+    using ::_C_legacy::mbtowc;;
+    using ::_C_legacy::wctomb;
+    using ::_C_legacy::mbstowcs;
+    using ::_C_legacy::wcstombs;
 
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
       using ::std::div_t;
       using ::std::ldiv_t;
 
@@ -216,7 +216,7 @@
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif
 

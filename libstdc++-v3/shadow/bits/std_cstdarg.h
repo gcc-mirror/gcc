@@ -34,9 +34,9 @@
 #ifndef _CPP_CSTDARG
 #define _CPP_CSTDARG 1
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <stdarg.h>
     }
@@ -60,41 +60,41 @@
 
     // typedef size_t    _CPP_size_t_capture;  // handled in <cstddef>
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 #  ifdef __GNUC__
 
 #    undef va_list
-     using _C_Swamp::__gnuc_va_list;
+     using _C_legacy::__gnuc_va_list;
 
 #  elif  /* probably must be tailored for each compiler, as above. */
 
 #    undef va_list
 #    undef va_start
-#    define va_start(a,b) ::_C_Swamp::_CPP_va_start_capture(a,b)
+#    define va_start(a,b) ::_C_legacy::_CPP_va_start_capture(a,b)
 #    undef va_arg
-#    define va_arg(a,b)   ::_C_Swamp::_CPP_va_arg_capture<b>(a)
+#    define va_arg(a,b)   ::_C_legacy::_CPP_va_arg_capture<b>(a)
 #    undef va_end
-#    define va_end(a)     ::_C_Swamp::_CPP_va_end_capture(a)
+#    define va_end(a)     ::_C_legacy::_CPP_va_end_capture(a)
 
 #  endif
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
-      typedef ::_C_Swamp::_CPP_va_list_capture va_list;
+  namespace _C_legacy {
+    namespace _C_shadow {
+      typedef ::_C_legacy::_CPP_va_list_capture va_list;
     }
   }
   namespace std {
-    using ::_C_Swamp::_C_Shadow::va_list;  
+    using ::_C_legacy::_C_shadow::va_list;  
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif
 

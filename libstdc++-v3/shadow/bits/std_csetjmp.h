@@ -34,42 +34,42 @@
 #ifndef _CPP_CSETJMP
 #define _CPP_CSETJMP 1
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <setjmp.h>
     }
     typedef jmp_buf   _CPP_jmp_buf_capture;
     inline int _CPP_setjmp_capture(jmp_buf __jb) { return setjmp(__jb); }
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 #  undef jmp_buf
 #  undef setjmp
-#  define setjmp(__jb) ::_C_Swamp::_CPP_setjmp_capture(__jb)
+#  define setjmp(__jb) ::_C_legacy::_CPP_setjmp_capture(__jb)
 #  undef longjmp
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
-      typedef ::_C_Swamp::_CPP_jmp_buf_capture  jmp_buf;
+  namespace _C_legacy {
+    namespace _C_shadow {
+      typedef ::_C_legacy::_CPP_jmp_buf_capture  jmp_buf;
     }
   }
   namespace std {
 
     // Adopt C names into std::
-    using ::_C_Swamp::_C_Shadow::jmp_buf;  
-    using ::_C_Swamp::longjmp;
+    using ::_C_legacy::_C_shadow::jmp_buf;  
+    using ::_C_legacy::longjmp;
 
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif
 

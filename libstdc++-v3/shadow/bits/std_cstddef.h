@@ -34,17 +34,17 @@
 #ifndef _CPP_CSTDDEF
 #define _CPP_CSTDDEF 1
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <stddef.h>
     }
     typedef ptrdiff_t _CPP_ptrdiff_t_capture; 
     typedef size_t    _CPP_size_t_capture; 
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 #  undef ptrdiff_t  
 #  undef size_t  
@@ -53,26 +53,26 @@
 #  define NULL 0 
 // # undef offsetof
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
-      typedef ::_C_Swamp::_CPP_ptrdiff_t_capture  ptrdiff_t;
-      typedef ::_C_Swamp::_CPP_size_t_capture  size_t;
+  namespace _C_legacy {
+    namespace _C_shadow {
+      typedef ::_C_legacy::_CPP_ptrdiff_t_capture  ptrdiff_t;
+      typedef ::_C_legacy::_CPP_size_t_capture  size_t;
     }
   }
   namespace std {
 
     // Adopt C names into std::
-    using ::_C_Swamp::_C_Shadow::ptrdiff_t;  
-    using ::_C_Swamp::_C_Shadow::size_t;  
+    using ::_C_legacy::_C_shadow::ptrdiff_t;  
+    using ::_C_legacy::_C_shadow::size_t;  
 
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif
 

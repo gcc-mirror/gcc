@@ -36,9 +36,9 @@
 
 # include <bits/std_cstddef.h> /* pick up NULL */
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <locale.h>
     }
@@ -54,56 +54,56 @@
     const int _CPP_LC_MESSAGES_capture = LC_MESSAGES;
 #endif
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 // #  undef  NULL
 // #  define NULL 0  /* handled in <cstddef> */
 #  undef LC_ALL
-#  define LC_ALL	::_C_Swamp::_CPP_LC_ALL_capture
+#  define LC_ALL	::_C_legacy::_CPP_LC_ALL_capture
 #  undef LC_COLLATE
-#  define LC_COLLATE	::_C_Swamp::_CPP_LC_COLLATE_capture
+#  define LC_COLLATE	::_C_legacy::_CPP_LC_COLLATE_capture
 #  undef LC_CTYPE
-#  define LC_CTYPE	::_C_Swamp::_CPP_LC_CTYPE_capture
+#  define LC_CTYPE	::_C_legacy::_CPP_LC_CTYPE_capture
 #  undef LC_MONETARY
-#  define LC_MONETARY	::_C_Swamp::_CPP_LC_MONETARY_capture
+#  define LC_MONETARY	::_C_legacy::_CPP_LC_MONETARY_capture
 #  undef LC_NUMERIC
-#  define LC_NUMERIC	::_C_Swamp::_CPP_LC_NUMERIC_capture
+#  define LC_NUMERIC	::_C_legacy::_CPP_LC_NUMERIC_capture
 #  undef LC_TIME
-#  define LC_TIME	::_C_Swamp::_CPP_LC_TIME_capture
+#  define LC_TIME	::_C_legacy::_CPP_LC_TIME_capture
 #if 0 /* XXX need proper macro guard for this common extension. */
 #  undef LC_MESSAGES
-#  define LC_MESSAGES	::_C_Swamp::_CPP_LC_MESSAGES_capture
+#  define LC_MESSAGES	::_C_legacy::_CPP_LC_MESSAGES_capture
 #endif
 
 #  undef lconv
 #  undef setlocale
 #  undef localeconv
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
   namespace std {
 
     // Adopt C names into std::
-    using ::_C_Swamp::setlocale;  
+    using ::_C_legacy::setlocale;  
 
     // note: still a POD type:
-    struct lconv  : ::_C_Swamp::_CPP_lconv_capture  { };
+    struct lconv  : ::_C_legacy::_CPP_lconv_capture  { };
 
     inline lconv* localeconv() 
-      { return reinterpret_cast<lconv*>(::_C_Swamp::localeconv()); }
+      { return reinterpret_cast<lconv*>(::_C_legacy::localeconv()); }
 
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
       using ::std::lconv;
       using ::std::localeconv;
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif /* _CPP_CLOCALE */

@@ -40,7 +40,7 @@
 # include <bits/generic_shadow.h>
 # undef _SHADOW_NAME
 
-# ifndef _IN_C_SWAMP_
+# ifndef _IN_C_LEGACY_
   using ::std::size_t;  /* handled in <cstddef> */
   using ::std::clock_t;
   using ::std::time_t;

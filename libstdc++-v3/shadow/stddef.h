@@ -42,7 +42,7 @@
 # include <bits/generic_shadow.h>
 # undef _SHADOW_NAME
 
-# ifndef _IN_C_SWAMP_
+# ifndef _IN_C_LEGACY_
   using ::std::ptrdiff_t;
   using ::std::size_t;
 # define _INCLUDED_CPP_STDDEF_H_ 1

@@ -67,20 +67,20 @@ while read header; do
 
 #ifndef  _INCLUDED_CPP_${UPNAME}_
 
-# ifdef _IN_C_SWAMP_  /* sub-included by a C header */
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
 #   include_next <${header}>
 # else
 
-    namespace _C_Swamp { namespace _C_Shadow { } }
-    using namespace ::_C_Swamp::_C_Shadow;
-    namespace _C_Swamp {
+    namespace _C_legacy { namespace _C_shadow { } }
+    using namespace ::_C_legacy::_C_shadow;
+    namespace _C_legacy {
       extern "C" {
-#       define _IN_C_SWAMP_
+#       define _IN_C_LEGACY_
 #       include_next <${header}>
       } // close extern "C"
-    }   // close namespace _C_Swamp::
+    }   // close namespace _C_legacy::
   
-# endif /* _IN_C_SWAMP_ */
+# endif /* _IN_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_${UPNAME}_ */
 EOF
 #################### end ####################

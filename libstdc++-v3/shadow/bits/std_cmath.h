@@ -34,9 +34,9 @@
 #ifndef _CPP_CMATH
 #define _CPP_CMATH 1
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <math.h>
     }
@@ -70,11 +70,11 @@
     inline double _CPP_fmod_capture(double __x, double __y) 
       { return fmod(__x, __y); }
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 # undef HUGE_VAL
-# define HUGE_VAL ::_C_Swamp::_CPP_HUGE_VAL_capture()
+# define HUGE_VAL ::_C_legacy::_CPP_HUGE_VAL_capture()
 # undef acos
 # undef asin
 # undef atan
@@ -98,88 +98,88 @@
 # undef floor
 # undef fmod
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
       inline double acos(double __x)
-        { return ::_C_Swamp::_CPP_acos_capture(__x); }
+        { return ::_C_legacy::_CPP_acos_capture(__x); }
       inline double asin(double __x)
-        { return ::_C_Swamp::_CPP_asin_capture(__x); }
+        { return ::_C_legacy::_CPP_asin_capture(__x); }
       inline double atan(double __x)
-        { return ::_C_Swamp::_CPP_atan_capture(__x); }
+        { return ::_C_legacy::_CPP_atan_capture(__x); }
       inline double atan2(double __y, double __x)
-      	{ return ::_C_Swamp::_CPP_atan2_capture(__y,__x); }
+      	{ return ::_C_legacy::_CPP_atan2_capture(__y,__x); }
       inline double cos(double __x)
-        { return ::_C_Swamp::_CPP_cos_capture(__x); }
+        { return ::_C_legacy::_CPP_cos_capture(__x); }
       inline double sin(double __x)
-        { return ::_C_Swamp::_CPP_sin_capture(__x); }
+        { return ::_C_legacy::_CPP_sin_capture(__x); }
       inline double tan(double __x)
-        { return ::_C_Swamp::_CPP_tan_capture(__x); }
+        { return ::_C_legacy::_CPP_tan_capture(__x); }
       inline double cosh(double __x)
-        { return ::_C_Swamp::_CPP_cosh_capture(__x); }
+        { return ::_C_legacy::_CPP_cosh_capture(__x); }
       inline double sinh(double __x)
-        { return ::_C_Swamp::_CPP_sinh_capture(__x); }
+        { return ::_C_legacy::_CPP_sinh_capture(__x); }
       inline double tanh(double __x)
-        { return ::_C_Swamp::_CPP_tanh_capture(__x); }
+        { return ::_C_legacy::_CPP_tanh_capture(__x); }
       inline double exp(double __x)
-        { return ::_C_Swamp::_CPP_exp_capture(__x); }
+        { return ::_C_legacy::_CPP_exp_capture(__x); }
       inline double frexp(double __x, int* __exp)
-      	{ return ::_C_Swamp::_CPP_frexp_capture(__x, __exp); }
+      	{ return ::_C_legacy::_CPP_frexp_capture(__x, __exp); }
       inline double ldexp(double __x, int __exp)
-      	{ return ::_C_Swamp::_CPP_ldexp_capture(__x, __exp); }
+      	{ return ::_C_legacy::_CPP_ldexp_capture(__x, __exp); }
       inline double log(double __x)
-        { return ::_C_Swamp::_CPP_log_capture(__x); }
+        { return ::_C_legacy::_CPP_log_capture(__x); }
       inline double log10(double __x)
-        { return ::_C_Swamp::_CPP_log10_capture(__x); }
+        { return ::_C_legacy::_CPP_log10_capture(__x); }
       inline double modf(double __x, double* __iptr)
-      	{ return ::_C_Swamp::_CPP_modf_capture(__x, __iptr); }
+      	{ return ::_C_legacy::_CPP_modf_capture(__x, __iptr); }
       inline double pow(double __x, double __y)
-      	{ return ::_C_Swamp::_CPP_pow_capture(__x, __y); }
+      	{ return ::_C_legacy::_CPP_pow_capture(__x, __y); }
       inline double sqrt(double __x)
-        { return ::_C_Swamp::_CPP_sqrt_capture(__x); }
+        { return ::_C_legacy::_CPP_sqrt_capture(__x); }
       inline double ceil(double __x)
-        { return ::_C_Swamp::_CPP_ceil_capture(__x); }
+        { return ::_C_legacy::_CPP_ceil_capture(__x); }
       inline double fabs(double __x)
-        { return ::_C_Swamp::_CPP_fabs_capture(__x); }
+        { return ::_C_legacy::_CPP_fabs_capture(__x); }
       inline double floor(double __x)
-        { return ::_C_Swamp::_CPP_floor_capture(__x); }
+        { return ::_C_legacy::_CPP_floor_capture(__x); }
       inline double fmod(double __x, double __y)
-      	{ return ::_C_Swamp::_CPP_fmod_capture(__x, __y); }
+      	{ return ::_C_legacy::_CPP_fmod_capture(__x, __y); }
 
     }
   }
   namespace std {
 
     // Adopt C names into std::
-    using ::_C_Swamp::_C_Shadow::acos;
-    using ::_C_Swamp::_C_Shadow::asin;
-    using ::_C_Swamp::_C_Shadow::atan;
-    using ::_C_Swamp::_C_Shadow::atan2;
-    using ::_C_Swamp::_C_Shadow::cos;
-    using ::_C_Swamp::_C_Shadow::sin;
-    using ::_C_Swamp::_C_Shadow::tan;
-    using ::_C_Swamp::_C_Shadow::cosh;
-    using ::_C_Swamp::_C_Shadow::sinh;
-    using ::_C_Swamp::_C_Shadow::tanh;
-    using ::_C_Swamp::_C_Shadow::exp;
-    using ::_C_Swamp::_C_Shadow::frexp;
-    using ::_C_Swamp::_C_Shadow::ldexp;
-    using ::_C_Swamp::_C_Shadow::log;
-    using ::_C_Swamp::_C_Shadow::log10;
-    using ::_C_Swamp::_C_Shadow::modf;
-    using ::_C_Swamp::_C_Shadow::pow;
-    using ::_C_Swamp::_C_Shadow::sqrt;
-    using ::_C_Swamp::_C_Shadow::ceil;
-    using ::_C_Swamp::_C_Shadow::fabs;
-    using ::_C_Swamp::_C_Shadow::floor;
-    using ::_C_Swamp::_C_Shadow::fmod;
+    using ::_C_legacy::_C_shadow::acos;
+    using ::_C_legacy::_C_shadow::asin;
+    using ::_C_legacy::_C_shadow::atan;
+    using ::_C_legacy::_C_shadow::atan2;
+    using ::_C_legacy::_C_shadow::cos;
+    using ::_C_legacy::_C_shadow::sin;
+    using ::_C_legacy::_C_shadow::tan;
+    using ::_C_legacy::_C_shadow::cosh;
+    using ::_C_legacy::_C_shadow::sinh;
+    using ::_C_legacy::_C_shadow::tanh;
+    using ::_C_legacy::_C_shadow::exp;
+    using ::_C_legacy::_C_shadow::frexp;
+    using ::_C_legacy::_C_shadow::ldexp;
+    using ::_C_legacy::_C_shadow::log;
+    using ::_C_legacy::_C_shadow::log10;
+    using ::_C_legacy::_C_shadow::modf;
+    using ::_C_legacy::_C_shadow::pow;
+    using ::_C_legacy::_C_shadow::sqrt;
+    using ::_C_legacy::_C_shadow::ceil;
+    using ::_C_legacy::_C_shadow::fabs;
+    using ::_C_legacy::_C_shadow::floor;
+    using ::_C_legacy::_C_shadow::fmod;
 
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif
