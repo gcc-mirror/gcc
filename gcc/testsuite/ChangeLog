@@ -1,3 +1,7 @@
+2004-08-26  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c-torture/compile/pr17119.c: New test.
+
 2004-08-26  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/c90-typespec-1.c, gcc.dg/c99-typespec-1.c: New tests.

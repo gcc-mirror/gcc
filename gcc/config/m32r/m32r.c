@@ -1174,11 +1174,8 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	y = force_reg (GET_MODE (x), y);
       else
 	{
-	  int ok_const =
-	    (code == LTU || code == LEU || code == GTU || code == GEU)
-	    ? uint16_operand (y, GET_MODE (y))
-	    : reg_or_cmp_int16_operand (y, GET_MODE (y));
-	  
+	  int ok_const = reg_or_int16_operand (y, GET_MODE (y));
+
 	  if (! ok_const)
 	    y = force_reg (GET_MODE (x), y);
 	}
