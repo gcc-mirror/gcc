@@ -1480,6 +1480,17 @@ shift_op (op, mode)
 	  || GET_CODE (op) == ROTATE
 	  || GET_CODE (op) == ROTATERT);
 }
+
+/* Return 1 if OP is COMPARE rtx with mode VOIDmode.
+   MODE is not used.  */
+
+int
+VOIDmode_compare_op (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  return GET_CODE (op) == COMPARE && GET_MODE (op) == VOIDmode;
+}
 
 /* Output code to perform a 387 binary operation in INSN, one of PLUS,
    MINUS, MULT or DIV.  OPERANDS are the insn operands, where operands[3]
