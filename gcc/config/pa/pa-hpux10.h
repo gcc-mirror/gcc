@@ -147,10 +147,3 @@ Boston, MA 02111-1307, USA.  */
    better than the assembler shipped with older versions of hpux.  */
 #undef NEW_HP_ASSEMBLER
 #define NEW_HP_ASSEMBLER 1
-
-/* CVS GAS as of 4/28/04 supports a comdat parameter for the .nsubspa
-   directive.  This provides one only linkage semantics even though we
-   don't have weak support.  */
-#undef SUPPORTS_ONE_ONLY
-#define SUPPORTS_ONE_ONLY (TARGET_GAS)
-#undef MAKE_DECL_ONE_ONLY

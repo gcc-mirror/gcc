@@ -1,3 +1,17 @@
+2004-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR c++/17242
+	* configure.ac: Add GAS check for HP-UX .nsubspa comdat.
+	* configure, config.in: Rebuilt.
+	* config/pa/pa-hpux10.h (SUPPORTS_ONE_ONLY, MAKE_DECL_ONE_ONLY): Delete
+	defines.
+	* config/pa/pa.c (pa_select_section): Allow uninitialized variables in
+	one-only (comdat) subspaces.
+	* config/pa/som.h (SUPPORTS_SOM_COMDAT): New define.
+	(SUPPORTS_ONE_ONLY): True if SUPPORTS_WEAK or SUPPORTS_SOM_COMDAT are
+	true.
+	(MAKE_DECL_ONE_ONLY): Place uninitialized variables in common.
+
 2004-12-14  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* combine.c (combine_validate_cost): Consider cost of

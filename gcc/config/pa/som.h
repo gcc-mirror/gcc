@@ -311,11 +311,30 @@ do {						\
 #define SUPPORTS_WEAK 0
 #endif
 
-/* We can support one only if we support weak.  */
-#define SUPPORTS_ONE_ONLY SUPPORTS_WEAK
+/* CVS GAS as of 4/28/04 supports a comdat parameter for the .nsubspa
+   directive.  This provides one-only linkage semantics even though we
+   don't have weak support.  */
+#ifdef HAVE_GAS_NSUBSPA_COMDAT
+#define SUPPORTS_SOM_COMDAT (TARGET_GAS)
+#else
+#define SUPPORTS_SOM_COMDAT 0
+#endif
 
-/* Use weak (secondary definitions) to make one only declarations.  */
-#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+/* We can support one only if we support weak or comdat.  */
+#define SUPPORTS_ONE_ONLY (SUPPORTS_WEAK || SUPPORTS_SOM_COMDAT)
+
+/* We use DECL_COMMON for uninitialized one-only variables as we don't
+   have linkonce .bss.  We use SOM secondary definitions or comdat for
+   initialized variables and functions.  */
+#define MAKE_DECL_ONE_ONLY(DECL) \
+  do {									\
+    if (TREE_CODE (DECL) == VAR_DECL					\
+        && (DECL_INITIAL (DECL) == 0					\
+            || DECL_INITIAL (DECL) == error_mark_node))			\
+      DECL_COMMON (DECL) = 1;						\
+    else if (SUPPORTS_WEAK)						\
+      DECL_WEAK (DECL) = 1;						\
+  } while (0)
 
 /* This is how we tell the assembler that a symbol is weak.  The SOM
    weak implementation uses the secondary definition (sdef) flag.

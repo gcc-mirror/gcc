@@ -9350,8 +9350,7 @@ pa_select_section (tree exp, int reloc,
   else if (TARGET_SOM
 	   && TREE_CODE (exp) == VAR_DECL
 	   && DECL_ONE_ONLY (exp)
-	   && !DECL_WEAK (exp)
-	   && DECL_INITIAL (exp))
+	   && !DECL_WEAK (exp))
     som_one_only_data_section ();
   else
     data_section ();
