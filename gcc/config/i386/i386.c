@@ -3683,7 +3683,7 @@ notice_update_cc (exp)
           if (stack_regs_mentioned_p (SET_SRC (XVECEXP (exp, 0, 0))))
 	    {
               cc_status.flags |= CC_IN_80387;
-	      if (TARGET_CMOVE && stack_regs_mentioned_p
+	      if (0 && TARGET_CMOVE && stack_regs_mentioned_p
 		  (XEXP (SET_SRC (XVECEXP (exp, 0, 0)), 1)))
 		cc_status.flags |= CC_FCOMI;
 	    }
@@ -4013,7 +4013,7 @@ output_float_compare (insn, operands)
   int unordered_compare = GET_MODE (SET_SRC (body)) == CCFPEQmode;
   rtx tmp;
 
-  if (TARGET_CMOVE && STACK_REG_P (operands[1]))
+  if (0 && TARGET_CMOVE && STACK_REG_P (operands[1]))
     {
       cc_status.flags |= CC_FCOMI;
       cc_prev_status.flags &= ~CC_TEST_AX;
