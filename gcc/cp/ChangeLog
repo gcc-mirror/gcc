@@ -1,3 +1,8 @@
+2003-02-09  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* cp-tree.h (struct lang_type_header): Make all fields unsigned
+	char.
+
 2003-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7129
