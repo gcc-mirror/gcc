@@ -8290,9 +8290,27 @@ reload_cse_regs (first)
 	  int count = 0;
 	  if (reload_cse_noop_set_p (body, insn))
 	    {
-	      PUT_CODE (insn, NOTE);
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (insn) = 0;
+	      /* If this sets the return value of the function, we must keep
+		 a USE around, in case this is in a different basic block
+		 than the final USE.  Otherwise, we could loose important
+		 register lifeness information on SMALL_REGISTER_CLASSES
+		 machines, where return registers might be used as spills:
+		 subsequent passes assume that spill registers are dead at
+		 the end of a basic block.  */
+	      if (REG_FUNCTION_VALUE_P (SET_DEST (body)))
+		{
+		  pop_obstacks ();
+		  PATTERN (insn) = gen_rtx_USE (VOIDmode, SET_DEST (body));
+		  INSN_CODE (insn) = -1;
+		  REG_NOTES (insn) = NULL_RTX;
+		  push_obstacks (&reload_obstack, &reload_obstack);
+		}
+	      else
+		{
+		  PUT_CODE (insn, NOTE);
+		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		  NOTE_SOURCE_FILE (insn) = 0;
+		}
 	      reload_cse_delete_death_notes (insn);
 
 	      /* We're done with this insn.  */
@@ -8313,19 +8331,43 @@ reload_cse_regs (first)
       else if (GET_CODE (body) == PARALLEL)
 	{
 	  int count = 0;
+	  rtx value = NULL_RTX;
 
 	  /* If every action in a PARALLEL is a noop, we can delete
              the entire PARALLEL.  */
 	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
-	    if ((GET_CODE (XVECEXP (body, 0, i)) != SET
-		 || ! reload_cse_noop_set_p (XVECEXP (body, 0, i), insn))
-		&& GET_CODE (XVECEXP (body, 0, i)) != CLOBBER)
-	      break;
+	    {
+	      rtx part = XVECEXP (body, 0, i);
+	      if (GET_CODE (part) == SET)
+		{
+		  if (! reload_cse_noop_set_p (part, insn))
+		    break;
+		  if (REG_FUNCTION_VALUE_P (SET_DEST (part)))
+		    {
+		      if (value)
+			break;
+		      value = SET_DEST (part);
+		    }
+		}
+	      else if (GET_CODE (part) != CLOBBER)
+		break;
+	    }
 	  if (i < 0)
 	    {
-	      PUT_CODE (insn, NOTE);
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (insn) = 0;
+	      if (value)
+		{
+		  pop_obstacks ();
+		  PATTERN (insn) = gen_rtx_USE (VOIDmode, value);
+		  INSN_CODE (insn) = -1;
+		  REG_NOTES (insn) = NULL_RTX;
+		  push_obstacks (&reload_obstack, &reload_obstack);
+		}
+	      else
+		{
+		  PUT_CODE (insn, NOTE);
+		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		  NOTE_SOURCE_FILE (insn) = 0;
+		}
 	      reload_cse_delete_death_notes (insn);
 
 	      /* We're done with this insn.  */
