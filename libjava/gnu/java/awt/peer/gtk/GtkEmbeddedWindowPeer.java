@@ -1,4 +1,5 @@
-/* GtkEmbeddedWindowPeer.java -- Implements FramePeer using a GtkPlug
+/* GtkEmbeddedWindowPeer.java -- Implements EmbeddedWindowPeer using a
+   GtkPlug
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,12 +45,15 @@ import gnu.java.awt.peer.EmbeddedWindowPeer;
 public class GtkEmbeddedWindowPeer extends GtkFramePeer
   implements EmbeddedWindowPeer
 {
-  native void create();
-  native void construct (int window_id);
+  native void create(int window_id);
+
+  void create ()
+  {
+    create (((EmbeddedWindow) awtComponent).getHandle());
+  }
 
   public GtkEmbeddedWindowPeer (EmbeddedWindow w)
   {
     super (w);
-    construct (w.getHandle());
   }
 }

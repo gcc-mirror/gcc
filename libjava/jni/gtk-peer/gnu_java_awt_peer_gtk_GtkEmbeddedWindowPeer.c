@@ -42,15 +42,14 @@ exception statement from your version. */
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_create
-  (JNIEnv *env, jobject obj)
+  (JNIEnv *env, jobject obj, jint window_id)
 {
-  gpointer window;
+  GtkWidget *window;
   GtkWidget *vbox, *layout;
 
   gdk_threads_enter ();
 
-  /* Create an "unplugged" GtkPlug. */
-  window = gtk_plug_new (0);
+  window = gtk_plug_new (window_id);
 
   vbox = gtk_vbox_new (0, 0);
   layout = gtk_layout_new (NULL, NULL);
@@ -63,19 +62,4 @@ Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_create
   gdk_threads_leave ();
 
   NSA_SET_PTR (env, obj, window);
-}
-
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_construct
-  (JNIEnv *env, jobject obj, jint window_id)
-{
-  void *ptr;
-
-  ptr = NSA_GET_PTR (env, obj);
-
-  gdk_threads_enter ();
-
-  gtk_plug_construct (GTK_PLUG (ptr), window_id);
-
-  gdk_threads_leave ();
 }

@@ -1,3 +1,14 @@
+2003-09-16  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java (construct):
+	Remove method declaration.
+	(create()): Call native create.
+	(create(int)): New method.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c:
+	(create): Add window_id parameter.  Call gtk_plug_new with
+	window_id parameter.
+	(construct): Remove method implementation.
+
 2003-09-16  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* Makefile.am: (MOSTLYCLEANFILES) Removed libtool objects.
