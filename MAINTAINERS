@@ -61,7 +61,7 @@ objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 cpplib			Dave Brolley		brolley@redhat.com
 cpplib			Per Bothner		per@bothner.com
 cpplib			Zack Weinberg		zack@wolery.cumb.org
-cpplib			Neil Booth		neilb@earthling.net
+cpplib			Neil Booth		neil@daikokuya.demon.co.uk
 alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@redhat.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
@@ -103,7 +103,6 @@ in changes outside of the parts of the compiler they maintain.
 			Write After Approval
 Scott Bambrough					scottb@netwinder.org
 Phil Blundell					pb@futuretv.com
-Neil Booth					neilb@earthling.net
 Andrew cagney					cagney@redhat.com
 Eric Christopher				echristo@redhat.com
 William Cohen					wcohen@redhat.com
