@@ -5131,6 +5131,11 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
   if (TREE_CODE (exp) == ERROR_MARK)
     return const0_rtx;
 
+  /* If we have nothing to store, do nothing unless the expression has
+     side-effects.  */
+  if (bitsize == 0)
+    return expand_expr (exp, const0_rtx, VOIDmode, 0);
+
   if (bitsize < HOST_BITS_PER_WIDE_INT)
     width_mask = ((HOST_WIDE_INT) 1 << bitsize) - 1;
 
