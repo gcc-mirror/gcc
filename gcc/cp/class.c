@@ -444,9 +444,12 @@ build_vtable_entry_ref (basetype, idx)
   s = build_tree_list (build_string (1, "s"), s);
 
   i = build_array_ref (first_fn, idx);
-  i = build_c_cast (ptrdiff_type_node, build_unary_op (ADDR_EXPR, i, 0));
+  /* We must not convert to ptrdiff_type node here, since this could widen
+     from a partial to an integral node, which would create a
+     convert_expression that would be in the way of any simplifications.  */
+  i = build_c_cast (string_type_node, build_unary_op (ADDR_EXPR, i, 0));
   i2 = build_array_ref (vtable, build_int_2 (0,0));
-  i2 = build_c_cast (ptrdiff_type_node, build_unary_op (ADDR_EXPR, i2, 0));
+  i2 = build_c_cast (string_type_node, build_unary_op (ADDR_EXPR, i2, 0));
   i = cp_build_binary_op (MINUS_EXPR, i, i2);
   i = build_tree_list (build_string (1, "i"), i);
 
