@@ -2867,9 +2867,24 @@ record_constant_1 (exp)
 	/* Record the offset.  */
 	obstack_grow (&permanent_obstack,
 		      (char *) &value.offset, sizeof value.offset);
-	/* Record the symbol name.  */
-	obstack_grow (&permanent_obstack, XSTR (value.base, 0),
-		      strlen (XSTR (value.base, 0)) + 1);
+
+	switch (GET_CODE (value.base))
+	  {
+	  case SYMBOL_REF:
+	    /* Record the symbol name.  */
+	    obstack_grow (&permanent_obstack, XSTR (value.base, 0),
+			  strlen (XSTR (value.base, 0)) + 1);
+	    break;
+	  case LABEL_REF:
+	    /* Record the address of the CODE_LABEL.  It may not have
+	       been emitted yet, so it's UID may be zero.  But pointer
+	       identity is good enough.  */
+	    obstack_grow (&permanent_obstack, &XEXP (value.base, 0),
+			  sizeof (rtx));
+	    break;
+	  default:
+	    abort ();
+	  }
       }
       return;
 
