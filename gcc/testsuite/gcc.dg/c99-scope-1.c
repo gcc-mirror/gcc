@@ -1,6 +1,6 @@
 /* Test for new block scopes in C99.  Inspired by C99 Rationale (N897).  */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
-/* { dg-do run { xfail *-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-std=iso9899:1999 -pedantic-errors" } */
 
 struct foo {
