@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987, 1988, 91-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 91-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -152,21 +152,40 @@ int
 check_asm_operands (x)
      rtx x;
 {
-  int noperands = asm_noperands (x);
+  int noperands;
   rtx *operands;
+  char **constraints;
   int i;
 
+  /* Post-reload, be more strict with things.  */
+  if (reload_completed)
+    {
+      /* ??? Doh!  We've not got the wrapping insn.  Cook one up.  */
+      extract_insn (make_insn_raw (x));
+      constrain_operands (1);
+      return which_alternative >= 0;
+    }
+
+  noperands = asm_noperands (x);
   if (noperands < 0)
     return 0;
   if (noperands == 0)
     return 1;
 
   operands = (rtx *) alloca (noperands * sizeof (rtx));
-  decode_asm_operands (x, operands, NULL_PTR, NULL_PTR, NULL_PTR);
+  constraints = (char **) alloca (noperands * sizeof (char *));
+
+  decode_asm_operands (x, operands, NULL_PTR, constraints, NULL_PTR);
 
   for (i = 0; i < noperands; i++)
-    if (!general_operand (operands[i], VOIDmode))
-      return 0;
+    {
+      char *c = constraints[i];
+      if (ISDIGIT ((unsigned char)c[0]))
+	c = constraints[c[0] - '0'];
+
+      if (! asm_operand_ok (operands[i], c))
+        return 0;
+    }
 
   return 1;
 }
@@ -1492,6 +1511,204 @@ decode_asm_operands (body, operands, operand_locs, constraints, modes)
     }
 
   return template;
+}
+
+/* Check if an asm_operand matches it's constraints.  */
+
+int
+asm_operand_ok (op, constraint)
+     rtx op;
+     const char *constraint;
+{
+  /* Use constrain_operands after reload.  */
+  if (reload_completed)
+    abort ();
+
+  while (*constraint)
+    {
+      switch (*constraint++)
+	{
+	case '=':
+	case '+':
+	case '*':
+	case '%':
+	case '?':
+	case '!':
+	case '#':
+	case '&':
+	case ',':
+	  break;
+
+	case '0': case '1': case '2': case '3': case '4':
+	case '5': case '6': case '7': case '8': case '9':
+	  /* Our caller is supposed to have given us the proper
+	     matching constraint.  */
+	  /* abort (); */
+	  break;
+
+	case 'p':
+	  if (address_operand (op, VOIDmode))
+	    return 1;
+	  break;
+
+	case 'm':
+	case 'V': /* non-offsettable */
+	  if (memory_operand (op, VOIDmode))
+	    return 1;
+	  break;
+
+	case 'o': /* offsettable */
+	  if (offsettable_nonstrict_memref_p (op))
+	    return 1;
+	  break;
+
+	case '<':
+	  if (GET_CODE (op) == MEM
+	      && (GET_CODE (XEXP (op, 0)) == PRE_DEC
+                  || GET_CODE (XEXP (op, 0)) == POST_DEC))
+	    return 1;
+	  break;
+
+	case '>':
+	  if (GET_CODE (op) == MEM
+	      && (GET_CODE (XEXP (op, 0)) == PRE_INC
+                  || GET_CODE (XEXP (op, 0)) == POST_INC))
+	    return 1;
+	  break;
+
+	case 'E':
+#ifndef REAL_ARITHMETIC
+	  /* Match any floating double constant, but only if
+	     we can examine the bits of it reliably.  */
+	  if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
+	       || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
+	      && GET_MODE (op) != VOIDmode && ! flag_pretend_float)
+	    break;
+#endif
+	  /* FALLTHRU */
+
+	case 'F':
+	  if (GET_CODE (op) == CONST_DOUBLE)
+	    return 1;
+	  break;
+
+	case 'G':
+	  if (GET_CODE (op) == CONST_DOUBLE
+	      && CONST_DOUBLE_OK_FOR_LETTER_P (op, 'G'))
+	    return 1;
+	  break;
+	case 'H':
+	  if (GET_CODE (op) == CONST_DOUBLE
+	      && CONST_DOUBLE_OK_FOR_LETTER_P (op, 'H'))
+	    return 1;
+	  break;
+
+	case 's':
+	  if (GET_CODE (op) == CONST_INT
+	      || (GET_CODE (op) == CONST_DOUBLE
+		  && GET_MODE (op) == VOIDmode))
+	    break;
+	  /* FALLTHRU */
+
+	case 'i':
+	  if (CONSTANT_P (op)
+#ifdef LEGITIMATE_PIC_OPERAND_P
+	      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
+#endif
+	      )
+	    return 1;
+	  break;
+
+	case 'n':
+	  if (GET_CODE (op) == CONST_INT
+	      || (GET_CODE (op) == CONST_DOUBLE
+		  && GET_MODE (op) == VOIDmode))
+	    return 1;
+	  break;
+
+	case 'I':
+	  if (GET_CODE (op) == CONST_INT
+	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'I'))
+	    return 1;
+	  break;
+	case 'J':
+	  if (GET_CODE (op) == CONST_INT
+	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'J'))
+	    return 1;
+	  break;
+	case 'K':
+	  if (GET_CODE (op) == CONST_INT
+	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'K'))
+	    return 1;
+	  break;
+	case 'L':
+	  if (GET_CODE (op) == CONST_INT
+	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'L'))
+	    return 1;
+	  break;
+	case 'M':
+	  if (GET_CODE (op) == CONST_INT
+	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'M'))
+	    return 1;
+	  break;
+	case 'N':
+	  if (GET_CODE (op) == CONST_INT
+	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'N'))
+	    return 1;
+	  break;
+	case 'O':
+	  if (GET_CODE (op) == CONST_INT
+	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'O'))
+	    return 1;
+	  break;
+	case 'P':
+	  if (GET_CODE (op) == CONST_INT
+	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'P'))
+	    return 1;
+	  break;
+
+	case 'X':
+	  return 1;
+
+	case 'g':
+	  if (general_operand (op, VOIDmode))
+	    return 1;
+	  break;
+
+#ifdef EXTRA_CONSTRAINT
+	case 'Q':
+	  if (EXTRA_CONSTRAINT (op, 'Q'))
+	    return 1;
+	  break;
+	case 'R':
+	  if (EXTRA_CONSTRAINT (op, 'R'))
+	    return 1;
+	  break;
+	case 'S':
+	  if (EXTRA_CONSTRAINT (op, 'S'))
+	    return 1;
+	  break;
+	case 'T':
+	  if (EXTRA_CONSTRAINT (op, 'T'))
+	    return 1;
+	  break;
+	case 'U':
+	  if (EXTRA_CONSTRAINT (op, 'U'))
+	    return 1;
+	  break;
+#endif
+
+	case 'r':
+	default:
+	  if (GET_MODE (op) == BLKmode)
+	    break;
+	  if (register_operand (op, VOIDmode))
+	    return 1;
+	  break;
+	}
+    }
+
+  return 0;
 }
 
 /* Given an rtx *P, if it is a sum containing an integer constant term,

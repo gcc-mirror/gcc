@@ -1,3 +1,14 @@
+Fri Jan 15 18:42:12 1999  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (queued_subexp_p): Make public.
+	* expr.h (queued_subexp_p): Declare it.
+	* recog.c (asm_operand_ok): New function.
+	(check_asm_operands): Use it.  After reload, use constrain_operands 
+	instead.
+	* recog.h (asm_operand_ok): Declare it.
+	* stmt.c (expand_asm_operands): Use it to try harder to make
+	asms initially satisfy their constraints.
+
 Fri Jan 15 17:43:59 1999  Jeffrey A. Law  <law@rtl.cygnus.com>
 
 	* sparc.h (LEGITIMIZE_RELOAD_ADDRESS): Do not create

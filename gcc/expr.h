@@ -716,6 +716,9 @@ extern rtx protect_from_queue PROTO((rtx, int));
 /* Perform all the pending incrementations.  */
 extern void emit_queue PROTO((void));
 
+/* Tell if something has a queued subexpression.  */
+extern int queued_subexp_p PROTO((rtx));
+
 /* Emit some rtl insns to move data between rtx's, converting machine modes.
    Both modes must be floating or both fixed.  */
 extern void convert_move PROTO((rtx, rtx, int));

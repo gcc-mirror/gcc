@@ -1397,9 +1397,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   for (tail = inputs; tail; tail = TREE_CHAIN (tail))
     {
       int j;
-      int allows_reg = 0;
-      char *constraint;
+      int allows_reg = 0, allows_mem = 0;
+      char *constraint, *orig_constraint;
       int c_len;
+      rtx op;
 
       /* If there's an erroneous arg, emit no insn,
 	 because the ASM_INPUT would get VOIDmode
@@ -1417,6 +1418,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       c_len = TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1;
       constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
+      orig_constraint = constraint;
 
       /* Make sure constraint has neither `=', `+', nor '&'.  */
 
@@ -1424,19 +1426,28 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	switch (constraint[j])
 	  {
 	  case '+':  case '=':  case '&':
-	    error ("input operand constraint contains `%c'", constraint[j]);
-	    return;
+	    if (constraint == orig_constraint)
+	      {
+	        error ("input operand constraint contains `%c'", constraint[j]);
+	        return;
+	      }
+	    break;
 
 	  case '%':
-	    if (i + 1 == ninputs - ninout)
+	    if (constraint == orig_constraint
+		&& i + 1 == ninputs - ninout)
 	      {
 		error ("`%%' constraint used with last operand");
 		return;
 	      }
 	    break;
 
+	  case 'V':  case 'm':  case 'o':
+	    allows_mem = 1;
+	    break;
+
+	  case '<':  case '>':
 	  case '?':  case '!':  case '*':
-	  case 'V':  case 'm':  case 'o':  case '<':  case '>':
 	  case 'E':  case 'F':  case 'G':  case 'H':  case 'X':
 	  case 's':  case 'i':  case 'n':
 	  case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
@@ -1460,48 +1471,73 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		return;
 	      }
 
+	    /* Try and find the real constraint for this dup.  */
+	    if (j == 0 && c_len == 1)
+	      {
+		tree o = outputs;
+		for (j = constraint[j] - '0'; j > 0; --j)
+		  o = TREE_CHAIN (o);
+	
+		c_len = TREE_STRING_LENGTH (TREE_PURPOSE (o)) - 1;
+		constraint = TREE_STRING_POINTER (TREE_PURPOSE (o));
+		j = 0;
+		break;
+	      }
+
 	    /* ... fall through ... */
 
-	  case 'p':  case 'g':  case 'r':
+	  case 'p':  case 'r':
 	  default:
 	    allows_reg = 1;
 	    break;
+
+	  case 'g':
+	    allows_reg = 1;
+	    allows_mem = 1;
+	    break;
 	  }
 
-      if (! allows_reg)
+      if (! allows_reg && allows_mem)
 	mark_addressable (TREE_VALUE (tail));
 
-      XVECEXP (body, 3, i)      /* argvec */
-	= expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
-      if (CONSTANT_P (XVECEXP (body, 3, i))
-	  && ! general_operand (XVECEXP (body, 3, i),
-				TYPE_MODE (TREE_TYPE (TREE_VALUE (tail)))))
+      op = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
+
+      if (! asm_operand_ok (op, constraint))
 	{
 	  if (allows_reg)
-	    XVECEXP (body, 3, i)
-	      = force_reg (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
-			   XVECEXP (body, 3, i));
+	    op = force_reg (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))), op);
+	  else if (!allows_mem)
+	    warning ("asm operand %d probably doesn't match constraints", i);
+	  else if (CONSTANT_P (op))
+	    op = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
+				  op);
+	  else if (GET_CODE (op) == REG
+		   || GET_CODE (op) == SUBREG
+		   || GET_CODE (op) == CONCAT)
+	    {
+	      tree type = TREE_TYPE (TREE_VALUE (tail));
+	      rtx memloc = assign_temp (type, 1, 1, 1);
+
+	      emit_move_insn (memloc, op);
+	      op = memloc;
+	    }
+	  else if (GET_CODE (op) == MEM && MEM_VOLATILE_P (op))
+	    /* We won't recognize volatile memory as available a
+	       memory_operand at this point.  Ignore it.  */
+	    ;
+	  else if (queued_subexp_p (op))
+	    ;
 	  else
-	    XVECEXP (body, 3, i)
-	      = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
-				 XVECEXP (body, 3, i));
+	    /* ??? Leave this only until we have experience with what
+	       happens in combine and elsewhere when constraints are
+	       not satisfied.  */
+	    warning ("asm operand %d probably doesn't match constraints", i);
 	}
-
-      if (! allows_reg
-	  && (GET_CODE (XVECEXP (body, 3, i)) == REG
-	      || GET_CODE (XVECEXP (body, 3, i)) == SUBREG
-	      || GET_CODE (XVECEXP (body, 3, i)) == CONCAT))
-	{
-	  tree type = TREE_TYPE (TREE_VALUE (tail));
-	  rtx memloc = assign_temp (type, 1, 1, 1);
-
-	  emit_move_insn (memloc, XVECEXP (body, 3, i));
-	  XVECEXP (body, 3, i) = memloc;
-	}
+      XVECEXP (body, 3, i) = op;
 
       XVECEXP (body, 4, i)      /* constraints */
 	= gen_rtx_ASM_INPUT (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
-			     constraint);
+			     orig_constraint);
       i++;
     }
 
