@@ -60,62 +60,72 @@ extern java::lang::Class IntegerClass;
 void
 java::net::PlainDatagramSocketImpl::create ()
 {
-  JvThrow (new SocketException (JvNewStringLatin1 ("DatagramSocketImpl.create: unimplemented")));
+  throw new SocketException (
+    JvNewStringLatin1 ("DatagramSocketImpl.create: unimplemented"));
 }
 
 void
 java::net::PlainDatagramSocketImpl::bind (jint, java::net::InetAddress *)
 {
-  JvThrow (new BindException (JvNewStringLatin1 ("DatagramSocketImpl.bind: unimplemented")));
+  throw new BindException (
+    JvNewStringLatin1 ("DatagramSocketImpl.bind: unimplemented"));
 }
 
 jint
 java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *)
 {
-  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.peek: unimplemented")));
+  throw new java::io::IOException (
+    JvNewStringLatin1 ("DatagramSocketImpl.peek: unimplemented"));
 }
 
 void
 java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *)
 {
-  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.send: unimplemented")));
+  throw new java::io::IOException (
+    JvNewStringLatin1 ("DatagramSocketImpl.send: unimplemented"));
 }
 
 void
 java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *)
 {
-  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.receive: unimplemented")));
+  throw new java::io::IOException (
+    JvNewStringLatin1 ("DatagramSocketImpl.receive: unimplemented"));
 }
 
 void
 java::net::PlainDatagramSocketImpl::setTimeToLive (jint)
 {
-  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.setTimeToLive: unimplemented")));
+  throw new java::io::IOException (
+    JvNewStringLatin1 ("DatagramSocketImpl.setTimeToLive: unimplemented"));
 }
 
 jint
 java::net::PlainDatagramSocketImpl::getTimeToLive ()
 {
-  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.getTimeToLive: unimplemented")));
+  throw new java::io::IOException (
+    JvNewStringLatin1 ("DatagramSocketImpl.getTimeToLive: unimplemented"));
 }
 
 void
 java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *,
 					      jboolean)
 {
-  JvThrow (new java::io::IOException (JvNewStringLatin1 ("DatagramSocketImpl.mcastGrp: unimplemented")));
+  throw new java::io::IOException (
+    JvNewStringLatin1 ("DatagramSocketImpl.mcastGrp: unimplemented"));
 }
 
 void
 java::net::PlainDatagramSocketImpl::setOption (jint, java::lang::Object *)
 {
-  JvThrow (new SocketException (JvNewStringLatin1 ("DatagramSocketImpl.setOption: unimplemented")));
+  throw new SocketException (
+    JvNewStringLatin1 ("DatagramSocketImpl.setOption: unimplemented"));
 }
 
 java::lang::Object *
 java::net::PlainDatagramSocketImpl::getOption (jint)
 {
-  JvThrow (new SocketException (JvNewStringLatin1 ("DatagramSocketImpl.getOption: unimplemented")));
+  throw new SocketException (
+    JvNewStringLatin1 ("DatagramSocketImpl.getOption: unimplemented"));
 }
 
 #else /* DISABLE_JAVA_NET */
@@ -161,7 +171,7 @@ java::net::PlainDatagramSocketImpl::create ()
   if (sock < 0)
     {
       char* strerr = strerror (errno);
-      JvThrow (new java::net::SocketException (JvNewStringUTF (strerr)));
+      throw new java::net::SocketException (JvNewStringUTF (strerr));
     }
   fnum = sock;
   fd = new java::io::FileDescriptor (sock);
@@ -214,7 +224,7 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
     }
  error:
   char* strerr = strerror (errno);
-  JvThrow (new java::net::BindException (JvNewStringUTF (strerr)));
+  throw new java::net::BindException (JvNewStringUTF (strerr));
 }
 
 jint
@@ -252,7 +262,7 @@ java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *i)
   return rport;
  error:
   char* strerr = strerror (errno);
-  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
+  throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
 void
@@ -287,6 +297,9 @@ java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *p)
 
   if (::sendto (fnum, (char *) dbytes, p->getLength(), 0, ptr, len) >= 0)
     return;
+
+  char* strerr = strerror (errno);
+  throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
 void
@@ -311,7 +324,7 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
       if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
 	goto error;
       else if (retval == 0)
-	JvThrow (new java::io::InterruptedIOException ());
+	throw new java::io::InterruptedIOException ();
     }
 
   retlen =
@@ -345,7 +358,7 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
   return;
  error:
   char* strerr = strerror (errno);
-  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
+  throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
 void
@@ -358,7 +371,7 @@ java::net::PlainDatagramSocketImpl::setTimeToLive (jint ttl)
     return;
 
   char* strerr = strerror (errno);
-  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
+  throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
 jint
@@ -371,7 +384,7 @@ java::net::PlainDatagramSocketImpl::getTimeToLive ()
     return ((int) val) & 0xFF;
 
   char* strerr = strerror (errno);
-  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
+  throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
 void
@@ -415,8 +428,11 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
   else
     throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-  if (::setsockopt (fnum, level, opname, ptr, len) == 0)
+  if (::setsockopt (fnum, level, opname, ptr, len) != 0)
     return;
+
+  char* strerr = strerror (errno);
+  throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
 void
@@ -443,12 +459,12 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
   switch (optID) 
     {
       case _Jv_TCP_NODELAY_ :
-        JvThrow (new java::net::SocketException (
-          JvNewStringUTF ("TCP_NODELAY not valid for UDP")));      
+        throw new java::net::SocketException (
+          JvNewStringUTF ("TCP_NODELAY not valid for UDP"));
         return;
       case _Jv_SO_LINGER_ :
-        JvThrow (new java::net::SocketException (
-          JvNewStringUTF ("SO_LINGER not valid for UDP")));      
+        throw new java::net::SocketException (
+          JvNewStringUTF ("SO_LINGER not valid for UDP"));
         return;
       case _Jv_SO_SNDBUF_ :
       case _Jv_SO_RCVBUF_ :
@@ -458,8 +474,8 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
         if (::setsockopt (fnum, SOL_SOCKET, opt, (char *) &val, val_len) != 0)
 	  goto error;    
 #else
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported")));
+        throw new java::lang::InternalError (
+          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported"));
 #endif 
         return;
       case _Jv_SO_REUSEADDR_ :
@@ -468,13 +484,13 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
 	    val_len) != 0)
 	  goto error;
 #else
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("SO_REUSEADDR not supported")));
+        throw new java::lang::InternalError (
+          JvNewStringUTF ("SO_REUSEADDR not supported"));
 #endif 
 	return;
       case _Jv_SO_BINDADDR_ :
-        JvThrow (new java::net::SocketException (
-          JvNewStringUTF ("SO_BINDADDR: read only option")));
+        throw new java::net::SocketException (
+          JvNewStringUTF ("SO_BINDADDR: read only option"));
         return;
       case _Jv_IP_MULTICAST_IF_ :
 	union InAddr u;
@@ -521,7 +537,7 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
 
  error:
   char* strerr = strerror (errno);
-  JvThrow (new java::net::SocketException (JvNewStringUTF (strerr)));
+  throw new java::net::SocketException (JvNewStringUTF (strerr));
 }
 
 java::lang::Object *
@@ -535,13 +551,13 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
   switch (optID)
     {
       case _Jv_TCP_NODELAY_ :
-        JvThrow (new java::net::SocketException (
-          JvNewStringUTF ("TCP_NODELAY not valid for UDP")));      
+        throw new java::net::SocketException (
+          JvNewStringUTF ("TCP_NODELAY not valid for UDP"));
         break;
 
       case _Jv_SO_LINGER_ :
-        JvThrow (new java::net::SocketException (
-          JvNewStringUTF ("SO_LINGER not valid for UDP")));      
+        throw new java::net::SocketException (
+          JvNewStringUTF ("SO_LINGER not valid for UDP"));
         break;    
       case _Jv_SO_RCVBUF_ :
       case _Jv_SO_SNDBUF_ :
@@ -553,8 +569,8 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
         else
 	  return new java::lang::Integer (val);
 #else
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported")));
+        throw new java::lang::InternalError (
+          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported"));
 #endif    
 	break;
       case _Jv_SO_BINDADDR_:
@@ -589,8 +605,8 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
 	  goto error;
 	return new java::lang::Boolean (val != 0);
 #else
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("SO_REUSEADDR not supported")));
+        throw new java::lang::InternalError (
+          JvNewStringUTF ("SO_REUSEADDR not supported"));
 #endif 
 	break;
       case _Jv_IP_MULTICAST_IF_ :
@@ -608,8 +624,8 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
 
 	return java::net::InetAddress::getByName (JvNewStringLatin1 (bytes));
 #else
-	JvThrow (new java::net::SocketException (
-	  JvNewStringUTF ("IP_MULTICAST_IF: not available - no inet_ntoa()")));
+	throw new java::net::SocketException (
+	  JvNewStringUTF ("IP_MULTICAST_IF: not available - no inet_ntoa()"));
 #endif
 	break;
       case _Jv_SO_TIMEOUT_ :
@@ -621,7 +637,7 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
 
  error:
   char* strerr = strerror (errno);
-  JvThrow (new java::net::SocketException (JvNewStringUTF (strerr)));
+  throw new java::net::SocketException (JvNewStringUTF (strerr));
 }
 
 #endif /* DISABLE_JAVA_NET */

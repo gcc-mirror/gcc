@@ -57,43 +57,50 @@ extern java::lang::Class BooleanClass;
 void
 java::net::PlainSocketImpl::create (jboolean)
 {
-  JvThrow (new java::io::IOException (JvNewStringLatin1 ("SocketImpl.create: unimplemented")));
+  throw new java::io::IOException (
+    JvNewStringLatin1 ("SocketImpl.create: unimplemented"));
 }
 
 void
 java::net::PlainSocketImpl::bind (java::net::InetAddress *, jint)
 {
-  JvThrow (new BindException (JvNewStringLatin1 ("SocketImpl.bind: unimplemented")));
+  throw new BindException (
+    JvNewStringLatin1 ("SocketImpl.bind: unimplemented"));
 }
 
 void
 java::net::PlainSocketImpl::connect (java::net::InetAddress *, jint)
 {
-  JvThrow (new ConnectException (JvNewStringLatin1 ("SocketImpl.connect: unimplemented")));
+  throw new ConnectException (
+    JvNewStringLatin1 ("SocketImpl.connect: unimplemented"));
 }
 
 void
 java::net::PlainSocketImpl::listen (jint)
 {
-  JvThrow (new java::io::IOException (JvNewStringLatin1 ("SocketImpl.listen: unimplemented")));
+  throw new java::io::IOException (
+    JvNewStringLatin1 ("SocketImpl.listen: unimplemented"));
 }
 
 void
 java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *)
 {
-  JvThrow (new java::io::IOException (JvNewStringLatin1 ("SocketImpl.accept: unimplemented")));
+  throw new java::io::IOException (
+    JvNewStringLatin1 ("SocketImpl.accept: unimplemented"));
 }
 
 void
 java::net::PlainSocketImpl::setOption (jint, java::lang::Object *)
 {
-  JvThrow (new SocketException (JvNewStringLatin1 ("SocketImpl.setOption: unimplemented")));
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.setOption: unimplemented"));
 }
 
 java::lang::Object *
 java::net::PlainSocketImpl::getOption (jint)
 {
-  JvThrow (new SocketException (JvNewStringLatin1 ("SocketImpl.getOption: unimplemented")));
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.getOption: unimplemented"));
 }
 
 #else /* DISABLE_JAVA_NET */
@@ -117,7 +124,7 @@ java::net::PlainSocketImpl::create (jboolean stream)
   if (sock < 0)
     {
       char* strerr = strerror (errno);
-      JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
+      throw new java::io::IOException (JvNewStringUTF (strerr));
     }
   fnum = sock;
   fd = new java::io::FileDescriptor (sock);
@@ -172,7 +179,7 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
     }
  error:
   char* strerr = strerror (errno);
-  JvThrow (new java::net::BindException (JvNewStringUTF (strerr)));
+  throw new java::net::BindException (JvNewStringUTF (strerr));
 }
 
 void
@@ -218,7 +225,7 @@ java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
   return;  
  error:
   char* strerr = strerror (errno);
-  JvThrow (new java::net::ConnectException (JvNewStringUTF (strerr)));
+  throw new java::net::ConnectException (JvNewStringUTF (strerr));
 }
 
 void
@@ -227,7 +234,7 @@ java::net::PlainSocketImpl::listen (jint backlog)
   if (::listen (fnum, backlog) != 0)
     {
       char* strerr = strerror (errno);
-      JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
+      throw new java::io::IOException (JvNewStringUTF (strerr));
     }
 }
 
@@ -251,8 +258,8 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
       if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
 	goto error;
       else if (retval == 0)
-	JvThrow (new java::io::InterruptedIOException (
-	         JvNewStringUTF("Accept timed out")));
+	throw new java::io::InterruptedIOException (
+	         JvNewStringUTF("Accept timed out"));
     }
 
   new_socket = ::accept (fnum, (sockaddr*) &u, &addrlen);
@@ -285,7 +292,7 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
   return;
  error:
   char* strerr = strerror (errno);
-  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
+  throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
 void
@@ -323,8 +330,8 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
 	    val_len) != 0)
 	  goto error;    
 #else
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("TCP_NODELAY not supported")));      
+        throw new java::lang::InternalError (
+          JvNewStringUTF ("TCP_NODELAY not supported"));
 #endif /* TCP_NODELAY */
         return;
       case _Jv_SO_LINGER_ :
@@ -336,8 +343,8 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
 	    sizeof(l_val)) != 0)
 	  goto error;    
 #else
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("SO_LINGER not supported")));      
+        throw new java::lang::InternalError (
+          JvNewStringUTF ("SO_LINGER not supported"));
 #endif /* SO_LINGER */
         return;
       case _Jv_SO_SNDBUF_ :
@@ -348,21 +355,21 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
         if (::setsockopt (fnum, SOL_SOCKET, opt, (char *) &val, val_len) != 0)
 	  goto error;    
 #else
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported")));
+        throw new java::lang::InternalError (
+          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported"));
 #endif 
         return;
       case _Jv_SO_BINDADDR_ :
-        JvThrow (new java::net::SocketException (
-          JvNewStringUTF ("SO_BINDADDR: read only option")));
+        throw new java::net::SocketException (
+          JvNewStringUTF ("SO_BINDADDR: read only option"));
         return;
       case _Jv_IP_MULTICAST_IF_ :
-        JvThrow (new java::net::SocketException (
-          JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP")));
+        throw new java::net::SocketException (
+          JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP"));
         return;
       case _Jv_SO_REUSEADDR_ :
-        JvThrow (new java::net::SocketException (
-          JvNewStringUTF ("SO_REUSEADDR: not valid for TCP")));
+        throw new java::net::SocketException (
+          JvNewStringUTF ("SO_REUSEADDR: not valid for TCP"));
         return;
       case _Jv_SO_TIMEOUT_ :
 	timeout = val;
@@ -373,7 +380,7 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
 
  error:
   char* strerr = strerror (errno);
-  JvThrow (new java::net::SocketException (JvNewStringUTF (strerr)));
+  throw new java::net::SocketException (JvNewStringUTF (strerr));
 }
 
 java::lang::Object *
@@ -396,8 +403,8 @@ java::net::PlainSocketImpl::getOption (jint optID)
         else
 	  return new java::lang::Boolean (val != 0);
 #else
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("TCP_NODELAY not supported")));      
+        throw new java::lang::InternalError (
+          JvNewStringUTF ("TCP_NODELAY not supported"));
 #endif       
         break;
 
@@ -411,8 +418,8 @@ java::net::PlainSocketImpl::getOption (jint optID)
         else
 	  return new java::lang::Boolean ((__java_boolean)false);
 #else
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("SO_LINGER not supported")));      
+        throw new java::lang::InternalError (
+          JvNewStringUTF ("SO_LINGER not supported"));
 #endif
         break;    
       case _Jv_SO_RCVBUF_ :
@@ -425,8 +432,8 @@ java::net::PlainSocketImpl::getOption (jint optID)
         else
 	  return new java::lang::Integer (val);
 #else
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported")));
+        throw new java::lang::InternalError (
+          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported"));
 #endif    
 	break;
       case _Jv_SO_BINDADDR_:
@@ -456,12 +463,12 @@ java::net::PlainSocketImpl::getOption (jint optID)
 	return localAddress;
 	break;
       case _Jv_IP_MULTICAST_IF_ :
-	JvThrow (new java::net::SocketException (
-	  JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP")));
+	throw new java::net::SocketException (
+	  JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP"));
 	break;
       case _Jv_SO_REUSEADDR_ :
-	JvThrow (new java::net::SocketException (
-	  JvNewStringUTF ("SO_REUSEADDR: not valid for TCP")));
+	throw new java::net::SocketException (
+	  JvNewStringUTF ("SO_REUSEADDR: not valid for TCP"));
 	break;
       case _Jv_SO_TIMEOUT_ :
 	return new java::lang::Integer (timeout);
@@ -472,7 +479,7 @@ java::net::PlainSocketImpl::getOption (jint optID)
 
  error:
   char* strerr = strerror (errno);
-  JvThrow (new java::net::SocketException (JvNewStringUTF (strerr)));
+  throw new java::net::SocketException (JvNewStringUTF (strerr));
 }
 
 #endif /* DISABLE_JAVA_NET */
