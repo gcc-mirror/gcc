@@ -898,7 +898,7 @@ m32r_select_cc_mode (op, x, y)
      int op;
      rtx x, y;
 {
-  return (int)CCmode;
+  return (int)SImode;
 }
 
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
@@ -2150,7 +2150,7 @@ carry_compare_operand (op, int_mode)
 {
   rtx x;
 
-  if (GET_MODE (op) != CCmode && GET_MODE (op) != VOIDmode)
+  if (GET_MODE (op) != SImode && GET_MODE (op) != VOIDmode)
     return FALSE;
 
   if (GET_CODE (op) != NE && GET_CODE (op) != EQ)
@@ -2179,7 +2179,8 @@ emit_cond_move (operands, insn)
      rtx   insn;
 {
   static char buffer [100];
-
+  char * dest = reg_names [REGNO (operands [0])];
+  
   buffer [0] = 0;
   
   /* Destination must be a register.  */
@@ -2190,7 +2191,6 @@ emit_cond_move (operands, insn)
   if (! conditional_move_operand (operands [3], SImode))
     abort();
       
-
   /* Check to see if the test is reversed.  */
   if (GET_CODE (operands [1]) == NE)
     {
@@ -2199,24 +2199,13 @@ emit_cond_move (operands, insn)
       operands [3] = tmp;
     }
 
-  /* Catch a special case where 0 or 1 is being loaded into the destination.
-     Since we already have these values in the C bit we can use a special
-     instruction.  */
-  if (zero_and_one (operands [2], operands [3]))
-    {
-      char * dest = reg_names [REGNO (operands [0])];
-      
-      sprintf (buffer, "mvfc %s, cbr", dest);
-
-      /* If the true value was '0' then we need to invert the results of the move.  */
-      if (INTVAL (operands [2]) == 0)
-	sprintf (buffer + strlen (buffer), "\n\txor3 %s, %s, #1",
-		 dest, dest);
-      
-      return buffer;
-    }
-
-
+  sprintf (buffer, "mvfc %s, cbr", dest);
+  
+  /* If the true value was '0' then we need to invert the results of the move.  */
+  if (INTVAL (operands [2]) == 0)
+    sprintf (buffer + strlen (buffer), "\n\txor3 %s, %s, #1",
+	     dest, dest);
+  
   return buffer;
 }
 

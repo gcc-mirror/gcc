@@ -434,7 +434,7 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 #define FIXED_REGISTERS \
 { 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 1,	\
-  1, 0 }
+  1, 1 }
 
 
 /* 1 for registers not available across function calls.
