@@ -245,7 +245,7 @@ tree_code_get_type (int type_num)
       return void_type_node;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -330,8 +330,7 @@ tree_code_create_function_prototype (unsigned char* chars,
   id = get_identifier ((const char*)chars);
   for (parm = parms; parm; parm = parm->tp.par.next)
     {
-      if (parm->category != parameter_category)
-        abort ();
+      gcc_assert (parm->category == parameter_category);
       type_node = tree_code_get_type (parm->type);
       type_list = tree_cons (NULL_TREE, type_node, type_list);
     }
@@ -375,7 +374,7 @@ tree_code_create_function_prototype (unsigned char* chars,
 
     case AUTOMATIC_STORAGE:
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Process declaration of function defined elsewhere.  */
@@ -403,8 +402,7 @@ tree_code_create_function_initial (tree prev_saved,
   struct prod_token_parm_item* parm;
 
   fn_decl = prev_saved;
-  if (!fn_decl)
-    abort ();
+  gcc_assert (fn_decl);
 
   /* Output message if not -quiet.  */
   announce_function (fn_decl);
@@ -437,10 +435,8 @@ tree_code_create_function_initial (tree prev_saved,
 
       /* Some languages have different nominal and real types.  */
       DECL_ARG_TYPE (parm_decl) = TREE_TYPE (parm_decl);
-      if (!DECL_ARG_TYPE (parm_decl))
-        abort ();
-      if (!fn_decl)
-        abort ();
+      gcc_assert (DECL_ARG_TYPE (parm_decl));
+      gcc_assert (fn_decl);
       DECL_CONTEXT (parm_decl) = fn_decl;
       DECL_SOURCE_LOCATION (parm_decl) = loc;
       parm_list = chainon (parm_decl, parm_list);
@@ -458,12 +454,10 @@ tree_code_create_function_initial (tree prev_saved,
        param_decl = TREE_CHAIN (param_decl),
          this_parm = this_parm->tp.par.next)
     {
-      if (!this_parm)
-        abort (); /* Too few.  */
+      gcc_assert (this_parm); /* Too few.  */
       *this_parm->tp.par.where_to_put_var_tree = param_decl;
     }
-  if (this_parm)
-    abort (); /* Too many.  */
+  gcc_assert (!this_parm); /* Too many.  */
 
   /* Create a new level at the start of the function.  */
 
@@ -541,8 +535,7 @@ tree_code_create_variable (unsigned int storage_class,
   var_type = tree_code_get_type (expression_type);
 
   /* 2. Build the name.  */
-  if (chars[length] != 0)
-    abort (); /* Should be null terminated.  */
+  gcc_assert (chars[length] == 0); /* Should be null terminated.  */
 
   var_id = get_identifier ((const char*)chars);
 
@@ -555,8 +548,7 @@ tree_code_create_variable (unsigned int storage_class,
   else
     DECL_INITIAL (var_decl) = NULL_TREE;
 
-  if (TYPE_SIZE (var_type) == 0)
-    abort (); /* Did not calculate size.  */
+  gcc_assert (TYPE_SIZE (var_type) != 0); /* Did not calculate size.  */
 
   DECL_CONTEXT (var_decl) = current_function_decl;
 
@@ -586,7 +578,7 @@ tree_code_create_variable (unsigned int storage_class,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* This should really only be set if the variable is used.  */
@@ -611,13 +603,12 @@ tree_code_generate_return (tree type, tree exp)
   tree setret;
   tree param;
 
+#ifdef ENABLE_CHECKING
   for (param = DECL_ARGUMENTS (current_function_decl);
        param;
        param = TREE_CHAIN (param))
-    {
-      if (DECL_CONTEXT (param) != current_function_decl)
-        abort ();
-    }
+    gcc_assert (DECL_CONTEXT (param) == current_function_decl);
+#endif
 
   if (exp && TREE_TYPE (TREE_TYPE (current_function_decl)) != void_type_node)
     {
@@ -692,12 +683,10 @@ tree_code_get_expression (unsigned int exp_type,
   switch (exp_type)
     {
     case EXP_ASSIGN:
-      if (!op1 || !op2)
-        abort ();
+      gcc_assert (op1 && op2);
       operator = MODIFY_EXPR;
       ret1 = fold (build2 (operator, void_type_node, op1,
                            fold (build1 (CONVERT_EXPR, TREE_TYPE (op1), op2))));
-
       break;
 
     case EXP_PLUS:
@@ -714,8 +703,7 @@ tree_code_get_expression (unsigned int exp_type,
 
     /* Expand a binary expression.  Ensure the operands are the right type.  */
     binary_expression:
-      if (!op1 || !op2)
-        abort ();
+      gcc_assert (op1 && op2);
       ret1  =  fold (build2 (operator, type,
                        fold (build1 (CONVERT_EXPR, type, op1)),
                        fold (build1 (CONVERT_EXPR, type, op2))));
@@ -725,8 +713,7 @@ tree_code_get_expression (unsigned int exp_type,
          decl for the variable.  If the TYPE is different than the
          variable type, convert it.  */
     case EXP_REFERENCE:
-      if (!op1)
-        abort ();
+      gcc_assert (op1);
       if (type == TREE_TYPE (op1))
         ret1 = op1;
       else
@@ -734,9 +721,7 @@ tree_code_get_expression (unsigned int exp_type,
       break;
 
     case EXP_FUNCTION_INVOCATION:
-      if (!op1 || !op2)
-        abort ();
-
+      gcc_assert (op1 && op2);
       {
         tree fun_ptr;
         fun_ptr = fold (build1 (ADDR_EXPR,
@@ -746,7 +731,7 @@ tree_code_get_expression (unsigned int exp_type,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return ret1;

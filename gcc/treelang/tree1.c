@@ -104,9 +104,6 @@ treelang_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED,
 
   switch (code)
     {
-    default:
-      abort();
-
     case OPT_v:
       if (!version_done)
 	{
@@ -129,6 +126,10 @@ treelang_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED,
     case OPT_flexer_trace:
       option_lexer_trace = value;
       break;
+
+    default:
+      gcc_unreachable ();
+
     }
 
   return 1;
@@ -294,7 +295,7 @@ sanity_check (struct prod_token_parm_item *item)
       break;
       
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }  
 
