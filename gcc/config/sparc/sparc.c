@@ -406,6 +406,85 @@ fp_zero_operand (op)
   return (REAL_VALUES_EQUAL (r, dconst0) && ! REAL_VALUE_MINUS_ZERO (r));
 }
 
+/* Nonzero if OP is a floating point constant which can
+   be loaded into an integer register using a single
+   sethi instruction.  */
+
+int
+fp_sethi_p (op)
+     rtx op;
+{
+  if (GET_CODE (op) == CONST_DOUBLE)
+    {
+      REAL_VALUE_TYPE r;
+      long i;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+      if (REAL_VALUES_EQUAL (r, dconst0) &&
+	  ! REAL_VALUE_MINUS_ZERO (r))
+	return 0;
+      REAL_VALUE_TO_TARGET_SINGLE (r, i);
+      if (SPARC_SETHI_P (i))
+	return 1;
+    }
+
+  return 0;
+}
+
+/* Nonzero if OP is a floating point constant which can
+   be loaded into an integer register using a single
+   mov instruction.  */
+
+int
+fp_mov_p (op)
+     rtx op;
+{
+  if (GET_CODE (op) == CONST_DOUBLE)
+    {
+      REAL_VALUE_TYPE r;
+      long i;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+      if (REAL_VALUES_EQUAL (r, dconst0) &&
+	  ! REAL_VALUE_MINUS_ZERO (r))
+	return 0;
+      REAL_VALUE_TO_TARGET_SINGLE (r, i);
+      if (SPARC_SIMM13_P (i))
+	return 1;
+    }
+
+  return 0;
+}
+
+/* Nonzero if OP is a floating point constant which can
+   be loaded into an integer register using a high/losum
+   instruction sequence.  */
+
+int
+fp_high_losum_p (op)
+     rtx op;
+{
+  /* The constraints calling this should only be in
+     SFmode move insns, so any constant which cannot
+     be moved using a single insn will do.  */
+  if (GET_CODE (op) == CONST_DOUBLE)
+    {
+      REAL_VALUE_TYPE r;
+      long i;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+      if (REAL_VALUES_EQUAL (r, dconst0) &&
+	  ! REAL_VALUE_MINUS_ZERO (r))
+	return 0;
+      REAL_VALUE_TO_TARGET_SINGLE (r, i);
+      if (! SPARC_SETHI_P (i)
+          && ! SPARC_SIMM13_P (i))
+	return 1;
+    }
+
+  return 0;
+}
+
 /* Nonzero if OP is an integer register.  */
 
 int
@@ -1110,6 +1189,10 @@ input_operand (op, mode)
     return 1;
 
   if (register_operand (op, mode))
+    return 1;
+
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+      && GET_CODE (op) == CONST_DOUBLE)
     return 1;
 
   /* If this is a SUBREG, look inside so that we handle
