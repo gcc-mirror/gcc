@@ -3241,7 +3241,7 @@ __get_eh_info (void)
 
 #ifdef DWARF2_UNWIND_INFO
 static int dwarf_reg_size_table_initialized = 0;
-static char dwarf_reg_size_table[FIRST_PSEUDO_REGISTER];
+static char dwarf_reg_size_table[DWARF_FRAME_REGISTERS];
 
 static void
 init_reg_size_table (void)
@@ -3949,7 +3949,7 @@ throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
 	  udata = next_stack_level (pc, udata, sub_udata);
 	  sub_udata = p;
 
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+	  for (i = 0; i < DWARF_FRAME_REGISTERS; ++i)
 	    if (i != udata->retaddr_column && udata->saved[i])
 	      {
 		/* If you modify the saved value of the return address
