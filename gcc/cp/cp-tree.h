@@ -3609,6 +3609,7 @@ extern void finish_handler_sequence             PROTO((tree));
 extern tree begin_function_try_block            PROTO((void));
 extern void finish_function_try_block           PROTO((tree));
 extern void finish_function_handler_sequence    PROTO((tree));
+extern void finish_cleanup_try_block            PROTO((tree));
 extern tree begin_handler                       PROTO((void));
 extern void start_handler_parms                 PROTO((tree, tree));
 extern void finish_handler_parms                PROTO((tree));
