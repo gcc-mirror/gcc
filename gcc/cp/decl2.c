@@ -127,7 +127,7 @@ grok_method_quals (tree ctype, tree function, tree quals)
   int dup_quals = TYPE_UNQUALIFIED;
   int this_quals = TYPE_UNQUALIFIED;
 
-  do
+  while (quals)
     {
       int tq = cp_type_qual_from_rid (TREE_VALUE (quals));
       
@@ -139,7 +139,6 @@ grok_method_quals (tree ctype, tree function, tree quals)
 	type_quals |= tq;
       quals = TREE_CHAIN (quals);
     } 
-  while (quals);
 
   if (dup_quals != TYPE_UNQUALIFIED)
     error ("duplicate type qualifiers in %s declaration",
@@ -168,7 +167,7 @@ grok_x_components (tree specs)
   specs = strip_attrs (specs);
 
   check_tag_decl (specs);
-  t = groktypename (build_tree_list (specs, NULL_TREE)); 
+  t = groktypename (specs, /*declarator=*/NULL);
 
   /* The only case where we need to do anything additional here is an
      anonymous union field, e.g.: `struct S { union { int i; }; };'.  */
@@ -841,7 +840,8 @@ finish_static_data_member_decl (tree decl, tree init, tree asmspec_tree,
    CHANGES TO CODE IN `start_method'.  */
 
 tree
-grokfield (tree declarator, tree declspecs, tree init, tree asmspec_tree,
+grokfield (const cp_declarator *declarator, tree declspecs, 
+	   tree init, tree asmspec_tree,
            tree attrlist)
 {
   tree value;
@@ -849,15 +849,18 @@ grokfield (tree declarator, tree declspecs, tree init, tree asmspec_tree,
   int flags = LOOKUP_ONLYCONVERTING;
 
   if (declspecs == NULL_TREE
-      && TREE_CODE (declarator) == SCOPE_REF
-      && TREE_CODE (TREE_OPERAND (declarator, 1)) == IDENTIFIER_NODE)
+      && declarator->kind == cdk_id
+      && TREE_CODE (declarator->u.id.name) == SCOPE_REF
+      && (TREE_CODE (TREE_OPERAND (declarator->u.id.name, 1)) 
+	  == IDENTIFIER_NODE))
     {
       /* Access declaration */
-      if (! IS_AGGR_TYPE_CODE (TREE_CODE (TREE_OPERAND (declarator, 0))))
+      if (! IS_AGGR_TYPE_CODE (TREE_CODE 
+			       (TREE_OPERAND (declarator->u.id.name, 0))))
 	;
-      else if (TREE_COMPLEXITY (declarator) == current_class_depth)
+      else if (TREE_COMPLEXITY (declarator->u.id.name) == current_class_depth)
 	pop_nested_class ();
-      return do_class_using_decl (declarator);
+      return do_class_using_decl (declarator->u.id.name);
     }
 
   if (init
@@ -1020,7 +1023,7 @@ grokfield (tree declarator, tree declspecs, tree init, tree asmspec_tree,
    WIDTH is non-NULL for bit fields only, and is an INTEGER_CST node.  */
 
 tree
-grokbitfield (tree declarator, tree declspecs, tree width)
+grokbitfield (const cp_declarator *declarator, tree declspecs, tree width)
 {
   tree value = grokdeclarator (declarator, declspecs, BITFIELD, 0, NULL);
 
@@ -1915,8 +1918,8 @@ set_guard (tree guard)
 static tree
 start_objects (int method_type, int initp)
 {
-  tree fnname;
   tree body;
+  tree fndecl;
   char type[10];
 
   /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
@@ -1936,12 +1939,11 @@ start_objects (int method_type, int initp)
   else
     sprintf (type, "%c", method_type);
 
-  fnname = get_file_function_name_long (type);
-
-  start_function (void_list_node,
-		  make_call_declarator (fnname, void_list_node, NULL_TREE,
-					NULL_TREE),
-		  NULL_TREE, SF_DEFAULT);
+  fndecl = build_lang_decl (FUNCTION_DECL, 
+			    get_file_function_name_long (type),
+			    build_function_type (void_type_node,
+						 void_list_node));
+  start_preparsed_function (fndecl, /*attrs=*/NULL_TREE, SF_PRE_PARSED);
 
   /* It can be a static function as long as collect2 does not have
      to scan the object file to find its ctor/dtor routine.  */
@@ -2108,10 +2110,9 @@ start_static_storage_duration_function (unsigned count)
        
      It is static because we only need to call this function from the
      various constructor and destructor functions for this module.  */
-  start_function (/*specs=*/NULL_TREE, 
-		  ssdf_decl,
-		  /*attrs=*/NULL_TREE,
-		  SF_PRE_PARSED);
+  start_preparsed_function (ssdf_decl,
+			    /*attrs=*/NULL_TREE,
+			    SF_PRE_PARSED);
 
   /* Set up the scope of the outermost block in the function.  */
   body = begin_compound_stmt (BCS_FN_BODY);

@@ -1900,23 +1900,6 @@ finish_fname (tree id)
   return decl;
 }
 
-/* Begin a function definition declared with DECL_SPECS, ATTRIBUTES,
-   and DECLARATOR.  Returns nonzero if the function-declaration is
-   valid.  */
-
-int
-begin_function_definition (tree decl_specs, tree attributes, tree declarator)
-{
-  if (!start_function (decl_specs, declarator, attributes, SF_DEFAULT))
-    return 0;
-
-  /* The things we're about to see are not directly qualified by any
-     template headers we've seen thus far.  */
-  reset_specialization ();
-
-  return 1;
-}
-
 /* Finish a translation unit.  */
 
 void 
@@ -1996,24 +1979,6 @@ check_template_template_default_arg (tree argument)
     }
 
   return argument;
-}
-
-/* Finish a parameter list, indicated by PARMS.  If ELLIPSIS is
-   nonzero, the parameter list was terminated by a `...'.  */
-
-tree
-finish_parmlist (tree parms, int ellipsis)
-{
-  if (parms)
-    {
-      /* We mark the PARMS as a parmlist so that declarator processing can
-         disambiguate certain constructs.  */
-      TREE_PARMLIST (parms) = 1;
-      /* We do not append void_list_node here, but leave it to grokparms
-         to do that.  */
-      PARMLIST_ELLIPSIS_P (parms) = ellipsis;
-    }
-  return parms;
 }
 
 /* Begin a class definition, as indicated by T.  */
