@@ -265,6 +265,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      then one of them follows the note.  */
 		   || (GET_CODE (insn) == JUMP_INSN
 		       && GET_CODE (PATTERN (insn)) == RETURN)
+		   /* A barrier can follow the return insn.  */
+		   || GET_CODE (insn) == BARRIER
 		   /* Other kinds of notes can follow also.  */
 		   || (GET_CODE (insn) == NOTE
 		       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_END)))
@@ -2093,6 +2095,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  then one of them follows the note.  */
 	       || (GET_CODE (insn) == JUMP_INSN
 		   && GET_CODE (PATTERN (insn)) == RETURN)
+	       /* A barrier can follow the return insn.  */
+	       || GET_CODE (insn) == BARRIER
 	       /* Other kinds of notes can follow also.  */
 	       || (GET_CODE (insn) == NOTE
 		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_END)))
