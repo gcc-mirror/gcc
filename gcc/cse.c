@@ -680,9 +680,7 @@ static void record_jump_equiv	PROTO((rtx, int));
 static void record_jump_cond	PROTO((enum rtx_code, enum machine_mode,
 				       rtx, rtx, int));
 static void cse_insn		PROTO((rtx, rtx));
-#ifdef AUTO_INC_DEC
 static int addr_affects_sp_p	PROTO((rtx));
-#endif
 static void invalidate_from_clobbers PROTO((rtx));
 static rtx cse_process_notes	PROTO((rtx, rtx));
 static void cse_around_loop	PROTO((rtx));
@@ -5924,8 +5922,6 @@ invalidate_memory ()
       }
 }
 
-#ifdef AUTO_INC_DEC
-
 /* If ADDR is an address that implicitly affects the stack pointer, return
    1 and update the register tables to show the effect.  Else, return 0.  */
 
@@ -5950,7 +5946,6 @@ addr_affects_sp_p (addr)
 
   return 0;
 }
-#endif
 
 /* Perform invalidation on the basis of everything about an insn
    except for invalidating the actual places that are SET in it.
@@ -6175,9 +6170,7 @@ invalidate_skipped_set (dest, set, data)
   enum rtx_code code = GET_CODE (dest);
 
   if (code == MEM
-#ifdef AUTO_INC_DEC
       && ! addr_affects_sp_p (dest)	/* If this is not a stack push ... */
-#endif
       /* There are times when an address can appear varying and be a PLUS
 	 during this scan when it would be a fixed address were we to know
 	 the proper equivalences.  So invalidate all memory if there is
@@ -6350,10 +6343,8 @@ cse_set_around_loop (x, insn, loop_start)
 	    }
     }
 
-#ifdef AUTO_INC_DEC
   /* Deal with the destination of X affecting the stack pointer.  */
   addr_affects_sp_p (SET_DEST (x));
-#endif
 
   /* See comment on similar code in cse_insn for explanation of these
      tests.  */
