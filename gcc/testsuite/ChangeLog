@@ -4,6 +4,8 @@
 
 	* gcc.c-torture/compile/20020323-1.c: New test.
 
+	* g++.dg/opt/conj2.C: New test.
+
 2002-03-24  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/compile/920625-1.x: XFAIL -O1 too.
