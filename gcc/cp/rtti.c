@@ -340,7 +340,7 @@ get_tinfo_decl (type)
     {
       /* The tinfo decl is the type_info object itself.  We make all
          tinfo objects look as type_info, even though they will end up
-         being a subclass of that when emitted.  This means the we'll
+         being a subclass of that when emitted.  This means that we'll
          erroneously think we know the dynamic type -- be careful in the
          runtime.  */
       d = build_lang_decl (VAR_DECL, name, tinfo_decl_type);

@@ -152,8 +152,6 @@ print_lang_type (file, node, indent)
 	fprintf (file, " interface-only");
       if (CLASSTYPE_INTERFACE_UNKNOWN (node))
 	fprintf (file, " interface-unknown");
-      if (CLASSTYPE_VTABLE_NEEDS_WRITING (node))
-	fprintf (file, " vtable-needs-writing");
       print_node (file, "member-functions", CLASSTYPE_METHOD_VEC (node),
 		  indent + 4);
     }

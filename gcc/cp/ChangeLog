@@ -1,4 +1,40 @@
-2001-03-20  Jason Merrill  <jason@redhat.com>
+2001-03-21  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (instantiate_decl): Abort if we see a member constant
+	instantiation that doesn't already have its initializer.
+	Downgrade explicit instantiation without definition to pedwarn.
+
+	* cp-tree.h (DECL_TINFO_FN_P, SET_DECL_TINFO_FN_P): Remove.
+	* class.c (build_vtable_entry): Don't check DECL_TINFO_FN_P.
+	(import_export_decl): Check tinfo_decl_p, not DECL_TINFO_FN_P.
+
+	* cp-tree.h (CLASSTYPE_VTABLE_NEEDS_WRITING): Remove.
+	(pending_vtables): Remove.
+	* decl2.c (pending_vtables): Remove.
+	(import_export_vtable): Use CLASSTYPE_INTERFACE_ONLY, not
+	CLASSTYPE_VTABLE_NEEDS_WRITING.
+	(import_export_class): Likewise.
+	(init_decl2): Don't mark pending_vtables.
+	* lex.c (handle_pragma_vtable): Just sorry.
+	* pt.c (instantiate_class_template): Don't mess with
+	CLASSTYPE_VTABLE_NEEDS_WRITING.
+	(mark_class_instantiated): Likewise.
+	* ptree.c (print_lang_type): Don't print it.
+	* semantics.c (begin_class_definition): Don't set it.
+
+	* pt.c (template_tail): Replace with last_pending_template.
+	(maybe_templates, maybe_template_tail): Remove.
+	(add_pending_template): Adjust.
+	(instantiate_pending_templates): Adjust.
+
+	* cp-tree.h (struct saved_scope): Remove lang_stack field.
+	(current_lang_stack): Remove.
+	* decl.c (maybe_push_to_top_level): Don't initialize it.
+	(duplicate_decls): Use current_lang_depth.
+	(xref_basetypes): Likewise.
+	* class.c (current_lang_depth): New fn.
+	(push_lang_context): Use more varray functionality.
+	(pop_lang_context): Likewise.
 
 	* error.c (GLOBAL_THING): Always use '__'.
 
