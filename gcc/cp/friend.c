@@ -225,32 +225,30 @@ make_friend_class (type, friend_type)
   else
     is_template_friend = 0;
 
-  if (is_template_friend 
-      && (TREE_CODE (friend_type) == TYPENAME_TYPE
-	  || TREE_CODE (friend_type) == TEMPLATE_TYPE_PARM))
+  /* [temp.friend]
+
+     A friend of a class or class template can be a function or
+     class template, a specialization of a function template or
+     class template, or an ordinary (nontemplate) function or
+     class. */
+  if (!is_template_friend)
+    ;/* ok */
+  else if (TREE_CODE (friend_type) == TYPENAME_TYPE)
     {
-      /* [temp.friend]
-
-	   A friend of a class or class template can be a function or
-	   class template, a specialization of a function template or
-	   class template, or an ordinary (nontemplate) function or
-	   class. 
-	   
-	 But, we're looking at something like:
-
-	   template <class T> friend typename S<T>::X;
-
-	 or:
-
-	   template <class T> friend class T;
-
-	 which isn't any of these.  */
-      if (TREE_CODE (friend_type) == TYPENAME_TYPE)
-	cp_error ("typename type `%T' declared `friend'",
-		  friend_type);
-      else
-	cp_error ("template parameter type `%T' declared `friend'",
-		  friend_type);
+      /* template <class T> friend typename S<T>::X; */
+      cp_error ("typename type `%#T' declared `friend'", friend_type);
+      return;
+    }
+  else if (TREE_CODE (friend_type) == TEMPLATE_TYPE_PARM)
+    {
+      /* template <class T> friend class T; */
+      cp_error ("template parameter type `%T' declared `friend'", friend_type);
+      return;
+    }
+  else if (!CLASSTYPE_TEMPLATE_INFO (friend_type))
+    {
+      /* template <class T> friend class A; where A is not a template */
+      cp_error ("`%#T' is not a template", friend_type);
       return;
     }
 
