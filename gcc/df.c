@@ -151,16 +151,16 @@ Similarly, should the first entry in the use list be the last use
 Often the whole CFG does not need to be analyzed, for example,
 when optimising a loop, only certain registers are of interest.
 Perhaps there should be a bitmap argument to df_analyse to specify
-which registers should be analyzed?   
+which registers should be analyzed?
 
 
 NOTES:
 
 Embedded addressing side-effects, such as POST_INC or PRE_INC, generate
-both a use and a def.  These are both marked read/write to show that they 
+both a use and a def.  These are both marked read/write to show that they
 are dependent. For example, (set (reg 40) (mem (post_inc (reg 42))))
-will generate a use of reg 42 followed by a def of reg 42 (both marked 
-read/write).  Similarly, (set (reg 40) (mem (pre_dec (reg 41)))) 
+will generate a use of reg 42 followed by a def of reg 42 (both marked
+read/write).  Similarly, (set (reg 40) (mem (pre_dec (reg 41))))
 generates a use of reg 41 then a def of reg 41 (both marked read/write),
 even though reg 41 is decremented before it is used for the memory
 address in this second example.
@@ -290,7 +290,6 @@ static struct ref *df_bb_insn_regno_first_def_find PARAMS((struct df *,
 static void df_chain_dump PARAMS((struct df_link *, FILE *file));
 static void df_chain_dump_regno PARAMS((struct df_link *, FILE *file));
 static void df_regno_debug PARAMS ((struct df *, unsigned int, FILE *));
-static void df_regno_rtl_debug PARAMS ((struct df *, unsigned int, FILE *));
 static void df_ref_debug PARAMS ((struct df *, struct ref *, FILE *));
 static void df_rd_transfer_function PARAMS ((int, int *, bitmap, bitmap,
 					     bitmap, bitmap, void *));
