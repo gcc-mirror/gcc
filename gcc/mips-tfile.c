@@ -2,9 +2,9 @@
    contain debugging information specified by the GNU compiler
    in the form of comments (the mips assembler does not support
    assembly access to debug information).
-   Contributed by:  Michael Meissner, meissner@osf.org
-   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
-
+   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
+   Contributed by Michael Meissner, meissner@osf.org
+   
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -598,7 +598,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 */
 
 
+#ifdef __STDC__
+#include "gstdarg.h"
+#else
 #include "gvarargs.h"
+#endif
 #include "config.h"
 #include <stdio.h>
 
@@ -614,6 +618,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 typedef void *PTR_T;
 typedef const void *CPTR_T;
 #define __proto(x) x
+#define VPROTO(ARGS)            ARGS
+#define VA_START(va_list,var)  va_start(va_list,var)
 #else
 
 #if defined(_STDIO_H_) || defined(__STDIO_H__)		/* Ultrix 4.0, SGI */
@@ -627,6 +633,8 @@ typedef char *CPTR_T;
 
 #define __proto(x) ()
 #define const
+#define VPROTO(ARGS)            (va_alist) va_dcl
+#define VA_START(va_list,var)  va_start(va_list)
 #endif
 
 /* Do to size_t being defined in sys/types.h and different
@@ -656,8 +664,8 @@ extern PTR_T	xcalloc		__proto((Size_t, Size_t));
 extern PTR_T	xrealloc	__proto((PTR_T, Size_t));
 extern void	xfree		__proto((PTR_T));
 
-extern void	fatal();	/* can't use prototypes here */
-extern void	error();
+extern void	fatal		__proto((char *format, ...));
+extern void	error		__proto((char *format, ...));
 
 
 #ifndef MIPS_DEBUGGING_INFO
@@ -5533,19 +5541,24 @@ free_thead (ptr)
 
 /*VARARGS*/
 void
-fatal (va_alist)
-     va_dcl
+fatal VPROTO((char *format, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *format;
+#endif
+  va_list ap;
+
+  VA_START (ap, format);
+
+#ifndef __STDC__
+  format = va_arg (ap, char*);
+#endif
 
   if (line_number > 0)
     fprintf (stderr, "%s, %s:%ld ", progname, input_name, line_number);
   else
     fprintf (stderr, "%s:", progname);
 
-  va_start(ap);
-  format = va_arg (ap, char *);
   vfprintf (stderr, format, ap);
   va_end (ap);
   fprintf (stderr, "\n");
@@ -5558,19 +5571,24 @@ fatal (va_alist)
 
 /*VARARGS*/
 void
-error (va_alist) 
-     va_dcl
+error VPROTO((char *format, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *format;
+#endif
+  va_list ap;
+
+  VA_START (ap, format);
+
+#ifndef __STDC__
+  format = va_arg (ap, char*);
+#endif
 
   if (line_number > 0)
     fprintf (stderr, "%s, %s:%ld ", progname, input_name, line_number);
   else
     fprintf (stderr, "%s:", progname);
 
-  va_start(ap);
-  format = va_arg (ap, char *);
   vfprintf (stderr, format, ap);
   fprintf (stderr, "\n");
   if (line_number > 0)

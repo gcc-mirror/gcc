@@ -24,7 +24,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Error messages and low-level interface to malloc also handled here.  */
 
 #include "config.h"
+#ifdef __STDC__
+#include "gstdarg.h"
+#else
 #include "gvarargs.h"
+#endif
 #include <stdio.h>
 #include <signal.h>
 #include <setjmp.h>
@@ -106,8 +110,20 @@ extern void dump_sched_info ();
 extern void dump_local_alloc ();
 
 void rest_of_decl_compilation ();
-void error ();
-void error_with_file_and_line ();
+void error_with_file_and_line PROTO((char *file, int line, char *s, ...));
+void error_with_decl PROTO((tree decl, char *s, ...));
+void error_for_asm PROTO((rtx insn, char *s, ...));
+void error PROTO((char *s, ...));
+void fatal PROTO((char *s, ...));
+void warning_with_file_and_line PROTO((char *file, int line, char *s, ...));
+void warning_with_decl PROTO((tree decl, char *s, ...));
+void warning_for_asm PROTO((rtx insn, char *s, ...));
+void warning PROTO((char *s, ...));
+void pedwarn PROTO((char *s, ...));
+void pedwarn_with_decl PROTO((tree decl, char *s, ...));
+void pedwarn_with_file_and_line PROTO((char *file, int line, char *s, ...));
+void sorry PROTO((char *s, ...));
+void really_sorry PROTO((char *s, ...));
 void fancy_abort ();
 #ifndef abort
 void abort ();
@@ -1182,19 +1198,23 @@ v_error_with_file_and_line (file, line, s, ap)
 }
 
 void
-error_with_file_and_line (va_alist)
-     va_dcl
-     /* (char *file, int line, char *s, ...) */
+error_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *file;
   int line;
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
   s = va_arg (ap, char *);
+#endif
+
   v_error_with_file_and_line (file, line, s, ap);
   va_end (ap);
 }
@@ -1215,17 +1235,21 @@ v_error_with_decl (decl, s, ap)
 }
 
 void
-error_with_decl (va_alist)
-     va_dcl
-     /* (tree decl, char *s, ...) */
+error_with_decl VPROTO((tree decl, char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   tree decl;
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   decl = va_arg (ap, tree);
   s = va_arg (ap, char *);
+#endif
+
   v_error_with_decl (decl, s, ap);
   va_end (ap);
 }
@@ -1250,17 +1274,21 @@ v_error_for_asm (insn, s, ap)
 }
 
 void
-error_for_asm (va_alist)
-     va_dcl
-     /* (rtx insn, char *s, ...) */
+error_for_asm VPROTO((rtx insn, char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   rtx insn;
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   insn = va_arg (ap, rtx);
   s = va_arg (ap, char *);
+#endif
+
   v_error_for_asm (insn, s, ap);
   va_end (ap);
 }
@@ -1276,15 +1304,19 @@ verror (s, ap)
 }
 
 void
-error (va_alist)
-     va_dcl
-     /* (char *s, ...) */
+error VPROTO((char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   s = va_arg (ap, char *);
+#endif
+
   verror (s, ap);
   va_end (ap);
 }
@@ -1301,15 +1333,19 @@ vfatal (s, ap)
 }
 
 void
-fatal (va_alist)
-     va_dcl
-     /* (char *s, ...) */
+fatal VPROTO((char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   s = va_arg (ap, char *);
+#endif
+
   vfatal (s, ap);
   va_end (ap);
 }
@@ -1331,19 +1367,23 @@ v_warning_with_file_and_line (file, line, s, ap)
 }
 
 void
-warning_with_file_and_line (va_alist)
-     va_dcl
-     /* (char *file, int line, char *s, ...) */
+warning_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *file;
   int line;
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
   s = va_arg (ap, char *);
+#endif
+
   v_warning_with_file_and_line (file, line, s, ap);
   va_end (ap);
 }
@@ -1366,17 +1406,21 @@ v_warning_with_decl (decl, s, ap)
 }
 
 void
-warning_with_decl (va_alist)
-     va_dcl
-     /* (tree decl, char *s, ...) */
+warning_with_decl VPROTO((tree decl, char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   tree decl;
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   decl = va_arg (ap, tree);
   s = va_arg (ap, char *);
+#endif
+
   v_warning_with_decl (decl, s, ap);
   va_end (ap);
 }
@@ -1403,17 +1447,21 @@ v_warning_for_asm (insn, s, ap)
 }
 
 void
-warning_for_asm (va_alist)
-     va_dcl
-     /* (rtx insn, char *s, ...) */
+warning_for_asm VPROTO((rtx insn, char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   rtx insn;
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   insn = va_arg (ap, rtx);
   s = va_arg (ap, char *);
+#endif
+
   v_warning_for_asm (insn, s, ap);
   va_end (ap);
 }
@@ -1429,14 +1477,19 @@ vwarning (s, ap)
 }
 
 void
-warning (va_alist)
-     va_dcl
+warning VPROTO((char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   s = va_arg (ap, char *);
+#endif
+
   vwarning (s, ap);
   va_end (ap);
 }
@@ -1456,15 +1509,19 @@ vpedwarn (s, ap)
 }
 
 void
-pedwarn (va_alist)
-     va_dcl
-     /* (char *s, ...) */
+pedwarn VPROTO((char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   s = va_arg (ap, char *);
+#endif
+
   vpedwarn (s, ap);
   va_end (ap);
 }
@@ -1482,17 +1539,21 @@ v_pedwarn_with_decl (decl, s, ap)
 }
 
 void
-pedwarn_with_decl (va_alist)
-     va_dcl
-     /* (tree decl, char *s, ...) */
+pedwarn_with_decl VPROTO((tree decl, char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   tree decl;
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   decl = va_arg (ap, tree);
   s = va_arg (ap, char *);
+#endif
+
   v_pedwarn_with_decl (decl, s, ap);
   va_end (ap);
 }
@@ -1511,19 +1572,23 @@ v_pedwarn_with_file_and_line (file, line, s, ap)
 }
 
 void
-pedwarn_with_file_and_line (va_alist)
-     va_dcl
-     /* (char *file, int line, char *s, ...) */
+pedwarn_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *file;
   int line;
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
   s = va_arg (ap, char *);
+#endif
+
   v_pedwarn_with_file_and_line (file, line, s, ap);
   va_end (ap);
 }
@@ -1545,15 +1610,19 @@ vsorry (s, ap)
 }
 
 void
-sorry (va_alist)
-     va_dcl
-     /* (char *s, ...) */
+sorry VPROTO((char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   s = va_arg (ap, char *);
+#endif
+
   vsorry (s, ap);
   va_end (ap);
 }
@@ -1575,15 +1644,19 @@ v_really_sorry (s, ap)
 }
 
 void
-really_sorry (va_alist)
-     va_dcl
-     /* (char *s, ...) */
+really_sorry VPROTO((char *s, ...))
 {
-  va_list ap;
+#ifndef __STDC__
   char *s;
+#endif
+  va_list ap;
 
-  va_start (ap);
+  VA_START (ap, s);
+
+#ifndef __STDC__
   s = va_arg (ap, char *);
+#endif
+
   v_really_sorry (s, ap);
   va_end (ap);
 }
