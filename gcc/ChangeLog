@@ -1,3 +1,9 @@
+2003-10-18  Roger Sayle  <roger@eyesopen.com>
+
+	* libgcc.texi: Group multi-word types, such as "long double" and
+	"unsigned int", using braces in @deftypefn and @deftypefnx nodes.
+	Document __unord?f2 as returning a non-zero value, not just one.
+
 2003-10-18  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/t-mmix (CRTSTUFF_T_CFLAGS): Define.
