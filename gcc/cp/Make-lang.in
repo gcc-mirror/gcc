@@ -261,19 +261,22 @@ CXX_TREE_H = $(TREE_H) cp/cp-tree.h c-common.h cp/cp-tree.def c-common.def \
 
 cp/spew.o: cp/spew.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h toplev.h
 cp/lex.o: cp/lex.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h c-pragma.h \
-  toplev.h output.h mbchar.h $(GGC_H) input.h diagnostic.h cp/operators.def
+  toplev.h output.h mbchar.h $(GGC_H) input.h diagnostic.h cp/operators.def \
+  $(TM_P_H)
 cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
-  output.h $(EXPR_H) except.h toplev.h hash.h $(GGC_H) $(RTL_H) cp/operators.def
+  output.h $(EXPR_H) except.h toplev.h hash.h $(GGC_H) $(RTL_H) \
+  cp/operators.def $(TM_P_H)
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h $(EXPR_H) \
   output.h except.h toplev.h dwarf2out.h dwarfout.h $(GGC_H) $(RTL_H)
-cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) flags.h toplev.h output.h
+cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) flags.h toplev.h output.h $(TM_P_H)
 cp/typeck.o: cp/typeck.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h 
 cp/class.o: cp/class.c $(CXX_TREE_H) flags.h toplev.h $(RTL_H)
 cp/call.o: cp/call.c $(CXX_TREE_H) flags.h toplev.h $(RTL_H) $(EXPR_H) $(GGC_H)
 cp/friend.o: cp/friend.c $(CXX_TREE_H) flags.h $(RTL_H) toplev.h $(EXPR_H)
 cp/init.o: cp/init.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
   $(GGC_H) except.h
-cp/method.o: cp/method.c $(CXX_TREE_H) toplev.h $(GGC_H) $(RTL_H) $(EXPR_H)
+cp/method.o: cp/method.c $(CXX_TREE_H) toplev.h $(GGC_H) $(RTL_H) $(EXPR_H) \
+  $(TM_P_H)
 cp/cvt.o: cp/cvt.c $(CXX_TREE_H) cp/decl.h flags.h toplev.h convert.h
 cp/search.o: cp/search.c $(CXX_TREE_H) stack.h flags.h toplev.h $(RTL_H)
 cp/tree.o: cp/tree.c $(CXX_TREE_H) flags.h toplev.h $(GGC_H) $(RTL_H) \
@@ -282,7 +285,8 @@ cp/ptree.o: cp/ptree.c $(CXX_TREE_H) system.h
 cp/rtti.o: cp/rtti.c $(CXX_TREE_H) flags.h toplev.h
 cp/except.o: cp/except.c $(CXX_TREE_H) flags.h $(RTL_H) except.h toplev.h \
   cp/cfns.h $(EXPR_H) insn-flags.h cp/decl.h $(OBSTACK_H)
-cp/expr.o: cp/expr.c $(CXX_TREE_H) $(RTL_H) flags.h $(EXPR_H) toplev.h except.h
+cp/expr.o: cp/expr.c $(CXX_TREE_H) $(RTL_H) flags.h $(EXPR_H) toplev.h \
+  except.h $(TM_P_H)
 cp/xref.o: cp/xref.c $(CXX_TREE_H) input.h toplev.h
 cp/pt.o: cp/pt.c $(CXX_TREE_H) cp/decl.h cp/parse.h cp/lex.h toplev.h \
   $(GGC_H) $(RTL_H) except.h

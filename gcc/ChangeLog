@@ -1,3 +1,43 @@
+2001-03-09  Zack Weinberg  <zackw@stanford.edu>
+
+	* configure.in: Prune nonexistent files from build_xm_file,
+	xm_file, and host_xm_file lists.  Warn unless they're
+	$cpu/xm-$cpu.h.
+	Don't generate *config.h here.
+	AC_SUBST all variables needed to generate *config.h.
+	* configure: Regenerate.
+	* mkconfig.sh: New helper script, from code removed from
+	configure.in.
+	* Makefile.in: Zap all MALLOC variables - no longer used
+	anywhere, and malloc.c doesn't exist.
+	Substitute in variables needed to generate *config.h.
+	Stop lying about the dependencies contained in CONFIG_H and
+	GCONFIG_H.
+	(HCONFIG_H, TCONFIG_H, TM_P_H): New variables.
+	(config.h, hconfig.h, tconfig.h, tm_p.h, cs-config.h,
+	cs-hconfig.h, cs-tconfig.h, cs-tm_p.h): New rules.
+	(all .o): Add dependencies on $(HCONFIG_H), $(TCONFIG_H),
+	$(TM_P_H), etc. as appropriate.
+
+	* config.gcc: Zap references to deleted files.
+	* ggc-none.c: Don't include rtl.h or tm_p.h.
+
+	* config/i386/xm-beos.h, config/i386/xm-dgux.h,
+	config/i386/xm-djgpp.h, config/i386/xm-dos.h,
+	config/i386/xm-gnu.h, config/i386/xm-i386-interix.h,
+	config/i386/xm-linux.h, config/i386/xm-linux.h,
+	config/i386/xm-next.h, config/i386/xm-openbsd.h,
+	config/i386/xm-sun.h, config/i386/xm-sysv3.h:
+	Don't include i386/xm-i386.h.
+
+	* config/elxsi/xm-elxsi.h, config/i386/xm-bsd386.h,
+	config/i386/xm-i386.h, config/i860/xm-i860.h,
+	config/i960/xm-i960.h, config/mcore/xm-mcore.h,
+	config/mn10300/xm-mn10300.h, config/ns32k/xm-ns32k.h,
+	config/pj/xm-pj.h, config/sh/xm-sh.h, config/v850/xm-v850.h:
+	Delete (empty except comments, #includes of other deleted
+	files, and macros used nowhere).
+
 Fri Mar  9 20:05:27 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (MAX_WCHAR_TYPE_SIZE): New constant to keep tradcpp
@@ -6,17 +46,20 @@ Fri Mar  9 20:05:27 CET 2001  Jan Hubicka  <jh@suse.cz>
 Fri Mar  9 19:52:52 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (FIRST_PSEUDO_REGISTER): Set to 53.
-	(FIXED_REGISTERS, CALL_USED_REGISTERS, REG_ALLOC_ONES): Add extended ones.
-	(CONDITIONAL_REGISTER_USAGE): Set proper values according to TARGET_64BIT.
-	(FIRST_REX_INT_REG, LAST_REX_INT_REG, FIRST_REX_SSE_REG, LAST_REX_SSE_REG):
-	define.
+
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, REG_ALLOC_ONES): Add
+	extended ones.
+	(CONDITIONAL_REGISTER_USAGE): Set proper values according to
+	TARGET_64BIT.
+	(FIRST_REX_INT_REG, LAST_REX_INT_REG, FIRST_REX_SSE_REG,
+	LAST_REX_SSE_REG): define.
 	(enum reg_class): Add 'LEGACY_REGS'
 	(REG_CLASS_CONTENTS): Likewise; add extended registers.
 	(SSE_REGNO_P): Recognize extended registers.
 	(ANY_QI_REG_P, REX_INT_REGNO_P, REX_INT_REG_P): New.
 	(REG_CLASS_FROM_LETTER): Add 'R' and 'Q'.
-	(REGNO_OK_FOR_INDEX_P, REGNO_OK_FOR_BASE_P, REG_OK_FOR_BASE_NONSTRICT_P):
-	 Recognize REX registers.
+	(REGNO_OK_FOR_INDEX_P, REGNO_OK_FOR_BASE_P,
+	REG_OK_FOR_BASE_NONSTRICT_P): Recognize REX registers.
 	(REG_OK_FOR_STRREG_NONSTRICT_P, REG_OK_FOR_STRREG_STRICT_P,
 	 REG_OK_FOR_STRREG_P): Remove.
 	(HI_REGISTER_NAMES): Add extended registers.
@@ -79,7 +122,7 @@ Thu Mar  8 23:29:37 2001  John Wehle  (john@feith.com)
 2001-03-08  Bruce Korb  <bkorb@gnu.org>
 
 	gcc.c(main): ensure SIGCHLD handling is set to SIG_DFL so that
-	wiat4() can receive the signal.
+	wait4() can receive the signal.
 
 Thu Mar  8 21:09:10 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
@@ -185,7 +228,7 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* combine.c (combine_simplify_rtx): Likewise.
 	(simplify_if_then_else): Likewise.
 	* cse.c (fold_rtx): Likewise.
-	* flags.h: Remove flag_fast_math.  Add 
+	* flags.h: Remove flag_fast_math.  Add
 	flag_unsafe_math_optimizations and flag_trapping_math.
 	* fold-const.c (negate_expr): Check
 	flag_unsafe_math_optimizations, not flag_fast_math.
@@ -227,11 +270,11 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-03-07  Laurynas Biveinis  <lauras@softhome.net>
 
-        * Makefile.in: Set RANLIB to @RANLIB@.
-        Remove RANLIB_TEST.
+	* Makefile.in: Set RANLIB to @RANLIB@.
+	Remove RANLIB_TEST.
 
 2001-03-07  Laurynas Biveinis  <lauras@softhome.net>
-	 
+
 	* fixinc/inclhack.def (djgpp_wchar_h): New test.
 	* fixinc/fixincl.x: Regenerated.
 
