@@ -483,7 +483,6 @@
    INLINE B No_Return                          (E Id);
    INLINE B Non_Binary_Modulus                 (E Id);
    INLINE E Non_Limited_View                   (E Id);
-   INLINE L Non_Limited_Views                  (E Id);
    INLINE B Nonzero_Is_True                    (E Id);
    INLINE U Normalized_First_Bit               (E Id);
    INLINE U Normalized_Position                (E Id);
@@ -1516,9 +1515,6 @@
 
    INLINE E Non_Limited_View (E Id)
       { return Node17 (Id); }
-
-   INLINE L Non_Limited_Views (E Id)
-      { return Elist8 (Id); }
 
    INLINE B Nonzero_Is_True (E Id)
       { return Flag162 (Base_Type (Id)); }

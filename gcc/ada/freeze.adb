@@ -124,7 +124,12 @@ package body Freeze is
    --  a subprogram type (i.e. an access to a subprogram).
 
    function Is_Fully_Defined (T : Entity_Id) return Boolean;
-   --  true if T is not private, or has a full view.
+   --  true if T is not private and has no private components, or has a full
+   --  view. Used to determine whether the designated type of an access type
+   --  should be frozen when the access type is frozen. This is done when an
+   --  allocator is frozen, or an expression that may involve attributes of
+   --  the designated type. Otherwise freezing the access type does not freeze
+   --  the designated type.
 
    procedure Process_Default_Expressions
      (E     : Entity_Id;
@@ -4246,15 +4251,38 @@ package body Freeze is
    --  Is_Fully_Defined --
    -----------------------
 
-   --  Should this be in Sem_Util ???
-
    function Is_Fully_Defined (T : Entity_Id) return Boolean is
    begin
       if Ekind (T) = E_Class_Wide_Type then
          return Is_Fully_Defined (Etype (T));
-      else
-         return not Is_Private_Type (T)
-           or else Present (Full_View (Base_Type (T)));
+
+      elsif Is_Array_Type (T) then
+         return Is_Fully_Defined (Component_Type (T));
+
+      elsif Is_Record_Type (T)
+        and not Is_Private_Type (T)
+      then
+
+         --  Verify that the record type has no components with
+         --  private types without completion.
+
+         declare
+            Comp : Entity_Id;
+         begin
+            Comp := First_Component (T);
+
+            while Present (Comp) loop
+               if not Is_Fully_Defined (Etype (Comp)) then
+                  return False;
+               end if;
+
+               Next_Component (Comp);
+            end loop;
+            return True;
+         end;
+
+      else return not Is_Private_Type (T)
+        or else Present (Full_View (Base_Type (T)));
       end if;
    end Is_Fully_Defined;
 

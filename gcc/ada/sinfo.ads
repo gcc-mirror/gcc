@@ -573,7 +573,7 @@ package Sinfo is
    --    and N_Extension_Aggregate nodes. This field is used during generic
    --    processing to relate nodes in the original template to nodes in the
    --    generic copy. It overlaps the Entity field, and is used to capture
-   --    global references in the analyzed copy and place them in the template.
+   --    global references in the analyzed copy and place them in the instance.
    --    See description in Sem_Ch12 for further details on this usage.
 
    --  At_End_Proc (Node1)

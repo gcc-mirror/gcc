@@ -2381,8 +2381,7 @@ package Einfo is
 --       Present in non-generic package entities that are not instances.
 --       The elements of this list are the shadow entities created for the
 --       types and local packages that are declared in a package that appears
---       in a limited_with clause. This list and Non_Limited_Views are built
---       at the same time, and their elements are in one-one correspondence.
+--       in a limited_with clause.
 
 --    Lit_Indexes (Node15)
 --       Present in enumeration types and subtypes. Non-empty only for the
@@ -2551,14 +2550,9 @@ package Einfo is
 --       is other than a power of 2.
 
 --    Non_Limited_View (Node17)
---       Present in incomplete types, and local packages that are the
---       shadow entities created when analyzing a limited_with_clause.
---       Points to the definining entity in the original declaration.
-
---    Non_Limited_Views (Elist8)
---       Present in non-generic packages that are not instances. The elements
---       of this list are defining identifiers for types and local packages
---       declared within a package that appears in a limited_with clause.
+--       Present in incomplete types that are the shadow entities
+--       created when analyzing a limited_with_clause. Points to the
+--       definining entity in the original declaration.
 
 --    Nonzero_Is_True (Flag162) [base type only]
 --       Present in enumeration types. True if any non-zero value is to be
@@ -4388,7 +4382,6 @@ package Einfo is
    --  E_Package
    --  E_Generic_Package
    --    Dependent_Instances           (Elist8)   (for an instance)
-   --    Non_Limited_Views             (Elist8)   (non-generic, not instance)
    --    Renaming_Map                  (Uint9)
    --    Handler_Records               (List10)   (non-generic case only)
    --    Generic_Homonym               (Node11)   (generic case only)
@@ -5152,7 +5145,6 @@ package Einfo is
    function No_Return                          (Id : E) return B;
    function Non_Binary_Modulus                 (Id : E) return B;
    function Non_Limited_View                   (Id : E) return E;
-   function Non_Limited_Views                  (Id : E) return L;
    function Nonzero_Is_True                    (Id : E) return B;
    function Normalized_First_Bit               (Id : E) return U;
    function Normalized_Position                (Id : E) return U;
@@ -5624,7 +5616,6 @@ package Einfo is
    procedure Set_No_Return                     (Id : E; V : B := True);
    procedure Set_Non_Binary_Modulus            (Id : E; V : B := True);
    procedure Set_Non_Limited_View              (Id : E; V : E);
-   procedure Set_Non_Limited_Views             (Id : E; V : L);
    procedure Set_Nonzero_Is_True               (Id : E; V : B := True);
    procedure Set_Normalized_First_Bit          (Id : E; V : U);
    procedure Set_Normalized_Position           (Id : E; V : U);
@@ -6150,7 +6141,6 @@ package Einfo is
    pragma Inline (No_Return);
    pragma Inline (Non_Binary_Modulus);
    pragma Inline (Non_Limited_View);
-   pragma Inline (Non_Limited_Views);
    pragma Inline (Nonzero_Is_True);
    pragma Inline (Normalized_First_Bit);
    pragma Inline (Normalized_Position);
@@ -6455,7 +6445,6 @@ package Einfo is
    pragma Inline (Set_No_Return);
    pragma Inline (Set_Non_Binary_Modulus);
    pragma Inline (Set_Non_Limited_View);
-   pragma Inline (Set_Non_Limited_Views);
    pragma Inline (Set_Nonzero_Is_True);
    pragma Inline (Set_Normalized_First_Bit);
    pragma Inline (Set_Normalized_Position);

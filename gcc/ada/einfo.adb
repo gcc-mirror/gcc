@@ -80,7 +80,6 @@ package body Einfo is
    --    Hiding_Loop_Variable            Node8
    --    Mechanism                       Uint8 (but returns Mechanism_Type)
    --    Normalized_First_Bit            Uint8
-   --    Non_Limited_Views               Elist8
 
    --    Class_Wide_Type                 Node9
    --    Current_Value                   Node9
@@ -1798,16 +1797,9 @@ package body Einfo is
    function Non_Limited_View (Id : E) return E is
    begin
       pragma Assert (False
-        or else Ekind (Id) = E_Incomplete_Type
-        or else Ekind (Id) = E_Package);
+        or else Ekind (Id) = E_Incomplete_Type);
       return Node17 (Id);
    end Non_Limited_View;
-
-   function Non_Limited_Views (Id : E) return L is
-   begin
-      pragma Assert (Ekind (Id) = E_Package);
-      return Elist8 (Id);
-   end Non_Limited_Views;
 
    function Nonzero_Is_True (Id : E) return B is
    begin
@@ -2845,7 +2837,7 @@ package body Einfo is
    begin
       pragma Assert
         (Is_Type (Id)
-          or else Ekind (Id) = E_Package);
+         or else Ekind (Id) = E_Package);
       Set_Flag159 (Id, V);
    end Set_From_With_Type;
 
@@ -3741,17 +3733,10 @@ package body Einfo is
 
    procedure Set_Non_Limited_View (Id : E; V : E) is
       pragma Assert (False
-        or else Ekind (Id) = E_Incomplete_Type
-        or else Ekind (Id) = E_Package);
+        or else Ekind (Id) = E_Incomplete_Type);
    begin
       Set_Node17 (Id, V);
    end Set_Non_Limited_View;
-
-   procedure Set_Non_Limited_Views (Id : E; V : L) is
-   begin
-      pragma Assert (Ekind (Id) = E_Package);
-      Set_Elist8 (Id, V);
-   end Set_Non_Limited_Views;
 
    procedure Set_Nonzero_Is_True (Id : E; V : B := True) is
    begin

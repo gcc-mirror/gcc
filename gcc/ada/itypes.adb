@@ -26,6 +26,7 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Opt;      use Opt;
 with Sem;      use Sem;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -64,7 +65,9 @@ package body Itypes is
       Set_Is_Itype (Typ);
       Set_Associated_Node_For_Itype (Typ, Related_Nod);
 
-      if In_Deleted_Code then
+      if In_Deleted_Code
+        and then not ASIS_Mode
+      then
          Set_Is_Frozen (Typ);
       end if;
 

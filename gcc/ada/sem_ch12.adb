@@ -2332,8 +2332,15 @@ package body Sem_Ch12 is
          return;
 
       elsif Ekind (Gen_Unit) /= E_Generic_Package then
-         Error_Msg_N
-           ("expect name of generic package in instantiation", Gen_Id);
+
+         if From_With_Type (Gen_Unit) then
+            Error_Msg_N
+              ("cannot instantiate a limited withed package", Gen_Id);
+         else
+            Error_Msg_N
+              ("expect name of generic package in instantiation", Gen_Id);
+         end if;
+
          Restore_Env;
          return;
       end if;

@@ -1,3 +1,140 @@
+2003-10-29  Robert Dewar  <dewar@gnat.com>
+
+	* 3vtrasym.adb, 5vtraent.ads, sprint.adb,
+	sem_ch10.adb: Minor reformatting
+
+	* exp_ch5.adb (Expand_Assign_Array): Test for bit unaligned operands
+	(Expand_Assign_Record): Test right hand side for bit unaligned as well
+
+2003-10-29  Vasiliy Fofanov  <fofanov@act-europe.fr>
+
+	* 3vtrasym.adb: 
+	* 5vtraent.adb: 
+	* 5vtraent.ads: 
+	* tb-alvms.c: 
+	Support for TBK$SYMBOLIZE-based symbolic traceback.
+
+2003-10-29  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* exp_disp.adb: 
+	Revert previous change, that did not work well when pragma No_Run_Time
+	was used in conjunction with a run-time other than ZFP.
+
+2003-10-29  Vincent Celier  <celier@gnat.com>
+
+	* make.adb: 
+	(Gnatmake): When there are no Ada mains in attribute Main, disable the
+	 bind and link steps only is switch -z is not used.
+
+2003-10-29  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.generic: Remove duplicated setting of CC.
+
+	* Makefile.prolog: Set CC to gcc by default, to override make's
+	default (cc).
+
+	* einfo.h: Regenerated.
+
+2003-10-29  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch10.adb (Analyze_Subunit): Restore state of suppress flags for
+	current body, after compiling subunit.
+
+	* itypes.adb (Create_Itype): In ASIS_Mode, do not freeze the itype
+	when in deleted code, because gigi needs properly ordered freeze
+	actions to annotate types.
+
+	* freeze.adb (Is_Fully_Defined): Predicate must be recursive, to
+	prevent the premature freezing of record type that contains
+	subcomponents with a private type that does not yet have a completion.
+
+2003-10-29  Javier Miranda  <miranda@gnat.com>
+
+	* sem_ch12.adb: 
+	(Analyze_Package_Instantiation): Check that instances can not be used in
+	limited with_clauses.
+
+	* sem_ch8.adb: 
+	(Analyze_Package_Renaming): Check that limited withed packages cannot
+	be renamed. Improve text on error messages related to limited
+	with_clauses.
+
+	* einfo.adb, einfo.ads: Remove Non_Limited_Views attribute.
+
+	* sprint.adb: (Sprint_Node_Actual): Print limited with_clauses.
+	Update copyright notice.
+
+	* sem_ch10.adb: (Build_Limited_Views): Complete its documentation.
+	(Install_Limited_Context_Clauses): New subprogram that isolates all the
+	checks required for limited context_clauses and installs the limited
+	view.
+	(Install_Limited_Withed_Unit): Complete its documentation.
+	(Analyze_Context): Check that limited with_clauses are only allowed in
+	package specs.
+	(Install_Context): Call Install_Limited_Context_Clauses after the
+	parents have been installed.
+	(Install_Limited_Withed_Unit): Add documentation. Mark the installed
+	package as 'From_With_Type'; this mark indicates that the limited view
+	is installed. Used to check bad usages of limited with_clauses.
+	(Build_Limited_Views): Do not add shadow entities to the scope's list
+	of entities. Do not add real entities to the Non_Limited_Views chain.
+	Improve error notification.
+	(Remove_Context_Clauses): Remove context clauses in two phases:
+	limited views first and regular views later (to maintain the
+	stack model).
+	(Remove_Limited_With_Clause): If the package is analyzed then reinstall
+	its visible entities.
+
+2003-10-29  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_type.adb (Specific_Type): Type Universal_Fixed is compatible
+	with any type that Is_Fixed_Point_Type.
+
+	* sinfo.ads: Fix documentation for Associated_Node attribute.
+
+2003-10-29  Sergey Rybin  <rybin@act-europe.fr>
+
+	* switch-c.adb (Scan_Front_End_Switches): ASIS_Mode is set now when
+	both '-gnatc' and '-gnatt' are specified.
+
+	* atree.adb (Initialize): Add initialization for Node_Count (set to
+	zero).
+
+2003-10-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (gnat_to_gnu_entity, case E_Subprogram): If no return value,
+	do not consider as Pure.
+
+	Part of implementation of function-at-a-time:
+
+	* trans.c (gnat_to_gnu_code): If IS_STMT, call expand_expr_stmt.
+	(tree_transform): Add new argument to build_component_ref.
+	(tree_transform, case N_Assignment_Statement): Make and return an
+	EXPR_STMT.
+	(tree_transform): If result IS_STMT, set flags and return it.
+	(gnat_expand_stmt, set_lineno_from_sloc): New functions.
+
+	* utils2.c (build_simple_component_ref, build_component_ref): Add new
+	arg, NO_FOLD_P.
+	(build_binary_op, case EQ_EXPR): Pass additional arg to it.
+	(build_allocator): Likewise.
+
+	* utils.c (convert_to_fat_pointer, convert_to_thin_pointer, convert):
+	Add new arg to build_component_ref.
+	(maybe_unconstrained_array, unchecked_convert): Likewise.
+
+	* ada-tree.def (EXPR_STMT): New code.
+
+	* ada-tree.h (IS_STMT, TREE_SLOC, EXPR_STMT_EXPR): New macros.
+
+	* decl.c (gnat_to_gnu_entity, case object): Add extra arg to
+	build_component_ref calls.
+
+	* misc.c (gnat_expand_expr): If IS_STMT, call gnat_expand_stmt.
+
+	* gigi.h (gnat_expand_stmt, set_lineno_from_sloc): New functions.
+	(build_component_ref): Add new argument, NO_FOLD_P.
+
 2003-10-27  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* Makefile.generic: Add missing substitution on object_deps handling.

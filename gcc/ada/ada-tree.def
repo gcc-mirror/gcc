@@ -77,3 +77,11 @@ DEFTREECODE (GNAT_NOP_EXPR, "gnat_nop_expr", '1', 1)
    ??? This should be redone at some point.  */
 
 DEFTREECODE (GNAT_LOOP_ID, "gnat_loop_id", 'x', 0)
+
+/* Here are the tree codes for the statement types known to Ada.  These
+   must be at the end of this file to allow IS_STMT to work.
+
+   We start with an expression statement, whose only operand is an
+   expression, EXPR_STMT_EXPR, Execution of the statement means evaluation of
+   the expression (such as a MODIFY_EXPR) and discarding its result.  */
+DEFTREECODE (EXPR_STMT, "expr_stmt_expr", 's', 1)

@@ -275,3 +275,14 @@ struct lang_type GTY(())
    node.  We need to find some other place to store it!  */
 #define TREE_LOOP_ID(NODE) \
   (((union lang_tree_node *)TREE_CHECK (NODE, GNAT_LOOP_ID))->loop_id.loop_id)
+
+/* Define fields and macros for statements.
+
+   Start by defining which tree codes are used for statements.  */
+#define IS_STMT(NODE)		(TREE_CODE_CLASS (TREE_CODE (NODE)) == 's')
+
+/* We store the Sloc in statement nodes.  */
+#define TREE_SLOC(NODE)		TREE_COMPLEXITY (STMT_CHECK (NODE))
+
+/* There is just one field in an EXPR_STMT: the expression.  */
+#define EXPR_STMT_EXPR(NODE)	TREE_OPERAND_CHECK_CODE (NODE, EXPR_STMT, 0)

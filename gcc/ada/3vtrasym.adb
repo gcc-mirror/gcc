@@ -34,7 +34,6 @@
 
 with Ada.Exceptions.Traceback; use Ada.Exceptions.Traceback;
 with Interfaces.C;
-with Interfaces.C.Strings;
 with System;
 with System.Aux_DEC;
 with System.Soft_Links;
@@ -45,133 +44,147 @@ package body GNAT.Traceback.Symbolic is
    pragma Warnings (Off);
    pragma Linker_Options ("--for-linker=sys$library:trace.exe");
 
-   use Interfaces.C.Strings;
+   use Interfaces.C;
    use System;
    use System.Aux_DEC;
    use System.Traceback_Entries;
 
-   type Dscdef1_Type is record
-      Maxstrlen : Unsigned_Word;
-      Dtype     : Unsigned_Byte;
-      Class     : Unsigned_Byte;
-      Pointer   : chars_ptr;
-   end record;
-
-   for Dscdef1_Type use record
-      Maxstrlen at 0 range 0 .. 15;
-      Dtype     at 2 range 0 .. 7;
-      Class     at 3 range 0 .. 7;
-      Pointer   at 4 range 0 .. 31;
-   end record;
-   for Dscdef1_Type'Size use 64;
-
-   Image_Buf  : String (1 .. 10240);
-   Image_Len  : Integer;
-   Image_Need_Hdr : Boolean := True;
-   Image_Do_Another_Line : Boolean;
-   Image_Xtra_Msg : Boolean;
-
-   procedure Traceback_Image (Out_Desc : access Dscdef1_Type);
-
-   procedure Traceback_Image (Out_Desc : access Dscdef1_Type) is
-      Image : String (1 .. Integer (Out_Desc.Maxstrlen));
-   begin
-      Image := Value (Out_Desc.Pointer,
-                      Interfaces.C.size_t (Out_Desc.Maxstrlen));
-
-      if Image_Do_Another_Line and then
-        (Image_Need_Hdr or else
-         Image (Image'First .. Image'First + 27) /=
-         "  image    module    routine")
-      then
-         declare
-            First : Integer := Image_Len + 1;
-            Last  : Integer := First + Image'Length - 1;
-         begin
-            Image_Buf (First .. Last + 1) := Image & ASCII.LF;
-            Image_Len := Last + 1;
-         end;
-
-         Image_Need_Hdr := False;
-
-         if Image (Image'First .. Image'First + 3) = "----" then
-            if Image_Xtra_Msg = False then
-               Image_Xtra_Msg := True;
-            else
-               Image_Xtra_Msg := False;
-            end if;
-         end if;
-
-         if Out_Desc.Maxstrlen = 79 and then not Image_Xtra_Msg then
-            Image_Len := Image_Len - 1;
-            Image_Do_Another_Line := False;
-         end if;
-      end if;
-   end Traceback_Image;
-
    subtype User_Arg_Type is Unsigned_Longword;
    subtype Cond_Value_Type is Unsigned_Longword;
 
-   procedure Show_Traceback
-     (Status         : out Cond_Value_Type;
-      Faulting_FP    : Address;
-      Faulting_SP    : Address;
-      Faulting_PC    : Address;
-      Detail_Level   : Integer           := Integer'Null_Parameter;
-      User_Act_Proc  : Address           := Address'Null_Parameter;
-      User_Arg_Value : User_Arg_Type     := User_Arg_Type'Null_Parameter;
-      Exceptionn     : Unsigned_Longword := Unsigned_Longword'Null_Parameter);
+   type ASCIC is record
+      Count : unsigned_char;
+      Data  : char_array (1 .. 255);
+   end record;
+   pragma Convention (C, ASCIC);
 
-   pragma Interface (External, Show_Traceback);
+   for ASCIC use record
+      Count at 0 range 0 .. 7;
+      Data  at 1 range 0 .. 8 * 255 - 1;
+   end record;
+   for ASCIC'Size use 8 * 256;
+
+   function Fetch_ASCIC is new Fetch_From_Address (ASCIC);
+
+   procedure Symbolize
+     (Status         : out Cond_Value_Type;
+      Current_PC     : in Address;
+      Adjusted_PC    : in Address;
+      Current_FP     : in Address;
+      Current_R26    : in Address;
+      Image_Name     : out Address;
+      Module_Name    : out Address;
+      Routine_Name   : out Address;
+      Line_Number    : out Integer;
+      Relative_PC    : out Address;
+      Absolute_PC    : out Address;
+      PC_Is_Valid    : out Long_Integer;
+      User_Act_Proc  : Address           := Address'Null_Parameter;
+      User_Arg_Value : User_Arg_Type     := User_Arg_Type'Null_Parameter);
+
+   pragma Interface (External, Symbolize);
 
    pragma Import_Valued_Procedure
-     (Show_Traceback, "TBK$SHOW_TRACEBACK",
-      (Cond_Value_Type, Address, Address, Address, Integer, Address,
-       User_Arg_Type, Unsigned_Longword),
-      (Value, Value, Value, Value, Reference, Value, Value, Reference),
-       Detail_Level);
-
+     (Symbolize, "TBK$SYMBOLIZE",
+      (Cond_Value_Type, Address, Address, Address, Address,
+       Address, Address, Address, Integer,
+       Address, Address, Long_Integer,
+       Address, User_Arg_Type),
+      (Value, Value, Value, Value, Value,
+       Reference, Reference, Reference, Reference,
+       Reference, Reference, Reference,
+       Value, Value),
+       User_Act_Proc);
 
    ------------------------
    -- Symbolic_Traceback --
    ------------------------
 
    function Symbolic_Traceback (Traceback : Tracebacks_Array) return String is
-      Res : String (1 .. 256 * Traceback'Length);
-      Len : Integer;
-      Status : Cond_Value_Type;
+      Status       : Cond_Value_Type;
+      Image_Name        : ASCIC;
+      Image_Name_Addr   : Address;
+      Module_Name       : ASCIC;
+      Module_Name_Addr  : Address;
+      Routine_Name      : ASCIC;
+      Routine_Name_Addr : Address;
+      Line_Number       : Integer;
+      Relative_PC       : Address;
+      Absolute_PC       : Address;
+      PC_Is_Valid       : Long_Integer;
+      Return_Address    : Address;
+      Res               : String (1 .. 256 * Traceback'Length);
+      Len               : Integer;
 
    begin
       if Traceback'Length > 0 then
-
          Len := 0;
 
          --  Since image computation is not thread-safe we need task lockout
-         System.Soft_Links.Lock_Task.all;
-         for I in Traceback'Range loop
-            Image_Len := 0;
-            Image_Do_Another_Line := True;
-            Image_Xtra_Msg := False;
 
-            Show_Traceback
+         System.Soft_Links.Lock_Task.all;
+
+         for J in Traceback'Range loop
+            if J = Traceback'Last then
+               Return_Address := Address_Zero;
+            else
+               Return_Address := PC_For (Traceback (J + 1));
+            end if;
+
+            Symbolize
               (Status,
-               FP_For (Traceback (I)),
-               SP_For (Traceback (I)),
-               PC_For (Traceback (I)),
-               0,
-               Traceback_Image'Address);
+               PC_For (Traceback (J)),
+               PC_For (Traceback (J)),
+               PV_For (Traceback (J)),
+               Return_Address,
+               Image_Name_Addr,
+               Module_Name_Addr,
+               Routine_Name_Addr,
+               Line_Number,
+               Relative_PC,
+               Absolute_PC,
+               PC_Is_Valid);
+
+            Image_Name   := Fetch_ASCIC (Image_Name_Addr);
+            Module_Name  := Fetch_ASCIC (Module_Name_Addr);
+            Routine_Name := Fetch_ASCIC (Routine_Name_Addr);
 
             declare
                First : Integer := Len + 1;
-               Last  : Integer := First + Image_Len - 1;
+               Last  : Integer := First + 80 - 1;
+
             begin
-               Res (First .. Last + 1) := Image_Buf & ASCII.LF;
-               Len := Last + 1;
+               Res (First .. Last) := (others => ' ');
+
+               Res (First .. First + Integer (Image_Name.Count) - 1) :=
+                 To_Ada
+                  (Image_Name.Data (1 .. size_t (Image_Name.Count)),
+                   False);
+
+               Res (First + 10 ..
+                    First + 10 + Integer (Module_Name.Count) - 1) :=
+                 To_Ada
+                  (Module_Name.Data (1 .. size_t (Module_Name.Count)),
+                   False);
+
+               Res (First + 30 ..
+                    First + 30 + Integer (Routine_Name.Count) - 1) :=
+                 To_Ada
+                  (Routine_Name.Data (1 .. size_t (Routine_Name.Count)),
+                   False);
+
+               Res (First + 50 ..
+                    First + 50 + Integer'Image (Line_Number)'Length - 1) :=
+                 Integer'Image (Line_Number);
+
+               Res (Last) := ASCII.LF;
+               Len := Last;
             end;
          end loop;
-         System.Soft_Links.Unlock_Task.all;
 
+         System.Soft_Links.Unlock_Task.all;
          return Res (1 .. Len);
+
       else
          return "";
       end if;

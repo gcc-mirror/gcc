@@ -838,6 +838,7 @@ package body Atree is
       pragma Warnings (Off, Dummy);
 
    begin
+      Node_Count := 0;
       Atree_Private_Part.Nodes.Init;
       Orig_Nodes.Init;
 

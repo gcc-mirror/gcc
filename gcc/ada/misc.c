@@ -544,6 +544,13 @@ gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier)
   tree new;
   rtx result;
 
+  /* If this is a statement, call the expansion routine for statements.  */
+  if (IS_STMT (exp))
+    {
+      gnat_expand_stmt (exp);
+      return const0_rtx;
+    }
+
   /* Update EXP to be the new expression to expand.  */
   switch (TREE_CODE (exp))
     {

@@ -2134,15 +2134,19 @@ package body Sem_Type is
       if B1 = B2 then
          return B1;
 
-      elsif (T1 = Universal_Integer  and then Is_Integer_Type (T2))
-        or else (T1 = Universal_Real and then Is_Real_Type (T2))
-        or else (T1 = Any_Fixed      and then Is_Fixed_Point_Type (T2))
+      elsif False
+        or else (T1 = Universal_Integer and then Is_Integer_Type (T2))
+        or else (T1 = Universal_Real    and then Is_Real_Type (T2))
+        or else (T1 = Universal_Fixed   and then Is_Fixed_Point_Type (T2))
+        or else (T1 = Any_Fixed         and then Is_Fixed_Point_Type (T2))
       then
          return B2;
 
-      elsif (T2 = Universal_Integer  and then Is_Integer_Type (T1))
-        or else (T2 = Universal_Real and then Is_Real_Type (T1))
-        or else (T2 = Any_Fixed      and then Is_Fixed_Point_Type (T1))
+      elsif False
+        or else (T2 = Universal_Integer and then Is_Integer_Type (T1))
+        or else (T2 = Universal_Real    and then Is_Real_Type (T1))
+        or else (T2 = Universal_Fixed   and then Is_Fixed_Point_Type (T1))
+        or else (T2 = Any_Fixed         and then Is_Fixed_Point_Type (T1))
       then
          return B1;
 

@@ -47,22 +47,13 @@ package body System.Traceback_Entries is
    end PC_For;
 
    ------------
-   -- SP_For --
+   -- PV_For --
    ------------
 
-   function SP_For (TB_Entry : Traceback_Entry) return System.Address is
+   function PV_For (TB_Entry : Traceback_Entry) return System.Address is
    begin
-      return TB_Entry.SP;
-   end SP_For;
-
-   ------------
-   -- FP_For --
-   ------------
-
-   function FP_For (TB_Entry : Traceback_Entry) return System.Address is
-   begin
-      return TB_Entry.FP;
-   end FP_For;
+      return TB_Entry.PV;
+   end PV_For;
 
    ------------------
    -- TB_Entry_For --
@@ -70,7 +61,7 @@ package body System.Traceback_Entries is
 
    function TB_Entry_For (PC : System.Address) return Traceback_Entry is
    begin
-      return (PC => PC, SP => System.Null_Address, FP => System.Null_Address);
+      return (PC => PC, PV => System.Null_Address);
    end TB_Entry_For;
 
 end System.Traceback_Entries;

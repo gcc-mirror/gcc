@@ -50,7 +50,7 @@ static tree contains_null_expr		PARAMS ((tree));
 static tree compare_arrays		PARAMS ((tree, tree, tree));
 static tree nonbinary_modular_operation	PARAMS ((enum tree_code, tree,
 						tree, tree));
-static tree build_simple_component_ref	PARAMS ((tree, tree, tree));
+static tree build_simple_component_ref	PARAMS ((tree, tree, tree, int));
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR or other logical
    operation.
@@ -955,7 +955,8 @@ build_binary_op (op_code, result_type, left_operand, right_operand)
 	       && integer_zerop (TREE_VALUE (CONSTRUCTOR_ELTS (right_operand))))
 	{
 	  right_operand = build_component_ref (left_operand, NULL_TREE,
-					       TYPE_FIELDS (left_base_type));
+					       TYPE_FIELDS (left_base_type),
+					       0);
 	  left_operand = convert (TREE_TYPE (right_operand),
 				  integer_zero_node);
 	}
@@ -1609,16 +1610,17 @@ gnat_build_constructor (type, list)
 
 /* Return a COMPONENT_REF to access a field that is given by COMPONENT,
    an IDENTIFIER_NODE giving the name of the field, or FIELD, a FIELD_DECL,
-   for the field.
+   for the field.  Don't fold the result if NO_FOLD_P is nonzero.
 
    We also handle the fact that we might have been passed a pointer to the
    actual record and know how to look for fields in variant parts.  */
 
 static tree
-build_simple_component_ref (record_variable, component, field)
+build_simple_component_ref (record_variable, component, field, no_fold_p)
      tree record_variable;
      tree component;
      tree field;
+     int no_fold_p;
 {
   tree record_type = TYPE_MAIN_VARIANT (TREE_TYPE (record_variable));
   tree ref;
@@ -1674,8 +1676,9 @@ build_simple_component_ref (record_variable, component, field)
 	    {
 	      tree field_ref
 		= build_simple_component_ref (record_variable, 
-					      NULL_TREE, new_field);
-	      ref = build_simple_component_ref (field_ref, NULL_TREE, field);
+					      NULL_TREE, new_field, no_fold_p);
+	      ref = build_simple_component_ref (field_ref, NULL_TREE, field,
+						no_fold_p);
 
 	      if (ref != 0)
 		return ref;
@@ -1697,19 +1700,21 @@ build_simple_component_ref (record_variable, component, field)
       || TYPE_VOLATILE (record_type))
     TREE_THIS_VOLATILE (ref) = 1;
 
-  return fold (ref);
+  return no_fold_p ? ref : fold (ref);
 }
 
 /* Like build_simple_component_ref, except that we give an error if the
    reference could not be found.  */
 
 tree
-build_component_ref (record_variable, component, field)
+build_component_ref (record_variable, component, field, no_fold_p)
      tree record_variable;
      tree component;
      tree field;
+     int no_fold_p;
 {
-  tree ref = build_simple_component_ref (record_variable, component, field);
+  tree ref = build_simple_component_ref (record_variable, component, field,
+					 no_fold_p);
 
   if (ref != 0)
     return ref;
@@ -1945,7 +1950,7 @@ build_allocator (type, init, result_type, gnat_proc, gnat_pool, gnat_node)
 	    build_component_ref
 	    (build_unary_op (INDIRECT_REF, NULL_TREE,
 			     convert (storage_ptr_type, storage)),
-	     NULL_TREE, TYPE_FIELDS (storage_type)),
+	     NULL_TREE, TYPE_FIELDS (storage_type), 0),
 	    build_template (template_type, type, NULL_TREE)),
 	   convert (result_type, convert (storage_ptr_type, storage)));
     }
@@ -1990,7 +1995,7 @@ build_allocator (type, init, result_type, gnat_proc, gnat_pool, gnat_node)
       result = convert (build_pointer_type (new_type), result);
       result = build_unary_op (INDIRECT_REF, NULL_TREE, result);
       result = build_component_ref (result, NULL_TREE,
-				    TYPE_FIELDS (new_type));
+				    TYPE_FIELDS (new_type), 0);
       result = convert (result_type,
 			build_unary_op (ADDR_EXPR, NULL_TREE, result));
     }

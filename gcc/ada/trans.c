@@ -243,9 +243,13 @@ gnat_to_code (gnat_node)
 
   gnu_root = tree_transform (gnat_node);
 
+  /* If we return a statement, generate code for it.  */
+  if (IS_STMT (gnu_root))
+    expand_expr_stmt (gnu_root);
+
   /* This should just generate code, not return a value.  If it returns
      a value, something is wrong.  */
-  if (gnu_root != error_mark_node)
+  else if (gnu_root != error_mark_node)
     gigi_abort (302);
 }
 
@@ -997,7 +1001,9 @@ tree_transform (gnat_node)
 	      gnu_prefix = gnat_stabilize_reference (gnu_prefix, 0);
 
 	    gnu_result
-	      = build_component_ref (gnu_prefix, NULL_TREE, gnu_field);
+	      = build_component_ref (gnu_prefix, NULL_TREE, gnu_field,
+				     (Nkind (Parent (gnat_node))
+				      == N_Attribute_Reference));
 	  }
 
 	if (gnu_result == 0)
@@ -2058,8 +2064,6 @@ tree_transform (gnat_node)
       gnu_rhs
 	= maybe_unconstrained_array (gnat_to_gnu (Expression (gnat_node)));
 
-      set_lineno (gnat_node, 1);
-
       /* If range check is needed, emit code to generate it */
       if (Do_Range_Check (Expression (gnat_node)))
 	gnu_rhs = emit_range_check (gnu_rhs, Etype (Name (gnat_node)));
@@ -2071,10 +2075,12 @@ tree_transform (gnat_node)
 	   && TREE_OVERFLOW (TYPE_SIZE (TREE_TYPE (gnu_lhs))))
 	  || (TREE_CODE (TYPE_SIZE (TREE_TYPE (gnu_rhs))) == INTEGER_CST
 	      && TREE_OVERFLOW (TYPE_SIZE (TREE_TYPE (gnu_rhs)))))
-	expand_expr_stmt (build_call_raise (SE_Object_Too_Large));
+	gnu_result = build_call_raise (SE_Object_Too_Large);
       else
-	expand_expr_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE,
-					   gnu_lhs, gnu_rhs));
+	gnu_result
+	  = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_lhs, gnu_rhs);
+
+      gnu_result = build_nt (EXPR_STMT, gnu_result);
       break;
 
     case N_If_Statement:
@@ -3168,7 +3174,7 @@ tree_transform (gnat_node)
 		    = length == 1 ? gnu_subprog_call
 		      : build_component_ref
 			(gnu_subprog_call, NULL_TREE,
-			 TREE_PURPOSE (scalar_return_list));
+			 TREE_PURPOSE (scalar_return_list), 0);
 		  int unchecked_conversion
 		    = Nkind (gnat_actual) == N_Unchecked_Type_Conversion;
 		  /* If the actual is a conversion, get the inner expression,
@@ -3614,7 +3620,8 @@ tree_transform (gnat_node)
 			(build_unary_op
 			 (INDIRECT_REF, NULL_TREE,
 			  TREE_VALUE (gnu_except_ptr_stack)),
-			 get_identifier ("not_handled_by_others"), NULL_TREE)),
+			 get_identifier ("not_handled_by_others"), NULL_TREE,
+			 0)),
 			 integer_zero_node);
 		}
 
@@ -3643,7 +3650,7 @@ tree_transform (gnat_node)
 			 (build_unary_op
 			  (INDIRECT_REF, NULL_TREE,
 			   TREE_VALUE (gnu_except_ptr_stack)),
-			  get_identifier ("import_code"), NULL_TREE),
+			  get_identifier ("import_code"), NULL_TREE, 0),
 			 gnu_expr);
 		  else
 		    this_choice
@@ -3664,7 +3671,7 @@ tree_transform (gnat_node)
 			  (build_unary_op
 			   (INDIRECT_REF, NULL_TREE,
 			    TREE_VALUE (gnu_except_ptr_stack)),
-			   get_identifier ("lang"), NULL_TREE);
+			   get_identifier ("lang"), NULL_TREE, 0);
 
 		      this_choice
 			= build_binary_op
@@ -4024,8 +4031,17 @@ tree_transform (gnat_node)
 	gigi_abort (321);
     }
 
+  /* If the result is a statement, set needed flags and return it.  */
+  if (IS_STMT (gnu_result))
+    {
+      TREE_TYPE (gnu_result) = void_type_node;
+      TREE_THIS_VOLATILE (gnu_result) = TREE_SIDE_EFFECTS (gnu_result) = 1;
+      TREE_SLOC (gnu_result) = Sloc (gnat_node);
+      return gnu_result;
+    }
+
   /* If the result is a constant that overflows, raise constraint error.  */
-  if (TREE_CODE (gnu_result) == INTEGER_CST
+  else if (TREE_CODE (gnu_result) == INTEGER_CST
       && TREE_CONSTANT_OVERFLOW (gnu_result))
     {
       post_error ("Constraint_Error will be raised at run-time?", gnat_node);
@@ -4135,6 +4151,25 @@ tree_transform (gnat_node)
     gnu_result = TREE_OPERAND (gnu_result, 0);
 
   return gnu_result;
+}
+
+/* GNU_STMT is a statement.  We generate code for that statement.  */
+
+void
+gnat_expand_stmt (gnu_stmt)
+     tree gnu_stmt;
+{
+  set_lineno_from_sloc (TREE_SLOC (gnu_stmt), 1);
+
+  switch (TREE_CODE (gnu_stmt))
+    {
+    case EXPR_STMT:
+      expand_expr_stmt (EXPR_STMT_EXPR (gnu_stmt));
+      break;
+
+    default:
+      abort ();
+    }
 }
 
 /* Force references to each of the entities in packages GNAT_NODE with's
@@ -5407,6 +5442,16 @@ set_lineno (gnat_node, write_note_p)
 {
   Source_Ptr source_location = Sloc (gnat_node);
 
+  set_lineno_from_sloc (source_location, write_note_p);
+}
+
+/* Likewise, but passed a Sloc.  */
+
+void
+set_lineno_from_sloc (source_location, write_note_p)
+     Source_Ptr source_location;
+     int write_note_p;
+{
   /* If node not from source code, ignore.  */
   if (source_location < 0)
     return;

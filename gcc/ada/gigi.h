@@ -190,6 +190,9 @@ extern void gnat_to_code	PARAMS ((Node_Id));
    code.  */
 extern tree gnat_to_gnu		PARAMS ((Node_Id));
 
+/* GNU_STMT is a statement.  We generate code for that statement.  */
+extern void gnat_expand_stmt	PARAMS ((tree));
+
 /* Do the processing for the declaration of a GNAT_ENTITY, a type.  If
    a separate Freeze node exists, delay the bulk of the processing.  Otherwise
    make a GCC type for GNAT_ENTITY and set up the correspondance.  */
@@ -200,6 +203,9 @@ extern void process_type	PARAMS ((Entity_Id));
    (Sloc) of GNAT_NODE node.  Set the global variable input_filename and
    input_line.  If WRITE_NOTE_P is true, emit a line number note. */
 extern void set_lineno		PARAMS ((Node_Id, int));
+
+/* Likewise, but passed a Sloc.  */
+extern void set_lineno_from_sloc PARAMS ((Source_Ptr, int));
 
 /* Post an error message.  MSG is the error message, properly annotated.
    NODE is the node at which to post the error and the node to use for the
@@ -699,8 +705,8 @@ extern tree gnat_build_constructor PARAMS((tree, tree));
 
 /* Return a COMPONENT_REF to access a field that is given by COMPONENT,
    an IDENTIFIER_NODE giving the name of the field, FIELD, a FIELD_DECL,
-   for the field, or both.  */
-extern tree build_component_ref	PARAMS((tree, tree, tree));
+   for the field, or both.  Don't fold the result if NO_FOLD_P.  */
+extern tree build_component_ref	PARAMS((tree, tree, tree, int));
 
 /* Build a GCC tree to call an allocation or deallocation function.
    If GNU_OBJ is nonzero, it is an object to deallocate.  Otherwise,

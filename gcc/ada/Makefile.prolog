@@ -39,6 +39,7 @@ C_EXT:=.c
 CXX_EXT:=.cc
 AR_EXT=.a
 OBJ_EXT=.o
+CC=gcc
 
 # Default target is to build (compile/bind/link)
 # Target build is defined in Makefile.generic
