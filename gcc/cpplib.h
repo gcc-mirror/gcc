@@ -385,7 +385,7 @@ struct cpp_options
    The return value is the malloced name of a header to try and open,
    if any, or NULL otherwise.  This callback is called only if the
    header is otherwise unfound.  */
-typedef const char *(*missing_header_cb)(cpp_reader *, const char *header);
+typedef const char *(*missing_header_cb)(cpp_reader *, const char *header, cpp_dir **);
 
 /* Call backs to cpplib client.  */
 struct cpp_callbacks
@@ -744,6 +744,7 @@ extern void cpp_make_system_header (cpp_reader *, int, int);
 extern bool cpp_push_include (cpp_reader *, const char *);
 extern void cpp_change_file (cpp_reader *, enum lc_reason, const char *);
 extern const char *cpp_get_path (struct _cpp_file *);
+extern cpp_dir *cpp_get_dir (struct _cpp_file *);
 extern cpp_buffer *cpp_get_buffer (cpp_reader *);
 extern struct _cpp_file *cpp_get_file (cpp_buffer *);
 extern cpp_buffer *cpp_get_prev (cpp_buffer *);
