@@ -4379,9 +4379,10 @@ lookup_static_chain (decl)
   tree context = decl_function_context (decl);
   tree link;
 
-  if (context == 0)
+  if (context == 0
+      || (TREE_CODE (decl) == FUNCTION_DECL && DECL_NO_STATIC_CHAIN (decl)))
     return 0;
-  
+
   /* We treat inline_function_decl as an alias for the current function
      because that is the inline function whose vars, types, etc.
      are being merged into the current function.
@@ -4851,7 +4852,8 @@ init_function_start (subr, filename, line)
   /* Nonzero if this is a nested function that uses a static chain.  */
 
   current_function_needs_context
-    = (decl_function_context (current_function_decl) != 0);
+    = (decl_function_context (current_function_decl) != 0
+       && ! DECL_NO_STATIC_CHAIN (current_function_decl));
 
   /* Set if a call to setjmp is seen.  */
   current_function_calls_setjmp = 0;

@@ -4678,6 +4678,8 @@ expand_expr (exp, target, tmode, modifier)
 
 	  /* Mark as non-local and addressable.  */
 	  DECL_NONLOCAL (exp) = 1;
+	  if (DECL_NO_STATIC_CHAIN (current_function_decl))
+	    abort ();
 	  mark_addressable (exp);
 	  if (GET_CODE (DECL_RTL (exp)) != MEM)
 	    abort ();
@@ -6770,7 +6772,8 @@ expand_expr (exp, target, tmode, modifier)
 
       /* Are we taking the address of a nested function?  */
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == FUNCTION_DECL
-	  && decl_function_context (TREE_OPERAND (exp, 0)) != 0)
+	  && decl_function_context (TREE_OPERAND (exp, 0)) != 0
+	  && ! DECL_NO_STATIC_CHAIN (TREE_OPERAND (exp, 0)))
 	{
 	  op0 = trampoline_address (TREE_OPERAND (exp, 0));
 	  op0 = force_operand (op0, target);
