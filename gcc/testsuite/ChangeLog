@@ -1,3 +1,10 @@
+2004-09-26  Roger Sayle  <roger@eyesopen.com>
+
+	PR other/15526
+	Backport from mainline
+	2004-05-20  Falk Hueffner  <falk@debian.org>
+	* gcc.dg/ftrapv-1.c: New test case.
+
 2004-09-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/9771
