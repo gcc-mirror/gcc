@@ -1,3 +1,7 @@
+2002-05-10  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/20020510-1.c: New test case.
+
 2002-05-10  David S. Miller  <davem@redhat.com>
 
 	* gcc.c-torture/execute/conversion.c: Test long double too.
