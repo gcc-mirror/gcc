@@ -370,7 +370,7 @@ static int flag_rerun_cse_after_loop;
 int flag_inline_functions;
 
 /* Nonzero for -fkeep-inline-functions: even if we make a function
-   go inline everywhere, keep its defintion around for debugging
+   go inline everywhere, keep its definition around for debugging
    purposes.  */
 
 int flag_keep_inline_functions;

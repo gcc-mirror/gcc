@@ -416,7 +416,7 @@ sdbout_record_type_name (type)
 	{
 	  t = TYPE_NAME (type);
 	}
-#if 1  /* As a temprary hack, use typedef names for C++ only.  */
+#if 1  /* As a temporary hack, use typedef names for C++ only.  */
       else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	       && TYPE_LANG_SPECIFIC (type))
 	{

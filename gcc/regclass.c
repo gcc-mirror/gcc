@@ -605,7 +605,7 @@ regclass (f, nregs)
 	  int noperands;
 
 	  /* Show that an insn inside a loop is likely to be executed three
-	     times more than insns outside a loop.  This is much more agressive
+	     times more than insns outside a loop.  This is much more aggressive
 	     than the assumptions made elsewhere and is being tried as an
 	     experiment.  */
 
@@ -1084,7 +1084,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		break;
 
 	      case 'm':  case 'o':  case 'V':
-		/* It doesn't seem worth distingishing between offsettable
+		/* It doesn't seem worth distinguishing between offsettable
 		   and non-offsettable addresses here.  */
 		allows_mem = 1;
 		if (GET_CODE (op) == MEM)

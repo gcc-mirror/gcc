@@ -673,7 +673,7 @@ push_reload (in, out, inloc, outloc, class,
   if (in != 0)
     class = PREFERRED_RELOAD_CLASS (in, class);
 
-  /* Output reloads may need analagous treatment, different in detail.  */
+  /* Output reloads may need analogous treatment, different in detail.  */
 #ifdef PREFERRED_OUTPUT_RELOAD_CLASS
   if (out != 0)
     class = PREFERRED_OUTPUT_RELOAD_CLASS (out, class);
