@@ -26,9 +26,12 @@ AUTOMAKE_OPTIONS = 1.3 cygnus
 # Passed down for cross compilers, canadian crosses.
 TOPLEVEL_INCLUDES = -I$(includedir)
 
-LIBIO_INCLUDES = @BUILD_LIBIO_INCLUDE@ -I$(top_srcdir)/libio 
-
-CSHADOW_INCLUDES = @CSHADOWFLAGS@ @CSHADOW_INCLUDES@
+if GLIBCPP_NEED_LIBIO
+LIBIO_INCLUDES = \
+	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
+else
+LIBIO_INCLUDES = 
+endif
 
 CONFIG_INCLUDES = \
 	-I$(top_srcdir)/@cpu_include_dir@ \
@@ -36,7 +39,7 @@ CONFIG_INCLUDES = \
 
 INCLUDES = \
 	-nostdinc++ -I$(top_srcdir) \
-	$(LIBIO_INCLUDES) $(CONFIG_INCLUDES) $(CSHADOW_INCLUDES) \
+	$(LIBIO_INCLUDES) $(CONFIG_INCLUDES) \
 	$(TOPLEVEL_INCLUDES)	
 
 noinst_LTLIBRARIES = libio.la

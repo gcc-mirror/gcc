@@ -52,7 +52,7 @@ AC_CXXFLAGS = \
 # the end of the compile line so that -O2 can be overridden as the
 # occasion call for it. (ie, --enable-debug)
 AM_CXXFLAGS = \
-	-D_GNU_SOURCE -fno-implicit-templates $(OPTIMIZE_CXXFLAGS) \
+	-fno-implicit-templates $(OPTIMIZE_CXXFLAGS) \
 	-Wall -Wno-format -W -Wwrite-strings -Winline \
 	$(AC_CXXFLAGS) 
 
@@ -60,18 +60,29 @@ AM_CXXFLAGS = \
 # Passed down for cross compilers, canadian crosses.
 TOPLEVEL_INCLUDES = -I$(includedir)
 
-LIBIO_INCLUDES = @BUILD_LIBIO_INCLUDE@ -I$(top_srcdir)/libio 
+if GLIBCPP_NEED_LIBIO
+LIBIO_INCLUDES = \
+	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
+else
+LIBIO_INCLUDES = 
+endif
 
-CSHADOW_INCLUDES = @CSHADOWFLAGS@ @CSHADOW_INCLUDES@
+if GLIBCPP_USE_CSHADOW
+CSHADOW_INCLUDES = 
+#CSHADOW_INCLUDES = \
+#	@CSHADOWFLAGS@ -I$(top_srcdir)/shadow -I$(top_builddir)/cshadow
+else
+CSHADOW_INCLUDES =
+endif
 
 CONFIG_INCLUDES = \
 	-I$(top_srcdir)/@cpu_include_dir@ \
 	-I$(top_srcdir)/@ctype_include_dir@
 
 INCLUDES = \
-	-nostdinc++ -I$(top_srcdir) \
-	$(LIBIO_INCLUDES) $(CONFIG_INCLUDES) $(CSHADOW_INCLUDES) \
-	$(TOPLEVEL_INCLUDES)	
+	-D_GNU_SOURCE -nostdinc++ -I$(top_srcdir) \
+	$(CSHADOW_INCLUDES) $(LIBIO_INCLUDES) \
+	$(CONFIG_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 
 # Need to explicitly set this so that AM_CXXFLAGS is last. (That way,

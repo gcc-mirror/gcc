@@ -1,3 +1,23 @@
+2000-07-23  Brent Verner <brent@rcfile.org>
+
+        * bits/istream.tcc: istream::getline(char_type*, streamsize,
+	char_type) make compliant
+        * testsuite/27_io/istream_unformatted.cc: test for compliant behavior
+
+2000-07-23  Benjamin Kosnik  <bkoz@haight.constant.com>
+
+	* acinclude.m4 (enable_cshadow_headers): Fix problems with blddir
+	and srcdir used to define CSHADOW_INCLUDES..
+
+	* configure.in: For consistency, change .sanity_warned to
+	stamp-sanity-warned.
+
+	* acinclude.m4: Tweak formatting.
+	* Makefile.am (check): Call mkcheck with full pathname for build
+	directory...
+	(check-install): And here.
+	* Makefile.in: Regenerate.
+	
 2000-07-22  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	Line up with libstdc++-v2 version of valarray.
