@@ -11,7 +11,7 @@ LIB1ASMSRC    = ia64/lib1funcs.asm
 LIB1ASMFUNCS  = __divdf3 __divsf3 \
 	__divdi3 __moddi3 __udivdi3 __umoddi3 \
 	__divsi3 __modsi3 __udivsi3 __umodsi3 __save_stack_nonlocal \
-	__nonlocal_goto
+	__nonlocal_goto __restore_stack_nonlocal
 
 # ??? Hack to get -P option used when compiling lib1funcs.asm, because Intel
 # assembler does not accept # line number as a comment.
