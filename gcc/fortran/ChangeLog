@@ -1,3 +1,9 @@
+2004-10-04  Erik Schnetter  <schnetter@aei.mpg.de>
+
+	* scanner.c (preprocessor_line): Accept preprocessor lines without
+	file names.  Check file names for closing quotes.  Handle escaped
+	quotes in file names.
+
 2004-10-04  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	Paul Brook  <paul@codesourcery.com>
 
