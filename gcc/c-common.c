@@ -922,7 +922,7 @@ record_function_format (name, assembler_name, is_scan,
    the number of the argument which is the format control string (starting
    from 1).  */
 
-void
+static void
 record_international_format (name, assembler_name, format_num)
       tree name;
       tree assembler_name;
