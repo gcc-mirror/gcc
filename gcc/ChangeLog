@@ -1,3 +1,7 @@
+2000-06-02  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* expr.c (emit_group_load): Fix typo, GET_MODE not GET_CODE.
+
 Fri Jun  2 00:22:52 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (CPP_SPEC): Add -D__NOMACSAVE__ for -mnomacsave.

@@ -1926,7 +1926,7 @@ emit_group_load (dst, orig_src, ssize, align)
   src = orig_src;
   if (GET_CODE (src) != MEM)
     {
-      if (GET_CODE (src) == VOIDmode)
+      if (GET_MODE (src) == VOIDmode)
 	src = gen_reg_rtx (GET_MODE (dst));
       else
 	src = gen_reg_rtx (GET_MODE (orig_src));
