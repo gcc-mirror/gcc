@@ -82,7 +82,7 @@ struct deps
      scheduling is done.  */
   rtx sched_before_next_call;
 
-  /* Used to keep post-call psuedo/hard reg movements together with
+  /* Used to keep post-call pseudo/hard reg movements together with
      the call.  */
   bool in_post_call_group_p;
 

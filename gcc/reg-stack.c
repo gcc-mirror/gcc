@@ -2837,7 +2837,7 @@ convert_regs_2 (FILE *file, basic_block block)
 	 some dead EH outgoing edge after the possible deletion of the
 	 trapping insn inside the block.  Since the number of predecessors of
 	 "block"'s successors has been computed based on the initial edge set,
-	 we check for the possiblity to process some of these successors
+	 we check for the possibility to process some of these successors
 	 before such an edge deletion may happen.  */
       for (e = block->succ; e ; e = e->succ_next)
 	if (! (e->flags & EDGE_DFS_BACK))

@@ -706,7 +706,7 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
       if (! INSN_P (p))
 	continue;
 
-      /* Make a tenative change.  */
+      /* Make a tentative change.  */
       validate_replace_rtx_group (src_reg, subreg, p);
     }
 

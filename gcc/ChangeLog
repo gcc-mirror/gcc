@@ -1,3 +1,29 @@
+2003-10-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-pretty-print.c: Fix comment typos.
+	* c-pretty-print.h: Likewise.
+	* calls.c: Likewise.
+	* cfgloopmanip.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* cppfiles.c: Likewise.
+	* final.c: Likewise.
+	* function.c: Likewise.
+	* gcov-io.h: Likewise.
+	* gcse.c: Likewise.
+	* genoutput.c: Likewise.
+	* loop.c: Likewise.
+	* postreload.c: Likewise.
+	* reg-stack.c: Likewise.
+	* regmove.c: Likewise.
+	* sched-int.h: Likewise.
+	* sched-rgn.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* tree-inline.c: Likewise.
+	* config/m68hc11/m68hc11.h: Likewise.
+	* config/mmix/mmix.c: Likewise.
+	* config/mn10300/mn10300.md: Likewise.
+	* config/sh/sh.h: Likewise.
+
 2003-10-05  Richard Henderson  <rth@redhat.com>
 
 	* tree-inline.c (remap_type): New.

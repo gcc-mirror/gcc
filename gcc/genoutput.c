@@ -1048,7 +1048,7 @@ constraint_len (const char *p, int genoutput_default_constraint_len)
      check that fails if the value is not the expected one...  */
   if (DEFAULT_CONSTRAINT_LEN (*p, p) != 1)
     abort ();
-  /* And now a comile-time check that should give a diagnostic if the
+  /* And now a compile-time check that should give a diagnostic if the
      definition doesn't exactly match.  */
 #define DEFAULT_CONSTRAINT_LEN(C,STR) 1
   /* Now re-define DEFAULT_CONSTRAINT_LEN so that we can verify it is

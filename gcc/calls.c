@@ -2353,7 +2353,7 @@ expand_call (tree exp, rtx target, int ignore)
 
   /* Start updating where the next arg would go.
 
-     On some machines (such as the PA) indirect calls have a difuferent
+     On some machines (such as the PA) indirect calls have a different
      calling convention than normal calls.  The last argument in
      INIT_CUMULATIVE_ARGS tells the backend if this is an indirect call
      or not.  */

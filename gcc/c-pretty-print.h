@@ -46,7 +46,7 @@ typedef void (*c_pretty_print_fn) (c_pretty_printer *, tree);
    language using C/c++ syntax can derive from this datatype and reuse
    facilities provided here.  It can do so by having a subobject of type
    c_pretty_printer and override the macro pp_c_base to return a pointer
-   to that subobject.  Such a pretty-printer has the responsability to
+   to that subobject.  Such a pretty-printer has the responsibility to
    initialize the pp_base() part, then call pp_c_pretty_printer_init
    to set up the components that are specific to the C pretty-printer.
    A derived pretty-printer can override any function listed in the

@@ -3213,7 +3213,7 @@ extern int rtx_equal_function_value_matters;
 #define MAX_FIXED_MODE_SIZE (TARGET_SH5 ? 128 : 64)
 
 /* ??? Define ACCUMULATE_OUTGOING_ARGS?  This is more efficient than pushing
-   and poping arguments.  However, we do have push/pop instructions, and
+   and popping arguments.  However, we do have push/pop instructions, and
    rather limited offsets (4 bits) in load/store instructions, so it isn't
    clear if this would give better code.  If implemented, should check for
    compatibility problems.  */

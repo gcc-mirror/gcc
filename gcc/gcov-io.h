@@ -148,7 +148,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    program.  The checksum is used for whole program summaries, and
    disambiguates different programs which include the same
    instrumented object file.  There may be several program summaries,
-   each with a unique checksum.  The object summary's checkum is zero.
+   each with a unique checksum.  The object summary's checksum is zero.
    Note that the data file might contain information from several runs
    concatenated, or the data might be merged.
 

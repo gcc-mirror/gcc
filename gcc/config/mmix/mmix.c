@@ -62,7 +62,7 @@ Boston, MA 02111-1307, USA.  */
    (perhaps any insn).  But regs_ever_live is up-to-date when
    leaf_function_p () isn't, so we "or" them together to get accurate
    information.  FIXME: Some tweak to leaf_function_p might be
-   preferrable.  */
+   preferable.  */
 #define MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS			\
  (flag_exceptions						\
   && ((reload_completed && regs_ever_live[MMIX_rJ_REGNUM])	\

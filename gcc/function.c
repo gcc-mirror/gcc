@@ -6342,7 +6342,7 @@ allocate_struct_function (tree fndecl)
 }
 
 /* Reset cfun, and other non-struct-function variables to defaults as
-   appropriate for emiiting rtl at the start of a function.  */
+   appropriate for emitting rtl at the start of a function.  */
 
 static void
 prepare_function_start (tree fndecl)

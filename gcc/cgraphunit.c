@@ -106,7 +106,7 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
   /* "extern inline" functions are never output locally.  */
   if (DECL_EXTERNAL (decl))
     return false;
-  /* We want to emit COMDAT functions only when absolutely neccesary.  */
+  /* We want to emit COMDAT functions only when absolutely necessary.  */
   if (DECL_COMDAT (decl))
     return false;
   if (!DECL_INLINE (decl)
@@ -166,7 +166,7 @@ cgraph_finalize_function (tree decl, bool nested)
 	 inlined in others.
 	 
 	 ??? It may make more sense to use one body for inlining and other
-	 body for expanding the function but this is dificult to do.  */
+	 body for expanding the function but this is difficult to do.  */
 
       /* If node->output is set, then this is a unit-at-a-time compilation
 	 and we have already begun whole-unit analysis.  This is *not*

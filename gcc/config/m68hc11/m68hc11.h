@@ -968,7 +968,7 @@ extern enum reg_class m68hc11_tmp_regs_class;
    followed by "to".  Eliminations of the same "from" register are listed
    in order of preference.
 
-   We have two registers that are eliminated on the 6811. The psuedo arg
+   We have two registers that are eliminated on the 6811. The pseudo arg
    pointer and pseudo frame pointer registers can always be eliminated;
    they are replaced with either the stack or the real frame pointer.  */
 

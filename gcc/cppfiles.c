@@ -643,7 +643,7 @@ _cpp_mark_file_once_only (cpp_reader *pfile, _cpp_file *file)
 }
 
 /* Return the directory from which searching for FNAME should start,
-   condiering the directive TYPE and ANGLE_BRACKETS.  If there is
+   considering the directive TYPE and ANGLE_BRACKETS.  If there is
    nothing left in the path, returns NULL.  */
 static struct cpp_dir *
 search_path_head (cpp_reader *pfile, const char *fname, int angle_brackets,

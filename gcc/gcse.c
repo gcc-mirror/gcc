@@ -5360,7 +5360,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
      reaching_reg <- expr
      old_reg      <- reaching_reg
    because this way copy propagation can discover additional PRE
-   opportunuties.  But if this fails, we try the old way.  */
+   opportunities.  But if this fails, we try the old way.  */
 
 static void
 pre_insert_copy_insn (struct expr *expr, rtx insn)
