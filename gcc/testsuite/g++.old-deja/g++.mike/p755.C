@@ -2,11 +2,12 @@
 // prms-id: 755
 
 #include <new>
-extern "C" void exit(int);
+
+extern "C" void _exit(int);
 
 void* operator new(size_t sz) throw (std::bad_alloc) {
   void* p = 0;
-  exit(0);
+  _exit(0);
   return p;
 }
 

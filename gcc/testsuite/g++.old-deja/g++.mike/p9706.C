@@ -19,6 +19,10 @@ public:
 int main() {
   int i;
 
+  // The standard library may have called new and/or delete during
+  // startup, so we have to reset the counter here.
+  count = 0;
+
   for( i = 0; i < 10; i++ ) {
     try {
       throw A();

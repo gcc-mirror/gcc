@@ -1,3 +1,10 @@
+2000-11-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.mike/p755.C: Tweak handling of exit.
+	* g++.old-deja/g++.mike/p755a.C: Likewise.
+	* g++.old-deja/g++.mike/p9706.C: Don't assume that the standard
+	library makes no calls to `operator new' during initialization.
+
 2000-11-04  Neil Booth  <neilb@earthling.net>
 
         * gcc.dg/cpp/include2.c: New tests.
