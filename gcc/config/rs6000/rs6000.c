@@ -4368,28 +4368,28 @@ rs6000_expand_ternop_builtin (icode, arglist, target)
   enum machine_mode mode1 = insn_data[icode].operand[2].mode;
   enum machine_mode mode2 = insn_data[icode].operand[3].mode;
 
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
   /* If we got invalid arguments bail out before generating bad rtl.  */
   if (arg0 == error_mark_node
       || arg1 == error_mark_node
       || arg2 == error_mark_node)
     return const0_rtx;
 
-  switch (icode)
+  if (icode == CODE_FOR_altivec_vsldoi_4sf
+      || icode == CODE_FOR_altivec_vsldoi_4si
+      || icode == CODE_FOR_altivec_vsldoi_8hi
+      || icode == CODE_FOR_altivec_vsldoi_16qi)
     {
       /* Only allow 4-bit unsigned literals.  */
-    case CODE_FOR_altivec_vsldoi_4sf:
-    case CODE_FOR_altivec_vsldoi_4si:
-    case CODE_FOR_altivec_vsldoi_8hi:
-    case CODE_FOR_altivec_vsldoi_16qi:
       if (TREE_CODE (arg2) != INTEGER_CST
 	  || TREE_INT_CST_LOW (arg2) & ~0xf)
 	{
 	  error ("argument 3 must be a 4-bit unsigned literal");
 	  return const0_rtx;
 	}
-      break;
-    default:
-      break;
     }
 
   if (target == 0
