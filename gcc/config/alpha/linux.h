@@ -31,14 +31,18 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LIB_SPEC "%{pg:-lgmon} %{pg:-lc_p} %{!pg:-lc}"
 
 /* Generate calls to memcpy, etc., not bcopy, etc. */
-#define TARGET_MEM_FUNCTIONS
+#define TARGET_MEM_FUNCTIONS 1
 
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)			\
 	fputs ("\tlda $28,_mcount\n\tjsr $28,($28),_mcount\n", (FILE))
 
 /* Show that we need a GP when profiling.  */
-#define TARGET_PROFILING_NEEDS_GP
+#define TARGET_PROFILING_NEEDS_GP 1
+
+/* Don't care about faults in the prologue.  */
+#undef TARGET_CAN_FAULT_IN_PROLOGUE
+#define TARGET_CAN_FAULT_IN_PROLOGUE 1
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
