@@ -3052,7 +3052,15 @@ purge_addressof_1 (loc, insn, force, store, may_postpone, ht)
 	return true;
 
       start_sequence ();
-      sub = force_operand (sub, NULL_RTX);
+
+      /* If SUB is a or virtual register, try it as a pseudo-register. 
+	 Otherwise, perhaps SUB is an expression, so generate code to compute
+	 it.  */
+      if (GET_CODE (sub) == REG && REGNO (sub) <= LAST_VIRTUAL_REGISTER)
+	sub = copy_to_reg (sub);
+      else
+	sub = force_operand (sub, NULL_RTX);
+
       if (! validate_change (insn, loc, sub, 0)
 	  && ! validate_replace_rtx (x, sub, insn))
 	abort ();
