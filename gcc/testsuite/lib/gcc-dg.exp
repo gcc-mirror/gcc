@@ -21,6 +21,7 @@
 
 load_lib dg.exp
 load_lib file-format.exp
+load_lib target-supports.exp
 
 proc gcc-dg-test { prog do_what extra_tool_flags } {
     # Set up the compiler flags, based on what we're going to do.
