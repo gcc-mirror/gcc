@@ -1,7 +1,8 @@
-
 /* Functions to support a pool of allocatable objects
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003
+   Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@cgsoftware.com>
+
 This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -21,6 +22,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef ALLOC_POOL_H
 #define ALLOC_POOL_H
 
+typedef unsigned long ALLOC_POOL_ID_TYPE;
+
 typedef struct alloc_pool_list_def
 {
   struct alloc_pool_list_def *next;
@@ -30,6 +33,9 @@ typedef struct alloc_pool_list_def
 typedef struct alloc_pool_def
 {
   char *name;
+#ifdef ENABLE_CHECKING
+  ALLOC_POOL_ID_TYPE id;
+#endif
   size_t elts_per_block;
   alloc_pool_list free_list;
   size_t elts_allocated;

@@ -1,3 +1,19 @@
+2003-05-12  Josef Zlomek  <zlomekj@suse.cz>
+
+	* alloc-pool.h (ALLOC_POOL_ID_TYPE): New type.
+	(struct alloc_pool_def): New element 'id'. 
+	* alloc-pool.c (fancy_abort): Extern function prototype.
+	(abort): Macro which uses fancy_abort.
+	(struct allocation_object_def): New structure.
+	(ALLOCATION_OBJECT_PTR_FROM_USER_PTR): New macro.
+	(USER_PTR_FROM_ALLOCATION_OBJECT_PTR): New macro.
+	(last_id): New variable.
+	(create_alloc_pool): Add the offset of u.data to size of element,
+	increase and use last_id.
+	(free_alloc_pool): Do the checking only when ENABLE_CHECKING.
+	(pool_alloc): Likewise. Set ID for elements.
+	(pool_free): Check whether the PTR was allocated from POOL.
+
 2003-05-11  Richard Henderson  <rth@redhat.com>
 
 	PR c/10675
