@@ -1,3 +1,10 @@
+2001-07-14  Richard Henderson  <rth@redhat.com>
+
+	* ifcvt.c (find_cond_trap): New.
+	(find_if_header): Call it.
+	(merge_if_block): Relax existing jump sanity check.
+	* jump.c (jump_optimize_1): Remove conditional trap handling.
+
 2001-07-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/pa/pa.c (emit_hpdiv_const): Return reg is r2 for 64-bit
