@@ -1,3 +1,8 @@
+2003-12-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (ldm_h8300s_2_normal): Use HImode for
+	addresses.
+
 2003-12-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.md: Remove a constraint from a splitter.
