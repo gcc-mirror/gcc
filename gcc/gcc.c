@@ -214,16 +214,15 @@ static void fatal_error			PROTO ((int));
 
 void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
 
-#ifdef LANG_SPECIFIC_DRIVER
 /* Called before processing to change/add/remove arguments. */
-extern void lang_specific_driver PROTO ((void (*) PVPROTO((const char *, ...)), int *, char ***, int *));
+extern void lang_specific_driver PROTO ((void (*) PVPROTO((const char *, ...)),
+					 int *, char ***, int *));
 
 /* Called before linking.  Returns 0 on success and -1 on failure. */
 extern int lang_specific_pre_link ();
 
 /* Number of extra output files that lang_specific_pre_link may generate. */
 extern int lang_specific_extra_outfiles;
-#endif
 
 /* Specs are strings containing lines, each of which (if not blank)
 is made up of a program name, and arguments separated by spaces.
@@ -2379,7 +2378,7 @@ static struct infile *infiles;
 
 static int n_infiles;
 
-/* This counts the number of libraries added by LANG_SPECIFIC_DRIVER, so that
+/* This counts the number of libraries added by lang_specific_driver, so that
    we can tell if there were any user supplied any files or libraries.  */
 
 static int added_libraries;
@@ -2719,10 +2718,8 @@ process_command (argc, argv)
   /* Convert new-style -- options to old-style.  */
   translate_options (&argc, &argv);
 
-#ifdef LANG_SPECIFIC_DRIVER
   /* Do language-specific adjustment/addition of flags.  */
   lang_specific_driver (fatal, &argc, &argv, &added_libraries);
-#endif
 
   /* Scan argv twice.  Here, the first time, just count how many switches
      there will be in their vector, and how many input files in theirs.
@@ -3747,9 +3744,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'o':
 	    {
 	      int max = n_infiles;
-#ifdef LANG_SPECIFIC_DRIVER
 	      max += lang_specific_extra_outfiles;
-#endif
+
 	      for (i = 0; i < max; i++)
 		if (outfiles[i])
 		  store_arg (outfiles[i], 0, 0);
@@ -5008,9 +5004,7 @@ main (argc, argv)
      that correspond to the input files.  */
 
   i = n_infiles;
-#ifdef LANG_SPECIFIC_DRIVER
   i += lang_specific_extra_outfiles;
-#endif
   outfiles = (const char **) xmalloc (i * sizeof (char *));
   bzero ((char *) outfiles, i * sizeof (char *));
 
@@ -5109,7 +5103,6 @@ main (argc, argv)
       clear_failure_queue ();
     }
 
-#ifdef LANG_SPECIFIC_DRIVER
   if (error_count == 0)
     {
       /* Make sure INPUT_FILE_NUMBER points to first available open
@@ -5118,7 +5111,6 @@ main (argc, argv)
       if (lang_specific_pre_link ())
 	error_count++;
     }
-#endif
 
   /* Run ld to link all the compiler output files.  */
 

@@ -59,16 +59,6 @@ F77 f77: f771$(exeext)
   f77.extraclean f77.maintainer-clean f77.distdir f77.rebuilt \
   f77.stage1 f77.stage2 f77.stage3 f77.stage4
 
-g77.c: $(srcdir)/gcc.c
-	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
-	  *) rm -f lang-f77;; \
-	esac
-	if [ -f lang-f77 ]; then \
-	  rm -f g77.c; \
-	  $(LN_S) $(srcdir)/gcc.c g77.c; \
-	else true; fi
-
 g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) touch lang-f77;; \
@@ -88,25 +78,11 @@ g77version.o: $(srcdir)/f/version.c
 	    $(srcdir)/f/version.c; \
 	else true; fi
 
-# N.B.: This is a copy of the gcc.o rule, with -DLANG_SPECIFIC_DRIVER added.
-# It'd be nice if we could find an easier way to do this---rather than have
-# to track changes to the toplevel gcc Makefile as well.
-# We depend on g77.c last, to make it obvious where it came from.
-g77.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g77.c prefix.h
-	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
-	  *) rm -f lang-f77;; \
-	esac
-	if [ -f lang-f77 ]; then \
-	  $(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(DRIVER_DEFINES) \
-	   -DLANG_SPECIFIC_DRIVER -c g77.c; \
-	else true; fi
-
 # Create the compiler driver for g77.
-g77$(exeext): g77.o g77spec.o g77version.o version.o prefix.o intl.o \
+g77$(exeext): gcc.o g77spec.o g77version.o version.o prefix.o intl.o \
   $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	if [ -f lang-f77 ]; then \
-	  $(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g77.o g77spec.o g77version.o \
+	  $(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o g77spec.o g77version.o \
 	   version.o prefix.o intl.o $(EXTRA_GCC_OBJS) $(LIBS); \
 	else true; fi
 
@@ -428,7 +404,7 @@ f77.mostlyclean:
 	-rm -f g77.aux g77.cps g77.ky g77.toc g77.vr g77.fn g77.kys \
 	       g77.pg g77.tp g77.vrs g77.cp g77.fns g77.log g77.pgs g77.tps 
 f77.clean:
-	-rm -f g77.c g77.o g77spec.o g77version.o
+	-rm -f g77spec.o g77version.o
 f77.distclean:
 	-rm -f lang-f77 f/Makefile
 f77.extraclean:
@@ -439,7 +415,7 @@ f77.maintainer-clean:
 # The main makefile has already created stage?/f.
 
 G77STAGESTUFF = f/*$(objext) f/fini f/stamp-str f/str-*.h f/str-*.j \
-  lang-f77 g77.c g77.o g77spec.o g77version.o
+  lang-f77 g77spec.o g77version.o
 
 f77.stage1: stage1-start
 	-if [ -f lang-f77 ]; then \

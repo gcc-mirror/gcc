@@ -1,3 +1,8 @@
+1999-03-25  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* Make-lang.in: Remove all references to g77.o/g77.c.
+	Link g77 from gcc.o.
+
 1999-03-21  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (g77$(exeext)): Depend on intl.o.  Link in intl.o.

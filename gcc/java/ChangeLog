@@ -1,3 +1,8 @@
+1999-03-25  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* java/Make-lang.in: Remove all references to gcj.o/gcj.c.
+	Link gcj from gcc.o.
+
 Tue Mar 23 10:48:24 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (find_applicable_accessible_methods_list): When dealing
