@@ -1,3 +1,8 @@
+Tue Feb  2 22:51:21 1999 Philip Blundell  <philb@gnu.org>
+
+	* mh-armpic: New file.  Patch from Jim Pick <jim@jimpick.com>.
+	* mt-armpic: Likewise.
+
 Mon Nov  2 15:15:33 1998  Geoffrey Noer  <noer@cygnus.com>
 
         * mh-cygwin32: delete
