@@ -385,6 +385,9 @@ extern const char *darwin_fix_and_continue_switch;
       targetm.asm_out.globalize_label (FILE, NAME);			\
     if (DECL_EXTERNAL (DECL))						\
       fputs ("\t.weak_reference ", FILE);				\
+    else if (! lookup_attribute ("weak", DECL_ATTRIBUTES (DECL))	\
+	&& lookup_attribute ("weak_import", DECL_ATTRIBUTES (DECL)))	\
+      break;								\
     else if (TREE_PUBLIC (DECL))					\
       fputs ("\t.weak_definition ", FILE);				\
     else								\
@@ -862,6 +865,11 @@ objc_section_init (void)			\
 #undef TARGET_ASM_ASSEMBLE_VISIBILITY
 #define TARGET_ASM_ASSEMBLE_VISIBILITY darwin_assemble_visibility
 
+/* Extra attributes for Darwin.  */
+#define SUBTARGET_ATTRIBUTE_TABLE					     \
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */ \
+  { "weak_import", 0, 0, true, false, false,				     \
+    darwin_handle_weak_import_attribute }
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\

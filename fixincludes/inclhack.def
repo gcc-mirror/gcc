@@ -978,6 +978,23 @@ fix = {
 
 
 /*
+ * AvailabilityMacros.h on Darwin breaks with GCC 4.0, because of
+ * bad __GNUC__ tests.
+ */
+
+fix = {
+  hackname  = darwin_gcc4_breakage;
+  mach      = "*-*-darwin*";
+  files     = AvailabilityMacros.h;
+  select    = "\\(__GNUC__ >= 3\\) && \\(__GNUC_MINOR__ >= 1\\)";
+  c_fix     = format;
+  c_fix_arg = "((__GNUC__ >= 4) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))";
+  test_text = "#if defined(__GNUC__) && (__GNUC__ >= 3) && "
+  	      "(__GNUC_MINOR__ >= 1)\n";
+};
+
+
+/*
  *  __private_extern__ doesn't exist in FSF GCC.  Even if it did,
  *  why would you ever put it in a system header file?
  */

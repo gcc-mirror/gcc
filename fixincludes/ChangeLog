@@ -1,3 +1,8 @@
+2004-10-27  Geoffrey Keating  <geoffk@apple.com>
+
+	* inclhack.def (darwin_gcc4_breakage): New.
+	* fixincl.x: Regenerate.
+
 2004-10-27  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	PR bootstrap/17832

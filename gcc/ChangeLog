@@ -8,6 +8,16 @@
 
 2004-10-27  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.c (rs6000_attribute_table): Add
+	SUBTARGET_ATTRIBUTE_TABLE.
+	* config/darwin.h (ASM_WEAKEN_DECL): Handle weak_import.
+	(SUBTARGET_ATTRIBUTE_TABLE): Define.
+	* config/darwin.c (darwin_handle_weak_import_attribute): New.
+	(HAVE_DEAD_STRIP): Delete.
+	(no_dead_strip): Don't test HAVE_DEAD_STRIP.
+	* config/darwin-protos.h (darwin_handle_weak_import_attribute):
+	Prototype.
+
 	* doc/tm.texi (USE_SELECT_SECTION_FOR_FUNCTIONS): Document.
 
 	* config/darwin.h (GTHREAD_USE_WEAK): Define.

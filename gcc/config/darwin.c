@@ -1209,13 +1209,30 @@ darwin_unique_section (tree decl ATTRIBUTE_UNUSED, int reloc ATTRIBUTE_UNUSED)
   /* Darwin does not use unique sections.  */
 }
 
-#define HAVE_DEAD_STRIP 0
+/* Handle a "weak_import" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+darwin_handle_weak_import_attribute (tree *node, tree name,
+				     tree ARG_UNUSED (args),
+				     int ARG_UNUSED (flags),
+				     bool * no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else
+    declare_weak (*node);
+
+  return NULL_TREE;
+}
 
 static void
 no_dead_strip (FILE *file, const char *lab)
 {
-  if (HAVE_DEAD_STRIP)
-    fprintf (file, ".no_dead_strip %s\n", lab);
+  fprintf (file, ".no_dead_strip %s\n", lab);
 }
 
 /* Emit a label for an FDE, making it global and/or weak if appropriate. 
