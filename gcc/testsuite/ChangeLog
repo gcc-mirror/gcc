@@ -1,3 +1,8 @@
+2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/_Pragma4.c: Remove stray space.
+	* gcc.dg/cpp/trad/escaped-eof.c: Correct line number.
+
 2003-04-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20030418-1.c: New test.

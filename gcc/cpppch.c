@@ -708,7 +708,7 @@ cpp_read_state (r, name, f, data)
 
       if (fread (defn, 1, m.definition_length, f) != m.definition_length)
 	goto error;
-      defn[m.definition_length] = '\0';
+      defn[m.definition_length] = '\n';
       
       h = cpp_lookup (r, defn, m.name_length);
 
@@ -722,6 +722,7 @@ cpp_read_state (r, name, f, data)
 			       m.definition_length - m.name_length, 
 			       true, 1) != NULL)
 	    {
+	      _cpp_clean_line (r);
 	      if (!_cpp_create_definition (r, h))
 		abort ();
 	      _cpp_pop_buffer (r);

@@ -30,47 +30,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "mkdeps.h"
 #include "splay-tree.h"
-#ifdef ENABLE_VALGRIND_CHECKING
-# ifdef HAVE_MEMCHECK_H
-# include <memcheck.h>
-# else
-# include <valgrind.h>
-# endif
-#else
-/* Avoid #ifdef:s when we can help it.  */
-#define VALGRIND_DISCARD(x)
-#endif
-
-#ifdef HAVE_MMAP_FILE
-# include <sys/mman.h>
-# ifndef MMAP_THRESHOLD
-#  define MMAP_THRESHOLD 3 /* Minimum page count to mmap the file.  */
-# endif
-# if MMAP_THRESHOLD
-#  define TEST_THRESHOLD(size, pagesize) \
-     (size / pagesize >= MMAP_THRESHOLD && (size % pagesize) != 0)
-   /* Use mmap if the file is big enough to be worth it (controlled
-      by MMAP_THRESHOLD) and if we can safely count on there being
-      at least one readable NUL byte after the end of the file's
-      contents.  This is true for all tested operating systems when
-      the file size is not an exact multiple of the page size.  */
-#  ifndef __CYGWIN__
-#   define SHOULD_MMAP(size, pagesize) TEST_THRESHOLD (size, pagesize)
-#  else
-#   define WIN32_LEAN_AND_MEAN
-#   include <windows.h>
-    /* Cygwin can't correctly emulate mmap under Windows 9x style systems so
-       disallow use of mmap on those systems.  Windows 9x does not zero fill
-       memory at EOF and beyond, as required.  */
-#   define SHOULD_MMAP(size, pagesize) ((GetVersion() & 0x80000000) \
-    					? 0 : TEST_THRESHOLD (size, pagesize))
-#  endif
-# endif
-
-#else  /* No MMAP_FILE */
-#  undef MMAP_THRESHOLD
-#  define MMAP_THRESHOLD 0
-#endif
 
 #ifndef O_BINARY
 # define O_BINARY 0
@@ -102,8 +61,6 @@ struct include_file {
   int fd;			/* fd open on file (short term storage only) */
   int err_no;			/* errno obtained if opening a file failed */
   unsigned short include_count;	/* number of times file has been read */
-  unsigned short refcnt;	/* number of stacked buffers using this file */
-  unsigned char mapped;		/* file buffer is mmapped */
   unsigned char pch;		/* 0: file not known to be a PCH.
 				   1: file is a PCH 
 				      (on return from find_include_file).
@@ -278,7 +235,7 @@ open_file (pfile, filename)
     return file;
 
   /* Don't reopen one which is already loaded.  */
-  if (file->buffer != NULL)
+  if (0 && file->buffer != NULL)
     return file;
 
   /* We used to open files in nonblocking mode, but that caused more
@@ -446,7 +403,7 @@ stack_include_file (pfile, inc)
     }
 
   /* Not in cache?  */
-  if (! inc->buffer)
+  if (1 || ! inc->buffer)
     {
       if (read_include_file (pfile, inc))
 	{
@@ -471,7 +428,6 @@ stack_include_file (pfile, inc)
   fp = cpp_push_buffer (pfile, inc->buffer, inc->st.st_size,
 			/* from_stage3 */ CPP_OPTION (pfile, preprocessed), 0);
   fp->inc = inc;
-  fp->inc->refcnt++;
 
   /* Initialize controlling macro state.  */
   pfile->mi_valid = true;
@@ -507,9 +463,6 @@ read_include_file (pfile, inc)
 {
   ssize_t size, offset, count;
   uchar *buf;
-#if MMAP_THRESHOLD
-  static int pagesize = -1;
-#endif
 
   if (S_ISREG (inc->st.st_mode))
     {
@@ -528,25 +481,6 @@ read_include_file (pfile, inc)
 	}
       size = inc->st.st_size;
 
-      inc->mapped = 0;
-#if MMAP_THRESHOLD
-      if (pagesize == -1)
-	pagesize = getpagesize ();
-
-      if (SHOULD_MMAP (size, pagesize))
-	{
-	  buf = (uchar *) mmap (0, size, PROT_READ, MAP_PRIVATE, inc->fd, 0);
-	  if (buf == (uchar *) -1)
-	    goto perror_fail;
-
-	  /* We must tell Valgrind that the byte at buf[size] is actually
-	     readable.  Discard the handle to avoid handle leak.  */
-	  VALGRIND_DISCARD (VALGRIND_MAKE_READABLE (buf + size, 1));
-
-	  inc->mapped = 1;
-	}
-      else
-#endif
 	{
 	  buf = (uchar *) xmalloc (size + 1);
 	  offset = 0;
@@ -567,8 +501,8 @@ read_include_file (pfile, inc)
 		}
 	      offset += count;
 	    }
-	  /* The lexer requires that the buffer be NUL-terminated.  */
-	  buf[size] = '\0';
+	  /* The lexer requires that the buffer be \n-terminated.  */
+	  buf[size] = '\n';
 	}
     }
   else if (S_ISBLK (inc->st.st_mode))
@@ -600,8 +534,8 @@ read_include_file (pfile, inc)
       if (offset + 1 < size)
 	buf = xrealloc (buf, offset + 1);
 
-      /* The lexer requires that the buffer be NUL-terminated.  */
-      buf[offset] = '\0';
+      /* The lexer requires that the buffer be \n-terminated.  */
+      buf[offset] = '\n';
       inc->st.st_size = offset;
     }
 
@@ -614,26 +548,14 @@ read_include_file (pfile, inc)
   return 1;
 }
 
-/* Drop INC's buffer from memory, if we are unlikely to need it again.  */
+/* Drop INC's buffer from memory.  */
 static void
 purge_cache (inc)
      struct include_file *inc;
 {
   if (inc->buffer)
     {
-#if MMAP_THRESHOLD
-      if (inc->mapped)
-	{
-	  /* Undo the previous annotation for the
-	     known-zero-byte-after-mmap.  Discard the handle to avoid
-	     handle leak.  */
-	  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (inc->buffer
-						    + inc->st.st_size, 1));
-	  munmap ((PTR) inc->buffer, inc->st.st_size);
-	}
-      else
-#endif
-	free ((PTR) inc->buffer);
+      free ((PTR) inc->buffer);
       inc->buffer = NULL;
     }
 }
@@ -929,9 +851,7 @@ _cpp_pop_file_buffer (pfile, inc)
   /* Invalidate control macros in the #including file.  */
   pfile->mi_valid = false;
 
-  inc->refcnt--;
-  if (inc->refcnt == 0 && DO_NOT_REREAD (inc))
-    purge_cache (inc);
+  purge_cache (inc);
 }
 
 /* Returns the first place in the include chain to start searching for

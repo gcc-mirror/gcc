@@ -295,7 +295,7 @@ prepare_directive_trad (pfile)
 				    || pfile->directive == &dtable[T_ELIF]);
       if (no_expand)
 	pfile->state.prevent_expansion++;
-      _cpp_read_logical_line_trad (pfile);
+      scan_out_logical_line (pfile, NULL);
       if (no_expand)
 	pfile->state.prevent_expansion--;
       pfile->state.skipping = was_skipping;
@@ -451,13 +451,12 @@ _cpp_handle_directive (pfile, indented)
       /* Restore state when within macro args.  */
       pfile->state.parsing_args = 2;
       pfile->state.prevent_expansion = 1;
-      pfile->buffer->saved_flags |= PREV_WHITE;
     }
   return skip;
 }
 
 /* Directive handler wrapper used by the command line option
-   processor.  */
+   processor.  BUF is \n terminated.  */
 static void
 run_directive (pfile, dir_no, buf, count)
      cpp_reader *pfile;
@@ -471,8 +470,11 @@ run_directive (pfile, dir_no, buf, count)
   if (dir_no == T_PRAGMA)
     pfile->buffer->inc = pfile->buffer->prev->inc;
   start_directive (pfile);
-  /* We don't want a leading # to be interpreted as a directive.  */
-  pfile->buffer->saved_flags = 0;
+
+  /* This is a short-term fix to prevent a leading '#' being
+     interpreted as a directive.  */
+  _cpp_clean_line (pfile);
+
   pfile->directive = &dtable[dir_no];
   if (CPP_OPTION (pfile, traditional))
     prepare_directive_trad (pfile);
@@ -1378,7 +1380,7 @@ destringize_and_run (pfile, in)
 	src++;
       *dest++ = *src++;
     }
-  *dest = '\0';
+  *dest = '\n';
 
   /* Ugh; an awful kludge.  We are really not set up to be lexing
      tokens when in the middle of a macro expansion.  Use a new
@@ -1904,7 +1906,7 @@ cpp_define (pfile, str)
       buf[count++] = ' ';
       buf[count++] = '1';
     }
-  buf[count] = '\0';
+  buf[count] = '\n';
 
   run_directive (pfile, T_DEFINE, buf, count);
 }
@@ -1915,7 +1917,11 @@ _cpp_define_builtin (pfile, str)
      cpp_reader *pfile;
      const char *str;
 {
-  run_directive (pfile, T_DEFINE, str, strlen (str));
+  size_t len = strlen (str);
+  char *buf = alloca (len + 1);
+  memcpy (buf, str, len);
+  buf[len] = '\n';
+  run_directive (pfile, T_DEFINE, buf, len);
 }
 
 /* Process MACRO as if it appeared as the body of an #undef.  */
@@ -1924,7 +1930,11 @@ cpp_undef (pfile, macro)
      cpp_reader *pfile;
      const char *macro;
 {
-  run_directive (pfile, T_UNDEF, macro, strlen (macro));
+  size_t len = strlen (macro);
+  char *buf = alloca (len + 1);
+  memcpy (buf, macro, len);
+  buf[len] = '\n';
+  run_directive (pfile, T_UNDEF, buf, len);
 }
 
 /* Process the string STR as if it appeared as the body of a #assert.  */
@@ -1955,18 +1965,18 @@ handle_assertion (pfile, str, type)
   size_t count = strlen (str);
   const char *p = strchr (str, '=');
 
+  /* Copy the entire option so we can modify it.  Change the first
+     "=" in the string to a '(', and tack a ')' on the end.  */
+  char *buf = (char *) alloca (count + 2);
+
+  memcpy (buf, str, count);
   if (p)
     {
-      /* Copy the entire option so we can modify it.  Change the first
-	 "=" in the string to a '(', and tack a ')' on the end.  */
-      char *buf = (char *) alloca (count + 2);
-
-      memcpy (buf, str, count);
       buf[p - str] = '(';
       buf[count++] = ')';
-      buf[count] = '\0';
-      str = buf;
     }
+  buf[count] = '\n';
+  str = buf;
 
   run_directive (pfile, type, str, count);
 }
@@ -2028,15 +2038,14 @@ cpp_push_buffer (pfile, buffer, len, from_stage3, return_at_eof)
   /* Clears, amongst other things, if_stack and mi_cmacro.  */
   memset (new, 0, sizeof (cpp_buffer));
 
-  new->line_base = new->buf = new->cur = buffer;
+  new->next_line = new->buf = buffer;
   new->rlimit = buffer + len;
-  new->from_stage3 = from_stage3 || CPP_OPTION (pfile, traditional);
+  new->from_stage3 = from_stage3;
   new->prev = pfile->buffer;
   new->return_at_eof = return_at_eof;
-  new->saved_flags = BOL;
+  new->need_line = true;
 
   pfile->buffer = new;
-
   return new;
 }
 
@@ -2061,6 +2070,8 @@ _cpp_pop_buffer (pfile)
 
   /* _cpp_do_file_change expects pfile->buffer to be the new one.  */
   pfile->buffer = buffer->prev;
+
+  free (buffer->notes);
 
   /* Free the buffer object now; we may want to push a new buffer
      in _cpp_push_next_include_file.  */

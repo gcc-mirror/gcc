@@ -1,3 +1,52 @@
+2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppfiles.c (ENABLE_VALGRIND_CHECKING, VALGRIND_DISCARD,
+	MMAP_THRESHOLD, TEST_THRESHOLD, SHOULD_MMAP): Remove.
+	(struct include_file): Remove fefcnt, mapped members.
+	(open_file, stack_include_file, _cpp_pop_file_buffer): Disable caching.
+	(read_include_file): Don't use mmap, terminate buffers in '\r'.
+	(purge_cache): Don't use munmap.
+	* cpphash.h (CPP_BUF_COLUMN): Update.
+	(lexer_state): Remove lexing_comment.
+	(struct _cpp_line_note): New.
+	(struct cpp_buffer): New members cur_note, notes_used, notes_cap,
+	next_line and need_line.  Remove col_adjust and saved_flags.
+	(_cpp_process_line_notes, _cpp_clean_line, _cpp_get_fresh_line,
+	_cpp_skip_block_comment, scan_out_logical_line): New.
+	(_cpp_init_mbchar): Remove.
+	* cppinit.c (init_library): Remove call to _cpp_init_mbchar.
+	(cpp_read_main_file): Set line to 1 earlier.
+	(post_options): -traditional-cpp doesn't want trigraphs.
+	* cpplex.c (MULTIBYTE_CHARS): Remove code predicated on this.
+	(add_line_note, _cpp_clean_line, _cpp_process_line_notes,
+	_cpp_get_fresh_line): New.
+	(handle_newline, skip_escaped_newlines, trigraph_p,
+	continue_after_nul, _cpp_init_mbchar): Remove.
+	(get_effective_char): Update.
+	(_cpp_skip_block_comment): Rename from skip_block_comment, simplify.
+	(skip_line_comment): Simplify.
+	(skip_whitespace, parse_identifier, parse_slow, parse_number,
+	parse_string): Update.
+	(cpp_lex_direct): Use clean lines and process line notes.  Update.
+	(cpp_interpret_charconst): No MULTIBYTE_CHARS.
+	* cpplib.c (prepare_directive_trad): Call scan_out_logical_line
+	directly.
+	(_cpp_handle_directive): Don't set saved_flags.
+	(run_directive, destringize_and_run, cpp_define, cpp_define_builtin,
+	cpp_undef, handle_assertion, cpp_push_buffer): Update.
+	(_cpp_pop_buffer): Free notes.
+	* cppmacro.c (builtin_macro, paste_tokens): \n terminate buffer.
+	* cpppch.c (cpp_read_state): \n terminate buffer.
+	* cpptrad.c (skip_escaped_newlines, handle_newline): Remove.
+	(copy_comment): Use _cpp_skip_block_comment.
+	(skip_whitespace, lex_identifier, _cpp_read_logical_line_trad):
+	Simplify.
+	(_cpp_overlay_buffer, _cpp_remove_overlay, push_replacement_text,
+	save_replacement_text): Update.
+	(scan_out_logical_line): Update to use clean lines and process
+	line notes.
+	* fix-header.c (read_scan_file): Update.
+
 2003-04-18  Douglas B Rupp  <rupp@gnat.com>
 
 	* unwind-dw2-fde.c (__register_frame_info_bases): Check for
