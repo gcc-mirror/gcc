@@ -442,6 +442,52 @@ DEFTREECODE (METHOD_CALL_EXPR, "method_call_expr", "e", 4)
    which is not at precisely the same time that this value is computed.  */
 DEFTREECODE (WITH_CLEANUP_EXPR, "with_cleanup_expr", "e", 3)
 
+/* The following two codes are used in languages that have types where
+   the position and/or sizes of fields vary from object to object of the
+   same type, i.e., where some other field in the object contains a value
+   that is used in the computation of another field's offset or size.
+
+   For example, a record type with a discriminant in Ada is such a type.
+   This mechanism is also used to create "fat pointers" for unconstrained
+   array types in Ada; the fat pointer is a structure one of whose fields is
+   a pointer to the actual array type and the other field is a pointer to a
+   template, which is a structure containing the bounds of the array.  The
+   bounds in the type pointed to by the first field in the fat pointer refer
+   to the values in the template.
+
+   These "self-references" are doing using a PLACEHOLDER_EXPR.  This is a
+   node that will later be replaced with the object being referenced.  Its type
+   is that of the object and selects which object to use from a chain of
+   references (see below).
+
+   When we wish to evaluate a size or offset, we check it is contains a
+   placeholder.  If it does, we construct a WITH_RECORD_EXPR that contains
+   both the expression we wish to evaluate and an expression within which the
+   object may be found.  The latter expression is the object itself in
+   the simple case of an Ada record with discriminant, but it can be the
+   array in the case of an unconstrained array.
+
+   In the latter case, we need the fat pointer, because the bounds of the
+   array can only be accessed from it.  However, we rely here on the fact that
+   the expression for the array contains the dereference of the fat pointer
+   that obtained the array pointer.
+
+   Accordingly, when looking for the object to substitute in place of
+   a PLACEHOLDER_EXPR, we look down the first operand of the expression
+   passed as the second operand to WITH_RECORD_EXPR until we find something
+   of the desired type or reach a constant.  */
+
+/* Denotes a record to later be supplied with a WITH_RECORD_EXPR when
+   evaluating this expression.  The type of this expression is used to
+   find the record to replace it.  */
+DEFTREECODE (PLACEHOLDER_EXPR, "placeholder_expr", "x", 0)
+
+/* Provide an expression that references a record to be used in place
+   of a PLACEHOLDER_EXPR.  The record to be used is the record within
+   operand 1 that has the same type as the PLACEHOLDER_EXPR in
+   operand 0.  */
+DEFTREECODE (WITH_RECORD_EXPR, "with_record_expr", "e", 2)
+
 /* Simple arithmetic.  Operands must have the same machine mode
    and the value shares that mode.  */
 DEFTREECODE (PLUS_EXPR, "plus_expr", "2", 2)
