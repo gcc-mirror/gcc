@@ -1064,7 +1064,8 @@ void GC_register_data_segments()
 
 # else
 
-# if (defined(SVR4) || defined(AUX) || defined(DGUX)) && !defined(PCR)
+# if (defined(SVR4) || defined(AUX) || defined(DGUX) \
+      || (defined(LINUX) && defined(SPARC))) && !defined(PCR)
 char * GC_SysVGetDataStart(max_page_size, etext_addr)
 int max_page_size;
 int * etext_addr;
@@ -2580,23 +2581,37 @@ struct hblk *h;
  * Call stack save code for debugging.
  * Should probably be in mach_dep.c, but that requires reorganization.
  */
-#if defined(SPARC) && !defined(LINUX)
-#   if defined(SUNOS4)
-#     include <machine/frame.h>
-#   else
-#     if defined (DRSNX)
-#	include <sys/sparc/frame.h>
-#     else
-#        if defined(OPENBSD)
-#          include <frame.h>
-#        else
-#          include <sys/frame.h>
-#        endif
-#     endif
-#   endif
-#   if NARGS > 6
+#if defined(SPARC)
+#  if defined(LINUX)
+struct frame {
+	long	fr_local[8];
+	long	fr_arg[6];
+	struct frame *fr_savfp;
+	long	fr_savpc;
+#    ifndef __arch64__
+	char	*fr_stret;
+#    endif
+	long	fr_argd[6];
+	long	fr_argx[0];
+};
+#  else
+#    if defined(SUNOS4)
+#      include <machine/frame.h>
+#    else
+#      if defined (DRSNX)
+#	 include <sys/sparc/frame.h>
+#      else
+#	 if defined(OPENBSD)
+#	   include <frame.h>
+#	 else
+#	   include <sys/frame.h>
+#	 endif
+#      endif
+#    endif
+#  endif
+#  if NARGS > 6
 	--> We only know how to to get the first 6 arguments
-#   endif
+#  endif
 
 #ifdef SAVE_CALL_CHAIN
 /* Fill in the pc and argument information for up to NFRAMES of my	*/
@@ -2610,6 +2625,12 @@ struct hblk *h;
 #  define FR_SAVPC fr_savpc
 #endif
 
+#if defined(SPARC) && (defined(__arch64__) || defined(__sparcv9))
+#define BIAS 2047
+#else
+#define BIAS 0
+#endif
+
 void GC_save_callers (info) 
 struct callinfo info[NFRAMES];
 {
@@ -2620,8 +2641,9 @@ struct callinfo info[NFRAMES];
 
   frame = (struct frame *) GC_save_regs_in_stack ();
   
-  for (fp = frame -> FR_SAVFP; fp != 0 && nframes < NFRAMES;
-       fp = fp -> FR_SAVFP, nframes++) {
+  for (fp = (struct frame *)((long) frame -> FR_SAVFP + BIAS);
+       fp != 0 && nframes < NFRAMES;
+       fp = (struct frame *)((long) fp -> FR_SAVFP + BIAS), nframes++) {
       register int i;
       
       info[nframes].ci_pc = fp->FR_SAVPC;

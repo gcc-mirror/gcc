@@ -152,7 +152,7 @@ static inline ptr_t GC_linux_thread_top_of_stack(void)
   return tos;
 }
 
-#ifdef IA64
+#if defined(SPARC) || defined(IA64)
   extern word GC_save_regs_in_stack();
 #endif
 
@@ -177,7 +177,11 @@ void GC_suspend_handler(int sig)
     /* of a thread which holds the allocation lock in order	*/
     /* to stop the world.  Thus concurrent modification of the	*/
     /* data structure is impossible.				*/
-    me -> stack_ptr = (ptr_t)(&dummy);
+#   ifdef SPARC
+	me -> stack_ptr = (ptr_t)GC_save_regs_in_stack();
+#   else
+	me -> stack_ptr = (ptr_t)(&dummy);
+#   endif
 #   ifdef IA64
 	me -> backing_store_ptr = (ptr_t)GC_save_regs_in_stack();
 #   endif
@@ -425,7 +429,11 @@ void GC_push_all_stacks()
       for (p = GC_threads[i]; p != 0; p = p -> next) {
         if (p -> flags & FINISHED) continue;
         if (pthread_equal(p -> id, me)) {
+#  ifdef SPARC
+	    lo = (ptr_t)GC_save_regs_in_stack();
+#  else
 	    lo = GC_approx_sp();
+#  endif
 	    IF_IA64(bs_hi = (ptr_t)GC_save_regs_in_stack();)
 	} else {
 	    lo = p -> stack_ptr;
