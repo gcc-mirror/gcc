@@ -618,22 +618,31 @@ alloc_aux_for_blocks (size)
     }
 }
 
+/* Clear AUX pointers of all blocks.  */
+
+void
+clear_aux_for_blocks ()
+{
+  int i;
+
+  for (i = 0; i < n_basic_blocks; i++)
+    BASIC_BLOCK (i)->aux = NULL;
+  ENTRY_BLOCK_PTR->aux = NULL;
+  EXIT_BLOCK_PTR->aux = NULL;
+}
+
 /* Free data allocated in block_aux_obstack and clear AUX pointers
    of all blocks.  */
 
 void
 free_aux_for_blocks ()
 {
-  int i;
-
   if (!first_block_aux_obj)
     abort ();
   obstack_free (&block_aux_obstack, first_block_aux_obj);
-  for (i = 0; i < n_basic_blocks; i++)
-    BASIC_BLOCK (i)->aux = NULL;
-  ENTRY_BLOCK_PTR->aux = NULL;
-  EXIT_BLOCK_PTR->aux = NULL;
   first_block_aux_obj = NULL;
+
+  clear_aux_for_blocks ();
 }
 
 /* Allocate an memory edge of SIZE as BB->aux.  The obstack must
@@ -687,17 +696,13 @@ alloc_aux_for_edges (size)
     }
 }
 
-/* Free data allocated in edge_aux_obstack and clear AUX pointers
-   of all edges.  */
+/* Clear AUX pointers of all edges.  */
 
 void
-free_aux_for_edges ()
+clear_aux_for_edges ()
 {
   int i;
 
-  if (!first_edge_aux_obj)
-    abort ();
-  obstack_free (&edge_aux_obstack, first_edge_aux_obj);
   for (i = -1; i < n_basic_blocks; i++)
     {
       basic_block bb;
@@ -710,5 +715,18 @@ free_aux_for_edges ()
       for (e = bb->succ; e; e = e->succ_next)
 	e->aux = NULL;
     }
+}
+
+/* Free data allocated in edge_aux_obstack and clear AUX pointers
+   of all edges.  */
+
+void
+free_aux_for_edges ()
+{
+  if (!first_edge_aux_obj)
+    abort ();
+  obstack_free (&edge_aux_obstack, first_edge_aux_obj);
   first_edge_aux_obj = NULL;
+
+  clear_aux_for_edges ();
 }
