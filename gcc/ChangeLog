@@ -1,3 +1,26 @@
+2000-05-01  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (_cpp_make_hashnode): Rename make_HASHNODE, now
+	static.  Allocate the hashnode and its string in the same
+	block of memory.
+	(del_HASHNODE): Don't free h->name.
+	(_cpp_lookup): If there is no entry for this string, create
+	one, of type T_VOID.
+	(_cpp_lookup_slot): Delete.
+	* cpphash.h: Update prototypes.
+
+	* cpplex.c (maybe_macroexpand): Check for hp->type == T_VOID,
+	not hp == NULL.
+	* cpplib.c (do_define, do_undef, do_pragma_poison, do_assert,
+	do_unassert, cpp_defined): Use _cpp_lookup.  Don't create a
+	node here, just fill in the value field properly.  "Delete"
+	entries by setting the value field to T_VOID.  Check for
+	hp->type == T_VOID, not hp == NULL.
+
+	* Makefile.in (cpplib.o): Don't depend on $(HASHTAB_H).
+	* cpperror.c, cppexp.c, cpplex.c, cpplib.c:  Don't include
+	hashtab.h.
+
 2000-05-01  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.c (print_operand_address): Do not add
