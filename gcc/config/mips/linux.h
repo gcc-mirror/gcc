@@ -155,6 +155,9 @@ void FN ()							\
 %{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
 %{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
 %{mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4} \
+%{mips5: -D_MIPS_ISA=_MIPS_ISA_MIPS5} \
+%{mips32: -D_MIPS_ISA=_MIPS_ISA_MIPS32} \
+%{mips64: -D_MIPS_ISA=_MIPS_ISA_MIPS64} \
 %{!mips*: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
 %{mabi=32: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
 %{mabi=n32: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
