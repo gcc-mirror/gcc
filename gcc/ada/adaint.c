@@ -68,6 +68,62 @@
 #include <sys/wait.h>
 
 #if defined (__EMX__) || defined (MSDOS) || defined (_WIN32)
+#elif defined (VMS)
+#include <rms.h>
+#include <atrdef.h>
+#include <fibdef.h>
+#include <stsdef.h>
+#include <iodef.h>
+#include <errno.h>
+#include <descrip.h>
+#include <string.h>
+#include <unixlib.h>
+
+struct utimbuf
+{
+  time_t actime;
+  time_t modtime;
+};
+
+#define NOREAD     0x01
+#define NOWRITE    0x02
+#define NOEXECUTE  0x04
+#define NODELETE   0x08
+
+/* use native 64-bit arithmetic */
+#define unix_time_to_vms(X,Y) \
+  { unsigned long long reftime, tmptime = (X); \
+    $DESCRIPTOR (unixtime,"1-JAN-1970 0:00:00.00"); \
+    SYS$BINTIM (&unixtime, &reftime); \
+    Y = tmptime * 10000000 + reftime; }
+
+/* descrip.h doesn't have everything ... */
+struct dsc$descriptor_fib
+{
+  unsigned long fib$l_len;
+  struct fibdef *fib$l_addr;
+};
+
+struct IOSB
+{ 
+  unsigned short status, count;
+  unsigned long devdep;
+};
+
+static char *tryfile;
+
+struct vstring
+{
+  short length;
+  char string [NAM$C_MAXRSS+1];
+};
+
+
+#else
+#include <utime.h>
+#endif
+
+#if defined (__EMX__) || defined (MSDOS) || defined (_WIN32)
 #include <process.h>
 #endif
 
@@ -869,6 +925,187 @@ __gnat_file_time_fd (fd)
 #else
   return statbuf.st_mtime;
 #endif
+#endif
+}
+
+/* Set the file time stamp */
+
+void
+__gnat_set_file_time_name (name, time_stamp)
+     char *name;
+     time_t time_stamp;
+{
+#if defined (__EMX__) || defined (MSDOS) || defined (_WIN32)
+#elif defined (VMS)
+  struct FAB fab;
+  struct NAM nam;
+
+  struct
+    {
+      unsigned long long backup, create, expire, revise;
+      unsigned long uic;
+      union
+	{
+	  unsigned short value;
+	  struct
+	    {
+	      unsigned system : 4;
+	      unsigned owner  : 4;
+	      unsigned group  : 4;
+	      unsigned world  : 4;
+	    } bits;
+	} prot;
+    } Fat = { 0 };
+
+  ATRDEF atrlst []
+    = {
+      { ATR$S_CREDATE,  ATR$C_CREDATE,  &Fat.create },
+      { ATR$S_REVDATE,  ATR$C_REVDATE,  &Fat.revise },
+      { ATR$S_EXPDATE,  ATR$C_EXPDATE,  &Fat.expire },
+      { ATR$S_BAKDATE,  ATR$C_BAKDATE,  &Fat.backup },
+      n{ ATR$S_FPRO,     ATR$C_FPRO,     &Fat.prot },
+      { ATR$S_UIC,      ATR$C_UIC,      &Fat.uic },
+      { 0, 0, 0}
+    };
+
+  FIBDEF fib;
+  struct dsc$descriptor_fib fibdsc = {sizeof (fib), (void *) &fib};
+
+  struct IOSB iosb;
+
+  unsigned long long newtime;
+  unsigned long long revtime;
+  long status;
+  short chan;
+
+  struct vstring file;
+  struct dsc$descriptor_s filedsc
+    = {NAM$C_MAXRSS, DSC$K_DTYPE_T, DSC$K_CLASS_S, (void *) file.string};
+  struct vstring device;
+  struct dsc$descriptor_s devicedsc
+    = {NAM$C_MAXRSS, DSC$K_DTYPE_T, DSC$K_CLASS_S, (void *) device.string};
+  struct vstring timev;
+  struct dsc$descriptor_s timedsc
+    = {NAM$C_MAXRSS, DSC$K_DTYPE_T, DSC$K_CLASS_S, (void *) timev.string};
+  struct vstring result;
+  struct dsc$descriptor_s resultdsc
+    = {NAM$C_MAXRSS, DSC$K_DTYPE_VT, DSC$K_CLASS_VS, (void *) result.string};
+
+  tryfile = (char *) __gnat_to_host_dir_spec (name, 0);
+
+  /* Allocate and initialize a fab and nam structures. */
+  fab = cc$rms_fab;
+  nam = cc$rms_nam;
+
+  nam.nam$l_esa = file.string;
+  nam.nam$b_ess = NAM$C_MAXRSS;
+  nam.nam$l_rsa = result.string;
+  nam.nam$b_rss = NAM$C_MAXRSS;
+  fab.fab$l_fna = tryfile;
+  fab.fab$b_fns = strlen (tryfile);
+  fab.fab$l_nam = &nam;
+
+  /*Validate filespec syntax and device existence.  */
+  status = SYS$PARSE (&fab, 0, 0);
+  if ((status & 1) != 1)
+    LIB$SIGNAL (status);
+
+  file.string [nam.nam$b_esl] = 0;
+
+  /* Find matching filespec. */
+  status = SYS$SEARCH (&fab, 0, 0);
+  if ((status & 1) != 1)
+    LIB$SIGNAL (status);
+
+  file.string [nam.nam$b_esl] = 0;
+  result.string [result.length=nam.nam$b_rsl] = 0;
+
+  /* Get the device name and assign an IO channel. */
+  strncpy (device.string, nam.nam$l_dev, nam.nam$b_dev);
+  devicedsc.dsc$w_length  = nam.nam$b_dev;
+  chan = 0;
+  status = SYS$ASSIGN (&devicedsc, &chan, 0, 0, 0);
+  if ((status & 1) != 1)
+    LIB$SIGNAL (status);
+
+  /*  Initialize the FIB and fill in the directory id field. */
+  bzero (&fib, sizeof (fib));
+  fib.fib$w_did [0]  = nam.nam$w_did [0];
+  fib.fib$w_did [1]  = nam.nam$w_did [1];
+  fib.fib$w_did [2]  = nam.nam$w_did [2];
+  fib.fib$l_acctl = 0;
+  fib.fib$l_wcc = 0;
+  strcpy (file.string, (strrchr (result.string, ']') + 1));
+  filedsc.dsc$w_length = strlen (file.string);
+  result.string [result.length = 0] = 0;
+
+  /* Open and close the file to fill in the attributes.  */
+  status
+    = SYS$QIOW (0, chan, IO$_ACCESS|IO$M_ACCESS, &iosb, 0, 0,
+		&fibdsc, &filedsc, &result.length, &resultdsc, &atrlst, 0);
+  if ((status & 1) != 1)
+    LIB$SIGNAL (status);
+  if ((iosb.status & 1) != 1)
+    LIB$SIGNAL (iosb.status);
+
+  result.string [result.length] = 0;
+  status = SYS$QIOW (0, chan, IO$_DEACCESS, &iosb, 0, 0,
+                     &fibdsc, 0, 0, 0, &atrlst, 0);
+  if ((status & 1) != 1)
+    LIB$SIGNAL (status);
+  if ((iosb.status & 1) != 1)
+    LIB$SIGNAL (iosb.status);
+
+  /* Set creation time to requested time */
+  unix_time_to_vms (time_stamp, newtime);
+
+  {
+    time_t t;
+    struct tm *ts;
+
+    t = time ((time_t) 0);
+    ts = localtime (&t);
+
+    /* Set revision time to now in local time. */
+    unix_time_to_vms (t + ts->tm_gmtoff, revtime);
+  }
+
+  /*  Reopen the file, modify the times and then close. */
+  fib.fib$l_acctl = FIB$M_WRITE;
+  status
+    = SYS$QIOW (0, chan, IO$_ACCESS|IO$M_ACCESS, &iosb, 0, 0,
+		&fibdsc, &filedsc, &result.length, &resultdsc, &atrlst, 0);
+  if ((status & 1) != 1)
+    LIB$SIGNAL (status);
+  if ((iosb.status & 1) != 1)
+    LIB$SIGNAL (iosb.status);
+
+  Fat.create = newtime;
+  Fat.revise = revtime;
+
+  status = SYS$QIOW (0, chan, IO$_DEACCESS, &iosb, 0, 0,
+                     &fibdsc, 0, 0, 0, &atrlst, 0);
+  if ((status & 1) != 1)
+    LIB$SIGNAL (status);
+  if ((iosb.status & 1) != 1)
+    LIB$SIGNAL (iosb.status);
+
+  /* Deassign the channel and exit. */
+  status = SYS$DASSGN (chan);
+  if ((status & 1) != 1)
+    LIB$SIGNAL (status);
+#else
+  struct utimbuf utimbuf;
+  time_t t;
+
+  /* Set modification time to requested time */
+  utimbuf.modtime = time_stamp;
+
+  /* Set access time to now in local time */
+  t = time ((time_t) 0);
+  utimbuf.actime = mktime (localtime (&t));
+
+  utime (name, &utimbuf);
 #endif
 }
 
