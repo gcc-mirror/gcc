@@ -2757,6 +2757,19 @@ split_all_insns (upd_life)
 		      bb->end = last;
 		      break;
 		    }
+
+		  /* ??? Coddle to md files that generate subregs in post-
+		     reload splitters instead of computing the proper 
+		     hard register.  */
+		  if (reload_completed)
+		    while (1)
+		      {
+			if (INSN_P (first))
+			  cleanup_subreg_operands (first);
+			if (first == last)
+			  break;
+			first = NEXT_INSN (first);
+		      }
 		}
 	    }
 
