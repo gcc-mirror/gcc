@@ -4792,7 +4792,7 @@ then
 	will_use_collect2=
 	maybe_use_collect2=
 else
-	will_use_collect2="ld"
+	will_use_collect2="collect2"
 	maybe_use_collect2="-DUSE_COLLECT2"
 fi
 

@@ -1,3 +1,19 @@
+Mon Apr  6 21:49:57 1998  Bob Manson  <manson@charmed.cygnus.com>
+
+	* gcc.c: Add linker spec.
+	(link_command_spec): Use %(linker) instead of ld.
+	(main): If collect2 is requested as the linker, see if it exists;
+ 	if not, use ld instead.
+
+	* Makefile.in (USE_COLLECT2): It's named collect2 now, not ld.
+	(ld:) Deleted.
+	(install-collect2): Install as collect2, not ld.
+
+	* configure.in(will_use_collect2): It's named collect2 now.
+
+	* collect2: Remove checks to see if we were invoked recursively.
+	(collect_execute): Use _spawnvp under cygwin32.
+
 Mon Apr  6 17:23:41 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* haifa-sched.c (build_control_flow): Set unreachable for block whose

@@ -334,12 +334,12 @@ EXTRA_GCC_OBJS =@host_extra_gcc_objs@
 # Often this is edited directly by `configure'.
 EXTRA_HEADERS =@extra_headers_list@
 
-# Set this to `ld' to enable use of collect2.
+# Set this to `collect2' to enable use of collect2.
 USE_COLLECT2 = @will_use_collect2@
 MAYBE_USE_COLLECT2 = @maybe_use_collect2@
 # It is convenient for configure to add the assignment at the beginning,
 # so don't override it here.
-USE_COLLECT2 = ld$(exeext)
+USE_COLLECT2 = collect2$(exeext)
 
 # List of extra C and assembler files to add to libgcc1.a.
 # Assembler files should have names ending in `.asm'.
@@ -1253,11 +1253,6 @@ c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(TREE_H) except.h function.h \
     defaults.h c-pragma.h
 c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
     flags.h
-
-# To make a configuration always use collect2, set USE_COLLECT2 to ld.
-ld$(exeext): collect2$(exeext)
-	rm -f ld$(exeext)
-	$(LN) collect2$(exeext) ld$(exeext)
 
 collect2$(exeext): collect2.o tlink.o hash.o cplus-dem.o underscore.o \
 	version.o choose-temp.o $(LIBDEPS)
@@ -2390,9 +2385,9 @@ install-assert-h: assert.h installdirs
 	  chmod a-x $(assertdir)/assert.h; \
 	fi
 
-# Use this target to install the program `collect2' under the name `ld'.
+# Use this target to install the program `collect2' under the name `collect2'.
 install-collect2: collect2 installdirs
-	$(INSTALL_PROGRAM) collect2$(exeext) $(libsubdir)/ld$(exeext)
+	$(INSTALL_PROGRAM) collect2$(exeext) $(libsubdir)/collect2$(exeext)
 # Install the driver program as $(libsubdir)/gcc for collect2.
 	$(INSTALL_PROGRAM) xgcc$(exeext) $(libsubdir)/gcc$(exeext)
 
