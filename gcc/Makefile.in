@@ -251,6 +251,9 @@ STAMP = echo timestamp >
 @SET_MAKE@
 REMAKEFLAGS=LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)"
 
+# Locate mkinstalldirs.
+mkinstalldirs=$(SHELL) $(srcdir)/../mkinstalldirs
+
 # --------
 # UNSORTED
 # --------
@@ -1162,7 +1165,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext
 	SHLIB_MAPFILES='$(SHLIB_MAPFILES)' \
 	SHLIB_NM_FLAGS='$(SHLIB_NM_FLAGS)' \
 	MULTILIB_OSDIRNAMES='$(MULTILIB_OSDIRNAMES)' \
-	mkinstalldirs='$(SHELL) $(srcdir)/mkinstalldirs' \
+	mkinstalldirs='$(mkinstalldirs)' \
 	  $(SHELL) mklibgcc > tmp-libgcc.mk
 	mv tmp-libgcc.mk libgcc.mk
 
@@ -2520,7 +2523,7 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 
 .PHONY: install-gcc-tooldir
 install-gcc-tooldir:
-	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(gcc_tooldir)
+	$(mkinstalldirs) $(DESTDIR)$(gcc_tooldir)
 
 # Build fixed copies of system files.
 stmp-fixinc: fixinc.sh gsyslimits.h
@@ -2611,7 +2614,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 	else \
 	  : This line works around a 'make' bug in BSDI 1.1.; \
 	  FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"; export FIXPROTO_DEFINES; \
-	  mkinstalldirs="$(SHELL) $(srcdir)/mkinstalldirs"; \
+	  mkinstalldirs="$(mkinstalldirs)"; \
 	    export mkinstalldirs; \
 	  if [ -d "$(SYSTEM_HEADER_DIR)" ]; then \
 	    $(SHELL) ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR); \
@@ -2865,14 +2868,14 @@ install-cpp: cpp$(exeext)
 # Create the installation directories.
 # $(libdir)/gcc/include isn't currently searched by cpp.
 installdirs:
-	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(libsubdir)
-	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(libexecsubdir)
-	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(bindir)
-	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(includedir)
-	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(infodir)
-	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(slibdir)
-	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(man1dir)
-	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(man7dir)
+	$(mkinstalldirs) $(DESTDIR)$(libsubdir)
+	$(mkinstalldirs) $(DESTDIR)$(libexecsubdir)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	$(mkinstalldirs) $(DESTDIR)$(includedir)
+	$(mkinstalldirs) $(DESTDIR)$(infodir)
+	$(mkinstalldirs) $(DESTDIR)$(slibdir)
+	$(mkinstalldirs) $(DESTDIR)$(man1dir)
+	$(mkinstalldirs) $(DESTDIR)$(man7dir)
 
 # Install the compiler executables built during cross compilation.
 install-common: native $(EXTRA_PARTS) lang.install-common installdirs
@@ -3060,8 +3063,8 @@ itoolsdatadir = $(libsubdir)/install-tools
 install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
     mkheaders xlimits.h
 	-rm -rf $(DESTDIR)$(itoolsdir) $(DESTDIR)$(itoolsdatadir)
-	$(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$(itoolsdatadir)/include
-	$(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$(itoolsdir)
+	$(mkinstalldirs) $(DESTDIR)$(itoolsdatadir)/include
+	$(mkinstalldirs) $(DESTDIR)$(itoolsdir)
 	for file in $(USER_H); do \
 	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	  $(INSTALL_DATA) $$file \
@@ -3077,7 +3080,7 @@ install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
 	    $(DESTDIR)$(itoolsdatadir)/gsyslimits.h ; \
 	else :; fi
 	if [ x$(STMP_FIXPROTO) != x ] ; then \
-	  $(INSTALL_SCRIPT) $(srcdir)/mkinstalldirs \
+	  $(INSTALL_SCRIPT) $(mkinstalldirs) \
 		$(DESTDIR)$(itoolsdir)/mkinstalldirs ; \
 	  $(INSTALL_SCRIPT) $(srcdir)/fixproto $(DESTDIR)$(itoolsdir)/fixproto ; \
 	  $(INSTALL_PROGRAM) fix-header$(build_exeext) \
@@ -3839,7 +3842,7 @@ update-po: $(CATALOGS:.gmo=.pox)
 # for each language, in case they weren't built or included
 # with the distribution.
 install-po:
-	$(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$(datadir)
+	$(mkinstalldirs) $(DESTDIR)$(datadir)
 	cats="$(CATALOGS)"; for cat in $$cats; do \
 	  lang=`basename $$cat | sed 's/\.gmo$$//'`; \
 	  if [ -f $$cat ]; then :; \
@@ -3847,8 +3850,8 @@ install-po:
 	  else continue; \
 	  fi; \
 	  dir=$(localedir)/$$lang/LC_MESSAGES; \
-	  echo $(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$$dir; \
-	  $(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$$dir || exit 1; \
+	  echo $(mkinstalldirs) $(DESTDIR)$$dir; \
+	  $(mkinstalldirs) $(DESTDIR)$$dir || exit 1; \
 	  echo $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
 	  $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
 	done
