@@ -1,5 +1,9 @@
 2000-07-03  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.pt (lookup10.C): New test.
+
+2000-07-03  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.pt (typename25.C): New test.
 
 2000-07-02  Zack Weinberg  <zack@wolery.cumb.org
