@@ -33,20 +33,18 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #define	MASK_NO_BITFIELD_TYPE	0x40000000	/* Set PCC_BITFIELD_TYPE_MATTERS to 0 */
 #define	MASK_STRICT_ALIGN	0x20000000	/* Set STRICT_ALIGNMENT to 1.  */
 #define MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative */
-#define	MASK_SDATA		0x08000000	/* use small data areas */
+#define	MASK_EABI		0x08000000	/* Adhere to eabi, not System V spec */
 #define MASK_LITTLE_ENDIAN	0x04000000	/* target is little endian */
 #define MASK_REGNAMES		0x02000000	/* use alternate register names.  */
 #define MASK_PROTOTYPE		0x01000000	/* Only prototyped fcns pass variable args */
-#define	MASK_EABI		0x00800000	/* Adhere to eabi, not System V spec */
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
 #define TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
-#define TARGET_SDATA		(target_flags & MASK_SDATA)
+#define TARGET_EABI		(target_flags & MASK_EABI)
 #define TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
 #define TARGET_REGNAMES		(target_flags & MASK_REGNAMES)
 #define	TARGET_PROTOTYPE	(target_flags & MASK_PROTOTYPE)
-#define TARGET_EABI		(target_flags & MASK_EABI)
 #define	TARGET_TOC		((target_flags & MASK_64BIT)		\
 				 || ((target_flags & (MASK_RELOCATABLE	\
 						      | MASK_MINIMAL_TOC)) \
@@ -73,13 +71,9 @@ extern enum rs6000_sdata_type rs6000_sdata;
   { "strict-align",	 MASK_STRICT_ALIGN },				\
   { "no-strict-align",	-MASK_STRICT_ALIGN },				\
   { "relocatable",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC }, \
-  { "relocatable",	-MASK_SDATA },					\
   { "no-relocatable",	-MASK_RELOCATABLE },				\
   { "relocatable-lib",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC }, \
-  { "relocatable-lib",	-MASK_SDATA },					\
   { "no-relocatable-lib", -MASK_RELOCATABLE },				\
-  { "sdata",		 MASK_SDATA },					\
-  { "no-sdata",		-MASK_SDATA },					\
   { "little-endian",	 MASK_LITTLE_ENDIAN },				\
   { "little",		 MASK_LITTLE_ENDIAN },				\
   { "big-endian",	-MASK_LITTLE_ENDIAN },				\
@@ -94,6 +88,8 @@ extern enum rs6000_sdata_type rs6000_sdata;
   { "no-eabi",		-MASK_EABI },					\
   { "regnames",		  MASK_REGNAMES },				\
   { "no-regnames",	 -MASK_REGNAMES },				\
+  { "sdata",		 0 },						\
+  { "no-sdata",		 0 },						\
   { "sim",		 0 },						\
   { "mvme",		 0 },						\
   { "emb",		 0 },						\
@@ -169,12 +165,8 @@ do {									\
 									\
   if (rs6000_sdata_name)						\
     {									\
-      target_flags |= MASK_SDATA;					\
       if (!strcmp (rs6000_sdata_name, "none"))				\
-	{								\
-	  rs6000_sdata = SDATA_NONE;					\
-	  target_flags &= ~MASK_SDATA;					\
-	}								\
+	rs6000_sdata = SDATA_NONE;					\
       else if (!strcmp (rs6000_sdata_name, "data"))			\
 	rs6000_sdata = SDATA_DATA;					\
       else if (!strcmp (rs6000_sdata_name, "default"))			\
@@ -186,21 +178,10 @@ do {									\
       else								\
 	error ("Bad value for -msdata=%s", rs6000_sdata_name);		\
     }									\
-  else if (TARGET_SDATA && TARGET_EABI)					\
-    {									\
-      rs6000_sdata = SDATA_EABI;					\
-      rs6000_sdata_name = "eabi";					\
-    }									\
-  else if (TARGET_SDATA)						\
-    {									\
-      rs6000_sdata = SDATA_SYSV;					\
-      rs6000_sdata_name = "sysv";					\
-    }									\
   else if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)		\
     {									\
       rs6000_sdata = SDATA_DATA;					\
       rs6000_sdata_name = "data";					\
-      target_flags |= MASK_SDATA;					\
     }									\
   else									\
     {									\
@@ -225,10 +206,12 @@ do {									\
 	     rs6000_sdata_name);					\
     }									\
 									\
-  if (TARGET_SDATA && DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS) \
+  if (rs6000_sdata != SDATA_NONE && DEFAULT_ABI != ABI_V4		\
+      && DEFAULT_ABI != ABI_SOLARIS)					\
     {									\
-      target_flags &= ~MASK_SDATA;					\
-      error ("-msdata and -mcall-%s are incompatible.", rs6000_abi_name); \
+      rs6000_sdata = SDATA_NONE;					\
+      error ("-msdata=%s and -mcall-%s are incompatible.",		\
+	     rs6000_sdata_name, rs6000_abi_name);			\
     }									\
 									\
   if (TARGET_RELOCATABLE && !TARGET_MINIMAL_TOC)			\
@@ -467,8 +450,6 @@ extern void sbss_section ();
 void									\
 toc_section ()								\
 {									\
-  static int toc_initialized = 0;					\
-									\
   if (in_section != in_toc)						\
     {									\
       in_section = in_toc;						\
@@ -628,7 +609,7 @@ extern int rs6000_pic_labelno;
     char *init_ptr = (TARGET_64BIT) ? ".quad" : ".long";		\
     STRIP_NAME_ENCODING (orig_name, NAME);				\
 									\
-    if (TARGET_RELOCATABLE && get_pool_size () != 0)			\
+    if (TARGET_RELOCATABLE && (get_pool_size () != 0 || profile_flag))	\
       {									\
 	char buf[256], *buf_ptr;					\
 									\
@@ -701,7 +682,8 @@ extern int rs6000_pic_labelno;
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  if (TARGET_SDATA && (SIZE) > 0 && (SIZE) <= g_switch_value)		\
+  if (rs6000_sdata != SDATA_NONE && (SIZE) > 0				\
+      && (SIZE) <= g_switch_value)					\
     {									\
       sdata_section ();							\
       ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));	\
@@ -961,7 +943,8 @@ do {									\
 
 /* Pass various options to the assembler */
 #undef ASM_SPEC
-#define ASM_SPEC "%(asm_cpu) %{mregnames} %{mno-regnames} \
+#define ASM_SPEC "%(asm_cpu) \
+%{.s: %{mregnames} %{mno-regnames}} %{.S: %{mregnames} %{mno-regnames}} \
 %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
 %{mrelocatable} %{mrelocatable-lib} %{fpic:-K PIC} %{fPIC:-K PIC} \
 %{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb}} \
@@ -983,7 +966,9 @@ do {									\
 %{!meabi: %{!mno-eabi: \
     %{mrelocatable: -meabi } \
     %{mcall-solaris: -mno-eabi } \
-    %{mcall-linux: -mno-eabi }}}"
+    %{mcall-linux: -mno-eabi }}} \
+%{msdata: -msdata=default} \
+%{mno-sdata: -msdata=none}"
 
 /* Don't put -Y P,<path> for cross compilers */
 #undef LINK_PATH_SPEC
@@ -1357,3 +1342,12 @@ do {									\
 
 #undef	MULTILIB_DEFAULTS
 #define	MULTILIB_DEFAULTS { "mbig", "mcall-sysv" }
+
+/* Define this macro if the code for function profiling should come
+   before the function prologue.  Normally, the profiling code comes
+   after.  */
+#define PROFILE_BEFORE_PROLOGUE 1
+
+/* Function name to call to do profiling.  */
+#undef	RS6000_MCOUNT
+#define RS6000_MCOUNT "_mcount"

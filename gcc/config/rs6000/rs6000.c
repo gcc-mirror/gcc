@@ -104,6 +104,14 @@ enum rs6000_abi rs6000_current_abi;
 int rs6000_fpmem_offset;
 int rs6000_fpmem_size;
 
+/* Debug flags */
+char *rs6000_debug_name;
+int rs6000_debug_stack;		/* debug stack applications */
+int rs6000_debug_arg;		/* debug argument handling */
+
+/* Flag to say the TOC is initialized */
+int toc_initialized;
+
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -297,6 +305,19 @@ rs6000_override_options (default_cpu)
 	}
     }
 
+  /* Set debug flags */
+  if (rs6000_debug_name)
+    {
+      if (!strcmp (rs6000_debug_name, "all"))
+	rs6000_debug_stack = rs6000_debug_arg = 1;
+      else if (!strcmp (rs6000_debug_name, "stack"))
+	rs6000_debug_stack = 1;
+      else if (!strcmp (rs6000_debug_name, "arg"))
+	rs6000_debug_arg = 1;
+      else
+	error ("Unknown -mdebug-%s switch", rs6000_debug_name);
+    }
+
 #ifdef TARGET_REGNAMES
   /* If the user desires alternate register names, copy in the alternate names
      now.  */
@@ -416,7 +437,8 @@ any_operand (op, mode)
 }
 
 /* Returns 1 if op is the count register */
-int count_register_operand(op, mode)
+int
+count_register_operand(op, mode)
      register rtx op;
      enum machine_mode mode;
 {
@@ -434,7 +456,8 @@ int count_register_operand(op, mode)
 
 /* Returns 1 if op is memory location for float/int conversions that masquerades
    as a register.  */
-int fpmem_operand(op, mode)
+int
+fpmem_operand(op, mode)
      register rtx op;
      enum machine_mode mode;
 {
@@ -574,6 +597,17 @@ got_operand (op, mode)
   return (GET_CODE (op) == SYMBOL_REF
 	  || GET_CODE (op) == CONST
 	  || GET_CODE (op) == LABEL_REF);
+}
+
+/* Return 1 if the operand is a simple references that can be loaded via
+   the GOT (labels involving addition aren't allowed).  */
+
+int
+got_no_const_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF);
 }
 
 /* Return the number of instructions it takes to form a constant in an
@@ -869,8 +903,7 @@ and_operand (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
-  return (reg_or_short_operand (op, mode)
-	  || logical_operand (op, mode)
+  return (logical_operand (op, mode)
 	  || mask_operand (op, mode));
 }
 
@@ -1009,7 +1042,7 @@ small_data_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-#ifdef TARGET_SDATA
+#if TARGET_ELF
   rtx sym_ref, const_part;
 
   if (rs6000_sdata == SDATA_NONE || rs6000_sdata == SDATA_DATA)
@@ -2168,6 +2201,7 @@ rs6000_finalize_pic ()
       rtx insn = get_insns ();
       rtx reg = NULL_RTX;
       rtx first_insn;
+      rtx last_insn = NULL_RTX;
 
       if (GET_CODE (insn) == NOTE)
 	insn = next_nonnote_insn (insn);
@@ -2186,12 +2220,17 @@ rs6000_finalize_pic ()
 							 GOT_TOC_REGNUM,
 							 &reg);
 	    }
+
+	  if (GET_CODE (insn) != NOTE)
+	    last_insn = insn;
 	}
 
       if (reg)
 	{
 	  rtx init = gen_init_v4_pic (reg);
 	  emit_insn_before (init, first_insn);
+	  if (!optimize && last_insn)
+	    emit_insn_after (gen_rtx (USE, VOIDmode, reg), last_insn);
 	}
     }
 }
@@ -2274,7 +2313,7 @@ rs6000_init_expanders ()
 
 /* Print an operand.  Recognize special options, documented below.  */
 
-#ifdef TARGET_SDATA
+#if TARGET_ELF
 #define SMALL_DATA_RELOC ((rs6000_sdata == SDATA_EABI) ? "sda21" : "sdarel")
 #else
 #define SMALL_DATA_RELOC "sda21"
@@ -2875,8 +2914,10 @@ rs6000_makes_calls ()
 {
   rtx insn;
 
-  /* If we are profiling, we will be making a call to __mcount.  */
-  if (profile_flag)
+  /* If we are profiling, we will be making a call to __mcount.
+     Under the System V ABI's, we store the LR directly, so
+     we don't need to do it here.  */
+  if (DEFAULT_ABI == ABI_AIX && profile_flag)
     return 1;
 
   for (insn = get_insns (); insn; insn = next_insn (insn))
@@ -3066,7 +3107,8 @@ rs6000_stack_info ()
 
 
   /* Determine if we need to save the link register */
-  if (regs_ever_live[65] || profile_flag
+  if (regs_ever_live[65]
+      || (DEFAULT_ABI == ABI_AIX && profile_flag)
 #ifdef TARGET_RELOCATABLE
       || (TARGET_RELOCATABLE && (get_pool_size () != 0))
 #endif
@@ -3336,8 +3378,9 @@ debug_stack_info (info)
    a constant pool.  */
 
 void
-rs6000_output_load_toc_table (file)
+rs6000_output_load_toc_table (file, reg)
      FILE *file;
+     int reg;
 {
   char buf[256];
 
@@ -3349,8 +3392,45 @@ rs6000_output_load_toc_table (file)
       assemble_name (file, buf);
       fprintf (file, "\n");
 
+      /* possibly create the toc section */
+      if (!toc_initialized)
+	{
+	  toc_section ();
+	  function_section (current_function_decl);
+	}
+
+      /* If not first call in this function, we need to put the
+	 different between .LCTOC1 and the address we get to right
+	 after the bl.  It will mess up disassembling the instructions
+	 but that can't be helped.  We will later need to bias the
+	 address before loading.  */
+      if (rs6000_pic_func_labelno != rs6000_pic_labelno)
+	{
+	  char *init_ptr = (TARGET_64BIT) ? ".quad" : ".long";
+	  char *buf_ptr;
+
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCL", rs6000_pic_labelno);
+
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
+	  STRIP_NAME_ENCODING (buf_ptr, buf);
+	  fprintf (file, "\t%s %s-", init_ptr, buf_ptr);
+
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
+	  fprintf (file, "%s\n", buf_ptr);
+	}
+
       ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", rs6000_pic_labelno);
-      fprintf (file, "\tmflr %s\n", reg_names[30]);
+      fprintf (file, "\tmflr %s\n", reg_names[reg]);
+
+      if (rs6000_pic_func_labelno != rs6000_pic_labelno)
+	{
+	  if (TARGET_POWERPC64)
+	    fprintf (file, "\taddi %s,%s,8\n", reg_names[reg], reg_names[reg]);
+	  else if (TARGET_NEW_MNEMONICS)
+	    fprintf (file, "\taddi %s,%s,4\n", reg_names[reg], reg_names[reg]);
+	  else
+	    fprintf (file, "\tcal %s,4(%s)\n", reg_names[reg], reg_names[reg]);
+	}
 
       if (TARGET_POWERPC64)
 	fprintf (file, "\tld");
@@ -3360,33 +3440,33 @@ rs6000_output_load_toc_table (file)
 	fprintf (file, "\tl");
 
       fprintf (file, " %s,(", reg_names[0]);
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_func_labelno);
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
       assemble_name (file, buf);
       fprintf (file, "-");
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
       assemble_name (file, buf);
-      fprintf (file, ")(%s)\n", reg_names[30]);
+      fprintf (file, ")(%s)\n", reg_names[reg]);
       asm_fprintf (file, "\t{cax|add} %s,%s,%s\n",
-		   reg_names[30], reg_names[0], reg_names[30]);
+		   reg_names[reg], reg_names[0], reg_names[reg]);
       rs6000_pic_labelno++;
     }
   else if (!TARGET_64BIT)
     {
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
-      asm_fprintf (file, "\t{cau|addis} %s,%s,", reg_names[30], reg_names[0]);
+      asm_fprintf (file, "\t{cau|addis} %s,%s,", reg_names[reg], reg_names[0]);
       assemble_name (file, buf);
       asm_fprintf (file, "@ha\n");
       if (TARGET_NEW_MNEMONICS)
 	{
-	  asm_fprintf (file, "\taddi %s,%s,", reg_names[30], reg_names[30]);
+	  asm_fprintf (file, "\taddi %s,%s,", reg_names[reg], reg_names[reg]);
 	  assemble_name (file, buf);
 	  asm_fprintf (file, "@l\n");
 	}
       else
 	{
-	  asm_fprintf (file, "\tcal %s,", reg_names[30]);
+	  asm_fprintf (file, "\tcal %s,", reg_names[reg]);
 	  assemble_name (file, buf);
-	  asm_fprintf (file, "@l(%s)\n", reg_names[30]);
+	  asm_fprintf (file, "@l(%s)\n", reg_names[reg]);
 	}
     }
   else
@@ -3394,12 +3474,68 @@ rs6000_output_load_toc_table (file)
 
 #else	/* !USING_SVR4_H */
   ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
-  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[30]);
+  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[reg]);
   assemble_name (file, buf);
   asm_fprintf (file, "(%s)\n", reg_names[2]);
 #endif /* USING_SVR4_H */
 }
 
+
+/* Emit the correct code for allocating stack space.  If COPY_R12, make sure a copy
+   of the old frame is left in r12.  */
+
+void
+rs6000_allocate_stack_space (file, size, copy_r12)
+     FILE *file;
+     int size;
+     int copy_r12;
+{
+  int neg_size = -size;
+  if (TARGET_UPDATE)
+    {
+      if (size < 32767)
+	asm_fprintf (file,
+		     (TARGET_32BIT) ? "\t{stu|stwu} %s,%d(%s)\n" : "\tstdu %s,%d(%s)\n",
+		     reg_names[1], neg_size, reg_names[1]);
+      else
+	{
+	  if (copy_r12)
+	    fprintf (file, "\tmr %s,%s\n", reg_names[12], reg_names[1]);
+
+	  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
+		       reg_names[0], (neg_size >> 16) & 0xffff,
+		       reg_names[0], reg_names[0], neg_size & 0xffff);
+	  asm_fprintf (file,
+		       (TARGET_32BIT) ? "\t{stux|stwux} %s,%s,%s\n" : "\tstdux %s,%s,%s\n",
+		       reg_names[1], reg_names[1], reg_names[0]);
+	}
+    }
+  else
+    {
+      fprintf (file, "\tmr %s,%s\n", reg_names[12], reg_names[1]);
+      if (size < 32767)
+	{
+	  if (TARGET_NEW_MNEMONICS)
+	    fprintf (file, "\taddi %s,%s,%d\n", reg_names[1], reg_names[1], neg_size);
+	  else
+	    fprintf (file, "\tcal %s,%d(%s)\n", reg_names[1], neg_size, reg_names[1]);
+	}
+      else
+	{
+	  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
+		       reg_names[0], (neg_size >> 16) & 0xffff,
+		       reg_names[0], reg_names[0], neg_size & 0xffff);
+	  asm_fprintf (file, "\t{cax|add} %s,%s,%s\n", reg_names[1],
+		       reg_names[0], reg_names[1]);
+	}
+
+      asm_fprintf (file,
+		   (TARGET_32BIT) ? "\t{st|stw} %s,0(%s)\n" : "\tstd %s,0(%s)\n",
+		   reg_names[12], reg_names[1]);
+    }
+}
+
+
 /* Write function prologue.  */
 void
 output_prolog (file, size)
@@ -3458,24 +3594,10 @@ output_prolog (file, size)
   if (info->push_p && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
     {
       if (info->total_size < 32767)
-	{
-	  asm_fprintf (file,
-		       (TARGET_32BIT) ? "\t{stu|stwu} %s,%d(%s)\n" : "\tstdu %s,%d(%s)\n",
-		       reg_names[1], - info->total_size, reg_names[1]);
-	  sp_offset = info->total_size;
-	}
+	sp_offset = info->total_size;
       else
-	{
-	  int neg_size = - info->total_size;
-	  sp_reg = 12;
-	  asm_fprintf (file, "\tmr %s,%s\n", reg_names[12], reg_names[1]);
-	  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
-		       reg_names[0], (neg_size >> 16) & 0xffff,
-		       reg_names[0], reg_names[0], neg_size & 0xffff);
-	  asm_fprintf (file,
-		       (TARGET_32BIT) ? "\t{stux|stwux} %s,%s,%s\n" : "\tstdux %s,%s,%s\n",
-		       reg_names[1], reg_names[1], reg_names[0]);
-	}
+	sp_reg = 12;
+      rs6000_allocate_stack_space (file, info->total_size, sp_reg == 12);
     }
 
   /* If we use the link register, get it into r0.  */
@@ -3589,24 +3711,9 @@ output_prolog (file, size)
 	}
     }
 
-  /* Update stack and set back pointer and we have already done so for V.4.  */
+  /* Update stack and set back pointer unless this is V.4, which was done previously */
   if (info->push_p && DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
-    {
-      if (info->total_size < 32767)
-	asm_fprintf (file,
-		     (TARGET_32BIT) ? "\t{stu|stwu} %s,%d(%s)\n" : "\tstdu %s,%d(%s)\n",
-		     reg_names[1], - info->total_size, reg_names[1]);
-      else
-	{
-	  int neg_size = - info->total_size;
-	  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
-		       reg_names[0], (neg_size >> 16) & 0xffff,
-		       reg_names[0], reg_names[0], neg_size & 0xffff);
-	  asm_fprintf (file,
-		       (TARGET_32BIT) ? "\t{stux|stwux} %s,%s,%s\n" : "\tstdux %s,%s,%s\n",
-		       reg_names[1], reg_names[1], reg_names[0]);
-	}
-    }
+    rs6000_allocate_stack_space (file, info->total_size, FALSE);
 
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
@@ -3671,9 +3778,10 @@ output_prolog (file, size)
   if (TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
     {
 #ifdef USING_SVR4_H
-      rs6000_pic_func_labelno = rs6000_pic_labelno;
+      if (!profile_flag)
+	rs6000_pic_func_labelno = rs6000_pic_labelno;
 #endif
-      rs6000_output_load_toc_table (file);
+      rs6000_output_load_toc_table (file, 30);
     }
 
   if (DEFAULT_ABI == ABI_NT)
@@ -4287,55 +4395,115 @@ output_function_profiler (file, labelno)
   int i, j;
   char buf[100];
 
-  if (DEFAULT_ABI != ABI_AIX)
-    abort ();
-
-  /* Set up a TOC entry for the profiler label.  */
-  toc_section ();
-  ASM_OUTPUT_INTERNAL_LABEL (file, "LPC", labelno);
   ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
-  if (TARGET_MINIMAL_TOC)
+  switch (DEFAULT_ABI)
     {
-      fputs ("\t.long ", file);
-      assemble_name (file, buf);
-      putc ('\n', file);
-    }
-  else
-    {
-      fputs ("\t.tc\t", file);
-      assemble_name (file, buf);
-      fputs ("[TC],", file);
-      assemble_name (file, buf);
-      putc ('\n', file);
-    }
-  text_section ();
+    default:
+      abort ();
+
+    case ABI_V4:
+    case ABI_SOLARIS:
+    case ABI_AIX_NODESC:
+      fprintf (file, "\tmflr %s\n", reg_names[0]);
+      if (flag_pic == 1)
+	{
+	  fprintf (file, "\tbl _GLOBAL_OFFSET_TABLE_@local-4\n");
+	  fprintf (file, "\tmflr %s\n", reg_names[11]);
+	  fprintf (file, "\t%s %s,", (TARGET_NEW_MNEMONICS) ? "lwz" : "l",
+		   reg_names[11]);
+	  assemble_name (file, buf);
+	  fprintf (file, "@got(%s)\n", reg_names[11]);
+	}
+#if TARGET_ELF
+      else if (flag_pic > 1 || TARGET_RELOCATABLE)
+	{
+	  fprintf (file, "\tstw %s,4(%s)\n", reg_names[0], reg_names[1]);
+	  fprintf (file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
+	  assemble_name (file, buf);
+	  fprintf (file, "X = .-.LCTOC1\n");
+	  fprintf (file, "\t.long ");
+	  assemble_name (file, buf);
+	  fputs ("\n\t.previous\n", file);
+	  rs6000_pic_func_labelno = rs6000_pic_labelno;
+	  rs6000_output_load_toc_table (file, 11);
+	  fprintf (file, "\t%s %s,", (TARGET_NEW_MNEMONICS) ? "lwz" : "l",
+		   reg_names[11]);
+	  assemble_name (file, buf);
+	  fprintf (file, "X(%s)\n", reg_names[11]);
+	}
+#endif
+      else if (TARGET_NEW_MNEMONICS)
+	{
+	  fprintf (file, "\taddis %s,%s,", reg_names[11], reg_names[11]);
+	  assemble_name (file, buf);
+	  fprintf (file, "@ha\n");
+	  fprintf (file, "\tstw %s,4(%s)\n", reg_names[0], reg_names[1]);
+	  fprintf (file, "\taddi %s,%s,", reg_names[11], reg_names[11]);
+	  assemble_name (file, buf);
+	  fputs ("@l\n", file);
+	}
+      else
+	{
+	  fprintf (file, "\tcau %s,%s,", reg_names[11], reg_names[11]);
+	  assemble_name (file, buf);
+	  fprintf (file, "@ha\n");
+	  fprintf (file, "\tst %s,4(%s)\n", reg_names[0], reg_names[1]);
+	  fprintf (file, "\tcal %s,", reg_names[11]);
+	  assemble_name (file, buf);
+	  fprintf (file, "@l(%s)\n", reg_names[11]);
+	}
+
+      fprintf (file, "\tbl %s\n", RS6000_MCOUNT);
+      break;
+
+    case ABI_AIX:
+      /* Set up a TOC entry for the profiler label.  */
+      toc_section ();
+      ASM_OUTPUT_INTERNAL_LABEL (file, "LPC", labelno);
+      if (TARGET_MINIMAL_TOC)
+	{
+	  fputs ("\t.long ", file);
+	  assemble_name (file, buf);
+	  putc ('\n', file);
+	}
+      else
+	{
+	  fputs ("\t.tc\t", file);
+	  assemble_name (file, buf);
+	  fputs ("[TC],", file);
+	  assemble_name (file, buf);
+	  putc ('\n', file);
+	}
+      text_section ();
 
   /* Figure out last used parameter register.  The proper thing to do is
      to walk incoming args of the function.  A function might have live
      parameter registers even if it has no incoming args.  */
 
-  for (last_parm_reg = 10;
-       last_parm_reg > 2 && ! regs_ever_live [last_parm_reg];
-       last_parm_reg--)
-    ;
+      for (last_parm_reg = 10;
+	   last_parm_reg > 2 && ! regs_ever_live [last_parm_reg];
+	   last_parm_reg--)
+	;
 
   /* Save parameter registers in regs 23-30.  Don't overwrite reg 31, since
      it might be set up as the frame pointer.  */
 
-  for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
-    asm_fprintf (file, "\tmr %d,%d\n", j, i);
+      for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
+	asm_fprintf (file, "\tmr %d,%d\n", j, i);
 
   /* Load location address into r3, and call mcount.  */
 
-  ASM_GENERATE_INTERNAL_LABEL (buf, "LPC", labelno);
-  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[3]);
-  assemble_name (file, buf);
-  asm_fprintf (file, "(%s)\n\tbl %s\n", reg_names[2], RS6000_MCOUNT);
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LPC", labelno);
+      asm_fprintf (file, "\t{l|lwz} %s,", reg_names[3]);
+      assemble_name (file, buf);
+      asm_fprintf (file, "(%s)\n\tbl %s\n", reg_names[2], RS6000_MCOUNT);
 
   /* Restore parameter registers.  */
 
-  for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
-    asm_fprintf (file, "\tmr %d,%d\n", i, j);
+      for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
+	asm_fprintf (file, "\tmr %d,%d\n", i, j);
+      break;
+    }
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
