@@ -712,7 +712,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) cc1obj$(exeext) \
  enquire$(exeext) protoize$(exeext) unprotoize$(exeext) \
  specs collect2$(exeext) $(USE_COLLECT2) underscore.c \
- gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a \
+ gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a libgcc libgcc.mk \
  $(LANG_STAGESTUFF)
 
 # Members of libgcc1.a.
@@ -812,6 +812,9 @@ $(srcdir)/configure: $(srcdir)/configure.in
 
 gccbug:	$(srcdir)/gccbug.in
 	CONFIG_FILES=gccbug CONFIG_HEADERS= ./config.status 
+
+mklibgcc: $(srcdir)/mklibgcc.in
+	CONFIG_FILES=mklibgcc CONFIG_HEADERS= ./config.status 
 
 # cstamp-h.in controls rebuilding of config.in.
 # It is named cstamp-h.in and not stamp-h.in so the mostlyclean rule doesn't
@@ -931,128 +934,6 @@ xlimits.h: glimits.h limitx.h limity.h
 	mv tmp-xlimits.h xlimits.h
 #
 # Build libgcc.a.
-# This is done in two parts because some functions, in libgcc1.c,
-# must be compiled with something other than GCC,
-# while the rest, in libgcc2.c, must be compiled with xgcc.
-# That means we can't do libgcc2.c until after xgcc, cc1, etc.
-
-# Use this as value of LIBGCC1 to cause conversion to GNU library format.
-# LIBCONVERT should put its output in libgcc1.conv.
-libgcc1.conv: libgcc1.a
-	$(LIBCONVERT) libgcc1.a libgcc1.conv
-
-# Use this as value of LIBGCC1 to inhibit use of libgcc1.c entirely.
-# Make an empty file instead.
-libgcc1.null: $(GCC_PASSES)
-	echo "void __foo () {}" > dummy.c
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) -c dummy.c
-	$(AR_CREATE_FOR_TARGET) libgcc1.null dummy$(objext)
-	rm -f dummy$(objext) dummy.c
-
-# This is $(LIBGCC1) for a cross-compiler.
-# We have no automatic way of building libgcc1.a,
-# so it's up to the installer to find a way to do that.
-# This rule deliberately does not depend on libgcc1.a
-# so that it will fail if the installer hasn't provided it.
-libgcc1.cross:
-	mv libgcc1.a libgcc1.cross || (echo You must find a way to make libgcc1.a; false)
-
-# Compile the library of arithmetic subroutines with the native compiler.
-# Don't compile it with GCC!
-# (That would cause most arithmetic functions to call themselves.)
-#
-# NOTE: If you modify these rules substantially, please be sure to
-# check at least config/i386/t-sco5 and possibly other makefile
-# fragments.
-libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
-	-rm -f tmplibgcc1.a
-# Actually build it in tmplibgcc1.a, then rename at end,
-# so that libgcc1.a itself remains nonexistent if compilation is aborted.
-# -e causes any failing command to make this rule fail.
-# -e doesn't work in certain shells, so we test $$? as well.
-# lynx has a broken ar, it always complains when the initial library is
-# empty, thus this command works only if we don't do -e
-# There is a trailing backslash (\) deleted from the following line.
-#	set -e;
-	for name in $(LIB1FUNCS); \
-	do \
-	  echo $${name}; \
-	  rm -f $${name}$(objext); \
-	  $(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES) -c -DL$${name} $(srcdir)/libgcc1.c; \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  mv libgcc1$(objext) $${name}$(objext); \
-	  $(OLDAR) $(OLDAR_FLAGS) tmplibgcc1.a $${name}$(objext); \
-	  rm -f $${name}$(objext); \
-	done
-# Some shells crash when a loop has no items.
-# So make sure there is always at least one--`..'.
-# Then ignore it.
-# We don't use -e here because there are if statements
-# that should not make the command give up when the if condition is false.
-# Instead, we test for failure after each command where it matters.
-	for file in .. $(LIB1FUNCS_EXTRA); \
-	do \
-	  if [ x$${file} != x.. ]; then \
-	    name=`echo $${file} | sed -e 's/[.][cS]$$//' -e 's/[.]asm$$//'`; \
-	    echo $${name}; \
-	    if [ $${name}.asm = $${file} ]; then \
-	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
-	    else true; fi; \
-	    $(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES) -c $${file}; \
-	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(OLDAR) $(OLDAR_FLAGS) tmplibgcc1.a $${name}$(objext); \
-	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    rm -f $${name}.s $${name}$(objext); \
-	  else true; \
-	  fi; \
-	done
-	-if $(RANLIB_TEST_FOR_TARGET) ; then \
-	  $(RANLIB_FOR_TARGET) tmplibgcc1.a; \
-	else true; fi
-	mv tmplibgcc1.a libgcc1.a
-
-# Build libgcc1.a from assembler source.  LIB1ASMFUNCS is the list of
-# functions.  LIB1ASMSRC is the name of the source file in the config
-# subdirectory.
-libgcc1-asm.a: libgcc2.ready config.status $(srcdir)/config/$(LIB1ASMSRC)
-	-rm -f tmplibgcc1.a libgcc1.S
-	cp $(srcdir)/config/$(LIB1ASMSRC) libgcc1.S
-# Actually build it in tmplibgcc1.a, then rename at end,
-# so that libgcc1-asm.a itself remains nonexistent if compilation is aborted.
-# -e causes any failing command to make this rule fail.
-# -e doesn't work in certain shells, so we test $$? as well.
-# lynx has a broken ar, it always complains when the initial library is
-# empty, thus this command works only if we don't do -e
-# There is a trailing backslash (\) deleted from the following line.
-#	set -e;
-	for name in $(LIB1ASMFUNCS); \
-	do \
-	  echo $${name}; \
-	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} libgcc1.S; \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  mv libgcc1$(objext) $${name}$(objext); \
-	  $(AR_CREATE_FOR_TARGET) tmplibgcc1.a $${name}$(objext); \
-	  rm -f $${name}$(objext); \
-	done
-	-rm -f libgcc1.S
-	mv tmplibgcc1.a libgcc1-asm.a
-
-# Generate assembly versions of the functions required for libgcc1.
-# You'll still need to massage the code by hand (possibly hacking
-# underscores and local labels) but this will get you started.
-libgcc1.S: libgcc1.c $(CONFIG_H) config.status
-	-rm -f libgcc1.S
-	touch libgcc1.S
-	for name in $(LIB1FUNCS); \
-	do \
-	  echo $${name}; \
-	  $(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES) -S -DL$${name} $(srcdir)/libgcc1.c; \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  echo '#ifdef ' L$${name} >> libgcc1.S; \
-	  cat  libgcc1.s >> libgcc1.S; \
-	  echo '#endif /*' L$${name} '*/' >> libgcc1.S; \
-	  echo "" >> libgcc1.S; \
-	done
 
 # Compiling libgcc2.a requires making sure that cc1, etc. have been compiled.
 # But recompiling cc1 should not force recompilation of libgcc2.a.
@@ -1065,127 +946,39 @@ libgcc2.ready: $(GCC_PASSES) stmp-int-hdrs $(STMP_FIXPROTO)
 	fi
 
 LIB2ADD = $(srcdir)/frame.c $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
-libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
-   $(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status stmp-int-hdrs \
-   tsystem.h
-# Actually build it in tmplibgcc2.a, then rename at end,
-# so that libgcc2.a itself remains nonexistent if compilation is aborted.
-	-rm -f tmplibgcc2.a
-# -e causes any failing command to make this rule fail.
-# -e doesn't work in certain shells, so we test $$? as well.
-# lynx has a broken ar, it always complains when the initial library is
-# empty, thus this command works only if we don't do -e
-# There is a trailing backslash (\) deleted from the following line.
-#	set -e;
-	for name in $(LIB2FUNCS); \
-	do \
-	  echo $${name}; \
-	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
-	      $(MAYBE_USE_COLLECT2) $(srcdir)/libgcc2.c -o $${name}$(objext); \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  $(AR_CREATE_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
-	  rm -f $${name}$(objext); \
-	done
-	for name in $(LIB2FUNCS_EH); \
-	do \
-	  echo $${name}; \
-	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -fexceptions $(INCLUDES) -c \
-	      -DL$${name} $(srcdir)/libgcc2.c -o $${name}$(objext); \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  $(AR_CREATE_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
-	  rm -f $${name}$(objext); \
-	done
-	if [ x$(FPBIT) != x ]; then \
-	  for name in $(FPBIT_FUNCS); \
-	  do \
-	    echo $${name}; \
-	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
-	        -DFINE_GRAINED_LIBRARIES $(FPBIT) -o $${name}$(objext); \
-	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR_CREATE_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
-	    rm -f $${name}$(objext); \
-	  done; \
-	else true; fi;
-	if [ x$(DPBIT) != x ]; then \
-	  for name in $(DPBIT_FUNCS); \
-	  do \
-	    echo $${name}; \
-	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
-	        -DFINE_GRAINED_LIBRARIES $(DPBIT) -o _dp$${name}$(objext); \
-	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR_CREATE_FOR_TARGET) tmplibgcc2.a _dp$${name}$(objext); \
-	    rm -f _dp$${name}$(objext); \
-	  done; \
-	else true; fi;
-# Some shells crash when a loop has no items.
-# So make sure there is always at least one--`..'.
-# Then ignore it.
-# We don't use -e here because there are if statements
-# that should not make the command give up when the if condition is false.
-# Instead, we test for failure after each command where it matters.
-	for file in $(LIB2ADD); do \
-	  name=`echo $${file} | sed -e 's/[.][cSo]$$//' -e 's/[.]asm$$//' -e 's/[.]txt$$//'`; \
-	  oname=` echo $${name} | sed -e 's,.*/,,'`; \
-	  if [ $${name}.txt = $${file} ]; then \
-	    for f in .. `cat $${file}`; do if [ x$${f} != x.. ]; then \
-	      $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-		AR_FOR_TARGET="$(AR_FOR_TARGET)" \
-		AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
-		AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
-		AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" CC="$(CC)" \
-		CFLAGS="$(CFLAGS)" HOST_PREFIX="$(HOST_PREFIX)" \
-		HOST_PREFIX_1="$(HOST_PREFIX_1)" \
-		LANGUAGES="$(LANGUAGES)" \
-		LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $${f}; \
-	      if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	      $(AR_CREATE_FOR_TARGET) tmplibgcc2.a $${f}; \
-	      rm -f $${f}; \
-	    else true; \
-	    fi; done; \
-	  else \
-	    echo $${name}; \
-	    if [ $${name}.asm = $${file} ]; then \
-	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
-	    else true; fi; \
-	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
-	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR_CREATE_FOR_TARGET) tmplibgcc2.a $${oname}$(objext); \
-	    rm -f $${name}.s $${oname}$(objext); \
-	  fi; \
-	done
-	mv tmplibgcc2.a libgcc2.a
-# These lines were deleted from above the mv command
-# because ranlibing libgcc.a itself should suffice.
-#	-if [ x${HPUX_GAS} = x ] ; then \
-#	  if $(RANLIB_TEST_FOR_TARGET) ; then \
-#	    $(RANLIB_FOR_TARGET) tmplibgcc2.a;
-#	  else true; fi; \
-#	else true; fi
 
-# Combine the various libraries into a single library, libgcc.a.
-# $(LIBGCC1) is added after $(LIBGCC2) so that routines written in
-# assembler will be used in preference to the C versions.
-libgcc.a: $(LIBGCC1) $(LIBGCC2)
-	-rm -rf tmplibgcc.a libgcc.a tmpcopy
-	mkdir tmpcopy
-	(cd tmpcopy; $(AR_EXTRACT_FOR_TARGET) ../$(LIBGCC2))
-# Some versions of ar (specifically the one in RISC/os 5.x), create an
-# unwritable table of contents file, and then print an error message when
-# the second ar command tries to overwrite this file.  To avoid the error
-# message from ar, we make sure all files are writable.
-	-(cd tmpcopy; chmod +w * > /dev/null 2>&1)
-	-if [ x$(LIBGCC1) != x ];			\
-	then (cd tmpcopy; $(AR_EXTRACT_FOR_TARGET) ../$(LIBGCC1));	\
-	else true;					\
-	fi
-	(cd tmpcopy; $(AR_CREATE_FOR_TARGET) ../tmplibgcc.a *$(objext))
-	rm -rf tmpcopy
-	-if $(RANLIB_TEST_FOR_TARGET) ; then \
-	  $(RANLIB_FOR_TARGET) tmplibgcc.a; \
-	else true; fi
-# Actually build it in tmplibgcc.a, then rename at end,
-# so that libgcc.a itself remains nonexistent if compilation is aborted.
-	mv tmplibgcc.a libgcc.a
+libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD)
+	objext='$(objext)' \
+	OLDCC='$(OLDCC)' \
+	LIBGCC1='$(LIBGCC1)' \
+	LIB1FUNCS='$(LIB1FUNCS)' \
+	LIB1ASMFUNCS='$(LIB1ASMFUNCS)' \
+	LIB1FUNCS_EXTRA='$(LIB1FUNCS_EXTRA)' \
+	LIB2FUNCS='$(LIB2FUNCS)' \
+	LIB2FUNCS_EH='$(LIB2FUNCS_EH)' \
+	LIB2ADD='$(LIB2ADD)' \
+	FPBIT='$(FPBIT)' \
+	FPBIT_FUNCS='$(FPBIT_FUNCS)' \
+	DPBIT='$(DPBIT)' \
+	DPBIT_FUNCS='$(DPBIT_FUNCS)' \
+	MULTILIBS=`$(GCC_FOR_TARGET) --print-multi-lib` \
+	EXTRA_MULTILIB_PARTS='$(EXTRA_MULTILIB_PARTS)' \
+	  $(SHELL) mklibgcc > tmp-libgcc.mk
+	$(SHELL) $(srcdir)/move-if-change tmp-libgcc.mk libgcc.mk
+
+libgcc.a: libgcc2.ready libgcc.mk
+	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
+	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
+	  OLDCC="$(OLDCC)" CCLIBFLAGS="$(CCLIBFLAGS)" CFLAGS="$(CFLAGS)" \
+	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
+	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
+	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
+	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
+	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
+	  -f libgcc.mk all
 
 # Use the genmultilib shell script to generate the information the gcc
 # driver program needs to select the library directory based on the
@@ -1203,96 +996,20 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	touch s-mlib
 
 # Build multiple copies of libgcc.a, one for each target switch.
-stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
-   frame.h tsystem.h \
-   $(LIB2ADD) $(MACHMODE_H) longlong.h gbl-ctors.h config.status
-	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
-	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
-	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    AR_FOR_TARGET="$(AR_FOR_TARGET)" \
-	    AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
-	    AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
-	    AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
-	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
-	    RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
-	    RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
-	    LANGUAGES="$(LANGUAGES)" \
-	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
-	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" \
-	    MULTILIB_CFLAGS="$${flags}" \
-	    LIBGCC1="$(LIBGCC1)" LIBGCC2="$(LIBGCC2)" \
-	    dir="$${dir}" stmp-multilib-sub; \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	done
-	touch stmp-multilib
-
-# Subroutine of stmp-multilib so make -n works.
-stmp-multilib-sub:
-	rm -f $(LIBGCC2)
-	if [ -d $(dir) ]; then \
-	  cd $(dir); \
-	  rm -f libgcc.a $(EXTRA_MULTILIB_PARTS); \
-	else true; \
-	fi
+stmp-multilib: libgcc2.ready libgcc.mk
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
-	  AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
-	  CC="$(CC)" CFLAGS="$(CFLAGS)" \
-	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
-	  LANGUAGES="$(LANGUAGES)" \
-	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $(LIBGCC2)
-	if [ x$(LIBGCC1) != xlibgcc1-asm.a ]; \
-	then true; \
-	else rm -f $(LIBGCC1); \
-	fi
-	if [ x$(LIBGCC1) != xlibgcc1-asm.a ]; \
-	then true; \
-	else \
-	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    AR_FOR_TARGET="$(AR_FOR_TARGET)" \
-	    AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
-	    AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
-	    AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
-	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
-	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
-	    LANGUAGES="$(LANGUAGES)" \
-	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $(LIBGCC1); \
-	fi
-	rm -rf tmplibgcc.a tmpcopy
-	mkdir tmpcopy
-	(cd tmpcopy; $(AR_EXTRACT_FOR_TARGET) ../$(LIBGCC2))
-# Some versions of ar (specifically the one in RISC/os 5.x), create an
-# unwritable table of contents file, and then print an error message when
-# the second ar command tries to overwrite this file.  To avoid the error
-# message from ar, we make sure all files are writable.
-	-(cd tmpcopy; chmod +w * > /dev/null 2>&1)
-	if [ x$(LIBGCC1) != x ]; \
-	then (cd tmpcopy; $(AR_EXTRACT_FOR_TARGET) ../$(LIBGCC1)); \
-	else true; \
-	fi
-	(cd tmpcopy; $(AR_CREATE_FOR_TARGET) ../tmplibgcc.a *$(objext))
-	rm -rf libgcc2.a tmpcopy
-	if $(RANLIB_TEST_FOR_TARGET) ; then \
-	  $(RANLIB_FOR_TARGET) tmplibgcc.a; \
-	else true; fi
-	if [ -d $(dir) ]; then true; else mkdir $(dir); fi
-	mv tmplibgcc.a $(dir)/libgcc.a
-	for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
-	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    AR_FOR_TARGET="$(AR_FOR_TARGET)" \
-	    AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
-	    AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
-	    AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
-	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
-	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
-	    LANGUAGES="$(LANGUAGES)" \
-	    MULTILIB_CFLAGS="$(MULTILIB_CFLAGS)" T="t" t$${f}; \
-	  mv t$${f} $(dir)/$${f}; \
-	else true; \
-	fi; done
+	  OLDCC="$(OLDCC)" CCLIBFLAGS="$(CCLIBFLAGS)" CFLAGS="$(CFLAGS)" \
+	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
+	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
+	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
+	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
+	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
+	  -f libgcc.mk all
+	touch stmp-multilib
 
 # Compile two additional files that are linked with every program
 # linked using GCC on systems using COFF or ELF, for the sake of C++
@@ -1328,7 +1045,8 @@ $(T)crtendS.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
 	  -c $(srcdir)/crtstuff.c -DCRT_END -DCRTSTUFFS_O \
 	  -o $(T)crtendS$(objext)
 
-# Compile the start modules crt0.o and mcrt0.o that are linked with every program
+# Compile the start modules crt0.o and mcrt0.o that are linked with
+# every program
 crt0.o: s-crt0 ; @true
 mcrt0.o: s-crt0; @true
 
@@ -2370,10 +2088,10 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
 	-rm -f $(HOST_PREFIX_1)obstack.c
 # Delete the temp files made in the course of building libgcc.a.
-	-rm -f tmplibgcc* tmpcopy xlimits.h libgcc1-test
+	-rm -f xlimits.h libgcc1-test
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
 # Delete other built files.
-	-rm -f t-float.h-cross xsys-protos.hT fp-bit.c dp-bit.c
+	-rm -f t-float.h-cross xsys-protos.hT
 # Delete the stamp and temporary files.
 	-rm -f s-* tmp-* stamp-* stmp-*
 	-rm -f */stamp-* */tmp-*

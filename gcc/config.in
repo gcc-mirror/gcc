@@ -62,6 +62,9 @@
 /* Define as __inline if that's what the C compiler calls it.  */
 #undef inline
 
+/* Define if your C compiler doesn't accept -c and -o together.  */
+#undef NO_MINUS_C_MINUS_O
+
 /* Define to `long' if <sys/types.h> doesn't define.  */
 #undef off_t
 

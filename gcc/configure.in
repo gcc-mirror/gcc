@@ -321,6 +321,9 @@ AC_CANONICAL_SYSTEM
 
 # Find the native compiler
 AC_PROG_CC
+AC_PROG_CC_C_O
+AC_SUBST(NO_MINUS_C_MINUS_O)
+
 gcc_AC_C_LONG_DOUBLE
 
 # If the native compiler is GCC, we can enable warnings even in stage1.  
@@ -4705,7 +4708,7 @@ all_boot_languages=
 all_compilers=
 all_stagestuff=
 all_diff_excludes=
-all_outputs='Makefile intl/Makefile po/Makefile.in fixinc/Makefile gccbug'
+all_outputs='Makefile intl/Makefile po/Makefile.in fixinc/Makefile gccbug mklibgcc'
 # List of language makefile fragments.
 all_lang_makefiles=
 all_headers=
