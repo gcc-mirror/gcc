@@ -1,3 +1,8 @@
+2004-06-13  Steven Bosscher <stevenb@suse.de>
+
+	* gcse.c (hash_scan_set, hash_scan_insn, mark_set, mark_oprs_set):
+	Revert previous change, don't use CALL_P.
+
 2004-06-13  Jason Merrill  <jason@redhat.com>
 
 	* tree.h: Move std_gimplify_va_arg_expr protoype here.
