@@ -217,7 +217,7 @@ extern struct rtx_def *mips_function_value ();
 #undef LONG_MAX_SPEC
 #if ((MIPS_ABI_DEFAULT == ABI_64) || ((MIPS_ABI_DEFAULT == ABI_EABI) && ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_64BIT)))
 #define LONG_MAX_SPEC \
-  "%{!mabi=n32:%{!mno-long64:%{!mgp32:-D__LONG_MAX__=9223372036854775807L}}}"
+  "%{!mabi=n32:%{!mno-long64:%{!mgp32:%{!mips1:%{!mips2:-D__LONG_MAX__=9223372036854775807L}}}}}"
 #else
 #define LONG_MAX_SPEC \
   "%{mabi=64:-D__LONG_MAX__=9223372036854775807L} \
