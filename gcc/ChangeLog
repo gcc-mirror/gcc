@@ -1,3 +1,7 @@
+Fri Dec 15 03:37:51 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* haifa-sched.c (sched_init): Don't put a note in front of any BARRIER.
+
 2000-12-14  Jim Wilson  <wilson@redhat.com>
 
 	* alias.c (get_alias_set): Call record_component_aliases for
