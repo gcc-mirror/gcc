@@ -737,6 +737,11 @@ sdbout_symbol (tree decl, int local)
 	return;
       if (DECL_IGNORED_P (decl))
 	return;
+      /* Don't output intrinsic types.  GAS chokes on SDB .def
+	 statements that contain identifiers with embedded spaces
+	 (eg "unsigned long").  */
+      if (DECL_IS_BUILTIN (decl))
+	return;
 
       /* Output typedef name.  */
       if (template_name_p (DECL_NAME (decl)))
