@@ -1492,6 +1492,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       XVECEXP (body, 3, i)      /* argvec */
 	= expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
+      if (CONSTANT_P (XVECEXP (body, 3, i))
+	  && ! general_operand (XVECEXP (body, 3, i),
+				TYPE_MODE (TREE_TYPE (TREE_VALUE (tail)))))
+	XVECEXP (body, 3, i)
+	  = force_reg (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
+		       XVECEXP (body, 3, i));
       XVECEXP (body, 4, i)      /* constraints */
 	= gen_rtx (ASM_INPUT, TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
 		   TREE_STRING_POINTER (TREE_PURPOSE (tail)));
