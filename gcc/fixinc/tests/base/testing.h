@@ -22,6 +22,15 @@ BSD43__IOWR('T', 1) /* Some are multi-line */
 #endif  /* IO_QUOTES_USE_CHECK */
 
 
+#if defined( LIBC1_IFDEFD_MEMX_CHECK )
+#if defined(__STDC__) && __GNUC__ < 2 || defined(__cplusplus)
+/* Copy N bytes of SRC to DEST.  */
+extern __ptr_t memcpy __P ((__ptr_t __dest, __const __ptr_t __src,
+                         size_t __n));
+#endif
+#endif  /* LIBC1_IFDEFD_MEMX_CHECK */
+
+
 #if defined( MACHINE_NAME_CHECK )
 /* MACH_DIFF: */
 #if defined( __i386__ ) || defined( sparc ) || defined( vax )
