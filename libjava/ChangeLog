@@ -1,3 +1,8 @@
+2005-03-08  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/libjava.lang/pr13107_2.xfail: Remove xfail.
+	* testsuite/libjava.lang/pr13107_3.xfail: Likewise.
+	
 2005-03-07  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Recognize '-f'.
