@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -63,10 +63,12 @@ public class CharArrayReader extends Reader
     }
   }
 
-  public void mark(int readAheadLimit)
+  public void mark(int readAheadLimit) throws IOException
   {
     synchronized (lock)
     {
+      if (buf == null)
+	throw new IOException("Stream closed");
       // readAheadLimit is ignored per Java Class Lib. book, p. 318.
       markedPos = pos;
     }
@@ -82,7 +84,7 @@ public class CharArrayReader extends Reader
     synchronized (lock)
     {
       if (buf == null)
-        throw new IOException();
+	throw new IOException("Stream closed");
 
       if (pos < 0)
         throw new ArrayIndexOutOfBoundsException(pos);
@@ -98,7 +100,7 @@ public class CharArrayReader extends Reader
     synchronized (lock)
     {
       if (buf == null)
-        throw new IOException();
+	throw new IOException("Stream closed");
 
       /* Don't need to check pos value, arraycopy will check it. */
       if (off < 0 || len < 0 || off + len > b.length)
@@ -117,7 +119,7 @@ public class CharArrayReader extends Reader
   public boolean ready() throws IOException
   {
     if (buf == null)
-      throw new IOException();
+      throw new IOException("Stream closed");
 
     return true;
   }
@@ -127,7 +129,7 @@ public class CharArrayReader extends Reader
     synchronized (lock)
     {
       if (buf == null)
-        throw new IOException();
+	throw new IOException("Stream closed");
 
       pos = markedPos;
     }
@@ -138,7 +140,7 @@ public class CharArrayReader extends Reader
     synchronized (lock)
     {
       if (buf == null)
-        throw new IOException();
+	throw new IOException("Stream closed");
 
       // Even though the var numChars is a long, in reality it can never
       // be larger than an int since the result of subtracting 2 positive

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -31,8 +31,11 @@ public abstract class FilterReader extends Reader
 
   public void close() throws IOException
   {
+    // We used to set `in = null' here.  We don't, though, because
+    // that is the simplest way to ensure that read-after-close will
+    // throw the appropriate exception -- we rely on the filtered
+    // stream to do it.
     in.close();
-    in = null;
   }
 
   public synchronized void mark(int readlimit) throws IOException

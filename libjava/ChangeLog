@@ -1,5 +1,16 @@
 2001-02-13  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/PipedReader.java (ready): Throw IOException if pipe
+	closed.
+	* java/io/FilterReader.java (close): Don't clear `in'.
+	* java/io/CharArrayReader.java (mark): Throw IOException if stream
+	closed.
+	(read, ready, reset, skip): Added exception message.
+	* java/io/BufferedReader.java (mark, reset, ready, read, skip):
+	Perform checkStatus check inside synchronized block.
+
+2001-02-13  Tom Tromey  <tromey@redhat.com>
+
 	* gnu/awt/j2d/AbstractGraphicsState.java (clone): Made public.
 
 2001-02-13  Tom Tromey  <tromey@redhat.com>

@@ -312,10 +312,15 @@ public class PipedReader extends Reader
   public boolean ready() throws IOException
   {
     // The JDK 1.3 implementation does not appear to check for the closed or 
-    // unconnected stream conditions here.
+    // unconnected stream conditions here.  However, checking for a
+    // closed stream is explicitly required by the JDK 1.2 and 1.3
+    // documentation (for Reader.close()), so we do it.
     
     synchronized (lock)
     {
+      if (closed)
+	throw new IOException("Pipe closed");
+
       if (in < 0)
 	return false;
 
