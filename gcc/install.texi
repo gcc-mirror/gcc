@@ -609,7 +609,7 @@ just @samp{@var{cpu}-@var{system}}, if it is not needed.  For example,
 Here is a list of system types:
 
 @quotation
-386bsd, aix, acis, amigados, aos, aout, aux, bosx, bsd, clix, coff, ctix, cxux,
+386bsd, aix, acis, amigaos, aos, aout, aux, bosx, bsd, clix, coff, ctix, cxux,
 dgux, dynix, ebmon, ecoff, elf, esix, freebsd, hms, genix, gnu, linux-gnu,
 hiux, hpux, iris, irix, isc, luna, lynxos, mach, minix, msdos, mvs,
 netbsd, newsos, nindy, ns, osf, osfrose, ptx, riscix, riscos, rtu, sco, sim,

@@ -1,3 +1,9 @@
+Sun Sep  7 23:18:32 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* INSTALL: Change 'amigados' to 'amigaos' to match current usage.
+	* install.texi (Configurations): Ditto.
+	* config.sub: Ditto.
+
 Sun Sep  7 22:56:56 1997  Weiwen Liu  (liu@hepvms.physics.yale.edu)
 
 	* Makefile.in (sdbout.o): Depend on insn-config.h.
