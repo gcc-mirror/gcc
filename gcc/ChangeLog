@@ -1,3 +1,7 @@
+Mon Dec  1 15:36:13 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Tue Nov 25 14:08:12 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* mips.md (fix_truncdfsi2, fix_truncsfsi2, fix_truncdfdi2,
