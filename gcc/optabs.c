@@ -969,17 +969,17 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      if (res != imagr)
 		emit_move_insn (imagr, res);
 	    }
-	  else			/* Divider is of complex type */
+	  else			/* Divisor is of complex type */
 	    {			/* X/(a+ib) */
 
-	      rtx divider;
+	      rtx divisor;
 	      rtx real_t;
 	      rtx imag_t;
 	      
 	      optab mulopt = unsignedp ? umul_widen_optab : smul_optab;
 
-	      /* Divider: a*a + b*b */
-	      divider = expand_binop (submode, add_optab,
+	      /* Divisor: c*c + d*d */
+	      divisor = expand_binop (submode, add_optab,
 				      expand_binop (submode, mulopt,
 						    real1, real1,
 						    0, unsignedp, methods),
@@ -988,9 +988,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 						    0, unsignedp, methods),
 				      0, unsignedp, methods);
 
-	      if (! imag0)	/* ((c)(a-ib))/divider */
-		{
-		  /* Calculate the divident */
+	      if (! imag0)	/* ((a)(c-id))/divisor */
+		{	/* (a+i0) / (c+id) = (ac/(cc+dd)) + i(-ad/(cc+dd)) */
+		  /* Calculate the dividend */
 		  real_t = expand_binop (submode, mulopt, real0, real1,
 					 0, unsignedp, methods);
 		  
@@ -1000,9 +1000,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 						 0, unsignedp, methods),
 				   0, unsignedp);
 		}
-	      else		/* ((c+id)(a-ib))/divider */
+	      else		/* ((a+ib)(c-id))/divider */
 		{
-		  /* Calculate the divident */
+		  /* Calculate the dividend */
 		  real_t = expand_binop (submode, add_optab,
 					 expand_binop (submode, mulopt,
 						       real0, real1,
@@ -1014,21 +1014,21 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		  
 		  imag_t = expand_binop (submode, sub_optab,
 					 expand_binop (submode, mulopt,
-						       real0, imag1,
+						       imag0, real1,
 						       0, unsignedp, methods),
 					 expand_binop (submode, mulopt,
-						       real1, imag0,
+						       real0, imag1,
 						       0, unsignedp, methods),
 					 0, unsignedp, methods);
 
 		}
 
-	      res = expand_binop (submode, binoptab, real_t, divider,
+	      res = expand_binop (submode, binoptab, real_t, divisor,
 				  realr, unsignedp, methods);
 	      if (res != realr)
 		emit_move_insn (realr, res);
 
-	      res = expand_binop (submode, binoptab, imag_t, divider,
+	      res = expand_binop (submode, binoptab, imag_t, divisor,
 				  imagr, unsignedp, methods);
 	      if (res != imagr)
 		emit_move_insn (imagr, res);
