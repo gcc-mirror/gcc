@@ -1,3 +1,10 @@
+1999-12-30  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* dwarfout.c: Include "frame.h"	
+	* dwarf2out.c: Likewise.
+	* Makefile.in (dwarfout.o): Depend on frame.h
+	(dwarf2out.o): Likewise.
+
 1999-12-29  "Martin v. Loewis" <martin@loewis.home.cs.tu-berlin.de>
 
 	Restore i386 binary compatibility in Dwarf EH info.

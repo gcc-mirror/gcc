@@ -1465,7 +1465,7 @@ stor-layout.o : stor-layout.c $(CONFIG_H) system.h $(TREE_H) flags.h \
 fold-const.o : fold-const.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h \
    $(RTL_H) ggc.h
 diagnostic.o : $(CONFIG_H) system.h $(TREE_H) $(RTL_H) tm_p.h flags.h \
-   input.h insn-attr.h insn-codes.h insn-config.h toplev.h intl.h
+   input.h insn-attr.h insn-codes.h insn-config.h toplev.h intl.h 
 toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
    flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
    insn-codes.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h dwarfout.h \
@@ -1519,11 +1519,12 @@ sdbout.o : sdbout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h except.h \
    insn-config.h $(srcdir)/../include/obstack.h xcoffout.h c-pragma.h \
    sdbout.h toplev.h
 dwarfout.o : dwarfout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf.h \
-   flags.h insn-config.h reload.h output.h defaults.h toplev.h dwarfout.h
+   flags.h insn-config.h reload.h output.h defaults.h toplev.h dwarfout.h \
+   frame.h
 dwarf2out.o : dwarf2out.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf2.h \
    flags.h insn-config.h reload.h output.h defaults.h \
    hard-reg-set.h $(REGS_H) $(EXPR_H) toplev.h dwarf2out.h dyn-string.h \
-   ggc.h except.h
+   ggc.h except.h frame.h
 xcoffout.o : xcoffout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) xcoffout.h \
    flags.h toplev.h output.h dbxout.h ggc.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
