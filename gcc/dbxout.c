@@ -2182,7 +2182,15 @@ dbxout_symbol_location (decl, type, suffix, home)
     }
   else if (GET_CODE (home) == CONCAT)
     {
-      tree subtype = TREE_TYPE (type);
+      tree subtype;
+
+      /* If TYPE is not a COMPLEX_TYPE (it might be a RECORD_TYPE,
+	 for example), then there is no easy way to figure out
+	 what SUBTYPE should be.  So, we give up.  */
+      if (TREE_CODE (type) != COMPLEX_TYPE)
+	return 0;
+
+      subtype = TREE_TYPE (type);
 
       /* If the variable's storage is in two parts,
 	 output each as a separate stab with a modified name.  */

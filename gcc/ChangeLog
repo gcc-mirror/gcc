@@ -1,3 +1,8 @@
+2001-05-17  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* dbxout.c (dbxout_symbol_location): For CONCAT, skip types not
+	COMPLEX_TYPE.
+
 2001-05-17  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gccbug.in (CATEGORIES): Add "bootstrap".
