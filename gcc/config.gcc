@@ -2712,7 +2712,7 @@ case ${target} in
 	mips*-*-*)
 		if test x$gnu_ld = xyes
 		then
-			target_cpu_default2="MASK_SPLIT_ADDR"
+			target_cpu_default2="MASK_SPLIT_ADDRESSES"
 		fi
 		case ${target} in
 			mips*el-*-*)

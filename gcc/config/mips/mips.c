@@ -746,6 +746,15 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   mips_multipass_dfa_lookahead
 
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS		\
+  (TARGET_DEFAULT				\
+   | TARGET_CPU_DEFAULT				\
+   | TARGET_ENDIAN_DEFAULT			\
+   | TARGET_FP_EXCEPTIONS_DEFAULT		\
+   | MASK_CHECK_ZERO_DIV			\
+   | MASK_FUSED_MADD)
+
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL mips_function_ok_for_sibcall
 
@@ -4308,11 +4317,13 @@ override_options (void)
 
   if ((target_flags_explicit & MASK_LONG64) == 0)
     {
+      if (TARGET_INT64)
+	target_flags |= MASK_LONG64;
       /* If no type size setting options (-mlong64,-mint64,-mlong32)
 	 were used, then set the type sizes.  In the EABI in 64 bit mode,
 	 longs and pointers are 64 bits.  Likewise for the SGI Irix6 N64
 	 ABI.  */
-      if ((mips_abi == ABI_EABI && TARGET_64BIT) || mips_abi == ABI_64)
+      else if ((mips_abi == ABI_EABI && TARGET_64BIT) || mips_abi == ABI_64)
 	target_flags |= MASK_LONG64;
       else
 	target_flags &= ~MASK_LONG64;
@@ -4321,6 +4332,9 @@ override_options (void)
   /* Deprecate -mint64. Remove after 4.0 branches.  */
   if (TARGET_INT64)
     warning ("-mint64 is a deprecated option");
+
+  if (TARGET_INT64 && !TARGET_LONG64)
+    error ("unsupported combination: %s", "-mint64 -mlong32");
 
   if (mips_fix_vr4130_string && mips_fix_vr4130_string[0] != 0)
     error ("unrecognized option %<-mfix-vr4130%s%>", mips_fix_vr4130_string);
@@ -4456,13 +4470,13 @@ override_options (void)
 
   /* Make sure that the user didn't turn off paired single support when
      MIPS-3D support is requested.  */
-  if (TARGET_MIPS3D && (target_flags_explicit & MASK_PAIRED_SINGLE)
+  if (TARGET_MIPS3D && (target_flags_explicit & MASK_PAIRED_SINGLE_FLOAT)
       && !TARGET_PAIRED_SINGLE_FLOAT)
     error ("-mips3d requires -mpaired-single");
 
-  /* If TARGET_MIPS3D, enable MASK_PAIRED_SINGLE.  */
+  /* If TARGET_MIPS3D, enable MASK_PAIRED_SINGLE_FLOAT.  */
   if (TARGET_MIPS3D)
-    target_flags |= MASK_PAIRED_SINGLE;
+    target_flags |= MASK_PAIRED_SINGLE_FLOAT;
 
   /* Make sure that when TARGET_PAIRED_SINGLE_FLOAT is true, TARGET_FLOAT64
      and TARGET_HARD_FLOAT are both true.  */
@@ -9641,10 +9655,10 @@ struct builtin_description
 
 /* Define all the builtins related to c.cond.fmt condition COND.  */
 #define CMP_BUILTINS(COND)						\
-  MOVTF_BUILTINS (c, COND, MASK_PAIRED_SINGLE),				\
+  MOVTF_BUILTINS (c, COND, MASK_PAIRED_SINGLE_FLOAT),			\
   MOVTF_BUILTINS (cabs, COND, MASK_MIPS3D),				\
   CMP_SCALAR_BUILTINS (cabs, COND, MASK_MIPS3D),			\
-  CMP_PS_BUILTINS (c, COND, MASK_PAIRED_SINGLE),			\
+  CMP_PS_BUILTINS (c, COND, MASK_PAIRED_SINGLE_FLOAT),			\
   CMP_PS_BUILTINS (cabs, COND, MASK_MIPS3D),				\
   CMP_4S_BUILTINS (c, COND),						\
   CMP_4S_BUILTINS (cabs, COND)
@@ -9654,16 +9668,17 @@ struct builtin_description
 
 static const struct builtin_description mips_bdesc[] =
 {
-  DIRECT_BUILTIN (pll_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE),
-  DIRECT_BUILTIN (pul_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE),
-  DIRECT_BUILTIN (plu_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE),
-  DIRECT_BUILTIN (puu_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE),
-  DIRECT_BUILTIN (cvt_ps_s, MIPS_V2SF_FTYPE_SF_SF, MASK_PAIRED_SINGLE),
-  DIRECT_BUILTIN (cvt_s_pl, MIPS_SF_FTYPE_V2SF, MASK_PAIRED_SINGLE),
-  DIRECT_BUILTIN (cvt_s_pu, MIPS_SF_FTYPE_V2SF, MASK_PAIRED_SINGLE),
-  DIRECT_BUILTIN (abs_ps, MIPS_V2SF_FTYPE_V2SF, MASK_PAIRED_SINGLE),
+  DIRECT_BUILTIN (pll_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE_FLOAT),
+  DIRECT_BUILTIN (pul_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE_FLOAT),
+  DIRECT_BUILTIN (plu_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE_FLOAT),
+  DIRECT_BUILTIN (puu_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE_FLOAT),
+  DIRECT_BUILTIN (cvt_ps_s, MIPS_V2SF_FTYPE_SF_SF, MASK_PAIRED_SINGLE_FLOAT),
+  DIRECT_BUILTIN (cvt_s_pl, MIPS_SF_FTYPE_V2SF, MASK_PAIRED_SINGLE_FLOAT),
+  DIRECT_BUILTIN (cvt_s_pu, MIPS_SF_FTYPE_V2SF, MASK_PAIRED_SINGLE_FLOAT),
+  DIRECT_BUILTIN (abs_ps, MIPS_V2SF_FTYPE_V2SF, MASK_PAIRED_SINGLE_FLOAT),
 
-  DIRECT_BUILTIN (alnv_ps, MIPS_V2SF_FTYPE_V2SF_V2SF_INT, MASK_PAIRED_SINGLE),
+  DIRECT_BUILTIN (alnv_ps, MIPS_V2SF_FTYPE_V2SF_V2SF_INT,
+		  MASK_PAIRED_SINGLE_FLOAT),
   DIRECT_BUILTIN (addr_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D),
   DIRECT_BUILTIN (mulr_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D),
   DIRECT_BUILTIN (cvt_pw_ps, MIPS_V2SF_FTYPE_V2SF, MASK_MIPS3D),
@@ -9692,7 +9707,7 @@ static const struct builtin_description mips_bdesc[] =
 
 static const struct builtin_description sb1_bdesc[] =
 {
-  DIRECT_BUILTIN (sqrt_ps, MIPS_V2SF_FTYPE_V2SF, MASK_PAIRED_SINGLE)
+  DIRECT_BUILTIN (sqrt_ps, MIPS_V2SF_FTYPE_V2SF, MASK_PAIRED_SINGLE_FLOAT)
 };
 
 /* This helps provide a mapping from builtin function codes to bdesc
