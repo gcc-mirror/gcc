@@ -1,3 +1,9 @@
+2004-02-10  Loren J. Rittle  <ljrittle@acm.org>
+
+	PR libstdc++/14098
+	* config/linker-map.gnu: Add typeinfo and typeinfo name for
+	__gnu_cxx::stdio_sync_filebuf<char, std::char_traits<char> >.
+
 2004-02-09  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/ext/pool_allocator.h: Include c++config.h.
