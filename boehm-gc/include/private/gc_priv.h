@@ -1725,6 +1725,13 @@ extern GC_bool GC_print_stats;	/* Produce at least some logging output	*/
 
 #ifdef KEEP_BACK_PTRS
   extern long GC_backtraces;
+  void GC_generate_random_backtrace_no_gc(void);
+#endif
+
+extern GC_bool GC_print_back_height;
+
+#ifdef MAKE_BACK_GRAPH
+  void GC_print_back_graph_stats(void);
 #endif
 
 /* Macros used for collector internal allocation.	*/

@@ -104,8 +104,6 @@ word GC_free_space_divisor = 3;
 extern GC_bool GC_collection_in_progress();
 		/* Collection is in progress, or was abandoned.	*/
 
-extern GC_bool GC_print_back_height;
-
 int GC_never_stop_func GC_PROTO((void)) { return(0); }
 
 unsigned long GC_time_limit = TIME_LIMIT;

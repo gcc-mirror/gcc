@@ -1,3 +1,15 @@
+2004-08-27  Hans Boehm  <Hans.Boehm@hp.com>
+
+	* backgraph.c, gc_priv.h (GC_traverse_back_graph,
+	GC_print_back_graph_stats): split GC_traverse_back_graph.
+	* backgraph.c: Dynamically grow in_progress_space.
+	* finalize.c (GC_notify_or_invoke_finalizers): also call
+	GC_print_back_graph_stats.
+	* alloc.c, finalize.c, gc_priv.h (GC_generate_random_backtrace_no_gc,
+	GC_print_back_height): Move delarations to header file.
+	* configure.ac: rename --enable-full-debug to --enable-gc-debug.
+	* configure: Regenerate.
+	
 2004-08-23  Hans Boehm  <Hans.Boehm@hp.com>
 
 	* aix_irix_threads.c: Move _THREADS checks after gc_priv.h include.

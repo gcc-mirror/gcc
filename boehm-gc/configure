@@ -852,7 +852,7 @@ Optional Features:
   --enable-fast-install=PKGS  optimize for fast installation default=yes
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-parallel-mark	parallelize marking and free list construction
-  --enable-full-debug	include full support for pointer backtracing etc.
+  --enable-gc-debug	include full support for pointer backtracing etc.
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -6495,10 +6495,10 @@ _ACEOF
 
 fi
 
-# Check whether --enable-full-debug or --disable-full-debug was given.
-if test "${enable_full_debug+set}" = set; then
-  enableval="$enable_full_debug"
-   if test "$enable_full_debug" = "yes"; then
+# Check whether --enable-gc-debug or --disable-gc-debug was given.
+if test "${enable_gc_debug+set}" = set; then
+  enableval="$enable_gc_debug"
+   if test "$enable_gc_debug" = "yes"; then
     { echo "$as_me:$LINENO: WARNING: \"Must define GC_DEBUG and use debug alloc. in clients.\"" >&5
 echo "$as_me: WARNING: \"Must define GC_DEBUG and use debug alloc. in clients.\"" >&2;}
     cat >>confdefs.h <<\_ACEOF
