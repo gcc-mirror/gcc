@@ -406,14 +406,14 @@ collect_exit (status)
 void
 notice VPROTO((char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 

@@ -324,7 +324,7 @@ static rtx express_from PROTO((struct induction *, struct induction *));
 static rtx combine_givs_p PROTO((struct induction *, struct induction *));
 static void combine_givs PROTO((struct iv_class *));
 struct recombine_givs_stats;
-static int find_life_end (rtx,  struct recombine_givs_stats *, rtx, rtx);
+static int find_life_end PROTO((rtx, struct recombine_givs_stats *, rtx, rtx));
 static void recombine_givs PROTO((struct iv_class *, rtx, rtx, int));
 static int product_cheap_p PROTO((rtx, rtx));
 static int maybe_eliminate_biv PROTO((struct iv_class *, rtx, rtx, int, int, int));

@@ -1541,14 +1541,14 @@ vnotice (file, msgid, ap)
 void
 notice VPROTO((const char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 
@@ -1559,7 +1559,7 @@ notice VPROTO((const char *msgid, ...))
 void
 fnotice VPROTO((FILE *file, char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   FILE *file;
   char *msgid;
 #endif
@@ -1567,7 +1567,7 @@ fnotice VPROTO((FILE *file, char *msgid, ...))
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (ap, FILE *);
   msgid = va_arg (ap, char *);
 #endif
