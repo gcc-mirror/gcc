@@ -1,3 +1,39 @@
+2003-02-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl.c: Include "timevar.h".
+	(poplevel): Time name lookup.
+	(find_binding): Likewise.
+	(push_namespace): Likewise.
+	(pop_nested_namespace): Likewise.
+	(store_bindings): Likewise.
+	(maybe_push_to_top_level): Likewise.
+	(pop_from_top_level): Likewise.
+	(push_local_name): Likewise.
+	(pushtag): Likewise.
+	(pushdecl): Likewise.
+	(pushdecl_with_scope): Likewise.
+	(pushdecl_namespace_level): Likewise.
+	(pushdecl_top_level): Likewise.
+	(pushdecl_class_level): Likewise.
+	(push_class_level_binding): Likewise.
+	(push_using_decl): Likewise.
+	(push_using_directive): Likewise.
+	(push_overloaded_decl): Likewise.
+	(lookup_label): Likewise.
+	(define_label): Likewise.
+	(lookup_tag): Likewise.
+	(lookup_tag_reverse): Likewise.
+	(lookup_namespace_name): Likewise.
+	(select_decl): Likewise.
+	(unqualified_namespace_lookup): Likewise.
+	(lookup_name_real): Likewise.
+	(lookup_name_current_level): Likewise.
+	(lookup_type_current_level): Likewise.
+	(maybe_inject_for_scope_var): Likewise.
+	(xref_tag): Likewise.
+
+	* Make-lang.in (cp/decl.o): Add dependency on timevar.h
+	
 2003-02-12  Phil Edwards  <pme@gcc.gnu.org>
 
 	* decl.c (build_enumerator):  Remove unneeded test.
