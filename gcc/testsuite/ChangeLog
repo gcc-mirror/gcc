@@ -1,3 +1,7 @@
+2005-01-09  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-4.c: Fix outcome.
+
 2005-01-09  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/pr18400.c: Add checks for alignment prints.
