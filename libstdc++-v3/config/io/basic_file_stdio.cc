@@ -74,7 +74,11 @@ namespace std
     if (__testi && !__testo && !__testt && !__testa)
       {
 	strcpy(__c_mode, "r");
+#if defined (O_NONBLOCK)
 	__p_mode |=  O_RDONLY | O_NONBLOCK;
+#else
+	__p_mode |=  O_RDONLY;
+#endif
       }
     if (__testi && __testo && !__testt && !__testa)
       {
@@ -151,9 +155,11 @@ namespace std
 	  {
 	    _M_cfile_created = true;
 
+#if defined (F_SETFL) && defined (O_NONBLOCK)
 	    // Set input to nonblocking for fifos.
 	    if (__mode & ios_base::in)
 	      fcntl(this->fd(), F_SETFL, O_NONBLOCK);
+#endif
 
 	    __ret = this;
 	  }
