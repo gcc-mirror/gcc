@@ -127,16 +127,14 @@ vax_output_function_prologue (file, size)
 	 will end up adding them right back again, but don't bother.  */
 
       if (MAIN_NAME_P (DECL_NAME (current_function_decl)))
-	fprintf (file, "\tclrl -(%ssp)\n\tjsb _C$MAIN_ARGS\n",
-	         REGISTER_PREFIX);
+	asm_fprintf (file, "\tclrl -(%Rsp)\n\tjsb _C$MAIN_ARGS\n");
     }
 
   size -= STARTING_FRAME_OFFSET;
   if (size >= 64)
-    fprintf (file, "\tmovab %d(%ssp),%ssp\n", -size, REGISTER_PREFIX,
-	     REGISTER_PREFIX);
+    asm_fprintf (file, "\tmovab %d(%Rsp),%Rsp\n", -size);
   else if (size)
-    fprintf (file, "\tsubl2 $%d,%ssp\n", size, REGISTER_PREFIX);
+    asm_fprintf (file, "\tsubl2 $%d,%Rsp\n", size);
 }
 
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */

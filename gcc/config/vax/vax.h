@@ -470,9 +470,18 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-   fprintf (FILE, "\tmovab LP%d,%s\n\tjsb mcount\n", (LABELNO), \
-	    reg_names[0]);
+#define VAX_FUNCTION_PROFILER_NAME "mcount"
+#define FUNCTION_PROFILER(FILE, LABELNO)			\
+  do								\
+    {								\
+      char label[256];						\
+      ASM_GENERATE_INTERNAL_LABEL (label, "LP", (LABELNO));	\
+      fprintf (FILE, "\tmovab ");				\
+      assemble_name (FILE, label);				\
+      asm_fprintf (FILE, ",%Rr0\n\tjsb %s\n",			\
+		   VAX_FUNCTION_PROFILER_NAME);			\
+    }								\
+  while (0)
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
@@ -1155,7 +1164,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
 do {									\
   fprintf (FILE, "\t.word 0x0ffc\n");					\
-  fprintf (FILE, "\taddl2 $%d,4(%sap)\n", DELTA, REGISTER_PREFIX);	\
+  asm_fprintf (FILE, "\taddl2 $%d,4(%Rap)\n", DELTA);			\
   fprintf (FILE, "\tjmp ");						\
   assemble_name (FILE,  XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
   fprintf (FILE, "+2\n");						\
@@ -1178,7 +1187,8 @@ VAX operand formatting codes:
    R	32 - constant operand
    b	the low 8 bits of a negated constant operand
    h	the low 16 bits of a negated constant operand
-   #	'd' or 'g' depending on whether dfloat or gfloat is used  */
+   #	'd' or 'g' depending on whether dfloat or gfloat is used
+   |	register prefix  */
 
 /* The purpose of D is to get around a quirk or bug in VAX assembler
    whereby -1 in a 64-bit immediate operand means 0x00000000ffffffff,

@@ -1,3 +1,14 @@
+2002-10-03  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/vax/vax.c (vax_output_function_prologue): Use asm_fprintf.
+	* config/vax/vax.h (VAX_FUNCTION_PROFILER_NAME): New.
+	(FUNCTION_PROFILER): Rewrite to use ASM_GENERATE_INTERNAL_LABEL,
+	assemble_name, asm_fprintf, and VAX_FUNCTION_PROFILER_NAME.
+	(ASM_OUTPUT_MI_THUNK): Use asm_fprintf instead of REGISTER_PREFIX.
+	(PRINT_OPERAND_PUNCT_VALID_P): Fix comment.
+	* config/vax/elf.h (FUNCTION_PROFILER): Remove.
+	(VAX_FUNCTION_PROFILER_NAME): Redefine as "__mcount".
+
 2002-10-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/invoke.texi (-Wabi): Document mangling bug.

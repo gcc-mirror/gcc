@@ -33,11 +33,9 @@ Boston, MA 02111-1307, USA.  */
 #define PTRDIFF_TYPE "long int"
 
 /* Profiling routine.  */
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-  fprintf (FILE, "\tmovab .LP%d,%sr0\n\tjsb __mcount\n", (LABELNO), \
-           REGISTER_PREFIX)
-  
+#undef VAX_FUNCTION_PROFILER_NAME
+#define VAX_FUNCTION_PROFILER_NAME "__mcount"
+
 /*  Let's be re-entrant.  */
 #undef PCC_STATIC_STRUCT_RETURN
 
