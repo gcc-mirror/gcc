@@ -9764,6 +9764,12 @@ ix86_expand_fp_movcc (rtx operands[])
       if (cmode != mode)
 	return 0;
 
+      /* We have no LTGT as an operator.  We could implement it with
+	 NE & ORDERED, but this requires an extra temporary.  It's
+	 not clear that it's worth it.  */
+      if (code == LTGT || code == UNEQ)
+	return 0;
+
       /* Massage condition to satisfy sse_comparison_operator.  Try
 	 to canonicalize the destination operand to be first in the
 	 comparison - this helps reload to avoid extra moves.  */
