@@ -24,6 +24,12 @@ java::lang::Float::floatToIntBits(jfloat value)
 {
   union u u;
   u.d = value;
+  jint e = u.l & 0x7f800000;
+  jint f = u.l & 0x007fffff;
+
+  if (e == 0x7f800000 && f != 0)
+    u.l = 0x7fc00000;
+
   return u.l;
 }
 
