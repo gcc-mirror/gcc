@@ -6,6 +6,7 @@ Thu Aug 13 16:09:53 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 Thu Aug 13 15:24:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (display_help): Add braces to shut up warnings.
+	* tree.c (simple_cst_equal): Likewise.
 
 	* fold-const.c (non_lvalue): Don't deal with null pointer 
 	constants here.
