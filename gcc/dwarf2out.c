@@ -2131,7 +2131,9 @@ dwarf2out_begin_prologue (line, file)
    been generated.  */
 
 void
-dwarf2out_end_epilogue ()
+dwarf2out_end_epilogue (line, file)
+     unsigned int line ATTRIBUTE_UNUSED;
+     const char *file ATTRIBUTE_UNUSED;
 {
   dw_fde_ref fde;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -3106,7 +3108,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_ignore_block,
   dwarf2out_source_line,
   dwarf2out_begin_prologue,
-  debug_nothing_int,		/* end_prologue */
+  debug_nothing_int_charstar,	/* end_prologue */
   dwarf2out_end_epilogue,
   debug_nothing_tree,		/* begin_function */
   debug_nothing_int,		/* end_function */

@@ -68,10 +68,10 @@ struct gcc_debug_hooks
 
   /* Called at end of prologue code.  LINE is the first line in the
      function.  */
-  void (* end_prologue) PARAMS ((unsigned int line));
+  void (* end_prologue) PARAMS ((unsigned int line, const char *file));
 
   /* Record end of epilogue code.  */
-  void (* end_epilogue) PARAMS ((void));
+  void (* end_epilogue) PARAMS ((unsigned int line, const char *file));
 
   /* Called at start of function DECL, before it is declared.  */
   void (* begin_function) PARAMS ((tree decl));
@@ -135,17 +135,11 @@ extern const struct gcc_debug_hooks vmsdbg_debug_hooks;
 /* Dwarf2 frame information.  */
 
 extern void dwarf2out_begin_prologue	PARAMS ((unsigned int, const char *));
-extern void dwarf2out_end_epilogue	PARAMS ((void));
+extern void dwarf2out_end_epilogue	PARAMS ((unsigned int, const char *));
 extern void dwarf2out_frame_init	PARAMS ((void));
 extern void dwarf2out_frame_finish	PARAMS ((void));
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
 extern int dwarf2out_do_frame		PARAMS ((void));
-
-/* When writing VMS debug info, output label after the prologue of the
-   function.  */
-extern void vmsdbgout_after_prologue	PARAMS ((void));
-
-
 
 #endif /* !GCC_DEBUG_H  */

@@ -1681,12 +1681,6 @@ final_start_function (first, file, optimize)
   /* First output the function prologue: code to set up the stack frame.  */
   (*targetm.asm_out.function_prologue) (file, get_frame_size ());
 
-#ifdef VMS_DEBUGGING_INFO
-  /* Output label after the prologue of the function.  */
-  if (write_symbols == VMS_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
-    vmsdbgout_after_prologue ();
-#endif
-
   /* If the machine represents the prologue as RTL, the profiling code must
      be emitted when NOTE_INSN_PROLOGUE_END is scanned.  */
 #ifdef HAVE_prologue
@@ -1797,12 +1791,12 @@ final_end_function ()
   (*targetm.asm_out.function_epilogue) (asm_out_file, get_frame_size ());
 
   /* And debug output.  */
-  (*debug_hooks->end_epilogue) ();
+  (*debug_hooks->end_epilogue) (last_linenum, last_filename);
 
 #if defined (DWARF2_UNWIND_INFO)
   if (write_symbols != DWARF2_DEBUG && write_symbols != VMS_AND_DWARF2_DEBUG
       && dwarf2out_do_frame ())
-    dwarf2out_end_epilogue ();
+    dwarf2out_end_epilogue (last_linenum, last_filename);
 #endif
 }
 
@@ -2061,7 +2055,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	case NOTE_INSN_FUNCTION_BEG:
 	  app_disable ();
-	  (*debug_hooks->end_prologue) (last_linenum);
+	  (*debug_hooks->end_prologue) (last_linenum, last_filename);
 	  break;
 
 	case NOTE_INSN_BLOCK_BEG:

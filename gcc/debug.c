@@ -33,8 +33,8 @@ const struct gcc_debug_hooks do_nothing_debug_hooks =
   debug_true_tree,		/* ignore_block */
   debug_nothing_int_charstar,	/* source_line */
   debug_nothing_int_charstar,	/* begin_prologue */
-  debug_nothing_int,		/* end_prologue */
-  debug_nothing_void,		/* end_epilogue */
+  debug_nothing_int_charstar,	/* end_prologue */
+  debug_nothing_int_charstar,	/* end_epilogue */
   debug_nothing_tree,		/* begin_function */
   debug_nothing_int,		/* end_function */
   debug_nothing_tree,		/* function_decl */

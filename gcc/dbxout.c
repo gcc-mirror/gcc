@@ -1,6 +1,6 @@
 /* Output dbx-format symbol table information from GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -340,8 +340,8 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   debug_true_tree,		/* ignore_block */
   dbxout_source_line,		/* source_line */
   dbxout_source_line,		/* begin_prologue: just output line info */
-  debug_nothing_int,		/* end_prologue */
-  debug_nothing_void,		/* end_epilogue */
+  debug_nothing_int_charstar,	/* end_prologue */
+  debug_nothing_int_charstar,	/* end_epilogue */
 #ifdef DBX_FUNCTION_FIRST
   dbxout_begin_function,
 #else
@@ -370,7 +370,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   debug_true_tree,		/* ignore_block */
   xcoffout_source_line,
   xcoffout_begin_prologue,	/* begin_prologue */
-  debug_nothing_int,		/* end_prologue */
+  debug_nothing_int_charstar,	/* end_prologue */
   xcoffout_end_epilogue,
   debug_nothing_tree,		/* begin_function */
   xcoffout_end_function,
