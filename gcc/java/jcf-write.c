@@ -1254,7 +1254,7 @@ generate_bytecode_conditional (exp, true_label, false_label,
 	    }
 	  if (integer_zerop (exp1) || integer_zerop (exp0))
 	    {
-	      generate_bytecode_insns (integer_zerop (exp1) ? exp0 : exp0,
+	      generate_bytecode_insns (integer_zerop (exp0) ? exp1 : exp0,
 				       STACK_TARGET, state);
 	      op = op + (OPCODE_ifnull - OPCODE_if_acmpeq);
 	      negop = (op & 1) ? op - 1 : op + 1;
@@ -2565,6 +2565,9 @@ generate_bytecode_insns (exp, target, state)
 	    if (interface)
 	      {
 		DECL_CONTEXT (f) = saved_context;
+		if (nargs <= 0)
+		  fatal ("Illegal number of arguments to invokeinterface, nargs=%d",
+			 nargs);
 		OP1 (nargs);
 		OP1 (0);
 	      }

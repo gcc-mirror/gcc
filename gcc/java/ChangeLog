@@ -1,3 +1,12 @@
+2000-08-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-write.c (generate_bytecode_conditional): Re-installed lost
+	Jan 6 2000 patch.
+	(generate_bytecode_insns): Check `nargs' before emitting it.
+	* verify.c (merge_type_state): Fixed typo.
+	* ChangeLog: Fixed typo in some jcf-write.c entries mentioning
+	generate_bytecode_{conditional,insns}.
+
 Sun Aug 13 09:41:49 2000  Anthony Green  <green@redhat.com>
 
 	* check-init.c (check_init): Add case for BIT_FIELD_REF (required
@@ -2176,7 +2185,7 @@ Thu Jan  6 16:31:28 2000  Anthony Green  <green@cygnus.com>
 
 Thu Jan  6 00:54:10 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* jcf-write.c (generate_byecode_conditional): Fixed indentation in
+	* jcf-write.c (generate_bytecode_conditional): Fixed indentation in
 	method invocation and typo in conditional expression.
         (generate_bytecode_insns): COND_EXPR can be part of a binop. Issue
  	the appropriate NOTE_POP.
@@ -2363,7 +2372,7 @@ Tue Nov 30 12:36:15 1999  Anthony Green  <green@cygnus.com>
 
 Tue Nov 30 12:28:34 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-        * jcf-write.c (generate_byecode_insns): Fixed indentation for
+        * jcf-write.c (generate_bytecode_insns): Fixed indentation for
         COMPOUND_EXPR and FIX_TRUNC_EXPR cases.
 
         * parse.y (patch_assignment): Removed bogus final class test on
