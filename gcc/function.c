@@ -6980,7 +6980,7 @@ thread_prologue_and_epilogue_insns (f)
 	    }
 	}
       }
-  #endif
+#endif
 }
 
 /* Reposition the prologue-end and epilogue-begin notes after instruction
