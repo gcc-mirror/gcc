@@ -1961,7 +1961,10 @@ cp_parser_non_integral_constant_expression (cp_parser  *parser,
 }
 
 /* Emit a diagnostic for an invalid type name.  SCOPE is the
-   qualifying scope (or NULL, if none) for ID.  */
+   qualifying scope (or NULL, if none) for ID.  This function commits
+   to the current active tentative parse, if any.  (Otherwise, the
+   problematic construct might be encountered again later, resulting
+   in duplicate error messages.)  */
 
 static void
 cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
@@ -2033,6 +2036,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
       else
 	gcc_unreachable ();
     }
+  cp_parser_commit_to_tentative_parse (parser);
 }
 
 /* Check for a common situation where a type-name should be present,

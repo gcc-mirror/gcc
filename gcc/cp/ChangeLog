@@ -1,5 +1,9 @@
 2005-01-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/19253
+	* parser.c (cp_parser_diagnose_invalid_type_name): Commit to
+	tentative parses.
+
 	PR c++/19667
 	* pt.c (redeclare_class_template): Robustify.
 
