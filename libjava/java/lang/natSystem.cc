@@ -243,7 +243,7 @@ getpwuid_adaptor(int (*getpwuid_r)(T_uid user_id, T_passwd *pwd_r,
 		 uid_t user_id, struct passwd *pwd_r,
 		 char *buf_r, size_t len_r, struct passwd **pwd_entry)
 {
-  return getpwuid_r(user_id, pwd_r, buf_r, len_r, pwd_entry);
+  return getpwuid_r (user_id, pwd_r, buf_r, len_r, pwd_entry);
 }
 
 /* This is used on IRIX 5.2.  */
@@ -254,7 +254,7 @@ getpwuid_adaptor(T_passwd * (*getpwuid_r)(T_uid user_id, T_passwd *pwd_r,
 		 uid_t user_id, struct passwd *pwd_r,
 		 char *buf_r, size_t len_r, struct passwd **pwd_entry)
 {
-  *pwd_entry = getpwuid_r(user_id, pwd_r, buf_r, len_r);
+  *pwd_entry = getpwuid_r (user_id, pwd_r, buf_r, len_r);
   return (*pwd_entry == NULL) ? errno : 0;
 }
 #endif
