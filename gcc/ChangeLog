@@ -1,3 +1,67 @@
+1999-02-22  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h: Add TARGET_CPU_strongarm1100.
+	Add -mno-sched command line switch to disable scheduling of
+	instructions into the function's prologue.
+	(enum processor_type): Remove.
+	(TARGET_OPTIONS): Add "fpe=" option to match documentation.
+	(struct arm_cpu_select): Replace 'set_tune_p' and 'set_arch_p'
+	fields with 'processors' field.
+	(CONDITIONAL_REGISTER_USAGE): Allow r10 to be used if stack
+	checking is not enabled.
+	(RETURN_IN_MEMORY): Always call arm_return_in_memory.
+	
+	* config/arm/arm.c: (arm_cpu): Remove.
+	(tune_flags): Remove.
+	(arm_is_strong): New variable: true iff the target processor is a 
+	StrongARM.
+	(arm_is_6_or_7): New variable: true iff the target processor is an
+	ARM6 or and ARM7.
+	(arm_select): Fields reorganised.
+	(struct processors): processor_type field removed.
+	(all_procs): Remove.
+	(all_cores): New array: Definitions of all known ARM cpu cores.
+	(all_architectures): New array: Definitions of all known ARM
+	architectures. 
+	(streq): New macro.
+	(FL_SCHED): New processor flag: processor required load
+	scheduling.
+	(FL_STRONG): New processor flag: processor is a StrongARM.
+	(arm_override_options): Reorganised to make code clearer.
+	(use_return_insn): Test for "not (TARGET_APCS and
+	frame_pointer_needed)".
+	(arm_return_in_memory): Improve handling of structures.
+	
+	* config/arm/arm.md: Remove "cpu" attribute.  Replace with
+	"is_strongarm" and "is_arm_6_or_7" attributes.
+	(zero_extendhisi2): Check for TARGET_SHORT_BY_BYTES before
+	arm_arch4.
+	(extendhisi2):  Check for TARGET_SHORT_BY_BYTES before arm_arch4. 
+
+	* invoke.texi (ARM Options): Document -mtune= and -mfp= options.
+	
+1999-02-22  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/linux-gas.h (INITIALIZE_TRAMPOLINE): Replace default
+	definition with one including cache synchronisation.
+	(CLEAR_INSN_CACHE): Correct syscall number and enable definition.
+	Move definition of inhibit_libc to...
+	* config/arm/xm-linux.h: ... here.
+
+	* config/arm/t-linux: Disable multilib configurations since the
+	only effect for most people is to cause builds to fail.
+	
+	* config/arm/elf.h (ASM_FILE_START): Add .file directive.
+	(ASM_SPEC): Translate -mapcs-float to -mfloat for the assembler.
+
+	* config/arm/linux-elf.h (DEFAULT_VTABLE_THUNKS): Define.
+	(HANDLE_SYSV_PRAGMA): Likewise.
+	(LIB_SPEC): Copy definition from generic Linux files.
+	(LIBGCC_SPEC): Include -lfloat if -msoft-float was given.
+	(FP_DEFAULT): Set to SOFT3 on 32-bit targets.
+	(DWARF2_DEBUGGING_INFO): Define.
+	(PREFERRED_DEBUGGING_TYPE): Define as DBX_DEBUG.
+
 Mon Feb 22 16:54:18 EST 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* loop.c (libcall_other_regs): Make extern.

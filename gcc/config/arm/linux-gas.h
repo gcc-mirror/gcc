@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    ARM Linux-based GNU systems version.
-   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Russell King  <rmk92@ecs.soton.ac.uk>.
 
 This file is part of GNU CC.
@@ -59,29 +59,25 @@ Boston, MA 02111-1307, USA.  */
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-#if 0		/* not yet */
+/* Emit code to set up a trampoline and synchronise the caches.  */
+#undef  INITIALIZE_TRAMPOLINE
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
+{									\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 8)),	\
+		  (CXT));						\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 12)),	\
+		  (FNADDR));						\
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),	\
+		     0, VOIDmode, 2, TRAMP, Pmode,			\
+		     plus_constant (TRAMP, TRAMPOLINE_SIZE), Pmode);	\
+}
 
 /* Clear the instruction cache from `beg' to `end'.  This makes an
-   inline system call to SYS_cacheflush.  The arguments are as
-   follows:
-
-	cacheflush (start, end, flags)
-
-*/
-
+   inline system call to SYS_cacheflush.  */
 #define CLEAR_INSN_CACHE(BEG, END)					\
 {									\
   register unsigned long _beg __asm ("a1") = (unsigned long) (BEG);	\
   register unsigned long _end __asm ("a2") = (unsigned long) (END);	\
   register unsigned long _flg __asm ("a3") = 0;				\
-  __asm __volatile ("swi 0x9000b8");					\
+  __asm __volatile ("swi 0x9f0002");					\
 }
-
-#endif
-
-/* If cross-compiling, don't require stdio.h etc to build libgcc.a.  */
-#ifdef CROSS_COMPILE
-#ifndef inhibit_libc
-#define inhibit_libc
-#endif
-#endif
