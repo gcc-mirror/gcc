@@ -1,5 +1,10 @@
 2001-11-14  Geoffrey Keating  <geoffk@redhat.com>
 
+	* gcc.dg/noncompile/920923-1.c: xstormy16 produces an extra error
+	message.
+
+	* gcc.c-torture/execute/20011114-1.c: New testcase.
+
 	* gcc.c-torture/compile/20010327-1.c: Revert last change.
 	* gcc.c-torture/compile/20011114-1.c: New test, exactly
 	like the (before this change) version of 20010327-1.c.
