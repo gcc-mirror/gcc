@@ -865,7 +865,7 @@ dbxout_range_type (type)
      tree type;
 {
   fprintf (asmfile, "r");
-  if (TREE_TYPE (type) && TREE_CODE (TREE_TYPE(type)) != INTEGER_TYPE)
+  if (TREE_TYPE (type))
     dbxout_type (TREE_TYPE (type), 0, 0);
   else
     {
