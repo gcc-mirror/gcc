@@ -1,3 +1,7 @@
+Thu Mar  7 16:54:10 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* reload1.c (reload_cse_delete_noop_set): Purge dead edges.
+
 Thu Mar  7 16:33:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (fixup_abnormal_edges): Declare.
