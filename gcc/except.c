@@ -73,6 +73,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "target.h"
 #include "langhooks.h"
+#include "cgraph.h"
 
 /* Provide defaults for stuff that may not be defined when using
    sjlj exceptions.  */
@@ -3704,11 +3705,25 @@ output_function_exception_table (void)
       rtx value;
 
       if (type == NULL_TREE)
-	type = integer_zero_node;
+	value = const0_rtx;
       else
-	type = lookup_type_for_runtime (type);
+	{
+	  struct cgraph_varpool_node *node;
 
-      value = expand_expr (type, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
+	  type = lookup_type_for_runtime (type);
+	  value = expand_expr (type, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
+
+	  /* Let cgraph know that the rtti decl is used.  Not all of the
+	     paths below go through assemble_integer, which would take
+	     care of this for us.  */
+	  if (TREE_CODE (type) != ADDR_EXPR)
+	    abort ();
+	  type = TREE_OPERAND (type, 0);
+	  node = cgraph_varpool_node (type);
+	  if (node)
+	    cgraph_varpool_mark_needed_node (node);
+	}
+
       if (tt_format == DW_EH_PE_absptr || tt_format == DW_EH_PE_aligned)
 	assemble_integer (value, tt_format_size,
 			  tt_format_size * BITS_PER_UNIT, 1);
