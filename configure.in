@@ -42,7 +42,7 @@
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline db tcl tk tcl8.1 tk8.1 tclX itcl tix libgui zlib"
+host_libs="intl mmalloc libiberty opcodes bfd readline db tcl tk tclX itcl tix libgui zlib"
 
 libstdcxx_version="target-libstdc++-v3"
 # Don't use libstdc++-v3's flags to configure/build itself.

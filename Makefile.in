@@ -580,7 +580,6 @@ ALL_MODULES = \
 	all-snavigator \
 	all-tar \
 	all-tcl \
-	all-tcl8.1 \
 	all-texinfo \
 	all-textutils \
 	all-tgas \
@@ -712,7 +711,6 @@ INSTALL_MODULES = \
 	install-intl \
 	install-ispell \
 	install-tcl \
-	install-tcl8.1 \
 	install-itcl \
 	install-ld \
 	install-libgui \
@@ -752,7 +750,6 @@ ALL_X11_MODULES = \
 	all-guile \
 	all-tclX \
 	all-tk \
-	all-tk8.1 \
 	all-tix
 
 # This is a list of the check targets for all of the modules which are
@@ -776,7 +773,6 @@ INSTALL_X11_MODULES = \
 	install-expect \
 	install-tclX \
 	install-tk \
-	install-tk8.1 \
 	install-tix
 
 # This is a list of the targets for all of the modules which are compiled
@@ -1755,11 +1751,11 @@ all-indent:
 all-inet: all-tcl all-send-pr all-perl
 all-intl:
 all-ispell: all-emacs19
-all-itcl: all-tcl all-tk all-tcl8.1 all-tk8.1
+all-itcl: all-tcl all-tk
 all-ld: all-libiberty all-bfd all-opcodes all-bison all-byacc all-flex all-intl
 configure-target-libgloss: $(ALL_GCC)
 all-target-libgloss: configure-target-libgloss configure-target-newlib
-all-libgui: all-tcl all-tk all-tcl8.1 all-tk8.1 all-itcl
+all-libgui: all-tcl all-tk all-itcl
 all-libiberty:
 
 all-build-libiberty: configure-build-libiberty
@@ -1803,15 +1799,13 @@ all-sim: all-libiberty all-bfd all-opcodes all-readline all-cgen
 all-snavigator: all-tcl all-tk all-itcl all-tix all-db all-grep all-libgui
 all-tar: all-libiberty
 all-tcl:
-all-tcl8.1:
 all-tclX: all-tcl all-tk
 all-tk: all-tcl
-all-tk8.1: all-tcl8.1
 all-texinfo: all-libiberty
 all-textutils:
 all-tgas: all-libiberty all-bfd all-opcodes
 all-time:
-all-tix: all-tcl all-tk all-tcl8.1 all-tk8.1
+all-tix: all-tcl all-tk
 all-wdiff:
 configure-target-winsup: $(ALL_GCC_C)
 all-target-winsup: all-target-libiberty all-target-libtermcap configure-target-winsup

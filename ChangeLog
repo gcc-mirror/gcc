@@ -1,3 +1,8 @@
+2002-05-31  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* Makefile.in: Eliminate version-specific references to tcl8.1, tk8.1.
+	* configure.in: Eliminate version-specific references to tcl8.1, tk8.1.
+
 2002-05-31  Olaf Hering  <olh@suse.de>
 
 	* config-ml.in: Propogate DESTDIR also.
