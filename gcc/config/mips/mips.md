@@ -4397,7 +4397,7 @@ move\\t%0,%z4\\n\\
 	    }
 
 	  emit_move_insn (operands[0],
-			  gen_rtx (PLUS, SImode, base_reg,
+			  gen_rtx (PLUS, Pmode, base_reg,
 				   mips16_gp_offset (operands[1])));
 	  DONE;
 	}
@@ -4789,7 +4789,7 @@ move\\t%0,%z4\\n\\
 	  emit_move_insn (base_reg, mips16_gp_pseudo_reg ());
 
 	  emit_move_insn (operands[0],
-			  gen_rtx (PLUS, SImode, base_reg,
+			  gen_rtx (PLUS, Pmode, base_reg,
 				   mips16_gp_offset (operands[1])));
 	  DONE;
 	}
