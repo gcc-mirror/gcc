@@ -880,7 +880,7 @@ dw2_output_indirect_constant_1 (node, data)
   sym_ref = gen_rtx_SYMBOL_REF (Pmode, sym);
 
   ASM_OUTPUT_LABEL (asm_out_file, label);
-  assemble_integer (sym_ref, POINTER_SIZE / BITS_PER_UNIT, BITS_PER_UNIT, 1);
+  assemble_integer (sym_ref, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
   return 0;
 }
