@@ -858,8 +858,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 /* ISA has branch likely instructions (eg. mips2).  */
 /* Disable branchlikely for tx39 until compare rewrite.  They haven't
    been generated up to this point.  */
-#define ISA_HAS_BRANCHLIKELY	(!ISA_MIPS1                             \
-				 && !TARGET_MIPS5500)
+#define ISA_HAS_BRANCHLIKELY	(!ISA_MIPS1)
 
 /* ISA has the conditional move instructions introduced in mips4.  */
 #define ISA_HAS_CONDMOVE        ((ISA_MIPS4				\

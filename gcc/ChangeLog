@@ -1,5 +1,11 @@
 2004-05-07  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.h (ISA_HAS_BRANCHLIKELY): Remove TARGET_MIPS5500.
+	* config/mips/mips.c (override_options): Disable branch likely
+	instructions if TUNE_MIPS5500.
+
+2004-05-07  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (override_options): Allow the hi and lo registers
 	to store any integral mode, not just MODE_INTs.
 
