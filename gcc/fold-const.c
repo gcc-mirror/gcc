@@ -2076,6 +2076,9 @@ invert_truthvalue (arg)
   tree type = TREE_TYPE (arg);
   enum tree_code code = TREE_CODE (arg);
 
+  if (code == ERROR_MARK)
+    return arg;
+
   /* If this is a comparison, we can simply invert it, except for
      floating-point non-equality comparisons, in which case we just
      enclose a TRUTH_NOT_EXPR around what we have.  */
