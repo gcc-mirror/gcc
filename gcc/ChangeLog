@@ -1,5 +1,9 @@
 2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/mcore/mcore.h (ASM_OUTPUT_EXTERNAL): Remove.
+
+2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* hooks.c (hook_void_tree_int): Remove.
 	(hook_void_constcharptr): Likewise.
 	(hook_int_void_0): Likewise.
