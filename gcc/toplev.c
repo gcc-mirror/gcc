@@ -908,6 +908,7 @@ char *lang_options[] =
   "-nostdinc",
   "-nostdinc++",
   "-undef",
+  "-remap",
 
 #include "options.h"
   0
