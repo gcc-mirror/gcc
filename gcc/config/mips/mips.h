@@ -824,9 +824,6 @@ extern const struct mips_cpu_info *mips_tune_info;
                                  && !TARGET_MIPS5500                    \
 				 && !TARGET_MIPS16)
 
-/* ISA has just the integer condition move instructions (movn,movz) */
-#define ISA_HAS_INT_CONDMOVE     0
-
 /* ISA has the mips4 FP condition code instructions: FP-compare to CC,
    branch on CC, and move (both FP and non-FP) on CC.  */
 #define ISA_HAS_8CC		(ISA_MIPS4				\

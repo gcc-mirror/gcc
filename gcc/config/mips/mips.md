@@ -293,6 +293,10 @@
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
 (define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
 
+;; This mode macro allows :MOVECC to be used anywhere that a
+;; conditional-move-type condition is needed.
+(define_mode_macro MOVECC [SI (DI "TARGET_64BIT") (CC "TARGET_HARD_FLOAT")])
+
 ;; In GPR templates, a string like "<d>subu" will expand to "subu" in the
 ;; 32-bit version and "dsubu" in the 64-bit version.
 (define_mode_attr d [(SI "") (DI "d")])
@@ -305,6 +309,10 @@
 ;; are different.  Some forms of unextended addiu have an 8-bit immediate
 ;; field but the equivalent daddiu has only a 5-bit field.
 (define_mode_attr si8_di5 [(SI "8") (DI "5")])
+
+;; In MOVECC templates, this attribute gives the constraint to use
+;; for the condition register.
+(define_mode_attr ccreg [(SI "d") (DI "d") (CC "z")])
 
 ;; This code macro allows all branch instructions to be generated from
 ;; a single define_expand template.
@@ -6019,207 +6027,60 @@ beq\t%2,%.,1b\;\
 
 ;; MIPS4 Conditional move instructions.
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(if_then_else:SI
-	 (match_operator:SI 4 "equality_operator"
-			    [(match_operand:SI 1 "register_operand" "d,d")
-			     (const_int 0)])
-	 (match_operand:SI 2 "reg_or_0_operand" "dJ,0")
-	 (match_operand:SI 3 "reg_or_0_operand" "0,dJ")))]
-  "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
+(define_insn "*mov<GPR:mode>_on_<MOVECC:mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+	(if_then_else:GPR
+	 (match_operator:MOVECC 4 "equality_operator"
+		[(match_operand:MOVECC 1 "register_operand" "<ccreg>,<ccreg>")
+		 (const_int 0)])
+	 (match_operand:GPR 2 "reg_or_0_operand" "dJ,0")
+	 (match_operand:GPR 3 "reg_or_0_operand" "0,dJ")))]
+  "ISA_HAS_CONDMOVE"
   "@
-    mov%B4\t%0,%z2,%1
-    mov%b4\t%0,%z3,%1"
+    mov%T4\t%0,%z2,%1
+    mov%t4\t%0,%z3,%1"
   [(set_attr "type" "condmove")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(if_then_else:SI
-	 (match_operator:DI 4 "equality_operator"
-			    [(match_operand:DI 1 "register_operand" "d,d")
-			     (const_int 0)])
-	 (match_operand:SI 2 "reg_or_0_operand" "dJ,0")
-	 (match_operand:SI 3 "reg_or_0_operand" "0,dJ")))]
-  "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
-  "@
-    mov%B4\t%0,%z2,%1
-    mov%b4\t%0,%z3,%1"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "SI")])
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(if_then_else:SI
-	 (match_operator:CC 3 "equality_operator"
-			    [(match_operand:CC 4 "register_operand" "z,z")
-			     (const_int 0)])
-	 (match_operand:SI 1 "reg_or_0_operand" "dJ,0")
-	 (match_operand:SI 2 "reg_or_0_operand" "0,dJ")))]
-  "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
-  "@
-    mov%T3\t%0,%z1,%4
-    mov%t3\t%0,%z2,%4"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "SI")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(if_then_else:DI
-	 (match_operator:SI 4 "equality_operator"
-			    [(match_operand:SI 1 "register_operand" "d,d")
-			     (const_int 0)])
-	 (match_operand:DI 2 "reg_or_0_operand" "dJ,0")
-	 (match_operand:DI 3 "reg_or_0_operand" "0,dJ")))]
-  "(ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE) && TARGET_64BIT"
-  "@
-    mov%B4\t%0,%z2,%1
-    mov%b4\t%0,%z3,%1"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "DI")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(if_then_else:DI
-	 (match_operator:DI 4 "equality_operator"
-			    [(match_operand:DI 1 "register_operand" "d,d")
-			     (const_int 0)])
-	 (match_operand:DI 2 "reg_or_0_operand" "dJ,0")
-	 (match_operand:DI 3 "reg_or_0_operand" "0,dJ")))]
-  "(ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE) && TARGET_64BIT"
-  "@
-    mov%B4\t%0,%z2,%1
-    mov%b4\t%0,%z3,%1"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "DI")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(if_then_else:DI
-	 (match_operator:CC 3 "equality_operator"
-			    [(match_operand:CC 4 "register_operand" "z,z")
-			     (const_int 0)])
-	 (match_operand:DI 1 "reg_or_0_operand" "dJ,0")
-	 (match_operand:DI 2 "reg_or_0_operand" "0,dJ")))]
-  "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_64BIT"
-  "@
-    mov%T3\t%0,%z1,%4
-    mov%t3\t%0,%z2,%4"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "DI")])
-
-(define_insn ""
+(define_insn "*movsf_on_<MOVECC:mode>"
   [(set (match_operand:SF 0 "register_operand" "=f,f")
 	(if_then_else:SF
-	 (match_operator:SI 4 "equality_operator"
-			    [(match_operand:SI 1 "register_operand" "d,d")
-			     (const_int 0)])
+	 (match_operator:MOVECC 4 "equality_operator"
+		[(match_operand:MOVECC 1 "register_operand" "<ccreg>,<ccreg>")
+		 (const_int 0)])
 	 (match_operand:SF 2 "register_operand" "f,0")
 	 (match_operand:SF 3 "register_operand" "0,f")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
   "@
-    mov%B4.s\t%0,%2,%1
-    mov%b4.s\t%0,%3,%1"
+    mov%T4.s\t%0,%2,%1
+    mov%t4.s\t%0,%3,%1"
   [(set_attr "type" "condmove")
    (set_attr "mode" "SF")])
 
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f,f")
-	(if_then_else:SF
-	 (match_operator:DI 4 "equality_operator"
-			    [(match_operand:DI 1 "register_operand" "d,d")
-			     (const_int 0)])
-	 (match_operand:SF 2 "register_operand" "f,0")
-	 (match_operand:SF 3 "register_operand" "0,f")))]
-  "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
-  "@
-    mov%B4.s\t%0,%2,%1
-    mov%b4.s\t%0,%3,%1"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "SF")])
-
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f,f")
-	(if_then_else:SF
-	 (match_operator:CC 3 "equality_operator"
-			    [(match_operand:CC 4 "register_operand" "z,z")
-			     (const_int 0)])
-	 (match_operand:SF 1 "register_operand" "f,0")
-	 (match_operand:SF 2 "register_operand" "0,f")))]
-  "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
-  "@
-    mov%T3.s\t%0,%1,%4
-    mov%t3.s\t%0,%2,%4"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "SF")])
-
-(define_insn ""
+(define_insn "*movdf_on_<MOVECC:mode>"
   [(set (match_operand:DF 0 "register_operand" "=f,f")
 	(if_then_else:DF
-	 (match_operator:SI 4 "equality_operator"
-			    [(match_operand:SI 1 "register_operand" "d,d")
-			     (const_int 0)])
+	 (match_operator:MOVECC 4 "equality_operator"
+		[(match_operand:MOVECC 1 "register_operand" "<ccreg>,<ccreg>")
+		 (const_int 0)])
 	 (match_operand:DF 2 "register_operand" "f,0")
 	 (match_operand:DF 3 "register_operand" "0,f")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "@
-    mov%B4.d\t%0,%2,%1
-    mov%b4.d\t%0,%3,%1"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "DF")])
-
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f,f")
-	(if_then_else:DF
-	 (match_operator:DI 4 "equality_operator"
-			    [(match_operand:DI 1 "register_operand" "d,d")
-			     (const_int 0)])
-	 (match_operand:DF 2 "register_operand" "f,0")
-	 (match_operand:DF 3 "register_operand" "0,f")))]
-  "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "@
-    mov%B4.d\t%0,%2,%1
-    mov%b4.d\t%0,%3,%1"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "DF")])
-
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f,f")
-	(if_then_else:DF
-	 (match_operator:CC 3 "equality_operator"
-			    [(match_operand:CC 4 "register_operand" "z,z")
-			     (const_int 0)])
-	 (match_operand:DF 1 "register_operand" "f,0")
-	 (match_operand:DF 2 "register_operand" "0,f")))]
-  "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "@
-    mov%T3.d\t%0,%1,%4
-    mov%t3.d\t%0,%2,%4"
+    mov%T4.d\t%0,%2,%1
+    mov%t4.d\t%0,%3,%1"
   [(set_attr "type" "condmove")
    (set_attr "mode" "DF")])
 
 ;; These are the main define_expand's used to make conditional moves.
 
-(define_expand "movsicc"
+(define_expand "mov<mode>cc"
   [(set (match_dup 4) (match_operand 1 "comparison_operator"))
-   (set (match_operand:SI 0 "register_operand")
-	(if_then_else:SI (match_dup 5)
-			 (match_operand:SI 2 "reg_or_0_operand")
-			 (match_operand:SI 3 "reg_or_0_operand")))]
-  "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
-{
-  gen_conditional_move (operands);
-  DONE;
-})
-
-(define_expand "movdicc"
-  [(set (match_dup 4) (match_operand 1 "comparison_operator"))
-   (set (match_operand:DI 0 "register_operand")
-	(if_then_else:DI (match_dup 5)
-			 (match_operand:DI 2 "reg_or_0_operand")
-			 (match_operand:DI 3 "reg_or_0_operand")))]
-  "(ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE) && TARGET_64BIT"
+   (set (match_operand:GPR 0 "register_operand")
+	(if_then_else:GPR (match_dup 5)
+			  (match_operand:GPR 2 "reg_or_0_operand")
+			  (match_operand:GPR 3 "reg_or_0_operand")))]
+  "ISA_HAS_CONDMOVE"
 {
   gen_conditional_move (operands);
   DONE;
