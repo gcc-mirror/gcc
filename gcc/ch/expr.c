@@ -1484,7 +1484,7 @@ build_chill_descr (expr)
       /* check for expression is referable */
       if (! CH_REFERABLE (expr))
 	{
-	  error ("expression for DESCR-builtin must be referable");
+	  error ("expression for DESCR-built-in must be referable");
 	  return error_mark_node;
 	}
       
@@ -2974,11 +2974,11 @@ build_generalized_call (func, args)
 
 	    case BUILT_IN_EXPIRED:
 	    case BUILT_IN_WAIT:
-	      sorry ("unimplemented builtin function `%s'",
+	      sorry ("unimplemented built-in function `%s'",
 		     IDENTIFIER_POINTER (fnname));
 	      break;
 	    default:
-	      error ("internal error - bad builtin function `%s'",
+	      error ("internal error - bad built-in function `%s'",
 		     IDENTIFIER_POINTER (fnname));
 	    }
 	}

@@ -1000,7 +1000,7 @@ cpp_finish_options (pfile)
     {
       struct pending_option *p;
 
-      _cpp_do_file_change (pfile, LC_RENAME, _("<builtin>"), 1, 0);
+      _cpp_do_file_change (pfile, LC_RENAME, _("<built-in>"), 1, 0);
       init_builtins (pfile);
       _cpp_do_file_change (pfile, LC_RENAME, _("<command line>"), 1, 0);
       for (p = CPP_OPTION (pfile, pending)->directive_head; p; p = p->next)

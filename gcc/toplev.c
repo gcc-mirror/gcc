@@ -1193,7 +1193,7 @@ documented_lang_options[] =
 
   { "-fsigned-bitfields", "" },
   { "-funsigned-bitfields",
-    N_("Make bitfields by unsigned by default") },
+    N_("Make bit-fields by unsigned by default") },
   { "-fno-signed-bitfields", "" },
   { "-fno-unsigned-bitfields","" },
   { "-fsigned-char", 

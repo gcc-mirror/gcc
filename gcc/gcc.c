@@ -1463,7 +1463,7 @@ init_spec ()
     return;			/* Already initialized.  */
 
   if (verbose_flag)
-    notice ("Using builtin specs.\n");
+    notice ("Using built-in specs.\n");
 
 #ifdef EXTRA_SPECS
   extra_specs = (struct spec_list *)
@@ -3053,7 +3053,7 @@ display_help ()
   fputs (_("  -save-temps              Do not delete intermediate files\n"), stdout);
   fputs (_("  -pipe                    Use pipes rather than intermediate files\n"), stdout);
   fputs (_("  -time                    Time the execution of each subprocess\n"), stdout);
-  fputs (_("  -specs=<file>            Override builtin specs with the contents of <file>\n"), stdout);
+  fputs (_("  -specs=<file>            Override built-in specs with the contents of <file>\n"), stdout);
   fputs (_("  -std=<standard>          Assume that the input sources are for <standard>\n"), stdout);
   fputs (_("  -B <directory>           Add <directory> to the compiler's search paths\n"), stdout);
   fputs (_("  -b <machine>             Run gcc for target <machine>, if installed\n"), stdout);

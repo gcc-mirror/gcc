@@ -101,9 +101,9 @@ extern int g_switch_set;		/* Whether -G xx was passed.  */
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
   { "bit-align",	-MASK_NO_BITFIELD_TYPE,				\
-    N_("Align to the base type of the bitfield") },			\
+    N_("Align to the base type of the bit-field") },			\
   { "no-bit-align",	 MASK_NO_BITFIELD_TYPE,				\
-    N_("Don't align to the base type of the bitfield") },		\
+    N_("Don't align to the base type of the bit-field") },		\
   { "strict-align",	 MASK_STRICT_ALIGN,				\
     N_("Don't assume that unaligned accesses are handled by the system") }, \
   { "no-strict-align",	-MASK_STRICT_ALIGN,				\
@@ -134,7 +134,7 @@ extern int g_switch_set;		/* Whether -G xx was passed.  */
   { "no-eabi",		-MASK_EABI, N_("Don't use EABI") },		\
   { "bit-word",		-MASK_NO_BITFIELD_WORD, "" },			\
   { "no-bit-word",	 MASK_NO_BITFIELD_WORD,				\
-    N_("Do not allow bitfields to cross word boundaries") },		\
+    N_("Do not allow bit-fields to cross word boundaries") },		\
   { "regnames",		  MASK_REGNAMES,				\
     N_("Use alternate register names") },				\
   { "no-regnames",	 -MASK_REGNAMES,				\

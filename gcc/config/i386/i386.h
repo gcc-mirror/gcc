@@ -353,25 +353,25 @@ extern int x86_prefetch_sse;
   { "no-accumulate-outgoing-args",MASK_ACCUMULATE_OUTGOING_ARGS_SET,	      \
     N_("Do not use push instructions to save outgoing arguments") },	      \
   { "mmx",			 MASK_MMX | MASK_MMX_SET,		      \
-    N_("Support MMX builtins") },					      \
+    N_("Support MMX built-in functions") },				      \
   { "no-mmx",			 -MASK_MMX,				      \
-    N_("Do not support MMX builtins") },				      \
+    N_("Do not support MMX built-in functions") },			      \
   { "no-mmx",			 MASK_MMX_SET, N_("") },		      \
   { "3dnow",                     MASK_3DNOW | MASK_3DNOW_SET,		      \
-    N_("Support 3DNow! builtins") },					      \
+    N_("Support 3DNow! built-in functions") },				      \
   { "no-3dnow",                  -MASK_3DNOW, N_("") },			      \
   { "no-3dnow",                  MASK_3DNOW_SET,			      \
-    N_("Do not support 3DNow! builtins") },				      \
+    N_("Do not support 3DNow! built-in functions") },			      \
   { "sse",			 MASK_SSE | MASK_SSE_SET,		      \
-    N_("Support MMX and SSE builtins and code generation") },		      \
+    N_("Support MMX and SSE built-in functions and code generation") },	      \
   { "no-sse",			 -MASK_SSE, N_("") },	 		      \
   { "no-sse",			 MASK_SSE_SET,				      \
-    N_("Do not support MMX and SSE builtins and code generation") },	      \
+    N_("Do not support MMX and SSE built-in functions and code generation") },\
   { "sse2",			 MASK_SSE2 | MASK_SSE2_SET,		      \
-    N_("Support MMX, SSE and SSE2 builtins and code generation") },	      \
+    N_("Support MMX, SSE and SSE2 built-in functions and code generation") }, \
   { "no-sse2",			 -MASK_SSE2, N_("") },			      \
   { "no-sse2",			 MASK_SSE2_SET,				      \
-    N_("Do not support MMX, SSE and SSE2 builtins and code generation") },    \
+    N_("Do not support MMX, SSE and SSE2 built-in functions and code generation") },    \
   { "128bit-long-double",	 MASK_128BIT_LONG_DOUBLE,		      \
     N_("sizeof(long double) is 16") },					      \
   { "96bit-long-double",	-MASK_128BIT_LONG_DOUBLE,		      \

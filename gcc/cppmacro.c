@@ -145,7 +145,7 @@ builtin_macro (pfile, node)
   switch (node->value.builtin)
     {
     default:
-      cpp_ice (pfile, "invalid builtin macro \"%s\"", NODE_NAME (node));
+      cpp_ice (pfile, "invalid built-in macro \"%s\"", NODE_NAME (node));
       return 0;
 
     case BT_FILE:
