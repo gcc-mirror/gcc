@@ -217,7 +217,7 @@ c_objc_common_init (filename)
 
   filename = c_common_init (filename);
 
-  add_c_tree_codes ();
+  lang_unsafe_for_reeval = c_unsafe_for_reeval;
 
   save_lang_status = &push_c_function_context;
   restore_lang_status = &pop_c_function_context;

@@ -70,7 +70,8 @@ static int process_option_with_no PARAMS ((const char *,
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-static const char java_tree_code_type[] = {
+const char tree_code_type[] = {
+#include "tree.def"
   'x',
 #include "java-tree.def"
 };
@@ -82,7 +83,8 @@ static const char java_tree_code_type[] = {
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
 
-static const int java_tree_code_length[] = {
+const unsigned char tree_code_length[] = {
+#include "tree.def"
   0,
 #include "java-tree.def"
 };
@@ -92,7 +94,8 @@ static const int java_tree_code_length[] = {
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
 
-static const char *const java_tree_code_name[] = {
+const char *const tree_code_name[] = {
+#include "tree.def"
   "@@dummy",
 #include "java-tree.def"
 };
@@ -505,19 +508,6 @@ java_init (filename)
   print_error_function = lang_print_error;
   lang_expand_expr = java_lang_expand_expr;
 
-  /* Append to Gcc tree node definition arrays */
-
-  memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
-	  java_tree_code_type,
-	  (int)LAST_JAVA_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
-  memcpy (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
-	  java_tree_code_length,
-	  (LAST_JAVA_TREE_CODE - 
-	   (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
-  memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
-	  java_tree_code_name,
-	  (LAST_JAVA_TREE_CODE - 
-	   (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
   java_init_decl_processing ();
 
   using_eh_for_cleanups ();

@@ -4998,11 +4998,6 @@ lang_independent_init ()
   decl_printable_name = decl_name;
   lang_expand_expr = (lang_expand_expr_t) do_abort;
 
-  /* Set the language-dependent identifier size.  */
-  tree_code_length[(int) IDENTIFIER_NODE]
-    = ((lang_hooks.identifier_size - sizeof (struct tree_common)
-	+ sizeof (tree) - 1) / sizeof (tree));
-
   /* Initialize the garbage-collector, and string pools.  */
   init_ggc ();
   ggc_add_rtx_root (&stack_limit_rtx, 1);

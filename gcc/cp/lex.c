@@ -205,37 +205,6 @@ int interface_only;		/* whether or not current file is only for
 int interface_unknown;		/* whether or not we know this class
 				   to behave according to #pragma interface.  */
 
-/* Tree code classes. */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
-
-static const char cplus_tree_code_type[] = {
-  'x',
-#include "cp-tree.def"
-};
-#undef DEFTREECODE
-
-/* Table indexed by tree code giving number of expression
-   operands beyond the fixed part of the node structure.
-   Not used for types or decls.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
-
-static const int cplus_tree_code_length[] = {
-  0,
-#include "cp-tree.def"
-};
-#undef DEFTREECODE
-
-/* Names of tree components.
-   Used for printing out the tree and error messages.  */
-#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
-
-static const char *const cplus_tree_code_name[] = {
-  "@@dummy",
-#include "cp-tree.def"
-};
-#undef DEFTREECODE
 
 /* Post-switch processing.  */
 void
@@ -682,17 +651,7 @@ cxx_init (filename)
   init_cplus_expand ();
   init_cp_semantics ();
 
-  add_c_tree_codes ();
-
-  memcpy (tree_code_type + (int) LAST_C_TREE_CODE,
-	  cplus_tree_code_type,
-	  (int)LAST_CPLUS_TREE_CODE - (int)LAST_C_TREE_CODE);
-  memcpy (tree_code_length + (int) LAST_C_TREE_CODE,
-	  cplus_tree_code_length,
-	  (LAST_CPLUS_TREE_CODE - (int)LAST_C_TREE_CODE) * sizeof (int));
-  memcpy (tree_code_name + (int) LAST_C_TREE_CODE,
-	  cplus_tree_code_name,
-	  (LAST_CPLUS_TREE_CODE - (int)LAST_C_TREE_CODE) * sizeof (char *));
+  lang_unsafe_for_reeval = c_unsafe_for_reeval;
 
   init_operators ();
   init_method ();

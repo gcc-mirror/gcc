@@ -3696,56 +3696,6 @@ c_staticp (exp)
   return 0;
 }
 
-/* Tree code classes.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
-
-static const char c_tree_code_type[] = {
-  'x',
-#include "c-common.def"
-};
-#undef DEFTREECODE
-
-/* Table indexed by tree code giving number of expression
-   operands beyond the fixed part of the node structure.
-   Not used for types or decls.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
-
-static const int c_tree_code_length[] = {
-  0,
-#include "c-common.def"
-};
-#undef DEFTREECODE
-
-/* Names of tree components.
-   Used for printing out the tree and error messages.  */
-#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
-
-static const char *const c_tree_code_name[] = {
-  "@@dummy",
-#include "c-common.def"
-};
-#undef DEFTREECODE
-
-/* Adds the tree codes specific to the C front end to the list of all
-   tree codes.  */
-
-void
-add_c_tree_codes ()
-{
-  memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
-	  c_tree_code_type,
-	  (int) LAST_C_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE);
-  memcpy (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
-	  c_tree_code_length,
-	  (LAST_C_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
-  memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
-	  c_tree_code_name,
-	  (LAST_C_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
-  lang_unsafe_for_reeval = c_unsafe_for_reeval;
-}
-
 #define CALLED_AS_BUILT_IN(NODE) \
    (!strncmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__builtin_", 10))
 

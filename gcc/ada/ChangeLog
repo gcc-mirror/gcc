@@ -1,3 +1,11 @@
+2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* misc.c (gnat_tree_code_type, gnat_tree_code_length,
+	gnat_tree_code_name): Delete.
+	(tree_code_type, tree_code_length, tree_code_name): Define.
+	(gnat_init): Don't try to copy into the various tree_code
+	arrays.
+
 2002-03-11  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (.NOTPARALLEL): Add fake tag.

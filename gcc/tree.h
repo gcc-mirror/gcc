@@ -46,7 +46,7 @@ enum tree_code {
    and `x' for anything else (TREE_LIST, IDENTIFIER, etc).  */
 
 #define MAX_TREE_CODES 256
-extern char tree_code_type[MAX_TREE_CODES];
+extern const char tree_code_type[];
 #define TREE_CODE_CLASS(CODE)	tree_code_type[(int) (CODE)]
 
 /* Returns non-zero iff CLASS is the tree-code class of an
@@ -57,12 +57,12 @@ extern char tree_code_type[MAX_TREE_CODES];
 
 /* Number of argument-words in each kind of tree-node.  */
 
-extern int tree_code_length[MAX_TREE_CODES];
+extern const unsigned char tree_code_length[];
 #define TREE_CODE_LENGTH(CODE)	tree_code_length[(int) (CODE)]
 
 /* Names of tree components.  */
 
-extern const char *tree_code_name[MAX_TREE_CODES];
+extern const char *const tree_code_name[];
 
 /* Classify which part of the compiler has defined a given builtin function.
    Note that we assume below that this is no more than two bits.  */
