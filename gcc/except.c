@@ -616,11 +616,7 @@ rtx
 gen_exception_label ()
 {
   rtx lab;
-
-  push_obstacks_nochange ();
-  end_temporary_allocation ();
   lab = gen_label_rtx ();
-  pop_obstacks ();
   return lab;
 }
 
@@ -924,6 +920,7 @@ get_new_handler (handler, typeinfo)
   struct handler_info* ptr;
   ptr = (struct handler_info *) malloc (sizeof (struct handler_info));
   ptr->handler_label = handler;
+  ptr->handler_number = CODE_LABEL_NUMBER (handler);
   ptr->type_info = typeinfo;
   ptr->next = NULL;
 
@@ -2147,8 +2144,11 @@ output_exception_table_entry (file, n)
       if (handler == NULL)
         assemble_integer (GEN_INT (0), POINTER_SIZE / BITS_PER_UNIT, 1);
       else
-        assemble_integer (handler->handler_label, 
-                          POINTER_SIZE / BITS_PER_UNIT, 1);
+        {
+          ASM_GENERATE_INTERNAL_LABEL (buf, "L", handler->handler_number);
+          sym = gen_rtx_SYMBOL_REF (Pmode, buf);
+          assemble_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
+        }
 
       if (flag_new_exceptions)
         {
@@ -2394,7 +2394,6 @@ check_exception_handler_labels ()
 void
 init_eh ()
 {
-  
   first_rethrow_symbol = create_rethrow_ref (0);
   final_rethrow = gen_exception_label ();
   last_rethrow_symbol = create_rethrow_ref (CODE_LABEL_NUMBER (final_rethrow));

@@ -99,12 +99,7 @@ get_label_from_map (map, i)
   rtx x = map->label_map[i];
 
   if (x == NULL_RTX)
-    {                     
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
-      x = map->label_map[i] = gen_label_rtx();
-      pop_obstacks ();
-    }
+    x = map->label_map[i] = gen_label_rtx();
 
   return x;
 }
