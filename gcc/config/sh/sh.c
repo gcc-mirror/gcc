@@ -693,7 +693,7 @@ prepare_move_operands (operands, mode)
       /* copy the source to a register */
       operands[1] = copy_to_mode_reg (mode, operands[1]);
     }
-  if ((mode == DImode || mode == SImode || mode == HImode || mode == QImode)
+  if ((mode == SImode || mode == HImode || mode == QImode)
       && GET_CODE (operands[1]) == CONST_INT)
     {
       return synth_constant (operands, mode);
@@ -2510,5 +2510,16 @@ sh_function_arg_partial_nregs (CUM, MODE, TYPE, NAMED)
 	  return NPARM_REGS - CUM;
 	}
     }
+  return 0;
+}
+
+/* Turn this on to recognise shift insns which aren't supported in the
+   hardware.  This will allow the combiner to notice more patterns,
+   but the down side is that the asm outputter will have to emit
+   several instructions for each shift which isn't possible in the
+   hardware, this makes scheduling perform badly .*/ 
+
+int fake_shift()
+{
   return 0;
 }

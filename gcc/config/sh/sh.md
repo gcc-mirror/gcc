@@ -634,7 +634,7 @@
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		   (match_operand:SI 2 "immediate_operand" "n")))
    (clobber (reg:SI 18))]
-  ""
+  "fake_shift()"
   "*return output_shift(\"shll\", operands[0], operands[2], ASHIFT);"
   [(set_attr "length" "12")
    (set_attr "in_delay_slot" "no")
@@ -727,7 +727,7 @@
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "n")))
    (clobber (reg:SI 18))]
-  ""
+  "fake_shift()"
   "* return output_shift (\"shlr\", operands[0], operands[2], LSHIFTRT);"
   [(set_attr "length" "12")
    (set_attr "in_delay_slot" "no")
