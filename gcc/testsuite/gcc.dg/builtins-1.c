@@ -30,9 +30,16 @@ double test_##FN(TYPE x) { return __builtin_##FN(x); } \
 float test_##FN##f(TYPE x) { return __builtin_##FN##f(x); } \
 long double test_##FN##l(TYPE x) { return __builtin_##FN##l(x); } 
 
+/* Test FP functions taking two arguments, the first argument is of a
+   supplied type.  */
+#define FPTEST2ARG1(FN, TYPE) \
+double test_##FN(TYPE x, double y) { return __builtin_##FN(x, y); } \
+float test_##FN##f(TYPE x, float y) { return __builtin_##FN##f(x, y); } \
+long double test_##FN##l(TYPE x, long double y) { return __builtin_##FN##l(x, y); } 
+
 /* Test FP functions taking two arguments, the second argument is of a
    supplied type.  */
-#define FPTEST2ARG(FN, TYPE) \
+#define FPTEST2ARG2(FN, TYPE) \
 double test_##FN(double x, TYPE y) { return __builtin_##FN(x, y); } \
 float test_##FN##f(float x, TYPE y) { return __builtin_##FN##f(x, y); } \
 long double test_##FN##l(long double x, TYPE y) { return __builtin_##FN##l(x, y); } 
@@ -70,6 +77,8 @@ FPTEST2     (copysign)
 FPTEST1     (cos)
 FPTEST1     (cosh)
 FPTEST2     (drem)
+FPTEST1     (erf)
+FPTEST1     (erfc)
 FPTEST1     (exp)
 FPTEST1     (exp10)
 FPTEST1     (exp2)
@@ -81,11 +90,16 @@ FPTEST3     (fma)
 FPTEST2     (fmax)
 FPTEST2     (fmin)
 FPTEST2     (fmod)
+FPTEST1     (gamma)
 FPTEST0     (huge_val)
 FPTEST2     (hypot)
 FPTEST1     (ilogb)
 FPTEST0     (inf)
-FPTEST2ARG  (ldexp, int)
+FPTEST1     (j0)
+FPTEST1     (j1)
+FPTEST2ARG1 (jn, int)
+FPTEST2ARG2 (ldexp, int)
+FPTEST1     (lgamma)
 FPTEST1RET  (llrint, long long)
 FPTEST1RET  (llround, long long)
 FPTEST1     (log)
@@ -106,11 +120,16 @@ FPTEST2     (remainder)
 FPTEST1     (rint)
 FPTEST1     (round)
 FPTEST2     (scalb)
-FPTEST2ARG  (scalbln, int)
-FPTEST2ARG  (scalbn, int)
+FPTEST2ARG2 (scalbln, int)
+FPTEST2ARG2 (scalbn, int)
+FPTEST1     (significand)
 FPTEST1     (sin)
 FPTEST1     (sinh)
 FPTEST1     (sqrt)
 FPTEST1     (tan)
 FPTEST1     (tanh)
+FPTEST1     (tgamma)
 FPTEST1     (trunc)
+FPTEST1     (y0)
+FPTEST1     (y1)
+FPTEST2ARG1 (yn, int)

@@ -83,9 +83,24 @@ void test_builtin_##FN##f(float f1, float f2) \
 void test_builtin_##FN##l(long double ld1, long double ld2) \
 { if (__builtin_##FN##l(ld1,ld2) != __builtin_##FN##l(ld1,ld2)) link_failure_builtin_##FN##l(); }
 
-/* Test the __builtin_ functions taking two arguments, one FP and one
-   supplied type (with the "f" and "l" variants).  */
-#define BUILTIN_FPTEST2ARG(FN, TYPE) \
+/* Test the __builtin_ functions taking two arguments, the first one
+   is of a supplied type and the second one one is of FP type (with
+   the "f" and "l" variants).  */
+#define BUILTIN_FPTEST2ARG1(FN, TYPE) \
+extern void link_failure_builtin_##FN(void); \
+extern void link_failure_builtin_##FN##f(void); \
+extern void link_failure_builtin_##FN##l(void); \
+void test_builtin_##FN(TYPE x, double d) \
+{ if (__builtin_##FN(x,d) != __builtin_##FN(x,d)) link_failure_builtin_##FN(); } \
+void test_builtin_##FN##f(TYPE x, float f) \
+{ if (__builtin_##FN##f(x,f) != __builtin_##FN##f(x,f)) link_failure_builtin_##FN##f(); } \
+void test_builtin_##FN##l(TYPE x, long double ld) \
+{ if (__builtin_##FN##l(x,ld) != __builtin_##FN##l(x,ld)) link_failure_builtin_##FN##l(); }
+
+/* Test the __builtin_ functions taking two arguments, the first one
+   is of FP type and the second one one is of a supplied type (with
+   the "f" and "l" variants).  */
+#define BUILTIN_FPTEST2ARG2(FN, TYPE) \
 extern void link_failure_builtin_##FN(void); \
 extern void link_failure_builtin_##FN##f(void); \
 extern void link_failure_builtin_##FN##l(void); \
@@ -139,10 +154,26 @@ void test_##FN##f(float f1, float f2) \
 void test_##FN##l(long double ld1, long double ld2) \
 { if (FN##l(ld1,ld2) != FN##l(ld1,ld2)) link_failure_##FN##l(); }
 
-/* Test the functions taking two arguments, one FP and one of supplied
-   type (with the "f" and "l" variants).  */
-#define FPTEST2ARG(FN, TYPE) \
-BUILTIN_FPTEST2ARG(FN, TYPE) \
+/* Test the functions taking two arguments, the first one is of a
+   supplied type and the second one one is of FP type (with the "f"
+   and "l" variants).  */
+#define FPTEST2ARG1(FN, TYPE) \
+BUILTIN_FPTEST2ARG1(FN, TYPE) \
+extern void link_failure_##FN(void); \
+extern void link_failure_##FN##f(void); \
+extern void link_failure_##FN##l(void); \
+void test_##FN(TYPE x, double d) \
+{ if (FN(x,d) != FN(x,d)) link_failure_##FN(); } \
+void test_##FN##f(TYPE x, float f) \
+{ if (FN##f(x,f) != FN##f(x,f)) link_failure_##FN##f(); } \
+void test_##FN##l(TYPE x, long double ld) \
+{ if (FN##l(x,ld) != FN##l(x,ld)) link_failure_##FN##l(); }
+
+/* Test the functions taking two arguments, the first one is of FP
+   type and the second one one is of a supplied type (with the "f" and
+   "l" variants).  */
+#define FPTEST2ARG2(FN, TYPE) \
+BUILTIN_FPTEST2ARG2(FN, TYPE) \
 extern void link_failure_##FN(void); \
 extern void link_failure_##FN##f(void); \
 extern void link_failure_##FN##l(void); \
@@ -182,6 +213,8 @@ FPTEST2            (copysign)
 FPTEST1            (cos)
 FPTEST1            (cosh)
 FPTEST2            (drem)
+FPTEST1            (erf)
+FPTEST1            (erfc)
 FPTEST1            (exp)
 FPTEST1            (exp10)
 FPTEST1            (exp2)
@@ -193,11 +226,16 @@ FPTEST3            (fma)
 FPTEST2            (fmax)
 FPTEST2            (fmin)
 FPTEST2            (fmod)
+FPTEST1            (gamma)
 BUILTIN_FPTEST0    (huge_val)
 FPTEST2            (hypot)
 FPTEST1            (ilogb)
 BUILTIN_FPTEST0    (inf)
-FPTEST2ARG         (ldexp, int)
+FPTEST1            (j0)
+FPTEST1            (j1)
+FPTEST2ARG1        (jn, int)
+FPTEST2ARG2        (ldexp, int)
+FPTEST1            (lgamma)
 FPTEST1            (llrint)
 FPTEST1            (llround)
 FPTEST1            (log)
@@ -218,14 +256,19 @@ FPTEST2            (remainder)
 FPTEST1            (rint)
 FPTEST1            (round)
 FPTEST2            (scalb)
-FPTEST2ARG         (scalbln, int)
-FPTEST2ARG         (scalbn, int)
+FPTEST2ARG2        (scalbln, int)
+FPTEST2ARG2        (scalbn, int)
+FPTEST1            (significand)
 FPTEST1            (sin)
 FPTEST1            (sinh)
 FPTEST1            (sqrt)
 FPTEST1            (tan)
 FPTEST1            (tanh)
+FPTEST1            (tgamma)
 FPTEST1            (trunc)
+FPTEST1            (y0)
+FPTEST1            (y1)
+FPTEST2ARG1        (yn, int)
 
 /* Various other const builtins.  */
 TEST1         (abs, int)

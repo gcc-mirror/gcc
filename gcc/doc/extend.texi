@@ -4786,6 +4786,12 @@ v4si f (v4si a, v4si b, v4si c)
 @findex drem
 @findex dremf
 @findex dreml
+@findex erf
+@findex erfc
+@findex erfcf
+@findex erfcl
+@findex erff
+@findex erfl
 @findex exit
 @findex exp
 @findex exp10
@@ -4826,6 +4832,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex fputs
 @findex fputs_unlocked
 @findex fscanf
+@findex gamma
+@findex gammaf
+@findex gammal
 @findex gettext
 @findex hypot
 @findex hypotf
@@ -4835,10 +4844,22 @@ v4si f (v4si a, v4si b, v4si c)
 @findex ilogbl
 @findex imaxabs
 @findex index
+@findex j0
+@findex j0f
+@findex j0l
+@findex j1
+@findex j1f
+@findex j1l
+@findex jn
+@findex jnf
+@findex jnl
 @findex labs
 @findex ldexp
 @findex ldexpf
 @findex ldexpl
+@findex lgamma
+@findex lgammaf
+@findex lgammal
 @findex llabs
 @findex llrint
 @findex llrintf
@@ -4910,6 +4931,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex scalbn
 @findex scalbnf
 @findex scanfnl
+@findex significand
+@findex significandf
+@findex significandl
 @findex sin
 @findex sinf
 @findex sinh
@@ -4945,6 +4969,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex tanhf
 @findex tanhl
 @findex tanl
+@findex tgamma
+@findex tgammaf
+@findex tgammal
 @findex trunc
 @findex truncf
 @findex truncl
@@ -4955,6 +4982,15 @@ v4si f (v4si a, v4si b, v4si c)
 @findex vsnprintf
 @findex vsprintf
 @findex vsscanf
+@findex y0
+@findex y0f
+@findex y0l
+@findex y1
+@findex y1f
+@findex y1l
+@findex yn
+@findex ynf
+@findex ynl
 
 GCC provides a large number of built-in functions other than the ones
 mentioned above.  Some of these are for internal use in the processing
@@ -4981,10 +5017,15 @@ Outside strict ISO C mode (@option{-ansi}, @option{-std=c89} or
 @code{dcgettext}, @code{dgettext}, @code{dremf}, @code{dreml},
 @code{drem}, @code{exp10f}, @code{exp10l}, @code{exp10}, @code{ffsll},
 @code{ffsl}, @code{ffs}, @code{fprintf_unlocked}, @code{fputs_unlocked},
-@code{gettext}, @code{index}, @code{mempcpy}, @code{pow10f},
-@code{pow10l}, @code{pow10}, @code{printf_unlocked}, @code{rindex},
-@code{scalbf}, @code{scalbl}, @code{scalb}, @code{stpcpy},
-@code{strdup} and @code{strfmon}
+@code{gammaf}, @code{gammal}, @code{gamma}, @code{gettext},
+@code{index}, @code{j0f}, @code{j0l}, @code{j0}, @code{j1f}, @code{j1l},
+@code{j1}, @code{jnf}, @code{jnl}, @code{jn}, @code{mempcpy},
+@code{pow10f}, @code{pow10l}, @code{pow10}, @code{printf_unlocked},
+@code{rindex}, @code{scalbf}, @code{scalbl}, @code{scalb},
+@code{significandf}, @code{significandl}, @code{significand},
+@code{stpcpy}, @code{strdup}, @code{strfmon}, @code{y0f}, @code{y0l},
+@code{y0}, @code{y1f}, @code{y1l}, @code{y1}, @code{ynf}, @code{ynl} and
+@code{yn}
 may be handled as built-in functions.
 All these functions have corresponding versions
 prefixed with @code{__builtin_}, which may be used even in strict C89
@@ -4997,25 +5038,28 @@ The ISO C99 functions
 @code{cbrt}, @code{cimagf}, @code{cimagl}, @code{cimag}, @code{conjf},
 @code{conjl}, @code{conj}, @code{copysignf}, @code{copysignl},
 @code{copysign}, @code{crealf}, @code{creall}, @code{creal},
-@code{exp2f}, @code{exp2l}, @code{exp2}, @code{expm1f}, @code{expm1l},
-@code{expm1}, @code{fdimf}, @code{fdiml}, @code{fdim}, @code{fmaf},
-@code{fmal}, @code{fmaxf}, @code{fmaxl}, @code{fmax}, @code{fma},
-@code{fminf}, @code{fminl}, @code{fmin}, @code{hypotf}, @code{hypotl},
-@code{hypot}, @code{ilogbf}, @code{ilogbl}, @code{ilogb},
-@code{imaxabs}, @code{llabs}, @code{llrintf}, @code{llrintl},
-@code{llrint}, @code{llroundf}, @code{llroundl}, @code{llround},
-@code{log1pf}, @code{log1pl}, @code{log1p}, @code{log2f}, @code{log2l},
-@code{log2}, @code{logbf}, @code{logbl}, @code{logb}, @code{lrintf},
-@code{lrintl}, @code{lrint}, @code{lroundf}, @code{lroundl},
-@code{lround}, @code{nearbyintf}, @code{nearbyintl}, @code{nearbyint},
+@code{erfcf}, @code{erfcl}, @code{erfc}, @code{erff}, @code{erfl},
+@code{erf}, @code{exp2f}, @code{exp2l}, @code{exp2}, @code{expm1f},
+@code{expm1l}, @code{expm1}, @code{fdimf}, @code{fdiml}, @code{fdim},
+@code{fmaf}, @code{fmal}, @code{fmaxf}, @code{fmaxl}, @code{fmax},
+@code{fma}, @code{fminf}, @code{fminl}, @code{fmin}, @code{hypotf},
+@code{hypotl}, @code{hypot}, @code{ilogbf}, @code{ilogbl}, @code{ilogb},
+@code{imaxabs}, @code{lgammaf}, @code{lgammal}, @code{lgamma},
+@code{llabs}, @code{llrintf}, @code{llrintl}, @code{llrint},
+@code{llroundf}, @code{llroundl}, @code{llround}, @code{log1pf},
+@code{log1pl}, @code{log1p}, @code{log2f}, @code{log2l}, @code{log2},
+@code{logbf}, @code{logbl}, @code{logb}, @code{lrintf}, @code{lrintl},
+@code{lrint}, @code{lroundf}, @code{lroundl}, @code{lround},
+@code{nearbyintf}, @code{nearbyintl}, @code{nearbyint},
 @code{nextafterf}, @code{nextafterl}, @code{nextafter},
 @code{nexttowardf}, @code{nexttowardl}, @code{nexttoward},
 @code{remainderf}, @code{remainderl}, @code{remainder}, @code{rintf},
 @code{rintl}, @code{rint}, @code{roundf}, @code{roundl}, @code{round},
 @code{scalblnf}, @code{scalblnl}, @code{scalbln}, @code{scalbnf},
-@code{scalbnl}, @code{scalbn}, @code{snprintf}, @code{truncf},
-@code{truncl}, @code{trunc}, @code{vfscanf}, @code{vscanf},
-@code{vsnprintf} and @code{vsscanf},
+@code{scalbnl}, @code{scalbn}, @code{snprintf}, @code{tgammaf},
+@code{tgammal}, @code{tgamma}, @code{truncf}, @code{truncl},
+@code{trunc}, @code{vfscanf}, @code{vscanf}, @code{vsnprintf} and
+@code{vsscanf},
 are handled as built-in functions
 except in strict ISO C90 mode (@option{-ansi} or @option{-std=c89}).
 
