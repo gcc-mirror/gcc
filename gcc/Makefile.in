@@ -149,7 +149,7 @@ ZLIBINC = @zlibinc@
 TARGET_GETGROUPS_T = @TARGET_GETGROUPS_T@
 
 # Target to use when installing include directory.  Either
-# install-headers-tar or install-headers-cpio.
+# install-headers-tar, install-headers-cpio or install-headers-cp.
 INSTALL_HEADERS_DIR = @build_install_headers_dir@
 
 # Header files that are made available under the same name
@@ -2785,6 +2785,10 @@ install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # See discussion about the use of `pwd` above
 	cd `pwd`/include ; \
 	find . -print | cpio -pdum $(libsubdir)/include
+
+# Install the include directory using cp.
+install-headers-cp: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
+	cp -p -r include $(libsubdir)
 
 # Use this target to install the program `collect2' under the name `collect2'.
 install-collect2: collect2 installdirs
