@@ -1,3 +1,7 @@
+Fri Feb  7 23:24:28 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (sse2_nandv2di3): Fix.
+
 2003-03-07  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/i386.h (MS_AGGREGATE_RETURN): New define.
