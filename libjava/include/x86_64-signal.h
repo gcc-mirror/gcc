@@ -21,7 +21,7 @@ details.  */
 #define HANDLE_SEGV 1
 
 #define SIGNAL_HANDLER(_name)	\
-static void _Jv_##_name (int, siginfo_t *_sip, void *_p)
+static void _Jv_##_name (int, siginfo_t *, void *_p)
 
 extern "C" 
 {
@@ -41,7 +41,7 @@ do									\
      instruction:  the x86_64 exception handler expects			\
      the PC to point to the instruction after a call. */		\
   struct ucontext *_uc = (struct ucontext *)_p;				\
-  struct sigcontext *_sc = (struct sigcontext *) &_uc->uc_mcontext;	\
+  volatile struct sigcontext *_sc = (struct sigcontext *) &_uc->uc_mcontext; \
   _sc->rip += 2;							\
 }									\
 while (0)
