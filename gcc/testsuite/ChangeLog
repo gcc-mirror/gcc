@@ -1,3 +1,8 @@
+2005-01-17  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/19121
+	* gcc.c-torture/compile/pr19121.c: New test.
+
 2005-01-17  James E. Wilson  <wilson@specifixinc.com>
 
 	PR target/19357

@@ -913,6 +913,7 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
 	EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
 	  {
 	    add_may_alias (pi->name_mem_tag, referenced_var (j));
+	    add_may_alias (v_ann->type_mem_tag, referenced_var (j));
 	  }
 
       /* If the name tag is call clobbered, so is the type tag

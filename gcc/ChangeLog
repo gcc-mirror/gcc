@@ -1,3 +1,16 @@
+2005-01-17  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/19121
+	* tree-ssa-alias.c (compute_flow_sensitive_aliasing): When
+	adding aliases to a name tag, also add them to the pointer's
+	type tag.
+	* tree-ssa-copy.c (merge_alias_info): Do not merge flow
+	sensitive alias info at all.  Only check that the two pointers
+	have compatible pointed-to sets.
+	* tree-ssa.c (verify_name_tags): Verify that the alias set of
+	a pointer's type tag is a superset of the alias set of the
+	pointer's name tag.
+
 2005-01-17  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/19357
