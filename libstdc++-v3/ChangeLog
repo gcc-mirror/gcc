@@ -1,3 +1,12 @@
+2004-02-25  Carlo Wood  <carlo@alinoe.com>
+
+	* bits/demangle.h
+	namespace __gnu_cxx::demangler
+	(session<Allocator>::qualifier_list_Allocator): Add
+	(session<Allocator>::M_qualifier_list_alloc): Add
+	(session<Allocator>::decode_type_with_postfix):
+	Use M_qualifier_list_alloc instead of calling operator new/delete.
+
 2004-02-24  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14252
@@ -163,7 +172,7 @@
 	* docs/html/ext/mt_allocator.html: Change due to that deallocated
 	blocks now are added to the front of freelists. The reason to this
 	approach is also explained.
-        
+
 2004-02-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
@@ -776,11 +785,11 @@
 2004-01-29  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 
 	* config/local/generic/c_locale.h: Change ::malloc() to new char[].
-  	* config/local/gnu/c_locale.h: Change ::malloc() to new char[].
-  	* include/bits/stl_tempbuf.h: Convert _Temporary_buffer to use
+	* config/local/gnu/c_locale.h: Change ::malloc() to new char[].
+	* include/bits/stl_tempbuf.h: Convert _Temporary_buffer to use
 	std::get_temporary_buffer() instead of duplicating its code.
 	Update to C++STYLE conventions.
-  	* include/std/std_memory.h (get_temporary_buffer): Use ::operator
+	* include/std/std_memory.h (get_temporary_buffer): Use ::operator
 	new() instead of std::malloc().
 	(return_temporary_buffer): Use ::operator delete() instead of
 	std::free().
