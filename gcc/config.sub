@@ -360,9 +360,9 @@ case $basic_machine in
 		basic_machine=a29k-amd
 		os=-ebmon
 		;;
-	h8300hds)
+	h8300hms)
 		basic_machine=h8300-hitachi
-		os=-hds
+		os=-hms
 		;;
 	harris)
 		basic_machine=m88k-harris
@@ -485,7 +485,7 @@ case $os in
 	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]* | -hpux* \
 	      | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
-	      | -nindy* | -vxworks* | -ebmon* | -hds*  \
+	      | -nindy* | -vxworks* | -ebmon* | -hms*  \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* )
 		;;
 	-sunos5*)
