@@ -3,6 +3,11 @@
 	* check-init.c (check_init): Take into account both types of
         `throw's when checking for uninitialized variables.
 
+Fri Dec 10 21:53:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * parse.y (java_complete_lhs): Force convertion of array
+        dimensions to int_type_node, that's what runtime's ABI expects.
+
 Fri Dec 10 16:13:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h (EXPR_WFL_QUALIFICATION): Temporary uses the third
