@@ -248,12 +248,14 @@ delete_insn_chain_and_edges (first, last)
    the note and basic block struct in BB_NOTE, if any and do not grow
    BASIC_BLOCK chain and should be used directly only by CFG construction code.
    END can be NULL in to create new empty basic block before HEAD.  Both END
-   and HEAD can be NULL to create basic block at the end of INSN chain.  */
+   and HEAD can be NULL to create basic block at the end of INSN chain.
+   AFTER is the basic block we should be put after.  */
 
 basic_block
-create_basic_block_structure (index, head, end, bb_note)
+create_basic_block_structure (index, head, end, bb_note, after)
      int index;
      rtx head, end, bb_note;
+     basic_block after;
 {
   basic_block bb;
 
@@ -311,6 +313,7 @@ create_basic_block_structure (index, head, end, bb_note)
   bb->end = end;
   bb->index = index;
   bb->flags = BB_NEW;
+  link_block (bb, after);
   BASIC_BLOCK (index) = bb;
   if (basic_block_for_insn)
     update_bb_for_insn (bb);
@@ -323,17 +326,18 @@ create_basic_block_structure (index, head, end, bb_note)
 }
 
 /* Create new basic block consisting of instructions in between HEAD and END
-   and place it to the BB chain at position INDEX.  END can be NULL in to
+   and place it to the BB chain after block AFTER.  END can be NULL in to
    create new empty basic block before HEAD.  Both END and HEAD can be NULL to
    create basic block at the end of INSN chain.  */
 
 basic_block
-create_basic_block (index, head, end)
-     int index;
+create_basic_block (head, end, after)
      rtx head, end;
+     basic_block after;
 {
   basic_block bb;
   int i;
+  int index = after->index + 1;
 
   /* Place the new block just after the block being split.  */
   VARRAY_GROW (basic_block_info, ++n_basic_blocks);
@@ -349,7 +353,7 @@ create_basic_block (index, head, end)
       tmp->index = i;
     }
 
-  bb = create_basic_block_structure (index, head, end, NULL);
+  bb = create_basic_block_structure (index, head, end, NULL, after);
   bb->aux = NULL;
   return bb;
 }
@@ -537,7 +541,7 @@ split_block (bb, insn)
     return 0;
 
   /* Create the new basic block.  */
-  new_bb = create_basic_block (bb->index + 1, NEXT_INSN (insn), bb->end);
+  new_bb = create_basic_block (NEXT_INSN (insn), bb->end, bb);
   new_bb->count = bb->count;
   new_bb->frequency = bb->frequency;
   new_bb->loop_depth = bb->loop_depth;
@@ -998,7 +1002,7 @@ force_nonfallthru_and_redirect (e, target)
       /* We can't redirect the entry block.  Create an empty block at the
          start of the function which we use to add the new jump.  */
       edge *pe1;
-      basic_block bb = create_basic_block (0, e->dest->head, NULL);
+      basic_block bb = create_basic_block (e->dest->head, NULL, ENTRY_BLOCK_PTR);
 
       /* Change the existing edge's source to be the new block, and add
 	 a new edge from the entry block to the new block.  */
@@ -1019,7 +1023,7 @@ force_nonfallthru_and_redirect (e, target)
       /* Create the new structures.  */
       note = last_loop_beg_note (e->src->end);
       jump_block
-	= create_basic_block (e->src->index + 1, NEXT_INSN (note), NULL);
+	= create_basic_block (NEXT_INSN (note), NULL, e->src);
       jump_block->count = e->count;
       jump_block->frequency = EDGE_FREQUENCY (e);
       jump_block->loop_depth = target->loop_depth;
@@ -1286,8 +1290,7 @@ split_edge (edge_in)
   else
     before = NULL_RTX;
 
-  bb = create_basic_block (edge_in->dest == EXIT_BLOCK_PTR ? n_basic_blocks
-			   : edge_in->dest->index, before, NULL);
+  bb = create_basic_block (before, NULL, edge_in->dest->prev_bb);
   bb->count = edge_in->count;
   bb->frequency = EDGE_FREQUENCY (edge_in);
 
@@ -1719,11 +1722,48 @@ verify_flow_info ()
   size_t *edge_checksum;
   rtx x;
   int i, last_bb_num_seen, num_bb_notes, err = 0;
+  basic_block bb, last_bb_seen;
 
   bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
   last_visited = (basic_block *) xcalloc (n_basic_blocks + 2,
 					  sizeof (basic_block));
   edge_checksum = (size_t *) xcalloc (n_basic_blocks + 2, sizeof (size_t));
+
+  /* Check bb chain & numbers.  */
+  last_bb_seen = ENTRY_BLOCK_PTR;
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb, NULL, next_bb)
+    {
+      if (bb != EXIT_BLOCK_PTR
+	  && bb != BASIC_BLOCK (bb->index))
+	{
+	  error ("bb %d on wrong place", bb->index);
+	  err = 1;
+	}
+
+      if (bb->prev_bb != last_bb_seen)
+	{
+	  error ("prev_bb of %d should be %d, not %d",
+		 bb->index, last_bb_seen->index, bb->prev_bb->index);
+	  err = 1;
+	}
+
+      /* For now, also check that we didn't change the order.  */
+      if (bb != EXIT_BLOCK_PTR && bb->index != last_bb_seen->index + 1)
+	{
+	  error ("Wrong order of blocks %d and %d",
+		 last_bb_seen->index, bb->index);
+	  err = 1;
+	}
+
+      if (bb == EXIT_BLOCK_PTR && last_bb_seen->index != n_basic_blocks - 1)
+	{
+	  error ("Only %d of %d blocks in chain",
+		 last_bb_seen->index + 1, n_basic_blocks);
+	  err = 1;
+	}
+
+      last_bb_seen = bb;
+    }
 
   for (i = n_basic_blocks - 1; i >= 0; i--)
     {

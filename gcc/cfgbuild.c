@@ -476,6 +476,7 @@ find_basic_blocks_1 (f)
   rtx trll = NULL_RTX;
   rtx head = NULL_RTX;
   rtx end = NULL_RTX;
+  basic_block prev = ENTRY_BLOCK_PTR;
 
   /* We process the instructions in a slightly different way than we did
      previously.  This is so that we see a NOTE_BASIC_BLOCK after we have
@@ -492,7 +493,7 @@ find_basic_blocks_1 (f)
       if ((GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == BARRIER)
 	  && head)
 	{
-	  create_basic_block_structure (i++, head, end, bb_note);
+	  prev = create_basic_block_structure (i++, head, end, bb_note, prev);
 	  head = end = NULL_RTX;
 	  bb_note = NULL_RTX;
 	}
@@ -506,7 +507,7 @@ find_basic_blocks_1 (f)
 
       if (head && control_flow_insn_p (insn))
 	{
-	  create_basic_block_structure (i++, head, end, bb_note);
+	  prev = create_basic_block_structure (i++, head, end, bb_note, prev);
 	  head = end = NULL_RTX;
 	  bb_note = NULL_RTX;
 	}
@@ -588,7 +589,7 @@ find_basic_blocks_1 (f)
     }
 
   if (head != NULL_RTX)
-    create_basic_block_structure (i++, head, end, bb_note);
+    create_basic_block_structure (i++, head, end, bb_note, prev);
   else if (bb_note)
     delete_insn (bb_note);
 
@@ -633,6 +634,8 @@ find_basic_blocks (f, nregs, file)
     }
 
   n_basic_blocks = count_basic_blocks (f);
+  ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
+  EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
 
   /* Size the basic block table.  The actual structures will be allocated
      by find_basic_blocks_1, since we want to keep the structure pointers

@@ -723,6 +723,9 @@ merge_blocks_move_predecessor_nojumps (a, b)
   a->index = b->index;
   b->index = index;
 
+  unlink_block (a);
+  link_block (a, b->prev_bb);
+
   /* Now blocks A and B are contiguous.  Merge them.  */
   merge_blocks_nomove (a, b);
 }

@@ -93,6 +93,8 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* global_live_at_end */
     NULL,			/* aux */
     ENTRY_BLOCK,		/* index */
+    NULL,			/* prev_bb */
+    EXIT_BLOCK_PTR,		/* next_bb */
     0,				/* loop_depth */
     0,				/* count */
     0,				/* frequency */
@@ -111,6 +113,8 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* global_live_at_end */
     NULL,			/* aux */
     EXIT_BLOCK,			/* index */
+    ENTRY_BLOCK_PTR,		/* prev_bb */
+    NULL,			/* next_bb */
     0,				/* loop_depth */
     0,				/* count */
     0,				/* frequency */
@@ -220,12 +224,35 @@ alloc_block ()
   return bb;
 }
 
+/* Link block B to chain after AFTER.  */
+void
+link_block (b, after)
+     basic_block b, after;
+{
+  b->next_bb = after->next_bb;
+  b->prev_bb = after;
+  after->next_bb = b;
+  b->next_bb->prev_bb = b;
+}
+  
+/* Unlink block B from chain.  */
+void
+unlink_block (b)
+     basic_block b;
+{
+  b->next_bb->prev_bb = b->prev_bb;
+  b->prev_bb->next_bb = b->next_bb;
+}
+  
+
 /* Remove block B from the basic block array and compact behind it.  */
 
 void
 expunge_block_nocompact (b)
      basic_block b;
 {
+  unlink_block (b);
+
   /* Invalidate data to make bughunting easier.  */
   memset (b, 0, sizeof *b);
   b->index = -3;
@@ -521,6 +548,8 @@ dump_flow_info (file)
 
       fprintf (file, "\nBasic block %d: first insn %d, last %d, ",
 	       i, INSN_UID (bb->head), INSN_UID (bb->end));
+      fprintf (file, "prev %d, next %d, ",
+	       bb->prev_bb->index, bb->next_bb->index);
       fprintf (file, "loop_depth %d, count ", bb->loop_depth);
       fprintf (file, HOST_WIDEST_INT_PRINT_DEC, bb->count);
       fprintf (file, ", freq %i.\n", bb->frequency);
