@@ -1,5 +1,8 @@
 2003-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (java_build_function_call_expr): Renamed from
+	build_function_call_expr.  All callers changed.
+
 	* Make-lang.in (java/jcf-parse.o): Depend on $(TM_P_H).
 	* jcf-parse.c: Include tm_p.h.
 
