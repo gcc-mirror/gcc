@@ -273,7 +273,7 @@ GLIBCXX_3.4.3 {
 
     _ZN9__gnu_cxx9free_list12_S_free_listE;
     _ZN9__gnu_cxx9free_list12_S_bfl_mutexE;
-    _ZN9__gnu_cxx9free_list6_M_getEj;
+    _ZN9__gnu_cxx9free_list6_M_getE*;
     _ZN9__gnu_cxx9free_list8_M_clearEv;
 
     # stub functions from libmath

@@ -41,11 +41,11 @@ namespace __gnu_cxx
     <bitmap_allocator<wchar_t>::_Alloc_block*, 
      bitmap_allocator<wchar_t>::_Alloc_block*> >;
 
-    template class __mini_vector<unsigned int*>;
+    template class __mini_vector<size_t*>;
 
-    template unsigned int** __lower_bound
-    (unsigned int**, unsigned int**, 
-     unsigned int const&, free_list::_LT_pointer_compare);
+    template size_t** __lower_bound
+    (size_t**, size_t**, 
+     size_t const&, free_list::_LT_pointer_compare);
   }
 
 #if defined __GTHREADS
@@ -53,9 +53,9 @@ namespace __gnu_cxx
 #endif
   free_list::vector_type free_list::_S_free_list;
 
-  unsigned int*
+  size_t*
   free_list::
-  _M_get(unsigned int __sz) throw(std::bad_alloc)
+  _M_get(size_t __sz) throw(std::bad_alloc)
   {
 #if defined __GTHREADS
     _Lock __bfl_lock(&_S_bfl_mutex);
@@ -77,15 +77,15 @@ namespace __gnu_cxx
 	// Try twice to get the memory: once directly, and the 2nd
 	// time after clearing the free list. If both fail, then
 	// throw std::bad_alloc().
-	unsigned int __ctr = 2;
+	int __ctr = 2;
 	while (__ctr)
 	  {
-	    unsigned int* __ret = 0;
+	    size_t* __ret = 0;
 	    --__ctr;
 	    try
 	      {
-		__ret = reinterpret_cast<unsigned int*>
-		  (::operator new(__sz + sizeof(unsigned int)));
+		__ret = reinterpret_cast<size_t*>
+		  (::operator new(__sz + sizeof(size_t)));
 	      }
 	    catch(...)
 	      {
@@ -94,20 +94,18 @@ namespace __gnu_cxx
 	    if (!__ret)
 	      continue;
 	    *__ret = __sz;
-	    return reinterpret_cast<unsigned int*>
-	      (reinterpret_cast<char*>(__ret) + sizeof(unsigned int));
+	    return __ret + 1;
 	  }
 	throw std::bad_alloc();
       }
     else
       {
-	unsigned int* __ret = *__temp;
+	size_t* __ret = *__temp;
 	_S_free_list.erase(__temp);
 #if defined __GTHREADS
 	__bfl_lock._M_unlock();
 #endif
-	return reinterpret_cast<unsigned int*>
-	  (reinterpret_cast<char*>(__ret) + sizeof(unsigned int));
+	return __ret + 1;
       }
   }
 
