@@ -6573,7 +6573,7 @@ While picking a specific @var{cpu type} will schedule things appropriately
 for that particular chip, the compiler will not generate any code that
 does not run on the i386 without the @samp{-march=@var{cpu type}} option
 being used.  @samp{i586} is equivalent to @samp{pentium} and @samp{i686}
-is equivalent to @samp{pentiumpro}.  @samp{k6} and @samp{athlon} sre the
+is equivalent to @samp{pentiumpro}.  @samp{k6} and @samp{athlon} are the
 AMD chips as opposed to the Intel ones.
 
 @item -march=@var{cpu type}

@@ -1,3 +1,8 @@
+2001-03-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi: Fix typo.
+	* gcc.1: Regenerate.
+
 2001-03-09  Zack Weinberg  <zackw@stanford.edu>
 
 	* configure.in: Prune nonexistent files from build_xm_file,
