@@ -27,9 +27,8 @@
 /* Locate the FDE entry for a given address, using Darwin's keymgr support.  */
 
 #include "tconfig.h"
-#include "tsystem.h"
-#include "coretypes.h"
-#include "tm.h"
+#include <string.h>
+#include <stdlib.h>
 #include "dwarf2.h"
 #include "unwind.h"
 #define NO_BASE_OF_ENCODED_VALUE
