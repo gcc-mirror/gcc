@@ -1,5 +1,9 @@
 2004-09-06  James E Wilson  <wilson@specifixinc.com>
 
+	* config/mips/mips.md (movsf_hardfloat, movdf_hardfloat_64bit,
+	movdf_hardfloat_32bit): Split fG into two alternatives.
+	(movv2sf_hardfloat_64bit): Split fYG into two alternatives.
+
 	* emit-rtl.c (try_split): Check INSN_P before may_trap_p call.
 
 2004-09-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
