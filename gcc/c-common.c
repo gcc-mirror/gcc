@@ -4732,8 +4732,11 @@ cb_register_builtins (pfile)
 	cpp_define (pfile, "__EXCEPTIONS");
       if (warn_deprecated)
 	cpp_define (pfile, "__DEPRECATED");
-      cpp_define (pfile, "__GXX_ABI_VERSION=102");
     }
+
+  /* represents the C++ ABI version, always defined so it can be used while
+     preprocessing C and assembler.  */
+  cpp_define (pfile, "__GXX_ABI_VERSION=102");
 
   /* libgcc needs to know this.  */
   if (USING_SJLJ_EXCEPTIONS)
