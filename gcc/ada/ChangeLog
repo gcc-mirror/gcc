@@ -1,3 +1,8 @@
+2001-12-04  Ed Schonberg <schonber@gnat.com>
+
+	* sem_warn.adb (Output_Unreferenced_Messages): Extend previous fix to 
+	constants.
+
 2001-12-04  Robert Dewar <dewar@gnat.com>
 
 	* errout.adb: Minor reformatting

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.24 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -926,7 +926,9 @@ package body Sem_Warn is
                   end if;
 
                when E_Constant =>
-                  if Present (Renamed_Object (E)) then
+                  if Present (Renamed_Object (E))
+                    and then Comes_From_Source (Renamed_Object (E))
+                  then
                      Error_Msg_N ("renamed constant & is not referenced?", E);
                   else
                      Error_Msg_N ("constant & is not referenced?", E);
