@@ -352,6 +352,12 @@ do {									\
    ? MAX (MAX ((COMPUTED), (SPECIFIED)), 128)          			 \
    : MAX ((COMPUTED), (SPECIFIED)))
 
+/* Specify padding for the last element of a block move between
+   registers and memory.  FIRST is nonzero if this is the only
+   element.  */
+#define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
+  (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
+
 /* XXX: Darwin supports neither .quad, or .llong, but it also doesn't
    support 64 bit PowerPC either, so this just keeps things happy.  */
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
