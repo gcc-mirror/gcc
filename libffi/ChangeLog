@@ -1,3 +1,8 @@
+2004-09-05  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/powerpc/darwin.S: Fix comments and identation.
+	* src/powerpc/darwin_closure.S: Likewise.
+
 2004-09-02  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* src/powerpc/ffi_darwin.c: Add flag for longdouble return values.
