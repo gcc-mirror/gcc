@@ -642,6 +642,11 @@ name:
 
 simple_name:
 	identifier		/* Default rule */
+	{
+	  if (strchr (IDENTIFIER_POINTER (EXPR_WFL_NODE ($$)), '$'))
+	    parse_error_context ($$, "Invalide name `%s'",
+				 IDENTIFIER_POINTER (EXPR_WFL_NODE ($$)));
+	}
 ;
 
 qualified_name:
@@ -13335,7 +13340,7 @@ resolve_type_during_patch (type)
 {
   if (unresolved_type_p (type, NULL))
     {
-      tree type_decl = resolve_no_layout (EXPR_WFL_NODE (type), NULL_TREE);
+      tree type_decl = resolve_no_layout (EXPR_WFL_NODE (type), type);
       if (!type_decl)
 	{
 	  parse_error_context (type, 
