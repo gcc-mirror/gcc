@@ -145,7 +145,7 @@ convert_to_integer (type, expr)
       if (TREE_CODE_CLASS (ex_form) == '<'
 	  || ex_form == TRUTH_AND_EXPR || ex_form == TRUTH_ANDIF_EXPR
 	  || ex_form == TRUTH_OR_EXPR || ex_form == TRUTH_ORIF_EXPR
-	  || ex_form == TRUTH_NOT_EXPR)
+	  || ex_form == TRUTH_XOR_EXPR || ex_form == TRUTH_NOT_EXPR)
 	{
 	  TREE_TYPE (expr) = type;
 	  return expr;
