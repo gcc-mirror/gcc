@@ -1,3 +1,8 @@
+Mon May 24 16:44:09 1999  Jakub Jelinek  <jj@ultra.linux.cz>
+
+	* sparc/linux64.h (ASM_OUTPUT_CONSTRUCTOR): Define.
+	(ASM_OUTPUT_DESTRUCTOR): Define.
+
 Mon May 24 14:35:24 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (strength_reduce): Do not clear NOT_EVERY_ITERATION at the
