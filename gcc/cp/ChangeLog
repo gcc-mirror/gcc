@@ -1,3 +1,7 @@
+2003-03-16   Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* decl.c (binding_for_name): Fix initialization thinko.
+
 2003-03-15  Gabriel Dos Reis <gdr@integrable-solutions.net>
 	
 	Compile-time improvement: 2/n.
