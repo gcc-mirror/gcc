@@ -3514,7 +3514,8 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
       return NULL_TREE;
     }
 
-  if (TYPE_P (declspecs->type)
+  if (declspecs->type
+      && TYPE_P (declspecs->type)
       && ((TREE_CODE (declspecs->type) != TYPENAME_TYPE
 	   && IS_AGGR_TYPE (declspecs->type))
 	  || TREE_CODE (declspecs->type) == ENUMERAL_TYPE))
