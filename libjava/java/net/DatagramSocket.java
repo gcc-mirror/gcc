@@ -89,6 +89,11 @@ public class DatagramSocket
   private int remotePort = -1;
 
   /**
+   * Indicates when the socket is closed.
+   */
+  private boolean closed = false;
+
+  /**
    * Creates a DatagramSocket from a specified DatagramSocketImpl instance
    *
    * @param impl The DatagramSocketImpl the socket will be created from
@@ -201,9 +206,13 @@ public class DatagramSocket
    */
   public void close()
   {
-    impl.close();
-    remoteAddress = null;
-    remotePort = -1;
+    if (!closed)
+      {
+        impl.close();
+        remoteAddress = null;
+        remotePort = -1;
+        closed = true;
+      }
   }
 
   /**
@@ -217,9 +226,6 @@ public class DatagramSocket
    */
   public InetAddress getInetAddress()
   {
-    if (!isConnected ())
-      return null;
-
     return remoteAddress;
   }
 
@@ -234,9 +240,6 @@ public class DatagramSocket
    */
   public int getPort()
   {
-    if (!isConnected ())
-      return -1;
-    
     return remotePort;
   }
 
@@ -265,7 +268,7 @@ public class DatagramSocket
     //   s.checkConnect("localhost", -1);
     try
       {
-	return (InetAddress)impl.getOption(SocketOptions.SO_BINDADDR);
+        return (InetAddress)impl.getOption(SocketOptions.SO_BINDADDR);
       }
     catch (SocketException ex)
       {
@@ -273,12 +276,12 @@ public class DatagramSocket
 
     try
       {
-	return InetAddress.getLocalHost();
+        return InetAddress.getLocalHost();
       }
     catch (UnknownHostException ex)
       {
-	// FIXME: This should never happen, so how can we avoid this construct?
-	return null;
+        // FIXME: This should never happen, so how can we avoid this construct?
+        return null;
       }
   }
 
@@ -469,7 +472,7 @@ public class DatagramSocket
 
   /**
    * This method disconnects this socket from the address/port it was
-   * conencted to.  If the socket was not connected in the first place,
+   * connected to.  If the socket was not connected in the first place,
    * this method does nothing.
    * 
    * @since 1.2
@@ -477,6 +480,8 @@ public class DatagramSocket
   public void disconnect()
   {
     impl.disconnect();
+    remoteAddress = null;
+    remotePort = -1;
   }
 
   /**
@@ -596,7 +601,7 @@ public class DatagramSocket
    */
   public boolean isClosed()
   {
-    return !impl.getFileDescriptor().valid();
+    return closed;
   }
 
   /**

@@ -1,3 +1,13 @@
+2003-03-01  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java
+	(closed): New member variable.
+	(close): Use closed variable.
+	(getInetAddress): No need to call isConnected().
+	(getPort): No need to call isConnected().
+	(disconnect): Reset remoteAddress and remotePort, fixed typo.
+	(isClosed): Reimplemented.
+
 2003-03-01  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* java/io/File (getAbsolutePath): Prefix drive specifier on
