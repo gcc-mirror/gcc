@@ -2066,7 +2066,7 @@ convert_arguments (typelist, values, name)
    In addition to constructing the expression,
    we check for operands that were written with other binary operators
    in a way that is likely to confuse the user.  */
-   
+
 tree
 parser_build_binary_op (code, arg1, arg2)
      enum tree_code code;
@@ -2132,12 +2132,12 @@ parser_build_binary_op (code, arg1, arg2)
 	}
     }
 
-  class = TREE_CODE_CLASS (TREE_CODE (result));
-
   /* Similarly, check for cases like 1<=i<=10 that are probably errors.  */
-  if (class == '<' && extra_warnings
+  if (TREE_CODE_CLASS (code) == '<' && extra_warnings
       && (TREE_CODE_CLASS (code1) == '<' || TREE_CODE_CLASS (code2) == '<'))
     warning ("comparisons like X<=Y<=Z do not have their mathematical meaning");
+
+  class = TREE_CODE_CLASS (TREE_CODE (result));
 
   /* Record the code that was specified in the source,
      for the sake of warnings about confusing nesting.  */
