@@ -1783,7 +1783,9 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type)
 	    ? (int) GET_MODE_SIZE (mode)
 	    : int_size_in_bytes (type)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
-  if ((*arg_words + words > max) && (*arg_words < max))
+  if (*arg_words < max
+      && (targetm.calls.must_pass_in_stack (mode, type)
+	  || *arg_words + words > max))
     *arg_words = max;
 
   *arg_words += words;
@@ -2619,7 +2621,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
      are aligned differently.  */
 
 
-  if (BYTES_BIG_ENDIAN)
+  if (BYTES_BIG_ENDIAN && TREE_CODE (type_size) == INTEGER_CST)
     {
       t = size_int (PARM_BOUNDARY / BITS_PER_UNIT);
       t = fold (build (GE_EXPR, boolean_type_node, type_size, t));
