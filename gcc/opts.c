@@ -128,6 +128,12 @@ bool warn_unused_value;
 /* Hack for cooperation between set_Wunused and set_Wextra.  */
 static bool maybe_warn_unused_parameter;
 
+/* Columns of --help display.  */
+static unsigned int columns = 80;
+
+/* What to print when a switch has no documentation.  */
+static const char undocumented_msg[] = N_("This switch lacks documentation");
+
 static size_t find_opt (const char *, int);
 static int common_handle_option (size_t scode, const char *arg, int value);
 static void handle_param (const char *);
@@ -137,9 +143,11 @@ static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const char *, const struct cl_option *,
 				 unsigned int lang_mask);
 static void handle_options (unsigned int, const char **, unsigned int);
-static void wrap_help (const char *help, const char *item, int item_width);
+static void wrap_help (const char *help, const char *item, unsigned int);
 static void print_help (void);
+static void print_param_help (void);
 static void print_filtered_help (unsigned int flag);
+static unsigned int print_switch (const char *text, unsigned int indent);
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS
@@ -1487,39 +1495,104 @@ static void
 print_help (void)
 {
   size_t i;
+  const char *p;
+
+  GET_ENVIRONMENT (p, "COLUMNS");
+  if (p)
+    {
+      int value = atoi (p);
+      if (value > 0)
+	columns = value;
+    }
 
   puts (_("The following options are language-independent:\n"));
 
   print_filtered_help (CL_COMMON);
+  print_param_help ();
 
   for (i = 0; lang_names[i]; i++)
     {
-      printf (_("\nThe %s front end recognizes the following options:\n"),
+      printf (_("The %s front end recognizes the following options:\n\n"),
 	      lang_names[i]);
       print_filtered_help (1U << i);
     }
 
-  puts ( "\n" );
   display_help ();
+}
+
+/* Print the help for --param.  */
+static void
+print_param_help (void)
+{
+  size_t i;
+
+  puts (_("The --param option recognizes the following as parameters:\n"));
+
+  for (i = 0; i < LAST_PARAM; i++)
+    {
+      const char *help = compiler_params[i].help;
+      const char *param = compiler_params[i].option;
+
+      if (help == NULL || *help == '\0')
+	help = undocumented_msg;
+
+      /* Get the translation.  */
+      help = _(help);
+
+      wrap_help (help, param, strlen (param));
+    }
+
+  putchar ('\n');
 }
 
 /* Print help for a specific front-end, etc.  */
 static void
 print_filtered_help (unsigned int flag)
 {
-  size_t i, len;
-  unsigned int filter;
+  unsigned int i, len, filter, indent = 0;
+  bool duplicates = false;
+  const char *help, *opt, *tab;
+  static char *printed;
 
-  /* Don't print COMMON options twice.  */
-  filter = flag;
-  if (flag != CL_COMMON)
-    filter |= CL_COMMON;
+  if (flag == CL_COMMON)
+    {
+      filter = flag;
+      if (!printed)
+	printed = xmalloc (cl_options_count);
+      memset (printed, 0, cl_options_count);
+    }
+  else
+    {
+      /* Don't print COMMON options twice.  */
+      filter = flag | CL_COMMON;
+
+      for (i = 0; i < cl_options_count; i++)
+	{
+	  if ((cl_options[i].flags & filter) != flag)
+	    continue;
+
+	  /* Skip help for internal switches.  */
+	  if (cl_options[i].flags & CL_UNDOCUMENTED)
+	    continue;
+
+	  /* Skip switches that have already been printed, mark them to be
+	     listed later.  */
+	  if (printed[i])
+	    {
+	      duplicates = true;
+	      indent = print_switch (cl_options[i].opt_text, indent);
+	    }
+	}
+
+      if (duplicates)
+	{
+	  putchar ('\n');
+	  putchar ('\n');
+	}
+    }
 
   for (i = 0; i < cl_options_count; i++)
     {
-      const char *help;
-      const char *opt, *tab;
-
       if ((cl_options[i].flags & filter) != flag)
 	continue;
 
@@ -1527,10 +1600,15 @@ print_filtered_help (unsigned int flag)
       if (cl_options[i].flags & CL_UNDOCUMENTED)
 	continue;
 
-      /* During transition, ignore switches with no help.  */
+      /* Skip switches that have already been printed.  */
+      if (printed[i])
+	continue;
+
+      printed[i] = true;
+
       help = cl_options[i].help;
       if (!help)
-	continue;
+	help = undocumented_msg;
 
       /* Get the translation.  */
       help = _(help);
@@ -1550,14 +1628,42 @@ print_filtered_help (unsigned int flag)
 
       wrap_help (help, opt, len);
     }
+
+  putchar ('\n');
+}
+
+/* Output ITEM, of length ITEM_WIDTH, in the left column, followed by
+   word-wrapped HELP in a second column.  */
+static unsigned int
+print_switch (const char *text, unsigned int indent)
+{
+  unsigned int len = strlen (text) + 1; /* trailing comma */
+
+  if (indent)
+    {
+      putchar (',');
+      if (indent + len > columns)
+	{
+	  putchar ('\n');
+	  putchar (' ');
+	  indent = 1;
+	}
+    }
+  else
+    putchar (' ');
+
+  putchar (' ');
+  fputs (text, stdout);
+
+  return indent + len + 1;
 }
 
 /* Output ITEM, of length ITEM_WIDTH, in the left column, followed by
    word-wrapped HELP in a second column.  */
 static void
-wrap_help (const char *help, const char *item, int item_width)
+wrap_help (const char *help, const char *item, unsigned int item_width)
 {
-  const int columns = 80, col_width = 27;
+  unsigned int col_width = 27;
   unsigned int remaining, room, len;
 
   remaining = strlen (help);
@@ -1565,6 +1671,8 @@ wrap_help (const char *help, const char *item, int item_width)
   do
     {
       room = columns - 3 - MAX (col_width, item_width);
+      if (room > columns)
+	room = 0;
       len = remaining;
 
       if (room < len)
@@ -1577,7 +1685,9 @@ wrap_help (const char *help, const char *item, int item_width)
 		break;
 	      if (help[i] == ' ')
 		len = i;
-	      else if (help[i] == '-')
+	      else if ((help[i] == '-' || help[i] == '/')
+		       && help[i + 1] != ' '
+		       && ISALPHA (help[i - 1]))
 		len = i + 1;
 	    }
 	}

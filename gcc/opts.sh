@@ -42,7 +42,7 @@ ${AWK} '
 	# Note that RS="" falls foul of gawk 3.1.2 bugs
 	/^[^ \t]/       { record = $0
 			  do { getline tmp;
-			       if (tmp != "" )
+			       if (!(tmp ~ "^[ \t]*(;|$)"))
 			          record = record "\034" tmp
 			  } while (tmp != "")
 			  print record
