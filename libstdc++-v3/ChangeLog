@@ -1,3 +1,11 @@
+2004-03-28  Chavdar Botev  <cbotev@yahoo.com>
+
+	PR libstdc++/14245
+	* include/bits/basic_string.tcc
+	(basic_string::basic_string(const basic_string&)): Pass to
+	_Rep::_M_grab the actual allocator of the string being constructed
+	not the default constructed one.
+
 2004-03-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++ PR/13598
