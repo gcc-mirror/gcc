@@ -1042,7 +1042,7 @@ demangle_prefix (dm, template_p)
 
       peek = peek_char (dm);
       
-      if (isdigit (peek)
+      if (isdigit ((unsigned char) peek)
 	  || (peek >= 'a' && peek <= 'z')
 	  || peek == 'C' || peek == 'D'
 	  || peek == 'S')
@@ -1103,7 +1103,7 @@ demangle_unqualified_name (dm)
 
   DEMANGLE_TRACE ("unqualified-name", dm);
 
-  if (isdigit (peek))
+  if (isdigit ((unsigned char) peek))
     RETURN_IF_ERROR (demangle_source_name (dm));
   else if (peek >= 'a' && peek <= 'z')
     {
@@ -1207,7 +1207,7 @@ demangle_number_literally (dm, str, base, is_signed)
   while (1)
     {
       char peek = peek_char (dm);
-      if (isdigit (peek)
+      if (isdigit ((unsigned char) peek)
 	  || (base == 36 && peek >= 'A' && peek <= 'Z'))
 	/* Accumulate digits.  */
 	dyn_string_append_char (str, next_char (dm));
@@ -1792,7 +1792,7 @@ demangle_type (dm)
 
   /* A <class-enum-type> can start with a digit (a <source-name>), an
      N (a <nested-name>), or a Z (a <local-name>).  */
-  if (isdigit (peek) || peek == 'N' || peek == 'Z')
+  if (isdigit ((unsigned char) peek) || peek == 'N' || peek == 'Z')
     RETURN_IF_ERROR (demangle_class_enum_type (dm, &template_p));
   else if (peek >= 'a' && peek <= 'z')
     {
@@ -2555,7 +2555,7 @@ demangle_substitution (dm, template_p, special_std_substitution)
   /* If the following character is 0-9 or a capital letter, interpret
      the sequence up to the next underscore as a base-36 substitution
      index.  */
-  else if (isdigit (peek) 
+  else if (isdigit ((unsigned char) peek) 
 	   || (peek >= 'A' && peek <= 'Z'))
     RETURN_IF_ERROR (demangle_number (dm, &seq_id, 36, 0));
   else 
@@ -2710,7 +2710,7 @@ demangle_discriminator (dm, suppress_first)
       if (flag_verbose)
 	result_append (dm, " [#");
       /* Check if there's a number following the underscore.  */
-      if (isdigit (peek_char (dm)))
+      if (isdigit ((unsigned char) peek_char (dm)))
 	{
 	  int discriminator;
 	  /* Demangle the number.  */
@@ -2821,7 +2821,8 @@ static void print_usage
   PARAMS ((FILE* fp, int exit_value));
 
 /* Non-zero if CHAR is a character than can occur in a mangled name.  */
-#define is_mangled_char(CHAR)  (isalnum (CHAR) || (CHAR) == '_')
+#define is_mangled_char(CHAR)                                           \
+  (isalnum ((unsigned char) (CHAR)) || (CHAR) == '_')
 
 /* The name of this program, as invoked.  */
 const char* program_name;
