@@ -389,7 +389,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
      rtx call_fusage;
      int is_const;
 {
-  rtx stack_size_rtx = GEN_INT (stack_size);
+  rtx rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
   rtx struct_value_size_rtx = GEN_INT (struct_value_size);
   rtx call_insn;
 #ifndef ACCUMULATE_OUTGOING_ARGS
@@ -416,10 +416,10 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
       if (valreg)
 	pat = gen_call_value_pop (valreg,
 				  gen_rtx_MEM (FUNCTION_MODE, funexp),
-				  stack_size_rtx, next_arg_reg, n_pop);
+				  rounded_stack_size_rtx, next_arg_reg, n_pop);
       else
 	pat = gen_call_pop (gen_rtx_MEM (FUNCTION_MODE, funexp),
-			    stack_size_rtx, next_arg_reg, n_pop);
+			    rounded_stack_size_rtx, next_arg_reg, n_pop);
 
       emit_call_insn (pat);
       already_popped = 1;
@@ -434,11 +434,11 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
       if (valreg)
 	emit_call_insn (gen_call_value (valreg,
 					gen_rtx_MEM (FUNCTION_MODE, funexp),
-					stack_size_rtx, next_arg_reg,
+					rounded_stack_size_rtx, next_arg_reg,
 					NULL_RTX));
       else
 	emit_call_insn (gen_call (gen_rtx_MEM (FUNCTION_MODE, funexp),
-				  stack_size_rtx, next_arg_reg,
+				  rounded_stack_size_rtx, next_arg_reg,
 				  struct_value_size_rtx));
     }
   else
@@ -492,8 +492,8 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 	  = gen_rtx_EXPR_LIST (VOIDmode,
 			       gen_rtx_CLOBBER (VOIDmode, stack_pointer_rtx),
 			       CALL_INSN_FUNCTION_USAGE (call_insn));
-      stack_size -= n_popped;
       rounded_stack_size -= n_popped;
+      rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
     }
 
   if (rounded_stack_size != 0)
@@ -501,7 +501,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
       if (flag_defer_pop && inhibit_defer_pop == 0 && !is_const)
 	pending_stack_adjust += rounded_stack_size;
       else
-	adjust_stack (GEN_INT (rounded_stack_size));
+	adjust_stack (rounded_stack_size_rtx);
     }
 #endif
 }

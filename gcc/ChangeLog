@@ -1,3 +1,8 @@
+Thu Apr 29 12:53:33 1999  Richard Henderson  <rth@cygnus.com>
+
+	* calls.c (emit_call_1): Pass rounded_stack_size to emit_call
+	instead of the unrounded size.
+
 1999-04-28 14:40 Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixinc/mkfixinc.sh: Makesure the result shell script is writable
