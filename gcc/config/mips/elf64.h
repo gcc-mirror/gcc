@@ -196,6 +196,7 @@ do {									 \
  } while (0)
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+#undef UNIQUE_SECTION_P
 #define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
 #define UNIQUE_SECTION(DECL,RELOC)					   \
 do {									   \
