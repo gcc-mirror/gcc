@@ -2910,6 +2910,18 @@ Support for AIX version 3 and older was discontinued in GCC 3.4.
 AIX Make frequently has problems with GCC makefiles.  GNU Make 3.79.1 or
 newer is recommended to build on this platform.
 
+To speed up the configuration phases of bootstrapping and installing GCC,
+one may use GNU Bash instead of AIX @command{/bin/sh}, e.g.,
+
+@smallexample
+   % CONFIG_SHELL=/opt/freeware/bin/bash
+   % export CONFIG_SHELL
+@end smallexample
+
+and then proceed as described in @uref{build.html,,the build instructions},
+where we strongly recommend using GNU make and specifying an absolute path
+to invoke @var{srcdir}/configure.
+
 Errors involving @code{alloca} when building GCC generally are due
 to an incorrect definition of @code{CC} in the Makefile or mixing files
 compiled with the native C compiler and GCC@.  During the stage1 phase of
@@ -2929,35 +2941,38 @@ Assembler and Linker do not support AIX 5L sufficiently to bootstrap GCC.
 The native AIX tools do interoperate with GCC@.
 
 Building @file{libstdc++.a} requires a fix for an AIX Assembler bug
-APAR IY26685 (AIX 4.3) or APAR IY25528 (AIX 5.1).
+APAR IY26685 (AIX 4.3) or APAR IY25528 (AIX 5.1).  It also requires a
+fix for another AIX Assembler bug and a co-dependent AIX Archiver fix
+referenced as APAR IY53606 (AIX 5.2) or a APAR TBD (AIX 5.1)
 
-@samp{libstdc++} in GCC 3.2 increments the major version number of the
+@samp{libstdc++} in GCC 3.4 increments the major version number of the
 shared object and GCC installation places the @file{libstdc++.a}
-shared library in a common location which will overwrite the GCC 3.1
-version of the shared library.  Applications either need to be
-re-linked against the new shared library or the GCC 3.1 version of the
-@samp{libstdc++} shared object needs to be available to the AIX
-runtime loader.  The GCC 3.1 @samp{libstdc++.so.4} shared object can
-be installed for runtime dynamic loading using the following steps to
-set the @samp{F_LOADONLY} flag in the shared object for @emph{each}
+shared library in a common location which will overwrite the and GCC
+3.3 version of the shared library.  Applications either need to be
+re-linked against the new shared library or the GCC 3.1 and GCC 3.3
+versions of the @samp{libstdc++} shared object needs to be available
+to the AIX runtime loader.  The GCC 3.1 @samp{libstdc++.so.4}, if
+present, and GCC 3.3 @samp{libstdc++.so.5} shared objects can be
+installed for runtime dynamic loading using the following steps to set
+the @samp{F_LOADONLY} flag in the shared object for @emph{each}
 multilib @file{libstdc++.a} installed:
 
-Extract the shared object from each the GCC 3.1 @file{libstdc++.a}
-archive:
+Extract the shared objects from the currently installed
+@file{libstdc++.a} archive:
 @smallexample
-   % ar -x libstdc++.a libstdc++.so.4
+   % ar -x libstdc++.a libstdc++.so.4 libstdc++.so.5
 @end smallexample
 
 Enable the @samp{F_LOADONLY} flag so that the shared object will be
 available for runtime dynamic loading, but not linking:
 @smallexample
-   % strip -e libstdc++.so.4
+   % strip -e libstdc++.so.4 libstdc++.so.5
 @end smallexample
 
-Archive the runtime-only shared object in the GCC 3.2
+Archive the runtime-only shared object in the GCC 3.4
 @file{libstdc++.a} archive:
 @smallexample
-   % ar -q libstdc++.a libstdc++.so.4
+   % ar -q libstdc++.a libstdc++.so.4 libstdc++.so.5
 @end smallexample
 
 Linking executables and shared libraries may produce warnings of
