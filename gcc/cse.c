@@ -8018,9 +8018,24 @@ cse_set_around_loop (x, insn, loop_start)
 		    if (cse_check_loop_start_value
 			&& validate_change (insn, &SET_SRC (x),
 					    src_elt->exp, 0))
-		      emit_insn_after (gen_move_insn (src_elt->exp,
-						      SET_DEST (set)),
-				       p);
+		      {
+			/* If this creates new pseudos, this is unsafe,
+			   because the regno of new pseudo is unsuitable
+			   to index into reg_qty when cse_insn processes
+			   the new insn.  Therefore, if a new pseudo was
+			   created, discard this optimization.  */
+			int nregs = max_reg_num ();
+			rtx move
+			  = gen_move_insn (src_elt->exp, SET_DEST (set));
+			if (nregs != max_reg_num ())
+			  {
+			    if (! validate_change (insn, &SET_SRC (x),
+						   SET_SRC (set), 0))
+			      abort ();
+			  }
+			else
+			  emit_insn_after (move, p);
+		      }
 		    break;
 		  }
 	    }
