@@ -1,3 +1,34 @@
+2004-02-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/12916
+	* config/sparc/sparc.h (NPARM_REGS): Delete.
+	(BASE_RETURN_VALUE_REG): Likewise.
+	(BASE_OUTGOING_VALUE_REG): Likewise.
+	(BASE_PASSING_ARG_REG): Likewise.
+	(BASE_INCOMING_ARG_REG): Likewise.
+	* config/sparc/sparc.c (sparc_strict_argument_naming): Test
+	TARGET_ARCH64, not TARGET_V9.
+	(function_arg_slotno): Dispatch based on the mode class.
+	Handle vector modes like floating-point modes.
+	(function_arg_record_value_1): Handle vector types like
+	floating-point types.
+	(function_arg_record_value_2): Likewise.
+	Calculate regno after mode transformation.
+	(function_arg): Handle vector modes like floating-point modes.
+	(function_arg_partial_nregs): Replace NPARM_REGS by SPARC_INT_ARG_MAX.
+	If ARCH64, do not recheck alignment.
+	(function_arg_pass_by_reference): Reorder the conditions.
+	(sparc_return_in_memory): Move after function_arg_padding.
+	Implement calling conventions for vector modes.
+	(sparc_struct_value_rtx): Move after sparc_return_in_memory.
+	(function_value): Move scope of 'regbase'.
+	Implement calling conventions for vector modes.
+	(sparc_builtin_saveregs): Replace NPARM_REGS by SPARC_INT_ARG_MAX
+	and BASE_INCOMING_ARG_REG by SPARC_INCOMING_INT_ARG_FIRST.
+	(sparc_va_arg): Use function_arg_pass_by_reference to test whether
+	the argument is passed by reference.
+	(sparc_type_code): Handle vector types.
+
 2004-02-19  Alan Modra  <amodra@bigpond.net.au>
 
 	* function.c (assign_parms): When building decl_rtl for
