@@ -1,3 +1,10 @@
+2003-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/12167
+	* g++.dg/parse/defarg5.C: New test.
+
+	* g++.dg/template/non-type-template-argument-1.C: Tweak expected error.
+
 2003-09-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12163

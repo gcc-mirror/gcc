@@ -1,3 +1,9 @@
+2003-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/12167
+	* parser.c (cp_parser_late_parsing_default_args): Push & pop the
+	unparsed functions queue.
+
 2003-09-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12163

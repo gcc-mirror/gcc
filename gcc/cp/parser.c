@@ -13883,6 +13883,13 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
   bool saved_local_variables_forbidden_p;
   tree parameters;
 
+  /* While we're parsing the default args, we might (due to the
+     statement expression extension) encounter more classes.  We want
+     to handle them right away, but we don't want them getting mixed
+     up with default args that are currently in the queue.  */
+  parser->unparsed_functions_queues
+    = tree_cons (NULL_TREE, NULL_TREE, parser->unparsed_functions_queues);
+
   for (parameters = TYPE_ARG_TYPES (TREE_TYPE (fn));
        parameters;
        parameters = TREE_CHAIN (parameters))
@@ -13916,6 +13923,10 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       parser->lexer = saved_lexer;
       parser->local_variables_forbidden_p = saved_local_variables_forbidden_p;
     }
+
+  /* Restore the queue.  */
+  parser->unparsed_functions_queues 
+    = TREE_CHAIN (parser->unparsed_functions_queues);
 }
 
 /* Parse the operand of `sizeof' (or a similar operator).  Returns
