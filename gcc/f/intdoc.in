@@ -1365,7 +1365,7 @@ See @code{erf(3m)}, which provides the implementation.
 
 DEFDOC (ERFC, "Complementary error function.", "\
 Returns the complementary error function of @var{@1@}:
-@samp{ERFC(R) = 1 - ERF(R)} (except that the result may be more
+@samp{ERFC(R) = 1 - ERF(R)} (except that the result might be more
 accurate than explicitly evaluating that formulae would give).
 See @code{erfc(3m)}, which provides the implementation.
 ")
@@ -1445,7 +1445,7 @@ See @code{chdir(3)}.
 
 @emph{Caution:} Using this routine during I/O to a unit connected with a
 non-absolute file name can cause subsequent I/O on such a unit to fail
-because the I/O library may reopen files by name.
+because the I/O library might reopen files by name.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
@@ -1459,7 +1459,7 @@ See @code{chdir(3)}.
 
 @emph{Caution:} Using this routine during I/O to a unit connected with a
 non-absolute file name can cause subsequent I/O on such a unit to fail
-because the I/O library may reopen files by name.
+because the I/O library might reopen files by name.
 
 Due to the side effects performed by this intrinsic, the function
 form is not recommended.
@@ -1479,7 +1479,7 @@ Returns 0 on success or a non-zero error code otherwise.
 
 Note that this currently works
 by actually invoking @code{/bin/chmod} (or the @code{chmod} found when
-the library was configured) and so may fail in some circumstances and
+the library was configured) and so might fail in some circumstances and
 will, anyway, be slow.
 
 Due to the side effects performed by this intrinsic, the function
@@ -1501,7 +1501,7 @@ If the @var{@3@} argument is supplied, it contains
 
 Note that this currently works
 by actually invoking @code{/bin/chmod} (or the @code{chmod} found when
-the library was configured) and so may fail in some circumstances and
+the library was configured) and so might fail in some circumstances and
 will, anyway, be slow.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
@@ -2058,7 +2058,7 @@ Fills @var{@1@} with the system's host name returned by
 @code{gethostname(2)}, returning 0 on success or a non-zero error code
 (@code{ENOSYS} if the system does not provide @code{gethostname(2)}).
 
-On some systems (specifically SCO) it may be necessary to link the
+On some systems (specifically SCO) it might be necessary to link the
 ``socket'' library if you call this routine.
 Typically this means adding @samp{-lg2c -lsocket -lm}
 to the @code{g77} command line when linking the program.
@@ -2075,7 +2075,7 @@ Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
 (optional) @var{@2@} argument.
 
-On some systems (specifically SCO) it may be necessary to link the
+On some systems (specifically SCO) it might be necessary to link the
 ``socket'' library if you call this routine.
 Typically this means adding @samp{-lg2c -lsocket -lm}
 to the @code{g77} command line when linking the program.
@@ -2426,8 +2426,7 @@ All bits representing @var{@1@} are shifted @var{@2@} places.
 indicates no shift and @samp{@var{@2@}.LT.0} indicates a right shift.
 If the absolute value of the shift count is greater than
 @samp{BIT_SIZE(@var{@1@})}, the result is undefined.
-Bits shifted out from the left end or the right end, as the case may be,
-are lost.
+Bits shifted out from the left end or the right end are lost.
 Zeros are shifted in from the opposite end.
 
 @xref{IShftC Intrinsic} for the circular-shift equivalent.

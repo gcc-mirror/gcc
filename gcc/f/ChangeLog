@@ -3,6 +3,10 @@
 	* Makefile.in (LDFLAGS): Set from BOOT_LDFLAGS.
 	(F771_LDFLAGS): Variable dispensed with.
 
+Fri Sep  4 19:53:34 1998  Craig Burley  <burley@gnu.org>
+
+	* intdoc.in: Minor editorial tweaks.
+
 Fri Sep  4 18:35:52 1998  Craig Burley  <burley@gnu.org>
 
 	* Makefile.in (fini.o): Don't define USE_HCONFIG here.
