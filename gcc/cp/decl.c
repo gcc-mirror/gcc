@@ -7638,6 +7638,7 @@ reshape_init (tree type, tree *initp)
 	    {
 	      /* Loop through the initializable fields, gathering
 		 initializers.  */
+              /* FIXME support non-trivial labeled initializers.  */
 	      while (*initp && field)
 		{
 		  tree field_init;
@@ -7652,8 +7653,6 @@ reshape_init (tree type, tree *initp)
 		     initializer for the first member of the union.  */
 		  if (TREE_CODE (type) == UNION_TYPE)
 		    break;
-		  if (TREE_PURPOSE (field_init))
-		    field = TREE_PURPOSE (field_init);
 		  field = next_initializable_field (TREE_CHAIN (field));
 		}
 	    }
