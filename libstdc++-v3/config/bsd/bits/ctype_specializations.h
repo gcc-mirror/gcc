@@ -37,12 +37,18 @@
   bool
   ctype<char>::
   is(mask __m, char __c) const throw()
-  { return _M_table[(unsigned char)(__c)] & __m; }
+  { 
+    if (__m & digit || __m & xdigit)
+      return __isctype(__c, __m);
+    else
+      return __istype(__c);
+  }
 
   const char*
   ctype<char>::
   is(const char* __low, const char* __high, mask* __vec) const throw()
   {
+    // XXX
     while (__low < __high)
       *__vec++ = _M_table[(unsigned char)(*__low++)];
     return __high;

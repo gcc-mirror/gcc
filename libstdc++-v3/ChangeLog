@@ -1,3 +1,17 @@
+2000-05-09  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* acinclude.m4 (GLIBCPP_CHECK_CPU): Change powerpc bits to
+	-mcpu=powerpc.
+
+	* config/generic/bits/ctype_specializations.h (ctype<char>::is):
+	Make more generic.
+
+	* config/bsd: New directory.
+	* config/bsd/ctype.cc: New.
+	* config/bsd/bits/ctype_base.h (ctype_base): New.
+	* config/bsd/bits/ctype_specializations.h: New.
+	* acinclude.m4 (GLIBCPP_CHECK_CTYPE): Add bsd tests.
+	
 2000-05-09  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* acinclude.m4:  New macro, GLIBCPP_ENABLE_CXX_FLAGS.

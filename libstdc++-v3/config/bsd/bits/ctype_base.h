@@ -31,42 +31,29 @@
 // ISO C++ 14882: 22.1  Locales
 //
   
-// ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
-// functions go in ctype.cc
+// Information as gleaned from /usr/include/ctype.h on FreeBSD 4.0
   
-  bool
-  ctype<char>::
-  is(mask __m, char __c) const throw()
-  { return _M_table[(unsigned char)(__c)] & __m; }
-
-  const char*
-  ctype<char>::
-  is(const char* __low, const char* __high, mask* __vec) const throw()
+  struct ctype_base
   {
-    while (__low < __high)
-      *__vec++ = _M_table[(unsigned char)(*__low++)];
-    return __high;
-  }
+    typedef unsigned long 	mask;
+    // Non-standard typedefs.
+    typedef const int* 		__to_type;
 
-  const char*
-  ctype<char>::
-  scan_is(mask __m, const char* __low, const char* __high) const throw()
-  {
-    while (__low < __high && !this->is(__m, *__low))
-      ++__low;
-    return __low;
-  }
-
-  const char*
-  ctype<char>::
-  scan_not(mask __m, const char* __low, const char* __high) const throw()
-  {
-    while (__low < __high && this->is(__m, *__low) != 0)
-      ++__low;
-    return __low;
-  }
-
-
+    enum
+    {
+      space = _CTYPE_S,
+      print = _CTYPE_R,
+      cntrl = _CTYPE_C,
+      upper = _CTYPE_U,
+      lower = _CTYPE_L,
+      alpha = _CTYPE_A,
+      digit = _CTYPE_D,
+      punct = _CTYPE_P,
+      xdigit = _CTYPE_X,
+      alnum = _CTYPE_A | _CTYPE_D,
+      graph = _CTYPE_G
+    };
+  };
 
 
 
