@@ -1,3 +1,8 @@
+2001-05-15  Tom Tromey  <tromey@redhat.com>
+
+	* class.c (build_utf8_ref): Don't generate identifier based on
+	utf8const contents.
+
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
 	* java-tree.def (JAVA_EXC_OBJ_EXPR): New.

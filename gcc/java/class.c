@@ -807,7 +807,6 @@ build_utf8_ref (name)
   const char * name_ptr = IDENTIFIER_POINTER(name);
   int name_len = IDENTIFIER_LENGTH(name);
   char buf[60];
-  char *buf_ptr;
   tree ctype, field = NULL_TREE, str_type, cinit, string;
   static int utf8_count = 0;
   int name_hash;
@@ -833,23 +832,8 @@ build_utf8_ref (name)
   FINISH_RECORD_CONSTRUCTOR (cinit);
   TREE_CONSTANT (cinit) = 1;
 
-  /* Build a unique identifier based on buf. */
+  /* Generate a unique-enough identifier.  */
   sprintf(buf, "_Utf%d", ++utf8_count);
-  buf_ptr = &buf[strlen (buf)];
-  if (name_len > 0 && name_ptr[0] >= '0' && name_ptr[0] <= '9')
-    *buf_ptr++ = '_';
-  while (--name_len >= 0)
-    {
-      unsigned char c = *name_ptr++;
-      if (c & 0x80)
-	continue;
-      if (!ISALPHA(c) && !ISDIGIT(c))
-	c = '_';
-      *buf_ptr++ = c;
-      if (buf_ptr >= buf + 50)
-	break;
-    }
-  *buf_ptr = '\0';
 
   decl = build_decl (VAR_DECL, get_identifier (buf), utf8const_type);
   /* FIXME get some way to force this into .text, not .data. */
