@@ -2980,7 +2980,7 @@ simplify_unary_operation (code, mode, op, op_mode)
       REAL_VALUE_FROM_UNSIGNED_INT (d, lv, hv);
 #else
 
-      d = (double) hv;
+      d = (double) (unsigned HOST_WIDE_INT) hv;
       d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
       d += (double) (unsigned HOST_WIDE_INT) lv;
