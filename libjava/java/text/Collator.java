@@ -27,7 +27,7 @@ import java.util.ResourceBundle;
 public abstract class Collator implements Cloneable, Serializable
 {
   public static final int NO_DECOMPOSITION = 0;
-  public static final int CANONCIAL_DECOMPOSITION = 1;
+  public static final int CANONICAL_DECOMPOSITION = 1;
   public static final int FULL_DECOMPOSITION = 2;
 
   public static final int PRIMARY = 0;
@@ -38,7 +38,7 @@ public abstract class Collator implements Cloneable, Serializable
   protected Collator ()
   {
     strength = TERTIARY;
-    decmp = CANONCIAL_DECOMPOSITION;
+    decmp = CANONICAL_DECOMPOSITION;
   }
 
   public abstract int compare (String source, String target);
@@ -107,7 +107,7 @@ public abstract class Collator implements Cloneable, Serializable
   public synchronized void setDecomposition (int mode)
   {
     if (mode != NO_DECOMPOSITION
-	&& mode != CANONCIAL_DECOMPOSITION
+	&& mode != CANONICAL_DECOMPOSITION
 	&& mode != FULL_DECOMPOSITION)
       throw new IllegalArgumentException ();
     decmp = mode;
