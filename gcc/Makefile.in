@@ -118,8 +118,9 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
     $(srcdir)/ginclude/va-m88k.h $(srcdir)/ginclude/va-pa.h \
     $(srcdir)/ginclude/va-pyr.h $(srcdir)/ginclude/va-sparc.h \
     $(srcdir)/ginclude/va-clipper.h $(srcdir)/ginclude/va-spur.h \
+    $(srcdir)/ginclude/va-m32r.h $(srcdir)/ginclude/va-sh.h \
     $(srcdir)/ginclude/iso646.h $(srcdir)/ginclude/va-ppc.h \
-    $(srcdir)/ginclude/proto.h $(srcdir)/ginclude/va-sh.h $(EXTRA_HEADERS) \
+    $(srcdir)/ginclude/proto.h $(EXTRA_HEADERS) \
     $(LANG_EXTRA_HEADERS)
 
 # Target to use whe installing assert.h.  Some systems may
