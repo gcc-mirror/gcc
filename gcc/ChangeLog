@@ -1,3 +1,8 @@
+Fri May  5 10:29:21 2000  Marc Espie <espie@cvs.openbsd.org>
+
+	* config/openbsd.h (LINK_SPEC): pass correct flags to ld 
+	to support -shared, on platforms with dynamic libraries.
+
 Fri May  5 10:27:06 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* system.h (S_ISBLK): Provide fallback definition.

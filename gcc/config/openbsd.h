@@ -119,7 +119,7 @@ Boston, MA 02111-1307, USA.  */
   "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{assert*}"
 #else
 #define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{R*} %{static:-Bstatic} %{assert*}"
+  "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}}} %{shared:-Bshareable -x} -dc -dp %{R*} %{static:-Bstatic} %{assert*}"
 #endif
 
 #undef LIB_SPEC
