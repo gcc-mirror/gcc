@@ -1,3 +1,8 @@
+1998-10-03  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_vtable_vardecl): Check DECL_INTERFACE_KNOWN
+	instead of linkage.
+
 1998-10-01  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (FORMAT_VBASE_NAME): New macro.

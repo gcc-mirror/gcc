@@ -2703,8 +2703,7 @@ finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
   if (! DECL_EXTERNAL (vars)
-      && ((TREE_PUBLIC (vars) && ! DECL_WEAK (vars) && ! DECL_ONE_ONLY (vars))
-	  || CLASSTYPE_EXPLICIT_INSTANTIATION (DECL_CONTEXT (vars))
+      && (DECL_INTERFACE_KNOWN (vars)
 	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars))
 	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
       && ! TREE_ASM_WRITTEN (vars))
