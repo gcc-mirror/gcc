@@ -1,3 +1,11 @@
+2002-01-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/extend.texi: Move documentation of X86 built-in functions
+	here.
+	* doc/invoke.texi: From here.
+	* doc/sourcebuild.texi: Document location of documentation for
+	machine built-in functions.
+
 2002-01-13  Christopher Faylor  <cgf@redhat.com>
 
 	* cppfiles.c (TEST_THRESHOLD): New macro.
