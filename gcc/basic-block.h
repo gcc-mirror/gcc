@@ -153,6 +153,9 @@ typedef struct edge_def {
 
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
+/* Declared in cfgloop.h.  */
+struct loop;
+struct loops;
 
 /* A basic block is a sequence of instructions with only entry and
    only one exit.  If any one of the instructions are executed, they
@@ -240,6 +243,8 @@ typedef struct basic_block_def {
 #define BB_NEW			2
 #define BB_REACHABLE		4
 #define BB_VISITED		8
+#define BB_IRREDUCIBLE_LOOP	16
+#define BB_SUPERBLOCK		32
 
 /* Number of basic blocks in the current function.  */
 
@@ -360,6 +365,9 @@ extern void tidy_fallthru_edges		PARAMS ((void));
 extern void flow_reverse_top_sort_order_compute	PARAMS ((int *));
 extern int flow_depth_first_order_compute	PARAMS ((int *, int *));
 extern void flow_preorder_transversal_compute	PARAMS ((int *));
+extern int dfs_enumerate_from		PARAMS ((basic_block, int,
+						bool (*)(basic_block, void *),
+						basic_block *, int, void *));
 extern void dump_edge_info		PARAMS ((FILE *, edge, int));
 extern void clear_edges			PARAMS ((void));
 extern void mark_critical_edges		PARAMS ((void));
@@ -368,165 +376,6 @@ extern rtx first_insn_after_basic_block_note	PARAMS ((basic_block));
 /* Dominator information for basic blocks.  */
 
 typedef struct dominance_info *dominance_info;
-
-/* Structure to hold information for each natural loop.  */
-struct loop
-{
-  /* Index into loops array.  */
-  int num;
-
-  /* Basic block of loop header.  */
-  basic_block header;
-
-  /* Basic block of loop latch.  */
-  basic_block latch;
-
-  /* Basic block of loop pre-header or NULL if it does not exist.  */
-  basic_block pre_header;
-
-  /* Array of edges along the pre-header extended basic block trace.
-     The source of the first edge is the root node of pre-header
-     extended basic block, if it exists.  */
-  edge *pre_header_edges;
-
-  /* Number of edges along the pre_header extended basic block trace.  */
-  int num_pre_header_edges;
-
-  /* The first block in the loop.  This is not necessarily the same as
-     the loop header.  */
-  basic_block first;
-
-  /* The last block in the loop.  This is not necessarily the same as
-     the loop latch.  */
-  basic_block last;
-
-  /* Bitmap of blocks contained within the loop.  */
-  sbitmap nodes;
-
-  /* Number of blocks contained within the loop.  */
-  int num_nodes;
-
-  /* Array of edges that enter the loop.  */
-  edge *entry_edges;
-
-  /* Number of edges that enter the loop.  */
-  int num_entries;
-
-  /* Array of edges that exit the loop.  */
-  edge *exit_edges;
-
-  /* Number of edges that exit the loop.  */
-  int num_exits;
-
-  /* Bitmap of blocks that dominate all exits of the loop.  */
-  sbitmap exits_doms;
-
-  /* The loop nesting depth.  */
-  int depth;
-
-  /* Superloops of the loop.  */
-  struct loop **pred;
-
-  /* The height of the loop (enclosed loop levels) within the loop
-     hierarchy tree.  */
-  int level;
-
-  /* The outer (parent) loop or NULL if outermost loop.  */
-  struct loop *outer;
-
-  /* The first inner (child) loop or NULL if innermost loop.  */
-  struct loop *inner;
-
-  /* Link to the next (sibling) loop.  */
-  struct loop *next;
-
-  /* Nonzero if the loop is invalid (e.g., contains setjmp.).  */
-  int invalid;
-
-  /* Auxiliary info specific to a pass.  */
-  void *aux;
-
-  /* The following are currently used by loop.c but they are likely to
-     disappear as loop.c is converted to use the CFG.  */
-
-  /* Nonzero if the loop has a NOTE_INSN_LOOP_VTOP.  */
-  rtx vtop;
-
-  /* Nonzero if the loop has a NOTE_INSN_LOOP_CONT.
-     A continue statement will generate a branch to NEXT_INSN (cont).  */
-  rtx cont;
-
-  /* The NOTE_INSN_LOOP_BEG.  */
-  rtx start;
-
-  /* The NOTE_INSN_LOOP_END.  */
-  rtx end;
-
-  /* For a rotated loop that is entered near the bottom,
-     this is the label at the top.  Otherwise it is zero.  */
-  rtx top;
-
-  /* Place in the loop where control enters.  */
-  rtx scan_start;
-
-  /* The position where to sink insns out of the loop.  */
-  rtx sink;
-
-  /* List of all LABEL_REFs which refer to code labels outside the
-     loop.  Used by routines that need to know all loop exits, such as
-     final_biv_value and final_giv_value.
-
-     This does not include loop exits due to return instructions.
-     This is because all bivs and givs are pseudos, and hence must be
-     dead after a return, so the presence of a return does not affect
-     any of the optimizations that use this info.  It is simpler to
-     just not include return instructions on this list.  */
-  rtx exit_labels;
-
-  /* The number of LABEL_REFs on exit_labels for this loop and all
-     loops nested inside it.  */
-  int exit_count;
-};
-
-
-/* Structure to hold CFG information about natural loops within a function.  */
-struct loops
-{
-  /* Number of natural loops in the function.  */
-  int num;
-
-  /* Maxium nested loop level in the function.  */
-  int levels;
-
-  /* Array of natural loop descriptors (scanning this array in reverse order
-     will find the inner loops before their enclosing outer loops).  */
-  struct loop *array;
-
-  /* The above array is unused in new loop infrastructure and is kept only for
-     purposes of the old loop optimizer.  Instead we store just pointers to
-     loops here.  */
-  struct loop **parray;
-
-  /* Pointer to root of loop heirachy tree.  */
-  struct loop *tree_root;
-
-  /* Information derived from the CFG.  */
-  struct cfg
-  {
-    /* The bitmap vector of dominators or NULL if not computed.  */
-    dominance_info dom;
-
-    /* The ordering of the basic blocks in a depth first search.  */
-    int *dfs_order;
-
-    /* The reverse completion ordering of the basic blocks found in a
-       depth first search.  */
-    int *rc_order;
-  } cfg;
-
-  /* Headers shared by multiple loops that should be merged.  */
-  sbitmap shared_headers;
-};
 
 /* Structure to group all of the information to process IF-THEN and
    IF-THEN-ELSE blocks for the conditional execution support.  This
@@ -554,19 +403,6 @@ typedef struct ce_if_block
 #endif
 
 } ce_if_block_t;
-
-extern int flow_loops_find PARAMS ((struct loops *, int flags));
-extern int flow_loops_update PARAMS ((struct loops *, int flags));
-extern void flow_loops_free PARAMS ((struct loops *));
-extern void flow_loops_dump PARAMS ((const struct loops *, FILE *,
-				     void (*)(const struct loop *,
-					      FILE *, int), int));
-extern void flow_loop_dump PARAMS ((const struct loop *, FILE *,
-				    void (*)(const struct loop *,
-					     FILE *, int), int));
-extern int flow_loop_scan PARAMS ((struct loops *, struct loop *, int));
-extern void flow_loop_tree_node_add PARAMS ((struct loop *, struct loop *));
-extern void flow_loop_tree_node_remove PARAMS ((struct loop *));
 
 /* This structure maintains an edge list vector.  */
 struct edge_list
@@ -658,15 +494,6 @@ enum update_life_extent
 #define CLEANUP_THREADING	64	/* Do jump threading.  */
 #define CLEANUP_NO_INSN_DEL	128	/* Do not try to delete trivially dead
 					   insns.  */
-/* Flags for loop discovery.  */
-
-#define LOOP_TREE		1	/* Build loop hierarchy tree.  */
-#define LOOP_PRE_HEADER		2	/* Analyse loop pre-header.  */
-#define LOOP_ENTRY_EDGES	4	/* Find entry edges.  */
-#define LOOP_EXIT_EDGES		8	/* Find exit edges.  */
-#define LOOP_EDGES		(LOOP_ENTRY_EDGES | LOOP_EXIT_EDGES)
-#define LOOP_ALL	       15	/* All of the above  */
-
 extern void life_analysis	PARAMS ((rtx, FILE *, int));
 extern int update_life_info	PARAMS ((sbitmap, enum update_life_extent,
 					 int));
@@ -752,26 +579,6 @@ extern void free_aux_for_edges		PARAMS ((void));
    debugger, and it is declared extern so we don't get warnings about
    it being unused.  */
 extern void verify_flow_info		PARAMS ((void));
-extern bool flow_loop_outside_edge_p	PARAMS ((const struct loop *, edge));
-extern bool flow_loop_nested_p PARAMS ((const struct loop *,
-					const struct loop *));
-extern bool flow_bb_inside_loop_p       PARAMS ((const struct loop *,
-						 const basic_block));
-extern basic_block *get_loop_body       PARAMS ((const struct loop *));
-extern int dfs_enumerate_from           PARAMS ((basic_block, int,
-				         bool (*)(basic_block, void *),
-					 basic_block *, int, void *));
-
-extern edge loop_preheader_edge PARAMS ((struct loop *));
-extern edge loop_latch_edge PARAMS ((struct loop *));
-
-extern void add_bb_to_loop PARAMS ((basic_block, struct loop *));
-extern void remove_bb_from_loops PARAMS ((basic_block));
-extern struct loop * find_common_loop PARAMS ((struct loop *, struct loop *));
-
-extern void verify_loop_structure PARAMS ((struct loops *, int));
-#define VLS_EXPECT_PREHEADERS 1
-#define VLS_EXPECT_SIMPLE_LATCHES 2
 
 typedef struct conflict_graph_def *conflict_graph;
 

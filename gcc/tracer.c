@@ -366,7 +366,7 @@ tracer ()
 {
   if (n_basic_blocks <= 1)
     return;
-  cfg_layout_initialize ();
+  cfg_layout_initialize (NULL);
   mark_dfs_back_edges ();
   if (rtl_dump_file)
     dump_flow_info (rtl_dump_file);
