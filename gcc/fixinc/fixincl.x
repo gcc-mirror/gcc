@@ -4499,9 +4499,9 @@ tSCC zUnixware7_Byteorder_FixList[] =
  */
 tSCC* apzUnixware7_Byteorder_FixMachs[] = {
         "*-*-sysv4*",
-        "i[34567]86-*-sysv5*",
-        "i[34567]86-*-udk*",
-        "i[34567]86-*-solaris2.[0-4]",
+        "i?86-*-sysv5*",
+        "i?86-*-udk*",
+        "i?86-*-solaris2.[0-4]",
         "powerpcle-*-solaris2.[0-4]",
         "sparc-*-solaris2.[0-4]",
         (const char*)NULL };
