@@ -1295,9 +1295,9 @@ break_out_target_exprs (tree t)
 tree
 build_min_nt (enum tree_code code, ...)
 {
-  register tree t;
-  register int length;
-  register int i;
+  tree t;
+  int length;
+  int i;
   va_list p;
 
   va_start (p, code);
@@ -1321,9 +1321,9 @@ build_min_nt (enum tree_code code, ...)
 tree
 build_min (enum tree_code code, tree tt, ...)
 {
-  register tree t;
-  register int length;
-  register int i;
+  tree t;
+  int length;
+  int i;
   va_list p;
 
   va_start (p, tt);
@@ -1352,9 +1352,9 @@ build_min (enum tree_code code, tree tt, ...)
 tree
 build_min_non_dep (enum tree_code code, tree non_dep, ...)
 {
-  register tree t;
-  register int length;
-  register int i;
+  tree t;
+  int length;
+  int i;
   va_list p;
 
   va_start (p, non_dep);
@@ -1454,7 +1454,7 @@ decl_namespace_context (tree decl)
 bool
 cp_tree_equal (tree t1, tree t2)
 {
-  register enum tree_code code1, code2;
+  enum tree_code code1, code2;
 
   if (t1 == t2)
     return true;

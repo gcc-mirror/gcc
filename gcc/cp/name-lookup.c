@@ -545,8 +545,8 @@ add_decl_to_level (tree decl, cxx_scope *b)
 tree
 pushdecl (tree x)
 {
-  register tree t;
-  register tree name;
+  tree t;
+  tree name;
   int need_new_binding;
 
   timevar_push (TV_NAME_LOOKUP);
@@ -1811,7 +1811,7 @@ make_anon_name (void)
 void
 clear_anon_tags (void)
 {
-  register struct cp_binding_level *b;
+  struct cp_binding_level *b;
   static int last_cnt = 0;
 
   /* Fast out if no new anon names were declared.  */
@@ -1909,7 +1909,7 @@ push_using_decl (tree scope, tree name)
 tree
 pushdecl_with_scope (tree x, cxx_scope *level)
 {
-  register struct cp_binding_level *b;
+  struct cp_binding_level *b;
   tree function_decl = current_function_decl;
 
   timevar_push (TV_NAME_LOOKUP);
@@ -2335,7 +2335,7 @@ tree
 lookup_tag (enum tree_code form, tree name,
             cxx_scope *binding_level, int thislevel_only)
 {
-  register struct cp_binding_level *level;
+  struct cp_binding_level *level;
   /* Nonzero if, we should look past a template parameter level, even
      if THISLEVEL_ONLY.  */
   int allow_template_parms_p = 1;
@@ -2344,7 +2344,7 @@ lookup_tag (enum tree_code form, tree name,
   timevar_push (TV_NAME_LOOKUP);
   for (level = binding_level; level; level = level->level_chain)
     {
-      register tree tail;
+      tree tail;
       if (type_is_anonymous && level->type_decls != NULL)
         {
           tree type = binding_table_find_anon_type (level->type_decls, name);
@@ -2447,7 +2447,7 @@ lookup_tag (enum tree_code form, tree name,
 tree
 lookup_tag_reverse (tree type, tree name)
 {
-  register struct cp_binding_level *level;
+  struct cp_binding_level *level;
 
   timevar_push (TV_NAME_LOOKUP);
   for (level = current_binding_level; level; level = level->level_chain)
@@ -2531,7 +2531,7 @@ pushlevel_class (void)
 void
 poplevel_class (void)
 {
-  register struct cp_binding_level *level = class_binding_level;
+  struct cp_binding_level *level = class_binding_level;
   tree shadowed;
 
   timevar_push (TV_NAME_LOOKUP);
@@ -3157,8 +3157,8 @@ do_namespace_alias (tree alias, tree namespace)
 tree
 pushdecl_namespace_level (tree x)
 {
-  register struct cp_binding_level *b = current_binding_level;
-  register tree t;
+  struct cp_binding_level *b = current_binding_level;
+  tree t;
 
   timevar_push (TV_NAME_LOOKUP);
   t = pushdecl_with_scope (x, NAMESPACE_LEVEL (current_namespace));
@@ -3977,7 +3977,7 @@ lookup_name_current_level (tree name)
 static tree
 lookup_type_current_level (tree name)
 {
-  register tree t = NULL_TREE;
+  tree t = NULL_TREE;
 
   timevar_push (TV_NAME_LOOKUP);
   my_friendly_assert (current_binding_level->kind != sk_namespace, 
@@ -4491,7 +4491,7 @@ maybe_process_template_type_declaration (tree type, int globalize,
 void
 pushtag (tree name, tree type, int globalize)
 {
-  register struct cp_binding_level *b;
+  struct cp_binding_level *b;
 
   timevar_push (TV_NAME_LOOKUP);
   b = current_binding_level;
@@ -4514,7 +4514,7 @@ pushtag (tree name, tree type, int globalize)
       /* Do C++ gratuitous typedefing.  */
       if (IDENTIFIER_TYPE_VALUE (name) != type)
         {
-          register tree d = NULL_TREE;
+          tree d = NULL_TREE;
 	  int in_class = 0;
 	  tree context = TYPE_CONTEXT (type);
 

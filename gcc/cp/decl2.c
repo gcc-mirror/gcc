@@ -1037,8 +1037,7 @@ grokfield (tree declarator, tree declspecs, tree init, tree asmspec_tree,
 tree
 grokbitfield (tree declarator, tree declspecs, tree width)
 {
-  register tree value = grokdeclarator (declarator, declspecs, BITFIELD,
-					0, NULL);
+  tree value = grokdeclarator (declarator, declspecs, BITFIELD, 0, NULL);
 
   if (! value) return NULL_TREE; /* friends went bad.  */
 
