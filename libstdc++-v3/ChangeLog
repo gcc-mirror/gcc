@@ -1,3 +1,18 @@
+2000-12-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in: Change GLIBCPP_ENABLE_SHADOW to
+	GLIBCPP_ENABLE_CHEADERS.
+	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW): Change to
+	ENABLE_CHEADERS.  C_INCLUDE_DIR defaults to c_std from c. 
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* include/c: Move to ...
+	* include/c_std: ...here.
+	* include/c_std: Move to ...
+	* include/c_shadow: ...here.
+	* include/c: Repopulate, with simple headers.
+	* docs/html/configopts.html: Adjust docs.
+	
 2000-12-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* acinclude.m4, configure.in, mkcheck.in,
