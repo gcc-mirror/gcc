@@ -31,7 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 gfc_st_label format_asterisk =
   { -1, ST_LABEL_FORMAT, ST_LABEL_FORMAT, NULL, 0,
-    {NULL, 0, NULL, NULL}, NULL, NULL};
+    {NULL, NULL}, NULL, NULL};
 
 typedef struct
 {
