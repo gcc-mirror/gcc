@@ -2421,6 +2421,11 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
      appropriate number of bits and mask it with the computed mask
      (in case this was a signed field).  If we changed it, make a new one.  */
   lhs = make_bit_field_ref (linner, unsigned_type, lnbitsize, lnbitpos, 1);
+  if (lvolatilep)
+    {
+      TREE_SIDE_EFFECTS (lhs) = 1;
+      TREE_THIS_VOLATILE (lhs) = 1;
+    }
 
   rhs = fold (const_binop (BIT_AND_EXPR,
 			   const_binop (LSHIFT_EXPR,
