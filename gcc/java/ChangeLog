@@ -1,3 +1,23 @@
+2005-03-07  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* verify-glue.c (vfy_is_assignable_from): Perform static check using
+	can_widen_reference_to if the C++ ABI is in use.
+	(vfy_get_interface_count, vfy_get_interface): Remove unused functions.
+	* verify-impl.c (debug_print, make_utf8_const, init_type, copy_type,
+	type_isresolved, init_state, set_pc, state_get_pc,
+	_Jv_BytecodeVerifier): Clean up unused and disabled functions.
+	(verify_fail): Report the current PC from the verifier context.
+	(free_state): Remove #if 0 block to enable this function.
+	(free_verifier_context): Call free_state on state_list iterator
+	values before freeing them.
+	* expr.c (pop_type_0): Pop correct type for error message when stack
+	contains a multi-word type.
+
+2005-03-07  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* expr.c (build_java_array_length_access): Remove !flag_new_verifier
+	for known NULL array length access.
+
 2005-03-07  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (Invoking gcj-dbtool): Document '-f'.
