@@ -376,17 +376,17 @@ UDItype __umulsidi3 (USItype, USItype);
 #if defined (__M32R__) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   /* The cmp clears the condition bit.  */ \
-  __asm__ ("cmp %0,%0\n\taddx %%5,%1\n\taddx %%3,%0"			\
+  __asm__ ("cmp %0,%0\n\taddx %1,%5\n\taddx %0,%3"			\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
-	   : "%0" ((USItype) (ah)),					\
+	   : "0" ((USItype) (ah)),					\
 	     "r" ((USItype) (bh)),					\
-	     "%1" ((USItype) (al)),					\
+	     "1" ((USItype) (al)),					\
 	     "r" ((USItype) (bl))					\
 	   : "cbit")
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   /* The cmp clears the condition bit.  */ \
-  __asm__ ("cmp %0,%0\n\tsubx %5,%1\n\tsubx %3,%0"			\
+  __asm__ ("cmp %0,%0\n\tsubx %1,%5\n\tsubx %0,%3"			\
 	   : "=r" ((USItype) (sh)),					\
 	     "=&r" ((USItype) (sl))					\
 	   : "0" ((USItype) (ah)),					\
