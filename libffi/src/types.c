@@ -42,7 +42,8 @@ FFI_INTEGRAL_TYPEDEF(uint32, 4, 4, FFI_TYPE_UINT32);
 FFI_INTEGRAL_TYPEDEF(sint32, 4, 4, FFI_TYPE_SINT32);
 FFI_INTEGRAL_TYPEDEF(float, 4, 4, FFI_TYPE_FLOAT);
 
-#if defined ALPHA || defined SPARC64 || defined X86_64 || defined S390X
+#if defined ALPHA || defined SPARC64 || defined X86_64 || defined S390X \
+    || defined IA64
 
 FFI_INTEGRAL_TYPEDEF(pointer, 8, 8, FFI_TYPE_POINTER);
 
