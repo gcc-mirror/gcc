@@ -422,8 +422,8 @@ cgraph_finalize_compilation_unit ()
 
 /* Expand all functions that must be output.  */
 
-#define NPREDECESORS(node) (size_t)((node)->aux)
-#define SET_NPREDECESORS(node,n) (node)->aux = (void *) (n);
+#define NPREDECESORS(node) ((size_t) (node)->aux)
+#define SET_NPREDECESORS(node, n) ((node)->aux = (void *) (size_t) (n))
 
 /* Figure out what functions we want to assemble.  */
 
