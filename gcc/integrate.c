@@ -1906,6 +1906,12 @@ copy_rtx_and_substitute (orig, map)
 	      start_sequence ();
 	      loc = assign_stack_temp (BLKmode, size, 1);
 	      loc = XEXP (loc, 0);
+	      /* When arguments grow downward, the virtual incoming 
+		 args pointer points to the top of the argument block,
+		 so the remapped location better do the same. */
+#ifdef ARGS_GROW_DOWNWARD
+	      loc = plus_constant (loc, size);
+#endif
 	      map->reg_map[regno] = temp
 		= force_reg (Pmode, force_operand (loc, NULL_RTX));
 	      map->const_equiv_map[REGNO (temp)] = loc;
