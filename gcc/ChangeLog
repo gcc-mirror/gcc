@@ -1,3 +1,7 @@
+2002-01-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* expmed.c (emit_store_flag): Call protect_from_queue on op0 and op1.
+
 2002-01-28  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (dwarf_cfi_name): Add other DWARF 3 codes.
