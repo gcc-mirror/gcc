@@ -585,6 +585,21 @@ extern enum reg_class reg_class_from_letter[];
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS) CLASS
 
+/* ??? Should make FPUL register a nn-fixed register and make it's
+   use explicit in the rtl; then change this definition here to
+   ...  ? FPUL_REGS : NO_REGS) .  */
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X) \
+  ((((CLASS == FP_REGS || CLASS == FP0_REGS)				\
+     && GET_CODE (X) == REG && REGNO (X) <= AP_REG)			\
+    || (CLASS == GENERAL_REGS && GET_CODE (X) == REG			\
+	&& REGNO (X) <= FIRST_FP_REG && REGNO (X) >= LAST_FP_REG))	\
+   ? /* FPUL_REGS */ NO_REGS : NO_REGS)
+
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,X)  \
+  (((CLASS == FP_REGS || CLASS == FP0_REGS) && immediate_operand (X, MODE)\
+    && ! (fp_one_operand (X) || fp_one_operand (X)))			\
+   ? R0_REGS : SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X))
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
 
