@@ -8887,16 +8887,17 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
   if (TREE_CODE (decl) != FUNCTION_DECL)
     ttype = target_type (type);
 
-  if (! DECL_EXTERNAL (decl) && TREE_READONLY (decl)
-      && (TYPE_NEEDS_CONSTRUCTING (type) 
-	  || TREE_CODE (type) == REFERENCE_TYPE))
+  
+  /* Currently, GNU C++ puts constants in text space, making them
+     impossible to initialize.  In the future, one would hope for
+     an operating system which understood the difference between
+     initialization and the running of a program.  */
+  if (! DECL_EXTERNAL (decl) && TREE_READONLY (decl))
     {
-      /* Currently, GNU C++ puts constants in text space, making them
-	 impossible to initialize.  In the future, one would hope for
-	 an operating system which understood the difference between
-	 initialization and the running of a program.  */
       was_readonly = 1;
-      TREE_READONLY (decl) = 0;
+      if (TYPE_NEEDS_CONSTRUCTING (type) 
+	  || TREE_CODE (type) == REFERENCE_TYPE)
+	TREE_READONLY (decl) = 0;
     }
 
   if (TREE_CODE (decl) == FIELD_DECL && asmspec)
