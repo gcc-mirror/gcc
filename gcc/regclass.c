@@ -1223,10 +1223,10 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		p++;
 		break;
 
-	      case '?':  case '!':  case '#':
+	      case '=':  case '+':  case '?':  case '!':  case '#':
+	      case '&':  case 'p':
 	      case '0':  case '1':  case '2':  case '3':  case '4':
 	      case '5':  case '6':  case '7':  case '8':  case '9':
-	      case 'p':
 		break;
 
 	      case 'm':  case 'o':  case 'V':
