@@ -304,14 +304,14 @@ extern int ix86_arch;
 
 #ifndef CPP_CPU_SPEC
 #ifdef __STDC__
-#if TARGET_CPU_DEFAULT == 0
-#define CPP_CPU_DEFAULT ""
-#elif TARGET_CPU_DEFAULT == 1
+#if TARGET_CPU_DEFAULT == 1
 #define CPP_CPU_DEFAULT "-Di486"
 #elif TARGET_CPU_DEFAULT == 2
 #define CPP_CPU_DEFAULT "-Di586"
 #elif TARGET_CPU_DEFAULT == 3
 #define CPP_CPU_DEFAULT "-Di686"
+#else
+#define CPP_CPU_DEFAULT ""
 #endif /* TARGET_CPU_DEFAULT */
 
 #define CPP_CPU_SPEC "\
@@ -392,7 +392,7 @@ extern int ix86_arch;
 #define PARM_BOUNDARY 32
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY (TARGET_ALIGN_DOUBLE ? 64 : 32)
+#define STACK_BOUNDARY 32
 
 /* Allocation boundary (in *bits*) for the code of a function.
    For i486, we get better performance by aligning to a cache
