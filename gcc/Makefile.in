@@ -247,6 +247,7 @@ lang_options_files=@lang_options_files@
 lang_tree_files=@lang_tree_files@
 GCC_THREAD_FILE=@thread_file@
 OBJC_BOEHM_GC=@objc_boehm_gc@
+JAVAGC=@JAVAGC@
 GTHREAD_FLAGS=@gthread_flags@
 # Be prepared for gcc2 merges.
 gcc_version=@gcc_version@
