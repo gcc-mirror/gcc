@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1991-1994 by Xerox Corporation.  All rights reserved.
+ * Copyright (c) 1991-1994, 2000 by Xerox Corporation.  All rights reserved.
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -117,9 +117,13 @@ extern mse * GC_mark_stack_top;
 
 extern mse * GC_mark_stack;
 
-ptr_t GC_find_start();
+#ifdef PRINT_BLACK_LIST
+ptr_t GC_find_start(ptr_t, hdr*, word);
+#else
+ptr_t GC_find_start(ptr_t, hdr*);
+#endif
 
-mse * GC_signal_mark_stack_overflow();
+mse * GC_signal_mark_stack_overflow(mse *);
 
 # ifdef GATHERSTATS
 #   define ADD_TO_ATOMIC(sz) GC_atomic_in_use += (sz)
