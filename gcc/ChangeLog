@@ -13,6 +13,9 @@ Sun Mar 28 15:34:28 1999  Richard Henderson  <rth@cygnus.com>
 
 Sun Mar 28 16:09:01 1999  "Jerry Quinn" <jquinn@nortelnetworks.com>
 
+	* pa.md (pa7100LCshiftmem, pa7100LCalu): Change simultaneity.  Use
+	shift/mem ops in pa7100LCalu.
+
 	* pa.c (pa_adjust_cost): Don't do cost adjustments on pa8000.
 	(pa_reorg): Don't call pa_combine_instructions on pa8000.
 
