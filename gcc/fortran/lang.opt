@@ -97,13 +97,13 @@ fimplicit-none
 F95
 Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements
 
-ffixed-line-length-80
+ffixed-line-length-none
 F95 RejectNegative
-Use 80 character line width in fixed mode
+Allow arbitrary character line width in fixed mode
 
-ffixed-line-length-132
-F95 RejectNegative
-Use 132 character line width in fixed mode
+ffixed-line-length-
+F95 RejectNegative Joined UInteger
+-ffixed-line-length-<n>		Use n as character line width in fixed mode
 
 fmax-identifier-length=
 F95 RejectNegative Joined UInteger

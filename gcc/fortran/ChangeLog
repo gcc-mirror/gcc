@@ -1,3 +1,16 @@
+2004-07-18  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/16465
+	* lang.opt (ffixed-line-length-none, ffixed-line-length-): New
+	options.
+	(ffixed-line-length-80, ffixed-line-length-132): Remove.
+	* options.c (gfc_handle_options): Deal with changed options.
+	* scanner.c (load_line): Change second arg to 'char **',
+	allocate if pointing to NULL. Keep track of buffer's length.
+	Adapt buffer size to overlong lines. Pad lines to full length
+	in fixed form.
+	(load_file): Adapt to new interface of load_line.
+
 2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* trans.h (builtin_function): Declare.
