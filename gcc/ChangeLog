@@ -1,3 +1,8 @@
+2001-07-05  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.h (RETURN_ADDR_RTX): Fix return address
+	when -fomit-frame-pointer is used.
+
 2001-07-05  Brad Lucier <lucier@math.purdue.edu>
 	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 

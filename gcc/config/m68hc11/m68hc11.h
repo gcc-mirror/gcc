@@ -894,10 +894,10 @@ extern int m68hc11_sp_correction;
 #define INCOMING_RETURN_ADDR_RTX \
     gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
 
-/* After the prologue, RA is at -2(AP) in the current frame.  */
+/* After the prologue, RA is at 0(AP) in the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
   ((COUNT) == 0								\
-   ? gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, -2))\
+   ? gen_rtx_MEM (Pmode, arg_pointer_rtx)                               \
    : 0)
 
 /* Before the prologue, the top of the frame is at 2(sp).  */
