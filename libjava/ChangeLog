@@ -1,3 +1,8 @@
+2000-12-04  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/natDouble.cc: Include fdlibm.h, not mprec.h. From 
+	Edgar Villanueva <edgarvil@home.com>.
+
 2000-12-03  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/geom/Point2D.java: Added protected constructor.
