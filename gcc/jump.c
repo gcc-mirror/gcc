@@ -2010,8 +2010,8 @@ static int
 duplicate_loop_exit_test (loop_start)
      rtx loop_start;
 {
-  rtx insn, set, p;
-  rtx copy, link;
+  rtx insn, set, p, link;
+  rtx copy = 0;
   int num_insns = 0;
   rtx exitcode = NEXT_INSN (JUMP_LABEL (next_nonnote_insn (loop_start)));
   rtx lastexit;
@@ -2155,7 +2155,7 @@ duplicate_loop_exit_test (loop_start)
 
   /* Now clean up by emitting a jump to the end label and deleting the jump
      at the start of the loop.  */
-  if (GET_CODE (copy) != BARRIER)
+  if (! copy || GET_CODE (copy) != BARRIER)
     {
       copy = emit_jump_insn_before (gen_jump (get_label_after (insn)),
 				    loop_start);
