@@ -40,7 +40,6 @@ struct macro_info
   unsigned char flags;
 };
 
-static void dump_macro_args PARAMS ((FILE *, const cpp_toklist *));
 static void count_params PARAMS ((cpp_reader *, struct macro_info *));
 static int is__va_args__ PARAMS ((cpp_reader *, const cpp_token *));
 
@@ -575,57 +574,6 @@ _cpp_create_definition (pfile, hp)
   hp->value.expansion = list;
 
   return 1;
-}
-
-/* Dump the definition of macro MACRO on FP.  The format is suitable
-   to be read back in again.  Caller is expected to generate the
-   "#define NAME" bit.  */
-
-void
-cpp_dump_definition (pfile, fp, hp)
-     cpp_reader *pfile;
-     FILE *fp;
-     const cpp_hashnode *hp;
-{
-  const cpp_toklist *list = hp->value.expansion;
-
-  if (hp->type != T_MACRO)
-    {
-      cpp_ice (pfile, "invalid hash type %d in dump_definition", hp->type);
-      return;
-    }
-
-  if (list->paramc >= 0)
-    dump_macro_args (fp, list);
-
-  putc (' ', fp);
-  cpp_output_list (pfile, fp, list, list->tokens);
-}
-
-static void
-dump_macro_args (fp, list)
-     FILE *fp;
-     const cpp_toklist *list;
-{
-  int i;
-  const U_CHAR *param = list->namebuf;
-
-  putc ('(', fp);
-  for (i = 0; i++ < list->paramc;)
-    {
-      unsigned int len;
-
-      len = ustrlen (param);
-      if (!(list->flags & VAR_ARGS) || ustrcmp (param, U"__VA_ARGS__"))
-	ufputs (param, fp);
-      if (i < list->paramc)
-	fputs (", ", fp);
-      else if (list->flags & VAR_ARGS)
-	fputs ("...", fp);
-
-      param += len + 1;
-    }
-  putc (')', fp);
 }
 
 /* Warn if a token in `string' matches one of the function macro

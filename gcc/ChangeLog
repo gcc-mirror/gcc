@@ -1,3 +1,20 @@
+Mon 25-Sep-2000 23:31:45 BST  Neil Booth  <neilb@earthling.net>
+
+	* cpphash.h (_cpp_digraph_spellings, _cpp_process_directive,
+	_cpp_can_paste): New library-internal prototypes.
+	* cpplex.c (dump_param_spelling, output_line_command,
+	output_token, cpp_scan_buffer, cpp_scan_buffer_nooutput,
+	cpp_printf, cpp_output_list): Move to cppoutput.c.
+	(process_directive, can_paste, digraph_spellings): Add _cpp_ prefix.
+	* cppmacro.c (dump_macro_args, cpp_dump_definition) Move to
+	cppoutput.c.
+	* cppoutput.c (dump_macro_args, cpp_dump_definition, output_token,
+	dump_param_spelling, output_line_command, cpp_scan_buffer,
+	cpp_scan_buffer_nooutput, cpp_printf, cpp_output_list): Moved
+	from elsewhere.
+	* Makefile.in: Add cppoutput.c.
+	* po/POTFILES.in: Add cppoutput.c.
+
 2000-09-25  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (ia64_print_operand): Define 'e' as 64-n.

@@ -231,6 +231,7 @@ extern void _cpp_pop_file_buffer	PARAMS ((cpp_reader *, cpp_buffer *));
 extern int _cpp_parse_expr		PARAMS ((cpp_reader *));
 
 /* In cpplex.c */
+extern const unsigned char *_cpp_digraph_spellings[];
 extern void _cpp_skip_rest_of_line	PARAMS ((cpp_reader *));
 extern void _cpp_free_temp_tokens	PARAMS ((cpp_reader *));
 extern void _cpp_init_input_buffer	PARAMS ((cpp_reader *));
@@ -247,6 +248,7 @@ extern void _cpp_reserve_name_space	PARAMS ((cpp_toklist *, unsigned int));
 extern void _cpp_expand_name_space	PARAMS ((cpp_toklist *, unsigned int));
 extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
 						 const cpp_token *));
+extern void _cpp_process_directive PARAMS ((cpp_reader *, const cpp_token *));
 extern void _cpp_run_directive		PARAMS ((cpp_reader *,
 						 const struct directive *,
 						 const char *, size_t,
@@ -257,6 +259,8 @@ extern const cpp_token *_cpp_get_token PARAMS ((cpp_reader *));
 extern const cpp_token *_cpp_get_raw_token PARAMS ((cpp_reader *));
 extern void _cpp_push_token PARAMS ((cpp_reader *, const cpp_token*));
 extern const cpp_token *_cpp_glue_header_name PARAMS ((cpp_reader *));
+extern enum cpp_ttype _cpp_can_paste PARAMS ((cpp_reader *, const cpp_token *,
+					      const cpp_token *, int *));
 
 /* In cpplib.c */
 extern const struct directive *_cpp_check_directive

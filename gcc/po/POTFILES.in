@@ -599,6 +599,7 @@ cpplex.c
 cpplib.c
 cpplib.h
 cppmain.c
+cppoutput.c
 cppspec.c
 #crtstuff.c is part of the GCC library
 cse.c
