@@ -11926,9 +11926,15 @@ finish_enum (enumtype)
 		minnode = value;
 	    }
 
-	  /* In the list we're building up, we want the enumeration
-	     values, not the CONST_DECLs.  */
-	  TREE_VALUE (pair) = value;
+	  if (processing_template_decl) 
+	    /* If this is just a template, leave the CONST_DECL
+	       alone.  That way tsubst_copy will find CONST_DECLs for
+	       CONST_DECLs, and not INTEGER_CSTs.  */
+	    ;
+	  else
+	    /* In the list we're building up, we want the enumeration
+	       values, not the CONST_DECLs.  */
+	    TREE_VALUE (pair) = value;
 	}
     }
   else
