@@ -5,7 +5,7 @@ bar (const int * const x)
   __asm__ __volatile__ (""::"m" (*x)); 
 } 
  
-static const int y[]; 
+static const int y[1]; 
  
 void 
 foo (void) 
