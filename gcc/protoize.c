@@ -1,6 +1,4 @@
-/* Protoize program - Written by Ron Guilmette at the Microelectronics
-   and Computer Technology Corporation (MCC).  The author's current
-   E-mail address is <rfg@ncd.com>.
+/* Protoize program - Original version by Ron Guilmette at MCC.
 
    Copyright (C) 1989, 1992 Free Software Foundation, Inc.
 
