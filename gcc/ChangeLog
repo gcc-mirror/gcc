@@ -1,5 +1,11 @@
 2001-04-12  Alexandre Oliva  <aoliva@redhat.com>
 
+	* recog.c (general_operand, immediate_operand,
+	nonmemory_operand): Require CONST_INTs to be sign-extended
+	values for their modes.
+
+2001-04-12  Alexandre Oliva  <aoliva@redhat.com>
+
 	* expmed.c (store_bit_field): Truncate CONST_INTs.
 	(expand_mult_highpart, expand_divmod): Likewise.
 	* expr.c (convert_modes, store_field): Likewise.
