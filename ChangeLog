@@ -1,3 +1,8 @@
+2003-04-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* Makefile.tpl (MAKEINFOFLAGS): Default to --split-size=5000000.
+	* Makefile.in: Regenerate.
+
 2003-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (powerpc64*-*-linux*): Remove.
