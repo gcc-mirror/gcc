@@ -10526,7 +10526,7 @@ Sun Nov  2 19:27:21 1997  Jeffrey A Law  (law@cygnus.com)
 
 Sat Nov  1 21:43:00 1997  Mike Stump  (mrs@wrs.com)
 
-	* except.c (expand_ex_region_start_for_decl): Emit EH_REGION_BEG
+	* except.c (expand_eh_region_start_for_decl): Emit EH_REGION_BEG
 	notes for sjlj exceptions too.
 	(expand_eh_region_end): Similarly for EH_REGION_END notes.
 	(exception_optimize): Optimize EH regions for sjlj exceptions too.
