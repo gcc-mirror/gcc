@@ -5646,27 +5646,28 @@ registers_ok_for_ldd_peep (reg1, reg2)
   return (REGNO (reg1) == REGNO (reg2) - 1);
 }
 
-/* Return 1 if addr1 and addr2 are suitable for use in an ldd or 
-   std insn.
-
-   This can only happen when addr1 and addr2 are consecutive memory
-   locations (addr1 + 4 == addr2).  addr1 must also be aligned on a 
-   64 bit boundary (addr1 % 8 == 0).  
-
-   We know %sp and %fp are kept aligned on a 64 bit boundary.  Other
-   registers are assumed to *never* be properly aligned and are 
-   rejected.
-
-   Knowing %sp and %fp are kept aligned on a 64 bit boundary, we 
-   need only check that the offset for addr1 % 8 == 0.  */
+/* Return 1 if the addresses in mem1 and mem2 are suitable for use in
+   an ldd or std insn. 
+      
+   This can only happen when addr1 and addr2, the addresses in mem1
+   and mem2, are consecutive memory locations (addr1 + 4 == addr2).
+   addr1 must also be aligned on a 64-bit boundary.  */
 
 int
-addrs_ok_for_ldd_peep (addr1, addr2)
-      rtx addr1, addr2;
+mems_ok_for_ldd_peep (mem1, mem2)
+      rtx mem1, mem2;
 {
+  rtx addr1, addr2;
   unsigned int reg1;
   int offset1;
 
+  addr1 = XEXP (mem1, 0);
+  addr2 = XEXP (mem2, 0);
+
+  /* mem1 should be aligned on a 64-bit boundary */
+  if (MEM_ALIGN (mem1) < 64)
+    return 0;
+  
   /* Extract a register number and offset (if used) from the first addr.  */
   if (GET_CODE (addr1) == PLUS)
     {
@@ -5697,11 +5698,6 @@ addrs_ok_for_ldd_peep (addr1, addr2)
 
   if (GET_CODE (XEXP (addr2, 0)) != REG
       || GET_CODE (XEXP (addr2, 1)) != CONST_INT)
-    return 0;
-
-  /* Only %fp and %sp are allowed.  Additionally both addresses must
-     use the same register.  */
-  if (reg1 != FRAME_POINTER_REGNUM && reg1 != STACK_POINTER_REGNUM)
     return 0;
 
   if (reg1 != REGNO (XEXP (addr2, 0)))
