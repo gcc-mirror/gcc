@@ -2,6 +2,11 @@
 
 	* df.h (DF_REF_MODE_CHANGE, DF_REF_MEM_OK): Remove.
 
+	* builtins.def, haifa-sched.c, libgcc2.c, libgcc2.h,
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-niter.c,
+	config/cris/cris-protos.h, config/cris/cris.c: Update
+	copyright.
+
 2005-02-10  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (thread_across_edge): Use xmalloc, not xcalloc.
