@@ -1,8 +1,8 @@
-/* Output routines for GCC for ARM/RISCiX.
+/* Output routines for GCC for ARM.
    Copyright (C) 1991, 93, 94, 95, 96, 97, 98, 1999 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
-   More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
+   More major hacks by Richard Earnshaw (rearnsha@arm.com).
 
 This file is part of GNU CC.
 
@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* The maximum number of insns skipped which will be conditionalised if
    possible.  */
-#define MAX_INSNS_SKIPPED  5
+static int max_insns_skipped = 5;
 
 /* Some function declarations.  */
 extern FILE *asm_out_file;
@@ -200,6 +200,11 @@ static struct processors all_procs[] =
 				 | FL_ARCH4)},
   {"arm810",	PROCESSOR_ARM8, (FL_FAST_MULT | FL_MODE32 | FL_MODE26
 				 | FL_ARCH4)},
+  /* The next two are the same, but arm9 only exists in the thumb variant */
+  {"arm9",	PROCESSOR_ARM9, (FL_FAST_MULT | FL_MODE32 | FL_ARCH4
+				 | FL_THUMB)},
+  {"arm9tdmi",	PROCESSOR_ARM9, (FL_FAST_MULT | FL_MODE32 | FL_ARCH4
+				 | FL_THUMB)},
   {"strongarm",	PROCESSOR_STARM, (FL_FAST_MULT | FL_MODE32 | FL_MODE26
 				  | FL_ARCH4)},
   {"strongarm110", PROCESSOR_STARM, (FL_FAST_MULT | FL_MODE32 | FL_MODE26
@@ -362,13 +367,53 @@ arm_override_options ()
       target_flags &= ~ARM_FLAG_THUMB;
     }
 
-  if (TARGET_FPE && arm_fpu != FP_HARD)
-    arm_fpu = FP_SOFT2;
+  if (TARGET_FPE && arm_fpu == FP_HARD)
+    arm_fpu = FP_SOFT3;
 
-  /* For arm2/3 there is no need to do any scheduling if there is only
-     a floating point emulator, or we are doing software floating-point.  */
-  if ((TARGET_SOFT_FLOAT || arm_fpu != FP_HARD) && arm_cpu == PROCESSOR_ARM2)
-    flag_schedule_insns = flag_schedule_insns_after_reload = 0;
+  /* If optimizing for space, don't synthesize constants */
+  if (optimize_size)
+    arm_constant_limit = 1;
+
+  /* Override a few things based on the tuning pararmeters.  */
+  switch (arm_cpu)
+    {
+    case PROCESSOR_ARM2:
+    case PROCESSOR_ARM3:
+      /* For arm2/3 there is no need to do any scheduling if there is
+	 only a floating point emulator, or we are doing software
+	 floating-point.  */
+      if (TARGET_SOFT_FLOAT || arm_fpu != FP_HARD)
+	flag_schedule_insns = flag_schedule_insns_after_reload = 0;
+      break;
+
+    case PROCESSOR_ARM6:
+    case PROCESSOR_ARM7:
+      break;
+
+    case PROCESSOR_ARM8:
+    case PROCESSOR_ARM9:
+      /* For these processors, it never costs more than 2 cycles to load a
+	 constant, and the load scheduler may well reduce that to 1.  */
+      arm_constant_limit = 1;
+      break;
+
+    case PROCESSOR_STARM:
+      /* Same as above */
+      arm_constant_limit = 1;
+      /* StrongARM has early execution of branches, a sequence that is worth
+	 skipping is shorter.  */
+      max_insns_skipped = 3;
+      break;
+
+    default:
+      fatal ("Unknown cpu type selected");
+      break;
+    }
+
+  /* If optimizing for size, bump the number of instructions that we
+     are prepared to conditionally execute (even on a StrongARM).  */
+  if (optimize_size)
+    max_insns_skipped = 6;
 
   arm_prog_mode = TARGET_APCS_32 ? PROG_MODE_PROG32 : PROG_MODE_PROG26;
   
@@ -383,11 +428,11 @@ arm_override_options ()
     }
 }
 
-
 /* Return 1 if it is possible to return using a single instruction */
 
 int
-use_return_insn ()
+use_return_insn (iscond)
+     int iscond;
 {
   int regno;
 
@@ -398,8 +443,12 @@ use_return_insn ()
     return 0;
 
   /* Can't be done if interworking with Thumb, and any registers have been
-     stacked */
-  if (TARGET_THUMB_INTERWORK)
+     stacked.  Similarly, on StrongARM, conditional returns are expensive
+     if they aren't taken and registers have been stacked.  */
+  if (iscond && arm_cpu == PROCESSOR_STARM && frame_pointer_needed)
+    return 0;
+  else if ((iscond && arm_cpu == PROCESSOR_STARM)
+	   || TARGET_THUMB_INTERWORK)
     for (regno = 0; regno < 16; regno++)
       if (regs_ever_live[regno] && ! call_used_regs[regno])
 	return 0;
@@ -1604,6 +1653,11 @@ arm_adjust_cost (insn, link, dep, cost)
 {
   rtx i_pat, d_pat;
 
+  /* XXX This is not strictly true for the FPA. */
+  if (REG_NOTE_KIND(link) == REG_DEP_ANTI
+      || REG_NOTE_KIND(link) == REG_DEP_OUTPUT)
+    return 0;
+
   if ((i_pat = single_set (insn)) != NULL
       && GET_CODE (SET_SRC (i_pat)) == MEM
       && (d_pat = single_set (dep)) != NULL
@@ -2536,6 +2590,13 @@ load_multiple_sequence (operands, nops, regs, base, load_offset)
 
   if (unsorted_offsets[order[nops - 1]] == -4)
     return 4; /* ldmdb */
+
+  /* For ARM8,9 & StrongARM, 2 ldr instructions are faster than an ldm if
+     the offset isn't small enough */
+  if (nops == 2
+      && (arm_cpu == PROCESSOR_ARM8 || arm_cpu == PROCESSOR_ARM9
+	  || arm_cpu == PROCESSOR_STARM))
+    return 0;
 
   /* Can't do it without setting up the offset, only do this if it takes
      no more than one insn.  */
@@ -5009,7 +5070,7 @@ output_func_epilogue (f, frame_size)
   int volatile_func = (optimize > 0
 		       && TREE_THIS_VOLATILE (current_function_decl));
 
-  if (use_return_insn() && return_used_this_function)
+  if (use_return_insn (FALSE) && return_used_this_function)
     {
       if ((frame_size + current_function_outgoing_args_size) != 0
 	  && !(frame_pointer_needed || TARGET_APCS))
@@ -5830,7 +5891,7 @@ final_prescan_insn (insn, opvec, noperands)
 	 insns are okay, and the label or unconditional branch to the same
 	 label is not too far away, succeed.  */
       for (insns_skipped = 0;
-	   !fail && !succeed && insns_skipped++ < MAX_INSNS_SKIPPED;)
+	   !fail && !succeed && insns_skipped++ < max_insns_skipped;)
 	{
 	  rtx scanbody;
 
@@ -5892,7 +5953,7 @@ final_prescan_insn (insn, opvec, noperands)
 		    this_insn = next_nonnote_insn (this_insn);
 
 		  if (this_insn && this_insn == label
-		      && insns_skipped < MAX_INSNS_SKIPPED)
+		      && insns_skipped < max_insns_skipped)
 		    {
 		      if (jump_clobbers)
 			{
@@ -5927,6 +5988,12 @@ final_prescan_insn (insn, opvec, noperands)
 		  else if (GET_CODE (SET_SRC (scanbody)) == IF_THEN_ELSE)
 		    fail = TRUE;
 		}
+	      /* Fail if a conditional return is undesirable (eg on a
+		 StrongARM), but still allow this if optimizing for size.  */
+	      else if (GET_CODE (scanbody) == RETURN
+		       && ! use_return_insn (TRUE)
+		       && ! optimize_size)
+		fail = TRUE;
 	      else if (GET_CODE (scanbody) == RETURN
 		       && seeking_return)
 	        {

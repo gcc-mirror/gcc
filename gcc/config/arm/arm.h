@@ -53,6 +53,8 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_CPU_arm810	0x0020
 #define TARGET_CPU_strongarm	0x0040
 #define TARGET_CPU_strongarm110 0x0040
+#define TARGET_CPU_arm9		0x0080
+#define TARGET_CPU_arm9tdmi	0x0080
 /* Configure didn't specify */
 #define TARGET_CPU_generic	0x8000
 
@@ -95,7 +97,7 @@ extern int frame_pointer_needed;
 #if TARGET_CPU_DEFAULT == TARGET_CPU_arm7m
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_3M__"
 #else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm7tdmi
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm7tdmi || TARGET_CPU_DEFAULT == TARGET_CPU_ARM9
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_4T__"
 #else
 #if TARGET_CPU_DEFAULT == TARGET_CPU_arm8 || TARGET_CPU_DEFAULT == TARGET_CPU_arm810 || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm
@@ -140,6 +142,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{march=arm7tdmi:-D__ARM_ARCH_4T__} \
 %{march=arm8:-D__ARM_ARCH_4__} \
 %{march=arm810:-D__ARM_ARCH_4__} \
+%{march=arm9:-D__ARM_ARCH_4T__} \
+%{march=arm9tdmi:-D__ARM_ARCH_4T__} \
 %{march=strongarm:-D__ARM_ARCH_4__} \
 %{march=strongarm110:-D__ARM_ARCH_4__} \
 %{march=armv2:-D__ARM_ARCH_2__} \
@@ -167,6 +171,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
  %{mcpu=arm7tdmi:-D__ARM_ARCH_4T__} \
  %{mcpu=arm8:-D__ARM_ARCH_4__} \
  %{mcpu=arm810:-D__ARM_ARCH_4__} \
+ %{mcpu=arm9:-D__ARM_ARCH_4T__} \
+ %{mcpu=arm9tdmi:-D__ARM_ARCH_4T__} \
  %{mcpu=strongarm:-D__ARM_ARCH_4__} \
  %{mcpu=strongarm110:-D__ARM_ARCH_4__} \
  %{!mcpu*:%{!m6:%{!m2:%{!m3:%(cpp_cpu_arch_default)}}}}} \
@@ -427,6 +433,7 @@ enum processor_type
   PROCESSOR_ARM6,
   PROCESSOR_ARM7,
   PROCESSOR_ARM8,
+  PROCESSOR_ARM9,
   PROCESSOR_STARM,
   PROCESSOR_NONE	/* NOTE: This must be last, since it doesn't
 			   appear in the attr_cpu list */
@@ -1165,7 +1172,7 @@ do {									\
 
 /* Determine if the epilogue should be output as RTL.
    You should override this if you define FUNCTION_EXTRA_EPILOGUE.  */
-#define USE_RETURN_INSN use_return_insn ()
+#define USE_RETURN_INSN(ISCOND) use_return_insn (ISCOND)
 
 /* Definitions for register eliminations.
 
@@ -2050,7 +2057,7 @@ do {									\
    fully defined yet.  */
 
 void arm_override_options (/* void */);
-int use_return_insn (/* void */);
+int use_return_insn (/* int */);
 int const_ok_for_arm (/* HOST_WIDE_INT */);
 int const_ok_for_op (/* HOST_WIDE_INT, enum rtx_code, 
 			enum machine_mode */);
