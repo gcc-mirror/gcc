@@ -1,7 +1,5 @@
 // Adapted from testcase by Oskar Enoksson <osken393@student.liu.se>
 
-// execution test - XFAIL *-*-*
-
 extern "C" void abort();
 
 template<class T0>
@@ -22,6 +20,6 @@ public:
 };
 
 int main() {
-  if (sizeof(C<3,7>::AC::T) != 7) // gets bogus error - XFAIL *-*-*
+  if (sizeof(C<3,7>::AC::T) != 7) 
     abort();
 }

@@ -1740,7 +1740,7 @@ covariant_return_p (brettype, drettype)
       drettype = TREE_TYPE (drettype);
     }
 
-  if (comptypes (brettype, drettype, 1))
+  if (same_type_p (brettype, drettype))
     return 0;
 
   if (! (TREE_CODE (brettype) == TREE_CODE (drettype)
@@ -1850,7 +1850,7 @@ get_matching_virtual (binfo, fndecl, dtorp)
 		  && compparms (TREE_CHAIN (btypes), TREE_CHAIN (dtypes)))
 		{
 		  tree brettype = TREE_TYPE (TREE_TYPE (tmp));
-		  if (comptypes (brettype, drettype, 1))
+		  if (same_type_p (brettype, drettype))
 		    /* OK */;
 		  else if ((i = covariant_return_p (brettype, drettype)))
 		    {
@@ -1864,7 +1864,7 @@ get_matching_virtual (binfo, fndecl, dtorp)
 			}
 		    }
 		  else if (IS_AGGR_TYPE_2 (brettype, drettype)
-			   && comptypes (brettype, drettype, 0))
+			   && same_or_base_type_p (brettype, drettype))
 		    {
 		      error ("invalid covariant return type (must use pointer or reference)");
 		      cp_error_at ("  overriding `%#D'", tmp);

@@ -64,7 +64,7 @@ is_friend (type, supplicant)
 	      tree friends = TREE_VALUE (list);
 	      for (; friends ; friends = TREE_CHAIN (friends))
 		{
-		  if (comptypes (ctype, TREE_PURPOSE (friends), 1))
+		  if (same_type_p (ctype, TREE_PURPOSE (friends)))
 		    return 1;
 
 		  if (TREE_VALUE (friends) == NULL_TREE)
@@ -86,8 +86,8 @@ is_friend (type, supplicant)
 		     FUNCTION_MEMBER_P bit can go.  */
 		  if ((flag_guiding_decls 
 		       || DECL_FUNCTION_MEMBER_P (supplicant))
-		      && comptypes (TREE_TYPE (supplicant),
-				    TREE_TYPE (TREE_VALUE (friends)), 1))
+		      && same_type_p (TREE_TYPE (supplicant),
+				      TREE_TYPE (TREE_VALUE (friends))))
 		    return 1;
 
 		  if (TREE_CODE (TREE_VALUE (friends)) == TEMPLATE_DECL
@@ -112,7 +112,7 @@ is_friend (type, supplicant)
 
 	  if (TREE_CODE (t) == TEMPLATE_DECL ? 
 	      is_specialization_of (TYPE_MAIN_DECL (supplicant), t) :
-	      comptypes (supplicant, t, 1))
+	      same_type_p (supplicant, t))
 	    return 1;
 	}
     }      
@@ -278,7 +278,7 @@ make_friend_class (type, friend_type)
        friends with itself; this means that each instantiation is
        friends with all other instantiations.  */
     is_template_friend = 1;
-  else if (comptypes (type, friend_type, 1))
+  else if (same_type_p (type, friend_type))
     {
       pedwarn ("class `%s' is implicitly friends with itself",
 	       TYPE_NAME_STRING (type));
@@ -297,7 +297,7 @@ make_friend_class (type, friend_type)
 	 /* Stop if we find the same type on the list.  */
 	 && !(TREE_CODE (TREE_VALUE (classes)) == TEMPLATE_DECL ?
 	      friend_type == TREE_VALUE (classes) :
-	      comptypes (TREE_VALUE (classes), friend_type, 1)))
+	      same_type_p (TREE_VALUE (classes), friend_type)))
     classes = TREE_CHAIN (classes);
   if (classes) 
     cp_warning ("`%T' is already a friend of `%T'",

@@ -845,8 +845,8 @@ standard_conversion (to, from, expr)
       enum tree_code ufcode = TREE_CODE (TREE_TYPE (from));
       enum tree_code utcode = TREE_CODE (TREE_TYPE (to));
 
-      if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (from)),
-		     TYPE_MAIN_VARIANT (TREE_TYPE (to)), 1))
+      if (same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (from)),
+		       TYPE_MAIN_VARIANT (TREE_TYPE (to))))
 	;
       else if (utcode == VOID_TYPE && ufcode != OFFSET_TYPE
 	       && ufcode != FUNCTION_TYPE)
@@ -862,9 +862,9 @@ standard_conversion (to, from, expr)
 	  tree tbase = TYPE_OFFSET_BASETYPE (TREE_TYPE (to));
 
 	  if (DERIVED_FROM_P (fbase, tbase)
-	      && (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (from))),
-			     TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (to))),
-			     1)))
+	      && (same_type_p 
+		  (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (from))),
+		   TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (to))))))
 	    {
 	      from = build_offset_type (tbase, TREE_TYPE (TREE_TYPE (from)));
 	      from = build_pointer_type (from);
@@ -884,7 +884,7 @@ standard_conversion (to, from, expr)
 	    }
 	}
 
-      if (comptypes (from, to, 1))
+      if (same_type_p (from, to))
 	/* OK */;
       else if (comp_ptr_ttypes (TREE_TYPE (to), TREE_TYPE (from)))
 	conv = build_conv (QUAL_CONV, to, conv);
@@ -909,7 +909,7 @@ standard_conversion (to, from, expr)
       tree tbase = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (tofn)));
 
       if (! DERIVED_FROM_P (fbase, tbase)
-	  || ! comptypes (TREE_TYPE (fromfn), TREE_TYPE (tofn), 1)
+	  || ! same_type_p (TREE_TYPE (fromfn), TREE_TYPE (tofn))
 	  || ! compparms (TREE_CHAIN (TYPE_ARG_TYPES (fromfn)),
 			  TREE_CHAIN (TYPE_ARG_TYPES (tofn)))
 	  || CP_TYPE_QUALS (fbase) != CP_TYPE_QUALS (tbase))
@@ -990,8 +990,8 @@ reference_binding (rto, rfrom, expr, flags)
   else if (! expr || ! real_lvalue_p (expr))
     lvalue = 0;
 
-  related = (comptypes (TYPE_MAIN_VARIANT (to),
-			TYPE_MAIN_VARIANT (from), 1)
+  related = (same_type_p (TYPE_MAIN_VARIANT (to),
+			  TYPE_MAIN_VARIANT (from))
 	     || (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
 		 && DERIVED_FROM_P (to, from)));
 
@@ -999,8 +999,8 @@ reference_binding (rto, rfrom, expr, flags)
     {
       conv = build1 (IDENTITY_CONV, from, expr);
 
-      if (comptypes (TYPE_MAIN_VARIANT (to),
-		     TYPE_MAIN_VARIANT (from), 1))
+      if (same_type_p (TYPE_MAIN_VARIANT (to),
+		       TYPE_MAIN_VARIANT (from)))
 	conv = build_conv (REF_BIND, rto, conv);
       else
 	{
@@ -3099,7 +3099,7 @@ convert_like (convs, expr)
 	       destination type takes a pointer argument.  */
 	    if (TYPE_SIZE (TREE_TYPE (expr)) == 0)
 	      {
-		if (comptypes (TREE_TYPE (expr), TREE_TYPE (convs), 1))
+		if (same_type_p (TREE_TYPE (expr), TREE_TYPE (convs)))
 		  incomplete_type_error (expr, TREE_TYPE (expr));
 		else
 		  cp_error ("could not convert `%E' (with incomplete type `%T') to `%T'",
@@ -3369,8 +3369,8 @@ build_over_call (cand, args, flags)
       if (TREE_CODE (targ) == ADDR_EXPR)
 	{
 	  targ = TREE_OPERAND (targ, 0);
-	  if (! comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (arg))),
-			   TYPE_MAIN_VARIANT (TREE_TYPE (targ)), 1))
+	  if (!same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (arg))),
+			    TYPE_MAIN_VARIANT (TREE_TYPE (targ))))
 	    targ = NULL_TREE;
 	}
       else
@@ -3713,9 +3713,9 @@ is_subseq (ics1, ics2)
       ics2 = TREE_OPERAND (ics2, 0);
 
       if (TREE_CODE (ics2) == TREE_CODE (ics1)
-	  && comptypes (TREE_TYPE (ics2), TREE_TYPE (ics1), 1)
-	  && comptypes (TREE_TYPE (TREE_OPERAND (ics2, 0)),
-			TREE_TYPE (TREE_OPERAND (ics1, 0)), 1))
+	  && same_type_p (TREE_TYPE (ics2), TREE_TYPE (ics1))
+	  && same_type_p (TREE_TYPE (TREE_OPERAND (ics2, 0)),
+			     TREE_TYPE (TREE_OPERAND (ics1, 0))))
 	return 1;
     }
 }
@@ -3734,8 +3734,8 @@ is_properly_derived_from (derived, base)
 
   /* We only allow proper derivation here.  The DERIVED_FROM_P macro
      considers every class derived from itself.  */
-  return (!comptypes (TYPE_MAIN_VARIANT (derived),
-		      TYPE_MAIN_VARIANT (base), 1)
+  return (!same_type_p (TYPE_MAIN_VARIANT (derived),
+			TYPE_MAIN_VARIANT (base))
 	  && DERIVED_FROM_P (base, derived));
 }
 
@@ -3948,7 +3948,7 @@ compare_ics (ics1, ics2)
       from_type2 = TREE_TYPE (from_type2);
     }
 
-  if (comptypes (from_type1, from_type2, 1))
+  if (same_type_p (from_type1, from_type2))
     {
       if (is_subseq (ics1, ics2))
 	return 1;
@@ -4048,7 +4048,7 @@ compare_ics (ics1, ics2)
       else if (TREE_CODE (deref_to_type1) == VOID_TYPE
 	       || TREE_CODE (deref_to_type2) == VOID_TYPE)
 	{
-	  if (comptypes (deref_from_type1, deref_from_type2, 1))
+	  if (same_type_p (deref_from_type1, deref_from_type2))
 	    {
 	      if (TREE_CODE (deref_to_type2) == VOID_TYPE)
 		{
@@ -4075,7 +4075,7 @@ compare_ics (ics1, ics2)
 	     
 	     --conversion of B* to A* is better than conversion of C* to
 	       A*  */
-	  if (comptypes (deref_from_type1, deref_from_type2, 1))
+	  if (same_type_p (deref_from_type1, deref_from_type2))
 	    {
 	      if (is_properly_derived_from (deref_to_type1,
 					    deref_to_type2))
@@ -4084,7 +4084,7 @@ compare_ics (ics1, ics2)
 						 deref_to_type1))
 		return -1;
 	    }
-	  else if (comptypes (deref_to_type1, deref_to_type2, 1))
+	  else if (same_type_p (deref_to_type1, deref_to_type2))
 	    {
 	      if (is_properly_derived_from (deref_from_type2,
 					    deref_from_type1))
@@ -4096,7 +4096,7 @@ compare_ics (ics1, ics2)
 	}
     }
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (from_type1))
-	   && comptypes (from_type1, from_type2, 1))
+	   && same_type_p (from_type1, from_type2))
     {
       /* [over.ics.rank]
 	 
@@ -4115,7 +4115,7 @@ compare_ics (ics1, ics2)
 	}
     }
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (to_type1))
-	   && comptypes (to_type1, to_type2, 1))
+	   && same_type_p (to_type1, to_type2))
     {
       /* [over.ics.rank]
 
@@ -4142,7 +4142,7 @@ compare_ics (ics1, ics2)
        qualification signature of type T2  */
   if (TREE_CODE (ics1) == QUAL_CONV 
       && TREE_CODE (ics2) == QUAL_CONV
-      && comptypes (from_type1, from_type2, 1))
+      && same_type_p (from_type1, from_type2))
     return comp_cv_qual_signature (to_type1, to_type2);
 
   /* [over.ics.rank]
@@ -4154,8 +4154,8 @@ compare_ics (ics1, ics2)
      which the reference initialized by S1 refers */
       
   if (ref_binding1 && ref_binding2
-      && comptypes (TYPE_MAIN_VARIANT (to_type1),
-		    TYPE_MAIN_VARIANT (to_type2), 1))
+      && same_type_p (TYPE_MAIN_VARIANT (to_type1),
+		      TYPE_MAIN_VARIANT (to_type2)))
     return comp_cv_qualification (target_type2, target_type1);
 
   /* Neither conversion sequence is better than the other.  */
@@ -4298,8 +4298,8 @@ joust (cand1, cand2, warn)
 	   != DECL_CONSTRUCTOR_P (cand2->fn))
 	  /* Don't warn if the two conv ops convert to the same type...  */
 	  || (! DECL_CONSTRUCTOR_P (cand1->fn)
-	      && ! comptypes (TREE_TYPE (cand1->second_conv),
-			      TREE_TYPE (cand2->second_conv), 1))))
+	      && ! same_type_p (TREE_TYPE (cand1->second_conv),
+				TREE_TYPE (cand2->second_conv)))))
     {
       int comp = compare_ics (cand1->second_conv, cand2->second_conv);
       if (comp != winner)
@@ -4355,8 +4355,8 @@ joust (cand1, cand2, warn)
       && TREE_CODE (cand1->fn) == IDENTIFIER_NODE)
     {
       for (i = 0; i < len; ++i)
-	if (! comptypes (TREE_TYPE (TREE_VEC_ELT (cand1->convs, i)),
-			 TREE_TYPE (TREE_VEC_ELT (cand2->convs, i)), 1))
+	if (!same_type_p (TREE_TYPE (TREE_VEC_ELT (cand1->convs, i)),
+			  TREE_TYPE (TREE_VEC_ELT (cand2->convs, i))))
 	  break;
       if (i == TREE_VEC_LENGTH (cand1->convs))
 	return 1;
@@ -4371,7 +4371,7 @@ joust (cand1, cand2, warn)
 	  tree t1 = strip_top_quals (non_reference (TREE_TYPE (c1)));
 	  tree t2 = strip_top_quals (non_reference (TREE_TYPE (c2)));
 
-	  if (comptypes (t1, t2, 1))
+	  if (same_type_p (t1, t2))
 	    {
 	      if (TREE_CODE (c1) == REF_BIND && TREE_CODE (c2) != REF_BIND)
 		return 1;

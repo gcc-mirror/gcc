@@ -124,7 +124,6 @@ static int check_cv_quals_for_unify PROTO((int, tree, tree));
 static tree tsubst_template_arg_vector PROTO((tree, tree));
 static tree tsubst_template_parms PROTO((tree, tree));
 static void regenerate_decl_from_template PROTO((tree, tree));
-static int is_member_template_class PROTO((tree));
 static tree most_specialized PROTO((tree, tree, tree));
 static tree most_specialized_class PROTO((tree, tree));
 static tree most_general_template PROTO((tree));
@@ -750,8 +749,8 @@ is_specialization_of (decl, tmpl)
 	   t != NULL_TREE;
 	   t = CLASSTYPE_USE_TEMPLATE (t)
 	     ? TREE_TYPE (CLASSTYPE_TI_TEMPLATE (t)) : NULL_TREE)
-	if (comptypes (TYPE_MAIN_VARIANT (t), 
-		       TYPE_MAIN_VARIANT (TREE_TYPE (tmpl)), 1))
+	if (same_type_p (TYPE_MAIN_VARIANT (t), 
+			 TYPE_MAIN_VARIANT (TREE_TYPE (tmpl))))
 	  return 1;
     }  
 
@@ -1464,8 +1463,7 @@ int comp_template_parms (parms1, parms2)
 
 	  if (TREE_CODE (parm1) == TEMPLATE_TYPE_PARM)
 	    continue;
-	  else if (!comptypes (TREE_TYPE (parm1), 
-			       TREE_TYPE (parm2), 1))
+	  else if (!same_type_p (TREE_TYPE (parm1), TREE_TYPE (parm2)))
 	    return 0;
 	}
     }
@@ -2555,7 +2553,7 @@ convert_nontype_argument (type, expr)
 
 	    expr = build_unary_op (ADDR_EXPR, fn, 0);
 
-	    my_friendly_assert (comptypes (type, TREE_TYPE (expr), 1), 
+	    my_friendly_assert (same_type_p (type, TREE_TYPE (expr)), 
 				0);
 	    return expr;
 	  }
@@ -2613,7 +2611,8 @@ convert_nontype_argument (type, expr)
 		  goto bad_argument;
 	      }
 
-	    my_friendly_assert (comptypes (type_referred_to, TREE_TYPE (fn), 1),
+	    my_friendly_assert (same_type_p (type_referred_to, 
+					     TREE_TYPE (fn)),
 				0);
 
 	    return fn;
@@ -2626,8 +2625,8 @@ convert_nontype_argument (type, expr)
 	       identical) type of the template-argument.  The
 	       template-parameter is bound directly to the
 	       template-argument, which must be an lvalue.  */
-	    if (!comptypes (TYPE_MAIN_VARIANT (expr_type),
-			    TYPE_MAIN_VARIANT (type), 1)
+	    if (!same_type_p (TYPE_MAIN_VARIANT (expr_type),
+			      TYPE_MAIN_VARIANT (type))
 		|| !at_least_as_qualified_p (type_referred_to,
 					     expr_type)
 		|| !real_lvalue_p (expr))
@@ -2664,7 +2663,7 @@ convert_nontype_argument (type, expr)
 	if (TREE_CODE (expr) == CONSTRUCTOR)
 	  {
 	    /* A ptr-to-member constant.  */
-	    if (!comptypes (type, expr_type, 1))
+	    if (!same_type_p (type, expr_type))
 	      return error_mark_node;
 	    else 
 	      return expr;
@@ -2683,7 +2682,7 @@ convert_nontype_argument (type, expr)
 
 	expr = build_unary_op (ADDR_EXPR, fn, 0);
 	
-	my_friendly_assert (comptypes (type, TREE_TYPE (expr), 1), 
+	my_friendly_assert (same_type_p (type, TREE_TYPE (expr)),
 			    0);
 	return expr;
       }
@@ -2762,8 +2761,8 @@ coerce_template_template_parms (parm_parms, arg_parms, in_decl, outer_args)
 	  /* The tsubst call is used to handle cases such as
 	       template <class T, template <T> class TT> class D;  
 	     i.e. the parameter list of TT depends on earlier parameters.  */
-	  if (!comptypes (tsubst (TREE_TYPE (parm), outer_args, in_decl), 
-			  TREE_TYPE (arg), 1))
+	  if (!same_type_p (tsubst (TREE_TYPE (parm), outer_args, in_decl), 
+			    TREE_TYPE (arg)))
 	    return 0;
 	  break;
 	  
@@ -3089,7 +3088,7 @@ template_args_equal (ot, nt)
     /* For member templates */
     return comp_template_args (ot, nt);
   else if (TREE_CODE_CLASS (TREE_CODE (ot)) == 't')
-    return comptypes (ot, nt, 1);
+    return same_type_p (ot, nt);
   else
     return (cp_tree_equal (ot, nt) > 0);
 }
@@ -3540,7 +3539,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 		   ctx; 
 		   ctx = (TREE_CODE_CLASS (TREE_CODE (ctx)) == 't') 
 		     ? TYPE_CONTEXT (ctx) : DECL_CONTEXT (ctx))
-		if (comptypes (ctx, template_type, 1))
+		if (same_type_p (ctx, template_type))
 		  break;
 	      
 	      if (!ctx)
@@ -6859,7 +6858,7 @@ type_unification_real (tparms, targs, parms, args, subr,
 
 	  if (strict == DEDUCE_EXACT)
 	    {
-	      if (comptypes (parm, type, 1))
+	      if (same_type_p (parm, type))
 		continue;
 	    }
 	  else
@@ -7187,7 +7186,7 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	/* The PARM is not one we're trying to unify.  Just check
 	   to see if it matches ARG.  */
 	return (TREE_CODE (arg) == TREE_CODE (parm)
-		&& comptypes (parm, arg, 1)) ? 0 : 1;
+		&& same_type_p (parm, arg)) ? 0 : 1;
       idx = TEMPLATE_TYPE_IDX (parm);
       targ = TREE_VEC_ELT (targs, idx);
       tparm = TREE_VALUE (TREE_VEC_ELT (tparms, idx));
@@ -7276,7 +7275,7 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 
       /* Simple cases: Value already set, does match or doesn't.  */
       if (targ != NULL_TREE 
-	  && (comptypes (targ, arg, 1)
+	  && (same_type_p (targ, arg)
 	      || (explicit_mask && explicit_mask[idx])))
 	return 0;
       else if (targ)
@@ -7391,8 +7390,8 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
       /* We use the TYPE_MAIN_VARIANT since we have already
 	 checked cv-qualification at the top of the
 	 function.  */
-      else if (!comptypes (TYPE_MAIN_VARIANT (arg),
-			   TYPE_MAIN_VARIANT (parm), 1))
+      else if (!same_type_p (TYPE_MAIN_VARIANT (arg),
+			     TYPE_MAIN_VARIANT (parm)))
 	return 1;
 
       /* As far as unification is concerned, this wins.	 Later checks
@@ -7462,8 +7461,8 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 			CLASSTYPE_TI_ARGS (t), UNIFY_ALLOW_NONE,
 			explicit_mask);
 	}
-      else if (!comptypes (TYPE_MAIN_VARIANT (parm),
-			   TYPE_MAIN_VARIANT (arg), 1))
+      else if (!same_type_p (TYPE_MAIN_VARIANT (parm),
+			     TYPE_MAIN_VARIANT (arg)))
 	return 1;
       return 0;
 
@@ -7692,7 +7691,7 @@ get_bindings_real (fn, decl, explicit_args, check_rettype)
       tree t = tsubst (TREE_TYPE (TREE_TYPE (fn)), targs,
 		       NULL_TREE);
 
-      if (!comptypes (t, TREE_TYPE (TREE_TYPE (decl)), 1))
+      if (!same_type_p (t, TREE_TYPE (TREE_TYPE (decl))))
 	return NULL_TREE;
     }
 

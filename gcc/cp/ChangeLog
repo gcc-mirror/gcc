@@ -1,3 +1,69 @@
+1998-11-01  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (COMPARE_STRICT): New macro.
+	(COMPARE_BASE): Likewise.
+	(COMPARE_RELAXED): Likewise.
+	(COMPARE_REDECLARATION): Likewise.
+	(same_type_p): Likewise.
+	(same_or_base_type_p): Likewise.
+	* call.c (standard_conversion): Use them, in place of comptypes
+	with numeric arguments.
+	(reference_binding): Likewise.
+	(convert_like): Likewise.
+	(build_over_call): Likewise.
+	(is_subseq): Likewise.
+	(is_properly_derived_from): Likewise.
+	(compare_ics): Likewise.
+	(joust): Likewise.
+	* class.c (delete_duplicate_fields_1): Likewise.
+	(resolves_to_fixed_type_p): Likewise.
+	(instantiate_type): Likewise.  Remove #if 0'd code.
+	* decl.c (decls_match): Likewise.  Use COMPARE_REDECLARATION here.
+	(pushdecl): Likewise.
+	(lookup_name_real): Likewise.
+	(grokdeclarator): Likewise.  Check for illegal array declarations.
+	(grokparms): Likewise.
+	(grok_op_properties): Likewise.
+	* decl2.c (check_classfn): Likewise.
+	* friend.c (is_friend): Likewise.
+	(make_friend_class): Likewise.
+	* init.c (expand_aggr_init): Likewise.
+	(expand_vec_init): Likewise.
+	* pt.c (is_member_template_class): Remove declaration.
+	(is_specialization_of): Use COMPARE_* and new macros.
+	(comp_template_parms): Likewise.
+	(convert_nontype_argument): Likewise.
+	(coerce_template_template_parms): Likewise.
+	(template_args_equal): Likewise.
+	(lookup_template_class): Likewise.
+	(type_unification_real): Likewise.
+	(unify): Likewise.
+	(get_bindings_real): Likewise.
+	* search.c (covariant_return_p): Likewise.
+	(get_matching_virtual): Likewise.
+	* sig.c (match_method_types): Likewise.
+	* tree.c (vec_binfo_member): Likewise.
+	(cp_tree_equal): Likewise.
+	* typeck.c (common_type): Likewise.
+	(comp_array_types): Likewise.  Get issues involving unknown array
+	bounds right.
+	(comptypes): Update comments.  Use new flags.
+	(comp_target_types): Use new macros.
+	(compparms): Likewise.
+	(comp_target_parms): Likewise.
+	(string_conv_p): Likewise.
+	(build_component_ref): Likewise.
+	(build_indirect_ref): Likewise.
+	(build_conditional_expr): Likewise.
+	(build_static_cast): Likewise.
+	(build_reinterpret_cast): Likewise.
+	(build_const_cast): Likewise.
+	(build_modify_expr): Likewise.
+	(convert_for_assignment): Likewise.
+	(comp_ptr_ttypes_real): Likewise.
+	(ptr_reasonably_similar): Likewise.
+	(comp_ptr_ttypes_const): Likewise.
+	
 1998-10-31  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* rtti.c (build_dynamic_cast_1): Fix cut-and-paste error.

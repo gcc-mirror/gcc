@@ -22,23 +22,23 @@
 
 // keywords: incomplete types, arrays, element types
 
-extern int extern_two_d [] [];		// ERROR - , XFAIL *-*-*
+extern int extern_two_d [] [];		// ERROR - invalid declaration
 int tenative_two_d [] [];		// ERROR - caught by g++
 static int static_two_d [] [];		// ERROR - caught by g++
 
-int (*pointer_to_two_d)[][];		// ERROR - , XFAIL *-*-*
+int (*pointer_to_two_d)[][];		// ERROR - invalid declaration
 
-void function_0 (int arg [] []) {	/* ERROR - */
+void function_0 (int arg [] []) {	// ERROR - invalid declaration
 }
 
 typedef int int_one_d_type [];
-typedef int_one_d_type int_two_d_type[];// ERROR - , XFAIL *-*-*
+typedef int_one_d_type int_two_d_type[];// ERROR - invalid declaration
 
 struct s;
 
 extern struct s extern_s_array [10];	// ERROR - , XFAIL *-*-*
-struct s tenative_s_array [10];		/* ERROR - caught by g++ */
-static struct s static_s_array [10];	/* ERROR - caught by g++ */
+struct s tenative_s_array [10];		// ERROR - caught by g++ 
+static struct s static_s_array [10];	// ERROR - caught by g++
 
 struct s (*pointer_to_s_array) [];	// ERROR - , XFAIL *-*-*
 

@@ -408,7 +408,7 @@ match_method_types (sig_mtype, class_mtype)
   tree class_arg_types = TYPE_ARG_TYPES (class_mtype);
 
   /* The return types have to be the same.  */
-  if (! comptypes (sig_return_type, class_return_type, 1))
+  if (!same_type_p (sig_return_type, class_return_type))
     return 0;
 
   /* Compare the first argument `this.'  */
