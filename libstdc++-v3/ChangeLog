@@ -1,3 +1,10 @@
+2003-04-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* docs/html/install.html: Document complete list of locales
+	required by test suite.  Document procedure for installing
+	said locales under Debian.  Solicit instructions for other
+	operating systems.
+
 2003-04-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* include/bits/sstream.tcc (overflow): Make sure operands of min
@@ -25,7 +32,7 @@
 	(__copy_streambufs): Likewise.
 	* include/std/std_fstream.h (_M_set_determinate): Set
 	_M_out_end here.
-	
+
 2003-03-30  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (basic_filebuf::showmanyc,
@@ -40,19 +47,19 @@
 	* include/std/std_sstream.h (basic_istringstream): Adjust
 	initialization.
 	(basic_ostringstream): Same.
-	(basic_stringstream): Same.	
+	(basic_stringstream): Same.
 	* include/std/std_fstream.h (basic_ifstream): Adjust initialization.
 	(basic_ofstream): Same.
 	(basic_fstream): Same.
 	* include/std/std_ostream.h (basic_ostrem): Add protected ctor
 	that does not call init.
-	* include/std/std_istream.h (basic_istream): Same.		
+	* include/std/std_istream.h (basic_istream): Same.
 	(basic_iostream): Construct istream, ostream uninitialized, use
 	init to initialize just once. Add protected ctor that does not
 	call init.
 
 2003-03-28  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	PR libstdc++/9533
 	* include/bits/fstream.tcc (basic_filebuf<>::open): Don't
@@ -95,7 +102,7 @@
 	* testsuite/21_strings/basic_string/rfind/wchar_t/2.cc: likewise,
 	wchar_t find_last_of tests here.
 	* testsuite/21_strings/basic_string/rfind/wchar_t/3.cc: likewise,
-	wchar_t find_last_not_of tests here.	
+	wchar_t find_last_not_of tests here.
 
 2003-03-22  Loren J. Rittle  <ljrittle@acm.org>
 
@@ -106,8 +113,8 @@
 
 	PR libstdc++/5730
 	* include/bits/c++config (_GLIBCPP_FAST_MATH): Define.
-        * include/std/std_complex.h (norm):  Use faster,
-        less accurate computation for builtin float types under --fast-math.
+	* include/std/std_complex.h (norm):  Use faster,
+	less accurate computation for builtin float types under --fast-math.
 
 2003-03-21  Magnus Fromreide  <gnats@magfr.user.lysator.liu.se>
 
@@ -136,7 +143,7 @@
 	element_access.cc, operations.cc, char_traits_requirements.cc,
 	find.cc, replace.cc, char_traits_typedefs.cc, insert.cc, rfind.cc,
 	compare.cc, inserters_extractors.cc, substr.cc: Split up, add
-	wchar_t tests as follows.	
+	wchar_t tests as follows.
 	* 21_strings/basic_string/append/char/1.cc: New.
 	* 21_strings/basic_string/append/wchar_t/1.cc: New.
 	* 21_strings/basic_string/assign/char/1.cc: New.
@@ -217,9 +224,9 @@
 	* 21_strings/char_traits/requirements/char/1.cc: New.
 	* 21_strings/char_traits/requirements/wchar_t/1.cc: New.
 	* 21_strings/char_traits/typedefs/char/1.cc: New.
-	
+
 2003-03-17  Paolo Carlini  <pcarlini@unitus.it>
-            Petur Runolfsson  <peturr02@ru.is>
+	    Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/10097
 	* src/fstream.cc (basic_filebuf<char>::_M_underflow_common,
@@ -238,12 +245,12 @@
 	Cleanups.
 
 2003-03-17  Petur Runolfsson  <peturr02@ru.is>
- 
-        PR libstdc++/9964
-        * include/bits/fstream.tcc (basic_filebuf::close):
-        Always close file, even when write fails.
-        * testsuite/27_io/filebuf_members.cc (test_07):  New test.
- 
+
+	PR libstdc++/9964
+	* include/bits/fstream.tcc (basic_filebuf::close):
+	Always close file, even when write fails.
+	* testsuite/27_io/filebuf_members.cc (test_07):  New test.
+
 2003-03-17  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* libsupc++/Makefile.am (C_COMPILE): Remove.
@@ -252,7 +259,7 @@
 
 2003-03-14  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* testsuite/23_containers/bitset_members.cc: Add test variable.	
+	* testsuite/23_containers/bitset_members.cc: Add test variable.
 	* testsuite/23_containers/map_insert.cc: Same.
 	* testsuite/22_locale/ctype/cons/char/1.cc: Same.
 	* testsuite/22_locale/codecvt/max_length/wchar_t/1.cc: Same.
@@ -272,7 +279,7 @@
 	* testsuite/26_numerics/slice_array_assignment.cc: Same.
 	* testsuite/24_iterators/istream_iterator.cc: Same.
 	* mkcheck.in (TESTS_FILE): Use dejagnu-generated file if possible.
-	
+
 2003-03-14  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9581
@@ -287,16 +294,16 @@
 	char, char*):
 	Convert characters with wctob instead of wcsrtombs.
 	* testsuite/22_locale/ctype/narrow/wchar_t/3.cc:  New test.
-	* testsuite/22_locale/ctype/widen/wchar_t/2.cc:  New test.	
-	* testsuite/22_locale/ctype/widen/wchar_t/3.cc:  New test.	
+	* testsuite/22_locale/ctype/widen/wchar_t/2.cc:  New test.
+	* testsuite/22_locale/ctype/widen/wchar_t/3.cc:  New test.
 
 2003-03-14  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* include/stdc++.h: New.	
+	* include/stdc++.h: New.
 	* libsupc++/exception_defines.h (__EXCEPTION_DEFINES_H): Add guard.
 	* include/Makefile.am (stamp-std-precompile): Generate stdc++.h.gch
-        * include/Makefile.in: Regenerate.
-        * testsuite_flags.in (--build-cxx): Add, but don't use PCHFLAGS.
+	* include/Makefile.in: Regenerate.
+	* testsuite_flags.in (--build-cxx): Add, but don't use PCHFLAGS.
 	(--cxxflags): Put -g -O2 here.
 	* testsuite/libstdc++-v3.dg/dg.exp: Remove -g -O2 here.
 
@@ -355,7 +362,7 @@
 	* config/io/basic_file_stdio.cc: include <unistd.h>.
 
 2003-03-09  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	PR libstdc++/7744
 	* config/io/basic_file_stdio.h (__basic_file<>::xsgetn, xsputn,
@@ -395,14 +402,14 @@
 	* testsuite/27_io/ostream_exception.cc,
 	testsuite/27_io/istream_exception.cc: New tests.
 
-2003-03-08  Benjamin Kosnik  <bkoz@redhat.com>	
+2003-03-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc: Fix typo.
 
 2003-03-08  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/26_numerics/c99_classification_macros_c.cc: Tweak test.
-	
+
 	* config/locale/generic/c_locale.cc
 	(locale::facet::_S_create_c_locale): Throw runtime exception when
 	unsupported language is specified.
@@ -476,7 +483,7 @@
 	* testsuite/27_io/stringbuf_virtuals.cc: New test wrap.
 
 2003-03-08  Paolo Carlini <pcarlini@unitus.it>
-            Petur Runolfsson  <peturr02@ru.is>
+	    Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9424
 	* include/bits/streambuf.tcc (__copy_streambufs): Use
@@ -566,7 +573,7 @@
 
 2003-03-05  Carlo Wood  <carlo@alinoe.com>
 
-        * include/bits/ios_base.h(ios_base::Init::_S_initialized()): Added
+	* include/bits/ios_base.h(ios_base::Init::_S_initialized()): Added
 	_S_initialized() in order to allow debugging libraries to detect
 	when the std streams are initialized from an overloaded operator
 	new.
@@ -578,8 +585,8 @@
 	* src/demangle.cc: Adjust include.
 	* include/Makefile.am (bits_headers): Add.
 	* include/Makefile.in: Regenerate.
-	
-2003-03-04  Benjamin Kosnik  <bkoz@redhat.com>	
+
+2003-03-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/globals.cc: Clarify comments, remove c_locale_imp_compat.
 
@@ -609,17 +616,17 @@
 	* config/linker-map.gnu: Hide more stuff.
 	* include/Makefile.am: Cleanups.
 	* include/Makefile.in: Regenerate.
-	
+
 2003-02-27  Jerry Quinn  <jlquinn@optonline.net>
 
-        * config/locale/generic/messages_members.h (messages::messages):
+	* config/locale/generic/messages_members.h (messages::messages):
 	Remove name from unused parameter.
 
 2003-02-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/Makefile.am (sources): Add demangle.cc.
 	(demangle.o): Add.
-	(demangle.lo): Add.	
+	(demangle.lo): Add.
 	* src/Makefile.in: Regenerate.
 	* libsupc++/Makefile.am: Remove old __cxa_demangle bits.
 	* libsupc++/Makefile.in: Regenerate.
@@ -627,14 +634,14 @@
 	* testsuite/testsuite_hooks.h
 	(__gnu_cxx_test::verify_demangle): New.
 	* testsuite/testsuite_hooks.cc: Define.
-	
+
 2003-02-27  Carlo Wood  <carlo@alinoe.com>
 
 	* src/demangle.cc: New.
 	* libsupc++/demangle.h: New.
 
 2003-02-27  Benjamin Kosnik  <bkoz@redhat.com>
-            Carlo Wood  <carlo@alinoe.com>
+	    Carlo Wood  <carlo@alinoe.com>
 
 	* testsuite/demangle/abi_examples/01.cc: New.
 	* testsuite/demangle/abi_examples/02.cc: New.
@@ -786,7 +793,7 @@
 
 2003-02-21  Jerry Quinn  <jlquinn@optonline.net>
 
-        * include/bits/locale_facets.tcc (_M_convert_float): Replace
+	* include/bits/locale_facets.tcc (_M_convert_float): Replace
 	numpunct facet accesses with data from __locale_cache.
 
 2003-02-20  Phil Edwards  <pme@gcc.gnu.org>
@@ -845,7 +852,7 @@
 	(ios_base::_M_cache): Define.
 	* include/bits/locale_facets.h:	(__num_base): Fix comment.  Add
 	_S_end.
-        (__locale_cache_base,__locale_cache<_CharT>):  New classes.
+	(__locale_cache_base,__locale_cache<_CharT>):  New classes.
 	(__locale_cache<char>, __locale_cache<wchar_t>): New specializations.
 	* include/bits/locale_facets.tcc (num_put::_M_convert_int): Use locale
 	cache literal string, grouping flag, thousands separator.
@@ -912,21 +919,21 @@
 
 	* include/Makefile.am (stamp-std-precompile): Add rule.
 	* include/Makefile.in: Regenerated.
-	
+
 2003-02-11 Jerry Quinn  <jlquinn@optonline.net>
-           Benjamin Kosnik  <benjamin@redhat.com>
-	
+	   Benjamin Kosnik  <benjamin@redhat.com>
+
 	* include/bits/locale_facets.h (__num_base): Add _S_atoms_out.
 	Add indexes into this array.
 	(__num_base::_S_atoms): To _S_atoms_in.
 	(num_put::_M_insert): Rename to _M_pad.
 	(num_put::_M_convert_int): Adjust remove __mod, __modl arguments.
 	(num_put::_M_widen_int): Rename to _M_group_int.
-	(num_put::_M_widen_float): Rename to _M_group_float.	
+	(num_put::_M_widen_float): Rename to _M_group_float.
 	* include/bits/locale_facets.tcc (__int_to_char): New inline
 	function and adapter functions.
 	(num_put::_M_group_int): Streamline.
-	(num_put::_M_group_float): Streamline.	
+	(num_put::_M_group_float): Streamline.
 	(num_put::_M_convert_int): Remove unused parameter names. Choose
 	large enough buffer for text.  Use __int_to_char instead of
 	__convert_from_v.  Formatted text is now at the end of the buffer.
@@ -937,7 +944,7 @@
 	(__int_to_char<char, unsigned long long>): New.
 	(__int_to_char<wchar_t, unsigned long>): New.
 	(__int_to_char<wchar_t, unsigned long long>): New.
-	
+
 2003-02-11  Scott Snyder  <snyder@fnal.gov>
 
 	PR libstdc++/9659
@@ -957,7 +964,7 @@
 	* testsuite/ext/stdio_filebuf.cc: Add.
 
 2003-02-11  Paolo Carlini  <pcarlini@unitus.it>
-            Petur Runolfsson  <peturr02@ru.is>
+	    Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9318
 	* include/bits/streambuf.tcc (__copy_streambufs):
@@ -1012,13 +1019,13 @@
 	* config/io/c_io_libio.h: Same.
 	* libio/Makefile.am: Same.
 	* libio/Makefile.in: Regenerated.
-	
+
 2003-02-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/codecvt/encoding/wchar_t/1.cc (test01):
 	Explicitly use the "C" locale.
 	* testsuite/22_locale/codecvt/max_length/wchar_t/1.cc (test01): Same.
-	
+
 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
 	DR 75
@@ -1112,19 +1119,19 @@
 	* include/bits/locale_facets.h:	(struct __pad): Comment on
 	implementation.
 	(__verify_grouping): Same.
-	(__add_grouping): Same.		
+	(__add_grouping): Same.
 	* include/bits/locale_facets.tcc (__verify_grouping): Move
 	comments to declaration.
 	(__add_grouping): Same.
-	
-	* include/bits/locale_facets.tcc: 
+
+	* include/bits/locale_facets.tcc:
 	(__write<_CharT, _OutIter>): New function.
 	(__write<_CharT>): New function specialization.
 	(num_put::_M_insert): Remove explicit loop over iterator.  Use
 	__write.
-	(num_put::_M_widen_float): Remove __basefield. 
+	(num_put::_M_widen_float): Remove __basefield.
 	(num_put::_M_widen_int): Move __basefield to within grouping block.
-	
+
 	* include/bits/streambuf_iterator.h: Include <streambuf>.
 	(ostreambuf_iterator::_M_put): Add.
 
@@ -1135,9 +1142,9 @@
 2003-02-04  Nathan Myers  <ncm@cantrip.org>
 
 	* testsuite/25_algorithms/min_max.cc (test02): Add.
-            
+
 2003-02-04  Paolo Carlini  <pcarlini@unitus.it>
-	
+
 	PR libstdc++/9439, PR libstdc++/9425
 	* config/io/basic_file_stdio.cc
 	(__basic_file<char>::seekoff, seekpos): Return -1L if
@@ -1146,13 +1153,13 @@
 	Check _M_file.seekoff return value; always return
 	pos_type(off_type(-1)) in case of failure.
 	(basic_filebuf::pbackfail): Check this->seekoff return
-	value and return traits_type::eof() in case of failure.  
+	value and return traits_type::eof() in case of failure.
 	* testsuite/27_io/filebuf_virtuals.cc (test09): Add.
 
 2003-02-04  Jerry Quinn  <jlquinn@optonline.net>
 
-	* include/std/std_ostream.h (ostream::_M_write): Declare.	
-        * ostream.tcc (ostream::_M_write): Define.
+	* include/std/std_ostream.h (ostream::_M_write): Declare.
+	* ostream.tcc (ostream::_M_write): Define.
 	(basic_ostream::write): Use it.
 	(operator<<(basic_ostream, _CharT)): Ditto.
 	(operator<<(basic_ostream, char)): Ditto.
@@ -1200,7 +1207,7 @@
 	* docs/html/17_intro/porting.html: Regenerate.
 
 2003-02-03  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
-            Phil Edwards  <pme@gcc.gnu.org>
+	    Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/std/std_bitset.h:  Replace CHAR_BIT with __CHAR_BIT__, use
 	numeric_limits for bits-per-word values.
@@ -1240,7 +1247,7 @@
 	* docs/html/faq/index.txt:  Regenerated.
 
 2003-02-01  Paolo Carlini  <pcarlini@unitus.it>
-            Benjamin Kosnik  <bkoz@redhat.com>
+	    Benjamin Kosnik  <bkoz@redhat.com>
 
 	Const correctness issue:
 	http://gcc.gnu.org/ml/libstdc++/2003-01/msg00370.html
@@ -1334,22 +1341,22 @@
 	* include/std/std_iosfwd.h: Add c++locale.h, cctype includes.
 	* include/std/std_fstream.h: Remove streambuf include.
 	* include/std/std_sstream.h: Remove streambuf include.
-	
+
 2003-01-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (libtool_VERSION): To 6:0:0.
 	* configure: Regenerated.
 	* config/linker-map.gnu: Clean.
-	
+
 	* src/misc-inst.cc: Remove instantiations.
 
-	* include/bits/stl_alloc.h (__malloc_alloc_template): 
+	* include/bits/stl_alloc.h (__malloc_alloc_template):
 	To __malloc_alloc.
 	(__default_alloc_template): To __pool_alloc.
 	* src/stl-inst.cc: Same.
 	* include/backward/alloc.h: Update.
 	* testsuite/ext/allocators.cc: Update.
-	
+
 	* src/globals.cc (__gnu_cxx): Remove _GLIBCPP_ASM_SYMVER. Should
 	really try to remove these if possible.
 	* src/locale.cc (std): Same.
@@ -1359,7 +1366,7 @@
 2003-01-22  Benjamin Kosnik  <bkoz@redhat.com>
 	    Sysoltsev Slawa  <Vyatcheslav.Sysoltsev@intel.com>
 	    Mark Mitchell  <mark@codesourcery.com>
-	
+
 	PR libstdc++/9269
 	* include/std/std_fstream.h (basic_filebuf::uflow): Declare.
 	(basic_filebuf::underflow): Declare.
@@ -1368,15 +1375,15 @@
 2003-01-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h: Move non-facet classes requiring
-	<string> to...  
-	* include/bits/locale_classes.h: New.  
+	<string> to...
+	* include/bits/locale_classes.h: New.
 	* include/bits/Makefile.am (bits_headers_src): Add locale_classes.h.
 	* include/bits/Makefile.in: Regenerate.
 
 	* include/bits/locale_facets.tcc (__convert_from_v): Move to...
 	* config/locale/gnu/c_locale.h: ...here.
 	* config/locale/generic/c_locale.h: Same.
-	
+
 	* include/bits/locale_facets.tcc: Move declarations to...
 	* include/bits/locale_facets.h: ...here.
 	* include/bits/basic_ios.h: Tweak includes accordingly.
@@ -1388,7 +1395,7 @@
 
 	* config/linker-map.gnu: Specify __cxa functions, mark __cxa_dyn_*
 	bits as unexported in the future.
-	
+
 2003-01-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Reshuffle 22_locale testsuite.
@@ -1411,8 +1418,8 @@
 	ctype_widen_wchar_t.cc time_get.cc facet.cc time_get_members_char.cc
 	global_templates.cc time_get_members_wchar_t.cc, members.cc,
 	time_put.cc, messages_byname.cc, time_put_members_char.cc,
-	messages.cc, time_put_members_wchar_t.cc, messages_members_char.cc): 
-	Split up into individual test cases...	
+	messages.cc, time_put_members_wchar_t.cc, messages_members_char.cc):
+	Split up into individual test cases...
 	* 22_locale/codecvt/1.cc: New.
 	* 22_locale/codecvt/2.cc: New.
 	* 22_locale/codecvt/always_noconv/char/1.cc: New.
@@ -1736,7 +1743,7 @@
 
 2003-01-16  Mark Mitchell  <mark@codesourcery.com>
 	    Jeffrey Oldham <oldham@codesourcery.com>
-	
+
 	* config/locale/gnu/messages_members.h: Use this-> to refer to
 	unqualified members of base clasess.
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Likewise.
@@ -1759,7 +1766,7 @@
 	* include/ext/stl_rope.h: Likewise.
 	* include/std/std_fstream.h: Likewise.
 	* include/std/std_sstream.h: Likewise.
-	
+
 2003-01-15  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/basic_string.tcc (_S_string_copy): Unused, remove.
@@ -1780,8 +1787,8 @@
 	Remove setulimit bits.
 	* testsuite/26_numerics/complex_value.cc: Set to noopts.
 	* testsuite/Makefile.am (CLEANFILES): Add.
-	* testsuite/Makefile.in: Regenerate.	
-	
+	* testsuite/Makefile.in: Regenerate.
+
 2003-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* config/os/hpux/os_defines.h (_GLIBCPP_GTHREAD_USE_WEAK): Define for
@@ -1797,7 +1804,7 @@
 
 2003-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
-	Renames, namespaces for testsuite utilities.	
+	Renames, namespaces for testsuite utilities.
 	* testsuite/testsuite_hooks.h: Put into namespace __gnu_cxx_test.
 	(gnu_allocator_tracker): Rename to allocation_tracker.
 	(gnu_new_allocator): Rename to tracker_alloc.
@@ -1816,12 +1823,12 @@
 	* testsuite/testsuite_allocator.cc: Same.
 	* testsuite/23_containers/deque_ctor.cc
 	(test_copy_ctor_exception_safety): Change gnu_allocator_tracker to
-	allocation_tracker. 
+	allocation_tracker.
 	Change gnu_new_allocator to tracker_alloc.
 	Change gnu_counting_struct to counter.
 	Change gnu_copy_tracker to copy_tracker.
 	Change gnu_copy_constructor to copy_constructor.
-	Change gnu_assignment_operator to assignment_operator.	
+	Change gnu_assignment_operator to assignment_operator.
 	Inject.
 	* testsuite/23_containers/vector_capacity.cc: Same.
 	* testsuite/23_containers/vector_ctor.cc (test01): Same.
@@ -1879,19 +1886,19 @@
 	* configure.in: Don't add new multi-do rules every time the
 	directory is reconfigured.
 	* configure: Regenerate.
-	
+
 2003-01-08  Brad Spencer  <spencer@infointeractive.com>
-            Nathan Myers  <ncm@cantrip.org>
-	
+	    Nathan Myers  <ncm@cantrip.org>
+
 	* src/Makefile.am (stamp-debug): Clean.
 	* src/Makefile.in: Regenerate.
-	
+
 2003-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/8707
 	* Makefile.am (distclean-multi): Fix.
 	* Makefile.in: Regenerate.
-	
+
 2003-01-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h (messages): Move ctor, dtor
@@ -1911,7 +1918,7 @@
 	Use it.
 	* config/locale/gnu/time_members.h: Use it.
 	* config/locale/gnu/messages_members.h: Use it.
-	* config/linker-map.gnu: Add locale::facets details.	
+	* config/linker-map.gnu: Add locale::facets details.
 	* include/Makefile.am (target_headers_extra): Add time_members.h.
 	* include/Makefile.in: Regenerate.
 	* acinclude.m4: Export CTIME_H.
@@ -1921,8 +1928,8 @@
 2003-01-06  Paolo Carlini  <pcarlini@unitus.it>
 
 	* src/codecvt.cc
-        (codecvt<char, char, mbstate_t>::do_in, do_out):
-        Tweak parameters to avoid unused parameter warnings.
+	(codecvt<char, char, mbstate_t>::do_in, do_out):
+	Tweak parameters to avoid unused parameter warnings.
 
 2003-01-06  Paolo Carlini  <pcarlini@unitus.it>
 
@@ -1938,7 +1945,7 @@
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init,
 	libstdc++-v3-list-sourcefiles): Additionally handle files one
 	level deeper in glob patterns.
-	
+
 	* testsuite/27_io/istream_extractor_arith.cc: Delete, split...
 	* testsuite/27_io/istream_extractor_arith/01.cc,
 	testsuite/27_io/istream_extractor_arith/02.cc,
