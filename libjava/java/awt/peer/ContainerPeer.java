@@ -35,18 +35,15 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.awt.peer;
 
 import java.awt.Insets;
 
 public interface ContainerPeer extends ComponentPeer
 {
-
-public abstract Insets insets();
-public abstract Insets getInsets();
-public abstract void beginValidate();
-public abstract void endValidate();
-
+  public abstract Insets insets();
+  public abstract Insets getInsets();
+  public abstract void beginValidate();
+  public abstract void endValidate();
 } // interface ContainerPeer 
 

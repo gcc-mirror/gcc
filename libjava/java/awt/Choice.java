@@ -215,7 +215,7 @@ insert(String item, int index)
   *
   * @param item The item to remove.
   *
-  * @param IllegalArgumentException If the specified item doesn't exist.
+  * @exception IllegalArgumentException If the specified item doesn't exist.
   */
 public synchronized void
 remove(String item)
@@ -234,7 +234,7 @@ remove(String item)
   *
   * @param index The index of the item to remove.
   *
-  * @exception ArrayIndexOutOfBoundsException If the index is not valid.
+  * @exception IndexOutOfBoundsException If the index is not valid.
   */
 public synchronized void
 remove(int index)
@@ -325,7 +325,7 @@ getSelectedIndex()
   *
   * @param index The index of the row to make selected.
   *
-  * @param IllegalArgumentException If the specified index is invalid.
+  * @exception IllegalArgumentException If the specified index is invalid.
   */
 public synchronized void
 select(int index)

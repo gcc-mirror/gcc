@@ -1,5 +1,14 @@
 2002-11-07  Michael Koch <konqueror@gmx.de>
 
+	* java/awt/Choice.java,
+	java/awt/Container.java,
+	java/awt/GridBagLayout.java:
+	Fixed documentation.
+	* java/awt/peer/ContainerPeer.java:
+	Reindented.
+
+2002-11-07  Michael Koch <konqueror@gmx.de>
+
 	* java/awt/color/ICC_Profile.java:
 	Added missing constants.
 	* java/awt/color/ICC_ColorSpace.java

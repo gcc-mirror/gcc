@@ -40,7 +40,7 @@ package java.awt;
 import java.io.Serializable;
 
 /**
- * Stub implementeation.
+ * Stub implementation.
  */
 public class GridBagLayout
   implements Serializable, LayoutManager2
