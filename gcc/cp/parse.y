@@ -2179,20 +2179,13 @@ initlist:
 		{ $$ = build_tree_list (NULL_TREE, $$); }
 	| initlist ',' init
 		{ $$ = expr_tree_cons (NULL_TREE, $3, $$); }
-	/* These are for labeled elements, which don't currently work
-	   as documented, or give warning messages when used with
-	   -ansi -pedantic, or match the syntax currently used in the
-	   C front-end.  They are therefore disabled.  
-
+	/* These are for labeled elements.  */
 	| '[' expr_no_commas ']' init
 		{ $$ = build_expr_list ($2, $4); }
-	| initlist ',' CASE expr_no_commas ':' init
-		{ $$ = expr_tree_cons ($4, $6, $$); }
 	| identifier ':' init
 		{ $$ = build_expr_list ($$, $3); }
 	| initlist ',' identifier ':' init
 		{ $$ = expr_tree_cons ($3, $5, $$); }
-	*/
 	;
 
 fn.defpen:

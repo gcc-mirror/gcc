@@ -962,6 +962,9 @@ process_init_constructor (type, init, elts)
 	{
 	  register tree next1;
 
+	  if (TREE_PURPOSE (tail))
+	    sorry ("non-trivial labeled initializers");
+
 	  if (TREE_VALUE (tail) != 0)
 	    {
 	      tree tail1 = tail;
@@ -1037,6 +1040,10 @@ process_init_constructor (type, init, elts)
 
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
+
+	  if (TREE_PURPOSE (tail)
+	      && TREE_PURPOSE (tail) != DECL_NAME (field))
+	    sorry ("non-trivial labeled initializers");
 
 	  if (TREE_VALUE (tail) != 0)
 	    {
