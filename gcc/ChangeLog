@@ -1,3 +1,8 @@
+2001-11-08  Jason Eckhardt  <jle@rice.edu>
+
+	* config/mips/mips.c (mips_output_conditional_branch): Do not hard
+	code the branch target as ".+16/.+12", but rather use labels.
+
 Fri Nov  9 11:27:42 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* config/pa/milli64.S: Use %r25 and %r0 instead of arg1 and r0  
