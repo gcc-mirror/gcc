@@ -733,14 +733,10 @@ namespace std
 	  try 
 	    {
 	      // Cannot compare int_type with streamsize generically.
-	      streamsize __num = this->rdbuf()->in_avail();
-	      if (__num >= 0)
-		{
-		  __num = min(__num, __n);
-		  if (__num)
-		    _M_gcount = this->rdbuf()->sgetn(__s, __num);
-		}
-	      else
+	      const streamsize __num = this->rdbuf()->in_avail();
+	      if (__num > 0)
+		_M_gcount = this->rdbuf()->sgetn(__s, min(__num, __n));
+	      else if (__num == -1)
 		__err |= ios_base::eofbit;
 	    }
 	  catch(...)

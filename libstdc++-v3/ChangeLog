@@ -1,3 +1,10 @@
+2005-02-02  Zack Weinberg  <zack@codesourcery.com>
+
+	Backport from mainline:
+	Paolo Carlini  <pcarlini@suse.de>
+	* include/bits/istream.tcc (readsome):
+	Tidy, closely following 27.6.1.3, p30.
+
 2005-01-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR libstdc++/19510
@@ -27,7 +34,7 @@
 	* configure.in (libtool_VERSION): To 5:7:0.
 	* configure: Regenerate.
 	* testsuite/abi_check.cc (check_version): Add CXXABI_1.2.2.
-	
+
 2004-07-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR bootstrap/15120
@@ -35,7 +42,7 @@
 
 2004-07-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* testsuite/22_locale/time_put_members_char.cc (test01): Allow either 
+	* testsuite/22_locale/time_put_members_char.cc (test01): Allow either
 	"Son" or "So" as abbreviated name for Sunday in de_DE locale.
 	* testsuite/22_locale/time_put_members_wchar_t.cc (test01): Likewise.
 
@@ -56,14 +63,14 @@
 	* aclocal.m4: Regenerate.
 	* configure.in: Set os_include_dir correctly when --with-newlib.
 	* configure: Regenerate.
-	
+
 2004-05-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/14720
 	* config/linker-map.gnu: Export basic_ios::_M_setstate.
 	* testsuite/abi_check.cc (check_version): Add GLIBCXX_3.2.4
 	to known versions.
-	* configure.in (libtool_VERSION): To 5:6:0. 
+	* configure.in (libtool_VERSION): To 5:6:0.
 	* configure: Regenerated.
 
 2004-05-07  Matthias Klose  <doko@debian.org>
