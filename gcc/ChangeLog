@@ -1,3 +1,10 @@
+Fri Sep  8 03:26:38 2000  J"orn Rennecke <amylaar@redhat.co.uk>
+
+	* sh.md (cmpeqsi_ior_t, cmpeqsi_and_t): Remove.
+	(cmpeqdi_t): Add output pattern.
+	(cmpeqdi_t+1): Don't split when not optimizing.
+	Restore proper splitting operation.
+
 2000-09-07  Richard Henderson  <rth@cygnus.com>
 
 	* c-lex.c (process_directive): If not HANDLE_GENERIC_PRAGMAS,
