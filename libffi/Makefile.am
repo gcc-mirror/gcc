@@ -66,9 +66,7 @@ AM_MAKEFLAGS = \
 	"CC=$(CC)" \
 	"CXX=$(CXX)" \
 	"LD=$(LD)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"NM=$(NM)" \
-	"PICFLAG=$(PICFLAG)" \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
 
