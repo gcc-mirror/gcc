@@ -1,3 +1,8 @@
+2004-01-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (bypass_block): Prevent edges to be unified when we are
+	about to emit compenstation code.
+
 2004-01-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (arm_expand_builtin): Force second argument of
