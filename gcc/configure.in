@@ -637,6 +637,7 @@ changequote([,])dnl
 			extra_passes="mips-tfile mips-tdump"
 		fi
 		use_collect2=yes
+		thread_file='vxworks'
 		;;
 	alpha*-*-winnt*)
 		tm_file="${tm_file} alpha/win-nt.h"
@@ -668,6 +669,7 @@ changequote([,])dnl
 	arm-*-vxworks*)
 		tm_file=arm/vxarm.h
 		tmake_file=arm/t-bare
+		thread_file='vxworks'
 		;;
 changequote(,)dnl
 	arm-*-riscix1.[01]*)		# Acorn RISC machine (early versions)
@@ -1067,6 +1069,7 @@ changequote(,)dnl
 changequote([,])dnl
 		tm_file=i386/vxi386.h
 		tmake_file=i386/t-i386bare
+		thread_file='vxworks'
 		;;
 changequote(,)dnl
 	i[34567]86-*-aout*)
@@ -3173,6 +3176,14 @@ changequote([,])dnl
 		xm_file=arm/xm-thumb.h
 		md_file=arm/thumb.md
 		tmake_file=arm/t-thumb
+		;;
+	thumb-wrs-vxworks)
+		tm_file=arm/tcoff.h
+		out_file=arm/thumb.c
+		xm_file=arm/xm-thumb.h
+		md_file=arm/thumb.md
+		tmake_file=arm/t-thumb
+		thread_file='vxworks'
 		;;
 # This hasn't been upgraded to GCC 2.
 #	tron-*-*)
