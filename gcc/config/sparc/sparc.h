@@ -1345,8 +1345,8 @@ extern int sparc_arg_count,sparc_n_named_args;
       ((FNTYPE) && TYPE_ARG_TYPES (FNTYPE)			\
        ? (list_length (TYPE_ARG_TYPES (FNTYPE))			\
 	  + (TREE_CODE (TREE_TYPE (FNTYPE)) == RECORD_TYPE	\
-	     || TREE_CODE (TREE_TYPE (FNTYPE)) == QUAL_UNION_TYPE)\
-	     || TREE_CODE (TREE_TYPE (FNTYPE)) == SET_TYPE)	\
+	     || TREE_CODE (TREE_TYPE (FNTYPE)) == QUAL_UNION_TYPE\
+	     || TREE_CODE (TREE_TYPE (FNTYPE)) == SET_TYPE	\
 	     || TREE_CODE (TREE_TYPE (FNTYPE)) == UNION_TYPE))	\
        /* Can't tell, treat 'em all as named.  */		\
        : 10000);						\
