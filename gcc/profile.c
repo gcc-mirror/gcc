@@ -1108,7 +1108,6 @@ output_func_start_profiler ()
   TREE_PUBLIC (fndecl) = 1;
 #endif
 
-  DECL_ASSEMBLER_NAME (fndecl) = fnname;
   DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
 
   fndecl = pushdecl (fndecl);

@@ -377,7 +377,7 @@ builtin_function (name, type, function_code, class, library_name)
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   if (library_name)
-    DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
+    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
   make_decl_rtl (decl, NULL_PTR);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
@@ -1569,7 +1569,7 @@ give_name_to_locals (jcf)
 	{
 	  tree decl = TREE_VEC_ELT (decl_map, slot);
 	  DECL_NAME (decl) = name;
-	  DECL_ASSEMBLER_NAME (decl) = name;
+	  SET_DECL_ASSEMBLER_NAME (decl, name);
 	  if (TREE_CODE (decl) != PARM_DECL || TREE_TYPE (decl) != type)
 	    warning ("bad type in parameter debug info");
 	}
@@ -1636,7 +1636,7 @@ give_name_to_locals (jcf)
 	      sprintf (buffer, "ARG_%d", arg_i);
 	      DECL_NAME (parm) = get_identifier (buffer);
 	    }
-	  DECL_ASSEMBLER_NAME (parm) = DECL_NAME (parm);
+	  SET_DECL_ASSEMBLER_NAME (parm, DECL_NAME (parm));
 	}
     }
 }

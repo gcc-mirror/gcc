@@ -2069,6 +2069,17 @@ mangle_decl_string (decl)
 
   if (TREE_CODE (decl) == TYPE_DECL)
     write_type (TREE_TYPE (decl));
+  else if (/* The names of `extern "C"' functions are not mangled.  */
+	   (TREE_CODE (decl) == FUNCTION_DECL 
+	    /* If there's no DECL_LANG_SPECIFIC, it's a function built
+	       by language-independent code, which never builds
+	       functions with C++ linkage.  */
+	    && (!DECL_LANG_SPECIFIC (decl) 
+		|| DECL_EXTERN_C_FUNCTION_P (decl)))
+	   /* The names of global variables aren't mangled either.  */
+	   || (TREE_CODE (decl) == VAR_DECL
+	       && CP_DECL_CONTEXT (decl) == global_namespace))
+    write_string (IDENTIFIER_POINTER (DECL_NAME (decl)));
   else
     {
       write_mangled_name (decl);
@@ -2089,11 +2100,13 @@ mangle_decl_string (decl)
 
 /* Create an identifier for the external mangled name of DECL.  */
 
-tree
+void
 mangle_decl (decl)
      tree decl;
 {
-  return get_identifier (mangle_decl_string (decl));
+  tree id = get_identifier (mangle_decl_string (decl));
+
+  SET_DECL_ASSEMBLER_NAME (decl, id);
 }
 
 /* Generate the mangled representation of TYPE.  */

@@ -883,19 +883,15 @@ ident_fndecl (t)
 #  endif
 #endif
 
-#define GLOBAL_IORD_P(NODE) \
-  ! strncmp (IDENTIFIER_POINTER(NODE), GLOBAL_THING, sizeof (GLOBAL_THING) - 1)
-
 static void
 dump_global_iord (t)
      tree t;
 {
-  const char *name = IDENTIFIER_POINTER (t);
   const char *p = NULL;
 
-  if (name [sizeof (GLOBAL_THING) - 1] == 'I')
+  if (DECL_GLOBAL_CTOR_P (t))
     p = "initializers";
-  else if (name [sizeof (GLOBAL_THING) - 1] == 'D')
+  else if (DECL_GLOBAL_DTOR_P (t))
     p = "destructors";
   else
     my_friendly_abort (352);
@@ -1041,8 +1037,8 @@ dump_decl (t, flags)
       /* Fall through.  */
 
     case FUNCTION_DECL:
-      if (GLOBAL_IORD_P (DECL_ASSEMBLER_NAME (t)))
-	dump_global_iord (DECL_ASSEMBLER_NAME (t));
+      if (DECL_GLOBAL_CTOR_P (t) || DECL_GLOBAL_DTOR_P (t))
+	dump_global_iord (t);
       else if (! DECL_LANG_SPECIFIC (t))
 	print_identifier (scratch_buffer, "<internal>");
       else

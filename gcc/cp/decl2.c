@@ -1061,17 +1061,17 @@ grokclassfn (ctype, function, flags, quals)
   DECL_ARGUMENTS (function) = last_function_parms;
   DECL_CONTEXT (function) = ctype;
 
+  if (flags == DTOR_FLAG)
+    DECL_DESTRUCTOR_P (function) = 1;
+
   if (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function))
     maybe_retrofit_in_chrg (function);
 
   if (flags == DTOR_FLAG)
     {
       DECL_DESTRUCTOR_P (function) = 1;
-      set_mangled_name_for_decl (function);
       TYPE_HAS_DESTRUCTOR (ctype) = 1;
     }
-  else
-    set_mangled_name_for_decl (function);
 }
 
 /* Work on the expr used by alignof (this is only called by the parser).  */
@@ -1436,22 +1436,6 @@ check_classfn (ctype, function)
 		   fndecls = OVL_NEXT (fndecls))
 		{
 		  fndecl = OVL_CURRENT (fndecls);
-		  /* The DECL_ASSEMBLER_NAME for a TEMPLATE_DECL, or
-		     for a for member function of a template class, is
-		     not mangled, so the check below does not work
-		     correctly in that case.  Since mangled destructor
-		     names do not include the type of the arguments,
-		     we can't use this short-cut for them, either.
-		     (It's not legal to declare arguments for a
-		     destructor, but some people try.)  */
-		  if (!DECL_DESTRUCTOR_P (function)
-		      && (DECL_ASSEMBLER_NAME (function)
-			  != DECL_NAME (function))
-		      && (DECL_ASSEMBLER_NAME (fndecl)
-			  != DECL_NAME (fndecl))
-		      && (DECL_ASSEMBLER_NAME (function) 
-			  == DECL_ASSEMBLER_NAME (fndecl)))
-		    return fndecl;
 
 		  /* We cannot simply call decls_match because this
 		     doesn't work for static member functions that are 
@@ -1525,11 +1509,6 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
      tree asmspec_tree;
      int flags;
 {
-  const char *asmspec = 0;
-
-  if (asmspec_tree)
-    asmspec = TREE_STRING_POINTER (asmspec_tree);
-
   my_friendly_assert (TREE_PUBLIC (decl), 0);
 
   DECL_CONTEXT (decl) = current_class_type;
@@ -1538,11 +1517,9 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
      decl of our TREE_CHAIN.  Instead, we modify cp_finish_decl to do
      the right thing, namely, to put this decl out straight away.  */
   /* current_class_type can be NULL_TREE in case of error.  */
-  if (!asmspec && current_class_type)
-    {
-      DECL_INITIAL (decl) = error_mark_node;
-      DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
-    }
+  if (!asmspec_tree && current_class_type)
+    DECL_INITIAL (decl) = error_mark_node;
+
   if (! processing_template_decl)
     {
       if (!pending_statics)
@@ -1672,12 +1649,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       if (CLASS_TYPE_P (TREE_TYPE (value)))
         CLASSTYPE_GOT_SEMICOLON (TREE_TYPE (value)) = 1;
       
-      /* Now that we've updated the context, we need to remangle the
-	 name for this TYPE_DECL.  */
-      DECL_ASSEMBLER_NAME (value) = DECL_NAME (value);
-      if (!uses_template_parms (value)) 
-	DECL_ASSEMBLER_NAME (value) = mangle_type (TREE_TYPE (value));
-
       if (processing_template_decl)
 	value = push_template_decl (value);
 
@@ -1776,7 +1747,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	  /* This must override the asm specifier which was placed
 	     by grokclassfn.  Lay this out fresh.  */
 	  SET_DECL_RTL (value, NULL_RTX);
-	  DECL_ASSEMBLER_NAME (value) = get_identifier (asmspec);
+	  SET_DECL_ASSEMBLER_NAME (value, get_identifier (asmspec));
 	}
       cp_finish_decl (value, init, asmspec_tree, flags);
 

@@ -354,7 +354,7 @@ get_tinfo_decl (type)
       TREE_PUBLIC (d) = 1;
       if (flag_weak || !typeinfo_in_lib_p (d))
 	comdat_linkage (d);
-      DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
+      SET_DECL_ASSEMBLER_NAME (d, name);
       cp_finish_decl (d, NULL_TREE, NULL_TREE, 0);
 
       pushdecl_top_level (d);
@@ -837,8 +837,8 @@ tinfo_base_init (desc, target)
     comdat_linkage (name_decl);
     /* The new ABI specifies the external name of the string
        containing the type's name.  */
-    DECL_ASSEMBLER_NAME (name_decl) 
-      = mangle_typeinfo_string_for_type (target);
+    SET_DECL_ASSEMBLER_NAME (name_decl,
+			     mangle_typeinfo_string_for_type (target));
     DECL_INITIAL (name_decl) = name_string;
     cp_finish_decl (name_decl, name_string, NULL_TREE, 0);
     pushdecl_top_level (name_decl);
@@ -1243,7 +1243,7 @@ create_real_tinfo_var (target_type, name, type, init, non_public)
       if (flag_weak || !typeinfo_in_lib_p (target_type))
 	comdat_linkage (decl);
     }
-  DECL_ASSEMBLER_NAME (decl) = name;
+  SET_DECL_ASSEMBLER_NAME (decl, name);
   DECL_INITIAL (decl) = init;
   cp_finish_decl (decl, init, NULL_TREE, 0);
   pushdecl_top_level (decl);

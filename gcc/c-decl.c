@@ -1902,7 +1902,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 
       /* Copy the assembler name.
 	 Currently, it can only be defined in the prototype.  */
-      DECL_ASSEMBLER_NAME (newdecl) = DECL_ASSEMBLER_NAME (olddecl);
+      COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{
@@ -3186,7 +3186,7 @@ builtin_function (name, type, function_code, class, library_name)
   if (flag_traditional && name[0] != '_')
     DECL_BUILT_IN_NONANSI (decl) = 1;
   if (library_name)
-    DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
+    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
   make_decl_rtl (decl, NULL_PTR);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
@@ -3599,7 +3599,7 @@ finish_decl (decl, init, asmspec_tree)
     {
       DECL_BUILT_IN_CLASS (decl) = NOT_BUILT_IN;
       SET_DECL_RTL (decl, NULL_RTX);
-      DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
     }
 
   /* Output the assembler code and/or RTL code for variables and functions,
@@ -3627,7 +3627,7 @@ finish_decl (decl, init, asmspec_tree)
 	{
 	  if (asmspec)
 	    {
-	      DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
+	      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
 	      DECL_C_HARD_REGISTER (decl) = 1;
 	    }
 	  add_decl_stmt (decl);

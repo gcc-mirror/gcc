@@ -738,7 +738,7 @@ make_decl_rtl (decl, asmspec)
 
   if (name != new_name)
     {
-      DECL_ASSEMBLER_NAME (decl) = get_identifier (new_name);
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (new_name));
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
     }
 

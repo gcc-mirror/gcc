@@ -833,9 +833,17 @@ dbxout_type_methods (type)
 	{
 	  /* This is the "mangled" name of the method.
 	     It encodes the argument types.  */
-	  const char *debug_name =
-	    IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl));
+	  const char *debug_name;
 	  int show_arg_types = 0;
+
+	  /* Skip methods that aren't FUNCTION_DECLs.  (In C++, these
+	     include TEMPLATE_DECLs.)  The debugger doesn't know what
+	     to do with such entities anyhow.  */
+	  if (TREE_CODE (fndecl) != FUNCTION_DECL)
+	    continue;
+
+	  debug_name =
+	    IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl));
 
 	  CONTIN;
 
