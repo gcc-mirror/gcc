@@ -68,6 +68,14 @@ typedef struct exception t_math_exception;
 #endif  /* MATH_EXCEPTION_CHECK */
 
 
+#if defined( MATH_HUGE_VAL_FROM_DBL_MAX_CHECK )
+
+#ifndef HUGE_VAL
+#define HUGE_VAL 3.1415e+9 /* really big */
+#endif
+#endif  /* MATH_HUGE_VAL_FROM_DBL_MAX_CHECK */
+
+
 #if defined( MATH_HUGE_VAL_IFNDEF_CHECK )
 #ifndef HUGE_VAL
 # define	HUGE_VAL 3.4e+40

@@ -7,6 +7,13 @@
 #endif  /* LIMITS_IFNDEFS_CHECK */
 
 
+#if defined( NESTED_MOTOROLA_CHECK )
+#undef PIPE_BUF /* max # bytes atomic in write to a */
+		/* PIPE */
+/*#define	HUGE_VAL	3.9e+9 */ /*error value returned by Math lib*/
+#endif  /* NESTED_MOTOROLA_CHECK */
+
+
 #if defined( NESTED_SYS_LIMITS_CHECK )
 /*
 #define CHILD_MAX 20  Max, Max, ... */ /*
