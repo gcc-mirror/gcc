@@ -1,3 +1,10 @@
+2002-02-13  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* gnu/gcj/runtime/NameFinder.java (createStackTraceElement): Use
+	lastIndexOf( ) instead of indexOf( ) to find the colon before
+	the line number, because Win32 file names might contain a 
+	drive letter and a colon at the start of an absolute path.
+
 2003-02-13  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/natSocketChannelImpl.cc
