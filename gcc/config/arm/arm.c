@@ -9704,6 +9704,7 @@ arm_output_epilogue (rtx sibling)
 	}
     }
 
+  /* We may have already restored PC directly from the stack.  */
   if (! really_return
     || (ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
 	&& current_function_pretend_args_size == 0
@@ -9714,8 +9715,6 @@ arm_output_epilogue (rtx sibling)
   switch ((int) ARM_FUNC_TYPE (func_type))
     {
     case ARM_FT_EXCEPTION_HANDLER:
-      /* Even in 26-bit mode we do a mov (rather than a movs)
-	 because we don't have the PSR bits set in the address.  */
       asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, EXCEPTION_LR_REGNUM);
       break;
 
@@ -9733,19 +9732,7 @@ arm_output_epilogue (rtx sibling)
       break;
 
     default:
-      if (frame_pointer_needed)
-	/* If we used the frame pointer then the return address
-	   will have been loaded off the stack directly into the
-	   PC, so there is no need to issue a MOV instruction
-	   here.  */
-	;
-      else if (current_function_pretend_args_size == 0
-	       && (saved_regs_mask & (1 << LR_REGNUM)))
-	/* Similarly we may have been able to load LR into the PC
-	   even if we did not create a stack frame.  */
-	;
-      else
-	asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, LR_REGNUM);
+      asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, LR_REGNUM);
       break;
     }
 
