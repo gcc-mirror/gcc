@@ -66,6 +66,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 # define CRT_CALL_STATIC_FUNCTION(func) func ()
 #endif
 
+#if defined(OBJECT_FORMAT_ELF) && defined(HAVE_LD_EH_FRAME_HDR) \
+    && !defined(CRTSTUFFT_O) \
+    && defined(__GLIBC__) && __GLIBC__ >= 2
+#include <link.h>
+# if (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2) \
+     || (__GLIBC__ == 2 && __GLIBC_MINOR__ == 2 && defined(DT_CONFIG)))
+#  define USE_PT_GNU_EH_FRAME
+# endif
+#endif
+#if defined(EH_FRAME_SECTION_NAME) && !defined(USE_PT_GNU_EH_FRAME)
+# define USE_EH_FRAME_REGISTRY
+#endif
+
 /* We do not want to add the weak attribute to the declarations of these
    routines in unwind-dw2-fde.h because that will cause the definition of
    these symbols to be weak as well.
@@ -245,7 +258,7 @@ __do_global_dtors_aux (void)
       f ();
     }
 
-#ifdef EH_FRAME_SECTION_NAME
+#ifdef USE_EH_FRAME_REGISTRY
 #if defined(CRT_GET_RFIB_TEXT) || defined(CRT_GET_RFIB_DATA)
   /* If we used the new __register_frame_info_bases interface,
      make sure that we deregister from the same place.  */
@@ -274,7 +287,7 @@ fini_dummy (void)
   asm (TEXT_SECTION_ASM_OP);
 }
 
-#if defined(EH_FRAME_SECTION_NAME) || defined(JCR_SECTION_NAME)
+#if defined(USE_EH_FRAME_REGISTRY) || defined(JCR_SECTION_NAME)
 /* Stick a call to __register_frame_info into the .init section.  For some
    reason calls with no arguments work more reliably in .init, so stick the
    call in another function.  */
@@ -282,7 +295,7 @@ fini_dummy (void)
 static void
 frame_dummy (void)
 {
-#ifdef EH_FRAME_SECTION_NAME
+#ifdef USE_EH_FRAME_REGISTRY
   static struct object object;
 #if defined(CRT_GET_RFIB_TEXT) || defined(CRT_GET_RFIB_DATA)
   void *tbase, *dbase;
@@ -386,13 +399,13 @@ __do_global_dtors (void)
   for (p = __DTOR_LIST__ + 1; (f = *p); p++)
     f ();
 
-#ifdef EH_FRAME_SECTION_NAME
+#ifdef USE_EH_FRAME_REGISTRY
   if (__deregister_frame_info)
     __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
 }
 
-#if defined(EH_FRAME_SECTION_NAME) || defined(JCR_SECTION_NAME)
+#if defined(USE_EH_FRAME_REGISTRY) || defined(JCR_SECTION_NAME)
 /* A helper function for __do_global_ctors, which is in crtend.o.  Here
    in crtbegin.o, we can reference a couple of symbols not visible there.
    Plus, since we're before libgcc.a, we have no problems referencing
@@ -400,7 +413,7 @@ __do_global_dtors (void)
 void
 __do_global_ctors_1(void)
 {
-#ifdef EH_FRAME_SECTION_NAME
+#ifdef USE_EH_FRAME_REGISTRY
   static struct object object;
   if (__register_frame_info)
     __register_frame_info (__EH_FRAME_BEGIN__, &object);
@@ -547,7 +560,7 @@ void
 __do_global_ctors (void)
 {
   func_ptr *p;
-#if defined(EH_FRAME_SECTION_NAME) || defined(JCR_SECTION_NAME)
+#if defined(USE_EH_FRAME_REGISTRY) || defined(JCR_SECTION_NAME)
   __do_global_ctors_1();
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)

@@ -18,6 +18,15 @@
 #undef ASM_SPEC
 #define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic}"
 
+/* Need to override linux.h STARTFILE_SPEC, since it has crtbeginT.o in.  */
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC \
+  "%{!shared: \
+     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
+		       %{!p:%{profile:gcrt1.o%s} \
+			 %{!profile:crt1.o%s}}}} \
+   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+
 /* Similar to standard Linux, but adding -ffast-math support.  */
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
@@ -44,5 +53,11 @@
 
 #undef PROFILE_BEFORE_PROLOGUE
 #define PROFILE_BEFORE_PROLOGUE 1
+
+/* Override linux.h LINK_EH_SPEC definition.
+   Signalize that because we have fde-glibc, we don't need all C shared libs
+   linked against -lgcc_s.  */
+#undef LINK_EH_SPEC
+#define LINK_EH_SPEC ""
 
 /* End of linux.h */

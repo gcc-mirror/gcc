@@ -551,6 +551,9 @@
 /* Define if your assembler supports the --gstabs option. */
 #undef HAVE_AS_GSTABS_DEBUG_FLAG
 
+/* Define if your linker supports --eh-frame-hdr option. */
+#undef HAVE_LD_EH_FRAME_HDR
+
 /* Define 0/1 to force the choice for exception handling model. */
 #undef CONFIG_SJLJ_EXCEPTIONS
 

@@ -28,6 +28,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef _Unwind_Find_FDE
 #include "tconfig.h"
 #include "tsystem.h"
 #include "dwarf2.h"
@@ -36,6 +37,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "unwind-pe.h"
 #include "unwind-dw2-fde.h"
 #include "gthr.h"
+#endif
 
 /* The unseen_objects list contains objects that have been registered
    but not yet categorized in any way.  The seen_objects list has had

@@ -323,7 +323,7 @@ static void clear_args			PARAMS ((void));
 static void fatal_error			PARAMS ((int));
 #ifdef ENABLE_SHARED_LIBGCC
 static void init_gcc_specs              PARAMS ((struct obstack *,
-						 const char *,
+						 const char *, const char *,
 						 const char *));
 #endif
 #if defined(HAVE_TARGET_OBJECT_SUFFIX) || defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
@@ -1416,28 +1416,36 @@ static struct spec_list *specs = (struct spec_list *) 0;
 
 #ifdef ENABLE_SHARED_LIBGCC
 static void
-init_gcc_specs (obstack, shared_name, static_name)
+init_gcc_specs (obstack, shared_name, static_name, eh_name)
      struct obstack *obstack;
      const char *shared_name;
      const char *static_name;
+     const char *eh_name;
 {
   char buffer[128];
+  const char *p;
 
   /* If we see -shared-libgcc, then use the shared version.  */
   sprintf (buffer, "%%{shared-libgcc:%s %s}", shared_name, static_name);
   obstack_grow (obstack, buffer, strlen (buffer));
   /* If we see -static-libgcc, then use the static version.  */
-  sprintf (buffer, "%%{static-libgcc:%s}", static_name);
+  sprintf (buffer, "%%{static-libgcc:%s %s}", static_name, eh_name);
   obstack_grow (obstack, buffer, strlen (buffer));
-  /* Otherwise, if we see -shared, then use the shared version.  */
-  sprintf (buffer,
-	   "%%{!shared-libgcc:%%{!static-libgcc:%%{shared:%s %s}}}", 
-	   shared_name, static_name);
+  /* Otherwise, if we see -shared, then use the shared version
+     if using EH registration routines or static version without
+     exception handling routines otherwise.  */
+  p = "%{!shared-libgcc:%{!static-libgcc:%{shared:";
+  obstack_grow (obstack, p, strlen (p));
+#ifdef LINK_EH_SPEC
+  sprintf (buffer, "%s}}}", static_name);
+#else
+  sprintf (buffer, "%s %s}}}", shared_name, static_name);
+#endif
   obstack_grow (obstack, buffer, strlen (buffer));
   /* Otherwise, use the static version.  */
   sprintf (buffer, 
-	   "%%{!shared-libgcc:%%{!static-libgcc:%%{!shared:%s}}}", 
-	   static_name);
+	   "%%{!shared-libgcc:%%{!static-libgcc:%%{!shared:%s %s}}}", 
+	   static_name, eh_name);
   obstack_grow (obstack, buffer, strlen (buffer));
 }
 #endif /* ENABLE_SHARED_LIBGCC */
@@ -1525,7 +1533,8 @@ init_spec ()
 			    "-lgcc_s%M"
 #endif
 			    ,
-			    "-lgcc");
+			    "-lgcc",
+			    "-lgcc_eh");
 	    p += 5;
 	    in_sep = 0;
 	  }
@@ -1540,7 +1549,8 @@ init_spec ()
 			    "-lgcc_s%M"
 #endif
 			    ,
-			    "libgcc.a%s");
+			    "libgcc.a%s",
+			    "libgcc_eh.a%s");
 	    p += 10;
 	    in_sep = 0;
 	  }
@@ -1564,6 +1574,12 @@ init_spec ()
     obstack_grow0 (&obstack, asm_spec, strlen (asm_spec));
     asm_spec = obstack_finish (&obstack);
   }
+#endif
+#ifdef LINK_EH_SPEC
+  /* Prepend LINK_EH_SPEC to whatever link_spec we had before.  */
+  obstack_grow (&obstack, LINK_EH_SPEC, sizeof(LINK_EH_SPEC) - 1);
+  obstack_grow0 (&obstack, link_spec, strlen (link_spec));
+  link_spec = obstack_finish (&obstack);
 #endif
 
   specs = sl;

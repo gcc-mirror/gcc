@@ -1106,6 +1106,15 @@ $(T)crtendS.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
 	  -c $(srcdir)/crtstuff.c -DCRT_END -DCRTSTUFFS_O \
 	  -o $(T)crtendS$(objext)
 
+# This is a version of crtbegin for -static links.
+$(T)crtbeginT.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
+  gbl-ctors.h stmp-int-hdrs tsystem.h
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
+	  -finhibit-size-directive -fno-inline-functions \
+	  -fno-exceptions $(CRTSTUFF_T_CFLAGS) @inhibit_libc@ \
+	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFT_O \
+	  -o $(T)crtbeginT$(objext)
+
 # Compile the start modules crt0.o and mcrt0.o that are linked with
 # every program
 crt0.o: s-crt0 ; @true
@@ -2384,7 +2393,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # that don't exist in the distribution.
 INTL_CLEAN = intl.clean
 clean: mostlyclean $(INTL_CLEAN) lang.clean
-	-rm -f libgcc.a libgcc_s$(SHLIB_EXT) libgcc_s$(SHLIB_EXT).1
+	-rm -f libgcc.a libgcc_eh.a libgcc_s$(SHLIB_EXT) libgcc_s$(SHLIB_EXT).1
 	-rm -f config.h tconfig.h hconfig.h tm_p.h
 	-rm -f cs-*
 	-rm -rf libgcc
@@ -3140,11 +3149,15 @@ stage1-start:
 	-if [ -f as$(exeext) ] ; then (cd stage1 && $(LN_S) ../as$(exeext) .) ; else true ; fi
 	-if [ -f ld$(exeext) ] ; then (cd stage1 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
 	-if [ -f collect-ld$(exeext) ] ; then (cd stage1 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-rm -f stage1/libgcc.a
+	-rm -f stage1/libgcc.a stage1/libgcc_eh.a
 	-cp libgcc.a stage1
 	-if $(RANLIB_TEST_FOR_TARGET) ; then \
 	  $(RANLIB_FOR_TARGET) stage1/libgcc.a; \
 	else true; fi
+	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage1; \
+	  if $(RANLIB_TEST_FOR_TARGET) ; then \
+	   $(RANLIB_FOR_TARGET) stage1/libgcc_eh.a; \
+	  else true; fi; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage1/$${f} . ; \
 	else true; \
@@ -3165,11 +3178,15 @@ stage2-start:
 	-if [ -f as$(exeext) ] ; then (cd stage2 && $(LN_S) ../as$(exeext) .) ; else true ; fi
 	-if [ -f ld$(exeext) ] ; then (cd stage2 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
 	-if [ -f collect-ld$(exeext) ] ; then (cd stage2 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-rm -f stage2/libgcc.a
+	-rm -f stage2/libgcc.a stage2/libgcc_eh.a
 	-cp libgcc.a stage2
 	-if $(RANLIB_TEST_FOR_TARGET) ; then \
 	  $(RANLIB_FOR_TARGET) stage2/libgcc.a; \
 	else true; fi
+	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage2; \
+	  if $(RANLIB_TEST_FOR_TARGET) ; then \
+	   $(RANLIB_FOR_TARGET) stage2/libgcc_eh.a; \
+	  else true; fi; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage2/$${f} . ; \
 	else true; \
@@ -3190,11 +3207,15 @@ stage3-start:
 	-if [ -f as$(exeext) ] ; then (cd stage3 && $(LN_S) ../as$(exeext) .) ; else true ; fi
 	-if [ -f ld$(exeext) ] ; then (cd stage3 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
 	-if [ -f collect-ld$(exeext) ] ; then (cd stage3 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-rm -f stage3/libgcc.a
+	-rm -f stage3/libgcc.a stage3/libgcc_eh.a
 	-cp libgcc.a stage3
 	-if $(RANLIB_TEST_FOR_TARGET) ; then \
 	  $(RANLIB_FOR_TARGET) stage3/libgcc.a; \
 	else true; fi
+	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage3; \
+	  if $(RANLIB_TEST_FOR_TARGET) ; then \
+	   $(RANLIB_FOR_TARGET) stage3/libgcc_eh.a; \
+	  else true; fi; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage3/$${f} . ; \
 	else true; \
@@ -3215,11 +3236,15 @@ stage4-start:
 	-if [ -f as$(exeext) ] ; then (cd stage4 && $(LN_S) ../as$(exeext) .) ; else true ; fi
 	-if [ -f ld$(exeext) ] ; then (cd stage4 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
 	-if [ -f collect-ld$(exeext) ] ; then (cd stage4 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-rm -f stage4/libgcc.a
+	-rm -f stage4/libgcc.a stage4/libgcc_eh.a
 	-cp libgcc.a stage4
 	-if $(RANLIB_TEST_FOR_TARGET) ; then \
 	  $(RANLIB_FOR_TARGET) stage4/libgcc.a; \
 	else true; fi
+	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage4; \
+	  if $(RANLIB_TEST_FOR_TARGET) ; then \
+	   $(RANLIB_FOR_TARGET) stage4/libgcc_eh.a; \
+	  else true; fi; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage4/$${f} . ; \
 	else true; \
