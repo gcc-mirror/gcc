@@ -582,6 +582,7 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
    $(LANG_MAKEFILES)
 	cp config.status config.run
 	$(SHELL) config.run
+	rm -f config.run
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
@@ -1883,7 +1884,8 @@ clean: mostlyclean bytecode.clean lang.clean
 # Delete all files that users would normally create
 # while building and installing GCC.
 distclean: clean bytecode.distclean lang.distclean
-	-rm -f tm.h aux-output.c config.h config.status tconfig.h hconfig.h
+	-rm -f tm.h aux-output.c config.h tconfig.h hconfig.h
+	-rm -f config.status config.run
 	-rm -f md md.pre-cpp
 	-rm -f Makefile *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
