@@ -1,3 +1,12 @@
+2004-08-24  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* Makefile.in (HOOKS_H): Add dependency on MACHMODE_H.
+	(host-default.o): Add dependency on HOOKS_H.
+	* config/x-linux: Likewise.
+	* config/x-solaris: Likewise.
+	* config/i386/x-mingw32: Likewise.
+	* config/rs6000/x-darwin: Likewise.
+
 2004-08-23  James E Wilson  <wilson@specifixinc.com>
 
 	* reg-notes.def (REG_NOTE): In comment, change DEF_INSN_NOTE to

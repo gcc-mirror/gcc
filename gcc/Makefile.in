@@ -669,10 +669,10 @@ GTM_H     = tm.h      $(tm_file_list)
 TM_H      = $(GTM_H) insn-constants.h insn-flags.h
 
 TARGET_H = $(TM_H) target.h insn-modes.h
-HOOKS_H = hooks.h
+MACHMODE_H = machmode.h mode-classes.def insn-modes.h
+HOOKS_H = hooks.h $(MACHMODE_H)
 LANGHOOKS_DEF_H = langhooks-def.h $(HOOKS_H)
 TARGET_DEF_H = target-def.h $(HOOKS_H)
-MACHMODE_H = machmode.h mode-classes.def insn-modes.h
 RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H) reg-notes.def insn-notes.def \
   input.h statistics.h
 RTL_H = $(RTL_BASE_H) genrtl.h
@@ -1786,7 +1786,7 @@ passes.o : passes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 
 main.o : main.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h
 
-host-default.o : host-default.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+host-default.o : host-default.c $(CONFIG_H) $(SYSTEM_H) $(HOOKS_H) coretypes.h \
 	hosthooks.h hosthooks-def.h
 
 rtl-error.o: rtl-error.c $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(INSN_ATTR_H) \
