@@ -1,3 +1,8 @@
+Thu Jul 23 18:53:20 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* dbxout.c (dbxout_range_type): Only call dbxout_type_index for
+	already defined type.
+
 Wed Jul 22 14:08:54 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* profile.c (branch_prob): Call allocate_reg_info after outputting
