@@ -1,3 +1,29 @@
+2004-08-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (RTL_BASE_H, RTL_H): Correct.
+	(BUILD_RTL): Remove $(BUILD_PREFIX) from ggc-none.o.
+	(genobjs): Add errors.o, ggc-none.o, and min-insn-modes.o.
+	(read-rtl.o, gensupport.o, genconfig.o, genflags.o, gencodes.o)
+	(genconstants.o, genemit.o, genopinit.o, genrecog.o, genextract.o)
+	(genpeep.o, genattr.o, genattrtab.o, genautomata.o, genoutput.o)
+	(genconditions.o): Depend on $(RTL_BASE_H) not $(RTL_H).
+	(ggc-none.o, errors.o): Move rule to generators section;
+	correct dependencies.
+	(min-insn-modes.o): Move rule to generators section; remove
+	unnecessary explicit command; correct dependencies.
+	(print-rtl.o, print-rtl1.o): Correct dependencies.
+	($(BUILD_PREFIX_1)errors.o. $(BUILD_PREFIX_1)ggc-none.o): Delete rule.
+	(mostlyclean): Update.
+
+	* errors.c: Include bconfig.h not config.h.  Correct comment.
+	* gengtype.c, genpreds.c: Don't define NO_GENRTL_H.
+	* ggc-none.c: Include bconfig.h; not config.h or tm.h.
+	* print-rtl.c: Don't include tm_p.h.
+
+	* rtl.h: Move forward-decl of struct function down where it's
+	needed.  Include genrtl.h #ifndef GENERATOR_FILE, not
+	#ifndef NO_GENRTL_H.  Remove unnecessary #ifdef BUFSIZ statements.
+
 2004-08-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 	    Jeff Law  <law@redhat.com>
 

@@ -24,8 +24,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "gengtype.h"
 #include "gtyp-gen.h"
-
-#define NO_GENRTL_H
 #include "rtl.h"
 #undef abort
 

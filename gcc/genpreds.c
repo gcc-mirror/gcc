@@ -25,10 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-
-#define NO_GENRTL_H
 #include "rtl.h"
-
 
 static void
 output_predicate_decls (void)
