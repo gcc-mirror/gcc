@@ -1,3 +1,10 @@
+2001-01-05  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* varasm.c (mark_constant_pool): Improve initial comments.
+	(mark_constants): Move marking of constants to mark_constant.
+	(mark_constant): New function to recursively mark all constants
+	referred to by a constant.
+
 2001-01-05  Catherine Moore  <clm@redhat.com>
 
 	* dbxout.c ((dbxout_parms): Handle invisible ref where decl is a REG.
