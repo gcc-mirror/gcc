@@ -1,3 +1,7 @@
+2001-07-31  Loren J. Rittle  <ljrittle@acm.org>
+
+	* src/gen-num-limits.cc:  Use __LONG_LONG_MAX__.
+
 2001-07-26  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* acinclude.m4: CHECK_MATH_DECL_AND_LINKAGE for hypot, hypotf,
