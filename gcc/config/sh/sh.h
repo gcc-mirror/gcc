@@ -1090,6 +1090,9 @@ extern struct rtx_def *sh_builtin_saveregs ();
    done, NIL if none.  */
 #define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
 
+/* Define if loading short immediate values into registers sign extends.  */
+#define SHORT_IMMEDIATES_SIGN_EXTEND
+
 /* Define this if zero-extension is slow (more than one real instruction).
    On the SH, it's only one instruction.  */
 /* #define SLOW_ZERO_EXTEND */
