@@ -8875,8 +8875,19 @@ record_dead_and_set_regs (insn)
   register rtx link;
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     {
-      if (REG_NOTE_KIND (link) == REG_DEAD)
-	reg_last_death[REGNO (XEXP (link, 0))] = insn;
+      if (REG_NOTE_KIND (link) == REG_DEAD
+	  && GET_CODE (XEXP (link, 0)) == REG)
+	{
+	  int regno = REGNO (XEXP (link, 0));
+	  int endregno
+	    = regno + (regno < FIRST_PSEUDO_REGISTER
+		       ? HARD_REGNO_NREGS (regno, GET_MODE (XEXP (link, 0)))
+		       : 1);
+	  int i;
+
+	  for (i = regno; i < endregno; i++)
+	    reg_last_death[i] = insn;
+	}
       else if (REG_NOTE_KIND (link) == REG_INC)
 	record_value_for_reg (XEXP (link, 0), insn, NULL_RTX);
     }
@@ -9204,13 +9215,37 @@ move_deaths (x, from_cuid, to_insn, pnotes)
       if (where_dead && INSN_CUID (where_dead) >= from_cuid
 	  && INSN_CUID (where_dead) < INSN_CUID (to_insn))
 	{
-	  rtx note = remove_death (regno, reg_last_death[regno]);
+	  rtx note = remove_death (regno, where_dead);
 
 	  /* It is possible for the call above to return 0.  This can occur
 	     when reg_last_death points to I2 or I1 that we combined with.
-	     In that case make a new note.  */
+	     In that case make a new note.
 
-	  if (note)
+	     We must also check for the case where X is a hard register
+	     and NOTE is a death note for a range of hard registers
+	     including X.  In that case, we must put REG_DEAD notes for
+	     the remaining registers in place of NOTE.  */
+
+	  if (note != 0 && regno < FIRST_PSEUDO_REGISTER
+	      && (GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
+		  != GET_MODE_SIZE (GET_MODE (x))))
+	    {
+	      int deadregno = REGNO (XEXP (note, 0));
+	      int deadend
+		= (deadregno + HARD_REGNO_NREGS (deadregno,
+						 GET_MODE (XEXP (note, 0))));
+	      int ourend = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	      int i;
+
+	      for (i = deadregno; i < deadend; i++)
+		if (i < regno || i >= ourend)
+		  REG_NOTES (where_dead)
+		    = gen_rtx (EXPR_LIST, REG_DEAD,
+			       gen_rtx (REG, word_mode, i),
+			       REG_NOTES (where_dead));
+	    }
+
+	  if (note != 0 && GET_MODE (XEXP (note, 0)) == GET_MODE (x))
 	    {
 	      XEXP (note, 1) = *pnotes;
 	      *pnotes = note;
