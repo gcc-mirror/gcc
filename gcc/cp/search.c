@@ -266,7 +266,7 @@ my_tree_cons (purpose, value, chain)
   /* The type of the last on the LHS of this statement must be a pointer
      to the same type as the bitfields in struct tree_common.  Otherwise
      we may write beyond our intended area.  */
-  ((unsigned *)p)[3] = 0;
+  ((unsigned *)p)[2] = 0;
   TREE_SET_CODE (p, TREE_LIST);
   TREE_PURPOSE (p) = purpose;
   TREE_VALUE (p) = value;
