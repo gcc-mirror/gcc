@@ -1,5 +1,21 @@
 2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (instantiate_type_flags): New enumeration.
+	(instantiate_type): Change parameter.
+	* class.c (instantiate_type): Adjust prototype. Adjust.
+	* call.c (standard_conversion): Adjust instantiate_type call.
+	(reference_binding): Likewise.
+	(build_op_delete_call): Likewise.
+	(convert_like_real): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(convert_to_reference): Likewise.
+	* pt.c (convert_nontype_argument): Likewise.
+	* typeck.c (build_binary_op): Likewise.
+	(build_ptrmemfunc): Likewise.
+	(convert_for_assignment): Likewise.
+
+2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (CPTR_AGGR_TAG): New global tree node.
 	(current_aggr): Define.
 	* decl.c (grokdeclarator): Make sure a friend class is an

@@ -5977,24 +5977,22 @@ resolve_address_of_overloaded_function (target_type,
 
 /* This function will instantiate the type of the expression given in
    RHS to match the type of LHSTYPE.  If errors exist, then return
-   error_mark_node.  We only complain is COMPLAIN is set.  If we are
-   not complaining, never modify rhs, as overload resolution wants to
-   try many possible instantiations, in hopes that at least one will
-   work.
-
-   FLAGS is a bitmask, as we see at the top of the function.
-
+   error_mark_node. FLAGS is a bit mask.  If ITF_COMPLAIN is set, then
+   we complain on errors.  If we are not complaining, never modify rhs,
+   as overload resolution wants to try many possible instantiations, in
+   the hope that at least one will work.
+   
    For non-recursive calls, LHSTYPE should be a function, pointer to
    function, or a pointer to member function.  */
 
 tree
 instantiate_type (lhstype, rhs, flags)
      tree lhstype, rhs;
-     int flags;
+     enum instantiate_type_flags flags;
 {
-  int complain = (flags & 1);
-  int strict = (flags & 2) ? COMPARE_NO_ATTRIBUTES : COMPARE_STRICT;
-  tree r;
+  int complain = (flags & itf_complain);
+  int strict = (flags & itf_no_attributes)
+               ? COMPARE_NO_ATTRIBUTES : COMPARE_STRICT;
 
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {

@@ -2911,7 +2911,7 @@ convert_nontype_argument (type, expr)
 	    else
 	      fns = expr;
 
-	    fn = instantiate_type (type_pointed_to, fns, 0);
+	    fn = instantiate_type (type_pointed_to, fns, itf_none);
 
 	    if (fn == error_mark_node)
 	      return error_mark_node;
@@ -2976,7 +2976,7 @@ convert_nontype_argument (type, expr)
 	       set (_over.over_).  */
 	    tree fn;
 
-	    fn = instantiate_type (type_referred_to, expr, 0);
+	    fn = instantiate_type (type_referred_to, expr, itf_none);
 
 	    if (fn == error_mark_node)
 	      return error_mark_node;
@@ -3051,7 +3051,7 @@ convert_nontype_argument (type, expr)
 	if (TREE_CODE (expr) != ADDR_EXPR)
 	  return error_mark_node;
 
-	expr = instantiate_type (type, expr, 0);
+	expr = instantiate_type (type, expr, itf_none);
 	
 	if (expr == error_mark_node)
 	  return error_mark_node;
