@@ -747,9 +747,7 @@ do {									\
 do {									\
   if (DEFAULT_ABI == ABI_V4)						\
     asm_fprintf (FILE,							\
-		 (TARGET_32BIT						\
-		  ? "\t{stu|stwu} %s,-16(%s)\n\t{st|stw} %s,12(%s)\n"	\
-		  : "\tstdu %s,-32(%s)\n\tstd %s,24(%s)\n"),		\
+		 "\t{stu|stwu} %s,-16(%s)\n\t{st|stw} %s,12(%s)\n",	\
 		 reg_names[1], reg_names[1], reg_names[REGNO],		\
 		 reg_names[1]);						\
 } while (0)
@@ -761,9 +759,7 @@ do {									\
 do {									\
   if (DEFAULT_ABI == ABI_V4)						\
     asm_fprintf (FILE,							\
-		 (TARGET_32BIT						\
-		  ? "\t{l|lwz} %s,12(%s)\n\t{ai|addic} %s,%s,16\n"	\
-		  : "\tld %s,24(%s)\n\t{ai|addic} %s,%s,32\n"),		\
+		 "\t{l|lwz} %s,12(%s)\n\t{ai|addic} %s,%s,16\n",	\
 		 reg_names[REGNO], reg_names[1], reg_names[1],		\
 		 reg_names[1]);						\
 } while (0)
