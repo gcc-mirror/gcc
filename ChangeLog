@@ -1,3 +1,7 @@
+2002-08-04  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in (mips*-*-linux*): Don't skip target-libffi.
+
 2002-08-02  Krister Walfridsson  <cato@df.lth.se>
 
 	* MAINTAINERS (Write After Approval): Add myself.
