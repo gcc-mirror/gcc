@@ -1,3 +1,17 @@
+1998-05-20  Mark Mitchell  <mmitchell@usa.net>
+
+	* cp-tree.h (MAIN_NAME_P): New macro.
+	(DECL_MAIN_P): Likwise.
+	* decl.c (pushdecl): Avoid crashing on redefinitions of `main'.
+	(grokfndecl): Use the new macros.
+	(grokdeclarator): Likewise.
+	(start_function): Likewise.
+	(store_parm_decls): Likewise.
+	(finsh_function): Likewise.
+	* friend.c (do_friend): Likewise.
+	* typeck.c (build_function_call_real): Likewise.
+	(build_unary_op): Likewise.
+
 Wed May 20 02:16:01 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (start_objects, finish_objects, do_dtors,

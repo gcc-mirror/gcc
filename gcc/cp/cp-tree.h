@@ -1918,6 +1918,21 @@ extern int current_function_parms_stored;
 #define ANON_PARMNAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == '_' \
 				  && IDENTIFIER_POINTER (ID_NODE)[1] <= '9')
 #endif /* !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL) */
+
+/* Returns non-zero iff ID_NODE is an IDENTIFIER_NODE whose name is
+   `main'.  */
+#define MAIN_NAME_P(ID_NODE) \
+   (strcmp (IDENTIFIER_POINTER (ID_NODE), "main") == 0)
+
+/* Returns non-zero iff NODE is a declaration for the global function
+   `main'.  */
+#define DECL_MAIN_P(NODE)				\
+   (TREE_CODE (NODE) == FUNCTION_DECL			\
+    && (DECL_CONTEXT (NODE) == global_namespace 	\
+	|| DECL_CONTEXT (NODE) == NULL_TREE)		\
+    && DECL_NAME (NODE) != NULL_TREE			\
+    && MAIN_NAME_P (DECL_NAME (NODE)))
+
 
 /* Define the sets of attributes that member functions and baseclasses
    can have.  These are sensible combinations of {public,private,protected}

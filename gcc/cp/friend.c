@@ -364,9 +364,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	}
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL
-	   && ((IDENTIFIER_LENGTH (declarator) == 4
-		&& IDENTIFIER_POINTER (declarator)[0] == 'm'
-		&& ! strcmp (IDENTIFIER_POINTER (declarator), "main"))
+	   && (MAIN_NAME_P (declarator)
 	       || (IDENTIFIER_LENGTH (declarator) > 10
 		   && IDENTIFIER_POINTER (declarator)[0] == '_'
 		   && IDENTIFIER_POINTER (declarator)[1] == '_'

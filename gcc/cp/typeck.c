@@ -2744,14 +2744,8 @@ build_function_call_real (function, params, require_complete, flags)
       fndecl = function;
 
       /* Convert anything with function type to a pointer-to-function.  */
-      if (pedantic
-	  && name
-	  && IDENTIFIER_LENGTH (name) == 4
-	  && ! strcmp (IDENTIFIER_POINTER (name), "main")
-	  && DECL_CONTEXT (function) == global_namespace)
-	{
-	  pedwarn ("ANSI C++ forbids calling `main' from within program");
-	}
+      if (pedantic && DECL_MAIN_P (function))
+	pedwarn ("ANSI C++ forbids calling `main' from within program");
 
       /* Differs from default_conversion by not setting TREE_ADDRESSABLE
 	 (because calling an inline function does not mean the function
@@ -4509,13 +4503,7 @@ build_unary_op (code, xarg, noconvert)
 	  TREE_CONSTANT (arg) = TREE_CONSTANT (TREE_OPERAND (arg, 0));
 	  return arg;
 	}
-      else if (pedantic
-	       && TREE_CODE (arg) == FUNCTION_DECL
-	       && DECL_NAME (arg)
-	       && DECL_CONTEXT (arg) == global_namespace
-	       && IDENTIFIER_LENGTH (DECL_NAME (arg)) == 4
-	       && IDENTIFIER_POINTER (DECL_NAME (arg))[0] == 'm'
-	       && ! strcmp (IDENTIFIER_POINTER (DECL_NAME (arg)), "main"))
+      else if (pedantic && DECL_MAIN_P (arg))
 	/* ARM $3.4 */
 	pedwarn ("taking address of function `main'");
 
