@@ -3117,18 +3117,6 @@ struct exception_table_node {
 
 static struct exception_table_node *exception_table_list;
 
-static exception_table *
-find_exception_table (void *pc)
-{
-  register struct exception_table_node *table = exception_table_list;
-  for ( ; table != 0; table = table->next)
-    {
-      if (table->start <= pc && table->end > pc)
-	return table->table;
-    }
-  return 0;
-}
-
 /* this routine takes a pc, and the address of the exception handler associated
    with the closest exception table handler entry associated with that PC,
    or 0 if there are no table entries the PC fits in.  The algorithm works
@@ -3156,49 +3144,59 @@ find_exception_table (void *pc)
 void *
 __find_first_exception_table_match (void *pc)
 {
-  exception_table *table = find_exception_table (pc);
-  int pos = 0;
-  int best = 0;
-  if (table == 0)
-    return (void *) 0;
+  register struct exception_table_node *tnp;
+  register exception_table *table;
+  int pos;
+  int best;
+
 #if 0
   printf ("find_first_exception_table_match (): pc = %x!\n", pc);
 #endif
 
-#if 0
-  /* We can't do this yet, as we don't know that the table is sorted.  */
-  do {
-    ++pos;
-    if (table[pos].start > pc)
-      /* found the first table[pos].start > pc, so the previous
-	 entry better be the one we want! */
-      break;
-  } while (table[pos].exception_handler != (void *) -1);
-
-  --pos;
-  if (table[pos].start <= pc && table[pos].end > pc)
+  for (tnp = exception_table_list; tnp != 0; tnp = tnp->next)
     {
+      if (tnp->start > pc || tnp->end <= pc)
+	continue;
+
+      table = tnp->table;
+
+      pos = 0;
+      best = 0;
 #if 0
-      printf ("find_first_eh_table_match (): found match: %x\n", table[pos].exception_handler);
+      /* We can't do this yet, as we don't know that the table is sorted.  */
+      do {
+	++pos;
+	if (table[pos].start > pc)
+	  /* found the first table[pos].start > pc, so the previous
+	     entry better be the one we want! */
+	  break;
+      } while (table[pos].exception_handler != (void *) -1);
+
+      --pos;
+      if (table[pos].start <= pc && table[pos].end > pc)
+	{
+#if 0
+	  printf ("find_first_eh_table_match (): found match: %x\n", table[pos].exception_handler);
 #endif
-      return table[pos].exception_handler;
-    }
+	  return table[pos].exception_handler;
+	}
 #else
-  while (table[++pos].exception_handler != (void *) -1) {
-    if (table[pos].start <= pc && table[pos].end > pc)
-      {
-	/* This can apply.  Make sure it is better or as good as the previous
-	   best.  */
-	/* The best one ends first.  */
-	if (best == 0 || (table[pos].end <= table[best].end
-			  /* The best one starts last.  */
-			  && table[pos].start >= table[best].start))
-	  best = pos;
+      while (table[++pos].exception_handler != (void *) -1) {
+	if (table[pos].start <= pc && table[pos].end > pc)
+	  {
+	    /* This can apply.  Make sure it is better or as good as
+	       the previous best.  */
+	    /* The best one ends first.  */
+	    if (best == 0 || (table[pos].end <= table[best].end
+			      /* The best one starts last.  */
+			      && table[pos].start >= table[best].start))
+	      best = pos;
+	  }
       }
-  }
-  if (best != 0)
-    return table[best].exception_handler;
+      if (best != 0)
+	return table[best].exception_handler;
 #endif
+    }
 
 #if 0
   printf ("find_first_eh_table_match (): else: returning NULL!\n");
