@@ -1,3 +1,9 @@
+2001-10-15  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/reflect/AccessibleObject.java (checkPermission):
+	Implemented.
+	Updated copyright information.
+
 2001-10-15  Hans Boehm <Hans_Boehm@hp.com>
 
 	* java/lang/natObject.cc (heavy_lock): Moved fields
