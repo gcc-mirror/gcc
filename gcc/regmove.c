@@ -2458,8 +2458,9 @@ combine_stack_adjustments_for_block (bb)
 	      && ! reg_mentioned_p (stack_pointer_rtx, src)
 	      && memory_address_p (GET_MODE (dest), stack_pointer_rtx)
 	      && validate_change (insn, &SET_DEST (set),
-				  change_address (dest, VOIDmode,
-						  stack_pointer_rtx), 0))
+				  replace_equiv_address (dest,
+							 stack_pointer_rtx),
+				  0))
 	    {
 	      if (last_sp_set == bb->head)
 		bb->head = NEXT_INSN (last_sp_set);

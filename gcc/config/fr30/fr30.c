@@ -1007,7 +1007,7 @@ fr30_move_double (operands)
 	  if (reverse)
 	    {
 	      emit_insn (gen_rtx_SET (VOIDmode, dest1,
-				      change_address (src, SImode, addr)));
+				      adjust_address (src, SImode, 0)));
 	      emit_insn (gen_rtx_SET (SImode, dest0,
 				      gen_rtx_REG (SImode, REGNO (addr))));
 	      emit_insn (gen_rtx_SET (SImode, dest0,
@@ -1021,7 +1021,7 @@ fr30_move_double (operands)
 	  else
 	    {
 	      emit_insn (gen_rtx_SET (VOIDmode, dest0,
-				      change_address (src, SImode, addr)));
+				      adjust_address (src, SImode, 0)));
 	      emit_insn (gen_rtx_SET (SImode, dest1,
 				      gen_rtx_REG (SImode, REGNO (addr))));
 	      emit_insn (gen_rtx_SET (SImode, dest1,
@@ -1058,8 +1058,7 @@ fr30_move_double (operands)
       src0 = operand_subword (src, 0, TRUE, mode);
       src1 = operand_subword (src, 1, TRUE, mode);
       
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      change_address (dest, SImode, addr),
+      emit_insn (gen_rtx_SET (VOIDmode, adjust_address (dest, SImode, 0),
 			      src0));
 
       if (REGNO (addr) == STACK_POINTER_REGNUM

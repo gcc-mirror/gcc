@@ -1154,6 +1154,12 @@ extern rtx change_address PARAMS ((rtx, enum machine_mode, rtx));
    to MODE and its address offset by OFFSET bytes.  */
 extern rtx adjust_address PARAMS ((rtx, enum machine_mode, HOST_WIDE_INT));
 
+/* Return a memory reference like MEMREF, but with its address changed to
+   ADDR.  The caller is asserting that the actual piece of memory pointed
+   to is the same, just the form of the address is being changed, such as
+   by putting something into a register.  */
+extern rtx replace_equiv_address PARAMS ((rtx, rtx));
+
 /* Return a memory reference like MEMREF, but which is known to have a
    valid address.  */
 extern rtx validize_mem PARAMS ((rtx));

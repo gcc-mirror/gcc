@@ -5066,7 +5066,7 @@ move\\t%0,%z4\\n\\
 	{
 	  rtx memword, offword, hi_word, lo_word;
 	  rtx addr = find_replacement (&XEXP (operands[1], 0));
-	  rtx op1 = change_address (operands[1], VOIDmode, addr);
+	  rtx op1 = replace_equiv_address (operands[1], addr);
 
 	  scratch = gen_rtx_REG (SImode, REGNO (scratch));
 	  memword = adjust_address (op1, SImode, 0);
@@ -5146,7 +5146,7 @@ move\\t%0,%z4\\n\\
 	{
 	  rtx scratch, memword, offword, hi_word, lo_word;
 	  rtx addr = find_replacement (&XEXP (operands[0], 0));
-	  rtx op0 = change_address (operands[0], VOIDmode, addr);
+	  rtx op0 = replace_equiv_address (operands[0], addr);
 
 	  scratch = gen_rtx_REG (SImode, REGNO (operands[2]));
 	  memword = adjust_address (op0, SImode, 0);

@@ -696,11 +696,11 @@
   "
 {
   operands[0]
-    = change_address (operands[0], VOIDmode,
-		      copy_to_mode_reg (Pmode, XEXP (operands[0], 0)));
+    = replace_equiv_address (operands[0],
+			     copy_to_mode_reg (Pmode, XEXP (operands[0], 0)));
   operands[1]
-    = change_address (operands[1], VOIDmode,
-		      copy_to_mode_reg (Pmode, XEXP (operands[1], 0)));
+    = replace_equiv_address (operands[1],
+			     copy_to_mode_reg (Pmode, XEXP (operands[1], 0)));
 
   operands[5] = XEXP (operands[0], 0);
   operands[6] = XEXP (operands[1], 0);

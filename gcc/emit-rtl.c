@@ -1601,6 +1601,7 @@ change_address (memref, mode, addr)
   MEM_COPY_ATTRIBUTES (new, memref);
   return new;
 }
+
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address offset by OFFSET bytes.  */
 
@@ -1614,6 +1615,21 @@ adjust_address (memref, mode, offset)
      will do memref tracking.  */
   return
     change_address (memref, mode, plus_constant (XEXP (memref, 0), offset));
+}
+
+/* Return a memory reference like MEMREF, but with its address changed to
+   ADDR.  The caller is asserting that the actual piece of memory pointed
+   to is the same, just the form of the address is being changed, such as
+   by putting something into a register.  */
+
+rtx
+replace_equiv_address (memref, addr)
+     rtx memref;
+     rtx addr;
+{
+  /* For now, this is just a wrapper for change_address, but eventually
+     will do memref tracking.  */
+  return change_address (memref, VOIDmode, addr);
 }
 
 /* Return a newly created CODE_LABEL rtx with a unique label number.  */

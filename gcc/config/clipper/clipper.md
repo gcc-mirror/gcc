@@ -531,8 +531,8 @@
   operands[6] = addr0;
   operands[7] = addr1;
 
-  operands[0] = change_address (operands[0], VOIDmode, addr0);
-  operands[1] = change_address (operands[1], VOIDmode, addr1);
+  operands[0] = replace_equiv_address (operands[0], addr0);
+  operands[1] = replace_equiv_address (operands[1], addr1);
 
   if (GET_CODE (operands[2]) != CONST_INT)
     operands[2] = force_reg (SImode, operands[2]);

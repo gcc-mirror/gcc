@@ -2930,8 +2930,8 @@ alpha_expand_block_move (operands)
 	}
 
       /* No appropriate mode; fall back on memory.  */
-      orig_src = change_address (orig_src, GET_MODE (orig_src),
-				 copy_addr_to_reg (XEXP (orig_src, 0)));
+      orig_src = replace_equiv_address (orig_src,
+					copy_addr_to_reg (XEXP (orig_src, 0)));
       src_align = GET_MODE_BITSIZE (GET_MODE (tmp));
     }
 
@@ -2961,9 +2961,7 @@ alpha_expand_block_move (operands)
 
       for (i = 0; i < words; ++i)
 	emit_move_insn (data_regs[nregs + i],
-			change_address (orig_src, SImode,
-					plus_constant (XEXP (orig_src, 0),
-						       ofs + i * 4)));
+			adjust_address (orig_src, SImode, ofs + i * 4));
 
       nregs += words;
       bytes -= words * 4;
@@ -3076,8 +3074,8 @@ alpha_expand_block_move (operands)
 
       /* No appropriate mode; fall back on memory.  We can speed things
 	 up by recognizing extra alignment information.  */
-      orig_dst = change_address (orig_dst, GET_MODE (orig_dst),
-				 copy_addr_to_reg (XEXP (orig_dst, 0)));
+      orig_dst = replace_equiv_address (orig_dst,
+					copy_addr_to_reg (XEXP (orig_dst, 0)));
       dst_align = GET_MODE_BITSIZE (GET_MODE (tmp));
     }
 
@@ -3229,8 +3227,7 @@ alpha_expand_block_clear (operands)
 	}
 
       /* No appropriate mode; fall back on memory.  */
-      orig_dst = change_address (orig_dst, GET_MODE (orig_dst),
-				 copy_addr_to_reg (tmp));
+      orig_dst = replace_equiv_address (orig_dst, copy_addr_to_reg (tmp));
       align = GET_MODE_BITSIZE (GET_MODE (XEXP (tmp, 0)));
     }
 

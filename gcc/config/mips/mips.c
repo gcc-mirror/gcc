@@ -3248,11 +3248,11 @@ block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src)
      rtx src_reg;		/* register holding source address */
      unsigned int bytes;	/* # bytes to move */
      int align;			/* alignment */
-     rtx orig_dest;		/* original dest for change_address */
+     rtx orig_dest;		/* original dest */
      rtx orig_src;		/* original source for making a reg note */
 {
-  rtx dest_mem = change_address (orig_dest, BLKmode, dest_reg);
-  rtx src_mem = change_address (orig_src, BLKmode, src_reg);
+  rtx dest_mem = replace_equiv_address (orig_dest, dest_reg);
+  rtx src_mem = replace_equiv_address (orig_src, src_reg);
   rtx align_rtx = GEN_INT (align);
   rtx label;
   rtx final_src;
@@ -3383,10 +3383,10 @@ expand_block_move (operands)
     move_by_pieces (orig_dest, orig_src, bytes, align * BITS_PER_WORD);
 	
   else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES)
-    emit_insn (gen_movstrsi_internal (change_address (orig_dest, BLKmode,
-						      dest_reg),
-				      change_address (orig_src, BLKmode,
-						      src_reg),
+    emit_insn (gen_movstrsi_internal (replace_equiv_address (orig_dest,
+							     dest_reg),
+				      replace_equiv_address (orig_src,
+							     src_reg),
 				      bytes_rtx, align_rtx));
 
   else if (constp && align >= (unsigned) UNITS_PER_WORD && optimize)
@@ -3433,10 +3433,10 @@ expand_block_move (operands)
 
       /* Bytes at the end of the loop.  */
       if (leftover)
-	emit_insn (gen_movstrsi_internal (change_address (orig_dest, BLKmode,
-							  dest_reg),
-					  change_address (orig_src, BLKmode,
-							  src_reg),
+	emit_insn (gen_movstrsi_internal (replace_equiv_address (orig_dest,
+								 dest_reg),
+					  replace_equiv_address (orig_src,
+								 src_reg),
 					  GEN_INT (leftover),
 					  GEN_INT (align)));
     }

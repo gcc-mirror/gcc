@@ -2617,7 +2617,7 @@ fixup_stack_1 (x, insn)
 	  seq = gen_sequence ();
 	  end_sequence ();
 	  emit_insn_before (seq, insn);
-	  return change_address (x, VOIDmode, temp);
+	  return replace_equiv_address (x, temp);
 	}
       return x;
     }
