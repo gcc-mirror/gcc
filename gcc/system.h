@@ -594,10 +594,17 @@ typedef char _Bool;
 
 #if (GCC_VERSION >= 3000)
 
+#undef malloc
+#undef realloc
+#undef calloc
+#undef strdup
  #pragma GCC poison malloc realloc calloc strdup
 
 /* Note: not all uses of `bcopy' and `index' (esp. variable names)
    have been eliminated.  */
+#undef bzero
+#undef bcmp
+#undef rindex
  #pragma GCC poison bzero bcmp rindex
 
 #endif /* GCC >= 3.0 */
