@@ -1,3 +1,18 @@
+2000-07-26  Dave Pitts  <dpitts@cozx.com>	
+
+	* i370.c: Remove LONGEXTERNAL ifdef from alias_number. Added hash 
+	routine constants.
+	(mvs_hash_alias): New function.
+	(mvs_add_alias): Change argument spacing.
+	(mvs_need_alias): Change aliasing criteria. Added documentation.
+	(mvs_get_alias): Change to use hashed name. The hashed name prevents
+	CSECT name collisions.
+	(mvs_check_alias): Likewise.
+	(handle_pragma): Change documentation.
+	* i370.md (mulsi3, divsi3, udivsi3, modsi3, umodsi3): Changed gen_rtx
+	mode from SImode to DImode.
+	(iorhi3): Changed LTORG size for insn.
+
 Wed Jul 26 19:44:05 2000   Hans-Peter Nilsson  <hp@axis.com>
 
 	* reload.c (find_reloads_toplev): Reload a paradoxical subreg of a
