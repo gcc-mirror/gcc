@@ -679,10 +679,10 @@
    instructions scan (ffs from high bit) and divscc.  */
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ ("umul %2,%3,%1;rd %%y,%0"					\
-	   : "=r" ((unsigned long int)(w1)),				\
-	     "=r" ((unsigned long int)(w0))				\
-	   : "r" ((unsigned long int)(u)),				\
-	     "r" ((unsigned long int)(v)))
+	   : "=r" ((USItype)(w1)),					\
+	     "=r" ((USItype)(w0))					\
+	   : "r" ((USItype)(u)),					\
+	     "r" ((USItype)(v)))
 #define udiv_qrnnd(q, r, n1, n0, d) \
   __asm__ ("! Inlined udiv_qrnnd
 	wr	%%g0,%2,%%y	! Not a delayed write for sparclite
@@ -723,17 +723,17 @@
 	bl,a 1f
 	add	%1,%4,%1
 1:	! End of inline udiv_qrnnd"					\
-	   : "=r" ((unsigned int)(q)),					\
-	     "=r" ((unsigned int)(r))					\
-	   : "r" ((unsigned int)(n1)),					\
-	     "r" ((unsigned int)(n0)),					\
-	     "rI" ((unsigned int)(d))					\
+	   : "=r" ((USItype)(q)),					\
+	     "=r" ((USItype)(r))					\
+	   : "r" ((USItype)(n1)),					\
+	     "r" ((USItype)(n0)),					\
+	     "rI" ((USItype)(d))					\
 	   : "%g1" __AND_CLOBBER_CC)
 #define UDIV_TIME 37
 #define count_leading_zeros(count, x) \
   __asm__ ("scan %1,0,%0"						\
-	   : "=r" ((unsigned long int)(x))				\
-	   : "r" ((unsigned long int)(count)))
+	   : "=r" ((USItype)(x))					\
+	   : "r" ((USItype)(count)))
 #else
 /* SPARC without integer multiplication and divide instructions.
    (i.e. at least Sun4/20,40,60,65,75,110,260,280,330,360,380,470,490) */
