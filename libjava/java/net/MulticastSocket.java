@@ -80,8 +80,7 @@ public class MulticastSocket extends DatagramSocket
    */
   public MulticastSocket() throws IOException
   {
-    super(0, null);
-    setReuseAddress (true);
+    this(new InetSocketAddress(0));
   }
 
   /**
@@ -95,8 +94,7 @@ public class MulticastSocket extends DatagramSocket
    */
   public MulticastSocket(int port) throws IOException
   {
-    super(port, null);
-    setReuseAddress (true);
+    this(new InetSocketAddress(port));
   }
 
   /**
@@ -112,8 +110,10 @@ public class MulticastSocket extends DatagramSocket
    */
   public MulticastSocket(SocketAddress address) throws IOException
   {
-    super(address);
-    setReuseAddress (true);
+    super((SocketAddress) null);
+    setReuseAddress(true);
+    if (address != null)
+      bind(address);
   }
   
   /**
