@@ -1175,11 +1175,9 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("H",                        0,      OPT_H)                          \
   DEF_OPT("I",                        no_dir, OPT_I)                          \
   DEF_OPT("M",                        0,      OPT_M)                          \
-  DEF_OPT("MD",                       no_fil, OPT_MD)                         \
   DEF_OPT("MF",                       no_fil, OPT_MF)                         \
   DEF_OPT("MG",                       0,      OPT_MG)                         \
   DEF_OPT("MM",                       0,      OPT_MM)                         \
-  DEF_OPT("MMD",                      no_fil, OPT_MMD)                        \
   DEF_OPT("MP",                       0,      OPT_MP)                         \
   DEF_OPT("MQ",                       no_tgt, OPT_MQ)                         \
   DEF_OPT("MT",                       no_tgt, OPT_MT)                         \
@@ -1589,21 +1587,6 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	  deps_add_target (pfile->deps, arg, opt_code == OPT_MQ);
 	  break;
 
-	  /* -MD and -MMD for cpp0 are deprecated and undocumented
-	     (use -M or -MM with -MF instead), and probably should be
-	     removed with the next major GCC version.  For the moment
-	     we allow these for the benefit of Automake 1.4, which
-	     uses these when dependency tracking is enabled.  Automake
-	     1.5 will fix this.  */
-	case OPT_MD:
-	  CPP_OPTION (pfile, print_deps) = 2;
-	  CPP_OPTION (pfile, deps_file) = arg;
-	  break;
-	case OPT_MMD:
-	  CPP_OPTION (pfile, print_deps) = 1;
-	  CPP_OPTION (pfile, deps_file) = arg;
-	  break;
-
 	case OPT_A:
 	  if (arg[0] == '-')
 	    {
@@ -1894,7 +1877,6 @@ init_dependency_output (pfile)
 static void
 print_help ()
 {
-  fprintf (stderr, _("Usage: %s [switches] input output\n"), progname);
   /* To keep the lines from getting too long for some compilers, limit
      to about 500 characters (6 lines) per chunk.  */
   fputs (_("\
@@ -1957,6 +1939,8 @@ Switches:\n\
   fputs (_("\
   -M                        Generate make dependencies\n\
   -MM                       As -M, but ignore system header files\n\
+  -MD                       Generate make dependencies and compile\n\
+  -MMD                      As -MD, but ignore system header files\n\
   -MF <file>                Write dependency output to the given file\n\
   -MG                       Treat missing header file as generated files\n\
 "), stdout);
@@ -1968,8 +1952,8 @@ Switches:\n\
   fputs (_("\
   -D<macro>                 Define a <macro> with string '1' as its value\n\
   -D<macro>=<val>           Define a <macro> with <val> as its value\n\
-  -A<question> (<answer>)   Assert the <answer> to <question>\n\
-  -A-<question> (<answer>)  Disable the <answer> to <question>\n\
+  -A<question>=<answer>     Assert the <answer> to <question>\n\
+  -A-<question>=<answer>    Disable the <answer> to <question>\n\
   -U<macro>                 Undefine <macro> \n\
   -v                        Display the version number\n\
 "), stdout);
@@ -1986,7 +1970,7 @@ Switches:\n\
   -ftabstop=<number>        Distance between tab stops for column reporting\n\
   -P                        Do not generate #line directives\n\
   -$                        Do not allow '$' in identifiers\n\
-  -remap                    Remap file names when including files.\n\
+  -remap                    Remap file names when including files\n\
   --version                 Display version information\n\
   -h or --help              Display this information\n\
 "), stdout);
