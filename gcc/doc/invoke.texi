@@ -3838,8 +3838,8 @@ behavior.
 @item -fnew-ra
 @opindex fnew-ra
 Use a graph coloring register allocator.  Currently this option is meant
-for testing, so we are interested to hear about miscompilations with
-@option{-fnew-ra}.
+only for testing.  Users should not specify this option, since it is not
+yet ready for production use.
 
 @item -fno-branch-count-reg
 @opindex fno-branch-count-reg

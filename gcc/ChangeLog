@@ -6,6 +6,10 @@
 	(pushdecl): Use lookup_name to search for a previous decl with the
 	same identifier.
 
+2004-03-13  Dara Hazeghi  <dhazeghi@yahoo.com>
+
+	* doc/install.texi: Note status of -fnew-ra.
+
 2004-03-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/14470
