@@ -7538,12 +7538,59 @@ fold (tree expr)
 	return omit_one_operand (type, integer_zero_node, arg0);
       if (integer_zerop (arg1))
 	return t;
+
       /* X % -1 is zero.  */
       if (!TYPE_UNSIGNED (type)
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_INT_CST_LOW (arg1) == (unsigned HOST_WIDE_INT) -1
 	  && TREE_INT_CST_HIGH (arg1) == -1)
 	return omit_one_operand (type, integer_zero_node, arg0);
+
+      /* Optimize unsigned TRUNC_MOD_EXPR by a power of two into a
+	 BIT_AND_EXPR, i.e. "X % C" into "X & C2".  */
+      if (code == TRUNC_MOD_EXPR
+	  && TYPE_UNSIGNED (type)
+	  && integer_pow2p (arg1))
+	{
+	  unsigned HOST_WIDE_INT high, low;
+	  tree mask;
+	  int l;
+
+	  l = tree_log2 (arg1);
+	  if (l >= HOST_BITS_PER_WIDE_INT)
+	    {
+	      high = ((unsigned HOST_WIDE_INT) 1
+		      << (l - HOST_BITS_PER_WIDE_INT)) - 1;
+	      low = -1;
+	    }
+	  else
+	    {
+	      high = 0;
+	      low = ((unsigned HOST_WIDE_INT) 1 << l) - 1;
+	    }
+
+	  mask = build_int_2 (low, high);
+	  TREE_TYPE (mask) = type;
+	  return fold (build2 (BIT_AND_EXPR, type,
+			       fold_convert (type, arg0), mask));
+	}
+
+      /* X % -C is the same as X % C (for all rounding moduli).  */
+      if (!TYPE_UNSIGNED (type)
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_INT_CST_HIGH (arg1) < 0
+	  && !flag_trapv
+	  /* Avoid this transformation if C is INT_MIN, i.e. C == -C.  */
+	  && !sign_bit_p (arg1, arg1))
+	return fold (build2 (code, type, fold_convert (type, arg0),
+			     fold_convert (type, negate_expr (arg1))));
+
+      /* X % -Y is the same as X % Y (for all rounding moduli).  */
+      if (!TYPE_UNSIGNED (type)
+	  && TREE_CODE (arg1) == NEGATE_EXPR
+	  && !flag_trapv)
+	return fold (build2 (code, type, fold_convert (type, arg0),
+			     fold_convert (type, TREE_OPERAND (arg1, 0))));
 
       if (TREE_CODE (arg1) == INTEGER_CST
 	  && 0 != (tem = extract_muldiv (TREE_OPERAND (t, 0), arg1,
@@ -8268,13 +8315,14 @@ fold (tree expr)
 	  && integer_pow2p (TREE_OPERAND (arg0, 1)))
 	{
 	  tree newtype = lang_hooks.types.unsigned_type (TREE_TYPE (arg0));
-	  tree newmod = build2 (TREE_CODE (arg0), newtype,
-				fold_convert (newtype,
-					      TREE_OPERAND (arg0, 0)),
-				fold_convert (newtype,
-					      TREE_OPERAND (arg0, 1)));
+	  tree newmod = fold (build2 (TREE_CODE (arg0), newtype,
+				      fold_convert (newtype,
+						    TREE_OPERAND (arg0, 0)),
+				      fold_convert (newtype,
+						    TREE_OPERAND (arg0, 1))));
 
-	  return build2 (code, type, newmod, fold_convert (newtype, arg1));
+	  return fold (build2 (code, type, newmod,
+			       fold_convert (newtype, arg1)));
 	}
 
       /* If this is an NE comparison of zero with an AND of one, remove the
