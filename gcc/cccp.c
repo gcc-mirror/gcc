@@ -75,6 +75,7 @@ typedef unsigned char U_CHAR;
 #include <sys/stat.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <signal.h>
 
 #ifndef VMS
 #ifndef USG
@@ -248,6 +249,7 @@ static void fatal ();
 void fancy_abort ();
 static void pfatal_with_name ();
 static void perror_with_name ();
+static void pipe_closed ();
 static void print_containing_files ();
 static int lookup_import ();
 static int redundant_include_p ();
@@ -982,6 +984,8 @@ main (argc, argv)
     setrlimit (RLIMIT_STACK, &rlim);
   }
 #endif /* RLIMIT_STACK defined */
+
+  signal (SIGPIPE, pipe_closed);
 
   progname = argv[0];
 #ifdef VMS
@@ -8662,6 +8666,15 @@ pfatal_with_name (name)
 #endif
 }
 
+/* Handler for SIGPIPE.  */
+
+static void
+pipe_closed (signo)
+     /* If this is missing, some compilers complain.  */
+     int signo;
+{
+  fatal ("output pipe has been closed");
+}
 
 static void
 memory_full ()
