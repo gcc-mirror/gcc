@@ -3412,7 +3412,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	  case 'W':
 	    {
-	      int index = argbuf_index;
+	      int cur_index = argbuf_index;
 	      /* Handle the {...} following the %W.  */
 	      if (*p != '{')
 		abort ();
@@ -3421,7 +3421,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		return -1;
 	      /* If any args were output, mark the last one for deletion
 		 on failure.  */
-	      if (argbuf_index != index)
+	      if (argbuf_index != cur_index)
 		record_temp_file (argbuf[argbuf_index - 1], 0, 1);
 	      break;
 	    }
