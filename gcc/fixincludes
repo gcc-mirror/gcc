@@ -1834,6 +1834,8 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# Fix return value of mem{ccpy,chr,cpy,set} and str{len,spn,cspn}
+# in string.h on sysV68
 # Correct the return type for strlen in string.h on Lynx.
 # Correct the argument type for ffs in string.h on Alpha OSF/1 V2.0.
 # Add missing const for strdup on OSF/1 V3.0.
@@ -1845,10 +1847,16 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
 fi
 
 if [ -r ${LIB}/$file ]; then
-  echo Fixing $file
+  echo Fixing $file, mem{ccpy,chr,cpy,set} and str{len,spn,cspn} return value
   sed -e 's/extern[ 	]*int[ 	]*strlen();/extern unsigned int strlen();/' \
       -e 's/extern[ 	]*int[ 	]*ffs[ 	]*(long);/extern int ffs(int);/' \
       -e 's/strdup(char \*s1);/strdup(const char *s1);/' \
+      -e '/^extern char$/N' \
+      -e 's/^extern char\(\n	\*memccpy(),\)$/extern void\1/'\
+      -e '/^	strncmp(),$/N'\
+      -e 's/^\(	strncmp()\),\n\(	strlen(),\)$/\1;\
+extern unsigned int\
+\2/'\
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
