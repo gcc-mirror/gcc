@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for HP-UX.
-   Copyright (C) 1991, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 1996, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -29,9 +29,58 @@ Boston, MA 02111-1307, USA.  */
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
 
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()				\
+  do								\
+    {								\
+	builtin_assert ("system=hpux");				\
+	builtin_assert ("system=unix");				\
+	builtin_define ("__hp9000s800");			\
+	builtin_define ("__hp9000s800__");			\
+	builtin_define ("__hp9k8");				\
+	builtin_define ("__hp9k8__");				\
+	builtin_define ("__hpux");				\
+	builtin_define ("__hpux__");				\
+	builtin_define ("__unix");				\
+	builtin_define ("__unix__");				\
+	if (c_language == clk_cplusplus)			\
+	  {							\
+	    builtin_define ("_HPUX_SOURCE");			\
+	    builtin_define ("_INCLUDE_LONGLONG");		\
+	  }							\
+	else if (!flag_iso)					\
+	  {							\
+	    builtin_define ("_HPUX_SOURCE");			\
+	    if (preprocessing_trad_p ())			\
+	      {							\
+		builtin_define ("hp9000s800");			\
+		builtin_define ("hp9k8");			\
+		builtin_define ("hppa");			\
+		builtin_define ("hpux");			\
+		builtin_define ("unix");			\
+		builtin_define ("__CLASSIC_C__");		\
+		builtin_define ("_PWB");			\
+		builtin_define ("PWB");				\
+	      }							\
+	    else						\
+	      builtin_define ("__STDC_EXT__");			\
+	  }							\
+	if (TARGET_SIO)						\
+	  builtin_define ("_SIO");				\
+	else							\
+	  {							\
+	    builtin_define ("__hp9000s700");			\
+	    builtin_define ("__hp9000s700__");			\
+	    builtin_define ("_WSIO");				\
+	  }							\
+    }								\
+  while (0)
+
+#undef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES \
+  { "sio",	 MASK_SIO,	N_("Generate cpp defines for server IO") }, \
+  { "wsio",	-MASK_SIO,	N_("Generate cpp defines for workstation IO") },
+
 /* Like the default, except no -lg.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p: -L/lib/libp/ -lc}%{pg: -L/lib/libp/ -lc}"
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -DPWB -Dhpux -Dunix -Asystem=unix -Asystem=hpux -Acpu=hppa -Amachine=hppa"

@@ -1,3 +1,28 @@
+2002-09-22  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* c-common.c (preprocessing_trad_p): Define.
+	* pa-hiux.h, pa-hpux.h, pa-hpux7.h (CPP_PREDEFINES): Delete.
+	(TARGET_OS_CPP_BUILTINS, SUBTARGET_SWITCHES): Define.
+	* pa-hpux10.h (TARGET_OS_CPP_BUILTINS, CPP_SPEC): Define.
+	* pa-hpux11.h (TARGET_OS_CPP_BUILTINS): Define.
+	* pa-linux.h (CPP_PREDEFINES): Delete.
+	(TARGET_OS_CPP_BUILTINS, CPP_SPEC): Define.
+	* pa32-linux.h, pa64-linux.h (CPP_SPEC): Delete.
+	* pa-osf.h, pa-pro-end.h, rtems.h (CPP_PREDEFINES): Delete.
+	(TARGET_OS_CPP_BUILTINS): Define.
+	* pa.h (MASK_SIO, TARGET_SIO, TARGET_PA_10): Define.
+	(TARGET_SWITCHES): Reformat.  Use N_() macro.  Add SUBTARGET_SWITCHES.
+	(SUBTARGET_SWITCHES): Provide default definition.
+	(TARGET_OPTIONS): Reformat.  Use N_() macro.
+	(CPP_PA10_SPEC, CPP_PA11_SPEC, CPP_PA20_SPEC, CPP_64BIT_SPEC,
+	CPP_CPU_DEFAULT_SPEC, CPP_64BIT_DEFAULT_SPEC, SUBTARGET_EXTRA_SPECS,
+	EXTRA_SPECS, CPP_SPEC, CPLUSPLUS_CPP_SPEC, CPP_PREDEFINES): Delete.
+	(TARGET_CPU_CPP_BUILTINS): Define.
+	(TARGET_OS_CPP_BUILTINS): Define for BSD-like systems.
+	* doc/invoke.texi (msio, mwsio): Document new hppa options.
+	* doc/tm.texi (TARGET_CPU_CPP_BUILTINS): Document macro
+	preprocessing_trad_p().
+
 2002-09-22  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* doc/install.texi: Document behavior of --with-headers and

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for PRO.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,12 +25,24 @@ Boston, MA 02111-1307, USA.  */
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
 
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	if (c_language != clk_cplusplus		\
+	    && !flag_iso)			\
+	  {					\
+	    builtin_define ("hppa");		\
+	    builtin_define_std ("PWB");		\
+	  }					\
+	builtin_define ("__pro__");		\
+	builtin_assert ("system=pro");		\
+    }						\
+  while (0)
+
 /* Like the default, except no -lg.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p: -L/lib/libp/ -lc}%{pg: -L/lib/libp/ -lc}"
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dhppa -DPWB -Acpu=hppa -D__pro__ -Amachine=hppa"
 
 /* hpux8 and later have C++ compatible include files, so do not
    pretend they are `extern "C"'.  */

@@ -21,6 +21,17 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dhppa -DPWB -Acpu=hppa -Amachine=hppa \
-   -D__rtems__ -Asystem=rtems"
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	if (c_language != clk_cplusplus		\
+	    && !flag_iso)			\
+	  {					\
+	    builtin_define ("hppa");		\
+	    builtin_define_std ("PWB");		\
+	  }					\
+	builtin_define ("__rtems__");		\
+	builtin_assert ("system=rtems");	\
+    }						\
+  while (0)

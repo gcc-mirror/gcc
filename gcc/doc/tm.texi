@@ -615,7 +615,9 @@ or @code{clk_objective_c}.  Note that if we are preprocessing
 assembler, this variable will be @code{clk_c} but the function-like
 macro @code{preprocessing_asm_p()} will return true, so you might want
 to check for that first.  If you need to check for strict ANSI, the
-variable @code{flag_iso} can be used.
+variable @code{flag_iso} can be used.  The function-like macro
+@code{preprocessing_trad_p()} can be used to check for traditional
+preprocessing.
 
 With @code{TARGET_OS_CPP_BUILTINS} this macro obsoletes the
 @code{CPP_PREDEFINES} target macro.

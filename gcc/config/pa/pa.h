@@ -74,13 +74,9 @@ extern enum architecture_type pa_arch;
 
 extern int target_flags;
 
-/* compile code for HP-PA 1.1 ("Snake") */
+/* compile code for HP-PA 1.1 ("Snake").  */
 
 #define MASK_PA_11 1
-
-#ifndef TARGET_PA_11
-#define TARGET_PA_11 (target_flags & MASK_PA_11)
-#endif
 
 /* Disable all FP registers (they all become fixed).  This may be necessary
    for compiling kernels which perform lazy context switching of FP regs.
@@ -142,10 +138,22 @@ extern int target_flags;
 #define MASK_BIG_SWITCH 2048
 #define TARGET_BIG_SWITCH (target_flags & MASK_BIG_SWITCH)
 
-
 /* Generate code for the HPPA 2.0 architecture.  TARGET_PA_11 should also be
    true when this is true.  */
 #define MASK_PA_20 4096
+
+/* Generate cpp defines for server I/O.  */
+#define MASK_SIO 8192
+#define TARGET_SIO (target_flags & MASK_SIO)
+
+#ifndef TARGET_PA_10
+#define TARGET_PA_10 (target_flags & (MASK_PA_11 | MASK_PA_20) == 0)
+#endif
+
+#ifndef TARGET_PA_11
+#define TARGET_PA_11 (target_flags & MASK_PA_11)
+#endif
+
 #ifndef TARGET_PA_20
 #define TARGET_PA_20 (target_flags & MASK_PA_20)
 #endif
@@ -165,40 +173,69 @@ extern int target_flags;
 #define TARGET_SOM 0
 #endif
 
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
+/* Macro to define tables used to set the flags.  This is a
+   list in braces of target switches with each switch being
+   { "NAME", VALUE, "HELP_STRING" }.  VALUE is the bits to set,
+   or minus the bits to clear.  An empty string NAME is used to
+   identify the default VALUE.  Do not mark empty strings for
+   translation.  */
 
 #define TARGET_SWITCHES \
-  {{"snake", MASK_PA_11, "Generate PA1.1 code"},			\
-   {"nosnake", -(MASK_PA_11 | MASK_PA_20), "Generate PA1.0 code"},		\
-   {"pa-risc-1-0", -(MASK_PA_11 | MASK_PA_20), "Generate PA1.0 code"},		\
-   {"pa-risc-1-1", MASK_PA_11, "Generate PA1.1 code"},			\
-   {"pa-risc-2-0", MASK_PA_20, "Generate PA2.0 code.  This option requires binutils 2.10 or later"},			\
-   {"disable-fpregs", MASK_DISABLE_FPREGS, "Disable FP regs"},		\
-   {"no-disable-fpregs", -MASK_DISABLE_FPREGS, "Do not disable FP regs"},\
-   {"no-space-regs", MASK_NO_SPACE_REGS, "Disable space regs"},		\
-   {"space-regs", -MASK_NO_SPACE_REGS, "Do not disable space regs"},	\
-   {"jump-in-delay", MASK_JUMP_IN_DELAY, "Put jumps in call delay slots"},\
-   {"no-jump-in-delay", -MASK_JUMP_IN_DELAY, "Do not put jumps in call delay slots"},	\
-   {"disable-indexing", MASK_DISABLE_INDEXING, "Disable indexed addressing"},\
-   {"no-disable-indexing", -MASK_DISABLE_INDEXING, "Do not disable indexed addressing"},\
-   {"portable-runtime", MASK_PORTABLE_RUNTIME, "Use portable calling conventions"},	\
-   {"no-portable-runtime", -MASK_PORTABLE_RUNTIME, "Do not use portable calling conventions"},\
-   {"gas", MASK_GAS, "Assume code will be assembled by GAS"},		\
-   {"no-gas", -MASK_GAS, "Do not assume code will be assembled by GAS"},		\
-   {"soft-float", MASK_SOFT_FLOAT, "Use software floating point"},		\
-   {"no-soft-float", -MASK_SOFT_FLOAT, "Do not use software floating point"},	\
-   {"long-load-store", MASK_LONG_LOAD_STORE, "Emit long load/store sequences"},	\
-   {"no-long-load-store", -MASK_LONG_LOAD_STORE, "Do not emit long load/store sequences"},\
-   {"fast-indirect-calls", MASK_FAST_INDIRECT_CALLS, "Generate fast indirect calls"},\
-   {"no-fast-indirect-calls", -MASK_FAST_INDIRECT_CALLS, "Do not generate fast indirect calls"},\
-   {"big-switch", MASK_BIG_SWITCH, "Generate code for huge switch statements"},	\
-   {"no-big-switch", -MASK_BIG_SWITCH, "Do not generate code for huge switch statements"},	\
-   {"linker-opt", 0, "Enable linker optimizations"},		\
-   { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT, NULL}}
+  {{ "snake",			 MASK_PA_11,				\
+     N_("Generate PA1.1 code") },					\
+   { "nosnake",			-(MASK_PA_11 | MASK_PA_20),		\
+     N_("Generate PA1.0 code") },					\
+   { "pa-risc-1-0",		-(MASK_PA_11 | MASK_PA_20),		\
+     N_("Generate PA1.0 code") },					\
+   { "pa-risc-1-1",		 MASK_PA_11,				\
+     N_("Generate PA1.1 code") },					\
+   { "pa-risc-2-0",		 MASK_PA_20,				\
+     N_("Generate PA2.0 code (requires binutils 2.10 or later)") },	\
+   { "disable-fpregs",		 MASK_DISABLE_FPREGS,			\
+     N_("Disable FP regs") },						\
+   { "no-disable-fpregs",	-MASK_DISABLE_FPREGS,			\
+     N_("Do not disable FP regs") },					\
+   { "no-space-regs",		 MASK_NO_SPACE_REGS,			\
+     N_("Disable space regs") },					\
+   { "space-regs",		-MASK_NO_SPACE_REGS,			\
+     N_("Do not disable space regs") },					\
+   { "jump-in-delay",		 MASK_JUMP_IN_DELAY,			\
+     N_("Put jumps in call delay slots") },				\
+   { "no-jump-in-delay",	-MASK_JUMP_IN_DELAY,			\
+     N_("Do not put jumps in call delay slots") },			\
+   { "disable-indexing",	 MASK_DISABLE_INDEXING,			\
+     N_("Disable indexed addressing") },				\
+   { "no-disable-indexing",	-MASK_DISABLE_INDEXING,			\
+     N_("Do not disable indexed addressing") },				\
+   { "portable-runtime",	 MASK_PORTABLE_RUNTIME,			\
+     N_("Use portable calling conventions") },				\
+   { "no-portable-runtime",	-MASK_PORTABLE_RUNTIME,			\
+     N_("Do not use portable calling conventions") },			\
+   { "gas",			 MASK_GAS,				\
+     N_("Assume code will be assembled by GAS") },			\
+   { "no-gas",			-MASK_GAS,				\
+     N_("Do not assume code will be assembled by GAS") },		\
+   { "soft-float",		 MASK_SOFT_FLOAT,			\
+     N_("Use software floating point") },				\
+   { "no-soft-float",		-MASK_SOFT_FLOAT,			\
+     N_("Do not use software floating point") },			\
+   { "long-load-store",		 MASK_LONG_LOAD_STORE,			\
+     N_("Emit long load/store sequences") },				\
+   { "no-long-load-store",	-MASK_LONG_LOAD_STORE,			\
+     N_("Do not emit long load/store sequences") },			\
+   { "fast-indirect-calls",	 MASK_FAST_INDIRECT_CALLS,		\
+     N_("Generate fast indirect calls") },				\
+   { "no-fast-indirect-calls",	-MASK_FAST_INDIRECT_CALLS,		\
+     N_("Do not generate fast indirect calls") },			\
+   { "big-switch",		 MASK_BIG_SWITCH,			\
+     N_("Generate code for huge switch statements") },			\
+   { "no-big-switch",		-MASK_BIG_SWITCH,			\
+     N_("Do not generate code for huge switch statements") },		\
+   { "linker-opt",		 0,					\
+     N_("Enable linker optimizations") },				\
+   SUBTARGET_SWITCHES							\
+   { "",			 TARGET_DEFAULT | TARGET_CPU_DEFAULT,	\
+     NULL }}
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_GAS | MASK_JUMP_IN_DELAY)
@@ -208,14 +245,20 @@ extern int target_flags;
 #define TARGET_CPU_DEFAULT 0
 #endif
 
+#ifndef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES
+#endif
+
 #ifndef TARGET_SCHED_DEFAULT
 #define TARGET_SCHED_DEFAULT "8000"
 #endif
 
-#define TARGET_OPTIONS			\
-{					\
-  { "schedule=",	&pa_cpu_string, "Specify CPU for scheduling purposes" },\
-  { "arch=",		&pa_arch_string, "Specify architecture for code generation.  Values are 1.0, 1.1, and 2.0.  2.0 requires gas snapshot 19990413 or later." }\
+#define TARGET_OPTIONS							\
+{									\
+  { "schedule=",		&pa_cpu_string,				\
+    N_("Specify CPU for scheduling purposes") },			\
+  { "arch=",			&pa_arch_string,			\
+    N_("Specify architecture for code generation.  Values are 1.0, 1.1, and 2.0.  2.0 requires gas snapshot 19990413 or later.") }\
 }
 
 /* Specify the dialect of assembler to use.  New mnemonics is dialect one
@@ -265,75 +308,42 @@ extern int target_flags;
   ((GET_CODE (X) == PLUS ? OFFSET : 0) \
     + (frame_pointer_needed ? 0 : compute_frame_size (get_frame_size (), 0)))
 
-#define CPP_PA10_SPEC ""
-#define CPP_PA11_SPEC "-D_PA_RISC1_1 -D__hp9000s700"
-#define CPP_PA20_SPEC "-D_PA_RISC2_0 -D__hp9000s800"
-#define CPP_64BIT_SPEC "-D__LP64__"
+#define TARGET_CPU_CPP_BUILTINS()				\
+do {								\
+     builtin_assert("cpu=hppa");				\
+     builtin_assert("machine=hppa");				\
+     builtin_define("__hppa");					\
+     builtin_define("__hppa__");				\
+     if (TARGET_64BIT)						\
+       {							\
+	 builtin_define("_LP64");				\
+	 builtin_define("__LP64__");				\
+       }							\
+     if (TARGET_PA_20)						\
+       builtin_define("_PA_RISC2_0");				\
+     else if (TARGET_PA_11)					\
+       builtin_define("_PA_RISC1_1");				\
+     else							\
+       builtin_define("_PA_RISC1_0");				\
+} while (0)
 
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11) == 0
-#define CPP_CPU_DEFAULT_SPEC "%(cpp_pa10)"
-#endif
-
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11) != 0
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_20) != 0
-#define CPP_CPU_DEFAULT_SPEC "%(cpp_pa11) %(cpp_pa20)"
-#else
-#define CPP_CPU_DEFAULT_SPEC "%(cpp_pa11)"
-#endif
-#endif
-
-#if TARGET_64BIT
-#define CPP_64BIT_DEFAULT_SPEC "%(cpp_64bit)"
-#else
-#define CPP_64BIT_DEFAULT_SPEC ""
-#endif
-
-/* This macro defines names of additional specifications to put in the
-   specs that can be used in various specifications like CC1_SPEC.  Its
-   definition is an initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   specification name, and a string constant that used by the GNU CC driver
-   program.
-
-   Do not define this macro if it does not need to do anything.  */
-
-#ifndef SUBTARGET_EXTRA_SPECS
-#define SUBTARGET_EXTRA_SPECS
-#endif
-
-#define EXTRA_SPECS							\
-  { "cpp_pa10", CPP_PA10_SPEC},						\
-  { "cpp_pa11", CPP_PA11_SPEC},						\
-  { "cpp_pa20", CPP_PA20_SPEC},						\
-  { "cpp_64bit", CPP_64BIT_SPEC},					\
-  { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC },				\
-  { "cpp_64bit_default", CPP_64BIT_DEFAULT_SPEC },			\
-  SUBTARGET_EXTRA_SPECS
-
-#define CPP_SPEC "\
-%{mpa-risc-1-0:%(cpp_pa10)} \
-%{mpa-risc-1-1:%(cpp_pa11)} \
-%{msnake:%(cpp_pa11)} \
-%{mpa-risc-2-0:%(cpp_pa20)} \
-%{!mpa-risc-1-0:%{!mpa-risc-1-1:%{!mpa-risc-2-0:%{!msnake:%(cpp_cpu_default)}}}} \
-%{m64bit:%(cpp_64bit)} \
-%{!m64bit:%(cpp_64bit_default)} \
-%{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE -D__STDC_EXT__ -D_INCLUDE_LONGLONG} \
-%{threads: -D_REENTRANT -D_DCE_THREADS}"
-
-#define CPLUSPLUS_CPP_SPEC "\
--D_HPUX_SOURCE -D_HIUX_SOURCE -D__STDC_EXT__ -D_INCLUDE_LONGLONG \
-%{mpa-risc-1-0:%(cpp_pa10)} \
-%{mpa-risc-1-1:%(cpp_pa11)} \
-%{msnake:%(cpp_pa11)} \
-%{mpa-risc-2-0:%(cpp_pa20)} \
-%{!mpa-risc-1-0:%{!mpa-risc-1-1:%{!mpa-risc-2-0:%{!msnake:%(cpp_cpu_default)}}}} \
-%{m64bit:%(cpp_64bit)} \
-%{!m64bit:%(cpp_64bit_default)} \
-%{threads: -D_REENTRANT -D_DCE_THREADS}"
-
-/* Defines for a K&R CC */
+/* An old set of OS defines for various BSD-like systems.  */
+#define TARGET_OS_CPP_BUILTINS()				\
+  do								\
+    {								\
+	builtin_define_std ("REVARGV");				\
+	builtin_define_std ("hp800");				\
+	builtin_define_std ("hp9000");				\
+	builtin_define_std ("hp9k8");				\
+	if (c_language != clk_cplusplus				\
+	    && !flag_iso)					\
+	  builtin_define ("hppa");				\
+	builtin_define_std ("spectrum");			\
+	builtin_define_std ("unix");				\
+	builtin_assert ("system=bsd");				\
+	builtin_assert ("system=unix");				\
+    }								\
+  while (0)
 
 #define CC1_SPEC "%{pg:} %{p:}"
 
@@ -366,9 +376,6 @@ extern int target_flags;
 /* Machine dependent reorg pass.  */
 #define MACHINE_DEPENDENT_REORG(X) pa_reorg(X)
 
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -Dhp9000 -Dhp800 -Dspectrum -DREVARGV -Asystem=unix -Asystem=bsd -Acpu=hppa -Amachine=hppa"
 
 /* target machine storage layout */
 
