@@ -1,3 +1,8 @@
+2002-09-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi: Correct text of s390-*-linux* and s390x-*-linux*
+	URLs.  Fix AIX wording.
+
 2002-09-05  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Make -fpic and

@@ -1654,9 +1654,9 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#powerpcle-*-winnt,,powerpcle-*-winnt, powerpcle-*-pe}
 @item
-@uref{#s390-*-linux*}
+@uref{#s390-*-linux*,,s390-*-linux*}
 @item
-@uref{#s390x-*-linux*}
+@uref{#s390x-*-linux*,,s390x-*-linux*}
 @item
 @uref{#*-*-solaris2*,,*-*-solaris2*}
 @item
@@ -2421,8 +2421,8 @@ If this error occurs during stage2 or later, then the problem most likely
 is the version of Make (see above).
 
 The GNU Assembler incorrectly reports that it supports WEAK symbols on
-AIX which causes GCC to try to utilize weak symbol functionality which
-is not really supported on the platform.  The native @command{as} and
+AIX which causes GCC to try to utilize weak symbol functionality although
+it is not supported on the platform.  The native @command{as} and
 @command{ld} still are recommended.  The native AIX tools do
 interoperate with GCC@.
 
