@@ -1,3 +1,7 @@
+2004-11-30  Ben Elliston  <bje@au.ibm.com>
+
+	* Makefile.in (REGS_H): Depend on $(BASIC_BLOCK_H).
+
 2004-11-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/18479
