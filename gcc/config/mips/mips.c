@@ -3476,8 +3476,10 @@ override_options ()
   if (mips_abi == ABI_32)
     target_flags &= ~ (MASK_FLOAT64|MASK_64BIT);
 
-  /* In the EABI in 64 bit mode, longs and pointers are 64 bits.  */
-  if (mips_abi == ABI_EABI && TARGET_64BIT)
+  /* In the EABI in 64 bit mode, longs and pointers are 64 bits.  Likewise
+   for the SGI Irix6 N64 ABI.  */
+  if ((mips_abi == ABI_EABI && TARGET_64BIT)
+      || mips_abi == ABI_64)
     target_flags |= MASK_LONG64;
 
   /* ??? This doesn't work yet, so don't let people try to use it.  */
