@@ -1,3 +1,7 @@
+2002-10-09  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppmacro.c (paste_tokens): Only allow / to paste with =.
+
 2002-10-09  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (movdf splitter): Use gen_int_mode on

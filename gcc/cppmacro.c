@@ -442,8 +442,7 @@ paste_tokens (pfile, plhs, rhs)
      It is simpler to insert a space here, rather than modifying the
      lexer to ignore comments in some circumstances.  Simply returning
      false doesn't work, since we want to clear the PASTE_LEFT flag.  */
-  if (lhs->type == CPP_DIV
-      && (rhs->type == CPP_MULT || rhs->type == CPP_DIV))
+  if (lhs->type == CPP_DIV && rhs->type != CPP_EQ)
     *end++ = ' ';
   end = cpp_spell_token (pfile, rhs, end);
   *end = '\0';
