@@ -8566,6 +8566,7 @@ unify (tparms, targs, parm, arg, strict)
   switch (TREE_CODE (parm))
     {
     case TYPENAME_TYPE:
+    case SCOPE_REF:
     case UNBOUND_CLASS_TEMPLATE:
       /* In a type which contains a nested-name-specifier, template
 	 argument values cannot be deduced for template parameters used
