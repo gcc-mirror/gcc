@@ -2554,7 +2554,7 @@ instantiate_decls (fndecl, valid_only)
 {
   tree decl;
 
-  if (DECL_INLINE (fndecl) || DECL_DEFER_OUTPUT (fndecl))
+  if (DECL_SAVED_INSNS (fndecl))
     /* When compiling an inline function, the obstack used for
        rtl allocation is the maybepermanent_obstack.  Calling
        `resume_temporary_allocation' switches us back to that
