@@ -86,9 +86,9 @@
 #define NUL '\0'
 #endif
 
-STATIC bool read_pipe_timeout;
+STATIC volatile bool read_pipe_timeout;
 
-STATIC t_pchar def_args[] =
+static t_pchar def_args[] =
 { (char *) NULL, (char *) NULL };
 STATIC t_pf_pair server_pair =
 { (FILE *) NULL, (FILE *) NULL };
@@ -149,7 +149,8 @@ load_data (fp)
           p = realloc ((void *) pz_text, text_size);
           if (p == (void *) NULL)
             {
-              fprintf (stderr, "Failed to get 0x%08X bytes\n", text_size);
+              fprintf (stderr, "Failed to get 0x%08lX bytes\n",
+                      (long) text_size);
               free ((void *) pz_text);
               return (char *) NULL;
             }
@@ -201,6 +202,12 @@ static void
 sig_handler (signo)
      int signo;
 {
+#ifdef DEBUG
+  /* FIXME: this is illegal to do in a signal handler.  */
+  fprintf (stderr,
+          "fixincl ERROR:  sig_handler: killed pid %ld due to %s\n",
+          (long) server_id, signo == SIGPIPE ? "SIGPIPE" : "SIGALRM");
+#endif
   close_server ();
   read_pipe_timeout = BOOL_TRUE;
 }
@@ -273,7 +280,7 @@ run_shell (pz_cmd)
   /*  Make sure the process will pay attention to us, send the
      supplied command, and then have it output a special marker that
      we can find.  */
-  fprintf (server_pair.pf_write, "\\cd %s\n%s\n\necho\necho %s\n",
+  fprintf (server_pair.pf_write, "cd %s\n%s\n\necho\necho %s\n",
            p_cur_dir, pz_cmd, z_done);
   fflush (server_pair.pf_write);
 
