@@ -1,3 +1,7 @@
+Thu Oct  1 17:57:14 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c: Improve interworking support.
+
 Thu Oct  1 18:43:35 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (choose_reload_regs): Fix test if reload_reg_rtx[r] was
