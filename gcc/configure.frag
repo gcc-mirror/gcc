@@ -23,8 +23,17 @@
 rm -f Make-lang
 touch Make-lang
 
-savesrcdir=$srcdir
-savesubdirs="$subdirs"
+# We can either be invoked with . from configure or from Makefile.
+# Some shells can't pass arguments to source'd scripts.
+# ??? This needs some rethinking.
+
+if [ x"$1" != x ] ; then
+	savesrcdir=$1
+	savesubdirs=$2
+else
+	savesrcdir=$srcdir
+	savesubdirs=$subdirs
+fi
 
 for subdir in . $savesubdirs
 do
