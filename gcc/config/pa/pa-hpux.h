@@ -121,3 +121,11 @@ Boston, MA 02111-1307, USA.  */
    compatibility with the HP-UX unwind library.  */
 #undef TARGET_HPUX_UNWIND_LIBRARY
 #define TARGET_HPUX_UNWIND_LIBRARY 1
+
+/* Handle #pragma weak and #pragma pack.  */
+#undef HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA
+
+/* Define this so we can compile MS code for use with WINE.  */
+#undef HANDLE_PRAGMA_PACK_PUSH_POP
+#define HANDLE_PRAGMA_PACK_PUSH_POP

@@ -1,3 +1,7 @@
+2004-12-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa-hpux.h (HANDLE_SYSV_PRAGMA, HANDLE_PRAGMA_PACK_PUSH_POP): Define.
+
 2004-12-31  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18701
