@@ -11,11 +11,13 @@
    Copyright (c) 1988, 1989, 1990 Steven Pemberton, CWI, Amsterdam.
    All rights reserved.
 
+   Changes by Richard Stallman:
    Undef CHAR_BIT, etc., if defined in stdio.h, Richard Stallman, Aug 90.
    In EPROP, avoid a <= old if bad is set, Richard Stallman, May 91.
    Use gstddef.h, not stddef.h, Richard Stallman, Nov 91.
    Don't declare malloc, instead cast the value, Richard Stallman, Nov 91.
    Include sys/types.h before signal.h, Apr 92.
+   Support NO_LONG_DOUBLE_IO in f_define and f_rep; new fn fake_f_rep, Apr 92.
 
    COMPILING
    With luck and a following wind, just the following will work:
@@ -28,6 +30,7 @@
 	unsigned short and long			-DNO_UI
 	void					-DNO_VOID
 	signal(), or setjmp/longjmp()		-DNO_SIG
+	%Lf in printf				-DNO_LONG_DOUBLE_IO
 
    Try to compile first with no flags, and see if you get any errors -
    you might be surprised. (Most non-ANSI compilers need -DNO_SC, though.)
@@ -421,6 +424,7 @@ char *malloc ARGS((size_t size));
 Procedure exit ARGS((int status));
 
 char *f_rep ARGS((int precision, Long_double val));
+char *fake_f_rep ARGS((char *type, Long_double val));
 
 int maximum_int NOARGS;
 int cprop NOARGS;
@@ -810,8 +814,29 @@ Procedure f_define(desc, extra, sort, name, precision, val, mark)
 	/* Produce a #define for a float/double/long double */
 	describe(desc, extra);
 	if (stdc) {
+#ifdef NO_LONG_DOUBLE_IO
+		static int union_defined = 0;
+		if (!strcmp(sort, "LDBL")) {
+			if (!union_defined) {
+				printf("#ifndef __LDBL_UNION__\n");
+				printf("#define __LDBL_UNION__\n");
+				printf("union __convert_long_double {\n");
+				printf("  int __convert_long_double_i[4];\n");
+				printf("  long double __convert_long_double_d;\n");
+				printf("};\n");
+				printf("#endif\n");
+				union_defined = 1;
+			}
+			printf("#define %s%s %s\n",
+			       sort, name, fake_f_rep("long double", val));
+		} else {
+			printf("#define %s%s %s%s\n",
+			       sort, name, f_rep(precision, val), mark);
+		}
+#else
 		printf("#define %s%s %s%s\n",
 		       sort, name, f_rep(precision, val), mark);
+#endif
 	} else if (*mark == 'F') {
 		/* non-ANSI C has no float constants, so cast the constant */
 		printf("#define %s%s ((float)%s)\n",
@@ -865,19 +890,38 @@ int exponent(x, fract, exp) Long_double x; double *fract; int *exp; {
 	return 1;
 }
 
+/* Print a value of type TYPE with value VAL,
+   assuming that sprintf can't handle this type properly (without truncation).
+   We create an expession that uses type casting to create the value from
+   a bit pattern.  */
+
+char *fake_f_rep(type, val) char *type; Long_double val; {
+	static char buf[1024];
+	union { int i[4]; Long_double ld;} u;
+	u.ld = val;
+	sprintf(buf, "(((union __convert_long_double) {0x%x, 0x%x, 0x%x, 0x%x}).__convert_long_double_d)",
+		u.i[0], u.i[1], u.i[2], u.i[3]);
+	return buf;
+}
+
 char *f_rep(precision, val) int precision; Long_double val; {
 	/* Return the floating representation of val */
 	static char buf[1024];
 	char *f1;
-	if (sizeof(double) == sizeof(Long_double)) {
+#ifdef NO_LONG_DOUBLE_IO
+	if (1)
+#else
+	if (sizeof(double) == sizeof(Long_double))
+#endif
+	{
+		double d = val;
 		/* Assume they're the same, and use non-stdc format */
 		/* This is for stdc compilers using non-stdc libraries */
-		f1= "%.*e";
+		sprintf(buf, "%.*e", precision, d);
 	} else {
 		/* It had better support Le then */
-		f1= "%.*Le";
+		sprintf(buf, "%.*Le", precision, val);
 	}
-	sprintf(buf, f1, precision, val);
 	return buf;
 }
 
