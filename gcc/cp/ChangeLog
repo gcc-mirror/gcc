@@ -1,6 +1,7 @@
 2000-03-18  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* parse.y (extdefs): Call ggc_collect.
+	* parse.c: Regenerated.
 
 2000-03-18  Nathan Sidwell  <nathan@codesourcery.com>
 
