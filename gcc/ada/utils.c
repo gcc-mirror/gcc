@@ -118,7 +118,6 @@ struct language_function GTY(())
   int unused;
 };
 
-static void gnat_define_builtin (const char *, tree, int, const char *, bool);
 static void gnat_install_builtins (void);
 static tree merge_sizes (tree, tree, tree, bool, bool);
 static tree compute_related_constant (tree, tree);
@@ -405,110 +404,13 @@ gnat_init_decl_processing (void)
   gnat_install_builtins ();
 }
 
-/* Define a builtin function.  This is temporary and is just being done
-   to initialize *_built_in_decls for the middle-end.  We'll want
-   to do full builtin processing soon.  */
-
-static void
-gnat_define_builtin (const char *name, tree type,
-		     int function_code, const char *library_name, bool const_p)
-{
-  tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
-
-  DECL_EXTERNAL (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
-  if (library_name)
-    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
-  make_decl_rtl (decl);
-  gnat_pushdecl (decl, Empty);
-  DECL_BUILT_IN_CLASS (decl) = BUILT_IN_NORMAL;
-  DECL_FUNCTION_CODE (decl) = function_code;
-  TREE_READONLY (decl) = const_p;
-
-  implicit_built_in_decls[function_code] = decl;
-  built_in_decls[function_code] = decl;
-}
-
 /* Install the builtin functions the middle-end needs.  */
 
 static void
 gnat_install_builtins ()
 {
-  tree ftype;
-  tree tmp;
-
-  tmp = tree_cons (NULL_TREE, long_integer_type_node, void_list_node);
-  tmp = tree_cons (NULL_TREE, long_integer_type_node, tmp);
-  ftype = build_function_type (long_integer_type_node, tmp);
-  gnat_define_builtin ("__builtin_expect", ftype, BUILT_IN_EXPECT,
-		       "__builtin_expect", true);
-
-  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
-  ftype = build_function_type (ptr_void_type_node, tmp);
-  gnat_define_builtin ("__builtin_memcpy", ftype, BUILT_IN_MEMCPY,
-		       "memcpy", false);
-
-  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
-  ftype = build_function_type (integer_type_node, tmp);
-  gnat_define_builtin ("__builtin_memcmp", ftype, BUILT_IN_MEMCMP,
-		       "memcmp", false);
-
-  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
-  tmp = tree_cons (NULL_TREE, integer_type_node, tmp);
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
-  ftype = build_function_type (integer_type_node, tmp);
-  gnat_define_builtin ("__builtin_memset", ftype, BUILT_IN_MEMSET,
-		       "memset", false);
-
-  tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
-  ftype = build_function_type (integer_type_node, tmp);
-  gnat_define_builtin ("__builtin_clz", ftype, BUILT_IN_CLZ, "clz", true);
-
-  tmp = tree_cons (NULL_TREE, long_integer_type_node, void_list_node);
-  ftype = build_function_type (integer_type_node, tmp);
-  gnat_define_builtin ("__builtin_clzl", ftype, BUILT_IN_CLZL, "clzl", true);
-
-  tmp = tree_cons (NULL_TREE, long_long_integer_type_node, void_list_node);
-  ftype = build_function_type (integer_type_node, tmp);
-  gnat_define_builtin ("__builtin_clzll", ftype, BUILT_IN_CLZLL, "clzll",
-		       true);
-
-  /* The init_trampoline and adjust_trampoline builtins aren't used directly.
-     They are inserted during lowering of nested functions.  */
-
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, void_list_node);
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
-  ftype = build_function_type (void_type_node, tmp);
-  gnat_define_builtin ("__builtin_init_trampoline", ftype,
-		       BUILT_IN_INIT_TRAMPOLINE, "init_trampoline", false);
-
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, void_list_node);
-  ftype = build_function_type (ptr_void_type_node, tmp);
-  gnat_define_builtin ("__builtin_adjust_trampoline", ftype,
-		       BUILT_IN_ADJUST_TRAMPOLINE, "adjust_trampoline", true);
-
-  /* The stack_save, stack_restore, and alloca builtins aren't used directly.
-     They are inserted during gimplification to implement variable sized stack
-     allocation.  */
-
-  ftype = build_function_type (ptr_void_type_node, void_list_node);
-  gnat_define_builtin ("__builtin_stack_save", ftype, BUILT_IN_STACK_SAVE,
-		       "stack_save", false);
-
-  tmp = tree_cons (NULL_TREE, ptr_void_type_node, void_list_node);
-  ftype = build_function_type (void_type_node, tmp);
-  gnat_define_builtin ("__builtin_stack_restore", ftype,
-		       BUILT_IN_STACK_RESTORE, "stack_restore", false);
-
-  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
-  ftype = build_function_type (ptr_void_type_node, tmp);
-  gnat_define_builtin ("__builtin_alloca", ftype, BUILT_IN_ALLOCA,
-		       "alloca", false);
+  /* Builtins used by generic optimizers.  */
+  build_common_builtin_nodes ();
 
   /* Target specific builtins, such as the AltiVec family on ppc.  */
   targetm.init_builtins ();

@@ -1,3 +1,18 @@
+2005-02-09  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (DEF_BUILTIN): Add COND argument.
+	* tree.h (DEF_BUILTIN): Likewise.
+	* builtins.def (DEF_GCC_BUILTIN, DEF_LIB_BUILTIN, DEF_EXT_LIB_BUILTIN,
+	DEF_C94_BUILTIN, DEF_C99_BUILTIN, DEF_C99_C90RES_BUILTIN): Update to
+	match.
+	(DEF_BUILTIN_STUB): New.
+	(BUILT_IN_STACK_SAVE, BUILT_IN_STACK_RESTORE, BUILT_IN_INIT_TRAMPOLINE,
+	BUILT_IN_ADJUST_TRAMPOLINE, BUILT_IN_NONLOCAL_GOTO,
+	BUILT_IN_PROFILE_FUNC_ENTER, BUILT_IN_PROFILE_FUNC_EXIT): Use it.
+	* c-common.c (DEF_BUILTIN): Add COND argument.
+	* tree.c (local_define_builtin): New.
+	(build_common_builtin_nodes): New.
+
 2005-02-09  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_strip_sign_ops): New function to simplify a

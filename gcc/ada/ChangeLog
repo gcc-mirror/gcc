@@ -1,3 +1,8 @@
+2005-02-09  Richard Henderson  <rth@redhat.com>
+
+	* utils.c (gnat_define_builtin): Remove.
+	(gnat_install_builtins): Use build_common_builtin_nodes.
+
 2005-02-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* a-rbtgso.adb, a-crbtgo.ads, a-crbtgo.adb, a-crbtgk.ads,

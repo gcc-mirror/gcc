@@ -3199,9 +3199,9 @@ c_common_nodes_and_builtins (void)
 
   c_init_attributes ();
 
-#define DEF_BUILTIN(ENUM, NAME, CLASS, TYPE, LIBTYPE,			\
-		    BOTH_P, FALLBACK_P, NONANSI_P, ATTRS, IMPLICIT)	\
-  if (NAME)								\
+#define DEF_BUILTIN(ENUM, NAME, CLASS, TYPE, LIBTYPE, BOTH_P, FALLBACK_P, \
+		    NONANSI_P, ATTRS, IMPLICIT, COND)			\
+  if (NAME && COND)							\
     {									\
       tree decl;							\
 									\
@@ -3233,6 +3233,8 @@ c_common_nodes_and_builtins (void)
     }
 #include "builtins.def"
 #undef DEF_BUILTIN
+
+  build_common_builtin_nodes ();
 
   targetm.init_builtins ();
   if (flag_mudflap)

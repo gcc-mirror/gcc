@@ -69,7 +69,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_GCC_BUILTIN
 #define DEF_GCC_BUILTIN(ENUM, NAME, TYPE, ATTRS)		\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, BT_LAST,	\
-               false, false, false, ATTRS, true)
+               false, false, false, ATTRS, true, true)
 
 /* A library builtin (like __builtin_strchr) is a builtin equivalent
    of an ANSI/ISO standard library function.  In addition to the
@@ -80,7 +80,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_LIB_BUILTIN					
 #define DEF_LIB_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-	       true, true, false, ATTRS, true)
+	       true, true, false, ATTRS, true, true)
 
 /* Like DEF_LIB_BUILTIN, except that the function is not one that is
    specified by ANSI/ISO C.  So, when we're being fully conformant we
@@ -89,21 +89,21 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_EXT_LIB_BUILTIN				
 #define DEF_EXT_LIB_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-   	       true, true, true, ATTRS, false)
+   	       true, true, true, ATTRS, false, true)
 
 /* Like DEF_LIB_BUILTIN, except that the function is only a part of
    the standard in C94 or above.  */
 #undef DEF_C94_BUILTIN					
 #define DEF_C94_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-   	       true, true, !flag_isoc94, ATTRS, TARGET_C99_FUNCTIONS)
+   	       true, true, !flag_isoc94, ATTRS, TARGET_C99_FUNCTIONS, true)
 
 /* Like DEF_LIB_BUILTIN, except that the function is only a part of
    the standard in C99 or above.  */
 #undef DEF_C99_BUILTIN					
 #define DEF_C99_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-   	       true, true, !flag_isoc99, ATTRS, TARGET_C99_FUNCTIONS)
+   	       true, true, !flag_isoc99, ATTRS, TARGET_C99_FUNCTIONS, true)
 
 /* Builtin that is specified by C99 and C90 reserve the name for future use.
    We can still recognize the builtin in C90 mode but we can't produce it
@@ -111,7 +111,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_C99_C90RES_BUILTIN					
 #define DEF_C99_C90RES_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-   	       true, true, !flag_isoc99, ATTRS, TARGET_C99_FUNCTIONS)
+   	       true, true, !flag_isoc99, ATTRS, TARGET_C99_FUNCTIONS, true)
+
+/* Allocate the enum and the name for a builtin, but do not actually
+   define it here at all.  */
+#undef DEF_BUILTIN_STUB
+#define DEF_BUILTIN_STUB(ENUM, NAME) \
+  DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, 0, 0, false, false, \
+	       false, 0, false, false)
 
 /* Define an attribute list for math functions that are normally
    "impure" because some of them may write into global memory for
@@ -610,8 +617,6 @@ DEF_GCC_BUILTIN        (BUILT_IN_RETURN, "return", BT_FN_VOID_PTR, ATTR_NORETURN
 DEF_GCC_BUILTIN        (BUILT_IN_RETURN_ADDRESS, "return_address", BT_FN_PTR_UINT, ATTR_NULL)
 DEF_GCC_BUILTIN        (BUILT_IN_SAVEREGS, "saveregs", BT_FN_PTR_VAR, ATTR_NULL)
 DEF_GCC_BUILTIN        (BUILT_IN_SETJMP, "setjmp", BT_FN_INT_PTR, ATTR_NULL)
-DEF_GCC_BUILTIN        (BUILT_IN_STACK_SAVE, "stack_save", BT_FN_PTR, ATTR_NULL)
-DEF_GCC_BUILTIN        (BUILT_IN_STACK_RESTORE, "stack_restore", BT_FN_VOID_PTR, ATTR_NULL)
 DEF_GCC_BUILTIN        (BUILT_IN_STDARG_START, "stdarg_start", BT_FN_VOID_VALIST_REF_VAR, ATTR_NULL)
 DEF_EXT_LIB_BUILTIN    (BUILT_IN_STRFMON, "strfmon", BT_FN_SSIZE_STRING_SIZE_CONST_STRING_VAR, ATTR_FORMAT_STRFMON_3_4)
 DEF_LIB_BUILTIN        (BUILT_IN_STRFTIME, "strftime", BT_FN_SIZE_STRING_SIZE_CONST_STRING_CONST_PTR, ATTR_FORMAT_STRFTIME_3_0)
@@ -623,12 +628,16 @@ DEF_GCC_BUILTIN        (BUILT_IN_VA_END, "va_end", BT_FN_VOID_VALIST_REF, ATTR_N
 DEF_GCC_BUILTIN        (BUILT_IN_VA_START, "va_start", BT_FN_VOID_VALIST_REF_VAR, ATTR_NULL)
 DEF_EXT_LIB_BUILTIN    (BUILT_IN__EXIT, "_exit", BT_FN_VOID_INT, ATTR_NORETURN_NOTHROW_LIST)
 DEF_C99_BUILTIN        (BUILT_IN__EXIT2, "_Exit", BT_FN_VOID_INT, ATTR_NORETURN_NOTHROW_LIST)
-DEF_GCC_BUILTIN        (BUILT_IN_INIT_TRAMPOLINE, "init_trampoline", BT_FN_VOID_PTR_PTR_PTR, ATTR_NOTHROW_LIST)
-DEF_GCC_BUILTIN        (BUILT_IN_ADJUST_TRAMPOLINE, "adjust_trampoline", BT_FN_PTR_PTR, ATTR_CONST_NOTHROW_LIST)
-DEF_GCC_BUILTIN        (BUILT_IN_NONLOCAL_GOTO, "nonlocal_goto", BT_FN_PTR_PTR, ATTR_NORETURN_NOTHROW_LIST)
+
+/* Implementing nested functions.  */
+DEF_BUILTIN_STUB (BUILT_IN_INIT_TRAMPOLINE, "__builtin_init_trampoline")
+DEF_BUILTIN_STUB (BUILT_IN_ADJUST_TRAMPOLINE, "__builtin_adjust_trampoline")
+DEF_BUILTIN_STUB (BUILT_IN_NONLOCAL_GOTO, "__builtin_nonlocal_goto")
+
+/* Implementing variable sized local variables.  */
+DEF_BUILTIN_STUB (BUILT_IN_STACK_SAVE, "__builtin_stack_save")
+DEF_BUILTIN_STUB (BUILT_IN_STACK_RESTORE, "__builtin_stack_restore")
 
 /* Profiling hooks.  */
-DEF_GCC_BUILTIN (BUILT_IN_PROFILE_FUNC_ENTER, "profile_func_enter",
-		 BT_FN_VOID, ATTR_NULL)
-DEF_GCC_BUILTIN (BUILT_IN_PROFILE_FUNC_EXIT, "profile_func_exit", 
-		 BT_FN_VOID, ATTR_NULL)
+DEF_BUILTIN_STUB (BUILT_IN_PROFILE_FUNC_ENTER, "profile_func_enter")
+DEF_BUILTIN_STUB (BUILT_IN_PROFILE_FUNC_EXIT, "profile_func_exit")
