@@ -1797,9 +1797,18 @@ gfc_check_assign (gfc_expr * lvalue, gfc_expr * rvalue, int conform)
       return FAILURE;
     }
 
+  /* This is a guaranteed segfault and possibly a typo: p = NULL()
+     instead of p => NULL()  */
   if (rvalue->expr_type == EXPR_NULL)
     gfc_warning ("NULL appears on right-hand side in assignment at %L",
 		 &rvalue->where);
+
+  /* This is possibly a typo: x = f() instead of x => f()  */
+  if (gfc_option.warn_surprising 
+      && rvalue->expr_type == EXPR_FUNCTION
+      && rvalue->symtree->n.sym->attr.pointer)
+    gfc_warning ("POINTER valued function appears on right-hand side of "
+		 "assignment at %L", &rvalue->where);
 
   /* Check size of array assignments.  */
   if (lvalue->rank != 0 && rvalue->rank != 0
