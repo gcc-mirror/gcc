@@ -1017,13 +1017,14 @@ default_conversion (exp)
       type = type_for_size (MAX (TYPE_PRECISION (type),
 				 TYPE_PRECISION (integer_type_node)),
 			    ((flag_traditional
-			      || TYPE_PRECISION (type) >= TYPE_PRECISION (integer_type_node))
+			      || (TYPE_PRECISION (type)
+				  >= TYPE_PRECISION (integer_type_node)))
 			     && TREE_UNSIGNED (type)));
       return convert (type, exp);
     }
 
   if (TREE_CODE (exp) == COMPONENT_REF
-      && DECL_BIT_FIELD (TREE_OPERAND (exp, 1)))
+      && DECL_C_BIT_FIELD (TREE_OPERAND (exp, 1)))
     {
       tree width = DECL_SIZE (TREE_OPERAND (exp, 1));
       HOST_WIDE_INT low = TREE_INT_CST_LOW (width);
