@@ -152,10 +152,6 @@ static int current_blocks;
 /* The mapping from bb to block.  */
 #define BB_TO_BLOCK(bb) (rgn_bb_table[current_blocks + (bb)])
 
-/* Bit vectors and bitset operations are needed for computations on
-   the control flow graph.  */
-
-typedef unsigned HOST_WIDE_INT *bitset;
 typedef struct
 {
   int *first_member;		/* Pointer to the list start in bitlst_table.  */
@@ -167,8 +163,7 @@ static int bitlst_table_last;
 static int bitlst_table_size;
 static int *bitlst_table;
 
-static char bitset_member PARAMS ((bitset, int, int));
-static void extract_bitlst PARAMS ((bitset, int, int, bitlst *));
+static void extract_bitlst PARAMS ((sbitmap, bitlst *));
 
 /* Target info declarations.
 
@@ -214,22 +209,16 @@ static void compute_trg_info PARAMS ((int));
 void debug_candidate PARAMS ((int));
 void debug_candidates PARAMS ((int));
 
-/* Bit-set of bbs, where bit 'i' stands for bb 'i'.  */
-typedef bitset bbset;
-
-/* Number of words of the bbset.  */
-static int bbset_size;
-
-/* Dominators array: dom[i] contains the bbset of dominators of
+/* Dominators array: dom[i] contains the sbitmap of dominators of
    bb i in the region.  */
-static bbset *dom;
+static sbitmap *dom;
 
 /* bb 0 is the only region entry.  */
 #define IS_RGN_ENTRY(bb) (!bb)
 
 /* Is bb_src dominated by bb_trg.  */
 #define IS_DOMINATED(bb_src, bb_trg)                                 \
-( bitset_member (dom[bb_src], bb_trg, bbset_size) )
+( TEST_BIT (dom[bb_src], bb_trg) )
 
 /* Probability: Prob[i] is a float in [0, 1] which is the probability
    of bb i relative to the region entry.  */
@@ -242,7 +231,7 @@ static float *prob;
 						      prob[bb_trg])))
 
 /* Bit-set of edges, where bit i stands for edge i.  */
-typedef bitset edgeset;
+typedef sbitmap edgeset;
 
 /* Number of edges in the region.  */
 static int rgn_nr_edges;
@@ -250,11 +239,6 @@ static int rgn_nr_edges;
 /* Array of size rgn_nr_edges.  */
 static int *rgn_edges;
 
-/* Number of words in an edgeset.  */
-static int edgeset_size;
-
-/* Number of bits in an edgeset.  */
-static int edgeset_bitsize;
 
 /* Mapping from each edge in the graph to its number in the rgn.  */
 static int *edge_to_bit;
@@ -482,81 +466,14 @@ new_edge (source, target)
     }
 }
 
-/* BITSET macros for operations on the control flow graph.  */
-
-/* Compute bitwise union of two bitsets.  */
-#define BITSET_UNION(set1, set2, len)                                \
-do { bitset tp = set1, sp = set2;                                    \
-     int i;                                                          \
-     for (i = 0; i < len; i++)                                       \
-       *(tp++) |= *(sp++); } while (0)
-
-/* Compute bitwise intersection of two bitsets.  */
-#define BITSET_INTER(set1, set2, len)                                \
-do { bitset tp = set1, sp = set2;                                    \
-     int i;                                                          \
-     for (i = 0; i < len; i++)                                       \
-       *(tp++) &= *(sp++); } while (0)
-
-/* Compute bitwise difference of two bitsets.  */
-#define BITSET_DIFFER(set1, set2, len)                               \
-do { bitset tp = set1, sp = set2;                                    \
-     int i;                                                          \
-     for (i = 0; i < len; i++)                                       \
-       *(tp++) &= ~*(sp++); } while (0)
-
-/* Inverts every bit of bitset 'set'.  */
-#define BITSET_INVERT(set, len)                                      \
-do { bitset tmpset = set;                                            \
-     int i;                                                          \
-     for (i = 0; i < len; i++, tmpset++)                             \
-       *tmpset = ~*tmpset; } while (0)
-
-/* Turn on the index'th bit in bitset set.  */
-#define BITSET_ADD(set, index, len)                                  \
-{                                                                    \
-  if (index >= HOST_BITS_PER_WIDE_INT * len)                         \
-    abort ();                                                        \
-  else                                                               \
-    set[index/HOST_BITS_PER_WIDE_INT] |=			     \
-      ((unsigned HOST_WIDE_INT) 1) << (index % HOST_BITS_PER_WIDE_INT); \
-}
-
-/* Turn off the index'th bit in set.  */
-#define BITSET_REMOVE(set, index, len)                               \
-{                                                                    \
-  if (index >= HOST_BITS_PER_WIDE_INT * len)                         \
-    abort ();                                                        \
-  else                                                               \
-    set[index/HOST_BITS_PER_WIDE_INT] &=			     \
-      ~(((unsigned HOST_WIDE_INT) 1) << (index % HOST_BITS_PER_WIDE_INT)); \
-}
-
-/* Check if the index'th bit in bitset set is on.  */
-
-static char
-bitset_member (set, index, len)
-     bitset set;
-     int index, len;
-{
-  if (index >= HOST_BITS_PER_WIDE_INT * len)
-    abort ();
-  return ((set[index / HOST_BITS_PER_WIDE_INT] &
-	   ((unsigned HOST_WIDE_INT) 1) << (index % HOST_BITS_PER_WIDE_INT))
-	  ? 1 : 0);
-}
-
 /* Translate a bit-set SET to a list BL of the bit-set members.  */
 
 static void
-extract_bitlst (set, len, bitlen, bl)
-     bitset set;
-     int len;
-     int bitlen;
+extract_bitlst (set, bl)
+     sbitmap set;
      bitlst *bl;
 {
-  int i, j, offset;
-  unsigned HOST_WIDE_INT word;
+  int i;
 
   /* bblst table space is reused in each call to extract_bitlst.  */
   bitlst_table_last = 0;
@@ -565,24 +482,11 @@ extract_bitlst (set, len, bitlen, bl)
   bl->nr_members = 0;
 
   /* Iterate over each word in the bitset.  */
-  for (i = 0; i < len; i++)
-    {
-      word = set[i];
-      offset = i * HOST_BITS_PER_WIDE_INT;
-
-      /* Iterate over each bit in the word, but do not
-	 go beyond the end of the defined bits.  */
-      for (j = 0; offset < bitlen && word; j++)
-	{
-	  if (word & 1)
-	    {
-	      bitlst_table[bitlst_table_last++] = offset;
-	      (bl->nr_members)++;
-	    }
-	  word >>= 1;
-	  ++offset;
-	}
-    }
+  EXECUTE_IF_SET_IN_SBITMAP (set, 0, i,
+  {
+    bitlst_table[bitlst_table_last++] = i;
+    (bl->nr_members)++;
+  });
 
 }
 
@@ -1134,7 +1038,7 @@ compute_dom_prob_ps (bb)
   prob[bb] = 0.0;
   if (IS_RGN_ENTRY (bb))
     {
-      BITSET_ADD (dom[bb], 0, bbset_size);
+      SET_BIT (dom[bb], 0);
       prob[bb] = 1.0;
       return;
     }
@@ -1142,26 +1046,24 @@ compute_dom_prob_ps (bb)
   fst_in_edge = nxt_in_edge = IN_EDGES (BB_TO_BLOCK (bb));
 
   /* Intialize dom[bb] to '111..1'.  */
-  BITSET_INVERT (dom[bb], bbset_size);
+  sbitmap_ones (dom[bb]);
 
   do
     {
       pred = FROM_BLOCK (nxt_in_edge);
-      BITSET_INTER (dom[bb], dom[BLOCK_TO_BB (pred)], bbset_size);
+      sbitmap_a_and_b (dom[bb], dom[bb], dom[BLOCK_TO_BB (pred)]);
+      sbitmap_a_or_b (ancestor_edges[bb], ancestor_edges[bb], ancestor_edges[BLOCK_TO_BB (pred)]);
 
-      BITSET_UNION (ancestor_edges[bb], ancestor_edges[BLOCK_TO_BB (pred)],
-		    edgeset_size);
-
-      BITSET_ADD (ancestor_edges[bb], EDGE_TO_BIT (nxt_in_edge), edgeset_size);
+      SET_BIT (ancestor_edges[bb], EDGE_TO_BIT (nxt_in_edge));
 
       nr_out_edges = 1;
       nr_rgn_out_edges = 0;
       fst_out_edge = OUT_EDGES (pred);
       nxt_out_edge = NEXT_OUT (fst_out_edge);
-      BITSET_UNION (pot_split[bb], pot_split[BLOCK_TO_BB (pred)],
-		    edgeset_size);
 
-      BITSET_ADD (pot_split[bb], EDGE_TO_BIT (fst_out_edge), edgeset_size);
+      sbitmap_a_or_b (pot_split[bb], pot_split[bb], pot_split[BLOCK_TO_BB (pred)]);
+
+      SET_BIT (pot_split[bb], EDGE_TO_BIT (fst_out_edge));
 
       /* The successor doesn't belong in the region?  */
       if (CONTAINING_RGN (TO_BLOCK (fst_out_edge)) !=
@@ -1175,7 +1077,7 @@ compute_dom_prob_ps (bb)
 	  if (CONTAINING_RGN (TO_BLOCK (nxt_out_edge)) !=
 	      CONTAINING_RGN (BB_TO_BLOCK (bb)))
 	    ++nr_rgn_out_edges;
-	  BITSET_ADD (pot_split[bb], EDGE_TO_BIT (nxt_out_edge), edgeset_size);
+        SET_BIT (pot_split[bb], EDGE_TO_BIT (nxt_out_edge));
 	  nxt_out_edge = NEXT_OUT (nxt_out_edge);
 
 	}
@@ -1192,8 +1094,8 @@ compute_dom_prob_ps (bb)
     }
   while (fst_in_edge != nxt_in_edge);
 
-  BITSET_ADD (dom[bb], bb, bbset_size);
-  BITSET_DIFFER (pot_split[bb], ancestor_edges[bb], edgeset_size);
+  SET_BIT (dom[bb], bb);
+  sbitmap_difference (pot_split[bb], pot_split[bb], ancestor_edges[bb]);
 
   if (sched_verbose >= 2)
     fprintf (sched_dump, ";;  bb_prob(%d, %d) = %3d\n", bb, BB_TO_BLOCK (bb),
@@ -1211,14 +1113,12 @@ split_edges (bb_src, bb_trg, bl)
      int bb_trg;
      edgelst *bl;
 {
-  int es = edgeset_size;
-  edgeset src = (edgeset) xcalloc (es, sizeof (HOST_WIDE_INT));
+  sbitmap src = (edgeset) sbitmap_alloc (pot_split[bb_src]->n_bits);
+  sbitmap_copy (src, pot_split[bb_src]);
 
-  while (es--)
-    src[es] = (pot_split[bb_src])[es];
-  BITSET_DIFFER (src, pot_split[bb_trg], edgeset_size);
-  extract_bitlst (src, edgeset_size, edgeset_bitsize, bl);
-  free (src);
+  sbitmap_difference (src, src, pot_split[bb_trg]);
+  extract_bitlst (src, bl);
+  sbitmap_free (src);
 }
 
 /* Find the valid candidate-source-blocks for the target block TRG, compute
@@ -1647,9 +1547,8 @@ enum INSN_TRAP_CLASS
 #define IS_REACHABLE(bb_from, bb_to)					\
 (bb_from == bb_to                                                       \
    || IS_RGN_ENTRY (bb_from)						\
-   || (bitset_member (ancestor_edges[bb_to],				\
-		      EDGE_TO_BIT (IN_EDGES (BB_TO_BLOCK (bb_from))),	\
-		      edgeset_size)))
+   || (TEST_BIT (ancestor_edges[bb_to],                               \
+                    EDGE_TO_BIT (IN_EDGES (BB_TO_BLOCK (bb_from))))))
 
 /* Non-zero iff the address is comprised from at most 1 register.  */
 #define CONST_BASED_ADDRESS_P(x)			\
@@ -2747,11 +2646,8 @@ schedule_region (rgn)
 
       prob = (float *) xmalloc ((current_nr_blocks) * sizeof (float));
 
-      bbset_size = current_nr_blocks / HOST_BITS_PER_WIDE_INT + 1;
-      dom = (bbset *) xmalloc (current_nr_blocks * sizeof (bbset));
-      for (i = 0; i < current_nr_blocks; i++)
-	dom[i] = (bbset) xcalloc (bbset_size, sizeof (HOST_WIDE_INT));
-
+      dom = sbitmap_vector_alloc (current_nr_blocks, current_nr_blocks);
+      sbitmap_vector_zero (dom, current_nr_blocks);
       /* Edge to bit.  */
       rgn_nr_edges = 0;
       edge_to_bit = (int *) xmalloc (nr_edges * sizeof (int));
@@ -2766,18 +2662,10 @@ schedule_region (rgn)
 	  rgn_edges[rgn_nr_edges++] = i;
 
       /* Split edges.  */
-      edgeset_size = rgn_nr_edges / HOST_BITS_PER_WIDE_INT + 1;
-      edgeset_bitsize = rgn_nr_edges;
-      pot_split = (edgeset *) xmalloc (current_nr_blocks * sizeof (edgeset));
-      ancestor_edges
-	= (edgeset *) xmalloc (current_nr_blocks * sizeof (edgeset));
-      for (i = 0; i < current_nr_blocks; i++)
-	{
-	  pot_split[i] =
-	    (edgeset) xcalloc (edgeset_size, sizeof (HOST_WIDE_INT));
-	  ancestor_edges[i] =
-	    (edgeset) xcalloc (edgeset_size, sizeof (HOST_WIDE_INT));
-	}
+      pot_split = sbitmap_vector_alloc (current_nr_blocks, rgn_nr_edges);
+      sbitmap_vector_zero (pot_split, current_nr_blocks);
+      ancestor_edges = sbitmap_vector_alloc (current_nr_blocks, rgn_nr_edges);
+      sbitmap_vector_zero (ancestor_edges, current_nr_blocks);
 
       /* Compute probabilities, dominators, split_edges.  */
       for (bb = 0; bb < current_nr_blocks; bb++)
@@ -2875,20 +2763,12 @@ schedule_region (rgn)
 
   if (current_nr_blocks > 1)
     {
-      int i;
-
       free (prob);
-      for (i = 0; i < current_nr_blocks; ++i)
-	{
-	  free (dom[i]);
-	  free (pot_split[i]);
-	  free (ancestor_edges[i]);
-	}
-      free (dom);
+      sbitmap_vector_free (dom);
+      sbitmap_vector_free (pot_split);
+      sbitmap_vector_free (ancestor_edges);
       free (edge_to_bit);
       free (rgn_edges);
-      free (pot_split);
-      free (ancestor_edges);
     }
 }
 

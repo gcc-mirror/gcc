@@ -1,3 +1,24 @@
+2001-10-27  Daniel Berlin  <dan@cgsoftware.com>
+
+        * sched-rgn.c: Remove bitset typedef.
+        Change bitset to sbitmap in prototypes / variable types.
+        Remove bbset_size.
+        Remove edgeset_bits.
+        Remove edgeset_size.
+        s/BITSET_ADD/SET_BIT/g
+        s/BITSET_INVERT/sbitmap_ones/g
+        s/BITSET_INTER/sbitmap_a_and_b/g
+        s/BITSET_UNION/sbitmap_a_or_b/g
+        s/BITSET_DIFFER/sbitmap_difference/g
+        s/bitset_member/TEST_BIT/g
+        (BITSET_*): Removed.
+        (bitset_member): Removed.
+        (extract_bitlst): Rewrite, now that we have sbitmaps, we can use
+        EXECUTE_IF_SET_IN_SBITMAP.
+        (split_edges): Rewrite, use sbitmap functions instead of bitset
+        operations.
+        (schedule_region): Allocate/free sbitmaps, rather than bitsets.
+
 2001-10-26  Andreas Schwab  <schwab@suse.de>
 
 	* reload1.c (emit_input_reload_insns): Fix parens in last
