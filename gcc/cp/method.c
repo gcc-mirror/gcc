@@ -523,13 +523,11 @@ mangle_expression (value)
       const char *name;
 
       name = operator_name_info[TREE_CODE (value)].mangled_name;
-      my_friendly_assert (name != NULL, 0);
-      if (name[0] != '_' || name[1] != '_')
+      if (name == NULL)
 	/* On some erroneous inputs, we can get here with VALUE a
-	   LOOKUP_EXPR.  In that case, the NAME will be the
-	   identifier for "<invalid operator>".  We must survive
-	   this routine in order to issue a sensible error
-	   message, so we fall through to the case below.  */
+	   LOOKUP_EXPR. We must survive this routine in order to issue
+	   a sensible error message, so we fall through to the case
+	   below.  */
 	goto bad_value;
 
       for (i = 0; i < operands; ++i)

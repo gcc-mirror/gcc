@@ -1,3 +1,13 @@
+2000-05-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (build_cp_library_fn): Set DECL_CONTEXT.
+
+	* method.c (mangle_expression): Adjust test for legal expression
+	operators.
+
+	* pt.c (instantiate_decl): Save and restore the local
+	specializations list.
+
 2000-05-30  Jason Merrill  <jason@decepticon.cygnus.com>
 
 	* decl.c (grok_reference_init): Pass LOOKUP_ONLYCONVERTING.

@@ -6821,6 +6821,7 @@ build_cp_library_fn (name, operator_code, type)
 {
   tree fn = build_library_fn_1 (name, operator_code, type);
   TREE_NOTHROW (fn) = TYPE_NOTHROW_P (type);
+  DECL_CONTEXT (fn) = FROB_CONTEXT (current_namespace);
   set_mangled_name_for_decl (fn);
   make_function_rtl (fn);
   return fn;
