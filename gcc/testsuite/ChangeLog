@@ -1,3 +1,12 @@
+2004-11-10  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.target/sparc: New directory.
+	* gcc.target/sparc/sparc.exp: New driver.
+	* gcc.target/sparc/fpadd16.c, gcc.target/sparc/fpadd16s.c,
+	gcc.target/sparc/fpsub16.c, gcc.target/sparc/fpsub16s.c,
+	gcc.target/sparc/fpadd32.c, gcc.target/sparc/fpadd32s.c,
+	gcc.target/sparc/fpsub32.c, gcc.target/sparc/fpsub32s.c: New tests.
+
 2004-11-10  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/18218
