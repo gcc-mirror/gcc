@@ -87,7 +87,8 @@
    broken by
    6.  choose insn with the least dependences upon the previously
    scheduled insn, or finally
-   7.  choose insn with lowest UID.
+   7   choose the insn which has the most insns dependent on it.
+   8.  choose insn with lowest UID.
 
    Memory references complicate matters.  Only if we can be certain
    that memory references are not part of the data dependency graph
@@ -4029,7 +4030,7 @@ rank_for_schedule (x, y)
   rtx tmp = *(rtx *)y;
   rtx tmp2 = *(rtx *)x;
   rtx link;
-  int tmp_class, tmp2_class;
+  int tmp_class, tmp2_class, depend_count1, depend_count2;
   int val, priority_val, spec_val, prob_val, weight_val;
 
 
@@ -4090,6 +4091,21 @@ rank_for_schedule (x, y)
 	return val;
     }
 
+  /* Prefer the insn which has more later insns that depend on it. 
+     This gives the scheduler more freedom when scheduling later
+     instructions at the expense of added register pressure.  */
+  depend_count1 = 0;
+  for (link = INSN_DEPEND (tmp); link; link = XEXP (link, 1))
+    depend_count1++;
+
+  depend_count2 = 0;
+  for (link = INSN_DEPEND (tmp2); link; link = XEXP (link, 1))
+    depend_count2++;
+
+  val = depend_count2 - depend_count1;
+  if (val)
+    return val;
+  
   /* If insns are equally good, sort by INSN_LUID (original insn order),
      so that we make the sort stable.  This minimizes instruction movement,
      thus minimizing sched's effect on debugging and cross-jumping.  */
