@@ -1,3 +1,7 @@
+1999-06-23  Tom Tromey  <tromey@cygnus.com>
+
+	* lib/libjava.exp (libjava_arguments): Handle -lzgcj.
+
 1999-05-24  Anthony Green  <green@cygnus.com>
 
 	* libjava.lang/Shazam.java: New file.
