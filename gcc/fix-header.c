@@ -85,7 +85,7 @@ sstring buf;
 int verbose = 0;
 int partial_count = 0;
 int missing_extern_C_count = 0;
-int missing_extra_stuff = 0;
+int missing_errno = 0;
 
 #include "xsys-protos.h"
 
@@ -112,9 +112,6 @@ int seen_S_IFDIR = 0, seen_S_ISDIR  = 0;
 int seen_S_IFIFO = 0, seen_S_ISFIFO = 0;
 int seen_S_IFLNK = 0, seen_S_ISLNK  = 0;
 int seen_S_IFREG = 0, seen_S_ISREG  = 0;
-
-/* The following are only used when handling errno.h */
-int seen_errno = 0;
 
 /* Wrapper around free, to avoid prototype clashes. */
 
@@ -164,7 +161,9 @@ int required_unseen_count;
 int 
 write_lbrac ()
 {
-  fprintf (outf, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
+  
+  if (missing_extern_C_count + required_unseen_count > 0)
+    fprintf (outf, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
 
   if (partial_count)
     {
@@ -210,7 +209,7 @@ recognized_macro (fname)
   switch (special_file_handling)
     {
     case errno_special:
-      if (strcmp (fname, "errno") == 0) seen_errno++;
+      if (strcmp (fname, "errno") == 0) missing_errno = 0;
       break;
     case sys_stat_special:
       if (fname[0] == 'S' && fname[1] == '_')
@@ -239,7 +238,7 @@ recognized_extern (name, type)
   switch (special_file_handling)
     {
     case errno_special:
-      if (strcmp (name, "errno") == 0) seen_errno++;
+      if (strcmp (name, "errno") == 0) missing_errno = 0;
       break;
     }
 }
@@ -326,7 +325,7 @@ read_scan_file (scan_file)
   scan_decls (scan_file);
 
   if (missing_extern_C_count + required_unseen_count + partial_count
-      + missing_extra_stuff == 0)
+      + missing_errno == 0)
     {
       if (verbose)
 	fprintf (stderr, "%s: OK, nothing needs to be done.\n", inc_filename);
@@ -374,7 +373,7 @@ write_rbrac ()
   switch (special_file_handling)
     {
     case errno_special:
-      if (!seen_errno)
+      if (missing_errno)
 	fprintf (outf, "extern int errno;\n");
       break;
     case sys_stat_special:
@@ -400,7 +399,8 @@ write_rbrac ()
     }
 
 
-  fprintf (outf, "#ifdef __cplusplus\n}\n#endif\n");
+  if (missing_extern_C_count + required_unseen_count > 0)
+    fprintf (outf, "#ifdef __cplusplus\n}\n#endif\n");
 }
 
 char *
@@ -648,7 +648,7 @@ main (argc, argv)
   if (strcmp (inc_filename, "sys/stat.h") == 0)
     special_file_handling = sys_stat_special;
   else if (strcmp (inc_filename, "errno.h") == 0)
-    special_file_handling = errno_special, missing_extra_stuff++;
+    special_file_handling = errno_special, missing_errno = 1;
 
   /* Calculate an upper bound of the number of function names in argv[4] */
   for (i = 1, cptr = argv[4]; *cptr; cptr++)
