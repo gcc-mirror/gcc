@@ -1,5 +1,7 @@
 2000-08-03  Alexandre Oliva  <aoliva@redhat.com>
 
+	* configure.in (libstdcxx_flags): Don't use `"'.
+
 	* config-ml.in: Adjust multilib search paths to the
 	appropriate multilib tree.
 
