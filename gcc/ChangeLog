@@ -1,3 +1,7 @@
+2004-06-07  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* tree.c (iterative_hash_expr): Use real_hash.
+
 2004-06-07  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/14765
