@@ -855,6 +855,8 @@ static const format_kind_info format_types_orig[] =
    new data if necessary, while still allowing the original data to be
    const.  */
 static const format_kind_info *format_types = format_types_orig;
+/* We can modify this one.  */
+static format_kind_info *dynamic_format_types;
 
 /* Structure detailing the results of checking a format function call
    where the format expression may be a conditional expression with
@@ -2367,6 +2369,67 @@ check_format_types (status, types)
     }
 }
 
+/* Given a format_length_info array FLI, and a character C, this
+   function returns the index into the conversion_specs where that
+   modifier's data is located.  If the character isn't found it
+   aborts.  */
+static unsigned int
+find_length_info_modifier_index (const format_length_info *fli, int c)
+{
+  unsigned int i = 0;
+  
+  while (fli->name)
+    {
+      if (strchr (fli->name, c))
+	return i;
+      i++; fli++;
+    }
+  
+  /* We shouldn't be looking for a non-existent modifier.  */
+  abort ();
+}
+
+/* Determine the type of HOST_WIDE_INT in the code being compiled for
+   use in GCC's __asm_fprintf__ custom format attribute.  You must
+   have set dynamic_format_types before calling this function.  */
+static void
+init_dynamic_asm_fprintf_info (void)
+{
+  static tree hwi;
+      
+  if (!hwi)
+    {
+      format_length_info *new_asm_fprintf_length_specs;
+      unsigned int i;
+	  
+      /* Find the underlying type for HOST_WIDE_INT.  For the %w
+	 length modifier to work, one must have issued: "typedef
+	 HOST_WIDE_INT __gcc_host_wide_int__;" in one's source code
+	 prior to using that modifier.  */
+      if (!(hwi = maybe_get_identifier ("__gcc_host_wide_int__"))
+	  || !(hwi = DECL_ORIGINAL_TYPE (identifier_global_value (hwi))))
+	abort ();
+
+      /* Create a new (writable) copy of asm_fprintf_length_specs.  */
+      new_asm_fprintf_length_specs = xmemdup (asm_fprintf_length_specs,
+					      sizeof (asm_fprintf_length_specs),
+					      sizeof (asm_fprintf_length_specs));
+
+      /* HOST_WIDE_INT must be one of 'long' or 'long long'.  */
+      i = find_length_info_modifier_index (new_asm_fprintf_length_specs, 'w');
+      if (hwi == long_integer_type_node)
+	new_asm_fprintf_length_specs[i].index = FMT_LEN_l;
+      else if (hwi == long_long_integer_type_node)
+	new_asm_fprintf_length_specs[i].index = FMT_LEN_ll;
+      else
+	abort ();
+
+      /* Assign the new data for use.  */
+      dynamic_format_types[asm_fprintf_format_type].length_char_specs =
+	new_asm_fprintf_length_specs;
+    }
+}
+
 /* Handle a "format" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
@@ -2424,44 +2487,14 @@ handle_format_attribute (node, name, args, flags, no_add_attrs)
      GCC's notion of HOST_WIDE_INT for checking %wd.  */
   if (info.format_type == asm_fprintf_format_type)
     {
-      static tree hwi;
-      tree orig;
-      
-      /* For this custom check to work, one must have issued:
-	 "typedef HOST_WIDE_INT __gcc_host_wide_int__;"
-	 in your source code prior to using this attribute.  */
-      if (!hwi)
-        {
-	  format_kind_info *new_format_types;
-	  format_length_info *new_asm_fprintf_length_specs;
-	  
-	  if (!(hwi = maybe_get_identifier ("__gcc_host_wide_int__")))
-	    abort ();
+      /* Our first time through, we have to make sure that our
+         format_type data is allocated dynamically and is modifiable.  */
+      if (!dynamic_format_types)
+	format_types = dynamic_format_types =
+	  xmemdup (format_types_orig, sizeof (format_types_orig),
+		   sizeof (format_types_orig));
 
-	  /* Create a new (writable) copy of asm_fprintf_length_specs.  */
-	  new_asm_fprintf_length_specs =
-	    xmalloc (sizeof (asm_fprintf_length_specs));
-	  memcpy (new_asm_fprintf_length_specs, asm_fprintf_length_specs,
-		  sizeof (asm_fprintf_length_specs));
-
-	  /* Create a new (writable) copy of format_types.  */
-	  new_format_types = xmalloc (sizeof (format_types_orig));
-	  memcpy (new_format_types, format_types_orig, sizeof (format_types_orig));
-	  
-	  /* Find the underlying type for HOST_WIDE_INT.  */
-	  orig = DECL_ORIGINAL_TYPE (identifier_global_value (hwi));
-	  if (orig == long_integer_type_node)
-	    new_asm_fprintf_length_specs[1].index = FMT_LEN_l;
-	  else if (orig == long_long_integer_type_node)
-	    new_asm_fprintf_length_specs[1].index = FMT_LEN_ll;
-	  else
-	    abort ();
-
-	  /* Assign the new data for use.  */
-	  new_format_types[asm_fprintf_format_type].length_char_specs =
-	    new_asm_fprintf_length_specs;
-	  format_types = new_format_types;
-	}
+      init_dynamic_asm_fprintf_info();
     }
 
   return NULL_TREE;
