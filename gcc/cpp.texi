@@ -894,18 +894,20 @@ whether there is a space.
 @cindex macro with variable arguments
 @cindex rest argument (in macro)
 
-In GNU C, a macro can accept a variable number of arguments, much as a
-function can.  The syntax for defining the macro looks much like that
-used for a function.  Here is an example:
+In the ISO C standard of 1999, a macro can be declared to accept a
+variable number of arguments much as a function can.  The syntax for
+defining the macro is similar to that of a function.  Here is an
+example:
 
 @example
 #define eprintf(...) fprintf (stderr, __VA_ARGS__)
 @end example
 
-Here @samp{<@dots{}>} is a @dfn{variable argument}.  It represents the
-zero or more tokens until the matching closing parenthesis, including
-commas.  This set of tokens is substituted into the macro body wherever
-@code{__VA_ARGS__} is used.  Thus, we have this expansion:
+Here @samp{@dots{}} is a @dfn{variable argument}.  In the invocation of
+such a macro, it represents the zero or more tokens until the closing
+parenthesis that ends the invocation, including any commas.  This set of
+tokens replaces the identifier @code{__VA_ARGS__} in the macro body
+wherever it appears.  Thus, we have this expansion:
 
 @example
 eprintf ("%s:%d: ", input_file_name, line_number)
@@ -919,9 +921,9 @@ We might instead have defined eprintf as follows:-
 #define eprintf(format, ...) fprintf (stderr, format, __VA_ARGS__)
 @end example
 
-This formulation causes problems if there are no arguments to fprintf
-after the format, however.  There is no way to produce expanded output
-of
+This formulation looks more descriptive, but unfortunately causes
+problems if fprintf wants no arguments the format.  There is no way to
+produce expanded output of
 
 @example
 fprintf (stderr, "success!\n")
@@ -935,8 +937,38 @@ eprintf ("success!\n", )
 @end example
 
 @noindent
-produces an unwanted extra comma, originating from the expansion and not
-the invocation of eprintf, in the output.
+produces
+
+@example
+fprintf (stderr, "success!\n",)
+@end example
+
+@noindent
+where the extra comma originates from the replacement list and not from
+the arguments to eprintf.
+
+Within a @samp{#define} directive, ISO C mandates that the only place
+the identifier @code{__VA_ARGS__} can appear is in the replacement list
+of a variable-argument macro.  Using it as a macro name, macro argument
+or within a different type of macro is illegal.
+
+Before standardization, previous GNU preprocessors implemented a
+slightly different syntax for defining variable-argument macros.  The
+macros were called ``rest args macros''.  You could assign a name to the
+variable arguments, by contrast the standardized method leaves them
+anonymous.  For example, the eprintf macro could have been defined like
+this
+
+@example
+#define eprintf(format...) fprintf (stderr, format)
+@end example
+
+Now that there is a standardized construct, you are encouraged to use
+that instead.  It is unlikely that support for named variable arguments
+will be removed in future revisions of CPP, since being able to assign a
+name is descriptive, and there is a wide base of legacy code.  However,
+two obscure features of the GNU style are deprecated and likely to be
+dropped in future.  @xref{Unreliable Features}.
 
 @node Predefined, Stringification, Macro Varargs, Macros
 @subsection Predefined Macros
@@ -2731,7 +2763,7 @@ Preservation of the form of whitespace between tokens is unlikely to
 change from current behavior (see @ref{Output}), but you are advised not
 to rely on it.
 
-The following is undocumented and subject to change:-
+The following are undocumented and subject to change:-
 
 @itemize @bullet
 
@@ -2763,9 +2795,9 @@ point in the future:-
 
 @itemize @bullet
 
-@item ## swallowing the previous token in variable-argument macros
+@item ## swallowing the previous token in GNU rest argument macros
 
-In a macro expansion, if ## appeared before a variable arguments
+In a macro expansion, if ## appeared before a GNU named variable arguments
 parameter, and the set of tokens specified for that argument in the
 macro invocation was empty, previous versions of the GNU C preprocessor
 would back up and remove the token appearing before the ##.  This
@@ -2776,7 +2808,24 @@ conflicts with behavior mandated by the standard, this feature is now
 deprecated and will be removed in future.
 
 The current preprocessor still supports it for reasons of code
-migration, and warns at the location of the macro definition.
+migration, and warns at each use of the feature.
+
+@item Optional argument when invoking GNU rest argument macros
+
+In the invocation of a GNU named variable arguments macro, the variable
+arguments were optional.  For example, the following two invocations are
+both legal for GNU rest args.  The first is illegal in the equivalent
+formulation using ISO C anonymous variable arguments and
+@code{__VA_ARGS__}:-
+
+@smallexample
+#define debug(format, args...) printf (format, args)
+debug("string");       /* Illegal in ISO C equivalent.  */
+debug("string",);      /* OK for both.  */
+@end smallexample
+
+The current preprocessor still supports it for reasons of code
+migration, and warns at each use of the feature.
 
 @item Attempting to paste two tokens which together do not form a valid
 preprocessing token

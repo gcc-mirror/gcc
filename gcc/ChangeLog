@@ -1,3 +1,7 @@
+2000-07-07  Neil Booth  <NeilB@earthling.net>
+
+	* cpp.texi: Update.
+
 Fri Jul  7 07:47:35 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* final.c (final): Detect out of bounds array access to
