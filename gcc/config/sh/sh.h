@@ -1711,9 +1711,13 @@ struct sh_args {
 	 (CUM).arg_count[(int) SH_ARG_INT] += numregs;	\
 	 if (TARGET_SHCOMPACT				\
 	     && SHCOMPACT_FORCE_ON_STACK (MODE_, TYPE_)) \
-	   (CUM).call_cookie 				\
-	     |= CALL_COOKIE_INT_REG (((CUM).arg_count[(int) SH_ARG_INT] \
-				      - numregs), 1);	\
+	   {						\
+	     (CUM).call_cookie 				\
+	       |= CALL_COOKIE_INT_REG (((CUM).arg_count[(int) SH_ARG_INT] \
+					- numregs), 1);	\
+	     /* N.B. We want this also for outgoing.   */\
+	     (CUM).stack_regs += numregs;		\
+	   }						\
 	 else if ((CUM).byref)				\
 	   {						\
 	     if (! (CUM).outgoing)			\
