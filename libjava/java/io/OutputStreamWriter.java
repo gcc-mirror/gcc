@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -55,9 +55,9 @@ public class OutputStreamWriter extends Writer
   {
     synchronized (lock)
       {
-	flush();
 	if (out != null)
 	  {
+	    flush();
 	    out.close();
 	    out = null;
 	  }
