@@ -158,7 +158,7 @@ EOF
 	elif grep bos411 /usr/include/stdio.h >/dev/null 2>&1; then
 		IBM_REV=4.1.1
 	else
-		IBM_REV=4
+		IBM_REV=4.${UNAME_RELEASE}
 	fi
 	echo ${IBM_ARCH}-ibm-aix${IBM_REV}
 	exit 0 ;;
