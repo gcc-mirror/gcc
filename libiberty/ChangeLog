@@ -1,3 +1,8 @@
+2002-05-22  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
+
+	* configure.in: Fix typo in the code checking for sys_errlist.
+	* configure: Regenerated.
+
 2002-05-13  Andreas Schwab  <schwab@suse.de>
 
 	* config.table: Use mh-x86pic also for x86-64.
