@@ -1,3 +1,15 @@
+2003-11-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12868
+	* include/bits/fstream.tcc (imbue): For encodings != -1 it's
+	always ok to imbue a new locale, provided seekoff(0, cur, ...)
+	doesn't fail, of course.
+	(underflow): In order for the above to work, deal gracefully
+	with _M_codecvt->in returning codecvt_base::error while 
+	(__ilen = __iend - this->eback()) > 0: it just means __ilen
+	correctly converted internal characters before an error.	
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/12868.cc: New.
+
 2003-11-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc: Fix typo in comment.
