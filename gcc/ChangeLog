@@ -1,3 +1,9 @@
+Sat Jan 30 05:27:25 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Thu Jan 21 01:59:30 1999  Richard Henderson  <rth@cygnus.com>
+	* explow.c (allocate_dynamic_stack_space): Use register_operand
+	instead of arith_operand, which does not exist.
+
 Thu Jan 28 09:44:04 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (hppa1.0-hp-hpux10*): Use t-pa.

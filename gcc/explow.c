@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987, 91, 94-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 94-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1186,7 +1186,7 @@ allocate_dynamic_stack_space (size, target, known_align)
 	/* Our optimization works based upon being able to perform a simple
 	   transformation of this RTL into a (set REG REG) so make sure things
 	   did in fact end up in a REG.  */
-	if (!arith_operand (setjmpless_size, Pmode))
+	if (!register_operand (setjmpless_size, Pmode))
 	  setjmpless_size = force_reg (Pmode, setjmpless_size);
       }
 
