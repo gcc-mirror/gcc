@@ -1,3 +1,10 @@
+2000-08-07  Hans Boehm  <boehm@acm.org>
+
+	* boehm.c (mark_reference_fields): Set marking bits for all words in
+	a multiple-word record.
+	(get_boehm_type_descriptor): Use the procedure marking descriptor for
+	java.lang.Class.
+	
 2000-08-31  Mike Stump  <mrs@wrs.com>
 
 	* Make-lang.in (jc1$(exeext), gcjh$(exeext), jv-scan$(exeext),
