@@ -732,8 +732,8 @@ alloc_page (order)
 
   if (GGC_DEBUG_LEVEL >= 2)
     fprintf (G.debug_file, 
-	     "Allocating page at %p, object size=%ld, data %p-%p\n",
-	     (PTR) entry, (long) OBJECT_SIZE (order), page,
+	     "Allocating page at %p, object size=%lu, data %p-%p\n",
+	     (PTR) entry, (unsigned long) OBJECT_SIZE (order), page,
 	     page + entry_size - 1);
 
   return entry;
@@ -954,8 +954,9 @@ ggc_alloc (size)
 
   if (GGC_DEBUG_LEVEL >= 3)
     fprintf (G.debug_file, 
-	     "Allocating object, requested size=%ld, actual=%ld at %p on %p\n",
-	     (long) size, (long) OBJECT_SIZE (order), result, (PTR) entry);
+	     "Allocating object, requested size=%lu, actual=%lu at %p on %p\n",
+	     (unsigned long) size, (unsigned long) OBJECT_SIZE (order), result,
+	     (PTR) entry);
 
   return result;
 }
@@ -1500,13 +1501,14 @@ ggc_print_statistics ()
 	  overhead += (sizeof (page_entry) - sizeof (long)
 		       + BITMAP_SIZE (OBJECTS_PER_PAGE (i) + 1));
 	}
-      fprintf (stderr, "%-5d %10ld%c %10ld%c %10ld%c\n", OBJECT_SIZE (i),
+      fprintf (stderr, "%-5lu %10lu%c %10lu%c %10lu%c\n",
+	       (unsigned long) OBJECT_SIZE (i),
 	       SCALE (allocated), LABEL (allocated),
 	       SCALE (in_use), LABEL (in_use),
 	       SCALE (overhead), LABEL (overhead));
       total_overhead += overhead;
     }
-  fprintf (stderr, "%-5s %10ld%c %10ld%c %10ld%c\n", "Total",
+  fprintf (stderr, "%-5s %10lu%c %10lu%c %10lu%c\n", "Total",
 	   SCALE (G.bytes_mapped), LABEL (G.bytes_mapped),
 	   SCALE (G.allocated), LABEL(G.allocated),
 	   SCALE (total_overhead), LABEL (total_overhead));
