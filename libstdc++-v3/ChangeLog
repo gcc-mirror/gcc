@@ -1,3 +1,7 @@
+2004-04-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/20_util/allocator.html: Add bitmap_allocator links.
+
 2004-04-29  Dhruv Matani  <dhruvbird@gmx.net>
 	
 	* include/ext/bitmap_allocator.h: (_Bit_scan_forward) -> Made this
