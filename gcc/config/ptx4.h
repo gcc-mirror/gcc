@@ -82,7 +82,7 @@ Boston, MA 02111-1307, USA.
 
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "-no_0f_fix %{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*}"
+  "-no_0f_fix %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*}"
 
 /* svr4 assemblers need the `-' (indicating input from stdin) to come after
    the -o option (and its argument) for some reason.  If we try to put it
@@ -140,7 +140,7 @@ Boston, MA 02111-1307, USA.
    not being done.  */
 
 #undef	LINK_SPEC
-#define LINK_SPEC "%{h*} %{V} %{v:%{!V:-V}} \
+#define LINK_SPEC "%{h*} %{v:-V} \
 		   %{b} %{Wl,*:%*} \
 		   %{static:-dn -Bstatic} \
 		   %{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
