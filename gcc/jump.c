@@ -952,16 +952,37 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && (temp3 = get_condition (insn, &temp4)) != 0
 	      && can_reverse_comparison_p (temp3, insn))
 	    {
-	      rtx target, seq;
+	      rtx temp6, target = 0, seq, init_insn = 0, init = temp2;
 	      enum rtx_code code = reverse_condition (GET_CODE (temp3));
 
 	      start_sequence ();
 
-	      target = emit_store_flag (gen_reg_rtx (GET_MODE (temp2)), code,
-					XEXP (temp3, 0), XEXP (temp3, 1),
-					VOIDmode,
-					(code == LTU || code == LEU
-					 || code == GTU || code == GEU), 1);
+	      /* It must be the case that TEMP2 is not modified in the range
+		 [TEMP4, INSN).  The one exception we make is if the insn
+		 before INSN sets TEMP2 to something which is also unchanged
+		 in that range.  In that case, we can move the initialization
+		 into our sequence.  */
+
+	      if ((temp5 = prev_active_insn (insn)) != 0
+		  && GET_CODE (temp5) == INSN
+		  && (temp6 = single_set (temp5)) != 0
+		  && rtx_equal_p (temp2, SET_DEST (temp6))
+		  && (CONSTANT_P (SET_SRC (temp6))
+		      || GET_CODE (SET_SRC (temp6)) == REG
+		      || GET_CODE (SET_SRC (temp6)) == SUBREG))
+		{
+		  emit_insn (PATTERN (temp5));
+		  init_insn = temp5;
+		  init = SET_SRC (temp6);
+		}
+
+	      if (CONSTANT_P (init)
+		  || ! reg_set_between_p (init, PREV_INSN (temp4), insn))
+		target = emit_store_flag (gen_reg_rtx (GET_MODE (temp2)), code,
+					  XEXP (temp3, 0), XEXP (temp3, 1),
+					  VOIDmode,
+					  (code == LTU || code == LEU
+					   || code == GTU || code == GEU), 1);
 
 	      /* If we can do the store-flag, do the addition or
 		 subtraction.  */
@@ -987,6 +1008,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
 		  emit_insns_before (seq, temp4);
 		  delete_insn (temp);
+
+		  if (init_insn)
+		    delete_insn (init_insn);
+
 		  next = NEXT_INSN (insn);
 #ifdef HAVE_cc0
 		  delete_insn (prev_nonnote_insn (insn));
