@@ -1,5 +1,11 @@
 2001-12-10  Tom Tromey  <tromey@redhat.com>
 
+	For PR libgcj/1147:
+	* prims.cc (JvConvertArgv): Convert using current locale's
+	encoding.
+
+2001-12-10  Tom Tromey  <tromey@redhat.com>
+
 	Fix for PR libgcj/5064.
 	* java/lang/natClassLoader.cc: Don't include stdio.h.
 	(_Jv_RegisterClassHookDefault): Don't use snprintf.

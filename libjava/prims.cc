@@ -657,12 +657,20 @@ JvConvertArgv (int argc, const char **argv)
   if (argc < 0)
     argc = 0;
   jobjectArray ar = JvNewObjectArray(argc, &StringClass, NULL);
-  jobject* ptr = elements(ar);
+  jobject *ptr = elements(ar);
+  jbyteArray bytes = NULL;
   for (int i = 0;  i < argc;  i++)
     {
       const char *arg = argv[i];
-      // FIXME - should probably use JvNewStringUTF.
-      *ptr++ = JvNewStringLatin1(arg, strlen(arg));
+      int len = strlen (arg);
+      if (bytes == NULL || bytes->length < len)
+	bytes = JvNewByteArray (len);
+      jbyte *bytePtr = elements (bytes);
+      // We assume jbyte == char.
+      memcpy (bytePtr, arg, len);
+
+      // Now convert using the default encoding.
+      *ptr++ = new java::lang::String (bytes, 0, len);
     }
   return (JArray<jstring>*) ar;
 }
@@ -993,7 +1001,7 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
       runtime = java::lang::Runtime::getRuntime ();
 
       arg_vec = JvConvertArgv (argc - 1, argv + 1);
-      
+
       if (klass)
 	main_thread = new gnu::gcj::runtime::FirstThread (klass, arg_vec);
       else
