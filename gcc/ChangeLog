@@ -1,3 +1,24 @@
+1999-01-26 12:11 -0500  Zack Weinberg  <zack@midnite.ec.rhno.columbia.edu>
+
+	* cppfiles.c (safe_read): Deleted.  
+	(read_and_prescan): New function, replaces safe_read, converts
+	and/or warns about trigraphs, silently converts odd line
+	terminators (\r, \n\r, \r\n).  Warns about no newline at EOF.
+	(finclude): Use read_and_prescan; turn off nonblocking mode on
+	the input descriptor; remove file-size-examination and
+	no-newline-at-EOF gunk which is	longer necessary; be more
+	careful about checking that we've been handed a legitimate
+	file to read (only real files, pipes, and ttys are acceptable).
+	* cpplib.h (cpp_options): Rename no_trigraphs flag to 
+	`trigraphs' and invert its sense.
+	(trigraph_table): Declare.
+	(cpp_warning_with_line): Prototype.
+	* cpplib.c: Remove all references to trigraph_pcp. Define
+	trigraph_table; initialize it in initialize_char_syntax.  Open
+	files in nonblocking mode.  s/no_trigraphs/trigraphs/
+	throughout, and invert sense.  Put cpp_warning_with_line back
+	in and export it.
+
 Tue Jan 26 23:21:49 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (COUNTER_REGS): New register class.
