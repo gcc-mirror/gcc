@@ -207,7 +207,7 @@ public final class Inet4Address extends InetAddress
    */
   public byte[] getAddress()
   {
-    return addr;
+    return (byte[]) addr.clone();
   }
 
   /**

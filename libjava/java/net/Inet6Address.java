@@ -65,7 +65,8 @@ public final class Inet6Address extends InetAddress
   Inet6Address(byte[] addr, String host)
   {
     super(addr, host);
-    this.ipaddress = addr;
+    // Super constructor clones the addr.  Get a reference to the clone.
+    this.ipaddress = this.addr;
   }
 
   /**
@@ -194,7 +195,7 @@ public final class Inet6Address extends InetAddress
    */
   public byte[] getAddress()
   {
-    return ipaddress;
+    return (byte[]) ipaddress.clone();
   }
 
   /**
@@ -233,9 +234,10 @@ public final class Inet6Address extends InetAddress
     if (! (obj instanceof Inet6Address))
       return false;
 
-    Inet6Address tmp = (Inet6Address) obj;
-
-    return super.equals(tmp) && this.ipaddress == tmp.ipaddress;
+    // this.ipaddress is never set in this class except to
+    // the value of the super class' addr.  The super classes
+    // equals(Object) will do the compare.
+    return super.equals(obj);
   }
 
   /**
