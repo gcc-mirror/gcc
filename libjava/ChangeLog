@@ -1,5 +1,21 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/beans/beancontext/BeanContext.java,
+	java/beans/beancontext/BeanContextChild.java,
+	java/beans/beancontext/BeanContextChildComponentProxy.java,
+	java/beans/beancontext/BeanContextChildSupport.java,
+	java/beans/beancontext/BeanContextContainerProxy.java,
+	java/beans/beancontext/BeanContextMembershipListener.java,
+	java/beans/beancontext/BeanContextProxy.java,
+	java/beans/beancontext/BeanContextServiceProvider.java,
+	java/beans/beancontext/BeanContextServiceProviderBeanInfo.java,
+	java/beans/beancontext/BeanContextServiceRevokedListener.java,
+	java/beans/beancontext/BeanContextServices.java,
+	java/beans/beancontext/BeanContextServicesListener.java:
+	Removed redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/beans/AppletInitializer.java,
 	java/beans/BeanInfo.java,
 	java/beans/Customizer.java,

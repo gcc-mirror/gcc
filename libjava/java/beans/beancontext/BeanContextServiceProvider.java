@@ -89,7 +89,7 @@ public interface BeanContextServiceProvider {
 	 *        <code>null</code>.
 	 * @see java.beans.beancontext.BeanContextServices#getService(java.beans.beancontext.BeanContextChild,java.lang.Object,java.lang.Class,java.lang.Object,java.beans.beancontext.BeanContextServiceRevokedListener)
 	 */
-	public Object getService(BeanContextServices services, Object requestor, Class serviceClass, Object serviceSelector);
+	Object getService(BeanContextServices services, Object requestor, Class serviceClass, Object serviceSelector);
 
 	/**
 	 * Release the service.
@@ -109,7 +109,7 @@ public interface BeanContextServiceProvider {
 	 * @param service the service to relinquish
 	 * @see java.beans.beancontext.BeanContextServices#releaseService(java.beans.beancontext.BeanContextChild,java.lang.Object,java.lang.Object)
 	 */
-	public void releaseService(BeanContextServices services, Object requestor, Object service);
+	void releaseService(BeanContextServices services, Object requestor, Object service);
 
 	/**
 	 * Get a list of valid service selectors for the specified service class.
@@ -136,5 +136,5 @@ public interface BeanContextServiceProvider {
 	 *         class, or <code>null</code>.
 	 * @see java.beans.beancontext.BeanContextServices#getCurrentServiceSelectors(java.lang.Class)
 	 */
-	public Iterator getCurrentServiceSelectors(BeanContextServices services, Class serviceClass);
+	Iterator getCurrentServiceSelectors(BeanContextServices services, Class serviceClass);
 }

@@ -132,28 +132,28 @@ public interface BeanContextChild {
 	 *            <code>BeanContextChild</code> implementor does not
 	 *            wish to have its parent changed.
 	 */
-	public void setBeanContext(BeanContext parent)
+	void setBeanContext(BeanContext parent)
 		throws PropertyVetoException;
 
 	/**
 	 * Get the parent <code>BeanContext</code>.
 	 * @return the parent <code>BeanContext</code>.
 	 */
-	public BeanContext getBeanContext();
+	BeanContext getBeanContext();
 
 	/**
 	 * Add a listener that will be notified when a specific property changes.
 	 * @param prop the name of the property to listen on
 	 * @param listener the listener to listen on the property.
 	 */
-	public void addPropertyChangeListener(String prop, PropertyChangeListener listener);
+	void addPropertyChangeListener(String prop, PropertyChangeListener listener);
 
 	/**
 	 * Remove a listener to a certain property.
 	 * @param prop the name of the property being listened on
 	 * @param listener the listener listening on the property.
 	 */
-	public void removePropertyChangeListener(String prop, PropertyChangeListener listener);
+	void removePropertyChangeListener(String prop, PropertyChangeListener listener);
 
 	/**
 	 * Add a listener that will be notified when a specific property
@@ -163,12 +163,12 @@ public interface BeanContextChild {
 	 * @param prop the name of the property to listen on
 	 * @param listener the listener to listen on the property.
 	 */
-	public void addVetoableChangeListener(String prop, VetoableChangeListener listener);
+	void addVetoableChangeListener(String prop, VetoableChangeListener listener);
 
 	/**
 	 * Remove a listener to a certain property.
 	 * @param prop the name of the property being listened on
 	 * @param listener the listener listening on the property.
 	 */
-	public void removeVetoableChangeListener(String prop, VetoableChangeListener listener);
+	void removeVetoableChangeListener(String prop, VetoableChangeListener listener);
 }

@@ -57,7 +57,7 @@ public interface BeanContextMembershipListener extends EventListener {
 	 * @param event the event, including which children were added.
 	 * @see java.beans.beancontext.BeanContext#add(java.lang.Object)
 	 */
-	public void childrenAdded(BeanContextMembershipEvent event);
+	void childrenAdded(BeanContextMembershipEvent event);
 
 	/**
 	 * When beans are removed from a <code>BeanContext</code>,
@@ -66,5 +66,5 @@ public interface BeanContextMembershipListener extends EventListener {
 	 * @param event the event, including which children were removed.
 	 * @see java.beans.beancontext.BeanContext#remove(java.lang.Object)
 	 */
-	public void childrenRemoved(BeanContextMembershipEvent event);
+	void childrenRemoved(BeanContextMembershipEvent event);
 }
