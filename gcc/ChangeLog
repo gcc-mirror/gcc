@@ -1,3 +1,40 @@
+2004-09-26  Kenneth Zadeck  <Kenneth.Zadeck@NaturalBridge.com>
+
+
+	* tree-ssa-operands.c (get_call_expr_operands): Added parm to
+	add_call_clobber_ops and add_call_read_ops.
+	(add_call_clobber_ops, add_call_read_ops): Added code to reduce
+	the number of vdefs and vuses inserted based on analysis of global
+	variables across calls.  * tree-dfa.c (find_referenced_vars):
+	Needed to reset static var maps before each function is compiled.
+	* cgraphunit.c:
+	(static_vars_to_consider_by_tree,static_vars_to_consider_by_uid,
+	static_vars_info,functions_to_static_vars_info,module_statics_escape,
+	all_module_statics,searchc_env,dfs_info): New fields to support
+	analysis of static global variables.
+	(print_order, convert_UIDs_in_bitmap, new_static_vars_info,
+	cgraph_reset_static_var_maps, get_global_static_vars_info,
+	get_global_statics_not_read, get_global_statics_not_written,
+	searchc, cgraph_reduced_inorder, has_proper_scope_for_analysis,
+	check_rhs_var, check_lhs_var, get_asm_expr_operands,
+	process_call_for_static_vars, scan_for_static_refs,
+	cgraph_characterize_statics_local, cgraph_get_static_name_by_uid,
+	clear_static_vars_maps, cgraph_propagate_bits,
+	cgraph_characterize_statics): New. Functions to support analysis
+	of static global variables.
+	(cgraph_mark_local_and_external_functions): Renamed from:
+	(cgraph_mark_local_functions)
+	(cgraph_expand_all_functions): Remove call to
+	cgraph_mark_local_and_external_functions.
+	(cgraph_optimize): Added driver to analyze static variables whose
+	scope is within the compilation unit.  * cgraph.h (struct
+	cgraph_local_info, GTY): Added statics_read, statics_written,
+	local, calls_read_all, calls_write_all, for_functions_valid.
+	(struct cgraph_node): Added next_cycle.  * cgraph.c
+	(dump_cgraph_node): Added print routines for new fields.  *
+	makefile.in: macroized cgraph.h, added cgraphunit.c to the ggc
+	list.
+
 2004-09-13  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-decl.c (grokdeclarator): Correct comments about where storage

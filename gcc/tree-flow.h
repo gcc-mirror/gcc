@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hashtab.h"
 #include "tree-gimple.h"
 #include "tree-ssa-operands.h"
+#include "cgraph.h"
 
 /* Forward declare structures for the garbage collector GTY markers.  */
 #ifndef GCC_BASIC_BLOCK_H
@@ -199,6 +200,11 @@ struct var_ann_d GTY(())
      live at the same time and this can happen for each call to the
      dominator optimizer.  */
   tree current_def;
+
+  /* Pointer to the structure that contains the sets of global
+     variables modified by function calls.  This field is only used
+     for FUNCTION_DECLs.  */
+  static_vars_info_t static_vars_info;
 };
 
 
