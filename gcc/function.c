@@ -2688,6 +2688,7 @@ static int in_arg_offset;
 static int var_offset;
 static int dynamic_offset;
 static int out_arg_offset;
+static int cfa_offset;
 
 /* In most machines, the stack pointer register is equivalent to the bottom
    of the stack.  */
@@ -2725,6 +2726,13 @@ static int out_arg_offset;
 #define STACK_DYNAMIC_OFFSET(FNDECL) STACK_POINTER_OFFSET
 #endif
 #endif
+
+/* On a few machines, the CFA coincides with the arg pointer.  */
+
+#ifndef ARG_POINTER_CFA_OFFSET
+#define ARG_POINTER_CFA_OFFSET 0
+#endif
+
 
 /* Build up a (MEM (ADDRESSOF (REG))) rtx for a register REG that just had
    its address taken.  DECL is the decl for the object stored in the
@@ -2910,6 +2918,7 @@ instantiate_virtual_regs (fndecl, insns)
   var_offset = STARTING_FRAME_OFFSET;
   dynamic_offset = STACK_DYNAMIC_OFFSET (fndecl);
   out_arg_offset = STACK_POINTER_OFFSET;
+  cfa_offset = ARG_POINTER_CFA_OFFSET;
 
   /* Scan all variables and parameters of this function.  For each that is
      in memory, instantiate all virtual registers if the result is a valid
@@ -3143,6 +3152,8 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	new = stack_pointer_rtx, offset = - dynamic_offset;
       else if (SET_DEST (x) == virtual_outgoing_args_rtx)
 	new = stack_pointer_rtx, offset = - out_arg_offset;
+      else if (SET_DEST (x) == virtual_cfa_rtx)
+	new = arg_pointer_rtx, offset = - cfa_offset;
 
       if (new)
 	{
@@ -3194,6 +3205,8 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 		new = stack_pointer_rtx, offset = dynamic_offset;
 	      else if (inner == virtual_outgoing_args_rtx)
 		new = stack_pointer_rtx, offset = out_arg_offset;
+	      else if (inner == virtual_cfa_rtx)
+	        new = arg_pointer_rtx, offset = cfa_offset;
 	      else
 		{
 		  loc = &XEXP (x, 0);
@@ -3213,6 +3226,8 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	    new = stack_pointer_rtx, offset = dynamic_offset;
 	  else if (XEXP (x, 0) == virtual_outgoing_args_rtx)
 	    new = stack_pointer_rtx, offset = out_arg_offset;
+          else if (XEXP (x, 0) == virtual_cfa_rtx)
+            new = arg_pointer_rtx, offset = cfa_offset;
 	  else
 	    {
 	      /* We know the second operand is a constant.  Unless the
@@ -3420,6 +3435,8 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	new = stack_pointer_rtx, offset = dynamic_offset;
       else if (x == virtual_outgoing_args_rtx)
 	new = stack_pointer_rtx, offset = out_arg_offset;
+      else if (x == virtual_cfa_rtx)
+        new = arg_pointer_rtx, offset = cfa_offset;
 
       if (new)
 	{
@@ -5980,6 +5997,10 @@ expand_function_end (filename, line, end_bindings)
       emit_move_insn (outgoing, value_address);
       use_variable (outgoing);
     }
+
+  /* If this is an implementation of __throw, do what's necessary to 
+     communicate between __builtin_eh_return and the epilogue.  */
+  expand_eh_return ();
 
   /* Output a return insn if we are using one.
      Otherwise, let the rtl chain end here, to drop through

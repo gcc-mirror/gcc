@@ -1,3 +1,54 @@
+Tue Sep 15 19:09:06 1998  Richard Henderson  <rth@cygnus.com>
+
+	* tree.h (BUILT_IN_CALLER_RETURN_ADDRESS): Unused.  Kill.
+	(BUILT_IN_FP, BUILT_IN_SP, BUILT_IN_SET_RETURN_ADDR_REG): Kill.
+	(BUILT_IN_EH_STUB_OLD, BUILT_IN_EH_STUB, BUILT_IN_SET_EH_REGS): Kill.
+	(BUILT_IN_EH_RETURN, BUILT_IN_DWARF_CFA): New.
+	* c-decl.c (init_decl_processing): Update accordingly.
+	* expr.c (expand_builtin): Likewise.
+
+	* rtl.h (global_rtl): Add cfa entry.
+	(virtual_cfa_rtx, VIRTUAL_CFA_REGNUM): New.
+	(LAST_VIRTUAL_REGISTER): Update.
+	* emit-rtl.c (global_rtl): Add cfa entry.
+	(init_emit): Initialize it.
+	* function.c (cfa_offset): New.
+	(instantiate_virtual_regs): Initialize it.
+	(instantiate_virtual_regs_1): Instantiate virtual_cfa_rtx.
+	(expand_function_end): Call expand_eh_return.
+	* tm.texi (ARG_POINTER_CFA_OFFSET): New.
+
+	* except.c (current_function_eh_stub_label): Kill.
+	(current_function_eh_old_stub_label): Likwise; update all references.
+	(expand_builtin_set_return_addr_reg): Kill.
+	(expand_builtin_eh_stub_old, expand_builtin_eh_stub): Kill.
+	(expand_builtin_set_eh_regs): Kill.
+	(eh_regs): Produce a third reg for the actual handler address.
+	(eh_return_context, eh_return_stack_adjust): New.
+	(eh_return_handler, eh_return_stub_label): New.
+	(init_eh_for_function): Initialize them.
+	(expand_builtin_eh_return, expand_eh_return): New.
+	* except.h: Update prototypes.
+	* flow.c (find_basic_blocks_1): Update references to the stub label.
+	* function.h (struct function): Kill stub label elements.
+
+	* libgcc2.c (in_reg_window): For REG_SAVED_REG, check that the
+	register number is one that would be in the previous window.
+	Provide a dummy definition for non-windowed targets.
+	(get_reg_addr): New function.
+	(get_reg, put_reg, copy_reg): Use it.
+	(__throw): Rely on in_reg_window, not INCOMING_REGNO.  Kill stub
+	generating code and use __builtin_eh_return.  Use __builtin_dwarf_cfa.
+
+	* alpha.c (alpha_eh_epilogue_sp_ofs): New.
+	(alpha_init_expanders): Initialize it.
+	(alpha_expand_epilogue): Use it.
+	* alpha.h: Declare it.
+	* alpha.md (eh_epilogue): New.
+
+	* m68h.h (ARG_POINTER_CFA_OFFSET): New.
+	* sparc.h (ARG_POINTER_CFA_OFFSET): New.
+
 Tue Sep 15 19:31:58 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* i960.h (CONST_COSTS): Fix thinko.  Test flag, not the constant

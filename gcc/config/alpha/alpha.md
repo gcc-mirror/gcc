@@ -5144,6 +5144,22 @@
   ""
   "alpha_expand_epilogue (); DONE;")
 
+(define_expand "eh_epilogue"
+  [(use (match_operand:DI 0 "register_operand" "r"))
+   (use (match_operand:DI 1 "register_operand" "r"))
+   (use (match_operand:DI 2 "register_operand" "r"))]
+  "! TARGET_OPEN_VMS"
+  "
+{
+  alpha_eh_epilogue_sp_ofs = operands[1];
+  if (GET_CODE (operands[2]) != REG || REGNO (operands[2]) != 26)
+    {
+      rtx ra = gen_rtx_REG (Pmode, 26);
+      emit_move_insn (ra, operands[2]);
+      operands[2] = ra;
+    }
+}")
+
 (define_expand "builtin_longjmp"
   [(unspec_volatile [(match_operand 0 "register_operand" "r")] 3)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"

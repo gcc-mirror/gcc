@@ -1055,6 +1055,7 @@ extern struct _global_rtl
   struct rtx_def virtual_stack_vars_val;
   struct rtx_def virtual_stack_dynamic_val;
   struct rtx_def virtual_outgoing_args_val;
+  struct rtx_def virtual_cfa_val;
 } global_rtl;
 
 /* All references to certain hard regs, except those created
@@ -1159,7 +1160,17 @@ extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));
 
 #define VIRTUAL_OUTGOING_ARGS_REGNUM	((FIRST_VIRTUAL_REGISTER) + 3)
 
-#define LAST_VIRTUAL_REGISTER	((FIRST_VIRTUAL_REGISTER) + 3)
+/* This points to the Canonical Frame Address of the function.  This
+   should corrospond to the CFA produced by INCOMING_FRAME_SP_OFFSET,
+   but is calculated relative to the arg pointer for simplicity; the
+   frame pointer nor stack pointer are necessarily fixed relative to 
+   the CFA until after reload.  */
+
+#define virtual_cfa_rtx			(&global_rtl.virtual_cfa_val)
+
+#define VIRTUAL_CFA_REGNUM		((FIRST_VIRTUAL_REGISTER) + 4)
+
+#define LAST_VIRTUAL_REGISTER		((FIRST_VIRTUAL_REGISTER) + 4)
 
 extern rtx find_next_ref		PROTO((rtx, rtx));
 extern rtx *find_single_use		PROTO((rtx, rtx, rtx *));

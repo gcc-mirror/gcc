@@ -79,6 +79,10 @@ char *alpha_mlat_string;	/* -mmemory-latency= */
 rtx alpha_compare_op0, alpha_compare_op1;
 int alpha_compare_fp_p;
 
+/* Define the information needed to modify the epilogue for EH.  */
+
+rtx alpha_eh_epilogue_sp_ofs;
+
 /* Non-zero if inside of a function, because the Alpha asm can't
    handle .files inside of functions.  */
 
@@ -2431,6 +2435,7 @@ void
 alpha_init_expanders ()
 {
   alpha_return_addr_rtx = NULL_RTX;
+  alpha_eh_epilogue_sp_ofs = NULL_RTX;
 
   /* Arrange to save and restore machine status around nested functions.  */
   save_machine_status = alpha_save_machine_status;
@@ -3731,9 +3736,13 @@ alpha_expand_epilogue ()
 	  
       /* Restore registers in order, excepting a true frame pointer. */
 
-      FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA),
-		           gen_rtx_MEM (DImode, plus_constant(sa_reg,
-							      reg_offset))));
+      if (! alpha_eh_epilogue_sp_ofs)
+	{
+          FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA),
+		               gen_rtx_MEM (DImode,
+					    plus_constant(sa_reg,
+							  reg_offset))));
+	}
       reg_offset += 8;
       imask &= ~(1L << REG_RA);
 
@@ -3763,21 +3772,28 @@ alpha_expand_epilogue ()
 	  }
     }
 
-  if (frame_size)
+  if (frame_size || alpha_eh_epilogue_sp_ofs)
     {
+      sp_adj1 = stack_pointer_rtx;
+
+      if (alpha_eh_epilogue_sp_ofs)
+	{
+	  sp_adj1 = gen_rtx_REG (DImode, 23);
+	  emit_move_insn (sp_adj1,
+			  gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					alpha_eh_epilogue_sp_ofs));
+	}
+
       /* If the stack size is large, begin computation into a temporary
 	 register so as not to interfere with a potential fp restore,
 	 which must be consecutive with an SP restore.  */
       if (frame_size < 32768)
-	{
-	  sp_adj1 = stack_pointer_rtx;
-	  sp_adj2 = GEN_INT (frame_size);
-	}
+	sp_adj2 = GEN_INT (frame_size);
       else if (frame_size < 0x40007fffL)
 	{
 	  int low = ((frame_size & 0xffff) ^ 0x8000) - 0x8000;
 
-	  sp_adj2 = plus_constant (stack_pointer_rtx, frame_size - low);
+	  sp_adj2 = plus_constant (sp_adj1, frame_size - low);
 	  if (sa_reg_exp && rtx_equal_p (sa_reg_exp, sp_adj2))
 	    sp_adj1 = sa_reg;
 	  else
@@ -3789,21 +3805,20 @@ alpha_expand_epilogue ()
 	}
       else
 	{
-	  sp_adj2 = gen_rtx_REG (DImode, 23);
-	  FRP (sp_adj1 = alpha_emit_set_const (sp_adj2, DImode, frame_size, 3));
-	  if (!sp_adj1)
+	  rtx tmp = gen_rtx_REG (DImode, 23);
+	  FRP (sp_adj2 = alpha_emit_set_const (tmp, DImode, frame_size, 3));
+	  if (!sp_adj2)
 	    {
 	      /* We can't drop new things to memory this late, afaik,
 		 so build it up by pieces.  */
 #if HOST_BITS_PER_WIDE_INT == 64
-	      FRP (sp_adj1 = alpha_emit_set_long_const (sp_adj2, frame_size));
-	      if (!sp_adj1)
+	      FRP (sp_adj2 = alpha_emit_set_long_const (tmp, frame_size));
+	      if (!sp_adj2)
 		abort ();
 #else
 	      abort ();
 #endif
 	    }
-	  sp_adj2 = stack_pointer_rtx;
 	}
 
       /* From now on, things must be in order.  So emit blockages.  */

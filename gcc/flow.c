@@ -485,8 +485,7 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 	  /* Make a list of all labels referred to other than by jumps.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_LABEL
-		&& XEXP (note, 0) != current_function_eh_stub_label
-		&& XEXP (note, 0) != current_function_eh_old_stub_label)
+		&& XEXP (note, 0) != eh_return_stub_label)
 	      label_value_list = gen_rtx_EXPR_LIST (VOIDmode, XEXP (note, 0),
 						    label_value_list);
 	}
@@ -619,8 +618,7 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 			     note = XEXP (note, 1))
 			  {
 			    if (REG_NOTE_KIND (note) == REG_LABEL
-				&& XEXP (note, 0) != current_function_eh_stub_label
-				&& XEXP (note, 0) != current_function_eh_old_stub_label)
+				&& XEXP (note, 0) != eh_return_stub_label)
 			      {
 				x = XEXP (note, 0);
 				block_live[BLOCK_NUM (x)] = 1;
@@ -708,13 +706,10 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 		   within it.  So we have to make additional edges in the
 		   flow graph.  */
 		if (i + 1 == n_basic_blocks
-		    && current_function_eh_stub_label != 0)
+		    && eh_return_stub_label != 0)
 		  {
 		    mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
-						       current_function_eh_stub_label),
-				    basic_block_end[i], 0);
-		    mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
-						       current_function_eh_old_stub_label),
+						       eh_return_stub_label),
 				    basic_block_end[i], 0);
 		  }
 	      }

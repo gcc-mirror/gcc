@@ -1478,6 +1478,10 @@ extern char leaf_reg_remap[];
   (TARGET_ARCH64 ? (SPARC_STACK_BIAS + 16 * UNITS_PER_WORD) \
    : (STRUCT_VALUE_OFFSET + UNITS_PER_WORD))
 
+/* Offset from the argument pointer register value to the CFA.  */
+
+#define ARG_POINTER_CFA_OFFSET  SPARC_STACK_BIAS
+
 /* When a parameter is passed in a register, stack space is still
    allocated for it.
    !v9: All 6 possible integer registers have backing store allocated.
