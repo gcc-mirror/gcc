@@ -595,7 +595,6 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   dnl keep this sync'd with the one above. And if you add any new symbol,
   dnl please add the corresponding block in the @BOTTOM@ section of acconfig.h.
   dnl Check to see if certain C math functions exist.
-  dnl Check to see if certain C math functions exist.
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnan)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_finite)
@@ -760,8 +759,8 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     dnl If doesn't match any specified, go with defaults.
     ctype_default=yes
 
-    dnl Test for <ctype> functionality -- gnu-linux
-    AC_MSG_CHECKING([<ctype> for gnu-linux ])
+    dnl Test for <ctype> functionality -- GNU/Linux
+    AC_MSG_CHECKING([<ctype> for GNU/Linux])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -777,7 +776,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
 
     dnl Test for <ctype> functionality -- FreeBSD 4.0
     if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for freebsd 4.0 ])
+    AC_MSG_CHECKING([<ctype> for FreeBSD 4.0])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -793,7 +792,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
 
     dnl Test for <ctype> functionality -- FreeBSD 3.4
     if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for freebsd 3.4 ])
+    AC_MSG_CHECKING([<ctype> for FreeBSD 3.4])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -807,9 +806,9 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     fi
     fi
 
-    dnl Test for <ctype> functionality -- solaris 2.6 and 2.7
+    dnl Test for <ctype> functionality -- Solaris 2.6 and up
     if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for solaris 2.[6,7,8] ])
+    AC_MSG_CHECKING([<ctype> for Solaris 2.6,7,8])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -828,19 +827,19 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
       AC_LANG_C
       if test $ctype_solaris26 = "yes"; then
         ctype_include_dir="config/solaris/solaris2.6"
-        AC_MSG_RESULT("solaris2.6")
+        AC_MSG_RESULT([Solaris 2.6])
         ctype_default=no
       else
         ctype_include_dir="config/solaris/solaris2.7"
-        AC_MSG_RESULT("solaris2.[7,8]")
+        AC_MSG_RESULT([Solaris 7,8])
         ctype_default=no
       fi
     fi
     fi  
 
-    dnl Test for <ctype> functionality -- solaris 2.5.1
+    dnl Test for <ctype> functionality -- Solaris 2.5.1
     if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for solaris 2.5.1 ])
+    AC_MSG_CHECKING([<ctype> for Solaris 2.5.1])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -854,9 +853,9 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     fi
     fi
 
-    dnl Test for <ctype> functionality -- aix
+    dnl Test for <ctype> functionality -- AIX
     if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for aix ])
+    AC_MSG_CHECKING([<ctype> for AIX])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -873,7 +872,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
 
     dnl Test for <ctype> functionality -- newlib
     if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for newlib ])
+    AC_MSG_CHECKING([<ctype> for newlib])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -1604,6 +1603,7 @@ AC_DEFUN([AM_PROG_LIBTOOL])
 AC_DEFUN([AC_LIBTOOL_DLOPEN])
 AC_DEFUN([AC_PROG_LD])
 ])
+
 
 # Do all the work for Automake.  This macro actually does too much --
 # some checks are only needed if your package does certain things.

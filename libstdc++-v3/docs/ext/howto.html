@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 HOWTO:  Extensions</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/docs/ext/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.5 2000/09/19 21:54:48 pme Exp $ -->
+<!-- $Id: howto.html,v 1.1 2000/09/25 21:42:14 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -84,6 +84,16 @@
       functions, as well as some extra constructors specifying the number
       of buckets, etc.
    </P>
+   <P>Why would you want to use a hashing class instead of the
+      &quot;normal&quot; implementations?  Matt Austern writes:
+      <BLOCKQUOTE><EM>[W]ith a well chosen hash function, hash tables
+      generally provide much better average-case performance than binary
+      search trees, and much worse worst-case performance.  So if your
+      implementation has hash_map, if you don't mind using nonstandard
+      components, and if you aren't scared about the possibility of
+      pathological cases, you'll probably get better performance from
+      hash_map.</EM></BLOCKQUOTE>
+   </P>
    <P>(Side note:  for those of you wondering, <B>&quot;Why wasn't a hash
       table included in the Standard in the first #!$@ place?&quot;</B> I'll
       give a quick answer:  it was proposed, but too late and in too
@@ -139,7 +149,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.5 2000/09/19 21:54:48 pme Exp $
+<BR> $Id: howto.html,v 1.1 2000/09/25 21:42:14 pme Exp $
 </EM></P>
 
 
