@@ -958,6 +958,57 @@ grok_x_components (specs, components)
     return grok_enum_decls (components);
 }
 
+/* Constructors for types with virtual baseclasses need an "in-charge" flag
+   saying whether this constructor is responsible for initialization of
+   virtual baseclasses or not.  All destructors also need this "in-charge"
+   flag, which additionally determines whether or not the destructor should
+   free the memory for the object.
+
+   This function adds the "in-charge" flag to member function FN if
+   appropriate.  It is called from grokclassfn and tsubst.
+   FN must be either a constructor or destructor.  */
+
+void
+maybe_retrofit_in_chrg (fn)
+     tree fn;
+{
+  tree basetype, arg_types, parms, parm, fntype;
+
+  if (DECL_CONSTRUCTOR_P (fn)
+      && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CLASS_CONTEXT (fn))
+      && ! DECL_CONSTRUCTOR_FOR_VBASE_P (fn))
+    /* OK */;
+  else if (! DECL_CONSTRUCTOR_P (fn)
+	   && TREE_CHAIN (DECL_ARGUMENTS (fn)) == NULL_TREE)
+    /* OK */;
+  else
+    return;
+
+  if (DECL_CONSTRUCTOR_P (fn))
+    DECL_CONSTRUCTOR_FOR_VBASE_P (fn) = 1;
+
+  /* First add it to DECL_ARGUMENTS...  */
+  parm = build_decl (PARM_DECL, in_charge_identifier, integer_type_node);
+  /* Mark the artificial `__in_chrg' parameter as "artificial".  */
+  SET_DECL_ARTIFICIAL (parm);
+  DECL_ARG_TYPE (parm) = integer_type_node;
+  TREE_READONLY (parm) = 1;
+  parms = DECL_ARGUMENTS (fn);
+  TREE_CHAIN (parm) = TREE_CHAIN (parms);
+  TREE_CHAIN (parms) = parm;
+
+  /* ...and then to TYPE_ARG_TYPES.  */
+  arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
+  basetype = TREE_TYPE (TREE_VALUE (arg_types));
+  arg_types = hash_tree_chain (integer_type_node, TREE_CHAIN (arg_types));
+  fntype = build_cplus_method_type (basetype, TREE_TYPE (TREE_TYPE (fn)),
+				    arg_types);
+  if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)))
+    fntype = build_exception_variant (fntype,
+				      TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)));
+  TREE_TYPE (fn) = fntype;
+}
+
 /* Classes overload their constituent function names automatically.
    When a function name is declared in a record structure,
    its name is changed to it overloaded name.  Since names for
@@ -988,8 +1039,6 @@ grokclassfn (ctype, cname, function, flags, quals)
   tree arg_types;
   tree parm;
   tree qualtype;
-  tree fntype = TREE_TYPE (function);
-  tree raises = TYPE_RAISES_EXCEPTIONS (fntype);
 
   if (fn_name == NULL_TREE)
     {
@@ -1016,24 +1065,6 @@ grokclassfn (ctype, cname, function, flags, quals)
 	  && (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function)))
 	constp = 0;
 
-      if (DECL_CONSTRUCTOR_P (function))
-	{
-	  if (TYPE_USES_VIRTUAL_BASECLASSES (ctype))
-	    {
-	      DECL_CONSTRUCTOR_FOR_VBASE_P (function) = 1;
-	      /* In this case we need "in-charge" flag saying whether
-		 this constructor is responsible for initialization
-		 of virtual baseclasses or not.  */
-	      parm = build_decl (PARM_DECL, in_charge_identifier, integer_type_node);
-	      /* Mark the artificial `__in_chrg' parameter as "artificial".  */
-	      SET_DECL_ARTIFICIAL (parm);
-	      DECL_ARG_TYPE (parm) = integer_type_node;
-	      TREE_READONLY (parm) = 1;
-	      TREE_CHAIN (parm) = last_function_parms;
-	      last_function_parms = parm;
-	    }
-	}
-
       parm = build_decl (PARM_DECL, this_identifier, type);
       /* Mark the artificial `this' parameter as "artificial".  */
       SET_DECL_ARTIFICIAL (parm);
@@ -1047,81 +1078,33 @@ grokclassfn (ctype, cname, function, flags, quals)
       last_function_parms = parm;
     }
 
-  if (flags == DTOR_FLAG)
-    {
-      char *buf, *dbuf;
-      int len = sizeof (DESTRUCTOR_DECL_PREFIX)-1;
-
-      arg_types = hash_tree_chain (integer_type_node, void_list_node);
-      TREE_SIDE_EFFECTS (arg_types) = 1;
-      /* Build the overload name.  It will look like `7Example'.  */
-      if (IDENTIFIER_TYPE_VALUE (cname))
-	dbuf = build_overload_name (IDENTIFIER_TYPE_VALUE (cname), 1, 1);
-      else if (IDENTIFIER_LOCAL_VALUE (cname))
-	dbuf = build_overload_name (TREE_TYPE (IDENTIFIER_LOCAL_VALUE (cname)),
-				    1, 1);
-      else
-      /* Using ctype fixes the `X::Y::~Y()' crash.  The cname has no type when
-	 it's defined out of the class definition, since poplevel_class wipes
-	 it out.  This used to be internal error 346.  */
-	dbuf = build_overload_name (ctype, 1, 1);
-      buf = (char *) alloca (strlen (dbuf) + sizeof (DESTRUCTOR_DECL_PREFIX));
-      bcopy (DESTRUCTOR_DECL_PREFIX, buf, len);
-      buf[len] = '\0';
-      strcat (buf, dbuf);
-      DECL_ASSEMBLER_NAME (function) = get_identifier (buf);
-      parm = build_decl (PARM_DECL, in_charge_identifier, integer_type_node);
-      /* Mark the artificial `__in_chrg' parameter as "artificial".  */
-      SET_DECL_ARTIFICIAL (parm);
-      TREE_READONLY (parm) = 1;
-      DECL_ARG_TYPE (parm) = integer_type_node;
-      /* This is the same chain as DECL_ARGUMENTS (...).  */
-      TREE_CHAIN (last_function_parms) = parm;
-
-      fntype = build_cplus_method_type (qualtype, void_type_node,
-					arg_types);
-      if (raises)
-	{
-	  fntype = build_exception_variant (fntype, raises);
-	}
-      TREE_TYPE (function) = fntype;
-      TYPE_HAS_DESTRUCTOR (ctype) = 1;
-    }
-  else
-    {
-      tree these_arg_types;
-
-      if (DECL_CONSTRUCTOR_FOR_VBASE_P (function))
-	{
-	  arg_types = hash_tree_chain (integer_type_node,
-				       TREE_CHAIN (arg_types));
-	  fntype = build_cplus_method_type (qualtype,
-					    TREE_TYPE (TREE_TYPE (function)),
-					    arg_types);
-	  if (raises)
-	    {
-	      fntype = build_exception_variant (fntype, raises);
-	    }
-	  TREE_TYPE (function) = fntype;
-	  arg_types = TYPE_ARG_TYPES (TREE_TYPE (function));
-	}
-
-      these_arg_types = arg_types;
-
-      if (TREE_CODE (TREE_TYPE (function)) == FUNCTION_TYPE)
-	/* Only true for static member functions.  */
-	these_arg_types = hash_tree_chain (build_pointer_type (qualtype),
-					   arg_types);
-
-      DECL_ASSEMBLER_NAME (function)
-	= build_decl_overload (fn_name, these_arg_types,
-			       1 + DECL_CONSTRUCTOR_P (function));
-    }
-
   DECL_ARGUMENTS (function) = last_function_parms;
   /* First approximations.  */
   DECL_CONTEXT (function) = ctype;
   DECL_CLASS_CONTEXT (function) = ctype;
+
+  if (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function))
+    {
+      maybe_retrofit_in_chrg (function);
+      arg_types = TYPE_ARG_TYPES (TREE_TYPE (function));
+    }
+
+  if (flags == DTOR_FLAG)
+    {
+      DECL_ASSEMBLER_NAME (function) = build_destructor_name (ctype);
+      TYPE_HAS_DESTRUCTOR (ctype) = 1;
+    }
+  else
+    {
+      if (TREE_CODE (TREE_TYPE (function)) == FUNCTION_TYPE)
+	/* Only true for static member functions.  */
+	arg_types = hash_tree_chain (build_pointer_type (qualtype),
+				     arg_types);
+
+      DECL_ASSEMBLER_NAME (function)
+	= build_decl_overload (fn_name, arg_types,
+			       1 + DECL_CONSTRUCTOR_P (function));
+    }
 }
 
 /* Work on the expr used by alignof (this is only called by the parser).  */

@@ -10606,10 +10606,11 @@ grok_ctor_properties (ctype, decl)
      added to any ctor so we can tell if the class has been initialized
      yet.  This could screw things up in this function, so we deliberately
      ignore the leading int if we're in that situation.  */
-  if (parmtypes
-      && TREE_VALUE (parmtypes) == integer_type_node
-      && TYPE_USES_VIRTUAL_BASECLASSES (ctype))
+  if (TYPE_USES_VIRTUAL_BASECLASSES (ctype))
     {
+      my_friendly_assert (parmtypes
+			  && TREE_VALUE (parmtypes) == integer_type_node,
+			  980529);
       parmtypes = TREE_CHAIN (parmtypes);
       parmtype = TREE_VALUE (parmtypes);
     }

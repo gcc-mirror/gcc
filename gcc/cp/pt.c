@@ -3777,19 +3777,33 @@ instantiate_class_template (type)
 	bases = make_tree_vec (len);
 	for (i = 0; i < len; ++i)
 	  {
-	    tree elt;
+	    tree elt, basetype;
 
 	    TREE_VEC_ELT (bases, i) = elt
 	      = tsubst (TREE_VEC_ELT (pbases, i), args, NULL_TREE);
 	    BINFO_INHERITANCE_CHAIN (elt) = binfo;
 
-	    if (! IS_AGGR_TYPE (TREE_TYPE (elt)))
+	    basetype = TREE_TYPE (elt);
+
+	    if (! IS_AGGR_TYPE (basetype))
 	      cp_error
 		("base type `%T' of `%T' fails to be a struct or class type",
-		 TREE_TYPE (elt), type);
-	    else if (TYPE_SIZE (complete_type (TREE_TYPE (elt))) == NULL_TREE)
+		 basetype, type);
+	    else if (TYPE_SIZE (complete_type (basetype)) == NULL_TREE)
 	      cp_error ("base class `%T' of `%T' has incomplete type",
-			TREE_TYPE (elt), type);
+			basetype, type);
+
+	    /* These are set up in xref_basetypes for normal classes, so
+	       we have to handle them here for template bases.  */
+	    if (TYPE_USES_VIRTUAL_BASECLASSES (basetype))
+	      {
+		TYPE_USES_VIRTUAL_BASECLASSES (type) = 1;
+		TYPE_USES_COMPLEX_INHERITANCE (type) = 1;
+	      }
+	    TYPE_GETS_NEW (type) |= TYPE_GETS_NEW (basetype);
+	    TYPE_GETS_DELETE (type) |= TYPE_GETS_DELETE (basetype);
+	    CLASSTYPE_LOCAL_TYPEDECLS (type)
+	      |= CLASSTYPE_LOCAL_TYPEDECLS (basetype);
 	  }
 	/* Don't initialize this until the vector is filled out, or
 	   lookups will crash.  */
@@ -3837,13 +3851,6 @@ instantiate_class_template (type)
       }
 
   TYPE_METHODS (type) = tsubst_chain (TYPE_METHODS (pattern), args);
-  for (t = TYPE_METHODS (type); t; t = TREE_CHAIN (t))
-    {
-      if (DECL_CONSTRUCTOR_P (t))
-	grok_ctor_properties (type, t);
-      else if (IDENTIFIER_OPNAME_P (DECL_NAME (t)))
-	grok_op_properties (t, DECL_VIRTUAL_P (t), 0);
-    }
 
   /* Construct the DECL_FRIENDLIST for the new class type.  */
   typedecl = TYPE_MAIN_DECL (type);
@@ -4542,17 +4549,30 @@ tsubst (t, args, in_decl)
 	    DECL_NAME (r) = build_typename_overload (TREE_TYPE (type));
 	  }
 
-	if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (t)))
+	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args, t);
+	DECL_MAIN_VARIANT (r) = r;
+	DECL_RESULT (r) = NULL_TREE;
+	DECL_INITIAL (r) = NULL_TREE;
+
+	TREE_STATIC (r) = 0;
+	TREE_PUBLIC (r) = TREE_PUBLIC (t);
+	DECL_EXTERNAL (r) = 1;
+	DECL_INTERFACE_KNOWN (r) = 0;
+	DECL_DEFER_OUTPUT (r) = 0;
+	TREE_CHAIN (r) = NULL_TREE;
+	DECL_PENDING_INLINE_INFO (r) = 0;
+	TREE_USED (r) = 0;
+
+	if (DECL_CONSTRUCTOR_P (r))
 	  {
-	    char *buf, *dbuf = build_overload_name (ctx, 1, 1);
-	    int len = sizeof (DESTRUCTOR_DECL_PREFIX) - 1;
-	    buf = (char *) alloca (strlen (dbuf)
-				   + sizeof (DESTRUCTOR_DECL_PREFIX));
-	    bcopy (DESTRUCTOR_DECL_PREFIX, buf, len);
-	    buf[len] = '\0';
-	    strcat (buf, dbuf);
-	    DECL_ASSEMBLER_NAME (r) = get_identifier (buf);
+	    maybe_retrofit_in_chrg (r);
+	    grok_ctor_properties (ctx, r);
 	  }
+	if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
+	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
+
+	if (DECL_DESTRUCTOR_P (t))
+	  DECL_ASSEMBLER_NAME (r) = build_destructor_name (ctx);
 	else 
 	  {
 	    /* Instantiations of template functions must be mangled
@@ -4644,23 +4664,6 @@ tsubst (t, args, in_decl)
 	  }
 	DECL_RTL (r) = 0;
 	make_decl_rtl (r, NULL_PTR, 1);
-
-	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args, t);
-	DECL_MAIN_VARIANT (r) = r;
-	DECL_RESULT (r) = NULL_TREE;
-	DECL_INITIAL (r) = NULL_TREE;
-
-	TREE_STATIC (r) = 0;
-	TREE_PUBLIC (r) = TREE_PUBLIC (t);
-	DECL_EXTERNAL (r) = 1;
-	DECL_INTERFACE_KNOWN (r) = 0;
-	DECL_DEFER_OUTPUT (r) = 0;
-	TREE_CHAIN (r) = NULL_TREE;
-	DECL_PENDING_INLINE_INFO (r) = 0;
-	TREE_USED (r) = 0;
-
-	if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
-	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
 
 	if (DECL_TEMPLATE_INFO (t) != NULL_TREE)
 	  {
@@ -7141,6 +7144,7 @@ instantiate_decl (d)
     goto out;
 
   if (TREE_CODE (d) == VAR_DECL 
+      && TREE_READONLY (d)
       && DECL_INITIAL (d) == NULL_TREE
       && DECL_INITIAL (code_pattern) != NULL_TREE)
     /* We need to set up DECL_INITIAL regardless of pattern_defined if

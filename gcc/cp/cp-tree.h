@@ -1087,6 +1087,8 @@ struct lang_decl
 
 /* For FUNCTION_DECLs: nonzero means that this function is a constructor.  */
 #define DECL_CONSTRUCTOR_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_attr)
+#define DECL_DESTRUCTOR_P(NODE) (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME(NODE)))
+
 /* For FUNCTION_DECLs: nonzero means that this function is a constructor
    for an object with virtual baseclasses.  */
 #define DECL_CONSTRUCTOR_FOR_VBASE_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_for_vbase_attr)
@@ -2396,6 +2398,7 @@ extern int lang_decode_option			PROTO((char *));
 extern tree grok_method_quals			PROTO((tree, tree, tree));
 extern void warn_if_unknown_interface		PROTO((tree));
 extern tree grok_x_components			PROTO((tree, tree));
+extern void maybe_retrofit_in_chrg		PROTO((tree));
 extern void grokclassfn				PROTO((tree, tree, tree, enum overload_flags, tree));
 extern tree grok_alignof			PROTO((tree));
 extern tree grok_array_decl			PROTO((tree, tree));
@@ -2584,6 +2587,7 @@ extern tree build_decl_overload			PROTO((tree, tree, int));
 extern tree build_template_decl_overload        PROTO((tree, tree, tree, tree, tree, int));
 extern tree build_typename_overload		PROTO((tree));
 extern tree build_overload_with_type		PROTO((tree, tree));
+extern tree build_destructor_name		PROTO((tree));
 extern tree build_opfncall			PROTO((enum tree_code, int, tree, tree, tree));
 extern tree hack_identifier			PROTO((tree, tree));
 extern tree make_thunk				PROTO((tree, int));
