@@ -5684,7 +5684,10 @@ emit_case_nodes (index, node, default_label, index_type)
 /* These routines are used by the loop unrolling code.  They copy BLOCK trees
    so that the debugging info will be correct for the unrolled loop.  */
 
-/* Indexed by block number, contains a pointer to the N'th block node.  */
+/* Indexed by block number, contains a pointer to the N'th block node.
+
+  Allocated by the call to identify_blocks, then released after the call
+  to reorder_blocks in the function unroll_block_trees.  */
 
 static tree *block_vector;
 
@@ -5702,4 +5705,8 @@ unroll_block_trees ()
   tree block = DECL_INITIAL (current_function_decl);
 
   reorder_blocks (block_vector, block, get_insns ());
+
+  /* Release any memory allocated by identify_blocks.  */
+  if (block_vector)
+    free (block_vector);
 }
