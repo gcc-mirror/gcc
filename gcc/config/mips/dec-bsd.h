@@ -22,7 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__ANSI_COMPAT \
 -DMIPSEL -DR3000 -DSYSTYPE_BSD -D_SYSTYPE_BSD -Dbsd4_4 -Dhost_mips -Dmips \
--Dunix -D_mips -D_unix -D_host_mips -D_MIPSEB -D_R3000 \
+-Dunix -D_mips -D_unix -D_host_mips -D_MIPSEL -D_R3000 \
 -Asystem(unix) -Asystem(bsd) -Amachine(mips)"
 #endif
 
