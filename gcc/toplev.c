@@ -4094,10 +4094,12 @@ display_help ()
 	}
 #endif
       if (undoc)
-	if (doc)
-	  printf ("\nThere are undocumented target specific options as well.\n");
-	else
-	  printf ("  They exist, but they are not documented.\n");
+	{
+	  if (doc)
+	    printf ("\nThere are undocumented target specific options as well.\n");
+	  else
+	    printf ("  They exist, but they are not documented.\n");
+	}
     }
 }
 

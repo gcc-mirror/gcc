@@ -1679,8 +1679,7 @@ fold_convert (t, arg1)
   return t;
 }
 
-/* Return an expr equal to X but certainly not valid as an lvalue.
-   Also make sure it is not valid as an null pointer constant.  */
+/* Return an expr equal to X but certainly not valid as an lvalue.  */
 
 tree
 non_lvalue (x)
@@ -1694,18 +1693,7 @@ non_lvalue (x)
       || TREE_CODE (x) == REAL_CST
       || TREE_CODE (x) == STRING_CST
       || TREE_CODE (x) == ADDR_EXPR)
-    {
-      if (TREE_CODE (x) == INTEGER_CST && integer_zerop (x))
-	{
-	  /* Use NOP_EXPR instead of NON_LVALUE_EXPR
-	     so convert_for_assignment won't strip it.
-	     This is so this 0 won't be treated as a null pointer constant.  */
-	  result = build1 (NOP_EXPR, TREE_TYPE (x), x);
-	  TREE_CONSTANT (result) = TREE_CONSTANT (x);
-	  return result;
-	}
-      return x;
-    }
+    return x;
 
   result = build1 (NON_LVALUE_EXPR, TREE_TYPE (x), x);
   TREE_CONSTANT (result) = TREE_CONSTANT (x);
@@ -6060,7 +6048,7 @@ fold (expr)
 	return t;
       /* Don't let (0, 0) be null pointer constant.  */
       if (integer_zerop (arg1))
-	return non_lvalue (arg1);
+	return build1 (NOP_EXPR, TREE_TYPE (arg1), arg1);
       return arg1;
 
     case COMPLEX_EXPR:
