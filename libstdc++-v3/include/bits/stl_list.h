@@ -69,7 +69,7 @@ namespace __gnu_norm
   // latter publicly inherits from the former in an effort to reduce code
   // duplication.  This results in some "needless" static_cast'ing later on,
   // but it's all safe downcasting.
-  
+
   /// @if maint Common part of a node in the %list.  @endif
   struct _List_node_base
   {
@@ -88,18 +88,18 @@ namespace __gnu_norm
 
     void
     hook(_List_node_base * const __position);
-    
+
     void
     unhook();
   };
-  
+
   /// @if maint An actual node in the %list.  @endif
   template<typename _Tp>
     struct _List_node : public _List_node_base
     {
       _Tp _M_data;                ///< User's data.
     };
-  
+
   /**
    *  @brief A list::iterator.
    *
@@ -112,13 +112,13 @@ namespace __gnu_norm
     {
       typedef _List_iterator<_Tp>           _Self;
       typedef _List_node<_Tp>               _Node;
-      
+
       typedef ptrdiff_t                     difference_type;
       typedef bidirectional_iterator_tag    iterator_category;
       typedef _Tp                           value_type;
       typedef _Tp*                          pointer;
       typedef _Tp&                          reference;
-      
+
       _List_iterator() { }
 
       _List_iterator(_List_node_base* __x)
@@ -132,14 +132,14 @@ namespace __gnu_norm
       pointer
       operator->() const
       { return &static_cast<_Node*>(_M_node)->_M_data; }
-      
+
       _Self&
       operator++()
       {
 	_M_node = _M_node->_M_next;
 	return *this;
       }
-  
+
       _Self
       operator++(int)
       {
@@ -147,14 +147,14 @@ namespace __gnu_norm
 	_M_node = _M_node->_M_next;
 	return __tmp;
       }
-      
+
       _Self&
       operator--()
       {
 	_M_node = _M_node->_M_prev;
 	return *this;
       }
-  
+
       _Self
       operator--(int)
       {
@@ -162,7 +162,7 @@ namespace __gnu_norm
 	_M_node = _M_node->_M_prev;
 	return __tmp;
       }
-      
+
       bool
       operator==(const _Self& __x) const
       { return _M_node == __x._M_node; }
@@ -170,11 +170,11 @@ namespace __gnu_norm
       bool
       operator!=(const _Self& __x) const
       { return _M_node != __x._M_node; }
-      
+
       // The only member points to the %list element.
       _List_node_base* _M_node;
     };
-  
+
   /**
    *  @brief A list::const_iterator.
    *
@@ -188,13 +188,13 @@ namespace __gnu_norm
       typedef _List_const_iterator<_Tp>     _Self;
       typedef const _List_node<_Tp>         _Node;
       typedef _List_iterator<_Tp>           iterator;
-      
+
       typedef ptrdiff_t                     difference_type;
       typedef bidirectional_iterator_tag    iterator_category;
       typedef _Tp                           value_type;
       typedef const _Tp*                    pointer;
       typedef const _Tp&                    reference;
-      
+
       _List_const_iterator() { }
 
       _List_const_iterator(const _List_node_base* __x)
@@ -212,14 +212,14 @@ namespace __gnu_norm
       pointer
       operator->() const
       { return &static_cast<_Node*>(_M_node)->_M_data; }
-      
+
       _Self&
       operator++()
       {
 	_M_node = _M_node->_M_next;
 	return *this;
       }
-      
+
       _Self
       operator++(int)
       {
@@ -227,14 +227,14 @@ namespace __gnu_norm
 	_M_node = _M_node->_M_next;
 	return __tmp;
       }
-      
+
       _Self&
       operator--()
       {
 	_M_node = _M_node->_M_prev;
 	return *this;
       }
-  
+
       _Self
       operator--(int)
       {
@@ -242,32 +242,32 @@ namespace __gnu_norm
 	_M_node = _M_node->_M_prev;
 	return __tmp;
       }
-      
+
       bool
       operator==(const _Self& __x) const
       { return _M_node == __x._M_node; }
-      
+
       bool
       operator!=(const _Self& __x) const
       { return _M_node != __x._M_node; }
-      
+
       // The only member points to the %list element.
       const _List_node_base* _M_node;
     };
-  
+
   template<typename _Val>
-    inline bool 
-    operator==(const _List_iterator<_Val>& __x, 
-	       const _List_const_iterator<_Val>& __y) 
+    inline bool
+    operator==(const _List_iterator<_Val>& __x,
+	       const _List_const_iterator<_Val>& __y)
     { return __x._M_node == __y._M_node; }
 
   template<typename _Val>
-    inline bool 
+    inline bool
     operator!=(const _List_iterator<_Val>& __x,
-               const _List_const_iterator<_Val>& __y) 
+               const _List_const_iterator<_Val>& __y)
     { return __x._M_node != __y._M_node; }
 
-  
+
   /**
    *  @if maint
    *  See bits/stl_deque.h's _Deque_base for an explanation.
@@ -300,7 +300,7 @@ namespace __gnu_norm
       _List_node<_Tp>*
       _M_get_node()
       { return _Node_Alloc_type::allocate(1); }
-      
+
       void
       _M_put_node(_List_node<_Tp>* __p)
       { _Node_Alloc_type::deallocate(__p, 1); }
@@ -308,18 +308,18 @@ namespace __gnu_norm
   public:
       typedef _Alloc allocator_type;
 
-      allocator_type 
+      allocator_type
       get_allocator() const
       { return allocator_type(*static_cast<const _Node_Alloc_type*>(this)); }
 
       _List_base(const allocator_type& __a)
       : _Node_Alloc_type(__a)
       { _M_init(); }
-  
+
       // This is what actually destroys the list.
       ~_List_base()
       { _M_clear(); }
-      
+
       void
       _M_clear();
 
@@ -330,7 +330,7 @@ namespace __gnu_norm
         this->_M_node._M_prev = &this->_M_node;
       }
     };
-  
+
   /**
    *  @brief A standard container with linear time access to elements,
    *  and fixed time insertion/deletion at any point in the sequence.
@@ -381,9 +381,9 @@ namespace __gnu_norm
     {
       // concept requirements
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
-  
+
       typedef _List_base<_Tp, _Alloc>                   _Base;
-  
+
     public:
       typedef _Tp                                       value_type;
       typedef value_type*                               pointer;
@@ -397,12 +397,12 @@ namespace __gnu_norm
       typedef size_t                                    size_type;
       typedef ptrdiff_t                                 difference_type;
       typedef typename _Base::allocator_type            allocator_type;
-  
+
     protected:
       // Note that pointers-to-_Node's can be ctor-converted to
       // iterator types.
-      typedef _List_node<_Tp>               		_Node;
-  
+      typedef _List_node<_Tp>				_Node;
+
       /** @if maint
        *  One data member plus two memory-handling functions.  If the
        *  _Alloc type requires separate instances, then one of those
@@ -412,7 +412,7 @@ namespace __gnu_norm
       using _Base::_M_node;
       using _Base::_M_put_node;
       using _Base::_M_get_node;
-      
+
       /**
        *  @if maint
        *  @param  x  An instance of user data.
@@ -424,7 +424,7 @@ namespace __gnu_norm
       _M_create_node(const value_type& __x)
       {
 	_Node* __p = this->_M_get_node();
-	try 
+	try
 	  {
 	    std::_Construct(&__p->_M_data, __x);
 	  }
@@ -435,7 +435,7 @@ namespace __gnu_norm
 	  }
 	return __p;
       }
-  
+
       /**
        *  @if maint
        *  Allocates space for a new node and default-constructs a new
@@ -446,7 +446,7 @@ namespace __gnu_norm
       _M_create_node()
       {
 	_Node* __p = this->_M_get_node();
-	try 
+	try
 	  {
 	    std::_Construct(&__p->_M_data);
 	  }
@@ -457,7 +457,7 @@ namespace __gnu_norm
 	  }
 	return __p;
       }
-      
+
     public:
       // [23.2.2.1] construct/copy/destroy
       // (assign() and get_allocator() are also listed in this section)
@@ -467,23 +467,23 @@ namespace __gnu_norm
       explicit
       list(const allocator_type& __a = allocator_type())
       : _Base(__a) { }
-  
+
       /**
        *  @brief  Create a %list with copies of an exemplar element.
        *  @param  n  The number of elements to initially create.
        *  @param  value  An element to copy.
-       * 
+       *
        *  This constructor fills the %list with @a n copies of @a value.
        */
       list(size_type __n, const value_type& __value,
 	   const allocator_type& __a = allocator_type())
       : _Base(__a)
       { this->insert(begin(), __n, __value); }
-  
+
       /**
        *  @brief  Create a %list with default elements.
        *  @param  n  The number of elements to initially create.
-       * 
+       *
        *  This constructor fills the %list with @a n copies of a
        *  default-constructed element.
        */
@@ -491,23 +491,23 @@ namespace __gnu_norm
       list(size_type __n)
       : _Base(allocator_type())
       { this->insert(begin(), __n, value_type()); }
-  
+
       /**
        *  @brief  %List copy constructor.
        *  @param  x  A %list of identical element and allocator types.
-       * 
+       *
        *  The newly-created %list uses a copy of the allocation object used
        *  by @a x.
        */
       list(const list& __x)
       : _Base(__x.get_allocator())
       { this->insert(begin(), __x.begin(), __x.end()); }
-      
+
       /**
        *  @brief  Builds a %list from a range.
        *  @param  first  An input iterator.
        *  @param  last  An input iterator.
-       * 
+       *
        *  Create a %list consisting of copies of the elements from
        *  [@a first,@a last).  This is linear in N (where N is
        *  distance(@a first,@a last)).
@@ -522,7 +522,7 @@ namespace __gnu_norm
 	     const allocator_type& __a = allocator_type())
         : _Base(__a)
         { this->insert(begin(), __first, __last); }
-  
+
       /**
        *  No explicit dtor needed as the _Base dtor takes care of
        *  things.  The _Base dtor only erases the elements, and note
@@ -530,17 +530,17 @@ namespace __gnu_norm
        *  memory is not touched in any way.  Managing the pointer is
        *  the user's responsibilty.
        */
-  
+
       /**
        *  @brief  %List assignment operator.
        *  @param  x  A %list of identical element and allocator types.
-       * 
+       *
        *  All the elements of @a x are copied, but unlike the copy
        *  constructor, the allocator object is not copied.
        */
       list&
       operator=(const list& __x);
-      
+
       /**
        *  @brief  Assigns a given value to a %list.
        *  @param  n  Number of elements to be assigned.
@@ -552,9 +552,9 @@ namespace __gnu_norm
        *  of elements assigned.  Old data may be lost.
        */
       void
-      assign(size_type __n, const value_type& __val) 
+      assign(size_type __n, const value_type& __val)
       { _M_fill_assign(__n, __val); }
-      
+
       /**
        *  @brief  Assigns a range to a %list.
        *  @param  first  An input iterator.
@@ -570,17 +570,17 @@ namespace __gnu_norm
       template<typename _InputIterator>
         void
         assign(_InputIterator __first, _InputIterator __last)
-        { 
+        {
 	  // Check whether it's an integral type.  If so, it's not an iterator.
 	  typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
 	  _M_assign_dispatch(__first, __last, _Integral());
 	}
-  
+
       /// Get a copy of the memory allocation object.
       allocator_type
       get_allocator() const
       { return _Base::get_allocator(); }
-      
+
       // iterators
       /**
        *  Returns a read/write iterator that points to the first element in the
@@ -589,7 +589,7 @@ namespace __gnu_norm
       iterator
       begin()
       { return this->_M_node._M_next; }
-      
+
       /**
        *  Returns a read-only (constant) iterator that points to the
        *  first element in the %list.  Iteration is done in ordinary
@@ -598,7 +598,7 @@ namespace __gnu_norm
       const_iterator
       begin() const
       { return this->_M_node._M_next; }
-      
+
       /**
        *  Returns a read/write iterator that points one past the last
        *  element in the %list.  Iteration is done in ordinary element
@@ -606,7 +606,7 @@ namespace __gnu_norm
        */
       iterator
       end() { return &this->_M_node; }
-      
+
       /**
        *  Returns a read-only (constant) iterator that points one past
        *  the last element in the %list.  Iteration is done in ordinary
@@ -615,7 +615,7 @@ namespace __gnu_norm
       const_iterator
       end() const
       { return &this->_M_node; }
-      
+
       /**
        *  Returns a read/write reverse iterator that points to the last
        *  element in the %list.  Iteration is done in reverse element
@@ -624,7 +624,7 @@ namespace __gnu_norm
       reverse_iterator
       rbegin()
       { return reverse_iterator(end()); }
-      
+
       /**
        *  Returns a read-only (constant) reverse iterator that points to
        *  the last element in the %list.  Iteration is done in reverse
@@ -633,7 +633,7 @@ namespace __gnu_norm
       const_reverse_iterator
       rbegin() const
       { return const_reverse_iterator(end()); }
-      
+
       /**
        *  Returns a read/write reverse iterator that points to one
        *  before the first element in the %list.  Iteration is done in
@@ -642,7 +642,7 @@ namespace __gnu_norm
       reverse_iterator
       rend()
       { return reverse_iterator(begin()); }
-      
+
       /**
        *  Returns a read-only (constant) reverse iterator that points to one
        *  before the first element in the %list.  Iteration is done in reverse
@@ -651,7 +651,7 @@ namespace __gnu_norm
       const_reverse_iterator
       rend() const
       { return const_reverse_iterator(begin()); }
-      
+
       // [23.2.2.2] capacity
       /**
        *  Returns true if the %list is empty.  (Thus begin() would equal
@@ -660,17 +660,17 @@ namespace __gnu_norm
       bool
       empty() const
       { return this->_M_node._M_next == &this->_M_node; }
-      
+
       /**  Returns the number of elements in the %list.  */
       size_type
       size() const
       { return std::distance(begin(), end()); }
-      
+
       /**  Returns the size() of the largest possible %list.  */
       size_type
       max_size() const
       { return size_type(-1); }
-      
+
       /**
        *  @brief Resizes the %list to the specified number of elements.
        *  @param new_size Number of elements the %list should contain.
@@ -683,7 +683,7 @@ namespace __gnu_norm
        */
       void
       resize(size_type __new_size, const value_type& __x);
-      
+
       /**
        *  @brief  Resizes the %list to the specified number of elements.
        *  @param  new_size  Number of elements the %list should contain.
@@ -696,7 +696,7 @@ namespace __gnu_norm
       void
       resize(size_type __new_size)
       { this->resize(__new_size, value_type()); }
-      
+
       // element access
       /**
        *  Returns a read/write reference to the data at the first
@@ -705,7 +705,7 @@ namespace __gnu_norm
       reference
       front()
       { return *begin(); }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %list.
@@ -713,7 +713,7 @@ namespace __gnu_norm
       const_reference
       front() const
       { return *begin(); }
-      
+
       /**
        *  Returns a read/write reference to the data at the last element
        *  of the %list.
@@ -721,7 +721,7 @@ namespace __gnu_norm
       reference
       back()
       { return *(--end()); }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the last
        *  element of the %list.
@@ -729,7 +729,7 @@ namespace __gnu_norm
       const_reference
       back() const
       { return *(--end()); }
-      
+
       // [23.2.2.3] modifiers
       /**
        *  @brief  Add data to the front of the %list.
@@ -744,7 +744,7 @@ namespace __gnu_norm
       void
       push_front(const value_type& __x)
       { this->_M_insert(begin(), __x); }
-  
+
       /**
        *  @brief  Removes first element.
        *
@@ -760,7 +760,7 @@ namespace __gnu_norm
       void
       pop_front()
       { this->_M_erase(begin()); }
-      
+
       /**
        *  @brief  Add data to the end of the %list.
        *  @param  x  Data to be added.
@@ -774,7 +774,7 @@ namespace __gnu_norm
       void
       push_back(const value_type& __x)
       { this->_M_insert(end(), __x); }
-      
+
       /**
        *  @brief  Removes last element.
        *
@@ -789,7 +789,7 @@ namespace __gnu_norm
       void
       pop_back()
       { this->_M_erase(this->_M_node._M_prev); }
-      
+
       /**
        *  @brief  Inserts given value into %list before specified iterator.
        *  @param  position  An iterator into the %list.
@@ -803,7 +803,7 @@ namespace __gnu_norm
        */
       iterator
       insert(iterator __position, const value_type& __x);
-      
+
       /**
        *  @brief  Inserts a number of copies of given data into the %list.
        *  @param  position  An iterator into the %list.
@@ -820,7 +820,7 @@ namespace __gnu_norm
       void
       insert(iterator __position, size_type __n, const value_type& __x)
       { _M_fill_insert(__position, __n, __x); }
-      
+
       /**
        *  @brief  Inserts a range into the %list.
        *  @param  position  An iterator into the %list.
@@ -837,14 +837,14 @@ namespace __gnu_norm
        */
       template<typename _InputIterator>
         void
-        insert(iterator __position, _InputIterator __first, 
+        insert(iterator __position, _InputIterator __first,
 	       _InputIterator __last)
         {
 	  // Check whether it's an integral type.  If so, it's not an iterator.
 	  typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
 	  _M_insert_dispatch(__position, __first, __last, _Integral());
 	}
-      
+
       /**
        *  @brief  Remove element at given position.
        *  @param  position  Iterator pointing to element to be erased.
@@ -862,7 +862,7 @@ namespace __gnu_norm
        */
       iterator
       erase(iterator __position);
-  
+
       /**
        *  @brief  Remove a range of elements.
        *  @param  first  Iterator pointing to the first element to be erased.
@@ -889,7 +889,7 @@ namespace __gnu_norm
 	  __first = erase(__first);
 	return __last;
       }
-  
+
       /**
        *  @brief  Swaps data with another %list.
        *  @param  x  A %list of the same element and allocator types.
@@ -902,7 +902,7 @@ namespace __gnu_norm
       void
       swap(list& __x)
       { _List_node_base::swap(this->_M_node,__x._M_node); }
-  
+
       /**
        *  Erases all the elements.  Note that this function only erases
        *  the elements, and that if the elements themselves are
@@ -915,7 +915,7 @@ namespace __gnu_norm
         _Base::_M_clear();
         _Base::_M_init();
       }
-  
+
       // [23.2.2.4] list operations
       /**
        *  @brief  Insert contents of another %list.
@@ -932,7 +932,7 @@ namespace __gnu_norm
 	if (!__x.empty())
 	  this->_M_transfer(__position, __x.begin(), __x.end());
       }
-  
+
       /**
        *  @brief  Insert element from another %list.
        *  @param  position  Iterator referencing the element to insert before.
@@ -951,7 +951,7 @@ namespace __gnu_norm
 	  return;
 	this->_M_transfer(__position, __i, __j);
       }
-  
+
       /**
        *  @brief  Insert range from another %list.
        *  @param  position  Iterator referencing the element to insert before.
@@ -970,7 +970,7 @@ namespace __gnu_norm
 	if (__first != __last)
 	  this->_M_transfer(__position, __first, __last);
       }
-  
+
       /**
        *  @brief  Remove all elements equal to value.
        *  @param  value  The value to remove.
@@ -984,7 +984,7 @@ namespace __gnu_norm
        */
       void
       remove(const _Tp& __value);
-  
+
       /**
        *  @brief  Remove all elements satisfying a predicate.
        *  @param  Predicate  Unary predicate function or object.
@@ -999,7 +999,7 @@ namespace __gnu_norm
       template<typename _Predicate>
       void
       remove_if(_Predicate);
-  
+
       /**
        *  @brief  Remove consecutive duplicate elements.
        *
@@ -1012,7 +1012,7 @@ namespace __gnu_norm
        */
       void
       unique();
-  
+
       /**
        *  @brief  Remove consecutive elements satisfying a predicate.
        *  @param  BinaryPredicate  Binary predicate function or object.
@@ -1028,7 +1028,7 @@ namespace __gnu_norm
       template<typename _BinaryPredicate>
         void
         unique(_BinaryPredicate);
-  
+
       /**
        *  @brief  Merge sorted lists.
        *  @param  x  Sorted list to merge.
@@ -1040,7 +1040,7 @@ namespace __gnu_norm
        */
       void
       merge(list& __x);
-  
+
       /**
        *  @brief  Merge sorted lists according to comparison function.
        *  @param  x  Sorted list to merge.
@@ -1056,7 +1056,7 @@ namespace __gnu_norm
       template<typename _StrictWeakOrdering>
         void
         merge(list&, _StrictWeakOrdering);
-  
+
       /**
        *  @brief  Reverse the elements in list.
        *
@@ -1065,7 +1065,7 @@ namespace __gnu_norm
       void
       reverse()
       { this->_M_node.reverse(); }
-  
+
       /**
        *  @brief  Sort the elements.
        *
@@ -1074,7 +1074,7 @@ namespace __gnu_norm
        */
       void
       sort();
-  
+
       /**
        *  @brief  Sort the elements according to comparison function.
        *
@@ -1084,10 +1084,10 @@ namespace __gnu_norm
       template<typename _StrictWeakOrdering>
         void
         sort(_StrictWeakOrdering);
-  
+
     protected:
       // Internal assign functions follow.
-      
+
       // Called by the range assign to implement [23.1.1]/9
       template<typename _Integer>
         void
@@ -1096,21 +1096,21 @@ namespace __gnu_norm
 	  _M_fill_assign(static_cast<size_type>(__n),
 			 static_cast<value_type>(__val));
 	}
-  
+
       // Called by the range assign to implement [23.1.1]/9
       template<typename _InputIterator>
         void
-        _M_assign_dispatch(_InputIterator __first, _InputIterator __last, 
+        _M_assign_dispatch(_InputIterator __first, _InputIterator __last,
 			   __false_type);
-  
+
       // Called by assign(n,t), and the range assign when it turns out
       // to be the same thing.
       void
       _M_fill_assign(size_type __n, const value_type& __val);
-      
-      
+
+
       // Internal insert functions follow.
-      
+
       // Called by the range insert to implement [23.1.1]/9
       template<typename _Integer>
         void
@@ -1120,7 +1120,7 @@ namespace __gnu_norm
 	  _M_fill_insert(__pos, static_cast<size_type>(__n),
 			 static_cast<value_type>(__x));
 	}
-      
+
       // Called by the range insert to implement [23.1.1]/9
       template<typename _InputIterator>
         void
@@ -1131,7 +1131,7 @@ namespace __gnu_norm
 	  for ( ; __first != __last; ++__first)
 	    _M_insert(__pos, *__first);
 	}
-      
+
       // Called by insert(p,n,x), and the range insert when it turns out
       // to be the same thing.
       void
@@ -1140,8 +1140,8 @@ namespace __gnu_norm
 	for ( ; __n > 0; --__n)
 	  _M_insert(__pos, __x);
       }
-      
-      
+
+
       // Moves the elements from [first,last) before position.
       void
       _M_transfer(iterator __position, iterator __first, iterator __last)
@@ -1165,7 +1165,7 @@ namespace __gnu_norm
         _M_put_node(__n);
       }
     };
-  
+
   /**
    *  @brief  List equality comparison.
    *  @param  x  A %list.
@@ -1183,17 +1183,17 @@ namespace __gnu_norm
       typedef typename list<_Tp,_Alloc>::const_iterator const_iterator;
       const_iterator __end1 = __x.end();
       const_iterator __end2 = __y.end();
-  
+
       const_iterator __i1 = __x.begin();
       const_iterator __i2 = __y.begin();
-      while (__i1 != __end1 && __i2 != __end2 && *__i1 == *__i2) 
+      while (__i1 != __end1 && __i2 != __end2 && *__i1 == *__i2)
 	{
 	  ++__i1;
 	  ++__i2;
 	}
       return __i1 == __end1 && __i2 == __end2;
     }
-  
+
   /**
    *  @brief  List ordering relation.
    *  @param  x  A %list.
@@ -1210,31 +1210,31 @@ namespace __gnu_norm
     operator<(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
     { return std::lexicographical_compare(__x.begin(), __x.end(),
 					  __y.begin(), __y.end()); }
-  
+
   /// Based on operator==
   template<typename _Tp, typename _Alloc>
     inline bool
     operator!=(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
     { return !(__x == __y); }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator>(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
     { return __y < __x; }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator<=(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
     { return !(__y < __x); }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator>=(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
     { return !(__x < __y); }
-  
+
   /// See std::list::swap().
   template<typename _Tp, typename _Alloc>
     inline void

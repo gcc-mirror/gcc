@@ -78,7 +78,7 @@ namespace std
     /** @namespace std::rel_ops
      *  @brief  The generated relational operators are sequestered here.
      */
-    
+
     /**
      *  @brief Defines @c != for arbitrary types, in terms of @c ==.
      *  @param  x  A thing.

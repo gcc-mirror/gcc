@@ -166,7 +166,7 @@ namespace std
 	    typename _BinaryOperation1, typename _BinaryOperation2>
     _Tp
     inner_product(_InputIterator1 __first1, _InputIterator1 __last1,
-		  _InputIterator2 __first2, _Tp __init, 
+		  _InputIterator2 __first2, _Tp __init,
 		  _BinaryOperation1 __binary_op1,
 		  _BinaryOperation2 __binary_op2)
     {
@@ -195,7 +195,7 @@ namespace std
    *  @return  Iterator pointing just beyond the values written to result.
    */
   template<typename _InputIterator, typename _OutputIterator>
-    _OutputIterator 
+    _OutputIterator
     partial_sum(_InputIterator __first, _InputIterator __last,
 		_OutputIterator __result)
     {
@@ -231,7 +231,7 @@ namespace std
    *  @return  Iterator pointing just beyond the values written to result.
    */
   template<typename _InputIterator, typename _OutputIterator, typename _BinaryOperation>
-    _OutputIterator 
+    _OutputIterator
     partial_sum(_InputIterator __first, _InputIterator __last,
 		_OutputIterator __result, _BinaryOperation __binary_op)
     {
@@ -299,7 +299,7 @@ namespace std
    *  @return  Iterator pointing just beyond the values written to result.
    */
   template<typename _InputIterator, typename _OutputIterator, typename _BinaryOperation>
-    _OutputIterator 
+    _OutputIterator
     adjacent_difference(_InputIterator __first, _InputIterator __last,
 			_OutputIterator __result, _BinaryOperation __binary_op)
     {

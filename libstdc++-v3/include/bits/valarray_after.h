@@ -41,35 +41,35 @@
 
 namespace std
 {
-  
+
     //
     // gslice_array closure.
     //
     template<class _Dom> class _GBase {
     public:
         typedef typename _Dom::value_type value_type;
-        
+
         _GBase (const _Dom& __e, const valarray<size_t>& __i)
                 : _M_expr (__e), _M_index(__i) {}
         value_type operator[] (size_t __i) const
         { return _M_expr[_M_index[__i]]; }
         size_t size () const { return _M_index.size(); }
-        
+
     private:
         const _Dom&	 _M_expr;
         const valarray<size_t>& _M_index;
     };
-    
+
     template<typename _Tp> class _GBase<_Array<_Tp> > {
     public:
         typedef _Tp value_type;
-        
+
         _GBase (_Array<_Tp> __a, const valarray<size_t>& __i)
                 : _M_array (__a), _M_index(__i) {}
         value_type operator[] (size_t __i) const
         { return _M_array._M_data[_M_index[__i]]; }
         size_t size () const { return _M_index.size(); }
-        
+
     private:
         const _Array<_Tp>     _M_array;
         const valarray<size_t>& _M_index;
@@ -104,9 +104,9 @@ namespace std
         value_type operator[] (size_t __i) const
         { return _M_expr[_M_index[__i]]; }
         size_t size() const { return _M_index.size(); }
-        
+
     private:
-        const _Dom& 	    _M_expr;
+        const _Dom&	    _M_expr;
         const valarray<size_t>& _M_index;
     };
 
@@ -129,23 +129,23 @@ namespace std
 
   //
   // class _Expr
-  //      
-  template<class _Clos, typename _Tp> 
+  //
+  template<class _Clos, typename _Tp>
     class _Expr
     {
     public:
       typedef _Tp value_type;
-      
+
       _Expr(const _Clos&);
-      
+
       const _Clos& operator()() const;
-        
+
       value_type operator[](size_t) const;
       valarray<value_type> operator[](slice) const;
       valarray<value_type> operator[](const gslice&) const;
       valarray<value_type> operator[](const valarray<bool>&) const;
       valarray<value_type> operator[](const valarray<size_t>&) const;
-    
+
       _Expr<_UnClos<__unary_plus,std::_Expr,_Clos>, value_type>
         operator+() const;
 
@@ -160,7 +160,7 @@ namespace std
 
       size_t size() const;
       value_type sum() const;
-        
+
       valarray<value_type> shift(int) const;
       valarray<value_type> cshift(int) const;
 
@@ -169,15 +169,15 @@ namespace std
 
       valarray<value_type> apply(value_type (*)(const value_type&)) const;
       valarray<value_type> apply(value_type (*)(value_type)) const;
-        
+
     private:
       const _Clos _M_closure;
     };
-    
+
   template<class _Clos, typename _Tp>
     inline
     _Expr<_Clos,_Tp>::_Expr(const _Clos& __c) : _M_closure(__c) {}
-    
+
   template<class _Clos, typename _Tp>
     inline const _Clos&
     _Expr<_Clos,_Tp>::operator()() const
@@ -192,22 +192,22 @@ namespace std
     inline valarray<_Tp>
     _Expr<_Clos,_Tp>::operator[](slice __s) const
     { return _M_closure[__s]; }
-    
+
   template<class _Clos, typename _Tp>
     inline valarray<_Tp>
     _Expr<_Clos,_Tp>::operator[](const gslice& __gs) const
     { return _M_closure[__gs]; }
-    
+
   template<class _Clos, typename _Tp>
     inline valarray<_Tp>
     _Expr<_Clos,_Tp>::operator[](const valarray<bool>& __m) const
     { return _M_closure[__m]; }
-    
+
   template<class _Clos, typename _Tp>
     inline valarray<_Tp>
     _Expr<_Clos,_Tp>::operator[](const valarray<size_t>& __i) const
     { return _M_closure[__i]; }
-    
+
   template<class _Clos, typename _Tp>
     inline size_t
     _Expr<_Clos,_Tp>::size() const  { return _M_closure.size (); }
@@ -226,7 +226,7 @@ namespace std
     inline valarray<_Tp>
     _Expr<_Clos, _Tp>::apply(_Tp __f(const _Tp&)) const
     { return valarray<_Tp>(_M_closure).apply(__f); }
-    
+
   template<class _Clos, typename _Tp>
     inline valarray<_Tp>
     _Expr<_Clos, _Tp>::apply(_Tp __f(_Tp)) const
@@ -238,9 +238,9 @@ namespace std
     _Expr<_Clos,_Tp>::sum() const
     {
       size_t __n = _M_closure.size();
-      if (__n == 0) 
+      if (__n == 0)
 	return _Tp();
-      else 
+      else
 	{
 	  _Tp __s = _M_closure[--__n];
 	  while (__n != 0)
@@ -258,7 +258,7 @@ namespace std
     inline _Tp
     _Expr<_Clos, _Tp>::max() const
     { return __valarray_max(_M_closure); }
-    
+
   template<class _Dom, typename _Tp>
     inline _Expr<_UnClos<__logical_not,_Expr,_Dom>, bool>
     _Expr<_Dom,_Tp>::operator!() const
@@ -386,14 +386,14 @@ operator _Op(const valarray<typename _Dom::value_type>& __v,            \
     _DEFINE_EXPR_UNARY_FUNCTION(abs)
     _DEFINE_EXPR_UNARY_FUNCTION(cos)
     _DEFINE_EXPR_UNARY_FUNCTION(acos)
-    _DEFINE_EXPR_UNARY_FUNCTION(cosh)    
+    _DEFINE_EXPR_UNARY_FUNCTION(cosh)
     _DEFINE_EXPR_UNARY_FUNCTION(sin)
     _DEFINE_EXPR_UNARY_FUNCTION(asin)
-    _DEFINE_EXPR_UNARY_FUNCTION(sinh)    
+    _DEFINE_EXPR_UNARY_FUNCTION(sinh)
     _DEFINE_EXPR_UNARY_FUNCTION(tan)
     _DEFINE_EXPR_UNARY_FUNCTION(tanh)
     _DEFINE_EXPR_UNARY_FUNCTION(atan)
-    _DEFINE_EXPR_UNARY_FUNCTION(exp)    
+    _DEFINE_EXPR_UNARY_FUNCTION(exp)
     _DEFINE_EXPR_UNARY_FUNCTION(log)
     _DEFINE_EXPR_UNARY_FUNCTION(log10)
     _DEFINE_EXPR_UNARY_FUNCTION(sqrt)

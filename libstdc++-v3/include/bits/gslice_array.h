@@ -108,13 +108,13 @@ namespace std {
         void operator<<=(const _Expr<_Dom,_Tp>&) const;
       template<class _Dom>
         void operator>>=(const _Expr<_Dom,_Tp>&) const;
-        
+
     private:
       _Array<_Tp>    _M_array;
       const valarray<size_t>& _M_index;
-        
+
       friend class valarray<_Tp>;
-      
+
       gslice_array(_Array<_Tp>, const valarray<size_t>&);
 
       // this constructor needs to be implemented.
@@ -141,13 +141,13 @@ namespace std {
     gslice_array<_Tp>::gslice_array(const gslice_array<_Tp>& __a)
       : _M_array(__a._M_array), _M_index(__a._M_index) {}
 
-    
+
   template<typename _Tp>
     inline void
     gslice_array<_Tp>::operator=(const _Tp& __t) const
-    { 
+    {
       std::__valarray_fill(_M_array, _Array<size_t>(_M_index),
-			   _M_index.size(), __t); 
+			   _M_index.size(), __t);
     }
 
   template<typename _Tp>
@@ -178,8 +178,8 @@ namespace std {
     }									\
 									\
   template<typename _Tp>                                                \
-    template<class _Dom>        			                \
-      inline void 							\
+    template<class _Dom>				                \
+      inline void							\
       gslice_array<_Tp>::operator _Op##= (const _Expr<_Dom, _Tp>& __e) const\
       {									\
 	_Array_augmented_##_Name(_M_array, _Array<size_t>(_M_index), __e,\
@@ -187,9 +187,9 @@ namespace std {
       }
 
 _DEFINE_VALARRAY_OPERATOR(*, __multiplies)
-_DEFINE_VALARRAY_OPERATOR(/, __divides)    
+_DEFINE_VALARRAY_OPERATOR(/, __divides)
 _DEFINE_VALARRAY_OPERATOR(%, __modulus)
-_DEFINE_VALARRAY_OPERATOR(+, __plus)    
+_DEFINE_VALARRAY_OPERATOR(+, __plus)
 _DEFINE_VALARRAY_OPERATOR(-, __minus)
 _DEFINE_VALARRAY_OPERATOR(^, __bitwise_xor)
 _DEFINE_VALARRAY_OPERATOR(&, __bitwise_and)

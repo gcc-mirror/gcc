@@ -73,12 +73,12 @@ namespace __gnu_norm
 
   template <class _Key, class _Compare, class _Alloc>
     inline bool
-    operator==(const multiset<_Key,_Compare,_Alloc>& __x, 
+    operator==(const multiset<_Key,_Compare,_Alloc>& __x,
 	       const multiset<_Key,_Compare,_Alloc>& __y);
 
   template <class _Key, class _Compare, class _Alloc>
     inline bool
-    operator<(const multiset<_Key,_Compare,_Alloc>& __x, 
+    operator<(const multiset<_Key,_Compare,_Alloc>& __x,
 	      const multiset<_Key,_Compare,_Alloc>& __y);
 
   /**
@@ -108,17 +108,17 @@ namespace __gnu_norm
       __glibcxx_class_requires(_Key, _SGIAssignableConcept)
       __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
 				_BinaryFunctionConcept)
-	
+
     public:
       // typedefs:
       typedef _Key     key_type;
       typedef _Key     value_type;
       typedef _Compare key_compare;
       typedef _Compare value_compare;
-      
+
     private:
       /// @if maint  This turns a red-black tree into a [multi]set.  @endif
-      typedef _Rb_tree<key_type, value_type, 
+      typedef _Rb_tree<key_type, value_type,
 		       _Identity<value_type>, key_compare, _Alloc> _Rep_type;
       /// @if maint  The actual tree structure.  @endif
       _Rep_type _M_t;
@@ -137,7 +137,7 @@ namespace __gnu_norm
       typedef typename _Rep_type::allocator_type allocator_type;
 
     // allocation/deallocation
-      
+
     /**
      *  @brief  Default constructor creates no elements.
      */
@@ -201,12 +201,12 @@ namespace __gnu_norm
       multiset<_Key,_Compare,_Alloc>&
       operator=(const multiset<_Key,_Compare,_Alloc>& __x)
       {
-	_M_t = __x._M_t; 
+	_M_t = __x._M_t;
 	return *this;
       }
-      
+
       // accessors:
-      
+
       ///  Returns the comparison object.
       key_compare
       key_comp() const
@@ -219,7 +219,7 @@ namespace __gnu_norm
       allocator_type
       get_allocator() const
       { return _M_t.get_allocator(); }
-      
+
       /**
        *  Returns a read/write iterator that points to the first element in the
        *  %multiset.  Iteration is done in ascending order according to the
@@ -237,7 +237,7 @@ namespace __gnu_norm
       iterator
       end() const
       { return _M_t.end(); }
-      
+
       /**
        *  Returns a read/write reverse iterator that points to the last element
        *  in the %multiset.  Iteration is done in descending order according to
@@ -245,8 +245,8 @@ namespace __gnu_norm
        */
       reverse_iterator
       rbegin() const
-      { return _M_t.rbegin(); } 
-      
+      { return _M_t.rbegin(); }
+
       /**
        *  Returns a read/write reverse iterator that points to the last element
        *  in the %multiset.  Iteration is done in descending order according to
@@ -255,22 +255,22 @@ namespace __gnu_norm
       reverse_iterator
       rend() const
       { return _M_t.rend(); }
-      
+
       ///  Returns true if the %set is empty.
       bool
       empty() const
       { return _M_t.empty(); }
-      
+
       ///  Returns the size of the %set.
       size_type
       size() const
       { return _M_t.size(); }
-      
+
       ///  Returns the maximum size of the %set.
       size_type
       max_size() const
       { return _M_t.max_size(); }
-      
+
       /**
        *  @brief  Swaps data with another %multiset.
        *  @param  x  A %multiset of the same element and allocator types.
@@ -285,7 +285,7 @@ namespace __gnu_norm
       void
       swap(multiset<_Key,_Compare,_Alloc>& __x)
       { _M_t.swap(__x._M_t); }
-      
+
       // insert/erase
       /**
        *  @brief Inserts an element into the %multiset.
@@ -301,7 +301,7 @@ namespace __gnu_norm
       iterator
       insert(const value_type& __x)
       { return _M_t.insert_equal(__x); }
-      
+
       /**
        *  @brief Inserts an element into the %multiset.
        *  @param  position  An iterator that serves as a hint as to where the
@@ -354,11 +354,11 @@ namespace __gnu_norm
        */
       void
       erase(iterator __position)
-      { 
+      {
 	typedef typename _Rep_type::iterator _Rep_iterator;
-	_M_t.erase((_Rep_iterator&)__position); 
+	_M_t.erase((_Rep_iterator&)__position);
       }
-      
+
       /**
        *  @brief Erases elements according to the provided key.
        *  @param  x  Key of element to be erased.
@@ -373,7 +373,7 @@ namespace __gnu_norm
       size_type
       erase(const key_type& __x)
       { return _M_t.erase(__x); }
-      
+
       /**
        *  @brief Erases a [first,last) range of elements from a %multiset.
        *  @param  first  Iterator pointing to the start of the range to be
@@ -387,11 +387,11 @@ namespace __gnu_norm
        */
       void
       erase(iterator __first, iterator __last)
-      { 
+      {
 	typedef typename _Rep_type::iterator _Rep_iterator;
-	_M_t.erase((_Rep_iterator&)__first, (_Rep_iterator&)__last); 
+	_M_t.erase((_Rep_iterator&)__first, (_Rep_iterator&)__last);
       }
-      
+
       /**
        *  Erases all elements in a %multiset.  Note that this function only
        *  erases the elements, and that if the elements themselves are pointers,
@@ -401,9 +401,9 @@ namespace __gnu_norm
       void
       clear()
       { _M_t.clear(); }
-      
+
       // multiset operations:
-      
+
       /**
        *  @brief Finds the number of elements with given key.
        *  @param  x  Key of elements to be located.
@@ -412,7 +412,7 @@ namespace __gnu_norm
       size_type
       count(const key_type& __x) const
       { return _M_t.count(__x); }
-      
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 214.  set::find() missing const overload
       //@{
@@ -430,12 +430,12 @@ namespace __gnu_norm
       iterator
       find(const key_type& __x)
       { return _M_t.find(__x); }
-      
+
       const_iterator
       find(const key_type& __x) const
       { return _M_t.find(__x); }
       //@}
-      
+
       //@{
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
@@ -451,12 +451,12 @@ namespace __gnu_norm
       iterator
       lower_bound(const key_type& __x)
       { return _M_t.lower_bound(__x); }
-      
+
       const_iterator
       lower_bound(const key_type& __x) const
       { return _M_t.lower_bound(__x); }
       //@}
-      
+
       //@{
       /**
        *  @brief Finds the end of a subsequence matching given key.
@@ -467,12 +467,12 @@ namespace __gnu_norm
       iterator
       upper_bound(const key_type& __x)
       { return _M_t.upper_bound(__x); }
-      
+
       const_iterator
       upper_bound(const key_type& __x) const
       { return _M_t.upper_bound(__x); }
       //@}
-      
+
       //@{
       /**
        *  @brief Finds a subsequence matching given key.
@@ -492,11 +492,11 @@ namespace __gnu_norm
       pair<iterator,iterator>
       equal_range(const key_type& __x)
       { return _M_t.equal_range(__x); }
-      
+
       pair<const_iterator,const_iterator>
       equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
-      
+
       template <class _K1, class _C1, class _A1>
         friend bool
         operator== (const multiset<_K1,_C1,_A1>&,
@@ -521,10 +521,10 @@ namespace __gnu_norm
   */
   template <class _Key, class _Compare, class _Alloc>
     inline bool
-    operator==(const multiset<_Key,_Compare,_Alloc>& __x, 
+    operator==(const multiset<_Key,_Compare,_Alloc>& __x,
 	       const multiset<_Key,_Compare,_Alloc>& __y)
     { return __x._M_t == __y._M_t; }
-  
+
   /**
    *  @brief  Multiset ordering relation.
    *  @param  x  A %multiset.
@@ -538,42 +538,42 @@ namespace __gnu_norm
   */
   template <class _Key, class _Compare, class _Alloc>
     inline bool
-    operator<(const multiset<_Key,_Compare,_Alloc>& __x, 
+    operator<(const multiset<_Key,_Compare,_Alloc>& __x,
 	      const multiset<_Key,_Compare,_Alloc>& __y)
     { return __x._M_t < __y._M_t; }
 
   ///  Returns !(x == y).
   template <class _Key, class _Compare, class _Alloc>
     inline bool
-    operator!=(const multiset<_Key,_Compare,_Alloc>& __x, 
+    operator!=(const multiset<_Key,_Compare,_Alloc>& __x,
 	       const multiset<_Key,_Compare,_Alloc>& __y)
     { return !(__x == __y); }
 
   ///  Returns y < x.
   template <class _Key, class _Compare, class _Alloc>
     inline bool
-    operator>(const multiset<_Key,_Compare,_Alloc>& __x, 
+    operator>(const multiset<_Key,_Compare,_Alloc>& __x,
 	      const multiset<_Key,_Compare,_Alloc>& __y)
     { return __y < __x; }
 
   ///  Returns !(y < x)
   template <class _Key, class _Compare, class _Alloc>
     inline bool
-    operator<=(const multiset<_Key,_Compare,_Alloc>& __x, 
+    operator<=(const multiset<_Key,_Compare,_Alloc>& __x,
 	       const multiset<_Key,_Compare,_Alloc>& __y)
     { return !(__y < __x); }
 
   ///  Returns !(x < y)
   template <class _Key, class _Compare, class _Alloc>
     inline bool
-    operator>=(const multiset<_Key,_Compare,_Alloc>& __x, 
+    operator>=(const multiset<_Key,_Compare,_Alloc>& __x,
 	       const multiset<_Key,_Compare,_Alloc>& __y)
     { return !(__x < __y); }
 
   /// See std::multiset::swap().
   template <class _Key, class _Compare, class _Alloc>
     inline void
-    swap(multiset<_Key,_Compare,_Alloc>& __x, 
+    swap(multiset<_Key,_Compare,_Alloc>& __x,
 	 multiset<_Key,_Compare,_Alloc>& __y)
     { __x.swap(__y); }
 

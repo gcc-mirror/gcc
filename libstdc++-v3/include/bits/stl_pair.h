@@ -145,7 +145,7 @@ namespace std
   inline pair<_T1, _T2>
   make_pair(_T1 __x, _T2 __y)
   { return pair<_T1, _T2>(__x, __y); }
-  
+
 } // namespace std
 
 #endif /* _PAIR_H */

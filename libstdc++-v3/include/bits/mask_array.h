@@ -57,23 +57,23 @@ namespace std {
    *
    *  @param  Tp  Element type.
    */
-  template <class _Tp> 
+  template <class _Tp>
     class mask_array
-    { 
+    {
     public:
       typedef _Tp value_type;
-    
+
       void operator=(const valarray<_Tp>&) const;
       ///  Multiply slice elements by corresponding elements of @a v.
       void operator*=(const valarray<_Tp>&) const;
       ///  Divide slice elements by corresponding elements of @a v.
       void operator/=(const valarray<_Tp>&) const;
       ///  Modulo slice elements by corresponding elements of @a v.
-      void operator%=(const valarray<_Tp>&) const; 
+      void operator%=(const valarray<_Tp>&) const;
       ///  Add corresponding elements of @a v to slice elements.
       void operator+=(const valarray<_Tp>&) const;
       ///  Subtract corresponding elements of @a v from slice elements.
-      void operator-=(const valarray<_Tp>&) const;  
+      void operator-=(const valarray<_Tp>&) const;
       ///  Logical xor slice elements with corresponding elements of @a v.
       void operator^=(const valarray<_Tp>&) const;
       ///  Logical and slice elements with corresponding elements of @a v.
@@ -83,12 +83,12 @@ namespace std {
       ///  Left shift slice elements by corresponding elements of @a v.
       void operator<<=(const valarray<_Tp>&) const;
       ///  Right shift slice elements by corresponding elements of @a v.
-      void operator>>=(const valarray<_Tp>&) const; 
+      void operator>>=(const valarray<_Tp>&) const;
       ///  Assign all slice elements to @a t.
       void operator=(const _Tp&) const;
-    
+
         //        ~mask_array ();
-        
+
       template<class _Dom>
         void operator=(const _Expr<_Dom,_Tp>&) const;
       template<class _Dom>
@@ -110,19 +110,19 @@ namespace std {
       template<class _Dom>
         void operator<<=(const _Expr<_Dom,_Tp>&) const;
       template<class _Dom>
-        void operator>>=(const _Expr<_Dom,_Tp>&) const; 
+        void operator>>=(const _Expr<_Dom,_Tp>&) const;
 
     private:
       mask_array(_Array<_Tp>, size_t, _Array<bool>);
       friend class valarray<_Tp>;
-        
+
       const size_t       _M_sz;
       const _Array<bool> _M_mask;
       const _Array<_Tp>   _M_array;
-      
+
       ///  Copy constructor.  Both slices refer to the same underlying array.
       mask_array (const mask_array&);
-      
+
       // not implemented
       mask_array();
 
@@ -137,15 +137,15 @@ namespace std {
       : _M_sz(a._M_sz), _M_mask(a._M_mask), _M_array(a._M_array) {}
 
   template<typename _Tp>
-    inline 
+    inline
     mask_array<_Tp>::mask_array(_Array<_Tp> __a, size_t __s, _Array<bool> __m)
       : _M_sz(__s), _M_mask(__m), _M_array(__a) {}
-    
+
   template<typename _Tp>
     inline void
     mask_array<_Tp>::operator=(const _Tp& __t) const
     { std::__valarray_fill(_M_array, _M_sz, _M_mask, __t); }
-    
+
   template<typename _Tp>
     inline void
     mask_array<_Tp>::operator=(const valarray<_Tp>& __v) const
@@ -186,8 +186,8 @@ _DEFINE_VALARRAY_OPERATOR(|, __bitwise_or)
 _DEFINE_VALARRAY_OPERATOR(<<, __shift_left)
 _DEFINE_VALARRAY_OPERATOR(>>, __shift_right)
 
-#undef _DEFINE_VALARRAY_OPERATOR    
-    
+#undef _DEFINE_VALARRAY_OPERATOR
+
 } // std::
 
 #endif /* _MASK_ARRAY_H */

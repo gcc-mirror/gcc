@@ -126,7 +126,7 @@ namespace std
     {
       // concept requirements
       __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
-      
+
       const _Tp __tmp = __a;
       __a = __b;
       __b = __tmp;
@@ -169,7 +169,7 @@ namespace std
   */
   template<typename _Tp>
     inline const _Tp&
-    max(const _Tp& __a, const _Tp& __b) 
+    max(const _Tp& __a, const _Tp& __b)
     {
       // concept requirements
       __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
@@ -242,7 +242,7 @@ namespace std
     {
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type
           _Distance;
-      for (_Distance __n = __last - __first; __n > 0; --__n) 
+      for (_Distance __n = __last - __first; __n > 0; --__n)
 	{
 	  *__result = *__first;
 	  ++__first;
@@ -280,7 +280,7 @@ namespace std
 
   template<typename _Tp>
     inline _Tp*
-    __copy_aux2(const _Tp* __first, const _Tp* __last, _Tp* __result, 
+    __copy_aux2(const _Tp* __first, const _Tp* __last, _Tp* __result,
 		__true_type)
     { return std::__copy_trivial(__first, __last, __result); }
 
@@ -361,7 +361,7 @@ namespace std
   template<typename _BidirectionalIterator1, typename _BidirectionalIterator2>
     inline _BidirectionalIterator2
     __copy_backward(_BidirectionalIterator1 __first,
-		    _BidirectionalIterator1 __last, 
+		    _BidirectionalIterator1 __last,
 		    _BidirectionalIterator2 __result,
 		    bidirectional_iterator_tag)
     {
@@ -372,7 +372,7 @@ namespace std
 
   template<typename _RandomAccessIterator, typename _BidirectionalIterator>
     inline _BidirectionalIterator
-    __copy_backward(_RandomAccessIterator __first, _RandomAccessIterator __last, 
+    __copy_backward(_RandomAccessIterator __first, _RandomAccessIterator __last,
 		    _BidirectionalIterator __result, random_access_iterator_tag)
     {
       typename iterator_traits<_RandomAccessIterator>::difference_type __n;
@@ -382,7 +382,7 @@ namespace std
     }
 
 
-  // This dispatch class is a workaround for compilers that do not 
+  // This dispatch class is a workaround for compilers that do not
   // have partial ordering of function templates.  All we're doing is
   // creating a specialization so that we can turn a call to copy_backward
   // into a memmove whenever possible.
@@ -391,9 +391,9 @@ namespace std
     struct __copy_backward_dispatch
     {
       static _BidirectionalIterator2
-      copy(_BidirectionalIterator1 __first, _BidirectionalIterator1 __last, 
+      copy(_BidirectionalIterator1 __first, _BidirectionalIterator1 __last,
 	   _BidirectionalIterator2 __result)
-      { return std::__copy_backward(__first, __last, __result, 
+      { return std::__copy_backward(__first, __last, __result,
 				    std::__iterator_category(__first)); }
     };
 
@@ -427,8 +427,8 @@ namespace std
       typedef typename __type_traits<typename iterator_traits<_BI2>::value_type>
 			    ::has_trivial_assignment_operator _Trivial;
       return
-	std::__copy_backward_dispatch<_BI1, _BI2, _Trivial>::copy(__first, 
-								  __last, 
+	std::__copy_backward_dispatch<_BI1, _BI2, _Trivial>::copy(__first,
+								  __last,
 								  __result);
     }
 
@@ -754,7 +754,7 @@ namespace std
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      for (;__first1 != __last1 && __first2 != __last2; ++__first1, ++__first2) 
+      for (;__first1 != __last1 && __first2 != __last2; ++__first1, ++__first2)
 	{
 	  if (*__first1 < *__first2)
 	    return true;
@@ -790,7 +790,7 @@ namespace std
       __glibcxx_requires_valid_range(__first2, __last2);
 
       for ( ; __first1 != __last1 && __first2 != __last2
-	    ; ++__first1, ++__first2) 
+	    ; ++__first1, ++__first2)
 	{
 	  if (__comp(*__first1, *__first2))
 	    return true;
@@ -800,10 +800,10 @@ namespace std
       return __first1 == __last1 && __first2 != __last2;
     }
 
-  inline bool 
-  lexicographical_compare(const unsigned char* __first1, 
+  inline bool
+  lexicographical_compare(const unsigned char* __first1,
 			  const unsigned char* __last1,
-			  const unsigned char* __first2, 
+			  const unsigned char* __first2,
 			  const unsigned char* __last2)
   {
     __glibcxx_requires_valid_range(__first1, __last1);
@@ -838,4 +838,4 @@ namespace std
 
 } // namespace std
 
-#endif 
+#endif

@@ -78,9 +78,9 @@ namespace std
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 402. wrong new expression in [some_]allocator::construct
-      ::new(static_cast<void*>(__p)) _T1(__value); 
+      ::new(static_cast<void*>(__p)) _T1(__value);
     }
-  
+
   /**
    * @if maint
    * Constructs an object in existing memory by invoking an allocated
@@ -92,7 +92,7 @@ namespace std
     _Construct(_T1* __p)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 402. wrong new expression in [some_]allocator::construct     
+      // 402. wrong new expression in [some_]allocator::construct
       ::new(static_cast<void*>(__p)) _T1();
     }
 
@@ -108,7 +108,7 @@ namespace std
 
   /**
    * @if maint
-   * Destroy a range of objects with nontrivial destructors.  
+   * Destroy a range of objects with nontrivial destructors.
    *
    * This is a helper function used only by _Destroy().
    * @endif
@@ -128,7 +128,7 @@ namespace std
    * This is a helper function used only by _Destroy().
    * @endif
    */
-  template<typename _ForwardIterator> 
+  template<typename _ForwardIterator>
     inline void
     __destroy_aux(_ForwardIterator, _ForwardIterator, __true_type)
     { }

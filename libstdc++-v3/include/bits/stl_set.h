@@ -66,18 +66,18 @@
 namespace __gnu_norm
 {
   // Forward declarations of operators < and ==, needed for friend declaration.
-  template<class _Key, class _Compare = less<_Key>, 
+  template<class _Key, class _Compare = less<_Key>,
 	   class _Alloc = allocator<_Key> >
     class set;
 
   template<class _Key, class _Compare, class _Alloc>
-    inline bool 
-    operator==(const set<_Key,_Compare,_Alloc>& __x, 
+    inline bool
+    operator==(const set<_Key,_Compare,_Alloc>& __x,
 	       const set<_Key,_Compare,_Alloc>& __y);
 
   template<class _Key, class _Compare, class _Alloc>
-    inline bool 
-    operator<(const set<_Key,_Compare,_Alloc>& __x, 
+    inline bool
+    operator<(const set<_Key,_Compare,_Alloc>& __x,
 	      const set<_Key,_Compare,_Alloc>& __y);
 
   /**
@@ -110,7 +110,7 @@ namespace __gnu_norm
       __glibcxx_class_requires(_Key, _SGIAssignableConcept)
       __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
 				_BinaryFunctionConcept)
-	
+
     public:
       // typedefs:
       //@{
@@ -122,7 +122,7 @@ namespace __gnu_norm
       //@}
 
     private:
-      typedef _Rb_tree<key_type, value_type, 
+      typedef _Rb_tree<key_type, value_type,
 		       _Identity<value_type>, key_compare, _Alloc> _Rep_type;
       _Rep_type _M_t;  // red-black tree representing set
     public:
@@ -197,7 +197,7 @@ namespace __gnu_norm
        */
       set(const set<_Key,_Compare,_Alloc>& __x)
       : _M_t(__x._M_t) { }
-      
+
       /**
        *  @brief  Set assignment operator.
        *  @param  x  A %set of identical element and allocator types.
@@ -207,8 +207,8 @@ namespace __gnu_norm
        */
       set<_Key,_Compare,_Alloc>&
       operator=(const set<_Key, _Compare, _Alloc>& __x)
-      { 
-	_M_t = __x._M_t; 
+      {
+	_M_t = __x._M_t;
 	return *this;
       }
 
@@ -250,7 +250,7 @@ namespace __gnu_norm
        */
       reverse_iterator
       rbegin() const
-      { return _M_t.rbegin(); } 
+      { return _M_t.rbegin(); }
 
       /**
        *  Returns a read-only (constant) reverse iterator that points to the
@@ -307,7 +307,7 @@ namespace __gnu_norm
        */
       pair<iterator,bool>
       insert(const value_type& __x)
-      { 
+      {
 	pair<typename _Rep_type::iterator, bool> __p = _M_t.insert_unique(__x);
 	return pair<iterator, bool>(__p.first, __p.second);
       }
@@ -350,7 +350,7 @@ namespace __gnu_norm
       void
       insert(_InputIterator __first, _InputIterator __last)
       { _M_t.insert_unique(__first, __last); }
-      
+
       /**
        *  @brief Erases an element from a %set.
        *  @param  position  An iterator pointing to the element to be erased.
@@ -362,9 +362,9 @@ namespace __gnu_norm
        */
       void
       erase(iterator __position)
-      { 
+      {
 	typedef typename _Rep_type::iterator _Rep_iterator;
-	_M_t.erase((_Rep_iterator&)__position); 
+	_M_t.erase((_Rep_iterator&)__position);
       }
 
       /**
@@ -396,7 +396,7 @@ namespace __gnu_norm
       erase(iterator __first, iterator __last)
       {
 	typedef typename _Rep_type::iterator _Rep_iterator;
-	_M_t.erase((_Rep_iterator&)__first, (_Rep_iterator&)__last); 
+	_M_t.erase((_Rep_iterator&)__first, (_Rep_iterator&)__last);
       }
 
       /**
@@ -461,7 +461,7 @@ namespace __gnu_norm
       iterator
       lower_bound(const key_type& __x)
       { return _M_t.lower_bound(__x); }
-      
+
       const_iterator
       lower_bound(const key_type& __x) const
       { return _M_t.lower_bound(__x); }
@@ -502,7 +502,7 @@ namespace __gnu_norm
       pair<iterator,iterator>
       equal_range(const key_type& __x)
       { return _M_t.equal_range(__x); }
-      
+
       pair<const_iterator,const_iterator>
       equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
@@ -511,7 +511,7 @@ namespace __gnu_norm
       template<class _K1, class _C1, class _A1>
         friend bool
         operator== (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
-      
+
       template<class _K1, class _C1, class _A1>
         friend bool
         operator< (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
@@ -530,7 +530,7 @@ namespace __gnu_norm
   */
   template<class _Key, class _Compare, class _Alloc>
     inline bool
-    operator==(const set<_Key,_Compare,_Alloc>& __x, 
+    operator==(const set<_Key,_Compare,_Alloc>& __x,
 	       const set<_Key,_Compare,_Alloc>& __y)
     { return __x._M_t == __y._M_t; }
 
@@ -547,35 +547,35 @@ namespace __gnu_norm
   */
   template<class _Key, class _Compare, class _Alloc>
     inline bool
-    operator<(const set<_Key,_Compare,_Alloc>& __x, 
+    operator<(const set<_Key,_Compare,_Alloc>& __x,
 	      const set<_Key,_Compare,_Alloc>& __y)
     { return __x._M_t < __y._M_t; }
 
   ///  Returns !(x == y).
   template<class _Key, class _Compare, class _Alloc>
     inline bool
-    operator!=(const set<_Key,_Compare,_Alloc>& __x, 
+    operator!=(const set<_Key,_Compare,_Alloc>& __x,
 	       const set<_Key,_Compare,_Alloc>& __y)
     { return !(__x == __y); }
 
   ///  Returns y < x.
   template<class _Key, class _Compare, class _Alloc>
     inline bool
-    operator>(const set<_Key,_Compare,_Alloc>& __x, 
+    operator>(const set<_Key,_Compare,_Alloc>& __x,
 	      const set<_Key,_Compare,_Alloc>& __y)
     { return __y < __x; }
 
   ///  Returns !(y < x)
   template<class _Key, class _Compare, class _Alloc>
     inline bool
-    operator<=(const set<_Key,_Compare,_Alloc>& __x, 
+    operator<=(const set<_Key,_Compare,_Alloc>& __x,
 	       const set<_Key,_Compare,_Alloc>& __y)
     { return !(__y < __x); }
-  
+
   ///  Returns !(x < y)
   template<class _Key, class _Compare, class _Alloc>
     inline bool
-    operator>=(const set<_Key,_Compare,_Alloc>& __x, 
+    operator>=(const set<_Key,_Compare,_Alloc>& __x,
 	       const set<_Key,_Compare,_Alloc>& __y)
     { return !(__x < __y); }
 

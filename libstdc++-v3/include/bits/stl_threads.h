@@ -85,8 +85,8 @@ namespace __gnu_cxx
 #endif
     __gthread_mutex_t _M_lock;
 
-    void 
-    _M_initialize() 
+    void
+    _M_initialize()
     {
 #ifdef __GTHREAD_MUTEX_INIT
       // There should be no code in this path given the usage rules above.
@@ -97,7 +97,7 @@ namespace __gnu_cxx
 	  && __gthread_active_p())
 	abort ();
       __gthread_mutex_lock(&__gnu_cxx::_GLIBCXX_mutex);
-      if (!_M_init_flag) 
+      if (!_M_init_flag)
 	{
 	  // Even though we have a global lock, we use __gthread_once to be
 	  // absolutely certain the _M_lock mutex is only initialized once on
@@ -113,8 +113,8 @@ namespace __gnu_cxx
 #endif
     }
 
-    void 
-    _M_acquire_lock() 
+    void
+    _M_acquire_lock()
     {
 #if !defined(__GTHREAD_MUTEX_INIT) && defined(__GTHREAD_MUTEX_INIT_FUNCTION)
       if (!_M_init_flag) _M_initialize();
@@ -122,8 +122,8 @@ namespace __gnu_cxx
       __gthread_mutex_lock(&_M_lock);
     }
 
-    void 
-    _M_release_lock() 
+    void
+    _M_release_lock()
     {
 #if !defined(__GTHREAD_MUTEX_INIT) && defined(__GTHREAD_MUTEX_INIT_FUNCTION)
       if (!_M_init_flag) _M_initialize();
@@ -131,7 +131,7 @@ namespace __gnu_cxx
       __gthread_mutex_unlock(&_M_lock);
     }
   };
-  
+
 #ifdef __GTHREAD_MUTEX_INIT
 #define __STL_MUTEX_INITIALIZER = { __GTHREAD_MUTEX_INIT }
 #elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
@@ -144,4 +144,4 @@ namespace __gnu_cxx
 #endif
 } // namespace __gnu_cxx
 
-#endif 
+#endif

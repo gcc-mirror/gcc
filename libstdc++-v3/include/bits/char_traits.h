@@ -50,12 +50,12 @@ namespace __gnu_cxx
 {
   /**
    *  @brief  Mapping from character type to associated types.
-   * 
+   *
    *
    *  @note This is an implementation class for the generic version
    *  of char_traits.  It defines int_type, off_type, pos_type, and
    *  state_type.  By default these are unsigned long, streamoff,
-   *  streampos, and mbstate_t.  Users who need a different set of 
+   *  streampos, and mbstate_t.  Users who need a different set of
    *  types, but who don't need to change the definitions of any function
    *  defined in char_traits, can specialize __gnu_cxx::_Char_types
    *  while leaving __gnu_cxx::char_traits alone. */
@@ -91,54 +91,54 @@ namespace __gnu_cxx
       typedef typename _Char_types<_CharT>::pos_type    pos_type;
       typedef typename _Char_types<_CharT>::off_type    off_type;
       typedef typename _Char_types<_CharT>::state_type  state_type;
-      
-      static void 
+
+      static void
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool 
+      static bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool 
+      static bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
-      static int 
+      static int
       compare(const char_type* __s1, const char_type* __s2, std::size_t __n);
 
       static std::size_t
       length(const char_type* __s);
 
-      static const char_type* 
+      static const char_type*
       find(const char_type* __s, std::size_t __n, const char_type& __a);
 
-      static char_type* 
+      static char_type*
       move(char_type* __s1, const char_type* __s2, std::size_t __n);
 
-      static char_type* 
+      static char_type*
       copy(char_type* __s1, const char_type* __s2, std::size_t __n);
 
-      static char_type* 
+      static char_type*
       assign(char_type* __s, std::size_t __n, char_type __a);
 
-      static char_type 
+      static char_type
       to_char_type(const int_type& __c)
       { return static_cast<char_type>(__c); }
 
-      static int_type 
+      static int_type
       to_int_type(const char_type& __c)
       { return static_cast<int_type>(__c); }
 
-      static bool 
+      static bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type 
+      static int_type
       eof()
       { return static_cast<int_type>(EOF); }
 
-      static int_type 
+      static int_type
       not_eof(const int_type& __c)
       { return !eq_int_type(__c, eof()) ? __c : to_int_type(char_type()); }
     };
@@ -168,7 +168,7 @@ namespace __gnu_cxx
     }
 
   template<typename _CharT>
-    const typename char_traits<_CharT>::char_type* 
+    const typename char_traits<_CharT>::char_type*
     char_traits<_CharT>::
     find(const char_type* __s, std::size_t __n, const char_type& __a)
     {
@@ -188,7 +188,7 @@ namespace __gnu_cxx
     }
 
   template<typename _CharT>
-    typename char_traits<_CharT>::char_type* 
+    typename char_traits<_CharT>::char_type*
     char_traits<_CharT>::
     copy(char_type* __s1, const char_type* __s2, std::size_t __n)
     {
@@ -197,7 +197,7 @@ namespace __gnu_cxx
     }
 
   template<typename _CharT>
-    typename char_traits<_CharT>::char_type* 
+    typename char_traits<_CharT>::char_type*
     char_traits<_CharT>::
     assign(char_type* __s, std::size_t __n, char_type __a)
     {
@@ -206,7 +206,7 @@ namespace __gnu_cxx
     }
 }
 
-namespace std 
+namespace std
 {
   // 21.1
   /**
@@ -237,19 +237,19 @@ namespace std
       typedef streamoff         off_type;
       typedef mbstate_t         state_type;
 
-      static void 
+      static void
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool 
+      static bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool 
+      static bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
-      static int 
+      static int
       compare(const char_type* __s1, const char_type* __s2, size_t __n)
       { return memcmp(__s1, __s2, __n); }
 
@@ -257,40 +257,40 @@ namespace std
       length(const char_type* __s)
       { return strlen(__s); }
 
-      static const char_type* 
+      static const char_type*
       find(const char_type* __s, size_t __n, const char_type& __a)
       { return static_cast<const char_type*>(memchr(__s, __a, __n)); }
 
-      static char_type* 
+      static char_type*
       move(char_type* __s1, const char_type* __s2, size_t __n)
       { return static_cast<char_type*>(memmove(__s1, __s2, __n)); }
 
-      static char_type* 
+      static char_type*
       copy(char_type* __s1, const char_type* __s2, size_t __n)
       { return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
 
-      static char_type* 
+      static char_type*
       assign(char_type* __s, size_t __n, char_type __a)
       { return static_cast<char_type*>(memset(__s, __a, __n)); }
 
-      static char_type 
+      static char_type
       to_char_type(const int_type& __c)
       { return static_cast<char_type>(__c); }
 
       // To keep both the byte 0xff and the eof symbol 0xffffffff
       // from ending up as 0xffffffff.
-      static int_type 
+      static int_type
       to_int_type(const char_type& __c)
       { return static_cast<int_type>(static_cast<unsigned char>(__c)); }
 
-      static bool 
+      static bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type 
+      static int_type
       eof() { return static_cast<int_type>(EOF); }
 
-      static int_type 
+      static int_type
       not_eof(const int_type& __c)
       { return (__c == eof()) ? 0 : __c; }
   };
@@ -306,20 +306,20 @@ namespace std
       typedef streamoff         off_type;
       typedef wstreampos        pos_type;
       typedef mbstate_t         state_type;
-      
-      static void 
+
+      static void
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool 
+      static bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool 
+      static bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
-      static int 
+      static int
       compare(const char_type* __s1, const char_type* __s2, size_t __n)
       { return wmemcmp(__s1, __s2, __n); }
 
@@ -327,36 +327,36 @@ namespace std
       length(const char_type* __s)
       { return wcslen(__s); }
 
-      static const char_type* 
+      static const char_type*
       find(const char_type* __s, size_t __n, const char_type& __a)
       { return wmemchr(__s, __a, __n); }
 
-      static char_type* 
+      static char_type*
       move(char_type* __s1, const char_type* __s2, size_t __n)
       { return wmemmove(__s1, __s2, __n); }
 
-      static char_type* 
+      static char_type*
       copy(char_type* __s1, const char_type* __s2, size_t __n)
       { return wmemcpy(__s1, __s2, __n); }
 
-      static char_type* 
+      static char_type*
       assign(char_type* __s, size_t __n, char_type __a)
       { return wmemset(__s, __a, __n); }
 
-      static char_type 
+      static char_type
       to_char_type(const int_type& __c) { return char_type(__c); }
 
-      static int_type 
+      static int_type
       to_int_type(const char_type& __c) { return int_type(__c); }
 
-      static bool 
+      static bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type 
+      static int_type
       eof() { return static_cast<int_type>(WEOF); }
 
-      static int_type 
+      static int_type
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? 0 : __c; }
   };
@@ -368,7 +368,7 @@ namespace std
       _CharT _M_c;
       _Char_traits_match(_CharT const& __c) : _M_c(__c) { }
 
-      bool 
+      bool
       operator()(_CharT const& __a) { return _Traits::eq(_M_c, __a); }
     };
 } // namespace std

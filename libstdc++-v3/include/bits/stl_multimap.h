@@ -66,22 +66,22 @@
 namespace __gnu_norm
 {
   // Forward declaration of operators < and ==, needed for friend declaration.
-  
+
   template <typename _Key, typename _Tp,
             typename _Compare = less<_Key>,
             typename _Alloc = allocator<pair<const _Key, _Tp> > >
     class multimap;
-  
+
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator==(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
 	       const multimap<_Key,_Tp,_Compare,_Alloc>& __y);
-  
+
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator<(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
 	      const multimap<_Key,_Tp,_Compare,_Alloc>& __y);
-  
+
   /**
    *  @brief A standard container made up of (key,value) pairs, which can be
    *  retrieved based on a key, in logarithmic time.
@@ -110,35 +110,35 @@ namespace __gnu_norm
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
       __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
 				_BinaryFunctionConcept)
-	
+
     public:
       typedef _Key                                          key_type;
       typedef _Tp                                           mapped_type;
       typedef pair<const _Key, _Tp>                         value_type;
       typedef _Compare                                      key_compare;
-      
+
       class value_compare
       : public binary_function<value_type, value_type, bool>
       {
 	friend class multimap<_Key,_Tp,_Compare,_Alloc>;
       protected:
 	_Compare comp;
-	
+
 	value_compare(_Compare __c)
 	: comp(__c) { }
-	
+
       public:
 	bool operator()(const value_type& __x, const value_type& __y) const
 	{ return comp(__x.first, __y.first); }
       };
-      
+
     private:
       /// @if maint  This turns a red-black tree into a [multi]map.  @endif
       typedef _Rb_tree<key_type, value_type,
 		       _Select1st<value_type>, key_compare, _Alloc> _Rep_type;
       /// @if maint  The actual tree structure.  @endif
       _Rep_type _M_t;
-  
+
     public:
       // many of these are specified differently in ISO, but the following are
       // "functionally equivalent"
@@ -153,8 +153,8 @@ namespace __gnu_norm
       typedef typename _Rep_type::const_pointer          const_pointer;
       typedef typename _Rep_type::reverse_iterator       reverse_iterator;
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
-  
-  
+
+
       // [23.3.2] construct/copy/destroy
       // (get_allocator() is also listed in this section)
       /**
@@ -162,7 +162,7 @@ namespace __gnu_norm
        */
       multimap()
       : _M_t(_Compare(), allocator_type()) { }
-  
+
       // for some reason this was made a separate function
       /**
        *  @brief  Default constructor creates no elements.
@@ -171,7 +171,7 @@ namespace __gnu_norm
       multimap(const _Compare& __comp,
 	       const allocator_type& __a = allocator_type())
       : _M_t(__comp, __a) { }
-  
+
       /**
        *  @brief  %Multimap copy constructor.
        *  @param  x  A %multimap of identical element and allocator types.
@@ -181,7 +181,7 @@ namespace __gnu_norm
        */
       multimap(const multimap& __x)
       : _M_t(__x._M_t) { }
-  
+
       /**
        *  @brief  Builds a %multimap from a range.
        *  @param  first  An input iterator.
@@ -195,7 +195,7 @@ namespace __gnu_norm
         multimap(_InputIterator __first, _InputIterator __last)
 	: _M_t(_Compare(), allocator_type())
         { _M_t.insert_equal(__first, __last); }
-  
+
       /**
        *  @brief  Builds a %multimap from a range.
        *  @param  first  An input iterator.
@@ -213,7 +213,7 @@ namespace __gnu_norm
 		 const allocator_type& __a = allocator_type())
         : _M_t(__comp, __a)
         { _M_t.insert_equal(__first, __last); }
-  
+
       // FIXME There is no dtor declared, but we should have something generated
       // by Doxygen.  I don't know what tags to add to this paragraph to make
       // that happen:
@@ -222,7 +222,7 @@ namespace __gnu_norm
        *  themselves are pointers, the pointed-to memory is not touched in any
        *  way.  Managing the pointer is the user's responsibilty.
        */
-  
+
       /**
        *  @brief  %Multimap assignment operator.
        *  @param  x  A %multimap of identical element and allocator types.
@@ -236,12 +236,12 @@ namespace __gnu_norm
 	_M_t = __x._M_t;
 	return *this;
       }
-      
+
       /// Get a copy of the memory allocation object.
       allocator_type
       get_allocator() const
       { return _M_t.get_allocator(); }
-      
+
       // iterators
       /**
        *  Returns a read/write iterator that points to the first pair in the
@@ -251,7 +251,7 @@ namespace __gnu_norm
       iterator
       begin()
       { return _M_t.begin(); }
-  
+
       /**
        *  Returns a read-only (constant) iterator that points to the first pair
        *  in the %multimap.  Iteration is done in ascending order according to
@@ -260,7 +260,7 @@ namespace __gnu_norm
       const_iterator
       begin() const
       { return _M_t.begin(); }
-      
+
       /**
        *  Returns a read/write iterator that points one past the last pair in
        *  the %multimap.  Iteration is done in ascending order according to the
@@ -269,7 +269,7 @@ namespace __gnu_norm
       iterator
       end()
       { return _M_t.end(); }
-      
+
       /**
        *  Returns a read-only (constant) iterator that points one past the last
        *  pair in the %multimap.  Iteration is done in ascending order according
@@ -278,7 +278,7 @@ namespace __gnu_norm
       const_iterator
       end() const
       { return _M_t.end(); }
-      
+
       /**
        *  Returns a read/write reverse iterator that points to the last pair in
        *  the %multimap.  Iteration is done in descending order according to the
@@ -287,7 +287,7 @@ namespace __gnu_norm
       reverse_iterator
       rbegin()
       { return _M_t.rbegin(); }
-      
+
       /**
        *  Returns a read-only (constant) reverse iterator that points to the
        *  last pair in the %multimap.  Iteration is done in descending order
@@ -296,7 +296,7 @@ namespace __gnu_norm
       const_reverse_iterator
       rbegin() const
       { return _M_t.rbegin(); }
-      
+
       /**
        *  Returns a read/write reverse iterator that points to one before the
        *  first pair in the %multimap.  Iteration is done in descending order
@@ -305,7 +305,7 @@ namespace __gnu_norm
       reverse_iterator
       rend()
       { return _M_t.rend(); }
-      
+
       /**
        *  Returns a read-only (constant) reverse iterator that points to one
        *  before the first pair in the %multimap.  Iteration is done in
@@ -314,23 +314,23 @@ namespace __gnu_norm
       const_reverse_iterator
       rend() const
       { return _M_t.rend(); }
-      
+
       // capacity
       /** Returns true if the %multimap is empty.  */
       bool
       empty() const
       { return _M_t.empty(); }
-      
+
       /** Returns the size of the %multimap.  */
       size_type
       size() const
       { return _M_t.size(); }
-      
+
       /** Returns the maximum size of the %multimap.  */
       size_type
       max_size() const
       { return _M_t.max_size(); }
-      
+
       // modifiers
       /**
        *  @brief Inserts a std::pair into the %multimap.
@@ -338,7 +338,7 @@ namespace __gnu_norm
        *             of pairs).
        *  @return An iterator that points to the inserted (key,value) pair.
        *
-       *  This function inserts a (key, value) pair into the %multimap. 
+       *  This function inserts a (key, value) pair into the %multimap.
        *  Contrary to a std::map the %multimap does not rely on unique keys and
        *  thus multiple pairs with the same key can be inserted.
        *
@@ -347,7 +347,7 @@ namespace __gnu_norm
       iterator
       insert(const value_type& __x)
       { return _M_t.insert_equal(__x); }
-  
+
       /**
        *  @brief Inserts a std::pair into the %multimap.
        *  @param  position  An iterator that serves as a hint as to where the
@@ -356,7 +356,7 @@ namespace __gnu_norm
        *             of pairs).
        *  @return An iterator that points to the inserted (key,value) pair.
        *
-       *  This function inserts a (key, value) pair into the %multimap. 
+       *  This function inserts a (key, value) pair into the %multimap.
        *  Contrary to a std::map the %multimap does not rely on unique keys and
        *  thus multiple pairs with the same key can be inserted.
        *  Note that the first parameter is only a hint and can potentially
@@ -371,7 +371,7 @@ namespace __gnu_norm
       iterator
       insert(iterator __position, const value_type& __x)
       { return _M_t.insert_equal(__position, __x); }
-      
+
       /**
        *  @brief A template function that attemps to insert a range of elements.
        *  @param  first  Iterator pointing to the start of the range to be
@@ -384,7 +384,7 @@ namespace __gnu_norm
         void
         insert(_InputIterator __first, _InputIterator __last)
         { _M_t.insert_equal(__first, __last); }
-  
+
       /**
        *  @brief Erases an element from a %multimap.
        *  @param  position  An iterator pointing to the element to be erased.
@@ -398,7 +398,7 @@ namespace __gnu_norm
       void
       erase(iterator __position)
       { _M_t.erase(__position); }
-      
+
       /**
        *  @brief Erases elements according to the provided key.
        *  @param  x  Key of element to be erased.
@@ -413,7 +413,7 @@ namespace __gnu_norm
       size_type
       erase(const key_type& __x)
       { return _M_t.erase(__x); }
-  
+
       /**
        *  @brief Erases a [first,last) range of elements from a %multimap.
        *  @param  first  Iterator pointing to the start of the range to be
@@ -428,7 +428,7 @@ namespace __gnu_norm
       void
       erase(iterator __first, iterator __last)
       { _M_t.erase(__first, __last); }
-      
+
       /**
        *  @brief  Swaps data with another %multimap.
        *  @param  x  A %multimap of the same element and allocator types.
@@ -443,7 +443,7 @@ namespace __gnu_norm
       void
       swap(multimap& __x)
       { _M_t.swap(__x._M_t); }
-      
+
       /**
        *  Erases all elements in a %multimap.  Note that this function only
        *  erases the elements, and that if the elements themselves are pointers,
@@ -453,7 +453,7 @@ namespace __gnu_norm
       void
       clear()
       { _M_t.clear(); }
-      
+
       // observers
       /**
        *  Returns the key comparison object out of which the %multimap
@@ -462,7 +462,7 @@ namespace __gnu_norm
       key_compare
       key_comp() const
       { return _M_t.key_comp(); }
-      
+
       /**
        *  Returns a value comparison object, built from the key comparison
        *  object out of which the %multimap was constructed.
@@ -470,7 +470,7 @@ namespace __gnu_norm
       value_compare
       value_comp() const
       { return value_compare(_M_t.key_comp()); }
-      
+
       // multimap operations
       /**
        *  @brief Tries to locate an element in a %multimap.
@@ -486,7 +486,7 @@ namespace __gnu_norm
       iterator
       find(const key_type& __x)
       { return _M_t.find(__x); }
-      
+
       /**
        *  @brief Tries to locate an element in a %multimap.
        *  @param  x  Key of (key, value) pair to be located.
@@ -501,7 +501,7 @@ namespace __gnu_norm
       const_iterator
       find(const key_type& __x) const
       { return _M_t.find(__x); }
-      
+
       /**
        *  @brief Finds the number of elements with given key.
        *  @param  x  Key of (key, value) pairs to be located.
@@ -510,7 +510,7 @@ namespace __gnu_norm
       size_type
       count(const key_type& __x) const
       { return _M_t.count(__x); }
-      
+
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
        *  @param  x  Key of (key, value) pair to be located.
@@ -525,7 +525,7 @@ namespace __gnu_norm
       iterator
       lower_bound(const key_type& __x)
       { return _M_t.lower_bound(__x); }
-  
+
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
        *  @param  x  Key of (key, value) pair to be located.
@@ -540,7 +540,7 @@ namespace __gnu_norm
       const_iterator
       lower_bound(const key_type& __x) const
       { return _M_t.lower_bound(__x); }
-      
+
       /**
        *  @brief Finds the end of a subsequence matching given key.
        *  @param  x  Key of (key, value) pair to be located.
@@ -550,7 +550,7 @@ namespace __gnu_norm
       iterator
       upper_bound(const key_type& __x)
       { return _M_t.upper_bound(__x); }
-      
+
       /**
        *  @brief Finds the end of a subsequence matching given key.
        *  @param  x  Key of (key, value) pair to be located.
@@ -560,7 +560,7 @@ namespace __gnu_norm
       const_iterator
       upper_bound(const key_type& __x) const
       { return _M_t.upper_bound(__x); }
-  
+
       /**
        *  @brief Finds a subsequence matching given key.
        *  @param  x  Key of (key, value) pairs to be located.
@@ -577,7 +577,7 @@ namespace __gnu_norm
       pair<iterator,iterator>
       equal_range(const key_type& __x)
       { return _M_t.equal_range(__x); }
-  
+
       /**
        *  @brief Finds a subsequence matching given key.
        *  @param  x  Key of (key, value) pairs to be located.
@@ -594,18 +594,18 @@ namespace __gnu_norm
       pair<const_iterator,const_iterator>
       equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
-  
+
       template <typename _K1, typename _T1, typename _C1, typename _A1>
         friend bool
         operator== (const multimap<_K1,_T1,_C1,_A1>&,
 		    const multimap<_K1,_T1,_C1,_A1>&);
-      
+
       template <typename _K1, typename _T1, typename _C1, typename _A1>
         friend bool
         operator< (const multimap<_K1,_T1,_C1,_A1>&,
 		   const multimap<_K1,_T1,_C1,_A1>&);
   };
-    
+
   /**
    *  @brief  Multimap equality comparison.
    *  @param  x  A %multimap.
@@ -621,7 +621,7 @@ namespace __gnu_norm
     operator==(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
                const multimap<_Key,_Tp,_Compare,_Alloc>& __y)
     { return __x._M_t == __y._M_t; }
-  
+
   /**
    *  @brief  Multimap ordering relation.
    *  @param  x  A %multimap.
@@ -638,35 +638,35 @@ namespace __gnu_norm
     operator<(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
               const multimap<_Key,_Tp,_Compare,_Alloc>& __y)
     { return __x._M_t < __y._M_t; }
-  
+
   /// Based on operator==
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator!=(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
                const multimap<_Key,_Tp,_Compare,_Alloc>& __y)
     { return !(__x == __y); }
-  
+
   /// Based on operator<
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator>(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
               const multimap<_Key,_Tp,_Compare,_Alloc>& __y)
     { return __y < __x; }
-  
+
   /// Based on operator<
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator<=(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
                const multimap<_Key,_Tp,_Compare,_Alloc>& __y)
     { return !(__y < __x); }
-  
+
   /// Based on operator<
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator>=(const multimap<_Key,_Tp,_Compare,_Alloc>& __x,
                const multimap<_Key,_Tp,_Compare,_Alloc>& __y)
     { return !(__x < __y); }
-  
+
   /// See std::multimap::swap().
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline void

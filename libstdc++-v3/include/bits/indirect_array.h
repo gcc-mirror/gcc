@@ -67,7 +67,7 @@ namespace std
       ///  Assignment operator.  Assigns elements to corresponding elements
       ///  of @a a.
       indirect_array& operator=(const indirect_array&);
-       
+
       ///  Assign slice elements to corresponding elements of @a v.
       void operator=(const valarray<_Tp>&) const;
       ///  Multiply slice elements by corresponding elements of @a v.
@@ -75,11 +75,11 @@ namespace std
       ///  Divide slice elements by corresponding elements of @a v.
       void operator/=(const valarray<_Tp>&) const;
       ///  Modulo slice elements by corresponding elements of @a v.
-      void operator%=(const valarray<_Tp>&) const; 
+      void operator%=(const valarray<_Tp>&) const;
       ///  Add corresponding elements of @a v to slice elements.
       void operator+=(const valarray<_Tp>&) const;
       ///  Subtract corresponding elements of @a v from slice elements.
-      void operator-=(const valarray<_Tp>&) const;  
+      void operator-=(const valarray<_Tp>&) const;
       ///  Logical xor slice elements with corresponding elements of @a v.
       void operator^=(const valarray<_Tp>&) const;
       ///  Logical and slice elements with corresponding elements of @a v.
@@ -89,11 +89,11 @@ namespace std
       ///  Left shift slice elements by corresponding elements of @a v.
       void operator<<=(const valarray<_Tp>&) const;
       ///  Right shift slice elements by corresponding elements of @a v.
-      void operator>>=(const valarray<_Tp>&) const; 
+      void operator>>=(const valarray<_Tp>&) const;
       ///  Assign all slice elements to @a t.
       void operator= (const _Tp&) const;
       //    ~indirect_array();
-       
+
       template<class _Dom>
       void operator=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
@@ -115,7 +115,7 @@ namespace std
       template<class _Dom>
       void operator<<=(const _Expr<_Dom, _Tp>&) const;
       template<class _Dom>
-      void operator>>=(const _Expr<_Dom, _Tp>&) const; 
+      void operator>>=(const _Expr<_Dom, _Tp>&) const;
 
     private:
       ///  Copy constructor.  Both slices refer to the same underlying array.
@@ -124,23 +124,23 @@ namespace std
 
       friend class valarray<_Tp>;
       friend class gslice_array<_Tp>;
-       
-      const size_t 	 _M_sz;
+
+      const size_t	 _M_sz;
       const _Array<size_t> _M_index;
-      const _Array<_Tp> 	 _M_array;
-       
+      const _Array<_Tp>	 _M_array;
+
       // not implemented
       indirect_array();
     };
 
   template<typename _Tp>
-    inline 
+    inline
     indirect_array<_Tp>::indirect_array(const indirect_array<_Tp>& __a)
       : _M_sz(__a._M_sz), _M_index(__a._M_index), _M_array(__a._M_array) {}
 
   template<typename _Tp>
      inline
-     indirect_array<_Tp>::indirect_array(_Array<_Tp> __a, size_t __s, 
+     indirect_array<_Tp>::indirect_array(_Array<_Tp> __a, size_t __s,
 					 _Array<size_t> __i)
        : _M_sz(__s), _M_index(__i), _M_array(__a) {}
 

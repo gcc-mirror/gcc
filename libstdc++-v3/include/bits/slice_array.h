@@ -69,14 +69,14 @@ namespace std
      *  @param  s  Stride between array elements.
      */
     slice(size_t, size_t, size_t);
-    
+
     ///  Return array offset of first slice element.
     size_t start() const;
     ///  Return size of slice.
     size_t size() const;
     ///  Return array stride of slice.
     size_t stride() const;
-    
+
   private:
     size_t _M_off;                      // offset
     size_t _M_sz;			// size
@@ -85,21 +85,21 @@ namespace std
 
   // The default constructor constructor is not required to initialize
   // data members with any meaningful values, so we choose to do nothing.
-  inline 
+  inline
   slice::slice() {}
-  
-  inline 
+
+  inline
   slice::slice(size_t __o, size_t __d, size_t __s)
     : _M_off(__o), _M_sz(__d), _M_st(__s) {}
-  
+
   inline size_t
   slice::start() const
   { return _M_off; }
-  
+
   inline size_t
   slice::size() const
   { return _M_sz; }
-  
+
   inline size_t
   slice::stride() const
   { return _M_st; }
@@ -194,16 +194,16 @@ namespace std
     };
 
   template<typename _Tp>
-    inline 
+    inline
     slice_array<_Tp>::slice_array(_Array<_Tp> __a, const slice& __s)
       : _M_sz(__s.size()), _M_stride(__s.stride()),
 	_M_array(__a.begin() + __s.start()) {}
 
   template<typename _Tp>
-    inline 
+    inline
     slice_array<_Tp>::slice_array(const slice_array<_Tp>& a)
       : _M_sz(a._M_sz), _M_stride(a._M_stride), _M_array(a._M_array) {}
-    
+
   //    template<typename _Tp>
   //    inline slice_array<_Tp>::~slice_array () {}
 
@@ -220,12 +220,12 @@ namespace std
     inline void
     slice_array<_Tp>::operator=(const _Tp& __t) const
     { std::__valarray_fill(_M_array, _M_sz, _M_stride, __t); }
-    
+
   template<typename _Tp>
     inline void
     slice_array<_Tp>::operator=(const valarray<_Tp>& __v) const
     { std::__valarray_copy(_Array<_Tp>(__v), _M_array, _M_sz, _M_stride); }
-    
+
   template<typename _Tp>
   template<class _Dom>
     inline void
@@ -248,7 +248,7 @@ namespace std
       {									\
 	  _Array_augmented_##_Name(_M_array, _M_stride, __e, _M_sz);	\
       }
-        
+
 
 _DEFINE_VALARRAY_OPERATOR(*, __multiplies)
 _DEFINE_VALARRAY_OPERATOR(/, __divides)

@@ -42,13 +42,13 @@
 namespace std
 {
   template <class _CharT, class _Traits, class _Alloc>
-    typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type 
+    typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     pbackfail(int_type __c)
     {
       int_type __ret = traits_type::eof();
       const bool __testeof = traits_type::eq_int_type(__c, __ret);
-      
+
       if (this->eback() < this->gptr())
 	{
 	  const bool __testeq = traits_type::eq(traits_type::to_char_type(__c),
@@ -69,9 +69,9 @@ namespace std
 	}
       return __ret;
     }
-  
+
   template <class _CharT, class _Traits, class _Alloc>
-    typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type 
+    typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     overflow(int_type __c)
     {
@@ -111,7 +111,7 @@ namespace std
     }
 
   template <class _CharT, class _Traits, class _Alloc>
-    typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type 
+    typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     underflow()
     {
@@ -132,7 +132,7 @@ namespace std
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode __mode)
     {
-      pos_type __ret =  pos_type(off_type(-1)); 
+      pos_type __ret =  pos_type(off_type(-1));
       bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
       bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
       const bool __testboth = __testin && __testout && __way != ios_base::cur;
@@ -156,14 +156,14 @@ namespace std
 	    __newoffo = __newoffi = this->egptr() - __beg;
 
 	  if ((__testin || __testboth)
-	      && __newoffi + __off >= 0 
+	      && __newoffi + __off >= 0
 	      && this->egptr() - __beg >= __newoffi + __off)
 	    {
 	      this->gbump((__beg + __newoffi + __off) - this->gptr());
 	      __ret = pos_type(__newoffi);
 	    }
 	  if ((__testout || __testboth)
-	      && __newoffo + __off >= 0 
+	      && __newoffo + __off >= 0
 	      && this->egptr() - __beg >= __newoffo + __off)
 	    {
 	      this->pbump((__beg + __newoffo + __off) - this->pptr());
@@ -178,14 +178,14 @@ namespace std
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     seekpos(pos_type __sp, ios_base::openmode __mode)
     {
-      pos_type __ret =  pos_type(off_type(-1));       
+      pos_type __ret =  pos_type(off_type(-1));
       if (_M_string.capacity())
 	{
 	  off_type __pos (__sp);
 	  const bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
 	  const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
 	  char_type* __beg = __testin ? this->eback() : this->pbase();
-	  
+
 	  _M_update_egptr();
 
 	  const bool __testpos = 0 <= __pos
@@ -203,7 +203,7 @@ namespace std
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.  
+  // which are defined via explicit instantiations elsewhere.
   // NB:  This syntax is a GNU extension.
 #if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_stringbuf<char>;
