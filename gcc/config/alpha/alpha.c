@@ -2005,7 +2005,7 @@ summarize_insn (x, sum, set)
     default:
       format_ptr = GET_RTX_FORMAT (GET_CODE (x));
       for (i = GET_RTX_LENGTH (GET_CODE (x)); i >= 0; i--)
-	switch (*format_ptr++)
+	switch (format_ptr[i])
 	  {
 	  case 'e':
 	    summarize_insn (XEXP (x, i), sum, 0);
