@@ -1,4 +1,4 @@
-int zzz (char *s1, char *s2, int len, int *q)
+void zzz (char *s1, char *s2, int len, int *q)
 {
   int z = 5;
   unsigned int i,  b;
