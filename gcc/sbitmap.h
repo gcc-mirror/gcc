@@ -141,6 +141,7 @@ extern void sbitmap_a_or_b_and_c (sbitmap, sbitmap, sbitmap, sbitmap);
 extern bool sbitmap_a_or_b_and_c_cg (sbitmap, sbitmap, sbitmap, sbitmap);
 extern void sbitmap_a_and_b_or_c (sbitmap, sbitmap, sbitmap, sbitmap);
 extern bool sbitmap_a_and_b_or_c_cg (sbitmap, sbitmap, sbitmap, sbitmap);
+extern bool sbitmap_any_common_bits (sbitmap, sbitmap);
 extern void sbitmap_a_and_b (sbitmap, sbitmap, sbitmap);
 extern bool sbitmap_a_and_b_cg (sbitmap, sbitmap, sbitmap);
 extern void sbitmap_a_or_b (sbitmap, sbitmap, sbitmap);

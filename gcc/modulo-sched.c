@@ -1219,8 +1219,6 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order, FILE *du
   ddg_edge_ptr e;
   int start, end, step; /* Place together into one struct?  */
   sbitmap sched_nodes = sbitmap_alloc (num_nodes);
-  sbitmap psp = sbitmap_alloc (num_nodes);
-  sbitmap pss = sbitmap_alloc (num_nodes);
   sbitmap must_precede = sbitmap_alloc (num_nodes);
   sbitmap must_follow = sbitmap_alloc (num_nodes);
 
@@ -1250,10 +1248,8 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order, FILE *du
 	    continue;
 
 	  /* 1. compute sched window for u (start, end, step).  */
-	  sbitmap_zero (psp);
-	  sbitmap_zero (pss);
-	  psp_not_empty = sbitmap_a_and_b_cg (psp, u_node_preds, sched_nodes);
-	  pss_not_empty = sbitmap_a_and_b_cg (pss, u_node_succs, sched_nodes);
+	  psp_not_empty = sbitmap_any_common_bits (u_node_preds, sched_nodes);
+	  pss_not_empty = sbitmap_any_common_bits (u_node_succs, sched_nodes);
 
 	  if (psp_not_empty && !pss_not_empty)
 	    {
@@ -1399,8 +1395,6 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order, FILE *du
     } /* While try_again_with_larger_ii.  */
 
   sbitmap_free (sched_nodes);
-  sbitmap_free (psp);
-  sbitmap_free (pss);
 
   if (ii >= maxii)
     {

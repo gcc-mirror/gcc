@@ -316,6 +316,24 @@ sbitmap_difference (sbitmap dst, sbitmap a, sbitmap b)
       *dstp++ = *ap++;
 }
 
+/* Return true if there are any bits set in A are also set in B.
+   Return false otherwise.  */
+
+bool
+sbitmap_any_common_bits (sbitmap a, sbitmap b)
+{
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+  unsigned int i, n;
+
+  n = MIN (a->size, b->size);
+  for (i = 0; i < n; i++)
+    if ((*ap++ & *bp++) != 0)
+      return true;
+
+  return false;
+}
+
 /* Set DST to be (A and B).
    Return nonzero if any change is made.  */
 
