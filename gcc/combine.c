@@ -3085,8 +3085,16 @@ subst (x, from, to, in_dest, unique_copy)
 	    return temp;
 	}
 	
+      /* If we want a subreg of a constant, at offset 0,
+	 take the low bits.  On a little-endian machine, that's
+	 always valid.  On a big-endian machine, it's valid
+	 only if the constant's mode fits in one word.  */
       if (CONSTANT_P (SUBREG_REG (x)) && subreg_lowpart_p (x)
-	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (op0_mode))
+	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (op0_mode)
+#if WORDS_BIG_ENDIAN
+	  && GET_MODE_BITSIZE (op0_mode) < BITS_PER_WORD
+#endif
+	  )
 	return gen_lowpart_for_combine (mode, SUBREG_REG (x));
 
       /* If we are narrowing the object, we need to see if we can simplify
