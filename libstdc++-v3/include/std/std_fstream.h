@@ -121,6 +121,15 @@ namespace std
       */
       char_type*		_M_buf; 	
 
+      /**
+       *  @if maint
+       *  Actual size of internal buffer. This number is equal to the size
+       *  of the put area + 1 position, reserved for the overflow char of
+       *  a full area.
+       *  @endif
+      */
+      size_t			_M_buf_size;
+
       // Set iff _M_buf is allocated memory from _M_allocate_internal_buffer.
       /**
        *  @if maint
@@ -206,6 +215,7 @@ namespace std
       ~basic_filebuf()
       {
 	this->close();
+	_M_buf_size = 0;
 	_M_last_overflowed = false;
       }
 
@@ -429,17 +439,15 @@ namespace std
       {
  	const bool __testin = this->_M_mode & ios_base::in;
  	const bool __testout = this->_M_mode & ios_base::out;
-	if (this->_M_buf_size)
+	
+	if (__testin)
+	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);
+	if (__testout && this->_M_buf_size > 1)
 	  {
-	    if (__testin)
-	      this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);
-	    if (__testout)
-	      {
-		this->setp(this->_M_buf, this->_M_buf + this->_M_buf_size - 1);
-		this->_M_out_lim += __off;
-	      }
-	    _M_filepos = this->_M_buf + __off;
+	    this->setp(this->_M_buf, this->_M_buf + this->_M_buf_size - 1);
+	    this->_M_out_lim += __off;
 	  }
+	_M_filepos = this->_M_buf + __off;
       }
     };
 

@@ -1,3 +1,28 @@
+2003-06-09  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/fstream.tcc (_M_underflow): Do not special
+	case the unbuffered case, which really means simply a one char
+	get area.
+	(basic_filebuf): Initialize _M_buf_size.
+	(setbuf): Unbuffered means _M_buf_size == 1, since only
+	_M_buf_size - 1 == 0 chars are going to be used for the
+	put area and 1 for the get area.
+	* include/std/std_streambuf.h (_M_buf_size): Move to basic_filebuf.
+	(~basic_streambuf): Tweak.
+	(basic_streambuf): Do not initialize _M_buf_size.
+	* include/std/std_fstream.h (_M_buf_size): Add from basic_streambuf.
+	(~basic_filebuf): Tweak.
+	(_M_set_buffer): Tweak, considering that _M_buf_size == 1 is the
+	unbuffered situation (i.e., put area pointers NULL).
+	* include/bits/streambuf.tcc (sbumpc): Clean up.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1.cc: Split into...
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-out.cc: New.
+
 2003-06-09  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acinclude.m4:  Move all AM_CONDITIONAL calls out.

@@ -48,12 +48,8 @@ namespace std
       if (_M_in_cur < _M_in_end)
 	{
 	  char_type __c = *this->_M_in_cur;
+	  _M_move_in_cur(1);
 	  __ret = traits_type::to_int_type(__c);
-	  
-	  if (_M_buf_size)
-	    _M_move_in_cur(1);
-	  else
-	    this->underflow();
 	}
       else 
 	__ret = this->uflow();
