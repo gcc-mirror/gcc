@@ -1,5 +1,5 @@
 /* Definitions for Unix assembler syntax for the Intel 80386.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -28,13 +28,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Note that the other files fail to use these
    in some of the places where they should.  */
 
-#ifdef __STDC__
+#if defined(__STDC__) || defined(ALMOST_STDC)
 #define AS2(a,b,c) #a " " #b "," #c
+#define AS2C(b,c) " " #b "," #c
 #define AS3(a,b,c,d) #a " " #b "," #c "," #d
 #define AS1(a,b) #a " " #b
 #else
 #define AS1(a,b) "a b"
 #define AS2(a,b,c) "a b,c"
+#define AS2C(b,c) " b,c"
 #define AS3(a,b,c,d) "a b,c,d"
 #endif  
 
