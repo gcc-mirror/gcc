@@ -1,5 +1,15 @@
 Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gcse.c (set_hash_table_size): Now unsigned.
+	* sdbout.c (template_name_p): Add "const" to avoid warnings.
+	(sdbout_record_type_name, plain_type_1, sdbout_symbol): Likewise.
+	(sdbout_one_type, sdbout_parms, sdbout_reg_parms): Likewise.
+	(sdbout_end_epilogue): Remove variable NAME.
+	* system.h (getopt): Add default definition.
+	* config/alpha/alpha.c (print_operand): Don't continue processing
+	after issuing error.
+	(summarize_insn): Avoid use of UL in constant.
+
 	* function.c (locate_and_pad_parm): Use host_integerp and tree_low_cst.
 
 	* fold-const.c (force_fit_type): Unsigned values can overflow

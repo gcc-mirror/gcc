@@ -429,7 +429,7 @@ static int
 template_name_p (name)
      tree name;
 {
-  register char *ptr = IDENTIFIER_POINTER (name);
+  register const char *ptr = IDENTIFIER_POINTER (name);
   while (*ptr && *ptr != '<')
     ptr++;
 
@@ -440,7 +440,7 @@ static void
 sdbout_record_type_name (type)
      tree type;
 {
-  char *name = 0;
+  const char *name = 0;
   int no_name;
 
   if (KNOWN_TYPE_TAG (type))
@@ -516,7 +516,8 @@ plain_type_1 (type, level)
 	    && DECL_NAME (TYPE_NAME (type)) != 0
 	    && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
 	  {
-	    char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+	    const char *name
+	      = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 
 	    if (!strcmp (name, "char"))
 	      return T_CHAR;
@@ -709,7 +710,7 @@ sdbout_symbol (decl, local)
   tree context = NULL_TREE;
   rtx value;
   int regno = -1;
-  char *name;
+  const char *name;
 
   sdbout_one_type (type);
 
@@ -1246,7 +1247,7 @@ sdbout_one_type (type)
 		&& host_integerp (DECL_SIZE (tem), 1)
 		&& host_integerp (bit_position (tem), 0))
 	      {
-		char *name;
+		const char *name;
 
 		CONTIN;
 		name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (tem));
@@ -1302,7 +1303,7 @@ sdbout_parms (parms)
     if (DECL_NAME (parms))
       {
 	int current_sym_value = 0;
-	char *name = IDENTIFIER_POINTER (DECL_NAME (parms));
+	const char *name = IDENTIFIER_POINTER (DECL_NAME (parms));
 
 	if (name == 0 || *name == 0)
 	  name = gen_fake_label ();
@@ -1433,7 +1434,7 @@ sdbout_reg_parms (parms)
   for (; parms; parms = TREE_CHAIN (parms))
     if (DECL_NAME (parms))
       {
-	char *name = IDENTIFIER_POINTER (DECL_NAME (parms));
+	const char *name = IDENTIFIER_POINTER (DECL_NAME (parms));
 
 	/* Report parms that live in registers during the function
 	   but were passed in memory.  */
@@ -1594,8 +1595,8 @@ sdbout_end_function (line)
 void
 sdbout_end_epilogue ()
 {
-  char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
-  PUT_SDB_EPILOGUE_END (name);
+  PUT_SDB_EPILOGUE_END
+    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
 }
 
 /* Output sdb info for the given label.  Called only if LABEL_NAME (insn)

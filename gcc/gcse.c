@@ -372,7 +372,7 @@ static unsigned int expr_hash_table_size;
 static struct expr **expr_hash_table;
 
 /* Total size of the copy propagation hash table, in elements.  */
-static int set_hash_table_size;
+static unsigned int set_hash_table_size;
 
 /* The table itself.
    This is an array of `set_hash_table_size' elements.  */
