@@ -1,3 +1,8 @@
+2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-dump.c (SPECIAL_IINC): Ensure arguments match format
+	specifiers in calls to fprintf.
+
 2000-05-03  Andrew Haley  <aph@cygnus.com>
 
 	* expr.c (build_java_jsr): Use emit_jump, not expand_goto.
