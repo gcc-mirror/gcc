@@ -1,3 +1,9 @@
+2004-02-15  David Asher  <david.asher@cavium.com>
+
+	PR libstdc++/11352
+	* include/bits/locale_facets.tcc (__pad<>::_S_pad): Don't
+	access __olds beyond __oldlen.
+
 2004-02-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_filebuf/overflow/char/9182-2.cc: Make
