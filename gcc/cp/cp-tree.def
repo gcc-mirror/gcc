@@ -274,12 +274,13 @@ DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
 
 /* Template instantiation level node.
 
-   Operand 1 contains the original DECL node and can be accessed via TINST_DECL.
+   TINST_DECL contains the original DECL node.
+   TINST_LOCATION contains the location where the template is instantiated.
 
    A stack of template instantiation nodes is kept through the TREE_CHAIN
    fields of these nodes.  */
 
-DEFTREECODE (TINST_LEVEL, "TINST_LEVEL", 'e', 1)
+DEFTREECODE (TINST_LEVEL, "TINST_LEVEL", 'x', 0)
 
 /*
 Local variables:

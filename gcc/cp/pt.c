@@ -4873,9 +4873,7 @@ push_tinst_level (tree d)
       return 0;
     }
 
-  new = make_node (TINST_LEVEL);
-  SET_EXPR_LOCATION (new, input_location);
-  TINST_DECL (new) = d;
+  new = make_tinst_level (d, input_location);
   TREE_CHAIN (new) = current_tinst_level;
   current_tinst_level = new;
 
@@ -4899,7 +4897,7 @@ pop_tinst_level (void)
 
   /* Restore the filename and line number stashed away when we started
      this instantiation.  */
-  input_location = EXPR_LOCATION (old);
+  input_location = TINST_LOCATION (old);
   extract_interface_info ();
   
   current_tinst_level = TREE_CHAIN (old);

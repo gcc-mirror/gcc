@@ -10711,6 +10711,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case IDENTIFIER_NODE:	return TS_CP_IDENTIFIER;
     case OVERLOAD:		return TS_CP_OVERLOAD;
     case TEMPLATE_PARM_INDEX:	return TS_CP_TPI;
+    case TINST_LEVEL:		return TS_CP_TINST_LEVEL;
     case PTRMEM_CST:		return TS_CP_PTRMEM;
     case BASELINK:              return TS_CP_BASELINK;
     default:			return TS_CP_GENERIC;

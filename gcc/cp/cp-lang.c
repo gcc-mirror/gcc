@@ -284,6 +284,7 @@ cp_tree_size (enum tree_code code)
 {
   switch (code)
     {
+    case TINST_LEVEL:		return sizeof (struct tinst_level_s);
     case PTRMEM_CST: 		return sizeof (struct ptrmem_cst);
     case BASELINK:		return sizeof (struct tree_baselink);
     case TEMPLATE_PARM_INDEX: 	return sizeof (template_parm_index);
