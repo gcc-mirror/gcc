@@ -75,7 +75,7 @@
   else if (current_sym_addr)					\
     output_addr_const (asmfile, current_sym_addr);		\
   else if (current_sym_code == N_GSYM)				\
-    fprintf (asmfile, "%s", IDENTIFIER_POINTER (DECL_NAME (SYM))); \
+    fprintf (asmfile, "%s", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (SYM))); \
   else								\
     fprintf (asmfile, "%d", current_sym_value);			\
   fprintf (asmfile, ",%d,0\n", stab_to_sclass (current_sym_code)); \
