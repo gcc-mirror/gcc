@@ -1,3 +1,10 @@
+Fri Apr 10 01:29:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in: Handle --with-fast-fixincludes.
+	(fixincludes): If --with-fast-fixincludes, then use a different
+	fixincludes program by default.
+	* Makefile.in (fixinc.sh): New rule.
+
 Fri Apr 10 00:36:31 1998  H.J. Lu  (hjl@gnu.org)
 
 	* i386.md (movqi+1): Handle invalid QI register.
