@@ -1,3 +1,10 @@
+2000-12-05  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	2000-07-03  Nick Clifton  <nickc@cygnus.com>
+	* config/arm/arm.md: Fix post increment and pre increment
+	peepholes so that they do not generate UNPREDICATBLE opcodes.
+	(ie ones where the increment clobbers the source/destination).
+
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* version.c: Bump.
