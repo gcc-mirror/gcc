@@ -251,7 +251,8 @@ expr_size (exp)
       && contains_placeholder_p (size))
     size = build (WITH_RECORD_EXPR, sizetype, size, exp);
 
-  return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), 0);
+  return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype),
+  		      EXPAND_MEMORY_USE_BAD);
 }
 
 /* Return a copy of X in which all memory references
