@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -158,7 +158,7 @@ static struct pred_table
      {"push_operand", {MEM}},
      {"memory_operand", {SUBREG, MEM}},
      {"indirect_operand", {SUBREG, MEM}},
-     {"comparison_operation", {EQ, NE, LE, LT, GE, LT, LEU, LTU, GEU, GTU}},
+     {"comparison_operator", {EQ, NE, LE, LT, GE, LT, LEU, LTU, GEU, GTU}},
      {"mode_independent_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
 				   LABEL_REF, SUBREG, REG, MEM}}};
 
@@ -378,30 +378,40 @@ add_to_sequence (pattern, last, position)
 	 considerably simplify the generated code.  */
 
       if (new->tests)
-	for (i = 0; i < NUM_KNOWN_PREDS; i++)
-	  if (! strcmp (preds[i].name, new->tests))
-	    {
-	      int j;
-	      int allows_const_int = 0;
+	{
+	  for (i = 0; i < NUM_KNOWN_PREDS; i++)
+	    if (! strcmp (preds[i].name, new->tests))
+	      {
+		int j;
+		int allows_const_int = 0;
 
-	      new->pred = i;
+		new->pred = i;
 
-	      if (preds[i].codes[1] == 0 && new->code == UNKNOWN)
-		{
-		  new->code = preds[i].codes[0];
-		  if (! strcmp ("const_int_operand", new->tests))
-		    new->tests = 0, new->pred = -1;
-		}
+		if (preds[i].codes[1] == 0 && new->code == UNKNOWN)
+		  {
+		    new->code = preds[i].codes[0];
+		    if (! strcmp ("const_int_operand", new->tests))
+		      new->tests = 0, new->pred = -1;
+		  }
 
-	      for (j = 0; j < NUM_RTX_CODE && preds[i].codes[j] != 0; j++)
-		if (preds[i].codes[j] == CONST_INT)
-		  allows_const_int = 1;
+		for (j = 0; j < NUM_RTX_CODE && preds[i].codes[j] != 0; j++)
+		  if (preds[i].codes[j] == CONST_INT)
+		    allows_const_int = 1;
 
-	      if (! allows_const_int)
-		new->enforce_mode = new->ignore_mode= 1;
+		if (! allows_const_int)
+		  new->enforce_mode = new->ignore_mode= 1;
 
-	      break;
-	    }
+		break;
+	      }
+
+#ifdef PREDICATE_CODES
+	  /* If the port has a list of the predicates it uses but omits
+	     one, warn.  */
+	  if (i == NUM_KNOWN_PREDS)
+	    fprintf (stderr, "Warning: `%s' not in PREDICATE_CODES\n",
+		     new->tests);
+#endif
+	}
 
       if (code == MATCH_OPERATOR || code == MATCH_PARALLEL)
 	{
