@@ -1,3 +1,7 @@
+Fri Jan 26 23:22:58 2001  Denis Chertykov  <denisc@overta.ru>
+
+	* README.AVR : Removed.
+
 Fri Jan 26 11:37:26 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa-64.h (text_section): Remove declaration.
