@@ -2021,24 +2021,24 @@ status_warning VPARAMS ((int *status, const char *msgid, ...))
   va_list ap;
   diagnostic_context dc;
 
+  VA_START (ap, msgid);
+
+#ifndef ANSI_PROTOTYPES
+  status = va_arg (ap, int *);
+  msgid = va_arg (ap, const char *);
+#endif
+
   if (status)
     *status = 1;
   else
     {
-      VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-      status = va_arg (ap, int *);
-      msgid = va_arg (ap, const char *);
-#endif
-
       /* This duplicates the warning function behavior.  */
       set_diagnostic_context
 	(&dc, msgid, &ap, input_filename, lineno, /* warn = */ 1);
       report_diagnostic (&dc);
-
-      va_end (ap);
     }
+
+  va_end (ap);
 }
 
 /* Variables used by the checking of $ operand number formats.  */
