@@ -4468,12 +4468,6 @@ On System V.4 and embedded PowerPC systems do not (do) assume that
 register 2 contains a pointer to a global area pointing to the addresses
 used in the program.
 
-@item -mno-traceback
-@itemx -mtraceback
-On embedded PowerPC systems do not (do) generate a traceback tag before
-the start of the function.  This tag can be used by the debugger to
-identify where the start of a function is.
-
 @item -mlittle
 @itemx -mlittle-endian
 On System V.4 and embedded PowerPC systems compile code for the
