@@ -33,6 +33,9 @@
 
 2004-09-10  Geoffrey Keating  <geoffk@apple.com>
 
+	* gimplify.c (create_tmp_var_raw): Don't name otherwise-nameless
+	temporary variables.
+
 	* dbxout.c (dbxout_block): Update for
 	current_function_func_begin_label a string.
 	* dwarf2out.c (dwarf2out_begin_prologue): Likewise.
