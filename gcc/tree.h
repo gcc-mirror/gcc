@@ -1259,7 +1259,7 @@ extern tree convert			PROTO((tree, tree));
 extern tree size_in_bytes		PROTO((tree));
 extern int int_size_in_bytes		PROTO((tree));
 extern tree size_binop			PROTO((enum tree_code, tree, tree));
-extern tree size_int			PROTO((unsigned));
+extern tree size_int			PROTO((unsigned HOST_WIDE_INT));
 extern tree round_up			PROTO((tree, int));
 extern tree get_pending_sizes		PROTO((void));
 
