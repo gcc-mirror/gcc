@@ -35,7 +35,7 @@ static struct
   const struct line_map *map;	/* Logical to physical line mappings.  */
   const cpp_token *prev;	/* Previous token.  */
   const cpp_token *source;	/* Source token for spacing.  */
-  unsigned int line;		/* Line currently being written.  */
+  fileline line;		/* Line currently being written.  */
   unsigned char printed;	/* Nonzero if something output at line.  */
 } print;
 
@@ -45,19 +45,18 @@ static void scan_translation_unit_trad (cpp_reader *);
 static void account_for_newlines (const unsigned char *, size_t);
 static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
 
-static void print_line (const struct line_map *, unsigned int,
-			const char *);
-static void maybe_print_line (const struct line_map *, unsigned int);
+static void print_line (const struct line_map *, fileline, const char *);
+static void maybe_print_line (const struct line_map *, fileline);
 
 /* Callback routines for the parser.   Most of these are active only
    in specific modes.  */
 static void cb_line_change (cpp_reader *, const cpp_token *, int);
-static void cb_define (cpp_reader *, unsigned int, cpp_hashnode *);
-static void cb_undef (cpp_reader *, unsigned int, cpp_hashnode *);
-static void cb_include (cpp_reader *, unsigned int, const unsigned char *,
+static void cb_define (cpp_reader *, fileline, cpp_hashnode *);
+static void cb_undef (cpp_reader *, fileline, cpp_hashnode *);
+static void cb_include (cpp_reader *, fileline, const unsigned char *,
 			const char *, int);
-static void cb_ident (cpp_reader *, unsigned int, const cpp_string *);
-static void cb_def_pragma (cpp_reader *, unsigned int);
+static void cb_ident (cpp_reader *, fileline, const cpp_string *);
+static void cb_def_pragma (cpp_reader *, fileline);
 
 /* Preprocess and output.  */
 void
@@ -116,7 +115,7 @@ init_pp_output (FILE *out_stream)
   /* Initialize the print structure.  Setting print.line to -1 here is
      a trick to guarantee that the first token of the file will cause
      a linemarker to be output by maybe_print_line.  */
-  print.line = (unsigned int) -1;
+  print.line = (fileline) -1;
   print.printed = 0;
   print.prev = 0;
   print.map = 0;
@@ -200,7 +199,7 @@ scan_translation_unit_trad (cpp_reader *pfile)
    different line to the current one, output the required newlines or
    a line marker, and return 1.  Otherwise return 0.  */
 static void
-maybe_print_line (const struct line_map *map, unsigned int line)
+maybe_print_line (const struct line_map *map, fileline line)
 {
   /* End the previous line of text.  */
   if (print.printed)
@@ -225,7 +224,7 @@ maybe_print_line (const struct line_map *map, unsigned int line)
 /* Output a line marker for logical line LINE.  Special flags are "1"
    or "2" indicating entering or leaving a file.  */
 static void
-print_line (const struct line_map *map, unsigned int line, const char *special_flags)
+print_line (const struct line_map *map, fileline line, const char *special_flags)
 {
   /* End any previous line of text.  */
   if (print.printed)
@@ -289,7 +288,7 @@ cb_line_change (cpp_reader *pfile, const cpp_token *token,
 }
 
 static void
-cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, unsigned int line,
+cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, fileline line,
 	  const cpp_string *str)
 {
   maybe_print_line (print.map, line);
@@ -298,7 +297,7 @@ cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, unsigned int line,
 }
 
 static void
-cb_define (cpp_reader *pfile, unsigned int line, cpp_hashnode *node)
+cb_define (cpp_reader *pfile, fileline line, cpp_hashnode *node)
 {
   maybe_print_line (print.map, line);
   fputs ("#define ", print.outf);
@@ -315,7 +314,7 @@ cb_define (cpp_reader *pfile, unsigned int line, cpp_hashnode *node)
 }
 
 static void
-cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, unsigned int line,
+cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, fileline line,
 	  cpp_hashnode *node)
 {
   maybe_print_line (print.map, line);
@@ -324,7 +323,7 @@ cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, unsigned int line,
 }
 
 static void
-cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, unsigned int line,
+cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, fileline line,
 	    const unsigned char *dir, const char *header, int angle_brackets)
 {
   maybe_print_line (print.map, line);
@@ -372,7 +371,7 @@ pp_file_change (const struct line_map *map)
 
 /* Copy a #pragma directive to the preprocessed output.  */
 static void
-cb_def_pragma (cpp_reader *pfile, unsigned int line)
+cb_def_pragma (cpp_reader *pfile, fileline line)
 {
   maybe_print_line (print.map, line);
   fputs ("#pragma ", print.outf);

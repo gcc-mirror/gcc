@@ -1,3 +1,10 @@
+2003-09-18  Mike Stump  <mrs@apple.com>
+
+	* c-ppoutput.c (print):  Use fileline typedef for field 'line'.
+	(print_line, maybe_print_line, cb_define, cb_undef, cb_include,
+	cb_ident, cb_def_pragma):  Use fileline typedef.
+	* cpphash.h (struct cpp_reader):  Likewise for field out.first_line.
+
 2003-09-18  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/winnt.c (gen_stdcall_suffix): Quit summation of
