@@ -2793,6 +2793,18 @@ If you receive Signal 11 errors when building on GNU/Linux, then it is
 possible you have a hardware problem.  Further information on this can be
 found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 
+Some recent versions of GNU/Linux, such as Fedora Core 1, support
+exec-shield-randomize.  Turning this on interferes with precompiled
+headers.  If you need to use precompiled headers,
+exec-shield-randomize can be turned off for the entire system by
+editing @file{/etc/sysctl.conf} and adding a line:
+@smallexample
+kernel.exec-shield-randomize = 0
+@end smallexample
+You may then need to run @samp{sysctl -p}.
+
+This will be fixed in future releases of GCC.
+
 @html
 <hr />
 @end html
