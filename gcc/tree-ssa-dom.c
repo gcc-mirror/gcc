@@ -653,7 +653,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
       if (SSA_NAME_VAR (cached_lhs) != SSA_NAME_VAR (lhs))
 	break;
 
-      /* If CACHED_LHS does not represent the current value of the undering
+      /* If CACHED_LHS does not represent the current value of the underlying
 	 variable in CACHED_LHS/LHS, then we can not ignore this statement.  */
       if (var_ann (SSA_NAME_VAR (lhs))->current_def != cached_lhs)
 	break;
