@@ -1710,6 +1710,24 @@ if [ -r ${LIB}/$file ]; then
   rm -f ${LIB}/$file
 fi
 
+# Put cpp wrappers around these include files to avoid redeclaration
+# errors during multiple inclusion on m88k-tektronix-sysv3.
+for file in time.h sys/time.h ; do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+  fi
+  if [ -r ${LIB}/$file ]; then
+    echo Fixing $file, to protect against multiple inclusion.
+    cpp_wrapper=`echo $file | sed -e 's,\.,_,g' -e 's,/,_,g'`
+    (echo "#ifndef __GCC_GOT_${cpp_wrapper}_"
+    echo "#define __GCC_GOT_${cpp_wrapper}_"
+    cat ${LIB}/${file}
+    echo '#endif /* !_GCC_GOT_'${cpp_wrapper}_' */')  > ${LIB}/${file}.new
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.new ${LIB}/$file
+  fi
+done
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`
