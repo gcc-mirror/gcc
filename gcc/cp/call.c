@@ -4738,7 +4738,6 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	  return rval;
 
 	TREE_TYPE (rval) = arg1;
-	TREE_CALLS_NEW (rval) = 1;
 	return rval;
       }
 

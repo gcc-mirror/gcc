@@ -4574,13 +4574,6 @@ resolves_to_fixed_type_p (instance, nonnull)
       return resolves_to_fixed_type_p (TREE_OPERAND (instance, 0), nonnull);
 
     case RTL_EXPR:
-      /* This is a call to `new', hence it's never zero.  */
-      if (TREE_CALLS_NEW (instance))
-	{
-	  if (nonnull)
-	    *nonnull = 1;
-	  return 1;
-	}
       return 0;
 
     case PLUS_EXPR:

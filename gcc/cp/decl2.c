@@ -2148,21 +2148,18 @@ tree
 get_temp_regvar (type, init)
      tree type, init;
 {
-  static char buf[sizeof (AUTO_TEMP_FORMAT) + 20] = { '_' };
   tree decl;
 
-  sprintf (buf+1, AUTO_TEMP_FORMAT, temp_name_counter++);
-  decl = build_decl (VAR_DECL, get_identifier (buf), type);
+  decl = build_decl (VAR_DECL, NULL_TREE, type);
   TREE_USED (decl) = 1;
   DECL_REGISTER (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
 
-  if (init)
-    store_init_value (decl, init);
-
+  DECL_RTL (decl) = assign_temp (type, 2, 0, 1);
   /* We can expand these without fear, since they cannot need
      constructors or destructors.  */
-  expand_decl (decl);
-  expand_decl_init (decl);
+  expand_expr (build_modify_expr (decl, INIT_EXPR, init),
+	       NULL_RTX, VOIDmode, 0);
 
   return decl;
 }

@@ -1396,7 +1396,6 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 	  return rval;
 
 	TREE_TYPE (rval) = xarg1;
-	TREE_CALLS_NEW (rval) = 1;
 	return rval;
       }
       break;

@@ -188,6 +188,9 @@ cplus_expand_expr (exp, target, tmode, modifier)
 			   integer_one_node, 1),
 	  TREE_OPERAND (exp, 1), 0), target, tmode, modifier);
 
+    case NEW_EXPR:
+      return expand_expr (build_new_1 (exp), target, tmode, modifier);
+
     default:
       break;
     }
