@@ -32,6 +32,7 @@ extern void s390_function_profiler PARAMS ((FILE *, int));
 
 #ifdef RTX_CODE
 extern int const0_operand PARAMS ((rtx, enum machine_mode));
+extern int consttable_operand PARAMS ((rtx, enum machine_mode));
 extern int larl_operand PARAMS ((rtx, enum machine_mode));
 extern int fp_operand PARAMS ((rtx, enum machine_mode));
 extern int s_operand PARAMS ((rtx, enum machine_mode));
@@ -65,8 +66,6 @@ extern void s390_output_symbolic_const PARAMS ((FILE *, rtx));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void s390_output_constant_pool PARAMS ((FILE *));
-extern int s390_stop_dump_lit_p PARAMS ((rtx));
-extern void s390_dump_literal_pool PARAMS ((rtx, rtx));
 extern void s390_trampoline_template PARAMS ((FILE *));
 extern void s390_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern rtx s390_gen_rtx_const_DI PARAMS ((int, int));
@@ -74,7 +73,6 @@ extern rtx s390_simplify_dwarf_addr PARAMS ((rtx));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern void s390_asm_output_pool_prologue PARAMS ((FILE *, const char *, tree, int));
 extern int s390_function_arg_pass_by_reference PARAMS ((enum machine_mode, tree));
 extern void s390_function_arg_advance PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
 extern tree s390_build_va_list PARAMS ((void));
