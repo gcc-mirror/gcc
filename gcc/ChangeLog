@@ -1,3 +1,12 @@
+2002-04-28  David S. Miller  <davem@redhat.com>
+
+	PR target/6500
+	* config/sparc/sparc.md (prefetch): Emit properly for 32-bit vs.
+	64-bit TARGET_V9.  Do not use prefetch page, use prefetch for
+	several {reads,writes} instead.
+	* config/sparc/sparc.h (PREFETCH_BLOCK, SIMULTANEOUS_PREFETCHES):
+	Define.
+
 2002-04-27  David S. Miller  <davem@redhat.com>
 
 	PR target/6494
