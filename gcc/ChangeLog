@@ -1,3 +1,51 @@
+2004-02-06  Josef Zlomek  <zlomekj@suse.cz>
+            Daniel Berlin <dberlin@dberlin.org>
+
+	Josef Zlomek  <zlomekj@suse.cz>
+	* Makefile.in (var-tracking.o): New.
+	* common.opt (fvar-tracking): New.
+	* flags.h (flag_var_tracking): New.
+	* gengtype.c (adjust_field_rtx_def): NOTE_INSN_VAR_LOCATION was added.
+	* opts.c (common_handle_option): Add OPT_fvar_tracking.
+	* print-rtl.c (print_rtx): NOTE_INSN_VAR_LOCATION was added.
+        * rtl.c (note_insn_name): Likewise.
+        * rtl.def (VAR_LOCATION): New.
+        * rtl.h (NOTE_VAR_LOCATION): New.
+        (NOTE_VAR_LOCATION_DECL): New.
+        (NOTE_VAR_LOCATION_LOC): New.
+        (enum insn_note): NOTE_INSN_VAR_LOCATION was added.
+        (variable_tracking_main): New exported function.
+        * timevar.def (TV_VAR_TRACKING): New.
+        * toplev.c (enum dump_file_index): Added DFI_vartrack.
+        (dump_file): "vartrack" was added (-dV).
+        (flag_var_tracking): New.
+        (f_options): "var-tracking" was added.
+	(rest_of_handle_variable_tracking): New function.
+        (rest_of_compilation): Run variable tracking.
+	(process_options): If user has not specified flag_var_tracking set it
+	according to optimize, debug_info_level and debug_hooks.
+	* tree.h (frame_base_decl): New.
+        * var-tracking.c: New file.
+	* config/ia64/ia64.c (ia64_flag_var_tracking): New variable.
+	(ia64_override_options): Set flags to run variable tracking in machine
+	dependent reorg instead of toplev.c.
+	(ia64_reorg): Run variable tracking if wanted.
+        * doc/invoke.texi: Mention variable tracking in -dV,
+	add and -fvar-tracking.
+        * doc/passes.texi: Added variable tracking pass.
+
+	Daniel Berlin <dberlin@dberlin.org>
+	* debug.h (struct gcc_debug_hooks): Added var_location debug hook.
+	* dbxout.c (dbx_debug_hooks): Likewise.
+	(xcoff_debug): Likewise.
+	* debug.c (do_nothing_debug_hooks): Likewise.
+	* dwarf2out.c (dwarf2_debug_hooks): Likewise.
+	* dwarfout.c (dwarf_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+	* final.c (final_scan_insn): Call var_location debug hook for each 
+	NOTE_INSN_VAR_LOCATION. 
+
 2004-02-06  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (update_life_info): Allocate reg_deaths when called from

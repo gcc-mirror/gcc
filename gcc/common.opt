@@ -715,6 +715,10 @@ funwind-tables
 Common
 Just generate unwind tables for exception handling
 
+fvar-tracking
+Common
+Perform variable tracking
+
 fverbose-asm
 Common
 Add extra commentary to assembler output

@@ -723,6 +723,9 @@ extern int flag_web;
    used.  */
 extern int flag_remove_unreachable_functions;
 
+/* Nonzero if we should track variables.  */
+extern int flag_var_tracking;
+
 /* A string that's used when a random name is required.  NULL means
    to make it really random.  */
 

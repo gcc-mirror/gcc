@@ -291,6 +291,14 @@ print_rtx (rtx in_rtx)
 		  fprintf (outfile, " [ ERROR ]");
 		break;
 
+	      case NOTE_INSN_VAR_LOCATION:
+		fprintf (outfile, " (");
+		print_mem_expr (outfile, NOTE_VAR_LOCATION_DECL (in_rtx));
+		fprintf (outfile, " ");
+		print_rtx (NOTE_VAR_LOCATION_LOC (in_rtx));
+		fprintf (outfile, ")");
+		break;
+
 	      default:
 		{
 		  const char * const str = X0STR (in_rtx, i);

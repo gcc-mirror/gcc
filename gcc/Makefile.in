@@ -852,7 +852,7 @@ OBJS-common = \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
  loop.o optabs.o options.o opts.o params.o postreload.o predict.o	   \
- print-rtl.o print-tree.o value-prof.o					   \
+ print-rtl.o print-tree.o value-prof.o var-tracking.o			   \
  profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
@@ -1669,6 +1669,9 @@ lcm.o : lcm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
 df.o : df.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(RECOG_H) function.h $(REGS_H) alloc-pool.h hard-reg-set.h \
    $(BASIC_BLOCK_H) df.h $(FIBHEAP_H)
+var-tracking.o : var-tracking.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(RTL_H) $(TREE_H) hard-reg-set.h insn-config.h reload.h flags.h \
+   $(BASIC_BLOCK_H) output.h sbitmap.h alloc-pool.h $(FIBHEAP_H) $(HASHTAB_H)
 conflict.o : conflict.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(OBSTACK_H) \
    $(HASHTAB_H) $(RTL_H) hard-reg-set.h $(BASIC_BLOCK_H)
 profile.o : profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
