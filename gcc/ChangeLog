@@ -1,3 +1,9 @@
+2000-04-05  Michael Meissner  <meissner@redhat.com>
+
+	* config/rs6000/rs6000.c (print_operand): Patch from Jonathan
+	Walton <jonboy@gordian.com> to make memory references with update
+	work wtih -mregnames.
+
 2000-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* regrename.c (regno_first_use_in): Wrap prototype in PARAMS.
