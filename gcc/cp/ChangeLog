@@ -1,3 +1,9 @@
+2000-11-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (lookup_template_class): Simplify loop exit constructs.
+	Cope when there is no partial instantiation of a template
+	template member.
+
 Thu Nov 23 02:16:47 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* Make-lang.in (g++spec.o, cxxmain.o): Depend on $(CONFIG_H).
