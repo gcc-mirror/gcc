@@ -1,4 +1,9 @@
-<html>
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html
+          PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
    <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
@@ -273,19 +278,32 @@
    #include &lt;algorithm&gt;
    #include &lt;cctype&gt;      // old &lt;ctype.h&gt;
 
-   std::string  s ("Some Kind Of Initial Input Goes Here");
+   struct ToLower
+   {
+     char operator() (char c) const  { return std::tolower(c); }
+   };
 
-   // Change everything into upper case
-   std::transform (s.begin(), s.end(), s.begin(), toupper);
+   struct ToUpper
+   {
+     char operator() (char c) const  { return std::toupper(c); }
+   };
 
-   // Change everything into lower case
-   std::transform (s.begin(), s.end(), s.begin(), tolower);
+   int main()
+   {
+     std::string  s ("Some Kind Of Initial Input Goes Here");
 
-   // Change everything back into upper case, but store the
-   // result in a different string
-   std::string  capital_s;
-   capital_s.reserve(s.size());
-   std::transform (s.begin(), s.end(), capital_s.begin(), tolower); </pre>
+     // Change everything into upper case
+     std::transform (s.begin(), s.end(), s.begin(), ToUpper());
+
+     // Change everything into lower case
+     std::transform (s.begin(), s.end(), s.begin(), ToLower());
+
+     // Change everything back into upper case, but store the
+     // result in a different string
+     std::string  capital_s;
+     capital_s.resize(s.size());
+     std::transform (s.begin(), s.end(), capital_s.begin(), ToUpper());
+   } </pre>
    <p><span class="larger"><strong>Note</strong></span> that these calls all
       involve the global C locale through the use of the C functions
       <code>toupper/tolower</code>.  This is absolutely guaranteed to work --
@@ -296,19 +314,28 @@
       So, if all your input forevermore consists of only those 96
       characters (hahahahahaha), then you're done.
    </p>
-   <p>At minimum, you can write short wrappers like
+   <p><span class="larger"><strong>Note</strong></span> that the
+      <code>ToUpper</code> and <code>ToLower</code> function objects
+      are needed because <code>toupper</code> and <code>tolower</code>
+      are overloaded names (declared in <code>&lt;cctype&gt;</code> and
+      <code>&lt;locale&gt;</code>) so the template-arguments for
+      <code>transform&lt;&gt;</code> cannot be deduced, as explained in
+      <a href="http://gcc.gnu.org/ml/libstdc++/2002-11/msg00180.html">this
+      message</a>.  <!-- section 14.8.2.4 clause 16 in ISO 14882:1998
+      if you're into that sort of thing -->
+      At minimum, you can write short wrappers like
    </p>
    <pre>
    char toLower (char c)
    {
-      return tolower(static_cast&lt;unsigned char&gt;(c));
+      return std::tolower(c);
    } </pre>
    <p>The correct method is to use a facet for a particular locale
       and call its conversion functions.  These are discussed more in
       Chapter 22; the specific part is
-      <a href="../22_locale/howto.html#5">here</a>, which shows the
-      final version of this code.  (Thanks to James Kanze for assistance
-      and suggestions on all of this.)
+      <a href="../22_locale/howto.html#7">Correct Transformations</a>,
+      which shows the final version of this code.  (Thanks to James Kanze
+      for assistance and suggestions on all of this.)
    </p>
    <p>Another common operation is trimming off excess whitespace.  Much
       like transformations, this task is trivial with the use of string's
@@ -335,13 +362,76 @@
 
 <hr />
 <h2><a name="5">Making strings of arbitrary character types</a></h2>
-   <p>how to work with char_traits -- in the archives, just need to
-      go through and pull the examples together
+   <p>The <code>std::basic_string</code> is tantalizingly general, in that
+      it is parameterized on the type of the characters which it holds.
+      In theory, you could whip up a Unicode character class and instantiate
+      <code>std::basic_string&lt;my_unicode_char&gt;</code>, or assuming
+      that integers are wider than characters on your platform, maybe just
+      declare variables of type <code>std::basic_string&lt;int&gt;</code>.
+   </p>
+   <p>That's the theory.  Remember however that basic_string has additional
+      type parameters, which take default arguments based on the character
+      type (called CharT here):
+   </p>
+   <pre>
+      template &lt;typename CharT,
+                typename Traits = char_traits&lt;CharT&gt;,
+                typename Alloc = allocator&lt;CharT&gt; &gt;
+      class basic_string { .... };</pre>
+   <p>Now, <code>allocator&lt;CharT&gt;</code> will probably Do The Right
+      Thing by default, unless you need to implement your own allocator
+      for your characters.
+   </p>
+   <p>But <code>char_traits</code> takes more work.  The char_traits
+      template is <em>declared</em> but not <em>defined</em>.
+      That means there is only
+   </p>
+   <pre>
+      template &lt;typename CharT&gt;
+        struct char_traits
+        {
+            static void foo (type1 x, type2 y);
+            ...
+        };</pre>
+   <p>and functions such as char_traits&lt;CharT&gt;::foo() are not
+      actually defined anywhere for the general case.  The C++ standard
+      permits this, because writing such a definition to fit all possible
+      CharT's cannot be done.  (For a time, in earlier versions of GCC,
+      there was a mostly-correct implementation that let programmers be
+      lazy.  :-)  But it broke under many situations, so it was removed.
+      You are no longer allowed to be lazy and non-portable.)
+   </p>
+   <p>The C++ standard also requires that char_traits be specialized for
+      instantiations of <code>char</code> and <code>wchar_t</code>, and it
+      is these template specializations that permit entities like
+      <code>basic_string&lt;char,char_traits&lt;char&gt;&gt;</code> to work.
+   </p>
+   <p>If you want to use character types other than char and wchar_t,
+      such as <code>unsigned char</code> and <code>int</code>, you will
+      need to write specializations for them at the present time.  If you
+      want to use your own special character class, then you have
+      <a href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00163.html">a lot
+      of work to do</a>, especially if you with to use i18n features
+      (facets require traits information but don't have a traits argument).
+   </p>
+   <p>One example of how to specialize char_traits is given
+      <a href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00260.html">in
+      this message</a>.  We agree that the way it's used with basic_string
+      (scroll down to main()) doesn't look nice, but that's because
+      <a href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00236.html">the
+      nice-looking first attempt</a> turned out to
+      <a href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00242.html">not
+      be conforming C++</a>, due to the rule that CharT must be a POD.
+      (See how tricky this is?)
+   </p>
+   <p>Other approaches were suggested in that same thread, such as providing
+      more specializations and/or some helper types in the library to assist
+      users writing such code.  So far nobody has had the time...
+      <a href="../17_intro/contribute.html">do you?</a>
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
-
 
 
 <!-- ####################################################### -->

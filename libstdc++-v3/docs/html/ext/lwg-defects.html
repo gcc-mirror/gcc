@@ -5,11 +5,11 @@
 <table>
 <tr>
 <td align="left">Doc. no.</td>
-<td align="left">J16/02-0028 = WG21 N1370</td>
+<td align="left">J16/02-0049 = WG21 N1391</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">10 May 2002</td>
+<td align="left">10 Sep 2002</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -17,10 +17,10 @@
 </tr>
 <tr>
 <td align="left">Reply to:</td>
-<td align="left">Matt Austern &lt;austern@research.att.com&gt;</td>
+<td align="left">Matt Austern &lt;austern@apple.com&gt;</td>
 </tr>
 </table>
-<h1>C++ Standard Library Defect Report List (Revision 22)</h1>
+<h1>C++ Standard Library Defect Report List (Revision 23)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
     <ul>
@@ -42,6 +42,10 @@
   document.</p>
 <h2>Revision History</h2>
 <ul>
+<li>R23: 
+Pre-Santa Cruz mailing.  Added new issues <a href="lwg-active.html#367">367</a>-<a href="lwg-active.html#382">382</a>.
+Moved issues in the TC to TC status.
+</li>
 <li>R22: 
 Post-Cura&ccedil;ao mailing.  Added new issues <a href="lwg-active.html#362">362</a>-<a href="lwg-active.html#366">366</a>.
 </li>
@@ -204,7 +208,7 @@ format, <a href="lwg-defects.html#64">64</a> title. (17 Sep 98)
 <h2>Defect Reports</h2>
 <hr>
 <a name="1"><h3>1.&nbsp;C library linkage editing oversight</h3></a><p>
-<b>Section:</b>&nbsp;17.4.2.2 <a href="lib-intro.html#lib.using.linkage"> [lib.using.linkage]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;16 Nov 1997</p>
+<b>Section:</b>&nbsp;17.4.2.2 <a href="lib-intro.html#lib.using.linkage"> [lib.using.linkage]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;16 Nov 1997</p>
 <p>The change specified in the proposed resolution below did not make
 it into the Standard. This change was accepted in principle at the
 London meeting, and the exact wording below was accepted at the
@@ -229,7 +233,7 @@ from:</p>
 </blockquote>
 <hr>
 <a name="3"><h3>3.&nbsp;Atexit registration during atexit() call is not described</h3></a><p>
-<b>Section:</b>&nbsp;18.3 <a href="lib-support.html#lib.support.start.term"> [lib.support.start.term]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;12 Dec 1997</p>
+<b>Section:</b>&nbsp;18.3 <a href="lib-support.html#lib.support.start.term"> [lib.support.start.term]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;12 Dec 1997</p>
 <p>We appear not to have covered all the possibilities of
  exit processing with respect to
 atexit registration. <br>
@@ -349,7 +353,7 @@ committee decides. </p>
 supporting to the proposed resolution.</p>
 <hr>
 <a name="5"><h3>5.&nbsp;String::compare specification questionable</h3></a><p>
-<b>Section:</b>&nbsp;21.3.6.8 <a href="lib-strings.html#lib.string::compare"> [lib.string::compare]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Jack Reeves&nbsp; <b>Date:</b>&nbsp;11 Dec 1997</p>
+<b>Section:</b>&nbsp;21.3.6.8 <a href="lib-strings.html#lib.string::compare"> [lib.string::compare]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Jack Reeves&nbsp; <b>Date:</b>&nbsp;11 Dec 1997</p>
 <p>At the very end of the basic_string class definition is the signature: int
 compare(size_type pos1, size_type n1, const charT* s, size_type n2 = npos) const; In the
 following text this is defined as: returns
@@ -432,7 +436,7 @@ the Standard which must be fixed.&nbsp; The same problem was also
 identified in issues 7 (item 5) and 87.</p>
 <hr>
 <a name="7"><h3>7.&nbsp;String clause minor problems</h3></a><p>
-<b>Section:</b>&nbsp;21 <a href="lib-strings.html#lib.strings"> [lib.strings]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;15 Dec 1997</p>
+<b>Section:</b>&nbsp;21 <a href="lib-strings.html#lib.strings"> [lib.strings]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;15 Dec 1997</p>
 <p>(1) In 21.3.5.4 <a href="lib-strings.html#lib.string::insert"> [lib.string::insert]</a>, the description of template
 &lt;class InputIterator&gt; insert(iterator, InputIterator,
 InputIterator) makes no sense. It refers to a member function that
@@ -503,7 +507,7 @@ with:<br>
 s+n) overlap.&quot;</p>
 <hr>
 <a name="8"><h3>8.&nbsp;Locale::global lacks guarantee</h3></a><p>
-<b>Section:</b>&nbsp;22.1.1.5 <a href="lib-locales.html#lib.locale.statics"> [lib.locale.statics]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;24 Dec 1997</p>
+<b>Section:</b>&nbsp;22.1.1.5 <a href="lib-locales.html#lib.locale.statics"> [lib.locale.statics]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;24 Dec 1997</p>
 <p>It appears there's an important guarantee missing from clause
 22. We're told that invoking locale::global(L) sets the C locale if L
 has a name. However, we're not told whether or not invoking
@@ -522,7 +526,7 @@ paragraph 2:&nbsp; </p>
 </blockquote>
 <hr>
 <a name="9"><h3>9.&nbsp;Operator new(0) calls should not yield the same pointer</h3></a><p>
-<b>Section:</b>&nbsp;18.4.1 <a href="lib-support.html#lib.new.delete"> [lib.new.delete]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;4 Jan 1998</p>
+<b>Section:</b>&nbsp;18.4.1 <a href="lib-support.html#lib.new.delete"> [lib.new.delete]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;4 Jan 1998</p>
 <p>Scott Meyers, in a comp.std.c++ posting: I just noticed that
 section 3.7.3.1 of CD2 seems to allow for the possibility that all
 calls to operator new(0) yield the same pointer, an implementation
@@ -577,7 +581,7 @@ list maintainer's note: the IS is the same.]</p>
 supporting to the proposed resolution.</p>
 <hr>
 <a name="11"><h3>11.&nbsp;Bitset minor problems</h3></a><p>
-<b>Section:</b>&nbsp;23.3.5 <a href="lib-containers.html#lib.template.bitset"> [lib.template.bitset]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;22 Jan 1998</p>
+<b>Section:</b>&nbsp;23.3.5 <a href="lib-containers.html#lib.template.bitset"> [lib.template.bitset]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;22 Jan 1998</p>
 <p>(1) bitset&lt;&gt;::operator[] is mentioned in the class synopsis (23.3.5), but it is
 not documented in 23.3.5.2. </p>
 
@@ -625,7 +629,7 @@ input&quot; implies the desired semantics. See 27.6.1.2 <a href="lib-iostreams.h
 </p>
 <hr>
 <a name="13"><h3>13.&nbsp;Eos refuses to die</h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.2.3 <a href="lib-iostreams.html#lib.istream::extractors"> [lib.istream::extractors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;William M. Miller&nbsp; <b>Date:</b>&nbsp;3 Mar 1998</p>
+<b>Section:</b>&nbsp;27.6.1.2.3 <a href="lib-iostreams.html#lib.istream::extractors"> [lib.istream::extractors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;William M. Miller&nbsp; <b>Date:</b>&nbsp;3 Mar 1998</p>
 <p>In 27.6.1.2.3, there is a reference to &quot;eos&quot;, which is
 the only one in the whole draft (at least using Acrobat search), so
 it's undefined. </p>
@@ -634,7 +638,7 @@ it's undefined. </p>
 &quot;charT()&quot;</p>
 <hr>
 <a name="14"><h3>14.&nbsp;Locale::combine should be const</h3></a><p>
-<b>Section:</b>&nbsp;22.1.1.3 <a href="lib-locales.html#lib.locale.members"> [lib.locale.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.1.1.3 <a href="lib-locales.html#lib.locale.members"> [lib.locale.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>locale::combine is the only member function of locale (other than constructors and
 destructor) that is not const. There is no reason for it not to be const, and good reasons
 why it should have been const. Furthermore, leaving it non-const conflicts with 22.1.1
@@ -653,7 +657,7 @@ time, but the omission was not noticed. </p>
 </blockquote>
 <hr>
 <a name="15"><h3>15.&nbsp;Locale::name requirement inconsistent</h3></a><p>
-<b>Section:</b>&nbsp;22.1.1.3 <a href="lib-locales.html#lib.locale.members"> [lib.locale.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.1.1.3 <a href="lib-locales.html#lib.locale.members"> [lib.locale.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>locale::name() is described as returning a string that can be passed to a locale
 constructor, but there is no matching constructor. </p>
 <p><b>Proposed resolution:</b></p>
@@ -663,7 +667,7 @@ constructor, but there is no matching constructor. </p>
 </p>
 <hr>
 <a name="16"><h3>16.&nbsp;Bad ctype_byname&lt;char&gt; decl</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.4 <a href="lib-locales.html#lib.locale.ctype.byname.special"> [lib.locale.ctype.byname.special]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.1.4 <a href="lib-locales.html#lib.locale.ctype.byname.special"> [lib.locale.ctype.byname.special]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The new virtual members ctype_byname&lt;char&gt;::do_widen and do_narrow did not get
 edited in properly. Instead, the member do_widen appears four times, with wrong argument
 lists. </p>
@@ -673,7 +677,7 @@ lists. </p>
 from 22.2.1.3 <a href="lib-locales.html#lib.facet.ctype.special"> [lib.facet.ctype.special]</a>.</p>
 <hr>
 <a name="17"><h3>17.&nbsp;Bad bool parsing</h3></a><p>
-<b>Section:</b>&nbsp;22.2.2.1.2 <a href="lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.2.1.2 <a href="lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>This section describes the process of parsing a text boolean value from the input
 stream. It does not say it recognizes either of the sequences &quot;true&quot; or
 &quot;false&quot; and returns the corresponding bool value; instead, it says it recognizes
@@ -753,7 +757,7 @@ change &quot;&amp;&amp;&quot; to &quot;&amp;&quot;.</p>
 </blockquote>
 <hr>
 <a name="18"><h3>18.&nbsp;Get(...bool&amp;) omitted</h3></a><p>
-<b>Section:</b>&nbsp;22.2.2.1.1 <a href="lib-locales.html#lib.facet.num.get.members"> [lib.facet.num.get.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.2.1.1 <a href="lib-locales.html#lib.facet.num.get.members"> [lib.facet.num.get.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In the list of num_get&lt;&gt; non-virtual members on page 22-23, the member
 that parses bool values was omitted from the list of definitions of non-virtual
 members, though it is listed in the class definition and the corresponding
@@ -764,7 +768,7 @@ another get member for bool&amp;, copied from the entry in
 22.2.2.1 <a href="lib-locales.html#lib.locale.num.get"> [lib.locale.num.get]</a>.</p>
 <hr>
 <a name="19"><h3>19.&nbsp;&quot;Noconv&quot; definition too vague</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>
 In the definitions of codecvt&lt;&gt;::do_out and do_in, they are
 specified to return noconv if &quot;no conversion is
@@ -790,7 +794,7 @@ Change the entry for noconv in the table under paragraph 4 in section
 </blockquote>
 <hr>
 <a name="20"><h3>20.&nbsp;Thousands_sep returns wrong type</h3></a><p>
-<b>Section:</b>&nbsp;22.2.3.1.2 <a href="lib-locales.html#lib.facet.numpunct.virtuals"> [lib.facet.numpunct.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.3.1.2 <a href="lib-locales.html#lib.facet.numpunct.virtuals"> [lib.facet.numpunct.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The synopsis for numpunct&lt;&gt;::do_thousands_sep, and the
 definition of numpunct&lt;&gt;::thousands_sep which calls it, specify
 that it returns a value of type char_type. Here it is erroneously
@@ -800,7 +804,7 @@ described as returning a &quot;string_type&quot;. </p>
 &quot;string_type&quot; to &quot;char_type&quot;. </p>
 <hr>
 <a name="21"><h3>21.&nbsp;Codecvt_byname&lt;&gt; instantiations</h3></a><p>
-<b>Section:</b>&nbsp;22.1.1.1.1 <a href="lib-locales.html#lib.locale.category"> [lib.locale.category]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.1.1.1.1 <a href="lib-locales.html#lib.locale.category"> [lib.locale.category]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In the second table in the section, captioned &quot;Required
 instantiations&quot;, the instantiations for codecvt_byname&lt;&gt;
 have been omitted. These are necessary to allow users to construct a
@@ -816,7 +820,7 @@ codecvt_byname&lt;wchar_t,char,mbstate_t&gt; </pre>
 </blockquote>
 <hr>
 <a name="22"><h3>22.&nbsp;Member open vs. flags</h3></a><p>
-<b>Section:</b>&nbsp;27.8.1.7 <a href="lib-iostreams.html#lib.ifstream.members"> [lib.ifstream.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;27.8.1.7 <a href="lib-iostreams.html#lib.ifstream.members"> [lib.ifstream.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The description of basic_istream&lt;&gt;::open leaves unanswered questions about how it
 responds to or changes flags in the error status for the stream. A strict reading
 indicates that it ignores the bits and does not change them, which confuses users who do
@@ -843,7 +847,7 @@ believes to have been the original intent.</p>
 
 <hr>
 <a name="24"><h3>24.&nbsp;&quot;do_convert&quot; doesn't exist</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The description of codecvt&lt;&gt;::do_out and do_in mentions a
 symbol &quot;do_convert&quot; which is not defined in the
 standard. This is a leftover from an edit, and should be &quot;do_in
@@ -854,7 +858,7 @@ and do_out&quot;. </p>
 or do_out&quot;. </p>
 <hr>
 <a name="25"><h3>25.&nbsp;String operator&lt;&lt; uses width() value wrong</h3></a><p>
-<b>Section:</b>&nbsp;21.3.7.9 <a href="lib-strings.html#lib.string.io"> [lib.string.io]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;21.3.7.9 <a href="lib-strings.html#lib.string.io"> [lib.string.io]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In the description of operator&lt;&lt; applied to strings, the standard says that uses
 the smaller of os.width() and str.size(), to pad &quot;as described in stage 3&quot;
 elsewhere; but this is inconsistent, as this allows no possibility of space for padding. </p>
@@ -870,7 +874,7 @@ to: <br>
 ...&quot;</p>
 <hr>
 <a name="26"><h3>26.&nbsp;Bad sentry example</h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.1.2 <a href="lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;27.6.1.1.2 <a href="lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In paragraph 6, the code in the example: </p>
 
 <pre>  template &lt;class charT, class traits = char_traits&lt;charT&gt; &gt;
@@ -905,7 +909,7 @@ decided that it would be counter-productive to include such a lengthy
 example, which might well still contain errors.</p>
 <hr>
 <a name="27"><h3>27.&nbsp;String::erase(range) yields wrong iterator</h3></a><p>
-<b>Section:</b>&nbsp;21.3.5.5 <a href="lib-strings.html#lib.string::erase"> [lib.string::erase]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;21.3.5.5 <a href="lib-strings.html#lib.string::erase"> [lib.string::erase]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The string::erase(iterator first, iterator last) is specified to return an element one
 place beyond the next element after the last one erased. E.g. for the string
 &quot;abcde&quot;, erasing the range ['b'..'d') would yield an iterator for element 'e',
@@ -926,7 +930,7 @@ while 'd' has not been erased. </p>
 </blockquote>
 <hr>
 <a name="28"><h3>28.&nbsp;Ctype&lt;char&gt;is ambiguous</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.3.2 <a href="lib-locales.html#lib.facet.ctype.char.members"> [lib.facet.ctype.char.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.1.3.2 <a href="lib-locales.html#lib.facet.ctype.char.members"> [lib.facet.ctype.char.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The description of the vector form of ctype&lt;char&gt;::is can be interpreted to mean
 something very different from what was intended. Paragraph 4 says </p>
 
@@ -946,7 +950,7 @@ vec[]. </p>
 </blockquote>
 <hr>
 <a name="29"><h3>29.&nbsp;Ios_base::init doesn't exist</h3></a><p>
-<b>Section:</b>&nbsp;27.3.1 <a href="lib-iostreams.html#lib.narrow.stream.objects"> [lib.narrow.stream.objects]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;27.3.1 <a href="lib-iostreams.html#lib.narrow.stream.objects"> [lib.narrow.stream.objects]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>Sections 27.3.1 <a href="lib-iostreams.html#lib.narrow.stream.objects"> [lib.narrow.stream.objects]</a> and 27.3.2 <a href="lib-iostreams.html#lib.wide.stream.objects"> [lib.wide.stream.objects]</a> mention
 a function ios_base::init, which is not defined. Probably they mean
 basic_ios&lt;&gt;::init, defined in 27.4.4.1 <a href="lib-iostreams.html#lib.basic.ios.cons"> [lib.basic.ios.cons]</a>,
@@ -974,7 +978,7 @@ should read </p>
 </blockquote>
 <hr>
 <a name="30"><h3>30.&nbsp;Wrong header for LC_*</h3></a><p>
-<b>Section:</b>&nbsp;22.1.1.1.1 <a href="lib-locales.html#lib.locale.category"> [lib.locale.category]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.1.1.1.1 <a href="lib-locales.html#lib.locale.category"> [lib.locale.category]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>Paragraph 2 implies that the C macros LC_CTYPE etc. are defined in &lt;cctype&gt;,
 where they are in fact defined elsewhere to appear in &lt;clocale&gt;. </p>
 <p><b>Proposed resolution:</b></p>
@@ -982,7 +986,7 @@ where they are in fact defined elsewhere to appear in &lt;clocale&gt;. </p>
 &quot;&lt;cctype&gt;&quot; to read &quot;&lt;clocale&gt;&quot;. </p>
 <hr>
 <a name="31"><h3>31.&nbsp;Immutable locale values</h3></a><p>
-<b>Section:</b>&nbsp;22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>Paragraph 6, says &quot;An instance of <tt>locale</tt> is
 <i>immutable</i>; once a facet reference is obtained from it,
 ...&quot;. This has caused some confusion, because locale variables
@@ -1006,7 +1010,7 @@ are manifestly assignable. </p>
 </blockquote>
 <hr>
 <a name="32"><h3>32.&nbsp;Pbackfail description inconsistent</h3></a><p>
-<b>Section:</b>&nbsp;27.5.2.4.4 <a href="lib-iostreams.html#lib.streambuf.virt.pback"> [lib.streambuf.virt.pback]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;27.5.2.4.4 <a href="lib-iostreams.html#lib.streambuf.virt.pback"> [lib.streambuf.virt.pback]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The description of the required state before calling virtual member
 basic_streambuf&lt;&gt;::pbackfail requirements is inconsistent with the conditions
 described in 27.5.2.2.4 [lib.streambuf.pub.pback] where member sputbackc calls it.
@@ -1037,7 +1041,7 @@ Specifically, the latter says it calls pbackfail if: </p>
 the argument value.</p>
 <hr>
 <a name="33"><h3>33.&nbsp;Codecvt&lt;&gt; mentions from_type</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In the table defining the results from do_out and do_in, the specification for the
 result <i>error</i> says </p>
 
@@ -1056,7 +1060,7 @@ in the table for the case of _error_ with </p>
 </blockquote>
 <hr>
 <a name="34"><h3>34.&nbsp;True/falsename() not in ctype&lt;&gt;</h3></a><p>
-<b>Section:</b>&nbsp;22.2.2.2.2 <a href="lib-locales.html#lib.facet.num.put.virtuals"> [lib.facet.num.put.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.2.2.2 <a href="lib-locales.html#lib.facet.num.put.virtuals"> [lib.facet.num.put.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In paragraph 19, Effects:, members truename() and falsename are used from facet
 ctype&lt;charT&gt;, but it has no such members. Note that this is also a problem in
 22.2.2.1.2, addressed in (4). </p>
@@ -1071,7 +1075,7 @@ string_type s = val ? np.truename() : np.falsename(); </pre>
 </blockquote>
 <hr>
 <a name="35"><h3>35.&nbsp;No manipulator unitbuf in synopsis</h3></a><p>
-<b>Section:</b>&nbsp;27.4 <a href="lib-iostreams.html#lib.iostreams.base"> [lib.iostreams.base]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;27.4 <a href="lib-iostreams.html#lib.iostreams.base"> [lib.iostreams.base]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In 27.4.5.1 <a href="lib-iostreams.html#lib.fmtflags.manip"> [lib.fmtflags.manip]</a>, we have a definition for a manipulator
 named &quot;unitbuf&quot;. Unlike other manipulators, it's not listed
 in synopsis. Similarly for &quot;nounitbuf&quot;. </p>
@@ -1085,7 +1089,7 @@ ios_base&amp; nounitbuf(ios_base&amp; str); </pre>
 </blockquote>
 <hr>
 <a name="36"><h3>36.&nbsp;Iword &amp; pword storage lifetime omitted</h3></a><p>
-<b>Section:</b>&nbsp;27.4.2.5 <a href="lib-iostreams.html#lib.ios.base.storage"> [lib.ios.base.storage]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;27.4.2.5 <a href="lib-iostreams.html#lib.ios.base.storage"> [lib.ios.base.storage]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In the definitions for ios_base::iword and pword, the lifetime of the storage is
 specified badly, so that an implementation which only keeps the last value stored appears
 to conform. In particular, it says: </p>
@@ -1115,7 +1119,7 @@ paragraph 4, replace the sentence: </p>
 <p>substituting &quot;iword&quot; or &quot;pword&quot; as appropriate. </p>
 <hr>
 <a name="37"><h3>37.&nbsp;Leftover &quot;global&quot; reference</h3></a><p>
-<b>Section:</b>&nbsp;22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In the overview of locale semantics, paragraph 4, is the sentence </p>
 
 <blockquote>
@@ -1134,7 +1138,7 @@ expression </p>
 </blockquote>
 <hr>
 <a name="38"><h3>38.&nbsp;Facet definition incomplete</h3></a><p>
-<b>Section:</b>&nbsp;22.1.2 <a href="lib-locales.html#lib.locale.global.templates"> [lib.locale.global.templates]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.1.2 <a href="lib-locales.html#lib.locale.global.templates"> [lib.locale.global.templates]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>It has been noticed by Esa Pulkkinen that the definition of
 &quot;facet&quot; is incomplete. In particular, a class derived from
 another facet, but which does not define a member <i>id</i>, cannot
@@ -1165,7 +1169,7 @@ contains (not inherits) the public static member
 
 <hr>
 <a name="39"><h3>39.&nbsp;istreambuf_iterator&lt;&gt;::operator++(int) definition garbled</h3></a><p>
-<b>Section:</b>&nbsp;24.5.3.4 <a href="lib-iterators.html#lib.istreambuf.iterator::op++"> [lib.istreambuf.iterator::op++]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;24.5.3.4 <a href="lib-iterators.html#lib.istreambuf.iterator::op%2B%2B"> [lib.istreambuf.iterator::op++]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>Following the definition of istreambuf_iterator&lt;&gt;::operator++(int) in paragraph
 3, the standard contains three lines of garbage text left over from a previous edit. </p>
 
@@ -1175,11 +1179,11 @@ sbuf_-&gt;sbumpc();
 return(tmp); </pre>
 </blockquote>
 <p><b>Proposed resolution:</b></p>
-<p>In 24.5.3.4 <a href="lib-iterators.html#lib.istreambuf.iterator::op++"> [lib.istreambuf.iterator::op++]</a>, delete the three lines of code at the
+<p>In 24.5.3.4 <a href="lib-iterators.html#lib.istreambuf.iterator::op%2B%2B"> [lib.istreambuf.iterator::op++]</a>, delete the three lines of code at the
 end of paragraph 3. </p>
 <hr>
 <a name="40"><h3>40.&nbsp;Meaningless normative paragraph in examples</h3></a><p>
-<b>Section:</b>&nbsp;22.2.8 <a href="lib-locales.html#lib.facets.examples"> [lib.facets.examples]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.8 <a href="lib-locales.html#lib.facets.examples"> [lib.facets.examples]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>Paragraph 3 of the locale examples is a description of part of an
 implementation technique that has lost its referent, and doesn't mean
 anything. </p>
@@ -1190,7 +1194,7 @@ editor's option) replace it with a place-holder to keep the paragraph
 numbering the same. </p>
 <hr>
 <a name="41"><h3>41.&nbsp;Ios_base needs clear(), exceptions()</h3></a><p>
-<b>Section:</b>&nbsp;27.4.2 <a href="lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;27.4.2 <a href="lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The description of ios_base::iword() and pword() in 27.4.2.4 <a href="lib-iostreams.html#lib.ios.members.static"> [lib.ios.members.static]</a>, say that if they fail, they &quot;set badbit,
 which may throw an exception&quot;. However, ios_base offers no
 interface to set or to test badbit; those interfaces are defined in
@@ -1217,7 +1221,7 @@ setstate(badbit).]</i></p>
 
 <hr>
 <a name="42"><h3>42.&nbsp;String ctors specify wrong default allocator</h3></a><p>
-<b>Section:</b>&nbsp;21.3 <a href="lib-strings.html#lib.basic.string"> [lib.basic.string]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;21.3 <a href="lib-strings.html#lib.basic.string"> [lib.basic.string]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The basic_string&lt;&gt; copy constructor: </p>
 
 <pre>basic_string(const basic_string&amp; str, size_type pos = 0,
@@ -1291,7 +1295,7 @@ reflects the LWG consensus.
 ]</i></p>
 <hr>
 <a name="46"><h3>46.&nbsp;Minor Annex D errors</h3></a><p>
-<b>Section:</b>&nbsp;D.7 <a href="future.html#depr.str.strstreams"> [depr.str.strstreams]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Brendan Kehoe&nbsp; <b>Date:</b>&nbsp; 1 Jun 1998</p>
+<b>Section:</b>&nbsp;D.7 <a href="future.html#depr.str.strstreams"> [depr.str.strstreams]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Brendan Kehoe&nbsp; <b>Date:</b>&nbsp; 1 Jun 1998</p>
 <p>See lib-6522 and edit-814.</p>
 <p><b>Proposed resolution:</b></p>
 <p>Change D.7.1 <a href="future.html#depr.strstreambuf"> [depr.strstreambuf]</a> (since streambuf is a typedef of
@@ -1316,7 +1320,7 @@ int_type:</p>
          typedef typename char_traits&lt;char&gt;::pos_type pos_type;</pre>
 <hr>
 <a name="47"><h3>47.&nbsp;Imbue() and getloc() Returns clauses swapped</h3></a><p>
-<b>Section:</b>&nbsp;27.4.2.3 <a href="lib-iostreams.html#lib.ios.base.locales"> [lib.ios.base.locales]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;21 Jun 1998</p>
+<b>Section:</b>&nbsp;27.4.2.3 <a href="lib-iostreams.html#lib.ios.base.locales"> [lib.ios.base.locales]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;21 Jun 1998</p>
 <p>Section 27.4.2.3 specifies how imbue() and getloc() work. That
 section has two RETURNS clauses, and they make no sense as
 stated. They make perfect sense, though, if you swap them. Am I
@@ -1326,7 +1330,7 @@ accident?</p>
 <p>In 27.4.2.3 <a href="lib-iostreams.html#lib.ios.base.locales"> [lib.ios.base.locales]</a> swap paragraphs 2 and 4.</p>
 <hr>
 <a name="48"><h3>48.&nbsp;Use of non-existent exception constructor</h3></a><p>
-<b>Section:</b>&nbsp;27.4.2.1.1 <a href="lib-iostreams.html#lib.ios::failure"> [lib.ios::failure]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;21 Jun 1998</p>
+<b>Section:</b>&nbsp;27.4.2.1.1 <a href="lib-iostreams.html#lib.ios::failure"> [lib.ios::failure]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;21 Jun 1998</p>
 <p>27.4.2.1.1, paragraph 2, says that class failure initializes the
 base class, exception, with exception(msg). Class exception (see
 18.6.1) has no such constructor.</p>
@@ -1421,7 +1425,7 @@ text was added in the non-normative footnote to say that operations
 on the two streams can be mixed arbitrarily.]</i></p>
 <hr>
 <a name="50"><h3>50.&nbsp;Copy constructor and assignment operator of ios_base</h3></a><p>
-<b>Section:</b>&nbsp;27.4.2 <a href="lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;21 Jun 1998</p>
+<b>Section:</b>&nbsp;27.4.2 <a href="lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;21 Jun 1998</p>
 <p>As written, ios_base has a copy constructor and an assignment
 operator. (Nothing in the standard says it doesn't have one, and all
 classes have copy constructors and assignment operators unless you
@@ -1448,7 +1452,7 @@ constructor and operator= members as being private.</p>
 outweighs any benefit of allowing ios_base objects to be copyable.</p>
 <hr>
 <a name="51"><h3>51.&nbsp;Requirement to not invalidate iterators missing</h3></a><p>
-<b>Section:</b>&nbsp;23.1 <a href="lib-containers.html#lib.container.requirements"> [lib.container.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;David Vandevoorde&nbsp; <b>Date:</b>&nbsp;23 Jun 1998</p>
+<b>Section:</b>&nbsp;23.1 <a href="lib-containers.html#lib.container.requirements"> [lib.container.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;David Vandevoorde&nbsp; <b>Date:</b>&nbsp;23 Jun 1998</p>
 <p>The std::sort algorithm can in general only sort a given sequence
 by moving around values. The list&lt;&gt;::sort() member on the other
 hand could move around values or just update internal pointers. Either
@@ -1495,7 +1499,7 @@ particularly the addition of the phrase &quot;or change the values
 of&quot;</p>
 <hr>
 <a name="52"><h3>52.&nbsp;Small I/O problems</h3></a><p>
-<b>Section:</b>&nbsp;27.4.3.2 <a href="lib-iostreams.html#lib.fpos.operations"> [lib.fpos.operations]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;23 Jun 1998</p>
+<b>Section:</b>&nbsp;27.4.3.2 <a href="lib-iostreams.html#lib.fpos.operations"> [lib.fpos.operations]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;23 Jun 1998</p>
 <p>First, 27.4.4.1 <a href="lib-iostreams.html#lib.basic.ios.cons"> [lib.basic.ios.cons]</a>, table 89. This is pretty obvious:
 it should be titled &quot;basic_ios&lt;&gt;() effects&quot;, not
 &quot;ios_base() effects&quot;. </p>
@@ -1523,7 +1527,7 @@ arithmetic is possible.) </p>
 effects&quot;. </p>
 <hr>
 <a name="53"><h3>53.&nbsp;Basic_ios destructor unspecified</h3></a><p>
-<b>Section:</b>&nbsp;27.4.4.1 <a href="lib-iostreams.html#lib.basic.ios.cons"> [lib.basic.ios.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;23 Jun 1998</p>
+<b>Section:</b>&nbsp;27.4.4.1 <a href="lib-iostreams.html#lib.basic.ios.cons"> [lib.basic.ios.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;23 Jun 1998</p>
 <p>There's nothing in 27.4.4 saying what basic_ios's destructor does.
 The important question is whether basic_ios::~basic_ios() destroys
 rdbuf().</p>
@@ -1544,7 +1548,7 @@ footnote which incorrectly said &quot;<tt>rdbuf(0)</tt> does not set
 <tt>badbit</tt>&quot;.</p>
 <hr>
 <a name="54"><h3>54.&nbsp;Basic_streambuf's destructor</h3></a><p>
-<b>Section:</b>&nbsp;27.5.2.1 <a href="lib-iostreams.html#lib.streambuf.cons"> [lib.streambuf.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;25 Jun 1998</p>
+<b>Section:</b>&nbsp;27.5.2.1 <a href="lib-iostreams.html#lib.streambuf.cons"> [lib.streambuf.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;25 Jun 1998</p>
 <p>The class synopsis for basic_streambuf shows a (virtual)
 destructor, but the standard doesn't say what that destructor does. My
 assumption is that it does nothing, but the standard should say so
@@ -1559,7 +1563,7 @@ explicitly. </p>
 </blockquote>
 <hr>
 <a name="55"><h3>55.&nbsp;Invalid stream position is undefined</h3></a><p>
-<b>Section:</b>&nbsp;27 <a href="lib-iostreams.html#lib.input.output"> [lib.input.output]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;26 Jun 1998</p>
+<b>Section:</b>&nbsp;27 <a href="lib-iostreams.html#lib.input.output"> [lib.input.output]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;26 Jun 1998</p>
 <p>Several member functions in clause 27 are defined in certain
 circumstances to return an &quot;invalid stream position&quot;, a term
 that is defined nowhere in the standard. Two places (27.5.2.4.2,
@@ -1618,7 +1622,7 @@ stores an invalid stream position&quot; to &quot;the return value is
 <tt>pos_type(off_type(-1))</tt>&quot;</p>
 <hr>
 <a name="56"><h3>56.&nbsp;Showmanyc's return type</h3></a><p>
-<b>Section:</b>&nbsp;27.5.2 <a href="lib-iostreams.html#lib.streambuf"> [lib.streambuf]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;29 Jun 1998</p>
+<b>Section:</b>&nbsp;27.5.2 <a href="lib-iostreams.html#lib.streambuf"> [lib.streambuf]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;29 Jun 1998</p>
 <p>The class summary for basic_streambuf&lt;&gt;, in 27.5.2, says that
 showmanyc has return type int. However, 27.5.2.4.3 says that its
 return type is streamsize. </p>
@@ -1627,7 +1631,7 @@ return type is streamsize. </p>
 27.5.2 <a href="lib-iostreams.html#lib.streambuf"> [lib.streambuf]</a> class summary to <tt>streamsize</tt>.</p>
 <hr>
 <a name="57"><h3>57.&nbsp;Mistake in char_traits</h3></a><p>
-<b>Section:</b>&nbsp;21.1.3.2 <a href="lib-strings.html#lib.char.traits.specializations.wchar.t"> [lib.char.traits.specializations.wchar.t]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;1 Jul 1998</p>
+<b>Section:</b>&nbsp;21.1.3.2 <a href="lib-strings.html#lib.char.traits.specializations.wchar.t"> [lib.char.traits.specializations.wchar.t]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;1 Jul 1998</p>
 <p>21.1.3.2, paragraph 3, says &quot;The types streampos and
 wstreampos may be different if the implementation supports no shift
 encoding in narrow-oriented iostreams but supports one or more shift
@@ -1646,7 +1650,7 @@ begins &quot;The types streampos and wstreampos may be
 different...&quot; . </p>
 <hr>
 <a name="59"><h3>59.&nbsp;Ambiguity in specification of gbump</h3></a><p>
-<b>Section:</b>&nbsp;27.5.2.3.1 <a href="lib-iostreams.html#lib.streambuf.get.area"> [lib.streambuf.get.area]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;28 Jul 1998</p>
+<b>Section:</b>&nbsp;27.5.2.3.1 <a href="lib-iostreams.html#lib.streambuf.get.area"> [lib.streambuf.get.area]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;28 Jul 1998</p>
 <p>27.5.2.3.1 says that basic_streambuf::gbump() &quot;Advances the
 next pointer for the input sequence by n.&quot; </p>
 
@@ -1675,7 +1679,7 @@ former interpretation.)</p>
 effects.</p>
 <hr>
 <a name="60"><h3>60.&nbsp;What is a formatted input function?</h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.2.1 <a href="lib-iostreams.html#lib.istream.formatted.reqmts"> [lib.istream.formatted.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;3 Aug 1998</p>
+<b>Section:</b>&nbsp;27.6.1.2.1 <a href="lib-iostreams.html#lib.istream.formatted.reqmts"> [lib.istream.formatted.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;3 Aug 1998</p>
 <p>Paragraph 1 of 27.6.1.2.1 contains general requirements for all
 formatted input functions. Some of the functions defined in section
 27.6.1.2 explicitly say that those requirements apply (&quot;Behaves
@@ -1972,7 +1976,7 @@ by Judy Ward and Matt Austern.  This proposed resolution is section
 VI of that paper.</p>
 <hr>
 <a name="61"><h3>61.&nbsp;Ambiguity in iostreams exception policy</h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The introduction to the section on unformatted input (27.6.1.3)
 says that every unformatted input function catches all exceptions that
 were thrown during input, sets badbit, and then conditionally rethrows
@@ -2008,7 +2012,7 @@ parenthetical comment: &quot;(Exceptions thrown from
 resolution as better standardese.</p>
 <hr>
 <a name="62"><h3>62.&nbsp;<tt>Sync</tt>'s return value</h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<b>Section:</b>&nbsp;27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The Effects clause for sync() (27.6.1.3, paragraph 36) says that it
 &quot;calls rdbuf()-&gt;pubsync() and, if that function returns -1
 ... returns traits::eof().&quot; </p>
@@ -2021,7 +2025,7 @@ traits::int_type while the return type of sync() is int. </p>
 </p>
 <hr>
 <a name="63"><h3>63.&nbsp;Exception-handling policy for unformatted output</h3></a><p>
-<b>Section:</b>&nbsp;27.6.2.6 <a href="lib-iostreams.html#lib.ostream.unformatted"> [lib.ostream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;11 Aug 1998</p>
+<b>Section:</b>&nbsp;27.6.2.6 <a href="lib-iostreams.html#lib.ostream.unformatted"> [lib.ostream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;11 Aug 1998</p>
 <p>Clause 27 details an exception-handling policy for formatted input,
 unformatted input, and formatted output. It says nothing for
 unformatted output (27.6.2.6). 27.6.2.6 should either include the same
@@ -2052,7 +2056,7 @@ input, unformatted input, and formatted output.
 <hr>
 <a name="64"><h3>64.&nbsp;Exception handling in <tt>basic_istream::operator&gt;&gt;(basic_streambuf*)</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.2.3 <a href="lib-iostreams.html#lib.istream::extractors"> [lib.istream::extractors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;11 Aug 1998 </p>
+<b>Section:</b>&nbsp;27.6.1.2.3 <a href="lib-iostreams.html#lib.istream::extractors"> [lib.istream::extractors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;11 Aug 1998 </p>
 <p>27.6.1.2.3, paragraph 13, is ambiguous. It can be interpreted two
 different ways, depending on whether the second sentence is read as an
 elaboration of the first. </p>
@@ -2070,7 +2074,7 @@ elaboration of the first. </p>
 </blockquote>
 <hr>
 <a name="66"><h3>66.&nbsp;Strstreambuf::setbuf</h3></a><p>
-<b>Section:</b>&nbsp;D.7.1.3 <a href="future.html#depr.strstreambuf.virtuals"> [depr.strstreambuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;18 Aug 1998</p>
+<b>Section:</b>&nbsp;D.7.1.3 <a href="future.html#depr.strstreambuf.virtuals"> [depr.strstreambuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;18 Aug 1998</p>
 <p>D.7.1.3, paragraph 19, says that strstreambuf::setbuf
 &quot;Performs an operation that is defined separately for each class
 derived from strstreambuf&quot;. This is obviously an incorrect
@@ -2089,7 +2093,7 @@ with:</p>
 </blockquote>
 <hr>
 <a name="68"><h3>68.&nbsp;Extractors for char* should store null at end</h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.2.3 <a href="lib-iostreams.html#lib.istream::extractors"> [lib.istream::extractors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;14 Jul 1998</p>
+<b>Section:</b>&nbsp;27.6.1.2.3 <a href="lib-iostreams.html#lib.istream::extractors"> [lib.istream::extractors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;14 Jul 1998</p>
 <p>Extractors for char* (27.6.1.2.3) do not store a null character
 after the extracted character sequence whereas the unformatted
 functions like get() do. Why is this?</p>
@@ -2116,7 +2120,7 @@ item from:</p>
 </blockquote>
 <hr>
 <a name="69"><h3>69.&nbsp;Must elements of a vector be contiguous?</h3></a><p>
-<b>Section:</b>&nbsp;23.2.4 <a href="lib-containers.html#lib.vector"> [lib.vector]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;29 Jul 1998</p>
+<b>Section:</b>&nbsp;23.2.4 <a href="lib-containers.html#lib.vector"> [lib.vector]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;29 Jul 1998</p>
 <p>The issue is this: Must the elements of a vector be in contiguous memory?</p>
 
 <p>(Please note that this is entirely separate from the question of
@@ -2150,7 +2154,7 @@ directly defined in the standard.  Discussion included:</p>
 </ul>
 <hr>
 <a name="70"><h3>70.&nbsp;Uncaught_exception() missing throw() specification</h3></a><p>
-<b>Section:</b>&nbsp;18.6 <a href="lib-support.html#lib.support.exception"> [lib.support.exception]</a>, 18.6.4 <a href="lib-support.html#lib.uncaught"> [lib.uncaught]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;Unknown</p>
+<b>Section:</b>&nbsp;18.6 <a href="lib-support.html#lib.support.exception"> [lib.support.exception]</a>, 18.6.4 <a href="lib-support.html#lib.uncaught"> [lib.uncaught]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;Unknown</p>
 <p>In article 3E04@pratique.fr, Valentin Bonnard writes: </p>
 
 <p>uncaught_exception() doesn't have a throw specification.</p>
@@ -2164,7 +2168,7 @@ exception safety is very important.</p>
 <p>In 15.5.3 <a href="except.html#except.uncaught"> [except.uncaught]</a>, paragraph 1, 18.6 <a href="lib-support.html#lib.support.exception"> [lib.support.exception]</a>, and 18.6.4 <a href="lib-support.html#lib.uncaught"> [lib.uncaught]</a>, add &quot;throw()&quot; to uncaught_exception().</p>
 <hr>
 <a name="71"><h3>71.&nbsp;Do_get_monthname synopsis missing argument</h3></a><p>
-<b>Section:</b>&nbsp;22.2.5.1 <a href="lib-locales.html#lib.locale.time.get"> [lib.locale.time.get]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;13 Aug 1998</p>
+<b>Section:</b>&nbsp;22.2.5.1 <a href="lib-locales.html#lib.locale.time.get"> [lib.locale.time.get]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;13 Aug 1998</p>
 <p>The locale facet member <tt>time_get&lt;&gt;::do_get_monthname</tt>
 is described in 22.2.5.1.2 <a href="lib-locales.html#lib.locale.time.get.virtuals"> [lib.locale.time.get.virtuals]</a> with five arguments,
 consistent with do_get_weekday and with its specified use by member
@@ -2180,7 +2184,7 @@ the declaration of member do_monthname as follows:</p>
 <hr>
 <a name="74"><h3>74.&nbsp;Garbled text for <tt>codecvt::do_max_length</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;8 Sep 1998</p>
+<b>Section:</b>&nbsp;22.2.1.5.2 <a href="lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;8 Sep 1998</p>
 <p>The text of <tt>codecvt::do_max_length</tt>'s &quot;Returns&quot;
 clause (22.2.1.5.2, paragraph 11) is garbled. It has unbalanced
 parentheses and a spurious <b>n</b>.</p>
@@ -2197,7 +2201,7 @@ following:</p>
 </blockquote>
 <hr>
 <a name="75"><h3>75.&nbsp;Contradiction in <tt>codecvt::length</tt>'s argument types</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.5 <a href="lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp; Matt
+<b>Section:</b>&nbsp;22.2.1.5 <a href="lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp; Matt
 Austern&nbsp; <b>Date:</b>&nbsp; 18 Sep 1998</p>
 <p>The class synopses for classes <tt>codecvt&lt;&gt;</tt> (22.2.1.5)
 and <tt>codecvt_byname&lt;&gt;</tt> (22.2.1.6) say that the first
@@ -2349,14 +2353,14 @@ return value.]</i></p>
   </p>
 <hr>
 <a name="78"><h3>78.&nbsp;Typo: event_call_back</h3></a><p>
-<b>Section:</b>&nbsp;27.4.2 <a href="lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
+<b>Section:</b>&nbsp;27.4.2 <a href="lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
 <p>typo: event_call_back should be event_callback &nbsp; </p>
 <p><b>Proposed resolution:</b></p>
 <p>In the 27.4.2 <a href="lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a> synopsis change
 &quot;event_call_back&quot; to &quot;event_callback&quot;. </p>
 <hr>
 <a name="79"><h3>79.&nbsp;Inconsistent declaration of polar()</h3></a><p>
-<b>Section:</b>&nbsp;26.2.1 <a href="lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a>, 26.2.7 <a href="lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
+<b>Section:</b>&nbsp;26.2.1 <a href="lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a>, 26.2.7 <a href="lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
 <p>In 26.2.1 <a href="lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a> polar is declared as follows:</p>
 <pre>   template&lt;class T&gt; complex&lt;T&gt; polar(const T&amp;, const T&amp;); </pre>
 
@@ -2372,14 +2376,14 @@ return value.]</i></p>
 <pre>   template&lt;class T&gt; complex&lt;T&gt; polar(const T&amp; rho, const T&amp; theta = 0); </pre>
 <hr>
 <a name="80"><h3>80.&nbsp;Global Operators of complex declared twice</h3></a><p>
-<b>Section:</b>&nbsp;26.2.1 <a href="lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a>, 26.2.2 <a href="lib-numerics.html#lib.complex"> [lib.complex]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
+<b>Section:</b>&nbsp;26.2.1 <a href="lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a>, 26.2.2 <a href="lib-numerics.html#lib.complex"> [lib.complex]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
 <p>Both 26.2.1 and 26.2.2 contain declarations of global operators for
 class complex. This redundancy should be removed.</p>
 <p><b>Proposed resolution:</b></p>
 <p>Reduce redundancy according to the general style of the standard. </p>
 <hr>
 <a name="83"><h3>83.&nbsp;String::npos vs. string::max_size()</h3></a><p>
-<b>Section:</b>&nbsp;21.3 <a href="lib-strings.html#lib.basic.string"> [lib.basic.string]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
+<b>Section:</b>&nbsp;21.3 <a href="lib-strings.html#lib.basic.string"> [lib.basic.string]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
 <p>Many string member functions throw if size is getting or exceeding
 npos. However, I wonder why they don't throw if size is getting or
 exceeding max_size() instead of npos.  May be npos is known at compile
@@ -2399,7 +2403,7 @@ described in this clause...&quot;) add a new paragraph:</p>
 <p>The LWG believes length_error is the correct exception to throw.</p>
 <hr>
 <a name="86"><h3>86.&nbsp;String constructors don't describe exceptions</h3></a><p>
-<b>Section:</b>&nbsp;21.3.1 <a href="lib-strings.html#lib.string.cons"> [lib.string.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
+<b>Section:</b>&nbsp;21.3.1 <a href="lib-strings.html#lib.string.cons"> [lib.string.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
 <p>The constructor from a range:</p>
 
 <pre>template&lt;class InputIterator&gt; 
@@ -2419,7 +2423,7 @@ because they are subsumed by the general wording added by the
 resolution for issue <a href="lwg-defects.html#83">83</a>.</p>
 <hr>
 <a name="90"><h3>90.&nbsp;Incorrect description of operator &gt;&gt; for strings</h3></a><p>
-<b>Section:</b>&nbsp;21.3.7.9 <a href="lib-strings.html#lib.string.io"> [lib.string.io]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
+<b>Section:</b>&nbsp;21.3.7.9 <a href="lib-strings.html#lib.string.io"> [lib.string.io]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
 <p>The effect of operator &gt;&gt; for strings contain the following item:</p>
 
 <p>&nbsp;&nbsp;&nbsp; <tt>isspace(c,getloc())</tt> is true for the next available input
@@ -2553,7 +2557,7 @@ conversion from <tt>iterator</tt> to <tt>const_iterator</tt>.
 <p><i>[Tokyo: The LWG crafted the proposed resolution and rationale.]</i></p>
 <hr>
 <a name="106"><h3>106.&nbsp;Numeric library private members are implementation defined</h3></a><p>
-<b>Section:</b>&nbsp;26.3.5 <a href="lib-numerics.html#lib.template.slice.array"> [lib.template.slice.array]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
+<b>Section:</b>&nbsp;26.3.5 <a href="lib-numerics.html#lib.template.slice.array"> [lib.template.slice.array]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
 <p>This is the only place in the whole standard where the implementation has to document
 something private.</p>
 <p><b>Proposed resolution:</b></p>
@@ -2573,7 +2577,7 @@ Remove the comment which says &quot;// remainder implementation defined&quot; fr
 </ul>
 <hr>
 <a name="108"><h3>108.&nbsp;Lifetime of exception::what() return unspecified</h3></a><p>
-<b>Section:</b>&nbsp;18.6.1 <a href="lib-support.html#lib.exception"> [lib.exception]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
+<b>Section:</b>&nbsp;18.6.1 <a href="lib-support.html#lib.exception"> [lib.exception]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
 <p>In 18.6.1, paragraphs 8-9, the lifetime of the return value of
 exception::what() is left unspecified. This issue has implications
 with exception safety of exception handling: some exceptions should
@@ -2701,7 +2705,7 @@ Leave open - 1.]</i></p>
 
 <hr>
 <a name="110"><h3>110.&nbsp;istreambuf_iterator::equal not const</h3></a><p>
-<b>Section:</b>&nbsp;24.5.3 <a href="lib-iterators.html#lib.istreambuf.iterator"> [lib.istreambuf.iterator]</a>, 24.5.3.5 <a href="lib-iterators.html#lib.istreambuf.iterator::equal"> [lib.istreambuf.iterator::equal]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;15 Oct 1998</p>
+<b>Section:</b>&nbsp;24.5.3 <a href="lib-iterators.html#lib.istreambuf.iterator"> [lib.istreambuf.iterator]</a>, 24.5.3.5 <a href="lib-iterators.html#lib.istreambuf.iterator::equal"> [lib.istreambuf.iterator::equal]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;15 Oct 1998</p>
 <p>Member istreambuf_iterator&lt;&gt;::equal is not declared
 &quot;const&quot;, yet 24.5.3.6 <a href="lib-iterators.html#lib.istreambuf.iterator::op=="> [lib.istreambuf.iterator::op==]</a> says that operator==,
 which is const, calls it. This is contradictory. </p>
@@ -2720,7 +2724,7 @@ replace:</p>
 </blockquote>
 <hr>
 <a name="112"><h3>112.&nbsp;Minor typo in <tt>ostreambuf_iterator</tt> constructor</h3></a><p>
-<b>Section:</b>&nbsp;24.5.4.1 <a href="lib-iterators.html#lib.ostreambuf.iter.cons"> [lib.ostreambuf.iter.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;20 Oct 1998</p>
+<b>Section:</b>&nbsp;24.5.4.1 <a href="lib-iterators.html#lib.ostreambuf.iter.cons"> [lib.ostreambuf.iter.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;20 Oct 1998</p>
 <p>The <b>requires</b> clause for <tt>ostreambuf_iterator</tt>'s
 constructor from an <tt>ostream_type</tt> (24.5.4.1, paragraph 1)
 reads &quot;<i>s</i> is not null&quot;. However, <i>s</i> is a
@@ -2740,7 +2744,7 @@ reading:</p>
 </blockquote>
 <hr>
 <a name="114"><h3>114.&nbsp;Placement forms example in error twice</h3></a><p>
-<b>Section:</b>&nbsp;18.4.1.3 <a href="lib-support.html#lib.new.delete.placement"> [lib.new.delete.placement]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;28 Oct 1998</p>
+<b>Section:</b>&nbsp;18.4.1.3 <a href="lib-support.html#lib.new.delete.placement"> [lib.new.delete.placement]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;28 Oct 1998</p>
 <p>Section 18.4.1.3 contains the following example: </p>
 
 <pre>[Example: This can be useful for constructing an object at a known address:
@@ -2766,7 +2770,7 @@ likely to fail.</p>
 </blockquote>
 <hr>
 <a name="115"><h3>115.&nbsp;Typo in strstream constructors</h3></a><p>
-<b>Section:</b>&nbsp;D.7.4.1 <a href="future.html#depr.strstream.cons"> [depr.strstream.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;2 Nov 1998</p>
+<b>Section:</b>&nbsp;D.7.4.1 <a href="future.html#depr.strstream.cons"> [depr.strstream.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;2 Nov 1998</p>
 <p>D.7.4.1 strstream constructors paragraph 2 says: </p>
 
 <blockquote>
@@ -2958,7 +2962,7 @@ operator&gt;&gt;(int&amp; val);</pre>
 <p><i>[Post-Tokyo: PJP provided the above wording.]</i></p>
 <hr>
 <a name="119"><h3>119.&nbsp;Should virtual functions be allowed to strengthen the exception specification?</h3></a><p>
-<b>Section:</b>&nbsp;17.4.4.8 <a href="lib-intro.html#lib.res.on.exception.handling"> [lib.res.on.exception.handling]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
+<b>Section:</b>&nbsp;17.4.4.8 <a href="lib-intro.html#lib.res.on.exception.handling"> [lib.res.on.exception.handling]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
 <p>Section 17.4.4.8 <a href="lib-intro.html#lib.res.on.exception.handling"> [lib.res.on.exception.handling]</a> states: </p>
 
 <p>&quot;An implementation may strengthen the exception-specification
@@ -2992,7 +2996,7 @@ exception-specification for a function&quot;</p>
 exception-specification for a non-virtual function&quot;. </p>
 <hr>
 <a name="122"><h3>122.&nbsp;streambuf/wstreambuf description should not say they are specializations</h3></a><p>
-<b>Section:</b>&nbsp;27.5.2 <a href="lib-iostreams.html#lib.streambuf"> [lib.streambuf]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
+<b>Section:</b>&nbsp;27.5.2 <a href="lib-iostreams.html#lib.streambuf"> [lib.streambuf]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
 <p>Section 27.5.2 describes the streambuf classes this way: </p>
 
 <blockquote>
@@ -3016,7 +3020,7 @@ sentences). </p>
 typedefs and that is sufficient. </p>
 <hr>
 <a name="124"><h3>124.&nbsp;ctype_byname&lt;charT&gt;::do_scan_is &amp; do_scan_not return type should be const charT*</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.2 <a href="lib-locales.html#lib.locale.ctype.byname"> [lib.locale.ctype.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
+<b>Section:</b>&nbsp;22.2.1.2 <a href="lib-locales.html#lib.locale.ctype.byname"> [lib.locale.ctype.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
 <p>In Section 22.2.1.2 <a href="lib-locales.html#lib.locale.ctype.byname"> [lib.locale.ctype.byname]</a>
 ctype_byname&lt;charT&gt;::do_scan_is() and do_scan_not() are declared
 to return a const char* not a const charT*. </p>
@@ -3026,7 +3030,7 @@ to return a const char* not a const charT*. </p>
 charT*</tt>. </p>
 <hr>
 <a name="125"><h3>125.&nbsp;valarray&lt;T&gt;::operator!() return type is inconsistent</h3></a><p>
-<b>Section:</b>&nbsp;26.3.2 <a href="lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
+<b>Section:</b>&nbsp;26.3.2 <a href="lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
 <p>In Section 26.3.2 <a href="lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a> valarray&lt;T&gt;::operator!() is
 declared to return a valarray&lt;T&gt;, but in Section 26.3.2.5 <a href="lib-numerics.html#lib.valarray.unary"> [lib.valarray.unary]</a> it is declared to return a valarray&lt;bool&gt;. The
 latter appears to be correct. </p>
@@ -3036,7 +3040,7 @@ latter appears to be correct. </p>
 <tt>valarray&lt;bool&gt;</tt>. </p>
 <hr>
 <a name="126"><h3>126.&nbsp;typos in Effects clause of ctype::do_narrow()</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.1.2 <a href="lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
+<b>Section:</b>&nbsp;22.2.1.1.2 <a href="lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
 <p>Typos in 22.2.1.1.2 need to be fixed.</p>
 <p><b>Proposed resolution:</b></p>
 <p>In Section 22.2.1.1.2 <a href="lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a> change: </p>
@@ -3056,7 +3060,7 @@ latter appears to be correct. </p>
 <pre>   (is(M,c) || !ctc.is(M, do_narrow(c,dfault)) )</pre>
 <hr>
 <a name="127"><h3>127.&nbsp;auto_ptr&lt;&gt; conversion issues</h3></a><p>
-<b>Section:</b>&nbsp;20.4.5 <a href="lib-utilities.html#lib.auto.ptr"> [lib.auto.ptr]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Greg Colvin&nbsp; <b>Date:</b>&nbsp;17 Feb 1999</p>
+<b>Section:</b>&nbsp;20.4.5 <a href="lib-utilities.html#lib.auto.ptr"> [lib.auto.ptr]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Greg Colvin&nbsp; <b>Date:</b>&nbsp;17 Feb 1999</p>
 <p>There are two problems with the current <tt>auto_ptr</tt> wording
 in the standard: </p>
 
@@ -3122,7 +3126,7 @@ a public assignment operator to the <tt>auto_ptr</tt> definition: </p>
 </blockquote>
 <hr>
 <a name="129"><h3>129.&nbsp;Need error indication from seekp() and seekg()</h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>, 27.6.2.4 <a href="lib-iostreams.html#lib.ostream.seeks"> [lib.ostream.seeks]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;22 Feb 1999</p>
+<b>Section:</b>&nbsp;27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>, 27.6.2.4 <a href="lib-iostreams.html#lib.ostream.seeks"> [lib.ostream.seeks]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;22 Feb 1999</p>
 <p>Currently, the standard does not specify how seekg() and seekp()
 indicate failure. They are not required to set failbit, and they can't
 return an error indication because they must return *this, i.e. the
@@ -3146,7 +3150,7 @@ stream state in case of failure.</p>
 <p>Setting failbit is the usual error reporting mechanism for streams</p>
 <hr>
 <a name="132"><h3>132.&nbsp;list::resize description uses random access iterators</h3></a><p>
-<b>Section:</b>&nbsp;23.2.2.2 <a href="lib-containers.html#lib.list.capacity"> [lib.list.capacity]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
+<b>Section:</b>&nbsp;23.2.2.2 <a href="lib-containers.html#lib.list.capacity"> [lib.list.capacity]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
 <p>The description reads:</p>
 
 <p>-1- Effects:</p>
@@ -3178,7 +3182,7 @@ with David Abrahams. They had a discussion and believe there is
 no issue of exception safety with the proposed resolution.]</i></p>
 <hr>
 <a name="133"><h3>133.&nbsp;map missing get_allocator()</h3></a><p>
-<b>Section:</b>&nbsp;23.3.1 <a href="lib-containers.html#lib.map"> [lib.map]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
+<b>Section:</b>&nbsp;23.3.1 <a href="lib-containers.html#lib.map"> [lib.map]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
 <p>The title says it all.</p>
 <p><b>Proposed resolution:</b></p>
 <p>Insert in 23.3.1 <a href="lib-containers.html#lib.map"> [lib.map]</a>, paragraph 2,
@@ -3187,7 +3191,7 @@ after operator= in the map declaration:</p>
 <pre>    allocator_type get_allocator() const;</pre>
 <hr>
 <a name="134"><h3>134.&nbsp;vector constructors over specified</h3></a><p>
-<b>Section:</b>&nbsp;23.2.4.1 <a href="lib-containers.html#lib.vector.cons"> [lib.vector.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
+<b>Section:</b>&nbsp;23.2.4.1 <a href="lib-containers.html#lib.vector.cons"> [lib.vector.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
 <p>The complexity description says: &quot;It does at most 2N calls to the copy constructor
 of T and logN reallocations if they are just input iterators ...&quot;.</p>
 
@@ -3272,7 +3276,7 @@ for basic_streambuf&lt;&gt;::seekpos, or for basic_filebuf&lt;&gt;::seekoff or
 basic_filebuf&lt;&gt;::seekpos.]</i></p>
 <hr>
 <a name="137"><h3>137.&nbsp;Do use_facet and has_facet look in the global locale?</h3></a><p>
-<b>Section:</b>&nbsp;22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;17 Mar 1999</p>
+<b>Section:</b>&nbsp;22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;17 Mar 1999</p>
 <p>Section 22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a> says:</p>
 
 <p>-4- In the call to use_facet&lt;Facet&gt;(loc), the type argument
@@ -3301,7 +3305,7 @@ from section 22.1.1. </p>
 in the standard.</p>
 <hr>
 <a name="139"><h3>139.&nbsp;Optional sequence operation table description unclear</h3></a><p>
-<b>Section:</b>&nbsp;23.1.1 <a href="lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;30 Mar 1999</p>
+<b>Section:</b>&nbsp;23.1.1 <a href="lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;30 Mar 1999</p>
 <p>The sentence introducing the Optional sequence operation table
 (23.1.1 paragraph 12) has two problems:</p>
 
@@ -3325,7 +3329,7 @@ with:</p>
 </blockquote>
 <hr>
 <a name="141"><h3>141.&nbsp;basic_string::find_last_of, find_last_not_of say pos instead of xpos</h3></a><p>
-<b>Section:</b>&nbsp;21.3.6.4 <a href="lib-strings.html#lib.string::find.last.of"> [lib.string::find.last.of]</a>, 21.3.6.6 <a href="lib-strings.html#lib.string::find.last.not.of"> [lib.string::find.last.not.of]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Arch Robison&nbsp; <b>Date:</b>&nbsp;28 Apr 1999</p>
+<b>Section:</b>&nbsp;21.3.6.4 <a href="lib-strings.html#lib.string::find.last.of"> [lib.string::find.last.of]</a>, 21.3.6.6 <a href="lib-strings.html#lib.string::find.last.not.of"> [lib.string::find.last.not.of]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Arch Robison&nbsp; <b>Date:</b>&nbsp;28 Apr 1999</p>
 <p>Sections 21.3.6.4 paragraph 1 and 21.3.6.6 paragraph 1 surely have misprints where they
 say:<br>
 <br>
@@ -3347,7 +3351,7 @@ proposed resolution.]</i></p>
 </p>
 <hr>
 <a name="142"><h3>142.&nbsp;lexicographical_compare complexity wrong</h3></a><p>
-<b>Section:</b>&nbsp;25.3.8 <a href="lib-algorithms.html#lib.alg.lex.comparison"> [lib.alg.lex.comparison]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;20 Jun 1999</p>
+<b>Section:</b>&nbsp;25.3.8 <a href="lib-algorithms.html#lib.alg.lex.comparison"> [lib.alg.lex.comparison]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;20 Jun 1999</p>
 <p>The lexicographical_compare complexity is specified as:<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp; &quot;At most min((last1 - first1), (last2 - first2))
@@ -3381,7 +3385,7 @@ right! (and Matt states this complexity in his book)</p>
     </blockquote>
 <hr>
 <a name="144"><h3>144.&nbsp;Deque constructor complexity wrong </h3></a><p>
-<b>Section:</b>&nbsp;23.2.1.1 <a href="lib-containers.html#lib.deque.cons"> [lib.deque.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Herb Sutter&nbsp; <b>Date:</b>&nbsp;9 May 1999</p>
+<b>Section:</b>&nbsp;23.2.1.1 <a href="lib-containers.html#lib.deque.cons"> [lib.deque.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Herb Sutter&nbsp; <b>Date:</b>&nbsp;9 May 1999</p>
 <p>In 23.2.1.1 paragraph 6, the deque ctor that takes an iterator range appears
 to have complexity requirements which are incorrect, and which contradict the
 complexity requirements for insert(). I suspect that the text in question,
@@ -3413,7 +3417,7 @@ typo):</p>
 </blockquote>
 <hr>
 <a name="146"><h3>146.&nbsp;complex&lt;T&gt; Inserter and Extractor need sentries</h3></a><p>
-<b>Section:</b>&nbsp;26.2.6 <a href="lib-numerics.html#lib.complex.ops"> [lib.complex.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;12 May 1999</p>
+<b>Section:</b>&nbsp;26.2.6 <a href="lib-numerics.html#lib.complex.ops"> [lib.complex.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;12 May 1999</p>
 <p>The <u> extractor</u> for complex numbers is specified as:&nbsp;</p>
 
 <blockquote>
@@ -3488,7 +3492,7 @@ follows an &quot;all-or-none&quot; rule.</p>
 as written.</p>
 <hr>
 <a name="147"><h3>147.&nbsp;Library Intro refers to global functions that aren't global</h3></a><p>
-<b>Section:</b>&nbsp;17.4.4.3 <a href="lib-intro.html#lib.global.functions"> [lib.global.functions]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Lois Goldthwaite&nbsp; <b>Date:</b>&nbsp;4 Jun 1999</p>
+<b>Section:</b>&nbsp;17.4.4.3 <a href="lib-intro.html#lib.global.functions"> [lib.global.functions]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Lois Goldthwaite&nbsp; <b>Date:</b>&nbsp;4 Jun 1999</p>
 <p>The library had many global functions until 17.4.1.1 [lib.contents]
 paragraph 2 was added: </p>
 
@@ -3552,7 +3556,7 @@ was changed from &quot;non-member&quot; to &quot;global or non-member.
 </p>
 <hr>
 <a name="148"><h3>148.&nbsp;Functions in the example facet BoolNames should be const</h3></a><p>
-<b>Section:</b>&nbsp;22.2.8 <a href="lib-locales.html#lib.facets.examples"> [lib.facets.examples]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Jeremy Siek&nbsp; <b>Date:</b>&nbsp;3 Jun 1999</p>
+<b>Section:</b>&nbsp;22.2.8 <a href="lib-locales.html#lib.facets.examples"> [lib.facets.examples]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Jeremy Siek&nbsp; <b>Date:</b>&nbsp;3 Jun 1999</p>
 <p>In 22.2.8 <a href="lib-locales.html#lib.facets.examples"> [lib.facets.examples]</a> paragraph 13, the do_truename() and
 do_falsename() functions in the example facet BoolNames should be
 const. The functions they are overriding in
@@ -3566,7 +3570,7 @@ two places:</p>
 </blockquote>
 <hr>
 <a name="150"><h3>150.&nbsp;Find_first_of says integer instead of iterator </h3></a><p>
-<b>Section:</b>&nbsp;25.1.4 <a href="lib-algorithms.html#lib.alg.find.first.of"> [lib.alg.find.first.of]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt McClure&nbsp; <b>Date:</b>&nbsp;30 Jun 1999</p>
+<b>Section:</b>&nbsp;25.1.4 <a href="lib-algorithms.html#lib.alg.find.first.of"> [lib.alg.find.first.of]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt McClure&nbsp; <b>Date:</b>&nbsp;30 Jun 1999</p>
 <p><b>Proposed resolution:</b></p>
 <p>Change 25.1.4 <a href="lib-algorithms.html#lib.alg.find.first.of"> [lib.alg.find.first.of]</a> paragraph 2 from:</p>
 
@@ -3583,7 +3587,7 @@ that for some iterator j in the range [first2, last2) ...</p>
 </blockquote>
 <hr>
 <a name="151"><h3>151.&nbsp;Can't currently clear() empty container</h3></a><p>
-<b>Section:</b>&nbsp;23.1.1 <a href="lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Ed Brey&nbsp; <b>Date:</b>&nbsp;21 Jun 1999</p>
+<b>Section:</b>&nbsp;23.1.1 <a href="lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Ed Brey&nbsp; <b>Date:</b>&nbsp;21 Jun 1999</p>
 <p>For both sequences and associative containers, a.clear() has the
 semantics of erase(a.begin(),a.end()), which is undefined for an empty
 container since erase(q1,q2) requires that q1 be dereferenceable
@@ -3622,7 +3626,7 @@ iterators or certain kinds of iterators is unnecessary.
 </blockquote>
 <hr>
 <a name="152"><h3>152.&nbsp;Typo in <tt>scan_is()</tt> semantics</h3></a><p>
-<b>Section:</b>&nbsp;22.2.1.1.2 <a href="lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;22.2.1.1.2 <a href="lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>The semantics of <tt>scan_is()</tt> (paragraphs 4 and 6) is not exactly described
 because there is no function <tt>is()</tt> which only takes a character as
 argument. Also, in the effects clause (paragraph 3), the semantic is also kept
@@ -3684,7 +3688,7 @@ same paragraphs.]</i></p>
 <hr>
 <a name="154"><h3>154.&nbsp;Missing <tt>double</tt> specifier for <tt>do_get()</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;22.2.2.1.2 <a href="lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;22.2.2.1.2 <a href="lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>The table in paragraph 7 for the length modifier does not list the length
 modifier <tt>l</tt> to be applied if the type is <tt>double</tt>. Thus, the
 standard asks the implementation to do undefined things when using <tt>scanf()</tt>
@@ -3699,7 +3703,7 @@ Modifier table to say that for <tt>double</tt> a length modifier
 <hr>
 <a name="155"><h3>155.&nbsp;Typo in naming the class defining the class <tt>Init</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;27.3 <a href="lib-iostreams.html#lib.iostream.objects"> [lib.iostream.objects]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;27.3 <a href="lib-iostreams.html#lib.iostream.objects"> [lib.iostream.objects]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>There are conflicting statements about where the class
 <tt>Init</tt> is defined. According to 27.3 <a href="lib-iostreams.html#lib.iostream.objects"> [lib.iostream.objects]</a> paragraph 2
 it is defined as <tt>basic_ios::Init</tt>, according to 27.4.2 <a href="lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a> it is defined as <tt>ios_base::Init</tt>.</p>
@@ -3712,7 +3716,7 @@ it is defined as <tt>basic_ios::Init</tt>, according to 27.4.2 <a href="lib-iost
 the change.</p>
 <hr>
 <a name="156"><h3>156.&nbsp;Typo in <tt>imbue()</tt> description</h3></a><p>
-<b>Section:</b>&nbsp;27.4.2.3 <a href="lib-iostreams.html#lib.ios.base.locales"> [lib.ios.base.locales]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;27.4.2.3 <a href="lib-iostreams.html#lib.ios.base.locales"> [lib.ios.base.locales]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>There is a small discrepancy between the declarations of
 <tt>imbue()</tt>: in 27.4.2 <a href="lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a> the argument is passed as
 <tt>locale const&amp;</tt> (correct), in 27.4.2.3 <a href="lib-iostreams.html#lib.ios.base.locales"> [lib.ios.base.locales]</a> it
@@ -3725,7 +3729,7 @@ const&amp;&quot;.</tt>
 <hr>
 <a name="158"><h3>158.&nbsp;Underspecified semantics for <tt>setbuf()</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;27.5.2.4.2 <a href="lib-iostreams.html#lib.streambuf.virt.buffer"> [lib.streambuf.virt.buffer]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;27.5.2.4.2 <a href="lib-iostreams.html#lib.streambuf.virt.buffer"> [lib.streambuf.virt.buffer]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>The default behavior of <tt>setbuf()</tt> is described only for the
 situation that <tt>gptr() != 0 &amp;&amp; gptr() != egptr()</tt>:
 namely to do nothing.  What has to be done in other situations&nbsp;
@@ -3742,7 +3746,7 @@ to: &quot;Default behavior: Does nothing. Returns this.&quot;</p>
 <hr>
 <a name="159"><h3>159.&nbsp;Strange use of <tt>underflow()</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;27.5.2.4.3 <a href="lib-iostreams.html#lib.streambuf.virt.get"> [lib.streambuf.virt.get]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;27.5.2.4.3 <a href="lib-iostreams.html#lib.streambuf.virt.get"> [lib.streambuf.virt.get]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>The description of the meaning of the result of
 <tt>showmanyc()</tt> seems to be rather strange: It uses calls to
 <tt>underflow()</tt>. Using <tt>underflow()</tt> is strange because
@@ -3757,7 +3761,7 @@ stream&quot;.</p>
 <hr>
 <a name="160"><h3>160.&nbsp;Typo: Use of non-existing function <tt>exception()</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.1 <a href="lib-iostreams.html#lib.istream"> [lib.istream]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;27.6.1.1 <a href="lib-iostreams.html#lib.istream"> [lib.istream]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>The paragraph 4 refers to the function <tt>exception()</tt> which
 is not defined. Probably, the referred function is
 <tt>basic_ios&lt;&gt;::exceptions()</tt>.</p>
@@ -3772,7 +3776,7 @@ is the correct spelling.]</i></p>
 <hr>
 <a name="161"><h3>161.&nbsp;Typo: <tt>istream_iterator</tt> vs. <tt>istreambuf_iterator</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.2.2 <a href="lib-iostreams.html#lib.istream.formatted.arithmetic"> [lib.istream.formatted.arithmetic]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;27.6.1.2.2 <a href="lib-iostreams.html#lib.istream.formatted.arithmetic"> [lib.istream.formatted.arithmetic]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>The note in the second paragraph pretends that the first argument
 is an object of type <tt>istream_iterator</tt>. This is wrong: It is
 an object of type <tt>istreambuf_iterator</tt>.</p>
@@ -3787,7 +3791,7 @@ an object of type <tt>istreambuf_iterator</tt>.</p>
 </blockquote>
 <hr>
 <a name="164"><h3>164.&nbsp;do_put() has apparently unused fill argument</h3></a><p>
-<b>Section:</b>&nbsp;22.2.5.3.2 <a href="lib-locales.html#lib.locale.time.put.virtuals"> [lib.locale.time.put.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
+<b>Section:</b>&nbsp;22.2.5.3.2 <a href="lib-locales.html#lib.locale.time.put.virtuals"> [lib.locale.time.put.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
 <p>In 22.2.5.3.2 <a href="lib-locales.html#lib.locale.time.put.virtuals"> [lib.locale.time.put.virtuals]</a> the do_put() function is specified
 as taking a fill character as an argument, but the description of the
 function does not say whether the character is used at all and, if so,
@@ -3857,7 +3861,7 @@ called from what functions and eg to state specifically that flush()
 is allowed to call sync() while other functions are not.]</i></p>
 <hr>
 <a name="168"><h3>168.&nbsp;Typo: formatted vs. unformatted</h3></a><p>
-<b>Section:</b>&nbsp;27.6.2.6 <a href="lib-iostreams.html#lib.ostream.unformatted"> [lib.ostream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;27.6.2.6 <a href="lib-iostreams.html#lib.ostream.unformatted"> [lib.ostream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>The first paragraph begins with a descriptions what has to be done
 in <i>formatted</i> output functions. Probably this is a typo and the
 paragraph really want to describe unformatted output functions...</p>
@@ -3872,7 +3876,7 @@ sentences, change the word &quot;formatted&quot; to
 </blockquote>
 <hr>
 <a name="169"><h3>169.&nbsp;Bad efficiency of <tt>overflow()</tt> mandated</h3></a><p>
-<b>Section:</b>&nbsp;27.7.1.3 <a href="lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;27.7.1.3 <a href="lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>Paragraph 8, Notes, of this section seems to mandate an extremely
 inefficient way of buffer handling for <tt>basic_stringbuf</tt>,
 especially in view of the restriction that <tt>basic_ostream</tt>
@@ -3894,7 +3898,7 @@ solution is to handle this in <tt>underflow()</tt>.</p>
 <hr>
 <a name="170"><h3>170.&nbsp;Inconsistent definition of <tt>traits_type</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;27.7.4 <a href="lib-iostreams.html#lib.stringstream"> [lib.stringstream]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
+<b>Section:</b>&nbsp;27.7.4 <a href="lib-iostreams.html#lib.stringstream"> [lib.stringstream]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>The classes <tt>basic_stringstream</tt> (27.7.4 <a href="lib-iostreams.html#lib.stringstream"> [lib.stringstream]</a>),
 <tt>basic_istringstream</tt> (27.7.2 <a href="lib-iostreams.html#lib.istringstream"> [lib.istringstream]</a>), and
 <tt>basic_ostringstream</tt> (27.7.3 <a href="lib-iostreams.html#lib.ostringstream"> [lib.ostringstream]</a>) are inconsistent
@@ -3964,7 +3968,7 @@ paragraph 14 from:</p>
 <hr>
 <a name="172"><h3>172.&nbsp;Inconsistent types for <tt>basic_istream::ignore()</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Greg Comeau, Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
+<b>Section:</b>&nbsp;27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Greg Comeau, Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
 <p>In 27.6.1.1 <a href="lib-iostreams.html#lib.istream"> [lib.istream]</a> the function
 <tt>ignore()</tt> gets an object of type <tt>streamsize</tt> as first
 argument. However, in 27.6.1.3 <a href="lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>
@@ -3989,7 +3993,7 @@ of <tt>int</tt> in the description of <tt>ignore()</tt> to
 <hr>
 <a name="173"><h3>173.&nbsp;Inconsistent types for <tt>basic_filebuf::setbuf()</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;27.8.1.4 <a href="lib-iostreams.html#lib.filebuf.virtuals"> [lib.filebuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Greg Comeau, Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
+<b>Section:</b>&nbsp;27.8.1.4 <a href="lib-iostreams.html#lib.filebuf.virtuals"> [lib.filebuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Greg Comeau, Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
 
 <p>
 In 27.8.1.1 <a href="lib-iostreams.html#lib.filebuf"> [lib.filebuf]</a> the function <tt>setbuf()</tt> gets an
@@ -4013,7 +4017,7 @@ as described in issue <a href="lwg-defects.html#172">172</a>.
 <hr>
 <a name="174"><h3>174.&nbsp;Typo: <tt>OFF_T</tt> vs. <tt>POS_T</tt>
 </h3></a><p>
-<b>Section:</b>&nbsp;D.6 <a href="future.html#depr.ios.members"> [depr.ios.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
+<b>Section:</b>&nbsp;D.6 <a href="future.html#depr.ios.members"> [depr.ios.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
 <p>According to paragraph 1 of this section, <tt>streampos</tt> is the
 type <tt>OFF_T</tt>, the same type as <tt>streamoff</tt>. However, in
 paragraph 6 the <tt>streampos</tt> gets the type <tt>POS_T</tt>
@@ -4024,7 +4028,7 @@ OFF_T streampos;</tt>&quot; to &quot;<tt>typedef POS_T
 streampos;</tt>&quot;</p>
 <hr>
 <a name="175"><h3>175.&nbsp;Ambiguity for <tt>basic_streambuf::pubseekpos()</tt> and a few other functions.</h3></a><p>
-<b>Section:</b>&nbsp;D.6 <a href="future.html#depr.ios.members"> [depr.ios.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
+<b>Section:</b>&nbsp;D.6 <a href="future.html#depr.ios.members"> [depr.ios.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
 <p>According to paragraph 8 of this section, the methods
 <tt>basic_streambuf::pubseekpos()</tt>,
 <tt>basic_ifstream::open()</tt>, and <tt>basic_ofstream::open</tt>
@@ -4044,7 +4048,7 @@ argument is not specified.</p>
 </p>
 <hr>
 <a name="176"><h3>176.&nbsp;<tt>exceptions()</tt> in <tt>ios_base</tt>...?</h3></a><p>
-<b>Section:</b>&nbsp;D.6 <a href="future.html#depr.ios.members"> [depr.ios.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
+<b>Section:</b>&nbsp;D.6 <a href="future.html#depr.ios.members"> [depr.ios.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar K&uuml;hl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
 <p>The &quot;overload&quot; for the function <tt>exceptions()</tt> in
 paragraph 8 gives the impression that there is another function of
 this function defined in class <tt>ios_base</tt>. However, this is not
@@ -4056,7 +4060,7 @@ in clause 27 <a href="lib-iostreams.html#lib.input.output"> [lib.input.output]</
 function <tt>exceptions()</tt>into class <tt>basic_ios</tt>.</p>
 <hr>
 <a name="181"><h3>181.&nbsp;make_pair() unintended behavior</h3></a><p>
-<b>Section:</b>&nbsp;20.2.2 <a href="lib-utilities.html#lib.pairs"> [lib.pairs]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;3 Aug 1999</p>
+<b>Section:</b>&nbsp;20.2.2 <a href="lib-utilities.html#lib.pairs"> [lib.pairs]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;3 Aug 1999</p>
 <p>The claim has surfaced in Usenet that expressions such as<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <tt>make_pair(&quot;abc&quot;, 3)</tt><br>
@@ -4549,7 +4553,7 @@ the case that users cannot rely on the type of a pointer to a
 nonvirtual member of a standard library class.</p>
 <hr>
 <a name="189"><h3>189.&nbsp;setprecision() not specified correctly</h3></a><p>
-<b>Section:</b>&nbsp;27.4.2.2 <a href="lib-iostreams.html#lib.fmtflags.state"> [lib.fmtflags.state]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;25 Aug 1999</p>
+<b>Section:</b>&nbsp;27.4.2.2 <a href="lib-iostreams.html#lib.fmtflags.state"> [lib.fmtflags.state]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;25 Aug 1999</p>
 <p>27.4.2.2 paragraph 9 claims that setprecision() sets the precision,
 and includes a parenthetical note saying that it is the number of
 digits after the decimal point.<br>
@@ -4566,7 +4570,7 @@ correct the statement in 27.4.2.2</p>
 &quot;(number of digits after the decimal point)&quot;.</p>
 <hr>
 <a name="193"><h3>193.&nbsp;Heap operations description incorrect</h3></a><p>
-<b>Section:</b>&nbsp;25.3.6 <a href="lib-algorithms.html#lib.alg.heap.operations"> [lib.alg.heap.operations]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;24 Sep 1999</p>
+<b>Section:</b>&nbsp;25.3.6 <a href="lib-algorithms.html#lib.alg.heap.operations"> [lib.alg.heap.operations]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;24 Sep 1999</p>
 <p>25.3.6 [lib.alg.heap.operations] states two key properties of a heap [a,b), the first of them
 is<br>
 <br>
@@ -4593,7 +4597,7 @@ resolution.</p>
 </blockquote>
 <hr>
 <a name="195"><h3>195.&nbsp;Should <tt>basic_istream::sentry</tt>'s constructor ever set eofbit?</h3></a><p>
-<b>Section:</b>&nbsp;27.6.1.1.2 <a href="lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;13 Oct 1999</p>
+<b>Section:</b>&nbsp;27.6.1.1.2 <a href="lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;13 Oct 1999</p>
 <p>Suppose that <tt>is.flags() &amp; ios_base::skipws</tt> is nonzero.
 What should <tt>basic_istream&lt;&gt;::sentry</tt>'s constructor do if it
 reaches eof while skipping whitespace?  27.6.1.1.2/5 suggests it
@@ -4768,7 +4772,7 @@ predefined iterators are as strong as users expect.</p>
 
 <hr>
 <a name="199"><h3>199.&nbsp;What does <tt>allocate(0)</tt> return?</h3></a><p>
-<b>Section:</b>&nbsp;20.1.5 <a href="lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;19 Nov 1999</p>
+<b>Section:</b>&nbsp;20.1.5 <a href="lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;19 Nov 1999</p>
 <p>
 Suppose that <tt>A</tt> is a class that conforms to the
 Allocator requirements of Table 32, and <tt>a</tt> is an
@@ -4791,7 +4795,7 @@ would be over-specification to mandate the return value.
 </p>
 <hr>
 <a name="208"><h3>208.&nbsp;Unnecessary restriction on past-the-end iterators</h3></a><p>
-<b>Section:</b>&nbsp;24.1 <a href="lib-iterators.html#lib.iterator.requirements"> [lib.iterator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Stephen Cleary&nbsp; <b>Date:</b>&nbsp;02 Feb 2000</p>
+<b>Section:</b>&nbsp;24.1 <a href="lib-iterators.html#lib.iterator.requirements"> [lib.iterator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Stephen Cleary&nbsp; <b>Date:</b>&nbsp;02 Feb 2000</p>
 <p>In 24.1 paragraph 5, it is stated &quot;. . . Dereferenceable and
 past-the-end values are always non-singular.&quot;</p>
 <p>This places an unnecessary restriction on past-the-end iterators for
@@ -4818,7 +4822,7 @@ iterators.  Null pointers are singular.
 </p>
 <hr>
 <a name="209"><h3>209.&nbsp;basic_string declarations inconsistent</h3></a><p>
-<b>Section:</b>&nbsp;21.3 <a href="lib-strings.html#lib.basic.string"> [lib.basic.string]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Igor Stauder&nbsp; <b>Date:</b>&nbsp;11 Feb 2000</p>
+<b>Section:</b>&nbsp;21.3 <a href="lib-strings.html#lib.basic.string"> [lib.basic.string]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Igor Stauder&nbsp; <b>Date:</b>&nbsp;11 Feb 2000</p>
 <p>In Section 21.3 <a href="lib-strings.html#lib.basic.string"> [lib.basic.string]</a> the basic_string member function
 declarations use a consistent style except for the following functions:</p>
 <blockquote>
@@ -4848,7 +4852,7 @@ change.
 </p>
 <hr>
 <a name="210"><h3>210.&nbsp;distance first and last confused</h3></a><p>
-<b>Section:</b>&nbsp;25 <a href="lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Lisa Lippincott&nbsp; <b>Date:</b>&nbsp;15 Feb 2000</p>
+<b>Section:</b>&nbsp;25 <a href="lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Lisa Lippincott&nbsp; <b>Date:</b>&nbsp;15 Feb 2000</p>
 <p>In paragraph 9 of section 25 <a href="lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>, it is written:</p>
 <blockquote>
   <p>      In the description of the algorithms operators + and - are used
@@ -4869,7 +4873,7 @@ or change the return to distance(b,a).  The LWG preferred the
 former for consistency.</p>
 <hr>
 <a name="211"><h3>211.&nbsp;operator&gt;&gt;(istream&amp;, string&amp;) doesn't set failbit</h3></a><p>
-<b>Section:</b>&nbsp;21.3.7.9 <a href="lib-strings.html#lib.string.io"> [lib.string.io]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Scott Snyder&nbsp; <b>Date:</b>&nbsp;4 Feb 2000</p>
+<b>Section:</b>&nbsp;21.3.7.9 <a href="lib-strings.html#lib.string.io"> [lib.string.io]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Scott Snyder&nbsp; <b>Date:</b>&nbsp;4 Feb 2000</p>
 <p>The description of the stream extraction operator for std::string (section
 21.3.7.9 [lib.string.io]) does not contain a requirement that failbit be set in
 the case that the operator fails to extract any characters from the input
@@ -4897,7 +4901,7 @@ is.setstate(ios::failbit) which may throw ios_base::failure
 </blockquote>
 <hr>
 <a name="212"><h3>212.&nbsp;Empty range behavior unclear for several algorithms</h3></a><p>
-<b>Section:</b>&nbsp;25.3.7 <a href="lib-algorithms.html#lib.alg.min.max"> [lib.alg.min.max]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;26 Feb 2000</p>
+<b>Section:</b>&nbsp;25.3.7 <a href="lib-algorithms.html#lib.alg.min.max"> [lib.alg.min.max]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;26 Feb 2000</p>
 <p>The standard doesn't specify what min_element() and max_element() shall
 return if the range is empty (first equals last). The usual implementations
 return last. This problem seems also apply to partition(), stable_partition(),
@@ -4940,7 +4944,7 @@ extending the proposed resolution to lower_bound, upper_bound, and
 equal_range.]</i></p>
 <hr>
 <a name="217"><h3>217.&nbsp;Facets example (Classifying Japanese characters) contains errors</h3></a><p>
-<b>Section:</b>&nbsp;22.2.8 <a href="lib-locales.html#lib.facets.examples"> [lib.facets.examples]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;29 Feb 2000</p>
+<b>Section:</b>&nbsp;22.2.8 <a href="lib-locales.html#lib.facets.examples"> [lib.facets.examples]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;29 Feb 2000</p>
 <p>The example in 22.2.8, paragraph 11 contains the following errors:</p>
 <p>1) The member function `My::JCtype::is_kanji()' is non-const; the function
 must be const in order for it to be callable on a const object (a reference to
@@ -4984,7 +4988,7 @@ declared above.</pre>
 }</pre>
 <hr>
 <a name="220"><h3>220.&nbsp;~ios_base() usage valid?</h3></a><p>
-<b>Section:</b>&nbsp;27.4.2.7 <a href="lib-iostreams.html#lib.ios.base.cons"> [lib.ios.base.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Jonathan Schilling, Howard Hinnant&nbsp; <b>Date:</b>&nbsp;13 Mar 2000</p>
+<b>Section:</b>&nbsp;27.4.2.7 <a href="lib-iostreams.html#lib.ios.base.cons"> [lib.ios.base.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Jonathan Schilling, Howard Hinnant&nbsp; <b>Date:</b>&nbsp;13 Mar 2000</p>
 <p>The pre-conditions for the ios_base destructor are described in 27.4.2.7
 paragraph 2:</p>
 <blockquote>
@@ -5060,7 +5064,7 @@ of digits will not be recognized.  This design decision was made
 deliberately, with full knowledge of that limitation.</p>
 <hr>
 <a name="222"><h3>222.&nbsp;Are throw clauses necessary if a throw is already implied by the effects clause?</h3></a><p>
-<b>Section:</b>&nbsp;17.3.1.3 <a href="lib-intro.html#lib.structure.specifications"> [lib.structure.specifications]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;17 Mar 2000</p>
+<b>Section:</b>&nbsp;17.3.1.3 <a href="lib-intro.html#lib.structure.specifications"> [lib.structure.specifications]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;17 Mar 2000</p>
 <p>Section 21.3.6.8 describes the basic_string::compare function this way:</p>
 <blockquote>
   <pre>21.3.6.8 - basic_string::compare [lib.string::compare]
@@ -5102,7 +5106,7 @@ non-normative. The proposed resolution from the LWG clarifies the
 footnote.</p>
 <hr>
 <a name="223"><h3>223.&nbsp;reverse algorithm should use iter_swap rather than swap</h3></a><p>
-<b>Section:</b>&nbsp;25.2.9 <a href="lib-algorithms.html#lib.alg.reverse"> [lib.alg.reverse]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;21 Mar 2000</p>
+<b>Section:</b>&nbsp;25.2.9 <a href="lib-algorithms.html#lib.alg.reverse"> [lib.alg.reverse]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;21 Mar 2000</p>
 <p>Shouldn't the effects say &quot;applies iter_swap to all pairs...&quot;?</p>
 <p><b>Proposed resolution:</b></p>
 <p>In 25.2.9 <a href="lib-algorithms.html#lib.alg.reverse"> [lib.alg.reverse]</a>, replace:</p>
@@ -5117,7 +5121,7 @@ footnote.</p>
   </blockquote>
 <hr>
 <a name="224"><h3>224.&nbsp;clear() complexity for associative containers refers to undefined N</h3></a><p>
-<b>Section:</b>&nbsp;23.1.2 <a href="lib-containers.html#lib.associative.reqmts"> [lib.associative.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Ed Brey&nbsp; <b>Date:</b>&nbsp;23 Mar 2000</p>
+<b>Section:</b>&nbsp;23.1.2 <a href="lib-containers.html#lib.associative.reqmts"> [lib.associative.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Ed Brey&nbsp; <b>Date:</b>&nbsp;23 Mar 2000</p>
 <p>In the associative container requirements table in 23.1.2 paragraph 7,
 a.clear() has complexity &quot;log(size()) + N&quot;. However, the meaning of N
 is not defined.</p>
@@ -5132,7 +5136,7 @@ log(N))</i>.  The text in the standard is probably an incorrect
 cut-and-paste from the range version of <tt>erase</tt>.</p>
 <hr>
 <a name="227"><h3>227.&nbsp;std::swap() should require CopyConstructible or DefaultConstructible arguments</h3></a><p>
-<b>Section:</b>&nbsp;25.2.2 <a href="lib-algorithms.html#lib.alg.swap"> [lib.alg.swap]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;09 Apr 2000</p>
+<b>Section:</b>&nbsp;25.2.2 <a href="lib-algorithms.html#lib.alg.swap"> [lib.alg.swap]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;09 Apr 2000</p>
 <p>25.2.2 reads:</p>
 <blockquote>
   <p>

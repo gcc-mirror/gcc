@@ -1,3 +1,24 @@
+2003-01-23  Phil Edwards  <pme@gcc.gnu.org>
+
+	Bulk documentation merge (copy) from trunk.
+	* docs/doxygen/TODO, docs/doxygen/run_doxygen,
+	docs/doxygen/stdheader.cc, docs/doxygen/style.css,
+	docs/doxygen/tables.html, docs/doxygen/user.cfg.in,
+	docs/html/configopts.html, docs/html/debug.html,
+	docs/html/documentation.html, docs/html/explanations.html,
+	docs/html/install.html, docs/html/17_intro/contribute.html,
+	docs/html/17_intro/howto.html, docs/html/17_intro/license.html,
+	docs/html/17_intro/porting.html, docs/html/17_intro/porting.texi,
+	docs/html/18_support/howto.html, docs/html/19_diagnostics/howto.html,
+	docs/html/20_util/howto.html, docs/html/21_strings/howto.html,
+	docs/html/22_locale/codecvt.html, docs/html/22_locale/ctype.html,
+	docs/html/22_locale/howto.html, docs/html/22_locale/locale.html,
+	docs/html/22_locale/messages.html, docs/html/24_iterators/howto.html,
+	docs/html/25_algorithms/howto.html, docs/html/26_numerics/howto.html,
+	docs/html/27_io/howto.html, docs/html/ext/lwg-active.html,
+	docs/html/ext/lwg-defects.html, docs/html/ext/sgiexts.html,
+	docs/html/faq/index.html, docs/html/faq/index.txt:  Merge from trunk.
+
 2003-01-23  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9322
