@@ -5963,6 +5963,9 @@ init_decl_processing ()
        : make_unsigned_type (CHAR_TYPE_SIZE));
   record_builtin_type (RID_CHAR, "char", char_type_node);
 
+  /* `signed' is the same as `int' */
+  record_builtin_type (RID_SIGNED, NULL_PTR, integer_type_node);
+  
   long_integer_type_node = make_signed_type (LONG_TYPE_SIZE);
   record_builtin_type (RID_LONG, "long int", long_integer_type_node);
 
