@@ -2427,7 +2427,8 @@ computation_cost (tree expr)
   rtx seq, rslt;
   tree type = TREE_TYPE (expr);
   unsigned cost;
-  int regno = 0;
+  /* Avoid using hard regs in ways which may be unsupported.  */
+  int regno = LAST_VIRTUAL_REGISTER + 1;
 
   walk_tree (&expr, prepare_decl_rtl, &regno, NULL);
   start_sequence ();

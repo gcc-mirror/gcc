@@ -1,3 +1,10 @@
+2005-02-21  DJ Delorie  <dj@redhat.com>
+
+	* tree-ssa-loop-ivopts.c (computation_cost): Start register
+	numbering at LAST_VIRTUAL_REGISTER+1 to avoid possibly using hard
+	registers in unsupported ways.
+	* expmed.c (init_expmed): Likewise.
+	
 2005-02-21  Stan Cox  <scox@redhat.com>
 
 	* config/iq2000/iq2000.h (DWARF_FRAME_RETURN_COLUMN): Change to 31.
