@@ -3023,7 +3023,8 @@ rest_of_compilation (decl)
 	 for those functions that need to be output.  Also defer those
 	 functions that we are supposed to defer.  We cannot defer
 	 functions containing nested functions since the nested function
-	 data is in our non-saved obstack.  */
+	 data is in our non-saved obstack.  We cannot defer nested
+	 functions for the same reason.  */
 
       /* If this is a nested inline, remove ADDRESSOF now so we can
 	 finish compiling ourselves.  Otherwise, wait until EOF.
@@ -3038,6 +3039,7 @@ rest_of_compilation (decl)
 	}
 
       if (! current_function_contains_functions
+	  && ! decl_function_context (decl)
 	  && (DECL_DEFER_OUTPUT (decl)
 	      || (DECL_INLINE (decl)
 		  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)

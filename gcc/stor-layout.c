@@ -549,6 +549,11 @@ layout_record (rec)
   TYPE_ALIGN (rec) = MAX (TYPE_ALIGN (rec), record_align);
 #endif
 
+  /* Record the un-rounded size in the binfo node.  But first we check
+     the size of TYPE_BINFO to make sure that BINFO_SIZE is available.  */
+  if (TYPE_BINFO (rec) && TREE_VEC_LENGTH (TYPE_BINFO (rec)) >= 6)
+    TYPE_BINFO_SIZE (rec) = TYPE_SIZE (rec);
+
 #ifdef ROUND_TYPE_SIZE
   TYPE_SIZE (rec) = ROUND_TYPE_SIZE (rec, TYPE_SIZE (rec), TYPE_ALIGN (rec));
 #else
