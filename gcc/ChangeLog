@@ -5,6 +5,8 @@
 	config/rs6000/altivec.md, config/rs6000/darwin-tramp.asm:
 	Update copyright.
 
+	* cse.c: Update comments.
+
 2005-02-07  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/19775
