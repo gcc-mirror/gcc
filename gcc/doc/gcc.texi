@@ -3137,18 +3137,18 @@ closing files, and sequencing the passes.
 
 @cindex parsing pass
 The parsing pass is invoked only once, to parse the entire input.  A
-high level tree representation is then generated from the input, 
+high level tree representation is then generated from the input,
 one function at a time.  This tree code is then transformed into RTL
 intermediate code, and processed.  The files involved in transforming
 the trees into RTL are @file{expr.c}, @file{expmed.c}, and
-@file{stmt.c}. 
+@file{stmt.c}.
 @c Note, the above files aren't strictly the only files involved. It's
 @c all over the place (function.c, final.c,etc).  However, those are
 @c the files that are supposed to be directly involved, and have
 @c their purpose listed as such, so i've only listed them.
 The order of trees that are processed, is not
-necessarily the same order they are generated from 
-the input, due to deferred inlining, and other considerations.  
+necessarily the same order they are generated from
+the input, due to deferred inlining, and other considerations.
 
 @findex rest_of_compilation
 @findex rest_of_decl_compilation
@@ -3255,19 +3255,19 @@ representation, before converting into RTL code.
 
 @cindex inline on trees, automatic
 Currently, the main optimization performed here is tree-based
-inlining.  
+inlining.
 This is implemented for C++ in @file{cp/optimize.c}.  Note that
 tree based inlining turns off rtx based inlining (since it's more
 powerful, it would be a waste of time to do rtx based inlining in
 addition).
-The C front end currently does not perform tree based inlining. 
+The C front end currently does not perform tree based inlining.
 
 @cindex constant folding
 @cindex arithmetic simplifications
 @cindex simplifications, arithmetic
 Constant folding and some arithmetic simplifications are also done
 during this pass, on the tree representation.
-The routines that perform these tasks are located in @file{fold-const.c}. 
+The routines that perform these tasks are located in @file{fold-const.c}.
 
 @cindex RTL generation
 @item
@@ -3394,7 +3394,7 @@ Common subexpression elimination.  This pass also does constant
 propagation.  Its source files are @file{cse.c}, and @file{cselib.c}.
 If constant  propagation causes conditional jumps to become
 unconditional or to become no-ops, jump optimization is run again when
-CSE is finished. 
+CSE is finished.
 
 @opindex ds
 The option @option{-ds} causes a debugging dump of the RTL code after
@@ -3420,12 +3420,12 @@ The option @option{-de} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.ssa} to
 the input file name.
 @itemize @bullet
-@cindex SSA DCE 
+@cindex SSA DCE
 @cindex DCE, SSA based
 @cindex dead code elimination
 @opindex fdce
 @item
-Dead Code Elimination.  Turned on by the @option{-fdce} option. 
+Dead Code Elimination.  Turned on by the @option{-fdce} option.
 This pass performs elimination of code considered unnecessary because it
 is never executed.  It operates in linear time.
 
@@ -3441,7 +3441,7 @@ the input file name.
 Global common subexpression elimination.  This pass performs two
 different types of GCSE  depending on whether you are optimizing for
 size or not (LCM based GCSE tends to increase code size for a gain in
-speed, while Morel-Renvoise based GCSE does not). 
+speed, while Morel-Renvoise based GCSE does not).
 When optimizing for size, GCSE is done using Morel-Renvoise Partial
 Redundancy Elimination, with the exception that it does not try to move
 invariants out of loops---that is left to  the loop optimization pass.
@@ -3452,10 +3452,10 @@ done.  LCM is based on the work of Knoop, Ruthing, and Steffen.  LCM
 based GCSE also does loop invariant code motion.  We also perform load
 and store motion when optimizing for speed.
 Regardless of which type of GCSE is used, the GCSE pass also performs
-global constant and  copy propagation.  
+global constant and  copy propagation.
 
 The source file for this pass is @file{gcse.c}, and the LCM routines
-are in @file{lcm.c}. 
+are in @file{lcm.c}.
 
 @opindex dG
 The option @option{-dG} causes a debugging dump of the RTL code after
