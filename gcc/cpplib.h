@@ -650,8 +650,6 @@ extern cpp_buffer* cpp_pop_buffer PARAMS ((cpp_reader *));
 extern cpp_hashnode* cpp_lookup PARAMS ((cpp_reader*, const U_CHAR*,
 					 int, int));
 
-extern long cpp_parse_expr PARAMS ((cpp_reader*));
-
 #ifdef __cplusplus
 }
 #endif
