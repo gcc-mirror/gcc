@@ -153,9 +153,10 @@ namespace std
 
 	// NB: Not required, but considered best practice. 
 	if (__builtin_expect(__is_null_pointer(__beg), 0))
-	  __throw_logic_error("basic_string::_S_construct NULL not valid");
+	  __throw_logic_error(__N("basic_string::_S_construct NULL not valid"));
 
-	const size_type __dnew = static_cast<size_type>(std::distance(__beg, __end));
+	const size_type __dnew = static_cast<size_type>(std::distance(__beg,
+								      __end));
 	
 	// Check for out_of_range and length_error exceptions.
 	_Rep* __r = _Rep::_S_create(__dnew, __a);
@@ -207,8 +208,10 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const basic_string& __str, size_type __pos, size_type __n)
     : _M_dataplus(_S_construct(__str._M_ibegin()
-			       + __str._M_check(__pos, "basic_string::basic_string"), 
-			       __str._M_ibegin() + __pos + __str._M_limit(__pos, __n),
+			       + __str._M_check(__pos,
+						"basic_string::basic_string"),
+			       __str._M_ibegin() + __pos
+			       + __str._M_limit(__pos, __n),
 			       _Alloc()), _Alloc())
     { }
 
@@ -217,9 +220,10 @@ namespace std
     basic_string(const basic_string& __str, size_type __pos,
 		 size_type __n, const _Alloc& __a)
     : _M_dataplus(_S_construct(__str._M_ibegin()
-			       + __str._M_check(__pos, "basic_string::basic_string"), 
-			       __str._M_ibegin() + __pos + __str._M_limit(__pos, __n),
-			       __a), __a)
+			       + __str._M_check(__pos,
+						"basic_string::basic_string"),
+			       __str._M_ibegin() + __pos
+			       + __str._M_limit(__pos, __n), __a), __a)
     { }
 
   // TBD: DPG annotate
@@ -274,7 +278,7 @@ namespace std
      {
        __glibcxx_requires_string_len(__s, __n);
        if (__n > this->max_size())
-	 __throw_length_error("basic_string::assign");
+	 __throw_length_error(__N("basic_string::assign"));
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
 	   || less<const _CharT*>()(_M_data() + this->size(), __s))
 	 return _M_replace_safe(size_type(0), this->size(), __s, __n);
@@ -300,7 +304,7 @@ namespace std
        __glibcxx_requires_string_len(__s, __n);
        _M_check(__pos, "basic_string::insert");
        if (this->max_size() - this->size() < __n)
-	 __throw_length_error("basic_string::insert");
+	 __throw_length_error(__N("basic_string::insert"));
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
            || less<const _CharT*>()(_M_data() + this->size(), __s))
          return _M_replace_safe(__pos, size_type(0), __s, __n);
@@ -337,7 +341,7 @@ namespace std
        _M_check(__pos, "basic_string::replace");
        __n1 = _M_limit(__pos, __n1);
        if (this->max_size() - (this->size() - __n1) < __n2)
-         __throw_length_error("basic_string::replace");
+         __throw_length_error(__N("basic_string::replace"));
        bool __left;
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
 	   || less<const _CharT*>()(_M_data() + this->size(), __s))
@@ -451,7 +455,7 @@ namespace std
       if (__res != this->capacity() || _M_rep()->_M_is_shared())
         {
 	  if (__res > this->max_size())
-	    __throw_length_error("basic_string::reserve");
+	    __throw_length_error(__N("basic_string::reserve"));
 	  // Make sure we don't shrink below the current size
 	  if (__res < this->size())
 	    __res = this->size();
@@ -478,9 +482,10 @@ namespace std
       // The code below can usually be optimized away.
       else 
 	{
-	  basic_string __tmp1(_M_ibegin(), _M_iend(), __s.get_allocator());
-	  basic_string __tmp2(__s._M_ibegin(), __s._M_iend(), 
-			      this->get_allocator());
+	  const basic_string __tmp1(_M_ibegin(), _M_iend(),
+				    __s.get_allocator());
+	  const basic_string __tmp2(__s._M_ibegin(), __s._M_iend(), 
+				    this->get_allocator());
 	  *this = __tmp2;
 	  __s = __tmp1;
 	}
@@ -495,7 +500,7 @@ namespace std
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 83.  String::npos vs. string::max_size()
       if (__capacity > _S_max_size)
-	__throw_length_error("basic_string::_S_create");
+	__throw_length_error(__N("basic_string::_S_create"));
 
       // NB: Need an array of char_type[__capacity], plus a
       // terminating null char_type() element, plus enough for the
@@ -591,7 +596,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::resize(size_type __n, _CharT __c)
     {
       if (__n > max_size())
-	__throw_length_error("basic_string::resize");
+	__throw_length_error(__N("basic_string::resize"));
       const size_type __size = this->size();
       if (__size < __n)
 	this->append(__n - __size, __c);
@@ -610,7 +615,7 @@ namespace std
 	const basic_string __s(__k1, __k2);
 	const size_type __n1 = __i2 - __i1;
 	if (this->max_size() - (this->size() - __n1) < __s.size())
-	  __throw_length_error("basic_string::_M_replace_dispatch");
+	  __throw_length_error(__N("basic_string::_M_replace_dispatch"));
 	return _M_replace_safe(__i1 - _M_ibegin(), __n1, __s._M_data(),
 			       __s.size());
       }

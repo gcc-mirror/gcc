@@ -1,5 +1,18 @@
 2004-01-26  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h (_M_replace_aux): Use the
+	__N marker in throw message.
+	* include/bits/basic_string.tcc (assign(const _CharT*,
+	size_type), insert(size_type, const _CharT*, size_type),
+	replace(size_type, size_type, const _CharT*, size_type),
+	reserve, _Rep::_S_create, resize, _M_replace_dispatch):
+	Likewise.
+
+	* include/bits/basic_string.h, include/bits/basic_string.tcc:
+	Fold overlong lines, minor formatting changes.
+
+2004-01-26  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.h (replace(iterator, iterator,
 	const basic_string&)): Remove _GLIBCXX_DEBUG_PEDASSERT.
 	(replace(iterator, iterator, const _CharT*)): Ditto.

@@ -1362,7 +1362,7 @@ namespace std
 		     _CharT __c)
       {
 	if (this->max_size() - (this->size() - __n1) < __n2)
-	  __throw_length_error("basic_string::_M_replace_aux");
+	  __throw_length_error(__N("basic_string::_M_replace_aux"));
 	_M_mutate(__pos1, __n1, __n2);
 	if (__n2)
 	  traits_type::assign(_M_data() + __pos1, __n2, __c);
@@ -1383,8 +1383,8 @@ namespace std
       // requires special behaviour if _InIter is an integral type
       template<class _InIterator>
         static _CharT*
-        _S_construct_aux(_InIterator __beg, _InIterator __end, const _Alloc& __a,
-			 __false_type)
+        _S_construct_aux(_InIterator __beg, _InIterator __end,
+			 const _Alloc& __a, __false_type)
 	{
           typedef typename iterator_traits<_InIterator>::iterator_category _Tag;
           return _S_construct(__beg, __end, __a, _Tag());
@@ -1392,12 +1392,10 @@ namespace std
 
       template<class _InIterator>
         static _CharT*
-        _S_construct_aux(_InIterator __beg, _InIterator __end, const _Alloc& __a,
-			 __true_type)
-	{
-	  return _S_construct(static_cast<size_type>(__beg),
-			      static_cast<value_type>(__end), __a);
-	}
+        _S_construct_aux(_InIterator __beg, _InIterator __end,
+			 const _Alloc& __a, __true_type)
+	{ return _S_construct(static_cast<size_type>(__beg),
+			      static_cast<value_type>(__end), __a); }
 
       template<class _InIterator>
         static _CharT*
@@ -1457,8 +1455,7 @@ namespace std
        *  happen.
       */
       const _CharT*
-      c_str() const
-      { return _M_data(); }
+      c_str() const { return _M_data(); }
 
       /**
        *  @brief  Return const pointer to contents.
@@ -1845,7 +1842,8 @@ namespace std
       */
       basic_string
       substr(size_type __pos = 0, size_type __n = npos) const
-      { return basic_string(*this, _M_check(__pos, "basic_string::substr"), __n); }
+      { return basic_string(*this,
+			    _M_check(__pos, "basic_string::substr"), __n); }
 
       /**
        *  @brief  Compare to a string.
@@ -1958,9 +1956,10 @@ namespace std
        *  at @a pos1.  Form a string from the first @a n2 characters of @a s.
        *  Returns an integer < 0 if this substring is ordered before the string
        *  from @a s, 0 if their values are equivalent, or > 0 if this substring
-       *  is ordered after the string from @a s. If the lengths of this substring
-       *  and @a n2 are different, the shorter one is ordered first.  If they are
-       *  the same, returns the result of traits::compare(substring.data(),s,size());
+       *  is ordered after the string from @a s. If the lengths of this
+       *  substring and @a n2 are different, the shorter one is ordered first. 
+       *  If they are the same, returns the result of
+       *  traits::compare(substring.data(),s,size());
        *
        *  NB: s must have at least n2 characters, '\0' has no special
        *  meaning.
