@@ -30,8 +30,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "xtensa-config.h"
 
-	# Define macros for the ABS and ADDX* instructions to handle cases
-	# where they are not included in the Xtensa processor configuration.
+# Note: These functions use a minimum stack frame size of 32.  This is
+# necessary for Xtensa configurations that only support a fixed register
+# window size of 8, where even leaf functions (such as these) need to
+# allocate space for a 4-word "extra save area".
+
+# Define macros for the ABS and ADDX* instructions to handle cases
+# where they are not included in the Xtensa processor configuration.
 
 	.macro	do_abs dst, src, tmp
 #if XCHAL_HAVE_ABS
@@ -75,7 +80,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	.global	__mulsi3
 	.type	__mulsi3,@function
 __mulsi3:
-	entry	sp, 16
+	entry	sp, 32
 
 #if XCHAL_HAVE_MUL16
 	or	a4, a2, a3
@@ -174,11 +179,11 @@ __mulsi3:
 #endif /* L_mulsi3 */
 
 
-	# Define a macro for the NSAU (unsigned normalize shift amount)
-	# instruction, which computes the number of leading zero bits,
-	# to handle cases where it is not included in the Xtensa processor
-	# configuration.
-	
+# Define a macro for the NSAU (unsigned normalize shift amount)
+# instruction, which computes the number of leading zero bits,
+# to handle cases where it is not included in the Xtensa processor
+# configuration.
+
 	.macro	do_nsau cnt, val, tmp, a
 #if XCHAL_HAVE_NSA
 	nsau	\cnt, \val
@@ -237,7 +242,7 @@ __nsau_data:
 	.global	__udivsi3
 	.type	__udivsi3,@function
 __udivsi3:
-	entry	sp, 16
+	entry	sp, 32
 	bltui	a3, 2, .Lle_one	# check if the divisor <= 1
 
 	mov	a6, a2		# keep dividend in a6
@@ -296,7 +301,7 @@ __udivsi3:
 	.global	__divsi3
 	.type	__divsi3,@function
 __divsi3:
-	entry	sp, 16
+	entry	sp, 32
 	xor	a7, a2, a3	# sign = dividend ^ divisor
 	do_abs	a6, a2, a4	# udividend = abs(dividend)
 	do_abs	a3, a3, a4	# udivisor = abs(divisor)
@@ -361,7 +366,7 @@ __divsi3:
 	.global	__umodsi3
 	.type	__umodsi3,@function
 __umodsi3:
-	entry	sp, 16
+	entry	sp, 32
 	bltui	a3, 2, .Lle_one	# check if the divisor is <= 1
 
 	do_nsau	a5, a2, a6, a7	# dividend_shift = nsau(dividend)
@@ -413,7 +418,7 @@ __umodsi3:
 	.global	__modsi3
 	.type	__modsi3,@function
 __modsi3:
-	entry	sp, 16
+	entry	sp, 32
 	mov	a7, a2		# save original (signed) dividend
 	do_abs	a2, a2, a4	# udividend = abs(dividend)
 	do_abs	a3, a3, a4	# udivisor = abs(divisor)

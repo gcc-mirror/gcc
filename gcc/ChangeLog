@@ -1,3 +1,9 @@
+2003-07-23  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/crti.asm (_init, _fini): Increase frame size to 64.
+	* config/xtensa/lib1funcs.asm (__mulsi3, __udivsi3, __divsi3,
+	__umodsi3, __modsi3): Increase frame size to 32.
+
 2003-07-23  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/host-darwin.c: ANSIfy, update comment for sigaltstack

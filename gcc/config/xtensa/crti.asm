@@ -34,11 +34,11 @@
 	.type _init,@function
 	.align	4
 _init:
-	entry	sp, 40
+	entry	sp, 64
 
 	.section .fini
 	.globl _fini
 	.type _fini,@function
 	.align	4
 _fini:
-	entry	sp, 40
+	entry	sp, 64
