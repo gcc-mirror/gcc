@@ -91,12 +91,6 @@ typedef long int __padding_type;
 #define _LIBUNWIND_STD_ABI 1
 #endif
 
-/* We need explicit instantiation of the atomicity lock on HPPA if
-   there is no weak support.  */
-#if !__GXX_WEAK__ && defined (__hppa__)
-#define _GLIBCXX_INST_ATOMICITY_LOCK 1
-#endif
-
 /* Don't use pragma weak in gthread headers.  HP-UX rejects programs
    with unsatisfied external references even if all of those references
    are weak; gthread relies on such unsatisfied references being resolved

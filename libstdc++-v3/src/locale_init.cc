@@ -88,6 +88,10 @@ namespace __gnu_internal
   extern std::__moneypunct_cache<wchar_t, true>	 moneypunct_cache_wt;
   extern std::__timepunct_cache<wchar_t>	 timepunct_cache_w;
 #endif
+
+  // Mutex objects for locale initialization.
+  __glibcxx_mutex_define_initialized(locale_cons_mutex);
+  __glibcxx_mutex_define_initialized(locale_global_mutex);
 } // namespace __gnu_internal
 
 namespace std 
@@ -97,19 +101,23 @@ namespace std
   locale::locale() throw()
   { 
     _S_initialize(); 
+    __glibcxx_mutex_lock(__gnu_internal::locale_cons_mutex);
     _S_global->_M_add_reference();
     _M_impl = _S_global;
+    __glibcxx_mutex_unlock(__gnu_internal::locale_cons_mutex);
   }
 
   locale
   locale::global(const locale& __other)
   {
     _S_initialize();
+    __glibcxx_mutex_lock(__gnu_internal::locale_global_mutex);
     _Impl* __old = _S_global;
     __other._M_impl->_M_add_reference();
     _S_global = __other._M_impl; 
     if (__other.name() != "*")
       setlocale(LC_ALL, __other.name().c_str());
+   __glibcxx_mutex_unlock(__gnu_internal::locale_global_mutex);
 
     // Reference count sanity check: one reference removed for the
     // subsition of __other locale, one added by return-by-value. Net
