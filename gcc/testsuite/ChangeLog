@@ -1,5 +1,7 @@
 1998-12-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.pt/spec20.C: ERROR marks were bogus
+
 	* lib/old-dejagnu.exp (old-dejagnu): ignore collect recompiling
 	and relinking messages
 	* lib/g++.exp (g++_target_compile): remove .rpo file when
