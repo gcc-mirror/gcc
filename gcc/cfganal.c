@@ -874,7 +874,9 @@ flow_depth_first_order_compute (dfs_order, rc_order)
 	  SET_BIT (visited, dest->index);
 
 	  if (dfs_order)
-	    dfs_order[dfsnum++] = dest->index;
+	    dfs_order[dfsnum] = dest->index;
+
+	  dfsnum++;
 
 	  if (dest->succ)
 	    {
