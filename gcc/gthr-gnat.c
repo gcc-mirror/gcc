@@ -28,7 +28,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "gthr-gnat.h"
 
+#ifndef HIDE_EXPORTS
 #pragma GCC visibility push(default)
+#endif
 
 #ifdef __cplusplus
 #define UNUSED(x)
@@ -81,4 +83,6 @@ __gthread_mutex_unlock (__gthread_mutex_t * UNUSED (mutex))
   return 0;
 }
 
+#ifndef HIDE_EXPORTS
 #pragma GCC visibility pop
+#endif
