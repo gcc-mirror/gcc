@@ -50,7 +50,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
   "%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
-   %{!nostdlib:%{!r*:%{!e*:-e __start}}} -dc -dp %{static:-Bstatic} %{assert*}"
+   %{!nostartfiles:%{!r*:%{!e*:-e __start}}} -dc -dp %{static:-Bstatic} %{assert*}"
 
 /* We have atexit(3).  */
 
@@ -102,8 +102,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_DEFAULT MASK_GAS
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#define LOCAL_LABEL_PREFIX	"."
 
 #include "mips/mips.h"
 
@@ -227,7 +225,23 @@ do {									 \
       }									\
   } while (0)
 
+/*
+ A C statement to output something to the assembler file to switch to section
+ NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
+ NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
+ define this macro in such cases.
+*/
+#define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME)                               \
+do {                                                                         \
+  extern FILE *asm_out_text_file;                                            \
+  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)                           \
+    fprintf (asm_out_text_file, "\t.section %s,\"ax\",@progbits\n", (NAME)); \
+  else if ((DECL) && TREE_READONLY (DECL))                                   \
+    fprintf (F, "\t.section %s,\"a\",@progbits\n", (NAME));                  \
+  else                                                                       \
+    fprintf (F, "\t.section %s,\"aw\",@progbits\n", (NAME));                 \
+} while (0)
+
 /* Since gas and gld are standard on NetBSD, we don't need these */
 #undef ASM_FINAL_SPEC
 #undef STARTFILE_SPEC
-
