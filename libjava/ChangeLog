@@ -1,5 +1,10 @@
 2002-11-06  Tom Tromey  <tromey@redhat.com>
 
+	From svens@it.uu.se.  For PR libgcj/8481.
+	* java/util/Random.java (nextInt(int)): Only use 31 bits.
+
+2002-11-06  Tom Tromey  <tromey@redhat.com>
+
 	* jni.cc (array_from_valist): Assume that jlong won't be
 	promoted.
 

@@ -259,7 +259,7 @@ public int nextInt(int n)
   int bits, val;
   do
   {
-    bits = next(32);
+    bits = next(31);
     val = bits % n;
   }
   while(bits - val + (n-1) &lt; 0);
@@ -296,7 +296,7 @@ public int nextInt(int n)
     int bits, val;
     do
       {
-        bits = next(32);
+        bits = next(31);
         val = bits % n;
       }
     while (bits - val + (n - 1) < 0);
