@@ -3,6 +3,8 @@
 	* ada/acats/run_all.sh: Change output to be more compliant with
 	dejagnu framework.
 	Create acats.sum and acats.log files under testsuite/ada/acats
+	Only run [a-z]* directories, to filter out e.g. CVS.
+	Redirect build output to log file.
 
 2003-10-27  Arnaud Charlet  <charlet@act-europe.fr>
 
