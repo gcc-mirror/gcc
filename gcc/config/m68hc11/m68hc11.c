@@ -288,21 +288,6 @@ m68hc11_override_options ()
 }
 
 
-int
-m68hc11_optimization_options (level, size)
-     int level ATTRIBUTE_UNUSED;
-     int size;
-{
-  /* When optimizing for size, do not reorder basic blocks because
-     it duplicates some insns for speed and this results in larder code.
-     This reordering can still be enabled but explicitly.  */
-  if (size)
-    {
-      flag_reorder_blocks = 0;
-    }
-  return 0;
-}
-
 void
 m68hc11_conditional_register_usage ()
 {

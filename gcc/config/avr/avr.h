@@ -132,9 +132,6 @@ extern int avr_asm_only_p;
    Don't use this macro to turn on various extra optimizations for
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZE) \
-   avr_optimization_options (LEVEL, SIZE)
-
 #define CAN_DEBUG_WITHOUT_FP
 /* Define this macro if debugging can be performed even without a
    frame pointer.  If this macro is defined, GNU CC will turn on the

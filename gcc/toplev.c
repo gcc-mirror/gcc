@@ -4813,6 +4813,15 @@ parse_options_and_default_flags (argc, argv)
       align_jumps = 1;
       align_labels = 1;
       align_functions = 1;
+
+      /* Don't reorder blocks when optimizing for size because extra
+	 jump insns may be created; also barrier may create extra padding.
+
+	 More correctly we should have a block reordering mode that tried
+	 to minimize the combined size of all the jumps.  This would more
+	 or less automatically remove extra jumps, but would also try to
+	 use more short jumps instead of long jumps.  */
+      flag_reorder_blocks = 0;
     }
 
   /* Initialize whether `char' is signed.  */
