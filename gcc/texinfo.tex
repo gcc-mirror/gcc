@@ -35,7 +35,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.182 $
+\deftexinfoversion$Revision: 2.183 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -46,20 +46,20 @@
 
 % Save some parts of plain tex whose names we will redefine.
 
-\let\ptextilde=\~
+\let\ptexb=\b
+\let\ptexbullet=\bullet
+\let\ptexc=\c
+\let\ptexcomma=\,
+\let\ptexdot=\.
+\let\ptexdots=\dots
+\let\ptexend=\end
+\let\ptexequiv = \equiv
+\let\ptexi=\i
 \let\ptexlbrace=\{
 \let\ptexrbrace=\}
-\let\ptexdots=\dots
-\let\ptexdot=\.
 \let\ptexstar=\*
-\let\ptexend=\end
-\let\ptexbullet=\bullet
-\let\ptexb=\b
-\let\ptexc=\c
-\let\ptexi=\i
 \let\ptext=\t
-\let\ptexl=\l
-\let\ptexL=\L
+\let\ptextilde=\~
 
 % Be sure we're in horizontal mode when doing a tie, since we make space
 % equivalent to this in @example-like environments. Otherwise, a space
@@ -138,15 +138,24 @@
 %---------------------End change-----------------------
 
 % \onepageout takes a vbox as an argument.  Note that \pagecontents
-% does insertions itself, but you have to call it yourself.
+% does insertions, but you have to call it yourself.
 \chardef\PAGE=255  \output={\onepageout{\pagecontents\PAGE}}
-\def\onepageout#1{\hoffset=\normaloffset
-\ifodd\pageno  \advance\hoffset by \bindingoffset
-\else \advance\hoffset by -\bindingoffset\fi
-{\escapechar=`\\\relax % makes sure backslash is used in output files.
-\shipout\vbox{{\let\hsize=\pagewidth \makeheadline} \pagebody{#1}%
-{\let\hsize=\pagewidth \makefootline}}}%
-\advancepageno \ifnum\outputpenalty>-20000 \else\dosupereject\fi}
+\def\onepageout#1{%
+  \hoffset=\normaloffset
+  \ifodd\pageno  \advance\hoffset by \bindingoffset
+  \else \advance\hoffset by -\bindingoffset\fi
+  {%
+    \escapechar = `\\ % use backslash in output files.
+    \indexdummies
+    \shipout\vbox{%
+      {\let\hsize=\pagewidth \makeheadline}%
+      \pagebody{#1}%
+      {\let\hsize=\pagewidth \makefootline}%
+    }%
+  }%
+  \advancepageno
+  \ifnum\outputpenalty>-20000 \else\dosupereject\fi
+}
 
 %%%% For @cropmarks command %%%%
 
@@ -367,11 +376,43 @@
 %\def\'{{'}}
 
 % Used to generate quoted braces.
-
 \def\mylbrace {{\tt \char '173}}
 \def\myrbrace {{\tt \char '175}}
 \let\{=\mylbrace
 \let\}=\myrbrace
+\begingroup
+  % Definitions to produce actual \{ & \} command in an index.
+  \catcode`\{ = 12 \catcode`\} = 12
+  \catcode`\[ = 1 \catcode`\] = 2
+  \catcode`\@ = 0 \catcode`\\ = 12
+  @gdef@lbracecmd[\{]%
+  @gdef@rbracecmd[\}]%
+@endgroup
+
+% Accents: @, @dotaccent @ringaccent @ubaraccent @udotaccent
+% Others are defined by plain TeX: @` @' @" @^ @~ @= @v @H.
+\let\, = \c
+\let\dotaccent = \.
+\def\ringaccent#1{{\accent23 #1}}
+\let\tieaccent = \t
+\let\ubaraccent = \b
+\let\udotaccent = \d
+
+% Other special characters: @questiondown @exclamdown
+% Plain TeX defines: @AA @AE @O @OE @L (and lowercase versions) @ss.
+\def\questiondown{?`}
+\def\exclamdown{!`}
+
+% Dotless i and dotless j, used for accents.
+\def\imacro{i}
+\def\jmacro{j}
+\def\dotless#1{%
+  \def\temp{#1}%
+  \ifx\temp\imacro \ptexi
+  \else\ifx\temp\jmacro \j
+  \else \errmessage{@dotless can be used only with i or j}%
+  \fi\fi
+}
 
 % @: forces normal size whitespace following.
 \def\:{\spacefactor=1000 }
@@ -726,6 +767,7 @@ where each line of input produces a line of output.}
     \immediate\write16{If you are running another version of TeX, relax.}
     \immediate\write16{If you are running Unix TeX 3.0, kill this TeX process.}
     \immediate\write16{  Then upgrade your TeX installation if you can.}
+    \immediate\write16{  (See ftp://ftp.gnu.ai.mit.edu/pub/gnu/TeX.README.)}
     \immediate\write16{If you are stuck with version 3.0, run the}
     \immediate\write16{  script ``tex3patch'' from the Texinfo distribution}
     \immediate\write16{  to use a workaround.}
@@ -933,6 +975,7 @@ where each line of input produces a line of output.}
 \expandafter\expandafter\expandafter\appendixsetref{\lastnode}\fi
 \global\let\lastnode=\relax}
 
+% @refill is a no-op.
 \let\refill=\relax
 
 % @setfilename is done at the beginning of every texinfo file.
@@ -1287,7 +1330,10 @@ where each line of input produces a line of output.}
 
 \def\kbd#1{\def\look{#1}\expandafter\kbdfoo\look??\par}
 
-\def\l#1{{\li #1}\null}		%
+% @l was never documented to mean ``switch to the Lisp font'',
+% and it is not used as such in any manual I can find.  We need it for
+% Polish suppressed-l.  --karl, 22sep96.
+%\def\l#1{{\li #1}\null}
 
 \def\r#1{{\rm #1}}		% roman font
 % Use of \lowercase was suggested.
@@ -1929,7 +1975,8 @@ July\or August\or September\or October\or November\or December\fi
                                      % We don't need this so we don't use it.
     \else
        \global\advance\colcount by1
-       \setbox0=\hbox{#1}%
+       \setbox0=\hbox{#1 }% Add a normal word space as a separator;
+                          % typically that is always in the input, anyway.
        \expandafter\xdef\csname col\the\colcount\endcsname{\the\wd0}%
     \fi%
   \fi%
@@ -1990,7 +2037,7 @@ July\or August\or September\or October\or November\or December\fi
  % In either case we will make \leftskip=\multitablecolspace:
 \leftskip=\multitablecolspace
 \fi
-\noindent##}\cr%
+\noindent##\multistrut}\cr%
  % \everycr will reset column counter, \colcount, at the end of
  % each line. Every column  entry will cause \colcount to advance by one. 
  % The table preamble
@@ -2003,11 +2050,10 @@ July\or August\or September\or October\or November\or December\fi
 \def\setmultitablespacing{% test to see if user has set \multitablelinespace.
 % If so, do nothing. If not, give it an appropriate dimension based on
 % current baselineskip.
-\setbox0=\vbox{Xy}
 \ifdim\multitablelinespace=0pt
 %% strut to put in table in case some entry doesn't have descenders,
 %% to keep lines equally spaced
-\gdef\multistrut{\vrule height\ht0 depth\dp0 width0pt\relax}
+\let\multistrut = \strut
 %% Test to see if parskip is larger than space between lines of
 %% table. If not, do nothing. 
 %%        If so, set to same dimension as multitablelinespace.
@@ -2126,24 +2172,31 @@ width0pt\relax} \fi
 \def\L{\realbackslash L}%
 \def\ss{\realbackslash ss}%
 % Take care of texinfo commands likely to appear in an index entry.
+% (Must be a way to avoid doing expansion at all, and thus not have to
+% laboriously list every single command here.)
+\def\@{@}% will be @@ when we switch to @ as escape char.
+%\let\{ = \lbracecmd
+%\let\} = \rbracecmd
 \def\_{{\realbackslash _}}%
 \def\w{\realbackslash w }%
 \def\bf{\realbackslash bf }%
-\def\rm{\realbackslash rm }%
+%\def\rm{\realbackslash rm }%
 \def\sl{\realbackslash sl }%
 \def\sf{\realbackslash sf}%
 \def\tt{\realbackslash tt}%
 \def\gtr{\realbackslash gtr}%
 \def\less{\realbackslash less}%
 \def\hat{\realbackslash hat}%
-\def\char{\realbackslash char}%
+%\def\char{\realbackslash char}%
 \def\TeX{\realbackslash TeX}%
 \def\dots{\realbackslash dots }%
 \def\copyright{\realbackslash copyright }%
 \def\tclose##1{\realbackslash tclose {##1}}%
 \def\code##1{\realbackslash code {##1}}%
+\def\dotless##1{\realbackslash dotless {##1}}%
 \def\samp##1{\realbackslash samp {##1}}%
-\def\t##1{\realbackslash r {##1}}%
+\def\,##1{\realbackslash ,{##1}}%
+\def\t##1{\realbackslash t {##1}}%
 \def\r##1{\realbackslash r {##1}}%
 \def\i##1{\realbackslash i {##1}}%
 \def\b##1{\realbackslash b {##1}}%
@@ -2171,6 +2224,7 @@ width0pt\relax} \fi
 
 \def\indexnofonts{%
 % Just ignore accents.
+\let\,=\indexdummyfont
 \let\"=\indexdummyfont
 \let\`=\indexdummyfont
 \let\'=\indexdummyfont
@@ -2183,6 +2237,7 @@ width0pt\relax} \fi
 \let\u=\indexdummyfont
 \let\v=\indexdummyfont
 \let\H=\indexdummyfont
+\let\dotless=\indexdummyfont
 % Take care of the plain tex special European modified letters.
 \def\oe{oe}%
 \def\ae{ae}%
@@ -2216,6 +2271,7 @@ width0pt\relax} \fi
 \let\var=\indexdummyfont
 \let\TeX=\indexdummytex
 \let\dots=\indexdummydots
+\def\@{@}%
 }
 
 % To define \realbackslash, we must make \ not be an escape.
@@ -2231,29 +2287,37 @@ width0pt\relax} \fi
 % workhorse for all \fooindexes
 % #1 is name of index, #2 is stuff to put there
 \def\doind #1#2{%
-% Put the index entry in the margin if desired.
-\ifx\SETmarginindex\relax\else%
-\insert\margin{\hbox{\vrule height8pt depth3pt width0pt #2}}%
-\fi%
-{\count10=\lastpenalty %
-{\indexdummies % Must do this here, since \bf, etc expand at this stage
-\escapechar=`\\%
-{\let\folio=0% Expand all macros now EXCEPT \folio
-\def\rawbackslashxx{\indexbackslash}% \indexbackslash isn't defined now
-% so it will be output as is; and it will print as backslash in the indx.
-%
-% Now process the index-string once, with all font commands turned off,
-% to get the string to sort the index by.
-{\indexnofonts
-\xdef\temp1{#2}%
-}%
-% Now produce the complete index entry.  We process the index-string again,
-% this time with font commands expanded, to get what to print in the index.
-\edef\temp{%
-\write \csname#1indfile\endcsname{%
-\realbackslash entry {\temp1}{\folio}{#2}}}%
-\temp }%
-}\penalty\count10}}
+  % Put the index entry in the margin if desired.
+  \ifx\SETmarginindex\relax\else
+    \insert\margin{\hbox{\vrule height8pt depth3pt width0pt #2}}%
+  \fi
+  {%
+    \count255=\lastpenalty
+    {%
+      \indexdummies % Must do this here, since \bf, etc expand at this stage
+      \escapechar=`\\
+      {%
+        \let\folio=0 % We will expand all macros now EXCEPT \folio.
+        \def\rawbackslashxx{\indexbackslash}% \indexbackslash isn't defined now
+        % so it will be output as is; and it will print as backslash.
+        %
+        % First process the index-string with all font commands turned off
+        % to get the string to sort by.
+        {\indexnofonts \xdef\indexsorttmp{#2}}%
+        %
+        % Now produce the complete index entry, with both the sort key and the
+        % original text, including any font commands.
+        \toks0 = {#2}%
+        \edef\temp{%
+          \write\csname#1indfile\endcsname{%
+            \realbackslash entry{\indexsorttmp}{\folio}{\the\toks0}}%
+        }%
+        \temp
+      }%
+    }%
+    \penalty\count255
+  }%
+}
 
 \def\dosubind #1#2#3{%
 {\count10=\lastpenalty %
@@ -2325,6 +2389,8 @@ width0pt\relax} \fi
   % character.  It would be better to use @, but that's too big a change
   % to make right now.
   \catcode`\\ = 0
+  \catcode`\@ = 11
+  \escapechar = `\\
   \begindoublecolumns
   %
   % See if the index file exists and is nonempty.
@@ -2440,15 +2506,15 @@ width0pt\relax} \fi
 \noindent\hskip\secondaryindent\hbox{#1}\indexdotfill #2\par
 }}
 
-%% Define two-column mode, which is used in indexes.
-%% Adapted from the TeXbook, page 416.
-\catcode `\@=11
+% Define two-column mode, which we use to typeset indexes.
+% Adapted from the TeXbook, page 416, which is to say,
+% the manmac.tex format used to print the TeXbook itself.
+\catcode`\@=11
 
 \newbox\partialpage
-
 \newdimen\doublecolumnhsize
 
-\def\begindoublecolumns{\begingroup
+\def\begindoublecolumns{\begingroup % ended by \enddoublecolumns
   % Grab any single-column material above us.
   \output = {\global\setbox\partialpage
     =\vbox{\unvbox255\kern -\topskip \kern \baselineskip}}%
@@ -2481,48 +2547,47 @@ width0pt\relax} \fi
   % Double the \vsize as well.  (We don't need a separate register here,
   % since nobody clobbers \vsize.)
   \vsize = 2\vsize
-  \doublecolumnpagegoal
 }
-
-\def\enddoublecolumns{\eject \endgroup \pagegoal=\vsize \unvbox\partialpage}
-
-\def\doublecolumnsplit{\splittopskip=\topskip \splitmaxdepth=\maxdepth
-  \global\dimen@=\pageheight \global\advance\dimen@ by-\ht\partialpage
-  \global\setbox1=\vsplit255 to\dimen@ \global\setbox0=\vbox{\unvbox1}
-  \global\setbox3=\vsplit255 to\dimen@ \global\setbox2=\vbox{\unvbox3}
-  \ifdim\ht0>\dimen@ \setbox255=\vbox{\unvbox0\unvbox2} \global\setbox255=\copy5 \fi
-  \ifdim\ht2>\dimen@ \setbox255=\vbox{\unvbox0\unvbox2} \global\setbox255=\copy5 \fi
-}
-\def\doublecolumnpagegoal{%
-  \dimen@=\vsize \advance\dimen@ by-2\ht\partialpage \global\pagegoal=\dimen@
-}
-\def\pagesofar{\unvbox\partialpage %
-  \hsize=\doublecolumnhsize % have to restore this since output routine
-  \wd0=\hsize \wd2=\hsize \hbox to\pagewidth{\box0\hfil\box2}}
 \def\doublecolumnout{%
-  \setbox5=\copy255
-  {\vbadness=10000 \doublecolumnsplit}
-  \ifvbox255
-    \setbox0=\vtop to\dimen@{\unvbox0}
-    \setbox2=\vtop to\dimen@{\unvbox2}
-    \onepageout\pagesofar \unvbox255 \penalty\outputpenalty
-  \else
-    \setbox0=\vbox{\unvbox5}
-    \ifvbox0
-      \dimen@=\ht0 \advance\dimen@ by\topskip \advance\dimen@ by-\baselineskip
-      \divide\dimen@ by2 \splittopskip=\topskip \splitmaxdepth=\maxdepth
-      {\vbadness=10000
-	\loop \global\setbox5=\copy0
-          \setbox1=\vsplit5 to\dimen@
-          \setbox3=\vsplit5 to\dimen@
-          \ifvbox5 \global\advance\dimen@ by1pt \repeat
-        \setbox0=\vbox to\dimen@{\unvbox1}
-        \setbox2=\vbox to\dimen@{\unvbox3}
-        \global\setbox\partialpage=\vbox{\pagesofar}
-        \doublecolumnpagegoal
-      }
-    \fi
-  \fi
+  \splittopskip=\topskip \splitmaxdepth=\maxdepth
+  % Get the available space for the double columns -- the normal
+  % (undoubled) page height minus any material left over from the
+  % previous page.
+  \dimen@=\pageheight \advance\dimen@ by-\ht\partialpage
+  % box0 will be the left-hand column, box1 the right.
+  \setbox0=\vsplit255 to\dimen@ \setbox2=\vsplit255 to\dimen@
+  \onepageout\pagesofar
+  \unvbox255 \penalty\outputpenalty
+}
+\def\pagesofar{%
+  % The contents of the output page -- any previous material,
+  % followed by the two boxes we just split.
+  \unvbox\partialpage
+  \hsize = \doublecolumnhsize
+  \wd0=\hsize \wd2=\hsize \hbox to\pagewidth{\box0\hfil\box2}%
+}
+\def\enddoublecolumns{%
+  \output={\balancecolumns}\eject % split what we have
+  \endgroup
+  % Back to normal single-column typesetting, but take account of the
+  % fact that we just accumulated some stuff on the output page.
+  \pagegoal=\vsize 
+}
+\def\balancecolumns{%
+  % Called on the last page of the double column material.
+  \setbox0=\vbox{\unvbox255}%
+  \dimen@ = \ht0
+  \advance\dimen@ by \topskip
+  \advance\dimen@ by-\baselineskip
+  \divide\dimen@ by 2
+  \splittopskip = \topskip
+  % Loop until we get a decent breakpoint.
+  {\vbadness=10000 \loop \global\setbox3=\copy0
+    \global\setbox1=\vsplit3 to\dimen@
+    \ifdim\ht3>\dimen@ \global\advance\dimen@ by1pt \repeat}%
+  \setbox0=\vbox to\dimen@{\unvbox1}%
+  \setbox2=\vbox to\dimen@{\unvbox3}%
+  \pagesofar
 }
 \catcode `\@=\other
 
@@ -3100,6 +3165,7 @@ width0pt\relax} \fi
       \secfonts
       \let\rm=\shortcontrm \let\bf=\shortcontbf \let\sl=\shortcontsl
       \rm
+      \hyphenpenalty = 10000
       \advance\baselineskip by 1pt % Open it up a little.
       \def\secentry ##1##2##3##4{}
       \def\unnumbsecentry ##1##2{}
@@ -3143,7 +3209,7 @@ width0pt\relax} \fi
   % This space should be plenty, since a single number is .5em, and the
   % widest letter (M) is 1em, at least in the Computer Modern fonts.
   % (This space doesn't include the extra space that gets added after
-  % the label; that gets put in in \shortchapentry above.)
+  % the label; that gets put in by \shortchapentry above.)
   \advance\dimen0 by 1.1em
   \hbox to \dimen0{#1\hfil}%
 }
@@ -3164,22 +3230,21 @@ width0pt\relax} \fi
   \dosubsubsecentry{#2.#3.#4.#5\labelspace#1}{#6}}
 \def\unnumbsubsubsecentry#1#2{\dosubsubsecentry{#1}{#2}}
 
-
 % This parameter controls the indentation of the various levels.
 \newdimen\tocindent \tocindent = 3pc
 
 % Now for the actual typesetting. In all these, #1 is the text and #2 is the
 % page number.
 %
-% If the toc has to be broken over pages, we would want to be at chapters
+% If the toc has to be broken over pages, we want it to be at chapters
 % if at all possible; hence the \penalty.
 \def\dochapentry#1#2{%
-   \penalty-300 \vskip\baselineskip
+   \penalty-300 \vskip1\baselineskip plus.33\baselineskip minus.25\baselineskip
    \begingroup
      \chapentryfonts
      \tocentry{#1}{\dopageno{#2}}%
    \endgroup
-   \nobreak\vskip .25\baselineskip
+   \nobreak\vskip .25\baselineskip plus.1\baselineskip
 }
 
 \def\dosecentry#1#2{\begingroup
@@ -3204,7 +3269,7 @@ width0pt\relax} \fi
 %
 % \turnoffactive is for the sake of @" used for umlauts.
 \def\tocentry#1#2{\begingroup
-  \hyphenpenalty = 10000
+  \vskip 0pt plus1pt % allow a little stretch for the sake of nice page breaks
   \entry{\turnoffactive #1}{\turnoffactive #2}%
 \endgroup}
 
@@ -3228,8 +3293,6 @@ width0pt\relax} \fi
 \newbox\dblarrowbox    \newbox\longdblarrowbox
 \newbox\pushcharbox    \newbox\bullbox
 \newbox\equivbox       \newbox\errorbox
-
-\let\ptexequiv = \equiv
 
 %{\tentt
 %\global\setbox\dblarrowbox = \hbox to 1em{\hfil$\Rightarrow$\hfil}
@@ -3277,7 +3340,7 @@ width0pt\relax} \fi
 \catcode `\$=3 \catcode `\&=4 \catcode `\#=6
 \catcode `\^=7 \catcode `\_=8 \catcode `\~=13 \let~=\tie
 \catcode `\%=14
-\catcode 43=12
+\catcode 43=12 % plus
 \catcode`\"=12
 \catcode`\==12
 \catcode`\|=12
@@ -3285,6 +3348,7 @@ width0pt\relax} \fi
 \catcode`\>=12
 \escapechar=`\\
 %
+\let\,=\ptexcomma
 \let\~=\ptextilde
 \let\{=\ptexlbrace
 \let\}=\ptexrbrace
@@ -3295,8 +3359,7 @@ width0pt\relax} \fi
 \def\enddots{\relax\ifmmode\endldots\else$\mathsurround=0pt \endldots\,$\fi}
 \def\@{@}%
 \let\bullet=\ptexbullet
-\let\b=\ptexb \let\c=\ptexc \let\i=\ptexi \let\t=\ptext \let\l=\ptexl
-\let\L=\ptexL
+\let\b=\ptexb \let\c=\ptexc \let\i=\ptexi \let\t=\ptext
 %
 \let\Etex=\endgroup}
 
