@@ -3175,11 +3175,9 @@ output_arg_descriptor (call_insn)
 	}
       else if (regno >= 32 && regno <= 39)
 	{
-	  if ((regno & 1) != 0)
-	    abort ();
 	  if (arg_mode == SFmode)
 	    arg_regs[(regno - 32) / 2] = "FR";
-	  else if (arg_mode == DFmode)
+	  else
 	    {
 #ifndef HP_FP_ARG_DESCRIPTOR_REVERSED
 	      arg_regs[(regno - 34) / 2] = "FR";
@@ -3189,8 +3187,6 @@ output_arg_descriptor (call_insn)
 	      arg_regs[(regno - 34) / 2 + 1] = "FR";
 #endif
 	    }
-	  else
-	    abort ();
 	}
     }
   fputs ("\t.CALL ", asm_out_file);
