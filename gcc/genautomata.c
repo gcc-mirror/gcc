@@ -9358,9 +9358,8 @@ output_description ()
       decl = description->decls [i];
       if (decl->mode == dm_reserv)
 	{
-          fprintf (output_description_file, "reservation ");
-          fprintf (output_description_file, "%s", DECL_RESERV (decl)->name);
-          fprintf (output_description_file, ": ");
+          fprintf (output_description_file, "reservation %s: ",
+		   DECL_RESERV (decl)->name);
           output_regexp (DECL_RESERV (decl)->regexp);
           fprintf (output_description_file, "\n");
         }
