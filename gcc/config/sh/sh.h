@@ -942,6 +942,12 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 			      && (GET_MODE_SIZE (MODE2) <= 4)) \
 			  : ((MODE1) != SFmode && (MODE2) != SFmode))))
 
+/* A C expression that is nonzero if hard register NEW_REG can be
+   considered for use as a rename register for OLD_REG register */
+
+#define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
+   sh_hard_regno_rename_ok (OLD_REG, NEW_REG)
+
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 

@@ -6701,6 +6701,26 @@ sh_can_redirect_branch (branch1, branch2)
   return 0;
 }
 
+/* Return non-zero if register old_reg can be renamed to register new_reg.  */
+int
+sh_hard_regno_rename_ok (old_reg, new_reg)
+     unsigned int old_reg ATTRIBUTE_UNUSED;
+     unsigned int new_reg;
+{
+
+/* Interrupt functions can only use registers that have already been
+   saved by the prologue, even if they would normally be
+   call-clobbered.  */
+
+   if ((lookup_attribute ("interrupt_handler",
+			  DECL_ATTRIBUTES (current_function_decl))
+	!= NULL_TREE)
+       && !regs_ever_live[new_reg])
+     return 0;
+
+   return 1;
+}
+
 /* A C statement (sans semicolon) to update the integer variable COST
    based on the relationship between INSN that is dependent on
    DEP_INSN through the dependence LINK.  The default is to make no
