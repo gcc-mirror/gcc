@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.238 1998/06/06 21:23:59 karl Exp $
+% $Id: texinfo.tex,v 2.238 1998/06/07 22:13:42 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -5047,7 +5047,7 @@ width0pt\relax} \fi
 % 4) hoffset; 5) binding offset; 6) topskip.  Then whoever calls us can
 % set \parskip and call \setleading for \baselineskip.
 %
-\def\pagesizes#1#2#3#4#5#6{%
+\def\internalpagesizes#1#2#3#4#5#6{%
   \voffset = #3\relax
   \topskip = #6\relax
   \splittopskip = \topskip
@@ -5076,7 +5076,7 @@ width0pt\relax} \fi
   \setleading{13.2pt}%
   %
   % If page is nothing but text, make it come out even.
-  \pagesizes{46\baselineskip}{6in}{\voffset}{.25in}{\bindingoffset}{36pt}%
+  \internalpagesizes{46\baselineskip}{6in}{\voffset}{.25in}{\bindingoffset}{36pt}%
 }}
 
 % Use @smallbook to reset parameters for 7x9.5 (or so) format.
@@ -5084,7 +5084,7 @@ width0pt\relax} \fi
   \parskip = 2pt plus 1pt
   \setleading{12pt}%
   %
-  \pagesizes{7.5in}{5.in}{\voffset}{.25in}{\bindingoffset}{16pt}%
+  \internalpagesizes{7.5in}{5.in}{\voffset}{.25in}{\bindingoffset}{16pt}%
   %
   \lispnarrowing = 0.3in
   \tolerance = 700
@@ -5103,7 +5103,7 @@ width0pt\relax} \fi
   \setleading{12pt}%
   \parskip = 3pt plus 2pt minus 1pt
   %
-  \pagesizes{53\baselineskip}{6.5in}{\voffset}{.25in}{\bindingoffset}{44pt}%
+  \internalpagesizes{53\baselineskip}{6.5in}{\voffset}{.25in}{\bindingoffset}{44pt}%
   %
   \tolerance = 700
   \hfuzz = 1pt
@@ -5115,7 +5115,7 @@ width0pt\relax} \fi
   \setleading{13.6pt}%
   %
   \afourpaper
-  \pagesizes{237mm}{150mm}{3.6mm}{3.6mm}{3mm}{7mm}%
+  \internalpagesizes{237mm}{150mm}{3.6mm}{3.6mm}{3mm}{7mm}%
   %
   \globaldefs = 0
 }}
@@ -5123,25 +5123,25 @@ width0pt\relax} \fi
 % Use @afourwide to print on European A4 paper in wide format.
 \def\afourwide{%
   \afourpaper
-  \pagesizes{9.5in}{6.5in}{\hoffset}{\normaloffset}{\bindingoffset}{7mm}%
+  \internalpagesizes{9.5in}{6.5in}{\hoffset}{\normaloffset}{\bindingoffset}{7mm}%
   %
   \globaldefs = 0
 }
 
-% @custompaper TEXTHEIGHT[,TEXTWIDTH]
+% @pagesizes TEXTHEIGHT[,TEXTWIDTH]
 % Perhaps we should allow setting the margins, \topskip, \parskip,
 % and/or leading, also. Or perhaps we should compute them somehow.
 % 
-\def\custompaper{\parsearg\custompaperxxx}
-\def\custompaperxxx#1{\custompaperyyy #1,\finish}
-\def\custompaperyyy#1,#2\finish{{%
+\def\pagesizes{\parsearg\pagesizesxxx}
+\def\pagesizesxxx#1{\pagesizesyyy #1,,\finish}
+\def\pagesizesyyy#1,#2,#3\finish{{%
   \setbox0 = \hbox{\ignorespaces #2}\ifdim\wd0 > 0pt \hsize=#2\relax \fi
   \globaldefs = 1
   %
   \parskip = 3pt plus 2pt minus 1pt
   \setleading{13.2pt}%
   %
-  \pagesizes{#1}{\hsize}{\voffset}{\normaloffset}{\bindingoffset}{44pt}%
+  \internalpagesizes{#1}{\hsize}{\voffset}{\normaloffset}{\bindingoffset}{44pt}%
 }}
 
 % Set default to letter.
