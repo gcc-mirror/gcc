@@ -75,7 +75,7 @@ int rs6000_compare_fp_p;
    get the address of the GOT section */
 int rs6000_pic_labelno;
 
-#ifdef _USING_ELFOS_H
+#ifdef USING_ELFOS_H
 /* Which abi to adhere to */
 const char *rs6000_abi_name = RS6000_ABI_NAME;
 
@@ -442,7 +442,7 @@ rs6000_file_start (file, default_cpu)
 	    }
 	}
 
-#ifdef _USING_ELFOS_H
+#ifdef USING_ELFOS_H
       switch (rs6000_sdata)
 	{
 	case SDATA_NONE: fprintf (file, "%s -msdata=none", start); start = ""; break;
@@ -7930,7 +7930,7 @@ rs6000_longcall_ref (call_ref)
    Do not define this macro if you put all constants in the read-only
    data section.  */
 
-#ifdef _USING_ELFOS_H
+#ifdef USING_ELFOS_H
 
 void
 rs6000_select_rtx_section (mode, x)
@@ -8132,7 +8132,7 @@ rs6000_encode_section_info (decl)
     }
 }
 
-#endif /* _USING_ELFOS_H */
+#endif /* USING_ELFOS_H */
 
 
 /* Return a REG that occurs in ADDR with coefficient 1.

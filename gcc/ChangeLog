@@ -1,3 +1,8 @@
+2001-12-07  David O'Brien  <obrien@FreeBSD.org>
+
+	* elfos.h (_USING_ELFOS_H): Rename to USING_ELFOS_H, to match mainline.
+	* rs6000/rs6000.c (_USING_ELFOS_H): Likewise.
+
 2001-12-06  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.h (STRUCT_VALUE): Suppress definition.

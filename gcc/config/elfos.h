@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Define a symbol indicating that we are using elfos.h.  */
-#define _USING_ELFOS_H
+#define USING_ELFOS_H
 
 /* The prefix to add to user-visible assembler symbols.
 
