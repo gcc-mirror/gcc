@@ -451,8 +451,9 @@ Objective-C and Objective-C++ Dialects}.
 -malloc-cc  -mfixed-cc  -mdword  -mno-dword @gol
 -mdouble  -mno-double @gol
 -mmedia  -mno-media  -mmuladd  -mno-muladd @gol
--mfdpic -minline-plt -mgprel-ro -multilib-library-pic -mlinked-fp @gol
--mlibrary-pic  -macc-4 -macc-8 @gol
+-mfdpic  -minline-plt -mgprel-ro  -multilib-library-pic @gol
+-mlinked-fp  -mlong-calls  -malign-labels @gol
+-mlibrary-pic  -macc-4  -macc-8 @gol
 -mpack  -mno-pack  -mno-eflags  -mcond-move  -mno-cond-move @gol
 -mscc  -mno-scc  -mcond-exec  -mno-cond-exec @gol
 -mvliw-branch  -mno-vliw-branch @gol
@@ -7821,6 +7822,21 @@ Follow the EABI requirement of always creating a frame pointer whenever
 a stack frame is allocated.  This option is enabled by default and can
 be disabled with @option{-mno-linked-fp}.
 
+@item -mlong-calls
+@opindex mlong-calls
+
+Use indirect addressing to call functions outside the current
+compilation unit.  This allows the functions to be placed anywhere
+within the 32-bit address space.
+
+@item -malign-labels
+@opindex malign-labels
+
+Try to align labels to an 8-byte boundary by inserting nops into the
+previous packet.  This option only has an effect when VLIW packing
+is enabled.  It doesn't create new packets; it merely adds nops to
+existing ones.
+
 @item -mlibrary-pic
 @opindex mlibrary-pic
 
@@ -7957,8 +7973,8 @@ Cause gas to print out tomcat statistics.
 @opindex mcpu
 
 Select the processor type for which to generate code.  Possible values are
-@samp{simple}, @samp{tomcat}, @samp{fr500}, @samp{fr400}, @samp{fr300},
-@samp{frv}.
+@samp{frv}, @samp{fr550}, @samp{tomcat}, @samp{fr500}, @samp{fr450},
+@samp{fr405}, @samp{fr400}, @samp{fr300} and @samp{simple}.
 
 @end table
 

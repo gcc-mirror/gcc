@@ -1,3 +1,130 @@
+2004-09-09  Richard Sandiford  <rsandifo@redhat.com>
+	    Catherine Moore  <clm@redhat.com>
+
+	* config/frv/frv-protos.h (FRV_CPU_FR550, FRV_CPU_FR450)
+	(FRV_CPU_FR405): New processor enums.
+	(frv_issue_rate, frv_acc_group): Declare.
+	* config/frv/frv.h (CPP_SPEC, CPP_FRV_SPEC, CPP_FR500_SPEC): Delete.
+	(CPP_FR400_SPEC, CPP_SIMPLE_SPEC): Delete.
+	(MASK_DEFAULT_FR550, MASK_DEFAULT_FR450): New macros.
+	(SUBTARGET_EXTRA_SPECS, EXTRA_SPECS, CPP_CPU_DEFAULT_SPEC): Delete.
+	(TARGET_CPU_CPP_BUILTINS): Define the macros that were previously
+	handled by CPP_SPEC.
+	(MASK_LONG_CALLS, TARGET_LONG_CALLS): New macros.
+	(MASK_ALIGN_LABELS, TARGET_ALIGN_LABELS): New macros.
+	(ACC_MASK): New macro.
+	(TARGET_MEDIA_REV2): Include FRV_CPU_{FR405,FR450,FR550}.
+	(TARGET_MEDIA_FR450): New macro.
+	(TARGET_FR500_FR550_BUILTINS, TARGET_FR405_BUILTINS): New macros.
+	(TARGET_SWITCHES): Add -m{no-,}align-labels and -m{no-,}long-calls.
+	(LABEL_ALIGN_AFTER_BARRIER): Define.
+	(ACC_LAST, ACCG_LAST): Add four new accumulator registers.
+	(IACC_FIRST, IACC_LAST): New pair of SPRs.
+	(ACCG_FIRST, AP_FIRST, SPR_FIRST, SPR_LAST): Adjust accordingly.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, REG_ALLOC_ORDER)
+	(REGISTER_NAMES): Add entries for new registers.
+	(REG_CLASS_CONTENTS): Update for new register ranges.
+	(EXTRA_CONSTRAINT_FOR_S): Redefine in terms of call_operand.
+	(ISSUE_RATE, CLEAR_VLIW_START, SET_VLIW_START): Delete.
+	(PACKING_FLAG_USED_P): Delete.
+	(FRV_BUILTIN_MQLCLRHS, FRV_BUILTIN_MQLMTHS, FRV_BUILTIN_MQSLLHI)
+	(FRV_BUILTIN_MQSRAHI, FRV_BUILTIN_SMUL, FRV_BUILTIN_UMUL)
+	(FRV_BUILTIN_PREFETCH0, FRV_BUILTIN_PREFETCH, FRV_BUILTIN_SMASS)
+	(FRV_BUILTIN_SMSSS, FRV_BUILTIN_SMU, FRV_BUILTIN_SCUTSS)
+	(FRV_BUILTIN_ADDSS, FRV_BUILTIN_SUBSS, FRV_BUILTIN_SLASS)
+	(FRV_BUILTIN_IACCread{l,ll}, FRV_BUILTIN_IACCset{ll,l})
+	(FRV_BUILTIN_SCAN): New members of frv_builtin_enum.
+	(FRV_BUILTIN_FIRST_NONMEDIA): New macro.
+	(CPU_UNITS_QUERY): Define to 1.
+	* config/frv/frv.c: Include gt-frv.h
+	(NUM_NOP_PATTERNS, NTH_UNIT, UNIT_NUMBER, PACKING_FLAG_P): New macros.
+	(SET_PACKING_FLAG, CLEAR_PACKING_FLAG, FOR_EACH_REGNO): New macros.
+	(frv_insn_group): New enumeration.
+	(frv_unit_names, frv_unit_groups, frv_unit_codes): New variables.
+	(frv_type_to_unit, frv_nops, frv_num_nops): New variables.
+	(REGSTATE_DEAD, REGSTATE_LIVE, REGSTATE_UNUSED, REGSTATE_MASK)
+	(REGSTATE_CONDJUMP): Delete.  Shuffle other numbers to cover the
+	gap left by REGSTATE_LIVE.
+	(regstate_t): New typedef.
+	(TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(frv_default_flags_for_cpu): Handle FRV_CPU_{FR550,FR450,FR405}.
+	(frv_override_options): Check for -mcpu={fr550,fr450,fr405}.
+	Initialize frv_unit_codes[] and frv_type_to_unit[].
+	(frv_conditional_register_usage): Remove redundant fixing of
+	accumulator registers.
+	(frv_insn_packing_flag): Update specification.
+	(frv_function_prologue): Don't set frv_insn_packing_flag here.
+	Zero out frv_nops[].
+	(frv_expand_epilogue): Remove comments about the no-longer-present
+	SIBCALL_P argument.
+	(frv_asm_output_mi_thunk): Check frv_issue_rate() rather than
+	PACKING_FLAG_USED_P() when deciding whether to pack instructions.
+	(frv_asm_output_opcode, frv_final_prescan_insn): Simplify in light
+	of the new meaning of frv_insn_packing_flag.  Emit an mnop.p if
+	packing is disabled and if INSN can only issue to M1.
+	(call_operand): Check TARGET_LONG_CALLS.
+	(acc_operand, even_acc_operand, quad_acc_operand)
+	(accg_operand): Simplify.  Don't accept pseudo registers.
+	(output_move_single): Handle SPR<-zero moves.
+	(frv_issue_rate): Make non-static.  Handle FRV_CPU_{FR550,FR450,FR405}.
+	(frv_registers_update, frv_registers_used_p): Delete.
+	(frv_registers_set_p): Delete.
+	(frv_acc_group_1, frv_acc_group, frv_insn_unit): New functions.
+	(frv_issues_to_branch_unit_p): New function.
+	(frv_packet): New structure.
+	(frv_cond_flags, frv_regstate_conflict_p): New functions.
+	(frv_registers_conflict_p_1, frv_registers_conflict_p): New functions.
+	(frv_registers_update_1, frv_registers_update): New functions.
+	(frv_start_packet, frv_start_packet_block, frv_finish_packet)
+	(frv_pack_insn_p, frv_add_insn_to_packet, frv_insert_nop_in_packet)
+	(frv_for_each_packet, frv_sort_insn_group_1, frv_compare_insns)
+	(frv_sort_insn_group, frv_reorder_packet): New functions.
+	(frv_pack_insns): Use frv_reorder_packet.
+	(frv_packet_address): New variable.
+	(frv_fill_unused_units, frv_align_label, frv_reorg_packet)
+	(frv_register_nop, frv_reorg): New functions.
+	(bdesc_1arg): Add __SCUTSS.
+	(bdesc_2arg): Add __MQLCLRHS, __MQLMTHS, __SMUL, __UMUL, __ADDSS,
+	__SUBSS, __SLASS and __SCAN.
+	(bdesc_2argimm): Add __MQSLLHI and __MQSRAHI.
+	(bdesc_int_void2arg, bdesc_prefetches): New arrays.
+	(frv_init_builtins): Register the above builtins.
+	(frv_int_to_acc): Use ACC_MASK to check for valid accumulator
+	registers.  Turn the referenced accumulators into global registers.  
+	(frv_read_iacc_argument): New function.
+	(frv_expand_int_void2arg, frv_expand_prefetches): New functions.
+	(frv_split_iacc_move): New function.
+	(frv_expand_builtin): Handle the new builtins.
+	* config/frv/frv.md: Replace old schedulers with new order-independent
+	ones.  Add schedulers for the FR405, FR450 and FR550.  Describe new
+	packing algorithm.
+	(cpu): Add fr550, fr450 and fr405.
+	(type): Add macc, scan, cut, fnop, fscmp, fdcmp, mnop, mqlimh and
+	mqshift.  Replace fmas with fsmadd and fmad with fdmadd.  Delete m7.
+	(*muladd[sd]f4, *mulsub[sd]f4): Fix types.
+	(*cmp[sd]f_cc_fp): Use new f[sd]cmp types.
+	(fnop, mnop): New patterns.
+	(UNSPEC_MQLCLRHS, UNSPEC_MQLMTHS, UNSPEC_MQSLLHI, UNSPEC_MQSRAHI):
+	New constants.
+	(mexpdhw, *cond_exec_mexpdhw): Fix destination operands.
+	(mclracca8): Use ACC_MASK to determine the upper set of accumulator
+	registers.
+	(mqlclrhs, mqlmths, mqsllhi, mqsrahi): New patterns.
+	(UNSPEC_SMUL, UNSPEC_UMUL, UNSPEC_SMU, UNSPEC_ADDSS, UNSPEC_SUBSS)
+	(UNSPEC_SLASS, UNSPEC_SCAN, UNSPEC_INTSS, UNSPEC_SCUTSS)
+	(UNSPEC_PREFETCH0, UNSPEC_PREFETCH, UNSPEC_IACCreadll)
+	(UNSPEC_IACCreadl, UNSPEC_IACCsetll, UNSPEC_IACCsetl, UNSPEC_SMASS)
+	(UNSPEC_SMSSS, UNSPEC_IMUL, IACC0_REG): New constants.
+	(smul, umul, smass, smsss, smu, addss, subss, slass, scan, scutss)
+	(frv_prefetch0, frv_prefetch): New patterns.
+	* config/frv/t-frv (MULTILIB_OPTIONS): Remove -mcpu=frv and
+	-mcpu=simple.  Add -mcpu=fr550.
+	(MULTILIB_DIRNAMES): Update accordingly.
+	(MULTILIB_MATCHES): Use the fr400 multilibs for -mcpu=fr405 and
+	-mcpu=fr450.
+	* doc/invoke.texi: Document the new -mcpu={fr550,fr450,fr405},
+	-mlong-calls and -malign-labels options for FR-V.
+
 2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/8420
