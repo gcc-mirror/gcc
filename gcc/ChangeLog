@@ -1,3 +1,11 @@
+Fri Feb  6 14:34:28 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* mips/t-r3900: New - same as t-ecoff but eliminate 
+	multilibs: mips1 and mips3.
+	* configure.in (tx39*): Use new mips/t-r3900.
+ 	* configure: Rebuild.
+	* mips/r3900.h (MULTILIB_DEFAULTS): Eliminate mips1.
+
 1998-02-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c: Add old_args_size.

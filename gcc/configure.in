@@ -1992,11 +1992,11 @@ for machine in $build $host $target; do
 		;;
 	mipstx39el-*-elf*)
 		tm_file="mips/r3900.h mips/elfl.h mips/abi64.h libgloss.h"
-		tmake_file=mips/t-ecoff
+		tmake_file=mips/t-r3900
 		;;
 	mipstx39-*-elf*)
 		tm_file="mips/r3900.h mips/elf.h mips/abi64.h libgloss.h"
-		tmake_file=mips/t-ecoff
+		tmake_file=mips/t-r3900
 		;;
 	mips-*-*)				# Default MIPS RISC-OS 4.0.
 		if [[ x$stabs = xyes ]]; then
