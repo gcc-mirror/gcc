@@ -1,3 +1,12 @@
+Thu Feb 11 14:30:36 1999  Sam Tardieu  <tardieu@act-europe.fr>
+
+	* gcc.c (pass_exit_codes, greatest_status): New variables.
+	(struct option_map): Add entry for "--pass-exit-codes".
+	(execute): Update greatest_status if error.
+	(display_help): Add documentation for -pass-exit-codes.
+	(process_command): Handle -pass-exit-codes.
+	(main): Look at pass_exit_codes and greatest_status on call to exit.
+
 Tue Feb  2 16:39:39 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* mips/iris5.h (SWITCHES_NEED_SPACES): New macro.
