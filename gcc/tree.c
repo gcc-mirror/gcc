@@ -1969,7 +1969,7 @@ staticp (arg)
     case FUNCTION_DECL:
       /* Nested functions aren't static, since taking their address
 	 involves a trampoline.  */
-      return ! FUNCTION_NEEDS_STATIC_CHAIN (arg);
+       return decl_function_context (arg) == 0;
     case VAR_DECL:
       return TREE_STATIC (arg) || DECL_EXTERNAL (arg);
 
