@@ -3320,17 +3320,17 @@ move\\t%0,%z4\\n\\
 }")
 
 (define_insn "movdi_internal"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,R,o,*d,*x")
-	(match_operand:DI 1 "general_operand" "d,iF,R,o,d,d,*x,*d"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,R,o,*x,*d,*x")
+	(match_operand:DI 1 "general_operand" "d,iF,R,o,d,d,J,*x,*d"))]
   "!TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
        || operands[1] == CONST0_RTX (DImode))"
   "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,arith,load,load,store,store,hilo,hilo")
+  [(set_attr "type"	"move,arith,load,load,store,store,hilo,hilo,hilo")
    (set_attr "mode"	"DI")
-   (set_attr "length"   "2,4,2,4,2,4,2,2")])
+   (set_attr "length"   "2,4,2,4,2,4,2,2,2")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -3344,17 +3344,17 @@ move\\t%0,%z4\\n\\
   "")
 
 (define_insn "movdi_internal2"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*x,*a")
-	(match_operand:DI 1 "movdi_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*x,*d,*I"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*x,*d,*x,*a")
+	(match_operand:DI 1 "movdi_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,J,*x,*d,*J"))]
   "TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || se_register_operand (operands[1], DImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
        || operands[1] == CONST0_RTX (DImode))"
   "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,hilo,hilo,hilo")
+  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,hilo,hilo,hilo,hilo")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"1,2,1,2,1,2,1,2,1,1,2")])
+   (set_attr "length"	"1,2,1,2,1,2,1,2,1,1,1,2")])
 
 ;; Handle input reloads in DImode.
 ;; This is mainly to handle reloading HILO_REGNUM.  Note that we may
@@ -3574,7 +3574,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movsi_internal1"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*f*z,*f,*f,*f,*R,*m,*x,*x,*d,*d")
-	(match_operand:SI 1 "move_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*f*z,*d,*f,*R,*m,*f,*f,I,*d,*x,*a"))]
+	(match_operand:SI 1 "move_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*f*z,*d,*f,*R,*m,*f,*f,J,*d,*x,*a"))]
   "TARGET_DEBUG_H_MODE
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode)
@@ -3586,7 +3586,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movsi_internal2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*z,*x,*d,*x,*d")
-	(match_operand:SI 1 "move_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*z,*d,I,*x,*d,*a"))]
+	(match_operand:SI 1 "move_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*z,*d,J,*x,*d,*a"))]
   "!TARGET_DEBUG_H_MODE
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode)
