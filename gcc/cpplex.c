@@ -846,8 +846,7 @@ _cpp_lex_token (pfile, result)
   cppchar_t c;
   cpp_buffer *buffer;
   const unsigned char *comment_start;
-  unsigned char was_skip_newlines = pfile->state.skip_newlines;
-  unsigned char newline_in_args = 0;
+  unsigned char bol = pfile->state.skip_newlines;
 
  done_directive:
   buffer = pfile->buffer;
@@ -884,33 +883,23 @@ _cpp_lex_token (pfile, result)
       goto next_char2;
 
     case '\n': case '\r':
-      /* Don't let directives spill over to the next line.  */
-      if (pfile->state.in_directive)
-	buffer->read_ahead = c;
-      else
+      if (!pfile->state.in_directive)
 	{
 	  handle_newline (buffer, c);
-
+	  bol = 1;
 	  pfile->lexer_pos.output_line = buffer->lineno;
 
-	  /* Skip newlines in macro arguments (except in directives).  */
+	  /* Newlines in arguments are white space (6.10.3.10).
+             Otherwise, clear any white space flag.  */
 	  if (pfile->state.parsing_args)
-	    {
-	      /* Set the whitespace flag.   */
-	      newline_in_args = 1;
-	      result->flags |= PREV_WHITE;
-	      goto next_char;
-	    }
-
-	  if (was_skip_newlines)
-	    {
-	      /* Clear any whitespace flag.   */
-	      result->flags &= ~PREV_WHITE;
-	      goto next_char;
-	    }
+	    result->flags |= PREV_WHITE;
+	  else
+	    result->flags &= ~PREV_WHITE;
+	  goto next_char;
 	}
 
-      /* Next we're at BOL, so skip new lines.  */
+      /* Don't let directives spill over to the next line.  */
+      buffer->read_ahead = c;
       pfile->state.skip_newlines = 1;
       result->type = CPP_EOF;
       break;
@@ -1172,12 +1161,16 @@ _cpp_lex_token (pfile, result)
 	c = get_effective_char (buffer);
 
       if (c == '#')
-	ACCEPT_CHAR (CPP_PASTE);
-      else
 	{
-	  result->type = CPP_HASH;
-	do_hash:
-	  if (newline_in_args)
+	  ACCEPT_CHAR (CPP_PASTE);
+	  break;
+	}
+
+      result->type = CPP_HASH;
+    do_hash:
+      if (bol)
+	{
+	  if (pfile->state.parsing_args)
 	    {
 	      /* 6.10.3 paragraph 11: If there are sequences of
 		 preprocessing tokens within the list of arguments that
@@ -1200,11 +1193,11 @@ _cpp_lex_token (pfile, result)
 	      if (pfile->lexer_pos.col == 1)
 		result->flags &= ~PREV_WHITE;
 	    }
-	  else if (was_skip_newlines)
+	  else
 	    {
 	      /* This is the hash introducing a directive.  */
 	      if (_cpp_handle_directive (pfile, result->flags & PREV_WHITE))
-		goto done_directive; /* was_skip_newlines still 1.  */
+		goto done_directive; /* bol still 1.  */
 	      /* This is in fact an assembler #.  */
 	    }
 	}

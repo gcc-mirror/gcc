@@ -902,9 +902,10 @@ _cpp_pop_context (pfile)
 }
 
 /* Internal routine to return a token, either from an in-progress
-   macro expansion, or from the source file as appropriate.  Handles
-   macros, so tokens returned are post-expansion.  Does not filter
-   CPP_PLACEMARKER tokens.  Returns CPP_EOF at EOL and EOF.  */
+   macro expansion, or from the source file as appropriate.
+   Transparently enters included files.  Handles macros, so tokens
+   returned are post-expansion.  Does not filter CPP_PLACEMARKER
+   tokens.  Returns CPP_EOF at EOL and EOF.  */
 void
 _cpp_get_token (pfile, token)
      cpp_reader *pfile;
@@ -929,6 +930,7 @@ _cpp_get_token (pfile, token)
 	      _cpp_pop_context (pfile);
 	      continue;
 	    }
+	  /* End of argument pre-expansion.  */
 	  token->type = CPP_EOF;
 	  token->flags = 0;
 	}
@@ -981,12 +983,13 @@ _cpp_get_token (pfile, token)
 
 /* External interface to get a token.  Tokens are returned after macro
    expansion and directives have been handled, as a continuous stream.
-   Transparently enters included files.  CPP_EOF indicates end of
-   original source file.  Filters out CPP_PLACEMARKER tokens.
+   Compared to the function above, CPP_EOF means EOF, and placemarker
+   tokens are filtered out.  Also, it skips tokens if we're skipping,
+   and saves tokens to lookahead.
 
-   For the benefit of #pragma callbacks which may want to get the
-   pragma's tokens, returns CPP_EOF to indicate end-of-directive in
-   this case.  */
+   CPP_EOF indicates end of original source file.  For the benefit of
+   #pragma callbacks which may want to get the pragma's tokens,
+   returns CPP_EOF to indicate end-of-directive in this case.  */
 void
 cpp_get_token (pfile, token)
      cpp_reader *pfile;
@@ -997,13 +1000,7 @@ cpp_get_token (pfile, token)
       _cpp_get_token (pfile, token);
 
       if (token->type == CPP_EOF)
-	{
-	  /* In directives we should pass through EOLs for the callbacks.  */
-	  if (pfile->buffer->cur == pfile->buffer->rlimit
-	      || pfile->state.in_directive || pfile->state.parsing_args)
-	    break;
-	  continue;
-	}
+	break;
       /* We are not merging the PREV_WHITE of CPP_PLACEMARKERS.  I
          don't think it really matters.  */
       else if (pfile->skipping || token->type == CPP_PLACEMARKER)

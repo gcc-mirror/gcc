@@ -1,4 +1,4 @@
-/* CPP Library.
+/* CPP Library. (Directive handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
@@ -837,12 +837,7 @@ do_ident (pfile)
    to the front end.  C99 defines three pragmas and says that no macro
    expansion is to be performed on them; whether or not macro
    expansion happens for other pragmas is implementation defined.
-   This implementation never macro-expands the text after #pragma.
-
-   We currently do not support the _Pragma operator.  Support for that
-   has to be coordinated with the front end.  Proposed implementation:
-   both #pragma blah blah and _Pragma("blah blah") become
-   __builtin_pragma(blah blah) and we teach the parser about that.  */
+   This implementation never macro-expands the text after #pragma.  */
 
 /* Sub-handlers for the pragmas needing treatment here.
    They return 1 if the token buffer is to be popped, 0 if not. */
@@ -1698,19 +1693,6 @@ handle_assertion (pfile, str, type)
     }
 
   run_directive (pfile, type, str, count, 0);
-}
-
-/* Determine whether the identifier ID, of length LEN, is a defined macro.  */
-int
-cpp_defined (pfile, id, len)
-     cpp_reader *pfile;
-     const U_CHAR *id;
-     int len;
-{
-  cpp_hashnode *hp = cpp_lookup (pfile, id, len);
-
-  /* If it's of type NT_MACRO, it cannot be poisoned.  */
-  return hp->type == NT_MACRO;
 }
 
 /* Allocate a new cpp_buffer for PFILE, and push it on the input

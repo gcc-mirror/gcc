@@ -281,3 +281,16 @@ cpp_forall_identifiers (pfile, cb, v)
     }
   while (++p < limit);
 }
+
+/* Determine whether the identifier ID, of length LEN, is a defined macro.  */
+int
+cpp_defined (pfile, id, len)
+     cpp_reader *pfile;
+     const U_CHAR *id;
+     int len;
+{
+  cpp_hashnode *hp = cpp_lookup (pfile, id, len);
+
+  /* If it's of type NT_MACRO, it cannot be poisoned.  */
+  return hp->type == NT_MACRO;
+}

@@ -1,3 +1,11 @@
+2000-11-09  Neil Booth  <neilb@earthling.net>
+
+	* cpphash.c: Move cpp_defined here from cpplib.c.
+	* cpplib.c: Update comments, move cpp_defined to cpphash.c.
+	* cpplex.c (_cpp_lex_token): Don't leave the lexer at EOL.
+	* cppmacro.c (cpp_get_token): Update comments, no need now
+	to catch the CPP_EOF meaning EOL case.
+
 2000-11-08  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/sparc/sparc.c (sparc_va_arg): When the required alignment
