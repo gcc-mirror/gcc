@@ -274,16 +274,17 @@ java_handle_option (size_t scode, const char *arg, int value)
 
   if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
     {
-      /* These can take an emtpy argument.  */
+      /* These can take an empty argument.  */
       if (code == OPT_fassume_compiled_
 	  || code == OPT_fclasspath_
-	  || code == OPT_fCLASSPATH_)
+	  || code == OPT_fCLASSPATH_
+	  || code == OPT_fbootclasspath_)
 	arg = "";
       else
-    {
+	{
 	  error ("missing argument to \"-%s\"", option->opt_text);
-      return 1;
-    }
+	  return 1;
+	}
     }
 
   switch (code)
@@ -384,7 +385,7 @@ java_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fdump_:
       if (!dump_switch_p (option->opt_text + strlen ("f")))
-  return 0;
+	return 0;
       break;
 
     case OPT_femit_class_file:
