@@ -123,6 +123,9 @@
    getenv("GCJ_PROPERTIES").  */
 #undef DISABLE_GETENV_PROPERTIES
 
+/* Define if we should ignore arguments to main().  */
+#undef DISABLE_MAIN_ARGS
+
 /* Define if using setjmp/longjmp exceptions.  */
 #undef SJLJ_EXCEPTIONS
 
@@ -132,6 +135,9 @@
 /* Define if you have dladdr() */
 #undef HAVE_DLADDR
  
+/* Define if tzname is missing.  */
+#undef NO_TZNAME
+
 /* Define if getuid() and friends are missing.  */
 #undef NO_GETUID
 

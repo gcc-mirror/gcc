@@ -131,7 +131,9 @@ java::io::File::performList (java::io::FilenameFilter *filter,
 			     java::io::FileFilter *fileFilter, 
 			     java::lang::Class *result_type)
 {
-#ifdef HAVE_DIRENT_H
+  /* Some systems have dirent.h, but no directory reading functions like
+     opendir.  */
+#if defined(HAVE_DIRENT_H) && defined(HAVE_OPENDIR)
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
@@ -178,9 +180,9 @@ java::io::File::performList (java::io::FilenameFilter *filter,
   jobjectArray ret = JvNewObjectArray (list->size(), result_type, NULL);
   list->toArray(ret);
   return ret;
-#else /* HAVE_DIRENT_H */
+#else /* HAVE_DIRENT_H && HAVE_OPENDIR */
   return NULL;
-#endif /* HAVE_DIRENT_H */
+#endif /* HAVE_DIRENT_H && HAVE_OPENDIR */
 }
 
 jboolean
