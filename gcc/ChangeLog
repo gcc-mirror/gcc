@@ -1,3 +1,12 @@
+2000-04-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (collect_objlike_expansion): Add sanity check.
+	(special_symbol): Remove case T_CONST, T_XCONST, T_MCONST.  If
+	the buffer is the empty string, return.  Mark __DATE__ and
+	__TIME__ as XCONST nodes, not MCONST.
+	(_cpp_macroexpand): Avoid pushing an empty buffer.
+	(funlike_macroexpand): Don't pop token_buffer here.
+
 Sun Apr 23 18:37:53 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.h (REGNO_IN_RANGE_P): New macro.
