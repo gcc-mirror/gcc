@@ -54,9 +54,7 @@ __dso_handle:
 __dso_handle:
 	data8	0
 #endif
-#ifdef HAVE_GAS_HIDDEN
 	.hidden __dso_handle#
-#endif
 
 	/* The frame object.  */
 	/* ??? How can we rationally keep this size correct?  */

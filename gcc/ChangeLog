@@ -1,3 +1,8 @@
+2000-09-19  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/crtbegin.asm (__dso_handle): Delete use of
+	HAVE_GAS_HIDDEN macro.
+
 Tue 19-Sep-2000 22:38:57 BST  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c (lex_line): Drop the EOF token for unknown
