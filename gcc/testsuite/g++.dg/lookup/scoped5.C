@@ -9,7 +9,7 @@ class A {
 public:
   class B {
   public:
-    int a;			// { dg-error "member of base" }
+    int a;			// { dg-error "object missing" }
   };
 };
 
