@@ -743,9 +743,11 @@ save_fixed_argument_area (reg_parm_stack_space, argblock,
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	  emit_block_move (validize_mem (save_area), stack_area,
-			   GEN_INT (num_to_save),
-			   PARM_BOUNDARY / BITS_PER_UNIT);
+	  /* Cannot use emit_block_move here because it can be done by a library
+	     call which in turn gets into this place again and deadly infinite
+	     recursion happens.  */
+	  move_by_pieces (validize_mem (save_area), stack_area, num_to_save,
+			  PARM_BOUNDARY / BITS_PER_UNIT);
 	}
       else
 	{
@@ -781,9 +783,12 @@ restore_fixed_argument_area (save_area, argblock, high_to_save, low_to_save)
   if (save_mode != BLKmode)
     emit_move_insn (stack_area, save_area);
   else
-    emit_block_move (stack_area, validize_mem (save_area),
-		     GEN_INT (high_to_save - low_to_save + 1),
-		     PARM_BOUNDARY / BITS_PER_UNIT);
+    /* Cannot use emit_block_move here because it can be done by a library
+       call which in turn gets into this place again and deadly infinite
+       recursion happens.  */
+    move_by_pieces (stack_area, validize_mem (save_area),
+		    high_to_save - low_to_save + 1,
+		    PARM_BOUNDARY / BITS_PER_UNIT);
 }
 #endif
 	  

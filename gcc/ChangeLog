@@ -13,6 +13,10 @@
 	* config/sparc/sparc.c (input_operand): Allow HImode and QImode
 	valid sethi operations when TARGET_ARCH64.
 
+	* calls.c (save_fixed_argument_area): If save_mode is BLKmode,
+	always use move_by_pieces to avoid infinite recursion.
+	(restore_fixed_argument_area): Likewise.
+
 Mon Dec  6 12:24:52 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (optimize_bit_field_compare): Only use one mode
