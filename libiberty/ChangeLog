@@ -1,5 +1,9 @@
 2003-11-20  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* testsuite/demangle-expected: Minor changes to match output of
+	new demangler: adjust whitespace in four tests, and change order
+	of qualifiers in one test.
+
 	* cp-demangle.c: Complete rewrite.
 
 2003-11-19  Mark Mitchell  <mark@codesourcery.com>

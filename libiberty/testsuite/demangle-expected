@@ -2629,7 +2629,7 @@ operator<<(X const&, X const&)
 #
 --format=gnu-v3
 _ZN3FooIA4_iE3barE
-Foo<int[4]>::bar
+Foo<int [4]>::bar
 #
 --format=gnu-v3
 _Z1fIiEvi
@@ -2697,7 +2697,7 @@ typeinfo for a_class
 #
 --format=gnu-v3
 U4_farrVKPi
-int* restrict volatile const _far
+int* const volatile restrict _far
 # 
 --format=gnu-v3
 _Z3fooILi2EEvRAplT_Li1E_i
@@ -2749,11 +2749,11 @@ f(int (* const)(int))
 #
 --format=gnu-v3
 _Z1fAszL_ZZNK1N1A1fEvE3foo_0E_i
-f(int[sizeof(N::A::f() const::foo)])
+f(int [sizeof (N::A::f() const::foo)])
 #
 --format=gnu-v3
 _Z1fA37_iPS_
-f(int[37], int (*) [37])
+f(int [37], int (*) [37])
 #
 --format=gnu-v3
 _Z1fM1AFivEPS0_
@@ -2777,7 +2777,7 @@ s(int (*) [37], int (**) [37])
 #
 --format=gnu-v3
 _Z3fooA30_A_i
-foo(int[30][])
+foo(int [30][])
 #
 --format=gnu-v3
 _Z3kooPA28_A30_i
