@@ -181,7 +181,7 @@ javao_files = $(java_source_files:.java=.lo) \
 
 x_javao_files = $(x_java_source_files:.java=.lo)
 
-libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
+libffi_files = `find ../libffi/ \-name '*.lo'`
 
 libgcj_la_SOURCES = prims.cc posix.cc jni.cc exception.cc \
 	resolve.cc defineclass.cc interpret.cc name-finder.cc \
