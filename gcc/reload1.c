@@ -4109,44 +4109,35 @@ order_regs_for_reload (chain)
 
   COPY_HARD_REG_SET (bad_spill_regs, bad_spill_regs_global);
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    {
-      hard_reg_n_uses[i].regno = i;
-      hard_reg_n_uses[i].uses = 0;
-    }
-
   /* Count number of uses of each hard reg by pseudo regs allocated to it
      and then order them by decreasing use.  */
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      int j;
+      hard_reg_n_uses[i].regno = i;
+      hard_reg_n_uses[i].uses = 0;
 
       /* Test the various reasons why we can't use a register for
 	 spilling in this insn.  */
       if (fixed_regs[i]
 	  || REGNO_REG_SET_P (chain->live_before, i)
 	  || REGNO_REG_SET_P (chain->live_after, i))
-	{
-	  SET_HARD_REG_BIT (bad_spill_regs, i);
-	  continue;
-	}
-
-      /* Now find out which pseudos are allocated to it, and update
-	 hard_reg_n_uses.  */
-      CLEAR_REG_SET (pseudos_counted);
-
-      EXECUTE_IF_SET_IN_REG_SET
-	(chain->live_before, FIRST_PSEUDO_REGISTER, j,
-	 {
-	   count_pseudo (hard_reg_n_uses, j);
-	 });
-      EXECUTE_IF_SET_IN_REG_SET
-	(chain->live_after, FIRST_PSEUDO_REGISTER, j,
-	 {
-	   count_pseudo (hard_reg_n_uses, j);
-	 });
+	SET_HARD_REG_BIT (bad_spill_regs, i);
     }
+
+  /* Now compute hard_reg_n_uses.  */
+  CLEAR_REG_SET (pseudos_counted);
+
+  EXECUTE_IF_SET_IN_REG_SET
+    (chain->live_before, FIRST_PSEUDO_REGISTER, i,
+     {
+       count_pseudo (hard_reg_n_uses, i);
+     });
+  EXECUTE_IF_SET_IN_REG_SET
+    (chain->live_after, FIRST_PSEUDO_REGISTER, i,
+     {
+       count_pseudo (hard_reg_n_uses, i);
+     });
 
   FREE_REG_SET (pseudos_counted);
 
