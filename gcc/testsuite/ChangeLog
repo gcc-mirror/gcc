@@ -1,3 +1,7 @@
+2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c99-array-nonobj-1.c: No longer XFAIL.
+
 2000-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/string-opt-5.c: Add some memset tests.

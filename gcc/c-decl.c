@@ -4526,18 +4526,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	      itype = build_range_type (sizetype, size_zero_node, NULL_TREE);
 	    }
 
-#if 0
-	  /* This had bad results for pointers to arrays, as in
-	     union incomplete (*foo)[4];  */
-	  /* Complain about arrays of incomplete types, except in typedefs.  */
+	  /* If pedantic, complain about arrays of incomplete types.  */
 
-	  if (!COMPLETE_TYPE_P (type)
-	      /* Avoid multiple warnings for nested array types.  */
-	      && TREE_CODE (type) != ARRAY_TYPE
-	      && !(specbits & (1 << (int) RID_TYPEDEF))
-	      && !C_TYPE_BEING_DEFINED (type))
-	    warning ("array type has incomplete element type");
-#endif
+	  if (pedantic && !COMPLETE_TYPE_P (type))
+	    pedwarn ("array type has incomplete element type");
 
 #if 0
 	  /* We shouldn't have a function type here at all!
@@ -5055,6 +5047,8 @@ grokparms (parms_info, funcdef_flag)
 	    {
 	      /* Barf if the parameter itself has an incomplete type.  */
 	      tree type = TREE_VALUE (typelt);
+	      if (type == error_mark_node)
+		continue;
 	      if (!COMPLETE_TYPE_P (type))
 		{
 		  if (funcdef_flag && DECL_NAME (parm) != 0)
