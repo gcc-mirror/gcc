@@ -1,3 +1,7 @@
+2001-01-23  Phil Edwards  <pme@sources.redhat.com>
+
+	* c-tree.texi (IDENTIFIER_LENGTH):  Fix typo.
+
 2001-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* integrate.h (struct inline_remap): Add compare_src, compare_mode.

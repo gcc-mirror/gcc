@@ -252,7 +252,7 @@ no embedded @code{NUL} characters.
 @item IDENTIFIER_LENGTH
 The length of the string returned by @code{IDENTIFIER_POINTER}, not
 including the trailing @code{NUL}.  This value of
-@code{IDENTIFIER_POINTER (x)} is always the same as @code{strlen
+@code{IDENTIFIER_LENGTH (x)} is always the same as @code{strlen
 (IDENTIFIER_POINTER (x))}.
 
 @item IDENTIFIER_OPNAME_P
