@@ -1,3 +1,8 @@
+2005-03-06  DJ Delorie  <dj@redhat.com>
+
+	* configure.ac (target_header_dir): vfork is a stub under djgpp.
+	* configure: Regenerated.
+
 2005-03-01  Jan Beulich  <jbeulich@novell.com>
 
 	* Makefile.in (CFILES): Add unlink-if-ordinary.c

@@ -445,6 +445,11 @@ if test -z "${setobjs}"; then
     libiberty_cv_var_sys_errlist=yes
     ;;
 
+  *-*-msdosdjgpp)
+    # vfork and fork are stubs.
+    ac_cv_func_vfork_works=no
+    ;;
+
   *-*-uwin*)
     # Under some versions of uwin, vfork is notoriously buggy and the test 
     # can hang configure; on other versions, vfork exists just as a stub.
