@@ -1,3 +1,12 @@
+2004-09-19  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (update_bb_profile_after_threading): Declare.
+	* cfg.c (update_bb_profile_after_threading): Break out from ...
+	* cfgcleanup.c (try_forward_edges): ... here; use it.
+	* tree-ssa-dom.c (thread_across_edge): Use it.
+	* tree-ssa-threadupdate.c (create_block_for_threading): Zero out
+	profile of the new BB.
+
 2004-09-19  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (insert_into_set): Don't put

@@ -172,16 +172,24 @@ static void
 create_block_for_threading (basic_block bb, struct redirection_data *rd)
 {
   tree phi;
+  edge e;
 
   /* We can use the generic block duplication code and simply remove
      the stuff we do not need.  */
   rd->dup_block = duplicate_block (bb, NULL);
+
+  /* Zero out the profile, since the block is unreachable for now.  */
+  rd->dup_block->frequency = 0;
+  rd->dup_block->count = 0;
 
   /* The call to duplicate_block will copy everything, including the
      useless COND_EXPR or SWITCH_EXPR at the end of the block.  We just remove
      the useless COND_EXPR or SWITCH_EXPR here rather than having a
      specialized block copier.  */
   remove_last_stmt_and_useless_edges (rd->dup_block, rd->outgoing_edge->dest);
+
+  for (e = rd->dup_block->succ; e; e = e->succ_next)
+    e->count = 0;
 
   /* If there are any PHI nodes at the destination of the outgoing edge
      from the duplicate block, then we will need to add a new argument

@@ -614,41 +614,23 @@ try_forward_edges (int mode, basic_block b)
 	    {
 	      edge t;
 
-	      first->count -= edge_count;
-	      if (first->count < 0)
-		first->count = 0;
-	      first->frequency -= edge_frequency;
-	      if (first->frequency < 0)
-		first->frequency = 0;
 	      if (first->succ->succ_next)
 		{
-		  edge e;
-		  int prob;
-		  
 		  gcc_assert (n < nthreaded_edges);
 		  t = threaded_edges [n++];
 		  gcc_assert (t->src == first);
-		  if (first->frequency)
-		    prob = edge_frequency * REG_BR_PROB_BASE / first->frequency;
-		  else
-		    prob = 0;
-		  if (prob > t->probability)
-		    prob = t->probability;
-		  t->probability -= prob;
-		  prob = REG_BR_PROB_BASE - prob;
-		  if (prob <= 0)
-		    {
-		      first->succ->probability = REG_BR_PROB_BASE;
-		      first->succ->succ_next->probability = 0;
-		    }
-		  else
-		    for (e = first->succ; e; e = e->succ_next)
-		      e->probability = ((e->probability * REG_BR_PROB_BASE)
-					/ (double) prob);
+		  update_bb_profile_for_threading (first, edge_frequency,
+						   edge_count, t);
 		  update_br_prob_note (first);
 		}
 	      else
 		{
+		  first->count -= edge_count;
+		  if (first->count < 0)
+		    first->count = 0;
+		  first->frequency -= edge_frequency;
+		  if (first->frequency < 0)
+		    first->frequency = 0;
 		  /* It is possible that as the result of
 		     threading we've removed edge as it is
 		     threaded to the fallthru edge.  Avoid
