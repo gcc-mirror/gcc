@@ -508,8 +508,9 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
 
 /* SOM ABI says that objects larger than 64 bits are returned in memory.
    PA64 ABI says that objects larger than 128 bits are returned in memory.
-   Note that int_size_in_bytes can return -1 if the size is variable
-   or larger than an integer.  */
+   Note, int_size_in_bytes can return -1 if the size of the object is
+   variable or larger than the maximum value that can be expressed as
+   a HOST_WIDE_INT.  */
 #define RETURN_IN_MEMORY(TYPE)	\
   ((unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > (TARGET_64BIT ? 16 : 8))
 

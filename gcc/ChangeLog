@@ -1,3 +1,7 @@
+2001-08-20  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.h (RETURN_IN_MEMORY): Improve comment.
+
 2001-08-20  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.misc-tests/gcov.exp: Add support for branch information.
