@@ -496,6 +496,9 @@ cpp_create_reader (table, lang)
      be needed.  */
   pfile->deps = deps_init ();
 
+  /* Initialise the line map.  */
+  init_line_maps (&pfile->line_maps);
+
   /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
 
@@ -584,6 +587,8 @@ cpp_destroy (pfile)
       contextn = context->next;
       free (context);
     }
+
+  free_line_maps (&pfile->line_maps);
 
   result = pfile->errors;
   free (pfile);
@@ -940,6 +945,11 @@ cpp_start_read (pfile, fname)
       free (p);
       p = q;
     }
+
+  /* This was zero when the initial buffer was stacked; so we must
+     make up for a non-existent new line, as well as the intervening
+     macro definitions, by setting it to 1.  */
+  pfile->line = 1;
 
   /* The -imacros files can be scanned now, but the -include files
      have to be pushed onto the buffer stack and processed later,

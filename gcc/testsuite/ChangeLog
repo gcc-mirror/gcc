@@ -1,3 +1,7 @@
+2001-08-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/19951025-1.c: Update.
+
 2001-08-02  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* g77.dg/ff90-1.f (s): Fix reference of variable z,

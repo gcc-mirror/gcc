@@ -603,7 +603,7 @@ cb_file_change (pfile, fc)
      const cpp_file_change *fc;
 {
   /* Just keep track of current file name.  */
-  cur_file = fc->to.filename;
+  cur_file = fc->map->to_file;
 }
 
 static void

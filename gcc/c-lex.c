@@ -241,16 +241,20 @@ cb_file_change (pfile, fc)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      const cpp_file_change *fc;
 {
-  if (fc->reason == FC_ENTER)
+  unsigned int from_line = SOURCE_LINE (fc->map - 1, fc->line - 1);
+
+  if (fc->reason == LC_ENTER)
     {
       /* Don't stack the main buffer on the input stack;
 	 we already did in compile_file.  */
-      if (fc->from.filename)
+      if (MAIN_FILE_P (fc->map))
+	main_input_filename = fc->map->to_file;
+      else
 	{
-	  lineno = fc->from.lineno;
-	  push_srcloc (fc->to.filename, 1);
+	  lineno = from_line;
+	  push_srcloc (fc->map->to_file, 1);
 	  input_file_stack->indent_level = indent_level;
-	  (*debug_hooks->start_source_file) (fc->from.lineno, fc->to.filename);
+	  (*debug_hooks->start_source_file) (lineno, fc->map->to_file);
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
 	    ++c_header_level;
@@ -261,10 +265,8 @@ cb_file_change (pfile, fc)
 	    }
 #endif
 	}
-      else
-	main_input_filename = fc->to.filename;
     }
-  else if (fc->reason == FC_LEAVE)
+  else if (fc->reason == LC_LEAVE)
     {
       /* Popping out of a file.  */
       if (input_file_stack->next)
@@ -288,16 +290,16 @@ cb_file_change (pfile, fc)
 	    }
 #endif
 	  pop_srcloc ();
-	  (*debug_hooks->end_source_file) (input_file_stack->line);
+	  (*debug_hooks->end_source_file) (from_line);
 	}
       else
 	error ("leaving more files than we entered");
     }
 
-  update_header_times (fc->to.filename);
+  update_header_times (fc->map->to_file);
   in_system_header = fc->sysp != 0;
-  input_filename = fc->to.filename;
-  lineno = fc->to.lineno;	/* Do we need this?  */
+  input_filename = fc->map->to_file;
+  lineno = SOURCE_LINE (fc->map, fc->line); /* Do we need this?  */
 
   /* Hook for C++.  */
   extract_interface_info ();

@@ -1,4 +1,4 @@
 /* { dg-do preprocess } */
-/* { dg-error "include expects" "" { target *-*-* } 4 } */
-/* { dg-error "newline at end" "" { target *-*-* } 4 } */
+/* { dg-error "include expects" "" { target *-*-* } 5 } */
+/* { dg-error "newline at end" "" { target *-*-* } 5 } */
 #include /\
