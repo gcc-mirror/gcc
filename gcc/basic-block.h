@@ -190,9 +190,6 @@ extern int *uid_block_number;
 extern void compute_preds_succs PROTO ((int_list_ptr *, int_list_ptr *,
 				        int *, int *));
 extern void dump_bb_data       PROTO ((FILE *, int_list_ptr *, int_list_ptr *));
-extern void dump_sbitmap       PROTO ((FILE *, sbitmap));
-extern void dump_sbitmap_vector PROTO ((FILE *, char *, char *,
-					sbitmap *, int));
 extern void free_bb_mem        PROTO ((void));
 extern void free_basic_block_vars	PROTO ((int));
 
@@ -237,6 +234,9 @@ do { \
   (bitmap)->elms [(bitno) / SBITMAP_ELT_BITS] &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS); \
 } while (0)
 
+extern void dump_sbitmap       PROTO ((FILE *, sbitmap));
+extern void dump_sbitmap_vector PROTO ((FILE *, char *, char *,
+					sbitmap *, int));
 extern sbitmap sbitmap_alloc PROTO ((int));
 extern sbitmap *sbitmap_vector_alloc PROTO ((int, int));
 extern void sbitmap_copy PROTO ((sbitmap, sbitmap));
@@ -261,3 +261,5 @@ extern void sbitmap_union_of_predecessors PROTO ((sbitmap, sbitmap *, int,
 						  int_list_ptr *));
 extern void sbitmap_union_of_successors PROTO ((sbitmap, sbitmap *, int,
 						int_list_ptr *));
+extern void compute_dominators PROTO ((sbitmap *, sbitmap *,
+				       int_list_ptr *, int_list_ptr *));
