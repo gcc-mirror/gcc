@@ -1,5 +1,10 @@
 2003-07-31  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	* combine.c (try_combine): Set JUMP_LABEL for newly created
+	unconditional jump.
+
+2003-07-31  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
 	* fold-const.c (fold): Fold some comparisons of bit operations.
 
 Thu Jul 31 19:49:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
