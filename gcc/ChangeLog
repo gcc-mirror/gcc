@@ -1,3 +1,9 @@
+2002-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md (movsi): Only use floating point
+	register alternatives when operands are already fprs.
+	(movdi_31, movdi_64): Likewise.
+
 2002-06-11  David S. Miller  <davem@redhat.com>
 
 	* emit-rtl.c (try_split): Do not abort on non-INSN_P.
