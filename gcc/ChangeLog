@@ -1,3 +1,9 @@
+Sat 16-Sep-2000 19:14:00 BST Laurynas Biveinis <lauras@softhome.net>
+
+	* cppfiles.c (purge_cache): use munmap() only if MMAP_THRESHOLD
+	 defined.
+	 (read_include_file): Ensure inc->mmaped is initialized.
+
 2000-09-16  Richard Henderson  <rth@cygnus.com>
 
 	* cppiles.c (purge_cache): Use PTR not caddr_t.
