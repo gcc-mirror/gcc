@@ -109,6 +109,8 @@ extern const char * lshrqi3_out PARAMS ((rtx insn, rtx operands[], int *len));
 extern const char * lshrhi3_out PARAMS ((rtx insn, rtx operands[], int *len));
 extern const char * lshrsi3_out PARAMS ((rtx insn, rtx operands[], int *len));
 
+extern void avr_output_bld PARAMS ((rtx operands[], int bit_nr));
+
 extern enum reg_class preferred_reload_class PARAMS ((rtx x,
 						     enum reg_class class));
 extern int    avr_address_cost       PARAMS ((rtx x));
@@ -150,7 +152,8 @@ extern int    avr_simplify_comparision_p PARAMS ((enum machine_mode mode,
 extern RTX_CODE avr_normalize_condition  PARAMS ((RTX_CODE condition));
 extern int    compare_eq_p           PARAMS ((rtx insn));
 extern void   out_shift_with_cnt     PARAMS ((const char *template, rtx insn,
-					      rtx operands[], int *len));
+					      rtx operands[], int *len,
+					      int t_len));
 extern int    const_int_pow2_p       PARAMS ((rtx x));
 #endif /* RTX_CODE */
 

@@ -1363,17 +1363,10 @@ avr_num_arg_regs (mode, type)
   else
     size = GET_MODE_SIZE (mode);
 
-  /* Align all function arguments to start in even-numbered registers,
-     for "movw" on the enhanced core (to keep call conventions the same
-     on all devices, do it even if "movw" is not available).  Odd-sized
-     arguments leave holes above them - registers still available for
-     other uses.  Use -mpack-args for compatibility with old asm code
-     (the new convention will still be used for libgcc calls).  */
+  /* Align all function arguments to start in even-numbered registers.
+     Odd-sized arguments leave holes above them.  */
 
-  if (!(type && TARGET_PACK_ARGS))
-    size += size & 1;
-
-  return size;
+  return (size + 1) & ~1;
 }
 
 /* Controls whether a function argument is passed
@@ -1464,20 +1457,6 @@ output_movqi (insn, operands, l)
 		  return (AS1 (clr,%0) CR_TAB
 			  AS1 (inc,%0));
 		}
-	      else if (src == const2_rtx)
-		{
-		  if (reg_was_0 (insn, dest))
-		    {
-		      *l = 2;
-		      return (AS1 (inc,%0 ; reg_was_0) CR_TAB
-			      AS1 (inc,%0));
-		    }
-
-		  *l = 3;
-		  return (AS1 (clr,%0) CR_TAB
-			  AS1 (inc,%0) CR_TAB
-			  AS1 (inc,%0));
-		}
 	      else if (src == constm1_rtx)
 		{
 		  /* Immediate constants -1 to any register */
@@ -1488,7 +1467,31 @@ output_movqi (insn, operands, l)
 		  return (AS1 (clr,%0) CR_TAB
 			  AS1 (dec,%0));
 		}
-	      
+	      else
+		{
+		  int bit_nr = exact_log2 (INTVAL (src));
+
+		  if (bit_nr >= 0)
+		    {
+		      if (reg_was_0 (insn, dest))
+			{
+			  *l = 2;
+			  if (!real_l)
+			    output_asm_insn ("set ; reg_was_0", operands);
+			}
+		      else
+			{
+			  *l = 3;
+			  if (!real_l)
+			    output_asm_insn ((AS1 (clr,%0) CR_TAB
+					      "set"), operands);
+			}
+		      if (!real_l)
+			avr_output_bld (operands, bit_nr);
+
+		      return "";
+		    }
+		}
 	    }
 	  
 	  /* Last resort, larger than loading from memory.  */
@@ -1621,21 +1624,6 @@ output_movhi (insn, operands, l)
 			  AS1 (clr,%B0) CR_TAB
 			  AS1 (inc,%A0));
 		}
-	      else if (src == const2_rtx)
-		{
-		  if (reg_was_0 (insn, dest))
-		    {
-		      *l = 2;
-		      return (AS1 (inc,%0 ; reg_was_0) CR_TAB
-			      AS1 (inc,%0));
-		    }
-
-		  *l = 4;
-		  return (AS1 (clr,%A0) CR_TAB
-			  AS1 (clr,%B0) CR_TAB
-			  AS1 (inc,%A0) CR_TAB
-			  AS1 (inc,%A0));
-		}
 	      else if (src == constm1_rtx)
 		{
 		  /* Immediate constants -1 to any register */
@@ -1651,6 +1639,33 @@ output_movhi (insn, operands, l)
 			  AS1 (dec,%A0) CR_TAB
 			  AS2 (mov,%B0,%A0));
 		}
+	      else
+		{
+		  int bit_nr = exact_log2 (INTVAL (src));
+
+		  if (bit_nr >= 0)
+		    {
+		      if (reg_was_0 (insn, dest))
+			{
+			  *l = 2;
+			  if (!real_l)
+			    output_asm_insn ("set ; reg_was_0", operands);
+			}
+		      else
+			{
+			  *l = 4;
+			  if (!real_l)
+			    output_asm_insn ((AS1 (clr,%A0) CR_TAB
+					      AS1 (clr,%B0) CR_TAB
+					      "set"), operands);
+			}
+		      if (!real_l)
+			avr_output_bld (operands, bit_nr);
+
+		      return "";
+		    }
+		}
+
 	      if ((INTVAL (src) & 0xff) == 0)
 		{
 		  *l = 5;
@@ -2260,20 +2275,19 @@ output_movsisf(insn, operands, l)
 	  
 	  if (GET_CODE (src) == CONST_INT)
 	    {
+	      const char *clr_op0 =
+		AVR_ENHANCED ? (AS1 (clr,%A0) CR_TAB
+				AS1 (clr,%B0) CR_TAB
+				AS2 (movw,%C0,%A0))
+			     : (AS1 (clr,%A0) CR_TAB
+				AS1 (clr,%B0) CR_TAB
+				AS1 (clr,%C0) CR_TAB
+				AS1 (clr,%D0));
+
 	      if (src == const0_rtx) /* mov r,L */
 		{
-		  if (AVR_ENHANCED)
-		    {
-		      *l = 3;
-		      return (AS1 (clr,%A0) CR_TAB
-			      AS1 (clr,%B0) CR_TAB
-			      AS2 (movw,%C0,%A0));
-		    }
-		  *l = 4;
-		  return (AS1 (clr,%A0) CR_TAB
-			  AS1 (clr,%B0) CR_TAB
-			  AS1 (clr,%C0) CR_TAB
-			  AS1 (clr,%D0));
+		  *l = AVR_ENHANCED ? 3 : 4;
+		  return clr_op0;
 		}
 	      else if (src == const1_rtx)
 		{
@@ -2282,46 +2296,10 @@ output_movsisf(insn, operands, l)
 		      *l = 1;
 		      return AS1 (inc,%A0 ; reg_was_0);
 		    }
-		  if (AVR_ENHANCED)
-		    {
-		      *l = 4;
-		      return (AS1 (clr,%A0) CR_TAB
-			      AS1 (clr,%B0) CR_TAB
-			      AS2 (movw,%C0,%A0) CR_TAB
-			      AS1 (inc,%A0));
-		    }
-		  *l = 5;
-		  return (AS1 (clr,%A0) CR_TAB
-			  AS1 (clr,%B0) CR_TAB
-			  AS1 (clr,%C0) CR_TAB
-			  AS1 (clr,%D0) CR_TAB
-			  AS1 (inc,%A0));
-		}
-	      else if (src == const2_rtx)
-		{
-		  if (reg_was_0 (insn, dest))
-		    {
-		      *l = 2;
-		      return (AS1 (inc,%A0 ; reg_was_0) CR_TAB
-			      AS1 (inc,%A0));
-		    }
-
-		  if (AVR_ENHANCED)
-		    {
-		      *l = 5;
-		      return (AS1 (clr,%D0)      CR_TAB
-			      AS1 (clr,%C0)      CR_TAB
-			      AS2 (movw,%A0,%C0) CR_TAB
-			      AS1 (inc,%A0)      CR_TAB
-			      AS1 (inc,%A0));
-		    }
-		  *l = 6;
-		  return (AS1 (clr,%D0) CR_TAB
-			  AS1 (clr,%B0) CR_TAB
-			  AS1 (clr,%C0) CR_TAB
-			  AS1 (clr,%A0) CR_TAB
-			  AS1 (inc,%A0) CR_TAB
-			  AS1 (inc,%A0));
+		  if (!real_l)
+		    output_asm_insn (clr_op0, operands);
+		  *l = AVR_ENHANCED ? 4 : 5;
+		  return AS1 (inc,%A0);
 		}
 	      else if (src == constm1_rtx)
 		{
@@ -2355,6 +2333,33 @@ output_movsisf(insn, operands, l)
 			  AS2 (mov,%B0,%A0) CR_TAB
 			  AS2 (mov,%C0,%A0) CR_TAB
 			  AS2 (mov,%D0,%A0));
+		}
+	      else
+		{
+		  int bit_nr = exact_log2 (INTVAL (src));
+
+		  if (bit_nr >= 0)
+		    {
+		      if (reg_was_0 (insn, dest))
+			{
+			  *l = 2;
+			  if (!real_l)
+			    output_asm_insn ("set ; reg_was_0", operands);
+			}
+		      else
+			{
+			  *l = AVR_ENHANCED ? 5 : 6;
+			  if (!real_l)
+			    {
+			      output_asm_insn (clr_op0, operands);
+			      output_asm_insn ("set", operands);
+			    }
+			}
+		      if (!real_l)
+			avr_output_bld (operands, bit_nr);
+
+		      return "";
+		    }
 		}
 	    }
 	  
@@ -2684,52 +2689,107 @@ out_tstsi (insn, l)
 }
 
 
-/* Generate asm equivalent for various shift's.
-   Shift count are CONST_INT or REG.  */
+/* Generate asm equivalent for various shifts.
+   Shift count is a CONST_INT, MEM or REG.
+   This only handles cases that are not already
+   carefully hand-optimized in ?sh??i3_out.  */
 
 void
-out_shift_with_cnt (template, insn, operands, len)
+out_shift_with_cnt (template, insn, operands, len, t_len)
      const char *template;
      rtx insn;
      rtx operands[];
      int *len;
+     int t_len;  /* Length of template.  */
 {
   rtx op[10];
-  char str[300];
+  char str[500];
   int second_label = 1;
-  
+  int saved_in_tmp = 0;
+  int use_zero_reg = 0;
+
   op[0] = operands[0];
   op[1] = operands[1];
   op[2] = operands[2];
   op[3] = operands[3];
   str[0] = 0;
-    
-  if (CONSTANT_P (operands[2]))
+
+  if (len)
+    *len = 1;
+
+  if (GET_CODE (operands[2]) == CONST_INT)
     {
-      if (len)
-	++*len;
+      int scratch = (GET_CODE (PATTERN (insn)) == PARALLEL);
+      int count = INTVAL (operands[2]);
+      int max_len = 10;  /* If larger than this, always use a loop.  */
+
+      if (count < 8 && !scratch)
+	use_zero_reg = 1;
+
+      if (optimize_size)
+	max_len = t_len + (scratch ? 3 : (use_zero_reg ? 4 : 5));
+
+      if (t_len * count <= max_len)
+	{
+	  /* Output shifts inline with no loop - faster.  */
+	  if (len)
+	    *len = t_len * count;
+	  else
+	    {
+	      while (count-- > 0)
+		output_asm_insn (template, op);
+	    }
+
+	  return;
+	}
+
+      if (scratch)
+	{
+	  if (!len)
+	    strcat (str, AS2 (ldi,%3,%2));
+	}
+      else if (use_zero_reg)
+	{
+	  /* Hack to save one word: use __zero_reg__ as loop counter.
+	     Set one bit, then shift in a loop until it is 0 again.  */
+
+	  op[3] = zero_reg_rtx;
+	  if (len)
+	    *len = 2;
+	  else
+	    strcat (str, ("set" CR_TAB
+			  AS2 (bld,%3,%2-1)));
+	}
       else
-	strcat (str, AS2 (ldi,%3,lo8((%2)-1)));
+	{
+	  /* No scratch register available, use one from LD_REGS (saved in
+	     __tmp_reg__) that doesn't overlap with registers to shift.  */
+
+	  op[3] = gen_rtx (REG, QImode,
+			   ((true_regnum (operands[0]) - 1) & 15) + 16);
+	  op[4] = tmp_reg_rtx;
+	  saved_in_tmp = 1;
+
+	  if (len)
+	    *len = 3;  /* Includes "mov %3,%4" after the loop.  */
+	  else
+	    strcat (str, (AS2 (mov,%4,%3) CR_TAB
+			  AS2 (ldi,%3,%2)));
+	}
+
       second_label = 0;
     }
   else if (GET_CODE (operands[2]) == MEM)
     {
-      int mov_len;
       rtx op_mov[10];
       
       op[3] = op_mov[0] = tmp_reg_rtx;
       op_mov[1] = op[2];
-      
-      if (!len)
-	{
-	  output_asm_insn (out_movqi_r_mr (insn, op_mov, NULL), op_mov);
-	  strcat (str, AS1 (rjmp,2f));
-	}
+
+      if (len)
+	out_movqi_r_mr (insn, op_mov, len);
       else
-	{
-	  out_movqi_r_mr (insn, op_mov, &mov_len);
-	  *len += mov_len + 1;
-	}
+	output_asm_insn (out_movqi_r_mr (insn, op_mov, NULL), op_mov);
     }
   else if (register_operand (operands[2], QImode))
     {
@@ -2738,26 +2798,33 @@ out_shift_with_cnt (template, insn, operands, len)
       else
 	{
 	  op[3] = tmp_reg_rtx;
-	  if (len)
-	    ++*len;
-	  else
-	    strcat (str, AS2 (mov,%3,%2) CR_TAB);
+	  if (!len)
+	    strcat (str, (AS2 (mov,%3,%2) CR_TAB));
 	}
-      
+    }
+  else
+    fatal_insn ("Bad shift insn:", insn);
+
+  if (second_label)
+    {
       if (len)
 	++*len;
       else
 	strcat (str, AS1 (rjmp,2f));
-      
     }
-  if (!len)
+
+  if (len)
+    *len += t_len + 2;  /* template + dec + brXX */
+  else
     {
       strcat (str, "\n1:\t");
       strcat (str, template);
       strcat (str, second_label ? "\n2:\t" : "\n\t");
-      strcat (str,
-	      AS1 (dec,%3) CR_TAB
-	      AS1 (brpl,1b));
+      strcat (str, use_zero_reg ? AS1 (lsr,%3) : AS1 (dec,%3));
+      strcat (str, CR_TAB);
+      strcat (str, second_label ? AS1 (brpl,1b) : AS1 (brne,1b));
+      if (saved_in_tmp)
+	strcat (str, (CR_TAB AS2 (mov,%3,%4)));
       output_asm_insn (str, op);
     }
 }
@@ -2854,10 +2921,8 @@ ashlqi3_out (insn, operands, len)
   else if (CONSTANT_P (operands[2]))
     fatal_insn ("Internal compiler bug.\nIncorrect shift:", insn);
 
-  if (len)
-    *len = 3;
   out_shift_with_cnt (AS1 (lsl,%0),
-		      insn, operands, len);
+		      insn, operands, len, 1);
   return "";
 }
 
@@ -2872,25 +2937,85 @@ ashlhi3_out (insn, operands, len)
 {
   if (GET_CODE (operands[2]) == CONST_INT)
     {
+      int scratch = (GET_CODE (PATTERN (insn)) == PARALLEL);
+      int ldi_ok = test_hard_reg_class (LD_REGS, operands[0]);
       int k;
-      int *t=len;
+      int *t = len;
 
       if (!len)
 	len = &k;
       
       switch (INTVAL (operands[2]))
 	{
-	case 1:
-	  *len = 2;
-	  return (AS1 (lsl,%A0) CR_TAB
-		  AS1 (rol,%B0));
+	case 4:
+	  if (optimize_size && scratch)
+	    break;  /* 5 */
+	  if (ldi_ok)
+	    {
+	      *len = 6;
+	      return (AS1 (swap,%A0)      CR_TAB
+		      AS1 (swap,%B0)      CR_TAB
+		      AS2 (andi,%B0,0xf0) CR_TAB
+		      AS2 (eor,%B0,%A0)   CR_TAB
+		      AS2 (andi,%A0,0xf0) CR_TAB
+		      AS2 (eor,%B0,%A0));
+	    }
+	  if (scratch)
+	    {
+	      *len = 7;
+	      return (AS1 (swap,%A0)    CR_TAB
+		      AS1 (swap,%B0)    CR_TAB
+		      AS2 (ldi,%3,0xf0) CR_TAB
+		      AS2 (and,%B0,%3)  CR_TAB
+		      AS2 (eor,%B0,%A0) CR_TAB
+		      AS2 (and,%A0,%3)  CR_TAB
+		      AS2 (eor,%B0,%A0));
+	    }
+	  break;  /* optimize_size ? 6 : 8 */
 
-	case 2:
-	  *len = 4;
-	  return (AS1 (lsl,%A0) CR_TAB
-		  AS1 (rol,%B0) CR_TAB
-		  AS1 (lsl,%A0) CR_TAB
-		  AS1 (rol,%B0));
+	case 5:
+	  if (optimize_size)
+	    break;  /* scratch ? 5 : 6 */
+	  if (ldi_ok)
+	    {
+	      *len = 8;
+	      return (AS1 (lsl,%A0)       CR_TAB
+		      AS1 (rol,%B0)       CR_TAB
+		      AS1 (swap,%A0)      CR_TAB
+		      AS1 (swap,%B0)      CR_TAB
+		      AS2 (andi,%B0,0xf0) CR_TAB
+		      AS2 (eor,%B0,%A0)   CR_TAB
+		      AS2 (andi,%A0,0xf0) CR_TAB
+		      AS2 (eor,%B0,%A0));
+	    }
+	  if (scratch)
+	    {
+	      *len = 9;
+	      return (AS1 (lsl,%A0)     CR_TAB
+		      AS1 (rol,%B0)     CR_TAB
+		      AS1 (swap,%A0)    CR_TAB
+		      AS1 (swap,%B0)    CR_TAB
+		      AS2 (ldi,%3,0xf0) CR_TAB
+		      AS2 (and,%B0,%3)  CR_TAB
+		      AS2 (eor,%B0,%A0) CR_TAB
+		      AS2 (and,%A0,%3)  CR_TAB
+		      AS2 (eor,%B0,%A0));
+	    }
+	  break;  /* 10 */
+
+	case 6:
+	  if (optimize_size)
+	    break;  /* scratch ? 5 : 6 */
+	  *len = 9;
+	  return (AS1 (clr,__tmp_reg__) CR_TAB
+		  AS1 (lsr,%B0)         CR_TAB
+		  AS1 (ror,%A0)         CR_TAB
+		  AS1 (ror,__tmp_reg__) CR_TAB
+		  AS1 (lsr,%B0)         CR_TAB
+		  AS1 (ror,%A0)         CR_TAB
+		  AS1 (ror,__tmp_reg__) CR_TAB
+		  AS2 (mov,%B0,%A0)     CR_TAB
+		  AS2 (mov,%A0,__tmp_reg__));
 
 	case 7:
 	  *len = 5;
@@ -2929,7 +3054,7 @@ ashlhi3_out (insn, operands, len)
 		  AS1 (lsl,%B0));
 
 	case 12:
-	  if (test_hard_reg_class (LD_REGS, operands[0]))
+	  if (ldi_ok)
 	    {
 	      *len = 4;
 	      return (AS2 (mov,%B0,%A0) CR_TAB
@@ -2937,16 +3062,25 @@ ashlhi3_out (insn, operands, len)
 		      AS1 (swap,%B0)    CR_TAB
 		      AS2 (andi,%B0,0xf0));
 	    }
-	  /* %3 is a scratch register from class LD_REGS */
-	  *len = 5;
+	  if (scratch)
+	    {
+	      *len = 5;
+	      return (AS2 (mov,%B0,%A0) CR_TAB
+		      AS1 (clr,%A0)     CR_TAB
+		      AS1 (swap,%B0)    CR_TAB
+		      AS2 (ldi,%3,0xf0) CR_TAB
+		      AS2 (and,%B0,%3));
+	    }
+	  *len = 6;
 	  return (AS2 (mov,%B0,%A0) CR_TAB
 		  AS1 (clr,%A0)     CR_TAB
-		  AS1 (swap,%B0)    CR_TAB
-		  AS2 (ldi,%3,0xf0) CR_TAB
-		  AS2 (and,%B0,%3));
+		  AS1 (lsl,%B0)     CR_TAB
+		  AS1 (lsl,%B0)     CR_TAB
+		  AS1 (lsl,%B0)     CR_TAB
+		  AS1 (lsl,%B0));
 
 	case 13:
-	  if (test_hard_reg_class (LD_REGS, operands[0]))
+	  if (ldi_ok)
 	    {
 	      *len = 5;
 	      return (AS2 (mov,%B0,%A0) CR_TAB
@@ -2955,7 +3089,7 @@ ashlhi3_out (insn, operands, len)
 		      AS1 (lsl,%B0)     CR_TAB
 		      AS2 (andi,%B0,0xe0));
 	    }
-	  if (AVR_ENHANCED)
+	  if (AVR_ENHANCED && scratch)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%3,0x20) CR_TAB
@@ -2964,10 +3098,48 @@ ashlhi3_out (insn, operands, len)
 		      AS1 (clr,%A0)     CR_TAB
 		      AS1 (clr,__zero_reg__));
 	    }
-	  break;
+	  if (optimize_size && scratch)
+	    break;  /* 5 */
+	  if (scratch)
+	    {
+	      *len = 6;
+	      return (AS2 (mov,%B0,%A0) CR_TAB
+		      AS1 (clr,%A0)     CR_TAB
+		      AS1 (swap,%B0)    CR_TAB
+		      AS1 (lsl,%B0)     CR_TAB
+		      AS2 (ldi,%3,0xe0) CR_TAB
+		      AS2 (and,%B0,%3));
+	    }
+	  if (AVR_ENHANCED)
+	    {
+	      *len = 6;
+	      return ("set"            CR_TAB
+		      AS2 (bld,r1,5)   CR_TAB
+		      AS2 (mul,%A0,r1) CR_TAB
+		      AS2 (mov,%B0,r0) CR_TAB
+		      AS1 (clr,%A0)    CR_TAB
+		      AS1 (clr,__zero_reg__));
+	    }
+	  *len = 7;
+	  return (AS2 (mov,%B0,%A0) CR_TAB
+		  AS1 (clr,%A0)     CR_TAB
+		  AS1 (lsl,%B0)     CR_TAB
+		  AS1 (lsl,%B0)     CR_TAB
+		  AS1 (lsl,%B0)     CR_TAB
+		  AS1 (lsl,%B0)     CR_TAB
+		  AS1 (lsl,%B0));
 
 	case 14:
-	  if (AVR_ENHANCED)
+	  if (AVR_ENHANCED && ldi_ok)
+	    {
+	      *len = 5;
+	      return (AS2 (ldi,%B0,0x40) CR_TAB
+		      AS2 (mul,%A0,%B0)  CR_TAB
+		      AS2 (mov,%B0,r0)   CR_TAB
+		      AS1 (clr,%A0)      CR_TAB
+		      AS1 (clr,__zero_reg__));
+	    }
+	  if (AVR_ENHANCED && scratch)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%3,0x40) CR_TAB
@@ -2976,7 +3148,24 @@ ashlhi3_out (insn, operands, len)
 		      AS1 (clr,%A0)     CR_TAB
 		      AS1 (clr,__zero_reg__));
 	    }
-	  break;
+	  if (optimize_size && ldi_ok)
+	    {
+	      *len = 5;
+	      return (AS2 (mov,%B0,%A0) CR_TAB
+		      AS2 (ldi,%A0,6) "\n1:\t"
+		      AS1 (lsl,%B0)     CR_TAB
+		      AS1 (dec,%A0)     CR_TAB
+		      AS1 (brne,1b));
+	    }
+	  if (optimize_size && scratch)
+	    break;  /* 5 */
+	  *len = 6;
+	  return (AS1 (clr,%B0) CR_TAB
+		  AS1 (lsr,%A0) CR_TAB
+		  AS1 (ror,%B0) CR_TAB
+		  AS1 (lsr,%A0) CR_TAB
+		  AS1 (ror,%B0) CR_TAB
+		  AS1 (clr,%A0));
 
 	case 15:
 	  *len = 4;
@@ -2987,11 +3176,9 @@ ashlhi3_out (insn, operands, len)
 	}
       len = t;
     }
-  if (len)
-    *len = 4;
-  out_shift_with_cnt (AS1 (lsl,%0)  CR_TAB
-		      AS1 (rol,%B0),
-		      insn, operands, len);
+  out_shift_with_cnt ((AS1 (lsl,%A0) CR_TAB
+		       AS1 (rol,%B0)),
+		       insn, operands, len, 2);
   return "";
 }
 
@@ -3007,32 +3194,13 @@ ashlsi3_out (insn, operands, len)
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       int k;
-      int *t=len;
+      int *t = len;
       
       if (!len)
 	len = &k;
       
       switch (INTVAL (operands[2]))
 	{
-	case 1:
-	  *len = 4;
-	  return (AS1 (lsl,%A0) CR_TAB
-		  AS1 (rol,%B0) CR_TAB
-		  AS1 (rol,%C0) CR_TAB
-		  AS1 (rol,%D0));
-
-	case 2:
-	  /* Loop is one word smaller, but slower and needs a register.  */
-	  *len = 8;
-	  return (AS1 (lsl,%A0) CR_TAB
-		  AS1 (rol,%B0) CR_TAB
-		  AS1 (rol,%C0) CR_TAB
-		  AS1 (rol,%D0) CR_TAB
-		  AS1 (lsl,%A0) CR_TAB
-		  AS1 (rol,%B0) CR_TAB
-		  AS1 (rol,%C0) CR_TAB
-		  AS1 (rol,%D0));
-
 	case 8:
 	  {
 	    int reg0 = true_regnum (operands[0]);
@@ -3111,13 +3279,11 @@ ashlsi3_out (insn, operands, len)
 	}
       len = t;
     }
-  if (len)
-    *len = 6;
-  out_shift_with_cnt (AS1 (lsl,%0)  CR_TAB
-		      AS1 (rol,%B0) CR_TAB
-		      AS1 (rol,%C0) CR_TAB
-		      AS1 (rol,%D0),
-		      insn, operands, len);
+  out_shift_with_cnt ((AS1 (lsl,%A0) CR_TAB
+		       AS1 (rol,%B0) CR_TAB
+		       AS1 (rol,%C0) CR_TAB
+		       AS1 (rol,%D0)),
+		       insn, operands, len, 4);
   return "";
 }
 
@@ -3185,10 +3351,8 @@ ashrqi3_out (insn, operands, len)
   else if (CONSTANT_P (operands[2]))
     fatal_insn ("Internal compiler bug.\nIncorrect shift:", insn);
 
-  if (len)
-    *len = 3;
   out_shift_with_cnt (AS1 (asr,%0),
-		      insn, operands, len);
+		      insn, operands, len, 1);
   return "";
 }
 
@@ -3203,6 +3367,8 @@ ashrhi3_out (insn, operands, len)
 {
   if (GET_CODE (operands[2]) == CONST_INT)
     {
+      int scratch = (GET_CODE (PATTERN (insn)) == PARALLEL);
+      int ldi_ok = test_hard_reg_class (LD_REGS, operands[0]);
       int k;
       int *t = len;
       
@@ -3211,17 +3377,23 @@ ashrhi3_out (insn, operands, len)
 
       switch (INTVAL (operands[2]))
 	{
-	case 1:
-	  *len=2;
-	  return (AS1 (asr,%B0) CR_TAB
-		  AS1 (ror,%A0));
+	case 4:
+	case 5:
+	  /* XXX try to optimize this too? */
+	  break;
 
-	case 2:
-	  *len=4;
-	  return (AS1 (asr,%B0)  CR_TAB
-		  AS1 (ror,%A0) CR_TAB
-		  AS1 (asr,%B0)  CR_TAB
-		  AS1 (ror,%A0));
+	case 6:
+	  if (optimize_size)
+	    break;  /* scratch ? 5 : 6 */
+	  *len = 8;
+	  return (AS2 (mov,__tmp_reg__,%A0) CR_TAB
+		  AS2 (mov,%A0,%B0)         CR_TAB
+		  AS1 (lsl,__tmp_reg__)     CR_TAB
+		  AS1 (rol,%A0)             CR_TAB
+		  AS2 (sbc,%B0,%B0)         CR_TAB
+		  AS1 (lsl,__tmp_reg__)     CR_TAB
+		  AS1 (rol,%A0)             CR_TAB
+		  AS1 (rol,%B0));
 
 	case 7:
 	  *len = 4;
@@ -3231,15 +3403,24 @@ ashrhi3_out (insn, operands, len)
 		  AS2 (sbc,%B0,%B0));
 
 	case 8:
-	  if (true_regnum (operands[0]) != true_regnum (operands[1]) + 1)
+	  {
+	    int reg0 = true_regnum (operands[0]);
+	    int reg1 = true_regnum (operands[1]);
+
+	    if (reg0 == reg1)
+	      return *len = 3, (AS2 (mov,%A0,%B0) CR_TAB
+				AS1 (lsl,%B0)     CR_TAB
+				AS2 (sbc,%B0,%B0));
+	    else if (reg0 == reg1 + 1)
+	      return *len = 3, (AS1 (clr,%B0)    CR_TAB
+				AS2 (sbrc,%A0,7) CR_TAB
+				AS1 (dec,%B0));
+
 	    return *len = 4, (AS2 (mov,%A0,%B1) CR_TAB
 			      AS1 (clr,%B0)     CR_TAB
 			      AS2 (sbrc,%A0,7)  CR_TAB
 			      AS1 (dec,%B0));
-	  else
-	    return *len = 3, (AS1 (clr,%B0)     CR_TAB
-			      AS2 (sbrc,%A0,7)  CR_TAB
-			      AS1 (dec,%B0));
+	  }
 
 	case 9:
 	  *len = 4;
@@ -3257,40 +3438,67 @@ ashrhi3_out (insn, operands, len)
 		  AS1 (asr,%A0));
 
 	case 11:
-	  if (AVR_ENHANCED && test_hard_reg_class (LD_REGS, operands[0]))
+	  if (AVR_ENHANCED && ldi_ok)
 	    {
 	      *len = 5;
-	      return (AS2 (ldi,%3,0x20) CR_TAB
-		      AS2 (muls,%B0,%3) CR_TAB
-		      AS2 (mov,%A0,r1)  CR_TAB
-		      AS2 (sbc,%B0,%B0) CR_TAB
+	      return (AS2 (ldi,%A0,0x20) CR_TAB
+		      AS2 (muls,%B0,%A0) CR_TAB
+		      AS2 (mov,%A0,r1)   CR_TAB
+		      AS2 (sbc,%B0,%B0)  CR_TAB
 		      AS1 (clr,__zero_reg__));
 	    }
-	  break;
+	  if (optimize_size && scratch)
+	    break;  /* 5 */
+	  *len = 6;
+	  return (AS2 (mov,%A0,%B0) CR_TAB
+		  AS1 (lsl,%B0)     CR_TAB
+		  AS2 (sbc,%B0,%B0) CR_TAB
+		  AS1 (asr,%A0)     CR_TAB
+		  AS1 (asr,%A0)     CR_TAB
+		  AS1 (asr,%A0));
 
 	case 12:
-	  if (AVR_ENHANCED && test_hard_reg_class (LD_REGS, operands[0]))
+	  if (AVR_ENHANCED && ldi_ok)
 	    {
 	      *len = 5;
-	      return (AS2 (ldi,%3,0x10) CR_TAB
-		      AS2 (muls,%B0,%3) CR_TAB
-		      AS2 (mov,%A0,r1)  CR_TAB
-		      AS2 (sbc,%B0,%B0) CR_TAB
+	      return (AS2 (ldi,%A0,0x10) CR_TAB
+		      AS2 (muls,%B0,%A0) CR_TAB
+		      AS2 (mov,%A0,r1)   CR_TAB
+		      AS2 (sbc,%B0,%B0)  CR_TAB
 		      AS1 (clr,__zero_reg__));
 	    }
-	  break;
+	  if (optimize_size && scratch)
+	    break;  /* 5 */
+	  *len = 7;
+	  return (AS2 (mov,%A0,%B0) CR_TAB
+		  AS1 (lsl,%B0)     CR_TAB
+		  AS2 (sbc,%B0,%B0) CR_TAB
+		  AS1 (asr,%A0)     CR_TAB
+		  AS1 (asr,%A0)     CR_TAB
+		  AS1 (asr,%A0)     CR_TAB
+		  AS1 (asr,%A0));
 
 	case 13:
-	  if (AVR_ENHANCED && test_hard_reg_class (LD_REGS, operands[0]))
+	  if (AVR_ENHANCED && ldi_ok)
 	    {
 	      *len = 5;
-	      return (AS2 (ldi,%3,0x08) CR_TAB
-		      AS2 (muls,%B0,%3) CR_TAB
-		      AS2 (mov,%A0,r1)  CR_TAB
-		      AS2 (sbc,%B0,%B0) CR_TAB
+	      return (AS2 (ldi,%A0,0x08) CR_TAB
+		      AS2 (muls,%B0,%A0) CR_TAB
+		      AS2 (mov,%A0,r1)   CR_TAB
+		      AS2 (sbc,%B0,%B0)  CR_TAB
 		      AS1 (clr,__zero_reg__));
 	    }
-	  break;
+	  if (optimize_size)
+	    break;  /* scratch ? 5 : 7 */
+	  *len = 8;
+	  return (AS2 (mov,%A0,%B0) CR_TAB
+		  AS1 (lsl,%B0)     CR_TAB
+		  AS2 (sbc,%B0,%B0) CR_TAB
+		  AS1 (asr,%A0)     CR_TAB
+		  AS1 (asr,%A0)     CR_TAB
+		  AS1 (asr,%A0)     CR_TAB
+		  AS1 (asr,%A0)     CR_TAB
+		  AS1 (asr,%A0));
 
 	case 14:
 	  *len = 5;
@@ -3307,11 +3515,9 @@ ashrhi3_out (insn, operands, len)
 	}
       len = t;
     }
-  if (len)
-    *len = 4;
-  out_shift_with_cnt (AS1 (asr,%B0) CR_TAB
-		      AS1 (ror,%A0),
-		      insn, operands, len);
+  out_shift_with_cnt ((AS1 (asr,%B0) CR_TAB
+		       AS1 (ror,%A0)),
+		       insn, operands, len, 2);
   return "";
 }
 
@@ -3334,25 +3540,6 @@ ashrsi3_out (insn, operands, len)
       
       switch (INTVAL (operands[2]))
 	{
-	case 1:
-	  *len=4;
-	  return (AS1 (asr,%D0)  CR_TAB
-		  AS1 (ror,%C0)  CR_TAB
-		  AS1 (ror,%B0)  CR_TAB
-		  AS1 (ror,%A0));
-
-	case 2:
-	  /* Loop is one word smaller, but slower and needs a register.  */
-	  *len = 8;
-	  return (AS1 (asr,%D0) CR_TAB
-		  AS1 (ror,%C0) CR_TAB
-		  AS1 (ror,%B0) CR_TAB
-		  AS1 (ror,%A0) CR_TAB
-		  AS1 (asr,%D0) CR_TAB
-		  AS1 (ror,%C0) CR_TAB
-		  AS1 (ror,%B0) CR_TAB
-		  AS1 (ror,%A0));
-
 	case 8:
 	  {
 	    int reg0 = true_regnum (operands[0]);
@@ -3446,13 +3633,11 @@ ashrsi3_out (insn, operands, len)
 	}
       len = t;
     }
-  if (len)
-    *len = 6;
-  out_shift_with_cnt (AS1 (asr,%D0) CR_TAB
-		      AS1 (ror,%C0) CR_TAB
-		      AS1 (ror,%B0) CR_TAB
-		      AS1 (ror,%A0),
-		      insn, operands, len);
+  out_shift_with_cnt ((AS1 (asr,%D0) CR_TAB
+		       AS1 (ror,%C0) CR_TAB
+		       AS1 (ror,%B0) CR_TAB
+		       AS1 (ror,%A0)),
+		       insn, operands, len, 4);
   return "";
 }
 
@@ -3546,10 +3731,8 @@ lshrqi3_out (insn, operands, len)
   else if (CONSTANT_P (operands[2]))
     fatal_insn ("Internal compiler bug.\nIncorrect shift:", insn);
   
-  if (len)
-    *len = 3;
   out_shift_with_cnt (AS1 (lsr,%0),
-		      insn, operands, len);
+		      insn, operands, len, 1);
   return "";
 }
 
@@ -3563,25 +3746,85 @@ lshrhi3_out (insn, operands, len)
 {
   if (GET_CODE (operands[2]) == CONST_INT)
     {
+      int scratch = (GET_CODE (PATTERN (insn)) == PARALLEL);
+      int ldi_ok = test_hard_reg_class (LD_REGS, operands[0]);
       int k;
       int *t = len;
-      
+
       if (!len)
 	len = &k;
       
       switch (INTVAL (operands[2]))
 	{
-	case 1:
-	  *len = 2;
-	  return (AS1 (lsr,%B0) CR_TAB
-		  AS1 (ror,%A0));
-	  
-	case 2:
-	  *len = 4;
-	  return (AS1 (lsr,%B0)  CR_TAB
-		  AS1 (ror,%A0)  CR_TAB
-		  AS1 (lsr,%B0)  CR_TAB
-		  AS1 (ror,%A0));
+	case 4:
+	  if (optimize_size && scratch)
+	    break;  /* 5 */
+	  if (ldi_ok)
+	    {
+	      *len = 6;
+	      return (AS1 (swap,%B0)      CR_TAB
+		      AS1 (swap,%A0)      CR_TAB
+		      AS2 (andi,%A0,0x0f) CR_TAB
+		      AS2 (eor,%A0,%B0)   CR_TAB
+		      AS2 (andi,%B0,0x0f) CR_TAB
+		      AS2 (eor,%A0,%B0));
+	    }
+	  if (scratch)
+	    {
+	      *len = 7;
+	      return (AS1 (swap,%B0)    CR_TAB
+		      AS1 (swap,%A0)    CR_TAB
+		      AS2 (ldi,%3,0x0f) CR_TAB
+		      AS2 (and,%A0,%3)  CR_TAB
+		      AS2 (eor,%A0,%B0) CR_TAB
+		      AS2 (and,%B0,%3)  CR_TAB
+		      AS2 (eor,%A0,%B0));
+	    }
+	  break;  /* optimize_size ? 6 : 8 */
+
+	case 5:
+	  if (optimize_size)
+	    break;  /* scratch ? 5 : 6 */
+	  if (ldi_ok)
+	    {
+	      *len = 8;
+	      return (AS1 (lsr,%B0)       CR_TAB
+		      AS1 (ror,%A0)       CR_TAB
+		      AS1 (swap,%B0)      CR_TAB
+		      AS1 (swap,%A0)      CR_TAB
+		      AS2 (andi,%A0,0x0f) CR_TAB
+		      AS2 (eor,%A0,%B0)   CR_TAB
+		      AS2 (andi,%B0,0x0f) CR_TAB
+		      AS2 (eor,%A0,%B0));
+	    }
+	  if (scratch)
+	    {
+	      *len = 9;
+	      return (AS1 (lsr,%B0)     CR_TAB
+		      AS1 (ror,%A0)     CR_TAB
+		      AS1 (swap,%B0)    CR_TAB
+		      AS1 (swap,%A0)    CR_TAB
+		      AS2 (ldi,%3,0x0f) CR_TAB
+		      AS2 (and,%A0,%3)  CR_TAB
+		      AS2 (eor,%A0,%B0) CR_TAB
+		      AS2 (and,%B0,%3)  CR_TAB
+		      AS2 (eor,%A0,%B0));
+	    }
+	  break;  /* 10 */
+
+	case 6:
+	  if (optimize_size)
+	    break;  /* scratch ? 5 : 6 */
+	  *len = 9;
+	  return (AS1 (clr,__tmp_reg__) CR_TAB
+		  AS1 (lsl,%A0)         CR_TAB
+		  AS1 (rol,%B0)         CR_TAB
+		  AS1 (rol,__tmp_reg__) CR_TAB
+		  AS1 (lsl,%A0)         CR_TAB
+		  AS1 (rol,%B0)         CR_TAB
+		  AS1 (rol,__tmp_reg__) CR_TAB
+		  AS2 (mov,%A0,%B0)     CR_TAB
+		  AS2 (mov,%B0,__tmp_reg__));
 
 	case 7:
 	  *len = 5;
@@ -3620,7 +3863,7 @@ lshrhi3_out (insn, operands, len)
 		  AS1 (lsr,%A0));
 
 	case 12:
-	  if (test_hard_reg_class (LD_REGS, operands[0]))
+	  if (ldi_ok)
 	    {
 	      *len = 4;
 	      return (AS2 (mov,%A0,%B0) CR_TAB
@@ -3628,16 +3871,25 @@ lshrhi3_out (insn, operands, len)
 		      AS1 (swap,%A0)    CR_TAB
 		      AS2 (andi,%A0,0x0f));
 	    }
-	  /* %3 is a scratch register from class LD_REGS */
-	  *len = 5;
+	  if (scratch)
+	    {
+	      *len = 5;
+	      return (AS2 (mov,%A0,%B0) CR_TAB
+		      AS1 (clr,%B0)     CR_TAB
+		      AS1 (swap,%A0)    CR_TAB
+		      AS2 (ldi,%3,0x0f) CR_TAB
+		      AS2 (and,%A0,%3));
+	    }
+	  *len = 6;
 	  return (AS2 (mov,%A0,%B0) CR_TAB
 		  AS1 (clr,%B0)     CR_TAB
-		  AS1 (swap,%A0)    CR_TAB
-		  AS2 (ldi,%3,0x0f) CR_TAB
-		  AS2 (and,%A0,%3));
+		  AS1 (lsr,%A0)     CR_TAB
+		  AS1 (lsr,%A0)     CR_TAB
+		  AS1 (lsr,%A0)     CR_TAB
+		  AS1 (lsr,%A0));
 
 	case 13:
-	  if (test_hard_reg_class (LD_REGS, operands[0]))
+	  if (ldi_ok)
 	    {
 	      *len = 5;
 	      return (AS2 (mov,%A0,%B0) CR_TAB
@@ -3646,7 +3898,7 @@ lshrhi3_out (insn, operands, len)
 		      AS1 (lsr,%A0)     CR_TAB
 		      AS2 (andi,%A0,0x07));
 	    }
-	  if (AVR_ENHANCED)
+	  if (AVR_ENHANCED && scratch)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%3,0x08) CR_TAB
@@ -3655,10 +3907,48 @@ lshrhi3_out (insn, operands, len)
 		      AS1 (clr,%B0)     CR_TAB
 		      AS1 (clr,__zero_reg__));
 	    }
-	  break;
+	  if (optimize_size && scratch)
+	    break;  /* 5 */
+	  if (scratch)
+	    {
+	      *len = 6;
+	      return (AS2 (mov,%A0,%B0) CR_TAB
+		      AS1 (clr,%B0)     CR_TAB
+		      AS1 (swap,%A0)    CR_TAB
+		      AS1 (lsr,%A0)     CR_TAB
+		      AS2 (ldi,%3,0x07) CR_TAB
+		      AS2 (and,%A0,%3));
+	    }
+	  if (AVR_ENHANCED)
+	    {
+	      *len = 6;
+	      return ("set"            CR_TAB
+		      AS2 (bld,r1,3)   CR_TAB
+		      AS2 (mul,%B0,r1) CR_TAB
+		      AS2 (mov,%A0,r1) CR_TAB
+		      AS1 (clr,%B0)    CR_TAB
+		      AS1 (clr,__zero_reg__));
+	    }
+	  *len = 7;
+	  return (AS2 (mov,%A0,%B0) CR_TAB
+		  AS1 (clr,%B0)     CR_TAB
+		  AS1 (lsr,%A0)     CR_TAB
+		  AS1 (lsr,%A0)     CR_TAB
+		  AS1 (lsr,%A0)     CR_TAB
+		  AS1 (lsr,%A0)     CR_TAB
+		  AS1 (lsr,%A0));
 
 	case 14:
-	  if (AVR_ENHANCED)
+	  if (AVR_ENHANCED && ldi_ok)
+	    {
+	      *len = 5;
+	      return (AS2 (ldi,%A0,0x04) CR_TAB
+		      AS2 (mul,%B0,%A0)  CR_TAB
+		      AS2 (mov,%A0,r1)   CR_TAB
+		      AS1 (clr,%B0)      CR_TAB
+		      AS1 (clr,__zero_reg__));
+	    }
+	  if (AVR_ENHANCED && scratch)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%3,0x04) CR_TAB
@@ -3667,22 +3957,37 @@ lshrhi3_out (insn, operands, len)
 		      AS1 (clr,%B0)     CR_TAB
 		      AS1 (clr,__zero_reg__));
 	    }
-	  break;
+	  if (optimize_size && ldi_ok)
+	    {
+	      *len = 5;
+	      return (AS2 (mov,%A0,%B0) CR_TAB
+		      AS2 (ldi,%B0,6) "\n1:\t"
+		      AS1 (lsr,%A0)     CR_TAB
+		      AS1 (dec,%B0)     CR_TAB
+		      AS1 (brne,1b));
+	    }
+	  if (optimize_size && scratch)
+	    break;  /* 5 */
+	  *len = 6;
+	  return (AS1 (clr,%A0) CR_TAB
+		  AS1 (lsl,%B0) CR_TAB
+		  AS1 (rol,%A0) CR_TAB
+		  AS1 (lsl,%B0) CR_TAB
+		  AS1 (rol,%A0) CR_TAB
+		  AS1 (clr,%B0));
 
 	case 15:
 	  *len = 4;
-	  return (AS1 (lsl,%B0)     CR_TAB
-		  AS2 (sbc,%A0,%A0) CR_TAB
-		  AS1 (neg,%A0)     CR_TAB
+	  return (AS1 (clr,%A0) CR_TAB
+		  AS1 (lsl,%B0) CR_TAB
+		  AS1 (rol,%A0) CR_TAB
 		  AS1 (clr,%B0));
 	}
       len = t;
     }
-  if (len)
-    *len = 4;
-  out_shift_with_cnt (AS1 (lsr,%B0) CR_TAB
-		      AS1 (ror,%A0),
-		      insn, operands, len);
+  out_shift_with_cnt ((AS1 (lsr,%B0) CR_TAB
+		       AS1 (ror,%A0)),
+		       insn, operands, len, 2);
   return "";
 }
 
@@ -3704,25 +4009,6 @@ lshrsi3_out (insn, operands, len)
       
       switch (INTVAL (operands[2]))
 	{
-	case 1:
-	  *len = 4;
-	  return (AS1 (lsr,%D0) CR_TAB
-		  AS1 (ror,%C0) CR_TAB
-		  AS1 (ror,%B0) CR_TAB
-		  AS1 (ror,%A0));
-
-	case 2:
-	  /* Loop is one word smaller, but slower and needs a register.  */
-	  *len = 8;
-	  return (AS1 (lsr,%D0) CR_TAB
-		  AS1 (ror,%C0) CR_TAB
-		  AS1 (ror,%B0) CR_TAB
-		  AS1 (ror,%A0) CR_TAB
-		  AS1 (lsr,%D0) CR_TAB
-		  AS1 (ror,%C0) CR_TAB
-		  AS1 (ror,%B0) CR_TAB
-		  AS1 (ror,%A0));
-
 	case 8:
 	  {
 	    int reg0 = true_regnum (operands[0]);
@@ -3791,13 +4077,11 @@ lshrsi3_out (insn, operands, len)
 	}
       len = t;
     }
-  if (len)
-    *len = 6;
-  out_shift_with_cnt (AS1 (lsr,%D0) CR_TAB
-		      AS1 (ror,%C0) CR_TAB
-		      AS1 (ror,%B0) CR_TAB
-		      AS1 (ror,%A0),
-		      insn, operands, len);
+  out_shift_with_cnt ((AS1 (lsr,%D0) CR_TAB
+		       AS1 (ror,%C0) CR_TAB
+		       AS1 (ror,%B0) CR_TAB
+		       AS1 (ror,%A0)),
+		      insn, operands, len, 4);
   return "";
 }
 
@@ -4994,3 +5278,16 @@ output_reload_insisf (insn, operands, len)
     }
   return "";
 }
+
+void
+avr_output_bld (operands, bit_nr)
+     rtx operands[];
+     int bit_nr;
+{
+  static char s[] = "bld %A0,0";
+
+  s[5] = 'A' + (bit_nr >> 3);
+  s[8] = '0' + (bit_nr & 7);
+  output_asm_insn (s, operands);
+}
+

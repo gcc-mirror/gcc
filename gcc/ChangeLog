@@ -1,3 +1,35 @@
+2000-10-14  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr-protos.h (avr_output_bld): New.
+	(out_shift_with_cnt): Add t_len argument.
+	* config/avr/avr.c (avr_num_arg_regs): Remove -mpack-args.
+	(output_movqi, output_movhi, output_movsisf): Optimize loading
+	any constant with exactly one bit set to NO_LD_REGS.
+	(out_shift_with_cnt): Optimize output code for size or speed,
+	depending on optimize_size.  Handle small shift counts as well
+	(if not hand-optimized in ?sh??i3_out).  Shifts can be done
+	with or without a scratch register, with help of __tmp_reg__
+	or __zero_reg__ if necessary.  Add T_LEN argument to pass the
+	length of TEMPLATE in words, return total insn length in *LEN.
+	(ashlqi3_out, ashrqi3_out, lshrqi3_out): Change all calls to
+	out_shift_with_cnt to work with the above change.
+	(ashlhi3_out, ashlsi3_out, ashrhi3_out, ashrsi3_out, lshrhi3_out,
+	lshrsi3_out): Likewise.  Optimize more known shift count cases.
+	Remove cases already well optimized in out_shift_with_cnt.
+	(avr_output_bld): New function.
+	* config/avr/avr.h (MASK_PACK_ARGS, TARGET_PACK_ARGS): Remove.
+	(TARGET_SWITCHES): Remove -mpack-args backward compatibility.
+	* config/avr/avr.md (*reload_inqi, *reload_inhi, *reload_insi):
+	Add reload_completed to insn condition - only for peepholes.
+	(ashlqi3, ashrqi3, lshrqi3): Correct insn length for shift counts
+	in a register or memory.
+	(ashlhi3, ashlsi3, ashrhi3, ashrsi3, lshrhi3, lshrsi3): Likewise.
+	Do not require a scratch register.
+	(*ashlhi3_const, *ashlsi3_const, *ashrhi3_const, *ashrsi3_const,
+	*lshrhi3_const, *lshrsi3_const): New insns and matching peepholes.
+	Optimize shifts by known count using a scratch register, but only
+	if one is still available after register allocation.
+
 2000-10-20  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
  
 	* t-vax: New file.  Don't build modules from libgcc1.c.

@@ -55,7 +55,6 @@ extern int target_flags;
 #define MASK_NO_INTERRUPTS	0x00020000
 #define MASK_CALL_PROLOGUES	0x00040000
 #define MASK_TINY_STACK		0x00080000
-#define MASK_PACK_ARGS		0x00100000
 
 #define TARGET_ORDER_1		(target_flags & MASK_ORDER_1)
 #define TARGET_ORDER_2		(target_flags & MASK_ORDER_2)
@@ -64,7 +63,6 @@ extern int target_flags;
 #define TARGET_INSN_SIZE_DUMP	(target_flags & MASK_INSN_SIZE_DUMP)
 #define TARGET_CALL_PROLOGUES	(target_flags & MASK_CALL_PROLOGUES)
 #define TARGET_TINY_STACK	(target_flags & MASK_TINY_STACK)
-#define TARGET_PACK_ARGS	(target_flags & MASK_PACK_ARGS)
 
 /* Dump each assembler insn's rtl into the output file.
    This is for debugging the compiler itself.  */
@@ -104,8 +102,6 @@ extern int target_flags;
     N_("Use subroutines for function prologue/epilogue") },		\
   { "tiny-stack", MASK_TINY_STACK,					\
     N_("Change only the low 8 bits of the stack pointer") },		\
-  { "pack-args", MASK_PACK_ARGS,					\
-    N_("Do not align function arguments on even numbered registers") },	\
   { "rtl", MASK_RTL_DUMP, NULL },					\
   { "size", MASK_INSN_SIZE_DUMP,					\
     N_("Output instruction sizes to the asm file") },			\
