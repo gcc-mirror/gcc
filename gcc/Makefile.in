@@ -884,7 +884,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-attr.h insn-attrtab.c insn-opinit.c insn-constants.h tm-preds.h \
  tree-check.h insn-conditions.c min-insn-modes.c insn-modes.c insn-modes.h \
  s-flags s-config s-codes s-mlib s-genrtl s-modes s-gtype gtyp-gen.h \
- s-output s-recog s-emit s-extract s-peep s-check s-conditions \
+ s-gtyp-gen s-output s-recog s-emit s-extract s-peep s-check s-conditions \
  s-attr s-attrtab s-opinit s-preds s-constants s-crt0 \
  genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
  genextract$(build_exeext) genflags$(build_exeext) gencodes$(build_exeext) \
@@ -1439,12 +1439,14 @@ s-specs : Makefile
 	$(SHELL) $(srcdir)/move-if-change tmp-specs.h specs.h
 	$(STAMP) s-specs
 
-options.c: $(lang_opt_files) $(srcdir)/opts.sh options.h intl.h
-
-options.h: $(lang_opt_files) $(srcdir)/opts.sh Makefile
+options.c options.h: s-options ; @true
+s-options: $(lang_opt_files) $(srcdir)/opts.sh Makefile
 	AWK=$(AWK) $(SHELL) $(srcdir)/opts.sh \
                '$(SHELL) $(srcdir)/move-if-change' \
                options.c options.h $(lang_opt_files)
+	$(STAMP) s-options
+
+options.o: options.c options.h opts.h intl.h
 
 dumpvers: dumpvers.c
 
@@ -2076,7 +2078,8 @@ gt-dbxout.h gt-c-common.h gt-c-decl.h gt-c-parse.h \
 gt-c-pragma.h gtype-c.h gt-input.h gt-cfglayout.h \
 gt-stringpool.h gt-langhooks.h : s-gtype ; @true
 
-gtyp-gen.h: Makefile
+gtyp-gen.h: s-gtyp-gen ; @true
+s-gtyp-gen: Makefile
 	echo "/* This file is machine generated.  Do not edit.  */" > tmp-gtyp.h
 	echo "static const char *const srcdir = "  >> tmp-gtyp.h
 	echo "\"$(GTFILES_SRCDIR)\"" >> tmp-gtyp.h
@@ -2102,6 +2105,7 @@ gtyp-gen.h: Makefile
 	echo "\"$$l\", "; done >> tmp-gtyp.h
 	echo "NULL};" >> tmp-gtyp.h
 	$(SHELL) $(srcdir)/move-if-change tmp-gtyp.h gtyp-gen.h 
+	$(STAMP) s-gtyp-gen
 
 s-gtype: gengtype$(build_exeext) $(GTFILES)
 	$(RUN_GEN) ./gengtype
