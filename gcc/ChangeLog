@@ -1,3 +1,13 @@
+1999-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/linux64.h (TARGET_LIVE_G0,
+	TARGET_BROKEN_SAVERESTORE): Don't support weird SPARC
+	variants on Linux.
+	* config/sparc/linux.h (TARGET_LIVE_G0,
+	TARGET_BROKEN_SAVERESTORE): Likewise.
+	* config/sparc/linux-aout.h (TARGET_LIVE_G0,
+	TARGET_BROKEN_SAVERESTORE): Likewise.
+
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* combine.c (combine_simplify_rtx): Don't make shared rtl.
