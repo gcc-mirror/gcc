@@ -357,18 +357,32 @@ can_completely_scalarize_p (struct sra_elt *elt)
 static hashval_t
 sra_hash_tree (tree t)
 {
+  hashval_t h;
+
   switch (TREE_CODE (t))
     {
     case VAR_DECL:
     case PARM_DECL:
     case RESULT_DECL:
-    case FIELD_DECL:
-      return DECL_UID (t);
+      h = DECL_UID (t);
+      break;
+
     case INTEGER_CST:
-      return TREE_INT_CST_LOW (t) ^ TREE_INT_CST_HIGH (t);
+      h = TREE_INT_CST_LOW (t) ^ TREE_INT_CST_HIGH (t);
+      break;
+
+    case FIELD_DECL:
+      /* We can have types that are compatible, but have different member
+	 lists, so we can't hash fields by ID.  Use offsets instead.  */
+      h = iterative_hash_expr (DECL_FIELD_OFFSET (t), 0);
+      h = iterative_hash_expr (DECL_FIELD_BIT_OFFSET (t), h);
+      break;
+
     default:
       abort ();
     }
+
+  return h;
 }
 
 /* Hash function for type SRA_PAIR.  */
@@ -399,20 +413,41 @@ sra_elt_eq (const void *x, const void *y)
 {
   const struct sra_elt *a = x;
   const struct sra_elt *b = y;
+  tree ae, be;
 
   if (a->parent != b->parent)
     return false;
 
-  /* All the field/decl stuff is unique.  */
-  if (a->element == b->element)
-    return true;
+  ae = a->element;
+  be = b->element;
 
-  /* The only thing left is integer equality.  */
-  if (TREE_CODE (a->element) == INTEGER_CST
-      && TREE_CODE (b->element) == INTEGER_CST)
-    return tree_int_cst_equal (a->element, b->element);
-  else
+  if (ae == be)
+    return true;
+  if (TREE_CODE (ae) != TREE_CODE (be))
     return false;
+
+  switch (TREE_CODE (ae))
+    {
+    case VAR_DECL:
+    case PARM_DECL:
+    case RESULT_DECL:
+      /* These are all pointer unique.  */
+      return false;
+
+    case INTEGER_CST:
+      /* Integers are not pointer unique, so compare their values.  */
+      return tree_int_cst_equal (ae, be);
+
+    case FIELD_DECL:
+      /* Fields are unique within a record, but not between
+	 compatible records.  */
+      if (DECL_FIELD_CONTEXT (ae) == DECL_FIELD_CONTEXT (be))
+	return false;
+      return fields_compatible_p (ae, be);
+
+    default:
+      abort ();
+    }
 }
 
 /* Create or return the SRA_ELT structure for CHILD in PARENT.  PARENT
@@ -1392,7 +1427,15 @@ generate_one_element_ref (struct sra_elt *elt, tree base)
   switch (TREE_CODE (TREE_TYPE (base)))
     {
     case RECORD_TYPE:
-      return build (COMPONENT_REF, elt->type, base, elt->element, NULL);
+      {
+	tree field = elt->element;
+
+	/* Watch out for compatible records with differing field lists.  */
+	if (DECL_FIELD_CONTEXT (field) != TYPE_MAIN_VARIANT (TREE_TYPE (base)))
+	  field = find_compatible_field (TREE_TYPE (base), field);
+
+        return build (COMPONENT_REF, elt->type, base, field, NULL);
+      }
 
     case ARRAY_TYPE:
       return build (ARRAY_REF, elt->type, base, elt->element, NULL, NULL);

@@ -5693,4 +5693,49 @@ needs_to_live_in_memory (tree t)
 	  || decl_function_context (t) != current_function_decl);
 }
 
+/* There are situations in which a language considers record types
+   compatible which have different field lists.  Decide if two fields
+   are compatible.  It is assumed that the parent records are compatible.  */
+
+bool
+fields_compatible_p (tree f1, tree f2)
+{
+  if (!operand_equal_p (DECL_FIELD_BIT_OFFSET (f1),
+			DECL_FIELD_BIT_OFFSET (f2), OEP_ONLY_CONST))
+    return false;
+
+  if (!operand_equal_p (DECL_FIELD_OFFSET (f1),
+                        DECL_FIELD_OFFSET (f2), OEP_ONLY_CONST))
+    return false;
+
+  if (!lang_hooks.types_compatible_p (TREE_TYPE (f1), TREE_TYPE (f2)))
+    return false; 
+
+  return true;
+}
+
+/* Locate within RECORD a field that is compatible with ORIG_FIELD.  */
+
+tree
+find_compatible_field (tree record, tree orig_field)
+{
+  tree f;
+
+  for (f = TYPE_FIELDS (record); f ; f = TREE_CHAIN (f))
+    if (TREE_CODE (f) == FIELD_DECL
+	&& fields_compatible_p (f, orig_field))
+      return f;
+
+  /* ??? Why isn't this on the main fields list?  */
+  f = TYPE_VFIELD (record);
+  if (f && TREE_CODE (f) == FIELD_DECL
+      && fields_compatible_p (f, orig_field))
+    return f;
+
+  /* ??? We should abort here, but Java appears to do Bad Things
+     with inherited fields.  */
+  return orig_field;
+}
+
+
 #include "gt-tree.h"

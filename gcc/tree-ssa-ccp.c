@@ -1962,38 +1962,19 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
         return t;
       *walk_subtrees = 0;
 
-      /* Make sure the FIELD_DECL is actually a field in the type on
-         the lhs.  In cases with IMA it is possible that it came
-         from another, equivalent type at this point.  We have
-	 already checked the equivalence in this case.
-	 Match on type plus offset, to allow for unnamed fields.
-	 We won't necessarily get the corresponding field for
-	 unions; this is believed to be harmless.  */
+      /* Make sure the FIELD_DECL is actually a field in the type on the lhs.
+	 We've already checked that the records are compatible, so we should
+	 come up with a set of compatible fields.  */
+      {
+	tree expr_record = TREE_TYPE (TREE_OPERAND (expr, 0));
+	tree expr_field = TREE_OPERAND (expr, 1);
 
-      if ((current_file_decl && TREE_CHAIN (current_file_decl))
-        && (DECL_FIELD_CONTEXT (TREE_OPERAND (expr, 1)) !=
-            TREE_TYPE (TREE_OPERAND (expr, 0))))
-        {
-          tree f;
-          tree orig_field = TREE_OPERAND (expr, 1);
-          tree orig_type = TREE_TYPE (orig_field);
-          for (f = TYPE_FIELDS (TREE_TYPE (TREE_OPERAND (expr, 0)));
-              f; f = TREE_CHAIN (f))
-            {
-              if (lang_hooks.types_compatible_p (TREE_TYPE (f), orig_type)
-                  && tree_int_cst_compare (DECL_FIELD_BIT_OFFSET (f),
-                                          DECL_FIELD_BIT_OFFSET (orig_field))
-                      == 0
-                  && tree_int_cst_compare (DECL_FIELD_OFFSET (f),
-                                          DECL_FIELD_OFFSET (orig_field))
-                      == 0)
-                {
-                  TREE_OPERAND (expr, 1) = f;
-                  break;
-                }
-            }
-        /* Fall through is an error; it will be detected in tree-sra.  */
-        }
+        if (DECL_FIELD_CONTEXT (expr_field) != TYPE_MAIN_VARIANT (expr_record))
+	  {
+	    expr_field = find_compatible_field (expr_record, expr_field);
+	    TREE_OPERAND (expr, 1) = expr_field;
+	  }
+      }
       break;
 
     default:
