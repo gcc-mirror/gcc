@@ -1,3 +1,9 @@
+2003-02-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9457
+	* pt.c (tsubst_copy_and_build) [CONSTRUCTOR]: Substitute
+	CONSTRUCTOR_ELTS only once.
+
 2003-02-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9459

@@ -8290,8 +8290,7 @@ tsubst_copy_and_build (t, args, complain, in_decl)
 	   initializers as they are identifier nodes which will be
 	   looked up by digest_init.  */
 	purpose_p = !(type && IS_AGGR_TYPE (type));
-	for (elts = tsubst_copy (CONSTRUCTOR_ELTS (t), args, complain,
-				 in_decl);
+	for (elts = CONSTRUCTOR_ELTS (t);
 	     elts;
 	     elts = TREE_CHAIN (elts))
 	  {
