@@ -1,3 +1,26 @@
+2001-06-21  DJ Delorie  <dj@redhat.com>
+
+	* integrate.c (ggc.h): Include.
+	(initial_value_pair, initial_value_struct,
+	setup_initial_hard_reg_value_integration): Add prototypes.
+	(expand_inline_function): Call
+	setup_initial_hard_reg_value_integration.
+	(has_func_hard_reg_initial_val, get_func_hard_reg_initial_val,
+	get_hard_reg_initial_val, has_hard_reg_initial_val): New functions
+	to keep track of values present at the start of a function.
+	(mark_hard_reg_initial_vals): New, for gc.
+	(setup_initial_hard_reg_value_integration): New.  Sets up pseudo
+	mappings for initial values.
+	(emit_initial_value_sets): New.  Emits code to set initial value
+	pseudos.
+	* integrate.h: Add prototypes for new functions.
+	* function.h (struct function): Add hard_reg_initial_vals field.
+	* function.c (integrate.h): Include.
+	(mark_function_status): Call
+	mark_hard_reg_initial_vals.
+	* toplev.c (integrate.h): Include.
+	(rest_of_compilation): Call emit_initial_value_sets.
+
 2001-06-21  Stan Shebs  <shebs@apple.com>
 
 	* doc/contrib.texi, doc/cpp.texi, doc/cppinternals.texi,

@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "loop.h"
 #include "params.h"
+#include "ggc.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
@@ -68,6 +69,20 @@ extern struct obstack *function_maybepermanent_obstack;
 #define FUNCTION_ATTRIBUTE_INLINABLE_P(FNDECL) 0
 #endif
 
+
+/* Private type used by {get/has}_func_hard_reg_initial_val. */
+typedef struct initial_value_pair {
+  rtx hard_reg;
+  rtx pseudo;
+} initial_value_pair;
+typedef struct initial_value_struct {
+  int num_entries;
+  int max_entries;
+  initial_value_pair *entries;
+} initial_value_struct;
+
+static void setup_initial_hard_reg_value_integration PARAMS ((struct function *, struct inline_remap *));
+
 static rtvec initialize_for_inline	PARAMS ((tree));
 static void note_modified_parmregs	PARAMS ((rtx, rtx, void *));
 static void integrate_parm_decls	PARAMS ((tree, struct inline_remap *,
@@ -1158,6 +1173,9 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      pushes.  */
   if (inl_f->calls_alloca)
     emit_stack_save (SAVE_BLOCK, &stack_save, NULL_RTX);
+
+  /* Map pseudos used for initial hard reg values.  */
+  setup_initial_hard_reg_value_integration (inl_f, map);
 
   /* Now copy the insns one by one.  */
   copy_insn_list (insns, map, static_chain_value);
@@ -2877,4 +2895,127 @@ output_inline_function (fndecl)
   cfun = old_cfun;
   current_function_decl = old_cfun ? old_cfun->decl : 0;
   write_symbols = old_write_symbols;
+}
+
+
+/* Functions to keep track of the values hard regs had at the start of
+   the function.  */
+
+rtx
+has_func_hard_reg_initial_val (fun, reg)
+     struct function *fun;
+     rtx reg;
+{
+  struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
+  int i;
+
+  if (ivs == 0)
+    return NULL_RTX;
+
+  for (i = 0; i < ivs->num_entries; i++)
+    if (rtx_equal_p (ivs->entries[i].hard_reg, reg))
+      return ivs->entries[i].pseudo;
+
+  return NULL_RTX;
+}
+
+rtx
+get_func_hard_reg_initial_val (fun, reg)
+     struct function *fun;
+     rtx reg;
+{
+  struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
+  rtx rv = has_func_hard_reg_initial_val (fun, reg);
+
+  if (rv)
+    return rv;
+
+  if (ivs == 0)
+    {
+      fun->hard_reg_initial_vals = (void *) xmalloc (sizeof (initial_value_struct));
+      ivs = fun->hard_reg_initial_vals;
+      ivs->num_entries = 0;
+      ivs->max_entries = 5;
+      ivs->entries = (initial_value_pair *) xmalloc (5 * sizeof (initial_value_pair));
+    }
+
+  if (ivs->num_entries >= ivs->max_entries)
+    {
+      ivs->max_entries += 5;
+      ivs->entries = 
+	(initial_value_pair *) xrealloc (ivs->entries,
+					 ivs->max_entries
+					 * sizeof (initial_value_pair));
+    }
+
+  ivs->entries[ivs->num_entries].hard_reg = reg;
+  ivs->entries[ivs->num_entries].pseudo = gen_reg_rtx (GET_MODE (reg));
+
+  return ivs->entries[ivs->num_entries++].pseudo;
+}
+
+rtx
+get_hard_reg_initial_val (mode, regno)
+     enum machine_mode mode;
+     int regno;
+{
+  return get_func_hard_reg_initial_val (cfun, gen_rtx_REG (mode, regno));
+}
+
+rtx
+has_hard_reg_initial_val (mode, regno)
+     enum machine_mode mode;
+     int regno;
+{
+  return has_func_hard_reg_initial_val (cfun, gen_rtx_REG (mode, regno));
+}
+
+void
+mark_hard_reg_initial_vals (fun)
+     struct function *fun;
+{
+  struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
+  int i;
+
+  for (i = 0; i < ivs->num_entries; i ++)
+    {
+      ggc_mark_rtx (ivs->entries[i].hard_reg);
+      ggc_mark_rtx (ivs->entries[i].pseudo);
+    }
+}
+
+static void
+setup_initial_hard_reg_value_integration (inl_f, remap)
+     struct function *inl_f;
+     struct inline_remap *remap;
+{
+  struct initial_value_struct *ivs = inl_f->hard_reg_initial_vals;
+  int i;
+
+  if (ivs == 0)
+    return;
+
+  for (i = 0; i < ivs->num_entries; i ++)
+    remap->reg_map[REGNO (ivs->entries[i].pseudo)]
+      = get_func_hard_reg_initial_val (cfun, ivs->entries[i].hard_reg);
+}
+
+
+void
+emit_initial_value_sets ()
+{
+  struct initial_value_struct *ivs = cfun->hard_reg_initial_vals;
+  int i;
+  rtx seq;
+
+  if (ivs == 0)
+    return;
+
+  start_sequence ();
+  for (i = 0; i < ivs->num_entries; i++)
+    emit_move_insn (ivs->entries[i].pseudo, ivs->entries[i].hard_reg);
+  seq = get_insns ();
+  end_sequence ();
+
+  emit_insns_after (seq, get_insns ());
 }

@@ -129,6 +129,22 @@ struct inline_remap
    labels, and frame-pointer offsets as necessary.  */
 extern rtx copy_rtx_and_substitute PARAMS ((rtx, struct inline_remap *, int));
 
+/* Return a pseudo that corresponds to the value in the specified hard
+   reg as of the start of the function (for inlined functions, the
+   value at the start of the parent function).  */
+extern rtx get_hard_reg_initial_val		PARAMS ((enum machine_mode, int));
+/* Likewise, but for a different than the current function, or
+   arbitrary expression.  */
+extern rtx get_func_hard_reg_initial_val	PARAMS ((struct function *, rtx));
+/* Likewise, but iff someone else has caused it to become allocated.  */
+extern rtx has_func_hard_reg_initial_val	PARAMS ((struct function *, rtx));
+/* Likewise, but for common cases.  */
+extern rtx has_hard_reg_initial_val		PARAMS ((enum machine_mode, int));
+/* This is for GC.  */
+extern void mark_hard_reg_initial_vals		PARAMS ((struct function *));
+/* Called from rest_of_compilation.  */
+extern void emit_initial_value_sets		PARAMS ((void));
+
 /* Copy a declaration when one function is substituted inline into
    another.  */
 extern union tree_node *copy_decl_for_inlining PARAMS ((union tree_node *,
