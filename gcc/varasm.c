@@ -2428,9 +2428,12 @@ compare_constant_1 (exp, p)
     }
   else if (code == CONSTRUCTOR && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
     {
-      len = int_size_in_bytes (TREE_TYPE (exp));
+      int xlen = len = int_size_in_bytes (TREE_TYPE (exp));
       strp = (char*) alloca (len);
       get_set_constructor_bytes (exp, (unsigned char *) strp, len);
+      if (bcmp ((char *) &xlen, p, sizeof xlen))
+	return 0;
+      p += sizeof xlen;
     }
   else if (code == CONSTRUCTOR)
     {
@@ -2585,7 +2588,8 @@ record_constant_1 (exp)
 	  obstack_grow (&permanent_obstack, &nbytes, sizeof (nbytes));
 	  obstack_blank (&permanent_obstack, nbytes);
 	  get_set_constructor_bytes
-	    (exp, (unsigned char *) permanent_obstack.next_free, nbytes);
+	    (exp, (unsigned char *) permanent_obstack.next_free-nbytes,
+	     nbytes);
 	  return;
 	}
       else
