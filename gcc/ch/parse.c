@@ -2205,7 +2205,7 @@ parse_delay_case_action (label)
     }
   expect (ESAC, "missing 'ESAC' in DELAY CASE'");
   if (! ignoring)
-    build_delay_case_end (label_cnt, combined_event_list);
+    build_delay_case_end (combined_event_list);
   possibly_define_exit_label (label);
   poplevel (0, 0, 0); 
 }
@@ -2436,8 +2436,7 @@ parse_receive_case_action (label)
   expect (ESAC, "missing 'ESAC' matching 'RECEIVE CASE'");
   if (! ignoring)
     {
-      build_receive_case_end (instance_location, nreverse (alt_list),
-			      have_else_actions);
+      build_receive_case_end (nreverse (alt_list), have_else_actions);
     }
   possibly_define_exit_label (label);
   poplevel (0, 0, 0); 
