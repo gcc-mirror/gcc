@@ -229,10 +229,15 @@ public class GridBagLayout
      */
     public int[][] getLayoutDimensions ()
     {
-	if (layoutInfo == null)
-	    return new int [2][];
-
 	int[][] result = new int [2][];
+	if (layoutInfo == null)
+	  {
+	    result[0] = new int[0];
+	    result[1] = new int[0];
+
+	    return result;
+	  }
+
 	result [0] = new int [layoutInfo.cols];
 	System.arraycopy (layoutInfo.colWidths, 0, result [0], 0, layoutInfo.cols);
 	result [1] = new int [layoutInfo.rows];
@@ -242,10 +247,15 @@ public class GridBagLayout
 
     public double[][] getLayoutWeights ()
     {
-	if (layoutInfo == null)
-	    return new double [2][];
-      
 	double[][] result = new double [2][];
+	if (layoutInfo == null)
+	  {
+	    result[0] = new double[0];
+	    result[1] = new double[0];
+
+	    return result;
+	  }
+
 	result [0] = new double [layoutInfo.cols];
 	System.arraycopy (layoutInfo.colWeights, 0, result [0], 0, layoutInfo.cols);
 	result [1] = new double [layoutInfo.rows];
