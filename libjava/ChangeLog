@@ -1,3 +1,17 @@
+2005-03-30  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am (gtk_c_source_files): Remove jni/classpath/jcl.c,
+	jni/classpath/jnilink.c, jni/classpath/primlib.c.
+	(lib_gnu_java_awt_peer_gtk_la_SOURCES): jni/classpath/jcl.h,
+	jni/classpath/jnilink.h, jni/classpath/primlib.h.
+	* Makefile.in: Regenerate.
+	* jni/classpath/jcl.h: Remove.
+	* jni/classpath/jcl.c: Likewise.
+	* jni/classpath/jnilink.h: Likewise.
+	* jni/classpath/jnilink.c: Likewise.
+	* jni/classpath/primlib.h: Likewise.
+	* jni/classpath/primlib.c: Likewise.
+
 2005-03-30  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* Makefile.am (classes.stamp): Add gnu/gcj/tools/gcj_dbtool/Main.java

@@ -224,11 +224,8 @@ am__lib_gnu_java_awt_peer_gtk_la_SOURCES_DIST =  \
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c \
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.c \
 	jni/gtk-peer/gthread-jni.c jni/gtk-peer/gtk_jawt.c \
-	jni/classpath/jcl.c jni/classpath/jnilink.c \
-	jni/classpath/native_state.c jni/classpath/primlib.c \
-	jni/gtk-peer/gthread-jni.h jni/gtk-peer/gtkpeer.h \
-	jni/classpath/jcl.h jni/classpath/jnilink.h \
-	jni/classpath/native_state.h jni/classpath/primlib.h
+	jni/classpath/native_state.c jni/gtk-peer/gthread-jni.h \
+	jni/gtk-peer/gtkpeer.h jni/classpath/native_state.h
 am__objects_3 = gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.lo \
 	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.lo \
 	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.lo \
@@ -314,10 +311,7 @@ am__objects_5 = $(am__objects_4) \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.lo \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gthread-jni.lo \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo \
-	jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo \
-	jni/classpath/lib_gnu_java_awt_peer_gtk_la-jnilink.lo \
-	jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo \
-	jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo
+	jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo
 am_lib_gnu_java_awt_peer_gtk_la_OBJECTS = $(am__objects_3) \
 	$(am__objects_5)
 lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
@@ -5249,10 +5243,7 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.c \
 jni/gtk-peer/gthread-jni.c \
 jni/gtk-peer/gtk_jawt.c \
-jni/classpath/jcl.c \
-jni/classpath/jnilink.c	\
-jni/classpath/native_state.c \
-jni/classpath/primlib.c
+jni/classpath/native_state.c
 
 gtk_awt_peer_sources = \
 gnu/java/awt/peer/gtk/GdkTextLayout.java \
@@ -5307,10 +5298,7 @@ $(gtk_awt_peer_sources) \
 $(gtk_c_source_files) \
 jni/gtk-peer/gthread-jni.h \
 jni/gtk-peer/gtkpeer.h \
-jni/classpath/jcl.h \
-jni/classpath/jnilink.h	\
-jni/classpath/native_state.h \
-jni/classpath/primlib.h
+jni/classpath/native_state.h
 
 lib_gnu_java_awt_peer_gtk_la_CFLAGS = \
 	-Ijniinclude -I$(srcdir)/jni/classpath \
@@ -8728,16 +8716,7 @@ jni/classpath/$(am__dirstamp):
 jni/classpath/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) jni/classpath/$(DEPDIR)
 	@: > jni/classpath/$(DEPDIR)/$(am__dirstamp)
-jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo:  \
-	jni/classpath/$(am__dirstamp) \
-	jni/classpath/$(DEPDIR)/$(am__dirstamp)
-jni/classpath/lib_gnu_java_awt_peer_gtk_la-jnilink.lo:  \
-	jni/classpath/$(am__dirstamp) \
-	jni/classpath/$(DEPDIR)/$(am__dirstamp)
 jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo:  \
-	jni/classpath/$(am__dirstamp) \
-	jni/classpath/$(DEPDIR)/$(am__dirstamp)
-jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo:  \
 	jni/classpath/$(am__dirstamp) \
 	jni/classpath/$(DEPDIR)/$(am__dirstamp)
 lib-gnu-java-awt-peer-gtk.la: $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES) 
@@ -21818,14 +21797,8 @@ mostlyclean-compile:
 	-rm -f javax/xml/xpath/XPathFunctionResolver.lo
 	-rm -f javax/xml/xpath/XPathVariableResolver.$(OBJEXT)
 	-rm -f javax/xml/xpath/XPathVariableResolver.lo
-	-rm -f jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.$(OBJEXT)
-	-rm -f jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo
-	-rm -f jni/classpath/lib_gnu_java_awt_peer_gtk_la-jnilink.$(OBJEXT)
-	-rm -f jni/classpath/lib_gnu_java_awt_peer_gtk_la-jnilink.lo
 	-rm -f jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.$(OBJEXT)
 	-rm -f jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo
-	-rm -f jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.$(OBJEXT)
-	-rm -f jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo
 	-rm -f jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.$(OBJEXT)
 	-rm -f jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.lo
 	-rm -f jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GdkFontPeer.$(OBJEXT)
@@ -24728,10 +24701,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/xml/xpath/$(DEPDIR)/XPathFunctionException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/xml/xpath/$(DEPDIR)/XPathFunctionResolver.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/xml/xpath/$(DEPDIR)/XPathVariableResolver.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jcl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jnilink.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-native_state.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-primlib.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GdkFontPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GdkGraphics.Plo@am__quote@
@@ -25078,33 +25048,12 @@ jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo: jni/gtk-peer/gtk_jawt.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -c -o jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo `test -f 'jni/gtk-peer/gtk_jawt.c' || echo '$(srcdir)/'`jni/gtk-peer/gtk_jawt.c
 
-jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo: jni/classpath/jcl.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -MT jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo -MD -MP -MF "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jcl.Tpo" -c -o jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo `test -f 'jni/classpath/jcl.c' || echo '$(srcdir)/'`jni/classpath/jcl.c; \
-@am__fastdepCC_TRUE@	then mv -f "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jcl.Tpo" "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jcl.Plo"; else rm -f "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jcl.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='jni/classpath/jcl.c' object='jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -c -o jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo `test -f 'jni/classpath/jcl.c' || echo '$(srcdir)/'`jni/classpath/jcl.c
-
-jni/classpath/lib_gnu_java_awt_peer_gtk_la-jnilink.lo: jni/classpath/jnilink.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -MT jni/classpath/lib_gnu_java_awt_peer_gtk_la-jnilink.lo -MD -MP -MF "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jnilink.Tpo" -c -o jni/classpath/lib_gnu_java_awt_peer_gtk_la-jnilink.lo `test -f 'jni/classpath/jnilink.c' || echo '$(srcdir)/'`jni/classpath/jnilink.c; \
-@am__fastdepCC_TRUE@	then mv -f "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jnilink.Tpo" "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jnilink.Plo"; else rm -f "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jnilink.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='jni/classpath/jnilink.c' object='jni/classpath/lib_gnu_java_awt_peer_gtk_la-jnilink.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -c -o jni/classpath/lib_gnu_java_awt_peer_gtk_la-jnilink.lo `test -f 'jni/classpath/jnilink.c' || echo '$(srcdir)/'`jni/classpath/jnilink.c
-
 jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo: jni/classpath/native_state.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -MT jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo -MD -MP -MF "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-native_state.Tpo" -c -o jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo `test -f 'jni/classpath/native_state.c' || echo '$(srcdir)/'`jni/classpath/native_state.c; \
 @am__fastdepCC_TRUE@	then mv -f "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-native_state.Tpo" "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-native_state.Plo"; else rm -f "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-native_state.Tpo"; exit 1; fi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='jni/classpath/native_state.c' object='jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -c -o jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo `test -f 'jni/classpath/native_state.c' || echo '$(srcdir)/'`jni/classpath/native_state.c
-
-jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo: jni/classpath/primlib.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -MT jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo -MD -MP -MF "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-primlib.Tpo" -c -o jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo `test -f 'jni/classpath/primlib.c' || echo '$(srcdir)/'`jni/classpath/primlib.c; \
-@am__fastdepCC_TRUE@	then mv -f "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-primlib.Tpo" "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-primlib.Plo"; else rm -f "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-primlib.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='jni/classpath/primlib.c' object='jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -c -o jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo `test -f 'jni/classpath/primlib.c' || echo '$(srcdir)/'`jni/classpath/primlib.c
 
 libjawt_la-jawt.lo: jawt.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjawt_la_CFLAGS) $(CFLAGS) -MT libjawt_la-jawt.lo -MD -MP -MF "$(DEPDIR)/libjawt_la-jawt.Tpo" -c -o libjawt_la-jawt.lo `test -f 'jawt.c' || echo '$(srcdir)/'`jawt.c; \

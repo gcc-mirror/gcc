@@ -323,10 +323,7 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.c \
 jni/gtk-peer/gthread-jni.c \
 jni/gtk-peer/gtk_jawt.c \
-jni/classpath/jcl.c \
-jni/classpath/jnilink.c	\
-jni/classpath/native_state.c \
-jni/classpath/primlib.c
+jni/classpath/native_state.c
 
 ## Java sources for Gtk peers.
 gtk_awt_peer_sources = \
@@ -472,10 +469,7 @@ $(gtk_awt_peer_sources) \
 $(gtk_c_source_files) \
 jni/gtk-peer/gthread-jni.h \
 jni/gtk-peer/gtkpeer.h \
-jni/classpath/jcl.h \
-jni/classpath/jnilink.h	\
-jni/classpath/native_state.h \
-jni/classpath/primlib.h
+jni/classpath/native_state.h
 
 lib_gnu_java_awt_peer_gtk_la_CFLAGS = \
 	-Ijniinclude -I$(srcdir)/jni/classpath \
