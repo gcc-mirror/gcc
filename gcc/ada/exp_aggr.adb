@@ -144,6 +144,16 @@ package body Exp_Aggr is
    -- Local Subprograms for Array Aggregate Expansion --
    -----------------------------------------------------
 
+   procedure Convert_Array_Aggr_In_Allocator
+     (Decl   : Node_Id;
+      Aggr   : Node_Id;
+      Target : Node_Id);
+   --  If the aggregate appears within an allocator and can be expanded in
+   --  place, this routine generates the individual assignments to components
+   --  of the designated object. This is an optimization over the general
+   --  case, where a temporary is first created on the stack and then used to
+   --  construct the allocated object on the heap.
+
    procedure Convert_To_Positional
      (N                    : Node_Id;
       Max_Others_Replicate : Nat     := 5;
@@ -2348,7 +2358,10 @@ package body Exp_Aggr is
       Access_Type : constant Entity_Id := Etype (Temp);
 
    begin
-      if Has_Default_Init_Comps (Aggr) then
+      if Is_Array_Type (Typ) then
+         Convert_Array_Aggr_In_Allocator (Decl, Aggr, Occ);
+
+      elsif Has_Default_Init_Comps (Aggr) then
          declare
             L          : constant List_Id := New_List;
             Init_Stmts : List_Id;
@@ -2490,6 +2503,34 @@ package body Exp_Aggr is
       Set_No_Initialization (N);
       Initialize_Discriminants (N, Typ);
    end Convert_Aggr_In_Object_Decl;
+
+   -------------------------------------
+   -- Convert_array_Aggr_In_Allocator --
+   -------------------------------------
+
+   procedure Convert_Array_Aggr_In_Allocator
+     (Decl   : Node_Id;
+      Aggr   : Node_Id;
+      Target : Node_Id)
+   is
+      Aggr_Code : List_Id;
+      Typ       : constant Entity_Id := Etype (Aggr);
+      Ctyp      : constant Entity_Id := Component_Type (Typ);
+
+   begin
+      --  The target is an explicit dereference of the allocated object.
+      --  Generate component assignments to it, as for an aggregate that
+      --  appears on the right-hand side of an assignment statement.
+
+      Aggr_Code :=
+        Build_Array_Aggr_Code (Aggr,
+          Ctype       => Ctyp,
+          Index       => First_Index (Typ),
+          Into        => Target,
+          Scalar_Comp => Is_Scalar_Type (Ctyp));
+
+      Insert_Actions_After (Decl, Aggr_Code);
+   end Convert_Array_Aggr_In_Allocator;
 
    ----------------------------
    -- Convert_To_Assignments --
@@ -3451,7 +3492,10 @@ package body Exp_Aggr is
                            and then Check_Component (Right_Opnd (Comp)))
 
                  or else (Nkind (Comp) = N_Selected_Component
-                           and then Check_Component (Prefix (Comp)));
+                           and then Check_Component (Prefix (Comp)))
+
+                 or else (Nkind (Comp) = N_Unchecked_Type_Conversion
+                           and then Check_Component (Expression (Comp)));
             end Check_Component;
 
          --  Start of processing for Safe_Component
@@ -3511,7 +3555,17 @@ package body Exp_Aggr is
             end if;
 
             Aggr_In := First_Index (Etype (N));
-            Obj_In  := First_Index (Etype (Name (Parent (N))));
+            if Nkind (Parent (N)) = N_Assignment_Statement then
+               Obj_In  := First_Index (Etype (Name (Parent (N))));
+
+            else
+               --  Context is an allocator. Check bounds of aggregate
+               --  against given type in qualified expression.
+
+               pragma Assert (Nkind (Parent (Parent (N))) = N_Allocator);
+               Obj_In :=
+                 First_Index (Etype (Entity (Subtype_Mark (Parent (N)))));
+            end if;
 
             while Present (Aggr_In) loop
                Get_Index_Bounds (Aggr_In, Aggr_Lo, Aggr_Hi);
@@ -4000,6 +4054,11 @@ package body Exp_Aggr is
       --  create a temporary. The analysis for safety of on-line assignment
       --  is delicate, i.e. we don't know how to do it fully yet ???
 
+      --  For allocators we assign to the designated object in place if the
+      --  aggregate meets the same conditions as other in-place assignments.
+      --  In this case the aggregate may not come from source but was created
+      --  for default initialization, e.g. with Initialize_Scalars.
+
       if Requires_Transient_Scope (Typ) then
          Establish_Transient_Scope
            (N, Sec_Stack => Has_Controlled_Component (Typ));
@@ -4007,13 +4066,21 @@ package body Exp_Aggr is
 
       if Has_Default_Init_Comps (N) then
          Maybe_In_Place_OK := False;
+
+      elsif Is_Bit_Packed_Array (Typ)
+        or else Has_Controlled_Component (Typ)
+      then
+         Maybe_In_Place_OK := False;
+
       else
          Maybe_In_Place_OK :=
-           Comes_From_Source (N)
-             and then Nkind (Parent (N)) = N_Assignment_Statement
-             and then not Is_Bit_Packed_Array (Typ)
-             and then not Has_Controlled_Component (Typ)
-             and then In_Place_Assign_OK;
+          (Nkind (Parent (N)) = N_Assignment_Statement
+             and then Comes_From_Source (N)
+             and then In_Place_Assign_OK)
+
+          or else
+            (Nkind (Parent (Parent (N))) = N_Allocator
+              and then In_Place_Assign_OK);
       end if;
 
       if not Has_Default_Init_Comps (N)
@@ -4045,6 +4112,15 @@ package body Exp_Aggr is
             Set_Size_Known_At_Compile_Time (Typ, False);
             Set_Etype (Tmp, Typ);
          end if;
+
+      elsif Maybe_In_Place_OK
+        and then Nkind (Parent (N)) = N_Qualified_Expression
+        and then Nkind (Parent (Parent (N))) = N_Allocator
+      then
+         Set_Expansion_Delayed (N);
+         return;
+
+      --  In the remaining cases  the aggregate is the RHS of an assignment.
 
       elsif Maybe_In_Place_OK
         and then Is_Entity_Name (Name (Parent (N)))
