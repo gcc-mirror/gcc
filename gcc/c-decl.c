@@ -5183,7 +5183,12 @@ store_parm_decls ()
 	      if (DECL_NAME (parm) == 0)
 		error_with_decl (parm, "parameter name omitted");
 	      else if (TREE_TYPE (parm) == void_type_node)
-		error_with_decl (parm, "parameter `%s' declared void");
+		{
+		  error_with_decl (parm, "parameter `%s' declared void");
+		  /* Change the type to error_mark_node so this parameter
+		     will be ignored by assign_parms.  */
+		  TREE_TYPE (parm) = error_mark_node;
+		}
 	      pushdecl (parm);
 	    }
 	  else
