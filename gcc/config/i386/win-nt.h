@@ -41,10 +41,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
      0 \
    : \
      ( \
-      ((FUNDECL && (TREE_CODE_CLASS (TREE_CODE (FUNDECL)) == 'd') ? \
-        chain_member_purpose (get_identifier ("stdcall"), \
-                              DECL_MACHINE_ATTRIBUTES (FUNDECL) \
-                             )                                    : 0 \
+      ((FUNDECL && (TREE_CODE_CLASS (TREE_CODE (FUNDECL)) == 'd') \
+	? \
+          lookup_attribute ("stdcall", \
+			    DECL_MACHINE_ATTRIBUTES (FUNDECL)) != NULL_TREE \
+	: 0 \
        ) \
       ) \
       && \
@@ -70,7 +71,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
 #endif
 #define CPP_PREDEFINES "-Dunix -Di386 -DWIN32 -D_WIN32 \
   -DWINNT -D_M_IX86=300 -D_X86_=1 -D__STDC__=0 -DALMOST_STDC -D_MSC_VER=800 \
-  -D__stdcall=__attribute__((stdcall)) -D__cdecl=__attribute__((cdecl)) \
+  -D__stdcall=__attribute__((__stdcall__)) \
+  -D__cdecl=__attribute__((__cdecl__)) \
   -Asystem(unix) -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
 
 #define SIZE_TYPE "unsigned int"
@@ -154,8 +156,8 @@ do									\
 	     || ! TREE_PUBLIC (DECL));					\
       }									\
     if (TREE_CODE (DECL) == FUNCTION_DECL) 				\
-      if (chain_member_purpose (get_identifier ("stdcall"), 		\
-                                DECL_MACHINE_ATTRIBUTES (DECL))) 	\
+      if (lookup_attribute ("stdcall",					\
+			    DECL_MACHINE_ATTRIBUTES (DECL)))		\
         XEXP (DECL_RTL (DECL), 0) = 					\
           gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (DECL)); 	\
   }									\
@@ -165,12 +167,13 @@ while (0)
 /* Value is 1 if the declaration has either of the attributes: CDECL or
    STDCALL and 0 otherwise */
 
-#define VALID_MACHINE_DECL_ATTRIBUTE(decl,attr,name) \
-  ((TREE_CODE(decl) == FUNCTION_DECL) \
-   || (TREE_CODE(decl) == FIELD_DECL) \
-   || (TREE_CODE(decl) == TYPE_DECL)) \
-  && ((get_identifier("stdcall") == name) \
-   || (get_identifier("cdecl") == name))
+#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTR, NAME, ARGS) \
+  (((TREE_CODE(DECL) == FUNCTION_DECL) \
+    || (TREE_CODE(DECL) == FIELD_DECL) \
+    || (TREE_CODE(DECL) == TYPE_DECL)) \
+   && (is_attribute_p ("stdcall", (NAME)) \
+       || is_attribute_p ("cdecl", (NAME))) \
+   && (ARGS) == NULL)
 
 /* The global __fltused is necessary to cause the printf/scanf routines
    for outputting/inputting floating point numbers to be loaded.  Since this
