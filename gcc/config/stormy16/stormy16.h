@@ -1299,8 +1299,9 @@ enum reg_class
  (  (CHAR) == 'a' ? R0_REGS			\
   : (CHAR) == 'b' ? R1_REGS			\
   : (CHAR) == 'c' ? R2_REGS			\
-  : (CHAR) == 't' ? TWO_REGS			\
+  : (CHAR) == 'd' ? R8_REGS			\
   : (CHAR) == 'e' ? EIGHT_REGS			\
+  : (CHAR) == 't' ? TWO_REGS			\
   : (CHAR) == 'y' ? CARRY_REGS			\
   : NO_REGS)
 
