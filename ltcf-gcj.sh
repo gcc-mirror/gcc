@@ -286,6 +286,12 @@ else
       # According to Greg Wooledge, -bexpall is only supported from AIX 4.2 on
       always_export_symbols=yes ;;
     esac
+
+    # We don't want to build shared libraries on unknown CPU types.
+    case $host_cpu in
+    powerpc | rs6000) ;;
+    *) ld_shlibs=no ;;
+    esac
    ;;
 
   amigaos*)
