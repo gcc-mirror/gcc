@@ -1,5 +1,12 @@
 2003-11-15  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/lib1funcs.asm (divnorm): Store the sign in bit
+	3 of S2L.
+	(modnorm): Likewise.
+	(exitdiv): Look at bit 3 of S2L only.
+
+2003-11-15  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.h (DO_GLOBAL_CTORS_BODY): Fix warnings.
 	(DO_GLOBAL_DTORS_BODY): Likewise.
 
