@@ -10035,6 +10035,24 @@ mips_hard_regno_nregs (regno, mode)
     return ((GET_MODE_SIZE (mode) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG);
 }
 
+int
+mips_return_in_memory (type)
+     tree type;
+{
+  /* Under the old (i.e., 32 and O64 ABIs) all BLKmode objects are
+     returned in memory.  Under the new (N32 and 64-bit MIPS ABIs) small
+     structures are returned in a register.  Objects with varying size
+     must still be returned in memory, of course.  */
+
+  if (mips_abi == ABI_32 || mips_abi == ABI_O64)
+    return (TYPE_MODE (type) == BLKmode);
+  else
+    return ((int_size_in_bytes (type) > (2 * UNITS_PER_WORD))
+	    || (int_size_in_bytes (type) == -1));
+}
+
+
+
 
 #ifdef TARGET_IRIX6
 /* Output assembly to switch to section NAME with attribute FLAGS.  */

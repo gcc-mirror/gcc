@@ -6286,17 +6286,17 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"4,8,4,4,8,8,8,8,4,8,4,4")])
 
 (define_insn "movdf_internal2"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=d,d,d,R,To,*d")
-	(match_operand:DF 1 "general_operand" "dG,R,ToF,d,d,*f"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=d,d,d,R,To,d,f,f")
+	(match_operand:DF 1 "general_operand" "dG,R,ToF,d,d,f,d,f"))]
   "(TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT) && !TARGET_MIPS16
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
        || operands[1] == CONST0_RTX (DFmode))"
   "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,load,load,store,store,xfer")
+  [(set_attr "type"	"move,load,load,store,store,xfer,load,move")
    (set_attr "mode"	"DF")
-   (set_attr "length"	"8,8,16,8,16,8")])
+   (set_attr "length"	"8,8,16,8,16,8,8,4")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "nonimmediate_operand" "=d,y,d,d,d,R,To")
