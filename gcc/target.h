@@ -296,8 +296,15 @@ struct gcc_target
      not, at the current point in the compilation.  */
   bool (* cannot_modify_jumps_p) PARAMS ((void));
 
-  enum reg_class (* branch_target_register_class) PARAMS ((void));
-  bool (* branch_target_register_callee_saved) PARAMS ((bool));
+  /* Return a register class for which branch target register
+     optimizations should be applied.  */
+  int (* branch_target_register_class) PARAMS ((void));
+
+  /* Return true if branch target register optimizations should include
+     callee-saved registers that are not already live during the current
+     function.  AFTER_PE_GEN is true if prologues and epilogues have
+     already been generated.  */
+  bool (* branch_target_register_callee_saved) PARAMS ((bool after_pe_gen));
 
   /* True if the constant X cannot be placed in the constant pool.  */
   bool (* cannot_force_const_mem) PARAMS ((rtx));

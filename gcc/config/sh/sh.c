@@ -211,7 +211,7 @@ static int sh_issue_rate PARAMS ((void));
 static bool sh_function_ok_for_sibcall PARAMS ((tree, tree));
 
 static bool sh_cannot_modify_jumps_p PARAMS ((void));
-static enum reg_class sh_target_reg_class (void);
+static int sh_target_reg_class (void);
 static bool sh_optimize_target_register_callee_saved (bool);
 static bool sh_ms_bitfield_layout_p PARAMS ((tree));
 
@@ -7804,7 +7804,7 @@ sh_cannot_modify_jumps_p ()
   return (TARGET_SHMEDIA && (reload_in_progress || reload_completed));
 }
 
-static enum reg_class
+static int
 sh_target_reg_class (void)
 {
   return TARGET_SHMEDIA ? TARGET_REGS : NO_REGS;
