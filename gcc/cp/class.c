@@ -122,7 +122,6 @@ static void finish_struct_bits PARAMS ((tree));
 static int alter_access PARAMS ((tree, tree, tree));
 static void handle_using_decl PARAMS ((tree, tree));
 static int strictly_overrides PARAMS ((tree, tree));
-static void mark_overriders PARAMS ((tree, tree));
 static void check_for_override PARAMS ((tree, tree));
 static tree dfs_modify_vtables PARAMS ((tree, void *));
 static tree modify_all_vtables PARAMS ((tree, int *, tree));
@@ -3003,57 +3002,35 @@ strictly_overrides (fndecl1, fndecl2)
   return 0;
 }
 
-/* Get the base virtual function declarations in T that are either
-   overridden or hidden by FNDECL as a list.  We set TREE_PURPOSE with
-   the overrider/hider.  */
+/* Get the base virtual function declarations in T that have the
+   indicated NAME.  */
 
 static tree
-get_basefndecls (fndecl, t)
-     tree fndecl, t;
+get_basefndecls (name, t)
+     tree name, t;
 {
-  tree methods = TYPE_METHODS (t);
+  tree methods;
   tree base_fndecls = NULL_TREE;
-  tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
-  int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  int n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
+  int i;
 
-  while (methods)
-    {
-      if (TREE_CODE (methods) == FUNCTION_DECL
-	  && DECL_VINDEX (methods) != NULL_TREE
-	  && DECL_NAME (fndecl) == DECL_NAME (methods))
-	base_fndecls = tree_cons (fndecl, methods, base_fndecls);
-
-      methods = TREE_CHAIN (methods);
-    }
+  for (methods = TYPE_METHODS (t); methods; methods = TREE_CHAIN (methods))
+    if (TREE_CODE (methods) == FUNCTION_DECL
+	&& DECL_VINDEX (methods) != NULL_TREE
+	&& DECL_NAME (methods) == name)
+      base_fndecls = tree_cons (NULL_TREE, methods, base_fndecls);
 
   if (base_fndecls)
     return base_fndecls;
 
   for (i = 0; i < n_baseclasses; i++)
     {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      tree basetype = BINFO_TYPE (base_binfo);
-
-      base_fndecls = chainon (get_basefndecls (fndecl, basetype),
+      tree basetype = TYPE_BINFO_BASETYPE (t, i);
+      base_fndecls = chainon (get_basefndecls (name, basetype),
 			      base_fndecls);
     }
 
   return base_fndecls;
-}
-
-/* Mark the functions that have been hidden with their overriders.
-   Since we start out with all functions already marked with a hider,
-   no need to mark functions that are just hidden.
-
-   Subroutine of warn_hidden.  */
-
-static void
-mark_overriders (fndecl, base_fndecls)
-     tree fndecl, base_fndecls;
-{
-  for (; base_fndecls; base_fndecls = TREE_CHAIN (base_fndecls))
-    if (same_signature_p (fndecl, TREE_VALUE (base_fndecls)))
-      TREE_PURPOSE (base_fndecls) = fndecl;
 }
 
 /* If this declaration supersedes the declaration of
@@ -3103,57 +3080,59 @@ warn_hidden (t)
   /* We go through each separately named virtual function.  */
   for (i = 2; i < n_methods && TREE_VEC_ELT (method_vec, i); ++i)
     {
-      tree fns = TREE_VEC_ELT (method_vec, i);
-      tree fndecl = NULL_TREE;
+      tree fns;
+      tree name;
+      tree fndecl;
+      tree base_fndecls;
+      int j;
 
-      tree base_fndecls = NULL_TREE;
-      tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
-      int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-      /* First see if we have any virtual functions in this batch.  */
-      for (; fns; fns = OVL_NEXT (fns))
+      /* All functions in this slot in the CLASSTYPE_METHOD_VEC will
+	 have the same name.  Figure out what name that is.  */
+      name = DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
+      /* There are no possibly hidden functions yet.  */
+      base_fndecls = NULL_TREE;
+      /* Iterate through all of the base classes looking for possibly
+	 hidden functions.  */
+      for (j = 0; j < CLASSTYPE_N_BASECLASSES (t); j++)
 	{
-	  fndecl = OVL_CURRENT (fns);
-	  if (DECL_VINDEX (fndecl))
-	    break;
-	}
-
-      if (fns == NULL_TREE)
-	continue;
-
-      /* First we get a list of all possible functions that might be
-	 hidden from each base class.  */
-      for (i = 0; i < n_baseclasses; i++)
-	{
-	  tree base_binfo = TREE_VEC_ELT (binfos, i);
-	  tree basetype = BINFO_TYPE (base_binfo);
-
-	  base_fndecls = chainon (get_basefndecls (fndecl, basetype),
+	  tree basetype = TYPE_BINFO_BASETYPE (t, j);
+	  base_fndecls = chainon (get_basefndecls (name, basetype),
 				  base_fndecls);
 	}
 
-      fns = OVL_NEXT (fns);
+      /* If there are no functions to hide, continue. */
+      if (!base_fndecls)
+	continue;
 
-      /* ...then mark up all the base functions with overriders, preferring
-	 overriders to hiders.  */
-      if (base_fndecls)
-	for (; fns; fns = OVL_NEXT (fns))
-	  {
-	    fndecl = OVL_CURRENT (fns);
-	    if (DECL_VINDEX (fndecl))
-	      mark_overriders (fndecl, base_fndecls);
-	  }
+      /* Remove any overridden functions. */
+      for (fns = TREE_VEC_ELT (method_vec, i); fns; fns = OVL_NEXT (fns))
+	{
+	  fndecl = OVL_CURRENT (fns);
+	  if (DECL_VINDEX (fndecl))
+	    {
+	      tree *prev = &base_fndecls;
+	      
+	      while (*prev) 
+		/* If the method from the base class has the same
+		   signature as the method from the derived class, it
+		   has been overridden.  */
+		if (same_signature_p (fndecl, TREE_VALUE (*prev)))
+		  *prev = TREE_CHAIN (*prev);
+		else
+		  prev = &TREE_CHAIN (*prev);
+	    }
+	}
 
       /* Now give a warning for all base functions without overriders,
 	 as they are hidden.  */
-      for (; base_fndecls; base_fndecls = TREE_CHAIN (base_fndecls))
-	if (!same_signature_p (TREE_PURPOSE (base_fndecls),
-			       TREE_VALUE (base_fndecls)))
-	  {
-	    /* Here we know it is a hider, and no overrider exists.  */
-	    cp_warning_at ("`%D' was hidden", TREE_VALUE (base_fndecls));
-	    cp_warning_at ("  by `%D'", TREE_PURPOSE (base_fndecls));
-	  }
+      while (base_fndecls) 
+	{
+	  /* Here we know it is a hider, and no overrider exists.  */
+	  cp_warning_at ("`%D' was hidden", TREE_VALUE (base_fndecls));
+	  cp_warning_at ("  by `%D'", 
+			 OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
+	  base_fndecls = TREE_CHAIN (base_fndecls);
+	}
     }
 }
 
