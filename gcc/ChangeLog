@@ -1,3 +1,9 @@
+2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* system.h (GIV_SORT_CRITERION): Poison.
+	* config/avr/avr.h (GIV_SORT_CRITERION): Remove.
+	* config/ip2k/ip2k.h (GIV_SORT_CRITERION): Likewise.
+
 2004-02-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/9348
