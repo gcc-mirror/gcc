@@ -601,7 +601,7 @@ case $os in
 		;;
 	# First accept the basic system types.
 	# The portable systems comes first.
-	# Each alternative must end in a *, to match a version number.
+	# Each alternative MUST END IN A *, to match a version number.
 	# -sysv* is not here because it comes later, after sysvr4.
 	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
 	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[345]* \
@@ -611,7 +611,9 @@ case $os in
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
 	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* \
-	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta | -udi | -eabi)
+	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
+	      | -udi* | -eabi* | -lites* )
+	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
