@@ -7409,12 +7409,9 @@ flow_loop_dump (loop, file, loop_dump_aux, verbose)
 	   loop->depth, loop->level,
 	   (long) (loop->outer ? loop->outer->num : -1));
 
-  if (loop->pre_header_root)
-    fprintf (file, ";;  pre-header root %d\n", 
-	     loop->pre_header_root->index);
-  if (loop->pre_header_trace)
-    flow_nodes_print (";;  pre-header trace", loop->pre_header_trace,
-		      file);
+  if (loop->pre_header_edges)
+    flow_edge_list_print (";;  pre-header edges", loop->pre_header_edges,
+			  loop->num_pre_header_edges, file);
   flow_edge_list_print (";;  entry edges", loop->entry_edges,
 			loop->num_entries, file);
   fprintf (file, ";;  %d", loop->num_nodes);
@@ -7505,8 +7502,8 @@ flow_loops_free (loops)
 	{
 	  struct loop *loop = &loops->array[i];
 
-	  if (loop->pre_header_trace)
-	    sbitmap_free (loop->pre_header_trace);
+	  if (loop->pre_header_edges)
+	    free (loop->pre_header_edges);
 	  if (loop->nodes)
 	    sbitmap_free (loop->nodes);
 	  if (loop->entry_edges)
@@ -7888,35 +7885,48 @@ flow_dfs_compute_reverse_finish (data)
 
 
 /* Find the root node of the loop pre-header extended basic block and
-   the blocks along the trace from the root node to the loop header.  */
+   the edges along the trace from the root node to the loop header.  */
 
 static void
 flow_loop_pre_header_scan (loop)
      struct loop *loop;
 {
+  int num = 0;
   basic_block ebb;
+
+  loop->num_pre_header_edges = 0;
 
   if (loop->num_entries != 1)
      return;
 
-  /* Find pre_header root note and trace from root node to pre_header.  */
-  loop->pre_header_trace = sbitmap_alloc (n_basic_blocks);
-  sbitmap_zero (loop->pre_header_trace);
-  
   ebb = loop->entry_edges[0]->src;
 
   if (ebb != ENTRY_BLOCK_PTR)
     {
-      SET_BIT (loop->pre_header_trace, ebb->index);
-      while (ebb->pred->src != ENTRY_BLOCK_PTR
-	     && ! ebb->pred->pred_next)
+      edge e;
+
+      /* Count number of edges along trace from loop header to
+	 root of pre-header extended basic block.  Usually this is
+	 only one or two edges. */
+      num++;
+      while (ebb->pred->src != ENTRY_BLOCK_PTR && ! ebb->pred->pred_next)
 	{
 	  ebb = ebb->pred->src;
-	  SET_BIT (loop->pre_header_trace, ebb->index);
+	  num++;
+	}
+
+      loop->pre_header_edges = (edge *) xmalloc (num * sizeof (edge *));
+      loop->num_pre_header_edges = num;
+
+      /* Store edges in order that they are followed.   The source
+	 of the first edge is the root node of the pre-header extended
+	 basic block and the destination of the last last edge is
+	 the loop header.  */
+      for (e = loop->entry_edges[0]; num; e = e->src->pred)
+	{
+	  loop->pre_header_edges[--num] = e;
 	}
     }
-  
-  loop->pre_header_root = ebb;
 }
 
 

@@ -276,11 +276,13 @@ struct loop
   /* Basic block of loop pre-header or NULL if it does not exist.  */
   basic_block pre_header;
 
-  /* Root node of pre_header extended basic block.  */
-  basic_block pre_header_root;
+  /* Array of edges along the pre-header extended basic block trace. 
+     The source of the first edge is the root node of pre-header
+     extended basic block, if it exists.  */
+  edge *pre_header_edges;
 
-  /* Bitmap of blocks of trace from pre_header root to pre_header.  */
-  sbitmap pre_header_trace;
+  /* Number of edges along the pre_header extended basic block trace.  */
+  int num_pre_header_edges;
 
   /* The first block in the loop.  This is not necessarily the same as
      the loop header.  */

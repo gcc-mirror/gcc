@@ -1,3 +1,12 @@
+2000-10-18  Michael Hayes  <mhayes@cygnus.com>
+
+	* basic-block.h (struct loop): Delete fields pre_header_root
+	and pre_header_trace and replace with pre_header_edges
+	and num_pre_header_edges.
+	* flow.c (flow_loop_dump): Dump pre_header_edges.
+	(flow_loops_free): Free pre_header_edges.
+	(flow_loop_pre_header_scan): Calculate pre_header_edges.
+
 2000-10-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* contrib.texi: Update references to steering committee members
