@@ -1,5 +1,12 @@
 2000-08-05  Chris Demetriou  <cgd@sibyte.com>
 
+	* mips/elf.h (CTOR_LIST_BEGIN, CTOR_LIST_END,
+	DTOR_LIST_BEGIN, DTOR_LIST_END): change type of
+	__CTOR_LIST__ from func_ptr array to just func_ptr, to
+	avoid extra alignment imposed on arrays.
+	* mips/elf64.h (CTOR_LIST_BEGIN, CTOR_LIST_END,
+	DTOR_LIST_BEGIN, DTOR_LIST_END): Likewise.
+
 	* mips.h: Clean up comments and spacing near MASKs.
 	(TARGET_UNIX_ASM): Delete.
 	(MASK_MIPS16, MASK_NO_CHECK_ZERO_DIV, MASK_CHECK_RANGE_DIV,
