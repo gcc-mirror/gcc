@@ -245,7 +245,8 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
      regions; they cannot usually be deleted.  */
 
   for (insn = exception_handler_labels; insn; insn = XEXP (insn, 1))
-    LABEL_NUSES (XEXP (insn, 0))++;
+    if (GET_CODE (XEXP (insn, 0)) == CODE_LABEL)
+      LABEL_NUSES (XEXP (insn, 0))++;
 
   /* Quit now if we just wanted to rebuild the JUMP_LABEL and REG_LABEL
      notes and recompute LABEL_NUSES.  */
