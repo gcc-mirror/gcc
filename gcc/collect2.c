@@ -2692,7 +2692,7 @@ scan_libraries (prog_name)
 		    fatal ("%s: can't read loader section", soname);
 		  /*fprintf (stderr, "\tscanning %s\n", soname);*/
 		  symcnt = soldh.l_nsyms;
-		  lsyms = alloca (symcnt * sizeof *lsyms);
+		  lsyms = (LDSYM*) alloca (symcnt * sizeof *lsyms);
 		  symcnt = FREAD (lsyms, sizeof *lsyms, symcnt, libptr);
 		  ldstrings = alloca (soldh.l_stlen);
 		  FSEEK (libptr, soldsh.s_scnptr+soldh.l_stoff, BEGINNING);
