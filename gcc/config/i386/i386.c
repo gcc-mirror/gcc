@@ -1932,7 +1932,7 @@ ix86_expand_epilogue ()
 	{
 	  xops[0] = frame_pointer_rtx;
 	  xops[1] = stack_pointer_rtx;
-	  emit_move_insn (xops[1], xops[0]);
+	  emit_insn (gen_epilogue_set_stack_ptr());
 /*	  output_asm_insn (AS2 (mov%L2,%0,%2), xops);*/
 	  emit_insn (gen_pop (xops[0]));
 /*	  output_asm_insn ("pop%L0 %0", xops);*/
