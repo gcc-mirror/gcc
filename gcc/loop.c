@@ -824,7 +824,7 @@ scan_loop (loop, flags)
 		   && (maybe_never
 		       || loop_reg_used_before_p (loop, set, p)))
 		/* It is unsafe to move the set.  However, it may be OK to
-		   move the source into a new psuedo, and subsitute a 
+		   move the source into a new pseudo, and substitute a 
 		   reg-to-reg copy for the original insn.
 
 		   This code used to consider it OK to move a set of a variable
@@ -839,11 +839,15 @@ scan_loop (loop, flags)
 		 the benefit.  */
 	      if (REGNO (SET_DEST (set)) >= max_reg_before_loop)
 		;
-	      /* Don't move the source and add a reg-to-reg copy with -Os
-		 (this certainly increases size) or if the source is
-		 already a reg (the motion will gain nothing).  */
+	      /* Don't move the source and add a reg-to-reg copy:
+		 - with -Os (this certainly increases size),
+		 - if the mode doesn't support copy operations (obviously),
+		 - if the source is already a reg (the motion will gain nothing),
+		 - if the source is a legitimate constant (likewise).  */
 	      else if (insert_temp 
-		       && (optimize_size || GET_CODE (SET_SRC (set)) == REG
+		       && (optimize_size
+			   || ! can_copy_p (GET_MODE (SET_SRC (set)))
+			   || GET_CODE (SET_SRC (set)) == REG
 			   || (CONSTANT_P (SET_SRC (set))
 			       && LEGITIMATE_CONSTANT_P (SET_SRC (set)))))
 		;

@@ -1,3 +1,17 @@
+2003-04-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/10157
+	* gcse.c (can_copy_p): Rename it to can_copy.
+	(can_copy_init_p): Remove.
+	(compute_can_copy): Use can_copy instead of can_copy_p.
+	(can_copy_p): New exported function. Call compute_can_copy.
+	(hash_scan_set): Use it.
+	(gcse_main): Don't call compute_can_copy.
+	(bypass_jumps): Don't call compute_can_copy.
+	* rtl.h (can_copy_p): Declare.
+	* loop.c (scan_loop): Don't move the source and add a reg-to-reg
+	copy if the mode doesn't support copy operations.
+
 2003-04-03  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (unstrap): Also remove stage_last.

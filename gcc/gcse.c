@@ -299,14 +299,6 @@ static FILE *debug_stderr;
 /* An obstack for our working variables.  */
 static struct obstack gcse_obstack;
 
-/* Nonzero for each mode that supports (set (reg) (reg)).
-   This is trivially true for integer and floating point values.
-   It may or may not be true for condition codes.  */
-static char can_copy_p[(int) NUM_MACHINE_MODES];
-
-/* Nonzero if can_copy_p has been initialized.  */
-static int can_copy_init_p;
-
 struct reg_use {rtx reg_rtx; };
 
 /* Hash table of expressions.  */
@@ -786,13 +778,6 @@ gcse_main (f, file)
       return 0;
     }
 
-  /* See what modes support reg/reg copy operations.  */
-  if (! can_copy_init_p)
-    {
-      compute_can_copy ();
-      can_copy_init_p = 1;
-    }
-
   gcc_obstack_init (&gcse_obstack);
   bytes_used = 0;
 
@@ -925,6 +910,11 @@ gcse_main (f, file)
 
 /* Misc. utilities.  */
 
+/* Nonzero for each mode that supports (set (reg) (reg)).
+   This is trivially true for integer and floating point values.
+   It may or may not be true for condition codes.  */
+static char can_copy[(int) NUM_MACHINE_MODES];
+
 /* Compute which modes support reg/reg copy operations.  */
 
 static void
@@ -934,25 +924,42 @@ compute_can_copy ()
 #ifndef AVOID_CCMODE_COPIES
   rtx reg, insn;
 #endif
-  memset (can_copy_p, 0, NUM_MACHINE_MODES);
+  memset (can_copy, 0, NUM_MACHINE_MODES);
 
   start_sequence ();
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     if (GET_MODE_CLASS (i) == MODE_CC)
       {
 #ifdef AVOID_CCMODE_COPIES
-	can_copy_p[i] = 0;
+	can_copy[i] = 0;
 #else
 	reg = gen_rtx_REG ((enum machine_mode) i, LAST_VIRTUAL_REGISTER + 1);
 	insn = emit_insn (gen_rtx_SET (VOIDmode, reg, reg));
 	if (recog (PATTERN (insn), insn, NULL) >= 0)
-	  can_copy_p[i] = 1;
+	  can_copy[i] = 1;
 #endif
       }
     else
-      can_copy_p[i] = 1;
+      can_copy[i] = 1;
 
   end_sequence ();
+}
+
+/* Returns whether the mode supports reg/reg copy operations.  */
+
+bool
+can_copy_p (mode)
+     enum machine_mode mode;
+{
+  static bool can_copy_init_p = false;
+
+  if (! can_copy_init_p)
+    {
+      compute_can_copy ();
+      can_copy_init_p = true;
+    }
+
+  return can_copy[mode] != 0;
 }
 
 /* Cover function to xmalloc to record bytes allocated.  */
@@ -2211,7 +2218,7 @@ hash_scan_set (pat, insn, table)
       if (! table->set_p
 	  && regno >= FIRST_PSEUDO_REGISTER
 	  /* Don't GCSE something if we can't do a reg/reg copy.  */
-	  && can_copy_p [GET_MODE (dest)]
+	  && can_copy_p (GET_MODE (dest))
 	  /* GCSE commonly inserts instruction after the insn.  We can't
 	     do that easily for EH_REGION notes so disable GCSE on these
 	     for now.  */
@@ -2247,7 +2254,7 @@ hash_scan_set (pat, insn, table)
 	       && regno >= FIRST_PSEUDO_REGISTER
 	       && ((GET_CODE (src) == REG
 		    && REGNO (src) >= FIRST_PSEUDO_REGISTER
-		    && can_copy_p [GET_MODE (dest)]
+		    && can_copy_p (GET_MODE (dest))
 		    && REGNO (src) != regno)
 		   || gcse_constant_p (src))
 	       /* A copy is not available if its src or dest is subsequently
@@ -7876,13 +7883,6 @@ bypass_jumps (file)
                  n_basic_blocks, max_gcse_regno);
 
       return 0;
-    }
-
-  /* See what modes support reg/reg copy operations.  */
-  if (! can_copy_init_p)
-    {
-      compute_can_copy ();
-      can_copy_init_p = 1;
     }
 
   gcc_obstack_init (&gcse_obstack);
