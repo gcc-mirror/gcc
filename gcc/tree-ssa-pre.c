@@ -393,20 +393,9 @@ phi_trans_add (tree e, tree v, basic_block pred)
 void
 add_to_value (tree v, tree e)
 {
-  /* For values representing non-CST nodes, but still function
-     invariant things we mark TREE_CONSTANT as true and set the tree
-     chain to the actual constant.  This is because unlike values
-     involving expressions, which are only available to use where the
-     expressions are live, a function invariant can be remade
-     anywhere, and thus, is available everywhere, just like a constant.  */
-  if (TREE_CODE_CLASS (TREE_CODE (v)) == 'c')
+  /* Constants have no expression sets.  */
+  if (is_gimple_min_invariant (v))
     return;
-  else if (is_gimple_min_invariant (v))
-    {
-      TREE_CONSTANT (v) = true;
-      TREE_CHAIN (v) = e;
-      return;
-    }
 
   if (VALUE_HANDLE_EXPR_SET (v) == NULL)
     VALUE_HANDLE_EXPR_SET (v) = set_new (false);
@@ -565,14 +554,8 @@ set_remove (value_set_t set, tree expr)
 static bool
 set_contains_value (value_set_t set, tree val)
 {
-  /* All true constants are in every set.  */
-  if (TREE_CODE_CLASS (TREE_CODE (val)) == 'c')
-    return true;
-  /* This is only referring to the flag above that we set on
-     values referring to invariants, because we know that we
-     are dealing with one of the value handles we created.  */
-
-  if (TREE_CONSTANT (val))
+  /* All constants are in every set.  */
+  if (is_gimple_min_invariant (val))
     return true;
   
   if (set->length == 0)
@@ -679,7 +662,7 @@ value_insert_into_set (value_set_t set, tree expr)
 
   /* Constant and invariant values exist everywhere, and thus,
      actually keeping them in the sets is pointless.  */
-  if (TREE_CONSTANT (val))
+  if (is_gimple_min_invariant (val))
     return;
 
   if (!set_contains_value (set, val))
@@ -880,14 +863,9 @@ find_leader (value_set_t set, tree val)
   if (val == NULL)
     return NULL;
 
-  /* True constants represent themselves.  */
-  if (TREE_CODE_CLASS (TREE_CODE (val)) == 'c')
+  /* Constants represent themselves.  */
+  if (is_gimple_min_invariant (val))
     return val;
-
-  /* Invariants are still represented by values, since they may be
-     more than a single _CST node.  */  
-  if (TREE_CONSTANT (val))
-    return TREE_CHAIN (val);
 
   if (set->length == 0)
     return NULL;
