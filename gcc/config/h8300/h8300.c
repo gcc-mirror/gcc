@@ -2203,8 +2203,7 @@ output_logical_op (mode, operands)
 		   && code == AND
 		   && (det & 0xffff0000) == 0xff000000)
 	    {
-	      sprintf (insn_buf, "extu.w\t%%e0", opname);
-	      output_asm_insn (insn_buf, operands);
+	      output_asm_insn ("extu.w\t%e0", operands);
 	    }
 	  else if (TARGET_H8300H || TARGET_H8300S)
 	    {
