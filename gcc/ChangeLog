@@ -1,3 +1,7 @@
+2000-05-31  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Fix typo last change.
+
 2000-05-31  Philipp Thomas  <pthomas@suse.de>
 
 	* configure.in (enable-nls): Enable if build == host, i.e. when 
