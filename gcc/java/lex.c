@@ -1218,34 +1218,35 @@ java_lex (java_lval)
 	}
       /* End borrowed section.  */
 
-      /* Range checking.  */
-      if (long_suffix)
-	{
-	  /* 9223372036854775808L is valid if operand of a '-'. Otherwise
-	     9223372036854775807L is the biggest `long' literal that can be
-	     expressed using a 10 radix. For other radices, everything that
-	     fits withing 64 bits is OK.  */
-	  int hb = (high >> 31);
-	  if (overflow || (hb && low && radix == 10)
-	      || (hb && high & 0x7fffffff && radix == 10))
-	    JAVA_INTEGRAL_RANGE_ERROR ("Numeric overflow for `long' literal");
-	}
-      else
-	{
-	  /* 2147483648 is valid if operand of a '-'. Otherwise,
-	     2147483647 is the biggest `int' literal that can be
-	     expressed using a 10 radix. For other radices, everything
-	     that fits within 32 bits is OK.  As all literals are
-	     signed, we sign extend here.  */
-	  int hb = (low >> 31) & 0x1;
-	  if (overflow || high || (hb && low & 0x7fffffff && radix == 10))
-	    JAVA_INTEGRAL_RANGE_ERROR ("Numeric overflow for `int' literal");
-	  high = -hb;
-	}
 #ifndef JC1_LITE
+      /* Range checking.  */
       value = build_int_2 (low, high);
+      /* Temporarily set type to unsigned.  */
+      SET_LVAL_NODE_TYPE (value, (long_suffix
+				  ? unsigned_long_type_node
+				  : unsigned_int_type_node));
+
+      /* For base 10 numbers, only values up to the highest value
+	 (plus one) can be written.  For instance, only ints up to
+	 2147483648 can be written.  The special case of the largest
+	 negative value is handled elsewhere.  For other bases, any
+	 number can be represented.  */
+      if (overflow || (radix == 10
+		       && tree_int_cst_lt (long_suffix
+					   ? decimal_long_max
+					   : decimal_int_max,
+					   value)))
+	{
+	  if (long_suffix)
+	    JAVA_INTEGRAL_RANGE_ERROR ("Numeric overflow for `long' literal");
+	  else
+	    JAVA_INTEGRAL_RANGE_ERROR ("Numeric overflow for `int' literal");
+	}
+
+      /* Sign extend the value.  */
+      SET_LVAL_NODE_TYPE (value, (long_suffix ? long_type_node : int_type_node));
+      force_fit_type (value, 0);
       JAVA_RADIX10_FLAG (value) = radix == 10;
-      SET_LVAL_NODE_TYPE (value, long_suffix ? long_type_node : int_type_node);
 #else
       SET_LVAL_NODE_TYPE (build_int_2 (low, high),
 			  long_suffix ? long_type_node : int_type_node);
@@ -1661,24 +1662,14 @@ static void
 error_if_numeric_overflow (value)
      tree value;
 {
-  if (TREE_CODE (value) == INTEGER_CST && JAVA_RADIX10_FLAG (value))
+  if (TREE_CODE (value) == INTEGER_CST
+      && JAVA_RADIX10_FLAG (value)
+      && tree_int_cst_sgn (value) < 0)
     {
-      unsigned HOST_WIDE_INT lo, hi;
-
-      lo = TREE_INT_CST_LOW (value);
-      hi = TREE_INT_CST_HIGH (value);
       if (TREE_TYPE (value) == long_type_node)
-	{
-	  int hb = (hi >> 31);
-	  if (hb && !(hi & 0x7fffffff))
-	    java_lex_error ("Numeric overflow for `long' literal", 0);
-	}
+	java_lex_error ("Numeric overflow for `long' literal", 0);
       else
-	{
-	  int hb = (lo >> 31) & 0x1;
-	  if (hb && !(lo & 0x7fffffff))
-	    java_lex_error ("Numeric overflow for `int' literal", 0);
-	}
+	java_lex_error ("Numeric overflow for `int' literal", 0);
     }
 }
 #endif /* JC1_LITE */

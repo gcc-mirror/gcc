@@ -275,6 +275,9 @@ enum java_tree_index
   JTI_UNSIGNED_INT_TYPE_NODE,
   JTI_UNSIGNED_LONG_TYPE_NODE,
   
+  JTI_DECIMAL_INT_MAX_NODE,
+  JTI_DECIMAL_LONG_MAX_NODE,
+
   JTI_BOOLEAN_TYPE_NODE,
 
   JTI_OBJECT_TYPE_NODE,
@@ -440,6 +443,11 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_UNSIGNED_INT_TYPE_NODE]
 #define unsigned_long_type_node \
   java_global_trees[JTI_UNSIGNED_LONG_TYPE_NODE]
+
+#define decimal_int_max \
+  java_global_trees[JTI_DECIMAL_INT_MAX_NODE]
+#define decimal_long_max \
+  java_global_trees[JTI_DECIMAL_LONG_MAX_NODE]
 
 #define boolean_type_node \
   java_global_trees[JTI_BOOLEAN_TYPE_NODE]
