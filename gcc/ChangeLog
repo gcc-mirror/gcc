@@ -1,3 +1,8 @@
+2005-02-07  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* config/arm/rtems-elf.h (SUBTARGET_EXTRA_ASM_SPEC): 
+	Let !-mhard-float !-msoft-float imply -mfpu=softfpa.
+
 2005-02-06  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/19800
