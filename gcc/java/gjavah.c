@@ -203,7 +203,7 @@ static int decompiled = 0;
 
 /* Some useful constants.  */
 #define F_NAN_MASK 0x7f800000
-#if (1 == HOST_FLOAT_WORDS_BIG_ENDIAN)
+#if (1 == HOST_FLOAT_WORDS_BIG_ENDIAN) && ! defined (HOST_WORDS_BIG_ENDIAN)
 #define D_NAN_MASK 0x000000007ff00000LL
 #else
 #define D_NAN_MASK 0x7ff0000000000000LL
