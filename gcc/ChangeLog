@@ -1,3 +1,8 @@
+Fri Nov 12 14:08:40 1999  Andrew Haley  <aph@cygnus.com>
+
+	* emit-rtl.c (gen_sequence): Only return the pattern of an insn if
+	its code is INSN and it has no notes.
+
 1999-11-22  Andrew Haley  <aph@cygnus.com>
 
         * varasm.c (function_defined): Remove.
