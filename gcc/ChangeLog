@@ -1,3 +1,8 @@
+2004-10-14  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* tree.h (TREE_STRING_POINTER): Wrap in "const char *".
+	(struct tree_string): Remove "const" qualifier for "str".
+
 2004-10-14  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.c (vect_analyze_data_refs): Call
