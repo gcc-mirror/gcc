@@ -1355,6 +1355,12 @@ extern union tree_node *current_function_decl;
 	   || (GET_CODE (X) == CONST_INT		\
 	       && INT_5_BITS (X)))			\
     goto ADDR;						\
+  /* Needed for -fPIC */				\
+  else if (GET_CODE (X) == LO_SUM			\
+	   && GET_CODE (XEXP (X, 0)) == REG             \
+	   && REG_OK_FOR_BASE_P (XEXP (X, 0))		\
+	   && GET_CODE (XEXP (X, 1)) == UNSPEC)		\
+    goto ADDR;						\
 }
 
 /* Try machine-dependent ways of modifying an illegitimate address

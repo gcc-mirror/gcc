@@ -491,8 +491,10 @@ legitimize_pic_address (orig, mode, reg)
 
       if (flag_pic == 2)
 	{
-	  emit_insn (gen_pic_highpart (reg, pic_offset_table_rtx, orig));
-	  pic_ref = (gen_rtx (MEM, Pmode, gen_rtx (LO_SUM, Pmode, reg, orig)));
+	  emit_insn (gen_pic2_highpart (reg, pic_offset_table_rtx, orig));
+	  pic_ref = gen_rtx (MEM, Pmode,
+			     gen_rtx (LO_SUM, Pmode, reg,
+				      gen_rtx (UNSPEC, SImode, gen_rtvec (1, orig), 0)));
 	}
       else
 	pic_ref = gen_rtx (MEM, Pmode,
