@@ -734,7 +734,7 @@ The following systems are the only ones where it makes a difference
 whether you use the GNU assembler.  On any other system,
 @option{--with-gnu-as} has no effect.
 
-@itemize bullet
+@itemize @bullet
 @item @samp{hppa1.0-@var{any}-@var{any}}
 @item @samp{hppa1.1-@var{any}-@var{any}}
 @item @samp{i386-@var{any}-sysv}
