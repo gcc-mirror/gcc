@@ -1,3 +1,9 @@
+2003-12-03  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/Class.h (hack_signers): Renamed signers to hack_signers.
+	* java/lang/natClass.cc (getSigners): Likewise.
+	(setSigners): Likewise.
+
 2003-12-02  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* configure.in: Added new MinGW-specific configure flag

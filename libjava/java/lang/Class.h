@@ -446,7 +446,7 @@ private:
   // Security Domain to which this class belongs (or null).
   java::security::ProtectionDomain *protectionDomain;
   // Signers of this class (or null).
-  JArray<jobject> *signers;
+  JArray<jobject> *hack_signers;
   // Used by Jv_PopClass and _Jv_PushClass to communicate with StackTrace.
   jclass chain;
 };

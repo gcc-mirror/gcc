@@ -1502,13 +1502,13 @@ java::lang::Class::getProtectionDomain0 ()
 JArray<jobject> *
 java::lang::Class::getSigners()
 {
-  return signers;
+  return hack_signers;
 }
 
 void
 java::lang::Class::setSigners(JArray<jobject> *s)
 {
-  signers = s;
+  hack_signers = s;
 }
 
 // Functions for indirect dispatch (symbolic virtual binding) support.
