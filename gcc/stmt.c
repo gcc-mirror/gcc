@@ -1709,15 +1709,19 @@ warn_if_unused_value (exp)
       if (TREE_NO_UNUSED_WARNING (exp))
 	return 0;
       /* Assignment to a cast usually results in a cast of a modify.
-	 Don't complain about that.  */
-      if (TREE_CODE (TREE_OPERAND (exp, 0)) == MODIFY_EXPR)
-	return 0;
-      /* Sometimes it results in a cast of a cast of a modify.
-	 Don't complain about that.  */
-      if ((TREE_CODE (TREE_OPERAND (exp, 0)) == CONVERT_EXPR
-	   || TREE_CODE (TREE_OPERAND (exp, 0)) == NOP_EXPR)
-	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) == MODIFY_EXPR)
-	return 0;
+	 Don't complain about that.  There can be an arbitrary number of
+	 casts before the modify, so we must loop until we find the first
+	 non-cast expression and then test to see if that is a modify.  */
+      {
+	tree tem = TREE_OPERAND (exp, 0);
+
+	while (TREE_CODE (tem) == CONVERT_EXPR || TREE_CODE (tem) == NOP_EXPR)
+	  tem = TREE_OPERAND (tem, 0);
+
+	if (TREE_CODE (tem) == MODIFY_EXPR)
+	  return 0;
+      }
+      /* ... fall through ... */
 
     default:
       /* Referencing a volatile value is a side effect, so don't warn.  */
