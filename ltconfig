@@ -1190,7 +1190,7 @@ irix5* | irix6*)
     version_type=linux
   else
     version_type=irix
-  if
+  fi
   version_type=irix
   need_lib_prefix=no
   need_version=no
