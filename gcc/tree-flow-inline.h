@@ -630,7 +630,7 @@ loop_containing_stmt (tree stmt)
 static inline bool
 is_call_clobbered (tree var)
 {
-  return needs_to_live_in_memory (var)
+  return is_global_var (var)
 	 || bitmap_bit_p (call_clobbered_vars, var_ann (var)->uid);
 }
 
@@ -639,8 +639,12 @@ static inline void
 mark_call_clobbered (tree var)
 {
   var_ann_t ann = var_ann (var);
-  /* Call-clobbered variables need to live in memory.  */
-  DECL_NEEDS_TO_LIVE_IN_MEMORY_INTERNAL (var) = 1;
+  /* If VAR is a memory tag, then we need to consider it a global
+     variable.  This is because the pointer that VAR represents has
+     been found to point to either an arbitrary location or to a known
+     location in global memory.  */
+  if (ann->mem_tag_kind != NOT_A_TAG)
+    DECL_EXTERNAL (var) = 1;
   bitmap_set_bit (call_clobbered_vars, ann->uid);
 }
 
@@ -649,7 +653,6 @@ static inline void
 mark_non_addressable (tree var)
 {
   bitmap_clear_bit (call_clobbered_vars, var_ann (var)->uid);
-  DECL_NEEDS_TO_LIVE_IN_MEMORY_INTERNAL (var) = 0;
   TREE_ADDRESSABLE (var) = 0;
 }
 

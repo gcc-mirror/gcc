@@ -390,7 +390,6 @@ init_alias_info (void)
       EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
 	{
 	  tree var = referenced_var (i);
-	  DECL_NEEDS_TO_LIVE_IN_MEMORY_INTERNAL (var) = 0;
 
 	  /* Variables that are intrinsically call-clobbered (globals,
 	     local statics, etc) will not be marked by the aliasing
@@ -1329,7 +1328,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	{
 	  if (!bitmap_bit_p (ai->addresses_needed, v_ann->uid)
 	      && v_ann->mem_tag_kind == NOT_A_TAG
-	      && !needs_to_live_in_memory (var))
+	      && !is_global_var (var))
 	    {
 	      /* The address of VAR is not needed, remove the
 		 addressable bit, so that it can be optimized as a
@@ -1391,7 +1390,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	      /* If pointer VAR is a global variable or a PARM_DECL,
 		 then its memory tag should be considered a global
 		 variable.  */
-	      if (TREE_CODE (var) == PARM_DECL || needs_to_live_in_memory (var))
+	      if (TREE_CODE (var) == PARM_DECL || is_global_var (var))
 		mark_call_clobbered (tag);
 
 	      /* All the dereferences of pointer VAR count as
@@ -2105,18 +2104,16 @@ get_nmt_for (tree ptr)
   tree tag = pi->name_mem_tag;
 
   if (tag == NULL_TREE)
-    {
-      tag = create_memory_tag (TREE_TYPE (TREE_TYPE (ptr)), false);
+    tag = create_memory_tag (TREE_TYPE (TREE_TYPE (ptr)), false);
 
-      /* If PTR is a PARM_DECL, its memory tag should be considered a
-	 global variable.  */
-      if (TREE_CODE (SSA_NAME_VAR (ptr)) == PARM_DECL)
-	mark_call_clobbered (tag);
+  /* If PTR is a PARM_DECL, its memory tag should be considered a global
+     variable.  */
+  if (TREE_CODE (SSA_NAME_VAR (ptr)) == PARM_DECL)
+    mark_call_clobbered (tag);
 
-      /* Similarly, if PTR points to malloc, then TAG is a global.  */
-      if (pi->pt_malloc)
-	mark_call_clobbered (tag);
-    }
+  /* Similarly, if PTR points to malloc, then TAG is a global.  */
+  if (pi->pt_malloc)
+    mark_call_clobbered (tag);
 
   return tag;
 }
