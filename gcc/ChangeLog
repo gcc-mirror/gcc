@@ -3,6 +3,10 @@
 	* tree-ssa-phiopt.c: Update copyright.  Fix indentations.
 	Remove trailing spaces.
 
+	* gimplify.c (gimple_push_bind_expr, gimple_pop_bind_expr,
+	unshare_all_trees): Make them static.
+	* tree-gimple.h: Remove the corresponding prototypes.
+
 2005-03-07  Per Bothner  <per@bothner.com>
 
 	* tree.h (DECL_IS_BUILTIN): Reverted my patch from earlier today.
