@@ -4603,6 +4603,10 @@ free_AT (a)
       free (a->dw_attr_val.v.val_str);
       break;
 
+    case dw_val_class_float:
+      free (a->dw_attr_val.v.val_float.array);
+      break;
+      
     default:
       break;
     }
@@ -7670,7 +7674,7 @@ add_const_value_attribute (die, rtl)
 	if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	  {
 	    register unsigned length = GET_MODE_SIZE (mode) / sizeof (long);
-	    long array[4];
+ 	    long *array = (long *) xmalloc (sizeof (long) * 4);
 	    REAL_VALUE_TYPE rv;
 
 	    REAL_VALUE_FROM_CONST_DOUBLE (rv, rtl);
