@@ -232,10 +232,15 @@ print_inline_rtx (outf, x, ind)
      FILE *outf;
      rtx x;
 {
+  int oldsaw = sawclose;
+  int oldindent = indent;
+
   sawclose = 0;
   indent = ind;
   outfile = outf;
   print_rtx (x);
+  sawclose = oldsaw;
+  indent = oldindent;
 }
 
 /* Call this function from the debugger to see what X looks like.  */
