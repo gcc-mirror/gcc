@@ -1,3 +1,7 @@
+2005-03-04  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* gcc.dg/cpp/assert4.c:  Fix for cygwin
+
 2005-03-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19916
