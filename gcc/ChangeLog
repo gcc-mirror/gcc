@@ -1,5 +1,20 @@
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (ANYF, SCALARF): New mode macros.
+	(loadx, storex, fmt, UNITMODE): New mode attributes.
+	(add{sf,df,v2sf}3, sub{sf,df,v2sf}3): Redefine using :ANYF.
+	(mul[sd]f3): Redefine using :SCALARF.
+	(*mul[sd]f3): Renamed from mul[sd]f3_internal.  Use :SCALARF.
+	(*mul[sd]3_r4300): Likewise mul[sd]f3_r4300.
+	(*m{add,sub}{sf,df,v2sf}3): Name formerly unnamed patterns.  Use :ANYF.
+	Check TARGET_FUSED_MADD for V2SF too.
+	(*nm{add,sub}{sf,df,v2sf}3{,_fastmath}): Likewise, except v2sf patterns
+	were already named.
+	(abs{sf,df,v2sf}3, neg{sf,df,v2sf}3): Redefine using :ANYF.
+	(*[sl][wd]xc1_[sd]i): Redefine using :ANYF.
+
+2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (mips_init_builtins): Simplify.  Only create
 	V2SF_type_node if it will be needed.
 
