@@ -1,3 +1,8 @@
+Mon Sep 14 16:46:36 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* expr.c (build_chill_function_call): Remove redundant call to
+ 	chill_convert_to_assignment
+
 Thu Sep 10 17:52:36 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* actions.c (chill_convert_for_assignment): Make a copy of the result
