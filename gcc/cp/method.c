@@ -2065,6 +2065,7 @@ make_thunk (function, delta, vcall_index)
 	= vcall_index * int_size_in_bytes (vtable_entry_type);
       DECL_EXTERNAL (thunk) = 1;
       DECL_ARTIFICIAL (thunk) = 1;
+      DECL_CONTEXT (thunk) = DECL_CONTEXT (func_decl);
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
     }
