@@ -4104,7 +4104,7 @@ output_line_command (ip, op, conditional, file_change)
   sprintf (line_cmd_buf, "# %d \"%s\"", ip->lineno, ip->fname);
   if (file_change != same_file)
     strcat (line_cmd_buf, file_change == enter_file ? " 1" : " 2");
-  if (system_include_depth > 0)
+  if (system_include_depth > (file_change == leave_file))
     strcat (line_cmd_buf, " 3");
   len = strlen (line_cmd_buf);
   line_cmd_buf[len++] = '\n';
