@@ -170,7 +170,7 @@ static void vmsdbgout_abstract_function PARAMS ((tree));
 
 /* The debug hooks structure.  */
 
-struct gcc_debug_hooks vmsdbg_debug_hooks
+const struct gcc_debug_hooks vmsdbg_debug_hooks
 = {vmsdbgout_init,
    vmsdbgout_finish,
    vmsdbgout_define,

@@ -326,7 +326,7 @@ static void dbxout_begin_block		PARAMS ((unsigned, unsigned));
 static void dbxout_end_block		PARAMS ((unsigned, unsigned));
 static void dbxout_function_decl	PARAMS ((tree));
 
-struct gcc_debug_hooks dbx_debug_hooks =
+const struct gcc_debug_hooks dbx_debug_hooks =
 {
   dbxout_init,
   dbxout_finish,
@@ -356,7 +356,7 @@ struct gcc_debug_hooks dbx_debug_hooks =
 #endif /* DBX_DEBUGGING_INFO  */
 
 #if defined (XCOFF_DEBUGGING_INFO)
-struct gcc_debug_hooks xcoff_debug_hooks =
+const struct gcc_debug_hooks xcoff_debug_hooks =
 {
   dbxout_init,
   dbxout_finish,
