@@ -1190,6 +1190,12 @@ changequote([,])dnl
 		tmake_file=i386/t-go32
 		gnu_ld=yes
 		gas=yes
+		exeext=.exe
+		case $host in
+		*pc-msdosdjgpp*)
+			target_alias=djgpp
+			;;
+		esac
 		;;
 changequote(,)dnl
 	i[34567]86-moss-msdos* | i[34567]86-*-moss*)

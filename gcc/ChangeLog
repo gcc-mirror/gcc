@@ -1,3 +1,7 @@
+Fri Oct 30 00:42:34 1998  Mark Elbrecht <snowball3@usa.net>
+
+	* configure.in (msdosdjgpp): Set exeext and target_alias.
+
 Thu Oct 29 23:55:43 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* flow.c (XNMALLOC): New macro.
