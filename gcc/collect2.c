@@ -184,7 +184,6 @@ static struct head destructors;		/* list of destructors found */
 
 extern char *getenv ();
 extern char *mktemp ();
-extern int   vfork ();
 static void  add_to_list ();
 static void  scan_prog_file ();
 static void  fork_execute ();
