@@ -3836,6 +3836,7 @@ build_compound_literal (type, init)
      the COMPOUND_LITERAL_EXPR rather than added elsewhere as a DECL_STMT.  */
   tree decl = build_decl (VAR_DECL, NULL_TREE, type);
   tree complit;
+  tree stmt;
   DECL_EXTERNAL (decl) = 0;
   TREE_PUBLIC (decl) = 0;
   TREE_STATIC (decl) = (current_binding_level == global_binding_level);
@@ -3855,7 +3856,8 @@ build_compound_literal (type, init)
   if (type == error_mark_node || !COMPLETE_TYPE_P (type))
     return error_mark_node;
 
-  complit = build1 (COMPOUND_LITERAL_EXPR, TREE_TYPE (decl), decl);
+  stmt = build_stmt (DECL_STMT, decl);
+  complit = build1 (COMPOUND_LITERAL_EXPR, TREE_TYPE (decl), stmt);
   TREE_SIDE_EFFECTS (complit) = 1;
 
   layout_decl (decl, 0);

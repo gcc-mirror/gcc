@@ -103,7 +103,8 @@ DEFTREECODE (CASE_LABEL, "case_label", 'e', 3)
 DEFTREECODE (STMT_EXPR, "stmt_expr", 'e', 1)
 
 /* A COMPOUND_LITERAL_EXPR represents a C99 compound literal.  The
-   COMPOND_LITERAL_EXPR_DECL is the decl for the anonymous object
-   represented by the COMPOUND_LITERAL; the DECL_INITIAL of that
-   decl is the CONSTRUCTOR that initializes the compound literal.  */
+   COMPOND_LITERAL_EXPR_DECL_STMT is the a DECL_STMT containing the decl
+   for the anonymous object represented by the COMPOUND_LITERAL;
+   the DECL_INITIAL of that decl is the CONSTRUCTOR that initializes
+   the compound literal.  */
 DEFTREECODE (COMPOUND_LITERAL_EXPR, "compound_literal_expr", 'e', 1)
