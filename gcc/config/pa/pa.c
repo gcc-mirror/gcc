@@ -97,12 +97,12 @@ void
 override_options ()
 {
   /* Default to 7100LC scheduling.  */
-  if (! strcmp (pa_cpu_string, "7100"))
+  if (pa_cpu_string && ! strcmp (pa_cpu_string, "7100"))
     {
       pa_cpu_string = "7100";
       pa_cpu = PROCESSOR_7100;
     }
-  else if (! strcmp (pa_cpu_string, "700"))
+  else if (pa_cpu_string && ! strcmp (pa_cpu_string, "700"))
     {
       pa_cpu_string = "700";
       pa_cpu = PROCESSOR_700;
@@ -113,14 +113,19 @@ override_options ()
       pa_cpu_string = "7100LC";
       pa_cpu = PROCESSOR_7100LC;
     }
-  else if (! strcmp (pa_cpu_string, "7200"))
+  else if (pa_cpu_string && ! strcmp (pa_cpu_string, "7200"))
     {
       pa_cpu_string = "7200";
       pa_cpu = PROCESSOR_7200;
     }
+  else if (pa_cpu_string && ! strcmp (pa_cpu_string, "8000"))
+    {
+      pa_cpu_string = "8000";
+      pa_cpu = PROCESSOR_8000;
+    }
   else
     {
-      warning ("Unknown -mschedule= option (%s).\nValid options are 700, 7100 and 7100LC and 7200\n", pa_cpu_string);
+      warning ("Unknown -mschedule= option (%s).\nValid options are 700, 7100, 7100LC, 7200, and 8000\n", pa_cpu_string);
     }
 
   if (flag_pic && TARGET_PORTABLE_RUNTIME)
