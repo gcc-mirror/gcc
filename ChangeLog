@@ -1,3 +1,9 @@
+1999-05-22  Ben Elliston  <bje@cygnus.com>
+
+	* config.guess: Merge with FSF version. Future changes will be
+	more accurately recorded in this ChangeLog.
+	* config.sub: Likewise.
+
 Thu May 20 10:00:42 1999   Stephen L Moshier  <moshier@world.std.com>
 
 	 * Makefile.in (GCC_FOR_TARGET): Add -I$(build_tooldir)/include.
