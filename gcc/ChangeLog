@@ -1,3 +1,8 @@
+Wed Nov 25 07:53:24 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (make_extraction): Make extraction even if may
+	span if INNER is not MEM.
+
 Wed Nov 25 07:30:28 1998  David Addison <addy@quadrics.com>
 
 	* sparc.h (SPARC_INCOMING_INT_ARG_FIRST): Respect TARGET_FLAT.
