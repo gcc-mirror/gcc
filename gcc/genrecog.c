@@ -238,8 +238,6 @@ static void validate_pattern
 static struct decision *add_to_sequence
   PARAMS ((rtx, struct decision_head *, const char *, enum routine_type, int));
 
-static int maybe_both_true_mode
-  PARAMS ((enum machine_mode, enum machine_mode));
 static int maybe_both_true_2
   PARAMS ((struct decision_test *, struct decision_test *));
 static int maybe_both_true_1
@@ -1056,29 +1054,6 @@ add_to_sequence (pattern, last, position, insn_type, top)
   return sub;
 }
 
-/* A subroutine of maybe_both_true; compares two modes.
-   Returns > 0 for "definitely both true" and < 0 for "maybe both true".  */
-
-static int
-maybe_both_true_mode (m1, m2)
-     enum machine_mode m1, m2;
-{
-  enum mode_class other_mode_class;
-
-  /* Pmode is not a distinct mode.  We do know that it is
-     either MODE_INT or MODE_PARTIAL_INT though.  */
-  if (m1 == Pmode)
-    other_mode_class = GET_MODE_CLASS (m2);
-  else if (m2 == Pmode)
-    other_mode_class = GET_MODE_CLASS (m1);
-  else
-    return m1 == m2;
-
-  return (other_mode_class == MODE_INT
-	  || other_mode_class == MODE_PARTIAL_INT
-	  ? -1 : 0);
-}
-
 /* A subroutine of maybe_both_true; examines only one test.
    Returns > 0 for "definitely both true" and < 0 for "maybe both true".  */
 
@@ -1091,7 +1066,7 @@ maybe_both_true_2 (d1, d2)
       switch (d1->type)
 	{
 	case DT_mode:
-	  return maybe_both_true_mode (d1->u.mode, d2->u.mode);
+	  return d1->u.mode == d2->u.mode;
 
 	case DT_code:
 	  return d1->u.code == d2->u.code;
@@ -1127,7 +1102,7 @@ maybe_both_true_2 (d1, d2)
 	{
 	  if (d2->type == DT_mode)
 	    {
-	      if (maybe_both_true_mode (d1->u.pred.mode, d2->u.mode) == 0
+	      if (d1->u.pred.mode != d2->u.mode
 		  /* The mode of an address_operand predicate is the
 		     mode of the memory, not the operand.  It can only
 		     be used for testing the predicate, so we must
@@ -1910,9 +1885,6 @@ write_switch (start, depth)
 	   || type == DT_elt_zero_wide_safe)
     {
       const char *indent = "";
-      /* Pmode may not be a compile-time constant.  */
-      if (type == DT_mode && p->tests->u.mode == Pmode)
-	return p;
 
       /* We cast switch parameter to integer, so we must ensure that the value
 	 fits.  */
@@ -1955,10 +1927,6 @@ write_switch (start, depth)
 	  for (q = start; q != p; q = q->next)
 	    if (nodes_identical_1 (p->tests, q->tests))
 	      goto case_done;
-
-	  /* Pmode may not be a compile-time constant.  */
-	  if (type == DT_mode && p->tests->u.mode == Pmode)
-	    goto case_done;
 
 	  if (p != start && p->need_label && needs_label == NULL)
 	    needs_label = p;
