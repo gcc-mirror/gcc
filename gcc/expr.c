@@ -4057,6 +4057,7 @@ expand_expr (exp, target, tmode, modifier)
 	abort ();
       emit_insns (RTL_EXPR_SEQUENCE (exp));
       RTL_EXPR_SEQUENCE (exp) = const0_rtx;
+      free_temps_for_rtl_expr (exp);
       return RTL_EXPR_RTL (exp);
 
     case CONSTRUCTOR:
