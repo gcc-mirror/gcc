@@ -1,3 +1,31 @@
+2005-03-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4: Adjust so that _GLIBCXX_USE_C99 implies
+	using _GLIBCXX_USE_C99_COMPLEX, _GLIBCXX_USE_C99_MATH, and
+	_GLIBCXX_USE_C99_WCHAR.
+	Remove GLIBCXX_ENABLE_C_MBCHAR, consolidate in GLIBCXX_ENABLE_C99
+	and GLIBCXX_ENABLE_WCHAR_T.
+	Take C99 bits from GLIBCXX_CHECK_WCHAR_T_SUPPORT and put in 
+	GLIBCXX_ENABLE_C99.
+	Change remaining parts of GLIBCXX_CHECK_WCHAR_T_SUPPORT to
+	GLIBCXX_CHECK_ICONV_SUPPORT.
+	* configure.ac: Remove GLIBCXX_ENABLE_C_MBCHAR, use
+	GLIBCXX_CHECK_ICONV_SUPPORT and GLIBCXX_ENABLE_WCHAR_T.
+	* crossconfig.m4: Same.
+	* acconfig.h: Same, adjust comments.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* docs/html/configopts.html: Change --enable-c-mbchar to
+	--enable-wchar_t.
+
+	* config/locale/gnu/c++locale_internal.h: Guard wide functions
+	with _GLIBCXX_USE_WCHAR_T.
+	* include/c_std/std_cwctype.h: Alphabetize, remove duplicates.
+	* include/c_std/std_cstdio.h: Spacing.
+
+	* config/locale/gnu/c_locale.h: Tweaks for unused warnings.
+	* src/debug.cc: Same.
+
 2005-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/libstdc++-dg/normal.exp: Read testsuite_files, if it

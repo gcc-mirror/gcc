@@ -154,15 +154,16 @@ namespace __gnu_cxx
 {
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
   extern "C" int
-    (snprintf)(char * restrict, size_t, const char * restrict, ...);
+  (snprintf)(char * restrict, size_t, const char * restrict, ...);
   extern "C" int
-    (vfscanf)(FILE * restrict, const char * restrict, __gnuc_va_list);
+  (vfscanf)(FILE * restrict, const char * restrict, __gnuc_va_list);
   extern "C" int (vscanf)(const char * restrict, __gnuc_va_list);
   extern "C" int
-    (vsnprintf)(char * restrict, size_t, const char * restrict, __gnuc_va_list);
+  (vsnprintf)(char * restrict, size_t, const char * restrict, __gnuc_va_list);
   extern "C" int
-    (vsscanf)(const char * restrict, const char * restrict, __gnuc_va_list);
+  (vsscanf)(const char * restrict, const char * restrict, __gnuc_va_list);
 #endif
+
 #if !_GLIBCXX_USE_C99_DYNAMIC
   using ::snprintf;
   using ::vfscanf;

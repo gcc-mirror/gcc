@@ -124,14 +124,6 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
   ## (Right now, this only matters for enable_wchar_t, but nothing prevents
   ## other macros from doing the same.  This should be automated.)  -pme
   need_libmath=no
-  enable_wchar_t=no
-  #enable_libstdcxx_debug=no
-  #enable_libstdcxx_pch=no
-  #enable_cheaders=c
-  #c_compatibility=no
-  #enable_abi_check=no
-  #enable_symvers=no
-  #enable_hosted_libstdcxx=yes
 
   # Find platform-specific directories containing configuration info.
   # Also possibly modify flags used elsewhere, as needed by the platform.
@@ -290,85 +282,21 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
 
 
 dnl
-dnl Check to see if this target can enable the wchar_t parts.
-dnl If --disable-c-mbchar was given, no wchar_t stuff is enabled.  (This
-dnl must have been previously checked.)  By default, wide characters are
-dnl disabled.
+dnl Check to see if this target can enable the iconv specializations.
+dnl If --disable-c-mbchar was given, no wchar_t specialization is enabled.  
+dnl (This must have been previously checked, along with the rest of C99 
+dnl support.) By default, iconv support is disabled.
 dnl
 dnl Defines:
-dnl  HAVE_MBSTATE_T if mbstate_t is not in wchar.h
-dnl  _GLIBCXX_USE_WCHAR_T if all the bits are found.
+dnl  _GLIBCXX_USE_ICONV if all the bits are found.
 dnl Substs:
 dnl  LIBICONV to a -l string containing the iconv library, if needed.
 dnl
-AC_DEFUN([GLIBCXX_CHECK_WCHAR_T_SUPPORT], [
-  # Test wchar.h for mbstate_t, which is needed for char_traits and
-  # others even if wchar_t support is not on.
-  AC_MSG_CHECKING([for mbstate_t])
-  AC_TRY_COMPILE([#include <wchar.h>],
-  [mbstate_t teststate;],
-  have_mbstate_t=yes, have_mbstate_t=no)
-  AC_MSG_RESULT($have_mbstate_t)
-  if test x"$have_mbstate_t" = xyes; then
-    AC_DEFINE(HAVE_MBSTATE_T)
-  fi
+AC_DEFUN([GLIBCXX_CHECK_ICONV_SUPPORT], [
 
-  # Sanity check for existence of ISO C99 headers for extended encoding.
-  AC_CHECK_HEADERS(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
-  AC_CHECK_HEADERS(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
-
+  enable_iconv=no
   # Only continue checking if the ISO C99 headers exist and support is on.
-  if test x"$ac_has_wchar_h" = xyes &&
-     test x"$ac_has_wctype_h" = xyes &&
-     test x"$enable_c_mbchar" != xno; then
-
-    # Test wchar.h for WCHAR_MIN, WCHAR_MAX, which is needed before
-    # numeric_limits can instantiate type_traits<wchar_t>
-    AC_MSG_CHECKING([for WCHAR_MIN and WCHAR_MAX])
-    AC_TRY_COMPILE([#include <wchar.h>],
-    [int i = WCHAR_MIN; int j = WCHAR_MAX;],
-    has_wchar_minmax=yes, has_wchar_minmax=no)
-    AC_MSG_RESULT($has_wchar_minmax)
-
-    # Test wchar.h for WEOF, which is what we use to determine whether
-    # to specialize for char_traits<wchar_t> or not.
-    AC_MSG_CHECKING([for WEOF])
-    AC_TRY_COMPILE([
-      #include <wchar.h>
-      #include <stddef.h>],
-    [wint_t i = WEOF;],
-    has_weof=yes, has_weof=no)
-    AC_MSG_RESULT($has_weof)
-
-    # Tests for wide character functions used in char_traits<wchar_t>.
-    ac_wfuncs=yes
-    AC_CHECK_FUNCS([wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset],
-    [],[ac_wfuncs=no])
-
-    # Checks for names injected into std:: by the c_std headers.
-    AC_CHECK_FUNCS([btowc wctob fgetwc fgetws fputwc fputws fwide \
-    fwprintf fwscanf swprintf swscanf vfwprintf vswprintf \
-    vwprintf wprintf wscanf getwc getwchar mbsinit mbrlen mbrtowc \
-    mbsrtowcs wcsrtombs putwc putwchar ungetwc wcrtomb wcstod wcstol \
-    wcstoul wcscpy wcsncpy wcscat wcsncat wcscmp wcscoll wcsncmp wcsxfrm \
-    wcscspn wcsspn wcstok wcsftime wcschr wcspbrk wcsrchr wcsstr],
-    [],[ac_wfuncs=no])
-
-    # Checks for wide character functions that are not required
-    # for basic wchar_t support.  Don't disable support if they are missing.
-    # Injection of these is wrapped with guard macros.
-    AC_CHECK_FUNCS([vfwscanf vswscanf vwscanf wcstof iswblank],[],[])
-
-    AC_MSG_CHECKING([for ISO C99 wchar_t support])
-    if test x"$has_weof" = xyes &&
-       test x"$has_wchar_minmax" = xyes &&
-       test x"$ac_wfuncs" = xyes;
-    then
-      ac_isoC99_wchar_t=yes
-    else
-      ac_isoC99_wchar_t=no
-    fi
-    AC_MSG_RESULT($ac_isoC99_wchar_t)
+  if test x"$enable_wchar_t" = xyes; then
 
     # Use iconv for wchar_t to char conversions. As such, check for
     # X/Open Portability Guide, version 2 features (XPG2).
@@ -386,28 +314,17 @@ AC_DEFUN([GLIBCXX_CHECK_WCHAR_T_SUPPORT], [
 
     LIBS="$ac_save_LIBS"
 
-    AC_MSG_CHECKING([for XPG2 wchar_t support])
     if test x"$ac_has_iconv_h" = xyes &&
        test x"$ac_has_langinfo_h" = xyes &&
        test x"$ac_XPG2funcs" = xyes;
     then
-      ac_XPG2_wchar_t=yes
-    else
-      ac_XPG2_wchar_t=no
-    fi
-    AC_MSG_RESULT($ac_XPG2_wchar_t)
-
-    # At the moment, only enable wchar_t specializations if all the
-    # above support is present.
-    if test x"$ac_isoC99_wchar_t" = xyes &&
-       test x"$ac_XPG2_wchar_t" = xyes;
-    then
-      AC_DEFINE(_GLIBCXX_USE_WCHAR_T)
-      enable_wchar_t=yes
+      AC_DEFINE([_GLIBCXX_USE_ICONV],1,
+	        [Define if iconv and related functions exist and are usable.])
+      enable_iconv=yes
     fi
   fi
-  AC_MSG_CHECKING([for enabled wchar_t specializations])
-  AC_MSG_RESULT($enable_wchar_t)
+  AC_MSG_CHECKING([for enabled iconv specializations])
+  AC_MSG_RESULT($enable_iconv)
 ])
 
 
@@ -838,29 +755,43 @@ dnl
 AC_DEFUN([GLIBCXX_ENABLE_C99], [
   GLIBCXX_ENABLE(c99,$1,,[turns on ISO/IEC 9899:1999 support])
 
+  # Test wchar.h for mbstate_t, which is needed for char_traits and fpos
+  # even if C99 support is turned off.
+  AC_CHECK_HEADERS(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
+  AC_MSG_CHECKING([for mbstate_t])
+  AC_TRY_COMPILE([#include <wchar.h>],
+  [mbstate_t teststate;],
+  have_mbstate_t=yes, have_mbstate_t=no)
+  AC_MSG_RESULT($have_mbstate_t)
+  if test x"$have_mbstate_t" = xyes; then
+    AC_DEFINE(HAVE_MBSTATE_T)
+  fi
+
+  if test x"$enable_c99" = x"yes"; then
+
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
 
   # Check for the existence of <math.h> functions used if C99 is enabled.
-  ac_c99_math=yes;
   AC_MSG_CHECKING([for ISO C99 support in <math.h>])
-  AC_TRY_COMPILE([#include <math.h>],[fpclassify(0.0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[isfinite(0.0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[isinf(0.0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[isnan(0.0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[isnormal(0.0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[signbit(0.0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[isgreater(0.0,0.0);],, [ac_c99_math=no])
+  AC_CACHE_VAL(ac_c99_math, [
   AC_TRY_COMPILE([#include <math.h>],
-                 [isgreaterequal(0.0,0.0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[isless(0.0,0.0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],[islessequal(0.0,0.0);],,[ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],
-                 [islessgreater(0.0,0.0);],, [ac_c99_math=no])
-  AC_TRY_COMPILE([#include <math.h>],
-                 [isunordered(0.0,0.0);],, [ac_c99_math=no])
+	         [fpclassify(0.0);
+	          isfinite(0.0); 
+		  isinf(0.0);
+	          isnan(0.0);
+		  isnormal(0.0);
+	  	  signbit(0.0);
+	 	  isgreater(0.0,0.0);
+		  isgreaterequal(0.0,0.0);
+		  isless(0.0,0.0);
+		  islessequal(0.0,0.0);
+		  islessgreater(0.0,0.0);
+		  islessgreater(0.0,0.0);
+		  isunordered(0.0,0.0);
+		 ],[ac_c99_math=yes], [ac_c99_math=no])
+  ])
   AC_MSG_RESULT($ac_c99_math)
-
   if test x"$ac_c99_math" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_MATH)
   fi
@@ -869,200 +800,210 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   # This is necessary even though libstdc++ uses the builtin versions
   # of these functions, because if the builtin cannot be used, a reference
   # to the library function is emitted.
+  # In addition, need to explicitly specify "C" compilation for this
+  # one, or else the backwards C++ <complex.h> include will be selected.
+  save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -x c"
   AC_CHECK_HEADERS(complex.h, ac_has_complex_h=yes, ac_has_complex_h=no)
   ac_c99_complex=no;
   if test x"$ac_has_complex_h" = x"yes"; then
-    ac_c99_complex=yes;
     AC_MSG_CHECKING([for ISO C99 support in <complex.h>])
     AC_TRY_COMPILE([#include <complex.h>],
-	           [typedef __complex__ float _ComplexT; _ComplexT tmp;
-	            cabsf(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    cabs(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-	 	   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    cabsl(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-	           [typedef __complex__ float _ComplexT; _ComplexT tmp;
-                    cargf(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    carg(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-	   	   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    cargl(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-	       	   [typedef __complex__ float _ComplexT; _ComplexT tmp;
-		    ccosf(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    ccos(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    ccosl(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
-		    ccoshf(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    ccosh(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    ccoshl(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
-		    cexpf(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    cexp(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    cexpl(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
-		    csinf(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    csin(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    csinl(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
- 		    csinhf(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    csinh(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    csinhl(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
-		    csqrtf(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    csqrt(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    csqrtl(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
-		    ctanf(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    ctan(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    ctanl(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
-		    ctanhf(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    ctanh(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-	  	   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    ctanhl(tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
-		    cpowf(tmp, tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
-		    cpow(tmp, tmp);],, [ac_c99_complex=no])
-    AC_TRY_COMPILE([#include <complex.h>],
-		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
-		    cpowl(tmp, tmp);],, [ac_c99_complex=no])
+	           [typedef __complex__ float float_type; float_type tmpf;
+	            cabsf(tmpf);
+		    cargf(tmpf);
+		    ccosf(tmpf);
+  		    ccoshf(tmpf);
+		    cexpf(tmpf);
+		    csinf(tmpf);
+		    csinhf(tmpf);
+		    csqrtf(tmpf);
+		    ctanf(tmpf);
+		    ctanhf(tmpf);
+		    cpowf(tmpf, tmpf);
+		    typedef __complex__ double double_type; double_type tmpd;
+	            cabs(tmpd);
+		    carg(tmpd);
+		    ccos(tmpd);
+  		    ccosh(tmpd);
+		    cexp(tmpd);
+		    csin(tmpd);
+		    csinh(tmpd);
+		    csqrt(tmpd);
+		    ctan(tmpd);
+		    ctanh(tmpd);
+		    cpow(tmpd, tmpd);
+		    typedef __complex__ long double ld_type; ld_type tmpld;
+	            cabsl(tmpld);
+		    cargl(tmpld);
+		    ccosl(tmpld);
+  		    ccoshl(tmpld);
+		    cexpl(tmpld);
+		    csinl(tmpld);
+		    csinhl(tmpld);
+		    csqrtl(tmpld);
+		    ctanl(tmpld);
+		    ctanhl(tmpld);
+		    cpowl(tmpld, tmpld);
+		   ],[ac_c99_complex=yes], [ac_c99_complex=no])
   fi
+  CXXFLAGS="$save_CXXFLAGS"
   AC_MSG_RESULT($ac_c99_complex)
-
   if test x"$ac_c99_complex" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_COMPLEX)
   fi
 
   # Check for the existence in <stdio.h> of vscanf, et. al.
-  ac_c99_stdio=yes;
   AC_MSG_CHECKING([for ISO C99 support in <stdio.h>])
-  AC_TRY_COMPILE([#include <stdio.h>],
-                 [snprintf("12", 0, "%i");],, [ac_c99_stdio=no])
+  AC_CACHE_VAL(ac_c99_stdio, [
   AC_TRY_COMPILE([#include <stdio.h>
-                  #include <stdarg.h>
+		  #include <stdarg.h>
                   void foo(char* fmt, ...)
-                  {va_list args; va_start(args, fmt);
-                  vfscanf(stderr, "%i", args);}],
-                  [],, [ac_c99_stdio=no])
-  AC_TRY_COMPILE([#include <stdio.h>
-                  #include <stdarg.h>
-                  void foo(char* fmt, ...)
-                  {va_list args; va_start(args, fmt);
-                  vscanf("%i", args);}],
-                  [],, [ac_c99_stdio=no])
-  AC_TRY_COMPILE([#include <stdio.h>
-                  #include <stdarg.h>
-                  void foo(char* fmt, ...)
-                  {va_list args; va_start(args, fmt);
-                  vsnprintf(fmt, 0, "%i", args);}],
-                  [],, [ac_c99_stdio=no])
-  AC_TRY_COMPILE([#include <stdio.h>
-                  #include <stdarg.h>
-                  void foo(char* fmt, ...)
-                  {va_list args; va_start(args, fmt);
-                  vsscanf(fmt, "%i", args);}],
-                  [],, [ac_c99_stdio=no])
+                  {
+	            va_list args; va_start(args, fmt);
+                    vfscanf(stderr, "%i", args); 
+		    vscanf("%i", args);
+                    vsnprintf(fmt, 0, "%i", args);
+                    vsscanf(fmt, "%i", args);
+		  }],
+                 [snprintf("12", 0, "%i");],
+		 [ac_c99_stdio=yes], [ac_c99_stdio=no])
+  ])
   AC_MSG_RESULT($ac_c99_stdio)
 
   # Check for the existence in <stdlib.h> of lldiv_t, et. al.
-  ac_c99_stdlib=yes;
-  AC_MSG_CHECKING([for lldiv_t declaration])
-  AC_CACHE_VAL(ac_c99_lldiv_t, [
-  AC_TRY_COMPILE([#include <stdlib.h>],
-                   [ lldiv_t mydivt;],
-                   [ac_c99_lldiv_t=yes], [ac_c99_lldiv_t=no])
-  ])
-  AC_MSG_RESULT($ac_c99_lldiv_t)
-
   AC_MSG_CHECKING([for ISO C99 support in <stdlib.h>])
+  AC_CACHE_VAL(ac_c99_stdlib, [
   AC_TRY_COMPILE([#include <stdlib.h>],
-                 [char* tmp; strtof("gnu", &tmp);],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>],
-                 [char* tmp; strtold("gnu", &tmp);],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>], [llabs(10);],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>], [lldiv(10,1);],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>], [atoll("10");],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>], [_Exit(0);],, [ac_c99_stdlib=no])
-  if test x"$ac_c99_lldiv_t" = x"no"; then
-    ac_c99_stdlib=no;
-  fi;
+                 [char* tmp; 
+	    	  strtof("gnu", &tmp); 
+		  strtold("gnu", &tmp);
+                  llabs(10); 
+		  lldiv(10,1); 
+		  atoll("10"); 
+		  _Exit(0);
+		  lldiv_t mydivt;],[ac_c99_stdlib=yes], [ac_c99_stdlib=no])
+  ])
   AC_MSG_RESULT($ac_c99_stdlib)
 
-  # Check for the existence of <wchar.h> functions used if C99 is enabled.
-  # XXX the wchar.h checks should be rolled into the general C99 bits.
-  ac_c99_wchar=yes;
-  AC_MSG_CHECKING([for additional ISO C99 support in <wchar.h>])
-  AC_TRY_COMPILE([#include <wchar.h>],
-                 [wcstold(L"10.0", NULL);],, [ac_c99_wchar=no])
-  AC_TRY_COMPILE([#include <wchar.h>],
-                 [wcstoll(L"10", NULL, 10);],, [ac_c99_wchar=no])
-  AC_TRY_COMPILE([#include <wchar.h>],
-                 [wcstoull(L"10", NULL, 10);],, [ac_c99_wchar=no])
-  AC_MSG_RESULT($ac_c99_wchar)
+  # Check for the existence in <wchar.h> of wcstoull, WEOF, etc.
+  AC_CHECK_HEADERS(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
+  ac_c99_wchar=no;
+  if test x"$ac_has_wchar_h" = xyes &&
+     test x"$ac_has_wctype_h" = xyes; then
+    AC_TRY_COMPILE([#include <wchar.h>
+                    #include <stddef.h>
+                    wint_t i;
+		    long l = WEOF;
+		    long j = WCHAR_MIN;
+		    long k = WCHAR_MAX;
+                    namespace test
+                    {
+		      using ::btowc;
+		      using ::fgetwc;
+		      using ::fgetws;
+		      using ::fputwc;
+		      using ::fputws;
+		      using ::fwide;
+		      using ::fwprintf; 
+		      using ::fwscanf;
+		      using ::getwc;
+		      using ::getwchar;
+		      using ::mbrlen; 
+		      using ::mbrtowc; 
+		      using ::mbsinit; 
+		      using ::mbsrtowcs; 
+		      using ::putwc;
+		      using ::putwchar;
+		      using ::swprintf; 
+		      using ::swscanf; 
+		      using ::ungetwc;
+		      using ::vfwprintf; 
+		      using ::vswprintf; 
+		      using ::vwprintf; 
+		      using ::wcrtomb; 
+		      using ::wcscat; 
+		      using ::wcschr; 
+		      using ::wcscmp; 
+		      using ::wcscoll; 
+		      using ::wcscpy; 
+		      using ::wcscspn; 
+		      using ::wcsftime; 
+		      using ::wcslen;
+		      using ::wcsncat; 
+		      using ::wcsncmp; 
+		      using ::wcsncpy; 
+		      using ::wcspbrk;
+		      using ::wcsrchr; 
+		      using ::wcsrtombs; 
+		      using ::wcsspn; 
+		      using ::wcsstr;
+		      using ::wcstod; 
+		      using ::wcstok; 
+		      using ::wcstol;
+		      using ::wcstold;
+		      using ::wcstoll;
+		      using ::wcstoul; 
+		      using ::wcstoull;
+		      using ::wcsxfrm; 
+		      using ::wctob; 
+		      using ::wmemchr;
+		      using ::wmemcmp;
+		      using ::wmemcpy;
+		      using ::wmemmove;
+		      using ::wmemset;
+		      using ::wprintf; 
+		      using ::wscanf; 
+		    }
+		   ],[],[ac_c99_wchar=yes], [ac_c99_wchar=no])
 
-  AC_MSG_CHECKING([for enabled ISO C99 support])
+    # Checks for wide character functions that may not be present.
+    # Injection of these is wrapped with guard macros.
+    # NB: only put functions here, instead of immediately above, if
+    # absolutely necessary.
+    AC_TRY_COMPILE([#include <wchar.h>
+                    namespace test { using ::vfwscanf; } ], [],
+ 	    	   [AC_DEFINE(HAVE_VFWSCANF,1,
+			[Defined if vfwscanf exists.])],[])
+
+    AC_TRY_COMPILE([#include <wchar.h>
+                    namespace test { using ::vswscanf; } ], [],
+ 	    	   [AC_DEFINE(HAVE_VSWSCANF,1,
+			[Defined if vswscanf exists.])],[])
+
+    AC_TRY_COMPILE([#include <wchar.h>
+                    namespace test { using ::vwscanf; } ], [],
+ 	    	   [AC_DEFINE(HAVE_VWSCANF,1,[Defined if vwscanf exists.])],[])
+
+    AC_TRY_COMPILE([#include <wchar.h>
+                    namespace test { using ::wcstof; } ], [],
+ 	    	   [AC_DEFINE(HAVE_WCSTOF,1,[Defined if wcstof exists.])],[])
+
+    AC_TRY_COMPILE([#include <wctype.h>],
+                   [ wint_t t; int i = iswblank(t);], 
+ 	    	   [AC_DEFINE(HAVE_ISWBLANK,1,
+			[Defined if iswblank exists.])],[])
+
+    AC_MSG_CHECKING([for ISO C99 support in <wchar.h>])
+    AC_MSG_RESULT($ac_c99_wchar)
+  fi
+
+  # Option parsed, now set things appropriately.
   if test x"$ac_c99_math" = x"no" ||
      test x"$ac_c99_complex" = x"no" ||
      test x"$ac_c99_stdio" = x"no" ||
      test x"$ac_c99_stdlib" = x"no" ||
      test x"$ac_c99_wchar" = x"no"; then
     enable_c99=no;
-  fi;
-  AC_MSG_RESULT($enable_c99)
-
-  # Option parsed, now set things appropriately
-  if test x"$enable_c99" = x"yes"; then
+  else
     AC_DEFINE(_GLIBCXX_USE_C99)
   fi
 
   AC_LANG_RESTORE
+  fi	
+
+  AC_MSG_CHECKING([for fully enabled ISO C99 support])
+  AC_MSG_RESULT($enable_c99)
 ])
 
 
@@ -1296,7 +1237,7 @@ dnl
 dnl Default is new.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
-  AC_MSG_CHECKING([for std::allocator base class to use])
+  AC_MSG_CHECKING([for std::allocator base class])
   GLIBCXX_ENABLE(libstdcxx-allocator,auto,[=KIND],
     [use KIND for target std::allocator base],
     [permit new|malloc|mt|bitmap|pool|yes|no|auto])
@@ -1445,21 +1386,6 @@ AC_DEFUN([GLIBCXX_ENABLE_CXX_FLAGS], [dnl
 
 
 dnl
-dnl Check for wide character support.  Has the same effect as the option
-dnl in gcc's configure, but in a form that autoconf can mess with.
-dnl
-dnl --enable-c-mbchar requests all the wchar_t stuff.
-dnl --disable-c-mbchar doesn't.
-dnl  +  Usage:  GLIBCXX_ENABLE_C_MBCHAR[(DEFAULT)]
-dnl       Where DEFAULT is either `yes' or `no'.
-dnl
-AC_DEFUN([GLIBCXX_ENABLE_C_MBCHAR], [
-  GLIBCXX_ENABLE(c-mbchar,$1,,[enable multibyte (wide) characters])
-  # Option parsed, now other scripts can test enable_c_mbchar for yes/no.
-])
-
-
-dnl
 dnl Check to see if debugging libraries are to be built.
 dnl
 dnl --enable-libstdcxx-debug
@@ -1555,7 +1481,7 @@ AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
 
 
 dnl
-dnl Check for template specializations for the 'long long' type extension.
+dnl Check for template specializations for the 'long long' type.
 dnl The result determines only whether 'long long' I/O is enabled; things
 dnl like numeric_limits<> specializations are always available.
 dnl
@@ -1565,10 +1491,32 @@ dnl  +  Usage:  GLIBCXX_ENABLE_LONG_LONG[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_LONG_LONG], [
-  GLIBCXX_ENABLE(long-long,$1,,[enables I/O support for 'long long'])
+  GLIBCXX_ENABLE(long-long,$1,,[enable template specializations for 'long long'])
   if test $enable_long_long = yes; then
     AC_DEFINE(_GLIBCXX_USE_LONG_LONG)
   fi
+  AC_MSG_CHECKING([for enabled long long specializations])
+  AC_MSG_RESULT([$enable_long_long])
+])
+
+
+dnl
+dnl Check for template specializations for the 'wchar_t' type.
+dnl
+dnl --enable-wchar_t defines _GLIBCXX_USE_WCHAR_T
+dnl --disable-wchar_t leaves _GLIBCXX_USE_WCHAR_T undefined
+dnl  +  Usage:  GLIBCXX_ENABLE_WCHAR_T[(DEFAULT)]
+dnl       Where DEFAULT is either `yes' or `no'.
+dnl
+dnl Necessary support (probed along with C99 support) must also be present.
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_WCHAR_T], [
+  GLIBCXX_ENABLE(wchar_t,$1,,[enable template specializations for 'wchar_t'])
+  if test x"$ac_c99_wchar" = x"yes" && test x"$enable_wchar_t" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_WCHAR_T)
+  fi
+  AC_MSG_CHECKING([for enabled wchar_t specializations])
+  AC_MSG_RESULT([$enable_wchar_t])
 ])
 
 

@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -59,19 +59,18 @@
 # undef iswblank
 #endif
 #undef iswcntrl
+#undef iswctype
 #undef iswdigit
 #undef iswgraph
 #undef iswlower
-#undef iswprint
 #undef iswprint
 #undef iswpunct
 #undef iswspace
 #undef iswupper
 #undef iswxdigit
-#undef iswctype
+#undef towctrans
 #undef towlower
 #undef towupper
-#undef towctrans
 #undef wctrans
 #undef wctype
 
@@ -89,19 +88,18 @@ namespace std
   using ::iswblank;
 #endif
   using ::iswcntrl;
+  using ::iswctype;
   using ::iswdigit;
   using ::iswgraph;
   using ::iswlower;
-  using ::iswprint;
   using ::iswprint;
   using ::iswpunct;
   using ::iswspace;
   using ::iswupper;
   using ::iswxdigit;
-  using ::iswctype;
+  using ::towctrans;
   using ::towlower;
   using ::towupper;
-  using ::towctrans;
   using ::wctrans;
   using ::wctype;
 }

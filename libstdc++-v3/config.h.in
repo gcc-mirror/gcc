@@ -1,5 +1,5 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
-// acconfig.h symbols and macros for libstdc++ v3 -*- C++ -*-
+// Symbols and macros for libstdc++ -*- C++ -*-
 
 // Defines libstdc++ version.
 #undef PACKAGE
@@ -11,20 +11,24 @@
 #undef HAVE_GETTEXT
 #undef HAVE_STPCPY
 
-// Include I/O support for 'long long' and 'unsigned long long'.
+// Define if code specialized for long long should be used.
 #undef _GLIBCXX_USE_LONG_LONG
-
-// Define if C99 features such as lldiv_t, llabs, lldiv should be exposed.
-#undef _GLIBCXX_USE_C99
-
-// Define if C99 math functions (like fpclassify) should be exposed.
-#undef _GLIBCXX_USE_C99_MATH
-
-// Define if C99 complex math functions should be used in std::complex.
-#undef _GLIBCXX_USE_C99_COMPLEX
 
 // Define if code specialized for wchar_t should be used.
 #undef _GLIBCXX_USE_WCHAR_T
+
+// Define if C99 functions or macros from <wchar.h>, <math.h>,
+// <complex.h>, <stdio.h>, and <stdlib.h> can be used or exposed.
+#undef _GLIBCXX_USE_C99
+
+// Define if C99 functions or macros in <math.h> should be imported in
+// <cmath> in namespace std.
+#undef _GLIBCXX_USE_C99_MATH
+
+// Define if C99 functions in <complex.h> should be used in
+// <complex>. Using compiler builtins for these functions requires
+// corresponding C99 library functions to be present.
+#undef _GLIBCXX_USE_C99_COMPLEX
 
 // Define if using setrlimit to set resource limits during 'make check'.
 #undef _GLIBCXX_RES_LIMITS
@@ -194,9 +198,6 @@
 /* Define to 1 if you have the `atanl' function. */
 #undef HAVE_ATANL
 
-/* Define to 1 if you have the `btowc' function. */
-#undef HAVE_BTOWC
-
 /* Define to 1 if you have the `ceilf' function. */
 #undef HAVE_CEILF
 
@@ -242,12 +243,6 @@
 /* Define to 1 if you have the `fabsl' function. */
 #undef HAVE_FABSL
 
-/* Define to 1 if you have the `fgetwc' function. */
-#undef HAVE_FGETWC
-
-/* Define to 1 if you have the `fgetws' function. */
-#undef HAVE_FGETWS
-
 /* Define to 1 if you have the `finite' function. */
 #undef HAVE_FINITE
 
@@ -275,12 +270,6 @@
 /* Define to 1 if you have the `fpclass' function. */
 #undef HAVE_FPCLASS
 
-/* Define to 1 if you have the `fputwc' function. */
-#undef HAVE_FPUTWC
-
-/* Define to 1 if you have the `fputws' function. */
-#undef HAVE_FPUTWS
-
 /* Define to 1 if you have the <fp.h> header file. */
 #undef HAVE_FP_H
 
@@ -290,26 +279,11 @@
 /* Define to 1 if you have the `frexpl' function. */
 #undef HAVE_FREXPL
 
-/* Define to 1 if you have the `fwide' function. */
-#undef HAVE_FWIDE
-
-/* Define to 1 if you have the `fwprintf' function. */
-#undef HAVE_FWPRINTF
-
-/* Define to 1 if you have the `fwscanf' function. */
-#undef HAVE_FWSCANF
-
 /* Define to 1 if you have the <gconv.h> header file. */
 #undef HAVE_GCONV_H
 
 /* Define to 1 if you have the `getpagesize' function. */
 #undef HAVE_GETPAGESIZE
-
-/* Define to 1 if you have the `getwc' function. */
-#undef HAVE_GETWC
-
-/* Define to 1 if you have the `getwchar' function. */
-#undef HAVE_GETWCHAR
 
 /* Define to 1 if you have the `hypot' function. */
 #undef HAVE_HYPOT
@@ -353,7 +327,7 @@
 /* Define to 1 if you have the `isnanl' function. */
 #undef HAVE_ISNANL
 
-/* Define to 1 if you have the `iswblank' function. */
+/* Defined if iswblank exists. */
 #undef HAVE_ISWBLANK
 
 /* Define to 1 if you have the `ldexpf' function. */
@@ -404,18 +378,6 @@
 /* Define to 1 if you have the <machine/param.h> header file. */
 #undef HAVE_MACHINE_PARAM_H
 
-/* Define to 1 if you have the `mbrlen' function. */
-#undef HAVE_MBRLEN
-
-/* Define to 1 if you have the `mbrtowc' function. */
-#undef HAVE_MBRTOWC
-
-/* Define to 1 if you have the `mbsinit' function. */
-#undef HAVE_MBSINIT
-
-/* Define to 1 if you have the `mbsrtowcs' function. */
-#undef HAVE_MBSRTOWCS
-
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -439,12 +401,6 @@
 
 /* Define to 1 if you have the `powl' function. */
 #undef HAVE_POWL
-
-/* Define to 1 if you have the `putwc' function. */
-#undef HAVE_PUTWC
-
-/* Define to 1 if you have the `putwchar' function. */
-#undef HAVE_PUTWCHAR
 
 /* Define to 1 if you have the `qfpclass' function. */
 #undef HAVE_QFPCLASS
@@ -500,12 +456,6 @@
 /* Define to 1 if you have the `strtold' function. */
 #undef HAVE_STRTOLD
 
-/* Define to 1 if you have the `swprintf' function. */
-#undef HAVE_SWPRINTF
-
-/* Define to 1 if you have the `swscanf' function. */
-#undef HAVE_SWSCANF
-
 /* Define to 1 if you have the <sys/filio.h> header file. */
 #undef HAVE_SYS_FILIO_H
 
@@ -554,128 +504,26 @@
 /* Define to 1 if you have the `tanl' function. */
 #undef HAVE_TANL
 
-/* Define to 1 if you have the `ungetwc' function. */
-#undef HAVE_UNGETWC
-
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to 1 if you have the `vfwprintf' function. */
-#undef HAVE_VFWPRINTF
-
-/* Define to 1 if you have the `vfwscanf' function. */
+/* Defined if vfwscanf exists. */
 #undef HAVE_VFWSCANF
 
-/* Define to 1 if you have the `vswprintf' function. */
-#undef HAVE_VSWPRINTF
-
-/* Define to 1 if you have the `vswscanf' function. */
+/* Defined if vswscanf exists. */
 #undef HAVE_VSWSCANF
 
-/* Define to 1 if you have the `vwprintf' function. */
-#undef HAVE_VWPRINTF
-
-/* Define to 1 if you have the `vwscanf' function. */
+/* Defined if vwscanf exists. */
 #undef HAVE_VWSCANF
 
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
 
-/* Define to 1 if you have the `wcrtomb' function. */
-#undef HAVE_WCRTOMB
-
-/* Define to 1 if you have the `wcscat' function. */
-#undef HAVE_WCSCAT
-
-/* Define to 1 if you have the `wcschr' function. */
-#undef HAVE_WCSCHR
-
-/* Define to 1 if you have the `wcscmp' function. */
-#undef HAVE_WCSCMP
-
-/* Define to 1 if you have the `wcscoll' function. */
-#undef HAVE_WCSCOLL
-
-/* Define to 1 if you have the `wcscpy' function. */
-#undef HAVE_WCSCPY
-
-/* Define to 1 if you have the `wcscspn' function. */
-#undef HAVE_WCSCSPN
-
-/* Define to 1 if you have the `wcsftime' function. */
-#undef HAVE_WCSFTIME
-
-/* Define to 1 if you have the `wcslen' function. */
-#undef HAVE_WCSLEN
-
-/* Define to 1 if you have the `wcsncat' function. */
-#undef HAVE_WCSNCAT
-
-/* Define to 1 if you have the `wcsncmp' function. */
-#undef HAVE_WCSNCMP
-
-/* Define to 1 if you have the `wcsncpy' function. */
-#undef HAVE_WCSNCPY
-
-/* Define to 1 if you have the `wcspbrk' function. */
-#undef HAVE_WCSPBRK
-
-/* Define to 1 if you have the `wcsrchr' function. */
-#undef HAVE_WCSRCHR
-
-/* Define to 1 if you have the `wcsrtombs' function. */
-#undef HAVE_WCSRTOMBS
-
-/* Define to 1 if you have the `wcsspn' function. */
-#undef HAVE_WCSSPN
-
-/* Define to 1 if you have the `wcsstr' function. */
-#undef HAVE_WCSSTR
-
-/* Define to 1 if you have the `wcstod' function. */
-#undef HAVE_WCSTOD
-
-/* Define to 1 if you have the `wcstof' function. */
+/* Defined if wcstof exists. */
 #undef HAVE_WCSTOF
-
-/* Define to 1 if you have the `wcstok' function. */
-#undef HAVE_WCSTOK
-
-/* Define to 1 if you have the `wcstol' function. */
-#undef HAVE_WCSTOL
-
-/* Define to 1 if you have the `wcstoul' function. */
-#undef HAVE_WCSTOUL
-
-/* Define to 1 if you have the `wcsxfrm' function. */
-#undef HAVE_WCSXFRM
-
-/* Define to 1 if you have the `wctob' function. */
-#undef HAVE_WCTOB
 
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
-
-/* Define to 1 if you have the `wmemchr' function. */
-#undef HAVE_WMEMCHR
-
-/* Define to 1 if you have the `wmemcmp' function. */
-#undef HAVE_WMEMCMP
-
-/* Define to 1 if you have the `wmemcpy' function. */
-#undef HAVE_WMEMCPY
-
-/* Define to 1 if you have the `wmemmove' function. */
-#undef HAVE_WMEMMOVE
-
-/* Define to 1 if you have the `wmemset' function. */
-#undef HAVE_WMEMSET
-
-/* Define to 1 if you have the `wprintf' function. */
-#undef HAVE_WPRINTF
-
-/* Define to 1 if you have the `wscanf' function. */
-#undef HAVE_WSCANF
 
 /* Define to 1 if you have the `_acosf' function. */
 #undef HAVE__ACOSF
@@ -898,6 +746,9 @@
 
 /* Define if the compiler is configured for setjmp/longjmp exceptions. */
 #undef _GLIBCXX_SJLJ_EXCEPTIONS
+
+/* Define if iconv and related functions exist and are usable. */
+#undef _GLIBCXX_USE_ICONV
 //
 // Systems that have certain non-standard functions prefixed with an
 // underscore, we'll handle those here. Must come after config.h.in.

@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003, 2004
+// Copyright (C) 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -507,7 +507,7 @@ namespace __gnu_debug
   template<typename _Tp>
     void
     _Error_formatter::_M_format_word(char* __buf, 
-				     int __n __attribute__((__unused__)), 
+				     int __n __attribute__ ((__unused__)), 
 				     const char* __fmt, _Tp __s) const
     {
 #ifdef _GLIBCXX_USE_C99
@@ -653,21 +653,20 @@ namespace __gnu_debug
   // Instantiations.
   template
     void
-    _Error_formatter::_M_format_word(char* __buf, int __n, const char* __fmt, 
-				     const void* __s) const;
+    _Error_formatter::_M_format_word(char*, int, const char*, 
+				     const void*) const;
 
   template
     void
-    _Error_formatter::_M_format_word(char* __buf, int __n, const char* __fmt, 
-				     long __s) const;
+    _Error_formatter::_M_format_word(char*, int, const char*, long) const;
 
   template
     void
-    _Error_formatter::_M_format_word(char* __buf, int __n, const char* __fmt, 
-				     std::size_t __s) const;
+    _Error_formatter::_M_format_word(char*, int, const char*, 
+				     std::size_t) const;
 
   template
     void
-    _Error_formatter::_M_format_word(char* __buf, int __n, const char* __fmt, 
-				     const char* __s) const;
+    _Error_formatter::_M_format_word(char*, int, const char*, 
+				     const char*) const;
 } // namespace __gnu_debug
