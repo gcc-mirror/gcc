@@ -1171,8 +1171,7 @@ struct tree_decl
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   /* For FUNCTION_DECLs: points to insn that constitutes its definition
-     on the permanent obstack.  For any other kind of decl, this is the
-     alignment.  */
+     on the permanent obstack.  For FIELD_DECL, this is DECL_FIELD_SIZE.  */
   union {
     struct rtx_def *r;
     HOST_WIDE_INT i;
