@@ -93,8 +93,8 @@ namespace std
 	    _RandomAccessIterator>)
       __glibcpp_function_requires(_LessThanComparableConcept<_ValueType>)
 
-      __push_heap(__first, _DistanceType((__last - __first) - 1), _DistanceType(0), 
-		  _ValueType(*(__last - 1)));
+      std::__push_heap(__first, _DistanceType((__last - __first) - 1), _DistanceType(0), 
+		       _ValueType(*(__last - 1)));
     }
 
   template<typename _RandomAccessIterator, typename _Distance, typename _Tp, 
@@ -126,8 +126,8 @@ namespace std
       __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
 
-      __push_heap(__first, _DistanceType((__last - __first) - 1), _DistanceType(0), 
-		  _ValueType(*(__last - 1)), __comp);
+      std::__push_heap(__first, _DistanceType((__last - __first) - 1), _DistanceType(0), 
+		       _ValueType(*(__last - 1)), __comp);
     }
 
   template<typename _RandomAccessIterator, typename _Distance, typename _Tp>
@@ -148,7 +148,7 @@ namespace std
 	*(__first + __holeIndex) = *(__first + (__secondChild - 1));
 	__holeIndex = __secondChild - 1;
       }
-      __push_heap(__first, __holeIndex, __topIndex, __value);
+      std::__push_heap(__first, __holeIndex, __topIndex, __value);
     }
 
   template<typename _RandomAccessIterator, typename _Tp>
@@ -158,7 +158,7 @@ namespace std
     {
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type _Distance;
       *__result = *__first;
-      __adjust_heap(__first, _Distance(0), _Distance(__last - __first), __value);
+      std::__adjust_heap(__first, _Distance(0), _Distance(__last - __first), __value);
     }
 
   template<typename _RandomAccessIterator>
@@ -172,7 +172,7 @@ namespace std
 	    _RandomAccessIterator>)
       __glibcpp_function_requires(_LessThanComparableConcept<_ValueType>)
 
-      __pop_heap(__first, __last - 1, __last - 1, _ValueType(*(__last - 1)));
+      std::__pop_heap(__first, __last - 1, __last - 1, _ValueType(*(__last - 1)));
     }
 
   template<typename _RandomAccessIterator, typename _Distance,
@@ -194,7 +194,7 @@ namespace std
 	*(__first + __holeIndex) = *(__first + (__secondChild - 1));
 	__holeIndex = __secondChild - 1;
       }
-      __push_heap(__first, __holeIndex, __topIndex, __value, __comp);
+      std::__push_heap(__first, __holeIndex, __topIndex, __value, __comp);
     }
 
   template<typename _RandomAccessIterator, typename _Tp, typename _Compare>
@@ -204,8 +204,8 @@ namespace std
     {
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type _Distance;
       *__result = *__first;
-      __adjust_heap(__first, _Distance(0), _Distance(__last - __first), 
-		    __value, __comp);
+      std::__adjust_heap(__first, _Distance(0), _Distance(__last - __first), 
+			 __value, __comp);
     }
 
   template<typename _RandomAccessIterator, typename _Compare>
@@ -218,7 +218,7 @@ namespace std
 	    _RandomAccessIterator>)
 
       typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
-      __pop_heap(__first, __last - 1, __last - 1, _ValueType(*(__last - 1)), __comp);
+      std::__pop_heap(__first, __last - 1, __last - 1, _ValueType(*(__last - 1)), __comp);
     }
 
   template<typename _RandomAccessIterator>
@@ -240,7 +240,7 @@ namespace std
       _DistanceType __parent = (__len - 2)/2;
 	
       while (true) {
-	__adjust_heap(__first, __parent, __len, _ValueType(*(__first + __parent)));
+	std::__adjust_heap(__first, __parent, __len, _ValueType(*(__first + __parent)));
 	if (__parent == 0) return;
 	__parent--;
       }
@@ -265,8 +265,8 @@ namespace std
       _DistanceType __parent = (__len - 2)/2;
 	
       while (true) {
-	__adjust_heap(__first, __parent, __len,
-	              _ValueType(*(__first + __parent)), __comp);
+	std::__adjust_heap(__first, __parent, __len,
+			   _ValueType(*(__first + __parent)), __comp);
 	if (__parent == 0) return;
 	__parent--;
       }
@@ -283,7 +283,7 @@ namespace std
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
 
       while (__last - __first > 1)
-	pop_heap(__first, __last--);
+	std::pop_heap(__first, __last--);
     }
 
   template<typename _RandomAccessIterator, typename _Compare>
@@ -296,7 +296,7 @@ namespace std
 	    _RandomAccessIterator>)
 
       while (__last - __first > 1)
-	pop_heap(__first, __last--, __comp);
+	std::pop_heap(__first, __last--, __comp);
     }
 
 } // namespace std

@@ -248,13 +248,13 @@ namespace std
     inline _OutputIterator
     __copy_aux2(_InputIterator __first, _InputIterator __last,
 		_OutputIterator __result, __false_type)
-    { return std::__copy(__first, __last, __result, __iterator_category(__first)); }
+    { return std::__copy(__first, __last, __result, std::__iterator_category(__first)); }
 
   template<typename _InputIterator, typename _OutputIterator>
     inline _OutputIterator
     __copy_aux2(_InputIterator __first, _InputIterator __last,
 		_OutputIterator __result, __true_type)
-    { return std::__copy(__first, __last, __result, __iterator_category(__first)); }
+    { return std::__copy(__first, __last, __result, std::__iterator_category(__first)); }
 
   template<typename _Tp>
     inline _Tp*
@@ -370,7 +370,7 @@ namespace std
 	   _BidirectionalIterator2 __result)
       {
         return std::__copy_backward(__first, __last, __result, 
-				    __iterator_category(__first));
+				    std::__iterator_category(__first));
       }
     };
 
@@ -594,7 +594,7 @@ namespace std
 	  ++__first1;
 	  ++__first2;
         }
-      return std::pair<_InputIterator1, _InputIterator2>(__first1, __first2);
+      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
 
   /**
@@ -625,7 +625,7 @@ namespace std
 	  ++__first1;
 	  ++__first2;
         }
-      return std::pair<_InputIterator1, _InputIterator2>(__first1, __first2);
+      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
 
   /**

@@ -295,7 +295,7 @@ namespace std
       __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcpp_function_requires(_EqualOpConcept<
 		typename iterator_traits<_InputIterator>::value_type, _Tp>)
-      return std::find(__first, __last, __val, __iterator_category(__first));
+      return std::find(__first, __last, __val, std::__iterator_category(__first));
     }
 
   /**
@@ -315,7 +315,7 @@ namespace std
       __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcpp_function_requires(_UnaryPredicateConcept<_Predicate,
 	      typename iterator_traits<_InputIterator>::value_type>)
-      return std::find_if(__first, __last, __pred, __iterator_category(__first));
+      return std::find_if(__first, __last, __pred, std::__iterator_category(__first));
     }
 
   /**
@@ -1352,7 +1352,7 @@ namespace std
 	  // concept requirements
 	  __glibcpp_function_requires(_Mutable_BidirectionalIteratorConcept<
 		    _BidirectionalIterator>)
-	  std::__reverse(__first, __last, __iterator_category(__first));
+	  std::__reverse(__first, __last, std::__iterator_category(__first));
     }
 
   /**
@@ -1754,7 +1754,7 @@ namespace std
       __glibcpp_function_requires(_UnaryPredicateConcept<_Predicate,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
 
-      return std::__partition(__first, __last, __pred, __iterator_category(__first));
+      return std::__partition(__first, __last, __pred, std::__iterator_category(__first));
     }
 
 
@@ -3469,10 +3469,10 @@ namespace std
 	  __left = std::lower_bound(__first, __middle, __val);
 	  std::advance(__first, __len);
 	  __right = std::upper_bound(++__middle, __first, __val);
-	  return std::pair<_ForwardIterator, _ForwardIterator>(__left, __right);
+	  return pair<_ForwardIterator, _ForwardIterator>(__left, __right);
 	}
       }
-      return std::pair<_ForwardIterator, _ForwardIterator>(__first, __first);
+      return pair<_ForwardIterator, _ForwardIterator>(__first, __first);
     }
 
   /**
@@ -3524,10 +3524,10 @@ namespace std
 	  __left = std::lower_bound(__first, __middle, __val, __comp);
 	  std::advance(__first, __len);
 	  __right = std::upper_bound(++__middle, __first, __val, __comp);
-	  return std::pair<_ForwardIterator, _ForwardIterator>(__left, __right);
+	  return pair<_ForwardIterator, _ForwardIterator>(__left, __right);
 	}
       }
-      return std::pair<_ForwardIterator, _ForwardIterator>(__first, __first);
+      return pair<_ForwardIterator, _ForwardIterator>(__first, __first);
     }
 
   /**
@@ -4320,8 +4320,8 @@ namespace std
 	    typename iterator_traits<_ForwardIterator2>::value_type>)
 
       return std::__find_end(__first1, __last1, __first2, __last2,
-			     __iterator_category(__first1),
-			     __iterator_category(__first2));
+			     std::__iterator_category(__first1),
+			     std::__iterator_category(__first2));
     }
 
   template<typename _ForwardIterator1, typename _ForwardIterator2,
@@ -4339,8 +4339,8 @@ namespace std
 	    typename iterator_traits<_ForwardIterator2>::value_type>)
 
       return std::__find_end(__first1, __last1, __first2, __last2,
-			     __iterator_category(__first1),
-			     __iterator_category(__first2),
+			     std::__iterator_category(__first1),
+			     std::__iterator_category(__first2),
 			     __comp);
     }
 
