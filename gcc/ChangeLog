@@ -28,6 +28,19 @@
 
 	* gcse.c (gcse_main): Add a comment.
 
+2004-12-04  Andrew  Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17909
+	* builtins.c (fold_builtin_next_arg): Export and return true
+	when there is a warning or an error.
+	(expand_builtin_va_start): When fold_builtin_next_arg returns true,
+	return const0_rtx.
+	(expand_builtin): Likewise.
+	* gimplify.c (gimplify_call_expr): Error out if there is not
+	enough arguments to va_start. Call fold_builtin_next_arg also
+	on the second argument.
+	* tree.h (fold_builtin_next_arg): Prototype.
+
 2004-12-04  Alan Modra  <amodra@bigpond.net.au>
 
 	* mklibgcc.in: Build shared libgcc and shared libunwind in gcc/.
