@@ -3573,7 +3573,11 @@ expand_decl (decl)
 			   / BITS_PER_UNIT));
     }
 
-  else if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
+  else if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST
+	   && ! (flag_stack_check && ! STACK_CHECK_BUILTIN
+		 && (TREE_INT_CST_HIGH (DECL_SIZE (decl)) != 0
+		     || (TREE_INT_CST_LOW (DECL_SIZE (decl))
+			 > STACK_CHECK_MAX_VAR_SIZE * BITS_PER_UNIT))))
     {
       /* Variable of fixed size that goes on the stack.  */
       rtx oldaddr = 0;
