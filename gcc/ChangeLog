@@ -1,3 +1,8 @@
+2002-01-31  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gccbug.in: Follow GNU Coding Standards for --version.  Use GCC
+	version rather than GNATS version in --version output.
+
 2002-01-31  Richard Sandiford  <rsandifo@redhat.com>
 
 	* ifcvt.c (noce_process_if_block): Make a copy of the destination

@@ -1,3 +1,8 @@
+2002-01-31  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77spec.c (lang_specific_driver): Follow GNU Coding Standards
+	for --version.
+
 2002-01-30  Richard Henderson  <rth@redhat.com>
 
 	* ste.c (ffeste_begin_iterdo_): Use expand_exit_loop_top_cond.
