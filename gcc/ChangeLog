@@ -1,3 +1,8 @@
+2003-01-17  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.h: Don't use #elif.  Reported by Kaveh
+	R. Ghazi.
+
 2003-01-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ifcvt.c: Fix comment typos.
