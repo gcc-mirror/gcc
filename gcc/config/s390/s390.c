@@ -592,7 +592,6 @@ s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
     }
 
   /* Narrow comparisons against 0xffff to HImode if possible.  */
-
   if ((*code == EQ || *code == NE)
       && GET_CODE (*op1) == CONST_INT
       && INTVAL (*op1) == 0xffff
@@ -602,6 +601,35 @@ s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
     {
       *op0 = gen_lowpart (HImode, *op0);
       *op1 = constm1_rtx;
+    }
+
+
+  /* Remove redundant UNSPEC_CMPINT conversions if possible.  */
+  if (GET_CODE (*op0) == UNSPEC
+      && XINT (*op0, 1) == UNSPEC_CMPINT
+      && XVECLEN (*op0, 0) == 1
+      && GET_MODE (XVECEXP (*op0, 0, 0)) == CCUmode
+      && GET_CODE (XVECEXP (*op0, 0, 0)) == REG
+      && REGNO (XVECEXP (*op0, 0, 0)) == CC_REGNUM
+      && *op1 == const0_rtx)
+    {
+      enum rtx_code new_code = UNKNOWN;
+      switch (*code)
+	{
+	  case EQ: new_code = EQ;  break;
+	  case NE: new_code = NE;  break;
+	  case LT: new_code = LTU; break;
+	  case GT: new_code = GTU; break;
+	  case LE: new_code = LEU; break;
+	  case GE: new_code = GEU; break;
+	  default: break;
+	}
+
+      if (new_code != UNKNOWN)
+	{
+	  *op0 = XVECEXP (*op0, 0, 0);
+	  *code = new_code;
+	}
     }
 }
 
@@ -633,6 +661,26 @@ s390_emit_jump (rtx target, rtx cond)
 
   insn = gen_rtx_SET (VOIDmode, pc_rtx, target);
   emit_jump_insn (insn);
+}
+
+/* Return nonzero if OP is a valid comparison operator
+   for a branch condition in mode MODE.  */
+
+int
+s390_comparison (rtx op, enum machine_mode mode)
+{
+  if (mode != VOIDmode && mode != GET_MODE (op))
+    return 0;
+
+  if (!COMPARISON_P (op))
+    return 0;
+
+  if (GET_CODE (XEXP (op, 0)) != REG
+      || REGNO (XEXP (op, 0)) != CC_REGNUM
+      || XEXP (op, 1) != const0_rtx)
+    return 0;
+
+  return s390_branch_condition_mask (op) >= 0;
 }
 
 /* Return nonzero if OP is a valid comparison operator
@@ -732,7 +780,7 @@ s390_slb_comparison (rtx op, enum machine_mode mode)
 }
 
 /* Return branch condition mask to implement a branch
-   specified by CODE.  */
+   specified by CODE.  Return -1 for invalid comparisons.  */
 
 static int
 s390_branch_condition_mask (rtx code)
@@ -754,8 +802,7 @@ s390_branch_condition_mask (rtx code)
         {
         case EQ:	return CC0;
 	case NE:	return CC1 | CC2 | CC3;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -764,8 +811,7 @@ s390_branch_condition_mask (rtx code)
         {
         case EQ:	return CC1;
 	case NE:	return CC0 | CC2 | CC3;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -774,8 +820,7 @@ s390_branch_condition_mask (rtx code)
         {
         case EQ:	return CC2;
 	case NE:	return CC0 | CC1 | CC3;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -784,8 +829,7 @@ s390_branch_condition_mask (rtx code)
         {
         case EQ:	return CC3;
 	case NE:	return CC0 | CC1 | CC2;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -794,8 +838,7 @@ s390_branch_condition_mask (rtx code)
         {
         case EQ:	return CC0 | CC2;
 	case NE:	return CC1 | CC3;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -804,8 +847,7 @@ s390_branch_condition_mask (rtx code)
         {
 	case LTU:	return CC2 | CC3;  /* carry */
 	case GEU:	return CC0 | CC1;  /* no carry */
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -814,8 +856,7 @@ s390_branch_condition_mask (rtx code)
         {
 	case GTU:	return CC0 | CC1;  /* borrow */
 	case LEU:	return CC2 | CC3;  /* no borrow */
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -828,8 +869,7 @@ s390_branch_condition_mask (rtx code)
 	case GTU:	return CC3;
 	case LEU:	return CC1 | CC2;
 	case GEU:	return CC2 | CC3;
-	default:
-	  abort ();
+	default:	return -1;
 	}
 
     case CCUmode:
@@ -841,8 +881,7 @@ s390_branch_condition_mask (rtx code)
         case GTU:	return CC2;
         case LEU:	return CC0 | CC1;
         case GEU:	return CC0 | CC2;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -855,8 +894,7 @@ s390_branch_condition_mask (rtx code)
         case GTU:	return CC1;
         case LEU:	return CC0 | CC2;
         case GEU:	return CC0 | CC1;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -869,8 +907,7 @@ s390_branch_condition_mask (rtx code)
         case GT:	return CC2;
         case LE:	return CC0 | CC1 | CC3;
         case GE:	return CC0 | CC2;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -883,8 +920,7 @@ s390_branch_condition_mask (rtx code)
         case GT:	return CC2 | CC3;
         case LE:	return CC0 | CC1;
         case GE:	return CC0 | CC2 | CC3;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -905,8 +941,7 @@ s390_branch_condition_mask (rtx code)
         case UNLE:	return CC0 | CC1 | CC3;
         case UNGE:	return CC0 | CC2 | CC3;
 	case LTGT:	return CC1 | CC2;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
@@ -927,13 +962,12 @@ s390_branch_condition_mask (rtx code)
         case UNLE:	return CC0 | CC2 | CC3;
         case UNGE:	return CC0 | CC1 | CC3;
 	case LTGT:	return CC2 | CC1;
-	default:
-	  abort ();
+	default:	return -1;
         }
       break;
 
     default:
-      abort ();
+      return -1;
     }
 }
 
@@ -953,6 +987,7 @@ s390_branch_condition_mnemonic (rtx code, int inv)
     };
 
   int mask = s390_branch_condition_mask (code);
+  gcc_assert (mask >= 0);
 
   if (inv)
     mask ^= 15;
@@ -3486,15 +3521,15 @@ s390_expand_clrmem (rtx dst, rtx len)
 void
 s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 {
-  rtx (*gen_result) (rtx) =
-    GET_MODE (target) == DImode ? gen_cmpint_di : gen_cmpint_si;
+  rtx ccreg = gen_rtx_REG (CCUmode, CC_REGNUM);
+  rtx result = gen_rtx_UNSPEC (SImode, gen_rtvec (1, ccreg), UNSPEC_CMPINT);
 
   if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
     {
       if (INTVAL (len) > 0)
         {
           emit_insn (gen_cmpmem_short (op0, op1, GEN_INT (INTVAL (len) - 1)));
-          emit_insn (gen_result (target));
+          emit_move_insn (target, result);
         }
       else
         emit_move_insn (target, const0_rtx);
@@ -3503,7 +3538,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
   else /* if (TARGET_MVCLE) */
     {
       emit_insn (gen_cmpmem_long (op0, op1, convert_to_mode (Pmode, len, 1)));
-      emit_insn (gen_result (target));
+      emit_move_insn (target, result);
     }
 
 #if 0
@@ -3549,7 +3584,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
       emit_label (loop_start_label);
 
       emit_insn (gen_cmpmem_short (op0, op1, GEN_INT (255)));
-      temp = gen_rtx_NE (VOIDmode, gen_rtx_REG (CCSmode, 33), const0_rtx);
+      temp = gen_rtx_NE (VOIDmode, ccreg, const0_rtx);
       temp = gen_rtx_IF_THEN_ELSE (VOIDmode, temp,
 			gen_rtx_LABEL_REF (VOIDmode, end_label), pc_rtx);
       temp = gen_rtx_SET (VOIDmode, pc_rtx, temp);
@@ -3574,7 +3609,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
 
-      emit_insn (gen_result (target));
+      emit_move_insn (target, result);
     }
 #endif
 }
