@@ -1510,8 +1510,8 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-*-interix*)
 changequote([,])dnl
-		tm_file=i386/interix.h
-		xm_file="${xm_file} xm-interix.h"
+		tm_file=i386/i386-interix.h
+		xm_file="i386/xm-i386-interix.h xm-interix.h"
 		xm_defines="USG NO_SYS_SIGLIST"
 		tmake_file="i386/t-interix"
 		extra_objs=interix.o
