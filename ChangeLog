@@ -1,3 +1,8 @@
+Thu Apr 26 02:13:07 2001  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (noconfigdirs) [hppa*-*-*, mips*-*-irix6*,
+	sparc-*-solaris2.8]: Disable ${libgcj}.
+
 Wed Apr 25 18:35:30 2001  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (libgcj_saved): Copy from $libgcj.

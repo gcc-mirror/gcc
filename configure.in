@@ -745,7 +745,9 @@ case "${target}" in
 	"" | cc*) noconfigdirs="$noconfigdirs emacs emacs19" ;;
         *) ;;
     esac
-    noconfigdirs="$noconfigdirs ld shellutils"
+    # According to Alexandre Oliva <aoliva@redhat.com>, libjava won't
+    # build on HP-UX 10.20.
+    noconfigdirs="$noconfigdirs ld shellutils ${libgcj}"
     ;;
   ia64*-*-elf*)
     # No gdb support yet.
@@ -889,7 +891,11 @@ case "${target}" in
   mips*-*-irix6*)
     # The GNU assembler does not support IRIX 6.
     # emacs is emacs 18, which does not work on Irix 5 (emacs19 does work)
-    noconfigdirs="$noconfigdirs gas gprof emacs target-libgloss"
+    # Linking libjava exceeds command-line length limits on at least
+    # IRIX 6.2, but not on IRIX 6.5.
+    # Also, boehm-gc won't build on IRIX 6.5, according to Jeffrey Oldham
+    # <oldham@codesourcery.com>
+    noconfigdirs="$noconfigdirs gas gprof emacs target-libgloss ${libgcj}"
     ;;
   mips*-dec-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
@@ -941,6 +947,15 @@ case "${target}" in
     fi
     ;;
   sparc-*-solaris*)
+    case "${host}" in
+    sparc-*-solaris2.8)
+      # According to Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, libjava
+      # won't build correctly on Solaris 8 if there's a
+      # previously-installed version of GCC in the configured prefix.
+      # This problem does not show up on earlier versions of Solaris.
+      noconfigdirs="$noconfigdirs ${libgcj}"
+      ;;
+    esac
     ;;
   v810-*-*)
     noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld ${libstdcxx_version} opcodes target-libgloss ${libgcj}"
