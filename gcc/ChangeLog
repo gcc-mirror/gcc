@@ -1,3 +1,8 @@
+Mon Nov  9 23:29:39 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (floatunssidf2_internal splitter): Use base register
+	operand, not hard-coded SP.
+
 Mon Nov  9 23:05:51 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	Restore ABI compatibility for NetBSD.
