@@ -355,10 +355,6 @@ void GC_register_dynamic_libraries()
 		/* Stack mapping; discard	*/
 		continue;
 	    }
-	    if (start <= datastart && end > datastart && maj_dev != 0) {
-		/* Main data segment; discard	*/
-		continue;
-	    }
 #	    ifdef THREADS
 	      if (GC_segment_is_thread_stack(start, end)) continue;
 #	    endif
@@ -384,6 +380,13 @@ void GC_register_dynamic_libraries()
      }
 }
 
+/* We now take care of the main data segment ourselves: */
+GC_bool GC_register_main_static_data()
+{
+  return FALSE;
+}
+  
+# define HAVE_REGISTER_MAIN_STATIC_DATA
 //
 //  parse_map_entry parses an entry from /proc/self/maps so we can
 //  locate all writable data segments that belong to shared libraries.
@@ -469,13 +472,6 @@ static int GC_register_dynlib_callback(info, size, ptr)
       + sizeof (info->dlpi_phnum))
     return -1;
 
-  /* Skip the first object - it is the main program.  */
-  if (*(int *)ptr == 0)
-    {
-      *(int *)ptr = 1;
-      return 0;
-    }
-
   p = info->dlpi_phdr;
   for( i = 0; i < (int)(info->dlpi_phnum); ((i++),(p++)) ) {
     switch( p->p_type ) {
@@ -509,6 +505,14 @@ GC_bool GC_register_dynamic_libraries_dl_iterate_phdr()
     return FALSE;
   }
 }
+
+/* Do we need to separately register the main static data segment? */
+GC_bool GC_register_main_static_data()
+{
+  return (dl_iterate_phdr == 0);
+}
+
+#define HAVE_REGISTER_MAIN_STATIC_DATA
 
 # else /* !LINUX || version(glibc) < 2.2.4 */
 
@@ -775,10 +779,23 @@ void GC_register_dynamic_libraries()
     }
 # endif
 
-# ifndef MSWINCE
+# ifdef MSWINCE
+  /* Do we need to separately register the main static data segment? */
+  GC_bool GC_register_main_static_data()
+  {
+    return FALSE;
+  }
+# else /* win32 */
   extern GC_bool GC_no_win32_dlls;
-# endif
+
+  GC_bool GC_register_main_static_data()
+  {
+    return GC_no_win32_dlls;
+  }
+# endif /* win32 */
   
+# define HAVE_REGISTER_MAIN_STATIC_DATA
+
   void GC_register_dynamic_libraries()
   {
     MEMORY_BASIC_INFORMATION buf;
@@ -1079,4 +1096,15 @@ void GC_register_dynamic_libraries(){}
 int GC_no_dynamic_loading;
 
 #endif /* !PCR */
+
 #endif /* !DYNAMIC_LOADING */
+
+#ifndef HAVE_REGISTER_MAIN_STATIC_DATA
+
+/* Do we need to separately register the main static data segment? */
+GC_bool GC_register_main_static_data()
+{
+  return TRUE;
+}
+#endif /* HAVE_REGISTER_MAIN_STATIC_DATA */
+

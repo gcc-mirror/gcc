@@ -1462,6 +1462,11 @@ GC_bool GC_is_tmp_root GC_PROTO((ptr_t p));
 # endif
 void GC_register_dynamic_libraries GC_PROTO((void));
   		/* Add dynamic library data sections to the root set. */
+
+GC_bool GC_register_main_static_data GC_PROTO((void));
+               /* We need to register the main data segment.  Returns  */
+               /* TRUE unless this is done implicitly as part of       */
+               /* dynamic library registration.                        */
   
 /* Machine dependent startup routines */
 ptr_t GC_get_stack_base GC_PROTO((void));	/* Cold end of stack */
