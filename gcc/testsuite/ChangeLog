@@ -1,3 +1,7 @@
+2004-02-09  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/compile/20040209-1.c: New test case.
+
 2004-02-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/c90-init-1.c: Adjust expected error messages.
