@@ -639,9 +639,9 @@ convert_pointer_to (binfo, expr)
   if (TREE_CODE (binfo) == TREE_VEC)
     type = BINFO_TYPE (binfo);
   else if (IS_AGGR_TYPE (binfo))
-      type = binfo;
+    type = binfo;
   else
-      type = binfo;
+    type = binfo;
   return convert_pointer_to_real (type, expr);
 }
 
