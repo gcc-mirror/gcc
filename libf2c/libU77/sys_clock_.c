@@ -19,6 +19,9 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#if HAVE_SYS_PARAM_H
+# include <sys/param.h>
+#endif
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
