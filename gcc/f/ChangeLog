@@ -1,3 +1,9 @@
+2002-01-30  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* intrin.c (upcasecmp_): New function.
+	(ffeintrin_cmp_name_): Use it to correctly compare name
+	and table entry for bsearch.
+
 2002-01-26  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* intrin.c (ffeintrin_cmp_name_): Correct comparison
