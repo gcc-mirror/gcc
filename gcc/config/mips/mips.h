@@ -2086,6 +2086,12 @@ extern enum reg_class	mips_secondary_reload_class ();
       : 2 * CLASS_UNITS (MODE, 8))					\
    : CLASS_UNITS (MODE, UNITS_PER_WORD))
 
+/* If defined, gives a class of registers that cannot be used as the
+   operand of a SUBREG that changes the size of the object.  */
+
+#define CLASS_CANNOT_CHANGE_SIZE					\
+  (TARGET_FLOAT64 && ! TARGET_64BIT ? FP_REGS : NO_REGS)
+
 /* If defined, this is a C expression whose value should be
    nonzero if the insn INSN has the effect of mysteriously
    clobbering the contents of hard register number REGNO.  By
