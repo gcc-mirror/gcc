@@ -13,7 +13,7 @@ c4x-c.o: $(srcdir)/config/c4x/c4x-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 MULTILIB_OPTIONS = m30 msmall mmemparm
 MULTILIB_DIRNAMES = c3x small mem
-MULTILIB_MATCHES = m30=mcpu?30 m30=mcpu?31 m30=mcpu?32 m30=m31 m30=m32
+MULTILIB_MATCHES = m30=mcpu?30 m30=mcpu?31 m30=mcpu?32 m30=mcpu?33 m30=m31 m30=m32 m30=m33
 MULTILIB_EXCEPTIONS =
 MULTILIB_EXTRA_OPTS =
 LIBGCC = stmp-multilib
