@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -475,7 +475,8 @@ package body Exp_Ch2 is
             return In_Assignment_Context (Parent (N));
 
          elsif (Nkind (Parent (N)) = N_Selected_Component
-                 or else Nkind (Parent (N)) = N_Indexed_Component)
+                 or else Nkind (Parent (N)) = N_Indexed_Component
+                 or else Nkind (Parent (N)) = N_Slice)
            and then In_Assignment_Context (Parent (N))
          then
             return True;
