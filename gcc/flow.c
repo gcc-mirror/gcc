@@ -4115,7 +4115,7 @@ life_analysis (f, file, flags)
 #endif
 
   if (! optimize)
-    flags &= ~(PROP_LOG_LINKS | PROP_AUTOINC);
+    flags &= ~(PROP_LOG_LINKS | PROP_AUTOINC | PROP_ALLOW_CFG_CHANGES);
 
   /* The post-reload life analysis have (on a global basis) the same
      registers live as was computed by reload itself.  elimination
