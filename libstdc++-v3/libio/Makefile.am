@@ -44,28 +44,23 @@ libio_headers = \
 
 if GLIBCPP_NEED_LIBIO
 LIBIO_SRCS = \
-	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c
+	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c iofclose.c \
+    iofopen.c stdio.c
 else
 LIBIO_SRCS =
 endif
 
 if GLIBCPP_NEED_WLIBIO
 LIBIO_WSRCS = \
-	wfiledoalloc.c wfileops.c wgenops.c
+	wfiledoalloc.c wfileops.c wgenops.c iofwide.c
 else
 LIBIO_WSRCS =
 endif
 
-if GLIBCPP_NEED_XTRA_LIBIO
-LIBIO_XTRASRCS = \
-	iofwide.c iofclose.c iofopen.c stdio.c
-else
-LIBIO_XTRASRCS =
-endif
 
 EXTRA_DIST = iostreamP.h
 
-libio_la_SOURCES = $(LIBIO_SRCS) $(LIBIO_WSRCS) $(LIBIO_XTRASRCS)
+libio_la_SOURCES = $(LIBIO_SRCS) $(LIBIO_WSRCS)
 
 
 AM_CFLAGS = -D_GNU_SOURCE @DEBUG_FLAGS@ 
