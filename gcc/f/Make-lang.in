@@ -246,13 +246,13 @@ f77.install-normal:
 f77.install-common: installdirs
 	-if [ -f f771$(exeext) ] ; then \
 	  if [ -f g77-cross$(exeext) ] ; then \
-	    rm -f $(bindir)/$(G77_CROSS_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) g77-cross$(exeext) $(bindir)/$(G77_CROSS_NAME)$(exeext); \
-	    chmod a+x $(bindir)/$(G77_CROSS_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(G77_CROSS_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) g77-cross$(exeext) $(DESTDIR)$(bindir)/$(G77_CROSS_NAME)$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$(G77_CROSS_NAME)$(exeext); \
 	  else \
-	    rm -f $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) g77$(exeext) $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
-	    chmod a+x $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(G77_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) g77$(exeext) $(DESTDIR)$(bindir)/$(G77_INSTALL_NAME)$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$(G77_INSTALL_NAME)$(exeext); \
 	  fi ; \
 	else true; fi
 	@if [ -f f77-install-ok -o -f $(srcdir)/f77-install-ok ]; then \
@@ -269,43 +269,43 @@ f77.install-common: installdirs
 # to do the install.  The sed rule was copied from stmp-int-hdrs.
 f77.install-info: f77.info installdirs
 	if [ -f $(srcdir)/f/g77.info ] ; then \
-	  rm -f $(infodir)/g77.info*; \
+	  rm -f $(DESTDIR)$(infodir)/g77.info*; \
 	  for f in $(srcdir)/f/g77.info*; do \
 	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	      $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
+	      $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
 	  done; \
-	  chmod a-x $(infodir)/g77.info*; \
+	  chmod a-x $(DESTDIR)$(infodir)/g77.info*; \
 	else true; fi
 	@if [ -f $(srcdir)/f/g77.info ] ; then \
 	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
-	    echo " install-info --info-dir=$(infodir) $(infodir)/g77.info"; \
-	    install-info --info-dir=$(infodir) $(infodir)/g77.info || : ; \
+	    echo " install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/g77.info"; \
+	    install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/g77.info || : ; \
 	  else : ; fi; \
 	else : ; fi
 
 f77.install-man: $(GENERATED_MANPAGES) installdirs
 	-if [ -f f771$(exeext) ] ; then \
 	  if [ -f g77-cross$(exeext) ] ; then \
-	    rm -f $(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
-	    chmod a-x $(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
+	    rm -f $(DESTDIR)$(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
+	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(DESTDIR)$(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
+	    chmod a-x $(DESTDIR)$(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
 	  else \
-	    rm -f $(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
-	    chmod a-x $(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
+	    rm -f $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
+	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
+	    chmod a-x $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
 	  fi; \
 	else true; fi
 
 f77.uninstall: installdirs
 	if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
-	  echo " install-info --delete --info-dir=$(infodir) $(infodir)/g77.info"; \
-	  install-info --delete --info-dir=$(infodir) $(infodir)/g77.info || : ; \
+	  echo " install-info --delete --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/g77.info"; \
+	  install-info --delete --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/g77.info || : ; \
 	else : ; fi
-	rm -rf $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
-	rm -rf $(bindir)/$(G77_CROSS_NAME)$(exeext); \
-	rm -rf $(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
-	rm -rf $(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
-	rm -rf $(infodir)/g77.info*
+	rm -rf $(DESTDIR)$(bindir)/$(G77_INSTALL_NAME)$(exeext); \
+	rm -rf $(DESTDIR)$(bindir)/$(G77_CROSS_NAME)$(exeext); \
+	rm -rf $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
+	rm -rf $(DESTDIR)$(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
+	rm -rf $(DESTDIR)$(infodir)/g77.info*
 #
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
