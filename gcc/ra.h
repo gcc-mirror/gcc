@@ -1,5 +1,5 @@
 /* Graph coloring register allocator
-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Michael Matz <matz@suse.de>
    and Daniel Berlin <dan@cgsoftware.com>.
 

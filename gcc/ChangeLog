@@ -1,3 +1,21 @@
+2004-01-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* alias.c, basic-block.h, c-common.c, c-common.h,
+	c-cppbuiltin.c, c-pragma.c, c-pretty-print.c, c-semantics.c,
+	calls.c, cfg.c, cfgcleanup.c, cfgrtl.c, cgraph.h, collect2.c,
+	combine.c, cppcharset.c, cpptrad.c, cse.c, cselib.c, cselib.h,
+	defaults.h, df.c, dominance.c, et-forest.c, expmed.c, expr.c,
+	expr.h, fold-const.c, function.h, gcc.c, gcse.c, genattrtab.c,
+	genautomata.c, genconditions.c, genflags.c, gengtype.c,
+	genopinit.c, genrecog.c, gensupport.c, ggc-zone.c, graph.c,
+	haifa-sched.c, integrate.c, langhooks-def.h, langhooks.c,
+	langhooks.h, local-alloc.c, optabs.c, optabs.h, postreload.c,
+	ra.h, recog.c, reg-stack.c, regmove.c, reload.c, reorg.c,
+	rtlanal.c, sched-deps.c, sched-ebb.c, sdbout.c, system.h,
+	target.h, targhooks.c, toplev.h, tree-inline.c,
+	unwind-dw2-fde.h, unwind-pe.h, unwind.h, varray.c, varray.h:
+	Update copyright.
+
 2004-01-23  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_va_arg): Handle complex values as
