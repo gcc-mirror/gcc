@@ -519,7 +519,7 @@ static void
 mark_align_stack (p)
     void *p;
 {
-  align_stack *a = (align_stack *) p;
+  align_stack *a = *(align_stack **) p;
 
   while (a)
     {
