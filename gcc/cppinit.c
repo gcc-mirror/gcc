@@ -223,7 +223,7 @@ unsigned char id[256] = {
 #define END };
 #else
 #define TABLE(id) unsigned char id[256] = { 0 }; \
-static void CAT(init_, id) PARAMS ((void)) { \
+static void CAT(init_,id) PARAMS ((void)) { \
 unsigned char *x = id;
 #define s(p, v) x[p] = v;
 #define END } 

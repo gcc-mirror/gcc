@@ -1,3 +1,8 @@
+Tue Nov 30 01:34:47 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* cppinit.c (CAT): The argument list of this macro may not contain
+	spaces !
+
 1999-11-29  David S. Miller  <davem@redhat.com>
 
 	Move quantity tables and register equivalence chains into
