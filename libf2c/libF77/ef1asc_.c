@@ -15,7 +15,5 @@ int G77_ef1asc_0 (ftnint *a, ftnlen *la, ftnint *b, ftnlen *lb)
 #endif
 {
 s_copy( (char *)a, (char *)b, EVEN(*la), *lb );
-#ifdef __cplusplus
-return 0;
-#endif
+return 0;	/* ignored return value */
 }

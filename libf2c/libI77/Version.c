@@ -1,4 +1,4 @@
-static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19990502\n";
+static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19990503\n";
 
 /*
 */
@@ -300,6 +300,7 @@ wrtfmt.c:
 		 err.c: cast a pointer difference to (int) for %d.
 		 rdfmt.c: omit fixed-length buffer that could be overwritten
 		 by formats Inn or Lnn with nn > 83. */
+/* 3 May 1999:	open.c: insert two casts for machines with 64-bit longs. */
 
 
 

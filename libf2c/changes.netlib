@@ -3003,7 +3003,14 @@ Sun May  2 22:38:25 EDT 1999
   libf77, libi77, libf2c.zip: make getenv_() more portable (call
 getenv() rather than knowing about char **environ); adjust some
 complex intrinsics to work with overlapping arguments (caused by
-illegal use of equivalence); open.c: get "external" versus "internal"
-right in the error message if a file cannot be opened; err.c: cast a
-pointer difference to (int) for %d; rdfmt.c: omit fixed-length buffer
-that could be overwritten by formats Inn or Lnn with nn > 83.
+inappropriate use of equivalence); open.c: get "external" versus
+"internal" right in the error message if a file cannot be opened;
+err.c: cast a pointer difference to (int) for %d; rdfmt.c: omit
+fixed-length buffer that could be overwritten by formats Inn or Lnn
+with nn > 83.
+
+Mon May  3 13:14:07 EDT 1999
+  "Invisible" changes to omit a few compiler warnings in f2c and
+libf2c; two new casts in libf2c/open.c that matter with 64-bit longs,
+and one more tweak (libf2c/c_log.c) for pathological equivalences.
+  Minor update to "fc" script: new -L flag and comment correction.

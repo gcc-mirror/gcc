@@ -698,10 +698,21 @@ Sun May  2 22:38:25 EDT 1999
   libf77, libi77, libf2c.zip: make getenv_() more portable (call
 getenv() rather than knowing about char **environ); adjust some
 complex intrinsics to work with overlapping arguments (caused by
-illegal use of equivalence); open.c: get "external" versus "internal"
-right in the error message if a file cannot be opened; err.c: cast a
-pointer difference to (int) for %d; rdfmt.c: omit fixed-length buffer
-that could be overwritten by formats Inn or Lnn with nn > 83.
+inappropriate use of equivalence); open.c: get "external" versus
+"internal" right in the error message if a file cannot be opened;
+err.c: cast a pointer difference to (int) for %d; rdfmt.c: omit
+fixed-length buffer that could be overwritten by formats Inn or Lnn
+with nn > 83.
+
+Mon May  3 13:14:07 EDT 1999
+  "Invisible" changes to omit a few compiler warnings in f2c and
+libf2c; two new casts in libf2c/open.c that matter with 64-bit longs,
+and one more tweak (libf2c/c_log.c) for pathological equivalences.
+  Minor update to "fc" script: new -L flag and comment correction.
+
+Tue May  4 10:06:26 EDT 1999
+   libf77, libf2c.zip: forgot to copy yesterday's latest updates to
+netlib.
 
 Current timestamps of files in "all from f2c/src", sorted by time,
 appear below (mm/dd/year hh:mm:ss).  To bring your source up to date,
@@ -709,17 +720,22 @@ obtain source files with a timestamp later than the time shown in your
 version.c.  Note that the time shown in the current version.c is the
 timestamp of the source module that immediately follows version.c below:
 
- 3/28/1999  13:16:27  xsum0.out
- 3/26/1999  23:18:20  version.c
+ 5/03/1999  12:46:15  version.c
+ 5/03/1999  12:39:35  formatdata.c
+ 5/03/1999  12:31:14  format.c
+ 5/03/1999  12:27:17  p1output.c
+ 5/03/1999  12:27:17  data.c
+ 5/03/1999  10:01:12  xsum0.out
+ 5/03/1999   9:59:36  io.c
+ 5/03/1999   9:59:36  misc.c
+ 5/03/1999   9:59:36  init.c
  3/26/1999  23:18:11  lex.c
  3/11/1999  16:44:17  expr.c
  3/11/1999  16:42:42  exec.c
  2/10/1999  17:43:01  defs.h
- 9/13/1998  22:18:21  format.c
  9/08/1998  10:16:51  f2c.1
  9/08/1998  10:16:48  f2c.1t
  9/08/1998  10:14:53  intr.c
- 8/31/1998  10:13:22  formatdata.c
  5/16/1998  16:55:49  output.c
  4/03/1998  17:15:05  gram.c
  4/03/1998  17:14:59  gram.dcl
@@ -732,8 +748,6 @@ timestamp of the source module that immediately follows version.c below:
  7/21/1997  12:58:44  proc.c
  2/11/1997  23:39:14  vax.c
 12/04/1996  13:07:53  gram.exec
-10/01/1996  14:36:18  init.c
-10/01/1996  14:36:17  data.c
  9/12/1996  12:12:46  equiv.c
  8/26/1996   9:41:13  sysdep.c
  7/09/1996  10:40:45  names.c
@@ -741,12 +755,9 @@ timestamp of the source module that immediately follows version.c below:
  7/04/1996   9:55:43  put.c
  7/04/1996   9:55:41  pread.c
  7/04/1996   9:55:40  parse_args.c
- 7/04/1996   9:55:40  p1output.c
- 7/04/1996   9:55:37  misc.c
- 7/04/1996   9:55:36  memset.c
  7/04/1996   9:55:36  mem.c
+ 7/04/1996   9:55:36  memset.c
  7/04/1996   9:55:35  main.c
- 7/04/1996   9:55:33  io.c
  7/04/1996   9:55:29  error.c
  7/04/1996   9:55:27  cds.c
  7/03/1996  15:47:49  xsum.c
