@@ -1,3 +1,8 @@
+Wed Oct 29 16:57:19 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000/xm-sysv4.h: Include xm-linux.h instead of xm-svr4.h if we
+	are running on PowerPC Linux.
+
 Wed Oct 29 13:10:11 1997  Gavin Koch  <gavin@cygnus.com>
 
 	* config/mips/elf64.h (PREFERRED_DEBUGGING_TYPE): Only define
