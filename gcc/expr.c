@@ -5171,9 +5171,20 @@ expand_expr (exp, target, tmode, modifier)
       return TREE_CST_RTL (exp);
 
     case EXPR_WITH_FILE_LOCATION:
-      if (EXPR_WFL_EMIT_LINE_NOTE (exp))
-	emit_line_note (EXPR_WFL_FILENAME (exp), EXPR_WFL_LINENO (exp));
-      return expand_expr (EXPR_WFL_NODE (exp), target, tmode, modifier);
+      {
+	rtx to_return;
+	char *saved_input_filename = input_filename;
+	int saved_lineno = lineno;
+	input_filename = EXPR_WFL_FILENAME (exp);
+	lineno = EXPR_WFL_LINENO (exp);
+	if (EXPR_WFL_EMIT_LINE_NOTE (exp))
+	  emit_line_note (input_filename, lineno);
+	/* Possibly avoid switching back and force here */
+	to_return = expand_expr (EXPR_WFL_NODE (exp), target, tmode, modifier);
+	input_filename = saved_input_filename;
+	lineno = saved_lineno;
+	return to_return;
+      }
 
     case SAVE_EXPR:
       context = decl_function_context (exp);
