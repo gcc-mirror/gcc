@@ -71,10 +71,19 @@ Boston, MA 02111-1307, USA.  */
    increasing rL and clearing unused (unset) registers with lower numbers.  */
 #define MMIX_OUTPUT_REGNO(N)					\
  (TARGET_ABI_GNU 						\
-  || (int) (N) < MMIX_RETURN_VALUE_REGNUM				\
-  || (int) (N) > MMIX_LAST_STACK_REGISTER_REGNUM			\
+  || (int) (N) < MMIX_RETURN_VALUE_REGNUM			\
+  || (int) (N) > MMIX_LAST_STACK_REGISTER_REGNUM		\
   ? (N) : ((N) - MMIX_RETURN_VALUE_REGNUM			\
 	   + cfun->machine->highest_saved_stack_register + 1))
+
+/* The %d in "POP %d,0".  */
+#define MMIX_POP_ARGUMENT()						\
+ ((! TARGET_ABI_GNU							\
+   && current_function_return_rtx != NULL				\
+   && ! current_function_returns_struct)				\
+  ? (GET_CODE (current_function_return_rtx) == PARALLEL			\
+     ? GET_NUM_ELEM (XVEC (current_function_return_rtx, 0)) : 1)	\
+  : 0)
 
 /* The canonical saved comparison operands for non-cc0 machines, set in
    the compare expander.  */
@@ -1058,6 +1067,26 @@ mmix_target_asm_function_epilogue (stream, locals_size)
   /* The first address to access is beyond the outgoing_args area.  */
   int offset = current_function_outgoing_args_size;
 
+  rtx insn = get_last_insn ();
+
+  /* If the last insn was a BARRIER, we don't have to write any code,
+     then all returns were covered by "return" insns.  */
+  if (GET_CODE (insn) == NOTE)
+    insn = prev_nonnote_insn (insn);
+  if (insn
+      && (GET_CODE (insn) == BARRIER
+	  /* We must make sure that the insn really is a "return" and
+	     not a conditional branch.  Try to match the return exactly,
+	     and if it doesn't match, assume it is a conditional branch
+	     (and output an epilogue).  */
+	  || (GET_CODE (insn) == JUMP_INSN
+	      && GET_CODE (PATTERN (insn)) == RETURN)))
+    {
+      /* Emit an extra \n as is done with the normal epilogue.  */
+      fputc ('\n', stream);
+      return;
+    }
+
   /* Add the space for global non-register-stack registers.
      It is assumed that the frame-pointer register can be one of these
      registers, in which case it is excluded from the count when needed.  */
@@ -1197,13 +1226,7 @@ mmix_target_asm_function_epilogue (stream, locals_size)
 
   /* The extra \n is so we have a blank line between the assembly code of
      separate functions.  */
-  fprintf (stream, "\tPOP %d,0\n\n",
-	   (! TARGET_ABI_GNU
-	    && current_function_return_rtx != NULL
-	    && ! current_function_returns_struct)
-	   ? (GET_CODE (current_function_return_rtx) == PARALLEL
-	      ? GET_NUM_ELEM (XVEC (current_function_return_rtx, 0)) : 1)
-	   : 0);
+  fprintf (stream, "\tPOP %d,0\n\n", MMIX_POP_ARGUMENT ());
 }
 
 /* ASM_OUTPUT_MI_THUNK.  */
@@ -2098,6 +2121,11 @@ mmix_print_operand (stream, x, code)
 	}
       return;
 
+    case '.':
+      /* For the %d in POP %d,0.  */
+      fprintf (stream, "%d", MMIX_POP_ARGUMENT ());
+      return;
+
     case 'B':
       if (GET_CODE (x) != CONST_INT)
 	fatal_insn ("MMIX Internal: Expected a CONST_INT, not this", x);
@@ -2303,7 +2331,9 @@ mmix_print_operand_punct_valid_p (code)
      int code ATTRIBUTE_UNUSED;
 {
   /* A '+' is used for branch prediction, similar to other ports.  */
-  return code == '+';
+  return code == '+'
+    /* A '.' is used for the %d in the POP %d,0 return insn.  */
+    || code == '.';
 }
 
 /* PRINT_OPERAND_ADDRESS.  */
@@ -2452,6 +2482,43 @@ mmix_dbx_register_number (regno)
 /* End of target macro support functions.
 
    Now MMIX's own functions.  First the exported ones.  */
+
+/* Non-zero when the function epilogue is simple enough that a single
+   "POP %d,0" should be used.  */
+
+int
+mmix_use_simple_return ()
+{
+  int regno;
+
+  int stack_space_to_allocate
+    = (current_function_outgoing_args_size
+       + current_function_pretend_args_size
+       + get_frame_size () + 7) & ~7;
+
+  if (!TARGET_USE_RETURN_INSN || !reload_completed)
+    return 0;
+
+  for (regno = 255;
+       regno >= MMIX_FIRST_GLOBAL_REGNUM;
+       regno--)
+    /* Note that we assume that the frame-pointer-register is one of these
+       registers, in which case we don't count it here.  */
+    if ((((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
+	  && regs_ever_live[regno] && !call_used_regs[regno]))
+	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
+      return 0;
+
+  if (frame_pointer_needed)
+    stack_space_to_allocate += 8;
+
+  if (MMIX_CFUN_HAS_LANDING_PAD)
+    stack_space_to_allocate += 16;
+  else if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
+    stack_space_to_allocate += 8;
+
+  return stack_space_to_allocate == 0;
+}
 
 /* Output an optimal sequence for setting a register to a specific
    constant.  Used in an alternative for const_ints in movdi, and when

@@ -1067,8 +1067,10 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; I hope untyped_call and untyped_return are not needed for MMIX.
 ;; Users of Objective C will notice.
 
-;; FIXME:  Add "return" pattern where the epilogue is just "pop
-;; 0,0" or similar.
+(define_insn "return"
+  [(return)]
+  "mmix_use_simple_return ()"
+  "POP %.,0")
 
 (define_insn "nop"
   [(const_int 0)]

@@ -1,3 +1,22 @@
+2002-06-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md ("return"): New pattern.
+	* config/mmix/mmix.h (TARGET_MASK_USE_RETURN_INSN)
+	(TARGET_USE_RETURN_INSN): New macros.
+	(TARGET_DEFAULT): Include TARGET_MASK_USE_RETURN_INSN.
+	(TARGET_SWITCHES): Add -msingle-exit and -mno-single-exit.
+	* config/mmix/mmix.c (MMIX_OUTPUT_REGNO): Fix spacing.
+	(MMIX_POP_ARGUMENT): New macro.
+	(mmix_target_asm_function_prologue): When no epilogue is executed,
+	just emit a blank line.  Use MMIX_POP_ARGUMENT with final POP insn.
+	(mmix_print_operand) <case '.'>: New case.
+	(mmix_print_operand_punct_valid_p): Match '.'.
+	(mmix_use_simple_return): New function.
+	* config/mmix/mmix-protos.h (mmix_use_simple_return): Prototype.
+	* doc/invoke.texi (Option Summary) <MMIX Summary>: Add
+	-msingle-exit, -mno-single-exit.
+	(MMIX Options): Ditto.
+
 2002-06-30  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/i386/i386.c (ix86_init_mmx_sse_builtins): Fix typos.
