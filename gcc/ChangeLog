@@ -1,3 +1,8 @@
+2004-07-06 Jan Beulich <jbeulich@novell.com>
+                                                                                
+        * config/i386/i386.c (ix86_gimplify_va_arg): Don't need temporary for
+        passing arguments the containers for which are registers.
+
 2004-07-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	Introduce H8SX support.
