@@ -286,7 +286,9 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #endif
 
 
+#ifndef INLINE
 #define INLINE __inline__
+#endif
 
 /* Preserve the sticky-bit when shifting fractions to the right.  */
 #define LSHIFT(a) { a = (a & 1) | (a >> 1); }

@@ -1,3 +1,7 @@
+Fri Jun 19 18:38:04 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* config/fp-bit.c (INLINE): Only define if not already defined.
+
 1998-06-19  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (installdirs): Loop over directories in $(libsubdir)
