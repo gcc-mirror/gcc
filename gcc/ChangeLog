@@ -1,3 +1,13 @@
+2002-02-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_final_chunkify): Re-run shorten_branches
+	after emitting ltorg insns.
+
+	* config/s390/s390.md (*cmpdf_ccs_0, *cmpdf_ccs, *cmpsf_ccs_0,
+	*cmpsf_ccs, truncdfsf2_ieee, *adddf3, *addsf3, *subdf3, *subsf3,
+	*muldf3, *mulsf3, *divdf3, *divsf3, *negdf2, *negsf2, *absdf2,
+	*abssf2): Fix "op_type" attribute.
+
 2002-02-13  Douglas B Rupp  <rupp@gnat.com>
 
 	* mkconfig.sh: Avoid using a subshell redirect.
