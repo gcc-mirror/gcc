@@ -217,3 +217,13 @@ GCC_3.4 {
   ___paritydi2
   ___parityti2
 }
+
+%inherit GCC_3.4.4 GCC_3.4
+GCC_3.4.4 {
+  # libgcc2 TImode arithmetic (for 64-bit targets).
+  __absvti2
+  __addvti3
+  __mulvti3
+  __negvti2
+  __subvti3
+}

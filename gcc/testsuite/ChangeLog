@@ -1,3 +1,7 @@
+2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/ftrapv-2.c: New test.
+
 2004-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/18951

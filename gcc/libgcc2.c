@@ -73,7 +73,7 @@ __negdi2 (DWtype u)
 
 #ifdef L_addvsi3
 Wtype
-__addvsi3 (Wtype a, Wtype b)
+__addvSI3 (Wtype a, Wtype b)
 {
   const Wtype w = a + b;
 
@@ -82,11 +82,23 @@ __addvsi3 (Wtype a, Wtype b)
 
   return w;
 }
+#ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
+SItype
+__addvsi3 (SItype a, SItype b)
+{
+  const SItype w = a + b;
+
+  if (b >= 0 ? w < a : w > a)
+    abort ();
+
+  return w;
+}
+#endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
 #endif
 
 #ifdef L_addvdi3
 DWtype
-__addvdi3 (DWtype a, DWtype b)
+__addvDI3 (DWtype a, DWtype b)
 {
   const DWtype w = a + b;
 
@@ -99,20 +111,32 @@ __addvdi3 (DWtype a, DWtype b)
 
 #ifdef L_subvsi3
 Wtype
-__subvsi3 (Wtype a, Wtype b)
+__subvSI3 (Wtype a, Wtype b)
 {
-  const DWtype w = a - b;
+  const Wtype w = a - b;
 
   if (b >= 0 ? w > a : w < a)
     abort ();
 
   return w;
 }
+#ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
+SItype
+__subvsi3 (SItype a, SItype b)
+{
+  const SItype w = a - b;
+
+  if (b >= 0 ? w > a : w < a)
+    abort ();
+
+  return w;
+}
+#endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
 #endif
 
 #ifdef L_subvdi3
 DWtype
-__subvdi3 (DWtype a, DWtype b)
+__subvDI3 (DWtype a, DWtype b)
 {
   const DWtype w = a - b;
 
@@ -126,7 +150,7 @@ __subvdi3 (DWtype a, DWtype b)
 #ifdef L_mulvsi3
 #define WORD_SIZE (sizeof (Wtype) * BITS_PER_UNIT)
 Wtype
-__mulvsi3 (Wtype a, Wtype b)
+__mulvSI3 (Wtype a, Wtype b)
 {
   const DWtype w = (DWtype) a * (DWtype) b;
 
@@ -135,11 +159,25 @@ __mulvsi3 (Wtype a, Wtype b)
 
   return w;
 }
+#ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
+#undef WORD_SIZE
+#define WORD_SIZE (sizeof (SItype) * BITS_PER_UNIT)
+SItype
+__mulvsi3 (SItype a, SItype b)
+{
+  const DItype w = (DItype) a * (DItype) b;
+
+  if ((SItype) (w >> WORD_SIZE) != (SItype) w >> (WORD_SIZE-1))
+    abort ();
+
+  return w;
+}
+#endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
 #endif
 
 #ifdef L_negvsi2
 Wtype
-__negvsi2 (Wtype a)
+__negvSI2 (Wtype a)
 {
   const Wtype w = -a;
 
@@ -148,11 +186,23 @@ __negvsi2 (Wtype a)
 
    return w;
 }
+#ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
+SItype
+__negvsi2 (SItype a)
+{
+  const SItype w = -a;
+
+  if (a >= 0 ? w > 0 : w < 0)
+    abort ();
+
+   return w;
+}
+#endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
 #endif
 
 #ifdef L_negvdi2
 DWtype
-__negvdi2 (DWtype a)
+__negvDI2 (DWtype a)
 {
   const DWtype w = -a;
 
@@ -165,9 +215,27 @@ __negvdi2 (DWtype a)
 
 #ifdef L_absvsi2
 Wtype
-__absvsi2 (Wtype a)
+__absvSI2 (Wtype a)
 {
   Wtype w = a;
+
+  if (a < 0)
+#ifdef L_negvsi2
+    w = __negvSI2 (a);
+#else
+    w = -a;
+
+  if (w < 0)
+    abort ();
+#endif
+
+   return w;
+}
+#ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
+SItype
+__absvsi2 (SItype a)
+{
+  SItype w = a;
 
   if (a < 0)
 #ifdef L_negvsi2
@@ -181,17 +249,18 @@ __absvsi2 (Wtype a)
 
    return w;
 }
+#endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
 #endif
 
 #ifdef L_absvdi2
 DWtype
-__absvdi2 (DWtype a)
+__absvDI2 (DWtype a)
 {
   DWtype w = a;
 
   if (a < 0)
 #ifdef L_negvdi2
-    w = __negvdi2 (a);
+    w = __negvDI2 (a);
 #else
     w = -a;
 
@@ -206,7 +275,7 @@ __absvdi2 (DWtype a)
 #ifdef L_mulvdi3
 #define WORD_SIZE (sizeof (Wtype) * BITS_PER_UNIT)
 DWtype
-__mulvdi3 (DWtype u, DWtype v)
+__mulvDI3 (DWtype u, DWtype v)
 {
   /* The unchecked multiplication needs 3 Wtype x Wtype multiplications,
      but the checked multiplication needs only two.  */

@@ -135,6 +135,16 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define float bogus_type
 #define double bogus_type
 
+/* Versions prior to 3.4.4 were not taking into account the word size for
+   the 5 trapping arithmetic functions absv, addv, subv, mulv and negv.  As
+   a consequence, the si and di variants were always and the only ones emitted.
+   To maintain backward compatibility, COMPAT_SIMODE_TRAPPING_ARITHMETIC is
+   defined on platforms where it makes sense to still have the si variants
+   emitted.  As a bonus, their implementation is now correct.  Note that the
+   same mechanism should have been implemented for the di variants, but it
+   turns out that no platform would define COMPAT_DIMODE_TRAPPING_ARITHMETIC
+   if it existed.  */
+
 #if MIN_UNITS_PER_WORD > 4
 #define W_TYPE_SIZE (8 * BITS_PER_UNIT)
 #define Wtype	DItype
@@ -145,6 +155,7 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define UDWtype	UTItype
 #define __NW(a,b)	__ ## a ## di ## b
 #define __NDW(a,b)	__ ## a ## ti ## b
+#define COMPAT_SIMODE_TRAPPING_ARITHMETIC
 #elif MIN_UNITS_PER_WORD > 2 \
       || (MIN_UNITS_PER_WORD > 1 && LONG_LONG_TYPE_SIZE > 32)
 #define W_TYPE_SIZE (4 * BITS_PER_UNIT)
@@ -210,6 +221,17 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define __fixunsdfSI	__NW(fixunsdf,)
 #define __fixunssfSI	__NW(fixunssf,)
 
+#define __absvSI2	__NW(absv,2)
+#define __addvSI3	__NW(addv,3)
+#define __subvSI3	__NW(subv,3)
+#define __mulvSI3	__NW(mulv,3)
+#define __negvSI2	__NW(negv,2)
+#define __absvDI2	__NDW(absv,2)
+#define __addvDI3	__NDW(addv,3)
+#define __subvDI3	__NDW(subv,3)
+#define __mulvDI3	__NDW(mulv,3)
+#define __negvDI2	__NDW(negv,2)
+
 #define __ffsSI2	__NW(ffs,2)
 #define __clzSI2	__NW(clz,2)
 #define __ctzSI2	__NW(ctz,2)
@@ -251,16 +273,24 @@ extern UWtype __udiv_w_sdiv (UWtype *, UWtype, UWtype, UWtype);
 extern word_type __cmpdi2 (DWtype, DWtype);
 extern word_type __ucmpdi2 (DWtype, DWtype);
 
-extern Wtype __absvsi2 (Wtype);
-extern DWtype __absvdi2 (DWtype);
-extern Wtype __addvsi3 (Wtype, Wtype);
-extern DWtype __addvdi3 (DWtype, DWtype);
-extern Wtype __subvsi3 (Wtype, Wtype);
-extern DWtype __subvdi3 (DWtype, DWtype);
-extern Wtype __mulvsi3 (Wtype, Wtype);
-extern DWtype __mulvdi3 (DWtype, DWtype);
-extern Wtype __negvsi2 (Wtype);
-extern DWtype __negvdi2 (DWtype);
+extern Wtype __absvSI2 (Wtype);
+extern Wtype __addvSI3 (Wtype, Wtype);
+extern Wtype __subvSI3 (Wtype, Wtype);
+extern Wtype __mulvSI3 (Wtype, Wtype);
+extern Wtype __negvSI2 (Wtype);
+extern DWtype __absvDI2 (DWtype);
+extern DWtype __addvDI3 (DWtype, DWtype);
+extern DWtype __subvDI3 (DWtype, DWtype);
+extern DWtype __mulvDI3 (DWtype, DWtype);
+extern DWtype __negvDI2 (DWtype);
+
+#ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
+extern SItype __absvsi2 (SItype);
+extern SItype __addvsi3 (SItype, SItype);
+extern SItype __subvsi3 (SItype, SItype);
+extern SItype __mulvsi3 (SItype, SItype);
+extern SItype __negvsi2 (SItype);
+#endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
 
 #if BITS_PER_UNIT == 8
 extern DWtype __fixdfdi (DFtype);
