@@ -1,3 +1,8 @@
+2001-12-11  Loren Rittle <ljrittle@acm.org>
+
+	* config/cpu/sparc/sparc32/bits/atomicity.h
+	(__Atomicity_lock<0>::_S_atomicity_lock): Add.
+
 2001-12-10  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/basic_string.tcc (_M_replace_safe):  Fix typos.

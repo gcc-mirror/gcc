@@ -41,6 +41,8 @@ struct __Atomicity_lock
 template <int __inst>
 unsigned char __Atomicity_lock<__inst>::_S_atomicity_lock = 0;
 
+template unsigned char __Atomicity_lock<0>::_S_atomicity_lock;
+
 static int
 __attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word* __mem, int __val)
