@@ -1,3 +1,9 @@
+2003-11-25  Mohan Embar  <gnustuff@thisiscool.com>
+
+  PR java/12548
+  * resource.c (write_resource_constructor): Append
+  "_resource" to constructor identifier name.
+
 2003-11-25  Jeff Sturm  <jsturm@one-point.com>
 
 	Fix PR java/13183.
