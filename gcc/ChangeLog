@@ -1,3 +1,8 @@
+Mon Aug 17 10:28:52 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* stmt.c (expand_end_loop): Tidy.  Allow unconditional
+	jumps out of the loop to be treated as part of the exit test.
+
 Mon Aug 17 10:06:11 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 			  Jeff Law <law@cygnus.com>
 
