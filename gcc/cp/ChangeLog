@@ -1,3 +1,13 @@
+2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/5050
+        * tree.c (cp_start_inlining): Remove.
+        (cp_end_inlining): Remove.
+        * cp-lang.c (LANG_HOOKS_TREE_INLINING_START_INLINING): Do not define.
+        (LANG_HOOKS_TREE_INLINING_END_INLINING): Do not define.
+        * cp-tree.h (cp_start_inlining): Do not declare.
+        (cp_end_inlining): Do not declare.
+
 2003-12-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12479

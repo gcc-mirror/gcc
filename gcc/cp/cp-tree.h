@@ -4169,8 +4169,6 @@ extern int cp_is_overload_p (tree);
 extern int cp_auto_var_in_fn_p (tree,tree);
 extern tree cp_copy_res_decl_for_inlining (tree, tree, tree, void*,
 						   int*, tree);
-extern int cp_start_inlining			(tree);
-extern void cp_end_inlining			(tree);
 
 /* in typeck.c */
 extern int string_conv_p			(tree, tree, int);
