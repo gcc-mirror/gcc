@@ -42,5 +42,5 @@ public interface RMIFailureHandler
   /**
    * @exception IOException If an error occurs
    */
-  public boolean failure (Exception ex);
+  boolean failure (Exception ex);
 }

@@ -37,8 +37,7 @@ exception statement from your version. */
 
 package java.rmi.server;
 
-public interface Unreferenced {
-
-public void unreferenced();
-
+public interface Unreferenced
+{
+  void unreferenced();
 }

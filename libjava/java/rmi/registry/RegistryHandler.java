@@ -48,11 +48,11 @@ public interface RegistryHandler
   /**
    * @deprecated
    */
-  public Registry registryStub (String host, int port)
+  Registry registryStub (String host, int port)
     throws RemoteException, UnknownHostException;
 
   /**
    * @deprecated
    */
-  public Registry registryImpl (int port) throws RemoteException;
+  Registry registryImpl (int port) throws RemoteException;
 }

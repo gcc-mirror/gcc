@@ -45,22 +45,22 @@ import java.net.URL;
  */
 public interface LoaderHandler
 {
-  public static final String packagePrefix = "";
+  String packagePrefix = "";
 
   /**
    * @deprecated
    */
-  public Class loadClass(String name)
+  Class loadClass(String name)
     throws MalformedURLException, ClassNotFoundException;
 
   /**
    * @deprecated
    */
-  public Class loadClass(URL codebase, String name)
+  Class loadClass(URL codebase, String name)
     throws MalformedURLException, ClassNotFoundException;
 
   /**
    * @deprecated
    */
-  public Object getSecurityContext(ClassLoader loader);
+  Object getSecurityContext(ClassLoader loader);
 }

@@ -51,36 +51,36 @@ public interface RemoteCall
   /**
    * @deprecated
    */
-  public ObjectOutput getOutputStream () throws IOException;
+  ObjectOutput getOutputStream () throws IOException;
 
   /**
    * @deprecated
    */
-  public void releaseOutputStream () throws IOException;
+  void releaseOutputStream () throws IOException;
 
   /**
    * @deprecated
    */
-  public ObjectInput getInputStream () throws IOException;
+  ObjectInput getInputStream () throws IOException;
 
   /**
    * @deprecated
    */
-  public void releaseInputStream () throws IOException;
+  void releaseInputStream () throws IOException;
 
   /**
    * @deprecated
    */
-  public ObjectOutput getResultStream (boolean success)
+  ObjectOutput getResultStream (boolean success)
     throws IOException, StreamCorruptedException;
 
   /**
    * @deprecated
    */
-  public void executeCall () throws Exception;
+  void executeCall () throws Exception;
 
   /**
    * @deprecated
    */
-  public void done () throws IOException;
+  void done () throws IOException;
 }

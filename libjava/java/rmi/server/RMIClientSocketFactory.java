@@ -40,8 +40,7 @@ package java.rmi.server;
 import java.net.Socket;
 import java.io.IOException;
 
-public interface RMIClientSocketFactory {
-
-public Socket createSocket(String host, int port) throws IOException;
-
+public interface RMIClientSocketFactory
+{
+  Socket createSocket (String host, int port) throws IOException;
 }
