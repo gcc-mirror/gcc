@@ -31,10 +31,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "timevar.h"
 #include "params.h"
 #ifdef ENABLE_VALGRIND_CHECKING
-# ifdef HAVE_MEMCHECK_H
-# include <memcheck.h>
+# ifdef HAVE_VALGRIND_MEMCHECK_H
+#  include <valgrind/memcheck.h>
+# elif defined HAVE_MEMCHECK_H
+#  include <memcheck.h>
 # else
-# include <valgrind.h>
+#  include <valgrind.h>
 # endif
 #else
 /* Avoid #ifdef:s when we can help it.  */

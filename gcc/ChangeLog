@@ -1,3 +1,16 @@
+2003-10-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.in <enable-checking for valgrind>: Look for
+	<valgrind/memcheck.h> first.  AC_DEFINE HAVE_VALGRIND_MEMCHECK_H
+	if it exists.
+	* configure, config.in: Regenerate.
+	* ggc-common.c [ENABLE_VALGRIND_CHECKING &&
+	HAVE_VALGRIND_MEMCHECK_H]: Include <valgrind/memcheck.h>.  Use
+	#elif for other alternatives.
+	* ggc-page.c: Ditto.
+	* ggc-zone.c: Don't assume <valgrind/memcheck.h>; instead copy
+	include structure from ggc-common.c.
+
 2003-10-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa-linux.h (ASM_OUTPUT_ADDR_VEC_ELT): Use label in big switch ELTs.
