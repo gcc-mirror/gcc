@@ -1,5 +1,7 @@
 Fri Aug 22 14:05:55 1997  Jim Wilson  <wilson@cygnus.com>
 
+	* alias.c (true_dependence): Pass x_addr not x to varies.
+
 	* acconfig.h (NEED_DECLARATION_CALLOC): Add.
 	* configure.in: Add GCC_NEED_DECLARATION call for calloc.
 	* rs6000/xm-rs6000.h (malloc, realloc, calloc, free): Delete
