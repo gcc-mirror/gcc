@@ -1,3 +1,7 @@
+Mon Oct 12 19:57:34 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* collect2.c (extract_init_priority): No priority is 65535.
+
 Mon Oct 12 12:10:37 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	
 	* Makefile.in (build_tooldir): new variable, same as old
