@@ -1,3 +1,7 @@
+Fri Aug 29 12:46:05 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* execute/921007-1.c: Make strcmp static.
+
 Thu May 15 14:00:04 1997  Mike Meissner  <meissner@cygnus.com>
 
 	* execute/va-arg-3.c: If NO_VARARGS is defined, nop test.
