@@ -607,7 +607,7 @@ compilations: ${OBJS}
 
 # Create a list of the language-independent object files so the language
 # subdirectories needn't mention their names explicitly.
-stamp-objlist: Makefile
+stamp-objlist: Makefile $(OBJS) $(BC_OBJS)
 	echo " $(OBJS) $(BC_OBJS)" | sed -e 's, \([a-z]\), ../\1,g' >stamp-objlist
 
 # We call this executable `xgcc' rather than `gcc'
