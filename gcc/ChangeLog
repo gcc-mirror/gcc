@@ -1,3 +1,11 @@
+2001-05-13  Geoff Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.h (EXCEPTION_SECTION): Move to...
+	* config/rs6000/aix.h (EXCEPTION_SECTION): ... here.
+	* config/rs6000/sysv4.h (CONST_SECTION_ASM_OP): Delete.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	(EXCEPTION_SECTION): Define.
+
 2001-05-13  Zack Weinberg  <zackw@stanford.edu>
 
 	* libgcc2.c, libgcc2.h: Restore __eprintf.  Label as used for
