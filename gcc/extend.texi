@@ -2726,16 +2726,17 @@ In addition, operating systems on one type of cpu may differ in how they
 name the registers; then you would need additional conditionals.  For
 example, some 68000 operating systems call this register @code{%a5}.
 
-Eventually there may be a way of asking the compiler to choose a register
-automatically, but first we need to figure out how it should choose and
-how to enable you to guide the choice.  No solution is evident.
-
 Defining such a register variable does not reserve the register; it
 remains available for other uses in places where flow control determines
 the variable's value is not live.  However, these registers are made
-unavailable for use in the reload pass.  I would not be surprised if
-excessive use of this feature leaves the compiler too few available
-registers to compile certain functions.
+unavailable for use in the reload pass; excessive use of this feature
+leaves the compiler too few available registers to compile certain
+functions.
+
+This option does not guarantee that GNU CC will generate code that has
+variable in the register you specify at all times.  You may not
+code an explicit reference to this register in an @code{asm} statement
+and assume it will always refer to this variable.
 
 @node Alternate Keywords
 @section Alternate Keywords
