@@ -4333,10 +4333,10 @@ standard_80387_constant_p (rtx x)
   if (x == CONST1_RTX (GET_MODE (x)))
     return 2;
 
-  /* For XFmode constants, try to find a special 80387 instruction on
-     those CPUs that benefit from them.  */
+  /* For XFmode constants, try to find a special 80387 instruction when
+     optimizing for size or on those CPUs that benefit from them.  */
   if (GET_MODE (x) == XFmode
-      && x86_ext_80387_constants & TUNEMASK)
+      && (optimize_size || x86_ext_80387_constants & TUNEMASK))
     {
       REAL_VALUE_TYPE r;
       int i;
