@@ -3021,6 +3021,9 @@ get_mem_expr_from_op (op, paddressp)
 
   *paddressp = 0;
 
+  if (op == NULL)
+    return 0;
+
   if (GET_CODE (op) == REG && ORIGINAL_REGNO (op) >= FIRST_PSEUDO_REGISTER)
     return REGNO_DECL (ORIGINAL_REGNO (op));
   else if (GET_CODE (op) != MEM)

@@ -1,3 +1,8 @@
+2002-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/6782
+	* final.c (get_mem_expr_from_op): Return 0 if op is NULL.
+
 2002-05-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix43.h (LINK_SPEC): Add PE initializer.
