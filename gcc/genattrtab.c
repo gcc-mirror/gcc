@@ -409,7 +409,7 @@ struct attr_hash *attr_hash_table[RTL_HASH_SIZE];
 
 /* Here is how primitive or already-shared RTL's hash
    codes are made.  */
-#define RTL_HASH(RTL) ((int) (RTL) & 0777777)
+#define RTL_HASH(RTL) ((HOST_WIDE_INT) (RTL) & 0777777)
 
 /* Add an entry to the hash table for RTL with hash code HASHCODE.  */
 
@@ -489,7 +489,7 @@ attr_rtx (va_alist)
 	  return rt_val;
 	}
 
-      hashcode = ((int) code + RTL_HASH (arg0));
+      hashcode = ((HOST_WIDE_INT) code + RTL_HASH (arg0));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code
@@ -520,7 +520,7 @@ attr_rtx (va_alist)
 	  return rt_val;
 	}
 
-      hashcode = ((int) code + RTL_HASH (arg0) + RTL_HASH (arg1));
+      hashcode = ((HOST_WIDE_INT) code + RTL_HASH (arg0) + RTL_HASH (arg1));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code
@@ -544,7 +544,7 @@ attr_rtx (va_alist)
       if (code == SYMBOL_REF)
 	arg0 = attr_string (arg0, strlen (arg0));
 
-      hashcode = ((int) code + RTL_HASH (arg0));
+      hashcode = ((HOST_WIDE_INT) code + RTL_HASH (arg0));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code
@@ -565,7 +565,7 @@ attr_rtx (va_alist)
       char *arg0 = va_arg (p, char *);
       char *arg1 = va_arg (p, char *);
 
-      hashcode = ((int) code + RTL_HASH (arg0) + RTL_HASH (arg1));
+      hashcode = ((HOST_WIDE_INT) code + RTL_HASH (arg0) + RTL_HASH (arg1));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code
