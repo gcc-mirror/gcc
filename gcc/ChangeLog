@@ -1,3 +1,15 @@
+2004-02-24  Richard Henderson  <rth@redhat.com>
+
+	* toplev.c (dump_file_tbl): Rename from dump_file.
+	* bb-reorder.c, bt-load.c, cfgcleanup.c, cfglayout.c, cfgloopanal.c,
+ 	cfgloopmanip.c, cfgrtl.c, config/arm/arm.c, config/frv/frv.c,
+	config/i386/i386.c, config/ia64/ia64.c, config/mips/mips.c,
+	config/sh/sh.c, cse.c, flow.c, ifcvt.c, loop-iv.c, loop-unroll.c,
+	loop-unswitch.c, output.h, predict.c, profile.c, ra-build.c,
+	ra-colorize.c, ra-debug.c, ra-rewrite.c, ra.c, regrename.c, reload1.c,
+	toplev.c, tracer.c, value-prof.c, var-tracking.c, web.c:
+	s/rtl_dump_file/dump_file/g.
+
 2004-02-24  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/spe.md (spe_fix_truncsfsi2): Delete.

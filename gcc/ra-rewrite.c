@@ -1534,10 +1534,10 @@ detect_web_parts_to_rebuild (void)
 		      BITMAP_AND_COMPL);
   live_at_end += 2;
 
-  if (rtl_dump_file && (debug_new_regalloc & DUMP_REBUILD) != 0)
+  if (dump_file && (debug_new_regalloc & DUMP_REBUILD) != 0)
     {
       ra_debug_msg (DUMP_REBUILD, "need to check these uses:\n");
-      dump_sbitmap_file (rtl_dump_file, last_check_uses);
+      dump_sbitmap_file (dump_file, last_check_uses);
     }
   sbitmap_free (already_webs);
   BITMAP_XFREE (uses_as_bitmap);

@@ -15738,8 +15738,8 @@ ix86_avoid_jump_misspredicts (void)
     {
 
       nbytes += min_insn_size (insn);
-      if (rtl_dump_file)
-        fprintf(rtl_dump_file, "Insn %i estimated to %i bytes\n",
+      if (dump_file)
+        fprintf(dump_file, "Insn %i estimated to %i bytes\n",
 		INSN_UID (insn), min_insn_size (insn));
       if ((GET_CODE (insn) == JUMP_INSN
 	   && GET_CODE (PATTERN (insn)) != ADDR_VEC
@@ -15763,16 +15763,17 @@ ix86_avoid_jump_misspredicts (void)
 	}
       if (njumps < 0)
 	abort ();
-      if (rtl_dump_file)
-        fprintf(rtl_dump_file, "Interval %i to %i has %i bytes\n",
+      if (dump_file)
+        fprintf (dump_file, "Interval %i to %i has %i bytes\n",
 		INSN_UID (start), INSN_UID (insn), nbytes);
 
       if (njumps == 3 && isjump && nbytes < 16)
 	{
 	  int padsize = 15 - nbytes + min_insn_size (insn);
 
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, "Padding insn %i by %i bytes!\n", INSN_UID (insn), padsize);
+	  if (dump_file)
+	    fprintf (dump_file, "Padding insn %i by %i bytes!\n",
+		     INSN_UID (insn), padsize);
           emit_insn_before (gen_align (GEN_INT (padsize)), insn);
 	}
     }

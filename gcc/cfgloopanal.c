@@ -906,11 +906,11 @@ count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
 	}
     }
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, ";  Number of iterations: ");
-      print_simple_rtl (rtl_dump_file, exp);
-      fprintf (rtl_dump_file, "\n");
+      fprintf (dump_file, ";  Number of iterations: ");
+      print_simple_rtl (dump_file, exp);
+      fprintf (dump_file, "\n");
     }
 
   return exp;
@@ -946,12 +946,12 @@ test_for_iteration (struct loop_desc *desc, unsigned HOST_WIDE_INT iter)
   exp = simplify_gen_relational (cond, SImode,
 				 GET_MODE (desc->var), exp, desc->lim);
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, ";  Conditional to continue loop at "
+      fprintf (dump_file, ";  Conditional to continue loop at "
 	       HOST_WIDE_INT_PRINT_UNSIGNED "th iteration: ", iter);
-      print_simple_rtl (rtl_dump_file, exp);
-      fprintf (rtl_dump_file, "\n");
+      print_simple_rtl (dump_file, exp);
+      fprintf (dump_file, "\n");
     }
   return exp;
 }
@@ -1067,42 +1067,42 @@ simple_loop_p (struct loop *loop, struct loop_desc *desc)
     }
   desc->n_branches = n_branches;
 
-  if (rtl_dump_file && any)
+  if (dump_file && any)
     {
-      fprintf (rtl_dump_file, "; Simple loop %i\n", loop->num);
+      fprintf (dump_file, "; Simple loop %i\n", loop->num);
       if (desc->postincr)
-	fprintf (rtl_dump_file,
+	fprintf (dump_file,
 		 ";  does postincrement after loop exit condition\n");
 
-      fprintf (rtl_dump_file, ";  Induction variable:");
-      print_simple_rtl (rtl_dump_file, desc->var);
-      fputc ('\n', rtl_dump_file);
+      fprintf (dump_file, ";  Induction variable:");
+      print_simple_rtl (dump_file, desc->var);
+      fputc ('\n', dump_file);
 
-      fprintf (rtl_dump_file, ";  Initial values:");
-      print_simple_rtl (rtl_dump_file, desc->var_alts);
-      fputc ('\n', rtl_dump_file);
+      fprintf (dump_file, ";  Initial values:");
+      print_simple_rtl (dump_file, desc->var_alts);
+      fputc ('\n', dump_file);
 
-      fprintf (rtl_dump_file, ";  Stride:");
-      print_simple_rtl (rtl_dump_file, desc->stride);
-      fputc ('\n', rtl_dump_file);
+      fprintf (dump_file, ";  Stride:");
+      print_simple_rtl (dump_file, desc->stride);
+      fputc ('\n', dump_file);
 
-      fprintf (rtl_dump_file, ";  Compared with:");
-      print_simple_rtl (rtl_dump_file, desc->lim);
-      fputc ('\n', rtl_dump_file);
+      fprintf (dump_file, ";  Compared with:");
+      print_simple_rtl (dump_file, desc->lim);
+      fputc ('\n', dump_file);
 
-      fprintf (rtl_dump_file, ";  Alternative values:");
-      print_simple_rtl (rtl_dump_file, desc->lim_alts);
-      fputc ('\n', rtl_dump_file);
+      fprintf (dump_file, ";  Alternative values:");
+      print_simple_rtl (dump_file, desc->lim_alts);
+      fputc ('\n', dump_file);
 
-      fprintf (rtl_dump_file, ";  Exit condition:");
+      fprintf (dump_file, ";  Exit condition:");
       if (desc->neg)
-	fprintf (rtl_dump_file, "(negated)");
-      fprintf (rtl_dump_file, "%s\n", GET_RTX_NAME (desc->cond));
+	fprintf (dump_file, "(negated)");
+      fprintf (dump_file, "%s\n", GET_RTX_NAME (desc->cond));
 
-      fprintf (rtl_dump_file, ";  Number of branches:");
-      fprintf (rtl_dump_file, "%d\n", desc->n_branches);
+      fprintf (dump_file, ";  Number of branches:");
+      fprintf (dump_file, "%d\n", desc->n_branches);
 
-      fputc ('\n', rtl_dump_file);
+      fputc ('\n', dump_file);
     }
 
   free (body);

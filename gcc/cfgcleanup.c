@@ -159,8 +159,8 @@ try_simplify_condjump (basic_block cbranch_block)
   if (!invert_jump (cbranch_insn, block_label (jump_dest_block), 0))
     return false;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Simplifying condjump %i around jump %i\n",
+  if (dump_file)
+    fprintf (dump_file, "Simplifying condjump %i around jump %i\n",
 	     INSN_UID (cbranch_insn), INSN_UID (BB_END (jump_block)));
 
   /* Success.  Update the CFG to match.  Note that after this point
@@ -544,8 +544,8 @@ try_forward_edges (int mode, basic_block b)
 
       if (counter >= n_basic_blocks)
 	{
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, "Infinite loop in BB %i.\n",
+	  if (dump_file)
+	    fprintf (dump_file, "Infinite loop in BB %i.\n",
 		     target->index);
 	}
       else if (target == first)
@@ -562,13 +562,13 @@ try_forward_edges (int mode, basic_block b)
 	  if (threaded && target != EXIT_BLOCK_PTR)
 	    {
 	      notice_new_block (redirect_edge_and_branch_force (e, target));
-	      if (rtl_dump_file)
-		fprintf (rtl_dump_file, "Conditionals threaded.\n");
+	      if (dump_file)
+		fprintf (dump_file, "Conditionals threaded.\n");
 	    }
 	  else if (!redirect_edge_and_branch (e, target))
 	    {
-	      if (rtl_dump_file)
-		fprintf (rtl_dump_file,
+	      if (dump_file)
+		fprintf (dump_file,
 			 "Forwarding edge %i->%i to %i failed.\n",
 			 b->index, e->dest->index, target->index);
 	      continue;
@@ -693,8 +693,8 @@ merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
     reorder_insns_nobb (BB_HEAD (a), BB_END (a), PREV_INSN (BB_HEAD (b)));
   a->flags |= BB_DIRTY;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Moved block %d before %d and merged.\n",
+  if (dump_file)
+    fprintf (dump_file, "Moved block %d before %d and merged.\n",
 	     a->index, b->index);
 
   /* Swap the records for the two blocks around.  */
@@ -747,8 +747,8 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
   /* Restore the real end of b.  */
   BB_END (b) = real_b_end;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Moved block %d after %d and merged.\n",
+  if (dump_file)
+    fprintf (dump_file, "Moved block %d after %d and merged.\n",
 	     b->index, a->index);
 
   /* Now blocks A and B are contiguous.  Merge them.  */
@@ -787,8 +787,8 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
       merge_blocks (b, c);
       update_forwarder_flag (b);
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Merged %d and %d without moving.\n",
+      if (dump_file)
+	fprintf (dump_file, "Merged %d and %d without moving.\n",
 		 b_index, c_index);
 
       return b->prev_bb == ENTRY_BLOCK_PTR ? b : b->prev_bb;
@@ -1201,8 +1201,8 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	     outcomes.  */
 	  if (abs (b1->probability - prob2) > REG_BR_PROB_BASE / 2)
 	    {
-	      if (rtl_dump_file)
-		fprintf (rtl_dump_file,
+	      if (dump_file)
+		fprintf (dump_file,
 			 "Outcomes of branch in bb %i and %i differs to much (%i %i)\n",
 			 bb1->index, bb2->index, b1->probability, prob2);
 
@@ -1210,8 +1210,8 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	    }
 	}
 
-      if (rtl_dump_file && match)
-	fprintf (rtl_dump_file, "Conditionals in bb %i and %i match.\n",
+      if (dump_file && match)
+	fprintf (dump_file, "Conditionals in bb %i and %i match.\n",
 		 bb1->index, bb2->index);
 
       return match;
@@ -1276,8 +1276,8 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 		  for_each_rtx (&BB_END (bb1), replace_label, &rr);
 
 		  match = insns_match_p (mode, BB_END (bb1), BB_END (bb2));
-		  if (rtl_dump_file && match)
-		    fprintf (rtl_dump_file,
+		  if (dump_file && match)
+		    fprintf (dump_file,
 			     "Tablejumps in bb %i and %i match.\n",
 			     bb1->index, bb2->index);
 
@@ -1448,14 +1448,14 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
     redirect_to = src2;
   else
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Splitting bb %i before %i insns\n",
+      if (dump_file)
+	fprintf (dump_file, "Splitting bb %i before %i insns\n",
 		 src2->index, nmatch);
       redirect_to = split_block (src2, PREV_INSN (newpos2))->dest;
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
+  if (dump_file)
+    fprintf (dump_file,
 	     "Cross jumping from bb %i to bb %i; %i common insns\n",
 	     src1->index, src2->index, nmatch);
 
@@ -1676,8 +1676,8 @@ try_optimize_cfg (int mode)
 	  changed = false;
 	  iterations++;
 
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "\n\ntry_optimize_cfg iteration %i\n\n",
 		     iterations);
 
@@ -1691,8 +1691,8 @@ try_optimize_cfg (int mode)
 	      while (b->pred == NULL)
 		{
 		  c = b->prev_bb;
-		  if (rtl_dump_file)
-		    fprintf (rtl_dump_file, "Deleting block %i.\n",
+		  if (dump_file)
+		    fprintf (dump_file, "Deleting block %i.\n",
 			     b->index);
 
 		  delete_basic_block (b);
@@ -1733,8 +1733,8 @@ try_optimize_cfg (int mode)
 		      reorder_insns_nobb (label, label, bb_note);
 		      BB_HEAD (b) = bb_note;
 		    }
-		  if (rtl_dump_file)
-		    fprintf (rtl_dump_file, "Deleted label in block %i.\n",
+		  if (dump_file)
+		    fprintf (dump_file, "Deleted label in block %i.\n",
 			     b->index);
 		}
 
@@ -1749,8 +1749,8 @@ try_optimize_cfg (int mode)
 		  && (b->succ->flags & EDGE_FALLTHRU)
 		  && n_basic_blocks > 1)
 		{
-		  if (rtl_dump_file)
-		    fprintf (rtl_dump_file,
+		  if (dump_file)
+		    fprintf (dump_file,
 			     "Deleting fallthru block %i.\n",
 			     b->index);
 

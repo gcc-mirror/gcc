@@ -7607,7 +7607,7 @@ ia64_reorg (void)
 	  _1mfb_ = get_cpu_unit_code ("1b_1mfb.");
 	  _1mlx_ = get_cpu_unit_code ("1b_1mlx.");
 	}
-      schedule_ebbs (rtl_dump_file);
+      schedule_ebbs (dump_file);
       finish_bundle_states ();
       if (ia64_tune == PROCESSOR_ITANIUM)
 	{
@@ -7615,13 +7615,13 @@ ia64_reorg (void)
 	  free (clocks);
 	}
       free (stops_p);
-      emit_insn_group_barriers (rtl_dump_file);
+      emit_insn_group_barriers (dump_file);
 
       ia64_final_schedule = 0;
       timevar_pop (TV_SCHED2);
     }
   else
-    emit_all_insn_group_barriers (rtl_dump_file);
+    emit_all_insn_group_barriers (dump_file);
 
   /* A call must not be the last instruction in a function, so that the
      return address is still within the function, so that unwinding works

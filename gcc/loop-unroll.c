@@ -192,8 +192,9 @@ peel_loops_completely (struct loops *loops, int flags)
 
       loop->lpt_decision.decision = LPT_NONE;
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "\n;; *** Considering loop %d for complete peeling ***\n",
+      if (dump_file)
+	fprintf (dump_file,
+		 "\n;; *** Considering loop %d for complete peeling ***\n",
 		 loop->num);
 
       loop->ninsns = num_loop_insns (loop);
@@ -237,14 +238,14 @@ decide_unrolling_and_peeling (struct loops *loops, int flags)
 
       loop->lpt_decision.decision = LPT_NONE;
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "\n;; *** Considering loop %d ***\n", loop->num);
+      if (dump_file)
+	fprintf (dump_file, "\n;; *** Considering loop %d ***\n", loop->num);
 
       /* Do not peel cold areas.  */
       if (!maybe_hot_bb_p (loop->header))
 	{
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, ";; Not considering loop, cold area\n");
+	  if (dump_file)
+	    fprintf (dump_file, ";; Not considering loop, cold area\n");
 	  loop = next;
 	  continue;
 	}
@@ -252,8 +253,8 @@ decide_unrolling_and_peeling (struct loops *loops, int flags)
       /* Can the loop be manipulated?  */
       if (!can_duplicate_loop_p (loop))
 	{
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     ";; Not considering loop, cannot duplicate\n");
 	  loop = next;
 	  continue;
@@ -262,8 +263,8 @@ decide_unrolling_and_peeling (struct loops *loops, int flags)
       /* Skip non-innermost loops.  */
       if (loop->inner)
 	{
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, ";; Not considering loop, is not innermost\n");
+	  if (dump_file)
+	    fprintf (dump_file, ";; Not considering loop, is not innermost\n");
 	  loop = next;
 	  continue;
 	}
@@ -293,14 +294,14 @@ decide_peel_once_rolling (struct loop *loop, int flags ATTRIBUTE_UNUSED)
 {
   struct niter_desc *desc;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "\n;; Considering peeling once rolling loop\n");
+  if (dump_file)
+    fprintf (dump_file, "\n;; Considering peeling once rolling loop\n");
 
   /* Is the loop small enough?  */
   if ((unsigned) PARAM_VALUE (PARAM_MAX_ONCE_PEELED_INSNS) < loop->ninsns)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not considering loop, is too big\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not considering loop, is too big\n");
       return;
     }
 
@@ -313,14 +314,15 @@ decide_peel_once_rolling (struct loop *loop, int flags ATTRIBUTE_UNUSED)
       || !desc->const_iter
       || desc->niter != 0)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Unable to prove that the loop rolls exactly once\n");
+      if (dump_file)
+	fprintf (dump_file,
+		 ";; Unable to prove that the loop rolls exactly once\n");
       return;
     }
 
   /* Success.  */
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Decided to peel exactly once rolling loop\n");
+  if (dump_file)
+    fprintf (dump_file, ";; Decided to peel exactly once rolling loop\n");
   loop->lpt_decision.decision = LPT_PEEL_COMPLETELY;
 }
 
@@ -331,30 +333,30 @@ decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
   unsigned npeel;
   struct niter_desc *desc;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "\n;; Considering peeling completely\n");
+  if (dump_file)
+    fprintf (dump_file, "\n;; Considering peeling completely\n");
 
   /* Skip non-innermost loops.  */
   if (loop->inner)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not considering loop, is not innermost\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not considering loop, is not innermost\n");
       return;
     }
 
   /* Do not peel cold areas.  */
   if (!maybe_hot_bb_p (loop->header))
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not considering loop, cold area\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not considering loop, cold area\n");
       return;
     }
 
   /* Can the loop be manipulated?  */
   if (!can_duplicate_loop_p (loop))
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file,
+      if (dump_file)
+	fprintf (dump_file,
 		 ";; Not considering loop, cannot duplicate\n");
       return;
     }
@@ -367,8 +369,8 @@ decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
   /* Is the loop small enough?  */
   if (!npeel)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not considering loop, is too big\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not considering loop, is too big\n");
       return;
     }
 
@@ -380,25 +382,27 @@ decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
       || desc->assumptions
       || !desc->const_iter)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Unable to prove that the loop iterates constant times\n");
+      if (dump_file)
+	fprintf (dump_file,
+		 ";; Unable to prove that the loop iterates constant times\n");
       return;
     }
 
   if (desc->niter > npeel - 1)
     {
-      if (rtl_dump_file)
+      if (dump_file)
 	{
-	  fprintf (rtl_dump_file, ";; Not peeling loop completely, rolls too much (");
-	  fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC, desc->niter);
-	  fprintf (rtl_dump_file, " iterations > %d [maximum peelings])\n", npeel);
+	  fprintf (dump_file,
+		   ";; Not peeling loop completely, rolls too much (");
+	  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, desc->niter);
+	  fprintf (dump_file, " iterations > %d [maximum peelings])\n", npeel);
 	}
       return;
     }
 
   /* Success.  */
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Decided to peel loop completely\n");
+  if (dump_file)
+    fprintf (dump_file, ";; Decided to peel loop completely\n");
   loop->lpt_decision.decision = LPT_PEEL_COMPLETELY;
 }
 
@@ -459,11 +463,12 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
      the loop.  */
   remove_path (loops, ei);
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Peeled loop completely, %d times\n", (int) npeel);
+  if (dump_file)
+    fprintf (dump_file, ";; Peeled loop completely, %d times\n", (int) npeel);
 }
 
-/* Decide whether to unroll LOOP iterating constant number of times and how much.  */
+/* Decide whether to unroll LOOP iterating constant number of times
+   and how much.  */
 
 static void
 decide_unroll_constant_iterations (struct loop *loop, int flags)
@@ -477,14 +482,16 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
       return;
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
-	     "\n;; Considering unrolling loop with constant number of iterations\n");
+  if (dump_file)
+    fprintf (dump_file,
+	     "\n;; Considering unrolling loop with constant "
+	     "number of iterations\n");
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
   nunroll = PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS) / loop->ninsns;
-  nunroll_by_av = PARAM_VALUE (PARAM_MAX_AVERAGE_UNROLLED_INSNS) / loop->av_ninsns;
+  nunroll_by_av
+    = PARAM_VALUE (PARAM_MAX_AVERAGE_UNROLLED_INSNS) / loop->av_ninsns;
   if (nunroll > nunroll_by_av)
     nunroll = nunroll_by_av;
   if (nunroll > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLL_TIMES))
@@ -493,8 +500,8 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
   /* Skip big loops.  */
   if (nunroll <= 1)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not considering loop, is too big\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not considering loop, is too big\n");
       return;
     }
 
@@ -504,16 +511,17 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
   /* Check number of iterations.  */
   if (!desc->simple_p || !desc->const_iter || desc->assumptions)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Unable to prove that the loop iterates constant times\n");
+      if (dump_file)
+	fprintf (dump_file,
+		 ";; Unable to prove that the loop iterates constant times\n");
       return;
     }
 
   /* Check whether the loop rolls enough to consider.  */
   if (desc->niter < 2 * nunroll)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not unrolling loop, doesn't roll\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not unrolling loop, doesn't roll\n");
       return;
     }
 
@@ -546,15 +554,15 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
 	}
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; max_unroll %d (%d copies, initial %d).\n",
+  if (dump_file)
+    fprintf (dump_file, ";; max_unroll %d (%d copies, initial %d).\n",
 	     best_unroll + 1, best_copies, nunroll);
 
   loop->lpt_decision.decision = LPT_UNROLL_CONSTANT;
   loop->lpt_decision.times = best_unroll;
   
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
+  if (dump_file)
+    fprintf (dump_file,
 	     ";; Decided to unroll the constant times rolling loop, %d times.\n",
 	     loop->lpt_decision.times);
 }
@@ -609,8 +617,8 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 	 in the first copy, so that the loops that start with test
 	 of exit condition have continuous body after unrolling.  */
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Condition on beginning of loop.\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Condition on beginning of loop.\n");
 
       /* Peel exit_mod iterations.  */
       RESET_BIT (wont_exit, 0);
@@ -638,8 +646,8 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
       /* Leave exit test in last copy, for the same reason as above if
 	 the loop tests the condition at the end of loop body.  */
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Condition on end of loop.\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Condition on end of loop.\n");
 
       /* We know that niter >= max_unroll + 2; so we do not need to care of
 	 case when we would exit before reaching the loop.  So just peel
@@ -703,8 +711,10 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
     remove_path (loops, remove_edges[i]);
   free (remove_edges);
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Unrolled loop %d times, constant # of iterations %i insns\n",max_unroll, num_loop_insns (loop));
+  if (dump_file)
+    fprintf (dump_file,
+	     ";; Unrolled loop %d times, constant # of iterations %i insns\n",
+	     max_unroll, num_loop_insns (loop));
 }
 
 /* Decide whether to unroll LOOP iterating runtime computable number of times
@@ -721,9 +731,10 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
       return;
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
-	     "\n;; Considering unrolling loop with runtime computable number of iterations\n");
+  if (dump_file)
+    fprintf (dump_file,
+	     "\n;; Considering unrolling loop with runtime "
+	     "computable number of iterations\n");
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
@@ -737,8 +748,8 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
   /* Skip big loops.  */
   if (nunroll <= 1)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not considering loop, is too big\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not considering loop, is too big\n");
       return;
     }
 
@@ -748,24 +759,25 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
   /* Check simpleness.  */
   if (!desc->simple_p || desc->assumptions)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file,
-		 ";; Unable to prove that the number of iterations can be counted in runtime\n");
+      if (dump_file)
+	fprintf (dump_file,
+		 ";; Unable to prove that the number of iterations "
+		 "can be counted in runtime\n");
       return;
     }
 
   if (desc->const_iter)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Loop iterates constant times\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Loop iterates constant times\n");
       return;
     }
 
   /* If we have profile feedback, check whether the loop rolls.  */
   if (loop->header->count && expected_loop_iterations (loop) < 2 * nunroll)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not unrolling loop, doesn't roll\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not unrolling loop, doesn't roll\n");
       return;
     }
 
@@ -777,9 +789,10 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
   loop->lpt_decision.decision = LPT_UNROLL_RUNTIME;
   loop->lpt_decision.times = i - 1;
   
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
-	     ";; Decided to unroll the runtime computable times rolling loop, %d times.\n",
+  if (dump_file)
+    fprintf (dump_file,
+	     ";; Decided to unroll the runtime computable "
+	     "times rolling loop, %d times.\n",
 	     loop->lpt_decision.times);
 }
 
@@ -1013,9 +1026,10 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       desc->niter_max--;
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
-	     ";; Unrolled loop %d times, counting # of iterations in runtime, %i insns\n",
+  if (dump_file)
+    fprintf (dump_file,
+	     ";; Unrolled loop %d times, counting # of iterations "
+	     "in runtime, %i insns\n",
 	     max_unroll, num_loop_insns (loop));
 }
 
@@ -1032,8 +1046,8 @@ decide_peel_simple (struct loop *loop, int flags)
       return;
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "\n;; Considering simply peeling loop\n");
+  if (dump_file)
+    fprintf (dump_file, "\n;; Considering simply peeling loop\n");
 
   /* npeel = number of iterations to peel.  */
   npeel = PARAM_VALUE (PARAM_MAX_PEELED_INSNS) / loop->ninsns;
@@ -1043,8 +1057,8 @@ decide_peel_simple (struct loop *loop, int flags)
   /* Skip big loops.  */
   if (!npeel)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not considering loop, is too big\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not considering loop, is too big\n");
       return;
     }
 
@@ -1054,8 +1068,8 @@ decide_peel_simple (struct loop *loop, int flags)
   /* Check number of iterations.  */
   if (desc->simple_p && !desc->assumptions && desc->const_iter)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Loop iterates constant times\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Loop iterates constant times\n");
       return;
     }
 
@@ -1063,8 +1077,8 @@ decide_peel_simple (struct loop *loop, int flags)
      of mispredicts.  */
   if (num_loop_branches (loop) > 1)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not peeling, contains branches\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not peeling, contains branches\n");
       return;
     }
 
@@ -1073,11 +1087,13 @@ decide_peel_simple (struct loop *loop, int flags)
       unsigned niter = expected_loop_iterations (loop);
       if (niter + 1 > npeel)
 	{
-	  if (rtl_dump_file)
+	  if (dump_file)
 	    {
-	      fprintf (rtl_dump_file, ";; Not peeling loop, rolls too much (");
-	      fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) (niter + 1));
-	      fprintf (rtl_dump_file, " iterations > %d [maximum peelings])\n", npeel);
+	      fprintf (dump_file, ";; Not peeling loop, rolls too much (");
+	      fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC,
+		       (HOST_WIDEST_INT) (niter + 1));
+	      fprintf (dump_file, " iterations > %d [maximum peelings])\n",
+		       npeel);
 	    }
 	  return;
 	}
@@ -1087,8 +1103,8 @@ decide_peel_simple (struct loop *loop, int flags)
     {
       /* For now we have no good heuristics to decide whether loop peeling
          will be effective, so disable it.  */
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file,
+      if (dump_file)
+	fprintf (dump_file,
 		 ";; Not peeling loop, no evidence it will be profitable\n");
       return;
     }
@@ -1097,8 +1113,8 @@ decide_peel_simple (struct loop *loop, int flags)
   loop->lpt_decision.decision = LPT_PEEL_SIMPLE;
   loop->lpt_decision.times = npeel;
       
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Decided to simply peel the loop, %d times.\n",
+  if (dump_file)
+    fprintf (dump_file, ";; Decided to simply peel the loop, %d times.\n",
 	     loop->lpt_decision.times);
 }
 
@@ -1150,8 +1166,8 @@ peel_loop_simple (struct loops *loops, struct loop *loop)
 	  free_simple_loop_desc (loop);
 	}
     }
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Peeling loop %d times\n", npeel);
+  if (dump_file)
+    fprintf (dump_file, ";; Peeling loop %d times\n", npeel);
 }
 
 /* Decide whether to unroll LOOP stupidly and how much.  */
@@ -1167,13 +1183,14 @@ decide_unroll_stupid (struct loop *loop, int flags)
       return;
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "\n;; Considering unrolling loop stupidly\n");
+  if (dump_file)
+    fprintf (dump_file, "\n;; Considering unrolling loop stupidly\n");
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
   nunroll = PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS) / loop->ninsns;
-  nunroll_by_av = PARAM_VALUE (PARAM_MAX_AVERAGE_UNROLLED_INSNS) / loop->av_ninsns;
+  nunroll_by_av
+    = PARAM_VALUE (PARAM_MAX_AVERAGE_UNROLLED_INSNS) / loop->av_ninsns;
   if (nunroll > nunroll_by_av)
     nunroll = nunroll_by_av;
   if (nunroll > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLL_TIMES))
@@ -1182,8 +1199,8 @@ decide_unroll_stupid (struct loop *loop, int flags)
   /* Skip big loops.  */
   if (nunroll <= 1)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not considering loop, is too big\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not considering loop, is too big\n");
       return;
     }
 
@@ -1193,8 +1210,8 @@ decide_unroll_stupid (struct loop *loop, int flags)
   /* Check simpleness.  */
   if (desc->simple_p && !desc->assumptions)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; The loop is simple\n");
+      if (dump_file)
+	fprintf (dump_file, ";; The loop is simple\n");
       return;
     }
 
@@ -1202,8 +1219,8 @@ decide_unroll_stupid (struct loop *loop, int flags)
      of mispredicts.  */
   if (num_loop_branches (loop) > 1)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not unrolling, contains branches\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not unrolling, contains branches\n");
       return;
     }
 
@@ -1211,8 +1228,8 @@ decide_unroll_stupid (struct loop *loop, int flags)
   if (loop->header->count
       && expected_loop_iterations (loop) < 2 * nunroll)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not unrolling loop, doesn't roll\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not unrolling loop, doesn't roll\n");
       return;
     }
 
@@ -1225,8 +1242,8 @@ decide_unroll_stupid (struct loop *loop, int flags)
   loop->lpt_decision.decision = LPT_UNROLL_STUPID;
   loop->lpt_decision.times = i - 1;
       
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
+  if (dump_file)
+    fprintf (dump_file,
 	     ";; Decided to unroll the loop stupidly, %d times.\n",
 	     loop->lpt_decision.times);
 }
@@ -1276,7 +1293,7 @@ unroll_loop_stupid (struct loops *loops, struct loop *loop)
       desc->simple_p = false;
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Unrolled loop %d times, %i insns\n",
+  if (dump_file)
+    fprintf (dump_file, ";; Unrolled loop %d times, %i insns\n",
 	     nunroll, num_loop_insns (loop));
 }

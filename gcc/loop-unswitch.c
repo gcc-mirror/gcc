@@ -269,48 +269,48 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
   /* Do not unswitch too much.  */
   if (num > PARAM_VALUE (PARAM_MAX_UNSWITCH_LEVEL))
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not unswitching anymore, hit max level\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not unswitching anymore, hit max level\n");
       return;
     }
 
   /* Only unswitch innermost loops.  */
   if (loop->inner)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not unswitching, not innermost loop\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not unswitching, not innermost loop\n");
       return;
     }
 
   /* We must be able to duplicate loop body.  */
   if (!can_duplicate_loop_p (loop))
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not unswitching, can't duplicate loop\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not unswitching, can't duplicate loop\n");
       return;
     }
 
   /* The loop should not be too large, to limit code growth.  */
   if (num_loop_insns (loop) > PARAM_VALUE (PARAM_MAX_UNSWITCH_INSNS))
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not unswitching, loop too big\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not unswitching, loop too big\n");
       return;
     }
 
   /* Do not unswitch in cold areas.  */
   if (!maybe_hot_bb_p (loop->header))
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not unswitching, not hot area\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not unswitching, not hot area\n");
       return;
     }
 
   /* Nor if the loop usually does not roll.  */
   if (expected_loop_iterations (loop) < 1)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Not unswitching, loop iterations < 1\n");
+      if (dump_file)
+	fprintf (dump_file, ";; Not unswitching, loop iterations < 1\n");
       return;
     }
 
@@ -364,8 +364,8 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
   else
     rconds = cond_checked;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Unswitching loop\n");
+  if (dump_file)
+    fprintf (dump_file, ";; Unswitching loop\n");
 
   /* Unswitch the loop on this condition.  */
   nloop = unswitch_loop (loops, loop, bbs[i], cond, cinsn);

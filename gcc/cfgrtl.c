@@ -687,8 +687,8 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
   /* See if we can create the fallthru edge.  */
   if (in_cfglayout || can_fallthru (src, target))
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Removing jump %i.\n", INSN_UID (insn));
+      if (dump_file)
+	fprintf (dump_file, "Removing jump %i.\n", INSN_UID (insn));
       fallthru = 1;
 
       /* Selectively unlink whole insn chain.  */
@@ -724,8 +724,8 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
     {
       if (e->dest == target)
 	return false;
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Redirecting jump %i from %i to %i.\n",
+      if (dump_file)
+	fprintf (dump_file, "Redirecting jump %i from %i to %i.\n",
 		 INSN_UID (insn), e->dest->index, target->index);
       if (!redirect_jump (insn, block_label (target), 0))
 	{
@@ -748,8 +748,8 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
       emit_jump_insn_after (gen_jump (target_label), insn);
       JUMP_LABEL (BB_END (src)) = target_label;
       LABEL_NUSES (target_label)++;
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Replacing insn %i by jump %i\n",
+      if (dump_file)
+	fprintf (dump_file, "Replacing insn %i by jump %i\n",
 		 INSN_UID (insn), INSN_UID (BB_END (src)));
 
 
@@ -911,8 +911,8 @@ redirect_branch_edge (edge e, basic_block target)
 	}
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Edge %i->%i redirected to %i\n",
+  if (dump_file)
+    fprintf (dump_file, "Edge %i->%i redirected to %i\n",
 	     e->src->index, e->dest->index, target->index);
 
   if (e->dest != target)
@@ -2242,8 +2242,8 @@ purge_dead_edges (basic_block bb)
       if (!bb->succ || !purged)
 	return purged;
 
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Purged edges from bb %i\n", bb->index);
+      if (dump_file)
+	fprintf (dump_file, "Purged edges from bb %i\n", bb->index);
 
       if (!optimize)
 	return purged;
@@ -2313,8 +2313,8 @@ purge_dead_edges (basic_block bb)
   bb->succ->probability = REG_BR_PROB_BASE;
   bb->succ->count = bb->count;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Purged non-fallthru edges from bb %i\n",
+  if (dump_file)
+    fprintf (dump_file, "Purged non-fallthru edges from bb %i\n",
 	     bb->index);
   return purged;
 }
@@ -2389,8 +2389,8 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
   if (e->src == ENTRY_BLOCK_PTR
       && (e->flags & EDGE_FALLTHRU) && !(e->flags & EDGE_COMPLEX))
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Redirecting entry edge from bb %i to %i\n",
+      if (dump_file)
+	fprintf (dump_file, "Redirecting entry edge from bb %i to %i\n",
 		 e->src->index, dest->index);
 
       redirect_edge_succ (e, dest);
@@ -2408,8 +2408,8 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 	  && label_is_jump_target_p (BB_HEAD (e->dest),
 				     BB_END (src)))
 	{
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, "Fallthru edge unified with branch "
+	  if (dump_file)
+	    fprintf (dump_file, "Fallthru edge unified with branch "
 		     "%i->%i redirected to %i\n",
 		     e->src->index, e->dest->index, dest->index);
 	  e->flags &= ~EDGE_FALLTHRU;
@@ -2430,8 +2430,8 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 	    delete_insn (BB_END (src));
 	}
       redirect_edge_succ_nodup (e, dest);
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Fallthru edge %i->%i redirected to %i\n",
+      if (dump_file)
+	fprintf (dump_file, "Fallthru edge %i->%i redirected to %i\n",
 		 e->src->index, e->dest->index, dest->index);
 
       ret = true;
@@ -2635,8 +2635,8 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
       b->rbi->footer = NULL;
     }
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Merged blocks %d and %d.\n",
+  if (dump_file)
+    fprintf (dump_file, "Merged blocks %d and %d.\n",
 	     a->index, b->index);
 }
 

@@ -9480,19 +9480,18 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
-
-      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-      life_analysis (insns, rtl_dump_file, PROP_FINAL);
+      find_basic_blocks (insns, max_reg_num (), dump_file);
+      life_analysis (insns, dump_file, PROP_FINAL);
 
       split_all_insns (1);
 
-      schedule_insns (rtl_dump_file);
+      schedule_insns (dump_file);
     }
 
   sh_reorg ();
 
   if (optimize > 0 && flag_delayed_branch)
-      dbr_schedule (insns, rtl_dump_file);
+      dbr_schedule (insns, dump_file);
   shorten_branches (insns);
   final_start_function (insns, file, 1);
   final (insns, file, 1, 0);

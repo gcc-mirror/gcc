@@ -157,8 +157,8 @@ find_trace (basic_block bb, basic_block *trace)
   int i = 0;
   edge e;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Trace seed %i [%i]", bb->index, bb->frequency);
+  if (dump_file)
+    fprintf (dump_file, "Trace seed %i [%i]", bb->index, bb->frequency);
 
   while ((e = find_best_predecessor (bb)) != NULL)
     {
@@ -166,12 +166,12 @@ find_trace (basic_block bb, basic_block *trace)
       if (seen (bb2) || (e->flags & (EDGE_DFS_BACK | EDGE_COMPLEX))
 	  || find_best_successor (bb2) != e)
 	break;
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ",%i [%i]", bb->index, bb->frequency);
+      if (dump_file)
+	fprintf (dump_file, ",%i [%i]", bb->index, bb->frequency);
       bb = bb2;
     }
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, " forward %i [%i]", bb->index, bb->frequency);
+  if (dump_file)
+    fprintf (dump_file, " forward %i [%i]", bb->index, bb->frequency);
   trace[i++] = bb;
 
   /* Follow the trace in forward direction.  */
@@ -181,12 +181,12 @@ find_trace (basic_block bb, basic_block *trace)
       if (seen (bb) || (e->flags & (EDGE_DFS_BACK | EDGE_COMPLEX))
 	  || find_best_predecessor (bb) != e)
 	break;
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, ",%i [%i]", bb->index, bb->frequency);
+      if (dump_file)
+	fprintf (dump_file, ",%i [%i]", bb->index, bb->frequency);
       trace[i++] = bb;
     }
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "\n");
+  if (dump_file)
+    fprintf (dump_file, "\n");
   return i;
 }
 
@@ -287,8 +287,8 @@ tail_duplicate (void)
 	      blocks[old->index] =
 		fibheap_insert (heap, -old->frequency, old);
 
-	      if (rtl_dump_file)
-		fprintf (rtl_dump_file, "Duplicated %i as %i [%i]\n",
+	      if (dump_file)
+		fprintf (dump_file, "Duplicated %i as %i [%i]\n",
 			 old->index, bb2->index, bb2->frequency);
 	    }
 	  bb->rbi->next = bb2;
@@ -298,12 +298,12 @@ tail_duplicate (void)
 	  if (ignore_bb_p (bb))
 	    break;
 	}
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, " covered now %.1f\n\n",
+      if (dump_file)
+	fprintf (dump_file, " covered now %.1f\n\n",
 		 traced_insns * 100.0 / weighted_insns);
     }
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Duplicated %i insns (%i%%)\n", nduplicated,
+  if (dump_file)
+    fprintf (dump_file, "Duplicated %i insns (%i%%)\n", nduplicated,
 	     nduplicated * 100 / ninsns);
 
   free (blocks);
@@ -366,12 +366,12 @@ tracer (void)
 
   cfg_layout_initialize ();
   mark_dfs_back_edges ();
-  if (rtl_dump_file)
-    dump_flow_info (rtl_dump_file);
+  if (dump_file)
+    dump_flow_info (dump_file);
   tail_duplicate ();
   layout_superblocks ();
-  if (rtl_dump_file)
-    dump_flow_info (rtl_dump_file);
+  if (dump_file)
+    dump_flow_info (dump_file);
   cfg_layout_finalize ();
 
   /* Merge basic blocks in duplicated traces.  */

@@ -190,8 +190,8 @@ find_values_to_profile (unsigned *n_values, struct histogram_value **values)
       switch ((*values)[i].type)
 	{
 	case HIST_TYPE_INTERVAL:
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "Interval counter for insn %d, range %d -- %d.\n",
 		     INSN_UID ((*values)[i].insn),
 		     (*values)[i].hdata.intvl.int_start,
@@ -203,8 +203,8 @@ find_values_to_profile (unsigned *n_values, struct histogram_value **values)
 	  break;
 
 	case HIST_TYPE_POW2:
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "Pow2 counter for insn %d.\n",
 		     INSN_UID ((*values)[i].insn));
 	  (*values)[i].n_counters = GET_MODE_BITSIZE ((*values)[i].mode) +
@@ -212,16 +212,16 @@ find_values_to_profile (unsigned *n_values, struct histogram_value **values)
 	  break;
 
 	case HIST_TYPE_SINGLE_VALUE:
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "Single value counter for insn %d.\n",
 		     INSN_UID ((*values)[i].insn));
 	  (*values)[i].n_counters = 3;
 	  break;
 
 	case HIST_TYPE_CONST_DELTA:
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file,
+	  if (dump_file)
+	    fprintf (dump_file,
 		     "Constant delta counter for insn %d.\n",
 		     INSN_UID ((*values)[i].insn));
 	  (*values)[i].n_counters = 4;
@@ -334,11 +334,11 @@ value_profile_transformations (void)
       if (!maybe_hot_bb_p (BLOCK_FOR_INSN (insn)))
 	continue;
 
-      if (rtl_dump_file)
+      if (dump_file)
 	{
-	  fprintf (rtl_dump_file, "Trying transformations on insn %d\n",
+	  fprintf (dump_file, "Trying transformations on insn %d\n",
 		   INSN_UID (insn));
-	  print_rtl_single (rtl_dump_file, insn);
+	  print_rtl_single (dump_file, insn);
 	}
 
       /* Transformations:  */
@@ -452,8 +452,8 @@ divmod_fixed_value_transform (rtx insn)
   if (!rtx_equal_p (op2, value) || 2 * count < all)
     return false;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Div/mod by constant transformation on insn %d\n",
+  if (dump_file)
+    fprintf (dump_file, "Div/mod by constant transformation on insn %d\n",
 	     INSN_UID (insn));
 
   e = split_block (BLOCK_FOR_INSN (insn), PREV_INSN (insn));
@@ -568,8 +568,8 @@ mod_pow2_value_transform (rtx insn)
   if (count < wrong_values)
     return false;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Mod power of 2 transformation on insn %d\n",
+  if (dump_file)
+    fprintf (dump_file, "Mod power of 2 transformation on insn %d\n",
 	     INSN_UID (insn));
 
   e = split_block (BLOCK_FOR_INSN (insn), PREV_INSN (insn));
@@ -694,8 +694,8 @@ mod_subtract_transform (rtx insn)
   if (i == 2)
     return false;
 
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Mod subtract transformation on insn %d\n",
+  if (dump_file)
+    fprintf (dump_file, "Mod subtract transformation on insn %d\n",
 	     INSN_UID (insn));
 
   e = split_block (BLOCK_FOR_INSN (insn), PREV_INSN (insn));

@@ -788,11 +788,11 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
   enum machine_mode inner_mode, outer_mode;
   enum rtx_code extend;
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, "Analysing ");
-      print_rtl (rtl_dump_file, def);
-      fprintf (rtl_dump_file, " for bivness.\n");
+      fprintf (dump_file, "Analysing ");
+      print_rtl (dump_file, def);
+      fprintf (dump_file, " for bivness.\n");
     }
     
   if (!REG_P (def))
@@ -806,15 +806,15 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
   regno = REGNO (def);
   if (last_def[regno] == const0_rtx)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "  not simple.\n");
+      if (dump_file)
+	fprintf (dump_file, "  not simple.\n");
       return false;
     }
 
   if (last_def[regno] && bivs[regno].analysed)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "  already analysed.\n");
+      if (dump_file)
+	fprintf (dump_file, "  already analysed.\n");
 
       *iv = bivs[regno];
       return iv->base != NULL_RTX;
@@ -849,12 +849,12 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
   iv->delta = outer_step;
   iv->first_special = inner_mode != outer_mode;
 
-end:
-  if (rtl_dump_file)
+ end:
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, "  ");
-      dump_iv_info (rtl_dump_file, iv);
-      fprintf (rtl_dump_file, "\n");
+      fprintf (dump_file, "  ");
+      dump_iv_info (dump_file, iv);
+      fprintf (dump_file, "\n");
     }
 
   bivs[regno] = *iv;
@@ -871,12 +871,12 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
   unsigned regno;
   bool inv = CONSTANT_P (op);
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, "Analysing operand ");
-      print_rtl (rtl_dump_file, op);
-      fprintf (rtl_dump_file, " of insn ");
-      print_rtl_single (rtl_dump_file, insn);
+      fprintf (dump_file, "Analysing operand ");
+      print_rtl (dump_file, op);
+      fprintf (dump_file, " of insn ");
+      print_rtl_single (dump_file, insn);
     }
 
   if (GET_CODE (op) == SUBREG)
@@ -897,8 +897,8 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
 	inv = true;
       else if (last_def[regno] == const0_rtx)
 	{
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, "  not simple.\n");
+	  if (dump_file)
+	    fprintf (dump_file, "  not simple.\n");
 	  return false;
 	}
     }
@@ -907,11 +907,11 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
     {
       iv_constant (iv, op, VOIDmode);
 
-      if (rtl_dump_file)
+      if (dump_file)
 	{
-	  fprintf (rtl_dump_file, "  ");
-	  dump_iv_info (rtl_dump_file, iv);
-	  fprintf (rtl_dump_file, "\n");
+	  fprintf (dump_file, "  ");
+	  dump_iv_info (dump_file, iv);
+	  fprintf (dump_file, "\n");
 	}
       return true;
     }
@@ -919,8 +919,8 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
   def_insn = iv_get_reaching_def (insn, op);
   if (def_insn == const0_rtx)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "  not simple.\n");
+      if (dump_file)
+	fprintf (dump_file, "  not simple.\n");
       return false;
     }
 
@@ -956,19 +956,19 @@ iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
   if (!insn)
     return iv_analyze_biv (def, iv);
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      fprintf (rtl_dump_file, "Analysing def of ");
-      print_rtl (rtl_dump_file, def);
-      fprintf (rtl_dump_file, " in insn ");
-      print_rtl_single (rtl_dump_file, insn);
+      fprintf (dump_file, "Analysing def of ");
+      print_rtl (dump_file, def);
+      fprintf (dump_file, " in insn ");
+      print_rtl_single (dump_file, insn);
     }
 
   uid = INSN_UID (insn);
   if (insn_info[uid].iv.analysed)
     {
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "  already analysed.\n");
+      if (dump_file)
+	fprintf (dump_file, "  already analysed.\n");
       *iv = insn_info[uid].iv;
       return iv->base != NULL_RTX;
     }
@@ -1088,18 +1088,18 @@ iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
 
   *iv = iv0;
 
-end:
+ end:
   iv->analysed = true;
   insn_info[uid].iv = *iv;
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
-      print_rtl (rtl_dump_file, def);
-      fprintf (rtl_dump_file, " in insn ");
-      print_rtl_single (rtl_dump_file, insn);
-      fprintf (rtl_dump_file, "  is ");
-      dump_iv_info (rtl_dump_file, iv);
-      fprintf (rtl_dump_file, "\n");
+      print_rtl (dump_file, def);
+      fprintf (dump_file, " in insn ");
+      print_rtl_single (dump_file, insn);
+      fprintf (dump_file, "  is ");
+      dump_iv_info (dump_file, iv);
+      fprintf (dump_file, "\n");
     }
 
   return iv->base != NULL_RTX;
@@ -2389,43 +2389,43 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 	}
     }
 
-  if (rtl_dump_file)
+  if (dump_file)
     {
       if (desc->simple_p)
 	{
-	  fprintf (rtl_dump_file, "Loop %d is simple:\n", loop->num);
-	  fprintf (rtl_dump_file, "  simple exit %d -> %d\n",
+	  fprintf (dump_file, "Loop %d is simple:\n", loop->num);
+	  fprintf (dump_file, "  simple exit %d -> %d\n",
 		   desc->out_edge->src->index,
 		   desc->out_edge->dest->index);
 	  if (desc->assumptions)
 	    {
-	      fprintf (rtl_dump_file, "  assumptions: ");
-	      print_rtl (rtl_dump_file, desc->assumptions);
-	      fprintf (rtl_dump_file, "\n");
+	      fprintf (dump_file, "  assumptions: ");
+	      print_rtl (dump_file, desc->assumptions);
+	      fprintf (dump_file, "\n");
 	    }
 	  if (desc->noloop_assumptions)
 	    {
-	      fprintf (rtl_dump_file, "  does not roll if: ");
-	      print_rtl (rtl_dump_file, desc->noloop_assumptions);
-	      fprintf (rtl_dump_file, "\n");
+	      fprintf (dump_file, "  does not roll if: ");
+	      print_rtl (dump_file, desc->noloop_assumptions);
+	      fprintf (dump_file, "\n");
 	    }
 	  if (desc->infinite)
 	    {
-	      fprintf (rtl_dump_file, "  infinite if: ");
-	      print_rtl (rtl_dump_file, desc->infinite);
-	      fprintf (rtl_dump_file, "\n");
+	      fprintf (dump_file, "  infinite if: ");
+	      print_rtl (dump_file, desc->infinite);
+	      fprintf (dump_file, "\n");
 	    }
 
-	  fprintf (rtl_dump_file, "  number of iterations: ");
-	  print_rtl (rtl_dump_file, desc->niter_expr);
-      	  fprintf (rtl_dump_file, "\n");
+	  fprintf (dump_file, "  number of iterations: ");
+	  print_rtl (dump_file, desc->niter_expr);
+      	  fprintf (dump_file, "\n");
 
-	  fprintf (rtl_dump_file, "  upper bound: ");
-	  fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC, desc->niter_max);
-      	  fprintf (rtl_dump_file, "\n");
+	  fprintf (dump_file, "  upper bound: ");
+	  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, desc->niter_max);
+      	  fprintf (dump_file, "\n");
 	}
       else
-	fprintf (rtl_dump_file, "Loop %d is not simple.\n", loop->num);
+	fprintf (dump_file, "Loop %d is not simple.\n", loop->num);
     }
 
   free (body);
