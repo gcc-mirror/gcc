@@ -248,6 +248,10 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       gnat_argc++;
       break;
 
+    case OPT_Wall:
+      /* All front ends are expected to accept this.  */
+      break;
+
     case OPT_fRTS:
       gnat_argv[gnat_argc] = xstrdup ("-fRTS");
       gnat_argc++;
