@@ -1,5 +1,9 @@
 2002-10-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390.md: Remove old-style peepholes.
+
+2002-10-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.c (s390_decompose_address): Do not range check the
 	displacement if base or index is the argument pointer register.
 
