@@ -6402,16 +6402,16 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
   /* Scan all of the blocks for registers that must not be allocated.  */
   for (j = 0; j < num_bb; j++)
     {
-      rtx last_insn = bb[j]->end;
-      rtx insn = bb[j]->head;
+      rtx last_insn = BB_END (bb[j]);
+      rtx insn = BB_HEAD (bb[j]);
       int regno;
 
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Scanning %s block %d, start %d, end %d\n",
 		 (bb[j] == else_bb) ? "else" : ((bb[j] == then_bb) ? "then" : "test"),
 		 (int) bb[j]->index,
-		 (int) INSN_UID (bb[j]->head),
-		 (int) INSN_UID (bb[j]->end));
+		 (int) INSN_UID (BB_HEAD (bb[j])),
+		 (int) INSN_UID (BB_END (bb[j])));
 
       /* Anything live at the beginning of the block is obviously unavailable
          for allocation.  */
@@ -6611,7 +6611,7 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
 			    gen_rtx_fmt_ee (code, CC_CCRmode, cc, const0_rtx));
 
   /* Record the check insn to be inserted later.  */
-  frv_ifcvt_add_insn (check_insn, test_bb->end, TRUE);
+  frv_ifcvt_add_insn (check_insn, BB_END (test_bb), TRUE);
 
   /* Update the tests.  */
   frv_ifcvt.cr_reg = cr;
@@ -6729,7 +6729,7 @@ frv_ifcvt_modify_multiple_tests (ce_if_block_t *ce_info,
   /* First add the andcr/andncr/orcr/orncr, which will be added after the
      conditional check instruction, due to frv_ifcvt_add_insn being a LIFO
      stack.  */
-  frv_ifcvt_add_insn ((*logical_func) (cr, cr, new_cr), bb->end, TRUE);
+  frv_ifcvt_add_insn ((*logical_func) (cr, cr, new_cr), BB_END (bb), TRUE);
 
   /* Now add the conditional check insn.  */
   cc = XEXP (test_expr, 0);
@@ -6740,7 +6740,7 @@ frv_ifcvt_modify_multiple_tests (ce_if_block_t *ce_info,
 
   /* add the new check insn to the list of check insns that need to be
      inserted.  */
-  frv_ifcvt_add_insn (check_insn, bb->end, TRUE);
+  frv_ifcvt_add_insn (check_insn, BB_END (bb), TRUE);
 
   if (TARGET_DEBUG_COND_EXEC)
     {

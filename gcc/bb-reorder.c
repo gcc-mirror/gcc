@@ -312,7 +312,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 
 	      /* Duplicate HEADER if it is a small block containing cond jump
 		 in the end.  */
-	      if (any_condjump_p (header->end) && copy_bb_p (header, 0))
+	      if (any_condjump_p (BB_END (header)) && copy_bb_p (header, 0))
 		{
 		  copy_bb (header, prev_bb->succ, prev_bb, trace_n);
 		}
@@ -1011,7 +1011,7 @@ copy_bb_p (basic_block bb, int code_may_grow)
   if (code_may_grow && maybe_hot_bb_p (bb))
     max_size *= 8;
 
-  for (insn = bb->head; insn != NEXT_INSN (bb->end);
+  for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
        insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))

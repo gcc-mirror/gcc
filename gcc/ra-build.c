@@ -884,7 +884,7 @@ live_in_edge (struct df *df, struct curr_use *use, edge e)
     use->live_over_abnormal = 1;
   bitmap_set_bit (live_at_end[e->src->index], DF_REF_ID (use->wp->ref));
   info_pred = (struct ra_bb_info *) e->src->aux;
-  next_insn = e->src->end;
+  next_insn = BB_END (e->src);
 
   /* If the last insn of the pred. block doesn't completely define the
      current use, we need to check the block.  */
@@ -899,7 +899,7 @@ live_in_edge (struct df *df, struct curr_use *use, edge e)
 	     creation to later.  */
 	  bitmap_set_bit (info_pred->live_throughout,
 			  DF_REF_ID (use->wp->ref));
-	  next_insn = e->src->head;
+	  next_insn = BB_HEAD (e->src);
 	}
       return next_insn;
     }
@@ -1033,7 +1033,7 @@ livethrough_conflicts_bb (basic_block bb)
   /* First collect the IDs of all defs, count the number of death
      containing insns, and if there's some call_insn here.  */
   all_defs = BITMAP_XMALLOC ();
-  for (insn = bb->head; insn; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); insn; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
 	{
@@ -1048,7 +1048,7 @@ livethrough_conflicts_bb (basic_block bb)
 	  if (GET_CODE (insn) == CALL_INSN)
 	    contains_call = 1;
 	}
-      if (insn == bb->end)
+      if (insn == BB_END (bb))
 	break;
     }
 
@@ -2674,10 +2674,10 @@ detect_webs_set_in_cond_jump (void)
 {
   basic_block bb;
   FOR_EACH_BB (bb)
-    if (GET_CODE (bb->end) == JUMP_INSN)
+    if (GET_CODE (BB_END (bb)) == JUMP_INSN)
       {
 	struct df_link *link;
-	for (link = DF_INSN_DEFS (df, bb->end); link; link = link->next)
+	for (link = DF_INSN_DEFS (df, BB_END (bb)); link; link = link->next)
 	  if (link->ref && DF_REF_REGNO (link->ref) >= FIRST_PSEUDO_REGISTER)
 	    {
 	      struct web *web = def2web[DF_REF_ID (link->ref)];

@@ -477,7 +477,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 	    && REGNO_REG_SET_P (bb->global_live_at_start, reg))
 	  SET_HARD_REG_BIT (info.btrs_live_in_block, reg);
 
-      for (insn = bb->head, last = NEXT_INSN (bb->end);
+      for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb));
 	   insn != last;
 	   insn = NEXT_INSN (insn), insn_luid++)
 	{
@@ -629,7 +629,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
       rtx last;
 
       sbitmap_union_of_preds (reaching_defs, bb_out, i);
-      for (insn = bb->head, last = NEXT_INSN (bb->end);
+      for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb));
 	   insn != last;
 	   insn = NEXT_INSN (insn))
 	{
@@ -1058,7 +1058,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
      Replace all uses of the old target register definition by
      uses of the new definition.  Delete the old definition.  */
   basic_block b = new_def_bb;
-  rtx insp = b->head;
+  rtx insp = BB_HEAD (b);
   rtx old_insn = def->insn;
   rtx src;
   rtx btr_rtx;
@@ -1131,7 +1131,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
 static int
 can_move_up (basic_block bb, rtx insn, int n_insns)
 {
-  while (insn != bb->head && n_insns > 0)
+  while (insn != BB_HEAD (bb) && n_insns > 0)
     {
       insn = PREV_INSN (insn);
       /* ??? What if we have an anti-dependency that actually prevents the

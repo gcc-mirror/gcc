@@ -260,14 +260,14 @@ print_rtl_graph_with_bb (const char *base, const char *suffix, rtx rtx_first)
       FOR_EACH_BB_REVERSE (bb)
 	{
 	  rtx x;
-	  start[INSN_UID (bb->head)] = bb->index;
-	  end[INSN_UID (bb->end)] = bb->index;
-	  for (x = bb->head; x != NULL_RTX; x = NEXT_INSN (x))
+	  start[INSN_UID (BB_HEAD (bb))] = bb->index;
+	  end[INSN_UID (BB_END (bb))] = bb->index;
+	  for (x = BB_HEAD (bb); x != NULL_RTX; x = NEXT_INSN (x))
 	    {
 	      in_bb_p[INSN_UID (x)]
 		= (in_bb_p[INSN_UID (x)] == NOT_IN_BB)
 		 ? IN_ONE_BB : IN_MULTIPLE_BB;
-	      if (x == bb->end)
+	      if (x == BB_END (bb))
 		break;
 	    }
 	}
@@ -321,7 +321,7 @@ print_rtl_graph_with_bb (const char *base, const char *suffix, rtx rtx_first)
 		{
 		  if (e->dest != EXIT_BLOCK_PTR)
 		    {
-		      rtx block_head = e->dest->head;
+		      rtx block_head = BB_HEAD (e->dest);
 
 		      draw_edge (fp, INSN_UID (tmp_rtx),
 				 INSN_UID (block_head),

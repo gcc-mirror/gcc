@@ -1,3 +1,25 @@
+2003-12-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* basic-block.h (BLOCK_HEAD, BLOCK_END): Remove.
+	(BLOCK_HEAD_TREE, BLOCK_END_TREE): Remove.
+	(basic_block_def): Rename `head' to `head_' and `end' to `end_'.
+	(BB_HEAD, BB_END): New accessor macros for the `head_' and `end_'
+	fields of a basic block.
+	* bb-reorder.c, bt-load.c, caller-save.c, cfg.c, cfganal.c,
+	cfgbuild.c, cfgcleanup.c, cfglayout.c, cfgloop.c, cfgloopanal.c,
+	cfgloopmanip.c, cfgrtl.c, combine.c, conflict.c, df.c, emit-rtl.c,
+	final.c, flow.c, function.c, gcse.c, global.c, graph.c,
+	haifa-sched.c, ifcvt.c, lcm.c, local-alloc.c, loop-unswitch.c,
+	loop.c, postreload.c, predict.c, profile.c, ra-build.c, ra-debug.c,
+	ra-rewrite.c, ra.c, recog.c, reg-stack.c, regclass.c, regmove.c,
+	regrename.c, reload1.c, resource.c, sched-ebb.c, sched-rgn.c,
+	sibcall.c, tracer.c, config/frv/frv.c, config/i386/i386.c,
+	config/ia64/ia64.c: Use the BB_HEAD and BB_END macros instead of
+	accessing the `head' and `end' fields of a basic block directly.
+
+	* gengtype.c: Teach about "void**" pointers and "void *" function
+	types.  Fixes earlier commit.
+
 2003-12-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/extend.texi (Vector Extensions): Document that bitwise

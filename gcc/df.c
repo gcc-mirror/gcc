@@ -1215,14 +1215,14 @@ df_bb_refs_record (struct df *df, basic_block bb)
   rtx insn;
 
   /* Scan the block an insn at a time from beginning to end.  */
-  for (insn = bb->head; ; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
 	{
 	  /* Record defs within INSN.  */
 	  df_insn_refs_record (df, bb, insn);
 	}
-      if (insn == bb->end)
+      if (insn == BB_END (bb))
 	break;
     }
 }
@@ -1255,7 +1255,7 @@ df_bb_reg_def_chain_create (struct df *df, basic_block bb)
      scan the basic blocks in reverse order so that the first defs
      appear at the start of the chain.  */
 
-  for (insn = bb->end; insn && insn != PREV_INSN (bb->head);
+  for (insn = BB_END (bb); insn && insn != PREV_INSN (BB_HEAD (bb));
        insn = PREV_INSN (insn))
     {
       struct df_link *link;
@@ -1307,7 +1307,7 @@ df_bb_reg_use_chain_create (struct df *df, basic_block bb)
   /* Scan in forward order so that the last uses appear at the start
      of the chain.  */
 
-  for (insn = bb->head; insn && insn != NEXT_INSN (bb->end);
+  for (insn = BB_HEAD (bb); insn && insn != NEXT_INSN (BB_END (bb));
        insn = NEXT_INSN (insn))
     {
       struct df_link *link;
@@ -1360,7 +1360,7 @@ df_bb_du_chain_create (struct df *df, basic_block bb, bitmap ru)
 
   /* For each def in BB create a linked list (chain) of uses
      reached from the def.  */
-  for (insn = bb->end; insn && insn != PREV_INSN (bb->head);
+  for (insn = BB_END (bb); insn && insn != PREV_INSN (BB_HEAD (bb));
        insn = PREV_INSN (insn))
     {
       struct df_link *def_link;
@@ -1437,7 +1437,7 @@ df_bb_ud_chain_create (struct df *df, basic_block bb)
 
   /* For each use in BB create a linked list (chain) of defs
      that reach the use.  */
-  for (insn = bb->head; insn && insn != NEXT_INSN (bb->end);
+  for (insn = BB_HEAD (bb); insn && insn != NEXT_INSN (BB_END (bb));
        insn = NEXT_INSN (insn))
     {
       unsigned int uid = INSN_UID (insn);
@@ -1547,7 +1547,7 @@ df_bb_rd_local_compute (struct df *df, basic_block bb)
   struct bb_info *bb_info = DF_BB_INFO (df, bb);
   rtx insn;
 
-  for (insn = bb->head; insn && insn != NEXT_INSN (bb->end);
+  for (insn = BB_HEAD (bb); insn && insn != NEXT_INSN (BB_END (bb));
        insn = NEXT_INSN (insn))
     {
       unsigned int uid = INSN_UID (insn);
@@ -1611,7 +1611,7 @@ df_bb_ru_local_compute (struct df *df, basic_block bb)
   rtx insn;
 
 
-  for (insn = bb->end; insn && insn != PREV_INSN (bb->head);
+  for (insn = BB_END (bb); insn && insn != PREV_INSN (BB_HEAD (bb));
        insn = PREV_INSN (insn))
     {
       unsigned int uid = INSN_UID (insn);
@@ -1674,7 +1674,7 @@ df_bb_lr_local_compute (struct df *df, basic_block bb)
   struct bb_info *bb_info = DF_BB_INFO (df, bb);
   rtx insn;
 
-  for (insn = bb->end; insn && insn != PREV_INSN (bb->head);
+  for (insn = BB_END (bb); insn && insn != PREV_INSN (BB_HEAD (bb));
        insn = PREV_INSN (insn))
     {
       unsigned int uid = INSN_UID (insn);
@@ -1729,7 +1729,7 @@ df_bb_reg_info_compute (struct df *df, basic_block bb, bitmap live)
 
   bitmap_copy (live, bb_info->lr_out);
 
-  for (insn = bb->end; insn && insn != PREV_INSN (bb->head);
+  for (insn = BB_END (bb); insn && insn != PREV_INSN (BB_HEAD (bb));
        insn = PREV_INSN (insn))
     {
       unsigned int uid = INSN_UID (insn);
@@ -1795,13 +1795,13 @@ df_bb_luids_set (struct df *df, basic_block bb)
 
   /* The LUIDs are monotonically increasing for each basic block.  */
 
-  for (insn = bb->head; ; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
 	DF_INSN_LUID (df, insn) = luid++;
       DF_INSN_LUID (df, insn) = luid;
 
-      if (insn == bb->end)
+      if (insn == BB_END (bb))
 	break;
     }
   return luid;
@@ -2096,7 +2096,7 @@ df_bb_refs_update (struct df *df, basic_block bb)
      a bitmap for insns_modified saves memory and avoids queuing
      duplicates.  */
 
-  for (insn = bb->head; ; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
       unsigned int uid;
 
@@ -2112,7 +2112,7 @@ df_bb_refs_update (struct df *df, basic_block bb)
 
 	  count++;
 	}
-      if (insn == bb->end)
+      if (insn == BB_END (bb))
 	break;
     }
   return count;
@@ -2248,14 +2248,14 @@ df_bb_refs_unlink (struct df *df, basic_block bb)
   rtx insn;
 
   /* Scan the block an insn at a time from beginning to end.  */
-  for (insn = bb->head; ; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
 	{
 	  /* Unlink refs for INSN.  */
 	  df_insn_refs_unlink (df, bb, insn);
 	}
-      if (insn == bb->end)
+      if (insn == BB_END (bb))
 	break;
     }
 }
@@ -2294,7 +2294,7 @@ df_insn_delete (struct df *df, basic_block bb ATTRIBUTE_UNUSED, rtx insn)
      handle the JUMP_LABEL?  */
 
   /* We should not be deleting the NOTE_INSN_BASIC_BLOCK or label.  */
-  if (insn == bb->head)
+  if (insn == BB_HEAD (bb))
     abort ();
 
   /* Delete the insn.  */
@@ -2591,7 +2591,7 @@ df_pattern_emit_before (struct df *df, rtx pattern, basic_block bb, rtx insn)
   rtx prev_insn = PREV_INSN (insn);
 
   /* We should not be inserting before the start of the block.  */
-  if (insn == bb->head)
+  if (insn == BB_HEAD (bb))
     abort ();
   ret_insn = emit_insn_before (pattern, insn);
   if (ret_insn == insn)

@@ -2203,7 +2203,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
 	       /* A copy is not available if its src or dest is subsequently
 		  modified.  Here we want to search from INSN+1 on, but
 		  oprs_available_p searches from INSN on.  */
-	       && (insn == BLOCK_END (BLOCK_NUM (insn))
+	       && (insn == BB_END (BLOCK_FOR_INSN (insn))
 		   || ((tmp = next_nonnote_insn (insn)) != NULL_RTX
 		       && oprs_available_p (pat, tmp))))
 	insert_set_in_table (pat, insn, table);
@@ -2510,8 +2510,8 @@ compute_hash_table_work (struct hash_table *table)
 	 ??? hard-reg reg_set_in_block computation
 	 could be moved to compute_sets since they currently don't change.  */
 
-      for (insn = current_bb->head;
-	   insn && insn != NEXT_INSN (current_bb->end);
+      for (insn = BB_HEAD (current_bb);
+	   insn && insn != NEXT_INSN (BB_END (current_bb));
 	   insn = NEXT_INSN (insn))
 	{
 	  if (! INSN_P (insn))
@@ -2541,12 +2541,12 @@ compute_hash_table_work (struct hash_table *table)
       if (table->set_p
 	  && implicit_sets[current_bb->index] != NULL_RTX)
 	hash_scan_set (implicit_sets[current_bb->index],
-		       current_bb->head, table);
+		       BB_HEAD (current_bb), table);
 
       /* The next pass builds the hash table.  */
 
-      for (insn = current_bb->head, in_libcall_block = 0;
-	   insn && insn != NEXT_INSN (current_bb->end);
+      for (insn = BB_HEAD (current_bb), in_libcall_block = 0;
+	   insn && insn != NEXT_INSN (BB_END (current_bb));
 	   insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
 	  {
@@ -3540,8 +3540,8 @@ classic_gcse (void)
 	 start of the block].  */
       reset_opr_set_tables ();
 
-      for (insn = bb->head;
-	   insn != NULL && insn != NEXT_INSN (bb->end);
+      for (insn = BB_HEAD (bb);
+	   insn != NULL && insn != NEXT_INSN (BB_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
 	  /* Is insn of form (set (pseudo-reg) ...)?  */
@@ -4477,8 +4477,8 @@ cprop (int alter_jumps)
 	 start of the block].  */
       reset_opr_set_tables ();
 
-      for (insn = bb->head;
-	   insn != NULL && insn != NEXT_INSN (bb->end);
+      for (insn = BB_HEAD (bb);
+	   insn != NULL && insn != NEXT_INSN (BB_END (bb));
 	   insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
 	  {
@@ -4578,7 +4578,7 @@ find_implicit_sets (void)
     /* Check for more than one successor.  */
     if (bb->succ && bb->succ->succ_next)
       {
-	cond = fis_get_condition (bb->end);
+	cond = fis_get_condition (BB_END (bb));
 
 	if (cond
 	    && (GET_CODE (cond) == EQ || GET_CODE (cond) == NE)
@@ -4901,8 +4901,8 @@ bypass_conditional_jumps (void)
       if (bb->pred && bb->pred->pred_next)
 	{
 	  setcc = NULL_RTX;
-	  for (insn = bb->head;
-	       insn != NULL && insn != NEXT_INSN (bb->end);
+	  for (insn = BB_HEAD (bb);
+	       insn != NULL && insn != NEXT_INSN (BB_END (bb));
 	       insn = NEXT_INSN (insn))
 	    if (GET_CODE (insn) == INSN)
 	      {
@@ -5193,7 +5193,7 @@ process_insert_insn (struct expr *expr)
 static void
 insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
 {
-  rtx insn = bb->end;
+  rtx insn = BB_END (bb);
   rtx new_insn;
   rtx reg = expr->reaching_reg;
   int regno = REGNO (reg);
@@ -5274,7 +5274,7 @@ insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
       /* Since different machines initialize their parameter registers
 	 in different orders, assume nothing.  Collect the set of all
 	 parameter registers.  */
-      insn = find_first_parameter_load (insn, bb->head);
+      insn = find_first_parameter_load (insn, BB_HEAD (bb));
 
       /* If we found all the parameter loads, then we want to insert
 	 before the first parameter load.
@@ -5834,7 +5834,7 @@ compute_transpout (void)
       /* Note that flow inserted a nop a the end of basic blocks that
 	 end in call instructions for reasons other than abnormal
 	 control flow.  */
-      if (GET_CODE (bb->end) != CALL_INSN)
+      if (GET_CODE (BB_END (bb)) != CALL_INSN)
 	continue;
 
       for (i = 0; i < expr_hash_table.size; i++)
@@ -5916,8 +5916,8 @@ delete_null_pointer_checks_1 (unsigned int *block_reg, sbitmap *nonnull_avin,
 
       /* Scan each insn in the basic block looking for memory references and
 	 register sets.  */
-      stop_insn = NEXT_INSN (current_block->end);
-      for (insn = current_block->head;
+      stop_insn = NEXT_INSN (BB_HEAD (current_block));
+      for (insn = BB_HEAD (current_block);
 	   insn != stop_insn;
 	   insn = NEXT_INSN (insn))
 	{
@@ -5972,7 +5972,7 @@ delete_null_pointer_checks_1 (unsigned int *block_reg, sbitmap *nonnull_avin,
      against zero.  */
   FOR_EACH_BB (bb)
     {
-      rtx last_insn = bb->end;
+      rtx last_insn = BB_END (bb);
       rtx condition, earliest;
       int compare_and_branch;
 
@@ -6022,7 +6022,7 @@ delete_null_pointer_checks_1 (unsigned int *block_reg, sbitmap *nonnull_avin,
 	delete_insn (earliest);
       purge_dead_edges (bb);
 
-      /* Don't check this block again.  (Note that BLOCK_END is
+      /* Don't check this block again.  (Note that BB_END is
 	 invalid here; we deleted the last instruction in the
 	 block.)  */
       block_reg[bb->index] = 0;
@@ -6088,7 +6088,7 @@ delete_null_pointer_checks (rtx f ATTRIBUTE_UNUSED)
   block_reg = xcalloc (last_basic_block, sizeof (int));
   FOR_EACH_BB (bb)
     {
-      rtx last_insn = bb->end;
+      rtx last_insn = BB_END (bb);
       rtx condition, earliest, reg;
 
       /* We only want conditional branches.  */
@@ -6747,8 +6747,8 @@ compute_ld_motion_mems (void)
 
   FOR_EACH_BB (bb)
     {
-      for (insn = bb->head;
-	   insn && insn != NEXT_INSN (bb->end);
+      for (insn = BB_HEAD (bb);
+	   insn && insn != NEXT_INSN (BB_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
 	  if (INSN_P (insn))
@@ -7156,7 +7156,7 @@ find_moveable_store (rtx insn, int *regs_set_before, int *regs_set_after)
 	 failed last time.  */
       if (LAST_AVAIL_CHECK_FAILURE (ptr))
 	{
-	  for (tmp = bb->end;
+	  for (tmp = BB_END (bb);
 	       tmp != insn && tmp != LAST_AVAIL_CHECK_FAILURE (ptr);
 	       tmp = PREV_INSN (tmp))
 	    continue;
@@ -7199,8 +7199,8 @@ compute_store_table (void)
       /* First compute the registers set in this block.  */
       regvec = last_set_in;
 
-      for (insn = bb->head;
-	   insn != NEXT_INSN (bb->end);
+      for (insn = BB_HEAD (bb);
+	   insn != NEXT_INSN (BB_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
 	  if (! INSN_P (insn))
@@ -7232,8 +7232,8 @@ compute_store_table (void)
       /* Now find the stores.  */
       memset (already_set, 0, sizeof (int) * max_gcse_regno);
       regvec = already_set;
-      for (insn = bb->head;
-	   insn != NEXT_INSN (bb->end);
+      for (insn = BB_HEAD (bb);
+	   insn != NEXT_INSN (BB_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
 	  if (! INSN_P (insn))
@@ -7466,7 +7466,7 @@ static bool
 store_killed_after (rtx x, rtx x_regs, rtx insn, basic_block bb,
 		    int *regs_set_after, rtx *fail_insn)
 {
-  rtx last = bb->end, act;
+  rtx last = BB_END (bb), act;
 
   if (!store_ops_ok (x_regs, regs_set_after))
     {
@@ -7495,7 +7495,7 @@ static bool
 store_killed_before (rtx x, rtx x_regs, rtx insn, basic_block bb,
 		     int *regs_set_before)
 {
-  rtx first = bb->head;
+  rtx first = BB_HEAD (bb);
 
   if (!store_ops_ok (x_regs, regs_set_before))
     return true;
@@ -7570,7 +7570,7 @@ build_store_vectors (void)
 
       for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
 	{
-	  if (store_killed_after (ptr->pattern, ptr->pattern_regs, bb->head,
+	  if (store_killed_after (ptr->pattern, ptr->pattern_regs, BB_HEAD (bb),
 				  bb, regs_set_in_block, NULL))
 	    {
 	      /* It should not be necessary to consider the expression
@@ -7596,14 +7596,14 @@ build_store_vectors (void)
 }
 
 /* Insert an instruction at the beginning of a basic block, and update
-   the BLOCK_HEAD if needed.  */
+   the BB_HEAD if needed.  */
 
 static void
 insert_insn_start_bb (rtx insn, basic_block bb)
 {
   /* Insert at start of successor block.  */
-  rtx prev = PREV_INSN (bb->head);
-  rtx before = bb->head;
+  rtx prev = PREV_INSN (BB_HEAD (bb));
+  rtx before = BB_HEAD (bb);
   while (before != 0)
     {
       if (GET_CODE (before) != CODE_LABEL
@@ -7611,7 +7611,7 @@ insert_insn_start_bb (rtx insn, basic_block bb)
 	      || NOTE_LINE_NUMBER (before) != NOTE_INSN_BASIC_BLOCK))
 	break;
       prev = before;
-      if (prev == bb->end)
+      if (prev == BB_END (bb))
 	break;
       before = NEXT_INSN (before);
     }
@@ -7746,9 +7746,9 @@ remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
 	  last = XEXP (last, 0);
 	}
       else
-	last = NEXT_INSN (bb->end);
+	last = NEXT_INSN (BB_END (bb));
   
-      for (insn = bb->head; insn != last; insn = NEXT_INSN (insn))
+      for (insn = BB_HEAD (bb); insn != last; insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
 	  {
 	    note = find_reg_equal_equiv_note (insn);
@@ -7802,7 +7802,7 @@ replace_store_insn (rtx reg, rtx del, basic_block bb, struct ls_expr *smexpr)
   /* Now we must handle REG_EQUAL notes whose contents is equal to the mem;
      they are no longer accurate provided that they are reached by this
      definition, so drop them.  */
-  for (; insn != NEXT_INSN (bb->end); insn = NEXT_INSN (insn))
+  for (; insn != NEXT_INSN (BB_END (bb)); insn = NEXT_INSN (insn))
     if (INSN_P (insn))
       {
 	set = single_set (insn);

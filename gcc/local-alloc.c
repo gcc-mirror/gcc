@@ -809,7 +809,9 @@ update_equiv_regs (void)
     {
       loop_depth = bb->loop_depth;
 
-      for (insn = bb->head; insn != NEXT_INSN (bb->end); insn = NEXT_INSN (insn))
+      for (insn = BB_HEAD (bb);
+	   insn != NEXT_INSN (BB_END (bb));
+	   insn = NEXT_INSN (insn))
 	{
 	  rtx note;
 	  rtx set;
@@ -1023,7 +1025,9 @@ update_equiv_regs (void)
   FOR_EACH_BB_REVERSE (bb)
     {
       loop_depth = bb->loop_depth;
-      for (insn = bb->end; insn != PREV_INSN (bb->head); insn = PREV_INSN (insn))
+      for (insn = BB_END (bb);
+	   insn != PREV_INSN (BB_HEAD (bb));
+	   insn = PREV_INSN (insn))
 	{
 	  rtx link;
 
@@ -1117,8 +1121,8 @@ update_equiv_regs (void)
 		      REG_N_CALLS_CROSSED (regno) = 0;
 		      REG_LIVE_LENGTH (regno) = 2;
 
-		      if (insn == bb->head)
-			bb->head = PREV_INSN (insn);
+		      if (insn == BB_HEAD (bb))
+			BB_HEAD (bb) = PREV_INSN (insn);
 
 		      /* Remember to clear REGNO from all basic block's live
 			 info.  */
@@ -1204,13 +1208,13 @@ block_alloc (int b)
 
   /* Count the instructions in the basic block.  */
 
-  insn = BLOCK_END (b);
+  insn = BB_END (BASIC_BLOCK (b));
   while (1)
     {
       if (GET_CODE (insn) != NOTE)
 	if (++insn_count > max_uid)
 	  abort ();
-      if (insn == BLOCK_HEAD (b))
+      if (insn == BB_HEAD (BASIC_BLOCK (b)))
 	break;
       insn = PREV_INSN (insn);
     }
@@ -1227,7 +1231,7 @@ block_alloc (int b)
      and assigns quantities to registers.
      It computes which registers to tie.  */
 
-  insn = BLOCK_HEAD (b);
+  insn = BB_HEAD (BASIC_BLOCK (b));
   while (1)
     {
       if (GET_CODE (insn) != NOTE)
@@ -1459,7 +1463,7 @@ block_alloc (int b)
       IOR_HARD_REG_SET (regs_live_at[2 * insn_number], regs_live);
       IOR_HARD_REG_SET (regs_live_at[2 * insn_number + 1], regs_live);
 
-      if (insn == BLOCK_END (b))
+      if (insn == BB_END (BASIC_BLOCK (b)))
 	break;
 
       insn = NEXT_INSN (insn);

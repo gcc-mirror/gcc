@@ -376,7 +376,7 @@ first_insn_after_basic_block_note (basic_block block)
   rtx insn;
 
   /* Get the first instruction in the block.  */
-  insn = block->head;
+  insn = BB_HEAD (block);
 
   if (insn == NULL_RTX)
     return NULL_RTX;
@@ -505,7 +505,7 @@ verify_wide_reg_1 (rtx *px, void *pregno)
 static void
 verify_wide_reg (int regno, basic_block bb)
 {
-  rtx head = bb->head, end = bb->end;
+  rtx head = BB_HEAD (bb), end = BB_END (bb);
 
   while (1)
     {
@@ -822,7 +822,7 @@ delete_noop_moves (rtx f ATTRIBUTE_UNUSED)
 
   FOR_EACH_BB (bb)
     {
-      for (insn = bb->head; insn != NEXT_INSN (bb->end); insn = next)
+      for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb)); insn = next)
 	{
 	  next = NEXT_INSN (insn);
 	  if (INSN_P (insn) && noop_move_p (insn))
@@ -1844,8 +1844,8 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
   /* If this block ends in a conditional branch, for each register
      live from one side of the branch and not the other, record the
      register as conditionally dead.  */
-  if (GET_CODE (bb->end) == JUMP_INSN
-      && any_condjump_p (bb->end))
+  if (GET_CODE (BB_END (bb)) == JUMP_INSN
+      && any_condjump_p (BB_END (bb)))
     {
       regset_head diff_head;
       regset diff = INITIALIZE_REG_SET (diff_head);
@@ -1870,7 +1870,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
       else
 	{
 	  /* This can happen with a conditional jump to the next insn.  */
-	  if (JUMP_LABEL (bb->end) != bb_true->head)
+	  if (JUMP_LABEL (BB_END (bb)) != BB_HEAD (bb_true))
 	    abort ();
 
 	  /* Simplest way to do nothing.  */
@@ -1882,7 +1882,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 			    bb_false->global_live_at_start, BITMAP_XOR))
 	{
 	  /* Extract the condition from the branch.  */
-	  rtx set_src = SET_SRC (pc_set (bb->end));
+	  rtx set_src = SET_SRC (pc_set (BB_END (bb)));
 	  rtx cond_true = XEXP (set_src, 0);
 	  rtx reg = XEXP (cond_true, 0);
 
@@ -1951,7 +1951,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 	      && ! current_function_calls_eh_return)))
     {
       rtx insn, set;
-      for (insn = bb->end; insn != bb->head; insn = PREV_INSN (insn))
+      for (insn = BB_END (bb); insn != BB_HEAD (bb); insn = PREV_INSN (insn))
 	if (GET_CODE (insn) == INSN
 	    && (set = single_set (insn))
 	    && GET_CODE (SET_DEST (set)) == MEM)
@@ -2031,7 +2031,7 @@ propagate_block (basic_block bb, regset live, regset local_set,
   /* Scan the block an insn at a time from end to beginning.  */
 
   changed = 0;
-  for (insn = bb->end;; insn = prev)
+  for (insn = BB_END (bb); ; insn = prev)
     {
       /* If this is a call to `setjmp' et al, warn if any
 	 non-volatile datum is live.  */
@@ -2046,7 +2046,7 @@ propagate_block (basic_block bb, regset live, regset local_set,
       else
         changed |= NEXT_INSN (prev) != insn;
 
-      if (insn == bb->head)
+      if (insn == BB_HEAD (bb))
 	break;
     }
 
@@ -3313,8 +3313,8 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
 	 new insn(s) and do the updates.  */
       emit_insn_before (insns, insn);
 
-      if (pbi->bb->head == insn)
-	pbi->bb->head = insns;
+      if (BB_HEAD (pbi->bb) == insn)
+	BB_HEAD (pbi->bb) = insns;
 
       /* INCR will become a NOTE and INSN won't contain a
 	 use of INCR_REG.  If a use of INCR_REG was just placed in
@@ -4229,7 +4229,7 @@ count_or_remove_death_notes_bb (basic_block bb, int kill)
   int count = 0;
   rtx insn;
 
-  for (insn = bb->head;; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
 	{
@@ -4273,7 +4273,7 @@ count_or_remove_death_notes_bb (basic_block bb, int kill)
 	    }
 	}
 
-      if (insn == bb->end)
+      if (insn == BB_END (bb))
 	break;
     }
 
@@ -4300,7 +4300,7 @@ clear_log_links (sbitmap blocks)
       {
 	basic_block bb = BASIC_BLOCK (i);
 
-	for (insn = bb->head; insn != NEXT_INSN (bb->end);
+	for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
 	     insn = NEXT_INSN (insn))
 	  if (INSN_P (insn))
 	    free_INSN_LIST_list (&LOG_LINKS (insn));

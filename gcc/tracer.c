@@ -85,7 +85,9 @@ count_insns (basic_block bb)
   rtx insn;
   int n = 0;
 
-  for (insn = bb->head; insn != NEXT_INSN (bb->end); insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb);
+       insn != NEXT_INSN (BB_END (bb));
+       insn = NEXT_INSN (insn))
     if (active_insn_p (insn))
       n++;
   return n;

@@ -218,8 +218,8 @@ add_missing_bbs (rtx before, basic_block first, basic_block last)
     {
       before = emit_note_before (NOTE_INSN_BASIC_BLOCK, before);
       NOTE_BASIC_BLOCK (before) = last;
-      last->head = before;
-      last->end = before;
+      BB_HEAD (last) = before;
+      BB_END (last) = before;
       update_bb_for_insn (last);
     }
 }
@@ -233,10 +233,10 @@ fix_basic_block_boundaries (basic_block bb, basic_block last, rtx head,
 			    rtx tail)
 {
   rtx insn = head;
-  rtx last_inside = bb->head;
+  rtx last_inside = BB_HEAD (bb);
   rtx aftertail = NEXT_INSN (tail);
 
-  head = bb->head;
+  head = BB_HEAD (bb);
 
   for (; insn != aftertail; insn = NEXT_INSN (insn))
     {
@@ -299,9 +299,9 @@ fix_basic_block_boundaries (basic_block bb, basic_block last, rtx head,
 	      if (f)
 		{
 		  last = curr_bb = split_edge (f);
-		  h = curr_bb->head;
-		  curr_bb->head = head;
-		  curr_bb->end = insn;
+		  h = BB_HEAD (curr_bb);
+		  BB_HEAD (curr_bb) = head;
+		  BB_END (curr_bb) = insn;
 		  /* Edge splitting created misplaced BASIC_BLOCK note, kill
 		     it.  */
 		  delete_insn (h);
@@ -324,9 +324,9 @@ fix_basic_block_boundaries (basic_block bb, basic_block last, rtx head,
 	    }
 	  else
 	    {
-	      curr_bb->head = head;
-	      curr_bb->end = insn;
-	      add_missing_bbs (curr_bb->head, bb, curr_bb->prev_bb);
+	      BB_HEAD (curr_bb) = head;
+	      BB_END (curr_bb) = insn;
+	      add_missing_bbs (BB_HEAD (curr_bb), bb, curr_bb->prev_bb);
 	    }
 	  note = GET_CODE (head) == CODE_LABEL ? NEXT_INSN (head) : head;
 	  NOTE_BASIC_BLOCK (note) = curr_bb;
@@ -337,7 +337,7 @@ fix_basic_block_boundaries (basic_block bb, basic_block last, rtx head,
 	     break;
 	}
     }
-  add_missing_bbs (last->next_bb->head, bb, last);
+  add_missing_bbs (BB_HEAD (last->next_bb), bb, last);
   return bb->prev_bb;
 }
 
@@ -442,7 +442,7 @@ add_deps_for_risky_insns (rtx head, rtx tail)
 		    bb = bb->aux;
 		    if (!bb)
 		      break;
-		    prev = bb->end;
+		    prev = BB_END (bb);
 		  }
 	      }
 	    /* FALLTHRU */
@@ -585,15 +585,15 @@ schedule_ebbs (FILE *dump_file)
   /* Schedule every region in the subroutine.  */
   FOR_EACH_BB (bb)
     {
-      rtx head = bb->head;
+      rtx head = BB_HEAD (bb);
       rtx tail;
 
       for (;;)
 	{
 	  edge e;
-	  tail = bb->end;
+	  tail = BB_END (bb);
 	  if (bb->next_bb == EXIT_BLOCK_PTR
-	      || GET_CODE (bb->next_bb->head) == CODE_LABEL)
+	      || GET_CODE (BB_HEAD (bb->next_bb)) == CODE_LABEL)
 	    break;
 	  for (e = bb->succ; e; e = e->succ_next)
 	    if ((e->flags & EDGE_FALLTHRU) != 0)

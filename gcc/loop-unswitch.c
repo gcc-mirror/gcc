@@ -126,7 +126,7 @@ may_unswitch_on_p (struct loops *loops, basic_block bb, struct loop *loop,
   /* BB must end in a simple conditional jump.  */
   if (!bb->succ || !bb->succ->succ_next || bb->succ->succ_next->succ_next)
     return false;
-  if (!any_condjump_p (bb->end))
+  if (!any_condjump_p (BB_END (bb)))
     return false;
 
   /* With branches inside loop.  */
@@ -141,12 +141,12 @@ may_unswitch_on_p (struct loops *loops, basic_block bb, struct loop *loop,
 
   /* Condition must be invariant.  We use just a stupid test of invariantness
      of the condition: all used regs must not be modified inside loop body.  */
-  test = get_condition (bb->end, NULL, true);
+  test = get_condition (BB_END (bb), NULL, true);
   if (!test)
     return false;
 
   for (i = 0; i < loop->num_nodes; i++)
-    if (modified_between_p (test, body[i]->head, NEXT_INSN (body[i]->end)))
+    if (modified_between_p (test, BB_HEAD (body[i]), NEXT_INSN (BB_END (body[i]))))
       return false;
 
   return true;
@@ -248,7 +248,7 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
 	  return;
 	}
 
-      if (!(cond = get_condition (bbs[i]->end, &split_before, true)))
+      if (!(cond = get_condition (BB_END (bbs[i]), &split_before, true)))
 	abort ();
       rcond = reversed_condition (cond);
 
@@ -345,7 +345,7 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on)
     abort ();
 
   /* Will we be able to perform redirection?  */
-  if (!any_condjump_p (unswitch_on->end))
+  if (!any_condjump_p (BB_END (unswitch_on)))
     return NULL;
   if (!cfg_layout_can_duplicate_bb_p (unswitch_on))
     return NULL;

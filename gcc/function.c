@@ -7293,9 +7293,9 @@ sibcall_epilogue_contains (rtx insn)
 static void
 emit_return_into_block (basic_block bb, rtx line_note)
 {
-  emit_jump_insn_after (gen_return (), bb->end);
+  emit_jump_insn_after (gen_return (), BB_END (bb));
   if (line_note)
-    emit_note_copy_after (line_note, PREV_INSN (bb->end));
+    emit_note_copy_after (line_note, PREV_INSN (BB_END (bb)));
 }
 #endif /* HAVE_return */
 
@@ -7720,7 +7720,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
       last = e->src;
 
       /* Verify that there are no active instructions in the last block.  */
-      label = last->end;
+      label = BB_END (last);
       while (label && GET_CODE (label) != CODE_LABEL)
 	{
 	  if (active_insn_p (label))
@@ -7728,7 +7728,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 	  label = PREV_INSN (label);
 	}
 
-      if (last->head == label && GET_CODE (label) == CODE_LABEL)
+      if (BB_HEAD (last) == label && GET_CODE (label) == CODE_LABEL)
 	{
 	  rtx epilogue_line_note = NULL_RTX;
 
@@ -7752,7 +7752,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 	      if (bb == ENTRY_BLOCK_PTR)
 		continue;
 
-	      jump = bb->end;
+	      jump = BB_END (bb);
 	      if ((GET_CODE (jump) != JUMP_INSN) || JUMP_LABEL (jump) != label)
 		continue;
 
@@ -7787,9 +7787,9 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 	  /* Emit a return insn for the exit fallthru block.  Whether
 	     this is still reachable will be determined later.  */
 
-	  emit_barrier_after (last->end);
+	  emit_barrier_after (BB_END (last));
 	  emit_return_into_block (last, epilogue_line_note);
-	  epilogue_end = last->end;
+	  epilogue_end = BB_END (last);
 	  last->succ->flags &= ~EDGE_FALLTHRU;
 	  goto epilogue_done;
 	}
@@ -7845,7 +7845,7 @@ epilogue_done:
   for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
     {
       basic_block bb = e->src;
-      rtx insn = bb->end;
+      rtx insn = BB_END (bb);
       rtx i;
       rtx newinsn;
 
@@ -7902,7 +7902,7 @@ epilogue_done:
 	}
 
       /* Find the last line number note in the first block.  */
-      for (insn = ENTRY_BLOCK_PTR->next_bb->end;
+      for (insn = BB_END (ENTRY_BLOCK_PTR->next_bb);
 	   insn != prologue_end && insn;
 	   insn = PREV_INSN (insn))
 	if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)

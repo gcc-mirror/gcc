@@ -528,11 +528,12 @@ ra_debug_bbi (int bbi)
 {
   basic_block bb = BASIC_BLOCK (bbi);
   rtx insn;
-  for (insn = bb->head; insn; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); insn; insn = NEXT_INSN (insn))
     {
-      ra_print_rtx_top (stderr, insn, (insn == bb->head || insn == bb->end));
+      ra_print_rtx_top (stderr, insn,
+			(insn == BB_HEAD (bb) || insn == BB_END (bb)));
       fprintf (stderr, "\n");
-      if (insn == bb->end)
+      if (insn == BB_END (bb))
 	break;
     }
 }
@@ -911,7 +912,7 @@ dump_static_insn_cost (FILE *file, const char *message, const char *prefix)
     {
       unsigned HOST_WIDE_INT block_cost = bb->frequency;
       rtx insn, set;
-      for (insn = bb->head; insn; insn = NEXT_INSN (insn))
+      for (insn = BB_HEAD (bb); insn; insn = NEXT_INSN (insn))
 	{
 	  /* Yes, yes.  We don't calculate the costs precisely.
 	     Only for "simple enough" insns.  Those containing single
@@ -950,7 +951,7 @@ dump_static_insn_cost (FILE *file, const char *message, const char *prefix)
 		  pcost->count++;
 		}
 	    }
-	  if (insn == bb->end)
+	  if (insn == BB_END (bb))
 	    break;
 	}
     }

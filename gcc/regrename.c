@@ -149,7 +149,7 @@ merge_overlapping_regs (basic_block b, HARD_REG_SET *pset,
   HARD_REG_SET live;
 
   REG_SET_TO_HARD_REG_SET (live, b->global_live_at_start);
-  insn = b->head;
+  insn = BB_HEAD (b);
   while (t)
     {
       /* Search forward until the next reference to the register to be
@@ -729,7 +729,7 @@ build_def_use (basic_block bb)
 
   open_chains = closed_chains = NULL;
 
-  for (insn = bb->head; ; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
 	{
@@ -954,7 +954,7 @@ build_def_use (basic_block bb)
 	      scan_rtx (insn, &XEXP (note, 0), NO_REGS, terminate_dead,
 			OP_IN, 0);
 	}
-      if (insn == bb->end)
+      if (insn == BB_END (bb))
 	break;
     }
 
@@ -1525,7 +1525,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
   bool changed = false;
   rtx insn;
 
-  for (insn = bb->head; ; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
       int n_ops, i, alt, predicated;
       bool is_asm;
@@ -1533,7 +1533,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
       if (! INSN_P (insn))
 	{
-	  if (insn == bb->end)
+	  if (insn == BB_END (bb))
 	    break;
 	  else
 	    continue;
@@ -1709,7 +1709,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       if (set && REG_P (SET_DEST (set)) && REG_P (SET_SRC (set)))
 	copy_value (SET_DEST (set), SET_SRC (set), vd);
 
-      if (insn == bb->end)
+      if (insn == BB_END (bb))
 	break;
     }
 

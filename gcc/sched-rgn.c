@@ -343,7 +343,7 @@ is_cfg_nonregular (void)
      the cfg not well structured.  */
   /* Check for labels referred to other thn by jumps.  */
   FOR_EACH_BB (b)
-    for (insn = b->head;; insn = NEXT_INSN (insn))
+    for (insn = BB_HEAD (b); ; insn = NEXT_INSN (insn))
       {
 	code = GET_CODE (insn);
 	if (GET_RTX_CLASS (code) == 'i' && code != JUMP_INSN)
@@ -357,7 +357,7 @@ is_cfg_nonregular (void)
 	      return 1;
 	  }
 
-	if (insn == b->end)
+	if (insn == BB_END (b))
 	  break;
       }
 
@@ -558,8 +558,8 @@ static int
 too_large (int block, int *num_bbs, int *num_insns)
 {
   (*num_bbs)++;
-  (*num_insns) += (INSN_LUID (BLOCK_END (block)) -
-		   INSN_LUID (BLOCK_HEAD (block)));
+  (*num_insns) += (INSN_LUID (BB_END (BASIC_BLOCK (block))) -
+		   INSN_LUID (BB_HEAD (BASIC_BLOCK (block))));
   if ((*num_bbs > MAX_RGN_BLOCKS) || (*num_insns > MAX_RGN_INSNS))
     return 1;
   else
@@ -852,8 +852,8 @@ find_rgns (struct edge_list *edge_list, dominance_info dom)
 
 	      /* Estimate # insns, and count # blocks in the region.  */
 	      num_bbs = 1;
-	      num_insns = (INSN_LUID (bb->end)
-			   - INSN_LUID (bb->head));
+	      num_insns = (INSN_LUID (BB_END (bb))
+			   - INSN_LUID (BB_HEAD (bb)));
 
 	      /* Find all loop latches (blocks with back edges to the loop
 		 header) or all the leaf blocks in the cfg has no loops.
@@ -1839,28 +1839,28 @@ can_schedule_ready_p (rtx insn)
 
       /* Update source block boundaries.  */
       b1 = BLOCK_FOR_INSN (insn);
-      if (insn == b1->head && insn == b1->end)
+      if (insn == BB_HEAD (b1) && insn == BB_END (b1))
 	{
 	  /* We moved all the insns in the basic block.
 	     Emit a note after the last insn and update the
 	     begin/end boundaries to point to the note.  */
 	  rtx note = emit_note_after (NOTE_INSN_DELETED, insn);
-	  b1->head = note;
-	  b1->end = note;
+	  BB_HEAD (b1) = note;
+	  BB_END (b1) = note;
 	}
-      else if (insn == b1->end)
+      else if (insn == BB_END (b1))
 	{
 	  /* We took insns from the end of the basic block,
 	     so update the end of block boundary so that it
 	     points to the first insn we did not move.  */
-	  b1->end = PREV_INSN (insn);
+	  BB_END (b1) = PREV_INSN (insn);
 	}
-      else if (insn == b1->head)
+      else if (insn == BB_HEAD (b1))
 	{
 	  /* We took insns from the start of the basic block,
 	     so update the start of block boundary so that
 	     it points to the first insn we did not move.  */
-	  b1->head = NEXT_INSN (insn);
+	  BB_HEAD (b1) = NEXT_INSN (insn);
 	}
     }
   else
@@ -2516,10 +2516,10 @@ schedule_region (int rgn)
       sched_rgn_n_insns += sched_n_insns;
 
       /* Update target block boundaries.  */
-      if (head == BLOCK_HEAD (b))
-	BLOCK_HEAD (b) = current_sched_info->head;
-      if (tail == BLOCK_END (b))
-	BLOCK_END (b) = current_sched_info->tail;
+      if (head == BB_HEAD (BASIC_BLOCK (b)))
+	BB_HEAD (BASIC_BLOCK (b)) = current_sched_info->head;
+      if (tail == BB_END (BASIC_BLOCK (b)))
+	BB_END (BASIC_BLOCK (b)) = current_sched_info->tail;
 
       /* Clean up.  */
       if (current_nr_blocks > 1)
