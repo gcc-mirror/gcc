@@ -5526,7 +5526,7 @@ attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
       /* Count an extra reference to the reg.  When a reg is
 	 incremented, spilling it is worse, so we want to make
 	 that less likely.  */
-      REG_FREQ (regno) += (optimize_size || !phi->bb->frequency
+      REG_FREQ (regno) += (optimize_size || !pbi->bb->frequency
 		           ? 1 : pbi->bb->frequency);
 
       /* Count the increment as a setting of the register,
@@ -6115,7 +6115,7 @@ try_pre_increment_1 (pbi, insn)
 	 so we want to make that less likely.  */
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
-	  REG_FREQ (regno) += (optimize_size || !phi->bb->frequency
+	  REG_FREQ (regno) += (optimize_size || !pbi->bb->frequency
 			       ? 1 : pbi->bb->frequency);
 	  REG_N_SETS (regno)++;
 	}
