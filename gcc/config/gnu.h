@@ -2,8 +2,8 @@
 
 /* Macro to produce CPP_PREDEFINES for GNU on a given machine.  */
 #define GNU_CPP_PREDEFINES(machine) \
-"-D" machine " -Acpu(" machine ") -Amachine(" machine ")" \
-"-Dunix -Asystem(unix) \
+"-D" machine " -Acpu(" machine ") -Amachine(" machine ") \
+-Dunix -Asystem(unix) \
 -DMACH -Asystem(mach) \
 -D__GNU__ -Asystem(gnu)"
 
