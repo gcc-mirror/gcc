@@ -12,6 +12,10 @@ Mon Mar  8 16:04:44 1999  Jim Wilson  <wilson@cygnus.com>
 
 Mon Mar  8 15:27:42 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* i386.md (ashlsi3): Revise comments.  Provide new anonymous
+	pattern for Pentium and PPro/PII.  Reverse constraints in 
+	generic ashlsi3 anonymous pattern.
+
 	* calls.c (initialize_argument_info): Accept a pointer to 
 	CUMULATIVE_ARGS.
 	(expand_call): Pass the address of CUMULATIVE_ARGS.
