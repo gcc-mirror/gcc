@@ -1,3 +1,8 @@
+2000-12-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.dg/pack-test-1.c: Compile on powerpc*-*-eabi* too.
+	* gcc.dg/pack-test-2.c: Likewise.
+
 2000-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	Tests by Zack Weinberg <zackw@stanford.edu>.
