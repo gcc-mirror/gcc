@@ -1,3 +1,7 @@
+2004-07-04  Bud Davis  <bdavis9659@comcast.net>
+
+	* gfortran.fortran-torture/execute/seq_io.f90: New test.
+
 2004-07-04  Neil Booth  <neil@duron.akihabara.co.uk>
 
 	* gcc.dg/cpp/if-mop.c: Two new testcases.
