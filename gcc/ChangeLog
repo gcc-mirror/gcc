@@ -1,5 +1,10 @@
 2000-05-01  Richard Henderson  <rth@cygnus.com>
 
+	* ifcvt.c (dead_or_predicable): Set merge_bb->end to the insn before
+	the sequence we're moving, not to merge_bb->head.
+
+2000-05-01  Richard Henderson  <rth@cygnus.com>
+
 	* configure.in (alpha*-*-linux-gnulibc1*) [tmake_file]: Remove
 	reference to alpha/t-linux.
 	(alpha*-*-linux-gnu*): Likewise.
