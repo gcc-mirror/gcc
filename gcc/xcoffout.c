@@ -1,5 +1,5 @@
 /* Output xcoff-format symbol table information from GNU compiler.
-   Copyright (C) 1992, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1994, 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,10 +24,8 @@ Boston, MA 02111-1307, USA.  */
    interface.  Many functions are very similar to their counterparts in
    sdbout.c.  */
 
-/* Include this first, because it may define MIN and MAX.  */
-#include <stdio.h>
-
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "flags.h"
@@ -113,6 +111,9 @@ char *xcoff_lastfile;
 
 #define ASM_OUTPUT_LBE(FILE,LINENUM,BLOCKNUM) \
   fprintf (FILE, "\t.eb\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM))
+
+static void assign_type_number		PROTO((tree, char *, int));
+static void xcoffout_block		PROTO((tree, int, tree));
 
 /* Support routines for XCOFF debugging info.  */
 

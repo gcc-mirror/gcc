@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "recog.h"
 #include "reload.h"
-#include <ctype.h>
 
 /* Each optab contains info on how this target machine
    can perform a particular operation

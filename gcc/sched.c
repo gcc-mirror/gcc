@@ -118,10 +118,7 @@ Boston, MA 02111-1307, USA.  */
    beginning of basic blocks that have been scheduled.  */
 
 #include "config.h"
-#include <stdio.h>
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include "system.h"
 #include "rtl.h"
 #include "basic-block.h"
 #include "regs.h"

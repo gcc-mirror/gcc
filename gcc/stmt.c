@@ -34,13 +34,7 @@ Boston, MA 02111-1307, USA.  */
    after parsing the then-clause.  */
 
 #include "config.h"
-
-#include <stdio.h>
-#include <ctype.h>
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include "system.h"
 
 #include "rtl.h"
 #include "tree.h"

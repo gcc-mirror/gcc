@@ -27,11 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #endif
 
-#include <stdio.h>
-#include <errno.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#include "system.h"
 
 #ifdef IN_GCC
 #include "gansidecl.h"

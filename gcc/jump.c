@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
    from other passes as well.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "flags.h"
 #include "hard-reg-set.h"

@@ -116,7 +116,7 @@ Boston, MA 02111-1307, USA.  */
    effect to the ARM, differing mostly in which insn is "in charge".   */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "expr.h"
 #include "insn-config.h"

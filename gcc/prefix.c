@@ -64,28 +64,17 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include "gansidecl.h"
 #ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-
+#include "system.h"
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+#include "gansidecl.h"
 
 static char *get_key_value	PROTO((char *));
 static char *translate_name	PROTO((char *));
@@ -96,8 +85,6 @@ static char *save_string	PROTO((char *, int));
 static char *lookup_key		PROTO((char *));
 static HKEY reg_key = (HKEY) INVALID_HANDLE_VALUE;
 #endif
-
-extern char *getenv ();
 
 /* Given KEY, as above, return its value.  */
 

@@ -19,20 +19,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-
-#include <stdio.h>
-#include <errno.h>
+#include "system.h"
 #include <setjmp.h>
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
 
 #include "rtl.h"
 #include "tree.h"
@@ -43,8 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-parse.h"
 #include "c-pragma.h"
 
-#include <ctype.h>
-
 /* MULTIBYTE_CHARS support only works for native compilers.
    ??? Ideally what we want is to model widechar support after
    the current floating point support.  */
@@ -53,12 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifdef MULTIBYTE_CHARS
-#include <stdlib.h>
 #include <locale.h>
-#endif
-
-#ifndef errno
-extern int errno;
 #endif
 
 #if USE_CPPLIB

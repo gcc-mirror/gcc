@@ -81,8 +81,8 @@ Boston, MA 02111-1307, USA.  */
 #include <varargs.h>
 #endif
 
-/* Must precede rtl.h for FFS.  */
-#include <stdio.h>
+/* stdio.h must precede rtl.h for FFS.  */
+#include "system.h"
 
 #include "rtl.h"
 #include "flags.h"

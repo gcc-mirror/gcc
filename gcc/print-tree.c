@@ -20,8 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include "system.h"
 #include "tree.h"
-#include <stdio.h>
 
 extern char *mode_name[];
 

@@ -26,39 +26,15 @@ Boston, MA 02111-1307, USA.  */
 /* Build tables of static constructors and destructors and run ld.  */
 
 #include "config.h"
-#include <sys/types.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h>
+#include "system.h"
 #include <signal.h>
-#include <sys/file.h>
 #include <sys/stat.h>
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
 
 #define COLLECT
 
 #include "demangle.h"
 #include "obstack.h"
 #include "gansidecl.h"
-
-#ifndef errno
-extern int errno;
-#endif
 
 #ifndef HAVE_STRERROR
 extern char *sys_errlist[];
@@ -73,12 +49,6 @@ char *strerror();
 
 #ifdef USG
 #define vfork fork
-#endif
-
-#ifndef R_OK
-#define R_OK 4
-#define W_OK 2
-#define X_OK 1
 #endif
 
 #ifndef WIFSIGNALED
@@ -272,7 +242,6 @@ char * temporary_firstobj;
 /* Defined in the automatically-generated underscore.c.  */
 extern int prepends_underscore;
 
-extern char *getenv ();
 extern char *mktemp ();
 extern FILE *fdopen ();
 
@@ -337,17 +306,6 @@ static int ignore_library	PROTO((char *));
 char *xcalloc ();
 char *xmalloc ();
 
-#ifdef NEED_DECLARATION_INDEX
-extern char *index ();
-#endif
-
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
-
-#ifdef NEED_DECLARATION_FREE
-extern void free ();
-#endif
 
 #ifdef NO_DUP2
 int
@@ -1028,8 +986,8 @@ main (argc, argv)
      and a new one is installed (rare, but we should handle it).
      ??? Hopefully references to COLLECT_NAME can be removed at some point.  */
 
-  collect_name = (char *) getenv ("COLLECT_NAME");
-  collect_names = (char *) getenv ("COLLECT_NAMES");
+  collect_name = getenv ("COLLECT_NAME");
+  collect_names = getenv ("COLLECT_NAMES");
 
   p = (char *) xmalloc (strlen ("COLLECT_NAMES=")
 			+ (collect_name ? strlen (collect_name) + 1 : 0)
@@ -1055,7 +1013,7 @@ main (argc, argv)
   sprintf (p, "COLLECT_NAME=%s", argv[0]);
   putenv (p);
 
-  p = (char *) getenv ("COLLECT_GCC_OPTIONS");
+  p = getenv ("COLLECT_GCC_OPTIONS");
   while (p && *p)
     {
       char *q = extract_string (&p);
@@ -1272,7 +1230,7 @@ main (argc, argv)
      AIX support needs to know if -shared has been specified before
      parsing commandline arguments.  */
 
-  p = (char *) getenv ("COLLECT_GCC_OPTIONS");
+  p = getenv ("COLLECT_GCC_OPTIONS");
   while (p && *p)
     {
       char *q = extract_string (&p);
