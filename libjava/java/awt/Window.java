@@ -92,6 +92,11 @@ public class Window extends Container implements Accessible
 
   private transient Component windowFocusOwner;
   
+  /*
+   * The number used to generate the name returned by getName.
+   */
+  private static transient long next_window_number;
+
   protected class AccessibleAWTWindow extends AccessibleAWTContainer
   {
     public AccessibleRole getAccessibleRole()
@@ -944,5 +949,20 @@ public class Window extends Container implements Accessible
           new ComponentEvent(this, ComponentEvent.COMPONENT_MOVED);
         getToolkit().getSystemEventQueue().postEvent(ce);
       }
+  }
+
+  /**
+   * Generate a unique name for this window.
+   *
+   * @return A unique name for this window.
+   */
+  String generateName()
+  {
+    return "win" + getUniqueLong();
+  }
+
+  private static synchronized long getUniqueLong()
+  {
+    return next_window_number++;
   }
 }

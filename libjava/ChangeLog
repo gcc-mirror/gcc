@@ -1,3 +1,14 @@
+2005-02-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Checkbox.java
+	(next_checkbox_number): New static variable.
+	(generateName): New method.
+	(getUniqueLong): Likewise.
+	* java/awt/Window.java
+	(next_window_number): New static variable.
+	(generateName): New method.
+	(getUniqueLong): Likewise.
+
 2005-02-21  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/jar/JarFile.java (verifyHashes): Check whether ZipEntry

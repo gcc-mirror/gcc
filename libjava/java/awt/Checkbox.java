@@ -1,5 +1,5 @@
 /* Checkbox.java -- An AWT checkbox widget
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -95,6 +95,11 @@ private boolean state;
 // The list of listeners for this object.
 private transient ItemListener item_listeners;
 
+  /*
+   * The number used to generate the name returned by getName.
+   */
+  private static transient long next_checkbox_number;
+
 /**
  * This class provides accessibility support for the
  * checkbox.
@@ -106,7 +111,6 @@ protected class AccessibleAWTCheckbox
   extends AccessibleAWTComponent
   implements ItemListener, AccessibleAction, AccessibleValue
 {
-
   /**
    * Serialization constant to match JDK 1.5
    */
@@ -627,4 +631,18 @@ public AccessibleContext getAccessibleContext()
   return accessibleContext;
 }
 
-} // class Checkbox 
+  /**
+   * Generate a unique name for this checkbox.
+   *
+   * @return A unique name for this checkbox.
+   */
+  String generateName()
+  {
+    return "checkbox" + getUniqueLong();
+  }
+
+  private static synchronized long getUniqueLong()
+  {
+    return next_checkbox_number++;
+  }
+}
