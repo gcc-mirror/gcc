@@ -18,23 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#ifdef hpux
-
-#include <magic.h>
-#if defined(SHL_MAGIC)
-#define hpux8 1
-#define HAVE_VPRINTF
-#endif
-
-#define USG
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define bcmp(a,b,c) memcmp (a,b,c)
-
-#else /* hpux */
-#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 extern int errno;
-#endif /* hpux */
 
 /* #defines that need visibility everywhere.  */
 #define FALSE 0
@@ -61,13 +45,6 @@ extern int errno;
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
-
-#if 0
-/* If compiled with GNU C, use the built-in alloca */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#endif
-#endif
 
 /* Don't try to use sys_siglist.  */
 #define NO_SYS_SIGLIST
