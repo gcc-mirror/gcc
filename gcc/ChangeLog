@@ -1,3 +1,11 @@
+2003-10-17  Richard Earnshaw <rearnsha@arm.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/arm/arm.c (use_return_insn): Not a single instruction, if
+	there's a frame pointer.
+	(arm_output_epilogue): Protect stack pointer from being corrupted
+	on interrupt.
+
 2003-10-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* ifcvt.c (noce_try_addcc): Handle ifs with 'else' case.

@@ -986,7 +986,11 @@ use_return_insn (int iscond)
   /* Never use a return instruction before reload has run.  */
   if (!reload_completed)
     return 0;
-      
+
+  /* We need two instructions when there's a frame pointer. */
+  if (frame_pointer_needed)
+    return 0;
+  
   func_type = arm_current_func_type ();
 
   /* Naked functions and volatile functions need special
@@ -8500,8 +8504,18 @@ arm_output_epilogue (int really_return)
 	saved_regs_mask &= ~ (1 << LR_REGNUM);
       else
 	saved_regs_mask &= ~ (1 << PC_REGNUM);
-      
-      print_multi_reg (f, "ldmea\t%r", FP_REGNUM, saved_regs_mask);
+
+      /* We must use SP as the base register, because SP is one of the
+         registers being restored.  If an interrupt or page fault
+         happens in the ldm instruction, the SP might or might not
+         have been restored.  That would be bad, as then SP will no
+         longer indicate the safe area of stack, and we can get stack
+         corruption.  Using SP as the base register means that it will
+         be reset correctly to the original value, should an interrupt
+         occur.  */
+      asm_fprintf (f, "\tsub\t%r,%r,#%d\n", SP_REGNUM, FP_REGNUM,
+		   4 * bit_count (saved_regs_mask));
+      print_multi_reg (f, "ldmfd\t%r", SP_REGNUM, saved_regs_mask);
 
       if (IS_INTERRUPT (func_type))
 	/* Interrupt handlers will have pushed the
