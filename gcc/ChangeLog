@@ -1,3 +1,7 @@
+2004-09-27  Aaron W. LaFramboise <aaronraolete36@aaronwl.com>
+
+	* libgcc2.c (getpagesize): Change type of return value to int.
+
 2004-09-26  Matt Austern  <austern@apple.com>
 
 	* ggc-page.c (GGC_QUIRE_SIZE): Bump up from 16 to 256 if we're
