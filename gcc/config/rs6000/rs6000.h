@@ -65,10 +65,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
-/* Flag to allow putting fp constants in the TOC; can be turned off when
+/* Flag to disable putting fp constants in the TOC; can be turned on when
    the TOC overflows.  */
 
-#define TARGET_FP_IN_TOC  (target_flags & 1)
+#define TARGET_NO_FP_IN_TOC  (target_flags & 1)
 
 /* Flag to output only one TOC entry per module.  Normally linking fails if
    there are more than 16K unique variables/constants in an executable.  With
@@ -89,13 +89,12 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES		\
-  {{"fp-in-toc", 1},		\
-   {"no-fp-in-toc", -1},	\
+  {{"normal-toc", - (1|2)},	\
+   {"no-fp-in-toc", 1},	\
    {"minimal-toc", 2},		\
-   {"no-minimal-toc", -2},	\
    { "", TARGET_DEFAULT}}
 
-#define TARGET_DEFAULT 1
+#define TARGET_DEFAULT 0
 
 /* On the RS/6000, we turn on various flags if optimization is selected.  */
 
@@ -1565,7 +1564,8 @@ toc_section ()						\
    || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
        && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)	\
    || GET_CODE (X) == LABEL_REF					\
-   || (TARGET_FP_IN_TOC && GET_CODE (X) == CONST_DOUBLE		\
+   || (! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC)		\
+       && GET_CODE (X) == CONST_DOUBLE				\
        && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
        && BITS_PER_WORD == HOST_BITS_PER_INT))
 
