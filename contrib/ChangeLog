@@ -1,3 +1,7 @@
+2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gennews: Update for GCC 3.0.
+
 2001-06-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc_release: Tweaks for solaris /bin/sh.
