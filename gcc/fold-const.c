@@ -4029,7 +4029,7 @@ fold (expr)
 	return non_lvalue (invert_truthvalue (arg1));
       if (integer_onep (arg1))
 	return non_lvalue (invert_truthvalue (arg0));
-      break;
+      return t;
 
     case EQ_EXPR:
     case NE_EXPR:
