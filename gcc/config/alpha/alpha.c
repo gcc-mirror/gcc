@@ -1035,6 +1035,7 @@ alpha_emit_conditional_move (cmp, mode)
      enum machine_mode mode;
 {
   enum rtx_code code = GET_CODE (cmp);
+  enum rtx_code cmov_code = NE;
   rtx op0 = alpha_compare_op0;
   rtx op1 = alpha_compare_op1;
   enum machine_mode cmp_mode
@@ -1065,6 +1066,7 @@ alpha_emit_conditional_move (cmp, mode)
     case NE:
       /* This must be reversed. */
       code = reverse_condition (code);
+      cmov_code = EQ;
       break;
 
     case GE:  case GT:  case GEU:  case GTU:
@@ -1081,8 +1083,7 @@ alpha_emit_conditional_move (cmp, mode)
 
   tem = gen_reg_rtx (cmp_op_mode);
   emit_move_insn (tem, gen_rtx (code, cmp_op_mode, op0, op1));
-  return gen_rtx (code == NE ? EQ : NE, VOIDmode, tem,
-		  CONST0_RTX (cmp_op_mode));
+  return gen_rtx (cmov_code, VOIDmode, tem, CONST0_RTX (cmp_op_mode));
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
