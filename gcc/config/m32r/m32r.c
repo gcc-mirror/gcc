@@ -2576,7 +2576,7 @@ m32r_not_same_reg (rtx a, rtx b)
 /* Use a library function to move some bytes.  */
 
 static void
-block_move_call (rtx dest, rtx src_reg, rtx bytes_rtx)
+block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
 {
   /* We want to pass the size as Pmode, which will normally be SImode
      but will be DImode if we are using 64 bit longs and pointers.  */
