@@ -1,3 +1,8 @@
+2001-02-22  Andreas Jaeger  <aj@suse.de>
+
+	* optimize.c: Include toplev.h for
+	note_deferral_of_defined_inline_function prototype.
+
 2001-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (struct lang_decl_inlined_fns): New.
@@ -56,7 +61,7 @@
 	appropriate.
 	(start_function): Set current_vtt_parm.
 	(lang_mark_tree): Don't mark vtt_parm.
-	* decl2.c (maybe_retrofit_in_chrg): Do add the VTT parm to 
+	* decl2.c (maybe_retrofit_in_chrg): Do add the VTT parm to
 	DECL_ARGUMENTS.  Set DECL_HAS_VTT_PARM_P.
 	* class.c (build_clone): Maybe remove the VTT parm.
 	* optimize.c (maybe_clone_body): Set up the VTT parm.
@@ -111,7 +116,7 @@
 
 	* decl2.c (build_artificial_parm): Set TREE_READONLY.
 
-	* decl.c (bad_specifiers): Allow throw specs on things with 
+	* decl.c (bad_specifiers): Allow throw specs on things with
 	pointer-to-function or -member-function type.
 	* init.c (build_default_init): Don't use a CONSTRUCTOR to initialize
 	a pmf.
@@ -220,7 +225,7 @@
 	non-virtual destructor.
 	* init.c (build_delete): Explicitly call `operator delete' when
 	deleting an object with a non-virtual destructor.
-	
+
 2001-02-13  Jason Merrill  <jason@redhat.com>
 
 	* lang-specs.h: Add more __EXCEPTIONS.
@@ -251,7 +256,7 @@
 	* decl2.c (flag_vtable_thunks): Always set it to 1.
 	(flag_new_abi): Likewise.
 	* lang-specs.h: Remove conditional on ENABLE_NEW_GXX_ABI.
-	
+
 	* Makefile.in (g++spec.o): Fix typo.
 
 2001-02-09  Jason Merrill  <jason@redhat.com>
@@ -275,7 +280,7 @@
 	* typeck2.c (friendly_abort): Don't say anything if we have
 	earlier errors or sorries.
 
-	* decl.c (check_tag_decl): Notice attempts to redefine bool and 
+	* decl.c (check_tag_decl): Notice attempts to redefine bool and
 	wchar_t.  Ignore if in_system_header.
 
 	* decl.c (maybe_push_cleanup_level): New fn...
@@ -285,7 +290,7 @@
 
 2001-02-07  Mark Mitchell  <mark@codesourcery.com>
 
-	* lang-specs.h: Use CPLUSPLUS_CPP_SPEC for the preprocessor 
+	* lang-specs.h: Use CPLUSPLUS_CPP_SPEC for the preprocessor
 	spec.
 
 2001-02-06  Nathan Sidwell  <nathan@codesourcery.com>
@@ -405,7 +410,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(typeinfo_in_lib_p): New function.
 	(synthesize_tinfo_var): Use it.
 	(create_real_tinfo_var): Likewise.
-	
+
 2001-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (push_class_binding): Use context_for_name_lookup instead
@@ -622,7 +627,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
         * cvt.c (ocp_convert): Handle vector type conversion
         * typeck2.c (digest_init): Handle vector type initializations
-		
+
 2001-01-16  Phil Edwards  <pme@sources.redhat.com>
 
 	* g++spec.c:  Don't add libraries needlessly if -fsyntax-only
@@ -791,7 +796,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	DECL_INITIALIZED_IN_CLASS_P.
 	(instantiate_class_template): Likewise.
 	(instantiate_decl): Check DECL_INITIALIZED_IN_CLASS_P.
-	
+
 	* class.c (finish_struct): Constify saved_filename.
 
 2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
@@ -809,14 +814,14 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Don't set TREE_VALUE on the class_shadowed list.
 
 2001-01-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
- 
-	* decl2.c (acceptable_java_type): Allow references too. 
+
+	* decl2.c (acceptable_java_type): Allow references too.
 	* init.c (build_java_class_ref): When using the new ABI, search
 	`class$' and have it mangled with `mangle_decl.'
 	* mangle.c (write_java_integer_type_codes): New function.
 	(write_builtin_type): Detect and mangle Java integer and real
 	types.
- 
+
 2001-01-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (grokfield): Don't accept `asm' specifiers for
@@ -873,7 +878,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(implicitly_declare_fn): Generate the exception spec too.
 	* search.c (check_final_overrider): Check artificial functions
 	too.
-	* typeck2.c (merge_exception_specifiers): New function.	
+	* typeck2.c (merge_exception_specifiers): New function.
 
 2001-01-03  Jason Merrill  <jason@redhat.com>
 
@@ -913,7 +918,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(tsubst_template_parms): Use size_int, not build_int_2.
 	(tsubst): Likewise.
 	* rtti.c (get_vmi_pseudo_type_info): Likewise.
-	
+
 2001-01-02  Richard Henderson  <rth@redhat.com>
 
 	* parse.y (asm): Set ASM_INPUT_P.
@@ -931,7 +936,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* typeck.c (build_unary_op): Restore old &a.f diagnostic code.
 	* cvt.c (convert_to_void): Use type_unknown_p.
 
-	* typeck.c (strip_all_pointer_quals): Also strip quals from 
+	* typeck.c (strip_all_pointer_quals): Also strip quals from
 	pointer-to-member types.
 
 	* Make-lang.in (cp/TAGS): Use --no-globals.  Ignore parse.c, and treat
