@@ -39,7 +39,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 /* #define NDEBUG 1 */
-#include <assert.h>
+#include "assert.h"
 
 #if defined(DWARF_TIMESTAMPS)
 #if defined(POSIX)
