@@ -1,5 +1,10 @@
 2003-10-24  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (__verify_grouping):
+	Prefer '=' to an unnecessary '&='.
+
+2003-10-24  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_ios.tcc (copyfmt(const basic_ios&)):
 	Tweak my fix for libstdc++/12657.
 
