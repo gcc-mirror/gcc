@@ -1,3 +1,47 @@
+2003-01-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/2738
+	* g++.dg/parse/ret-type1.C: New test.
+
+	PR c++/3792
+	* g++.dg/parse/tmpl-outside1.C: New test.
+
+	PR c++/4207
+	* g++.dg/parse/int-as-enum1.C: New test.
+
+	PR c++/4903
+	* g++.dg/parse/no-typename1.C: New test.
+
+	PR c++/5533
+	* g++.dg/parse/no-value1.C: New test.
+
+	PR c++/5921
+	* g++.dg/parse/wrong-inline1.C: New test.
+
+	PR c++/6402
+	* g++.dg/parse/ref1.C: New test.
+
+	PR c++/6992
+	* g++.dg/parse/attr-ctor1.C: New test.
+
+	PR c++/7229
+	* g++.dg/parse/namespace5.C: New test.
+
+	PR c++/7917
+	* g++.dg/parse/func-def1.C: New test.
+
+	PR c++/8143
+	* g++.dg/parse/undefined1.C: New test.
+
+	PR c++/5723, PR c++/8522
+	* g++.dg/parse/specialization1.C: New test.
+
+	PR c++/163, PR c++/8595
+	* g++.dg/parse/struct-as-enum1.C: New test.
+
+	PR c++/9173
+	* g++.dg/parse/undefined2.C: New test.
+
 2003-01-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9298
