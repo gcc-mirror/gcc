@@ -1169,11 +1169,11 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
 		start_sequence ();
 
-		/* If we're not dealing with a simple operand or the insn is
-		   more complex than a simple SET, duplicate the computation
-		   and replace the destination with a new temporary.  */
-		if (general_operand (temp2, GET_MODE (var))
-		    && GET_CODE (PATTERN (temp)) == SET)
+		/* We're dealing with a single_set insn with no side effects
+		   on SET_SRC.  We do need to be reasonably certain that if
+		   we need to force BVAL into a register that we won't 
+		   clobber the flags -- general_operand should suffice.  */
+		if (general_operand (temp2, GET_MODE (var)))
 		  bval = temp2;
 		else
 		  {
@@ -1183,7 +1183,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		    SET_DEST (temp6) = bval;
 		    emit_insn (PATTERN (new_insn));
 		  }
-		  
+
 		target = emit_conditional_move (var, code,
 						cond0, cond1, VOIDmode,
 						aval, bval, GET_MODE (var),
