@@ -41,7 +41,7 @@
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="mmalloc libiberty opcodes bfd readline gash db tcl tk tclX itcl tix"
+host_libs="intl mmalloc libiberty opcodes bfd readline gash db tcl tk tclX itcl tix libgui"
 
 if [ "${enable_gdbgui}" = "yes" ] ; then
 	host_libs="${host_libs} libgui"
@@ -50,13 +50,22 @@ fi
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
 # know that we are building the simulator.
-host_tools="texinfo byacc flex bison binutils ld gas gcc sim gdb make patch prms send-pr gprof gdbtest tgas etc expect dejagnu bash m4 autoconf automake ispell grep diff rcs cvs fileutils shellutils time textutils wdiff find emacs emacs19 uudecode hello tar gzip indent recode release sed utils guile perl apache inet gawk findutils sn"
+host_tools="texinfo byacc flex bison binutils ld gas gcc sim gdb make patch prms send-pr gprof gdbtest tgas etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool ispell grep diff rcs cvssrc fileutils shellutils time textutils wdiff find emacs emacs19 uudecode hello tar gzip indent recode release sed utils guile perl apache inet gawk findutils snavigator libtool gettext"
+
 
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
 #
-target_libs="target-libiberty target-libgloss target-newlib target-libio target-librx target-libstdc++ target-libg++ target-libf2c target-libchill target-libobjc"
-
+target_libs="target-libiberty \
+		target-libgloss \
+		target-newlib \
+		target-libio \
+		target-librx \
+		target-libstdc \++
+		target-libg++ \
+		target-libf2c \
+		target-libchill \
+		target-libobjc"
 
 # these tools are built using the target libs, and are intended to run only
 # in the target environment
@@ -79,11 +88,11 @@ target_tools="target-examples target-groff target-gperf"
 #
 # This must be a single line because of the way it is searched by grep in
 # the code below.
-native_only="autoconf automake cvs emacs emacs19 fileutils find gawk grep gzip hello indent ispell m4 rcs recode sed shellutils tar textutils gash uudecode wdiff gprof target-groff guile perl apache inet time bash prms sn gnuserv target-gperf"
+native_only="autoconf automake libtool cvssrc emacs emacs19 fileutils find gawk gettext grep gzip hello indent ispell m4 rcs recode sed shellutils tar textutils gash uudecode wdiff gprof target-groff guile perl apache inet time ash bash bzip2 prms snavigator gnuserv target-gperf"
 
 # directories to be built in a cross environment only
 #
-cross_only="target-libgloss target-newlib"
+cross_only="target-libgloss target-newlib target-cygmon target-opcodes target-libstub"
 
 ## All tools belong in one of the four categories, and are assigned above
 ## We assign ${configdirs} this way to remove all embedded newlines.  This
@@ -148,6 +157,9 @@ case "${host}" in
     ;;
   mips*-*-sysv*)
     host_makefile_frag="${host_makefile_frag} config/mh-riscos"
+    ;;
+  i[3456]86-*-sysv5*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sysv5"
     ;;
   i[3456]86-*-dgux*)
     host_makefile_frag="${host_makefile_frag} config/mh-dgux386"
@@ -229,7 +241,7 @@ fi
 
 # If we aren't going to be using gcc, see if we can extract a definition
 # of CC from the fragment.
-if [ -z "${CC}" -a "${build}" = "${host}" ]; then
+if [ -z "${CC}" ] && [ "${build}" = "${host}" ]; then
   IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
   found=
   for dir in $PATH; do
@@ -240,7 +252,7 @@ if [ -z "${CC}" -a "${build}" = "${host}" ]; then
     fi
   done
   IFS="$save_ifs"
-  if [ -z "${found}" -a -n "${host_makefile_frag}" -a -f "${srcdir}/${host_makefile_frag}" ]; then
+  if [ -z "${found}" ] && [ -n "${host_makefile_frag}" ] && [ -f "${srcdir}/${host_makefile_frag}" ]; then
     xx=`sed -n -e 's/^[ 	]*CC[ 	]*=[ 	]*\(.*\)$/\1/p' < ${srcdir}/${host_makefile_frag}`
     if [ -n "${xx}" ] ; then
       CC=$xx
@@ -270,6 +282,9 @@ if [ x${shared} = xyes ]; then
   case "${host}" in
     hppa*)
       host_makefile_frag="${host_makefile_frag} config/mh-papic"
+      ;;
+    i[3456]86-*-cygwin32*)
+      # We don't want -fPIC on cygwin32.
       ;;
     i[3456]86-*)
       host_makefile_frag="${host_makefile_frag} config/mh-x86pic"
@@ -346,7 +361,7 @@ case ${with_x} in
   yes | "")  # the default value for this tree is that X11 is available
 	;;
   no)
-	skipdirs="${skipdirs} tk gash"
+	skipdirs="${skipdirs} tk libgui gash"
 	;;
   *)
     	echo "*** bad value \"${with_x}\" for -with-x flag; ignored" 1>&2
@@ -495,17 +510,17 @@ noconfigdirs=""
 
 case "${host}" in
   i[3456]86-*-vsta)
-    noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl apache inet itcl tix db sn gnuserv"
+    noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl apache inet itcl tix db snavigator gnuserv gettext"
     ;;
   i[3456]86-*-go32* | i[3456]86-*-msdosdjgpp*)
-    noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl apache inet itcl tix db sn gnuserv"
+    noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl apache inet itcl tix db snavigator gnuserv gettext"
 	;;
   i[3456]86-*-mingw32*)
-    # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl apache inet itcl tix db sn gnuserv"
-     noconfigdirs="expect dejagnu cvs autoconf automake send-pr gprof rcs guile perl texinfo apache inet"
+    # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl apache inet itcl tix db snavigator gnuserv"
+     noconfigdirs="expect dejagnu cvs autoconf automake send-pr gprof rcs guile perl texinfo apache inet libtool"
 	;;
   *-*-cygwin32)
-     noconfigdirs="expect dejagnu cvs autoconf automake bison send-pr gprof rcs guile perl texinfo apache inet"
+     noconfigdirs="autoconf automake send-pr gprof rcs guile perl texinfo apache inet"
     ;;
   *-*-windows*)
 # This is only used to build WinGDB...
@@ -513,8 +528,11 @@ case "${host}" in
      configdirs="bfd libiberty opcodes readline sim gdb"
      target_configdirs=
     ;;
+  *-*-netbsd*)
+    noconfigdirs="rcs"
+    ;;
   ppc*-*-pe)
-     noconfigdirs="patch diff make tk tcl expect dejagnu cvs autoconf automake texinfo bison send-pr gprof rcs guile perl apache inet itcl tix db sn gnuserv"
+     noconfigdirs="patch diff make tk tcl expect dejagnu cvssrc autoconf automake texinfo bison send-pr gprof rcs guile perl apache inet itcl tix db snavigator gnuserv"
     ;;
 esac
 
@@ -557,14 +575,14 @@ case "${target}" in
   arm-*-coff*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
-  arm-*-riscix*)
-    noconfigdirs="$noconfigdirs ld target-libgloss"
-    ;;
   c4x-*-*)
     noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-libio target-librx target-libgloss"
     ;;
   thumb-*-coff)
     noconfigdirs="$noconfigdirs target-libgloss"
+    ;;
+  arm-*-riscix*)
+    noconfigdirs="$noconfigdirs ld target-libgloss"
     ;;
   d10v-*-*)
     noconfigdirs="$noconfigdirs target-librx target-libg++ target-libstdc++ target-libio target-libgloss"
@@ -599,23 +617,23 @@ case "${target}" in
     target_configdirs="$target_configdirs target-mingw"
     noconfigdirs="$noconfigdirs expect target-libgloss"
 
-    # Can't build gdb for cygwin32 if not native.
+    # Can't build gdb for mingw32 if not native.
     case "${host}" in
       i[3456]86-*-mingw32) ;; # keep gdb tcl tk expect etc.
-      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix db sn gnuserv"
+      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix db snavigator gnuserv"
          ;;
     esac
     ;;    
-  *-*-cygwin32)
+  *-*-cygwin32*)
     target_configdirs="$target_configdirs target-winsup"
-    noconfigdirs="$noconfigdirs expect target-libgloss"
+    noconfigdirs="$noconfigdirs target-gperf target-libgloss"
     # always build newlib.
     skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
 
     # Can't build gdb for cygwin32 if not native.
     case "${host}" in
-      *-*-cygwin32) ;; # keep gdb tcl tk expect etc.
-      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix db sn gnuserv"
+      *-*-cygwin32*) ;; # keep gdb tcl tk expect etc.
+      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix libgui db snavigator gnuserv"
          ;;
     esac
     ;;    
@@ -625,7 +643,7 @@ case "${target}" in
   i[3456]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
     # and is not configured to handle mixed ELF and COFF.
-    noconfigdirs="$noconfigdirs gprof ld target-libgloss"
+    noconfigdirs="$noconfigdirs ld target-libgloss"
     ;;
   i[3456]86-*-sco*)
     noconfigdirs="$noconfigdirs gprof target-libgloss"
@@ -646,31 +664,37 @@ case "${target}" in
     noconfigdirs="$noconfigdirs emacs emacs19 target-libgloss"
     ;;
   mn10200-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss"
+    noconfigdirs="$noconfigdirs"
+    if [ x${is_cross_compiler} != xno ] ; then
+	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
+    fi
     ;;
   mn10300-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss"
+    noconfigdirs="$noconfigdirs"
+    if [ x${is_cross_compiler} != xno ] ; then
+	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
+    fi
     ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
-    noconfigdirs="$noconfigdirs gprof cvs target-libgloss"
+    noconfigdirs="$noconfigdirs gprof cvssrc target-libgloss"
     # This is needed until gcc and ld are fixed to work together.
     use_gnu_ld=no
     ;;
   powerpc*-*-winnt* | powerpc*-*-pe* | ppc*-*-pe)
     target_configdirs="$target_configdirs target-winsup"
-    noconfigdirs="$noconfigdirs gdb tcl tk make expect target-libgloss itcl tix db sn gnuserv"
+    noconfigdirs="$noconfigdirs gdb tcl tk make expect target-libgloss itcl tix db snavigator gnuserv"
     # always build newlib.
     skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
     ;;
     # This is temporary until we can link against shared libraries
   powerpcle-*-solaris*)
-    noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl tix db sn gnuserv"
+    noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl tix db snavigator gnuserv"
     ;;
   rs6000-*-lynxos*)
     # The CVS server code doesn't work on the RS/6000
     # Newlib makes problems for libg++ in crosses.
-    noconfigdirs="$noconfigdirs target-newlib gprof cvs"
+    noconfigdirs="$noconfigdirs target-newlib gprof cvssrc"
     ;;
   rs6000-*-aix*)
     noconfigdirs="$noconfigdirs gprof"
@@ -699,6 +723,10 @@ case "${target}" in
   mips*-*-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss"
     ;;
+  mipstx39-*-*)
+    noconfigdirs="$noconfigdirs gprof"   # same as generic mips
+    target_configdirs="${target_configdirs} target-libstub target-cygmon"
+   ;;
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof"
     ;;
@@ -714,6 +742,21 @@ case "${target}" in
     esac
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
+  sparc-*-elf*)
+    if [ x${is_cross_compiler} != xno ] ; then
+	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
+    fi
+    ;;
+  sparc64-*-elf*)
+    if [ x${is_cross_compiler} != xno ] ; then
+	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
+    fi
+    ;;
+  sparclite-*-aout*)
+    if [ x${is_cross_compiler} != xno ] ; then
+	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
+    fi
+    ;;
   sparc-*-sunos4*)
     if [ x${is_cross_compiler} != xno ] ; then
            noconfigdirs="$noconfigdirs gdb gdbtest target-newlib target-libgloss"
@@ -723,6 +766,9 @@ case "${target}" in
     ;;
   v810-*-*)
     noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld target-libio target-libg++ target-libstdc++ opcodes target-libgloss"
+    ;;
+  v850-*-*)
+    noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   vax-*-vms)
     noconfigdirs="$noconfigdirs bfd binutils gdb ld target-newlib opcodes target-libgloss"
@@ -741,25 +787,12 @@ case "${target}" in
     ;;    
 esac
 
-# targets that need a second pass
-case "${target}" in
-  *-gm-magic*)
-    noconfigdirs="$noconfigdirs target-libgloss"
-    ;;
-esac
-
 # If we aren't building newlib, then don't build libgloss, since libgloss
 # depends upon some newlib header files.
 case "${noconfigdirs}" in
   *target-libgloss*) ;;
   *target-newlib*) noconfigdirs="$noconfigdirs target-libgloss" ;;
 esac
-
-# If we are building a Canadian Cross, discard tools that can not be built
-# using a cross compiler.  FIXME: These tools should be fixed.
-if [ "${build}" != "${host}" ]; then
-  noconfigdirs="$noconfigdirs expect dejagnu"
-fi
 
 # Make sure we don't let GNU ld be added if we didn't want it.
 if [ x$with_gnu_ld = xno ]; then
@@ -824,12 +857,12 @@ fi
 # Deconfigure all subdirectories, in case we are changing the
 # configuration from one where a subdirectory is supported to one where it
 # is not.
-if [ -z "${norecursion}" -a -n "${configdirs}" ]; then
+if [ -z "${norecursion}" ] && [ -n "${configdirs}" ]; then
   for i in `echo ${configdirs} | sed -e s/target-//g` ; do
     rm -f $i/Makefile
   done
 fi
-if [ -z "${norecursion}" -a -n "${target_configdirs}" ]; then
+if [ -z "${norecursion}" ] && [ -n "${target_configdirs}" ]; then
   for i in `echo ${target_configdirs} | sed -e s/target-//g` ; do
     rm -f ${target_subdir}/$i/Makefile
   done
@@ -944,7 +977,7 @@ fi
 # can be created.  At this point the main configure script has set CC.
 echo "int main () { return 0; }" > conftest.c
 ${CC} -o conftest ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} conftest.c
-if [ $? = 0 ] && [ -s conftest ]; then
+if [ $? = 0 ] && [ -s conftest -o -s conftest.exe ]; then
   :
 else
   echo 1>&2 "*** The command '${CC} -o conftest ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} conftest.c' failed."
@@ -992,7 +1025,7 @@ if [ "${shared}" = "yes" ]; then
 
   case "${host}" in
   *-*-hpux*)
-    sed -e 's/RPATH_ENVVAR[ 	]*=.*$/RPATH_ENVVAR = SHLIB_PATH/' \
+    sed -e 's/^RPATH_ENVVAR[ 	]*=.*$/RPATH_ENVVAR = SHLIB_PATH/' \
 	Makefile > Makefile.tem
     rm -f Makefile
     mv -f Makefile.tem Makefile
@@ -1000,21 +1033,10 @@ if [ "${shared}" = "yes" ]; then
   esac
 fi
 
-# If we are building for a win32 host, then set INSTALL_PROGRAM_ARGS to
-# -x.  This will cause programs to be installed with .exe extensions.
-case "${host}" in
-*-*-cygwin32* | i[3456]86-*-mingw32)
-    sed -e 's/^INSTALL_PROGRAM_ARGS[ 	]*=.*$/INSTALL_PROGRAM_ARGS = -x/' \
-	Makefile > Makefile.tem
-    rm -f Makefile
-    mv -f Makefile.tem Makefile
-    ;;
-esac
-
 # Record target_configdirs and the configure arguments in Makefile.
 target_configdirs=`echo "${target_configdirs}" | sed -e 's/target-//g'`
 targargs=`echo "${arguments}" | \
-	sed -e 's/--norecursion//' \
+	sed -e 's/--no[^ 	]*//' \
 	    -e 's/--cache[a-z-]*=[^ 	]*//' \
 	    -e 's/--ho[a-z-]*=[^ 	]*//' \
 	    -e 's/--bu[a-z-]*=[^ 	]*//' \
@@ -1032,6 +1054,12 @@ fi
 # Default to --enable-multilib.
 if [ x${enable_multilib} = x ]; then
   targargs="--enable-multilib ${targargs}"
+fi
+
+# Pass --with-newlib if appropriate.  Note that target_configdirs has
+# changed from the earlier setting of with_newlib.
+if [ x${with_newlib} != xno ] && echo " ${target_configdirs} " | grep " newlib " > /dev/null 2>&1 && [ -d ${srcdir}/newlib ] ; then
+  targargs="--with-newlib ${targargs}"
 fi
 
 targargs="--host=${target_alias} --build=${build_alias} ${targargs}"

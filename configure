@@ -51,6 +51,8 @@ build_alias=
 cache_file=config.cache
 cache_file_option=
 configdirs=
+extraconfigdirs=
+diroptions=
 exec_prefix=
 exec_prefixoption=
 fatal=
@@ -73,7 +75,7 @@ program_suffix=
 program_suffixoption=
 program_transform_name=
 program_transform_nameoption=
-redirect=">/dev/null"
+redirect=
 removing=
 site=
 site_makefile_frag=
@@ -86,6 +88,18 @@ target_makefile_frag=
 undefs=NOUNDEFS
 version="$Revision: 1.22 $"
 x11=default
+bindir='${exec_prefix}/bin'
+sbindir='${exec_prefix}/sbin'
+libexecdir='${exec_prefix}/libexec'
+datadir='${prefix}/share'
+sysconfdir='${prefix}/etc'
+sharedstatedir='${prefix}/com'
+localstatedir='${prefix}/var'
+libdir='${exec_prefix}/lib'
+includedir='${prefix}/include'
+oldincludedir='/usr/include'
+infodir='${prefix}/info'
+mandir='${prefix}/man'
 
 ### we might need to use some other shell than /bin/sh for running subshells
 
@@ -192,6 +206,10 @@ do
 # Now, process the options
 	case $option in
 
+	--bi*)
+		bindir=$optarg
+		diroptions="$diroptions --bindir=$optarg"
+		;;
 	--build* | --bu*)
 		case "$build_alias" in
 		"") build_alias=$optarg ;;
@@ -202,6 +220,10 @@ do
 		;;
 	--cache*)
 		cache_file=$optarg
+		;;
+	--da*)
+		datadir=$optarg
+		diroptions="$diroptions --datadir=$optarg"
 		;;
 	--disable-*)
 		enableopt=`echo ${option} | sed 's:^--disable-:enable_:;s:-:_:g'`
@@ -236,12 +258,40 @@ do
 		   ;;
 		esac
 		;;
+	--inc*)
+		includedir=$optarg
+		diroptions="$diroptions --includedir=$optarg"
+		;;
+	--inf*)
+		infodir=$optarg
+		diroptions="$diroptions --infodir=$optarg"
+		;;
+	--libd*)
+		libdir=$optarg
+		diroptions="$diroptions --libdir=$optarg"
+		;;
+	--libe*)
+		libexecdir=$optarg
+		diroptions="$diroptions --libexecdir=$optarg"
+		;;
+	--lo*)
+		localstatedir=$optarg
+		diroptions="$diroptions --localstatedir=$optarg"
+		;;
+	--ma*)
+		mandir=$optarg
+		diroptions="$diroptions --mandir=$optarg"
+		;;
 	--nfp | --nf*)
 		floating_point=no
 		floating_pointoption="--nfp"
 		;;
 	--norecursion | --no*)
 		norecursion=yes
+		;;
+	--ol*)
+		oldincludedir=$optarg
+		diroptions="$diroptions --oldincludedir=$optarg"
 		;;
 	--prefix* | --pre*)
 		prefix=$optarg
@@ -263,6 +313,14 @@ do
 	--rm)
 		removing=--rm
 		;;
+	--sb*)
+		sbindir=$optarg
+		diroptions="$diroptions --sbindir=$optarg"
+		;;
+	--sh*)
+		sharedstatedir=$optarg
+		diroptions="$diroptions --sharedstatedir=$optarg"
+		;;
 	--silent | --sil* | --quiet | --q*)
 		redirect=">/dev/null"
 		verbose=--silent
@@ -280,6 +338,10 @@ do
 		;;
 	--srcdir* | --sr*)
 		srcdir=$optarg
+		;;
+	--sy*)
+		sysconfdir=$optarg
+		diroptions="$diroptions --sysconfdir=$optarg"
 		;;
 	--target* | --ta*)
 		case $target_alias in
@@ -320,9 +382,6 @@ do
 		withoptions="$withoptions --with-x"
 		;;
 	--x-i* | --x-l*) other_options="$other_options $orig_option"
-		;;
-	--bi* | --sb* | --li* | --da* | --sy* | --sh* | --lo* | --in* | --ol* | --ma*)
-		# These options were added to autoconf for emacs.
 		;;
 	--*)
 		echo "configure: Unrecognized option: \"$orig_option\"; use --help for usage." >&2
@@ -461,6 +520,7 @@ configsub=`echo ${progname} | sed 's/configure$/config.sub/'`
 moveifchange=`echo ${progname} | sed 's/configure$/move-if-change/'`
 topsrcdir=`cd \`dirname ${progname}\`; pwd`
 
+
 # this is a hack.  sun4 must always be a valid host alias or this will fail.
 if ${config_shell} ${configsub} sun4 >/dev/null 2>&1 ; then
         true
@@ -566,7 +626,7 @@ case "`grep '^# per\-host:' ${srcdir}/configure.in`" in
 	    eval exec ${config_shell} ${srcdir}/configure ${verbose} \
 		${buildopt} --host=${host_alias} --target=${target_alias} \
 		${prefixoption} ${tmpdiroption} ${exec_prefixoption} \
-		${srcdiroption} \
+		${srcdiroption} ${diroptions} \
 		${program_prefixoption} ${program_suffixoption} \
 		${program_transform_nameoption} ${site_option} \
 		${withoptions} ${withoutoptions} \
@@ -728,7 +788,7 @@ fi
 # If CC and CXX are not set in the environment, and the Makefile
 # exists, try to extract them from it.  This is to handle running
 # ./config.status by hand.
-if [ -z "${CC}" -a -r Makefile ]; then
+if [ -z "${CC}" ] && [ -r Makefile ]; then
   sed -n -e ':loop
 /\\$/ N
 s/\\\n//g
@@ -738,7 +798,7 @@ t loop
   rm -f Makefile.cc
 fi
 
-if [ -z "${CFLAGS}" -a -r Makefile ]; then
+if [ -z "${CFLAGS}" ] && [ -r Makefile ]; then
   sed -n -e ':loop
 /\\$/ N
 s/\\\n//g
@@ -748,7 +808,7 @@ t loop
   rm -f Makefile.cc
 fi
 
-if [ -z "${CXX}" -a -r Makefile ]; then
+if [ -z "${CXX}" ] && [ -r Makefile ]; then
   sed -n -e ':loop
 /\\$/ N
 s/\\\n//g
@@ -758,7 +818,7 @@ t loop
   rm -f Makefile.cc
 fi
 
-if [ -z "${CXXFLAGS}" -a -r Makefile ]; then
+if [ -z "${CXXFLAGS}" ] && [ -r Makefile ]; then
   sed -n -e ':loop
 /\\$/ N
 s/\\\n//g
@@ -837,7 +897,7 @@ if [ "${build}" != "${host}" ]; then
   tools="${tools} WINDRES WINDRES_FOR_TARGET YACC"
 
   for var in ${tools}; do
-    if [ -z "`eval 'echo $'"${var}"`" -a -r Makefile ]; then
+    if [ -z "`eval 'echo $'"${var}"`" ] && [ -r Makefile ]; then
       sed -n -e ':loop
 /\\$/ N
 s/\\\n//g
@@ -950,6 +1010,24 @@ else
     done
     IFS="$save_ifs"
     CC=${CC-cc}
+  else
+    if test -z "${CFLAGS}"; then
+      # Here CC is set but CFLAGS is not.  Use a quick hack to use -O2 if CC
+      # is set to a version of gcc.
+      case "${CC}" in
+      *gcc)
+	echo 'void f(){}' > conftest.c
+	if test -z "`${CC} -g -c conftest.c 2>&1`"; then
+	  CFLAGS=${CFLAGS-"-g -O2"}
+	  CXXFLAGS=${CXXFLAGS-"-g -O2"}
+	else
+	  CFLAGS=${CFLAGS-"-O2"}
+	  CXXFLAGS=${CXXFLAGS-"-O2"}
+	fi
+	rm -f conftest*
+	;;
+      esac
+    fi
   fi
 
   CXX=${CXX-"c++"}
@@ -1297,6 +1375,18 @@ EOF
 	    fi
 	    sed     -e "s|^prefix[ 	]*=.*$|prefix = ${prefix}|" \
                     -e "s|^exec_prefix[ 	]*=.*$|exec_prefix = ${exec_prefix}|" \
+                    -e "s|^bindir[ 	]*=.*$|bindir = ${bindir}|" \
+                    -e "s|^sbindir[ 	]*=.*$|sbindir = ${sbindir}|" \
+                    -e "s|^libexecdir[ 	]*=.*$|libexecdir = ${libexecdir}|" \
+                    -e "s|^datadir[ 	]*=.*$|datadir = ${datadir}|" \
+                    -e "s|^sysconfdir[ 	]*=.*$|sysconfdir = ${sysconfdir}|" \
+                    -e "s|^sharedstatedir[ 	]*=.*$|sharedstatedir = ${sharedstatedir}|" \
+                    -e "s|^localstatedir[ 	]*=.*$|localstatedir = ${localstatedir}|" \
+                    -e "s|^libdir[ 	]*=.*$|libdir = ${libdir}|" \
+                    -e "s|^includedir[ 	]*=.*$|includedir = ${includedir}|" \
+                    -e "s|^oldincludedir[ 	]*=.*$|oldincludedir = ${oldincludedir}|" \
+                    -e "s|^infodir[ 	]*=.*$|infodir = ${infodir}|" \
+                    -e "s|^mandir[ 	]*=.*$|mandir = ${mandir}|" \
 		    -e "/^CC[ 	]*=/{
 			:loop1
 			/\\\\$/ N
@@ -1419,19 +1509,33 @@ ${progname}" ${arguments}  "
 done
 
 # If there are subdirectories, then recur.
-if [ -z "${norecursion}" -a -n "${configdirs}" ] ; then 
-        for configdir in ${configdirs} ; do
+if [ -z "${norecursion}" ] && [ -n "${configdirs}" ] ; then 
+        for configdir in ${configdirs} ${extraconfigdirs} ; do
 
-                if [ -d ${srcdir}/${configdir} ] ; then
+		# If configdir contains ',' it is
+		# srcdir,builddir,target_alias
+		# These come from extraconfigdirs.
+		case ${configdir} in
+		*,*)
+		    eval `echo ${configdir} | sed -e 's/\([^,]*\),\([^,]*\),\(.*\)/cfg_dir=\1 bld_dir=\2 tgt_alias=\3/'`
+		    ;;
+		*)
+		    cfg_dir=${configdir}
+		    bld_dir=${configdir}
+		    tgt_alias=${target_alias}
+		    ;;
+		esac
+
+                if [ -d ${srcdir}/${cfg_dir} ] ; then
                         eval echo Configuring ${configdir}... ${redirect}
                         case "${srcdir}" in
                         ".") ;;
                         *)
-                                if [ ! -d ./${configdir} ] ; then
-                                        if mkdir ./${configdir} ; then
+                                if [ ! -d ./${bld_dir} ] ; then
+                                        if mkdir ./${bld_dir} ; then
                                                 true
                                         else
-                                                echo '***' "${progname}: could not make ${PWD=`pwd`}/${configdir}" 1>&2
+                                                echo '***' "${progname}: could not make ${PWD=`pwd`}/${bld_dir}" 1>&2
                                                 exit 1
                                         fi
                                 fi
@@ -1439,21 +1543,21 @@ if [ -z "${norecursion}" -a -n "${configdirs}" ] ; then
                         esac
 
                         POPDIR=${PWD=`pwd`}
-                        cd ${configdir} 
+                        cd ${bld_dir} 
 
 ### figure out what to do with srcdir
                         case "${srcdir}" in
                         ".") newsrcdir=${srcdir} ;; # no -srcdir option.  We're building in place.
                         /*) # absolute path
-                                newsrcdir=${srcdir}/${configdir}
+                                newsrcdir=${srcdir}/${cfg_dir}
                                 srcdiroption="--srcdir=${newsrcdir}"
                                 ;;
                         ?:*) # absolute path on win32
-                                newsrcdir=${srcdir}/${configdir}
+                                newsrcdir=${srcdir}/${cfg_dir}
                                 srcdiroption="--srcdir=${newsrcdir}"
                                 ;;
                         *) # otherwise relative
-                                newsrcdir=../${srcdir}/${configdir}
+                                newsrcdir=../${srcdir}/${cfg_dir}
                                 srcdiroption="--srcdir=${newsrcdir}"
                                 ;;
                         esac
@@ -1483,15 +1587,15 @@ if [ -z "${norecursion}" -a -n "${configdirs}" ] ; then
                                 *)      recprog=../${progname} ;;
                                 esac
 			else
-				eval echo No configuration information in ${configdir} ${redirect}
+				eval echo No configuration information in ${cfg_dir} ${redirect}
 				recprog=
                         fi
 
 ### The recursion line is here.
 			if [ ! -z "${recprog}" ] ; then
-	                        if eval ${config_shell} ${recprog} ${verbose} ${buildopt} --host=${host_alias} --target=${target_alias} \
+	                        if eval ${config_shell} ${recprog} ${verbose} ${buildopt} --host=${host_alias} --target=${tgt_alias} \
         	                        ${prefixoption} ${tmpdiroption} ${exec_prefixoption} \
-                	                ${srcdiroption} ${program_prefixoption} ${program_suffixoption} ${program_transform_nameoption} ${site_option} ${withoptions} ${withoutoptions} ${enableoptions} ${disableoptions} ${floating_pointoption} ${cache_file_option} ${removing} ${other_options} ${redirect} ; then
+                	                ${srcdiroption} ${diroptions} ${program_prefixoption} ${program_suffixoption} ${program_transform_nameoption} ${site_option} ${withoptions} ${withoutoptions} ${enableoptions} ${disableoptions} ${floating_pointoption} ${cache_file_option} ${removing} ${other_options} ${redirect} ; then
 	                                true
         	                else
 					echo Configure in `pwd` failed, exiting. 1>&2

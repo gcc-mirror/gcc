@@ -53,9 +53,6 @@ mvcmd="$mvprog"
 src=""
 dst=""
 dir_arg=""
-# CYGNUS LOCAL: exeext variable
-exeext=""
-# END CYGNUS LOCAL
 
 while [ x"$1" != x ]; do
     case $1 in
@@ -94,16 +91,6 @@ while [ x"$1" != x ]; do
 	    shift
 	    continue;;
 
-	# CYGNUS LOCAL: -x option
-        -x=*) exeext=`echo $1 | sed 's/-x=//'`
-	    shift
-	    continue;;
-
-	-x) exeext=".exe"
-	    shift
-	    continue;;
-	# END CYGNUS LOCAL
-
 	*)  if [ x"$src" = x ]
 	    then
 		src=$1
@@ -137,22 +124,6 @@ if [ x"$dir_arg" != x ]; then
 	fi
 else
 
-# CYGNUS LOCAL noer
-# Win32-based gcc automatically appends .exe to produced executables,
-# whether asked for or not.  This breaks installs.  The following
-# changes the value of $src to $src.exe if $src is missing
-
-	if [ -f $src ]
-	then
-		true
-	elif [ -f $src.exe ]
-	then
-		echo "install:  $src does not exist, trying with .exe appended"
-		src="$src".exe
-	fi
-
-# end CYGNUS LOCAL noer
-
 # Waiting for this to be detected by the "$instcmd $src $dsttmp" command
 # might cause directories to be created, which would be especially bad 
 # if $src (and thus $dsttmp) contains '*'.
@@ -182,13 +153,6 @@ else
 	else
 		true
 	fi
-
-	# CYGNUS LOCAL: Use exeext
-	case "`basename $dst`" in
-	    *.*) ;;
-	    *) dst="$dst$exeext" ;;
-	esac
-	# END CYGNUS LOCAL
 fi
 
 ## this sed command emulates the dirname command
