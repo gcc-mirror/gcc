@@ -1,3 +1,10 @@
+2002-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/6358
+	* function.c (assign_parms): Assign hard current_function_return_rtx
+	register here...
+	(expand_function_end): ...not here.
+
 2002-04-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lang.c (LANG_HOOKS_INCOMPLETE_TYPE_ERROR): Redefine.
