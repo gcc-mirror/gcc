@@ -801,6 +801,17 @@ void
 optimize_function (fn)
      tree fn;
 {
+  /* While in this function, we may choose to go off and compile
+     another function.  For example, we might instantiate a function
+     in the hopes of inlining it.  Normally, that wouldn't trigger any
+     actual RTL code-generation -- but it will if the template is
+     actually needed.  (For example, if it's address is taken, or if
+     some other function already refers to the template.)  If
+     code-generation occurs, then garbage collection will occur, so we
+     must protect ourselves, just as we do while building up the body
+     of the function.  */
+  ++function_depth;
+
   /* Expand calls to inline functions.  */
   if (flag_inline_trees)
     {
@@ -839,6 +850,9 @@ optimize_function (fn)
       VARRAY_FREE (id.fns);
       VARRAY_FREE (id.target_exprs);
     }
+
+  /* Undo the call to ggc_push_context above.  */
+  --function_depth;
 }
 
 /* Called from calls_setjmp_p via walk_tree.  */

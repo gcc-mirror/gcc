@@ -1,3 +1,15 @@
+2000-07-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (function_depth): Declare.
+	(verify_stmt_tree): Likewise.
+	(find_tree): Likewise.
+	* decl.c (function_depth): Give it external linkage.
+	* optimize.c (optimize_function): Increment and decrement it.
+	* tree.c (verify_stmt_tree_r): New function.
+	(verify_stmt_tree): Likewise.
+	(find_tree_r): Likewise.
+	(find_tree): Likewise.
+
 2000-07-27  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (common_type): If we're just returning one of our
