@@ -5057,6 +5057,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   rtx op0;
   rtx lab1, insns;
   enum machine_mode value_mode = TYPE_MODE (TREE_TYPE (exp));
+  optab builtin_optab;
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
@@ -5066,6 +5067,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       /* build_function_call changes these into ABS_EXPR.  */
       abort ();
 
+    case BUILT_IN_SIN:
+    case BUILT_IN_COS:
     case BUILT_IN_FSQRT:
       /* If not optimizing, call the library function.  */
       if (! optimize)
@@ -5093,10 +5096,22 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       emit_queue ();
       start_sequence ();
 
-      /* Compute sqrt into TARGET. 
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_SIN:
+	  builtin_optab = sin_optab; break;
+	case BUILT_IN_COS:
+	  builtin_optab = cos_optab; break;
+	case BUILT_IN_FSQRT:
+	  builtin_optab = sqrt_optab; break;
+	default:
+	  abort ();
+	}
+
+      /* Compute into TARGET.
 	 Set TARGET to wherever the result comes back.  */
       target = expand_unop (TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist))),
-			    sqrt_optab, op0, target, 0);
+			    builtin_optab, op0, target, 0);
 
       /* If we were unable to expand via the builtin, stop the
 	 sequence (without outputting the insns) and break, causing
@@ -5112,7 +5127,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       if (! flag_fast_math)
 	{
-	  /* Don't define the sqrt instructions
+	  /* Don't define the builtin FP instructions
 	     if your machine is not IEEE.  */
 	  if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT)
 	    abort ();
