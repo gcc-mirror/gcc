@@ -1,3 +1,8 @@
+Wed Jun 25 11:31:59 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* varasm.c (assemble_name): Mark needed variables even when
+	global info is ready.
+
 2003-06-24  Jerry Quinn  <jlquinn@optonline.net>
 
 	PR other/11280

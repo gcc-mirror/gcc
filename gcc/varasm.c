@@ -1747,14 +1747,17 @@ assemble_name (file, name)
   id = maybe_get_identifier (real_name);
   if (id)
     {
-      if (!TREE_SYMBOL_REFERENCED (id)
-	  && !cgraph_global_info_ready)
+      if (!TREE_SYMBOL_REFERENCED (id))
 	{
-	  struct cgraph_node *node = cgraph_node_for_identifier (id);
+	  struct cgraph_node *node;
 	  struct cgraph_varpool_node *vnode;
 	  
-	  if (node)
-	    cgraph_mark_needed_node (node, 1);
+	  if (!cgraph_global_info_ready)
+	    {
+	      node = cgraph_node_for_identifier (id);
+	      if (node)
+		cgraph_mark_needed_node (node, 1);
+	    }
 
 	  vnode = cgraph_varpool_node_for_identifier (id);
 	  if (vnode)
