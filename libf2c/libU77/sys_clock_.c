@@ -29,14 +29,11 @@ Boston, MA 02111-1307, USA.  */
 #  include <time.h>
 # endif
 #endif
-#if HAVE_SYS_TIMES_H
-#  include <sys/times.h>
-#endif
+#include <sys/times.h>
 #include <limits.h>
 #if HAVE_UNISTD_H
 #  include <unistd.h>
 #endif
-#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 #ifdef KR_headers
@@ -46,29 +43,25 @@ int G77_system_clock_0 (count, count_rate, count_max)
 int G77_system_clock_0 (integer *count, integer *count_rate, integer *count_max)
 #endif
 {
-#if defined (HAVE_TIMES)
   struct tms buffer;
   unsigned long cnt;
+  if (count_rate) {
 #ifdef _SC_CLK_TCK
-  *count_rate = sysconf(_SC_CLK_TCK);
+    *count_rate = sysconf(_SC_CLK_TCK);
 #elif defined CLOCKS_PER_SECOND
-  *count_rate = CLOCKS_PER_SECOND;
+    *count_rate = CLOCKS_PER_SECOND;
 #elif defined CLK_TCK
-  *count_rate = CLK_TCK;
-#elif defined HZ
-  *count_rate = HZ;
+    *count_rate = CLK_TCK;
 #else
-  #error Dont know clock tick length
+#error Dont know clock tick length
 #endif
-  *count_max = INT_MAX;		/* dubious */
+  }
+  if (count_max)		/* optional arg present? */
+    *count_max = INT_MAX;		/* dubious */
   cnt = times (&buffer);
-  if (cnt > (unsigned long) (*count_max))
-    *count = *count_max;	/* also dubious */
+  if (cnt > (unsigned long) (INT_MAX))
+    *count = INT_MAX;		/* also dubious */
   else
     *count = cnt;
   return 0;
-#else /* ! HAVE_TIMES */
-  errno = ENOSYS;
-  return -1;
-#endif /* ! HAVE_TIMES */
 }

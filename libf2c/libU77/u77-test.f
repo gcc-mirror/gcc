@@ -11,14 +11,16 @@
      +     fnum, isatty, getarg, access, unlink, fstat,
      +     stat, lstat, getcwd, gmtime, hostnm, etime, chmod,
      +     chdir, fgetc, fputc, system_clock, second, idate, secnds,
-     +     time, ctime, fdate, ttynam
+     +     time, ctime, fdate, ttynam, date_and_time
       external lenstr
       integer lenstr
       logical l
       character gerr*80, c*1
-      character ctim*25, line*80, lognam*20, wd*100, line2*80
+      character ctim*25, line*80, lognam*20, wd*100, line2*80, ddate*8,
+     +     ttime*10, zone*5
       integer fstatb (13), statb (13)
       integer *2 i2zero
+      integer values(8)
 
       ctim = ctime(time())
       WRITE (6,'(A/)') '1 GNU libU77 test at: ' // ctim
@@ -61,8 +63,13 @@
       write (6,'(1x,a,9i4)') 'LTIME returns:', ltarray
       call gmtime (j, ltarray)
       write (6,'(1x,a,9i4)') 'GMTIME returns:', ltarray
+      call system_clock(count)  ! omitting optional args
       call system_clock(count, rate, count_max)
       write(6,*) 'SYSTEM_CLOCK returns: ', count, rate, count_max
+      call date_and_time(ddate)  ! omitting optional args
+      call date_and_time(ddate, ttime, zone, values)
+      write(6, *) 'DATE_AND_TIME returns: ', ddate, ' ', ttime, ' ',
+     +     zone, ' ', values
 
       write (6,*) 'Sleeping for 1 second (SLEEP) ...'
       call sleep (1)

@@ -98,7 +98,8 @@ AC_STRUCT_TM
 dnl Checks for library functions.
 
 AC_CHECK_FUNCS(symlink getcwd getwd lstat gethostname strerror clock \
-  getrusage times alarm getlogin getgid getuid kill link ttyname)
+  getrusage times alarm getlogin getgid getuid kill link ttyname \
+  gettimeofday)
 test $ac_cv_func_symlink = yes && MAYBES="$MAYBES symlnk_.o"
 test $ac_cv_func_lstat = yes && MAYBES="$MAYBES lstat_.o"
 test $ac_cv_func_gethostname = yes && MAYBES="$MAYBES hostnm_.o"
