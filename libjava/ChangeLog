@@ -1,3 +1,9 @@
+2004-08-31  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/AttributedString.java (AttributedString): Use
+	ArrayList to build array of attribute ranges.  Don't use
+	`attribs' before it is set.
+
 2004-08-30  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* HACKING: Remove reference to special automake. No longer needed.
