@@ -1,3 +1,12 @@
+2004-08-21  Mike Stump  <mrs@apple.com>
+
+	* config/rs6000/darwin.h (SUBTARGET_OPTIONS): Move from here, to...
+	(darwin_fix_and_continue): Likewise.
+	(darwin_fix_and_continue_switch): Likewise.
+	* config/darwin.h (SUBTARGET_OPTIONS): ...here, to fix -mone-byte-bool.
+	(darwin_fix_and_continue): Likewise.
+	(darwin_fix_and_continue_switch): Likewise.
+
 2004-08-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR  c++/16030
