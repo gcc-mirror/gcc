@@ -50,14 +50,37 @@ public class InetSocketAddress extends SocketAddress
     InetAddress addr;
     int port;
     
+    /**
+     * Constructs an InetSocketAddress instance.
+     * 
+     * @param addr Address of the socket
+     * @param port Port if the socket
+     *
+     * @exception IllegalArgumentException If the port number is illegel
+     */
     public InetSocketAddress(InetAddress addr, int port)
+	throws IllegalArgumentException
     {
+	if (port < 0 || port > 65535)
+          throw new IllegalArgumentException();
+  
 	this.addr = addr;
 	this.port = port;
     }
 
+    /**
+     * Constructs an InetSocketAddress instance.
+     * 
+     * @param port Port if the socket
+     *
+     * @exception IllegalArgumentException If the port number is illegel
+     */
     public InetSocketAddress(int port)
+	throws IllegalArgumentException
     {
+	if (port < 0 || port > 65535)
+          throw new IllegalArgumentException();
+
 	this.port = port;
 	try {
 	    this.addr = InetAddress.getLocalHost();
@@ -66,8 +89,18 @@ public class InetSocketAddress extends SocketAddress
     }
 
 
+    /**
+     * Constructs an InetSocketAddress instance.
+     * 
+     * @param addr Address of the socket
+     * @param port Port if the socket
+     */
     public InetSocketAddress(String hostname, int port)
+	throws IllegalArgumentException
     {
+	if (port < 0 || port > 65535)
+          throw new IllegalArgumentException();
+
 	this.port = port;
 	try {
 	    this.addr = InetAddress.getByName(hostname);
