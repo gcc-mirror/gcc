@@ -5254,12 +5254,18 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 			 element.  */
 		      warning ("empty array initializer range");
 		      tail = TREE_CHAIN (tail);
-		      current_index = end_index;
+		      TREE_INT_CST_LOW (current_index)
+			= TREE_INT_CST_LOW (end_index);
+		      TREE_INT_CST_HIGH (current_index)
+			= TREE_INT_CST_HIGH (end_index);
 		      continue;
 		    }
 		  else
 		    {
-		      current_index = start_index;
+		      TREE_INT_CST_LOW (current_index)
+			= TREE_INT_CST_LOW (start_index);
+		      TREE_INT_CST_HIGH (current_index)
+			= TREE_INT_CST_HIGH (start_index);
 		      win = 1;
 		      /* See if the first element is also the last.  */
 		      if (!tree_int_cst_lt (current_index, end_index))
@@ -5276,7 +5282,10 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	      else
 		{
 		  constant_expression_warning (index);
-		  current_index = index, win = 1;
+		  TREE_INT_CST_LOW (current_index) = TREE_INT_CST_LOW (index);
+		  TREE_INT_CST_HIGH (current_index)
+		    = TREE_INT_CST_HIGH (index);
+		  win = 1;
 		}
 
 	      if (!win)
