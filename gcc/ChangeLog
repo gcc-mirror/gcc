@@ -1,3 +1,7 @@
+Sat Apr 18 23:52:35 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Apr 18 18:30:22 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* i386.md (fix_truncsfdi2+[123]): Add + to operand 1 constraints.
