@@ -27,10 +27,11 @@ You should have received a copy of the GNU General Public License along with
 #ifndef __objc_runtime_INCLUDE_GNU
 #define __objc_runtime_INCLUDE_GNU
 
+#include "gstdarg.h"		/* for varargs and va_list's */
+
 #include <stdio.h>
 #include <ctype.h>
 
-#include "gstdarg.h"		/* for varargs and va_list's */
 #include "gstddef.h"		/* so noone else will get system versions */
 #include "assert.h"
 
