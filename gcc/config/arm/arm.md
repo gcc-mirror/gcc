@@ -1298,8 +1298,8 @@
       rtx op1 = gen_reg_rtx (SImode);
 
       emit_insn (gen_ashlsi3 (op0, operands[3], GEN_INT (32 - width)));
-      emit_insn (gen_iorsi3 (op1, gen_rtx (LSHIFTRT, SImode, operands[0],
-					   operands[1]),
+      emit_insn (gen_iorsi3 (op1, gen_rtx_LSHIFTRT (SImode, operands[0],
+						    operands[1]),
 			     op0));
       emit_insn (gen_rotlsi3 (subtarget, op1, operands[1]));
     }
@@ -1315,8 +1315,8 @@
       emit_insn (gen_ashlsi3 (op0, operands[3], GEN_INT (32 - width)));
       emit_insn (gen_ashlsi3 (op1, operands[0], operands[1]));
       emit_insn (gen_iorsi3 (subtarget,
-			     gen_rtx (LSHIFTRT, SImode, op1,
-				      operands[1]), op0));
+			     gen_rtx_LSHIFTRT (SImode, op1, operands[1]),
+			     op0));
     }
   else
     {
@@ -1353,13 +1353,13 @@
 	    }
 
 	  if (start_bit != 0)
-	    op0 = gen_rtx (ASHIFT, SImode, op0, operands[2]);
+	    op0 = gen_rtx_ASHIFT (SImode, op0, operands[2]);
 	    
 	  emit_insn (gen_andsi_notsi_si (op2, operands[0], op0));
 	}
 
       if (start_bit != 0)
-	op1 = gen_rtx (ASHIFT, SImode, op1, operands[2]);
+	op1 = gen_rtx_ASHIFT (SImode, op1, operands[2]);
 
       emit_insn (gen_iorsi3 (subtarget, op1, op2));
     }
@@ -2187,8 +2187,8 @@
 {
   if (arm_arch4 && GET_CODE (operands[1]) == MEM)
     {
-      emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-			  gen_rtx (ZERO_EXTEND, SImode, operands[1])));
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_ZERO_EXTEND (SImode, operands[1])));
       DONE;
     }
   if (TARGET_SHORT_BY_BYTES && GET_CODE (operands[1]) == MEM)
@@ -2289,8 +2289,8 @@
 { 
   if (arm_arch4 && GET_CODE (operands[1]) == MEM)
     {
-      emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-		 gen_rtx (SIGN_EXTEND, SImode, operands[1])));
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+		 gen_rtx_SIGN_EXTEND (SImode, operands[1])));
       DONE;
     }
 
@@ -2318,10 +2318,10 @@
   rtx mem1, mem2;
   rtx addr = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
 
-  mem1 = gen_rtx (MEM, QImode, addr);
+  mem1 = gen_rtx_MEM (QImode, addr);
   MEM_COPY_ATTRIBUTES (mem1, operands[1]);
   RTX_UNCHANGING_P (mem1) = RTX_UNCHANGING_P (operands[1]);
-  mem2 = gen_rtx (MEM, QImode, plus_constant (addr, 1));
+  mem2 = gen_rtx_MEM (QImode, plus_constant (addr, 1));
   MEM_COPY_ATTRIBUTES (mem2, operands[1]);
   RTX_UNCHANGING_P (mem2) = RTX_UNCHANGING_P (operands[1]);
   operands[0] = gen_lowpart (SImode, operands[0]);
@@ -2393,8 +2393,8 @@
 {
   if (arm_arch4 && GET_CODE (operands[1]) == MEM)
     {
-      emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-			  gen_rtx (SIGN_EXTEND, HImode, operands[1])));
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_SIGN_EXTEND (HImode, operands[1])));
       DONE;
     }
   if (! s_register_operand (operands[1], QImode))
@@ -2429,8 +2429,8 @@
   {
     HOST_WIDE_INT offset;
 
-    operands[3] = gen_rtx (REG, SImode, REGNO (operands[0]));
-    operands[2] = gen_rtx (MEM, QImode, operands[3]);
+    operands[3] = gen_rtx_REG (SImode, REGNO (operands[0]));
+    operands[2] = gen_rtx_MEM (QImode, operands[3]);
     MEM_COPY_ATTRIBUTES (operands[2], operands[1]);
     RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
     operands[1] = XEXP (operands[1], 0);
@@ -2448,8 +2448,9 @@
     else if (GET_CODE (operands[1]) == PLUS
 	     && GET_CODE (XEXP (operands[1], 1)) != CONST_INT
 	     && ! s_register_operand (XEXP (operands[1], 1), VOIDmode))
-      operands[1] = gen_rtx (PLUS, GET_MODE (operands[1]),
-			     XEXP (operands[1], 1), XEXP (operands[1], 0));
+      operands[1] = gen_rtx_PLUS (GET_MODE (operands[1]),
+				  XEXP (operands[1], 1),
+				  XEXP (operands[1], 0));
   }
 ")
 
@@ -2465,8 +2466,8 @@
 {
   if (arm_arch4 && GET_CODE (operands[1]) == MEM)
     {
-      emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-			  gen_rtx (SIGN_EXTEND, SImode, operands[1])));
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_SIGN_EXTEND (SImode, operands[1])));
       DONE;
     }
   if (! s_register_operand (operands[1], QImode))
@@ -2500,7 +2501,7 @@
   {
     HOST_WIDE_INT offset;
 
-    operands[2] = gen_rtx (MEM, QImode, operands[0]);
+    operands[2] = gen_rtx_MEM (QImode, operands[0]);
     MEM_COPY_ATTRIBUTES (operands[2], operands[1]);
     RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
     operands[1] = XEXP (operands[1], 0);
@@ -2518,8 +2519,9 @@
     else if (GET_CODE (operands[1]) == PLUS
 	     && GET_CODE (XEXP (operands[1], 1)) != CONST_INT
 	     && ! s_register_operand (XEXP (operands[1], 1), VOIDmode))
-      operands[1] = gen_rtx (PLUS, GET_MODE (operands[1]),
-			     XEXP (operands[1], 1), XEXP (operands[1], 0));
+      operands[1] = gen_rtx_PLUS (GET_MODE (operands[1]),
+				  XEXP (operands[1], 1),
+				  XEXP (operands[1], 0));
   }
 ")
 
@@ -2898,7 +2900,7 @@
 	    }
 
 	  emit_insn (gen_movsi (reg, GEN_INT (val)));
-	  operands[1] = gen_rtx (SUBREG, HImode, reg, 0);
+	  operands[1] = gen_rtx_SUBREG (HImode, reg, 0);
 	}
       else if (! arm_arch4)
 	{
@@ -2919,8 +2921,8 @@
 		      HOST_WIDE_INT new_offset = INTVAL (offset) & ~2;
 		      rtx new;
 
-		      new = gen_rtx (MEM, SImode,
-				     plus_constant (base, new_offset));
+		      new = gen_rtx_MEM (SImode,
+					 plus_constant (base, new_offset));
 	              MEM_COPY_ATTRIBUTES (new, operands[1]);
 		      RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
 		      emit_insn (gen_movsi (reg, new));
@@ -2955,17 +2957,18 @@
 		      if ((INTVAL (offset) & 2) == 2)
 			{
 			  HOST_WIDE_INT new_offset = INTVAL (offset) ^ 2;
-			  new = gen_rtx (MEM, SImode,
-					 plus_constant (base, new_offset));
+			  new = gen_rtx_MEM (SImode,
+					     plus_constant (base, new_offset));
                           MEM_COPY_ATTRIBUTES (new, operands[1]);
 			  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
 			  emit_insn (gen_movsi (reg, new));
 			}
 		      else
 			{
-			  new = gen_rtx (MEM, SImode, XEXP (operands[1], 0));
+			  new = gen_rtx_MEM (SImode, XEXP (operands[1], 0));
 	                  MEM_COPY_ATTRIBUTES (new, operands[1]);
-			  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
+			  RTX_UNCHANGING_P (new)
+			    = RTX_UNCHANGING_P (operands[1]);
 			  emit_insn (gen_rotated_loadsi (reg, new));
 			}
 
@@ -2990,7 +2993,7 @@
       if (GET_CODE (operands[0]) != REG)
 	abort ();
 
-      operands[0] = gen_rtx (SUBREG, SImode, operands[0], 0);
+      operands[0] = gen_rtx_SUBREG (SImode, operands[0], 0);
       emit_insn (gen_movsi (operands[0], operands[1]));
       DONE;
     }
@@ -3007,7 +3010,7 @@
   rtx ops[2];
 
   ops[0] = operands[0];
-  ops[1] = gen_rtx (MEM, SImode, plus_constant (XEXP (operands[1], 0), 2));
+  ops[1] = gen_rtx_MEM (SImode, plus_constant (XEXP (operands[1], 0), 2));
   output_asm_insn (\"ldr%?\\t%0, %1\\t%@ load-rotate\", ops);
   return \"\";
 }"
@@ -3025,10 +3028,10 @@
   rtx mem1, mem2;
   rtx addr = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
 
-  mem1 = gen_rtx (MEM, QImode, addr);
+  mem1 = gen_rtx_MEM (QImode, addr);
   MEM_COPY_ATTRIBUTES (mem1, operands[1]);
   RTX_UNCHANGING_P (mem1) = RTX_UNCHANGING_P (operands[1]);
-  mem2 = gen_rtx (MEM, QImode, plus_constant (addr, 1));
+  mem2 = gen_rtx_MEM (QImode, plus_constant (addr, 1));
   MEM_COPY_ATTRIBUTES (mem2, operands[1]);
   RTX_UNCHANGING_P (mem2) = RTX_UNCHANGING_P (operands[1]);
   operands[0] = gen_lowpart (SImode, operands[0]);
@@ -3163,7 +3166,7 @@
 	  rtx reg = gen_reg_rtx (SImode);
 
 	  emit_insn (gen_movsi (reg, operands[1]));
-	  operands[1] = gen_rtx (SUBREG, QImode, reg, 0);
+	  operands[1] = gen_rtx_SUBREG (QImode, reg, 0);
 	}
       if (GET_CODE (operands[0]) == MEM)
 	operands[1] = force_reg (QImode, operands[1]);
@@ -3251,8 +3254,8 @@
     operands[2] = XEXP (operands[0], 0);
   else if (code == POST_INC || code == PRE_DEC)
     {
-      operands[0] = gen_rtx (SUBREG, DImode, operands[0], 0);
-      operands[1] = gen_rtx (SUBREG, DImode, operands[1], 0);
+      operands[0] = gen_rtx_SUBREG (DImode, operands[0], 0);
+      operands[1] = gen_rtx_SUBREG (DImode, operands[1], 0);
       emit_insn (gen_movdi (operands[0], operands[1]));
       DONE;
     }
@@ -3268,8 +3271,8 @@
     emit_insn (gen_addsi3 (operands[2], XEXP (XEXP (operands[0], 0), 0),
 			   XEXP (XEXP (operands[0], 0), 1)));
 
-  emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (MEM, DFmode, operands[2]),
-		      operands[1]));
+  emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_MEM (DFmode, operands[2]),
+			  operands[1]));
 
   if (code == POST_DEC)
     emit_insn (gen_addsi3 (operands[2], operands[2], GEN_INT (-8)));
@@ -6140,8 +6143,8 @@
   enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]), operands[2],
 					   operands[3]);
 
-  operands[6] = gen_rtx (REG, mode, 24);
-  operands[7] = gen_rtx (COMPARE, mode, operands[2], operands[3]);
+  operands[6] = gen_rtx_REG (mode, 24);
+  operands[7] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
 }
 ")
 
