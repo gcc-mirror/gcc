@@ -5035,6 +5035,15 @@ fold (expr)
 	}
       else if (TREE_CODE (arg0) == NEGATE_EXPR)
 	return TREE_OPERAND (arg0, 0);
+      /* Convert -((double)float) into (double)(-float).  */
+      else if (TREE_CODE (arg0) == NOP_EXPR
+	       && TREE_CODE (type) == REAL_TYPE)
+	{
+	  tree targ0 = strip_float_extensions (arg0);
+	  if (targ0 != arg0)
+	    return convert (type, build1 (NEGATE_EXPR, TREE_TYPE (targ0), targ0));
+			   
+	}
 
       /* Convert - (a - b) to (b - a) for non-floating-point.  */
       else if (TREE_CODE (arg0) == MINUS_EXPR
@@ -5083,6 +5092,15 @@ fold (expr)
 	}
       else if (TREE_CODE (arg0) == ABS_EXPR || TREE_CODE (arg0) == NEGATE_EXPR)
 	return build1 (ABS_EXPR, type, TREE_OPERAND (arg0, 0));
+      /* Convert fabs((double)float) into (double)fabsf(float).  */
+      else if (TREE_CODE (arg0) == NOP_EXPR
+	       && TREE_CODE (type) == REAL_TYPE)
+	{
+	  tree targ0 = strip_float_extensions (arg0);
+	  if (targ0 != arg0)
+	    return convert (type, build1 (ABS_EXPR, TREE_TYPE (targ0), targ0));
+			   
+	}
       else
 	{
 	  /* fabs(sqrt(x)) = sqrt(x) and fabs(exp(x)) = exp(x).  */

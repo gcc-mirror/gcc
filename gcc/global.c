@@ -132,6 +132,11 @@ struct allocno
   /* Set of hard registers that some later allocno has a preference for.  */
 
   HARD_REG_SET regs_someone_prefers;
+
+#ifdef STACK_REGS
+  /* Set to true if allocno can't be allocated in the stack register.  */
+  bool no_stack_reg;
+#endif
 };
 
 static struct allocno *allocno;
@@ -708,8 +713,14 @@ global_conflicts ()
 	    if (e->flags & EDGE_ABNORMAL)
 	      break;
 	  if (e != NULL)
-	    for (ax = FIRST_STACK_REG; ax <= LAST_STACK_REG; ax++)
-	      record_one_conflict (ax);
+	    {
+	      EXECUTE_IF_SET_IN_ALLOCNO_SET (allocnos_live, ax,
+		{
+		  allocno[ax].no_stack_reg = 1;
+		});
+	      for (ax = FIRST_STACK_REG; ax <= LAST_STACK_REG; ax++)
+		record_one_conflict (ax);
+	    }
 	}
 #endif
       }
@@ -1205,6 +1216,10 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 #ifdef CANNOT_CHANGE_MODE_CLASS
 	      && ! invalid_mode_change_p (regno, REGNO_REG_CLASS (regno),
 					  mode)
+#endif
+#ifdef STACK_REGS
+	     && (!allocno[num].no_stack_reg
+		 || regno < FIRST_STACK_REG || regno > LAST_STACK_REG)
 #endif
 	      )
 	    {

@@ -1,3 +1,10 @@
+Wed Jan 15 12:20:52 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/compile/20030115-1.c: New test.
+
+	* gcc.dg/i386-fpcvt-1.c: New test.
+	* gcc.dg/i386-fpcvt-2.c: New test.
+
 2003-01-14  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	Further conform g++'s __vmi_class_type_info to the C++ ABI
