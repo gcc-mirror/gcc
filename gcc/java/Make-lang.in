@@ -294,13 +294,12 @@ java/jcf-path.o: java/jcf-path.c $(CONFIG_H) system.h java/jcf.h
 	  $(srcdir)/java/jcf-path.c $(OUTPUT_OPTION)
 
 # Documentation
-$(srcdir)/java/gcj.info: $(srcdir)/java/gcj.texi
+$(srcdir)/java/gcj.info: $(srcdir)/java/gcj.texi $(srcdir)/fdl.texi
 	if test "x$(BUILD_INFO)" = xinfo; then \
 	  rm -f $(srcdir)/java/gcc.info*; \
 	  cd $(srcdir)/java && $(MAKEINFO) -I.. -o gcj.info gcj.texi; \
 	else true; fi
 
-java/gcj.dvi: $(srcdir)/java/gcj.texi
-	TEXINPUTS=${texidir}:$(srcdir)/java:$(srcdir):$$TEXINPUTS tex gcj.texi
-	texindex gcj.??
-	TEXINPUTS=${texidir}:$(srcdir)/java:$(srcdir):$$TEXINPUTS tex gcj.texi
+java/gcj.dvi: $(srcdir)/java/gcj.texi $(srcdir)/fdl.texi
+	s=`cd $(srcdir); pwd`; export s; \
+	cd java && $(TEXI2DVI) -I $$s $$s/java/gcj.texi
