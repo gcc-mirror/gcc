@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include <signal.h>
-#ifndef __MSDOS__
+#ifndef SEPARATE_FIX_PROC
 #include "server.h"
 #endif
 
@@ -182,7 +182,7 @@ Altering  %5d of them\n";
   }
 #endif /* DO_STATS */
 
-# ifdef __MSDOS__
+# ifdef SEPARATE_FIX_PROC
   unlink( pz_temp_file );
 # endif
   return EXIT_SUCCESS;
@@ -202,7 +202,7 @@ do_version ()
   */
   run_compiles ();
   sprintf (zBuf, zFmt, program_id);
-#ifndef __MSDOS__
+#ifndef SEPARATE_FIX_PROC
   puts (zBuf + 5);
   exit (strcmp (run_shell (zBuf), program_id));
 #else
@@ -298,7 +298,7 @@ ENV_TABLE
       */
   run_compiles ();
 
-# ifdef __MSDOS__
+# ifdef SEPARATE_FIX_PROC
   /* NULL as the first argument to `tempnam' causes it to DTRT
      wrt the temporary directory where the file will be created.  */
   pz_temp_file = tempnam( NULL, "fxinc" );
@@ -382,7 +382,7 @@ static int
 machine_matches( p_fixd )
   tFixDesc *p_fixd;
         {
-# ifndef __MSDOS__
+# ifndef SEPARATE_FIX_PROC
           tSCC case_fmt[] = "case %s in\n";     /*  9 bytes, plus string */
           tSCC esac_fmt[] =
                " )\n    echo %s ;;\n* ) echo %s ;;\nesac";/*  4 bytes */
@@ -449,7 +449,7 @@ machine_matches( p_fixd )
 	  }
 
   return BOOL_TRUE;
-# else /* is __MSDOS__ */
+# else /* is SEPARATE_FIX_PROC */
   const char **papz_machs = p_fixd->papz_machs;
   int invert = (p_fixd->fd_flags & FD_MACH_IFNOT) != 0;
   for (;;)
@@ -613,7 +613,7 @@ create_file ()
           the name of the file that we might want to fix
   Result: APPLY_FIX or SKIP_FIX, depending on the result of the
           shell script we run.  */
-#ifndef __MSDOS__
+#ifndef SEPARATE_FIX_PROC
 static int test_test PARAMS ((tTestDesc *, char *));
 static int
 test_test (p_test, pz_test_file)
@@ -812,7 +812,7 @@ extract_quoted_files (pz_data, pz_fixed_file, p_re_match)
 
     Somebody wrote a *_fix subroutine that we must call.
     */
-#ifndef __MSDOS__
+#ifndef SEPARATE_FIX_PROC
 static int internal_fix PARAMS ((int, tFixDesc *));
 static int
 internal_fix (read_fd, p_fixd)
@@ -879,10 +879,10 @@ internal_fix (read_fd, p_fixd)
   apply_fix (p_fixd, pz_curr_file);
   exit (0);
 }
-#endif /* !__MSDOS__ */
+#endif /* !SEPARATE_FIX_PROC */
 
 
-#ifdef __MSDOS__
+#ifdef SEPARATE_FIX_PROC
 static void
 fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
   tFixDesc* p_fixd;
@@ -922,16 +922,25 @@ fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
   else /* NOT an "internal" fix: */
     {
       size_t parg_size;
+#ifdef __MSDOS__
       /* Don't use the "src > dstX; rm -f dst; mv -f dstX dst" trick:
-	 dst is a temporary file anyway, so we know there's no other
-	 file by that name; and DOS's system(3) doesn't mind to
+         dst is a temporary file anyway, so we know there's no other
+         file by that name; and DOS's system(3) doesn't mind to
          clobber existing file in redirection.  Besides, with DOS 8+3
          limited file namespace, we can easily lose if dst already has
          an extension that is 3 or more characters long.
-         The following bizarre use of 'cat' only works on DOS boxes.
-         It is causing the file to be dropped into a temporary file for
+
+         I do not think the 8+3 issue is relevant because all the files
+         we operate on are named "*.h", making 8+2 adequate.  Anyway,
+         the following bizarre use of 'cat' only works on DOS boxes.
+         It causes the file to be dropped into a temporary file for
          'cat' to read (pipes do not work on DOS).  */
       tSCC   z_cmd_fmt[] = " %s | cat > %s";
+#else
+      /* Don't use positional formatting arguments because some lame-o
+         implementations cannot cope  :-(.  */
+      tSCC   z_cmd_fmt[] = " %s > %sX ; rm -f %s; mv -f %sX %s";
+#endif
       tCC**  ppArgs = p_fixd->patch_args;
 
       argsize = sizeof( z_cmd_fmt ) + strlen( pz_temp_file )
@@ -1006,7 +1015,12 @@ fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
       /*
        *  add the file machinations.
        */
-      sprintf( pz_scan, z_cmd_fmt, pz_file_source, pz_temp_file );
+#ifdef SEPARATE_FIX_PROC
+      sprintf (pz_scan, z_cmd_fmt, pz_file_source, pz_temp_file );
+#else
+      sprintf (pz_scan, z_cmd_fmt, pz_file_source, pz_temp_file,
+               pz_temp_file, pz_temp_file, pz_temp_file);
+#endif
     }
   system( pz_cmd );
   free( (void*)pz_cmd );
@@ -1019,7 +1033,7 @@ fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
     its stdin and returns the new fd this process will use
     for stdout.  */
 
-#else /* is *NOT* __MSDOS__ */
+#else /* is *NOT* SEPARATE_FIX_PROC */
 static int start_fixer PARAMS ((int, tFixDesc *, char *));
 static int
 start_fixer (read_fd, p_fixd, pz_fix_file)
@@ -1105,7 +1119,7 @@ fix_applies (p_fixd)
   int test_ct;
   tTestDesc *p_test;
 
-# ifdef __MSDOS__
+# ifdef SEPARATE_FIX_PROC
   /*
    *  There is only one fix that uses a shell script as of this writing.
    *  I hope to nuke it anyway, it does not apply to DOS and it would
@@ -1314,9 +1328,9 @@ process ()
   tFixDesc *p_fixd = fixDescList;
   int todo_ct = FIX_COUNT;
   int read_fd = -1;
-# ifndef __MSDOS__
+# ifndef SEPARATE_FIX_PROC
   int num_children = 0;
-# else /* is __MSDOS__ */
+# else /* is SEPARATE_FIX_PROC */
   char* pz_file_source = pz_curr_file;
 # endif
 
@@ -1339,7 +1353,7 @@ process ()
   if (VLEVEL( VERB_PROGRESS ) && have_tty)
     fprintf (stderr, "%6d %-50s   \r", data_map_size, pz_curr_file );
 
-# ifndef __MSDOS__
+# ifndef SEPARATE_FIX_PROC
   process_chain_head = NOPROCESS;
 
   /* For every fix in our fix list, ...  */
@@ -1400,7 +1414,7 @@ process ()
       } while (--num_children > 0);
     }
 
-# else /* is __MSDOS__ */
+# else /* is SEPARATE_FIX_PROC */
 
   for (; todo_ct > 0; p_fixd++, todo_ct--)
     {
@@ -1421,12 +1435,20 @@ process ()
       pz_file_source = pz_temp_file;
     }
 
-  read_fd = open( pz_temp_file, O_RDONLY );
-  test_for_changes( read_fd );
-  /* Unlinking a file while it is still open is a Bad Idea on
-     DOS/Windows.  */
-  close( read_fd );
-  unlink( pz_temp_file );
+  read_fd = open (pz_temp_file, O_RDONLY);
+  if (read_fd < 0)
+    {
+      fprintf (stderr, "error %d (%s) opening output (%s) for read\n",
+               errno, xstrerror (errno), pz_temp_file);
+    }
+  else
+    {
+      test_for_changes (read_fd);
+      /* Unlinking a file while it is still open is a Bad Idea on
+         DOS/Windows.  */
+      close (read_fd);
+      unlink (pz_temp_file);
+    }
 
 # endif
   UNLOAD_DATA();

@@ -209,7 +209,7 @@ void   apply_fix   PARAMS(( tFixDesc* p_fixd, tCC* filname ));
 apply_fix_p_t
        run_test    PARAMS(( tCC* t_name, tCC* f_name, tCC* text ));
 
-#ifdef __MSDOS__
+#ifdef SEPARATE_FIX_PROC
 char*  make_raw_shell_str
                    PARAMS(( char* pz_d, tCC* pz_s, size_t smax ));
 #endif

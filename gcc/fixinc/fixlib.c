@@ -244,7 +244,7 @@ mn_get_regexps( label_re, name_re, who )
 #endif
 
 
-#ifdef __MSDOS__
+#ifdef SEPARATE_FIX_PROC
 
 char*
 make_raw_shell_str( pz_d, pz_s, smax )

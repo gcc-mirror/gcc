@@ -49,6 +49,12 @@ case $machine in
 		MAKE="${MAKE} -f ${srcdir}/Makefile.DOS srcdir=${srcdir}"
 		;;
 
+	*-*-beos* )
+		MAKE="${MAKE} -f ${srcdir}/Makefile.BEOS srcdir=${srcdir}"
+		# Remove the following line to enable fixincludes
+		fixincludes=
+		;;
+
 	alpha*-dec-vms* | \
 	arm-semi-aout | armel-semi-aout | \
 	arm-semi-aof | armel-semi-aof | \
@@ -59,7 +65,6 @@ case $machine in
 	hppa1.1-*-bsd* | \
 	hppa1.0-*-bsd* | \
 	hppa*-*-lites* | \
-	*-*-beos* | \
 	*-*-gnu* | \
 	i?86-moss-msdos* | i?86-*-moss* | \
 	i?86-*-osf1* | \

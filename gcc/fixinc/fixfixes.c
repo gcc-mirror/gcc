@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #include "fixlib.h"
 #define    GTYPE_SE_CT 1
 
-#ifdef __MSDOS__
+#ifdef SEPARATE_FIX_PROC
 #include "fixincl.x"
 #endif
 
@@ -597,11 +597,19 @@ FIX_PROC_HEAD( machine_name_fix )
 
 FIX_PROC_HEAD( wrap_fix )
 {
+  tSCC   z_no_wrap_pat[] = "^#if.*__need_";
+  static regex_t no_wrapping_re = { NULL, 0, 0 };
+
   char   z_fixname[ 64 ];
   tCC*   pz_src  = p_fixd->fix_name;
   tCC*   pz_name = z_fixname;
   char*  pz_dst  = z_fixname;
+  int    do_end  = 0;
   size_t len     = 0;
+
+  if (no_wrapping_re.allocated == 0)
+    compile_re( z_no_wrap_pat, &no_wrapping_re, 0, "no-wrap pattern",
+                "wrap-fix" );
 
   for (;;) {
     char ch = *(pz_src++);
@@ -627,8 +635,16 @@ FIX_PROC_HEAD( wrap_fix )
     }
   }
 
-  printf( "#ifndef FIXINC_%s_CHECK\n", pz_name );
-  printf( "#define FIXINC_%s_CHECK 1\n\n", pz_name );
+  /*
+   *  IF we do *not* match the no-wrap re, then we have a double negative.
+   *  A double negative means YES.
+   */
+  if (regexec (&no_wrapping_re, text, 0, NULL, 0) != 0)
+    {
+      printf( "#ifndef FIXINC_%s_CHECK\n", pz_name );
+      printf( "#define FIXINC_%s_CHECK 1\n\n", pz_name );
+      do_end = 1;
+    }
 
   if (p_fixd->patch_args[1] == (tCC*)NULL)
     fputs( text, stdout );
@@ -640,7 +656,9 @@ FIX_PROC_HEAD( wrap_fix )
       fputs( p_fixd->patch_args[2], stdout );
   }
 
-  printf( "\n#endif  /* FIXINC_%s_CHECK */\n", pz_name );
+  if (do_end != 0)
+    printf( "\n#endif  /* FIXINC_%s_CHECK */\n", pz_name );
+
   if (pz_name != z_fixname)
     free( (void*)pz_name );
 }
@@ -731,7 +749,7 @@ apply_fix( p_fixd, filname )
   (*pfe->fix_proc)( filname, buf, p_fixd );
 }
 
-#ifdef __MSDOS__
+#ifdef SEPARATE_FIX_PROC
 tSCC z_usage[] =
 "USAGE: applyfix <fix-name> <file-to-fix> <file-source> <file-destination>\n";
 tSCC z_reopen[] =
@@ -750,7 +768,7 @@ main( argc, argv )
   if (argc != 5)
     {
     usage_failure:
-      fputs( z_usage, stderr );
+      fputs (z_usage, stderr);
       return EXIT_FAILURE;
     }
 
@@ -761,15 +779,15 @@ main( argc, argv )
     if (! ISDIGIT ( *pz ))
       goto usage_failure;
 
-    idx = strtol( pz, &pz, 10 );
+    idx = strtol (pz, &pz, 10);
     if ((*pz != NUL) || ((unsigned)idx >= FIX_COUNT))
       goto usage_failure;
     pFix = fixDescList + idx;
   }
 
-  if (freopen( argv[3], "r", stdin ) != stdin)
+  if (freopen (argv[3], "r", stdin) != stdin)
     {
-      fprintf( stderr, z_reopen, errno, strerror( errno ), argv[3], "in" );
+      fprintf (stderr, z_reopen, errno, strerror( errno ), argv[3], "in");
       return EXIT_FAILURE;
     }
 
@@ -783,23 +801,23 @@ main( argc, argv )
   pz_tmp_dot = strchr( pz_tmp_base, '.' );
   if (pathconf( pz_tmptmp, _PC_NAME_MAX ) <= 12	/* is this DOS or Windows9X? */
       && pz_tmp_dot != (char*)NULL)
-    strcpy( pz_tmp_dot+1, "X" ); /* nuke the original extension */
+    strcpy (pz_tmp_dot+1, "X"); /* nuke the original extension */
   else
-    strcat( pz_tmptmp, ".X" );
-  if (freopen( pz_tmptmp, "w", stdout ) != stdout)
+    strcat (pz_tmptmp, ".X");
+  if (freopen (pz_tmptmp, "w", stdout) != stdout)
     {
-      fprintf( stderr, z_reopen, errno, strerror( errno ), pz_tmptmp, "out" );
+      fprintf (stderr, z_reopen, errno, strerror( errno ), pz_tmptmp, "out");
       return EXIT_FAILURE;
     }
 
-  apply_fix( pFix, argv[1] );
-  close( STDOUT_FILENO );
-  close( STDIN_FILENO );
-  unlink( argv[4] );
-  if (rename( pz_tmptmp, argv[4] ) != 0)
+  apply_fix (pFix, argv[1]);
+  fclose (stdout);
+  fclose (stdin);
+  unlink (argv[4]);
+  if (rename (pz_tmptmp, argv[4]) != 0)
     {
-      fprintf( stderr, "error %d (%s) renaming %s to %s\n", errno,
-               strerror( errno ), pz_tmptmp, argv[4] );
+      fprintf (stderr, "error %d (%s) renaming %s to %s\n", errno,
+               strerror( errno ), pz_tmptmp, argv[4]);
       return EXIT_FAILURE;
     }
 
