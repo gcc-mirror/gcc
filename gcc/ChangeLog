@@ -1,3 +1,13 @@
+Fri Aug 28 15:13:25 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+        * regmove.c (regclass_compatible_p): New function.
+        (regmove_optimize): Use it.
+
+        Use NREGS parameter insted of calling max_reg_num.
+
+        (fixup_match_1): Don't use code = MINUS when later tieing with
+        a hard register is likely.
+
 Fri Aug 28 14:54:07 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (check_dbra_loop): Fix calculation of FINAL_VALUE when
