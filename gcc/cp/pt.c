@@ -12376,7 +12376,8 @@ build_non_dependent_expr (tree expr)
   if (TREE_CODE (inner_expr) == OVERLOAD 
       || TREE_CODE (inner_expr) == FUNCTION_DECL
       || TREE_CODE (inner_expr) == TEMPLATE_DECL
-      || TREE_CODE (inner_expr) == TEMPLATE_ID_EXPR)
+      || TREE_CODE (inner_expr) == TEMPLATE_ID_EXPR
+      || TREE_CODE (inner_expr) == OFFSET_REF)
     return expr;
   /* There is no need to return a proxy for a variable.  */
   if (TREE_CODE (expr) == VAR_DECL)
