@@ -297,6 +297,35 @@ struct tree_opt_pass pass_iv_canon =
   0					/* letter */
 };
 
+/* Record bounds on numbers of iterations of loops.  */
+
+static void
+tree_ssa_loop_bounds (void)
+{
+  if (!current_loops)
+    return;
+
+  estimate_numbers_of_iterations (current_loops);
+  scev_reset ();
+}
+
+struct tree_opt_pass pass_record_bounds =
+{
+  "bounds",				/* name */
+  NULL,					/* gate */
+  tree_ssa_loop_bounds,		       	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,			  		/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,			              	/* todo_flags_finish */
+  0					/* letter */
+};
+
 /* Complete unrolling of loops.  */
 
 static void

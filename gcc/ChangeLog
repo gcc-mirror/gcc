@@ -1,5 +1,13 @@
 2004-09-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	* tree-optimize.c (init_tree_optimization_passes): Add
+	pass_record_bounds.
+	* tree-pass.h (pass_record_bounds): Declare.
+	* tree-ssa-loop.c (tree_ssa_loop_bounds, pass_record_bounds):
+	New pass.
+
+2004-09-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
 	PR tree-optimization/17474
 	* tree-ssa-ccp.c (maybe_fold_offset_to_component_ref): Determine
 	offset of the field correctly when DECL_FIELD_BIT_OFFSET != 0.
