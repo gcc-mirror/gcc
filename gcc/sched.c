@@ -146,7 +146,6 @@ static int *sched_reg_live_length;
    such insn.  Needed for new registers which may be introduced
    by splitting insns.  */
 static rtx *reg_last_uses;
-static int reg_last_uses_size;
 static rtx *reg_last_sets;
 static regset reg_pending_sets;
 static int reg_pending_sets_all;
@@ -1486,7 +1485,7 @@ sched_analyze_insn (x, insn, loop_notes)
 {
   register RTX_CODE code = GET_CODE (x);
   rtx link;
-  int maxreg = reg_last_uses_size;
+  int maxreg = max_reg_num ();
   int i;
 
   if (code == SET || code == CLOBBER)
@@ -1523,7 +1522,7 @@ sched_analyze_insn (x, insn, loop_notes)
 
   if (loop_notes)
     {
-      int max_reg = reg_last_uses_size;
+      int max_reg = max_reg_num ();
       rtx link;
 
       for (i = 0; i < max_reg; i++)
@@ -1661,7 +1660,8 @@ sched_analyze (head, tail)
 	  if (NEXT_INSN (insn) && GET_CODE (NEXT_INSN (insn)) == NOTE
 	      && NOTE_LINE_NUMBER (NEXT_INSN (insn)) == NOTE_INSN_SETJMP)
 	    {
-	      for (i = 0; i < reg_last_uses_size; i++)
+	      int max_reg = max_reg_num ();
+	      for (i = 0; i < max_reg; i++)
 		{
 		  for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
@@ -2636,7 +2636,7 @@ schedule_block (b, file)
     fprintf (file, ";;\t -- basic block number %d from %d to %d --\n",
 	     b, INSN_UID (basic_block_head[b]), INSN_UID (basic_block_end[b]));
 
-  reg_last_uses_size = i = max_reg_num ();
+  i = max_reg_num ();
   reg_last_uses = (rtx *) alloca (i * sizeof (rtx));
   bzero ((char *) reg_last_uses, i * sizeof (rtx));
   reg_last_sets = (rtx *) alloca (i * sizeof (rtx));
