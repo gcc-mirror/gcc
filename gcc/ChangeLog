@@ -1,5 +1,8 @@
 2000-08-07  Graham Stott  <grahams@cygnus.co.uk>
 
+	* mn10300.md: Use nonimmediate_operand instead of general_operand
+	on output operands.
+	
 	* mn10300.h (PREFERRED_RELOAD_CLASS): Limit memory reloads.
 
 2000-08-07  Alexandre Oliva  <aoliva@redhat.com>
