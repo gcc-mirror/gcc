@@ -60,7 +60,7 @@ public interface SocketOptions
    * @since 1.3
    */
   static final int SO_KEEPALIVE = 0x8;
-	
+
   /**
    * Option id for the SO_LINGER value
    */
@@ -106,13 +106,13 @@ public interface SocketOptions
   static final int SO_OOBINLINE = 0x1003; // 4099
 
   /**
-    * Option id for the TCP_NODELAY value
-    */
+   * Option id for the TCP_NODELAY value
+   */
   static final int TCP_NODELAY = 0x01; // 1
 
   /**
-    * Options id for the IP_MULTICAST_IF value
-    */
+   * Options id for the IP_MULTICAST_IF value
+   */
   static final int IP_MULTICAST_IF = 0x10; // 16
 
   /**

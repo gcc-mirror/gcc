@@ -402,9 +402,9 @@ public final class DatagramPacket
   /**
    * Sets the length of the data in the buffer. 
    *
-   * @param length The new length.  (Where len <= buf.length)
+   * @param length The new length.  (Where len &lt;= buf.length)
    *
-   * @exception IllegalArgumentException f the length is negative or
+   * @exception IllegalArgumentException If the length is negative or
    * if the length is greater than the packet's data buffer length
    *
    * @since 1.1
