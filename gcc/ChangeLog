@@ -1,3 +1,9 @@
+2003-08-27  Per Bothner  <pbothner@apple.com>
+
+	* cpperror.c (print_location):  Don't check for !pfile->buffer.  That
+	test fails following my 08-21 change, and it seems unnecessary anyway.
+	(cpp_error):  Likewise.
+
 2003-08-27  Jason Merrill  <jason@redhat.com>
 
 	* real.c (do_multiply): Initialize with memset.
@@ -755,7 +761,7 @@ Wed Aug 20 12:08:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/s390/s390.h: Prefix #include of s390/fixdfdi.h
 	[under IN_LIBGCC2] with config/.
 
-2003-08-21  Per Bothner  <bothner@pbothner.com>
+2003-08-21  Per Bothner  <pbothner@apple.com>
 
 	* cppfiles.c (stack_file):  Correctly pass return_at_eof parameter
 	to cpp_push_buffer.
