@@ -4080,10 +4080,15 @@ simplify_rtx (x, op0_mode, last, in_dest)
     case XOR:
       return simplify_logical (x, last);
 
-    case ABS:
+    case ABS:      
       /* (abs (neg <foo>)) -> (abs <foo>) */
       if (GET_CODE (XEXP (x, 0)) == NEG)
 	SUBST (XEXP (x, 0), XEXP (XEXP (x, 0), 0));
+
+      /* If the mode of the operand is VOIDmode (i.e. if it is ASM_OPERANDS),
+         do nothing.  */
+      if (GET_MODE (XEXP (x, 0)) == VOIDmode)
+	break;
 
       /* If operand is something known to be positive, ignore the ABS.  */
       if (GET_CODE (XEXP (x, 0)) == FFS || GET_CODE (XEXP (x, 0)) == ABS
