@@ -963,7 +963,7 @@ ptr_t GC_get_stack_base()
 #endif /* FREEBSD_STACKBOTTOM */
 
 #if !defined(BEOS) && !defined(AMIGA) && !defined(MSWIN32) \
-    && !defined(MSWINCE) && !defined(OS2)
+    && !defined(MSWINCE) && !defined(OS2) && !defined(NOSYS) && !defined(ECOS)
 
 ptr_t GC_get_stack_base()
 {
@@ -1021,7 +1021,7 @@ ptr_t GC_get_stack_base()
 #   endif /* STACKBOTTOM */
 }
 
-# endif /* ! AMIGA, !OS 2, ! MS Windows, !BEOS */
+# endif /* ! AMIGA, !OS 2, ! MS Windows, !BEOS, !NOSYS, !ECOS */
 
 /*
  * Register static data segment(s) as roots.
