@@ -4800,6 +4800,9 @@ assign_parms (fndecl)
 	      if (GET_CODE (entry_parm) == PARALLEL)
 		emit_group_store (mem, entry_parm, size);
 
+	      else if (size == 0)
+		;
+
 	      /* If SIZE is that of a mode no bigger than a word, just use
 		 that mode's store operation.  */
 	      else if (size <= UNITS_PER_WORD)
