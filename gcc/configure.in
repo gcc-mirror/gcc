@@ -792,6 +792,19 @@ if test $gcc_cv_type_clock_t = yes; then
   [Define if <time.h> defines clock_t.])
 fi
 
+AC_CACHE_CHECK(for uchar, gcc_cv_type_uchar,
+[AC_TRY_COMPILE([
+#include "ansidecl.h"
+#include "system.h"
+], 
+[if ((uchar *)0) return 0;
+ if (sizeof(uchar)) return 0;],
+ac_cv_type_uchar=yes, ac_cv_type_uchar=no)])
+if test $ac_cv_type_uchar = yes; then
+  AC_DEFINE(HAVE_UCHAR, 1,
+  [Define if <sys/types.h> defines \`uchar'.])
+fi
+
 # Restore CFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
 CFLAGS="$saved_CFLAGS"
 

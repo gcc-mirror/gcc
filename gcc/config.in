@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -497,6 +497,9 @@
 
 /* Define if <time.h> defines clock_t. */
 #undef HAVE_CLOCK_T
+
+/* Define if <sys/types.h> defines `uchar'. */
+#undef HAVE_UCHAR
 
 /* Define .init_array/.fini_array sections are available and working. */
 #undef HAVE_INITFINI_ARRAY
