@@ -250,7 +250,7 @@ extern char *strdup(), *float_label();
 #define STRUCT_VALUE_REGNUM 12
 
 /* Define this to be 1 if all structure return values must be in memory. */
-#define DEFAUT_PCC_STRUCT_RETURN 0
+#define DEFAULT_PCC_STRUCT_RETURN 0
 
 /*****************************************************************************/
 
