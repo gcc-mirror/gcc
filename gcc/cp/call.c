@@ -103,7 +103,7 @@ static tree direct_reference_binding (tree, tree);
 static bool promoted_arithmetic_type_p (tree);
 static tree conditional_conversion (tree, tree);
 static char *name_as_c_string (tree, tree, bool *);
-static tree call_builtin_trap (tree);
+static tree call_builtin_trap (void);
 static tree prep_operand (tree);
 static void add_candidates (tree, tree, tree, bool, tree, tree,
 			    int, struct z_candidate **);
@@ -4118,18 +4118,15 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
 		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
 }
 
-/* Build a call to __builtin_trap which can be used as an expression of
-   type TYPE.  */
+/* Build a call to __builtin_trap.  */
 
 static tree
-call_builtin_trap (tree type)
+call_builtin_trap (void)
 {
   tree fn = IDENTIFIER_GLOBAL_VALUE (get_identifier ("__builtin_trap"));
 
   my_friendly_assert (fn != NULL, 20030927);
   fn = build_call (fn, NULL_TREE);
-  fn = build (COMPOUND_EXPR, type, fn, error_mark_node);
-  fn = force_target_expr (type, fn);
   return fn;
 }
 
@@ -4172,7 +4169,9 @@ convert_arg_to_ellipsis (tree arg)
       if (!skip_evaluation)
 	warning ("cannot pass objects of non-POD type `%#T' through `...'; "
 	         "call will abort at runtime", TREE_TYPE (arg));
-      arg = call_builtin_trap (TREE_TYPE (arg));
+      arg = call_builtin_trap ();
+      arg = build (COMPOUND_EXPR, integer_type_node, arg,
+		   integer_zero_node);
     }
 
   return arg;
@@ -4197,7 +4196,11 @@ build_x_va_arg (tree expr, tree type)
       warning ("cannot receive objects of non-POD type `%#T' through `...'; \
 call will abort at runtime",
 	       type);
-      return call_builtin_trap (type);
+      expr = convert (build_pointer_type (type), null_node);
+      expr = build (COMPOUND_EXPR, TREE_TYPE (expr),
+		    call_builtin_trap (), expr);
+      expr = build_indirect_ref (expr, NULL);
+      return expr;
     }
   
   return build_va_arg (expr, type);
