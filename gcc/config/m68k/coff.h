@@ -80,6 +80,20 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_FILE_START(FILE) \
   output_file_directive ((FILE), main_input_filename)
 
+/* If defined, a C expression whose value is a string containing the
+   assembler operation to identify the following data as uninitialized global
+   data.  */
+
+#define BSS_SECTION_ASM_OP	".section\t.bss"
+
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of an uninitialized global label named
+   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
+   Try to use asm_output_aligned_bss to implement this macro.  */
+
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss ((FILE), (NAME), (SIZE), (ALIGN))
+
 /* Support the ctors and dtors sections for g++.  */
 
 #define CTORS_SECTION_ASM_OP	".section\t.ctors,\"x\""
