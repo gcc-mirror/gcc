@@ -6052,7 +6052,7 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
   enum mode_class class;
 
 #ifdef ENABLE_CHECKING
-  if (alpha_return_in_memory (valtype, func))
+  if (valtype && alpha_return_in_memory (valtype, func))
     abort ();
 #endif
 
