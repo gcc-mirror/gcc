@@ -1,3 +1,8 @@
+2004-07-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR bootstrap/15120
+	* configure: Rebuilt.
+
 2004-07-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* testsuite/22_locale/time_put_members_char.cc (test01): Allow either 

@@ -1,3 +1,15 @@
+2004-07-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/13250
+	Backport from mainline:
+	* config/sh/sh.md (rotlsi3): Use emit_move_insn.
+
+	PR target/15647
+	Backport from mainline:
+	* config/sh/t-linux (SHLIB_MAPFILES): Use sh specific
+	libgcc-std.ver.
+	* config/sh/libgcc-std.ver: New file.
+
 2004-07-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/15202

@@ -14,8 +14,11 @@ MULTILIB_EXCEPTIONS=
 EXTRA_MULTILIB_PARTS= crtbegin.o crtend.o crtbeginS.o crtendS.o
 
 # Override t-slibgcc-elf-ver to export some libgcc symbols with
-# the symbol versions that glibc used.
-SHLIB_MAPFILES =  $(srcdir)/libgcc-std.ver $(srcdir)/config/sh/libgcc-glibc.ver
+# the symbol versions that glibc used.  Also use sh specific
+# libgcc-std.ver to avoid to export some lib1func routines which
+# shoud not be called via PLT.
+SHLIB_MAPFILES =  $(srcdir)/config/sh/libgcc-std.ver \
+	$(srcdir)/config/sh/libgcc-glibc.ver
 
 # Override SHLIB_LINK and SHLIB_INSTALL to use linker script
 # libgcc_s.so.
