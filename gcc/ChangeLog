@@ -1,3 +1,9 @@
+2004-02-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* cpplib.h (cpp_get_line_maps): Un-constify the structure
+	pointed to by the pointer returned by the function.
+	* cpplib.c (cpp_get_line_maps): Likewise.
+
 2004-02-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-objc-common.c (c_cannot_inline_tree_fn): Fix a typo in a

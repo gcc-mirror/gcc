@@ -1904,7 +1904,7 @@ cpp_get_callbacks (cpp_reader *pfile)
 }
 
 /* The line map set.  */
-const struct line_maps *
+struct line_maps *
 cpp_get_line_maps (cpp_reader *pfile)
 {
   return &pfile->line_maps;
