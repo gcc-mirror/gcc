@@ -8226,9 +8226,9 @@ get_last_value (x)
     {
       rtx insn, set;
 
-      for (insn = prev_active_insn (subst_insn);
+      for (insn = prev_nonnote_insn (subst_insn);
 	   insn && INSN_CUID (insn) >= subst_low_cuid;
-	   insn = prev_active_insn (insn))
+	   insn = prev_nonnote_insn (insn))
 	;
 
       if (insn
