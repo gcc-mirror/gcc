@@ -1,3 +1,8 @@
+2004-12-19  Dale Johannesen  <dalej@apple.com>
+
+	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p):  Don't
+	reference operand 1 of ADDR_EXPRs.
+
 2004-12-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* defaults.h (ASM_OUTPUT_INTERNAL_LABEL): New macro.

@@ -834,7 +834,7 @@ contains_abnormal_ssa_name_p (tree expr)
     return false;
 
   if (code == ADDR_EXPR)
-    return !for_each_index (&TREE_OPERAND (expr, 1),
+    return !for_each_index (&TREE_OPERAND (expr, 0),
 			    idx_contains_abnormal_ssa_name_p,
 			    NULL);
 
