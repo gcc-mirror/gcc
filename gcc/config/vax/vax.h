@@ -912,7 +912,7 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 /* note that it is very hard to accidentally create a number that fits in a
    double but not in a float, since their ranges are almost the same */
 
-#define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW)
+#define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) \
   ((OVERFLOW) = check_float_value (MODE, &D, OVERFLOW))
 
 /* For future reference:
