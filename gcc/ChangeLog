@@ -1,3 +1,8 @@
+Wed Apr 14 00:18:22 1999  Jan Hubicka <hubicka@freesoft.cz>
+
+	* i386.md (neghi2): Do not output prefixed opcode when possible.
+	(ashlhi3): Likewise.
+
 Wed Apr 14 00:08:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.c (memory_address_length): New function.
