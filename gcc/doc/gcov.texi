@@ -363,6 +363,8 @@ program flow.
 
 In the @file{.bbg} file, the format is:
 @smallexample
+        name of function #0
+        checksum of function #0
         number of basic blocks for function #0 (4-byte number)
         total number of arcs for function #0 (4-byte number)
         count of arcs in basic block #0 (4-byte number)
@@ -383,6 +385,9 @@ A @minus{}1 (stored as a 4-byte number) is used to separate each function's
 list of basic blocks, and to verify that the file has been read
 correctly.
 
+The function name is stored as a @minus{}1 (4 bytes), the length (4 bytes),
+the name itself (padded to 4-byte boundary) followed by a @minus{}1 (4 bytes).
+
 The @file{.da} file is generated when a program containing object files
 built with the GCC @option{-fprofile-arcs} option is executed.  A
 separate @file{.da} file is created for each source file compiled with
@@ -390,15 +395,32 @@ this option, and the name of the @file{.da} file is stored as an
 absolute pathname in the resulting object file.  This path name is
 derived from the source file name by substituting a @file{.da} suffix.
 
-The format of the @file{.da} file is fairly simple.  The first 8-byte
-number is the number of counts in the file, followed by the counts
-(stored as 8-byte numbers).  Each count corresponds to the number of
-times each arc in the program is executed.  The counts are cumulative;
-each time the program is executed, it attempts to combine the existing
-@file{.da} files with the new counts for this invocation of the
-program.  It ignores the contents of any @file{.da} files whose number of
-arcs doesn't correspond to the current program, and merely overwrites
-them instead.
+The @file{.da} consists of several blocks (one for each run) with the following structure:
+@smallexample
+        "magic" number @minus{}123 (4-byte number)
+	number of functions (4-byte number)
+        length of the "extension block" in bytes
+	extension block (variable length)
+  	name of function #0 (the same format as in .bbg file)
+        checksum of function #0
+	number of instrumented arcs (4-byte number)
+        count of arc #0 (8-byte number)
+        count of arc #1 (8-byte number)
+        @dots{}
+	count of arc #M_0 (8-byte number)
+  	name of function #1 (the same format as in .bbg file)
+        checksum of function #1
+	@dots{}
+@end smallexample
+The current structure of the extension block is as follows:
+@smallexample
+        number of instrumented arcs in whole program (4-byte number)
+        sum all of instrumented arcs in whole program (8-byte number)
+        maximal value of counter in whole program (8-byte number)
+        number of instrumented arcs in the object file (4-byte number)
+        sum all of instrumented arcs in the object file (8-byte number)
+        maximal value of counter in the object file (8-byte number)
+@end smallexample
 
 All three of these files use the functions in @file{gcov-io.h} to store
 integers; the functions in this header provide a machine-independent

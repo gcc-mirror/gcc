@@ -49,6 +49,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "basic-block.h"
 #include "gcov-io.h"
 #include "target.h"
+#include "profile.h"
+#include "libfuncs.h"
 #include "langhooks.h"
 
 /* Additional information about the edges we need.  */
@@ -92,11 +94,6 @@ static FILE *bb_file;
 
 static char *last_bb_file_name;
 
-/* Used by final, for allocating the proper amount of storage for the
-   instrumented arc execution counts.  */
-
-int count_instrumented_edges;
-
 /* Collect statistics on the performance of this pass for the entire source
    file.  */
 
@@ -118,6 +115,8 @@ static rtx gen_edge_profiler PARAMS ((int));
 static void instrument_edges PARAMS ((struct edge_list *));
 static void output_gcov_string PARAMS ((const char *, long));
 static void compute_branch_probabilities PARAMS ((void));
+static gcov_type * get_exec_counts PARAMS ((void));
+static long compute_checksum PARAMS ((void));
 static basic_block find_group PARAMS ((basic_block));
 static void union_groups PARAMS ((basic_block, basic_block));
 
@@ -163,8 +162,9 @@ instrument_edges (el)
 	}
     }
 
+  profile_info.count_edges_instrumented_now = num_instr_edges;
   total_num_edges_instrumented += num_instr_edges;
-  count_instrumented_edges = total_num_edges_instrumented;
+  profile_info.count_instrumented_edges = total_num_edges_instrumented;
 
   total_num_blocks_created += num_edges;
   if (rtl_dump_file)
@@ -205,6 +205,167 @@ output_gcov_string (string, delimiter)
 }
 
 
+/* Computes hybrid profile for all matching entries in da_file. 
+   Sets max_counter_in_program as a side effect.  */
+
+static gcov_type *
+get_exec_counts ()
+{
+  int num_edges = 0;
+  int i;
+  int okay = 1;
+  int mismatch = 0;
+  gcov_type *profile;
+  char *function_name_buffer;
+  int function_name_buffer_len;
+  gcov_type max_counter_in_run;
+
+  profile_info.max_counter_in_program = 0;
+  profile_info.count_profiles_merged = 0;
+
+  /* No .da file, no execution counts.  */
+  if (!da_file)
+    return 0;
+
+  /* Count the edges to be (possibly) instrumented.  */
+
+  for (i = 0; i < n_basic_blocks + 2; i++)
+    {
+      basic_block bb = GCOV_INDEX_TO_BB (i);
+      edge e;
+      for (e = bb->succ; e; e = e->succ_next)
+	if (!EDGE_INFO (e)->ignore && !EDGE_INFO (e)->on_tree)
+	  {
+	    num_edges++;
+	  }
+    }
+
+  /* now read and combine all matching profiles. */
+
+  profile = xmalloc (sizeof (gcov_type) * num_edges);
+  rewind (da_file);
+  function_name_buffer_len = strlen (current_function_name) + 1;
+  function_name_buffer = xmalloc (function_name_buffer_len + 1);
+
+  for (i = 0; i < num_edges; i++)
+    profile[i] = 0;
+
+  while (1)
+    {
+      long magic, extra_bytes;
+      long func_count;
+      int i;
+
+      if (__read_long (&magic, da_file, 4) != 0)
+	break;
+
+      if (magic != -123)
+	{
+	  okay = 0;
+	  break;
+	}
+
+      if (__read_long (&func_count, da_file, 4) != 0)
+	{
+	  okay = 0;
+	  break;
+	}
+
+      if (__read_long (&extra_bytes, da_file, 4) != 0)
+	{
+	  okay = 0;
+	  break;
+	}
+
+      fseek (da_file, 4 + 8, SEEK_CUR);
+
+      /* read the maximal counter.  */
+      __read_gcov_type (&max_counter_in_run, da_file, 8);
+
+      /* skip the rest of "statistics" emited by __bb_exit_func.  */
+      fseek (da_file, extra_bytes - (4 + 8 + 8), SEEK_CUR);
+
+      for (i = 0; i < func_count; i++)
+	{
+	  long arc_count;
+	  long chksum;
+	  int j;
+
+	  if (__read_gcov_string
+	      (function_name_buffer, function_name_buffer_len, da_file,
+	       -1) != 0)
+	    {
+	      okay = 0;
+	      break;
+	    }
+
+	  if (__read_long (&chksum, da_file, 4) != 0)
+	    {
+	      okay = 0;
+	      break;
+	    }
+
+	  if (__read_long (&arc_count, da_file, 4) != 0)
+	    {
+	      okay = 0;
+	      break;
+	    }
+
+	  if (strcmp (function_name_buffer, current_function_name) != 0)
+	    {
+	      /* skip */
+	      if (fseek (da_file, arc_count * 8, SEEK_CUR) < 0)
+		{
+		  okay = 0;
+		  break;
+		}
+	    }
+	  else if (arc_count != num_edges
+		   || chksum != profile_info.current_function_cfg_checksum)
+	    okay = 0, mismatch = 1;
+	  else
+	    {
+	      gcov_type tmp;
+
+	      profile_info.max_counter_in_program += max_counter_in_run;
+	      profile_info.count_profiles_merged++;
+
+	      for (j = 0; j < arc_count; j++)
+		if (__read_gcov_type (&tmp, da_file, 8) != 0)
+		  {
+		    okay = 0;
+		    break;
+		  }
+		else
+		  {
+		    profile[j] += tmp;
+		  }
+	    }
+	}
+
+      if (!okay)
+	break;
+
+    }
+
+  free (function_name_buffer);
+
+  if (!okay)
+    {
+      if (mismatch)
+	error
+	  ("Profile does not match flowgraph of function %s (out of date?)",
+	   current_function_name);
+      else
+	error (".da file corrupted");
+      free (profile);
+      return 0;
+    }
+
+  return profile;
+}
+
+
 /* Compute the branch probabilities for the various branches.
    Annotate them accordingly.  */
 
@@ -218,6 +379,8 @@ compute_branch_probabilities ()
   int hist_br_prob[20];
   int num_never_executed;
   int num_branches;
+  gcov_type *exec_counts = get_exec_counts ();
+  int exec_counts_pos = 0;
 
   /* Attach extra info block to each bb.  */
 
@@ -253,14 +416,13 @@ compute_branch_probabilities ()
 	if (!EDGE_INFO (e)->ignore && !EDGE_INFO (e)->on_tree)
 	  {
 	    num_edges++;
-	    if (da_file)
+	    if (exec_counts)
 	      {
-		gcov_type value;
-		__read_gcov_type (&value, da_file, 8);
-		e->count = value;
+		e->count = exec_counts[exec_counts_pos++];
 	      }
 	    else
 	      e->count = 0;
+
 	    EDGE_INFO (e)->count_valid = 1;
 	    BB_INFO (bb)->succ_count--;
 	    BB_INFO (e->dest)->pred_count--;
@@ -517,6 +679,36 @@ compute_branch_probabilities ()
     }
 
   free_aux_for_blocks ();
+  if (exec_counts)
+    free (exec_counts);
+}
+
+/* Compute checksum for the current function.  */
+
+#define CHSUM_HASH	500000003
+#define CHSUM_SHIFT	2
+
+static long
+compute_checksum ()
+{
+  long chsum = 0;
+  int i;
+
+  
+  for (i = 0; i < n_basic_blocks ; i++)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      edge e;
+
+      for (e = bb->succ; e; e = e->succ_next)
+	{
+	  chsum = ((chsum << CHSUM_SHIFT) + (BB_TO_GCOV_INDEX (e->dest) + 1)) % CHSUM_HASH;
+	}
+
+      chsum = (chsum << CHSUM_SHIFT) % CHSUM_HASH;
+    }
+
+  return chsum;
 }
 
 /* Instrument and/or analyze program behavior based on program flow graph.
@@ -542,6 +734,12 @@ branch_prob ()
   int num_edges, ignored_edges;
   struct edge_list *el;
 
+  profile_info.current_function_cfg_checksum = compute_checksum ();
+
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "CFG checksum is %ld\n", 
+	profile_info.current_function_cfg_checksum);
+  
   /* Start of a function.  */
   if (flag_test_coverage)
     output_gcov_string (current_function_name, (long) -2);
@@ -758,6 +956,12 @@ branch_prob ()
     {
       int flag_bits;
 
+      __write_gcov_string (current_function_name,
+		           strlen (current_function_name), bbg_file, -1);
+
+      /* write checksum.  */
+      __write_long (profile_info.current_function_cfg_checksum, bbg_file, 4);
+      
       /* The plus 2 stands for entry and exit block.  */
       __write_long (n_basic_blocks + 2, bbg_file, 4);
       __write_long (num_edges - ignored_edges + 1, bbg_file, 4);
@@ -884,14 +1088,21 @@ find_spanning_tree (el)
   /* Add fake edge exit to entry we can't instrument.  */
   union_groups (EXIT_BLOCK_PTR, ENTRY_BLOCK_PTR);
 
-  /* First add all abnormal edges to the tree unless they form an cycle.  */
+  /* First add all abnormal edges to the tree unless they form an cycle. Also
+     add all edges to EXIT_BLOCK_PTR to avoid inserting profiling code behind
+     setting return value from function.  */
   for (i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (el, i);
-      if ((e->flags & (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_FAKE))
+      if (((e->flags & (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_FAKE))
+           || e->dest == EXIT_BLOCK_PTR
+          )
 	  && !EDGE_INFO (e)->ignore
 	  && (find_group (e->src) != find_group (e->dest)))
 	{
+	  if (rtl_dump_file)
+	    fprintf (rtl_dump_file, "Abnormal edge %d to %d put to tree\n",
+                     e->src->index, e->dest->index);
 	  EDGE_INFO (e)->on_tree = 1;
 	  union_groups (e->src, e->dest);
 	}
@@ -905,6 +1116,9 @@ find_spanning_tree (el)
 	  && !EDGE_INFO (e)->ignore
 	  && (find_group (e->src) != find_group (e->dest)))
 	{
+	  if (rtl_dump_file)
+	    fprintf (rtl_dump_file, "Critical edge %d to %d put to tree\n",
+                     e->src->index, e->dest->index);
 	  EDGE_INFO (e)->on_tree = 1;
 	  union_groups (e->src, e->dest);
 	}
@@ -917,6 +1131,9 @@ find_spanning_tree (el)
       if (find_group (e->src) != find_group (e->dest)
 	  && !EDGE_INFO (e)->ignore)
 	{
+	  if (rtl_dump_file)
+	    fprintf (rtl_dump_file, "Normal edge %d to %d put to tree\n",
+                     e->src->index, e->dest->index);
 	  EDGE_INFO (e)->on_tree = 1;
 	  union_groups (e->src, e->dest);
 	}
@@ -975,12 +1192,6 @@ init_branch_prob (filename)
       if ((da_file = fopen (da_file_name, "rb")) == 0)
 	warning ("file %s not found, execution counts assumed to be zero",
 		 da_file_name);
-
-      /* The first word in the .da file gives the number of instrumented
-	 edges, which is not needed for our purposes.  */
-
-      if (da_file)
-	__read_long (&len, da_file, 8);
     }
 
   if (profile_arc_flag)
@@ -1011,22 +1222,8 @@ end_branch_prob ()
       fclose (bbg_file);
     }
 
-  if (flag_branch_probabilities)
-    {
-      if (da_file)
-	{
-	  long temp;
-	  /* This seems slightly dangerous, as it presumes the EOF
-	     flag will not be set until an attempt is made to read
-	     past the end of the file.  */
-	  if (feof (da_file))
-	    error (".da file contents exhausted too early");
-	  /* Should be at end of file now.  */
-	  if (__read_long (&temp, da_file, 8) == 0)
-	    error (".da file contents not exhausted");
-	  fclose (da_file);
-	}
-    }
+  if (flag_branch_probabilities && da_file)
+    fclose (da_file);
 
   if (rtl_dump_file)
     {
@@ -1097,6 +1294,8 @@ gen_edge_profiler (edgeno)
   tmp = expand_simple_binop (mode, PLUS, mem_ref, const1_rtx,
 			     mem_ref, 0, OPTAB_WIDEN);
 
+  set_mem_alias_set (mem_ref, new_alias_set ());
+
   if (tmp != mem_ref)
     emit_move_insn (copy_rtx (mem_ref), tmp);
 
@@ -1118,9 +1317,6 @@ output_func_start_profiler ()
   rtx table_address;
   enum machine_mode mode = mode_for_size (GCOV_TYPE_SIZE, MODE_INT, 0);
   int save_flag_inline_functions = flag_inline_functions;
-  int save_flag_test_coverage = flag_test_coverage;
-  int save_profile_arc_flag = profile_arc_flag;
-  int save_flag_branch_probabilities = flag_branch_probabilities;
 
   /* It's either already been output, or we don't need it because we're
      not doing profile-edges.  */
@@ -1163,6 +1359,7 @@ output_func_start_profiler ()
   init_function_start (fndecl, input_filename, lineno);
   (*lang_hooks.decls.pushlevel) (0);
   expand_function_start (fndecl, 0);
+  cfun->arc_profile = 0;
 
   /* Actually generate the code to call __bb_init_func.  */
   ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", 0);
@@ -1179,20 +1376,10 @@ output_func_start_profiler ()
      flag_inline_functions.  */
   flag_inline_functions = 0;
 
-  /* Don't instrument the function that turns on instrumentation.  Which
-     is also handy since we'd get silly warnings about not consuming all
-     of our da_file input.  */
-  flag_test_coverage = 0;
-  profile_arc_flag = 0;
-  flag_branch_probabilities = 0;
-
   rest_of_compilation (fndecl);
 
   /* Reset flag_inline_functions to its original value.  */
   flag_inline_functions = save_flag_inline_functions;
-  flag_test_coverage = save_flag_test_coverage;
-  profile_arc_flag = save_profile_arc_flag;
-  flag_branch_probabilities = save_flag_branch_probabilities;
 
   if (! quiet_flag)
     fflush (asm_out_file);

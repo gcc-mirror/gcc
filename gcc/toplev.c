@@ -364,6 +364,11 @@ int profile_flag = 0;
 
 int profile_arc_flag = 0;
 
+/* Nonzero if we should not attempt to generate thread-safe
+   code to profile program flow graph arcs.  */
+
+int flag_unsafe_profile_arcs = 0;
+
 /* Nonzero if generating info for gcov to calculate line test coverage.  */
 
 int flag_test_coverage = 0;
@@ -1061,6 +1066,8 @@ static const lang_independent_options f_options[] =
    N_("Support synchronous non-call exceptions") },
   {"profile-arcs", &profile_arc_flag, 1,
    N_("Insert arc based program profiling code") },
+  {"unsafe-profile-arcs", &flag_unsafe_profile_arcs, 1,
+   N_("Avoid thread safety profiling overhead") },
   {"test-coverage", &flag_test_coverage, 1,
    N_("Create data files needed by gcov") },
   {"branch-probabilities", &flag_branch_probabilities, 1,
@@ -2891,14 +2898,13 @@ rest_of_compilation (decl)
   close_dump_file (DFI_cfg, print_rtl_with_bb, insns);
 
   /* Do branch profiling and static profile estimation passes.  */
-  if (optimize > 0 || profile_arc_flag || flag_test_coverage
-      || flag_branch_probabilities)
+  if (optimize > 0 || cfun->arc_profile || flag_branch_probabilities)
     {
       struct loops loops;
 
       timevar_push (TV_BRANCH_PROB);
       open_dump_file (DFI_bp, decl);
-      if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
+      if (cfun->arc_profile || flag_branch_probabilities)
 	branch_prob ();
 
       /* Discover and record the loop depth at the head of each basic

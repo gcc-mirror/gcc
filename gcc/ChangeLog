@@ -1,3 +1,42 @@
+Thu May  9 14:52:45 CEST 2002  Jan Hubicka  <jh@suse.cz>
+			       Pavel Nejedly  <bim@atrey.karlin.mff.cuni.cz>
+
+	* final.c (end_final): Use C trees to output data structures for profiling.
+
+	* Makefile.in (LIBGCC_DEPS): Added missing dependency on gcov-io.h
+        (profile.o): New dependency profile.h
+        (final.o): New dependency profile.h
+        * profile.h: New file. New global structure profile_info.
+        * final.h (count_edges_instrumented_now): Declare.
+        (current_function_cfg_checksum): Declare.
+        (function_list): New structure.
+        (functions_head, functions_tail): New static variables.
+        (end_final): Emits more data, removed some -ax stuff.
+        (final): Stores function names and chcksums.
+        * gcov-io.h (__write_gcov_string): New function.
+        (__read_gcov_string): New function.
+        * gcov.c (read_profile): New function.
+        (create_program_flow_graph): Uses read_profile instead of reading
+	da_file.
+        (read_files): Removed da_file checking, it's done by read_profile now.
+        * libgcc2.c (bb_function_info): New structure.
+        (bb): New field in structure, removed some -ax stuff.
+        (__bb_exit_func): Changed structure of da_file.
+        * profile.c (count_edges_instrumented_now): New global variable.
+        (current_function_cfg_checksum): New global variable.
+        (max_counter_in_program): New global variable.
+        (get_exec_counts): New function.
+        (compute_checksum): New function.
+        (instrument_edges): Sets count_edges_instrumented_now.
+        (compute_branch_probabilities): Uses get_exec_counts instead of
+	reading da_file.
+        (branch_prob): Calls compute_checksum and writes extra data to bbg_file.
+        (init_branch_prob): Removed da_file checking, done in get_exec_counts
+	now.
+        (end_branch_prob): Removed da_file checking, done in get_exec_counts
+	now.
+        * gcov.texi: Updated information about gcov file format.
+
 2002-05-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* sbitmap.c: Fix formatting.
