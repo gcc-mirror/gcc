@@ -1727,7 +1727,7 @@ literal_section ()						\
 		 can get it to parse the data properly.  */		      \
 	      if (i < thissize - 1					      \
 		  && p[i + 1] >= '0' && p[i + 1] <= '9')		      \
-		fprintf (asm_out_file, "\"\n\t.ascii \"");		      \
+		_size_so_far = 0, fprintf (asm_out_file, "\"\n\t.ascii \"");  \
 	  }								      \
 	}								      \
       fprintf (asm_out_file, "\"\n");					      \
