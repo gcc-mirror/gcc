@@ -69,13 +69,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    __do_global_dtors.  */
 #define HAVE_ATEXIT
 
-#if (STACK_BOUNDARY / BITS_PER_UNIT) == 16 && REG_PARM_STACK_SPACE (0) == 32
 #define CTOR_LIST_BEGIN	    		\
   asm (INIT_SECTION_ASM_OP);		\
-  asm ("\tsubu\t r31,r31,16");		\
-  asm ("\tst\t r0,r31,32");		
+  asm ("\tsubu\t r31,r31,16");	/* (STACK_BOUNDARY / BITS_PER_UNIT) == 16 */ \
+  asm ("\tst\t r0,r31,32");	/* REG_PARM_STACK_SPACE (0) == 32 */
 #define CTOR_LIST_END
-#endif
 
 /* ASM_OUTPUT_CONSTRUCTOR outputs code into the .init section to push the
    address of the constructor.  This becomes the body of __do_global_ctors
