@@ -24,19 +24,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Di386 -Asystem(unix) -Acpu(i386) -Amachine(i386)"
 
 #undef  CPP_SPEC
-#ifndef NO_UNDERSCORE
-#define CPP_SPEC "\
-%{mrose: -D__ROSE__} %{!mrose: -D__ELF__} \
-%{mno-underscores: -D__NO_UNDERSCORES__} \
-%{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
-%{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.cc:	-D__LANGUAGE_C_PLUS_PLUS} \
-%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS} \
-%{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
-%{.m:	-D__LANGUAGE_OBJECTIVE_C} \
-%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
-#else
-
 #define CPP_SPEC "\
 %{mrose: -D__ROSE__} %{!mrose: -D__ELF__} \
 %{mno-underscores: -D__NO_UNDERSCORES__} \
@@ -48,19 +35,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C} \
 %{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
-#endif
 
 /* Turn on -mpic-extern by default (change to later use -fpic.  */
 #undef  CC1_SPEC
-#ifndef NO_UNDERSCORE
-#define CC1_SPEC "\
-%{!melf: %{!mrose: -melf }} \
-%{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{mrose: %{pic-none: -mno-half-pic} \
-	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
-	 %{!pic-none: -mhalf-pic }}"
-#else
-
 #define CC1_SPEC "\
 %{!melf: %{!mrose: -mrose }} \
 %{!mrose: %{!munderscores: %{!mno-underscores: -mno-underscores }}} \
@@ -68,13 +45,18 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{mrose: %{pic-none: -mno-half-pic} \
 	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
 	 %{!pic-none: -mhalf-pic }}"
-#endif
 
 #undef	ASM_SPEC
 #define ASM_SPEC       "%{v*: -v}"
 
 #undef  LINK_SPEC
-#define LINK_SPEC      "%{noshrlib: } %{glue: }"
+#define LINK_SPEC      "\
+%{mrose:	%{!noshrlib: %{pic-none: -noshrlib} %{!pic-none: -warn_nopic}} \
+		%{nostdlib} %{noshrlib} %{glue} %{v*: -v}} \
+%{!mrose:	%{dy} %{dn: } %{glue: } \
+		%{!dy: %{!dn: \
+			%{noshrlib: } %{pic-none: } \
+			%{!noshrlib: %{!pic-none: -dy}}}}}"
 
 #undef TARGET_VERSION_INTERNAL
 #undef TARGET_VERSION

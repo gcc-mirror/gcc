@@ -18,9 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* Put leading underscores in front of names. */
-#define YES_UNDERSCORES
-
 #include "halfpic.h"
 #include "i386/gstabs.h"
 
@@ -80,19 +77,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Di386 -Asystem(unix) -Acpu(i386) -Amachine(i386)"
 
 #undef  CPP_SPEC
-#ifndef NO_UNDERSCORE
-#define CPP_SPEC "\
-%{!melf: -D__ROSE__} %{melf: -D__ELF__} \
-%{mno-underscores: -D__NO_UNDERSCORES__} \
-%{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
-%{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.cc:	-D__LANGUAGE_C_PLUS_PLUS} \
-%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS} \
-%{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
-%{.m:	-D__LANGUAGE_OBJECTIVE_C} \
-%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
-#else
-
 #define CPP_SPEC "\
 %{!melf: -D__ROSE__} %{melf: -D__ELF__} \
 %{mno-underscores: -D__NO_UNDERSCORES__} \
@@ -104,19 +88,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C} \
 %{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
-#endif
 
 /* Turn on -pic-extern by default.  */
 #undef  CC1_SPEC
-#ifndef NO_UNDERSCORE
-#define CC1_SPEC "\
-%{!melf: %{!mrose: -mrose }} \
-%{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{!melf: %{pic-none: -mno-half-pic} \
-	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
-	 %{!pic-none: -mhalf-pic }}"
-#else
-
 #define CC1_SPEC "\
 %{!melf: %{!mrose: -mrose }} \
 %{melf: %{!munderscores: %{!mno-underscores: -mno-underscores }}} \
@@ -124,15 +98,18 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!melf: %{pic-none: -mno-half-pic} \
 	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
 	 %{!pic-none: -mhalf-pic }}"
-#endif
 
 #undef	ASM_SPEC
 #define ASM_SPEC       "%{v*: -v}"
 
 #undef  LINK_SPEC
-#define LINK_SPEC      "%{v*: -v}                           \
-	               %{!noshrlib: %{pic-none: -noshrlib} %{!pic-none: -warn_nopic}} \
-	               %{nostdlib} %{noshrlib} %{glue}"
+#define LINK_SPEC      "\
+%{!melf:	%{!noshrlib: %{pic-none: -noshrlib} %{!pic-none: -warn_nopic}} \
+		%{nostdlib} %{noshrlib} %{glue} %{v*: -v}} \
+%{melf:		%{dy} %{dn: } %{glue: } \
+		%{!dy: %{!dn: \
+			%{noshrlib: } %{pic-none: } \
+			%{!noshrlib: %{!pic-none: -dy}}}}}"
 
 #undef  LIB_SPEC
 #define LIB_SPEC "-lc"
