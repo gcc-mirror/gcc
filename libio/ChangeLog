@@ -1,3 +1,8 @@
+1998-05-22  Ulrich Drepper  <drepper@cygnus.com>
+
+	* strops.c (_IO_str_underflow): Read newly available character
+	from buffer as unsigned.
+
 Sun Apr 19 22:13:36 1998  H.J. Lu  (hjl@gnu.org)
 
 	* isgetline.cc (istream::get): Fix a typo.
@@ -179,7 +184,7 @@ Thu Jan  8 18:09:03 1998  Fred Fish  <fnf@cygnus.com>
 
 	Don't make gperf depend upon libg++.
 	* config.shared (TOLIBGCXX) [DOING_GPERF]: Delete.
-	(LIBS) [DOING_GPERF]: Make it just `-L../libstdc++ -lstdc++'. 
+	(LIBS) [DOING_GPERF]: Make it just `-L../libstdc++ -lstdc++'.
 
 Thu Dec 11 11:20:59 1997  H.J. Lu  (hjl@gnu.org)
 
