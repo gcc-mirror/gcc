@@ -65,7 +65,7 @@ import gnu.gcj.RawData;
 
 public class FileChannelImpl extends FileChannel
 {
-  RawData map_address;
+  public RawData map_address;
   
   int length;
   FileDescriptor fd;
@@ -85,7 +85,7 @@ public class FileChannelImpl extends FileChannel
 
   public FileChannelImpl ()
   {
-    this (new FileDescriptor (-1), true, null);
+    this (new FileDescriptor (), true, null);
   }
 
   private native long implPosition ();
