@@ -3458,23 +3458,9 @@ static int is_main_source;
 /* A list of DIEs with a NULL parent waiting to be relocated.  */
 static GTY(()) limbo_die_node *limbo_die_list;
 
-/* Structure used by lookup_filename to manage sets of filenames.  */
-struct file_table
-{
-  char **table;
-  unsigned allocated;
-  unsigned in_use;
-  unsigned last_lookup_index;
-};
-
-/* Size (in elements) of increments by which we may expand the filename
-   table.  */
-#define FILE_TABLE_INCREMENT 64
-
-#ifdef DWARF2_DEBUGGING_INFO
 /* Filenames referenced by this compilation unit.  */
-static struct file_table file_table;
-#endif
+static GTY(()) varray_type file_table;
+static GTY(()) size_t file_table_last_lookup_index;
 
 /* A pointer to the base of a table of references to DIE's that describe
    declarations.  The table is indexed by DECL_UID() which is a unique
@@ -3789,6 +3775,7 @@ static rtx rtl_for_decl_location	PARAMS ((tree));
 static void add_location_or_const_value_attribute PARAMS ((dw_die_ref, tree));
 static void tree_add_const_value_attribute PARAMS ((dw_die_ref, tree));
 static void add_name_attribute		PARAMS ((dw_die_ref, const char *));
+static void add_comp_dir_attribute	PARAMS ((dw_die_ref));
 static void add_bound_info		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute, tree));
 static void add_subscript_info		PARAMS ((dw_die_ref, tree));
@@ -5452,7 +5439,8 @@ print_dwarf_line_table (outfile)
     {
       line_info = &line_info_table[i];
       fprintf (outfile, "%5d: ", i);
-      fprintf (outfile, "%-20s", file_table.table[line_info->dw_file_num]);
+      fprintf (outfile, "%-20s",
+	       VARRAY_CHAR_PTR (file_table, line_info->dw_file_num));
       fprintf (outfile, "%6ld", line_info->dw_line_num);
       fprintf (outfile, "\n");
     }
@@ -7298,24 +7286,24 @@ output_file_names ()
   int *saved;
   int *savehere;
   int *backmap;
-  int ndirs;
+  size_t ndirs;
   int idx_offset;
-  int i;
+  size_t i;
   int idx;
 
   /* Allocate the various arrays we need.  */
-  files = (struct file_info *) alloca (file_table.in_use
+  files = (struct file_info *) alloca (VARRAY_ACTIVE_SIZE (file_table)
 				       * sizeof (struct file_info));
-  dirs = (struct dir_info *) alloca (file_table.in_use
+  dirs = (struct dir_info *) alloca (VARRAY_ACTIVE_SIZE (file_table)
 				     * sizeof (struct dir_info));
 
   /* Sort the file names.  */
-  for (i = 1; i < (int) file_table.in_use; i++)
+  for (i = 1; i < VARRAY_ACTIVE_SIZE (file_table); i++)
     {
       char *f;
 
       /* Skip all leading "./".  */
-      f = file_table.table[i];
+      f = VARRAY_CHAR_PTR (file_table, i);
       while (f[0] == '.' && f[1] == '/')
 	f += 2;
 
@@ -7329,7 +7317,8 @@ output_file_names ()
       files[i].fname = f == NULL ? files[i].path : f + 1;
     }
 
-  qsort (files + 1, file_table.in_use - 1, sizeof (files[0]), file_info_cmp);
+  qsort (files + 1, VARRAY_ACTIVE_SIZE (file_table) - 1,
+	 sizeof (files[0]), file_info_cmp);
 
   /* Find all the different directories used.  */
   dirs[0].path = files[1].path;
@@ -7341,7 +7330,7 @@ output_file_names ()
   files[1].dir_idx = 0;
   ndirs = 1;
 
-  for (i = 2; i < (int) file_table.in_use; i++)
+  for (i = 2; i < VARRAY_ACTIVE_SIZE (file_table); i++)
     if (files[i].fname - files[i].path == dirs[ndirs - 1].length
 	&& memcmp (dirs[ndirs - 1].path, files[i].path,
 		   dirs[ndirs - 1].length) == 0)
@@ -7352,7 +7341,7 @@ output_file_names ()
       }
     else
       {
-	int j;
+	size_t j;
 
 	/* This is a new directory.  */
 	dirs[ndirs].path = files[i].path;
@@ -7387,7 +7376,7 @@ output_file_names ()
   memset (saved, '\0', ndirs * sizeof (saved[0]));
   for (i = 0; i < ndirs; i++)
     {
-      int j;
+      size_t j;
       int total;
 
       /* We can always save some space for the current directory.  But this
@@ -7405,10 +7394,10 @@ output_file_names ()
 	      int k;
 
 	      k = dirs[j].prefix;
-	      while (k != -1 && k != i)
+	      while (k != -1 && k != (int) i)
 		k = dirs[k].prefix;
 
-	      if (k == i)
+	      if (k == (int) i)
 		{
 		  /* Yes it is.  We can possibly safe some memory but
 		     writing the filenames in dirs[j] relative to
@@ -7439,8 +7428,8 @@ output_file_names ()
   /* We have to emit them in the order they appear in the file_table array
      since the index is used in the debug info generation.  To do this
      efficiently we generate a back-mapping of the indices first.  */
-  backmap = (int *) alloca (file_table.in_use * sizeof (int));
-  for (i = 1; i < (int) file_table.in_use; i++)
+  backmap = (int *) alloca (VARRAY_ACTIVE_SIZE (file_table) * sizeof (int));
+  for (i = 1; i < VARRAY_ACTIVE_SIZE (file_table); i++)
     {
       backmap[files[i].file_idx] = i;
 
@@ -7471,7 +7460,7 @@ output_file_names ()
     dirs[0].used = 0;
 
   /* Now write all the file names.  */
-  for (i = 1; i < (int) file_table.in_use; i++)
+  for (i = 1; i < VARRAY_ACTIVE_SIZE (file_table); i++)
     {
       int file_idx = backmap[i];
       int dir_idx = dirs[files[file_idx].dir_idx].dir_idx;
@@ -7630,7 +7619,8 @@ output_line_info ()
 	  current_file = line_info->dw_file_num;
 	  dw2_asm_output_data (1, DW_LNS_set_file, "DW_LNS_set_file");
 	  dw2_asm_output_data_uleb128 (current_file, "(\"%s\")",
-				       file_table.table[current_file]);
+				       VARRAY_CHAR_PTR (file_table,
+							current_file));
 	}
 
       /* Emit debug info for the current line number, choosing the encoding
@@ -7738,7 +7728,8 @@ output_line_info ()
 	  current_file = line_info->dw_file_num;
 	  dw2_asm_output_data (1, DW_LNS_set_file, "DW_LNS_set_file");
 	  dw2_asm_output_data_uleb128 (current_file, "(\"%s\")",
-				       file_table.table[current_file]);
+				       VARRAY_CHAR_PTR (file_table,
+							current_file));
 	}
 
       /* Emit debug info for the current line number, choosing the encoding
@@ -9602,7 +9593,7 @@ tree_add_const_value_attribute (var_die, decl)
 /* Generate an DW_AT_name attribute given some string value to be included as
    the value of the attribute.  */
 
-static inline void
+static void
 add_name_attribute (die, name_string)
      dw_die_ref die;
      const char *name_string;
@@ -9614,6 +9605,17 @@ add_name_attribute (die, name_string)
 
       add_AT_string (die, DW_AT_name, name_string);
     }
+}
+
+/* Generate an DW_AT_comp_dir attribute for DIE.  */
+
+static void
+add_comp_dir_attribute (die)
+     dw_die_ref die;
+{
+  const char *wd = getpwd ();
+  if (wd != NULL)
+    add_AT_string (die, DW_AT_comp_dir, wd);
 }
 
 /* Given a tree node describing an array bound (either lower or upper) output
@@ -11294,15 +11296,17 @@ gen_compile_unit_die (filename)
 {
   dw_die_ref die;
   char producer[250];
-  const char *wd = getpwd ();
   const char *language_string = lang_hooks.name;
   int language;
 
   die = new_die (DW_TAG_compile_unit, NULL, NULL);
-  add_name_attribute (die, filename);
 
-  if (wd != NULL && filename[0] != DIR_SEPARATOR)
-    add_AT_string (die, DW_AT_comp_dir, wd);
+  if (filename)
+    {
+      add_name_attribute (die, filename);
+      if (filename[0] != DIR_SEPARATOR)
+	add_comp_dir_attribute (die);
+    }
 
   sprintf (producer, "%s %s", language_string, version_string);
 
@@ -12310,7 +12314,8 @@ static unsigned
 lookup_filename (file_name)
      const char *file_name;
 {
-  unsigned i;
+  size_t i, n;
+  char *save_file_name;
 
   /* ??? Why isn't DECL_SOURCE_FILE left null instead.  */
   if (strcmp (file_name, "<internal>") == 0
@@ -12319,34 +12324,27 @@ lookup_filename (file_name)
 
   /* Check to see if the file name that was searched on the previous
      call matches this file name.  If so, return the index.  */
-  if (file_table.last_lookup_index != 0)
-    if (0 == strcmp (file_name,
-		     file_table.table[file_table.last_lookup_index]))
-      return file_table.last_lookup_index;
+  if (file_table_last_lookup_index != 0)
+    {
+      const char *last
+	= VARRAY_CHAR_PTR (file_table, file_table_last_lookup_index);
+      if (strcmp (file_name, last) == 0)
+        return file_table_last_lookup_index;
+    }
 
   /* Didn't match the previous lookup, search the table */
-  for (i = 1; i < file_table.in_use; i++)
-    if (strcmp (file_name, file_table.table[i]) == 0)
+  n = VARRAY_ACTIVE_SIZE (file_table);
+  for (i = 1; i < n; i++)
+    if (strcmp (file_name, VARRAY_CHAR_PTR (file_table, i)) == 0)
       {
-	file_table.last_lookup_index = i;
+	file_table_last_lookup_index = i;
 	return i;
       }
 
-  /* Prepare to add a new table entry by making sure there is enough space in
-     the table to do so.  If not, expand the current table.  */
-  if (i == file_table.allocated)
-    {
-      file_table.allocated = i + FILE_TABLE_INCREMENT;
-      file_table.table = (char **)
-	xrealloc (file_table.table, file_table.allocated * sizeof (char *));
-      memset (file_table.table + i, 0,
-	      FILE_TABLE_INCREMENT * sizeof (char *));
-    }
-
   /* Add the new entry to the end of the filename table.  */
-  file_table.table[i] = xstrdup (file_name);
-  file_table.in_use = i + 1;
-  file_table.last_lookup_index = i;
+  file_table_last_lookup_index = n;
+  save_file_name = (char *) ggc_strdup (file_name);
+  VARRAY_PUSH_CHAR_PTR (file_table, save_file_name);
 
   if (DWARF2_ASM_LINE_DEBUG_INFO)
     {
@@ -12362,12 +12360,11 @@ static void
 init_file_table ()
 {
   /* Allocate the initial hunk of the file_table.  */
-  file_table.table = (char **) xcalloc (FILE_TABLE_INCREMENT, sizeof (char *));
-  file_table.allocated = FILE_TABLE_INCREMENT;
+  VARRAY_CHAR_PTR_INIT (file_table, 64, "file_table");
 
   /* Skip the first entry - file numbers begin at 1.  */
-  file_table.in_use = 1;
-  file_table.last_lookup_index = 0;
+  VARRAY_PUSH_CHAR_PTR (file_table, NULL);
+  file_table_last_lookup_index = 0;
 }
 
 /* Output a label to mark the beginning of a source code line entry
@@ -12544,15 +12541,10 @@ dwarf2out_undef (lineno, buffer)
 /* Set up for Dwarf output at the start of compilation.  */
 
 static void
-dwarf2out_init (main_input_filename)
-     const char *main_input_filename;
+dwarf2out_init (input_filename)
+     const char *input_filename ATTRIBUTE_UNUSED;
 {
   init_file_table ();
-
-  /* Add the name of the primary input file to the file table first,
-     under the assumption that we'll be emitting line number data for
-     it first, which avoids having to add an initial DW_LNS_set_file.  */
-  lookup_filename (main_input_filename);
 
   /* Allocate the initial hunk of the decl_die_table.  */
   decl_die_table = ggc_alloc_cleared (DECL_DIE_TABLE_INCREMENT 
@@ -12582,8 +12574,9 @@ dwarf2out_init (main_input_filename)
      value given in the DW_AT_name attribute of the DW_TAG_compile_unit DIE
      will (typically) be a relative pathname and that this pathname should be
      taken as being relative to the directory from which the compiler was
-     invoked when the given (base) source file was compiled.  */
-  comp_unit_die = gen_compile_unit_die (main_input_filename);
+     invoked when the given (base) source file was compiled.  We will fill
+     in this value in dwarf2out_finish.  */
+  comp_unit_die = gen_compile_unit_die (NULL);
   is_main_source = 1;
 
   VARRAY_TREE_INIT (incomplete_types, 64, "incomplete_types");
@@ -12651,10 +12644,16 @@ output_indirect_string (h, v)
 
 static void
 dwarf2out_finish (input_filename)
-     const char *input_filename ATTRIBUTE_UNUSED;
+     const char *input_filename;
 {
   limbo_die_node *node, *next_node;
   dw_die_ref die = 0;
+
+  /* Add the name for the main input file now.  We delayed this from
+     dwarf2out_init to avoid complications with PCH.  */
+  add_name_attribute (comp_unit_die, input_filename);
+  if (input_filename[0] != DIR_SEPARATOR)
+    add_comp_dir_attribute (comp_unit_die);
 
   /* Traverse the limbo die list, and add parent/child links.  The only
      dies without parents that should be here are concrete instances of
