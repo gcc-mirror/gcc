@@ -2063,10 +2063,6 @@ block and arc execution counts from the information in the
 @samp{-fprofile-arcs}).
 @end table
 
-@item -Q
-Makes the compiler print out each function name as it is compiled, and
-print some statistics about each pass when it finishes.
-
 @item -d@var{letters}
 Says to make debugging dumps during compilation at times specified by
 @var{letters}.  This is used for debugging the compiler.  The file names
