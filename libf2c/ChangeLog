@@ -1,3 +1,9 @@
+Fri Jun 18 11:38:07 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libU77/ttynam_.c: if !defined (HAVE_TTYNAM),
+	write all spaces into return value instead of trying
+	to return -1 from a void function.
+
 Fri Jun 18 11:22:21 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Update to Netlib version of 1999-05-10:

@@ -59,6 +59,6 @@ extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
   }
 #else
   errno = ENOSYS;
-  return -1;
+  s_copy (ret_val, " ", ret_val_len, 1);
 #endif
 }
