@@ -413,6 +413,7 @@ do {									\
 
 #define DIR_SEPARATOR ']'
 
+#undef PREFIX
 #define PREFIX "GNU_ROOT:"
 
 /* XXX Really? Even with modern CRTL? */

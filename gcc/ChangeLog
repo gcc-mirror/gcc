@@ -1,3 +1,24 @@
+2001-11-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alpha.c (unicosmk_special_name): Prototype.
+	(unicosmk_ssib_name): Delete unused variable.
+	* alpha/unicosmk.h (common_section, ssib_section): Prototype.
+	* alpha/vms.h (PREFIX): Undef before defining.
+	* arm/pe.h (SUBTARGET_NAME_ENCODING_LENGTHS): Likewise.
+	* i370/i370.c (mvs_hash_alias): Prototype.  Wrap with macro
+	controlling usage.  Const-ify.
+	(alias_number): Delete unused variable.
+	* m32r/m32r.c (m32r_sched_init): Add missing argument.
+	(m32r_expand_block_move): Fix uninitialized warnings.
+	* mn10300/mn10300.h (REGNO_IN_RANGE_P): Fix 'unsigned >=0 is
+	always true' warnings.
+	* openbsd.h (TARGET_MEM_FUNCTIONS): Don't redefine.
+	* sh/sh.c: Include "integrate.h".
+	(output_far_jump): Fix uninitialized warning.
+	* final.c (shorten_branches): Avoid automatic aggregate
+	initialization.
+	* integrate.c (subst_constants): Likewise.
+
 2001-11-11  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (shift_alg): Remove SHIFT_MAX.

@@ -339,7 +339,7 @@ enum reg_class {
 
 #ifndef REG_OK_STRICT
 # define REGNO_IN_RANGE_P(regno,min,max) \
-  (((regno) >= (min) && (regno) <= (max)) || (regno) >= FIRST_PSEUDO_REGISTER)
+  (IN_RANGE ((regno), (min), (max)) || (regno) >= FIRST_PSEUDO_REGISTER)
 #else
 # define REGNO_IN_RANGE_P(regno,min,max) \
   (IN_RANGE ((regno), (min), (max)) \

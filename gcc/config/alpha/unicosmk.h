@@ -365,6 +365,7 @@ do { fprintf (FILE, "\tbr $1,0\n");			\
 COMMON_SECTION			\
 SSIB_SECTION	
 
+extern void common_section PARAMS ((void));
 #define COMMON_SECTION		\
 void				\
 common_section ()		\
@@ -372,6 +373,7 @@ common_section ()		\
   in_section = in_common;	\
 }
 
+extern void ssib_section PARAMS ((void));
 #define SSIB_SECTION		\
 void				\
 ssib_section ()			\

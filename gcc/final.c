@@ -1425,12 +1425,15 @@ shorten_branches (first)
 	      rtx rel_lab = XEXP (XEXP (body, 0), 0);
 	      rtx min_lab = XEXP (XEXP (body, 2), 0);
 	      rtx max_lab = XEXP (XEXP (body, 3), 0);
-	      addr_diff_vec_flags flags = ADDR_DIFF_VEC_FLAGS (body);
 	      int rel_addr = INSN_ADDRESSES (INSN_UID (rel_lab));
 	      int min_addr = INSN_ADDRESSES (INSN_UID (min_lab));
 	      int max_addr = INSN_ADDRESSES (INSN_UID (max_lab));
 	      rtx prev;
 	      int rel_align = 0;
+	      addr_diff_vec_flags flags;
+
+	      /* Avoid automatic aggregate initialization.  */
+	      flags = ADDR_DIFF_VEC_FLAGS (body);
 
 	      /* Try to find a known alignment for rel_lab.  */
 	      for (prev = rel_lab;

@@ -8028,7 +8028,7 @@ static void unicosmk_output_dex PARAMS ((FILE *));
 static void unicosmk_output_externs PARAMS ((FILE *));
 static void unicosmk_output_addr_vec PARAMS ((FILE *, rtx));
 static const char *unicosmk_ssib_name PARAMS ((void));
-
+static int unicosmk_special_name PARAMS ((const char *));
 
 /* Define the offset between two registers, one to be eliminated, and the
    other its replacement, at the start of a routine.  */
@@ -8457,7 +8457,6 @@ unicosmk_ssib_name ()
 
   rtx x;
   const char *fnname;
-  char *ssib_name;
   int len;
 
   x = DECL_RTL (cfun->decl);

@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "recog.h"
 #include "c-pragma.h"
+#include "integrate.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -746,7 +747,7 @@ output_far_jump (insn, op)
      rtx op;
 {
   struct { rtx lab, reg, op; } this;
-  rtx braf_base_lab;
+  rtx braf_base_lab = NULL_RTX;
   const char *jump;
   int far;
   int offset = branch_dest (insn) - INSN_ADDRESSES (INSN_UID (insn));
