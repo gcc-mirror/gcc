@@ -3593,6 +3593,22 @@ namespace std
   // that their input ranges are sorted and the postcondition that their output
   // ranges are sorted.
 
+  /**
+   *  @brief Determines whether all elements of a sequence exists in a range.
+   *  @param  first1  Start of search range.
+   *  @param  last1   End of search range.
+   *  @param  first2  Start of sequence
+   *  @param  last2   End of sequence.
+   *  @return  True if each element in [first2,last2) is contained in order
+   *  within [first1,last1).  False otherwise.
+   *  @ingroup setoperations
+   *
+   *  This operation expects both [first1,last1) and [first2,last2) to be
+   *  sorted.  Searches for the presence of each element in [first2,last2)
+   *  within [first1,last1).  The iterators over each range only move forward,
+   *  so this is a linear algorithm.  If an element in [first2,last2) is not
+   *  found before the search iterator reaches @a last2, false is returned.
+  */
   template<typename _InputIterator1, typename _InputIterator2>
     bool
     includes(_InputIterator1 __first1, _InputIterator1 __last1,
@@ -3618,6 +3634,25 @@ namespace std
       return __first2 == __last2;
     }
 
+  /**
+   *  @brief Determines whether all elements of a sequence exists in a range
+   *  using comparison.
+   *  @param  first1  Start of search range.
+   *  @param  last1   End of search range.
+   *  @param  first2  Start of sequence
+   *  @param  last2   End of sequence.
+   *  @param  comp    Comparison function to use.
+   *  @return  True if each element in [first2,last2) is contained in order
+   *  within [first1,last1) according to comp.  False otherwise.
+   *  @ingroup setoperations
+   *
+   *  This operation expects both [first1,last1) and [first2,last2) to be
+   *  sorted.  Searches for the presence of each element in [first2,last2)
+   *  within [first1,last1), using comp to decide.  The iterators over each
+   *  range only move forward, so this is a linear algorithm.  If an element
+   *  in [first2,last2) is not found before the search iterator reaches @a
+   *  last2, false is returned.
+  */
   template<typename _InputIterator1, typename _InputIterator2, typename _Compare>
     bool
     includes(_InputIterator1 __first1, _InputIterator1 __last1,
@@ -3644,6 +3679,23 @@ namespace std
       return __first2 == __last2;
     }
 
+  /**
+   *  @brief Return the union of two sorted ranges.
+   *  @param  first1  Start of first range.
+   *  @param  last1   End of first range.
+   *  @param  first2  Start of second range.
+   *  @param  last2   End of second range.
+   *  @return  End of the output range.
+   *  @ingroup setoperations
+   *
+   *  This operation iterates over both ranges, copying elements present in
+   *  each range in order to the output range.  Iterators increment for each
+   *  range.  When the current element of one range is less than the other,
+   *  that element is copied and the iterator advanced.  If an element is
+   *  contained in both ranges, the element from the first range is copied and
+   *  both ranges advance.  The output range may not overlap either input
+   *  range.
+  */
   template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator>
     _OutputIterator
     set_union(_InputIterator1 __first1, _InputIterator1 __last1,
@@ -3680,6 +3732,24 @@ namespace std
       return std::copy(__first2, __last2, std::copy(__first1, __last1, __result));
     }
 
+  /**
+   *  @brief Return the union of two sorted ranges using a comparison functor.
+   *  @param  first1  Start of first range.
+   *  @param  last1   End of first range.
+   *  @param  first2  Start of second range.
+   *  @param  last2   End of second range.
+   *  @param  comp    The comparison functor.
+   *  @return  End of the output range.
+   *  @ingroup setoperations
+   *
+   *  This operation iterates over both ranges, copying elements present in
+   *  each range in order to the output range.  Iterators increment for each
+   *  range.  When the current element of one range is less than the other
+   *  according to @a comp, that element is copied and the iterator advanced.
+   *  If an equivalent element according to @a comp is contained in both
+   *  ranges, the element from the first range is copied and both ranges
+   *  advance.  The output range may not overlap either input range.
+  */
   template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator,
 	   typename _Compare>
     _OutputIterator
@@ -3718,6 +3788,22 @@ namespace std
       return std::copy(__first2, __last2, std::copy(__first1, __last1, __result));
     }
 
+  /**
+   *  @brief Return the intersection of two sorted ranges.
+   *  @param  first1  Start of first range.
+   *  @param  last1   End of first range.
+   *  @param  first2  Start of second range.
+   *  @param  last2   End of second range.
+   *  @return  End of the output range.
+   *  @ingroup setoperations
+   *
+   *  This operation iterates over both ranges, copying elements present in
+   *  both ranges in order to the output range.  Iterators increment for each
+   *  range.  When the current element of one range is less than the other,
+   *  that iterator advances.  If an element is contained in both ranges, the
+   *  element from the first range is copied and both ranges advance.  The
+   *  output range may not overlap either input range.
+  */
   template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator>
     _OutputIterator
     set_intersection(_InputIterator1 __first1, _InputIterator1 __last1,
@@ -3749,6 +3835,25 @@ namespace std
       return __result;
     }
 
+  /**
+   *  @brief Return the intersection of two sorted ranges using comparison
+   *  functor. 
+   *  @param  first1  Start of first range.
+   *  @param  last1   End of first range.
+   *  @param  first2  Start of second range.
+   *  @param  last2   End of second range.
+   *  @param  comp    The comparison functor.
+   *  @return  End of the output range.
+   *  @ingroup setoperations
+   *
+   *  This operation iterates over both ranges, copying elements present in
+   *  both ranges in order to the output range.  Iterators increment for each
+   *  range.  When the current element of one range is less than the other
+   *  according to @a comp, that iterator advances.  If an element is
+   *  contained in both ranges according to @a comp, the element from the
+   *  first range is copied and both ranges advance.  The output range may not
+   *  overlap either input range.
+  */
   template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator,
 	   typename _Compare>
     _OutputIterator
@@ -3782,6 +3887,24 @@ namespace std
       return __result;
     }
 
+  /**
+   *  @brief Return the difference of two sorted ranges.
+   *  @param  first1  Start of first range.
+   *  @param  last1   End of first range.
+   *  @param  first2  Start of second range.
+   *  @param  last2   End of second range.
+   *  @return  End of the output range.
+   *  @ingroup setoperations
+   *
+   *  This operation iterates over both ranges, copying elements present in
+   *  the first range but not the second in order to the output range.
+   *  Iterators increment for each range.  When the current element of the
+   *  first range is less than the second, that element is copied and the
+   *  iterator advances.  If the current element of the second range is less,
+   *  the iterator advances, but no element is copied.  If an element is
+   *  contained in both ranges, no elements are copied and both ranges
+   *  advance.  The output range may not overlap either input range.
+  */
   template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator>
     _OutputIterator
     set_difference(_InputIterator1 __first1, _InputIterator1 __last1,
@@ -3814,6 +3937,27 @@ namespace std
       return std::copy(__first1, __last1, __result);
     }
 
+  /**
+   *  @brief  Return the difference of two sorted ranges using comparison
+   *  functor.
+   *  @param  first1  Start of first range.
+   *  @param  last1   End of first range.
+   *  @param  first2  Start of second range.
+   *  @param  last2   End of second range.
+   *  @param  comp    The comparison functor.
+   *  @return  End of the output range.
+   *  @ingroup setoperations
+   *
+   *  This operation iterates over both ranges, copying elements present in
+   *  the first range but not the second in order to the output range.
+   *  Iterators increment for each range.  When the current element of the
+   *  first range is less than the second according to @a comp, that element
+   *  is copied and the iterator advances.  If the current element of the
+   *  second range is less, no element is copied and the iterator advances.
+   *  If an element is contained in both ranges according to @a comp, no
+   *  elements are copied and both ranges advance.  The output range may not
+   *  overlap either input range.
+  */
   template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator,
 	   typename _Compare>
     _OutputIterator
@@ -3848,6 +3992,22 @@ namespace std
       return std::copy(__first1, __last1, __result);
     }
 
+  /**
+   *  @brief  Return the symmetric difference of two sorted ranges.
+   *  @param  first1  Start of first range.
+   *  @param  last1   End of first range.
+   *  @param  first2  Start of second range.
+   *  @param  last2   End of second range.
+   *  @return  End of the output range.
+   *  @ingroup setoperations
+   *
+   *  This operation iterates over both ranges, copying elements present in
+   *  one range but not the other in order to the output range.  Iterators
+   *  increment for each range.  When the current element of one range is less
+   *  than the other, that element is copied and the iterator advances.  If an
+   *  element is contained in both ranges, no elements are copied and both
+   *  ranges advance.  The output range may not overlap either input range.
+  */
   template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator>
     _OutputIterator
     set_symmetric_difference(_InputIterator1 __first1, _InputIterator1 __last1,
@@ -3883,6 +4043,25 @@ namespace std
       return std::copy(__first2, __last2, std::copy(__first1, __last1, __result));
     }
 
+  /**
+   *  @brief  Return the symmetric difference of two sorted ranges using
+   *  comparison functor.
+   *  @param  first1  Start of first range.
+   *  @param  last1   End of first range.
+   *  @param  first2  Start of second range.
+   *  @param  last2   End of second range.
+   *  @param  comp    The comparison functor.
+   *  @return  End of the output range.
+   *  @ingroup setoperations
+   *
+   *  This operation iterates over both ranges, copying elements present in
+   *  one range but not the other in order to the output range.  Iterators
+   *  increment for each range.  When the current element of one range is less
+   *  than the other according to @a comp, that element is copied and the
+   *  iterator advances.  If an element is contained in both ranges according
+   *  to @a comp, no elements are copied and both ranges advance.  The output
+   *  range may not overlap either input range.
+  */
   template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator,
 	   typename _Compare>
     _OutputIterator
@@ -3924,6 +4103,12 @@ namespace std
   // min_element and max_element, with and without an explicitly supplied
   // comparison function.
 
+  /**
+   *  @brief  Return the maximum element in a range.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @return  Iterator referencing the first instance of the largest value.
+  */
   template<typename _ForwardIterator>
     _ForwardIterator
     max_element(_ForwardIterator __first, _ForwardIterator __last)
@@ -3941,6 +4126,14 @@ namespace std
       return __result;
     }
 
+  /**
+   *  @brief  Return the maximum element in a range using comparison functor.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @param  comp   Comparison functor.
+   *  @return  Iterator referencing the first instance of the largest value
+   *  according to comp.
+  */
   template<typename _ForwardIterator, typename _Compare>
     _ForwardIterator
     max_element(_ForwardIterator __first, _ForwardIterator __last,
@@ -3959,6 +4152,12 @@ namespace std
       return __result;
     }
 
+  /**
+   *  @brief  Return the minimum element in a range.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @return  Iterator referencing the first instance of the smallest value.
+  */
   template<typename _ForwardIterator>
     _ForwardIterator
     min_element(_ForwardIterator __first, _ForwardIterator __last)
@@ -3976,6 +4175,14 @@ namespace std
       return __result;
     }
 
+  /**
+   *  @brief  Return the minimum element in a range using comparison functor.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @param  comp   Comparison functor.
+   *  @return  Iterator referencing the first instance of the smallest value
+   *  according to comp.
+  */
   template<typename _ForwardIterator, typename _Compare>
     _ForwardIterator
     min_element(_ForwardIterator __first, _ForwardIterator __last,
@@ -3998,6 +4205,17 @@ namespace std
   // next_permutation and prev_permutation, with and without an explicitly
   // supplied comparison function.
 
+  /**
+   *  @brief  Permute range into the next "dictionary" ordering.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @return  False if wrapped to first permutation, true otherwise.
+   *
+   *  Treats all permutations of the range as a set of "dictionary" sorted
+   *  sequences.  Permutes the current sequence into the next one of this set.
+   *  Returns true if there are more sequences to generate.  If the sequence
+   *  is the largest of the set, the smallest is generated and false returned.
+  */
   template<typename _BidirectionalIterator>
     bool
     next_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last)
@@ -4034,6 +4252,20 @@ namespace std
       }
     }
 
+  /**
+   *  @brief  Permute range into the next "dictionary" ordering using
+   *  comparison functor.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @param  comp   
+   *  @return  False if wrapped to first permutation, true otherwise.
+   *
+   *  Treats all permutations of the range [first,last) as a set of
+   *  "dictionary" sorted sequences ordered by @a comp.  Permutes the current
+   *  sequence into the next one of this set.  Returns true if there are more
+   *  sequences to generate.  If the sequence is the largest of the set, the
+   *  smallest is generated and false returned.
+  */
   template<typename _BidirectionalIterator, typename _Compare>
     bool
     next_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last,
@@ -4072,6 +4304,18 @@ namespace std
       }
     }
 
+  /**
+   *  @brief  Permute range into the previous "dictionary" ordering.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @return  False if wrapped to last permutation, true otherwise.
+   *
+   *  Treats all permutations of the range as a set of "dictionary" sorted
+   *  sequences.  Permutes the current sequence into the previous one of this
+   *  set.  Returns true if there are more sequences to generate.  If the
+   *  sequence is the smallest of the set, the largest is generated and false
+   *  returned.
+  */
   template<typename _BidirectionalIterator>
     bool
     prev_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last)
@@ -4108,6 +4352,20 @@ namespace std
       }
     }
 
+  /**
+   *  @brief  Permute range into the previous "dictionary" ordering using
+   *  comparison functor.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @param  comp   
+   *  @return  False if wrapped to last permutation, true otherwise.
+   *
+   *  Treats all permutations of the range [first,last) as a set of
+   *  "dictionary" sorted sequences ordered by @a comp.  Permutes the current
+   *  sequence into the previous one of this set.  Returns true if there are
+   *  more sequences to generate.  If the sequence is the smallest of the set,
+   *  the largest is generated and false returned.
+  */
   template<typename _BidirectionalIterator, typename _Compare>
     bool
     prev_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last,
@@ -4148,6 +4406,20 @@ namespace std
 
   // find_first_of, with and without an explicitly supplied comparison function.
 
+  /**
+   *  @brief  Find element from a set in a sequence.
+   *  @param  first1  Start of range to search.
+   *  @param  last1   End of range to search.
+   *  @param  first2  Start of match candidates.
+   *  @param  last2   End of match candidates.
+   *  @return   The first iterator @c i in the range
+   *  @p [first1,last1) such that @c *i == @p *(i2) such that i2 is an
+   *  interator in [first2,last2), or @p last1 if no such iterator exists.
+   *
+   *  Searches the range @p [first1,last1) for an element that is equal to
+   *  some element in the range [first2,last2).  If found, returns an iterator
+   *  in the range [first1,last1), otherwise returns @p last1.
+  */
   template<typename _InputIterator, typename _ForwardIterator>
     _InputIterator
     find_first_of(_InputIterator __first1, _InputIterator __last1,
@@ -4167,6 +4439,21 @@ namespace std
       return __last1;
     }
 
+  /**
+   *  @brief  Find element from a set in a sequence using a predicate.
+   *  @param  first1  Start of range to search.
+   *  @param  last1   End of range to search.
+   *  @param  first2  Start of match candidates.
+   *  @param  last2   End of match candidates.
+   *  @param  comp    Predicate to use.
+   *  @return   The first iterator @c i in the range
+   *  @p [first1,last1) such that @c comp(*i, @p *(i2)) is true and i2 is an
+   *  interator in [first2,last2), or @p last1 if no such iterator exists.
+   *
+   *  Searches the range @p [first1,last1) for an element that is equal to
+   *  some element in the range [first2,last2).  If found, returns an iterator in
+   *  the range [first1,last1), otherwise returns @p last1.
+  */
   template<typename _InputIterator, typename _ForwardIterator, typename _BinaryPredicate>
     _InputIterator
     find_first_of(_InputIterator __first1, _InputIterator __last1,
@@ -4307,6 +4594,30 @@ namespace std
 
   // Dispatching functions for find_end.
 
+  /**
+   *  @brief  Find last matching subsequence in a sequence.
+   *  @param  first1  Start of range to search.
+   *  @param  last1   End of range to search.
+   *  @param  first2  Start of sequence to match.
+   *  @param  last2   End of sequence to match.
+   *  @return   The last iterator @c i in the range
+   *  @p [first1,last1-(last2-first2)) such that @c *(i+N) == @p *(first2+N)
+   *  for each @c N in the range @p [0,last2-first2), or @p last1 if no
+   *  such iterator exists.
+   *
+   *  Searches the range @p [first1,last1) for a sub-sequence that compares
+   *  equal value-by-value with the sequence given by @p [first2,last2) and
+   *  returns an iterator to the first element of the sub-sequence, or
+   *  @p last1 if the sub-sequence is not found.  The sub-sequence will be the
+   *  last such subsequence contained in [first,last1).
+   *
+   *  Because the sub-sequence must lie completely within the range
+   *  @p [first1,last1) it must start at a position less than
+   *  @p last1-(last2-first2) where @p last2-first2 is the length of the
+   *  sub-sequence.
+   *  This means that the returned iterator @c i will be in the range
+   *  @p [first1,last1-(last2-first2))
+  */
   template<typename _ForwardIterator1, typename _ForwardIterator2>
     inline _ForwardIterator1
     find_end(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
@@ -4324,6 +4635,32 @@ namespace std
 			     std::__iterator_category(__first2));
     }
 
+  /**
+   *  @brief  Find last matching subsequence in a sequence using a predicate.
+   *  @param  first1  Start of range to search.
+   *  @param  last1   End of range to search.
+   *  @param  first2  Start of sequence to match.
+   *  @param  last2   End of sequence to match.
+   *  @param  comp    The predicate to use.
+   *  @return   The last iterator @c i in the range
+   *  @p [first1,last1-(last2-first2)) such that @c predicate(*(i+N), @p
+   *  (first2+N)) is true for each @c N in the range @p [0,last2-first2), or
+   *  @p last1 if no such iterator exists.
+   *
+   *  Searches the range @p [first1,last1) for a sub-sequence that compares
+   *  equal value-by-value with the sequence given by @p [first2,last2) using
+   *  comp as a predicate and returns an iterator to the first element of the
+   *  sub-sequence, or @p last1 if the sub-sequence is not found.  The
+   *  sub-sequence will be the last such subsequence contained in
+   *  [first,last1).
+   *
+   *  Because the sub-sequence must lie completely within the range
+   *  @p [first1,last1) it must start at a position less than
+   *  @p last1-(last2-first2) where @p last2-first2 is the length of the
+   *  sub-sequence.
+   *  This means that the returned iterator @c i will be in the range
+   *  @p [first1,last1-(last2-first2))
+  */
   template<typename _ForwardIterator1, typename _ForwardIterator2,
 	   typename _BinaryPredicate>
     inline _ForwardIterator1

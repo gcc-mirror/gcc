@@ -202,6 +202,14 @@ relation.  Rather, it partitions the range.
 */
 
 // // // // // // // // // // // // // // // // // // // // // // // //
+/** @addtogroup setoperations Set operation algorithms
+These algorithms are common set operations performed on sequences that are
+already sorted.
+
+The number of comparisons will be linear.
+*/
+
+// // // // // // // // // // // // // // // // // // // // // // // //
 
 // // // // // // // // // // // // // // // // // // // // // // // //
 /* * @addtogroup groupname description of group
