@@ -453,9 +453,10 @@ static void new_insn_dead_notes PROTO ((rtx, rtx, rtx, rtx));
 static void update_n_sets PROTO ((rtx, int));
 static void update_flow_info PROTO ((rtx, rtx, rtx, rtx));
 static char *safe_concat PROTO ((char *, char *, char *));
-
-/* Main entry point of this file.  */
-void schedule_insns PROTO ((FILE *));
+static int insn_issue_delay PROTO ((rtx));
+static int birthing_insn_p PROTO ((rtx));
+static void adjust_priority PROTO ((rtx));
+static void print_insn_chain PROTO ((rtx));
 
 /* Mapping of insns to their original block prior to scheduling.  */
 static int *insn_orig_block;
@@ -744,10 +745,10 @@ static void update_reg_usage PROTO ((void));
 static int queue_to_ready PROTO ((rtx [], int));
 
 static void debug_ready_list PROTO ((rtx[], int));
-static void init_target_units PROTO (());
+static void init_target_units PROTO ((void));
 static void insn_print_units PROTO ((rtx));
-static int get_visual_tbl_length PROTO (());
-static void init_block_visualization PROTO (());
+static int get_visual_tbl_length PROTO ((void));
+static void init_block_visualization PROTO ((void));
 static void print_block_visualization PROTO ((int, char *));
 static void visualize_scheduled_insns PROTO ((int, int));
 static void visualize_no_unit PROTO ((rtx));

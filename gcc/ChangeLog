@@ -6,6 +6,12 @@ Sun Jun 21 18:56:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 Sun Jun 21 18:30:13 1998  H.J. Lu  (hjl@gnu.org)
 
+	* haifa-sched.c (insn_issue_delay, birthing_insn_p,
+	adjust_priority, print_insn_chaino): New declaration.
+	(schedule_insns): Remove declaration.
+	(init_target_units, get_visual_tbl_length,
+	init_block_visualization): Add prototype.
+
 	* integrate.c (pushdecl, poplevel): Remove declaration.
 
 	* rtl.h (expand_expr): Remove declaration.
