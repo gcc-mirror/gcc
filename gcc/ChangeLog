@@ -1,3 +1,11 @@
+2002-05-19  Richard Henderson  <rth@redhat.com>
+
+	* gensupport.c (init_include_reader): Merge into ...
+	(process_include): ... here.  Simplify composite path creation.
+	Plug memory leaks.  Fix file/line number tracking.  Do not
+	process_define_cond_exec.  Return void.
+	(process_rtx): Don't check process_include return value.
+
 2002-05-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* basic_block.h (struct basic_block_def): Added prev_bb and next_bb
