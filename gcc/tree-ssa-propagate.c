@@ -575,6 +575,8 @@ set_rhs (tree *stmt_p, tree expr)
       if (!is_gimple_val (TREE_OPERAND (expr, 0)))
 	return false;
     }
+  else if (code == COMPOUND_EXPR)
+    return false;
 
   switch (TREE_CODE (stmt))
     {
