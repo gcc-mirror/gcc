@@ -1,3 +1,8 @@
+2004-07-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* method.c (implicitly_declare_fn): Set linkage of generated
+	functions.
+
 2004-07-04  Richard Henderson  <rth@redhat.com>
 
 	* typeck.c (cxx_mark_addressable): Don't put_var_into_stack.
