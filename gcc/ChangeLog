@@ -1,3 +1,13 @@
+002-01-07  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (bdesc_2arg): Add altivec predicates.
+        (altivec_init_builtins): New node v4si_ftype_v16qi_v16qi.
+
+        * config/rs6000/rs6000.h (rs6000_builtins): Add enums for altivec
+        predicates.
+
+        * config/rs6000/rs6000.md: Add altivec predicate patterns.
+
 2002-01-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (FUNC_BEGIN_PROLOG_LABEL, current_function_number): Define.
