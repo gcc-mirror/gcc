@@ -19,10 +19,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.5 1991/11/29 00:24:14 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.6 1991/11/29 20:02:01 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/29 00:24:14 $
+  $Date: 1991/11/29 20:02:01 $
   $Log: ObjC.h,v $
+ * Revision 0.6  1991/11/29  20:02:01  dennisg
+ * fixed several const decls.  bozo.
+ *
  * Revision 0.5  1991/11/29  00:24:14  dennisg
  * many changes including posing, things to make the compiler
  * happier, structure changes, and things to make it play better.
@@ -57,6 +60,7 @@ extern "C" {
 
 #include  <sys/types.h>
 #include  <hash.h>
+#include	<stdarg.h>
 
 
 #define nil ( id )0                             /* id of Nil instance */
@@ -375,6 +379,37 @@ typedef struct objc_super {
                                                 the message. */
   Class_t class;                              /* Object's super class. */
 } Super, *Super_t;
+
+/*
+ * _alloc points to the function, called through 
+ *	class_createInstance(), used to allocate memory for 
+ *	new instances.
+ */
+extern id (*_alloc)(Class_t aClass, u_int indexedIvarBytes);
+/*
+ * _dealloc points to the function, called 
+ *	through object_dispose(), used to free instances.
+ */
+extern id (*_dealloc)(id aObject);
+/*
+ * _realloc points to the function, called through 
+ *	object_realloc(), used to reallocate memory for an object
+ */
+extern id (*_realloc)(id aObject, u_int numBytes);
+
+/*
+ * _copy points to the function, called through 
+ *	object_copy(), used to create an exact copy of an object.
+ */
+extern	id (*_copy)(id aObject, u_int indexedIvarBytes);
+
+/*
+ * _error points to the function that the run-time 
+ *	system calls in response to an error.  By default, 
+ *	it prints formatted error messages to the standard 
+ *	error stream and calls abort() to produce a core file.
+ */
+extern void (*_error)(id aObject, const char* fmt, va_list ap);
 
 
 #ifdef __cplusplus
