@@ -172,6 +172,15 @@ struct demangling_def
   
   /* Language style to use for demangled output. */
   int style;
+
+  /* Set to non-zero iff this name is a constructor.  The actual value
+     indicates what sort of constructor this is; see demangle.h.  */
+  enum gnu_v3_ctor_kinds is_constructor;
+
+  /* Set to non-zero iff this name is a destructor.  The actual value
+     indicates what sort of destructor this is; see demangle.h.  */
+  enum gnu_v3_dtor_kinds is_destructor;
+
 };
 
 typedef struct demangling_def *demangling_t;
@@ -815,6 +824,8 @@ demangling_new (name, style)
       return NULL;
     }
   dm->style = style;
+  dm->is_constructor = 0;
+  dm->is_destructor = 0;
 
   return dm;
 }
@@ -2018,15 +2029,24 @@ demangle_ctor_dtor_name (dm)
     {
       /* A constructor name.  Consume the C.  */
       advance_char (dm);
-      if (peek_char (dm) < '1' || peek_char (dm) > '3')
+      flavor = next_char (dm);
+      if (flavor < '1' || flavor > '3')
 	return "Unrecognized constructor.";
       RETURN_IF_ERROR (result_add_string (dm, dm->last_source_name));
+      switch (flavor)
+	{
+	case '1': dm->is_constructor = gnu_v3_complete_object_ctor;
+	  break;
+	case '2': dm->is_constructor = gnu_v3_base_object_ctor;
+	  break;
+	case '3': dm->is_constructor = gnu_v3_complete_object_allocating_ctor;
+	  break;
+	}
       /* Print the flavor of the constructor if in verbose mode.  */
-      flavor = next_char (dm) - '1';
       if (flag_verbose)
 	{
 	  RETURN_IF_ERROR (result_add (dm, "["));
-	  RETURN_IF_ERROR (result_add (dm, ctor_flavors[flavor]));
+	  RETURN_IF_ERROR (result_add (dm, ctor_flavors[flavor - '1']));
 	  RETURN_IF_ERROR (result_add_char (dm, ']'));
 	}
     }
@@ -2034,16 +2054,25 @@ demangle_ctor_dtor_name (dm)
     {
       /* A destructor name.  Consume the D.  */
       advance_char (dm);
-      if (peek_char (dm) < '0' || peek_char (dm) > '2')
+      flavor = next_char (dm);
+      if (flavor < '0' || flavor > '2')
 	return "Unrecognized destructor.";
       RETURN_IF_ERROR (result_add_char (dm, '~'));
       RETURN_IF_ERROR (result_add_string (dm, dm->last_source_name));
+      switch (flavor)
+	{
+	case '0': dm->is_destructor = gnu_v3_deleting_dtor;
+	  break;
+	case '1': dm->is_destructor = gnu_v3_complete_object_dtor;
+	  break;
+	case '2': dm->is_destructor = gnu_v3_base_object_dtor;
+	  break;
+	}
       /* Print the flavor of the destructor if in verbose mode.  */
-      flavor = next_char (dm) - '0';
       if (flag_verbose)
 	{
 	  RETURN_IF_ERROR (result_add (dm, " ["));
-	  RETURN_IF_ERROR (result_add (dm, dtor_flavors[flavor]));
+	  RETURN_IF_ERROR (result_add (dm, dtor_flavors[flavor - '0']));
 	  RETURN_IF_ERROR (result_add_char (dm, ']'));
 	}
     }
@@ -3788,6 +3817,85 @@ java_demangle_v3 (mangled)
 }
 
 #endif /* IN_LIBGCC2 */
+
+
+/* Demangle NAME in the G++ V3 ABI demangling style, and return either
+   zero, indicating that some error occurred, or a demangling_t
+   holding the results.  */
+static demangling_t
+demangle_v3_with_details (const char *name)
+{
+  demangling_t dm;
+  status_t status;
+
+  if (strncmp (name, "_Z", 2))
+    return 0;
+
+  dm = demangling_new (name, DMGL_GNU_V3);
+  if (dm == NULL)
+    {
+      fprintf (stderr, "Memory allocation failed.\n");
+      abort ();
+    }
+
+  status = result_push (dm);
+  if (! STATUS_NO_ERROR (status))
+    {
+      demangling_delete (dm);
+      fprintf (stderr, "%s\n", status);
+      abort ();
+    }
+
+  status = demangle_mangled_name (dm);
+  if (STATUS_NO_ERROR (status))
+    return dm;
+
+  demangling_delete (dm);
+  return 0;
+}
+
+
+/* Return non-zero iff NAME is the mangled form of a constructor name
+   in the G++ V3 ABI demangling style.  Specifically, return:
+   - '1' if NAME is a complete object constructor,
+   - '2' if NAME is a base object constructor, or
+   - '3' if NAME is a complete object allocating constructor.  */
+enum gnu_v3_ctor_kinds
+is_gnu_v3_mangled_ctor (const char *name)
+{
+  demangling_t dm = demangle_v3_with_details (name);
+
+  if (dm)
+    {
+      enum gnu_v3_ctor_kinds result = dm->is_constructor;
+      demangling_delete (dm);
+      return result;
+    }
+  else
+    return 0;
+}
+
+
+/* Return non-zero iff NAME is the mangled form of a destructor name
+   in the G++ V3 ABI demangling style.  Specifically, return:
+   - '0' if NAME is a deleting destructor,
+   - '1' if NAME is a complete object destructor, or
+   - '2' if NAME is a base object destructor.  */
+enum gnu_v3_dtor_kinds
+is_gnu_v3_mangled_dtor (const char *name)
+{
+  demangling_t dm = demangle_v3_with_details (name);
+
+  if (dm)
+    {
+      enum gnu_v3_dtor_kinds result = dm->is_destructor;
+      demangling_delete (dm);
+      return result;
+    }
+  else
+    return 0;
+}
+
 
 #ifdef STANDALONE_DEMANGLER
 
