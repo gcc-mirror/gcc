@@ -3,6 +3,7 @@
 #include <cstddef>
 
 void g(int) {}
+void g(long) {}
 extern void g(void*);
 
 template <int I>
