@@ -48,7 +48,6 @@ import java.security.BasicPermission;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public final class NetPermission extends BasicPermission
-  implements java.io.Serializable
 {
   static final long serialVersionUID = -8343910153355041693L;
 
