@@ -1740,8 +1740,11 @@ struct lang_type
 #define SET_BINFO_VTABLE_PATH_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?SET_CLASSTYPE_MARKED3(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_3(NODE)=1))
 #define CLEAR_BINFO_VTABLE_PATH_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?CLEAR_CLASSTYPE_MARKED3(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_3(NODE)=0))
 
-/* Nonzero means B (a BINFO) needs a new vtable.  B is part of the
-   hierarchy dominated by C.  */
+/* Nonzero means B (a BINFO) has its own vtable.  Under the old ABI,
+   secondary vtables are sometimes shared.  Any copies will not have
+   this flag set.
+
+   B is part of the hierarchy dominated by C.  */
 #define BINFO_NEW_VTABLE_MARKED(B, C) \
   (TREE_LANG_FLAG_4 (CANONICAL_BINFO (B, C)))
 #define SET_BINFO_NEW_VTABLE_MARKED(B, C) \
@@ -4351,7 +4354,6 @@ extern tree dfs_walk_real                      PARAMS ((tree,
 						       tree (*) (tree, void *),
 						       void *));
 extern tree dfs_unmark                          PARAMS ((tree, void *));
-extern tree dfs_vtable_path_unmark              PARAMS ((tree, void *));
 extern tree markedp                             PARAMS ((tree, void *));
 extern tree unmarkedp                           PARAMS ((tree, void *));
 extern tree dfs_skip_nonprimary_vbases_unmarkedp PARAMS ((tree, void *));
