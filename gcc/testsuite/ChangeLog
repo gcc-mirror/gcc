@@ -1,5 +1,7 @@
 2003-04-15  Mark Mitchell  <mark@codesourcery.com>
 
+	* lib/prune.exp: Ignore more messages.
+
 	PR c++/10381
 	* g++.dg/parse/lookup3.C: New test.
 
