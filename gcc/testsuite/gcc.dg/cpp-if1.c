@@ -1,12 +1,12 @@
 /* { dg-do preprocess } */ 
 /* { dg-options "-pedantic-errors" } */
 
-#if 0xa == 10
-#error yes /* { dg-error "#error yes" "normal conversion" } */
+#if 0xa != 10
+#error 0xa != 10 /* { dg-bogus "#error" "normal conversion" } */
 #endif
 
-#if 077 == 63
-#error yes /* { dg-error "#error yes" "normal conversion" } */
+#if 077 != 63
+#error 077 != 63 /* { dg-bogus "#error" "normal conversion" } */
 #endif
 
 #if 12wrt /* { dg-error "nvalid number" "invalid number" } */
