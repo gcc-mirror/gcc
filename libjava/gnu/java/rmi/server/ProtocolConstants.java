@@ -37,27 +37,26 @@ exception statement from your version. */
 
 package gnu.java.rmi.server;
 
-public interface ProtocolConstants {
+public interface ProtocolConstants
+{
+  int PROTOCOL_HEADER = 0x4a524d49; // JRMI
+  int PROTOCOL_VERSION = 2;
 
-final public static int PROTOCOL_HEADER = 0x4a524d49; // JRMI
-final public static int PROTOCOL_VERSION = 2;
+  int STREAM_PROTOCOL = 0x4b;
+  int SINGLE_OP_PROTOCOL = 0x4c;
+  int MULTIPLEX_PROTOCOL = 0x4d;
 
-final public static int STREAM_PROTOCOL = 0x4b;
-final public static int SINGLE_OP_PROTOCOL = 0x4c;
-final public static int MULTIPLEX_PROTOCOL = 0x4d;
+  int PROTOCOL_ACK = 0x4e;
+  int PROTOCOL_NACK = 0x4f;
 
-final public static int PROTOCOL_ACK = 0x4e;
-final public static int PROTOCOL_NACK = 0x4f;
+  int MESSAGE_CALL = 0x50;
+  int MESSAGE_CALL_ACK = 0x51;
+  int MESSAGE_PING = 0x52;
+  int MESSAGE_PING_ACK = 0x53;
+  int MESSAGE_DGCACK = 0x54;
 
-final public static int MESSAGE_CALL = 0x50;
-final public static int MESSAGE_CALL_ACK = 0x51;
-final public static int MESSAGE_PING = 0x52;
-final public static int MESSAGE_PING_ACK = 0x53;
-final public static int MESSAGE_DGCACK = 0x54;
+  int RETURN_ACK = 0x01;
+  int RETURN_NACK = 0x02;
 
-final public static int RETURN_ACK = 0x01;
-final public static int RETURN_NACK = 0x02;
-
-final public static int DEFAULT_PROTOCOL = STREAM_PROTOCOL;
-
-};
+  int DEFAULT_PROTOCOL = STREAM_PROTOCOL;
+}
