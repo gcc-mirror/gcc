@@ -1249,7 +1249,7 @@ standard_68881_constant_p (x)
   union {double d; int i[2];} u;
   register double d;
 
-  /* fmovecr must be emulated on the 68040, so it shoudn't be used at all. */
+  /* fmovecr must be emulated on the 68040, so it shouldn't be used at all. */
   if (TARGET_68040)
     return 0;
 

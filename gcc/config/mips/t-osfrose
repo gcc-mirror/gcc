@@ -6,7 +6,7 @@ CONFIG2_H	= $(srcdir)/config/mips.h $(srcdir)/config/decrose.h $(srcdir)/halfpic
 # PREMADE_ATTRTAB = $(srcdir)/config/mips-at.c
 # PREMADE_ATTRTAB_MD = $(srcdir)/config/mips-at.md
 
-# Supress building libgcc1.a, since the MIPS compiler port is complete
+# Suppress building libgcc1.a, since the MIPS compiler port is complete
 # and does not need anything from libgcc1.a.
 LIBGCC1 = libgcc1.null
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Motorola m88100 running the AT&T/Unisoft/Motorla V.3 reference port.
+   Motorola m88100 running the AT&T/Unisoft/Motorola V.3 reference port.
    Copyright (C) 1990, 1991 Free Software Foundation, Inc.
    Contributed by Ray Essick (ressick@mot.com)
    Currently supported by Tom Wood (wood@dg-rtp.dg.com)

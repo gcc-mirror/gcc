@@ -733,7 +733,7 @@ i960_output_ldconst (dst, src)
 }
 
 /* Determine if there is an opportunity for a bypass optimization.
-   Bypass suceeds on the 960K* if the destination of the previous
+   Bypass succeeds on the 960K* if the destination of the previous
    instruction is the second operand of the current instruction.
    Bypass always succeeds on the C*.
  
@@ -2073,7 +2073,7 @@ i960_round_align (align, tsize)
 }
 
 /* Do any needed setup for a varargs function.  For the i960, we must
-   create a register paramter block if one doesn't exist, and then copy
+   create a register parameter block if one doesn't exist, and then copy
    all register parameters to memory.  */
 
 void
