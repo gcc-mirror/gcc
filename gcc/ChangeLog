@@ -1,3 +1,8 @@
+2004-09-06  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* Makefile.in (rtl.o): Remove -DGENERATOR_FILE.
+	(bitmap.o): Likewise.
+
 2004-09-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	Unify the management of RTL and tree-level dump files.
