@@ -1,5 +1,11 @@
 2003-01-15  Scott Gilbertson  <scottg@mantatest.com>
 
+	* gnu/awt/xlib/XToolkit.java (getColorModel): Implemented.
+	* gnu/awt/xlib/XGraphicsConfiguration.java (getPixel): Work with
+	16-bit display mode.
+
+2003-01-15  Scott Gilbertson  <scottg@mantatest.com>
+
 	* java/awt/CardLayout.java (show): Rewrote.
 	(gotoComponent): Removed `target' argument.  Simplified code.
 	Don't pre-compute `choice' unless `what' is FIRST or LAST.

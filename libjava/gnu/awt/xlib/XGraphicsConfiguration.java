@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -389,15 +389,32 @@ public class XGraphicsConfiguration extends GraphicsConfiguration
 
   int getPixel(Color color)
   {
+    /* FIXME: consider an integer technique whenever
+     * the ColorModel is 8 bits per color.
+     * The problem with using integers is that it doesn't work unless
+     * the colors are 8 bits each (as in the array), since ColorModel.getDataElement(int[],int)
+     * expects non-normalized values.  For example, in a 16-bit display mode, you
+     * would typically have 5 bits each for red and blue, and 6 bits for green.
     int[] components =
-        {
-	  color.getRed(),
-	  color.getGreen(),
-	  color.getBlue(),
-	  0xff
-	};
-	
-    ColorModel cm = getColorModel();
-    return cm.getDataElement(components, 0);
+    {
+      color.getRed (),
+      color.getGreen (),
+      color.getBlue (),
+      0xff
+    };
+     */
+    
+    float[] normalizedComponents =
+    {
+      ((float)color.getRed ()) / 255F,
+      ((float)color.getGreen ()) / 255F,
+      ((float)color.getBlue ()) / 255F,
+      1
+    };
+    int[] unnormalizedComponents = { 0, 0, 0, 0xff };
+    ColorModel cm = getColorModel ();
+    cm.getUnnormalizedComponents(normalizedComponents, 0,
+				 unnormalizedComponents, 0);
+    return cm.getDataElement (unnormalizedComponents, 0);
   }
 }
