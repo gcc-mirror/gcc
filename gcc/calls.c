@@ -150,9 +150,25 @@ int stack_arg_under_construction;
 static int calls_function	PARAMS ((tree, int));
 static int calls_function_1	PARAMS ((tree, int));
 
-#define ECF_IS_CONST		1
-#define ECF_NOTHROW		2
-#define ECF_SIBCALL		4
+/* Nonzero if this is a call to a `const' function. */
+#define ECF_CONST		1
+/* Nonzero if this is a call to a `volatile' function.  */
+#define ECF_NORETURN		2
+/* Nonzero if this is a call to malloc or a related function. */
+#define ECF_MALLOC		4
+/* Nonzero if it is plausible that this is a call to alloca.  */
+#define ECF_MAY_BE_ALLOCA	8
+/* Nonzero if this is a call to a function that won't throw an exception.  */
+#define ECF_NOTHROW		16
+/* Nonzero if this is a call to setjmp or a related function.  */
+#define ECF_RETURNS_TWICE	32
+/* Nonzero if this is a call to `longjmp'.  */
+#define ECF_LONGJMP		64
+/* Nonzero if this is a syscall that makes a new process in the image of
+   the current one.  */
+#define ECF_FORK_OR_EXEC	128
+#define ECF_SIBCALL		256
+
 static void emit_call_1		PARAMS ((rtx, tree, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, HOST_WIDE_INT, rtx,
 					 rtx, int, rtx, int));
@@ -178,7 +194,7 @@ static void initialize_argument_information	PARAMS ((int,
 							 int, tree, tree,
 							 CUMULATIVE_ARGS *,
 							 int, rtx *, int *,
-							 int *, int *, int));
+							 int *, int *));
 static void compute_argument_addresses		PARAMS ((struct arg_data *,
 							 rtx, int));
 static rtx rtx_for_function_call		PARAMS ((tree, tree));
@@ -188,6 +204,10 @@ static int libfunc_nothrow			PARAMS ((rtx));
 static rtx emit_library_call_value_1 		PARAMS ((int, rtx, rtx, int,
 							 enum machine_mode,
 							 int, va_list));
+static int special_function_p			PARAMS ((tree, int));
+static int flags_from_decl_or_type 		PARAMS ((tree));
+static rtx try_to_integrate			PARAMS ((tree, tree, rtx,
+							 int, tree, rtx));
 
 #ifdef REG_PARM_STACK_SPACE
 static rtx save_fixed_argument_area	PARAMS ((int, rtx, int *, int *));
@@ -401,9 +421,7 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
    We restore `inhibit_defer_pop' to that value.
 
    CALL_FUSAGE is either empty or an EXPR_LIST of USE expressions that
-   denote registers used by the called function.
-
-   IS_CONST is true if this is a `const' call.  */
+   denote registers used by the called function.  */
 
 static void
 emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
@@ -553,7 +571,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
     CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
 
   /* If this is a const call, then set the insn's unchanging bit.  */
-  if (ecf_flags & ECF_IS_CONST)
+  if (ecf_flags & ECF_CONST)
     CONST_CALL_P (call_insn) = 1;
 
   /* If this call can't throw, attach a REG_EH_REGION reg note to that
@@ -592,7 +610,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
       if (rounded_stack_size != 0)
 	{
 	  if (flag_defer_pop && inhibit_defer_pop == 0
-	      && !(ecf_flags & ECF_IS_CONST))
+	      && !(ecf_flags & ECF_CONST))
 	    pending_stack_adjust += rounded_stack_size;
 	  else
 	    adjust_stack (rounded_stack_size_rtx);
@@ -619,33 +637,20 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
    For example, if the function might return more than one time (setjmp), then
    set RETURNS_TWICE to a nonzero value.
 
-   Similarly set IS_LONGJMP for if the function is in the longjmp family.
+   Similarly set LONGJMP for if the function is in the longjmp family.
 
-   Set IS_MALLOC for any of the standard memory allocation functions which
+   Set MALLOC for any of the standard memory allocation functions which
    allocate from the heap.
 
    Set MAY_BE_ALLOCA for any memory allocation function that might allocate
    space from the stack such as alloca.  */
 
-void
-special_function_p (fndecl, returns_twice, is_longjmp, fork_or_exec,
-		    is_malloc, may_be_alloca)
+static int
+special_function_p (fndecl, flags)
      tree fndecl;
-     int *returns_twice;
-     int *is_longjmp;
-     int *fork_or_exec;
-     int *is_malloc;
-     int *may_be_alloca;
+     int flags;
 {
-  *returns_twice = 0;
-  *is_longjmp = 0;
-  *fork_or_exec = 0;
-  *may_be_alloca = 0;
-
-  /* The function decl may have the `malloc' attribute.  */
-  *is_malloc = fndecl && DECL_IS_MALLOC (fndecl);
-
-  if (! *is_malloc 
+  if (! (flags & ECF_MALLOC)
       && fndecl && DECL_NAME (fndecl)
       && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 17
       /* Exclude functions not at the file scope, or not `extern',
@@ -659,13 +664,13 @@ special_function_p (fndecl, returns_twice, is_longjmp, fork_or_exec,
       /* We assume that alloca will always be called by name.  It
 	 makes no sense to pass it as a pointer-to-function to
 	 anything that does not understand its behavior.  */
-      *may_be_alloca
-	= (((IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 6
-	     && name[0] == 'a'
-	     && ! strcmp (name, "alloca"))
-	    || (IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 16
-		&& name[0] == '_'
-		&& ! strcmp (name, "__builtin_alloca"))));
+      if (((IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 6
+	    && name[0] == 'a'
+	    && ! strcmp (name, "alloca"))
+	   || (IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 16
+	       && name[0] == '_'
+	       && ! strcmp (name, "__builtin_alloca"))))
+	flags |= ECF_MAY_BE_ALLOCA;
 
       /* Disregard prefix _, __ or __x.  */
       if (name[0] == '_')
@@ -680,27 +685,28 @@ special_function_p (fndecl, returns_twice, is_longjmp, fork_or_exec,
 
       if (tname[0] == 's')
 	{
-	  *returns_twice
-	     = ((tname[1] == 'e'
-		 && (! strcmp (tname, "setjmp")
-		     || ! strcmp (tname, "setjmp_syscall")))
-	        || (tname[1] == 'i'
-		    && ! strcmp (tname, "sigsetjmp"))
-	        || (tname[1] == 'a'
-		    && ! strcmp (tname, "savectx")));
+	  if ((tname[1] == 'e'
+	       && (! strcmp (tname, "setjmp")
+		   || ! strcmp (tname, "setjmp_syscall")))
+	      || (tname[1] == 'i'
+		  && ! strcmp (tname, "sigsetjmp"))
+	      || (tname[1] == 'a'
+		  && ! strcmp (tname, "savectx")))
+	    flags |= ECF_RETURNS_TWICE;
+
 	  if (tname[1] == 'i'
 	      && ! strcmp (tname, "siglongjmp"))
-	    *is_longjmp = 1;
+	    flags |= ECF_LONGJMP;
 	}
       else if ((tname[0] == 'q' && tname[1] == 's'
 		&& ! strcmp (tname, "qsetjmp"))
 	       || (tname[0] == 'v' && tname[1] == 'f'
 		   && ! strcmp (tname, "vfork")))
-	*returns_twice = 1;
+	flags |= ECF_RETURNS_TWICE;
 
       else if (tname[0] == 'l' && tname[1] == 'o'
 	       && ! strcmp (tname, "longjmp"))
-	*is_longjmp = 1;
+	flags |= ECF_LONGJMP;
 
       else if ((tname[0] == 'f' && tname[1] == 'o'
 		&& ! strcmp (tname, "fork"))
@@ -714,7 +720,7 @@ special_function_p (fndecl, returns_twice, is_longjmp, fork_or_exec,
 		   && (tname[5] == '\0'
 		       || ((tname[5] == 'p' || tname[5] == 'e')
 			   && tname[6] == '\0'))))
-	*fork_or_exec = 1;
+	flags |= ECF_FORK_OR_EXEC;
 
       /* Do not add any more malloc-like functions to this list,
          instead mark them as malloc functions using the malloc attribute.
@@ -727,9 +733,45 @@ special_function_p (fndecl, returns_twice, is_longjmp, fork_or_exec,
 	       && (! strcmp (tname, "malloc")
 		   || ! strcmp (tname, "calloc")
 		   || ! strcmp (tname, "strdup")))
-	*is_malloc = 1;
+	flags |= ECF_MALLOC;
     }
+  return flags;
 }
+
+/* Return nonzero when tree represent call to longjmp.  */
+int
+setjmp_call_p (fndecl)
+     tree fndecl;
+{
+  return special_function_p (fndecl, 0) & ECF_RETURNS_TWICE;
+}
+
+/* Detect flags (function attributes) from the function type node.  */
+static int
+flags_from_decl_or_type (exp)
+     tree exp;
+{
+  int flags = 0;
+  /* ??? We can't set IS_MALLOC for function types?  */
+  if (DECL_P (exp))
+    {
+      /* The function exp may have the `malloc' attribute.  */
+      if (DECL_P (exp) && DECL_IS_MALLOC (exp))
+	flags |= ECF_MALLOC;
+
+      if (TREE_NOTHROW (exp))
+	flags |= ECF_NOTHROW;
+    }
+
+  if (TREE_READONLY (exp) && !TREE_THIS_VOLATILE (exp))
+    flags |= ECF_CONST;
+
+  if (TREE_THIS_VOLATILE (exp))
+    flags |= ECF_NORETURN;
+
+  return flags;
+}
+
 
 /* Precompute all register parameters as described by ARGS, storing values
    into fields within the ARGS array.
@@ -990,14 +1032,14 @@ store_unaligned_arguments_into_pseudos (args, num_actuals)
    OLD_STACK_LEVEL is a pointer to an rtx which olds the old stack level
    and may be modified by this routine.
 
-   OLD_PENDING_ADJ, MUST_PREALLOCATE and IS_CONST are pointers to integer
+   OLD_PENDING_ADJ, MUST_PREALLOCATE and FLAGS are pointers to integer
    flags which may may be modified by this routine.  */
 
 static void
 initialize_argument_information (num_actuals, args, args_size, n_named_args,
 				 actparms, fndecl, args_so_far,
 				 reg_parm_stack_space, old_stack_level,
-				 old_pending_adj, must_preallocate, is_const,
+				 old_pending_adj, must_preallocate,
 				 ecf_flags)
      int num_actuals ATTRIBUTE_UNUSED;
      struct arg_data *args;
@@ -1010,8 +1052,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
      rtx *old_stack_level;
      int *old_pending_adj;
      int *must_preallocate;
-     int *is_const;
-     int ecf_flags ATTRIBUTE_UNUSED;
+     int *ecf_flags;
 {
   /* 1 if scanning parms front to back, -1 if scanning back to front.  */
   int inc;
@@ -1154,7 +1195,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 	      MEM_SET_IN_STRUCT_P (copy, AGGREGATE_TYPE_P (type));
 
 	      store_expr (args[i].tree_value, copy, 0);
-	      *is_const = 0;
+	      *ecf_flags &= ~ECF_CONST;
 
 	      args[i].tree_value = build1 (ADDR_EXPR,
 					   build_pointer_type (type),
@@ -1213,7 +1254,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
       /* If this is an addressable type, we cannot pre-evaluate it.  Thus,
 	 we cannot consider this function call constant.  */
       if (TREE_ADDRESSABLE (type))
-	*is_const = 0;
+	*ecf_flags &= ~ECF_CONST;
 
       /* Compute the stack-size of this argument.  */
       if (args[i].reg == 0 || args[i].partial != 0
@@ -1358,7 +1399,7 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
 
 /* Precompute parameters as needed for a function call.
 
-   IS_CONST indicates the target function is a pure function.
+   FLAGS is mask of ECF_* constants.
 
    MUST_PREALLOCATE indicates that we must preallocate stack space for
    any stack arguments.
@@ -1371,8 +1412,8 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
    ARGS_SIZE contains information about the size of the arg list.  */
 
 static void
-precompute_arguments (is_const, must_preallocate, num_actuals, args, args_size)
-     int is_const;
+precompute_arguments (flags, must_preallocate, num_actuals, args, args_size)
+     int flags;
      int must_preallocate;
      int num_actuals;
      struct arg_data *args;
@@ -1394,7 +1435,7 @@ precompute_arguments (is_const, must_preallocate, num_actuals, args, args_size)
      which have already been stored into the stack.  */
 
   for (i = 0; i < num_actuals; i++)
-    if (is_const
+    if ((flags & ECF_CONST)
 	|| ((args_size->var != 0 || args_size->constant != 0)
 	    && calls_function (args[i].tree_value, 1))
 	|| (must_preallocate
@@ -1691,6 +1732,122 @@ load_register_parameters (args, num_actuals, call_fusage)
     }
 }
 
+/* Try to integreate function.  See expand_inline_function for documentation
+   about the parameters.  */
+
+static rtx
+try_to_integrate (fndecl, actparms, target, ignore, type, structure_value_addr)
+     tree fndecl;
+     tree actparms;
+     rtx target;
+     int ignore;
+     tree type;
+     rtx structure_value_addr;
+{
+  rtx temp;
+  rtx before_call;
+  int i;
+  rtx old_stack_level = 0;
+  int reg_parm_stack_space;
+
+#ifdef REG_PARM_STACK_SPACE
+#ifdef MAYBE_REG_PARM_STACK_SPACE
+  reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
+#else
+  reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
+#endif
+#endif
+
+  before_call = get_last_insn ();
+
+  temp = expand_inline_function (fndecl, actparms, target,
+				 ignore, type,
+				 structure_value_addr);
+
+  /* If inlining succeeded, return.  */
+  if (temp != (rtx) (HOST_WIDE_INT) - 1)
+    {
+      if (ACCUMULATE_OUTGOING_ARGS)
+	{
+	  /* If the outgoing argument list must be preserved, push
+	     the stack before executing the inlined function if it
+	     makes any calls.  */
+
+	  for (i = reg_parm_stack_space - 1; i >= 0; i--)
+	    if (i < highest_outgoing_arg_in_use && stack_usage_map[i] != 0)
+	      break;
+
+	  if (stack_arg_under_construction || i >= 0)
+	    {
+	      rtx first_insn
+		= before_call ? NEXT_INSN (before_call) : get_insns ();
+	      rtx insn = NULL_RTX, seq;
+
+	      /* Look for a call in the inline function code.
+	         If DECL_SAVED_INSNS (fndecl)->outgoing_args_size is
+	         nonzero then there is a call and it is not necessary
+	         to scan the insns.  */
+
+	      if (DECL_SAVED_INSNS (fndecl)->outgoing_args_size == 0)
+		for (insn = first_insn; insn; insn = NEXT_INSN (insn))
+		  if (GET_CODE (insn) == CALL_INSN)
+		    break;
+
+	      if (insn)
+		{
+		  /* Reserve enough stack space so that the largest
+		     argument list of any function call in the inline
+		     function does not overlap the argument list being
+		     evaluated.  This is usually an overestimate because
+		     allocate_dynamic_stack_space reserves space for an
+		     outgoing argument list in addition to the requested
+		     space, but there is no way to ask for stack space such
+		     that an argument list of a certain length can be
+		     safely constructed. 
+
+		     Add the stack space reserved for register arguments, if
+		     any, in the inline function.  What is really needed is the
+		     largest value of reg_parm_stack_space in the inline
+		     function, but that is not available.  Using the current
+		     value of reg_parm_stack_space is wrong, but gives
+		     correct results on all supported machines.  */
+
+		  int adjust = (DECL_SAVED_INSNS (fndecl)->outgoing_args_size
+				+ reg_parm_stack_space);
+
+		  start_sequence ();
+		  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+		  allocate_dynamic_stack_space (GEN_INT (adjust),
+						NULL_RTX, BITS_PER_UNIT);
+		  seq = get_insns ();
+		  end_sequence ();
+		  emit_insns_before (seq, first_insn);
+		  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+		}
+	    }
+	}
+
+      /* If the result is equivalent to TARGET, return TARGET to simplify
+         checks in store_expr.  They can be equivalent but not equal in the
+         case of a function that returns BLKmode.  */
+      if (temp != target && rtx_equal_p (temp, target))
+	return target;
+      return temp;
+    }
+
+  /* If inlining failed, mark FNDECL as needing to be compiled
+     separately after all.  If function was declared inline,
+     give a warning.  */
+  if (DECL_INLINE (fndecl) && warn_inline && !flag_no_inline
+      && optimize > 0 && !TREE_ADDRESSABLE (fndecl))
+    {
+      warning_with_decl (fndecl, "inlining failed in call to `%s'");
+      warning ("called from here");
+    }
+  mark_addressable (fndecl);
+  return (rtx) (HOST_WIDE_INT) - 1;
+}
+
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -1722,7 +1879,6 @@ expand_call (exp, target, ignore)
      or 0 if the function is computed (not known by name).  */
   tree fndecl = 0;
   char *name = 0;
-  rtx before_call;
   rtx insn;
   int try_tail_call;
   int pass;
@@ -1781,26 +1937,10 @@ expand_call (exp, target, ignore)
      (on machines that lack push insns), or 0 if space not preallocated.  */
   rtx argblock = 0;
 
-  /* Nonzero if it is plausible that this is a call to alloca.  */
-  int may_be_alloca;
-  /* Nonzero if this is a call to malloc or a related function. */
-  int is_malloc;
-  /* Nonzero if this is a call to setjmp or a related function.  */
-  int returns_twice;
-  /* Nonzero if this is a call to `longjmp'.  */
-  int is_longjmp;
-  /* Nonzero if this is a syscall that makes a new process in the image of
-     the current one.  */
-  int fork_or_exec;
+  /* Mask of ECF_ flags.  */
+  int flags = 0;
   /* Nonzero if this is a call to an inline function.  */
   int is_integrable = 0;
-  /* Nonzero if this is a call to a `const' function.
-     Note that only explicitly named functions are handled as `const' here.  */
-  int is_const = 0;
-  /* Nonzero if this is a call to a `volatile' function.  */
-  int is_volatile = 0;
-  /* Nonzero if this is a call to a function that won't throw an exception.  */
-  int nothrow = TREE_NOTHROW (exp);
 #ifdef REG_PARM_STACK_SPACE
   /* Define the boundary of the register parm stack space that needs to be
      save, if any.  */
@@ -1827,6 +1967,10 @@ expand_call (exp, target, ignore)
      So, target is always a pseudo-register in that case.  */
   if (current_function_check_memory_usage)
     target = 0;
+
+  /* See if this is "nothrow" function call.  */
+  if (TREE_NOTHROW (exp))
+    flags |= ECF_NOTHROW;
 
   /* See if we can find a DECL-node for the actual function.
      As a result, decide whether this is a call to an integrable function.  */
@@ -1861,24 +2005,15 @@ expand_call (exp, target, ignore)
 	      mark_addressable (fndecl);
 	    }
 
-	  if (TREE_READONLY (fndecl) && ! TREE_THIS_VOLATILE (fndecl)
-	      && TYPE_MODE (TREE_TYPE (exp)) != VOIDmode)
-	    is_const = 1;
-
-	  if (TREE_THIS_VOLATILE (fndecl))
-	    is_volatile = 1;
-
-	  if (TREE_NOTHROW (fndecl))
-	    nothrow = 1;
+	  flags |= flags_from_decl_or_type (fndecl);
 	}
     }
 
   /* If we don't have specific function to call, see if we have a 
-     constant or `noreturn' function from the type.  */
+     attributes set in the type.  */
   if (fndecl == 0)
     {
-      is_const = TREE_READONLY (TREE_TYPE (TREE_TYPE (p)));
-      is_volatile = TREE_THIS_VOLATILE (TREE_TYPE (TREE_TYPE (p)));
+      flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
     }
 
 #ifdef REG_PARM_STACK_SPACE
@@ -1905,7 +2040,7 @@ expand_call (exp, target, ignore)
   if (aggregate_value_p (exp))
     {
       /* This call returns a big structure.  */
-      is_const = 0;
+      flags &= ~ECF_CONST;
 
 #ifdef PCC_STATIC_STRUCT_RETURN
       {
@@ -1956,95 +2091,11 @@ expand_call (exp, target, ignore)
 
   if (is_integrable)
     {
-      rtx temp;
-
-      before_call = get_last_insn ();
-
-      temp = expand_inline_function (fndecl, actparms, target,
-				     ignore, TREE_TYPE (exp),
-				     structure_value_addr);
-
-      /* If inlining succeeded, return.  */
-      if (temp != (rtx) (HOST_WIDE_INT) -1)
-	{
-	  if (ACCUMULATE_OUTGOING_ARGS)
-	    {
-	      /* If the outgoing argument list must be preserved, push
-		 the stack before executing the inlined function if it
-		 makes any calls.  */
-
-	      for (i = reg_parm_stack_space - 1; i >= 0; i--)
-		if (i < highest_outgoing_arg_in_use && stack_usage_map[i] != 0)
-		  break;
-
-	      if (stack_arg_under_construction || i >= 0)
-		{
-		  rtx first_insn
-		    = before_call ? NEXT_INSN (before_call) : get_insns ();
-		  rtx insn = NULL_RTX, seq;
-
-		  /* Look for a call in the inline function code.
-		     If DECL_SAVED_INSNS (fndecl)->outgoing_args_size is
-		     nonzero then there is a call and it is not necessary
-		     to scan the insns.  */
-
-		  if (DECL_SAVED_INSNS (fndecl)->outgoing_args_size == 0)
-		    for (insn = first_insn; insn; insn = NEXT_INSN (insn))
-		      if (GET_CODE (insn) == CALL_INSN)
-			break;
-
-		  if (insn)
-		    {
-		      /* Reserve enough stack space so that the largest
-			 argument list of any function call in the inline
-			 function does not overlap the argument list being
-			 evaluated.  This is usually an overestimate because
-			 allocate_dynamic_stack_space reserves space for an
-			 outgoing argument list in addition to the requested
-			 space, but there is no way to ask for stack space such
-			 that an argument list of a certain length can be
-			 safely constructed. 
-
-			 Add the stack space reserved for register arguments, if
-			 any, in the inline function.  What is really needed is the
-			 largest value of reg_parm_stack_space in the inline
-			 function, but that is not available.  Using the current
-			 value of reg_parm_stack_space is wrong, but gives
-			 correct results on all supported machines.  */
-
-		      int adjust = (DECL_SAVED_INSNS (fndecl)->outgoing_args_size
-				    + reg_parm_stack_space);
-
-		      start_sequence ();
-		      emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
-		      allocate_dynamic_stack_space (GEN_INT (adjust),
-						    NULL_RTX, BITS_PER_UNIT);
-		      seq = get_insns ();
-		      end_sequence ();
-		      emit_insns_before (seq, first_insn);
-		      emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
-		    }
-		}
-	    }
-
-	  /* If the result is equivalent to TARGET, return TARGET to simplify
-	     checks in store_expr.  They can be equivalent but not equal in the
-	     case of a function that returns BLKmode.  */
-	  if (temp != target && rtx_equal_p (temp, target))
-	    return target;
-	  return temp;
-	}
-
-      /* If inlining failed, mark FNDECL as needing to be compiled
-	 separately after all.  If function was declared inline,
-	 give a warning.  */
-      if (DECL_INLINE (fndecl) && warn_inline && !flag_no_inline
-	  && optimize > 0 && ! TREE_ADDRESSABLE (fndecl))
-	{
-	  warning_with_decl (fndecl, "inlining failed in call to `%s'");
-	  warning ("called from here");
-	}
-      mark_addressable (fndecl);
+      rtx temp = try_to_integrate (fndecl, actparms, target,
+				   ignore, TREE_TYPE (exp),
+				   structure_value_addr);
+      if (temp != (rtx) (HOST_WIDE_INT) - 1)
+	return temp;
     }
 
   currently_expanding_call++;
@@ -2162,10 +2213,9 @@ expand_call (exp, target, ignore)
 
   /* See if this is a call to a function that can return more than once
      or a call to longjmp or malloc.  */
-  special_function_p (fndecl, &returns_twice, &is_longjmp, &fork_or_exec,
-		      &is_malloc, &may_be_alloca);
+  flags |= special_function_p (fndecl, flags);
 
-  if (may_be_alloca)
+  if (flags & ECF_MAY_BE_ALLOCA)
     current_function_calls_alloca = 1;
 
   /* Operand 0 is a pointer-to-function; get the type of the function.  */
@@ -2225,9 +2275,13 @@ expand_call (exp, target, ignore)
 	  save_pending_stack_adjust = pending_stack_adjust;
 	  save_stack_pointer_delta = stack_pointer_delta;
 	}
+      if (pass)
+	flags &= ~ECF_SIBCALL;
+      else
+	flags |= ECF_SIBCALL;
 
       /* Other state variables that we must reinitialize each time
-	 through the loop (that are not initialized by the loop itself.  */
+	 through the loop (that are not initialized by the loop itself).  */
       argblock = 0;
       call_fusage = 0;
 
@@ -2239,7 +2293,7 @@ expand_call (exp, target, ignore)
 
       /* When calling a const function, we must pop the stack args right away,
 	 so that the pop is deleted or moved with the call.  */
-      if (is_const)
+      if (flags & ECF_CONST)
 	NO_DEFER_POP;
 
       /* Don't let pending stack adjusts add up to too much.
@@ -2247,11 +2301,11 @@ expand_call (exp, target, ignore)
 	 this might be a call to alloca or if we are expanding a sibling
 	 call sequence.  */
       if (pending_stack_adjust >= 32
-	  || (pending_stack_adjust > 0 && may_be_alloca)
+	  || (pending_stack_adjust > 0 && (flags & ECF_MAY_BE_ALLOCA))
 	  || pass == 0)
 	do_pending_stack_adjust ();
 
-      if (profile_arc_flag && fork_or_exec)
+      if (profile_arc_flag && (flags & ECF_FORK_OR_EXEC))
 	{
 	  /* A fork duplicates the profile information, and an exec discards
 	     it.  We can't rely on fork/exec to be paired.  So write out the
@@ -2344,8 +2398,7 @@ expand_call (exp, target, ignore)
 				       n_named_args, actparms, fndecl,
 				       &args_so_far, reg_parm_stack_space,
 				       &old_stack_level, &old_pending_adj,
-				       &must_preallocate, &is_const,
-				       (pass == 0) ? ECF_SIBCALL : 0);
+				       &must_preallocate, &flags);
 
 #ifdef FINAL_REG_PARM_STACK_SPACE
       reg_parm_stack_space = FINAL_REG_PARM_STACK_SPACE (args_size.constant,
@@ -2361,7 +2414,7 @@ expand_call (exp, target, ignore)
 
 	     Also do not make a sibling call.  */
 
-	  is_const = 0;
+	  flags &= ~ECF_CONST;
 	  must_preallocate = 1;
 	  sibcall_failure = 1;
 	}
@@ -2410,12 +2463,12 @@ expand_call (exp, target, ignore)
 	structure_value_addr = copy_to_reg (structure_value_addr);
 
       /* Precompute any arguments as needed.  */
-      precompute_arguments (is_const, must_preallocate, num_actuals,
+      precompute_arguments (flags, must_preallocate, num_actuals,
 			    args, &args_size);
 
       /* Now we are about to start emitting insns that can be deleted
 	 if a libcall is deleted.  */
-      if (is_const || is_malloc)
+      if (flags & (ECF_CONST | ECF_MALLOC))
 	start_sequence ();
 
       old_stack_allocated =  stack_pointer_delta - pending_stack_adjust;
@@ -2598,7 +2651,7 @@ expand_call (exp, target, ignore)
 	{
 	  /* When the stack adjustment is pending, we get better code
 	     by combining the adjustments.  */
-	  if (pending_stack_adjust && ! is_const
+	  if (pending_stack_adjust && ! (flags & ECF_CONST)
 	      && ! inhibit_defer_pop)
 	    {
 	      int adjust;
@@ -2661,7 +2714,7 @@ expand_call (exp, target, ignore)
 
       for (i = 0; i < num_actuals; i++)
 	if (args[i].reg == 0 || args[i].pass_on_stack)
-	  store_one_arg (&args[i], argblock, may_be_alloca,
+	  store_one_arg (&args[i], argblock, flags & ECF_MAY_BE_ALLOCA,
 			 args_size.var != 0, reg_parm_stack_space);
 
       /* If we have a parm that is passed in registers but not in memory
@@ -2676,7 +2729,7 @@ expand_call (exp, target, ignore)
       if (reg_parm_seen)
 	for (i = 0; i < num_actuals; i++)
 	  if (args[i].partial != 0 && ! args[i].pass_on_stack)
-	    store_one_arg (&args[i], argblock, may_be_alloca,
+	    store_one_arg (&args[i], argblock, flags & ECF_MAY_BE_ALLOCA,
 			   args_size.var != 0, reg_parm_stack_space);
 
 #ifdef PREFERRED_STACK_BOUNDARY
@@ -2749,9 +2802,7 @@ expand_call (exp, target, ignore)
       emit_call_1 (funexp, fndecl, funtype, unadjusted_args_size,
 		   args_size.constant, struct_value_size,
 		   next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
-		   ((is_const ? ECF_IS_CONST : 0)
-		    | (nothrow ? ECF_NOTHROW : 0)
-		    | (pass == 0 ? ECF_SIBCALL : 0)));
+		   flags);
 
       /* Verify that we've deallocated all the stack we used.  */
       if (pass
@@ -2762,7 +2813,7 @@ expand_call (exp, target, ignore)
 	 Test valreg so we don't crash; may safely ignore `const'
 	 if return type is void.  Disable for PARALLEL return values, because
 	 we have no way to move such values into a pseudo register.  */
-      if (is_const && valreg != 0 && GET_CODE (valreg) != PARALLEL)
+      if ((flags & ECF_CONST) && valreg != 0 && GET_CODE (valreg) != PARALLEL)
 	{
 	  rtx note = 0;
 	  rtx temp = gen_reg_rtx (GET_MODE (valreg));
@@ -2789,7 +2840,7 @@ expand_call (exp, target, ignore)
   
 	  valreg = temp;
 	}
-      else if (is_const)
+      else if (flags & ECF_CONST)
 	{
 	  /* Otherwise, just write out the sequence without a note.  */
 	  rtx insns = get_insns ();
@@ -2797,7 +2848,7 @@ expand_call (exp, target, ignore)
 	  end_sequence ();
 	  emit_insns (insns);
 	}
-      else if (is_malloc)
+      else if (flags & ECF_MALLOC)
 	{
 	  rtx temp = gen_reg_rtx (GET_MODE (valreg));
 	  rtx last, insns;
@@ -2825,7 +2876,7 @@ expand_call (exp, target, ignore)
 	 if nonvolatile values are live.  For functions that cannot return,
 	 inform flow that control does not fall through.  */
 
-      if (returns_twice || is_volatile || is_longjmp || pass == 0)
+      if ((flags & (ECF_RETURNS_TWICE | ECF_NORETURN | ECF_LONGJMP)) || pass == 0)
 	{
 	  /* The barrier or NOTE_INSN_SETJMP note must be emitted
 	     immediately after the CALL_INSN.  Some ports emit more
@@ -2840,7 +2891,7 @@ expand_call (exp, target, ignore)
 		abort ();
 	    }
 
-	  if (returns_twice)
+	  if (flags & ECF_RETURNS_TWICE)
 	    {
 	      emit_note_after (NOTE_INSN_SETJMP, last);
 	      current_function_calls_setjmp = 1;
@@ -2850,7 +2901,7 @@ expand_call (exp, target, ignore)
 	    emit_barrier_after (last);
 	}
 
-      if (is_longjmp)
+      if (flags & ECF_LONGJMP)
 	current_function_calls_longjmp = 1, sibcall_failure = 1;
 
       /* If this function is returning into a memory location marked as
@@ -3008,7 +3059,7 @@ expand_call (exp, target, ignore)
 	 Check for the handler slots since we might not have a save area
 	 for non-local gotos.  */
 
-      if (may_be_alloca && nonlocal_goto_handler_slots != 0)
+      if ((flags & ECF_MAY_BE_ALLOCA) && nonlocal_goto_handler_slots != 0)
 	emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
 
       pop_temp_slots ();
@@ -3144,9 +3195,8 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
   rtx mem_value = 0;
   int pcc_struct_value = 0;
   int struct_value_size = 0;
-  int is_const;
+  int flags = 0;
   int reg_parm_stack_space = 0;
-  int nothrow;
   int needed;
 
 #ifdef REG_PARM_STACK_SPACE
@@ -3168,10 +3218,12 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 #endif
 #endif
 
-  is_const = no_queue;
+  if (no_queue)
+    flags |= ECF_CONST;
   fun = orgfun;
 
-  nothrow = libfunc_nothrow (fun);
+  if (libfunc_nothrow (fun))
+    flags |= ECF_NOTHROW;
 
 #ifdef PREFERRED_STACK_BOUNDARY
   /* Ensure current function's preferred stack boundary is at least
@@ -3201,7 +3253,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 #endif
 
       /* This call returns a big structure.  */
-      is_const = 0;
+      flags &= ~ECF_CONST;
     }
 
   /* ??? Unfinished: must pass the memory address as an argument.  */
@@ -3645,9 +3697,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 	       struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       mem_value == 0 && outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
-	       old_inhibit_defer_pop + 1, call_fusage,
-	       ((is_const ? ECF_IS_CONST : 0)
-		| (nothrow ? ECF_NOTHROW : 0)));
+	       old_inhibit_defer_pop + 1, call_fusage, flags);
 
   /* Now restore inhibit_defer_pop to its actual original value.  */
   OK_DEFER_POP;
@@ -3729,7 +3779,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 
    NO_QUEUE will be true if and only if the library call is a `const' call
    which will be enclosed in REG_LIBCALL/REG_RETVAL notes; it is equivalent
-   to the variable is_const in expand_call.
+   to the flag ECF_CONST in expand_call.
 
    NO_QUEUE must be true for const calls, because if it isn't, then
    any pending increment will be emitted between REG_LIBCALL/REG_RETVAL notes,
