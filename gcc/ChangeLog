@@ -1,3 +1,11 @@
+Mon Jul  6 21:28:14 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Disable the following change from gcc2.  Not appropriate for egcs:
+
+	Sun Jun  7 09:30:31 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+        * reload.c (find_reloads): Give preference to pseudo that was the
+        reloaded output of previous insn.
+
 Mon Jul  6 21:07:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (GCC_FUNC_PRINTF_PTR): Don't define HOST_PTR_PRINTF.
