@@ -815,9 +815,6 @@ extern bool mark_dfs_back_edges (void);
 extern void set_edge_can_fallthru_flag (void);
 extern void update_br_prob_note (basic_block);
 extern void fixup_abnormal_edges (void);
-extern bool can_hoist_insn_p (rtx, rtx, regset);
-extern rtx hoist_insn_after (rtx, rtx, rtx, rtx);
-extern rtx hoist_insn_to_edge (rtx, edge, rtx, rtx);
 extern bool inside_basic_block_p (rtx);
 extern bool control_flow_insn_p (rtx);
 
