@@ -101,7 +101,7 @@ extern tree stabilize_reference PROTO ((tree));
 
 #define ABSTRACT_CHECK(FLAG, V, CL, S)				\
   if ((FLAG) & (V))						\
-    parse_error_context ((CL), S " method can't be abstract");
+    parse_error_context ((CL), "%s method can't be abstract", (S));
 
 #define JCONSTRUCTOR_CHECK(FLAG, V, CL, S)			\
   if ((FLAG) & (V))						\
@@ -142,8 +142,7 @@ extern tree stabilize_reference PROTO ((tree));
   {                                                                          \
     if (flag_redundant && (cl) && ((flags) & (modifier)))		     \
       parse_warning_context (cl,                                             \
-			     "Discouraged redundant use of `%s' modifier "   \
-			     "in declaration of " format,                    \
+     "Discouraged redundant use of `%s' modifier in declaration of " format, \
 			     java_accstring_lookup (modifier), arg);         \
   }
 
@@ -212,26 +211,26 @@ extern tree stabilize_reference PROTO ((tree));
 
 /* Standard error messages */
 #define ERROR_CANT_CONVERT_TO_BOOLEAN(OPERATOR, NODE, TYPE)		\
-  parse_error_context							\
-    ((OPERATOR), "Incompatible type for `%s'. Can't convert `%s' to "	\
-     "boolean", operator_string ((NODE)), lang_printable_name ((TYPE),0))
+  parse_error_context ((OPERATOR),					\
+    "Incompatible type for `%s'. Can't convert `%s' to boolean",	\
+    operator_string ((NODE)), lang_printable_name ((TYPE),0))
 
 #define ERROR_CANT_CONVERT_TO_NUMERIC(OPERATOR, NODE, TYPE)		\
-  parse_error_context							\
-    ((OPERATOR), "Incompatible type for `%s'. Can't convert `%s' to "	\
-     "numeric type", operator_string ((NODE)), lang_printable_name ((TYPE), 0))
+  parse_error_context ((OPERATOR),					\
+      "Incompatible type for `%s'. Can't convert `%s' to numeric type",	\
+      operator_string ((NODE)), lang_printable_name ((TYPE), 0))
 
 #define ERROR_CAST_NEEDED_TO_INTEGRAL(OPERATOR, NODE, TYPE)		\
 do {									\
   tree _operator = (OPERATOR), _node = (NODE), _type = (TYPE);		\
   if (JPRIMITIVE_TYPE_P (_type))					\
-    parse_error_context (_operator, "Incompatible type for `%s'. Explicit" \
-                         " cast needed to convert `%s' to integral",	\
+    parse_error_context (_operator,					\
+"Incompatible type for `%s'. Explicit cast needed to convert `%s' to integral",\
 			 operator_string(_node),			\
 			 lang_printable_name (_type, 0));		\
   else									\
-    parse_error_context (_operator, "Incompatible type for `%s'. Can't" \
-                         " convert `%s' to integral",			\
+    parse_error_context (_operator,					\
+      "Incompatible type for `%s'. Can't convert `%s' to integral",	\
 			 operator_string(_node),			\
 			 lang_printable_name (_type, 0));		\
 } while (0)

@@ -1675,8 +1675,8 @@ synchronized_statement:
 synchronized:
 	modifiers
 		{
-		  check_modifiers ("Illegal modifier `%s'. Only "
-				   "`synchronized' was expected here",
+		  check_modifiers (
+             "Illegal modifier `%s'. Only `synchronized' was expected here",
 				   $1, ACC_SYNCHRONIZED);
 		  if ($1 != ACC_SYNCHRONIZED)
 		    MODIFIER_WFL (SYNCHRONIZED_TK) = 
@@ -2746,8 +2746,7 @@ variable_redefinition_error (context, name, type, line)
     type_name = lang_printable_name (type, 0);
 
   parse_error_context (context,
-		       "Variable `%s' is already defined in this method and "
-		       "was declared `%s %s' at line %d", 
+		       "Variable `%s' is already defined in this method and was declared `%s %s' at line %d", 
 		       IDENTIFIER_POINTER (name),
 		       type_name, IDENTIFIER_POINTER (name), line);
 }
@@ -2908,8 +2907,8 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
       if (strncmp (IDENTIFIER_POINTER (raw_name), 
 		   f , IDENTIFIER_LENGTH (raw_name)) ||
 	  f [IDENTIFIER_LENGTH (raw_name)] != '.')
-	parse_error_context (cl, "Public %s `%s' must be defined in a file "
-			     "called `%s.java'", 
+	parse_error_context
+	  (cl, "Public %s `%s' must be defined in a file called `%s.java'", 
 			     (is_interface ? "interface" : "class"),
 			     IDENTIFIER_POINTER (qualified_name),
 			     IDENTIFIER_POINTER (raw_name));
@@ -3013,8 +3012,7 @@ create_interface (flags, id, super)
   if ((flags & ACC_ABSTRACT) && flag_redundant)
     parse_warning_context 
       (MODIFIER_WFL (ABSTRACT_TK),
-       "Redundant use of `abstract' modifier. Interface `%s' is implicitely "
-       "abstract", IDENTIFIER_POINTER (raw_name));
+       "Redundant use of `abstract' modifier. Interface `%s' is implicitely abstract", IDENTIFIER_POINTER (raw_name));
 
   /* Create a new decl if DECL is NULL, otherwise fix it */
   decl = maybe_create_class_interface_decl (decl, q_name, id);
@@ -3055,8 +3053,9 @@ create_class (flags, id, super, interfaces)
        - abstract AND final forbidden 
        - Public classes defined in the correct file */
   if ((flags & ACC_ABSTRACT) && (flags & ACC_FINAL))
-    parse_error_context (id, "Class `%s' can't be declared both abstract "
-			 "and final", IDENTIFIER_POINTER (raw_name));
+    parse_error_context
+      (id, "Class `%s' can't be declared both abstract and final",
+       IDENTIFIER_POINTER (raw_name));
 
   /* Create a new decl if DECL is NULL, otherwise fix it */
   decl = maybe_create_class_interface_decl (decl, class_id, id);
@@ -3388,8 +3387,7 @@ method_header (flags, type, mdecl, throws)
       if (!CLASS_ABSTRACT (TYPE_NAME (this_class))
 	  && !CLASS_INTERFACE (TYPE_NAME (this_class)))
 	parse_error_context 
-	  (id, "Class `%s' must be declared abstract to define abstract "
-	   "method `%s'", 
+	  (id, "Class `%s' must be declared abstract to define abstract method `%s'", 
 	   IDENTIFIER_POINTER (DECL_NAME (ctxp->current_parsed_class)),
 	   IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
     }
@@ -3591,10 +3589,10 @@ finish_method_declaration (method_body)
   else if (!(flags & ACC_ABSTRACT) && !(flags & ACC_NATIVE) && !method_body)
     {
       tree wfl = DECL_NAME (current_function_decl);
-      parse_error_context (wfl, 
-			   "Non native and non abstract method `%s' must "
-			   "have a body defined",
-			   IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
+      parse_error_context
+	(wfl, 
+	 "Non native and non abstract method `%s' must have a body defined",
+	 IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
       method_body = NULL_TREE;
     }
 
@@ -3690,8 +3688,7 @@ check_modifiers_consistency (flags)
   THIS_MODIFIER_ONLY (flags, ACC_PROTECTED, 2, acc_count, cl);
   if (acc_count > 1)
     parse_error_context
-      (cl, "Inconsistent member declaration. At most one of `public', "
-       "`private', or `protected' may be specified");
+      (cl, "Inconsistent member declaration. At most one of `public', `private', or `protected' may be specified");
 }
 
 /* Check the methode header METH for abstract specifics features */
@@ -3759,9 +3756,9 @@ method_declarator (id, list)
       for (already = arg_types; already; already = TREE_CHAIN (already))
 	if (TREE_PURPOSE (already) == name)
 	  {
-	    parse_error_context 
-	      (wfl_name, "Variable `%s' is used more than once in the "
-	       "argument list of method `%s'", IDENTIFIER_POINTER (name),
+	    parse_error_context
+	      (wfl_name, "Variable `%s' is used more than once in the argument list of method `%s'",
+	       IDENTIFIER_POINTER (name),
 	       IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
 	    break;
 	  }
@@ -4494,16 +4491,14 @@ complete_class_report_errors (dep)
       break;
     case JDEP_METHOD:		/* Covers arguments */
       parse_error_context
-	(JDEP_WFL (dep), "Type `%s' not found in the declaration of the "
-	 "argument `%s' of method `%s'",
+	(JDEP_WFL (dep), "Type `%s' not found in the declaration of the argument `%s' of method `%s'",
 	 purify_type_name (name),
 	 IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_DECL_WFL (dep))),
 	 IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_MISC (dep))));
       break;
     case JDEP_METHOD_RETURN:	/* Covers return type */
       parse_error_context
-	(JDEP_WFL (dep), "Type `%s' not found in the declaration of the "
-	 "return type of method `%s'", 
+	(JDEP_WFL (dep), "Type `%s' not found in the declaration of the return type of method `%s'", 
 	 purify_type_name (name),
 	 IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_DECL_WFL (dep))));
       break;
@@ -4516,8 +4511,7 @@ complete_class_report_errors (dep)
       break;
     case JDEP_VARIABLE:
       parse_error_context
-	(JDEP_WFL (dep), "Type `%s' not found in the declaration of the "
-	 "local variable `%s'", 
+	(JDEP_WFL (dep), "Type `%s' not found in the declaration of the local variable `%s'", 
 	 purify_type_name (IDENTIFIER_POINTER 
 			   (EXPR_WFL_NODE (JDEP_WFL (dep)))),
 	 IDENTIFIER_POINTER (DECL_NAME (JDEP_DECL (dep))));
@@ -4711,9 +4705,7 @@ check_abstract_method_definitions (do_interface, class_decl, type)
 	  
 	  parse_error_context 
 	    (lookup_cl (class_decl),
-	     "Class `%s' doesn't define the abstract method `%s %s' from "
-	     "%s `%s'. This method must be defined or %s `%s' must be "
-	     "declared abstract",
+	     "Class `%s' doesn't define the abstract method `%s %s' from %s `%s'. This method must be defined or %s `%s' must be declared abstract",
 	     IDENTIFIER_POINTER (DECL_NAME (class_decl)),
 	     t, lang_printable_name (method, 0), 
 	     (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (method))) ? 
@@ -4821,8 +4813,7 @@ java_check_regular_methods (class_decl)
 	{
 	  if (!inherits_from_p (TREE_VALUE (mthrows), throwable_type_node))
 	    parse_error_context 
-	      (TREE_PURPOSE (mthrows), "Class `%s' in `throws' clause must be "
-	       "a subclass of class `java.lang.Throwable'",
+	      (TREE_PURPOSE (mthrows), "Class `%s' in `throws' clause must be a subclass of class `java.lang.Throwable'",
 	       IDENTIFIER_POINTER 
 	         (DECL_NAME (TYPE_NAME (TREE_VALUE (mthrows)))));
 	}
@@ -4871,9 +4862,7 @@ java_check_regular_methods (class_decl)
 	  && flag_not_overriding)
         {
 	  parse_warning_context 
-	    (method_wfl, "Method `%s' in class `%s' does not "
-	     "override the corresponding method in class `%s', which is "
-	     "private to a different package",
+	    (method_wfl, "Method `%s' in class `%s' does not override the corresponding method in class `%s', which is private to a different package",
 	     lang_printable_name (found, 0),
 	     IDENTIFIER_POINTER (DECL_NAME (class_decl)),
 	     IDENTIFIER_POINTER (DECL_NAME 
@@ -4903,8 +4892,7 @@ java_check_regular_methods (class_decl)
 	{
 	  parse_error_context 
 	    (method_wfl,
-	     "Instance methods can't be overriden by a static method. Method "
-	     "`%s' is an instance method in class `%s'",
+	     "Instance methods can't be overriden by a static method. Method `%s' is an instance method in class `%s'",
 	     lang_printable_name (found, 0),
 	     IDENTIFIER_POINTER
 	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
@@ -4924,8 +4912,7 @@ java_check_regular_methods (class_decl)
 	{
 	  parse_error_context 
 	    (method_wfl,
-	     "Methods can't be overridden to be more private. Method `%s' is "
-	     "not %s in class `%s'", lang_printable_name (method, 0),
+	     "Methods can't be overridden to be more private. Method `%s' is not %s in class `%s'", lang_printable_name (method, 0),
 	     (METHOD_PUBLIC (method) ? "public" : 
 	      (METHOD_PRIVATE (method) ? "private" : "protected")),
 	     IDENTIFIER_POINTER (DECL_NAME 
@@ -4985,9 +4972,7 @@ check_throws_clauses (method, method_wfl, found)
       if (!fthrows)
 	{
 	  parse_error_context 
-	    (method_wfl, "Invalid checked exception class `%s' in "
-	     "`throws' clause. The exception must be a subclass of an "
-	     "exception thrown by `%s' from class `%s'",
+	    (method_wfl, "Invalid checked exception class `%s' in `throws' clause. The exception must be a subclass of an exception thrown by `%s' from class `%s'",
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (TREE_VALUE (mthrows)))),
 	     lang_printable_name (found, 0),
 	     IDENTIFIER_POINTER 
@@ -5059,9 +5044,7 @@ java_check_abstract_methods (interface_decl)
 	      reset_method_name (found);
 	      parse_error_context 
 		(lookup_cl (sub_interface_method),
-		 "Interface `%s' inherits method `%s' from interface `%s'. "
-		 "This method is redefined with a different return type in "
-		 "interface `%s'",
+		 "Interface `%s' inherits method `%s' from interface `%s'. This method is redefined with a different return type in interface `%s'",
 		 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (interface))),
 		 lang_printable_name (found, 0),
 		 IDENTIFIER_POINTER 
@@ -5365,9 +5348,7 @@ read_import_dir (wfl)
       static int first = 1;
       if (first)
 	{
-	  error ("Can't find default package `%s'. Check "
-		 "the CLASSPATH environment variable and the access to the "
-		 "archives.", package_name);
+	  error ("Can't find default package `%s'. Check the CLASSPATH environment variable and the access to the archives.", package_name);
 	  java_error_count++;
 	  first = 0;
 	}
@@ -5570,8 +5551,7 @@ check_pkg_class_access (class_name, cl)
 	return 0;
 
       parse_error_context 
-	(cl, "Can't access %s `%s'. Only public classes and interfaces in "
-	 "other packages can be accessed",
+	(cl, "Can't access %s `%s'. Only public classes and interfaces in other packages can be accessed",
 	 (CLASS_INTERFACE (TYPE_NAME (type)) ? "interface" : "class"),
 	 IDENTIFIER_POINTER (class_name));
       return 1;
@@ -5608,8 +5588,7 @@ declare_local_variables (modifier, type, vlist)
 	{
 	  if (flag_static_local_jdk1_1)
 	    parse_warning_context (ctxp->modifier_ctx [i], 
-				   "Unsupported JDK1.1 `final' local variable "
-				   "(treated as non final)");
+	      "Unsupported JDK1.1 `final' local variable (treated as non final)");
 	}
       else 
 	{
@@ -6222,9 +6201,9 @@ fix_constructors (mdecl)
 	{
 	  tree sclass_decl = TYPE_NAME (CLASSTYPE_SUPER (current_class));
 	  const char *n = IDENTIFIER_POINTER (DECL_NAME (sclass_decl));
-	  parse_error_context (lookup_cl (TYPE_NAME (current_class)), 
-			       "No constructor matching `%s()' found in "
-			       "class `%s'", n, n);
+	  parse_error_context
+	    (lookup_cl (TYPE_NAME (current_class)), 
+	     "No constructor matching `%s()' found in class `%s'", n, n);
 	}
       
       start_artificial_method_body (mdecl);
@@ -6445,8 +6424,7 @@ cut_identifier_in_qualified (wfl)
     if (!TREE_CHAIN (q))
       {
 	if (!previous)
-	  fatal ("Operating on a non qualified qualified WFL - "
-		 "cut_identifier_in_qualified");
+	  fatal ("Operating on a non qualified qualified WFL - cut_identifier_in_qualified");
 	TREE_CHAIN (previous) = NULL_TREE;
 	return TREE_PURPOSE (q);
       }
@@ -6490,8 +6468,7 @@ resolve_expression_name (id, orig)
 	      if (!fs && ctxp->explicit_constructor_p)
 		{
 		  parse_error_context
-		    (id, "Can't reference `%s' before the superclass "
-		     "constructor has been called", IDENTIFIER_POINTER (name));
+		    (id, "Can't reference `%s' before the superclass constructor has been called", IDENTIFIER_POINTER (name));
 		  return error_mark_node;
 		}
 
@@ -6781,8 +6758,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	    }
 	  if (ctxp->explicit_constructor_p)
 	    {
-	      parse_error_context (wfl, "Can't reference `this' before the "
-				   "superclass constructor has been called");
+	      parse_error_context (wfl, "Can't reference `this' before the superclass constructor has been called");
 	      return 1;
 	    }
 	  /* We have to generate code for intermediate acess */
@@ -7198,9 +7174,10 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	    {
 	      tree remainder;
 	      breakdown_qualified (&remainder, NULL, EXPR_WFL_NODE (wfl));
-	      parse_error_context (wfl, "Can't search method `%s' in package "
-				   "`%s'",IDENTIFIER_POINTER (identifier),
-				   IDENTIFIER_POINTER (remainder));
+	      parse_error_context
+		(wfl, "Can't search method `%s' in package `%s'",
+		 IDENTIFIER_POINTER (identifier),
+		 IDENTIFIER_POINTER (remainder));
 	      PATCH_METHOD_RETURN_ERROR ();
 	    }
 	  RESOLVE_PACKAGE_NAME_P (wfl) = 0;
@@ -7228,8 +7205,9 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	  if (CLASS_INTERFACE (decl))
 	    {
 	      parse_error_context
-		(identifier_wfl, "Can't make static reference to method "
-		 "`%s' in interface `%s'", IDENTIFIER_POINTER (identifier), 
+		(identifier_wfl,
+		"Can't make static reference to method `%s' in interface `%s'",
+		 IDENTIFIER_POINTER (identifier), 
 		 IDENTIFIER_POINTER (name));
 	      PATCH_METHOD_RETURN_ERROR ();
 	    }
@@ -7307,8 +7285,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 		  DECL_NAME (TYPE_NAME (CLASSTYPE_SUPER (current_class)));
 	      else
 		{
-		  parse_error_context (wfl, "Can't invoke super constructor "
-				       "on java.lang.Object");
+		  parse_error_context (wfl, "Can't invoke super constructor on java.lang.Object");
 		  PATCH_METHOD_RETURN_ERROR ();
 		}
 	    }
@@ -7333,8 +7310,8 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 		  && TREE_CODE (patch) == NEW_CLASS_EXPR)
 		{
 		  parse_error_context 
-		    (wfl, "Class `%s' is an abstract class. It can't be "
-		     "instantiated", IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
+		    (wfl, "Class `%s' is an abstract class. It can't be instantiated",
+		     IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
 		  PATCH_METHOD_RETURN_ERROR ();
 		}
 	      class_to_search = TREE_TYPE (class_to_search);
@@ -7410,9 +7387,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
       && (!primary || primary == current_this)
       && (TREE_CODE (patch) != NEW_CLASS_EXPR))
     {
-      parse_error_context 
-	(wfl, "Can't reference `this' before the superclass constructor has "
-	 "been called");
+      parse_error_context (wfl, "Can't reference `this' before the superclass constructor has been called");
       PATCH_METHOD_RETURN_ERROR ();
     }
   java_parser_context_restore_global ();
@@ -8755,8 +8730,8 @@ java_complete_lhs (node)
       if (!current_this)
 	{
 	  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
-	  parse_error_context (wfl_operator, "Keyword `this' used outside "
-			       "allowed context");
+	  parse_error_context (wfl_operator,
+			       "Keyword `this' used outside allowed context");
 	  TREE_TYPE (node) = error_mark_node;
 	  return error_mark_node;
 	}
@@ -8764,8 +8739,7 @@ java_complete_lhs (node)
 	{
 	  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
 	  parse_error_context 
-	    (wfl_operator, "Can't reference `this' or `super' before the "
-	     "superclass constructor has been called");
+	    (wfl_operator, "Can't reference `this' or `super' before the superclass constructor has been called");
 	  TREE_TYPE (node) = error_mark_node;
 	  return error_mark_node;
 	}
@@ -9208,12 +9182,11 @@ patch_assignment (node, wfl_op1, wfl_op2)
 	}
 
       if (!valid_cast_to_p (rhs_type, lhs_type))
-	parse_error_context (wfl, "Incompatible type for %s. "
-			     "Can't convert `%s' to `%s'",
-			     operation, t1, t2);
+	parse_error_context
+	  (wfl, "Incompatible type for %s. Can't convert `%s' to `%s'",
+	   operation, t1, t2);
       else
-	parse_error_context (wfl, "Incompatible type for %s. "
-			     "Explicit cast needed to convert `%s' to `%s'",
+	parse_error_context (wfl, "Incompatible type for %s. Explicit cast needed to convert `%s' to `%s'",
 			     operation, t1, t2);
       free (t1); free (t2);
       error_found = 1;
@@ -9350,8 +9323,7 @@ try_builtin_assignconv (wfl_op1, lhs_type, rhs)
         new_rhs = convert (lhs_type, rhs);
       else if (wfl_op1)		/* Might be called with a NULL */
 	parse_warning_context 
-	  (wfl_op1, "Constant expression `%s' to wide for narrowing "
-	   "primitive conversion to `%s'", 
+	  (wfl_op1, "Constant expression `%s' to wide for narrowing primitive conversion to `%s'", 
 	   print_int_node (rhs), lang_printable_name (lhs_type, 0));
       /* Reported a warning that will turn into an error further
 	 down, so we don't return */
@@ -9820,15 +9792,12 @@ patch_binop (node, wfl_op1, wfl_op2)
 	    {
 	      if (JPRIMITIVE_TYPE_P (op2_type))
 		parse_error_context (wfl_operator,
-				     "Incompatible type for `%s'. "
-				     "Explicit cast needed to convert "
-				     "shift distance from `%s' to integral",
+				     "Incompatible type for `%s'. Explicit cast needed to convert shift distance from `%s' to integral",
 				     operator_string (node),
 				     lang_printable_name (op2_type, 0));
 	      else
-		parse_error_context (wfl_operator, "Incompatible type for `%s'."
-				     " Can't convert shift distance from "
-				     "`%s' to integral", 
+		parse_error_context (wfl_operator,
+				     "Incompatible type for `%s'. Can't convert shift distance from `%s' to integral", 
 				     operator_string (node),
 				     lang_printable_name (op2_type, 0));
 	    }
@@ -10036,8 +10005,9 @@ patch_binop (node, wfl_op1, wfl_op2)
 	  char *t1;
 	  t1 = xstrdup (lang_printable_name (op1_type, 0));
 	  parse_error_context 
-	    (wfl_operator, "Incompatible type for `%s'. Can't convert `%s' "
-	     "to `%s'", operator_string (node), t1, 
+	    (wfl_operator,
+	     "Incompatible type for `%s'. Can't convert `%s' to `%s'",
+	     operator_string (node), t1, 
 	     lang_printable_name (op2_type, 0));
 	  free (t1);
 	  TREE_TYPE (node) = boolean_type_node;
@@ -10681,8 +10651,9 @@ patch_array_ref (node)
   if (!TYPE_ARRAY_P (array_type))
     {
       parse_error_context 
-	(wfl_operator, "`[]' can only be applied to arrays. It can't be "
-	 "applied to `%s'", lang_printable_name (array_type, 0));
+	(wfl_operator,
+	 "`[]' can only be applied to arrays. It can't be applied to `%s'",
+	 lang_printable_name (array_type, 0));
       TREE_TYPE (node) = error_mark_node;
       error_found = 1;
     }
@@ -10693,12 +10664,12 @@ patch_array_ref (node)
   if (TREE_TYPE (index) != int_type_node)
     {
       if (valid_cast_to_p (index_type, int_type_node))
-	parse_error_context (wfl_operator, "Incompatible type for `[]'. "
-			     "Explicit cast needed to convert `%s' to `int'",
+	parse_error_context (wfl_operator,
+   "Incompatible type for `[]'. Explicit cast needed to convert `%s' to `int'",
 			     lang_printable_name (index_type, 0));
       else
-	parse_error_context (wfl_operator, "Incompatible type for `[]'. "
-			     "Can't convert `%s' to `int'",
+	parse_error_context (wfl_operator,
+          "Incompatible type for `[]'. Can't convert `%s' to `int'",
 			     lang_printable_name (index_type, 0));
       TREE_TYPE (node) = error_mark_node;
       error_found = 1;
@@ -10782,8 +10753,7 @@ patch_newarray (node)
 	{
 	  parse_error_context 
 	    (TREE_PURPOSE (cdim), 
-	     "Incompatible type for dimension in array creation expression. "
-	     "%s convert `%s' to `int'", 
+	     "Incompatible type for dimension in array creation expression. %s convert `%s' to `int'", 
 	     (valid_cast_to_p (TREE_TYPE (dim), int_type_node) ?
 	      "Explicit cast needed to" : "Can't"),
 	     lang_printable_name (TREE_TYPE (dim), 0));
@@ -11174,13 +11144,13 @@ build_labeled_block (location, label)
       if (IDENTIFIER_LOCAL_VALUE (label_name))
 	{
 	  EXPR_WFL_LINECOL (wfl_operator) = location;
-	  parse_error_context (wfl_operator, "Declaration of `%s' shadows "
-			       "a previous label declaration",
+	  parse_error_context (wfl_operator,
+            "Declaration of `%s' shadows a previous label declaration",
 			       IDENTIFIER_POINTER (label));
 	  EXPR_WFL_LINECOL (wfl_operator) = 
 	    EXPR_WFL_LINECOL (IDENTIFIER_LOCAL_VALUE (label_name));
-	  parse_error_context (wfl_operator, "This is the location of the "
-			       "previous declaration of label `%s'",
+	  parse_error_context (wfl_operator,
+            "This is the location of the previous declaration of label `%s'",
 			       IDENTIFIER_POINTER (label));
 	  java_error_count--;
 	}
@@ -11501,8 +11471,7 @@ patch_exit_expr (node)
     {
       parse_error_context 
 	(wfl_operator, 
-	 "Incompatible type for loop conditional. Can't convert `%s' to "
-	 "`boolean'", 
+    "Incompatible type for loop conditional. Can't convert `%s' to `boolean'", 
 	 lang_printable_name (TREE_TYPE (expression), 0));
       return error_mark_node;
     }
@@ -11539,8 +11508,8 @@ patch_switch_statement (node)
   if (!JINTEGRAL_TYPE_P (se_type))
     {
       EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
-      parse_error_context (wfl_operator, "Incompatible type for `switch'. "
-			   "Can't convert `%s' to `int'",
+      parse_error_context (wfl_operator,
+	  "Incompatible type for `switch'. Can't convert `%s' to `int'",
 			   lang_printable_name (se_type, 0));
       /* This is what java_complete_tree will check */
       TREE_OPERAND (node, 0) = error_mark_node;
@@ -11628,9 +11597,7 @@ patch_try_statement (node)
 	{
 	  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (current);
 	  parse_error_context (wfl_operator,
-			       "Can't catch class `%s'. Catch clause "
-			       "parameter type must be a subclass of "
-			       "class `java.lang.Throwable'",
+			       "Can't catch class `%s'. Catch clause parameter type must be a subclass of class `java.lang.Throwable'",
 			       lang_printable_name (carg_type, 0));
 	  error_found = 1;
 	  continue;
@@ -11653,8 +11620,9 @@ patch_try_statement (node)
 	    {
 	      EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (current);
 	      parse_error_context 
-		(wfl_operator, "`catch' not reached because of the catch "
-		 "clause at line %d", EXPR_WFL_LINENO (sub_current));
+		(wfl_operator,
+		 "`catch' not reached because of the catch clause at line %d",
+		 EXPR_WFL_LINENO (sub_current));
 	      unreachable = error_found = 1;
 	      break;
 	    }
@@ -11717,8 +11685,7 @@ patch_synchronized_statement (node, wfl_op1)
   if (!JREFERENCE_TYPE_P (TREE_TYPE (expr)))
     {
       SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
-      parse_error_context (wfl_operator, "Incompatible type for `synchronized'"
-			   ". Can't convert `%s' to `java.lang.Object'",
+      parse_error_context (wfl_operator, "Incompatible type for `synchronized'. Can't convert `%s' to `java.lang.Object'",
 			   lang_printable_name (TREE_TYPE (expr), 0));
       return error_mark_node;
     }
@@ -11781,8 +11748,8 @@ patch_throw_statement (node, wfl_op1)
   if (!try_reference_assignconv (throwable_type_node, expr))
     {
       SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
-      parse_error_context (wfl_operator, "Can't throw `%s'; it must be a "
-			   "subclass of class `java.lang.Throwable'",
+      parse_error_context (wfl_operator,
+    "Can't throw `%s'; it must be a subclass of class `java.lang.Throwable'",
 			   lang_printable_name (type, 0));
       /* If the thrown expression was a reference, we further the
          compile-time check. */
@@ -11812,9 +11779,7 @@ patch_throw_statement (node, wfl_op1)
 	 only if there is something after the list of checked
 	 exception thrown by the current function (if any). */
       if (IN_TRY_BLOCK_P ())
-	parse_error_context (wfl_operator, "Checked exception `%s' can't be "
-			     "caught by any of the catch clause(s) "
-			     "of the surrounding `try' block",
+	parse_error_context (wfl_operator, "Checked exception `%s' can't be caught by any of the catch clause(s) of the surrounding `try' block",
 			     lang_printable_name (type, 0));
       /* If we have no surrounding try statement and the method doesn't have
 	 any throws, report it now. FIXME */
@@ -11826,20 +11791,18 @@ patch_throw_statement (node, wfl_op1)
 	       && !tryblock_throws_ok)
 	{
 	  if (IS_CLINIT (current_function_decl))
-	    parse_error_context (wfl_operator, "Checked exception `%s' can't "
-				 "be thrown in initializer",
+	    parse_error_context (wfl_operator,
+                   "Checked exception `%s' can't be thrown in initializer",
 				 lang_printable_name (type, 0));
 	  else
-	    parse_error_context (wfl_operator, "Checked exception `%s' isn't "
-				 "thrown from a `try' block", 
+	    parse_error_context (wfl_operator,
+                   "Checked exception `%s' isn't thrown from a `try' block", 
 				 lang_printable_name (type, 0));
 	}
       /* Otherwise, the current method doesn't have the appropriate
          throws declaration */
       else
-	parse_error_context (wfl_operator, "Checked exception `%s' doesn't "
-			     "match any of current method's `throws' "
-			     "declaration(s)", 
+	parse_error_context (wfl_operator, "Checked exception `%s' doesn't match any of current method's `throws' declaration(s)", 
 			     lang_printable_name (type, 0));
       return error_mark_node;
     }
@@ -11880,8 +11843,7 @@ check_thrown_exceptions (location, decl)
 	else 
 	  {
 	    parse_error_context 
-	      (wfl_operator, "Exception `%s' must be caught, or it must be "
-	       "declared in the `throws' clause of `%s'", 
+	      (wfl_operator, "Exception `%s' must be caught, or it must be declared in the `throws' clause of `%s'", 
 	       lang_printable_name (TREE_VALUE (throws), 0),
 	       (DECL_NAME (current_function_decl) == init_identifier_node ?
 		IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))) :
@@ -11963,8 +11925,8 @@ patch_conditional_expr (node, wfl_cond, wfl_op1)
   if (TREE_TYPE (cond) != boolean_type_node)
     {
       SET_WFL_OPERATOR (wfl_operator, node, wfl_cond);
-      parse_error_context (wfl_operator, "Incompatible type for `?:'. Can't "
-			   "convert `%s' to `boolean'",
+      parse_error_context (wfl_operator,
+               "Incompatible type for `?:'. Can't convert `%s' to `boolean'",
 			   lang_printable_name (TREE_TYPE (cond), 0));
       error_found = 1;
     }
@@ -12031,9 +11993,9 @@ patch_conditional_expr (node, wfl_cond, wfl_op1)
     {
       char *t = xstrdup (lang_printable_name (t1, 0));
       SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
-      parse_error_context (wfl_operator, "Incompatible type for `?:'. Can't "
-			   "convert `%s' to `%s'", t,
-			   lang_printable_name (t2, 0));
+      parse_error_context (wfl_operator,
+		 "Incompatible type for `?:'. Can't convert `%s' to `%s'",
+			   t, lang_printable_name (t2, 0));
       free (t);
       error_found = 1;
     }
