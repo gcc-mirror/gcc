@@ -58,7 +58,7 @@ G77_vxtidate_y2kbuggy_0 (integer * m __attribute__ ((__unused__)),
 			 integer * d __attribute__ ((__unused__)),
 			 integer * y __attribute__ ((__unused__)))
 {
-  extern int G77_abort_0 ();
+  extern int G77_abort_0() __attribute__ ((noreturn));
   fprintf (stderr, "%s\n", G77_Non_Y2K_Compliance_Message);
   G77_abort_0 ();
 }

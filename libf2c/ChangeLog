@@ -1,3 +1,8 @@
+Wed Dec 18 11:33:35 2002  Jason Merrill  <jason@redhat.com>
+
+	* libU77/date_.c (G77_date_y2kbuggy_0): Declare G77_abort_0 noreturn.
+	* libU77/vxtidate_.c (G77_vxtidate_y2kbuggy_0): Likewise.
+
 2002-11-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Remove skip-this-dir support.
