@@ -1,3 +1,9 @@
+2004-12-16  Richard Henderson  <rth@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* simplify-rtx.c (simplify_replace_rtx): Do not blindly replace
+	hard registers.
+
 2004-12-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/18508
