@@ -59,7 +59,7 @@ DEFTREECODE (TYPE_EXPR, "type_expr", 'e', 1)
 /* For AGGR_INIT_EXPR, operand 0 is function which performs initialization,
    operand 1 is argument list to initialization function,
    and operand 2 is the slot which was allocated for this expression.  */
-DEFTREECODE (AGGR_INIT_EXPR, "nw_expr", 'e', 3)
+DEFTREECODE (AGGR_INIT_EXPR, "aggr_init_expr", 'e', 3)
 
 /* A throw expression.  operand 0 is the expression, if there was one,
    else it is NULL_TREE.  */
