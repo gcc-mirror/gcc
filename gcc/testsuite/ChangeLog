@@ -1,3 +1,7 @@
+2001-01-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.dg/cpp/avoidpaste1.c: Fix typos.
+
 2001-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20010129-1.c: New test.
