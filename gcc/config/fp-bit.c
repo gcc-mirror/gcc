@@ -546,13 +546,13 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
       else
 	{
 	  /* Non zero fraction, means nan */
-	  if (sign)
+	  if (fraction & QUIET_NAN)
 	    {
-	      dst->class = CLASS_SNAN;
+	      dst->class = CLASS_QNAN;
 	    }
 	  else
 	    {
-	      dst->class = CLASS_QNAN;
+	      dst->class = CLASS_SNAN;
 	    }
 	  /* Keep the fraction part as the nan number */
 	  dst->fraction.ll = fraction;
