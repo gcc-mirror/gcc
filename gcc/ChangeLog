@@ -1,9 +1,9 @@
 2005-02-14  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/19019
-	* config/rs6000/rs6000.md (truntfdf2): Change to define_expand.
+	* config/rs6000/rs6000.md (trunctfdf2): Change to define_expand.
 	(trunctfdf2_internal1): New.
-	(trunctfdf2_internal2): XLC-compatible fadd version.
+	(trunctfdf2_internal2): Renamed from trunctfdf2.
 
 2005-02-14  Diego Novillo  <dnovillo@redhat.com>
 
