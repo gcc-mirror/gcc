@@ -114,6 +114,11 @@ RANLIB = ranlib
 # Test to use to see whether ranlib exists on the system.
 RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
 
+HOST_AR = ar
+HOST_AR_FLAGS = rc
+HOST_RANLIB = ranlib
+HOST_RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
+
 # Compiler to use for compiling libgcc1.a.
 # OLDCC should not be the GNU C compiler,
 # since that would compile typical libgcc1.a functions such as mulsi3
@@ -677,7 +682,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  gcov$(exeext) *.bp \
  *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop \
  *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.gcse \
- *.[si] \
+ *.[si] libcpp.a \
  $(LANG_STAGESTUFF)
 
 # Members of libgcc1.a.
@@ -1886,9 +1891,15 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h \
 LIBCPP_OBJS =	cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o cppfiles.o \
 		cppulp.o prefix.o version.o mbchar.o @extra_cpp_objs@
 
+# All the other archives built/used by this makefile are for targets.  This
+# one is strictly for the host.
+#
+# For various reasons AR, RANLIB, etc are all set to the target tools and
+# must not be used here.  Instead explicitly use the host versions.
+#
 libcpp.a: $(LIBCPP_OBJS)
-	$(AR) $(ARFLAGS) libcpp.a $(LIBCPP_OBJS)
-	if $(RANLIB_TEST) ; then $(RANLIB) libcpp.a ; else true ; fi
+	$(HOST_AR) $(HOST_AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
+	if $(HOST_RANLIB_TEST) ; then $(HOST_RANLIB) libcpp.a ; else true ; fi
 
 cppmain$(exeext): cppmain.o libcpp.a $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain$(exeext) cppmain.o \
