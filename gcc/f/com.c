@@ -5103,7 +5103,7 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				  FALSE,
 				  ((codegen_imp == FFEINTRIN_impIRAND) ?
 				   ffecom_f2c_integer_type_node :
-				   ffecom_f2c_doublereal_type_node),
+				   ffecom_f2c_real_type_node),
 				  arg1_tree,
 				  dest_tree, dest, dest_used,
 				  NULL_TREE, TRUE);
