@@ -17,10 +17,10 @@ crti.o: $(srcdir)/config/fr30/crti.asm $(GCC_PASSES)
 crtn.o: $(srcdir)/config/fr30/crtn.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler $(srcdir)/config/fr30/crtn.asm
 
-# These are really part of libgcc1, but this will cause them to be
-# built correctly, so...
-
-LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
 
 # If any special flags are necessary when building libgcc2 put them here.
 #
