@@ -1,5 +1,5 @@
 /* Definitions of long double support for GNU compiler.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -42,6 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #define FIX_TRUNCTFSI2_LIBCALL \
   (TARGET_64BIT ? "__U_Qfcnvfxt_quad_to_sgl" : "_U_Qfcnvfxt_quad_to_sgl")
 #define FIXUNS_TRUNCTFSI2_LIBCALL "_U_Qfcnvfxt_quad_to_usgl"
+#define FIXUNS_TRUNCTFDI2_LIBCALL "_U_Qfcnvfxt_quad_to_udbl"
 #define FIX_TRUNCTFDI2_LIBCALL "_U_Qfcnvfxt_quad_to_dbl"
 #define EQTF2_LIBCALL "_U_Qfeq"
 #define NETF2_LIBCALL "_U_Qfne"
@@ -80,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
     fixtfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFSI2_LIBCALL);\
     fixtfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFDI2_LIBCALL);\
     fixunstfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIXUNS_TRUNCTFSI2_LIBCALL);\
-    fixunstfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFDI2_LIBCALL);  \
+    fixunstfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIXUNS_TRUNCTFDI2_LIBCALL);\
     eqtf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, EQTF2_LIBCALL);		\
     netf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, NETF2_LIBCALL);		\
     gttf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, GTTF2_LIBCALL);		\

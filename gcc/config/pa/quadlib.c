@@ -1,5 +1,5 @@
 /* Subroutines for long double support.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -42,6 +42,7 @@ long double _U_Qfneg (long double);
 int __U_Qfcnvfxt_quad_to_sgl (long double);
 #endif
 unsigned int _U_Qfcnvfxt_quad_to_usgl(long double);
+unsigned long long _U_Qfcnvfxt_quad_to_udbl(long double);
 
 int
 _U_Qfeq (long double a, long double b)
@@ -113,4 +114,20 @@ _U_Qfcnvfxt_quad_to_usgl(long double a)
 {
   extern long long _U_Qfcnvfxt_quad_to_dbl (long double a);
   return (unsigned int) _U_Qfcnvfxt_quad_to_dbl (a);
+}
+
+/* HP only has signed conversion in library, so need to synthesize an
+   unsigned version */
+typedef union {
+    long long unsigned int u[2];
+    long double d[1];
+} quad_type;
+
+unsigned long long
+_U_Qfcnvfxt_quad_to_udbl(long double a)
+{
+  extern quad_type _U_Qfcnvfxt_quad_to_quad (long double a);
+  quad_type u;
+  u = _U_Qfcnvfxt_quad_to_quad(a);
+  return u.u[1];
 }
