@@ -1458,6 +1458,33 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# For C++, avoid any typedef or macro definition of bool, and use the
+# built in type instead.
+for files in curses.h; do
+  if [ -r $file ] && egrep bool $file >/dev/null 2>&1; then
+    if [ ! -r ${LIB}/$file ]; then
+      cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+      chmod +w ${LIB}/$file 2>/dev/null
+      chmod a+r ${LIB}/$file 2>/dev/null
+    fi
+
+    echo Fixing $file
+    sed -e '/^#[ 	]*define[ 	][ 	]*bool[ 	][ 	]*char[ 	]*$/i\
+#ifndef __cplusplus'\
+	-e '/^#[ 	]*define[ 	][ 	]*bool[ 	][ 	]*char[ 	]*$/a\
+#endif'\
+	-e '/^typedef[ 	][ 	]*char[ 	][ 	]*bool;[ 	]*$/i\
+#ifndef __cplusplus'\
+	-e '/^typedef[ 	][ 	]*char[ 	][ 	]*bool;[ 	]*$/a\
+#endif'\
+	${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm -f ${LIB}/$file
+    fi
+  fi
+done
+
 # Fix incorrect S_IF* definitions on m88k-sysv3.
 file=sys/stat.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
