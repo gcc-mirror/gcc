@@ -1,3 +1,7 @@
+2004-02-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/pr14092-1.c: Use intptr_t for the cast.
+
 2004-02-11  Hartmut Penner  <hpenner@de.ibm.com>
 
         * gcc.dg/ppc64-abi-3.c: New test.
