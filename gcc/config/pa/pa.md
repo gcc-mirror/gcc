@@ -68,17 +68,6 @@
 		(const_string "true")
 		(const_string "false")))
 
-(define_attr "in_milli_delay" "false,true"
-  (cond [(eq_attr "length" "!1")
-	 (const_string "false")
-
-	 (eq_attr "type" "branch,cbranch,call,dyncall,multi,milli")
-	 (const_string "false")
-
-	 (ne (symbol_ref "use_milli_regs (insn)") (const_int 0))
-	 (const_string "false")]
-	(const_string "true")))
-
 (define_delay (eq_attr "type" "branch")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
@@ -86,7 +75,7 @@
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 (define_delay (eq_attr "type" "milli")
-  [(eq_attr "in_milli_delay" "true") (nil) (nil)])
+  [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 ;; Function units of the HPPA. The following data is for the "Snake"
 ;; (Mustang CPU + Timex FPU) because that's what I have the docs for.
@@ -2123,7 +2112,7 @@
 (define_insn "indirect_jump"
   [(set (pc) (match_operand:SI 0 "register_operand" "r"))]
   ""
- "bv 0(%0)%#"
+ "bv%* 0(%0)"
  [(set_attr "type" "branch")])
 
 (define_insn "extzv"
