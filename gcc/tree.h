@@ -1888,6 +1888,15 @@ enum tree_index
 
   TI_VOID_LIST_NODE,
 
+  TI_UV4SF_TYPE,
+  TI_UV4SI_TYPE,
+  TI_UV8HI_TYPE,
+  TI_UV8QI_TYPE,
+  TI_UV4HI_TYPE,
+  TI_UV2SI_TYPE,
+  TI_UV2SF_TYPE,
+  TI_UV16QI_TYPE,
+
   TI_V4SF_TYPE,
   TI_V4SI_TYPE,
   TI_V8HI_TYPE,
@@ -1955,6 +1964,13 @@ extern tree global_trees[TI_MAX];
 
 #define main_identifier_node		global_trees[TI_MAIN_IDENTIFIER]
 #define MAIN_NAME_P(NODE) (IDENTIFIER_NODE_CHECK (NODE) == main_identifier_node)
+
+#define unsigned_V16QI_type_node	global_trees[TI_UV16QI_TYPE]
+#define unsigned_V4SI_type_node		global_trees[TI_UV4SI_TYPE]
+#define unsigned_V8QI_type_node		global_trees[TI_UV8QI_TYPE]
+#define unsigned_V8HI_type_node		global_trees[TI_UV8HI_TYPE]
+#define unsigned_V4HI_type_node		global_trees[TI_UV4HI_TYPE]
+#define unsigned_V2SI_type_node		global_trees[TI_UV2SI_TYPE]
 
 #define V16QI_type_node			global_trees[TI_V16QI_TYPE]
 #define V4SF_type_node			global_trees[TI_V4SF_TYPE]

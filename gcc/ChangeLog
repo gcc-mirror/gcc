@@ -1,3 +1,20 @@
+2001-12-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-common.c (type_for_mode): Handle unsigned vectors.
+	(type_for_mode): Remove redundant calls to TYPE_MODE.
+
+	* tree.c (make_vector): New.
+	(build_common_tree_nodes_2): Use make_vector for vector types.
+	Add unsigned vector types.
+
+	* tree.h (tree_index): Add unsigned types for vectors.
+	(unsigned_V16QI_type_node): New.
+	(unsigned_V4SI_type_node): New.
+	(unsigned_V8QI_type_node): New.
+	(unsigned_V8HI_type_node): New.
+	(unsigned_V4HI_type_node): New.
+	(unsigned_V2SI_type_node): New.
+
 2001-12-11  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c (finish_message_expr): Fix misplaced parens in a
