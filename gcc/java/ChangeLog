@@ -1,3 +1,27 @@
+1999-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* parse.h (ABSTRACT_CHECK, JCONSTRUCTOR_CHECK,
+	ERROR_CANT_CONVERT_TO_BOOLEAN, ERROR_CANT_CONVERT_TO_NUMERIC,
+	ERROR_CAST_NEEDED_TO_INTEGRAL): Avoid the use of ANSI string
+	concatenation.
+
+	* parse.y (synchronized, variable_redefinition_error,
+	check_class_interface_creation, create_interface, create_class,
+	method_header, finish_method_declaration,
+	check_modifiers_consistency, method_declarator,
+	complete_class_report_errors, check_abstract_method_definitions,
+	java_check_regular_methods, check_throws_clauses,
+	java_check_abstract_methods, read_import_dir,
+	check_pkg_class_access, declare_local_variables, fix_constructors,
+	cut_identifier_in_qualified, resolve_expression_name,
+	resolve_qualified_expression_name, patch_method_invocation,
+	java_complete_lhs, patch_assignment, try_builtin_assignconv,
+	patch_binop, patch_array_ref, patch_newarray, build_labeled_block,
+	patch_exit_expr, patch_exit_expr, patch_switch_statement,
+	patch_try_statement, patch_synchronized_statement,
+	patch_throw_statement, check_thrown_exceptions,
+	patch_conditional_expr): Likewise.
+
 1999-12-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (class_depth): Return -1 if the class doesn't load
