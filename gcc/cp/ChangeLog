@@ -1,3 +1,9 @@
+Fri Dec  9 18:17:37 1994  Doug Evans  <dje@cygnus.com>
+
+	* Makefile.in (BISONFLAGS): Delete --yacc.
+	(PARSE_H): Depend on $(PARSE_C), for parallel makes.
+	(PARSE_C): Undo last patch.
+
 Fri Dec  2 10:44:36 1994  Mike Stump  (mrs@wombat.gnu.ai.mit.edu)
 
 	* Makefile.in (BISONFLAGS): Add --yacc so that output winds up in
