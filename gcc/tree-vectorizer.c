@@ -1866,6 +1866,7 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   tree vectype_size;
   tree ptr_update;
   tree data_ref_ptr;
+  tree type, tmp, size;
 
   base_name = unshare_expr (DR_BASE_NAME (dr));
   if (vect_debug_details (NULL))
@@ -1952,11 +1953,20 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   idx = vect_create_index_for_vector_ref (loop, bsi);
 
   /* Create: update = idx * vectype_size  */
-  ptr_update = create_tmp_var (integer_type_node, "update");
+  tmp = create_tmp_var (integer_type_node, "update");
+  add_referenced_tmp_var (tmp);
+  size = TYPE_SIZE (vect_ptr_type); 
+  type = lang_hooks.types.type_for_size (tree_low_cst (size, 1), 1);
+  ptr_update = create_tmp_var (type, "update");
   add_referenced_tmp_var (ptr_update);
   vectype_size = build_int_cst (integer_type_node,
                                 GET_MODE_SIZE (TYPE_MODE (vectype)));
   vec_stmt = build2 (MULT_EXPR, integer_type_node, idx, vectype_size);
+  vec_stmt = build2 (MODIFY_EXPR, void_type_node, tmp, vec_stmt);
+  new_temp = make_ssa_name (tmp, vec_stmt);
+  TREE_OPERAND (vec_stmt, 0) = new_temp;
+  bsi_insert_before (bsi, vec_stmt, BSI_SAME_STMT);
+  vec_stmt = fold_convert (type, new_temp);
   vec_stmt = build2 (MODIFY_EXPR, void_type_node, ptr_update, vec_stmt);
   new_temp = make_ssa_name (ptr_update, vec_stmt);
   TREE_OPERAND (vec_stmt, 0) = new_temp;
