@@ -340,11 +340,11 @@ namespace _GLIBCXX_STD
 
       _Base_bitset(void)
       : _M_w(0)
-      {}
+      { }
 
       _Base_bitset(unsigned long __val)
       : _M_w(__val)
-      {}
+      { }
 
       static size_t
       _S_whichword(size_t __pos )
@@ -464,10 +464,10 @@ namespace _GLIBCXX_STD
       typedef unsigned long _WordT;
 
       _Base_bitset()
-      {}
+      { }
 
       _Base_bitset(unsigned long)
-      {}
+      { }
 
       static size_t
       _S_whichword(size_t __pos )
@@ -505,35 +505,35 @@ namespace _GLIBCXX_STD
 
       void
       _M_do_and(const _Base_bitset<0>&)
-      {}
+      { }
 
       void
       _M_do_or(const _Base_bitset<0>&)
-      {}
+      { }
 
       void
       _M_do_xor(const _Base_bitset<0>&)
-      {}
+      { }
 
       void
       _M_do_left_shift(size_t)
-      {}
+      { }
 
       void
       _M_do_right_shift(size_t)
-      {}
+      { }
 
       void
       _M_do_flip()
-      {}
+      { }
 
       void
       _M_do_set()
-      {}
+      { }
 
       void
       _M_do_reset()
-      {}
+      { }
 
       // Are all empty bitsets equal to each other?  Are they equal to
       // themselves?  How to compare a thing which has no state?  What is
