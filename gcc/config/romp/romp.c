@@ -1809,6 +1809,8 @@ output_fpops (file)
 	    case CONST_INT:
 	    case CONST_DOUBLE:
 	    case CONST:
+	    case SYMBOL_REF:
+	    case LABEL_REF:
 	      type += 0x20;
 	      opbyte = 0;
 	      immed[i] = fpop->ops[i];
