@@ -7860,6 +7860,9 @@ Note that the EABI has a 32-bit and a 64-bit variant.  GCC normally
 generates 64-bit code when you select a 64-bit architecture, but you
 can use @option{-mgp32} to get 32-bit code instead.
 
+For information about the O64 ABI, see
+@w{@uref{http://gcc.gnu.org/projects/mipso64-abi.html}}.
+
 @item -mabicalls
 @itemx -mno-abicalls
 @opindex mabicalls
