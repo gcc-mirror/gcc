@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on Ubicom IP2022
    Communications Controller.
-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc and Ubicom, Inc.
 
    This file is part of GCC.
@@ -81,6 +81,9 @@ static tree ip2k_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static bool ip2k_rtx_costs (rtx, int, int, int *);
 static int ip2k_address_cost (rtx);
 static void ip2k_init_libfuncs (void);
+static bool ip2k_return_in_memory (tree, tree);
+static void ip2k_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+					 tree, int *, int);
 
 const struct attribute_spec ip2k_attribute_table[];
 
@@ -111,6 +114,14 @@ const struct attribute_spec ip2k_attribute_table[];
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS ip2k_init_libfuncs
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY ip2k_return_in_memory
+
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS ip2k_setup_incoming_varargs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6183,4 +6194,20 @@ ip2k_unsigned_comparison_operator (rtx op, enum machine_mode mode)
 {
   return (comparison_operator (op, mode)
           && unsigned_condition (GET_CODE (op)) == GET_CODE (op));
+}
+
+static bool
+ip2k_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  return (TYPE_MODE (type) == BLKmode) ? int_size_in_bytes (type) > 8 : 0;
+}
+
+static void
+ip2k_setup_incoming_varargs (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+			     enum machine_mode mode ATTRIBUTE_UNUSED,
+			     tree type ATTRIBUTE_UNUSED,
+			     int *pretend_arg_size,
+			     int second_time ATTRIBUTE_UNUSED)
+{
+  *pretend_arg_size = 0;
 }
