@@ -2058,6 +2058,13 @@ expand_call (exp, target, ignore)
 	  preserve_temp_slots (target);
 	}
 
+      /* This code assumes valreg is at least a full word.  If it isn't,
+	 copy it into a new pseudo which is a full word.  */
+      if (GET_MODE (valreg) != BLKmode
+	  && GET_MODE_SIZE (GET_MODE (valreg)) < UNITS_PER_WORD)
+	valreg = convert_to_mode (SImode, valreg,
+				  TREE_UNSIGNED (TREE_TYPE (exp)));
+
       /* Structures whose size is not a multiple of a word are aligned
 	 to the least significant byte (to the right).  On a BYTES_BIG_ENDIAN
 	 machine, this means we must skip the empty high order bytes when
