@@ -1,3 +1,8 @@
+2002-04-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Use MIPS instead of Mips and
+	mips.  Add two missing commas.
+
 2002-04-30  Paolo Carlini  <pcarlini@unitus.it>
 
 	* doc/contrib.texi (Contributors): Update Paolo Carlini's
