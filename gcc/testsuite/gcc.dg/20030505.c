@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc-eabi* } } */
+/* { dg-do compile { target powerpc-*-eabi* } } */
 /* { dg-options "-W" } */
 
 #define __vector __attribute__((vector_size(8)))
