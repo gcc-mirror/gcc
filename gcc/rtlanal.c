@@ -1598,54 +1598,6 @@ reg_overlap_mentioned_p (rtx x, rtx in)
     }
 }
 
-/* Return the last value to which REG was set prior to INSN.  If we can't
-   find it easily, return 0.
-
-   We only return a REG, SUBREG, or constant because it is too hard to
-   check if a MEM remains unchanged.  */
-
-rtx
-reg_set_last (rtx x, rtx insn)
-{
-  rtx orig_insn = insn;
-
-  /* Scan backwards until reg_set_last_1 changed one of the above flags.
-     Stop when we reach a label or X is a hard reg and we reach a
-     CALL_INSN (if reg_set_last_last_regno is a hard reg).
-
-     If we find a set of X, ensure that its SET_SRC remains unchanged.  */
-
-  /* We compare with <= here, because reg_set_last_last_regno
-     is actually the number of the first reg *not* in X.  */
-  for (;
-       insn && GET_CODE (insn) != CODE_LABEL
-       && ! (GET_CODE (insn) == CALL_INSN
-	     && REGNO (x) <= FIRST_PSEUDO_REGISTER);
-       insn = PREV_INSN (insn))
-    if (INSN_P (insn))
-      {
-	rtx set = set_of (x, insn);
-	/* OK, this function modify our register.  See if we understand it.  */
-	if (set)
-	  {
-	    rtx last_value;
-	    if (GET_CODE (set) != SET || SET_DEST (set) != x)
-	      return 0;
-	    last_value = SET_SRC (x);
-	    if (CONSTANT_P (last_value)
-		|| ((GET_CODE (last_value) == REG
-		     || GET_CODE (last_value) == SUBREG)
-		    && ! reg_set_between_p (last_value,
-					    insn, orig_insn)))
-	      return last_value;
-	    else
-	      return 0;
-	  }
-      }
-
-  return 0;
-}
-
 /* Call FUN on each register or MEM that is stored into or clobbered by X.
    (X would be the pattern of an insn).
    FUN receives two arguments:

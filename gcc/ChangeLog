@@ -1,3 +1,8 @@
+2004-04-19  James E Wilson  <wilson@specifixinc.com>
+
+	* rtl.h (reg_set_last): Delete declaration.
+	* rtlanal.c (reg_set_last): Delete.
+
 2004-04-19  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_convert): Make function extern/public.

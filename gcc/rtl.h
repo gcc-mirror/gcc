@@ -1844,7 +1844,6 @@ extern int reg_overlap_mentioned_p (rtx, rtx);
 extern rtx set_of (rtx, rtx);
 extern void note_stores (rtx, void (*) (rtx, rtx, void *), void *);
 extern void note_uses (rtx *, void (*) (rtx *, void *), void *);
-extern rtx reg_set_last (rtx, rtx);
 extern int dead_or_set_p (rtx, rtx);
 extern int dead_or_set_regno_p (rtx, unsigned int);
 extern rtx find_reg_note (rtx, enum reg_note, rtx);
