@@ -1,5 +1,10 @@
 2001-12-21  Richard Henderson  <rth@redhat.com>
 
+	* gcc.dg/wtr-aggr-init-1.c: Test that __extension__ disables then
+	re-enables the warning.
+
+2001-12-21  Richard Henderson  <rth@redhat.com>
+
 	* g++.old-deja/g++.eh/badalloc1.C (malloc): Fix typo.
 
 2001-12-20  Jakub Jelinek  <jakub@redhat.com>
