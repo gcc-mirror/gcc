@@ -1,10 +1,17 @@
-2000-11-22  Chris Demetriou  <cgd@sibyte.com>  
-2000-11-22  Neil Booth  <neilb@earthling.net>
+2000-11-22  Richard Henderson  <rth@redhat.com>
 
-        * gcc.c (validate_switches): Validate multiple switches named
-        in '|' (or) expressions in specs.  
-        (handle_braces): If more than 1 alternative in a '|' spec
-        matches, call do_spec1 just once.
+	* haifa-sched.c (sched_analyze_1): Don't special-case calls
+	for clobbering registers.
+	(sched_analyze_2): Likewise.
+	(sched_analyze): Zap reg_last_uses and reg_last_sets after calls.
+
+2000-11-22  Chris Demetriou  <cgd@sibyte.com>  
+	    Neil Booth  <neilb@earthling.net>
+
+	* gcc.c (validate_switches): Validate multiple switches named
+	in '|' (or) expressions in specs.  
+	(handle_braces): If more than 1 alternative in a '|' spec
+	matches, call do_spec1 just once.
 
 2000-11-22  Michael Meissner  <meissner@redhat.com>
 
@@ -107,7 +114,7 @@ Wed Nov 22 00:52:55 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-21  Neil Booth  <neilb@earthling.net>
 
-        * do_includes: Revert to using cpp_read_file.
+	* do_includes: Revert to using cpp_read_file.
 
 2000-11-21  Bernd Schmidt  <bernds@redhat.co.uk>
 
