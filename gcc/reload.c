@@ -4699,14 +4699,6 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
      that the index needs a reload and find_reloads_address_1 will take care
      of it.
 
-     There is still a case when we might generate an extra reload,
-     however.  In certain cases eliminate_regs will return a MEM for a REG
-     (see the code there for details).  In those cases, memory_address_p
-     applied to our address will return 0 so we will think that our offset
-     must be too large.  But it might indeed be valid and the only problem
-     is that a MEM is present where a REG should be.  This case should be
-     very rare and there doesn't seem to be any way to avoid it.
-
      If we decide to do something here, it must be that
      `double_reg_address_ok' is true and that this address rtl was made by
      eliminate_regs.  We generate a reload of the fp/sp/ap + constant and
