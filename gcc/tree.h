@@ -880,8 +880,9 @@ struct tree_type
 /*  For FIELD_DECLs, this is the
     RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE node that the field is
     a member of.  For VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL,
-    and CONST_DECL nodes, this points to the FUNCTION_DECL for the
-    containing function, or else yields NULL_TREE if the given decl has "file scope".  */
+    and CONST_DECL nodes, this points to either the FUNCTION_DECL for the
+    containing function, the RECORD_TYPE or UNION_TYPE for the containing
+    type, or NULL_TREE if the given decl has "file scope".  */
 #define DECL_CONTEXT(NODE) ((NODE)->decl.context)
 #define DECL_FIELD_CONTEXT(NODE) ((NODE)->decl.context)
 /* In a DECL this is the field where configuration dependent machine

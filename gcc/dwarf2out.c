@@ -6358,6 +6358,7 @@ gen_enumeration_type_die (type, context_die)
   if (TYPE_SIZE (type))
     {
       register tree link;
+      TREE_ASM_WRITTEN (type) = 1;
       add_byte_size_attribute (type_die, type);
       for (link = TYPE_FIELDS (type);
 	   link != NULL; link = TREE_CHAIN (link))
@@ -7119,18 +7120,26 @@ gen_struct_or_union_type_die (type, context_die)
      register dw_die_ref context_die;
 {
   register dw_die_ref type_die = lookup_type_die (type);
+  register dw_die_ref scope_die = 0;
+  register int nested = 0;
 
   if (type_die && ! TYPE_SIZE (type))
     return;
-  else if (! type_die
-	   || (TYPE_CONTEXT (type)
-	       && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't'))
+
+  if (TYPE_CONTEXT (type)
+      && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't')
+    nested = 1;
+
+  if (! type_die || nested)
+    scope_die = scope_die_for (type, context_die);
+
+  if (! type_die || (nested && scope_die == comp_unit_die))
     /* First occurrence of type or toplevel definition of nested class.  */
     {
       register dw_die_ref old_die = type_die;
       type_die = new_die (TREE_CODE (type) == RECORD_TYPE
 			  ? DW_TAG_structure_type : DW_TAG_union_type,
-			  scope_die_for (type, context_die));
+			  scope_die);
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
       if (old_die)
@@ -7141,7 +7150,11 @@ gen_struct_or_union_type_die (type, context_die)
 
   /* If this type has been completed, then give it a byte_size attribute and
      then give a list of members.  */
-  if (TYPE_SIZE (type))
+  if (TYPE_SIZE (type)
+      /* If we're getting a reference to one nested class from another
+	 nested class, don't recurse.  */
+      && ! (nested && scope_die != context_die
+	    && scope_die == lookup_type_die (TYPE_CONTEXT (type))))
     {
       /* Prevent infinite recursion in cases where the type of some member of 
          this type is expressed in terms of this type itself.  */
@@ -7279,16 +7292,21 @@ gen_type_die (type, context_die)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      if (TREE_CODE (type) == ENUMERAL_TYPE)
+      /* If this is a nested type whose containing class hasn't been
+	 written out yet, writing it out will cover this one, too.  */
+      if (TYPE_CONTEXT (type)
+	  && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't'
+	  && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
+	gen_type_die (TYPE_CONTEXT (type), context_die);
+      else if (TREE_CODE (type) == ENUMERAL_TYPE)
 	gen_enumeration_type_die (type, context_die);
       else
 	gen_struct_or_union_type_die (type, context_die);
 
       /* Don't set TREE_ASM_WRITTEN on an incomplete struct; we want to fix
-	 it up if it is ever completed.  */
-      if (TYPE_SIZE (type) == NULL_TREE)
-	return;
-      break;
+	 it up if it is ever completed.  gen_*_type_die will set it for us
+	 when appropriate.  */
+      return;
 
     case VOID_TYPE:
     case INTEGER_TYPE:

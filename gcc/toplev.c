@@ -2752,12 +2752,8 @@ rest_of_type_compilation (type, toplev)
     TIMEVAR (symout_time, sdbout_symbol (TYPE_STUB_DECL (type), !toplev));
 #endif
 #ifdef DWARF_DEBUGGING_INFO
-  /* If this is a file-scope type or a class-scope type
-     for which the containing class has already been completed, write it
-     out now to avoid ordering headaches with member functions.  */
-  if (write_symbols == DWARF_DEBUG
-      && (TYPE_CONTEXT (type) == NULL_TREE
-	  || TREE_ASM_WRITTEN (TYPE_CONTEXT (type))))
+  /* Don't write out function-scope types here.  */
+  if (write_symbols == DWARF_DEBUG && toplev)
     TIMEVAR (symout_time, dwarfout_file_scope_decl (TYPE_STUB_DECL (type), 0));
 #endif
 }
