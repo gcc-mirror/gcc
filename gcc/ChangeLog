@@ -1,3 +1,38 @@
+2001-05-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-parse.in: Remove many shift/reduce conflicts.  Update
+	%expect values.
+	(declspecs_nosc_nots_nosa_noea, declspecs_nosc_nots_nosa_ea,
+	declspecs_nosc_nots_sa_noea, declspecs_nosc_nots_sa_ea,
+	declspecs_nosc_ts_nosa_noea, declspecs_nosc_ts_nosa_ea,
+	declspecs_nosc_ts_sa_noea, declspecs_nosc_ts_sa_ea,
+	declspecs_sc_nots_nosa_noea, declspecs_sc_nots_nosa_ea,
+	declspecs_sc_nots_sa_noea, declspecs_sc_nots_sa_ea,
+	declspecs_sc_ts_nosa_noea, declspecs_sc_ts_nosa_ea,
+	declspecs_sc_ts_sa_noea, declspecs_sc_ts_sa_ea, declspecs_ts,
+	declspecs_nots, declspecs_ts_nosa, declspecs_nots_nosa,
+	declspecs_nosc_ts, declspecs_nosc_nots, declspecs_nosc, declspecs,
+	maybe_type_quals_setattrs, typespec_nonattr, typespec_attr,
+	typespec_reserved_nonattr, typespec_reserved_attr,
+	typespec_nonreserved_nonattr, maybe_setattrs, structsp_attr,
+	structsp_nonattr, components_notype, component_notype_declarator,
+	absdcl1_ea, absdcl1_noea, direct_absdcl1, absdcl_maybe_attribute,
+	firstparm, setspecs_fp): New
+	(typed_declspecs, reserved_declspecs, typed_typespecs,
+	reserved_typespecquals, declmods, typespec, typespecqual_reserved,
+	typed_declspecs_no_prefix_attr reserved_declspecs_no_prefix_attr
+	declmods_no_prefix_attr, nonempty_type_quals, structsp,
+	type_quals): Remove.  Users updated.
+	(initdecls, notype_initdecls, after_type_declarator,
+	parm_declarator, notype_declarator, absdcl1, components, ivars):
+	Don't allow attributes at the start of a declarator; include them
+	in the production containing the declarator instead.  Always
+	require type specifiers before trying to redeclare a typedef name.
+	(typename): Allow for attributes but warn that they are ignored.
+	(parmlist, firstparm, setspecs_fp): Include attributes in
+	parmlist; suck them off the parser stack in firstparm using
+	setspecs_fp.
+
 Thu May 10 09:17:42 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ifcvt.c (merge_if_block): Use any_uncondjump_p, not simplejump_p
