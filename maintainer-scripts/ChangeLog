@@ -1,3 +1,8 @@
+2003-05-02  Gerald Pfeifer  <gerald@pfeifer@dbai.tuwien.ac.at>
+
+	* update_version: Add a trace of which branch we are currently
+	working on.
+
 2002-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_release: Make snapshots from the GCC 3.3 branch.
