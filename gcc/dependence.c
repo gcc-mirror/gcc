@@ -1,5 +1,5 @@
 /* Analyze loop dependencies
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -269,7 +269,6 @@ build_def_use (exp, du_type)
   static loop *loop_def;
   tree node = exp;
   tree array_ref;
-  int array_idx;
   def_use *du_ptr;
 
   if (du_type == init_def_use)
@@ -364,8 +363,6 @@ build_def_use (exp, du_type)
 		  }
 	      }
 	    
-	    array_idx -= 1;
-
 	    for (i = 0;
 		 i < du_idx
 		   && strcmp (IDENTIFIER_POINTER (DECL_NAME (array_ref)),
