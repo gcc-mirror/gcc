@@ -1799,6 +1799,10 @@ etags tags: TAGS
 # built are.
 TAGS: do-TAGS
 
+# Rebuilding Makefile.in, using autogen.
+$(srcdir)/Makefile.in: # $(srcdir)/Makefile.tpl $(srcdir)/Makefile.def
+	cd $(srcdir) && autogen Makefile.def
+
 # with the gnu make, this is done automatically.
 
 Makefile: Makefile.in configure.in $(host_makefile_frag) $(target_makefile_frag) $(gcc_version_trigger)
