@@ -1480,7 +1480,7 @@ finish_object_call_expr (fn, object, args)
   tree real_fn = build_component_ref (object, fn, NULL_TREE, 1);
   return finish_call_expr (real_fn, args);
 #else
-  if (TREE_CODE (fn) == TYPE_DECL)
+  if (DECL_DECLARES_TYPE_P (fn))
     {
       if (processing_template_decl)
 	/* This can happen on code like:
