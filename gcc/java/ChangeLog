@@ -1,5 +1,11 @@
 2001-12-20  Tom Tromey  <tromey@redhat.com>
 
+	For PR java/4766:
+	* jcf-write.c (generate_bytecode_insns) [TRY_FINALLY_EXPR]: Handle
+	case where `finally' clause can't complete normally.
+
+2001-12-20  Tom Tromey  <tromey@redhat.com>
+
 	Fixes PR java/5057:
 	* parse.y (analyze_clinit_body): Added this_class parameter.
 	Check for more cases where we must keep <clinit>.

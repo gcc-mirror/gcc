@@ -1348,7 +1348,7 @@ generate_bytecode_conditional (exp, true_label, false_label,
     abort ();
 }
 
-/* Call pending cleanups i.e. those for surrounding TRY_FINAL_EXPRs.
+/* Call pending cleanups i.e. those for surrounding TRY_FINALLY_EXPRs.
    but only as far out as LIMIT (since we are about to jump to the
    emit label that is LIMIT). */
 
@@ -1683,8 +1683,8 @@ generate_bytecode_insns (exp, target, state)
 	   1.  the switch_expression (the value used to select the correct case);
 	   2.  the switch_body;
 	   3.  the switch_instruction (the tableswitch/loopupswitch instruction.).
-	   After code generation, we will re-order then in the order 1, 3, 2.
-	   This is to avoid an extra GOTOs. */
+	   After code generation, we will re-order them in the order 1, 3, 2.
+	   This is to avoid any extra GOTOs. */
 	struct jcf_switch_state sw_state;
 	struct jcf_block *expression_last; /* Last block of the switch_expression. */
 	struct jcf_block *body_last; /* Last block of the switch_body. */
@@ -2298,7 +2298,8 @@ generate_bytecode_insns (exp, target, state)
 	  {
 	    tree catch_clause = TREE_OPERAND (clause, 0);
 	    tree exception_decl = BLOCK_EXPR_DECLS (catch_clause);
-	    struct jcf_handler *handler = alloc_handler (start_label, end_label, state);
+	    struct jcf_handler *handler = alloc_handler (start_label,
+							 end_label, state);
 	    if (exception_decl == NULL_TREE)
 	      handler->type = NULL_TREE;
 	    else
@@ -2314,8 +2315,8 @@ generate_bytecode_insns (exp, target, state)
 
     case TRY_FINALLY_EXPR:
       {
-	struct jcf_block *finished_label,
-	  *finally_label, *start_label, *end_label;
+	struct jcf_block *finished_label = NULL;
+	struct jcf_block *finally_label, *start_label, *end_label;
 	struct jcf_handler *handler;
 	tree try_block = TREE_OPERAND (exp, 0);
 	tree finally = TREE_OPERAND (exp, 1);
@@ -2325,15 +2326,26 @@ generate_bytecode_insns (exp, target, state)
 
 	finally_label = gen_jcf_label (state);
 	start_label = get_jcf_label_here (state);
-	finally_label->pc = PENDING_CLEANUP_PC;
-	finally_label->next = state->labeled_blocks;
-	state->labeled_blocks = finally_label;
-	state->num_finalizers++;
+	/* If the `finally' clause can complete normally, we emit it
+	   as a subroutine and let the other clauses call it via
+	   `jsr'.  If it can't complete normally, then we simply emit
+	   `goto's directly to it.  */
+	if (CAN_COMPLETE_NORMALLY (finally))
+	  {
+	    finally_label->pc = PENDING_CLEANUP_PC;
+	    finally_label->next = state->labeled_blocks;
+	    state->labeled_blocks = finally_label;
+	    state->num_finalizers++;
+	  }
 
 	generate_bytecode_insns (try_block, target, state);
-	if (state->labeled_blocks != finally_label)
-	  abort();
-	state->labeled_blocks = finally_label->next;
+
+	if (CAN_COMPLETE_NORMALLY (finally))
+	  {
+	    if (state->labeled_blocks != finally_label)
+	      abort();
+	    state->labeled_blocks = finally_label->next;
+	  }
 	end_label = get_jcf_label_here (state);
 
 	if (end_label == start_label)
@@ -2344,43 +2356,75 @@ generate_bytecode_insns (exp, target, state)
 	    break;
 	  }
 
-	return_link = build_decl (VAR_DECL, NULL_TREE,
-				  return_address_type_node);
-	finished_label = gen_jcf_label (state);
-
+	if (CAN_COMPLETE_NORMALLY (finally))
+	  {
+	    return_link = build_decl (VAR_DECL, NULL_TREE,
+				      return_address_type_node);
+	    finished_label = gen_jcf_label (state);
+	  }
 
 	if (CAN_COMPLETE_NORMALLY (try_block))
 	  {
-	    emit_jsr (finally_label, state);
-	    emit_goto (finished_label, state);
+	    if (CAN_COMPLETE_NORMALLY (finally))
+	      {
+		emit_jsr (finally_label, state);
+		emit_goto (finished_label, state);
+	      }
+	    else
+	      emit_goto (finally_label, state);
 	  }
 
-	/* Handle exceptions. */
+	/* Handle exceptions.  */
 
 	exception_type = build_pointer_type (throwable_type_node);
-	exception_decl = build_decl (VAR_DECL, NULL_TREE, exception_type);
-	localvar_alloc (return_link, state);
+	if (CAN_COMPLETE_NORMALLY (finally))
+	  {
+	    /* We're going to generate a subroutine, so we'll need to
+	       save and restore the exception around the `jsr'.  */ 
+	    exception_decl = build_decl (VAR_DECL, NULL_TREE, exception_type);
+	    localvar_alloc (return_link, state);
+	  }
 	handler = alloc_handler (start_label, end_label, state);
 	handler->type = NULL_TREE;
-	localvar_alloc (exception_decl, state);
-	NOTE_PUSH (1);
-	emit_store (exception_decl, state);
-	emit_jsr (finally_label, state);
-	emit_load (exception_decl, state);
-	RESERVE (1);
-	OP1 (OPCODE_athrow);
-	NOTE_POP (1);
+	if (CAN_COMPLETE_NORMALLY (finally))
+	  {
+	    localvar_alloc (exception_decl, state);
+	    NOTE_PUSH (1);
+	    emit_store (exception_decl, state);
+	    emit_jsr (finally_label, state);
+	    emit_load (exception_decl, state);
+	    RESERVE (1);
+	    OP1 (OPCODE_athrow);
+	    NOTE_POP (1);
+	  }
+	else
+	  {
+	    /* We're not generating a subroutine.  In this case we can
+	       simply have the exception handler pop the exception and
+	       then fall through to the `finally' block.  */
+	    NOTE_PUSH (1);
+	    emit_pop (1, state);
+	    NOTE_POP (1);
+	  }
 
-	/* The finally block.  First save return PC into return_link. */
+	/* The finally block.  If we're generating a subroutine, first
+	   save return PC into return_link.  Otherwise, just generate
+	   the code for the `finally' block.  */
 	define_jcf_label (finally_label, state);
-	NOTE_PUSH (1);
-	emit_store (return_link, state);
+	if (CAN_COMPLETE_NORMALLY (finally))
+	  {
+	    NOTE_PUSH (1);
+	    emit_store (return_link, state);
+	  }
 
 	generate_bytecode_insns (finally, IGNORE_TARGET, state);
-	maybe_wide (OPCODE_ret, DECL_LOCAL_INDEX (return_link), state);
-	localvar_free (exception_decl, state);
-	localvar_free (return_link, state);
-	define_jcf_label (finished_label, state);
+	if (CAN_COMPLETE_NORMALLY (finally))
+	  {
+	    maybe_wide (OPCODE_ret, DECL_LOCAL_INDEX (return_link), state);
+	    localvar_free (exception_decl, state);
+	    localvar_free (return_link, state);
+	    define_jcf_label (finished_label, state);
+	  }
       }
       break;
     case THROW_EXPR:
