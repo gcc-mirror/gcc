@@ -1,3 +1,10 @@
+2003-08-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/error2.C: New test.
+	* g++.dg/lookup/using7.C: Adjust errors
+	* g++.old-deja/g++.pt/crash36.C: Likewise.
+	* g++.old-deja/g++.pt/derived3.C: Likewise.
+
 2003-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/builtins/lib/strcat.c: New.

@@ -1,5 +1,8 @@
 2003-08-15  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (instantiate_class_template): Set location before
+	substuting bases.
+
 	* decl.c (make_typename_type): Use my_friendly_assert.
 	* pt.c (tsubst_aggr_type): Rearrange context substitution.
 
