@@ -112,3 +112,47 @@ HI	SET   `1` + 2
 	POPM  R10,R13
      ENDMACRO
 
+
+; Double Unsigned Compare Register with register
+
+     MACRO DUCR.M
+	PSHM	R13,R14    ; R13 and R14 are assumed not to be input parameters
+LOW1	SET	`1` + 1
+LOW2	SET	`2` + 1
+	PSHM	R`1`,R`LOW1`
+	PSHM	R`2`,R`LOW2`
+	LR	R13,R`LOW1`
+	LR	R14,R`LOW2`
+	DSRL	R`1`,1
+	DSRL	R`2`,1
+	DCR	R`1`,R`2`
+	BNE	+6
+	ANDM	R13,1
+	ANDM	R14,1
+	CR	R13,R14
+	POPM	R`2`,R`LOW2`
+	POPM	R`1`,R`LOW1`
+	POPM	R13,R14
+     ENDMACRO
+
+
+; Double Unsigned Compare register with memory
+
+     MACRO DUC.M
+	PSHM	R13,R14    ; R13 and R14 are assumed not to be input parameters
+LOW1	SET	`1` + 1
+	PSHM	R`1`,R`LOW1`
+	DL	R13,`2`
+	DSRL	R`1`,1
+	DSRL	R13,1
+	DCR	R`1`,R13
+	BNE	+10        ; done, go pop the saved regs
+	DL	R13,`2`    ; interested in the *low* word (R14)
+	L	R13,1,R15
+	ANDM	R13,1
+	ANDM	R14,1
+	CR	R13,R14
+	POPM	R`1`,R`LOW1`
+	POPM	R13,R14
+     ENDMACRO
+
