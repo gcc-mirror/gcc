@@ -1,5 +1,10 @@
 2004-12-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/18672
+	* gimplify.c (canonicalize_addr_expr): Cope with array of
+	incomplete type.
+	(gimplify_conversion): Remove redundant checks.
+
 	* doc/trouble.texi (Non-bugs): Clarify empty loop removal.
 
 2004-12-08  Uros Bizjak  <uros@kss-loka.si>

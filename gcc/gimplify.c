@@ -1336,7 +1336,8 @@ canonicalize_addr_expr (tree *expr_p)
     return;
 
   /* The lower bound and element sizes must be constant.  */
-  if (TREE_CODE (TYPE_SIZE_UNIT (dctype)) != INTEGER_CST
+  if (!TYPE_SIZE_UNIT (dctype)
+      || TREE_CODE (TYPE_SIZE_UNIT (dctype)) != INTEGER_CST
       || !TYPE_DOMAIN (datype) || !TYPE_MIN_VALUE (TYPE_DOMAIN (datype))
       || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (datype))) != INTEGER_CST)
     return;
@@ -1356,16 +1357,15 @@ canonicalize_addr_expr (tree *expr_p)
 static enum gimplify_status
 gimplify_conversion (tree *expr_p)
 {
-  /* If we still have a conversion at the toplevel, then strip
-     away all but the outermost conversion.  */
-  if (TREE_CODE (*expr_p) == NOP_EXPR || TREE_CODE (*expr_p) == CONVERT_EXPR)
-    {
-      STRIP_SIGN_NOPS (TREE_OPERAND (*expr_p, 0));
+  gcc_assert (TREE_CODE (*expr_p) == NOP_EXPR
+	      || TREE_CODE (*expr_p) == CONVERT_EXPR);
+  
+  /* Then strip away all but the outermost conversion.  */
+  STRIP_SIGN_NOPS (TREE_OPERAND (*expr_p, 0));
 
-      /* And remove the outermost conversion if it's useless.  */
-      if (tree_ssa_useless_type_conversion (*expr_p))
-	*expr_p = TREE_OPERAND (*expr_p, 0);
-    }
+  /* And remove the outermost conversion if it's useless.  */
+  if (tree_ssa_useless_type_conversion (*expr_p))
+    *expr_p = TREE_OPERAND (*expr_p, 0);
 
   /* If we still have a conversion at the toplevel,
      then canonicalize some constructs.  */
