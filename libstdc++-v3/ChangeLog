@@ -1,3 +1,21 @@
+2002-11-15  Paolo Carlini  <pcarlini@unitus.it>
+            Loren J. Rittle  <ljrittle@acm.org>
+
+	PR libstdc++/8399
+	* acinclude.m4
+	(GLIBCPP_CHECK_UNISTD_DECL_AND_LINKAGE_1): New macro to
+	check for unistd.h functions.
+	(GLIBCPP_CHECK_UNISTD_SUPPORT): New macro, check for isatty
+	in unistd.h.
+	* configure.in: Call here.
+	* src/ios.cc (ios_base::Init::_S_ios_create(bool)):
+	Use _GLIBCPP_HAVE_ISATTY: ifdef, in case of interactive
+	input __in_size = 1 even when sync_with_stdio is false;
+	otherwise fall back to __in_size = 1.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2002-11-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acconfig.h (HAVE_DRAND48): Add.
