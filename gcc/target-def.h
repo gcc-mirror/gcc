@@ -179,7 +179,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES default_set_default_type_attributes
 #define TARGET_INSERT_ATTRIBUTES default_insert_attributes
 #define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P default_function_attribute_inlinable_p
-#define TARGET_REGISTER_CPP_BUILTINS default_register_cpp_builtins
 #define TARGET_MS_BITFIELD_LAYOUT_P default_ms_bitfield_layout_p
 
 /* In builtins.c.  */
@@ -206,7 +205,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_SET_DEFAULT_TYPE_ATTRIBUTES,		\
   TARGET_INSERT_ATTRIBUTES,			\
   TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P,	\
-  TARGET_REGISTER_CPP_BUILTINS,			\
   TARGET_MS_BITFIELD_LAYOUT_P,			\
   TARGET_INIT_BUILTINS,				\
   TARGET_EXPAND_BUILTIN,			\

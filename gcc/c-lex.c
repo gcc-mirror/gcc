@@ -39,7 +39,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "splay-tree.h"
 #include "debug.h"
-#include "target.h"
 
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"
@@ -81,7 +80,6 @@ static tree lex_string		PARAMS ((const unsigned char *, unsigned int,
 static tree lex_charconst	PARAMS ((const cpp_token *));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
-static void cb_register_builtins PARAMS ((cpp_reader *));
 static void cb_line_change     PARAMS ((cpp_reader *, const cpp_token *, int));
 static void cb_ident		PARAMS ((cpp_reader *, unsigned int,
 					 const cpp_string *));
@@ -123,7 +121,6 @@ init_c_lex (filename)
   cb->ident = cb_ident;
   cb->file_change = cb_file_change;
   cb->def_pragma = cb_def_pragma;
-  cb->register_builtins = cb_register_builtins;
 
   /* Set the debug callbacks if we can use them.  */
   if (debug_info_level == DINFO_LEVEL_VERBOSE
@@ -227,25 +224,6 @@ dump_time_statistics ()
 
   splay_tree_foreach (file_info_tree, dump_one_header, 0);
 }
-
-/* Register preprocessor built-ins.  */
-static void
-cb_register_builtins (pfile)
-     cpp_reader *pfile;
-{
-  if (c_language == clk_cplusplus)
-    {
-      if (SUPPORTS_ONE_ONLY)
-	cpp_define (pfile, "__GXX_WEAK__");
-      else
-	cpp_define (pfile, "__GXX_WEAK__=0");
-    }
-
-  (*targetm.register_cpp_builtins) (pfile);
-}
-
-/* Not yet handled: #pragma, #define, #undef.
-   No need to deal with linemarkers under normal conditions.  */
 
 static void
 cb_ident (pfile, line, str)

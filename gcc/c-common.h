@@ -378,6 +378,14 @@ extern c_language_kind c_language;
 /* Nonzero if prepreprocessing only.  */
 extern int flag_preprocess_only;
 
+/* Nonzero if an ISO standard was selected.  It rejects macros in the
+   user's namespace.  */
+extern int flag_iso;
+
+/* Nonzero if -undef was given.  It suppresses target built-in macros
+   and assertions.  */
+extern int flag_undef;
+
 /* Nonzero means give string constants the type `const char *', rather
    than `char *'.  */
 

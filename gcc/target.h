@@ -44,8 +44,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    to gradually reduce the amount of conditional compilation that is
    scattered throughout GCC.  */
 
-struct cpp_reader;
-
 struct gcc_target
 {
   /* Functions that output assembler for the target.  */
@@ -199,8 +197,6 @@ struct gcc_target
   /* Return true if FNDECL (which has at least one machine attribute)
      can be inlined despite its machine attributes, false otherwise.  */
   bool (* function_attribute_inlinable_p) PARAMS ((tree fndecl));
-
-  void (* register_cpp_builtins) PARAMS ((struct cpp_reader *));
 
   /* Return true if bitfields in RECORD_TYPE should follow the
      Microsoft Visual C++ bitfield layout rules.  */

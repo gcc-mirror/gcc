@@ -1021,12 +1021,6 @@ extern int interface_only, interface_unknown;
 
 extern int flag_elide_constructors;
 
-/* Nonzero means enable obscure standard features and disable GNU
-   extensions that might cause standard-compliant code to be
-   miscompiled.  */
-
-extern int flag_ansi;
-
 /* Nonzero means that member functions defined in class scope are
    inline by default.  */
 

@@ -184,6 +184,14 @@ tree c_global_trees[CTI_MAX];
 /* Nonzero if prepreprocessing only.  */
 int flag_preprocess_only;
 
+/* Nonzero if an ISO standard was selected.  It rejects macros in the
+   user's namespace.  */
+int flag_iso;
+
+/* Nonzero if -undef was given.  It suppresses target built-in macros
+   and assertions.  */
+int flag_undef;
+
 /* Nonzero means don't recognize the non-ANSI builtin functions.  */
 
 int flag_no_builtin;
@@ -274,6 +282,8 @@ static int if_stack_space = 0;
 
 /* Stack pointer.  */
 static int if_stack_pointer = 0;
+
+static void cb_register_builtins PARAMS ((cpp_reader *));
 
 static tree handle_packed_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
@@ -4298,6 +4308,73 @@ c_common_post_options ()
     warning ("-Wmissing-format-attribute ignored without -Wformat");
 }
 
+/* Hook that registers front end and target-specific built-ins.  */
+static void
+cb_register_builtins (pfile)
+     cpp_reader *pfile;
+{
+  /* -undef turns off target-specific built-ins.  */
+  if (flag_undef)
+    return;
+
+  if (c_language == clk_cplusplus)
+    {
+      if (SUPPORTS_ONE_ONLY)
+	cpp_define (pfile, "__GXX_WEAK__");
+      else
+	cpp_define (pfile, "__GXX_WEAK__=0");
+    }
+
+  /* A straightforward target hook doesn't work, because of problems
+     linking that hook's body when part of non-C front ends.  */
+#ifdef TARGET_REGISTER_CPP_BUILTINS
+  TARGET_REGISTER_CPP_BUILTINS;
+#endif
+}
+
+/* Pass an object-like macro.  If it doesn't lie in the user's
+   namespace, defines it unconditionally.  Otherwise define a version
+   with two leading underscores, and another version with two leading
+   and trailing underscores, and define the original only if an ISO
+   standard was not nominated.
+
+   e.g. passing "unix" defines "__unix", "__unix__" and possibly
+   "unix".  Passing "_mips" defines "__mips", "__mips__" and possibly
+   "_mips".  */
+void
+builtin_define_std (macro)
+     const char *macro;
+{
+  size_t len = strlen (macro);
+  char *buff = alloca (len + 5);
+  char *p = buff + 2;
+  char *q = p + len;
+
+  /* prepend __ (or maybe just _) if in user's namespace.  */
+  memcpy (p, macro, len + 1);
+  if (*p != '_')
+    *--p = '_';
+  if (p[1] != '_' && !ISUPPER (p[1]))
+    *--p = '_';
+  cpp_define (parse_in, p);
+
+  /* If it was in user's namespace...  */
+  if (p != buff + 2)
+    {
+      /* Define the original macro if permitted.  */
+      if (!flag_iso)
+	cpp_define (parse_in, macro);
+
+      /* Define the macro with leading and following __.  */
+      if (q[-1] != '_')
+	*q++ = '_';
+      if (q[-2] != '_')
+	*q++ = '_';
+      *q = '\0';
+      cpp_define (parse_in, p);
+    }
+}
+
 /* Front end initialization common to C, ObjC and C++.  */
 const char *
 c_common_init (filename)
@@ -4321,6 +4398,10 @@ c_common_init (filename)
      options->unsigned_char = !flag_signed_char; */
 
   options->warn_multichar = warn_multichar;
+
+  /* Register preprocessor built-ins before calls to
+     cpp_main_file.  */
+  cpp_get_callbacks (parse_in)->register_builtins = cb_register_builtins;
 
   /* NULL is passed up to toplev.c and we exit quickly.  */
   if (flag_preprocess_only)
