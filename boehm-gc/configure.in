@@ -63,7 +63,7 @@ AC_ARG_ENABLE(parallel-mark,
     esac]
 )
 
-INCLUDES=-I${srcdir}/include
+INCLUDES="-I`cd $srcdir && ${PWDCMD-pwd}`/include"
 THREADLIBS=
 case "$THREADS" in
  no | none | single)
@@ -436,8 +436,8 @@ else
 fi
 
 AC_OUTPUT(Makefile include/Makefile, [
-dnl Put all the -D options in a file.
-echo "$DEFS" > boehm-cflags
+dnl Put all the -I and -D options in a file.
+echo "$INCLUDES $DEFS" > boehm-cflags
 
 if test -n "$CONFIG_FILES"; then
   LD="${ORIGINAL_LD_FOR_MULTILIBS}"
@@ -453,4 +453,5 @@ gc_basedir=${gc_basedir}
 CC="${CC}"
 ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
 DEFS="$DEFS"
+INCLUDES="$INCLUDES"
 )

@@ -375,13 +375,12 @@ case "$GC" in
  boehm)
     AC_MSG_RESULT(boehm)
     GCLIBS=../boehm-gc/libgcjgc_convenience.la
-    GCINCS='-I$(top_srcdir)/../boehm-gc/include'
     JC1GCSPEC='-fuse-boehm-gc'
     GCTESTSPEC="-L`${PWDCMD-pwd}`/../boehm-gc/.libs -rpath `${PWDCMD-pwd}`/../boehm-gc/.libs"
 
     dnl We also want to pick up some cpp flags required when including
     dnl boehm-config.h.  Yuck.
-    GCINCS="$GCINCS `cat ../boehm-gc/boehm-cflags`"
+    GCINCS="`cat ../boehm-gc/boehm-cflags`"
     GCOBJS=boehm.lo
     GCHDR=boehm-gc.h
     dnl The POSIX thread support needs to know this.

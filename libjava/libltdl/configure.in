@@ -47,8 +47,7 @@ changequote([,])
 
 GCINCS=
 if test "$GC" = "boehm"; then
-   GCINCS='-I$(top_srcdir)/../../boehm-gc/include'
-   GCINCS="$GCINCS `cat ../../boehm-gc/boehm-cflags`"
+   GCINCS="`cat ../../boehm-gc/boehm-cflags`"
    AC_DEFINE(HAVE_BOEHM_GC)
 fi
 AC_SUBST(GCINCS)

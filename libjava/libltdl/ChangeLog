@@ -1,3 +1,8 @@
+2003-08-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in: Don't initialize GCINCS to boehm-gc/include.
+	* Regenerate.	
+
 2002-04-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* .cvsignore: Remove files that are present in CVS.
