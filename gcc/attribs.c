@@ -338,8 +338,15 @@ decl_attributes (node, attributes, flags)
 	    }
 	}
 
+      /* If we require a type, but were passed a decl, set up to make a
+	 new type and update the one in the decl.  ATTR_FLAG_TYPE_IN_PLACE
+	 would have applied if we'd been passed a type, but we cannot modify
+	 the decl's type in place here.  */
       if (spec->type_required && DECL_P (*anode))
-	anode = &TREE_TYPE (*anode);
+	{
+	  anode = &TREE_TYPE (*anode);
+	  flags &= ~(int) ATTR_FLAG_TYPE_IN_PLACE;
+	}
 
       if (spec->function_type_required && TREE_CODE (*anode) != FUNCTION_TYPE
 	  && TREE_CODE (*anode) != METHOD_TYPE)
