@@ -1481,7 +1481,11 @@ fold_convert (t, arg1)
       if (TREE_CODE (arg1) == REAL_CST)
 	{
 	  if (REAL_VALUE_ISNAN (TREE_REAL_CST (arg1)))
-	    return arg1;
+	    {
+	      t = arg1;
+	      TREE_TYPE (arg1) = type;
+	      return t;
+	    }
 	  else if (setjmp (float_error))
 	    {
 	      overflow = 1;
