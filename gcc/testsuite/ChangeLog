@@ -1,3 +1,9 @@
+2004-07-13  David Billinghurst (David.Billinghurst@riotinto.com)
+ 
+	* gfortran.dg/g77/cpp.F: Copy from g77.f-torture/compile.
+	Add {dg-do compile} directive.
+	* gfortran.dg/g77/cpp2.F: Likewise
+
 2004-07-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/5402
@@ -16,7 +22,7 @@
 
 2004-07-12  David Billinghurst (David.Billinghurst@riotinto.com)
  
-	* gfortran.dg/g77/12002.f: Copy from g77.f-torture/compile .
+	* gfortran.dg/g77/12002.f: Copy from g77.f-torture/compile.
 	Add {dg-do compile} directive.
 	* gfortran.dg/g77/13060.f: Likewise
 	* gfortran.dg/g77/19990218-0.f: Likewise
