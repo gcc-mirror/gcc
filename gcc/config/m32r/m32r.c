@@ -1591,8 +1591,8 @@ static struct m32r_frame_info zero_frame_info;
    The return address and frame pointer are treated separately.
    Don't consider them here.  */
 #define MUST_SAVE_REGISTER(regno, interrupt_p) \
-((regno) != RETURN_ADDR_REGNUM && (regno) != FRAME_POINTER_REGNUM \
- && (regs_ever_live[regno] && (!call_used_regs[regno] || interrupt_p)))
+  ((regno) != RETURN_ADDR_REGNUM && (regno) != FRAME_POINTER_REGNUM \
+  && (regs_ever_live[regno] && (!call_really_used_regs[regno] || interrupt_p)))
 
 #define MUST_SAVE_FRAME_POINTER (regs_ever_live[FRAME_POINTER_REGNUM])
 #define MUST_SAVE_RETURN_ADDR   (regs_ever_live[RETURN_ADDR_REGNUM] || current_function_profile)
