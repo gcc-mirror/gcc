@@ -1,3 +1,7 @@
+Wed Mar 25 02:01:02 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (constructor_name_full): Handle TYPENAME_TYPE.
+
 Tue Mar 24 16:12:01 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* tree.c (mapcar): When dealing with a DECL, use it's constant

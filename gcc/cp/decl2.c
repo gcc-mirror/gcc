@@ -1958,7 +1958,8 @@ constructor_name_full (thing)
      tree thing;
 {
   if (TREE_CODE (thing) == TEMPLATE_TYPE_PARM
-      || TREE_CODE (thing) == TEMPLATE_TEMPLATE_PARM)
+      || TREE_CODE (thing) == TEMPLATE_TEMPLATE_PARM
+      || TREE_CODE (thing) == TYPENAME_TYPE)
     thing = TYPE_NAME (thing);
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (thing)))
     {
