@@ -245,6 +245,12 @@
 #define __glibcpp_plain_char_traps true
 #define __glibcpp_signed_char_traps true
 #define __glibcpp_unsigned_char_traps true
+#ifndef __glibcpp_char_is_modulo
+#define __glibcpp_char_is_modulo true
+#endif
+#ifndef __glibcpp_signed_char_is_modulo
+#define __glibcpp_signed_char_is_modulo true
+#endif
 #if __glibcpp_char_bits == 8
 #define __glibcpp_signed_char_min __glibcpp_s8_min
 #define __glibcpp_signed_char_max __glibcpp_s8_max
@@ -301,6 +307,9 @@
 
 #define __glibcpp_signed_short_traps true
 #define __glibcpp_unsigned_short_traps true
+#ifndef __glibcpp_signed_short_is_modulo
+#define __glibcpp_signed_short_is_modulo true
+#endif
 #if __glibcpp_short_bits == 8
 #define __glibcpp_signed_short_min __glibcpp_s8_min
 #define __glibcpp_signed_short_max __glibcpp_s8_max
@@ -345,6 +354,9 @@
 
 #define __glibcpp_signed_int_traps true
 #define __glibcpp_unsigned_int_traps true
+#ifndef __glibcpp_signed_int_is_modulo
+#define __glibcpp_signed_int_is_modulo true
+#endif
 #if __glibcpp_int_bits == 8
 #define __glibcpp_signed_int_min __glibcpp_s8_min
 #define __glibcpp_signed_int_max __glibcpp_s8_max
@@ -389,6 +401,9 @@
 
 #define __glibcpp_signed_long_traps true
 #define __glibcpp_unsigned_long_traps true
+#ifndef __glibcpp_signed_long_is_modulo
+#define __glibcpp_signed_long_is_modulo true
+#endif
 #if __glibcpp_long_bits == 8
 #define __glibcpp_signed_long_min __glibcpp_s8_min
 #define __glibcpp_signed_long_max __glibcpp_s8_max
@@ -433,6 +448,9 @@
 
 #define __glibcpp_signed_long_long_traps true
 #define __glibcpp_signed_long_long_traps true
+#ifndef __glibcpp_signed_long_long_is_modulo
+#define __glibcpp_signed_long_long_is_modulo true
+#endif
 #if __glibcpp_long_long_bits == 8
 #define __glibcpp_signed_long_long_min __glibcpp_s8_min
 #define __glibcpp_signed_long_long_max __glibcpp_s8_max
@@ -478,6 +496,9 @@
 // wchar_t
 
 #define __glibcpp_wchar_t_traps true
+#ifndef __glibcpp_wchar_t_is_modulo
+#define __glibcpp_wchar_t_is_modulo true
+#endif
 #if __glibcpp_wchar_t_is_signed
 #if __glibcpp_wchar_t_bits == 8
 #define __glibcpp_wchar_t_min __glibcpp_s8_min
@@ -1121,9 +1142,9 @@ namespace std
 
       static const bool is_iec559 = false;
       static const bool is_bounded = true;
-      static const bool is_modulo = false;
+      static const bool is_modulo = __glibcpp_char_is_modulo;
 
-      static const bool traps = __glibcpp_signed_char_traps;
+      static const bool traps = __glibcpp_char_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -1133,7 +1154,9 @@ namespace std
 #undef __glibcpp_char_digits
 #undef __glibcpp_char_digits10
 #undef __glibcpp_char_is_signed
+#undef __glibcpp_char_is_modulo
 #undef __glibcpp_char_traps
+
 
 
   template<>
@@ -1179,7 +1202,7 @@ namespace std
 
       static const bool is_iec559 = false;
       static const bool is_bounded = true;
-      static const bool is_modulo = false;
+      static const bool is_modulo = __glibcpp_signed_char_is_modulo;
 
       static const bool traps = __glibcpp_signed_char_traps;
       static const bool tinyness_before = false;
@@ -1190,6 +1213,7 @@ namespace std
 #undef __glibcpp_signed_char_max
 #undef __glibcpp_signed_char_digits
 #undef __glibcpp_signed_char_digits10
+#undef __glibcpp_signed_char_is_modulo  
 #undef __glibcpp_signed_char_traps  
 
   template<>
@@ -1290,7 +1314,7 @@ namespace std
 
       static const bool is_iec559 = false;
       static const bool is_bounded = true;
-      static const bool is_modulo = false;
+      static const bool is_modulo = __glibcpp_wchar_t_is_modulo;
 
       static const bool traps = __glibcpp_wchar_t_traps;
       static const bool tinyness_before = false;
@@ -1302,6 +1326,7 @@ namespace std
 #undef __glibcpp_wchar_t_digits
 #undef __glibcpp_wchar_t_digits10  
 #undef __glibcpp_wchar_t_is_signed
+#undef __glibcpp_wchar_t_is_modulo
 #undef __glibcpp_wchar_t_traps  
   
   template<>
@@ -1347,7 +1372,7 @@ namespace std
 
       static const bool is_iec559 = true;
       static const bool is_bounded = true;
-      static const bool is_modulo = false;
+      static const bool is_modulo = __glibcpp_signed_short_is_modulo;
 
       static const bool traps = __glibcpp_signed_short_traps;
       static const bool tinyness_before = false;
@@ -1358,6 +1383,7 @@ namespace std
 #undef __glibcpp_signed_short_max
 #undef __glibcpp_signed_short_digits
 #undef __glibcpp_signed_short_digits10
+#undef __glibcpp_signed_short_is_modulo
 #undef __glibcpp_signed_short_traps  
   
   template<>
@@ -1458,7 +1484,7 @@ namespace std
 
       static const bool is_iec559 = true;
       static const bool is_bounded = true;
-      static const bool is_modulo = false;
+      static const bool is_modulo = __glibcpp_signed_int_is_modulo;
 
       static const bool traps = __glibcpp_signed_int_traps;
       static const bool tinyness_before = false;
@@ -1469,6 +1495,7 @@ namespace std
 #undef __glibcpp_signed_int_max
 #undef __glibcpp_signed_int_digits
 #undef __glibcpp_signed_int_digits10
+#undef __glibcpp_signed_int_is_modulo
 #undef __glibcpp_signed_int_traps  
   
   template<>
@@ -1569,7 +1596,7 @@ namespace std
 
       static const bool is_iec559 = true;
       static const bool is_bounded = true;
-      static const bool is_modulo = false;
+      static const bool is_modulo = __glibcpp_signed_long_is_modulo;
 
       static const bool traps = __glibcpp_signed_long_traps;
       static const bool tinyness_before = false;
@@ -1580,6 +1607,7 @@ namespace std
 #undef __glibcpp_signed_long_max
 #undef __glibcpp_signed_long_digits
 #undef __glibcpp_signed_long_digits10
+#undef __glibcpp_signed_long_is_modulo
 #undef __glibcpp_signed_long_traps  
   
   template<>
@@ -1680,7 +1708,7 @@ namespace std
       
       static const bool is_iec559 = true;
       static const bool is_bounded = true;
-      static const bool is_modulo = false;
+      static const bool is_modulo = __glibcpp_signed_long_long_is_modulo;
 
       static const bool traps = __glibcpp_signed_long_long_traps;
       static const bool tinyness_before = false;
@@ -1691,6 +1719,7 @@ namespace std
 #undef __glibcpp_signed_long_long_max
 #undef __glibcpp_signed_long_long_digits
 #undef __glibcpp_signed_long_long_digits10
+#undef __glibcpp_signed_long_long_is_modulo
 #undef __glibcpp_signed_long_long_traps  
   
   template<>

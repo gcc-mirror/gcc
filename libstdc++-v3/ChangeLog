@@ -1,3 +1,10 @@
+2001-12-25  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/std_limits.h (__glibcpp_xxx_is_modulo): New
+	macros for signed types; default value is true.
+	(numeric_limits<>::is_modulo): Get value from corresponding
+	__glibcpp_xxx_is_modulo macro.
+
 Sun Dec 23 18:47:24 2001  Jeffrey A Law  (law@redhat.com)
 
 	* config/os/hpux/bits/os_defines.h: Do not include <_sys/inttypes.h>.
