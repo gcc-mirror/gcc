@@ -1691,6 +1691,11 @@ simplify_relational_operation (code, mode, op0, op1)
   int equal, op0lt, op0ltu, op1lt, op1ltu;
   rtx tem;
 
+  if (mode == VOIDmode
+      && (GET_MODE (op0) != VOIDmode
+	  || GET_MODE (op1) != VOIDmode))
+    abort();
+
   /* If op0 is a compare, extract the comparison arguments from it.  */
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
     op1 = XEXP (op0, 1), op0 = XEXP (op0, 0);
@@ -1980,8 +1985,11 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	return op2;
       else if (GET_RTX_CLASS (GET_CODE (op0)) == '<' && ! side_effects_p (op0))
 	{
+	  enum machine_mode cmp_mode = (GET_MODE (XEXP (op0, 0)) == VOIDmode
+					? GET_MODE (XEXP (op0, 1))
+					: GET_MODE (XEXP (op0, 0)));
 	  rtx temp
-	     = simplify_relational_operation (GET_CODE (op0), op0_mode,
+	     = simplify_relational_operation (GET_CODE (op0), cmp_mode,
 					      XEXP (op0, 0), XEXP (op0, 1));
 
 	  /* See if any simplifications were possible.  */
