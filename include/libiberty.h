@@ -85,6 +85,10 @@ extern char *basename ();
 
 extern const char *lbasename PARAMS ((const char *));
 
+/* A well-defined realpath () that is always compiled in.  */
+
+extern char *lrealpath PARAMS ((const char *));
+
 /* Concatenate an arbitrary number of strings.  You must pass NULL as
    the last argument of this function, to terminate the list of
    strings.  Allocates memory using xmalloc.  */

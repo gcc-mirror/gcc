@@ -1,3 +1,9 @@
+2003-11-12  Daniel Jacobowitz  <drow@mvista.com>
+
+	Backport from mainline:
+	2003-02-20  Daniel Jacobowitz  <drow@mvista.com>
+	* libiberty.h (lrealpath): Add declaration.
+
 2003-10-16  Release Manager
 
 	* GCC 3.3.2 Released.
