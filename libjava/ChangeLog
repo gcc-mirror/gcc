@@ -1,3 +1,21 @@
+2000-11-26  Anthony Green  <green@redhat.com>
+
+	* javax/naming/spi/NamingManager.java,
+ 	javax/naming/spi/ObjectFactory.java,
+ 	javax/naming/spi/InitialContextFactory.java,
+ 	javax/naming/spi/InitialContextFactoryBuilder.java,
+ 	javax/naming/RefAddr.java, javax/naming/Reference.java,
+ 	javax/naming/NamingException.java, javax/naming/Context.java,
+ 	javax/naming/Referenceable.java,
+ 	javax/naming/directory/InitialDirContext.java,
+ 	javax/naming/directory/DirContext.java,
+ 	javax/naming/directory/Attributes.java,
+ 	javax/naming/directory/Attribute.java,
+ 	javax/naming/StringRefAddr.java,
+ 	javax/naming/NamingEnumeration.java, javax/naming/Name.java,
+ 	javax/naming/InitialContext.java,
+ 	javax/naming/NoInitialContextException.java: New files.
+	
 2000-11-25  Anthony Green  <green@redhat.com>
 
 	* prims.cc (_Jv_NewObjectArray): Undo placement change.
