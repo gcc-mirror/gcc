@@ -2637,7 +2637,7 @@ $(docobjdir)/%.info: $(docdir)/%.texi stmp-docobjdir
 dvi: gcc.dvi gccint.dvi gccinstall.dvi cpp.dvi lang.dvi cppinternals.dvi
 
 %.dvi: $(docdir)/%.texi
-	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/$<
+	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $<
 
 gccinstall.dvi:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
