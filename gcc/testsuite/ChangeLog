@@ -1,3 +1,7 @@
+2000-08-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/typename27.C: New test.
+
 2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/crash44.C: Remove XFAIL. Add ERROR.
