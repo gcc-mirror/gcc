@@ -1,3 +1,59 @@
+2003-10-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* genmodes.c (struct mode_data): Add contained and next_cont
+	fields.
+	(complete_mode): Maintain linked list of modes that have a
+	given component.
+	(emit_mode_unit_size): Delete.
+	(emit_mode_nunits): New.
+	(emit_insn_modes_c): Update to match.
+	(emit_mode_adjustments): Propagate size and alignment
+	adjustments from component modes to their containers.
+	* machmode.h (mode_unit_size): Delete.
+	(mode_nunits): New.
+	(GET_MODE_NUNITS): Just return the value in the table.
+	(GET_MODE_UNIT_SIZE): Compute using GET_MODE_INNER and
+	GET_MODE_SIZE.
+	* expmed.c (store_bit_field, extract_bit_field): Can use a
+	plain move instruction if bitsize >= GET_MODE_BITSIZE of
+	destination/source mode, respectively.
+	* varasm.c (assemble_real): Write out the full size of the
+	constant, not just its bitsize.
+	(output_constant): Honor TYPE_MODE of TREE_REAL_CSTs.
+
+	* config/ia64/ia64-modes.def: Define XFmode as well as TFmode.
+	Use ADJUST_BYTESIZE and ADJUST_ALIGNMENT to set size and
+	alignment of XF and TF modes in compliance with ia64 ABIs.
+	Can now hardwire the format of both modes.
+	* config/ia64/ia64.c: Change TFmode to XFmode wherever appropriate.
+	(general_tfmode_operand, destination_tfmode_operand)
+	(tfreg_or_fp01_operand, spill_tfmode_operand): Rename to
+	general_xfmode_operand, destination_xfmode_operand,
+	xfreg_or_fp01_operand, spill_xfmode_operand respectively.
+	(ia64_init_builtins): Make TYPE_PRECISION of fpreg_type
+	and float80_type be 96 so they get XFmode.  Use !TARGET_HPUX,
+	not INTEL_EXTENDED_IEEE_FORMAT, to decide how to define
+	__float128.
+	* config/ia64/ia64.h: Default TARGET_HPUX to 0.
+	Change TFmode to XFmode wherever appropriate.  Remove all
+	references to INTEL_EXTENDED_IEEE_FORMAT.
+	(LONG_DOUBLE_TYPE_SIZE): Varies with TARGET_HPUX.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Define (always 96).
+	(PREDICATE_CODES): Update to match function renames.
+	* config/ia64/ia64.md: Change TF to XF throughout; rename all
+	patterns to match.  Remove all references to
+	INTEL_EXTENDED_IEEE_FORMAT.  Update predicate calls to match
+	function renames.
+	* config/ia64/ia64-protos.c: Update all prototypes to match
+	renamed functions.
+	* config/ia64/hpux.h: Redefine TARGET_HPUX to 1.
+	Remove all references to INTEL_EXTENDED_IEEE_FORMAT.
+	* config/ia64/lib1funcs.asm: Add __divxf3 as new name for
+	__divtf3; keep old name for backward compatibility.
+	(L__compat): New section providing forwarding stubs for
+	__fixtfti, __fixunstfti, __floattitf.
+	* config/ia64/t-ia64: Add __compat to LIB1ASMFUNCS.
+
 2003-10-24  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 10757
@@ -29,7 +85,7 @@
 	($(docobjdir)/%.1): Depend on .pod instead of .texi.
 	($(docobjdir)/%.7): Likewise.
 	(%.pod): New implicit rule.
-	(cpp.pod): New dependency only rule.	
+	(cpp.pod): New dependency only rule.
 	(gcc.pod): New intermediate rule with dependencies and commands.
 	(gfdl.pod): Likewise.
 	(fsf-funding.pod): Likewise.

@@ -65,6 +65,10 @@ struct mode_data
   struct mode_data *component;	/* mode of components */
   struct mode_data *wider;	/* next wider mode */
 
+  struct mode_data *contained;  /* Pointer to list of modes that have
+				   this mode as a component.  */
+  struct mode_data *next_cont;  /* Next mode in that list.  */
+
   const char *file;		/* file and line of definition, */
   unsigned int line;		/* for error reporting */
 };
@@ -76,7 +80,7 @@ static struct mode_data *void_mode;
 static const struct mode_data blank_mode = {
   0, "<unknown>", MAX_MODE_CLASS,
   -1, -1, -1, -1,
-  0, 0, 0,
+  0, 0, 0, 0, 0,
   "<unknown>", 0
 };
 
@@ -372,6 +376,14 @@ complete_mode (struct mode_data *m)
     alignment = m->bytesize;
 
   m->alignment = alignment & (~alignment + 1);
+
+  /* If this mode has components, make the component mode point back
+     to this mode, for the sake of adjustments.  */
+  if (m->component)
+    {
+      m->next_cont = m->component->contained;
+      m->component->contained = m;
+    }
 }
 
 static void
@@ -912,18 +924,15 @@ emit_mode_size (void)
 }
 
 static void
-emit_mode_unit_size (void)
+emit_mode_nunits (void)
 {
   enum mode_class c;
   struct mode_data *m;
 
-  print_decl ("unsigned char", "mode_unit_size", "NUM_MACHINE_MODES");
+  print_decl ("unsigned char", "mode_nunits", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
-    tagged_printf ("%u",
-		   m->component
-		   ? m->component->bytesize : m->bytesize,
-		   m->name);
+    tagged_printf ("%u", m->ncomponents, m->name);
 
   print_closer ();
 }
@@ -1055,23 +1064,87 @@ static void
 emit_mode_adjustments (void)
 {
   struct mode_adjust *a;
+  struct mode_data *m;
 
-  puts ("\nvoid\ninit_adjust_machine_modes (void)\n{");
+  puts ("\
+\nvoid\
+\ninit_adjust_machine_modes (void)\
+\n{\
+\n  size_t s ATTRIBUTE_UNUSED;");
 
+  /* Size adjustments must be propagated to all containing modes.
+     A size adjustment forces us to recalculate the alignment too.  */
   for (a = adj_bytesize; a; a = a->next)
-    printf ("  /* %s:%d */\n  mode_size[%smode] = %s;\n",
-	    a->file, a->line, a->mode->name, a->adjustment);
-  if (adj_bytesize && (adj_alignment || adj_format))
-    putchar ('\n');
+    {
+      printf ("\n  /* %s:%d */\n  s = %s;\n",
+	      a->file, a->line, a->adjustment);
+      printf ("  mode_size[%smode] = s;\n", a->mode->name);
+      printf ("  mode_base_align[%smode] = s & (~s + 1);\n",
+	      a->mode->name);
 
+      for (m = a->mode->contained; m; m = m->next_cont)
+	{
+	  switch (m->class)
+	    {
+	    case MODE_COMPLEX_INT:
+	    case MODE_COMPLEX_FLOAT:
+	      printf ("  mode_size[%smode] = 2*s;\n", m->name);
+	      printf ("  mode_base_align[%smode] = s & (~s + 1);\n",
+		      m->name);
+	      break;
+
+	    case MODE_VECTOR_INT:
+	    case MODE_VECTOR_FLOAT:
+	      printf ("  mode_size[%smode] = %d*s;\n",
+		      m->name, m->ncomponents);
+	      printf ("  mode_base_align[%smode] = (%d*s) & (~(%d*s)+1);\n",
+		      m->name, m->ncomponents, m->ncomponents);
+	      break;
+
+	    default:
+	      internal_error (
+	      "mode %s is neither vector nor complex but contains %s",
+	      m->name, a->mode->name);
+	      /* NOTREACHED */
+	    }
+	}
+    }
+
+  /* Alignment adjustments propagate too.
+     ??? This may not be the right thing for vector modes.  */
   for (a = adj_alignment; a; a = a->next)
-    printf ("  /* %s:%d */\n  mode_base_align[%smode] = %s;\n",
-	    a->file, a->line, a->mode->name, a->adjustment);
-  if (adj_alignment && adj_format)
-    putchar ('\n');
+    {
+      printf ("\n  /* %s:%d */\n  s = %s;\n",
+	      a->file, a->line, a->adjustment);
+      printf ("  mode_base_align[%smode] = s;\n", a->mode->name);
 
+      for (m = a->mode->contained; m; m = m->next_cont)
+	{
+	  switch (m->class)
+	    {
+	    case MODE_COMPLEX_INT:
+	    case MODE_COMPLEX_FLOAT:
+	      printf ("  mode_base_align[%smode] = s;\n", m->name);
+	      break;
+
+	    case MODE_VECTOR_INT:
+	    case MODE_VECTOR_FLOAT:
+	      printf ("  mode_base_align[%smode] = %d*s;\n",
+		      m->name, m->ncomponents);
+	      break;
+
+	    default:
+	      internal_error (
+	      "mode %s is neither vector nor complex but contains %s",
+	      m->name, a->mode->name);
+	      /* NOTREACHED */
+	    }
+	}
+    }
+      
+  /* Real mode formats don't have to propagate anywhere.  */
   for (a = adj_format; a; a = a->next)
-    printf ("  /* %s:%d */\n  REAL_MODE_FORMAT (%smode) = %s;\n",
+    printf ("\n  /* %s:%d */\n  REAL_MODE_FORMAT (%smode) = %s;\n",
 	    a->file, a->line, a->mode->name, a->adjustment);
 
   puts ("}");
@@ -1085,7 +1158,7 @@ emit_insn_modes_c (void)
   emit_mode_class ();
   emit_mode_bitsize ();
   emit_mode_size ();
-  emit_mode_unit_size ();
+  emit_mode_nunits ();
   emit_mode_wider ();
   emit_mode_mask ();
   emit_mode_inner ();

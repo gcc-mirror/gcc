@@ -1,15 +1,19 @@
-#ifdef L__divtf3
+#ifdef L__divxf3
 // Compute a 80-bit IEEE double-extended quotient.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
 // alternative.
 //
 // farg0 holds the dividend.  farg1 holds the divisor.
+//
+// __divtf3 is an alternate symbol name for backward compatibility.
 
 	.text
 	.align 16
+	.global __divxf3
 	.global __divtf3
-	.proc __divtf3
+	.proc __divxf3
+__divxf3:
 __divtf3:
 	cmp.eq p7, p0 = r0, r0
 	frcpa.s0 f10, p6 = farg0, farg1
@@ -37,7 +41,7 @@ __divtf3:
 (p6)	fma.s0 fret0 = f12, f10, f11
 (p7)	mov fret0 = f10
 	br.ret.sptk rp
-	.endp __divtf3
+	.endp __divxf3
 #endif
 
 #ifdef L__divdf3
@@ -700,4 +704,40 @@ __ia64_trampoline:
 	  ;;
 	}
 	.endp __ia64_trampoline
+#endif
+
+#ifdef L__compat
+// Thunks for backward compatibility.
+
+	.text
+	.align 16
+	.global __fixtfti
+	.proc __fixtfti
+__fixtfti:
+	{ .bbb
+	  br.sptk.many __fixxfti
+	  ;;
+	}
+	.endp __fixtfti
+
+	.align 16
+	.global __fixunstfti
+	.proc __fixunstfti
+__fixunstfti:
+	{ .bbb
+	  br.sptk.many __fixunsxfti
+	  ;;
+	}
+	.endp __fixunstfti
+
+	.align 16
+	.global __floattitf
+	.proc __floattitf
+__floattitf:
+	{ .bbb
+	  br.sptk.many __floattixf
+	  ;;
+	}
+	.endp __floattitf
+
 #endif

@@ -923,7 +923,7 @@ ar_pfs_reg_operand (register rtx op, enum machine_mode mode)
 /* Like general_operand, but don't allow (mem (addressof)).  */
 
 int
-general_tfmode_operand (rtx op, enum machine_mode mode)
+general_xfmode_operand (rtx op, enum machine_mode mode)
 {
   if (! general_operand (op, mode))
     return 0;
@@ -935,7 +935,7 @@ general_tfmode_operand (rtx op, enum machine_mode mode)
 /* Similarly.  */
 
 int
-destination_tfmode_operand (rtx op, enum machine_mode mode)
+destination_xfmode_operand (rtx op, enum machine_mode mode)
 {
   if (! destination_operand (op, mode))
     return 0;
@@ -947,7 +947,7 @@ destination_tfmode_operand (rtx op, enum machine_mode mode)
 /* Similarly.  */
 
 int
-tfreg_or_fp01_operand (rtx op, enum machine_mode mode)
+xfreg_or_fp01_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) == SUBREG)
     return 0;
@@ -1430,34 +1430,34 @@ ia64_split_timode (rtx out[2], rtx in, rtx scratch)
     }
 }
 
-/* ??? Fixing GR->FR TFmode moves during reload is hard.  You need to go
+/* ??? Fixing GR->FR XFmode moves during reload is hard.  You need to go
    through memory plus an extra GR scratch register.  Except that you can
    either get the first from SECONDARY_MEMORY_NEEDED or the second from
    SECONDARY_RELOAD_CLASS, but not both.
 
    We got into problems in the first place by allowing a construct like
-   (subreg:TF (reg:TI)), which we got from a union containing a long double.
+   (subreg:XF (reg:TI)), which we got from a union containing a long double.
    This solution attempts to prevent this situation from occurring.  When
    we see something like the above, we spill the inner register to memory.  */
 
 rtx
-spill_tfmode_operand (rtx in, int force)
+spill_xfmode_operand (rtx in, int force)
 {
   if (GET_CODE (in) == SUBREG
       && GET_MODE (SUBREG_REG (in)) == TImode
       && GET_CODE (SUBREG_REG (in)) == REG)
     {
       rtx mem = gen_mem_addressof (SUBREG_REG (in), NULL_TREE, /*rescan=*/true);
-      return gen_rtx_MEM (TFmode, copy_to_reg (XEXP (mem, 0)));
+      return gen_rtx_MEM (XFmode, copy_to_reg (XEXP (mem, 0)));
     }
   else if (force && GET_CODE (in) == REG)
     {
       rtx mem = gen_mem_addressof (in, NULL_TREE, /*rescan=*/true);
-      return gen_rtx_MEM (TFmode, copy_to_reg (XEXP (mem, 0)));
+      return gen_rtx_MEM (XFmode, copy_to_reg (XEXP (mem, 0)));
     }
   else if (GET_CODE (in) == MEM
 	   && GET_CODE (XEXP (in, 0)) == ADDRESSOF)
-    return change_address (in, TFmode, copy_to_reg (XEXP (in, 0)));
+    return change_address (in, XFmode, copy_to_reg (XEXP (in, 0)));
   else
     return in;
 }
@@ -2679,7 +2679,7 @@ ia64_expand_prologue (void)
       {
         if (cfa_off & 15)
 	  abort ();
-	reg = gen_rtx_REG (TFmode, regno);
+	reg = gen_rtx_REG (XFmode, regno);
 	do_spill (gen_fr_spill_x, reg, cfa_off, reg);
 	cfa_off -= 16;
       }
@@ -2849,7 +2849,7 @@ ia64_expand_epilogue (int sibcall_p)
       {
         if (cfa_off & 15)
 	  abort ();
-	reg = gen_rtx_REG (TFmode, regno);
+	reg = gen_rtx_REG (XFmode, regno);
 	do_restore (gen_fr_restore_x, reg, cfa_off);
 	cfa_off -= 16;
       }
@@ -3305,16 +3305,15 @@ hfa_element_mode (tree type, int nested)
 	 types though.  */
     case COMPLEX_TYPE:
       if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_FLOAT
-	  && (TYPE_MODE (type) != TCmode || INTEL_EXTENDED_IEEE_FORMAT))
-	return mode_for_size (GET_MODE_UNIT_SIZE (TYPE_MODE (type))
-			      * BITS_PER_UNIT, MODE_FLOAT, 0);
+	  && TYPE_MODE (type) != TCmode)
+	return GET_MODE_INNER (TYPE_MODE (type));
       else
 	return VOIDmode;
 
     case REAL_TYPE:
       /* We want to return VOIDmode for raw REAL_TYPEs, but the actual
 	 mode if this is contained within an aggregate.  */
-      if (nested && (TYPE_MODE (type) != TFmode || INTEL_EXTENDED_IEEE_FORMAT))
+      if (nested && TYPE_MODE (type) != TFmode)
 	return TYPE_MODE (type);
       else
 	return VOIDmode;
@@ -3482,8 +3481,8 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
   /* Integral and aggregates go in general registers.  If we have run out of
      FR registers, then FP values must also go in general registers.  This can
      happen when we have a SFmode HFA.  */
-  else if (((mode == TFmode) && ! INTEL_EXTENDED_IEEE_FORMAT)
-          || (! FLOAT_MODE_P (mode) || cum->fp_regs == MAX_ARGUMENT_SLOTS))
+  else if (mode == TFmode || mode == TCmode
+	   || (! FLOAT_MODE_P (mode) || cum->fp_regs == MAX_ARGUMENT_SLOTS))
     {
       int byte_size = ((mode == BLKmode)
                        ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
@@ -3784,8 +3783,7 @@ ia64_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
       else
 	return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
     }
-  else if (FLOAT_TYPE_P (valtype) &&
-           ((mode != TFmode) || INTEL_EXTENDED_IEEE_FORMAT))
+  else if (FLOAT_TYPE_P (valtype) && mode != TFmode)
     return gen_rtx_REG (mode, FR_ARG_FIRST);
   else
     {
@@ -4188,11 +4186,11 @@ ia64_register_move_cost (enum machine_mode mode, enum reg_class from,
       to = from, from = tmp;
     }
 
-  /* Moving from FR<->GR in TFmode must be more expensive than 2,
+  /* Moving from FR<->GR in XFmode must be more expensive than 2,
      so that we get secondary memory reloads.  Between FR_REGS,
      we have to make this at least as expensive as MEMORY_MOVE_COST
      to avoid spectacularly poor register class preferencing.  */
-  if (mode == TFmode)
+  if (mode == XFmode)
     {
       if (to != GR_REGS || from != GR_REGS)
         return MEMORY_MOVE_COST (mode, to, 0);
@@ -4521,10 +4519,6 @@ ia64_override_options (void)
   ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
 
   init_machine_status = ia64_init_machine_status;
-
-  /* Tell the compiler which flavor of TFmode we're using.  */
-  if (!INTEL_EXTENDED_IEEE_FORMAT)
-    REAL_MODE_FORMAT (TFmode) = &ieee_quad_format;
 }
 
 static enum attr_itanium_class ia64_safe_itanium_class (rtx);
@@ -7717,26 +7711,20 @@ ia64_init_builtins (void)
 
   /* The __fpreg type.  */
   fpreg_type = make_node (REAL_TYPE);
-  /* ??? Once the IA64 back end supports both 80-bit and 128-bit
-     floating types, this type should have XFmode, not TFmode.
-     TYPE_PRECISION should be 80 bits, not 128.  And, the back end
-     should know to load/save __fpreg variables using the ldf.fill and
-     stf.spill instructions.  */
-  TYPE_PRECISION (fpreg_type) = 128;
+  /* ??? The back end should know to load/save __fpreg variables using
+     the ldf.fill and stf.spill instructions.  */
+  TYPE_PRECISION (fpreg_type) = 96;
   layout_type (fpreg_type);
   (*lang_hooks.types.register_builtin_type) (fpreg_type, "__fpreg");
 
   /* The __float80 type.  */
   float80_type = make_node (REAL_TYPE);
-  /* ??? Once the IA64 back end supports both 80-bit and 128-bit
-     floating types, this type should have XFmode, not TFmode.
-     TYPE_PRECISION should be 80 bits, not 128.  */
-  TYPE_PRECISION (float80_type) = 128;
+  TYPE_PRECISION (float80_type) = 96;
   layout_type (float80_type);
   (*lang_hooks.types.register_builtin_type) (float80_type, "__float80");
 
   /* The __float128 type.  */
-  if (INTEL_EXTENDED_IEEE_FORMAT)
+  if (!TARGET_HPUX)
     {
       tree float128_type = make_node (REAL_TYPE);
       TYPE_PRECISION (float128_type) = 128;
@@ -7744,7 +7732,7 @@ ia64_init_builtins (void)
       (*lang_hooks.types.register_builtin_type) (float128_type, "__float128");
     }
   else
-    /* This is a synonym for "long double".  */
+    /* Under HPUX, this is a synonym for "long double".  */
     (*lang_hooks.types.register_builtin_type) (long_double_type_node,
 					       "__float128");
 
@@ -8345,8 +8333,10 @@ ia64_hpux_init_libfuncs (void)
 
   set_conv_libfunc (sext_optab,   TFmode, SFmode, "_U_Qfcnvff_sgl_to_quad");
   set_conv_libfunc (sext_optab,   TFmode, DFmode, "_U_Qfcnvff_dbl_to_quad");
+  set_conv_libfunc (sext_optab,   TFmode, XFmode, "_U_Qfcnvff_f80_to_quad");
   set_conv_libfunc (trunc_optab,  SFmode, TFmode, "_U_Qfcnvff_quad_to_sgl");
   set_conv_libfunc (trunc_optab,  DFmode, TFmode, "_U_Qfcnvff_quad_to_dbl");
+  set_conv_libfunc (trunc_optab,  XFmode, TFmode, "_U_Qfcnvff_quad_to_f80");
 
   set_conv_libfunc (sfix_optab,   SImode, TFmode, "_U_Qfcnvfxt_quad_to_sgl");
   set_conv_libfunc (sfix_optab,   DImode, TFmode, "_U_Qfcnvfxt_quad_to_dbl");
