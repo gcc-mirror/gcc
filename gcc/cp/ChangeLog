@@ -1,3 +1,12 @@
+2004-06-17  Geoffrey Keating  <geoffk@apple.com>
+
+	* class.c (build_clone): Don't call defer_fn, let mark_used do it.
+	* cp-tree.h (defer_fn): Delete.
+	* decl2.c (defer_fn): Delete.
+	(finish_file): Simplify deferred_fns loops; check that
+	only used inline functions get into deferred_fns.
+	(mark_used): Inline previous contents of defer_fn.
+
 2004-06-16  Richard Henderson  <rth@redhat.com>
 
 	* cp-tree.h (COMPOUND_STMT_TRY_BLOCK, COMPOUND_STMT_BODY_BLOCK): Kill.

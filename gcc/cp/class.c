@@ -3915,8 +3915,6 @@ build_clone (tree fn, tree name)
       DECL_TEMPLATE_INFO (result) = copy_node (DECL_TEMPLATE_INFO (result));
       DECL_TI_TEMPLATE (result) = clone;
     }
-  else if (DECL_DEFERRED_FN (fn))
-    defer_fn (clone);
 
   return clone;
 }
