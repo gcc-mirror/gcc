@@ -1,3 +1,7 @@
+2002-02-19  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* doc/rtl.texi (Constants): Close @code tag.
+
 2002-02-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/i386/i386.md ("mmx_uavgv8qi3"): Use const_vector.

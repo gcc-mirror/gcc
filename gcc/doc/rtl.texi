@@ -1166,7 +1166,7 @@ The number of units in a @code{const_vector} is obtained with the macro
 @code{CONST_VECTOR_NUNITS} as in @code{CONST_VECTOR_NUNITS (@var{v})}.
 
 Individual elements in a vector constant are accessed with the macro
-@code{CONST_VECTOR_ELT} as in @code{CONST_VECTOR_ELT (@var{v}, @var{n})
+@code{CONST_VECTOR_ELT} as in @code{CONST_VECTOR_ELT (@var{v}, @var{n})}
 where @var{v} is the vector constant and @var{n} is the element
 desired.
 
