@@ -746,9 +746,9 @@ int flag_schedule_speculative_load_dangerous = 0;
 
 int flag_single_precision_constant;
 
-/* flag_on_branch_count_reg means try to replace add-1,compare,branch tupple
-   by a cheaper branch, on a count register. */
-int flag_branch_on_count_reg;
+/* flag_branch_on_count_reg means try to replace add-1,compare,branch tupple
+   by a cheaper branch on a count register. */
+int flag_branch_on_count_reg = 1;
 
 /* -finhibit-size-directive inhibits output of .size for ELF.
    This is used only for compiling crtstuff.c, 

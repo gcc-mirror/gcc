@@ -2217,7 +2217,7 @@ any_uncondjump_p (insn)
 /* Return true when insn is a conditional jump.  This function works for
    instructions containing PC sets in PARALLELs.  The instruction may have
    various other effects so before removing the jump you must verify
-   safe_to_remove_jump_p.
+   onlyjump_p.
 
    Note that unlike condjump_p it returns false for unconditional jumps.  */
 

@@ -689,7 +689,7 @@ OBJS = diagnostic.o							      \
  function.o stmt.o except.o expr.o calls.o expmed.o explow.o optabs.o real.o  \
  builtins.o intl.o varasm.o rtl.o print-rtl.o rtlanal.o emit-rtl.o genrtl.o   \
  dbxout.o sdbout.o dwarfout.o dwarf2out.o xcoffout.o bitmap.o alias.o gcse.o  \
- integrate.o jump.o cse.o loop.o unroll.o flow.o combine.o varray.o	      \
+ integrate.o jump.o cse.o loop.o doloop.o unroll.o flow.o combine.o varray.o  \
  regclass.o regmove.o local-alloc.o global.o reload.o reload1.o caller-save.o \
  insn-peep.o reorg.o haifa-sched.o final.o recog.o reg-stack.o regrename.o    \
  insn-opinit.o insn-recog.o insn-extract.o insn-output.o insn-emit.o lcm.o    \
@@ -1338,6 +1338,8 @@ profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
 loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h $(LOOP_H) insn-config.h \
    insn-flags.h $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) real.h \
    $(BASIC_BLOCK_H) function.h toplev.h varray.h except.h cselib.h
+doloop.o : doloop.c $(CONFIG_H) system.h $(RTL_H) flags.h $(LOOP_H) \
+   insn-flags.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H)
 unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h function.h \
    $(INTEGRATE_H) $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) $(LOOP_H) toplev.h \
    hard-reg-set.h varray.h $(BASIC_BLOCK_H)

@@ -59,6 +59,8 @@ extern void ia64_function_prologue PARAMS((FILE *, int));
 extern void ia64_funtion_epilogue PARAMS((FILE *, int));
 extern int ia64_direct_return PARAMS((void));
 extern int predicate_operator PARAMS((rtx, enum machine_mode));
+extern int ar_lc_reg_operand PARAMS((rtx, enum machine_mode));
+
 extern int ia64_move_ok PARAMS((rtx, rtx));
 
 extern void ia64_expand_load_address PARAMS((rtx, rtx));
@@ -102,6 +104,7 @@ extern int ia64_valid_type_attribute PARAMS((tree, tree, tree, tree));
 extern void ia64_encode_section_info PARAMS((tree));
 #endif /* TREE_CODE */
 
+extern int ia64_register_move_cost PARAMS((enum reg_class, enum reg_class));
 extern int ia64_epilogue_uses PARAMS((int));
 extern void ia64_file_start PARAMS((FILE *));
 extern void ia64_expand_prologue PARAMS((void));
