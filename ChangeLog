@@ -1,3 +1,7 @@
+Sat Apr 10 21:50:01 1999  Philipp Thomas  (kthomas@gwdg.de)
+
+	* config.sub: Set basic_machine to i586 when target_alias = k6-*.
+
 Fri Apr  2 15:11:32 1999  H.J. Lu  (hjl@gnu.org)
 
 	* configure (gxx_include_dir): Removed.

@@ -641,19 +641,19 @@ case $basic_machine in
         pc532 | pc532-*)
 		basic_machine=ns32k-pc532
 		;;
-	pentium | p5 | k5 | nexen)
+	pentium | p5 | k5 | k6 | nexen)
 		basic_machine=i586-pc
 		;;
-	pentiumpro | p6 | k6 | 6x86)
+	pentiumpro | p6 | 6x86)
 		basic_machine=i686-pc
 		;;
 	pentiumii | pentium2)
 		basic_machine=i786-pc
 		;;
-	pentium-* | p5-* | k5-* | nexen-*)
+	pentium-* | p5-* | k5-* | k6-* | nexen-*)
 		basic_machine=i586-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
-	pentiumpro-* | p6-* | k6-* | 6x86-*)
+	pentiumpro-* | p6-* | 6x86-*)
 		basic_machine=i686-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	pentiumii-* | pentium2-*)
