@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for m68hc12.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@worldnet.fr).
 
 This file is part of GNU CC.
@@ -32,7 +32,8 @@ Boston, MA 02111-1307, USA.  */
 "%{mshort:-D__HAVE_SHORT_INT__ -D__INT__=16 -D__INT_MAX__=32767}\
  %{!mshort:-D__INT__=32 -D__INT_MAX__=2147483647}\
  %{m68hc11:-Dmc6811 -DMC6811 -Dmc68hc11}\
- %{!m68hc11:-Dmc6812 -DMC6812 -Dmc68hc12}"
+ %{!m68hc11:-Dmc6812 -DMC6812 -Dmc68hc12}\
+ %{fshort-double:-D__HAVE_SHORT_DOUBLE__}"
 
 /* Default target_flags if no switches specified.  */
 #define TARGET_DEFAULT		(MASK_M6812)
