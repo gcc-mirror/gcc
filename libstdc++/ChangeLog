@@ -1,3 +1,11 @@
+1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (INSTALLDIR): Add comment to document the fact,
+	this macro will be properly initialized at make's runtime.
+	(install): Add initialization of INSTALLDIR depending on $(libsubdir)
+	and ${enable_version_specific_runtime_libs}; use $${INSTALLDIR} shell variable
+	instead of the $(INSTALLDIR) make macro.
+
 Tue Mar 24 10:13:07 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/bastring.cc (basic_string::copy): Mark const here, too.

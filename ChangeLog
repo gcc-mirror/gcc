@@ -1,5 +1,12 @@
 1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* configure (enable_version_specific_runtime_libs): Implement new flag
+	--enable-version-specific-runtime-libs which installs C++ runtime stuff in
+	$(libsubdir); emit definition in each generated Makefile.
+	(gxx_include_dir): Initialize depending on $enable_version_specific_runtime_libs.
+
+1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
+
 	* configure (gcc_version): Initialize properly depending on
 	how and where configure is started.
 	(recursion line): Pass a --with-gcc-version=${gcc_version}
