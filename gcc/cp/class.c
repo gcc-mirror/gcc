@@ -401,6 +401,33 @@ convert_to_base (tree object, tree type, bool check_access)
   return build_base_path (PLUS_EXPR, object, binfo, /*nonnull=*/1);
 }
 
+/* EXPR is an expression with class type.  BASE is a base class (a
+   BINFO) of that class type.  Returns EXPR, converted to the BASE
+   type.  This function assumes that EXPR is the most derived class;
+   therefore virtual bases can be found at their static offsets.  */
+
+tree
+convert_to_base_statically (tree expr, tree base)
+{
+  tree expr_type;
+
+  expr_type = TREE_TYPE (expr);
+  if (!same_type_p (expr_type, BINFO_TYPE (base)))
+    {
+      tree pointer_type;
+
+      pointer_type = build_pointer_type (expr_type);
+      expr = build_unary_op (ADDR_EXPR, expr, /*noconvert=*/1);
+      if (!integer_zerop (BINFO_OFFSET (base)))
+	  expr = build (PLUS_EXPR, pointer_type, expr, 
+			build_nop (pointer_type, BINFO_OFFSET (base)));
+      expr = build_nop (build_pointer_type (BINFO_TYPE (base)), expr);
+      expr = build1 (INDIRECT_REF, BINFO_TYPE (base), expr);
+    }
+
+  return expr;
+}
+
 
 /* Virtual function things.  */
 

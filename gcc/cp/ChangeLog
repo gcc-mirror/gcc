@@ -1,3 +1,19 @@
+2003-07-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/10796
+	* decl.c (finish_enum): Make sure the underlying integer type has
+	the same precision as some full integer type.  Reverts part
+	2003-06-27's patch that didn't play any role in fixing the PR.
+
+2003-07-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (convert_to_base_statically): Declare.
+	* call.c (build_special_member_call): Convert INSTANCE to the base
+	type.
+	* class.c (convert_to_base_statically): New method.
+	* init.c (construct_virtual_base): Use it.
+	* method.c (do_build_assign_ref): Fix typo in comment.
+
 2003-07-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11513

@@ -14016,16 +14016,16 @@ finish_enum (enumtype)
   else
     fixup_signed_type (enumtype);
 
-  /* We use "int" or "unsigned int" as the underlying type, unless all
-     the values will not fit or the user has requested that we try to
-     use shorter types where possible.  */
-  if (precision < TYPE_PRECISION (integer_type_node)
-      && !flag_short_enums)
-    {
-      TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
-      TYPE_SIZE (enumtype) = NULL_TREE;
-      layout_type (enumtype);
-    }
+  if (flag_short_enums || (precision > TYPE_PRECISION (integer_type_node)))
+    /* Use the width of the narrowest normal C type which is wide
+       enough.  */
+    TYPE_PRECISION (enumtype) = TYPE_PRECISION (c_common_type_for_size
+						(precision, 1));
+  else
+    TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
+
+  TYPE_SIZE (enumtype) = NULL_TREE;
+  layout_type (enumtype);
 
   /* Fix up all variant types of this enum type.  */
   for (t = TYPE_MAIN_VARIANT (enumtype); t; t = TYPE_NEXT_VARIANT (t))

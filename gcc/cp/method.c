@@ -661,7 +661,7 @@ do_build_assign_ref (fndecl)
       int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
 
-      /* Assign to each of thedirect base classes.  */
+      /* Assign to each of the direct base classes.  */
       for (i = 0; i < CLASSTYPE_N_BASECLASSES (current_class_type); ++i)
 	{
 	  tree binfo;

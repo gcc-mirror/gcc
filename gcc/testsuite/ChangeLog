@@ -1,3 +1,11 @@
+2003-07-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/init/enum2.C: New.
+
+2003-07-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/inherit/access5.C: New test.
+
 2003-07-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11513
