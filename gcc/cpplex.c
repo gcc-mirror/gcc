@@ -1268,61 +1268,50 @@ find_position (start, limit, linep)
   return lbase;
 }
 
-/* These are tables used by _cpp_read_and_prescan.  If we have
-   designated initializers, they can be constant data; otherwise, they
-   are set up at runtime by _cpp_init_input_buffer.  */
+/* The following table is used by _cpp_read_and_prescan.  If we have
+   designated initializers, it can be constant data; otherwise, it is
+   set up at runtime by _cpp_init_input_buffer.  */
 
 #ifndef UCHAR_MAX
 #define UCHAR_MAX 255	/* assume 8-bit bytes */
 #endif
 
 #if (GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)
-#define CHARTAB(name) static const unsigned char name[UCHAR_MAX + 1]
-#define init_speccase()  /* nothing */
-#define init_trigraph_map() /* nothing */
-#define SPECCASE CHARTAB(speccase) = {
-#define TRIGRAPH_MAP CHARTAB(trigraph_map) = {
+#define init_chartab()  /* nothing */
+#define CHARTAB static const unsigned char chartab[UCHAR_MAX + 1] = {
 #define END };
 #define s(p, v) [p] = v,
 #else
-#define CHARTAB(name) static unsigned char name[UCHAR_MAX + 1]
-#define SPECCASE CHARTAB(speccase) = { 0 }; \
- static void init_speccase PARAMS ((void)) { \
- unsigned char *x = speccase;
-#define TRIGRAPH_MAP CHARTAB(trigraph_map) = { 0 }; \
- static void init_trigraph_map PARAMS ((void)) { \
- unsigned char *x = trigraph_map;
+#define CHARTAB static unsigned char chartab[UCHAR_MAX + 1] = { 0 }; \
+ static void init_chartab PARAMS ((void)) { \
+ unsigned char *x = chartab;
 #define END }
 #define s(p, v) x[p] = v;
 #endif
 
 /* Table of characters that can't be handled in the inner loop.
-   Keep these contiguous to optimize the performance of the code generated
-   for the switch that uses them.  */
-#define SPECCASE_EMPTY     0
+   Also contains the mapping between trigraph third characters and their
+   replacements.  */
 #define SPECCASE_CR        1
 #define SPECCASE_BACKSLASH 2
 #define SPECCASE_QUESTION  3
  
-SPECCASE
+CHARTAB
   s('\r', SPECCASE_CR)
   s('\\', SPECCASE_BACKSLASH)
   s('?',  SPECCASE_QUESTION)
-END
 
-/* Map of trigraph third characters to their replacements.  */
-  
-TRIGRAPH_MAP
   s('=', '#')	s(')', ']')	s('!', '|')
   s('(', '[')	s('\'', '^')	s('>', '}')
   s('/', '\\')	s('<', '{')	s('-', '~')
 END
 
 #undef CHARTAB
-#undef SPECCASE
-#undef TRIGRAPH_MAP
 #undef END
 #undef s
+
+#define NORMAL(c) ((chartab[c]) == 0 || (chartab[c]) > SPECCASE_QUESTION)
+#define NONTRI(c) ((c) <= SPECCASE_QUESTION)
 
 /* Read the entire contents of file DESC into buffer BUF.  LEN is how
    much memory to allocate initially; more will be allocated if
@@ -1438,7 +1427,7 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
 	  /* Deal with \-newline, potentially in the middle of a token. */
 	  if (deferred_newlines)
 	    {
-	      if (op != buf && op[-1] != ' ' && op[-1] != '\n' && op[-1] != '\t' && op[-1] != '\r')
+	      if (op != buf && ! is_space (op[-1]) && op[-1] != '\r')
 		{
 		  /* Previous was not white space.  Skip to white
 		     space, if we can, before outputting the \r's */
@@ -1446,12 +1435,12 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
 		  while (ip[span] != ' '
 			 && ip[span] != '\t'
 			 && ip[span] != '\n'
-			 && speccase[ip[span]] == SPECCASE_EMPTY)
+			 && NORMAL(ip[span]))
 		    span++;
 		  memcpy (op, ip, span);
 		  op += span;
 		  ip += span;
-		  if (speccase[ip[0]] != SPECCASE_EMPTY)
+		  if (! NORMAL(ip[0]))
 		    goto do_speccase;
 		}
 	      while (deferred_newlines)
@@ -1460,7 +1449,7 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
 
 	  /* Copy as much as we can without special treatment. */
 	  span = 0;
-	  while (speccase[ip[span]] == SPECCASE_EMPTY) span++;
+	  while (NORMAL (ip[span])) span++;
 	  memcpy (op, ip, span);
 	  op += span;
 	  ip += span;
@@ -1468,7 +1457,7 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
 	do_speccase:
 	  if (ip > near_buff_end) /* Do we have enough chars? */
 	    break;
-	  switch (speccase[*ip++])
+	  switch (chartab[*ip++])
 	    {
 	    case SPECCASE_CR:  /* \r */
 	      if (ip[-2] != '\n')
@@ -1505,8 +1494,8 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
 		  break;
 		    
 		d = ip[1];
-		t = trigraph_map[d];
-		if (t == 0)
+		t = chartab[d];
+		if (NONTRI (t))
 		  break;
 
 		if (CPP_OPTION (pfile, warn_trigraphs))
@@ -1578,8 +1567,8 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
   return -1;
 }
 
-/* Allocate pfile->input_buffer, and initialize speccase[] and
-   trigraph_map[] if it hasn't happened already.  */
+/* Allocate pfile->input_buffer, and initialize chartab[]
+   if it hasn't happened already.  */
  
 void
 _cpp_init_input_buffer (pfile)
@@ -1587,8 +1576,7 @@ _cpp_init_input_buffer (pfile)
 {
   U_CHAR *tmp;
 
-  init_speccase ();
-  init_trigraph_map ();
+  init_chartab ();
 
   /* Determine the appropriate size for the input buffer.  Normal C
      source files are smaller than eight K.  */

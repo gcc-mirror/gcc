@@ -1,3 +1,11 @@
+2000-04-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c (trigraph_map, speccase): Combine into single
+	table, chartab.
+	(NORMAL, NONTRI): New macros.
+	(_cpp_read_and_prescan): Change to use unified table.  Use
+	is_hspace to test for whitespace.
+
 2000-04-04  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* builtins.c (expand_builtin_strlen): Force the source to
