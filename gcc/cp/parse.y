@@ -204,7 +204,7 @@ empty_parms ()
 %type <ttype> compstmt implicitly_scoped_stmt
 
 %type <ttype> declarator notype_declarator after_type_declarator
-%type <ttype> notype_declarator_intern
+%type <ttype> notype_declarator_intern absdcl_intern
 %type <ttype> direct_notype_declarator direct_after_type_declarator
 %type <itype> components notype_components
 %type <ttype> component_decl component_decl_1 
@@ -3090,19 +3090,29 @@ direct_new_declarator:
 		{ $$ = build_parse_node (ARRAY_REF, $$, $3); }
 	;
 
+absdcl_intern:
+	  absdcl
+	| attributes absdcl
+                {
+		  /* Provide support for '(' attributes '*' declarator ')'
+		     etc */
+		  $$ = decl_tree_cons ($1, $2, NULL_TREE);
+		}
+	;
+	
 /* ANSI abstract-declarator (8.1) */
 absdcl:
-	  '*' nonempty_cv_qualifiers absdcl
+	  '*' nonempty_cv_qualifiers absdcl_intern
 		{ $$ = make_pointer_declarator ($2.t, $3); }
-	| '*' absdcl
+	| '*' absdcl_intern
 		{ $$ = make_pointer_declarator (NULL_TREE, $2); }
 	| '*' nonempty_cv_qualifiers  %prec EMPTY
 		{ $$ = make_pointer_declarator ($2.t, NULL_TREE); }
 	| '*'  %prec EMPTY
 		{ $$ = make_pointer_declarator (NULL_TREE, NULL_TREE); }
-	| '&' nonempty_cv_qualifiers absdcl
+	| '&' nonempty_cv_qualifiers absdcl_intern
 		{ $$ = make_reference_declarator ($2.t, $3); }
-	| '&' absdcl
+	| '&' absdcl_intern
 		{ $$ = make_reference_declarator (NULL_TREE, $2); }
 	| '&' nonempty_cv_qualifiers  %prec EMPTY
 		{ $$ = make_reference_declarator ($2.t, NULL_TREE); }
@@ -3112,7 +3122,7 @@ absdcl:
 		{ tree arg = make_pointer_declarator ($2, NULL_TREE);
 		  $$ = build_parse_node (SCOPE_REF, $1, arg);
 		}
-	| ptr_to_mem cv_qualifiers absdcl
+	| ptr_to_mem cv_qualifiers absdcl_intern
 		{ tree arg = make_pointer_declarator ($2, $3);
 		  $$ = build_parse_node (SCOPE_REF, $1, arg);
 		}
@@ -3121,7 +3131,7 @@ absdcl:
 
 /* ANSI direct-abstract-declarator (8.1) */
 direct_abstract_declarator:
-	  '(' absdcl ')'
+	  '(' absdcl_intern ')'
 		{ $$ = $2; }
 	  /* `(typedef)1' is `int'.  */
 	| PAREN_STAR_PAREN
