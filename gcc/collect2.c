@@ -239,6 +239,7 @@ static char *initname, *fininame;	/* names of init and fini funcs */
 static struct head constructors;	/* list of constructors found */
 static struct head destructors;		/* list of destructors found */
 static struct head exports;		/* list of exported symbols */
+static struct head frame_tables;	/* list of frame unwind info tables */
 
 struct obstack temporary_obstack;
 struct obstack permanent_obstack;
@@ -599,13 +600,16 @@ is_ctor_dtor (s)
 #ifdef NO_DOT_IN_LABEL
     { "GLOBAL__I_", sizeof ("GLOBAL__I_")-1, 1, 0 },
     { "GLOBAL__D_", sizeof ("GLOBAL__D_")-1, 2, 0 },
+    { "GLOBAL__F_", sizeof ("GLOBAL__F_")-1, 5, 0 },
 #else
     { "GLOBAL_.I.", sizeof ("GLOBAL_.I.")-1, 1, 0 },
     { "GLOBAL_.D.", sizeof ("GLOBAL_.D.")-1, 2, 0 },
+    { "GLOBAL_.F.", sizeof ("GLOBAL_.F.")-1, 5, 0 },
 #endif
 #else
     { "GLOBAL_$I$", sizeof ("GLOBAL_$I$")-1, 1, 0 },
     { "GLOBAL_$D$", sizeof ("GLOBAL_$D$")-1, 2, 0 },
+    { "GLOBAL_$F$", sizeof ("GLOBAL_$F$")-1, 5, 0 },
 #endif
     { "GLOBAL__FI_", sizeof ("GLOBAL__FI_")-1, 3, 0 },
     { "GLOBAL__FD_", sizeof ("GLOBAL__FD_")-1, 4, 0 },
@@ -993,6 +997,7 @@ main (argc, argv)
 	num_c_args++;
     }
   obstack_free (&temporary_obstack, temporary_firstobj);
+  ++num_c_args;
 
   c_ptr = c_argv = (char **) xcalloc (sizeof (char *), num_c_args);
 
@@ -1288,6 +1293,7 @@ main (argc, argv)
 	shared_obj = 1;
     }
   obstack_free (&temporary_obstack, temporary_firstobj);
+  *c_ptr++ = "-fno-exceptions";
 
 #ifdef COLLECT_EXPORT_LIST
   /* The AIX linker will discard static constructors in object files if
@@ -1393,6 +1399,7 @@ main (argc, argv)
     }
 
   if (constructors.number == 0 && destructors.number == 0
+      && frame_tables.number == 0
 #ifdef SCAN_LIBRARIES
       /* If we will be running these functions ourselves, we want to emit
 	 stubs into the shared library so that we don't have to relink
@@ -1687,6 +1694,7 @@ write_c_file_stat (stream, name)
      char *name;
 {
   char *prefix, *p, *q;
+  int frames = (frame_tables.number > 0);
 
   /* Figure out name of output_file, stripping off .so version.  */
   p = rindex (output_file, '/');
@@ -1740,15 +1748,35 @@ write_c_file_stat (stream, name)
   fprintf (stream, "static int count;\n");
   fprintf (stream, "typedef void entry_pt();\n");
   write_list_with_asm (stream, "extern entry_pt ", constructors.first);
+
+  if (frames)
+    {
+      write_list_with_asm (stream, "extern void *", frame_tables.first);
+
+      fprintf (stream, "\tstatic void *frame_table[] = {\n");
+      write_list (stream, "\t\t&", frame_tables.first);
+      fprintf (stream, "\t0\n};\n");
+
+      fprintf (stream, "static void reg_frame () {\n");
+      fprintf (stream, "\t__register_frame_table (frame_table);\n");
+      fprintf (stream, "\t}\n");
+
+      fprintf (stream, "static void dereg_frame () {\n");
+      fprintf (stream, "\t__deregister_frame (frame_table);\n");
+      fprintf (stream, "\t}\n");
+    }
+
   fprintf (stream, "void %s() {\n", initname);
-  if (constructors.number > 0)
+  if (constructors.number > 0 || frames)
     {
       fprintf (stream, "\tstatic entry_pt *ctors[] = {\n");
       write_list (stream, "\t\t", constructors.first);
+      if (frames)
+	fprintf (stream, "\treg_frame,\n");
       fprintf (stream, "\t};\n");
       fprintf (stream, "\tentry_pt **p;\n");
       fprintf (stream, "\tif (count++ != 0) return;\n");
-      fprintf (stream, "\tp = ctors + %d;\n", constructors.number);
+      fprintf (stream, "\tp = ctors + %d;\n", constructors.number + frames);
       fprintf (stream, "\twhile (p > ctors) (*--p)();\n");
     }
   else
@@ -1756,16 +1784,18 @@ write_c_file_stat (stream, name)
   fprintf (stream, "}\n");
   write_list_with_asm (stream, "extern entry_pt ", destructors.first);
   fprintf (stream, "void %s() {\n", fininame);
-  if (destructors.number > 0)
+  if (destructors.number > 0 || frames)
     {
       fprintf (stream, "\tstatic entry_pt *dtors[] = {\n");
       write_list (stream, "\t\t", destructors.first);
+      if (frames)
+	fprintf (stream, "\tdereg_frame,\n");
       fprintf (stream, "\t};\n");
       fprintf (stream, "\tentry_pt **p;\n");
       fprintf (stream, "\tif (--count != 0) return;\n");
       fprintf (stream, "\tp = dtors;\n");
       fprintf (stream, "\twhile (p < dtors + %d) (*p++)();\n",
-	       destructors.number);
+	       destructors.number + frames);
     }
   fprintf (stream, "}\n");
 
@@ -1785,20 +1815,43 @@ write_c_file_glob (stream, name)
 {
   /* Write the tables as C code  */
 
+  int frames = (frame_tables.number > 0);
+
   fprintf (stream, "typedef void entry_pt();\n\n");
     
   write_list_with_asm (stream, "extern entry_pt ", constructors.first);
-    
+
+  if (frames)
+    {
+      write_list_with_asm (stream, "extern void *", frame_tables.first);
+
+      fprintf (stream, "\tstatic void *frame_table[] = {\n");
+      write_list (stream, "\t\t&", frame_tables.first);
+      fprintf (stream, "\t0\n};\n");
+
+      fprintf (stream, "static void reg_frame () {\n");
+      fprintf (stream, "\t__register_frame_table (frame_table);\n");
+      fprintf (stream, "\t}\n");
+
+      fprintf (stream, "static void dereg_frame () {\n");
+      fprintf (stream, "\t__deregister_frame (frame_table);\n");
+      fprintf (stream, "\t}\n");
+    }
+
   fprintf (stream, "\nentry_pt * __CTOR_LIST__[] = {\n");
-  fprintf (stream, "\t(entry_pt *) %d,\n", constructors.number);
+  fprintf (stream, "\t(entry_pt *) %d,\n", constructors.number + frames);
   write_list (stream, "\t", constructors.first);
+  if (frames)
+    fprintf (stream, "\treg_frame,\n");
   fprintf (stream, "\t0\n};\n\n");
 
   write_list_with_asm (stream, "extern entry_pt ", destructors.first);
 
   fprintf (stream, "\nentry_pt * __DTOR_LIST__[] = {\n");
-  fprintf (stream, "\t(entry_pt *) %d,\n", destructors.number);
+  fprintf (stream, "\t(entry_pt *) %d,\n", destructors.number + frames);
   write_list (stream, "\t", destructors.first);
+  if (frames)
+    fprintf (stream, "\tdereg_frame,\n");
   fprintf (stream, "\t0\n};\n\n");
 
   fprintf (stream, "extern entry_pt %s;\n", NAME__MAIN);
@@ -1981,6 +2034,10 @@ scan_prog_file (prog_name, which_pass)
 	  add_to_list (&destructors, name);
 #endif
 	  break;
+
+	case 5:
+	  if (which_pass != PASS_LIB)
+	    add_to_list (&frame_tables, name);
 
 	default:		/* not a constructor or destructor */
 	  continue;

@@ -2396,6 +2396,10 @@ compile_file (name)
   if (write_symbols == DWARF_DEBUG)
     TIMEVAR (symout_time, dwarfout_init (asm_out_file, main_input_filename));
 #endif
+#ifdef DWARF2_UNWIND_INFO
+  if (dwarf2out_do_frame ())
+    dwarf2out_frame_init ();
+#endif
 #ifdef DWARF2_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
     TIMEVAR (symout_time, dwarf2out_init (asm_out_file, main_input_filename));
@@ -2530,8 +2534,7 @@ compile_file (name)
     /* Now that all possible functions have been output, we can dump
        the exception table.  */
 
-    if (exception_table_p ())
-      output_exception_table ();
+    output_exception_table ();
 
     for (i = 0; i < len; i++)
       {
@@ -2644,6 +2647,11 @@ compile_file (name)
 	     {
 	       dwarfout_finish ();
 	     });
+#endif
+
+#ifdef DWARF2_UNWIND_INFO
+  if (dwarf2out_do_frame ())
+    dwarf2out_frame_finish ();
 #endif
 
 #ifdef DWARF2_DEBUGGING_INFO

@@ -931,8 +931,9 @@ libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs
 		touch libgcc2.ready; \
 	fi
 
-libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
-   $(LANG_LIB2FUNCS) machmode.h longlong.h gbl-ctors.h config.status
+LIB2ADD = $(srcdir)/frame.c $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
+libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2ADD) \
+   machmode.h longlong.h gbl-ctors.h config.status
 # Actually build it in tmplibgcc2.a, then rename at end,
 # so that libgcc2.a itself remains nonexistent if compilation is aborted.
 	-rm -f tmplibgcc2.a
@@ -957,34 +958,30 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 # We don't use -e here because there are if statements
 # that should not make the command give up when the if condition is false.
 # Instead, we test for failure after each command where it matters.
-	for file in .. $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS); \
-	do \
-	  if [ x$${file} != x.. ]; then \
-	    name=`echo $${file} | sed -e 's/[.][cSo]$$//' -e 's/[.]asm$$//' -e 's/[.]txt$$//'`; \
-	    oname=` echo $${name} | sed -e 's,.*/,,'`; \
-	    if [ $${name}.txt = $${file} ]; then \
-	      for f in .. `cat $${file}`; do if [ x$${f} != x.. ]; then \
-		$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" \
-		  CFLAGS="$(CFLAGS)" HOST_PREFIX="$(HOST_PREFIX)" \
-		  HOST_PREFIX_1="$(HOST_PREFIX_1)" \
-		  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $${f}; \
-	        if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	        $(AR) $(AR_FLAGS) tmplibgcc2.a $${f}; \
-	        rm -f $${f}; \
-	      else true; \
-	      fi; done; \
-	    else \
-	      echo $${name}; \
-	      if [ $${name}.asm = $${file} ]; then \
-		cp $${file} $${name}.s || exit 1; file=$${name}.s; \
-	      else true; fi; \
-	      $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
+	for file in $(LIB2ADD); do \
+	  name=`echo $${file} | sed -e 's/[.][cSo]$$//' -e 's/[.]asm$$//' -e 's/[.]txt$$//'`; \
+	  oname=` echo $${name} | sed -e 's,.*/,,'`; \
+	  if [ $${name}.txt = $${file} ]; then \
+	    for f in .. `cat $${file}`; do if [ x$${f} != x.. ]; then \
+	      $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+		AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" \
+		CFLAGS="$(CFLAGS)" HOST_PREFIX="$(HOST_PREFIX)" \
+		HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+		LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $${f}; \
 	      if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	      $(AR) $(AR_FLAGS) tmplibgcc2.a $${oname}$(objext); \
-	      rm -f $${name}.s $${oname}$(objext); \
-	    fi; \
-	  else true; \
+	      $(AR) $(AR_FLAGS) tmplibgcc2.a $${f}; \
+	      rm -f $${f}; \
+	    else true; \
+	    fi; done; \
+	  else \
+	    echo $${name}; \
+	    if [ $${name}.asm = $${file} ]; then \
+	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
+	    else true; fi; \
+	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
+	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	    $(AR) $(AR_FLAGS) tmplibgcc2.a $${oname}$(objext); \
+	    rm -f $${name}.s $${oname}$(objext); \
 	  fi; \
 	done
 	mv tmplibgcc2.a libgcc2.a
@@ -1031,8 +1028,7 @@ stamp-mlib: $(srcdir)/genmultilib Makefile
 
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
-   $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS) machmode.h longlong.h gbl-ctors.h \
-   config.status
+   $(LIB2ADD) machmode.h longlong.h gbl-ctors.h config.status
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
 	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
@@ -1098,12 +1094,12 @@ stmp-multilib-sub:
 # constructors.
 $(T)crtbegin.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
-	  -finhibit-size-directive -fno-inline-functions $(CRTSTUFF_T_CFLAGS) \
+	  -finhibit-size-directive -fno-inline-functions -fno-exceptions $(CRTSTUFF_T_CFLAGS) \
 	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -o $(T)crtbegin$(objext)
 
 $(T)crtend.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
-	  -finhibit-size-directive -fno-inline-functions $(CRTSTUFF_T_CFLAGS) \
+	  -finhibit-size-directive -fno-inline-functions -fno-exceptions $(CRTSTUFF_T_CFLAGS) \
 	  -c $(srcdir)/crtstuff.c -DCRT_END -o $(T)crtend$(objext)
 
 # On some systems we also want to install versions of these files

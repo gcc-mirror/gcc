@@ -238,9 +238,6 @@ static unsigned reg_number		PROTO((rtx));
 #ifndef FRAME_SECTION
 #define FRAME_SECTION		".debug_frame"
 #endif
-#if !defined (EH_FRAME_SECTION) && defined (ASM_OUTPUT_SECTION_NAME)
-#define EH_FRAME_SECTION	".eh_frame"
-#endif
 
 #ifndef FUNC_BEGIN_LABEL
 #define FUNC_BEGIN_LABEL	"LFB"
@@ -403,6 +400,14 @@ static unsigned reg_number		PROTO((rtx));
 #ifndef DWARF_FRAME_REGNUM
 #define DWARF_FRAME_REGNUM(REG) DBX_REGISTER_NUMBER (REG)
 #endif
+
+/* Hook used by __throw.  */
+
+rtx
+expand_builtin_dwarf_fp_regnum ()
+{
+  return GEN_INT (DWARF_FRAME_REGNUM (HARD_FRAME_POINTER_REGNUM));
+}
 
 /* The offset from the incoming value of %sp to the top of the stack frame
    for the current function.  */
@@ -1203,6 +1208,19 @@ output_cfi (cfi, fde)
      }
 }
 
+#if !defined (EH_FRAME_SECTION)
+#if defined (EH_FRAME_SECTION_ASM_OP)
+#define EH_FRAME_SECTION() eh_frame_section();
+#else
+#if defined (ASM_OUTPUT_SECTION_NAME)
+#define EH_FRAME_SECTION()				\
+  do {							\
+      named_section (NULL_TREE, ".eh_frame", 0);	\
+  } while (0)
+#endif
+#endif
+#endif
+
 /* Output the call frame information used to used to record information
    that relates to calculating the frame pointer, and records the
    location of saved registers.  */
@@ -1225,9 +1243,13 @@ output_call_frame_info (for_eh)
   if (for_eh)
     {
 #ifdef EH_FRAME_SECTION
-      named_section (NULL_TREE, EH_FRAME_SECTION, 0);
+      EH_FRAME_SECTION ();
 #else
+      tree label = (tree) get_file_function_name ('F');
+
       data_section ();
+      ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
+      ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
 #endif
       assemble_label ("__FRAME_BEGIN__");
     }
@@ -1400,7 +1422,10 @@ int
 dwarf2out_do_frame ()
 {
   return (write_symbols == DWARF2_DEBUG
-	  || (flag_exceptions && ! exceptions_via_longjmp));
+#ifdef DWARF2_UNWIND_INFO
+	  || (flag_exceptions && ! exceptions_via_longjmp)
+#endif
+	  );
 }
 
 /* Output a marker (i.e. a label) for the beginning of a function, before
@@ -9191,10 +9216,6 @@ dwarf2out_init (asm_out_file, main_input_filename)
   gen_compile_unit_die (main_input_filename);
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
-
-  /* Initialize the frame unwind information.  Eventually this should be
-     called from compile_file instead.  */
-  dwarf2out_frame_init ();
 }
 
 /* Output stuff that dwarf requires at the end of every file,
@@ -9250,10 +9271,6 @@ dwarf2out_finish ()
   ASM_OUTPUT_SECTION (asm_out_file, BSS_SECTION);
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BSS_END_LABEL, 0);
 #endif
-
-  /* Output the frame unwind information.  Eventually this should be called
-     from compile_file instead.  */
-  dwarf2out_frame_finish ();
 
   /* Output the source line correspondence table.  */
   if (line_info_table_in_use > 1 || separate_line_info_table_in_use)

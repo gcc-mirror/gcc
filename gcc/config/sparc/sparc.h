@@ -3146,3 +3146,7 @@ extern int flag_pic;
    is something you can return to.  */
 #define INCOMING_RETURN_ADDR_RTX \
   gen_rtx (PLUS, word_mode, gen_rtx (REG, word_mode, 15), GEN_INT (8))
+
+#define UNALIGNED_SHORT_ASM_OP	    ".uahalf"
+#define UNALIGNED_INT_ASM_OP	    ".uaword"
+#define UNALIGNED_DOUBLE_INT_ASM_OP ".uaxword"

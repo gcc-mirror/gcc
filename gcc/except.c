@@ -87,34 +87,47 @@ Boston, MA 02111-1307, USA.  */
    exception region, and the address of the handler designated for
    that region.
 
-   At program startup each object file invokes a function named
+   If the target does not use the DWARF 2 frame unwind information, at
+   program startup each object file invokes a function named
    __register_exceptions with the address of its local
-   __EXCEPTION_TABLE__. __register_exceptions is defined in libgcc2.c,
-   and is responsible for recording all of the exception regions into
-   one list (which is kept in a static variable named exception_table_list).
+   __EXCEPTION_TABLE__. __register_exceptions is defined in libgcc2.c, and
+   is responsible for recording all of the exception regions into one list
+   (which is kept in a static variable named exception_table_list).
+
+   On targets that support crtstuff.c, the unwind information
+   is stored in a section named .eh_frame and the information for the
+   entire shared object or program is registered with a call to
+   __register_frame.  On other targets, the information for each
+   translation unit is registered separately with a static constructor.
+   __register_frame is defined in frame.c, and is responsible for
+   recording all of the unwind regions into one list (which is kept in a
+   static variable named unwind_table_list).
 
    The function __throw is actually responsible for doing the
-   throw. In the C++ frontend, __throw is generated on a
+   throw. On machines that have unwind info support, __throw is generated
+   by code in libgcc2.c, otherwise __throw is generated on a
    per-object-file basis for each source file compiled with
-   -fexceptions. Before __throw is invoked, the current context
-   of the throw needs to be placed in the global variable __eh_pc.
+   -fexceptions by the the C++ frontend.  Before __throw is invoked,
+   the current context of the throw needs to be placed in the global
+   variable __eh_pc.
 
    __throw attempts to find the appropriate exception handler for the 
    PC value stored in __eh_pc by calling __find_first_exception_table_match
    (which is defined in libgcc2.c). If __find_first_exception_table_match
-   finds a relevant handler, __throw jumps directly to it.
+   finds a relevant handler, __throw transfers control directly to it.
 
-   If a handler for the context being thrown from can't be found,
-   __throw is responsible for unwinding the stack, determining the
-   address of the caller of the current function (which will be used
-   as the new context to throw from), and then restarting the process
-   of searching for a handler for the new context. __throw may also
-   call abort if it is unable to unwind the stack, and can also
-   call an external library function named __terminate if it reaches
-   the top of the stack without finding an appropriate handler. (By
-   default __terminate invokes abort, but this behavior can be
-   changed by the user to perform some sort of cleanup behavior before
-   exiting).
+   If a handler for the context being thrown from can't be found, __throw
+   walks (see Walking the stack below) the stack up the dynamic call chain to
+   continue searching for an appropriate exception handler based upon the
+   caller of the function it last sought a exception handler for.  It stops
+   then either an exception handler is found, or when the top of the
+   call chain is reached.
+
+   If no handler is found, an external library function named
+   __terminate is called.  If a handler is found, then we restart
+   our search for a handler at the end of the call chain, and repeat
+   the search process, but instead of just walking up the call chain,
+   we unwind the call chain as we walk up it.
 
    Internal implementation details:
 
@@ -231,39 +244,78 @@ Boston, MA 02111-1307, USA.  */
    incorrect results is better than halting the program.
 
 
+   Walking the stack:
+
+   The stack is walked by starting with a pointer to the current
+   frame, and finding the pointer to the callers frame.  The unwind info
+   tells __throw how to find it.
+
    Unwinding the stack:
 
-   The details of unwinding the stack to the next frame can be rather
-   complex. While in many cases a generic __unwind_function routine
-   can be used by the generated exception handling code to do this, it
-   is often necessary to generate inline code to do the unwinding.
+   When we use the term unwinding the stack, we mean undoing the
+   effects of the function prologue in a controlled fashion so that we
+   still have the flow of control.  Otherwise, we could just return
+   (jump to the normal end of function epilogue).
 
-   Whether or not these inlined unwinders are necessary is
-   target-specific.
+   This is done in __throw in libgcc2.c when we know that a handler exists
+   in a frame higher up the call stack than its immediate caller.
 
-   By default, if the target-specific backend doesn't supply a
-   definition for __unwind_function, inlined unwinders will be used
-   instead. The main tradeoff here is in text space utilization.
-   Obviously, if inline unwinders have to be generated repeatedly,
-   this uses much more space than if a single routine is used.
+   To unwind, we find the unwind data associated with the frame, if any.
+   If we don't find any, we call the library routine __terminate.  If we do
+   find it, we use the information to copy the saved register values from
+   that frame into the register save area in the frame for __throw, return
+   into a stub which updates the stack pointer, and jump to the handler.
+   The normal function epilogue for __throw handles restoring the saved
+   values into registers.
+
+   When unwinding, we use this method if we know it will
+   work (if DWARF2_UNWIND_INFO is defined).  Otherwise, we know that
+   an inline unwinder will have been emitted for any function that
+   __unwind_function cannot unwind.  The inline unwinder appears as a
+   normal exception handler for the entire function, for any function
+   that we know cannot be unwound by __unwind_function.  We inform the
+   compiler of whether a function can be unwound with
+   __unwind_function by having DOESNT_NEED_UNWINDER evaluate to true
+   when the unwinder isn't needed.  __unwind_function is used as an
+   action of last resort.  If no other method can be used for
+   unwinding, __unwind_function is used.  If it cannot unwind, it
+   should call __teminate.
+
+   By default, if the target-specific backend doesn't supply a definition
+   for __unwind_function and doesn't support DWARF2_UNWIND_INFO, inlined
+   unwinders will be used instead. The main tradeoff here is in text space
+   utilization.  Obviously, if inline unwinders have to be generated
+   repeatedly, this uses much more space than if a single routine is used.
 
    However, it is simply not possible on some platforms to write a
    generalized routine for doing stack unwinding without having some
-   form of additional data associated with each function. The current
-   implementation encodes this data in the form of additional machine
-   instructions. This is clearly not desirable, as it is extremely
-   inefficient. The next implementation will provide a set of metadata
-   for each function that will provide the needed information.
+   form of additional data associated with each function.  The current
+   implementation can encode this data in the form of additional
+   machine instructions or as static data in tabular form.  The later
+   is called the unwind data.
 
-   The backend macro DOESNT_NEED_UNWINDER is used to conditionalize
-   whether or not per-function unwinders are needed. If DOESNT_NEED_UNWINDER
-   is defined and has a non-zero value, a per-function unwinder is
-   not emitted for the current function.
+   The backend macro DOESNT_NEED_UNWINDER is used to conditionalize whether
+   or not per-function unwinders are needed. If DOESNT_NEED_UNWINDER is
+   defined and has a non-zero value, a per-function unwinder is not emitted
+   for the current function.  If the static unwind data is supported, then
+   a per-function unwinder is not emitted.
 
    On some platforms it is possible that neither __unwind_function
    nor inlined unwinders are available. For these platforms it is not
    possible to throw through a function call, and abort will be
    invoked instead of performing the throw. 
+
+   The reason the unwind data may be needed is that on some platforms
+   the order and types of data stored on the stack can vary depending
+   on the type of function, its arguments and returned values, and the
+   compilation options used (optimization versus non-optimization,
+   -fomit-frame-pointer, processor variations, etc).
+
+   Unfortunately, this also means that throwing through functions that
+   aren't compiled with exception handling support will still not be
+   possible on some platforms. This problem is currently being
+   investigated, but no solutions have been found that do not imply
+   some unacceptable performance penalties.
 
    Future directions:
 
@@ -309,28 +361,11 @@ Boston, MA 02111-1307, USA.  */
    query various state variables to determine what actions are to be
    performed next.
 
-   Another major problem that is being worked on is the issue with
-   stack unwinding on various platforms. Currently the only platform
-   that has support for __unwind_function is the Sparc; all other
-   ports require per-function unwinders, which causes large amounts of
-   code bloat.
-
-   Ideally it would be possible to store a small set of metadata with
-   each function that would then make it possible to write a
-   __unwind_function for every platform. This would eliminate the
-   need for per-function unwinders.
-
-   The main reason the data is needed is that on some platforms the
-   order and types of data stored on the stack can vary depending on
-   the type of function, its arguments and returned values, and the
-   compilation options used (optimization versus non-optimization,
-   -fomit-frame-pointer, processor variations, etc).
-
-   Unfortunately, this also means that throwing through functions that
-   aren't compiled with exception handling support will still not be
-   possible on some platforms. This problem is currently being
-   investigated, but no solutions have been found that do not imply
-   some unacceptable performance penalties.
+   Another major problem that is being worked on is the issue with stack
+   unwinding on various platforms. Currently the only platforms that have
+   support for the generation of a generic unwinder are the SPARC and MIPS.
+   All other ports require per-function unwinders, which produce large
+   amounts of code bloat.
 
    For setjmp/longjmp based exception handling, some of the details
    are as above, but there are some additional details.  This section
@@ -354,6 +389,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include "defaults.h"
 #include <stdio.h>
 #include "rtl.h"
 #include "tree.h"
@@ -373,7 +409,11 @@ Boston, MA 02111-1307, USA.  */
 /* One to use setjmp/longjmp method of generating code for exception
    handling.  */
 
+#if DWARF2_UNWIND_INFO
+int exceptions_via_longjmp = 0;
+#else
 int exceptions_via_longjmp = 1;
+#endif
 
 /* One to enable asynchronous exception support.  */
 
@@ -648,11 +688,9 @@ eh_outer_context (addr)
   expand_and (addr, MASK_RETURN_ADDR, addr);
 #endif
 
-  /* Then subtract out enough to get into the appropriate region.  If
-     this is defined, assume we don't need to subtract anything as it
-     is already within the correct region.  */
-#if ! defined (RETURN_ADDR_OFFSET)
-  addr = plus_constant (addr, -1);
+  /* Then adjust to find the real return address.  */
+#if defined (RETURN_ADDR_OFFSET)
+  addr = plus_constant (addr, RETURN_ADDR_OFFSET);
 #endif
 
   return addr;
@@ -1106,7 +1144,10 @@ emit_throw ()
 #ifdef JUMP_TO_THROW
       emit_indirect_jump (throw_libfunc);
 #else
+#ifndef DWARF2_UNWIND_INFO
+      /* Prevent assemble_external from doing anything with this symbol.  */
       SYMBOL_REF_USED (throw_libfunc) = 1;
+#endif
       emit_library_call (throw_libfunc, 0, VOIDmode, 0);
 #endif
       throw_used = 1;
@@ -1445,10 +1486,8 @@ add_eh_table_entry (n)
 	  if (eh_table_max_size < 0)
 	    abort ();
 
-	  if ((eh_table = (int *) realloc (eh_table,
-					   eh_table_max_size * sizeof (int)))
-	      == 0)
-	    fatal ("virtual memory exhausted");
+	  eh_table = (int *) xrealloc (eh_table,
+				       eh_table_max_size * sizeof (int));
 	}
       else
 	{
@@ -1472,6 +1511,18 @@ exception_table_p ()
     return 1;
 
   return 0;
+}
+
+/* 1 if we need a static constructor to register EH table info.  */
+
+int
+register_exception_table_p ()
+{
+#if defined (DWARF2_UNWIND_INFO)
+  return 0;
+#endif
+
+  return exception_table_p ();
 }
 
 /* Output the entry of the exception table corresponding to to the
@@ -1511,7 +1562,7 @@ output_exception_table ()
   int i;
   extern FILE *asm_out_file;
 
-  if (! doing_eh (0))
+  if (! doing_eh (0) || ! eh_table)
     return;
 
   exception_section ();
@@ -1519,11 +1570,6 @@ output_exception_table ()
   /* Beginning marker for table.  */
   assemble_align (GET_MODE_ALIGNMENT (ptr_mode));
   assemble_label ("__EXCEPTION_TABLE__");
-
-  assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
-  assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
-  assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
-  putc ('\n', asm_out_file);		/* blank line */
 
   for (i = 0; i < eh_table_size; ++i)
     output_exception_table_entry (asm_out_file, eh_table[i]);
@@ -1571,6 +1617,10 @@ start_eh_unwinder ()
   if (exceptions_via_longjmp)
     return;
 
+#ifdef DWARF2_UNWIND_INFO
+  return;
+#endif
+
   expand_eh_region_start ();
 }
 
@@ -1596,6 +1646,10 @@ end_eh_unwinder ()
 
   if (exceptions_via_longjmp)
     return;
+
+#ifdef DWARF2_UNWIND_INFO
+  return;
+#else /* DWARF2_UNWIND_INFO */
 
   assemble_external (eh_saved_pc);
 
@@ -1657,6 +1711,7 @@ end_eh_unwinder ()
       emit_barrier ();
     }
 #endif
+#endif /* DWARF2_UNWIND_INFO */
 }
 
 /* If necessary, emit insns for the per function unwinder for the
@@ -2097,3 +2152,158 @@ exception_optimize ()
 	}
     }
 }
+}
+
+/* Various hooks for the DWARF 2 __throw routine.  */
+
+/* Do any necessary initialization to access arbitrary stack frames.
+   On the SPARC, this means flushing the register windows.  */
+
+void
+expand_builtin_unwind_init ()
+{
+  /* Set this so all the registers get saved in our frame; we need to be
+     able to copy the saved values for any registers from frames we unwind. */
+  current_function_has_nonlocal_label = 1;
+
+#ifdef SETUP_FRAME_ADDRESSES
+  SETUP_FRAME_ADDRESSES ();
+#endif
+}
+
+/* Given a value extracted from the return address register or stack slot,
+   return the actual address encoded in that value.  */
+
+rtx
+expand_builtin_extract_return_addr (addr_tree)
+     tree addr_tree;
+{
+  rtx addr = expand_expr (addr_tree, NULL_RTX, Pmode, 0);
+  return eh_outer_context (addr);
+}
+
+/* Given an actual address in addr_tree, do any necessary encoding
+   and return the value to be stored in the return address register or
+   stack slot so the epilogue will return to that address.  */
+
+rtx
+expand_builtin_frob_return_addr (addr_tree)
+     tree addr_tree;
+{
+  rtx addr = expand_expr (addr_tree, NULL_RTX, Pmode, 0);
+#ifdef RETURN_ADDR_OFFSET
+  addr = plus_constant (addr, -RETURN_ADDR_OFFSET);
+#endif
+  return addr;
+}
+
+/* Given an actual address in addr_tree, set the return address register up
+   so the epilogue will return to that address.  If the return address is
+   not in a register, do nothing.  */
+
+void
+expand_builtin_set_return_addr_reg (addr_tree)
+     tree addr_tree;
+{
+  rtx ra = expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
+				       0, hard_frame_pointer_rtx);
+
+  if (GET_CODE (ra) != REG || REGNO (ra) >= FIRST_PSEUDO_REGISTER)
+    return;
+
+  emit_move_insn (ra, expand_builtin_frob_return_addr (addr_tree));
+}
+
+/* Choose two registers for communication between the main body of
+   __throw and the stub for adjusting the stack pointer.  The first register
+   is used to pass the address of the exception handler; the second register
+   is used to pass the stack pointer offset.
+
+   For register 1 we use the return value register for a void *.
+   For register 2 we use the static chain register if it exists and is
+     different from register 1, otherwise some arbitrary call-clobbered
+     register.  */
+
+static void
+eh_regs (r1, r2, outgoing)
+     rtx *r1, *r2;
+     int outgoing;
+{
+  rtx reg1, reg2;
+
+#ifdef FUNCTION_OUTGOING_VALUE
+  if (outgoing)
+    reg1 = FUNCTION_OUTGOING_VALUE (build_pointer_type (void_type_node),
+				    current_function_decl);
+  else
+#endif
+    reg1 = FUNCTION_VALUE (build_pointer_type (void_type_node),
+			   current_function_decl);
+
+#ifdef STATIC_CHAIN_REGNUM
+  if (outgoing)
+    reg2 = static_chain_incoming_rtx;
+  else
+    reg2 = static_chain_rtx;
+  if (REGNO (reg2) == REGNO (reg1))
+#endif /* STATIC_CHAIN_REGNUM */
+    reg2 = NULL_RTX;
+
+  if (reg2 == NULL_RTX)
+    {
+      int i;
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+	if (call_used_regs[i] && ! fixed_regs[i] && i != REGNO (reg1))
+	  {
+	    reg2 = gen_rtx (REG, Pmode, i);
+	    break;
+	  }
+
+      if (reg2 == NULL_RTX)
+	abort ();
+    }
+
+  *r1 = reg1;
+  *r2 = reg2;
+}
+
+/* Emit inside of __throw a stub which adjusts the stack pointer and jumps
+   to the exception handler.  __throw will set up the necessary values
+   and then return to the stub.  */
+
+rtx
+expand_builtin_eh_stub ()
+{
+  rtx stub_start = gen_label_rtx ();
+  rtx after_stub = gen_label_rtx ();
+  rtx handler, offset, temp;
+
+  emit_jump (after_stub);
+  emit_label (stub_start);
+
+  eh_regs (&handler, &offset, 0);
+
+  adjust_stack (offset);
+  emit_indirect_jump (handler);
+
+  emit_label (after_stub);
+  return gen_rtx (LABEL_REF, Pmode, stub_start);
+}
+
+/* Set up the registers for passing the handler address and stack offset
+   to the stub above.  */
+
+void
+expand_builtin_set_eh_regs (handler, offset)
+     tree handler, offset;
+{
+  rtx reg1, reg2;
+
+  eh_regs (&reg1, &reg2, 1);
+
+  store_expr (offset,  reg2, 0);
+  store_expr (handler, reg1, 0);
+
+  /* These will be used by the stub.  */
+  emit_insn (gen_rtx (USE, VOIDmode, reg1));
+  emit_insn (gen_rtx (USE, VOIDmode, reg2));
