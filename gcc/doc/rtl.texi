@@ -2210,11 +2210,6 @@ Describes a vector concat operation.  The result is a concatenation of the
 vectors @var{vec1} and @var{vec2}; its length is the sum of the lengths of
 the two inputs.
 
-@findex vec_const
-@item (vec_const:@var{m} @var{subparts})
-This describes a constant vector.  @var{subparts} is a @code{parallel} that
-contains a constant for each of the subparts of the vector.
-
 @findex vec_duplicate
 @item (vec_duplicate:@var{m} @var{vec})
 This operation converts a small vector into a larger one by duplicating the
