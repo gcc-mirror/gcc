@@ -8179,7 +8179,17 @@ gen_subprogram_die (decl, context_die)
 	= lookup_filename (DECL_SOURCE_FILE (decl));
 
       if (get_AT_flag (old_die, DW_AT_declaration) != 1)
-	abort ();
+	{
+	  /* ??? This can happen if there is a bug in the program, for
+	     instance, if it has duplicate function definitions.  Ideally,
+	     we should detect this case and ignore it.  For now, if we have
+	     already reported an error, any error at all, then assume that
+	     we got here because of a input error, not a dwarf2 bug.  */
+	  extern int errorcount;
+	  if (errorcount)
+	    return;
+	  abort ();
+	}
 
       /* If the definition comes from the same place as the declaration,
 	 maybe use the old DIE.  We always want the DIE for this function
