@@ -816,6 +816,7 @@ java/lang/Process.java \
 java/lang/Runnable.java	\
 java/lang/Runtime.java \
 java/lang/RuntimeException.java	\
+java/lang/RuntimePermission.java \
 java/lang/SecurityException.java \
 java/lang/SecurityManager.java \
 java/lang/Short.java \
@@ -941,6 +942,7 @@ java/util/EventListener.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
 java/util/HashMap.java \
+java/util/HashSet.java \
 java/util/Hashtable.java \
 java/util/Iterator.java	\
 java/util/LinkedList.java \
@@ -968,6 +970,8 @@ java/util/TimeZone.java	\
 java/util/Timer.java \
 java/util/TimerTask.java \
 java/util/TooManyListenersException.java \
+java/util/TreeMap.java \
+java/util/TreeSet.java \
 java/util/Vector.java
 
 

@@ -145,21 +145,37 @@ public class Thread implements Runnable
     daemon_flag = status;
   }
 
-  public ClassLoader getContextClassLoader()
+  public synchronized ClassLoader getContextClassLoader()
   {
     if (context_class_loader == null)
+      context_class_loader = ClassLoader.getSystemClassLoader ();
+
+    SecurityManager s = System.getSecurityManager();
+    // FIXME: we can't currently find the caller's class loader.
+    ClassLoader callers = null;
+    if (s != null && callers != null)
       {
-	context_class_loader = ClassLoader.getSystemClassLoader ();
-	return context_class_loader;
+	// See if the caller's class loader is the same as or an
+	// ancestor of this thread's class loader.
+	while (callers != null && callers != context_class_loader)
+	  {
+	    // FIXME: should use some internal version of getParent
+	    // that avoids security checks.
+	    callers = callers.getParent ();
+	  }
+
+	if (callers != context_class_loader)
+	  s.checkPermission (new RuntimePermission ("getClassLoader"));
       }
 
-    // FIXME: Add security manager stuff here.
     return context_class_loader;
   }
 
-  public void setContextClassLoader(ClassLoader cl)
+  public synchronized void setContextClassLoader(ClassLoader cl)
   {
-    // FIXME: Add security manager stuff here.
+    SecurityManager s = System.getSecurityManager ();
+    if (s != null)
+      s.checkPermission (new RuntimePermission ("setContextClassLoader"));
     context_class_loader = cl;
   }
 
