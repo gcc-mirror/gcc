@@ -1240,6 +1240,14 @@ extern struct rtx_def *legitimize_pic_address ();
    in one reasonably fast instruction.  */
 #define MOVE_MAX 8
 
+/* This is the value of the error code EDOM for this machine,
+   used by the sqrt instruction.  */
+#define TARGET_EDOM 33
+
+/* This is how to refer to the variable errno.  */
+#define GEN_ERRNO_RTX \
+  gen_rtx (MEM, SImode, gen_rtx (SYMBOL_REF, Pmode, "errno"))
+
 /* Define if normal loads of shorter-than-word items from memory clears
    the rest of the bigs in the register.  */
 #define BYTE_LOADS_ZERO_EXTEND
