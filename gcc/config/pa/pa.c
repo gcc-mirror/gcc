@@ -1634,7 +1634,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      emit_insn (gen_zero_extendsidi2 (operands[0],
 					       gen_rtx_SUBREG (SImode,
 							       operands[0],
-							       0)));
+							       4)));
 	    }
 
 	  return 1;
