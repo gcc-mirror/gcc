@@ -1,3 +1,10 @@
+2003-10-20  Falk Hueffner  <falk@debian.org>
+
+	PR target/12654
+	* config/alpha/alpha.c (alpha_emit_conditional_branch): Don't do
+	comparison against constant by adjusting the argument except for
+	EQ and NE.
+
 2003-10-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* config.gcc: Add support for arm926ejs, arm1026ejs, arm1136js,
