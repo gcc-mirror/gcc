@@ -396,6 +396,33 @@ public class File implements Serializable, Comparable
         // the current working directory to it.
         return System.getProperty ("user.dir").substring (0, 2) + path;
       }
+    else if (separatorChar == '\\' 
+             && path.length () > 1 && path.charAt (1) == ':'
+             && ((path.charAt (0) >= 'a' && path.charAt (0) <= 'z')
+                 || (path.charAt (0) >= 'A' && path.charAt (0) <= 'Z')))
+      {
+        // On Windows, a process has a current working directory for
+        // each drive and a path like "G:foo\bar" would mean the 
+        // absolute path "G:\wombat\foo\bar" if "\wombat" is the 
+        // working directory on the G drive.
+        String drvDir = null;
+        try
+          {
+            drvDir = new File (path.substring (0, 2)).getCanonicalPath ();
+          }
+        catch (IOException e)
+          {
+            drvDir = path.substring (0, 2) + "\\";
+          }
+        
+        // Note: this would return "C:\\." for the path "C:.", if "\"
+        // is the working folder on the C drive, but this is 
+        // consistent with what Sun's JRE 1.4.1.01 actually returns!
+        if (path.length () > 2)
+          return drvDir + '\\' + path.substring (2, path.length ());
+        else
+          return drvDir;
+      }
     else
       return System.getProperty ("user.dir") + separatorChar + path;
   }
@@ -453,8 +480,30 @@ public class File implements Serializable, Comparable
    */
   public String getName ()
   {
-    int last = path.lastIndexOf(separatorChar);
-    return path.substring(last + 1);
+    int nameSeqIndex = 0;
+
+    if (separatorChar == '\\' && path.length () > 1)
+      {
+        // On Windows, ignore the drive specifier or the leading '\\'
+        // of a UNC network path, if any (a.k.a. the "prefix").
+        if ((path.charAt (0) == '\\' && path.charAt (1) == '\\')
+            || (((path.charAt (0) >= 'a' && path.charAt (0) <= 'z')
+		 || (path.charAt (0) >= 'A' && path.charAt (0) <= 'Z'))
+		&& path.charAt (1) == ':'))
+	  {
+	    if (path.length () > 2)
+	      nameSeqIndex = 2;
+	    else
+	      return "";
+	  }
+      }
+
+    String nameSeq 
+      = (nameSeqIndex > 0 ? path.substring (nameSeqIndex) : path);
+
+    int last = nameSeq.lastIndexOf (separatorChar);
+
+    return nameSeq.substring (last + 1);
   }
 
   /**
@@ -466,13 +515,56 @@ public class File implements Serializable, Comparable
    */
   public String getParent ()
   {
-    int last = path.lastIndexOf(separatorChar);
-    if (last == -1)
+    String prefix = null;
+    int nameSeqIndex = 0;
+
+    // The "prefix", if present, is the leading "/" on UNIX and 
+    // either the drive specifier (e.g. "C:") or the leading "\\"
+    // of a UNC network path on Windows.
+    if (separatorChar == '/' && path.charAt (0) == '/')
+      {
+        prefix = "/";
+        nameSeqIndex = 1;
+      }
+    else if (separatorChar == '\\' && path.length () > 1)
+      {
+        if ((path.charAt (0) == '\\' && path.charAt (1) == '\\')
+            || (((path.charAt (0) >= 'a' && path.charAt (0) <= 'z')
+                 || (path.charAt (0) >= 'A' && path.charAt (0) <= 'Z'))
+                && path.charAt (1) == ':'))
+          {
+            prefix = path.substring (0, 2);
+            nameSeqIndex = 2;
+          }
+      }
+
+    // According to the JDK docs, the returned parent path is the 
+    // portion of the name sequence before the last separator
+    // character, if found, prefixed by the prefix, otherwise null.
+    if (nameSeqIndex < path.length ())
+      {
+        String nameSeq = path.substring (nameSeqIndex, path.length ());
+        int last = nameSeq.lastIndexOf (separatorChar);
+        if (last == -1)
+          return prefix;
+        else if (last == (nameSeq.length () - 1))
+          // Note: The path would not have a trailing separator
+          // except for cases like "C:\" on Windows (see 
+          // normalizePath( )), where Sun's JRE 1.4 returns null.
+          return null;
+        else if (last == 0)
+          last++;
+
+        if (prefix != null)
+          return prefix + nameSeq.substring (0, last);
+        else
+          return nameSeq.substring (0, last);
+      }
+    else
+      // Sun's JRE 1.4 returns null if the prefix is the only 
+      // component of the path - so "/" gives null on UNIX and 
+      // "C:", "\\", etc. return null on Windows.
       return null;
-    // FIXME: POSIX assumption.
-    if (last == 0 && path.charAt (0) == '/')
-      ++last;
-    return path.substring(0, last);
   }
 
   /**

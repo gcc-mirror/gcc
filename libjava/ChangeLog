@@ -1,3 +1,14 @@
+2003-04-19  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* java/io/File.java (getAbsolutePath): On Windows, take care
+	of paths like "C:", "G:foo\bar", etc.
+	(getName): Make it work correctly on Windows.
+	(getParent): Make it work correctly on Windows. For UNIX,
+	fix bug that causes "/" to be returned as the parent of "/",
+	instead of null as returned by Sun's JRE.
+
+	* java/io/natFileWin32.cc: Change copyright owner to FSF.
+
 2003-04-19  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/awt/xlib/XGraphicsConfiguration.java (FontMetricsCache): New
