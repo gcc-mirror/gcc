@@ -187,7 +187,7 @@
 
 #define DRECTVE_SECTION_FUNCTION \
 void									\
-drectve_section ()							\
+drectve_section (void)							\
 {									\
   if (in_section != in_drectve)						\
     {									\
@@ -203,11 +203,8 @@ drectve_section ()							\
    ASM_DECLARE_OBJECT_NAME and then switch back to the original section
    afterwards.  */
 #define SWITCH_TO_SECTION_FUNCTION				\
-static void switch_to_section PARAMS ((enum in_section, tree)); \
 static void							\
-switch_to_section (section, decl)				\
-     enum in_section section;					\
-     tree decl;							\
+switch_to_section (enum in_section section, tree decl)		\
 {								\
   switch (section)						\
     {								\
@@ -221,3 +218,4 @@ switch_to_section (section, decl)				\
       default: abort (); break;					\
     }								\
 }
+

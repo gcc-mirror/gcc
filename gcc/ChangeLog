@@ -1,3 +1,7 @@
+2003-11-07  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/arm/pe.h: Convert to ISO C90.
+
 2003-11-07  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh-protos.h (sh_pch_valid_p): Declare.
