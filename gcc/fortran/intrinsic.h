@@ -69,7 +69,7 @@ try gfc_check_min_max_real (gfc_actual_arglist *);
 try gfc_check_min_max_double (gfc_actual_arglist *);
 try gfc_check_matmul (gfc_expr *, gfc_expr *);
 try gfc_check_merge (gfc_expr *, gfc_expr *, gfc_expr *);
-try gfc_check_minloc_maxloc (gfc_expr *, gfc_expr *, gfc_expr *);
+try gfc_check_minloc_maxloc (gfc_actual_arglist *);
 try gfc_check_minval_maxval (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_nearest (gfc_expr *, gfc_expr *);
 try gfc_check_null (gfc_expr *);

@@ -1,3 +1,15 @@
+2004-06-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+        Andrew Vaught <andyv@firstinter.net>
+
+	PR fortran/14928
+	* gfortran.h (gfc_check_f): Add new field f3ml.
+	* check.c (gfc_check_minloc_maxloc): Take argument list instead
+	of individual arguments, reorder if necessary.
+	* intrinsic.h (gfc_check_minloc_maxloc): ... adapt prototype.
+	* intrinsic.c (add_sym_3ml): New function.
+	(add_functions): Change to add_sym_3ml for MINLOC, MAXLOC.
+	(check_specific): Catch special case MINLOC, MAXLOC. 
+
 2004-06-14  Paul Brook  <paul@codesourcery.com>
 
 	* intrinsic.c (add_sym_2s): Use correct function types.

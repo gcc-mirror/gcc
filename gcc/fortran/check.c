@@ -1096,53 +1096,40 @@ gfc_check_matmul (gfc_expr * matrix_a, gfc_expr * matrix_b)
          MASK       NULL
          NULL       MASK             minloc(array, mask=m)
          DIM        MASK
-*/
+
+   I.e. in the case of minloc(array,mask), mask will be in the second
+   position of the argument list and we'll have to fix that up.  */
 
 try
-gfc_check_minloc_maxloc (gfc_expr * array, gfc_expr * a2, gfc_expr * a3)
+gfc_check_minloc_maxloc (gfc_actual_arglist * ap)
 {
+  gfc_expr *a, *m, *d;
 
-  if (int_or_real_check (array, 0) == FAILURE)
+  a = ap->expr;
+  if (int_or_real_check (a, 0) == FAILURE
+      || array_check (a, 0) == FAILURE)
     return FAILURE;
 
-  if (array_check (array, 0) == FAILURE)
+  d = ap->next->expr;
+  m = ap->next->next->expr;
+
+  if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
+      && ap->next->name[0] == '\0')
+    {
+      m = d;
+      d = NULL;
+
+      ap->next->expr = NULL;
+      ap->next->next->expr = m;
+    }
+
+  if (d != NULL
+      && (scalar_check (d, 1) == FAILURE
+      || type_check (d, 1, BT_INTEGER) == FAILURE))
     return FAILURE;
 
-  if (a3 != NULL)
-    {
-      if (logical_array_check (a3, 2) == FAILURE)
-	return FAILURE;
-
-      if (a2 != NULL)
-	{
-	  if (scalar_check (a2, 1) == FAILURE)
-	    return FAILURE;
-	  if (type_check (a2, 1, BT_INTEGER) == FAILURE)
-	    return FAILURE;
-	}
-    }
-  else
-    {
-      if (a2 != NULL)
-	{
-	  switch (a2->ts.type)
-	    {
-	    case BT_INTEGER:
-	      if (scalar_check (a2, 1) == FAILURE)
-		return FAILURE;
-	      break;
-
-	    case BT_LOGICAL:	/* The '2' makes the error message correct */
-	      if (logical_array_check (a2, 2) == FAILURE)
-		return FAILURE;
-	      break;
-
-	    default:
-	      type_check (a2, 1, BT_INTEGER);	/* Guaranteed to fail */
-	      return FAILURE;
-	    }
-	}
-    }
+  if (m != NULL && type_check (m, 2, BT_LOGICAL) == FAILURE)
+    return FAILURE;
 
   return SUCCESS;
 }
