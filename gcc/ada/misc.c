@@ -123,12 +123,18 @@ static void gnat_adjust_rli		(record_layout_info);
 #define LANG_HOOKS_HONOR_READONLY	true
 #undef LANG_HOOKS_HASH_TYPES
 #define LANG_HOOKS_HASH_TYPES		false
+#undef LANG_HOOKS_CLEAR_BINDING_STACK
+#define LANG_HOOKS_CLEAR_BINDING_STACK	lhd_do_nothing
 #undef LANG_HOOKS_PUSHLEVEL
 #define LANG_HOOKS_PUSHLEVEL		lhd_do_nothing_i
 #undef LANG_HOOKS_POPLEVEL
 #define LANG_HOOKS_POPLEVEL		lhd_do_nothing_iii_return_null_tree
 #undef LANG_HOOKS_SET_BLOCK
 #define LANG_HOOKS_SET_BLOCK		lhd_do_nothing_t
+#undef LANG_HOOKS_GETDECLS
+#define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
+#undef LANG_HOOKS_PUSHDECL
+#define LANG_HOOKS_PUSHDECL		lhd_return_tree
 #undef LANG_HOOKS_FINISH_INCOMPLETE_DECL
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL gnat_finish_incomplete_decl
 #undef LANG_HOOKS_GET_ALIAS_SET
@@ -392,6 +398,9 @@ internal_error_function (const char *msgid, va_list *ap)
 static bool
 gnat_init (void)
 {
+  /* Initialize translations and the outer statement group.  */
+  gnat_init_stmt_group ();
+
   /* Performs whatever initialization steps needed by the language-dependent
      lexical analyzer.  */
   gnat_init_decl_processing ();

@@ -1,3 +1,50 @@
+2004-06-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c: Remove calls to add_decl_expr, pushdecl, rest_of_compilation,
+	and rest_of_type_compilation; add arg to create_*_decl.
+ 	(annotate_decl_with_node): Deleted.
+	(gnat_to_gnu_entity, case E_Array_Type): Set location of fields.
+	* gigi.h (get_decls, block_has_vars, pushdecl): Deleted.
+	(get_current_block_context, gnat_pushdecl): New declarations.
+	(gnat_init_stmt_group): Likewise.
+	(create_var_decl, create_type_decl, create_subprog_decl): Add new arg.
+	* misc.c (LANG_HOOKS_CLEAR_BINDING_STACK): Deleted.
+	(LANG_HOOKS_GETDECLS, LANG_HOOKS_PUSHDECL): Deleted.
+	(gnat_init): Call gnat_init_stmt_group.
+	* trans.c (global_stmt_group, gnu_elab_proc_decl): New variables.
+	(gnu_pending_elaboration_list): Deleted.
+	(mark_visited, mark_unvisited, gnat_init_stmt_group): New functions.
+	(gigi): Rearrange initialization calls and move some to last above.
+	(gnat_to_gnu): If statement and not in procedure, go into elab proc.
+	Delete calls to add_decl_expr; add arg to create_*_decl.
+	(gnat_to_gnu, case N_Loop): Recalculate side effects on COND_EXPR.
+	(gnat_to_gnu, case N_Subprogram_Body): Move some code to 
+	begin_subprog_body and call it.
+	Don't push and pop ggc context.
+	(gnat_to_gnu, case N_Compilation_Unit): Rework to support elab proc.
+	(add_stmt): Remove handling of DECL_EXPR from here.
+	If not in function, mark visited.
+	(add_decl_expr): Put global at top level.
+	Check for cases of DECL_INITIAL we have to handle here.
+	(process_type): Add extra arg to create_type_decl.
+	(build_unit_elab): Rework to just gimplify.
+	* utils.c (pending_elaborations, elist_stack, getdecls): Deleted.
+	(block_has_vars, mark_visited, add_pending_elaborations): Likewise.
+	(get_pending_elaborations, pending_elaborations_p): Likewise.
+	(push_pending_elaborations, pop_pending_elaborations): Likewise.
+	(get_elaboration_location, insert_elaboration_list): Likewise.
+	(gnat_binding_level): Renamed from ada_binding_level.
+	(init_gnat_to_gnu): Don't clear pending_elaborations.
+	(global_bindings_p): Treat as global if no current_binding_level.
+	(set_current_block_context): New function.
+	(gnat_pushdecl): Renamed from pushdecl; major rework.
+	All callers changed.
+	(create_type_decl, create_var_decl, create_subprog_decl): Add new arg.
+	(finish_record_type): Call call pushdecl for stub decl.
+	(function_nesting_depth): Deleted.
+	(begin_subprog_body): Delete obsolete code.
+	* utils2.c (build_call_alloc_dealloc): Add new arg to create_var_decl.
+	
 2004-06-28  Robert Dewar  <dewar@gnat.com>
 
 	* mlib-tgt-tru64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb,

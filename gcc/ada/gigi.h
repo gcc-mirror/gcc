@@ -111,8 +111,6 @@ extern tree get_unpadded_type (Entity_Id);
 extern tree maybe_variable (tree);
 
 /* Create a record type that contains a field of TYPE with a starting bit
-   position so that it is aligned to ALIGN bits.  */
-/* Create a record type that contains a field of TYPE with a starting bit
    position so that it is aligned to ALIGN bits and is SIZE bytes long.  */
 extern tree make_aligning_type (tree, int, tree);
 
@@ -367,13 +365,13 @@ extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 /* Returns non-zero if we are currently in the global binding level       */
 extern int global_bindings_p (void);
 
-/* Returns the list of declarations in the current level. Note that this list
-   is in reverse order (it has to be so for back-end compatibility).  */
-extern tree getdecls (void);
-
 /* Enter and exit a new binding level. */
 extern void gnat_pushlevel (void);
 extern void gnat_poplevel (void);
+
+/* Set SUPERCONTEXT of the BLOCK for the current binding level to FNDECL
+   and point FNDECL to this BLOCK.  */
+extern void set_current_block_context (tree);
 
 /* Set the jmpbuf_decl for the current binding level to DECL.  */
 extern void set_block_jmpbuf_decl (tree);
@@ -386,15 +384,11 @@ extern tree get_block_jmpbuf_decl (void);
    to handle the BLOCK node inside the BIND_EXPR.  */
 extern void insert_block (tree);
 
-/* Return nonzero if the are any variables in the current block.  */
-extern int block_has_vars (void);
+/* Records a ..._DECL node DECL as belonging to the current lexical scope
+   and uses GNAT_ENTITY for location information.  */
+extern void gnat_pushdecl (tree, Entity_Id);
 
-/* Records a ..._DECL node DECL as belonging to the current lexical scope.
-   Returns the ..._DECL node. */
-extern tree pushdecl (tree);
-
-/* Create the predefined scalar types such as `integer_type_node' needed
-   in the gcc back-end and initialize the global binding level.  */
+extern void gnat_init_stmt_group (void);
 extern void gnat_init_decl_processing (void);
 extern void init_gigi_decls (tree, tree);
 extern void gnat_init_gcc_eh (void);
@@ -476,8 +470,9 @@ extern tree create_index_type (tree, tree, tree);
    string) and TYPE is a ..._TYPE node giving its data type.
    ARTIFICIAL_P is nonzero if this is a declaration that was generated
    by the compiler.  DEBUG_INFO_P is nonzero if we need to write debugging
-   information about this type.  */
-extern tree create_type_decl (tree, tree, struct attrib *, int, int);
+   information about this type.  GNAT_NODE is used for the position of
+   the decl.  */
+extern tree create_type_decl (tree, tree, struct attrib *, int, int, Node_Id);
 
 /* Returns a GCC VAR_DECL node. VAR_NAME gives the name of the variable.
    ASM_NAME is its assembler name (if provided).  TYPE is
@@ -492,9 +487,11 @@ extern tree create_type_decl (tree, tree, struct attrib *, int, int);
    when processing an external variable declaration (as opposed to a
    definition: no storage is to be allocated for the variable here).
    STATIC_FLAG is only relevant when not at top level.  In that case
-   it indicates whether to always allocate storage to the variable.  */
+   it indicates whether to always allocate storage to the variable.
+
+   GNAT_NODE is used for the position of the decl.  */
 extern tree create_var_decl (tree, tree, tree, tree, int, int, int, int,
-			     struct attrib *);
+			     struct attrib *, Node_Id);
 
 /* Given a DECL and ATTR_LIST, apply the listed attributes.  */
 extern void process_attributes (tree, struct attrib *);
@@ -542,10 +539,10 @@ extern tree create_param_decl (tree, tree, int);
    node), PARAM_DECL_LIST is the list of the subprogram arguments (a list of
    PARM_DECL nodes chained through the TREE_CHAIN field).
 
-   INLINE_FLAG, PUBLIC_FLAG, and EXTERN_FLAG are used to set the appropriate
-   fields in the FUNCTION_DECL.  */
+   INLINE_FLAG, PUBLIC_FLAG, EXTERN_FLAG, and ATTR_LIST are used to set the
+   appropriate fields in the FUNCTION_DECL.  GNAT_NODE gives the location.  */ 
 extern tree create_subprog_decl (tree, tree, tree, tree, int, int, int,
-				 struct attrib *);
+				 struct attrib *, Node_Id);
 
 /* Returns a LABEL_DECL node for LABEL_NAME.  */
 extern tree create_label_decl (tree);
