@@ -1,7 +1,7 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -334,7 +334,7 @@ add_dependence (insn, elem, dep_type)
 	     note that in the bitmap caches of dependency information.  */
 	  if (true_dependency_cache != NULL)
 	    {
-	      if ((int)REG_NOTE_KIND (link) == 0)
+	      if ((int) REG_NOTE_KIND (link) == 0)
 		SET_BIT (true_dependency_cache[INSN_LUID (insn)],
 			 INSN_LUID (elem));
 	      else if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
@@ -360,7 +360,7 @@ add_dependence (insn, elem, dep_type)
      in the bitmap caches of dependency information.  */
   if (true_dependency_cache != NULL)
     {
-      if ((int)dep_type == 0)
+      if ((int) dep_type == 0)
 	SET_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
       else if (dep_type == REG_DEP_ANTI)
 	SET_BIT (anti_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));

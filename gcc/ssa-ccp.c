@@ -1,5 +1,5 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000,2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
    Original framework by Daniel Berlin <dan@cgsoftware.com>
    Fleshed out and major cleanups by Jeff Law <law@redhat.com>
    
@@ -1102,7 +1102,7 @@ mark_references (current_rtx, data)
      void *data;
 {
   rtx x = *current_rtx;
-  sbitmap worklist = (sbitmap)data;
+  sbitmap worklist = (sbitmap) data;
 
   if (x == NULL_RTX)
     return 0;

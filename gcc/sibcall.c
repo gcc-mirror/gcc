@@ -1,5 +1,5 @@
 /* Generic sibling call optimization support
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -546,7 +546,7 @@ replace_call_placeholder (insn, use)
   else if (use == sibcall_use_normal)
     emit_insns_before (XEXP (PATTERN (insn), 0), insn);
   else
-    abort();
+    abort ();
 
   /* Turn off LABEL_PRESERVE_P for the tail recursion label if it
      exists.  We only had to set it long enough to keep the jump

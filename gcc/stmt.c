@@ -110,7 +110,7 @@ static int cost_table_initialized;
 
 /* Special care is needed because we allow -1, but TREE_INT_CST_LOW
    is unsigned.  */
-#define COST_TABLE(I)  cost_table_[(unsigned HOST_WIDE_INT)((I) + 1)]
+#define COST_TABLE(I)  cost_table_[(unsigned HOST_WIDE_INT) ((I) + 1)]
 
 /* Stack of control and binding constructs we are currently inside.
 

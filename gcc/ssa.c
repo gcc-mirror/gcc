@@ -1,5 +1,5 @@
 /* Static Single Assignment conversion routines for the GNU compiler.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -625,9 +625,9 @@ compute_iterated_dominance_frontiers (idfs, frontiers, evals, nregs)
 
   if (rtl_dump_file)
     {
-      fprintf(rtl_dump_file,
-	      "Iterated dominance frontier: %d passes on %d regs.\n",
-	      passes, nregs);
+      fprintf (rtl_dump_file,
+	       "Iterated dominance frontier: %d passes on %d regs.\n",
+	       passes, nregs);
     }
 }
 
@@ -743,7 +743,7 @@ create_delayed_rename (c, reg_loc)
   
   if (GET_CODE (*reg_loc) != REG
       || !CONVERT_REGISTER_TO_SSA_P (REGNO (*reg_loc)))
-    abort();
+    abort ();
 
   r->reg_loc = reg_loc;
   r->old_reg = *reg_loc;
@@ -779,7 +779,7 @@ apply_delayed_renames (c)
       /* Failure here means that someone has a PARALLEL that sets
 	 a register twice (bad!).  */
       if (ssa_rename_to_lookup (r->old_reg) != r->prev_reg)
-	abort();
+	abort ();
       /* Failure here means we have changed REG_LOC before applying
 	 the rename.  */
       /* For the first set we come across, reuse the original regno.  */
@@ -1091,7 +1091,7 @@ rename_block (bb, idom)
       rtx old_reg = *set_data->reg_loc;
 
       if (*set_data->reg_loc != set_data->old_reg)
-	abort();
+	abort ();
       *set_data->reg_loc = set_data->new_reg;
 
       ssa_rename_to_insert (old_reg, set_data->prev_reg);
@@ -1149,7 +1149,7 @@ convert_to_ssa ()
   life_analysis (get_insns (), NULL, 0);
 
   idom = (int *) alloca (n_basic_blocks * sizeof (int));
-  memset ((void *)idom, -1, (size_t)n_basic_blocks * sizeof (int));
+  memset ((void *) idom, -1, (size_t) n_basic_blocks * sizeof (int));
   calculate_dominance_info (idom, NULL, CDI_DOMINATORS);
 
   if (rtl_dump_file)
@@ -1175,7 +1175,7 @@ convert_to_ssa ()
 
   /* Compute register evaluations.  */
 
-  ssa_max_reg_num = max_reg_num();
+  ssa_max_reg_num = max_reg_num ();
   nregs = ssa_max_reg_num;
   evals = sbitmap_vector_alloc (nregs, n_basic_blocks);
   find_evaluations (evals, nregs);
@@ -1395,7 +1395,7 @@ eliminate_phi (e, reg_partition)
       reg = *preg;
 
       if (GET_CODE (reg) != REG || GET_CODE (tgt) != REG)
-	abort();
+	abort ();
 
       reg = regno_reg_rtx[partition_find (reg_partition, REGNO (reg))];
       tgt = regno_reg_rtx[partition_find (reg_partition, REGNO (tgt))];
@@ -2122,7 +2122,7 @@ rename_equivalent_regs (reg_partition)
 		  int i;
 
 		  if (slen <= 1)
-		    abort();
+		    abort ();
 
 		  PATTERN (insn) = XVECEXP (s, 0, slen-1);
 		  for (i = 0; i < slen - 1; i++)
@@ -2139,7 +2139,7 @@ rename_equivalent_regs (reg_partition)
 /* The main entry point for moving from SSA.  */
 
 void
-convert_from_ssa()
+convert_from_ssa ()
 {
   int bb;
   partition reg_partition;

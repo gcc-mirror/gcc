@@ -1,5 +1,5 @@
 /* Simple bitmaps.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -71,7 +71,7 @@ do {									\
       if (word_ != 0)							\
 	for (; bit_num_ < SBITMAP_ELT_BITS; bit_num_++)			\
 	  {								\
-	    SBITMAP_ELT_TYPE _mask = (SBITMAP_ELT_TYPE)1 << bit_num_;	\
+	    SBITMAP_ELT_TYPE _mask = (SBITMAP_ELT_TYPE) 1 << bit_num_;	\
 									\
 	    if ((word_ & _mask) != 0)					\
 	      {								\

@@ -1,3 +1,23 @@
+2002-01-22  Kazu Hirata  <kazu@hxi.com>
+
+	* predict.c: Fix formatting.
+	* print-tree.c: Likewise.
+	* protoize.c: Likewise.
+	* real.h: Likewise.
+	* rtl.h: Likewise.
+	* sbitmap.h: Likewise.
+	* scan.c: Likewise.
+	* sched-deps.c: Likewise.
+	* sched-vis.c: Likewise.
+	* sdbout.c: Likewise.
+	* sibcall.c: Likewise.
+	* ssa.c: Likewise.
+	* ssa-ccp.c: Likewise.
+	* ssa-dce.c: Likewise.
+	* stmt.c: Likewise.
+	* stor-layout.c: Likewise.
+	* system.h: Likewise.
+
 Tue Jan 22 06:26:33 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (int_fits_type_p): If bounds of a subtype are variable, see
