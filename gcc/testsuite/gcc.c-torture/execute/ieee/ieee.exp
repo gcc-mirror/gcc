@@ -1,6 +1,6 @@
 #
 # Expect driver script for GCC Regression Tests
-#   Copyright (C) 1993, 1996 Free Software Foundation
+#   Copyright (C) 1993, 1996, 2001 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,9 @@
 # These tests come from Torbjorn Granlund's (tege@cygnus.com)
 # C torture test suite, and other contributors.
 #
+
+# VAX does not have hardware support for IEEE arithmetic.
+if { [istarget "vax-*-*"] } { return }
 
 if $tracelevel then {
     strace $tracelevel
