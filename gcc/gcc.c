@@ -4533,7 +4533,17 @@ main (argc, argv)
 
   if (verbose_flag)
     {
-      if (! strcmp (version_string, compiler_version))
+      int n;
+
+      /* compiler_version is truncated at the first space when initialized
+	 from version string, so truncate version_string at the first space
+	 before comparing.  */
+      for (n = 0; version_string[n]; n++)
+	if (version_string[n] == ' ')
+	  break;
+
+      if (! strncmp (version_string, compiler_version, n)
+	  && compiler_version[n] == 0)
 	fprintf (stderr, "gcc version %s\n", version_string);
       else
 	fprintf (stderr, "gcc driver version %s executing gcc version %s\n",
