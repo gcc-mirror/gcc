@@ -1,3 +1,11 @@
+2005-03-31  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	Merge from csl-arm-branch.
+	2004-02-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* tlink.c (recompile_files): Do not assume that "rename" can
+	overwrite an existing file.
+
 2005-03-31  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc/configure.ac (TL_AC_GNU_MAKE_GCC_LIB_PATH): Remove.

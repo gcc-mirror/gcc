@@ -470,7 +470,13 @@ recompile_files (void)
 	}
       fclose (stream);
       fclose (output);
-      rename (outname, f->key);
+      /* On Windows "rename" returns -1 and sets ERRNO to EACCESS if
+	 the new file name already exists.  Therefore, we explicitly
+	 remove the old file first.  */
+      if (remove (f->key) == -1)
+	fatal_perror ("removing .rpo file");
+      if (rename (outname, f->key) == -1)
+	fatal_perror ("renaming .rpo file");
 
       if (!f->args)
 	{
