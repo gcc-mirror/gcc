@@ -93,10 +93,7 @@ load_data (fp)
   t_bool got_done = BOOL_FALSE;
 
   text_size = sizeof (z_line) * 2;
-  pz_scan = pz_text = malloc (text_size);
-
-  if (pz_text == (char *) NULL)
-    return (char *) NULL;
+  pz_scan = pz_text = xmalloc (text_size);
 
   for (;;)
     {
@@ -120,18 +117,9 @@ load_data (fp)
       if (text_size - used_ct < sizeof (z_line))
         {
           size_t off = (size_t) (pz_scan - pz_text);
-          void *p;
 	  
           text_size += 4096;
-          p = realloc ((void *) pz_text, text_size);
-          if (p == (void *) NULL)
-            {
-              fprintf (stderr, "Failed to get 0x%08lX bytes\n",
-                      (long) text_size);
-              free ((void *) pz_text);
-              return (char *) NULL;
-            }
-          pz_text = (char *) p;
+          pz_text = xrealloc ((void *) pz_text, text_size);
           pz_scan = pz_text + off;
         }
     }
@@ -146,7 +134,7 @@ load_data (fp)
   while ((pz_scan > pz_text) && ISSPACE (pz_scan[-1]))
     pz_scan--;
   *pz_scan = NUL;
-  return realloc ((void *) pz_text, strlen (pz_text) + 1);
+  return xrealloc ((void *) pz_text, strlen (pz_text) + 1);
 }
 
 
@@ -284,11 +272,8 @@ run_shell (pz_cmd)
   /*  IF it is still not running, THEN return the nil string.  */
   if (server_id <= 0)
     {
-      char *pz = (char *) malloc (1);
       fprintf (stderr, zNoServer, pz_cmd);
-      if (pz != (char *) NULL)
-        *pz = '\0';
-      return pz;
+      return xcalloc (1, 1);
     }
 
   /*  Make sure the process will pay attention to us, send the
@@ -302,11 +287,8 @@ run_shell (pz_cmd)
       THEN return an empty string.  */
   if (server_id == NULLPROCESS)
     {
-      char *pz = (char *) malloc (1);
       fprintf (stderr, zNoServer, pz_cmd);
-      if (pz != (char *) NULL)
-        *pz = '\0';
-      return pz;
+      return xcalloc (1, 1);
     }
 
   /*  Now try to read back all the data.  If we fail due to either a
@@ -326,9 +308,7 @@ run_shell (pz_cmd)
 
         fprintf (stderr, "CLOSING SHELL SERVER - command failure:\n\t%s\n",
                  pz_cmd);
-        pz = (char *) malloc (1);
-        if (pz != (char *) NULL)
-          *pz = '\0';
+        pz = xcalloc (1, 1);
       }
 #ifdef DEBUG
     fprintf( stderr, "run_shell command success:  %s\n", pz );

@@ -1,3 +1,22 @@
+2001-03-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/server.c (load_data, run_shell): Use xmalloc, xrealloc &
+	xcalloc in lieu of malloc, realloc & calloc.
+	
+	* gencheck.c (xmalloc): Use really_call_malloc, not malloc.
+
+	* gengenrtl.c (xmalloc): Likewise.
+
+	* gensupport.c (xcalloc, xrealloc, xmalloc): Use the
+	really_call_* memory allocation routines.
+
+	* stmt.c (check_for_full_enumeration_handling): Use
+	really_call_calloc, not calloc.
+
+	* system.h (really_call_malloc, really_call_calloc,
+	really_call_realloc): Define.
+	(malloc, realloc, calloc, strdup, bzero, bcmp, rindex): Poison.
+
 Fri Mar  9 18:39:19 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (builtin_longjmp): Rework slightly to work for PA64 too.

@@ -577,4 +577,29 @@ typedef char _Bool;
 #define TRUE true
 #define FALSE false
 
+/* As the last action in this file, we poison the identifiers that
+   shouldn't be used.  Note, luckily gcc-3.0's token-based integrated
+   preprocessor won't trip on poisoned identifiers that arrive from
+   the expansion of macros.  E.g. #define strrchr rindex, won't error
+   if rindex is poisoned after this directive is issued and later on
+   strrchr is called.
+
+   Note: We define bypass macros for the few cases where we really
+   want to use the libc memory allocation routines.  Otherwise we
+   insist you use the "x" versions from libiberty.  */
+
+#define really_call_malloc malloc
+#define really_call_calloc calloc
+#define really_call_realloc realloc
+
+#if (GCC_VERSION >= 3000)
+
+ #pragma GCC poison malloc realloc calloc strdup
+
+/* Note: not all uses of `bcopy' and `index' (esp. variable names)
+   have been eliminated.  */
+ #pragma GCC poison bzero bcmp rindex
+
+#endif /* GCC >= 3.0 */
+
 #endif /* __GCC_SYSTEM_H__ */
