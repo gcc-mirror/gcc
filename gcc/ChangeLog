@@ -1,3 +1,7 @@
+2003-05-05  Richard Henderson  <rth@redhat.com>
+
+	* doc/extend.texi (Variable Attributes): Re-sort table and tidy.
+
 2003-05-05  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/rs6000/sysv4.h (CPP_OS_FREEBSD_SPEC): Add __ELF__ to mirror
