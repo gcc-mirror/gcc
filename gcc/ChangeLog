@@ -1,3 +1,7 @@
+Mon Sep 29 00:18:16 1997  Richard Henderson  (rth@cygnus.com)
+
+	* Makefile.in (mostlyclean): Remove .regmove files.
+
 Sun Sep 28 18:59:58 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* libgcc2.c (__throw): Fix thinko.
