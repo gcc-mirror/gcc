@@ -1,3 +1,7 @@
+2000-01-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (BINFO_VPTR_FIELD): Augment documentation.
+
 2000-01-16  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* aclocal.m4 (AC_FUNC_MMAP_ZERO): New macro.
