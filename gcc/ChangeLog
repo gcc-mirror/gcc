@@ -1,5 +1,42 @@
 2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* c-tree.h (enum c_declarator_kind, struct c_arg_info, struct
+	c_declarator, struct c_type_name, struct c_parm): New.
+	(build_array_declarator, set_array_declarator_inner,
+	get_parm_info, grokfield, groktypename, grokparm, push_parm_decl,
+	start_function, start_decl, build_c_parm, build_attrs_declarator,
+	build_function_declarator, make_pointer_declarator, c_cast_expr,
+	store_parm_decls_newstyle, c_expr_sizeof_type): Update prototypes.
+	(build_id_declarator): New.
+	* c-typeck.c (c_cast_expr, c_expr_sizeof_type): Update to new
+	structures.
+	* c-decl.c (ARG_INFO_PARMS, ARG_INFO_TAGS, ARG_INFO_TYPES,
+	ARG_INFO_OTHERS): Remove.
+	(build_id_declarator): New.
+	(build_array_declarator, set_array_declarator_inner, groktypename,
+	start_decl, grokparm, push_parm_decl, grokparms, get_parm_info,
+	grokfield, start_function, store_parm_decls_newstyle,
+	store_parm_decls_oldstyle, store_parm_decls,
+	build_c_parm, build_attrs_declarator, build_function_declarator,
+	make_pointer_declarator, grokdeclarator): Update to new
+	structures.
+	* c-parse.in (%union): Add arginfotype, dtrtype, typenametype and
+	parmtype.
+	(declarator, notype_declarator, after_type_declarator,
+	parm_declarator, parm_declarator_starttypename,
+	parm_declarator_nostarttypename, array_declarator, typename,
+	absdcl, absdcl1, absdcl1_ea, absdcl1_noea, direct_absdcl1,
+	absdcl_maybe_attribute, parm, firstparm, parms, parmlist,
+	parmlist_1, parmlist_2, parmlist_or_identifiers,
+	parmlist_or_identifiers_1): Use these types.
+	(primary, after_type_declarator, parm_declarator_starttypename,
+	notype_declarator, component_decl, component_declarator,
+	component_notype_declarator, typename, absdcl,
+	absdcl_maybe_attribute, absdcl1_ea, direct_absdcl1, parmlist_1,
+	parmlist_2, parmlist_or_identifiers_1): Update to new structures.
+
+2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* c-tree.h (C_DECL_USED, parser_obstack, in_alignof, in_sizeof,
 	in_typeof, record_maybe_used_decl, pop_maybe_used,
 	c_expr_sizeof_expr, c_expr_sizeof_type): New.

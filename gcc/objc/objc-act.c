@@ -156,7 +156,11 @@ static tree start_class (enum tree_code, tree, tree, tree);
 static tree continue_class (tree);
 static void finish_class (tree);
 static void start_method_def (tree);
+#ifdef OBJCPLUS
 static void objc_start_function (tree, tree, tree, tree);
+#else
+static void objc_start_function (tree, tree, tree, struct c_arg_info *);
+#endif
 static tree start_protocol (enum tree_code, tree, tree);
 static tree build_method_decl (enum tree_code, tree, tree, tree);
 static tree objc_add_method (tree, tree, int);
@@ -244,12 +248,20 @@ static void encode_gnu_bitfield (int, tree, int);
 static void encode_type (tree, int, int);
 static void encode_field_decl (tree, int, int);
 
+#ifdef OBJCPLUS
 static void really_start_method (tree, tree);
+#else
+static void really_start_method (tree, struct c_arg_info *);
+#endif
 static int objc_types_are_equivalent (tree, tree);
 static int comp_proto_with_proto (tree, tree);
 static tree get_arg_type_list (tree, int, int);
 static void objc_push_parm (tree);
+#ifdef OBJCPLUS
 static tree objc_get_parm_info (int);
+#else
+static struct c_arg_info *objc_get_parm_info (int);
+#endif
 static void synth_self_and_ucmd_args (void);
 
 /* Utilities for debugging and error diagnostics.  */
@@ -7338,16 +7350,22 @@ objc_push_parm (tree parm)
 /* Retrieve the formal paramter list constructed via preceding calls to
    objc_push_parm().  */
 
-static tree
 #ifdef OBJCPLUS
+static tree
 objc_get_parm_info (int have_ellipsis ATTRIBUTE_UNUSED)
 #else
+static struct c_arg_info *
 objc_get_parm_info (int have_ellipsis)
 #endif
 {
+#ifdef OBJCPLUS
   tree parm_info = objc_parmlist;
+  objc_parmlist = NULL_TREE;
 
-#ifndef OBJCPLUS
+  return parm_info;
+#else
+  tree parm_info = objc_parmlist;
+  struct c_arg_info *arg_info;
   /* The C front-end requires an elaborate song and dance at
      this point.  */
   push_scope ();
@@ -7360,12 +7378,11 @@ objc_get_parm_info (int have_ellipsis)
       pushdecl (parm_info);
       parm_info = next;
     }
-  parm_info = get_parm_info (have_ellipsis);
+  arg_info = get_parm_info (have_ellipsis);
   pop_scope ();
-#endif
   objc_parmlist = NULL_TREE;
-
-  return parm_info;
+  return arg_info;
+#endif
 }
 
 /* Synthesize the formal parameters 'id self' and 'SEL _cmd' needed for ObjC
@@ -7400,6 +7417,11 @@ static void
 start_method_def (tree method)
 {
   tree parmlist;
+#ifdef OBJCPLUS
+  tree parm_info;
+#else
+  struct c_arg_info *parm_info;
+#endif
   int have_ellipsis = 0;
 
   /* Required to implement _msgSuper.  */
@@ -7434,9 +7456,9 @@ start_method_def (tree method)
 	have_ellipsis = 1;
     }
 
-  parmlist = objc_get_parm_info (have_ellipsis);
+  parm_info = objc_get_parm_info (have_ellipsis);
 
-  really_start_method (objc_method_context, parmlist);
+  really_start_method (objc_method_context, parm_info);
 }
 
 static void
@@ -7509,11 +7531,19 @@ comp_proto_with_proto (tree proto1, tree proto2)
 }
 
 static void
-objc_start_function (tree name, tree type, tree attrs, tree params)
+objc_start_function (tree name, tree type, tree attrs,
+#ifdef OBJCPLUS
+		     tree params
+#else
+		     struct c_arg_info *params
+#endif
+		     )
 {
   tree fndecl = build_decl (FUNCTION_DECL, name, type);
 
+#ifdef OBJCPLUS
   DECL_ARGUMENTS (fndecl) = params;
+#endif
   DECL_INITIAL (fndecl) = error_mark_node;
   DECL_EXTERNAL (fndecl) = 0;
   TREE_STATIC (fndecl) = 1;
@@ -7532,7 +7562,7 @@ objc_start_function (tree name, tree type, tree attrs, tree params)
     = build_decl (RESULT_DECL, NULL_TREE,
 		  TREE_TYPE (TREE_TYPE (current_function_decl)));
   start_fname_decls ();
-  store_parm_decls_from (DECL_ARGUMENTS (current_function_decl));
+  store_parm_decls_from (params);
 #endif
 
   TREE_USED (current_function_decl) = 1;
@@ -7545,7 +7575,13 @@ objc_start_function (tree name, tree type, tree attrs, tree params)
    - If we have a prototype, check for type consistency.  */
 
 static void
-really_start_method (tree method, tree parmlist)
+really_start_method (tree method,
+#ifdef OBJCPLUS
+		     tree parmlist
+#else
+		     struct c_arg_info *parmlist
+#endif
+		     )
 {
   tree ret_type, meth_type;
   tree method_id;
