@@ -1,3 +1,10 @@
+Sat Dec 22 08:59:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (save_rtx): Deleted.
+	(mem_loc_descriptor): Do equivalent operation.
+	(add_const_value_attribute, case CONST): Likewise.
+	(add_name_and_src_coords_attributes): Likewise.
+
 2001-12-21  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.h: Fix comment formatting.

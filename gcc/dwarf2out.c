@@ -3386,9 +3386,7 @@ static int comp_unit_has_inlines;
 #endif
 
 /* Array of RTXes referenced by the debugging information, which therefore
-   must be kept around forever.  We do this rather than perform GC on
-   the dwarf info because almost all of the dwarf info lives forever, and
-   it's easier to support non-GC frontends this way.  */
+   must be kept around forever.  This is a GC root.  */
 static varray_type used_rtx_varray;
 
 /* Forward declarations for functions defined in this file.  */
@@ -3604,7 +3602,6 @@ static void init_file_table		PARAMS ((void));
 static void add_incomplete_type		PARAMS ((tree));
 static void retry_incomplete_types	PARAMS ((void));
 static void gen_type_die_for_member	PARAMS ((tree, tree, dw_die_ref));
-static rtx save_rtx			PARAMS ((rtx));
 static void splice_child_die		PARAMS ((dw_die_ref, dw_die_ref));
 static int file_info_cmp		PARAMS ((const void *, const void *));
 static dw_loc_list_ref new_loc_list     PARAMS ((dw_loc_descr_ref, 
@@ -3735,19 +3732,6 @@ dwarf2out_set_demangle_name_func (func)
      const char *(*func) PARAMS ((const char *));
 {
   demangle_name_func = func;
-}
-
-/* Return an rtx like ORIG which lives forever.  If we're doing GC,
-   that means adding it to used_rtx_varray.  If not, that means making
-   a copy on the permanent_obstack.  */
-
-static rtx
-save_rtx (orig)
-     rtx orig;
-{
-  VARRAY_PUSH_RTX (used_rtx_varray, orig);
-
-  return orig;
 }
 
 /* Test if rtl node points to a pseudo register.  */
@@ -7770,7 +7754,8 @@ mem_loc_descriptor (rtl, mode)
 
       mem_loc_result = new_loc_descr (DW_OP_addr, 0, 0);
       mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_addr;
-      mem_loc_result->dw_loc_oprnd1.v.val_addr = save_rtx (rtl);
+      mem_loc_result->dw_loc_oprnd1.v.val_addr = rtl;
+      VARRAY_PUSH_RTX (used_rtx_varray, rtl);
       break;
 
     case PRE_MODIFY:
@@ -8623,7 +8608,8 @@ add_const_value_attribute (die, rtl)
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST:
-      add_AT_addr (die, DW_AT_const_value, save_rtx (rtl));
+      add_AT_addr (die, DW_AT_const_value, rtl);
+      VARRAY_PUSH_RTX (used_rtx_varray, rtl);
       break;
 
     case PLUS:
@@ -9365,8 +9351,11 @@ add_name_and_src_coords_attributes (die, decl)
   /* Get the function's name, as described by its RTL.  This may be different
      from the DECL_NAME name used in the source file.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && TREE_ASM_WRITTEN (decl))
-    add_AT_addr (die, DW_AT_VMS_rtnbeg_pd_address,
-		 save_rtx (XEXP (DECL_RTL (decl), 0)));
+    {
+      add_AT_addr (die, DW_AT_VMS_rtnbeg_pd_address,
+		   XEXP (DECL_RTL (decl), 0));
+      VARRAY_PUSH_RTX (used_rtx_varray, XEXP (DECL_RTL (decl), 0));
+    }
 #endif
 }
 
