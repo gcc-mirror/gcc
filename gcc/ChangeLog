@@ -1,3 +1,21 @@
+2005-01-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (LIB_SPEC) <sim*>: Use -lsyslinux, not
+	-lsyssim.  Wrap -lc -lsyssim in --start-group --end-group instead
+	of doubling.
+	(STARTFILE_SPEC): Add crti.o, before crtbegin.o.
+ 	<sim*>: Always use crt1.o, regardless of N in simN.
+	<!sim>: Drop support for -pg and -p variants; always use crt0.o.
+	(ENDFILE_SPEC): Add crtn.o, after crtend.o.
+	(CRT_CALL_STATIC_FUNCTION): Remove.
+	* config/cris/aout.h (STARTFILE_SPEC): <!melinux && sim*>: Always
+	use crt1.o, regardless of N in simN.
+	<!sim>: Drop support for -pg and -p variants; always use crt0.o.
+	(LIB_SPEC): Do not define; default to the one in config/cris/cris.h.
+	(CRIS_CPP_SUBTARGET_SPEC) <melinux && !nostdinc>: Remove special
+	case isystem setting.
+	(MAX_OFILE_ALIGNMENT): Correct to 32, not 16.
+
 2005-01-25  Ian Lance Taylor  <ian@airs.com>
 
 	* gimple-low.c (block_may_fallthru): Correct handling of

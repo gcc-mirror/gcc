@@ -210,35 +210,27 @@ extern const char *cris_elinux_stacksize_str;
   %{sim2:%{!T*:-Tdata 0x4000000 -Tbss 0x8000000}}\
   %{!r:%{O2|O3: --gc-sections}}"
 
-/* Which library to get.  The only difference from the default is to get
-   libsc.a if -sim is given to the driver.  Repeat -lc -lsysX
-   {X=sim,linux}, because libsysX needs (at least) errno from libc, and
-   then we want to resolve new unknowns in libc against libsysX, not
-   libnosys.  */
+/* Which library to get.  The simulator uses a different library for
+   the low-level syscalls (implementing the Linux syscall ABI instead
+   of direct-iron accesses).  Default everything with the stub "nosys"
+   library.  */
 /* Override previous definitions (linux.h).  */
 #undef LIB_SPEC
 #define LIB_SPEC \
- "%{sim*:-lc -lsyssim -lc -lsyssim}\
+ "%{sim*:--start-group -lc -lsyslinux --end-group}\
   %{!sim*:%{g*:-lg}\
     %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} -lbsp}\
   -lnosys"
 
 /* Linker startfile options; crt0 flavors.
-
-   At the moment there are no gcrt0.o or mcrt0.o, but keep them here and
-   link them to crt0.o to be prepared.  Use scrt0.c if running the
-   simulator, linear style, or s2crt0.c if fixed style.  */
-/* We need to remove any previous definition (elfos.h).  */
+   We need to remove any previous definition (elfos.h).  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
- "%{sim2:s2crt0.o%s}\
-  %{!sim2:%{sim:scrt0.o%s}\
-   %{!sim:%{pg:gcrt0.o%s}\
-    %{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}\
-  crtbegin.o%s"
+ "%{sim*:crt1.o%s}%{!sim*:crt0.o%s}\
+  crti.o%s crtbegin.o%s"
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s"
+#define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
 #define EXTRA_SPECS				\
   {"cpp_subtarget", CRIS_CPP_SUBTARGET_SPEC},	\
@@ -1335,27 +1327,6 @@ struct cum_args {int regs;};
 /* The jump table is immediately connected to the preceding insn.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-/* We pull a little trick to register the _fini function with atexit,
-   after (presumably) registering the eh frame info, since we don't handle
-   _fini (a.k.a. ___fini_start) in crt0 or have a crti for "pure" ELF.  If
-   you change this, don't forget that you can't have library function
-   references (e.g. to atexit) in crtend.o, since those won't be resolved
-   to libraries; those are linked in *before* crtend.o.  */
-#ifdef CRT_BEGIN
-# define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)		\
-static void __attribute__((__used__))				\
-call_ ## FUNC (void)						\
-{								\
-  asm (SECTION_OP);						\
-  FUNC ();							\
-  if (__builtin_strcmp (#FUNC, "frame_dummy") == 0)		\
-   {								\
-     extern void __fini__start (void);				\
-     atexit (__fini__start);					\
-   }								\
-  asm (TEXT_SECTION_ASM_OP);					\
-}
-#endif
 
 /* Node: PIC */
 
