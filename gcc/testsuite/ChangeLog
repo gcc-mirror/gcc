@@ -1,3 +1,9 @@
+2004-06-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/14800
+	* gcc.misc-tests/linkage.exp: Set native_cflags to "-m32" for
+	x86_64-*-linux* when compiling for 32bit.
+
 2004-06-21  Andrew Pinski  <apinski@apple.com>
 
 	* gcc.dg/pch/struct-1.c: New.
