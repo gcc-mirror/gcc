@@ -508,7 +508,10 @@ cp_build_qualified_type_real (type, type_quals, complain)
 
   if (type == error_mark_node)
     return type;
-  
+
+  if (type_quals == TYPE_QUALS (type))
+    return type;
+
   /* A restrict-qualified pointer type must be a pointer (or reference)
      to object or incomplete type.  */
   if ((type_quals & TYPE_QUAL_RESTRICT)
