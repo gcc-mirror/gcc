@@ -1,3 +1,13 @@
+2002-10-10  Stuart Hastings  <stuart@apple.com>
+
+	* cse.c (struct cse_reg_info): Add subreg_ticked.
+	(SUBREG_TICKED): New.
+	(get_cse_reg_info): Initialize SUBREG_TICKED.
+	(mention_regs): Use it.
+	(invalidate): Set SUBREG_TICKED.
+	(invalidate_for_call): Likewise.
+	(addr_affects_sp_p): Likewise.
+
 2002-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (tls_local_dynamic_base): Put pic reg
