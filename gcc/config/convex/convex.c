@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Convex.
-   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -413,31 +413,40 @@ expand_movstr_call (operands)
 #define MIN_FLOAT 2.9387358770557188e-39
 #endif
 
-void
-check_float_value (mode, dp)
+int
+check_float_value (mode, dp, overflow)
      enum machine_mode mode;
      REAL_VALUE_TYPE *dp;
+     int overflow;
 {
   REAL_VALUE_TYPE d = *dp;
+
+  if (overflow)
+    {
+      *dp = MAX_FLOAT;
+      return 1;
+    }
 
   if (mode == SFmode)
     {
       if (d > MAX_FLOAT)
 	{
-	  error ("magnitude of constant too large for `float'");
 	  *dp = MAX_FLOAT;
+	  return 1;
 	}
       else if (d < -MAX_FLOAT)
 	{
-	  error ("magnitude of constant too large for `float'");
 	  *dp = -MAX_FLOAT;
+	  return 1;
 	}	
       else if ((d > 0 && d < MIN_FLOAT) || (d < 0 && d > -MIN_FLOAT))
 	{
-	  warning ("`float' constant truncated to zero");
 	  *dp = 0.0;
+	  return 1;
 	}
     }
+
+  return 0;
 }
 
 /* Output the label at the start of a function.

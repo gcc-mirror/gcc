@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Alliant FX version.
-   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1994 Free Software Foundation, Inc.
    Adapted from m68k.h by Paul Petersen (petersen@uicsrd.csrd.uiuc.edu)
    and Joe Weening (weening@gang-of-four.stanford.edu).
 
@@ -887,19 +887,19 @@ extern enum reg_class regno_reg_class[];
 /* Check a `double' value for validity for a particular machine mode.
    This is defined to avoid crashes outputting certain constants.  */
 
-#define CHECK_FLOAT_VALUE(mode, d)					\
-  if ((mode) == SFmode)							\
+#define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW)				\
+  if (OVERFLOW)								\
+    (D) = 3.4028234663852890e+38;					\
+  else if ((MODE) == SFmode)						\
     { 									\
       if ((d) > 3.4028234663852890e+38)					\
-	{ warning ("magnitude of value too large for `float'");		\
-	  (d) = 3.4028234663852890e+38; }				\
-      else if ((d) < -3.4028234663852890e+38)				\
-	{ warning ("magnitude of value too large for `float'");		\
-	  (d) = -3.4028234663852890e+38; }				\
-      else if (((d) > 0) && ((d) < 1.1754943508222873e-38))		\
-	(d) = 0.0;							\
+	(OVERFLOW) = 1, (D) = 3.4028234663852890e+38;			\
+      else if ((D) < -3.4028234663852890e+38)				\
+	(OVERFLOW) = 1, (D) = -3.4028234663852890e+38;			\
+      else if (((D) > 0) && ((D) < 1.1754943508222873e-38))		\
+	(OVERFLOW) = 1, (D) = 0.0;					\
       else if (((d) < 0) && ((d) > -1.1754943508222873e-38))		\
-	(d) = 0.0;							\
+	(OVEFLOW) = 1, (D) = 0.0;					\
     }
 
 /* Tell final.c how to eliminate redundant test instructions.  */
