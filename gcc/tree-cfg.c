@@ -1201,7 +1201,6 @@ remove_useless_stmts_cond (tree *stmt_p, struct rus_data *data)
   else_has_label = data->has_label;
   data->has_label = save_has_label | then_has_label | else_has_label;
 
-  fold_stmt (stmt_p);
   then_clause = COND_EXPR_THEN (*stmt_p);
   else_clause = COND_EXPR_ELSE (*stmt_p);
   cond = COND_EXPR_COND (*stmt_p);
