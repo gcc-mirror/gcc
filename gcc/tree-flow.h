@@ -673,8 +673,6 @@ void canonicalize_induction_variables (struct loops *);
 void tree_unroll_loops_completely (struct loops *);
 void tree_ssa_iv_optimize (struct loops *);
 
-void number_of_iterations_cond (tree, tree, tree, enum tree_code, tree, tree,
-				struct tree_niter_desc *);
 bool number_of_iterations_exit (struct loop *, edge,
 				struct tree_niter_desc *niter);
 tree find_loop_niter (struct loop *, edge *);

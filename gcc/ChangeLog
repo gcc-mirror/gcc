@@ -1,3 +1,15 @@
+2005-04-06  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-flow.h (number_of_iterations_cond): Declaration removed.
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): Made static.
+	(number_of_iterations_special): New function.
+	(number_of_iterations_exit): Use number_of_iterations_special.
+	Use simplify_using_outer_evolutions only at -O3.
+	(number_of_iterations_cond, tree_simplify_using_condition,
+	simplify_using_initial_conditions, loop_niter_by_eval,
+	compare_trees, can_count_iv_in_wider_type_bound,
+	simplify_using_outer_evolutions): Use fold_build.
+
 2005-04-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* doc/install.texi (Configuration): Document --with-java-home.
