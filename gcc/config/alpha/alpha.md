@@ -1128,6 +1128,33 @@
   "cmp%C1 %r2,%3,%0"
   [(set_attr "type" "icmp")])
 
+;; There are three important special-case that don't fit the above pattern
+;; but which we want to handle here.
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ne:DI (match_operand:DI 1 "register_operand" "r")
+	       (const_int 0)))]
+  ""
+  "cmpult $31,%1,%0"
+  [(set_attr "type" "icmp")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(gt:DI (match_operand:DI 1 "register_operand" "r")
+	       (const_int 0)))]
+  ""
+  "cmplt $31,%1,%0"
+  [(set_attr "type" "icmp")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ge:DI (match_operand:DI 1 "register_operand" "r")
+	       (const_int 0)))]
+  ""
+  "cmple $31,%1,%0"
+  [(set_attr "type" "icmp")])
+
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(if_then_else:DI
