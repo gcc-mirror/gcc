@@ -132,6 +132,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "recog.h"
 #include "insn-flags.h"
+#include "resource.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
@@ -333,6 +334,13 @@ static void count_reg_sets		PROTO ((rtx));
 static void count_reg_references	PROTO ((rtx));
 static void notice_stack_pointer_modification PROTO ((rtx, rtx));
 static void invalidate_mems_from_autoinc	PROTO ((rtx));
+static void maybe_remove_dead_notes	PROTO ((rtx, rtx, rtx, rtx,
+						rtx, rtx));
+static int maybe_add_dead_note_use	PROTO ((rtx, rtx));
+static int maybe_add_dead_note		PROTO ((rtx, rtx, rtx));
+static int sets_reg_or_subreg		PROTO ((rtx, rtx));
+static void update_n_sets 		PROTO ((rtx, int));
+static void new_insn_dead_notes		PROTO ((rtx, rtx, rtx, rtx, rtx, rtx));
 void verify_flow_info			PROTO ((void));
 
 /* Find basic blocks of the current function.
@@ -5032,6 +5040,1047 @@ set_block_num (insn, bb)
      int bb;
 {
   set_block_for_insn (insn, BASIC_BLOCK (bb));
+}
+
+/* Unlink a chain of insns between START and FINISH inclusive, leaving notes
+   that must be paired, and return the new chain.  */
+
+rtx
+unlink_insn_chain (start, finish)
+     rtx start, finish;
+{
+  rtx insert_point = PREV_INSN (start);
+  rtx chain = NULL_RTX, curr;
+
+  /* Unchain the insns one by one.  It would be quicker to delete all
+     of these with a single unchaining, rather than one at a time, but
+     we need to keep the NOTE's.  */
+
+  while (1)
+    {
+      rtx next = NEXT_INSN (start);
+
+      remove_insn (start);
+
+      /* ??? Despite the fact that we're patching out the insn, it's
+	 still referenced in LOG_LINKS.  Rather than try and track
+	 them all down and remove them, just mark the insn deleted.  */
+      INSN_DELETED_P (start) = 1;
+
+      if (GET_CODE (start) == NOTE && ! can_delete_note_p (start))
+	{
+	  add_insn_after (start, insert_point);
+	  insert_point = start;
+	}
+      else
+	{
+	  if (chain != NULL)
+	    {
+	      NEXT_INSN (curr) = start;
+	      PREV_INSN (start) = curr;
+	      curr = start;
+	    }
+	  else
+	    {
+	      chain = start;
+	      curr = start;
+	      PREV_INSN (chain) = NULL_RTX;
+	    }
+	}
+
+      if (start == finish)
+	break;
+      start = next;
+    }
+
+  if (chain != NULL_RTX)
+    NEXT_INSN (curr) = NULL_RTX;
+
+  return chain;
+}
+
+/* Subroutine of update_life_info.  Determines whether multiple
+   REG_NOTEs need to be distributed for the hard register mentioned in
+   NOTE.  This can happen if a reference to a hard register in the
+   original insns was split into several smaller hard register
+   references in the new insns.  */
+
+static void
+split_hard_reg_notes (curr_insn, note, first, last)
+     rtx curr_insn, note, first, last;
+{
+  rtx reg, temp, link;
+  rtx insn;
+  int n_regs, i, new_reg;
+
+  reg = XEXP (note, 0);
+
+  if (REG_NOTE_KIND (note) != REG_DEAD
+      || GET_CODE (reg) != REG
+      || REGNO (reg) >= FIRST_PSEUDO_REGISTER
+      || HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)) == 1)
+    {
+      XEXP (note, 1) = REG_NOTES (curr_insn);
+      REG_NOTES (curr_insn) = note;
+      return;
+    }
+
+  n_regs = HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg));
+
+  for (i = 0; i < n_regs; i++)
+    {
+      new_reg = REGNO (reg) + i;
+
+      /* Check for references to new_reg in the split insns.  */
+      for (insn = last; ; insn = PREV_INSN (insn))
+	{
+	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	      && (temp = regno_use_in (new_reg, PATTERN (insn))))
+	    {
+	      /* Create a new reg dead note here.  */
+	      link = rtx_alloc (EXPR_LIST);
+	      PUT_REG_NOTE_KIND (link, REG_DEAD);
+	      XEXP (link, 0) = temp;
+	      XEXP (link, 1) = REG_NOTES (insn);
+	      REG_NOTES (insn) = link;
+
+	      /* If killed multiple registers here, then add in the excess.  */
+	      i += HARD_REGNO_NREGS (REGNO (temp), GET_MODE (temp)) - 1;
+
+	      break;
+	    }
+	  /* It isn't mentioned anywhere, so no new reg note is needed for
+	     this register.  */
+	  if (insn == first)
+	    break;
+	}
+    }
+}
+
+/* SET_INSN kills REG; add a REG_DEAD note mentioning REG to the last
+   use of REG in the insns after SET_INSN and before or including
+   LAST, if necessary.
+
+   A non-zero value is returned if we added a REG_DEAD note, or if we
+   determined that a REG_DEAD note because of this particular SET
+   wasn't necessary. */
+
+static int
+maybe_add_dead_note (reg, set_insn, last)
+     rtx reg, set_insn, last;
+{
+  rtx insn;
+
+  for (insn = last; insn != set_insn; insn = PREV_INSN (insn))
+    {
+      rtx set;
+
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	  && reg_overlap_mentioned_p (reg, PATTERN (insn))
+	  && (set = single_set (insn)))
+	{
+	  rtx insn_dest = SET_DEST (set);
+
+	  while (GET_CODE (insn_dest) == ZERO_EXTRACT
+		 || GET_CODE (insn_dest) == SUBREG
+		 || GET_CODE (insn_dest) == STRICT_LOW_PART
+		 || GET_CODE (insn_dest) == SIGN_EXTRACT)
+	    insn_dest = XEXP (insn_dest, 0);
+
+	  if (! rtx_equal_p (insn_dest, reg))
+	    {
+	      /* Use the same scheme as combine.c, don't put both REG_DEAD
+		 and REG_UNUSED notes on the same insn.  */
+	      if (! find_regno_note (insn, REG_UNUSED, REGNO (reg))
+		  && ! find_regno_note (insn, REG_DEAD, REGNO (reg)))
+		{
+		  rtx note = rtx_alloc (EXPR_LIST);
+		  PUT_REG_NOTE_KIND (note, REG_DEAD);
+		  XEXP (note, 0) = reg;
+		  XEXP (note, 1) = REG_NOTES (insn);
+		  REG_NOTES (insn) = note;
+		}
+	      return 1;
+	    }
+	  else if (reg_overlap_mentioned_p (reg, SET_SRC (set)))
+	    {
+	      /* We found an instruction that both uses the register and
+		 sets it, so no new REG_NOTE is needed for the previous
+		 set.  */
+	      return 0;
+	    }
+	}
+    }
+  return 0;
+}
+
+static int
+maybe_add_dead_note_use (insn, dest)
+     rtx insn, dest;
+{
+  rtx set;
+
+  /* We need to add a REG_DEAD note to the last place DEST is
+     referenced. */
+
+  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+      && reg_mentioned_p (dest, PATTERN (insn))
+      && (set = single_set (insn)))
+    {
+      rtx insn_dest = SET_DEST (set);
+
+      while (GET_CODE (insn_dest) == ZERO_EXTRACT
+	     || GET_CODE (insn_dest) == SUBREG
+	     || GET_CODE (insn_dest) == STRICT_LOW_PART
+	     || GET_CODE (insn_dest) == SIGN_EXTRACT)
+	insn_dest = XEXP (insn_dest, 0);
+
+      if (! rtx_equal_p (insn_dest, dest))
+	{
+	  /* Use the same scheme as combine.c, don't put both REG_DEAD
+	     and REG_UNUSED notes on the same insn.  */
+	  if (! find_regno_note (insn, REG_UNUSED, REGNO (dest))
+	      && ! find_regno_note (insn, REG_DEAD, REGNO (dest)))
+	    {
+	      rtx note = rtx_alloc (EXPR_LIST);
+	      PUT_REG_NOTE_KIND (note, REG_DEAD);
+	      XEXP (note, 0) = dest;
+	      XEXP (note, 1) = REG_NOTES (insn);
+	      REG_NOTES (insn) = note;
+	    }
+	  return 1;
+	}
+    }
+  return 0;
+}
+
+/* Find the first insn in the set of insns from FIRST to LAST inclusive
+   that contains the note NOTE. */
+rtx
+find_insn_with_note (note, first, last)
+     rtx note, first, last;
+{
+  rtx insn;
+
+  for (insn = first; insn != NULL_RTX; insn = NEXT_INSN (insn))
+    {
+      rtx temp = find_reg_note (insn, REG_NOTE_KIND (note), XEXP (note, 0));
+      if (temp == note)
+	{
+	  return insn;
+	}
+      if (insn == last)
+	{
+	  break;
+	}
+    }
+  return NULL_RTX;
+}
+     
+/* Subroutine of update_life_info.  Determines whether a SET or
+   CLOBBER in an insn created by splitting needs a REG_DEAD or
+   REG_UNUSED note added.  */
+
+static void
+new_insn_dead_notes (pat, insn, first, last, orig_first_insn, orig_last_insn)
+     rtx pat, insn, first, last, orig_first_insn, orig_last_insn;
+{
+  rtx dest, tem;
+
+  if (GET_CODE (pat) != CLOBBER && GET_CODE (pat) != SET)
+    abort ();
+
+  dest = XEXP (pat, 0);
+
+  while (GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SUBREG
+	 || GET_CODE (dest) == STRICT_LOW_PART
+	 || GET_CODE (dest) == SIGN_EXTRACT)
+    dest = XEXP (dest, 0);
+
+  if (GET_CODE (dest) == REG)
+    {
+      /* If the original insns already used this register, we may not
+         add new notes for it.  One example for a replacement that
+         needs this test is when a multi-word memory access with
+         register-indirect addressing is changed into multiple memory
+         accesses with auto-increment and one adjusting add
+         instruction for the address register.
+
+	 However, there is a problem with this code. We're assuming
+	 that any registers that are set in the new insns are either
+	 set/referenced in the old insns (and thus "inherit" the
+	 liveness of the old insns), or are registers that are dead
+	 before we enter this part of the stream (and thus should be
+	 dead when we leave).
+
+	 To do this absolutely correctly, we must determine the actual
+	 liveness of the registers before we go randomly adding
+	 REG_DEAD notes. This can probably be accurately done by
+	 calling mark_referenced_resources() on the old stream before
+	 replacing the old insns.  */
+
+      for (tem = orig_first_insn; tem != NULL_RTX; tem = NEXT_INSN (tem))
+	{
+	  if (GET_RTX_CLASS (GET_CODE (tem)) == 'i'
+	      && reg_referenced_p (dest, PATTERN (tem)))
+	    return;
+	  if (tem == orig_last_insn)
+	    break;
+	}
+      /* So it's a new register, presumably only used within this
+	 group of insns. Find the last insn in the set of new insns
+	 that DEST is referenced in, and add a dead note to it. */
+      if (! maybe_add_dead_note (dest, insn, last))
+	{
+	  /* If this is a set, it must die somewhere, unless it is the
+	     dest of the original insn, and thus is live after the
+	     original insn.  Abort if it isn't supposed to be live after
+	     the original insn.
+
+	     If this is a clobber, then just add a REG_UNUSED note.  */
+	  if (GET_CODE (pat) == CLOBBER)
+	    {
+	      rtx note = rtx_alloc (EXPR_LIST);
+	      PUT_REG_NOTE_KIND (note, REG_UNUSED);
+	      XEXP (note, 0) = dest;
+	      XEXP (note, 1) = REG_NOTES (insn);
+	      REG_NOTES (insn) = note;
+	      return;
+	    }
+	  else
+	    {
+	      struct resources res;
+	      rtx curr;
+
+	      CLEAR_RESOURCE (&res);
+	      for (curr = orig_first_insn;
+		   curr != NULL_RTX;
+		   curr = NEXT_INSN (curr))
+		{
+		  if (GET_RTX_CLASS (GET_CODE (curr)) == 'i')
+		    mark_set_resources (PATTERN (curr), &res, 0, 0);
+		  if (TEST_HARD_REG_BIT (res.regs, REGNO (dest)))
+		    break;
+		  if (curr == orig_last_insn)
+		    break;
+		}
+
+	      /* In case reg was not used later, it is dead store.
+	         add REG_UNUSED note.  */
+	      if (! TEST_HARD_REG_BIT (res.regs, REGNO (dest)))
+	        {
+	          rtx note = rtx_alloc (EXPR_LIST);
+	          PUT_REG_NOTE_KIND (note, REG_UNUSED);
+	          XEXP (note, 0) = dest;
+	          XEXP (note, 1) = REG_NOTES (insn);
+	          REG_NOTES (insn) = note;
+	          return;
+	        }
+	    }
+	}
+      if (insn != first)
+	{
+	  rtx set = single_set (insn);
+	  /* If this is a set, scan backwards for a previous
+	     reference, and attach a REG_DEAD note to it. But we don't
+	     want to do it if the insn is both using and setting the
+	     register.
+
+	     Global registers are always live.  */
+	  if (set && ! reg_overlap_mentioned_p (dest, SET_SRC (pat))
+	      && (REGNO (dest) >= FIRST_PSEUDO_REGISTER
+		  || ! global_regs[REGNO (dest)]))
+	    {
+	      for (tem = PREV_INSN (insn);
+		   tem != NULL_RTX; tem = PREV_INSN (tem))
+		{
+		  if (maybe_add_dead_note_use (tem, dest))
+		    break;
+		  if (tem == first)
+		    break;
+		}
+	    }
+	}
+    }
+}
+
+/* Subroutine of update_life_info.  Update the value of reg_n_sets for all
+   registers modified by X.  INC is -1 if the containing insn is being deleted,
+   and is 1 if the containing insn is a newly generated insn.  */
+
+static void
+update_n_sets (x, inc)
+     rtx x;
+     int inc;
+{
+  rtx dest = SET_DEST (x);
+
+  while (GET_CODE (dest) == STRICT_LOW_PART || GET_CODE (dest) == SUBREG
+	 || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
+    dest = SUBREG_REG (dest);
+
+  if (GET_CODE (dest) == REG)
+    {
+      int regno = REGNO (dest);
+      
+      if (regno < FIRST_PSEUDO_REGISTER)
+	{
+	  register int i;
+	  int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (dest));
+	  
+	  for (i = regno; i < endregno; i++)
+	    REG_N_SETS (i) += inc;
+	}
+      else
+	REG_N_SETS (regno) += inc;
+    }
+}
+
+/* Scan INSN for a SET that sets REG. If it sets REG via a SUBREG,
+   then return 2. If it sets REG directly, return 1. Otherwise, return
+   0. */
+
+static int sets_reg_or_subreg_ret;
+static rtx sets_reg_or_subreg_rtx;
+
+static void
+sets_reg_or_subreg_1 (x, set)
+     rtx x, set;
+{
+  if (rtx_equal_p (x, sets_reg_or_subreg_rtx))
+    {
+      if (x == XEXP (set, 0))
+	sets_reg_or_subreg_ret = 1;
+      else if (GET_CODE (XEXP (set, 0)) == SUBREG)
+	sets_reg_or_subreg_ret = 2;
+    }
+}
+
+static int
+sets_reg_or_subreg (insn, reg)
+     rtx insn;
+     rtx reg;
+{
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+    return 0;
+
+  sets_reg_or_subreg_ret = 0;
+  sets_reg_or_subreg_rtx = reg;
+  note_stores (PATTERN (insn), sets_reg_or_subreg_1);
+  return sets_reg_or_subreg_ret;
+}
+
+/* If a replaced SET_INSN (which is part of the insns between
+   OLD_FIRST_INSN and OLD_LAST_INSN inclusive) is modifying a multiple
+   register target, and the original dest is now set in the new insns
+   (between FIRST_INSN and LAST_INSN inclusive) by one or more subreg
+   sets, then the new insns no longer kill the destination of the
+   original insn.
+
+   We may also be directly using the register in the new insns before
+   setting it.
+
+   In either case, if there exists an instruction in the same basic
+   block before the replaced insns which uses the original dest (and
+   contains a corresponding REG_DEAD note), then we must remove this
+   REG_DEAD note. 
+
+   SET_INSN is the insn that contains the SET; it may be a PARALLEL
+   containing the SET insn.
+
+   SET is the actual SET insn proper. */
+
+static void
+maybe_remove_dead_notes (set_insn, set, first_insn, last_insn, 
+			 old_first_insn, old_last_insn)
+     rtx set_insn, set;
+     rtx first_insn, last_insn;
+     rtx old_first_insn, old_last_insn;
+{
+  rtx insn;
+  rtx stop_insn = NEXT_INSN (last_insn);
+  int set_type = 0;
+  rtx set_dest;
+  rtx set_pattern;
+
+  if (GET_RTX_CLASS (GET_CODE (set)) != 'i')
+    return;
+
+  set_pattern = PATTERN (set);
+
+  if (GET_CODE (set_pattern) == PARALLEL)
+    {
+      int i;
+
+      for (i = 0; i < XVECLEN (set_pattern, 0); i++)
+	{
+	  maybe_remove_dead_notes (set_insn, XVECEXP (set_pattern, 0, i),
+				   first_insn, last_insn, 
+				   old_first_insn, old_last_insn);
+	}
+      return;
+    }
+
+  if (GET_CODE (set_pattern) != SET)
+    {
+      return;
+    }
+
+  set_dest = SET_DEST (set_pattern);
+
+  if (GET_CODE (set_dest) != REG)
+    {
+      return;
+    }
+
+  /* We have a set of a REG. First we need to determine if this set is
+     both using and setting the register. (FIXME: if this is in a
+     PARALLEL, we will have to check the other exprs as well.) */
+  if (reg_overlap_mentioned_p (set_dest, SET_SRC (set_pattern)))
+    {
+      return;
+    }
+
+  /* Now determine if we used or set the register in the old insns
+     previous to this one. */
+
+  for (insn = old_first_insn; insn != set_insn; insn = NEXT_INSN (insn))
+    {
+      if (reg_overlap_mentioned_p (set_dest, insn))
+	{
+	  return;
+	}
+    }
+
+  /* Now determine if we're setting it in the new insns, or using
+     it. */
+  for (insn = first_insn; insn != stop_insn; insn = NEXT_INSN (insn))
+    {
+      set_type = sets_reg_or_subreg (insn, set_dest);
+      if (set_type != 0)
+	{
+	  break;
+	}
+      else if (reg_overlap_mentioned_p (set_dest, insn))
+	{
+	  /* Is the reg now used in this new insn?  -- This is probably an
+	     error. */
+	  set_type = 2;
+	  break;
+	}
+    }
+  if (set_type == 2)
+    {
+      /* The register is being set via a SUBREG or is being used in
+	 some other way, so it's no longer dead.
+
+	 Search backwards from first_insn, looking for the first insn
+	 that uses the original dest.  Stop if we pass a CODE_LABEL or
+	 a JUMP_INSN.
+
+	 If we find such an insn and it has a REG_DEAD note referring
+	 to the original dest, then delete the note.  */
+
+      for (insn = first_insn; insn != NULL_RTX; insn = PREV_INSN (insn))
+	{
+	  if (GET_CODE (insn) == CODE_LABEL
+	      || GET_CODE (insn) == JUMP_INSN)
+	    break;
+	  else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+		   && reg_mentioned_p (set_dest, insn))
+	    {
+	      rtx note = find_regno_note (insn, REG_DEAD, REGNO (set_dest));
+	      if (note != NULL_RTX)
+		{
+		  remove_note (insn, note);
+		}
+	      /* ??? -- Is this right? */
+	      break;
+	    }
+	}
+    }
+  else if (set_type == 0)
+    {
+      /* The reg is not being set or used in the new insns at all. */
+      int i, regno;
+
+      /* Should never reach here for a pseudo reg.  */
+      if (REGNO (set_dest) >= FIRST_PSEUDO_REGISTER)
+	abort ();
+
+      /* This can happen for a hard register, if the new insns do not
+	 contain instructions which would be no-ops referring to the
+	 old registers. 
+
+	 We try to verify that this is the case by checking to see if
+	 the original instruction uses all of the registers that it
+	 set. This case is OK, because deleting a no-op can not affect
+	 REG_DEAD notes on other insns. If this is not the case, then
+	 abort.  */
+
+      regno = REGNO (set_dest);
+      for (i = HARD_REGNO_NREGS (regno, GET_MODE (set_dest)) - 1;
+	   i >= 0; i--)
+	{
+	  if (! refers_to_regno_p (regno + i, regno + i + 1, set,
+				   NULL_PTR))
+	    break;
+	}
+      if (i >= 0)
+	abort ();
+    }
+}
+
+/* Updates all flow-analysis related quantities (including REG_NOTES) for
+   the insns from FIRST to LAST inclusive that were created by replacing
+   the insns from ORIG_INSN_FIRST to ORIG_INSN_LAST inclusive.  NOTES
+   are the original REG_NOTES.  */
+
+void
+update_life_info (notes, first, last, orig_first_insn, orig_last_insn)
+     rtx notes;
+     rtx first, last;
+     rtx orig_first_insn, orig_last_insn;
+{
+  rtx insn, note;
+  rtx next;
+  rtx orig_dest, temp;
+  rtx orig_insn;
+  rtx tem;
+
+  /* Get and save the destination set by the original insn, if there
+     was only one insn replaced.  */
+
+  if (orig_first_insn == orig_last_insn)
+    {
+      orig_insn = orig_first_insn;
+      orig_dest = single_set (orig_insn);
+      if (orig_dest)
+	orig_dest = SET_DEST (orig_dest);
+    }
+  else
+    {
+      orig_insn = NULL_RTX;
+      orig_dest = NULL_RTX;
+    }
+
+  /* Move REG_NOTES from the original insns to where they now belong.  */
+
+  for (note = notes; note; note = next)
+    {
+      next = XEXP (note, 1);
+      switch (REG_NOTE_KIND (note))
+	{
+	case REG_DEAD:
+	case REG_UNUSED:
+	  /* Move these notes from the original insn to the last new
+	     insn where the register is mentioned.  */
+
+	  for (insn = last; ; insn = PREV_INSN (insn))
+	    {
+	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+		  && reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
+		{
+		  /* Sometimes need to convert REG_UNUSED notes to
+		     REG_DEAD notes. */
+		  if (REG_NOTE_KIND (note) == REG_UNUSED
+		      && GET_CODE (XEXP (note, 0)) == REG
+		      && ! dead_or_set_p (insn, XEXP (note, 0)))
+		    {
+		      PUT_REG_NOTE_KIND (note, REG_DEAD);
+		    }
+		  split_hard_reg_notes (insn, note, first, last);
+		  /* The reg only dies in one insn, the last one that uses
+		     it.  */
+		  break;
+		}
+	      /* It must die somewhere, fail if we couldn't find where it died.
+
+		 We abort because otherwise the register will be live
+		 longer than it should, and we'll probably take an
+		 abort later. What we should do instead is search back
+		 and find the appropriate places to insert the note.  */
+	      if (insn == first)
+		{
+		  if (REG_NOTE_KIND (note) == REG_DEAD)
+		    {
+		      abort ();
+		    }
+		  break;
+		}
+	    }
+	  break;
+
+	case REG_WAS_0:
+	  {
+	    rtx note_dest;
+
+	    /* If the insn that set the register to 0 was deleted, this
+	       note cannot be relied on any longer.  The destination might
+	       even have been moved to memory.
+	       This was observed for SH4 with execute/920501-6.c compilation,
+	       -O2 -fomit-frame-pointer -finline-functions .  */
+
+	    if (GET_CODE (XEXP (note, 0)) == NOTE
+		|| INSN_DELETED_P (XEXP (note, 0)))
+	      break;
+	    if (orig_insn != NULL_RTX)
+	      {
+		note_dest = orig_dest;
+	      }
+	    else
+	      {
+		note_dest = find_insn_with_note (note, first, last);
+		if (note_dest != NULL_RTX)
+		  {
+		    note_dest = single_set (orig_dest);
+		    if (note_dest != NULL_RTX)
+		      {
+			note_dest = SET_DEST (orig_dest);
+		      }
+		  }
+	      }
+	      /* This note applies to the dest of the original insn.  Find the
+		 first new insn that now has the same dest, and move the note
+		 there.  */
+
+	    if (! note_dest)
+	      abort ();
+
+	    for (insn = first; ; insn = NEXT_INSN (insn))
+	      {
+		if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+		    && (temp = single_set (insn))
+		    && rtx_equal_p (SET_DEST (temp), note_dest))
+		  {
+		    XEXP (note, 1) = REG_NOTES (insn);
+		    REG_NOTES (insn) = note;
+		    /* The reg is only zero before one insn, the first that
+		       uses it.  */
+		    break;
+		  }
+		/* If this note refers to a multiple word hard
+		   register, it may have been split into several smaller
+		   hard register references.  We could split the notes,
+		   but simply dropping them is good enough.  */
+		if (GET_CODE (note_dest) == REG
+		    && REGNO (note_dest) < FIRST_PSEUDO_REGISTER
+		    && HARD_REGNO_NREGS (REGNO (note_dest),
+					 GET_MODE (note_dest)) > 1)
+		  break;
+		/* It must be set somewhere; fail if we couldn't find
+		   where it was set.  */
+		if (insn == last)
+		  abort ();
+	      }
+	  }
+	  break;
+
+	case REG_EQUAL:
+	case REG_EQUIV:
+	  /* A REG_EQUIV or REG_EQUAL note on an insn with more than one
+	     set is meaningless.  Just drop the note.  */
+	  if (! orig_dest)
+	    break;
+
+	case REG_NO_CONFLICT:
+	  /* These notes apply to the dest of the original insn.  Find the last
+	     new insn that now has the same dest, and move the note there.  
+
+	     If we are replacing multiple insns, just drop the note. */
+
+	  if (! orig_insn)
+	    break;
+
+	  if (! orig_dest)
+	    abort ();
+
+	  for (insn = last; ; insn = PREV_INSN (insn))
+	    {
+	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+		  && (temp = single_set (insn))
+		  && rtx_equal_p (SET_DEST (temp), orig_dest))
+		{
+		  XEXP (note, 1) = REG_NOTES (insn);
+		  REG_NOTES (insn) = note;
+		  /* Only put this note on one of the new insns.  */
+		  break;
+		}
+
+	      /* The original dest must still be set someplace.  Abort if we
+		 couldn't find it.  */
+	      if (insn == first)
+		{
+		  /* However, if this note refers to a multiple word hard
+		     register, it may have been split into several smaller
+		     hard register references.  We could split the notes,
+		     but simply dropping them is good enough.  */
+		  if (GET_CODE (orig_dest) == REG
+		      && REGNO (orig_dest) < FIRST_PSEUDO_REGISTER
+		      && HARD_REGNO_NREGS (REGNO (orig_dest),
+					   GET_MODE (orig_dest)) > 1)
+		    break;
+		  /* Likewise for multi-word memory references.  */
+		  if (GET_CODE (orig_dest) == MEM
+		      && GET_MODE_SIZE (GET_MODE (orig_dest)) > MOVE_MAX)
+		    break;
+		  abort ();
+		}
+	    }
+	  break;
+
+	case REG_LIBCALL:
+	  /* Move a REG_LIBCALL note to the first insn created, and update
+	     the corresponding REG_RETVAL note.  */
+	  XEXP (note, 1) = REG_NOTES (first);
+	  REG_NOTES (first) = note;
+
+	  insn = XEXP (note, 0);
+	  note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
+	  if (note)
+	    XEXP (note, 0) = first;
+	  break;
+
+	case REG_EXEC_COUNT:
+	  /* Move a REG_EXEC_COUNT note to the first insn created.  */
+	  XEXP (note, 1) = REG_NOTES (first);
+	  REG_NOTES (first) = note;
+	  break;
+
+	case REG_RETVAL:
+	  /* Move a REG_RETVAL note to the last insn created, and update
+	     the corresponding REG_LIBCALL note.  */
+	  XEXP (note, 1) = REG_NOTES (last);
+	  REG_NOTES (last) = note;
+
+	  insn = XEXP (note, 0);
+	  note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
+	  if (note)
+	    XEXP (note, 0) = last;
+	  break;
+
+	case REG_NONNEG:
+	case REG_BR_PROB:
+	  /* This should be moved to whichever instruction is a JUMP_INSN.  */
+
+	  for (insn = last; ; insn = PREV_INSN (insn))
+	    {
+	      if (GET_CODE (insn) == JUMP_INSN)
+		{
+		  XEXP (note, 1) = REG_NOTES (insn);
+		  REG_NOTES (insn) = note;
+		  /* Only put this note on one of the new insns.  */
+		  break;
+		}
+	      /* Fail if we couldn't find a JUMP_INSN.  */
+	      if (insn == first)
+		abort ();
+	    }
+	  break;
+
+	case REG_INC:
+	  /* reload sometimes leaves obsolete REG_INC notes around.  */
+	  if (reload_completed)
+	    break;
+	  /* This should be moved to whichever instruction now has the
+	     increment operation.  */
+	  abort ();
+
+	case REG_LABEL:
+	  /* Should be moved to the new insn(s) which use the label.  */
+	  for (insn = first; insn != NEXT_INSN (last); insn = NEXT_INSN (insn))
+	    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+		&& reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL,
+						    XEXP (note, 0),
+						    REG_NOTES (insn));
+	  break;
+
+	case REG_CC_SETTER:
+	case REG_CC_USER:
+	  /* These two notes will never appear until after reorg, so we don't
+	     have to handle them here.  */
+	default:
+	  abort ();
+	}
+    }
+
+  /* Each new insn created has a new set.  If the destination is a
+     register, then this reg is now live across several insns, whereas
+     previously the dest reg was born and died within the same insn.
+     To reflect this, we now need a REG_DEAD note on the insn where
+     this dest reg dies.
+
+     Similarly, the new insns may have clobbers that need REG_UNUSED
+     notes.  */
+
+  for (insn = first; ;insn = NEXT_INSN (insn))
+    {
+      rtx pat;
+      int i;
+
+      pat = PATTERN (insn);
+      if (GET_CODE (pat) == SET || GET_CODE (pat) == CLOBBER)
+	new_insn_dead_notes (pat, insn, first, last, 
+			     orig_first_insn, orig_last_insn);
+      else if (GET_CODE (pat) == PARALLEL)
+	{
+	  for (i = 0; i < XVECLEN (pat, 0); i++)
+	    {
+	      if (GET_CODE (XVECEXP (pat, 0, i)) == SET
+		  || GET_CODE (XVECEXP (pat, 0, i)) == CLOBBER)
+		{
+		  rtx parpat = XVECEXP (pat, 0, i);
+
+		  new_insn_dead_notes (parpat, insn, first, last, 
+				       orig_first_insn, orig_last_insn);
+		}
+	    }
+	}
+      if (insn == last)
+	{
+	  break;
+	}
+    }
+
+  /* Check to see if we have any REG_DEAD notes on insns previous to
+     the new ones that are now incorrect and need to be removed. */
+
+  for (insn = orig_first_insn; ; insn = NEXT_INSN (insn))
+    {
+      maybe_remove_dead_notes (insn, insn, first, last,
+			       orig_first_insn, orig_last_insn);
+
+      if (insn == orig_last_insn)
+	break;
+    }
+
+  /* Update reg_n_sets.  This is necessary to prevent local alloc from
+     converting REG_EQUAL notes to REG_EQUIV when the new insns are setting
+     a reg multiple times instead of once. */
+
+  for (tem = orig_first_insn; tem != NULL_RTX; tem = NEXT_INSN (tem))
+    {
+      rtx x;
+      RTX_CODE code;
+
+      if (GET_RTX_CLASS (GET_CODE (tem)) != 'i')
+	continue;
+
+       x = PATTERN (tem);
+      code = GET_CODE (x);
+      if (code == SET || code == CLOBBER)
+	update_n_sets (x, -1);
+      else if (code == PARALLEL)
+	{
+	  int i;
+	  for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+	    {
+	      code = GET_CODE (XVECEXP (x, 0, i));
+	      if (code == SET || code == CLOBBER)
+		update_n_sets (XVECEXP (x, 0, i), -1);
+	    }
+	}
+      if (tem == orig_last_insn)
+	break;
+    }
+
+  for (insn = first; ; insn = NEXT_INSN (insn))
+    {
+      rtx x = PATTERN (insn);
+      RTX_CODE code = GET_CODE (x);
+
+      if (code == SET || code == CLOBBER)
+	update_n_sets (x, 1);
+      else if (code == PARALLEL)
+	{
+	  int i;
+	  for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+	    {
+	      code = GET_CODE (XVECEXP (x, 0, i));
+	      if (code == SET || code == CLOBBER)
+		update_n_sets (XVECEXP (x, 0, i), 1);
+	    }
+	}
+
+      if (insn == last)
+	break;
+    }
+}
+
+/* Prepends the set of REG_NOTES in NEW to NOTES, and returns NEW. */
+static rtx
+prepend_reg_notes (notes, new)
+     rtx notes, new;
+{
+  rtx end;
+
+  if (new == NULL_RTX)
+    {
+      return notes;
+    }
+  if (notes == NULL_RTX)
+    {
+      return new;
+    }
+  end = new;
+  while (XEXP (end, 1) != NULL_RTX)
+    {
+      end = XEXP (end, 1);
+    }
+  XEXP (end, 1) = notes;
+  return new;
+}
+
+/* Replace the insns from FIRST to LAST inclusive with the set of insns in
+   NEW, and update the life analysis info accordingly. */
+void
+replace_insns (first, last, first_new, notes)
+     rtx first, last, first_new, notes;
+{
+  rtx stop = NEXT_INSN (last);
+  rtx last_new;
+  rtx curr, next;
+  rtx prev = PREV_INSN (first);
+  int i;
+
+  if (notes == NULL_RTX)
+    {
+      for (curr = first; curr != stop; curr = NEXT_INSN (curr))
+	{
+	  notes = prepend_reg_notes (notes, REG_NOTES (curr));
+	}
+    }
+  for (curr = first; curr; curr = next)
+    {
+      next = NEXT_INSN (curr);
+      delete_insn (curr);
+      if (curr == last)
+	break;
+    }
+  last_new = emit_insn_after (first_new, prev);
+  first_new = NEXT_INSN (prev);
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      if (BLOCK_HEAD (i) == first)
+	{
+	  BLOCK_HEAD (i) = first_new;
+	}
+      if (BLOCK_END (i) == last)
+	{
+	  BLOCK_END (i) = last_new;
+	}
+    }
+  /* This is probably bogus. */
+  if (first_new == last_new)
+    {
+      if (GET_CODE (first_new) == SEQUENCE)
+	{
+	  first_new = XVECEXP (first_new, 0, 0);
+	  last_new = XVECEXP (last_new, 0, XVECLEN (last_new, 0) - 1);
+	}
+    }
+  update_life_info (notes, first_new, last_new, first, last);
 }
 
 /* Verify the CFG consistency.  This function check some CFG invariants and

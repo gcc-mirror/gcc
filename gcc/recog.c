@@ -2669,7 +2669,7 @@ split_block_insns (b, do_split)
 	      /* try_split returns the NOTE that INSN became.  */
 	      first = NEXT_INSN (first);
 #ifdef INSN_SCHEDULING
-	      update_flow_info (notes, first, last, insn);
+	      update_life_info (notes, first, last, insn, insn);
 #endif
 	      PUT_CODE (insn, NOTE);
 	      NOTE_SOURCE_FILE (insn) = 0;

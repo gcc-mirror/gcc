@@ -1264,14 +1264,33 @@ find_free_register (current_insn, class_str, mode, reg_set)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      int success = 1;
+      int regno;
+      int success;
 
-      if (! TEST_HARD_REG_BIT (reg_class_contents[class], i))
+#ifdef REG_ALLOC_ORDER
+      regno = reg_alloc_order [i];
+#else
+      regno = i;
+#endif
+
+      /* Don't allocate fixed registers.  */
+      if (fixed_regs[regno])
 	continue;
-      for (j = HARD_REGNO_NREGS (i, mode) - 1; j >= 0; j--)
+      /* Make sure the register is of the right class.  */
+      if (! TEST_HARD_REG_BIT (reg_class_contents[class], regno))
+	continue;
+      /* And can support the mode we need.  */
+      if (! HARD_REGNO_MODE_OK (regno, mode))
+	continue;
+      /* And that we don't create an extra save/restore.  */
+      if (! call_used_regs[regno] && ! regs_ever_live[regno])
+	continue;
+
+      success = 1;
+      for (j = HARD_REGNO_NREGS (regno, mode) - 1; j >= 0; j--)
 	{
-	  if (TEST_HARD_REG_BIT (*reg_set, i + j)
-	      || TEST_HARD_REG_BIT (used.regs, i + j))
+	  if (TEST_HARD_REG_BIT (*reg_set, regno + j)
+	      || TEST_HARD_REG_BIT (used.regs, regno + j))
 	    {
 	      success = 0;
 	      break;
@@ -1279,12 +1298,33 @@ find_free_register (current_insn, class_str, mode, reg_set)
 	}
       if (success)
 	{
-	  for (j = HARD_REGNO_NREGS (i, mode) - 1; j >= 0; j--)
+	  for (j = HARD_REGNO_NREGS (regno, mode) - 1; j >= 0; j--)
 	    {
-	      SET_HARD_REG_BIT (*reg_set, i + j);
+	      SET_HARD_REG_BIT (*reg_set, regno + j);
 	    }
-	  return gen_rtx_REG (mode, i);
+	  return gen_rtx_REG (mode, regno);
 	}
     }
   return NULL_RTX;
+}
+
+/* Return true if REG is dead at CURRENT_INSN.  */
+
+int
+reg_dead_p (current_insn, reg)
+     rtx current_insn, reg;
+{
+  struct resources used;
+  int regno, j;
+
+  mark_target_live_regs (get_insns (), current_insn, &used);
+  
+  regno = REGNO (reg);
+  for (j = HARD_REGNO_NREGS (regno, GET_MODE (reg)) - 1; j >= 0; j--)
+    {
+      if (TEST_HARD_REG_BIT (used.regs, regno + j))
+	return 0;
+    }
+
+  return 1;
 }

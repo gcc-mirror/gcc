@@ -132,6 +132,7 @@ extern void find_basic_blocks         PROTO((rtx, int, FILE *, int));
 extern void free_basic_block_vars     PROTO((int));
 extern void set_block_num             PROTO((rtx, int));
 extern void life_analysis             PROTO((rtx, int, FILE *, int));
+extern void update_life_info	        PROTO((rtx, rtx, rtx, rtx, rtx));
 #endif
 
 /* Functions in varasm.c.  */

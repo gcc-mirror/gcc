@@ -1412,6 +1412,7 @@ extern void recompute_reg_usage		PROTO ((rtx, int));
 extern void dump_flow_info		PROTO ((FILE *));
 #endif
 extern void free_bb_mem			PROTO ((void));
+extern void replace_insns               PROTO ((rtx, rtx, rtx, rtx));
 
 /* In expmed.c */
 extern void init_expmed			PROTO ((void));

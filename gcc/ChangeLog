@@ -1,3 +1,31 @@
+Tue Aug 24 11:46:10 1999  Bob Manson <manson@cygnus.com>
+			  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (split_hard_reg_notes): Move to flow.c
+	(new_insn_dead_notes): Likewise.
+	(update_n_sets): Likewise.
+	(update_flow_info): Move to flow.c, renamed to update_life_info;
+	extend to handle multiple source insns.
+	* flow.c: Include resource.h
+	(unlink_insn_chain): New.
+	(split_hard_reg_notes): New.
+	(maybe_add_dead_note): New.
+	(maybe_add_dead_note_use): New.
+	(find_insn_with_note): New.
+	(new_insn_dead_notes): New.
+	(update_n_sets): New.
+	(sets_reg_or_subreg_1, sets_reg_or_subreg): New.
+	(maybe_remove_dead_notes): New.
+	(update_life_info): New.
+	(prepend_reg_notes): New.
+	(replace_insns): New.
+	* output.h (update_life_info): Declare.
+	* recog.c (split_block_insns): Use update_life_info.
+	* resource.c (find_free_register): Use reg_alloc_order, don't use
+	fixed regs, make sure the mode is supported, don't use new regs.
+	(reg_dead_p): New.
+	* rtl.h (replace_insns): Declare.
+
 Tue Aug 24 13:48:39 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* expr.c (expand_expr): Cope with COND_EXPRs with one
