@@ -1,3 +1,9 @@
+Sat Apr  4 19:08:37 1998  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (ffssi, ffshi): Rewrite as define_expands.
+	(ffssi_1, ffshi_1): New (unspec [] 5) support patterns.
+	* i386.c (notice_update_cc): Recognize unspec 5.
+
 Sat Apr  4 18:07:16 1998  David Mosberger-Tang  (davidm@mostang.com)
 
 	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Accept '(' for s/sv/svi.

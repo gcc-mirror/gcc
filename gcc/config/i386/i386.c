@@ -3646,6 +3646,18 @@ notice_update_cc (exp)
 	    cc_status.value2 = SET_DEST (exp);
 	    break;
 
+	    /* This is the bsf pattern used by ffs.  */
+	  case UNSPEC:
+	    if (XINT (SET_SRC (exp), 1) == 5)
+	      {
+		/* Only the Z flag is defined after bsf.  */
+		cc_status.flags
+		  = CC_NOT_POSITIVE | CC_NOT_NEGATIVE | CC_NO_OVERFLOW;
+		cc_status.value1 = XVECEXP (SET_SRC (exp), 0, 0);
+		break;
+	      }
+	    /* FALLTHRU */
+
 	  default:
 	    CC_STATUS_INIT;
 	  }
