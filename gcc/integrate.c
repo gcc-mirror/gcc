@@ -63,7 +63,6 @@ extern struct obstack *function_maybepermanent_obstack;
 #endif
 
 static rtvec initialize_for_inline	PROTO((tree));
-static void adjust_copied_decl_tree	PROTO((tree));
 static void note_modified_parmregs	PROTO((rtx, rtx));
 static void integrate_parm_decls	PROTO((tree, struct inline_remap *,
 					       rtvec));
@@ -290,30 +289,6 @@ initialize_for_inline (fndecl)
     }
 
   return arg_vector;
-}
-
-/* Adjust the BLOCK_END_NOTE pointers in a given copied DECL tree so that
-   they all point to the new (copied) rtxs.  */
-
-static void
-adjust_copied_decl_tree (block)
-     register tree block;
-{
-  register tree subblock;
-  register rtx original_end;
-
-  original_end = BLOCK_END_NOTE (block);
-  if (original_end)
-    {
-      BLOCK_END_NOTE (block) = (rtx) NOTE_SOURCE_FILE (original_end);
-      NOTE_SOURCE_FILE (original_end) = 0;
-    }
-
-  /* Process all subblocks.  */
-  for (subblock = BLOCK_SUBBLOCKS (block);
-       subblock;
-       subblock = TREE_CHAIN (subblock))
-    adjust_copied_decl_tree (subblock);
 }
 
 /* Copy NODE (as with copy_node).  NODE must be a DECL.  Set the

@@ -1120,9 +1120,6 @@ extern void push_function_context               PROTO((void));
 /* in integrate.c */
 extern void output_inline_function              PROTO((tree));
 
-/* in stmt.c */
-extern void remember_end_note                   PROTO((tree));
-
 /* in toplev.c */
 extern void announce_function                   PROTO((tree));
 extern int  floor_log2_wide                     PROTO((unsigned HOST_WIDE_INT));

@@ -528,7 +528,6 @@ print_node (file, prefix, node, indent)
 
     case 'b':
       print_node (file, "vars", BLOCK_VARS (node), indent + 4);
-      print_node (file, "tags", BLOCK_TYPE_TAGS (node), indent + 4);
       print_node (file, "supercontext", BLOCK_SUPERCONTEXT (node), indent + 4);
       print_node (file, "subblocks", BLOCK_SUBBLOCKS (node), indent + 4);
       print_node (file, "chain", BLOCK_CHAIN (node), indent + 4);

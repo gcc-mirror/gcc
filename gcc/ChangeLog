@@ -1,3 +1,26 @@
+Tue Oct 26 01:27:32 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (BLOCK_TYPE_TAGS): Remove.
+	(BLOCK_END_NOTE): Likewise.
+	(BLOCK_LIVE_RANGE_FLAG): Likewise.
+	(BLOCK_LIVE_RANGE_START): Likewise.
+	(BLOCK_LIVE_RANGE_END): Likewise.
+	(tree_block): Remove live_range_flag, live_range_var_flag, and
+	type_tags.  Remove end_note, live_range_start, and live_range_end.
+	(remember_end_note): Remove prototype.
+	* tree.c (build_block): Don't set BLOCK_TYPE_TAGS.
+	* c-decl.c (poplevel): Don't set BLOCK_TYPE_TAGS or call
+	remember_end_note.
+	* ggc-common.c (ggc_mark_tree_children): Don't mark
+	BLOCK_TYPE_TAGS or BLOCK_END_NOTE.
+	* integrate.c (adjust_copied_decl_tree): Remove.
+	* print-tree.c (print_node): Don't print BLOCK_TYPE_TAGS.
+	* stmt.c (last_block_end_note): Remove.
+	(init_stmt): Don't add a GC root for it.
+	(expand_fixup): Don't set it.
+	(remember_end_note): Remove.
+	(expand_end_bindings): Don't set last_block_end_note.
+
 Tue Oct 26 00:41:54 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_for_value_p): Show

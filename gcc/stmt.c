@@ -64,12 +64,6 @@ struct obstack stmt_obstack;
 #define CASE_VECTOR_PC_RELATIVE 0
 #endif
 
-/* Each time we expand the end of a binding contour (in `expand_end_bindings')
-   and we emit a new NOTE_INSN_BLOCK_END note, we save a pointer to it here.
-   This is used by the `remember_end_note' function to record the endpoint
-   of each generated block in its associated BLOCK node.  */
-
-static rtx last_block_end_note;
 
 /* Functions and data structures for expanding case statements.  */
 
@@ -598,7 +592,6 @@ init_stmt ()
   int i;
 
   gcc_obstack_init (&stmt_obstack);
-  ggc_add_rtx_root (&last_block_end_note, 1);
 
   for (i = 0; i < 10; i++)
     {
@@ -1046,7 +1039,7 @@ expand_fixup (tree_label, rtl_label, last_insn)
         start_sequence ();
         start = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
 	fixup->before_jump = emit_note (NULL_PTR, NOTE_INSN_DELETED);
-        last_block_end_note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+	emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
         fixup->context = block;
         end_sequence ();
         emit_insns_after (start, original_before_jump);
@@ -3345,18 +3338,6 @@ is_eh_region ()
 	  && block_stack->data.block.exception_region);
 }
 
-/* Given a pointer to a BLOCK node, save a pointer to the most recently
-   generated NOTE_INSN_BLOCK_END in the BLOCK_END_NOTE field of the given
-   BLOCK node.  */
-
-void
-remember_end_note (block)
-     register tree block;
-{
-  BLOCK_END_NOTE (block) = last_block_end_note;
-  last_block_end_note = NULL_RTX;
-}
-
 /* Emit a handler label for a nonlocal goto handler.
    Also emit code to store the handler label in SLOT before BEFORE_INSN.  */
 
@@ -3676,7 +3657,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
      just going out of scope, so they are in scope for their cleanups.  */
 
   if (mark_ends)
-    last_block_end_note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+    emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
   else
     /* Get rid of the beginning-mark if we don't make an end-mark.  */
     NOTE_LINE_NUMBER (thisblock->data.block.first_insn) = NOTE_INSN_DELETED;

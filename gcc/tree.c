@@ -3299,7 +3299,6 @@ build_block (vars, tags, subblocks, supercontext, chain)
 {
   register tree block = make_node (BLOCK);
   BLOCK_VARS (block) = vars;
-  BLOCK_TYPE_TAGS (block) = tags;
   BLOCK_SUBBLOCKS (block) = subblocks;
   BLOCK_SUPERCONTEXT (block) = supercontext;
   BLOCK_CHAIN (block) = chain;

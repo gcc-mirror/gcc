@@ -389,11 +389,9 @@ ggc_mark_tree_children (t)
 
     case 'b': /* A lexical block.  */
       ggc_mark_tree (BLOCK_VARS (t));
-      ggc_mark_tree (BLOCK_TYPE_TAGS (t));
       ggc_mark_tree (BLOCK_SUBBLOCKS (t));
       ggc_mark_tree (BLOCK_SUPERCONTEXT (t));
       ggc_mark_tree (BLOCK_ABSTRACT_ORIGIN (t));
-      ggc_mark_rtx (BLOCK_END_NOTE (t));
       break;
 
     case 'c': /* A constant.  */

@@ -1,3 +1,7 @@
+Tue Oct 26 01:32:19 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (poplevel): Don't call remember_end_note.
+
 Fri Oct 15 15:18:12 1999  Greg McGary  <gkm@gnu.org>
 
 	* top.h (ffe_is_subscript_check_): Remove extern decl.
