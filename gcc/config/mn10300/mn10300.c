@@ -1057,4 +1057,5 @@ legitimize_address (x, oldx, mode)
       regx1 = force_reg (Pmode, gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
       return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
     }
+  return x;
 }
