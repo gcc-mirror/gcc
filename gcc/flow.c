@@ -324,8 +324,8 @@ static void mark_reg			PARAMS ((regset, rtx));
 static void mark_regs_live_at_end	PARAMS ((regset));
 static void life_analysis_1		PARAMS ((rtx, int, int));
 static void calculate_global_regs_live	PARAMS ((sbitmap, sbitmap, int));
-static void propagate_block		PARAMS ((regset, rtx, rtx,
-						 regset, int, int));
+static void propagate_block		PARAMS ((basic_block, regset,
+						 regset, int));
 static int insn_dead_p			PARAMS ((rtx, regset, int, rtx));
 static int libcall_dead_p		PARAMS ((rtx, regset, rtx, rtx));
 static void mark_set_regs		PARAMS ((regset, regset, rtx,
@@ -2591,8 +2591,7 @@ update_life_info (blocks, extent, prop_flags)
       basic_block bb = BASIC_BLOCK (i);
 
       COPY_REG_SET (tmp, bb->global_live_at_end);
-      propagate_block (tmp, bb->head, bb->end, (regset) NULL, i,
-		       prop_flags);
+      propagate_block (bb, tmp, (regset) NULL, prop_flags);
 
       if (extent == UPDATE_LIFE_LOCAL)
 	verify_local_live_at_start (tmp, bb);
@@ -2957,7 +2956,7 @@ life_analysis_1 (f, nregs, flags)
         basic_block bb = BASIC_BLOCK (i);
 
 	COPY_REG_SET (tmp, bb->global_live_at_end);
-	propagate_block (tmp, bb->head, bb->end, (regset) NULL, i, flags);
+	propagate_block (bb, tmp, (regset) NULL, flags);
       }
 
     FREE_REG_SET (tmp);
@@ -3116,8 +3115,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 
 	  /* Rescan the block insn by insn to turn (a copy of) live_at_end
 	     into live_at_start.  */
-	  propagate_block (new_live_at_end, bb->head, bb->end,
-			   bb->local_set, bb->index, flags);
+	  propagate_block (bb, new_live_at_end, bb->local_set, flags);
 
 	  /* If live_at start didn't change, no need to go farther.  */
 	  if (REG_SET_EQUAL_P (bb->global_live_at_start, new_live_at_end))
@@ -3221,12 +3219,10 @@ allocate_reg_life_data ()
    BNUM is the number of the basic block.  */
 
 static void
-propagate_block (old, first, last, significant, bnum, flags)
-     register regset old;
-     rtx first;
-     rtx last;
+propagate_block (bb, old, significant, flags)
+     basic_block bb;
+     regset old;
      regset significant;
-     int bnum;
      int flags;
 {
   register rtx insn;
@@ -3238,7 +3234,7 @@ propagate_block (old, first, last, significant, bnum, flags)
      middle of the basic block -- for register allocation purposes, the 
      important uses will be in the blocks wholely contained within the loop
      not in the loop pre-header or post-trailer.  */
-  loop_depth = BASIC_BLOCK (bnum)->loop_depth;
+  loop_depth = bb->loop_depth;
 
   dead = ALLOCA_REG_SET ();
   live = ALLOCA_REG_SET ();
@@ -3259,7 +3255,7 @@ propagate_block (old, first, last, significant, bnum, flags)
 
   /* Scan the block an insn at a time from end to beginning.  */
 
-  for (insn = last; ; insn = prev)
+  for (insn = bb->end; ; insn = prev)
     {
       prev = PREV_INSN (insn);
 
@@ -3289,11 +3285,14 @@ propagate_block (old, first, last, significant, bnum, flags)
 
 	  if (flags & PROP_SCAN_DEAD_CODE)
 	    {
-	      insn_is_dead = (insn_dead_p (PATTERN (insn), old, 0, REG_NOTES (insn))
-	                      /* Don't delete something that refers to volatile storage!  */
+	      insn_is_dead = (insn_dead_p (PATTERN (insn), old, 0,
+					   REG_NOTES (insn))
+	                      /* Don't delete something that refers to
+				 volatile storage!  */
 	                      && ! INSN_VOLATILE (insn));
 	      libcall_is_dead = (insn_is_dead && note != 0
-	                         && libcall_dead_p (PATTERN (insn), old, note, insn));
+	                         && libcall_dead_p (PATTERN (insn), old,
+						    note, insn));
 	    }
 
 	  /* We almost certainly don't want to delete prologue or epilogue
@@ -3330,8 +3329,8 @@ propagate_block (old, first, last, significant, bnum, flags)
 		      LABEL_NUSES (label)--;
 
 		      /* If this label was attached to an ADDR_VEC, it's
-			 safe to delete the ADDR_VEC.  In fact, it's pretty much
-			 mandatory to delete it, because the ADDR_VEC may
+			 safe to delete the ADDR_VEC.  In fact, it's pretty
+			 much mandatory to delete it, because the ADDR_VEC may
 			 be referencing labels that no longer exist.  */
 		      if (LABEL_NUSES (label) == 0
 			  && (next = next_nonnote_insn (label)) != NULL
@@ -3513,14 +3512,13 @@ propagate_block (old, first, last, significant, bnum, flags)
 
 	    }
 
-	  /* On final pass, update counts of how many insns each reg is live
-	     at.  */
+	  /* On final pass, update counts of how many insns in which
+	     each reg is live.  */
 	  if (flags & PROP_REG_INFO)
-	    EXECUTE_IF_SET_IN_REG_SET (old, 0, i,
-				       { REG_LIVE_LENGTH (i)++; });
+	    EXECUTE_IF_SET_IN_REG_SET (old, 0, i, { REG_LIVE_LENGTH (i)++; });
 	}
-    flushed: ;
-      if (insn == first)
+    flushed:
+      if (insn == bb->head)
 	break;
     }
 
