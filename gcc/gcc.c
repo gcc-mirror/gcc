@@ -1285,8 +1285,8 @@ init_gcc_specs (obstack, shared_name, static_name)
   obstack_grow (obstack, buffer, strlen (buffer));
   /* Otherwise, if we see -shared, then use the shared version.  */
   sprintf (buffer,
-	   "%%{!shared-libgcc:%%{!static-libgcc:%%{shared:%s %s}}}", 
-	   shared_name, static_name);
+	   "%%{!shared-libgcc:%%{!static-libgcc:%%{shared:%s}}}", 
+	   shared_name);
   obstack_grow (obstack, buffer, strlen (buffer));
   /* Otherwise, use the static version.  */
   sprintf (buffer, 
