@@ -336,6 +336,23 @@ remap_block (block, decls, id)
     {
       tree new_var;
 
+      /* All local class initialization flags go in the outermost
+	 scope.  */
+      if (LOCAL_CLASS_INITIALIZATION_FLAG_P (old_var))
+	{
+	  /* We may already have one.  */
+	  if (! splay_tree_lookup (id->decl_map, (splay_tree_key) old_var))
+	    {
+	      tree outermost_block;
+	      new_var = remap_decl (old_var, id);
+	      DECL_ABSTRACT_ORIGIN (new_var) = NULL;
+	      outermost_block = DECL_SAVED_TREE (current_function_decl);
+	      TREE_CHAIN (new_var) = BLOCK_VARS (outermost_block);
+	      BLOCK_VARS (outermost_block) = new_var;
+	    }
+	  continue;
+	}
+
       /* Remap the variable.  */
       new_var = remap_decl (old_var, id);
       /* If we didn't remap this variable, so we can't mess with
@@ -1180,7 +1197,9 @@ expand_call_inline (tp, walk_subtrees, data)
   *inlined_body = copy_body (id);
 #else /* INLINER_FOR_JAVA */
   {
-    tree new_body = copy_body (id);
+    tree new_body;
+    java_inlining_map_static_initializers (fn, id->decl_map);
+    new_body = copy_body (id);
     TREE_TYPE (new_body) = TREE_TYPE (TREE_TYPE (fn));
     BLOCK_EXPR_BODY (expr)
       = add_stmt_to_compound (BLOCK_EXPR_BODY (expr), 
@@ -1218,9 +1237,17 @@ expand_call_inline (tp, walk_subtrees, data)
     = chainon (COMPOUND_BODY (stmt), scope_stmt);
 #else /* INLINER_FOR_JAVA */
   if (retvar)
-    BLOCK_EXPR_BODY (expr) 
-      = add_stmt_to_compound (BLOCK_EXPR_BODY (expr), 
-			      TREE_TYPE (retvar), retvar);
+    {
+      /* Mention the retvar.  If the return type of the function was
+	 promoted, convert it back to the expected type.  */
+      if (TREE_TYPE (TREE_TYPE (fn)) != TREE_TYPE (retvar))
+	retvar = build1 (NOP_EXPR, TREE_TYPE (TREE_TYPE (fn)), retvar);
+      BLOCK_EXPR_BODY (expr) 
+	= add_stmt_to_compound (BLOCK_EXPR_BODY (expr), 
+				TREE_TYPE (retvar), retvar);
+    }
+  
+  java_inlining_merge_static_initializers (fn, id->decl_map);
 #endif /* INLINER_FOR_JAVA */
 
   /* Clean up.  */
