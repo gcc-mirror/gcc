@@ -173,20 +173,10 @@ namespace std
     { }
 
   template<>
-    _Format_cache<char>::_Format_cache()
-    : _M_valid(true),
-    _M_decimal_point('.'), _M_thousands_sep(','),
-    _M_truename("true"), _M_falsename("false"), _M_use_grouping(false)
-    { }
+    _Format_cache<char>::_Format_cache();
 
-#ifdef _GLIBCPP_USE_WCHAR_T
   template<>
-    _Format_cache<wchar_t>::_Format_cache()
-    : _M_valid(true),
-    _M_decimal_point(L'.'), _M_thousands_sep(L','),
-    _M_truename(L"true"), _M_falsename(L"false"), _M_use_grouping(false)
-    { }
-#endif
+    _Format_cache<wchar_t>::_Format_cache();
 
   template<typename _CharT>
     void
@@ -278,7 +268,7 @@ namespace std
   template<typename _CharT, typename _InIter>
     void
     num_get<_CharT, _InIter>::
-    _M_extract(iter_type /*__beg*/, iter_type /*__end*/, ios_base& /*__io*/,
+    _M_extract(_InIter /*__beg*/, _InIter /*__end*/, ios_base& /*__io*/,
                ios_base::iostate& /*__err*/, char* /*__xtrc*/,
                int& /*__base*/, bool /*__fp*/) const
     {
@@ -288,305 +278,13 @@ namespace std
   template<>
     void
     num_get<char, istreambuf_iterator<char> >::
-    _M_extract(istreambuf_iterator<char> __beg,
-               istreambuf_iterator<char> __end, ios_base& __io,
-               ios_base::iostate& __err, char* __xtrc,
-               int& __base, bool __fp) const
-    {
-      typedef _Format_cache<char> __cache_type;	
+    _M_extract(istreambuf_iterator<char> __beg, 
+	       istreambuf_iterator<char> __end, ios_base& __io, 
+	       ios_base::iostate& __err, char* __xtrc, int& __base, 
+	       bool __fp) const;
 
-      // Prepare for possible failure
-      __xtrc[0] = '\0';
-
-      // Stage 1: determine a conversion specifier.
-      ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
-      if (__basefield == ios_base::dec)
-        __base = 10;
-      else if (__basefield == ios_base::oct)
-        __base = 8;
-      else if (__basefield == ios_base::hex)
-        __base = 16;
-      else
-        __base = 0;
-      // As far as I can tell, bases other than 10 are not available for
-      // floating point types
-      if (__fp)
-        __base = 10;
-
-      // Stage 2: extract characters.
-      __cache_type const* __fmt = __cache_type::_S_get(__io);
-      bool __valid = __beg != __end;
-      // Fail quickly if !__valid
-      if (!__valid)
-        {
-          __err |= (ios_base::eofbit | ios_base::failbit);
-          return;
-        }
-
-      // Acceptable formats for numbers here are based on 22.2.3.1
-      string __grp;
-      int __sep_pos = 0;
-      int __pos = 0;
-      const char* __lits = __fmt->_S_literals;
-      char __c = *__beg;
-
-      // Check first for sign
-      bool __testsign = false;
-      if ((__c == __lits[__cache_type::_S_minus])
-          || (__c == __lits[__cache_type::_S_plus]))
-        {
-          __xtrc[__pos++] = __c;
-          ++__beg;
-          __testsign = true;
-          // whitespace may follow a sign
-          while ((__beg != __end) && (isspace(*__beg)))
-            ++__beg;
-
-          // There had better be more to come...
-          if (__beg == __end)
-            {
-              __xtrc[__pos] = '\0';
-              __err |= (ios_base::eofbit | ios_base::failbit);
-              return;
-            }
-        }
-
-      bool __testzero = false;    // Has there been a leading zero?
-
-      // Now check if first character is a zero
-      __c = *__beg;
-      if (__c == __lits[__cache_type::_S_digits])
-        {
-           __testzero = true;
-           ++__beg;
-
-           // We have to check for __beg == __end here. If so,
-           // a plain '0' (possibly with a sign) can be got rid of now
-           if (__beg == __end)
-             {
-               __xtrc[__pos++] = __c;
-               __xtrc[__pos] = '\0';
-               __err |= ios_base::eofbit;
-               return;
-             }
-
-          // Figure out base for integer types only
-          // Based on Table 55 of 22.2.2.1.2
-          if (!__fp && __base != 10 && __base != 8)
-            {
-              // Here, __base == 0 or 16
-              __c = *__beg;
-              if ((__c == __lits[__cache_type::_S_x])
-                 || (__c == __lits[__cache_type::_S_X]))
-                {
-                  ++__beg;
-                  __base = 16;
-                  __testzero = false; // "0x" is not a leading zero
-                }
-              else if (__base == 0)
-                __base = 8;
-            }
-
-          // Remove any more leading zeros
-          while (__beg != __end)
-            {
-              if (*__beg == __lits[__cache_type::_S_digits])
-                {
-                  ++__beg;
-                  __testzero = true;
-                }
-              else
-                break;
-            }
-        }
-      else if (__base == 0) // 1st character is not zero
-        __base = 10;
-
-      // We now seek "units", i.e. digits and thousands separators.
-      // We may need to know if anything is found here. A leading zero
-      // (removed by now) would count.
-      bool __testunits = __testzero;
-      while (__valid && __beg != __end)
-        {
-          __valid = false;
-          __c = *__beg;
-          const char* __p = strchr(__fmt->_S_literals, __c);
-
-          // NB: strchr returns true for __c == 0x0
-          if (__p && __c)
-            {
-              // Try first for acceptable digit; record it if found
-              if ((__p >= &__lits[__cache_type::_S_digits]
-                    && __p < &__lits[__cache_type::_S_digits + __base])
-                   || (__p >= &__lits[__cache_type::_S_udigits]
-                       && __p < &__lits[__cache_type::_S_udigits + __base]))
-                {
-                  __xtrc[__pos++] = __c;
-                  ++__sep_pos;
-                  __valid = true;
-                  __testunits = true;
-                }
-            }
-          else if (__c == __fmt->_M_thousands_sep
-                   && __fmt->_M_use_grouping)
-            {
-              // NB: Thousands separator at the beginning of a string
-              // is a no-no, as is two consecutive thousands
-              // separators
-              if (__sep_pos)
-                {
-                  __grp += static_cast<char>(__sep_pos);
-                  __sep_pos = 0;
-                  __valid = true;
-                }
-              else
-                __err |= ios_base::failbit;
-            }
-          if (__valid)
-            ++__beg;
-        }
-
-      // Digit grouping is checked. If _M_groupings() doesn't
-      // match, then get very very upset, and set failbit.
-      if (__fmt->_M_use_grouping && !__grp.empty())
-        {
-          // Add the ending grouping
-          __grp += static_cast<char>(__sep_pos);
-
-          // __grp is parsed L to R
-          // 1,222,444 == __grp of "/1/3/3"
-          // __fmt->_M_grouping is parsed R to L
-          // 1,222,444 == __fmt->_M_grouping of "/3" == "/3/3/3"
-          int __i = 0;
-          int __j = 0;
-          const int __len = __fmt->_M_grouping.size();
-          int __n = __grp.size();
-          bool __test = true;
-
-          // Parsed number groupings have to match the
-          // numpunct::grouping string exactly, starting at the
-          // right-most point of the parsed sequence of elements ...
-          while (__test && __i < __n - 1)
-            for (__j = 0; __test && __j < __len && __i < __n - 1; ++__j,++__i)
-              __test &= __fmt->_M_grouping[__j] == __grp[__n - __i - 1];
-          // ... but the last parsed grouping can be <= numpunct
-          // grouping.
-          __j == __len ? __j = 0 : __j;
-          __test &= __fmt->_M_grouping[__j] >= __grp[__n - __i - 1];
-
-          if (!__test)
-            {
-              __err |= ios_base::failbit;
-              __xtrc[__pos] = '\0';
-              if (__beg == __end)
-                __err |= ios_base::eofbit;
-              return;
-            }
-        }
-
-      // If there was nothing but zeros, put one in the output string
-      if (__testzero && (__pos == 0 || (__pos == 1 && __testsign)))
-        __xtrc[__pos++] = __lits[__cache_type::_S_digits];
-
-      // That's it for integer types. Remaining code is for floating point
-      if (__fp && __beg != __end)
-        {
-          __c = *__beg;
-          // Check first for decimal point. There MUST be one if
-          // __testunits is false.
-          bool __testdec = false;    // Is there a decimal point
-                                     // with digits following it?
-          if (__c == __fmt->_M_decimal_point)
-            {
-              __xtrc[__pos++] = '.';
-              ++__beg;
-              // Now we get any digits after the decimal point
-              // There MUST be some if __testunits is false.
-              while (__beg != __end)
-                {
-                  __c = *__beg;
-                  const char* __p = strchr(__fmt->_S_literals, __c);
-                  if ((__p >= &__lits[__cache_type::_S_digits]
-                        && __p < &__lits[__cache_type::_S_digits + __base])
-                       || (__p >= &__lits[__cache_type::_S_udigits]
-                           && __p < &__lits[__cache_type::_S_udigits + __base]))
-                    {
-                      __xtrc[__pos++] = __c;
-                      ++__beg;
-                      __testdec = true;
-                    }
-                  else
-                    break;
-                }
-            }
-          if (!__testunits && !__testdec) // Ill formed
-            {
-              __err |= ios_base::failbit;
-              __xtrc[__pos] = '\0';
-              if (__beg == __end)
-                __err |= ios_base::eofbit;
-              return;
-            }
-
-          // Now we may find an exponent
-          if (__beg != __end)
-            {
-              __c = *__beg;
-              if ((__c == __lits[__cache_type::_S_ee])
-                   || (__c == __lits[__cache_type::_S_Ee]))
-                {
-                  __xtrc[__pos++] = __c;
-                  ++__beg;
-                  // Now there may be a sign
-                  if (__beg != __end)
-                    {
-                      __c = *__beg;
-                      if ((__c == __lits[__cache_type::_S_minus])
-                          || (__c == __lits[__cache_type::_S_plus]))
-                        {
-                          __xtrc[__pos++] = __c;
-                          ++__beg;
-                          // whitespace may follow a sign
-                          while ((__beg != __end) && (isspace(*__beg)))
-                            ++__beg;
-
-                        }
-                    }
-                  // And now there must be some digits
-                  if (__beg == __end)
-                    {
-                      __xtrc[__pos] = '\0';
-                      __err |= (ios_base::eofbit | ios_base::failbit);
-                      return;
-                    }
-                  while (__beg != __end)
-                    {
-                      __c = *__beg;
-                      const char* __p = strchr(__fmt->_S_literals, __c);
-                      if ((__p >= &__lits[__cache_type::_S_digits]
-                            && __p < &__lits[__cache_type::_S_digits + __base])
-                           || (__p >= &__lits[__cache_type::_S_udigits]
-                               && __p < &__lits[__cache_type::_S_udigits + __base]))
-                        {
-                          __xtrc[__pos++] = __c;
-                          ++__beg;
-                        }
-                      else
-                        break;
-                    }
-                }
-            }
-          // Finally, that's it for floating point
-        }
-
-      // Finish up
-      __xtrc[__pos] = '\0';
-      if (__beg == __end)
-        __err |= ios_base::eofbit;
-    }
-
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
   // NB: This is an unresolved library defect #17
-  // _GLIBCPP_RESOLVE_LIB_DEFECTS
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
@@ -655,6 +353,7 @@ namespace std
 
       return __beg;
     }
+#endif
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
   template<typename _CharT, typename _InIter>
@@ -1063,10 +762,23 @@ namespace std
 
   template <typename _CharT, typename _OutIter>
     _OutIter
-    _S_pad_numeric(_OutIter __s, ios_base::fmtflags __flags,
+    _S_pad_numeric(_OutIter __s, ios_base::fmtflags /*__flags*/,
+                   _CharT /*__fill*/, int /*__width*/, 
+		   _CharT const* /*__first*/, _CharT const* /*__middle*/, 
+		   _CharT const* /*__last*/)
+    {
+      // XXX Not currently done: non streambuf_iterator
+      return __s;
+    }
+
+  // Partial specialization for ostreambuf_iterator.
+  template <typename _CharT>   
+    ostreambuf_iterator<_CharT>
+    _S_pad_numeric(ostreambuf_iterator<_CharT> __s, ios_base::fmtflags __flags,
                    _CharT __fill, int __width, _CharT const* __first,
                    _CharT const* __middle, _CharT const* __last)
     {
+      typedef ostreambuf_iterator<_CharT> 	__out_iter;
       int __padding = __width - (__last - __first);
       if (__padding < 0)
         __padding = 0;
@@ -1084,14 +796,14 @@ namespace std
             }
           copy(__first, __middle, __s);
         }
-      _OutIter __s2 = __s;
+      __out_iter __s2 = __s;
 
       if (__padding && __aflags != ios_base::left)
         {
           _S_fill(__s2, __fill, __padding);
           __padding = 0;
         }
-      _OutIter __s3 = copy(__middle, __last, __s2);
+      __out_iter __s3 = copy(__middle, __last, __s2);
       if (__padding)
         _S_fill(__s3, __fill, __padding);
       return __s3;
@@ -1271,55 +983,21 @@ namespace std
     { return _S_format(__s, __io, __fill, false, __v); }
 #endif
 
-  // The following code uses sprintf() to convert floating point
-  // values for insertion into a stream. The current implementation
-  // replicates the code in _S_pad_numeric() (in _S_output_float()) in
-  // order to prevent having to create a "wide" buffer in addition to
-  // the "narrow" buffer passed to sprintf(). An optimization would be
-  // to replace sprintf() with code that works directly on a wide
-  // buffer and then use _S_pad_numeric() to do the padding. It would
-  // be good to replace sprintf() anyway to avoid accidental buffer
-  // overruns and to gain back the efficiency that C++ provides by
-  // knowing up front the type of the values to insert. This
-  // implementation follows the C++ standard fairly directly as
-  // outlined in 22.2.2.2 [lib.locale.num.put]
-  bool
-  _S_build_float_format(ios_base& __io, char* __fptr, char __modifier,
-                        streamsize __prec)
-  {
-    bool __incl_prec = false;
-    ios_base::fmtflags __flags = __io.flags();
-    *__fptr++ = '%';
-    // [22.2.2.2.2] Table 60
-    if (__flags & ios_base::showpos)
-      *__fptr++ = '+';
-    if (__flags & ios_base::showpoint)
-      *__fptr++ = '#';
-    // As per [22.2.2.2.2.11]
-    if (__flags & ios_base::fixed || __prec > 0)
-      {
-        *__fptr++ = '.';
-        *__fptr++ = '*';
-        __incl_prec = true;
-      }
-    if (__modifier)
-      *__fptr++ = __modifier;
-    ios_base::fmtflags __fltfield = __flags & ios_base::floatfield;
-    // [22.2.2.2.2] Table 58
-    if (__fltfield == ios_base::fixed)
-      *__fptr++ = 'f';
-    else if (__fltfield == ios_base::scientific)
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'E' : 'e';
-    else
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'G' : 'g';
-    *__fptr = '\0';
-    return __incl_prec;
-  }
-
-  template<typename _CharT,typename _OutIter>
-    _OutIter
-    _S_output_float(_OutIter __s, ios_base& __io,_CharT __fill,
+  // Generic helper function
+  template<typename _CharT, typename _OutIter>
+    static _OutIter
+    _S_output_float(_OutIter __s, ios_base& __io, _CharT __fill,
                     const char* __sptr, size_t __slen)
+    {
+      // XXX Not currently done: non streambuf_iterator
+      return __s;
+    }
+
+  // Partial specialization for ostreambuf_iterator.
+  template<typename _CharT>
+    static ostreambuf_iterator<_CharT>
+    _S_output_float(ostreambuf_iterator<_CharT> __s, ios_base& __io, 
+		    _CharT __fill, const char* __sptr, size_t __slen)
     {
       size_t __padding = __io.width() > streamsize(__slen) ?
                          __io.width() -__slen : 0;
@@ -1363,6 +1041,10 @@ namespace std
       __io.width(0);
       return __s;
     }
+
+  bool
+  _S_build_float_format(ios_base& __io, char* __fptr, char __modifier,
+                        streamsize __prec);
 
   template <typename _CharT, typename _OutIter>
     _OutIter
@@ -1454,7 +1136,7 @@ namespace std
 
   template<typename _Dummy>
     const char* const
-    _Weekdaynames<char,_Dummy>::_S_names[14] =
+    _Weekdaynames<char, _Dummy>::_S_names[14] =
     {
       "Sun", "Sunday",
       "Mon", "Monday",   "Tue", "Tuesday", "Wed", "Wednesday",
@@ -1463,12 +1145,12 @@ namespace std
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<typename _Dummy>
-    struct _Weekdaynames<wchar_t,_Dummy>
+    struct _Weekdaynames<wchar_t, _Dummy>
     { static const wchar_t* const _S_names[14]; };
 
   template<typename _Dummy>
     const wchar_t* const
-    _Weekdaynames<wchar_t,_Dummy>::_S_names[14] =
+    _Weekdaynames<wchar_t, _Dummy>::_S_names[14] =
     {
       L"Sun", L"Sunday",
       L"Mon", L"Monday",   L"Tue", L"Tuesday", L"Wed", L"Wednesday",
@@ -1576,31 +1258,16 @@ namespace std
     locale::id money_put<_CharT, _OutIter>::id;
 
   template<typename _CharT, bool _Intl>
-    locale::id moneypunct<_CharT,_Intl>::id;
+    locale::id moneypunct<_CharT, _Intl>::id;
+
+  template<typename _CharT, bool _Intl>
+    const bool moneypunct<_CharT, _Intl>::intl;
+
+  template<typename _CharT, bool _Intl>
+    const bool moneypunct_byname<_CharT, _Intl>::intl;
 
   template<typename _CharT>
     locale::id messages<_CharT>::id;
-
-  template<>
-    const ctype<char>&
-    use_facet<const ctype<char> > (const locale& __loc)
-    {
-      size_t __i = ctype<char>::id._M_index;
-      const locale::_Impl* __tmp = __loc._M_impl;
-      return static_cast<const ctype<char>&>(* (*(__tmp->_M_facets))[__i]);
-    }
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    const ctype<wchar_t>&
-    use_facet< const ctype<wchar_t> > (const locale& __loc)
-    {
-      size_t __i = ctype<wchar_t>::id._M_index;
-      const locale::_Impl* __tmp = __loc._M_impl;
-      return static_cast<const ctype<wchar_t>&>(* (*(__tmp->_M_facets))[__i]);
-    }
-#endif
-
 } // std::
 
 #endif /* _CPP_BITS_LOCFACETS_TCC */

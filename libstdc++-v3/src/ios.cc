@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,38 @@
 
 namespace std {
 
-  // Out-of-line definitions for static const ios_base members.
+  // Definitions for static const data members of __ios_flags.
+  const __ios_flags::__int_type __ios_flags::_S_boolalpha;
+  const __ios_flags::__int_type __ios_flags::_S_dec;
+  const __ios_flags::__int_type __ios_flags::_S_fixed;
+  const __ios_flags::__int_type __ios_flags::_S_hex;
+  const __ios_flags::__int_type __ios_flags::_S_internal;
+  const __ios_flags::__int_type __ios_flags::_S_left;
+  const __ios_flags::__int_type __ios_flags::_S_oct;
+  const __ios_flags::__int_type __ios_flags::_S_right;
+  const __ios_flags::__int_type __ios_flags::_S_scientific;
+  const __ios_flags::__int_type __ios_flags::_S_showbase;
+  const __ios_flags::__int_type __ios_flags::_S_showpoint;
+  const __ios_flags::__int_type __ios_flags::_S_showpos;
+  const __ios_flags::__int_type __ios_flags::_S_skipws;
+  const __ios_flags::__int_type __ios_flags::_S_unitbuf;
+  const __ios_flags::__int_type __ios_flags::_S_uppercase;
+  const __ios_flags::__int_type __ios_flags::_S_adjustfield;
+  const __ios_flags::__int_type __ios_flags::_S_basefield;
+  const __ios_flags::__int_type __ios_flags::_S_floatfield;
+
+  const __ios_flags::__int_type __ios_flags::_S_badbit;
+  const __ios_flags::__int_type __ios_flags::_S_eofbit;
+  const __ios_flags::__int_type __ios_flags::_S_failbit;
+
+  const __ios_flags::__int_type __ios_flags::_S_app;
+  const __ios_flags::__int_type __ios_flags::_S_ate;
+  const __ios_flags::__int_type __ios_flags::_S_bin;
+  const __ios_flags::__int_type __ios_flags::_S_in;
+  const __ios_flags::__int_type __ios_flags::_S_out;
+  const __ios_flags::__int_type __ios_flags::_S_trunc;
+
+  // Definitions for static const members of ios_base.
   const ios_base::fmtflags ios_base::boolalpha;
   const ios_base::fmtflags ios_base::dec;
   const ios_base::fmtflags ios_base::fixed;
@@ -73,17 +104,19 @@ namespace std {
   const ios_base::seekdir ios_base::cur;
   const ios_base::seekdir ios_base::end;
 
+  int ios_base::Init::_S_ios_base_init = 0;
+
+  const int ios_base::_S_local_words;
+
   ios_base::failure::failure(const string& __str)
   {
     strncpy(_M_name, __str.c_str(), _M_bufsize);
     _M_name[_M_bufsize - 1] = '\0';
   }
 
-  int ios_base::Init::_M_ios_base_init = 0;
-
   ios_base::Init::Init()
   {
-    if (++_M_ios_base_init == 1)
+    if (++_S_ios_base_init == 1)
       {
 	// NB: std_iostream.h creates the four standard files with
 	// default buffers. At this point, we swap out the default
@@ -124,7 +157,7 @@ namespace std {
 
   ios_base::Init::~Init()
   {
-    if (--_M_ios_base_init == 0)
+    if (--_S_ios_base_init == 0)
       {
 	cout.flush();
 	cerr.flush();

@@ -294,7 +294,7 @@ namespace std {
       Init();
       ~Init();
     private:
-      static int 	_M_ios_base_init;
+      static int 	_S_ios_base_init;
       filebuf* 		_M_cout;
       filebuf* 		_M_cin;
       filebuf* 		_M_cerr;

@@ -755,6 +755,7 @@ namespace std
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, void*& __v) const
       { return do_get(__in, __end, __io, __err, __v); }      
+
       static locale::id id;
 
     protected:
@@ -762,7 +763,8 @@ namespace std
 
       // This consolidates the extraction, storage and
       // error-processing parts of the do_get(...) overloaded member
-      // functions. NB: this is specialized for char.
+      // functions. 
+      // NB: This is specialized for char.
       void 
       _M_extract(iter_type __beg, iter_type __end, ios_base& __io, 
 		 ios_base::iostate& __err, char* __xtrc, 
@@ -1454,7 +1456,7 @@ namespace std
     enum part { none, space, symbol, sign, value };
     struct pattern { char field[4]; };
 
-    static const pattern __default_pattern;
+    static const pattern _S_default_pattern;
   };
 
   template<typename _CharT>
@@ -1513,16 +1515,11 @@ namespace std
 
       virtual pattern      
       do_pos_format() const
-      {
-	return money_base::__default_pattern;
-      }
+      { return money_base::_S_default_pattern; }
 
       virtual pattern      
       do_neg_format() const
-      {
-	return money_base::__default_pattern;
-      }
-
+      { return money_base::_S_default_pattern; }
     };
 
   template<typename _CharT, bool _Intl>

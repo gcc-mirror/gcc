@@ -53,6 +53,17 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     _Rep::_S_max_size = (((npos - sizeof(_Rep))/sizeof(_CharT)) - 1) / 4;
 
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    const basic_string<_CharT, _Traits, _Alloc>::size_type
+    basic_string<_CharT, _Traits, _Alloc>::npos;
+
+  // Linker sets _S_empty_rep_storage to all 0s (one reference, empty string)
+  // at static init time (before static ctors are run).
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_string<_CharT, _Traits, _Alloc>::size_type
+    basic_string<_CharT, _Traits, _Alloc>::_S_empty_rep_storage[
+    (sizeof(_Rep) + sizeof(_CharT) + sizeof(size_type) - 1)/sizeof(size_type)];
+
   // NB: This is the special case for Input Iterators, used in
   // istreambuf_iterators, etc.
   // Input Iterators have a cost structure very different from
@@ -396,13 +407,6 @@ namespace std
       return 2 * (__s <= 16 ? 16 : __s) < __r;
     }
   
-  // Linker sets _S_empty_rep_storage to all 0s (one reference, empty string)
-  // at static init time (before static ctors are run).
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
-    basic_string<_CharT, _Traits, _Alloc>::_S_empty_rep_storage[
-    (sizeof(_Rep) + sizeof(_CharT) + sizeof(size_type) - 1)/sizeof(size_type)];
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
     basic_string<_CharT, _Traits, _Alloc>::resize(size_type __n, _CharT __c)
