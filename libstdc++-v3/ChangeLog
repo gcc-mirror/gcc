@@ -1,3 +1,9 @@
+2001-12-28  Richard Henderson  <rth@redhat.com>
+
+	* config/cpu/ia64/bits/cpu_limits.h: New file.
+	* config/os/osf/osf5.0/bits/cpu_limits.h: New file.
+	* configure.target (CPULIMITSH): Use them.
+
 2001-12-28  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/c++config:  Move doxygen hook comment...
