@@ -1,3 +1,10 @@
+2003-06-04  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* c-decl.c (c_init_decl_processing): Clear input_file_name
+	while building common nodes.
+	* dwarf2out.c (gen_compile_unit_die, dwarf2out_finish):
+	Don't add working directory for strings like <built-in> .
+
 2003-06-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi (*-ibm-aix*): Native as and ld required

@@ -11493,7 +11493,8 @@ gen_compile_unit_die (filename)
   if (filename)
     {
       add_name_attribute (die, filename);
-      if (filename[0] != DIR_SEPARATOR)
+      /* Don't add cwd for <built-in>.  */
+      if (filename[0] != DIR_SEPARATOR && filename[0] != '<')
 	add_comp_dir_attribute (die);
     }
 
@@ -13084,7 +13085,9 @@ dwarf2out_finish (filename)
     {
       size_t i;
       for (i = 1; i < VARRAY_ACTIVE_SIZE (file_table); i++)
-	if (VARRAY_CHAR_PTR (file_table, i)[0] != DIR_SEPARATOR)
+	if (VARRAY_CHAR_PTR (file_table, i)[0] != DIR_SEPARATOR
+	    /* Don't add cwd for <built-in>.  */
+	    && VARRAY_CHAR_PTR (file_table, i)[0] != '<')
 	  {
 	    add_comp_dir_attribute (comp_unit_die);
 	    break;
