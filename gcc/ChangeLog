@@ -3,6 +3,7 @@
 	PR other/10584
 	* c-opts.c (c_common_post_options): Disable function inlining when
 	using -finstrument-functions.
+	* doc/invoke.texi (Code Gen Options): Document this restriction.
 
 2004-02-12  Chris Demetriou  <cgd@broadcom.com>
 

@@ -11114,16 +11114,8 @@ void __cyg_profile_func_exit  (void *this_fn,
 The first argument is the address of the start of the current function,
 which may be looked up exactly in the symbol table.
 
-This instrumentation is also done for functions expanded inline in other
-functions.  The profiling calls will indicate where, conceptually, the
-inline function is entered and exited.  This means that addressable
-versions of such functions must be available.  If all your uses of a
-function are expanded inline, this may mean an additional expansion of
-code size.  If you use @samp{extern inline} in your C code, an
-addressable version of such functions must be provided.  (This is
-normally the case anyways, but if you get lucky and the optimizer always
-expands the functions inline, you might have gotten away without
-providing static copies.)
+This currently disables function inlining.  This restriction is
+expected to be removed in future releases.
 
 A function may be given the attribute @code{no_instrument_function}, in
 which case this instrumentation will not be done.  This can be used, for
