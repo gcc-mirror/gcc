@@ -111,10 +111,7 @@
 #define umul_ppmm(ph, pl, m0, m1) \
   do {									\
     UDItype __m0 = (m0), __m1 = (m1);					\
-    __asm__ ("umulh %r1,%2,%0"						\
-	     : "=r" ((UDItype) ph)					\
-	     : "%rJ" (__m0),						\
-	       "rI" (__m1));						\
+    (ph) = __builtin_alpha_umulh (__m0, __m1);				\
     (pl) = __m0 * __m1;							\
   } while (0)
 #define UMUL_TIME 46
