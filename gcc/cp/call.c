@@ -2620,8 +2620,11 @@ build_user_type_conversion_1 (totype, expr, flags)
       cand = candidates;	/* any one will do */
       cand->second_conv = build1 (AMBIG_CONV, totype, expr);
       ICS_USER_FLAG (cand->second_conv) = 1;
-      /* Don't set ICS_BAD_FLAG; an ambiguous conversion is no worse than
-	 another user-defined conversion.  */
+      if (!any_strictly_viable (candidates))
+	ICS_BAD_FLAG (cand->second_conv) = 1;
+      /* If there are viable candidates, don't set ICS_BAD_FLAG; an
+	 ambiguous conversion is no worse than another user-defined
+	 conversion.  */
 
       return cand;
     }

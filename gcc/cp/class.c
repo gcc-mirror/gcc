@@ -288,13 +288,15 @@ build_base_path (code, expr, binfo, nonnull)
       return error_mark_node;
     }
 
+  if (!want_pointer)
+    /* This must happen before the call to save_expr.  */
+    expr = build_unary_op (ADDR_EXPR, expr, 0);
+
   fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
   if (fixed_type_p <= 0 && TREE_SIDE_EFFECTS (expr))
     expr = save_expr (expr);
 
-  if (!want_pointer)
-    expr = build_unary_op (ADDR_EXPR, expr, 0);
-  else if (!nonnull)
+  if (want_pointer && !nonnull)
     null_test = build (EQ_EXPR, boolean_type_node, expr, integer_zero_node);
   
   offset = BINFO_OFFSET (binfo);
@@ -1832,7 +1834,7 @@ maybe_warn_about_overly_private_class (t)
 	      return;
 		
 	    has_nonprivate_method = 1;
-	    break;
+	    /* Keep searching for a static member function.  */
 	  }
 	else if (!DECL_CONSTRUCTOR_P (fn) && !DECL_DESTRUCTOR_P (fn))
 	  has_member_fn = 1;
