@@ -140,10 +140,11 @@ HARD_REG_SET reg_class_contents[N_REG_CLASSES];
 
 /* The same information, but as an array of unsigned ints.  We copy from
    these unsigned ints to the table above.  We do this so the tm.h files
-   do not have to be aware of the wordsize for machines with <= 64 regs.  */
+   do not have to be aware of the wordsize for machines with <= 64 regs.
+   Note that we hard-code 32 here, not HOST_BITS_PER_INT.  */
 
 #define N_REG_INTS  \
-  ((FIRST_PSEUDO_REGISTER + (HOST_BITS_PER_INT - 1)) / HOST_BITS_PER_INT)
+  ((FIRST_PSEUDO_REGISTER + (32 - 1)) / 32)
 
 static unsigned int_reg_class_contents[N_REG_CLASSES][N_REG_INTS] 
   = REG_CLASS_CONTENTS;
