@@ -254,6 +254,7 @@ tree object_type_node;
 tree unqualified_object_id_node;
 tree object_ptr_type_node;
 tree string_type_node;
+tree string_ptr_type_node;
 tree throwable_type_node;
 tree runtime_exception_type_node;
 tree error_exception_type_node;
@@ -549,6 +550,7 @@ init_decl_processing ()
   object_type_node = lookup_class (get_identifier ("java.lang.Object"));
   object_ptr_type_node = promote_type (object_type_node);
   string_type_node = lookup_class (get_identifier ("java.lang.String"));
+  string_ptr_type_node = promote_type (string_type_node);
   class_type_node = lookup_class (get_identifier ("java.lang.Class"));
   throwable_type_node = lookup_class (get_identifier ("java.lang.Throwable"));
   runtime_exception_type_node = 

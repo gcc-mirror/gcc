@@ -1025,9 +1025,16 @@ make_class_data (type)
 	  tree init = make_field_value (field);
 	  if (FIELD_STATIC (field))
 	    {
+	      tree initial = DECL_INITIAL (field);
 	      static_field_count++;
 	      static_fields = tree_cons (NULL_TREE, init, static_fields);
+	      /* If the initial value is a string constant,
+		 prevent output_constant from trying to assemble the value. */
+	      if (initial != NULL_TREE
+		  && TREE_TYPE (initial) == string_ptr_type_node)
+		DECL_INITIAL (field) = NULL_TREE;
 	      rest_of_decl_compilation (field, (char*) 0, 1, 1);
+	      DECL_INITIAL (field) = initial;
 	    }
 	  else
 	    {
