@@ -1,3 +1,8 @@
+2004-05-03  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* Makefile.am (WARNINGS): Replace -W with the more speaking -Wextra.
+	* Makefile.in: Rebuilt.
+
 2004-05-03  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/java/security/der/DERReader.java: Call static methods staticly.
