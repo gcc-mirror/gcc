@@ -1,3 +1,12 @@
+2002-12-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8332
+	PR c++/8493
+	* decl.c (cxx_init_decl_processing): Use size_type_node, not
+	c_size_type_node.
+	* decl2.c (coerce_new_type): Likewise.
+	* except.c (do_allocate_exception): Likewise.
+
 2002-11-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8227

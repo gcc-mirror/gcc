@@ -1,5 +1,9 @@
 2002-11-30  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8332
+	PR c++/8493
+	* g++.dg/template/strlen1.C: New test.
+
 	PR c++/8227
 	* g++.dg/template/ctor2.C: New test.
 
