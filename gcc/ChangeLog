@@ -1,3 +1,7 @@
+2000-09-13  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/lib1funcs.asm (__divsf3): Protect fnorm.s with p6.
+
 2000-09-13  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* flags.h (flag_dump_rtl_in_asm): Declare.
