@@ -1150,15 +1150,10 @@ gfc_check_minloc_maxloc (gfc_actual_arglist * ap)
    I.e. in the case of minval(array,mask), mask will be in the second
    position of the argument list and we'll have to fix that up.  */
 
-try
-gfc_check_reduction (gfc_actual_arglist * ap)
+static try
+check_reduction (gfc_actual_arglist * ap)
 {
-  gfc_expr *a, *m, *d;
-
-  a = ap->expr;
-  if (int_or_real_check (a, 0) == FAILURE
-      || array_check (a, 0) == FAILURE)
-    return FAILURE;
+  gfc_expr *m, *d;
 
   d = ap->next->expr;
   m = ap->next->next->expr;
@@ -1182,6 +1177,30 @@ gfc_check_reduction (gfc_actual_arglist * ap)
     return FAILURE;
 
   return SUCCESS;
+}
+
+
+try
+gfc_check_minval_maxval (gfc_actual_arglist * ap)
+{
+  
+  if (int_or_real_check (ap->expr, 0) == FAILURE
+      || array_check (ap->expr, 0) == FAILURE)
+    return FAILURE;
+  
+  return check_reduction (ap);
+}
+
+
+try
+gfc_check_product_sum (gfc_actual_arglist * ap)
+{
+  
+  if (numeric_check (ap->expr, 0) == FAILURE
+      || array_check (ap->expr, 0) == FAILURE)
+    return FAILURE;
+  
+  return check_reduction (ap);
 }
 
 
