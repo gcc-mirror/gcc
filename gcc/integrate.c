@@ -788,7 +788,7 @@ copy_decl_list (list)
   if (list == 0)
     return 0;
 
-  head = prev = copy_and_set_decl_abstract_origin (head);
+  head = prev = copy_and_set_decl_abstract_origin (list);
   next = TREE_CHAIN (list);
   while (next)
     {
