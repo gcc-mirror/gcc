@@ -65,4 +65,4 @@ extern regset *basic_block_live_at_start;
 
 #define REG_BLOCK_UNKNOWN -1
 #define REG_BLOCK_GLOBAL -2
-extern short *reg_basic_block;
+extern int *reg_basic_block;
