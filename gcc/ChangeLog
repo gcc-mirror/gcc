@@ -1,3 +1,11 @@
+2002-04-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR f/6138.
+	* function.c (fixup_memory_subreg): Add promoted_mode parameter.
+	(walk_fixup_memory_subreg): Likewise.
+	(fixup_var_refs_insn): Adjust accordingly.
+	(fixup_var_refs_1): Likewise.
+
 2002-04-22	Joel Sherrill <joel@OARcorp.com>
 
 	* gthr-rtems.h: Correct prototypes to remove warnings.
