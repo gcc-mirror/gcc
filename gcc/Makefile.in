@@ -470,7 +470,7 @@ config.status:
 
 # On the target machine, finish building a cross compiler.
 # This does the things that can't be done on the host machine.
-rest.cross: libgcc.a float.h specs
+rest.cross: libgcc.a gfloat.h specs
 
 # Verify that it works to compile and link cross-test.
 # If it does, then there are sufficient replacements for libgcc1.a.
@@ -509,8 +509,8 @@ cc1obj:$(P) $(OBJC_OBJS) $(OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1obj $(OBJC_OBJS) $(OBJS) $(LIBS)
 
 # Copy float.h from its source.
-float.h: $(FLOAT_H)
-	cp $(FLOAT_H) float.h
+gfloat.h: $(FLOAT_H)
+	cp $(FLOAT_H) gfloat.h
 
 # Create float.h source for the native machine.
 float.h-nat: enquire
@@ -1267,7 +1267,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 # stamp-* so that mostlyclean does not force the include directory to
 # be rebuilt.
 
-stmp-headers: stmp-fixincludes $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h xlimits.h float.h
+stmp-headers: stmp-fixincludes $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h xlimits.h gfloat.h
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
@@ -1300,7 +1300,7 @@ stmp-headers: stmp-fixincludes $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimi
 	cp xlimits.h include/limits.h
 	chmod a+r include/limits.h
 	rm -f include/float.h
-	cp float.h include/float.h
+	cp gfloat.h include/float.h
 	chmod a+r include/float.h
 # Install the README
 	rm -f include/README
@@ -1379,7 +1379,7 @@ mostlyclean:
 	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
 	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack
 # Delete some files made during installation.
-	-rm -f specs float.h enquire SYSCALLS.c.X SYSCALLS.c
+	-rm -f specs gfloat.h float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 ld mips-tfile mips-tdump alloca.s
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
