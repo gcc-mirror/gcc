@@ -1,3 +1,9 @@
+Wed Jul  1 23:12:58 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* h8300.c (print_operand): Delete %L support.
+	* h8300.md (branch_true, branch_false): Use %= with a prefix
+	instead of %L for local branch labels.
+
 Wed Jul  1 21:27:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (emit_reload_insns): Use proper register classes for

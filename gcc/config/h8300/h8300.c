@@ -1024,7 +1024,6 @@ const_costs (r, c)
    'E' like s but negative.
    'F' like t but negative.
    'G' constant just the negative
-   'L' fake label, changed after used twice.
    'M' turn a 'M' constant into its negative mod 2.
    'P' if operand is incing/decing sp, print .w, otherwise .b.
    'R' print operand as a byte:8 address if appropriate, else fall back to
@@ -1098,9 +1097,6 @@ print_operand (file, x, code)
      rtx x;
      int code;
 {
-  /* This is used to general unique labels for the 'L' code.  */
-  static int lab = 1000;
-
   /* This is used for communication between the 'P' and 'U' codes.  */
   static char *last_p;
 
@@ -1148,12 +1144,6 @@ print_operand (file, x, code)
       if (GET_CODE (x) != CONST_INT)
 	abort ();
       fprintf (file, "#%d", 0xff & (-INTVAL (x)));
-      break;
-    case 'L':
-      /* 'L' must always be used twice in a single pattern.  It generates
-	 the same label twice, and then will generate a unique label the
-	 next time it is used.  */
-      asm_fprintf (file, "tl%d", (lab++) / 2);
       break;
     case 'M':
       /* For 3/-3 and 4/-4, the other 2 is handled separately.  */
