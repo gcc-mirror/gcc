@@ -259,6 +259,8 @@ extern void restore_emit_status		PROTO((struct function *));
 extern void save_storage_status		PROTO((struct function *));
 extern void restore_storage_status	PROTO((struct function *));
 
+extern rtx get_first_block_beg		PROTO((void));
+
 #ifdef rtx
 #undef rtx
 #endif

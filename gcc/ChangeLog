@@ -1,3 +1,21 @@
+Sun Jun 21 00:42:20 1998  H.J. Lu  (hjl@gnu.org)
+
+	* flow.c (allocate_for_life_analysis, init_regset_vector):
+	Remove declaration.
+
+	* function.h (get_first_block_beg): New declaration.
+
+	* gbl-ctors.h (__do_global_dtors): Add prototype.
+
+	* gcov-io.h (__fetch_long): New declaration.
+	(__store_long): Likewise.
+	(__read_long): Likewise.
+	(__write_long): Likewise.
+
+	* gcov.c (print_usage): New declaration.
+
+	* Makefile.in (c-iterate.o): Depend on insn-codes.h too.
+
 Sat Jun 20 00:36:16 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* calls.c (expand_call): Initialize "src" and "dest".
