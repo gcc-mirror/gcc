@@ -1,3 +1,8 @@
+2002-06-21  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (ns32k-*-netbsd*): Remove from list of obsolete
+	configurations.
+
 2002-06-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree.c (tree_node_kind, tree_node_counts, tree_node_sizes,
