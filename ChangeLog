@@ -1,3 +1,7 @@
+2000-09-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* INSTALL/README: egcs -> GCC update.
+
 Sun Sep 17 16:55:59 CEST 2000	Marc Espie <espie@cvs.openbsd.org>
 
 	* MAINTAINERS: Add myself to Write After Approval list.
