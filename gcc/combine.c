@@ -3638,6 +3638,8 @@ subst (x, from, to, in_dest, unique_copy)
 	  goto restart;
 	}
 
+#ifdef HAVE_conditional_move
+
       /* If we have (and A B) with A not an object but that is known to
 	 be -1 or 0, this is equivalent to the expression
 	 (if_then_else (ne A (const_int 0)) B (const_int 0))
@@ -3660,6 +3662,7 @@ subst (x, from, to, in_dest, unique_copy)
 				XEXP (x, 1), const0_rtx);
 	  goto restart;
 	}
+#endif
 
       /* In the following group of tests (and those in case IOR below),
 	 we start with some combination of logical operations and apply
@@ -4799,6 +4802,8 @@ force_to_mode (x, mode, bits, reg)
 	      && sub_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
 	  || (code == MULT && (smul_optab->handlers[(int) mode].insn_code
 			       == CODE_FOR_nothing))
+	  || (code == AND
+	      && and_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
 	  || (code == IOR
 	      && ior_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
 	  || (code == XOR && (xor_optab->handlers[(int) mode].insn_code
