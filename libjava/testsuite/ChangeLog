@@ -1,3 +1,12 @@
+2000-11-07  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.compile/sjis_comment3.java: Removed.
+	* libjava.compile/sjis_comment2.java: Removed.
+	* libjava.compile/sjis_comment1.java: Removed.
+	* libjava.compile/euc_comment3.java: Removed.
+	* libjava.compile/euc_comment2.java: Removed.
+	* libjava.compile/euc_comment1.java: Removed.
+
 2000-11-03  Tom Tromey  <tromey@cygnus.com>
 
 	* lib/libjava.exp (libjava_arguments): Set --tag on libtool
