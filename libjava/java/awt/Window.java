@@ -1,6 +1,5 @@
-/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
-
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* Window.java --
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -36,7 +35,9 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.awt;
+
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.peer.WindowPeer;
@@ -145,8 +146,8 @@ public class Window extends Container
   public void addNotify()
   {
     if (peer == null)
-      peer = getToolkit ().createWindow (this);
-    super.addNotify ();
+      peer = getToolkit().createWindow(this);
+    super.addNotify();
   }
 
   /**
@@ -171,7 +172,7 @@ public class Window extends Container
   /**
    * Makes this window visible and brings it to the front.
    */
-  public void show ()
+  public void show()
   {
     if (peer == null)
       addNotify();
@@ -206,12 +207,12 @@ public class Window extends Container
    * Sends this window to the back so that all other windows display in
    * front of it.
    */
-  public void toBack ()
+  public void toBack()
   {
     if (peer != null)
       {
 	WindowPeer wp = (WindowPeer) peer;
-	wp.toBack ();
+	wp.toBack();
       }
   }
 
@@ -219,12 +220,12 @@ public class Window extends Container
    * Brings this window to the front so that it displays in front of
    * any other windows.
    */
-  public void toFront ()
+  public void toFront()
   {
     if (peer != null)
       {
 	WindowPeer wp = (WindowPeer) peer;
-	wp.toFront ();
+	wp.toFront();
       }
   }
 
@@ -238,7 +239,7 @@ public class Window extends Container
    */
   public Toolkit getToolkit()
   {
-    return Toolkit.getDefaultToolkit ();    
+    return Toolkit.getDefaultToolkit();    
   }
 
   /**
@@ -270,9 +271,9 @@ public class Window extends Container
    *
    * @return The locale this window is configured for.
    */
-  public Locale getLocale ()
+  public Locale getLocale()
   {
-    return locale == null ? Locale.getDefault () : locale;
+    return locale == null ? Locale.getDefault() : locale;
   }
 
   /*
@@ -312,9 +313,9 @@ public class Window extends Container
    *
    * @param listener The <code>WindowListener</code> to add.
    */
-  public synchronized void addWindowListener (WindowListener listener)
+  public synchronized void addWindowListener(WindowListener listener)
   {
-    windowListener = AWTEventMulticaster.add (windowListener, listener);
+    windowListener = AWTEventMulticaster.add(windowListener, listener);
   }
 
   /**
@@ -323,17 +324,24 @@ public class Window extends Container
    *
    * @param listener The <code>WindowListener</code> to remove.
    */
-  public synchronized void removeWindowListener (WindowListener listener)
+  public synchronized void removeWindowListener(WindowListener listener)
   {
-    windowListener = AWTEventMulticaster.remove (windowListener, listener);
+    windowListener = AWTEventMulticaster.remove(windowListener, listener);
+  }
+
+  public synchronized WindowListener[] getWindowListeners()
+  {
+    return (WindowListener[])
+      AWTEventMulticaster.getListeners(windowListener,
+                                       WindowListener.class);
   }
 
   /** @since 1.3 */
   public EventListener[] getListeners(Class listenerType)
   {
     if (listenerType == WindowListener.class)
-      return getListenersImpl(listenerType, windowListener);
-    else return super.getListeners(listenerType);
+      return getWindowListeners();
+    return super.getListeners(listenerType);
   }
 
   void dispatchEventImpl(AWTEvent e)
@@ -356,12 +364,12 @@ public class Window extends Container
    *
    * @param event The event to process.
    */
-  protected void processEvent (AWTEvent evt)
+  protected void processEvent(AWTEvent evt)
   {
     if (evt instanceof WindowEvent)
-      processWindowEvent ((WindowEvent) evt);
+      processWindowEvent((WindowEvent) evt);
     else
-      super.processEvent (evt);
+      super.processEvent(evt);
   }
 
   /**
@@ -372,32 +380,32 @@ public class Window extends Container
    *
    * @param event The event to process.
    */
-  protected void processWindowEvent (WindowEvent evt)
+  protected void processWindowEvent(WindowEvent evt)
   {
     if (windowListener != null)
       {
-	switch (evt.getID ())
+	switch (evt.getID())
 	  {
 	  case WindowEvent.WINDOW_ACTIVATED:
-	    windowListener.windowActivated (evt);
+	    windowListener.windowActivated(evt);
 	    break;
 	  case WindowEvent.WINDOW_CLOSED:
-	    windowListener.windowClosed (evt);
+	    windowListener.windowClosed(evt);
 	    break;
 	  case WindowEvent.WINDOW_CLOSING:
-	    windowListener.windowClosing (evt);
+	    windowListener.windowClosing(evt);
 	    break;
 	  case WindowEvent.WINDOW_DEACTIVATED:
-	    windowListener.windowDeactivated (evt);
+	    windowListener.windowDeactivated(evt);
 	    break;
 	  case WindowEvent.WINDOW_DEICONIFIED:
-	    windowListener.windowDeiconified (evt);
+	    windowListener.windowDeiconified(evt);
 	    break;
 	  case WindowEvent.WINDOW_ICONIFIED:
-	    windowListener.windowIconified (evt);
+	    windowListener.windowIconified(evt);
 	    break;
 	  case WindowEvent.WINDOW_OPENED:
-	    windowListener.windowOpened (evt);
+	    windowListener.windowOpened(evt);
 	    break;
 	  }
       }

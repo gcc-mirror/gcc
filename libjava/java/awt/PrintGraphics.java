@@ -1,5 +1,5 @@
-/* PrintGraphics.java -- A print graphics context.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* PrintGraphics.java -- a print graphics context
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,21 +39,19 @@ exception statement from your version. */
 package java.awt;
 
 /**
-  * This interface allows the originating print job to be obtained.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface allows the originating print job to be obtained.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @since 1.0
+ * @status updated to 1.4
+ */
 public interface PrintGraphics
 {
-
-/**
-  * Returns the <code>PrintJob</code> that this object is being
-  * managed by.
-  *
-  * @return The print job for this object.
-  */
-public abstract PrintJob
-getPrintJob();
-
+  /**
+   * Returns the <code>PrintJob</code> that this object is being
+   * managed by.
+   *
+   * @return the print job for this object
+   */
+  PrintJob getPrintJob();
 } // interface PrintGraphics
-

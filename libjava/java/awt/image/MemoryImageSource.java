@@ -312,7 +312,10 @@ public class MemoryImageSource implements ImageProducer
 				       int scansize)
 
     {
-      // FIXME
+	if( animated == true )
+	    {
+		//FIXME
+	    }
     }
 
     public synchronized void newPixels(int newpix[],
@@ -321,7 +324,10 @@ public class MemoryImageSource implements ImageProducer
 				       int scansize)
 
     {
-      // FIXME
+	if( animated == true )
+	    {
+		//FIXME
+	    }
     }
 
 }

@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2001, 2002  Free Software Foundation
+/* RenderingHints.java --
+   Copyright (C) 2000, 2001, 2002  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -34,50 +35,59 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.awt;
 
-/**
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
- */
-public class RenderingHints implements
-    //java.util.Map,
-    Cloneable
-{
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
+/**
+ * NEEDS DOCUMENTATION
+ *
+ * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ */
+public class RenderingHints implements Map, Cloneable
+{
   public abstract static class Key
   {
-    private int intKey;
+    private final int key;
 
     protected Key(int privateKey)
     {
-      intKey = privateKey;
+      key = privateKey;
     }
 
     public abstract boolean isCompatibleValue(Object value);
-    
-    protected final int intKey() 
-    {
-      return intKey;
-    }    
 
-    public final int hashCode() 
+    protected final int intKey()
+    {
+      return key;
+    }
+
+    public final int hashCode()
     {
       return System.identityHashCode(this);
     }
-    
-    public final boolean equals(Object other) 
-    {
-      return (this == other);
-    }
-  }
 
-  private static class KeyImpl extends Key
+    public final boolean equals(Object other)
+    {
+      return this == other;
+    }
+  } // class Key
+
+  private static final class KeyImpl extends Key
   {
-    String description;
-    Object v1, v2, v3;
+    final String description;
+    final Object v1;
+    final Object v2;
+    final Object v3;
 
     KeyImpl(int privateKey, String description,
-	    Object v1, Object v2, Object v3)
+            Object v1, Object v2, Object v3)
     {
       super(privateKey);
       this.description = description;
@@ -85,243 +95,268 @@ public class RenderingHints implements
       this.v2 = v2;
       this.v3 = v3;
     }
-    
-    public boolean isCompatibleValue(Object value) 
+
+    public boolean isCompatibleValue(Object value)
     {
-      return (value == v1) || (value == v2) || (value == v3);
+      return value == v1 || value == v2 || value == v3;
     }
 
-    public String toString() 
+    public String toString()
     {
       return description;
     }
-  }
+  } // class KeyImpl
 
-
-  //java.util.HashMap hintMap;
+  private HashMap hintMap = new HashMap();
 
   public static final Key KEY_ANTIALIASING;
-  public static final Object
-    VALUE_ANTIALIAS_ON = "Antialiased rendering mode",
-    VALUE_ANTIALIAS_DEFAULT = "Default antialiasing rendering mode";
 
-  static 
-  {
-    KEY_ANTIALIASING = new KeyImpl(1, "Global antialiasing enable key",
-				   VALUE_ANTIALIAS_ON,
-				   VALUE_ANTIALIAS_DEFAULT,
-				   VALUE_ANTIALIAS_DEFAULT);
-  }
+  public static final Object VALUE_ANTIALIAS_ON
+    = "Antialiased rendering mode";
+
+  public static final Object VALUE_ANTIALIAS_OFF
+    = "Nonantialiased rendering mode";
+
+  public static final Object VALUE_ANTIALIAS_DEFAULT
+    = "Default antialiasing rendering mode";
 
   public static final Key KEY_RENDERING;
-  public static final Object 
-    VALUE_RENDER_SPEED = "Fastest rendering methods",
-    VALUE_RENDER_QUALITY = "Highest quality rendering methods",
-    VALUE_RENDER_DEFAULT = "Default rendering methods";
 
-  static
-  {
-    KEY_RENDERING = new KeyImpl(2, "Global rendering quality key",
-				VALUE_RENDER_SPEED,
-				VALUE_RENDER_QUALITY,
-				VALUE_RENDER_DEFAULT);
-  }
-  
+  public static final Object VALUE_RENDER_SPEED
+    = "Fastest rendering methods";
+
+  public static final Object VALUE_RENDER_QUALITY
+    = "Highest quality rendering methods";
+
+  public static final Object VALUE_RENDER_DEFAULT
+    = "Default rendering methods";
+
   public static final Key KEY_DITHERING;
-  public static final Object
-    VALUE_DITHER_DISABLE = "Nondithered rendering mode",
-    VALUE_DITHER_ENABLE = "Dithered rendering mode",
-    VALUE_DITHER_DEFAULT = "Default dithering mode";
 
-  static
-  {
-    KEY_DITHERING = new KeyImpl(3, "Dithering quality key",
-				VALUE_DITHER_DISABLE,
-				VALUE_DITHER_ENABLE,
-				VALUE_DITHER_DEFAULT);
-  }
-  
+  public static final Object VALUE_DITHER_DISABLE
+    = "Nondithered rendering mode";
+
+  public static final Object VALUE_DITHER_ENABLE
+    = "Dithered rendering mode";
+
+  public static final Object VALUE_DITHER_DEFAULT
+    = "Default dithering mode";
+
   public static final Key KEY_TEXT_ANTIALIASING;
-  public static final Object
-    VALUE_TEXT_ANTIALIAS_ON = "Antialiased text mode",
-    VALUE_TEXT_ANTIALIAS_OFF = "Nonantialiased text mode",
-    VALUE_TEXT_ANTIALIAS_DEFAULT = "Default antialiasing text mode";
 
-  static 
-  {
-    KEY_TEXT_ANTIALIASING = new KeyImpl(4, "Text-specific antialiasing enable key",
-					VALUE_TEXT_ANTIALIAS_ON,
-					VALUE_TEXT_ANTIALIAS_OFF,
-					VALUE_TEXT_ANTIALIAS_DEFAULT);
-  }
-  
+  public static final Object VALUE_TEXT_ANTIALIAS_ON
+    = "Antialiased text mode";
+
+  public static final Object VALUE_TEXT_ANTIALIAS_OFF
+    = "Nonantialiased text mode";
+
+  public static final Object VALUE_TEXT_ANTIALIAS_DEFAULT
+    = "Default antialiasing text mode";
+
   public static final Key KEY_FRACTIONALMETRICS;
-  public static final Object
-    VALUE_FRACTIONALMETRICS_OFF = "Integer text metrics mode",
-    VALUE_FRACTIONALMETRICS_ON = "Fractional text metrics mode",
-    VALUE_FRACTIONALMETRICS_DEFAULT = "Default fractional text metrics mode";
 
-  static 
-  {
-    KEY_FRACTIONALMETRICS = new KeyImpl(5, "Fractional metrics enable key",
-					VALUE_FRACTIONALMETRICS_OFF,
-					VALUE_FRACTIONALMETRICS_ON,
-					VALUE_FRACTIONALMETRICS_DEFAULT);
-  }
-  
+  public static final Object VALUE_FRACTIONALMETRICS_OFF
+    = "Integer text metrics mode";
+
+  public static final Object VALUE_FRACTIONALMETRICS_ON
+    = "Fractional text metrics mode";
+
+  public static final Object VALUE_FRACTIONALMETRICS_DEFAULT
+    = "Default fractional text metrics mode";
+
   public static final Key KEY_INTERPOLATION;
-  public static final Object
-    VALUE_INTERPOLATION_NEAREST_NEIGHBOR = "Nearest Neighbor image interpolation mode",
-    VALUE_INTERPOLATION_BILINEAR = "Bilinear image interpolation mode",
-    VALUE_INTERPOLATION_BICUBIC = "Bicubic image interpolation mode";
 
-  static 
-  {
-    KEY_INTERPOLATION = new KeyImpl(6, "Image interpolation method key",
-				    VALUE_INTERPOLATION_NEAREST_NEIGHBOR,
-				    VALUE_INTERPOLATION_BILINEAR,
-				    VALUE_INTERPOLATION_BICUBIC);
-  }
-  
+  public static final Object VALUE_INTERPOLATION_NEAREST_NEIGHBOR
+    = "Nearest Neighbor image interpolation mode";
+
+  public static final Object VALUE_INTERPOLATION_BILINEAR
+    = "Bilinear image interpolation mode";
+
+  public static final Object VALUE_INTERPOLATION_BICUBIC
+    = "Bicubic image interpolation mode";
+
   public static final Key KEY_ALPHA_INTERPOLATION;
-  public static final Object
-    VALUE_ALPHA_INTERPOLATION_SPEED = "Fastest alpha blending methods",
-    VALUE_ALPHA_INTERPOLATION_QUALITY = "Highest quality alpha blending methods",
-    VALUE_ALPHA_INTERPOLATION_DEFAULT = "Default alpha blending methods";
 
-  static
-  {
-    KEY_ALPHA_INTERPOLATION = new KeyImpl(7, "Alpha blending interpolation method key",
-					  VALUE_ALPHA_INTERPOLATION_SPEED,
-					  VALUE_ALPHA_INTERPOLATION_QUALITY,
-					  VALUE_ALPHA_INTERPOLATION_DEFAULT);
-  }
-  
+  public static final Object VALUE_ALPHA_INTERPOLATION_SPEED
+    = "Fastest alpha blending methods";
+
+  public static final Object VALUE_ALPHA_INTERPOLATION_QUALITY
+    = "Highest quality alpha blending methods";
+
+  public static final Object VALUE_ALPHA_INTERPOLATION_DEFAULT
+    = "Default alpha blending methods";
+
   public static final Key KEY_COLOR_RENDERING;
-  public static final Object
-    VALUE_COLOR_RENDER_SPEED = "Fastest color rendering mode",
-    VALUE_COLOR_RENDER_QUALITY = "Highest quality color rendering mode",
-    VALUE_COLOR_RENDER_DEFAULT = "Default color rendering mode";
 
-  static 
-  {
-    KEY_COLOR_RENDERING = new KeyImpl(8, "Color rendering quality key",
-				      VALUE_COLOR_RENDER_SPEED,
-				      VALUE_COLOR_RENDER_QUALITY,
-				      VALUE_COLOR_RENDER_DEFAULT);
-  }
+  public static final Object VALUE_COLOR_RENDER_SPEED
+    = "Fastest color rendering mode";
+
+  public static final Object VALUE_COLOR_RENDER_QUALITY
+    = "Highest quality color rendering mode";
+
+  public static final Object VALUE_COLOR_RENDER_DEFAULT
+    = "Default color rendering mode";
 
   public static final Key KEY_STROKE_CONTROL;
-  public static final Object
-    VALUE_STROKE_DEFAULT = "Default stroke control mode",
-    VALUE_STROKE_NORMALIZE = "Normalize stroke control mode",
-    VALUE_STROKE_PURE = "Pure stroke control mode";
 
-  static 
+  public static final Object VALUE_STROKE_DEFAULT
+    = "Default stroke normalization";
+
+  public static final Object VALUE_STROKE_NORMALIZE
+    = "Normalize strokes for consistent rendering";
+
+  public static final Object VALUE_STROKE_PURE
+    = "Pure stroke conversion for accurate paths";
+
+  static
   {
+    KEY_ANTIALIASING = new KeyImpl(1, "Global antialiasing enable key",
+                                   VALUE_ANTIALIAS_ON,
+                                   VALUE_ANTIALIAS_OFF,
+                                   VALUE_ANTIALIAS_DEFAULT);
+    KEY_RENDERING = new KeyImpl(2, "Global rendering quality key",
+                                VALUE_RENDER_SPEED,
+                                VALUE_RENDER_QUALITY,
+                                VALUE_RENDER_DEFAULT);
+    KEY_DITHERING = new KeyImpl(3, "Dithering quality key",
+                                VALUE_DITHER_DISABLE,
+                                VALUE_DITHER_ENABLE,
+                                VALUE_DITHER_DEFAULT);
+    KEY_TEXT_ANTIALIASING
+      = new KeyImpl(4, "Text-specific antialiasing enable key",
+                    VALUE_TEXT_ANTIALIAS_ON,
+                    VALUE_TEXT_ANTIALIAS_OFF,
+                    VALUE_TEXT_ANTIALIAS_DEFAULT);
+    KEY_FRACTIONALMETRICS = new KeyImpl(5, "Fractional metrics enable key",
+                                        VALUE_FRACTIONALMETRICS_OFF,
+                                        VALUE_FRACTIONALMETRICS_ON,
+                                        VALUE_FRACTIONALMETRICS_DEFAULT);
+    KEY_INTERPOLATION = new KeyImpl(6, "Image interpolation method key",
+                                    VALUE_INTERPOLATION_NEAREST_NEIGHBOR,
+                                    VALUE_INTERPOLATION_BILINEAR,
+                                    VALUE_INTERPOLATION_BICUBIC);
+    KEY_ALPHA_INTERPOLATION
+      = new KeyImpl(7, "Alpha blending interpolation method key",
+                    VALUE_ALPHA_INTERPOLATION_SPEED,
+                    VALUE_ALPHA_INTERPOLATION_QUALITY,
+                    VALUE_ALPHA_INTERPOLATION_DEFAULT);
+    KEY_COLOR_RENDERING = new KeyImpl(8, "Color rendering quality key",
+                                      VALUE_COLOR_RENDER_SPEED,
+                                      VALUE_COLOR_RENDER_QUALITY,
+                                      VALUE_COLOR_RENDER_DEFAULT);
     KEY_STROKE_CONTROL = new KeyImpl(9, "Stroke normalization control key",
-				     VALUE_STROKE_DEFAULT,
-				     VALUE_STROKE_NORMALIZE,
-				     VALUE_STROKE_PURE);
+                                     VALUE_STROKE_DEFAULT,
+                                     VALUE_STROKE_NORMALIZE,
+                                     VALUE_STROKE_PURE);
   }
-  
-  //public RenderingHints(Map init);
+
+  public RenderingHints(Map init)
+  {
+    putAll(init);
+  }
 
   public RenderingHints(Key key, Object value)
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    put(key, value);
   }
 
-  public int size() 
+  public int size()
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
-  }
-  
-  public boolean isEmpty() 
-  {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    return hintMap.size();
   }
 
-  public boolean containsKey(Object key) 
-  {      
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
-  }
-  
-  public boolean containsValue(Object value) 
+  public boolean isEmpty()
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    return hintMap.isEmpty();
   }
-  
+
+  public boolean containsKey(Object key)
+  {
+    if (key == null)
+      throw new NullPointerException();
+    return hintMap.containsKey((Key) key);
+  }
+
+  public boolean containsValue(Object value)
+  {
+    return hintMap.containsValue(value);
+  }
+
   public Object get(Object key)
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
-  }
-  
-  public Object put(Object key, Object value) 
-  {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
-  }
-  
-  public void add(RenderingHints hints) 
-  {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    return hintMap.get((Key) key);
   }
 
-  public void clear() 
+  public Object put(Object key, Object value)
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    if (key == null || value == null)
+      throw new NullPointerException();
+    if (! ((Key) key).isCompatibleValue(value))
+      throw new IllegalArgumentException();
+    return hintMap.put(key, value);
   }
-  
-  public Object remove(Object key) 
+
+  public void add(RenderingHints hints)
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    hintMap.putAll(hints);
   }
-  
-  /*
-  public void putAll(Map m) 
+
+  public void clear()
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    hintMap.clear();
   }
-  */
-  
-  /*
-  public Set keySet() 
+
+  public Object remove(Object key)
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    return remove((Key) key);
   }
-  */
-  
-  /*
-  public Collection values() 
+
+  public void putAll(Map m)
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    hintMap.putAll(m);
   }
-  */
-  
-  /*
-  public Set entrySet() 
+
+  public Set keySet()
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    return hintMap.keySet();
   }
-  */
-  
-  public boolean equals(Object o) 
+
+  public Collection values()
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    return hintMap.values();
   }
-  
-  public int hashCode() 
+
+  public Set entrySet()
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    return Collections.unmodifiableSet(hintMap.entrySet());
   }
-  
-  public Object clone() 
+
+  public boolean equals(Object o)
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    return hintMap.equals(o);
   }
-  
-  public String toString() 
+
+  public int hashCode()
   {
-    throw new UnsupportedOperationException("FIXME, not implemented yet");
+    return hintMap.hashCode();
   }
-}
+
+  public Object clone()
+  {
+    try
+      {
+        RenderingHints copy = (RenderingHints) super.clone();
+        copy.hintMap = (HashMap) hintMap.clone();
+        return copy;
+      }
+    catch (CloneNotSupportedException e)
+      {
+        throw (Error) new InternalError().initCause(e); // Impossible
+      }
+  }
+
+  public String toString()
+  {
+    return hintMap.toString();
+  }
+} // class RenderingHints

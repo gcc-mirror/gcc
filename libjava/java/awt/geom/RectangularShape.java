@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* RectangularShape.java -- a rectangular frame for several generic shapes
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -34,77 +35,196 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.awt.geom;
-import java.awt.*;
-import java.awt.geom.Rectangle2D;
+
+import java.awt.Rectangle;
+import java.awt.Shape;
 
 /**
+ * This class provides a generic framework, and several helper methods, for
+ * subclasses which represent geometric objects inside a rectangular frame.
+ * This does not specify any geometry except for the bounding box.
+ *
  * @author Tom Tromey <tromey@cygnus.com>
- * @date April 16, 2000
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.2
+ * @see Arc2D
+ * @see Ellipse2D
+ * @see Rectangle2D
+ * @see RoundRectangle2D
+ * @status updated to 1.4
  */
-
 public abstract class RectangularShape implements Shape, Cloneable
 {
-  protected RectangularShape ()
+  /**
+   * Default constructor.
+   */
+  protected RectangularShape()
   {
   }
 
-  public abstract double getX ();
-  public abstract double getY ();
-  public abstract double getWidth ();
-  public abstract double getHeight ();
+  /**
+   * Get the x coordinate of the upper-left corner of the framing rectangle.
+   *
+   * @return the x coordinate
+   */
+  public abstract double getX();
 
-  public double getMinX ()
-  {    
-    return Math.min (getX (), getX () + getWidth ());
-  }
+  /**
+   * Get the y coordinate of the upper-left corner of the framing rectangle.
+   *
+   * @return the y coordinate
+   */
+  public abstract double getY();
 
-  public double getMinY ()
+  /**
+   * Get the width of the framing rectangle.
+   *
+   * @return the width
+   */
+  public abstract double getWidth();
+
+  /**
+   * Get the height of the framing rectangle.
+   *
+   * @return the height
+   */
+  public abstract double getHeight();
+
+  /**
+   * Get the minimum x coordinate in the frame. This is misnamed, or else
+   * Sun has a bug, because the implementation returns getX() even when
+   * getWidth() is negative.
+   *
+   * @return the minimum x coordinate
+   */
+  public double getMinX()
   {
-    return Math.min (getY (), getY () + getHeight ());
+    return getX();
   }
 
-  public double getMaxX ()
-  {    
-    return Math.max (getX (), getX () + getWidth ());
-  }
-
-  public double getMaxY ()
+  /**
+   * Get the minimum y coordinate in the frame. This is misnamed, or else
+   * Sun has a bug, because the implementation returns getY() even when
+   * getHeight() is negative.
+   *
+   * @return the minimum y coordinate
+   */
+  public double getMinY()
   {
-    return Math.max (getY (), getY () + getHeight ());
+    return getY();
   }
 
-  public double getCenterX ()
+  /**
+   * Get the maximum x coordinate in the frame. This is misnamed, or else
+   * Sun has a bug, because the implementation returns getX()+getWidth() even
+   * when getWidth() is negative.
+   *
+   * @return the maximum x coordinate
+   */
+  public double getMaxX()
   {
-    return getX () + getWidth () / 2;
+    return getX() + getWidth();
   }
 
-  public double getCenterY ()
+  /**
+   * Get the maximum y coordinate in the frame. This is misnamed, or else
+   * Sun has a bug, because the implementation returns getY()+getHeight() even
+   * when getHeight() is negative.
+   *
+   * @return the maximum y coordinate
+   */
+  public double getMaxY()
   {
-    return getY () + getHeight () / 2;
+    return getY() + getHeight();
   }
 
-  public Rectangle2D getFrame ()
+  /**
+   * Return the x coordinate of the center point of the framing rectangle.
+   *
+   * @return the central x coordinate
+   */
+  public double getCenterX()
   {
-    return new Rectangle2D.Double (getX (), getY (),
-				   getWidth (), getHeight ());
+    return getX() + getWidth() / 2;
   }
 
-  public abstract boolean isEmpty ();
-  public abstract void setFrame (double x, double y, double w, double h);
-
-  public void setFrame (Point2D loc, Dimension2D size)
+  /**
+   * Return the y coordinate of the center point of the framing rectangle.
+   *
+   * @return the central y coordinate
+   */
+  public double getCenterY()
   {
-    setFrame (loc.getX (), loc.getY (), size.getWidth (), size.getHeight ());
+    return getY() + getHeight() / 2;
   }
 
-  public void setFrame (Rectangle2D r)
+  /**
+   * Return the frame around this object. Note that this may be a looser
+   * bounding box than getBounds2D.
+   *
+   * @return the frame, in double precision
+   * @see #setFrame(double, double, double, double)
+   */
+  public Rectangle2D getFrame()
   {
-    setFrame (r.getX (), r.getY (), r.getWidth (), r.getHeight ());
+    return new Rectangle2D.Double(getX(), getY(), getWidth(), getHeight());
   }
 
-  public void setFrameFromDiagonal (double x1, double y1,
-				    double x2, double y2)
+  /**
+   * Test if the shape is empty, meaning that no points are inside it.
+   *
+   * @return true if the shape is empty
+   */
+  public abstract boolean isEmpty();
+
+  /**
+   * Set the framing rectangle of this shape to the given coordinate and size.
+   *
+   * @param x the new x coordinate
+   * @param y the new y coordinate
+   * @param w the new width
+   * @param h the new height
+   * @see #getFrame()
+   */
+  public abstract void setFrame(double x, double y, double w, double h);
+
+  /**
+   * Set the framing rectangle of this shape to the given coordinate and size.
+   *
+   * @param p the new point
+   * @param d the new dimension
+   * @throws NullPointerException if p or d is null
+   * @see #getFrame()
+   */
+  public void setFrame(Point2D p, Dimension2D d)
+  {
+    setFrame(p.getX(), p.getY(), d.getWidth(), d.getHeight());
+  }
+
+  /**
+   * Set the framing rectangle of this shape to the given rectangle.
+   *
+   * @param r the new framing rectangle
+   * @throws NullPointerException if r is null
+   * @see #getFrame()
+   */
+  public void setFrame(Rectangle2D r)
+  {
+    setFrame(r.getX(), r.getY(), r.getWidth(), r.getHeight());
+  }
+
+  /**
+   * Set the framing rectangle of this shape using two points on a diagonal.
+   * The area will be positive.
+   *
+   * @param x1 the first x coordinate
+   * @param y1 the first y coordinate
+   * @param x2 the second x coordinate
+   * @param y2 the second y coordinate
+   */
+  public void setFrameFromDiagonal(double x1, double y1, double x2, double y2)
   {
     if (x1 > x2)
       {
@@ -118,206 +238,148 @@ public abstract class RectangularShape implements Shape, Cloneable
 	y2 = y1;
 	y1 = t;
       }
-    setFrame (x1, y1, x2 - x1, y2 - y1);
+    setFrame(x1, y1, x2 - x1, y2 - y1);
   }
 
-  public void setFrameFromDiagonal (Point2D p1, Point2D p2)
+  /**
+   * Set the framing rectangle of this shape using two points on a diagonal.
+   * The area will be positive.
+   *
+   * @param p1 the first point
+   * @param p2 the second point
+   * @throws NullPointerException if either point is null
+   */
+  public void setFrameFromDiagonal(Point2D p1, Point2D p2)
   {
-    setFrameFromDiagonal (p1.getX (), p1.getY (),
-			  p2.getX (), p2.getY ());
+    setFrameFromDiagonal(p1.getX(), p1.getY(), p2.getX(), p2.getY());
   }
 
-  public void setFrameFromCenter (double centerX, double centerY,
-				  double cornerX, double cornerY)
+  /**
+   * Set the framing rectangle of this shape using the center of the frame,
+   * and one of the four corners. The area will be positive.
+   *
+   * @param centerX the x coordinate at the center
+   * @param centerY the y coordinate at the center
+   * @param cornerX the x coordinate at a corner
+   * @param cornerY the y coordinate at a corner
+   */
+  public void setFrameFromCenter(double centerX, double centerY,
+                                 double cornerX, double cornerY)
   {
-    double halfw = Math.abs (cornerX - centerX);
-    double halfh = Math.abs (cornerY - centerY);
-    setFrame (centerX - halfw, centerY - halfh,
-	      2 * halfw, 2 * halfh);
+    double halfw = Math.abs(cornerX - centerX);
+    double halfh = Math.abs(cornerY - centerY);
+    setFrame(centerX - halfw, centerY - halfh, halfw + halfw, halfh + halfh);
   }
 
-  public void setFrameFromCenter (Point2D center, Point2D corner)
+  /**
+   * Set the framing rectangle of this shape using the center of the frame,
+   * and one of the four corners. The area will be positive.
+   *
+   * @param center the center point
+   * @param corner a corner point
+   * @throws NullPointerException if either point is null
+   */
+  public void setFrameFromCenter(Point2D center, Point2D corner)
   {
-    setFrameFromCenter (center.getX (), center.getY (),
-			corner.getX (), corner.getY ());
+    setFrameFromCenter(center.getX(), center.getY(),
+                       corner.getX(), corner.getY());
   }
 
-  public boolean contains (Point2D p)
+  /**
+   * Tests if a point is inside the boundary of the shape.
+   *
+   * @param p the point to test
+   * @return true if the point is inside the shape
+   * @throws NullPointerException if p is null
+   * @see #contains(double, double)
+   */
+  public boolean contains(Point2D p)
   {
-    double x = p.getX ();
-    double y = p.getY ();
-    double rx = getX ();
-    double ry = getY ();
-    double w = getWidth ();
-    double h = getHeight ();
-    return x >= rx && x < rx + w && y >= ry && y < ry + h;
+    return contains(p.getX(), p.getY());
   }
 
-  public boolean intersects (Rectangle2D r)
+  /**
+   * Tests if a rectangle and this shape share common internal points.
+   *
+   * @param r the rectangle to test
+   * @return true if the rectangle intersects this shpae
+   * @throws NullPointerException if r is null
+   * @see #intersects(double, double, double, double)
+   */
+  public boolean intersects(Rectangle2D r)
   {
-    double x = getX ();
-    double w = getWidth ();
-    double mx = r.getX ();
-    double mw = r.getWidth ();
-    if (x < mx || x >= mx + mw || x + w < mx || x + w >= mx + mw)
-      return false;
-    double y = getY ();
-    double h = getHeight ();
-    double my = r.getY ();
-    double mh = r.getHeight ();
-    return y >= my && y < my + mh && y + h >= my && y + h < my + mh;
+    return intersects(r.getX(), r.getY(), r.getWidth(), r.getHeight());
   }
 
-  private boolean containsPoint (double x, double y)
+  /**
+   * Tests if the shape completely contains the given rectangle.
+   *
+   * @param r the rectangle to test
+   * @return true if r is contained in this shape
+   * @throws NullPointerException if r is null
+   * @see #contains(double, double, double, double)
+   */
+  public boolean contains(Rectangle2D r)
   {
-    double mx = getX ();
-    double mw = getWidth ();
-    if (x < mx || x >= mx + mw)
-      return false;
-    double my = getY ();
-    double mh = getHeight ();
-    return y >= my && y < my + mh;
+    return contains(r.getX(), r.getY(), r.getWidth(), r.getHeight());
   }
 
-  public boolean contains (Rectangle2D r)
+  /**
+   * Returns a bounding box for this shape, in integer format. Notice that you
+   * may get a tighter bound with getBounds2D. If the frame is empty, the
+   * box is the default empty box at the origin.
+   *
+   * @return a bounding box
+   */
+  public Rectangle getBounds()
   {
-    return (containsPoint (r.getMinX (), r.getMinY ())
-	    && containsPoint (r.getMaxX (), r.getMaxY ()));
+    if (isEmpty())
+      return new Rectangle();
+    double x = getX();
+    double y = getY();
+    double maxx = Math.ceil(x + getWidth());
+    double maxy = Math.ceil(y + getHeight());
+    x = Math.floor(x);
+    y = Math.floor(y);
+    return new Rectangle((int) x, (int) y, (int) (maxx - x), (int) (maxy - y));
   }
 
-  public Rectangle getBounds ()
+  /**
+   * Return an iterator along the shape boundary. If the optional transform
+   * is provided, the iterator is transformed accordingly. The path is
+   * flattened until all segments differ from the curve by at most the value
+   * of the flatness parameter, within the limits of the default interpolation
+   * recursion limit of 1024 segments between actual points. Each call
+   * returns a new object, independent from others in use. The result is
+   * threadsafe if and only if the iterator returned by
+   * {@link #getPathIterator(AffineTransform)} is as well.
+   *
+   * @param transform an optional transform to apply to the iterator
+   * @param flatness the desired flatness
+   * @return a new iterator over the boundary
+   * @throws IllegalArgumentException if flatness is invalid
+   * @since 1.2
+   */
+  public PathIterator getPathIterator(AffineTransform at, double flatness)
   {
-    return new Rectangle ((int) getX (), (int) getY (),
-			  (int) getWidth (), (int) getHeight ());
+    return new FlatteningPathIterator(getPathIterator(at), flatness);
   }
 
-  public PathIterator getPathIterator (AffineTransform at, double flatness)
-  {
-    return at.new Iterator (new Iterator ());
-  }
-
-  public Object clone ()
+  /**
+   * Create a new shape of the same run-time type with the same contents as
+   * this one.
+   *
+   * @return the clone
+   */
+  public Object clone()
   {
     try
-    {
-      return super.clone ();
-    } 
-    catch (CloneNotSupportedException _) {return null;}
+      {
+        return super.clone();
+      }
+    catch (CloneNotSupportedException e)
+      {
+        throw (Error) new InternalError().initCause(e); // Impossible
+      }
   }
-
-  // This implements the PathIterator for all RectangularShape objects
-  // that don't override getPathIterator.
-  private class Iterator implements PathIterator
-  {
-    // Our current coordinate.
-    private int coord;
-
-    private static final int START = 0;
-    private static final int END_PLUS_ONE = 5;
-
-    public Iterator ()
-    {
-      coord = START;
-    }
-
-    public int currentSegment (double[] coords)
-    {
-      int r;
-      switch (coord)
-	{
-	case 0:
-	  coords[0] = getX ();
-	  coords[1] = getY ();
-	  r = SEG_MOVETO;
-	  break;
-
-	case 1:
-	  coords[0] = getX () + getWidth ();
-	  coords[1] = getY ();
-	  r = SEG_LINETO;
-	  break;
-
-	case 2:
-	  coords[0] = getX () + getWidth ();
-	  coords[1] = getY () + getHeight ();
-	  r = SEG_LINETO;
-	  break;
-
-	case 3:
-	  coords[0] = getX ();
-	  coords[1] = getY () + getHeight ();
-	  r = SEG_LINETO;
-	  break;
-
-	case 4:
-	  r = SEG_CLOSE;
-	  break;	  
-
-	default:
-	  // It isn't clear what to do if the caller calls us after
-	  // isDone returns true.
-	  r = SEG_CLOSE;
-	  break;
-	}
-
-      return r;
-    }
-
-    public int currentSegment (float[] coords)
-    {
-      int r;
-      switch (coord)
-	{
-	case 0:
-	  coords[0] = (float) getX ();
-	  coords[1] = (float) getY ();
-	  r = SEG_MOVETO;
-	  break;
-
-	case 1:
-	  coords[0] = (float) (getX () + getWidth ());
-	  coords[1] = (float) getY ();
-	  r = SEG_LINETO;
-	  break;
-
-	case 2:
-	  coords[0] = (float) (getX () + getWidth ());
-	  coords[1] = (float) (getY () + getHeight ());
-	  r = SEG_LINETO;
-	  break;
-
-	case 3:
-	  coords[0] = (float) getX ();
-	  coords[1] = (float) (getY () + getHeight ());
-	  r = SEG_LINETO;
-	  break;
-
-	case 4:
-	default:
-	  // It isn't clear what to do if the caller calls us after
-	  // isDone returns true.  We elect to keep returning
-	  // SEG_CLOSE.
-	  r = SEG_CLOSE;
-	  break;	  
-	}
-
-      return r;
-    }
-
-    public int getWindingRule ()
-    {
-      return WIND_NON_ZERO;
-    }
-
-    public boolean isDone ()
-    {
-      return coord == END_PLUS_ONE;
-    }
-
-    public void next ()
-    {
-      if (coord < END_PLUS_ONE)
-	++coord;
-    }
-  }
-}
+} // class RectangularShape

@@ -1,355 +1,271 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* IndexColorModel.java -- Java class for interpreting Pixel objects
+   Copyright (C) 1999 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version. */
+
 
 package java.awt.image;
 
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
-import gnu.java.awt.Buffers;
-
 /**
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ *
+ * @author C. Brian Jones (cbj@gnu.org) 
  */
 public class IndexColorModel extends ColorModel
 {
-  private byte[] r;
-  private byte[] g;
-  private byte[] b;
-  private byte[] a;
-  private int[] argb;
-  private byte[] cmap;
-  private int start;
-  private int transparent;
-  private int size;
-  
-  public IndexColorModel(int bits, int size, byte[] r, byte[] g, byte[] b)
-  {
-    super(bits, nArray(bits, 3),
-	  ColorSpace.getInstance(ColorSpace.CS_sRGB),
-	  false,  // no transparency
-	  false,  // no premultiplied
-	  Transparency.OPAQUE,
-	  Buffers.smallestAppropriateTransferType(bits));
-    this.r = r;
-    this.g = g;
-    this.b = b;
-    this.size = size;
-  }
+    private int map_size;
+    private boolean opaque;
+    private int trans = -1;
 
-  public IndexColorModel(int bits, int size, byte[] r, byte[] g, byte[] b,
-			 int transparent)
-  {
-    super(bits, nArray(bits, 4), 
-	  ColorSpace.getInstance(ColorSpace.CS_sRGB),
-	  true,  // has transparency
-	  false,
-	  Transparency.BITMASK,
-	  Buffers.smallestAppropriateTransferType(bits));
-    this.r = r;
-    this.g = g;
-    this.b = b;
-    this.transparent = transparent;
-    this.size = size;
-  }
+    private int[] rgb;
 
-  public IndexColorModel(int bits, int size, byte[] r, byte[] g, byte[] b,
-			 byte[] a)
-  {
-    super(bits, nArray(bits, 4),
-	  ColorSpace.getInstance(ColorSpace.CS_sRGB),
-	  true,  // has transparency
-	  false,
-	  Transparency.BITMASK,
-	  Buffers.smallestAppropriateTransferType(bits));
-    this.r = r;
-    this.g = g;
-    this.b = b;
-    this.a = a;
-    this.size = size;
-  }
+    /**
+     * Each array much contain <code>size</code> elements.  For each 
+     * array, the i-th color is described by reds[i], greens[i], 
+     * blues[i], alphas[i], unless alphas is not specified, then all the 
+     * colors are opaque except for the transparent color. 
+     *
+     * @param bits the number of bits needed to represent <code>size</code> colors
+     * @param size the number of colors in the color map
+     * @param reds the red component of all colors
+     * @param greens the green component of all colors
+     * @param blues the blue component of all colors
+     */
+    public IndexColorModel(int bits, int size, byte[] reds, byte[] greens,
+			   byte[] blues) {
+	this(bits, size, reds, greens, blues, (byte[])null);
+    }
 
-  public IndexColorModel(int bits, int size, byte[] cmap, int start,
-			 boolean hasAlpha)
-  {
-    super(bits, nArray(bits, hasAlpha ? 4 : 3),
-	  ColorSpace.getInstance(ColorSpace.CS_sRGB),
-	  hasAlpha,
-	  false,
-	  hasAlpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE,
-	  Buffers.smallestAppropriateTransferType(bits));
-    this.cmap = cmap;
-    this.start = start;
-    this.size = size;
-  }
+    /**
+     * Each array much contain <code>size</code> elements.  For each 
+     * array, the i-th color is described by reds[i], greens[i], 
+     * blues[i], alphas[i], unless alphas is not specified, then all the 
+     * colors are opaque except for the transparent color. 
+     *
+     * @param bits the number of bits needed to represent <code>size</code> colors
+     * @param size the number of colors in the color map
+     * @param reds the red component of all colors
+     * @param greens the green component of all colors
+     * @param blues the blue component of all colors
+     * @param trans the index of the transparent color
+     */
+    public IndexColorModel(int bits, int size, byte[] reds, byte[] greens,
+			   byte[] blues, int trans) {
+	this(bits, size, reds, greens, blues, (byte[])null);
+	this.trans = trans;
+    }
 
-  public IndexColorModel(int bits, int size, byte[] cmap, int start,
-			 boolean hasAlpha, int transparent,
-			 int transferType)
-  {
-    super(bits, nArray(bits, hasAlpha ? 4 : 3),
-	  ColorSpace.getInstance(ColorSpace.CS_sRGB),
-	  hasAlpha,
-	  false,
-	  hasAlpha ? 
-	  Transparency.TRANSLUCENT :
-	  ((transparent < 0) ?
-	   Transparency.OPAQUE :
-	   Transparency.BITMASK),
-	  transferType);
-    this.cmap = cmap;
-    this.start = start;
-    this.size = size;
-  }
+    /**
+     * Each array much contain <code>size</code> elements.  For each 
+     * array, the i-th color is described by reds[i], greens[i], 
+     * blues[i], alphas[i], unless alphas is not specified, then all the 
+     * colors are opaque except for the transparent color. 
+     *
+     * @param bits the number of bits needed to represent <code>size</code> colors
+     * @param size the number of colors in the color map
+     * @param reds the red component of all colors
+     * @param greens the green component of all colors
+     * @param blues the blue component of all colors
+     * @param alphas the alpha component of all colors
+     */
+    public IndexColorModel(int bits, int size, byte[] reds, byte[] greens,
+			   byte[] blues, byte[] alphas) {
+	super(bits);
+	map_size = size;
+	opaque = (alphas == null);
 
-  public final int getMapSize()
-  {
-    return size;
-  }
-  
-  public final int getTransparentPixel()
-  {
-    return transparent;
-  }
+	rgb = new int[size];
+	if (alphas == null) {
+	    for (int i = 0; i < size; i++) {
+		rgb[i] = 0xff000000 | 
+		         ((reds[i] & 0xff) << 16) |
+		         ((greens[i] & 0xff) << 8) |
+		          (blues[i] & 0xff);
+	    }
+	}
+	else {
+	    for (int i = 0; i < size; i++) {
+		rgb[i] = ((alphas[i] & 0xff) << 24 | 
+		         ((reds[i] & 0xff) << 16) |
+		         ((greens[i] & 0xff) << 8) |
+		          (blues[i] & 0xff));
+	    }
+	}
+    }
 
-  public final void getReds(byte r[])
-  {
-    if (this.r == null) calcRGBArrays();
-    System.arraycopy(this.r, 0, r, 0, getMapSize());
-  }
-  
-  public final void getGreens(byte g[])
-  {
-    if (this.g == null) calcRGBArrays();
-    System.arraycopy(this.g, 0, g, 0, getMapSize());
-  }
-  
-  public final void getBlues(byte b[])
-  {
-    if (this.b == null) calcRGBArrays();
-    System.arraycopy(this.b, 0, b, 0, getMapSize());
-  }
+    /**
+     * Each array much contain <code>size</code> elements.  For each 
+     * array, the i-th color is described by reds[i], greens[i], 
+     * blues[i], alphas[i], unless alphas is not specified, then all the 
+     * colors are opaque except for the transparent color. 
+     *
+     * @param bits the number of bits needed to represent <code>size</code> colors
+     * @param size the number of colors in the color map
+     * @param cmap packed color components
+     * @param start the offset of the first color component in <code>cmap</code>
+     * @param hasAlpha <code>cmap</code> has alpha values
+     */
+    public IndexColorModel(int bits, int size, byte[] cmap, int start, 
+			   boolean hasAlpha) {
+	this(bits, size, cmap, start, hasAlpha, -1);
+    }
 
-  public final void getAlphas(byte a[])
-  {
-    if (this.a == null) calcAlphaArray();
-    System.arraycopy(this.a, 0, a, 0, getMapSize());
-  }
+    /**
+     * Each array much contain <code>size</code> elements.  For each 
+     * array, the i-th color is described by reds[i], greens[i], 
+     * blues[i], alphas[i], unless alphas is not specified, then all the 
+     * colors are opaque except for the transparent color. 
+     *
+     * @param bits the number of bits needed to represent <code>size</code> colors
+     * @param size the number of colors in the color map
+     * @param cmap packed color components
+     * @param start the offset of the first color component in <code>cmap</code>
+     * @param hasAlpha <code>cmap</code> has alpha values
+     * @param trans the index of the transparent color
+     */
+    public IndexColorModel(int bits, int size, byte[] cmap, int start, 
+			   boolean hasAlpha, int trans) {
+	super(bits);
+	map_size = size;
+        opaque = !hasAlpha;
+	this.trans = trans;
+    }
 
-  public final void getRGBs(int rgb[])
-  {
-    if (this.argb == null) calcARGBArray();
-    System.arraycopy(this.argb, 0, rgb, 0, getMapSize());
-  }
+    public final int getMapSize() {
+	return map_size;
+    }
 
-  public int getRed(int pixel)
-  {
-    try
-      {
-	return r[pixel];
-      }
-    catch (NullPointerException npe)
-      {
-	calcRGBArrays();
-	return r[pixel];
-      }
-  }
+    /**
+     * Get the index of the transparent color in this color model
+     */
+    public final int getTransparentPixel() {
+	return trans;
+    }
 
-  public int getGreen(int pixel)
-  {
-    try
-      {
-	return g[pixel];
-      }
-    catch (NullPointerException npe)
-      {
-	calcRGBArrays();
-	return g[pixel];
-      }
-  }
+    /**
+     * <br>
+     */
+    public final void getReds(byte[] r) {
+	getComponents( r, 2 );
+    }
 
-  public int getBlue(int pixel)
-  {
-    try
-      {
-	return b[pixel];
-      }
-    catch (NullPointerException npe)
-      {
-	calcRGBArrays();
-	return b[pixel];
-      }
-  }
-  
-  public int getAlpha(int pixel)
-  {
-    try
-      {
-	return a[pixel];
-      } 
-    catch (NullPointerException npe)
-      {
-	calcAlphaArray();
-	return a[pixel];
-      }
-  }
+    /**
+     * <br>
+     */
+    public final void getGreens(byte[] g) {
+	getComponents( g, 1 );
+    }
 
-  private void calcRGBArrays() {
-    int j=0;
-    boolean hasAlpha = hasAlpha();
-    r = new byte[size];
-    g = new byte[size];
-    b = new byte[size];
-    if (hasAlpha) a = new byte[size];
+    /**
+     * <br>
+     */
+    public final void getBlues(byte[] b) {
+	getComponents( b, 0 );
+    }
+
+    /**
+     * <br>
+     */
+    public final void getAlphas(byte[] a) {
+	getComponents( a, 3 );
+    }
+
+    private void getComponents( byte[] c, int ci )
+    {
+	int i, max = ( map_size < c.length ) ? map_size : c.length;
+	for( i = 0; i < max; i++ )
+	    c[i] = (byte)(( generateMask( ci )  & rgb[i]) >> ( ci * pixel_bits) );
+    } 
+
+    /**
+     * Get the red component of the given pixel.
+     * <br>
+     */
+    public final int getRed(int pixel) {
+	if( pixel < map_size ) 
+	    return  (int)(( generateMask( 2 )  & rgb[pixel]) >> (2 * pixel_bits ) );
+	return 0;
+    }
+
+    /**
+     * Get the green component of the given pixel.
+     * <br>
+     */
+    public final int getGreen(int pixel) {
+	if( pixel < map_size ) 
+	    return (int)(( generateMask( 1 )  & rgb[pixel]) >> (1 * pixel_bits ) );
+	return 0;
+    }
+
+    /**
+     * Get the blue component of the given pixel.
+     * <br>
+     */
+    public final int getBlue(int pixel) {
+	if( pixel < map_size ) 
+	    return  (int)( generateMask( 0 )  & rgb[pixel]);
+	return 0;
+    }
+
+    /**
+     * Get the alpha component of the given pixel.
+     * <br>
+     */
+    public final int getAlpha(int pixel) {
+	if( pixel < map_size ) 
+	    return  (int)(( generateMask( 3 )  & rgb[pixel]) >> (3 * pixel_bits ) );
+	return 0;
+    }
+
+    /**
+     * Get the RGB color value of the given pixel using the default
+     * RGB color model. 
+     * <br>
+     *
+     * @param pixel a pixel value
+     */
+    public final int getRGB(int pixel) {
+	if( pixel < map_size ) 
+	    return rgb[pixel];
+	return 0;
+    }
     
-    for (int i=0; i<size; i++)
-      {
-	r[i] = cmap[j++];
-	g[i] = cmap[j++];
-	b[i] = cmap[j++];
-	if (hasAlpha()) a[i] = cmap[j++];
-      }
-  }
+    //pixel_bits is number of bits to be in generated mask
+    private int generateMask( int offset )
+    {
+	return (  ( ( 2 << pixel_bits ) - 1 ) << ( pixel_bits * offset ) );
+    }
 
-  private void calcAlphaArray()
-  {
-    int transparency = getTransparency();
-    switch (transparency)
-      {
-      case Transparency.OPAQUE:
-      case Transparency.BITMASK:
-	a = nArray((byte) 255, size);
-	if (transparency == Transparency.BITMASK)
-	  a[transparent] = 0;
-	break;
-      case Transparency.TRANSLUCENT:
-	calcRGBArrays();
-      }
-  }
-
-  private void calcARGBArray()
-  {
-    int mapSize = getMapSize();
-    argb = new int[mapSize];
-    for (int p=0; p<mapSize; p++) argb[p] = getRGB(p);
-  }
-  
-  public int getRed(Object inData)
-  {
-    return getRed(getPixelFromArray(inData));
-  }
-
-  public int getGreen(Object inData)
-  {
-    return getGreen(getPixelFromArray(inData));
-  }
-
-  public int getBlue(Object inData)
-  {
-    return getBlue(getPixelFromArray(inData));
-  }
-    
-  public int getAlpha(Object inData)
-  {
-    return getAlpha(getPixelFromArray(inData));
-  }
-
-  public int getRGB(Object inData)
-  {
-    return getRGB(getPixelFromArray(inData));
-  }
-
-  public Object getDataElements(int rgb, Object pixel)
-  {
-    int av, rv, gv, bv;
-    // using 8 bit values
-    av = (rgb >>> 24) & 0xff;
-    rv = (rgb >>> 16) & 0xff;
-    gv = (rgb >>>  8) & 0xff;
-    bv = (rgb >>>  0) & 0xff;
-    
-    int pixelValue = getPixelValue(av, rv, gv, bv);
-
-    /* In this color model, the whole pixel fits in the first element
-       of the array. */
-    DataBuffer buffer = Buffers.createBuffer(transferType, pixel, 1);
-    buffer.setElem(0, pixelValue);
-    return Buffers.getData(buffer);
-  }
-    
-  private int getPixelValue(int av, int rv, int gv, int bv)
-  {
-    if (r == null) calcRGBArrays();
-    if (a == null) calcAlphaArray();
-    
-    int minDAlpha = 1<<8;
-    int minDRGB = (1<<8)*(1<<8)*3;
-    int pixelValue = -1;
-    for (int i=0; i<size; i++)
-      {
-	int dAlpha = Math.abs(av-(a[i]&0xff));
-	if (dAlpha > minDAlpha) continue;
-	int dR = rv-(r[i]&0xff);
-	int dG = gv-(g[i]&0xff);
-	int dB = bv-(b[i]&0xff);
-	int dRGB = dR*dR + dG*dG + dB*dB;
-	
-	if (dRGB >= minDRGB) continue;
-	
-	pixelValue = i;
-	minDRGB = dRGB;
-      }
-    return pixelValue;
-  }  
-
-  public int[] getComponents(int pixel, int[] components, int offset)
-  {
-    int numComponents = getNumComponents();
-    if (components == null) components = new int[offset + numComponents];
-    components[offset++] = (r[pixel]&0xff);
-    components[offset++] = (g[pixel]&0xff);
-    components[offset++] = (b[pixel]&0xff);
-    if (hasAlpha()) components[offset++] = (a[pixel]&0xff);
-    return components;
-  }
-	
-  public final int[] getComponents(Object pixel, int[] components,
-				   int offset)
-  {
-    return getComponents(getPixelFromArray(pixel), components, offset);
-  }
-  
-  public int getDataElement(int[] components, int offset)
-  {
-    int r = components[offset++];
-    int g = components[offset++];
-    int b = components[offset++];
-    int a = hasAlpha() ? components[offset++] : 255;
-    
-    return getPixelValue(a, r, g, b);
-  }
-  
-  public Object getDataElements(int[] components, int offset, Object pixel)
-  {
-    int pixelValue = getDataElement(components, offset);
-    
-    /* In this color model, the whole pixel fits in the first element
-       of the array. */
-    DataBuffer buffer = Buffers.createBuffer(transferType, pixel, 1);
-    buffer.setElem(0, pixelValue);
-    return Buffers.getData(buffer);
-  }
-    
-  public SampleModel createCompatibleSampleModel(int w, int h)
-  {
-    int[] bandOffsets = {0};
-    return new ComponentSampleModel(transferType, w, h,
-				    1, // pixel stride
-				    w, // scanline stride
-				    bandOffsets);
-  }
 }
+

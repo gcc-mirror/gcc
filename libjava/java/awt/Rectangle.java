@@ -1,4 +1,5 @@
-/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
+/* Rectangle.java -- represents a graphics rectangle
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,10 +38,9 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.geom.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
-
-/* Status:  Mostly complete. Some of the Java2D stuff is commented out. */
 
 /**
  * This class represents a rectangle and all the interesting things you
@@ -48,30 +48,63 @@ import java.io.Serializable;
  * the origin (0,0) as the top left of the screen, with the x and y
  * values increasing as they move to the right and down respectively.
  *
+ * <p>It is valid for a rectangle to have negative width or height; but it
+ * is considered to have no area or internal points. Therefore, the behavior
+ * in methods like <code>contains</code> or <code>intersects</code> is
+ * undefined unless the rectangle has positive width and height.
+ *
+ * <p>There are some public fields; if you mess with them in an inconsistent
+ * manner, it is your own fault when you get NullPointerException,
+ * ArrayIndexOutOfBoundsException, or invalid results. Also, this class is
+ * not threadsafe.
+ *
  * @author Warren Levy  <warrenl@cygnus.com>
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.0
+ * @status updated to 1.4
  */
-public class Rectangle extends Rectangle2D
-  implements Cloneable, Shape, Serializable
+public class Rectangle extends Rectangle2D implements Shape, Serializable
 {
   /**
-  * The X coordinate of the top-left corner of the rectangle.
-  */
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -4345857070255674764L;
+
+  /**
+   * The X coordinate of the top-left corner of the rectangle.
+   *
+   * @see #setLocation(int, int)
+   * @see #getLocation()
+   * @serial the x coordinate
+   */
   public int x;
 
   /**
-  * The Y coordinate of the top-left corner of the rectangle;
-  */
+   * The Y coordinate of the top-left corner of the rectangle.
+   *
+   * @see #setLocation(int, int)
+   * @see #getLocation()
+   * @serial the y coordinate
+   */
   public int y;
 
   /**
-  * The width of the rectangle
-  */
+   * The width of the rectangle.
+   *
+   * @see #setSize(int, int)
+   * @see #getSize()
+   * @serial
+   */
   public int width;
 
   /**
-  * The height of the rectangle
-  */
+   * The height of the rectangle.
+   *
+   * @see #setSize(int, int)
+   * @see #getSize()
+   * @serial
+   */
   public int height;
 
   /**
@@ -80,17 +113,15 @@ public class Rectangle extends Rectangle2D
    */
   public Rectangle()
   {
-    x = 0;
-    y = 0;
-    width = 0;
-    height = 0;
   }
 
   /**
    * Initializes a new instance of <code>Rectangle</code> from the
    * coordinates of the specified rectangle.
    *
-   * @param rect The rectangle to copy from.
+   * @param r the rectangle to copy from
+   * @throws NullPointerException if r is null
+   * @since 1.1
    */
   public Rectangle(Rectangle r)
   {
@@ -104,10 +135,10 @@ public class Rectangle extends Rectangle2D
    * Initializes a new instance of <code>Rectangle</code> from the specified
    * inputs.
    *
-   * @param x The X coordinate of the top left corner of the rectangle.
-   * @param y The Y coordinate of the top left corner of the rectangle.
-   * @param width The width of the rectangle.
-   * @param height The height of the rectangle.
+   * @param x the X coordinate of the top left corner
+   * @param y the Y coordinate of the top left corner
+   * @param width the width of the rectangle
+   * @param height the height of the rectangle
    */
   public Rectangle(int x, int y, int width, int height)
   {
@@ -119,16 +150,14 @@ public class Rectangle extends Rectangle2D
 
   /**
    * Initializes a new instance of <code>Rectangle</code> with the specified
-   * width and height.  The upper left corner of the rectangle will be at
+   * width and height. The upper left corner of the rectangle will be at
    * the origin (0,0).
    *
-   * @param width The width of the rectangle.
-   * @param height the height of the rectange.
+   * @param width the width of the rectangle
+   * @param height the height of the rectange
    */
   public Rectangle(int width, int height)
   {
-    x = 0;
-    y = 0;
     this.width = width;
     this.height = height;
   }
@@ -138,8 +167,9 @@ public class Rectangle extends Rectangle2D
    * corner represented by the specified point and the width and height
    * represented by the specified dimension.
    *
-   * @param point The upper left corner of the rectangle.
-   * @param dim The width and height of the rectangle.
+   * @param p the upper left corner of the rectangle
+   * @param d the width and height of the rectangle
+   * @throws NullPointerException if p or d is null
    */
   public Rectangle(Point p, Dimension d)
   {
@@ -153,14 +183,12 @@ public class Rectangle extends Rectangle2D
    * Initializes a new instance of <code>Rectangle</code> with a top left
    * corner at the specified point and a width and height of zero.
    *
-   * @param poin The upper left corner of the rectangle.
+   * @param p the upper left corner of the rectangle
    */
   public Rectangle(Point p)
   {
     x = p.x;
     y = p.y;
-    width = 0;
-    height = 0;
   }
 
   /**
@@ -168,330 +196,106 @@ public class Rectangle extends Rectangle2D
    * upper left corner at the origin (0,0) and a width and height represented
    * by the specified dimension.
    *
-   * @param dim The width and height of the rectangle.
+   * @param d the width and height of the rectangle
    */
   public Rectangle(Dimension d)
   {
-    x = 0;
-    y = 0;
     width = d.width;
     height = d.height;
   }
 
   /**
-   * Returns the bounding rectangle for this rectangle, which is simply
-   * this rectange itself.
+   * Get the X coordinate of the upper-left corner.
    *
-   * @return This rectangle.
+   * @return the value of x, as a double
    */
-  public Rectangle getBounds ()
-  {
-    return (Rectangle) this.clone();
-  }
-
-  /**
-   * Modifies this rectangle so that it represents the smallest rectangle 
-   * that contains both the existing rectangle and the specified point.
-   *
-   * @param x The X coordinate of the point to add to this rectangle.
-   * @param y The Y coordinate of the point to add to this rectangle.
-   */
-  public void add(int newx, int newy)
-  {
-    int x = this.x > newx ? newx : this.x;
-    int y = this.y > newy ? newy : this.y;
-    width = (this.x + width > newx ? this.x + width : newx) - x;
-    height = (this.y + height > newy ? this.y + height : newy) - y;
-    this.x = x;
-    this.y = y;
-  }
-
-  /**
-   * Modifies this rectangle so that it represents the smallest rectangle 
-   * that contains both the existing rectangle and the specified point.
-   *
-   * @param point The point to add to this rectangle.
-   */
-  public void add(Point pt)
-  {
-    add (pt.x, pt.y);
-  }
-
-  /**
-   * Modifies this rectangle so that it represents the smallest rectangle 
-   * that contains both the existing rectangle and the specified rectangle.
-   *
-   * @param rect The rectangle to add to this rectangle.
-   */
-  public void add(Rectangle r)
-  {
-    int x = this.x > r.x ? r.x : this.x;
-    int y = this.y > r.y ? r.y : this.y;
-    width = (this.x + width > r.x + r.width ? 
-             this.x + width : r.x + r.width) - x;
-    height = (this.y + height > r.y + r.height ?
-              this.y + height : r.y + r.height) - y;
-    this.x = x;
-    this.y = y;
-  }
-
-  /**
-   * Tests whether or not the specified point is inside this rectangle.
-   *
-   * @param x The X coordinate of the point to test.
-   * @param y The Y coordinate of the point to test.
-   *
-   * @return <code>true</code> if the point is inside the rectangle,
-   * <code>false</code> otherwise.
-   */
-  public boolean contains(int x, int y)
-  {
-    return (x >= this.x && x <= this.x + this.width
-            && y >= this.y && y <= this.y + this.height);
-  }   
-
-  public boolean contains(int x, int y, int w, int h)
-  {
-    return (x >= this.x && x + w <= this.x + this.width
-            && y >= this.y && y + h <= this.y + this.height);
-  }
-
-  /**
-   * Tests whether or not the specified point is inside this rectangle.
-   *
-   * @param point The point to test.
-   *
-   * @return <code>true</code> if the point is inside the rectangle,
-   * <code>false</code> otherwise.
-   */
-  public boolean contains(Point p)
-  {
-    return contains(p.x, p.y);
-  }
-
-  public boolean contains(Rectangle r)
-  {
-    return contains(r.x, r.y, r.width, r.height);
-  }
-
-  /**
-   * Tests this rectangle for equality against the specified object.  This
-   * will be true if an only if the specified object:
-   * <p>
-   * <ul>
-   * <li>Is not <code>null</code>.
-   * <li>Is an instance of <code>Rectangle</code>.
-   * <li>Has X and Y coordinates identical to this rectangle.
-   * <li>Has a width and height identical to this rectangle.
-   * </ul>
-   *
-   * @param obj The object to test against for equality.
-   *
-   * @return <code>true</code> if the specified object is equal to this one,
-   * <code>false</code> otherwise.
-   */
-  public boolean equals(Object obj)
-  {
-    if (obj instanceof Rectangle)
-      {
-	Rectangle r = (Rectangle) obj;
-	return (r.x == x 
-	        && r.y == y 
-		&& r.width == width 
-		&& r.height == height);
-      }
-    return false;
-  }
-
-  public double getHeight()
-  {
-    return (double) this.height;     
-  }
-
-  /**
-   * Returns the location of this rectangle, which is the coordinates of
-   * its upper left corner.
-   *
-   * @return The point where this rectangle is located.
-   */
-  public Point getLocation()
-  {
-    return new Point(x,y);
-  }
-
-  /**
-   * Returns the size of this rectangle.
-   *
-   * @return The size of this rectangle.
-   */
-  public Dimension getSize()
-  {
-    return new Dimension(width, height);
-  }
-
-  public double getWidth()
-  {
-    return (double) this.width;
-  }
-
   public double getX()
   {
-    return (double) x;
+    return x;
   }
 
+  /**
+   * Get the Y coordinate of the upper-left corner.
+   *
+   * @return the value of y, as a double
+   */
   public double getY()
   {
-    return (double) y;
+    return y;
   }
 
   /**
-   * Expands the rectangle by the specified amount.  The horizontal
-   * and vertical expansion values are applied both to the X,Y coordinate
-   * of this rectangle, and its width and height.  Thus the width and
-   * height will increase by 2h and 2v accordingly.
+   * Get the width of the rectangle.
    *
-   * @param h The horizontal expansion value.
-   * @param v The vertical expansion value.
+   * @return the value of width, as a double
    */
-  public void grow(int h, int v)
+  public double getWidth()
   {
-    width += h;
-    height += v;
+    return width;
   }
 
   /**
-   * Tests whether or not the specified point is inside this rectangle.
+   * Get the height of the rectangle.
    *
-   * @param x The X coordinate of the point to test.
-   * @param y The Y coordinate of the point to test.
-   *
-   * @return <code>true</code> if the point is inside the rectangle,
-   * <code>false</code> otherwise.
-   *
-   * @deprecated This method is deprecated in favor of
-   * <code>contains(int, int)</code>.
+   * @return the value of height, as a double
    */
-  public boolean inside(int x, int y)
+  public double getHeight()
   {
-    return contains(x, y);
+    return height;
   }
 
   /**
-   * Determines the rectange which is formed by the intersection of this
-   * rectangle with the specified rectangle.
+   * Returns the bounds of this rectangle. A pretty useless method, as this
+   * is already a rectangle; it is included to mimic the
+   * <code>getBounds</code> method in Component.
    *
-   * @param rect The rectange to calculate the intersection with.
-   *
-   * @return The rectangle bounding the intersection.
-   *
-   * @specnote If there is no intersection, an empty rectangle at 0,0 
-   *           is returned.
+   * @return a copy of this rectangle
+   * @see #setBounds(Rectangle)
+   * @since 1.1
    */
-  public Rectangle intersection(Rectangle r)
+  public Rectangle getBounds()
   {
-    int newx = x < r.x ? r.x : x;
-    int newy = y < r.y ? r.y : y;
-    int neww = (x + width < r.x + r.width ?
-        	x + width : r.x + r.width) - newx;
-    int newh = (y + height < r.y + r.height ?
-        	y + height : r.y + r.height) - newy;
-    if (neww >= 0 && newh >= 0)
-      return new Rectangle(newx, newy, neww, newh);
-    else
-      return new Rectangle(0, 0, 0, 0);
+    return new Rectangle(this);
   }
 
   /**
-   * Tests whether or not the specified rectangle intersects this rectangle.
+   * Returns the high-precision bounds of this rectangle. A pretty useless
+   * method, as this is already a rectangle.
    *
-   * @param rect The rectangle to test against.
-   *
-   * @return <code>true</code> if the specified rectangle intersects this
-   * one, <code>false</code> otherwise.
-   *
-   * @specnote If the intersection is at an edge or corner only (an empty
-   *           intersection with a non-zero location), false is returned.
+   * @return a copy of this rectangle
+   * @see #setBounds(Rectangle)
+   * @since 1.2
    */
-  public boolean intersects(Rectangle r)
+  public Rectangle2D getBounds2D()
   {
-    int neww = (x + width < r.x + r.width ?
-        	x + width : r.x + r.width) - (x < r.x ? r.x : x);
-    int newh = (y + height < r.y + r.height ?
-        	y + height : r.y + r.height) - (y < r.y ? r.y : y);
-    return (neww > 0 && newh > 0);
+    return new Rectangle(x, y, width, height);
   }
 
   /**
-   * Tests whether or not this rectangle is empty.  An empty rectangle
-   * has a width or height of zero.
+   * Updates this rectangle to match the dimensions of the specified
+   * rectangle.
    *
-   * @return <code>true</code> if the rectangle is empty, <code>false</code>
-   * otherwise.
+   * @param r the rectangle to update from
+   * @throws NullPointerException if r is null
+   * @see #setBounds(int, int, int, int)
+   * @since 1.1
    */
-  public boolean isEmpty()
+  public void setBounds(Rectangle r)
   {
-    return !(width > 0 && height > 0);
-  }
-
-  /**
-   * Moves the location of this rectangle by setting its upper left
-   * corner to the specified coordinates.
-   * // FIXME: Is this true?
-   *
-   * @param x The new X coordinate for this rectangle.
-   * @param y The new Y coordinate for this rectangle.
-   *
-   * @deprecated This method is deprecated in favor of
-   * <code>setLocation(int, int)</code>.
-   */
-  public void move(int x, int y)
-  {
-    setLocation(x, y);
-  }
-
-  public int outcode(double x, double y)
-  {
-    // FIXME
-    return 0;
+    x = r.x;
+    y = r.y;
+    width = r.width;
+    height = r.height;
   }
 
   /**
    * Updates this rectangle to have the specified dimensions.
    *
-   * @param x The new X coordinate of the upper left hand corner.
-   * @param y The new Y coordinate of the upper left hand corner.
-   * @param width The new width of this rectangle.
-   * @param height The new height of this rectangle.
-   *
-   * @deprecated This method is deprecated in favor of 
-   * <code>setBounds(int, int, int, int)</code>.
-   */
-  public void reshape(int x, int y, int width, int height)
-  {
-    setBounds(x, y, width, height);
-  }
-
-  /**
-   * Sets the size of this rectangle based on the specified dimensions.
-   *
-   * @param width The new width of the rectangle.
-   * @param height The new height of the rectangle.
-   *
-   * @deprecated This method is deprecated in favor of
-   * <code>setSize(int, int)</code>.
-   */
-  public void resize(int width, int height)
-  {
-    setSize(width, height);
-  }
-
-  /**
-   * Updates this rectangle to have the specified dimensions.
-   *
-   * @param x The new X coordinate of the upper left hand corner.
-   * @param y The new Y coordinate of the upper left hand corner.
-   * @param width The new width of this rectangle.
-   * @param height The new height of this rectangle.
+   * @param x the new X coordinate of the upper left hand corner
+   * @param y the new Y coordinate of the upper left hand corner
+   * @param width the new width of this rectangle
+   * @param height the new height of this rectangle
+   * @since 1.1
    */
   public void setBounds(int x, int y, int width, int height)
   {
@@ -502,46 +306,15 @@ public class Rectangle extends Rectangle2D
   }
 
   /**
-   * Updates this rectangle to match the dimensions of the specified 
-   * rectangle.
+   * Updates this rectangle to have the specified dimensions, as rounded to
+   * integers.
    *
-   * @param rect The rectangle to update from.
+   * @param x the new X coordinate of the upper left hand corner
+   * @param y the new Y coordinate of the upper left hand corner
+   * @param width the new width of this rectangle
+   * @param height the new height of this rectangle
+   * @since 1.2
    */
-  public void setBounds(Rectangle r)
-  {
-    this.x = r.x;
-    this.y = r.y;
-    this.width = r.width;
-    this.height = r.height;     
-  }
-
-  /**
-   * Moves the location of this rectangle by setting its upper left
-   * corner to the specified coordinates.
-   * // FIXME: Is this true?
-   *
-   * @param x The new X coordinate for this rectangle.
-   * @param y The new Y coordinate for this rectangle.
-   */
-  public void setLocation(int x, int y)
-  {
-    this.x = x;
-    this.y = y;
-  }
-
-  /**
-   * Moves the location of this rectangle by setting its upper left
-   * corner to the specified point.
-   * // FIXME: Is this true?
-   *
-   * @param point The point to move the rectange to.
-   */
-  public void setLocation(Point p)
-  {
-    this.x = p.x;
-    this.y = p.y;
-  }
-
   public void setRect(double x, double y, double width, double height)
   {
     this.x = (int) x;
@@ -551,21 +324,119 @@ public class Rectangle extends Rectangle2D
   }
 
   /**
-   * Sets the size of this rectangle based on the specified dimensions.
+   * Updates this rectangle to have the specified dimensions.
    *
-   * @param dim The new dimensions of the rectangle.
+   * @param x the new X coordinate of the upper left hand corner
+   * @param y the new Y coordinate of the upper left hand corner
+   * @param width the new width of this rectangle
+   * @param height the new height of this rectangle
+   * @deprecated use {@link #setBounds(int, int, int, int)} instead
    */
-  public void setSize(Dimension d)
+  public void reshape(int x, int y, int width, int height)
   {
-    this.width = d.width;
-    this.height = d.height;
+    setBounds(x, y, width, height);
+  }
+
+  /**
+   * Returns the location of this rectangle, which is the coordinates of
+   * its upper left corner.
+   *
+   * @return the point where this rectangle is located
+   * @see setLocation(Point)
+   * @since 1.1
+   */
+  public Point getLocation()
+  {
+    return new Point(x,y);
+  }
+
+  /**
+   * Moves the location of this rectangle by setting its upper left
+   * corner to the specified point.
+   *
+   * @param p the point to move the rectangle to
+   * @throws NullPointerException if p is null
+   * @see #getLocation()
+   * @since 1.1
+   */
+  public void setLocation(Point p)
+  {
+    this.x = p.x;
+    this.y = p.y;
+  }
+
+  /**
+   * Moves the location of this rectangle by setting its upper left
+   * corner to the specified coordinates.
+   *
+   * @param x the new X coordinate for this rectangle
+   * @param y the new Y coordinate for this rectangle
+   * @since 1.1
+   */
+  public void setLocation(int x, int y)
+  {
+    this.x = x;
+    this.y = y;
+  }
+
+  /**
+   * Moves the location of this rectangle by setting its upper left
+   * corner to the specified coordinates.
+   *
+   * @param x the new X coordinate for this rectangle
+   * @param y the new Y coordinate for this rectangle
+   * @deprecated use {@link #setLocation(int, int)} instead
+   */
+  public void move(int x, int y)
+  {
+    setLocation(x, y);
+  }
+
+  /**
+   * Translate the location of this rectangle by the given amounts.
+   *
+   * @param dx the x distance to move by
+   * @param dy the y distance to move by
+   * @see #setLocation(int, int)
+   */
+  public void translate(int dx, int dy)
+  {
+    x += dx;
+    y += dy;
+  }
+
+  /**
+   * Returns the size of this rectangle.
+   *
+   * @return the size of this rectangle
+   * @see #setSize(Dimension)
+   * @since 1.1
+   */
+  public Dimension getSize()
+  {
+    return new Dimension(width, height);
   }
 
   /**
    * Sets the size of this rectangle based on the specified dimensions.
    *
-   * @param width The new width of the rectangle.
-   * @param height The new height of the rectangle.
+   * @param d the new dimensions of the rectangle
+   * @throws NullPointerException if d is null
+   * @see #getSize()
+   * @since 1.1
+   */
+  public void setSize(Dimension d)
+  {
+    width = d.width;
+    height = d.height;
+  }
+
+  /**
+   * Sets the size of this rectangle based on the specified dimensions.
+   *
+   * @param width the new width of the rectangle
+   * @param height the new height of the rectangle
+   * @since 1.1
    */
   public void setSize(int width, int height)
   {
@@ -573,73 +444,316 @@ public class Rectangle extends Rectangle2D
     this.height = height;
   }
 
-  public void translate(int x, int y)
+  /**
+   * Sets the size of this rectangle based on the specified dimensions.
+   *
+   * @param width the new width of the rectangle
+   * @param height the new height of the rectangle
+   * @deprecated use {@link #setSize(int, int)} instead
+   */
+  public void resize(int width, int height)
   {
-    x += x;
-    y += y;
+    setSize(width, height);
+  }
+
+  /**
+   * Tests whether or not the specified point is inside this rectangle.
+   * According to the contract of Shape, a point on the border is in only if
+   * it has an adjacent point inside the rectangle in either the increasing
+   * x or y direction.
+   *
+   * @param p the point to test
+   * @return true if the point is inside the rectangle
+   * @throws NullPointerException if p is null
+   * @see #contains(int, int)
+   * @since 1.1
+   */
+  public boolean contains(Point p)
+  {
+    return width > 0 && height > 0
+      && p.x >= x && p.x < x + width
+      && p.y >= y && p.y < y + height;
+  }
+
+  /**
+   * Tests whether or not the specified point is inside this rectangle.
+   * According to the contract of Shape, a point on the border is in only if
+   * it has an adjacent point inside the rectangle in either the increasing
+   * x or y direction.
+   *
+   * @param x the X coordinate of the point to test
+   * @param y the Y coordinate of the point to test
+   * @return true if the point is inside the rectangle
+   * @since 1.1
+   */
+  public boolean contains(int x, int y)
+  {
+    return width > 0 && height > 0
+      && x >= this.x && x < this.x + width
+      && y >= this.y && y < this.y + height;
+  }
+
+  /**
+   * Checks whether all points in the given rectangle are contained in this
+   * rectangle.
+   *
+   * @param r the rectangle to check
+   * @return true if r is contained in this rectangle
+   * @throws NullPointerException if r is null
+   * @see #contains(int, int, int, int)
+   * @since 1.1
+   */
+  public boolean contains(Rectangle r)
+  {
+    return width > 0 && height > 0 && r.width > 0 && r.height > 0
+      && r.x >= x && r.x + r.width <= x + width
+      && r.y >= y && r.y + r.height <= y + height;
+  }
+
+  /**
+   * Checks whether all points in the given rectangle are contained in this
+   * rectangle.
+   *
+   * @param x the x coordinate of the rectangle to check
+   * @param y the y coordinate of the rectangle to check
+   * @param w the width of the rectangle to check
+   * @param h the height of the rectangle to check
+   * @return true if the parameters are contained in this rectangle
+   * @since 1.1
+   */
+  public boolean contains(int x, int y, int w, int h)
+  {
+    return width > 0 && height > 0 && w > 0 && h > 0
+      && x >= this.x && x + w <= this.x + this.width
+      && y >= this.y && y + h <= this.y + this.height;
+  }
+
+  /**
+   * Tests whether or not the specified point is inside this rectangle.
+   *
+   * @param x the X coordinate of the point to test
+   * @param y the Y coordinate of the point to test
+   * @return true if the point is inside the rectangle
+   * @deprecated use {@link #contains(int, int)} instead
+   */
+  public boolean inside(int x, int y)
+  {
+    return contains(x, y);
+  }
+
+  /**
+   * Tests whether or not the specified rectangle intersects this rectangle.
+   * This means the two rectangles share at least one internal point.
+   *
+   * @param r the rectangle to test against
+   * @return true if the specified rectangle intersects this one
+   * @throws NullPointerException if r is null
+   * @since 1.2
+   */
+  public boolean intersects(Rectangle r)
+  {
+    return width > 0 && height > 0 && r.width > 0 && r.height > 0
+      && r.x < x + width && r.x + r.width > x
+      && r.y < y + height && r.y + r.height > y;
+  }
+
+  /**
+   * Determines the rectangle which is formed by the intersection of this
+   * rectangle with the specified rectangle. If the two do not intersect,
+   * an empty rectangle will be returned (meaning the width and/or height
+   * will be non-positive).
+   *
+   * @param r the rectange to calculate the intersection with
+   * @return a new rectangle bounding the intersection
+   * @throws NullPointerException if r is null
+   */
+  public Rectangle intersection(Rectangle r)
+  {
+    Rectangle res = new Rectangle();
+    intersect(this, r, res);
+    return res;
   }
 
   /**
    * Returns the smallest rectangle that contains both this rectangle
    * and the specified rectangle.
    *
-   * @param rect The rectangle to compute the union with.
-   *
-   * @return The smallest rectangle containing both rectangles.
+   * @param r the rectangle to compute the union with
+   * @return the smallest rectangle containing both rectangles
+   * @throws NullPointerException if r is null
    */
   public Rectangle union(Rectangle r)
   {
-    int newx = x > r.x ? r.x : x;
-    int newy = y > r.y ? r.y : y;     
-    int neww = (this.x + width > r.x + r.width ? 
-               this.x + width : r.x + r.width) - newx;
-    int newh = (this.y + height > r.y + r.height ?
-        	this.y + height : r.y + r.height) - newy;
-    return new Rectangle(newx, newy, neww, newh);
-  }
-
-  // Commented out until we have Rectangle2D
-  public Rectangle2D createIntersection(Rectangle2D r)
-  {
-    // FIXME: maybe we should consider returning a Rectangle or
-    // Rectangle2D.Float depending on type of R.
-    Rectangle2D.Double res = new Rectangle2D.Double ();
-    intersect (this, r, res);
+    Rectangle res = new Rectangle();
+    union(this, r, res);
     return res;
-  }
-
-  public Rectangle2D createUnion(Rectangle2D r)
-  {
-    // FIXME: maybe we should consider returning a Rectangle or
-    // Rectangle2D.Float depending on type of R.
-    Rectangle2D.Double res = new Rectangle2D.Double ();
-    union (this, r, res);
-    return res;
-  }
-
-  public Rectangle2D getBounds2D()
-  {
-    return new Rectangle (x, y, width, height);
   }
 
   /**
-   * Returns a string representation of this rectangle.
+   * Modifies this rectangle so that it represents the smallest rectangle
+   * that contains both the existing rectangle and the specified point.
+   * However, if the point falls on one of the two borders which are not
+   * inside the rectangle, a subsequent call to <code>contains</code> may
+   * return false.
    *
-   * @return A string representation of this rectangle.
+   * @param x the X coordinate of the point to add to this rectangle
+   * @param y the Y coordinate of the point to add to this rectangle
+   */
+  public void add(int x, int y)
+  {
+    add((double) x, (double) y);
+  }
+
+  /**
+   * Modifies this rectangle so that it represents the smallest rectangle
+   * that contains both the existing rectangle and the specified point.
+   * However, if the point falls on one of the two borders which are not
+   * inside the rectangle, a subsequent call to <code>contains</code> may
+   * return false.
+   *
+   * @param p the point to add to this rectangle
+   * @throws NullPointerException if p is null
+   */
+  public void add(Point p)
+  {
+    add((double) p.x, (double) p.y);
+  }
+
+  /**
+   * Modifies this rectangle so that it represents the smallest rectangle
+   * that contains both the existing rectangle and the specified rectangle.
+   *
+   * @param r the rectangle to add to this rectangle
+   * @throws NullPointerException if r is null
+   * @see #union(Rectangle)
+   */
+  public void add(Rectangle r)
+  {
+    union(this, r, this);
+  }
+
+  /**
+   * Expands the rectangle by the specified amount.  The horizontal
+   * and vertical expansion values are applied both to the X,Y coordinate
+   * of this rectangle, and its width and height.  Thus the width and
+   * height will increase by 2h and 2v accordingly.
+   *
+   * @param h the horizontal expansion value
+   * @param v the vertical expansion value
+   */
+  public void grow(int h, int v)
+  {
+    x -= h;
+    y -= v;
+    width += h + h;
+    height += v + v;
+  }
+
+  /**
+   * Tests whether or not this rectangle is empty.  An empty rectangle
+   * has a non-positive width or height.
+   *
+   * @return true if the rectangle is empty
+   */
+  public boolean isEmpty()
+  {
+    return width <= 0 || height <= 0;
+  }
+
+  /**
+   * Determine where the point lies with respect to this rectangle. The
+   * result will be the binary OR of the appropriate bit masks.
+   *
+   * @param x the x coordinate to check
+   * @param y the y coordinate to check
+   * @return the binary OR of the result
+   * @see #OUT_LEFT
+   * @see #OUT_TOP
+   * @see #OUT_RIGHT
+   * @see #OUT_BOTTOM
+   * @since 1.2
+   */
+  public int outcode(double x, double y)
+  {
+    int result = 0;
+    if (width <= 0)
+      result |= OUT_LEFT | OUT_RIGHT;
+    else if (x < this.x)
+      result |= OUT_LEFT;
+    else if (x > this.x + width)
+      result |= OUT_RIGHT;
+    if (height <= 0)
+      result |= OUT_BOTTOM | OUT_TOP;
+    else if (y < this.y) // Remember that +y heads top-to-bottom.
+      result |= OUT_TOP;
+    else if (y > this.y + height)
+      result |= OUT_BOTTOM;
+    return result;
+  }
+
+  /**
+   * Determines the rectangle which is formed by the intersection of this
+   * rectangle with the specified rectangle. If the two do not intersect,
+   * an empty rectangle will be returned (meaning the width and/or height
+   * will be non-positive).
+   *
+   * @param r the rectange to calculate the intersection with
+   * @return a new rectangle bounding the intersection
+   * @throws NullPointerException if r is null
+   * @since 1.2
+   */
+  public Rectangle2D createIntersection(Rectangle2D r)
+  {
+    // Favor runtime type of other rectangle.
+    Rectangle2D res = r.getBounds2D();
+    intersect(this, r, res);
+    return res;
+  }
+
+  /**
+   * Returns the smallest rectangle that contains both this rectangle
+   * and the specified rectangle.
+   *
+   * @param r the rectangle to compute the union with
+   * @return the smallest rectangle containing both rectangles
+   * @throws NullPointerException if r is null
+   * @since 1.2
+   */
+  public Rectangle2D createUnion(Rectangle2D r)
+  {
+    // Favor runtime type of other rectangle.
+    Rectangle2D res = r.getBounds2D();
+    union(this, r, res);
+    return res;
+  }
+
+  /**
+   * Tests this rectangle for equality against the specified object.  This
+   * will be true if an only if the specified object is an instance of
+   * Rectangle2D with the same coordinates and dimensions.
+   *
+   * @param obj the object to test against for equality
+   * @return true if the specified object is equal to this one
+   */
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof Rectangle2D))
+      return false;
+    Rectangle2D r = (Rectangle2D) obj;
+    return r.getX() == x && r.getY() == y
+      && r.getWidth() == width && r.getHeight() == height;
+  }
+
+  /**
+   * Returns a string representation of this rectangle. This is in the form
+   * <code>getClass().getName() + "[x=" + x + ",y=" + y + ",width=" + width
+   * + ",height=" + height + ']'</code>.
+   *
+   * @return a string representation of this rectangle
    */
   public String toString()
   {
-    return getClass().getName() + "[x=" + x + ",y=" + y + ",width=" + width + 
-           ",height=" + height + "]";
+    return getClass().getName() + "[x=" + x + ",y=" + y + ",width=" + width
+      + ",height=" + height + ']';
   }
-
-  /**
-   * Returns a hash value for this object.
-   *
-   * @return A hash value for this object.
-   */
-  public int hashCode()
-  {
-    return x * y * width * height * 37;
-  }
-}
+} // class Rectangle

@@ -1,4 +1,4 @@
-/* MenuContainer.java -- Container for menu items.
+/* MenuContainer.java -- container for menu items
    Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,42 +39,33 @@ exception statement from your version. */
 package java.awt;
 
 /**
-  * This interface is a container for menu components.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface is a container for menu components.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @since 1.0
+ * @status updated to 1.4
+ */
 public interface MenuContainer
 {
+  /**
+   * Returns the font in use by this container.
+   *
+   * @return the menu font
+   */
+  Font getFont();
 
-/**
-  * Returns the font in use by this container.
-  *
-  * @return The font in use by this container.
-  */
-public abstract Font
-getFont();
+  /**
+   * Removes the specified menu component from the menu.
+   *
+   * @param component the menu component to remove
+   */
+  void remove(MenuComponent component);
 
-/*************************************************************************/
-
-/**
-  * Removes the specified menu component from the menu.
-  *
-  * @param component The menu component to remove.
-  */
-public abstract void
-remove(MenuComponent component);
-
-/*************************************************************************/
-
-/**
-  * Posts and event to the listeners.  This is replaced by 
-  * <code>dispatchEvent</code>.
-  *
-  * @param event The event to dispatch.
-  *
-  * @deprecated
-  */  
-public abstract boolean
-postEvent(Event event);
-
+  /**
+   * Posts an event to the listeners.
+   *
+   * @param event the event to dispatch
+   * @deprecated use {@link MenuComponent#dispatchEvent(AWTEvent)} instead
+   */
+  boolean postEvent(Event event);
 } // interface MenuContainer

@@ -234,7 +234,7 @@ remove(String item)
   *
   * @param index The index of the item to remove.
   *
-  * @exception ArrayIndexOutOfBoundException If the index is not valid.
+  * @exception ArrayIndexOutOfBoundsException If the index is not valid.
   */
 public synchronized void
 remove(int index)

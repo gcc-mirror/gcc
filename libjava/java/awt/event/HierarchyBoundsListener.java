@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* HierarchyBoundsListener.java -- listens to bounds changes of parents
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -34,17 +35,36 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.awt.event;
 
+import java.util.EventListener;
+
 /**
- * @since 1.3
+ * This listens for changes in an ancestors size or location. Normally it is
+ * not necessary to process these events since the AWT handles them
+ * internally, taking all appropriate actions. To watch a subset of these
+ * events, use a HierarchyBoundsAdapter.
+ *
  * @author Bryce McKinlay
+ * @see HierarchyBoundsAdapter
+ * @see HierarchyEvent
+ * @since 1.3
+ * @status updated to 1.4
  */
-
-/* Status:  Believed complete and correct. */
-
-public interface HierarchyBoundsListener extends java.util.EventListener
+public interface HierarchyBoundsListener extends EventListener
 {
-  public void ancestorMoved(HierarchyEvent e);
-  public void ancestorResized(HierarchyEvent e);
-}
+  /**
+   * Called when an ancestor component of the source is moved.
+   *
+   * @param e the event describing the ancestor's motion
+   */
+  void ancestorMoved(HierarchyEvent e);
+
+  /**
+   * Called when an ancestor component is resized.
+   *
+   * @param e the event describing the ancestor's resizing
+   */
+  void ancestorResized(HierarchyEvent e);
+} // interface HierarchyBoundsListener

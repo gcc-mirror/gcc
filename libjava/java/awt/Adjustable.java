@@ -1,5 +1,5 @@
-/* Adjustable.java -- Objects with a numeric adjustment scale.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* Adjustable.java -- Objects with a numeric adjustment scale
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,183 +41,131 @@ package java.awt;
 import java.awt.event.AdjustmentListener;
 
 /**
-  * This interface is for objects that take a numeric value that
-  * can be adjusted within a bounded range.  For example, a scroll bar.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface is for objects that take a numeric value that can be
+ * adjusted within a bounded range.  For example, a scroll bar.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @since 1.0
+ * @status updated to 1.4
+ */
 public interface Adjustable
 {
+  /** Constant for an adjustable object with horizontal orientation. */
+  int HORIZONTAL = 0;
 
-/*
- * Static Variables
- */
+  /** Constant for an adjustable object with vertical orientation. */
+  int VERTICAL = 1;
 
-/**
-  * Constant for a horizontal orientation
-  */
-public static final int HORIZONTAL = 0;
+  /** Constant for an adjustable object with no orientation. */
+  int NO_ORIENTATION = 2;
 
-/**
-  * Constant for a vertical orientation
-  */
-public static final int VERTICAL = 1;
+  /**
+   * Returns a constant representing the orientation of the object.
+   *
+   * @return the orientation of this object
+   * @see #HORIZONTAL
+   * @see #VERTICAL
+   * @see #NO_ORIENTATION
+   */
+  int getOrientation();
 
-/*************************************************************************/
+  /**
+   * Sets the minimum value this object can have.
+   *
+   * @param minimum the new minimum value
+   */
+  void setMinimum(int minimum);
 
-/*
- * Instance Methods
- */
+  /**
+   * Returns the minimum value this object can have.
+   *
+   * @return the minimum value
+   */
+  int getMinimum();
 
-/**
-  * Returns the current value of the object.
-  *
-  * @return The current value of the object.
-  */
-public abstract int
-getValue();
+  /**
+   * Sets the maximum value this object can have.
+   *
+   * @param maximum the new maximum value
+   */
+  void setMaximum(int maximum);
 
-/*************************************************************************/
+  /**
+   * Returns the maximum value this object can have.
+   *
+   * @return the maximum value
+   */
+  int getMaximum();
 
-/**
-  * Sets the current value of the object.
-  *
-  * @param value The current value of the object.
-  */
-public abstract void
-setValue(int value);
+  /**
+   * Sets the increment value for incrementing the value by units.
+   *
+   * @param increment the unit increment value
+   */
+  void setUnitIncrement(int increment);
 
-/*************************************************************************/
+  /**
+   * Returns the increment value for incrementing the value by units.
+   *
+   * @return the unit increment value
+   */
+  int getUnitIncrement();
 
-/**
-  * Returns the orientation of the object, either <code>HORIZONTAL</code>
-  * or <code>VERTICAL</code>.
-  *
-  * @return The orientation of this object.
-  */
-public abstract int
-getOrientation();
+  /**
+   * Sets the increment value for incrementing the value by blocks.
+   *
+   * @param increment the block increment value
+   */
+  void setBlockIncrement(int increment);
 
-/*************************************************************************/
+  /**
+   * Returns the increment value for incrementing the value by blocks.
+   *
+   * @return the block increment value
+   */
+  int getBlockIncrement();
 
-/**
-  * Returns the minimum value this object can take.
-  *
-  * @return The minimum value this object can take.
-  */
-public abstract int
-getMinimum();
+  /**
+   * Sets the length of the indicator for this object to the specified value.
+   *
+   * @param length the indicator length
+   */
+  void setVisibleAmount(int length);
 
-/*************************************************************************/
+  /**
+   * Returns the length of the indicator for this object.
+   *
+   * @return the indicator length
+   */
+  int getVisibleAmount();
 
-/**
-  * Sets the minimum value this object can take to the specified value.
-  *
-  * @param minimum The new minimum value for this object.
-  */
-public abstract void
-setMinimum(int minimum);
+  /**
+   * Sets the current value of the object.
+   *
+   * @param value the new value
+   */
+  void setValue(int value);
 
-/*************************************************************************/
+  /**
+   * Returns the current value of the object.
+   *
+   * @return the current value
+   */
+  int getValue();
 
-/**
-  * Returns the maximum value this object can take.
-  *
-  * @return The maximum value this object can take.
-  */
-public abstract int
-getMaximum();
+  /**
+   * Adds a listener that will receive adjustment events for this object.
+   *
+   * @param listener the adjustment listener to add
+   * @see AdjustmentEvent
+   */
+  void addAdjustmentListener(AdjustmentListener listener);
 
-/*************************************************************************/
-
-/**
-  * Sets the maximum value this object can take to the specified value.
-  *
-  * @param maximum The new maximum value for this object.
-  */
-public abstract void
-setMaximum(int maximum);
-
-/*************************************************************************/
-
-/**
-  * Returns the increment value for incrementing by units.
-  *
-  * @return The unit increment value.
-  */
-public abstract int
-getUnitIncrement();
-
-/*************************************************************************/
-
-/**
-  * Sets the increment value for incrementing by units to the specified value.
-  *
-  * @param increment The unit increment value.
-  */
-public abstract void
-setUnitIncrement(int increment);
-
-/*************************************************************************/
-
-/**
-  * Returns the increment value for incrementing by blocks.
-  *
-  * @return The block increment value.
-  */
-public abstract int
-getBlockIncrement();
-
-/*************************************************************************/
-
-/**
-  * Sets the increment value for incrementing by blocks to the specified value.
-  *
-  * @param increment The block increment value.
-  */
-public abstract void
-setBlockIncrement(int increment);
-
-/*************************************************************************/
-
-/**
-  * Returns the length of the indicator for this object.
-  *
-  * @return The indicator length.
-  */
-public abstract int
-getVisibleAmount();
-
-/*************************************************************************/
-
-/**
-  * Sets the length of the indicator for this object to the specified value.
-  *
-  * @param length The indicator length
-  */
-public abstract void
-setVisibleAmount(int length);
-
-/*************************************************************************/
-
-/**
-  * Adds a listener that will receive adjustment events for this object.
-  * 
-  * @param listener The adjustment listener to add.
-  */
-public abstract void
-addAdjustmentListener(AdjustmentListener listener);
-
-/*************************************************************************/
-
-/**
-  * Removes an adjustment listener from this object.  It will no longer
-  * receive adjustment events.
-  *
-  * @param listener The adjustment listener to remove.
-  */
-public abstract void
-removeAdjustmentListener(AdjustmentListener listener);
-
+  /**
+   * Removes an adjustment listener from this object.
+   *
+   * @param listener the adjustment listener to remove
+   * @see AdjustmentEvent
+   */
+  void removeAdjustmentListener(AdjustmentListener listener);
 } // interface Adjustable
-

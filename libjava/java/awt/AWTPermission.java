@@ -1,6 +1,5 @@
-// AWTPermission.java - AWT permissions
-
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* AWTPermission.java -- AWT related permissions
+   Copyright (C) 2000, 2002  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,11 +36,6 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-/**
- * @author Tom Tromey <tromey@redhat.com>
- * @date December 2, 2000
- */
-
 package java.awt;
 
 import java.security.BasicPermission;
@@ -49,25 +43,79 @@ import java.security.BasicPermission;
 /**
  * This class implements permissions for AWT.  This is a named
  * permission.  No actions are defined.
+ *
+ * <p>The following table provides a list of all the possible AWTPermission
+ * permission names with a description of what that permission allows.<br>
+ * <table border=1>
+ * <tr><th>Permission Name</th><th>Permission Allows</th><th>Risks</th</tr>
+ * <tr>
+ *   <td><code>accessClipboard</code></td>
+ *   <td>posting and reading the AWT clipboard</td>
+ *   <td>the clipboard may contain sensitive data</td></tr>
+ * <tr>
+ *   <td><code>accessEventQueue</code></td>
+ *   <td>access to the AWT event queue</td>
+ *   <td>malicious code could remove real events and replace them with bogus
+ *       ones, including simulating the user granting permission</td></tr>
+ * <tr>
+ *   <td><code>listenToAllAWTEvents</code></td>
+ *   <td>listen to system-wide AWT events</td>
+ *   <td>malicious code can read passwords entered in an AWT event, and in
+ *       combination with accessEventQueue, could fake system events</td></tr>
+ * <tr>
+ *   <td><code>showWindowWithoutWarningBanner</code></td>
+ *   <td>display a window without a banner notification of insecurity</td>
+ *   <td>malicious code could install a Trojan horse applet that looks like
+ *       a normal window, and thus steal data like passwords</td></tr>
+ * <tr>
+ *   <td><code>readDisplayPixels</code></td>
+ *   <td>read back pixels from the display screen</td>
+ *   <td>malicious code could snoop on the user's actions</td></tr>
+ * <tr>
+ *   <td><code>createRobot</code></td>
+ *   <td>create an instance of java.awt.Robot</td>
+ *   <td>these objects can generate events as though they were the user; so
+ *       malicious code could control the system</td></tr>
+ * <tr>
+ *   <td><code>fullScreenExclusive</code></td>
+ *   <td>enter full-screen exclusive mode</td>
+ *   <td>malicious code could masquerade as a trusted program</td><tr>
+ * </table>
+ *
+ * @author Tom Tromey <tromey@redhat.com>
+ * @since 1.2
+ * @status updated to 1.4
  */
 public final class AWTPermission extends BasicPermission
 {
   /**
-   * Construct a AWTPermission with the given name.
-   * @param name The permission name
+   * Compatible with JDK 1.2+.
    */
-  public AWTPermission (String name)
-  {
-    super (name);
-  }
+  private static final long serialVersionUID = 8890392402588814465L;
 
   /**
    * Construct a AWTPermission with the given name.
-   * @param name The permission name
-   * @param actions The actions; this is ignored and should be null.
+   *
+   * @param name the permission name
+   * @throws NullPointerException if name is null
+   * @throws IllegalArgumentException if name is invalid
    */
-  public AWTPermission (String name, String actions)
+  public AWTPermission(String name)
   {
-    super (name, actions);
+    super(name);
   }
-}
+
+  /**
+   * Create a new permission with the specified name. The actions argument
+   * is ignored, as AWT permissions have no actions.
+   *
+   * @param name the permission name
+   * @param actions ignored
+   * @throws NullPointerException if name is null
+   * @throws IllegalArgumentException if name is invalid
+   */
+  public AWTPermission(String name, String actions)
+  {
+    super(name);
+  }
+} // class AWTPermission

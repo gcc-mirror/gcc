@@ -1,29 +1,92 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* TextEvent.java -- event for text changes
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
-   This file is part of libjava.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version. */
+
 
 package java.awt.event;
-import java.awt.*;
 
-/* Status: Believed complete and correct to JDK 1.2.  */
+import java.awt.AWTEvent;
 
+/**
+ * This event is generated when a text box changes contents. This is an
+ * abstraction that distills a large number of individual mouse or keyboard
+ * events into a simpler "text changed" event.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see TextComponent
+ * @see TextListener
+ * @since 1.1
+ * @status updated to 1.4
+ */
 public class TextEvent extends AWTEvent
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 6269902291250941179L;
+
+  /** This is the first id in the range of event ids used by this class. */
   public static final int TEXT_FIRST = 900;
+
+  /** This is the last id in the range of event ids used by this class. */
   public static final int TEXT_LAST = 900;
+
+  /** This event id indicates that the text of an object has changed. */
   public static final int TEXT_VALUE_CHANGED = 900;
 
-  public TextEvent (Object source, int id)
+  /**
+   * Initializes a new instance of <code>TextEvent</code> with the specified
+   * source and id. Note that an invalid id leads to unspecified results.
+   *
+   * @param source the (TextComponent) object that generated this event
+   * @param id the event id
+   * @throws IllegalArgumentException if source is null
+   */
+  public TextEvent(Object source, int id)
   {
-    super (source, id);
+    super(source, id);
   }
 
-  public String paramString ()
+  /**
+   * Returns a string identifying this event. This is "TEXT_VALUE_CHANGED".
+   *
+   * @return a string identifying this event
+   */
+  public String paramString()
   {
-    return "TEXT_VALUE_CHANGED";
+    return id == TEXT_VALUE_CHANGED ? "TEXT_VALUE_CHANGED" : "unknown type";
   }
-}
+} // class TextEvent

@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* PaintContext.java -- the environment for performing a paint operation
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,21 +38,39 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.awt.image.ColorModel;
+import java.awt.image.Raster;
+
 /**
  * @author Warren Levy <warrenl@cygnus.com>
- * @date March 16, 2000.
+ * @see Paint
+ * @since 1.1
+ * @status updated to 1.4
  */
-
-/**
- * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * Status:  Partially stubbed.
- */
-
 public interface PaintContext
 {
-  public void dispose();
-  // FIXME
-  // public ColorModel getColorModel();
-  // public Raster getRaster(int x, int y, int w, int h);
-}
+  /**
+   * Release the resources allocated for the paint.
+   */
+  void dispose();
+
+  /**
+   * Return the color model of this context. It may be different from the
+   * hint specified during createContext, as not all contexts can generate
+   * color patterns in an arbitrary model.
+   *
+   * @return the context color model
+   */
+  ColorModel getColorModel();
+
+  /**
+   * Return a raster containing the colors for the graphics operation.
+   *
+   * @param x the x-coordinate, in device space
+   * @param y the y-coordinate, in device space
+   * @param w the width, in device space
+   * @param h the height, in device space
+   * @return a raster for the given area and color
+   */
+  Raster getRaster(int x, int y, int w, int h);
+} // interface PaintContext

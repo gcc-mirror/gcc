@@ -1,4 +1,5 @@
-/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
+/* Dimension.java -- represents a 2-dimensional span
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,79 +38,168 @@ exception statement from your version. */
 
 package java.awt;
 
-/* Written using "Java Class Libraries", 2nd edition, plus online
- * API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct, except that neither toString
- * has not been compared with JDK output.
- */
+import java.awt.geom.Dimension2D;
+import java.io.Serializable;
 
 /**
-  * This class holds a width and height value pair.
-  *
-  * @author Per Bothner <bothner@cygnus.com>
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @date Fenruary 8, 1999.
-  */
-public class Dimension extends java.awt.geom.Dimension2D
-  implements java.io.Serializable
+ * This class holds a width and height value pair. This is used in plenty
+ * of windowing classes, but also has geometric meaning.
+ *
+ * <p>It is valid for a dimension to have negative width or height; but it
+ * is considered to have no area. Therefore, the behavior in various methods
+ * is undefined in such a case.
+ *
+ * <p>There are some public fields; if you mess with them in an inconsistent
+ * manner, it is your own fault when you get invalid results. Also, this
+ * class is not threadsafe.
+ *
+ * @author Per Bothner <bothner@cygnus.com>
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Component
+ * @see LayoutManager
+ * @since 1.0
+ * @status updated to 1.14
+ */
+public class Dimension extends Dimension2D implements Serializable
 {
   /**
-   * This width of this object.
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = 4723952579491349524L;
+
+  /**
+   * The width of this object.
+   *
+   * @see #getSize()
+   * @see #setSize(double, double)
+   * @serial the width
    */
   public int width;
 
   /**
    * The height of this object.
+   *
+   * @see #getSize()
+   * @see #setSize(double, double)
+   * @serial the height
    */
   public int height;
 
   /**
-   * Initializes a new instance of <code>Dimension</code> with a width
-   * and height of zero.
+   * Create a new Dimension with a width and height of zero.
    */
-  public Dimension () { }
-
-  /**
-   * Initializes a new instance of <code>Dimension</code> to have a width
-   * and height identical to that of the specified dimension object.
-   *
-   * @param dim The <code>Dimension</code> to take the width and height from.
-   */
-  public Dimension (Dimension dim)
+  public Dimension()
   {
-    this.width = dim.width;
-    this.height = dim.height;
   }
 
   /**
-   * Initializes a new instance of <code>Dimension</code> with the
-   * specified width and height.
+   * Create a new Dimension with width and height identical to that of the
+   * specified dimension.
    *
-   * @param width The width of this object.
-   * @param height The height of this object.
+   * @param d the Dimension to copy
+   * @throws NullPointerException if d is null
    */
-  public Dimension (int width, int height)
+  public Dimension(Dimension d)
   {
-    this.width = width;
-    this.height = height;
+    width = d.width;
+    height = d.height;
+  }
+
+  /**
+   * Create a new Dimension with the specified width and height.
+   *
+   * @param w the width of this object
+   * @param h the height of this object
+   */
+  public Dimension(int w, int h)
+  {
+    width = w;
+    height = h;
+  }
+
+  /**
+   * Gets the width of this dimension.
+   *
+   * @return the width, as a double
+   */
+  public double getWidth()
+  {
+    return width;
+  }
+
+  /**
+   * Gets the height of this dimension.
+   *
+   * @return the height, as a double
+   */
+  public double getHeight()
+  {
+    return height;
+  }
+
+  /**
+   * Sets the size of this dimension. The values are rounded to int.
+   *
+   * @param w the new width
+   * @param h the new height
+   * @since 1.2
+   */
+  public void setSize(double w, double h)
+  {
+    width = (int) w;
+    height = (int) h;
+  }
+
+  /**
+   * Returns the size of this dimension. A pretty useless method, as this is
+   * already a dimension.
+   *
+   * @return a copy of this dimension
+   * @see #setSize(Dimension)
+   * @since 1.1
+   */
+  public Dimension getSize()
+  {
+    return new Dimension(width, height);
+  }
+
+  /**
+   * Sets the width and height of this object to match that of the
+   * specified object.
+   *
+   * @param d the Dimension to get the new width and height from
+   * @throws NullPointerException if d is null
+   * @see #getSize()
+   * @since 1.1
+   */
+  public void setSize(Dimension d)
+  {
+    width = d.width;
+    height = d.height;
+  }
+
+  /**
+   * Sets the width and height of this object to the specified values.
+   *
+   * @param w the new width value
+   * @param h the new height value
+   */
+  public void setSize(int w, int h)
+  {
+    width = w;
+    height = h;
   }
 
   /**
    * Tests this object for equality against the specified object.  This will
-   * be true if and only if the specified object:
-   * <p>
-   * <ul>
-   * <li>Is not <code>null</code>.
-   * <li>Is an instance of <code>Dimension</code>.
-   * <li>Has width and height values identical to this object.
-   * </ul>
+   * be true if and only if the specified object is an instance of
+   * Dimension2D, and has the same width and height.
    *
-   * @param obj The object to test against.
-   *
-   * @return <code>true</code> if the specified object is equal to this
-   * object, <code>false</code> otherwise.
+   * @param obj the object to test against
+   * @return true if the object is equal to this
    */
-  public boolean equals (Object obj)
+  public boolean equals(Object obj)
   {
     if (! (obj instanceof Dimension))
       return false;
@@ -118,55 +208,27 @@ public class Dimension extends java.awt.geom.Dimension2D
   }
 
   /**
-   * Returns the size of this object.  Not very useful.
+   * Return the hashcode for this object. It is not documented, but appears
+   * to be <code>((width + height) * (width + height + 1) / 2) + width</code>.
    *
-   * @return This object.
+   * @return the hashcode
    */
-  public Dimension getSize () { return new Dimension(this); }
-
-  /**
-   * Sets the width and height of this object to match that of the
-   * specified object.
-   *
-   * @param dim The <code>Dimension</code> object to get the new width and
-   * height from.
-   */
-  public void setSize (Dimension dim)
+  public int hashCode()
   {
-    this.width = dim.width;
-    this.height = dim.height;
+    // Reverse engineering this was fun!
+    return (width + height) * (width + height + 1) / 2 + width;
   }
 
   /**
-   * Sets the width and height of this object to the specified values.
+   * Returns a string representation of this object. The format is:
+   * <code>getClass().getName() + "[width=" + width + ",height=" + height
+   * + ']'</code>.
    *
-   * @param width The new width value.
-   * @param height The new height value.
+   * @return a string representation of this object
    */
-  public void setSize (int width, int height)
+  public String toString()
   {
-    this.width = width;
-    this.height = height;
+    return getClass().getName()
+      + "[width=" + width + ",height=" + height + ']';
   }
-
-  /**
-   * Returns a string representation of this object.
-   *
-   * @return A string representation of this object.
-   */
-  public String toString ()
-  {
-    return "Dimension[w:"+width+",h:"+height+']';
-  }
-
-  /* Note:  There is no Dimension.hashCode. */
-
-  public double getWidth() { return width; }
-  public double getHeight() { return height; }
-
-  public void setSize (double width, double height)
-  {
-    this.width = (int) width;
-    this.height = (int) height;
-  }
-}
+} // class Dimension

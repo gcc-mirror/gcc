@@ -1,5 +1,5 @@
-/* IllegalComponentStateException.java -- Bad component state
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* IllegalComponentStateException.java -- bad component state
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,37 +39,33 @@ exception statement from your version. */
 package java.awt;
 
 /**
-  * This exception is thrown when the requested operation failed because
-  * a component was not in the proper state.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This exception is thrown when the requested operation failed because
+ * a component was not in the proper state.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @status updated to 1.4
+ */
 public class IllegalComponentStateException extends IllegalStateException
 {
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -1889339587208144238L;
 
-/**
-  * Initializes a new instance of <code>IllegalComponentStateException</code>
-  * with the specified detailed error message.
-  *
-  * @param message The detailed error message.
-  */
-public
-IllegalComponentStateException(String message)
-{
-  super(message);
-}
+  /**
+   * Create a new instance with no detailed error message.
+   */
+  public IllegalComponentStateException()
+  {
+  }
 
-/*************************************************************************/
-
-/**
-  * Initializes a new instance of <code>IllegalComponentStateException</code>
-  * with no detailed error message.
-  */
-public
-IllegalComponentStateException()
-{
-  super();
-}
-
+  /**
+   * Create a new instance with the specified detailed error message.
+   *
+   * @param message the detailed error message
+   */
+  public IllegalComponentStateException(String message)
+  {
+    super(message);
+  }
 } // class IllegalComponentStateException
-

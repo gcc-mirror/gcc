@@ -73,6 +73,66 @@ public static final int ROMAN_BASELINE = 0;
 public static final int CENTER_BASELINE = 1;
 public static final int HANGING_BASELINE = 2;
 
+
+  /**
+   * Indicates to <code>createFont</code> that the supplied font data
+   * is in TrueType format.
+   *
+   * <p><em>Specification Note:</em> The Sun JavaDoc for J2SE 1.4 does
+   * not indicate whether this value also subsumes OpenType. OpenType
+   * is essentially the same format as TrueType, but allows to define
+   * glyph shapes in the same way as PostScript, using cubic bezier
+   * curves.
+   *
+   * @since 1.3
+   */
+  public static final int TRUETYPE_FONT = 0;
+
+
+  /**
+   * A flag for <code>layoutGlyphVector</code>, indicating that the
+   * orientation of a text run is from left to right.
+   *
+   * @since 1.4
+   */
+  public static final int LAYOUT_LEFT_TO_RIGHT = 0;
+
+
+  /**
+   * A flag for <code>layoutGlyphVector</code>, indicating that the
+   * orientation of a text run is from right to left.
+   *
+   * @since 1.4
+   */
+  public static final int LAYOUT_RIGHT_TO_LEFT = 1;
+
+
+  /**
+   * A flag for <code>layoutGlyphVector</code>, indicating that the
+   * text does not contain valid characters before the
+   * <code>start</code> position.  If this flag is set,
+   * <code>layoutGlyphVector</code> does not examine the text before
+   * <code>start</code>, even if this would be necessary to select the
+   * correct glyphs (e.g., for Arabic text).
+   *
+   * @since 1.4
+   */
+  public static final int LAYOUT_NO_START_CONTEXT = 2;
+
+
+  /**
+   * A flag for <code>layoutGlyphVector</code>, indicating that the
+   * text does not contain valid characters after the
+   * <code>limit</code> position.  If this flag is set,
+   * <code>layoutGlyphVector</code> does not examine the text after
+   * <code>limit</code>, even if this would be necessary to select the
+   * correct glyphs (e.g., for Arabic text).
+   *
+   * @since 1.4
+   */
+  public static final int LAYOUT_NO_LIMIT_CONTEXT = 4;
+
+
 // Serialization constant
 private static final long serialVersionUID = -4206021311591459213L;
 
@@ -162,7 +222,7 @@ decode(String fontspec)
         {
           tokenval = Integer.parseInt(token);
         }
-      catch(Exception e) { ; }
+      catch(NumberFormatException e) { ; }
 
       if (tokenval != 0)
         size = tokenval;

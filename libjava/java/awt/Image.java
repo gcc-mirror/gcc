@@ -1,5 +1,5 @@
-/* Image.java -- Java class for images
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* Image.java -- superclass for images
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,160 +38,153 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.image.*;
+import java.awt.image.AreaAveragingScaleFilter;
+import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
+import java.awt.image.ReplicateScaleFilter;
 
 /**
-  * This is the abstract superclass of all image objects in Java.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This is the abstract superclass of all image objects in Java.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @since 1.0
+ * @status updated to 1.4
+ */
 public abstract class Image
 {
+  /**
+   * This variable is returned whenever a property that is not defined
+   * is requested.
+   */
+  // For debug purposes, this might as well be a unique string.
+  public static final Object UndefinedProperty
+    = new String("undefined property");
 
-/*
- * Static Variables
- */
+  /**
+   * Constant indicating that the default scaling algorithm should be used.
+   *
+   * @since 1.1
+   */
+  public static final int SCALE_DEFAULT = 1;
 
-/**
-  * Constant indicating that the default scaling algorithm should be used.
-  */
-public static final int SCALE_DEFAULT = 1;
+  /**
+   * Constant indicating that a fast scaling algorithm should be used.
+   *
+   * @since 1.1
+   */
+  public static final int SCALE_FAST = 2;
 
-/**
-  * Constant indicating that a fast scaling algorithm should be used.
-  */
-public static final int SCALE_FAST = 2;
+  /**
+   * Constant indicating that a smooth scaling algorithm should be used.
+   *
+   * @since 1.1
+   */
+  public static final int SCALE_SMOOTH = 4;
 
-/**
-  * Constant indicating that a smooth scaling algorithm should be used.
-  */
-public static final int SCALE_SMOOTH = 4;
+  /**
+   * Constant indicating that the <code>ReplicateScaleFilter</code> class
+   * algorithm should be used for scaling.
+   *
+   * @see ReplicateScaleFilter
+   * @since 1.1
+   */
+  public static final int SCALE_REPLICATE = 8;
 
-/**
-  * Constant indicating that the <code>ReplicateScaleFilter</code> class
-  * algorithm should be used for scaling.
-  */
-public static final int SCALE_REPLICATE = 8; 
+  /**
+   * Constant indicating that the area averaging scaling algorithm should be
+   * used.
+   *
+   * @see AreaAveragingScaleFilter
+   * @since 1.1
+   */
+  public static final int SCALE_AREA_AVERAGING = 16;
 
-/**
-  * Constant indicating that the area averaging scaling algorithm should be
-  * used.
-  */
-public static final int SCALE_AREA_AVERAGING = 16;
-
-/**
-  * This variable is returned whenever a property that is not defined
-  * is requested.
-  */
-public static final Object UndefinedProperty = Image.class;
-
-/*************************************************************************/
-
-/*
- * Constructors
- */
-
-/**
-  * A default constructor for subclasses.
-  */
-public 
-Image()
-{
-}
-
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
-
-/**
-  * Returns the width of the image, or -1 if it is unknown.  If the
-  * image width is unknown, the observer object will be notified when
-  * the value is known.
-  *
-  * @param observer The image observer for this object.
-  */
-public abstract int
-getWidth(ImageObserver observer);
-
-/*************************************************************************/
-
-/**
-  * Returns the height of the image, or -1 if it is unknown.  If the
-  * image height is unknown, the observer object will be notified when
-  * the value is known.
-  *
-  * @param observer The image observer for this object.
-  */
-public abstract int
-getHeight(ImageObserver observer);
-
-/*************************************************************************/
-
-/**
-  * Returns the image producer object for this object.
-  *
-  * @return The image producer for this object.
-  */
-public abstract ImageProducer
-getSource();
-
-/*************************************************************************/
-
-/**
-  * Returns a graphics context object for drawing an off-screen object.
-  * This method is only valid for off-screen objects.
-  *
-  * @return A graphics context object for an off-screen object.
-  */
-public abstract Graphics
-getGraphics();
-
-/*************************************************************************/
-
-/**
-  * This method requests a named property for an object.  The value of the
-  * property is returned. The value <code>UndefinedProperty</code> is
-  * returned if there is no property with the specified name.  The value
-  * <code>null</code> is returned if the properties for the object are
-  * not yet known.  In this case, the specified image observer is notified
-  * when the properties are known.
-  *
-  * @param name The requested property name.
-  * @param observer The image observer for this object.
-  */
-public abstract Object
-getProperty(String name, ImageObserver observer);
-
-/*************************************************************************/
-
-/**
-  * Scales the image to the requested dimension.
-  * 
-  * XXX: FIXME
-  * 
-  * @param width The width of the scaled image.
-  * @param height The height of the scaled image.
-  * @param flags A value indicating the algorithm to use, which will be
-  * set from contants defined in this class.
-  *
-  * @return The scaled <code>Image</code> object.
-  */
-public Image
-getScaledInstance(int width, int height, int flags)
+  /**
+   * A default constructor for subclasses.
+   */
+  public Image()
   {
-    return null;
   }
 
-/*************************************************************************/
+  /**
+   * Returns the width of the image, or -1 if it is unknown.  If the
+   * image width is unknown, the observer object will be notified when
+   * the value is known.
+   *
+   * @param observer the image observer for this object
+   * @return the width in pixels
+   * @see #getHeight(ImageObserver)
+   */
+  public abstract int getWidth(ImageObserver observer);
 
-/**
-  * Flushes (that is, destroys) any resources used for this image.  This
-  * includes the actual image data.
-  */
-public abstract void
-flush();
+  /**
+   * Returns the height of the image, or -1 if it is unknown.  If the
+   * image height is unknown, the observer object will be notified when
+   * the value is known.
+   *
+   * @param observer the image observer for this object
+   * @return the height in pixels
+   * @see #getWidth(ImageObserver)
+   */
+  public abstract int getHeight(ImageObserver observer);
 
+  /**
+   * Returns the image producer object for this object. The producer is the
+   * object which generates pixels for this image.
+   *
+   * @return the image producer for this object
+   */
+  public abstract ImageProducer getSource();
+
+  /**
+   * Returns a graphics context object for drawing an off-screen object.
+   * This method is only valid for off-screen objects.
+   *
+   * @return a graphics context object for an off-screen object
+   * @see Graphics#createImage(int, int)
+   */
+  public abstract Graphics getGraphics();
+
+  /**
+   * This method requests a named property for an object.  The value of the
+   * property is returned. The value <code>UndefinedProperty</code> is
+   * returned if there is no property with the specified name.  The value
+   * <code>null</code> is returned if the properties for the object are
+   * not yet known.  In this case, the specified image observer is notified
+   * when the properties are known.
+   *
+   * @param name the requested property name
+   * @param observer the image observer for this object
+   * @return the named property, if available
+   * @see #UndefinedProperty
+   */
+  public abstract Object getProperty(String name, ImageObserver observer);
+
+  /**
+   * Scales the image to the requested dimension. A new Image with asynchronous
+   * loading will be produced according to the hints of the algorithm
+   * requested. If either the width or height is non-positive, it is adjusted
+   * to preserve the original aspect ratio.
+   *
+   * @param width the width of the scaled image
+   * @param height the height of the scaled image
+   * @param flags a value indicating the algorithm to use
+   * @return the scaled <code>Image</code> object
+   * @see #SCALE_DEFAULT
+   * @see #SCALE_FAST
+   * @see #SCALE_SMOOTH
+   * @see #SCALE_REPLICATE
+   * @see #SCALE_AREA_AVERAGING
+   * @since 1.1
+   */
+  public Image getScaledInstance(int width, int height, int flags)
+  {
+    throw new Error("not implemented");
+  }
+
+  /**
+   * Flushes (that is, destroys) any resources used for this image.  This
+   * includes the actual image data.
+   */
+  public abstract void flush();
 } // class Image
-

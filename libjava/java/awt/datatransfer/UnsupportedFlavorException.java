@@ -1,5 +1,5 @@
-/* UnsupportedFlavorException.java -- Data flavor is not valid.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* UnsupportedFlavorException.java -- ata flavor is not valid
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,24 +39,27 @@ exception statement from your version. */
 package java.awt.datatransfer;
 
 /**
-  * The data flavor requested is not supported for the transfer data.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
-public class UnsupportedFlavorException extends Exception 
+ * The data flavor requested is not supported for the transfer data.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see Transferable#getTransferData(DataFlavor)
+ * @status updated to 1.4
+ */
+public class UnsupportedFlavorException extends Exception
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 5383814944251665601L;
 
-/**
-  * Initializes a new instance of <code>UnsupportedDataFlavor</code>
-  * for the specified data flavor.
-  *
-  * @param flavor The data flavor that is not supported.
-  */
-public
-UnsupportedFlavorException(DataFlavor flavor)
-{
-  super(flavor.getHumanPresentableName());
-}
-
+  /**
+   * Initializes a new instance of <code>UnsupportedDataFlavor</code>
+   * for the specified data flavor.
+   *
+   * @param flavor the data flavor that is not supported
+   */
+  public UnsupportedFlavorException(DataFlavor flavor)
+  {
+    super(flavor == null ? null : flavor.getHumanPresentableName());
+  }
 } // class UnsupportedFlavorException 
-

@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Transparency.java -- common transparency modes in graphics
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,21 +38,30 @@ exception statement from your version. */
 package java.awt;
 
 /**
+ * A common transparency mode for layering graphics.
+ *
  * @author Warren Levy <warrenl@cygnus.com>
- * @date March 15, 2000.
+ * @since 1.1
+ * @status updated to 1.4
  */
-
-/**
- * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * Status:  Believed complete and correct.
- */
-
 public interface Transparency
 {
-  public static final int OPAQUE = 1;
-  public static final int BITMASK = 2;
-  public static final int TRANSLUCENT = 3;
+  /** Image data which is completely opaque, for an alpha value of 1.0. */
+  int OPAQUE = 1;
 
-  public int getTransparency();
-}
+  /**
+   * Image data which is either completely opaque or transparent, for an
+   * exact integer alpha value.
+   */
+  int BITMASK = 2;
+
+  /** Image data which is translucent, for a non-integer alpha value. */
+  int TRANSLUCENT = 3;
+
+  /**
+   * Return the transparency type.
+   *
+   * @return One of {@see #OPAQUE}, {@see #BITMASK}, or {@see #TRANSLUCENT}.
+   */
+  int getTransparency();
+} // interface Transparency

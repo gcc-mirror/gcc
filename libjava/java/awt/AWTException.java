@@ -1,5 +1,5 @@
 /* AWTException.java -- Generic AWT exception
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,25 +39,26 @@ exception statement from your version. */
 package java.awt;
 
 /**
-  * This is a generic exception that indicates an error occurred in the
-  * AWT system.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This is a generic exception that indicates an exception occurred in the
+ * Abstract Window Toolkit (AWT) system.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @status updated to 1.4
+ */
 public class AWTException extends Exception
 {
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -1900414231151323879L;
 
-/**
-  * Initializes a new instance of <code>AWTException</code> with the
-  * specified detailed error message.
-  *
-  * @param message The detailed error message.
-  */
-public
-AWTException(String message)
-{
-  super(message);
-}
-
-} // class AWTException 
-
+  /**
+   * Create a new instance with the  specified detailed error message.
+   *
+   * @param message the detailed error message
+   */
+  public AWTException(String message)
+  {
+    super(message);
+  }
+} // class AWTException

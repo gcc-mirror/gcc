@@ -1,5 +1,5 @@
-/* LayoutManager2.java -- Enhanced layout manager.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* LayoutManager2.java -- enhanced layout manager
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,70 +39,62 @@ exception statement from your version. */
 package java.awt;
 
 /**
-  * Layout manager for laying out containers based on contraints.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * Layout manager for laying out containers based on contraints. The
+ * constraints control how the layout will proceed.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see LayoutManager
+ * @see Container
+ * @since 1.0
+ * @status updated to 1.4
+ */
 public interface LayoutManager2 extends LayoutManager
 {
+  /**
+   * Adds the specified component to the layout, with the specified
+   * constraint object.
+   *
+   * @param component the component to add
+   * @param constraint the constraint to satisfy
+   */
+  void addLayoutComponent(Component component, Object contraint);
 
-/**
-  * Adds the specified component to the layout, with the specified
-  * constraint object.
-  *
-  * @param component The component to add.
-  * @param constraint The constraint object.
-  */
-public abstract void
-addLayoutComponent(Component component, Object contraint);
+  /**
+   * Determines the maximum size of the specified target container.
+   *
+   * @param target the container to lay out
+   * @return the maximum size of the container
+   * @see Component#getMaximumSize()
+   */
+  Dimension maximumLayoutSize(Container target);
 
-/*************************************************************************/
+  /**
+   * Returns the preferred X axis alignment for the specified target
+   * container.  This value will range from 0 to 1 where 0 is alignment
+   * closest to the origin, 0.5 is centered, and 1 is aligned furthest
+   * from the origin.
+   *
+   * @param target the target container
+   * @return the x-axis alignment preference
+   */
+  float getLayoutAlignmentX(Container target);
 
-/**
-  * Determines the minimum size of the specified target container.
-  *
-  * @param target The target container.
-  */
-public abstract Dimension
-maximumLayoutSize(Container target);
+  /**
+   * Returns the preferred Y axis alignment for the specified target
+   * container.  This value will range from 0 to 1 where 0 is alignment
+   * closest to the origin, 0.5 is centered, and 1 is aligned furthest
+   * from the origin.
+   *
+   * @param target the target container
+   * @return the y-axis alignment preference
+   */
+  float getLayoutAlignmentY(Container target);
 
-/*************************************************************************/
-
-/**
-  * Returns the preferred X axis alignment for the specified target
-  * container.  This value will range from 0 to 1 where 0 is alignment 
-  * closest to the origin, 0.5 is centered, and 1 is aligned furthest 
-  * from the origin.
-  *
-  * @param target The target container.
-  */
-public abstract float
-getLayoutAlignmentX(Container target);
-
-/*************************************************************************/
-
-/**
-  * Returns the preferred Y axis alignment for the specified target
-  * container.  This value will range from 0 to 1 where 0 is alignment 
-  * closest to the origin, 0.5 is centered, and 1 is aligned furthest 
-  * from the origin.
-  *
-  * @param target The target container.
-  */
-public abstract float
-getLayoutAlignmentY(Container target);
-
-/*************************************************************************/
-
-/**
-  * Forces the layout manager to purge any cached information about
-  * the layout of the target container.  This will force it to be
-  * recalculated.
-  *
-  * @param target The target container.
-  */
-public abstract void
-invalidateLayout(Container target);
-
-} // interface LayoutManager2 
-
+  /**
+   * Forces the layout manager to purge any cached information about the
+   * layout of the target container.  This will force it to be recalculated.
+   *
+   * @param target the target container
+   */
+  void invalidateLayout(Container target);
+} // interface LayoutManager2

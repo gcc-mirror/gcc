@@ -42,6 +42,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.peer.ButtonPeer;
 import java.awt.peer.ComponentPeer;
+import java.lang.reflect.Array;
 import java.util.EventListener;
 
 /**
@@ -200,13 +201,24 @@ removeActionListener(ActionListener listener)
   action_listeners = AWTEventMulticaster.remove(action_listeners, listener);
 }
 
-public EventListener[]
-getListeners(Class listenerType)
-{
-  if (listenerType == ActionListener.class)
-    return getListenersImpl(listenerType, action_listeners);
-  return super.getListeners(listenerType);
-}
+  public synchronized ActionListener[] getActionListeners()
+  {
+    return (ActionListener[])
+      AWTEventMulticaster.getListeners(action_listeners,
+                                       ActionListener.class);
+  }
+
+/** Returns all registered EventListers of the given listenerType. 
+ * listenerType must be a subclass of EventListener, or a 
+ * ClassClassException is thrown.
+ * @since 1.3 
+ */
+  public EventListener[] getListeners(Class listenerType)
+  {
+    if (listenerType == ActionListener.class)
+      return getActionListeners();
+    return (EventListener[]) Array.newInstance(listenerType, 0);
+  }
 
 /*************************************************************************/
 

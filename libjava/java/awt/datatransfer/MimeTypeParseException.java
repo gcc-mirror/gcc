@@ -1,5 +1,5 @@
-/* MimeTypeParseException.java -- Thrown when MIME string couldn't be parsed.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+/* MimeTypeParseException.java -- thrown when MIME string couldn't be parsed
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,30 +41,30 @@ package java.awt.datatransfer;
 /**
   * MIME string couldn't be parsed correctly.
   *
-  * @author Mark Wielaard (mark@klomp.org)
+  * @author Mark Wielaard <mark@klomp.org>
+  * @status updated to 1.4
   */
-public class MimeTypeParseException extends Exception 
+public class MimeTypeParseException extends Exception
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -5604407764691570741L;
 
-/**
-  * Initializes a new instance of <code>MimeTypeParseException</code>
-  * without any message.
-  */
-public
-MimeTypeParseException()
-{
-  super();
-}
+  /**
+   * Create a new instance without any message.
+   */
+  public MimeTypeParseException()
+  {
+  }
 
-/**
-  * Initializes a new instance of <code>MimeTypeParseException</code>
-  * with a specified detailed error message.
-  */
-public
-MimeTypeParseException(String message)
-{
-  super(message);
-}
-
+  /**
+   * Create a new instance with a specified detailed error message.
+   *
+   * @param message the message
+   */
+  public MimeTypeParseException(String message)
+  {
+    super(message);
+  }
 } // class MimeTypeParseException
-

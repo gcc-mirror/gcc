@@ -42,6 +42,7 @@ import java.awt.peer.MenuItemPeer;
 import java.awt.peer.MenuComponentPeer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Array;
 import java.util.EventListener;
 
 /**
@@ -385,19 +386,24 @@ removeActionListener(ActionListener l)
   action_listeners = AWTEventMulticaster.remove(action_listeners, l);
 }
 
+  public synchronized ActionListener[] getActionListeners()
+  {
+    return (ActionListener[])
+      AWTEventMulticaster.getListeners(action_listeners,
+                                       ActionListener.class);
+  }
+
 /** Returns all registered EventListers of the given listenerType. 
  * listenerType must be a subclass of EventListener, or a 
  * ClassClassException is thrown.
  * @since 1.3 
  */
-public EventListener[]
-getListeners(Class listenerType)
-{
-  if (listenerType == ActionListener.class)
-    return Component.getListenersImpl(listenerType, action_listeners);
-  else
-    return Component.getListenersImpl(listenerType, null);
-}
+  public EventListener[] getListeners(Class listenerType)
+  {
+    if (listenerType == ActionListener.class)
+      return getActionListeners();
+    return (EventListener[]) Array.newInstance(listenerType, 0);
+  }
 
 /*************************************************************************/
 

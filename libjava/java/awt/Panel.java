@@ -1,4 +1,4 @@
-/* Panel.java -- Simple container object.
+/* Panel.java -- Simple container object
    Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,59 +41,109 @@ package java.awt;
 import java.awt.peer.PanelPeer;
 import java.awt.peer.ContainerPeer;
 import java.awt.peer.ComponentPeer;
+import java.io.Serializable;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 
 /**
-  * A panel is a simple container class. 
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
-public class Panel extends Container implements java.io.Serializable
-{
-
-/*
- * Constructors
+ * A panel is a simple container class. It's default layout is the
+ * <code>FlowLayout</code> manager.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see FlowLayout
+ * @since 1.0
+ * @status updated to 1.4
  */
-
-/**
-  * Initializes a new instance of <code>Panel</code> that has a default
-  * layout manager of <code>FlowLayout</code>.
-  */
-public
-Panel()
+public class Panel extends Container implements Accessible
 {
-  this(new FlowLayout());
-}
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -2728009084054400034L;
 
-/*************************************************************************/
+  /** The cached accessible context. */
+  private transient AccessibleContext context;
 
-/**
-  * Initializes a new instance of <code>Panel</code> with the specified
-  * layout manager.
-  *
-  * @param layoutManager The layout manager for this object.
-  */
-public
-Panel(LayoutManager layoutManager)
-{
-  setLayout(layoutManager);
-}
+  /**
+   * Initializes a new instance of <code>Panel</code> that has a default
+   * layout manager of <code>FlowLayout</code>.
+   */
+  public Panel()
+  {
+    this(new FlowLayout());
+  }
 
-/*************************************************************************/
+  /**
+   * Initializes a new instance of <code>Panel</code> with the specified
+   * layout manager.
+   *
+   * @param layoutManager the layout manager for this object
+   * @since 1.1
+   */
+  public Panel(LayoutManager layoutManager)
+  {
+    setLayout(layoutManager);
+  }
 
-/*
- * Instance Methods
- */
+  /**
+   * Notifies this object to create its native peer.
+   *
+   * @see #isDisplayable()
+   * @see #removeNotify()
+   */
+  public void addNotify()
+  {
+    if (peer == null)
+      peer = getToolkit().createPanel(this);
+    super.addNotify();
+  }
 
-/**
-  * Notifies this object to create its native peer.
-  */
-public void
-addNotify()
-{
-  if (peer == null)
-    peer = getToolkit().createPanel(this);
-  super.addNotify();
-}
+  /**
+   * Gets the AccessibleContext associated with this panel, creating one if
+   * necessary. This always returns an instance of {@link AccessibleAWTPanel}.
+   *
+   * @return the accessibility context of this panel
+   * @since 1.3
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (context == null)
+      context = new AccessibleAWTPanel();
+    return context;
+  }
 
+  /**
+   * This class provides accessibility support for Panels, and is the
+   * runtime type returned by {@link #getAccessibleContext()}.
+   *
+   * @author Eric Blake <ebb9@email.byu.edu>
+   * @since 1.3
+   */
+  protected class AccessibleAWTPanel extends AccessibleAWTContainer
+  {
+    /**
+     * Compatible with JDK 1.4+.
+     */
+    private static final long serialVersionUID = -6409552226660031050L;
+
+    /**
+     * The default constructor.
+     */
+    protected AccessibleAWTPanel()
+    {
+    }
+
+    /**
+     * Get the role of this accessible object, a panel.
+     *
+     * @return the role of the object
+     * @see AccessibleRole#PANEL
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.PANEL;
+    }
+  } // class AccessibleAWTPanel
 } // class Panel 
-
