@@ -4089,13 +4089,17 @@ expand_expr (exp, target, tmode, modifier)
 	    expand_expr (TREE_VALUE (elt), const0_rtx, VOIDmode, 0);
 	  return const0_rtx;
 	}
+
       /* All elts simple constants => refer to a constant in memory.  But
 	 if this is a non-BLKmode mode, let it store a field at a time
 	 since that should make a CONST_INT or CONST_DOUBLE when we
-	 fold.  If we are making an initializer and all operands are
-	 constant, put it in memory as well.  */
+	 fold.  Likewise, if we have a target we can use, it is best to
+	 store directly into the target.  If we are making an initializer and
+	 all operands are constant, put it in memory as well.  */
       else if ((TREE_STATIC (exp)
-		&& (mode == BLKmode || TREE_ADDRESSABLE (exp)))
+		&& ((mode == BLKmode
+		     && ! (target != 0 && safe_from_p (target, exp)))
+		    || TREE_ADDRESSABLE (exp)))
 	       || (modifier == EXPAND_INITIALIZER && TREE_CONSTANT (exp)))
 	{
 	  rtx constructor = output_constant_def (exp);
