@@ -111,6 +111,7 @@ Tue May  9 20:52:43 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* fixinc/check.tpl:  Template for checking fixes
 	* fixinc/inclhack.def:  Added 'test_text' for many fixes
+	disable hpux8_bogus_inlines on SCO
 	* fixinc/fixinc.sco:  Oh, yes, we don't need this any more.
 
 Tue May  9 16:30:27 MET DST 2000  Jan Hubicka  <jh@suse.cz>

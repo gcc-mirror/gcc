@@ -825,7 +825,7 @@ tSCC zAlpha_GetoptList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zAlpha_GetoptSelect0[] =
-       "getopt\\(int, char \\*\\[";
+       "getopt\\(int, char \\*\\[\\], *char \\*\\)";
 
 #define    ALPHA_GETOPT_TEST_CT  1
 tTestDesc aAlpha_GetoptTests[] = {
@@ -1159,7 +1159,7 @@ tSCC zBad_LvalList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zBad_LvalSelect0[] =
-       "^[ \t]*#[ \t]*pragma[ \t][ \t]*extern_prefix";
+       "^[ \t]*#[ \t]*pragma[ \t]+extern_prefix";
 
 #define    BAD_LVAL_TEST_CT  1
 tTestDesc aBad_LvalTests[] = {
@@ -1169,7 +1169,7 @@ tTestDesc aBad_LvalTests[] = {
  *  Fix Command Arguments for Bad_Lval
  */
 const char* apzBad_LvalPatch[] = { "sed",
-    "-e", "s/^[ \t]*#[ \t]*define[ \t]*\\([^(]*\\)\\(([^)]*)\\)[ \t]*\\(_.\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/",
+    "-e", "s/^[ \t]*#[ \t]*define[ \t]+\\([^(]*\\)\\(([^)]*)\\)[ \t]*\\(_.\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1200,7 +1200,7 @@ tSCC zBroken_Assert_StdioSelect0[] =
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zBroken_Assert_StdioBypass0[] =
-       "include.*stdio.h";
+       "include.*stdio\\.h";
 
 #define    BROKEN_ASSERT_STDIO_TEST_CT  2
 tTestDesc aBroken_Assert_StdioTests[] = {
@@ -1243,7 +1243,7 @@ tSCC zBroken_Assert_StdlibSelect0[] =
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zBroken_Assert_StdlibBypass0[] =
-       "include.*stdlib.h";
+       "include.*stdlib\\.h";
 
 #define    BROKEN_ASSERT_STDLIB_TEST_CT  2
 tTestDesc aBroken_Assert_StdlibTests[] = {
@@ -1491,8 +1491,16 @@ tSCC zHpux_MaxintList[] =
  *  Machine/OS name selection pattern
  */
 #define apzHpux_MaxintMachs (const char**)NULL
-#define HPUX_MAXINT_TEST_CT  0
-#define aHpux_MaxintTests   (tTestDesc*)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zHpux_MaxintSelect0[] =
+       "^#[ \t]*define[ \t]*MAXINT[ \t]";
+
+#define    HPUX_MAXINT_TEST_CT  1
+tTestDesc aHpux_MaxintTests[] = {
+  { TT_EGREP,    zHpux_MaxintSelect0, (regex_t*)NULL }, };
 
 /*
  *  Fix Command Arguments for Hpux_Maxint
@@ -1563,8 +1571,15 @@ tSCC zHpux8_Bogus_InlinesList[] =
 tSCC zHpux8_Bogus_InlinesSelect0[] =
        "inline";
 
-#define    HPUX8_BOGUS_INLINES_TEST_CT  1
+/*
+ *  content bypass pattern - skip fix if pattern found
+ */
+tSCC zHpux8_Bogus_InlinesBypass0[] =
+       "The Santa Cruz Operation";
+
+#define    HPUX8_BOGUS_INLINES_TEST_CT  2
 tTestDesc aHpux8_Bogus_InlinesTests[] = {
+  { TT_NEGREP,   zHpux8_Bogus_InlinesBypass0, (regex_t*)NULL },
   { TT_EGREP,    zHpux8_Bogus_InlinesSelect0, (regex_t*)NULL }, };
 
 /*
@@ -1634,7 +1649,7 @@ tSCC zIsc_Omits_With_StdcList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zIsc_Omits_With_StdcSelect0[] =
-       "defined(__STDC__) && !defined(_POSIX_SOURCE)";
+       "!defined(__STDC__) && !defined(_POSIX_SOURCE)";
 
 #define    ISC_OMITS_WITH_STDC_TEST_CT  1
 tTestDesc aIsc_Omits_With_StdcTests[] = {
@@ -4668,7 +4683,7 @@ extern char *\tsprintf();\\\n\
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          103
+#define REGEX_COUNT          105
 #define MACH_LIST_SIZE_LIMIT 279
 #define FIX_COUNT            118
 
