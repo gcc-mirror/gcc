@@ -3584,6 +3584,15 @@ esac
 
 
 
+#Figure out where generated headers like ffitarget.h get installed.
+gcc_version_trigger=${srcdir}/../gcc/version.c
+gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
+gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+tool_include_dir='$(libdir)/gcc/$(target_alias)/'${gcc_version}/include
+
+
+
+
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else
@@ -3802,6 +3811,8 @@ s%@TARGET@%$TARGET%g
 s%@TARGETDIR@%$TARGETDIR%g
 s%@toolexecdir@%$toolexecdir%g
 s%@toolexeclibdir@%$toolexeclibdir%g
+s%@tool_include_dir@%$tool_include_dir%g
+s%@gcc_version@%$gcc_version%g
 
 CEOF
 EOF
@@ -4089,4 +4100,5 @@ EOF
 chmod +x $CONFIG_STATUS
 rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
+
 

@@ -85,7 +85,9 @@ STRIP = @STRIP@
 TARGET = @TARGET@
 TARGETDIR = @TARGETDIR@
 VERSION = @VERSION@
+gcc_version = @gcc_version@
 libffi_basedir = @libffi_basedir@
+tool_include_dir = @tool_include_dir@
 toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 
