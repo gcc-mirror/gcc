@@ -1,3 +1,10 @@
+2003-01-12  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/9139:
+	* lib/libjava.exp (find_javac): Put value of libgcj_jar into
+	return value when gcj is used.
+	* libjava.mauve/mauve.exp (test_mauve): Use libgcj_jar global.
+
 2003-01-03  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.compile/pr8712.java: New file, for PR java/8712.
