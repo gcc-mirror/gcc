@@ -1,3 +1,7 @@
+2001-12-09  Per Bothner  <per@bothner.com>
+
+	* gnu/gcj/xlib/XImage.java (toString):  Add missing initialization.
+
 2001-12-09  Tom Tromey  <tromey@redhat.com>
 
 	* resolve.cc (_Jv_PrepareClass): Verify method here...
