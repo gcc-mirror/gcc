@@ -1,8 +1,8 @@
 /* This is a software floating point library which can be used instead of
    the floating point routines in libgcc1.c for targets without hardware
    floating point. 
-   Copyright (C) 1994, 1995, 1996, 1997, 1998,
-   2000 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
    to one copy, then compile both copies and add them to libgcc.a.  */
 
 #include "fp-bit.h"
+#include "hconfig.h"
 
 /* The following macros can be defined to change the behaviour of this file:
    FLOAT: Implement a `float', aka SFmode, fp library.  If this is not
@@ -1222,7 +1223,7 @@ float_to_si (FLO_type arg_a)
   /* it is a number, but a small one */
   if (a.normal_exp < 0)
     return 0;
-  if (a.normal_exp > 30)
+  if (a.normal_exp > 4 * BITS_PER_UNIT - 2)
     return a.sign ? (-MAX_SI_INT)-1 : MAX_SI_INT;
   tmp = a.fraction.ll >> ((FRACBITS + NGARDS) - a.normal_exp);
   return a.sign ? (-tmp) : (tmp);
@@ -1259,7 +1260,7 @@ float_to_usi (FLO_type arg_a)
   /* it is a number, but a small one */
   if (a.normal_exp < 0)
     return 0;
-  if (a.normal_exp > 31)
+  if (a.normal_exp > 4 * BITS_PER_UNIT - 1)
     return MAX_USI_INT;
   else if (a.normal_exp > (FRACBITS + NGARDS))
     return a.fraction.ll << (a.normal_exp - (FRACBITS + NGARDS));
