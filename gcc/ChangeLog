@@ -1,3 +1,8 @@
+2004-06-08  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/15790
+	* config/i386/i386-coff.h (ASM_OUTPUT_ALIGN): Define.
+
 2004-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* fold-const.c (fold_convert): Treat OFFSET_TYPE like
