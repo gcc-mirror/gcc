@@ -1,3 +1,8 @@
+Tue Dec 11 23:58:39 EST 2001  John Wehle  (john@feith.com)
+
+	* basic-block.h (flow_preorder_transversal_compute): Declare.
+	* cfganal.c (flow_preorder_transversal_compute): Implement.
+
 Tue Dec 11 23:54:27 EST 2001  John Wehle  (john@feith.com)
 
 	* cfganal.c (flow_depth_first_order_compute): Always

@@ -923,6 +923,132 @@ flow_depth_first_order_compute (dfs_order, rc_order)
   return dfsnum;
 }
 
+struct dfst_node {
+    unsigned nnodes;
+    struct dfst_node **node;
+    struct dfst_node *up;
+};
+
+/* Compute a preorder transversal ordering such that a sub-tree which
+   is the source of a cross edge appears before the sub-tree which is
+   the destination of the cross edge.  This allows for easy detection
+   of all the entry blocks for a loop.
+
+   The ordering is compute by:
+
+     1) Generating a depth first spanning tree.
+
+     2) Walking the resulting tree from right to left.  */
+
+void
+flow_preorder_transversal_compute (pot_order)
+     int *pot_order;
+{
+  edge e;
+  edge *stack;
+  int i;
+  int max_successors;
+  int sp;
+  sbitmap visited;
+  struct dfst_node *node;
+  struct dfst_node *dfst;
+
+  /* Allocate stack for back-tracking up CFG.  */
+  stack = (edge *) xmalloc ((n_basic_blocks + 1) * sizeof (edge));
+  sp = 0;
+
+  /* Allocate the tree.  */
+  dfst
+    = (struct dfst_node *) xcalloc (n_basic_blocks, sizeof (struct dfst_node));
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      max_successors = 0;
+      for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
+	max_successors++;
+      dfst[i].node = max_successors ? (struct dfst_node **)
+				      xcalloc (max_successors,
+					       sizeof (struct dfst_node *))
+			    : NULL;
+    }
+
+  /* Allocate bitmap to track nodes that have been visited.  */
+  visited = sbitmap_alloc (n_basic_blocks);
+
+  /* None of the nodes in the CFG have been visited yet.  */
+  sbitmap_zero (visited);
+
+  /* Push the first edge on to the stack.  */
+  stack[sp++] = ENTRY_BLOCK_PTR->succ;
+
+  while (sp)
+    {
+      basic_block src;
+      basic_block dest;
+
+      /* Look at the edge on the top of the stack.  */
+      e = stack[sp - 1];
+      src = e->src;
+      dest = e->dest;
+
+      /* Check if the edge destination has been visited yet.  */
+      if (dest != EXIT_BLOCK_PTR && ! TEST_BIT (visited, dest->index))
+	{
+	  /* Mark that we have visited the destination.  */
+	  SET_BIT (visited, dest->index);
+
+	  /* Add the destination to the preorder tree.  */
+	  if (src != ENTRY_BLOCK_PTR)
+	    {
+	      dfst[src->index].node[dfst[src->index].nnodes++]
+		= &dfst[dest->index];
+	      dfst[dest->index].up = &dfst[src->index];
+	    }
+
+	  if (dest->succ)
+	    {
+	      /* Since the DEST node has been visited for the first
+		 time, check its successors.  */
+	      stack[sp++] = dest->succ;
+	    }
+	}
+      else
+	{
+	  if (e->succ_next)
+	    stack[sp - 1] = e->succ_next;
+	  else
+	    sp--;
+	}
+    }
+
+  free (stack);
+  sbitmap_free (visited);
+
+  /* Record the preorder transversal order by
+     walking the tree from right to left.  */
+
+  i = 0;
+  node = &dfst[0];
+  pot_order[i++] = 0;
+
+  while (node)
+    {
+      if (node->nnodes)
+	{
+	  node = node->node[--node->nnodes];
+	  pot_order[i++] = node - dfst;
+	}
+      else
+	node = node->up;
+    }
+
+  /* Free the tree.  */
+
+  for (i = 0; i < n_basic_blocks; i++)
+    if (dfst[i].node)
+      free (dfst[i].node);
+  free (dfst);
+}
+
 /* Compute the depth first search order on the _reverse_ graph and
    store in the array DFS_ORDER, marking the nodes visited in VISITED.
    Returns the number of nodes visited.
