@@ -291,6 +291,9 @@ struct gcc_target
      not, at the current point in the compilation.  */
   bool (* cannot_modify_jumps_p) PARAMS ((void));
 
+  enum reg_class (* branch_target_register_class) PARAMS ((void));
+  bool (* branch_target_register_callee_saved) PARAMS ((bool));
+
   /* True if the constant X cannot be placed in the constant pool.  */
   bool (* cannot_force_const_mem) PARAMS ((rtx));
 

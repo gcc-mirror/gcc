@@ -1965,6 +1965,9 @@ extern int flow2_completed;
 
 extern int reload_completed;
 
+/* Nonzero after thread_prologue_and_epilogue_insns has run.  */
+extern int epilogue_completed;
+
 /* Set to 1 while reload_as_needed is operating.
    Required by some machines to handle any generated moves differently.  */
 
@@ -2123,6 +2126,7 @@ extern rtx libcall_other_reg		PARAMS ((rtx, rtx));
 #ifdef BUFSIZ
 extern void loop_optimize		PARAMS ((rtx, FILE *, int));
 #endif
+extern void branch_target_load_optimize (rtx, bool);
 extern void record_excess_regs		PARAMS ((rtx, rtx, rtx *));
 
 /* In function.c */

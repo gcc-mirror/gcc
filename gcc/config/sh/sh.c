@@ -175,6 +175,8 @@ enum reg_class reg_class_from_letter[] =
 
 int assembler_dialect;
 
+static bool shmedia_space_reserved_for_target_registers;
+
 static void split_branches PARAMS ((rtx));
 static int branch_dest PARAMS ((rtx));
 static void force_into PARAMS ((rtx, rtx));
@@ -209,6 +211,8 @@ static int sh_issue_rate PARAMS ((void));
 static bool sh_function_ok_for_sibcall PARAMS ((tree, tree));
 
 static bool sh_cannot_modify_jumps_p PARAMS ((void));
+static enum reg_class sh_target_reg_class (void);
+static bool sh_optimize_target_register_callee_saved (bool);
 static bool sh_ms_bitfield_layout_p PARAMS ((tree));
 
 static void sh_init_builtins PARAMS ((void));
@@ -226,6 +230,9 @@ static bool unspec_caller_rtx_p PARAMS ((rtx));
 static bool sh_cannot_copy_insn_p PARAMS ((rtx));
 static bool sh_rtx_costs PARAMS ((rtx, int, int, int *));
 static int sh_address_cost PARAMS ((rtx));
+static int shmedia_target_regs_stack_space (HARD_REG_SET *);
+static int shmedia_reserve_space_for_target_registers_p (int, HARD_REG_SET *);
+static int shmedia_target_regs_stack_adjust (HARD_REG_SET *);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -266,6 +273,11 @@ static int sh_address_cost PARAMS ((rtx));
 
 #undef TARGET_CANNOT_MODIFY_JUMPS_P
 #define TARGET_CANNOT_MODIFY_JUMPS_P sh_cannot_modify_jumps_p
+#undef TARGET_BRANCH_TARGET_REGISTER_CLASS
+#define TARGET_BRANCH_TARGET_REGISTER_CLASS sh_target_reg_class
+#undef TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED
+#define TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED \
+ sh_optimize_target_register_callee_saved
 
 #undef TARGET_MS_BITFIELD_LAYOUT_P
 #define TARGET_MS_BITFIELD_LAYOUT_P sh_ms_bitfield_layout_p
@@ -4698,6 +4710,53 @@ push_regs (mask, interrupt_handler)
     push (PR_REG);
 }
 
+/* Calculate how much extra space is needed to save all callee-saved
+   target registers.
+   LIVE_REGS_MASK is the register mask calculated by calc_live_regs.  */
+
+static int
+shmedia_target_regs_stack_space (HARD_REG_SET *live_regs_mask)
+{
+  int reg;
+  int stack_space = 0;
+  int interrupt_handler = sh_cfun_interrupt_handler_p ();
+
+  for (reg = LAST_TARGET_REG; reg >= FIRST_TARGET_REG; reg--)
+    if ((! call_used_regs[reg] || interrupt_handler)
+        && ! TEST_HARD_REG_BIT (*live_regs_mask, reg))
+      /* Leave space to save this target register on the stack,
+	 in case target register allocation wants to use it. */
+      stack_space += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
+  return stack_space;
+}
+   
+/* Decide whether we should reserve space for callee-save target registers,
+   in case target register allocation wants to use them.  REGS_SAVED is
+   the space, in bytes, that is already required for register saves.
+   LIVE_REGS_MASK is the register mask calculated by calc_live_regs.  */
+
+static int
+shmedia_reserve_space_for_target_registers_p (int regs_saved,
+					      HARD_REG_SET *live_regs_mask)
+{
+  if (optimize_size)
+    return 0;
+  return shmedia_target_regs_stack_space (live_regs_mask) <= regs_saved;
+}
+
+/* Decide how much space to reserve for callee-save target registers
+   in case target register allocation wants to use them.
+   LIVE_REGS_MASK is the register mask calculated by calc_live_regs.  */
+
+static int
+shmedia_target_regs_stack_adjust (HARD_REG_SET *live_regs_mask)
+{
+  if (shmedia_space_reserved_for_target_registers)
+    return shmedia_target_regs_stack_space (live_regs_mask);
+  else
+    return 0;
+}
+
 /* Work out the registers which need to be saved, both as a mask and a
    count of saved words.  Return the count.
 
@@ -4801,6 +4860,19 @@ calc_live_regs (live_regs_mask)
 	    }
 	}
     }
+  /* If we have a target register optimization pass after prologue / epilogue
+     threading, we need to assume all target registers will be live even if
+     they aren't now.  */
+  if (flag_branch_target_load_optimize2
+      && TARGET_SAVE_ALL_TARGET_REGS
+      && shmedia_space_reserved_for_target_registers)
+    for (reg = LAST_TARGET_REG; reg >= FIRST_TARGET_REG; reg--)
+      if ((! call_used_regs[reg] || interrupt_handler)
+	  && ! TEST_HARD_REG_BIT (*live_regs_mask, reg))
+	{
+	  SET_HARD_REG_BIT (*live_regs_mask, reg);
+	  count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
+	}
 
   return count;
 }
@@ -4950,13 +5022,37 @@ sh_expand_prologue ()
       rtx r0 = gen_rtx_REG (Pmode, R0_REG);
       int offset_in_r0 = -1;
       int sp_in_r0 = 0;
+      int tregs_space = shmedia_target_regs_stack_adjust (&live_regs_mask);
+      int total_size, save_size;
 
-      if (d % (STACK_BOUNDARY / BITS_PER_UNIT))
+      /* D is the actual number of bytes that we need for saving registers,
+	 however, in initial_elimination_offset we have committed to using
+	 an additional TREGS_SPACE amount of bytes - in order to keep both
+	 addresses to arguments supplied by the caller and local variables
+	 valid, we must keep this gap.  Place it between the incoming
+	 arguments and the actually saved registers in a bid to optimize
+	 locality of reference.  */
+      total_size = d + tregs_space;
+      total_size += rounded_frame_size (total_size);
+      save_size = total_size - rounded_frame_size (d);
+      if (save_size % (STACK_BOUNDARY / BITS_PER_UNIT))
 	d_rounding = ((STACK_BOUNDARY / BITS_PER_UNIT)
-		      - d % (STACK_BOUNDARY / BITS_PER_UNIT));
+			- save_size % (STACK_BOUNDARY / BITS_PER_UNIT));
+
+      /* If adjusting the stack in a single step costs nothing extra, do so.
+	 I.e. either if a single addi is enough, or we need a movi anyway,
+	 and we don't exceed the maximum offset range (the test for the
+	 latter is conservative for simplicity).  */
+      if (TARGET_SHMEDIA
+	  && (CONST_OK_FOR_I10 (-total_size)
+	      || (! CONST_OK_FOR_I10 (-(save_size + d_rounding))
+		  && total_size <= 2044)))
+	d_rounding = total_size - save_size;
 
       offset = d + d_rounding;
-      output_stack_adjust (-offset, stack_pointer_rtx, 1, frame_insn);
+
+      output_stack_adjust (-(save_size + d_rounding), stack_pointer_rtx,
+			   1, frame_insn);
 
       /* We loop twice: first, we save 8-byte aligned registers in the
 	 higher addresses, that are known to be aligned.  Then, we
@@ -5168,16 +5264,39 @@ sh_expand_epilogue ()
   int d_rounding = 0;
 
   int save_flags = target_flags;
-  int frame_size;
+  int frame_size, save_size;
   int fpscr_deferred = 0;
 
   d = calc_live_regs (&live_regs_mask);
 
-  if (TARGET_SH5 && d % (STACK_BOUNDARY / BITS_PER_UNIT))
-    d_rounding = ((STACK_BOUNDARY / BITS_PER_UNIT)
-		  - d % (STACK_BOUNDARY / BITS_PER_UNIT));
+  save_size = d;
+  frame_size = rounded_frame_size (d);
 
-  frame_size = rounded_frame_size (d) - d_rounding;
+  if (TARGET_SH5)
+    {
+      int tregs_space = shmedia_target_regs_stack_adjust (&live_regs_mask);
+      int total_size;
+      if (d % (STACK_BOUNDARY / BITS_PER_UNIT))
+      d_rounding = ((STACK_BOUNDARY / BITS_PER_UNIT)
+		    - d % (STACK_BOUNDARY / BITS_PER_UNIT));
+
+      total_size = d + tregs_space;
+      total_size += rounded_frame_size (total_size);
+      save_size = total_size - frame_size;
+
+      /* If adjusting the stack in a single step costs nothing extra, do so.
+	 I.e. either if a single addi is enough, or we need a movi anyway,
+	 and we don't exceed the maximum offset range (the test for the
+	 latter is conservative for simplicity).  */
+      if (TARGET_SHMEDIA
+	  && ! frame_pointer_needed
+	  && (CONST_OK_FOR_I10 (total_size)
+	      || (! CONST_OK_FOR_I10 (save_size + d_rounding)
+		  && total_size <= 2044)))
+	d_rounding = frame_size;
+
+      frame_size -= d_rounding;
+    }
 
   if (frame_pointer_needed)
     {
@@ -5356,33 +5475,33 @@ sh_expand_epilogue ()
 
       if (offset != d + d_rounding)
 	abort ();
-
-      goto finish;
     }
-  else
-    d = 0;
-  if (TEST_HARD_REG_BIT (live_regs_mask, PR_REG))
-    pop (PR_REG);
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+  else /* ! TARGET_SH5 */
     {
-      int j = (FIRST_PSEUDO_REGISTER - 1) - i;
+      save_size = 0;
+      if (TEST_HARD_REG_BIT (live_regs_mask, PR_REG))
+	pop (PR_REG);
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	{
+	  int j = (FIRST_PSEUDO_REGISTER - 1) - i;
+  
+	  if (j == FPSCR_REG && current_function_interrupt && TARGET_FMOVD
+	      && hard_regs_intersect_p (&live_regs_mask,
+					&reg_class_contents[DF_REGS]))
+	    fpscr_deferred = 1;
+	  else if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j))
+	    pop (j);
+	  if (j == FIRST_FP_REG && fpscr_deferred)
+	    pop (FPSCR_REG);
 
-      if (j == FPSCR_REG && current_function_interrupt && TARGET_FMOVD
-	  && hard_regs_intersect_p (&live_regs_mask,
-				    &reg_class_contents[DF_REGS]))
-	fpscr_deferred = 1;
-      else if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j))
-	pop (j);
-      if (j == FIRST_FP_REG && fpscr_deferred)
-	pop (FPSCR_REG);
+	}
     }
- finish:
   if (target_flags != save_flags && ! current_function_interrupt)
     emit_insn (gen_toggle_sz ());
   target_flags = save_flags;
 
   output_stack_adjust (extra_push + current_function_pretend_args_size
-		       + d + d_rounding
+		       + save_size + d_rounding
 		       + current_function_args_info.stack_regs * 8,
 		       stack_pointer_rtx, 7, emit_insn);
 
@@ -5961,10 +6080,18 @@ initial_elimination_offset (from, to)
   int total_auto_space;
   int save_flags = target_flags;
   int copy_flags;
-
   HARD_REG_SET live_regs_mask;
+
+  shmedia_space_reserved_for_target_registers = false;
   regs_saved = calc_live_regs (&live_regs_mask);
   regs_saved += SHMEDIA_REGS_STACK_ADJUST ();
+
+  if (shmedia_reserve_space_for_target_registers_p (regs_saved, &live_regs_mask))
+    {
+      shmedia_space_reserved_for_target_registers = true;
+      regs_saved += shmedia_target_regs_stack_adjust (&live_regs_mask);
+    }
+
   if (TARGET_SH5 && regs_saved % (STACK_BOUNDARY / BITS_PER_UNIT))
     regs_saved_rounding = ((STACK_BOUNDARY / BITS_PER_UNIT)
 			   - regs_saved % (STACK_BOUNDARY / BITS_PER_UNIT));
@@ -7659,6 +7786,19 @@ sh_cannot_modify_jumps_p ()
   return (TARGET_SHMEDIA && (reload_in_progress || reload_completed));
 }
 
+static enum reg_class
+sh_target_reg_class (void)
+{
+  return TARGET_SHMEDIA ? TARGET_REGS : NO_REGS;
+}
+
+static bool
+sh_optimize_target_register_callee_saved (bool after_prologue_epilogue_gen)
+{
+  return (shmedia_space_reserved_for_target_registers
+	  && (! after_prologue_epilogue_gen || TARGET_SAVE_ALL_TARGET_REGS));
+}
+
 static bool
 sh_ms_bitfield_layout_p (record_type)
      tree record_type ATTRIBUTE_UNUSED;
@@ -8331,6 +8471,7 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   rtx scratch0, scratch1, scratch2;
 
   reload_completed = 1;
+  epilogue_completed = 1;
   no_new_pseudos = 1;
   current_function_uses_only_leaf_regs = 1;
 
@@ -8480,6 +8621,7 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
     }
 
   reload_completed = 0;
+  epilogue_completed = 0;
   no_new_pseudos = 0;
 }
 

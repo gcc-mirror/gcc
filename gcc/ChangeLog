@@ -1,3 +1,58 @@
+2003-06-18  Stephen Clarke <stephen.clarke@superh.com>
+            J"orn Rennecke <joern.rennecke@superh.com>
+
+	* bt-load.c: New file.
+	* Makefile.in (OBJS): Include bt-load.o
+	(bt-load.o): Add dependencies.
+	* flags.h (flag_branch_target_load_optimize): Declare.
+	(flag_branch_target_load_optimize2): Likewise.
+	* hooks.c (hook_reg_class_void_no_regs): New function.
+	(hook_bool_bool_false): Likewise.
+	* hooks.h (hook_reg_class_void_no_regs, hook_bool_bool_false): Declare.
+	* rtl.h (branch_target_load_optimize): Declare.
+	* target-def.h (TARGET_BRANCH_TARGET_REGISTER_CLASS): Define.
+	(TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED): Likewise.
+	(TARGET_INITIALIZER): Include these.
+	* target.h (struct gcc_target): Add branch_target_register_class
+	and branch_target_register_callee_saved members.
+	* toplev.c (enum dump_file_index): Add DFI_branch_target_load
+	(dump_file) Add "tars" entry.
+	(flag_branch_target_load_optimize): New variable.
+	(flag_branch_target_load_optimize2): Likewise.
+	(lang_independent_options): Add entries for new options.
+	(rest_of_compilation): Call branch_target_load_optimize.
+	* doc/tm.texi (TARGET_BRANCH_TARGET_REGISTER_CLASS): Document.
+	(TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED): Likewise.
+	* doc/invoke.texi: Document -fbranch-target-load-optimize and
+	-fbranch-target-load-optimize2.
+	* rtl.h (epilogue_completed): Declare.
+	* recog.c (epilogue_completed): New variable.
+	* toplev.c (rest_of_compilation): Set it.
+	* flow.c (mark_regs_live_at_end): Use it.
+	* config/ia64/ia64.c (ia64_output_mi_thunk): Set it.
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Likewise.
+	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
+	* config/sparc/sparc.c (sparc_output_mi_thunk): Likewise.
+
+	* sh.c (shmedia_space_reserved_for_target_registers): New variable.
+	(sh_target_reg_class): New function.
+	(sh_optimize_target_register_callee_saved): Likwise.
+	(shmedia_target_regs_stack_space): Likewise.
+	(shmedia_reserve_space_for_target_registers_p): Likewise.
+	(shmedia_target_regs_stack_adjust): Likewise.
+	(TARGET_BRANCH_TARGET_REGISTER_CLASS): Override.
+	(TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED): Likewise.
+	(calc_live_regs): If flag_branch_target_load_optimize2 and
+	TARGET_SAVE_ALL_TARGET_REGS is enabled, and we have space reserved
+	for target registers, make sure that we save all target registers.
+	(sh_expand_prologue, sh_expand_epilogue): Take target register
+	optimizations into account.  Collapse stack adjustments if that
+	is beneficial.
+	(initial_elimination_offset): Reserve space for target registers
+	if necessary.
+	* sh.h (SAVE_ALL_TR_BIT, TARGET_SAVE_ALL_TARGET_REGS): Define.
+	(OPTIMIZATION_OPTIONS): Enable flag_branch_target_load_optimize.
+
 2003-06-18  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc: Add an extra_header for ARM targets.

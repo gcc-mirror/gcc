@@ -23,6 +23,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define GCC_HOOKS_H
 
 bool hook_bool_void_false PARAMS ((void));
+enum reg_class hook_reg_class_void_no_regs (void);
+bool hook_bool_bool_false (bool);
 bool hook_bool_tree_false PARAMS ((tree));
 bool hook_bool_tree_hwi_hwi_tree_false
   PARAMS ((tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));

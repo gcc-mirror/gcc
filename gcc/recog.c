@@ -88,6 +88,9 @@ int which_alternative;
 
 int reload_completed;
 
+/* Nonzero after thread_prologue_and_epilogue_insns has run.  */
+int epilogue_completed;
+
 /* Initialize data used by the function `recog'.
    This must be called once in the compilation of a function
    before any insn recognition may be done in the function.  */

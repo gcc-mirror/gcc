@@ -8589,6 +8589,7 @@ sparc_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   rtx this, insn, funexp, delta_rtx, tmp;
 
   reload_completed = 1;
+  epilogue_completed = 1;
   no_new_pseudos = 1;
   current_function_uses_only_leaf_regs = 1;
 
@@ -8641,6 +8642,7 @@ sparc_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   final_end_function ();
 
   reload_completed = 0;
+  epilogue_completed = 0;
   no_new_pseudos = 0;
 }
 

@@ -8470,6 +8470,7 @@ ia64_output_mi_thunk (file, thunk, delta, vcall_offset, function)
   rtx this, insn, funexp;
 
   reload_completed = 1;
+  epilogue_completed = 1;
   no_new_pseudos = 1;
 
   /* Set things up as ia64_expand_prologue might.  */
@@ -8537,6 +8538,7 @@ ia64_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 
   /* Code generation for calls relies on splitting.  */
   reload_completed = 1;
+  epilogue_completed = 1;
   try_split (PATTERN (insn), insn, 0);
 
   emit_barrier ();
@@ -8555,6 +8557,7 @@ ia64_output_mi_thunk (file, thunk, delta, vcall_offset, function)
   final_end_function ();
 
   reload_completed = 0;
+  epilogue_completed = 0;
   no_new_pseudos = 0;
 }
 
