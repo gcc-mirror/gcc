@@ -4831,7 +4831,7 @@ static tree free_tree_list = NULL_TREE;
    If OFWHAT is null, the component name is stored on the spelling stack.
    (That is true for all nested calls to digest_init.)  */
 
-tree
+static tree
 digest_init (type, init, tail, require_constant, constructor_constant)
      tree type, init, *tail;
      int require_constant, constructor_constant;
@@ -5081,6 +5081,11 @@ static tree constructor_unfilled_fields;
    This is a special INTEGER_CST node that we modify in place.  */
 static tree constructor_unfilled_index;
 
+/* In a RECORD_TYPE, the byte index of the next consecutive field.
+   This is so we can generate gaps between fields, when appropriate.
+   This is a special INTEGER_CST node that we modify in place.  */
+static tree constructor_bit_index;
+
 /* If we are saving up the elements rather than allocating them,
    this is the list of elements so far (in reverse order,
    most recent first).  */
@@ -5131,6 +5136,10 @@ static int constructor_top_level;
 /* When we finish reading a constructor expression
    (constructor_decl is 0), the CONSTRUCTOR goes here.  */
 static tree constructor_result;
+
+/* This stack has a level for each implicit or explicit level of
+   structuring in the initializer, including the outermost one.  It
+   saves the values of most of the variables above.  */
 
 struct constructor_stack
 {
@@ -5142,6 +5151,7 @@ struct constructor_stack
   tree max_index;
   tree unfilled_index;
   tree unfilled_fields;
+  tree bit_index;
   tree elements;
   int offset;
   tree pending_elts;
@@ -5205,7 +5215,7 @@ start_init (decl, asmspec_tree, top_level)
   p->spelling_size = spelling_size;
   p->deferred = constructor_subconstants_deferred;
   p->top_level = constructor_top_level;
-  p->next = 0;
+  p->next = initializer_stack;
   initializer_stack = p;
 
   constructor_decl = decl;
@@ -5302,6 +5312,7 @@ really_start_incremental_init (type)
   p->max_index = constructor_max_index;
   p->unfilled_index = constructor_unfilled_index;
   p->unfilled_fields = constructor_unfilled_fields;
+  p->bit_index = constructor_bit_index;
   p->elements = 0;
   p->constant = constructor_constant;
   p->simple = constructor_simple;
@@ -5326,6 +5337,7 @@ really_start_incremental_init (type)
     {
       constructor_fields = TYPE_FIELDS (constructor_type);
       constructor_unfilled_fields = constructor_fields;
+      constructor_bit_index = copy_node (integer_zero_node);
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
@@ -5381,6 +5393,7 @@ push_init_level (implicit)
   p->max_index = constructor_max_index;
   p->unfilled_index = constructor_unfilled_index;
   p->unfilled_fields = constructor_unfilled_fields;
+  p->bit_index = constructor_bit_index;
   p->elements = constructor_elements;
   p->constant = constructor_constant;
   p->simple = constructor_simple;
@@ -5419,6 +5432,7 @@ push_init_level (implicit)
     {
       constructor_fields = TYPE_FIELDS (constructor_type);
       constructor_unfilled_fields = constructor_fields;
+      constructor_bit_index = copy_node (integer_zero_node);
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
@@ -5488,6 +5502,15 @@ pop_init_level (implicit)
   /* Now output all pending elements.  */
   output_pending_init_elements (1);
 
+#if 0 /* c-parse.in warns about {}.  */
+  /* In ANSI, each brace level must have at least one element.  */
+  if (! implicit && pedantic
+      && (TREE_CODE (constructor_type) == ARRAY_TYPE
+	  ? integer_zerop (constructor_unfilled_index)
+	  : constructor_unfilled_fields == TYPE_FIELDS (constructor_type)))
+    pedwarn_init ("empty braces in initializer%s", " for `%s'", NULL);
+#endif
+
   /* Pad out the end of the structure.  */
   
   if (! constructor_incremental)
@@ -5515,17 +5538,9 @@ pop_init_level (implicit)
       if (TREE_CODE (constructor_type) == RECORD_TYPE
 	  || TREE_CODE (constructor_type) == UNION_TYPE)
 	{
-	  tree tail;
-	  /* Find the last field written out.  */
-	  for (tail = TYPE_FIELDS (constructor_type); tail;
-	       tail = TREE_CHAIN (tail))
-	    if (TREE_CHAIN (tail) == constructor_unfilled_fields)
-	      break;
 	  /* Find the offset of the end of that field.  */
 	  filled = size_binop (CEIL_DIV_EXPR,
-			       size_binop (PLUS_EXPR,
-					   DECL_FIELD_BITPOS (tail),
-					   DECL_SIZE (tail)),
+			       constructor_bit_index,
 			       size_int (BITS_PER_UNIT));
 	}
       else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
@@ -5581,6 +5596,7 @@ pop_init_level (implicit)
   constructor_max_index = p->max_index;
   constructor_unfilled_index = p->unfilled_index;
   constructor_unfilled_fields = p->unfilled_fields;
+  constructor_bit_index = p->bit_index;
   constructor_elements = p->elements;
   constructor_constant = p->constant;
   constructor_simple = p->simple;
@@ -5622,7 +5638,11 @@ set_init_index (first, last)
       if (last != 0 && tree_int_cst_lt (last, first))
 	error_init ("empty index range in initializer%s", " for `%s'", NULL);
       else
-	constructor_range_end = last;
+	{
+	  if (pedantic)
+	    pedwarn ("ANSI C forbids specifying element to initialize");
+	  constructor_range_end = last;
+	}
     }
 }
 
@@ -5651,7 +5671,11 @@ set_init_label (fieldname)
     error ("field `%s' already initialized",
 	   IDENTIFIER_POINTER (fieldname));
   else
-    constructor_fields = tail;
+    {
+      constructor_fields = tail;
+      if (pedantic)
+	pedwarn ("ANSI C forbids specifying structure member to initialize");
+    }
 }
 
 /* "Output" the next constructor element.
@@ -5759,7 +5783,37 @@ output_init_element (value, type, field, pending)
 					require_constant_elements),
 			   constructor_elements);
 	  else
-	    output_constant (value, int_size_in_bytes (type));
+	    {
+	      /* Structure elements may require alignment.
+		 Do this, if necessary.  */
+	      if (TREE_CODE (constructor_type) == RECORD_TYPE)
+		{
+		  /* Advance to offset of this element.  */
+		  if (! tree_int_cst_equal (constructor_bit_index,
+					    DECL_FIELD_BITPOS (constructor_fields)))
+		    {
+		      int next = (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
+				  / BITS_PER_UNIT);
+		      int here = (TREE_INT_CST_LOW (constructor_bit_index)
+				  / BITS_PER_UNIT);
+
+		      assemble_zeros (next - here);
+		    }
+		}
+	      output_constant (value, int_size_in_bytes (type));
+
+	      /* For a record, keep track of end position of last field.  */
+	      if (TREE_CODE (constructor_type) == RECORD_TYPE)
+		{
+		  tree temp = size_binop (PLUS_EXPR,
+					  DECL_FIELD_BITPOS (constructor_fields),
+					  DECL_SIZE (constructor_fields));
+		  TREE_INT_CST_LOW (constructor_bit_index)
+		    = TREE_INT_CST_LOW (temp);
+		  TREE_INT_CST_HIGH (constructor_bit_index)
+		    = TREE_INT_CST_HIGH (temp);
+		}
+	    }
 	}
 
       /* Advance the variable that indicates sequential elements output.  */
@@ -5924,6 +5978,9 @@ void
 process_init_element (value)
      tree value;
 {
+  tree orig_value = value;
+  int string_flag = value != 0 && TREE_CODE (value) == STRING_CST;
+
   if (value != 0)
     value = default_conversion (value);
 
@@ -5968,9 +6025,18 @@ process_init_element (value)
 	  fieldtype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_fields));
 	  fieldcode = TREE_CODE (fieldtype);
 
-	  if (value != 0 && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != fieldtype
-	      && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
-		  || fieldcode == UNION_TYPE))
+	  /* Accept a string constant to initialize a subarray.  */
+	  if (value != 0
+	      && fieldcode == ARRAY_TYPE
+	      && TREE_CODE (TREE_TYPE (fieldtype)) == INTEGER_TYPE
+	      && string_flag)
+	    value = orig_value;
+	  /* Otherwise, if we have come to a subaggregate,
+	     and we don't have an element of its type, push into it.  */
+	  else if (value != 0
+		   && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != fieldtype
+		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
+		       || fieldcode == UNION_TYPE))
 	    {
 	      push_init_level (1);
 	      continue;
@@ -5983,10 +6049,20 @@ process_init_element (value)
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
 	  else
-	    /* If we are doing the bookkeeping for an element that was
-	       directly output as a constructor,
-	       we must update constructor_unfilled_fields.  */
-	    constructor_unfilled_fields = TREE_CHAIN (constructor_fields);
+	    /* Do the bookkeeping for an element that was
+	       directly output as a constructor.  */
+	    {
+	      /* For a record, keep track of end position of last field.  */
+	      tree temp = size_binop (PLUS_EXPR,
+				      DECL_FIELD_BITPOS (constructor_fields),
+				      DECL_SIZE (constructor_fields));
+	      TREE_INT_CST_LOW (constructor_bit_index)
+		= TREE_INT_CST_LOW (temp);
+	      TREE_INT_CST_HIGH (constructor_bit_index)
+		= TREE_INT_CST_HIGH (temp);
+
+	      constructor_unfilled_fields = TREE_CHAIN (constructor_fields);
+	    }
 
 	  constructor_fields = TREE_CHAIN (constructor_fields);
 	  break;
@@ -6006,9 +6082,18 @@ process_init_element (value)
 	  fieldtype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_fields));
 	  fieldcode = TREE_CODE (fieldtype);
 
-	  if (value != 0 && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != fieldtype
-	      && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
-		  || fieldcode == UNION_TYPE))
+	  /* Accept a string constant to initialize a subarray.  */
+	  if (value != 0
+	      && fieldcode == ARRAY_TYPE
+	      && TREE_CODE (TREE_TYPE (fieldtype)) == INTEGER_TYPE
+	      && string_flag)
+	    value = orig_value;
+	  /* Otherwise, if we have come to a subaggregate,
+	     and we don't have an element of its type, push into it.  */
+	  else if (value != 0
+		   && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != fieldtype
+		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
+		       || fieldcode == UNION_TYPE))
 	    {
 	      push_init_level (1);
 	      continue;
@@ -6034,9 +6119,18 @@ process_init_element (value)
 	  tree elttype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_type));
 	  enum tree_code eltcode = TREE_CODE (elttype);
 
-	  if (value != 0 && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != elttype
-	      && (eltcode == RECORD_TYPE || eltcode == ARRAY_TYPE
-		  || eltcode == UNION_TYPE))
+	  /* Accept a string constant to initialize a subarray.  */
+	  if (value != 0
+	      && eltcode == ARRAY_TYPE
+	      && TREE_CODE (TREE_TYPE (elttype)) == INTEGER_TYPE
+	      && string_flag)
+	    value = orig_value;
+	  /* Otherwise, if we have come to a subaggregate,
+	     and we don't have an element of its type, push into it.  */
+	  else if (value != 0
+		   && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != elttype
+		   && (eltcode == RECORD_TYPE || eltcode == ARRAY_TYPE
+		       || eltcode == UNION_TYPE))
 	    {
 	      push_init_level (1);
 	      continue;
