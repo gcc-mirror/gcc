@@ -1,5 +1,10 @@
 2003-03-31  Richard Sandiford  <rsandifo@redhat.com>
 
+	* gcc.c-torture/compile/20030331-1.c: New test, moved from...
+	* gcc.c-torture/execute/20030331-1.c: ...here.
+
+2003-03-31  Richard Sandiford  <rsandifo@redhat.com>
+
 	* gcc.c-torture/execute/20030331-1.c: New test.
 
 2003-03-31  Nathan Sidwell  <nathan@codesourcery.com>
