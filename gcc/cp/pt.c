@@ -237,7 +237,7 @@ finish_member_template_decl (tree decl)
       return NULL_TREE;
     }
   else if (TREE_CODE (decl) == FIELD_DECL)
-    error ("data member `%D' cannot be a member template", decl);
+    error ("data member %qD cannot be a member template", decl);
   else if (DECL_TEMPLATE_INFO (decl))
     {
       if (!DECL_TEMPLATE_SPECIALIZATION (decl))
@@ -249,7 +249,7 @@ finish_member_template_decl (tree decl)
 	return decl;
     } 
   else
-    error ("invalid member template declaration `%D'", decl);
+    error ("invalid member template declaration %qD", decl);
 
   return error_mark_node;
 }
@@ -632,8 +632,7 @@ check_specialization_scope (void)
      shall be declared in the namespace of which the class template
      is a member.  */
   if (scope && TREE_CODE (scope) != NAMESPACE_DECL)
-    error ("explicit specialization in non-namespace scope `%D'",
-	      scope);
+    error ("explicit specialization in non-namespace scope %qD", scope);
 
   /* [temp.expl.spec] 
 
@@ -728,8 +727,8 @@ check_specialization_namespace (tree tmpl)
     return true;
   else
     {
-      pedwarn ("specialization of `%D' in different namespace", tmpl);
-      cp_pedwarn_at ("  from definition of `%#D'", tmpl);
+      pedwarn ("specialization of %qD in different namespace", tmpl);
+      cp_pedwarn_at ("  from definition of %q#D", tmpl);
       return false;
     }
 }
@@ -765,7 +764,7 @@ maybe_process_partial_specialization (tree type)
 	    push_template_decl (TYPE_MAIN_DECL (type));
 	}
       else if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
-	error ("specialization of `%T' after instantiation", type);
+	error ("specialization of %qT after instantiation", type);
     }
   else if (CLASS_TYPE_P (type)
 	   && !CLASSTYPE_USE_TEMPLATE (type)
@@ -797,8 +796,8 @@ maybe_process_partial_specialization (tree type)
 	  if (current_namespace
 	      != decl_namespace_context (CLASSTYPE_TI_TEMPLATE (type)))
 	    {
-	      pedwarn ("specializing `%#T' in different namespace", type);
-	      cp_pedwarn_at ("  from definition of `%#D'",
+	      pedwarn ("specializing %q#T in different namespace", type);
+	      cp_pedwarn_at ("  from definition of %q#D",
 			     CLASSTYPE_TI_TEMPLATE (type));
 	    }
 
@@ -812,7 +811,7 @@ maybe_process_partial_specialization (tree type)
 	       t; t = TREE_CHAIN (t))
 	    if (TREE_VALUE (t) != type
 		&& TYPE_CONTEXT (TREE_VALUE (t)) == context)
-	      error ("specialization `%T' after instantiation `%T'",
+	      error ("specialization %qT after instantiation %qT",
 		     type, TREE_VALUE (t));
 
 	  /* Mark TYPE as a specialization.  And as a result, we only
@@ -824,7 +823,7 @@ maybe_process_partial_specialization (tree type)
 	}
     }
   else if (processing_specialization)
-    error ("explicit specialization of non-template `%T'", type);
+    error ("explicit specialization of non-template %qT", type);
 }
 
 /* Retrieve the specialization (in the sense of [temp.spec] - a
@@ -1081,8 +1080,7 @@ register_specialization (tree spec, tree tmpl, tree args)
 	      if (TREE_USED (fn) 
 		  || DECL_EXPLICIT_INSTANTIATION (fn))
 		{
-		  error ("specialization of %D after instantiation",
-			 fn);
+		  error ("specialization of %qD after instantiation", fn);
 		  return spec;
 		}
 	      else
@@ -1267,7 +1265,7 @@ determine_specialization (tree template_id,
 
   if (!is_overloaded_fn (fns))
     {
-      error ("`%D' is not a function template", fns);
+      error ("%qD is not a function template", fns);
       return error_mark_node;
     }
 
@@ -1452,7 +1450,8 @@ determine_specialization (tree template_id,
 
   if (templates == NULL_TREE && candidates == NULL_TREE)
     {
-      cp_error_at ("template-id `%D' for `%+D' does not match any template declaration",
+      cp_error_at ("template-id %qD for %q+D does not match any template "
+                   "declaration",
 		   template_id, decl);
       return error_mark_node;
     }
@@ -1460,7 +1459,7 @@ determine_specialization (tree template_id,
 	   || (candidates && TREE_CHAIN (candidates))
 	   || (templates && candidates))
     {
-      cp_error_at ("ambiguous template specialization `%D' for `%+D'",
+      cp_error_at ("ambiguous template specialization %qD for %q+D",
 		   template_id, decl);
       chainon (candidates, templates);
       print_candidates (candidates);
@@ -1683,8 +1682,8 @@ check_explicit_specialization (tree declarator,
 	      /* This case handles bogus declarations like template <>
 		 template <class T> void f<int>(); */
 
-	      error ("template-id `%D' in declaration of primary template",
-			declarator);
+	      error ("template-id %qD in declaration of primary template",
+                     declarator);
 	      return decl;
 	    }
 	}
@@ -1710,13 +1709,12 @@ check_explicit_specialization (tree declarator,
     case tsk_excessive_parms:
     case tsk_insufficient_parms:
       if (tsk == tsk_excessive_parms)
-        error ("too many template parameter lists in declaration of `%D'",
+        error ("too many template parameter lists in declaration of %qD",
 	       decl);
       else if (template_header_count)
-	error("too few template parameter lists in declaration of `%D'",
-	      decl);
+	error("too few template parameter lists in declaration of %qD", decl);
       else
-	error("explicit specialization of `%D' must be introduced by "
+	error("explicit specialization of %qD must be introduced by "
 	      "`template <>'", decl);
 
       /* Fall through.  */
@@ -1735,11 +1733,11 @@ check_explicit_specialization (tree declarator,
 	     template <class T> void f<int>(); */
 
 	  if (uses_template_parms (declarator))
-	    error ("function template partial specialization `%D' "
+	    error ("function template partial specialization %qD "
 		   "is not allowed", declarator);
 	  else
-	    error ("template-id `%D' in declaration of primary template",
-		      declarator);
+	    error ("template-id %qD in declaration of primary template",
+                   declarator);
 	  return decl;
 	}
 
@@ -1899,8 +1897,7 @@ check_explicit_specialization (tree declarator,
 	      
 	  if (fns == NULL_TREE) 
 	    {
-	      error ("no member function `%D' declared in `%T'",
-			name, ctype);
+	      error ("no member function %qD declared in %qT", name, ctype);
 	      return error_mark_node;
 	    }
 	  else
@@ -2050,7 +2047,7 @@ maybe_check_template_type (tree type)
 	; 
       else if (template_header_count > context_depth + 1)
 	/* There are two many template parameter lists.  */
-	error ("too many template parameter lists in declaration of `%T'", type); 
+	error ("too many template parameter lists in declaration of %qT", type); 
     }
 }
 
@@ -2143,8 +2140,8 @@ check_template_shadow (tree decl)
       || TEMPLATE_PARMS_FOR_INLINE (current_template_parms))
     return;
 
-  cp_error_at ("declaration of `%#D'", decl);
-  cp_error_at (" shadows template parm `%#D'", olddecl);
+  cp_error_at ("declaration of %q#D", decl);
+  cp_error_at (" shadows template parm %q#D", olddecl);
 }
 
 /* Return a new TEMPLATE_PARM_INDEX with the indicated INDEX, LEVEL,
@@ -2548,8 +2545,7 @@ process_partial_specialization (tree decl)
 	    did_error_intro = 1;
 	  }
 
-	error ("        `%D'", 
-		  TREE_VALUE (TREE_VEC_ELT (inner_parms, i)));
+	error ("        %qD", TREE_VALUE (TREE_VEC_ELT (inner_parms, i)));
       }
 
   /* [temp.class.spec]
@@ -2560,7 +2556,7 @@ process_partial_specialization (tree decl)
       (inner_args, 
        INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (TREE_TYPE
 						   (maintmpl)))))
-    error ("partial specialization `%T' does not specialize any template arguments", type);
+    error ("partial specialization %qT does not specialize any template arguments", type);
 
   /* [temp.class.spec]
 
@@ -2585,7 +2581,7 @@ process_partial_specialization (tree decl)
 	  && TREE_CODE (arg) != TEMPLATE_PARM_INDEX)
 	{
 	  if (tpd.arg_uses_template_parms[i])
-	    error ("template argument `%E' involves template parameter(s)", arg);
+	    error ("template argument %qE involves template parameter(s)", arg);
 	  else 
 	    {
 	      /* Look at the corresponding template parameter,
@@ -2629,9 +2625,10 @@ process_partial_specialization (tree decl)
 		    if (tpd2.parms[j] != 0
 			&& tpd.arg_uses_template_parms [j])
 		      {
-			error ("type `%T' of template argument `%E' depends on template parameter(s)", 
-				  type,
-				  arg);
+			error ("type %qT of template argument %qE depends "
+                               "on template parameter(s)", 
+                               type,
+                               arg);
 			break;
 		      }
 		}
@@ -2714,7 +2711,7 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
 	    seen_def_arg_p = 1;
 	  else if (seen_def_arg_p)
 	    {
-	      error ("no default argument for `%D'", TREE_VALUE (parm));
+	      error ("no default argument for %qD", TREE_VALUE (parm));
 	      /* For better subsequent error-recovery, we indicate that
 		 there should have been a default argument.  */
 	      TREE_PURPOSE (parm) = error_mark_node;
@@ -2748,7 +2745,7 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
   else if (is_partial)
     msg = "default template arguments may not be used in partial specializations";
   else
-    msg = "default argument for template parameter for class enclosing `%D'";
+    msg = "default argument for template parameter for class enclosing %qD";
 
   if (current_class_type && TYPE_BEING_DEFINED (current_class_type))
     /* If we're inside a class definition, there's no need to
@@ -2790,7 +2787,7 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
       /* At this point, if we're still interested in issuing messages,
 	 they must apply to classes surrounding the object declared.  */
       if (msg)
-	msg = "default argument for template parameter for class enclosing `%D'"; 
+	msg = "default argument for template parameter for class enclosing %qD"; 
     }
 }
 
@@ -2877,7 +2874,7 @@ push_template_decl_real (tree decl, int is_friend)
 	      /* [temp.mem]
 		 
 	         A destructor shall not be a member template.  */
-	      error ("destructor `%D' declared as member template", decl);
+	      error ("destructor %qD declared as member template", decl);
 	      return error_mark_node;
 	    }
 	  if (NEW_DELETE_OPNAME_P (DECL_NAME (decl))
@@ -2892,7 +2889,7 @@ push_template_decl_real (tree decl, int is_friend)
 	         An allocation function can be a function
 		 template. ... Template allocation functions shall
 		 have two or more parameters.  */
-	      error ("invalid template declaration of `%D'", decl);
+	      error ("invalid template declaration of %qD", decl);
 	      return decl;
 	    }
 	}
@@ -2902,7 +2899,7 @@ push_template_decl_real (tree decl, int is_friend)
 	/* OK */;
       else
 	{
-	  error ("template declaration of `%#D'", decl);
+	  error ("template declaration of %q#D", decl);
 	  return error_mark_node;
 	}
     }
@@ -2972,13 +2969,13 @@ push_template_decl_real (tree decl, int is_friend)
 	    tmpl = TYPE_TI_TEMPLATE (TREE_TYPE (decl));
 	  else
 	    {
-	      error ("`%D' does not declare a template type", decl);
+	      error ("%qD does not declare a template type", decl);
 	      return decl;
 	    }
 	}
       else if (!DECL_LANG_SPECIFIC (decl) || !DECL_TEMPLATE_INFO (decl))
 	{
-	  error ("template definition of non-template `%#D'", decl);
+	  error ("template definition of non-template %q#D", decl);
 	  return decl;
 	}
       else
@@ -3019,8 +3016,8 @@ push_template_decl_real (tree decl, int is_friend)
       i = TMPL_PARMS_DEPTH (parms);
       if (TMPL_ARGS_DEPTH (args) != i)
 	{
-	  error ("expected %d levels of template parms for `%#D', got %d",
-		    i, decl, TMPL_ARGS_DEPTH (args));
+	  error ("expected %d levels of template parms for %q#D, got %d",
+                 i, decl, TMPL_ARGS_DEPTH (args));
 	}
       else
 	for (current = decl; i > 0; --i, parms = TREE_CHAIN (parms))
@@ -3031,11 +3028,11 @@ push_template_decl_real (tree decl, int is_friend)
 	    if (TREE_VEC_LENGTH (t) != TREE_VEC_LENGTH (a))
 	      {
 		if (current == decl)
-		  error ("got %d template parameters for `%#D'",
-			    TREE_VEC_LENGTH (a), decl);
+		  error ("got %d template parameters for %q#D",
+                         TREE_VEC_LENGTH (a), decl);
 		else
-		  error ("got %d template parameters for `%#T'",
-			    TREE_VEC_LENGTH (a), current);
+		  error ("got %d template parameters for %q#T",
+                         TREE_VEC_LENGTH (a), current);
 		error ("  but %d required", TREE_VEC_LENGTH (t));
 	      }
 
@@ -3121,7 +3118,7 @@ redeclare_class_template (tree type, tree parms)
 
   if (!TYPE_TEMPLATE_INFO (type))
     {
-      error ("`%T' is not a template type", type);
+      error ("%qT is not a template type", type);
       return;
     }
 
@@ -3137,7 +3134,7 @@ redeclare_class_template (tree type, tree parms)
 
   if (TREE_VEC_LENGTH (parms) != TREE_VEC_LENGTH (tmpl_parms))
     {
-      cp_error_at ("previous declaration `%D'", tmpl);
+      cp_error_at ("previous declaration %qD", tmpl);
       error ("used %d template parameter%s instead of %d",
 		TREE_VEC_LENGTH (tmpl_parms), 
 		TREE_VEC_LENGTH (tmpl_parms) == 1 ? "" : "s",
@@ -3158,8 +3155,8 @@ redeclare_class_template (tree type, tree parms)
 	  || (TREE_CODE (tmpl_parm) != TYPE_DECL
 	      && !same_type_p (TREE_TYPE (tmpl_parm), TREE_TYPE (parm))))
 	{
-	  cp_error_at ("template parameter `%#D'", tmpl_parm);
-	  error ("redeclared here as `%#D'", parm);
+	  cp_error_at ("template parameter %q#D", tmpl_parm);
+	  error ("redeclared here as %q#D", parm);
 	  return;
 	}
 
@@ -3169,7 +3166,7 @@ redeclare_class_template (tree type, tree parms)
 
 	     A template-parameter may not be given default arguments
 	     by two different declarations in the same scope.  */
-	  error ("redefinition of default argument for `%#D'", parm);
+	  error ("redefinition of default argument for %q#D", parm);
 	  error ("%J  original definition appeared here", tmpl_parm);
 	  return;
 	}
@@ -3316,7 +3313,7 @@ convert_nontype_argument (tree type, tree expr)
 	  if (TREE_CODE (e) != ADDR_EXPR)
 	    {
 	    bad_argument:
-	      error ("`%E' is not a valid template argument", expr);
+	      error ("%qE is not a valid template argument", expr);
 	      if (TYPE_PTR_P (expr_type))
 		{
 		  if (TREE_CODE (TREE_TYPE (expr_type)) == FUNCTION_TYPE)
@@ -3325,7 +3322,7 @@ convert_nontype_argument (tree type, tree expr)
 		    error ("it must be the address of an object with external linkage");
 		}
 	      else if (TYPE_PTR_TO_MEMBER_P (expr_type))
-		error ("it must be a pointer-to-member of the form `&X::Y'");
+		error ("it must be a pointer-to-member of the form %<&X::Y%>");
 
 	      return NULL_TREE;
 	    }
@@ -3336,8 +3333,9 @@ convert_nontype_argument (tree type, tree expr)
 
       if (TREE_CODE (referent) == STRING_CST)
 	{
-	  error ("string literal %E is not a valid template argument because it is the address of an object with static linkage", 
-		    referent);
+	  error ("string literal %qE is not a valid template argument "
+                 "because it is the address of an object with static linkage", 
+                 referent);
 	  return NULL_TREE;
 	}
 
@@ -3351,7 +3349,8 @@ convert_nontype_argument (tree type, tree expr)
 	goto bad_argument;
       else if (!DECL_EXTERNAL_LINKAGE_P (referent))
 	{
-	  error ("address of non-extern `%E' cannot be used as template argument", referent); 
+	  error ("address of non-extern %qE cannot be used as "
+                 "template argument", referent); 
 	  return error_mark_node;
 	}
     }
@@ -3360,20 +3359,19 @@ convert_nontype_argument (tree type, tree expr)
       if (! TREE_CONSTANT (expr))
 	{
 	non_constant:
-	  error ("non-constant `%E' cannot be used as template argument",
-		    expr);
+	  error ("non-constant %qE cannot be used as template argument", expr);
 	  return NULL_TREE;
 	}
     }
   else 
     {
       if (TYPE_P (expr))
-        error ("type '%T' cannot be used as a value for a non-type "
+         error ("type %qT cannot be used as a value for a non-type "
                "template-parameter", expr);
       else if (DECL_P (expr))
-        error ("invalid use of '%D' as a non-type template-argument", expr);
+        error ("invalid use of %qD as a non-type template-argument", expr);
       else
-        error ("invalid use of '%E' as a non-type template-argument", expr);
+        error ("invalid use of %qE as a non-type template-argument", expr);
 
       return NULL_TREE;
     }
@@ -3751,7 +3749,8 @@ convert_template_argument (tree parm,
   if (requires_type && ! is_type && TREE_CODE (arg) == SCOPE_REF
       && TREE_CODE (TREE_OPERAND (arg, 0)) == TEMPLATE_TYPE_PARM)
     {
-      pedwarn ("to refer to a type member of a template parameter, use `typename %E'", arg);
+      pedwarn ("to refer to a type member of a template parameter, "
+               "use %<typename %E%>", arg);
       
       arg = make_typename_type (TREE_OPERAND (arg, 0),
 				TREE_OPERAND (arg, 1),
@@ -3764,16 +3763,17 @@ convert_template_argument (tree parm,
 	{
 	  if (complain & tf_error)
 	    {
-	      error ("type/value mismatch at argument %d in template parameter list for `%D'",
-			i + 1, in_decl);
+	      error ("type/value mismatch at argument %d in template "
+                     "parameter list for %qD",
+                     i + 1, in_decl);
 	      if (is_type)
-		error ("  expected a constant of type `%T', got `%T'",
-			  TREE_TYPE (parm),
-			  (is_tmpl_type ? DECL_NAME (arg) : arg));
+		error ("  expected a constant of type %qT, got %qT",
+                       TREE_TYPE (parm),
+                       (is_tmpl_type ? DECL_NAME (arg) : arg));
 	      else if (requires_tmpl_type)
-		error ("  expected a class template, got `%E'", arg);
+		error ("  expected a class template, got %qE", arg);
 	      else
-		error ("  expected a type, got `%E'", arg);
+		error ("  expected a type, got %qE", arg);
 	    }
 	}
       return error_mark_node;
@@ -3782,12 +3782,13 @@ convert_template_argument (tree parm,
     {
       if (in_decl && (complain & tf_error))
 	{
-	  error ("type/value mismatch at argument %d in template parameter list for `%D'",
-		    i + 1, in_decl);
+	  error ("type/value mismatch at argument %d in template "
+                 "parameter list for %qD",
+                 i + 1, in_decl);
 	  if (is_tmpl_type)
-	    error ("  expected a type, got `%T'", DECL_NAME (arg));
+	    error ("  expected a type, got %qT", DECL_NAME (arg));
 	  else
-	    error ("  expected a class template, got `%T'", arg);
+	    error ("  expected a class template, got %qT", arg);
 	}
       return error_mark_node;
     }
@@ -3821,9 +3822,11 @@ convert_template_argument (tree parm,
 		{
 		  if (in_decl && (complain & tf_error))
 		    {
-		      error ("type/value mismatch at argument %d in template parameter list for `%D'",
-				i + 1, in_decl);
-		      error ("  expected a template of type `%D', got `%D'", parm, arg);
+		      error ("type/value mismatch at argument %d in "
+                             "template parameter list for %qD",
+                             i + 1, in_decl);
+		      error ("  expected a template of type %qD, got %qD",
+                             parm, arg);
 		    }
 		  
 		  val = error_mark_node;
@@ -3858,8 +3861,7 @@ convert_template_argument (tree parm,
       if (val == NULL_TREE)
 	val = error_mark_node;
       else if (val == error_mark_node && (complain & tf_error))
-	error ("could not convert template argument `%E' to `%T'", 
-		  arg, t);
+	error ("could not convert template argument %qE to %qT",  arg, t);
     }
 
   return val;
@@ -3899,10 +3901,10 @@ coerce_template_parms (tree parms,
       if (complain & tf_error) 
 	{
 	  error ("wrong number of template arguments (%d, should be %d)",
-		    nargs, nparms);
+                 nargs, nparms);
 	  
 	  if (in_decl)
-	    cp_error_at ("provided for `%D'", in_decl);
+	    cp_error_at ("provided for %qD", in_decl);
 	}
 
       return error_mark_node;
@@ -4274,7 +4276,7 @@ lookup_template_class (tree d1,
   if (! template)
     {
       if (complain & tf_error)
-        error ("`%T' is not a template", d1);
+        error ("%qT is not a template", d1);
       POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
     }
 
@@ -4286,9 +4288,9 @@ lookup_template_class (tree d1,
     {
       if (complain & tf_error)
         {
-          error ("non-template type `%T' used as a template", d1);
+          error ("non-template type %qT used as a template", d1);
           if (in_decl)
-	    cp_error_at ("for template declaration `%D'", in_decl);
+	    cp_error_at ("for template declaration %qD", in_decl);
 	}
       POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
     }
@@ -4937,7 +4939,8 @@ push_tinst_level (tree d)
 	return 0;
 
       last_template_error_tick = tinst_level_tick;
-      error ("template instantiation depth exceeds maximum of %d (use -ftemplate-depth-NN to increase the maximum) instantiating `%D'",
+      error ("template instantiation depth exceeds maximum of %d (use "
+             "-ftemplate-depth-NN to increase the maximum) instantiating %qD",
 	     max_tinst_depth, d);
 
       print_instantiation_context ();
@@ -5375,7 +5378,7 @@ instantiate_class_template (tree type)
   if (t == error_mark_node)
     {
       const char *str = "candidates are:";
-      error ("ambiguous class template instantiation for `%#T'", type);
+      error ("ambiguous class template instantiation for %q#T", type);
       for (t = DECL_TEMPLATE_SPECIALIZATIONS (template); t; 
 	   t = TREE_CHAIN (t))
 	{
@@ -6402,7 +6405,7 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 					complain, in_decl);
 	TREE_CHAIN (r) = NULL_TREE;
 	if (VOID_TYPE_P (type)) 
-	  cp_error_at ("instantiation of `%D' as type `%T'", r, type);
+	  cp_error_at ("instantiation of %qD as type %qT", r, type);
       }
       break;
 
@@ -6522,7 +6525,7 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 
 	TREE_CHAIN (r) = NULL_TREE;
 	if (TREE_CODE (r) == VAR_DECL && VOID_TYPE_P (type))
-	  cp_error_at ("instantiation of `%D' as type `%T'", r, type);
+	  cp_error_at ("instantiation of %qD as type %qT", r, type);
 	/* Compute the size, alignment, etc. of R.  */
 	layout_decl (r, 0);
       }
@@ -6564,9 +6567,9 @@ tsubst_arg_types (tree arg_types,
     {
       if (complain & tf_error)
         {
-          error ("invalid parameter type `%T'", type);
+          error ("invalid parameter type %qT", type);
           if (in_decl)
-            cp_error_at ("in declaration `%D'", in_decl);
+            cp_error_at ("in declaration %qD", in_decl);
         }
       return error_mark_node;
     }
@@ -6640,7 +6643,7 @@ tsubst_function_type (tree t,
 	     -- Attempting to create "pointer to member of T" when T
 	     is not a class type.  */
 	  if (complain & tf_error)
-	    error ("creating pointer to member function of non-class type `%T'",
+	    error ("creating pointer to member function of non-class type %qT",
 		      r);
 	  return error_mark_node;
 	}
@@ -6791,7 +6794,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		 Attempting to create an array with a size that is
 		 zero or negative.  */
 	    if (complain & tf_error)
-	      error ("creating array with size zero (`%E')", max);
+	      error ("creating array with size zero (%qE)", max);
 
 	    return error_mark_node;
 	  }
@@ -7010,9 +7013,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		if (TREE_CODE (type) == VOID_TYPE)
 		  error ("forming reference to void");
 		else
-		  error ("forming %s to reference type `%T'",
-			    (code == POINTER_TYPE) ? "pointer" : "reference",
-			    type);
+		  error ("forming %s to reference type %qT",
+                         (code == POINTER_TYPE) ? "pointer" : "reference",
+                         type);
 		last_loc = input_location;
 	      }
 
@@ -7047,13 +7050,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	       -- Attempting to create "pointer to member of T" when T
 	          is not a class type.  */
 	    if (complain & tf_error)
-	      error ("creating pointer to member of non-class type `%T'", r);
+	      error ("creating pointer to member of non-class type %qT", r);
 	    return error_mark_node;
 	  }
 	if (TREE_CODE (type) == REFERENCE_TYPE)
 	  {
 	    if (complain & tf_error)
-	      error ("creating pointer to member reference type `%T'", type);
+	      error ("creating pointer to member reference type %qT", type);
 	    
 	    return error_mark_node;
 	  }
@@ -7139,13 +7142,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    || TREE_CODE (type) == REFERENCE_TYPE)
 	  {
 	    if (complain & tf_error)
-	      error ("creating array of `%T'", type);
+	      error ("creating array of %qT", type);
 	    return error_mark_node;
 	  }
 	if (CLASS_TYPE_P (type) && CLASSTYPE_PURE_VIRTUALS (type))
 	  {
 	    if (complain & tf_error)
-	      error ("creating array of `%T', which is an abstract class type", 
+	      error ("creating array of %qT, which is an abstract class type", 
 		     type);
 	    return error_mark_node;	    
 	  }
@@ -7189,8 +7192,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (!IS_AGGR_TYPE (ctx))
 	  {
 	    if (complain & tf_error)
-	      error ("`%T' is not a class, struct, or union type",
-			ctx);
+	      error ("%qT is not a class, struct, or union type", ctx);
 	    return error_mark_node;
 	  }
 	else if (!uses_template_parms (ctx) && !TYPE_BEING_DEFINED (ctx))
@@ -7401,9 +7403,9 @@ tsubst_qualified_id (tree qualified_id, tree args,
 	{
 	  if (complain & tf_error)
 	    {
-	      error ("dependent-name `%E' is parsed as a non-type, but "
+	      error ("dependent-name %qE is parsed as a non-type, but "
 		     "instantiation yields a type", qualified_id);
-	      inform ("say `typename %E' if a type is meant", qualified_id);
+	      inform ("say %<typename %E%> if a type is meant", qualified_id);
 	    }
 	  return error_mark_node;
 	}
@@ -8540,10 +8542,10 @@ tsubst_copy_and_build (tree t,
 	    if (complain & tf_error)
 	      {
 		if (TYPE_P (TREE_OPERAND (member, 0)))
-		  error ("`%T' is not a class or namespace", 
+		  error ("%qT is not a class or namespace", 
 			 TREE_OPERAND (member, 0));
 		else
-		  error ("`%D' is not a class or namespace", 
+		  error ("%qD is not a class or namespace", 
 			 TREE_OPERAND (member, 0));
 	      }
 	    return error_mark_node;
@@ -8668,9 +8670,9 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
 	      if (!(complain & tf_error))
 		/*OK*/;
 	      else if (TYPE_ANONYMOUS_P (nt))
-		error ("`%T' uses anonymous type", t);
+		error ("%qT uses anonymous type", t);
 	      else
-		error ("`%T' uses local type `%T'", t, nt);
+		error ("%qT uses local type %qT", t, nt);
 	      result = true;
 	    }
 	  /* In order to avoid all sorts of complications, we do not
@@ -8678,7 +8680,7 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
 	  else if (variably_modified_type_p (t, NULL_TREE))
 	    {
 	      if (complain & tf_error)
-		error ("`%T' is a variably modified type", t);
+		error ("%qT is a variably modified type", t);
 	      result = true;
 	    }
 	}
@@ -8689,12 +8691,12 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
 	       && !TREE_CONSTANT (t))
 	{
 	  if (complain & tf_error)
-	    error ("integral expression `%E' is not constant", t);
+	    error ("integral expression %qE is not constant", t);
 	  result = true;
 	}
     }
   if (result && complain & tf_error)
-    error ("  trying to instantiate `%D'", tmpl);
+    error ("  trying to instantiate %qD", tmpl);
   return result;
 }
 
@@ -10526,7 +10528,7 @@ do_decl_instantiation (tree decl, tree storage)
     return;
   else if (! DECL_LANG_SPECIFIC (decl))
     {
-      error ("explicit instantiation of non-template `%#D'", decl);
+      error ("explicit instantiation of non-template %q#D", decl);
       return;
     }
   else if (TREE_CODE (decl) == VAR_DECL)
@@ -10542,13 +10544,13 @@ do_decl_instantiation (tree decl, tree storage)
       result = lookup_field (DECL_CONTEXT (decl), DECL_NAME (decl), 0, false);
       if (!result || TREE_CODE (result) != VAR_DECL)
 	{
-	  error ("no matching template for `%D' found", decl);
+	  error ("no matching template for %qD found", decl);
 	  return;
 	}
     }
   else if (TREE_CODE (decl) != FUNCTION_DECL)
     {
-      error ("explicit instantiation of `%#D'", decl);
+      error ("explicit instantiation of %q#D", decl);
       return;
     }
   else
@@ -10584,7 +10586,7 @@ do_decl_instantiation (tree decl, tree storage)
 	 the first instantiation was `extern' and the second is not,
 	 and EXTERN_P for the opposite case.  */
       if (DECL_NOT_REALLY_EXTERN (result) && !extern_p)
-	pedwarn ("duplicate explicit instantiation of `%#D'", result);
+	pedwarn ("duplicate explicit instantiation of %q#D", result);
       /* If an "extern" explicit instantiation follows an ordinary
 	 explicit instantiation, the template is instantiated.  */
       if (extern_p)
@@ -10592,12 +10594,12 @@ do_decl_instantiation (tree decl, tree storage)
     }
   else if (!DECL_IMPLICIT_INSTANTIATION (result))
     {
-      error ("no matching template for `%D' found", result);
+      error ("no matching template for %qD found", result);
       return;
     }
   else if (!DECL_TEMPLATE_INFO (result))
     {
-      pedwarn ("explicit instantiation of non-template `%#D'", result);
+      pedwarn ("explicit instantiation of non-template %q#D", result);
       return;
     }
 
@@ -10606,12 +10608,12 @@ do_decl_instantiation (tree decl, tree storage)
   else if (storage == ridpointers[(int) RID_EXTERN])
     {
       if (pedantic && !in_system_header)
-	pedwarn ("ISO C++ forbids the use of `extern' on explicit instantiations");
+	pedwarn ("ISO C++ forbids the use of %<extern%> on explicit "
+                 "instantiations");
       extern_p = 1;
     }
   else
-    error ("storage class `%D' applied to template instantiation",
-	      storage);
+    error ("storage class %qD applied to template instantiation", storage);
 
   mark_decl_instantiated (result, extern_p);
   if (! extern_p)
@@ -10673,7 +10675,7 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 
   if (! CLASS_TYPE_P (t) || ! CLASSTYPE_TEMPLATE_INFO (t))
     {
-      error ("explicit instantiation of non-template type `%T'", t);
+      error ("explicit instantiation of non-template type %qT", t);
       return;
     }
 
@@ -10682,8 +10684,8 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
   if (!COMPLETE_TYPE_P (t))
     {
       if (complain & tf_error)
-	error ("explicit instantiation of `%#T' before definition of template",
-		  t);
+	error ("explicit instantiation of %q#T before definition of template",
+               t);
       return;
     }
 
@@ -10701,8 +10703,8 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 	static_p = 1;
       else
 	{
-	  error ("storage class `%D' applied to template instantiation",
-		    storage);
+	  error ("storage class %qD applied to template instantiation",
+                 storage);
 	  extern_p = 0;
 	}
     }
@@ -10735,7 +10737,7 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 
       if (!previous_instantiation_extern_p && !extern_p
 	  && (complain & tf_error))
-	pedwarn ("duplicate explicit instantiation of `%#T'", t);
+	pedwarn ("duplicate explicit instantiation of %q#T", t);
       
       /* If we've already instantiated the template, just return now.  */
       if (!CLASSTYPE_INTERFACE_ONLY (t))
@@ -11098,7 +11100,7 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
 	   shall be present in every translation unit in which it is
 	   explicitly instantiated.  */
 	pedwarn
-	  ("explicit instantiation of `%D' but no definition available", d);
+	  ("explicit instantiation of %qD but no definition available", d);
 
       add_pending_template (d);
       goto out;
@@ -11244,7 +11246,7 @@ instantiate_pending_templates (int retries)
     {
       cp_error_at ("template instantiation depth exceeds maximum of %d"
 		   " (use -ftemplate-depth-NN to increase the maximum)"
-		   " instantiating `%+D', possibly from virtual table"
+		   " instantiating %q+D, possibly from virtual table"
 		   " generation",
 		   max_tinst_depth, TREE_VALUE (pending_templates));
       return;
@@ -11521,8 +11523,7 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
     return 0;
            
   if (complain & tf_error)
-    error ("`%#T' is not a valid type for a template constant parameter",
-              type);
+    error ("%q#T is not a valid type for a template constant parameter", type);
   return 1;
 }
 
