@@ -3790,7 +3790,8 @@ reorder_insns (rtx from, rtx to, rtx after)
 	BB_END (bb) = to;
 
       for (x = from; x != NEXT_INSN (to); x = NEXT_INSN (x))
-	set_block_for_insn (x, bb);
+	if (!BARRIER_P (x))
+	  set_block_for_insn (x, bb);
     }
 }
 
