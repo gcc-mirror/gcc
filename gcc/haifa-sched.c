@@ -971,6 +971,10 @@ schedule_insns (dump_file)
 #define __inline
 #endif
 
+#ifndef HAIFA_INLINE
+#define HAIFA_INLINE __inline
+#endif
+
 /* Computation of memory dependencies.  */
 
 /* The *_insns and *_mems are paired lists.  Each pending memory operation
@@ -2740,7 +2744,7 @@ is_exception_free (insn, bb_src, bb_trg)
 /* Return the INSN_LIST containing INSN in LIST, or NULL
    if LIST does not contain INSN.  */
 
-__inline static rtx
+HAIFA_INLINE static rtx
 find_insn_list (insn, list)
      rtx insn;
      rtx list;
@@ -2757,7 +2761,7 @@ find_insn_list (insn, list)
 
 /* Return 1 if the pair (insn, x) is found in (LIST, LIST1), or 0 otherwise.  */
 
-__inline static char
+HAIFA_INLINE static char
 find_insn_mem_list (insn, x, list, list1)
      rtx insn, x;
      rtx list, list1;
@@ -2780,7 +2784,7 @@ find_insn_mem_list (insn, x, list, list1)
    mask if the value is negative.  A function unit index is the
    non-negative encoding.  */
 
-__inline static int
+HAIFA_INLINE static int
 insn_unit (insn)
      rtx insn;
 {
@@ -2817,7 +2821,7 @@ insn_unit (insn)
    These values are encoded in an int where the upper half gives the
    minimum value and the lower half gives the maximum value.  */
 
-__inline static unsigned int
+HAIFA_INLINE static unsigned int
 blockage_range (unit, insn)
      int unit;
      rtx insn;
@@ -2864,7 +2868,7 @@ clear_units ()
 
 /* Return the issue-delay of an insn */
 
-__inline static int
+HAIFA_INLINE static int
 insn_issue_delay (insn)
      rtx insn;
 {
@@ -2894,7 +2898,7 @@ insn_issue_delay (insn)
    instance INSTANCE at time CLOCK if the previous actual hazard cost
    was COST.  */
 
-__inline static int
+HAIFA_INLINE static int
 actual_hazard_this_instance (unit, instance, insn, clock, cost)
      int unit, instance, clock, cost;
      rtx insn;
@@ -2931,7 +2935,7 @@ actual_hazard_this_instance (unit, instance, insn, clock, cost)
 /* Record INSN as having begun execution on the units encoded by UNIT at
    time CLOCK.  */
 
-__inline static void
+HAIFA_INLINE static void
 schedule_unit (unit, insn, clock)
      int unit, clock;
      rtx insn;
@@ -2963,7 +2967,7 @@ schedule_unit (unit, insn, clock)
 /* Return the actual hazard cost of executing INSN on the units encoded by
    UNIT at time CLOCK if the previous actual hazard cost was COST.  */
 
-__inline static int
+HAIFA_INLINE static int
 actual_hazard (unit, insn, clock, cost)
      int unit, clock, cost;
      rtx insn;
@@ -3012,7 +3016,7 @@ actual_hazard (unit, insn, clock, cost)
    to be used is chosen in preference to one with a unit that is less
    used.  We are trying to minimize a subsequent actual hazard.  */
 
-__inline static int
+HAIFA_INLINE static int
 potential_hazard (unit, insn, cost)
      int unit, cost;
      rtx insn;
@@ -3057,7 +3061,7 @@ potential_hazard (unit, insn, cost)
    This is the number of cycles between instruction issue and
    instruction results.  */
 
-__inline static int
+HAIFA_INLINE static int
 insn_cost (insn, link, used)
      rtx insn, link, used;
 {
@@ -4091,7 +4095,7 @@ rank_for_schedule (x, y)
 
 /* Resort the array A in which only element at index N may be out of order.  */
 
-__inline static void
+HAIFA_INLINE static void
 swap_sort (a, n)
      rtx *a;
      int n;
@@ -4113,7 +4117,7 @@ static int max_priority;
    N_CYCLES after the currently executing insn.  Preserve insns
    chain for debugging purposes.  */
 
-__inline static void
+HAIFA_INLINE static void
 queue_insn (insn, n_cycles)
      rtx insn;
      int n_cycles;
@@ -4138,7 +4142,7 @@ queue_insn (insn, n_cycles)
 /* Return nonzero if PAT is the pattern of an insn which makes a
    register live.  */
 
-__inline static int
+HAIFA_INLINE static int
 birthing_insn_p (pat)
      rtx pat;
 {
@@ -4174,7 +4178,7 @@ birthing_insn_p (pat)
 /* PREV is an insn that is ready to execute.  Adjust its priority if that
    will help shorten register lifetimes.  */
 
-__inline static void
+HAIFA_INLINE static void
 adjust_priority (prev)
      rtx prev;
 {
@@ -4701,7 +4705,7 @@ unlink_line_notes (insn, tail)
 
 /* Return the head and tail pointers of BB.  */
 
-__inline static void
+HAIFA_INLINE static void
 get_block_head_tail (bb, headp, tailp)
      int bb;
      rtx *headp;
@@ -6969,7 +6973,7 @@ compute_block_forward_dependences (bb)
 /* Initialize variables for region data dependence analysis.
    n_bbs is the number of region blocks */
 
-__inline static void
+HAIFA_INLINE static void
 init_rgn_data_dependences (n_bbs)
      int n_bbs;
 {

@@ -1,3 +1,21 @@
+Tue May 12 15:16:02 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* haifa-sched.c (HAIFA_INLINE): Define to be __inline unless
+	already defined.
+	(find_insn_{,mem_}list): Use HAIFA_INLINE, not __inline.
+	(insn_{unit,issue_delay}): Ditto.
+	(blockage_range): Ditto.
+	(actual_hazard{,_this_instance}): Ditto.
+	(schedule_unit): Ditto.
+	(potential_hazard): Ditto.
+	(insn_cost): Ditto.
+	(swap_sort): Ditto.
+	(queue_insn): Ditto.
+	(birthing_insn_p): Ditto.
+	(adjust_priority): Ditto.
+	(get_block_head_tail): Ditto.
+	(init_rgn_data_dependences): Ditto.
+
 Tue May 12 10:27:54 1998  Klaus Kaempf  <kkaempf@progis.de>
 
 	* alpha/vms.h (COMMON_ASM_OP, ASM_OUTPUT_ALIGNED_COMMON): Define.
