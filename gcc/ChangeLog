@@ -1,3 +1,7 @@
+2001-02-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* Makefile.in (distclean): Do not remove .gdbinit.
+
 2001-02-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (gcc.o): Fix typos.
