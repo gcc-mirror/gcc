@@ -1,5 +1,15 @@
 2005-03-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* testsuite/lib/libstdc++.exp (libstdc++_wchar_t): Rename to ...
+	(v3-wchar_t): ... this.
+	(libstdc++_threads): Rename to ...
+	(v3-threads): ... this.
+	(libstdc++_test_objs): Rename to ...
+	(v3-test_objs): ... this.
+	(libstdc++_build_support): Rename to ...
+	(v3-build_support): ... this.
+	* testsuite/libstdc++-dg/normal.exp: Adjust to use new names.
+
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Improve handling
 	of compilers not in the build directory.
 	(libstdc++_wchar_t): New variable.
