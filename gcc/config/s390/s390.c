@@ -70,6 +70,7 @@ static enum attr_type s390_safe_attr_type (rtx);
 static int s390_adjust_priority (rtx, int);
 static int s390_issue_rate (void);
 static int s390_first_cycle_multipass_dfa_lookahead (void);
+static bool s390_cannot_copy_insn_p (rtx);
 static bool s390_rtx_costs (rtx, int, int, int *);
 static int s390_address_cost (rtx);
 static void s390_reorg (void);
@@ -127,6 +128,8 @@ static bool s390_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD s390_first_cycle_multipass_dfa_lookahead
 
+#undef TARGET_CANNOT_COPY_INSN_P
+#define TARGET_CANNOT_COPY_INSN_P s390_cannot_copy_insn_p
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS s390_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -2122,6 +2125,11 @@ s390_cannot_force_const_mem (rtx x)
 	case UNSPEC_GOTNTPOFF:
 	case UNSPEC_INDNTPOFF:
 	  return false;
+
+	/* If the literal pool shares the code section, be put
+	   execute template placeholders into the pool as well.  */
+	case UNSPEC_INSN:
+	  return TARGET_CPU_ZARCH;
 
 	default:
 	  return true;
@@ -4720,6 +4728,7 @@ struct constant_pool
   bitmap insns;
 
   struct constant *constants[NR_C_MODES];
+  struct constant *execute;
   rtx label;
   int size;
 };
@@ -4738,7 +4747,12 @@ static void s390_add_pool_insn (struct constant_pool *, rtx);
 static struct constant_pool *s390_find_pool (struct constant_pool *, rtx);
 static void s390_add_constant (struct constant_pool *, rtx, enum machine_mode);
 static rtx s390_find_constant (struct constant_pool *, rtx, enum machine_mode);
-static rtx s390_dump_pool (struct constant_pool *, bool);
+static void s390_add_execute (struct constant_pool *, rtx);
+static rtx s390_find_execute (struct constant_pool *, rtx);
+static rtx s390_execute_label (rtx);
+static rtx s390_execute_target (rtx);
+static void s390_dump_pool (struct constant_pool *, bool);
+static void s390_dump_execute (struct constant_pool *);
 static struct constant_pool *s390_alloc_pool (void);
 static void s390_free_pool (struct constant_pool *);
 
@@ -4857,24 +4871,130 @@ s390_find_constant (struct constant_pool *pool, rtx val,
   return offset;
 }
 
+/* Add execute target for INSN to the constant pool POOL.  */
+
+static void
+s390_add_execute (struct constant_pool *pool, rtx insn)
+{
+  struct constant *c;
+
+  for (c = pool->execute; c != NULL; c = c->next)
+    if (INSN_UID (insn) == INSN_UID (c->value))
+      break;
+
+  if (c == NULL)
+    {
+      rtx label = s390_execute_label (insn);
+      gcc_assert (label);
+
+      c = (struct constant *) xmalloc (sizeof *c);
+      c->value = insn;
+      c->label = label == const0_rtx ? gen_label_rtx () : XEXP (label, 0);
+      c->next = pool->execute;
+      pool->execute = c;
+      pool->size += label == const0_rtx ? 6 : 0;
+    }
+}
+
+/* Find execute target for INSN in the constant pool POOL.
+   Return an RTX describing the distance from the start of
+   the pool to the location of the execute target.  */
+
+static rtx
+s390_find_execute (struct constant_pool *pool, rtx insn)
+{
+  struct constant *c;
+  rtx offset;
+
+  for (c = pool->execute; c != NULL; c = c->next)
+    if (INSN_UID (insn) == INSN_UID (c->value))
+      break;
+
+  if (c == NULL)
+    abort ();
+
+  offset = gen_rtx_MINUS (Pmode, gen_rtx_LABEL_REF (Pmode, c->label),
+				 gen_rtx_LABEL_REF (Pmode, pool->label));
+  offset = gen_rtx_CONST (Pmode, offset);
+  return offset;
+}
+
+/* Check whether INSN is an execute.  Return the label_ref to its
+   execute target template if so, NULL_RTX otherwise.  */
+
+static rtx
+s390_execute_label (rtx insn)
+{
+  if (GET_CODE (insn) == INSN
+      && GET_CODE (PATTERN (insn)) == PARALLEL
+      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC
+      && XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_EXECUTE)
+    return XVECEXP (XVECEXP (PATTERN (insn), 0, 0), 0, 2);
+
+  return NULL_RTX;
+}
+
+/* For an execute INSN, extract the execute target template.  */
+
+static rtx
+s390_execute_target (rtx insn)
+{
+  rtx pattern = PATTERN (insn);
+  gcc_assert (s390_execute_label (insn));
+
+  if (XVECLEN (pattern, 0) == 2)
+    {
+      pattern = copy_rtx (XVECEXP (pattern, 0, 1));
+    }
+  else
+    {
+      rtvec vec = rtvec_alloc (XVECLEN (pattern, 0) - 1);
+      int i;
+
+      for (i = 0; i < XVECLEN (pattern, 0) - 1; i++)
+	RTVEC_ELT (vec, i) = copy_rtx (XVECEXP (pattern, 0, i + 1));
+
+      pattern = gen_rtx_PARALLEL (VOIDmode, vec);
+    }
+
+  return pattern;
+}
+
+/* Indicate that INSN cannot be duplicated.  This is the case for
+   execute insns that carry a unique label.  */
+
+static bool
+s390_cannot_copy_insn_p (rtx insn)
+{
+  rtx label = s390_execute_label (insn);
+  return label && label != const0_rtx;
+}
+
 /* Dump out the constants in POOL.  If REMOTE_LABEL is true,
    do not emit the pool base label.  */
 
-static rtx
+static void
 s390_dump_pool (struct constant_pool *pool, bool remote_label)
 {
   struct constant *c;
-  rtx insn;
+  rtx insn = pool->pool_insn;
   int i;
 
-  /* Pool start insn switches to proper section
-     and guarantees necessary alignment.  */
+  /* Switch to rodata section.  */
   if (TARGET_CPU_ZARCH)
-    insn = emit_insn_after (gen_pool_start_64 (), pool->pool_insn);
+    {
+      insn = emit_insn_after (gen_pool_section_start (), insn);
+      INSN_ADDRESSES_NEW (insn, -1);
+    }
+
+  /* Ensure minimum pool alignment.  */
+  if (TARGET_CPU_ZARCH)
+    insn = emit_insn_after (gen_pool_align (GEN_INT (8)), insn);
   else
-    insn = emit_insn_after (gen_pool_start_31 (), pool->pool_insn);
+    insn = emit_insn_after (gen_pool_align (GEN_INT (4)), insn);
   INSN_ADDRESSES_NEW (insn, -1);
 
+  /* Emit pool base label.  */
   if (!remote_label)
     {
       insn = emit_label_after (pool->label, insn);
@@ -4908,13 +5028,29 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
 	INSN_ADDRESSES_NEW (insn, -1);
       }
 
-  /* Pool end insn switches back to previous section
-     and guarantees necessary alignment.  */
-  if (TARGET_CPU_ZARCH)
-    insn = emit_insn_after (gen_pool_end_64 (), insn);
-  else
-    insn = emit_insn_after (gen_pool_end_31 (), insn);
+  /* Ensure minimum alignment for instructions.  */
+  insn = emit_insn_after (gen_pool_align (GEN_INT (2)), insn);
   INSN_ADDRESSES_NEW (insn, -1);
+
+  /* Output in-pool execute template insns.  */
+  for (c = pool->execute; c; c = c->next)
+    {
+      if (s390_execute_label (c->value) != const0_rtx)
+	continue;
+
+      insn = emit_label_after (c->label, insn);
+      INSN_ADDRESSES_NEW (insn, -1);
+
+      insn = emit_insn_after (s390_execute_target (c->value), insn);
+      INSN_ADDRESSES_NEW (insn, -1);
+    }
+
+  /* Switch back to previous section.  */
+  if (TARGET_CPU_ZARCH)
+    {
+      insn = emit_insn_after (gen_pool_section_end (), insn);
+      INSN_ADDRESSES_NEW (insn, -1);
+    }
 
   insn = emit_barrier_after (insn);
   INSN_ADDRESSES_NEW (insn, -1);
@@ -4922,7 +5058,30 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
   /* Remove placeholder insn.  */
   remove_insn (pool->pool_insn);
 
-  return insn;
+  /* Output out-of-pool execute template isns.  */
+  s390_dump_execute (pool);
+}
+
+/* Dump out the out-of-pool execute template insns in POOL
+   at the end of the instruction stream.  */
+
+static void
+s390_dump_execute (struct constant_pool *pool)
+{
+  struct constant *c;
+  rtx insn;
+
+  for (c = pool->execute; c; c = c->next)
+    {
+      if (s390_execute_label (c->value) == const0_rtx)
+	continue;
+
+      insn = emit_label (c->label);
+      INSN_ADDRESSES_NEW (insn, -1);
+
+      insn = emit_insn (s390_execute_target (c->value));
+      INSN_ADDRESSES_NEW (insn, -1);
+    }
 }
 
 /* Allocate new constant_pool structure.  */
@@ -4938,6 +5097,7 @@ s390_alloc_pool (void)
   for (i = 0; i < NR_C_MODES; i++)
     pool->constants[i] = NULL;
 
+  pool->execute = NULL;
   pool->label = gen_label_rtx ();
   pool->first_insn = NULL_RTX;
   pool->pool_insn = NULL_RTX;
@@ -4952,17 +5112,20 @@ s390_alloc_pool (void)
 static void
 s390_free_pool (struct constant_pool *pool)
 {
+  struct constant *c, *next;
   int i;
 
   for (i = 0; i < NR_C_MODES; i++)
+    for (c = pool->constants[i]; c; c = next)
+      {
+	next = c->next;
+	free (c);
+      }
+
+  for (c = pool->execute; c; c = next)
     {
-      struct constant *c = pool->constants[i];
-      while (c != NULL)
-	{
-	  struct constant *next = c->next;
-	  free (c);
-	  c = next;
-	}
+      next = c->next;
+      free (c);
     }
 
   BITMAP_XFREE (pool->insns);
@@ -4992,7 +5155,11 @@ s390_mainpool_start (void)
 	  pool->pool_insn = insn;
 	}
 
-      if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+      if (s390_execute_label (insn))
+	{
+	  s390_add_execute (pool, insn);
+	}
+      else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
 	{
 	  rtx pool_ref = NULL_RTX;
 	  find_constant_pool_ref (PATTERN (insn), &pool_ref);
@@ -5034,6 +5201,9 @@ s390_mainpool_finish (struct constant_pool *pool)
   /* If the pool is empty, we're done.  */
   if (pool->size == 0)
     {
+      /* However, we may have out-of-pool execute templates.  */
+      s390_dump_execute (pool);
+
       /* We don't actually need a base register after all.  */
       cfun->machine->base_reg = NULL_RTX;
 
@@ -5120,8 +5290,12 @@ s390_mainpool_finish (struct constant_pool *pool)
           find_constant_pool_ref (PATTERN (insn), &pool_ref);
           if (pool_ref)
             {
-              addr = s390_find_constant (pool, get_pool_constant (pool_ref),
-                                               get_pool_mode (pool_ref));
+	      if (s390_execute_label (insn))
+		addr = s390_find_execute (pool, insn);
+	      else
+		addr = s390_find_constant (pool, get_pool_constant (pool_ref),
+						 get_pool_mode (pool_ref));
+
               replace_constant_pool_ref (&PATTERN (insn), pool_ref, addr);
               INSN_CODE (insn) = -1;
             }
@@ -5184,7 +5358,15 @@ s390_chunkify_start (void)
 	    }
 	}
 
-      if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+      if (s390_execute_label (insn))
+	{
+	  if (!curr_pool)
+	    curr_pool = s390_start_pool (&pool_list, insn);
+
+	  s390_add_execute (curr_pool, insn);
+	  s390_add_pool_insn (curr_pool, insn);
+	}
+      else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
 	{
 	  rtx pool_ref = NULL_RTX;
 	  find_constant_pool_ref (PATTERN (insn), &pool_ref);
@@ -5439,8 +5621,13 @@ s390_chunkify_finish (struct constant_pool *pool_list)
           find_constant_pool_ref (PATTERN (insn), &pool_ref);
           if (pool_ref)
             {
-              addr = s390_find_constant (curr_pool, get_pool_constant (pool_ref),
-                                                    get_pool_mode (pool_ref));
+	      if (s390_execute_label (insn))
+		addr = s390_find_execute (curr_pool, insn);
+	      else
+		addr = s390_find_constant (curr_pool,
+					   get_pool_constant (pool_ref),
+					   get_pool_mode (pool_ref));
+
               replace_constant_pool_ref (&PATTERN (insn), pool_ref, addr);
               INSN_CODE (insn) = -1;
             }

@@ -1,3 +1,32 @@
+2004-10-05  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_dump_pool): Remove return value.
+	Use gen_pool_align, gen_pool_section_start/end instead of
+	gen_pool_start/end_31/64.
+	* config/s390/s390.md (UNSPECV_POOL_START, UNSPECV_POOL_END): Remove.
+	(UNSPECV_POOL_SECTION, UNSPECV_POOL_ALIGN): New constants.
+	("pool_start_31", "pool_end_31"): Remove.
+	("pool_start_64", "pool_end_64"): Likewise.
+	("pool_align", "pool_section_start", "pool_section_end": New insns.
+
+	* config/s390/s390.c (s390_cannot_copy_insn_p): New function.
+	(TARGET_CANNOT_COPY_INSN_P): Define.
+	(s390_cannot_force_const_mem): Handle UNSPEC_INSN.
+	(struct constant_pool): New member 'execute'.
+	(s390_add_execute, s390_find_execute): New functions.
+	(s390_execute_label, s390_execute_target): Likewise.
+	(s390_dump_pool): Output in-pool execute target templates.
+	(s390_dump_execute): New function.
+	(s390_alloc_pool, s390_free_pool): Handle execute templates.
+	(s390_mainpool_start, s390_mainpool_finish): Likewise.
+	(s390_chunkify_start, s390_chunkify_finish): Likewise.
+	* config/s390/s390.md (UNSPEC_INSN, UNSPEC_EXECUTE): New constants.
+	("*execute"): New insn pattern.
+	("movmem_short", "*movmem_short"): Use splitters to generate
+	explicit execute pattern, remove embedded execute.
+	("clrmem_short", "*clrmem_short"): Likewise.
+	("cmpmem_short", "*cmpmem_short"): Likewise.
+
 2004-10-05  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa.c (verify_ssa): Verify phi arguments only
