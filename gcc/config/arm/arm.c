@@ -94,14 +94,15 @@ const char * structure_size_string = NULL;
 int    arm_structure_size_boundary = 32; /* Used to be 8 */
 
 /* Bit values used to identify processor capabilities.  */
-#define FL_CO_PROC    0x01            /* Has external co-processor bus */
-#define FL_FAST_MULT  0x02            /* Fast multiply */
-#define FL_MODE26     0x04            /* 26-bit mode support */
-#define FL_MODE32     0x08            /* 32-bit mode support */
-#define FL_ARCH4      0x10            /* Architecture rel 4 */
-#define FL_THUMB      0x20            /* Thumb aware */
-#define FL_LDSCHED    0x40	      /* Load scheduling necessary */
-#define FL_STRONG     0x80	      /* StrongARM */
+#define FL_CO_PROC    (1 << 0)        /* Has external co-processor bus */
+#define FL_FAST_MULT  (1 << 1)        /* Fast multiply */
+#define FL_MODE26     (1 << 2)        /* 26-bit mode support */
+#define FL_MODE32     (1 << 3)        /* 32-bit mode support */
+#define FL_ARCH4      (1 << 4)        /* Architecture rel 4 */
+#define FL_ARCH5      (1 << 5)        /* Architecture rel 5 */
+#define FL_THUMB      (1 << 6)        /* Thumb aware */
+#define FL_LDSCHED    (1 << 7)	      /* Load scheduling necessary */
+#define FL_STRONG     (1 << 8)	      /* StrongARM */
 
 /* The bits in this mask specify which instructions we are allowed to generate.  */
 static int insn_flags = 0;
@@ -119,6 +120,9 @@ int arm_fast_multiply = 0;
 
 /* Nonzero if this chip supports the ARM Architecture 4 extensions */
 int arm_arch4 = 0;
+
+/* Nonzero if this chip supports the ARM Architecture 5 extensions */
+int arm_arch5 = 0;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 int arm_ld_sched = 0;
@@ -229,15 +233,16 @@ static struct processors all_architectures[] =
 {
   /* ARM Architectures */
   
-  {"armv2",     FL_CO_PROC | FL_MODE26 },
-  {"armv2a",    FL_CO_PROC | FL_MODE26 },
-  {"armv3",     FL_CO_PROC | FL_MODE26 | FL_MODE32 },
-  {"armv3m",    FL_CO_PROC | FL_MODE26 | FL_MODE32 | FL_FAST_MULT },
-  {"armv4",     FL_CO_PROC | FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4  },
+  { "armv2",     FL_CO_PROC | FL_MODE26 },
+  { "armv2a",    FL_CO_PROC | FL_MODE26 },
+  { "armv3",     FL_CO_PROC | FL_MODE26 | FL_MODE32 },
+  { "armv3m",    FL_CO_PROC | FL_MODE26 | FL_MODE32 | FL_FAST_MULT },
+  { "armv4",     FL_CO_PROC | FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4  },
   /* Strictly, FL_MODE26 is a permitted option for v4t, but there are no
      implementations that support it, so we will leave it out for now.  */
-  {"armv4t",    FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB },
-  {NULL, 0}
+  { "armv4t",    FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB },
+  { "armv5",     FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 },
+  { NULL, 0 }
 };
 
 /* This is a magic stucture.  The 'string' field is magically filled in
@@ -494,6 +499,7 @@ arm_override_options ()
   /* Initialise boolean versions of the flags, for use in the arm.md file.  */
   arm_fast_multiply = insn_flags & FL_FAST_MULT;
   arm_arch4         = insn_flags & FL_ARCH4;
+  arm_arch5         = insn_flags & FL_ARCH5;
   
   arm_ld_sched      = tune_flags & FL_LDSCHED;
   arm_is_strong     = tune_flags & FL_STRONG;
@@ -1279,7 +1285,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 enum rtx_code
 arm_canonicalize_comparison (code, op1)
      enum rtx_code code;
-     rtx *op1;
+     rtx * op1;
 {
   unsigned HOST_WIDE_INT i = INTVAL (*op1);
 
@@ -1538,7 +1544,7 @@ legitimize_pic_address (orig, mode, reg)
 static rtx pic_rtx;
 
 int
-is_pic(x)
+is_pic (x)
      rtx x;
 {
   if (x == pic_rtx)
@@ -1876,7 +1882,8 @@ arm_adjust_cost (insn, link, dep, cost)
 
 static int fpa_consts_inited = 0;
 
-char *strings_fpa[8] = {
+char * strings_fpa[8] =
+{
   "0",   "1",   "2",   "3",
   "4",   "5",   "0.5", "10"
 };
@@ -2401,7 +2408,7 @@ int
 symbol_mentioned_p (x)
      rtx x;
 {
-  register char *fmt;
+  register char * fmt;
   register int i;
 
   if (GET_CODE (x) == SYMBOL_REF)
@@ -2430,7 +2437,7 @@ int
 label_mentioned_p (x)
      rtx x;
 {
-  register char *fmt;
+  register char * fmt;
   register int i;
 
   if (GET_CODE (x) == LABEL_REF)
@@ -2647,11 +2654,11 @@ store_multiple_operation (op, mode)
 
 int
 load_multiple_sequence (operands, nops, regs, base, load_offset)
-     rtx *operands;
+     rtx * operands;
      int nops;
-     int *regs;
-     int *base;
-     HOST_WIDE_INT *load_offset;
+     int * regs;
+     int * base;
+     HOST_WIDE_INT * load_offset;
 {
   int unsorted_regs[4];
   HOST_WIDE_INT unsorted_offsets[4];
@@ -2820,7 +2827,7 @@ load_multiple_sequence (operands, nops, regs, base, load_offset)
 
 char *
 emit_ldm_seq (operands, nops)
-     rtx *operands;
+     rtx * operands;
      int nops;
 {
   int regs[4];
@@ -2880,11 +2887,11 @@ emit_ldm_seq (operands, nops)
 
 int
 store_multiple_sequence (operands, nops, regs, base, load_offset)
-     rtx *operands;
+     rtx * operands;
      int nops;
-     int *regs;
-     int *base;
-     HOST_WIDE_INT *load_offset;
+     int * regs;
+     int * base;
+     HOST_WIDE_INT * load_offset;
 {
   int unsorted_regs[4];
   HOST_WIDE_INT unsorted_offsets[4];
@@ -2933,7 +2940,7 @@ store_multiple_sequence (operands, nops, regs, base, load_offset)
 	{
 	  if (i == 0)
 	    {
-	      base_reg = REGNO(reg);
+	      base_reg = REGNO (reg);
 	      unsorted_regs[0] = (GET_CODE (operands[i]) == REG
 				  ? REGNO (operands[i])
 				  : REGNO (SUBREG_REG (operands[i])));
@@ -3017,7 +3024,7 @@ store_multiple_sequence (operands, nops, regs, base, load_offset)
 
 char *
 emit_stm_seq (operands, nops)
-     rtx *operands;
+     rtx * operands;
      int nops;
 {
   int regs[4];
@@ -3209,7 +3216,7 @@ arm_gen_store_multiple (base_regno, count, to, up, write_back, unchanging_p,
 
 int
 arm_gen_movstrqi (operands)
-     rtx *operands;
+     rtx * operands;
 {
   HOST_WIDE_INT in_words_to_go, out_words_to_go, last_bytes;
   int i;
@@ -3291,27 +3298,27 @@ arm_gen_movstrqi (operands)
 
   /* OUT_WORDS_TO_GO will be zero here if there are byte stores to do.  */
   if (out_words_to_go)
-  {
-    rtx sreg;
-
-    mem = gen_rtx_MEM (SImode, src);
-    RTX_UNCHANGING_P (mem) = src_unchanging_p;
-    MEM_IN_STRUCT_P (mem) = src_in_struct_p;
-    MEM_SCALAR_P (mem) = src_scalar_p;
-    emit_move_insn (sreg = gen_reg_rtx (SImode), mem);
-    emit_move_insn (fin_src = gen_reg_rtx (SImode), plus_constant (src, 4));
-
-    mem = gen_rtx_MEM (SImode, dst);
-    RTX_UNCHANGING_P (mem) = dst_unchanging_p;
-    MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
-    MEM_SCALAR_P (mem) = dst_scalar_p;
-    emit_move_insn (mem, sreg);
-    emit_move_insn (fin_dst = gen_reg_rtx (SImode), plus_constant (dst, 4));
-    in_words_to_go--;
-
-    if (in_words_to_go)	/* Sanity check */
-      abort ();
-  }
+    {
+      rtx sreg;
+      
+      mem = gen_rtx_MEM (SImode, src);
+      RTX_UNCHANGING_P (mem) = src_unchanging_p;
+      MEM_IN_STRUCT_P (mem) = src_in_struct_p;
+      MEM_SCALAR_P (mem) = src_scalar_p;
+      emit_move_insn (sreg = gen_reg_rtx (SImode), mem);
+      emit_move_insn (fin_src = gen_reg_rtx (SImode), plus_constant (src, 4));
+      
+      mem = gen_rtx_MEM (SImode, dst);
+      RTX_UNCHANGING_P (mem) = dst_unchanging_p;
+      MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
+      MEM_SCALAR_P (mem) = dst_scalar_p;
+      emit_move_insn (mem, sreg);
+      emit_move_insn (fin_dst = gen_reg_rtx (SImode), plus_constant (dst, 4));
+      in_words_to_go--;
+      
+      if (in_words_to_go)	/* Sanity check */
+	abort ();
+    }
 
   if (in_words_to_go)
     {
@@ -3344,6 +3351,7 @@ arm_gen_movstrqi (operands)
 	  MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
 	  MEM_SCALAR_P (mem) = dst_scalar_p;
 	  emit_move_insn (mem, gen_rtx_SUBREG (QImode, part_bytes_reg, 0));
+	  
 	  if (--last_bytes)
 	    {
 	      tmp = gen_reg_rtx (SImode);
@@ -3365,6 +3373,7 @@ arm_gen_movstrqi (operands)
 	  MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
 	  MEM_SCALAR_P (mem) = dst_scalar_p;
 	  emit_move_insn (mem, gen_rtx_SUBREG (QImode, part_bytes_reg, 0));
+	  
 	  if (--last_bytes)
 	    {
 	      rtx tmp = gen_reg_rtx (SImode);
@@ -3613,7 +3622,7 @@ gen_compare_reg (code, x, y)
 
 void
 arm_reload_in_hi (operands)
-     rtx *operands;
+     rtx * operands;
 {
   rtx ref = operands[1];
   rtx base, scratch;
@@ -3729,7 +3738,7 @@ arm_reload_in_hi (operands)
    two scratch registers for some corner cases).  */
 void
 arm_reload_out_hi (operands)
-     rtx *operands;
+     rtx * operands;
 {
   rtx ref = operands[0];
   rtx outval = operands[1];
@@ -4047,7 +4056,7 @@ dump_table (scan)
 
   for (i = 0; i < pool_size; i++)
     {
-      pool_node *p = pool_vector + i;
+      pool_node * p = pool_vector + i;
 
       switch (GET_MODE_SIZE (p->mode))
 	{
@@ -4362,7 +4371,7 @@ fp_immediate_constant (x)
 /* As for fp_immediate_constant, but value is passed directly, not in rtx.  */
 static char *
 fp_const_from_val (r)
-     REAL_VALUE_TYPE *r;
+     REAL_VALUE_TYPE * r;
 {
   int i;
 
@@ -4383,8 +4392,8 @@ fp_const_from_val (r)
 
 void
 print_multi_reg (stream, instr, mask, hat)
-     FILE *stream;
-     char *instr;
+     FILE * stream;
+     char * instr;
      int mask, hat;
 {
   int i;
@@ -4393,11 +4402,13 @@ print_multi_reg (stream, instr, mask, hat)
   fputc ('\t', stream);
   fprintf (stream, instr, REGISTER_PREFIX);
   fputs (", {", stream);
+  
   for (i = 0; i < 16; i++)
     if (mask & (1 << i))
       {
 	if (not_first)
 	  fprintf (stream, ", ");
+	
 	fprintf (stream, "%s%s", REGISTER_PREFIX, reg_names[i]);
 	not_first = TRUE;
       }
@@ -4409,15 +4420,16 @@ print_multi_reg (stream, instr, mask, hat)
 
 char *
 output_call (operands)
-     rtx *operands;
+     rtx * operands;
 {
   /* Handle calls to lr using ip (which may be clobbered in subr anyway). */
 
-  if (REGNO (operands[0]) == 14)
+  if (REGNO (operands[0]) == LR_REGNUM)
     {
-      operands[0] = gen_rtx_REG (SImode, 12);
+      operands[0] = gen_rtx_REG (SImode, IP_REGNUM);
       output_asm_insn ("mov%?\t%0, %|lr", operands);
     }
+  
   output_asm_insn ("mov%?\t%|lr, %|pc", operands);
   
   if (TARGET_THUMB_INTERWORK)
@@ -4430,32 +4442,34 @@ output_call (operands)
 
 static int
 eliminate_lr2ip (x)
-     rtx *x;
+     rtx * x;
 {
   int something_changed = 0;
-  rtx x0 = *x;
+  rtx x0 = * x;
   int code = GET_CODE (x0);
   register int i, j;
-  register char *fmt;
+  register char * fmt;
   
   switch (code)
     {
     case REG:
-      if (REGNO (x0) == 14)
+      if (REGNO (x0) == LR_REGNUM)
         {
-	  *x = gen_rtx_REG (SImode, 12);
+	  *x = gen_rtx_REG (SImode, IP_REGNUM);
 	  return 1;
         }
       return 0;
     default:
       /* Scan through the sub-elements and change any references there */
       fmt = GET_RTX_FORMAT (code);
+      
       for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	if (fmt[i] == 'e')
 	  something_changed |= eliminate_lr2ip (&XEXP (x0, i));
 	else if (fmt[i] == 'E')
 	  for (j = 0; j < XVECLEN (x0, i); j++)
 	    something_changed |= eliminate_lr2ip (&XVECEXP (x0, i, j));
+      
       return something_changed;
     }
 }
@@ -4464,7 +4478,7 @@ eliminate_lr2ip (x)
 
 char *
 output_call_mem (operands)
-     rtx *operands;
+     rtx * operands;
 {
   operands[0] = copy_rtx (operands[0]); /* Be ultra careful */
   /* Handle calls using lr by using ip (which may be clobbered in subr anyway).
@@ -4494,13 +4508,13 @@ output_call_mem (operands)
 
 char *
 output_mov_long_double_fpu_from_arm (operands)
-     rtx *operands;
+     rtx * operands;
 {
   int arm_reg0 = REGNO (operands[1]);
   rtx ops[3];
 
-  if (arm_reg0 == 12)
-    abort();
+  if (arm_reg0 == IP_REGNUM)
+    abort ();
 
   ops[0] = gen_rtx_REG (SImode, arm_reg0);
   ops[1] = gen_rtx_REG (SImode, 1 + arm_reg0);
@@ -4508,6 +4522,7 @@ output_mov_long_double_fpu_from_arm (operands)
   
   output_asm_insn ("stm%?fd\t%|sp!, {%0, %1, %2}", ops);
   output_asm_insn ("ldf%?e\t%0, [%|sp], #12", operands);
+  
   return "";
 }
 
@@ -4517,13 +4532,13 @@ output_mov_long_double_fpu_from_arm (operands)
 
 char *
 output_mov_long_double_arm_from_fpu (operands)
-     rtx *operands;
+     rtx * operands;
 {
   int arm_reg0 = REGNO (operands[0]);
   rtx ops[3];
 
-  if (arm_reg0 == 12)
-    abort();
+  if (arm_reg0 == IP_REGNUM)
+    abort ();
 
   ops[0] = gen_rtx_REG (SImode, arm_reg0);
   ops[1] = gen_rtx_REG (SImode, 1 + arm_reg0);
@@ -4539,7 +4554,7 @@ output_mov_long_double_arm_from_fpu (operands)
    OPERANDS[1] is the source.  */
 char *
 output_mov_long_double_arm_from_arm (operands)
-     rtx *operands;
+     rtx * operands;
 {
   /* We have to be careful here because the two might overlap */
   int dest_start = REGNO (operands[0]);
@@ -4576,13 +4591,14 @@ output_mov_long_double_arm_from_arm (operands)
 
 char *
 output_mov_double_fpu_from_arm (operands)
-     rtx *operands;
+     rtx * operands;
 {
   int arm_reg0 = REGNO (operands[1]);
   rtx ops[2];
 
-  if (arm_reg0 == 12)
-    abort();
+  if (arm_reg0 == IP_REGNUM)
+    abort ();
+  
   ops[0] = gen_rtx_REG (SImode, arm_reg0);
   ops[1] = gen_rtx_REG (SImode, 1 + arm_reg0);
   output_asm_insn ("stm%?fd\t%|sp!, {%0, %1}", ops);
@@ -4596,13 +4612,13 @@ output_mov_double_fpu_from_arm (operands)
 
 char *
 output_mov_double_arm_from_fpu (operands)
-     rtx *operands;
+     rtx * operands;
 {
   int arm_reg0 = REGNO (operands[0]);
   rtx ops[2];
 
-  if (arm_reg0 == 12)
-    abort();
+  if (arm_reg0 == IP_REGNUM)
+    abort ();
 
   ops[0] = gen_rtx_REG (SImode, arm_reg0);
   ops[1] = gen_rtx_REG (SImode, 1 + arm_reg0);
@@ -4632,8 +4648,8 @@ output_move_double (operands)
       if (code1 == REG)
 	{
 	  int reg1 = REGNO (operands[1]);
-	  if (reg1 == 12)
-	    abort();
+	  if (reg1 == IP_REGNUM)
+	    abort ();
 
 	  /* Ensure the second source is not overwritten */
 	  if (reg1 == reg0 + (WORDS_BIG_ENDIAN ? -1 : 1))
@@ -4783,12 +4799,12 @@ output_move_double (operands)
 	    }
 	}
       else
-	abort();  /* Constraints should prevent this */
+	abort ();  /* Constraints should prevent this */
     }
   else if (code0 == MEM && code1 == REG)
     {
-      if (REGNO (operands[1]) == 12)
-	abort();
+      if (REGNO (operands[1]) == IP_REGNUM)
+	abort ();
 
       switch (GET_CODE (XEXP (operands[0], 0)))
         {
@@ -4840,7 +4856,7 @@ output_move_double (operands)
 	}
     }
   else
-    abort();  /* Constraints should prevent this */
+    abort ();  /* Constraints should prevent this */
 
   return "";
 }
@@ -4851,7 +4867,7 @@ output_move_double (operands)
 
 char *
 output_mov_immediate (operands)
-     rtx *operands;
+     rtx * operands;
 {
   HOST_WIDE_INT n = INTVAL (operands[1]);
   int n_ones = 0;
@@ -4894,7 +4910,7 @@ output_mov_immediate (operands)
 
 char *
 output_add_immediate (operands)
-     rtx *operands;
+     rtx * operands;
 {
   HOST_WIDE_INT n = INTVAL (operands[2]);
 
@@ -4922,8 +4938,8 @@ output_add_immediate (operands)
 
 static char *
 output_multi_immediate (operands, instr1, instr2, immed_op, n)
-     rtx *operands;
-     char *instr1, *instr2;
+     rtx * operands;
+     char * instr1, * instr2;
      int immed_op;
      HOST_WIDE_INT n;
 {
@@ -5001,7 +5017,7 @@ shift_op (op, amountp)
      rtx op;
      HOST_WIDE_INT *amountp;
 {
-  char *mnem;
+  char * mnem;
   enum rtx_code code = GET_CODE (op);
 
   if (GET_CODE (XEXP (op, 1)) == REG || GET_CODE (XEXP (op, 1)) == SUBREG)
@@ -5092,8 +5108,8 @@ int_log2 (power)
 
 void
 output_ascii_pseudo_op (stream, p, len)
-     FILE *stream;
-     unsigned char *p;
+     FILE * stream;
+     unsigned char * p;
      int len;
 {
   int i;
@@ -5157,11 +5173,11 @@ pattern_really_clobbers_lr (x)
       switch (GET_CODE (SET_DEST (x)))
 	{
 	case REG:
-	  return REGNO (SET_DEST (x)) == 14;
+	  return REGNO (SET_DEST (x)) == LR_REGNUM;
 
         case SUBREG:
 	  if (GET_CODE (XEXP (SET_DEST (x), 0)) == REG)
-	    return REGNO (XEXP (SET_DEST (x), 0)) == 14;
+	    return REGNO (XEXP (SET_DEST (x), 0)) == LR_REGNUM;
 
 	  if (GET_CODE (XEXP (SET_DEST (x), 0)) == MEM)
 	    return 0;
@@ -5181,11 +5197,11 @@ pattern_really_clobbers_lr (x)
       switch (GET_CODE (XEXP (x, 0)))
         {
 	case REG:
-	  return REGNO (XEXP (x, 0)) == 14;
+	  return REGNO (XEXP (x, 0)) == LR_REGNUM;
 
         case SUBREG:
 	  if (GET_CODE (XEXP (XEXP (x, 0), 0)) == REG)
-	    return REGNO (XEXP (XEXP (x, 0), 0)) == 14;
+	    return REGNO (XEXP (XEXP (x, 0), 0)) == LR_REGNUM;
 	  abort ();
 
         default:
@@ -5295,7 +5311,7 @@ output_return_instruction (operand, really_return, reverse)
 
   return_used_this_function = 1;
 
-  if (volatile_func)
+  if (TARGET_ABORT_NORETURN && volatile_func)
     {
       rtx ops[2];
       /* If this function was declared non-returning, and we have found a tail 
@@ -5313,7 +5329,7 @@ output_return_instruction (operand, really_return, reverse)
     }
       
   if (current_function_calls_alloca && ! really_return)
-    abort();
+    abort ();
     
   for (reg = 0; reg <= 10; reg++)
     if (regs_ever_live[reg] && ! call_used_regs[reg])
@@ -5322,7 +5338,7 @@ output_return_instruction (operand, really_return, reverse)
   if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     live_regs++;
 
-  if (live_regs || (regs_ever_live[14] && ! lr_save_eliminated))
+  if (live_regs || (regs_ever_live[LR_REGNUM] && ! lr_save_eliminated))
     live_regs++;
 
   if (frame_pointer_needed)
@@ -5330,7 +5346,7 @@ output_return_instruction (operand, really_return, reverse)
 
   if (live_regs)
     {
-      if (lr_save_eliminated || ! regs_ever_live[14])
+      if (lr_save_eliminated || ! regs_ever_live[LR_REGNUM])
         live_regs++;
 
       if (frame_pointer_needed)
@@ -5341,7 +5357,7 @@ output_return_instruction (operand, really_return, reverse)
 		reverse ? "ldm%?%D0fd\t%|sp!, {" : "ldm%?%d0fd\t%|sp!, {");
 
       for (reg = 0; reg <= 10; reg++)
-        if (regs_ever_live[reg] 
+        if (regs_ever_live[reg]
 	    && (! call_used_regs[reg]
 		|| (flag_pic && reg == PIC_OFFSET_TABLE_REGNUM)))
           {
@@ -5361,15 +5377,15 @@ output_return_instruction (operand, really_return, reverse)
           strcat (instr, ", ");
 	  strcat (instr, "%|");
 	  strcat (instr, TARGET_THUMB_INTERWORK || (! really_return)
-		  ? reg_names[14] : reg_names[15] );
+		  ? reg_names[LR_REGNUM] : reg_names[PC_REGNUM] );
         }
       else
 	{
 	  strcat (instr, "%|");
 	  if (TARGET_THUMB_INTERWORK && really_return)
-	    strcat (instr, reg_names[12]);
+	    strcat (instr, reg_names[IP_REGNUM]);
 	  else
-	    strcat (instr, really_return ? reg_names[15] : reg_names[14]);
+	    strcat (instr, really_return ? reg_names[PC_REGNUM] : reg_names[LR_REGNUM]);
 	}
       strcat (instr, (TARGET_APCS_32 || !really_return) ? "}" : "}^");
       output_asm_insn (instr, &operand);
@@ -5508,13 +5524,13 @@ output_func_prologue (f, frame_size)
 
   if (frame_pointer_needed)
     live_regs_mask |= 0xD800;
-  else if (regs_ever_live[14])
+  else if (regs_ever_live[LR_REGNUM])
     {
       if (! current_function_args_size
 	  && ! function_really_clobbers_lr (get_insns ()))
 	lr_save_eliminated = 1;
       else
-        live_regs_mask |= 0x4000;
+        live_regs_mask |= 1 << LR_REGNUM;
     }
 
   if (live_regs_mask)
@@ -5524,7 +5540,7 @@ output_func_prologue (f, frame_size)
 	 doing so,  in this case we need to push lr as well, or we
 	 will fail to get a proper return. */
 
-      live_regs_mask |= 0x4000;
+      live_regs_mask |= 1 << LR_REGNUM;
       lr_save_eliminated = 0;
 
     }
@@ -5543,7 +5559,7 @@ output_func_prologue (f, frame_size)
 
 void
 output_func_epilogue (f, frame_size)
-     FILE *f;
+     FILE * f;
      int frame_size;
 {
   int reg, live_regs_mask = 0;
@@ -5701,12 +5717,12 @@ output_func_epilogue (f, frame_size)
 		     reg - start_reg, REGISTER_PREFIX);
 	}
 
-      if (current_function_pretend_args_size == 0 && regs_ever_live[14])
+      if (current_function_pretend_args_size == 0 && regs_ever_live[LR_REGNUM])
 	{
 	  if (TARGET_THUMB_INTERWORK)
 	    {
 	      if (! lr_save_eliminated)
-		live_regs_mask |= 0x4000;
+		live_regs_mask |= 1 << LR_REGNUM;
 
 	      if (live_regs_mask != 0)
 		print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask, FALSE);
@@ -5723,11 +5739,11 @@ output_func_epilogue (f, frame_size)
 	}
       else
 	{
-	  if (live_regs_mask || regs_ever_live[14])
+	  if (live_regs_mask || regs_ever_live[LR_REGNUM])
 	    {
 	      /* Restore the integer regs, and the return address into lr */
 	      if (! lr_save_eliminated)
-		live_regs_mask |= 0x4000;
+		live_regs_mask |= 1 << LR_REGNUM;
 
 	      if (live_regs_mask != 0)
 		print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask, FALSE);
@@ -5856,14 +5872,14 @@ arm_expand_prologue ()
       if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
 	live_regs_mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
 
-      if (regs_ever_live[14])
-	live_regs_mask |= 0x4000;
+      if (regs_ever_live[LR_REGNUM])
+	live_regs_mask |= 1 << LR_REGNUM;
     }
 
   if (frame_pointer_needed)
     {
       live_regs_mask |= 0xD800;
-      emit_insn (gen_movsi (gen_rtx_REG (SImode, 12),
+      emit_insn (gen_movsi (gen_rtx_REG (SImode, IP_REGNUM),
 			    stack_pointer_rtx));
     }
 
@@ -5881,7 +5897,7 @@ arm_expand_prologue ()
     {
       /* If we have to push any regs, then we must push lr as well, or
 	 we won't get a proper return.  */
-      live_regs_mask |= 0x4000;
+      live_regs_mask |= 1 << LR_REGNUM;
       emit_multi_reg_push (live_regs_mask);
     }
       
@@ -5928,7 +5944,7 @@ arm_expand_prologue ()
     }
 
   if (frame_pointer_needed)
-    emit_insn (gen_addsi3 (hard_frame_pointer_rtx, gen_rtx_REG (SImode, 12),
+    emit_insn (gen_addsi3 (hard_frame_pointer_rtx, gen_rtx_REG (SImode, IP_REGNUM),
 			   (GEN_INT
 			    (-(4 + current_function_pretend_args_size)))));
 
@@ -5963,7 +5979,7 @@ arm_expand_prologue ()
 
 void
 arm_print_operand (stream, x, code)
-     FILE *stream;
+     FILE * stream;
      rtx x;
      int code;
 {
@@ -6586,17 +6602,17 @@ arm_final_prescan_insn (insn)
 rtx aof_pic_label = NULL_RTX;
 struct pic_chain
 {
-  struct pic_chain *next;
-  char *symname;
+  struct pic_chain * next;
+  char * symname;
 };
 
-static struct pic_chain *aof_pic_chain = NULL;
+static struct pic_chain * aof_pic_chain = NULL;
 
 rtx
 aof_pic_entry (x)
      rtx x;
 {
-  struct pic_chain **chainp;
+  struct pic_chain ** chainp;
   int offset;
 
   if (aof_pic_label == NULL_RTX)
@@ -6620,9 +6636,9 @@ aof_pic_entry (x)
 
 void
 aof_dump_pic_table (f)
-     FILE *f;
+     FILE * f;
 {
-  struct pic_chain *chain;
+  struct pic_chain * chain;
 
   if (aof_pic_chain == NULL)
     return;
@@ -6675,17 +6691,17 @@ aof_data_section ()
 
 struct import
 {
-  struct import *next;
-  char *name;
+  struct import * next;
+  char * name;
 };
 
-static struct import *imports_list = NULL;
+static struct import * imports_list = NULL;
 
 void
 aof_add_import (name)
-     char *name;
+     char * name;
 {
-  struct import *new;
+  struct import * new;
 
   for (new = imports_list; new; new = new->next)
     if (new->name == name)
@@ -6699,9 +6715,9 @@ aof_add_import (name)
 
 void
 aof_delete_import (name)
-     char *name;
+     char * name;
 {
-  struct import **old;
+  struct import ** old;
 
   for (old = &imports_list; *old; old = & (*old)->next)
     {
@@ -6717,7 +6733,7 @@ int arm_main_function = 0;
 
 void
 aof_dump_imports (f)
-     FILE *f;
+     FILE * f;
 {
   /* The AOF assembler needs this to cause the startup code to be extracted
      from the library.  Brining in __main causes the whole thing to work
