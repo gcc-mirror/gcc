@@ -1,5 +1,7 @@
 2003-08-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc (i386-*-vsta): Fix obvious bogosity.
+
 	* fixinc/inclhack.def:  Remove special cases for unsupported
 	PTX 1 and PTX 2 (including i[34567]86-sequent-sysv3).
 	* fixinc/fixincl.x: Regenerate.
