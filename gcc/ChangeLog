@@ -1,3 +1,10 @@
+2004-03-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR other/14474
+	* doc/md.texi (Pattern Ordering, Dependent Patterns)
+	(Jump Patterns, Looping Patterns): Wrap in separate "@ifset
+	INTERNALS".
+
 2004-03-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ia64/hpux.h (MULTILIB_DEFAULTS): Define.

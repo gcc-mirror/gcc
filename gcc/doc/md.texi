@@ -3516,6 +3516,12 @@ the values of operands 1 and 2.
 
 @end table
 
+@end ifset
+@c Each of the following nodes are wrapped in separate
+@c "@ifset INTERNALS" to work around memory limits for the default
+@c configuration in older tetex distributions.  Known to not work:
+@c tetex-1.0.7, known to work: tetex-2.0.2.
+@ifset INTERNALS
 @node Pattern Ordering
 @section When the Order of Patterns Matters
 @cindex Pattern Ordering
@@ -3539,6 +3545,8 @@ Instead of using this pattern ordering it would be possible to make the
 pattern for convert-a-byte smart enough to deal properly with any
 constant value.
 
+@end ifset
+@ifset INTERNALS
 @node Dependent Patterns
 @section Interdependence of Patterns
 @cindex Dependent Patterns
@@ -3619,6 +3627,8 @@ instructions.  Instead, they should be generated from the same pattern
 that supports register-register add insns by examining the operands and
 generating the appropriate machine instruction.
 
+@end ifset
+@ifset INTERNALS
 @node Jump Patterns
 @section Defining Jump Instruction Patterns
 @cindex jump instruction patterns
@@ -3732,6 +3742,8 @@ discussed above, we have the pattern
 The @code{SELECT_CC_MODE} macro on the SPARC returns @code{CC_NOOVmode}
 for comparisons whose argument is a @code{plus}.
 
+@end ifset
+@ifset INTERNALS
 @node Looping Patterns
 @section Defining Looping Instruction Patterns
 @cindex looping instruction patterns
@@ -3837,6 +3849,8 @@ be derived from it), however, in many cases the loop induction variable
 may become redundant and removed by the flow pass.
 
 
+@end ifset
+@ifset INTERNALS
 @node Insn Canonicalizations
 @section Canonicalization of Instructions
 @cindex canonicalization of instructions
@@ -3962,6 +3976,8 @@ will be written using @code{zero_extract} rather than the equivalent
 
 @end itemize
 
+@end ifset
+@ifset INTERNALS
 @node Expander Definitions
 @section Defining RTL Sequences for Code Generation
 @cindex expander definitions
@@ -4179,6 +4195,8 @@ at the end, emit an insn to copy the result of the operation into
 itself.  Such an insn will generate no code, but it can avoid problems
 in the compiler.
 
+@end ifset
+@ifset INTERNALS
 @node Insn Splitting
 @section Defining How to Split Instructions
 @cindex insn splitting
@@ -4412,6 +4430,8 @@ functionality as two separate @code{define_insn} and @code{define_split}
 patterns.  It exists for compactness, and as a maintenance tool to prevent
 having to ensure the two patterns' templates match.
 
+@end ifset
+@ifset INTERNALS
 @node Including Patterns
 @section Including Patterns in Machine Descriptions.
 @cindex insn includes
@@ -4486,6 +4506,8 @@ one @option{-I} option, the directories are scanned in left-to-right
 order; the standard default directory come after.
 
 
+@end ifset
+@ifset INTERNALS
 @node Peephole Definitions
 @section Machine-Specific Peephole Optimizers
 @cindex peephole optimizer definitions
@@ -4516,6 +4538,8 @@ targets that do scheduling.
 * define_peephole2::    RTL to RTL Peephole Optimizers
 @end menu
 
+@end ifset
+@ifset INTERNALS
 @node define_peephole
 @subsection RTL to Text Peephole Optimizers
 @findex define_peephole
@@ -4707,6 +4731,8 @@ then the way to mention this insn in a peephole is as follows:
   @dots{})
 @end smallexample
 
+@end ifset
+@ifset INTERNALS
 @node define_peephole2
 @subsection RTL to RTL Peephole Optimizers
 @findex define_peephole2
@@ -4792,6 +4818,8 @@ If we had not added the @code{(match_dup 4)} in the middle of the input
 sequence, it might have been the case that the register we chose at the
 beginning of the sequence is killed by the first or second @code{set}.
 
+@end ifset
+@ifset INTERNALS
 @node Insn Attributes
 @section Instruction Attributes
 @cindex insn attributes
@@ -4815,6 +4843,8 @@ to track the condition codes.
 * Processor pipeline description:: Specifying information for insn scheduling.
 @end menu
 
+@end ifset
+@ifset INTERNALS
 @node Defining Attributes
 @subsection Defining Attributes and their Values
 @cindex defining attributes and their values
@@ -4879,6 +4909,8 @@ If the attribute takes numeric values, no @code{enum} type will be
 defined and the function to obtain the attribute's value will return
 @code{int}.
 
+@end ifset
+@ifset INTERNALS
 @node Expressions
 @subsection Attribute Expressions
 @cindex attribute expressions
@@ -5088,6 +5120,8 @@ for numeric attributes, as @code{eq_attr} and @code{attr_flag}
 produce more efficient code for non-numeric attributes.
 @end table
 
+@end ifset
+@ifset INTERNALS
 @node Tagging Insns
 @subsection Assigning Attribute Values to Insns
 @cindex tagging insns
@@ -5193,6 +5227,8 @@ string.  Therefore, the value of the @code{length} attribute specified
 in a @code{define_asm_attributes} should be the maximum possible length
 of a single machine instruction.
 
+@end ifset
+@ifset INTERNALS
 @node Attr Example
 @subsection Example of Attribute Specifications
 @cindex attribute specifications example
@@ -5248,6 +5284,8 @@ performed on quantities smaller than a machine word clobber the condition
 code since they will set the condition code to a value corresponding to the
 full-word result.
 
+@end ifset
+@ifset INTERNALS
 @node Insn Lengths
 @subsection Computing the Length of an Insn
 @cindex insn lengths, computing
@@ -5332,6 +5370,8 @@ as follows:
                       (const_int 6)))])
 @end smallexample
 
+@end ifset
+@ifset INTERNALS
 @node Constant Attributes
 @subsection Constant Attributes
 @cindex constant attributes
@@ -5361,6 +5401,8 @@ the value of a constant attribute may use the @code{symbol_ref} form,
 but may not use either the @code{match_operand} form or @code{eq_attr}
 forms involving insn attributes.
 
+@end ifset
+@ifset INTERNALS
 @node Delay Slots
 @subsection Delay Slot Scheduling
 @cindex delay slots, defining
@@ -5436,6 +5478,8 @@ branch is true, we might represent this as follows:
 @end smallexample
 @c the above is *still* too long.  --mew 4feb93
 
+@end ifset
+@ifset INTERNALS
 @node Processor pipeline description
 @subsection Specifying processor pipeline description
 @cindex processor pipeline description
@@ -5521,6 +5565,8 @@ choose the best one.
 * Comparison of the two descriptions:: Drawbacks of the old pipeline description
 @end menu
 
+@end ifset
+@ifset INTERNALS
 @node Old pipeline description
 @subsubsection Specifying Function Units
 @cindex old pipeline description
@@ -5643,6 +5689,8 @@ used during their execution and there is no way of representing that
 conflict.  We welcome any examples of how function unit conflicts work
 in such processors and suggestions for their representation.
 
+@end ifset
+@ifset INTERNALS
 @node Automaton pipeline description
 @subsubsection Describing instruction pipeline characteristics
 @cindex automaton based pipeline description
@@ -6065,6 +6113,8 @@ construction
 @end smallexample
 
 
+@end ifset
+@ifset INTERNALS
 @node Comparison of the two descriptions
 @subsubsection Drawbacks of the old pipeline description
 @cindex old pipeline description
@@ -6118,6 +6168,8 @@ In an automaton based pipeline hazard recognizer, speed is not dependent
 on processor complexity.
 @end itemize
 
+@end ifset
+@ifset INTERNALS
 @node Conditional Execution
 @section Conditional Execution
 @cindex conditional execution
@@ -6198,6 +6250,8 @@ generates a new pattern
   "(%3) add %2,%1,%0")
 @end smallexample
 
+@end ifset
+@ifset INTERNALS
 @node Constant Definitions
 @section Constant Definitions
 @cindex constant definitions
