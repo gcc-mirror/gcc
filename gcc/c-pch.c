@@ -35,6 +35,23 @@ Boston, MA 02111-1307, USA.  */
 #include "hosthooks.h"
 #include "target.h"
 
+/* This is a list of flag variables that must match exactly, and their
+   names for the error message.  The possible values for *flag_var must
+   fit in a 'signed char'.  */
+
+static const struct c_pch_matching 
+{
+  int *flag_var;
+  const char *flag_name;
+} pch_matching[] = {
+  { &flag_exceptions, "-fexceptions" },
+  { &flag_unit_at_a_time, "-funit-at-a-time" }
+};
+
+enum {
+  MATCH_SIZE = ARRAY_SIZE (pch_matching)
+};
+
 /* This structure is read very early when validating the PCH, and
    might be read for a PCH which is for a completely different compiler
    for a different operating system.  Thus, it should really only contain
@@ -52,6 +69,7 @@ struct c_pch_validity
   unsigned char target_machine_length;
   unsigned char version_length;
   unsigned char debug_info_type;
+  signed char match[MATCH_SIZE];
   void (*pch_init) (void);
   size_t target_data_length;
 };
@@ -120,6 +138,15 @@ pch_init (void)
   v.target_machine_length = strlen (target_machine);
   v.version_length = strlen (version_string);
   v.debug_info_type = write_symbols;
+  {
+    size_t i;
+    for (i = 0; i < MATCH_SIZE; i++)
+      {
+	v.match[i] = *pch_matching[i].flag_var;
+	if (v.match[i] != *pch_matching[i].flag_var)
+	  abort ();
+      }
+  }
   v.pch_init = &pch_init;
   target_validity = targetm.get_pch_validity (&v.target_data_length);
   
@@ -301,6 +328,20 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 		   debug_type_names[write_symbols]);
       return 2;
     }
+
+  /* Check flags that must match exactly.  */
+  {
+    size_t i;
+    for (i = 0; i < MATCH_SIZE; i++)
+      if (*pch_matching[i].flag_var != v.match[i])
+	{
+	  if (cpp_get_options (pfile)->warn_invalid_pch)
+	    cpp_error (pfile, CPP_DL_WARNING, 
+		       "%s: settings for %s do not match", name,
+		       pch_matching[i].flag_name);
+	  return 2;
+	}
+  }
 
   /* If the text segment was not loaded at the same address as it was
      when the PCH file was created, function pointers loaded from the
