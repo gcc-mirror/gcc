@@ -138,7 +138,7 @@ Boston, MA 02111-1307, USA.  */
      %{!symbolic:\
        %{pthreads:-lpthread} \
        %{!pthreads:%{threads:-lthread}} \
-       -lc}}"
+       %{p|pg:-ldl} -lc}}"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"

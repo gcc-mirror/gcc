@@ -1,3 +1,7 @@
+Sun Feb 13 14:12:28 2000  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* sparc/sol2.h (LIB_SPEC): Link -ldl if profiling.
+
 Sun Feb 13 13:21:55 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* combine.c (simplify_comparison): Fix typo.
