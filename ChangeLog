@@ -1,3 +1,8 @@
+Sat Jul 18 14:32:43 CDT 1998  Robert Lipe  <robertl@dgii.com>
+
+	* config.guess: (*-pc-sco3.2v5) Add detection for Pentium II.
+	(*-pc-unixware7) Add detection for Pentium II, Pentium Pro.
+
 Sun Jul 19 00:46:53 CEST 1998  Marc Lehmann <pcg@goof.com>
 
 	* INSTALL/README: Fix typo.
