@@ -1,5 +1,8 @@
 2004-06-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	PR/16131
+	* gimplify.c (voidify_wrapper_expr): Allow TARGET_EXPR.
+
 	* gimplify.c: Remove unneeded forward declarations.
 
 	* gimplify.c (append_to_compound_expr): Deleted.
