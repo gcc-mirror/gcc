@@ -4483,6 +4483,14 @@ get_filename:
 #ifdef DIR_SEPARATOR
       || *fbeg == DIR_SEPARATOR
 #endif
+#if defined (__MSDOS__) || defined (_WIN32)
+      || (isalpha (fbeg[0]) && fbeg[1] == ':'
+	  && (fbeg[2] == '/'
+#ifdef DIR_SEPARATOR
+	      || fbeg[2] == DIR_SEPARATOR
+#endif
+	      ))
+#endif
       ) {
     strncpy (fname, (char *) fbeg, flen);
     fname[flen] = 0;
