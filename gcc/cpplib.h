@@ -108,14 +108,14 @@ typedef struct cpp_name cpp_name;
   T(CPP_DOT_STAR,	".*")			\
   T(CPP_MIN,		"<?")	/* extension */	\
   T(CPP_MAX,		">?")			\
-  H(CPP_OTHER,		spell_other) /* stray punctuation */ \
+  C(CPP_OTHER,		0)	/* stray punctuation */ \
 \
   H(CPP_NAME,		spell_name)	/* word */	\
   N(CPP_INT,		0)		/* 23 */	\
   N(CPP_FLOAT,		0)		/* 3.14159 */	\
   H(CPP_NUMBER,		spell_name)	/* 34_be+ta  */	\
-  H(CPP_CHAR,		spell_char)	/* 'char' */	\
-  H(CPP_WCHAR,		spell_char)	/* L'char' */	\
+  H(CPP_CHAR,		spell_string)	/* 'char' */	\
+  H(CPP_WCHAR,		spell_string)	/* L'char' */	\
   H(CPP_STRING,		spell_string)	/* "string" */	\
   H(CPP_WSTRING,	spell_string)	/* L"string" */	\
 \
@@ -138,6 +138,7 @@ typedef struct cpp_name cpp_name;
 
 #define T(e, s) e,
 #define H(e, s) e,
+#define C(e, s) e,
 #define N(e, s) e,
 #define E(e, s) e,
 enum cpp_ttype
@@ -147,6 +148,7 @@ enum cpp_ttype
 };
 #undef T
 #undef H
+#undef C
 #undef N
 #undef E
 

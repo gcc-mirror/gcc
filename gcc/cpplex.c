@@ -2161,16 +2161,12 @@ void _cpp_lex_line PARAMS ((cpp_reader *, cpp_toklist *));
 
 static void _cpp_output_list PARAMS ((cpp_reader *, cpp_toklist *));
 
-unsigned int spell_char PARAMS ((unsigned char *, cpp_toklist *,
-				 cpp_token *token));
 unsigned int spell_string PARAMS ((unsigned char *, cpp_toklist *,
 				   cpp_token *token));
 unsigned int spell_comment PARAMS ((unsigned char *, cpp_toklist *,
 				    cpp_token *token));
 unsigned int spell_name PARAMS ((unsigned char *, cpp_toklist *,
 				 cpp_token *token));
-unsigned int spell_other PARAMS ((unsigned char *, cpp_toklist *,
-				  cpp_token *token));
 
 typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 					  cpp_token *));
@@ -2200,22 +2196,25 @@ typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 
 #define SPELL_TEXT     0
 #define SPELL_HANDLER  1
-#define SPELL_NONE     2
-#define SPELL_EOL      3
+#define SPELL_CHAR     2
+#define SPELL_NONE     3
+#define SPELL_EOL      4
 
 #define T(e, s) {SPELL_TEXT, s},
 #define H(e, s) {SPELL_HANDLER, s},
+#define C(e, s) {SPELL_CHAR, s},
 #define N(e, s) {SPELL_NONE, s},
 #define E(e, s) {SPELL_EOL, s},
 
 static const struct token_spelling
 {
-  char type;
+  unsigned char type;
   PTR  speller;
 } token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
 
 #undef T
 #undef H
+#undef C
 #undef N
 #undef E
 
@@ -2246,12 +2245,12 @@ cpp_free_token_list (list)
 {
   if (list->comments)
     free (list->comments);
-  free (list->tokens - 1);
+  free (list->tokens - 1);	/* Backup over dummy token.  */
   free (list->namebuf);
   free (list);
 }
 
-static char trigraph_map[256];
+static unsigned char trigraph_map[256];
 
 void
 init_trigraph_map ()
@@ -3120,10 +3119,6 @@ _cpp_lex_line (pfile, list)
 	  cur_token++;
 	  break;
 
-	case ')':
-	  PUSH_TOKEN (CPP_CLOSE_PAREN);
-	  break;
-
 	case '(':
 	  /* Is this the beginning of an assertion string?  */
 	  if (list->dir_flags & SYNTAX_ASSERT)
@@ -3133,11 +3128,6 @@ _cpp_lex_line (pfile, list)
 	      goto do_parse_string;
 	    }
 	  PUSH_TOKEN (CPP_OPEN_PAREN);
-	  break;
-
-	make_complement:
-	case '~':
-	  PUSH_TOKEN (CPP_COMPL);
 	  break;
 
 	case '?':
@@ -3188,6 +3178,8 @@ _cpp_lex_line (pfile, list)
 	    PUSH_TOKEN (CPP_DOT);
 	  break;
 
+	make_complement:
+	case '~': PUSH_TOKEN (CPP_COMPL); break;
 	make_xor:
 	case '^': PUSH_TOKEN (CPP_XOR); break;
 	make_open_brace:
@@ -3203,6 +3195,7 @@ _cpp_lex_line (pfile, list)
 	case '!': PUSH_TOKEN (CPP_NOT); break;
 	case ',': PUSH_TOKEN (CPP_COMMA); break;
 	case ';': PUSH_TOKEN (CPP_SEMICOLON); break;
+	case ')': PUSH_TOKEN (CPP_CLOSE_PAREN); break;
 
 	case '$':
 	  if (CPP_OPTION (pfile, dollars_in_ident))
@@ -3260,43 +3253,23 @@ _cpp_lex_line (pfile, list)
 
 /* Needs buffer of 3 + len.  */
 unsigned int
-spell_char (buffer, list, token)
-     unsigned char *buffer;
-     cpp_toklist *list;
-     cpp_token *token;
-{
-  unsigned char* orig_buff = buffer;
-  size_t len;
-
-  if (token->type == CPP_WCHAR)
-    *buffer++ = 'L';
-  *buffer++ = '\'';
-
-  len = token->val.name.len;
-  memcpy (buffer, TOK_NAME (list, token), len);
-  buffer += len;
-  *buffer++ = '\'';
-  return buffer - orig_buff;
-}
-
-/* Needs buffer of 3 + len.  */
-unsigned int
 spell_string (buffer, list, token)
      unsigned char *buffer;
      cpp_toklist *list;
      cpp_token *token;
 {
-  unsigned char* orig_buff = buffer;
+  unsigned char c, *orig_buff = buffer;
   size_t len;
 
-  if (token->type == CPP_WSTRING)
+  if (token->type == CPP_WSTRING || token->type == CPP_WCHAR)
     *buffer++ = 'L';
-  *buffer++ = '"';
+  c = token->type == CPP_STRING || token->type == CPP_WSTRING ? '"': '\'';
+  *buffer++ = c;
 
   len = token->val.name.len;
   memcpy (buffer, TOK_NAME (list, token), len);
   buffer += len;
-  *buffer++ = '"';
+  *buffer++ = c;
   return buffer - orig_buff;
 }
 
@@ -3347,17 +3320,6 @@ spell_name (buffer, list, token)
   return len;
 }
 
-/* Needs buffer of 1.  */
-unsigned int
-spell_other (buffer, list, token)
-     unsigned char *buffer;
-     cpp_toklist *list ATTRIBUTE_UNUSED;
-     cpp_token *token;
-{
-  *buffer++ = token->aux;
-  return 1;
-}
-
 void
 _cpp_lex_file (pfile)
      cpp_reader* pfile;
@@ -3390,6 +3352,11 @@ _cpp_lex_file (pfile)
     }
 }
 
+/* This could be useful to other routines.  If you allocate this many
+   bytes, you have enough room to spell the token.  */
+#define TOKEN_LEN(token) (4 + (token_spellings[token->type].type == \
+			       SPELL_HANDLER ? token->val.name.len: 0))
+
 static void
 _cpp_output_list (pfile, list)
      cpp_reader *pfile;
@@ -3412,8 +3379,7 @@ _cpp_output_list (pfile, list)
 	      cpp_token *comment = &list->comments[comment_no];
 	      do
 		{
-		  /* Longest wrapper is 4.  */
-		  CPP_RESERVE (pfile, 4 + 2 + comment->val.name.len);
+		  CPP_RESERVE (pfile, 2 + TOKEN_LEN (comment));
 		  pfile->limit += spell_comment (pfile->limit, list, comment);
 		  comment_no++, comment++;
 		  if (comment_no == list->comments_used)
@@ -3426,6 +3392,7 @@ _cpp_output_list (pfile, list)
 	    CPP_PUTC_Q (pfile, ' ');
 	}
 
+      CPP_RESERVE (pfile, 2 + TOKEN_LEN (token));
       switch (token_spellings[token->type].type)
 	{
 	case SPELL_TEXT:
@@ -3433,9 +3400,8 @@ _cpp_output_list (pfile, list)
 	    const unsigned char *spelling;
 	    unsigned char c;
 
-	    CPP_RESERVE (pfile, 4 + 2); /* Longest is 4.  */
 	    if (token->flags & DIGRAPH)
-	      spelling = digraph_spellings [token->type - CPP_FIRST_DIGRAPH];
+	      spelling = digraph_spellings[token->type - CPP_FIRST_DIGRAPH];
 	    else
 	      spelling = token_spellings[token->type].speller;
 
@@ -3449,10 +3415,12 @@ _cpp_output_list (pfile, list)
 	    speller s;
 
 	    s = (speller) token_spellings[token->type].speller;
-	    /* Longest wrapper is 4.  */
-	    CPP_RESERVE (pfile, 4 + 2 + token->val.name.len);
 	    pfile->limit += s (pfile->limit, list, token);
 	  }
+	  break;
+
+	case SPELL_CHAR:
+	  *pfile->limit++ = token->aux;
 	  break;
 
 	case SPELL_EOL:
