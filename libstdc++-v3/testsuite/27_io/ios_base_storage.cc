@@ -45,7 +45,7 @@ void test01()
 void test02()
 {
   bool test = true;
-  int max = std::numeric_limits<int>::max();
+  int max = std::numeric_limits<int>::max() - 1;
   std::stringbuf        strbuf;
   std::ios              ios(&strbuf);
 

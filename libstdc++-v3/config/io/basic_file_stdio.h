@@ -72,11 +72,11 @@ namespace std
       __basic_file*
       sys_open(__c_file* __file, ios_base::openmode __mode);
 
-      char
+      int
       sys_getc();
 
-      char
-      sys_ungetc(char);
+      int
+      sys_ungetc(int);
 
       __basic_file* 
       close(); 

@@ -224,6 +224,17 @@ namespace std
 		return traits_type::to_int_type(*_M_in_cur);
 	    }
 
+	  // Check for unbuffered stream.
+	  if (_M_buf_size == 1)
+	    {
+	      __ret = _M_file.sys_getc();
+	      *_M_in_cur = traits_type::to_char_type(__ret);
+	      _M_set_determinate(1);
+	      if (__testout)
+		_M_out_cur = _M_in_cur;
+	      return __ret;
+	    }
+
 	  // Sync internal and external buffers.
 	  // NB: __testget -> __testput as _M_buf_unified here.
 	  bool __testget = _M_in_cur && _M_in_beg < _M_in_cur;
@@ -278,14 +289,6 @@ namespace std
 		  __ret = traits_type::to_int_type(*_M_in_cur);
 		  if (__bump)
 		    _M_in_cur_move(1);
-		  else if (_M_buf_size == 1)
-		    {
-		      // If we are synced with stdio, we have to unget the
-		      // character we just read so that the file pointer
-		      // doesn't move.
-		      _M_file.sys_ungetc(*_M_in_cur);
-		      _M_set_indeterminate();
-		    }
 		}	   
 	    }
 	}
