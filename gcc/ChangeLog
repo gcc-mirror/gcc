@@ -1,3 +1,13 @@
+2004-12-21  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR c/18596
+	* c-parse.in (initdcl): Don't process a declaration if start_decl fails.
+	(notype_initdcl):  Don't process a declaration if start_decl fails.
+	* c-decl.c (start_decl): Fail if grokdeclarator fails.
+	(grokdeclarator): Fail if a function definition has an invalid storage
+	class.
+	* c-typeck.c (start_init): Treat error_mark_node the same as 0.
+
 2004-12-21  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (x86_sse_split_regs): Rename from
