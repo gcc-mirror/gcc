@@ -60,7 +60,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "basic-block.h"
 #include "tm_p.h"
-#include "df.h"
 
 /* We want target macros for the mode switching code to be able to refer
    to instruction attribute values.  */
@@ -93,11 +92,9 @@ static void compute_rev_insert_delete	PARAMS ((struct edge_list *edge_list,
 						 sbitmap *, sbitmap *,
 						 sbitmap *, sbitmap *,
 						 sbitmap *));
-
-static void available_transfer_function PARAMS ((int, int *, sbitmap, sbitmap, 
-						 sbitmap, sbitmap, void *));
 
 /* Edge based lcm routines.  */
+
 /* Compute expression anticipatability at entrance and exit of each block.
    This is done based on the flow graph, and not on the pred-succ lists.
    Other than that, its pretty much identical to compute_antinout.  */
@@ -113,6 +110,7 @@ compute_antinout_edge (antloc, transp, antin, antout)
   edge e;
   basic_block *worklist, *qin, *qout, *qend;
   unsigned int qlen;
+
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
@@ -147,6 +145,7 @@ compute_antinout_edge (antloc, transp, antin, antout)
       basic_block b = *qout++;
       bb = b->index;
       qlen--;
+
       if (qout >= qend)
         qout = worklist;
 
@@ -488,48 +487,90 @@ pre_edge_lcm (file, n_exprs, transp, avloc, antloc, kill, insert, delete)
 
   return edge_list;
 }
-/* Availability transfer function */
-static void
-available_transfer_function (bb, changed, in, out, gen, kill, data)
-     int bb ATTRIBUTE_UNUSED;
-     int *changed;
-     sbitmap in,out,gen,kill;
-     void *data ATTRIBUTE_UNUSED;
-{
-  *changed = sbitmap_union_of_diff (out, gen, in, kill);
-}
-/* Compute the AVIN and AVOUT vectors from the AVLOC and KILL
-   vectors.  */
+
+/* Compute the AVIN and AVOUT vectors from the AVLOC and KILL vectors.
+   Return the number of passes we performed to iterate to a solution.  */
+
 void
 compute_available (avloc, kill, avout, avin)
-     sbitmap *avloc;
-     sbitmap *kill;
-     sbitmap *avout;
-     sbitmap *avin;
+     sbitmap *avloc, *kill, *avout, *avin;
 {
-  int *dfs_order;
-  int *rc_order;
-  bitmap blocks;
-  int *inverse_rc_map;
-  int i;
-  dfs_order = xmalloc (sizeof (int) * n_basic_blocks);
-  rc_order = xmalloc (sizeof (int) * n_basic_blocks);
-  inverse_rc_map = xmalloc (sizeof (int) * n_basic_blocks);
-  flow_depth_first_order_compute (dfs_order, rc_order);
-  blocks = BITMAP_XMALLOC ();
-  for (i = 0; i < n_basic_blocks; i ++)
-   {
-     inverse_rc_map[rc_order[i]] = i;
-     bitmap_set_bit (blocks, i);
-   }
+  int bb;
+  edge e;
+  basic_block *worklist, *qin, *qout, *qend;
+  unsigned int qlen;
+
+  /* Allocate a worklist array/queue.  Entries are only added to the
+     list if they were not already on the list.  So the size is
+     bounded by the number of basic blocks.  */
+  qin = qout = worklist
+    = (basic_block *) xmalloc (sizeof (basic_block) * n_basic_blocks);
+
+  /* We want a maximal solution.  */
   sbitmap_vector_ones (avout, n_basic_blocks);
-  iterative_dataflow_sbitmap (avin, avout, avloc, kill, blocks, 
-			      FORWARD, INTERSECTION, 
-			      available_transfer_function, inverse_rc_map, 0);
-  BITMAP_XFREE (blocks);
-  free (dfs_order);
-  free (rc_order);
-  free (inverse_rc_map);
+
+  /* Put every block on the worklist; this is necessary because of the
+     optimistic initialization of AVOUT above.  */
+  for (bb = 0; bb < n_basic_blocks; bb++)
+    {
+      *qin++ = BASIC_BLOCK (bb);
+      BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
+    }
+
+  qin = worklist;
+  qend = &worklist[n_basic_blocks];
+  qlen = n_basic_blocks;
+
+  /* Mark blocks which are successors of the entry block so that we
+     can easily identify them below.  */
+  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+    e->dest->aux = ENTRY_BLOCK_PTR;
+
+  /* Iterate until the worklist is empty.  */
+  while (qlen)
+    {
+      /* Take the first entry off the worklist.  */
+      basic_block b = *qout++;
+      bb = b->index;
+      qlen--;
+
+      if (qout >= qend)
+        qout = worklist;
+
+      /* If one of the predecessor blocks is the ENTRY block, then the
+	 intersection of avouts is the null set.  We can identify such blocks
+	 by the special value in the AUX field in the block structure.  */
+      if (b->aux == ENTRY_BLOCK_PTR)
+	/* Do not clear the aux field for blocks which are successors of the
+	   ENTRY block.  That way we never add then to the worklist again.  */
+	sbitmap_zero (avin[bb]);
+      else
+	{
+	  /* Clear the aux field of this block so that it can be added to
+	     the worklist again if necessary.  */
+	  b->aux = NULL;
+	  sbitmap_intersection_of_preds (avin[bb], avout, bb);
+	}
+
+      if (sbitmap_union_of_diff (avout[bb], avloc[bb], avin[bb], kill[bb]))
+	/* If the out state of this block changed, then we need
+	   to add the successors of this block to the worklist
+	   if they are not already on the worklist.  */
+	for (e = b->succ; e; e = e->succ_next)
+	  if (!e->dest->aux && e->dest != EXIT_BLOCK_PTR)
+	    {
+	      *qin++ = e->dest;
+	      e->dest->aux = e;
+	      qlen++;
+
+	      if (qin >= qend)
+	        qin = worklist;
+	    }
+    }
+
+  clear_aux_for_edges ();
+  clear_aux_for_blocks ();
+  free (worklist);
 }
 
 /* Compute the farthest vector for edge based lcm.  */
@@ -835,7 +876,7 @@ struct seginfo
   HARD_REG_SET regs_live;
 };
 
-struct lcm_bb_info
+struct bb_info
 {
   struct seginfo *seginfo;
   int computing;
@@ -851,7 +892,7 @@ static sbitmap *delete;
 static sbitmap *insert;
 
 static struct seginfo * new_seginfo PARAMS ((int, rtx, int, HARD_REG_SET));
-static void add_seginfo PARAMS ((struct lcm_bb_info *, struct seginfo *));
+static void add_seginfo PARAMS ((struct bb_info *, struct seginfo *));
 static void reg_dies PARAMS ((rtx, HARD_REG_SET));
 static void reg_becomes_live PARAMS ((rtx, rtx, void *));
 static void make_preds_opaque PARAMS ((basic_block, int));
@@ -885,7 +926,7 @@ new_seginfo (mode, insn, bb, regs_live)
 
 static void
 add_seginfo (head, info)
-     struct lcm_bb_info *head;
+     struct bb_info *head;
      struct seginfo *info;
 {
   struct seginfo *ptr;
@@ -984,7 +1025,7 @@ optimize_mode_switching (file)
   static const int num_modes[] = NUM_MODES_FOR_MODE_SWITCHING;
 #define N_ENTITIES (sizeof num_modes / sizeof (int))
   int entity_map[N_ENTITIES];
-  struct lcm_bb_info *bb_info[N_ENTITIES];
+  struct bb_info *bb_info[N_ENTITIES];
   int i, j;
   int n_entities;
   int max_num_modes = 0;
@@ -1000,7 +1041,7 @@ optimize_mode_switching (file)
       {
 	/* Create the list of segments within each basic block.  */
 	bb_info[n_entities]
-	  = (struct lcm_bb_info *) xcalloc (n_basic_blocks, sizeof **bb_info);
+	  = (struct bb_info *) xcalloc (n_basic_blocks, sizeof **bb_info);
 	entity_map[n_entities++] = e;
 	if (num_modes[e] > max_num_modes)
 	  max_num_modes = num_modes[e];
@@ -1039,7 +1080,7 @@ optimize_mode_switching (file)
     {
       int e = entity_map[j];
       int no_mode = num_modes[e];
-      struct lcm_bb_info *info = bb_info[j];
+      struct bb_info *info = bb_info[j];
 
       /* Determine what the first use (if any) need for a mode of entity E is.
 	 This will be the mode that is anticipatable for this block.
@@ -1141,7 +1182,7 @@ optimize_mode_switching (file)
       for (j = n_entities - 1; j >= 0; j--)
 	{
 	  int m = current_mode[j] = MODE_PRIORITY_TO_MODE (entity_map[j], i);
-	  struct lcm_bb_info *info = bb_info[j];
+	  struct bb_info *info = bb_info[j];
 
 	  for (bb = 0 ; bb < n_basic_blocks; bb++)
 	    {
