@@ -81,7 +81,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.1.1.1 $"
+version="$Revision: 1.2 $"
 x11=default
 
 ### we might need to use some other shell than /bin/sh for running subshells
@@ -1170,6 +1170,15 @@ EOF
             if [ "${site_makefile_frag}" != "" ] ; then
                 echo site_makefile_frag = ${invsubdir}${site_makefile_frag} >>${Makefile}
             fi 
+
+	    # provide a proper gxx_include_dir to all subdirs.
+	    # Note, if you change the default, make sure to fix both here
+	    # and in the gcc subdirectory.
+	    if test -z "${gxx_include_dir}"; then
+		echo gxx_include_dir = '${prefix}/include/g++' >> ${Makefile}
+	    else
+		echo gxx_include_dir = ${gxx_include_dir} >> ${Makefile}
+	    fi
 
             # reset prefix, exec_prefix, srcdir, SUBDIRS, NONSUBDIRS,
             # remove any form feeds.
