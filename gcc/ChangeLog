@@ -1,5 +1,13 @@
 2002-09-08  Roger Sayle  <roger@eyesopen.com>
 
+	PR optimization/6405
+	* unroll.c (loop_iterations): last_loop_insn should be the previous
+	non-note instruction before loop->end.
+	* loop.c (strength_reduce): The conditional jump is the last
+	non-note instruction before loop->end (as above).
+
+2002-09-08  Roger Sayle  <roger@eyesopen.com>
+
 	* combine.c (try_combine): Handle the case that undobuf.other_insn
 	has been turned into a return or unconditional jump, by inserting
 	a BARRIER if necessary.

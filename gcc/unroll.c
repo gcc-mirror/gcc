@@ -3273,7 +3273,7 @@ loop_iterations (loop)
      accidentally get the branch for a contained loop if the branch for this
      loop was deleted.  We can only trust branches immediately before the
      loop_end.  */
-  last_loop_insn = PREV_INSN (loop->end);
+  last_loop_insn = prev_nonnote_insn (loop->end);
 
   /* ??? We should probably try harder to find the jump insn
      at the end of the loop.  The following code assumes that

@@ -5348,7 +5348,7 @@ strength_reduce (loop, flags)
       unsigned HOST_WIDE_INT n
 	= loop_info->n_iterations / loop_info->unroll_number;
       if (n > 1)
-	predict_insn (PREV_INSN (loop->end), PRED_LOOP_ITERATIONS,
+	predict_insn (prev_nonnote_insn (loop->end), PRED_LOOP_ITERATIONS,
 		      REG_BR_PROB_BASE - REG_BR_PROB_BASE / n);
     }
 
