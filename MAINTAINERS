@@ -139,7 +139,6 @@ basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pthomas@suse.de
 diagnostic messages	Gabriel Dos Reis	gdr@integrable-solutions.net
 windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
-windows, cygwin, mingw	DJ Delorie		dj@redhat.com
 DJGPP			DJ Delorie		dj@delorie.com
 libiberty		DJ Delorie		dj@redhat.com
 build machinery (*.in)	DJ Delorie		dj@redhat.com
