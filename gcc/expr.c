@@ -3146,6 +3146,12 @@ emit_move_insn (x, y)
 	{
 	  y_cst = y;
 	  y = force_const_mem (mode, y);
+
+	  /* If the target's cannot_force_const_mem prevented the spill,
+	     assume that the target's move expanders will also take care
+	     of the non-legitimate constant.  */
+	  if (!y)
+	    y = y_cst;
 	}
     }
 

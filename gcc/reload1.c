@@ -817,8 +817,12 @@ reload (first, global)
 		      else if (LEGITIMATE_CONSTANT_P (x))
 			reg_equiv_constant[i] = x;
 		      else
-			reg_equiv_memory_loc[i]
-			  = force_const_mem (GET_MODE (SET_DEST (set)), x);
+			{
+			  reg_equiv_memory_loc[i]
+			    = force_const_mem (GET_MODE (SET_DEST (set)), x);
+			  if (!reg_equiv_memory_loc[i])
+			    continue;
+			}
 		    }
 		  else
 		    continue;

@@ -763,6 +763,7 @@ struct ix86_address
 };
 
 static int ix86_decompose_address PARAMS ((rtx, struct ix86_address *));
+static bool ix86_cannot_force_const_mem PARAMS ((rtx));
 
 static void ix86_encode_section_info PARAMS ((tree, int)) ATTRIBUTE_UNUSED;
 static const char *ix86_strip_name_encoding PARAMS ((const char *))
@@ -900,6 +901,8 @@ static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS true
 #endif
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM ix86_cannot_force_const_mem
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK x86_output_mi_thunk
@@ -5050,6 +5053,17 @@ legitimate_constant_p (x)
   return true;
 }
 
+/* Determine if it's legal to put X into the constant pool.  This
+   is not possible for the address of thread-local symbols, which
+   is checked above.  */
+
+static bool
+ix86_cannot_force_const_mem (x)
+     rtx x;
+{
+  return !legitimate_constant_p (x);
+}
+
 /* Determine if a given RTX is a valid constant address.  */
 
 bool
@@ -7685,29 +7699,6 @@ ix86_expand_move (mode, operands)
 
   op0 = operands[0];
   op1 = operands[1];
-
-  /* ??? We have a slight problem.  We need to say that tls symbols are
-     not legitimate constants so that reload does not helpfully reload
-     these constants from a REG_EQUIV, which we cannot handle.  (Recall
-     that general- and local-dynamic address resolution requires a
-     function call.)
-
-     However, if we say that tls symbols are not legitimate constants,
-     then emit_move_insn helpfully drop them into the constant pool.
-
-     It is far easier to work around emit_move_insn than reload.  Recognize
-     the MEM that we would have created and extract the symbol_ref.  */
-
-  if (mode == Pmode
-      && GET_CODE (op1) == MEM
-      && RTX_UNCHANGING_P (op1))
-    {
-      tmp = maybe_get_pool_constant (op1);
-      /* Note that we only care about symbolic constants here, which
-	 unlike CONST_INT will always have a proper mode.  */
-      if (tmp && GET_MODE (tmp) == Pmode)
-	op1 = tmp;
-    }
 
   if (tls_symbolic_operand (op1, Pmode))
     {

@@ -28,6 +28,7 @@ bool hook_bool_tree_hwi_hwi_tree_false
   PARAMS ((tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 bool hook_bool_tree_hwi_hwi_tree_true
   PARAMS ((tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
+bool hook_bool_rtx_false PARAMS ((rtx));
 
 void hook_void_tree_int PARAMS ((tree, int));
 void hook_void_void PARAMS ((void));
