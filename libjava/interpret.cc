@@ -87,12 +87,12 @@ static inline void dupx (_Jv_word *sp, int n, int x)
 #define PUSHA(V)  (sp++)->o = (V)
 #define PUSHI(V)  (sp++)->i = (V)
 #define PUSHF(V)  (sp++)->f = (V)
-#define PUSHL(V)  ({ _Jv_word2 w2; w2.l=(V); \
+#define PUSHL(V)  do { _Jv_word2 w2; w2.l=(V); \
                      (sp++)->ia[0] = w2.ia[0]; \
-                     (sp++)->ia[0] = w2.ia[1]; })
-#define PUSHD(V)  ({ _Jv_word2 w2; w2.d=(V); \
+                     (sp++)->ia[0] = w2.ia[1]; } while (0)
+#define PUSHD(V)  do { _Jv_word2 w2; w2.d=(V); \
                      (sp++)->ia[0] = w2.ia[0]; \
-                     (sp++)->ia[0] = w2.ia[1]; })
+                     (sp++)->ia[0] = w2.ia[1]; } while (0)
 
 #define POPA()    ((--sp)->o)
 #define POPI()    ((jint) (--sp)->i) // cast since it may be promoted
@@ -107,20 +107,20 @@ static inline void dupx (_Jv_word *sp, int n, int x)
 #define LOADA(I)  (sp++)->o = locals[I].o
 #define LOADI(I)  (sp++)->i = locals[I].i
 #define LOADF(I)  (sp++)->f = locals[I].f
-#define LOADL(I)  ({ jint __idx = (I); \
+#define LOADL(I)  do { jint __idx = (I); \
     (sp++)->ia[0] = locals[__idx].ia[0]; \
     (sp++)->ia[0] = locals[__idx+1].ia[0]; \
- })
+ } while (0)
 #define LOADD(I)  LOADL(I)
 
 
 #define STOREA(I) locals[I].o = (--sp)->o
 #define STOREI(I) locals[I].i = (--sp)->i
 #define STOREF(I) locals[I].f = (--sp)->f
-#define STOREL(I) ({ jint __idx = (I); \
+#define STOREL(I) do { jint __idx = (I); \
     locals[__idx+1].ia[0] = (--sp)->ia[0]; \
     locals[__idx].ia[0] = (--sp)->ia[0]; \
- })
+ } while (0)
 #define STORED(I) STOREL(I)
 
 #define PEEKI(I)  (locals+(I))->i
