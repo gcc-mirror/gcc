@@ -1,5 +1,13 @@
 2003-06-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/Locale.java
+	(getDisplayLanguage): Made it final.
+	(getDisplayCountry): Likewise.
+	(getDisplayVariant): Likewise.
+	(getDisplayName): Likewise.
+
+2003-06-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/PropertyResourceBundle.java:
 	Removed unneeded import.
 
