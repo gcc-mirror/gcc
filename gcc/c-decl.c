@@ -3087,7 +3087,7 @@ builtin_function (name, type, function_code, class, library_name)
    attributes.  */
 
 void
-insert_default_attributes (decl)
+c_insert_default_attributes (decl)
      tree decl;
 {
   if (!TREE_PUBLIC (decl))

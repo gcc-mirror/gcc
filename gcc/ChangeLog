@@ -1,3 +1,17 @@
+2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (attribs.o): Update.
+	* attribs.c: Include langhooks.h.
+	(decl_attributes): Use langhook.
+	* c-decl.c (insert_default_attributes): Rename.
+	* c-tree.h (c_insert_default_attributes): New.
+	* langhooks-def.h (LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES):New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (struct lang_hooks): New hook.
+	* tree.h (insert_default_attributes): Remove.
+objc:
+	* objc-lang.c (LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES): Redefine.
+
 2002-03-27  Andreas Schwab  <schwab@suse.de>
 
 	* config/i386/i386.c (classify_argument): Also check for

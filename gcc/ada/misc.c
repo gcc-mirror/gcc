@@ -801,14 +801,6 @@ gnat_get_alias_set (type)
   return -1;
 }
 
-/* Set default attributes for functions.  We do nothing.  */
-
-void
-insert_default_attributes (decl)
-     tree decl ATTRIBUTE_UNUSED;
-{
-}
-
 /* GNU_TYPE is a type. Determine if it should be passed by reference by
    default.  */
 
