@@ -1,3 +1,13 @@
+2005-02-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/altivec.md (altivec_dst): Make the first operand
+	a REG, not a MEM.
+	(altivec_dstt): Likewise.
+	(altivec_dstst): Likewise.
+	(altivec_dststt): Likewise.
+	* config/rs6000/rs6000.c (altivec_expand_dst_builtin): Adjust creation
+	of first operand.
+
 2005-02-03  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vectorizer.c (slpeel_make_loop_iterate_ntimes): Copy

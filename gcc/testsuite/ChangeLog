@@ -1,3 +1,7 @@
+2005-02-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/altivec-19.c: New.
+
 2005-02-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/17807

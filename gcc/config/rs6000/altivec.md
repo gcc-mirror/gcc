@@ -1542,35 +1542,35 @@
   [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_dst"
-  [(unspec [(match_operand:V4SI 0 "memory_operand" "Q")
+  [(unspec [(match_operand 0 "register_operand" "b")
 	    (match_operand:SI 1 "register_operand" "r")
 	    (match_operand:QI 2 "immediate_operand" "i")] 190)]
-  "TARGET_ALTIVEC"
-  "dst %P0,%1,%2"
+  "TARGET_ALTIVEC && GET_MODE (operands[0]) == Pmode"
+  "dst %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_dstt"
-  [(unspec [(match_operand:V4SI 0 "memory_operand" "Q")
+  [(unspec [(match_operand 0 "register_operand" "b")
 	    (match_operand:SI 1 "register_operand" "r")
 	    (match_operand:QI 2 "immediate_operand" "i")] 191)]
-  "TARGET_ALTIVEC"
-  "dstt %P0,%1,%2"
+  "TARGET_ALTIVEC && GET_MODE (operands[0]) == Pmode"
+  "dstt %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_dstst"
-  [(unspec [(match_operand:V4SI 0 "memory_operand" "Q")
+  [(unspec [(match_operand 0 "register_operand" "b")
 	    (match_operand:SI 1 "register_operand" "r")
 	    (match_operand:QI 2 "immediate_operand" "i")] 192)]
-  "TARGET_ALTIVEC"
-  "dstst %P0,%1,%2"
+  "TARGET_ALTIVEC && GET_MODE (operands[0]) == Pmode"
+  "dstst %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_dststt"
-  [(unspec [(match_operand:V4SI 0 "memory_operand" "Q")
+  [(unspec [(match_operand 0 "register_operand" "b")
 	    (match_operand:SI 1 "register_operand" "r")
 	    (match_operand:QI 2 "immediate_operand" "i")] 193)]
-  "TARGET_ALTIVEC"
-  "dststt %P0,%1,%2"
+  "TARGET_ALTIVEC && GET_MODE (operands[0]) == Pmode"
+  "dststt %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_lvsl"
