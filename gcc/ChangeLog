@@ -1,3 +1,10 @@
+1999-12-14  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/m68k/m68020-elf.h (ENDFILE_SPEC): Delete.
+	(INIT_SECTION_ASM_OP): Delete.
+	(FINI_SECTION_ASM_OP): Delete.
+	(STARTFILE_SPEC): Define to hold just crtbegin.o.
+
 1999-12-14  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (class_scope_p): New fn.
