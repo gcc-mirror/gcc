@@ -1881,6 +1881,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	gnu/gcj/convert/Output_EUCJIS.java \
 	gnu/gcj/convert/Output_JavaSrc.java \
 	gnu/gcj/convert/Output_SJIS.java \
+	gnu/gcj/convert/Output_UnicodeLittleUnmarked.java \
 	gnu/gcj/convert/Output_UTF8.java \
 	gnu/gcj/convert/Output_iconv.java \
 	gnu/gcj/convert/UnicodeToBytes.java \
@@ -3131,8 +3132,9 @@ am__objects_12 = gnu/gcj/convert/BytesToUnicode.lo \
 	gnu/gcj/convert/Output_ASCII.lo \
 	gnu/gcj/convert/Output_EUCJIS.lo \
 	gnu/gcj/convert/Output_JavaSrc.lo \
-	gnu/gcj/convert/Output_SJIS.lo gnu/gcj/convert/Output_UTF8.lo \
-	gnu/gcj/convert/Output_iconv.lo \
+	gnu/gcj/convert/Output_SJIS.lo \
+	gnu/gcj/convert/Output_UnicodeLittleUnmarked.lo \
+	gnu/gcj/convert/Output_UTF8.lo gnu/gcj/convert/Output_iconv.lo \
 	gnu/gcj/convert/UnicodeToBytes.lo
 am__objects_13 = javax/accessibility/Accessible.lo \
 	javax/accessibility/AccessibleAction.lo \
@@ -4768,6 +4770,7 @@ gnu/gcj/convert/Output_ASCII.java \
 gnu/gcj/convert/Output_EUCJIS.java \
 gnu/gcj/convert/Output_JavaSrc.java \
 gnu/gcj/convert/Output_SJIS.java \
+gnu/gcj/convert/Output_UnicodeLittleUnmarked.java \
 gnu/gcj/convert/Output_UTF8.java \
 gnu/gcj/convert/Output_iconv.java \
 gnu/gcj/convert/UnicodeToBytes.java
@@ -12731,6 +12734,9 @@ gnu/gcj/convert/Output_JavaSrc.lo: gnu/gcj/convert/$(am__dirstamp) \
 	gnu/gcj/convert/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/convert/Output_SJIS.lo: gnu/gcj/convert/$(am__dirstamp) \
 	gnu/gcj/convert/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/convert/Output_UnicodeLittleUnmarked.lo:  \
+	gnu/gcj/convert/$(am__dirstamp) \
+	gnu/gcj/convert/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/convert/Output_UTF8.lo: gnu/gcj/convert/$(am__dirstamp) \
 	gnu/gcj/convert/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/convert/Output_iconv.lo: gnu/gcj/convert/$(am__dirstamp) \
@@ -14131,6 +14137,8 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/convert/Output_SJIS.lo
 	-rm -f gnu/gcj/convert/Output_UTF8.$(OBJEXT)
 	-rm -f gnu/gcj/convert/Output_UTF8.lo
+	-rm -f gnu/gcj/convert/Output_UnicodeLittleUnmarked.$(OBJEXT)
+	-rm -f gnu/gcj/convert/Output_UnicodeLittleUnmarked.lo
 	-rm -f gnu/gcj/convert/Output_iconv.$(OBJEXT)
 	-rm -f gnu/gcj/convert/Output_iconv.lo
 	-rm -f gnu/gcj/convert/UnicodeToBytes.$(OBJEXT)
@@ -19043,6 +19051,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/Output_JavaSrc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/Output_SJIS.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/Output_UTF8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/Output_UnicodeLittleUnmarked.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/Output_iconv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/UnicodeToBytes.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/Unicode_to_JIS.Plo@am__quote@
