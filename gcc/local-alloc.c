@@ -2043,7 +2043,10 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
       int regno = i;
 #endif
       if (! TEST_HARD_REG_BIT (first_used, regno)
-	  && HARD_REGNO_MODE_OK (regno, mode))
+	  && HARD_REGNO_MODE_OK (regno, mode)
+	  && (qty_n_calls_crossed[qty] == 0
+	      || accept_call_clobbered
+	      || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
 	{
 	  register int j;
 	  register int size1 = HARD_REGNO_NREGS (regno, mode);
