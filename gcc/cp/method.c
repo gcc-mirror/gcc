@@ -356,7 +356,7 @@ make_thunk (function, delta, vcall_index, generate_with_vtable_p)
       THUNK_VCALL_OFFSET (thunk) = vcall_offset;
       THUNK_GENERATE_WITH_VTABLE_P (thunk) = generate_with_vtable_p;
       /* The thunk itself is not a constructor or destructor, even if
-       the thing it is thunking to is.  */
+         the thing it is thunking to is.  */
       DECL_INTERFACE_KNOWN (thunk) = 1;
       DECL_NOT_REALLY_EXTERN (thunk) = 1;
       DECL_SAVED_FUNCTION_DATA (thunk) = NULL;
