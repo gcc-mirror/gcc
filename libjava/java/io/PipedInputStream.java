@@ -1,5 +1,5 @@
 /* PipedInputStream.java -- Read portion of piped streams.
-   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -226,18 +226,17 @@ public class PipedInputStream extends InputStream
   }
   
   /**
-    * This method reads bytes from the stream into a caller supplied buffer.
-    * It starts storing bytes at position <code>offset</code> into the 
-    * buffer and
-    * reads a maximum of <code>len</code> bytes.  Note that this method 
-    * can actually
-    * read fewer than <code>len</code> bytes.  The actual number of bytes 
-    * read is
-    * returned.  A -1 is returned to indicated that no bytes can be read
+    * This method reads one byte from the stream.
+    * -1 is returned to indicated that no bytes can be read
     * because the end of the stream was reached.  If the stream is already
     * closed, a -1 will again be returned to indicate the end of the stream.
-    * <p>
-    * This method will block if no byte is available to be read.
+    * 
+    * <p>This method will block if no byte is available to be read.</p>
+    *
+    * @return the value of the read byte value, or -1 of the end of the stream
+    * was reached
+    * 
+    * @throws IOException if an error occured
     */
   public int read() throws IOException
   {
@@ -248,7 +247,7 @@ public class PipedInputStream extends InputStream
     // if this method is never called.
 
     int r = read(read_buf, 0, 1);
-    return r != -1 ? read_buf[0] : -1;
+    return r != -1 ? (read_buf[0] & 0xff) : -1;
   }
   
   /**
