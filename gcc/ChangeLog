@@ -1,5 +1,8 @@
 2004-09-26  Jan Hubicka  <jh@suse.cz>
 
+	* dwarf2out.c (dwarf2out_finish): Set parent to comp_unit_die
+	for nested functions whose proper parent has not been output.
+
 	* profile.c (compute_branch_probabilities): Use REG_BR_PROB notes
 	when re-constructing profile previously invalidated by loop.
 
