@@ -4642,6 +4642,10 @@ fold_real_zero_addition_p (type, addend, negate)
   if (!real_zerop (addend))
     return false;
 
+  /* Don't allow the fold with -fsignaling-nans.  */
+  if (HONOR_SNANS (TYPE_MODE (type)))
+    return false;
+
   /* Allow the fold if zeros aren't signed, or their sign isn't important.  */
   if (!HONOR_SIGNED_ZEROS (TYPE_MODE (type)))
     return true;
