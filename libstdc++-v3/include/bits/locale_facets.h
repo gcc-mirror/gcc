@@ -908,15 +908,15 @@ namespace std
       int 
       compare(const _CharT* __lo1, const _CharT* __hi1,
 	      const _CharT* __lo2, const _CharT* __hi2) const
-      { return do_compare(__lo1, __hi1, __lo2, __hi2); }
+      { return this->do_compare(__lo1, __hi1, __lo2, __hi2); }
 
       string_type 
       transform(const _CharT* __lo, const _CharT* __hi) const
-      { return do_transform(__lo, __hi); }
+      { return this->do_transform(__lo, __hi); }
 
       long 
       hash(const _CharT* __lo, const _CharT* __hi) const
-      { return do_hash(__lo, __hi); }
+      { return this->do_hash(__lo, __hi); }
       
   protected:
       ~collate() { } // virtual
@@ -1278,39 +1278,39 @@ namespace std
 
       char_type
       decimal_point() const
-      { return decimal_point(); }
+      { return this->do_decimal_point(); }
       
       char_type
       thousands_sep() const
-      { return thousands_sep(); }
+      { return this->do_thousands_sep(); }
       
       string 
       grouping() const
-      { return grouping(); }
+      { return this->do_grouping(); }
 
       string_type  
       curr_symbol() const
-      { return do_curr_symbol(); }
+      { return this->do_curr_symbol(); }
 
       string_type  
       positive_sign() const
-      { return do_positive_sign(); }
+      { return this->do_positive_sign(); }
 
       string_type  
       negative_sign() const
-      { return do_negative_sign(); }
+      { return this->do_negative_sign(); }
 
       int          
       frac_digits() const
-      { return do_frac_digits(); }
+      { return this->do_frac_digits(); }
 
       pattern      
       pos_format() const
-      { return do_pos_format(); }
+      { return this->do_pos_format(); }
 
       pattern      
       neg_format() const
-      { return do_neg_format(); }
+      { return this->do_neg_format(); }
 
     protected:
       virtual 
