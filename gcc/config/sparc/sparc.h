@@ -1961,7 +1961,8 @@ do {									\
    ? gen_rtx_REG (Pmode, 31)			\
    : gen_rtx_MEM (Pmode,			\
 		  memory_address (Pmode, plus_constant (frame, \
-							15 * UNITS_PER_WORD))))
+							15 * UNITS_PER_WORD \
+							+ SPARC_STACK_BIAS))))
 
 /* Before the prologue, the return address is %o7 + 8.  OK, sometimes it's
    +12, but always using +8 is close enough for frame unwind purposes.
