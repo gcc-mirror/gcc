@@ -336,7 +336,6 @@ for machine in $build $host $target; do
 		;;
 	alpha*-*-linux-gnu*)
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
-		xm_file="${xm_file} alpha/xm-linux.h"
 		xm_defines=USE_BFD
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux alpha/t-linux"
