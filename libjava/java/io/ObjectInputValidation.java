@@ -63,7 +63,5 @@ public interface ObjectInputValidation
     *
     * @exception InvalidObjectException If the object is invalid
     */
-  public abstract void validateObject() throws InvalidObjectException;
-
-} // interface ObjectInputValidation
-
+  void validateObject() throws InvalidObjectException;
+}

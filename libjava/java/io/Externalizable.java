@@ -60,7 +60,7 @@ package java.io;
  */
 public interface Externalizable extends Serializable
 {
-  static final long serialVersionUID = -282491828744381764L;
+  long serialVersionUID = -282491828744381764L;
 
   /**
    * This method restores an object's state by reading in the instance data
@@ -86,7 +86,7 @@ public interface Externalizable extends Serializable
    * restored cannot be found
    * @exception IOException If any other error occurs
    */
-  public abstract void readExternal(ObjectInput in) 
+  void readExternal(ObjectInput in) 
     throws ClassNotFoundException, IOException;
 
   /**
@@ -105,7 +105,5 @@ public interface Externalizable extends Serializable
    *
    * @exception IOException If an error occurs
    */
-  public abstract void writeExternal(ObjectOutput out) throws IOException;
-
-} // interface Externalizable
-
+  void writeExternal(ObjectOutput out) throws IOException;
+}

@@ -1,3 +1,16 @@
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/Externalizable.java,
+	java/io/FileFilter.java,
+	java/io/FilePermission.java,
+	java/io/ObjectInput.java,
+	java/io/ObjectInputValidation.java,
+	java/io/ObjectOutput.java,
+	java/io/ObjectStreamClass.java,
+	java/io/ObjectStreamConstants.java,
+	java/io/Serializable.java:
+	Removed redundant modifiers.
+
 2003-10-11  Ingo Proetel  <proetel@aicas.com>
 
 	* java/rmi/server/RMIClassLoader.java: Identify cached classloaders by 
