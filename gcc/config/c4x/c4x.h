@@ -2275,6 +2275,14 @@ asm_fprintf (FILE, "%s%d:\n", PREFIX, NUM)
    assemble_name (FILE, (NAME)),	\
    fprintf (FILE, ",%u\n", (ROUNDED)))
 
+#undef ASM_OUTPUT_BSS
+#define ASM_OUTPUT_BSS(FILE, DECL, NAME, SIZE, ALIGN)   \
+(  fputs ("\t.globl\t", FILE),	\
+   assemble_name (FILE, (NAME)),	\
+   fputs ("\n\t.bss\t", FILE),	\
+   assemble_name (FILE, (NAME)),	\
+   fprintf (FILE, ",%u\n", (SIZE)))
+
 /* Macros Controlling Initialization Routines.  */
 
 #define OBJECT_FORMAT_COFF
