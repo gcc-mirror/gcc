@@ -5799,7 +5799,6 @@ register_fields (flags, type, variable_list)
 		 appropriately. */
 	      TREE_CHAIN (init) = ctxp->static_initialized;
 	      ctxp->static_initialized = init;
-	      DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
 	      if (TREE_OPERAND (init, 1) 
 		  && TREE_CODE (TREE_OPERAND (init, 1)) == NEW_ARRAY_INIT)
 		TREE_STATIC (TREE_OPERAND (init, 1)) = 1;
@@ -5813,6 +5812,7 @@ register_fields (flags, type, variable_list)
 	      ctxp->non_static_initialized = init;
 	    }
 	  MODIFY_EXPR_FROM_INITIALIZATION_P (init) = 1;
+	  DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
 	}
     }
   lineno = saved_lineno;
@@ -7621,7 +7621,7 @@ note_possible_classname (name, len)
     return 0;
   node = ident_subst (name, len, "", '/', '.', "");
   IS_A_CLASSFILE_NAME (node) = 1; /* Or soon to be */
-  QUALIFIED_P (node) = 1; /* As soon as we turn / into . */
+  QUALIFIED_P (node) = strchr (name, '/') ? 1 : 0;
   return 1;
 }
 
@@ -8896,6 +8896,8 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 	      && TREE_CODE (where_found) != RECORD_TYPE)
 	    {
 	      tree type = QUAL_DECL_TYPE (field_ref);
+	      if (TREE_CODE (type) == RECORD_TYPE)
+		type = build_pointer_type (type);
 	      field_ref = build (COMPOUND_EXPR, type, where_found, field_ref);
 	    }
 	}
@@ -10111,6 +10113,7 @@ qualify_ambiguous_name (id)
 {
   tree qual, qual_wfl, name, decl, ptr_type, saved_current_class;
   int again, super_found = 0, this_found = 0, new_array_found = 0;
+  int code;
 
   /* We first qualify the first element, then derive qualification of
      others based on the first one. If the first element is qualified
@@ -10140,7 +10143,7 @@ qualify_ambiguous_name (id)
 	break;
       case NEW_ARRAY_EXPR:
 	qual = TREE_CHAIN (qual);
-	new_array_found = again = 1;
+	new_array_found = 1;
 	continue;
       case NEW_CLASS_EXPR:
       case CONVERT_EXPR:
@@ -10150,13 +10153,41 @@ qualify_ambiguous_name (id)
 	while (TREE_CODE (qual_wfl) == ARRAY_REF)
 	  qual_wfl = TREE_OPERAND (qual_wfl, 0);
 	break;
+      case STRING_CST:
+	qual = TREE_CHAIN (qual);
+	qual_wfl = QUAL_WFL (qual);
+	break;
       default:
 	/* Fix for -Wall. Just break doing nothing */
 	break;
       }
-    name = EXPR_WFL_NODE (qual_wfl);
+
     ptr_type = current_class;
     again = 0;
+    code = TREE_CODE (qual_wfl);
+
+    /* Pos evaluation: non WFL leading expression nodes */
+    if (code == CONVERT_EXPR
+	&& TREE_CODE (TREE_TYPE (qual_wfl)) == EXPR_WITH_FILE_LOCATION)
+      name = EXPR_WFL_NODE (TREE_TYPE (qual_wfl));
+
+    else if (code == ARRAY_REF &&
+	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
+      name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
+
+    else if (code == CALL_EXPR && 
+	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
+      name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
+
+    else if (code == STRING_CST || code == CONDITIONAL_EXPR)
+      {
+	qual = TREE_CHAIN (qual);
+	qual_wfl = QUAL_WFL (qual);
+	again = 1;
+      }
+    else 
+      name = EXPR_WFL_NODE (qual_wfl);
+    
     /* If we have a THIS (from a primary), we set the context accordingly */
     if (name == this_identifier_node)
       {
@@ -10184,22 +10215,7 @@ qualify_ambiguous_name (id)
 	/* Do one more interation to set things up */
 	super_found = again = 1;
       }
-    /* Loop one more time if we're dealing with ?: or a string
-       constant, or a convert expression */
-    if (TREE_CODE (qual_wfl) == CONDITIONAL_EXPR
-	|| TREE_CODE (qual_wfl) == STRING_CST
-	|| TREE_CODE (qual_wfl) == CONVERT_EXPR)
-      {
-	if (TREE_CODE (qual_wfl) == CONVERT_EXPR
-	    && TREE_CODE (TREE_TYPE (qual_wfl)) == EXPR_WITH_FILE_LOCATION)
-	    name = EXPR_WFL_NODE (TREE_TYPE (qual_wfl));
-	else
-	  {
-	    qual = TREE_CHAIN (qual);
-	    qual_wfl = QUAL_WFL (qual);
-	    again = 1;
-	  }
-      }
+
   } while (again);
   
   /* If name appears within the scope of a location variable
@@ -10239,7 +10255,8 @@ qualify_ambiguous_name (id)
 
   /* Method call are expression name */
   else if (TREE_CODE (QUAL_WFL (qual)) == CALL_EXPR
-	   || TREE_CODE (QUAL_WFL (qual)) == ARRAY_REF)
+	   || TREE_CODE (QUAL_WFL (qual)) == ARRAY_REF
+	   || TREE_CODE (QUAL_WFL (qual)) == CONVERT_EXPR)
     RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
 
   /* Check here that NAME isn't declared by more than one
@@ -10511,8 +10528,15 @@ java_complete_lhs (node)
       if (cn == error_mark_node)
 	return cn;
 
-      /* First, the case expression must be constant */
+      /* First, the case expression must be constant. Values of final
+         fields are accepted. */
       cn = fold (cn);
+      if ((TREE_CODE (cn) == COMPOUND_EXPR || TREE_CODE (cn) == COMPONENT_REF)
+	  && JDECL_P (TREE_OPERAND (cn, 1))
+	  && FIELD_FINAL (TREE_OPERAND (cn, 1))
+	  && DECL_INITIAL (TREE_OPERAND (cn, 1)))
+	cn = fold_constant_for_init (DECL_INITIAL (TREE_OPERAND (cn, 1)),
+				     TREE_OPERAND (cn, 1));
 
       if (!TREE_CONSTANT (cn) && !flag_emit_xref)
 	{
@@ -14112,7 +14136,7 @@ fold_constant_for_init (node, context)
 
   if (code == INTEGER_CST || code == REAL_CST)
     return convert (TREE_TYPE (context), node);
-  if (TREE_TYPE (node) != NULL_TREE && code != VAR_DECL)
+  if (TREE_TYPE (node) != NULL_TREE && code != VAR_DECL && code != FIELD_DECL)
     return NULL_TREE;
 
   switch (code)
@@ -14178,7 +14202,8 @@ fold_constant_for_init (node, context)
 	: TREE_OPERAND (node, 2);
 
     case VAR_DECL:
-      if (! FIELD_STATIC (node) || ! FIELD_FINAL (node)
+    case FIELD_DECL:
+      if (! FIELD_FINAL (node)
 	  || DECL_INITIAL (node) == NULL_TREE)
 	return NULL_TREE;
       val = DECL_INITIAL (node);
@@ -14200,7 +14225,8 @@ fold_constant_for_init (node, context)
 	  else if (! QUALIFIED_P (name))
 	    {
 	      decl = lookup_field_wrapper (DECL_CONTEXT (context), name);
-	      if (decl == NULL_TREE || ! FIELD_STATIC (decl))
+	      if (decl == NULL_TREE 
+		  || (! FIELD_STATIC (decl) && ! FIELD_FINAL (decl)))
 		return NULL_TREE;
 	      return fold_constant_for_init (decl, decl);
 	    }
