@@ -2320,8 +2320,6 @@ extern void cannot_change_mode_set_regs (HARD_REG_SET *,
 extern bool invalid_mode_change_p (unsigned int, enum reg_class,
 				   enum machine_mode);
 
-extern int delete_null_pointer_checks (rtx);
-
 /* In regmove.c */
 #ifdef BUFSIZ
 extern void regmove_optimize (rtx, int, FILE *);
