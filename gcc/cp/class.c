@@ -5829,6 +5829,7 @@ resolve_address_of_overloaded_function (target_type,
     {
       tree target_fn_type;
       tree target_arg_types;
+      tree target_ret_type;
       tree fns;
 
       if (is_ptrmem)
@@ -5837,6 +5838,7 @@ resolve_address_of_overloaded_function (target_type,
       else
 	target_fn_type = TREE_TYPE (target_type);
       target_arg_types = TYPE_ARG_TYPES (target_fn_type);
+      target_ret_type = TREE_TYPE (target_fn_type);
 	  
       for (fns = overload; fns; fns = OVL_CHAIN (fns))
 	{
@@ -5858,7 +5860,7 @@ resolve_address_of_overloaded_function (target_type,
 	  /* Try to do argument deduction.  */
 	  targs = make_tree_vec (DECL_NTPARMS (fn));
 	  if (fn_type_unification (fn, explicit_targs, targs,
-				   target_arg_types, NULL_TREE,
+				   target_arg_types, target_ret_type,
 				   DEDUCE_EXACT) != 0)
 	    /* Argument deduction failed.  */
 	    continue;

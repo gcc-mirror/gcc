@@ -7562,12 +7562,18 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
 
   if (DECL_CONV_FN_P (fn))
     {
-      /* This is a template conversion operator.  Use the return types
-         as well as the argument types.  We use it instead of 'this', since
+      /* This is a template conversion operator.  Remove `this', since
          we could be comparing conversions from different classes.  */
-      parms = tree_cons (NULL_TREE, TREE_TYPE (fntype),
-			 TREE_CHAIN (parms));
-      args = tree_cons (NULL_TREE, return_type, TREE_CHAIN (args));
+      parms = TREE_CHAIN (parms);
+      args = TREE_CHAIN (args);
+      my_friendly_assert (return_type != NULL_TREE, 20000227);
+    }
+  
+  if (return_type)
+    {
+      /* We've been given a return type to match, prepend it.  */
+      parms = tree_cons (NULL_TREE, TREE_TYPE (fntype), parms);
+      args = tree_cons (NULL_TREE, return_type, args);
     }
 
   /* We allow incomplete unification without an error message here
@@ -8793,21 +8799,12 @@ get_bindings_real (fn, decl, explicit_args, check_rettype)
 
   i = fn_type_unification (fn, explicit_args, targs, 
 			   decl_arg_types,
-			   TREE_TYPE (decl_type),
+			   (check_rettype || DECL_CONV_FN_P (fn)
+	                    ? TREE_TYPE (decl_type) : NULL_TREE),
 			   DEDUCE_EXACT);
 
   if (i != 0)
     return NULL_TREE;
-
-  if (check_rettype)
-    {
-      /* Check to see that the resulting return type is also OK.  */
-      tree t = tsubst (TREE_TYPE (TREE_TYPE (fn)), targs,
-		       /*complain=*/0, NULL_TREE);
-
-      if (!same_type_p (t, TREE_TYPE (TREE_TYPE (decl))))
-	return NULL_TREE;
-    }
 
   return targs;
 }
