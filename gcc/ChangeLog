@@ -1,3 +1,8 @@
+Sat Oct  3 07:20:28 1998  Stephen L Moshier  <moshier@world.std.com>
+
+	* emit-rtl.c (gen_lowpart_common): Disable optimization of
+	initialized float-int union if the value is a NaN.
+
 Sat Oct  3 06:58:53 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (ASM_OUTPUT_ADDR_DIFF_ELT): Remove extraneous parameter.
