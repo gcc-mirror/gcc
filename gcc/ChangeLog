@@ -1,5 +1,7 @@
 2005-03-30  Alan Modra  <amodra@bigpond.net.au>
 
+	* config/rs6000/rs6000.c (rs6000_arg_partial_bytes): Update comments.
+
 	* calls.c (struct arg_data): Update "partial" comment.
 	(load_register_parameters): Update "nregs" comment.
 
