@@ -1,3 +1,8 @@
+2000-11-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* src/locale-inst.cc: Add explicit instantiations of
+	_M_fill_insert and fill_n<..., unsigned long,...> .
+
 2000-11-06  Gabriel Dos Reis  <gdr@codesourcery.com>
 
         * include/bits/std_complex.h (conj): Undo double removal.
