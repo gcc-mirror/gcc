@@ -75,14 +75,11 @@ do
     for d in $dirs
     do
 	echo " Searching $INPUT/$d"
-	if [ "$d" != . ]
-	then
-	    d=$d/.
-	fi
 
 	# Find all directories under $d, relative to $d, excluding $d itself.
-        files="$files `find $d -type d -print | \
-		       sed -e '/\/\.$/d' -e '/^\.$/d'`"
+	# (The /. is needed after $d in case $d is a symlink.)
+        files="$files `find $d/. -type d -print | \
+		       sed -e '/\/\.$/d' -e 's@/./@/@g'`"
 	# Find all links to directories.
 	# Using `-exec test -d' in find fails on some systems,
 	# and trying to run test via sh fails on others,
@@ -90,7 +87,7 @@ do
 	# First find all the links, then test each one.
 	theselinks=
 	$LINKS && \
-	  theselinks=`find $d -type l -print`
+	  theselinks=`find $d/. -type l -print | sed -e 's@/./@/@g'`
 	for d1 in $theselinks --dummy--
 	do
 	    # If the link points to a directory,
@@ -185,7 +182,7 @@ if $LINKS; then
 	  # root area.
 	  for file2 in $files; do
 	    case $file2 in
-	      $file/./*)
+	      $file/*)
 		dupdir=${LIB}/root$x/`echo $file2 | sed -n "s|^${file}/||p"`
 		echo "Duplicating ${file}'s ${dupdir}"
 		if [ -d ${dupdir} ]
