@@ -1180,6 +1180,7 @@ libgcc.a: $(LIBGCC_DEPS)
 	$(MAKE) \
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  CONFIG_H="$(TCONFIG_H)" TM_H="$(TM_H)" \
+	  INCLUDES="$(INCLUDES)" \
 	  MAKEOVERRIDES= \
 	  -f libgcc.mk all
 
