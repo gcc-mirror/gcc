@@ -3,8 +3,9 @@ Sun Mar  1 05:50:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* varasm.c (compare_constant_1): Fix typo in previous change.
 
 	* Makefile.in (TAGS): Use tmp-tags instead of temp.
-	(distdir-start): Depend on version.c on TAGS.
-	If srcdir is cvs working directory, do cvs update.
+	(distdir): Depend on distdir-cvs.
+	(distdir-cvs): New rule.
+	(distdir-start): Depend on version.c and TAGS.
 
 	* objc/Make-lang.in (objc-distdir): Properly rebuild objc-parse.c.
 
