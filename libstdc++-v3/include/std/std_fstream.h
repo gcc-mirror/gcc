@@ -145,11 +145,15 @@ namespace std
       */
       bool			_M_buf_allocated;
 
-      // _M_reading == false && _M_writing == false for 'uncommitted' mode;  
-      // _M_reading == true for 'read' mode;
-      // _M_writing == true for 'write' mode;
-      //
-      // NB: _M_reading == true && _M_writing == true is unused.
+      /**
+       *  @if maint
+       *  _M_reading == false && _M_writing == false for 'uncommitted' mode;  
+       *  _M_reading == true for 'read' mode;
+       *  _M_writing == true for 'write' mode;
+       *
+       *  NB: _M_reading == true && _M_writing == true is unused.
+       *  @endif
+      */ 
       bool                      _M_reading;
       bool                      _M_writing;
 
