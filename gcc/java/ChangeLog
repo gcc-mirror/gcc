@@ -1,3 +1,15 @@
+1999-03-31  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (print_field_info): Allow constants of other types.
+	(print_include): Generate include when new name is proper prefix
+	of already printed name.
+	(add_namelet): Likewise.
+	(cxx_keyword_subst): New function.
+	(print_method_info): Use it.
+	(print_field_name): New function.
+	(get_field_name): New function.
+	(print_field_info): Use get_field_name and print_field_name.
+
 Wed Mar 31 11:00:32 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * Makefile.in (keyword.h): Generate using gperf language 'C', not
