@@ -1295,7 +1295,7 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 	 or	%temp4, %temp5, %reg  */
 
       /* Getting this right wrt. reloading is really tricky.
-	 We _MUST_ have a seperate temporary at this point,
+	 We _MUST_ have a separate temporary at this point,
 	 if we don't barf immediately instead of generating
 	 incorrect code.  */
       if (temp1 == op0)
@@ -1338,7 +1338,7 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
       else
 	{
 	  /* Getting this right wrt. reloading is really tricky.
-	     We _MUST_ have a seperate temporary at this point,
+	     We _MUST_ have a separate temporary at this point,
 	     so we barf immediately instead of generating
 	     incorrect code.  */
 	  if (temp1 == op0)
