@@ -18,10 +18,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
-#include <stdio.h>
 #include <setjmp.h>
-#include <ctype.h>
 #include "config.h"
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -38,18 +37,6 @@ Boston, MA 02111-1307, USA. */
 #include "recog.h"
 #include "expr.h"
 #include "toplev.h"
-
-#if HAVE_STDLIB_H
-#include <stdlib.h>                                                
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>                                                   
-#else                                                  
-#ifdef HAVE_STRINGS_H
-#include <strings.h>               
-#endif                                                                   
-#endif 
 
 #ifdef EXTRA_CONSTRAINT
 /* If EXTRA_CONSTRAINT is defined, then the 'S'
@@ -438,7 +425,7 @@ order_regs_for_local_alloc ()
 void
 optimization_options (level, size)
      int level;
-     int size;
+     int size ATTRIBUTE_UNUSED;
 {
   /* For -O2 and beyond, turn off -fschedule-insns by default.  It tends to
      make the problem with not enough registers even worse.  */
@@ -539,10 +526,10 @@ i386_cc_probably_useless_p (insn)
 
 int
 i386_valid_decl_attribute_p (decl, attributes, identifier, args)
-     tree decl;
-     tree attributes;
-     tree identifier;
-     tree args;
+     tree decl ATTRIBUTE_UNUSED;
+     tree attributes ATTRIBUTE_UNUSED;
+     tree identifier ATTRIBUTE_UNUSED;
+     tree args ATTRIBUTE_UNUSED;
 {
   return 0;
 }
@@ -554,7 +541,7 @@ i386_valid_decl_attribute_p (decl, attributes, identifier, args)
 int
 i386_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
-     tree attributes;
+     tree attributes ATTRIBUTE_UNUSED;
      tree identifier;
      tree args;
 {
@@ -604,8 +591,8 @@ i386_valid_type_attribute_p (type, attributes, identifier, args)
 
 int
 i386_comp_type_attributes (type1, type2)
-     tree type1;
-     tree type2;
+     tree type1 ATTRIBUTE_UNUSED;
+     tree type2 ATTRIBUTE_UNUSED;
 {
   return 1;
 }
@@ -818,10 +805,10 @@ function_arg (cum, mode, type, named)
 
 int
 function_arg_partial_nregs (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;	/* current arg information */
-     enum machine_mode mode;	/* current arg mode */
-     tree type;			/* type of the argument or 0 if lib support */
-     int named;			/* != 0 for normal args, == 0 for ... args */
+     CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED;	/* current arg information */
+     enum machine_mode mode ATTRIBUTE_UNUSED;	/* current arg mode */
+     tree type ATTRIBUTE_UNUSED;		/* type of the argument or 0 if lib support */
+     int named ATTRIBUTE_UNUSED;		/* != 0 for normal args, == 0 for ... args */
 {
   return 0;
 }
@@ -1628,7 +1615,7 @@ output_move_const_single (operands)
 int
 symbolic_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -1655,7 +1642,7 @@ symbolic_operand (op, mode)
 int
 call_insn_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == MEM
       && ((CONSTANT_ADDRESS_P (XEXP (op, 0))
@@ -1676,7 +1663,7 @@ call_insn_operand (op, mode)
 int
 expander_call_insn_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == MEM
       && (CONSTANT_ADDRESS_P (XEXP (op, 0))
@@ -1712,7 +1699,7 @@ arithmetic_comparison_operator (op, mode)
 int
 ix86_logical_operator (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return GET_CODE (op) == AND || GET_CODE (op) == IOR || GET_CODE (op) == XOR;
 }
@@ -1841,7 +1828,7 @@ ix86_expand_binary_operator (code, mode, operands)
 int
 ix86_binary_operator_ok (code, mode, operands)
      enum rtx_code code;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      rtx operands[3];
 {
   return (GET_CODE (operands[1]) != MEM || GET_CODE (operands[2]) != MEM)
@@ -1888,9 +1875,9 @@ ix86_expand_unary_operator (code, mode, operands)
 
 int
 ix86_unary_operator_ok (code, mode, operands)
-     enum rtx_code code;
-     enum machine_mode mode;
-     rtx operands[2];
+     enum rtx_code code ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     rtx operands[2] ATTRIBUTE_UNUSED;
 {
   return TRUE;
 }
@@ -1905,7 +1892,7 @@ static int pic_label_no = 0;
 void
 asm_output_function_prefix (file, name)
      FILE *file;
-     char *name;
+     char *name ATTRIBUTE_UNUSED;
 {
   rtx xops[2];
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
@@ -1941,8 +1928,8 @@ asm_output_function_prefix (file, name)
 
 void
 function_prologue (file, size)
-     FILE *file;
-     int size;
+     FILE *file ATTRIBUTE_UNUSED;
+     int size ATTRIBUTE_UNUSED;
 {
   if (TARGET_SCHEDULE_PROLOGUE)
     {
@@ -2229,8 +2216,8 @@ ix86_can_use_return_insn_p ()
 
 void
 function_epilogue (file, size)
-     FILE *file;
-     int size;
+     FILE *file ATTRIBUTE_UNUSED;
+     int size ATTRIBUTE_UNUSED;
 {
     return;
 }
@@ -2761,7 +2748,7 @@ legitimize_pic_address (orig, reg)
 void
 emit_pic_move (operands, mode)
      rtx *operands;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   rtx temp = reload_in_progress ? operands[0] : gen_reg_rtx (Pmode);
 
@@ -2795,7 +2782,7 @@ emit_pic_move (operands, mode)
 rtx
 legitimize_address (x, oldx, mode)
      register rtx x;
-     register rtx oldx;
+     register rtx oldx ATTRIBUTE_UNUSED;
      enum machine_mode mode;
 {
   int changed = 0;
@@ -3805,7 +3792,7 @@ shift_op (op, mode)
 int
 VOIDmode_compare_op (op, mode)
     register rtx op;
-    enum machine_mode mode;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return GET_CODE (op) == COMPARE && GET_MODE (op) == VOIDmode;
 }
@@ -4333,14 +4320,14 @@ assign_386_stack_local (mode, n)
 
 int is_mul(op,mode)
     register rtx op;
-    enum machine_mode mode;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == MULT);
 }
 
 int is_div(op,mode)
     register rtx op;
-    enum machine_mode mode;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == DIV);
 }
@@ -4811,7 +4798,7 @@ sets_condition_code (pat)
 int
 str_immediate_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == CONST_INT && INTVAL (op) <= 32 && INTVAL (op) >= 0)
     return 1;

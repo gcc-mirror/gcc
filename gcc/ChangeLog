@@ -1,3 +1,27 @@
+Fri Jun 19 20:23:05 1998   Robert Lipe  <robertl@dgii.com>
+
+        * i386.c: Include system.h.   Remove redundant includes.
+        (optimization_options): Mark param 'size' with ATTRIBUTE_UNUSED.
+        (i386_cc_probably_useless_p): Likewise for 'decl', 'attributes',
+        'identifier', 'args'.
+        (i386_valid_type_attribute_p): Likewise for 'attributes'.
+        (i386_comp_type_attribute_p): Likewise for 'type1', 'type2'.
+        (function_arg_partial_nregs): Likewise for 'cum', 'mode', 'type',
+        and 'named'.
+        (symbolic_operand): Likewise for 'mode'.
+        (call_insn_operand): Likewise.
+        (expander_call_insn_operand): Likewise.
+        (ix86_logical_operator): Likewise.
+        (ix86_binary_operator_ok): Likewise.
+        (emit_pic_move): Likewise.
+        (VOIDmode_compare_op): Likewise.
+        (is_mul): Likewise.
+        (str_immediate_operand): Likewise.
+        (ix86_uary_operator_ok): Likewise for 'code', 'mode', and 'operands'.yy
+        (asm_output_function_prefix): Likewise for 'name'.
+        (function_prologue): Likewise for 'file', and 'size'.
+        (function_epilogue): Likewise.
+
 1998-06-19  Jim Wilson  <wilson@cygnus.com>
 
 	* loop.h (struct induction): Clarify comment for unrolled field.
