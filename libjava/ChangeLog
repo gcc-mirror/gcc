@@ -1,3 +1,14 @@
+2005-03-09  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natVMClassLoader.cc (defineClass): Reference
+	'systemClassLoader' field directly.
+	* java/lang/natRuntime.cc (_load): Reference 'systemClassLoader'
+	field directly.
+	* java/lang/natClassLoader.cc (_Jv_RegisterInitiatingLoader):
+	Reference 'systemClassLoader' field directly.
+	(_Jv_UnregisterInitiatingLoader): Likewise.
+	(_Jv_FindClass): Likewise.
+
 2005-03-09  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* java/lang/fdlibm.h: Merge an AIX define from GNU Classpath.
