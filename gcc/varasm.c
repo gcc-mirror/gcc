@@ -87,6 +87,13 @@ int var_labelno;
 
 int size_directive_output;
 
+/* The last decl for which assemble_variable was called,
+   if it did ASM_DECLARE_OBJECT_NAME.
+   If the last call to assemble_variable didn't do that,
+   this holds 0.  */
+
+tree last_assemble_variable_decl;
+
 /* Nonzero if at least one function definition has been seen.  */
 static int function_defined;
 
@@ -858,6 +865,8 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   int reloc = 0;
   enum in_section saved_in_section;
 
+  last_assemble_variable_decl = 0;
+
   if (output_bytecode)
     return;
 
@@ -1179,6 +1188,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* Do any machine/system dependent processing of the object.  */
 #ifdef ASM_DECLARE_OBJECT_NAME
+  last_assemble_variable_decl = decl;
   ASM_DECLARE_OBJECT_NAME (asm_out_file, name, decl);
 #else
   /* Standard thing is just output label for the object.  */
