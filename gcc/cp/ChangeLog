@@ -1,3 +1,22 @@
+2004-11-23  Ben Elliston  <bje@au.ibm.com>
+
+	* cp-tree.h (context_as_string): Remove extern.
+	* error.c (context_as_string): Remove.
+
+	* cp-tree.h (cp_type_qual_from_rid): Remove extern.
+	* lex.c (cp_type_qual_from_rid): Remove.
+
+	* cp-tree.h (do_poplevel): Remove extern.
+	(check_multiple_declarators): Likewise.
+	* semantics.c (do_poplevel): Make static.
+	(check_multiple_declarators): Remove.
+
+	* cp-tree.h (check_final_overrider): Remove extern.
+	* search.c (check_final_overrider): Make static.
+
+	* cp-tree.h (build_artificial_parm): Remove extern.
+	* decl2.c (build_artificial_parm): Make static.
+
 2004-11-22  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/18354

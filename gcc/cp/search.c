@@ -1774,7 +1774,7 @@ dfs_walk_once_accessible (tree binfo, bool friends_p,
 /* Check that virtual overrider OVERRIDER is acceptable for base function
    BASEFN. Issue diagnostic, and return zero, if unacceptable.  */
 
-int
+static int
 check_final_overrider (tree overrider, tree basefn)
 {
   tree over_type = TREE_TYPE (overrider);

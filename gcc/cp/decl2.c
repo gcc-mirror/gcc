@@ -157,7 +157,7 @@ cp_build_parm_decl (tree name, tree type)
 /* Returns a PARM_DECL for a parameter of the indicated TYPE, with the
    indicated NAME.  */
 
-tree
+static tree
 build_artificial_parm (tree name, tree type)
 {
   tree parm = cp_build_parm_decl (name, type);

@@ -3831,7 +3831,6 @@ extern void check_default_args (tree);
 extern void mark_used (tree);
 extern void finish_static_data_member_decl (tree, tree, tree, int);
 extern tree cp_build_parm_decl (tree, tree);
-extern tree build_artificial_parm (tree, tree);
 extern tree get_guard (tree);
 extern tree get_guard_cond (tree);
 extern tree set_guard (tree);
@@ -3853,7 +3852,6 @@ extern void init_error				(void);
 extern const char *type_as_string		(tree, int);
 extern const char *decl_as_string		(tree, int);
 extern const char *expr_as_string		(tree, int);
-extern const char *context_as_string            (tree, int);
 extern const char *lang_decl_name		(tree, int);
 extern const char *language_to_string           (enum languages);
 extern const char *class_key_or_enum_as_string  (tree);
@@ -3923,7 +3921,6 @@ extern tree cxx_make_type			(enum tree_code);
 extern tree make_aggr_type			(enum tree_code);
 extern void yyerror				(const char *);
 extern void yyhook				(int);
-extern int cp_type_qual_from_rid                (tree);
 extern bool cxx_init				(void);
 extern void cxx_finish (void);
 
@@ -4056,7 +4053,6 @@ extern tree binfo_for_vtable			(tree);
 extern tree binfo_from_vbase			(tree);
 extern tree binfo_for_vbase			(tree, tree);
 extern tree look_for_overrides_here		(tree, tree);
-extern int check_final_overrider		(tree, tree);
 #define dfs_skip_bases ((tree)1)
 extern tree dfs_walk_all (tree, tree (*) (tree, void *),
 			  tree (*) (tree, void *), void *);
@@ -4080,7 +4076,6 @@ extern void pop_to_parent_deferring_access_checks	(void);
 extern void perform_deferred_access_checks	(void);
 extern void perform_or_defer_access_check	(tree, tree);
 extern void init_cp_semantics                   (void);
-extern tree do_poplevel				(tree);
 extern void add_decl_expr			(tree);
 extern tree finish_expr_stmt                    (tree);
 extern tree begin_if_stmt                       (void);
@@ -4157,7 +4152,6 @@ extern void finish_template_decl                (tree);
 extern tree finish_template_type                (tree, tree, int);
 extern tree finish_base_specifier               (tree, tree, bool);
 extern void finish_member_declaration           (tree);
-extern void check_multiple_declarators          (void);
 extern void qualified_name_lookup_error		(tree, tree, tree);
 extern tree finish_id_expression                (tree, tree, tree,
 						 cp_id_kind *, tree *,
