@@ -1,3 +1,19 @@
+Thu May 14 16:30:47 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* exception.cc: Include eh-common.h.
+	(struct cp_eh_info): add eh_info struct with NEW_EH_MODEL.
+	(__cplus_type_matcher): First stab at new C++ runtime type matcher.
+	(__cp_push_exception): Initialize eh_info struct as well.
+	* except.c: Remove local structs and include eh-common.h.
+	(init_exception_processing): Set language and version codes.
+	(call_eh_info): add presence of eh_info to runtime description of 
+	struct cp_eh_info.
+	(expand_end_eh_spec): call start_catch_block() and end_catch_block().
+	* semantics.c (finish_try_block): call start_catch_block() and 
+	end_catch_block().
+	* parse.y (function_try_block): call start_catch_block() and 
+	end_catch_block().
+
 Thu May 14 12:27:34 1998  Brendan Kehoe  <brendan@cygnus.com>
 
 	* typeck.c (original_type): New function.

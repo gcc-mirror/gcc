@@ -43,6 +43,10 @@ struct label_node {
    EXCEPTION_HANDLER_LABEL is the label corresponding to the handler
    for this region.
 
+   LABEL_USED indicates whether a CATCH block has already used this
+   label or not. New ones are needed for additional catch blocks if
+   it has.
+
    FINALIZATION is the tree codes for the handler, or is NULL_TREE if
    one hasn't been generated yet, or is integer_zero_node to mark the
    end of a group of try blocks.  */
@@ -50,8 +54,8 @@ struct label_node {
 struct eh_entry {
   rtx outer_context;
   rtx exception_handler_label;
-
   tree finalization;
+  int label_used;
 };
 
 /* A list of EH_ENTRYs. ENTRY is the entry; CHAIN points to the next
@@ -145,16 +149,88 @@ extern int doing_eh				       PROTO ((int));
 
 /* Toplevel initialization for EH.  */
 
+#ifdef NEW_EH_MODEL
+
+void set_exception_lang_code                    PROTO((short));
+void set_exception_version_code                 PROTO((short));
+
+#endif
+
+/* A list of handlers asocciated with an exception region. HANDLER_LABEL
+   is the the label that control should be transfered to if the data
+   in TYPE_INFO matches an exception. a value of NULL_TREE for TYPE_INFO
+   means This is a cleanup, and must always be called. A value of
+   CATCH_ALL_TYPE works like a cleanup, but a call to the runtime matcher
+   is still performed to avoid being caught by a different language
+   exception. NEXT is a pointer to the next handler for this region. 
+   NULL means there are no more. */
+
+#define CATCH_ALL_TYPE   (tree *) -1
+
+typedef struct handler_info 
+{
+  rtx  handler_label;
+  void *type_info;
+  struct handler_info *next;
+} handler_info;
+
+
+/* Add a new eh_entry for this function, The parameter specifies what
+   exception region number NOTE insns use to delimit this range. 
+   The integer returned is uniquely identifies this exception range
+   within an internal table. */
+
+int new_eh_region_entry                         PROTO((int));
+
+/* Add new handler information to an exception range. The  first parameter
+   specifies the range number (returned from new_eh_entry()). The second
+   parameter specifies the handler.  By default the handler is inserted at
+   the end of the list. A handler list may contain only ONE NULL_TREE
+   typeinfo entry. Regardless where it is positioned, a NULL_TREE entry
+   is always output as the LAST handler in the exception table for a region. */
+
+void add_new_handler                       PROTO((int, struct handler_info *));
+
+/* Create a new handler structure initialized with the handler label and
+   typeinfo fields passed in. */
+
+struct handler_info *get_new_handler            PROTO((rtx, void *));
+
+/* Make a duplicate of an exception region by copying all the handlers
+   for an exception region. Return the new handler index. */
+
+int duplicate_handlers                          PROTO((int, int));
+
+
+/* Get a pointer to the first handler in an exception region's list. */
+
+struct handler_info *get_first_handler          PROTO((int));
+
+
 extern void init_eh				PROTO((void));
 
 /* Initialization for the per-function EH data.  */
 
 extern void init_eh_for_function		PROTO((void));
 
+/* Generate an exception label. Use instead of gen_label_rtx */
+
+extern rtx gen_exception_label                  PROTO((void));
+
 /* Adds an EH table entry for EH entry number N. Called from
    final_scan_insn for NOTE_INSN_EH_REGION_BEG.  */
 
 extern void add_eh_table_entry			PROTO((int n));
+
+/* Start a catch clause, triggered by runtime value paramter. */
+
+#ifdef TREE_CODE
+extern void expand_start_catch                  PROTO((tree));
+#endif
+
+/* End a catch clause. */
+
+extern void expand_end_catch                    PROTO((void));
 
 /* Returns a non-zero value if we need to output an exception table.  */
 
@@ -224,6 +300,10 @@ extern void end_eh_unwinder			PROTO((void));
    variable exception_handler_labels.  */
 
 extern void find_exception_handler_labels	PROTO((void));
+
+/* Determine if an arbitrary label is an exception label */
+
+extern int is_exception_handler_label           PROTO((int));
 
 /* Performs sanity checking on the check_exception_handler_labels
    list.  */

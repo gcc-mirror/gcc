@@ -587,7 +587,10 @@ finish_try_block (try_block)
   if (processing_template_decl)
     RECHAIN_STMTS_FROM_LAST (try_block, TRY_STMTS (try_block));
   else
-    expand_start_all_catch ();  
+    {
+      expand_start_all_catch ();  
+      expand_start_catch (NULL);
+    }
 }
 
 /* Finish a handler-sequence for a try-block, which may be given by
@@ -600,7 +603,10 @@ finish_handler_sequence (try_block)
   if (processing_template_decl)
     RECHAIN_STMTS_FROM_CHAIN (try_block, TRY_HANDLERS (try_block));
   else
-    expand_end_all_catch ();
+    {
+      expand_end_catch ();
+      expand_end_all_catch ();
+    }
 }
 
 /* Begin a handler.  Returns a HANDLER if appropriate.  */

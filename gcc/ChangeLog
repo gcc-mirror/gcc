@@ -1,3 +1,65 @@
+Thu May 14 16:30:47 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* eh-common.h: New file for basic EH data structures.
+	* except.h: Various prototypes and structures for NEW_EH_MODEL
+	* function.h (struct function): Add a struct eh_stack for the catch
+	clause stack.
+	* except.c (gen_exception_label): New function to generate an 
+	exception label.
+	(push_eh_entry): Use gen_exception_label() and init 'label_used' field.
+	(push_entry): New function to push an existing entry onto a stack.
+	(receive_exception_label): New function to emit the code required 
+	at the start of all catch blocks.
+	(struct func_eh_entry): New structure for maintaining handlers
+	associated with EH regions.
+	(new_eh_region_entry): New function to register an EH region.
+	(add_new_handler): New function to register a handler with a region.
+	(get_new_handler): Creates  anew handler entry for registering.
+	(find_func_region): New function to convert a NOTE eh region number
+	to an Eh region index.
+	(get_first_handler): New function to get the first handler in a region.
+	(clear_function_eh_region): New function to release memory.
+	(duplicate_handlers): New function to duplicate a list of handlers.
+	(expand_eh_region_end): Create a new region entry node as well.
+	(expand_leftover_cleanups): Call receive_exception_label() and
+	register the cleanup as a handler to the current region.
+	(expand_start_catch): New function to start a catch clause.
+	(expand_end_catch): New function to end a catch clause.
+	(expand_start_all_catch): restructure to not do the equivilent of
+	what expand_start_catch() does now. Push the exception region being
+	handled onto the catch stack.
+	(output_exception_table_entry): Issue an entry for each handler
+	associated with a region.
+	(set_exception_lang_code): New function for setting the language code.
+	(set_exception_version_code): New function to set the version number.
+	(output_exception_table): Output version and language codes.
+	(find_exception_handler_labels): Find handler labels using new scheme.
+	(is_exception_handler_label): New function, returns 1 if label is
+	present as a handler in some exception region.
+	(check_exception_handler_labels): Use the new scheme.
+	(init_eh_for_function): Initialize the catch stack.
+	(save_eh_status): Save the catch stack.
+	(restore_eh_status): Restore the catch stack.
+	(scan_region): Don't remove unreferenced handler label. Flow does it.
+	(get_reg_for_handler): New function to get the eh_context pointer
+	passed by __throw.
+	(expand_builtin_eh_stub): Changes required for NEW_EH_MODEL only.
+	* final.c (final_scan_insn): With NEW_EH_MODEL, add EH table
+	entry when processing END region rather that START region.
+	* flow.c (find_basic_blocks_1): Find all potential handler regions
+	now that we don't automatically know what the labels might be.
+	Let scan_region() remove unreferenced EH BEGIN/END labels.
+	* integrate.c (get_label_from_map): Put inlined labels onto the
+	permanent obstack since we dont know which ones might be exception
+	labels.
+	(save_for_inline_copying): Make new copies of all the handlers.
+	(expand_inline_function): Make new copies of all the handlers.
+	* libgcc2.c: Remove local struct decls, and include eh-common.h.
+	(find_exception_handler): With NEW_EH_MODEL the first matching 
+	region we find is the right one. Add eh_info as a new parameter.
+	(__throw): Pass eh_info to find_exception_handler. Set handler
+	and pass use different regs  under NEW_EH_MODEL.
+
 Thu May 14 12:58:21 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* i960.h (hard_regno_mode_ok): Changed to function from array of

@@ -1,0 +1,133 @@
+/* Copyright (C) 1997 Free Software Foundation, Inc.
+   This file is part of GNU CC.  */
+
+/* This file contains the structures required for the language
+   independant exception handling model. Both the static compiler and
+   the runtime library share this file. */
+
+/* The compiler flag NEW_EH_MODEL is used to determine whether the 
+   compiler supports the new runtime typechecking mechanism or not. Under
+   the new model, runtime info is contained in the exception table, and
+   the __throw() library routine determines which handler to call based
+   on the results of a call to a matching function provided by the expcetion
+   thrower.  Otherwise the old scheme of calling any handler which matches
+   an exception range is used, and the handler is responsible for all
+   checking of runtime conditions. If the handler wasn't suppose to
+   get the exception, it performs a re-throw. */
+
+#include "gansidecl.h"
+
+
+#ifndef NEW_EH_MODEL
+
+struct eh_context
+{
+  void **dynamic_handler_chain;
+  /* This is language dependent part of the eh context. */
+  void *info;
+};
+
+#else
+
+/* The handler_label field MUST be the first field in this structure. The 
+   __throw()  library routine expects uses __eh_stub() from except.c, which
+   simply dereferences the context pointer to get the handler */
+
+struct eh_context
+{
+  void *handler_label;
+  void **dynamic_handler_chain;
+  /* This is language dependent part of the eh context. */
+  void *info;
+};
+
+#endif
+
+
+#ifndef EH_TABLE_LOOKUP
+
+#ifndef NEW_EH_MODEL
+
+typedef struct exception_table 
+{
+  void *start_region;
+  void *end_region;
+  void *exception_handler;
+} exception_table;
+
+typedef exception_table exception_descriptor;
+
+#else
+
+typedef struct exception_table 
+{
+  void *start_region;
+  void *end_region;
+  void *exception_handler;
+  void *match_info;              /* runtime type info */
+} exception_table;
+
+
+/* The language identifying portion of an exception table */
+
+typedef struct exception_lang_info 
+{
+  short language;
+  short version;  
+} exception_lang_info;
+
+/* Each function has an exception_descriptor which contains the
+   language info, and a table of exception ranges and handlers */
+
+typedef struct exception_descriptor 
+{
+  exception_lang_info lang;
+  exception_table table[1];
+} exception_descriptor;
+
+
+/* A pointer to a matching function is initialized at runtime by the 
+   specific language if run-time exceptions are supported. 
+   The function takes 3 parameters
+    1 - runtime exception that has been thrown info. (__eh_info *)
+    2 - Match info pointer from the region being considered (void *)
+    3 - exception table region is in (exception descriptor *)
+*/
+
+typedef void * (*__eh_matcher)          PROTO ((void *, void *, void *));
+
+/* This is the runtime exception information. This forms the minimum required
+   information for an exception info pointer in an eh_context structure. */
+
+typedef struct __eh_info 
+{
+  __eh_matcher match_function;
+  void *coerced_value;
+  short language;
+  short version;
+} __eh_info;
+
+/* Convienient language codes for ID the originating language. Similar
+   to the codes in dwarf2.h. */
+
+enum exception_source_language
+  {
+    EH_LANG_C89 = 0x0001,
+    EH_LANG_C = 0x0002,
+    EH_LANG_Ada83 = 0x0003,
+    EH_LANG_C_plus_plus = 0x0004,
+    EH_LANG_Cobol74 = 0x0005,
+    EH_LANG_Cobol85 = 0x0006,
+    EH_LANG_Fortran77 = 0x0007,
+    EH_LANG_Fortran90 = 0x0008,
+    EH_LANG_Pascal83 = 0x0009,
+    EH_LANG_Modula2 = 0x000a,
+    EH_LANG_Java = 0x000b,
+    EH_LANG_Mips_Assembler = 0x8001
+  };
+
+#endif
+
+#endif  /* EH_TABLE_LOOKUP */
+
+
