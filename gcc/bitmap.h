@@ -269,7 +269,7 @@ bmp_iter_single_init (bitmap_iterator *bi, bitmap bmp, unsigned min)
       bi->word = word_in_elt;
       bi->word_bit = min - bit_in_word;
       bi->bit = min;
-      bi->actual = bi->ptr1->bits[word_in_elt] >> bit_in_elt;
+      bi->actual = bi->ptr1->bits[word_in_elt] >> bit_in_word;
     }
   else
     {
@@ -400,9 +400,9 @@ bmp_iter_and_not_init (bitmap_iterator *bi, bitmap bmp1, bitmap bmp2,
 
       if (bi->ptr2 && bi->ptr2->indx == indx)
 	bi->actual = (bi->ptr1->bits[word_in_elt]
-		      & ~bi->ptr2->bits[word_in_elt]) >> bit_in_elt;
+                     & ~bi->ptr2->bits[word_in_elt]) >> bit_in_word;
       else
-	bi->actual = bi->ptr1->bits[word_in_elt] >> bit_in_elt;
+       bi->actual = bi->ptr1->bits[word_in_elt] >> bit_in_word;
     }
   else
     {
@@ -539,7 +539,7 @@ bmp_iter_and_init (bitmap_iterator *bi, bitmap bmp1, bitmap bmp2,
       bi->bit = min;
 
       bi->actual = (bi->ptr1->bits[word_in_elt]
-		    & bi->ptr2->bits[word_in_elt]) >> bit_in_elt;
+                   & bi->ptr2->bits[word_in_elt]) >> bit_in_word;
     }
   else
     {
