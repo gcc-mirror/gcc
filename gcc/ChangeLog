@@ -1,3 +1,7 @@
+Tue May 12 11:44:14 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.h (ASM_OUTPUT_ALIGN): Remove trailing semi-colon.
+
 Tue May 12 11:38:31 1998  Gavin Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.md (dslot): Move after definition of "cpu"
