@@ -1,3 +1,12 @@
+2001-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* ifcvt.c (noce_emit_move_insn): New.
+	(noce_try_store_flag, noce_try_store_flag_constants,
+	noce_try_store_flag_inc, noce_try_store_flag_mask,
+	noce_try_cmove, noce_try_cmove_arith): Use it.
+	(noce_process_if_block): Likewise.
+	For STRICT_LOW_PART, take mode from its SUBREG.
+
 2001-04-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-tree.texi: Document representation of wide strings.
