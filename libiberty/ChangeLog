@@ -1,3 +1,7 @@
+2000-04-26  Dave Pitts  <dpitts@cozx.com>	
+
+	* config/mh-openedition.h: Added -DLE370 definition.
+
 2000-07-26 Mark Elbrecht <snowball3@bigfoot.com>
 
 	* pexecute.c (pexecute) [__MSDOS__]: Change __GO32__ to
