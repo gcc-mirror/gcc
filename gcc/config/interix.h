@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    Interix
-   Copyright (C) 1994, 1995, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1999, 2002, 2004 Free Software Foundation, Inc.
    Donn Terry, Softway Systems, Inc. (donn@softway.com)
    Modified from code
       Contributed by Douglas B. Rupp (drupp@cs.washington.edu).

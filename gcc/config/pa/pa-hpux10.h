@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for HP PA-RISC
-   Copyright (C) 1995, 1996, 1997, 2000, 2001, 2002, 2003
+   Copyright (C) 1995, 1996, 1997, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@defmacro.cs.utah.edu)
 

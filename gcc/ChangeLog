@@ -1,5 +1,36 @@
 2004-10-17  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/elfos.h, config/gofast.h, config/interix.h,
+	config/netbsd.h, config/svr3.h, config/vxworks.h,
+	config/alpha/alpha-modes.def, config/alpha/alpha-protos.h,
+	config/alpha/ev4.md, config/alpha/ev5.md, config/alpha/ev6.md,
+	config/alpha/netbsd.h, config/arm/arm-modes.def,
+	config/arm/unknown-elf.h, config/c4x/c4x-modes.def,
+	config/cris/aout.h, config/frv/frv-modes.def,
+	config/i386/beos-elf.h, config/i386/gas.h,
+	config/i386/i386-coff.h, config/i386/i386-modes.def,
+	config/i386/linux.h, config/i386/linux64.h,
+	config/i386/mingw32.h, config/i386/netbsd-elf.h,
+	config/i386/netbsd64.h, config/i386/sco5.h,
+	config/i386/sol2.h, config/i386/uwin.h, config/i860/i860.md,
+	config/ia64/ia64-modes.def, config/ia64/itanium1.md,
+	config/ia64/itanium2.md, config/m68k/m68k-modes.def,
+	config/mips/mips-modes.def, config/mips/sdb.h,
+	config/mips/vr.h, config/mips/vxworks.h,
+	config/pa/pa-hpux10.h, config/pa/pa-hpux11.h,
+	config/pa/pa32-linux.h, config/rs6000/40x.md,
+	config/rs6000/7450.md, config/rs6000/8540.md,
+	config/rs6000/linuxspe.h, config/rs6000/power4.md,
+	config/rs6000/rs6000-modes.def, config/rs6000/rtems.h,
+	config/rs6000/spe.h, config/s390/2064.md, config/s390/linux.h,
+	config/s390/s390-modes.def, config/sh/elf.h,
+	config/sh/sh-modes.def, config/sh/sh64.h,
+	config/sparc/ultra1_2.md, config/sparc/ultra3.md,
+	config/stormy16/stormy16.md, config/v850/v850-protos.h,
+	config/vax/vax.md: Update copyright.
+
+2004-10-17  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* expr.c (expand_expr_real_1): Remove an obsolete comment.
 
 2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
