@@ -83,8 +83,7 @@ static int replace_reg_in_block		PARAMS ((def_uses *, varray_type *,
 static int consider_def			PARAMS ((rtx, int, def_uses *, int));
 static int consider_available		PARAMS ((rtx, int, HARD_REG_SET *,
 						 int, def_uses *, int));
-static rtx rr_replace_reg		PARAMS ((rtx, rtx, rtx, int, rtx,
-						 int *));
+static void rr_replace_reg		PARAMS ((rtx, rtx, int, rtx, int *));
 static int consider_use			PARAMS ((rtx, int, int, int));
 static int condmove_p			PARAMS ((rtx));
 static void dump_def_use_chain		PARAMS ((HARD_REG_SET *, def_uses *,
@@ -527,8 +526,8 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
   rtx reg_use = 0;
   rtx new_reg = gen_rtx_REG (GET_MODE (reg_def), avail_reg);
 
-  rr_replace_reg (PATTERN (VARRAY_RTX (*uid_ruid, def)), reg_def, new_reg,
-		  DESTINATION, VARRAY_RTX (*uid_ruid, def), &status);
+  rr_replace_reg (reg_def, new_reg, DESTINATION,
+		  VARRAY_RTX (*uid_ruid, def), &status);
 
   if (!status)
     return status;
@@ -568,9 +567,8 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
 	{
 	  new_reg = gen_rtx_REG (GET_MODE (reg_use), avail_reg);
 	  
-	  rr_replace_reg (PATTERN (VARRAY_RTX (*uid_ruid, du_idx)), reg_use,
-			  new_reg, SOURCE, VARRAY_RTX (*uid_ruid, du_idx),
-			  &status);
+	  rr_replace_reg (reg_use, new_reg, SOURCE,
+			  VARRAY_RTX (*uid_ruid, du_idx), &status);
 	  death_note = find_reg_note (VARRAY_RTX (*uid_ruid, du_idx),
 				      REG_DEAD, reg_use);
 	  if (death_note)
@@ -628,134 +626,82 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
 /* Try to replace REG_USE in X with REG_SUB if INSN has a REPLACE_TYPE.
    STATUS is zero if the resulting pattern is not valid. */
 
-static rtx
-rr_replace_reg (x, reg_use, reg_sub, replace_type, insn, status)
-     rtx x;
+static void
+rr_replace_reg (reg_use, reg_sub, replace_type, insn, status)
      rtx reg_use;
      rtx reg_sub;
      int replace_type;
      rtx insn;
      int *status;
 {
-  enum rtx_code code;
   int i;
-  const char *fmt;
-  int n;
+  int changed = 0;
 
-  if (x == 0)
-    return x;
+  /* We only perform replacements on operands, since everything else
+     is by definition hard-coded.  Begin by extracting insn information
+     so that we know where the operands and dups exist.  */
+  extract_insn (insn);
 
-  code = GET_CODE (x);
-  switch (code)
+  for (i = recog_data.n_operands - 1; i >= 0; --i)
     {
-    case REG:
-      if (REGNO (x) == REGNO (reg_use))
+      rtx op;
+
+      /* Match replace_type with operand_type and skip those we aren't
+	 supposed to touch.  Note that OP_INOUT does _not_ match either
+	 replace_type.  */
+      if (replace_type == DESTINATION && recog_data.operand_type[i] != OP_OUT)
+	continue;
+      if (replace_type == SOURCE && recog_data.operand_type[i] != OP_IN)
+	continue;
+
+      op = recog_data.operand[i];
+      if (GET_CODE (op) != REG)
+	continue;
+
+      if (REGNO (op) == REGNO (reg_use))
 	{
-	  if (GET_MODE (x) == GET_MODE (reg_use))
-	    return reg_sub;
-	  else
-	    return gen_rtx_REG (GET_MODE (x), REGNO (reg_sub));
+	  rtx new = reg_sub;
+	  if (GET_MODE (op) != GET_MODE (reg_use))
+	    new = gen_rtx_REG (GET_MODE (op), REGNO (reg_sub));
+
+	  validate_change (insn, recog_data.operand_loc[i], new, 1);
+	  recog_data.operand[i] = new;
+
+	  changed |= 1 << i;
 	}
+    }
 
-      return x;
+  /* Any MATCH_DUP's for changed operands must also be changed.  */
+  /* ??? This more or less assumes that operand_type is correct, in
+     that the dup will be of the appropriate replace_type.  */
+  for (i = recog_data.n_dups - 1; i >= 0; i--)
+    {
+      int opno = recog_data.dup_num[i];
+      if ((changed >> opno) & 1)
+	validate_change (insn, recog_data.dup_loc[i],
+			 recog_data.operand[i], 1);
+    }
 
-    case SET:
-      if (replace_type == DESTINATION)
-	SET_DEST (x) = rr_replace_reg (SET_DEST (x), reg_use, reg_sub,
-				       replace_type, insn, status);
-      else if (replace_type == SOURCE)
-	{
-	  unsigned int dest_subregno = 0;
-	  int had_subreg = GET_CODE (SET_DEST (x)) == SUBREG;
+  /* Verify that the changes applied so far result in a recognizable insn.  */
+  if (! apply_change_group ())
+    {
+      *status = 0;
+      return;
+    }
 
-	  if (had_subreg)
-	    dest_subregno = REGNO (XEXP (SET_DEST (x), 0));
-
-	  SET_SRC (x) = rr_replace_reg (SET_SRC (x), reg_use, reg_sub,
-					replace_type, insn, status);
-
-	  /* If the replacement register is not part of the source
-	     then it may be part of a source mem operand. */
-	  if (GET_CODE (SET_DEST (x)) == MEM
-	      || GET_CODE (SET_DEST (x)) == ZERO_EXTRACT
-	      || GET_CODE (SET_DEST (x)) == SIGN_EXTRACT
-	      || GET_CODE (SET_DEST (x)) == STRICT_LOW_PART)
-	    SET_DEST (x) = rr_replace_reg (SET_DEST (x), reg_use, reg_sub,
-					   replace_type, insn, status);
-	  /* Shared rtl sanity check. */
-	  if (had_subreg && dest_subregno != REGNO (XEXP (SET_DEST (x), 0)))
-	    {
-	      *status = 0;
-	      return x;
-	    }
-	}
-
-      n = recog_memoized (insn);
-      if (n >= 0)
-	{
-	  int id;
-
-	  extract_insn (insn);
-
-	  /* Any MATCH_DUP's which are REGs must still match */
-	  for (id = insn_data[n].n_dups - 1; id >= 0; id--)
-	    {
-	      int opno = recog_data.dup_num[id];
-
-	      if (GET_CODE (*recog_data.dup_loc[id]) == REG
-		  && GET_CODE (*recog_data.operand_loc[opno]) == REG
-		  && (REGNO (*recog_data.dup_loc[id])
-		      != REGNO (*recog_data.operand_loc[opno])))
-		*status = 0;
-	    }
-
-	  if (!constrain_operands (1))
-	    {
-	      *status = 0;
-	      validate_replace_rtx (reg_sub, reg_use, insn);
-	    }
-	}
-      else
+  /* Verify that there are no other references of the given type to the
+     register in question.  That is, there are no hard-coded references
+     to this hard register left in the insn.  */
+  if (replace_type == DESTINATION)
+    {
+      if (reg_set_p (reg_use, insn))
 	*status = 0;
-
-      return x;
-
-    default:
-      break;
     }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+  else
     {
-      if (fmt[i] == 'e')
-	XEXP (x, i) = rr_replace_reg (XEXP (x, i), reg_use, reg_sub,
-				      replace_type, insn, status);
-      if (fmt[i] == 'E')
-	{
-	  register int xv;
-
-	  for (xv = 0; xv < XVECLEN (x, i); xv++)
-	    {
-	      XVECEXP (x, i, xv) = rr_replace_reg (XVECEXP (x, i, xv), reg_use,
-						reg_sub, replace_type, insn,
-						   status);
-	      n = recog_memoized (insn);
-	      if (n >= 0)
-		{
-		  extract_insn (insn);
-		  if (!constrain_operands (1))
-		    {
-		      *status = 0;
-		      validate_replace_rtx (reg_sub, reg_use, insn);
-		    }
-		}
-	      else
-		*status = 0;
-	    }
-	}
+      if (reg_referenced_p (reg_use, PATTERN (insn)))
+	*status = 0;
     }
-
-  return x;
 }
 
 /* Can REGNO in INSN be considered for renaming, given def INUM in d/u

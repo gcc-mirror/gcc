@@ -7,6 +7,9 @@ Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (locate_and_pad_parm): Zero alignment_pad.
 
+	* regrename.c (rr_replace_reg): Rewrite to use recog_data to
+	perform substitutions, and apply_change_group to see if it worked.
+
 Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (add_bound_info): Also ignore COND_EXPR.
