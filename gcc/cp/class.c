@@ -270,6 +270,7 @@ build_vbase_path (code, type, expr, path, alias_this)
     {
       tree reverse_path = NULL_TREE;
 
+      push_expression_obstack ();
       while (path)
 	{
 	  tree r = copy_node (path);
@@ -278,6 +279,7 @@ build_vbase_path (code, type, expr, path, alias_this)
 	  path = BINFO_INHERITANCE_CHAIN (path);
 	}
       path = reverse_path;
+      pop_obstacks ();
     }
 
   basetype = BINFO_TYPE (path);
@@ -447,9 +449,9 @@ build_vtable_entry (delta, pfn)
   else
     {
       extern int flag_huge_objects;
-      tree elems = tree_cons (NULL_TREE, delta,
-			      tree_cons (NULL_TREE, integer_zero_node,
-					 build_tree_list (NULL_TREE, pfn)));
+      tree elems = expr_tree_cons (NULL_TREE, delta,
+			      expr_tree_cons (NULL_TREE, integer_zero_node,
+					 build_expr_list (NULL_TREE, pfn)));
       tree entry = build (CONSTRUCTOR, vtable_entry_type, NULL_TREE, elems);
 
       /* DELTA is constructed by `size_int', which means it may be an
@@ -3324,7 +3326,7 @@ finish_struct_1 (t, warn_anon)
 	    fdecl = lookup_fnfields (binfo, sname, 0);
 
 	  if (fdecl)
-	    access_decls = tree_cons (access, fdecl, access_decls);
+	    access_decls = scratch_tree_cons (access, fdecl, access_decls);
 	  else
 	    cp_error_at ("no members matching `%D' in `%#T'", x, ctype);
 	  continue;
@@ -5100,7 +5102,7 @@ instantiate_type (lhstype, rhs, complain)
 		if (TREE_CODE (elem) == TEMPLATE_DECL)
 		  {
 		    int n = DECL_NTPARMS (elem);
-		    tree t = make_tree_vec (n);
+		    tree t = make_scratch_vec (n);
 		    int i, d = 0;
 		    i = type_unification
 		      (DECL_INNERMOST_TEMPLATE_PARMS (elem), 

@@ -7045,7 +7045,7 @@ expand_static_init (decl, init)
 	  end_anon_func ();
 	  mark_addressable (cleanup);
 	  cleanup = build_unary_op (ADDR_EXPR, cleanup, 0);
-	  fcall = build_function_call (Atexit, tree_cons (NULL_TREE, cleanup, NULL_TREE));
+	  fcall = build_function_call (Atexit, expr_tree_cons (NULL_TREE, cleanup, NULL_TREE));
 	  expand_expr_stmt (fcall);
 	}
 
@@ -11318,7 +11318,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  && ! CLASSTYPE_GOT_SEMICOLON (restype))
 	{
 	  cp_error ("semicolon missing after declaration of `%#T'", restype);
-	  shadow_tag (build_tree_list (NULL_TREE, restype));
+	  shadow_tag (build_expr_list (NULL_TREE, restype));
 	  CLASSTYPE_GOT_SEMICOLON (restype) = 1;
 	  if (TREE_CODE (fntype) == FUNCTION_TYPE)
 	    fntype = build_function_type (integer_type_node,
@@ -12013,7 +12013,7 @@ finish_function (lineno, call_poplevel, nested)
 			  expand_expr_stmt
 			    (build_scoped_method_call
 			     (current_class_ref, vb, dtor_identifier,
-			      build_tree_list (NULL_TREE, integer_zero_node)));
+			      build_expr_list (NULL_TREE, integer_zero_node)));
 			}
 		      vbases = TREE_CHAIN (vbases);
 		    }
@@ -12038,8 +12038,8 @@ finish_function (lineno, call_poplevel, nested)
 							       error_mark_node),
 						       NULL_PTR),
 				   ansi_opname[(int) DELETE_EXPR],
-				   tree_cons (NULL_TREE, current_class_ptr,
-					      build_tree_list (NULL_TREE, virtual_size)),
+				   expr_tree_cons (NULL_TREE, current_class_ptr,
+					      build_expr_list (NULL_TREE, virtual_size)),
 				   NULL_TREE, LOOKUP_NORMAL);
 	  else if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
 	    exprstmt = build_x_delete (ptr_type_node, current_class_ptr, 0,
@@ -12675,8 +12675,8 @@ maybe_build_cleanup_1 (decl, auto_delete)
 
       if (TYPE_USES_VIRTUAL_BASECLASSES (type)
 	  && ! TYPE_HAS_DESTRUCTOR (type))
-	rval = build_compound_expr (tree_cons (NULL_TREE, rval,
-					       build_tree_list (NULL_TREE, build_vbase_delete (type, decl))));
+	rval = build_compound_expr (expr_tree_cons (NULL_TREE, rval,
+					       build_expr_list (NULL_TREE, build_vbase_delete (type, decl))));
 
       if (TREE_CODE (decl) != PARM_DECL)
 	resume_momentary (temp);

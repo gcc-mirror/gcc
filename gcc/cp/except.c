@@ -487,11 +487,11 @@ expand_start_catch_block (declspecs, declarator)
 	init_type = build_reference_type (init_type);
 
       exp = saved_throw_value;
-      exp = tree_cons (NULL_TREE,
+      exp = expr_tree_cons (NULL_TREE,
 		       build_eh_type_type (TREE_TYPE (decl)),
-		       tree_cons (NULL_TREE,
+		       expr_tree_cons (NULL_TREE,
 				  saved_throw_type,
-				  tree_cons (NULL_TREE, exp, NULL_TREE)));
+				  expr_tree_cons (NULL_TREE, exp, NULL_TREE)));
       exp = build_function_call (CatchMatch, exp);
       call_rtx = expand_call (exp, NULL_RTX, 0);
       assemble_external (TREE_OPERAND (CatchMatch, 0));
@@ -618,7 +618,7 @@ do_unwind (inner_throw_label)
   rtx temp;
 
   /* Call to  __builtin_return_address. */
-  params = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
+  params = expr_tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
   next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
   /* In the return, the new pc is pc+8, as the value coming in is
@@ -671,14 +671,14 @@ do_unwind (inner_throw_label)
 #if 0
   /* I would like to do this here, but the move below doesn't seem to work.  */
   /* Call to  __builtin_return_address.  */
-  params = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
+  params = expr_tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
   next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
 
   emit_move_insn (next_pc, inner_throw_label);
   /* So, for now, just pass throw label to stack unwinder.  */
 #endif
-  params = tree_cons (NULL_TREE, make_tree (ptr_type_node,
+  params = expr_tree_cons (NULL_TREE, make_tree (ptr_type_node,
 					    inner_throw_label), NULL_TREE);
   
   do_function_call (Unwind, params, NULL_TREE);
@@ -752,7 +752,7 @@ expand_builtin_throw ()
 
   /* search for an exception handler for the saved_pc */
   handler = do_function_call (FirstExceptionMatch,
-			      tree_cons (NULL_TREE, saved_pc,
+			      expr_tree_cons (NULL_TREE, saved_pc,
 					 NULL_TREE),
 			      ptr_type_node);
   assemble_external (TREE_OPERAND (FirstExceptionMatch, 0));
@@ -800,7 +800,7 @@ expand_builtin_throw ()
   emit_move_insn (next_pc,
 		  gen_rtx (MEM, Pmode, plus_constant (hard_frame_pointer_rtx, -4)));
 #else
-  params = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
+  params = expr_tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
   next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
 #endif
@@ -969,11 +969,11 @@ expand_end_eh_spec (raises)
 	{
 	  /* check TREE_VALUE (raises) here */
 	  exp = saved_throw_value;
-	  exp = tree_cons (NULL_TREE,
+	  exp = expr_tree_cons (NULL_TREE,
 			   build_eh_type_type (match_type),
-			   tree_cons (NULL_TREE,
+			   expr_tree_cons (NULL_TREE,
 				      saved_throw_type,
-				      tree_cons (NULL_TREE, exp, NULL_TREE)));
+				      expr_tree_cons (NULL_TREE, exp, NULL_TREE)));
 	  exp = build_function_call (CatchMatch, exp);
 	  assemble_external (TREE_OPERAND (CatchMatch, 0));
 
@@ -1137,7 +1137,7 @@ expand_throw (exp)
 
 	  /* Make a copy of the thrown object.  WP 15.1.5  */
 	  exp = build_new (NULL_TREE, TREE_TYPE (exp),
-			   build_tree_list (NULL_TREE, exp),
+			   build_expr_list (NULL_TREE, exp),
 			   0);
 
 	  if (exp == error_mark_node)

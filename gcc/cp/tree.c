@@ -1655,14 +1655,9 @@ extern int depth_reached;
 void
 print_lang_statistics ()
 {
-  extern struct obstack maybepermanent_obstack, decl_obstack;
+  extern struct obstack decl_obstack;
   print_obstack_statistics ("class_obstack", &class_obstack);
   print_obstack_statistics ("decl_obstack", &decl_obstack);
-  print_obstack_statistics ("permanent_obstack", &permanent_obstack);
-  print_obstack_statistics ("maybepermanent_obstack", &maybepermanent_obstack);
-#if 0
-  print_inline_obstack_statistics ();
-#endif
   print_search_statistics ();
   print_class_statistics ();
 #ifdef GATHER_STATISTICS
@@ -1764,8 +1759,6 @@ break_out_target_exprs (t)
 
 /* Obstack used for allocating nodes in template function and variable
    definitions.  */
-
-extern struct obstack *expression_obstack;
 
 /* Similar to `build_nt', except we build
    on the permanent_obstack, regardless.  */
@@ -2063,11 +2056,18 @@ make_temp_vec (len)
      int len;
 {
   register tree node;
-  push_obstacks_nochange ();
-  resume_temporary_allocation ();
+  register struct obstack *ambient_obstack = current_obstack;
+  current_obstack = expression_obstack;
   node = make_tree_vec (len);
-  pop_obstacks ();
+  current_obstack = ambient_obstack;
   return node;
+}
+
+void
+push_expression_obstack ()
+{
+  push_obstacks_nochange ();
+  current_obstack = expression_obstack;
 }
 
 /* The type of ARG when used as an lvalue.  */

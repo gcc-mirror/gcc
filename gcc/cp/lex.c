@@ -4461,7 +4461,7 @@ make_lang_type (code)
     pi[--i] = 0;
 
   TYPE_LANG_SPECIFIC (t) = (struct lang_type *) pi;
-  CLASSTYPE_AS_LIST (t) = build_tree_list (NULL_TREE, t);
+  CLASSTYPE_AS_LIST (t) = build_expr_list (NULL_TREE, t);
   SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
   CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
   CLASSTYPE_VBASE_SIZE (t) = integer_zero_node;
