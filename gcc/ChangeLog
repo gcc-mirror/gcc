@@ -1,3 +1,8 @@
+Thu Oct 14 04:54:54 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (call value patterns): Move to the end of the file.
+	(prologue_set_got, prologue_get_pc): Use register_operand for op 0.
+
 1999-10-14 Mark Elbrecht <snowball3@bigfoot.com>
 
 	* configure.in (djgpp configuration): Define extra_objects..
