@@ -1937,13 +1937,20 @@ expand_block_move (operands)
    operands[3] is the alignment.
    operands[4] is a temp register.
    operands[5] is a temp register.
-   ... */
+   ...
+   operands[3+num_regs] is the last temp register.
+
+   The block move type can be one of the following:
+	BLOCK_MOVE_NORMAL	Do all of the block move.
+	BLOCK_MOVE_NOT_LAST	Do all but the last store.
+	BLOCK_MOVE_LAST		Do just the last store. */
 
 char *
-output_block_move (insn, operands, num_regs)
+output_block_move (insn, operands, num_regs, move_type)
      rtx insn;
      rtx operands[];
      int num_regs;
+     enum block_move_type move_type;
 {
   rtx dest_reg		= XEXP (operands[0], 0);
   rtx src_reg		= XEXP (operands[1], 0);
@@ -1961,22 +1968,21 @@ output_block_move (insn, operands, num_regs)
     char *load;			/* load insn without nop */
     char *load_nop;		/* load insn with trailing nop */
     char *store;		/* store insn */
+    char *final;		/* if last_store used: NULL or swr */
+    char *last_store;		/* last store instruction */
     int offset;			/* current offset */
     enum machine_mode mode;	/* mode to use on (MEM) */
   } load_store[4];
 
-  /* Work around a bug in GCC, where it can give us a register
+  /* Detect a bug in GCC, where it can give us a register
      the same as one of the addressing registers.  */
   for (i = 4; i < last_operand; i++)
     {
       if (reg_mentioned_p (operands[i], operands[0])
 	  || reg_mentioned_p (operands[i], operands[1]))
 	{
-	  /* register passed as address and temp register to block move  */
-	  /* To have a correct compiler, either this function
-	     has to handle the case, or something else has to make
-	     sure the case won't arise.  */
-	  abort ();
+	  error ("register $%d passed as address and temp register to block move",
+		   REGNO (operands[i]));
 
 	  for (j = i+1; j < last_operand; j++)
 	    operands[j-1] = operands[j];
@@ -1990,16 +1996,20 @@ output_block_move (insn, operands, num_regs)
   /* If we are given global or static addresses, and we would be
      emitting a few instructions, try to save time by using a
      temporary register for the pointer.  */
-  if (bytes > 2*align)
+  if (bytes > 2*align || move_type != BLOCK_MOVE_NORMAL)
     {
       if (CONSTANT_P (src_reg))
 	{
 	  if (TARGET_STATS)
 	    mips_count_memory_refs (operands[1], 1);
 
-	  xoperands[1] = operands[1];
-	  xoperands[0] = src_reg = operands[ 3 + num_regs-- ];
-	  output_asm_insn ("la\t%0,%1", xoperands);
+	  src_reg = operands[ 3 + num_regs-- ];
+	  if (move_type != BLOCK_MOVE_LAST)
+	    {
+	      xoperands[1] = operands[1];
+	      xoperands[0] = src_reg;
+	      output_asm_insn ("la\t%0,%1", xoperands);
+	    }
 	}
 
       if (CONSTANT_P (dest_reg))
@@ -2007,9 +2017,13 @@ output_block_move (insn, operands, num_regs)
 	  if (TARGET_STATS)
 	    mips_count_memory_refs (operands[0], 1);
 
-	  xoperands[1] = operands[0];
-	  xoperands[0] = dest_reg = operands[ 3 + num_regs-- ];
-	  output_asm_insn ("la\t%0,%1", xoperands);
+	  dest_reg = operands[ 3 + num_regs-- ];
+	  if (move_type != BLOCK_MOVE_LAST)
+	    {
+	      xoperands[1] = operands[0];
+	      xoperands[0] = dest_reg;
+	      output_asm_insn ("la\t%0,%1", xoperands);
+	    }
 	}
     }
 
@@ -2019,35 +2033,39 @@ output_block_move (insn, operands, num_regs)
   else if (num_regs < 1)
     abort ();
 
-  if (TARGET_GAS && set_noreorder++ == 0)
+  if (TARGET_GAS && move_type != BLOCK_MOVE_LAST && set_noreorder++ == 0)
     output_asm_insn (".set\tnoreorder", operands);
 
   while (bytes > 0)
     {
       load_store[num].offset = offset;
 
-      dslots_load_total++;
-      dslots_load_filled++;
       if (bytes >= UNITS_PER_WORD && align >= UNITS_PER_WORD)
 	{
-	  load_store[num].load     = "lw\t%0,%1";
-	  load_store[num].load_nop = "lw\t%0,%1%#";
-	  load_store[num].store    = "sw\t%0,%1";
-	  load_store[num].mode     = SImode;
+	  load_store[num].load       = "lw\t%0,%1";
+	  load_store[num].load_nop   = "lw\t%0,%1%#";
+	  load_store[num].store      = "sw\t%0,%1";
+	  load_store[num].last_store = "sw\t%0,%1";
+	  load_store[num].final      = (char *)0;
+	  load_store[num].mode       = SImode;
 	  offset += UNITS_PER_WORD;
 	  bytes -= UNITS_PER_WORD;
 	}
 
-      else if (bytes >= UNITS_PER_WORD && TARGET_GAS)
+      else if (bytes >= UNITS_PER_WORD)
 	{
 #if BYTES_BIG_ENDIAN
-	  load_store[num].load     = "lwl\t%0,%1\n\tlwr\t%0,%2";
-	  load_store[num].load_nop = "lwl\t%0,%1\n\tlwr\t%0,%2%#";
-	  load_store[num].store    = "swl\t%0,%1\n\tswr\t%0,%2";
+	  load_store[num].load       = "lwl\t%0,%1\n\tlwr\t%0,%2";
+	  load_store[num].load_nop   = "lwl\t%0,%1\n\tlwr\t%0,%2%#";
+	  load_store[num].store      = "swl\t%0,%1\n\tswr\t%0,%2";
+	  load_store[num].last_store = "swr\t%0,%2";
+	  load_store[num].final      = "swl\t%0,%1";
 #else
-	  load_store[num].load     = "lwl\t%0,%2\n\tlwr\t%0,%1";
-	  load_store[num].load_nop = "lwl\t%0,%2\n\tlwr\t%0,%1%#";
-	  load_store[num].store    = "swl\t%0,%2\n\tswr\t%0,%1";
+	  load_store[num].load	     = "lwl\t%0,%2\n\tlwr\t%0,%1";
+	  load_store[num].load_nop   = "lwl\t%0,%2\n\tlwr\t%0,%1%#";
+	  load_store[num].store	     = "swl\t%0,%2\n\tswr\t%0,%1";
+	  load_store[num].last_store = "swr\t%0,%1";
+	  load_store[num].final      = "swl\t%0,%2";
 #endif
 	  load_store[num].mode = SImode;
 	  offset += UNITS_PER_WORD;
@@ -2055,39 +2073,36 @@ output_block_move (insn, operands, num_regs)
 	  use_lwl_lwr = TRUE;
 	}
 
-      else if (bytes >= UNITS_PER_WORD)
-	{
-	  load_store[num].load     = "ulw\t%0,%1";
-	  load_store[num].load_nop = "ulw\t%0,%1%#";
-	  load_store[num].store    = "usw\t%0,%1";
-	  load_store[num].mode     = SImode;
-	  offset += UNITS_PER_WORD;
-	  bytes -= UNITS_PER_WORD;
-	}
-
       else if (bytes >= UNITS_PER_SHORT && align >= UNITS_PER_SHORT)
 	{
-	  load_store[num].load     = "lh\t%0,%1";
-	  load_store[num].load_nop = "lh\t%0,%1%#";
-	  load_store[num].store    = "sh\t%0,%1";
-	  load_store[num].offset   = offset;
-	  load_store[num].mode     = HImode;
+	  load_store[num].load	     = "lh\t%0,%1";
+	  load_store[num].load_nop   = "lh\t%0,%1%#";
+	  load_store[num].store	     = "sh\t%0,%1";
+	  load_store[num].last_store = "sh\t%0,%1";
+	  load_store[num].final      = (char *)0;
+	  load_store[num].offset     = offset;
+	  load_store[num].mode	     = HImode;
 	  offset += UNITS_PER_SHORT;
 	  bytes -= UNITS_PER_SHORT;
 	}
 
       else
 	{
-	  load_store[num].load     = "lb\t%0,%1";
-	  load_store[num].load_nop = "lb\t%0,%1%#";
-	  load_store[num].store    = "sb\t%0,%1";
-	  load_store[num].mode     = QImode;
+	  load_store[num].load	     = "lb\t%0,%1";
+	  load_store[num].load_nop   = "lb\t%0,%1%#";
+	  load_store[num].store	     = "sb\t%0,%1";
+	  load_store[num].last_store = "sb\t%0,%1";
+	  load_store[num].final      = (char *)0;
+	  load_store[num].mode	     = QImode;
 	  offset++;
 	  bytes--;
 	}
 
-      if (TARGET_STATS)
+      if (TARGET_STATS && move_type != BLOCK_MOVE_LAST)
 	{
+	  dslots_load_total++;
+	  dslots_load_filled++;
+
 	  if (CONSTANT_P (src_reg))
 	    mips_count_memory_refs (src_reg, 1);
 
@@ -2104,34 +2119,40 @@ output_block_move (insn, operands, num_regs)
 	  if (num == 1)
 	    {
 	      load_store[0].load = load_store[0].load_nop;
-	      dslots_load_filled--;
+	      if (TARGET_STATS && move_type != BLOCK_MOVE_LAST)
+		dslots_load_filled--;
+	    }
+
+	  if (move_type != BLOCK_MOVE_LAST)
+	    {
+	      for (i = 0; i < num; i++)
+		{
+		  int offset;
+
+		  if (!operands[i+4])
+		    abort ();
+
+		  if (GET_MODE (operands[i+4]) != load_store[i].mode)
+		    operands[i+4] = gen_rtx (REG, load_store[i].mode, REGNO (operands[i+4]));
+
+		  offset = load_store[i].offset;
+		  xoperands[0] = operands[i+4];
+		  xoperands[1] = gen_rtx (MEM, load_store[i].mode,
+					  plus_constant (src_reg, offset));
+
+		  if (use_lwl_lwr)
+		    xoperands[2] = gen_rtx (MEM, load_store[i].mode,
+					    plus_constant (src_reg, UNITS_PER_WORD-1+offset));
+
+		  output_asm_insn (load_store[i].load, xoperands);
+		}
 	    }
 
 	  for (i = 0; i < num; i++)
 	    {
-	      int offset;
-
-	      if (!operands[i+4])
-		abort ();
-
-	      if (GET_MODE (operands[i+4]) != load_store[i].mode)
-		operands[i+4] = gen_rtx (REG, load_store[i].mode, REGNO (operands[i+4]));
-
-	      offset = load_store[i].offset;
-	      xoperands[0] = operands[i+4];
-	      xoperands[1] = gen_rtx (MEM, load_store[i].mode,
-				      plus_constant (src_reg, offset));
-
-	      if (use_lwl_lwr)
-		xoperands[2] = gen_rtx (MEM, load_store[i].mode,
-					plus_constant (src_reg, UNITS_PER_WORD-1+offset));
-
-	      output_asm_insn (load_store[i].load, xoperands);
-	    }
-
-	  for (i = 0; i < num; i++)
-	    {
+	      int last_p = (i == num-1 && bytes == 0);
 	      int offset = load_store[i].offset;
+
 	      xoperands[0] = operands[i+4];
 	      xoperands[1] = gen_rtx (MEM, load_store[i].mode,
 				      plus_constant (dest_reg, offset));
@@ -2141,7 +2162,20 @@ output_block_move (insn, operands, num_regs)
 		xoperands[2] = gen_rtx (MEM, load_store[i].mode,
 					plus_constant (dest_reg, UNITS_PER_WORD-1+offset));
 
-	      output_asm_insn (load_store[i].store, xoperands);
+	      if (move_type == BLOCK_MOVE_NORMAL)
+		output_asm_insn (load_store[i].store, xoperands);
+
+	      else if (move_type == BLOCK_MOVE_NOT_LAST)
+		{
+		  if (!last_p)
+		    output_asm_insn (load_store[i].store, xoperands);
+
+		  else if (load_store[i].final != (char *)0)
+		    output_asm_insn (load_store[i].final, xoperands);
+		}
+
+	      else if (last_p)
+		output_asm_insn (load_store[i].last_store, xoperands);
 	    }
 
 	  num = 0;		/* reset load_store */
@@ -2149,7 +2183,7 @@ output_block_move (insn, operands, num_regs)
 	}
     }
 
-  if (TARGET_GAS && --set_noreorder == 0)
+  if (TARGET_GAS && move_type != BLOCK_MOVE_LAST && --set_noreorder == 0)
     output_asm_insn (".set\treorder", operands);
 
   return "";
