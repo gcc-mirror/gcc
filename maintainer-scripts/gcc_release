@@ -158,9 +158,9 @@ EOF
 
   # Tag the sources.
   if [ -n "${TAG}" ]; then
-    inform "Tagging release sources"
+    inform "Tagging sources as ${TAG}"
     ${CVS} rtag -r ${CVSBRANCH} -F ${TAG} gcc || \
-      error "Could not tag release sources"
+      error "Could not tag sources"
     CVSBRANCH=$TAG
   fi
 
@@ -571,7 +571,7 @@ else
 
   # Building locally on gcc.gnu.org, we know what the last snapshot date
   # was.
-  if [ $LOCAL -ne 0 ]; then
+  if [ $MODE_DIFFS -ne 0 ] && [ $LOCAL -ne 0 ]; then
     LAST_DATE=`cat ~/.snapshot_date-${BRANCH}`
     LAST_LONG_DATE=`date --date=$LAST_DATE +%Y-%m-%d`
     LAST_DIR=~ftp/pub/gcc/snapshots/${LAST_LONG_DATE}

@@ -1,3 +1,10 @@
+2003-07-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release: Execute gcc.gnu.org-only operations which are
+	related to diff generation only if diffs have been requested.
+	(build_sources): Improve tracing and an error message related
+	to tagging.
+
 2003-07-01  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (BRANCH): Rename to...
