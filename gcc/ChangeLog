@@ -19,6 +19,9 @@
 
 2003-05-03  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (expand_expr, case VIEW_CONVERT_EXPR): Don't use
+	gen_lowpart on non-integer modes.
+
 	* stor-layout.c (place_field): When adjusting offset_align, use
 	desired_align, not DECL_ALIGN.
 
