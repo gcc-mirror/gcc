@@ -6382,7 +6382,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
   HOST_WIDE_INT size, rsize;
   tree tmp, pptr_type_node;
   tree addr, lab_over, result = NULL;
-  int pass_by_ref = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  int pass_by_ref = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
 
   if (pass_by_ref)
     type = build_pointer_type (type);
@@ -6603,6 +6603,12 @@ sh_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 {
   if (targetm.calls.must_pass_in_stack (mode, type))
     return true;
+
+  /* ??? std_gimplify_va_arg_expr passes NULL for cum.  That function
+     wants to know about pass-by-reference semantics for incoming
+     arguments.  */
+  if (! cum)
+    return false;
 
   if (TARGET_SHCOMPACT)
     {
