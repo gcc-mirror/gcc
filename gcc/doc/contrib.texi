@@ -346,7 +346,7 @@ Alan Modra for various Linux bits and testing.
 
 @item
 Toon Moene for his direction via the steering committee, Fortran
-maintainance, and his ongoing work to make us make Fortran run fast.
+maintenance, and his ongoing work to make us make Fortran run fast.
 
 @item
 Jason Molenda for major help in the care and feeding of all the services
@@ -374,7 +374,7 @@ Philippe De Muyter for his work on the m68k port.
 
 @item
 Joseph S. Myers for his work on the PDP-11 port, format checking and ISO
-C99 support, and continous emphasis on (and contributions to) documentation.
+C99 support, and continuous emphasis on (and contributions to) documentation.
 
 @item
 Nathan Myers for his work on libstdc++-v3.
@@ -413,7 +413,7 @@ Matthias Pfaller for major improvements to the NS32k port.
 @item
 Gerald Pfeifer for his direction via the steering committee, pointing
 out lots of problems we need to solve, maintenance of the web pages, and
-taking care of documentation maintainance in general.
+taking care of documentation maintenance in general.
 
 @item
 Ovidiu Predescu for his work on the ObjC front end and runtime libraries.

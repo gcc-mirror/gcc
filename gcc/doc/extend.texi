@@ -185,7 +185,7 @@ the macro safely as follows:
 @end example
 
 Embedded statements are not allowed in constant expressions, such as
-the value of an enumeration constant, the width of a bit field, or
+the value of an enumeration constant, the width of a bit-field, or
 the initial value of a static variable.
 
 If you don't know the type of the operand, you can still do this, but you
@@ -2167,7 +2167,7 @@ the function instead by syntax described below (which, however, is not
 yet implemented in this case).  In some other cases, attribute
 specifiers are permitted by this grammar but not yet supported by the
 compiler.  All attribute specifiers in this place relate to the
-declaration as a whole.  In the obsolencent usage where a type of
+declaration as a whole.  In the obsolescent usage where a type of
 @code{int} is implied by the absence of type specifiers, such a list of
 specifiers and qualifiers may be an attribute specifier list with no
 other specifiers or qualifiers.
@@ -2214,7 +2214,7 @@ ignored.
 
 An attribute specifier list may appear at the start of a nested
 declarator.  At present, there are some limitations in this usage: the
-attributes apply to the identifer declared, and to all subsequent
+attributes apply to the identifier declared, and to all subsequent
 identifiers declared in that declaration (if it includes a
 comma-separated list of declarators), rather than to a specific
 declarator.  When attribute specifiers follow the @code{*} of a pointer
@@ -2976,7 +2976,7 @@ template and does not know what it means or even whether it is valid
 assembler input.  The extended @code{asm} feature is most often used for
 machine instructions the compiler itself does not know exist.  If
 the output expression cannot be directly addressed (for example, it is a
-bit field), your constraint must allow a register.  In that case, GNU CC
+bit-field), your constraint must allow a register.  In that case, GNU CC
 will use the register as the output of the @code{asm}, and then store
 that register into the output.
 
@@ -3247,7 +3247,7 @@ asm ("foo" : "=t" (a) : "f" (b));
 @end example
 
 This asm says that input B is not popped by the asm, and that
-the asm pushes a result onto the reg-stack, ie, the stack is one
+the asm pushes a result onto the reg-stack, i.e., the stack is one
 deeper after the asm than it was before.  But, it is possible that
 reload will think that it can use the same reg for both the input and
 the output, if input B dies in this insn.
@@ -3723,7 +3723,7 @@ function as well.
 
 @node Other Builtins
 @section Other built-in functions provided by GNU CC
-@cindex builtin functions
+@cindex built-in functions
 @findex __builtin_isgreater
 @findex __builtin_isgreaterequal
 @findex __builtin_isless
@@ -4011,8 +4011,8 @@ In most expressions, it is intuitively obvious what is a read and what is
 a write. For instance
 
 @example
-volatile int *dst = <somevalue>;
-volatile int *src = <someothervalue>;
+volatile int *dst = @var{somevalue};
+volatile int *src = @var{someothervalue};
 *dst = *src;
 @end example
 
@@ -4026,7 +4026,7 @@ Less obvious expressions are where something which looks like an access
 is used in a void context. An example would be,
 
 @example
-volatile int *src = <somevalue>;
+volatile int *src = @var{somevalue};
 *src;
 @end example
 
@@ -4046,8 +4046,8 @@ warning.
 @example
 struct S;
 struct T @{int m;@};
-volatile S *ptr1 = <somevalue>;
-volatile T *ptr2 = <somevalue>;
+volatile S *ptr1 = @var{somevalue};
+volatile T *ptr2 = @var{somevalue};
 *ptr1;
 *ptr2;
 @end example

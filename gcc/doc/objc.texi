@@ -216,23 +216,23 @@ The types are encoded in the following way:
 @tab @code{*}
 @item unknown type
 @tab @code{?}
-@item bitfields
-@tab @code{b} followed by the starting position of the bitfield, the type of the bitfield and the size of the bitfield (the bitfields encoding was changed from the NeXT's compiler encoding, see below)
+@item bit-fields
+@tab @code{b} followed by the starting position of the bit-field, the type of the bit-field and the size of the bit-field (the bit-fields encoding was changed from the NeXT's compiler encoding, see below)
 @end multitable
 
 @c @sp 1
 
-The encoding of bitfields has changed to allow bitfields to be properly
+The encoding of bit-fields has changed to allow bit-fields to be properly
 handled by the runtime functions that compute sizes and alignments of
-types that contain bitfields. The previous encoding contained only the
-size of the bitfield. Using only this information it is not possible to
-reliably compute the size occupied by the bitfield. This is very
+types that contain bit-fields. The previous encoding contained only the
+size of the bit-field. Using only this information it is not possible to
+reliably compute the size occupied by the bit-field. This is very
 important in the presence of the Boehm's garbage collector because the
 objects are allocated using the typed memory facility available in this
 collector. The typed memory allocation requires information about where
 the pointers are located inside the object.
 
-The position in the bitfield is the position, counting in bits, of the
+The position in the bit-field is the position, counting in bits, of the
 bit closest to the beginning of the structure.
 
 The non-atomic types are encoded as follows:
