@@ -209,6 +209,8 @@ sig_handler (signo)
           "fixincl ERROR:  sig_handler: killed pid %ld due to %s\n",
           (long) server_id, signo == SIGPIPE ? "SIGPIPE" : "SIGALRM");
 #endif
+  if (signo == SIGPIPE)
+    return;
   close_server ();
   read_pipe_timeout = BOOL_TRUE;
 }
@@ -226,6 +228,8 @@ server_setup ()
   
   if (atexit_done++ == 0)
     atexit (close_server);
+  else
+    fputs ("NOTE: server restarted\n", stderr);
 
   signal (SIGPIPE, sig_handler);
   signal (SIGALRM, sig_handler);
@@ -281,6 +285,7 @@ char *
 run_shell (pz_cmd)
      const char *pz_cmd;
 {
+  tSCC zNoServer[] = "Server not running, cannot run:\n%s\n\n";
   t_bool retry = BOOL_TRUE;
 
  do_retry:
@@ -299,7 +304,7 @@ run_shell (pz_cmd)
   if (server_id <= 0)
     {
       char *pz = (char *) malloc (1);
-      
+      fprintf (stderr, zNoServer, pz_cmd);
       if (pz != (char *) NULL)
         *pz = '\0';
       return pz;
@@ -317,7 +322,7 @@ run_shell (pz_cmd)
   if (server_id == NULLPROCESS)
     {
       char *pz = (char *) malloc (1);
-      
+      fprintf (stderr, zNoServer, pz_cmd);
       if (pz != (char *) NULL)
         *pz = '\0';
       return pz;
@@ -344,6 +349,9 @@ run_shell (pz_cmd)
         if (pz != (char *) NULL)
           *pz = '\0';
       }
+#ifdef DEBUG
+    fprintf( stderr, "run_shell command success:  %s\n", pz );
+#endif
     return pz;
   }
 }

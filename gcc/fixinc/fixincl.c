@@ -618,14 +618,27 @@ else echo FALSE\n\
 fi";
 
   char *pz_res;
-  int res = SKIP_FIX;
+  int res;
 
   static char cmd_buf[4096];
 
   sprintf (cmd_buf, cmd_fmt, pz_test_file, p_test->pz_test_text);
   pz_res = run_shell (cmd_buf);
-  if (*pz_res == 'T')
+
+  switch (*pz_res) {
+  case 'T':
     res = APPLY_FIX;
+    break;
+
+  case 'F':
+    res = SKIP_FIX;
+    break;
+
+  default:
+    fprintf (stderr, "Script yielded bogus result of `%s':\n%s\n\n",
+             pz_res, cmd_buf );
+  }
+
   free ((void *) pz_res);
   return res;
 }
@@ -938,7 +951,8 @@ fix_applies (p_fixd)
   tFixDesc *p_fixd;
 {
 #ifdef DEBUG
-  static const char z_failed[] = "not applying %s to %s - test %d failed\n";
+  static const char z_failed[] = "not applying %s %s to %s - "
+    "test %d failed\n";
 #endif
   const char *pz_fname = pz_curr_file;
   const char *pz_scan = p_fixd->file_list;
@@ -994,8 +1008,8 @@ fix_applies (p_fixd)
           if (test_test (p_test, pz_curr_file) != APPLY_FIX) {
 #ifdef DEBUG
             if (VLEVEL( VERB_EVERYTHING ))
-              fprintf (stderr, z_failed, p_fixd->fix_name, pz_fname,
-                       p_fixd->test_ct - test_ct);
+              fprintf (stderr, z_failed, "TEST", p_fixd->fix_name,
+                       pz_fname, p_fixd->test_ct - test_ct);
 #endif
             return BOOL_FALSE;
           }
@@ -1005,8 +1019,8 @@ fix_applies (p_fixd)
           if (egrep_test (pz_curr_data, p_test) != APPLY_FIX) {
 #ifdef DEBUG
             if (VLEVEL( VERB_EVERYTHING ))
-              fprintf (stderr, z_failed, p_fixd->fix_name, pz_fname,
-                       p_fixd->test_ct - test_ct);
+              fprintf (stderr, z_failed, "EGREP", p_fixd->fix_name,
+                       pz_fname, p_fixd->test_ct - test_ct);
 #endif
             return BOOL_FALSE;
           }
@@ -1016,8 +1030,8 @@ fix_applies (p_fixd)
           if (egrep_test (pz_curr_data, p_test) == APPLY_FIX) {
 #ifdef DEBUG
             if (VLEVEL( VERB_EVERYTHING ))
-              fprintf (stderr, z_failed, p_fixd->fix_name, pz_fname,
-                       p_fixd->test_ct - test_ct);
+              fprintf (stderr, z_failed, "NEGREP", p_fixd->fix_name,
+                       pz_fname, p_fixd->test_ct - test_ct);
 #endif
             /*  Negated sense  */
             return BOOL_FALSE;
@@ -1029,8 +1043,8 @@ fix_applies (p_fixd)
               != APPLY_FIX) {
 #ifdef DEBUG
             if (VLEVEL( VERB_EVERYTHING ))
-              fprintf (stderr, z_failed, p_fixd->fix_name, pz_fname,
-                       p_fixd->test_ct - test_ct);
+              fprintf (stderr, z_failed, "FTEST", p_fixd->fix_name,
+                       pz_fname, p_fixd->test_ct - test_ct);
 #endif
             return BOOL_FALSE;
           }
