@@ -228,7 +228,6 @@ expunge_block_nocompact (b)
   /* Invalidate data to make bughunting easier.  */
   memset (b, 0, sizeof *b);
   b->index = -3;
-  basic_block_info->num_elements--;
   b->succ = (edge) first_deleted_block;
   first_deleted_block = (basic_block) b;
 }
@@ -237,7 +236,7 @@ void
 expunge_block (b)
      basic_block b;
 {
-  int i, n = n_basic_blocks--;
+  int i, n = n_basic_blocks;
 
   for (i = b->index; i + 1 < n; ++i)
     {
@@ -245,6 +244,9 @@ expunge_block (b)
       BASIC_BLOCK (i) = x;
       x->index = i;
     }
+
+  n_basic_blocks--;
+  basic_block_info->num_elements--;
 
   expunge_block_nocompact (b);
 }

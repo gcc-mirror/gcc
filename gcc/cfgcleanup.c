@@ -1755,6 +1755,7 @@ delete_unreachable_blocks ()
 	}
     }
   n_basic_blocks = j;
+  basic_block_info->num_elements = j;
 
   if (changed)
     tidy_fallthru_edges ();
