@@ -20,7 +20,7 @@
 	* expmed.c (synth_mult): Initialize latency.  Check cost before
 	checking ops count.
 
-2004-09-26  Kenneth Zadeck  <Kenneth.Zadeck@NaturalBridge.com>
+2004-09-13  Kenneth Zadeck  <Kenneth.Zadeck@NaturalBridge.com>
 
 
 	* tree-ssa-operands.c (get_call_expr_operands): Added parm to
