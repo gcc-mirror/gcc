@@ -1,6 +1,16 @@
+2001-01-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/semi.h (SUBTARGET_EXTRA_SPECS): Define.
+	(SUBTARGET_EXTRA_ASM_SPEC): Define to empty string.
+	(ASM_SPEC): Call subtarget_extra_asm_spec.
+	* config/arm/elf.h (SUBTARGET_EXTRA_SPECS): Define.
+	(SUBTARGET_EXTRA_ASM_SPEC): Define to empty string.
+	(ASM_SPEC): Call subtarget_extra_asm_spec.
+
 2001-01-15  Andreas Jaeger  <aj@suse.de>
 
-	* config/i386/i386.c (ix86_init_builtins): Make i size_t to remove warnings.
+	* config/i386/i386.c (ix86_init_builtins): Make i size_t to remove 
+	warnings.
 	(ix86_expand_builtin): Likewise.
 
 	* gencodes.c (output_predicate_decls): Make i size_t to avoid

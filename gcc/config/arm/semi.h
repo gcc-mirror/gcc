@@ -35,8 +35,13 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_APCS_FRAME)
 #endif
 
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+  { "subtarget_extra_asm_spec",	SUBTARGET_EXTRA_ASM_SPEC },
+#endif
+
 #ifndef SUBTARGET_EXTRA_ASM_SPEC
-#define SUBTARGET_EXTRA_ASM_SPEC
+#define SUBTARGET_EXTRA_ASM_SPEC ""
 #endif
 
 /* The compiler supports PIC code generation, even though the binutils
@@ -52,11 +57,10 @@ Boston, MA 02111-1307, USA.  */
 %{mbig-endian:-EB} \
 %{mcpu=*:-m%*} \
 %{march=*:-m%*} \
-%{mapcs-*:-mapcs-%*} \
 %{mapcs-float:-mfloat} \
 %{msoft-float:-mno-fpu} \
 %{mthumb-interwork:-mthumb-interwork} \
-" SUBTARGET_EXTRA_ASM_SPEC
+%(subtarget_extra_asm_spec)"
 #endif
 
 #include "arm/aout.h"
