@@ -1763,17 +1763,20 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
 
   if (TYPE_P (t) || DECL_P (t))
     *walk_subtrees = 0;
-  else if (TREE_CODE (t) == ARRAY_REF)
+  else if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
     {
-      while ((TREE_CODE (t) == ARRAY_REF
+      while (((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	      && is_gimple_min_invariant (TREE_OPERAND (t, 1)))
 	     || (TREE_CODE (t) == COMPONENT_REF
 		 || TREE_CODE (t) == BIT_FIELD_REF
 		 || TREE_CODE (t) == REALPART_EXPR
-		 || TREE_CODE (t) == IMAGPART_EXPR))
+		 || TREE_CODE (t) == IMAGPART_EXPR
+		 || TREE_CODE (t) == VIEW_CONVERT_EXPR
+		 || TREE_CODE (t) == NOP_EXPR
+		 || TREE_CODE (t) == CONVERT_EXPR))
 	t = TREE_OPERAND (t, 0);
 
-      if (TREE_CODE (t) == ARRAY_REF)
+      if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
 	  t = get_base_address (t);
 	  if (t && DECL_P (t))

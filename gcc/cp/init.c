@@ -1777,7 +1777,8 @@ build_new (tree placement, tree decl, tree init, int use_global_new)
     {
       if (has_array)
 	t = tree_cons (tree_cons (NULL_TREE, type, NULL_TREE),
-		       build_min_nt (ARRAY_REF, NULL_TREE, nelts),
+		       build_min_nt (ARRAY_REF, NULL_TREE, nelts,
+				     NULL_TREE, NULL_TREE),
 		       NULL_TREE);
       else
 	t = type;
@@ -1815,7 +1816,7 @@ build_new (tree placement, tree decl, tree init, int use_global_new)
     }
 
   if (has_array)
-    t = build_nt (ARRAY_REF, type, nelts);
+    t = build_nt (ARRAY_REF, type, nelts, NULL_TREE, NULL_TREE);
   else
     t = type;
 

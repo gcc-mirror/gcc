@@ -476,8 +476,6 @@ expand_var_p (tree var)
   if (TREE_CODE (var) != VAR_DECL)
     return true;
 
-  ann = var_ann (var);
-
   /* Remove all unused, unaliased temporaries.  Also remove unused, unaliased
      local variables during highly optimizing compilations.  */
   ann = var_ann (var);

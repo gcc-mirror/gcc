@@ -2019,9 +2019,9 @@ non_lvalue (tree x)
   case COMPONENT_REF:
   case INDIRECT_REF:
   case ARRAY_REF:
+  case ARRAY_RANGE_REF:
   case BIT_FIELD_REF:
   case BUFFER_REF:
-  case ARRAY_RANGE_REF:
   case VTABLE_REF:
 
   case REALPART_EXPR:
@@ -7901,24 +7901,26 @@ fold (tree expr)
 	  /* If VAROP is a reference to a bitfield, we must mask
 	     the constant by the width of the field.  */
 	  if (TREE_CODE (TREE_OPERAND (varop, 0)) == COMPONENT_REF
-	      && DECL_BIT_FIELD (TREE_OPERAND (TREE_OPERAND (varop, 0), 1)))
+	      && DECL_BIT_FIELD (TREE_OPERAND (TREE_OPERAND (varop, 0), 1))
+	      && host_integerp (DECL_SIZE (TREE_OPERAND
+					   (TREE_OPERAND (varop, 0), 1)), 1))
 	    {
 	      tree fielddecl = TREE_OPERAND (TREE_OPERAND (varop, 0), 1);
-	      int size = TREE_INT_CST_LOW (DECL_SIZE (fielddecl));
+	      HOST_WIDE_INT size = tree_low_cst (DECL_SIZE (fielddecl), 1);
 	      tree folded_compare, shift;
 
 	      /* First check whether the comparison would come out
 		 always the same.  If we don't do that we would
 		 change the meaning with the masking.  */
 	      folded_compare = fold (build2 (code, type,
-					     TREE_OPERAND (varop, 0),
-					     arg1));
+					     TREE_OPERAND (varop, 0), arg1));
 	      if (integer_zerop (folded_compare)
 		  || integer_onep (folded_compare))
 		return omit_one_operand (type, folded_compare, varop);
 
 	      shift = build_int_2 (TYPE_PRECISION (TREE_TYPE (varop)) - size,
 				   0);
+	      shift = fold_convert (TREE_TYPE (varop), shift);
 	      newconst = fold (build2 (LSHIFT_EXPR, TREE_TYPE (varop),
 				       newconst, shift));
 	      newconst = fold (build2 (RSHIFT_EXPR, TREE_TYPE (varop),
@@ -10106,13 +10108,10 @@ fold_read_from_constant_string (tree exp)
       tree string;
 
       if (TREE_CODE (exp) == INDIRECT_REF)
-	{
-	  string = string_constant (exp1, &index);
-	}
+	string = string_constant (exp1, &index);
       else
 	{
-	  tree domain = TYPE_DOMAIN (TREE_TYPE (exp1));
-	  tree low_bound = domain ? TYPE_MIN_VALUE (domain) : integer_zero_node;
+	  tree low_bound = array_ref_low_bound (exp);
 	  index = fold_convert (sizetype, TREE_OPERAND (exp, 1));
 	  
 	  /* Optimize the special-case of a zero lower bound.
@@ -10129,6 +10128,7 @@ fold_read_from_constant_string (tree exp)
 	}
 
       if (string
+	  && TREE_TYPE (exp) == TREE_TYPE (TREE_TYPE (string))
 	  && TREE_CODE (string) == STRING_CST
 	  && TREE_CODE (index) == INTEGER_CST
 	  && compare_tree_int (index, TREE_STRING_LENGTH (string)) < 0
@@ -10456,7 +10456,7 @@ build_fold_indirect_ref (tree t)
       /* *(foo *)&fooarray => fooarray[0] */
       else if (TREE_CODE (optype) == ARRAY_TYPE
 	       && lang_hooks.types_compatible_p (type, TREE_TYPE (optype)))
-	return build2 (ARRAY_REF, type, op, size_zero_node);
+	return build4 (ARRAY_REF, type, op, size_zero_node, NULL_TREE, NULL_TREE);
     }
 
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
@@ -10465,7 +10465,7 @@ build_fold_indirect_ref (tree t)
       && lang_hooks.types_compatible_p (type, TREE_TYPE (TREE_TYPE (subtype))))
     {
       sub = build_fold_indirect_ref (sub);
-      return build2 (ARRAY_REF, type, sub, size_zero_node);
+      return build4 (ARRAY_REF, type, sub, size_zero_node, NULL_TREE, NULL_TREE);
     }
 
   return build1 (INDIRECT_REF, type, t);

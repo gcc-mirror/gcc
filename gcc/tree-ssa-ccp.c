@@ -1041,40 +1041,43 @@ dump_lattice_value (FILE *outf, const char *prefix, value val)
 tree
 widen_bitfield (tree val, tree field, tree var)
 {
-  unsigned var_size, field_size;
+  unsigned HOST_WIDE_INT var_size, field_size;
   tree wide_val;
   unsigned HOST_WIDE_INT mask;
-  unsigned i;
+  unsigned int i;
 
-  var_size = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE ((var))));
-  field_size = TREE_INT_CST_LOW (DECL_SIZE (field));
+  /* We can only do this if the size of the type and field and VAL are
+     all constants representable in HOST_WIDE_INT.  */
+  if (!host_integerp (TYPE_SIZE (TREE_TYPE (var)), 1)
+      || !host_integerp (DECL_SIZE (field), 1)
+      || !host_integerp (val, 0))
+    return NULL_TREE;
+
+  var_size = tree_low_cst (TYPE_SIZE (TREE_TYPE (var)), 1);
+  field_size = tree_low_cst (DECL_SIZE (field), 1);
 
   /* Give up if either the bitfield or the variable are too wide.  */
   if (field_size > HOST_BITS_PER_WIDE_INT || var_size > HOST_BITS_PER_WIDE_INT)
-    return NULL;
+    return NULL_TREE;
 
 #if defined ENABLE_CHECKING
   if (var_size < field_size)
     abort ();
 #endif
 
-  /* If VAL is not an integer constant, then give up.  */
-  if (TREE_CODE (val) != INTEGER_CST)
-    return NULL;
-
-  /* If the sign bit of the value is not set, or the field's type is
-     unsigned, then just mask off the high order bits of the value.  */
-  if ((TREE_INT_CST_LOW (val) & (1 << (field_size - 1))) == 0
-      || DECL_UNSIGNED (field))
+  /* If the sign bit of the value is not set or the field's type is unsigned,
+     just mask off the high order bits of the value.  */
+  if (DECL_UNSIGNED (field)
+      || !(tree_low_cst (val, 0) & (((HOST_WIDE_INT)1) << (field_size - 1))))
     {
       /* Zero extension.  Build a mask with the lower 'field_size' bits
 	 set and a BIT_AND_EXPR node to clear the high order bits of
 	 the value.  */
       for (i = 0, mask = 0; i < field_size; i++)
-	mask |= 1 << i;
+	mask |= ((HOST_WIDE_INT) 1) << i;
 
       wide_val = build (BIT_AND_EXPR, TREE_TYPE (var), val, 
-			build_int_2 (mask, 0));
+			fold_convert (TREE_TYPE (var), build_int_2 (mask, 0)));
     }
   else
     {
@@ -1082,10 +1085,10 @@ widen_bitfield (tree val, tree field, tree var)
 	 bits set and a BIT_IOR_EXPR to set the high order bits of the
 	 value.  */
       for (i = 0, mask = 0; i < (var_size - field_size); i++)
-	mask |= 1 << (var_size - i - 1);
+	mask |= ((HOST_WIDE_INT) 1) << (var_size - i - 1);
 
       wide_val = build (BIT_IOR_EXPR, TREE_TYPE (var), val,
-			build_int_2 (mask, 0));
+			fold_convert (TREE_TYPE (var), build_int_2 (mask, 0)));
     }
 
   return fold (wide_val);
@@ -1493,10 +1496,26 @@ likely_value (tree stmt)
 static tree
 maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
 {
-  unsigned HOST_WIDE_INT lquo, lrem;
-  HOST_WIDE_INT hquo, hrem;
-  tree elt_size, min_idx, idx;
-  tree array_type, elt_type;
+  tree min_idx, idx, elt_offset = integer_zero_node;
+  tree array_type, elt_type, elt_size;
+
+  /* If BASE is an ARRAY_REF, we can pick up another offset (this time
+     measured in units of the size of elements type) from that ARRAY_REF).
+     We can't do anything if either is variable.
+
+     The case we handle here is *(&A[N]+O).  */
+  if (TREE_CODE (base) == ARRAY_REF)
+    {
+      tree low_bound = array_ref_low_bound (base);
+
+      elt_offset = TREE_OPERAND (base, 1);
+      if (TREE_CODE (low_bound) != INTEGER_CST
+	  || TREE_CODE (elt_offset) != INTEGER_CST)
+	return NULL_TREE;
+
+      elt_offset = int_const_binop (MINUS_EXPR, elt_offset, low_bound, 0);
+      base = TREE_OPERAND (base, 0);
+    }
 
   /* Ignore stupid user tricks of indexing non-array variables.  */
   array_type = TREE_TYPE (base);
@@ -1506,37 +1525,62 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
   if (!lang_hooks.types_compatible_p (orig_type, elt_type))
     return NULL_TREE;
 	
-  /* Whee.  Ignore indexing of variable sized types.  */
+  /* If OFFSET and ELT_OFFSET are zero, we don't care about the size of the
+     element type (so we can use the alignment if it's not constant).
+     Otherwise, compute the offset as an index by using a division.  If the
+     division isn't exact, then don't do anything.  */
   elt_size = TYPE_SIZE_UNIT (elt_type);
-  if (TREE_CODE (elt_size) != INTEGER_CST)
-    return NULL_TREE;
-
-  /* If the division isn't exact, then don't do anything.  Equally
-     invalid as the above indexing of non-array variables.  */
-  if (div_and_round_double (TRUNC_DIV_EXPR, 1,
-			    TREE_INT_CST_LOW (offset),
-			    TREE_INT_CST_HIGH (offset),
-			    TREE_INT_CST_LOW (elt_size),
-			    TREE_INT_CST_HIGH (elt_size),
-			    &lquo, &hquo, &lrem, &hrem)
-      || lrem || hrem)
-    return NULL_TREE;
-  idx = build_int_2_wide (lquo, hquo);
-
-  /* Re-bias the index by the min index of the array type.  */
-  min_idx = TYPE_DOMAIN (TREE_TYPE (base));
-  if (min_idx)
+  if (integer_zerop (offset))
     {
-      min_idx = TYPE_MIN_VALUE (min_idx);
-      if (min_idx)
-	{
-	  idx = convert (TREE_TYPE (min_idx), idx);
-	  if (!integer_zerop (min_idx))
-	    idx = int_const_binop (PLUS_EXPR, idx, min_idx, 1);
-	}
+      if (TREE_CODE (elt_size) != INTEGER_CST)
+	elt_size = size_int (TYPE_ALIGN (elt_type));
+
+      idx = integer_zero_node;
+    }
+  else
+    {
+      unsigned HOST_WIDE_INT lquo, lrem;
+      HOST_WIDE_INT hquo, hrem;
+
+      if (TREE_CODE (elt_size) != INTEGER_CST
+	  || div_and_round_double (TRUNC_DIV_EXPR, 1,
+				   TREE_INT_CST_LOW (offset),
+				   TREE_INT_CST_HIGH (offset),
+				   TREE_INT_CST_LOW (elt_size),
+				   TREE_INT_CST_HIGH (elt_size),
+				   &lquo, &hquo, &lrem, &hrem)
+	  || lrem || hrem)
+	return NULL_TREE;
+
+      idx = build_int_2_wide (lquo, hquo);
     }
 
-  return build (ARRAY_REF, orig_type, base, idx);
+  /* Assume the low bound is zero.  If there is a domain type, get the
+     low bound, if any, convert the index into that type, and add the
+     low bound.  */
+  min_idx = integer_zero_node;
+  if (TYPE_DOMAIN (array_type))
+    {
+      if (TYPE_MIN_VALUE (TYPE_DOMAIN (array_type)))
+	min_idx = TYPE_MIN_VALUE (TYPE_DOMAIN (array_type));
+      else
+	min_idx = fold_convert (TYPE_DOMAIN (array_type), min_idx);
+
+      if (TREE_CODE (min_idx) != INTEGER_CST)
+	return NULL_TREE;
+
+      idx = fold_convert (TYPE_DOMAIN (array_type), idx);
+      elt_offset = fold_convert (TYPE_DOMAIN (array_type), elt_offset);
+    }
+
+  if (!integer_zerop (min_idx))
+    idx = int_const_binop (PLUS_EXPR, idx, min_idx, 0);
+  if (!integer_zerop (elt_offset))
+    idx = int_const_binop (PLUS_EXPR, idx, elt_offset, 0);
+
+  return build (ARRAY_REF, orig_type, base, idx, min_idx,
+		size_int (tree_low_cst (elt_size, 1)
+			  / (TYPE_ALIGN (elt_type) / BITS_PER_UNIT)));
 }
 
 /* A subroutine of fold_stmt_r.  Attempts to fold *(S+O) to S.X.
@@ -1617,7 +1661,7 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 	{
 	  if (base_is_ptr)
 	    base = build1 (INDIRECT_REF, record_type, base);
-	  t = build (COMPONENT_REF, field_type, base, f);
+	  t = build (COMPONENT_REF, field_type, base, f, NULL_TREE);
 	  return t;
 	}
 
@@ -1639,7 +1683,7 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
      nonzero offset into them.  Recurse and hope for a valid match.  */
   if (base_is_ptr)
     base = build1 (INDIRECT_REF, record_type, base);
-  base = build (COMPONENT_REF, field_type, base, f);
+  base = build (COMPONENT_REF, field_type, base, f, NULL_TREE);
 
   t = maybe_fold_offset_to_array_ref (base, offset, orig_type);
   if (t)
@@ -1697,8 +1741,12 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
       if (t)
 	return t;
 
-      /* Fold *&B to B.  */
-      if (integer_zerop (offset))
+      /* Fold *&B to B.  We can only do this if EXPR is the same type
+	 as BASE.  We can't do this if EXPR is the element type of an array
+	 and BASE is the array.  */
+      if (integer_zerop (offset)
+	  && lang_hooks.types_compatible_p (TREE_TYPE (base),
+					    TREE_TYPE (expr)))
 	return base;
     }
   else
@@ -1803,6 +1851,9 @@ maybe_fold_stmt_addition (tree expr)
 	  min_idx = TYPE_MIN_VALUE (min_idx);
 	  if (min_idx)
 	    {
+	      if (TREE_CODE (min_idx) != INTEGER_CST)
+		break;
+
 	      array_idx = convert (TREE_TYPE (min_idx), array_idx);
 	      if (!integer_zerop (min_idx))
 		array_idx = int_const_binop (MINUS_EXPR, array_idx,

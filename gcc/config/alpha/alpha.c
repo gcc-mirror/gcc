@@ -6274,9 +6274,9 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
       offset_field = TREE_CHAIN (base_field);
 
       base_field = build (COMPONENT_REF, TREE_TYPE (base_field),
-			  valist, base_field);
+			  valist, base_field, NULL_TREE);
       offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
-			    valist, offset_field);
+			    valist, offset_field, NULL_TREE);
 
       t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
       t = build (PLUS_EXPR, ptr_type_node, t, build_int_2 (offset, 0));
@@ -6383,9 +6383,9 @@ alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   base_field = TYPE_FIELDS (va_list_type_node);
   offset_field = TREE_CHAIN (base_field);
   base_field = build (COMPONENT_REF, TREE_TYPE (base_field),
-		      valist, base_field);
+		      valist, base_field, NULL_TREE);
   offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
-			valist, offset_field);
+			valist, offset_field, NULL_TREE);
 
   /* Pull the fields of the structure out into temporaries.  Since we never
      modify the base field, we can use a formal temporary.  Sign-extend the

@@ -926,24 +926,17 @@ add_referenced_var (tree var, struct walk_state *walk_state)
 tree
 get_virtual_var (tree var)
 {
-  enum tree_code code;
-
   STRIP_NOPS (var);
 
   if (TREE_CODE (var) == SSA_NAME)
     var = SSA_NAME_VAR (var);
 
-  code = TREE_CODE (var);
-
-  while (code == ARRAY_REF
-         || code == COMPONENT_REF
-	 || code == REALPART_EXPR
-	 || code == IMAGPART_EXPR)
-    {
+  if (TREE_CODE (var) == REALPART_EXPR || TREE_CODE (var) == IMAGPART_EXPR)
+    var = TREE_OPERAND (var, 0);
+  else
+    while (handled_component_p (var))
       var = TREE_OPERAND (var, 0);
-      code = TREE_CODE (var);
-    }
-
+    
 #ifdef ENABLE_CHECKING
   /* Treating GIMPLE registers as virtual variables makes no sense.
      Also complain if we couldn't extract a _DECL out of the original

@@ -306,7 +306,7 @@ gfc_build_array_ref (tree base, tree offset)
   if (DECL_P (base))
     TREE_ADDRESSABLE (base) = 1;
 
-  return build (ARRAY_REF, type, base, offset);
+  return build (ARRAY_REF, type, base, offset, NULL_TREE, NULL_TREE);
 }
 
 

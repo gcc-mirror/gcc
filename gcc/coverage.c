@@ -428,16 +428,18 @@ rtl_coverage_counter_ref (unsigned counter, unsigned no)
 tree
 tree_coverage_counter_ref (unsigned counter, unsigned no)
 {
-  tree t;
+  tree domain_type = TYPE_DOMAIN (TREE_TYPE (tree_ctr_tables[counter]));
 
   if (no >= fn_n_ctrs[counter] - fn_b_ctrs[counter])
     abort ();
   no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
 
   /* "no" here is an array index, scaled to bytes later.  */
-  t = build (ARRAY_REF, GCOV_TYPE_NODE, tree_ctr_tables[counter],
-	     build_int_2 (no, 0));
-  return t;
+  return build (ARRAY_REF, GCOV_TYPE_NODE, tree_ctr_tables[counter],
+		fold_convert (domain_type, build_int_2 (no, 0)),
+		TYPE_MIN_VALUE (domain_type),
+		size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (GCOV_TYPE_NODE),
+			    size_int (TYPE_ALIGN (GCOV_TYPE_NODE))));
 }
 
 /* Generate a checksum for a string.  CHKSUM is the current

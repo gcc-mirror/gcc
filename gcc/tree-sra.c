@@ -621,7 +621,7 @@ csc_build_component_ref (tree base, tree field)
       break;
     }
 
-  return build (COMPONENT_REF, TREE_TYPE (field), base, field);
+  return build (COMPONENT_REF, TREE_TYPE (field), base, field, NULL_TREE);
 }
 
 /* Similarly for REALPART_EXPR and IMAGPART_EXPR for complex types.  */
@@ -1011,7 +1011,7 @@ scalarize_call_expr (block_stmt_iterator *si_p)
   /* Scalarize the return value, if any.  */
   if (TREE_CODE (stmt) == MODIFY_EXPR)
     {
-      tree var = TREE_OPERAND (stmt, 0);
+      tree var = get_base_address (TREE_OPERAND (stmt, 0));
 
       /* If the LHS of the assignment is a scalarizable structure, insert
 	 copies into the scalar replacements after the call.  */

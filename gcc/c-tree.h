@@ -147,7 +147,6 @@ extern int c_in_iteration_stmt;
 extern int c_in_case_stmt;
 
 extern int global_bindings_p (void);
-extern tree getdecls (void);
 extern void push_scope (void);
 extern tree pop_scope (void);
 extern void insert_block (tree);

@@ -4045,11 +4045,16 @@ mips_va_start (tree valist, rtx nextarg)
 	  f_goff = TREE_CHAIN (f_ftop);
 	  f_foff = TREE_CHAIN (f_goff);
 
-	  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl);
-	  gtop = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop);
-	  ftop = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop);
-	  goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff);
-	  foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff);
+	  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl,
+			NULL_TREE);
+	  gtop = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop,
+			NULL_TREE);
+	  ftop = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop,
+			NULL_TREE);
+	  goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff,
+			NULL_TREE);
+	  foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff,
+			NULL_TREE);
 
 	  /* Emit code to initialize OVFL, which points to the next varargs
 	     stack argument.  CUM->STACK_WORDS gives the number of stack
@@ -4212,12 +4217,15 @@ mips_va_arg (tree valist, tree type)
 	  lab_false = gen_label_rtx ();
 	  lab_over = gen_label_rtx ();
 
-	  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl);
+	  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl,
+			NULL_TREE);
 	  if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT
 	      && GET_MODE_SIZE (TYPE_MODE (type)) <= UNITS_PER_FPVALUE)
 	    {
-	      top = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop);
-	      off = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff);
+	      top = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop,
+			   NULL_TREE);
+	      off = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff,
+			   NULL_TREE);
 
 	      /* When floating-point registers are saved to the stack,
 		 each one will take up UNITS_PER_HWFPVALUE bytes, regardless
@@ -4245,8 +4253,10 @@ mips_va_arg (tree valist, tree type)
 	    }
 	  else
 	    {
-	      top = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop);
-	      off = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff);
+	      top = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop,
+			   NULL_TREE);
+	      off = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff,
+			   NULL_TREE);
 	      if (rsize > UNITS_PER_WORD)
 		{
 		  /* [1] Emit code for: off &= -rsize.	*/

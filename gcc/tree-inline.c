@@ -2054,8 +2054,14 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 	}
 #endif
     }
-  else if (TREE_CODE_CLASS (code) == 'd')
+
+  /* Look inside the sizes of decls, but we don't ever use the values for
+     FIELD_DECL and RESULT_DECL, so ignore them.  */
+  else if (TREE_CODE_CLASS (code) == 'd'
+	   && code != FIELD_DECL && code != RESULT_DECL)
     {
+      WALK_SUBTREE (DECL_SIZE (*tp));
+      WALK_SUBTREE (DECL_SIZE_UNIT (*tp));
       WALK_SUBTREE_TAIL (TREE_TYPE (*tp));
     }
   else
@@ -2077,23 +2083,20 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 	case REAL_CST:
 	case VECTOR_CST:
 	case STRING_CST:
-	case REAL_TYPE:
-	case COMPLEX_TYPE:
 	case VECTOR_TYPE:
 	case VOID_TYPE:
-	case BOOLEAN_TYPE:
-	case UNION_TYPE:
-	case ENUMERAL_TYPE:
 	case BLOCK:
-	case RECORD_TYPE:
 	case PLACEHOLDER_EXPR:
 	case SSA_NAME:
+	case FIELD_DECL:
+	case RESULT_DECL:
 	  /* None of thse have subtrees other than those already walked
 	     above.  */
 	  break;
 
 	case POINTER_TYPE:
 	case REFERENCE_TYPE:
+	case COMPLEX_TYPE:
 	  WALK_SUBTREE_TAIL (TREE_TYPE (*tp));
 	  break;
 
@@ -2126,6 +2129,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 
 	case METHOD_TYPE:
 	  WALK_SUBTREE (TYPE_METHOD_BASETYPE (*tp));
+
 	  /* Fall through.  */
 
 	case FUNCTION_TYPE:
@@ -2139,12 +2143,43 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 	  }
 	  break;
 
+	case RECORD_TYPE:
+	case UNION_TYPE:
+	case QUAL_UNION_TYPE:
+	  {
+	    tree field;
+
+	    for (field = TYPE_FIELDS (*tp); field; field = TREE_CHAIN (field))
+	      {
+		/* We would like to look at the type of the field, but we
+		   can easily get infinite recursion.  So assume it's
+		   pointed to elsewhere in the tree.  Also, ignore things that
+		   aren't fields.  */
+		if (TREE_CODE (field) != FIELD_DECL)
+		  continue;
+
+		WALK_SUBTREE (DECL_FIELD_OFFSET (field));
+		WALK_SUBTREE (DECL_SIZE (field));
+		WALK_SUBTREE (DECL_SIZE_UNIT (field));
+		if (code == QUAL_UNION_TYPE)
+		  WALK_SUBTREE (DECL_QUALIFIER (field));
+	      }
+	  }
+	  break;
+
 	case ARRAY_TYPE:
-	  WALK_SUBTREE (TREE_TYPE (*tp));
+	  /* Don't follow this nodes's type if a pointer for fear that we'll
+	     have infinite recursion.  Those types are uninteresting anyway. */
+	  if (!POINTER_TYPE_P (TREE_TYPE (*tp))
+	      && TREE_CODE (TREE_TYPE (*tp)) != OFFSET_TYPE)
+	    WALK_SUBTREE (TREE_TYPE (*tp));
 	  WALK_SUBTREE_TAIL (TYPE_DOMAIN (*tp));
 
+	case BOOLEAN_TYPE:
+	case ENUMERAL_TYPE:
 	case INTEGER_TYPE:
 	case CHAR_TYPE:
+	case REAL_TYPE:
 	  WALK_SUBTREE (TYPE_MIN_VALUE (*tp));
 	  WALK_SUBTREE_TAIL (TYPE_MAX_VALUE (*tp));
 
@@ -2166,8 +2201,8 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 		/* Walk the DECL_INITIAL and DECL_SIZE.  We don't want to walk
 		   into declarations that are just mentioned, rather than
 		   declared; they don't really belong to this part of the tree.
-		   And, we can see cycles: the initializer for a declaration can
-		   refer to the declaration itself.  */
+		   And, we can see cycles: the initializer for a declaration
+		   can refer to the declaration itself.  */
 		WALK_SUBTREE (DECL_INITIAL (decl));
 		WALK_SUBTREE (DECL_SIZE (decl));
 		WALK_SUBTREE (DECL_SIZE_UNIT (decl));
@@ -2185,7 +2220,9 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 	  break;
 
 	default:
-	  abort ();
+	  /* ??? This could be a language-defined node.  We really should make
+	     a hook for it, but right now just ignore it.  */
+	  break;
 	}
     }
 

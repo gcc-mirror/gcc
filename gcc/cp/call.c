@@ -203,7 +203,7 @@ build_vfield_ref (tree datum, tree type)
     datum = convert_to_base (datum, type, /*check_access=*/false);
 
   return build (COMPONENT_REF, TREE_TYPE (TYPE_VFIELD (type)),
-		datum, TYPE_VFIELD (type));
+		datum, TYPE_VFIELD (type), NULL_TREE);
 }
 
 /* Returns nonzero iff the destructor name specified in NAME
@@ -3868,8 +3868,7 @@ builtin:
       return build_conditional_expr (arg1, arg2, arg3);
 
     case MEMBER_REF:
-      return build_m_component_ref
-	(build_indirect_ref (arg1, NULL), arg2);
+      return build_m_component_ref (build_indirect_ref (arg1, NULL), arg2);
 
       /* The caller will deal with these.  */
     case ADDR_EXPR:
@@ -5360,7 +5359,7 @@ build_new_method_call (tree instance, tree fns, tree args,
   if (processing_template_decl && call != error_mark_node)
     call = (build_min_non_dep
 	    (CALL_EXPR, call,
-	     build_min_nt (COMPONENT_REF, orig_instance, orig_fns),
+	     build_min_nt (COMPONENT_REF, orig_instance, orig_fns, NULL_TREE),
 	     orig_args, NULL_TREE));
 
  /* Free all the conversions we allocated.  */

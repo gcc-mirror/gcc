@@ -359,7 +359,7 @@ set_parameter_value (stmtblock_t * block, tree var, gfc_expr * e)
   gfc_conv_expr_type (&se, e, TREE_TYPE (var));
   gfc_add_block_to_block (block, &se.pre);
 
-  tmp = build (COMPONENT_REF, TREE_TYPE (var), ioparm_var, var);
+  tmp = build (COMPONENT_REF, TREE_TYPE (var), ioparm_var, var, NULL_TREE);
   gfc_add_modify_expr (block, tmp, se.expr);
 }
 
@@ -379,7 +379,7 @@ set_parameter_ref (stmtblock_t * block, tree var, gfc_expr * e)
   gfc_conv_expr_type (&se, e, TREE_TYPE (var));
   gfc_add_block_to_block (block, &se.pre);
 
-  tmp = build (COMPONENT_REF, TREE_TYPE (var), ioparm_var, var);
+  tmp = build (COMPONENT_REF, TREE_TYPE (var), ioparm_var, var, NULL_TREE);
   gfc_add_modify_expr (block, tmp, se.expr);
 }
 
@@ -400,8 +400,9 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
   gfc_init_se (&se, NULL);
   gfc_conv_expr (&se, e);
 
-  io = build (COMPONENT_REF, TREE_TYPE (var), ioparm_var, var);
-  len = build (COMPONENT_REF, TREE_TYPE (var_len), ioparm_var, var_len);
+  io = build (COMPONENT_REF, TREE_TYPE (var), ioparm_var, var, NULL_TREE);
+  len = build (COMPONENT_REF, TREE_TYPE (var_len), ioparm_var, var_len,
+	       NULL_TREE);
 
   /*  Integer variable assigned a format label.  */
   if (e->ts.type == BT_INTEGER && e->symtree->n.sym->attr.assign == 1)
@@ -433,7 +434,7 @@ set_flag (stmtblock_t *block, tree var)
 {
   tree tmp;
 
-  tmp = build (COMPONENT_REF, TREE_TYPE(var), ioparm_var, var);
+  tmp = build (COMPONENT_REF, TREE_TYPE(var), ioparm_var, var, NULL_TREE);
   gfc_add_modify_expr (block, tmp, integer_one_node);
 }
 
@@ -496,7 +497,7 @@ io_result (stmtblock_t * block, gfc_st_label * err_label,
   tmp = gfc_finish_block (&body);
 
   rc = build (COMPONENT_REF, TREE_TYPE (ioparm_library_return), ioparm_var,
-	      ioparm_library_return);
+	      ioparm_library_return, NULL_TREE);
 
   tmp = build_v (SWITCH_EXPR, rc, tmp, NULL_TREE);
 
@@ -1127,7 +1128,8 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 	  field = c->backend_decl;
 	  assert (field && TREE_CODE (field) == FIELD_DECL);
 
-	  tmp = build (COMPONENT_REF, TREE_TYPE (field), expr, field);
+	  tmp = build (COMPONENT_REF, TREE_TYPE (field), expr, field,
+		       NULL_TREE);
 
 	  if (c->ts.type == BT_CHARACTER)
 	    {

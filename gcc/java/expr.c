@@ -698,7 +698,8 @@ build_java_array_length_access (tree node)
   node = build (COMPONENT_REF, int_type_node,
 		build_java_indirect_ref (array_type, node,
 					 flag_check_references),
-		lookup_field (&array_type, get_identifier ("length")));
+		lookup_field (&array_type, get_identifier ("length")),
+		NULL_TREE);
   IS_ARRAY_LENGTH_ACCESS (node) = 1;
   return node;
 }
@@ -780,9 +781,9 @@ build_java_arrayaccess (tree array, tree type, tree index)
   ref = build (COMPONENT_REF, TREE_TYPE (data_field),    
 	       build_java_indirect_ref (array_type, array, 
 					flag_check_references),
-	       data_field);
+	       data_field, NULL_TREE);
   
-  node = build (ARRAY_REF, type, ref, index);
+  node = build (ARRAY_REF, type, ref, index, NULL_TREE, NULL_TREE);
   return node;
 }
 
@@ -1181,8 +1182,8 @@ build_get_class (tree value)
 			build (COMPONENT_REF, dtable_ptr_type,
 			       build_java_indirect_ref (object_type_node, value,
 							flag_check_references),
-			       vtable_field)),
-		class_field);
+			       vtable_field, NULL_TREE)),
+		class_field, NULL_TREE);
 }
 
 /* This builds the tree representation of the `instanceof' operator.
@@ -1531,13 +1532,16 @@ build_field_ref (tree self_value, tree self_class, tree name)
 	   in the same translation unit as output_class.  If it is,
 	   we can make a direct reference.  */
 	{
-	  tree otable_index =
-	    build_int_2 (get_symbol_table_index 
-			 (field_decl, &TYPE_OTABLE_METHODS (output_class)), 0);
-	  tree field_offset = 
-	    build (ARRAY_REF, integer_type_node, TYPE_OTABLE_DECL (output_class), 
-		   otable_index);
+	  tree otable_index
+	    = build_int_2 (get_symbol_table_index 
+			   (field_decl, &TYPE_OTABLE_METHODS (output_class)),
+			   0);
+	  tree field_offset
+	    = build (ARRAY_REF, integer_type_node,
+		     TYPE_OTABLE_DECL (output_class), otable_index,
+		     NULL_TREE, NULL_TREE);
 	  tree address;
+
 	  field_offset = fold (convert (sizetype, field_offset));
 	  address 
 	    = fold (build (PLUS_EXPR, 
@@ -1549,7 +1553,7 @@ build_field_ref (tree self_value, tree self_class, tree name)
       self_value = build_java_indirect_ref (TREE_TYPE (TREE_TYPE (self_value)),
 					    self_value, check);
       return fold (build (COMPONENT_REF, TREE_TYPE (field_decl),
-			  self_value, field_decl));
+			  self_value, field_decl, NULL_TREE));
     }
 }
 
@@ -1826,12 +1830,12 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
 	}
       else
 	{
-	  tree table_index = 
-	    build_int_2 (get_symbol_table_index 
-			 (method, &TYPE_ATABLE_METHODS (output_class)), 0);
-	  func = 
-	    build (ARRAY_REF,  method_ptr_type_node, 
-		   TYPE_ATABLE_DECL (output_class), table_index);
+	  tree table_index
+	    = build_int_2 (get_symbol_table_index 
+			   (method, &TYPE_ATABLE_METHODS (output_class)), 0);
+	  func = build (ARRAY_REF,  method_ptr_type_node, 
+			TYPE_ATABLE_DECL (output_class), table_index,
+			NULL_TREE, NULL_TREE);
 	}
       func = convert (method_ptr_type_node, func);
     }
@@ -1858,7 +1862,7 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
       if (methods_ident == NULL_TREE)
 	methods_ident = get_identifier ("methods");
       ref = build (COMPONENT_REF, method_ptr_type_node, ref,
-		   lookup_field (&class_type_node, methods_ident));
+		   lookup_field (&class_type_node, methods_ident), NULL_TREE);
       for (meth = TYPE_METHODS (self_type);
 	   ; meth = TREE_CHAIN (meth))
 	{
@@ -1874,8 +1878,8 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
 			 ref, build_int_2 (method_index, 0)));
       ref = build1 (INDIRECT_REF, method_type_node, ref);
       func = build (COMPONENT_REF, nativecode_ptr_type_node,
-		    ref,
-		    lookup_field (&method_type_node, ncode_ident));
+		    ref, lookup_field (&method_type_node, ncode_ident),
+		    NULL_TREE);
     }
   return func;
 }
@@ -1899,7 +1903,7 @@ invoke_build_dtable (int is_invoke_interface, tree arg_list)
   dtable = build_java_indirect_ref (object_type_node, objectref, 
 				    flag_check_references);
   dtable = build (COMPONENT_REF, dtable_ptr_type, dtable,
-		  lookup_field (&object_type_node, dtable_ident));
+		  lookup_field (&object_type_node, dtable_ident), NULL_TREE);
 
   return dtable;
 }
@@ -1955,7 +1959,7 @@ build_invokevirtual (tree dtable, tree method)
 		       (method, &TYPE_OTABLE_METHODS (output_class)), 0);
       method_index = build (ARRAY_REF, integer_type_node, 
 			    TYPE_OTABLE_DECL (output_class), 
-			    otable_index);
+			    otable_index, NULL_TREE, NULL_TREE);
     }
   else
     {
@@ -2001,7 +2005,7 @@ build_invokeinterface (tree dtable, tree method)
   dtable = build_java_indirect_ref (dtable_type, dtable,
 				    flag_check_references);
   dtable = build (COMPONENT_REF, class_ptr_type, dtable,
-		  lookup_field (&dtable_type, class_ident));
+		  lookup_field (&dtable_type, class_ident), NULL_TREE);
 
   interface = DECL_CONTEXT (method);
   if (! CLASS_INTERFACE (TYPE_NAME (interface)))
@@ -2010,17 +2014,15 @@ build_invokeinterface (tree dtable, tree method)
   
   if (flag_indirect_dispatch)
     {
-      otable_index =
-	build_int_2 (get_symbol_table_index 
-		     (method, &TYPE_OTABLE_METHODS (output_class)), 0);
-      idx = 
-	build (ARRAY_REF, integer_type_node, TYPE_OTABLE_DECL (output_class),
-	       otable_index);
+      otable_index
+	= build_int_2 (get_symbol_table_index 
+		       (method, &TYPE_OTABLE_METHODS (output_class)), 0);
+      idx = build (ARRAY_REF, integer_type_node,
+		   TYPE_OTABLE_DECL (output_class), otable_index,
+		   NULL_TREE, NULL_TREE);
     }
   else
-    {
-      idx = build_int_2 (get_interface_method_index (method, interface), 0);
-    }
+    idx = build_int_2 (get_interface_method_index (method, interface), 0);
 
   lookup_arg = tree_cons (NULL_TREE, dtable,
                           tree_cons (NULL_TREE, build_class_ref (interface),
@@ -2577,7 +2579,8 @@ java_expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	expand_assignment (build (COMPONENT_REF, TREE_TYPE (data_fld),
 				  build_java_indirect_ref (array_type, 
 					  array_decl, flag_check_references), 
-				  data_fld), init, 0);
+				  data_fld, NULL_TREE),
+			   init, 0);
 	return tmp;
       }
     case BLOCK:
@@ -3460,7 +3463,8 @@ emit_init_test_initialization (void **entry, void *x ATTRIBUTE_UNUSED)
 		 build (COMPONENT_REF, byte_type_node,
 			build1 (INDIRECT_REF, class_type_node, klass),
 			lookup_field (&class_type_node,
-				      get_identifier ("state"))),
+				      get_identifier ("state")),
+			NULL_TREE),
 		 build_int_2 (JV_STATE_DONE, 0));
 
   expand_expr_stmt (build (MODIFY_EXPR, boolean_type_node, 

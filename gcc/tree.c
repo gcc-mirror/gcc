@@ -1927,7 +1927,8 @@ substitute_in_expr (tree exp, tree f, tree r)
      if (op0 == TREE_OPERAND (exp, 0))
        return exp;
 
-     new = fold (build2 (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1)));
+     new = fold (build (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1),
+			NULL_TREE));
    }
   else
     switch (TREE_CODE_CLASS (code))
@@ -2157,7 +2158,7 @@ stabilize_reference (tree ref)
     case COMPONENT_REF:
       result = build_nt (COMPONENT_REF,
 			 stabilize_reference (TREE_OPERAND (ref, 0)),
-			 TREE_OPERAND (ref, 1));
+			 TREE_OPERAND (ref, 1), NULL_TREE);
       break;
 
     case BIT_FIELD_REF:
@@ -2170,13 +2171,15 @@ stabilize_reference (tree ref)
     case ARRAY_REF:
       result = build_nt (ARRAY_REF,
 			 stabilize_reference (TREE_OPERAND (ref, 0)),
-			 stabilize_reference_1 (TREE_OPERAND (ref, 1)));
+			 stabilize_reference_1 (TREE_OPERAND (ref, 1)),
+			 TREE_OPERAND (ref, 2), TREE_OPERAND (ref, 3));
       break;
 
     case ARRAY_RANGE_REF:
       result = build_nt (ARRAY_RANGE_REF,
 			 stabilize_reference (TREE_OPERAND (ref, 0)),
-			 stabilize_reference_1 (TREE_OPERAND (ref, 1)));
+			 stabilize_reference_1 (TREE_OPERAND (ref, 1)),
+			 TREE_OPERAND (ref, 2), TREE_OPERAND (ref, 3));
       break;
 
     case COMPOUND_EXPR:
@@ -2292,41 +2295,77 @@ stabilize_reference_1 (tree e)
 
 /* Low-level constructors for expressions.  */
 
-/* A helper function for build1 and constant folders.
-   Set TREE_CONSTANT and TREE_INVARIANT for an ADDR_EXPR.  */
+/* A helper function for build1 and constant folders.  Set TREE_CONSTANT,
+   TREE_INVARIANT, and TREE_SIDE_EFFECTS for an ADDR_EXPR.  */
 
 void
 recompute_tree_invarant_for_addr_expr (tree t)
 {
-  tree node = TREE_OPERAND (t, 0);
-  bool tc = false, ti = false;
+  tree node;
+  bool tc = true, ti = true, se = false;
 
-  /* Addresses of constants and static variables are constant;
-     all other decl addresses are invariant.  */
-  if (staticp (node))
-    tc = ti = true;
+  /* We started out assuming this address is both invariant and constant, but
+     does not have side effects.  Now go down any handled components and see if
+     any of them involve offsets that are either non-constant or non-invariant.
+     Also check for side-effects.
+
+     ??? Note that this code makes no attempt to deal with the case where
+     taking the address of something causes a copy due to misalignment.  */
+
+#define UPDATE_TITCSE(NODE)  \
+do { tree _node = (NODE); \
+     if (_node && !TREE_INVARIANT (_node)) ti = false; \
+     if (_node && !TREE_CONSTANT (_node)) tc = false; \
+     if (_node && TREE_SIDE_EFFECTS (_node)) se = true; } while (0)
+
+  for (node = TREE_OPERAND (t, 0); handled_component_p (node);
+       node = TREE_OPERAND (node, 0))
+    {
+      /* If the first operand doesn't have an ARRAY_TYPE, this is a bogus
+	 array reference (probably made temporarily by the G++ front end),
+	 so ignore all the operands.  */
+      if ((TREE_CODE (node) == ARRAY_REF
+	   || TREE_CODE (node) == ARRAY_RANGE_REF)
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (node, 0))) == ARRAY_TYPE)
+	{
+	  UPDATE_TITCSE (TREE_OPERAND (node, 1));
+	  UPDATE_TITCSE (array_ref_low_bound (node));
+	  UPDATE_TITCSE (array_ref_element_size (node));
+	}
+      /* Likewise, just because this is a COMPONENT_REF doesn't mean we have a
+	 FIELD_DECL, apparently.  The G++ front end can put something else
+	 there, at least temporarily.  */
+      else if (TREE_CODE (node) == COMPONENT_REF
+	       && TREE_CODE (TREE_OPERAND (node, 1)) == FIELD_DECL)
+	UPDATE_TITCSE (component_ref_field_offset (node));
+      else if (TREE_CODE (node) == BIT_FIELD_REF)
+	UPDATE_TITCSE (TREE_OPERAND (node, 2));
+    }
+	      
+  /* Now see what's inside.  If it's an INDIRECT_REF, copy our properties from
+     it.  If it's a decl, it's definitely invariant and it's constant if the
+     decl is static.  (Taking the address of a volatile variable is not
+     volatile.)  If it's a constant, the address is both invariant and
+     constant.  Otherwise it's neither.  */
+  if (TREE_CODE (node) == INDIRECT_REF)
+    UPDATE_TITCSE (node);
+  else if (DECL_P (node))
+    {
+      if (!staticp (node))
+	tc = false;
+    }
+  else if (TREE_CODE_CLASS (TREE_CODE (node)) == 'c')
+    ;
   else
     {
-      /* Step past constant offsets.  */
-      while (1)
-	{
-	  if (TREE_CODE (node) == COMPONENT_REF
-	      && TREE_CODE (TREE_OPERAND (node, 1)) == FIELD_DECL
-	      && ! DECL_BIT_FIELD (TREE_OPERAND (node, 1)))
-	    ;
-	  else if (TREE_CODE (node) == ARRAY_REF
-	           && TREE_CONSTANT (TREE_OPERAND (node, 1)))
-	    ;
-	  else
-	    break;
-	  node = TREE_OPERAND (node, 0);
-	}
-      if (DECL_P (node))
-        ti = true;
+      ti = tc = false;
+      se |= TREE_SIDE_EFFECTS (node);
     }
 
   TREE_CONSTANT (t) = tc;
   TREE_INVARIANT (t) = ti;
+  TREE_SIDE_EFFECTS (t) = se;
+#undef UPDATE_TITCSE
 }
 
 /* Build an expression of code CODE, data type TYPE, and operands as
@@ -2429,27 +2468,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 
     case ADDR_EXPR:
       if (node)
-	{
-	  recompute_tree_invarant_for_addr_expr (t);
-
-	  /* The address of a volatile decl or reference does not have
-	     side-effects.  But be careful not to ignore side-effects from
-	     other sources deeper in the expression--if node is a _REF and
-	     one of its operands has side-effects, so do we.  */
-	  if (TREE_THIS_VOLATILE (node))
-	    {
-	      TREE_SIDE_EFFECTS (t) = 0;
-	      if (!DECL_P (node))
-		{
-		  int i = first_rtl_op (TREE_CODE (node)) - 1;
-		  for (; i >= 0; --i)
-		    {
-		      if (TREE_SIDE_EFFECTS (TREE_OPERAND (node, i)))
-			TREE_SIDE_EFFECTS (t) = 1;
-		    }
-		}
-	    }
-	}
+	recompute_tree_invarant_for_addr_expr (t);
       break;
 
     default:
@@ -2516,6 +2535,8 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
   TREE_CONSTANT (t) = constant;
   TREE_INVARIANT (t) = invariant;
   TREE_SIDE_EFFECTS (t) = side_effects;  
+  TREE_THIS_VOLATILE (t)
+    = TREE_CODE_CLASS (code) == 'r' && arg0 && TREE_THIS_VOLATILE (arg0);
 
   return t;
 }
@@ -2565,6 +2586,8 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
     }
 
   TREE_SIDE_EFFECTS (t) = side_effects;  
+  TREE_THIS_VOLATILE (t)
+    = TREE_CODE_CLASS (code) == 'r' && arg0 && TREE_THIS_VOLATILE (arg0);
 
   return t;
 }
@@ -2595,6 +2618,8 @@ build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   PROCESS_ARG(3);
 
   TREE_SIDE_EFFECTS (t) = side_effects;  
+  TREE_THIS_VOLATILE (t)
+    = TREE_CODE_CLASS (code) == 'r' && arg0 && TREE_THIS_VOLATILE (arg0);
 
   return t;
 }
@@ -4457,8 +4482,8 @@ get_unwidened (tree op, tree for_type)
 	  && (for_type || ! DECL_BIT_FIELD (TREE_OPERAND (op, 1)))
 	  && (! uns || final_prec <= innerprec || unsignedp))
 	{
-	  win = build2 (COMPONENT_REF, type, TREE_OPERAND (op, 0),
-			TREE_OPERAND (op, 1));
+	  win = build3 (COMPONENT_REF, type, TREE_OPERAND (op, 0),
+			TREE_OPERAND (op, 1), NULL_TREE);
 	  TREE_SIDE_EFFECTS (win) = TREE_SIDE_EFFECTS (op);
 	  TREE_THIS_VOLATILE (win) = TREE_THIS_VOLATILE (op);
 	}
@@ -4523,7 +4548,8 @@ get_narrower (tree op, int *unsignedp_ptr)
       /* Since type_for_size always gives an integer type.  */
       && TREE_CODE (TREE_TYPE (op)) != REAL_TYPE
       /* Ensure field is laid out already.  */
-      && DECL_SIZE (TREE_OPERAND (op, 1)) != 0)
+      && DECL_SIZE (TREE_OPERAND (op, 1)) != 0
+      && host_integerp (DECL_SIZE (TREE_OPERAND (op, 1)), 1))
     {
       unsigned HOST_WIDE_INT innerprec
 	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
@@ -4546,8 +4572,8 @@ get_narrower (tree op, int *unsignedp_ptr)
 	{
 	  if (first)
 	    uns = DECL_UNSIGNED (TREE_OPERAND (op, 1));
-	  win = build2 (COMPONENT_REF, type, TREE_OPERAND (op, 0),
-			TREE_OPERAND (op, 1));
+	  win = build3 (COMPONENT_REF, type, TREE_OPERAND (op, 0),
+			TREE_OPERAND (op, 1), NULL_TREE);
 	  TREE_SIDE_EFFECTS (win) = TREE_SIDE_EFFECTS (op);
 	  TREE_THIS_VOLATILE (win) = TREE_THIS_VOLATILE (op);
 	}

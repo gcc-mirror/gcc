@@ -424,7 +424,8 @@ build_ref_from_constant_pool (int index)
 {
   tree d = build_constant_data_ref ();
   tree i = build_int_2 (index, 0);
-  return build (ARRAY_REF, TREE_TYPE (TREE_TYPE (d)), d, i);
+  return build (ARRAY_REF, TREE_TYPE (TREE_TYPE (d)), d, i,
+		NULL_TREE, NULL_TREE);
 }
 
 /* Build an initializer for the constants field of the current constant pool.

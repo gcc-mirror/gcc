@@ -1,3 +1,16 @@
+2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* class.c (build_class_ref): Add new operand for COMPONENT_REF.
+	(build_static_field_ref): Likewise and add new operands for ARRAY_REF.
+	* constants.c (build_ref_from_constant_pool): Likewise.
+	* expr.c (build_java_array_length_access): Likewise.
+	(build_get_class, build_field_ref, build_known_method_ref): Likewise.
+	(invoke_build_dtable, build_invokevirtual): Likewise.
+	(build_invokeinterface, java_expand_expr): Likewise.
+	(emit_init_test_initialization): Likewise.
+	* java-gimplify.c (java_gimplify_new_array_init): Likewise.
+	* parse.y (make_qualifed_name, build_array_ref): Likewise.
+	
 2004-06-21  Andrew Haley  <aph@redhat.com>
 
 	* java-gimplify.c (java_gimplify_block): set TREE_USED on the new

@@ -119,17 +119,34 @@ Boston, MA 02111-1307, USA.  */
    min-lval: ID | '*' ID
    bitfieldref :
      BIT_FIELD_REF
-       op0 -> compref | min-lval
+       op0 -> inner_compref
        op1 -> CONST
-       op2 -> CONST
+       op2 -> var
    compref :
      COMPONENT_REF
-       op0 -> compref | min-lval
+       op0 -> inner_compref
      | ARRAY_REF
-       op0 -> compref | min-lval
+       op0 -> inner_compref
        op1 -> val
+       op2 -> val
+       op3 -> val
+     | ARRAY_RANGE_REF
+       op0 -> inner_compref
+       op1 -> val
+       op2 -> val
+       op3 -> val
      | REALPART_EXPR
+       op0 -> inner_compref
      | IMAGPART_EXPR
+       op0 -> inner_compref
+
+   inner_compref : compref | min_lval
+     | VIEW_CONVERT_EXPR
+       op0 -> inner_compref
+     | NOP_EXPR
+       op0 -> inner_compref
+     | CONVERT_EXPR
+       op0 -> inner_compref
 
    condition : val | val relop val
    val : ID | CONST
@@ -284,9 +301,11 @@ is_gimple_addr_expr_arg (tree t)
 {
   return (is_gimple_id (t)
 	  || TREE_CODE (t) == ARRAY_REF
+	  || TREE_CODE (t) == ARRAY_RANGE_REF
 	  || TREE_CODE (t) == COMPONENT_REF
 	  || TREE_CODE (t) == REALPART_EXPR
-	  || TREE_CODE (t) == IMAGPART_EXPR);
+	  || TREE_CODE (t) == IMAGPART_EXPR
+	  || TREE_CODE (t) == INDIRECT_REF);
 }
 
 /* Return nonzero if T is function invariant.  Or rather a restricted
@@ -581,19 +600,12 @@ get_base_address (tree t)
 	  || TREE_CODE (t) == INDIRECT_REF)
 	return t;
 
-      switch (TREE_CODE (t))
-	{
-	case ARRAY_REF:
-	case COMPONENT_REF:
-	case REALPART_EXPR:
-	case IMAGPART_EXPR:
-	case BIT_FIELD_REF:
-	  t = TREE_OPERAND (t, 0);
-	  break;
-
-	default:
-	  return NULL_TREE;
-	}
+      if (TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR)
+	t = TREE_OPERAND (t, 0);
+      else if (handled_component_p (t))
+	t = get_base_address (TREE_OPERAND (t, 0));
+      else
+	return NULL_TREE;
     }
   while (t);
 

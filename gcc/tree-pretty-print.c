@@ -392,6 +392,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case RECORD_TYPE:
     case UNION_TYPE:
+    case QUAL_UNION_TYPE:
       /* Print the name of the structure.  */
       if (TREE_CODE (node) == RECORD_TYPE)
 	pp_string (buffer, "struct ");
@@ -403,11 +404,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       else
 	print_struct_decl (buffer, node, spc, flags);
       break;
-
-    case QUAL_UNION_TYPE:
-      NIY;
-      break;
-
 
     case LANG_TYPE:
       NIY;
@@ -598,6 +594,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	pp_character (buffer, ')');
       pp_string (buffer, str);
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      if (TREE_OPERAND (node, 2)
+	  && TREE_CODE (TREE_OPERAND (node, 2)) != INTEGER_CST)
+	{
+	  pp_string (buffer, "{off: ");
+	  dump_generic_node (buffer, TREE_OPERAND (node, 2),
+			     spc, flags, false);
+	  pp_character (buffer, '}');
+	}
       break;
 
     case BIT_FIELD_REF:
@@ -615,6 +619,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
       op0 = TREE_OPERAND (node, 0);
       if (op_prio (op0) < op_prio (node))
 	pp_character (buffer, '(');
@@ -623,11 +628,23 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	pp_character (buffer, ')');
       pp_character (buffer, '[');
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      if (TREE_CODE (node) == ARRAY_RANGE_REF)
+	pp_string (buffer, " ...");
       pp_character (buffer, ']');
-      break;
 
-    case ARRAY_RANGE_REF:
-      NIY;
+      if ((TREE_OPERAND (node, 2)
+	   && TREE_CODE (TREE_OPERAND (node, 2)) != INTEGER_CST)
+	  || (TREE_OPERAND (node, 3)
+	      && TREE_CODE (TREE_OPERAND (node, 3)) != INTEGER_CST))
+	{
+	  pp_string (buffer, "{lb: ");
+	  dump_generic_node (buffer, TREE_OPERAND (node, 2),
+			     spc, flags, false);
+	  pp_string (buffer, " sz: ");
+	  dump_generic_node (buffer, TREE_OPERAND (node, 3),
+			     spc, flags, false);
+	  pp_character (buffer, '}');
+	}
       break;
 
     case CONSTRUCTOR:
@@ -1490,10 +1507,10 @@ print_struct_decl (pretty_printer *buffer, tree node, int spc, int flags)
       INDENT (spc);
       if (TREE_CODE (node) == RECORD_TYPE)
 	pp_string (buffer, "struct ");
-      else if (TREE_CODE (node) == UNION_TYPE)
+      else if ((TREE_CODE (node) == UNION_TYPE
+		|| TREE_CODE (node) == QUAL_UNION_TYPE))
 	pp_string (buffer, "union ");
-      else
-	NIY;
+
       dump_generic_node (buffer, TYPE_NAME (node), spc, 0, false);
     }
 
@@ -1515,8 +1532,8 @@ print_struct_decl (pretty_printer *buffer, tree node, int spc, int flags)
 	   Maybe this could be solved by looking at the scope in which the
 	   structure was declared.  */
 	if (TREE_TYPE (tmp) != node
-	    || (TREE_CODE (TREE_TYPE (tmp)) == POINTER_TYPE &&
-		TREE_TYPE (TREE_TYPE (tmp)) != node))
+	    || (TREE_CODE (TREE_TYPE (tmp)) == POINTER_TYPE
+		&& TREE_TYPE (TREE_TYPE (tmp)) != node))
 	  {
 	    print_declaration (buffer, tmp, spc+2, flags);
 	    pp_newline (buffer);
@@ -1656,6 +1673,7 @@ op_prio (tree op)
 
     case CALL_EXPR:
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
     case COMPONENT_REF:
       return 15;
 

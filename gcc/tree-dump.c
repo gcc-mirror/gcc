@@ -536,9 +536,7 @@ dequeue_and_dump (dump_info_p di)
     case TRUTH_ORIF_EXPR:
     case INIT_EXPR:
     case MODIFY_EXPR:
-    case COMPONENT_REF:
     case COMPOUND_EXPR:
-    case ARRAY_REF:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
@@ -546,6 +544,20 @@ dequeue_and_dump (dump_info_p di)
       /* These nodes are binary, but do not have code class `2'.  */
       dump_child ("op 0", TREE_OPERAND (t, 0));
       dump_child ("op 1", TREE_OPERAND (t, 1));
+      break;
+
+    case COMPONENT_REF:
+      dump_child ("op 0", TREE_OPERAND (t, 0));
+      dump_child ("op 1", TREE_OPERAND (t, 1));
+      dump_child ("op 2", TREE_OPERAND (t, 2));
+      break;
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      dump_child ("op 0", TREE_OPERAND (t, 0));
+      dump_child ("op 1", TREE_OPERAND (t, 1));
+      dump_child ("op 2", TREE_OPERAND (t, 2));
+      dump_child ("op 3", TREE_OPERAND (t, 3));
       break;
 
     case COND_EXPR:

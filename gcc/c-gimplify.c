@@ -243,7 +243,7 @@ gimplify_expr_stmt (tree *stmt_p)
     }
 
   if (stmt == NULL_TREE)
-    stmt = build_empty_stmt ();
+    stmt = alloc_stmt_list ();
 
   *stmt_p = stmt;
 
@@ -475,8 +475,6 @@ gimplify_decl_stmt (tree *stmt_p)
 {
   tree stmt = *stmt_p;
   tree decl = DECL_STMT_DECL (stmt);
-  tree pre = NULL_TREE;
-  tree post = NULL_TREE;
 
   if (TREE_TYPE (decl) == error_mark_node)
     {
@@ -485,38 +483,34 @@ gimplify_decl_stmt (tree *stmt_p)
     }
     
   if (TREE_CODE (decl) == TYPE_DECL)
-    {
-      tree type = TREE_TYPE (decl);
-      if (TYPE_SIZE_UNIT (type)
-          && !TREE_CONSTANT (TYPE_SIZE_UNIT (type)))
-        {
-          /* This is a variable-sized array type.  Simplify its size.  */
-          tree temp = TYPE_SIZE_UNIT (type);
-          gimplify_expr (&temp, &pre, &post, is_gimple_val, fb_rvalue);
-        }
-    }
+    *stmt_p = gimplify_type_sizes (TREE_TYPE (decl));
 
-  if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
+  else if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     {
       tree init = DECL_INITIAL (decl);
 
+      *stmt_p = NULL_TREE;
+      gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
+      gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
+
       if (!TREE_CONSTANT (DECL_SIZE (decl)))
 	{
-	  tree pt_type = build_pointer_type (TREE_TYPE (decl));
-	  tree alloc, size;
-
 	  /* This is a variable-sized decl.  Simplify its size and mark it
 	     for deferred expansion.  Note that mudflap depends on the format
 	     of the emitted code: see mx_register_decls().  */
 
-	  size = get_initialized_tmp_var (DECL_SIZE_UNIT (decl), &pre, &post);
+	  tree pt_type = build_pointer_type (TREE_TYPE (decl));
+	  tree alloc_stmt
+	    = (build_function_call_expr
+	       (implicit_built_in_decls[BUILT_IN_STACK_ALLOC],
+		tree_cons (NULL_TREE,
+			   build1 (ADDR_EXPR, pt_type, decl),
+			   tree_cons (NULL_TREE, DECL_SIZE_UNIT (decl),
+				      NULL_TREE))));
+
+	  gimplify_stmt (&alloc_stmt);
+	  append_to_statement_list(alloc_stmt, stmt_p);
 	  DECL_DEFER_OUTPUT (decl) = 1;
-	  alloc = build_function_call_expr
-	    (implicit_built_in_decls[BUILT_IN_STACK_ALLOC],
-	     tree_cons (NULL_TREE,
-			build1 (ADDR_EXPR, pt_type, decl),
-			tree_cons (NULL_TREE, size, NULL_TREE)));
-	  append_to_compound_expr (alloc, &pre);
 	}
 
       if (init && init != error_mark_node)
@@ -531,14 +525,13 @@ gimplify_decl_stmt (tree *stmt_p)
               
 	      DECL_INITIAL (decl) = NULL_TREE;
 	      init = build (MODIFY_EXPR, void_type_node, decl, init);
-	      append_to_compound_expr (init, &pre);
+	      gimplify_stmt (&init);
+	      append_to_statement_list (init, stmt_p);
 	    }
 	  else
-	    {
-	      /* We must still examine initializers for static variables
-		 as they may contain a label address.  */
-	      walk_tree (&init, force_labels_r, NULL, NULL);
-	    }
+	    /* We must still examine initializers for static variables
+	       as they may contain a label address.  */
+	    walk_tree (&init, force_labels_r, NULL, NULL);
 	}
 
       /* This decl isn't mentioned in the enclosing block, so add it to the
@@ -547,10 +540,10 @@ gimplify_decl_stmt (tree *stmt_p)
       if (DECL_ARTIFICIAL (decl) && DECL_NAME (decl) == NULL_TREE)
 	gimple_add_tmp_var (decl);
     }
+  else
+    *stmt_p = alloc_stmt_list ();
 
-  append_to_compound_expr (post, &pre);
-  *stmt_p = pre;
-  return GS_OK;
+  return GS_ALL_DONE;
 }
 
 /* Gimplification of expression trees.  */
@@ -560,7 +553,7 @@ gimplify_decl_stmt (tree *stmt_p)
    instead.  */
 
 static enum gimplify_status
-gimplify_compound_literal_expr (tree *expr_p)
+gimplify_compound_literal_expr (tree *expr_p, tree *pre_p)
 {
   tree decl_s = COMPOUND_LITERAL_EXPR_DECL_STMT (*expr_p);
   tree decl = DECL_STMT_DECL (decl_s);
@@ -572,7 +565,8 @@ gimplify_compound_literal_expr (tree *expr_p)
     gimple_add_tmp_var (decl);
 
   gimplify_decl_stmt (&decl_s);
-  *expr_p = decl_s ? decl_s : decl;
+  append_to_statement_list (decl_s, pre_p);
+  *expr_p = decl;
   return GS_OK;
 }
 
@@ -586,7 +580,7 @@ c_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
   switch (code)
     {
     case COMPOUND_LITERAL_EXPR:
-      return gimplify_compound_literal_expr (expr_p);
+      return gimplify_compound_literal_expr (expr_p, pre_p);
 
     case FOR_STMT:
       return gimplify_for_stmt (expr_p, pre_p);

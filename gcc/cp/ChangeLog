@@ -1,3 +1,29 @@
+2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* call.c (build_vfield_ref): Add new operand for COMPONENT_REF.
+	(build_new_method_call): Likewise.
+	* decl.c (local_variable_p_walkfn): Don't walk into types.
+	* decl2.c (grok_array_decl): Add new operands for ARRAY_REF.
+	(build_anon_union_vars): Add new operand for COMPONENT_REF.
+	* init.c (buld_new): Add new operand for ARRAY_REF.
+	* method.c (do_build_copy_constructor): New op for COMPONENT_REF.
+	(do_build_assign_ref): Likewise.
+	* parser.c (cp_parser_direct_new_declarator): Add new operands
+	for ARRAY_REF.
+	(cp_parser_direct_declarator): Likewise.
+	* pt.c (tsubst): Likewise.
+	(tsubst_copy, tsubst_copy_and_build): Likewise; also add new operand
+ 	for COMPONENT_REF.
+	* semantics.c (finish_non_static_data_member): Add new operand
+	for COMPONENT_REF.
+	* typeck.c (build_class_member_access_expr): Likewise.
+	(build_class_member_access_expr, finish_class_member_access_expr):
+	Likewise.
+	(build_ptrmemfunc_access_expr): Likewise.
+	(build_array_ref): Add new operands for ARRAY_REF.
+	* typeck2.c (split_nonconstant_init_1): Likewise; COMPONENT_REF too.
+	* tree.c (count_trees_r, no_linkage_helper): Don't walk in types.
+
 2004-06-21  Richard Henderson  <rth@redhat.com>
 
 	* dump.c (cp_dump_tree): Don't use dump_next_stmt.

@@ -354,9 +354,11 @@ DEFTREECODE (TRANSLATION_UNIT_DECL, "translation_unit_decl", 'd', 0)
 /* References to storage.  */
 
 /* Value is structure or union component.
-   Operand 0 is the structure or union (an expression);
-   operand 1 is the field (a node of type FIELD_DECL).  */
-DEFTREECODE (COMPONENT_REF, "component_ref", 'r', 2)
+   Operand 0 is the structure or union (an expression).
+   Operand 1 is the field (a node of type FIELD_DECL).
+   Operand 2, if present, is the value of DECL_FIELD_OFFSET, measured
+   in units of DECL_OFFSET_ALIGN / BITS_PER_UNIT.  */
+DEFTREECODE (COMPONENT_REF, "component_ref", 'r', 3)
 
 /* Reference to a group of bits within an object.  Similar to COMPONENT_REF
    except the position is given explicitly rather than via a FIELD_DECL.
@@ -374,13 +376,16 @@ DEFTREECODE (INDIRECT_REF, "indirect_ref", 'r', 1)
 DEFTREECODE (BUFFER_REF, "buffer_ref", 'r', 1)
 
 /* Array indexing.
-   Operand 0 is the array; operand 1 is a (single) array index.  */
-DEFTREECODE (ARRAY_REF, "array_ref", 'r', 2)
+   Operand 0 is the array; operand 1 is a (single) array index.
+   Operand 2, if present, is a copy of TYPE_MIN_VALUE of the index.
+   Operand 3, if present, is the element size, measured in units of
+   the alignment of the element type.  */
+DEFTREECODE (ARRAY_REF, "array_ref", 'r', 4)
 
 /* Likewise, except that the result is a range ("slice") of the array.  The
    starting index of the resulting array is taken from operand 1 and the size
    of the range is taken from the type of the expression.  */
-DEFTREECODE (ARRAY_RANGE_REF, "array_range_ref", 'r', 2)
+DEFTREECODE (ARRAY_RANGE_REF, "array_range_ref", 'r', 4)
 
 /* Vtable indexing.  Carries data useful for emitting information
    for vtable garbage collection.

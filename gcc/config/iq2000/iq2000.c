@@ -1656,11 +1656,11 @@ iq2000_va_arg (tree valist, tree type)
   f_goff = TREE_CHAIN (f_ftop);
   f_foff = TREE_CHAIN (f_goff);
 
-  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl);
-  gtop = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop);
-  ftop = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop);
-  goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff);
-  foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff);
+  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl, NULL_TREE);
+  gtop = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop, NULL_TREE);
+  ftop = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop, NULL_TREE);
+  goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff, NULL_TREE);
+  foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff, NULL_TREE);
 
   lab_false = gen_label_rtx ();
   lab_over = gen_label_rtx ();

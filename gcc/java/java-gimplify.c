@@ -1,5 +1,4 @@
 /* Java(TM) language-specific gimplification routines.
-
    Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -223,10 +222,11 @@ java_gimplify_new_array_init (tree exp)
 	 bounds checking.  */
       tree lhs = build (COMPONENT_REF, TREE_TYPE (data_field),    
 			build_java_indirect_ref (array_type, tmp, 0),
-			data_field);
+			data_field, NULL_TREE);
       tree assignment = build (MODIFY_EXPR, element_type,
   			       build (ARRAY_REF, element_type, lhs,
-				      build_int_2 (index++, 0)),
+				      build_int_2 (index++, 0),
+				      NULL_TREE, NULL_TREE),
 			       TREE_VALUE (values));
       body = build (COMPOUND_EXPR, element_type, body, assignment);
       values = TREE_CHAIN (values);

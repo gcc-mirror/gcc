@@ -1,3 +1,22 @@
+2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* f95-lang.c (LANG_HOOKS_GIMPLE_BEFORE_INLINING): Deleted.
+	* trans-array.c (gfc_conv_descriptor_data): Add operand
+	for COMPONENT_REF.
+	(gfc_conv_descriptor_offset, gfc_conv_descriptor_dtype): Likewise.
+	(gfc_conv_descriptor_dimension, gfc_conv_descriptor_stride): Likewise.
+	(gfc_conv_descriptor_lbound, gfc_conv_descriptor_ubound): Likewise.
+	* trans-common.c (create_common): Likewise.
+	* trans-expr.c (gfc_conv_component_ref): Likewise.
+	* trans-io.c (set_parameter_value): Likewise.
+	(set_parameter_ref, set_string, set_flag, io_result): Likewise.
+	(transfer_expr): Likewise.
+	* trans-decl.c (gfc_trans_auto_character_variable):
+	Set up to get DECL_SIZE and DECL_SIZE_UNIT gimplified.
+	(gfc_simplify_function): New function.
+	(gfc_generate_function-code): Properly handle nested functions.
+	* trans.c (gfc_build_array_ref): Add two new operands for ARRAY_REF.
+
 2004-06-22  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	PR fortran/15750

@@ -221,7 +221,7 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
   field = c->backend_decl;
   assert (TREE_CODE (field) == FIELD_DECL);
   decl = se->expr;
-  tmp = build (COMPONENT_REF, TREE_TYPE (field), decl, field);
+  tmp = build (COMPONENT_REF, TREE_TYPE (field), decl, field, NULL_TREE);
 
   se->expr = tmp;
 

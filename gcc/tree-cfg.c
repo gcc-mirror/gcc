@@ -3156,12 +3156,10 @@ verify_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
       break;
 
     case ADDR_EXPR:
-      x = TREE_OPERAND (t, 0);
-      while (TREE_CODE (x) == ARRAY_REF
-	     || TREE_CODE (x) == COMPONENT_REF
-	     || TREE_CODE (x) == REALPART_EXPR
-	     || TREE_CODE (x) == IMAGPART_EXPR)
-	x = TREE_OPERAND (x, 0);
+      for (x = TREE_OPERAND (t, 0); handled_component_p (x);
+	   x = TREE_OPERAND (x, 0))
+	;
+
       if (TREE_CODE (x) != VAR_DECL && TREE_CODE (x) != PARM_DECL)
 	return NULL;
       if (!TREE_ADDRESSABLE (x))
@@ -3309,7 +3307,7 @@ tree_node_can_be_shared (tree t)
       || TREE_CODE (t) == SSA_NAME)
     return true;
 
-  while ((TREE_CODE (t) == ARRAY_REF
+  while (((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	  /* We check for constants explicitly since they are not considered
 	     gimple invariants if they overflowed.  */
 	  && (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, 1))) == 'c'

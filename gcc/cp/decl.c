@@ -8508,13 +8508,17 @@ nonstatic_local_decl_p (tree t)
    function.  */
 
 static tree
-local_variable_p_walkfn (tree* tp,
-                         int* walk_subtrees ATTRIBUTE_UNUSED ,
-                         void* data ATTRIBUTE_UNUSED )
+local_variable_p_walkfn (tree *tp, int *walk_subtrees,
+			 void *data ATTRIBUTE_UNUSED)
 {
-  return ((local_variable_p (*tp) && !DECL_ARTIFICIAL (*tp))
-	  ? *tp : NULL_TREE);
+  if (local_variable_p (*tp) && !DECL_ARTIFICIAL (*tp))
+    return *tp;
+  else if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
 }
+
 
 /* Check that ARG, which is a default-argument expression for a
    parameter DECL, is valid.  Returns ARG, or ERROR_MARK_NODE, if

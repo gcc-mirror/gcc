@@ -4767,7 +4767,8 @@ cp_parser_direct_new_declarator (cp_parser* parser)
       cp_parser_require (parser, CPP_CLOSE_SQUARE, "`]'");
 
       /* Add this bound to the declarator.  */
-      declarator = build_nt (ARRAY_REF, declarator, expression);
+      declarator = build_nt (ARRAY_REF, declarator, expression,
+			     NULL_TREE, NULL_TREE);
 
       /* If the next token is not a `[', then there are no more
 	 bounds.  */
@@ -10714,7 +10715,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      break;
 	    }
 
-	  declarator = build_nt (ARRAY_REF, declarator, bounds);
+	  declarator = build_nt (ARRAY_REF, declarator, bounds,
+				 NULL_TREE, NULL_TREE);
 	}
       else if (first && dcl_kind != CP_PARSER_DECLARATOR_ABSTRACT)
 	{

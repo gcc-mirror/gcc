@@ -2430,9 +2430,9 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   f_reg = TREE_CHAIN (f_stk);
   f_ndx = TREE_CHAIN (f_reg);
 
-  stk = build (COMPONENT_REF, TREE_TYPE (f_stk), valist, f_stk);
-  reg = build (COMPONENT_REF, TREE_TYPE (f_reg), valist, f_reg);
-  ndx = build (COMPONENT_REF, TREE_TYPE (f_ndx), valist, f_ndx);
+  stk = build (COMPONENT_REF, TREE_TYPE (f_stk), valist, f_stk, NULL_TREE);
+  reg = build (COMPONENT_REF, TREE_TYPE (f_reg), valist, f_reg, NULL_TREE);
+  ndx = build (COMPONENT_REF, TREE_TYPE (f_ndx), valist, f_ndx, NULL_TREE);
 
   /* Call __builtin_saveregs; save the result in __va_reg */
   u = make_tree (ptr_type_node, expand_builtin_saveregs ());
@@ -2494,9 +2494,9 @@ xtensa_va_arg (tree valist, tree type)
   f_reg = TREE_CHAIN (f_stk);
   f_ndx = TREE_CHAIN (f_reg);
 
-  stk = build (COMPONENT_REF, TREE_TYPE (f_stk), valist, f_stk);
-  reg = build (COMPONENT_REF, TREE_TYPE (f_reg), valist, f_reg);
-  ndx = build (COMPONENT_REF, TREE_TYPE (f_ndx), valist, f_ndx);
+  stk = build (COMPONENT_REF, TREE_TYPE (f_stk), valist, f_stk, NULL_TREE);
+  reg = build (COMPONENT_REF, TREE_TYPE (f_reg), valist, f_reg, NULL_TREE);
+  ndx = build (COMPONENT_REF, TREE_TYPE (f_ndx), valist, f_ndx, NULL_TREE);
 
   type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type));
 
