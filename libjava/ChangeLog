@@ -1,3 +1,17 @@
+2000-04-08  Anthony Green  <green@cygnus.com>
+
+	* java/lang/natObject.cc (_Jv_MonitorEnter): Only perform null
+	check when we have to.
+
+	* gcj/array.h: Mark elements(JArray<T>& x) and elements(JArray<T>*
+	x) as `inline'.
+
+	* java/util/StringTokenizer.java: Minor optimization.  Eliminates
+	one method call.
+
+	* java/util/Vector.java (VectorEnumeration.nextElement): Manually
+	inline hasMoreElements.
+
 2000-04-05  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.

@@ -36,9 +36,9 @@ public:
 };
 
 template<class T>
-T* elements(JArray<T>& x) { return x.data; }
+inline T* elements(JArray<T>& x) { return x.data; }
 template<class T>
-T* elements(JArray<T>* x) { return x->data; }
+inline T* elements(JArray<T>* x) { return x->data; }
 
 }; // end extern "Java"
 
