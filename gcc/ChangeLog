@@ -1,3 +1,22 @@
+2004-08-09  Steven Bosscher  <stevenb@suse.de>
+
+	* timevar.def (TV_CPROP1, TV_CPROP2, TV_PRE, TV_HOIST, TV_LSM):
+	New timers.
+	* gcse.c: Include timevar.h.
+	(const_prop_count, copy_prop_count): Rename to global_const_prop_count
+	and global_copy_prop_count.
+	(local_const_prop_count, local_copy_prop_count): New static globals.
+	(gcse_main): Set the right timevar for each pass.
+	(cprop_jump): Increment global_const_prop_count when a constant is
+	propagated.  Add "GLOBAL" to dump output.
+	(cprop_insn): Increment global_const_prop_count when a constant is
+	propagated, or global_copy_prop_count when a copy is propagated.
+	(do_local_cprop): Likewise for local_const_prop_count and
+	local_copy_prop_count.
+	(one_cprop_pass): Initialize const/cprop counters to zero.
+	Print out results of local and global const/cprop separately.
+	(bypass_block): Break over-length line.
+
 2004-08-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (GTFILES): Remove stmt.c
@@ -152,13 +171,13 @@
 
 2004-08-06  Roman Zippel  <zippel@linux-m68k.org>
  
-        * config/m68k/m68k.c (post_inc_operand,pre_dec_operand): New.
-        * config/m68k/m68k.h (PREDICATE_CODES): add post_inc_operand,
-        pre_dec_operand.
-        * config/m68k/m68k.md (zero_extend*2): delay the splitting of the
-        pattern until reload is finished to allow better code generation
-        and split them completely into separate instrunctions.
-        (*andsi3_split): New pattern.
+	* config/m68k/m68k.c (post_inc_operand,pre_dec_operand): New.
+	* config/m68k/m68k.h (PREDICATE_CODES): add post_inc_operand,
+	pre_dec_operand.
+	* config/m68k/m68k.md (zero_extend*2): delay the splitting of the
+	pattern until reload is finished to allow better code generation
+	and split them completely into separate instrunctions.
+	(*andsi3_split): New pattern.
 
 2004-08-05  Mark Mitchell  <mark@codesourcery.com>
 
