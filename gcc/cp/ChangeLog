@@ -1,3 +1,10 @@
+2003-06-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cp-tree.h: Follow spelling conventions.
+	* mangle.c: Likewise.
+	* method.c: Likewise.
+	* parser.c: Likewise.
+
 2003-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (start_function): Adjust init_function_start call.

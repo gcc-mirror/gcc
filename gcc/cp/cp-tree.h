@@ -849,7 +849,7 @@ struct language_function GTY(())
 
 #define doing_semantic_analysis_p() (!expanding_p)
 
-/* Non-zero if we are processing a base initializer.  Zero elsewhere.  */
+/* Nonzero if we are processing a base initializer.  Zero elsewhere.  */
 #define in_base_initializer cp_function_chain->in_base_initializer
 
 #define in_function_try_handler cp_function_chain->in_function_try_handler

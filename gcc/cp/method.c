@@ -309,7 +309,7 @@ finish_thunk (tree thunk)
 
 /* Adjust PTR by the constant FIXED_OFFSET, and by the vtable
    offset indicated by VIRTUAL_OFFSET, if that is
-   non-null. THIS_ADJUSTING is non-zero for a this adjusting thunk and
+   non-null. THIS_ADJUSTING is nonzero for a this adjusting thunk and
    zero for a result adjusting thunk. */
 
 static tree
