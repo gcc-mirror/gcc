@@ -166,9 +166,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc gmalloc
 #define obstack_chunk_free free
 
-/* Maximum number of passes to perform.  */
-#define MAX_PASSES 1
-
 /* Propagate flow information through back edges and thus enable PRE's
    moving loop invariant calculations out of loops.
 
@@ -232,7 +229,7 @@ Boston, MA 02111-1307, USA.  */
    substitutions.
 
    PRE is quite expensive in complicated functions because the DFA can take
-   awhile to converge.  Hence we only perform one pass.  Macro MAX_PASSES can
+   awhile to converge.  Hence we only perform one pass.  The parameter max-gcse-passes can
    be modified if one wants to experiment.
 
    **********************
@@ -810,7 +807,7 @@ gcse_main (f, file)
   max_pass_bytes = 0;
   gcse_obstack_bottom = gcse_alloc (1);
   changed = 1;
-  while (changed && pass < MAX_PASSES)
+  while (changed && pass < MAX_GCSE_PASSES)
     {
       changed = 0;
       if (file)

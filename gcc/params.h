@@ -92,5 +92,6 @@ typedef enum compiler_param
   PARAM_VALUE (PARAM_MAX_DELAY_SLOT_LIVE_SEARCH)
 #define MAX_GCSE_MEMORY \
   ((size_t) PARAM_VALUE (PARAM_MAX_GCSE_MEMORY))
-
+#define MAX_GCSE_PASSES \
+  PARAM_VALUE (PARAM_MAX_GCSE_PASSES)
 #endif /* ! GCC_PARAMS_H */
