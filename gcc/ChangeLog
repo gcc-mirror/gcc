@@ -1,3 +1,11 @@
+Sat Apr 17 22:54:17 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (REG_OK_FP_BASE_P): New macro.
+	(GO_IF_LEGITIMATE_SIMPLE_ADDRESS): Use it.
+	* alpha.md (adddi3+1): New insn to handle large constants off 
+	the soft frame pointer.
+	(adddi3+2): Don't split soft frame pointer or arg pointer additions.
+
 Sun Apr 18 17:24:10 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (legitimize_operands): Use rtx_cost

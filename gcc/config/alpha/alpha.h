@@ -1386,17 +1386,31 @@ extern void alpha_init_expanders ();
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) 0
+
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X)  \
   (REGNO (X) < 32 || REGNO (X) == 63 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
+/* ??? Nonzero if X is the frame pointer, or some virtual register
+   that may eliminate to the frame pointer.  These will be allowed to
+   have offsets greater than 32K.  This is done because register
+   elimination offsets will change the hi/lo split, and if we split
+   before reload, we will require additional instructions.   */
+#define REG_OK_FP_BASE_P(X)			\
+  (REGNO (X) == 31 || REGNO (X) == 63		\
+   || (REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+       && REGNO (X) < LAST_VIRTUAL_REGISTER))
+
 #else
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
+
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
+
+#define REG_OK_FP_BASE_P(X) 0
 
 #endif
 
@@ -1418,10 +1432,14 @@ extern void alpha_init_expanders ();
   if (CONSTANT_ADDRESS_P (X))			\
     goto ADDR;					\
   if (GET_CODE (X) == PLUS			\
-      && REG_P (XEXP (X, 0))			\
-      && REG_OK_FOR_BASE_P (XEXP (X, 0))	\
-      && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
-    goto ADDR;					\
+      && REG_P (XEXP (X, 0)))			\
+    {						\
+      if (REG_OK_FP_BASE_P (XEXP (X, 0)))	\
+	goto ADDR;				\
+      if (REG_OK_FOR_BASE_P (XEXP (X, 0))	\
+	  && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
+	goto ADDR;				\
+    }						\
 }
 
 /* Now accept the simple address, or, for DImode only, an AND of a simple
