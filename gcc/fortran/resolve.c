@@ -371,7 +371,7 @@ resolve_structure_cons (gfc_expr * expr)
 /****************** Expression name resolution ******************/
 
 /* Returns 0 if a symbol was not declared with a type or
-   or attribute declaration statement, nonzero otherwise.  */
+   attribute declaration statement, nonzero otherwise.  */
 
 static int
 was_declared (gfc_symbol * sym)

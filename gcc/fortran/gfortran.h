@@ -528,7 +528,9 @@ gfc_component;
 /* Formal argument lists are lists of symbols.  */
 typedef struct gfc_formal_arglist
 {
+  /* Symbol representing the argument at this position in the arglist.  */
   struct gfc_symbol *sym;
+  /* Points to the next formal argument.  */
   struct gfc_formal_arglist *next;
 }
 gfc_formal_arglist;
@@ -712,18 +714,39 @@ gfc_symtree;
 
 typedef struct gfc_namespace
 {
-  /* Roots of the red/black symbol trees */
-  gfc_symtree *sym_root, *uop_root, *common_root;	
+  /* Tree containing all the symbols in this namespace.  */
+  gfc_symtree *sym_root;
+  /* Tree containing all the user-defined operators in the namespace.  */
+  gfc_symtree *uop_root;
+  /* Tree containing all the common blocks.  */
+  gfc_symtree *common_root;	
 
+  /* If set_flag[letter] is set, an implicit type has been set for letter.  */
   int set_flag[GFC_LETTERS];
-  gfc_typespec default_type[GFC_LETTERS];	/* IMPLICIT typespecs */
+  /* Keeps track of the implicit types associated with the letters.  */
+  gfc_typespec default_type[GFC_LETTERS];
 
+  /* If this is a namespace of a procedure, this points to the procedure.  */
   struct gfc_symbol *proc_name;
-  gfc_interface *operator[GFC_INTRINSIC_OPS];
-  struct gfc_namespace *parent, *contained, *sibling;
+  /* If this is the namespace of a unit which contains executable
+     code, this points to it.  */
   struct gfc_code *code;
-  gfc_common_head blank_common;
+
+  /* Points to the equivalences set up in this namespace.  */
   struct gfc_equiv *equiv;
+  gfc_interface *operator[GFC_INTRINSIC_OPS];
+
+  /* Points to the parent namespace, i.e. the namespace of a module or
+     procedure in which the procedure belonging to this namespace is
+     contained. The parent namespace points to this namespace either
+     directly via CONTAINED, or indirectly via the chain built by
+     SIBLING.  */
+  struct gfc_namespace *parent;
+  /* CONTAINED points to the first contained namespace. Sibling
+     namespaces are chained via SIBLING.  */
+  struct gfc_namespace  *contained, *sibling;
+
+  gfc_common_head blank_common;
   gfc_access default_access, operator_access[GFC_INTRINSIC_OPS];
 
   gfc_st_label *st_labels;
@@ -850,6 +873,13 @@ typedef struct gfc_intrinsic_arg
 gfc_intrinsic_arg;
 
 
+/* Specifies the various kinds of check functions used to verify the
+   argument lists of intrinsic functions. fX with X an integer refer
+   to check functions of intrinsics with X arguments. f1m is used for
+   the MAX and MIN intrinsics which can have an arbitrary number of
+   arguments, f3ml is used for the MINLOC and MAXLOC intrinsics as
+   these have special semantics.  */
+
 typedef union
 {
   try (*f1)(struct gfc_expr *);
@@ -864,6 +894,9 @@ typedef union
 }
 gfc_check_f;
 
+/* Like gfc_check_f, these specify the type of the simplification
+   function associated with an intrinsic. The fX are just like in
+   gfc_check_f. cc is used for type conversion functions.  */
 
 typedef union
 {
@@ -880,6 +913,10 @@ typedef union
 }
 gfc_simplify_f;
 
+/* Again like gfc_check_f, these specify the type of the resolution
+   function associated with an intrinsic. The fX are juse like in
+   gfc_check_f. f1m is used for MIN and MAX, s1 is used for abort().
+   */
 
 typedef union
 {

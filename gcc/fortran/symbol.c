@@ -1560,7 +1560,7 @@ done:
    symbols are kept in a singly linked list so that we can commit or
    undo the changes at a later time.
 
-   A symtree may point to a symbol node outside of it's namespace.  In
+   A symtree may point to a symbol node outside of its namespace.  In
    this case, that symbol has been used as a host associated variable
    at some previous time.  */
 

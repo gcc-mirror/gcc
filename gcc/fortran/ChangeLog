@@ -1,3 +1,10 @@
+2004-08-13  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h: Add comments.
+	* parse.c (parse_contained): Fix comment typo.
+	* resolve.c (was_declared): Ditto.
+	* symbol.c: Ditto.
+
 2004-08-11  Paul Brook  <paul@codeourcery.com>
 
 	PR fortran/16917
