@@ -84,11 +84,6 @@ case "$THREADS" in
     esac
     THREADLIB=-lpthread
     ;;
- qt)
-    AC_DEFINE(QUICK_THREADS)
-    INCLUDES="-I${boehm_gc_basedir}/../qthreads"
-    THREADLIB=../qthreads/libgcjcoop.la
-    ;;
  decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
     AC_MSG_ERROR(thread package $THREADS not yet supported)
     ;;

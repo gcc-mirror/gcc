@@ -1186,8 +1186,7 @@
 # if defined(PCR) || defined(SRC_M3) || \
 	defined(SOLARIS_THREADS) || defined(WIN32_THREADS) || \
 	defined(IRIX_THREADS) || defined(LINUX_THREADS) || \
-	defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS) || \
- 	defined(QUICK_THREADS)
+	defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS)
 #   define THREADS
 # endif
 

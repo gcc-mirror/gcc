@@ -2113,14 +2113,6 @@ EOF
     esac
     THREADLIB=-lpthread
     ;;
- qt)
-    cat >> confdefs.h <<\EOF
-#define QUICK_THREADS 1
-EOF
-
-    INCLUDES="-I${boehm_gc_basedir}/../qthreads"
-    THREADLIB=../qthreads/libgcjcoop.la
-    ;;
  decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
     { echo "configure: error: thread package $THREADS not yet supported" 1>&2; exit 1; }
     ;;

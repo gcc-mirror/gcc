@@ -1536,8 +1536,7 @@ void GC_default_push_other_roots()
 
 # if defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
      || defined(IRIX_THREADS) || defined(LINUX_THREADS) \
-     || defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS) \
-     || defined(QUICK_THREADS)
+     || defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS)
 
 extern void GC_push_all_stacks();
 
