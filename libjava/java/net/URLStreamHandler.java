@@ -196,7 +196,11 @@ public abstract class URLStreamHandler
             // need to canonicalise the file path.
             try
               {
+		boolean endsWithSlash = file.charAt(file.length() - 1) == '/';
                 file = new File (file).getCanonicalPath ();
+		if (endsWithSlash
+		    && file.charAt(file.length() - 1) != '/')
+		  file += '/';
               }
             catch (IOException e)
               {

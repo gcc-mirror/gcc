@@ -1,3 +1,10 @@
+2003-09-11  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/URLStreamHandler.java (parseURL): If original file
+	ends with "/", so must canonical result.
+	* java/io/natFilePosix.cc (getCanonicalPath): Clean up snafus
+	with nul-termination and finding previous "/".
+
 2003-09-11  Michael Koch  <konqueror@gmx.de>
 
 	* acconfig.h: Removed most items.
