@@ -1,3 +1,7 @@
+2001-06-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc_release: Tweaks for solaris /bin/sh.
+
 2001-06-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release: Fail for unknown modes instead of ignoring them.

@@ -86,7 +86,7 @@ changedir() {
 # to the working directory.
 
 adjust_dirs() {
-  for x; do
+  for x in $@; do
     echo `basename ${SOURCE_DIRECTORY}`/$x
   done
 }
@@ -96,7 +96,7 @@ adjust_dirs() {
 
 build_sources() {
   # If the WORKING_DIRECTORY already exists, do not risk destroying it.
-  if [ -e ${WORKING_DIRECTORY} ]; then
+  if [ -r ${WORKING_DIRECTORY} ]; then
     error "\`${WORKING_DIRECTORY}' already exists"
   fi
   # Create the WORKING_DIRECTORY.
