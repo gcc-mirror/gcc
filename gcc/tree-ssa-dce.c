@@ -93,6 +93,10 @@ static sbitmap last_stmt_necessary;
    on the Ith edge.  */
 bitmap *control_dependence_map;
 
+/* Vector indicating that a basic block has already had all the edges
+   processed that it is control dependent on.  */
+sbitmap visited_control_parents;
+
 /* Execute CODE for each edge (given number EDGE_NUMBER within the CODE)
    for which the block with index N is control dependent.  */
 #define EXECUTE_IF_CONTROL_DEPENDENT(N, EDGE_NUMBER, CODE)		      \
@@ -482,11 +486,6 @@ find_obviously_necessary_stmts (struct edge_list *el)
 	  NECESSARY (stmt) = 0;
 	  mark_stmt_if_obviously_necessary (stmt, el != NULL);
 	}
-
-      /* Mark this basic block as `not visited'.  A block will be marked
-	 visited when the edges that it is control dependent on have been
-	 marked.  */
-      bb->flags &= ~BB_VISITED;
     }
 
   if (el)
@@ -565,9 +564,10 @@ propagate_necessity (struct edge_list *el)
 	     containing `i' is control dependent on, but only if we haven't
 	     already done so.  */
 	  basic_block bb = bb_for_stmt (i);
-	  if (! (bb->flags & BB_VISITED))
+	  if (bb != ENTRY_BLOCK_PTR
+	      && ! TEST_BIT (visited_control_parents, bb->index))
 	    {
-	      bb->flags |= BB_VISITED;
+	      SET_BIT (visited_control_parents, bb->index);
 	      mark_control_dependent_edges_necessary (bb, el);
 	    }
 	}
@@ -593,9 +593,10 @@ propagate_necessity (struct edge_list *el)
 	      for (k = 0; k < PHI_NUM_ARGS (i); k++)
 		{
 		  basic_block arg_bb = PHI_ARG_EDGE (i, k)->src;
-		  if (! (arg_bb->flags & BB_VISITED))
+		  if (arg_bb != ENTRY_BLOCK_PTR
+		      && ! TEST_BIT (visited_control_parents, arg_bb->index))
 		    {
-		      arg_bb->flags |= BB_VISITED;
+		      SET_BIT (visited_control_parents, arg_bb->index);
 		      mark_control_dependent_edges_necessary (arg_bb, el);
 		    }
 		}
@@ -903,6 +904,7 @@ tree_dce_done (bool aggressive)
 	BITMAP_XFREE (control_dependence_map[i]);
       free (control_dependence_map);
 
+      sbitmap_free (visited_control_parents);
       sbitmap_free (last_stmt_necessary);
     }
 
@@ -938,6 +940,9 @@ perform_tree_ssa_dce (bool aggressive)
       el = create_edge_list ();
       find_all_control_dependences (el);
       timevar_pop (TV_CONTROL_DEPENDENCES);
+
+      visited_control_parents = sbitmap_alloc (last_basic_block);
+      sbitmap_zero (visited_control_parents);
 
       mark_dfs_back_edges ();
     }
