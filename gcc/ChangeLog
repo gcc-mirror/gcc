@@ -1,17 +1,21 @@
+2001-12-31  Richard Henderson  <rth@redhat.com>
+
+	* cfgrtl.c (delete_insn): Check for not NOTE_INSN_DELETED_LABEL
+	before decrementing LABEL_NUSES from a jump table.
+
+	* final.c (alter_subreg): Assign REGNO after changing the rtx code.
+
+	* config/alpha/alpha.c (reg_no_subreg_operand): Reject all
+	non-registers.
+
 2001-12-31  Graham Stott  <grahams@redhat.com>
 
 	* halfpic.h: Remove foward defs of tree_node and rtx_def.
 
-2001-12-31  Graham Stott  <grahams@redhat.com>
-
         * toplev.h: Remove forward def of tree_node, rtx_def.
-
-2001-12-31 Graham Stott  <grahams@redhat.com>
 
 	* except.h: Remove forward def of tree_node, rtx_def and
 	define of tree, rtx. Also remove undefs.
-
-2001-12-30  Graham Stott  <grahams@redhat.com>
 
 	* basic-block.h: Remove forward def of tree_node and
 	define of tree.
@@ -40,11 +44,7 @@
 
 	* c-lex.c: Include tree.h before expr.h
 
-2001-12-31  Graham Stott  <grahams@redhat.com>
-
 	* c-typeck.c: Include rtl.h earlier.
-
-2001-12-31  Graham Stott  <grahams@redhat.com>
 
 	* tree.h (STRIP_NOPS): Remove extraneous semicolon.
 	(STRIP_SIGN_NOPS): Likewise.
@@ -52,22 +52,14 @@
 	(COMPLETE_OR_UNBOUND_ARRAY_TYPE_P): Add Parenthesis around
 	macro paramater.
 
-2001-12-31  Graham Stott  <grahams@redhat.com>
-
 	* final.c (struct bb_list): Delete.
 	(struct bb_str): Likewise.
-
-2001-12-31  Graham Stott  <grahams@redhat.com>
 
        * cfgloop.c (flow_loop_entry_edges_find): Fix typo.
         (flow_loop_exit_edges_find): Likewise.
 
-2001-12-31  Graham Stott  <grahams@redhat.com>
-
 	* gcse.c (gcse_main): Fix typos.
 	(alloc_gcse_mem): Likewise.
-
-2001-12-31  Graham Stott  <grahams@redhat.com>
 
 	* function.h: Remove undefs for rtx and tree.
 

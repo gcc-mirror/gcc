@@ -1330,7 +1330,7 @@ reg_no_subreg_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  if (GET_CODE (op) == SUBREG)
+  if (GET_CODE (op) != REG)
     return 0;
   return register_operand (op, mode);
 }
