@@ -112,6 +112,11 @@ do {								\
 #define DATA_SECTION_ASM_OP	"\t.data"
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 
+#define HP_INIT_ARRAY_SECTION_ASM_OP	"\t.section\t.init"
+#define GNU_INIT_ARRAY_SECTION_ASM_OP	"\t.section\t.init_array"
+#define HP_FINI_ARRAY_SECTION_ASM_OP	"\t.section\t.fini"
+#define GNU_FINI_ARRAY_SECTION_ASM_OP	"\t.section\t.fini_array"
+
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
 do {									\
@@ -220,55 +225,175 @@ do {								\
 } while (0)
 
 #undef TEXT_SECTION_ASM_OP
-#define TEXT_SECTION_ASM_OP "\t.SUBSPA $CODE$\n"
+#define TEXT_SECTION_ASM_OP		"\t.SUBSPA $CODE$\n"
 #undef READONLY_DATA_SECTION_ASM_OP
-#define READONLY_DATA_SECTION_ASM_OP "\t.SUBSPA $LIT$\n"
+#define READONLY_DATA_SECTION_ASM_OP	"\t.SUBSPA $LIT$\n"
 #undef DATA_SECTION_ASM_OP
-#define DATA_SECTION_ASM_OP "\t.SUBSPA $DATA$\n"
+#define DATA_SECTION_ASM_OP		"\t.SUBSPA $DATA$\n"
 #undef BSS_SECTION_ASM_OP
-#define BSS_SECTION_ASM_OP "\t.SUBSPA $BSS$\n"
+#define BSS_SECTION_ASM_OP		"\t.SUBSPA $BSS$\n"
+
+/* We provide explicit defines for CTORS_SECTION_ASM_OP and
+   DTORS_SECTION_ASM_OP since we don't yet have support for
+   named sections with the HP assembler.  */
+#undef CTORS_SECTION_ASM_OP
+#define CTORS_SECTION_ASM_OP "\t.SUBSPA \\.ctors,QUAD=1,ALIGN=8,ACCESS=31"
+#undef DTORS_SECTION_ASM_OP
+#define DTORS_SECTION_ASM_OP "\t.SUBSPA \\.dtors,QUAD=1,ALIGN=8,ACCESS=31"
+
+#define HP_INIT_ARRAY_SECTION_ASM_OP \
+  "\t.SUBSPA \\.init,QUAD=1,ALIGN=8,ACCESS=31"
+#define GNU_INIT_ARRAY_SECTION_ASM_OP \
+  "\t.SUBSPA \\.init_array,QUAD=1,ALIGN=8,ACCESS=31"
+#define HP_FINI_ARRAY_SECTION_ASM_OP \
+  "\t.SUBSPA \\.fini,QUAD=1,ALIGN=8,ACCESS=31"
+#define GNU_FINI_ARRAY_SECTION_ASM_OP \
+  "\t.SUBSPA \\.fini_array,QUAD=1,ALIGN=8,ACCESS=31"
 
 #endif /* USING_ELFOS_H */
 
-/* For the time being, we aren't using init sections.  `P' relocations
-   are currently used for function references.  However, P relocations are
-   treated as data references and data references are bound by dld.sl
-   immediately at program startup.  This causes an abort due to undefined
-   weak symbols in crtbegin.o (e.g., __register_frame_info).  Possibly
-   Q relocations might avoid this problem but the GNU assembler doesn't
-   support them.  */
-#undef INIT_SECTION_ASM_OP
-#undef FINI_SECTION_ASM_OP
+/* The following defines, used to run constructors and destructors with
+   the SOM linker under HP-UX 11, are not needed.  */
+#undef HAS_INIT_SECTION
+#undef LD_INIT_SWITCH
+#undef LD_FINI_SWITCH
 
-#define EH_FRAME_IN_DATA_SECTION 1
-
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC ""
-
+/* The following STARTFILE_SPEC and ENDFILE_SPEC defines provide the
+   magic needed to run initializers and finalizers.  */
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared: %{!symbolic: crt0.o%s}}"
+#define STARTFILE_SPEC \
+  "%{!shared: %{!symbolic: crt0.o%s}} %{static:crtbeginT.o%s} \
+   %{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s}"
 
-/* Since we are not yet using .init and .fini sections, we need to
-   explicitly arrange to run the global constructors and destructors.
-   We could use ldd for this but it depends on LD_LIBRARY_PATH being
-   correctly set.  So, we use the ld init and fini switches. However,
-   we need to support different switches for the GNU and HP linkers.
-   We can't check TARGET_GNU_LD in collect2, so we need a different
-   test.  The +Accept switch is always the first switch when we are
-   using the HP linker (see define for LINK_SPEC).  Checking for it
-   is a somewhat fragile as it depends on internal details of the
-   collect2 program but it is better than testing ld_file_name.
+/* Since HP uses the .init and .fini sections for array initializers
+   and finalizers, we need different defines for INIT_SECTION_ASM_OP
+   and FINI_SECTION_ASM_OP.  With the implementation adopted below,
+   the sections are not actually used.  However, we still must provide
+   defines to select the proper code path.  */
+#undef INIT_SECTION_ASM_OP
+#define INIT_SECTION_ASM_OP
+#undef FINI_SECTION_ASM_OP
+#define FINI_SECTION_ASM_OP
 
-   FIXME: The GNU linker is broken.  The -init/-fini switches don't
-   work and ldd can't determine the dynamic dependences of executables
-   linked with GNU ld.  The init and fini routines are not executed
-   although DT_INIT and DT_FINI appear ok.  As a result, defining
-   LD_INIT_SWITCH and LD_FINI_SWITCH causes more harm than good when
-   using GNU ld.  However, the definitions appear to work fine with
-   the HP linker.  */
-#if 0
-#define LD_INIT_SWITCH (strcmp ("+Accept", ld2_argv[1]) ? "-init" : "+init")
-#define LD_FINI_SWITCH (strcmp ("+Accept", ld2_argv[1]) ? "-fini" : "+fini")
+/* We are using array initializers and don't want calls in the INIT
+   and FINI sections.  */
+#undef CRT_CALL_STATIC_FUNCTION
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)
+
+/* The init_priority attribute is not supported with HP ld.  This could be
+   supported if collect2 was used with LD_INIT_SWITCH.  Unfortunately, this
+   approach doesn't work with GNU ld since HP-UX doesn't support DT_INIT,
+   and therefore the -init and -fini GNU ld switches.  */
+#undef SUPPORTS_INIT_PRIORITY
+#define SUPPORTS_INIT_PRIORITY (TARGET_GNU_LD ? 1 : 0)
+
+/* We use DTOR_LIST_BEGIN to carry a bunch of hacks to allow us to use
+   the init and fini array sections with both the HP and GNU linkers.
+   The linkers setup the required dynamic entries in the dynamic segment
+   and the dynamic linker does the calls.  This approach avoids using
+   collect2.
+
+   The first hack is to implement __do_global_ctors_aux in crtbegin as
+   it needs to be the first entry in the init array so that it is called
+   last.  HP got the order of the init array backwards.  The DT_INIT_ARRAY
+   is supposed to be executed in the same order as the addresses appear in
+   the array.  DT_FINI_ARRAY is supposed to be executed in the opposite
+   order.
+
+   The second hack is stubs for __cxa_finalize and _Jv_RegisterClasses.
+   The HP implementation of undefined weak symbols is broken.  The linker
+   and dynamic loader both search for undefined weak symbols contrary the
+   generic System V ABI.  An undefined weak symbol should resolve to a
+   value of 0 rather than causing an error.  The prototypes for
+   __cxa_finalize and _Jv_RegisterClasses in crtstuff.c are weak when
+   weak is supported (GNU as), so in theory a strong define should override
+   the stub functions provided here.
+
+   The final hack is a set of plabels to implement the effect of
+   CRT_CALL_STATIC_FUNCTION.  HP-UX 11 only supports DI_INIT_ARRAY and
+   DT_FINI_ARRAY and they put the arrays in .init and .fini, rather than
+   in .init_array and .fini_array.  The standard defines for .init and
+   .fini have the execute flag set.  So, the assembler has to be hacked
+   to munge the standard flags for these sections to make them agree
+   with what the HP linker expects.  With the GNU linker, we need to
+   used the .init_array and .fini_array sections.  So, we set up for
+   both just in case.  Once we have built the table, the linker does
+   the rest of the work.
+
+   The order is significant.  Placing __do_global_ctors_aux first in
+   the list, results in it being called last.  User specified initializers,
+   either using the linker +init command or a plabel, run before the
+   initializers specified here.  */
+
+/* We need a __cxa_finalize stub if CRTSTUFFS_O is defined.  */
+#ifdef CRTSTUFFS_O
+#define PA_CXA_FINALIZE_STUB \
+extern void __cxa_finalize (void *) TARGET_ATTRIBUTE_WEAK;		\
+void									\
+__cxa_finalize (void *p __attribute__((unused))) {}
+#else
+#define PA_CXA_FINALIZE_STUB
+#endif
+
+/* We need a _Jv_RegisterClasses stub if JCR_SECTION_NAME is defined.  */
+#ifdef JCR_SECTION_NAME
+#define PA_JV_REGISTERCLASSES_STUB \
+void									\
+_Jv_RegisterClasses (void *p __attribute__((unused))) {}
+#else
+#define PA_JV_REGISTERCLASSES_STUB
+#endif
+
+/* We need to add frame_dummy to the initializer list if USE_EH_FRAME_REGISTRY
+   or JCR_SECTION_NAME is defined.  */
+#if defined(USE_EH_FRAME_REGISTRY) || defined(JCR_SECTION_NAME)
+#define PA_INIT_FRAME_DUMMY_ASM_OP ".dword P%frame_dummy"
+#else
+#define PA_INIT_FRAME_DUMMY_ASM_OP ""
+#endif
+
+#define PA_INIT_FINI_HACK \
+static void __attribute__((used))					\
+__do_global_ctors_aux (void)						\
+{									\
+  func_ptr *p = __CTOR_LIST__;						\
+  while (*(p + 1))							\
+    p++;								\
+  for (; *p != (func_ptr) -1; p--)					\
+    (*p) ();								\
+}									\
+									\
+PA_CXA_FINALIZE_STUB							\
+PA_JV_REGISTERCLASSES_STUB						\
+									\
+asm (HP_INIT_ARRAY_SECTION_ASM_OP);					\
+asm (".dword P%__do_global_ctors_aux");					\
+asm (PA_INIT_FRAME_DUMMY_ASM_OP);					\
+asm (GNU_INIT_ARRAY_SECTION_ASM_OP);					\
+asm (".dword P%__do_global_ctors_aux");					\
+asm (PA_INIT_FRAME_DUMMY_ASM_OP);					\
+asm (HP_FINI_ARRAY_SECTION_ASM_OP);					\
+asm (".dword P%__do_global_dtors_aux");					\
+asm (GNU_FINI_ARRAY_SECTION_ASM_OP);					\
+asm (".dword P%__do_global_dtors_aux")
+
+/* The following two variants of DTOR_LIST_BEGIN are identical to those
+   in crtstuff.c except for the addition of the above init-fini hack.  */
+#ifdef DTORS_SECTION_ASM_OP
+#define DTOR_LIST_BEGIN \
+asm (DTORS_SECTION_ASM_OP);						\
+STATIC func_ptr __DTOR_LIST__[1]					\
+  __attribute__ ((aligned(sizeof(func_ptr))))				\
+  = { (func_ptr) (-1) };						\
+PA_INIT_FINI_HACK
+#else
+#define DTOR_LIST_BEGIN \
+STATIC func_ptr __DTOR_LIST__[1]					\
+  __attribute__ ((section(".dtors"), aligned(sizeof(func_ptr))))	\
+  = { (func_ptr) (-1) };						\
+PA_INIT_FINI_HACK
 #endif
 
 /* If using HP ld do not call pxdb.  Use size as a program that does nothing
