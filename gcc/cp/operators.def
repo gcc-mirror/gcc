@@ -5,7 +5,7 @@
    non-overloadable operators (like the `?:' ternary operator).  
    Writtey by Mark Mitchell <mark@codesourcery.com>
 
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -71,84 +71,84 @@ Boston, MA 02111-1307, USA.  */
    arguments are as for DEF_OPERATOR, but there is no need to provide
    an ASSIGNMENT_P argument; it is always zero.  */
 
-#define DEF_SIMPLE_OPERATOR(NAME, CODE, NEW_MANGLING, OLD_MANGLING, ARITY) \
-  DEF_OPERATOR(NAME, CODE, NEW_MANGLING, OLD_MANGLING, ARITY, 0)
+#define DEF_SIMPLE_OPERATOR(NAME, CODE, MANGLING, ARITY) \
+  DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, 0)
 
 /* Use DEF_ASSN_OPERATOR to define an assignment operator.  Its
    arguments are as for DEF_OPERATOR, but there is no need to provide
    an ASSIGNMENT_P argument; it is always one.  */
 
-#define DEF_ASSN_OPERATOR(NAME, CODE, NEW_MANGLING, OLD_MANGLING, ARITY) \
-  DEF_OPERATOR(NAME, CODE, NEW_MANGLING, OLD_MANGLING, ARITY, 1)
+#define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING, ARITY) \
+  DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, 1)
 
 /* Memory allocation operators.  */
-DEF_SIMPLE_OPERATOR ("new", NEW_EXPR, "nw", "__nw", -1)
-DEF_SIMPLE_OPERATOR ("new []", VEC_NEW_EXPR, "na", "__vn", -1)
-DEF_SIMPLE_OPERATOR ("delete", DELETE_EXPR, "dl", "__dl", -1)
-DEF_SIMPLE_OPERATOR ("delete []", VEC_DELETE_EXPR, "da", "__vd", -1)
+DEF_SIMPLE_OPERATOR ("new", NEW_EXPR, "nw", -1)
+DEF_SIMPLE_OPERATOR ("new []", VEC_NEW_EXPR, "na", -1)
+DEF_SIMPLE_OPERATOR ("delete", DELETE_EXPR, "dl", -1)
+DEF_SIMPLE_OPERATOR ("delete []", VEC_DELETE_EXPR, "da", -1)
 
 /* Unary operators.  */
-DEF_SIMPLE_OPERATOR ("+", CONVERT_EXPR, "ps", "__pl", 1)
-DEF_SIMPLE_OPERATOR ("-", NEGATE_EXPR, "ng", "__mi", 1)
-DEF_SIMPLE_OPERATOR ("&", ADDR_EXPR, "ad", "__ad", 1)
-DEF_SIMPLE_OPERATOR ("*", INDIRECT_REF, "de", "__ml", 1)
-DEF_SIMPLE_OPERATOR ("~", BIT_NOT_EXPR, "co", "__co", 1)
-DEF_SIMPLE_OPERATOR ("!", TRUTH_NOT_EXPR, "nt", "__nt", 1)
-DEF_SIMPLE_OPERATOR ("++", PREINCREMENT_EXPR, "pp", "__pp", 1)
-DEF_SIMPLE_OPERATOR ("--", PREDECREMENT_EXPR, "mm", "__mm", 1)
-DEF_SIMPLE_OPERATOR ("sizeof", SIZEOF_EXPR, "sz", "__sz", 1)
+DEF_SIMPLE_OPERATOR ("+", CONVERT_EXPR, "ps", 1)
+DEF_SIMPLE_OPERATOR ("-", NEGATE_EXPR, "ng", 1)
+DEF_SIMPLE_OPERATOR ("&", ADDR_EXPR, "ad", 1)
+DEF_SIMPLE_OPERATOR ("*", INDIRECT_REF, "de", 1)
+DEF_SIMPLE_OPERATOR ("~", BIT_NOT_EXPR, "co", 1)
+DEF_SIMPLE_OPERATOR ("!", TRUTH_NOT_EXPR, "nt", 1)
+DEF_SIMPLE_OPERATOR ("++", PREINCREMENT_EXPR, "pp", 1)
+DEF_SIMPLE_OPERATOR ("--", PREDECREMENT_EXPR, "mm", 1)
+DEF_SIMPLE_OPERATOR ("sizeof", SIZEOF_EXPR, "sz", 1)
 /* This is an extension.  */
-DEF_SIMPLE_OPERATOR ("alignof", ALIGNOF_EXPR, "v17alignof", "__al", 1)
+DEF_SIMPLE_OPERATOR ("alignof", ALIGNOF_EXPR, "v17alignof", 1)
 
 /* The cast operator.  */
-DEF_SIMPLE_OPERATOR ("", TYPE_EXPR, "cv", OPERATOR_TYPENAME_FORMAT, 1)
+DEF_SIMPLE_OPERATOR ("", TYPE_EXPR, "cv", 1)
 
 /* Binary operators.  */
-DEF_SIMPLE_OPERATOR ("+", PLUS_EXPR, "pl", "__pl", 2)
-DEF_SIMPLE_OPERATOR ("-", MINUS_EXPR, "mi", "__mi", 2)
-DEF_SIMPLE_OPERATOR ("*", MULT_EXPR, "ml", "__ml", 2)
-DEF_SIMPLE_OPERATOR ("/", TRUNC_DIV_EXPR, "dv", "__dv", 2)
-DEF_SIMPLE_OPERATOR ("%", TRUNC_MOD_EXPR, "rm", "__md", 2)
-DEF_SIMPLE_OPERATOR ("&", BIT_AND_EXPR, "an", "__ad", 2)
-DEF_SIMPLE_OPERATOR ("|", BIT_IOR_EXPR, "or", "__or", 2)
-DEF_SIMPLE_OPERATOR ("^", BIT_XOR_EXPR, "eo", "__er", 2)
-DEF_SIMPLE_OPERATOR ("<<", LSHIFT_EXPR, "ls", "__ls", 2)
-DEF_SIMPLE_OPERATOR (">>", RSHIFT_EXPR, "rs", "__rs", 2)
-DEF_SIMPLE_OPERATOR ("==", EQ_EXPR, "eq", "__eq", 2)
-DEF_SIMPLE_OPERATOR ("!=", NE_EXPR, "ne", "__ne", 2)
-DEF_SIMPLE_OPERATOR ("<", LT_EXPR, "lt", "__lt", 2)
-DEF_SIMPLE_OPERATOR (">", GT_EXPR, "gt", "__gt", 2)
-DEF_SIMPLE_OPERATOR ("<=", LE_EXPR, "le", "__le", 2)
-DEF_SIMPLE_OPERATOR (">=", GE_EXPR, "ge", "__ge", 2)
-DEF_SIMPLE_OPERATOR ("&&", TRUTH_ANDIF_EXPR, "aa", "__aa", 2)
-DEF_SIMPLE_OPERATOR ("||", TRUTH_ORIF_EXPR, "oo", "__oo", 2)
-DEF_SIMPLE_OPERATOR (",", COMPOUND_EXPR, "cm", "__cm", 2)
-DEF_SIMPLE_OPERATOR ("->*", MEMBER_REF, "pm", "__rm", 2)
-DEF_SIMPLE_OPERATOR ("->", COMPONENT_REF, "pt", "__rf", 2)
-DEF_SIMPLE_OPERATOR ("[]", ARRAY_REF, "ix", "__vc", 2)
-DEF_SIMPLE_OPERATOR ("++", POSTINCREMENT_EXPR, "pp", "__pp", 2)
-DEF_SIMPLE_OPERATOR ("--", POSTDECREMENT_EXPR, "mm", "__mm", 2)
+DEF_SIMPLE_OPERATOR ("+", PLUS_EXPR, "pl", 2)
+DEF_SIMPLE_OPERATOR ("-", MINUS_EXPR, "mi", 2)
+DEF_SIMPLE_OPERATOR ("*", MULT_EXPR, "ml", 2)
+DEF_SIMPLE_OPERATOR ("/", TRUNC_DIV_EXPR, "dv", 2)
+DEF_SIMPLE_OPERATOR ("%", TRUNC_MOD_EXPR, "rm", 2)
+DEF_SIMPLE_OPERATOR ("&", BIT_AND_EXPR, "an", 2)
+DEF_SIMPLE_OPERATOR ("|", BIT_IOR_EXPR, "or", 2)
+DEF_SIMPLE_OPERATOR ("^", BIT_XOR_EXPR, "eo", 2)
+DEF_SIMPLE_OPERATOR ("<<", LSHIFT_EXPR, "ls", 2)
+DEF_SIMPLE_OPERATOR (">>", RSHIFT_EXPR, "rs", 2)
+DEF_SIMPLE_OPERATOR ("==", EQ_EXPR, "eq", 2)
+DEF_SIMPLE_OPERATOR ("!=", NE_EXPR, "ne", 2)
+DEF_SIMPLE_OPERATOR ("<", LT_EXPR, "lt", 2)
+DEF_SIMPLE_OPERATOR (">", GT_EXPR, "gt", 2)
+DEF_SIMPLE_OPERATOR ("<=", LE_EXPR, "le", 2)
+DEF_SIMPLE_OPERATOR (">=", GE_EXPR, "ge", 2)
+DEF_SIMPLE_OPERATOR ("&&", TRUTH_ANDIF_EXPR, "aa", 2)
+DEF_SIMPLE_OPERATOR ("||", TRUTH_ORIF_EXPR, "oo", 2)
+DEF_SIMPLE_OPERATOR (",", COMPOUND_EXPR, "cm", 2)
+DEF_SIMPLE_OPERATOR ("->*", MEMBER_REF, "pm", 2)
+DEF_SIMPLE_OPERATOR ("->", COMPONENT_REF, "pt", 2)
+DEF_SIMPLE_OPERATOR ("[]", ARRAY_REF, "ix", 2)
+DEF_SIMPLE_OPERATOR ("++", POSTINCREMENT_EXPR, "pp", 2)
+DEF_SIMPLE_OPERATOR ("--", POSTDECREMENT_EXPR, "mm", 2)
 /* These are extensions.  */
-DEF_SIMPLE_OPERATOR ("<?", MIN_EXPR, "v23min", "__mn", 2)
-DEF_SIMPLE_OPERATOR (">?", MAX_EXPR, "v23max", "__mx", 2)
+DEF_SIMPLE_OPERATOR ("<?", MIN_EXPR, "v23min", 2)
+DEF_SIMPLE_OPERATOR (">?", MAX_EXPR, "v23max", 2)
 /* This one is needed for mangling.  */
-DEF_SIMPLE_OPERATOR ("::", SCOPE_REF, "sr", NULL, 2);
+DEF_SIMPLE_OPERATOR ("::", SCOPE_REF, "sr", 2);
 
 /* Assignment operators.  */
-DEF_ASSN_OPERATOR ("=", NOP_EXPR, "aS", "__as", 2)
-DEF_ASSN_OPERATOR ("+=", PLUS_EXPR, "pL", "__apl", 2)
-DEF_ASSN_OPERATOR ("-=", MINUS_EXPR, "mI", "__ami", 2)
-DEF_ASSN_OPERATOR ("*=", MULT_EXPR, "mL", "__aml", 2)
-DEF_ASSN_OPERATOR ("/=", TRUNC_DIV_EXPR, "dV", "__adv", 2)
-DEF_ASSN_OPERATOR ("%=", TRUNC_MOD_EXPR, "rM", "__amd", 2)
-DEF_ASSN_OPERATOR ("&=", BIT_AND_EXPR, "aN", "__aad", 2)
-DEF_ASSN_OPERATOR ("|=", BIT_IOR_EXPR, "oR", "__aor", 2)
-DEF_ASSN_OPERATOR ("^=", BIT_XOR_EXPR, "eO", "__aer", 2)
-DEF_ASSN_OPERATOR ("<<=", LSHIFT_EXPR, "lS", "__als", 2)
-DEF_ASSN_OPERATOR (">>=", RSHIFT_EXPR, "rS", "__ars", 2)
+DEF_ASSN_OPERATOR ("=", NOP_EXPR, "aS", 2)
+DEF_ASSN_OPERATOR ("+=", PLUS_EXPR, "pL", 2)
+DEF_ASSN_OPERATOR ("-=", MINUS_EXPR, "mI", 2)
+DEF_ASSN_OPERATOR ("*=", MULT_EXPR, "mL", 2)
+DEF_ASSN_OPERATOR ("/=", TRUNC_DIV_EXPR, "dV", 2)
+DEF_ASSN_OPERATOR ("%=", TRUNC_MOD_EXPR, "rM", 2)
+DEF_ASSN_OPERATOR ("&=", BIT_AND_EXPR, "aN", 2)
+DEF_ASSN_OPERATOR ("|=", BIT_IOR_EXPR, "oR", 2)
+DEF_ASSN_OPERATOR ("^=", BIT_XOR_EXPR, "eO", 2)
+DEF_ASSN_OPERATOR ("<<=", LSHIFT_EXPR, "lS", 2)
+DEF_ASSN_OPERATOR (">>=", RSHIFT_EXPR, "rS", 2)
 
 /* Ternary operators.  */
-DEF_SIMPLE_OPERATOR ("?:", COND_EXPR, "qu", "__cn", 3)
+DEF_SIMPLE_OPERATOR ("?:", COND_EXPR, "qu", 3)
 
 /* Miscellaneous.  */
-DEF_SIMPLE_OPERATOR ("()", CALL_EXPR, "cl", "__cl", -1)
+DEF_SIMPLE_OPERATOR ("()", CALL_EXPR, "cl", -1)

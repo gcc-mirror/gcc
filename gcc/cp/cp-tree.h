@@ -3256,10 +3256,6 @@ extern varray_type local_classes;
 
 /* Here's where we control how name mangling takes place.  */
 
-#define OPERATOR_ASSIGN_FORMAT "__a%s"
-#define OPERATOR_FORMAT "__%s"
-#define OPERATOR_TYPENAME_FORMAT "__op"
-
 /* Cannot use '$' up front, because this confuses gdb
    (names beginning with '$' are gdb-local identifiers).
 

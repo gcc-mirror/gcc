@@ -12084,17 +12084,17 @@ grok_op_properties (decl, virtualp, friendp)
   else
     do
       {
-#define DEF_OPERATOR(NAME, CODE, NEW_MANGLING, OLD_MANGING, ARITY, ASSN_P)  \
-	if (ansi_opname (CODE) == name)					    \
-	  {								    \
-	    operator_code = CODE;					    \
-	    break;							    \
-	  }								    \
-	else if (ansi_assopname (CODE) == name)				    \
-	  {								    \
-	    operator_code = CODE;					    \
-	    DECL_ASSIGNMENT_OPERATOR_P (decl) = 1;			    \
-	    break;							    \
+#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, ASSN_P)	\
+	if (ansi_opname (CODE) == name)				\
+	  {							\
+	    operator_code = CODE;				\
+	    break;						\
+	  }							\
+	else if (ansi_assopname (CODE) == name)			\
+	  {							\
+	    operator_code = CODE;				\
+	    DECL_ASSIGNMENT_OPERATOR_P (decl) = 1;		\
+	    break;						\
 	  }
 
 #include "operators.def"

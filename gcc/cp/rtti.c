@@ -325,6 +325,14 @@ get_tinfo_decl (type)
   tree name;
   tree d;
 
+  if (COMPLETE_TYPE_P (type) 
+      && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    {
+      cp_error ("cannot create type information for type `%T' because its size is variable", 
+		type);
+      return error_mark_node;
+    }
+
   if (TREE_CODE (type) == OFFSET_TYPE)
     type = TREE_TYPE (type);
   if (TREE_CODE (type) == METHOD_TYPE)

@@ -1,3 +1,14 @@
+2001-04-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (OPERATOR_ASSIGN_FORMAT): Remove.
+	(OPERATOR_FORMAT): Likewise.
+	(OPERATOR_TYPENAME_FORMAT): Likewise.
+	* operators.def: Remove old name-mangling information.
+	* decl.c (grok_op_properties): Adjust accordingly.
+	* lex.c (init_operators): Likewise.
+	* rtti.c (get_tinfo_decl): Issue error messages about types that
+	have variable size.
+
 2001-04-03  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	Correct semantics restrictions checking in throw-expression.
