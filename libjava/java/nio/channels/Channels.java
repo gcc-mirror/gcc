@@ -1,5 +1,5 @@
 /* Channels.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.nio.channels;
 
+import gnu.java.nio.InputStreamChannel;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -69,9 +70,9 @@ public final class Channels
   /**
    * Constructs a channel that reads bytes from the given stream.
    */
-  public static ReadableByteChannel newChannel (InputStream in)
+  public static ReadableByteChannel newChannel(InputStream in)
   {
-    throw new Error ("not implemented");
+    return new InputStreamChannel(in);
   }
   
   /**

@@ -1,5 +1,10 @@
 2003-12-19  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/InputStreamChannel.java: New file.
+	* java/nio/channels/Channels.java (newChannel): Implemented.
+
+2003-12-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/SimpleTimeZone.java
 	(setStartRule): Reformated documentation.
 	(setEndRule): Reworked documentation.
