@@ -1,5 +1,8 @@
 1999-05-19  Tom Tromey  <tromey@cygnus.com>
 
+	* java/util/zip/GZIPOutputStream.java (write(byte[])): New
+	method.
+
 	* java/util/zip/natInflater.cc (inflate): Cast `len' to unsigned.
 	Include <stdlib.h>.
 	* java/util/zip/natDeflater.cc (deflate): Cast `len' to unsigned.
