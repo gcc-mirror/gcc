@@ -1,3 +1,7 @@
+2004-07-26  Tom Tromey  <tromey@redhat.com>
+
+	* tree.h: Fix typo in comment.
+
 2004-07-26  Daniel Jacobowitz  <dan@debian.org>
 
 	PR bootstrap/12804
