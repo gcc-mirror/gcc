@@ -1,3 +1,8 @@
+Fri Jul 17 07:31:04 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.md (extend[sd]fxf2): Accept constants and general reg as
+	source operand if the destination is a floating point register.
+
 Fri Jul 17 07:23:49 1998  Herman ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* reorg.c (check_annul_list_true_false): New function.
