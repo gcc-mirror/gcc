@@ -1,5 +1,15 @@
 2003-05-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/DataInputStream.java
+	(convertFromUTF): Merged comment from classpath.
+	* java/io/PrintStream.java
+	(error_occured): Renamed from error, merged comment from classpath.
+	(PrintStream): No need to initialized error.
+	(checkError): Replace error with error_occurred.
+	(setError): Likewise.
+
+2003-05-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/DataInputStream.java:
 	Reformatted, Replaced < and & with html entitites in documentation.
 	* java/io/File.java:
