@@ -1,6 +1,6 @@
-// GridLayout.java - Grid-based layout engine
+// FlowLayout.java - Grid-based layout engine
 
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -61,20 +61,20 @@ public class FlowLayout implements LayoutManager, Serializable
   }
 
   /** Create a new FlowLayout with center alignment.
-   * Both gaps are set to 0.
+   * Both gaps are set to 5.
    */
   public FlowLayout ()
   {
-    this (CENTER, 0, 0);
+    this (CENTER, 5, 5);
   }
 
   /** Create a new FlowLayout with the alignment.
-   * columns.  Both gaps are set to 0.
+   * columns.  Both gaps are set to 5.
    * @param align Alignment
    */
   public FlowLayout (int align)
   {
-    this (align, 0, 0);
+    this (align, 5, 5);
   }
 
   /** Create a new FlowLayout with the specified alignment and gaps.
@@ -85,16 +85,11 @@ public class FlowLayout implements LayoutManager, Serializable
    */
   public FlowLayout (int align, int hgap, int vgap)
   {
-    if (hgap < 0)
-      throw new IllegalArgumentException ("horizontal gap must be nonnegative");
-    if (vgap < 0)
-      throw new IllegalArgumentException ("vertical gap must be nonnegative");
-    if (align != LEFT && align != RIGHT && align != CENTER
-	&& align != LEADING && align != TRAILING)
-      throw new IllegalArgumentException ("invalid align: " + align);
-    this.align = align;
-    this.hgap = hgap;
-    this.vgap = vgap;
+    // Use methods to set fields so that we can have all the checking
+    // in one place.
+    setVgap (vgap);
+    setHgap (hgap);
+    setAlignment (align);
   }
 
   /** Lay out the container's components based on current settings.
@@ -120,22 +115,29 @@ public class FlowLayout implements LayoutManager, Serializable
 	int new_w = ins.left + hgap + ins.right;
 	int new_h = 0;
 	int j;
-	for (j = i; j < num; ++j)
+	boolean found_one = false;
+	for (j = i; j < num && ! found_one; ++j)
 	  {
 	    // FIXME: this is very inefficient.
 	    Dimension c = comps[i].getPreferredSize ();
+
+	    // Skip invisible items.
+	    if (! comps[i].visible)
+	      continue;
+
 	    int next_w = new_w + hgap + c.width;
-	    if (next_w > d.width)
+	    if (next_w <= d.width || ! found_one)
 	      {
-		// We must start a new row.
+		new_w = next_w;
+		new_h = Math.max (new_h, c.height);
+		found_one = true;
+	      }
+	    else
+	      {
+		// Must start a new row, and we already found an item
 		break;
 	      }
-	    new_w = next_w;
-	    new_h = Math.max (new_h, c.height);
 	  }
-	// We always need at least one item.
-	if (j == i)
-	  ++j;
 
 	// Set the location of each component for this row.
 	int x;
@@ -157,8 +159,11 @@ public class FlowLayout implements LayoutManager, Serializable
 	  {
 	    // FIXME: this is very inefficient.
 	    Dimension c = comps[i].getPreferredSize ();
-	    comps[i].setLocation (x, y);
-	    x += c.width + vgap;
+	    if (comps[i].visible)
+	      {
+		comps[i].setLocation (x, y);
+		x += c.width + vgap;
+	      }
 	  }
 
 	// Advance to next row.
@@ -241,6 +246,9 @@ public class FlowLayout implements LayoutManager, Serializable
     h = 0;
     for (int i = 0; i < num; ++i)
       {
+	if (! comps[i].visible)
+	  continue;
+
 	// FIXME: can we just directly read the fields in Component?
 	// Or will that not work with subclassing?
 	Dimension d;
