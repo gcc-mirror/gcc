@@ -1,3 +1,12 @@
+2004-07-05  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold) <TRUNC_MOD_EXPR>: Optimize unsigned modulus
+	by a power of two into a bit-wise AND, i.e. "X % C" as "X & (C-1)".
+	Normalize "X % C" as "X % -C" for signed modulus and negative C.
+	Optimize "X % -Y" as "X % Y" for signed modulus.
+	<EQ_EXPR>: Recursively call "fold" when transforming "(X % Y) == 0"
+	into "((unsigned) X % Y) == 0".
+
 2004-07-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* sourcebuild.texi (Config Fragments): Use @comma{} in
