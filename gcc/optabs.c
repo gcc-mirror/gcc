@@ -2041,6 +2041,17 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 	}
     }
 
+  /* If there is no negate operation, try doing a subtract from zero.
+     The US Software GOFAST library needs this.  */
+  if (unoptab == neg_optab)
+    {    
+      rtx temp;
+      temp = expand_binop (mode, sub_optab, CONST0_RTX (mode), op0,
+			   target, unsignedp, OPTAB_LIB_WIDEN);
+      if (temp)
+	return temp;
+    }
+      
   return 0;
 }
 
