@@ -1,3 +1,16 @@
+2000-06-08  James E. Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64-protos.h (ia64_output_end_prologue): Add.
+	(output_function_prologue): Fix mispelling.
+	(output_function_prologue, output_function_epilogue): Reorder to
+	match ia64.c definition order.
+	* config/ia64/ia64.c (ia64_expand_prologue): Add comment.
+	(ia64_expand_epilogue): Set RTX_FRAME_RELATED_P on stack restore insns.
+	Use r3 instead of r2 for large stack restores.
+	(ia64_output_end_prologue): New function.
+	(process_set): Emit ".restore sp" for epilogue stack restores.
+	* config/ia64/ia64.h (FUNCTION_END_PROLOGUE): Define.
+	
 2000-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* dbxout.c (dbxout_type_fields): Don't segfault on fields with

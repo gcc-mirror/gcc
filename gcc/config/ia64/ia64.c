@@ -1001,6 +1001,8 @@ ia64_expand_prologue ()
 	offset = GEN_INT (-frame_size);
       else
 	{
+	  /* ??? We use r2 to tell process_set that this is a stack pointer
+	     decrement.  See also ia64_expand_epilogue.  */
 	  offset = gen_rtx_REG (DImode, GR_REG (2));
 	  insn = emit_insn (gen_movdi (offset, GEN_INT (-frame_size)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -1033,6 +1035,8 @@ ia64_expand_prologue ()
 void
 ia64_expand_epilogue ()
 {
+  rtx insn;
+
   /* Restore registers from frame.  */
   save_restore_insns (0);
 
@@ -1053,8 +1057,10 @@ ia64_expand_epilogue ()
 	/* If there is a frame pointer, then we need to make the stack pointer
 	   restore depend on the frame pointer, so that the stack pointer
 	   restore won't be moved up past fp-relative loads from the frame.  */
-	emit_insn (gen_epilogue_deallocate_stack (stack_pointer_rtx,
-						  hard_frame_pointer_rtx));
+	insn
+	  = emit_insn (gen_epilogue_deallocate_stack (stack_pointer_rtx,
+						      hard_frame_pointer_rtx));
+	RTX_FRAME_RELATED_P (insn) = 1;
       }
     else
       {
@@ -1067,11 +1073,14 @@ ia64_expand_epilogue ()
 	      offset = GEN_INT (frame_size);
 	    else
 	      {
-		offset = gen_rtx_REG (DImode, GR_REG (2));
+		/* ??? We use r3 to tell process_set that this is a stack
+		   pointer increment.  See also ia64_expand_prologue.  */
+		offset = gen_rtx_REG (DImode, GR_REG (3));
 		emit_insn (gen_movdi (offset, GEN_INT (frame_size)));
 	      }
-	    emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-				   offset));
+	    insn = emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+					  offset));
+	    RTX_FRAME_RELATED_P (insn) = 1;
 	  }
       }
     }
@@ -1134,6 +1143,18 @@ ia64_function_prologue (file, size)
     }
   if (insn == NULL_RTX)
     fprintf (file, "\t.prologue\n");
+}
+
+/* Emit the .body directive at the scheduled end of the prologue.  */
+
+void
+ia64_output_end_prologue (file)
+     FILE *file;
+{
+  if (!flag_unwind_tables && (!flag_exceptions || exceptions_via_longjmp))
+    return;
+
+  fputs ("\t.body\n", file);
 }
 
 /* Emit the function epilogue.  */
@@ -3021,19 +3042,40 @@ process_set (asm_out_file, pat)
 	  rtx op1 = XEXP (src, 1);
 	  if (op0 == dest && GET_CODE (op1) == CONST_INT)
 	    {
-	      fputs ("\t.fframe ", asm_out_file);
-	      fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, -INTVAL (op1));
-	      fputc ('\n', asm_out_file);
-	      frame_size = INTVAL (op1);
-	      return 1;
+	      if (INTVAL (op1) < 0)
+		{
+		  fputs ("\t.fframe ", asm_out_file);
+		  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC,
+			   -INTVAL (op1));
+		  fputc ('\n', asm_out_file);
+		  frame_size = INTVAL (op1);
+		}
+	      else
+		fprintf (asm_out_file, "\t.restore sp\n");
 	    }
 	  else if (op0 == dest && GET_CODE (op1) == REG)
 	    {
-	      fprintf (asm_out_file, "\t.vframe r%d\n", REGNO (op1));
-	      frame_size = 0;
-	      return 1;
+	      /* ia64_expand_prologue uses r2 for stack pointer decrements,
+		 ia64_expand_epilogue uses r3 for stack pointer increments.  */
+	      if (REGNO (op1) == GR_REG (2))
+		{
+		  fprintf (asm_out_file, "\t.vframe r%d\n", REGNO (op1));
+		  frame_size = 0;
+		}
+	      else if (REGNO (op1) == GR_REG (3))
+		fprintf (asm_out_file, "\t.restore sp\n");
+	      else
+		abort ();
 	    }
+	  else
+	    abort ();
 	}
+      else if (GET_CODE (src) == REG && REGNO (src) == FRAME_POINTER_REGNUM)
+	fprintf (asm_out_file, "\t.restore sp\n");
+      else
+	abort ();
+
+      return 1;
     }
   /* Look for a frame offset.  */
   if (GET_CODE (dest) == REG)
