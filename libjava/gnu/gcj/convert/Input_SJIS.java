@@ -18,7 +18,7 @@ public class Input_SJIS extends BytesToUnicode
 {
   public String getName() { return "SJIS"; }
 
-  public native int read (char[] outbuffer, int outpos, int outlength);
+  public native int read (char[] outbuffer, int outpos, int count);
 
   int first_byte;
 }

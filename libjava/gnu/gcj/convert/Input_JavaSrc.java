@@ -27,14 +27,14 @@ public class Input_JavaSrc extends BytesToUnicode
 
   int value;
 
-  public int read (char[] outbuffer, int outpos, int outlength)
+  public int read (char[] outbuffer, int outpos, int count)
   {
     int origpos = outpos;
     for (;;)
       {
 	if (inpos >= inlength)
 	  break;
-	if (outpos >= outlength)
+	if (outpos - origpos >= count)
 	  break;
 	char b = (char) (inbuffer[inpos++] & 0xFF);
 	switch (state)

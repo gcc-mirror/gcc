@@ -91,15 +91,17 @@ public abstract class BytesToUnicode
    * bytes start at inbuffer[inpos], and end at inbuffer[inlength-1].
    * @param outbuffer buffer for the converted character
    * @param outpos position in buffer to start putting converted characters
-   * @param outlength the maximum number of characters to convert
+   * @param count the maximum number of characters to convert
    * @return number of chars placed in outbuffer.
    * Also, this.inpos is incremented by the number of bytes consumed.
    *
    * (Note the asymmetry in that the input upper bound is inbuffer[inlength-1],
-   * while the output upper bound is outbuffer[outpos+outlength-1].  The
+   * while the output upper bound is outbuffer[outpos+count-1].  The
    * justification is that inlength is like the count field of a
-   * BufferedInputStream, while the outlength parameter is like the
-   * length parameter of a read request.)
+   * BufferedInputStream, while the count parameter is like the
+   * length parameter of a read request.)  The count parameter is
+   * also defined to be <= outbuffer.length - outpos (per the specification
+   * of the length parameter for a read request).
    */
-  public abstract int read (char[] outbuffer, int outpos, int outlength);
+  public abstract int read (char[] outbuffer, int outpos, int count);
 }

@@ -197,7 +197,7 @@ public class BufferedReader extends Reader
       }
   }
 
-  /* Read more data into the buffer.  Update pos and limit appropriatly.
+  /* Read more data into the buffer.  Update pos and limit appropriately.
      Assumes pos==limit initially.  May invalidate the mark if read too much.
      Return number of chars read (never 0), or -1 on eof. */
   private int fill() throws IOException
@@ -214,7 +214,7 @@ public class BufferedReader extends Reader
 
     if (markPos >= 0 && limit == buffer.length)
       markPos = -1;
-    if (markPos <= 0)
+    if (markPos < 0)
       pos = limit = 0;
     int count = in.read(buffer, limit, buffer.length - limit);
     if (count > 0)
