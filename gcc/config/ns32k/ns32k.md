@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, ns32000 Version
-;;  Copyright (C) 1988, 1994 Free Software Foundation, Inc.
+;;  Copyright (C) 1988, 1994, 1996 Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 ;; This file is part of GNU CC.
@@ -858,6 +858,47 @@
   "GET_CODE (operands[1]) == CONST_INT"
   "addr %c1(sp),%0")
 
+(define_insn "adddi3"
+  [(set (match_operand:DI 0 "general_operand" "=ro")
+	(plus:DI (match_operand:DI 1 "general_operand" "%0")
+		 (match_operand:DI 2 "general_operand" "ron")))]
+  ""
+  "*
+{
+  rtx low[3], high[3], xops[4];
+  split_di (operands, 3, low, high);
+  xops[0] = low[0];
+  xops[1] = high[0];
+  xops[2] = low[2];
+  xops[3] = high[2];
+
+  if (GET_CODE (xops[2]) == CONST_INT)
+    {
+      int i = INTVAL (xops[2]);
+
+      if (i <= 7 && i >= -8) 
+        {
+          if (i == 0)
+	    {
+	      i = INTVAL (xops[3]);
+	      if (i <= 7 && i >= -8)
+                output_asm_insn (\"addqd %$%3,%1\", xops);
+	      else
+                output_asm_insn (\"addd %$%3,%1\", xops);
+	    }
+	  else
+	    {
+              output_asm_insn (\"addqd %$%2,%0\", xops);
+              output_asm_insn (\"addcd %$%3,%1\", xops);
+	    }
+	  return \"\";
+	}
+    }
+  output_asm_insn (\"addd %2,%0\", xops);
+  output_asm_insn (\"addcd %3,%1\", xops);
+  return \"\";
+}")
+
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "general_operand" "=g,=g&<")
 	(plus:SI (match_operand:SI 1 "general_operand" "%0,r")
@@ -969,6 +1010,47 @@
       && INTVAL(operands[0]) < 64 && INTVAL(operands[0]) > -64)
     return \"adjspb %$%0\";
   return \"adjspd %$%0\";
+}")
+
+(define_insn "subdi3"
+  [(set (match_operand:DI 0 "general_operand" "=ro")
+	(minus:DI (match_operand:DI 1 "general_operand" "0")
+		  (match_operand:DI 2 "general_operand" "ron")))]
+  ""
+  "*
+{
+  rtx low[3], high[3], xops[4];
+  split_di (operands, 3, low, high);
+  xops[0] = low[0];
+  xops[1] = high[0];
+  xops[2] = low[2];
+  xops[3] = high[2];
+
+  if (GET_CODE (xops[2]) == CONST_INT)
+    {
+      int i = INTVAL (xops[2]);
+
+      if (i <= 8 && i >= -7)
+        {
+          if (i == 0)
+	    {
+	      i = INTVAL (xops[3]);
+	      if (i <= 8 && i >= -7)
+                output_asm_insn (\"addqd %$%n3,%1\", xops);
+	      else
+                output_asm_insn (\"subd %$%3,%1\", xops);
+	    }
+	  else
+	    {
+              output_asm_insn (\"addqd %$%n2,%0\", xops);
+              output_asm_insn (\"subcd %$%3,%1\", xops);
+	    }
+	  return \"\";
+	}
+    }
+  output_asm_insn (\"subd %2,%0\", xops);
+  output_asm_insn (\"subcd %3,%1\", xops);
+  return \"\";
 }")
 
 (define_insn "subsi3"
@@ -1389,6 +1471,34 @@
 	(neg:SF (match_operand:SF 1 "general_operand" "fmF")))]
   "TARGET_32081"
   "negf %1,%0")
+
+(define_insn "negdi2"
+  [(set (match_operand:DI 0 "general_operand" "=ro")
+	(neg:DI (match_operand:DI 1 "general_operand" "ro")))]
+  ""
+  "*
+{
+  rtx low[2], high[2], xops[4];
+  split_di (operands, 2, low, high);
+  xops[0] = low[0];
+  xops[1] = high[0];
+  xops[2] = low[1];
+  xops[3] = high[1];
+
+  if (rtx_equal_p (operands[0], operands[1]))
+    {
+      output_asm_insn (\"negd %3,%1\", xops);
+      output_asm_insn (\"negd %2,%0\", xops);
+      output_asm_insn (\"subcd %$0,%1\", xops);
+    }
+  else
+    {
+      output_asm_insn (\"negd %2,%0\", xops);
+      output_asm_insn (\"movqd %$0,%1\", xops);
+      output_asm_insn (\"subcd %3,%1\", xops);
+    }
+  return \"\"; 
+}")
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "general_operand" "=g<")
