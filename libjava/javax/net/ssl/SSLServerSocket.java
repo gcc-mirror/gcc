@@ -1,4 +1,3 @@
-// THIS IS A GENERATED FILE. DO NOT EDIT. -*- buffer-read-only: t -*-
 /* SSLServerSocket.java -- a server socket for SSL connections.
    Copyright (C) 2004 Free Software Foundation, Inc.
 
