@@ -105,7 +105,7 @@ ffename_find (ffenameSpace ns, ffelexToken t)
   if (found)
     return n;
 
-  newn = (ffename) malloc_new_ks (ns->pool, "FFENAME name", sizeof (*n));
+  newn = malloc_new_ks (ns->pool, "FFENAME name", sizeof (*n));
   newn->next = n;
   newn->previous = n->previous;
   n->previous = newn;
@@ -232,8 +232,7 @@ ffename_space_new (mallocPool pool)
 {
   ffenameSpace ns;
 
-  ns = (ffenameSpace) malloc_new_ks (pool, "FFENAME space",
-				     sizeof (*ns));
+  ns = malloc_new_ks (pool, "FFENAME space", sizeof (*ns));
   ns->first = (ffename) &ns->first;
   ns->last = (ffename) &ns->first;
   ns->pool = pool;

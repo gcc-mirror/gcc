@@ -1,3 +1,8 @@
+2003-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/fixfixes.c fixinc/fixincl.c fixinc/fixlib.c
+	fixinc/server.c objc/objc-act.c: Remove unnecessary casts.
+
 2003-07-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (legitimize_pic_address): Access local symbols 

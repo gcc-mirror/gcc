@@ -111,7 +111,7 @@ load_data (fp)
           size_t off = (size_t) (pz_scan - pz_text);
 	  
           text_size += 4096;
-          pz_text = xrealloc ((void *) pz_text, text_size);
+          pz_text = xrealloc (pz_text, text_size);
           pz_scan = pz_text + off;
         }
     }
@@ -126,7 +126,7 @@ load_data (fp)
   while ((pz_scan > pz_text) && ISSPACE (pz_scan[-1]))
     pz_scan--;
   *pz_scan = NUL;
-  return xrealloc ((void *) pz_text, strlen (pz_text) + 1);
+  return xrealloc (pz_text, strlen (pz_text) + 1);
 }
 
 

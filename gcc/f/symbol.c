@@ -206,8 +206,7 @@ ffesymbol_new_ (ffename n)
 
   assert (n != NULL);
 
-  s = (ffesymbol) malloc_new_ks (FFESYMBOL_SPACE_POOL_, "FFESYMBOL",
-				 sizeof (*s));
+  s = malloc_new_ks (FFESYMBOL_SPACE_POOL_, "FFESYMBOL", sizeof (*s));
   s->name = n;
   s->other_space_name = NULL;
 #if FFEGLOBAL_ENABLED
@@ -258,8 +257,8 @@ ffesymbol_new_ (ffename n)
       return s;
     }
 
-  r = (ffesymbolRetract_) malloc_new_kp (ffesymbol_retract_pool_,
-					 "FFESYMBOL retract", sizeof (*r));
+  r = malloc_new_kp (ffesymbol_retract_pool_, "FFESYMBOL retract",
+		     sizeof (*r));
   r->next = NULL;
   r->command = FFESYMBOL_retractcommandDELETE_;
   r->live = s;
@@ -1104,13 +1103,13 @@ ffesymbol_signal_change (ffesymbol s)
   if (!ffesymbol_retractable_ || s->have_old)
     return;
 
-  r = (ffesymbolRetract_) malloc_new_kp (ffesymbol_retract_pool_,
-					 "FFESYMBOL retract", sizeof (*r));
+  r = malloc_new_kp (ffesymbol_retract_pool_, "FFESYMBOL retract",
+		     sizeof (*r));
   r->next = NULL;
   r->command = FFESYMBOL_retractcommandRETRACT_;
   r->live = s;
-  r->symbol = sym = (ffesymbol) malloc_new_ks (FFESYMBOL_SPACE_POOL_,
-					       "FFESYMBOL", sizeof (*sym));
+  r->symbol = sym = malloc_new_ks (FFESYMBOL_SPACE_POOL_,
+				   "FFESYMBOL", sizeof (*sym));
   *sym = *s;			/* Make an exact copy of the symbol in case
 				   we need it back. */
   sym->info = ffeinfo_use (s->info);

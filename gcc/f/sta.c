@@ -247,9 +247,8 @@ ffesta_save_ (ffelexToken t)
   if (saved_tokens == NULL)
     {
       saved_tokens
-	= (ffelexToken *) malloc_new_ksr (malloc_pool_image (),
-					  "FFEST Saved Tokens",
-			     (max_saved_tokens = 8) * sizeof (ffelexToken));
+	= malloc_new_ksr (malloc_pool_image (), "FFEST Saved Tokens",
+			  (max_saved_tokens = 8) * sizeof (ffelexToken));
       /* Start off with 8. */
     }
   else if (num_saved_tokens >= max_saved_tokens)
@@ -258,10 +257,9 @@ ffesta_save_ (ffelexToken t)
       max_saved_tokens <<= 1;	/* Multiply by two. */
       assert (max_saved_tokens > toknum);
       saved_tokens
-	= (ffelexToken *) malloc_resize_ksr (malloc_pool_image (),
-					     saved_tokens,
-				    max_saved_tokens * sizeof (ffelexToken),
-					     toknum * sizeof (ffelexToken));
+	= malloc_resize_ksr (malloc_pool_image (), saved_tokens,
+			     max_saved_tokens * sizeof (ffelexToken),
+			     toknum * sizeof (ffelexToken));
     }
 
   *(saved_tokens + num_saved_tokens++) = ffelex_token_use (t);
@@ -1319,10 +1317,8 @@ ffesta_init_0 (void)
   ffestaPossible_ ptr;
   int i;
 
-  ptr = (ffestaPossible_) malloc_new_kp (malloc_pool_image (),
-					 "FFEST possibles",
-					 FFESTA_maxPOSSIBLES_
-					 * sizeof (*ptr));
+  ptr = malloc_new_kp (malloc_pool_image (), "FFEST possibles",
+		       FFESTA_maxPOSSIBLES_ * sizeof (*ptr));
 
   for (i = 0; i < FFESTA_maxPOSSIBLES_; ++i)
     ffesta_possibles_[i] = ptr++;

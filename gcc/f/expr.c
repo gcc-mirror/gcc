@@ -8488,8 +8488,7 @@ ffeexpr_expr_new_ (void)
 {
   ffeexprExpr_ e;
 
-  e = (ffeexprExpr_) malloc_new_ks (ffe_pool_program_unit (), "FFEEXPR expr",
-				    sizeof (*e));
+  e = malloc_new_ks (ffe_pool_program_unit (), "FFEEXPR expr", sizeof (*e));
   e->previous = NULL;
   e->type = FFEEXPR_exprtypeUNKNOWN_;
   e->token = NULL;

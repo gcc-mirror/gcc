@@ -319,7 +319,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	  else if (argv[i][1] == 'O')
 	    saw_O = 1;
 	  else if ((argv[i][2] == '\0'
-		    && (char *)strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
+		    && strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
 		   || strcmp (argv[i], "-Tdata") == 0
 		   || strcmp (argv[i], "-MT") == 0
 		   || strcmp (argv[i], "-MF") == 0)
@@ -337,7 +337,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	    }
 	  else if (library != 0 
 		   && ((argv[i][2] == '\0'
-			&& (char *) strchr ("cSEM", argv[i][1]) != NULL)
+			&& strchr ("cSEM", argv[i][1]) != NULL)
 		       || strcmp (argv[i], "-MM") == 0))
 	    {
 	      /* Don't specify libraries if we won't link, since that would

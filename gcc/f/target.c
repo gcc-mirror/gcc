@@ -2244,8 +2244,7 @@ ffetarget_real1 (ffetargetReal1 *value, ffelexToken integer,
 #undef dotoktxt
 
   if (sz > ARRAY_SIZE (ffetarget_string_))
-    p = ptr = (char *) malloc_new_ks (malloc_pool_image (), "ffetarget_real1",
-				      sz);
+    p = ptr = malloc_new_ks (malloc_pool_image (), "ffetarget_real1", sz);
 
 #define dotoktxt(x) if (x != NULL)				   \
 		  {						   \
@@ -2327,7 +2326,7 @@ ffetarget_real2 (ffetargetReal2 *value, ffelexToken integer,
 #undef dotoktxt
 
   if (sz > ARRAY_SIZE (ffetarget_string_))
-    p = ptr = (char *) malloc_new_ks (malloc_pool_image (), "ffetarget_real1", sz);
+    p = ptr = malloc_new_ks (malloc_pool_image (), "ffetarget_real1", sz);
 
 #define dotoktxt(x) if (x != NULL)				   \
 		  {						   \

@@ -723,8 +723,8 @@ ffedata_convert_ (ffebld source, ffelexToken source_token,
 
       if (max > ffedata_convert_cache_max_)
 	{
-	  cache = (ffedataConvertCache_) malloc_new_ks (malloc_pool_image (),
-				    "FFEDATA cache", max * sizeof (*cache));
+	  cache = malloc_new_ks (malloc_pool_image (),
+				 "FFEDATA cache", max * sizeof (*cache));
 	  if (ffedata_convert_cache_max_ != 0)
 	    {
 	      memcpy (cache, ffedata_convert_cache_,

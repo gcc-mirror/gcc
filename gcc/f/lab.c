@@ -141,7 +141,7 @@ ffelab_new (ffelabValue v)
   ffelab l;
 
   ++ffelab_num_news_;
-  l = (ffelab) malloc_new_ks (ffe_pool_any_unit (), "FFELAB label", sizeof (*l));
+  l = malloc_new_ks (ffe_pool_any_unit (), "FFELAB label", sizeof (*l));
   l->next = ffelab_list_;
   l->hook = FFECOM_labelNULL;
   l->value = v;

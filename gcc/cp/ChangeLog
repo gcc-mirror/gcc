@@ -1,3 +1,8 @@
+2003-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c class.c decl.c decl2.c g++spec.c lex.c parser.c pt.c rtti.c
+	semantics.c typeck.c: Remove unnecessary casts.
+
 2003-07-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (finish_non_static_data_member): Add object param.

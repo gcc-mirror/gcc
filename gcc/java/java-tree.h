@@ -946,8 +946,7 @@ union lang_tree_node
   if (DECL_LANG_SPECIFIC (T) == NULL)				\
     {								\
       DECL_LANG_SPECIFIC ((T))					\
-	= ((struct lang_decl *)					\
-	   ggc_alloc_cleared (sizeof (struct lang_decl)));	\
+	= ggc_alloc_cleared (sizeof (struct lang_decl));	\
       DECL_LANG_SPECIFIC (T)->desc = LANG_DECL_VAR;		\
     }
 
@@ -1050,9 +1049,8 @@ struct lang_decl GTY(())
 #define MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC(T)				 \
   if (TYPE_LANG_SPECIFIC ((T)) == NULL)					 \
     {									 \
-      TYPE_LANG_SPECIFIC ((T)) = 					 \
-	((struct lang_type *) 						 \
-         ggc_alloc_cleared (sizeof (struct lang_type)));		 \
+      TYPE_LANG_SPECIFIC ((T)) 					 	 \
+        = ggc_alloc_cleared (sizeof (struct lang_type));		 \
     }
 
 #define TYPE_FINIT_STMT_LIST(T)  (TYPE_LANG_SPECIFIC(T)->finit_stmt_list)

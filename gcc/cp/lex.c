@@ -354,7 +354,7 @@ init_reswords (void)
   int mask = ((flag_no_asm ? D_ASM : 0)
 	      | (flag_no_gnu_keywords ? D_EXT : 0));
 
-  ridpointers = (tree *) ggc_calloc ((int) RID_MAX, sizeof (tree));
+  ridpointers = ggc_calloc ((int) RID_MAX, sizeof (tree));
   for (i = 0; i < ARRAY_SIZE (reswords); i++)
     {
       id = get_identifier (reswords[i].word);
@@ -643,7 +643,7 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
     }
   if (ifiles == 0)
     {
-      ifiles = (struct impl_files*) xmalloc (sizeof (struct impl_files));
+      ifiles = xmalloc (sizeof (struct impl_files));
       ifiles->filename = main_filename;
       ifiles->next = impl_file_chain;
       impl_file_chain = ifiles;
@@ -756,7 +756,7 @@ retrofit_lang_decl (tree t)
   else
     size = sizeof (struct lang_decl_flags);
 
-  ld = (struct lang_decl *) ggc_alloc_cleared (size);
+  ld = ggc_alloc_cleared (size);
 
   ld->decl_flags.can_be_full = CAN_HAVE_FULL_LANG_DECL_P (t) ? 1 : 0;
   ld->decl_flags.u1sel = TREE_CODE (t) == NAMESPACE_DECL ? 1 : 0;
@@ -792,7 +792,7 @@ cxx_dup_lang_specific_decl (tree node)
     size = sizeof (struct lang_decl_flags);
   else
     size = sizeof (struct lang_decl);
-  ld = (struct lang_decl *) ggc_alloc (size);
+  ld = ggc_alloc (size);
   memcpy (ld, DECL_LANG_SPECIFIC (node), size);
   DECL_LANG_SPECIFIC (node) = ld;
 
@@ -829,7 +829,7 @@ copy_lang_type (tree node)
     size = sizeof (struct lang_type);
   else
     size = sizeof (struct lang_type_ptrmem);
-  lt = (struct lang_type *) ggc_alloc (size);
+  lt = ggc_alloc (size);
   memcpy (lt, TYPE_LANG_SPECIFIC (node), size);
   TYPE_LANG_SPECIFIC (node) = lt;
 
@@ -862,8 +862,7 @@ cxx_make_type (enum tree_code code)
     {
       struct lang_type *pi;
 
-      pi = ((struct lang_type *)
-	    ggc_alloc_cleared (sizeof (struct lang_type)));
+      pi = ggc_alloc_cleared (sizeof (struct lang_type));
 
       TYPE_LANG_SPECIFIC (t) = pi;
       pi->u.c.h.is_lang_type_class = 1;

@@ -5380,8 +5380,7 @@ init_class_processing (void)
   current_class_depth = 0;
   current_class_stack_size = 10;
   current_class_stack 
-    = (class_stack_node_t) xmalloc (current_class_stack_size 
-				    * sizeof (struct class_stack_node));
+    = xmalloc (current_class_stack_size * sizeof (struct class_stack_node));
   VARRAY_TREE_INIT (local_classes, 8, "local_classes");
 
   ridpointers[(int) RID_PUBLIC] = access_public_node;
@@ -5426,9 +5425,9 @@ pushclass (tree type, bool modify)
     {
       current_class_stack_size *= 2;
       current_class_stack
-	= (class_stack_node_t) xrealloc (current_class_stack,
-					 current_class_stack_size
-					 * sizeof (struct class_stack_node));
+	= xrealloc (current_class_stack,
+		    current_class_stack_size
+		    * sizeof (struct class_stack_node));
     }
 
   /* Insert a new entry on the class stack.  */
@@ -6205,8 +6204,7 @@ get_vfield_name (tree type)
     binfo = BINFO_BASETYPE (binfo, 0);
 
   type = BINFO_TYPE (binfo);
-  buf = (char *) alloca (sizeof (VFIELD_NAME_FORMAT)
-			 + TYPE_NAME_LENGTH (type) + 2);
+  buf = alloca (sizeof (VFIELD_NAME_FORMAT) + TYPE_NAME_LENGTH (type) + 2);
   sprintf (buf, VFIELD_NAME_FORMAT,
 	   IDENTIFIER_POINTER (constructor_name (type)));
   return get_identifier (buf);
