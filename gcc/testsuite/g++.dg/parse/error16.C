@@ -2,7 +2,7 @@
 
 struct A
 {
-  struct B {}; // { dg-error "" }
+  struct B {}; // { dg-error "previous" }
 };
 
-struct A::B{}; // { dg-error "" }
+struct A::B{}; // { dg-error "redefinition" }

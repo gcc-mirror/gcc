@@ -12857,7 +12857,8 @@ cp_parser_class_head (cp_parser* parser,
     {
       error ("redefinition of %q#T", type);
       cp_error_at ("previous definition of %q#T", type);
-      type = error_mark_node;
+      type = NULL_TREE;
+      goto done;
     }
 
   /* We will have entered the scope containing the class; the names of
