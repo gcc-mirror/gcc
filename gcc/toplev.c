@@ -247,6 +247,7 @@ struct dump_file_info
 
 enum dump_file_index
 {
+  DFI_cgraph,
   DFI_rtl,
   DFI_sibling,
   DFI_eh,
@@ -294,11 +295,12 @@ enum dump_file_index
    Remaining -d letters:
 
 	"            m   q         "
-	"         JK   O Q   UV  YZ"
+	"         JK   O Q    V  YZ"
 */
 
 static struct dump_file_info dump_file[DFI_MAX] =
 {
+  { "cgraph",	'U', 0, 0, 0 },
   { "rtl",	'r', 0, 0, 0 },
   { "sibling",  'i', 0, 0, 0 },
   { "eh",	'h', 0, 0, 0 },
@@ -1567,6 +1569,7 @@ static const lang_independent_options W_options[] =
 FILE *asm_out_file;
 FILE *aux_info_file;
 FILE *rtl_dump_file = NULL;
+FILE *cgraph_dump_file = NULL;
 
 /* Set up a default flag_random_seed and local_tick, unless the user
    already specified one.  */
@@ -4944,9 +4947,22 @@ do_compile (void)
       if (!no_backend)
 	backend_init ();
 
+      if (flag_unit_at_a_time)
+	{
+          open_dump_file (DFI_cgraph, NULL);
+	  cgraph_dump_file = rtl_dump_file;
+	  rtl_dump_file = NULL;
+	}
       /* Language-dependent initialization.  Returns true on success.  */
       if (lang_dependent_init (main_input_filename))
 	compile_file ();
+
+      if (flag_unit_at_a_time)
+	{
+	  rtl_dump_file = cgraph_dump_file;
+	  cgraph_dump_file = NULL;
+          close_dump_file (DFI_cgraph, NULL, NULL_RTX);
+	}
 
       finalize ();
     }

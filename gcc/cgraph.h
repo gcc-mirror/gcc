@@ -126,6 +126,7 @@ extern GTY(()) struct cgraph_node *cgraph_nodes;
 extern GTY(()) int cgraph_n_nodes;
 extern bool cgraph_global_info_ready;
 extern GTY(()) struct cgraph_node *cgraph_nodes_queue;
+extern FILE *cgraph_dump_file;
 
 extern GTY(()) int cgraph_varpool_n_nodes;
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
@@ -142,6 +143,7 @@ bool cgraph_calls_p			PARAMS ((tree, tree));
 struct cgraph_local_info *cgraph_local_info PARAMS ((tree));
 struct cgraph_global_info *cgraph_global_info PARAMS ((tree));
 struct cgraph_rtl_info *cgraph_rtl_info PARAMS ((tree));
+const char * cgraph_node_name PARAMS ((struct cgraph_node *));
 
 struct cgraph_varpool_node *cgraph_varpool_node (tree decl);
 struct cgraph_varpool_node *cgraph_varpool_node_for_identifier (tree id);

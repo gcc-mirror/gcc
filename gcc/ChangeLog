@@ -1,3 +1,22 @@
+Wed Jul  9 03:00:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_node_name): New function.
+	(dump_cgraph): Use it.
+	* cgraph.h (cgraph_dump_file): Declare.
+	(cgraph_node_name): Declare.
+	* cgraphunit.c: Include timevar.h
+	(cgraph_finalize_compilation_unit): Use timevar; reorganize dumps.
+	(cgraph_optimize_function): Use TV_INTEGRATION.
+	(cgraph_mark_local_functions): reorganize dumps.
+	(cgraph_mark_functions_to_inline_once): Likewise.
+	(cgraph_optimize): Likewise; use timevar.
+	* timevar.def (TV_CGRAPH, TV_CGRAPHOPT): New.
+	* toplev.c (dump_file_index): Add DFI_cgraph.
+	(dump_file_info): Likewise.
+	(cgraph_dump_file): New global variable.
+	(do_compile): Open and close cgraph dump.
+	* invoke.texi (-d): Document new flag; renumber.
+
 2003-07-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/11370

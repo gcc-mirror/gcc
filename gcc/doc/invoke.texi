@@ -3118,115 +3118,118 @@ meanings:
 Annotate the assembler output with miscellaneous debugging information.
 @item b
 @opindex db
-Dump after computing branch probabilities, to @file{@var{file}.15.bp}.
+Dump after computing branch probabilities, to @file{@var{file}.16.bp}.
 @item B
 @opindex dB
-Dump after block reordering, to @file{@var{file}.31.bbro}.
+Dump after block reordering, to @file{@var{file}.32.bbro}.
 @item c
 @opindex dc
-Dump after instruction combination, to the file @file{@var{file}.21.combine}.
+Dump after instruction combination, to the file @file{@var{file}.22.combine}.
 @item C
 @opindex dC
-Dump after the first if conversion, to the file @file{@var{file}.16.ce1}.
-Also dump after the second if conversion, to the file @file{@var{file}.22.ce2}.
+Dump after the first if conversion, to the file @file{@var{file}.17.ce1}.
+Also dump after the second if conversion, to the file @file{@var{file}.23.ce2}.
 @item d
 @opindex dd
-Dump after branch target load optimization, to to @file{@var{file}.33.btl}.
-Also dump after delayed branch scheduling, to @file{@var{file}.36.dbr}.
+Dump after branch target load optimization, to to @file{@var{file}.34.btl}.
+Also dump after delayed branch scheduling, to @file{@var{file}.37.dbr}.
 @item D
 @opindex dD
 Dump all macro definitions, at the end of preprocessing, in addition to
 normal output.
 @item e
 @opindex de
-Dump after SSA optimizations, to @file{@var{file}.04.ssa} and
-@file{@var{file}.07.ussa}.
+Dump after SSA optimizations, to @file{@var{file}.05.ssa} and
+@file{@var{file}.010.ussa}.
 @item E
 @opindex dE
-Dump after the second if conversion, to @file{@var{file}.32.ce3}.
+Dump after the second if conversion, to @file{@var{file}.33.ce3}.
 @item f
 @opindex df
-Dump after control and data flow analysis, to @file{@var{file}.14.cfg}.
-Also dump after life analysis, to @file{@var{file}.20.life}.
+Dump after control and data flow analysis, to @file{@var{file}.15.cfg}.
+Also dump after life analysis, to @file{@var{file}.21.life}.
 @item F
 @opindex dF
-Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.10.addressof}.
+Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.11.addressof}.
 @item g
 @opindex dg
-Dump after global register allocation, to @file{@var{file}.26.greg}.
+Dump after global register allocation, to @file{@var{file}.27.greg}.
 @item G
 @opindex dG
-Dump after GCSE, to @file{@var{file}.11.gcse}.
+Dump after GCSE, to @file{@var{file}.12.gcse}.
 Also dump after jump bypassing and control flow optimizations, to
-@file{@var{file}.13.bypass}.
+@file{@var{file}.14.bypass}.
 @item h
 @opindex dh
-Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
+Dump after finalization of EH handling code, to @file{@var{file}.03.eh}.
 @item i
 @opindex di
-Dump after sibling call optimizations, to @file{@var{file}.01.sibling}.
+Dump after sibling call optimizations, to @file{@var{file}.02.sibling}.
 @item j
 @opindex dj
-Dump after the first jump optimization, to @file{@var{file}.03.jump}.
+Dump after the first jump optimization, to @file{@var{file}.04.jump}.
 @item k
 @opindex dk
-Dump after conversion from registers to stack, to @file{@var{file}.35.stack}.
+Dump after conversion from registers to stack, to @file{@var{file}.36.stack}.
 @item l
 @opindex dl
-Dump after local register allocation, to @file{@var{file}.25.lreg}.
+Dump after local register allocation, to @file{@var{file}.26.lreg}.
 @item L
 @opindex dL
-Dump after loop optimization passes, to @file{@var{file}.12.loop} and
-@file{@var{file}.18.loop2}.
+Dump after loop optimization passes, to @file{@var{file}.13.loop} and
+@file{@var{file}.19.loop2}.
 @item M
 @opindex dM
 Dump after performing the machine dependent reorganization pass, to
-@file{@var{file}.36.mach}.
+@file{@var{file}.37.mach}.
 @item n
 @opindex dn
-Dump after register renumbering, to @file{@var{file}.30.rnreg}.
+Dump after register renumbering, to @file{@var{file}.31.rnreg}.
 @item N
 @opindex dN
-Dump after the register move pass, to @file{@var{file}.23.regmove}.
+Dump after the register move pass, to @file{@var{file}.24.regmove}.
 @item o
 @opindex do
-Dump after post-reload optimizations, to @file{@var{file}.27.postreload}.
+Dump after post-reload optimizations, to @file{@var{file}.28.postreload}.
 @item r
 @opindex dr
-Dump after RTL generation, to @file{@var{file}.00.rtl}.
+Dump after RTL generation, to @file{@var{file}.01.rtl}.
 @item R
 @opindex dR
-Dump after the second scheduling pass, to @file{@var{file}.34.sched2}.
+Dump after the second scheduling pass, to @file{@var{file}.35.sched2}.
 @item s
 @opindex ds
 Dump after CSE (including the jump optimization that sometimes follows
-CSE), to @file{@var{file}.09.cse}.
+CSE), to @file{@var{file}.019.cse}.
 @item S
 @opindex dS
-Dump after the first scheduling pass, to @file{@var{file}.24.sched}.
+Dump after the first scheduling pass, to @file{@var{file}.25.sched}.
 @item t
 @opindex dt
 Dump after the second CSE pass (including the jump optimization that
-sometimes follows CSE), to @file{@var{file}.19.cse2}.
+sometimes follows CSE), to @file{@var{file}.20.cse2}.
 @item T
 @opindex dT
-Dump after running tracer, to @file{@var{file}.17.tracer}.
+Dump after running tracer, to @file{@var{file}.18.tracer}.
 @item u
 @opindex du
-Dump after null pointer elimination pass to @file{@var{file}.08.null}.
-@item w
+Dump after null pointer elimination pass to @file{@var{file}.018.null}.
+@item U
+@opindex dU
+Dump callgraph and unit-at-a-time optimization @file{@var{file}.00.unit}.
+@litem w
 @opindex dw
-Dump after the second flow pass, to @file{@var{file}.28.flow2}.
+Dump after the second flow pass, to @file{@var{file}.29.flow2}.
 @item W
 @opindex dW
 Dump after SSA conditional constant propagation, to
-@file{@var{file}.05.ssaccp}.
+@file{@var{file}.06.ssaccp}.
 @item X
 @opindex dX
-Dump after SSA dead code elimination, to @file{@var{file}.06.ssadce}.
+Dump after SSA dead code elimination, to @file{@var{file}.07.ssadce}.
 @item z
 @opindex dz
-Dump after the peephole pass, to @file{@var{file}.29.peephole2}.
+Dump after the peephole pass, to @file{@var{file}.30.peephole2}.
 @item a
 @opindex da
 Produce all the dumps listed above.
@@ -3249,7 +3252,7 @@ Also turns on @option{-dp} annotation.
 @item v
 @opindex dv
 For each of the other indicated dump files (except for
-@file{@var{file}.00.rtl}), dump a representation of the control flow graph
+@file{@var{file}.01.rtl}), dump a representation of the control flow graph
 suitable for viewing with VCG to @file{@var{file}.@var{pass}.vcg}.
 @item x
 @opindex dx

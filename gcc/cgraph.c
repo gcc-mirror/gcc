@@ -316,6 +316,13 @@ cgraph_rtl_info (decl)
   return &node->rtl;
 }
 
+/* Return name of the node used in debug output.  */
+const char *
+cgraph_node_name (node)
+     struct cgraph_node *node;
+{
+  return (*lang_hooks.decl_printable_name) (node->decl, 2);
+}
 
 /* Dump the callgraph.  */
 
@@ -329,10 +336,9 @@ dump_cgraph (f)
   for (node = cgraph_nodes; node; node = node->next)
     {
       struct cgraph_edge *edge;
-      fprintf (f, "%s", IDENTIFIER_POINTER (DECL_NAME (node->decl)));
+      fprintf (f, "%s", cgraph_node_name (node));
       if (node->origin)
-	fprintf (f, " nested in: %s",
-		 IDENTIFIER_POINTER (DECL_NAME (node->origin->decl)));
+	fprintf (f, " nested in: %s", cgraph_node_name (node->origin));
       if (node->needed)
 	fprintf (f, " needed");
       else if (node->reachable)
@@ -342,13 +348,11 @@ dump_cgraph (f)
 
       fprintf (f, "\n  called by :");
       for (edge = node->callers; edge; edge = edge->next_caller)
-	fprintf (f, "%s ",
-		 IDENTIFIER_POINTER (DECL_NAME (edge->caller->decl)));
+	fprintf (f, "%s ", cgraph_node_name (edge->caller));
 
       fprintf (f, "\n  calls: ");
       for (edge = node->callees; edge; edge = edge->next_callee)
-	fprintf (f, "%s ",
-		 IDENTIFIER_POINTER (DECL_NAME (edge->callee->decl)));
+	fprintf (f, "%s ", cgraph_node_name (edge->callee));
       fprintf (f, "\n");
     }
 }

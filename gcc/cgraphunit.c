@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "cgraph.h"
 #include "diagnostic.h"
+#include "timevar.h"
 
 static void cgraph_expand_functions PARAMS ((void));
 static void cgraph_mark_functions_to_output PARAMS ((void));
@@ -140,12 +141,14 @@ cgraph_finalize_compilation_unit ()
 
   cgraph_varpool_assemble_pending_decls ();
 
-  if (!quiet_flag)
+  timevar_push (TV_CGRAPH);
+  if (cgraph_dump_file)
     {
-      fprintf (stderr, "\n\nInitial entry points:");
+      fprintf (cgraph_dump_file, "\nInitial entry points:");
       for (node = cgraph_nodes; node; node = node->next)
 	if (node->needed && DECL_SAVED_TREE (node->decl))
-	  announce_function (node->decl);
+	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
+      fprintf (cgraph_dump_file, "\n");
     }
 
   /* Propagate reachability flag and lower representation of all reachable
@@ -198,16 +201,17 @@ cgraph_finalize_compilation_unit ()
     }
   /* Collect entry points to the unit.  */
 
-  if (!quiet_flag)
+  if (cgraph_dump_file)
     {
-      fprintf (stderr, "\n\nUnit entry points:");
+      fprintf (cgraph_dump_file, "\nUnit entry points:");
       for (node = cgraph_nodes; node; node = node->next)
 	if (node->needed && DECL_SAVED_TREE (node->decl))
-	  announce_function (node->decl);
+	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
+      fprintf (cgraph_dump_file, "\n");
     }
 
-  if (!quiet_flag)
-    fprintf (stderr, "\n\nReclaiming functions:");
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "\nReclaiming functions:");
 
   for (node = cgraph_nodes; node; node = node->next)
     {
@@ -216,10 +220,14 @@ cgraph_finalize_compilation_unit ()
       if (!node->reachable && DECL_SAVED_TREE (decl))
 	{
 	  cgraph_remove_node (node);
-	  announce_function (decl);
+	  if (cgraph_dump_file)
+	    fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
 	}
     }
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "\n");
   ggc_collect ();
+  timevar_pop (TV_CGRAPH);
 }
 
 /* Figure out what functions we want to assemble.  */
@@ -256,6 +264,7 @@ cgraph_optimize_function (node)
 {
   tree decl = node->decl;
 
+  timevar_push (TV_INTEGRATION);
   if (flag_inline_trees)
     optimize_inline_calls (decl);
   if (node->nested)
@@ -263,6 +272,7 @@ cgraph_optimize_function (node)
       for (node = node->nested; node; node = node->next_nested)
 	cgraph_optimize_function (node);
     }
+  timevar_pop (TV_INTEGRATION);
 }
 
 /* Expand function specified by NODE.  */
@@ -385,8 +395,8 @@ cgraph_mark_local_functions ()
 {
   struct cgraph_node *node;
 
-  if (!quiet_flag)
-    fprintf (stderr, "\n\nMarking local functions:");
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "Marking local functions:");
 
   /* Figure out functions we want to assemble.  */
   for (node = cgraph_nodes; node; node = node->next)
@@ -395,9 +405,11 @@ cgraph_mark_local_functions ()
 		           && DECL_SAVED_TREE (node->decl)
 			   && !DECL_COMDAT (node->decl)
 		           && !TREE_PUBLIC (node->decl));
-      if (node->local.local)
-	announce_function (node->decl);
+      if (cgraph_dump_file && node->local.local)
+	fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
     }
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "\n");
 }
 
 /* Decide what function should be inlined because they are invoked once
@@ -408,8 +420,8 @@ cgraph_mark_functions_to_inline_once ()
 {
   struct cgraph_node *node, *node1;
 
-  if (!quiet_flag)
-    fprintf (stderr, "\n\nMarking functions to inline once:");
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "\n\nMarking functions to inline once:");
 
   /* Now look for function called only once and mark them to inline.
      From this point number of calls to given function won't grow.  */
@@ -431,10 +443,13 @@ cgraph_mark_functions_to_inline_once ()
 	  if (ok)
 	    {
 	      node->global.inline_once = true;
-	      announce_function (node->decl);
+	      if (cgraph_dump_file)
+		fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
 	    }
 	}
     }
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "\n");
 }
 
 
@@ -446,11 +461,23 @@ cgraph_optimize ()
   struct cgraph_node *node;
   bool changed = true;
 
+  timevar_push (TV_CGRAPHOPT);
+  if (cgraph_dump_file)
+    {
+      fprintf (cgraph_dump_file, "Initial callgraph:");
+      dump_cgraph (cgraph_dump_file);
+    }
   cgraph_mark_local_functions ();
 
   cgraph_mark_functions_to_inline_once ();
 
   cgraph_global_info_ready = true;
+  if (cgraph_dump_file)
+    {
+      fprintf (cgraph_dump_file, "Optimized callgraph:");
+      dump_cgraph (cgraph_dump_file);
+    }
+  timevar_pop (TV_CGRAPHOPT);
   if (!quiet_flag)
     fprintf (stderr, "\n\nAssembling functions:");
 
@@ -484,5 +511,10 @@ cgraph_optimize ()
 		  }
 	    }
 	}
+    }
+  if (cgraph_dump_file)
+    {
+      fprintf (cgraph_dump_file, "Final callgraph:");
+      dump_cgraph (cgraph_dump_file);
     }
 }

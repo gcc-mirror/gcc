@@ -39,6 +39,8 @@ DEFTIMEVAR (TV_GC                    , "garbage collection")
 /* Time spent generating dump files.  */
 DEFTIMEVAR (TV_DUMP                  , "dump files")
 
+DEFTIMEVAR (TV_CGRAPH                , "callgraph construction")
+DEFTIMEVAR (TV_CGRAPHOPT             , "callgraph optimization")
 /* Time spent by constructing CFG.  */
 DEFTIMEVAR (TV_CFG                   , "cfg construction")
 /* Time spent by cleaning up CFG.  */
