@@ -196,7 +196,8 @@ incomplete_type_error (value, type)
     return;
 
   if (value != 0 && (TREE_CODE (value) == VAR_DECL
-		     || TREE_CODE (value) == PARM_DECL))
+		     || TREE_CODE (value) == PARM_DECL
+		     || TREE_CODE (value) == FIELD_DECL))
     {
       cp_error_at ("`%D' has incomplete type", value);
       decl = 1;
@@ -211,7 +212,10 @@ retry:
     case ENUMERAL_TYPE:
       if (!decl)
         error ("invalid use of undefined type `%#T'", type);
-      cp_error_at ("forward declaration of `%#T'", type);
+      if (!TYPE_TEMPLATE_INFO (type))
+	cp_error_at ("forward declaration of `%#T'", type);
+      else
+	cp_error_at ("declaration of `%#T'", type);
       break;
 
     case VOID_TYPE:

@@ -134,6 +134,7 @@ static tree build_template_decl PARAMS ((tree, tree));
 static int mark_template_parm PARAMS ((tree, void *));
 static tree tsubst_friend_function PARAMS ((tree, tree));
 static tree tsubst_friend_class PARAMS ((tree, tree));
+static int can_complete_type_without_circularity PARAMS ((tree));
 static tree get_bindings_real PARAMS ((tree, tree, tree, int, int, int));
 static int template_decl_level PARAMS ((tree));
 static tree maybe_get_template_decl_from_type_decl PARAMS ((tree));
@@ -4883,6 +4884,25 @@ tsubst_friend_class (friend_tmpl, args)
   return friend_type;
 }
 
+/* Returns zero if TYPE cannot be completed later due to circularity.
+   Otherwise returns one.  */
+
+int
+can_complete_type_without_circularity (type)
+     tree type;
+{
+  if (type == NULL_TREE || type == error_mark_node)
+    return 0;
+  else if (COMPLETE_TYPE_P (type))
+    return 1;
+  else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
+    return can_complete_type_without_circularity (TREE_TYPE (type));
+  else if (CLASS_TYPE_P (type) && TYPE_BEING_DEFINED (TYPE_MAIN_VARIANT (type)))
+    return 0;
+  else
+    return 1;
+}
+
 tree
 instantiate_class_template (type)
      tree type;
@@ -5203,7 +5223,20 @@ instantiate_class_template (type)
 	    if (DECL_INITIALIZED_IN_CLASS_P (r))
 	      check_static_variable_definition (r, TREE_TYPE (r));
 	  }
-	
+	else if (TREE_CODE (r) == FIELD_DECL)
+	  {
+	    /* Determine whether R has a valid type and can be
+	       completed later.  If R is invalid, then it is replaced
+	       by error_mark_node so that it will not be added to
+	       TYPE_FIELDS.  */
+	    tree rtype = TREE_TYPE (r);
+	    if (!can_complete_type_without_circularity (rtype))
+	      {
+		incomplete_type_error (r, rtype);
+		r = error_mark_node;
+	      }
+	  }
+
 	/* R will have a TREE_CHAIN if and only if it has already been
 	   processed by finish_member_declaration.  This can happen
 	   if, for example, it is a TYPE_DECL for a class-scoped
@@ -5284,6 +5317,8 @@ instantiate_class_template (type)
 	--processing_template_decl;
     }
 
+  /* Now that TYPE_FIELDS and TYPE_METHODS are set up.  We can
+     instantiate templates used by this class.  */
   for (t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
     if (TREE_CODE (t) == FIELD_DECL)
       {
