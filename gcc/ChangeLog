@@ -65,6 +65,9 @@ Wed Mar 17 22:46:13 1999  Mark Elbrecht  <snowball3@usa.net.
 	* configure.in(pc-msdosdjgpp): Set xm_file to i386/xm-djgpp.h.
   	Set tm_file to i386/djgpp.h. Set tmake_file to i386/t-djgpp.
   	Set xmake_file to i386/x-djgpp.
+	(*-go32-msdos, *-go32*): Remove entries.  Warn that GO32/DJGPP V1.X
+	is now unsupported and *-pc-msdosdjgpp for DJGPP V2.X should be
+	used instead.
 	* configure: Rebuilt.
 
 	* gcc.c (process_command): Dump link_command_spec too.
