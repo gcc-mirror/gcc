@@ -432,20 +432,20 @@ else
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  sed -e '/^extern int ftw(const/c\
+  sed -e '/^extern int ftw(const/i\
 #if !defined(_STYPES)\
 static\
 #else\
 extern\
-#endif\
-  int ftw(const char *, int (*)(const char *, const struct stat *, int), int);' \
-  -e '/^extern int nftw/c\
+#endif'\
+  -e 's/extern \(int ftw(const.*\)$/\1/' \
+  -e '/^extern int nftw/i\
 #if defined(_STYPES)\
 static\
 #else\
 extern\
-#endif\
-  int nftw(const char *, int (*)(const char *, const struct stat *, int, struct FTW *),int, int);' \
+#endif'\
+  -e 's/extern \(int nftw.*\)$/\1/' \
   -e '/^extern int ftw(),/c\
 #if !defined(_STYPES)\
 static\
