@@ -452,8 +452,7 @@ add_case (int label_value, gfc_st_label * label, stmtblock_t * body)
   value = build_int_cst (NULL_TREE, label_value);
 
   /* Make a backend label for this case.  */
-  tmp = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-  DECL_CONTEXT (tmp) = current_function_decl;
+  tmp = gfc_build_label_decl (NULL_TREE);
 
   /* And the case itself.  */
   tmp = build3_v (CASE_LABEL_EXPR, value, NULL_TREE, tmp);

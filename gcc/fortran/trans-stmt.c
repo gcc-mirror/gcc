@@ -945,8 +945,7 @@ gfc_trans_integer_select (gfc_code * code)
 	    }
 
           /* Build a label.  */
-          label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-          DECL_CONTEXT (label) = current_function_decl;
+          label = gfc_build_label_decl (NULL_TREE);
 
 	  /* Add this case label.
              Add parameter 'label', make it match GCC backend.  */
