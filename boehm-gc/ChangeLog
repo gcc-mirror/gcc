@@ -1,3 +1,7 @@
+2000-04-23  Tom Tromey  <tromey@cygnus.com>
+
+	* gcconfig.h (DYNAMIC_LOADING): Define for PPC Linux.
+
 2000-04-19  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Imported version version 5.0alpha6.
