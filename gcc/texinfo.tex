@@ -35,7 +35,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.183 $
+\deftexinfoversion$Revision: 2.185 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -104,10 +104,9 @@
 \hyphenation{eshell}
 
 % Margin to add to right of even pages, to left of odd pages.
-\newdimen \bindingoffset  \bindingoffset=0pt
-\newdimen \normaloffset   \normaloffset=\hoffset
+\newdimen \bindingoffset  
+\newdimen \normaloffset   
 \newdimen\pagewidth \newdimen\pageheight
-\pagewidth=\hsize \pageheight=\vsize
 
 % Sometimes it is convenient to have everything in the transcript file
 % and nothing on the terminal.  We don't just call \tracingall here,
@@ -128,7 +127,7 @@
 \newdimen\cornerlong \newdimen\cornerthick
 \newdimen \topandbottommargin
 \newdimen \outerhsize \newdimen \outervsize
-\cornerlong=1pc\cornerthick=.3pt	% These set size of cropmarks
+\cornerlong=1pc\cornerthick=.3pt        % These set size of cropmarks
 \outerhsize=7in
 %\outervsize=9.5in
 % Alternative @smallbook page size is 9.25in
@@ -167,8 +166,8 @@
 %
 \def\croppageout#1{\hoffset=0pt % make sure this doesn't mess things up
 {\escapechar=`\\\relax % makes sure backslash is used in output files.
-		 \shipout
-		 \vbox to \outervsize{\hsize=\outerhsize
+                 \shipout
+                 \vbox to \outervsize{\hsize=\outerhsize
                  \vbox{\line{\ewtop\hfill\ewtop}}
                  \nointerlineskip
                  \line{\vbox{\moveleft\cornerthick\nstop}
@@ -176,19 +175,19 @@
                        \vbox{\moveright\cornerthick\nstop}}
                  \vskip \topandbottommargin
                  \centerline{\ifodd\pageno\hskip\bindingoffset\fi
-			\vbox{
-			{\let\hsize=\pagewidth \makeheadline}
-			\pagebody{#1}
-			{\let\hsize=\pagewidth \makefootline}}
-			\ifodd\pageno\else\hskip\bindingoffset\fi}
-		 \vskip \topandbottommargin plus1fill minus1fill
+                        \vbox{
+                        {\let\hsize=\pagewidth \makeheadline}
+                        \pagebody{#1}
+                        {\let\hsize=\pagewidth \makefootline}}
+                        \ifodd\pageno\else\hskip\bindingoffset\fi}
+                 \vskip \topandbottommargin plus1fill minus1fill
                  \boxmaxdepth\cornerthick
                  \line{\vbox{\moveleft\cornerthick\nsbot}
                        \hfill
                        \vbox{\moveright\cornerthick\nsbot}}
                  \nointerlineskip
                  \vbox{\line{\ewbot\hfill\ewbot}}
-	}}
+        }}
   \advancepageno
   \ifnum\outputpenalty>-20000 \else\dosupereject\fi}
 %
@@ -873,9 +872,9 @@ where each line of input produces a line of output.}
 % @value{foo} gets the text saved in variable foo.
 %
 \def\value#1{\expandafter
-		\ifx\csname SET#1\endcsname\relax
-			{\{No value for ``#1''\}}
-		\else \csname SET#1\endcsname \fi}
+                \ifx\csname SET#1\endcsname\relax
+                        {\{No value for ``#1''\}}
+                \else \csname SET#1\endcsname \fi}
 
 % @ifset VAR ... @end ifset reads the `...' iff VAR has been defined
 % with @set.
@@ -1038,7 +1037,7 @@ where each line of input produces a line of output.}
 \fi
 % Support font families that don't use the same naming scheme as CM.
 \def\rmshape{r}
-\def\rmbshape{bx}		%where the normal face is bold
+\def\rmbshape{bx}               %where the normal face is bold
 \def\bfshape{b}
 \def\bxshape{bx}
 \def\ttshape{tt}
@@ -1125,9 +1124,9 @@ where each line of input produces a line of output.}
 % \setfont\ssectt\ttshape{10}{\magstep1}
 % \setfont\ssecsf\sfshape{10}{\magstep1}
 
-%\setfont\ssecrm\bfshape{10}{1315}	% Note the use of cmb rather than cmbx.
-%\setfont\ssecit\itshape{10}{1315}	% Also, the size is a little larger than
-%\setfont\ssecsl\slshape{10}{1315}	% being scaled magstep1.
+%\setfont\ssecrm\bfshape{10}{1315}      % Note the use of cmb rather than cmbx.
+%\setfont\ssecit\itshape{10}{1315}      % Also, the size is a little larger than
+%\setfont\ssecsl\slshape{10}{1315}      % being scaled magstep1.
 %\setfont\ssectt\ttshape{10}{1315}
 %\setfont\ssecsf\sfshape{10}{1315}
 
@@ -1335,10 +1334,10 @@ where each line of input produces a line of output.}
 % Polish suppressed-l.  --karl, 22sep96.
 %\def\l#1{{\li #1}\null}
 
-\def\r#1{{\rm #1}}		% roman font
+\def\r#1{{\rm #1}}              % roman font
 % Use of \lowercase was suggested.
-\def\sc#1{{\smallcaps#1}}	% smallcaps font
-\def\ii#1{{\it #1}}		% italic font
+\def\sc#1{{\smallcaps#1}}       % smallcaps font
+\def\ii#1{{\it #1}}             % italic font
 
 % @pounds{} is a sterling sign.
 \def\pounds{{\it\$}}
@@ -1357,7 +1356,7 @@ where each line of input produces a line of output.}
 
 \def\shorttitlepage{\parsearg\shorttitlepagezzz}
 \def\shorttitlepagezzz #1{\begingroup\hbox{}\vskip 1.5in \chaprm \centerline{#1}%
-	\endgroup\page\hbox{}\page}
+        \endgroup\page\hbox{}\page}
 
 \def\titlepage{\begingroup \parindent=0pt \textfonts
    \let\subtitlerm=\tenrm
@@ -1374,9 +1373,9 @@ where each line of input produces a line of output.}
    % Now you can print the title using @title.
    \def\title{\parsearg\titlezzz}%
    \def\titlezzz##1{\leftline{\titlefont{##1}}
-		    % print a rule at the page bottom also.
-		    \finishedtitlepagefalse
-		    \vskip4pt \hrule height 4pt width \hsize \vskip4pt}%
+                    % print a rule at the page bottom also.
+                    \finishedtitlepagefalse
+                    \vskip4pt \hrule height 4pt width \hsize \vskip4pt}%
    % No rule at page bottom unless we print one at the top with @title.
    \finishedtitlepagetrue
    %
@@ -1394,7 +1393,7 @@ where each line of input produces a line of output.}
    \let\oldpage = \page
    \def\page{%
       \iffinishedtitlepage\else
-	 \finishtitlepage
+         \finishtitlepage
       \fi
       \oldpage
       \let\page = \oldpage
@@ -1482,12 +1481,12 @@ where each line of input produces a line of output.}
 %
 }% unbind the catcode of @.
 
-% @headings double	turns headings on for double-sided printing.
-% @headings single	turns headings on for single-sided printing.
-% @headings off		turns them off.
-% @headings on		same as @headings double, retained for compatibility.
-% @headings after	turns on double-sided headings after this page.
-% @headings doubleafter	turns on double-sided headings after this page.
+% @headings double      turns headings on for double-sided printing.
+% @headings single      turns headings on for single-sided printing.
+% @headings off         turns them off.
+% @headings on          same as @headings double, retained for compatibility.
+% @headings after       turns on double-sided headings after this page.
+% @headings doubleafter turns on double-sided headings after this page.
 % @headings singleafter turns on single-sided headings after this page.
 % By default, they are off at the start of a document,
 % and turned `on' after @end titlepage.
@@ -2084,14 +2083,14 @@ width0pt\relax} \fi
 % It automatically defines \fooindex such that
 % \fooindex ...rest of line... puts an entry in the index foo.
 % It also defines \fooindfile to be the number of the output channel for
-% the file that	accumulates this index.  The file's extension is foo.
+% the file that accumulates this index.  The file's extension is foo.
 % The name of an index should be no more than 2 characters long
 % for the sake of vms.
 
 \def\newindex #1{
 \expandafter\newwrite \csname#1indfile\endcsname% Define number for output file
-\openout \csname#1indfile\endcsname \jobname.#1	% Open the file
-\expandafter\xdef\csname#1index\endcsname{%	% Define \xxxindex
+\openout \csname#1indfile\endcsname \jobname.#1 % Open the file
+\expandafter\xdef\csname#1index\endcsname{%     % Define \xxxindex
 \noexpand\doindex {#1}}
 }
 
@@ -2103,8 +2102,8 @@ width0pt\relax} \fi
 
 \def\newcodeindex #1{
 \expandafter\newwrite \csname#1indfile\endcsname% Define number for output file
-\openout \csname#1indfile\endcsname \jobname.#1	% Open the file
-\expandafter\xdef\csname#1index\endcsname{%	% Define \xxxindex
+\openout \csname#1indfile\endcsname \jobname.#1 % Open the file
+\expandafter\xdef\csname#1index\endcsname{%     % Define \xxxindex
 \noexpand\docodeindex {#1}}
 }
 
@@ -2115,7 +2114,7 @@ width0pt\relax} \fi
 \def\synindex #1 #2 {%
 \expandafter\let\expandafter\synindexfoo\expandafter=\csname#2indfile\endcsname
 \expandafter\let\csname#1indfile\endcsname=\synindexfoo
-\expandafter\xdef\csname#1index\endcsname{%	% Define \xxxindex
+\expandafter\xdef\csname#1index\endcsname{%     % Define \xxxindex
 \noexpand\doindex {#2}}%
 }
 
@@ -2124,7 +2123,7 @@ width0pt\relax} \fi
 \def\syncodeindex #1 #2 {%
 \expandafter\let\expandafter\synindexfoo\expandafter=\csname#2indfile\endcsname
 \expandafter\let\csname#1indfile\endcsname=\synindexfoo
-\expandafter\xdef\csname#1index\endcsname{%	% Define \xxxindex
+\expandafter\xdef\csname#1index\endcsname{%     % Define \xxxindex
 \noexpand\docodeindex {#2}}%
 }
 
@@ -2952,10 +2951,10 @@ width0pt\relax} \fi
 
 % NOTE on use of \vbox for chapter headings, section headings, and
 % such:
-%	1) We use \vbox rather than the earlier \line to permit
-%	   overlong headings to fold.
-%	2) \hyphenpenalty is set to 10000 because hyphenation in a
-%	   heading is obnoxious; this forbids it.
+%       1) We use \vbox rather than the earlier \line to permit
+%          overlong headings to fold.
+%       2) \hyphenpenalty is set to 10000 because hyphenation in a
+%          heading is obnoxious; this forbids it.
 %       3) Likewise, headings look best if no \parindent is used, and
 %          if justification is not attempted.  Hence \raggedright.
 
@@ -3134,12 +3133,12 @@ width0pt\relax} \fi
    \contentsalignmacro
    \immediate\closeout \contentsfile
    \ifnum \pageno>0
-      \pageno = -1		% Request roman numbered pages.
+      \pageno = -1              % Request roman numbered pages.
    \fi
    % Don't need to put `Contents' or `Short Contents' in the headline.
    % It is abundantly clear what they are.
    \unnumbchapmacro{#1}\def\thischapter{}%
-   \begingroup   		% Set up to handle contents files properly.
+   \begingroup                  % Set up to handle contents files properly.
       \catcode`\\=0  \catcode`\{=1  \catcode`\}=2  \catcode`\@=11
       \catcode`\^=7 % to see ^^e4 as \"a etc. juha@piuha.ydi.vtt.fi
       \raggedbottom             % Worry more about breakpoints than the bottom.
@@ -3418,50 +3417,50 @@ width0pt\relax} \fi
 \def\cbl{{\circle\char'012\hskip -6pt}}
 \def\cbr{{\hskip 6pt\circle\char'011}}
 \def\carttop{\hbox to \cartouter{\hskip\lskip
-	\ctl\leaders\hrule height\circthick\hfil\ctr
-	\hskip\rskip}}
+        \ctl\leaders\hrule height\circthick\hfil\ctr
+        \hskip\rskip}}
 \def\cartbot{\hbox to \cartouter{\hskip\lskip
-	\cbl\leaders\hrule height\circthick\hfil\cbr
-	\hskip\rskip}}
+        \cbl\leaders\hrule height\circthick\hfil\cbr
+        \hskip\rskip}}
 %
 \newskip\lskip\newskip\rskip
 
 \long\def\cartouche{%
 \begingroup
-	\lskip=\leftskip \rskip=\rightskip
-	\leftskip=0pt\rightskip=0pt %we want these *outside*.
-	\cartinner=\hsize \advance\cartinner by-\lskip
-		 	  \advance\cartinner by-\rskip
-	\cartouter=\hsize
-	\advance\cartouter by 18pt % allow for 3pt kerns on either
-%				     side, and for 6pt waste from
-%				     each corner char
-	\normbskip=\baselineskip \normpskip=\parskip \normlskip=\lineskip
-	% Flag to tell @lisp, etc., not to narrow margin.
-	\let\nonarrowing=\comment
-	\vbox\bgroup
-		\baselineskip=0pt\parskip=0pt\lineskip=0pt
-		\carttop
-		\hbox\bgroup
-			\hskip\lskip
-			\vrule\kern3pt
-			\vbox\bgroup
-				\hsize=\cartinner
-				\kern3pt
-				\begingroup
-					\baselineskip=\normbskip
-					\lineskip=\normlskip
-					\parskip=\normpskip
-					\vskip -\parskip
+        \lskip=\leftskip \rskip=\rightskip
+        \leftskip=0pt\rightskip=0pt %we want these *outside*.
+        \cartinner=\hsize \advance\cartinner by-\lskip
+                          \advance\cartinner by-\rskip
+        \cartouter=\hsize
+        \advance\cartouter by 18pt % allow for 3pt kerns on either
+%                                    side, and for 6pt waste from
+%                                    each corner char
+        \normbskip=\baselineskip \normpskip=\parskip \normlskip=\lineskip
+        % Flag to tell @lisp, etc., not to narrow margin.
+        \let\nonarrowing=\comment
+        \vbox\bgroup
+                \baselineskip=0pt\parskip=0pt\lineskip=0pt
+                \carttop
+                \hbox\bgroup
+                        \hskip\lskip
+                        \vrule\kern3pt
+                        \vbox\bgroup
+                                \hsize=\cartinner
+                                \kern3pt
+                                \begingroup
+                                        \baselineskip=\normbskip
+                                        \lineskip=\normlskip
+                                        \parskip=\normpskip
+                                        \vskip -\parskip
 \def\Ecartouche{%
-				\endgroup
-				\kern3pt
-			\egroup
-			\kern3pt\vrule
-			\hskip\rskip
-		\egroup
-		\cartbot
-	\egroup
+                                \endgroup
+                                \kern3pt
+                        \egroup
+                        \kern3pt\vrule
+                        \hskip\rskip
+                \egroup
+                \cartbot
+        \egroup
 \endgroup
 }}
 
@@ -4503,6 +4502,11 @@ width0pt\relax} \fi
 \global\pagewidth=\hsize
 \global\pageheight=\vsize
 }
+
+\bindingoffset=0pt
+\normaloffset=\hoffset
+\pagewidth=\hsize
+\pageheight=\vsize
 
 % Allow control of the text dimensions.  Parameters in order: textheight;
 % textwidth; voffset; hoffset; binding offset; topskip.
