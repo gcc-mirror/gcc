@@ -1,3 +1,8 @@
+Fri Nov 12 13:31:54 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* config/arm/arm.h (LEGITIMIZE_RELOAD_ADDRESS): Treat QImode
+	addresses the same way GO_IF_LEGITIMATE_INDEX does. 
+
 Fri Nov 12 12:36:04 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* cse.c (hash_arg_in_struct): Delete.
