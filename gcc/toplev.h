@@ -30,7 +30,6 @@ extern int toplev_main			(int, char **);
 extern int read_integral_parameter	(const char *, const char *,
 					 const int);
 extern void strip_off_ending		(char *, int);
-extern void print_time			(const char *, long);
 extern const char *trim_filename	(const char *);
 extern void internal_error		(const char *, ...)
      ATTRIBUTE_NORETURN;
