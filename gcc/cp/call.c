@@ -3331,7 +3331,14 @@ build_over_call (cand, args, flags)
 	     "argument passing", fn, i - is_method);
 	}
       else
-	val = convert_like (conv, TREE_VALUE (arg));
+	{
+	  /* Issue warnings about peculiar, but legal, uses of NULL.  */
+	  if (ARITHMETIC_TYPE_P (TREE_VALUE (parm))
+	      && TREE_VALUE (arg) == null_node)
+	    cp_warning ("converting NULL to non-pointer type");
+	    
+	  val = convert_like (conv, TREE_VALUE (arg));
+	}
 
 #ifdef PROMOTE_PROTOTYPES
       if ((TREE_CODE (type) == INTEGER_TYPE

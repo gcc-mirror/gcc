@@ -1,3 +1,8 @@
+Sun Aug 23 11:56:08 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* extend.texi: Remove description of extension to explicit
+	instantiation that is now endorsed by standard C++.
+
 Sun Aug 23 09:39:09 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/arc/arc.c (arc_initialize_pic): Remove.

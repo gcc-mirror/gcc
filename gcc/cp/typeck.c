@@ -3244,25 +3244,18 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
   /* Nonzero means set RESULT_TYPE to the common type of the args.  */
   int common = 0;
 
-  /* Unless -ansi is specified, __null has pointer type.  But, then,
-     things like `7 != NULL' result in errors about comparisons
-     between pointers and integers.  So, here, we replace __null with
-     an appropriate null pointer constant.  */
-  op0 = (orig_op0 == null_node) ? ansi_null_node : orig_op0;
-  op1 = (orig_op1 == null_node) ? ansi_null_node : orig_op1;
-
   /* Apply default conversions.  */
   if (code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR
       || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
       || code == TRUTH_XOR_EXPR)
     {
-      op0 = decay_conversion (op0);
-      op1 = decay_conversion (op1);
+      op0 = decay_conversion (orig_op0);
+      op1 = decay_conversion (orig_op1);
     }
   else
     {
-      op0 = default_conversion (op0);
-      op1 = default_conversion (op1);
+      op0 = default_conversion (orig_op0);
+      op1 = default_conversion (orig_op1);
     }
 
   type0 = TREE_TYPE (op0);
@@ -3961,15 +3954,19 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
       return error_mark_node;
     }
 
-  if (/* If OP0 is NULL and OP1 is not a pointer, or vice versa.  */
-      (orig_op0 == null_node
-       && TREE_CODE (TREE_TYPE (orig_op1)) != POINTER_TYPE)
-      /* Or vice versa.  */
-      || (orig_op1 == null_node
-	  && TREE_CODE (TREE_TYPE (orig_op0)) != POINTER_TYPE)
-      /* Or, both are NULL and the operation was not a comparison.  */
-      || (orig_op0 == null_node && orig_op1 == null_node 
-	  && code != EQ_EXPR && code != NE_EXPR))
+  /* Issue warnings about peculiar, but legal, uses of NULL.  */
+  if (/* It's reasonable to use pointer values as operands of &&
+	 and ||, so NULL is no exception.  */
+      !(code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
+      && (/* If OP0 is NULL and OP1 is not a pointer, or vice versa.  */
+	  (orig_op0 == null_node
+	   && TREE_CODE (TREE_TYPE (op1)) != POINTER_TYPE)
+	  /* Or vice versa.  */
+	  || (orig_op1 == null_node
+	      && TREE_CODE (TREE_TYPE (op0)) != POINTER_TYPE)
+	  /* Or, both are NULL and the operation was not a comparison.  */
+	  || (orig_op0 == null_node && orig_op1 == null_node 
+	      && code != EQ_EXPR && code != NE_EXPR)))
     /* Some sort of arithmetic operation involving NULL was
        performed.  Note that pointer-difference and pointer-addition
        have already been handled above, and so we don't end up here in
@@ -6593,6 +6590,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   register tree rhstype;
   register enum tree_code coder = TREE_CODE (TREE_TYPE (rhs));
 
+  /* Issue warnings about peculiar, but legal, uses of NULL.  */
+  if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
+    cp_warning ("converting NULL to non-pointer type");
+
   if (coder == UNKNOWN_TYPE)
     rhs = instantiate_type (type, rhs, 1);
 
@@ -7045,6 +7046,10 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
   register enum tree_code codel = TREE_CODE (type);
   register tree rhstype;
   register enum tree_code coder;
+
+  /* Issue warnings about peculiar, but legal, uses of NULL.  */
+  if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
+    cp_warning ("converting NULL to non-pointer type");
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Strip such NOP_EXPRs, since RHS is used in non-lvalue context.  */

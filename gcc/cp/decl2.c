@@ -1223,7 +1223,9 @@ grok_array_decl (array_expr, index_exp)
     return build_opfncall (ARRAY_REF, LOOKUP_NORMAL,
 			   array_expr, index_exp, NULL_TREE);
 
-  /* Otherwise, create an ARRAY_REF for a pointer or array type.  */
+  /* Otherwise, create an ARRAY_REF for a pointer or array type.  It
+     is a little-known fact that, if `a' is an array and `i' is an
+     int, you can write `i[a]', which means the same thing as `a[i]'.  */
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     p1 = array_expr;
@@ -4900,9 +4902,11 @@ mark_used (decl)
      template, we now know that we will need to actually do the
      instantiation.  A TEMPLATE_DECL may also have DECL_TEMPLATE_INFO,
      if it's a partial instantiation, but there's no need to
-     instantiate such a thing.  */
+     instantiate such a thing.  We check that DECL is not an explicit
+     instantiation because that is not checked in instantiate_decl.  */
   if (TREE_CODE (decl) != TEMPLATE_DECL
-      && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
+      && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
+      && !DECL_EXPLICIT_INSTANTIATION (decl))
     instantiate_decl (decl);
 }
 

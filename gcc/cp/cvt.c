@@ -946,6 +946,11 @@ build_expr_type_conversion (desires, expr, complain)
   tree conv;
   tree winner = NULL_TREE;
 
+  if (expr == null_node 
+      && (desires & WANT_INT) 
+      && !(desires & WANT_NULL))
+    cp_warning ("converting NULL to non-pointer type");
+    
   if (TREE_CODE (basetype) == OFFSET_TYPE)
     expr = resolve_offset_ref (expr);
   expr = convert_from_reference (expr);
@@ -955,8 +960,7 @@ build_expr_type_conversion (desires, expr, complain)
     switch (TREE_CODE (basetype))
       {
       case INTEGER_TYPE:
-	if ((desires & WANT_NULL) && TREE_CODE (expr) == INTEGER_CST
-	    && integer_zerop (expr))
+	if ((desires & WANT_NULL) && null_ptr_cst_p (expr))
 	  return expr;
 	/* else fall through...  */
 

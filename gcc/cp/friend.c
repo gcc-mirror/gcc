@@ -262,15 +262,13 @@ make_friend_class (type, friend_type)
       return;
     }
 
-  if (CLASSTYPE_TEMPLATE_SPECIALIZATION (friend_type)) 
+  if (CLASSTYPE_TEMPLATE_SPECIALIZATION (friend_type)
+      && uses_template_parms (friend_type))
     {
       /* [temp.friend]
 	 
 	 Friend declarations shall not declare partial
-	 specializations.  
-
-         Note that CLASSTYPE_TEMPLATE_SPECIALIZATION is not set for
-	 full specializations.  */ 
+	 specializations.  */
       cp_error ("partial specialization `%T' declared `friend'",
 		friend_type);
       return;

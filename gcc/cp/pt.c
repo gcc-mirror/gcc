@@ -1299,14 +1299,9 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 
 	  if (explicit_instantiation)
 	    {
+	      /* We don't set DECL_EXPLICIT_INSTANTIATION here; that
+		 is done by do_decl_instantiation later.  */
 	      decl = instantiate_template (tmpl, innermost_args (targs));
-	      if (!DECL_TEMPLATE_SPECIALIZATION (decl))
-		/* There doesn't seem to be anything in the draft to
-		   prevent a specialization from being explicitly
-		   instantiated.  We're careful not to destroy the
-		   information indicating that this is a
-		   specialization here.  */
-		SET_DECL_EXPLICIT_INSTANTIATION (decl);
 	      return decl;
 	    }
 	  
@@ -6595,12 +6590,6 @@ type_unification_real (tparms, targs, parms, args, subr,
 	  arg = TREE_TYPE (arg);
 	}
 #endif
-      if (! flag_ansi && arg == TREE_TYPE (null_node))
-	{
-	  warning ("using type void* for NULL");
-	  arg = ptr_type_node;
-	}
-
       if (!subr)
 	maybe_adjust_types_for_deduction (strict, &parm, &arg);
 
@@ -7109,14 +7098,15 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
     }
 }
 
+/* Called if RESULT is explicitly instantiated, or is a member of an
+   explicitly instantiated class, or if using -frepo and the
+   instantiation of RESULT has been assigned to this file.  */
+
 void
 mark_decl_instantiated (result, extern_p)
      tree result;
      int extern_p;
 {
-  if (DECL_TEMPLATE_INSTANTIATION (result))
-    SET_DECL_EXPLICIT_INSTANTIATION (result);
-
   if (TREE_CODE (result) != FUNCTION_DECL)
     /* The TREE_PUBLIC flag for function declarations will have been
        set correctly by tsubst.  */
@@ -7458,39 +7448,69 @@ do_decl_instantiation (declspecs, declarator, storage)
       cp_error ("explicit instantiation of non-template `%#D'", decl);
       return;
     }
-
-  /* If we've already seen this template instance, use it.  */
-  if (TREE_CODE (decl) == VAR_DECL)
+  else if (TREE_CODE (decl) == VAR_DECL)
     {
+      /* There is an asymmetry here in the way VAR_DECLs and
+	 FUNCTION_DECLs are handled by grokdeclarator.  In the case of
+	 the latter, the DECL we get back will be marked as a
+	 template instantiation, and the appropriate
+	 DECL_TEMPLATE_INFO will be set up.  This does not happen for
+	 VAR_DECLs so we do the lookup here.  Probably, grokdeclarator
+	 should handle VAR_DECLs as it currently handles
+	 FUNCTION_DECLs.  */
       result = lookup_field (DECL_CONTEXT (decl), DECL_NAME (decl), 0, 0);
       if (result && TREE_CODE (result) != VAR_DECL)
-	result = NULL_TREE;
+	{
+	  cp_error ("no matching template for `%D' found", result);
+	  return;
+	}
     }
   else if (TREE_CODE (decl) != FUNCTION_DECL)
     {
       cp_error ("explicit instantiation of `%#D'", decl);
       return;
     }
-  else if (DECL_TEMPLATE_SPECIALIZATION (decl))
-    /* [temp.spec]
-
-       No program shall both explicitly instantiate and explicitly
-       specialize a template.  */
-    {
-      cp_error ("explicit instantiation of `%#D' after", decl);
-      cp_error_at ("explicit specialization here", decl);
-      return;
-    }
-  else if (DECL_TEMPLATE_INSTANTIATION (decl))
+  else
     result = decl;
 
-  if (! result)
+  /* Check for various error cases.  Note that if the explicit
+     instantiation is legal the RESULT will currently be marked as an
+     *implicit* instantiation; DECL_EXPLICIT_INSTANTIATION is not set
+     until we get here.  */
+
+  if (DECL_TEMPLATE_SPECIALIZATION (result))
     {
-      cp_error ("no matching template for `%D' found", decl);
+      /* [temp.spec]
+
+	 No program shall both explicitly instantiate and explicitly
+	 specialize a template.  */
+      cp_error ("explicit instantiation of `%#D' after", result);
+      cp_error_at ("explicit specialization here", result);
       return;
     }
+  else if (DECL_EXPLICIT_INSTANTIATION (result))
+    {
+      /* [temp.spec]
 
-  if (! DECL_TEMPLATE_INFO (result))
+	 No program shall explicitly instantiate any template more
+	 than once.  
+
+	 We check DECL_INTERFACE_KNOWN so as not to complain when the
+	 first instantiation was `extern' and the second is not, and
+	 EXTERN_P for the opposite case.  */
+      if (DECL_INTERFACE_KNOWN (result) && !extern_p)
+	cp_error ("duplicate explicit instantiation of `%#D'", result);
+
+      /* If we've already instantiated the template, just return now.  */
+      if (DECL_INTERFACE_KNOWN (result))
+	return;
+    }
+  else if (!DECL_IMPLICIT_INSTANTIATION (result))
+    {
+      cp_error ("no matching template for `%D' found", result);
+      return;
+    }
+  else if (!DECL_TEMPLATE_INFO (result))
     {
       cp_pedwarn ("explicit instantiation of non-template `%#D'", result);
       return;
@@ -7502,11 +7522,16 @@ do_decl_instantiation (declspecs, declarator, storage)
   if (storage == NULL_TREE)
     ;
   else if (storage == ridpointers[(int) RID_EXTERN])
-    extern_p = 1;
+    {
+      if (pedantic)
+	cp_pedwarn ("ANSI C++ forbids the use of `extern' on explicit instantiations");
+      extern_p = 1;
+    }
   else
     cp_error ("storage class `%D' applied to template instantiation",
 	      storage);
 
+  SET_DECL_EXPLICIT_INSTANTIATION (result);
   mark_decl_instantiated (result, extern_p);
   repo_template_instantiated (result, extern_p);
   if (! extern_p)
@@ -7561,37 +7586,81 @@ do_type_instantiation (t, storage)
       return;
     }
 
-  if (storage == NULL_TREE)
-    /* OK */;
-  else if (storage == ridpointers[(int) RID_INLINE])
-    nomem_p = 1;
-  else if (storage == ridpointers[(int) RID_EXTERN])
-    extern_p = 1;
-  else if (storage == ridpointers[(int) RID_STATIC])
-    static_p = 1;
-  else
+  if (storage != NULL_TREE)
     {
-      cp_error ("storage class `%D' applied to template instantiation",
-		storage);
-      extern_p = 0;
+      if (pedantic)
+	cp_pedwarn("ANSI C++ forbids the use of `%s' on explicit instantiations", 
+		   IDENTIFIER_POINTER (storage));
+
+      if (storage == ridpointers[(int) RID_INLINE])
+	nomem_p = 1;
+      else if (storage == ridpointers[(int) RID_EXTERN])
+	extern_p = 1;
+      else if (storage == ridpointers[(int) RID_STATIC])
+	static_p = 1;
+      else
+	{
+	  cp_error ("storage class `%D' applied to template instantiation",
+		    storage);
+	  extern_p = 0;
+	}
     }
 
-  /* We've already instantiated this.  */
-  if (CLASSTYPE_EXPLICIT_INSTANTIATION (t) && ! CLASSTYPE_INTERFACE_ONLY (t)
-      && extern_p)
-    return;
-
-  if (! CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
+  if (CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
     {
-      mark_class_instantiated (t, extern_p);
-      repo_template_instantiated (t, extern_p);
+      /* [temp.spec]
+
+	 No program shall both explicitly instantiate and explicitly
+	 specialize a template.  */
+      cp_error ("explicit instantiation of `%#T' after", t);
+      cp_error_at ("explicit specialization here", t);
+      return;
     }
+  else if (CLASSTYPE_EXPLICIT_INSTANTIATION (t))
+    {
+      /* [temp.spec]
+
+	 No program shall explicitly instantiate any template more
+	 than once.  
+
+         If CLASSTYPE_INTERFACE_ONLY, then the first explicit
+	 instantiation was `extern', and if EXTERN_P then the second
+	 is.  Both cases are OK.  */
+      if (!CLASSTYPE_INTERFACE_ONLY (t) && !extern_p)
+	cp_error ("duplicate explicit instantiation of `%#T'", t);
+      
+      /* If we've already instantiated the template, just return now.  */
+      if (!CLASSTYPE_INTERFACE_ONLY (t))
+	return;
+    }
+
+  mark_class_instantiated (t, extern_p);
+  repo_template_instantiated (t, extern_p);
 
   if (nomem_p)
     return;
 
   {
     tree tmp;
+
+    /* In contrast to implicit instantiation, where only the
+       declarations, and not the definitions, of members are
+       instantiated, we have here:
+
+         [temp.explicit]
+
+	 The explicit instantiation of a class template specialization
+	 implies the instantiation of all of its members not
+	 previously explicitly specialized in the translation unit
+	 containing the explicit instantiation.  
+
+       Of course, we can't instantiate member template classes, since
+       we don't have any arguments for them.  Note that the standard
+       is unclear on whether the instatiation of the members are
+       *explicit* instantiations or not.  We choose to be generous,
+       and not set DECL_EXPLICIT_INSTANTIATION.  Therefore, we allow
+       the explicit instantiation of a class where some of the members
+       have no definition in the current translation unit.  */
 
     if (! static_p)
       for (tmp = TYPE_METHODS (t); tmp; tmp = TREE_CHAIN (tmp))
@@ -7613,19 +7682,6 @@ do_type_instantiation (t, storage)
 	    instantiate_decl (tmp);
 	}
 
-    /* In contrast to implicit instantiation, where only the
-       declarations, and not the definitions, of members are
-       instantiated, we have here:
-
-         [temp.explicit]
-
-	 The explicit instantiation of a class template specialization
-	 implies the instantiation of all of its members not
-	 previously explicitly specialized in the translation unit
-	 containing the explicit instantiation.  
-
-       Of course, we can't instantiate member template classes, since
-       we don't have any arguments for them.  */
     for (tmp = CLASSTYPE_TAGS (t); tmp; tmp = TREE_CHAIN (tmp))
       if (IS_AGGR_TYPE (TREE_VALUE (tmp))
 	  && !uses_template_parms (CLASSTYPE_TI_ARGS (TREE_VALUE (tmp))))
@@ -7783,7 +7839,11 @@ instantiate_decl (d)
 
   if ((TREE_CODE (d) == FUNCTION_DECL && DECL_INITIAL (d))
       || (TREE_CODE (d) == VAR_DECL && !DECL_IN_AGGR_P (d)))
-    /* D has already been instantiated.  */
+    /* D has already been instantiated.  It might seem reasonable to
+       check whether or not D is an explict instantiation, and, if so,
+       stop here.  But when an explicit instantiation is deferred
+       until the end of the compilation, DECL_EXPLICIT_INSTANTIATION
+       is set, even though we still need to do the instantiation.  */
     return d;
 
   /* If we already have a specialization of this declaration, then
@@ -7910,6 +7970,18 @@ instantiate_decl (d)
          function.  */
       lineno = line;
       input_filename = file;
+
+      if (at_eof && !pattern_defined 
+	  && DECL_EXPLICIT_INSTANTIATION (d))
+	/* [temp.explicit]
+
+	   The definition of a non-exported function template, a
+	   non-exported member function template, or a non-exported
+	   member function or static data member of a class template
+	   shall be present in every translation unit in which it is
+	   explicitly instantiated.  */
+	cp_error ("explicit instantiation of `%D' but no definition available",
+		  d);
 
       add_pending_template (d);
       goto out;

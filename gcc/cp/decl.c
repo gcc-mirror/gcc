@@ -429,13 +429,8 @@ tree static_aggregates;
 tree integer_zero_node;
 tree null_pointer_node;
 
-/* The value for __null (NULL), when -ansi is specified.  As per the
-   standard, this is an implementation-defined null pointer constant.  */
-tree ansi_null_node;
-
-/* The value for __null (NULL).  With -ansi, this is just
-   ansi_null_node.  Without -ansi, this is a zero-valued pointer
-   constant of type `{unknown type}*'.  */
+/* The value for __null (NULL), namely, a zero of an integer type with
+   the same number of bits as a pointer.  */
 tree null_node;
 
 /* A node for the integer constants 1, 2, and 3.  */
@@ -6035,9 +6030,7 @@ init_decl_processing ()
   /* Indirecting an UNKNOWN_TYPE node yields an UNKNOWN_TYPE node.  */
   TREE_TYPE (unknown_type_node) = unknown_type_node;
 
-  TREE_TYPE (ansi_null_node) = type_for_size (POINTER_SIZE, 0);
-  if (!flag_ansi)
-    TREE_TYPE (null_node) = build_pointer_type (unknown_type_node);
+  TREE_TYPE (null_node) = type_for_size (POINTER_SIZE, 0);
 
   /* Looking up TYPE_POINTER_TO and TYPE_REFERENCE_TO yield the same
      result.  */

@@ -1,3 +1,34 @@
+1998-08-23  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl2.c (grok_array_decl): Add comment.
+	(mark_used): Don't instantiate an explicit instantiation.
+	* friend.c (make_friend_class): Remove bogus comment.  Fix check
+	for partial specializations.
+	* pt.c (check_explicit_specialization): Don't
+	SET_DECL_EXPLICIT_INSTANTIATION here.
+	(mark_decl_instantiated): Or here.
+	(do_decl_instantiation): Do it here, instead.  Add checks for
+	duplicate explicit instantiations, etc.  Tidy.
+	(do_type_instantiation): Likewise.
+	(instantiate_decl): Improve comments.  Complain about explicit
+	instantiations where no definition is available.
+	
+	* cp-tree.h (ansi_null_node): Remove.
+	* call.c (build_over_call): Warn about converting NULL to an
+	arithmetic type.
+	* cvt.c (build_expr_type_conversion): Likewise.  Use
+	null_ptr_cst_p instead of expanding it inline.
+	* decl.c (ansi_null_node): Remove. 
+	(init_decl_processing): Make null_node always have integral type.
+	* except.c (build_throw): Warn about converting NULL to an
+	arithmetic type.
+	* lex.c (init_parse): Remove handling of ansi_null_node.
+	* pt.c (type_unification_real): Don't convert NULL to void* type.
+	* typeck.c (build_binary_op_nodefault): Fix NULL warnings.
+	(convert_for_assignment): Warn about converting NULL to an
+	arithmetic type.
+	(convert_for_initialization): Likewise.
+	
 1998-08-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (search_tree, no_linkage_helper, no_linkage_check): New fn.

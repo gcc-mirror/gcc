@@ -32,7 +32,6 @@ typedef complex<f> c;
 typedef const c& ccr;
 
 #ifdef MAIN
-template class complex<f>;
 template c& __doapl (c*, ccr);
 template c& __doaml (c*, ccr);
 template c& __doami (c*, ccr);
