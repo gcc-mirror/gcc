@@ -1,5 +1,33 @@
 2003-04-13  Nick Clifton  <nickc@redhat.com>
 
+	* config/rs6000/rs6000.c: Replace occurrences of "GNU CC" with
+	"GCC".
+	* config/rs6000/40x.md, config/rs6000/603.md,
+	config/rs6000/6xx.md, config/rs6000/7450.md, config/rs6000/7xx.md,
+	config/rs6000/8540.md, config/rs6000/aix.h, config/rs6000/aix31.h,
+	config/rs6000/aix3newas.h, config/rs6000/aix41.h,
+	config/rs6000/aix43.h, config/rs6000/aix51.h,
+	config/rs6000/aix52.h, config/rs6000/altivec-defs.h,
+	config/rs6000/altivec.h, config/rs6000/altivec.md,
+	config/rs6000/beos.h, config/rs6000/darwin.h,
+	config/rs6000/eabi.h, config/rs6000/eabialtivec.h,
+	config/rs6000/eabisim.h, config/rs6000/eabispe.h,
+	config/rs6000/freebsd.h, config/rs6000/gnu.h,
+	config/rs6000/host-darwin.c, config/rs6000/linux.h,
+	config/rs6000/linux64.h, config/rs6000/linuxaltivec.h,
+	config/rs6000/lynx.h, config/rs6000/mach.h, config/rs6000/mpc.md,
+	config/rs6000/netbsd.h, config/rs6000/power4.md,
+	config/rs6000/rios1.md, config/rs6000/rios2.md,
+	config/rs6000/rs6000-c.c, config/rs6000/rs6000-modes.def,
+	config/rs6000/rs6000-protos.h, config/rs6000/rs6000.c,
+	config/rs6000/rs6000.h, config/rs6000/rs6000.md,
+	config/rs6000/rs64.md, config/rs6000/rtems.h, config/rs6000/spe.h,
+	config/rs6000/spe.md, config/rs6000/sysv4.h,
+	config/rs6000/sysv4le.h, config/rs6000/vxworks.h,
+	config/rs6000/windiss.h, config/rs6000/xcoff.h: Likewise.	
+
+2003-04-13  Nick Clifton  <nickc@redhat.com>
+
 	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Delete
 	support for -mcall-aix switch.
 	* config/rs6000/eabiaix.h: Delete.

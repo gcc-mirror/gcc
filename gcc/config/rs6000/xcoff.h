@@ -1,24 +1,23 @@
 /* Definitions of target machine for GNU compiler,
    for some generic XCOFF file format
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+   This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 2, or (at your
+   option) any later version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
-
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING.  If not, write to the
+   Free Software Foundation, 59 Temple Place - Suite 330, Boston,
+   MA 02111-1307, USA.  */
 
 #define TARGET_OBJECT_FORMAT OBJECT_XCOFF
 
@@ -175,14 +174,14 @@ toc_section ()						\
 #define RESTORE_FP_SUFFIX ""
 
 /* Function name to call to do profiling.  */
-#undef RS6000_MCOUNT
+#undef  RS6000_MCOUNT
 #define RS6000_MCOUNT ".__mcount"
 
 /* Function names to call to do floating point truncation.  */
 
-#undef RS6000_ITRUNC
+#undef  RS6000_ITRUNC
 #define RS6000_ITRUNC "__itrunc"
-#undef RS6000_UITRUNC
+#undef  RS6000_UITRUNC
 #define RS6000_UITRUNC "__uitrunc"
 
 /* This outputs NAME to FILE up to the first null or '['.  */
@@ -305,7 +304,7 @@ toc_section ()						\
 
 /* This says how to output an external.  */
 
-#undef ASM_OUTPUT_EXTERNAL
+#undef  ASM_OUTPUT_EXTERNAL
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)				\
 { rtx _symref = XEXP (DECL_RTL (DECL), 0);				\
   if ((TREE_CODE (DECL) == VAR_DECL					\
