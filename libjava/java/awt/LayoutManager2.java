@@ -52,12 +52,12 @@ public interface LayoutManager2 extends LayoutManager
 {
   /**
    * Adds the specified component to the layout, with the specified
-   * constraint object.
+   * constraints object.
    *
    * @param component the component to add
-   * @param constraint the constraint to satisfy
+   * @param constraints the constraints to satisfy
    */
-  void addLayoutComponent(Component component, Object contraint);
+  void addLayoutComponent(Component component, Object contraints);
 
   /**
    * Determines the maximum size of the specified target container.

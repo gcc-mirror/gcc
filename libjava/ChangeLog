@@ -1,3 +1,23 @@
+2004-02-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkListPeer.java,
+	java/awt/BorderLayout.java, java/awt/CardLayout.java,
+	java/awt/CheckboxGroup.java, java/awt/Choice.java,
+	java/awt/Component.java, java/awt/Container.java,
+	java/awt/FontMetrics.java, java/awt/GridBagLayout.java,
+	java/awt/LayoutManager2.java, java/awt/List.java,
+	java/awt/Menu.java, java/awt/MenuBar.java,
+	java/awt/MenuItem.java, java/awt/Polygon.java,
+	java/awt/Rectangle.java, java/awt/ScrollPane.java,
+	java/awt/Scrollbar.java, java/awt/TextArea.java,
+	java/awt/TextField.java,
+	java/awt/image/renderable/RenderContext.java,
+	javax/swing/JApplet.java: Fix handling of alias methods, where a
+	method has been deprecated in favour of a new one with the same
+	funtion but a different name.  Put the method implementation in
+	the deprecated method and have the new method call the
+	deprecated one.  Make all other code call the new method.
+
 2004-02-03  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gnu/java/nio/DatagramChannelImpl.java

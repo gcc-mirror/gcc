@@ -80,7 +80,7 @@ public class JApplet extends Applet
   public Dimension getPreferredSize()
   {
     Dimension d = super.getPreferredSize();
-    System.out.println("JFrame.getPrefSize(): " + d + " , comp="+countComponents() + ", layout=" + getLayout());
+    System.out.println("JFrame.getPrefSize(): " + d + " , comp="+ getComponentCount () + ", layout=" + getLayout());
     return d;
   }
 

@@ -258,10 +258,24 @@ public class Polygon implements Shape, Serializable
    */
   public Rectangle getBounds()
   {
+    return getBoundingBox ();
+  }
+
+  /**
+   * Returns the bounding box of this polygon. This is the smallest
+   * rectangle with sides parallel to the X axis that will contain this
+   * polygon.
+   *
+   * @return the bounding box for this polygon
+   * @see #getBounds2D()
+   * @deprecated use {@link #getBounds()} instead
+   */
+  public Rectangle getBoundingBox()
+  {
     if (bounds == null)
       {
         if (npoints == 0)
-          return bounds = new Rectangle();
+          return bounds = new Rectangle ();
         int i = npoints - 1;
         int minx = xpoints[i];
         int maxx = minx;
@@ -280,23 +294,9 @@ public class Polygon implements Shape, Serializable
             else if (y > maxy)
               maxy = y;
           }
-        bounds = new Rectangle(minx, maxy, maxx - minx, maxy - miny);
+        bounds = new Rectangle (minx, maxy, maxx - minx, maxy - miny);
       }
     return bounds;
-  }
-
-  /**
-   * Returns the bounding box of this polygon. This is the smallest
-   * rectangle with sides parallel to the X axis that will contain this
-   * polygon.
-   *
-   * @return the bounding box for this polygon
-   * @see #getBounds2D()
-   * @deprecated use {@link #getBounds()} instead
-   */
-  public Rectangle getBoundingBox()
-  {
-    return getBounds();
   }
 
   /**

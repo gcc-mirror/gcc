@@ -87,24 +87,24 @@ public class RenderContext implements Cloneable
 
   public void preConcatenateTransform(AffineTransform pre)
   {
-    xform.preConcatenate(pre);
+    preConcetenateTransform (pre);
   }
 
-  /** @deprecated Sun can't spell concatenate */
+  /** @deprecated */
   public void preConcetenateTransform(AffineTransform pre)
   {
-    preConcetenateTransform(pre);
+    xform.preConcatenate (pre);
   }
 
   public void concatenateTransform(AffineTransform post)
   {
-    xform.concatenate(post);
+    concetenateTransform (post);
   }
 
-  /** @deprecated Sun can't spell concatenate */
+  /** @deprecated */
   public void concetenateTransform(AffineTransform post)
   {
-    concatenateTransform(post);
+    xform.concatenate (post);
   }
 
   public AffineTransform getTransform()

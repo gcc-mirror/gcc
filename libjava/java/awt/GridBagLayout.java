@@ -149,7 +149,7 @@ public class GridBagLayout
 
     public void layoutContainer (Container parent)
     {
-	arrangeGrid (parent);
+      arrangeGrid (parent);
     }
 
     public float getLayoutAlignmentX (Container target)
@@ -302,7 +302,8 @@ public class GridBagLayout
      */
     protected void AdjustForGravity (GridBagConstraints gbc, Rectangle rect)
     {
-	adjustForGravity (gbc, rect);
+      // FIXME
+      throw new Error ("Not implemented");
     }
 
     /**
@@ -310,7 +311,115 @@ public class GridBagLayout
      */
     protected void ArrangeGrid (Container parent)
     {
-	arrangeGrid (parent);
+      Component[] components = parent.getComponents();
+
+      if (components.length == 0)
+        return;
+
+      GridBagLayoutInfo info = getLayoutInfo (parent, PREFERREDSIZE);
+      if (info.cols == 0 && info.rows == 0)
+        return;
+      layoutInfo = info;
+
+      // DEBUG
+      //dumpLayoutInfo (layoutInfo);
+    
+      for(int i = 0; i < components.length; i++)
+	{
+          Component component = components [i];
+		
+          // If component is not visible we dont have to care about it.
+          if (!component.isVisible())
+            continue;
+		
+          GridBagConstraints constraints = lookupConstraints (component);
+
+          int cellx = sumIntArray(layoutInfo.colWidths, constraints.gridx);
+          int celly = sumIntArray(layoutInfo.rowHeights, constraints.gridy);
+          int cellw = sumIntArray(layoutInfo.colWidths,
+                                  constraints.gridx + constraints.gridwidth) - cellx;
+          int cellh = sumIntArray(layoutInfo.rowHeights,
+                                  constraints.gridy + constraints.gridheight) - celly;
+
+          Insets insets = constraints.insets;
+          if (insets != null)
+	    {
+              cellx += insets.left;
+              celly += insets.top;
+              cellw -= insets.left + insets.right;
+              cellh -= insets.top + insets.bottom;
+	    }
+
+          Dimension dim = component.getPreferredSize();
+
+          // Note: Documentation says that padding is added on both sides, but
+          // visual inspection shows that the Sun implementation only adds it
+          // once, so we do the same.
+          dim.width += constraints.ipadx;
+          dim.height += constraints.ipady;
+
+          switch(constraints.fill)
+	    {
+            case GridBagConstraints.HORIZONTAL:
+              dim.width = cellw;
+              break;
+            case GridBagConstraints.VERTICAL:
+              dim.height = cellh;
+              break;
+            case GridBagConstraints.BOTH:
+              dim.width = cellw;
+              dim.height = cellh;
+              break;
+	    }
+
+          int x;
+          int y;
+
+          switch(constraints.anchor)
+	    {
+            case GridBagConstraints.NORTH:
+              x = cellx + (cellw - dim.width) / 2;
+              y = celly;
+              break;
+            case GridBagConstraints.SOUTH:
+              x = cellx + (cellw - dim.width) / 2;
+              y = celly + cellh - dim.height;
+              break;
+            case GridBagConstraints.WEST:
+              x = cellx;
+              y = celly + (cellh - dim.height) / 2;
+              break;
+            case GridBagConstraints.EAST:
+              x = cellx + cellw - dim.width;
+              y = celly + (cellh - dim.height) / 2;
+              break;
+            case GridBagConstraints.NORTHEAST:
+              x = cellx + cellw - dim.width;
+              y = celly;
+              break;
+            case GridBagConstraints.NORTHWEST:
+              x = cellx;
+              y = celly;
+              break;
+            case GridBagConstraints.SOUTHEAST:
+              x = cellx + cellw - dim.width;
+              y = celly + cellh - dim.height;
+              break;
+            case GridBagConstraints.SOUTHWEST:
+              x = cellx;
+              y = celly + cellh - dim.height;
+              break;
+            default:
+              x = cellx + (cellw - dim.width) / 2;
+              y = celly + (cellh - dim.height) / 2;
+              break;
+	    }
+
+          component.setBounds(layoutInfo.pos_x + x, layoutInfo.pos_y + y, dim.width, dim.height);
+	}
+
+      // DEBUG
+      //dumpLayoutInfo (layoutInfo);
     }
 
     /**
@@ -318,7 +427,160 @@ public class GridBagLayout
      */
     protected GridBagLayoutInfo GetLayoutInfo (Container parent, int sizeflag)
     {
-	return getLayoutInfo (parent, sizeflag);
+      if (sizeflag != MINSIZE && sizeflag != PREFERREDSIZE)
+        throw new IllegalArgumentException();
+
+      Dimension parentDim = parent.getSize ();
+      Insets parentInsets = parent.getInsets ();
+      parentDim.width -= parentInsets.left + parentInsets.right;
+      parentDim.height -= parentInsets.top + parentInsets.bottom;
+   
+      int x = 0;
+      int y = 0;
+      int max_x = 0;
+      int max_y = 0;
+
+      // first we figure out how many rows/columns
+      Component[] components = parent.getComponents();
+      for (int i = 0; i < components.length; i++)
+	{
+          Component component = components [i];
+		
+          // If component is not visible we dont have to care about it.
+          if (!component.isVisible())
+            continue;
+		
+          GridBagConstraints constraints = lookupConstraints (component);
+		
+          if(constraints.gridx == GridBagConstraints.RELATIVE)
+            constraints.gridx = x;
+
+          if(constraints.gridy == GridBagConstraints.RELATIVE)
+            constraints.gridy = y;
+		
+          max_x = Math.max(max_x, 
+                           constraints.gridx + Math.max(1, constraints.gridwidth));
+          max_y = Math.max(max_y,
+                           constraints.gridy + Math.max(1, constraints.gridheight));
+
+          if(constraints.gridwidth == GridBagConstraints.REMAINDER)
+	    {
+              x = 0;
+              y++;
+	    }
+          else
+	    {
+              x = constraints.gridx + Math.max(1, constraints.gridwidth);
+              y = constraints.gridy;
+	    }
+	}
+	
+      GridBagLayoutInfo info = new GridBagLayoutInfo(max_x, max_y);
+
+      for (x = 0; x <= max_x; x++)
+	{
+          if(columnWidths != null && columnWidths.length > x)
+	    {
+              info.colWidths[x] = columnWidths[x];
+	    }
+          if(columnWeights != null && columnWeights.length > x)
+	    {
+              info.colWeights[x] = columnWeights[x];
+	    }
+          for (int i = 0; i < components.length; i++)
+	    {
+              Component component = components [i];
+			
+              // If component is not visible we dont have to care about it.
+              if (!component.isVisible())
+                continue;
+			
+              GridBagConstraints constraints = lookupConstraints (component);
+
+              // first we fix up any REMAINDER cells
+              if(constraints.gridwidth == GridBagConstraints.REMAINDER)
+		{
+                  constraints.gridwidth = max_x - constraints.gridx;
+		}
+              if(constraints.gridheight == GridBagConstraints.REMAINDER)
+		{
+                  constraints.gridheight = max_y - constraints.gridy;
+		}
+
+              if(constraints.gridx + constraints.gridwidth - 1 == x)
+		{
+                  int width = (sizeflag == PREFERREDSIZE) ?
+                    component.getPreferredSize().width :
+                    component.getMinimumSize().width;
+                  if(constraints.insets != null)
+		    {
+                      width += constraints.insets.left + constraints.insets.right;
+		    }
+                  width += constraints.ipadx;
+                  for(int w = 1; w < constraints.gridwidth; w++)
+		    {
+                      width -= info.colWidths[x - w];
+		    }
+                  info.colWidths[x] = Math.max(info.colWidths[x], width);
+                  info.colWeights[x] =
+                    Math.max(info.colWeights[x], constraints.weightx);
+		}
+	    }
+	}
+
+      for (y = 0; y <= max_y; y++)
+	{
+          if(rowHeights != null && rowHeights.length > y)
+	    {
+              info.rowHeights[y] = rowHeights[y];
+	    }
+          if(rowWeights != null && rowWeights.length > y)
+	    {
+              info.rowWeights[y] = rowWeights[y];
+	    }
+          for (int i = 0; i < components.length; i++)
+	    {
+              Component component = components [i];
+			
+              // If component is not visible we dont have to care about it.
+              if (!component.isVisible())
+                continue;
+			
+              GridBagConstraints constraints = lookupConstraints (component);
+
+              if(constraints.gridy + constraints.gridheight - 1 == y)
+		{
+                  int height = (sizeflag == PREFERREDSIZE) ?
+                    component.getPreferredSize().height :
+                    component.getMinimumSize().height;
+                  if(constraints.insets != null)
+		    {
+                      height += constraints.insets.top + constraints.insets.bottom;
+		    } 
+                  height += constraints.ipady;
+                  for(int h = 1; h < constraints.gridheight; h++)
+		    {
+                      height -= info.rowHeights[y - h];
+		    }
+                  info.rowHeights[y] = Math.max(info.rowHeights[y], height);
+                  info.rowWeights[y] =
+                    Math.max(info.rowWeights[y], constraints.weighty);
+		}
+	    }
+	}
+
+      calcCellSizes (info.colWidths, info.colWeights, parentDim.width);
+      calcCellSizes (info.rowHeights, info.rowWeights, parentDim.height);
+
+      int totalWidth = sumIntArray(info.colWidths);
+      int totalHeight = sumIntArray(info.rowHeights);
+      info.pos_x = parentInsets.left + (parentDim.width - totalWidth) / 2;
+      info.pos_y = parentInsets.top + (parentDim.height - totalHeight) / 2;
+
+      // DEBUG
+      //dumpLayoutInfo (info);
+
+      return info;
     }
 
     /**
@@ -326,7 +588,13 @@ public class GridBagLayout
      */
     protected Dimension GetMinSize (Container parent, GridBagLayoutInfo info)
     {
-	return getMinSize (parent, info);
+      if (parent == null || info == null)
+        return new Dimension (0, 0);
+
+      Insets insets = parent.getInsets();
+      int width = sumIntArray (info.colWidths) + insets.left + insets.right;
+      int height = sumIntArray (info.rowHeights) + insets.top + insets.bottom;
+      return new Dimension (width, height);
     }
 
     /**
@@ -334,13 +602,7 @@ public class GridBagLayout
      */
     protected Dimension getMinSize (Container parent, GridBagLayoutInfo info)
     {
-	if (parent == null || info == null)
-	    return new Dimension (0, 0);
-
-	Insets insets = parent.getInsets();
-	int width = sumIntArray (info.colWidths) + insets.left + insets.right;
-	int height = sumIntArray (info.rowHeights) + insets.top + insets.bottom;
-	return new Dimension (width, height);
+      return GetMinSize (parent, info);
     }
 
     private void calcCellSizes (int[] sizes, double[] weights, int range)
@@ -404,116 +666,7 @@ public class GridBagLayout
      */
     protected void arrangeGrid (Container parent)
     {
-	Component[] components = parent.getComponents();
-
-	if (components.length == 0)
-	    return;
-
-	GridBagLayoutInfo info = getLayoutInfo (parent, PREFERREDSIZE);
-	if (info.cols == 0 && info.rows == 0)
-	    return;
-	layoutInfo = info;
-
-	// DEBUG
-	//dumpLayoutInfo (layoutInfo);
-    
-	for(int i = 0; i < components.length; i++)
-	{
-	    Component component = components [i];
-		
-	    // If component is not visible we dont have to care about it.
-	    if (!component.isVisible())
-		continue;
-		
-	    GridBagConstraints constraints = lookupConstraints (component);
-
-	    int cellx = sumIntArray(layoutInfo.colWidths, constraints.gridx);
-	    int celly = sumIntArray(layoutInfo.rowHeights, constraints.gridy);
-	    int cellw = sumIntArray(layoutInfo.colWidths,
-		constraints.gridx + constraints.gridwidth) - cellx;
-	    int cellh = sumIntArray(layoutInfo.rowHeights,
-		constraints.gridy + constraints.gridheight) - celly;
-
-	    Insets insets = constraints.insets;
-	    if (insets != null)
-	    {
-		cellx += insets.left;
-		celly += insets.top;
-		cellw -= insets.left + insets.right;
-		cellh -= insets.top + insets.bottom;
-	    }
-
-	    Dimension dim = component.preferredSize();
-
-	    // Note: Documentation says that padding is added on both sides, but
-	    // visual inspection shows that the Sun implementation only adds it
-	    // once, so we do the same.
-	    dim.width += constraints.ipadx;
-	    dim.height += constraints.ipady;
-
-	    switch(constraints.fill)
-	    {
-		case GridBagConstraints.HORIZONTAL:
-		    dim.width = cellw;
-		    break;
-		case GridBagConstraints.VERTICAL:
-		    dim.height = cellh;
-		    break;
-		case GridBagConstraints.BOTH:
-		    dim.width = cellw;
-		    dim.height = cellh;
-		    break;
-	    }
-
-	    int x;
-	    int y;
-
-	    switch(constraints.anchor)
-	    {
-		case GridBagConstraints.NORTH:
-		    x = cellx + (cellw - dim.width) / 2;
-		    y = celly;
-		    break;
-		case GridBagConstraints.SOUTH:
-		    x = cellx + (cellw - dim.width) / 2;
-		    y = celly + cellh - dim.height;
-		    break;
-		case GridBagConstraints.WEST:
-		    x = cellx;
-		    y = celly + (cellh - dim.height) / 2;
-		    break;
-		case GridBagConstraints.EAST:
-		    x = cellx + cellw - dim.width;
-		    y = celly + (cellh - dim.height) / 2;
-		    break;
-		case GridBagConstraints.NORTHEAST:
-		    x = cellx + cellw - dim.width;
-		    y = celly;
-		    break;
-		case GridBagConstraints.NORTHWEST:
-		    x = cellx;
-		    y = celly;
-		    break;
-		case GridBagConstraints.SOUTHEAST:
-		    x = cellx + cellw - dim.width;
-		    y = celly + cellh - dim.height;
-		    break;
-		case GridBagConstraints.SOUTHWEST:
-		    x = cellx;
-		    y = celly + cellh - dim.height;
-		    break;
-		default:
-		    x = cellx + (cellw - dim.width) / 2;
-		    y = celly + (cellh - dim.height) / 2;
-		    break;
-	    }
-
-	    component.setBounds(layoutInfo.pos_x + x, layoutInfo.pos_y + y, dim.width, dim.height);
-	}
-    
-	// DEBUG
-	//dumpLayoutInfo (layoutInfo);
-
+      ArrangeGrid (parent);
     }
 
     /**
@@ -521,160 +674,7 @@ public class GridBagLayout
      */
     protected GridBagLayoutInfo getLayoutInfo (Container parent, int sizeflag)
     {
-	if (sizeflag != MINSIZE && sizeflag != PREFERREDSIZE)
-	    throw new IllegalArgumentException();
-
-	Dimension parentDim = parent.size();
-	Insets parentInsets = parent.insets();
-	parentDim.width -= parentInsets.left + parentInsets.right;
-	parentDim.height -= parentInsets.top + parentInsets.bottom;
-   
-	int x = 0;
-	int y = 0;
-	int max_x = 0;
-	int max_y = 0;
-
-	// first we figure out how many rows/columns
-	Component[] components = parent.getComponents();
-	for (int i = 0; i < components.length; i++)
-	{
-	    Component component = components [i];
-		
-	    // If component is not visible we dont have to care about it.
-	    if (!component.isVisible())
-		continue;
-		
-	    GridBagConstraints constraints = lookupConstraints (component);
-		
-	    if(constraints.gridx == GridBagConstraints.RELATIVE)
-		constraints.gridx = x;
-
-	    if(constraints.gridy == GridBagConstraints.RELATIVE)
-		constraints.gridy = y;
-		
-	    max_x = Math.max(max_x, 
-		constraints.gridx + Math.max(1, constraints.gridwidth));
-	    max_y = Math.max(max_y,
-		constraints.gridy + Math.max(1, constraints.gridheight));
-
-	    if(constraints.gridwidth == GridBagConstraints.REMAINDER)
-	    {
-		x = 0;
-		y++;
-	    }
-	    else
-	    {
-		x = constraints.gridx + Math.max(1, constraints.gridwidth);
-		y = constraints.gridy;
-	    }
-	}
-	
-	GridBagLayoutInfo info = new GridBagLayoutInfo(max_x, max_y);
-
-	for (x = 0; x <= max_x; x++)
-	{
-	    if(columnWidths != null && columnWidths.length > x)
-	    {
-		info.colWidths[x] = columnWidths[x];
-	    }
-	    if(columnWeights != null && columnWeights.length > x)
-	    {
-		info.colWeights[x] = columnWeights[x];
-	    }
-	    for (int i = 0; i < components.length; i++)
-	    {
-		Component component = components [i];
-			
-		// If component is not visible we dont have to care about it.
-		if (!component.isVisible())
-		    continue;
-			
-		GridBagConstraints constraints = lookupConstraints (component);
-
-		// first we fix up any REMAINDER cells
-		if(constraints.gridwidth == GridBagConstraints.REMAINDER)
-		{
-		    constraints.gridwidth = max_x - constraints.gridx;
-		}
-		if(constraints.gridheight == GridBagConstraints.REMAINDER)
-		{
-		    constraints.gridheight = max_y - constraints.gridy;
-		}
-
-		if(constraints.gridx + constraints.gridwidth - 1 == x)
-		{
-		    int width = (sizeflag == PREFERREDSIZE) ?
-			component.preferredSize().width :
-			component.minimumSize().width;
-		    if(constraints.insets != null)
-		    {
-			width += constraints.insets.left + constraints.insets.right;
-		    }
-		    width += constraints.ipadx;
-		    for(int w = 1; w < constraints.gridwidth; w++)
-		    {
-			width -= info.colWidths[x - w];
-		    }
-		    info.colWidths[x] = Math.max(info.colWidths[x], width);
-		    info.colWeights[x] =
-			Math.max(info.colWeights[x], constraints.weightx);
-		}
-	    }
-	}
-
-	for (y = 0; y <= max_y; y++)
-	{
-	    if(rowHeights != null && rowHeights.length > y)
-	    {
-		info.rowHeights[y] = rowHeights[y];
-	    }
-	    if(rowWeights != null && rowWeights.length > y)
-	    {
-		info.rowWeights[y] = rowWeights[y];
-	    }
-	    for (int i = 0; i < components.length; i++)
-	    {
-		Component component = components [i];
-			
-		// If component is not visible we dont have to care about it.
-		if (!component.isVisible())
-		    continue;
-			
-		GridBagConstraints constraints = lookupConstraints (component);
-
-		if(constraints.gridy + constraints.gridheight - 1 == y)
-		{
-		    int height = (sizeflag == PREFERREDSIZE) ?
-			component.preferredSize().height :
-			component.minimumSize().height;
-		    if(constraints.insets != null)
-		    {
-			height += constraints.insets.top + constraints.insets.bottom;
-		    } 
-		    height += constraints.ipady;
-		    for(int h = 1; h < constraints.gridheight; h++)
-		    {
-			height -= info.rowHeights[y - h];
-		    }
-		    info.rowHeights[y] = Math.max(info.rowHeights[y], height);
-		    info.rowWeights[y] =
-			Math.max(info.rowWeights[y], constraints.weighty);
-		}
-	    }
-	}
-
-	calcCellSizes (info.colWidths, info.colWeights, parentDim.width);
-	calcCellSizes (info.rowHeights, info.rowWeights, parentDim.height);
-
-	int totalWidth = sumIntArray(info.colWidths);
-	int totalHeight = sumIntArray(info.rowHeights);
-	info.pos_x = parentInsets.left + (parentDim.width - totalWidth) / 2;
-	info.pos_y = parentInsets.top + (parentDim.height - totalHeight) / 2;
-
-	// DEBUG
-	//dumpLayoutInfo (info);
-
-	return info;
+      return GetLayoutInfo (parent, sizeflag);
     }
 
     /**
@@ -682,7 +682,6 @@ public class GridBagLayout
      */
     protected void adjustForGravity (GridBagConstraints gbc, Rectangle rect)
     {
-	// FIXME
-	throw new Error ("Not implemented");
+      AdjustForGravity (gbc, rect);
     }
 }

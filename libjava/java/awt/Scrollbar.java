@@ -333,7 +333,7 @@ setMinimum(int minimum)
 public int
 getVisibleAmount()
 {
-  return(visibleAmount);
+  return getVisible ();
 }
 
 /*************************************************************************/
@@ -350,7 +350,7 @@ getVisibleAmount()
 public int
 getVisible()
 {
-  return(getVisibleAmount());
+  return visibleAmount;
 }
 
 /*************************************************************************/
@@ -438,7 +438,7 @@ setValues(int value, int visibleAmount, int minimum, int maximum)
 public int
 getUnitIncrement()
 {
-  return(lineIncrement);
+  return getLineIncrement ();
 }
 
 /*************************************************************************/
@@ -455,7 +455,7 @@ getUnitIncrement()
 public int
 getLineIncrement()
 {
-  return(lineIncrement);
+  return lineIncrement;
 }
 
 /*************************************************************************/
@@ -469,26 +469,7 @@ getLineIncrement()
 public synchronized void
 setUnitIncrement(int unitIncrement)
 {
-  if (unitIncrement < 0)
-    throw new IllegalArgumentException("Unit increment less than zero.");
-
-  int range = maximum - minimum;
-  if (unitIncrement > range)
-    {
-      if (range == 0)
-        unitIncrement = 1;
-      else
-        unitIncrement = range;
-    }
-
-  if (unitIncrement == lineIncrement)
-    return;
-
-  lineIncrement = unitIncrement;
-
-  ScrollbarPeer sp = (ScrollbarPeer)getPeer();
-  if (sp != null)
-    sp.setLineIncrement(lineIncrement);
+  setLineIncrement (unitIncrement);
 }
 
 /*************************************************************************/
@@ -505,7 +486,26 @@ setUnitIncrement(int unitIncrement)
 public void
 setLineIncrement(int lineIncrement)
 {
-  setUnitIncrement(lineIncrement);
+  if (lineIncrement < 0)
+    throw new IllegalArgumentException ("Unit increment less than zero.");
+
+  int range = maximum - minimum;
+  if (lineIncrement > range)
+    {
+      if (range == 0)
+        lineIncrement = 1;
+      else
+        lineIncrement = range;
+    }
+
+  if (lineIncrement == this.lineIncrement)
+    return;
+
+  this.lineIncrement = lineIncrement;
+
+  ScrollbarPeer sp = (ScrollbarPeer) getPeer ();
+  if (sp != null)
+    sp.setLineIncrement (this.lineIncrement);
 }
 
 /*************************************************************************/
@@ -519,7 +519,7 @@ setLineIncrement(int lineIncrement)
 public int
 getBlockIncrement()
 {
-  return(pageIncrement);
+  return getPageIncrement ();
 }
 
 /*************************************************************************/
@@ -536,7 +536,7 @@ getBlockIncrement()
 public int
 getPageIncrement()
 {
-  return(pageIncrement);
+  return pageIncrement;
 }
 
 /*************************************************************************/
@@ -550,26 +550,7 @@ getPageIncrement()
 public synchronized void
 setBlockIncrement(int blockIncrement)
 {
-  if (blockIncrement < 0)
-    throw new IllegalArgumentException("Block increment less than zero.");
-
-  int range = maximum - minimum;
-  if (blockIncrement > range)
-    {
-      if (range == 0)
-        blockIncrement = 1;
-      else
-        blockIncrement = range;
-    }
-
-  if (blockIncrement == pageIncrement)
-    return;
-
-  pageIncrement = blockIncrement;
-
-  ScrollbarPeer sp = (ScrollbarPeer)getPeer();
-  if (sp != null)
-    sp.setPageIncrement(pageIncrement);
+  setPageIncrement (blockIncrement);
 }
 
 /*************************************************************************/
@@ -586,7 +567,26 @@ setBlockIncrement(int blockIncrement)
 public void
 setPageIncrement(int pageIncrement)
 {
-  setBlockIncrement(pageIncrement);
+  if (pageIncrement < 0)
+    throw new IllegalArgumentException ("Block increment less than zero.");
+
+  int range = maximum - minimum;
+  if (pageIncrement > range)
+    {
+      if (range == 0)
+        pageIncrement = 1;
+      else
+        pageIncrement = range;
+    }
+
+  if (pageIncrement == this.pageIncrement)
+    return;
+
+  this.pageIncrement = pageIncrement;
+
+  ScrollbarPeer sp = (ScrollbarPeer) getPeer ();
+  if (sp != null)
+    sp.setPageIncrement (this.pageIncrement);
 }
 
 /*************************************************************************/

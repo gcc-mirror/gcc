@@ -111,7 +111,7 @@ private ItemListener item_listeners;
 public int
 getItemCount()
 {
-  return(pItems.size());
+  return countItems ();
 }
 
 /*************************************************************************/
