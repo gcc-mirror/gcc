@@ -4156,11 +4156,9 @@ init_function_start (subr, filename, line)
   if (aggregate_value_p (DECL_RESULT (subr)))
     {
 #ifdef PCC_STATIC_STRUCT_RETURN
-      if (flag_pcc_struct_return)
-	current_function_returns_pcc_struct = 1;
-      else
+      current_function_returns_pcc_struct = 1;
 #endif
-	current_function_returns_struct = 1;
+      current_function_returns_struct = 1;
     }
 
   /* Warn if this value is an aggregate type,
