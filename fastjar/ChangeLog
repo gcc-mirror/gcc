@@ -3,10 +3,6 @@
 	* dostime.c: Rewrote from scratch.
 	* dostime.h (dostime): Removed.
 
-2002-10-24  Tom Tromey  <tromey@redhat.com>
-
-	* dostime.c: Removed Id and Log.
-
 2002-10-20  Tom Tromey  <tromey@redhat.com>
 
 	* jartool.c: Use mode 0666 when opening new file.
