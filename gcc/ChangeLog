@@ -1,3 +1,10 @@
+1998-06-22 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* expr.c (expand_assignment): Rework address calculation for structure
+	field members to expose more invariant computations to the loop
+	optimizer.
+	(expand_expr): Likewise.
+
 Wed Jun 24 22:44:22 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* local-alloc.c (block_alloc): Do not try to avoid false dependencies
