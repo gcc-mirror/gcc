@@ -11,6 +11,8 @@ inline template struct A<int>;
 
 A<int> a;			// gets bogus error
 A<char> b;			// ERROR - not instantiated XFAIL mips*-*-*
+				// Irix's default linker does not
+				// produce line numbers so XFAIL it.
 
 int main ()
 {

@@ -1,5 +1,10 @@
 2001-01-14  Jeffrey Oldham  <oldham@codesourcery.com>
 
+	* g++.old-deja/g++.ext/instantiate2.C: Add explanatory comment.
+	* g++.old-deja/g++.ext/instantiate3.C: Likewise.
+
+2001-01-14  Jeffrey Oldham  <oldham@codesourcery.com>
+
 	* g++.dg/special/ecos.exp (conpr-1.C): XFAIL if compile emits
 	message containing "init_priority".
 	(conpr-2.C): Likewise.
