@@ -263,6 +263,20 @@ static void hack_vms_include_specification ();
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
+/* Find the largest host integer type and set its size and type.  */
+
+#ifndef HOST_BITS_PER_WIDE_INT
+
+#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
+#define HOST_WIDE_INT long
+#else
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
+#define HOST_WIDE_INT int
+#endif
+
+#endif
+
 #ifndef S_ISREG
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
@@ -5257,12 +5271,12 @@ pcfinclude (buf, limit, name, op)
 
     /* First skip to a longword boundary */
     /* ??? Why a 4-byte boundary?  On all machines? */
-    /* NOTE: This works correctly even if int
+    /* NOTE: This works correctly even if HOST_WIDE_INT
        is narrower than a pointer.
        Do not try risky measures here to get another type to use!
        Do not include stddef.h--it will fail!  */
-    if ((int) cp & 3)
-      cp += 4 - ((int) cp & 3);
+    if ((HOST_WIDE_INT) cp & 3)
+      cp += 4 - ((HOST_WIDE_INT) cp & 3);
     
     /* Now get the string. */
     str = (STRINGDEF *) (GENERIC_PTR) cp;
