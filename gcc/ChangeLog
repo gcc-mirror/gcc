@@ -1,3 +1,8 @@
+2001-11-12  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (get_shift_alg): Remove a redundant
+	label.
+
 Mon Nov 12 11:58:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (nonoverlapping_memrefs_p): Only update size from memref
