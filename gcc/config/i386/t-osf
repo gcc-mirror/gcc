@@ -1,0 +1,2 @@
+# If compiling with the osf gcc, avoid sharing code.
+TCFLAGS = -pic-none
