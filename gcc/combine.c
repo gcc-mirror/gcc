@@ -3307,7 +3307,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	 always valid.  On a big-endian machine, it's valid
 	 only if the constant's mode fits in one word.  */
       if (CONSTANT_P (SUBREG_REG (x)) && subreg_lowpart_p (x)
-	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (op0_mode)
+	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (op0_mode)
 	  && (! WORDS_BIG_ENDIAN
 	      || GET_MODE_BITSIZE (op0_mode) <= BITS_PER_WORD))
 	return gen_lowpart_for_combine (mode, SUBREG_REG (x));
@@ -6170,6 +6170,10 @@ force_to_mode (x, mode, mask, reg, just_select)
 
 	  return force_to_mode (x, mode, mask, reg, next_select);
 	}
+
+      /* (and (not FOO) CONST) is (not (or FOO (not CONST))), so we must
+	 use the full mask inside the NOT.  */
+      mask = fuller_mask;
 
     unop:
       op0 = gen_lowpart_for_combine (op_mode,
