@@ -48,10 +48,17 @@ print_lang_decl (file, node, indent)
       fprintf (file, " decl-main-variant ");
       fprintf (file, HOST_PTR_PRINTF, DECL_MAIN_VARIANT (node));
     }
-  if (DECL_PENDING_INLINE_INFO (node))
+  if (TREE_CODE (node) == FUNCTION_DECL
+      && DECL_PENDING_INLINE_INFO (node))
     {
       fprintf (file, " pending-inline-info ");
       fprintf (file, HOST_PTR_PRINTF, DECL_PENDING_INLINE_INFO (node));
+    }
+  if (TREE_CODE (node) == TYPE_DECL
+      && DECL_SORTED_FIELDS (node))
+    {
+      fprintf (file, " sorted-fields ");
+      fprintf (file, HOST_PTR_PRINTF, DECL_SORTED_FIELDS (node));
     }
   if (DECL_TEMPLATE_INFO (node))
     {

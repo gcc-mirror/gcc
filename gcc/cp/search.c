@@ -522,6 +522,32 @@ lookup_field_1 (type, name)
        of fields!)  */
     return NULL_TREE;
 
+  if (TYPE_NAME (type)
+      && DECL_LANG_SPECIFIC (TYPE_NAME (type))
+      && DECL_SORTED_FIELDS (TYPE_NAME (type)))
+    {
+      tree *fields = &TREE_VEC_ELT (DECL_SORTED_FIELDS (TYPE_NAME (type)), 0);
+      int lo = 0, hi = TREE_VEC_LENGTH (DECL_SORTED_FIELDS (TYPE_NAME (type)));
+      int i;
+
+      while (lo < hi)
+	{
+	  i = (lo + hi) / 2;
+
+#ifdef GATHER_STATISTICS
+	  n_fields_searched++;
+#endif /* GATHER_STATISTICS */
+
+	  if (DECL_NAME (fields[i]) > name)
+	    hi = i;
+	  else if (DECL_NAME (fields[i]) < name)
+	    lo = i + 1;
+	  else
+	    return fields[i];
+	}
+      return NULL_TREE;
+    }
+
   field = TYPE_FIELDS (type);
 
 #ifdef GATHER_STATISTICS
@@ -1502,61 +1528,84 @@ int
 lookup_fnfields_1 (type, name)
      tree type, name;
 {
-  register tree method_vec 
+  tree method_vec 
     = CLASS_TYPE_P (type) ? CLASSTYPE_METHOD_VEC (type) : NULL_TREE;
 
   if (method_vec != 0)
     {
+      register int i;
       register tree *methods = &TREE_VEC_ELT (method_vec, 0);
-      register tree *end = TREE_VEC_END (method_vec);
+      int len = TREE_VEC_LENGTH (method_vec);
+      tree tmp;
 
 #ifdef GATHER_STATISTICS
       n_calls_lookup_fnfields_1++;
 #endif /* GATHER_STATISTICS */
 
       /* Constructors are first...  */
-      if (*methods && name == ctor_identifier)
-	return 0;
+      if (name == ctor_identifier)
+	return methods[0] ? 0 : -1;
 
       /* and destructors are second.  */
-      if (*++methods && name == dtor_identifier)
-	return 1;
+      if (name == dtor_identifier)
+	return methods[1] ? 1 : -1;
 
-      while (++methods != end && *methods)
+      for (i = 2; i < len && methods[i]; ++i)
 	{
 #ifdef GATHER_STATISTICS
 	  n_outer_fields_searched++;
 #endif /* GATHER_STATISTICS */
-	  if (DECL_NAME (OVL_CURRENT (*methods)) == name)
-	    break;
+
+	  tmp = OVL_CURRENT (methods[i]);
+	  if (DECL_NAME (tmp) == name)
+	    return i;
+
+	  /* If the type is complete and we're past the conversion ops,
+	     switch to binary search.  */
+	  if (! DECL_CONV_FN_P (tmp)
+	      && TYPE_SIZE (type))
+	    {
+	      int lo = i + 1, hi = len;
+
+	      while (lo < hi)
+		{
+		  i = (lo + hi) / 2;
+
+#ifdef GATHER_STATISTICS
+		  n_outer_fields_searched++;
+#endif /* GATHER_STATISTICS */
+
+		  tmp = DECL_NAME (OVL_CURRENT (methods[i]));
+
+		  if (tmp > name)
+		    hi = i;
+		  else if (tmp < name)
+		    lo = i + 1;
+		  else
+		    return i;
+		}
+	      break;
+	    }
 	}
 
       /* If we didn't find it, it might have been a template
 	 conversion operator.  (Note that we don't look for this case
 	 above so that we will always find specializations first.)  */
-      if ((methods == end || !*methods)
-	  && IDENTIFIER_TYPENAME_P (name)) 
+      if (IDENTIFIER_TYPENAME_P (name)) 
 	{
-	  methods = &TREE_VEC_ELT (method_vec, 0) + 1;
-	  
-	  while (++methods != end && *methods)
+	  for (i = 2; i < len && methods[i]; ++i)
 	    {
-	      tree method_name = DECL_NAME (OVL_CURRENT (*methods));
-
-	      if (!IDENTIFIER_TYPENAME_P (method_name))
+	      tmp = OVL_CURRENT (methods[i]);
+	      if (! DECL_CONV_FN_P (tmp))
 		{
 		  /* Since all conversion operators come first, we know
 		     there is no such operator.  */
-		  methods = end;
 		  break;
 		}
-	      else if (TREE_CODE (OVL_CURRENT (*methods)) == TEMPLATE_DECL)
-		break;
+	      else if (TREE_CODE (tmp) == TEMPLATE_DECL)
+		return i;
 	    }
 	}
-
-      if (methods != end && *methods)
-	return methods - &TREE_VEC_ELT (method_vec, 0);
     }
 
   return -1;

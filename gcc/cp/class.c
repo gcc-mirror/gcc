@@ -130,6 +130,8 @@ static void modify_all_indirect_vtables PROTO((tree, int, int, tree,
 static int finish_base_struct PROTO((tree, struct base_info *));
 static void finish_struct_methods PROTO((tree));
 static void maybe_warn_about_overly_private_class PROTO ((tree));
+static int field_decl_cmp PROTO ((const tree *, const tree *));
+static int method_name_cmp PROTO ((const tree *, const tree *));
 static tree make_method_vec PROTO((int));
 static void free_method_vec PROTO((tree));
 static tree add_implicitly_declared_members PROTO((tree, int, int, int));
@@ -2004,6 +2006,39 @@ maybe_warn_about_overly_private_class (t)
     }
 }
 
+/* Function to help qsort sort FIELD_DECLs by name order.  */
+
+static int
+field_decl_cmp (x, y)
+     const tree *x, *y;
+{
+  if (DECL_NAME (*x) == DECL_NAME (*y))
+    return 0;
+  if (DECL_NAME (*x) == NULL_TREE)
+    return -1;
+  if (DECL_NAME (*y) == NULL_TREE)
+    return 1;
+  if (DECL_NAME (*x) < DECL_NAME (*y))
+    return -1;
+  return 1;
+}
+
+/* Comparison function to compare two TYPE_METHOD_VEC entries by name.  */
+
+static int
+method_name_cmp (m1, m2)
+     const tree *m1, *m2;
+{
+  if (*m1 == NULL_TREE && *m2 == NULL_TREE)
+    return 0;
+  if (*m1 == NULL_TREE)
+    return -1;
+  if (*m2 == NULL_TREE)
+    return 1;
+  if (DECL_NAME (OVL_CURRENT (*m1)) < DECL_NAME (OVL_CURRENT (*m2)))
+    return -1;
+  return 1;
+}
 
 /* Warn about duplicate methods in fn_fields.  Also compact method
    lists so that lookup can be made faster.
@@ -2020,10 +2055,11 @@ maybe_warn_about_overly_private_class (t)
    If there are any constructors/destructors, they are moved to the
    front of the list.  This makes pushclass more efficient.
 
-   We also link each field which has shares a name with its baseclass
-   to the head of the list of fields for that base class.  This allows
-   us to reduce search time in places like `build_method_call' to
-   consider only reasonably likely functions.   */
+   @@ The above comment is obsolete.  It mostly describes what add_method
+   @@ and add_implicitly_declared_members do.
+
+   Sort methods that are not special (i.e., constructors, destructors, and
+   type conversion operators) so that we can find them faster in search.  */
 
 static void
 finish_struct_methods (t)
@@ -2032,6 +2068,7 @@ finish_struct_methods (t)
   tree fn_fields;
   tree method_vec = CLASSTYPE_METHOD_VEC (t);
   tree ctor_name = constructor_name (t);
+  int slot, len = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
 
   /* First fill in entry 0 with the constructors, entry 1 with destructors,
      and the next few with type conversion operators (if any).  */
@@ -2089,7 +2126,28 @@ finish_struct_methods (t)
     
   /* Issue warnings about private constructors and such.  If there are
      no methods, then some public defaults are generated.  */
-  maybe_warn_about_overly_private_class (t); 
+  maybe_warn_about_overly_private_class (t);
+
+  if (method_vec == NULL_TREE)
+    return;
+
+  /* Now sort the methods.  */
+  while (len > 2 && TREE_VEC_ELT (method_vec, len-1) == NULL_TREE)
+    len--;
+  TREE_VEC_LENGTH (method_vec) = len;
+
+  /* The type conversion ops have to live at the front of the vec, so we
+     can't sort them.  */
+  for (slot = 2; slot < len; ++slot)
+    {
+      tree fn = TREE_VEC_ELT (method_vec, slot);
+  
+      if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+	break;
+    }
+  if (len - slot > 1)
+    qsort (&TREE_VEC_ELT (method_vec, slot), len-slot, sizeof (tree),
+	   (int (*)(const void *, const void *))method_name_cmp);
 }
 
 /* Emit error when a duplicate definition of a type is seen.  Patch up.  */
@@ -2950,6 +3008,7 @@ finish_struct_anon (t)
      tree t;
 {
   tree field;
+
   for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
     {
       if (TREE_STATIC (field))
@@ -2960,32 +3019,32 @@ finish_struct_anon (t)
       if (DECL_NAME (field) == NULL_TREE
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	{
-	  tree* uelt = &TYPE_FIELDS (TREE_TYPE (field));
-	  for (; *uelt; uelt = &TREE_CHAIN (*uelt))
+	  tree elt = TYPE_FIELDS (TREE_TYPE (field));
+	  for (; elt; elt = TREE_CHAIN (elt))
 	    {
-	      if (DECL_ARTIFICIAL (*uelt))
+	      if (DECL_ARTIFICIAL (elt))
 		continue;
 
-	      if (DECL_NAME (*uelt) == constructor_name (t))
+	      if (DECL_NAME (elt) == constructor_name (t))
 		cp_pedwarn_at ("ANSI C++ forbids member `%D' with same name as enclosing class",
-			       *uelt);
+			       elt);
 
-	      if (TREE_CODE (*uelt) != FIELD_DECL)
+	      if (TREE_CODE (elt) != FIELD_DECL)
 		{
 		  cp_pedwarn_at ("`%#D' invalid; an anonymous union can only have non-static data members",
-				 *uelt);
+				 elt);
 		  continue;
 		}
 
-	      if (TREE_PRIVATE (*uelt))
+	      if (TREE_PRIVATE (elt))
 		cp_pedwarn_at ("private member `%#D' in anonymous union",
-			       *uelt);
-	      else if (TREE_PROTECTED (*uelt))
+			       elt);
+	      else if (TREE_PROTECTED (elt))
 		cp_pedwarn_at ("protected member `%#D' in anonymous union",
-			       *uelt);
+			       elt);
 
-	      TREE_PRIVATE (*uelt) = TREE_PRIVATE (field);
-	      TREE_PROTECTED (*uelt) = TREE_PROTECTED (field);
+	      TREE_PRIVATE (elt) = TREE_PRIVATE (field);
+	      TREE_PROTECTED (elt) = TREE_PROTECTED (field);
 	    }
 	}
     }
@@ -3077,6 +3136,44 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
   return virtual_dtor;
 }
 
+/* Subroutine of finish_struct_1.  Recursively count the number of fields
+   in TYPE, including anonymous union members.  */
+
+static int
+count_fields (fields)
+     tree fields;
+{
+  tree x;
+  int n_fields = 0;
+  for (x = fields; x; x = TREE_CHAIN (x))
+    {
+      if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
+	n_fields += count_fields (TYPE_FIELDS (TREE_TYPE (x)));
+      else
+	n_fields += 1;
+    }
+  return n_fields;
+}
+
+/* Subroutine of finish_struct_1.  Recursively add all the fields in the
+   TREE_LIST FIELDS to the TREE_VEC FIELD_VEC, starting at offset IDX.  */
+
+static int
+add_fields_to_vec (fields, field_vec, idx)
+     tree fields, field_vec;
+     int idx;
+{
+  tree x;
+  for (x = fields; x; x = TREE_CHAIN (x))
+    {
+      if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
+	idx = add_fields_to_vec (TYPE_FIELDS (TREE_TYPE (x)), field_vec, idx);
+      else
+	TREE_VEC_ELT (field_vec, idx++) = x;
+    }
+  return idx;
+}
+
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
    (or C++ class declaration).
 
@@ -3125,6 +3222,7 @@ finish_struct_1 (t, warn_anon)
   int cant_have_const_ctor;
   int no_const_asn_ref;
   int has_mutable = 0;
+  int n_fields = 0;
 
   /* The index of the first base class which has virtual
      functions.  Only applied to non-virtual baseclasses.  */
@@ -4006,6 +4104,28 @@ finish_struct_1 (t, warn_anon)
 	  DECL_MODE (x) = TYPE_MODE (t);
 	  make_decl_rtl (x, NULL, 0);
 	}
+    }
+
+  /* Done with FIELDS...now decide whether to sort these for
+     faster lookups later.  Don't worry about optimizing
+     for structs only declared in inline functions...they're
+     not going to be referenced anywhere else.
+
+     The C front-end only does this when n_fields > 15.  We use
+     a smaller number because most searches fail (succeeding
+     ultimately as the search bores through the inheritance
+     hierarchy), and we want this failure to occur quickly.  */
+
+  n_fields = count_fields (fields);
+  if (n_fields > 7 && !allocation_temporary_p ())
+    {
+      tree field_vec = make_tree_vec (n_fields);
+      add_fields_to_vec (fields, field_vec, 0);
+      qsort (&TREE_VEC_ELT (field_vec, 0), n_fields, sizeof (tree),
+	     (int (*)(const void *, const void *))field_decl_cmp);
+      if (! DECL_LANG_SPECIFIC (TYPE_MAIN_DECL (t)))
+	retrofit_lang_decl (TYPE_MAIN_DECL (t));
+      DECL_SORTED_FIELDS (TYPE_MAIN_DECL (t)) = field_vec;
     }
 
   if (TYPE_HAS_CONSTRUCTOR (t))

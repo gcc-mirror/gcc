@@ -1194,7 +1194,11 @@ struct lang_decl
 
   tree main_decl_variant;
   tree befriending_classes;
-  struct pending_inline *pending_inline_info;
+  union
+  {
+    tree sorted_fields;
+    struct pending_inline *pending_inline_info;
+  } u;
 };
 
 /* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
@@ -1379,7 +1383,11 @@ struct lang_decl
 /* For a FUNCTION_DECL: if this function was declared inline inside of
    a class declaration, this is where the text for the function is
    squirreled away.  */
-#define DECL_PENDING_INLINE_INFO(NODE) (DECL_LANG_SPECIFIC(NODE)->pending_inline_info)
+#define DECL_PENDING_INLINE_INFO(NODE) (DECL_LANG_SPECIFIC(NODE)->u.pending_inline_info)
+
+/* For a TYPE_DECL: if this function has many fields, we'll sort them
+   and put them into a TREE_VEC. */
+#define DECL_SORTED_FIELDS(NODE) (DECL_LANG_SPECIFIC(NODE)->u.sorted_fields)
 
 /* True if on the saved_inlines (see decl2.c) list.  */
 #define DECL_SAVED_INLINE(DECL) \
