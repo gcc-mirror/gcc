@@ -19,7 +19,6 @@ comments about this document to Ovidiu Predescu
 * Type encoding::               
 * Garbage Collection::          
 * Constant string objects::     
-* compatibility_alias::
 @end menu
 
 @node Executing code before main, Type encoding, Objective C, Objective C
@@ -427,32 +426,3 @@ all the constant string objects will be instances of the class specified
 as argument to this option. It is possible to have multiple compilation
 units referring to different constant string classes, neither the
 compiler nor the linker impose any restrictions in doing this.
-
-@c =========================================================================
-@node compatibility_alias
-@section compatibility_alias
-
-This is a feature of the Objective-C compiler rather than of the
-runtime, anyway since it is documented nowhere and its existence was
-forgotten, we are documenting it here.
-
-The keyword @code{@@compatibility_alias} allows you to define a class name 
-as equivalent to another class name.  For example: 
-
-@example
-@@compatibility_alias WOApplication GSWApplication;
-@end example
-
-tells the compiler that each time it encounters @code{WOApplication} as 
-a class name, it should replace it with @code{GSWApplication} (that is, 
-@code{WOApplication} is just an alias for @code{GSWApplication}).
-
-There are some constraints on how this can be used - 
-
-@itemize @bullet 
-
-@item @code{WOApplication} (the alias) must not be an existing class;
-
-@item @code{GSWApplication} (the real class) must be an existing class.
-
-@end itemize

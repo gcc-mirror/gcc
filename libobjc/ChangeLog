@@ -1,3 +1,10 @@
+2001-05-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* objc-features.texi: Move to ../gcc/objc.texi.
+	* fdl.texi: Remove.
+	* Makefile.in: Don't generate documentation from
+	objc-features.texi.
+
 2001-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* fdl.texi: New file.

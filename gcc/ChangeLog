@@ -1,3 +1,11 @@
+2001-05-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* objc.texi: Move from ../libobjc/objc-features.texi.  Adjust for
+	inclusion as a chapter of the GCC manual.
+	* gcc.texi: Include objc.texi.
+	* fdl.texi: Use @unnumberedsec for the addendum.
+	* Makefile.in ($(srcdir)/gcc.info, gcc.dvi): Update dependencies.
+
 2001-05-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (interspace_jump): Revise comment.

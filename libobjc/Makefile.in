@@ -289,18 +289,9 @@ libobjc.dll: libobjc_s.a libobjc_entry.o
 #
 #
 
-info: objc-features.info
-dvi: objc-features.dvi
-html: objc-features_toc.html
-
-objc-features.info: $(srcdir)/objc-features.texi
-	makeinfo -I$(srcdir) $(srcdir)/objc-features.texi
-
-objc-features.dvi: $(srcdir)/objc-features.texi
-	TEXINPUTS="$(srcdir):${TEXINPUTS}" texi2dvi $(srcdir)/objc-features.texi
-
-objc-features_toc.html: objc-features.texi
-	texi2html -split_node $(srcdir)/objc-features.texi
+info:
+dvi:
+html:
 
 Makefile: Makefile.in config.status
 	$(SHELL) config.status
