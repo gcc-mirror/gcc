@@ -1,3 +1,8 @@
+2000-01-24  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_emit_xfloating_cvt): Thinko in operand manipulation.
+	* alpha.md (movtf): New expander, insn, and splitter.
+
 Mon Jan 24 19:49:47 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (subst_stack_regs_pat): Handle correctly USEs of

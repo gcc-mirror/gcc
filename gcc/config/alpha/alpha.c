@@ -1971,11 +1971,13 @@ alpha_emit_xfloating_cvt (code, operands)
     {
     case FIX:
       mode = alpha_compute_xfloating_mode_arg (code, ALPHA_FPRM_CHOP);
-      operands[noperands++] = GEN_INT (mode);
+      operands[2] = GEN_INT (mode);
+      noperands = 2;
       break;
     case FLOAT_TRUNCATE:
       mode = alpha_compute_xfloating_mode_arg (code, alpha_fprm);
-      operands[noperands++] = GEN_INT (mode);
+      operands[2] = GEN_INT (mode);
+      noperands = 2;
       break;
     default:
       break;
