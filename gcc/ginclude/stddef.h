@@ -152,6 +152,7 @@ typedef __SIZE_TYPE__ size_t;
 #ifndef _WCHAR_T_
 #ifndef _WCHAR_T_H
 #ifndef ___int_wchar_t_h
+#ifndef __INT_WCHAR_T_H
 #ifndef _GCC_WCHAR_T
 #define _WCHAR_T
 #define _T_WCHAR_
@@ -160,6 +161,7 @@ typedef __SIZE_TYPE__ size_t;
 #define _WCHAR_T_
 #define _WCHAR_T_H
 #define ___int_wchar_t_h
+#define __INT_WCHAR_T_H
 #define _GCC_WCHAR_T
 #ifndef __WCHAR_TYPE__
 #define __WCHAR_TYPE__ int
@@ -171,6 +173,7 @@ typedef __wchar_t wchar_t;
 #else
 /* In C, cpp tells us which type to make an alias for.  */
 typedef __WCHAR_TYPE__ wchar_t;
+#endif
 #endif
 #endif
 #endif
