@@ -1,3 +1,16 @@
+Tue Sep 29 21:37:33 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ch-tree.h (build_compare_expr): Change first argument's type
+	from `enum chill_tree_code' to `enum tree_code'.
+	(build_compare_discrete_expr): Likewise.
+
+	* expr.c (build_compare_set_expr): Likewise.
+	(build_compare_string_expr): Likewise.
+	(build_compare_expr): Likewise.
+	(build_compare_discrete_expr): Likewise.  Also add default case in
+	switch statement.
+	(compare_int_csts): Add default case in switch statement.
+
 Sun Sep 20 11:02:55 1998  Robert Lipe  <robertl@dgii.com>
 
 	* except.c: Include system.h.
