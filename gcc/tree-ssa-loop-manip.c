@@ -274,7 +274,7 @@ find_uses_to_rename (bitmap *use_blocks)
     {
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	for (i = 0; i < (unsigned) PHI_NUM_ARGS (phi); i++)
-	  find_uses_to_rename_use (PHI_ARG_EDGE (phi, i)->src,
+	  find_uses_to_rename_use (EDGE_PRED (bb, i)->src,
 				   PHI_ARG_DEF (phi, i), use_blocks);
 
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))

@@ -589,7 +589,7 @@ calculate_live_on_entry (var_map map)
 	      if (!phi_ssa_name_p (var))
 	        continue;
 	      stmt = SSA_NAME_DEF_STMT (var);
-	      e = PHI_ARG_EDGE (phi, i);
+	      e = EDGE_PRED (bb, i);
 
 	      /* Any uses in PHIs which either don't have def's or are not
 	         defined in the block from which the def comes, will be live

@@ -757,7 +757,7 @@ replace_phi_with_cond_modify_expr (tree phi, tree cond, basic_block true_bb,
   arg_1 = NULL_TREE;
 
   /* Use condition that is not TRUTH_NOT_EXPR in conditional modify expr.  */
-  if (PHI_ARG_EDGE(phi, 1)->src == true_bb)
+  if (EDGE_PRED (bb, 1)->src == true_bb)
     {
       arg_0 = PHI_ARG_DEF (phi, 1);
       arg_1 = PHI_ARG_DEF (phi, 0);

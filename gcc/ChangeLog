@@ -1,3 +1,11 @@
+2004-11-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-if-conv.c (replace_phi_with_cond_modify_expr): Use
+	EDGE_PRED instead of PHI_ARG_EDGE.
+	* tree-ssa-live.c: Likewise.
+	* tree-ssa-loop-manip.c: Likewise.
+	* tree-ssa.c: Likewise.
+
 2004-11-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* varasm.c (default_elf_select_section_1): Only pass DECL_P decl
