@@ -1,3 +1,8 @@
+2005-03-16  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/lang/MainThread.java (run): Load main class using
+	system class loader.
+
 2005-03-16  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one): Add
@@ -57,6 +62,11 @@
 	Add flags to keep the Darwin linker quiet.
 	(gcj_jni_invocation_test_one): Use the same target check for Darwin.
 	Add -liconv for Darwin.
+
+2005-03-11  Tom Tromey  <tromey@redhat.com>
+
+	* include/jvm.h (GCJ_40_BC_ABI_VERSION): New define.
+	(_Jv_CheckABIVersion): Use it.
 
 2005-03-11  Tom Tromey  <tromey@redhat.com>
 
