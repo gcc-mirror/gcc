@@ -44,13 +44,19 @@ gen_stdcall_suffix (decl)
     if (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (decl)))) 
         == void_type_node)
       {
-        tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
-        while (TREE_VALUE (formal_type) != void_type_node)
-          {
-            total += TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
-            formal_type = TREE_CHAIN (formal_type);
-          }
+	while (TREE_VALUE (formal_type) != void_type_node)
+	  {
+	    int parm_size
+	      = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
+	    /* Must round up to include padding.  This is done the same
+	       way as in store_one_arg.  */
+	    parm_size = ((parm_size + PARM_BOUNDARY - 1)
+			 / PARM_BOUNDARY * PARM_BOUNDARY);
+	    total += parm_size;
+	    formal_type = TREE_CHAIN (formal_type);
+	  }
       }
 
   newsym = xmalloc (strlen (asmname) + 10);
