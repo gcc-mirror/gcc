@@ -1122,7 +1122,7 @@ parse_float (data)
 	  if (args->imag)
 	    error ("more than one `i' or `j' in numeric constant");
 	  else if (pedantic)
-	    pedwarn ("ANSI C forbids imaginary numeric constants");
+	    pedwarn ("ISO C forbids imaginary numeric constants");
 	  args->imag = 1;
 	  break;
 
@@ -1789,7 +1789,7 @@ yylex ()
 			  error ("`Ll' and `lL' are not valid integer suffixes");
 			else if (pedantic && ! flag_isoc99
 				 && ! in_system_header && warn_long_long)
-			  pedwarn ("ANSI C forbids long long integer constants");
+			  pedwarn ("ISO C89 forbids long long integer constants");
 			spec_long_long = 1;
 		      }
 		    spec_long = c;
@@ -1799,7 +1799,7 @@ yylex ()
 		    if (spec_imag)
 		      error ("more than one `i' or `j' in numeric constant");
 		    else if (pedantic)
-		      pedwarn ("ANSI C forbids imaginary numeric constants");
+		      pedwarn ("ISO C forbids imaginary numeric constants");
 		    spec_imag = 1;
 		  }
 		else
@@ -1914,7 +1914,7 @@ yylex ()
 		  warning ("width of integer constant changes with -traditional");
 		else if (TREE_UNSIGNED (traditional_type)
 			 != TREE_UNSIGNED (ansi_type))
-		  warning ("integer constant is unsigned in ANSI C, signed with -traditional");
+		  warning ("integer constant is unsigned in ISO C, signed with -traditional");
 		else
 		  warning ("width of integer constant may change on other systems with -traditional");
 	      }
@@ -2018,7 +2018,7 @@ yylex ()
 	    else if (c == '\n')
 	      {
 		if (pedantic)
-		  pedwarn ("ANSI C forbids newline in character constant");
+		  pedwarn ("ISO C forbids newline in character constant");
 		lineno++;
 	      }
 	    else
@@ -2175,7 +2175,7 @@ yylex ()
 	    else if (c == '\n')
 	      {
 		if (pedantic)
-		  pedwarn ("ANSI C forbids newline in string constant");
+		  pedwarn ("ISO C forbids newline in string constant");
 		lineno++;
 	      }
 	    else

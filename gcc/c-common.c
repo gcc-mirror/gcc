@@ -375,8 +375,8 @@ combine_strings (strings)
   nchars = wide_flag ? length / wchar_bytes : length;
 
   if (pedantic && nchars > nchars_max)
-    pedwarn ("string length `%d' is greater than the minimum length `%d' ANSI C is required to support",
-	     nchars, nchars_max);
+    pedwarn ("string length `%d' is greater than the minimum length `%d' ISO C%d is required to support",
+	     nchars, nchars_max, flag_isoc99 ? 99 : 89);
 
   /* Create the array type for the string constant.
      -Wwrite-strings says make the string constant an array of const char
@@ -1653,7 +1653,7 @@ check_format_info (info, params)
 	  while (*format_chars != 0 && index ("_-0^#", *format_chars) != 0)
 	    {
 	      if (pedantic)
-		warning ("ANSI C does not support the strftime `%c' flag",
+		warning ("ISO C does not support the strftime `%c' flag",
 			 *format_chars);
 	      if (index (flag_chars, *format_chars) != 0)
 		{
@@ -1674,7 +1674,7 @@ check_format_info (info, params)
               ++format_chars;
 	    }
 	  if (wide && pedantic)
-	    warning ("ANSI C does not support strftime format width");
+	    warning ("ISO C does not support strftime format width");
 	  if (*format_chars == 'E' || *format_chars == 'O')
 	    {
 	      i = strlen (flag_chars);
@@ -1704,7 +1704,7 @@ check_format_info (info, params)
 		  int opnum = atoi (format_chars);
 
 		  if (pedantic)
-		    warning ("ANSI C does not support printf %%n$");
+		    warning ("ISO C does not support printf %%n$");
 
 		  params = first_fillin_param;
 		  format_chars = p + 1;
@@ -1743,7 +1743,7 @@ check_format_info (info, params)
 	      && index (flag_chars, '-') != 0)
 	    warning ("use of both `0' and `-' flags in format");
 	  if (index (flag_chars, '\'') && pedantic)
-	    warning ("ANSI C does not support the `'' format flag");
+	    warning ("ISO C does not support the `'' format flag");
 	  if (*format_chars == '*')
 	    {
 	      wide = TRUE;
@@ -1826,21 +1826,27 @@ check_format_info (info, params)
 	    {
 	      length_char = *format_chars++;
 	      if (length_char == 'q' && pedantic)
-		warning ("ANSI C does not support the `%c' length modifier",
+		warning ("ISO C does not support the `%c' length modifier",
 			 length_char);
 	    }
 	  else if (*format_chars == 'Z' || *format_chars == 'z')
 	    {
 	      length_char = *format_chars++;
-	      if (pedantic && (length_char == 'Z' || !flag_isoc99))
-		warning ("ANSI C does not support the `%c' length modifier",
-			 length_char);
+	      if (pedantic)
+		{
+		  if (length_char == 'Z')
+		    warning ("ISO C does not support the `%c' length modifier",
+			     length_char);
+		  else if (!flag_isoc99)
+		    warning ("ISO C89 does not support the `%c' length modifier",
+			     length_char);
+		}
 	    }
 	  else if (*format_chars == 't' || *format_chars == 'j')
 	    {
 	      length_char = *format_chars++;
 	      if (pedantic && !flag_isoc99)
-		warning ("ANSI C does not support the `%c' length modifier",
+		warning ("ISO C89 does not support the `%c' length modifier",
 			 length_char);
 	    }
 	  else
@@ -1849,13 +1855,13 @@ check_format_info (info, params)
 	    {
 	      length_char = 'q', format_chars++;
 	      if (pedantic && !flag_isoc99)
-		warning ("ANSI C does not support the `ll' length modifier");
+		warning ("ISO C89 does not support the `ll' length modifier");
 	    }
 	  else if (length_char == 'h' && *format_chars == 'h')
 	    {
 	      length_char = 'H', format_chars++;
 	      if (pedantic && !flag_isoc99)
-		warning ("ANSI C does not support the `hh' length modifier");
+		warning ("ISO C89 does not support the `hh' length modifier");
 	    }
 	  if (*format_chars == 'a' && info->format_type == scanf_format_type)
 	    {
@@ -1880,12 +1886,12 @@ check_format_info (info, params)
       /* The m, C, and S formats are GNU extensions.  */
       if (pedantic && info->format_type != strftime_format_type
 	  && (format_char == 'm' || format_char == 'C' || format_char == 'S'))
-	warning ("ANSI C does not support the `%c' format", format_char);
+	warning ("ISO C does not support the `%c' format", format_char);
       /* The a, A and F formats are C99 extensions.  */
       if (pedantic && info->format_type != strftime_format_type
 	  && (format_char == 'a' || format_char == 'A' || format_char == 'F')
 	  && !flag_isoc99)
-	warning ("ANSI C does not support the `%c' format", format_char);
+	warning ("ISO C89 does not support the `%c' format", format_char);
       format_chars++;
       switch (info->format_type)
 	{
@@ -1917,15 +1923,18 @@ check_format_info (info, params)
       if (pedantic)
 	{
 	  if (index (fci->flag_chars, 'G') != 0)
-	    warning ("ANSI C does not support `%%%c'", format_char);
+	    warning ("ISO C does not support `%%%c'", format_char);
 	  if (index (fci->flag_chars, '9') != 0 && !flag_isoc99)
-	    warning ("ANSI C does not support `%%%c'", format_char);
-	  if ((index (fci->flag_chars, 'o') != 0
-	       || (!flag_isoc99 && index (fci->flag_chars, 'O') != 0))
-	      && index (flag_chars, 'O') != 0)
-	    warning ("ANSI C does not support `%%O%c'", format_char);
+	    warning ("ISO C89 does not support `%%%c'", format_char);
+	  if (index (flag_chars, 'O') != 0)
+	    {
+	      if (index (fci->flag_chars, 'o') != 0)
+		warning ("ISO C does not support `%%O%c'", format_char);
+	      else if (!flag_isoc99 && index (fci->flag_chars, 'O') != 0)
+		warning ("ISO C89 does not support `%%O%c'", format_char);
+	    }
 	  if (!flag_isoc99 && index (flag_chars, 'E'))
-	    warning ("ANSI C does not support `%%E%c'", format_char);
+	    warning ("ISO C89 does not support `%%E%c'", format_char);
 	}
       if (wide && index (fci->flag_chars, 'w') == 0)
 	warning ("width used with `%c' format", format_char);
@@ -1944,7 +1953,7 @@ check_format_info (info, params)
 	}
       /* The a flag is a GNU extension.  */
       else if (pedantic && aflag)
-	warning ("ANSI C does not support the `a' flag");
+	warning ("ISO C does not support the `a' flag");
       if (info->format_type == scanf_format_type && format_char == '[')
 	{
 	  /* Skip over scan set, in case it happens to have '%' in it.  */
@@ -2004,20 +2013,20 @@ check_format_info (info, params)
 		    || format_char == 'e' || format_char == 'E'
 		    || format_char == 'f' || format_char == 'F'
 		    || format_char == 'g' || format_char == 'G'))
-	warning ("ANSI C does not support the `L' length modifier with the `%c' type character",
+	warning ("ISO C does not support the `L' length modifier with the `%c' type character",
 		 format_char);
       else if (length_char == 'l'
 	       && (format_char == 'c' || format_char == 's'
 		   || format_char == '[')
 	       && pedantic && !flag_isoc94)
-	warning ("ANSI C89 does not support the `l' length modifier with the `%c' type character",
+	warning ("ISO C89 does not support the `l' length modifier with the `%c' type character",
 		 format_char);
       else if (info->format_type == printf_format_type && pedantic
 	       && !flag_isoc99 && length_char == 'l'
 	       && (format_char == 'f' || format_char == 'e'
 		   || format_char == 'E' || format_char == 'g'
 		   || format_char == 'G'))
-	warning ("ANSI C does not support the `l' length modifier with the `%c' type character",
+	warning ("ISO C89 does not support the `l' length modifier with the `%c' type character",
 		 format_char);
 
       /* Finally. . .check type of argument against desired type!  */

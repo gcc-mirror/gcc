@@ -1,3 +1,17 @@
+2000-08-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (combine_strings, check_format_info): Refer to ISO C
+	or ISO C89 instead of ANSI C.
+	* c-decl.c (grokdeclarator, xref_tag, finish_struct,
+	build_enumerator, do_case): Likewise.
+	* c-lex.c (parse_float, yylex): Likewise.
+	* c-parse.in: Likewise.
+	* c-typeck.c (common_type, build_array_ref, build_binary_op,
+	build_unary_op, pedantic_lvalue_warning, build_conditional_expr,
+	build_c_cast, convert_for_assignment, set_init_index,
+	set_init_label, c_expand_start_case): Likewise.
+	* toplev.c (documented_lang_options, display_help): Likewise.
+
 2000-08-08  Kazu Hirata  <kazu@hxi.com>
 
 	* h8300.c: Fix formatting.

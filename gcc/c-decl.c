@@ -4005,7 +4005,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		      {
 			if (pedantic && !flag_isoc99 && ! in_system_header
 			    && warn_long_long)
-			  pedwarn ("ANSI C does not support `long long'");
+			  pedwarn ("ISO C89 does not support `long long'");
 			longlong = 1;
 		      }
 		  }
@@ -4385,7 +4385,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		}
 
 	      if (pedantic && integer_zerop (size))
-		pedwarn ("ANSI C forbids zero-size array `%s'", name);
+		pedwarn ("ISO C forbids zero-size array `%s'", name);
 
 	      if (TREE_CODE (size) == INTEGER_CST)
 		{
@@ -4405,9 +4405,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		  if (pedantic)
 		    {
 		      if (TREE_CONSTANT (size))
-			pedwarn ("ANSI C forbids array `%s' whose size can't be evaluated", name);
+			pedwarn ("ISO C89 forbids array `%s' whose size can't be evaluated", name);
 		      else
-			pedwarn ("ANSI C forbids variable-size array `%s'", name);
+			pedwarn ("ISO C89 forbids variable-size array `%s'", name);
 		    }
 		}
 
@@ -4539,7 +4539,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	  if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 	      && type_quals)
-	    pedwarn ("ANSI C forbids qualified function types");
+	    pedwarn ("ISO C forbids qualified function types");
 	  if (type_quals)
 	    type = c_build_qualified_type (type, type_quals);
 	  type_quals = TYPE_UNQUALIFIED;
@@ -4612,7 +4612,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	 in typenames, fields or parameters */
       if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 	  && type_quals)
-	pedwarn ("ANSI C forbids qualified function types");
+	pedwarn ("ISO C forbids qualified function types");
       if (type_quals)
 	type = c_build_qualified_type (type, type_quals);
       decl = build_decl (TYPE_DECL, declarator, type);
@@ -4646,7 +4646,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	 in typenames, fields or parameters */
       if (pedantic && TREE_CODE (type) == FUNCTION_TYPE
 	  && type_quals)
-	pedwarn ("ANSI C forbids const or volatile function types");
+	pedwarn ("ISO C forbids const or volatile function types");
       if (type_quals)
 	type = c_build_qualified_type (type, type_quals);
       return type;
@@ -4696,7 +4696,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
 	    if (pedantic && type_quals)
-	      pedwarn ("ANSI C forbids qualified function types");
+	      pedwarn ("ISO C forbids qualified function types");
 	    if (type_quals)
 	      type = c_build_qualified_type (type, type_quals);
 	    type = build_pointer_type (type);
@@ -4782,13 +4782,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	decl = build_decl_attribute_variant (decl, decl_machine_attr);
 
 	if (pedantic && type_quals && ! DECL_IN_SYSTEM_HEADER (decl))
-	  pedwarn ("ANSI C forbids qualified function types");
+	  pedwarn ("ISO C forbids qualified function types");
 
 	if (pedantic
 	    && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl)))
 	    && TYPE_QUALS (TREE_TYPE (TREE_TYPE (decl)))
 	    && ! DECL_IN_SYSTEM_HEADER (decl))
-	  pedwarn ("ANSI C forbids qualified void function return type");
+	  pedwarn ("ISO C forbids qualified void function return type");
 
 	/* GNU C interprets a `volatile void' return type to indicate
 	   that the function does not return.  */
@@ -5161,7 +5161,7 @@ xref_tag (code, name)
     {
       /* (In ANSI, Enums can be referred to only if already defined.)  */
       if (pedantic)
-	pedwarn ("ANSI C forbids forward references to `enum' types");
+	pedwarn ("ISO C forbids forward references to `enum' types");
       /* Give the type a default layout like unsigned int
 	 to avoid crashing if it does not get defined.  */
       TYPE_MODE (ref) = TYPE_MODE (unsigned_type_node);
@@ -5354,7 +5354,7 @@ finish_struct (t, fieldlist, attributes)
 	  && !(TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
 	       && (TYPE_PRECISION (TREE_TYPE (x))
 		   == TYPE_PRECISION (integer_type_node))))
-	pedwarn_with_decl (x, "bit-field `%s' type invalid in ANSI C");
+	pedwarn_with_decl (x, "bit-field `%s' type invalid in ISO C");
 
       /* Detect and ignore out of range field width and process valid
 	 field widths.  */
@@ -5749,7 +5749,7 @@ build_enumerator (name, value)
 
   if (pedantic && ! int_fits_type_p (value, integer_type_node))
     {
-      pedwarn ("ANSI C restricts enumerator values to range of `int'");
+      pedwarn ("ISO C restricts enumerator values to range of `int'");
       value = convert (integer_type_node, value);
     }
 
@@ -6924,7 +6924,7 @@ do_case (low_value, high_value)
   label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
   
   if (pedantic && (high_value != NULL_TREE))
-    pedwarn ("ANSI C forbids case ranges");
+    pedwarn ("ISO C forbids case ranges");
 
   if (value1 != error_mark_node && value2 != error_mark_node)
     {
@@ -6933,7 +6933,7 @@ do_case (low_value, high_value)
       
       if (high_value == NULL_TREE && value1 != NULL_TREE &&
 	  pedantic && ! INTEGRAL_TYPE_P (TREE_TYPE (value1)))
-	pedwarn ("label must have integral type in ANSI C");
+	pedwarn ("label must have integral type in ISO C");
       
       if (low_value == NULL_TREE)
 	success = pushcase (NULL_TREE, 0, label, &duplicate);
