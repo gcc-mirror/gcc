@@ -6490,6 +6490,10 @@ cpp_handle_options (pfile, argc, argv)
 	  opts->warn_stringify = 1;
 	else if (!strcmp (argv[i], "-Wno-traditional"))
 	  opts->warn_stringify = 0;
+	else if (!strcmp (argv[i], "-Wundef"))
+	  opts->warn_undef = 1;
+	else if (!strcmp (argv[i], "-Wno-undef"))
+	  opts->warn_undef = 0;
 	else if (!strcmp (argv[i], "-Wimport"))
 	  opts->warn_import = 1;
 	else if (!strcmp (argv[i], "-Wno-import"))
