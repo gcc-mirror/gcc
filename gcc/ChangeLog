@@ -1,3 +1,8 @@
+2004-11-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (macro_list): Use move-if-change to avoid spurious
+	rebuilds.
+
 2004-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18416
