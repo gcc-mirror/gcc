@@ -1337,6 +1337,14 @@ expand_call (exp, target, ignore)
 #endif
 #endif
 
+  /* If register arguments require space on the stack and stack space
+     was not preallocated, allocate stack space here for arguments
+     passed in registers.  */
+#if ! defined(ALLOCATE_OUTGOING_ARGS) && defined(OUTGOING_REG_PARM_STACK_SPACE)
+  if (must_preallocate == 0 && reg_parm_stack_space > 0)
+    anti_adjust_stack (gen_rtx (CONST_INT, VOIDmode, reg_parm_stack_space));
+#endif
+
   /* Pass the function the address in which to return a structure value.  */
   if (structure_value_addr && ! structure_value_addr_parm)
     {
