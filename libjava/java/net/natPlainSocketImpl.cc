@@ -10,22 +10,45 @@ details.  */
 
 
 #ifndef DISABLE_JAVA_NET
-#ifdef USE_WINSOCK
+#ifdef WIN32
 #include <windows.h>
 #include <winsock.h>
 #include <errno.h>
 #include <string.h>
+#undef STRICT
+#undef MAX_PRIORITY
+#undef MIN_PRIORITY
+#undef FIONREAD
+
+// stuff to make Win32 look POSIXy
+static inline int close(int s) {
+  return closesocket(s);
+}
+
+static inline int write(int s, void *buf, int len)
+{
+  return send(s, (char*)buf, len, 0);
+}
+
+static inline int read(int s, void *buf, int len)
+{
+  return recv(s, (char*)buf, len, 0);
+}
+
+// these errors cannot occur on Win32
+#define ENOTCONN 0
+#define ECONNRESET 0
 #ifndef ENOPROTOOPT
 #define ENOPROTOOPT 109
 #endif
-#else /* USE_WINSOCK */
+#else /* WIN32 */
 #include "posix.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <errno.h>
 #include <string.h>
-#endif /* USE_WINSOCK */
+#endif /* WIN32 */
 #endif /* DISABLE_JAVA_NET */
 
 #if HAVE_BSTRING_H
@@ -325,6 +348,8 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
   socklen_t addrlen = sizeof(u);
   int new_socket = 0; 
 
+// FIXME: implement timeout support for Win32
+#ifndef WIN32
   // Do timeouts via select since SO_RCVTIMEO is not always available.
   if (timeout > 0)
     {
@@ -341,6 +366,7 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
 	throw new java::io::InterruptedIOException (
 	         JvNewStringUTF("Accept timed out"));
     }
+#endif /* WIN32 */
 
   new_socket = _Jv_accept (fnum, (sockaddr*) &u, &addrlen);
   if (new_socket < 0)
@@ -461,6 +487,8 @@ java::net::PlainSocketImpl::read(void)
 {
   jbyte b;
 
+// FIXME: implement timeout support for Win32
+#ifndef WIN32
   // Do timeouts via select.
   if (timeout > 0)
   {
@@ -482,6 +510,8 @@ java::net::PlainSocketImpl::read(void)
     // If select returns ok we know we either got signalled or read some data...
     // either way we need to try to read.
   }
+#endif /* WIN32 */
+
   int r = ::read (fnum, &b, 1);
 
   if (r == 0)
@@ -516,6 +546,8 @@ java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
     throw new java::lang::ArrayIndexOutOfBoundsException;
   jbyte *bytes = elements (buffer) + offset;
 
+// FIXME: implement timeout support for Win32
+#ifndef WIN32
   // Do timeouts via select.
   if (timeout > 0)
   {
@@ -541,6 +573,8 @@ java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
 	throw iioe;
       }
   }
+#endif
+
   // Read the socket.
   int r = ::recv (fnum, (char *) bytes, count, 0);
   if (r == 0)
