@@ -7617,7 +7617,7 @@
    (set_attr "length" "1")])
 
 (define_insn "goto_handler_and_restore"
-  [(unspec_volatile [(match_operand:SI 0 "register_operand" "=r")] 2)]
+  [(unspec_volatile [(match_operand 0 "register_operand" "=r")] 2)]
   ""
   "jmp\\t%0+0\\n\\trestore"
   [(set_attr "type" "misc")

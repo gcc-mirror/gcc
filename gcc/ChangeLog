@@ -11,6 +11,9 @@ Sun Sep 13 19:17:35 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 	* config/sparc/sol2.h (INIT_SUBTARGET_OPTABS): Get the names right
 	for arch64 libfuncs.
 	
+	* config/sparc/sparc.md (goto_handler_and_restore): Allow any mode
+	for operand zero.
+
 Sun Sep 13 09:11:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* acconfig.h (NEED_DECLARATION_STRSIGNAL): Provide a stub.
