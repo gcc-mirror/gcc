@@ -102,9 +102,27 @@ static void parse_source_file_1 (tree, FILE *);
 static void parse_source_file_2 (void);
 static void parse_source_file_3 (void);
 static void parse_class_file (void);
+static void handle_deprecated (void);
 static void set_source_filename (JCF *, int);
 static void jcf_parse (struct JCF*);
 static void load_inner_classes (tree);
+
+/* Handle "Deprecated" attribute.  */
+static void
+handle_deprecated (void)
+{
+  if (current_field != NULL_TREE)
+    FIELD_DEPRECATED (current_field) = 1;
+  else if (current_method != NULL_TREE)
+    METHOD_DEPRECATED (current_method) = 1;
+  else if (current_class != NULL_TREE)
+    CLASS_DEPRECATED (TYPE_NAME (current_class)) = 1;
+  else
+    {
+      /* Shouldn't happen.  */
+      abort ();
+    }
+}
 
 /* Handle "SourceFile" attribute. */
 
@@ -199,6 +217,8 @@ set_source_filename (JCF *jcf, int index)
     } \
   DECL_FUNCTION_THROWS (current_method) = nreverse (list); \
 }
+
+#define HANDLE_DEPRECATED_ATTRIBUTE()  handle_deprecated ()
 
 /* Link seen inner classes to their outer context and register the
    inner class to its outer context. They will be later loaded.  */

@@ -176,6 +176,9 @@ extern int flag_jni;
 
 extern int flag_extraneous_semicolon;
 
+/* When nonzero, report use of deprecated classes, methods, or fields.  */
+extern int flag_deprecated;
+
 /* When nonzero, always check for a non gcj generated classes archive.  */
 
 extern int flag_force_classes_archive_check;

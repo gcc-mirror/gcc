@@ -51,7 +51,8 @@ static void java_store_unicode (struct java_line *, unicode_t, int);
 static int java_parse_escape_sequence (void);
 static int java_start_char_p (unicode_t);
 static int java_part_char_p (unicode_t);
-static int java_parse_doc_section (int);
+static int java_space_char_p (unicode_t);
+static void java_parse_doc_section (int);
 static void java_parse_end_comment (int);
 static int java_get_unicode (void);
 static int java_read_unicode (java_lexer *, int *);
@@ -673,53 +674,92 @@ java_parse_end_comment (int c)
    of a documentation comment line (ignoring white space and any `*'
    character). Parsed keyword(s): @DEPRECATED.  */
 
-static int
+static void
 java_parse_doc_section (int c)
 {
-  int valid_tag = 0, seen_star = 0;
+  int last_was_star;
 
-  while (JAVA_WHITE_SPACE_P (c) || (c == '*') || c == '\n')
+  /* We reset this here, because only the most recent doc comment
+     applies to the following declaration.  */
+  ctxp->deprecated = 0;
+
+  /* We loop over all the lines of the comment.  We'll eventually exit
+     if we hit EOF prematurely, or when we see the comment
+     terminator.  */
+  while (1)
     {
-      switch (c)
+      /* These first steps need only be done if we're still looking
+	 for the deprecated tag.  If we've already seen it, we might
+	 as well skip looking for it again.  */
+      if (! ctxp->deprecated)
 	{
-	case '*':
-	  seen_star = 1;
-	  break;
-	case '\n': /* ULT */
-	  valid_tag = 1;
-	default:
-	  seen_star = 0;
+	  /* Skip whitespace and '*'s.  We must also check for the end
+	     of the comment here.  */
+	  while (JAVA_WHITE_SPACE_P (c) || c == '*')
+	    {
+	      last_was_star = (c == '*');
+	      c = java_get_unicode ();
+	      if (last_was_star && c == '/')
+		{
+		  /* We just saw the comment terminator.  */
+		  return;
+		}
+	    }
+
+	  if (c == UEOF)
+	    goto eof;
+
+	  if (c == '@')
+	    {
+	      const char *deprecated = "@deprecated";
+	      int i;
+
+	      for (i = 0; deprecated[i]; ++i)
+		{
+		  if (c != deprecated[i])
+		    break;
+		  /* We write the code in this way, with the
+		     update at the end, so that after the loop
+		     we're left with the next character in C.  */
+		  c = java_get_unicode ();
+		}
+
+	      if (c == UEOF)
+		goto eof;
+
+	      /* @deprecated must be followed by a space or newline.
+		 We also allow a '*' in case it appears just before
+		 the end of a comment.  In this position only we also
+		 must allow any Unicode space character.  */
+	      if (c == ' ' || c == '\n' || c == '*' || java_space_char_p (c))
+		{
+		  if (! deprecated[i])
+		    ctxp->deprecated = 1;
+		}
+	    }
 	}
-      c = java_get_unicode();
-    }
 
-  if (c == UEOF)
-    java_lex_error ("Comment not terminated at end of input", 0);
-
-  if (seen_star && (c == '/'))
-    return 1;			/* Goto step1 in caller.  */
-
-  /* We're parsing `@deprecated'.  */
-  if (valid_tag && (c == '@'))
-    {
-      char tag [11];
-      int  tag_index = 0;
-
-      while (tag_index < 10 && c != UEOF && c != ' ' && c != '\n')
+      /* We've examined the relevant content from this line.  Now we
+	 skip the remaining characters and start over with the next
+	 line.  We also check for end of comment here.  */
+      while (c != '\n' && c != UEOF)
 	{
+	  last_was_star = (c == '*');
 	  c = java_get_unicode ();
-	  tag [tag_index++] = c;
+	  if (last_was_star && c == '/')
+	    return;
 	}
 
       if (c == UEOF)
-	java_lex_error ("Comment not terminated at end of input", 0);
-      tag [tag_index] = '\0';
-
-      if (!strcmp (tag, "deprecated"))
-	ctxp->deprecated = 1;
+	goto eof;
+      /* We have to advance past the \n.  */
+      c = java_get_unicode ();
+      if (c == UEOF)
+	goto eof;
     }
-  java_unget_unicode ();
-  return 0;
+
+ eof:
+  java_lex_error ("Comment not terminated at end of input", 0);
 }
 
 /* Return true if C is a valid start character for a Java identifier.
@@ -733,7 +773,7 @@ java_start_char_p (unicode_t c)
   unsigned long val = (unsigned long) page;
   int flags;
 
-  if ((val & ~ (LETTER_PART | LETTER_START)) != 0)
+  if ((val & ~ LETTER_MASK) != 0)
     flags = page[c & 255];
   else
     flags = val;
@@ -752,12 +792,29 @@ java_part_char_p (unicode_t c)
   unsigned long val = (unsigned long) page;
   int flags;
 
-  if ((val & ~ (LETTER_PART | LETTER_START)) != 0)
+  if ((val & ~ LETTER_MASK) != 0)
     flags = page[c & 255];
   else
     flags = val;
 
   return flags & LETTER_PART;
+}
+
+/* Return true if C is whitespace.  */
+static int
+java_space_char_p (unicode_t c)
+{
+  unsigned int hi = c / 256;
+  const char *const page = type_table[hi];
+  unsigned long val = (unsigned long) page;
+  int flags;
+
+  if ((val & ~ LETTER_MASK) != 0)
+    flags = page[c & 255];
+  else
+    flags = val;
+
+  return flags & LETTER_SPACE;
 }
 
 static int
@@ -940,13 +997,19 @@ java_lex (YYSTYPE *java_lval)
 	case '*':
 	  if ((c = java_get_unicode ()) == '*')
 	    {
-	      if ((c = java_get_unicode ()) == '/')
-		goto step1;	/* Empty documentation comment.  */
-	      else if (java_parse_doc_section (c))
-		goto step1;
+	      c = java_get_unicode ();
+	      if (c == '/')
+		{
+		  /* Empty documentation comment.  We have to reset
+		     the deprecation marker as only the most recent
+		     doc comment applies.  */
+		  ctxp->deprecated = 0;
+		}
+	      else
+		java_parse_doc_section (c);
 	    }
-
-	  java_parse_end_comment ((c = java_get_unicode ()));
+	  else
+	    java_parse_end_comment ((c = java_get_unicode ()));
 	  goto step1;
 	  break;
 	default:

@@ -1,3 +1,36 @@
+2003-02-23  Tom Tromey  <tromey@redhat.com>
+
+	* lang-options.h: Added -Wdeprecated.
+	* gcj.texi (Warnings): Document -Wdeprecated.
+	* java-tree.h (flag_deprecated): Declare.
+	* lang.c (lang_W_options): Added deprecated.
+	(flag_deprecated): New global.
+	* chartables.h: Rebuilt.
+	* gen-table.pl (process_one): Look at whitespace.
+	(print_tables): Define LETTER_SPACE, LETTER_MASK.
+	* parse.h (CLEAR_DEPRECATED): New macro.
+	(CHECK_DEPRECATED_NO_RESET): New macro.
+	* jcf-parse.c (handle_deprecated): New function.
+	(HANDLE_DEPRECATED_ATTRIBUTE): New define.
+	* jcf-reader.c (get_attribute): Handle Deprecated attribute.
+	* parse.y (resolve_type_during_patch): Check deprecation.
+	(jdep_resolve_class): Likewise.
+	(process_imports): Likewise.
+	(resolve_expression_name): Likewise.
+	(check_deprecation): Strip arrays from decl.  Check
+	flag_deprecated.
+	(patch_method_invocation): Also check the particular constructor
+	for deprecation.
+	(register_fields): Use CHECK_DEPRECATED_NO_RESET in loop.
+	* jcf-write.c (append_deprecated_attribute): New function.
+	(generate_classfile): Generate deprecated attribute when
+	appropriate.
+	* lex.c (java_parse_doc_section): Return type now void.  Rewrote.
+	(java_lex) [case '*']: Simplify logic.
+	(java_start_char_p): Use LETTER_MASK.
+	(java_part_char_p): Likewise.
+	(java_space_char_p): New function.
+
 2003-02-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Change base class access representation.

@@ -341,6 +341,7 @@ static void emit_jsr (struct jcf_block *, struct jcf_partial *);
 static void call_cleanups (struct jcf_block *, struct jcf_partial *);
 static char *make_class_file_name (tree);
 static unsigned char *append_synthetic_attribute (struct jcf_partial *);
+static void append_deprecated_attribute (struct jcf_partial *);
 static void append_innerclasses_attribute (struct jcf_partial *, tree);
 static void append_innerclasses_attribute_entry (struct jcf_partial *, tree, tree);
 static void append_gcj_attribute (struct jcf_partial *, tree);
@@ -2871,8 +2872,11 @@ generate_classfile (tree clas, struct jcf_partial *state)
       if (have_value)
 	attr_count++;
 
-      if (FIELD_THISN (part) || FIELD_LOCAL_ALIAS (part) || FIELD_SYNTHETIC (part))
+      if (FIELD_THISN (part) || FIELD_LOCAL_ALIAS (part)
+	  || FIELD_SYNTHETIC (part))
 	attr_count++;
+      if (FIELD_DEPRECATED (part))
+  	attr_count++;
 
       PUT2 (attr_count);  /* attributes_count */
       if (have_value)
@@ -2894,6 +2898,8 @@ generate_classfile (tree clas, struct jcf_partial *state)
       if (FIELD_THISN (part) || FIELD_LOCAL_ALIAS (part)
 	  || FIELD_SYNTHETIC (part))
 	ptr = append_synthetic_attribute (state);
+      if (FIELD_DEPRECATED (part))
+ 	append_deprecated_attribute (state);
       fields_count++;
     }
   ptr = fields_count_ptr;  UNSAFE_PUT2 (fields_count);
@@ -2929,6 +2935,9 @@ generate_classfile (tree clas, struct jcf_partial *state)
 	  i++;
 	  synthetic_p = 1;
 	}
+      /* Make room for Deprecated attribute.  */
+      if (METHOD_DEPRECATED (part))
+ 	i++;
 
       PUT2 (i);   /* attributes_count */
 
@@ -3069,6 +3078,10 @@ generate_classfile (tree clas, struct jcf_partial *state)
 	      PUT2 (i);
 	    }
 	}
+
+      if (METHOD_DEPRECATED (part))
+ 	append_deprecated_attribute (state);
+ 
       methods_count++;
       current_function_decl = save_function;
     }
@@ -3092,6 +3105,9 @@ generate_classfile (tree clas, struct jcf_partial *state)
     i++;
   PUT2 (i);			/* attributes_count */
 
+  if (CLASS_DEPRECATED (TYPE_NAME (clas)))
+    i++;
+
   /* generate the SourceFile attribute. */
   if (SourceFile_node == NULL_TREE) 
     {
@@ -3105,6 +3121,8 @@ generate_classfile (tree clas, struct jcf_partial *state)
   PUT2 (i);
   append_gcj_attribute (state, clas);
   append_innerclasses_attribute (state, clas);
+  if (CLASS_DEPRECATED (TYPE_NAME (clas)))
+    append_deprecated_attribute (state);
 
   /* New finally generate the contents of the constant pool chunk. */
   i = count_constant_pool_bytes (&state->cpool);
@@ -3131,6 +3149,17 @@ append_synthetic_attribute (struct jcf_partial *state)
   PUT4 (0);		/* Attribute length */
 
   return ptr;
+}
+
+static void
+append_deprecated_attribute (struct jcf_partial *state)
+{
+  unsigned char *ptr = append_chunk (NULL, 6, state);
+  int i;
+ 
+  i = find_utf8_constant (&state->cpool, get_identifier ("Deprecated"));
+  PUT2 (i);		/* Attribute string index */
+  PUT4 (0);		/* Attribute length */
 }
 
 static void

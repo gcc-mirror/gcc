@@ -4289,7 +4289,7 @@ register_fields (int flags, tree type, tree variable_list)
       else
 	lineno = EXPR_WFL_LINENO (cl);
       field_decl = add_field (class_type, current_name, real_type, flags);
-      CHECK_DEPRECATED (field_decl);
+      CHECK_DEPRECATED_NO_RESET (field_decl);
 
       /* If the field denotes a final instance variable, then we
 	 allocate a LANG_DECL_SPECIFIC part to keep track of its
@@ -4347,6 +4347,8 @@ register_fields (int flags, tree type, tree variable_list)
 	  DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
 	}
     }
+
+  CLEAR_DEPRECATED;
   lineno = saved_lineno;
 }
 
@@ -5460,6 +5462,10 @@ jdep_resolve_class (jdep *dep)
       decl = resolve_class (JDEP_ENCLOSING (dep), JDEP_TO_RESOLVE (dep),
 			    JDEP_DECL (dep), JDEP_WFL (dep));
       JDEP_RESOLVED (dep, decl);
+      /* If there is no WFL, that's ok.  We generate this warning
+	 elsewhere.  */
+      if (JDEP_WFL (dep) != NULL_TREE)
+	check_deprecation (JDEP_WFL (dep), decl);
     }
 
   if (!decl)
@@ -6647,7 +6653,11 @@ process_imports (void)
 
 	  /* We found it, we can bail out */
 	  if (IDENTIFIER_CLASS_VALUE (to_be_found))
-	    break;
+	    {
+	      check_deprecation (TREE_PURPOSE (import),
+				 IDENTIFIER_CLASS_VALUE (to_be_found));
+	      break;
+	    }
 
 	  /* We haven't found it. Maybe we're trying to access an
 	     inner class.  The only way for us to know is to try again
@@ -9154,6 +9164,8 @@ resolve_expression_name (tree id, tree *orig)
 	      if (FIELD_LOCAL_ALIAS_USED (decl))
 		name = DECL_NAME (decl);
 
+	      check_deprecation (id, decl);
+
 	      /* Instance variable (8.3.1.1) can't appear within
 		 static method, static initializer or initializer for
 		 a static variable. */
@@ -9952,22 +9964,40 @@ not_accessible_p (tree reference, tree member, tree where, int from_super)
 static void
 check_deprecation (tree wfl, tree decl)
 {
-  const char *file = DECL_SOURCE_FILE (decl);
+  const char *file;
+  tree elt;
+
+  if (! flag_deprecated)
+    return;
+
+  /* We want to look at the element type of arrays here, so we strip
+     all surrounding array types.  */
+  if (TYPE_ARRAY_P (TREE_TYPE (decl)))
+    {
+      elt = TREE_TYPE (decl);
+      while (TYPE_ARRAY_P (elt))
+	elt = TYPE_ARRAY_ELEMENT (elt);
+      /* We'll end up with a pointer type, so we use TREE_TYPE to go
+	 to the record.  */
+      decl = TYPE_NAME (TREE_TYPE (elt));
+    }
+  file = DECL_SOURCE_FILE (decl);
+
   /* Complain if the field is deprecated and the file it was defined
      in isn't compiled at the same time the file which contains its
      use is */
   if (DECL_DEPRECATED (decl)
       && !IS_A_COMMAND_LINE_FILENAME_P (get_identifier (file)))
     {
-      char the [20];
+      const char *the;
       switch (TREE_CODE (decl))
 	{
 	case FUNCTION_DECL:
-	  strcpy (the, "method");
+	  the = "method";
 	  break;
 	case FIELD_DECL:
 	case VAR_DECL:
-	  strcpy (the, "field");
+	  the = "field";
 	  break;
 	case TYPE_DECL:
 	  parse_warning_context (wfl, "The class `%s' has been deprecated",
@@ -10336,11 +10366,10 @@ patch_method_invocation (tree patch, tree primary, tree where, int from_super,
     }
 
   /* Deprecation check: check whether the method being invoked or the
-     instance-being-created's type are deprecated. */
+     instance-being-created's type are deprecated.  */
   if (TREE_CODE (patch) == NEW_CLASS_EXPR)
     check_deprecation (wfl, TYPE_NAME (DECL_CONTEXT (list)));
-  else
-    check_deprecation (wfl, list);
+  check_deprecation (wfl, list);
 
   /* If invoking a innerclass constructor, there are hidden parameters
      to pass */
@@ -13383,7 +13412,7 @@ patch_binop (tree node, tree wfl_op1, tree wfl_op2)
 	}
       break;
 
-      /* 15.19.1 Type Comparison Operator instaceof */
+      /* 15.19.1 Type Comparison Operator instanceof */
     case INSTANCEOF_EXPR:
 
       TREE_TYPE (node) = boolean_type_node;
@@ -14134,10 +14163,14 @@ resolve_type_during_patch (tree type)
 			       IDENTIFIER_POINTER (EXPR_WFL_NODE (type)));
 	  return NULL_TREE;
 	}
+
+      check_deprecation (type, type_decl);
+
       return TREE_TYPE (type_decl);
     }
   return type;
 }
+
 /* 5.5 Casting Conversion. error_mark_node is returned if an error is
    found. Otherwise NODE or something meant to replace it is returned.  */
 
