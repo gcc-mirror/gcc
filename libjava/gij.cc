@@ -16,6 +16,7 @@ details.  */
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <java/lang/System.h>
 #include <java/util/Properties.h>

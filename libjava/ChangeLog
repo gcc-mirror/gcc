@@ -1,3 +1,10 @@
+2000-05-31  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* gcj/cni.h: Include <string.h>.
+	* defineclass.cc: Include <alloca.h>.
+	* interpret.cc: Ditto.
+	* gij.cc: Include <stdlib.h>.
+
 2000-05-30  Tom Tromey  <tromey@cygnus.com>
 
 	* include/name-finder.h: Include <sys/wait.h>.

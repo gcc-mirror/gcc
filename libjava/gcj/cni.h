@@ -18,6 +18,8 @@ details.  */
 
 #include <gcj/array.h>
 
+#include <string.h>
+
 extern inline jobject
 JvAllocObject (jclass cls)
 {

@@ -24,6 +24,7 @@ details.  */
 
 #ifdef INTERPRETER
 
+#include <alloca.h>
 #include <java-cpool.h>
 #include <gcj/cni.h>
 
