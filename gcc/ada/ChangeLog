@@ -1,5 +1,12 @@
 Nathanael Nerode  <neroden@gcc.gnu.org>
 	PR ada/5904
+	* 5ataprop.adb 5atpopsp.adb 5bosinte.adb 5ftaprop.adb 
+	5gtaprop.adb 5htaprop.adb 5rosinte.ads 5staprop.adb 
+	5stpopse.adb 5vtaspri.ads 5zintman.adb 5ztaprop.adb 
+	7staprop.adb: Correct statements in comments about 
+	maintainership of GNAT.
+
+	PR ada/5904
 	* 1ssecsta.adb 1ssecsta.ads adadecode.c adadecode.h aux-io.c 
 	gnatname.adb gnatname.ads mkdir.c osint-b.adb osint-b.ads 
 	osint-c.adb osint-c.ads osint-l.adb osint-l.ads osint-m.adb 
