@@ -1,3 +1,7 @@
+2004-07-02  Steven Bosscher  <stevenb@suse.de>
+
+	* tree-flow.h (bb_ann_d): Remove ephi_nodes field.
+
 2004-07-01  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (struct machine_function): Add gp_save_rtx.
