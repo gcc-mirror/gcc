@@ -1,3 +1,8 @@
+2001-12-13  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (adjust_address_1): Don't adjust address if adjust
+	is false.
+
 2001-12-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* collect2.c (COLLECT_SHARED_INIT_FUNC)
