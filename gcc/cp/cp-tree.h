@@ -3167,7 +3167,7 @@ extern varray_type local_classes;
 #define VFIELD_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VFIELD_NAME, \
 	    sizeof (VFIELD_NAME) - 1))
-#define VFIELD_NAME_FORMAT "_vptr_%s"
+#define VFIELD_NAME_FORMAT "__vptr_%s"
 #define STATIC_NAME_FORMAT "__static_%s_%s"
 
 #define ANON_AGGRNAME_PREFIX "__anon_"
