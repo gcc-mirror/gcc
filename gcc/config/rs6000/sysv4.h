@@ -998,11 +998,10 @@ do {									\
     %{mcall-nt: -mlittle %{cc1_endian_little} } \
     %{mcall-aixdesc: -mbig %{cc1_endian_big} } \
     %{mcall-solaris: -mlittle %{cc1_endian_little} } \
-    %{mcall-linux: -mbig %{cc1_endian_big}}} \
+    %{mcall-linux: -mbig %{cc1_endian_big} } \
     %{!mcall-nt: %{!mcall-aixdesc: %{!mcall-solaris: %{!mcall-linux: \
 	    %(cc1_endian_default) \
     }}}} \
-}}} \
 %{mcall-solaris: -mregnames } \
 %{mno-sdata: -msdata=none } \
 %{meabi: %{!mcall-*: -mcall-sysv }} \

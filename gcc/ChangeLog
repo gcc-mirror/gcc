@@ -1,3 +1,7 @@
+1999-01-19  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* config/rs6000/sysv4.h (CC1_SPEC): Fix correct numbers of {}.
+
 Tue Jan 19 06:26:30 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (cccp.o, cpplib.o): Depend on Makefile.
