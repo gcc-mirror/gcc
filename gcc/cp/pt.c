@@ -2855,7 +2855,7 @@ do_poplevel ()
       saved_warn_unused = warn_unused;
       warn_unused = 0;
     }
-  expand_end_bindings (getdecls (), kept_level_p (), 1);
+  expand_end_bindings (getdecls (), kept_level_p (), 0);
   if (processing_template_decl)
     warn_unused = saved_warn_unused;
   t = poplevel (kept_level_p (), 1, 0);
