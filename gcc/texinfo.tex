@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.218 1997/07/26 19:12:35 karl Exp karl $
+%% $Id: texinfo.tex,v 2.219 1997/10/13 19:49:25 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.218 $
+\deftexinfoversion$Revision: 2.219 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -4617,7 +4617,7 @@ width0pt\relax} \fi
 % Check for and read epsf.tex up front.  If we read it only at @image
 % time, we might be inside a group, and then its definitions would get
 % undone and the next image would fail.
-\openin 1 = xepsf.tex
+\openin 1 = epsf.tex
 \ifeof 1 \else
   \closein 1
   \def\epsfannounce{\toks0 = }% do not bother showing banner
