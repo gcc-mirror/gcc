@@ -4,6 +4,8 @@ Sat Jun 13 14:30:25 1998  David W. Schuler  <schuld@btv.ibm.com>
 
 Sat Jun 13 14:16:34 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
+	* regmove.c (try_auto_increment): Fix typo.
+
 	* c-common.c (truthvalue_conversion): Protect side effects in the
 	expression when splitting a complex value.
 	* fold-const.c (fold): Likewise.
