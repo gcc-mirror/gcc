@@ -832,7 +832,7 @@ begin_compound_stmt (has_no_scope)
     {
       do_pushlevel ();
       if (is_try)
-      	note_level_for_eh ();
+      	note_level_for_try ();
     }
   else
     /* Normally, we try hard to keep the BLOCK for a
