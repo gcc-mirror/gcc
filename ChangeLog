@@ -1,3 +1,7 @@
+Tue Apr 28 07:35:02 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* configure.in (--enable-target-optspace): Remove debug echo.
+
 Thu Apr 23 21:31:16 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* configure: Set CXXFLAGS from CXXFLAGS, not CFLAGS.

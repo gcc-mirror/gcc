@@ -314,7 +314,6 @@ esac
 # If --enable-target-optspace always use -Os instead of -O2 to build
 # the target libraries, similarly if it is not specified, use -Os
 # on selected platforms.
-echo "---${enable_target_optspace}:${target}--" 1>&2
 case "${enable_target_optspace}:${target}" in
   yes:*)
     target_makefile_frag="${target_makefile_frag} config/mt-ospace"
