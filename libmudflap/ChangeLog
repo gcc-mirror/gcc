@@ -1,3 +1,8 @@
+2004-07-27  Ulrich Weigand  <weigand@informatik.uni-erlangen.de>
+
+	* mf-runtime.c (__mf_fini): Set mudflap_mode to mode_nop in
+	the statically linked case.
+
 2004-07-27  Frank Ch. Eigler  <fche@redhat.com>
 
 	* splay-tree.[ch]: Remove.  Merge contents into ...
