@@ -1,3 +1,12 @@
+2001-01-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* config.gcc (rs6000-ibm-aix[5-9]*): Change to aix51.h.
+	* collect2.c (main): Delete importf.  Add ".obj" file extension.
+	(GCC_CHECK_HDR): Handle AIX V5 new magic number.
+	(aix_std_libs): Add additional AIX libraries to skip.
+	* config/rs6000/aix.h (MY_ISCOFF): Add AIX V5 new magic number.
+	* config/rs6000/aix51.h: New file.
+
 2001-01-25  Michael Hayes  <mhayes@redhat.com>
 
 	* loop.c (loop_call_insn_emit_before, loop_call_insn_hoist): New.

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,15 +32,16 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define the magic numbers that we recognize as COFF.
  
-    AIX 4.3 adds U803XTOCMAGIC (0757) for 64-bit objects, but collect2.c
-    does not include files in the correct order to conditionally define
-    the symbolic name in this macro.
+    AIX 4.3 adds U803XTOCMAGIC (0757) for 64-bit objects and AIX V5 adds
+    U64_TOCMAGIC (0767), but collect2.c does not include files in the
+    correct order to conditionally define the symbolic name in this macro.
  
     The AIX linker accepts import/export files as object files,
     so accept "#!" (0x2321) magic number.  */
 #define MY_ISCOFF(magic) \
   ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC \
-   || (magic) == U802TOCMAGIC || (magic) == 0757 || (magic) == 0x2321)
+   || (magic) == U802TOCMAGIC || (magic) == 0757 || (magic) == 0767 \
+   || (magic) == 0x2321)
 
 /* This is the only version of nm that collect2 can work with.  */
 #define REAL_NM_FILE_NAME "/usr/ucb/nm"
