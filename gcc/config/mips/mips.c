@@ -4989,17 +4989,14 @@ mips_va_arg (valist, type)
 	  emit_queue();
 	  emit_label (lab_over);
 	}
+      if (BYTES_BIG_ENDIAN && rsize != size)
+	addr_rtx = plus_constant (addr_rtx, rsize - size);
       if (indirect)
 	{
 	  addr_rtx = force_reg (Pmode, addr_rtx);
 	  r = gen_rtx_MEM (Pmode, addr_rtx);
 	  set_mem_alias_set (r, get_varargs_alias_set ());
 	  emit_move_insn (addr_rtx, r);
-	}
-      else
-	{
-	  if (BYTES_BIG_ENDIAN && rsize != size)
-	    addr_rtx = plus_constant (addr_rtx, rsize - size);
 	}
       return addr_rtx;
     }
