@@ -102,7 +102,7 @@ static size_t include_cursor;
 
 static void missing_arg PARAMS ((enum opt_code));
 static void set_Wimplicit PARAMS ((int));
-static void complain_wrong_lang PARAMS ((size_t));
+static void complain_wrong_lang PARAMS ((size_t, int));
 static void write_langs PARAMS ((char *, int));
 static void print_help PARAMS ((void));
 static void handle_OPT_d PARAMS ((const char *));
@@ -265,7 +265,7 @@ c_common_handle_option (size_t scode, const char *arg, int on)
   lang_mask = lang_flags[(c_language << 1) + flag_objc];
   if (!(option->flags & lang_mask))
     {
-      complain_wrong_lang (code);
+      complain_wrong_lang (code, on);
       return 1;
     }
 
@@ -1553,8 +1553,9 @@ write_langs (buf, flags)
 
 /* Complain that switch OPT_INDEX does not apply to this front end.  */
 static void
-complain_wrong_lang (opt_index)
+complain_wrong_lang (opt_index, on)
      size_t opt_index;
+     int on;
 {
   char ok_langs[60], bad_langs[60];
   int ok_flags = cl_options[opt_index].flags;
@@ -1562,8 +1563,9 @@ complain_wrong_lang (opt_index)
   write_langs (ok_langs, ok_flags);
   write_langs (bad_langs, ~ok_flags);
   /* Eventually this should become a hard error.  */
-  warning ("\"-%s\" is valid for %s but not for %s",
-	   cl_options[opt_index].opt_text, ok_langs, bad_langs);
+  warning ("\"-%c%s%s\" is valid for %s but not for %s",
+	   cl_options[opt_index].opt_text[0], on ? "" : "no-",
+	   cl_options[opt_index].opt_text + 1, ok_langs, bad_langs);
 }
 
 /* Handle --help output.  */
