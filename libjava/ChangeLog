@@ -1,3 +1,9 @@
+1999-11-01  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.cc (_Jv_InitGC): Set GC_java_finalization.
+	(sum_blocks): Removed.
+	(_Jv_GCFreeMemory): Use GC_get_free_bytes.
+
 1999-11-01  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/io/PrintStream (PrintStream): Fix illegal usage of "this" 
