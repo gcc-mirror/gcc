@@ -1293,7 +1293,7 @@ bi-parser.o:	$(srcdir)/bi-parser.c $(srcdir)/bi-defs.h
 bi-lexer.c:	$(srcdir)/bi-lexer.l $(srcdir)/bi-parser.h
 
 bi-lexer.o:	bi-lexer.c bi-parser.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c bi-lexer.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $9srcdir)/bi-lexer.c
 
 bc-arity.h:	$(srcdir)/bytecode.def bi-arity
 	-rm -f bc-arity.h
