@@ -56,6 +56,7 @@ jmethodID postKeyEventID;
 jmethodID postFocusEventID;
 jmethodID postAdjustmentEventID;
 jmethodID postItemEventID;
+jmethodID choicePostItemEventID;
 jmethodID postListItemEventID;
 jmethodID postTextEventID;
 jmethodID postWindowEventID;
@@ -80,7 +81,7 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
   char **argv;
   char *homedir, *rcpath = NULL;
 /*    jclass gtkgenericpeer; */
-  jclass gtkcomponentpeer, gtkwindowpeer, gtkscrollbarpeer, gtklistpeer,
+  jclass gtkcomponentpeer, gtkchoicepeer, gtkwindowpeer, gtkscrollbarpeer, gtklistpeer,
     gtkmenuitempeer, gtktextcomponentpeer, window;
 
   NSA_INIT (env, clazz);
@@ -139,6 +140,8 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
 
   gtkcomponentpeer = (*env)->FindClass (env,
 				     "gnu/java/awt/peer/gtk/GtkComponentPeer");
+  gtkchoicepeer = (*env)->FindClass (env,
+				     "gnu/java/awt/peer/gtk/GtkChoicePeer");
   gtkwindowpeer = (*env)->FindClass (env,
 				     "gnu/java/awt/peer/gtk/GtkWindowPeer");
   gtkscrollbarpeer = (*env)->FindClass (env, 
@@ -181,6 +184,9 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
   postItemEventID = (*env)->GetMethodID (env, gtkcomponentpeer,
 					 "postItemEvent", 
 					 "(Ljava/lang/Object;I)V");
+  choicePostItemEventID = (*env)->GetMethodID (env, gtkchoicepeer,
+					 "choicePostItemEvent", 
+					 "(Ljava/lang/String;I)V");
   postListItemEventID = (*env)->GetMethodID (env, gtklistpeer,
 					     "postItemEvent",
 					     "(II)V");

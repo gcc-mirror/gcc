@@ -1,3 +1,30 @@
+2003-12-22  Fernando Nasser  <fnasser@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkChoicePeer.java (postItemEvent): Rename to...
+	(choicePostItemEvent): Change signature to more specific String object.
+	* java/awt/Choice.java (add): Generate ItemEvent for the first item
+	added.
+	(insert): Generate ItemEvent if insertion caused
+	selection to change.
+	(remove): Generate ItemEvent if removal cause selection to change.
+	(removeAll): Change algorithm to prevent generation of ItemEvents.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c
+	(connect_choice_item_selectable_hook): Change argument type.
+	Fix argument value.
+	Make sure resources are feed by registering callback.
+	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_append): Adjust call to the
+	above function.
+	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_add): Ditto.
+	(item_activate): Ditto.
+	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_remove): Destroy removed
+	menuitem.
+	(item_removed): New function.  Free resources.
+	* jni/gtk-peer/gtkpeer.h (item_event_hook_info): Change member type and
+	name.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c
+	(Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit): Obtain MethodID for
+	choicePostItemEvent.
+
 2003-12-23  Michael Koch  <konqueror@gmx.de>
 
 	* javax/print/attribute/standard/Copies.java,
