@@ -17,27 +17,26 @@ __divtf3:
 (p6)	cmp.ne p7, p0 = r0, r0
 	.pred.rel.mutex p6, p7
 (p6)	fnma.s1 f11 = farg1, f10, f1
-(p6)	fmpy.s1 f12 = farg0, f10
+(p6)	fma.s1 f12 = farg0, f10, f0
 	;;
-(p6)	fmpy.s1 f13 = f11, f11
+(p6)	fma.s1 f13 = f11, f11, f0
 (p6)	fma.s1 f14 = f11, f11, f11
 	;;
 (p6)	fma.s1 f11 = f13, f13, f11
 (p6)	fma.s1 f13 = f14, f10, f10
 	;;
 (p6)	fma.s1 f10 = f13, f11, f10
-(p6)	fnma.s1 f12 = farg1, f12, farg0
+(p6)	fnma.s1 f11 = farg1, f12, farg0
 	;;
 (p6)	fma.s1 f11 = f11, f10, f12
-(p6)	fnma.s1 f13 = farg1, f10, f1
+(p6)	fnma.s1 f12 = farg1, f10, f1
 	;;
 (p6)	fma.s1 f10 = f12, f10, f10
 (p6)	fnma.s1 f12 = farg1, f11, farg0
 	;;
-(p6)	fma fret0 = f12, f10, f11
+(p6)	fma.s0 fret0 = f12, f10, f11
 (p7)	mov fret0 = f10
 	br.ret.sptk rp
-	;;
 	.endp __divtf3
 #endif
 
