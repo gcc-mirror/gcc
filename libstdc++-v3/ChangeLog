@@ -1,3 +1,9 @@
+2004-12-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/18837
+	* testsuite/testsuite_performance.h: Fix mallinfo macros for
+	hpux.
+
 2004-12-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h
