@@ -1,5 +1,17 @@
 2000-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* 1750a-protos.h: New file.
+
+	* 1750a.c: Include tm_p.h.  Add static prototypes.  Fix compile
+	time warnings.
+	
+	* 1750a.h: Move prototypes to 1750a-protos.h.  Fix compile time
+	warnings.
+	
+	* 1750a.md: Likewise.
+
+2000-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* a29k-protos.h: New file.
 
 	* a29k.c: Include tm_p.h.  Add static prototypes.  Fix compile

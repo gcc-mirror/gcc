@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1994, 95-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 95-99, 2000 Free Software Foundation, Inc.
    Contributed by O.M.Kellogg, DASA (oliver.kellogg@space.otn.dasa.de)
 
 This file is part of GNU CC.
@@ -65,12 +65,7 @@ extern struct datalabel_array datalbl[];
 extern struct jumplabel_array jmplbl[];
 extern int datalbl_ndx, jmplbl_ndx, label_pending, program_counter;
 extern enum section current_section;
-extern char *sectname[4];
-extern char *float_label();
-extern struct rtx_def *function_arg ();
-extern char *movcnt_regno_adjust ();
-extern char *mod_regno_adjust ();
-extern char *branch_or_jump ();
+extern const char *const sectname[4];
 #endif
 /*--------------------------------------------------------------------*/
 
@@ -329,7 +324,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    1750 "index" (remember, in the *GCC* sense!) regs are R12 through R15. 
    The only 1750 register not usable as BASE_REG is R0. */
 
-#define REG_CLASS_CONTENTS  {0, 0x0004, 0x0003, 0xf000, 0xfffe, 0xffff}
+#define REG_CLASS_CONTENTS  { {0}, {0x0004}, {0x0003}, {0xf000}, {0xfffe}, {0xffff} }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -725,11 +720,11 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    */
 
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
- ((REGNO) > 0 && (REGNO) <= 15 ||   \
-  reg_renumber[REGNO] > 0 && reg_renumber[REGNO] <= 15)
+ (((REGNO) > 0 && (REGNO) <= 15) ||   \
+  (reg_renumber[REGNO] > 0 && reg_renumber[REGNO] <= 15))
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
- ((REGNO) >= 12 && (REGNO) <= 15 || \
-  reg_renumber[REGNO] >= 12 && reg_renumber[REGNO] <= 15)
+ (((REGNO) >= 12 && (REGNO) <= 15) || \
+  (reg_renumber[REGNO] >= 12 && reg_renumber[REGNO] <= 15))
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.  */
@@ -945,7 +940,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    else									\
 	p = main_input_filename;					\
    strcpy(name,p);							\
-   if (p = (char *)strchr(name,'.'))					\
+   if ((p = (char *)strchr(name,'.')))					\
 	*p = '\0';							\
    fprintf(FILE,"\tname %s\n",name); 					\
    fprintf(FILE,"\tnolist\n\tinclude \"ms1750.inc\"\n\tlist\n\n");	\
@@ -1002,7 +997,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	fprintf(asm_out_file,"\tkonst\n");			\
 	current_section = Konst;				\
     }								\
-    check_section(sect)						\
+    void check_section(sect)					\
 	 enum section sect;					\
     {								\
         if (current_section != sect) {				\
@@ -1164,10 +1159,10 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
   do {								\
       if (label_pending) {					\
 	 label_pending = 0;					\
-         sprintf (datalbl[datalbl_ndx].value, "%lf", (double) VALUE); \
+         sprintf (datalbl[datalbl_ndx].value, "%f", (double) VALUE); \
       }								\
       datalbl[datalbl_ndx].size += 2;				\
-      fprintf (FILE, "\tdataf\t%lf\n",VALUE);			\
+      fprintf (FILE, "\tdataf\t%f\n",VALUE);			\
   } while(0)
 
 /* This is how to output an assembler line defining a 1750A `double'
@@ -1177,10 +1172,10 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
   do {								\
       if (label_pending) {					\
 	 label_pending = 0;					\
-         sprintf (datalbl[datalbl_ndx].value, "%lf", VALUE);	\
+         sprintf (datalbl[datalbl_ndx].value, "%f", VALUE);	\
       }								\
       datalbl[datalbl_ndx].size += 3;				\
-      fprintf(FILE,"\tdataef\t%lf\n",VALUE);			\
+      fprintf(FILE,"\tdataef\t%f\n",VALUE);			\
   } while (0)
 
 /* This is how to output an assembler line defining a string constant.  */
@@ -1250,13 +1245,13 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    It need not be very fast code.  */
 
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
-  fprintf (FILE, "\tPSHM R%s,R%s\n", reg_names[REGNO])
+  fprintf (FILE, "\tPSHM R%s,R%s\n", reg_names[REGNO], "FIXME: missing arg")
 
 /* This is how to output an insn to pop a register from the stack.
    It need not be very fast code.  */
 
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
-	fprintf (FILE, "\tPOPM R%s,R%s\n", reg_names[REGNO])
+	fprintf (FILE, "\tPOPM R%s,R%s\n", reg_names[REGNO], "FIXME: missing arg")
 
 /* This is how to output an element of a case-vector that is absolute. */
 
