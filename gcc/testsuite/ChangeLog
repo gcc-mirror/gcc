@@ -1,3 +1,8 @@
+2003-04-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10428
+	* g++.dg/parse/elab1.C: New test.
+
 2003-04-22  Andreas Tobler <a.tobler@schweiz.ch>
 
         * g++.dg/other/packed1.C: Fix dg options.
