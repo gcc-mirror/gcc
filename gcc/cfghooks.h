@@ -26,7 +26,8 @@ struct cfg_hooks
 {
   /* Debugging.  Do not use macros to hook these so they can be called from
      debugger!  */
-  void (*cfgh_verify_flow_info)	        PARAMS ((void));
+  int (*cfgh_verify_flow_info)	        PARAMS ((void));
+  void (*dump_bb)			PARAMS ((basic_block, FILE *));
 
   /* Basic CFG manipulation.  */
 

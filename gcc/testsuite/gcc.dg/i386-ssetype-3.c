@@ -1,11 +1,11 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -msse2 -march=k8" } */
-/* { dg-final { scan-assembler "andps.*magic" } } */
-/* { dg-final { scan-assembler "andnps.*magic" } } */
-/* { dg-final { scan-assembler "xorps.*magic" } } */
-/* { dg-final { scan-assembler "orps.*magic" } } */
+/* { dg-final { scan-assembler "andps\[^\\n\]*magic" } } */
+/* { dg-final { scan-assembler "andnps\[^\\n\]*magic" } } */
+/* { dg-final { scan-assembler "xorps\[^\\n\]*magic" } } */
+/* { dg-final { scan-assembler "orps\[^\\n\]*magic" } } */
 /* { dg-final { scan-assembler-not "movdqa" } } */
-/* { dg-final { scan-assembler "movaps.*magic" } } */
+/* { dg-final { scan-assembler "movaps\[^\\n\]*magic" } } */
 
 /* Verify that we generate proper instruction with memory operand.  */
 

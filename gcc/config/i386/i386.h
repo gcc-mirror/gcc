@@ -97,7 +97,11 @@ extern int target_flags;
 /* configure can arrange to make this 2, to force a 486.  */
 
 #ifndef TARGET_CPU_DEFAULT
+#ifdef TARGET_64BIT_DEFAULT
+#define TARGET_CPU_DEFAULT TARGET_CPU_DEFAULT_k8
+#else
 #define TARGET_CPU_DEFAULT 0
+#endif
 #endif
 
 /* Masks for the -m switches */

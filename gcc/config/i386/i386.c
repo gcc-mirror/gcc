@@ -15685,7 +15685,7 @@ k8_avoid_jump_misspredicts ()
       if (njumps < 0)
 	abort ();
       if (rtl_dump_file)
-        fprintf(stderr,"Interval %i to %i has %i bytes\n",
+        fprintf(rtl_dump_file, "Interval %i to %i has %i bytes\n",
 		INSN_UID (start), INSN_UID (insn), nbytes);
 
       if (njumps == 3 && isjump && nbytes < 16)
@@ -15750,8 +15750,7 @@ ix86_reorg ()
 	delete_insn (ret);
       }
   }
-  if (TARGET_K8)
-    k8_avoid_jump_misspredicts ();
+  k8_avoid_jump_misspredicts ();
 }
 
 /* Return nonzero when QImode register that must be represented via REX prefix

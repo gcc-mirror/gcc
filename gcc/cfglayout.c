@@ -1032,6 +1032,9 @@ break_superblocks ()
 void
 cfg_layout_finalize ()
 {
+#ifdef ENABLE_CHECKING
+  verify_flow_info ();
+#endif
   rtl_register_cfg_hooks ();
   fixup_fallthru_exit_predecessor ();
   fixup_reorder_chain ();
