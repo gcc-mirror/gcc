@@ -2825,8 +2825,11 @@ reorder_insns_with_line_notes (from, to, after)
 void
 remove_unnecessary_notes ()
 {
+  rtx block_stack = NULL_RTX;
+  rtx eh_stack = NULL_RTX;
   rtx insn;
   rtx next;
+  rtx tmp;
 
   /* We must not remove the first instruction in the function because
      the compiler depends on the first instruction being a note.  */
@@ -2839,55 +2842,78 @@ remove_unnecessary_notes ()
       if (GET_CODE (insn) != NOTE)
 	continue;
 
-      /* By now, all notes indicating lexical blocks should have
-	 NOTE_BLOCK filled in.  */
-      if ((NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
-	   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
-	  && NOTE_BLOCK (insn) == NULL_TREE)
-	abort ();
-
-      /* Remove NOTE_INSN_DELETED notes.  */
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
-	remove_insn (insn);
-      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+      switch (NOTE_LINE_NUMBER (insn))
 	{
+	case NOTE_INSN_DELETED:
+	  remove_insn (insn);
+	  break;
+
+	case NOTE_INSN_EH_REGION_BEG:
+	  eh_stack = alloc_INSN_LIST (insn, eh_stack);
+	  break;
+
+	case NOTE_INSN_EH_REGION_END:
+	  /* Too many end notes.  */
+	  if (eh_stack == NULL_RTX)
+	    abort ();
+	  /* Mismatched nesting.  */
+	  if (NOTE_EH_HANDLER (XEXP (eh_stack, 0)) != NOTE_EH_HANDLER (insn))
+	    abort ();
+	  tmp = eh_stack;
+	  eh_stack = XEXP (eh_stack, 1);
+	  free_INSN_LIST_node (tmp);
+	  break;
+
+	case NOTE_INSN_BLOCK_BEG:
+	  /* By now, all notes indicating lexical blocks should have
+	     NOTE_BLOCK filled in.  */
+	  if (NOTE_BLOCK (insn) == NULL_TREE)
+	    abort ();
+	  block_stack = alloc_INSN_LIST (insn, block_stack);
+	  break;
+
+	case NOTE_INSN_BLOCK_END:
+	  /* Too many end notes.  */
+	  if (block_stack == NULL_RTX)
+	    abort ();
+	  /* Mismatched nesting.  */
+	  if (NOTE_BLOCK (XEXP (block_stack, 0)) != NOTE_BLOCK (insn))
+	    abort ();
+	  tmp = block_stack;
+	  block_stack = XEXP (block_stack, 1);
+	  free_INSN_LIST_node (tmp);
+
 	  /* Scan back to see if there are any non-note instructions
 	     between INSN and the beginning of this block.  If not,
 	     then there is no PC range in the generated code that will
 	     actually be in this block, so there's no point in
 	     remembering the existence of the block.  */
-	  rtx prev;
-
-	  for (prev = PREV_INSN (insn); prev; prev = PREV_INSN (prev))
+	  for (tmp = PREV_INSN (insn); tmp ; tmp = PREV_INSN (tmp))
 	    {
 	      /* This block contains a real instruction.  Note that we
 		 don't include labels; if the only thing in the block
 		 is a label, then there are still no PC values that
 		 lie within the block.  */
-	      if (INSN_P (prev))
+	      if (INSN_P (tmp))
 		break;
 
 	      /* We're only interested in NOTEs.  */
-	      if (GET_CODE (prev) != NOTE)
+	      if (GET_CODE (tmp) != NOTE)
 		continue;
 
-	      if (NOTE_LINE_NUMBER (prev) == NOTE_INSN_BLOCK_BEG)
+	      if (NOTE_LINE_NUMBER (tmp) == NOTE_INSN_BLOCK_BEG)
 		{
-		  /* If the BLOCKs referred to by these notes don't
-		     match, then something is wrong with our BLOCK
-		     nesting structure.  */
-		  if (NOTE_BLOCK (prev) != NOTE_BLOCK (insn))
-		    abort ();
-
+		  /* We just verified that this BLOCK matches us
+		     with the block_stack check above.  */
 		  if (debug_ignore_block (NOTE_BLOCK (insn)))
 		    {
 		      BLOCK_DEAD (NOTE_BLOCK (insn)) = 1;
-		      remove_insn (prev);
+		      remove_insn (tmp);
 		      remove_insn (insn);
 		    }
 		  break;
 		}
-	      else if (NOTE_LINE_NUMBER (prev) == NOTE_INSN_BLOCK_END)
+	      else if (NOTE_LINE_NUMBER (tmp) == NOTE_INSN_BLOCK_END)
 		/* There's a nested block.  We need to leave the
 		   current block in place since otherwise the debugger
 		   wouldn't be able to show symbols from our block in
@@ -2896,6 +2922,10 @@ remove_unnecessary_notes ()
 	    }
 	}
     }
+
+  /* Too many begin notes.  */
+  if (block_stack || eh_stack)
+    abort ();
 }
 
 
