@@ -1,5 +1,5 @@
 /* IntBufferImpl.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -98,10 +98,16 @@ final class IntBufferImpl extends IntBuffer
   }
 
   /**
-   * Relative get method. Reads the next <code>int</code> from the buffer.
+   * Reads the <code>int</code> at this buffer's current position,
+   * and then increments the position.
+   *
+   * @exception BufferUnderflowException If there are no remaining
+   * <code>ints</code> in this buffer.
    */
   public int get ()
   {
+    checkForUnderflow();
+
     int result = backing_buffer [position ()];
     position (position () + 1);
     return result;
@@ -110,14 +116,16 @@ final class IntBufferImpl extends IntBuffer
   /**
    * Relative put method. Writes <code>value</code> to the next position
    * in the buffer.
-   * 
+   *
+   * @exception BufferOverflowException If there no remaining 
+   * space in this buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public IntBuffer put (int value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-	  	    
+    checkIfReadOnly();
+    checkForOverflow();
+
     backing_buffer [position ()] = value;
     position (position () + 1);
     return this;
@@ -132,6 +140,8 @@ final class IntBufferImpl extends IntBuffer
    */
   public int get (int index)
   {
+    checkIndex(index);
+
     return backing_buffer [index];
   }
   
@@ -145,9 +155,9 @@ final class IntBufferImpl extends IntBuffer
    */
   public IntBuffer put (int index, int value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    	    
+    checkIfReadOnly();
+    checkIndex(index);
+
     backing_buffer [index] = value;
     return this;
   }

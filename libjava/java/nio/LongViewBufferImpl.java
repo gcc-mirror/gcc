@@ -66,6 +66,13 @@ final class LongViewBufferImpl extends LongBuffer
     this.endian = endian;
   }
 
+  /**
+   * Reads the <code>long</code> at this buffer's current position,
+   * and then increments the position.
+   *
+   * @exception BufferUnderflowException If there are no remaining
+   * <code>longs</code> in this buffer.
+   */
   public long get ()
   {
     int p = position();
@@ -74,6 +81,13 @@ final class LongViewBufferImpl extends LongBuffer
     return result;
   }
 
+  /**
+   * Absolute get method. Reads the <code>long</code> at position
+   * <code>index</code>.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   */
   public long get (int index)
   {
     return ByteBufferHelper.getLong(bb, (index << 3) + offset, endian);

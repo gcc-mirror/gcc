@@ -86,9 +86,9 @@ final class DirectByteBufferImpl extends ByteBuffer
 
   public byte get ()
   {
+    checkForUnderflow();
+
     int pos = position();
-    if (pos >= limit())
-      throw new BufferUnderflowException();
     byte result = getImpl (address, pos);
     position (pos + 1);
     return result;
@@ -96,8 +96,8 @@ final class DirectByteBufferImpl extends ByteBuffer
 
   public byte get (int index)
   {
-    if (index >= limit())
-      throw new BufferUnderflowException();
+    checkIndex(index);
+
     return getImpl (address, index);
   }
 
@@ -106,10 +106,8 @@ final class DirectByteBufferImpl extends ByteBuffer
 
   public ByteBuffer get (byte[] dst, int offset, int length)
   {
-    if (offset < 0 || length < 0 || offset + length > dst.length)
-      throw new IndexOutOfBoundsException ();
-    if (length > remaining())
-      throw new BufferUnderflowException();
+    checkArraySize(dst.length, offset, length);
+    checkForUnderflow(length);
 
     int index = position();
     getImpl(address, index, dst, offset, length);
@@ -120,9 +118,10 @@ final class DirectByteBufferImpl extends ByteBuffer
 
   public ByteBuffer put (byte value)
   {
+    checkIfReadOnly();
+    checkForOverflow();
+
     int pos = position();
-    if (pos >= limit())
-      throw new BufferUnderflowException();
     putImpl (address, pos, value);
     position (pos + 1);
     return this;
@@ -130,8 +129,9 @@ final class DirectByteBufferImpl extends ByteBuffer
   
   public ByteBuffer put (int index, byte value)
   {
-    if (index >= limit())
-      throw new BufferUnderflowException();
+    checkIfReadOnly();
+    checkIndex(index);
+
     putImpl (address, index, value);
     return this;
   }

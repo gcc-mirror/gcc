@@ -137,8 +137,9 @@ public abstract class CharBuffer extends Buffer
   }
   
   /**
-   * This method transfers <code>chars<code> from this buffer into the given
-   * destination array.
+   * This method transfers <code>char</code>s from this buffer into the given
+   * destination array. Before the transfer, it checks if there are fewer than
+   * length <code>char</code>s remaining in this buffer. 
    *
    * @param dst The destination array
    * @param offset The offset within the array of the first <code>char</code>
@@ -147,12 +148,15 @@ public abstract class CharBuffer extends Buffer
    * must be non-negative and no larger than dst.length - offset.
    *
    * @exception BufferUnderflowException If there are fewer than length
-   * <code>chars</code> remaining in this buffer.
+   * <code>char</code>s remaining in this buffer.
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold.
    */
   public CharBuffer get (char[] dst, int offset, int length)
   {
+    checkArraySize(dst.length, offset, length);
+    checkForUnderflow(length);
+
     for (int i = offset; i < offset + length; i++)
       {
         dst [i] = get ();
@@ -162,13 +166,13 @@ public abstract class CharBuffer extends Buffer
   }
 
   /**
-   * This method transfers <code>chars<code> from this buffer into the given
+   * This method transfers <code>char</code>s from this buffer into the given
    * destination array.
    *
    * @param dst The byte array to write into.
    *
    * @exception BufferUnderflowException If there are fewer than dst.length
-   * <code>chars</code> remaining in this buffer.
+   * <code>char</code>s remaining in this buffer.
    */
   public CharBuffer get (char[] dst)
   {
@@ -177,12 +181,13 @@ public abstract class CharBuffer extends Buffer
 
   /**
    * Writes the content of the the <code>CharBUFFER</code> src
-   * into the buffer.
+   * into the buffer. Before the transfer, it checks if there is fewer than
+   * <code>src.remaining()</code> space remaining in this buffer.
    *
    * @param src The source data.
    *
    * @exception BufferOverflowException If there is insufficient space in this
-   * buffer for the remaining <code>chars<code> in the source buffer.
+   * buffer for the remaining <code>char</code>s in the source buffer.
    * @exception IllegalArgumentException If the source buffer is this buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
@@ -191,8 +196,7 @@ public abstract class CharBuffer extends Buffer
     if (src == this)
       throw new IllegalArgumentException ();
 
-    if (src.remaining () > remaining ())
-      throw new BufferOverflowException ();
+    checkForOverflow(src.remaining());
 
     if (src.remaining () > 0)
       {
@@ -206,7 +210,8 @@ public abstract class CharBuffer extends Buffer
 
   /**
    * Writes the content of the the <code>char array</code> src
-   * into the buffer.
+   * into the buffer. Before the transfer, it checks if there is fewer than
+   * length space remaining in this buffer.
    *
    * @param src The array to copy into the buffer.
    * @param offset The offset within the array of the first byte to be read;
@@ -215,22 +220,15 @@ public abstract class CharBuffer extends Buffer
    * must be non-negative and no larger than src.length - offset.
    * 
    * @exception BufferOverflowException If there is insufficient space in this
-   * buffer for the remaining <code>chars<code> in the source array.
+   * buffer for the remaining <code>char</code>s in the source array.
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public CharBuffer put (char[] src, int offset, int length)
   {
-    if (offset < 0
-        || offset >= src.length
-        || length < 0
-        || length > (src.length - offset))
-      throw new IndexOutOfBoundsException ();
-     
-    // Put nothing into this buffer when not enough space left.
-    if (length > remaining ())
-      throw new BufferOverflowException ();
+    checkArraySize(src.length, offset, length);
+    checkForOverflow(length);
 		    
     for (int i = offset; i < offset + length; i++)
       put (src [i]);
@@ -245,7 +243,7 @@ public abstract class CharBuffer extends Buffer
    * @param src The array to copy into the buffer.
    * 
    * @exception BufferOverflowException If there is insufficient space in this
-   * buffer for the remaining <code>chars<code> in the source array.
+   * buffer for the remaining <code>char</code>s in the source array.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public final CharBuffer put (char[] src)
@@ -275,9 +273,8 @@ public abstract class CharBuffer extends Buffer
     if (backing_buffer == null)
       throw new UnsupportedOperationException ();
 
-    if (isReadOnly ())
-      throw new ReadOnlyBufferException ();
-    
+    checkIfReadOnly();
+
     return backing_buffer;
   }
 
@@ -293,8 +290,7 @@ public abstract class CharBuffer extends Buffer
     if (backing_buffer == null)
       throw new UnsupportedOperationException ();
 
-    if (isReadOnly ())
-      throw new ReadOnlyBufferException ();
+    checkIfReadOnly();
     
     return array_offset;
   }
@@ -362,7 +358,7 @@ public abstract class CharBuffer extends Buffer
    * and then increments the position.
    *
    * @exception BufferUnderflowException If there are no remaining
-   * <code>chars</code> in this buffer.
+   * <code>char</code>s in this buffer.
    */
   public abstract char get ();
 
@@ -371,7 +367,7 @@ public abstract class CharBuffer extends Buffer
    * and then increments the position.
    *
    * @exception BufferOverflowException If there no remaining 
-   * <code>chars</code> in this buffer.
+   * <code>char</code>s in this buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public abstract CharBuffer put (char b);

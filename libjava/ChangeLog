@@ -1,3 +1,42 @@
+2004-07-09  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/nio/Buffer.java,
+	java/nio/ByteBuffer.java,
+	java/nio/ByteBufferHelper.java,
+	java/nio/ByteBufferImpl.java,
+	java/nio/CharBuffer.java,
+	java/nio/CharBufferImpl.java,
+	java/nio/CharViewBufferImpl.java,
+	java/nio/DirectByteBufferImpl.java,
+	java/nio/DoubleBuffer.java,
+	java/nio/DoubleBufferImpl.java,
+	java/nio/DoubleViewBufferImpl.java,
+	java/nio/FloatBuffer.java,
+	java/nio/FloatBufferImpl.java,
+	java/nio/FloatViewBufferImpl.java,
+	java/nio/IntBuffer.java,
+	java/nio/IntBufferImpl.java,
+	java/nio/IntViewBufferImpl.java,
+	java/nio/LongBuffer.java,
+	java/nio/LongBufferImpl.java,
+	java/nio/LongViewBufferImpl.java,
+	java/nio/MappedByteBufferImpl.java,
+	java/nio/ShortBuffer.java,
+	java/nio/ShortBufferImpl.java,
+	java/nio/ShortViewBufferImpl.java:
+        Fixed javadocs all over. Improved input error
+        checking.
+
+	* java/nio/Buffer.java
+	(checkForUnderflow, checkForOverflow, checkIndex,
+	checkIfReadOnly, checkArraySize): New helper methods
+        for error checking.
+
+	* java/nio/ByteBufferHelper.java
+	(checkRemainingForRead, checkRemainingForWrite,
+	checkAvailableForRead, checkAvailableForWrite): Removed
+        no longer needed methods.
+
 2004-07-09  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/regexp/CharIndexedInputStream.java:

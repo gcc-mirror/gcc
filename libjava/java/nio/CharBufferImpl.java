@@ -1,5 +1,5 @@
 /* CharBufferImpl.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -116,10 +116,16 @@ final class CharBufferImpl extends CharBuffer
   }
   
   /**
-   * Relative get method. Reads the next <code>char</code> from the buffer.
+   * Reads the <code>char</code> at this buffer's current position,
+   * and then increments the position.
+   *
+   * @exception BufferUnderflowException If there are no remaining
+   * <code>char</code>s in this buffer.
    */
   public char get ()
   {
+    checkForUnderflow();
+
     char result = backing_buffer [position ()];
     position (position () + 1);
     return result;
@@ -133,8 +139,7 @@ final class CharBufferImpl extends CharBuffer
    */
   public CharBuffer put (char value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
+    checkIfReadOnly();
 	  	    
     backing_buffer [position ()] = value;
     position (position () + 1);
@@ -145,20 +150,20 @@ final class CharBufferImpl extends CharBuffer
    * Absolute get method. Reads the <code>char</code> at position
    * <code>index</code>.
    *
+   * @param index Position to read the <code>char</code> from.
+   *
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit.
    */
   public char get (int index)
   {
-    if (index < 0
-        || index >= limit ())
-      throw new IndexOutOfBoundsException ();
+    checkIndex(index);
     
     return backing_buffer [index];
   }
   
   /**
-   * Absolute put method. Writes <code>value</value> to position
+   * Absolute put method. Writes <code>value</code> to position
    * <code>index</code> in the buffer.
    *
    * @exception IndexOutOfBoundsException If index is negative or not smaller
@@ -167,12 +172,8 @@ final class CharBufferImpl extends CharBuffer
    */
   public CharBuffer put (int index, char value)
   {
-    if (index < 0
-        || index >= limit ())
-      throw new IndexOutOfBoundsException ();
-    
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
+    checkIndex(index);
+    checkIfReadOnly();
     	    
     backing_buffer [index] = value;
     return this;

@@ -66,6 +66,13 @@ final class FloatViewBufferImpl extends FloatBuffer
     this.endian = endian;
   }
 
+  /**
+   * Reads the <code>float</code> at this buffer's current position,
+   * and then increments the position.
+   *
+   * @exception BufferUnderflowException If there are no remaining
+   * <code>floats</code> in this buffer.
+   */
   public float get ()
   {
     int p = position();
@@ -74,6 +81,13 @@ final class FloatViewBufferImpl extends FloatBuffer
     return result;
   }
 
+  /**
+   * Absolute get method. Reads the <code>float</code> at position
+   * <code>index</code>.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   */
   public float get (int index)
   {
     return ByteBufferHelper.getFloat(bb, (index << 2) + offset, endian);
