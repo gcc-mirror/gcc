@@ -411,9 +411,6 @@ local_alloc ()
       next_qty = 0;
 
       block_alloc (b);
-#ifdef USE_C_ALLOCA
-      alloca (0);
-#endif
     }
 
   free (qty_phys_reg);
@@ -687,17 +684,13 @@ update_equiv_regs ()
 {
   /* Set when an attempt should be made to replace a register with the
      associated reg_equiv_replacement entry at the end of this function.  */
-  char *reg_equiv_replace
-    = (char *) alloca (max_regno * sizeof *reg_equiv_replace);
+  char *reg_equiv_replace;
   rtx insn;
   int block, depth;
 
-  reg_equiv_init_insns = (rtx *) alloca (max_regno * sizeof (rtx));
-  reg_equiv_replacement = (rtx *) alloca (max_regno * sizeof (rtx));
-
-  bzero ((char *) reg_equiv_init_insns, max_regno * sizeof (rtx));
-  bzero ((char *) reg_equiv_replacement, max_regno * sizeof (rtx));
-  bzero ((char *) reg_equiv_replace, max_regno * sizeof *reg_equiv_replace);
+  reg_equiv_replace = (char *) xcalloc (max_regno, sizeof *reg_equiv_replace);
+  reg_equiv_init_insns = (rtx *) xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_replacement = (rtx *) xcalloc (max_regno, sizeof (rtx));
 
   init_alias_analysis ();
 
@@ -1017,6 +1010,9 @@ update_equiv_regs ()
 
   /* Clean up.  */
   end_alias_analysis ();
+  free (reg_equiv_replace);
+  free (reg_equiv_init_insns);
+  free (reg_equiv_replacement);
 }
 
 /* Mark REG as having no known equivalence.
@@ -1080,9 +1076,8 @@ block_alloc (b)
 
   /* +2 to leave room for a post_mark_life at the last insn and for
      the birth of a CLOBBER in the first insn.  */
-  regs_live_at = (HARD_REG_SET *) alloca ((2 * insn_count + 2)
-					  * sizeof (HARD_REG_SET));
-  bzero ((char *) regs_live_at, (2 * insn_count + 2) * sizeof (HARD_REG_SET));
+  regs_live_at = (HARD_REG_SET *) xcalloc ((2 * insn_count + 2),
+					   sizeof (HARD_REG_SET));
 
   /* Initialize table of hardware registers currently live.  */
 
@@ -1321,7 +1316,7 @@ block_alloc (b)
      number of suggested registers they need so we allocate those with
      the most restrictive needs first.  */
 
-  qty_order = (int *) alloca (next_qty * sizeof (int));
+  qty_order = (int *) xmalloc (next_qty * sizeof (int));
   for (i = 0; i < next_qty; i++)
     qty_order[i] = i;
 
@@ -1491,6 +1486,10 @@ block_alloc (b)
 	for (i = qty_first_reg[q]; i >= 0; i = reg_next_in_qty[i])
 	  reg_renumber[i] = qty_phys_reg[q] + reg_offset[i];
       }
+
+  /* Clean up.  */
+  free (regs_live_at);
+  free (qty_order);
 }
 
 /* Compare two quantities' priority for getting real registers.
