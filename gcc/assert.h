@@ -23,10 +23,12 @@
 /* Defined in libgcc.a */
 #ifdef __cplusplus
 extern "C" {
-extern void __eprintf (const char *, const char *, unsigned, const char *);
+extern void __eprintf (const char *, const char *, unsigned, const char *)
+    __attribute__ ((noreturn));
 }
 #else
-extern void __eprintf (const char *, const char *, unsigned, const char *);
+extern void __eprintf (const char *, const char *, unsigned, const char *)
+    __attribute__ ((noreturn));
 #endif
 
 #define assert(expression)  \
@@ -38,7 +40,7 @@ extern void __eprintf (const char *, const char *, unsigned, const char *);
 
 #else /* no __STDC__ and not C++; i.e. -traditional.  */
 
-extern void __eprintf (); /* Defined in libgcc.a */
+extern void __eprintf () __attribute__ ((noreturn)); /* Defined in libgcc.a */
 
 #define assert(expression)  \
   ((void) ((expression) ? 0 : __assert (expression, __FILE__, __LINE__)))
