@@ -1520,7 +1520,7 @@ fold_convert (t, arg1)
 	    if (d >= (REAL_VALUE_TYPE) half_word * half_word / 2)
 	      {
 		low = d - (REAL_VALUE_TYPE) half_word * half_word / 2;
-		low |= 1 << (HOST_BITS_PER_WIDE_INT - 1);
+		low |= (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1);
 	      }
 	    else
 	      low = (HOST_WIDE_INT) d;
