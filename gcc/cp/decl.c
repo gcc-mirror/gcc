@@ -10310,8 +10310,7 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
      If it belongs to someone else's interface, it is also external.
      This only affects inlines and template instantiations.  */
   else if (interface_unknown == 0
-	   && (! DECL_TEMPLATE_INSTANTIATION (decl1)
-	       || flag_alt_external_templates))
+	   && ! DECL_TEMPLATE_INSTANTIATION (decl1))
     {
       if (DECL_DECLARED_INLINE_P (decl1) 
 	  || DECL_TEMPLATE_INSTANTIATION (decl1)
@@ -10332,8 +10331,7 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
       DECL_INTERFACE_KNOWN (decl1) = 1;
     }
   else if (interface_unknown && interface_only
-	   && (! DECL_TEMPLATE_INSTANTIATION (decl1)
-	       || flag_alt_external_templates))
+	   && ! DECL_TEMPLATE_INSTANTIATION (decl1))
     {
       /* If MULTIPLE_SYMBOL_SPACES is defined and we saw a #pragma
 	 interface, we will have interface_only set but not

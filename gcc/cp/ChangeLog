@@ -1,5 +1,15 @@
 2003-12-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (start_function): Do not check
+	flag_alt_external_templates or flag_external_templates.
+	* decl2.c (warn_if_unknown_interface): Likewise.
+	* lex.c (extract_interface_info): Likewise.
+	* pt.c (lookup_template_class): Likewise.
+
+	PR c++/12862
+	* name-lookup.c (pushdecl): Look up all namespace-scope entities
+	in their corresponding namespace.
+
 	PR c++/12397
 	* typeck.c (finish_class_member_access_expr): Don't tree
 	IDENTIFIER_NODEs as non-dependent expressions.

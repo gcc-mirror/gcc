@@ -510,17 +510,6 @@ int flag_no_gnu_keywords;
 
 int flag_implement_inlines = 1;
 
-/* Nonzero means do emit exported implementations of templates, instead of
-   multiple static copies in each file that needs a definition.  */
-
-int flag_external_templates;
-
-/* Nonzero means that the decision to emit or not emit the implementation of a
-   template depends on where the template is instantiated, rather than where
-   it is defined.  */
-
-int flag_alt_external_templates;
-
 /* Nonzero means that implicit instantiations will be emitted if needed.  */
 
 int flag_implicit_templates = 1;

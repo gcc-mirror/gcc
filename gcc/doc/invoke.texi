@@ -174,8 +174,7 @@ in the following sections.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control  -fcheck-new @gol
 -fconserve-space  -fno-const-strings @gol
 -fno-elide-constructors @gol
--fno-enforce-eh-specs  -fexternal-templates @gol
--falt-external-templates @gol
+-fno-enforce-eh-specs @gol
 -ffor-scope  -fno-for-scope  -fno-gnu-keywords @gol
 -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
@@ -1335,24 +1334,6 @@ Don't check for violation of exception specifications at runtime.  This
 option violates the C++ standard, but may be useful for reducing code
 size in production builds, much like defining @samp{NDEBUG}.  The compiler
 will still optimize based on the exception specifications.
-
-@item -fexternal-templates
-@opindex fexternal-templates
-
-Cause @samp{#pragma interface} and @samp{implementation} to apply to
-template instantiation; template instances are emitted or not according
-to the location of the template definition.  @xref{Template
-Instantiation}, for more information.
-
-This option is deprecated.
-
-@item -falt-external-templates
-@opindex falt-external-templates
-Similar to @option{-fexternal-templates}, but template instances are
-emitted or not according to the place where they are first instantiated.
-@xref{Template Instantiation}, for more information.
-
-This option is deprecated.
 
 @item -ffor-scope
 @itemx -fno-for-scope

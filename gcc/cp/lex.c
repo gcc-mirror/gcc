@@ -436,18 +436,9 @@ cxx_init (void)
 void
 extract_interface_info (void)
 {
-  struct c_fileinfo *finfo = 0;
+  struct c_fileinfo *finfo;
 
-  if (flag_alt_external_templates)
-    {
-      tree til = tinst_for_decl ();
-
-      if (til)
-	finfo = get_fileinfo (TINST_FILE (til));
-    }
-  if (!finfo)
-    finfo = get_fileinfo (input_filename);
-
+  finfo = get_fileinfo (input_filename);
   interface_only = finfo->interface_only;
   interface_unknown = finfo->interface_unknown;
 }
