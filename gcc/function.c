@@ -3178,6 +3178,53 @@ assign_parms (fndecl, second_time)
 	      emit_move_insn (parmreg, DECL_RTL (parm));
 	      DECL_RTL (parm) = parmreg;
 	    }
+#ifdef FUNCTION_ARG_CALLEE_COPIES
+	  /* If we are passed an arg by reference and it is our responsibility
+	     to make a copy, do it now.
+	     PASSED_TYPE and PASSED mode now refer to the pointer, not the
+	     original argument, so we must recreate them in the call to
+	     FUNCTION_ARG_CALLEE_COPIES.  */
+	  /* ??? Later add code to handle the case that if the argument isn't
+	     modified, don't do the copy.  */
+
+	  else if (passed_pointer
+		   && FUNCTION_ARG_CALLEE_COPIES (args_so_far,
+						  TYPE_MODE (DECL_ARG_TYPE (parm)),
+						  DECL_ARG_TYPE (parm),
+						  ! last_named))
+	    {
+	      rtx copy;
+	      tree type = DECL_ARG_TYPE (parm);
+
+	      /* This sequence may involve a library call perhaps clobbering
+		 registers that haven't been copied to pseudos yet.  */
+
+	      push_to_sequence (conversion_insns);
+
+	      if (TYPE_SIZE (type) == 0
+		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+		{
+		  /* This is a variable sized object.  */
+		  /* ??? Can we use expr_size here?  */
+		  rtx size_rtx = expand_expr (size_in_bytes (type), NULL_RTX,
+					      TYPE_MODE(sizetype), 0);
+
+		  copy = gen_rtx (MEM, BLKmode,
+				  allocate_dynamic_stack_space (size_rtx, NULL_RTX,
+								TYPE_ALIGN (type)));
+		}
+	      else
+		{
+		  int size = int_size_in_bytes (type);
+		  copy = assign_stack_temp (BLKmode, size, 1);
+		}
+
+	      store_expr (parm, copy, 0);
+	      emit_move_insn (parmreg, XEXP (copy, 0));
+	      conversion_insns = get_insns ();
+	      end_sequence ();
+	    }
+#endif /* FUNCTION_ARG_CALLEE_COPIES */
 
 	  /* In any case, record the parm's desired stack location
 	     in case we later discover it must live in the stack.  */
