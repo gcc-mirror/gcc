@@ -243,11 +243,10 @@ struct _cpp_line_note
   /* Location in the clean line the note refers to.  */
   const uchar *pos;
 
-  /* Type of note.  */
-  enum { NOTE_ESC_NL = 0,
-	 NOTE_ESC_SPACE_NL,
-	 NOTE_TRIGRAPH,
-	 NOTE_NEWLINE } type;
+  /* Type of note.  The 9 'from' trigraph characters represent those
+     trigraphs, '\\' an escaped newline, ' ' an escaped newline with
+     intervening space, and anything else is invalid.  */
+  unsigned int type;
 };
 
 /* Represents the contents of a file cpplib has read in.  */

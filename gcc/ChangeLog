@@ -1,3 +1,10 @@
+2003-04-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpphash.h (NOTE_ESC_NL, NOTE_ESC_SPACE_NL, NOTE_TRIGRAPH,
+	NOTE_NEWLINE): Remove.
+	* cpplex.c (_cpp_clean_line, _cpp_process_line_notes): Update
+	to handle new form of line note type.
+
 2003-04-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* target.h (encode_section_info): Add new argument carrying

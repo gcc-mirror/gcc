@@ -148,15 +148,14 @@ _cpp_clean_line (pfile)
 	      if (p == buffer->next_line || p[-1] != '\\')
 		break;
 
-	      add_line_note (buffer, p - 1,
-			     p != d ? NOTE_ESC_SPACE_NL: NOTE_ESC_NL);
+	      add_line_note (buffer, p - 1, p != d ? ' ': '\\');
 	      d = p - 2;
 	      buffer->next_line = p - 1;
 	    }
 	  else if (c == '?' && s[1] == '?' && _cpp_trigraph_map[s[2]])
 	    {
 	      /* Add a note regardless, for the benefit of -Wtrigraphs.  */
-	      add_line_note (buffer, d, NOTE_TRIGRAPH);
+	      add_line_note (buffer, d, s[2]);
 	      if (CPP_OPTION (pfile, trigraphs))
 		{
 		  *d = _cpp_trigraph_map[s[2]];
@@ -178,7 +177,8 @@ _cpp_clean_line (pfile)
     }
 
   *d = '\n';
-  add_line_note (buffer, d + 1, NOTE_NEWLINE);
+  /* A sentinel note that should never be processed.  */
+  add_line_note (buffer, d + 1, '\n');
   buffer->next_line = s + 1;
 }
 
@@ -202,32 +202,12 @@ _cpp_process_line_notes (pfile, in_comment)
       buffer->cur_note++;
       col = CPP_BUF_COLUMN (buffer, note->pos + 1);
 
-      switch (note->type)
+      if (note->type == '\\' || note->type == ' ')
 	{
-	case NOTE_NEWLINE:
-	  /* This note is a kind of sentinel we should never reach.  */
-	  abort ();
-
-	case NOTE_TRIGRAPH:
-	  if (!in_comment && CPP_OPTION (pfile, warn_trigraphs))
-	    {
-	      if (CPP_OPTION (pfile, trigraphs))
-		cpp_error_with_line (pfile, DL_WARNING, pfile->line, col,
-				     "trigraph converted to %c",
-				     (int) note->pos[0]);
-	      else
-		cpp_error_with_line (pfile, DL_WARNING, pfile->line, col,
-				     "trigraph ??%c ignored",
-				     (int) note->pos[2]);
-	    }
-	  break;
-
-	case NOTE_ESC_SPACE_NL:
-	  if (!in_comment)
+	  if (note->type == ' ' && !in_comment)
 	    cpp_error_with_line (pfile, DL_WARNING, pfile->line, col,
 				 "backslash and newline separated by space");
-	  /* Fall through... */
-	case NOTE_ESC_NL:
+
 	  if (buffer->next_line > buffer->rlimit)
 	    {
 	      cpp_error_with_line (pfile, DL_PEDWARN, pfile->line, col,
@@ -239,6 +219,23 @@ _cpp_process_line_notes (pfile, in_comment)
 	  buffer->line_base = note->pos;
 	  pfile->line++;
 	}
+      else if (_cpp_trigraph_map[note->type])
+	{
+	  if (!in_comment && CPP_OPTION (pfile, warn_trigraphs))
+	    {
+	      if (CPP_OPTION (pfile, trigraphs))
+		cpp_error_with_line (pfile, DL_WARNING, pfile->line, col,
+				     "trigraph ??%c converted to %c",
+				     note->type,
+				     (int) _cpp_trigraph_map[note->type]);
+	      else
+		cpp_error_with_line (pfile, DL_WARNING, pfile->line, col,
+				     "trigraph ??%c ignored",
+				     note->type);
+	    }
+	}
+      else
+	abort ();
     }
 }
 
