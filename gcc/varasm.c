@@ -4025,6 +4025,11 @@ initializer_constant_valid_p (value, endtype)
      tree value;
      tree endtype;
 {
+  /* Give the front-end a chance to convert VALUE to something that
+     looks more like a constant to the back-end.  */
+  if (lang_expand_constant)
+    value = (*lang_expand_constant) (value);
+
   switch (TREE_CODE (value))
     {
     case CONSTRUCTOR:
