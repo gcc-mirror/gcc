@@ -1,5 +1,8 @@
 Mon Jul 24 02:04:52 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* gcse.c (free_pre_mem): Do not free ANTLOC and AE_KILL here.
+	(compute_pre_data): Do it here instead.
+
 	* gcse.c (alloc_pre_mem, free_pre_mem): Delete unused bitmap
 	'temp_bitmap'.
 	(pre_delete): Corresponding changes.
