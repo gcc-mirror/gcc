@@ -301,8 +301,9 @@ extern void compute_immediate_dominators	PROTO ((int *, sbitmap *));
 
 enum update_life_extent
 {
-  UPDATE_LIFE_GLOBAL = 0,
-  UPDATE_LIFE_LOCAL = 1
+  UPDATE_LIFE_LOCAL = 0,
+  UPDATE_LIFE_GLOBAL = 1,
+  UPDATE_LIFE_GLOBAL_RM_NOTES = 2,
 };
 
 extern void update_life_info	PROTO ((sbitmap, enum update_life_extent));

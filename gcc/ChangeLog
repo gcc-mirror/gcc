@@ -1,3 +1,15 @@
+Sun Oct 10 16:14:16 1999  Richard Henderson  <rth@cygnus.com>
+
+	* combine.c (refresh_blocks, need_refresh): New.
+	(combine_instructions): Allocate refresh_blocks.  Invoke
+	update_life_info if needed.
+	(distribute_notes): Mark refresh_blocks instead of installing
+	USE insns.
+	* flow.c (update_life_info): Remove notes if GLOBAL_RM_NOTES.
+	* basic_block.h (enum update_life_extent): Add GLOBAL_RM_NOTES.
+
+	* Makefile.in (recog.o): Depend on basic-block.h.
+
 Sun Oct 10 12:03:21 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (add_to_sequence): Thinko last change: delete
