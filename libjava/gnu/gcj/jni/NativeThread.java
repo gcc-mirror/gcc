@@ -20,9 +20,10 @@ public class NativeThread extends Thread
   public NativeThread (ThreadGroup g, String name)
   {
     super (g, null, name);
-    alive_flag = true;
+    init ();
   }
 
   // Call this to mark the thread as finished.
   public native void finish ();
+  public native void init ();
 }
