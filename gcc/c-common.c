@@ -255,7 +255,7 @@ init_attributes ()
   add_attribute (A_MODE, "mode", 1, 1, 1);
   add_attribute (A_SECTION, "section", 1, 1, 1);
   add_attribute (A_ALIGNED, "aligned", 0, 1, 0);
-  add_attribute (A_FORMAT, "format", 3, 3, 0);
+  add_attribute (A_FORMAT, "format", 3, 3, 1);
 }
 
 /* Process the attributes listed in ATTRIBUTES and PREFIX_ATTRIBUTES
