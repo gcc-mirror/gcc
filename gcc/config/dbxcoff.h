@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output DBX (stabs) debugging information if doing -gstabs.  */
 
+#undef DBX_DEBUGGING_INFO
 #define DBX_DEBUGGING_INFO
 
 /* Generate SDB debugging information by default. */
@@ -34,16 +35,19 @@ Boston, MA 02111-1307, USA.  */
 
 /* Be function-relative for block and source line stab directives.  */
 
+#undef DBX_BLOCKS_FUNCTION_RELATIVE
 #define DBX_BLOCKS_FUNCTION_RELATIVE 1
 
 /* but, to make this work, functions must appear prior to line info.  */
 
+#undef DBX_FUNCTION_FIRST
 #define DBX_FUNCTION_FIRST
 
 /* Generate a blank trailing N_SO to mark the end of the .o file, since
    we can't depend upon the linker to mark .o file boundaries with
    embedded stabs.  */
 
+#undef DBX_OUTPUT_MAIN_SOURCE_FILE_END
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
   fprintf (FILE,							\
 	   "\t.text\n\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO)
@@ -69,6 +73,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* When generating stabs debugging, use N_BINCL entries.  */
 
+#undef DBX_USE_BINCL
 #define DBX_USE_BINCL
 
 /* There is no limit to the length of stabs strings.  */
