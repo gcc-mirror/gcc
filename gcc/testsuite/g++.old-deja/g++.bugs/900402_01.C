@@ -9,7 +9,7 @@
 typedef void (func_type) ();
 
 struct s {
-  func_type f:32;	// ERROR - XFAIL *-*-*
+  func_type f:32;	// ERROR - bitified with function type
 };
 
 int main () { return 0; }

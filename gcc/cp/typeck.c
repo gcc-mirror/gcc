@@ -80,7 +80,9 @@ target_type (type)
 }
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
-   does not have an incomplete type.  (That includes void types.)  */
+   does not have an incomplete type.  (That includes void types.)
+   Returns the error_mark_node if the VALUE does not have
+   complete type when this function returns.  */
 
 tree
 require_complete_type (value)
@@ -120,13 +122,10 @@ require_complete_type (value)
       return require_complete_type (value);
     }
 
-  if (TYPE_SIZE (complete_type (type)))
+  if (complete_type_or_else (type))
     return value;
   else
-    {
-      incomplete_type_error (value, type);
-      return error_mark_node;
-    }
+    return error_mark_node;
 }
 
 /* Try to complete TYPE, if it is incomplete.  For example, if TYPE is
@@ -170,7 +169,10 @@ complete_type_or_else (type)
      tree type;
 {
   type = complete_type (type);
-  if (type != error_mark_node && !TYPE_SIZE (type))
+  if (type == error_mark_node)
+    /* We already issued an error.  */
+    return NULL_TREE;
+  else if (!TYPE_SIZE (type))
     {
       incomplete_type_error (NULL_TREE, type);
       return NULL_TREE;

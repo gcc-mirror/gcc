@@ -2,9 +2,9 @@
 
 template <class T = int> // ERROR - original definition
 struct S
-{
+{ // ERROR - redefinition of default arg
   template <class U = int>
   friend class S;
 };
 
-template struct S<int>; // ERROR - redefinition of default arg
+template struct S<int>; // ERROR - instantiated from here
