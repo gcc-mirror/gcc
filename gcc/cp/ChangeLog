@@ -1,3 +1,7 @@
+2004-12-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* name-lookup.c (pushtag): Add missing POP_TIMEVAR_AND_RETURN.
+
 2004-12-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/18984
