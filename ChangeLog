@@ -1,3 +1,7 @@
+2004-02-25  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* MAINTAINERS: Add myself to write-after-approval.
+
 2004-02-22  Matthias Klose  <doko@debian.org>
 
 	* config.guess: Update from version 2003-10-16 to 2004-02-16.
