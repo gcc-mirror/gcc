@@ -1,3 +1,9 @@
+2004-04-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac: Restore toolexecdir.
+	* Makefile.in: Restore toolexecdir.
+	* configure: Regenerate.
+
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.ac: Remove (unused) glibcpp_prefixdir.
