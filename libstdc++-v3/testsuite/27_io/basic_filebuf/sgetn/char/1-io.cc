@@ -38,12 +38,12 @@ void test05()
   typedef filebuf::int_type 	int_type;
   typedef filebuf::traits_type 	traits_type;
 
-  bool 					test = true;
+  bool 				test = true;
 
   streamsize 			strmsz_1, strmsz_2, strmsz_3;
-  int 					i = 0, j = 0, k = 0;
   char carray1[13] = "";
   char carray2[8192] = "";
+  char buffer[8192] = "";
   int_type 			c1, c2, c3, c4;
   
   // streamsize sgetn(char_type *s, streamsize n)
@@ -65,7 +65,10 @@ void test05()
 
   // in | out 2
   {
-    constraint_filebuf fb_01; 
+    constraint_filebuf fb_01;
+    // Need this since BUFSIZ is only guaranteed >= 255 and we want
+    // to trigger the same underflow situation everywhere.
+    fb_01.pubsetbuf(buffer, 8192);
     fb_01.open(name_01, ios_base::in | ios_base::out);
     VERIFY( fb_01.write_position() );
     strmsz_1 = fb_01.in_avail();
