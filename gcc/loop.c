@@ -7977,7 +7977,9 @@ check_dbra_loop (loop, insn_count)
 	 which is reversible.  */
       int reversible_mem_store = 1;
 
-      if (bl->giv_count == 0 && ! loop_info->has_multiple_exit_targets)
+      if (bl->giv_count == 0
+	  && !loop->exit_count
+	  && !loop_info->has_multiple_exit_targets)
 	{
 	  rtx bivreg = regno_reg_rtx[bl->regno];
 	  struct iv_class *blt;
