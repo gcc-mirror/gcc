@@ -811,7 +811,7 @@
   "*
   {
   output_push_double(&operands[1]);
-  output_asm_insn(\"call &2, _fdtos\");
+  output_asm_insn(\"call &2, _fdtos\", operands);
 
   return \"\";
   }")
@@ -854,7 +854,7 @@
   "*
   {
   output_asm_insn(\"pushw %1\", operands);
-  output_asm_insn(\"call &1, _fstod\");
+  output_asm_insn(\"call &1, _fstod\", operands);
 
   return \"\";
   }")
