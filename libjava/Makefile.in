@@ -1725,10 +1725,12 @@ java/nio/ByteOrder.java \
 java/nio/CharBuffer.java \
 java/nio/InvalidMarkException.java \
 java/nio/MappedByteBuffer.java \
+java/nio/ReadOnlyBufferException.java \
 java/nio/channels/AlreadyConnectedException.java \
 java/nio/channels/ByteChannel.java \
 java/nio/channels/Channel.java \
 java/nio/channels/ClosedChannelException.java \
+java/nio/channels/ClosedSelectorException.java \
 java/nio/channels/DatagramChannel.java \
 java/nio/channels/GatheringByteChannel.java \
 java/nio/channels/IllegalBlockingModeException.java \
@@ -3004,9 +3006,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/nio/BufferUnderflowException.P .deps/java/nio/ByteBuffer.P \
 .deps/java/nio/ByteOrder.P .deps/java/nio/CharBuffer.P \
 .deps/java/nio/InvalidMarkException.P .deps/java/nio/MappedByteBuffer.P \
+.deps/java/nio/ReadOnlyBufferException.P \
 .deps/java/nio/channels/AlreadyConnectedException.P \
 .deps/java/nio/channels/ByteChannel.P .deps/java/nio/channels/Channel.P \
 .deps/java/nio/channels/ClosedChannelException.P \
+.deps/java/nio/channels/ClosedSelectorException.P \
 .deps/java/nio/channels/DatagramChannel.P \
 .deps/java/nio/channels/GatheringByteChannel.P \
 .deps/java/nio/channels/IllegalBlockingModeException.P \

@@ -1975,10 +1975,12 @@ java/nio/ByteOrder.java \
 java/nio/CharBuffer.java \
 java/nio/InvalidMarkException.java \
 java/nio/MappedByteBuffer.java \
+java/nio/ReadOnlyBufferException.java \
 java/nio/channels/AlreadyConnectedException.java \
 java/nio/channels/ByteChannel.java \
 java/nio/channels/Channel.java \
 java/nio/channels/ClosedChannelException.java \
+java/nio/channels/ClosedSelectorException.java \
 java/nio/channels/DatagramChannel.java \
 java/nio/channels/GatheringByteChannel.java \
 java/nio/channels/IllegalBlockingModeException.java \
