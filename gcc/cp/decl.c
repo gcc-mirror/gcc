@@ -10680,8 +10680,8 @@ cxx_push_function_context (struct function * f)
 	  *cp_function_chain = *DECL_SAVED_FUNCTION_DATA (fn);
 
 	  /* We don't need the saved data anymore.  Unless this is an inline
-	     function; we need the named return value info for
-	     cp_copy_res_decl_for_inlining.  */
+	     function; we need the named return value info for 
+	     declare_return_variable.  */
 	  if (! DECL_INLINE (fn))
 	    DECL_SAVED_FUNCTION_DATA (fn) = NULL;
 	}

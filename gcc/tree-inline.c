@@ -122,7 +122,6 @@ typedef struct inline_data
    decisions about when a function is too big to inline.  */
 #define INSNS_PER_STMT (10)
 
-static tree declare_return_variable (inline_data *, tree, tree *);
 static tree copy_body_r (tree *, int *, void *);
 static tree copy_body (inline_data *);
 static tree expand_call_inline (tree *, int *, void *);
@@ -851,35 +850,102 @@ initialize_inlined_parameters (inline_data *id, tree args, tree static_chain,
   return init_stmts;
 }
 
-/* Declare a return variable to replace the RESULT_DECL for the
-   function we are calling.  An appropriate decl is returned.
- 
-   ??? Needs documentation of parameters. */
+/* Declare a return variable to replace the RESULT_DECL for the function we
+   are calling.  RETURN_SLOT_ADDR, if non-null, was a fake parameter that
+   took the address of the result.  MODIFY_DEST, if non-null, was the LHS of
+   the MODIFY_EXPR to which this call is the RHS.
+
+   The return value is a (possibly null) value that is the result of the
+   function as seen by the callee.  *USE_P is a (possibly null) value that
+   holds the result as seen by the caller.  */
 
 static tree
-declare_return_variable (inline_data *id, tree return_slot_addr, tree *use_p)
+declare_return_variable (inline_data *id, tree return_slot_addr,
+			 tree modify_dest, tree *use_p)
 {
-  tree fn = VARRAY_TOP_TREE (id->fns);
-  tree result = DECL_RESULT (fn);
-  int need_return_decl = 1;
-  tree var;
+  tree callee = VARRAY_TOP_TREE (id->fns);
+  tree caller = VARRAY_TREE (id->fns, 0);
+  tree result = DECL_RESULT (callee);
+  tree callee_type = TREE_TYPE (result);
+  tree caller_type = TREE_TYPE (TREE_TYPE (callee));
+  tree var, use;
 
   /* We don't need to do anything for functions that don't return
      anything.  */
-  if (!result || VOID_TYPE_P (TREE_TYPE (result)))
+  if (!result || VOID_TYPE_P (callee_type))
     {
       *use_p = NULL_TREE;
       return NULL_TREE;
     }
 
-  var = (lang_hooks.tree_inlining.copy_res_decl_for_inlining
-	 (result, fn, VARRAY_TREE (id->fns, 0), id->decl_map,
-	  &need_return_decl, return_slot_addr));
-  
+  /* If there was a return slot, then the return value the the
+     dereferenced address of that object.  */
+  if (return_slot_addr)
+    {
+      /* The front end shouldn't have used both return_slot_addr and
+	 a modify expression.  */
+      if (modify_dest)
+	abort ();
+      var = build_fold_indirect_ref (return_slot_addr);
+      use = NULL;
+      goto done;
+    }
+
+  /* All types requiring non-trivial constructors should have been handled.  */
+  if (TREE_ADDRESSABLE (callee_type))
+    abort ();
+
+  /* Attempt to avoid creating a new temporary variable.  */
+  if (modify_dest)
+    {
+      bool use_it = false;
+
+      /* We can't use MODIFY_DEST if there's type promotion involved.  */
+      if (!lang_hooks.types_compatible_p (caller_type, callee_type))
+	use_it = false;
+
+      /* ??? If we're assigning to a variable sized type, then we must
+	 reuse the destination variable, because we've no good way to
+	 create variable sized temporaries at this point.  */
+      else if (TREE_CODE (TYPE_SIZE_UNIT (caller_type)) != INTEGER_CST)
+	use_it = true;
+
+      /* If the callee cannot possibly modify MODIFY_DEST, then we can
+	 reuse it as the result of the call directly.  Don't do this if
+	 it would promote MODIFY_DEST to addressable.  */
+      else if (!TREE_STATIC (modify_dest)
+	       && !TREE_ADDRESSABLE (modify_dest)
+	       && !TREE_ADDRESSABLE (result))
+	use_it = true;
+
+      if (use_it)
+	{
+	  var = modify_dest;
+	  use = NULL;
+	  goto done;
+	}
+    }
+
+  if (TREE_CODE (TYPE_SIZE_UNIT (callee_type)) != INTEGER_CST)
+    abort ();
+
+  var = copy_decl_for_inlining (result, callee, caller);
+  DECL_SEEN_IN_BIND_EXPR_P (var) = 1;
+  DECL_STRUCT_FUNCTION (caller)->unexpanded_var_list
+    = tree_cons (NULL_TREE, var,
+		 DECL_STRUCT_FUNCTION (caller)->unexpanded_var_list);
+
   /* Do not have the rest of GCC warn about this variable as it should
      not be visible to the user.   */
   TREE_NO_WARNING (var) = 1;
 
+  /* Build the use expr.  If the return type of the function was
+     promoted, convert it back to the expected type.  */
+  use = var;
+  if (!lang_hooks.types_compatible_p (TREE_TYPE (var), caller_type))
+    use = fold_convert (caller_type, var);
+
+ done:
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
      way, when the RESULT_DECL is encountered, it will be
      automatically replaced by the VAR_DECL.  */
@@ -888,30 +954,8 @@ declare_return_variable (inline_data *id, tree return_slot_addr, tree *use_p)
   /* Remember this so we can ignore it in remap_decls.  */
   id->retvar = var;
 
-  /* Build the use expr.  If the return type of the function was
-     promoted, convert it back to the expected type.  */
-  if (return_slot_addr)
-    /* The function returns through an explicit return slot, not a normal
-       return value.  */
-    *use_p = NULL_TREE;
-  else if (TREE_TYPE (var) == TREE_TYPE (TREE_TYPE (fn)))
-    *use_p = var;
-  else if (TREE_CODE (var) == INDIRECT_REF)
-    *use_p = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (fn)),
-		     TREE_OPERAND (var, 0));
-  else if (TREE_ADDRESSABLE (TREE_TYPE (var)))
-    abort ();
-  else
-    *use_p = build1 (NOP_EXPR, TREE_TYPE (TREE_TYPE (fn)), var);
-
-  /* Build the declaration statement if FN does not return an
-     aggregate.  */
-  if (need_return_decl)
-    return var;
-  /* If FN does return an aggregate, there's no need to declare the
-     return variable; we're using a variable in our caller's frame.  */
-  else
-    return NULL_TREE;
+  *use_p = use;
+  return var;
 }
 
 /* Returns nonzero if a function can be inlined as a tree.  */
@@ -1385,10 +1429,10 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
   tree fn;
   tree arg_inits;
   tree *inlined_body;
-  tree inline_result;
   splay_tree st;
   tree args;
   tree return_slot_addr;
+  tree modify_dest;
   location_t saved_location;
   struct cgraph_edge *edge;
   const char *reason;
@@ -1517,7 +1561,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
      statements within the function to jump to.  The type of the
      statement expression is the return type of the function call.  */
   stmt = NULL;
-  expr = build (BIND_EXPR, TREE_TYPE (TREE_TYPE (fn)), NULL_TREE,
+  expr = build (BIND_EXPR, void_type_node, NULL_TREE,
 		stmt, make_node (BLOCK));
   BLOCK_ABSTRACT_ORIGIN (BIND_EXPR_BLOCK (expr)) = fn;
 
@@ -1586,10 +1630,16 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
       || TREE_CODE (DECL_INITIAL (fn)) != BLOCK)
     abort ();
 
+  /* Find the lhs to which the result of this call is assigned.  */
+  modify_dest = tsi_stmt (id->tsi);
+  if (TREE_CODE (modify_dest) == MODIFY_EXPR)
+    modify_dest = TREE_OPERAND (modify_dest, 0);
+  else
+    modify_dest = NULL;
+
   /* Declare the return variable for the function.  */
-  decl = declare_return_variable (id, return_slot_addr, &use_retvar);
-  if (decl)
-    declare_inline_vars (expr, decl);
+  decl = declare_return_variable (id, return_slot_addr,
+				  modify_dest, &use_retvar);
 
   /* After we've initialized the parameters, we insert the body of the
      function itself.  */
@@ -1611,12 +1661,6 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
       append_to_statement_list (label, &BIND_EXPR_BODY (expr));
     }
 
-  /* Finally, mention the returned value so that the value of the
-     statement-expression is the returned value of the function.  */
-  if (use_retvar)
-    /* Set TREE_TYPE on BIND_EXPR?  */
-    append_to_statement_list_force (use_retvar, &BIND_EXPR_BODY (expr));
-
   /* Clean up.  */
   splay_tree_delete (id->decl_map);
   id->decl_map = st;
@@ -1624,28 +1668,16 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
   /* The new expression has side-effects if the old one did.  */
   TREE_SIDE_EFFECTS (expr) = TREE_SIDE_EFFECTS (t);
 
-  /* We want to create a new variable to hold the result of the inlined
-     body.  This new variable needs to be added to the function which we
-     are inlining into, thus the saving and restoring of
-     current_function_decl.  */
-  {
-    tree save_decl = current_function_decl;
-    current_function_decl = id->node->decl;
-    inline_result = voidify_wrapper_expr (expr, NULL);
-    current_function_decl = save_decl;
-  }
+  tsi_link_before (&id->tsi, expr, TSI_SAME_STMT);
 
   /* If the inlined function returns a result that we care about,
      then we're going to need to splice in a MODIFY_EXPR.  Otherwise
      the call was a standalone statement and we can just replace it
      with the BIND_EXPR inline representation of the called function.  */
-  if (TREE_CODE (tsi_stmt (id->tsi)) != CALL_EXPR)
-    {
-      tsi_link_before (&id->tsi, expr, TSI_SAME_STMT);
-      *tp = inline_result;
-    }
+  if (!use_retvar || !modify_dest)
+    *tsi_stmt_ptr (id->tsi) = build_empty_stmt ();
   else
-    *tp = expr;
+    *tp = use_retvar;
 
   /* When we gimplify a function call, we may clear TREE_SIDE_EFFECTS on
      the call if it is to a "const" function.  Thus the copy of
@@ -1659,11 +1691,6 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
      The easiest solution is to simply recalculate TREE_SIDE_EFFECTS for
      the toplevel expression.  */
   recalculate_side_effects (expr);
-
-  /* If the value of the new expression is ignored, that's OK.  We
-     don't warn about this for CALL_EXPRs, so we shouldn't warn about
-     the equivalent inlined version either.  */
-  TREE_USED (*tp) = 1;
 
   /* Update callgraph if needed.  */
   cgraph_remove_node (edge->callee);

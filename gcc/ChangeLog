@@ -1,5 +1,19 @@
 2004-07-16  Richard Henderson  <rth@redhat.com>
 
+	* langhooks-def.h (LANG_HOOKS_TREE_INLINING_COPY_RES_DECL_FOR_INLINING,
+	lhd_tree_inlining_copy_res_decl_for_inlining): Remove.
+	* langhooks.c (lhd_tree_inlining_copy_res_decl_for_inlining): Remove.
+	* langhooks.h (struct lang_hooks_for_tree_inlining): Remove
+	copy_res_decl_for_inlining.
+
+	* tree-inline.c (declare_return_variable): New modify_dest argument.
+	Use it as the return value, when possible or manditory.  Handle
+	TREE_ADDRESSABLE types.
+	(expand_call_inline): Extract MODIFY_EXPR lhs for call.  Simplify
+	replacement of CALL_EXPR.
+
+2004-07-16  Richard Henderson  <rth@redhat.com>
+
 	* tree-flow.h (struct var_ann_d): Remove has_hidden_use.
 	* gimple-low.c (expand_var_p): Don't check it.
 	* tree-ssa-alias.c (setup_pointers_and_addressables): Likewise.
