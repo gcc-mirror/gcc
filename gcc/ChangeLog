@@ -1,3 +1,7 @@
+2003-02-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (a peephole2): New.
+
 Fri Feb 21 11:05:44 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (commit_one_edge_insertion): Only mark BB for splitting.
