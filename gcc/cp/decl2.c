@@ -35,6 +35,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "decl.h"
 #include "lex.h"
 #include "output.h"
+#include "defaults.h"
 
 extern tree grokdeclarator ();
 extern tree get_file_function_name ();
@@ -2031,9 +2032,9 @@ constructor_name (thing)
 void
 setup_vtbl_ptr ()
 {
-  extern rtx base_init_insns;
+  extern rtx base_init_expr;
 
-  if (base_init_insns == 0
+  if (base_init_expr == 0
       && DECL_CONSTRUCTOR_P (current_function_decl))
     emit_base_init (current_class_type, 0);
 
@@ -2145,7 +2146,7 @@ get_temp_name (type, staticp)
 {
   char buf[sizeof (AUTO_TEMP_FORMAT) + 20];
   tree decl;
-  int toplev = global_bindings_p ();
+  int toplev = toplevel_bindings_p ();
 
   push_obstacks_nochange ();
   if (toplev || staticp)
@@ -2278,7 +2279,7 @@ finish_anon_union (anon_union_decl)
     {
       if (main_decl)
 	{
-	  make_decl_rtl (main_decl, 0, global_bindings_p ());
+	  make_decl_rtl (main_decl, 0, toplevel_bindings_p ());
 	  DECL_RTL (anon_union_decl) = DECL_RTL (main_decl);
 	}
       else
@@ -2568,7 +2569,10 @@ import_export_vtable (decl, type, final)
 	  if (TREE_PUBLIC (decl))
 	    cp_error ("all virtual functions redeclared inline");
 #endif
-	  TREE_PUBLIC (decl) = 0;
+	  if (SUPPORTS_WEAK)
+	    DECL_WEAK (decl) = 1;
+	  else
+	    TREE_PUBLIC (decl) = 0;
 	  DECL_EXTERNAL (decl) = 0;
 	}
       else
@@ -2788,7 +2792,12 @@ import_export_inline (decl)
   if (DECL_TEMPLATE_INSTANTIATION (decl))
     {
       if (DECL_IMPLICIT_INSTANTIATION (decl) && flag_implicit_templates)
-	TREE_PUBLIC (decl) = 0;
+	{
+	  if (SUPPORTS_WEAK)
+	    DECL_WEAK (decl) = 1;
+	  else
+	    TREE_PUBLIC (decl) = 0;
+	}
       else
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
     }
@@ -2801,9 +2810,15 @@ import_export_inline (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
 		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
 	}
+      else if (SUPPORTS_WEAK)
+	DECL_WEAK (decl) = 1;
       else
 	TREE_PUBLIC (decl) = 0;
     }
+  else if (DECL_C_STATIC (decl))
+    TREE_PUBLIC (decl) = 0;
+  else if (SUPPORTS_WEAK)
+    DECL_WEAK (decl) = 1;
   else
     TREE_PUBLIC (decl) = 0;
 
@@ -3116,7 +3131,8 @@ finish_file ()
       tree decl = TREE_VALUE (fnname);
       import_export_inline (decl);
       if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
-	  && TREE_PUBLIC (decl) && DECL_NOT_REALLY_EXTERN (decl))
+	  && TREE_PUBLIC (decl) && ! DECL_WEAK (decl)
+	  && DECL_NOT_REALLY_EXTERN (decl))
 	synthesize_method (decl);
     }
 
@@ -3169,7 +3185,7 @@ finish_file ()
 		continue;
 	      }
 
-	    if (TREE_PUBLIC (decl)
+	    if ((TREE_PUBLIC (decl) && ! DECL_WEAK (decl))
 		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 		|| flag_keep_inline_functions)
 	      {
@@ -3426,7 +3442,7 @@ check_cp_case_value (value)
   return value;
 }
 
-static tree current_namespace;
+tree current_namespace;
 
 /* Get the inner part of a namespace id.  It doesn't have any prefix, nor
    postfix.  Returns 0 if in global namespace.  */
@@ -3458,29 +3474,6 @@ current_namespace_id (name)
   return get_identifier (buf);
 }
 
-/* Push into the scopre of the NAME namespace.  */
-void
-push_namespace (name)
-     tree name;
-{
-  tree old_id = get_namespace_id ();
-  char *buf;
-
-  current_namespace = tree_cons (NULL_TREE, name, current_namespace);
-  buf = (char *) alloca (4 + (old_id ? IDENTIFIER_LENGTH (old_id) : 0)
-			 + IDENTIFIER_LENGTH (name));
-  sprintf (buf, "%s%s", old_id ? IDENTIFIER_POINTER (old_id) : "",
-	   IDENTIFIER_POINTER (name));
-  TREE_PURPOSE (current_namespace) = get_identifier (buf);
-}
-
-/* Pop from the scope of the current namespace.  */
-void
-pop_namespace ()
-{
-  current_namespace = TREE_CHAIN (current_namespace);
-}
-
 void
 do_namespace_alias (alias, namespace)
      tree alias, namespace;
@@ -3488,7 +3481,30 @@ do_namespace_alias (alias, namespace)
 }
 
 tree
-do_using_decl (decl)
+do_toplevel_using_decl (decl)
+     tree decl;
+{
+  if (decl == NULL_TREE || decl == error_mark_node)
+    return;
+
+  if (TREE_CODE (decl) == SCOPE_REF)
+    decl = resolve_scope_to_name (NULL_TREE, decl);
+
+  /* Is this the right way to do an id list? */
+  if (TREE_CODE (decl) != TREE_LIST)
+    {
+      pushdecl (decl);
+    }
+  else
+    while (decl)
+      {
+	pushdecl (TREE_VALUE (decl));
+	decl = TREE_CHAIN (decl);
+      }
+}
+
+tree
+do_class_using_decl (decl)
      tree decl;
 {
   return error_mark_node;

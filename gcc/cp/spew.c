@@ -327,6 +327,11 @@ yylex()
 	    case PTYPENAME:
 	      lastiddecl = NULL_TREE;
 	      break;
+	    case NSNAME:
+	      lastiddecl = trrr;
+	      if (got_scope || got_object)
+		tmp_token.yylval.ttype = trrr;
+	      break;
 	    default:
 	      my_friendly_abort (101);
 	    }

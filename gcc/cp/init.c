@@ -492,12 +492,14 @@ build_partial_cleanup_for (binfo)
 
    Argument IMMEDIATELY, if zero, forces a new sequence to be
    generated to contain these new insns, so it can be emitted later.
-   This sequence is saved in the global variable BASE_INIT_INSNS.
+   This sequence is saved in the global variable BASE_INIT_EXPR.
    Otherwise, the insns are emitted into the current sequence.
 
    Note that emit_base_init does *not* initialize virtual base
    classes.  That is done specially, elsewhere.  */
-   
+
+extern tree base_init_expr, rtl_expr_chain;
+
 void
 emit_base_init (t, immediately)
      tree t;
@@ -511,13 +513,20 @@ emit_base_init (t, immediately)
   tree t_binfo = TYPE_BINFO (t);
   tree binfos = BINFO_BASETYPES (t_binfo);
   int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  tree expr = NULL_TREE;
 
   my_friendly_assert (protect_list == NULL_TREE, 999);
 
   if (! immediately)
     {
+      int momentary;
       do_pending_stack_adjust ();
-      start_sequence ();
+      /* Make the RTL_EXPR node temporary, not momentary,
+	 so that rtl_expr_chain doesn't become garbage.  */
+      momentary = suspend_momentary ();
+      expr = make_node (RTL_EXPR);
+      resume_momentary (momentary);
+      start_sequence_for_rtl_expr (expr); 
     }
 
   if (write_symbols == NO_DEBUG)
@@ -670,12 +679,15 @@ emit_base_init (t, immediately)
 
   if (! immediately)
     {
-      extern rtx base_init_insns;
-
       do_pending_stack_adjust ();
-      my_friendly_assert (base_init_insns == 0, 207);
-      base_init_insns = get_insns ();
+      my_friendly_assert (base_init_expr == 0, 207);
+      base_init_expr = expr;
+      TREE_TYPE (expr) = void_type_node;
+      RTL_EXPR_RTL (expr) = const0_rtx;
+      RTL_EXPR_SEQUENCE (expr) = get_insns ();
+      rtl_expr_chain = tree_cons (NULL_TREE, expr, rtl_expr_chain);
       end_sequence ();
+      TREE_SIDE_EFFECTS (expr) = 1;
     }
 
   /* All the implicit try blocks we built up will be zapped
@@ -1728,6 +1740,18 @@ build_member_call (cname, name, parmlist)
   if (TREE_CODE (cname) == SCOPE_REF)
     cname = resolve_scope_to_name (NULL_TREE, cname);
 
+  /* This shouldn't be here, and build_member_call shouldn't appear in
+     parse.y!  (mrs)  */
+  if (cname && get_aggr_from_typedef (cname, 0) == 0
+      && TREE_CODE (cname) == IDENTIFIER_NODE)
+    {
+      tree ns = lookup_name (cname, 0);
+      if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
+	{
+	  return build_x_function_call (build_offset_ref (cname, name), parmlist, current_class_decl);
+	}
+    }
+
   if (cname == NULL_TREE || ! (type = get_aggr_from_typedef (cname, 1)))
     return error_mark_node;
 
@@ -1838,6 +1862,22 @@ build_offset_ref (cname, name)
 
   if (TREE_CODE (cname) == SCOPE_REF)
     cname = resolve_scope_to_name (NULL_TREE, cname);
+
+  /* Handle namespace names fully here.  */
+  if (TREE_CODE (cname) == IDENTIFIER_NODE
+      && get_aggr_from_typedef (cname, 0) == 0)
+    {
+      tree ns = lookup_name (cname, 0);
+      tree val;
+      if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
+	{
+	  val = lookup_namespace_name (ns, name);
+	  if (val)
+	    return val;
+	  cp_error ("namespace `%D' has no member named `%D'", ns, name);
+	  return error_mark_node;
+	}
+    }
 
   if (cname == NULL_TREE || ! is_aggr_typedef (cname, 1))
     return error_mark_node;

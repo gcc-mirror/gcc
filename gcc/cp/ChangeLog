@@ -1,3 +1,73 @@
+Tue May 16 12:40:16 1995  Jason Merrill  <jason@lisa.cygnus.com>
+
+	* lex.c (handle_sysv_pragma): Don't use token_buffer.
+
+Tue May 16 12:05:26 1995  Mike Stump  <mrs@cygnus.com>
+
+	* call.c (resolve_scope_to_name): Add initial semantic support for
+	namespaces.
+	* class.c (finish_struct): Ditto.
+	* cp-tree.h (NAMESPACE_LEVEL): Ditto.
+	* cvt.c (build_up_reference, convert_to_reference): Ditto. 
+	* decl.c (binding_level::namespace_p, suspend_binding_level): Ditto.
+	(resume_binding_level, toplevel_bindings_p): Ditto
+	(namespace_bindings_p, declare_namespace_level): Ditto.
+	(resume_level, push_namespace, pop_namespace): Ditto.
+	(pop_everything, pushtag, duplicate_decls, pushdecl): Ditto.
+	(implicitly_declare, lookup_namespace_name, lookup_name_real): Ditto.
+	(start_decl, make_temporary_for_reference), Ditto.
+	(obscure_complex_init, finish_decl, expand_static_init): Ditto.
+	(grokvardecl, grokdeclarator, parmlist_is_exprlist): Ditto.
+	(store_parm_decls, hack_incomplete_structures): Ditto.
+	* decl2.c (get_temp_name, finish_anon_union, current_namespace): Ditto.
+	(push_namespace, pop_namespace, do_namespace_alias): Ditto.
+	(do_toplevel_using_decl, do_class_using_decl): Ditto.
+	* error.c (dump_decl): Ditto.
+	* init.c (build_member_call, build_offset_ref): Ditto.
+	* lex.c (identifier_type): Ditto.
+	* parse.y (lang_extdef, using_decl, extdef, component_decl_1): Ditto.
+	(nested_name_specifier_1): Ditto.
+	* spew.c (yylex): Ditto.
+	* tree.def (NAMESPACE_DECL): Ditto.
+
+Tue May 16 11:55:35 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (push_overloaded_decl): Return the new decl even if it
+	can't be pushed.
+
+Tue May 16 11:00:37 1995  Jason Merrill  <jason@lisa.cygnus.com>
+
+	* typeck.c (decay_conversion): Split out from default_conversion.
+	(default_conversion): Call it.
+	(build_binary_op): Ditto.
+	(build_binary_op_nodefault): Use decay_conversion for truth ops.
+
+Mon May 15 12:47:56 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (warn_extern_redeclared_static): This is a pedwarn.
+	(duplicate_decls): Always use the old decl's linkage info.  Don't
+	play with linkage of consts.
+	(pushdecl): Don't play with linkage of consts.
+	(redeclaration_error_message): Don't complain about an old public
+	decl and a new non-public decl here.
+	(grokvardecl): Handle linkage of consts here.
+	(grokdeclarator): An 'extern inline' is public.  Pass constp to
+	grokvardecl.
+	(start_function): Wait until after the pushdecl to do some linkage
+	stuff.
+
+	* decl2.c (import_export_vtable): Make duplicates weak rather than
+	static if supported.
+	(import_export_inline): Ditto.
+	* pt.c (do_pending_expansions): Ditto.
+
+	* class.c (build_vbase_path): flag_assume_nonnull_objects only
+	affects reference conversion.
+
+	* init.c (emit_base_init): Build up an RTL_EXPR and add it to
+        rtl_expr_chain.
+	* decl.c, decl2.c: s/base_init_insns/base_init_expr/.
+
 Tue May 16 07:06:28 1995  Paul Eggert  <eggert@twinsun.com>
 
 	* method.c (numeric_output_need_bar): Renamed from misspelling.

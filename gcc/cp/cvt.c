@@ -593,7 +593,7 @@ build_up_reference (type, arg, flags, checkconst)
       else
 	{
 	  temp = get_temp_name (argtype, 0);
-	  if (global_bindings_p ())
+	  if (toplevel_bindings_p ())
 	    {
 	      /* Give this new temp some rtl and initialize it.  */
 	      DECL_INITIAL (temp) = targ;
@@ -770,10 +770,10 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	{
 	  tree init;
 
-	  if (global_bindings_p ())
+	  if (toplevel_bindings_p ())
 	    {
 	      extern tree static_aggregates;
-	      tree t = get_temp_name (type, global_bindings_p ());
+	      tree t = get_temp_name (type, toplevel_bindings_p ());
 	      init = build_method_call (t, constructor_name_full (type),
 					build_tree_list (NULL_TREE, expr),
 					TYPE_BINFO (type),

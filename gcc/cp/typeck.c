@@ -1337,7 +1337,7 @@ c_alignof (type)
    C++: this will automatically bash references to their target type.  */
 
 tree
-default_conversion (exp)
+decay_conversion (exp)
      tree exp;
 {
   register tree type = TREE_TYPE (exp);
@@ -1346,7 +1346,7 @@ default_conversion (exp)
   if (code == OFFSET_TYPE /* || TREE_CODE (exp) == OFFSET_REF */ )
     {
       if (TREE_CODE (exp) == OFFSET_REF)
-	return default_conversion (resolve_offset_ref (exp));
+	return decay_conversion (resolve_offset_ref (exp));
 
       type = TREE_TYPE (type);
       code = TREE_CODE (type);
@@ -1372,15 +1372,6 @@ default_conversion (exp)
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Leave such NOP_EXPRs, since RHS is being used in non-lvalue context.  */
 
-  if (INTEGRAL_CODE_P (code))
-    {
-      tree t = type_promotes_to (type);
-      if (t != type)
-	return convert (t, exp);
-    }
-  if (flag_traditional
-      && TYPE_MAIN_VARIANT (type) == float_type_node)
-    return convert (double_type_node, exp);
   if (code == VOID_TYPE)
     {
       error ("void value not ignored as it ought to be");
@@ -1424,7 +1415,7 @@ default_conversion (exp)
 
       if (TREE_CODE (exp) == COMPOUND_EXPR)
 	{
-	  tree op1 = default_conversion (TREE_OPERAND (exp, 1));
+	  tree op1 = decay_conversion (TREE_OPERAND (exp, 1));
 	  return build (COMPOUND_EXPR, TREE_TYPE (op1),
 			TREE_OPERAND (exp, 0), op1);
 	}
@@ -1470,6 +1461,32 @@ default_conversion (exp)
       adr = build_unary_op (ADDR_EXPR, exp, 1);
       return convert (ptrtype, adr);
     }
+
+  return exp;
+}
+
+tree
+default_conversion (exp)
+     tree exp;
+{
+  tree type;
+  enum tree_code code;
+
+  exp = decay_conversion (exp);
+
+  type = TREE_TYPE (exp);
+  code = TREE_CODE (type);
+
+  if (INTEGRAL_CODE_P (code))
+    {
+      tree t = type_promotes_to (type);
+      if (t != type)
+	return convert (t, exp);
+    }
+  if (flag_traditional
+      && TYPE_MAIN_VARIANT (type) == float_type_node)
+    return convert (double_type_node, exp);
+
   return exp;
 }
 
@@ -2809,8 +2826,8 @@ build_binary_op (code, arg1, arg2, convert_p)
     {
       tree args_save [2];
       tree type0, type1;
-      args[0] = args_save [0] = default_conversion (args[0]);
-      args[1] = args_save [1] = default_conversion (args[1]);
+      args[0] = decay_conversion (args[0]);
+      args[1] = decay_conversion (args[1]);
 
       if (args[0] == error_mark_node || args[1] == error_mark_node)
 	return error_mark_node;
@@ -2821,13 +2838,13 @@ build_binary_op (code, arg1, arg2, convert_p)
       if (type_unknown_p (args[0]))
 	{
 	  args[0] = instantiate_type (type1, args[0], 1);
-	  args[0] = default_conversion (args[0]);
+	  args[0] = decay_conversion (args[0]);
 	}
       else if (type_unknown_p (args[1]))
 	{
 	  args[1] = require_instantiated_type (type0, args[1],
 					       error_mark_node);
-	  args[1] = default_conversion (args[1]);
+	  args[1] = decay_conversion (args[1]);
 	}
 
       if (IS_AGGR_TYPE (type0) || IS_AGGR_TYPE (type1))
@@ -2840,11 +2857,6 @@ build_binary_op (code, arg1, arg2, convert_p)
 	      return error_mark_node;
 	    }
 	}
-      
-      if (args[0] == args_save[0])
-	args[0] = arg1;
-      if (args[1] == args_save[1])
-	args[1] = arg2;
     }
   return build_binary_op_nodefault (code, args[0], args[1], code);
 }
@@ -2923,8 +2935,18 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
   int common = 0;
 
   /* Apply default conversions.  */
-  op0 = default_conversion (orig_op0);
-  op1 = default_conversion (orig_op1);
+  if (code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR
+      || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
+      || code == TRUTH_XOR_EXPR)
+    {
+      op0 = decay_conversion (orig_op0);
+      op1 = decay_conversion (orig_op1);
+    }
+  else
+    {
+      op0 = default_conversion (orig_op0);
+      op1 = default_conversion (orig_op1);
+    }
 
   type0 = TREE_TYPE (op0);
   type1 = TREE_TYPE (op1);

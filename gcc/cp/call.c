@@ -1380,6 +1380,7 @@ resolve_scope_to_name (outer_type, inner_stuff)
 
   if (outer_type == NULL_TREE)
     {
+      tree x;
       /* If we have something that's already a type by itself,
 	 use that.  */
       if (IDENTIFIER_HAS_TYPE_VALUE (inner_name))
@@ -1388,6 +1389,14 @@ resolve_scope_to_name (outer_type, inner_stuff)
 	    return resolve_scope_to_name (IDENTIFIER_TYPE_VALUE (inner_name),
 					  inner_type);
 	  return inner_name;
+	}
+      
+      x = lookup_name (inner_name, 0);
+
+      if (x && TREE_CODE (x) == NAMESPACE_DECL)
+	{
+	  x = lookup_namespace_name (x, inner_type);
+	  return x;
 	}
       return NULL_TREE;
     }

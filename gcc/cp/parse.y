@@ -330,7 +330,7 @@ asm_keyword:
 lang_extdef:
 	  { if (pending_lang_change) do_pending_lang_change(); }
 	  extdef
-	  { if (! global_bindings_p () && ! pseudo_global_level_p())
+	  { if (! toplevel_bindings_p () && ! pseudo_global_level_p())
 	      pop_everything ();
 	    prefix_attributes = NULL_TREE; }
 	;
@@ -365,18 +365,18 @@ extdef:
 	| NAMESPACE identifier '=' any_id ';'
 		{ do_namespace_alias ($2, $4); }
 	| using_decl ';'
-		{ }
+		{ do_toplevel_using_decl ($1); }
 	| USING NAMESPACE any_id ';'
 		{ do_using_directive ($3); }
 	;
 
 using_decl:
 	  USING qualified_id
-		{ $$ = do_using_decl ($2); }
+		{ $$ = $2; }
 	| USING global_scope qualified_id
-		{ $$ = do_using_decl ($3); }
+		{ $$ = $3; }
 	| USING global_scope unqualified_id
-		{ $$ = do_using_decl ($3); }
+		{ $$ = $3; }
 	;
 
 any_id:
@@ -2645,6 +2645,7 @@ component_decl_1:
 		  $$ = grokfield ($$, TREE_CHAIN ($1), $4, $7, $5);
 		  cplus_decl_attributes ($$, $6, prefix_attributes); }
 	| using_decl
+		{ $$ = do_class_using_decl ($1); }
 	;
 
 /* The case of exactly one component is handled directly by component_decl. */
@@ -2956,7 +2957,7 @@ nested_name_specifier_1:
 	  TYPENAME SCOPE
 		{ got_scope = TREE_TYPE ($$); }
 	| NSNAME SCOPE
-		{ got_scope = TREE_TYPE ($$); }
+		{ got_scope = $$; }
 	| template_type SCOPE
 		{ got_scope = TREE_TYPE ($$); }
 /* 	These break 'const i;'
