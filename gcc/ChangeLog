@@ -1,5 +1,8 @@
 2000-09-18  Richard Henderson  <rth@cygnus.com>
 
+	* combine.c (simplify_comparison): Shift a NOT out of a single
+	bit test.
+
 	* combine.c (if_then_else_cond): Canonicalize BImode true to
 	STORE_FLAG_VALUE.
 	* explow.c (trunc_int_for_mode): Likewise.
