@@ -27,6 +27,26 @@ involve a combination of these elements.
 @heading In 0.5.22:
 @itemize @bullet
 @item
+@item
+Improve diagnostic messages from @code{libf2c}
+so it is more likely that the printing of the
+active format string is limited to the string,
+with no trailing garbage being printed.
+
+(Unlike @code{f2c}, @code{g77} does not append
+a null byte to its compiled form of every
+format string specified via a @code{FORMAT} statement.
+However, @code{f2c} would exhibit the problem
+anyway for a statement like @samp{PRINT '(I)garbage', 1}
+by printing @samp{(I)garbage} as the format string.)
+
+@item
+Improve compilation of FORMAT expressions so that
+a null byte is appended to the last operand if it
+is a constant.
+This provides a cleaner run-time diagnostic as provided
+by @code{libf2c} for statements like @samp{PRINT '(I1', 42}.
+
 Fix @code{SIGNAL} intrinsic so it offers portable
 support for 64-bit systems (such as Digital Alphas
 running GNU/Linux).
