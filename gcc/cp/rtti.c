@@ -73,8 +73,8 @@ Boston, MA 02111-1307, USA.  */
 /* The IDENTIFIER_NODE naming the real class.  */
 #define TINFO_REAL_NAME(NODE) TREE_PURPOSE (NODE)
 
-/* A varray of all tinfo decls that haven't yet been emitted.  */
-varray_type unemitted_tinfo_decls;
+/* A vector of all tinfo decls that haven't yet been emitted.  */
+VEC (tree) *unemitted_tinfo_decls;
 
 static tree build_headof (tree);
 static tree ifnonnull (tree, tree);
@@ -120,8 +120,8 @@ init_rtti_processing (void)
   type_info_ptr_type = build_pointer_type (const_type_info_type);
   type_info_ref_type = build_reference_type (const_type_info_type);
 
-  VARRAY_TREE_INIT (unemitted_tinfo_decls, 10, "RTTI decls");
-
+  unemitted_tinfo_decls = VEC_alloc (tree, 124);
+  
   create_tinfo_types ();
 }
 
@@ -361,8 +361,7 @@ get_tinfo_decl (tree type)
       pushdecl_top_level_and_finish (d, NULL_TREE);
 
       /* Add decl to the global array of tinfo decls.  */
-      gcc_assert (unemitted_tinfo_decls != 0);
-      VARRAY_PUSH_TREE (unemitted_tinfo_decls, d);
+      VEC_safe_push (tree, unemitted_tinfo_decls, d);
     }
 
   return d;

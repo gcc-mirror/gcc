@@ -1,5 +1,11 @@
 2004-09-22  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (unemitted_tinfo_decls): Make a VEC(tree).
+	* decl2.c (cp_finish_file): Adjust tinfo decl emission loop.
+	* rtti.c (unemitted_tinfo_decls): Make a VEC(tree).
+	(init_rtti_processing): Initialize it to something realistic.
+	(get_tinfo_decl): Adjust pushing the new decl.
+
 	* cp-tree.h (struct lang_type_class): Remove marked flags, add
 	diamond_shaped and repeated_base flags.  Reorder to keep 8-bit blocks.
 	(TYPE_MARKED_P): New.
