@@ -5,6 +5,9 @@ Thu Oct  1 10:43:45 1998  Nick Clifton  <nickc@cygnus.com>
 	(start_function): Add invocation of
 	SET_DEFAULT_DECL_ATTRIBUTES, if defined.
 
+	* lex.c: Replace occurances of HANDLE_SYSV_PRAGMA with
+	HANDLE_GENERIC_PRAGMAS.
+	
 1998-09-28  Anthony Green  <green@cygnus.com>
 
 	* semantics.c (finish_asm_stmt): Always permit volatile asms.

@@ -1,3 +1,8 @@
+Thu Oct  1 10:43:45 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lex.c: Replace occurances of HANDLE_SYSV_PRAGMA with
+	HANDLE_GENERIC_PRAGMAS.
+
 Mon Sep 28 04:22:00 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* news.texi: Update from Craig.
