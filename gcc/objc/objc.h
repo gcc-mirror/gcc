@@ -42,9 +42,12 @@ extern const char* __objc_hash_lookup_id;
 #endif
 
 
-#include <stdarg.h>
 #include <stdio.h>
-
+#ifdef IN_OBJC
+#include <gstdarg.h>
+#else
+#include <stdarg.h>
+#endif
 
 #define nil (id)0                               /* id of Nil instance */
 #define Nil (Class_t)0                          /* id of Nil class */
@@ -233,7 +236,7 @@ typedef struct objc_method_list {
 } MethodList, *MethodList_t;
 
 
-#include <objc/sarray.h>
+#include "objc/sarray.h"
 
 #ifdef OBJC_HASH_LOOKUP
 
@@ -465,7 +468,7 @@ static id nil_method(id rcv, SEL op, ...) { return rcv; }
 
 #ifdef OBJC_HASH_LOOKUP
 
-#include <objc/cache.h>
+#include "objc/cache.h"
 
 extern __inline__ IMP
 objc_msg_lookup(id receiver, SEL op)
