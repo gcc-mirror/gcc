@@ -1738,6 +1738,7 @@ extern tree shorten_compare                     PROTO((tree *, tree *, tree *, e
 extern tree truthvalue_conversion               PROTO((tree));
 extern tree type_for_mode                       PROTO((enum machine_mode, int));
 extern tree type_for_size                       PROTO((unsigned, int));
+extern int c_get_alias_set                      PROTO((tree));
 
 /* in decl{2}.c */
 extern tree void_list_node;
@@ -2890,6 +2891,7 @@ extern tree condition_conversion		PROTO((tree));
 extern tree target_type				PROTO((tree));
 extern tree require_complete_type		PROTO((tree));
 extern tree complete_type			PROTO((tree));
+extern tree complete_type_or_else               PROTO((tree));
 extern int type_unknown_p			PROTO((tree));
 extern int fntype_p				PROTO((tree));
 extern tree require_instantiated_type		PROTO((tree, tree, tree));

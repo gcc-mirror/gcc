@@ -120,16 +120,19 @@ require_complete_type (value)
       return require_complete_type (value);
     }
 
-  if (IS_AGGR_TYPE (type) && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
+  if (TYPE_SIZE (complete_type (type)))
+    return value;
+  else
     {
-      instantiate_class_template (TYPE_MAIN_VARIANT (type));
-      if (TYPE_SIZE (type) != 0)
-	return value;
+      incomplete_type_error (value, type);
+      return error_mark_node;
     }
-
-  incomplete_type_error (value, type);
-  return error_mark_node;
 }
+
+/* Try to complete TYPE, if it is incomplete.  For example, if TYPE is
+   a template instantiation, do the instantiation.  Returns TYPE,
+   whether or not it could be completed, unless something goes
+   horribly wrong, in which case the error_mark_node is returned.  */
 
 tree
 complete_type (type)
@@ -156,6 +159,24 @@ complete_type (type)
     instantiate_class_template (TYPE_MAIN_VARIANT (type));
 
   return type;
+}
+
+/* Like complete_type, but issue an error if the TYPE cannot be
+   completed.  Returns NULL_TREE if the type cannot be made 
+   complete.  */
+
+tree
+complete_type_or_else (type)
+     tree type;
+{
+  type = complete_type (type);
+  if (type != error_mark_node && !TYPE_SIZE (type))
+    {
+      incomplete_type_error (NULL_TREE, type);
+      return NULL_TREE;
+    }
+  else
+    return type;
 }
 
 /* Return truthvalue of whether type of EXP is instantiated.  */
@@ -1930,11 +1951,8 @@ build_component_ref (datum, component, basetype_path, protect)
       return error_mark_node;
     }
 
-  if (TYPE_SIZE (complete_type (basetype)) == 0)
-    {
-      incomplete_type_error (0, basetype);
-      return error_mark_node;
-    }
+  if (!complete_type_or_else (basetype))
+    return error_mark_node;
 
   if (TREE_CODE (component) == BIT_NOT_EXPR)
     {
@@ -3964,6 +3982,9 @@ pointer_int_sum (resultcode, ptrop, intop)
 
   register tree result_type = TREE_TYPE (ptrop);
 
+  if (!complete_type_or_else (result_type))
+    return error_mark_node;
+
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
       if (pedantic || warn_pointer_arith)
@@ -4052,6 +4073,9 @@ pointer_diff (op0, op1, ptrtype)
   register tree result, folded;
   tree restype = ptrdiff_type_node;
   tree target_type = TREE_TYPE (ptrtype);
+
+  if (!complete_type_or_else (target_type))
+    return error_mark_node;
 
   if (pedantic || warn_pointer_arith)
     {

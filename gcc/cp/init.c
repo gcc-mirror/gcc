@@ -2192,11 +2192,8 @@ build_new_1 (exp)
       true_type = TREE_TYPE (true_type);
     }
 
-  if (TYPE_SIZE (complete_type (true_type)) == 0)
-    {
-      incomplete_type_error (0, true_type);
-      return error_mark_node;
-    }
+  if (!complete_type_or_else (true_type))
+    return error_mark_node;
 
   if (has_array)
     size = fold (build_binary_op (MULT_EXPR, size_in_bytes (true_type),
@@ -2971,11 +2968,8 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
   if (TREE_CODE (type) == POINTER_TYPE)
     {
       type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      if (TYPE_SIZE (complete_type (type)) == 0)
-	{
-	  incomplete_type_error (0, type);
-	  return error_mark_node;
-	}
+      if (!complete_type_or_else (type))
+	return error_mark_node;
       if (TREE_CODE (type) == ARRAY_TYPE)
 	goto handle_array;
       if (! IS_AGGR_TYPE (type))
