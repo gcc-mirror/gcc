@@ -4,6 +4,10 @@
 	walking.
 	* tree-ssa.c (ssa_redirect_edge): Likewise.
 
+	* genattrtab.c, genemit.c, genoutput.c, genrecog.c,
+	gensupport.c, jump.c, tree-phinodes.c, unwind-dw2-fde-glibc.c:
+	Update copyright.
+
 2005-03-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Document new MIPS -msym32 and -mno-sym32 options.
