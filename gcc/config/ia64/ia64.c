@@ -5226,12 +5226,27 @@ static rtx
 ia64_single_set (insn)
      rtx insn;
 {
-  rtx x = PATTERN (insn);
+  rtx x = PATTERN (insn), ret;
   if (GET_CODE (x) == COND_EXEC)
     x = COND_EXEC_CODE (x);
   if (GET_CODE (x) == SET)
     return x;
-  return single_set_2 (insn, x);
+  ret = single_set_2 (insn, x);
+  if (ret == NULL && GET_CODE (x) == PARALLEL)
+    {
+      /* Special case here prologue_allocate_stack and
+	 epilogue_deallocate_stack.  Although it is not a classical
+	 single set, the second set is there just to protect it
+	 from moving past FP-relative stack accesses.  */
+      if (XVECLEN (x, 0) == 2
+	  && GET_CODE (XVECEXP (x, 0, 0)) == SET
+	  && GET_CODE (XVECEXP (x, 0, 1)) == SET
+	  && GET_CODE (SET_DEST (XVECEXP (x, 0, 1))) == REG
+	  && SET_DEST (XVECEXP (x, 0, 1)) == SET_SRC (XVECEXP (x, 0, 1))
+	  && ia64_safe_itanium_class (insn) == ITANIUM_CLASS_IALU)
+	ret = XVECEXP (x, 0, 0);
+    }
+  return ret;
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
