@@ -1,3 +1,11 @@
+2004-04-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (all-stage1-gcc, all-stage2-gcc, all-stage3-gcc):
+	Always relocate gcc and prev-gcc to the original names, even
+	if the build fails.
+	(new-cleanstrap, new-restage1, new-restage2, new-restage3):
+	New targets.
+
 2004-04-23  Laurent GUERBY <laurent@guerby.net>
 
 	* MAINTAINERS: Update my email address.
