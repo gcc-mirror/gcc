@@ -30,11 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output DBX (stabs) debugging information if doing -gstabs.  */
 
-#define DBX_DEBUGGING_INFO
-
-/* Generate SDB debugging information by default.  */
-
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+#include "dbxcoff.h"
 
 #define SDB_DELIM ";"
 
