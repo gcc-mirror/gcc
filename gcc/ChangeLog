@@ -1,3 +1,7 @@
+2001-04-30  Stan Shebs  <shebs@apple.com>
+
+	* invoke.texi: Add a section documenting Objective-C options.
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* regmove.c (record_stack_memrefs): Catch all references to the

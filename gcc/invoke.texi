@@ -115,6 +115,7 @@ only one of these two forms, whichever one is not the default.
 * Invoking G++::	Compiling C++ programs.
 * C Dialect Options::   Controlling the variant of C language compiled.
 * C++ Dialect Options:: Variations on C++.
+* Objective-C Dialect Options:: Variations on Objective-C.
 * Language Independent Options:: Controlling how diagnostics should be
                         formatted. 
 * Warning Options::     How picky should the compiler be?
@@ -183,6 +184,13 @@ in the following sections.
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
 -Wsign-promo  -Wsynth}
+
+@item Objective-C Language Options
+@xref{Objective-C Dialect Options,,Options Controlling Objective-C Dialect}.
+@gccoptlist{
+-fconstant-string-class=@var{class name} @gol
+-fgnu-runtime  -fnext-runtime  -gen-decls
+-Wno-protocol  -Wselector}
 
 @item Language Independent Options
 @xref{Language Independent Options,,Options to Control Diagnostic Messages Formatting}.
@@ -596,6 +604,7 @@ in the following sections.
                         or preprocessed source.
 * C Dialect Options::   Controlling the variant of C language compiled.
 * C++ Dialect Options:: Variations on C++.
+* Objective-C Dialect Options:: Variations on Objective-C.
 * Language Independent Options:: Controlling how diagnostics should be
                         formatted. 
 * Warning Options::     How picky should the compiler be?
@@ -1524,6 +1533,59 @@ main ()
 
 In this example, g++ will synthesize a default @samp{A& operator =
 (const A&);}, while cfront will use the user-defined @samp{operator =}.
+@end table
+
+@node Objective-C Dialect Options
+@section Options Controlling Objective-C Dialect
+
+@cindex compiler options, Objective-C
+@cindex Objective-C options, command line
+@cindex options, Objective-C
+This section describes the command-line options that are only meaningful
+for Objective-C programs; but you can also use most of the GNU compiler
+options regardless of what language your program is in.  For example,
+you might compile a file @code{some_class.m} like this:
+
+@example
+gcc -g -fgnu-runtime -O -c some_class.m
+@end example
+
+@noindent
+In this example, only @samp{-fgnu-runtime} is an option meant only for
+Objective-C programs; you can use the other options with any language
+supported by GCC.
+
+Here is a list of options that are @emph{only} for compiling Objective-C
+programs:
+
+@table @gcctabopt
+@item -fconstant-string-class=@var{class name}
+Use @var{class name} as the name of the class to instantiate for each
+literal string specified with the syntax @code{@@"..."}.  The default
+class name is @code{NXConstantString}.
+
+@item -fgnu-runtime
+Generate object code compatible with the standard GNU Objective-C
+runtime.  This is the default for most types of systems.
+
+@item -fnext-runtime
+Generate output compatible with the NeXT runtime.  This is the default
+for NeXT-based systems, including Darwin and Mac OS X.
+
+@item -gen-decls
+Dump interface declarations for all classes seen in the source file to a
+file named @file{@var{sourcename}.decl}.
+
+@item -Wno-protocol
+Do not warn if methods required by a protocol are not implemented
+in the class adopting it.
+
+@item -Wselector
+Warn if a selector has multiple methods of different types defined.
+
+@c not documented because only avail via -Wp
+@c @item -print-objc-runtime-info
+
 @end table
 
 @node Language Independent Options
