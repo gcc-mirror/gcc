@@ -1,4 +1,5 @@
-# Build a shared libgcc library with the GNU linker.
+# Build a shared libgcc library for ELF with symbol versioning
+# with the GNU linker.
 
 SHLIB_EXT = .so
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \

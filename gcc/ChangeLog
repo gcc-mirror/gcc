@@ -1,3 +1,12 @@
+2001-05-25  Richard Henderson  <rth@redhat.com>
+
+	* config.gcc (all gnu and linux): Use t-slibgcc-elf-ver with t-linux.
+	(i386-*-solaris2): Use t-slibgcc-elf-ver or t-slibgcc-sld.
+	(sparc*-*-solaris2): Likewise.
+	* config/t-linux: Remove shared libgcc macros.
+	* config/t-slibgcc-elf-ver: Move from sparc/t-slibgcc.
+	* config/t-slibgcc-sld: Move from sparc/t-slibgcc-sld.
+
 2001-05-25  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config.gcc (*-*-freebsd*): Report bad configuration.
