@@ -814,12 +814,11 @@ read_and_prescan (pfile, fp, desc, len)
      int desc;
      size_t len;
 {
-
   U_CHAR *buf = (U_CHAR *) xmalloc (len);
   U_CHAR *ip, *op, *line_base;
   U_CHAR *ibase;
   unsigned int line;
-  int count, seen_eof;
+  int count;
   size_t offset;
   /* 4096 bytes of buffer proper, 2 to detect running off the end without
      address arithmetic all the time, and 2 for pushback in the case there's
@@ -832,35 +831,35 @@ read_and_prescan (pfile, fp, desc, len)
   line_base = buf;
   line = 1;
   ibase = intermed + 2;
-  seen_eof = 0;
 
   for (;;)
     {
     read_next:
+
       count = read (desc, intermed + 2, INTERMED_BUFFER_SIZE);
       if (count < 0)
-	  goto error;
-      if (count == 0)
-	seen_eof = 1;
-      count += 2 - (ibase - intermed);
-      if (count == 0)
+	goto error;
+      else if (count == 0)
 	break;
 
-      ip = ibase;
-      ip[count] = ip[count+1] = '\0';
-      ibase = intermed + 2;
       offset += count;
-
+      ip = ibase;
+      ibase = intermed + 2;
+      ibase[count] = ibase[count+1] = '\0';
+      
       if (offset > len)
 	{
-	  size_t delta_op = op - buf;
-	  size_t delta_line_base = line_base - buf;
+	  size_t delta_op;
+	  size_t delta_line_base;
 	  len *= 2;
 	  if (offset > len)
 	      /* len overflowed.
 		 This could happen if the file is larger than half the
 		 maximum address space of the machine. */
 	    goto too_big;
+
+	  delta_op = op - buf;
+	  delta_line_base = line_base - buf;
 	  buf = xrealloc (buf, len);
 	  op = buf + delta_op;
 	  line_base = buf + delta_line_base;
@@ -868,7 +867,7 @@ read_and_prescan (pfile, fp, desc, len)
 
       for (;;)
 	{
-	  U_CHAR c;
+	  unsigned int c;
 	  c = *ip++;
 	  switch (c)
 	    {
@@ -880,16 +879,14 @@ read_and_prescan (pfile, fp, desc, len)
 	      break;
 	      
 	    case '\0':
-	      if (seen_eof)
-		goto eof;
-	      else
-		goto read_next;
+	      goto read_next;
 	    case '\r':
 	      if (*ip == '\n') ip++;
-	      else if (*ip == '\0' && !seen_eof)
+	      else if (*ip == '\0')
 		{
-		  *--ibase = '\r';
-		  break;
+		  --ibase;
+		  intermed[1] = '\r';
+		  goto read_next;
 		}
 	      *op++ = '\n';
 	      line++;
@@ -898,10 +895,11 @@ read_and_prescan (pfile, fp, desc, len)
 
 	    case '\n':
 	      if (*ip == '\r') ip++;
-	      else if (*ip == '\0' && !seen_eof)
+	      else if (*ip == '\0')
 		{
-		  *--ibase = '\n';
-		  break;
+		  --ibase;
+		  intermed[1] = '\n';
+		  goto read_next;
 		}
 	      *op++ = '\n';
 	      line++;
@@ -912,28 +910,30 @@ read_and_prescan (pfile, fp, desc, len)
 	      if (CPP_OPTIONS (pfile)->trigraphs
 		  || CPP_OPTIONS (pfile)->warn_trigraphs)
 		{
+		  unsigned int d;
 		  /* If we're at the end of the intermediate buffer,
 		     we have to shift the ?'s down to the start and
 		     come back next pass. */
-		  c = ip[0];
-		  if (c == '\0' && !seen_eof)
+		  d = ip[0];
+		  if (d == '\0')
 		    {
-		      *--ibase = '?';
-		      break;
+		      --ibase;
+		      intermed[1] = '?';
+		      goto read_next;
 		    }
-		  if (c != '?')
+		  if (d != '?')
 		    {
 		      *op++ = '?';
 		      break;
 		    }
-		  c = ip[1];
-		  if (c == '\0' && !seen_eof)
+		  d = ip[1];
+		  if (d == '\0')
 		    {
-		      *--ibase = '?';
-		      *--ibase = '?';
-		      break;
+		      ibase -= 2;
+		      intermed[0] = intermed[1] = '?';
+		      goto read_next;
 		    }
-		  if (!trigraph_table[c])
+		  if (!trigraph_table[d])
 		    {
 		      *op++ = '?';
 		      break;
@@ -941,35 +941,49 @@ read_and_prescan (pfile, fp, desc, len)
 
 		  if (CPP_OPTIONS (pfile)->warn_trigraphs)
 		    cpp_warning_with_line (pfile, line, op-line_base,
-					   "trigraph ??%c encountered", c);
+					   "trigraph ??%c encountered", d);
 		  if (CPP_OPTIONS (pfile)->trigraphs)
-		    {
-		      *op++ = trigraph_table[c];
-		      ip += 2;
-		      break;
-		    }
+		    *op++ = trigraph_table[d];
 		  else
 		    {
 		      *op++ = '?';
 		      *op++ = '?';
-		      *op++ = c;
-		      ip += 2;
+		      *op++ = d;
 		    }
+		  ip += 2;
 		}
 	      else
 		*op++ = c;
 	    }
 	}
     }
- eof:
 
-  if (op == buf)
+  if (offset == 0)
     return 0;
+
+  /* Deal with pushed-back chars at true EOF.
+     If two chars were pushed back, they must both be ?'s.
+     If one was, it might be ?, \r, or \n, and \r needs to
+     become \n.
+     We know we have space already. */
+  if (ibase == intermed)
+    {
+      *op++ = '?';
+      *op++ = '?';
+    }
+  else if (ibase == intermed + 1)
+    {
+      if (*ibase == '?')
+	*op++ = '?';
+      else
+	*op++ = '\n';
+    }
 
   if (op[-1] != '\n' || op[-2] == '\\')
     {
-      cpp_pedwarn_with_line (pfile, line, op - line_base,
-			     "no newline at end of file");
+      if (CPP_PEDANTIC (pfile))
+	cpp_pedwarn_with_line (pfile, line, op - line_base,
+			       "no newline at end of file");
       if (offset + 2 > len)
 	{
 	  len += 2;
@@ -983,8 +997,7 @@ read_and_prescan (pfile, fp, desc, len)
       *op++ = '\n';
     }
 
-  buf = xrealloc (buf, op - buf);
-  fp->buf = buf;
+  fp->buf = (len - offset < 20) ? buf : xrealloc (buf, op - buf);
   return op - buf;
 
  too_big:
