@@ -2957,9 +2957,13 @@ emit_libcall_block (insns, target, result, equiv)
     first = NEXT_INSN (prev);
 
   /* Encapsulate the block so it gets manipulated as a unit.  */
-  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
-					 REG_NOTES (first));
-  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  if (!flag_non_call_exceptions || !may_trap_p (equiv))
+    {
+      REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
+		      			     REG_NOTES (first));
+      REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
+		      			    REG_NOTES (last));
+    }
 }
 
 /* Generate code to store zero in X.  */
