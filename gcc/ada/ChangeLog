@@ -1,3 +1,8 @@
+2001-10-08  Richard Henderson  <rth@redhat.com>
+
+	* comperr.adb (Abort_In_Progress): New.
+	(Compiler_Abort): Use it to prevent recursion.
+
 2001-10-08  Robert Dewar <dewar@gnat.com>
 
 	* atree.adb: Set Error_Posted in Error node, helps error recovery.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.57 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -51,6 +51,14 @@ with System.Soft_Links; use System.Soft_Links;
 
 package body Comperr is
 
+   ----------------
+   -- Local Data --
+   ----------------
+
+   Abort_In_Progress : Boolean := False;
+   --  Used to prevent runaway recursion if something segfaults
+   --  while processing a previous abort.
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -82,6 +90,14 @@ package body Comperr is
    --  Start of processing for Compiler_Abort
 
    begin
+      --  Prevent recursion through Compiler_Abort, e.g. via SIGSEGV.
+
+      if Abort_In_Progress then
+         Exit_Program (E_Abort);
+      end if;
+
+      Abort_In_Progress := True;
+
       --  If errors have already occured, then we guess that the abort may
       --  well be caused by previous errors, and we don't make too much fuss
       --  about it, since we want to let the programmer fix the errors first.
