@@ -1,3 +1,7 @@
+2004-06-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* decl.c (grokdeclarator): Do not depend on C99's _Bool's behavior.
+
 2004-06-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15862
