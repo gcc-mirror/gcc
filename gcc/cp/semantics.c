@@ -1443,6 +1443,9 @@ finish_stmt_expr_expr (tree expr)
   tree result = NULL_TREE;
   tree type = void_type_node;
 
+  if (error_operand_p (expr))
+    return error_mark_node;
+  
   if (expr)
     {
       type = TREE_TYPE (expr);
