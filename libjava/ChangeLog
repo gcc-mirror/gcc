@@ -1,3 +1,19 @@
+1999-05-18  Warren Levy  <warrenl@cygnus.com>
+
+	* Makefile.am (ordinary_java_source_files): Added DatagramPacket.java,
+	DatagramSocket.java, DatagramSocketImpl.java, MulticastSocket.java,
+	PlainDatagramSocketImpl.java, and SocketOptions.java.
+	(nat_source_files): Added natPlainDatagramSocketImpl.cc.
+	* Makefile.in: Rebuilt.
+
+	* java/net/DatagramPacket.java: New file.
+	* java/net/DatagramSocket.java: New file.
+	* java/net/DatagramSocketImpl.java: New file.
+	* java/net/MulticastSocket.java: New file.
+	* java/net/PlainDatagramSocketImpl.java: New file.
+	* java/net/SocketOptions.java: New file.
+	* java/net/natPlainDatagramSocketImpl.cc: New file.
+
 1999-05-18  Tom Tromey  <tromey@cygnus.com>
 
 	* java/util/zip/ZipOutputStream.java (level): Initial value is

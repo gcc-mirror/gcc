@@ -435,11 +435,16 @@ java/net/BindException.java \
 java/net/ConnectException.java \
 java/net/ContentHandler.java \
 java/net/ContentHandlerFactory.java \
+java/net/DatagramPacket.java \
+java/net/DatagramSocket.java \
+java/net/DatagramSocketImpl.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java \
 java/net/InetAddress.java \
 java/net/MalformedURLException.java \
+java/net/MulticastSocket.java \
 java/net/NoRouteToHostException.java \
+java/net/PlainDatagramSocketImpl.java \
 java/net/PlainSocketImpl.java \
 java/net/ProtocolException.java	\
 java/net/ServerSocket.java \
@@ -447,6 +452,7 @@ java/net/Socket.java \
 java/net/SocketException.java \
 java/net/SocketImpl.java \
 java/net/SocketImplFactory.java	\
+java/net/SocketOptions.java \
 java/net/URL.java \
 java/net/URLConnection.java \
 java/net/URLDecoder.java \
@@ -569,6 +575,7 @@ java/lang/reflect/natArray.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
 java/net/natInetAddress.cc \
+java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
 java/text/natCollator.cc \
 java/util/natDate.cc \
@@ -800,15 +807,19 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/w_remainder.P .deps/java/lang/w_sqrt.P \
 .deps/java/net/BindException.P .deps/java/net/ConnectException.P \
 .deps/java/net/ContentHandler.P .deps/java/net/ContentHandlerFactory.P \
-.deps/java/net/FileNameMap.P .deps/java/net/HttpURLConnection.P \
-.deps/java/net/InetAddress.P .deps/java/net/MalformedURLException.P \
+.deps/java/net/DatagramPacket.P .deps/java/net/DatagramSocket.P \
+.deps/java/net/DatagramSocketImpl.P .deps/java/net/FileNameMap.P \
+.deps/java/net/HttpURLConnection.P .deps/java/net/InetAddress.P \
+.deps/java/net/MalformedURLException.P .deps/java/net/MulticastSocket.P \
 .deps/java/net/NoRouteToHostException.P \
+.deps/java/net/PlainDatagramSocketImpl.P \
 .deps/java/net/PlainSocketImpl.P .deps/java/net/ProtocolException.P \
 .deps/java/net/ServerSocket.P .deps/java/net/Socket.P \
 .deps/java/net/SocketException.P .deps/java/net/SocketImpl.P \
-.deps/java/net/SocketImplFactory.P .deps/java/net/URL.P \
-.deps/java/net/URLConnection.P .deps/java/net/URLDecoder.P \
-.deps/java/net/URLEncoder.P .deps/java/net/URLStreamHandler.P \
+.deps/java/net/SocketImplFactory.P .deps/java/net/SocketOptions.P \
+.deps/java/net/URL.P .deps/java/net/URLConnection.P \
+.deps/java/net/URLDecoder.P .deps/java/net/URLEncoder.P \
+.deps/java/net/URLStreamHandler.P \
 .deps/java/net/URLStreamHandlerFactory.P \
 .deps/java/net/UnknownHostException.P \
 .deps/java/net/UnknownServiceException.P \
