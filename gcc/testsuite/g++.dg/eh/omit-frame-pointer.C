@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-options -fomit-frame-pointer }
+// { dg-options "-fomit-frame-pointer -mno-accumulate-outgoing-args" { target i?86-*-* } }
 
 #include <iostream>
 
