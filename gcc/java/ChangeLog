@@ -1,3 +1,13 @@
+2004-08-18  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* class.c (make_local_function_alias): New function. Create local
+	alias for public method DECL.
+	(make_method_value): Use make_local_function_alias.
+	* parse.y (craft_constructor): Don't special-case anonymous classes.
+	Always set ctor_name to init_identifier_node.
+	(lookup_method_invoke): Call layout_class_method when creating
+	anonymous class constructor.
+
 2004-08-18  Richard Henderson  <rth@redhat.com>
 
 	* java-gimplify.c (java_gimplify_expr): Move '2' handling into

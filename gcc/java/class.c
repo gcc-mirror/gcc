@@ -1198,6 +1198,46 @@ get_access_flags_from_decl (tree decl)
   abort ();
 }
 
+static GTY (()) int alias_labelno = 0;
+
+/* Create a private alias for METHOD. Using this alias instead of the method
+decl ensures that ncode entries in the method table point to the real function 
+at runtime, not a PLT entry.  */
+
+static tree
+make_local_function_alias (tree method)
+{
+  tree alias;
+  const char *method_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (method));
+  char *name = alloca (strlen (method_name) + 1);
+  char *buf = alloca (strlen (method_name) + 128);
+  
+  /* Prefix method_name with 'L' for the alias label.  */
+  *name = 'L';
+  strcpy (name + 1, method_name);
+
+  ASM_GENERATE_INTERNAL_LABEL (buf, name, alias_labelno++);  
+  alias = build_decl (FUNCTION_DECL, get_identifier (buf),
+		      TREE_TYPE (method));
+  DECL_CONTEXT (alias) = NULL;
+  TREE_READONLY (alias) = TREE_READONLY (method);
+  TREE_THIS_VOLATILE (alias) = TREE_THIS_VOLATILE (method);
+  TREE_PUBLIC (alias) = 0;
+  DECL_EXTERNAL (alias) = 0;
+  DECL_ARTIFICIAL (alias) = 1;
+  DECL_INLINE (alias) = 0;
+  DECL_INITIAL (alias) = error_mark_node;
+  TREE_ADDRESSABLE (alias) = 1;
+  TREE_USED (alias) = 1;
+  SET_DECL_ASSEMBLER_NAME (alias, DECL_NAME (alias));
+  TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (alias)) = 1;
+  if (!flag_syntax_only)
+    assemble_alias (alias, DECL_ASSEMBLER_NAME (method));
+  return alias;
+}
+
+/** Make reflection data (_Jv_Field) for field FDECL. */
+
 static tree
 make_field_value (tree fdecl)
 {
@@ -1242,6 +1282,8 @@ make_field_value (tree fdecl)
   return finit;
 }
 
+/** Make reflection data (_Jv_Method) for method MDECL. */
+
 static tree
 make_method_value (tree mdecl)
 {
@@ -1265,7 +1307,8 @@ make_method_value (tree mdecl)
 
   code = null_pointer_node;
   if (DECL_RTL_SET_P (mdecl))
-    code = build1 (ADDR_EXPR, nativecode_ptr_type_node, mdecl);
+    code = build1 (ADDR_EXPR, nativecode_ptr_type_node, 
+		   make_local_function_alias (mdecl));
   START_RECORD_CONSTRUCTOR (minit, method_type_node);
   PUSH_FIELD_VALUE (minit, "name",
 		    build_utf8_ref (DECL_CONSTRUCTOR_P (mdecl) ?
