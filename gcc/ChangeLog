@@ -1,3 +1,14 @@
+1999-11-15  Robert Lipe  <RobertLipe@usa.net>
+            Bruce Korb  <autogen@linuxbox.com>
+
+	* fixinc/inclhack.def
+	(AAB_svr4_replace_byteorder): added.  Takes advantage of GCC features
+	(unixware7_byteorder_fix): added.  Removes conflicts for new defs
+		in net/inet.h.
+	(svr5_mach_defines): added.  Like svr4_mach_defines, with new syntax
+	(svr4_endian): enabled with SVR5
+	(svr4_mkdev): simplified syntax and enabled with SVR5
+
 Sun Nov 14 18:49:37 1999  David O'Brien  <obrien@FreeBSD.org>
 
 	* configure.in: Handle libgcc2 threads support on FreeBSD platforms.

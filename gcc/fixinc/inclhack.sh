@@ -6,7 +6,7 @@
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
 #
-# This script contains 107 fixup scripts.
+# This script contains 109 fixup scripts.
 #
 # See README-fixinc for more information.
 #
@@ -521,7 +521,170 @@ _EOF_
 
 
     #
-    # Fix   8:  Aix_Syswait
+    # Fix   8:  Aab_Svr4_Replace_Byteorder
+    #
+    case "${file}" in ./sys/byteorder.h )
+    case "$target_canonical" in *-*-sysv4* | \
+	i[34567]86-*-sysv5* | \
+	i[34567]86-*-udk* | \
+	i[34567]86-*-solaris2.[0-4] | \
+	powerpcle-*-solaris2.[0-4] | \
+	sparc-*-solaris2.[0-4] )
+    echo "aab_svr4_replace_byteorder replacing file ${file}" >&2
+    cat > ${DESTFILE} << '_EOF_'
+#ifndef _SYS_BYTEORDER_H
+#define _SYS_BYTEORDER_H
+
+/* Functions to convert `short' and `long' quantities from host byte order
+   to (internet) network byte order (i.e. big-endian).
+
+   Written by Ron Guilmette (rfg@ncd.com).
+
+   This isn't actually used by GCC.  It is installed by fixinc.svr4.
+
+   For big-endian machines these functions are essentially no-ops.
+
+   For little-endian machines, we define the functions using specialized
+   asm sequences in cases where doing so yields better code (e.g. i386).  */
+
+#if !defined (__GNUC__) && !defined (__GNUG__)
+#error You lose!  This file is only useful with GNU compilers.
+#endif
+
+#ifndef __BYTE_ORDER__
+/* Byte order defines.  These are as defined on UnixWare 1.1, but with
+   double underscores added at the front and back.  */
+#define __LITTLE_ENDIAN__   1234
+#define __BIG_ENDIAN__      4321
+#define __PDP_ENDIAN__      3412
+#endif
+
+#ifdef __STDC__
+static __inline__ unsigned long htonl (unsigned long);
+static __inline__ unsigned short htons (unsigned int);
+static __inline__ unsigned long ntohl (unsigned long);
+static __inline__ unsigned short ntohs (unsigned int);
+#endif /* defined (__STDC__) */
+
+#if defined (__i386__)
+
+#ifndef __BYTE_ORDER__
+#define __BYTE_ORDER__ __LITTLE_ENDIAN__
+#endif
+
+/* Convert a host long to a network long.  */
+
+/* We must use a new-style function definition, so that this will also
+   be valid for C++.  */
+static __inline__ unsigned long
+htonl (unsigned long __arg)
+{
+  register unsigned long __result;
+
+  __asm__ ("xchg%B0 %b0,%h0
+	ror%L0 $16,%0
+	xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
+  return __result;
+}
+
+/* Convert a host short to a network short.  */
+
+static __inline__ unsigned short
+htons (unsigned int __arg)
+{
+  register unsigned short __result;
+
+  __asm__ ("xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
+  return __result;
+}
+
+#elif ((defined (__i860__) && !defined (__i860_big_endian__))	       || defined (__ns32k__) || defined (__vax__)		       || defined (__spur__) || defined (__arm__))
+
+#ifndef __BYTE_ORDER__
+#define __BYTE_ORDER__ __LITTLE_ENDIAN__
+#endif
+
+/* For other little-endian machines, using C code is just as efficient as
+   using assembly code.  */
+
+/* Convert a host long to a network long.  */
+
+static __inline__ unsigned long
+htonl (unsigned long __arg)
+{
+  register unsigned long __result;
+
+  __result = (__arg >> 24) & 0x000000ff;
+  __result |= (__arg >> 8) & 0x0000ff00;
+  __result |= (__arg << 8) & 0x00ff0000;
+  __result |= (__arg << 24) & 0xff000000;
+  return __result;
+}
+
+/* Convert a host short to a network short.  */
+
+static __inline__ unsigned short
+htons (unsigned int __arg)
+{
+  register unsigned short __result;
+
+  __result = (__arg << 8) & 0xff00;
+  __result |= (__arg >> 8) & 0x00ff;
+  return __result;
+}
+
+#else /* must be a big-endian machine */
+
+#ifndef __BYTE_ORDER__
+#define __BYTE_ORDER__ __BIG_ENDIAN__
+#endif
+
+/* Convert a host long to a network long.  */
+
+static __inline__ unsigned long
+htonl (unsigned long __arg)
+{
+  return __arg;
+}
+
+/* Convert a host short to a network short.  */
+
+static __inline__ unsigned short
+htons (unsigned int __arg)
+{
+  return __arg;
+}
+
+#endif /* big-endian */
+
+/* Convert a network long to a host long.  */
+
+static __inline__ unsigned long
+ntohl (unsigned long __arg)
+{
+  return htonl (__arg);
+}
+
+/* Convert a network short to a host short.  */
+
+static __inline__ unsigned short
+ntohs (unsigned int __arg)
+{
+  return htons (__arg);
+}
+#endif
+
+_EOF_
+    continue
+
+    ;; # case end for machine type test
+    esac
+    ;; # case end for file name test
+    esac
+
+
+    #
+    # Fix   9:  Aix_Syswait
     #
     case "${file}" in ./sys/wait.h )
     if ( test -n "`egrep 'bos325,' ${file}`"
@@ -544,7 +707,7 @@ struct rusage;
 
 
     #
-    # Fix   9:  Aix_Volatile
+    # Fix  10:  Aix_Volatile
     #
     case "${file}" in ./sys/signal.h )
     if ( test -n "`egrep 'typedef volatile int sig_atomic_t' ${file}`"
@@ -565,7 +728,7 @@ struct rusage;
 
 
     #
-    # Fix  10:  Alpha_Getopt
+    # Fix  11:  Alpha_Getopt
     #
     case "${file}" in ./stdio.h | \
 	./stdlib.h )
@@ -587,7 +750,7 @@ struct rusage;
 
 
     #
-    # Fix  11:  Alpha_Parens
+    # Fix  12:  Alpha_Parens
     #
     case "${file}" in ./sym.h )
     if ( test -n "`egrep '#ifndef\\(__mips64\\)' ${file}`"
@@ -608,7 +771,7 @@ struct rusage;
 
 
     #
-    # Fix  12:  Alpha_Sbrk
+    # Fix  13:  Alpha_Sbrk
     #
     case "${file}" in ./unistd.h )
     if ( test -n "`egrep 'char[ 	]*\\*[	 ]*sbrk[ 	]*\\(' ${file}`"
@@ -629,7 +792,7 @@ struct rusage;
 
 
     #
-    # Fix  13:  Arm_Norcroft_Hint
+    # Fix  14:  Arm_Norcroft_Hint
     #
     case "${file}" in ./X11/Intrinsic.h )
     if ( test -n "`egrep '___type p_type' ${file}`"
@@ -650,7 +813,7 @@ struct rusage;
 
 
     #
-    # Fix  14:  Arm_Wchar
+    # Fix  15:  Arm_Wchar
     #
     case "${file}" in ./stdlib.h )
     if ( test -n "`egrep '#[ 	]*define[ 	]*__wchar_t' ${file}`"
@@ -672,7 +835,7 @@ struct rusage;
 
 
     #
-    # Fix  15:  Aux_Asm
+    # Fix  16:  Aux_Asm
     #
     case "${file}" in ./sys/param.h )
     if ( test -n "`egrep '#ifndef NOINLINE' ${file}`"
@@ -693,7 +856,7 @@ struct rusage;
 
 
     #
-    # Fix  16:  Avoid_Bool
+    # Fix  17:  Avoid_Bool
     #
     case "${file}" in ./curses.h | \
 	./curses_colr/curses.h | \
@@ -743,7 +906,7 @@ struct rusage;
 
 
     #
-    # Fix  17:  Bad_Struct_Term
+    # Fix  18:  Bad_Struct_Term
     #
     case "${file}" in ./curses.h )
     if ( test -n "`egrep '^[ 	]*typedef[ 	]+struct[ 	]+term[ 	]*;' ${file}`"
@@ -764,7 +927,7 @@ struct rusage;
 
 
     #
-    # Fix  18:  Badquote
+    # Fix  19:  Badquote
     #
     case "${file}" in ./sundev/vuid_event.h )
     fixlist="${fixlist}
@@ -782,7 +945,7 @@ struct rusage;
 
 
     #
-    # Fix  19:  Bad_Lval
+    # Fix  20:  Bad_Lval
     #
     case "${file}" in ./libgen.h | \
 	./dirent.h | \
@@ -813,7 +976,7 @@ struct rusage;
 
 
     #
-    # Fix  20:  Broken_Assert_Stdio
+    # Fix  21:  Broken_Assert_Stdio
     #
     case "${file}" in ./assert.h )
     if ( test -n "`egrep 'stderr' ${file}`"
@@ -840,7 +1003,7 @@ struct rusage;
 
 
     #
-    # Fix  21:  Broken_Assert_Stdlib
+    # Fix  22:  Broken_Assert_Stdlib
     #
     case "${file}" in ./assert.h )
     if ( test -n "`egrep 'exit *\\(|abort *\\(' ${file}`"
@@ -869,7 +1032,7 @@ struct rusage;
 
 
     #
-    # Fix  22:  Bsd43_Io_Macros
+    # Fix  23:  Bsd43_Io_Macros
     #
     if ( test -n "`egrep 'BSD43__IO' ${file}`"
        ) > /dev/null 2>&1 ; then
@@ -888,7 +1051,7 @@ struct rusage;
 
 
     #
-    # Fix  23:  Dec_Intern_Asm
+    # Fix  24:  Dec_Intern_Asm
     #
     case "${file}" in ./c_asm.h )
     fixlist="${fixlist}
@@ -911,7 +1074,7 @@ struct rusage;
 
 
     #
-    # Fix  24:  No_Double_Slash
+    # Fix  25:  No_Double_Slash
     #
     if ${FIXTESTS} ${file} double_slash
     then
@@ -927,7 +1090,7 @@ struct rusage;
 
 
     #
-    # Fix  25:  Ecd_Cursor
+    # Fix  26:  Ecd_Cursor
     #
     case "${file}" in ./sunwindow/win_lock.h | \
 	./sunwindow/win_cursor.h )
@@ -946,7 +1109,7 @@ struct rusage;
 
 
     #
-    # Fix  26:  Sco5_Stat_Wrappers
+    # Fix  27:  Sco5_Stat_Wrappers
     #
     case "${file}" in ./sys/stat.h )
     case "$target_canonical" in i*86-*-sco3.2v5* )
@@ -977,7 +1140,7 @@ extern "C"\
 
 
     #
-    # Fix  27:  End_Else_Label
+    # Fix  28:  End_Else_Label
     #
     if ${FIXTESTS} ${file} else_endif_label
     then
@@ -993,7 +1156,7 @@ extern "C"\
 
 
     #
-    # Fix  28:  Hp_Inline
+    # Fix  29:  Hp_Inline
     #
     case "${file}" in ./sys/spinlock.h )
     if ( test -n "`egrep 'include.*\"\\.\\./machine/' ${file}`"
@@ -1015,7 +1178,7 @@ extern "C"\
 
 
     #
-    # Fix  29:  Hp_Sysfile
+    # Fix  30:  Hp_Sysfile
     #
     case "${file}" in ./sys/file.h )
     if ( test -n "`egrep 'HPUX_SOURCE' ${file}`"
@@ -1036,7 +1199,7 @@ extern "C"\
 
 
     #
-    # Fix  30:  Cxx_Unready
+    # Fix  31:  Cxx_Unready
     #
     case "${file}" in ./sys/mman.h | \
 	./rpc/types.h )
@@ -1069,7 +1232,7 @@ extern "C" {\
 
 
     #
-    # Fix  31:  Hpux_Maxint
+    # Fix  32:  Hpux_Maxint
     #
     case "${file}" in ./sys/param.h )
     fixlist="${fixlist}
@@ -1092,7 +1255,7 @@ extern "C" {\
 
 
     #
-    # Fix  32:  Hpux_Systime
+    # Fix  33:  Hpux_Systime
     #
     case "${file}" in ./sys/time.h )
     if ( test -n "`egrep '^extern struct sigevent;' ${file}`"
@@ -1113,7 +1276,7 @@ extern "C" {\
 
 
     #
-    # Fix  33:  Hpux11_Uint32_C
+    # Fix  34:  Hpux11_Uint32_C
     #
     case "${file}" in ./inttypes.h )
     if ( test -n "`egrep '^#define UINT32_C\\(__c\\)[ 	]*__CONCAT__\\(__CONCAT_U__\\(__c\\),l\\)' ${file}`"
@@ -1134,7 +1297,7 @@ extern "C" {\
 
 
     #
-    # Fix  34:  Interactv_Add1
+    # Fix  35:  Interactv_Add1
     #
     case "${file}" in ./stdio.h | \
 	./math.h | \
@@ -1161,7 +1324,7 @@ extern "C" {\
 
 
     #
-    # Fix  35:  Interactv_Add2
+    # Fix  36:  Interactv_Add2
     #
     case "${file}" in ./math.h )
     if ( test '('  -d /etc/conf/kconfig.d ')' -a \
@@ -1183,7 +1346,7 @@ extern "C" {\
 
 
     #
-    # Fix  36:  Interactv_Add3
+    # Fix  37:  Interactv_Add3
     #
     case "${file}" in ./sys/limits.h )
     if ( test '('  -d /etc/conf/kconfig.d ')' -a \
@@ -1206,7 +1369,7 @@ extern "C" {\
 
 
     #
-    # Fix  37:  Io_Def_Quotes
+    # Fix  38:  Io_Def_Quotes
     #
     if ( test -n "`egrep '[ 	]*[ 	](_|DES)IO[A-Z]*[ 	]*\\( *[^,'\\'']' ${file}`"
        ) > /dev/null 2>&1 ; then
@@ -1227,7 +1390,7 @@ extern "C" {\
 
 
     #
-    # Fix  38:  Ioctl_Fix_Ctrl
+    # Fix  39:  Ioctl_Fix_Ctrl
     #
     if ( test -n "`egrep 'CTRL[ 	]*\\(' ${file}`"
        ) > /dev/null 2>&1 ; then
@@ -1250,7 +1413,7 @@ extern "C" {\
 
 
     #
-    # Fix  39:  Ip_Missing_Semi
+    # Fix  40:  Ip_Missing_Semi
     #
     case "${file}" in ./netinet/ip.h )
     fixlist="${fixlist}
@@ -1268,7 +1431,7 @@ extern "C" {\
 
 
     #
-    # Fix  40:  Irix_Multiline_Cmnt
+    # Fix  41:  Irix_Multiline_Cmnt
     #
     case "${file}" in ./sys/types.h )
     fixlist="${fixlist}
@@ -1287,7 +1450,7 @@ extern "C" {\
 
 
     #
-    # Fix  41:  Irix_Sockaddr
+    # Fix  42:  Irix_Sockaddr
     #
     case "${file}" in ./rpc/auth.h )
     if ( test -n "`egrep 'authdes_create.*struct sockaddr' ${file}`"
@@ -1310,7 +1473,7 @@ struct sockaddr;
 
 
     #
-    # Fix  42:  Irix_Struct__File
+    # Fix  43:  Irix_Struct__File
     #
     case "${file}" in ./rpc/xdr.h )
     fixlist="${fixlist}
@@ -1330,7 +1493,7 @@ struct __file_s;
 
 
     #
-    # Fix  43:  Irix_Asm_Apostrophe
+    # Fix  44:  Irix_Asm_Apostrophe
     #
     case "${file}" in ./sys/asm.h )
     if ( test -n "`egrep '^[ 	]*#.*[Ww]e'\\''re' ${file}`"
@@ -1351,7 +1514,7 @@ struct __file_s;
 
 
     #
-    # Fix  44:  Isc_Fmod
+    # Fix  45:  Isc_Fmod
     #
     case "${file}" in ./math.h )
     if ( test -n "`egrep 'fmod\\(double\\)' ${file}`"
@@ -1372,7 +1535,7 @@ struct __file_s;
 
 
     #
-    # Fix  45:  Motorola_Nested
+    # Fix  46:  Motorola_Nested
     #
     case "${file}" in ./limits.h | \
 	./sys/limits.h )
@@ -1395,7 +1558,7 @@ struct __file_s;
 
 
     #
-    # Fix  46:  Isc_Sys_Limits
+    # Fix  47:  Isc_Sys_Limits
     #
     case "${file}" in ./sys/limits.h )
     if ( test -n "`egrep 'CHILD_MAX' ${file}`"
@@ -1417,7 +1580,7 @@ struct __file_s;
 
 
     #
-    # Fix  47:  Kandr_Concat
+    # Fix  48:  Kandr_Concat
     #
     case "${file}" in ./sparc/asm_linkage.h | \
 	./sun3/asm_linkage.h | \
@@ -1455,7 +1618,7 @@ struct __file_s;
 
 
     #
-    # Fix  48:  Limits_Ifndefs
+    # Fix  49:  Limits_Ifndefs
     #
     case "${file}" in ./limits.h | \
 	./sys/limits.h )
@@ -1514,7 +1677,7 @@ struct __file_s;
 
 
     #
-    # Fix  49:  Lynx_Void_Int
+    # Fix  50:  Lynx_Void_Int
     #
     case "${file}" in ./curses.h )
     if ( test -n "`egrep '#[ 	]*define[ 	]+void[ 	]+int' ${file}`"
@@ -1535,7 +1698,7 @@ struct __file_s;
 
 
     #
-    # Fix  50:  Lynxos_Fcntl_Proto
+    # Fix  51:  Lynxos_Fcntl_Proto
     #
     case "${file}" in ./fcntl.h )
     if ( test -n "`egrep 'fcntl.*\\(int, int, int\\)' ${file}`"
@@ -1556,7 +1719,7 @@ struct __file_s;
 
 
     #
-    # Fix  51:  M88k_Bad_Hypot_Opt
+    # Fix  52:  M88k_Bad_Hypot_Opt
     #
     case "${file}" in ./math.h )
     case "$target_canonical" in m88k-motorola-sysv3* )
@@ -1591,7 +1754,7 @@ static __inline__ double fake_hypot (x, y)\
 
 
     #
-    # Fix  52:  M88k_Bad_S_If
+    # Fix  53:  M88k_Bad_S_If
     #
     case "${file}" in ./sys/stat.h )
     case "$target_canonical" in m88k-*-sysv3* )
@@ -1616,7 +1779,7 @@ static __inline__ double fake_hypot (x, y)\
 
 
     #
-    # Fix  53:  M88k_Multi_Incl
+    # Fix  54:  M88k_Multi_Incl
     #
     case "${file}" in ./time.h )
     case "$target_canonical" in m88k-tektronix-sysv3* )
@@ -1650,7 +1813,7 @@ static __inline__ double fake_hypot (x, y)\
 
 
     #
-    # Fix  54:  Machine_Name
+    # Fix  55:  Machine_Name
     #
     if ( test -n "`egrep '^#[ 	]*(if|elif).*[^a-zA-Z0-9_](_*[MSRrhim]|[Mbimnpstuv])[a-zA-Z0-9_]' ${file}`"
        ) > /dev/null 2>&1 ; then
@@ -1702,7 +1865,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  55:  Math_Exception
+    # Fix  56:  Math_Exception
     #
     case "${file}" in ./math.h )
     if ( test -n "`egrep 'struct exception' ${file}`"
@@ -1742,7 +1905,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  56:  Math_Gcc_Ifndefs
+    # Fix  57:  Math_Gcc_Ifndefs
     #
     case "${file}" in ./math.h )
     fixlist="${fixlist}
@@ -1776,7 +1939,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  57:  Nested_Comment
+    # Fix  58:  Nested_Comment
     #
     case "${file}" in ./rpc/rpc.h )
     fixlist="${fixlist}
@@ -1794,7 +1957,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  58:  News_Os_Recursion
+    # Fix  59:  News_Os_Recursion
     #
     case "${file}" in ./stdlib.h )
     if ( test -n "`egrep '#include <stdlib.h>' ${file}`"
@@ -1820,7 +1983,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  59:  Next_Math_Prefix
+    # Fix  60:  Next_Math_Prefix
     #
     case "${file}" in ./ansi/math.h )
     if ( test -n "`egrep '^extern.*double.*__const__.*' ${file}`"
@@ -1845,7 +2008,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  60:  Next_Template
+    # Fix  61:  Next_Template
     #
     case "${file}" in ./bsd/libc.h )
     if ( test -n "`egrep 'template' ${file}`"
@@ -1867,7 +2030,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  61:  Next_Volitile
+    # Fix  62:  Next_Volitile
     #
     case "${file}" in ./ansi/stdlib.h )
     if ( test -n "`egrep 'volatile' ${file}`"
@@ -1889,7 +2052,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  62:  Next_Wait_Union
+    # Fix  63:  Next_Wait_Union
     #
     case "${file}" in ./sys/wait.h )
     if ( test -n "`egrep 'wait\\(union wait' ${file}`"
@@ -1910,7 +2073,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  63:  Nodeent_Syntax
+    # Fix  64:  Nodeent_Syntax
     #
     case "${file}" in ./netdnet/dnetdb.h )
     fixlist="${fixlist}
@@ -1928,7 +2091,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  64:  Osf_Namespace_A
+    # Fix  65:  Osf_Namespace_A
     #
     case "${file}" in ./reg_types.h | \
 	./sys/lc_core.h )
@@ -1955,7 +2118,7 @@ s/\\+++fixinc_eol+++/\\/g
 
 
     #
-    # Fix  65:  Osf_Namespace_B
+    # Fix  66:  Osf_Namespace_B
     #
     case "${file}" in ./regex.h )
     if ( test '('  -r reg_types.h ')' -a \
@@ -1983,7 +2146,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  66:  Pthread_Page_Size
+    # Fix  67:  Pthread_Page_Size
     #
     case "${file}" in ./pthread.h )
     if ( test -n "`egrep '^int __page_size' ${file}`"
@@ -2004,7 +2167,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  67:  Read_Ret_Type
+    # Fix  68:  Read_Ret_Type
     #
     case "${file}" in ./stdio.h )
     if ( test -n "`egrep 'extern int	.*, fread\\(\\), fwrite\\(\\)' ${file}`"
@@ -2026,7 +2189,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  68:  Rs6000_Double
+    # Fix  69:  Rs6000_Double
     #
     case "${file}" in ./math.h )
     if ( test -n "`egrep '[^a-zA-Z_]class\\(' ${file}`"
@@ -2052,7 +2215,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  69:  Rs6000_Fchmod
+    # Fix  70:  Rs6000_Fchmod
     #
     case "${file}" in ./sys/stat.h )
     if ( test -n "`egrep 'fchmod\\(char' ${file}`"
@@ -2073,7 +2236,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  70:  Rs6000_Param
+    # Fix  71:  Rs6000_Param
     #
     case "${file}" in ./stdio.h | \
 	./unistd.h )
@@ -2092,7 +2255,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  71:  Sony_Include
+    # Fix  72:  Sony_Include
     #
     case "${file}" in ./machine/machparam.h )
     if ( test -n "`egrep '\"\\.\\./machine/endian.h\"' ${file}`"
@@ -2113,7 +2276,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  72:  Statsswtch
+    # Fix  73:  Statsswtch
     #
     case "${file}" in ./rpcsvc/rstat.h )
     if ( test -n "`egrep 'boottime$' ${file}`"
@@ -2134,7 +2297,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  73:  Stdio_Va_List
+    # Fix  74:  Stdio_Va_List
     #
     case "${file}" in ./stdio.h )
     fixlist="${fixlist}
@@ -2173,7 +2336,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  74:  Sun_Bogus_Ifdef
+    # Fix  75:  Sun_Bogus_Ifdef
     #
     case "${file}" in ./hsfs/hsfs_spec.h | \
 	./hsfs/iso_spec.h )
@@ -2195,7 +2358,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  75:  Sun_Bogus_Ifdef_Sun4c
+    # Fix  76:  Sun_Bogus_Ifdef_Sun4c
     #
     case "${file}" in ./hsfs/hsnode.h )
     if ( test -n "`egrep '#ifdef __i386__ || __sun4c__' ${file}`"
@@ -2216,7 +2379,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  76:  Sun_Catmacro
+    # Fix  77:  Sun_Catmacro
     #
     case "${file}" in ./pixrect/memvar.h )
     if ( test -n "`egrep '^#define[ 	]+CAT\\(a,b\\)' ${file}`"
@@ -2244,7 +2407,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  77:  Sun_Malloc
+    # Fix  78:  Sun_Malloc
     #
     case "${file}" in ./malloc.h )
     fixlist="${fixlist}
@@ -2265,7 +2428,7 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
-    # Fix  78:  Sun_Memcpy
+    # Fix  79:  Sun_Memcpy
     #
     case "${file}" in ./memory.h )
     if ( test -n "`egrep '/\\*	@\\(#\\)(head/memory.h	50.1	 |memory\\.h 1\\.[2-4] 8./../.. SMI; from S5R2 1\\.2	)\\*/' ${file}`"
@@ -2307,7 +2470,7 @@ extern int memcmp();\
 
 
     #
-    # Fix  79:  Sun_Rusers_Semi
+    # Fix  80:  Sun_Rusers_Semi
     #
     case "${file}" in ./rpcsvc/rusers.h )
     if ( test -n "`egrep '_cnt$' ${file}`"
@@ -2328,7 +2491,7 @@ extern int memcmp();\
 
 
     #
-    # Fix  80:  Sun_Signal
+    # Fix  81:  Sun_Signal
     #
     case "${file}" in ./sys/signal.h | \
 	./signal.h )
@@ -2357,7 +2520,7 @@ void	(*signal(...))(...);\
 
 
     #
-    # Fix  81:  Sun_Auth_Proto
+    # Fix  82:  Sun_Auth_Proto
     #
     case "${file}" in ./rpc/auth.h | \
 	./rpc/clnt.h | \
@@ -2386,7 +2549,7 @@ void	(*signal(...))(...);\
 
 
     #
-    # Fix  82:  Sunos_Matherr_Decl
+    # Fix  83:  Sunos_Matherr_Decl
     #
     case "${file}" in ./math.h )
     fixlist="${fixlist}
@@ -2407,7 +2570,7 @@ struct exception;
 
 
     #
-    # Fix  83:  Sunos_Strlen
+    # Fix  84:  Sunos_Strlen
     #
     case "${file}" in ./strings.h )
     fixlist="${fixlist}
@@ -2425,7 +2588,7 @@ struct exception;
 
 
     #
-    # Fix  84:  Systypes
+    # Fix  85:  Systypes
     #
     case "${file}" in ./sys/types.h | \
 	./stdlib.h | \
@@ -2479,7 +2642,7 @@ typedef __SIZE_TYPE__ size_t;\
 
 
     #
-    # Fix  85:  Systypes_For_Aix
+    # Fix  86:  Systypes_For_Aix
     #
     case "${file}" in ./sys/types.h )
     if ( test -n "`egrep 'typedef[ 	][ 	]*[A-Za-z_][ 	A-Za-z_]*[ 	]size_t' ${file}`"
@@ -2510,7 +2673,7 @@ typedef __SIZE_TYPE__ size_t;\
 
 
     #
-    # Fix  86:  Sysv68_String
+    # Fix  87:  Sysv68_String
     #
     case "${file}" in ./string.h )
     fixlist="${fixlist}
@@ -2538,7 +2701,7 @@ extern unsigned int\
 
 
     #
-    # Fix  87:  Sysz_Stdlib_For_Sun
+    # Fix  88:  Sysz_Stdlib_For_Sun
     #
     case "${file}" in ./stdlib.h )
     fixlist="${fixlist}
@@ -2569,7 +2732,7 @@ extern unsigned int\
 
 
     #
-    # Fix  88:  Sysz_Stdtypes_For_Sun
+    # Fix  89:  Sysz_Stdtypes_For_Sun
     #
     case "${file}" in ./sys/stdtypes.h )
     fixlist="${fixlist}
@@ -2607,7 +2770,7 @@ extern unsigned int\
 
 
     #
-    # Fix  89:  Tinfo_Cplusplus
+    # Fix  90:  Tinfo_Cplusplus
     #
     case "${file}" in ./tinfo.h )
     fixlist="${fixlist}
@@ -2625,7 +2788,7 @@ extern unsigned int\
 
 
     #
-    # Fix  90:  Ultrix_Ansi_Compat
+    # Fix  91:  Ultrix_Ansi_Compat
     #
     case "${file}" in ./ansi_compat.h )
     if ( test -n "`egrep 'ULTRIX' ${file}`"
@@ -2649,7 +2812,7 @@ extern unsigned int\
 
 
     #
-    # Fix  91:  Ultrix_Fix_Fixproto
+    # Fix  92:  Ultrix_Fix_Fixproto
     #
     case "${file}" in ./sys/utsname.h )
     if ( test -n "`egrep 'ULTRIX' ${file}`"
@@ -2672,7 +2835,7 @@ struct utsname;
 
 
     #
-    # Fix  92:  Ultrix_Atof_Param
+    # Fix  93:  Ultrix_Atof_Param
     #
     case "${file}" in ./math.h )
     fixlist="${fixlist}
@@ -2694,7 +2857,7 @@ struct utsname;
 
 
     #
-    # Fix  93:  Ultrix_Const
+    # Fix  94:  Ultrix_Const
     #
     case "${file}" in ./stdio.h )
     fixlist="${fixlist}
@@ -2720,7 +2883,7 @@ struct utsname;
 
 
     #
-    # Fix  94:  Ultrix_Ifdef
+    # Fix  95:  Ultrix_Ifdef
     #
     case "${file}" in ./sys/file.h )
     if ( test -n "`egrep '#ifdef KERNEL' ${file}`"
@@ -2741,7 +2904,7 @@ struct utsname;
 
 
     #
-    # Fix  95:  Ultrix_Nested_Cmnt
+    # Fix  96:  Ultrix_Nested_Cmnt
     #
     case "${file}" in ./rpc/svc.h )
     fixlist="${fixlist}
@@ -2759,7 +2922,7 @@ struct utsname;
 
 
     #
-    # Fix  96:  Ultrix_Static
+    # Fix  97:  Ultrix_Static
     #
     case "${file}" in ./machine/cpu.h )
     if ( test -n "`egrep '#include \"r[34]_cpu' ${file}`"
@@ -2782,7 +2945,7 @@ struct utsname;
 
 
     #
-    # Fix  97:  Undefine_Null
+    # Fix  98:  Undefine_Null
     #
     if ( test -n "`egrep '^#[ 	]*define[ 	]*[ 	]NULL[ 	]' ${file}`"
        ) > /dev/null 2>&1 ; then
@@ -2806,7 +2969,37 @@ struct utsname;
 
 
     #
-    # Fix  98:  Va_I960_Macro
+    # Fix  99:  Unixware7_Byteorder_Fix
+    #
+    case "${file}" in ./arpa/inet.h )
+    case "$target_canonical" in *-*-sysv4* | \
+	i[34567]86-*-sysv5* | \
+	i[34567]86-*-udk* | \
+	i[34567]86-*-solaris2.[0-4] | \
+	powerpcle-*-solaris2.[0-4] | \
+	sparc-*-solaris2.[0-4] )
+    if ( test -n "`egrep 'in_port_t' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      unixware7_byteorder_fix"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e '/^extern.*htons.*(in_port_t)/d' \
+        -e '/^extern.*ntohs.*(in_port_t)/d' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of select 'if'
+    ;; # case end for machine type test
+    esac
+    ;; # case end for file name test
+    esac
+
+
+    #
+    # Fix 100:  Va_I960_Macro
     #
     case "${file}" in ./arch/i960/archI960.h )
     if ( test -n "`egrep '__(vsiz|vali|vpad|alignof__)' ${file}`"
@@ -2830,7 +3023,7 @@ struct utsname;
 
 
     #
-    # Fix  99:  Void_Null
+    # Fix 101:  Void_Null
     #
     case "${file}" in ./curses.h | \
 	./dbm.h | \
@@ -2861,7 +3054,7 @@ struct utsname;
 
 
     #
-    # Fix 100:  Vxworks_Gcc_Problem
+    # Fix 102:  Vxworks_Gcc_Problem
     #
     case "${file}" in ./types/vxTypesBase.h )
     if ( test -n "`egrep '__GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__' ${file}`"
@@ -2903,7 +3096,7 @@ struct utsname;
 
 
     #
-    # Fix 101:  Vxworks_Needs_Vxtypes
+    # Fix 103:  Vxworks_Needs_Vxtypes
     #
     case "${file}" in ./time.h )
     if ( test -n "`egrep 'uint_t[ 	][ 	]*_clocks_per_sec' ${file}`"
@@ -2924,7 +3117,7 @@ struct utsname;
 
 
     #
-    # Fix 102:  Vxworks_Needs_Vxworks
+    # Fix 104:  Vxworks_Needs_Vxworks
     #
     case "${file}" in ./sys/stat.h )
     if ( test -n "`egrep '#[ 	]define[ 	][ 	]*__INCstath' ${file}`"
@@ -2952,7 +3145,7 @@ struct utsname;
 
 
     #
-    # Fix 103:  Vxworks_Time
+    # Fix 105:  Vxworks_Time
     #
     case "${file}" in ./time.h )
     if ( test -n "`egrep 'VOIDFUNCPTR' ${file}`"
@@ -2986,7 +3179,7 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\
 
 
     #
-    # Fix 104:  X11_Class
+    # Fix 106:  X11_Class
     #
     case "${file}" in ./X11/ShellP.h )
     if ( test  -a \
@@ -3015,7 +3208,7 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\
 
 
     #
-    # Fix 105:  X11_Class_Usage
+    # Fix 107:  X11_Class_Usage
     #
     case "${file}" in ./Xm/BaseClassI.h )
     if ( test  -a \
@@ -3037,7 +3230,7 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\
 
 
     #
-    # Fix 106:  X11_New
+    # Fix 108:  X11_New
     #
     case "${file}" in ./Xm/Traversal.h )
     if ( test  -a \
@@ -3067,7 +3260,7 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\
 
 
     #
-    # Fix 107:  X11_Sprintf
+    # Fix 109:  X11_Sprintf
     #
     case "${file}" in ./X11*/Xmu.h )
     fixlist="${fixlist}
