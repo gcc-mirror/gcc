@@ -1,5 +1,6 @@
 2004-10-27  Steven Bosscher  <stevenb@suse.de>
 
+	PR tree-optimization/17757
 	* tree-phinodes.c (remove_phi_arg_num): Don't remove PHIs
 	without any PHI arguments left.  Make sure the argument that
 	we're supposed to remove exists at all.
