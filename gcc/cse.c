@@ -3718,6 +3718,15 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* Don't let a relocatable value get a negative coeff.  */
 	  if (GET_CODE (op1) == CONST_INT && GET_MODE (op0) != VOIDmode)
 	    return plus_constant (op0, - INTVAL (op1));
+
+	  /* (x - (x & y)) -> (x & ~y) */
+	  if (GET_CODE (op1) == AND)
+	    {
+	     if (rtx_equal_p (op0, XEXP (op1, 0)))
+	       return cse_gen_binary (AND, mode, op0, gen_rtx (NOT, mode, XEXP (op1, 1)));
+	     if (rtx_equal_p (op0, XEXP (op1, 1)))
+	       return cse_gen_binary (AND, mode, op0, gen_rtx (NOT, mode, XEXP (op1, 0)));
+	   }
 	  break;
 
 	case MULT:
