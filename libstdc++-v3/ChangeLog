@@ -1,10 +1,16 @@
-2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
-
-	libstdc++/3284
-	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Portability enhancement.
-	* aclocal.m4: Regenerate.
-	* configure: Regenerate.
-
+2001-07-02  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* src/locale.cc (locale::locale(const char*)): Make sure global
+	locales are initialized.
+	* include/bits/locale_facets.tcc (locale::combine): Refcout should
+	be zero, not one as it's return-by-value.
+	* testsuite/27_io/ios_base_callbacks.cc (test01): Don't check for
+	named locales here.
+	* testsuite/22_locale/ctor_copy_dtor.cc (test01): Instead, check
+	for it here.
+	(test02): Add test.
+	* libsupc++/eh_alloc.cc: Use climits, not limits.h.
+	
 2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
 
 	libstdc++/3243

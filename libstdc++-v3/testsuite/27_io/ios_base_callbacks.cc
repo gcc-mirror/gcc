@@ -42,14 +42,14 @@ callb03(std::ios_base::event e,  std::ios_base& b, int i)
 bool test01() 
 {
   bool test = true;
-  std::locale locco("saturn_SUN*RA");
+  std::locale loc("C");
   std::stringbuf 	strbuf01;
   std::ios		ios01(&strbuf01);
 
   ios01.register_callback(callb03, 1);
   ios01.register_callback(callb02, 1);
   ios01.register_callback(callb01, 1);
-  ios01.imbue(locco);
+  ios01.imbue(loc);
   VERIFY( str01 == str02 );
 
 #ifdef DEBUG_ASSERT
@@ -66,3 +66,4 @@ int main(void)
 
   return 0;
 }
+
