@@ -251,6 +251,9 @@ EOF
     hp8??:OSF1:*:*)
 	echo hppa1.0-hp-osf
 	exit 0 ;;
+    parisc*:Lites*:*:*)
+	echo hppa1.1-hp-lites
+	exit 0 ;;
     C1*:ConvexOS:*:* | convex:ConvexOS:C1*:*)
 	echo c1-convex-bsd
         exit 0 ;;
@@ -297,8 +300,22 @@ EOF
 	echo `echo ${UNAME_MACHINE}|sed -e 's,/.*$,,'`-unknown-gnu`echo ${UNAME_RELEASE}|sed -e 's,/.*$,,'`
 	exit 0 ;;
     *:Linux:*:*)
-	echo ${UNAME_MACHINE}-unknown-linux
-	exit 0 ;;
+	# Determine whether the default compiler is a.out or elf
+	cat >dummy.c <<EOF
+main(argc, argv)
+int argc;
+char *argv[];
+{
+#ifdef __ELF__
+  printf ("%s-unknown-linux\n", argv[1]);
+#else
+  printf ("%s-unknown-linuxaout\n", argv[1]);
+#endif
+  return 0;
+}
+EOF
+	${CC-cc} dummy.c -o dummy 2>/dev/null && ./dummy "${UNAME_MACHINE}" && rm dummy.c dummy && exit 0
+	rm -f dummy.c dummy;;
 # ptx 4.0 does uname -s correctly, with DYNIX/ptx in there.  earlier versions
 # are messed up and put the nodename in both sysname and nodename.
     i[34]86:DYNIX/ptx:4*:*)
@@ -312,13 +329,13 @@ EOF
 	fi
 	exit 0 ;;
     i[34]86:*:3.2:*)
-	if test -f /usr/options/cb.name; then
-		UNAME_REL=`sed -n 's/.*Version //p' </usr/options/cb.name`
-		echo ${UNAME_MACHINE}-unknown-isc$UNAME_REL
-	elif /bin/uname -X 2>/dev/null >/dev/null ; then
+	if /bin/uname -X 2>/dev/null >/dev/null ; then
 		UNAME_REL=`(/bin/uname -X|egrep Release|sed -e 's/.*= //')`
 		(/bin/uname -X|egrep i80486 >/dev/null) && UNAME_MACHINE=i486
 		echo ${UNAME_MACHINE}-unknown-sco$UNAME_REL
+	elif test -f /usr/options/cb.name; then
+		UNAME_REL=`sed -n 's/.*Version //p' </usr/options/cb.name`
+		echo ${UNAME_MACHINE}-unknown-isc$UNAME_REL
 	else
 		echo ${UNAME_MACHINE}-unknown-sysv32
 	fi
