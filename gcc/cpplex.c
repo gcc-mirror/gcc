@@ -724,6 +724,10 @@ save_comment (pfile, token, from)
   unsigned int len;
   
   len = pfile->buffer->cur - from + 1; /* + 1 for the initial '/'.  */
+  /* C++ comments probably (not definitely) have moved past a new
+     line, which we don't want to save in the comment.  */
+  if (pfile->buffer->read_ahead != EOF)
+    len--;
   buffer = _cpp_pool_alloc (pfile->string_pool, len);
   
   token->type = CPP_COMMENT;

@@ -1,3 +1,7 @@
+2000-10-29  Neil Booth  <neilb@earthling.net>
+
+	* cpplex.c (save_comment): Don't store new lines in C++ comments.
+
 2000-10-29  Michael Hayes  <mhayes@redhat.com>
 
 	* integrate.c (copy_insn_list): Copy the unchanging flag for calls.
