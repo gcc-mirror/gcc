@@ -915,41 +915,60 @@ expand_call (exp, target, ignore)
       if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, TYPE_MODE (type), type,
 					  argpos < n_named_args))
 	{
-	  /* We make a copy of the object and pass the address to the function
-	     being called.  */
-	  rtx copy;
-
-	  if (TYPE_SIZE (type) == 0
-	      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+#ifdef FUNCTION_ARG_CALLEE_COPIES
+	  if (FUNCTION_ARG_CALLEE_COPIES (args_so_far, TYPE_MODE (type), type,
+					  argpos < n_named_args)
+	      /* If it's in a register, we must make a copy of it too.  */
+	      /* ??? Is this a sufficient test?  Is there a better one? */
+	      && !(TREE_CODE (args[i].tree_value) == VAR_DECL
+		   && REG_P (DECL_RTL (args[i].tree_value))))
 	    {
-	      /* This is a variable-sized object.  Make space on the stack
-		 for it.  */
-	      rtx size_rtx = expr_size (TREE_VALUE (p));
-
-	      if (old_stack_level == 0)
-		{
-		  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
-		  old_pending_adj = pending_stack_adjust;
-		  pending_stack_adjust = 0;
-		}
-
-	      copy = gen_rtx (MEM, BLKmode,
-			      allocate_dynamic_stack_space (size_rtx, NULL_RTX,
-							    TYPE_ALIGN (type)));
+	      args[i].tree_value = build1 (ADDR_EXPR,
+					   build_pointer_type (type),
+					   args[i].tree_value);
+	      type = build_pointer_type (type);
 	    }
 	  else
-	    {
-	      int size = int_size_in_bytes (type);
-	      copy = assign_stack_temp (TYPE_MODE (type), size, 1);
-	    }
-
-	  store_expr (args[i].tree_value, copy, 0);
-
-	  args[i].tree_value = build1 (ADDR_EXPR, build_pointer_type (type),
-				       make_tree (type, copy));
-	  type = build_pointer_type (type);
-	}
 #endif
+	    {
+	      /* We make a copy of the object and pass the address to the
+		 function being called.  */
+	      rtx copy;
+
+	      if (TYPE_SIZE (type) == 0
+		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+		{
+		  /* This is a variable-sized object.  Make space on the stack
+		     for it.  */
+		  rtx size_rtx = expr_size (TREE_VALUE (p));
+
+		  if (old_stack_level == 0)
+		    {
+		      emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+		      old_pending_adj = pending_stack_adjust;
+		      pending_stack_adjust = 0;
+		    }
+
+		  copy = gen_rtx (MEM, BLKmode,
+				  allocate_dynamic_stack_space (size_rtx,
+								NULL_RTX,
+								TYPE_ALIGN (type)));
+		}
+	      else
+		{
+		  int size = int_size_in_bytes (type);
+		  copy = assign_stack_temp (TYPE_MODE (type), size, 1);
+		}
+
+	      store_expr (args[i].tree_value, copy, 0);
+
+	      args[i].tree_value = build1 (ADDR_EXPR,
+					   build_pointer_type (type),
+					   make_tree (type, copy));
+	      type = build_pointer_type (type);
+	    }
+	}
+#endif /* FUNCTION_ARG_PASS_BY_REFERENCE */
 
       mode = TYPE_MODE (type);
 
