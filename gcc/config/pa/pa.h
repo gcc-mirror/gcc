@@ -1888,10 +1888,16 @@ readonly_data ()							\
 
 /* The bogus HP assembler requires ALL external references to be
    "imported", even library calls. They look a bit different, so
-   here's this macro. */
+   here's this macro.
+
+   Also note not all libcall names are passed to ENCODE_SECTION_INFO
+   (__main for example).  To make sure all libcall names have section
+   info recorded in them, we do it here.  */
 
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, RTL) \
   do { fputs ("\t.IMPORT ", FILE);					\
+       if (!function_label_operand (RTL, VOIDmode))			\
+	 hppa_encode_label (RTL);					\
        assemble_name (FILE, XSTR ((RTL), 0));		       		\
        fputs (",CODE\n", FILE);						\
      } while (0)
