@@ -1,3 +1,13 @@
+2004-05-16  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport from mainline
+	2004-05-01  Ulrich Weigand  <uweigand@de.ibm.com>
+	PR middle-end/15054
+	* expr.c (expand_expr_real): Do not call preserve_temp_slots 
+	on a TARGET_EXPR temp.
+	* function.c (assign_stack_temp_for_type): Set 'keep' flag for
+	TARGET_EXPR temp slots.
+
 2004-05-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/15130
