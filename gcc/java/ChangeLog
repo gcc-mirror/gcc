@@ -1,3 +1,7 @@
+2002-03-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-parse.c (get_constant): Delete unused variables.
+
 2002-03-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* parse.y (craft_constructor): Return the constructor decl.
