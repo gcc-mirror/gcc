@@ -15,6 +15,22 @@
 	(clear_sf): Use const_double_operand.
 	(clear_sfp, clear_dfp, clear_tf, clear_tfp): New patterns.
 
+	* config/sparc/sparc.c (sparc_emit_float_lib_cmp): New function.
+	* config/sparc/sparc-protos.h (sparc_emit_float_lib_cmp): Prototype.
+	* config/sparc/sparc.h (*_LIBCALL): Only use for _Q_*
+	routines, _Qp_* cannot be handled like that now.
+	(INIT_TARGET_OPTABS): Likewise.
+	* config/sparc/sparc.md (cmptf): Accept soft float ARCH64.
+	(seq, sne, sgt, sge, slt, sle, beq, bne, bgt, bge, blt, ble): Call
+	sparc_emit_float_lib_cmp if ARCH64 and soft float.
+	(extendsftf2, extenddftf2, trunctfsf2, trunctfdf2, floatsitf2,
+	floatditf2, fix_trunctfsi2, fix_trunctfdi2, addtf3, subtf3, multf3,
+	divtf3, sqrttf3): New expanders.
+	(extendsftf2_hq, extenddftf2_hq, trunctfsf2_hq, trunctfdf2_hq,
+	floatsitf2_hq, floatditf2_hq, fix_trunctfsi2_hq, fix_trunctfdi2_hq,
+	addtf3_hq, subtf3_hq, multf3_hq, divtf3_hq, sqrttf3_hq): Rename from
+	non-_hq patterns.
+
 Tue Dec  7 19:22:06 1999  Richard Henderson  <rth@cygnus.com>
 
 	* loop.h (struct induction): Add multi_insn_incr.

@@ -4689,6 +4689,77 @@ output_cbranch (op, label, reversed, annul, noop, insn)
   return string;
 }
 
+/* Emit a library call comparison between floating point X and Y.
+   COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).
+   TARGET_ARCH64 uses _Qp_* functions, which use pointers to TFmode
+   values as arguments instead of the TFmode registers themselves,
+   that's why we cannot call emit_float_lib_cmp.  */
+void
+sparc_emit_float_lib_cmp (x, y, comparison)
+     rtx x, y;
+     enum rtx_code comparison;
+{
+  const char *qpfunc;
+  rtx slot0, slot1, result;
+
+  switch (comparison)
+    {
+    case EQ:
+      qpfunc = "_Qp_feq";
+      break;
+
+    case NE:
+      qpfunc = "_Qp_fne";
+      break;
+
+    case GT:
+      qpfunc = "_Qp_fgt";
+      break;
+
+    case GE:
+      qpfunc = "_Qp_fge";
+      break;
+
+    case LT:
+      qpfunc = "_Qp_flt";
+      break;
+
+    case LE:
+      qpfunc = "_Qp_fle";
+      break;
+
+    default:
+      abort();
+      break;
+    }
+
+  if (GET_CODE (x) != MEM)
+    {
+      slot0 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
+      emit_insn (gen_rtx_SET (VOIDmode, slot0, x));
+    }
+
+  if (GET_CODE (y) != MEM)
+    {
+      slot1 = assign_stack_temp (TFmode, GET_MODE_SIZE(TFmode), 0);
+      emit_insn (gen_rtx_SET (VOIDmode, slot1, y));
+    }
+
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, qpfunc), 1,
+                     DImode, 2,
+                     XEXP (slot0, 0), Pmode,
+                     XEXP (slot1, 0), Pmode);
+
+  /* Immediately move the result of the libcall into a pseudo
+     register so reload doesn't clobber the value if it needs
+     the return register for a spill reg.  */
+  result = gen_reg_rtx (DImode);
+  emit_move_insn (result, hard_libcall_value (DImode));
+
+  emit_cmp_insn (result, const0_rtx, comparison,
+                 NULL_RTX, DImode, 0, 0);
+}
+          
 /* Return the string to output a conditional branch to LABEL, testing
    register REG.  LABEL is the operand number of the label; REG is the
    operand number of the reg.  OP is the conditional expression.  The mode
