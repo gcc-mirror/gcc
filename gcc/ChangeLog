@@ -3,6 +3,18 @@ Fri Sep 10 16:48:26 1999  Andrew Haley  <aph@cygnus.com>
 	* tree.c (type_hash_lookup): Check for equal TYPE_ALIGN fields
 	when comparing types.
 
+Fri Sep 10 08:43:32 1999  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (basic_induction_var): Typo NULL_RTX -> NULL.
+	(strength_reduce): Release the varrays from the no-bivs early exit.
+
+	* reload1.c (order_regs_for_reload): Init hard_reg_n_uses before
+	the loop over the registers.
+
+	* tree.c (save_tree_status): Set maybepermanent_firstobj NULL
+	for a new obstack.
+	(restore_tree_status): Check that instead when freeing the obstack.
+
 Wed Sep  8 16:12:04 1999  Andrew Haley  <aph@cygnus.com>
 
 	* alias.c (rtx_equal_for_memref_p): Allow CONST_DOUBLEs to be used
