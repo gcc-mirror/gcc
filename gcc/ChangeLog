@@ -1,3 +1,11 @@
+2002-07-14  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/7282
+	* config/rs6000/rs6000.md (floatsidf2): Enable for POWERPC64.
+	(floatunssidf2): Likewise.
+	(floatsidf_ppc64): New insn_and_split.
+	(floatunssidf_ppc64): Likewise.
+
 2002-07-14  Andreas Jaeger  <aj@suse.de>
 
 	* config.gcc (sh64): Remove unused
