@@ -15003,7 +15003,7 @@ finish_for_loop (location, condition, update, body)
       /* Try to detect constraint violations.  These would be
 	 programming errors somewhere.  */
       if (! IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (up2)))
-	  | TREE_CODE (up2) == LOOP_EXPR)
+	  || TREE_CODE (up2) == LOOP_EXPR)
 	abort ();
       SUPPRESS_UNREACHABLE_ERROR (up2) = 1;
     }
