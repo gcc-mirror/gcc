@@ -53,7 +53,8 @@ public class Scrollbar extends Component implements Adjustable
 
   public void addNotify ()
   {
-    peer = (ComponentPeer) getToolkit ().createScrollbar (this);
+    if (peer == null)
+      peer = (ComponentPeer) getToolkit ().createScrollbar (this);
   }
 
   public int getOrientation ()

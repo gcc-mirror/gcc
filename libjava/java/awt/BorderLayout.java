@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -14,6 +14,11 @@ public class BorderLayout implements LayoutManager2
 {
   int hgap;
   int vgap;
+
+  public BorderLayout ()
+  {
+    this (0, 0);
+  }
 
   public BorderLayout (int hgap, int vgap)
   {

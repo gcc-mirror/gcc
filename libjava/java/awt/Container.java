@@ -29,7 +29,10 @@ public abstract class Container extends Component
 
   /* Anything else is non-serializable, and should be declared "transient". */
   transient ContainerListener containerListener;  
-  
+
+  // Insets.
+  private transient Insets myInsets;
+
   public Container()
   {
   }
@@ -62,10 +65,9 @@ public abstract class Container extends Component
 
   public Insets getInsets()
   {
-    // FIXME
-    return null;
+    return myInsets;
   }
-  
+
   /** @deprecated Use getInsets() instead. */
   public Insets insets()
   {
@@ -74,17 +76,50 @@ public abstract class Container extends Component
   
   public Component add (Component comp)
   {
-    return add (comp, -1);
-  }
-  
-  public Component add(String name, Component comp)
-  {
-    // FIXME
-    return null;
+    addImpl (comp, null, -1);
+    return comp;
   }
 
-  public Component add(Component comp, int index)
+  public Component add (String name, Component comp)
   {
+    addImpl (comp, name, -1);
+    return comp;
+  }
+
+  public Component add (Component comp, int index)
+  {
+    addImpl (comp, null, index);
+    return comp;
+  }
+
+  public void add (Component comp, Object constraints)
+  {
+    addImpl (comp, constraints, -1);
+  }
+
+  public void add (Component comp, Object constraints, int index)
+  {
+    addImpl (comp, constraints, index);
+  }
+
+  protected void addImpl (Component comp, Object constraints, int index)
+  {
+    if (index > ncomponents
+	|| comp instanceof Window
+	|| (comp instanceof Container
+	    && ((Container) comp).isAncestorOf (this)))
+      throw new IllegalArgumentException ();
+
+    // Reparent component, and make sure component is instantiated if
+    // we are.
+    if (comp.parent != this)
+      comp.parent.remove (comp);
+    comp.parent = this;
+    if (peer != null)
+      comp.addNotify ();
+
+    invalidate ();
+
     // This isn't the most efficient implementation.  We could do less
     // copying when growing the array.  It probably doesn't matter.
     if (ncomponents >= component.length)
@@ -94,7 +129,6 @@ public abstract class Container extends Component
 	System.arraycopy (component, 0, c, 0, ncomponents);
 	component = c;
       }
-
     if (index == -1)
       component[ncomponents++] = comp;
     else
@@ -105,45 +139,69 @@ public abstract class Container extends Component
 	++ncomponents;
       }
 
-    return comp;
-  }
+    // Notify the layout manager.
+    if (layoutMgr != null)
+      {
+	if (constraints != null && layoutMgr instanceof LayoutManager2)
+	  {
+	    LayoutManager2 lm2 = (LayoutManager2) layoutMgr;
+	    lm2.addLayoutComponent (comp, constraints);
+	  }
+	else
+	  layoutMgr.addLayoutComponent ((String) constraints, comp);
+      }
 
-  public void add(Component comp, Object constraints)
-  {
-    // FIXME
-  }
+    ContainerEvent ce = new ContainerEvent (this,
+					    ContainerEvent.COMPONENT_ADDED,
+					    comp);
 
-  public void add(Component comp, Object constraints, int index)
-  {
-    // FIXME
-  }
-
-  protected void addImpl(Component comp, Object constraints, int index)
-  {
-    // FIXME
+    // FIXME: is this right?
+    dispatchEvent (ce);
+    if (containerListener != null)
+      containerListener.componentAdded (ce);
   }
 
   public void remove (int index)
   {
+    Component r = component[index];
+
+    r.removeNotify ();
+
     System.arraycopy (component, index + 1, component, index,
 		      ncomponents - index - 1);
     component[--ncomponents] = null;
+
+    invalidate ();
+
+    if (layoutMgr != null)
+      layoutMgr.removeLayoutComponent (r);
+
+    ContainerEvent ce = new ContainerEvent (this,
+					    ContainerEvent.COMPONENT_REMOVED,
+					    r);
+
+    // FIXME: is this right?
+    dispatchEvent (ce);
+    if (containerListener != null)
+      containerListener.componentAdded (ce);
   }
 
   public void remove (Component comp)
   {
     for (int i = 0; i < ncomponents; ++i)
-      if (component[i] == comp)
-	{
-	  remove (i);
-	  break;
-	}
+      {
+	if (component[i] == comp)
+	  {
+	    remove (i);
+	    break;
+	  }
+      }
   }
 
   public void removeAll()
   {
-    while (ncomponents >= 0)
-      component[--ncomponents] = null;
+    while (ncomponents > 0)
+      remove (0);
   }
 
   public LayoutManager getLayout()
@@ -159,7 +217,8 @@ public abstract class Container extends Component
   
   public void doLayout()
   {
-    // FIXME
+    if (layoutMgr != null)
+      layoutMgr.layoutContainer (this);
   }
 
   /** @deprecated Use doLayout() instead. */
@@ -170,17 +229,22 @@ public abstract class Container extends Component
 
   public void invalidate()
   {
-    // FIXME
+    super.invalidate ();
   }
 
   public void validate()
   {
-    // FIXME
+    if (! isValid ())
+      {
+	doLayout ();
+	validateTree ();
+      }
   }
 
   protected void validateTree()
   {
-    // FIXME
+    for (int i = 0; i < ncomponents; ++i)
+      component[i].validate ();
   }
 
   public void setFont(Font f)
@@ -190,8 +254,10 @@ public abstract class Container extends Component
 
   public Dimension getPreferredSize()
   {
-    // FIXME
-    return null;
+    if (layoutMgr != null)
+      return layoutMgr.preferredLayoutSize (this);
+    else
+      return super.getPreferredSize ();
   }
   
   /** @deprecated Use getPreferredSize() instead */
@@ -202,8 +268,10 @@ public abstract class Container extends Component
   
   public Dimension getMinimumSize()
   {
-    // FIXME
-    return null;
+    if (layoutMgr != null)
+      return layoutMgr.minimumLayoutSize (this);
+    else
+      return super.getMinimumSize ();
   }
   
   /** @deprecated Use getMinimumSize() instead */
@@ -214,20 +282,35 @@ public abstract class Container extends Component
   
   public Dimension getMaximumSize()
   {
-    // FIXME
-    return null;    
+    if (layoutMgr != null && layoutMgr instanceof LayoutManager2)
+      {
+	LayoutManager2 lm2 = (LayoutManager2) layoutMgr;
+	return lm2.maximumLayoutSize (this);
+      }
+    else
+      return super.getMaximumSize ();
   }
-  
+
   public float getAlignmentX()
   {
-    // FIXME
-    return 0;
+    if (layoutMgr instanceof LayoutManager2)
+      {
+	LayoutManager2 lm2 = (LayoutManager2) layoutMgr;
+	return lm2.getLayoutAlignmentX (this);
+      }
+    else
+      return CENTER_ALIGNMENT;
   }
 
   public float getAlignmentY()
   {
-    // FIXME
-    return 0;
+    if (layoutMgr instanceof LayoutManager2)
+      {
+	LayoutManager2 lm2 = (LayoutManager2) layoutMgr;
+	return lm2.getLayoutAlignmentY (this);
+      }
+    else
+      return CENTER_ALIGNMENT;
   }
 
   public void paint(Graphics g)
@@ -252,7 +335,8 @@ public abstract class Container extends Component
 
   public void printComponents(Graphics g)
   {
-    // FIXME
+    for (int i = 0; i < ncomponents; ++i)
+      component[i].printAll (g);
   }
   
   void dispatchEventImpl(AWTEvent e)
@@ -267,14 +351,12 @@ public abstract class Container extends Component
 
   public void addContainerListener(ContainerListener l)
   {
-    containerListener = (ContainerListener) 
-                          AWTEventMulticaster.add(containerListener, l);
+    containerListener = AWTEventMulticaster.add (containerListener, l);
   }
 
   public void removeContainerListener(ContainerListener l)
   {
-    containerListener = (ContainerListener)
-			  AWTEventMulticaster.remove(containerListener, l);
+    containerListener = AWTEventMulticaster.remove(containerListener, l);
   }
 
   /** @since 1.3 */
@@ -294,7 +376,7 @@ public abstract class Container extends Component
   
   protected void processContainerEvent(ContainerEvent e)
   {
-    if (componentListener == null)
+    if (containerListener == null)
       return;
     switch (e.id)
       {
@@ -313,9 +395,17 @@ public abstract class Container extends Component
   {
   }
   
-  public Component getComponentAt(int x, int y)
+  public Component getComponentAt (int x, int y)
   {
-    // FIXME
+    if (! contains (x, y))
+      return null;
+    for (int i = 0; i < ncomponents; ++i)
+      {
+	int x2 = x - component[i].x;
+	int y2 = y - component[i].y;
+	if (component[i].contains (x2, y2))
+	  return component[i];
+      }
     return null;
   }
 
@@ -345,12 +435,13 @@ public abstract class Container extends Component
   {
     for (int i = ncomponents;  --i >= 0; )
       component[i].addNotify();
-    peer = (ComponentPeer) getToolkit ().createContainer (this);
   }
 
   public void removeNotify()
   {
-    // FIXME
+    for (int i = 0; i < ncomponents; ++i)
+      component[i].removeNotify ();
+    // FIXME: remove our peer.
   }
 
   public boolean isAncestorOf (Component comp)
@@ -370,13 +461,21 @@ public abstract class Container extends Component
     return "FIXME";
   }
   
-  public void list(PrintStream out, int indent)
+  public void list (PrintStream out, int indent)
   {
-    // FIXME  
+    for (int i = 0; i < indent; ++i)
+      out.print (' ');
+    out.println (toString ());
+    for (int i = 0; i < ncomponents; ++i)
+      component[i].list (out, indent + 2);
   }
-  
+
   public void list(PrintWriter out, int indent)
   {
-    // FIXME  
+    for (int i = 0; i < indent; ++i)
+      out.print (' ');
+    out.println (toString ());
+    for (int i = 0; i < ncomponents; ++i)
+      component[i].list (out, indent + 2);
   }
 }

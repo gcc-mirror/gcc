@@ -31,6 +31,7 @@ public abstract class Toolkit
   protected abstract ContainerPeer createContainer (Container target);
   protected abstract LabelPeer createLabel (Label target);
   protected abstract ScrollbarPeer createScrollbar (Scrollbar target);
+  protected abstract WindowPeer createWindow (Window target);
 
   public final EventQueue getSystemEventQueue()
   {
