@@ -1722,6 +1722,20 @@ build_insn_chain (first)
 
       if (first == basic_block_end[b])
 	b++;
+
+      /* Stop after we pass the end of the last basic block.  Verify that
+	 no real insns are after the end of the last basic block.
+
+	 We may want to reorganize the loop somewhat since this test should
+	 always be the right exit test.  */
+      if (b == n_basic_blocks)
+	{
+	  for (first = NEXT_INSN (first) ; first; first = NEXT_INSN (first))
+	    if (GET_RTX_CLASS (GET_CODE (first)) == 'i'
+		&& GET_CODE (PATTERN (first)) != USE)
+	      abort ();
+	  break;
+	}
     }
   FREE_REG_SET (live_relevant_regs);
   *p = 0;
