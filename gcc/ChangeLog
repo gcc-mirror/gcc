@@ -1,3 +1,10 @@
+1997-08-27  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* expr.h (insn_gen_function): Reenable prototype.
+
+	* expr.c (move_by_pieces_1, clear_by_pieces_1): Fix prototype of
+	first parameter.
+
 Thu Aug 28 13:01:43 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* i386.c (ix86_expand_epilogue): Emit blockage instruction when pic.
