@@ -127,9 +127,21 @@ char *inf_ptr;
 enum special_file
 {
   no_special,
+#ifdef errno_h
+#undef errno_h
+#endif
   errno_h,
+#ifdef stdio_h
+#undef stdio_h
+#endif
   stdio_h,
+#ifdef stdlib_h
+#undef stdlib_h
+#endif
   stdlib_h,
+#ifdef sys_stat_h
+#undef sys_stat_h
+#endif
   sys_stat_h
 };
 
