@@ -2469,9 +2469,6 @@ restore frame pointers; it also makes an extra register available
 in many functions.  @strong{It also makes debugging impossible on
 some machines.}
 
-@item -foptimize-sibling-calls
-Optimize sibling and tail recursive calls.
-
 @ifset INTERNALS
 On some machines, such as the Vax, this flag has no effect, because
 the standard calling sequence automatically handles the frame pointer
@@ -2487,6 +2484,9 @@ machine-description macro @code{FRAME_POINTER_REQUIRED} controls
 whether a target machine supports this flag.  @xref{Registers,,Register
 Usage, gcc.info, Using and Porting GCC}.@refill
 @end ifclear
+
+@item -foptimize-sibling-calls
+Optimize sibling and tail recursive calls.
 
 @item -fno-inline
 Don't pay attention to the @code{inline} keyword.  Normally this option

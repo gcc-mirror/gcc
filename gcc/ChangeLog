@@ -1,3 +1,7 @@
+Thu Apr 27 15:08:46 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* invoke.texi (-foptimize-sibling-calls): Fix.
+
 Thu Apr 27 14:54:22 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (load_mems)  Don't use hard registers for the hoisting.
