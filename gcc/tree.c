@@ -3593,7 +3593,7 @@ simple_cst_equal (t1, t2)
      handled above.  If this is a language-specific tree code, we can't
      trust what might be in the operand, so say we don't know
      the situation.  */
-  if (code1
+  if ((int) code1
       >= sizeof standard_tree_code_type / sizeof standard_tree_code_type[0])
     return -1;
 
