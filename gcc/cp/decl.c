@@ -175,7 +175,6 @@ static void destroy_local_static PROTO((tree));
 static void destroy_local_var PROTO((tree));
 static void finish_constructor_body PROTO((void));
 static void finish_destructor_body PROTO((void));
-static tree compute_array_index_type PROTO((tree, tree));
 static tree create_array_type_for_decl PROTO((tree, tree, tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
@@ -7033,7 +7032,9 @@ layout_var_decl (decl)
      tree decl;
 {
   tree type = TREE_TYPE (decl);
+#if 0
   tree ttype = target_type (type);
+#endif
 
   /* If we haven't already layed out this declaration, do so now.
      Note that we must not call complete type for an external object
@@ -8679,7 +8680,7 @@ check_static_variable_definition (decl, type)
    appropriate index type for the array.  If non-NULL, NAME is the
    name of the thing being declared.  */
 
-static tree
+tree
 compute_array_index_type (name, size)
      tree name;
      tree size;
@@ -13469,14 +13470,14 @@ finish_function (lineno, flags)
     }
   else
     {
+#if 0
       if (write_symbols != NO_DEBUG /*&& TREE_CODE (fntype) != METHOD_TYPE*/)
 	{
-	  tree ttype = target_type (fntype);
-	  tree parmdecl;
-
-#if 0
 	  /* Keep this code around in case we later want to control debug info
 	     based on whether a type is "used".  (jason 1999-11-11) */
+
+	  tree ttype = target_type (fntype);
+	  tree parmdecl;
 
 	  if (IS_AGGR_TYPE (ttype))
 	    /* Let debugger know it should output info for this type.  */
@@ -13489,8 +13490,8 @@ finish_function (lineno, flags)
 		/* Let debugger know it should output info for this type.  */
 		note_debug_info_needed (ttype);
 	    }
-#endif
 	}
+#endif
 
       /* Clean house because we will need to reorder insns here.  */
       do_pending_stack_adjust ();
