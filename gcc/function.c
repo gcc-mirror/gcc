@@ -7649,7 +7649,7 @@ thread_prologue_and_epilogue_insns (f)
 		 that with a conditional return instruction.  */
 	      else if (condjump_p (jump))
 		{
-		  if (! redirect_jump (jump, 0, 1))
+		  if (! redirect_jump (jump, 0, 0))
 		    continue;
 
 		  /* If this block has only one successor, it both jumps
