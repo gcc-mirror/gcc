@@ -578,7 +578,7 @@ namespace __gnu_debug
 	    
 	    const ptrdiff_t __len = __end - __start;
 	    assert(__len < __bufsize);
-	    memmove(__buf, __start, __len);
+	    memcpy(__buf, __start, __len);
 	    __buf[__len] = '\0';
 	    _M_print_word(__buf);
 	    __start = __end;

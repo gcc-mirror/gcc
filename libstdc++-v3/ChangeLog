@@ -1,4 +1,9 @@
 2004-08-13  Paolo Carlini  <pcarlini@suse.de>
+	
+	* src/debug.cc (_Error_formatter::_M_print_string): Fix thinko,
+	memmove is not needed, memcpy suffices.
+
+2004-08-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_fstream.h (class basic_ifstream,
 	class basic_ofstream, class basic_fstream): Add const overloads
