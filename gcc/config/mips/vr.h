@@ -19,13 +19,30 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#define MIPS_CPU_STRING_DEFAULT "vr4100"
+#define DEFAULT_VR_ARCH "vr4130"
+#define MIPS_ABI_DEFAULT ABI_EABI
+#define MIPS_MARCH_CONTROLS_SOFT_FLOAT 1
 #define MULTILIB_DEFAULTS \
-	{ MULTILIB_ENDIAN_DEFAULT, MULTILIB_ABI_DEFAULT, "march=vr4100" }
+	{ MULTILIB_ENDIAN_DEFAULT,		\
+	  MULTILIB_ABI_DEFAULT,			\
+	  "march=" DEFAULT_VR_ARCH }
 
-/* Make sure that -mlong64 always appears on the command line when
-   64-bit longs are needed.  Also make sure that -mgp32 doesn't appear
-   if it is redundant.  */
 #define DRIVER_SELF_SPECS \
-	"%{mabi=eabi:%{!mlong*:%{!mgp32:-mlong64}}}", \
-	"%{mabi=32:%<mgp32}"
+	/* Make -mfix-vr4122-bugs imply -march=vr4120.  This cuts down	\
+	   on command-line tautology and makes it easier for t-vr to	\
+	   provide a -mfix-vr4122-bugs multilib.  */			\
+	"%{mfix-vr4122-bugs:%{!march=*:-march=vr4120}}",		\
+									\
+	/* Make -mabi=eabi -mlong32 the default.  */			\
+	"%{!mabi=*:-mabi=eabi %{!mlong*:-mlong32}}",			\
+									\
+	/* Make sure -mlong64 multilibs are chosen when	64-bit longs	\
+	   are needed.  */						\
+	"%{mabi=eabi:%{!mlong*:%{!mgp32:-mlong64}}}",			\
+									\
+	/* Remove -mgp32 if it is redundant.  */			\
+	"%{mabi=32:%<mgp32}",						\
+									\
+	/* Enforce the default architecture.  This is mostly for	\
+	   the assembler's benefit.  */					\
+	"%{!march=*:-march=" DEFAULT_VR_ARCH "}"

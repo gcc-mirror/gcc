@@ -22,27 +22,59 @@ $(T)crtn.o: $(srcdir)/config/mips/crtn.asm $(GCC_PASSES)
 
 # END boiler-plate
 
+# Main multilibs
+# --------------
+#
 # Endianness: EB or EL
 #
 # ABIs: mabi=32
 #	mabi=o64
 #	mabi=eabi
-#	meabi=eabi/mlong32
+#	mabi=eabi/mlong32
 #	mabi=eabi/mgp32
 #	mabi=eabi/mgp32/mlong64
 #
-# Architecture: march=vr5400
-#		march=vr4100
-#		march=vr4100/mips16
+# Architecture: march=vr4120 with -mfix-vr4122-bugs
+#		march=vr4130 (default)
+#		march=vr5000
+#		march=vr5400
+#		march=vr5500
 #
-# Total: 2 * 6 * 3 = 36 multilibs.
+# Total: 2 * 6 * 5 = 60 multilibs.
+#
+#
+# Extra vr4300 multilibs
+# ----------------------
+#
+# Endianness: EB or EL
+#
+# ABI: o64
+#
+# Architecture: vr4300.
+#
+# Total: 2 * 1 * 2 = 2 multilibs.
+#
+#
+# Extra MIPS16 multilibs
+# ----------------------
+#
+# Endianness: EB or EL
+#
+# ABIs: mabi=o64
+#	mabi=eabi/mlong32
+#	mabi=eabi/mgp32
+#
+# Architecture: march=vr4120 with -mfix-vr4122-bugs
+#		march=vr4130 (default)
+#
+# Total: 2 * 3 * 2 = 12 multilibs.
 MULTILIB_OPTIONS =			\
 	EL/EB				\
 	mabi=32/mabi=o64/mabi=eabi	\
 	mgp32				\
 	mlong64				\
 	mips16				\
-	march=vr5400/march=vr4100
+	mfix-vr4122-bugs/march=vr4130/march=vr4300/march=vr5000/march=vr5400/march=vr5500
 
 MULTILIB_DIRNAMES =	\
 	el eb		\
@@ -50,19 +82,30 @@ MULTILIB_DIRNAMES =	\
 	gp32		\
 	long64		\
 	mips16		\
-	vr5400 vr4100
+	vr4120 vr4130 vr4300 vr5000 vr5400 vr5500
 
-MULTILIB_MATCHES = EL=mel EB=meb
+MULTILIB_MATCHES = EL=mel EB=meb mfix-vr4122-bugs=march?vr4120
 
-# Assume a 4000-series is the default: we'd need a *mips16 entry if
-# the default processor didn't support mips16.  Also assume o64,
-# which means we need to extend the o64 exceptions to combinations
-# without a -mabi flag.
+# Assume a 41xx-series is the default: we'd need a *mips16 entry if
+# the default processor didn't support mips16.  Also assume the
+# default ABI is EABI64 -mlong32.
 MULTILIB_EXCEPTIONS =				\
 	*mabi=32/mlong64*			\
 	*mabi=32/mgp32*				\
 	*mabi=o64/mgp32*			\
 	*mabi=o64/mlong64*			\
-	mgp32* E[LB]/mgp32*			\
-	mlong64* E[LB]/mlong64*			\
-	*mips16/march=vr5*
+	*mips16/march=vr5*			\
+	*mips16/march=vr4300			\
+	$(MIPS16_EXCEPTIONS)			\
+	$(VR4300_EXCEPTIONS)
+
+MIPS16_EXCEPTIONS =				\
+	*mabi=32*mips16*			\
+	*mlong64*mips16*
+
+VR4300_EXCEPTIONS =				\
+	*mabi=32*march=vr4300			\
+	*mgp32*march=vr4300			\
+	*mlong64*march=vr4300			\
+	march=vr4300				\
+	E[LB]/march=vr4300
