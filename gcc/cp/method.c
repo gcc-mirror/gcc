@@ -2114,8 +2114,8 @@ emit_thunk (thunk_fndecl)
       current_function_decl = 0;
       cfun = 0;
     }
-#endif /* ASM_OUTPUT_MI_THUNK */
   else
+#endif /* ASM_OUTPUT_MI_THUNK */
   {
   /* If we don't have the necessary macro for efficient thunks, generate a
      thunk function that just makes a call to the real function.
