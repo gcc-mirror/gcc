@@ -1,3 +1,12 @@
+2004-03-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/14599
+	* config/mips/mips.md (UNSPEC_GP): New constant.
+	* config/mips/mips.c (CONST_GP_P): Expect the CONST to contain
+	an UNSPEC instead of (reg $gp).
+	(mips16_gp_pseudo_reg): Change accordingly.
+	(print_operand): Print $gp directly when handling CONST_GP_P.
+
 2004-03-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14481

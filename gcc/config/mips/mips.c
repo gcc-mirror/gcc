@@ -92,10 +92,12 @@ enum internal_test {
 #define UNSPEC_ADDRESS_TYPE(X) \
   ((enum mips_symbol_type) (XINT (X, 1) - UNSPEC_ADDRESS_FIRST))
 
-/* True if X is (const $gp).  This is used to initialize the mips16
-   gp pseudo register.  */
+/* True if X is (const (unspec [(const_int 0)] UNSPEC_GP)).  This is used
+   to initialize the mips16 gp pseudo register.  */
 #define CONST_GP_P(X) \
-  (GET_CODE (X) == CONST && XEXP (X, 0) == pic_offset_table_rtx)
+  (GET_CODE (X) == CONST			\
+   && GET_CODE (XEXP (X, 0)) == UNSPEC		\
+   && XINT (XEXP (X, 0), 1) == UNSPEC_GP)
 
 /* The maximum distance between the top of the stack frame and the
    value $sp has when we save & restore registers.
@@ -5601,7 +5603,7 @@ print_operand (FILE *file, rtx op, int letter)
     fputs (code == EQ ? "t" : "f", file);
 
   else if (CONST_GP_P (op))
-    print_operand (file, XEXP (op, 0), letter);
+    fputs (reg_names[GLOBAL_POINTER_REGNUM], file);
 
   else
     output_addr_const (file, op);
@@ -7841,7 +7843,7 @@ mips16_gp_pseudo_reg (void)
 {
   if (cfun->machine->mips16_gp_pseudo_rtx == NULL_RTX)
     {
-      rtx const_gp;
+      rtx unspec;
       rtx insn, scan;
 
       cfun->machine->mips16_gp_pseudo_rtx = gen_reg_rtx (Pmode);
@@ -7849,10 +7851,10 @@ mips16_gp_pseudo_reg (void)
 
       /* We want to initialize this to a value which gcc will believe
          is constant.  */
-      const_gp = gen_rtx_CONST (Pmode, pic_offset_table_rtx);
       start_sequence ();
+      unspec = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, const0_rtx), UNSPEC_GP);
       emit_move_insn (cfun->machine->mips16_gp_pseudo_rtx,
-		      const_gp);
+		      gen_rtx_CONST (Pmode, unspec));
       insn = get_insns ();
       end_sequence ();
 
