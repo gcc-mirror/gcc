@@ -203,15 +203,21 @@ namespace std
   __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way, 
 			      ios_base::openmode /*__mode*/)
   { 
-    fseek(_M_cfile, __off, __way); 
-    return ftell(_M_cfile); 
+    if (!fseek(_M_cfile, __off, __way))
+      return ftell(_M_cfile); 
+    else
+      // Fseek failed.
+      return -1L;
   }
 
   streamoff
   __basic_file<char>::seekpos(streamoff __pos, ios_base::openmode /*__mode*/)
   { 
-    fseek(_M_cfile, __pos, ios_base::beg); 
-    return ftell(_M_cfile); 
+    if (!fseek(_M_cfile, __pos, ios_base::beg))
+      return ftell(_M_cfile);
+    else
+      // Fseek failed.
+      return -1L;
   }
   
   int 

@@ -570,6 +570,20 @@ void test08()
   mb.sputbackc(0);  
 }
 
+// libstdc++/9439, libstdc++/9425
+void test09()
+{
+  using namespace std;
+  bool test = true;
+
+  filebuf fbuf;
+  fbuf.open(name_01, ios_base::in);
+  filebuf::int_type r = fbuf.sputbackc('a');
+  fbuf.close();
+
+  VERIFY( r == filebuf::traits_type::eof() );
+}
+
 main() 
 {
   test01();
@@ -582,5 +596,6 @@ main()
 
   test07();
   test08();
+  test09();
   return 0;
 }
