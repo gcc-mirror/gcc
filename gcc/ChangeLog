@@ -1,3 +1,7 @@
+Fri Feb 26 19:31:25 1999  Dave Love  <fx@gnu.org>
+
+	* md.texi, invoke.texi: Fix unterminated @xrefs.
+
 Fri Feb 26 01:47:46 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Sun Jan 17 03:20:47 1999  H.J. Lu  (hjl@gnu.org)
