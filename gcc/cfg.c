@@ -288,7 +288,6 @@ cached_make_edge (sbitmap *edge_cache, basic_block src, basic_block dst, int fla
 {
   int use_edge_cache;
   edge e;
-  edge_iterator ei;
 
   /* Don't bother with edge cache for ENTRY or EXIT, if there aren't that
      many edges to them, or we didn't allocate memory for it.  */
@@ -309,12 +308,12 @@ cached_make_edge (sbitmap *edge_cache, basic_block src, basic_block dst, int fla
 
       /* Fall through.  */
     case 0:
-      FOR_EACH_EDGE (e, ei, src->succs)
-	if (e->dest == dst)
-	  {
-	    e->flags |= flags;
-	    return NULL;
-	  }
+      e = find_edge (src, dst);
+      if (e)
+	{
+	  e->flags |= flags;
+	  return NULL;
+	}
       break;
     }
 

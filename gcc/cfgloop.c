@@ -1499,14 +1499,7 @@ verify_loop_structure (struct loops *loops)
 edge
 loop_latch_edge (const struct loop *loop)
 {
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, loop->header->preds)
-    if (e->src == loop->latch)
-      break;
-
-  return e;
+  return find_edge (loop->latch, loop->header);
 }
 
 /* Returns preheader edge of LOOP.  */

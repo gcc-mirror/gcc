@@ -2972,15 +2972,13 @@ rtl_flow_call_edges_add (sbitmap blocks)
       if (need_fake_edge_p (insn))
 	{
 	  edge e;
-	  edge_iterator ei;
 
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (e->dest == EXIT_BLOCK_PTR)
-	      {
-		insert_insn_on_edge (gen_rtx_USE (VOIDmode, const0_rtx), e);
-		commit_edge_insertions ();
-		break;
-	      }
+	  e = find_edge (bb, EXIT_BLOCK_PTR);
+	  if (e)
+	    {
+	      insert_insn_on_edge (gen_rtx_USE (VOIDmode, const0_rtx), e);
+	      commit_edge_insertions ();
+	    }
 	}
     }
 
@@ -3023,9 +3021,8 @@ rtl_flow_call_edges_add (sbitmap blocks)
 #ifdef ENABLE_CHECKING
 	      if (split_at_insn == BB_END (bb))
 		{
-		  edge_iterator ei;
-		  FOR_EACH_EDGE (e, ei, bb->succs)
-		    gcc_assert (e->dest != EXIT_BLOCK_PTR);
+		  e = find_edge (bb, EXIT_BLOCK_PTR);
+		  gcc_assert (e == NULL);
 		}
 #endif
 
