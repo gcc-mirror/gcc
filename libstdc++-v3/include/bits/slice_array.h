@@ -123,11 +123,12 @@ namespace std
     public:
       typedef _Tp value_type;
 
-      // This constructor is implemented since we need to return a value.
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 253. valarray helper functions are almost entirely useless
+
       ///  Copy constructor.  Both slices refer to the same underlying array.
       slice_array(const slice_array&);
 
-      // This operator must be public.  See DR-253.
       ///  Assignment operator.  Assigns slice elements to corresponding
       ///  elements of @a a.
       slice_array& operator=(const slice_array&);
@@ -196,13 +197,13 @@ namespace std
   template<typename _Tp>
     inline
     slice_array<_Tp>::slice_array(_Array<_Tp> __a, const slice& __s)
-      : _M_sz(__s.size()), _M_stride(__s.stride()),
-	_M_array(__a.begin() + __s.start()) {}
+    : _M_sz(__s.size()), _M_stride(__s.stride()),
+      _M_array(__a.begin() + __s.start()) {}
 
   template<typename _Tp>
     inline
     slice_array<_Tp>::slice_array(const slice_array<_Tp>& a)
-      : _M_sz(a._M_sz), _M_stride(a._M_stride), _M_array(a._M_array) {}
+    : _M_sz(a._M_sz), _M_stride(a._M_stride), _M_array(a._M_array) {}
 
   //    template<typename _Tp>
   //    inline slice_array<_Tp>::~slice_array () {}

@@ -63,11 +63,12 @@ namespace std
     public:
       typedef _Tp value_type;
 
-      // this constructor needs to be implemented.
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 253. valarray helper functions are almost entirely useless
+
       ///  Copy constructor.  Both slices refer to the same underlying array.
       indirect_array(const indirect_array&);
 
-      // XXX: This is a proposed resolution for DR-253.
       ///  Assignment operator.  Assigns elements to corresponding elements
       ///  of @a a.
       indirect_array& operator=(const indirect_array&);
@@ -139,13 +140,13 @@ namespace std
   template<typename _Tp>
     inline
     indirect_array<_Tp>::indirect_array(const indirect_array<_Tp>& __a)
-      : _M_sz(__a._M_sz), _M_index(__a._M_index), _M_array(__a._M_array) {}
+    : _M_sz(__a._M_sz), _M_index(__a._M_index), _M_array(__a._M_array) {}
 
   template<typename _Tp>
      inline
      indirect_array<_Tp>::indirect_array(_Array<_Tp> __a, size_t __s,
 					 _Array<size_t> __i)
-       : _M_sz(__s), _M_index(__i), _M_array(__a) {}
+     : _M_sz(__s), _M_index(__i), _M_array(__a) {}
 
   template<typename _Tp>
      inline indirect_array<_Tp>&

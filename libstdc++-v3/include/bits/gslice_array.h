@@ -61,11 +61,12 @@ namespace std {
     public:
       typedef _Tp value_type;
 
-      // this constructor needs to be implemented.
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 253. valarray helper functions are almost entirely useless
+
       ///  Copy constructor.  Both slices refer to the same underlying array.
       gslice_array(const gslice_array&);
 
-      // This operator must be public.  See DR-253.
       ///  Assignment operator.  Assigns slice elements to corresponding
       ///  elements of @a a.
       gslice_array& operator=(const gslice_array&);
@@ -134,13 +135,13 @@ namespace std {
     inline
     gslice_array<_Tp>::gslice_array(_Array<_Tp> __a,
 				    const valarray<size_t>& __i)
-      : _M_array(__a), _M_index(__i) {}
+    : _M_array(__a), _M_index(__i) {}
 
 
   template<typename _Tp>
     inline
     gslice_array<_Tp>::gslice_array(const gslice_array<_Tp>& __a)
-      : _M_array(__a._M_array), _M_index(__a._M_index) {}
+    : _M_array(__a._M_array), _M_index(__a._M_index) {}
 
 
   template<typename _Tp>
