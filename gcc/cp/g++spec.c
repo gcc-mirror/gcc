@@ -47,10 +47,8 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 void
-lang_specific_driver (in_argc, in_argv, in_added_libraries)
-     int *in_argc;
-     const char *const **in_argv;
-     int *in_added_libraries;
+lang_specific_driver (int *in_argc, const char *const **in_argv,
+		      int *in_added_libraries)
 {
   int i, j;
 

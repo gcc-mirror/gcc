@@ -1,3 +1,21 @@
+2003-07-07  Andreas Jaeger  <aj@suse.de>
+
+	* friend.c: Convert to ISO C90 prototypes.
+
+	* Make-lang.in ($(srcdir)/cp/cfns.h): Use ANSI-C as output
+	language.
+	* cfns.h: Regenerate.
+
+	* typeck.c: Convert remaining prototypes to ISO C90.
+	* search.c: Likewise.
+
+	* decl2.c (build_expr_from_tree): Convert prototype to ISO C90.
+	* semantics.c (expand_or_defer_fn): Likewise
+	* mangle.c (discriminator_for_string_literal): Likewise.
+	* g++spec.c (lang_specific_driver): Likewise.
+
+	* search.c (lookup_base_r): Remove unused variable.
+
 2003-07-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* semantics.c: (genrtl_try_block) Adjust emit_line_note

@@ -360,8 +360,7 @@ replacement_quality (rtx reg)
 
 /* Return 1 if INSN might end a basic block.  */
 
-static int perhaps_ends_bb_p (insn)
-     rtx insn;
+static int perhaps_ends_bb_p (rtx insn)
 {
   switch (GET_CODE (insn))
     {

@@ -936,9 +936,7 @@ redirect_branch_edge (edge e, basic_block target)
    stream.  */
 
 static bool
-rtl_redirect_edge_and_branch (e, target)
-     edge e;
-     basic_block target;
+rtl_redirect_edge_and_branch (edge e, basic_block target)
 {
   if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
     return false;

@@ -166,8 +166,7 @@ complete_type_or_diagnostic (tree type, tree value, int diag_type)
 /* Return truthvalue of whether type of EXP is instantiated.  */
 
 int
-type_unknown_p (exp)
-     tree exp;
+type_unknown_p (tree exp)
 {
   return (TREE_CODE (exp) == OVERLOAD
           || TREE_CODE (exp) == TREE_LIST
@@ -185,8 +184,7 @@ type_unknown_p (exp)
    signatures of T1 and T2: [expr.rel], [expr.eq].  */
 
 static tree
-qualify_type_recursive (t1, t2)
-     tree t1, t2;
+qualify_type_recursive (tree t1, tree t2)
 {
   if ((TYPE_PTR_P (t1) && TYPE_PTR_P (t2))
       || (TYPE_PTRMEM_P (t1) && TYPE_PTRMEM_P (t2)))
@@ -231,8 +229,7 @@ qualify_type_recursive (t1, t2)
    lists are already common.  */
 
 tree
-commonparms (p1, p2)
-     tree p1, p2;
+commonparms (tree p1, tree p2)
 {
   tree oldargs = p1, newargs, n;
   int i, len;
@@ -293,8 +290,7 @@ commonparms (p1, p2)
 /* Given a type, perhaps copied for a typedef,
    find the "original" version of it.  */
 tree
-original_type (t)
-     tree t;
+original_type (tree t)
 {
   while (TYPE_NAME (t) != NULL_TREE)
     {
@@ -314,9 +310,7 @@ original_type (t)
    T2 as described in [expr].  */
 
 tree
-type_after_usual_arithmetic_conversions (t1, t2)
-     tree t1;
-     tree t2;
+type_after_usual_arithmetic_conversions (tree t1, tree t2)
 {
   enum tree_code code1 = TREE_CODE (t1);
   enum tree_code code2 = TREE_CODE (t2);
@@ -459,12 +453,8 @@ type_after_usual_arithmetic_conversions (t1, t2)
    string describing the current location, in case an error occurs.  */
 
 tree 
-composite_pointer_type (t1, t2, arg1, arg2, location)
-     tree t1;
-     tree t2;
-     tree arg1;
-     tree arg2;
-     const char* location;
+composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
+			const char* location)
 {
   tree result_type;
   tree attributes;
@@ -547,8 +537,7 @@ composite_pointer_type (t1, t2, arg1, arg2, location)
    differences would cause the two types to compare unalike.  */
 
 tree
-merge_types (t1, t2)
-     tree t1, t2;
+merge_types (tree t1, tree t2)
 {
   register enum tree_code code1;
   register enum tree_code code2;
@@ -695,8 +684,7 @@ merge_types (t1, t2)
    if the operands have the given two types.  */
 
 tree
-common_type (t1, t2)
-     tree t1, t2;
+common_type (tree t1, tree t2)
 {
   enum tree_code code1;
   enum tree_code code2;
@@ -2210,9 +2198,7 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
    Must also handle REFERENCE_TYPEs for C++.  */
 
 tree
-build_x_indirect_ref (ptr, errorstring)
-     tree ptr;
-     const char *errorstring;
+build_x_indirect_ref (tree ptr, const char *errorstring)
 {
   tree rval;
 
@@ -2227,9 +2213,7 @@ build_x_indirect_ref (ptr, errorstring)
 }
 
 tree
-build_indirect_ref (ptr, errorstring)
-     tree ptr;
-     const char *errorstring;
+build_indirect_ref (tree ptr, const char *errorstring)
 {
   register tree pointer, type;
 
@@ -2309,8 +2293,7 @@ build_indirect_ref (ptr, errorstring)
    will inherit the type of the array, which will be some pointer type.  */
 
 tree
-build_array_ref (array, idx)
-     tree array, idx;
+build_array_ref (tree array, tree idx)
 {
   if (idx == 0)
     {
@@ -2466,9 +2449,7 @@ build_array_ref (array, idx)
    later has the right member.  */
 
 tree
-get_member_function_from_ptrfunc (instance_ptrptr, function)
-     tree *instance_ptrptr;
-     tree function;
+get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 {
   if (TREE_CODE (function) == OFFSET_REF)
     function = TREE_OPERAND (function, 1);
@@ -2570,8 +2551,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 }
 
 tree
-build_function_call (function, params)
-     tree function, params;
+build_function_call (tree function, tree params)
 {
   register tree fntype, fndecl;
   register tree coerced_params;
@@ -2689,9 +2669,7 @@ build_function_call (function, params)
    default arguments, if such were specified.  Do so here.  */
 
 tree
-convert_arguments (typelist, values, fndecl, flags)
-     tree typelist, values, fndecl;
-     int flags;
+convert_arguments (tree typelist, tree values, tree fndecl, int flags)
 {
   register tree typetail, valtail;
   register tree result = NULL_TREE;
@@ -2848,9 +2826,7 @@ convert_arguments (typelist, values, fndecl, flags)
    conversions on the operands.  CODE is the kind of expression to build.  */
 
 tree
-build_x_binary_op (code, arg1, arg2)
-     enum tree_code code;
-     tree arg1, arg2;
+build_x_binary_op (enum tree_code code, tree arg1, tree arg2)
 {
   if (processing_template_decl)
     return build_min_nt (code, arg1, arg2);
@@ -3057,10 +3033,8 @@ build_template_expr (enum tree_code code, tree op0, tree op1, tree op2)
    multiple inheritance, and deal with pointer to member functions.  */
 
 tree
-build_binary_op (code, orig_op0, orig_op1, convert_p)
-     enum tree_code code;
-     tree orig_op0, orig_op1;
-     int convert_p ATTRIBUTE_UNUSED;
+build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
+		 int convert_p ATTRIBUTE_UNUSED)
 {
   tree op0, op1;
   register enum tree_code code0, code1;
@@ -3792,9 +3766,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
    of pointer PTROP and integer INTOP.  */
 
 static tree
-cp_pointer_int_sum (resultcode, ptrop, intop)
-     enum tree_code resultcode;
-     register tree ptrop, intop;
+cp_pointer_int_sum (enum tree_code resultcode, register tree ptrop,
+		    register tree intop)
 {
   tree res_type = TREE_TYPE (ptrop);
 
@@ -3812,9 +3785,7 @@ cp_pointer_int_sum (resultcode, ptrop, intop)
    The resulting tree has type int.  */
 
 static tree
-pointer_diff (op0, op1, ptrtype)
-     register tree op0, op1;
-     register tree ptrtype;
+pointer_diff (register tree op0, register tree op1, register tree ptrtype)
 {
   register tree result, folded;
   tree restype = ptrdiff_type_node;
@@ -3868,9 +3839,7 @@ pointer_diff (op0, op1, ptrtype)
    and XARG is the operand.  */
 
 tree
-build_x_unary_op (code, xarg)
-     enum tree_code code;
-     tree xarg;
+build_x_unary_op (enum tree_code code, tree xarg)
 {
   tree exp;
   int ptrmem = 0;
@@ -3947,8 +3916,7 @@ build_x_unary_op (code, xarg)
    -1.  */
 
 tree
-cp_truthvalue_conversion (expr)
-     tree expr;
+cp_truthvalue_conversion (tree expr)
 {
   tree type = TREE_TYPE (expr);
   if (TYPE_PTRMEM_P (type))
@@ -3960,8 +3928,7 @@ cp_truthvalue_conversion (expr)
 /* Just like cp_truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  */
    
 tree
-condition_conversion (expr)
-     tree expr;
+condition_conversion (tree expr)
 {
   tree t;
   if (processing_template_decl)

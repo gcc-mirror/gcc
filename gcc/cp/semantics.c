@@ -2351,8 +2351,7 @@ expand_body (tree fn)
 /* Generate RTL for FN.  */
 
 void
-expand_or_defer_fn (fn)
-     tree fn;
+expand_or_defer_fn (tree fn)
 {
   /* When the parser calls us after finishing the body of a template
      function, we don't really want to expand the body.  When we're
