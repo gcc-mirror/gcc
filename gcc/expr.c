@@ -3499,6 +3499,124 @@ get_subtarget (rtx x)
 	  ? 0 : x);
 }
 
+/* A subroutine of expand_assignment.  Optimize FIELD op= VAL, where
+   FIELD is a bitfield.  Returns true if the optimization was successful,
+   and there's nothing else to do.  */
+
+static bool
+optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
+				 unsigned HOST_WIDE_INT bitpos,
+				 enum machine_mode mode1, rtx str_rtx,
+				 tree to, tree src)
+{
+  enum machine_mode str_mode = GET_MODE (str_rtx);
+  unsigned int str_bitsize = GET_MODE_BITSIZE (str_mode);
+  tree op0, op1;
+  rtx value, result;
+  optab binop;
+
+  if (mode1 != VOIDmode
+      || bitsize >= BITS_PER_WORD
+      || str_bitsize > BITS_PER_WORD
+      || TREE_SIDE_EFFECTS (to)
+      || TREE_THIS_VOLATILE (to))
+    return false;
+
+  STRIP_NOPS (src);
+  if (!BINARY_CLASS_P (src)
+      || TREE_CODE (TREE_TYPE (src)) != INTEGER_TYPE)
+    return false;
+
+  op0 = TREE_OPERAND (src, 0);
+  op1 = TREE_OPERAND (src, 1);
+  STRIP_NOPS (op0);
+
+  if (!operand_equal_p (to, op0, 0))
+    return false;
+
+  if (MEM_P (str_rtx))
+    {
+      unsigned HOST_WIDE_INT offset1;
+
+      if (str_bitsize == 0 || str_bitsize > BITS_PER_WORD)
+	str_mode = word_mode;
+      str_mode = get_best_mode (bitsize, bitpos,
+				MEM_ALIGN (str_rtx), str_mode, 0);
+      if (str_mode == VOIDmode)
+	return false;
+      str_bitsize = GET_MODE_BITSIZE (str_mode);
+
+      offset1 = bitpos;
+      bitpos %= str_bitsize;
+      offset1 = (offset1 - bitpos) / BITS_PER_UNIT;
+      str_rtx = adjust_address (str_rtx, str_mode, offset1);
+    }
+  else if (!REG_P (str_rtx) && GET_CODE (str_rtx) != SUBREG)
+    return false;
+
+  /* If the bit field covers the whole REG/MEM, store_field
+     will likely generate better code.  */
+  if (bitsize >= str_bitsize)
+    return false;
+
+  /* We can't handle fields split across multiple entities.  */
+  if (bitpos + bitsize > str_bitsize)
+    return false;
+
+  if (BYTES_BIG_ENDIAN)
+    bitpos = str_bitsize - bitpos - bitsize;
+
+  switch (TREE_CODE (src))
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      /* For now, just optimize the case of the topmost bitfield
+	 where we don't need to do any masking and also
+	 1 bit bitfields where xor can be used.
+	 We might win by one instruction for the other bitfields
+	 too if insv/extv instructions aren't used, so that
+	 can be added later.  */
+      if (bitpos + bitsize != str_bitsize
+	  && (bitsize != 1 || TREE_CODE (op1) != INTEGER_CST))
+	break;
+
+      value = expand_expr (op1, NULL_RTX, str_mode, 0);
+      value = convert_modes (str_mode,
+			     TYPE_MODE (TREE_TYPE (op1)), value,
+			     TYPE_UNSIGNED (TREE_TYPE (op1)));
+
+      /* We may be accessing data outside the field, which means
+	 we can alias adjacent data.  */
+      if (MEM_P (str_rtx))
+	{
+	  str_rtx = shallow_copy_rtx (str_rtx);
+	  set_mem_alias_set (str_rtx, 0);
+	  set_mem_expr (str_rtx, 0);
+	}
+
+      binop = TREE_CODE (src) == PLUS_EXPR ? add_optab : sub_optab;
+      if (bitsize == 1 && bitpos + bitsize != str_bitsize)
+	{
+	  value = expand_and (str_mode, value, const1_rtx, NULL);
+	  binop = xor_optab;
+	}
+      value = expand_shift (LSHIFT_EXPR, str_mode, value,
+			    build_int_cst (NULL_TREE, bitpos),
+			    NULL_RTX, 1);
+      result = expand_binop (str_mode, binop, str_rtx,
+			     value, str_rtx, 1, OPTAB_WIDEN);
+      if (result != str_rtx)
+	emit_move_insn (str_rtx, result);
+      return true;
+
+    default:
+      break;
+    }
+
+  return false;
+}
+
+
 /* Expand an assignment that stores the value of FROM into TO.  */
 
 void
@@ -3520,9 +3638,7 @@ expand_assignment (tree to, tree from)
      Assignment of an array element at a constant index, and assignment of
      an array element in an unaligned packed structure field, has the same
      problem.  */
-
-  if (TREE_CODE (to) == COMPONENT_REF || TREE_CODE (to) == BIT_FIELD_REF
-      || TREE_CODE (to) == ARRAY_REF || TREE_CODE (to) == ARRAY_RANGE_REF
+  if (handled_component_p (to)
       || TREE_CODE (TREE_TYPE (to)) == ARRAY_TYPE)
     {
       enum machine_mode mode1;
@@ -3575,153 +3691,43 @@ expand_assignment (tree to, tree from)
 				   				   offset));
 	}
 
-      if (MEM_P (to_rtx))
+      /* Handle expand_expr of a complex value returning a CONCAT.  */
+      if (GET_CODE (to_rtx) == CONCAT)
 	{
-	  /* If the field is at offset zero, we could have been given the
-	     DECL_RTX of the parent struct.  Don't munge it.  */
-	  to_rtx = shallow_copy_rtx (to_rtx);
-
-	  set_mem_attributes_minus_bitpos (to_rtx, to, 0, bitpos);
+	  gcc_assert (bitpos == 0 || bitpos == GET_MODE_BITSIZE (mode1));
+	  result = store_expr (from, XEXP (to_rtx, bitpos != 0), false);
 	}
-
-      /* Deal with volatile and readonly fields.  The former is only done
-	 for MEM.  Also set MEM_KEEP_ALIAS_SET_P if needed.  */
-      if (volatilep && MEM_P (to_rtx))
+      else
 	{
-	  if (to_rtx == orig_to_rtx)
-	    to_rtx = copy_rtx (to_rtx);
-	  MEM_VOLATILE_P (to_rtx) = 1;
-	}
-
-      if (MEM_P (to_rtx) && ! can_address_p (to))
-	{
-	  if (to_rtx == orig_to_rtx)
-	    to_rtx = copy_rtx (to_rtx);
-	  MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
-	}
-
-      /* Optimize bitfld op= val in certain cases.  */
-      while (mode1 == VOIDmode
-	     && bitsize > 0 && bitsize < BITS_PER_WORD
-	     && GET_MODE_BITSIZE (GET_MODE (to_rtx)) <= BITS_PER_WORD
-	     && !TREE_SIDE_EFFECTS (to)
-	     && !TREE_THIS_VOLATILE (to))
-	{
-	  tree src, op0, op1;
-	  rtx value, str_rtx = to_rtx;
-	  HOST_WIDE_INT bitpos1 = bitpos;
-	  optab binop;
-
-	  src = from;
-	  STRIP_NOPS (src);
-	  if (TREE_CODE (TREE_TYPE (src)) != INTEGER_TYPE
-	      || !BINARY_CLASS_P (src))
-	    break;
-
-	  op0 = TREE_OPERAND (src, 0);
-	  op1 = TREE_OPERAND (src, 1);
-	  STRIP_NOPS (op0);
-
-	  if (! operand_equal_p (to, op0, 0))
-	    break;
-
-	  if (MEM_P (str_rtx))
+	  if (MEM_P (to_rtx))
 	    {
-	      enum machine_mode mode = GET_MODE (str_rtx);
-	      HOST_WIDE_INT offset1;
+	      /* If the field is at offset zero, we could have been given the
+		 DECL_RTX of the parent struct.  Don't munge it.  */
+	      to_rtx = shallow_copy_rtx (to_rtx);
 
-	      if (GET_MODE_BITSIZE (mode) == 0
-		  || GET_MODE_BITSIZE (mode) > BITS_PER_WORD)
-		mode = word_mode;
-	      mode = get_best_mode (bitsize, bitpos1, MEM_ALIGN (str_rtx),
-				    mode, 0);
-	      if (mode == VOIDmode)
-		break;
+	      set_mem_attributes_minus_bitpos (to_rtx, to, 0, bitpos);
 
-	      offset1 = bitpos1;
-	      bitpos1 %= GET_MODE_BITSIZE (mode);
-	      offset1 = (offset1 - bitpos1) / BITS_PER_UNIT;
-	      str_rtx = adjust_address (str_rtx, mode, offset1);
-	    }
-	  else if (!REG_P (str_rtx) && GET_CODE (str_rtx) != SUBREG)
-	    break;
+	      /* Deal with volatile and readonly fields.  The former is only
+		 done for MEM.  Also set MEM_KEEP_ALIAS_SET_P if needed.  */
+	      if (volatilep)
+		MEM_VOLATILE_P (to_rtx) = 1;
 
-	  /* If the bit field covers the whole REG/MEM, store_field
-	     will likely generate better code.  */
-	  if (bitsize >= GET_MODE_BITSIZE (GET_MODE (str_rtx)))
-	    break;
-
-	  /* We can't handle fields split across multiple entities.  */
-	  if (bitpos1 + bitsize > GET_MODE_BITSIZE (GET_MODE (str_rtx)))
-	    break;
-
-	  if (BYTES_BIG_ENDIAN)
-	    bitpos1 = GET_MODE_BITSIZE (GET_MODE (str_rtx)) - bitpos1
-		      - bitsize;
-
-	  /* Special case some bitfield op= exp.  */
-	  switch (TREE_CODE (src))
-	    {
-	    case PLUS_EXPR:
-	    case MINUS_EXPR:
-	      /* For now, just optimize the case of the topmost bitfield
-		 where we don't need to do any masking and also
-		 1 bit bitfields where xor can be used.
-		 We might win by one instruction for the other bitfields
-		 too if insv/extv instructions aren't used, so that
-		 can be added later.  */
-	      if (bitpos1 + bitsize != GET_MODE_BITSIZE (GET_MODE (str_rtx))
-		  && (bitsize != 1 || TREE_CODE (op1) != INTEGER_CST))
-		break;
-	      value = expand_expr (op1, NULL_RTX, GET_MODE (str_rtx), 0);
-	      value = convert_modes (GET_MODE (str_rtx),
-				     TYPE_MODE (TREE_TYPE (op1)), value,
-				     TYPE_UNSIGNED (TREE_TYPE (op1)));
-
-	      /* We may be accessing data outside the field, which means
-		 we can alias adjacent data.  */
-	      if (MEM_P (str_rtx))
-		{
-		  str_rtx = shallow_copy_rtx (str_rtx);
-		  set_mem_alias_set (str_rtx, 0);
-		  set_mem_expr (str_rtx, 0);
-		}
-
-	      binop = TREE_CODE (src) == PLUS_EXPR ? add_optab : sub_optab;
-	      if (bitsize == 1
-		  && bitpos1 + bitsize != GET_MODE_BITSIZE (GET_MODE (str_rtx)))
-		{
-		  value = expand_and (GET_MODE (str_rtx), value, const1_rtx,
-				      NULL_RTX);
-		  binop = xor_optab;
-		}
-	      value = expand_shift (LSHIFT_EXPR, GET_MODE (str_rtx), value,
-				    build_int_cst (NULL_TREE, bitpos1),
-				    NULL_RTX, 1);
-	      result = expand_binop (GET_MODE (str_rtx), binop, str_rtx,
-				     value, str_rtx, 1, OPTAB_WIDEN);
-	      if (result != str_rtx)
-		emit_move_insn (str_rtx, result);
-	      free_temp_slots ();
-	      pop_temp_slots ();
-	      return;
-
-	    default:
-	      break;
+	      if (!can_address_p (to))
+		MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
 	    }
 
-	  break;
+	  if (optimize_bitfield_assignment_op (bitsize, bitpos, mode1,
+					       to_rtx, to, from))
+	    result = NULL;
+	  else
+	    result = store_field (to_rtx, bitsize, bitpos, mode1, from,
+				  TREE_TYPE (tem), get_alias_set (to));
 	}
 
-      result = store_field (to_rtx, bitsize, bitpos, mode1, from,
-			    TREE_TYPE (tem), get_alias_set (to));
-
-      preserve_temp_slots (result);
+      if (result)
+	preserve_temp_slots (result);
       free_temp_slots ();
       pop_temp_slots ();
-
-      /* If the value is meaningful, convert RESULT to the proper mode.
-	 Otherwise, return nothing.  */
       return;
     }
 

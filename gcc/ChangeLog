@@ -1,5 +1,10 @@
 2004-12-01  Richard Henderson  <rth@redhat.com>
 
+	* expr.c (optimize_bitfield_assignment_op): Split out from ... 
+	(expand_assignment): ... here.  Use handled_component_p to gate
+	get_inner_reference code.  Simplify MEM handling.  Special case
+	CONCAT destinations.
+
 	* expmed.c (store_bit_field): Use simplify_gen_subreg instead
 	of gen_rtx_SUBREG directly.
 
