@@ -1,3 +1,15 @@
+Thu Sep 20 12:19:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (indirect_jump): Allow Pmode operand.
+	(tablejump): LIkewise; perform expansion to 64bit mode.
+	* i386.c (symbolic_operand): Allow 64bit PIC references.
+	(pic_symbolic_operand): Likewise.
+	(ix86_find_base_term): Strip the 64bit PIC references.
+	(legitimate_pic_address_disp_p): Handle 64bit PIC.
+	(legitimize_pic_address): Likewise.
+	(i386_simplify_dwarf_addr): Strip down the 64bit PIC references.
+	* i386.h (CASE_VECTOR_MODE): Set to SImode for 64bit PIC compilation.
+
 2001-09-19  Alan Modra  <amodra@bigpond.net.au>
 	    David Edelsohn  <edelsohn@gnu.org>
 

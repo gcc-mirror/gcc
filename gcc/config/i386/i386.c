@@ -1495,8 +1495,9 @@ symbolic_operand (op, mode)
       if (GET_CODE (op) == SYMBOL_REF
 	  || GET_CODE (op) == LABEL_REF
 	  || (GET_CODE (op) == UNSPEC
-	      && XINT (op, 1) >= 6
-	      && XINT (op, 1) <= 7))
+	      && (XINT (op, 1) == 6
+		  || XINT (op, 1) == 7
+		  || XINT (op, 1) == 15)))
 	return 1;
       if (GET_CODE (op) != PLUS
 	  || GET_CODE (XEXP (op, 1)) != CONST_INT)
@@ -1529,9 +1530,16 @@ pic_symbolic_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (GET_CODE (op) == CONST)
+  if (GET_CODE (op) != CONST)
+    return 0;
+  op = XEXP (op, 0);
+  if (TARGET_64BIT)
     {
-      op = XEXP (op, 0);
+      if (GET_CODE (XEXP (op, 0)) == UNSPEC)
+	return 1;
+    }
+  else 
+    {
       if (GET_CODE (op) == UNSPEC)
 	return 1;
       if (GET_CODE (op) != PLUS
@@ -3220,6 +3228,29 @@ ix86_find_base_term (x)
 {
   rtx term;
 
+  if (TARGET_64BIT)
+    {
+      if (GET_CODE (x) != CONST)
+	return x;
+      term = XEXP (x, 0);
+      if (GET_CODE (term) == PLUS
+	  && (GET_CODE (XEXP (term, 1)) == CONST_INT
+	      || GET_CODE (XEXP (term, 1)) == CONST_DOUBLE))
+	term = XEXP (term, 0);
+      if (GET_CODE (term) != UNSPEC
+	  || XVECLEN (term, 0) != 1
+	  || XINT (term, 1) !=  15)
+	return x;
+
+      term = XVECEXP (term, 0, 0);
+
+      if (GET_CODE (term) != SYMBOL_REF
+	  && GET_CODE (term) != LABEL_REF)
+	return x;
+
+      return term;
+    }
+
   if (GET_CODE (x) != PLUS
       || XEXP (x, 0) != pic_offset_table_rtx
       || GET_CODE (XEXP (x, 1)) != CONST)
@@ -3251,9 +3282,41 @@ int
 legitimate_pic_address_disp_p (disp)
      register rtx disp;
 {
+  /* In 64bit mode we can allow direct addresses of symbols and labels
+     when they are not dynamic symbols.  */
+  if (TARGET_64BIT)
+    {
+      rtx x = disp;
+      if (GET_CODE (disp) == CONST)
+	x = XEXP (disp, 0);
+      /* ??? Handle PIC code models */
+      if (GET_CODE (x) == PLUS
+	  && (GET_CODE (XEXP (x, 1)) == CONST_INT
+	      && ix86_cmodel == CM_SMALL_PIC
+	      && INTVAL (XEXP (x, 1)) < 1024*1024*1024
+	      && INTVAL (XEXP (x, 1)) > -1024*1024*1024))
+	x = XEXP (x, 0);
+      if (local_symbolic_operand (x, Pmode))
+	return 1;
+    }
   if (GET_CODE (disp) != CONST)
     return 0;
   disp = XEXP (disp, 0);
+
+  if (TARGET_64BIT)
+    {
+      /* We are unsafe to allow PLUS expressions.  This limit allowed distance
+         of GOT tables.  We should not need these anyway.  */
+      if (GET_CODE (disp) != UNSPEC
+	  || XVECLEN (disp, 0) != 1
+	  || XINT (disp, 1) != 15)
+	return 0;
+
+      if (GET_CODE (XVECEXP (disp, 0, 0)) != SYMBOL_REF
+	  && GET_CODE (XVECEXP (disp, 0, 0)) != LABEL_REF)
+	return 0;
+      return 1;
+    }
 
   if (GET_CODE (disp) == PLUS)
     {
@@ -3576,16 +3639,23 @@ legitimize_pic_address (orig, reg)
 	  if (local_symbolic_operand (op0, Pmode)
 	      && GET_CODE (op1) == CONST_INT)
 	    {
-	      current_function_uses_pic_offset_table = 1;
-	      new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0), 7);
-	      new = gen_rtx_PLUS (Pmode, new, op1);
-	      new = gen_rtx_CONST (Pmode, new);
-	      new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
-
-	      if (reg != 0)
+	      if (!TARGET_64BIT)
 		{
-		  emit_move_insn (reg, new);
-		  new = reg;
+		  current_function_uses_pic_offset_table = 1;
+		  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0), 7);
+		  new = gen_rtx_PLUS (Pmode, new, op1);
+		  new = gen_rtx_CONST (Pmode, new);
+		  new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
+
+		  if (reg != 0)
+		    {
+		      emit_move_insn (reg, new);
+		      new = reg;
+		    }
+		}
+	      else
+		{
+		  /* ??? We need to limit offsets here.  */
 		}
 	    }
 	  else
@@ -3900,6 +3970,9 @@ output_pic_addr_const (file, x, code)
 	case 8:
 	  fputs ("@PLT", file);
 	  break;
+	case 15:
+	  fputs ("@GOTPCREL(%RIP)", file);
+	  break;
 	default:
 	  output_operand_lossage ("invalid UNSPEC as operand");
 	  break;
@@ -3936,6 +4009,15 @@ i386_simplify_dwarf_addr (orig_x)
      rtx orig_x;
 {
   rtx x = orig_x;
+
+  if (TARGET_64BIT)
+    {
+      if (GET_CODE (x) != CONST
+	  || GET_CODE (XEXP (x, 0)) != UNSPEC
+	  || XINT (XEXP (x, 0), 1) != 15)
+	return orig_x;
+      return XVECEXP (XEXP (x, 0), 0, 0);
+    }
 
   if (GET_CODE (x) != PLUS
       || GET_CODE (XEXP (x, 0)) != REG
