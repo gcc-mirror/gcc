@@ -1,3 +1,8 @@
+2004-08-03  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/mips-args-[23].c: Declare abort() and exit().
+	* gcc.dg/torture/mips-hilo-[12].c: Likewise.
+
 2004-08-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/compat/struct-layout-1.exp: Fix error message typo.
