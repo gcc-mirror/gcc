@@ -255,6 +255,11 @@ GLIBCXX_3.4.1 {
  
 } GLIBCXX_3.4;
  
+GLIBCXX_3.4.2 {
+
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE4fileEv;
+
+} GLIBCXX_3.4.1;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
