@@ -162,11 +162,10 @@ do {									\
   ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);			\
 } while (0)
 
-/* This is the pseudo-op used to generate a 32-bit word of data with a
-   specific value in some section.  This is the same for all known svr4
-   assemblers.  */
+/* This is the pseudo-op used to generate a 64-bit word of data with a
+   specific value in some section.  */
 
-#define INT_ASM_OP		".long"
+#define INT_ASM_OP		".quad"
 
 /* This is the pseudo-op used to generate a contiguous sequence of byte
    values from a double-quoted string WITHOUT HAVING A TERMINATING NUL
