@@ -816,7 +816,6 @@ do {									\
   if (TARGET_RELOCATABLE)						\
     {									\
       char buf[256];							\
-      const char *p;							\
 									\
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCP", fixuplabelno);		\
       fixuplabelno++;							\
