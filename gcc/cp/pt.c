@@ -8210,20 +8210,11 @@ tsubst_enum (tag, newtag, args)
 
   for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
     {
-      tree value;
-      tree elt;
-
-      value = TREE_VALUE (e);
-      if (value)
-	{
-	  if (TREE_CODE (value) == NOP_EXPR)
-	    /* This is the special case where the value is really a
-	       TEMPLATE_PARM_INDEX.  See finish_enum.  */
-	    value = TREE_OPERAND (value, 0);
-	  value = tsubst_expr (value, args, NULL_TREE);
-	}
-
-      elt = build_enumerator (TREE_PURPOSE (e), value);
+      tree elt
+	= build_enumerator (TREE_PURPOSE (e), 
+			    tsubst_expr (TREE_VALUE (e), args,
+					 NULL_TREE),
+			    newtag); 
 
       /* We save the enumerators we have built so far in the
 	 TYPE_VALUES so that if the enumeration constants for

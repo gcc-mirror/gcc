@@ -2984,8 +2984,12 @@ do_identifier (token, parsing, args)
 	    cp_error ("enum `%D' is private", id);
 	  /* protected is OK, since it's an enum of `this'.  */
 	}
-      if (! processing_template_decl
-	  || (DECL_INITIAL (id)
+      if (!processing_template_decl
+	  /* Don't resolve enumeration constants while processing
+	     template declarations, unless they're for global
+	     enumerations and therefore cannot involve template
+	     parameters.  */
+	  || (!DECL_CONTEXT (id)
 	      && TREE_CODE (DECL_INITIAL (id)) == TEMPLATE_PARM_INDEX))
 	id = DECL_INITIAL (id);
     }
