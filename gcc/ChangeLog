@@ -1,3 +1,22 @@
+Wed Nov 22 00:52:55 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* rtl.h (traverse_md_constants): Declare.
+	(struct md_constant): Define.
+	* Makefile.in (HOST_RTL): Add hashtab.o .
+	(OBJS): Add hashtab.o .
+	(hashtab.o): New rule.
+	(rtl.o): Depends on HASHTAB_H.
+	* rtl.c (hashtab.h): #include.
+	(md_constants): New static variable.
+	(def_hash, def_name_eq_p, read_constants): New static functions.
+	(traverse_md_constants): New function.
+	(read_name): Do constant expansion.
+	(read_rtx): Recognize define_constants.
+	* gencodes.c (print_md_constant): New function.
+	(main): Emit #defines for all constant definitions encountered.
+	* md.texi (Constant Definitions): New node.
+	* gensupport.c (xcalloc): New function.
+
 2000-11-21  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_split_tfmode_frobsign): New.

@@ -1946,6 +1946,9 @@ extern void init_varasm_once		PARAMS ((void));
 
 /* In rtl.c */
 extern void init_rtl			PARAMS ((void));
+extern void traverse_md_constants	PARAMS ((int (*) (void **, void *),
+						 void *));
+struct md_constant { char *name, *value; };
 
 #ifdef BUFSIZ
 extern int read_skip_spaces		PARAMS ((FILE *));

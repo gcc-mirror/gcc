@@ -633,7 +633,7 @@ HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
 	    $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) $(HOST_CLIB)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o \
-		$(HOST_PREFIX)ggc-none.o gensupport.o
+		$(HOST_PREFIX)ggc-none.o gensupport.o hashtab.o
 
 HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 HOST_ERRORS = $(HOST_PREFIX)errors.o
@@ -735,7 +735,8 @@ OBJS = diagnostic.o version.o tree.o print-tree.o stor-layout.o fold-const.o  \
  profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o	      \
  mbchar.o splay-tree.o graph.o sbitmap.o resource.o hash.o predict.o	      \
  lists.o ggc-common.o $(GGC) stringpool.o simplify-rtx.o ssa.o bb-reorder.o   \
- sibcall.o conflict.o timevar.o ifcvt.o dominance.o dependence.o dce.o
+ sibcall.o conflict.o timevar.o ifcvt.o dominance.o dependence.o dce.o \
+ hashtab.o
 
 BACKEND = toplev.o libbackend.a
 
@@ -1653,6 +1654,11 @@ $(MD_FILE): $(MD_DEPS)
 gensupport.o: gensupport.c $(RTL_H) $(OBSTACK_H) system.h errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gensupport.c
 
+hashtab.o: $(srcdir)/../libiberty/hashtab.c $(CONFIG_H)
+	rm -f hashtab.c
+	$(LN_S) $(srcdir)/../libiberty/hashtab.c hashtab.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) hashtab.c
+
 genconfig : genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	  genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
@@ -1749,7 +1755,7 @@ gengenrtl.o : gengenrtl.c $(RTL_BASE_H) system.h real.h
 # and HOST_PREFIX_1 is `foobar', just to ensure these rules don't conflict
 # with the rules for rtl.o, alloca.o, etc.
 $(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) system.h $(RTL_H) \
-  bitmap.h $(GGC_H) toplev.h
+  bitmap.h $(GGC_H) toplev.h $(HASHTAB_H)
 	rm -f $(HOST_PREFIX)rtl.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c

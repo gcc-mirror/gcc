@@ -863,6 +863,21 @@ xstrdup (input)
 }
 
 PTR
+xcalloc (nelem, elsize)
+  size_t nelem, elsize;
+{
+  PTR newmem;
+
+  if (nelem == 0 || elsize == 0)
+    nelem = elsize = 1;
+
+  newmem = calloc (nelem, elsize);
+  if (!newmem)
+    fatal ("virtual memory exhausted");
+  return (newmem);
+}
+
+PTR
 xrealloc (old, size)
   PTR old;
   size_t size;
