@@ -1,3 +1,10 @@
+2002-02-26  Ryan T. Sammartino <ryants@shaw.ca>
+
+	* emit-rtl.c (gen_const_vector_0): Remove TYPE argument.
+	(init_emit_once): Update calls.
+	* fixinc/gnu-regex.c (_GNU_SOURCE): Remove.
+	(init_syntax_once): Prototype.
+
 2002-02-26  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-linux.h (LIB_SPEC): Update definition.
