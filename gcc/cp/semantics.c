@@ -2364,11 +2364,16 @@ finish_id_expression (tree id_expression,
       if (decl == error_mark_node)
 	{
 	  /* Name lookup failed.  */
-	  if (scope && (!TYPE_P (scope) || !dependent_type_p (scope)))
+	  if (scope 
+	      && (!TYPE_P (scope) 
+		  || (!dependent_type_p (scope)
+		      && !(TREE_CODE (id_expression) == IDENTIFIER_NODE
+			   && IDENTIFIER_TYPENAME_P (id_expression)
+			   && dependent_type_p (TREE_TYPE (id_expression))))))
 	    {
-	      /* Qualified name lookup failed, and the qualifying name
-      		 was not a dependent type.  That is always an
-      		 error.  */
+	      /* If the qualifying type is non-dependent (and the name
+		 does not name a conversion operator to a dependent
+		 type), issue an error.  */
 	      qualified_name_lookup_error (scope, id_expression);
 	      return error_mark_node;
 	    }
@@ -2378,6 +2383,8 @@ finish_id_expression (tree id_expression,
 	      *idk = CP_ID_KIND_UNQUALIFIED;
 	      return id_expression;
 	    }
+	  else
+	    decl = id_expression;
 	}
       /* If DECL is a variable that would be out of scope under
 	 ANSI/ISO rules, but in scope in the ARM, name lookup

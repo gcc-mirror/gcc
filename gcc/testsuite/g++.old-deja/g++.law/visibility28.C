@@ -11,7 +11,7 @@ public:
 class D : public B {
 public:
         virtual ~D() { printf( "D::~D\n"); }
-  void operator = ( int i) { this->~B(); }// { dg-error "" } D has no ~B part to it
+  void operator = ( int i) { this->~B(); }
 };
 
 int

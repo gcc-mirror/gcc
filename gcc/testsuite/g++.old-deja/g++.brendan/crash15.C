@@ -16,7 +16,7 @@ int
 main() {
   std::cout << "starting\n";
   B b;
-  b.~A();// { dg-error "" }  destructor
+  b.~A();
   std::cout << "done\n";
 }
 
