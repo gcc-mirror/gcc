@@ -188,30 +188,29 @@ namespace std
       typedef typename _Traits::off_type	off_type;
 
       streamsize __ret = 0;
-      streamsize __in_avail = __sbin->in_avail();
-      streamsize __xtrct;
       const off_type __buf_size =
 	__sbin->_M_buf_size > 0 ? __sbin->_M_buf_size : 1;
-
       try 
 	{
-	  while (__in_avail != -1)
+	  for (;;)
   	    {
- 	      if (__in_avail != 0 && __sbin->_M_in_cur
-		  && __sbin->_M_in_cur + __in_avail <= __sbin->_M_in_end) 
+	      streamsize __xtrct;
+	      const off_type __avail = __sbin->_M_in_end
+		                       - __sbin->_M_in_cur;
+ 	      if (__avail)
 		{
-		  __xtrct = __sbout->sputn(__sbin->_M_in_cur, __in_avail);
+		  __xtrct = __sbout->sputn(__sbin->_M_in_cur, __avail);
 		  __ret += __xtrct;
 		  __sbin->_M_in_cur_move(__xtrct);
-		  if (__xtrct != __in_avail)
+		  if (__xtrct != __avail)
 		    break;
 		}
  	      else 
 		{
 		  streamsize __charsread;
-		  const streamsize __size =
-		    std::min(__buf_size, off_type(__sbout->_M_out_end -
-						  __sbout->_M_out_cur));
+		  const off_type __size = std::min(__buf_size,
+						   off_type(__sbout->_M_out_end
+						   - __sbout->_M_out_cur));
 		  if (__size > 1)
 		    {
 		      _CharT* __buf =
@@ -242,7 +241,6 @@ namespace std
 		}
  	      if (_Traits::eq_int_type(__sbin->sgetc(), _Traits::eof()))
   		break;
- 	      __in_avail = __sbin->in_avail();
   	    }
 	}
       catch(exception& __fail) 
