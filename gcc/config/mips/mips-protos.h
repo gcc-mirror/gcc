@@ -83,8 +83,6 @@ extern int function_arg_partial_nregs (const CUMULATIVE_ARGS *,
 				       enum machine_mode, tree, int);
 extern bool mips_pad_arg_upward (enum machine_mode, tree);
 extern bool mips_pad_reg_upward (enum machine_mode, tree);
-extern int mips_setup_incoming_varargs (const CUMULATIVE_ARGS *,
-					enum machine_mode, tree, int);
 extern void mips_va_start (tree, rtx);
 extern struct rtx_def *mips_va_arg (tree, tree);
 
@@ -141,7 +139,6 @@ extern const char *mips_output_conditional_branch (rtx, rtx *, int, int,
 						   int, int);
 extern const char *mips_output_division (const char *, rtx *);
 extern unsigned int mips_hard_regno_nregs (int, enum machine_mode);
-extern int mips_return_in_memory (tree);
 extern const char *mips_emit_prefetch (rtx *);
 
 extern void irix_asm_output_align (FILE *, unsigned);
