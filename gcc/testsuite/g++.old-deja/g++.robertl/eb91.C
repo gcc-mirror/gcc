@@ -1,9 +1,9 @@
 #include <sys/types.h>
 #include <algorithm>
-typedef short int16_t;
-typedef char int8_t;
-typedef unsigned char u_int8_t;
-typedef unsigned short u_int16_t;
+typedef short _eb91_int16_t;
+typedef char _eb91_int8_t;
+typedef unsigned char _eb91_u_int8_t;
+typedef unsigned short _eb91_u_int16_t;
 
 template <class INT>
 class other_endian
@@ -13,22 +13,22 @@ private:
   INT value;
 
    
-  u_int16_t change_endian(u_int16_t x)
+  _eb91_u_int16_t change_endian(_eb91_u_int16_t x)
   {
     union {
-      u_int16_t i;
-      u_int8_t c[2];
+      _eb91_u_int16_t i;
+      _eb91_u_int8_t c[2];
     } val;
     val.i = x;
     swap(val.c[0], val.c[1]);
     return val.i;
   };
 
-  int16_t change_endian(int16_t x)
+  _eb91_int16_t change_endian(_eb91_int16_t x)
   {
     union {
-      int16_t i;
-      int8_t c[2];
+      _eb91_int16_t i;
+      _eb91_int8_t c[2];
     } val;
     val.i = x;
     swap(val.c[0], val.c[1]);
@@ -80,6 +80,6 @@ public:
 
 
 int main() {
-  other_endian <u_int16_t> little_endian_16_bit_int;
+  other_endian <_eb91_u_int16_t> little_endian_16_bit_int;
   return 0;
 }
