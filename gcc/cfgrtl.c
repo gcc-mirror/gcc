@@ -3071,7 +3071,9 @@ struct cfg_hooks rtl_cfg_hooks = {
   rtl_tidy_fallthru_edge,
   rtl_block_ends_with_call_p,
   rtl_block_ends_with_condjump_p,
-  rtl_flow_call_edges_add
+  rtl_flow_call_edges_add,
+  NULL, /* execute_on_growing_pred */
+  NULL /* execute_on_shrinking_pred */
 };
 
 /* Implementation of CFG manipulation for cfg layout RTL, where
@@ -3107,6 +3109,8 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   NULL,
   rtl_block_ends_with_call_p,
   rtl_block_ends_with_condjump_p,
-  rtl_flow_call_edges_add
+  rtl_flow_call_edges_add,
+  NULL, /* execute_on_growing_pred */
+  NULL /* execute_on_shrinking_pred */
 };
 

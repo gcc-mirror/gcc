@@ -804,3 +804,23 @@ flow_call_edges_add (sbitmap blocks)
 
   return (cfg_hooks->flow_call_edges_add) (blocks);
 }
+
+/* This function is called immediately after edge E is added to the
+   edge vector E->dest->preds.  */
+
+void
+execute_on_growing_pred (edge e)
+{
+  if (cfg_hooks->execute_on_growing_pred)
+    cfg_hooks->execute_on_growing_pred (e);
+}
+
+/* This function is called immediately before edge E is removed from
+   the edge vector E->dest->preds.  */
+
+void
+execute_on_shrinking_pred (edge e)
+{
+  if (cfg_hooks->execute_on_shrinking_pred)
+    cfg_hooks->execute_on_shrinking_pred (e);
+}

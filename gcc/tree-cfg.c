@@ -5360,7 +5360,9 @@ struct cfg_hooks tree_cfg_hooks = {
   NULL,				/* tidy_fallthru_edge  */
   tree_block_ends_with_call_p,	/* block_ends_with_call_p */
   tree_block_ends_with_condjump_p, /* block_ends_with_condjump_p */
-  tree_flow_call_edges_add      /* flow_call_edges_add */
+  tree_flow_call_edges_add,     /* flow_call_edges_add */
+  NULL,	/* execute_on_growing_pred */
+  NULL, /* execute_on_shrinking_pred */
 };
 
 

@@ -7,6 +7,23 @@
 	* tree-ssa.c (ssa_remove_edge): Call remove_phi_args instead
 	of remove_phi_arg.
 
+	* cfg.c (unchecked_make_edge): Call execute_on_growing_pred
+	after making an edge.
+	(remove_edge): Call execute_on_shrinking_pred before removing
+	an edge.
+	(redirect_edge_succ): Call execute_on_growing_pred and
+	execute_on_shrinking_pred.
+	* cfghooks.c (execute_on_growing_pred): New.
+	(execute_on_shrinking_pred): Likewise.
+	* cfghooks.h (cfg_hooks): Add execute_on_growing_pred and
+	execute_on_shrinking_pred.
+	Add prototypes for execute_on_growing_pred and
+	execute_on_shrinking_pred.
+	* cfgrtl.c (rtl_cfg_hooks): Add NULL hooks to
+	execute_on_growing_pred and execute_on_shrinking_pred.
+	(cfg_layout_rtl_cfg_hook): Likewise.
+	* tree-cfg.c (tree_cfg_hooks): Likewise.
+
 2004-11-23  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/cfg.texi (Maintaining the CFG): Use @ftable instead of
