@@ -1,3 +1,7 @@
+2004-09-13  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.c-torture/compile/pr17408.c:  New test case.
+
 2004-09-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16716

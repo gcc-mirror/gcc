@@ -3012,8 +3012,11 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
      TEM may equal DECL or it may be a previous decl of the same name.  */
   tem = pushdecl (decl);
 
-  if (initialized)
-    DECL_EXTERNAL (tem) = 0;
+  if (initialized && DECL_EXTERNAL (tem))
+    {
+      DECL_EXTERNAL (tem) = 0;
+      TREE_STATIC (tem) = 1;
+    }
 
   return tem;
 }
