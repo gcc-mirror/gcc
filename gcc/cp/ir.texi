@@ -879,6 +879,11 @@ can safely ignore @code{TEMPLATE_DECL}s, but should examine
 @code{FUNCTION_DECL} nodes on the specializations list just as they
 would ordinary @code{FUNCTION_DECL} nodes.
 
+For a class template, the @code{DECL_TEMPLATE_INSTANTIATIONS} list
+contains the instantiations.  The @code{TREE_VALUE} of each node is an
+instantiation of the class.  The @code{DECL_TEMPLATE_SPECIALIZATIONS}
+contains partial specializations of the class.
+
 @item THUNK_DECL
 
 These nodes represent stub code that adjusts the @code{this} pointer and
