@@ -1,6 +1,80 @@
+Thu Aug 14 10:05:13 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* rtti.c (permanent_obstack): Fix decl to not be a pointer.
+
+	* cp-tree.h (report_type_mismatch): Add prototype.
+	* call.c (build_overload_call_real): Remove erroneous fourth
+	argument to report_type_mismatch.
+	(build_user_type_conversion_1): Remove erroneous second arg to
+	tourney.
+	(build_new_function_call): Likewise.
+	(build_object_call): Likewise.
+	(build_new_op): Likewise.
+	(build_new_method_call): Likewise.
+
+Wed Aug 13 19:19:25 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* error.c (dump_decl): Don't bother processing a function with no
+	DECL_LANG_SPECIFIC.
+
+	* method.c (emit_thunk): Call init_function_start in the macro case.
+
+Wed Aug 13 10:46:19 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* decl2.c (DEFAULT_VTABLE_THUNKS): Define to be 0 if not
+	defined and used to set flag_vtable_thunks.
+
+Tue Aug 12 20:13:57 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y: Don't clear the inlines from their obstack until they've 
+	all been processed.
+
+	* decl.c (duplicate_decls): Don't complain about exception
+ 	specification mismatch if flag_exceptions is off.
+
+Mon Aug 11 15:01:56  1997  Marc Lehmann <pcg@goof.com>
+
+	* Make-lang.in (c++.distclean): Remove g++.c on make distclean.
+
+Sun Aug 10 12:06:09 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* cp-tree.h: Replace STDIO_PROTO with PROTO in include files.
+	* cvt.c, error.c, except.c, expr.c, friend.c, init.c, rtti.c:
+	Include <stdio.h> before include files that formerly used STDIO_PROTO. 
+
+	* decl.c, g++spec.c, lex.c, method.c, repo.c:
+	Include	"config.h" first, as per autoconf manual.
+
+Fri Aug  8 11:47:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (duplicate_decls): Tweak wording.
+	* lex.c (do_pending_defargs): Don't die if we see a default arg
+	that isn't a DEFAULT_ARG.
+	* error.c (dump_expr): Handle DEFAULT_ARG.
+
+	* decl2.c (lang_decode_option): Handle -fhandle-exceptions.
+	* lang-options.h: Add -fhandle-exceptions.
+
+	* class.c (build_vtable): vtables are artificial.
+	(prepare_fresh_vtable): Likewise.
+
+Wed Aug  6 11:02:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (ocp_convert): After converting to the target type, set
+ 	LOOKUP_NO_CONVERSION.
+
+	* call.c (joust): Warn about potentially confusing promotion rules
+	with -Wsign-promo.
+	* cp-tree.h, lang-options.h, decl2.c: Support -Wsign-promo.
+
+Tue Aug  5 15:15:07 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* exception.cc: Declare __terminate_func with noreturn attribute.
+
 Fri Aug  1 03:18:15 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y: Break out eat_saved_input, handle errors.
+	(function_try_block): Use compstmt instead of compstmt_or_error.
 
 Thu Jul 31 17:14:04 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
@@ -573,6 +647,8 @@ Mon Apr 21 15:42:27 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	function is not changed.
 
 	* call.c (build_over_call): Move setting of conv into the loop.
+	Note: this change, along with the related changes of the 18th thru
+	the 20th of April, fix an infinite loop problem in conversions.
 
 Sun Apr 20 16:24:29 1997  Jason Merrill  <jason@yorick.cygnus.com>
 

@@ -248,6 +248,11 @@ extern int warn_pmf2ptr;
 
 extern int warn_ecpp;
 
+/* Nonzero means warn where overload resolution chooses a promotion from
+   unsigned to signed over a conversion to an unsigned of the same size.  */
+
+extern int warn_sign_promo;
+
 /* Non-zero means warn when a function is declared extern and later inline.  */
 
 extern int warn_extern_inline;
@@ -1463,7 +1468,7 @@ extern tree convert_and_check			PROTO((tree, tree));
 extern void overflow_warning			PROTO((tree));
 extern void unsigned_conversion_warning		PROTO((tree, tree));
 /* Read the rest of the current #-directive line.  */
-extern char *get_directive_line                 STDIO_PROTO((FILE *));
+extern char *get_directive_line                 PROTO((FILE *));
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.  */
@@ -2265,7 +2270,7 @@ extern void yyerror				PROTO((char *));
 /* in method.c */
 extern void init_method				PROTO((void));
 extern void do_inline_function_hair		PROTO((tree, tree));
-/* skip report_type_mismatch */
+extern void  report_type_mismatch		PROTO((struct candidate *, tree, char *));
 extern char *build_overload_name		PROTO((tree, int, int));
 extern tree build_static_name			PROTO((tree, tree));
 extern tree build_decl_overload			PROTO((tree, tree, int));

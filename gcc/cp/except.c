@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
 #include "cp-tree.h"
@@ -43,8 +44,6 @@ tree builtin_return_address_fndecl;
 /* Used to cache a call to __builtin_return_address.  */
 static tree BuiltinReturnAddress;
      
-
-#include <stdio.h>
 
 static void
 easy_expand_asm (str)

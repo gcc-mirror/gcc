@@ -2885,8 +2885,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, require_complete)
     return NULL_TREE;
   
   if (flags & LOOKUP_COMPLAIN)
-    report_type_mismatch (cp, parms, "function",
-			  decl_as_string (cp->function, 1));
+    report_type_mismatch (cp, parms, "function");
 
   return error_mark_node;
 }
@@ -4287,7 +4286,7 @@ build_user_type_conversion_1 (totype, expr, flags)
     }
 
   candidates = splice_viable (candidates);
-  cand = tourney (candidates, totype);
+  cand = tourney (candidates);
 
   if (cand == 0)
     {
@@ -4400,7 +4399,7 @@ build_new_function_call (fn, args, obj)
 	  return error_mark_node;
 	}
       candidates = splice_viable (candidates);
-      cand = tourney (candidates, NULL_TREE);
+      cand = tourney (candidates);
 
       if (cand == 0)
 	{
@@ -4474,7 +4473,7 @@ build_object_call (obj, args)
     }
 
   candidates = splice_viable (candidates);
-  cand = tourney (candidates, NULL_TREE);
+  cand = tourney (candidates);
 
   if (cand == 0)
     {
@@ -4749,7 +4748,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
       return error_mark_node;
     }
   candidates = splice_viable (candidates);
-  cand = tourney (candidates, NULL_TREE);
+  cand = tourney (candidates);
 
   if (cand == 0)
     {
@@ -5386,7 +5385,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       return error_mark_node;
     }
   candidates = splice_viable (candidates);
-  cand = tourney (candidates, NULL_TREE);
+  cand = tourney (candidates);
 
   if (cand == 0)
     {
@@ -5751,11 +5750,36 @@ joust (cand1, cand2)
 
   for (i = 0; i < len; ++i)
     {
-      int comp = compare_ics (TREE_VEC_ELT (cand1->convs, i+off1),
-			      TREE_VEC_ELT (cand2->convs, i+off2));
+      tree t1 = TREE_VEC_ELT (cand1->convs, i+off1);
+      tree t2 = TREE_VEC_ELT (cand2->convs, i+off2);
+      int comp = compare_ics (t1, t2);
 
       if (comp != 0)
 	{
+	  if (warn_sign_promo
+	      && ICS_RANK (t1) + ICS_RANK (t2) == STD_RANK + PROMO_RANK
+	      && TREE_CODE (t1) == STD_CONV
+	      && TREE_CODE (t2) == STD_CONV
+	      && TREE_CODE (TREE_TYPE (t1)) == INTEGER_TYPE
+	      && TREE_CODE (TREE_TYPE (t2)) == INTEGER_TYPE
+	      && (TYPE_PRECISION (TREE_TYPE (t1))
+		  == TYPE_PRECISION (TREE_TYPE (t2)))
+	      && (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (t1, 0)))
+		  || (TREE_CODE (TREE_TYPE (TREE_OPERAND (t1, 0)))
+		      == ENUMERAL_TYPE)))
+	    {
+	      tree type = TREE_TYPE (TREE_OPERAND (t1, 0));
+	      tree type1, type2;
+	      if (comp > 0)
+		type1 = TREE_TYPE (t1), type2 = TREE_TYPE (t2);
+	      else
+		type1 = TREE_TYPE (t2), type2 = TREE_TYPE (t1);
+
+	      cp_warning ("`%T' promotes to `%T', not `%T'",
+			  type, type1, type2);
+	      cp_warning ("  in call to `%D'", DECL_NAME (cand1->fn));
+	    }
+
 	  if (winner && comp != winner)
 	    {
 	      winner = 0;

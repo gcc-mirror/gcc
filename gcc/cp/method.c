@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Handle method declarations.  */
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "cp-tree.h"
 #include "class.h"
@@ -1777,6 +1777,7 @@ emit_thunk (thunk_fndecl)
     DECL_RESULT (thunk_fndecl)
       = build_decl (RESULT_DECL, 0, integer_type_node);
     fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
+    init_function_start (thunk_fndecl, input_filename, lineno);
     assemble_start_function (thunk_fndecl, fnname);
     ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
     assemble_end_function (thunk_fndecl, fnname);
