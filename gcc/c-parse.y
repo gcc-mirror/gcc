@@ -126,6 +126,9 @@ char *language_string = "GNU C";
 %token ATTRIBUTE EXTENSION LABEL
 %token REALPART IMAGPART VA_ARG
 
+/* Used in c-lex.c for parsing pragmas.  */
+%token END_OF_LINE
+
 /* Add precedence rules to solve dangling else s/r conflict */
 %nonassoc IF
 %nonassoc ELSE

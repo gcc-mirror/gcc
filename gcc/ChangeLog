@@ -1,3 +1,35 @@
+Wed Aug  4 12:53:44 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-lex.c: Sync with C++ frontend.
+	(linemode): New variable.
+	(parse_float): imag, conversion_errno, and type are output only.
+	(yylex): Adjust.  Move initial '.' case into main switch.
+	Use linemode.
+	(handle_generic_pragma): Just deal with tokens.
+	(readescape): Use ISXDIGIT and ISGRAPH.
+	* c-parse.in: Add END_OF_LINE token.
+
+	* c-lex.c (lang_init): Generalize.
+	(nextchar): Remove.  Replace uses with UNGETC.
+	(skip_white_space): Handle linemode here.  Optimize for cpplib.
+	(skip_white_space_on_line): Remove.
+	(extend_token_buffer_to): New fn.
+	(extend_token_buffer): Use it.
+	(read_line_number, check_newline): Just deal with tokens.
+	(token_getch, token_put_back): New fns.
+	(yylex): Use them.  More cpplib optimizations.  Simplify.
+
+Wed Aug  4 12:53:44 1999  Michael Tiemann  <tiemann@holodeck.cygnus.com>
+			  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-lex.c (init_parse): Set cpp_token to CPP_DIRECTIVE.
+	(consume_string): Make this smart about USE_CPPLIB.
+	(check_newline): Rewrite to be intelligent about USE_CPPLIB.
+	(yylex): Rewrite to be intelligent about USE_CPPLIB.
+	Also, clean up cases where we redundantly set token_buffer[0].
+	(read_line_number): New fn.
+	(ignore_escape_flag): New variable.
+
 Wed Aug  4 13:12:17 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (divsi3, udivsi3, modsi3, umodsi3 expanders): Clobber a new
