@@ -1,3 +1,7 @@
+Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (set_block): Set NAMES and BLOCKS from BLOCK.
+
 2001-02-15  Jim Meyering  <meyering@lucent.com>
 
 	* Make-lang.in (CHILL.install-common): Depend on `installdirs'.
