@@ -1,3 +1,27 @@
+2002-11-07  Jason Thorpe  <thorpej@wasabisystems.com>
+  
+	* config/arm/arm-protos.h (arm_get_frame_size)
+	(thumb_get_frame_size): New prototypes.  
+	* config/arm/arm.c (arm_get_frame_size)
+	(thumb_get_frame_size): New functions.       
+	(use_return_insn, arm_output_epilogue, arm_output_function_epilogue) 
+	(arm_compute_initial_elimination_offset, arm_expand_prologue): Use  
+	arm_get_frame_size.
+	(thumb_expand_prologue, thumb_expand_epilogue): Use
+	thumb_get_frame_size.
+	* config/arm/arm.h (PREFERRED_STACK_BOUNDARY): Define.
+	(machine_function): Add frame_size member.
+	(THUMB_INITIAL_ELIMINATION_OFFSET): Use thumb_get_frame_size.
+
+2002-11-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (bit_count): Make argument unsigned long.  Return unsigned.
+	Adjust code to use portable unsigned bit manipulation.
+	(insn_flags, tune_flags): Change type to unsigned.
+	(struct processors): Make flags unsigned long.
+	(arm_override_options): Change type of count and current_bit_count
+	to unsigned.
+
 2002-11-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/elf.h (TYPE_OPERAND_FMT): Prefix type with %.

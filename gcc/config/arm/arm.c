@@ -65,7 +65,7 @@ const struct attribute_spec arm_attribute_table[];
 /* Forward function declarations.  */
 static void      arm_add_gc_roots 		PARAMS ((void));
 static int       arm_gen_constant		PARAMS ((enum rtx_code, Mmode, Hint, rtx, rtx, int, int));
-static Ulong     bit_count 			PARAMS ((signed int));
+static unsigned  bit_count 			PARAMS ((Ulong));
 static int       const_ok_for_op 		PARAMS ((Hint, enum rtx_code));
 static int       eliminate_lr2ip		PARAMS ((rtx *));
 static rtx	 emit_multi_reg_push		PARAMS ((int));
@@ -246,13 +246,13 @@ int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
 
 /* The bits in this mask specify which
    instructions we are allowed to generate.  */
-static int insn_flags = 0;
+static unsigned long insn_flags = 0;
 
 /* The bits in this mask specify which instruction scheduling options should
    be used.  Note - there is an overlap with the FL_FAST_MULT.  For some
    hardware we want to be able to generate the multiply instructions, but to
    tune as if they were not present in the architecture.  */
-static int tune_flags = 0;
+static unsigned long tune_flags = 0;
 
 /* The following are used in the arm.md file as equivalents to bits
    in the above two flag variables.  */
@@ -324,7 +324,7 @@ static const char * const arm_condition_codes[] =
 struct processors
 {
   const char *const name;
-  const unsigned int flags;
+  const unsigned long flags;
 };
 
 /* Not all of these give usefully different compilation alternatives,
@@ -412,17 +412,17 @@ struct arm_cpu_select arm_select[] =
   { NULL,	"-mtune=",	all_cores }
 };
 
-/* Return the number of bits set in value' */
-static unsigned long
+/* Return the number of bits set in VALUE.  */
+static unsigned
 bit_count (value)
-     signed int value;
+     unsigned long value;
 {
   unsigned long count = 0;
   
   while (value)
     {
-      value &= ~(value & -value);
-      ++count;
+      count++;
+      value &= value - 1;  /* Clear the least-significant set bit.  */
     }
 
   return count;
@@ -549,7 +549,7 @@ arm_override_options ()
 
 	  if (sel->name == NULL)
 	    {
-	      unsigned int        current_bit_count = 0;
+	      unsigned current_bit_count = 0;
 	      const struct processors * best_fit = NULL;
 	      
 	      /* Ideally we would like to issue an error message here
@@ -568,7 +568,7 @@ arm_override_options ()
 	      for (sel = all_cores; sel->name != NULL; sel++)
 		if ((sel->flags & sought) == sought)
 		  {
-		    unsigned int count;
+		    unsigned count;
 
 		    count = bit_count (sel->flags & insn_flags);
 
@@ -928,7 +928,7 @@ use_return_insn (iscond)
       /* Of if the function calls __builtin_eh_return () */
       || ARM_FUNC_TYPE (func_type) == ARM_FT_EXCEPTION_HANDLER
       /* Or if there is no frame pointer and there is a stack adjustment.  */
-      || ((get_frame_size () + current_function_outgoing_args_size != 0)
+      || ((arm_get_frame_size () + current_function_outgoing_args_size != 0)
 	  && !frame_pointer_needed))
     return 0;
 
@@ -7564,7 +7564,7 @@ arm_output_epilogue (really_return)
      frame that is $fp + 4 for a non-variadic function.  */
   int floats_offset = 0;
   rtx operands[3];
-  int frame_size = get_frame_size ();
+  int frame_size = arm_get_frame_size ();
   FILE * f = asm_out_file;
   rtx eh_ofs = cfun->machine->eh_epilogue_sp_ofs;
 
@@ -7846,6 +7846,9 @@ arm_output_function_epilogue (file, frame_size)
     }
   else
     {
+      /* We need to take into account any stack-frame rounding.  */
+      frame_size = arm_get_frame_size ();
+
       if (use_return_insn (FALSE)
 	  && return_used_this_function
 	  && (frame_size + current_function_outgoing_args_size) != 0
@@ -8088,7 +8091,7 @@ arm_compute_initial_elimination_offset (from, to)
      unsigned int from;
      unsigned int to;
 {
-  unsigned int local_vars    = (get_frame_size () + 3) & ~3;
+  unsigned int local_vars    = arm_get_frame_size ();
   unsigned int outgoing_args = current_function_outgoing_args_size;
   unsigned int stack_frame;
   unsigned int call_saved_registers;
@@ -8207,6 +8210,51 @@ arm_compute_initial_elimination_offset (from, to)
 	 hard frame pointer will never be used.  */
       abort ();
     }
+}
+
+/* Calculate the size of the stack frame, taking into account any
+   padding that is required to ensure stack-alignment.  */
+
+HOST_WIDE_INT
+arm_get_frame_size ()
+{
+  int regno;
+
+  int base_size = ROUND_UP (get_frame_size ());
+  int entry_size = 0;
+  unsigned long func_type = arm_current_func_type ();
+
+  if (! TARGET_ARM)
+    abort();
+
+  if (! TARGET_ATPCS)
+    return base_size;
+
+  /* We know that SP will be word aligned on entry, and we must
+     preserve that condition at any subroutine call.  But those are
+     the only constraints.  */
+
+  /* Space for variadic functions.  */
+  if (current_function_pretend_args_size)
+    entry_size += current_function_pretend_args_size;
+
+  /* Space for saved registers.  */
+  entry_size += bit_count (arm_compute_save_reg_mask ()) * 4;
+
+  /* Space for saved FPA registers.  */
+  if (! IS_VOLATILE (func_type))
+    {
+      for (regno = FIRST_ARM_FP_REGNUM; regno <= LAST_ARM_FP_REGNUM; regno++)
+      if (regs_ever_live[regno] && ! call_used_regs[regno])
+	entry_size += 12;
+    }
+
+  if ((entry_size + base_size + current_function_outgoing_args_size) & 7)
+    base_size += 4;
+  if ((entry_size + base_size + current_function_outgoing_args_size) & 7)
+    abort ();
+
+  return base_size;
 }
 
 /* Generate the prologue instructions for entry into an ARM function.  */
@@ -8444,7 +8492,7 @@ arm_expand_prologue ()
 	}
     }
 
-  amount = GEN_INT (-(get_frame_size ()
+  amount = GEN_INT (-(arm_get_frame_size ()
 		      + current_function_outgoing_args_size));
 
   if (amount != const0_rtx)
@@ -10193,12 +10241,87 @@ arm_init_expanders ()
   init_machine_status = arm_init_machine_status;
 }
 
+HOST_WIDE_INT
+thumb_get_frame_size ()
+{
+  int regno;
+
+  int base_size = ROUND_UP (get_frame_size ());
+  int count_regs = 0;
+  int entry_size = 0;
+
+  if (! TARGET_THUMB)
+    abort ();
+
+  if (! TARGET_ATPCS)
+    return base_size;
+
+  /* We need to know if we are a leaf function.  Unfortunately, it
+     is possible to be called after start_sequence has been called,
+     which causes get_insns to return the insns for the sequence,
+     not the function, which will cause leaf_function_p to return
+     the incorrect result.
+
+     To work around this, we cache the computed frame size.  This
+     works because we will only be calling RTL expanders that need
+     to know about leaf functions once reload has completed, and the
+     frame size cannot be changed after that time, so we can safely
+     use the cached value.  */
+
+  if (reload_completed)
+    return cfun->machine->frame_size;
+
+  /* We know that SP will be word aligned on entry, and we must
+     preserve that condition at any subroutine call.  But those are
+     the only constraints.  */
+
+  /* Space for variadic functions.  */
+  if (current_function_pretend_args_size)
+    entry_size += current_function_pretend_args_size;
+
+  /* Space for pushed lo registers.  */
+  for (regno = 0; regno <= LAST_LO_REGNUM; regno++)
+    if (THUMB_REG_PUSHED_P (regno))
+      count_regs++;
+
+  /* Space for backtrace structure.  */
+  if (TARGET_BACKTRACE)
+    {
+      if (count_regs == 0 && regs_ever_live[LAST_ARG_REGNUM] != 0)
+	entry_size += 20;
+      else
+	entry_size += 16;
+    }
+
+  if (count_regs || !leaf_function_p () || thumb_far_jump_used_p (1))
+    count_regs++;	/* LR */
+
+  entry_size += count_regs * 4;
+  count_regs = 0;
+
+  /* Space for pushed hi regs.  */
+  for (regno = 8; regno < 13; regno++)
+    if (THUMB_REG_PUSHED_P (regno))
+      count_regs++;
+
+  entry_size += count_regs * 4;
+
+  if ((entry_size + base_size + current_function_outgoing_args_size) & 7)
+    base_size += 4;
+  if ((entry_size + base_size + current_function_outgoing_args_size) & 7)
+    abort ();
+
+  cfun->machine->frame_size = base_size;
+
+  return base_size;
+}
+
 /* Generate the rest of a function's prologue.  */
 
 void
 thumb_expand_prologue ()
 {
-  HOST_WIDE_INT amount = (get_frame_size ()
+  HOST_WIDE_INT amount = (thumb_get_frame_size ()
 			  + current_function_outgoing_args_size);
   unsigned long func_type;
 
@@ -10293,7 +10416,7 @@ thumb_expand_prologue ()
 void
 thumb_expand_epilogue ()
 {
-  HOST_WIDE_INT amount = (get_frame_size ()
+  HOST_WIDE_INT amount = (thumb_get_frame_size ()
 			  + current_function_outgoing_args_size);
   
   /* Naked functions don't have prologues.  */

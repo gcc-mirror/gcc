@@ -689,6 +689,8 @@ extern int arm_is_6_or_7;
 
 #define STACK_BOUNDARY  32
 
+#define PREFERRED_STACK_BOUNDARY (TARGET_ATPCS ? 64 : 32)
+
 #define FUNCTION_BOUNDARY  32
 
 /* The lowest bit is used to indicate Thumb-mode functions, so the
@@ -1436,6 +1438,8 @@ typedef struct machine_function GTY(())
   int arg_pointer_live;
   /* Records if the save of LR has been eliminated.  */
   int lr_save_eliminated;
+  /* The size of the stack frame.  Only valid after reload.  */
+  int frame_size;
   /* Records the type of the current function.  */
   unsigned long func_type;
   /* Record if the function has a variable argument list.  */
@@ -1679,7 +1683,7 @@ typedef struct
   if ((TO) == STACK_POINTER_REGNUM)					\
     {									\
       (OFFSET) += current_function_outgoing_args_size;			\
-      (OFFSET) += ROUND_UP (get_frame_size ());				\
+      (OFFSET) += thumb_get_frame_size ();				\
      }									\
 }
 

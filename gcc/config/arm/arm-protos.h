@@ -31,6 +31,7 @@ extern void   arm_finalize_pic		PARAMS ((int));
 extern int    arm_volatile_func		PARAMS ((void));
 extern const char * arm_output_epilogue	PARAMS ((int));
 extern void   arm_expand_prologue	PARAMS ((void));
+extern HOST_WIDE_INT arm_get_frame_size	PARAMS ((void));
 /* Used in arm.md, but defined in output.c.  */
 extern void   assemble_align		PARAMS ((int)); 
 extern const char * arm_strip_name_encoding	PARAMS ((const char *));
@@ -160,6 +161,7 @@ extern int    arm_float_words_big_endian PARAMS ((void));
 extern void   arm_init_expanders	PARAMS ((void));
 extern int    thumb_far_jump_used_p	PARAMS ((int));
 extern const char * thumb_unexpanded_epilogue	PARAMS ((void));
+extern HOST_WIDE_INT thumb_get_frame_size PARAMS ((void));
 extern void   thumb_expand_prologue	PARAMS ((void));
 extern void   thumb_expand_epilogue	PARAMS ((void));
 #ifdef TREE_CODE
