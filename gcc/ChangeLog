@@ -1,5 +1,17 @@
 2000-12-22  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	1999-12-16  David S. Miller  <davem@redhat.com>
+	* expr.c (emit_move_insn_1): Only emit clobbers if one of
+	the outputs is a SUBREG.
+
+	Wed Sep 22 17:35:55 1999  Michael Meissner  <meissner@cygnus.com>
+	* expr.c (emit_move_insn_1): If we are copying a complex that fits
+	in one word or less (complex char, complex short, or on 64 bit
+	systems complex float) to/from a hard register, copy it through
+	memory instead of dying in gen_{real,imag}part.  If we have a
+	short complex type, prevent inlining since it allocates stack
+	memory.
+
 	Fri Dec 15 15:32:16 MET 2000  Jan Hubicka  <jh@suse.cz>
 	* combine.c (cant_combine_insn_p): Get around SUBREGs when determining
 	hardreg<->reg moves.
