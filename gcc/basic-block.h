@@ -294,9 +294,6 @@ int find_edge_index			PROTO ((struct edge_list *,
 
 extern void compute_preds_succs		PROTO ((int_list_ptr *, int_list_ptr *,
 						int *, int *));
-extern void compute_dominators		PROTO ((sbitmap *, sbitmap *,
-						int_list_ptr *,
-						int_list_ptr *));
 extern void compute_flow_dominators	PROTO ((sbitmap *, sbitmap *));
 extern void compute_immediate_dominators	PROTO ((int *, sbitmap *));
 

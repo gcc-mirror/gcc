@@ -1,3 +1,16 @@
+Sat Nov  6 17:34:39 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcse.c (post_dominators): Kill.
+	(alloc_code_hoist_mem, free_code_hoist_mem); Kill post_dominators.
+	(compute_code_hoist_data): Use compute_flow_dominators.  Do not
+	pass in a pdom array since we do not need pdoms.
+	* haifa-sched.c (schedule_insns): Similarly.
+	* flow.c (compute_dominators): Remove dead function.
+	(compute_flow_dominators): Do not compute doms or pdoms if the
+	caller does not request them.  Split up loop to build doms and
+	pdoms.  Use a worklist to compute doms and pdoms.
+	* basic-block.h (compute_dominators): Remove prototype.
+
 Sat Nov  6 11:38:39 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (struct haifa_insn_data, h_i_d): New.

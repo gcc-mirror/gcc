@@ -5330,7 +5330,6 @@ static sbitmap *hoist_exprs;
 
 /* Dominator bitmaps.  */
 static sbitmap *dominators;
-static sbitmap *post_dominators;
 
 /* ??? We could compute post dominators and run this algorithm in
    reverse to to perform tail merging, doing so would probably be
@@ -5355,7 +5354,6 @@ alloc_code_hoist_mem (n_blocks, n_exprs)
   transpout = sbitmap_vector_alloc (n_blocks, n_exprs);
 
   dominators = sbitmap_vector_alloc (n_blocks, n_blocks);
-  post_dominators = sbitmap_vector_alloc (n_blocks, n_blocks);
 }
 
 /* Free vars used for code hoisting analysis.  */
@@ -5373,7 +5371,6 @@ free_code_hoist_mem ()
   free (transpout);
 
   free (dominators);
-  free (post_dominators);
 }
 
 /* Compute the very busy expressions at entry/exit from each block.
@@ -5418,7 +5415,7 @@ compute_code_hoist_data ()
   compute_local_properties (transp, comp, antloc, 0);
   compute_transpout ();
   compute_code_hoist_vbeinout ();
-  compute_flow_dominators (dominators, post_dominators);
+  compute_flow_dominators (dominators, NULL);
   if (gcse_file)
     fprintf (gcse_file, "\n");
 }
