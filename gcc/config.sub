@@ -70,19 +70,18 @@ case $os in
 		;;
 	-sco3.2v[4-9]*)
 		# Don't forget version if it is 3.2v4 or newer.
-		os=-sco3.2v4
-		basic_machine=i386-unknown
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-unknown/'`
 		;;
 	-sco*)
 		os=-sco3.2v2
-		basic_machine=i386-unknown
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-unknown/'`
 		;;
 	-isc)
 		os=-isc2.2
-		basic_machine=i386-unknown
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-unknown/'`
 		;;
 	-isc*)
-		basic_machine=i386-unknown
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-unknown/'`
 		;;
 esac
 
@@ -113,44 +112,17 @@ case $basic_machine in
 		basic_machine=vax-dec
 		os=-vms
 		;;
-	i386v32)
-		basic_machine=i386-unknown
+# I'm not sure what "Sysv32" means.  Should this be sysv3.2?
+	i[34]86v32)
+		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-sysv32
 		;;
-	i386-sco* | i386sco | sco)
-		basic_machine=i386-unknown
-		os=-sco3.2v2
-		;;
-	i386-isc* | isc)
-		basic_machine=i386-unknown
-		os=-isc
-		;;
-	i486v32)
-		basic_machine=i486-unknown
-		os=-sysv32
-		;;
-	i486-sco* | i486sco | sco)
-		basic_machine=i486-unknown
-		os=-sco3.2v2
-		;;
-	i486-isc* | isc)
-		basic_machine=i486-unknown
-		os=-isc
-		;;
-	i386v4*)
-		basic_machine=i386-unknown
+	i[34]86v4*)
+		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-sysv4
 		;;
-	i486v4*)
-		basic_machine=i486-unknown
-		os=-sysv4
-		;;
-	i386v)
-		basic_machine=i386-unknown
-		os=-sysv
-		;;
-	i486v)
-		basic_machine=i486-unknown
+	i[34]86v)
+		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-sysv
 		;;
 	spur)
