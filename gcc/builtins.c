@@ -106,8 +106,7 @@ static rtx expand_builtin_memcpy	PARAMS ((tree));
 static rtx expand_builtin_strcpy	PARAMS ((tree));
 static rtx expand_builtin_memset	PARAMS ((tree));
 static rtx expand_builtin_bzero		PARAMS ((tree));
-static rtx expand_builtin_strlen	PARAMS ((tree, rtx,
-						 enum machine_mode));
+static rtx expand_builtin_strlen	PARAMS ((tree, rtx));
 static rtx expand_builtin_strstr	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
@@ -1298,14 +1297,12 @@ expand_builtin_mathfn (exp, target, subtarget)
 
 /* Expand expression EXP which is a call to the strlen builtin.  Return 0
    if we failed the caller should emit a normal call, otherwise
-   try to get the result in TARGET, if convenient (and in mode MODE if that's
-   convenient).  */
+   try to get the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strlen (exp, target, mode)
+expand_builtin_strlen (exp, target)
      tree exp;
      rtx target;
-     enum machine_mode mode;
 {
   tree arglist = TREE_OPERAND (exp, 1);
   enum machine_mode value_mode = TYPE_MODE (TREE_TYPE (exp));
@@ -2624,7 +2621,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case BUILT_IN_STRLEN:
-      target = expand_builtin_strlen (exp, target, mode);
+      target = expand_builtin_strlen (exp, target);
       if (target)
 	return target;
       break;

@@ -2871,7 +2871,6 @@ process_command (argc, argv)
      const char *const *argv;
 {
   register int i;
-  unsigned int j;
   const char *temp;
   char *temp1;
   const char *spec_lang = 0;

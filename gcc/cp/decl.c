@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "../hash.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 extern int current_class_depth;
 
