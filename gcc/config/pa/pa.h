@@ -2125,10 +2125,12 @@ DTORS_SECTION_FUNCTION
 { fputs ("\t.word ", FILE);			\
   if (function_label_operand (VALUE, VOIDmode)	\
       && !TARGET_PORTABLE_RUNTIME)		\
-    fputs ("P%", FILE);			\
-  if (in_section == in_named		\
-      && ! strcmp (".gcc_except_table", in_named_name))\
-    fputs ("P%", FILE);			\
+    fputs ("P%", FILE);				\
+  if (in_section == in_named			\
+      && ! strcmp (".gcc_except_table", in_named_name)\
+      && TARGET_GAS				\
+      && ! TARGET_PORTABLE_RUNTIME)		\
+    fputs ("E%", FILE);				\
   output_addr_const (FILE, (VALUE));		\
   fputs ("\n", FILE);}
 
