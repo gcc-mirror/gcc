@@ -97,6 +97,7 @@ extern bool ffe_is_mainprog_;
 extern bool ffe_is_null_version_;
 extern bool ffe_is_onetrip_;
 extern bool ffe_is_silent_;
+extern bool ffe_is_subscript_check_;
 extern bool ffe_is_typeless_boz_;
 extern bool ffe_is_pedantic_;
 extern bool ffe_is_saveall_;
@@ -188,6 +189,7 @@ void ffe_terminate_4 (void);
 #define ffe_is_saveall() ffe_is_saveall_
 #define ffe_is_second_underscore() ffe_is_second_underscore_
 #define ffe_is_silent() ffe_is_silent_
+#define ffe_is_subscript_check() ffe_is_subscript_check_
 #define ffe_is_typeless_boz() ffe_is_typeless_boz_
 #define ffe_is_ugly_args() ffe_is_ugly_args_
 #define ffe_is_ugly_assign() ffe_is_ugly_assign_
@@ -238,6 +240,7 @@ void ffe_terminate_4 (void);
 #define ffe_set_is_saveall(f) (ffe_is_saveall_ = (f))
 #define ffe_set_is_second_underscore(f) (ffe_is_second_underscore_ = (f))
 #define ffe_set_is_silent(f) (ffe_is_silent_ = (f))
+#define ffe_set_is_subscript_check(f) (ffe_is_subscript_check_ = (f))
 #define ffe_set_is_typeless_boz(f) (ffe_is_typeless_boz_ = (f))
 #define ffe_set_is_ugly_args(f) (ffe_is_ugly_args_ = (f))
 #define ffe_set_is_ugly_assign(f) (ffe_is_ugly_assign_ = (f))

@@ -1,3 +1,24 @@
+Fri Apr 23 01:48:28 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Support new -fsubscript-check and -ff2c-subscript-check options:
+	* com-rt.def (FFECOM_gfrtRANGE): Describe s_rnge, in libf2c/libF77.
+	* com.c (ffecom_subscript_check_, ffecom_arrayref_): New functions.
+	(ffecom_char_args_x_): Use new ffecom_arrayref_ function for
+	FFEBLD_opARRAYREF case.
+	Compute character name, array type, and	use new
+	ffecom_subscript_check_ function for FFEBLD_opSUBSTRING case.
+	(ffecom_expr_): Use new ffecom_arrayref_ function.
+	(ffecom_ptr_to_expr): Use new ffecom_arrayref_ function.
+	* g77.texi, news.texi: Document new options.
+	* top.c, top.h: Support new options.
+
+	* news.texi: Fix up some items to not be in "User-Visible Changes".
+
+	* ste.c (ffeste_R819B): Fix type for loop variable, to avoid
+	warnings.
+
+	* version.c: Bump version.
+
 Tue Apr 20 01:38:57 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* bugs.texi, news.texi: Clarify -malign-double situation.

@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-04-20
+@set last-update-news 1999-04-23
 
 @include root.texi
 
@@ -188,6 +188,17 @@ The @samp{-ax} option is now obeyed when compiling Fortran programs.
 @end ifclear
 
 @item
+The new @samp{-fsubscript-check} option
+causes @code{g77} to compile run-time bounds checks
+of array subscripts, as well as of substring start and end points.
+
+The current implementation uses the @code{libf2c}
+library routine @code{s_rnge} to print the diagnostic.
+Since a future version of @code{g77} might use a different implementation,
+use the new @samp{-ff2c-subscript-check} option
+if your application requires use of @code{s_rnge} or a compile-time diagnostic.
+
+@item
 Source file names with the suffixes @samp{.FOR} and @samp{.FPP}
 now are recognized by @code{g77}
 as if they ended in @samp{.for} and @samp{.fpp}, respectively.
@@ -224,12 +235,15 @@ The @samp{-malign-double} option
 now reliably aligns @emph{all} double-precision variables and arrays
 on Intel x86 targets.
 
+@ifclear USERVISONLY
 @item
 Even without the @samp{-malign-double} option,
 @code{g77} reliably aligns local double-precision variables
 that are not in @code{EQUIVALENCE} areas
 and not @code{SAVE}'d.
+@end ifclear
 
+@ifclear USERVISONLY
 @item
 A substantial portion of the @code{g77} front end's code-generation component
 was rewritten.
@@ -238,6 +252,7 @@ by the @code{gcc} back end.
 One effect of this rewrite is that some codes no longer produce
 a spurious ``label @var{lab} used before containing binding contour''
 message.
+@end ifclear
 
 @item
 Support for the @samp{-fugly} option has been removed.
