@@ -6497,7 +6497,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	tree val = TREE_OPERAND (exp, 0);
 	rtx ret = expand_expr_real_1 (val, target, tmode, modifier, alt_rtl);
 
-	if (TREE_CODE (val) != VAR_DECL || !DECL_ARTIFICIAL (val))
+	if (!SAVE_EXPR_RESOLVED_P (exp))
 	  {
 	    /* We can indeed still hit this case, typically via builtin
 	       expanders calling save_expr immediately before expanding
@@ -6508,7 +6508,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	    val = build_decl (VAR_DECL, NULL, TREE_TYPE (exp));
 	    DECL_ARTIFICIAL (val) = 1;
+	    DECL_IGNORED_P (val) = 1;
 	    TREE_OPERAND (exp, 0) = val;
+	    SAVE_EXPR_RESOLVED_P (exp) = 1;
 
 	    if (!CONSTANT_P (ret))
 	      ret = copy_to_reg (ret);
