@@ -20,6 +20,8 @@
 	(match_io): Reformat error message.
 	(match_inquire_element): Call match_out_tag where appropriate.
 
+	* parse.c (gfc_check_do_variable): Fix error locus.
+
 2004-07-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15129
