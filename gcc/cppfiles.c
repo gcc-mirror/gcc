@@ -82,6 +82,7 @@ struct include_file
 #define DO_NOT_REREAD(inc) \
 ((inc)->cmacro && ((inc)->cmacro == NEVER_REREAD \
 		   || ((inc)->cmacro->type == NT_MACRO) == (inc)->defined))
+#define NO_INCLUDE_PATH ((struct include_file *) -1)
 
 static struct file_name_map *read_name_map
 				PARAMS ((cpp_reader *, const char *));
@@ -90,9 +91,8 @@ static char *remap_filename 	PARAMS ((cpp_reader *, char *,
 					 struct search_path *));
 static struct search_path *search_from PARAMS ((cpp_reader *,
 						struct include_file *));
-static struct include_file *find_include_file
-				PARAMS ((cpp_reader *, const char *,
-					 struct search_path *));
+static struct include_file *
+	find_include_file PARAMS ((cpp_reader *, const cpp_token *, int));
 static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
 static void read_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
@@ -487,26 +487,46 @@ cpp_included (pfile, fname)
   return 0;
 }
 
-/* Search for include file FNAME in the include chain starting at
-   SEARCH_START.  Return 0 if there is no such file (or it's un-openable),
-   otherwise an include_file structure.  */
+/* Search for HEADER.  Return 0 if there is no such file (or it's
+   un-openable), in which case an error code will be in errno.  If
+   there is no include path to use it returns NO_INCLUDE_PATH,
+   otherwise an include_file structure.  If this request originates
+   from a #include_next directive, set INCLUDE_NEXT to true.  */
 
 static struct include_file *
-find_include_file (pfile, fname, search_start)
+find_include_file (pfile, header, include_next)
      cpp_reader *pfile;
-     const char *fname;
-     struct search_path *search_start;
+     const cpp_token *header;
+     int include_next;
 {
+  const char *fname = (const char *) header->val.str.text;
   struct search_path *path;
-  char *name;
   struct include_file *file;
+  char *name;
 
   if (IS_ABSOLUTE_PATHNAME (fname))
     return open_file (pfile, fname);
-      
+
+  /* For #include_next, skip in the search path past the dir in which
+     the current file was found.  If this is the last directory in the
+     search path, don't include anything.  If the current file was
+     specified with an absolute path, use the normal search logic.  */
+  if (include_next && pfile->buffer->inc->foundhere)
+    path = pfile->buffer->inc->foundhere->next;
+  else if (header->type == CPP_HEADER_NAME)
+    path = CPP_OPTION (pfile, bracket_include);
+  else
+    path = pfile->buffer->search_from;
+
+  if (path == NULL)
+    {
+      cpp_error (pfile, "No include path in which to find %s", fname);
+      return NO_INCLUDE_PATH;
+    }
+
   /* Search directory path for the file.  */
   name = (char *) alloca (strlen (fname) + pfile->max_include_len + 2);
-  for (path = search_start; path; path = path->next)
+  for (; path; path = path->next)
     {
       memcpy (name, path->name, path->len);
       name[path->len] = '/';
@@ -631,9 +651,6 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
      int no_reinclude;
      int include_next;
 {
-  struct search_path *search_start = 0;
-  unsigned int angle_brackets = header->type == CPP_HEADER_NAME;
-  const char *fname = (const char *) header->val.str.text;
   struct include_file *inc;
 
   /* Help protect #include or similar from recursion.  */
@@ -650,45 +667,14 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
       return;
     }
 
-  /* For #include_next, skip in the search path past the dir in which
-     the current file was found.  If this is the last directory in the
-     search path, don't include anything.  If the current file was
-     specified with an absolute path, use the normal search logic.  If
-     this is the primary source file, use the normal search logic and
-     generate a warning.  */
-  if (include_next)
-    {
-      if (! pfile->buffer->prev)
-	cpp_warning (pfile, "#include_next in primary source file");
-      else
-	{
-	  if (pfile->buffer->inc->foundhere)
-	    {
-	      search_start = pfile->buffer->inc->foundhere->next;
-	      if (! search_start)
-		return;
-	    }
-	}
-    }
+  inc = find_include_file (pfile, header, include_next);
 
-  if (!search_start)
+  if (inc == 0)
+    handle_missing_header (pfile, (const char *) header->val.str.text,
+			   header->type == CPP_HEADER_NAME);
+  else if (inc != NO_INCLUDE_PATH)
     {
-      if (angle_brackets)
-	search_start = CPP_OPTION (pfile, bracket_include);
-      else
-	search_start = pfile->buffer->search_from;
-
-      if (!search_start)
-	{
-	  cpp_error (pfile, "No include path in which to find %s", fname);
-	  return;
-	}
-    }
-
-  inc = find_include_file (pfile, fname, search_start);
-  if (inc)
-    {
-      if (angle_brackets)
+      if (header->type == CPP_HEADER_NAME)
 	pfile->system_include_depth++;
 
       stack_include_file (pfile, inc);
@@ -708,37 +694,28 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
 	    }
 	}
     }
-  else
-    handle_missing_header (pfile, fname, angle_brackets);
 }
 
-/* Locate file F, and determine whether it is newer than PFILE. Return -1,
-   if F cannot be located or dated, 1, if it is newer and 0 if older.  */
+/* Locate HEADER, and determine whether it is newer than the current
+   file.  If it cannot be located or dated, return -1, if it is newer
+   newer, return 1, otherwise 0.  */
 int
-_cpp_compare_file_date (pfile, f)
+_cpp_compare_file_date (pfile, header)
      cpp_reader *pfile;
-     const cpp_token *f;
+     const cpp_token *header;
 {
-  const char *fname = (const char *) f->val.str.text;
-  struct search_path *search_start;
-  struct include_file *inc;
-
-  if (f->type == CPP_HEADER_NAME)
-    search_start = CPP_OPTION (pfile, bracket_include);
-  else
-    search_start = pfile->buffer->search_from;
-
-  inc = find_include_file (pfile, fname, search_start);
+  struct include_file *inc = find_include_file (pfile, header, 0);
   
-  if (!inc)
+  if (inc == NULL || inc == NO_INCLUDE_PATH)
     return -1;
+
   if (inc->fd > 0)
     {
       close (inc->fd);
       inc->fd = -1;
     }
     
-  return inc->st.st_mtime > CPP_BUFFER (pfile)->inc->st.st_mtime;
+  return inc->st.st_mtime > pfile->buffer->inc->st.st_mtime;
 }
 
 
