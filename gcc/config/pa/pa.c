@@ -2246,8 +2246,8 @@ hppa_expand_epilogue()
     }
 
   /* No frame pointer, but we have a stack greater than 8k.  We restore
-     %r2 very late in this case.  (all other cases are restored as early
-     as possible.  */
+     %r2 very late in this case.  (All other cases are restored as early
+     as possible.)  */
   if (! frame_pointer_needed
       && ! VAL_14_BITS_P (actual_fsize + 20)
       && (regs_ever_live[2] || profile_flag))
@@ -3312,9 +3312,9 @@ output_bb (operands, nullify, length, negated, insn, which)
 	   filled we can nullify the following instruction and 
 	   avoid emitting a nop.  */
 	if (negated)
-	  strcat (buf, " %0,%1,1,0\n\tbl,n %3,0");
+	  strcat (buf, " %0,%1,1,0\n\tbl%* %3,0");
 	else 
-	  strcat (buf, " %0,%1,1,0\n\tbl,n %2,0");
+	  strcat (buf, " %0,%1,1,0\n\tbl%* %2,0");
 	break;
 
       /* Long backward conditional branch with nullification.  */
