@@ -1,3 +1,9 @@
+2002-03-18  Tom Tromey  <tromey@redhat.com>
+
+	* include/jni.h (JNIIMPORT): New macro.
+	(JNIEXPORT): Likewise.
+	(JNICALL): Likewise.
+
 2002-03-18  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* include/i386-signal.h (old_i386_kernel_sigaction): New.

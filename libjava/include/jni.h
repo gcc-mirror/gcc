@@ -172,6 +172,12 @@ typedef void *jmethodID;
 #define JNI_EDETACHED    -2
 #define JNI_EVERSION     -3
 
+/* Linkage and calling conventions.  This will need updating when we
+   support Windows DLLs.  */
+#define JNIIMPORT
+#define JNIEXPORT
+#define JNICALL
+
 #ifdef __cplusplus
 extern "C"
 {
