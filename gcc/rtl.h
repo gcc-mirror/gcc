@@ -384,6 +384,9 @@ extern char *reg_note_name[];
    i.e. the point just after all of the parms have been moved into
    their homes, etc.  */
 #define NOTE_INSN_FUNCTION_BEG -13
+/* These note where exception handling regions begin and end.  */
+#define NOTE_INSN_EH_REGION_BEG -14
+#define NOTE_INSN_EH_REGION_END -15
 
 
 #if 0 /* These are not used, and I don't know what they were for. --rms.  */

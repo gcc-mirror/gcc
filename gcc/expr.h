@@ -358,6 +358,8 @@ extern rtx bcmp_libfunc;
 extern rtx memset_libfunc;
 extern rtx bzero_libfunc;
 
+extern rtx throw_libfunc;
+
 extern rtx eqhf2_libfunc;
 extern rtx nehf2_libfunc;
 extern rtx gthf2_libfunc;

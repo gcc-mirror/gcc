@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "regs.h"
 #include "hard-reg-set.h"
+#include "except.h"
 #include "function.h"
 #include "insn-flags.h"
 #include "insn-codes.h"
@@ -210,7 +211,6 @@ static void do_jump_for_compare	PROTO((rtx, rtx, rtx));
 static rtx compare		PROTO((tree, enum rtx_code, enum rtx_code));
 static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
 static tree defer_cleanups_to	PROTO((tree));
-extern void (*interim_eh_hook)	PROTO((tree));
 extern tree truthvalue_conversion       PROTO((tree));
 
 /* Record for each mode whether we can move a register directly to or
@@ -5689,7 +5689,7 @@ expand_expr (exp, target, tmode, modifier)
 	    = tree_cons (NULL_TREE, TREE_OPERAND (exp, 2), cleanups_this_call);
 	  /* That's it for this cleanup.  */
 	  TREE_OPERAND (exp, 2) = 0;
-	  (*interim_eh_hook) (NULL_TREE);
+	  expand_eh_region_start ();
 	}
       return RTL_EXPR_RTL (exp);
 
@@ -6723,10 +6723,10 @@ expand_expr (exp, target, tmode, modifier)
 
 	    pop_obstacks ();
 
-	    /* Now add in the conditionalized cleanups. */
+	    /* Now add in the conditionalized cleanups.  */
 	    cleanups_this_call
 	      = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
-	    (*interim_eh_hook) (NULL_TREE);
+	    expand_eh_region_start ();
 	  }
 	return temp;
       }
@@ -6815,7 +6815,7 @@ expand_expr (exp, target, tmode, modifier)
 	    cleanups_this_call = tree_cons (NULL_TREE,
 					    cleanups,
 					    cleanups_this_call);
-	    (*interim_eh_hook) (NULL_TREE);
+	    expand_eh_region_start ();
 	  }
 	
 	return target;
@@ -9731,7 +9731,7 @@ defer_cleanups_to (old_cleanups)
 
   while (cleanups_this_call != old_cleanups)
     {
-      (*interim_eh_hook) (TREE_VALUE (cleanups_this_call));
+      expand_eh_region_end (TREE_VALUE (cleanups_this_call));
       last = cleanups_this_call;
       cleanups_this_call = TREE_CHAIN (cleanups_this_call);
     }      
@@ -9774,7 +9774,7 @@ expand_cleanups_to (old_cleanups)
 {
   while (cleanups_this_call != old_cleanups)
     {
-      (*interim_eh_hook) (TREE_VALUE (cleanups_this_call));
+      expand_eh_region_end (TREE_VALUE (cleanups_this_call));
       expand_expr (TREE_VALUE (cleanups_this_call), const0_rtx, VOIDmode, 0);
       cleanups_this_call = TREE_CHAIN (cleanups_this_call);
     }
@@ -9973,10 +9973,10 @@ do_jump (exp, if_false_label, if_true_label)
 
 	    pop_obstacks ();
 
-	    /* Now add in the conditionalized cleanups. */
+	    /* Now add in the conditionalized cleanups.  */
 	    cleanups_this_call
 	      = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
-	    (*interim_eh_hook) (NULL_TREE);
+	    expand_eh_region_start ();
 	  }
 	else
 	  {
@@ -10037,10 +10037,10 @@ do_jump (exp, if_false_label, if_true_label)
 
 	    pop_obstacks ();
 
-	    /* Now add in the conditionalized cleanups. */
+	    /* Now add in the conditionalized cleanups.  */
 	    cleanups_this_call
 	      = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
-	    (*interim_eh_hook) (NULL_TREE);
+	    expand_eh_region_start ();
 	  }
 	else
 	  {

@@ -67,6 +67,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "defaults.h"
 #include "output.h"
+#include "except.h"
 
 /* Get N_SLINE and N_SOL from stab.h if we can expect the file to exist.  */
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
@@ -1196,6 +1197,8 @@ final (first, file, optimize, prescan)
   last_ignored_compare = 0;
   new_block = 1;
 
+  check_exception_handler_labels ();
+
   /* Make a map indicating which line numbers appear in this function.
      When producing SDB debugging info, delete troublesome line number
      notes from inlined functions in other files as well as duplicate
@@ -1297,6 +1300,25 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	}
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
 	break;
+
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
+	{
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHB", NOTE_BLOCK_NUMBER (insn));
+	  add_eh_table_entry (NOTE_BLOCK_NUMBER (insn));
+#ifdef ASM_OUTPUT_EH_REGION_BEG
+	  ASM_OUTPUT_EH_REGION_BEG (file, NOTE_BLOCK_NUMBER (insn));
+#endif
+	  break;
+	}
+
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
+	{
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHE", NOTE_BLOCK_NUMBER (insn));
+#ifdef ASM_OUTPUT_EH_REGION_END
+	  ASM_OUTPUT_EH_REGION_END (file, NOTE_BLOCK_NUMBER (insn));
+#endif
+	  break;
+	}
 
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
 	{
