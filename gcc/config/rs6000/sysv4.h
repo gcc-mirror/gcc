@@ -1330,7 +1330,7 @@ do {									\
 
 #ifndef CPP_OS_LINUX_SPEC
 #define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__ \
-%{!undef:%{!ansi:%{!std=*:-Dunix -Dlinux}%{std=gnu*:-Dunix -Dlinux}}}
+%{!undef:%{!ansi:%{!std=*:-Dunix -Dlinux}%{std=gnu*:-Dunix -Dlinux}}} \
 -Asystem(unix) -Asystem(posix)"
 #endif
 

@@ -1,3 +1,7 @@
+Mon Apr 12 19:15:17 1999  Daniel Jacobowitz <dan@debian.org>
+
+	* rs6000/sysv4.h (CPP_OS_LINUX_SPEC): Add missing backslash.
+
 Mon Apr 12 19:11:38 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/cygwin.h (SUBTARGET_SWITCHES): Add -mconsole; fix
