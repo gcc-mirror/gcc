@@ -82,6 +82,21 @@
 	* gjavah.c (add_class_decl): Don't special-case inner classes.
 	(add_namelet): Likewise.
 
+2000-10-11  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* java-tree.h: Constify current_encoding.
+	* lang.c: Constify current_encoding.
+
+2000-10-10  Jeff Sturm  <jeff.sturm@appnet.com>
+
+	* jvgenmain.c (class_mangling_suffix): Omit `.'.
+	(main): Use `$' when NO_DOLLAR_IN_LABEL is not set, otherwise `.'.
+
+2000-10-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (java_lang_expand_expr): Reinstall 1999-08-14 Anthony's
+	patch. Fixes gcj/340.
+
 2000-10-10  Tom Tromey  <tromey@cygnus.com>
 
 	* lex.c (java_new_lexer): Initialize out_first and out_last
