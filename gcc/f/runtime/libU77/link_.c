@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #if HAVE_SYS_PARAM_H
 #  include <sys/param.h>
 #endif
+#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 #ifdef KR_headers
@@ -44,6 +45,7 @@ void g_char(const char *a, ftnlen alen, char *b);
 integer G77_link_0 (const char *path1, const char *path2, const ftnlen Lpath1, const ftnlen Lpath2)
 #endif
 {
+#if defined (HAVE_LINK)
   char *buff1, *buff2;
   char *bp, *blast;
   int i;
@@ -57,4 +59,8 @@ integer G77_link_0 (const char *path1, const char *path2, const ftnlen Lpath1, c
   i = link (buff1, buff2);
   free (buff1); free (buff2);
   return i ? errno : 0;
+#else /* ! HAVE_LINK */
+  errno = ENOSYS;
+  return -1;
+#endif
 }

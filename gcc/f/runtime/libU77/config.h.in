@@ -84,3 +84,20 @@
 /* Define if you have the times function.  */
 #undef HAVE_TIMES
 
+/* Define if you have the getlogin function.  */
+#undef HAVE_GETLOGIN
+
+/* Define if you have the getgid function.  */
+#undef HAVE_GETGID
+
+/* Define if you have the getuid function.  */
+#undef HAVE_GETUID
+
+/* Define if you have the kill function.  */
+#undef HAVE_KILL
+
+/* Define if you have the link function.  */
+#undef HAVE_LINK
+
+/* Define if you have the ttyname function.  */
+#undef HAVE_TTYNAME

@@ -25,30 +25,19 @@ VPATH = @srcdir@
 
 #### Start of system configuration section. ####
 
-# The _FOR_TARGET things are appropriate for a cross-make, passed by the
-# superior makefile
-GCC_FOR_TARGET = @CC@
-CC = $(GCC_FOR_TARGET)
-CFLAGS = @CFLAGS@ $(GCC_FLAGS)
 CPPFLAGS = @CPPFLAGS@
 DEFS = @DEFS@
-CGFLAGS = #-g0
 # f2c.h should already be installed in xgcc's include directory but add that
 # to -I anyhow in case not using xgcc.  fio.h is in libI77.  We need config.h
 # from `.'.
-ALL_CFLAGS = -I. -I$(srcdir) -I$(srcdir)/../libI77 -I../../../include $(CPPFLAGS) $(DEFS) $(CFLAGS)
-AR = @AR@
-AR_FLAGS = rc
-RANLIB = @RANLIB@
-RANLIB_TEST = @RANLIB_TEST@
+ALL_CFLAGS = -I. -I$(srcdir) -I$(srcdir)/../libI77 -I.. $(CPPFLAGS) $(DEFS) $(CFLAGS)
 CROSS = @CROSS@
-G77DIR = ../../../
 
 .SUFFIXES:
 .SUFFIXES: .c .o
 
 .c.o:
-	$(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $(CGFLAGS) $<
+	$(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
 
 OBJS =  VersionU.o gerror_.o perror_.o ierrno_.o itime_.o time_.o \
 	unlink_.o fnum_.o getpid_.o getuid_.o getgid_.o kill_.o rand_.o \
@@ -71,7 +60,7 @@ SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
 	umask_.c sys_clock_.c date_.c second_.c flush1_.c mclock_.c \
 	alarm_.c
 
-F2C_H = ../../../include/f2c.h
+F2C_H = ../f2c.h
 
 all: $(OBJS)
 
@@ -93,7 +82,7 @@ distclean realclean maintainer-clean: clean
 $(OBJS): $(F2C_H) config.h
 
 check:
-	-$(G77DIR)g77 --driver=$(G77DIR)/xgcc -B$(G77DIR) -g $(srcdir)/u77-test.f $(lib) && ./a.out
+	-$(G77DIR)g77 -B$(G77DIR) -g $(srcdir)/u77-test.f $(lib) && ./a.out
 	rm -f a.out
 
 access_.o: access_.c

@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #else
 #  include <strings.h>
 #endif
+#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 /* getlogin not in svr1-3 */
@@ -51,7 +52,9 @@ extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
 {
   size_t i;
   char *p;
+  int status;
 
+#if defined (HAVE_GETLOGIN)
   p = getlogin ();
   if (p != NULL) {
     i = strlen (p);
@@ -59,5 +62,10 @@ extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
   } else {
     s_copy (str, " ", Lstr, 1);
   }
-  return 0;
+  status = 0;
+#else
+  errno = ENOSYS;
+  status = -1;
+#endif
+  return status;
 }
