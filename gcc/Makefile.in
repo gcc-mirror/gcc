@@ -1371,7 +1371,7 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h \
    function.h $(EXPR_H) $(RTL_H) toplev.h $(GGC_H) $(TM_P_H)
 fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h toplev.h \
    $(EXPR_H) $(RTL_H) $(GGC_H) $(TM_P_H)
-diagnostic.o : diagnostic.c diagnostic.h \
+diagnostic.o : diagnostic.c diagnostic.h diagnostic.def \
    $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) $(TM_P_H) flags.h \
    $(GGC_H) input.h $(INSN_ATTR_H) insn-config.h toplev.h intl.h 
 toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) function.h \
