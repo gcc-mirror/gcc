@@ -1,3 +1,10 @@
+Tue Sep  7 08:15:49 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.h (MULTILIB_ENDIAN_DEFAULT) : New macro.
+	(MULTILIB_ENDIAN_DEFAULT) : Use the new macro.
+	* config/mips/elf64.h (MULTILIB_DEFAULTS) : Use the new macro.
+	* config/mips/r3900.h (MULTILIB_DEFAULTS) : Use the new macro.
+
 Tue Sep  7 03:42:45 1999  Mark Klein (mklein@dis.com)
 
 	* pa/x-pa-mpeix: New file for the MPE port.
