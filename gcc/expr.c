@@ -7610,23 +7610,20 @@ expand_expr (exp, target, tmode, modifier)
 	 indexed address, for machines that support that.  */
 
       if (modifier == EXPAND_SUM && mode == ptr_mode
-	  && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
-	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+	  && host_integerp (TREE_OPERAND (exp, 1), 0))
 	{
 	  op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode,
 			     EXPAND_SUM);
 
-	  /* Apply distributive law if OP0 is x+c.  */
-	  if (GET_CODE (op0) == PLUS
-	      && GET_CODE (XEXP (op0, 1)) == CONST_INT)
-	    return
-	      gen_rtx_PLUS
-		(mode,
-		 gen_rtx_MULT
-		 (mode, XEXP (op0, 0),
-		  GEN_INT (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)))),
-		 GEN_INT (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1))
-			  * INTVAL (XEXP (op0, 1))));
+	  /* If we knew for certain that this is arithmetic for an array
+	     reference, and we knew the bounds of the array, then we could
+	     apply the distributive law across (PLUS X C) for constant C.
+	     Without such knowledge, we risk overflowing the computation
+	     when both X and C are large, but X+C isn't.  */
+	  /* ??? Could perhaps special-case EXP being unsigned and C being
+	     positive.  In that case we are certain that X+C is no smaller
+	     than X and so the transformed expression will overflow iff the
+	     original would have.  */
 
 	  if (GET_CODE (op0) != REG)
 	    op0 = force_operand (op0, NULL_RTX);
@@ -7635,7 +7632,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	  return
 	    gen_rtx_MULT (mode, op0,
-			  GEN_INT (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1))));
+			  GEN_INT (tree_low_cst (TREE_OPERAND (exp, 1), 0)));
 	}
 
       if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
