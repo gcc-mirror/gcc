@@ -1,3 +1,9 @@
+Sun Apr 12 13:04:55 1998  Nikolay Yatsenko  (nikolay@osf.org)
+
+	* configure.in (i[34567]86-*-osf1*): New entry.
+	* i386/osf1-c[in].asm: New files for OSF/1.
+	* i386/osf1elf{,gdb}.h, i386/[xt]-osf1elf, i386/xm-osf1elf.h: Likewise.
+
 Sun Apr 12 10:03:51 1998  Noel Cragg  <noel@red-bean.com>
 
 	* fixincludes: Remove specification of parameters when renaming
