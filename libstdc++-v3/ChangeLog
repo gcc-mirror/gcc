@@ -1,5 +1,14 @@
 2004-01-18  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h (c_str()): Simplify, due to
+	21.3.4 the internal representation is always kept null-terminated.
+	* include/bits/basic_string.tcc (_M_clone): Null-terminate.
+	* testsuite/21_strings/basic_string/element_access/char/4.cc: New.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/4.cc:
+	Ditto.
+
+2004-01-18  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.h (append(size_type, _CharT)):
 	Moved inline, just call _M_replace_aux, no source iterators at
 	risk of being clobbered.

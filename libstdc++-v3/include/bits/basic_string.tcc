@@ -616,6 +616,7 @@ namespace std
 	    }
 	}
       __r->_M_length = this->_M_length;
+      __r->_M_refdata()[this->_M_length] = _Rep::_S_terminal;
       return __r->_M_refdata();
     }
   

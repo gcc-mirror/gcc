@@ -129,9 +129,8 @@ namespace std
     private:
       // _Rep: string representation
       //   Invariants:
-      //   1. String really contains _M_length + 1 characters; last is set
-      //      to 0 only on call to c_str().  We avoid instantiating
-      //      _CharT() where the interface does not require it.
+      //   1. String really contains _M_length + 1 characters: due to 21.3.4
+      //      must be kept null-terminated.
       //   2. _M_capacity >= _M_length
       //      Allocated memory is always _M_capacity + (1 * sizeof(_CharT)).
       //   3. _M_refcount has three states:
@@ -1457,12 +1456,7 @@ namespace std
       */
       const _CharT*
       c_str() const
-      {
-	// MT: This assumes concurrent writes are OK.
-	const size_type __n = this->size();
-	traits_type::assign(_M_data()[__n], _Rep::_S_terminal);
-        return _M_data();
-      }
+      { return _M_data(); }
 
       /**
        *  @brief  Return const pointer to contents.
