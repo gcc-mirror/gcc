@@ -1,3 +1,10 @@
+Mon Jul 26 10:23:36 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* final.c (asm_fprintf): Accept ASM_FPRINTF_EXTENSIONS, if
+	defined.
+
+	* tm.texi: Document ASM_FPRINTF_EXTENSIONS.
+
 Sun Jul 25 23:51:59 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i860.h (EXPAND_BUILTIN_SAVEREGS): New.
