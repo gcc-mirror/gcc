@@ -326,7 +326,8 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
 		xm_defines=USE_BFD
 		target_cpu_default="MASK_GAS"
-		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux"
+		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux alpha/t-crtbe"
+		extra_parts="crtbegin.o crtend.o"
 		xmake_file=none
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
@@ -338,8 +339,8 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
 		xm_defines=USE_BFD
 		target_cpu_default="MASK_GAS"
-		tmake_file="t-linux alpha/t-linux"
-		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+		tmake_file="t-linux alpha/t-linux alpha/t-crtbe"
+		extra_parts="crtbegin.o crtend.o"
 		xmake_file=none
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
