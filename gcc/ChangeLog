@@ -1,3 +1,13 @@
+2005-01-11  Alan Modra  <amodra@bigpond.net.au>
+
+	* varasm.c (default_section_type_flags_1): Don't set SECTION_SMALL.
+	* config/ia64/ia64.c (TARGET_SECTION_TYPE_FLAGS): Define.
+	(TARGET_RWRELOC): Define.
+	(ia64_rwreloc_section_type_flags): Delete.
+	(ia64_section_type_flags): New function.
+	* config/ia64/hpux.h (TARGET_SECTION_TYPE_FLAGS): Don't define.
+	(TARGET_RWRELOC): Define.
+
 2005-01-10  David Mosberger  <davidm@hpl.hp.com>
 
 	PR target/18987
