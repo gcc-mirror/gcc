@@ -2535,7 +2535,8 @@ build_constant_desc (exp)
   /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
   symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
   SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
-  SYMBOL_REF_DECL (symbol) = exp;
+  SYMBOL_REF_DECL (symbol) = desc->value;
+  TREE_CONSTANT_POOL_ADDRESS_P (symbol) = 1;
 
   rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)), symbol);
   set_mem_attributes (rtl, exp, 1);
@@ -2549,12 +2550,6 @@ build_constant_desc (exp)
      SYMBOL; we can't use it afterward.  */
 
   (*targetm.encode_section_info) (exp, rtl, true);
-
-  /* Descriptors start out deferred; this simplifies the logic in
-     maybe_output_constant_def_contents.  However, we do not bump
-     n_deferred_constants here, because we don't know if we're inside
-     a function and have an n_deferred_constants to bump.  */
-  DEFERRED_CONSTANT_P (XEXP (rtl, 0)) = 1;
 
   desc->rtl = rtl;
 
@@ -2607,19 +2602,24 @@ maybe_output_constant_def_contents (desc, defer)
      int defer;
 {
   rtx symbol = XEXP (desc->rtl, 0);
+  tree exp = desc->value;
 
   if (flag_syntax_only)
     return;
 
-  if (!DEFERRED_CONSTANT_P (symbol))
+  if (TREE_ASM_WRITTEN (exp))
     /* Already output; don't do it again.  */
     return;
 
   /* The only constants that cannot safely be deferred, assuming the
      context allows it, are strings under flag_writable_strings.  */
-  if (defer && (TREE_CODE (desc->value) != STRING_CST
-		|| !flag_writable_strings))
+  if (defer && (TREE_CODE (exp) != STRING_CST || !flag_writable_strings))
     {
+      /* Increment n_deferred_constants if it exists.  It needs to be at
+	 least as large as the number of constants actually referred to
+	 by the function.  If it's too small we'll stop looking too early
+	 and fail to emit constants; if it's too large we'll only look
+	 through the entire function when we could have stopped earlier.  */
       if (cfun)
 	n_deferred_constants++;
       return;
@@ -2648,7 +2648,7 @@ output_constant_def_contents (symbol)
 #endif
 
   /* We are no longer deferring this constant.  */
-  DEFERRED_CONSTANT_P (symbol) = 0;
+  TREE_ASM_WRITTEN (exp) = 1;
 
   if (IN_NAMED_SECTION (exp))
     named_section (exp, NULL, reloc);
@@ -3481,10 +3481,14 @@ mark_constant (current_rtx, data)
 	  else
 	    return -1;
 	}
-      else if (DEFERRED_CONSTANT_P (x))
+      else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
 	{
-	  n_deferred_constants--;
-	  output_constant_def_contents (x);
+	  tree exp = SYMBOL_REF_DECL (x);
+	  if (!TREE_ASM_WRITTEN (exp))
+	    {
+	      n_deferred_constants--;
+	      output_constant_def_contents (x);
+	    }
 	}
     }
   return 0;

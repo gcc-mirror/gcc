@@ -2215,7 +2215,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 			  copy_rtx_and_substitute (constant, map, for_lhs)),
 			 0);
 	}
-      else if (DEFERRED_CONSTANT_P (orig) && inlining)
+      else if (TREE_CONSTANT_POOL_ADDRESS_P (orig) && inlining)
 	notice_rtl_inlining_of_deferred_constant ();
 
       return orig;

@@ -1,3 +1,15 @@
+2003-05-14  Richard Henderson  <rth@redhat.com>
+
+	* rtl.h (TREE_CONSTANT_POOL_ADDRESS_P): Rename from
+	DEFERRED_CONSTANT_P.
+	* integrate.c (copy_rtx_and_substitute): Update use.
+	* varasm.c (build_constant_desc): Set SYMBOL_REF_DECL
+	to the copy generated.
+	(maybe_output_constant_def_contents): Examine TREE_ASM_WRITTEN
+	of the constant to see if we should emit.
+	(mark_constant): Similarly.
+	(output_constant_def_contents): Set TREE_ASM_WRITTEN.
+
 2003-05-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (movsi_internal2): Use compare for self
