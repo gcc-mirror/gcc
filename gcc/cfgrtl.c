@@ -2892,7 +2892,6 @@ need_fake_edge_p (rtx insn)
   if ((CALL_P (insn)
        && !SIBLING_CALL_P (insn)
        && !find_reg_note (insn, REG_NORETURN, NULL)
-       && !find_reg_note (insn, REG_ALWAYS_RETURN, NULL)
        && !CONST_OR_PURE_CALL_P (insn)))
     return true;
 

@@ -3206,7 +3206,6 @@ try_split (rtx pat, rtx trial, int last)
 
 	case REG_NORETURN:
 	case REG_SETJMP:
-	case REG_ALWAYS_RETURN:
 	  insn = insn_last;
 	  while (insn != NULL_RTX)
 	    {

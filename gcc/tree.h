@@ -3688,10 +3688,8 @@ extern rtx emit_line_note (location_t);
 /* Nonzero if this is a call to a function that returns with the stack
    pointer depressed.  */
 #define ECF_SP_DEPRESSED	256
-/* Nonzero if this call is known to always return.  */
-#define ECF_ALWAYS_RETURN	512
 /* Create libcall block around the call.  */
-#define ECF_LIBCALL_BLOCK	1024
+#define ECF_LIBCALL_BLOCK	512
 
 extern int flags_from_decl_or_type (tree);
 extern int call_expr_flags (tree);

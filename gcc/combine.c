@@ -11886,7 +11886,6 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	    }
 	  break;
 
-	case REG_ALWAYS_RETURN:
 	case REG_NORETURN:
 	case REG_SETJMP:
 	  /* These notes must remain with the call.  It should not be
