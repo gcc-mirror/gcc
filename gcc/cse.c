@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "toplev.h"
 #include "output.h"
-#include "splay-tree.h"
+#include "hashtab.h"
 #include "ggc.h"
 
 /* The basic idea of common subexpression elimination is to go
@@ -292,14 +292,12 @@ static int *reg_next_eqv;
 static int *reg_prev_eqv;
 
 struct cse_reg_info {
-  union {
-    /* The number of times the register has been altered in the current
-       basic block.  */
-    int reg_tick;
-    
-    /* The next cse_reg_info structure in the free list.  */
-    struct cse_reg_info* next;
-  } variant;
+  /* The number of times the register has been altered in the current
+     basic block.  */
+  int reg_tick;
+
+  /* The next cse_reg_info structure in the free or used list.  */
+  struct cse_reg_info* next;
 
   /* The REG_TICK value at which rtx's containing this register are
      valid in the hash table.  If this does not equal the current
@@ -309,13 +307,20 @@ struct cse_reg_info {
 
   /* The quantity number of the register's current contents.  */
   int reg_qty;
+
+  /* Search key */
+  int regno;
 };
 
 /* A free list of cse_reg_info entries.  */
 static struct cse_reg_info *cse_reg_info_free_list;
 
+/* A used list of cse_reg_info entries.  */
+static struct cse_reg_info *cse_reg_info_used_list;
+static struct cse_reg_info *cse_reg_info_used_list_end;
+
 /* A mapping from registers to cse_reg_info data structures.  */
-static splay_tree cse_reg_info_tree;
+static hash_table_t cse_reg_info_tree;
 
 /* The last lookup we did into the cse_reg_info_tree.  This allows us
    to cache repeated lookups.  */
@@ -511,7 +516,7 @@ struct table_elt
 /* Get the number of times this register has been updated in this
    basic block.  */
 
-#define REG_TICK(N) ((GET_CSE_REG_INFO (N))->variant.reg_tick)
+#define REG_TICK(N) ((GET_CSE_REG_INFO (N))->reg_tick)
 
 /* Get the point at which REG was recorded in the table.  */
 
@@ -697,7 +702,10 @@ static void count_reg_usage	PROTO((rtx, int *, rtx, int));
 extern void dump_class          PROTO((struct table_elt*));
 static void check_fold_consts	PROTO((PTR));
 static struct cse_reg_info* get_cse_reg_info PROTO((int));
-static void free_cse_reg_info   PROTO((splay_tree_value));
+static unsigned int hash_cse_reg_info PROTO((hash_table_entry_t));
+static int cse_reg_info_equal_p	PROTO((hash_table_entry_t,
+				       hash_table_entry_t));
+
 static void flush_hash_table	PROTO((void));
 
 /* Dump the expressions in the equivalence class indicated by CLASSP.
@@ -845,32 +853,38 @@ get_cse_reg_info (regno)
      int regno;
 {
   struct cse_reg_info *cri;
-  splay_tree_node n;
+  struct cse_reg_info **entry;
+  struct cse_reg_info temp;
 
   /* See if we already have this entry.  */
-  n = splay_tree_lookup (cse_reg_info_tree, 
-			(splay_tree_key) regno);
-  if (n)
-    cri = (struct cse_reg_info *) (n->value);
+  temp.regno = regno;
+  entry = (struct cse_reg_info **) find_hash_table_entry (cse_reg_info_tree,
+							  &temp, TRUE);
+
+  if (*entry)
+    cri = *entry;
   else 
     {
       /* Get a new cse_reg_info structure.  */
       if (cse_reg_info_free_list) 
 	{
 	  cri = cse_reg_info_free_list;
-	  cse_reg_info_free_list = cri->variant.next;
+	  cse_reg_info_free_list = cri->next;
 	}
       else
 	cri = (struct cse_reg_info *) xmalloc (sizeof (struct cse_reg_info));
 
       /* Initialize it.  */
-      cri->variant.reg_tick = 0;
+      cri->reg_tick = 0;
       cri->reg_in_table = -1;
       cri->reg_qty = regno;
-
-      splay_tree_insert (cse_reg_info_tree, 
-			 (splay_tree_key) regno, 
-			 (splay_tree_value) cri);
+      cri->regno = regno;
+      cri->next = cse_reg_info_used_list;
+      cse_reg_info_used_list = cri;
+      if (!cse_reg_info_used_list_end)
+	cse_reg_info_used_list_end = cri;
+      
+      *entry = cri;
     }
 
   /* Cache this lookup; we tend to be looking up information about the
@@ -881,14 +895,20 @@ get_cse_reg_info (regno)
   return cri;
 }
 
-static void
-free_cse_reg_info (v)
-     splay_tree_value v;
+static unsigned int
+hash_cse_reg_info (el_ptr)
+     hash_table_entry_t el_ptr;
 {
-  struct cse_reg_info *cri = (struct cse_reg_info *) v;
-  
-  cri->variant.next = cse_reg_info_free_list;
-  cse_reg_info_free_list = cri;
+  return ((struct cse_reg_info *) el_ptr)->regno;
+}
+
+static int
+cse_reg_info_equal_p (el_ptr1, el_ptr2)
+     hash_table_entry_t el_ptr1;
+     hash_table_entry_t el_ptr2;
+{
+  return (((struct cse_reg_info *) el_ptr1)->regno
+	  == ((struct cse_reg_info *) el_ptr2)->regno);
 }
 
 /* Clear the hash table and initialize each register with its own quantity,
@@ -903,12 +923,18 @@ new_basic_block ()
 
   if (cse_reg_info_tree) 
     {
-      splay_tree_delete (cse_reg_info_tree);
+      delete_hash_table (cse_reg_info_tree);
+      if (cse_reg_info_used_list)
+	{
+	  cse_reg_info_used_list_end->next = cse_reg_info_free_list;
+	  cse_reg_info_free_list = cse_reg_info_used_list;
+	  cse_reg_info_used_list = cse_reg_info_used_list_end = 0;
+	}
       cached_cse_reg_info = 0;
     }
 
-  cse_reg_info_tree = splay_tree_new (splay_tree_compare_ints, 0, 
-				      free_cse_reg_info);
+  cse_reg_info_tree = create_hash_table (0, hash_cse_reg_info,
+					 cse_reg_info_equal_p);
 
   CLEAR_HARD_REG_SET (hard_regs_in_table);
 
