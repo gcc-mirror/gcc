@@ -1,3 +1,8 @@
+1999-07-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Makefile.in (stmp-multilib-sub): Make the files extracted
+        from $(LIBGCC1) writable.
+
 Sat Jul 17 14:25:46 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/aout.h: Reformat for improved readability.
