@@ -255,34 +255,32 @@ dnl Define SECTION_LDFLAGS='-Wl,--gc-sections' if possible
 dnl GLIBCPP_CHECK_LINKER_FEATURES
 AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   # All these tests are for C++; save the language and the compiler flags.
-  # The CXXFLAGS thing is suspicious, but based on similar bits 
-  # found in GLIBCPP_CONFIGURE.
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
+  # Need to do this so that g++ won't try to link in libstdc++
+  ac_test_CFLAGS="${CFLAGS+set}"
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS='-x c++  -Wl,--gc-sections'
 
   # Check for -Wl,--gc-sections
   AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
-  CXXFLAGS='-Wl,--gc-sections'
   AC_TRY_RUN([
-   int main() 
+   int main(void) 
    {
      try { throw 1; }
      catch (...) { };
      return 0;
    }
   ], [ac_sectionLDflags=yes], [ac_sectionLFflags=no], [ac_sectionLDflags=yes])
-  if test "$ac_test_CXXFLAGS" = set; then
-    CXXFLAGS="$ac_save_CXXFLAGS"
+  if test "$ac_test_CFLAGS" = set; then
+    CFLAGS="$ac_save_CFLAGS"
   else
     # this is the suspicious part
-    CXXFLAGS=''
+    CFLAGS=''
   fi
   if test "$ac_sectionLDflags" = "yes"; then
     SECTION_LDFLAGS='-Wl,--gc-sections'
   fi
   AC_MSG_RESULT($ac_sectionLDflags)
 
-  AC_LANG_RESTORE
   AC_SUBST(SECTION_LDFLAGS)
 ])
 

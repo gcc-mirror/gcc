@@ -65,6 +65,8 @@ bool test01(void)
   csz01 = str01.find(str04, 5);
   test &= csz01 == 5;
   csz01 = str01.find(str04, str01.size());
+  test &= csz01 == str01.size(); 
+  csz01 = str01.find(str04, str01.size()+1);
   test &= csz01 == npos; 
   
   // size_type find(const char* s, size_type pos, size_type n) const;
@@ -77,7 +79,7 @@ bool test01(void)
   csz01 = str01.find(str_lit01);
   test &= csz01 == 0;
   csz01 = str01.find(str_lit01, 3);
-  test &= csz01 == 3; // zero length string should be found at pos
+  test &= csz01 == npos;
 
   // size_type find(char c, size_type pos = 0) const;
   csz01 = str01.find('z');
