@@ -1,3 +1,47 @@
+Thu Jun 18 09:20:47 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* pa.c: Include system.h and toplev.h.  Remove redundant code.
+	(call_operand_address): Mark parameter `mode' with ATTRIBUTE_UNUSED.
+	(symbolic_operand): Likewise.
+	(symbolic_memory_operand): Likewise.
+	(pic_label_operand): Likewise.
+	(fp_reg_operand): Likewise.
+	(pre_cint_operand): Likewise.
+	(post_cint_operand): Likewise.
+	(ireg_or_int5_operand): Likewise.
+	(int5_operand): Likewise.
+	(uint5_operand): Likewise.
+	(int11_operand): Likewise.
+	(uint32_operand): Likewise.
+	(ior_operand): Likewise.
+	(lhs_lshift_cint_operand): Likewise.
+	(pc_or_label_operand): Likewise.
+	(legitimize_pic_address): Likewise.
+	(hppa_legitimize_address): Likewise for parameter `old'.
+	(output_block_move): Likewise for parameter `size_is_constant'.
+	(output_function_prologue): Likewise for parameter `size'.
+	(output_function_epilogue): Likewise.
+	(return_addr_rtx): Likewise for parameter `count'.
+	(output_mul_insn): Likewise for parameter `unsignedp'.
+	(hppa_builtin_saveregs): Likewise for parameter `arglist'.
+	(output_bb): Likewise for parameter `operands'.
+	(output_bvb): Likewise.
+	(function_label_operand): Likewise for parameter `mode'.
+	(plus_xor_ior_operator): Likewise.
+	(shadd_operand): Likewise.
+	(non_hard_reg_operand): Likewise.
+	(eq_neq_comparison_operator): Likewise.
+	(movb_comparison_operator): Likewise.
+	(pa_combine_instructions): Likewise for parameter `insns'.
+
+	* pa.h: Add prototypes for functions `output_deferred_plabels',
+ 	`override_options', `output_ascii', `output_function_prologue',
+ 	`output_function_epilogue', `print_operand',
+ 	`symbolic_expression_p', `reloc_needed', `compute_frame_size',
+ 	`hppa_address_cost', `and_mask_p', `symbolic_memory_operand',
+ 	`pa_adjust_cost', `pa_adjust_insn_length' and
+ 	`secondary_reload_class'.
+
 Wed Jun 17 22:28:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* configure.in: Don't turn on collect2 unconditionally.

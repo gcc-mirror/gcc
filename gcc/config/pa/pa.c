@@ -20,10 +20,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include "system.h"
+
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -39,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "expr.h"
 #include "obstack.h"
+#include "toplev.h"
 
 static void restore_unscaled_index_insn_codes		PROTO((rtx));
 static void record_unscaled_index_insn_codes		PROTO((rtx));
@@ -174,7 +173,7 @@ reg_or_0_operand (op, mode)
 int
 call_operand_address (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (CONSTANT_P (op) && ! TARGET_PORTABLE_RUNTIME);
 }
@@ -197,7 +196,7 @@ symbolic_expression_p (x)
 int
 symbolic_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -220,7 +219,7 @@ symbolic_operand (op, mode)
 int
 symbolic_memory_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
@@ -340,7 +339,7 @@ reg_or_cint_move_operand (op, mode)
 int
 pic_label_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (!flag_pic)
     return 0;
@@ -361,7 +360,7 @@ pic_label_operand (op, mode)
 int
 fp_reg_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return reg_renumber && FP_REG_P (op);
 }
@@ -397,7 +396,7 @@ arith11_operand (op, mode)
 int
 pre_cint_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && INTVAL (op) >= -0x2000 && INTVAL (op) < 0x10);
@@ -408,7 +407,7 @@ pre_cint_operand (op, mode)
 int
 post_cint_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && INTVAL (op) < 0x2000 && INTVAL (op) >= -0x10);
@@ -434,7 +433,7 @@ arith_double_operand (op, mode)
 int
 ireg_or_int5_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT && INT_5_BITS (op))
 	  || (GET_CODE (op) == REG && REGNO (op) > 0 && REGNO (op) < 32));
@@ -446,7 +445,7 @@ ireg_or_int5_operand (op, mode)
 int
 int5_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && INT_5_BITS (op));
 }
@@ -454,7 +453,7 @@ int5_operand (op, mode)
 int
 uint5_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && INT_U5_BITS (op));
 }
@@ -462,7 +461,7 @@ uint5_operand (op, mode)
 int
 int11_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && INT_11_BITS (op));
 }
@@ -470,7 +469,7 @@ int11_operand (op, mode)
 int
 uint32_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
 #if HOST_BITS_PER_WIDE_INT > 32
   /* All allowed constants will fit a CONST_INT.  */
@@ -543,7 +542,7 @@ ior_mask_p (mask)
 int
 ior_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && ior_mask_p (INTVAL (op)));
 }
@@ -562,7 +561,7 @@ lhs_lshift_operand (op, mode)
 int
 lhs_lshift_cint_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   unsigned HOST_WIDE_INT x;
   if (GET_CODE (op) != CONST_INT)
@@ -582,7 +581,7 @@ arith32_operand (op, mode)
 int
 pc_or_label_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == PC || GET_CODE (op) == LABEL_REF);
 }
@@ -595,7 +594,7 @@ pc_or_label_operand (op, mode)
 rtx
 legitimize_pic_address (orig, mode, reg)
      rtx orig, reg;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   rtx pic_ref = orig;
 
@@ -709,7 +708,7 @@ legitimize_pic_address (orig, mode, reg)
 
 rtx
 hppa_legitimize_address (x, oldx, mode)
-     rtx x, oldx;
+     rtx x, oldx ATTRIBUTE_UNUSED;
      enum machine_mode mode;
 {
   rtx orig = x;
@@ -1928,7 +1927,7 @@ find_addr_reg (addr)
 char *
 output_block_move (operands, size_is_constant)
      rtx *operands;
-     int size_is_constant;
+     int size_is_constant ATTRIBUTE_UNUSED;
 {
   int align = INTVAL (operands[5]);
   unsigned long n_bytes = INTVAL (operands[4]);
@@ -2555,7 +2554,7 @@ static char hp_profile_label_name[8];
 void
 output_function_prologue (file, size)
      FILE *file;
-     int size;
+     int size ATTRIBUTE_UNUSED;
 {
   /* The function's label and associated .PROC must never be
      separated and must be output *after* any profiling declarations
@@ -2942,7 +2941,7 @@ hppa_expand_prologue()
 void
 output_function_epilogue (file, size)
      FILE *file;
-     int size;
+     int size ATTRIBUTE_UNUSED;
 {
   rtx insn = get_last_insn ();
 
@@ -3171,7 +3170,7 @@ hppa_expand_epilogue ()
 
 rtx
 return_addr_rtx (count, frameaddr)
-     int count;
+     int count ATTRIBUTE_UNUSED;
      rtx frameaddr;
 {
   rtx label;
@@ -4015,7 +4014,7 @@ import_milli (code)
 
 char *
 output_mul_insn (unsignedp, insn)
-     int unsignedp;
+     int unsignedp ATTRIBUTE_UNUSED;
      rtx insn;
 {
   import_milli (mulI);
@@ -4344,7 +4343,7 @@ function_arg_padding (mode, type)
 
 struct rtx_def *
 hppa_builtin_saveregs (arglist)
-     tree arglist;
+     tree arglist ATTRIBUTE_UNUSED;
 {
   rtx offset, dest;
   tree fntype = TREE_TYPE (current_function_decl);
@@ -4572,7 +4571,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 
 char *
 output_bb (operands, nullify, length, negated, insn, which)
-  rtx *operands;
+  rtx *operands ATTRIBUTE_UNUSED;
   int nullify, length, negated;
   rtx insn;
   int which;
@@ -4710,7 +4709,7 @@ output_bb (operands, nullify, length, negated, insn, which)
 
 char *
 output_bvb (operands, nullify, length, negated, insn, which)
-  rtx *operands;
+  rtx *operands ATTRIBUTE_UNUSED;
   int nullify, length, negated;
   rtx insn;
   int which;
@@ -5494,7 +5493,7 @@ hppa_encode_label (sym, permanent)
 int
 function_label_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return GET_CODE (op) == SYMBOL_REF && FUNCTION_NAME_P (XSTR (op, 0));
 }
@@ -5634,7 +5633,7 @@ fmpysuboperands (operands)
 int
 plus_xor_ior_operator (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == PLUS || GET_CODE (op) == XOR
 	  || GET_CODE (op) == IOR);
@@ -5657,7 +5656,7 @@ shadd_constant_p (val)
 int
 shadd_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && shadd_constant_p (INTVAL (op)));
 }
@@ -5711,7 +5710,7 @@ basereg_operand (op, mode)
 int
 non_hard_reg_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ! (GET_CODE (op) == REG && REGNO (op) < FIRST_PSEUDO_REGISTER);
 }
@@ -5739,7 +5738,7 @@ forward_branch_p (insn)
 int
 eq_neq_comparison_operator (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == EQ || GET_CODE (op) == NE);
 }
@@ -5748,7 +5747,7 @@ eq_neq_comparison_operator (op, mode)
 int
 movb_comparison_operator (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == EQ || GET_CODE (op) == NE
 	  || GET_CODE (op) == LT || GET_CODE (op) == GE);
@@ -6138,7 +6137,7 @@ pa_reorg (insns)
 
 static void
 pa_combine_instructions (insns)
-     rtx insns;
+     rtx insns ATTRIBUTE_UNUSED;
 {
   rtx anchor, new;
 
