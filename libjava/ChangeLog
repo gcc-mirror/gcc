@@ -1,3 +1,8 @@
+2000-09-26  Tom Tromey  <tromey@cygnus.com>
+
+	* java/awt/Scrollbar.java (removeAdjustmentListener): Use
+	`remove', not `add'.
+
 2000-09-26  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java/lang/natSystem.cc (file_encoding): Added return statement.
