@@ -246,7 +246,7 @@ namespace std
     {
       __glibcxx_requires_string_len(__s, __n);
       _M_check_length(this->size(), __n, "basic_string::assign");
-      if (_M_rep()->_M_is_safe(_M_data(), __s) || _M_rep()->_M_is_shared())
+      if (_M_disjunct(__s) || _M_rep()->_M_is_shared())
 	return _M_replace_safe(size_type(0), this->size(), __s, __n);
       else
 	{
@@ -273,7 +273,7 @@ namespace std
 	  const size_type __len = __n + this->size();
 	  if (__len > this->capacity() || _M_rep()->_M_is_shared())
 	    {
-	      if (_M_rep()->_M_is_safe(_M_data(), __s))
+	      if (_M_disjunct(__s))
 		this->reserve(__len);
 	      else
 		{
@@ -314,7 +314,7 @@ namespace std
        __glibcxx_requires_string_len(__s, __n);
        _M_check(__pos, "basic_string::insert");
        _M_check_length(size_type(0), __n, "basic_string::insert");
-       if (_M_rep()->_M_is_safe(_M_data(), __s) || _M_rep()->_M_is_shared())
+       if (_M_disjunct(__s) || _M_rep()->_M_is_shared())
          return _M_replace_safe(__pos, size_type(0), __s, __n);
        else
          {
@@ -348,7 +348,7 @@ namespace std
        __n1 = _M_limit(__pos, __n1);
        _M_check_length(__n1, __n2, "basic_string::replace");
        bool __left;
-       if (_M_rep()->_M_is_safe(_M_data(), __s) || _M_rep()->_M_is_shared())
+       if (_M_disjunct(__s) || _M_rep()->_M_is_shared())
          return _M_replace_safe(__pos, __n1, __s, __n2);
        else if ((__left = __s + __n2 <= _M_data() + __pos)
 		|| _M_data() + __pos + __n1 <= __s)
