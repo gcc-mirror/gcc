@@ -1,5 +1,20 @@
 Fri Nov 19 06:32:19 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* i386.h (enum reg_class): Add FLOAT_INT_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Define FLOAT_INT_REGS as union of FLOAT_REGS
+	and GENERAL_REGS.
+	* i386.md (pushsf): Do not preferre FLOAT_REGS over GENERAL_REGS.
+	(movsf): Likewise; unify 4th and 5th alternative.
+	(pushdf): Likewise.
+	(movdf_1): Likewise; rename to movdf_integer.
+	(pushxf): Likewise; rename to pushxf_integer; fix output template;
+	remove redundant splitter.
+	(movxf_1): Likewise; rename to movxf_integer; fix splitter's condition.
+	(movdf_nointeger): New.
+	(movxf_nointeger): New.
+	(pushxf_nointeger): New.
+
 	* i386.md (extend?f?f): Split to expander and pattern, refuse two
 	memory operands in patterns.
 	(fop*): Refuse two memory operands.

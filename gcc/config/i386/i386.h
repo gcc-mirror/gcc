@@ -835,6 +835,7 @@ enum reg_class
   GENERAL_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp %esp */
   FP_TOP_REG, FP_SECOND_REG,	/* %st(0) %st(1) */
   FLOAT_REGS,
+  FLOAT_INT_REGS,		/* FLOAT_REGS and GENERAL_REGS.  */
   ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -854,6 +855,7 @@ enum reg_class
    "GENERAL_REGS",			\
    "FP_TOP_REG", "FP_SECOND_REG",	\
    "FLOAT_REGS",			\
+   "FLOAT_INT_REGS",			\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.
@@ -871,6 +873,7 @@ enum reg_class
  {0x100ff},			/* GENERAL_REGS */		\
   {0x0100}, {0x0200},		/* FP_TOP_REG, FP_SECOND_REG */	\
   {0xff00},			/* FLOAT_REGS */		\
+  {0x1ffff},			/* FLOAT_INT_REGS */		\
  {0x7ffff}							\
 }
 
