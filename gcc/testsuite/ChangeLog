@@ -1,3 +1,8 @@
+2003-12-20  Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR target/12749
+	* gcc.c-torture/compile/20031220-2.c: New test case.
+
 2003-12-20  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/13031

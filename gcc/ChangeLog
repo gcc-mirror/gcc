@@ -1,3 +1,10 @@
+2003-12-20  Andrew Pinski  <pinskia@gcc.gnu.org>
+            Matt Thomas  <matt@3am-software.com>
+
+	PR target/12749
+	* config/i386/i386.c (print_operand): Print only the first
+	8 characters of the float in hex.
+
 2003-12-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.h (TRAMPOLINE_TEMPLATE): Shorten sequence when generating PA
