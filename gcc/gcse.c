@@ -5327,7 +5327,6 @@ hoist_expr_reaches_here_p (expr_bb, expr_index, bb, visited)
        visited = xcalloc (n_basic_blocks, 1);
     }
 
-  visited[expr_bb] = 1;
   for (pred = BASIC_BLOCK (bb)->pred; pred != NULL; pred = pred->pred_next)
     {
       int pred_bb = pred->src->index;
