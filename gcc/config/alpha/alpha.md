@@ -564,6 +564,17 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    addl %r1,%2,%0
    subl %r1,%n2,%0")
 
+(define_insn "*addsi_se2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(sign_extend:DI
+	 (subreg:SI (plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,rJ")
+			     (match_operand:DI 2 "sext_add_operand" "rI,O"))
+		    0)))]
+  ""
+  "@
+   addl %r1,%2,%0
+   subl %r1,%n2,%0")
+
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
 	(sign_extend:DI
@@ -841,6 +852,15 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
 				  (match_operand:SI 2 "reg_or_8bit_operand" "rI"))))]
+  ""
+  "subl %r1,%2,%0")
+
+(define_insn "*subsi_se2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	 (subreg:SI (minus:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+			      (match_operand:DI 2 "reg_or_8bit_operand" "rI"))
+		    0)))]
   ""
   "subl %r1,%2,%0")
 

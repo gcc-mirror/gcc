@@ -1,3 +1,9 @@
+Sun Feb 24 07:41:31 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* optabs.c (widen_operand): Only call convert_modes for
+	promoted SUBREG if signedness matches.
+	* config/alpha/alpha.md (*addsi_se2, *subsi_se2): New patterns.
+
 2002-02-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplib.c (glue_header_name): Use local buffer to build up
