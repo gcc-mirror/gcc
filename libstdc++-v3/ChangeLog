@@ -1,5 +1,10 @@
 2000-12-13  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/locale_facets.h (ctype<char>): Remove throw specs not in
+	base class signature.
+
+2000-12-13  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* config/os/generic/bits/ctype_base.h (ctype_base): Consistency
 	with linux.
 	* config/os/generic/bits/ctype_inline.h (is): Same.
