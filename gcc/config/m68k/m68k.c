@@ -2189,11 +2189,9 @@ notice_update_cc (exp, insn)
 	}
       else if (ADDRESS_REG_P (SET_DEST (exp)))
 	{
-	  if (cc_status.value1
-	      && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value1))
+	  if (cc_status.value1 && modified_in_p (cc_status.value1, insn))
 	    cc_status.value1 = 0;
-	  if (cc_status.value2
-	      && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value2))
+	  if (cc_status.value2 && modified_in_p (cc_status.value2, insn))
 	    cc_status.value2 = 0; 
 	}
       else if (!FP_REG_P (SET_DEST (exp))
