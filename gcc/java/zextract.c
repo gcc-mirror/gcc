@@ -318,6 +318,8 @@ read_zip_archive (zipf)
   for (i = 0; i < zipf->count; i++)
     {
       ZipDirectory *zipd = (ZipDirectory*)(dir_ptr + dir_last_pad);
+      int compression_method = (int) dir_ptr[4+C_COMPRESSION_METHOD];
+      long size = makelong (&dir_ptr[4+C_COMPRESSED_SIZE]);
       long uncompressed_size = makelong (&dir_ptr[4+C_UNCOMPRESSED_SIZE]);
       long filename_length = makeword (&dir_ptr[4+C_FILENAME_LENGTH]);
       long extra_field_length = makeword (&dir_ptr[4+C_EXTRA_FIELD_LENGTH]);
@@ -326,7 +328,9 @@ read_zip_archive (zipf)
 	return -1;
 
       zipd->filename_length = filename_length;
-      zipd->size = uncompressed_size;
+      zipd->compression_method = compression_method;
+      zipd->size = size;
+      zipd->uncompressed_size = uncompressed_size;
 #ifdef __GNUC__
 #define DIR_ALIGN __alignof__(ZipDirectory)
 #else

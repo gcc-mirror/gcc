@@ -34,7 +34,9 @@ typedef struct ZipFile ZipFile;
 struct ZipDirectory {
   int direntry_size;
   int filename_offset;
+  int compression_method;
   long size; /* length of file */
+  long uncompressed_size; /* length of uncompressed data */
   long filestart;  /* start of file in archive */
   long filename_length;
   /* char mid_padding[...]; */

@@ -1,3 +1,11 @@
+2000-09-02  Anthony Green  <green@redhat.com>
+
+	* jcf-io.c: Include zlib.h.
+	(open_in_zip): Read compressed class file archives.
+	* zipfile.h (ZipDirectory): Add uncompressed_size and
+	compression_method fields.
+	* zextract.c (read_zip_archive): Collect file compression info.
+
 2000-08-07  Hans Boehm  <boehm@acm.org>
 
 	* boehm.c (mark_reference_fields): Set marking bits for all words in
