@@ -1,3 +1,8 @@
+2002-10-08  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*doloop_si_long"): Add missing operand.
+	("*doloop_di_long"): Likewise.
+
 Tue Oct  8 16:50:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* print-rtl.c (print_rtx): Increase buffer size for real numbers.
