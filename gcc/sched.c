@@ -2832,7 +2832,8 @@ attach_deaths (x, insn, set_p)
 			       & ((REGSET_ELT_TYPE) 1
 				  << ((regno +i) % REGSET_ELT_BITS))) == 0
 			      && ! dead_or_set_regno_p (insn, regno + i))
-			    create_reg_dead_note (gen_rtx (REG, word_mode,
+			    create_reg_dead_note (gen_rtx (REG,
+							   reg_raw_mode[regno + i],
 							   regno + i),
 						  insn);
 		      }
