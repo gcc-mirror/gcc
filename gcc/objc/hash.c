@@ -16,10 +16,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.8 1991/11/24 01:20:02 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.9 1991/12/03 02:01:23 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/24 01:20:02 $
+  $Date: 1991/12/03 02:01:23 $
   $Log: hash.c,v $
+ * Revision 0.9  1991/12/03  02:01:23  dennisg
+ * fixed assert macro.
+ * added memory allocation adjustment macro for hash size allocation.
+ *
  * Revision 0.8  1991/11/24  01:20:02  dennisg
  * changed shorts back to ints.
  * the efficiency gained didn't out weight the grossness of the code.
@@ -58,41 +62,41 @@
  
 
 #include  <hash.h>
-#include	<hash-inline.h>
+#include  <hash-inline.h>
 #include  <ObjC.h>
-#include	<ObjC-private.h>
+#include  <ObjC-private.h>
 
 #include  <assert.h>
 #include  <libc.h>
 #include  <math.h>
 
-																								/* These two macros determine
-																									when a hash table is full and
-																									by how much it should be 
-																									expanded respectively.
-																									
-																									These equations are 
-																									percentages. */
-#define	FULLNESS(cache)	\
-	 ((((cache)->sizeOfHash * 75	) / 100) <= (cache)->entriesInHash)
-#define	EXPANSION(cache) \
-	(((cache)->sizeOfHash * 175 ) / 100 )
+                                                /* These two macros determine
+                                                  when a hash table is full and
+                                                  by how much it should be 
+                                                  expanded respectively.
+                                                  
+                                                  These equations are 
+                                                  percentages. */
+#define FULLNESS(cache) \
+   ((((cache)->sizeOfHash * 75  ) / 100) <= (cache)->entriesInHash)
+#define EXPANSION(cache) \
+  (((cache)->sizeOfHash * 175 ) / 100 )
 
-#define	MEMORY_ALLOCATION_ADJUST(i) \
-	((i&0x01)?i:(i-1))
+#define MEMORY_ALLOCATION_ADJUST(i) \
+  ((i&0x01)?i:(i-1))
 
 Cache_t hash_new (u_int sizeOfHash) {
 
   Cache_t retCache;
-	
+  
 
   assert(sizeOfHash);
-	
-																								/* Memory is allocated on this
-																									machine in even address
-																									chunks.  Therefore the
-																									modulus must be odd. */
-	sizeOfHash = MEMORY_ALLOCATION_ADJUST(sizeOfHash);
+  
+                                                /* Memory is allocated on this
+                                                  machine in even address
+                                                  chunks.  Therefore the
+                                                  modulus must be odd. */
+  sizeOfHash = MEMORY_ALLOCATION_ADJUST(sizeOfHash);
 
                                                 /* Allocate the cache 
                                                   structure.  calloc () insures
@@ -108,7 +112,7 @@ Cache_t hash_new (u_int sizeOfHash) {
   retCache->theNodeTable = calloc (sizeOfHash, sizeof (CacheNode_t));
   assert(retCache->theNodeTable);
   
-  retCache->sizeOfHash	= sizeOfHash;
+  retCache->sizeOfHash  = sizeOfHash;
 
   return retCache;
 }
@@ -163,44 +167,44 @@ void hash_add (Cache_t* theCache, void* aKey, void* aValue) {
                                                   first element on the list. */
   (* (*theCache)->theNodeTable)[ indx ] = aCacheNode;
 
-																								/* Bump the number of entries
-																									in the cache. */
-	++ (*theCache)->entriesInHash;
-	
-																								/* Check the hash table's
-																									fullness.   We're going
-																									to expand if it is above
-																									the fullness level. */
-	if (FULLNESS (*theCache)) {
-																								/* The hash table has reached
-																									its fullness level.  Time to
-																									expand it. 
-																									
-																									I'm using a slow method 
-																									here but is built on other
-																									primitive functions thereby
-																									increasing its 
-																									correctness. */
-		CacheNode_t	aNode = NULL;
-		Cache_t			newCache = 
-									hash_new (MEMORY_ALLOCATION_ADJUST( EXPANSION (*theCache)));
+                                                /* Bump the number of entries
+                                                  in the cache. */
+  ++ (*theCache)->entriesInHash;
+  
+                                                /* Check the hash table's
+                                                  fullness.   We're going
+                                                  to expand if it is above
+                                                  the fullness level. */
+  if (FULLNESS (*theCache)) {
+                                                /* The hash table has reached
+                                                  its fullness level.  Time to
+                                                  expand it. 
+                                                  
+                                                  I'm using a slow method 
+                                                  here but is built on other
+                                                  primitive functions thereby
+                                                  increasing its 
+                                                  correctness. */
+    CacheNode_t aNode = NULL;
+    Cache_t     newCache = 
+                  hash_new (MEMORY_ALLOCATION_ADJUST( EXPANSION (*theCache)));
 
-		DEBUG_PRINTF (stderr, "Expanding cache %#x from %d to %d\n",
-			*theCache, (*theCache)->sizeOfHash, newCache->sizeOfHash);
-			
-																								/* Copy the nodes from the
-																									first hash table to the
-																									new one. */
-		while (aNode = hash_next (*theCache, aNode))
-			hash_add (&newCache, aNode->theKey, aNode->theValue);
+    DEBUG_PRINTF (stderr, "Expanding cache %#x from %d to %d\n",
+      *theCache, (*theCache)->sizeOfHash, newCache->sizeOfHash);
+      
+                                                /* Copy the nodes from the
+                                                  first hash table to the
+                                                  new one. */
+    while (aNode = hash_next (*theCache, aNode))
+      hash_add (&newCache, aNode->theKey, aNode->theValue);
 
-																								/* Trash the old cache. */
-		hash_delete (*theCache);
-		
-																								/* Return a pointer to the new
-																									hash table. */
-		*theCache = newCache;
-	}
+                                                /* Trash the old cache. */
+    hash_delete (*theCache);
+    
+                                                /* Return a pointer to the new
+                                                  hash table. */
+    *theCache = newCache;
+  }
 }
 
 
@@ -237,10 +241,10 @@ void hash_remove (Cache_t theCache, void* aKey) {
     } while (!removed && aCacheNode);
     assert(removed);
   }
-	
-																								/* Decrement the number of
-																									entries in the hash table. */
-	--theCache->entriesInHash;
+  
+                                                /* Decrement the number of
+                                                  entries in the hash table. */
+  --theCache->entriesInHash;
 }
 
 
