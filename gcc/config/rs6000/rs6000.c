@@ -4075,25 +4075,9 @@ expand_block_move (operands)
   if (bytes <= 0)
     return 1;
 
-  /* Don't support real large moves.  If string instructions are not used,
-     then don't generate more than 8 loads.  */
-  if (TARGET_STRING)
-    {
-      if (bytes > 8*4)
-	return 0;
-    }
-  else if (! STRICT_ALIGNMENT)
-    {
-      if (TARGET_POWERPC64 && align >= 4)
-	{
-	  if (bytes > 8*8)
-	    return 0;
-	}
-      else
-	if (bytes > 8*4)
-	  return 0;
-    }
-  else if (bytes > 8*align)
+  /* store_one_arg depends on expand_block_move to handle at least the size of
+     reg_parm_stack_space. */	
+  if (bytes > (TARGET_POWERPC64 ? 64 : 32))
     return 0;
 
   /* Move the address into scratch registers.  */
