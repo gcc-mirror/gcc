@@ -966,6 +966,8 @@ U_CHAR is_idstart[256];
 U_CHAR is_hor_space[256];
 /* table to tell if c is horizontal or vertical space.  */
 static U_CHAR is_space[256];
+/* names of some characters */
+static char *char_name[256];
 
 #define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
 #define SKIP_ALL_WHITE_SPACE(p) do { while (is_space[*p]) p++; } while (0)
@@ -3469,9 +3471,8 @@ handle_directive (ip, op)
   /* Skip whitespace and \-newline.  */
   while (1) {
     if (is_hor_space[*bp]) {
-      if ((*bp == '\f' || *bp == '\v') && pedantic)
-	pedwarn ("%s in preprocessing directive",
-		 *bp == '\f' ? "formfeed" : "vertical tab");
+      if (*bp != ' ' && *bp != '\t' && pedantic)
+	pedwarn ("%s in preprocessing directive", char_name[*bp]);
       bp++;
     } else if (*bp == '/' && (bp[1] == '*'
 			      || (cplusplus_comments && bp[1] == '/'))) {
@@ -3644,10 +3645,10 @@ handle_directive (ip, op)
 	  break;
 
 	case '\f':
+	case '\r':
 	case '\v':
 	  if (pedantic)
-	    pedwarn ("%s in preprocessing directive",
-		     c == '\f' ? "formfeed" : "vertical tab");
+	    pedwarn ("%s in preprocessing directive", char_name[c]);
 	  break;
 
 	case '\n':
@@ -5403,9 +5404,7 @@ create_definition (buf, limit, op)
     }
 
     ++bp;			/* skip paren */
-    /* Skip spaces and tabs if any.  */
-    while (bp < limit && (*bp == ' ' || *bp == '\t'))
-      ++bp;
+    SKIP_WHITE_SPACE (bp);
     /* now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, argno, arg_ptrs);
     defn->rest_args = rest_args;
@@ -5432,14 +5431,11 @@ create_definition (buf, limit, op)
 
     if (bp < limit)
       {
-	switch (*bp)
-	  {
-	    case '\t': case ' ': case '\r':
-	      /* Skip spaces and tabs.  */
-	      while (++bp < limit && (*bp == ' ' || *bp == '\t' || *bp == '\r'))
-		continue;
-	      break;
-
+	if (is_hor_space[*bp]) {
+	  bp++;
+	  SKIP_WHITE_SPACE (bp);
+	} else {
+	  switch (*bp) {
 	    case '!':  case '"':  case '#':  case '%':  case '&':  case '\'':
 	    case ')':  case '*':  case '+':  case ',':  case '-':  case '.':
 	    case '/':  case ':':  case ';':  case '<':  case '=':  case '>':
@@ -5454,6 +5450,7 @@ create_definition (buf, limit, op)
 		       sym_length, symname);
 	      break;
 	  }
+	}
       }
     /* Now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, -1, NULL_PTR);
@@ -6640,8 +6637,7 @@ static int
 do_pragma (buf, limit)
      U_CHAR *buf, *limit;
 {
-  while (*buf == ' ' || *buf == '\t')
-    buf++;
+  SKIP_WHITE_SPACE (buf);
   if (!strncmp (buf, "once", 4)) {
     /* Allow #pragma once in system headers, since that's not the user's
        fault.  */
@@ -7271,23 +7267,16 @@ do_endif (buf, limit, op, keyword)
 
       while (p != ep) {
 	U_CHAR c = *p++;
-	switch (c) {
-	case ' ':
-	case '\t':
-	case '\n':
-	  break;
-	case '/':
-	  if (p != ep && *p == '*') {
+	if (!is_space[c]) {
+	  if (c == '/' && p != ep && *p == '*') {
 	    /* Skip this comment.  */
 	    int junk = 0;
 	    U_CHAR *save_bufp = ip->bufp;
 	    ip->bufp = p + 1;
 	    p = skip_to_end_of_comment (ip, &junk, 1);
 	    ip->bufp = save_bufp;
-	  }
-	  break;
-	default:
-	  goto fail;
+	  } else
+	    goto fail;
 	}
       }
       /* If we get here, this #endif ends a #ifndef
@@ -9169,6 +9158,10 @@ initialize_char_syntax ()
   is_space['\f'] = 1;
   is_space['\n'] = 1;
   is_space['\r'] = 1;
+
+  char_name['\v'] = "vertical tab";
+  char_name['\f'] = "formfeed";
+  char_name['\r'] = "carriage return";
 }
 
 /* Initialize the built-in macros.  */
@@ -9414,7 +9407,7 @@ make_assertion (option, str)
   }
   while (is_idchar[*++p])
     ;
-  while (*p == ' ' || *p == '\t') p++;
+  SKIP_WHITE_SPACE (p);
   if (! (*p == 0 || *p == '(')) {
     error ("malformed option `%s %s'", option, str);
     return;
