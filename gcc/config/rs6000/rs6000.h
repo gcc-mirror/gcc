@@ -76,6 +76,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=604e: -D_ARCH_PPC} \
 %{mcpu=620: -D_ARCH_PPC} \
 %{mcpu=740: -D_ARCH_PPC} \
+%{mcpu=7450: -D_ARCH_PPC} \
 %{mcpu=750: -D_ARCH_PPC} \
 %{mcpu=801: -D_ARCH_PPC} \
 %{mcpu=821: -D_ARCH_PPC} \
@@ -113,6 +114,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=604e: -mppc} \
 %{mcpu=620: -mppc} \
 %{mcpu=740: -mppc} \
+%{mcpu=7450: -mppc} \
 %{mcpu=750: -mppc} \
 %{mcpu=801: -mppc} \
 %{mcpu=821: -mppc} \
@@ -293,9 +295,9 @@ extern int target_flags;
 			N_("Use PowerPC-64 instruction set")},		\
   {"no-powerpc64",	- MASK_POWERPC64,				\
 			N_("Don't use PowerPC-64 instruction set")},	\
-  {"altivec",		MASK_ALTIVEC,					\
+  {"altivec",		MASK_ALTIVEC ,					\
 			N_("Use AltiVec instructions.")},		\
-  {"no-altivec",	- MASK_ALTIVEC,					\
+  {"no-altivec",	- MASK_ALTIVEC ,					\
 			N_("Don't use AltiVec instructions.")},	\
   {"new-mnemonics",	MASK_NEW_MNEMONICS,				\
 			N_("Use new mnemonics for PowerPC architecture")},\
@@ -2852,8 +2854,14 @@ extern int frame_pointer_needed;
 enum rs6000_builtins
 {
   /* AltiVec builtins.  */
-  ALTIVEC_BUILTIN_ST_INTERNAL,
-  ALTIVEC_BUILTIN_LD_INTERNAL,
+  ALTIVEC_BUILTIN_ST_INTERNAL_4si,
+  ALTIVEC_BUILTIN_LD_INTERNAL_4si,
+  ALTIVEC_BUILTIN_ST_INTERNAL_8hi,
+  ALTIVEC_BUILTIN_LD_INTERNAL_8hi,
+  ALTIVEC_BUILTIN_ST_INTERNAL_16qi,
+  ALTIVEC_BUILTIN_LD_INTERNAL_16qi,
+  ALTIVEC_BUILTIN_ST_INTERNAL_4sf,
+  ALTIVEC_BUILTIN_LD_INTERNAL_4sf,
   ALTIVEC_BUILTIN_VADDUBM,
   ALTIVEC_BUILTIN_VADDUHM,
   ALTIVEC_BUILTIN_VADDUWM,
@@ -2936,8 +2944,8 @@ enum rs6000_builtins
   ALTIVEC_BUILTIN_VSL,
   ALTIVEC_BUILTIN_VSLO,
   ALTIVEC_BUILTIN_VSRB,
-  ALTIVEC_BUILTIN_VRSH,
-  ALTIVEC_BUILTIN_VRSW,
+  ALTIVEC_BUILTIN_VSRH,
+  ALTIVEC_BUILTIN_VSRW,
   ALTIVEC_BUILTIN_VSRAB,
   ALTIVEC_BUILTIN_VSRAH,
   ALTIVEC_BUILTIN_VSRAW,

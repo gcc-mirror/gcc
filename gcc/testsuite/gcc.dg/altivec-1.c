@@ -9,10 +9,10 @@
    overloaded functions implemented in an <altivec.h>.  */
 
 #define vec_load(src) \
-  __builtin_altivec_ld_internal ((int *) src)
+  __builtin_altivec_ld_internal_4si ((int *) src)
 
 #define vec_store(dst, src) \
-  __builtin_altivec_st_internal ((int *) dst, (int4) src)
+  __builtin_altivec_st_internal_4si ((int *) dst, (int4) src)
 
 #define vec_add_int4(x, y) \
   __builtin_altivec_vaddsws (x, y)

@@ -2976,10 +2976,10 @@ struct builtin_description
 /* Simple binary operatiors: VECc = foo (VECa, VECb).  */
 static const struct builtin_description bdesc_2arg[] =
 {
-  { MASK_ALTIVEC, CODE_FOR_altivec_vaddubm, "__builtin_altivec_vaddubm", ALTIVEC_BUILTIN_VADDUBM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vadduhm, "__builtin_altivec_vadduhm", ALTIVEC_BUILTIN_VADDUHM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vadduwm, "__builtin_altivec_vadduwm", ALTIVEC_BUILTIN_VADDUWM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vaddfp, "__builtin_altivec_vaddfp", ALTIVEC_BUILTIN_VADDFP },
+  { MASK_ALTIVEC, CODE_FOR_addv16qi3, "__builtin_altivec_vaddubm", ALTIVEC_BUILTIN_VADDUBM },
+  { MASK_ALTIVEC, CODE_FOR_addv8hi3, "__builtin_altivec_vadduhm", ALTIVEC_BUILTIN_VADDUHM },
+  { MASK_ALTIVEC, CODE_FOR_addv4si3, "__builtin_altivec_vadduwm", ALTIVEC_BUILTIN_VADDUWM },
+  { MASK_ALTIVEC, CODE_FOR_addv4sf3, "__builtin_altivec_vaddfp", ALTIVEC_BUILTIN_VADDFP },
   { MASK_ALTIVEC, CODE_FOR_altivec_vaddcuw, "__builtin_altivec_vaddcuw", ALTIVEC_BUILTIN_VADDCUW },
   { MASK_ALTIVEC, CODE_FOR_altivec_vaddubs, "__builtin_altivec_vaddubs", ALTIVEC_BUILTIN_VADDUBS },
   { MASK_ALTIVEC, CODE_FOR_altivec_vaddsbs, "__builtin_altivec_vaddsbs", ALTIVEC_BUILTIN_VADDSBS },
@@ -2987,7 +2987,7 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vaddshs, "__builtin_altivec_vaddshs", ALTIVEC_BUILTIN_VADDSHS },
   { MASK_ALTIVEC, CODE_FOR_altivec_vadduws, "__builtin_altivec_vadduws", ALTIVEC_BUILTIN_VADDUWS },
   { MASK_ALTIVEC, CODE_FOR_altivec_vaddsws, "__builtin_altivec_vaddsws", ALTIVEC_BUILTIN_VADDSWS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vand, "__builtin_altivec_vand", ALTIVEC_BUILTIN_VAND },
+  { MASK_ALTIVEC, CODE_FOR_andv4si3, "__builtin_altivec_vand", ALTIVEC_BUILTIN_VAND },
   { MASK_ALTIVEC, CODE_FOR_altivec_vandc, "__builtin_altivec_vandc", ALTIVEC_BUILTIN_VANDC },
   { MASK_ALTIVEC, CODE_FOR_altivec_vavgub, "__builtin_altivec_vavgub", ALTIVEC_BUILTIN_VAVGUB },
   { MASK_ALTIVEC, CODE_FOR_altivec_vavgsb, "__builtin_altivec_vavgsb", ALTIVEC_BUILTIN_VAVGSB },
@@ -3008,26 +3008,26 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vcmpgtuw, "__builtin_altivec_vcmpgtuw", ALTIVEC_BUILTIN_VCMPGTUW },
   { MASK_ALTIVEC, CODE_FOR_altivec_vcmpgtsw, "__builtin_altivec_vcmpgtsw", ALTIVEC_BUILTIN_VCMPGTSW },
   { MASK_ALTIVEC, CODE_FOR_altivec_vcmpgtfp, "__builtin_altivec_vcmpgtfp", ALTIVEC_BUILTIN_VCMPGTFP },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmaxub, "__builtin_altivec_vmaxub", ALTIVEC_BUILTIN_VMAXUB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmaxsb, "__builtin_altivec_vmaxsb", ALTIVEC_BUILTIN_VMAXSB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmaxuh, "__builtin_altivec_vmaxuh", ALTIVEC_BUILTIN_VMAXUH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmaxsh, "__builtin_altivec_vmaxsh", ALTIVEC_BUILTIN_VMAXSH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmaxuw, "__builtin_altivec_vmaxuw", ALTIVEC_BUILTIN_VMAXUW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmaxsw, "__builtin_altivec_vmaxsw", ALTIVEC_BUILTIN_VMAXSW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmaxfp, "__builtin_altivec_vmaxfp", ALTIVEC_BUILTIN_VMAXFP },
+  { MASK_ALTIVEC, CODE_FOR_umaxv16qi3, "__builtin_altivec_vmaxub", ALTIVEC_BUILTIN_VMAXUB },
+  { MASK_ALTIVEC, CODE_FOR_smaxv16qi3, "__builtin_altivec_vmaxsb", ALTIVEC_BUILTIN_VMAXSB },
+  { MASK_ALTIVEC, CODE_FOR_uminv8hi3, "__builtin_altivec_vmaxuh", ALTIVEC_BUILTIN_VMAXUH },
+  { MASK_ALTIVEC, CODE_FOR_sminv8hi3, "__builtin_altivec_vmaxsh", ALTIVEC_BUILTIN_VMAXSH },
+  { MASK_ALTIVEC, CODE_FOR_uminv4si3, "__builtin_altivec_vmaxuw", ALTIVEC_BUILTIN_VMAXUW },
+  { MASK_ALTIVEC, CODE_FOR_sminv4si3, "__builtin_altivec_vmaxsw", ALTIVEC_BUILTIN_VMAXSW },
+  { MASK_ALTIVEC, CODE_FOR_sminv4sf3, "__builtin_altivec_vmaxfp", ALTIVEC_BUILTIN_VMAXFP },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmrghb, "__builtin_altivec_vmrghb", ALTIVEC_BUILTIN_VMRGHB },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmrghh, "__builtin_altivec_vmrghh", ALTIVEC_BUILTIN_VMRGHH },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmrghw, "__builtin_altivec_vmrghw", ALTIVEC_BUILTIN_VMRGHW },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmrglb, "__builtin_altivec_vmrglb", ALTIVEC_BUILTIN_VMRGLB },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmrglh, "__builtin_altivec_vmrglh", ALTIVEC_BUILTIN_VMRGLH },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmrglw, "__builtin_altivec_vmrglw", ALTIVEC_BUILTIN_VMRGLW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vminub, "__builtin_altivec_vminub", ALTIVEC_BUILTIN_VMINUB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vminsb, "__builtin_altivec_vminsb", ALTIVEC_BUILTIN_VMINSB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vminuh, "__builtin_altivec_vminuh", ALTIVEC_BUILTIN_VMINUH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vminsh, "__builtin_altivec_vminsh", ALTIVEC_BUILTIN_VMINSH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vminuw, "__builtin_altivec_vminuw", ALTIVEC_BUILTIN_VMINUW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vminsw, "__builtin_altivec_vminsw", ALTIVEC_BUILTIN_VMINSW },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vminfp, "__builtin_altivec_vminfp", ALTIVEC_BUILTIN_VMINFP },
+  { MASK_ALTIVEC, CODE_FOR_uminv16qi3, "__builtin_altivec_vminub", ALTIVEC_BUILTIN_VMINUB },
+  { MASK_ALTIVEC, CODE_FOR_sminv16qi3, "__builtin_altivec_vminsb", ALTIVEC_BUILTIN_VMINSB },
+  { MASK_ALTIVEC, CODE_FOR_uminv8hi3, "__builtin_altivec_vminuh", ALTIVEC_BUILTIN_VMINUH },
+  { MASK_ALTIVEC, CODE_FOR_sminv8hi3, "__builtin_altivec_vminsh", ALTIVEC_BUILTIN_VMINSH },
+  { MASK_ALTIVEC, CODE_FOR_uminv4si3, "__builtin_altivec_vminuw", ALTIVEC_BUILTIN_VMINUW },
+  { MASK_ALTIVEC, CODE_FOR_sminv4si3, "__builtin_altivec_vminsw", ALTIVEC_BUILTIN_VMINSW },
+  { MASK_ALTIVEC, CODE_FOR_sminv4sf3, "__builtin_altivec_vminfp", ALTIVEC_BUILTIN_VMINFP },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmuleub, "__builtin_altivec_vmuleub", ALTIVEC_BUILTIN_VMULEUB },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmulesb, "__builtin_altivec_vmulesb", ALTIVEC_BUILTIN_VMULESB },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmuleuh, "__builtin_altivec_vmuleuh", ALTIVEC_BUILTIN_VMULEUH },
@@ -3037,7 +3037,7 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vmulouh, "__builtin_altivec_vmulouh", ALTIVEC_BUILTIN_VMULOUH },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmulosh, "__builtin_altivec_vmulosh", ALTIVEC_BUILTIN_VMULOSH },
   { MASK_ALTIVEC, CODE_FOR_altivec_vnor, "__builtin_altivec_vnor", ALTIVEC_BUILTIN_VNOR },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vor, "__builtin_altivec_vor", ALTIVEC_BUILTIN_VOR },
+  { MASK_ALTIVEC, CODE_FOR_iorv4si3, "__builtin_altivec_vor", ALTIVEC_BUILTIN_VOR },
   { MASK_ALTIVEC, CODE_FOR_altivec_vpkuhum, "__builtin_altivec_vpkuhum", ALTIVEC_BUILTIN_VPKUHUM },
   { MASK_ALTIVEC, CODE_FOR_altivec_vpkuwum, "__builtin_altivec_vpkuwum", ALTIVEC_BUILTIN_VPKUWUM },
   { MASK_ALTIVEC, CODE_FOR_altivec_vpkpx, "__builtin_altivec_vpkpx", ALTIVEC_BUILTIN_VPKPX },
@@ -3058,17 +3058,17 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vsl, "__builtin_altivec_vsl", ALTIVEC_BUILTIN_VSL },
   { MASK_ALTIVEC, CODE_FOR_altivec_vslo, "__builtin_altivec_vslo", ALTIVEC_BUILTIN_VSLO },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsrb, "__builtin_altivec_vsrb", ALTIVEC_BUILTIN_VSRB },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vrsh, "__builtin_altivec_vrsh", ALTIVEC_BUILTIN_VRSH },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vrsw, "__builtin_altivec_vrsw", ALTIVEC_BUILTIN_VRSW },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vsrh, "__builtin_altivec_vsrh", ALTIVEC_BUILTIN_VSRH },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vsrw, "__builtin_altivec_vsrw", ALTIVEC_BUILTIN_VSRW },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsrab, "__builtin_altivec_vsrab", ALTIVEC_BUILTIN_VSRAB },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsrah, "__builtin_altivec_vsrah", ALTIVEC_BUILTIN_VSRAH },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsraw, "__builtin_altivec_vsraw", ALTIVEC_BUILTIN_VSRAW },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsr, "__builtin_altivec_vsr", ALTIVEC_BUILTIN_VSR },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsro, "__builtin_altivec_vsro", ALTIVEC_BUILTIN_VSRO },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsububm, "__builtin_altivec_vsububm", ALTIVEC_BUILTIN_VSUBUBM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsubuhm, "__builtin_altivec_vsubuhm", ALTIVEC_BUILTIN_VSUBUHM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsubuwm, "__builtin_altivec_vsubuwm", ALTIVEC_BUILTIN_VSUBUWM },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vsubfp, "__builtin_altivec_vsubfp", ALTIVEC_BUILTIN_VSUBFP },
+  { MASK_ALTIVEC, CODE_FOR_subv16qi3, "__builtin_altivec_vsububm", ALTIVEC_BUILTIN_VSUBUBM },
+  { MASK_ALTIVEC, CODE_FOR_subv8hi3, "__builtin_altivec_vsubuhm", ALTIVEC_BUILTIN_VSUBUHM },
+  { MASK_ALTIVEC, CODE_FOR_subv4si3, "__builtin_altivec_vsubuwm", ALTIVEC_BUILTIN_VSUBUWM },
+  { MASK_ALTIVEC, CODE_FOR_subv4sf3, "__builtin_altivec_vsubfp", ALTIVEC_BUILTIN_VSUBFP },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsubcuw, "__builtin_altivec_vsubcuw", ALTIVEC_BUILTIN_VSUBCUW },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsububs, "__builtin_altivec_vsububs", ALTIVEC_BUILTIN_VSUBUBS },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsubsbs, "__builtin_altivec_vsubsbs", ALTIVEC_BUILTIN_VSUBSBS },
@@ -3081,7 +3081,7 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vsum4shs, "__builtin_altivec_vsum4shs", ALTIVEC_BUILTIN_VSUM4SHS },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsum2sws, "__builtin_altivec_vsum2sws", ALTIVEC_BUILTIN_VSUM2SWS },
   { MASK_ALTIVEC, CODE_FOR_altivec_vsumsws, "__builtin_altivec_vsumsws", ALTIVEC_BUILTIN_VSUMSWS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vxor, "__builtin_altivec_vxor", ALTIVEC_BUILTIN_VXOR },
+  { MASK_ALTIVEC, CODE_FOR_xorv4si3, "__builtin_altivec_vxor", ALTIVEC_BUILTIN_VXOR },
 };
 
 static rtx
@@ -3134,8 +3134,68 @@ altivec_expand_builtin (exp, target)
   
   switch (fcode)
     {
-    case ALTIVEC_BUILTIN_LD_INTERNAL:
-      icode = CODE_FOR_altivec_lvx;
+    case ALTIVEC_BUILTIN_LD_INTERNAL_16qi:
+      icode = CODE_FOR_altivec_lvx_16qi;
+      arg0 = TREE_VALUE (arglist);
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      tmode = insn_data[icode].operand[0].mode;
+      mode0 = insn_data[icode].operand[1].mode;
+
+      if (! target
+	  || GET_MODE (target) != tmode
+	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+
+      pat = GEN_FCN (icode) (target, op0);
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+      return target;
+    case ALTIVEC_BUILTIN_LD_INTERNAL_8hi:
+      icode = CODE_FOR_altivec_lvx_8hi;
+      arg0 = TREE_VALUE (arglist);
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      tmode = insn_data[icode].operand[0].mode;
+      mode0 = insn_data[icode].operand[1].mode;
+
+      if (! target
+	  || GET_MODE (target) != tmode
+	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+
+      pat = GEN_FCN (icode) (target, op0);
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+      return target;
+    case ALTIVEC_BUILTIN_LD_INTERNAL_4si:
+      icode = CODE_FOR_altivec_lvx_4si;
+      arg0 = TREE_VALUE (arglist);
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      tmode = insn_data[icode].operand[0].mode;
+      mode0 = insn_data[icode].operand[1].mode;
+
+      if (! target
+	  || GET_MODE (target) != tmode
+	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+
+      pat = GEN_FCN (icode) (target, op0);
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+      return target;
+    case ALTIVEC_BUILTIN_LD_INTERNAL_4sf:
+      icode = CODE_FOR_altivec_lvx_4sf;
       arg0 = TREE_VALUE (arglist);
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
       tmode = insn_data[icode].operand[0].mode;
@@ -3155,8 +3215,65 @@ altivec_expand_builtin (exp, target)
       emit_insn (pat);
       return target;
 
-    case ALTIVEC_BUILTIN_ST_INTERNAL:
-      icode = CODE_FOR_altivec_stvx;
+    case ALTIVEC_BUILTIN_ST_INTERNAL_16qi:
+      icode = CODE_FOR_altivec_stvx_16qi;
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      mode0 = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+
+      if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+      if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
+	op1 = copy_to_mode_reg (mode1, op1);
+
+      pat = GEN_FCN (icode) (op0, op1);
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+      return NULL_RTX;
+    case ALTIVEC_BUILTIN_ST_INTERNAL_8hi:
+      icode = CODE_FOR_altivec_stvx_8hi;
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      mode0 = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+
+      if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+      if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
+	op1 = copy_to_mode_reg (mode1, op1);
+
+      pat = GEN_FCN (icode) (op0, op1);
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+      return NULL_RTX;
+    case ALTIVEC_BUILTIN_ST_INTERNAL_4si:
+      icode = CODE_FOR_altivec_stvx_4si;
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      mode0 = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+
+      if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+	op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+      if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
+	op1 = copy_to_mode_reg (mode1, op1);
+
+      pat = GEN_FCN (icode) (op0, op1);
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+      return NULL_RTX;
+    case ALTIVEC_BUILTIN_ST_INTERNAL_4sf:
+      icode = CODE_FOR_altivec_stvx_4sf;
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
@@ -3223,17 +3340,50 @@ altivec_init_builtins (void)
   tree endlink = void_list_node;
 
   tree pint_type_node = build_pointer_type (integer_type_node);
+  tree pshort_type_node = build_pointer_type (short_integer_type_node);
+  tree pchar_type_node = build_pointer_type (char_type_node);
+  tree pfloat_type_node = build_pointer_type (float_type_node);
 
   /* V4SI foo (int *).  */
   tree v4si_ftype_pint
     = build_function_type (V4SI_type_node,
 			   tree_cons (NULL_TREE, pint_type_node, endlink));
+  /* V8HI foo (short *).  */
+  tree v8hi_ftype_pshort
+    = build_function_type (V8HI_type_node,
+			   tree_cons (NULL_TREE, pshort_type_node, endlink));
+  /* V16QI foo (char *).  */
+  tree v16qi_ftype_pchar
+    = build_function_type (V16QI_type_node,
+			   tree_cons (NULL_TREE, pchar_type_node, endlink));
+  /* V4SF foo (float *).  */
+  tree v4sf_ftype_pfloat
+    = build_function_type (V4SF_type_node,
+			   tree_cons (NULL_TREE, pfloat_type_node, endlink));
 
   /* void foo (int *, V4SI).  */
   tree void_ftype_pint_v4si
     = build_function_type (void_type_node,
 			   tree_cons (NULL_TREE, pint_type_node,
 				      tree_cons (NULL_TREE, V4SI_type_node,
+						 endlink)));
+  /* void foo (short *, V8HI).  */
+  tree void_ftype_pshort_v8hi
+    = build_function_type (void_type_node,
+			   tree_cons (NULL_TREE, pshort_type_node,
+				      tree_cons (NULL_TREE, V8HI_type_node,
+						 endlink)));
+  /* void foo (char *, V16QI).  */
+  tree void_ftype_pchar_v16qi
+    = build_function_type (void_type_node,
+			   tree_cons (NULL_TREE, pchar_type_node,
+				      tree_cons (NULL_TREE, V16QI_type_node,
+						 endlink)));
+  /* void foo (float *, V4SF).  */
+  tree void_ftype_pfloat_v4sf
+    = build_function_type (void_type_node,
+			   tree_cons (NULL_TREE, pfloat_type_node,
+				      tree_cons (NULL_TREE, V4SF_type_node,
 						 endlink)));
 
   tree v4si_ftype_v4si_v4si
@@ -3326,8 +3476,14 @@ altivec_init_builtins (void)
 				      tree_cons (NULL_TREE, V8HI_type_node,
 						 endlink)));
 
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_ld_internal", v4si_ftype_pint, ALTIVEC_BUILTIN_LD_INTERNAL);
-  def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal", void_ftype_pint_v4si, ALTIVEC_BUILTIN_ST_INTERNAL);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_ld_internal_4sf", v4sf_ftype_pfloat, ALTIVEC_BUILTIN_LD_INTERNAL_4sf);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal_4sf", void_ftype_pfloat_v4sf, ALTIVEC_BUILTIN_ST_INTERNAL_4sf);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_ld_internal_4si", v4si_ftype_pint, ALTIVEC_BUILTIN_LD_INTERNAL_4si);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal_4si", void_ftype_pint_v4si, ALTIVEC_BUILTIN_ST_INTERNAL_4si);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_ld_internal_8hi", v8hi_ftype_pshort, ALTIVEC_BUILTIN_LD_INTERNAL_8hi);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal_8hi", void_ftype_pshort_v8hi, ALTIVEC_BUILTIN_ST_INTERNAL_8hi);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_ld_internal_16qi", v16qi_ftype_pchar, ALTIVEC_BUILTIN_LD_INTERNAL_16qi);
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal_16qi", void_ftype_pchar_v16qi, ALTIVEC_BUILTIN_ST_INTERNAL_16qi);
 
   /* Add the simple binary operators.  */
   d = (struct builtin_description *) bdesc_2arg;

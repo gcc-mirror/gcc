@@ -1316,6 +1316,7 @@ ncrtn.o%s"
 %{mcpu=604e: -DCPU=PPC604} \
 %{mcpu=620: -DCPU=PPC604} \
 %{mcpu=740: -DCPU=PPC603} \
+%{mcpu=7450: -DCPU=PPC603} \
 %{mcpu=750: -DCPU=PPC603} \
 %{mcpu=801: -DCPU=PPC603} \
 %{mcpu=821: -DCPU=PPC603} \
