@@ -1,5 +1,11 @@
 2004-03-05  Paolo Bonzini  <bonzini@gnu.org>
 
+	* simplify-rtx.c (simplify_relational_operation): If
+	flag_wrapv is set, do not move terms between the two
+	side of a relational operator.
+
+2004-03-05  Paolo Bonzini  <bonzini@gnu.org>
+
 	* rtlanal.c: Include target.h and output.h
 	(rtx_cost, address_cost, default_address_cost): Move from...
 	* cse.c (rtx_cost, address_cost, default_address_cost):
