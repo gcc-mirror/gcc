@@ -1,3 +1,13 @@
+2004-08-18  Victor Leikehman  <lei@il.ibm.com>
+
+	PR fortran/13278
+	* trans-io.c (transfer_namelist_element): New. Recursively handle
+	derived-type variables.  Pass string lengths.
+	(build_dt): Code moved to build_namelist, with some
+	changes and additions.
+	(gfc_build_io_library_fndecls): Declare the fifth
+	argument in st_set_nml_var_char -- string_length.
+
 2004-08-17  Paul Brook  <paul@codesourcery.com>
 	Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 

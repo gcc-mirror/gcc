@@ -1122,8 +1122,11 @@ namelist_write (void)
           num ++;
           t2 = t1;
           t1 = t1->next;
-          write_character(t2->var_name, strlen(t2->var_name));
-          write_character("=",1);
+          if (t2->var_name)
+            {
+              write_character(t2->var_name, strlen(t2->var_name));
+              write_character("=",1);
+            }
           len = t2->len;
           p = t2->mem_pos;
           switch (t2->type)
@@ -1135,7 +1138,7 @@ namelist_write (void)
               write_logical (p, len);
               break;
             case BT_CHARACTER:
-              write_character (p, len);
+              write_character (p, t2->string_length);
               break;
             case BT_REAL:
               write_real (p, len);
