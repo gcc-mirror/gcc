@@ -5,7 +5,7 @@
    you are in the right place.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This code is based on toy.c written by Richard Kenner.
 
@@ -893,7 +893,10 @@ tree_lang_type_for_size (unsigned precision, int unsignedp)
 static tree
 tree_lang_type_for_mode (enum machine_mode mode, int unsignedp)
 {
-  return tree_lang_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
+  if (SCALAR_INT_MODE_P (mode))
+    return tree_lang_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
+  else
+    return NULL_TREE;
 }
 
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */

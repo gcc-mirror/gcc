@@ -1,3 +1,8 @@
+2005-02-13  James A. Morrison  <phython@gcc.gnu.org>
+
+	* treetree.c (tree_lang_type_for_mode): Return NULL_TREE for all non
+	scalar integer types.
+
 2005-02-09  Richard Henderson  <rth@redhat.com>
 
 	* treetree.c (treelang_init_decl_processing): Call
