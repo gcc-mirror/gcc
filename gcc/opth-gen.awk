@@ -53,6 +53,7 @@ print ""
 print "#ifndef OPTIONS_H"
 print "#define OPTIONS_H"
 print ""
+print "extern int target_flags;"
 
 for (i = 0; i < n_opts; i++) {
 	name = var_name(flags[i]);
@@ -66,6 +67,31 @@ for (i = 0; i < n_opts; i++) {
 
     }
 
+masknum = 0
+for (i = 0; i < n_opts; i++) {
+	name = opt_args("Mask", flags[i])
+	if (name != "")
+		print "#define MASK_" name " (1 << " masknum++ ")"
+}
+if (masknum > 31)
+	print "#error too many target masks"
+print ""
+
+for (i = 0; i < n_opts; i++) {
+	name = opt_args("Mask", flags[i])
+	if (name != "")
+		print "#define TARGET_" name \
+		      " ((target_flags & MASK_" name ") != 0)"
+}
+print ""
+
+for (i = 0; i < n_opts; i++) {
+	opt = opt_args("InverseMask", flags[i])
+	if (opt ~ ",")
+		print "#define TARGET_" nth_arg(1, opt) \
+		      " ((target_flags & MASK_" nth_arg(0, opt) ") == 0)"
+}
+print ""
 
 for (i = 0; i < n_langs; i++) {
 	macros[i] = "CL_" langs[i]

@@ -102,6 +102,14 @@ hook_bool_constcharptr_size_t_false (const char *a ATTRIBUTE_UNUSED,
 }
 
 bool
+hook_bool_size_t_constcharptr_int_true (size_t a ATTRIBUTE_UNUSED,
+					const char *b ATTRIBUTE_UNUSED,
+					int c ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+bool
 default_can_output_mi_thunk_no_vcall (tree a ATTRIBUTE_UNUSED,
 				      HOST_WIDE_INT b ATTRIBUTE_UNUSED,
 				      HOST_WIDE_INT c,

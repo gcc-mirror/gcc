@@ -374,6 +374,7 @@ static const param_info lang_independent_params[] = {
   { NULL, 0, 0, 0, NULL }
 };
 
+#ifdef TARGET_SWITCHES
 /* Here is a table, controlled by the tm.h file, listing each -m switch
    and which bits in `target_switches' it should set or clear.
    If VALUE is positive, it is bits to set.
@@ -387,6 +388,7 @@ static const struct
   const char *const description;
 }
 target_switches[] = TARGET_SWITCHES;
+#endif
 
 /* This table is similar, but allows the switch to have a value.  */
 
@@ -1066,6 +1068,7 @@ void
 display_target_options (void)
 {
   int undoc, i;
+  unsigned int cli;
   static bool displayed = false;
 
   /* Avoid double printing for --help --target-help.  */
@@ -1074,18 +1077,26 @@ display_target_options (void)
 
   displayed = true;
 
-  if (ARRAY_SIZE (target_switches) > 1
+  for (cli = 0; cli < cl_options_count; cli++)
+    if ((cl_options[cli].flags & (CL_TARGET | CL_UNDOCUMENTED)) == CL_TARGET)
+      break;
+
+  if (cli < cl_options_count
+#ifdef TARGET_SWITCHES
+      || ARRAY_SIZE (target_switches) > 1
+#endif
 #ifdef TARGET_OPTIONS
       || ARRAY_SIZE (target_options) > 1
 #endif
       )
     {
-      int doc = 0;
+      int doc = cli < cl_options_count;
 
       undoc = 0;
 
       printf (_("\nTarget specific options:\n"));
 
+#ifdef TARGET_SWITCHES
       for (i = ARRAY_SIZE (target_switches); i--;)
 	{
 	  const char *option      = target_switches[i].name;
@@ -1103,6 +1114,7 @@ display_target_options (void)
 	  else if (*description != 0)
 	    doc += printf ("  -m%-23s %s\n", option, _(description));
 	}
+#endif
 
 #ifdef TARGET_OPTIONS
       for (i = ARRAY_SIZE (target_options); i--;)
@@ -1123,6 +1135,7 @@ display_target_options (void)
 	    doc += printf ("  -m%-23s %s\n", option, _(description));
 	}
 #endif
+      print_filtered_help (CL_TARGET);
       if (undoc)
 	{
 	  if (doc)
@@ -1189,9 +1202,12 @@ const char *const debug_type_names[] =
 void
 set_target_switch (const char *name)
 {
+#if defined (TARGET_SWITCHES) || defined (TARGET_OPTIONS)
   size_t j;
+#endif
   int valid_target_option = 0;
 
+#ifdef TARGET_SWITCHES
   for (j = 0; j < ARRAY_SIZE (target_switches); j++)
     if (!strcmp (target_switches[j].name, name))
       {
@@ -1208,6 +1224,7 @@ set_target_switch (const char *name)
 	  }
 	valid_target_option = 1;
       }
+#endif
 
 #ifdef TARGET_OPTIONS
   if (!valid_target_option)
@@ -1233,7 +1250,7 @@ set_target_switch (const char *name)
       }
 #endif
 
-  if (!valid_target_option)
+  if (name[0] != 0 && !valid_target_option)
     error ("invalid option %qs", name);
 }
 
@@ -1340,28 +1357,14 @@ print_switch_values (FILE *file, int pos, int max,
 			     _("options enabled: "), "");
 
   for (j = 0; j < cl_options_count; j++)
-    {
-      if (!cl_options[j].flag_var
-	  || !(cl_options[j].flags & CL_REPORT))
-	continue;
-
-      if (cl_options[j].has_set_value)
-	{
-	  if (*cl_options[j].flag_var != cl_options[j].set_value)
-	    continue;
-	}
-      else
-	{
-	  if (!*cl_options[j].flag_var)
-	    continue;
-	}
-      
+    if ((cl_options[j].flags & CL_REPORT)
+	&& option_enabled (&cl_options[j]) > 0)
       pos = print_single_switch (file, pos, max, indent, sep, term,
 				 "", cl_options[j].opt_text);
-    }
 
   /* Print target specific options.  */
 
+#ifdef TARGET_SWITCHES
   for (j = 0; j < ARRAY_SIZE (target_switches); j++)
     if (target_switches[j].name[0] != '\0'
 	&& target_switches[j].value > 0
@@ -1371,6 +1374,7 @@ print_switch_values (FILE *file, int pos, int max,
 	pos = print_single_switch (file, pos, max, indent, sep, term,
 				   "-m", target_switches[j].name);
       }
+#endif
 
 #ifdef TARGET_OPTIONS
   for (j = 0; j < ARRAY_SIZE (target_options); j++)
@@ -1497,12 +1501,13 @@ default_pch_valid_p (const void *data_p, size_t len)
   /* Check target_flags.  */
   if (memcmp (data, &target_flags, sizeof (target_flags)) != 0)
     {
+      int tf;
+
+      memcpy (&tf, data, sizeof (target_flags));
+#ifdef TARGET_SWITCHES
       for (i = 0; i < ARRAY_SIZE (target_switches); i++)
 	{
 	  int bits;
-	  int tf;
-
-	  memcpy (&tf, data, sizeof (target_flags));
 
 	  bits = target_switches[i].value;
 	  if (bits < 0)
@@ -1513,6 +1518,14 @@ default_pch_valid_p (const void *data_p, size_t len)
 	      goto make_message;
 	    }
 	}
+#endif
+      for (i = 0; i < cl_options_count; i++)
+	if (cl_options[i].flag_var == &target_flags
+	    && (cl_options[i].var_value & (target_flags ^ tf)) != 0)
+	  {
+	    flag_that_differs = cl_options[i].opt_text + 2;
+	    goto make_message;
+	  }
       gcc_unreachable ();
     }
   data += sizeof (target_flags);

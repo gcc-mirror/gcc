@@ -19,51 +19,6 @@
 ; 02111-1307, USA.
 
 
-; This file is processed by the script opts.sh.  It is a database of
-; command line options, with each record separated by a blank line,
-; and each field appearing on its own line.  The first field is the
-; command-line switch with the leading "-" removed.  All options
-; beginning with "f" or "W" are implicitly assumed to take a "no-"
-; form; this form should not be listed.  If you do not want this
-; negative form and you want it to be automatically rejected, add
-; RejectNegative to the second field.
-
-; The second field is a space-separated list of which parts of the
-; compiler recognize the switch, as declared by "Language" entries.
-; If the switch takes an argument, then you should also specify
-; "Joined" and/or "Separate" to indicate where the argument can
-; appear.  If a Joined argument can legitimately be omitted, specify
-; "JoinedOrMissing" instead of "Joined".  If the argument to a switch
-; is a non-negative integer, you can specify "UInteger" and the switch
-; decoder will convert the argument for you, or complain to the user
-; if the argument is invalid.  "Var(name,set)" creates an integer
-; variable "name".  The variable is declared and initialized to value
-; given by "Init(value)" (or zero if this property is not defined).
-; When the option is passed to compiler, this variable is set to "set"
-; if value passed through the flag is nonzero, !"set" if value is zero,
-; or to value if "set" is omitted.  If "VarExists"  is specified, the
-; declaration for the variable is not created.  If "Report" is specified,
-; the flag is output with -fverbose-asm.
-
-; The third field is the help text to output with --help.  This is
-; automatically line-wrapped on output.  Normally the switch is output
-; automatically, with the help text on the right hand side of the
-; output.  However, if the help text contains a tab character, the
-; text to the left of the tab is output instead of the switch, and the
-; text to its right forms the help.  This is useful for elaborating on
-; what type of argument a switch takes, for example.  If the second
-; field contains "Undocumented" then nothing is output with --help.
-; Only do this with good reason like the switch being internal between
-; the driver and the front end - it is not an excuse to leave a switch
-; undocumented.
-
-; Comments can appear on their own line anwhere in the file, preceded
-; by a semicolon.  Whitespace is permitted before the semicolon.
-
-; For each switch XXX below, an enumeration constant is created by the
-; script opts.sh spelt OPT_XXX, but with all non-alphanumeric
-; characters replaced with an underscore.
-
 ; Please try to keep this file in ASCII collating order.
 
 Language

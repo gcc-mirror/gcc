@@ -18,6 +18,33 @@
 
 # Some common subroutines for use by opt[ch]-gen.awk.
 
+# If FLAGS contains a "NAME(...argument...)" flag, return the value
+# of the argument.  Return the empty string otherwise.
+function opt_args(name, flags)
+{
+	flags = " " flags
+	if (flags !~ " " name "\\(")
+		return ""
+	sub(".* " name "\\(", "", flags)
+	sub("\\).*", "", flags)
+
+	return flags
+}
+
+# Return the Nth comma-separated element of S.  Return the empty string
+# if S does not contain N elements.
+function nth_arg(n, s)
+{
+	while (n-- > 0) {
+		if (s !~ ",")
+			return ""
+		sub("[^,]*, *", "", s)
+	}
+	sub(",.*", "", s)
+	return s
+}
+
+# Return a bitmask of CL_* values for option flags FLAGS.
 function switch_flags (flags)
 {
 	flags = " " flags " "
@@ -29,6 +56,7 @@ function switch_flags (flags)
 			result = result " | " macros[j]
 	}
 	if (flags ~ " Common ") result = result " | CL_COMMON"
+	if (flags ~ " Target ") result = result " | CL_TARGET"
 	if (flags ~ " Joined ") result = result " | CL_JOINED"
 	if (flags ~ " JoinedOrMissing ") \
 	    result = result " | CL_JOINED | CL_MISSING_OK"
@@ -41,36 +69,39 @@ function switch_flags (flags)
 	return result
 }
 
-function var_args(flags)
-{
-	if (flags !~ "Var\\(")
-	    return ""
-	sub(".*Var\\(", "", flags)
-	sub("\\).*", "", flags)
-
-	return flags
-}
+# If FLAGS includes a Var flag, return the name of the variable it specifies.
+# Return the empty string otherwise.
 function var_name(flags)
 {
-	s = var_args(flags)
-	if (s == "")
-		return "";
-	sub( ",.*", "", s)
-	return s
+	return nth_arg(0, opt_args("Var", flags))
 }
+
+# Given that an option has flags FLAGS, return an initializer for the
+# "var_cond" and "var_value" fields of its cl_options[] entry.
 function var_set(flags)
 {
-	s = var_args(flags)
-	if (s !~ ",")
-		return "0, 0"
-	sub( "[^,]*,", "", s)
-	return "1, " s
+	s = nth_arg(1, opt_args("Var", flags))
+	if (s != "")
+		return "CLVC_EQUAL, " s
+	s = opt_args("Mask", flags);
+	if (s != "")
+		return "CLVC_BIT_SET, MASK_" s
+	s = nth_arg(0, opt_args("InverseMask", flags));
+	if (s != "")
+		return "CLVC_BIT_CLEAR, MASK_" s
+	return "CLVC_BOOLEAN, 0"
 }
+
+# Given that an option has flags FLAGS, return an initializer for the
+# "flag_var" field of its cl_options[] entry.
 function var_ref(flags)
 {
 	name = var_name(flags)
-	if (name == "")
-		return "0"
-	else
+	if (name != "")
 		return "&" name
+	if (opt_args("Mask", flags) != "")
+		return "&target_flags"
+	if (opt_args("InverseMask", flags) != "")
+		return "&target_flags"
+	return "0"
 }

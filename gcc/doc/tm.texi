@@ -721,8 +721,34 @@ it yourself.
 @end defmac
 
 @deftypevar {extern int} target_flags
-This declaration should be present.
+This variable is declared in @file{options.h}, which is included before
+any target-specific headers.
 @end deftypevar
+
+@deftypevar {Target Hook} int TARGET_DEFAULT_TARGET_FLAGS
+This variable specifies the initial value of @code{target_flags}.
+Its default setting is 0.
+
+If the target defines @code{TARGET_SWITCHES}, the null
+@code{TARGET_SWITCHES} entry will override this value.
+@end deftypevar
+
+@deftypefn {Target Hook} bool TARGET_HANDLE_OPTION (size_t @var{code}, const char *@var{arg}, int @var{value})
+This hook is called whenever the user specifies one of the
+target-specific options described by the @file{.opt} definition files
+(@pxref{Options}).  It has the opportunity to do some option-specific
+processing and should return true if the option is valid.  The default
+definition does nothing but return true.
+
+@var{code} specifies the @code{OPT_@var{name}} enumeration value
+associated with the selected option; @var{name} is just a rendering of
+the option name in which non-alphanumeric characters are replaced by
+underscores.  @var{arg} specifies the string argument and is null if
+no argument was given.  If the option is flagged as a @code{UInteger}
+(@pxref{Option properties}), @var{value} is the numeric value of the
+argument.  Otherwise @var{value} is 1 if the positive form of the
+option was used and 0 if the ``no-'' form was.
+@end deftypefn
 
 @cindex optional hardware or system features
 @cindex features, optional, in system conventions
@@ -792,6 +818,10 @@ with opposite meanings, and picks the latter as the default:
     @{ "", MASK_68020, "" @},          \
   @}
 @end smallexample
+
+This macro is being kept for compatibility with older backends.
+New targets should use option definition files instead.
+@xref{Back End}.
 @end defmac
 
 @defmac TARGET_OPTIONS
@@ -861,6 +891,10 @@ extern char *chip_alu;
 #define TARGET_ALU1 (chip_alu[0] == '1')
 #define TARGET_ALU2 (chip_alu[0] == '2')
 @end smallexample
+
+This macro is being kept for compatibility with older backends.
+New targets should use option definition files instead.
+@xref{Back End}.
 @end defmac
 
 @defmac TARGET_VERSION

@@ -652,9 +652,7 @@ Move to the stage directory files not included in @code{stagestuff} in
 
 @item lang.opt
 This file registers the set of switches that the front end accepts on
-the command line, and their @option{--help} text.  The file format is
-documented in the file @file{c.opt}.  These files are processed by the
-script @file{opts.sh}.
+the command line, and their @option{--help} text.  @xref{Options}.
 @item lang-specs.h
 This file provides entries for @code{default_compilers} in
 @file{gcc.c} which override the default of giving an error that a
@@ -745,6 +743,11 @@ defaults given by explicit specifications in @file{config.gcc}.
 If necessary, a file @file{@var{machine}-modes.def} in the
 @file{@var{machine}} directory, containing additional machine modes to
 represent condition codes.  @xref{Condition Code}, for further details.
+@item
+An optional @file{@var{machine}.opt} file in the @file{@var{machine}}
+directory, containing a list of target-specific options.  You can also
+add other option files using the @code{extra_options} variable in
+@file{config.gcc}.  @xref{Options}.
 @item
 Entries in @file{config.gcc} (@pxref{System Config, , The
 @file{config.gcc} File}) for the systems with this target

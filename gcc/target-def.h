@@ -278,6 +278,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_VECTORIZE                                                \
   {TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD}
 
+#define TARGET_DEFAULT_TARGET_FLAGS 0
+
+#define TARGET_HANDLE_OPTION hook_bool_size_t_constcharptr_int_true
+
 /* In except.c */
 #define TARGET_EH_RETURN_FILTER_MODE  default_eh_return_filter_mode
 
@@ -485,6 +489,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_ASM_OUT,				\
   TARGET_SCHED,					\
   TARGET_VECTORIZE,				\
+  TARGET_DEFAULT_TARGET_FLAGS,			\
+  TARGET_HANDLE_OPTION,				\
   TARGET_EH_RETURN_FILTER_MODE,			\
   TARGET_MERGE_DECL_ATTRIBUTES,			\
   TARGET_MERGE_TYPE_ATTRIBUTES,			\

@@ -105,6 +105,7 @@ Additional tutorial information is linked to from
 * Libgcc::          Low-level runtime library used by GCC.
 * Languages::       Languages for which GCC front ends are written.
 * Source Tree::     GCC source tree structure and build system.
+* Options::         Option specification files.
 * Passes::          Order of passes, what they do, and what each file is for.
 * Trees::           The source representation used by the C and C++ front ends.
 * RTL::             The intermediate representation that most passes work on.
@@ -136,6 +137,7 @@ Additional tutorial information is linked to from
 @include libgcc.texi
 @include languages.texi
 @include sourcebuild.texi
+@include options.texi
 @include passes.texi
 @include c-tree.texi
 @include tree-ssa.texi

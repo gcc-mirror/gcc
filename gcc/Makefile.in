@@ -425,6 +425,7 @@ GCC_THREAD_FILE=@thread_file@
 OBJC_BOEHM_GC=@objc_boehm_gc@
 GTHREAD_FLAGS=@gthread_flags@
 extra_modes_file=@extra_modes_file@
+extra_opt_files=@extra_opt_files@
 host_hook_obj=@out_host_hook_obj@
 # Be prepared for gcc2 merges.
 gcc_version=@gcc_version@
@@ -879,6 +880,9 @@ SUBDIR_FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) \
 	"STAGE_PREFIX=`echo @quoted_stage_prefix_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`"
 #
 # Lists of files for various purposes.
+
+# All option source files
+ALL_OPT_FILES=$(lang_opt_files) $(extra_opt_files)
 
 # Target specific, C specific object file
 C_TARGET_OBJS=@c_target_objs@
@@ -1529,19 +1533,21 @@ s-specs : Makefile
 	$(STAMP) s-specs
 
 optionlist: s-options ; @true
-s-options: $(lang_opt_files) Makefile $(srcdir)/opt-gather.awk
-	$(AWK) -f $(srcdir)/opt-gather.awk $(lang_opt_files) > tmp-optionlist
+s-options: $(ALL_OPT_FILES) Makefile $(srcdir)/opt-gather.awk
+	$(AWK) -f $(srcdir)/opt-gather.awk $(ALL_OPT_FILES) > tmp-optionlist
 	$(SHELL) $(srcdir)/../move-if-change tmp-optionlist optionlist
 	$(STAMP) s-options
-
 
 options.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/optc-gen.awk
 	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/optc-gen.awk \
 	       -v header_name="options.h" < $< > $@ 
 
-options.h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opth-gen.awk
+options.h: s-options-h ; @true
+s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opth-gen.awk
 	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opth-gen.awk \
-	       < $< > $@
+	       < $< > tmp-options.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-options.h options.h
+	$(STAMP) $@
 
 options.o: options.c options.h opts.h intl.h
 
@@ -2977,7 +2983,7 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi contribute.texi makefile.texi \
 	 c-tree.texi rtl.texi md.texi tm.texi hostconfig.texi fragments.texi \
 	 configfiles.texi collect2.texi headerdirs.texi funding.texi gnu.texi \
 	 gpl.texi fdl.texi contrib.texi languages.texi sourcebuild.texi \
-	 gty.texi libgcc.texi cfg.texi tree-ssa.texi
+	 gty.texi libgcc.texi cfg.texi tree-ssa.texi options.texi
 
 TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi
 
