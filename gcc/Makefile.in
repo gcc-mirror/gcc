@@ -803,6 +803,9 @@ Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
 $(srcdir)/configure: $(srcdir)/configure.in
 	cd $(srcdir); autoconf
 
+gccbug:	$(srcdir)/gccbug.in
+	CONFIG_FILES=gccbug CONFIG_HEADERS= ./config.status 
+
 # cstamp-h.in controls rebuilding of config.in.
 # It is named cstamp-h.in and not stamp-h.in so the mostlyclean rule doesn't
 # delete it.  A stamp file is needed as autoheader won't update the file if
@@ -2317,7 +2320,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 #
 # Remake the info files.
 
-doc: info
+doc: info gccbug
 info: cpp.info gcc.info lang.info
 
 cpp.info: $(srcdir)/cpp.texi
