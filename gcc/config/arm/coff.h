@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    For ARM with COFF object format.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2002
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Doug Evans (devans@cygnus.com).
    
@@ -43,7 +43,6 @@
 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-#include "dbxcoff.h"
 
 #define TARGET_ASM_FILE_START_APP_OFF true
 

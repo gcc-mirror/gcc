@@ -19,11 +19,6 @@
    Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA.  */
 
-/* Set up System V.4 (aka ELF) defaults.  */
-#include "svr4.h"
-#include "elfos.h"
-
-
 /* Driver configuration.  */
 
 #undef SWITCH_TAKES_ARG

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH 
    non-Linux embedded targets.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by J"orn Rennecke <joern.rennecke@superh.com>
 
 This file is part of GNU CC.
@@ -19,8 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#include "sh/elf.h"
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"

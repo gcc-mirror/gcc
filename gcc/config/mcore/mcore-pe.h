@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MCore using COFF/PE.
-   Copyright (C) 1994, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -31,11 +31,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* The MCore ABI says that bitfields are unsigned by default.  */
 /* The EPOC C++ environment does not support exceptions.  */
+#undef CC1_SPEC
 #define CC1_SPEC "-funsigned-bitfields %{!DIN_GCC:-fno-rtti} %{!DIN_GCC:-fno-exceptions}"
-
-#include "svr3.h"
-#include "mcore/mcore.h"
-#include "dbxcoff.h"
 
 #undef  SDB_DEBUGGING_INFO
 #define DBX_DEBUGGING_INFO 1

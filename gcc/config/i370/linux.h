@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
-   Copyright (C) 1989, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1995, 1996, 1997, 2003
+   Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for Linux/390 by Linas Vepstas (linas@linas.org)
 
@@ -27,10 +28,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_ELF_ABI
 #define LINUX_DEFAULT_ELF
-
-/* Include system common definitions */
-/* TODO: convert include to ${tm_file} list in config.gcc.  */
-#include "i370/i370.h"
 
 /* Target OS preprocessor built-ins.  */
 #define TARGET_OS_CPP_BUILTINS()		\

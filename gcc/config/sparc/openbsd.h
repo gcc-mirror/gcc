@@ -1,5 +1,5 @@
 /* Configuration file for sparc OpenBSD target.
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,10 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-/* Get generic OpenBSD definitions.  */
-#define OBSD_OLD_GAS
-#include <openbsd.h>
 
 /* Target OS builtins.  */
 #define TARGET_OS_CPP_BUILTINS()		\

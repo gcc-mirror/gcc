@@ -1,5 +1,5 @@
 /* Target macros for the FRV port of GCC.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
    This file is part of GCC.
@@ -22,10 +22,6 @@
 #ifndef __FRV_H__
 #define __FRV_H__
 
-/* Set up System V.4 (aka ELF) defaults.  */
-#include "svr4.h"
-
-
 /* Frv general purpose macros.  */
 /* Align an address.  */
 #define ADDR_ALIGN(addr,align) (((addr) + (align) - 1) & ~((align) - 1))

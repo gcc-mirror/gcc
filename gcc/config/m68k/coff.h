@@ -26,10 +26,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SDB_DEBUGGING_INFO 1
 
-/* Output DBX (stabs) debugging information if using -gstabs.  */
-
-#include "dbxcoff.h"
-
 /* COFF symbols don't start with an underscore.  */
 
 #undef USER_LABEL_PREFIX

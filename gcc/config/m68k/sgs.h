@@ -20,16 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Control assembler-syntax conditionals in m68k.md and conditionals in
-   m68k.h.  Note that some systems may also require SGS_SWAP_W and/or
-   SGS_SWITCH_TABLES to be defined as well.  */
-
-#define MOTOROLA		/* Use Motorola syntax rather than "MIT" */
-#define SGS			/* Uses SGS assembler */
-#define SGS_CMP_ORDER		/* Takes cmp operands in reverse order */
-
-#include "m68k/m68k.h"
-
 #undef INT_OP_GROUP
 #define INT_OP_GROUP INT_OP_STANDARD
 

@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
-   Copyright (C) 1989, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1995, 1996, 1997, 2003
+   Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for OS/390 LanguageEnvironment C by Dave Pitts (dpitts@cozx.com)
 
@@ -46,8 +47,3 @@ Boston, MA 02111-1307, USA.  */
 #else
 # define MAYBE_LE370_MACROS()
 #endif
-
-/* Include system common definitions */
-
-#include "config/i370/i370.h"
-

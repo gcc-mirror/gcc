@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  HP-UX 68000/68020 version.
-   Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1999, 2000, 2002
+   Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1999, 2000, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -19,34 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Define USE_GAS if GCC is supposed to work with the GNU assembler,
-   GNU linker and GNU debugger using DBX debugging information.
-   (In other words, much of HPUX has been cast aside.)
-   Undefine USE_GAS if you want GCC to feed the HP assembler.  */
-
-/* #define USE_GAS */  /* Use hp320g.h if you want this.  */
-
-/* Control assembler-syntax conditionals in m68k.md.  */
-
-#ifndef USE_GAS
-#define MOTOROLA		/* Use Motorola syntax rather than "MIT" */
-#define SGS			/* Uses SGS assembler */
-#define SGS_CMP_ORDER		/* Takes cmp operands in reverse order */
-#define HPUX_ASM
-
-#if !defined (CROSS_COMPILE) && !defined (NO_BUGS)
-/* The assembler on HP 9k3xx machines running HPUX 8.0 doesn't translate
-   floating point constants behind some operands.  The workaround is to
-   use hex constants.  Reported by Thomas Nau (nau@medizin.uni-ulm.de).  */
-#define AS_BUG_FLOATING_CONSTANT
-/* The assembler on HP 9k3xx machines running HPUX 8.0 doesn't accept
-   labels followed by a text, data, or other section directive.  Reported
-   by Thomas Nau (nau@medizin.uni-ulm.de).  */
-#define AS_BUG_TRAILING_LABEL
-#endif
-
-#endif /* not USE_GAS */
-
 /* gcc.c should find libgcc.a itself rather than expecting linker to.  */
 #define LINK_LIBGCC_SPECIAL
 /* The arguments of -L must be a separate argv element.  */
@@ -56,8 +28,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Be compatible with system stddef.h.  */
 #define SIZE_TYPE "unsigned int"
-
-#include "m68k/m68k.h"
 
 #undef INT_OP_GROUP
 #define INT_OP_GROUP INT_OP_NO_DOT

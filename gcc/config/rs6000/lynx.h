@@ -19,31 +19,6 @@
    Free Software Foundation, 59 Temple Place - Suite 330, Boston,
    MA 02111-1307, USA.  */
 
-/* Definitions we want to override with those from rs6000.h:  */
-#undef LIB_SPEC
-#undef PTRDIFF_TYPE
-#undef WCHAR_TYPE
-#undef WCHAR_TYPE_SIZE
-#undef EXTRA_SECTIONS
-#undef READONLY_DATA_SECTION
-#undef READONLY_DATA_SECTION_ASM_OP
-#undef EXTRA_SECTION_FUNCTIONS
-#undef TARGET_ASM_SELECT_RTX_SECTION
-#undef TARGET_ASM_SELECT_SECTION
-#undef USER_LABEL_PREFIX
-#undef ASM_OUTPUT_LABELREF
-#undef ASM_GENERATE_INTERNAL_LABEL
-#undef ASM_OUTPUT_COMMON
-#undef ASM_OUTPUT_LOCAL
-
-#undef SDB_DEBUGGING_INFO
-#undef DBX_DEBUGGING_INFO
-#undef PREFERRED_DEBUGGING_TYPE
-
-#undef FUNCTION_PROFILER
-
-#include <rs6000/rs6000.h>
-
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (LynxOS-RS/6000)");
 

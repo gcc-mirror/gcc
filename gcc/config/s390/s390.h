@@ -26,7 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Override the __fixdfdi etc. routines when building libgcc2.
    ??? This should be done in a cleaner way ...  */
 #if defined (IN_LIBGCC2) && !defined (__s390x__)
-#include <s390/fixdfdi.h>
+#include <config/s390/fixdfdi.h>
 #endif
 
 /* Which processor to generate code or schedule for. The cpu attribute

@@ -18,8 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "m68k/m68k.h"
-
 /* Default to m68k (m68020).  */
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT M68K_CPU_m68k

@@ -1,5 +1,5 @@
 /* Configuration file for an alpha OpenBSD target.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,16 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* We settle for little endian for now.  */
 #define TARGET_ENDIAN_DEFAULT 0
-
-#define OBSD_NO_DYNAMIC_LIBRARIES
-#define OBSD_HAS_DECLARE_FUNCTION_NAME
-#define OBSD_HAS_DECLARE_FUNCTION_SIZE
-#define OBSD_HAS_DECLARE_OBJECT
-
-/* alpha ecoff supports only weak aliases, see below.  */
-#define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS (FILE,NAME,0)
-
-#include <openbsd.h>
 
 /* Controlling the compilation driver.  */
 
@@ -89,6 +79,10 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Assembler format: label output.  */
+
+/* alpha ecoff supports only weak aliases.  */
+#undef ASM_WEAKEN_LABEL
+#define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS (FILE,NAME,0)
 
 #define ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,VALUE)	\
  do {						\
