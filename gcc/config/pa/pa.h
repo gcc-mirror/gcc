@@ -277,7 +277,7 @@ extern int target_flags;
 */
 
 #define FIXED_REGISTERS  \
- {0, 0, 0, 0, 1, 0, 0, 0, \
+ {0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 1, 0, 0, 1, 0, \
@@ -301,7 +301,7 @@ extern int target_flags;
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
 #define CALL_USED_REGISTERS  \
- {1, 1, 1, 0, 1, 0, 0, 0, \
+ {1, 1, 1, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
@@ -380,10 +380,10 @@ extern int target_flags;
   68, 69, 70, 71, 72, 73, 74, 75, 	\
   76, 77, 78, 79, 			\
   /* callee-saved general regs.  */	\
-   3,  5,  6,  7,  8,  9, 10, 11,	\
-  12, 13, 14, 15, 16, 17, 18,		\
+   3,  4,  5,  6,  7,  8,  9, 10, 	\
+  11, 12, 13, 14, 15, 16, 17, 18,	\
   /* special registers.  */		\
-   1,  4, 30,  0, 100}
+   1, 30,  0, 100}
 
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -953,10 +953,6 @@ extern union tree_node *current_function_decl;
 
 #define FUNCTION_EPILOGUE(FILE, SIZE)			\
   output_function_epilogue (FILE, SIZE)
-#define DELAY_SLOTS_FOR_EPILOGUE hppa_epilogue_delay_slots ()
-
-#define ELIGIBLE_FOR_EPILOGUE_DELAY(trial, slots_filled)	\
-  eligible_for_epilogue_delay (trial, slots_filled)
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.\
