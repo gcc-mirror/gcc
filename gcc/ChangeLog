@@ -1,3 +1,8 @@
+Thu Feb 21 16:20:46 2002  Alexandre Oliva  <aoliva@redhat.com>
+
+	* rtlanal.c (replace_rtx): Don't make a CONST_INT the operand of
+	SUBREG or ZERO_EXTEND.
+
 Thu Feb 21 15:35:46 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (current_function_anonymous_args): Remove.
