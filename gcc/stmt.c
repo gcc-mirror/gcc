@@ -4410,10 +4410,6 @@ pushcase (value, converter, label, duplicate)
   if (! (case_stack && case_stack->data.case_stmt.start))
     return 1;
 
-  /* Fail if the range is empty.  */
-  if (tree_int_cst_lt (value2, value1))
-    return 4;
-
   if (stack_block_stack
       && stack_block_stack->depth > case_stack->depth)
     return 5;
@@ -4493,6 +4489,10 @@ pushcase_range (value1, value2, converter, label, duplicate)
   /* Fail if not inside a real case statement.  */
   if (! (case_stack && case_stack->data.case_stmt.start))
     return 1;
+
+  /* Fail if the range is empty.  */
+  if (tree_int_cst_lt (value2, value1))
+    return 4;
 
   if (stack_block_stack
       && stack_block_stack->depth > case_stack->depth)
