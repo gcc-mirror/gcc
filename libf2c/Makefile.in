@@ -225,9 +225,10 @@ clean: mostlyclean
 	$(MULTICLEAN) multi-clean DO=$@
 
 distclean: clean
-	rm -f Makefile config.cache config.status g2c.h s-libe77
+	rm -f g2c.h s-libe77
 	$(MAKE) DO=$@ DODIRS="$(SUBDIRS)" $(FLAGS_TO_PASS) subdir_do; \
 	$(MULTICLEAN) multi-clean DO=distclean
+	rm -f config.cache config.status Makefile
 
 maintainer-clean:
 

@@ -1,3 +1,8 @@
+Tue Feb  9 18:13:30 GMT 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (distclean): Move Makefile deletion to end of
+	commands.
+
 1999-01-15  Dave Love  <fx@gnu.org>
 
 	* libU77/datetime_.c (G77_date_and_time_0): Return milliseconds as
