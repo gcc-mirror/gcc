@@ -3001,7 +3001,7 @@ store_constructor (exp, target)
 	    offset = pos;
 
 	  if (constant)
-	    bitpos = TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field));
+	    bitpos = TREE_INT_CST_LOW (constant);
 
 	  if (offset)
 	    {
