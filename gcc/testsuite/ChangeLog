@@ -1,3 +1,8 @@
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/execute/builtin-abs-1.c,
+	gcc.c-torture/execute/builtin-abs-2.c: New tests.
+
 2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * gcc.dg/cpp/multiline.c: New test.
