@@ -841,10 +841,9 @@ move_by_pieces (to, from, len, align)
       enum machine_mode mode = VOIDmode, tmode;
       enum insn_code icode;
 
-      for (tmode = VOIDmode; (int) tmode < (int) MAX_MACHINE_MODE;
-	   tmode = (enum machine_mode) ((int) tmode + 1))
-	if (GET_MODE_CLASS (tmode) == MODE_INT
-	    && GET_MODE_SIZE (tmode) < max_size)
+      for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   tmode != VOIDmode; tmode = GET_MODE_WIDER_MODE (tmode))
+	if (GET_MODE_SIZE (tmode) < max_size)
 	  mode = tmode;
 
       if (mode == VOIDmode)
@@ -884,10 +883,9 @@ move_by_pieces_ninsns (l, align)
       enum machine_mode mode = VOIDmode, tmode;
       enum insn_code icode;
 
-      for (tmode = VOIDmode; (int) tmode < (int) MAX_MACHINE_MODE;
-	   tmode = (enum machine_mode) ((int) tmode + 1))
-	if (GET_MODE_CLASS (tmode) == MODE_INT
-	    && GET_MODE_SIZE (tmode) < max_size)
+      for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   tmode != VOIDmode; tmode = GET_MODE_WIDER_MODE (tmode))
+	if (GET_MODE_SIZE (tmode) < max_size)
 	  mode = tmode;
 
       if (mode == VOIDmode)
@@ -2443,7 +2441,11 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 
    If the field is a bit-field, *PMODE is set to VOIDmode.  Otherwise, it
    is a mode that can be used to access the field.  In that case, *PBITSIZE
-   is redundant.  */
+   is redundant.
+
+   If the field describes a variable-sized object, *PMODE is set to
+   VOIDmode and *PBITSIZE is set to -1.  An access cannot be made in
+   this case, but the address of the object can be found.  */
 
 tree
 get_inner_reference (exp, pbitsize, pbitpos, pmode, punsignedp, pvolatilep)
@@ -2479,9 +2481,9 @@ get_inner_reference (exp, pbitsize, pbitpos, pmode, punsignedp, pvolatilep)
   if (size_tree)
     {
       if (TREE_CODE (size_tree) != INTEGER_CST)
-	abort ();
-
-      *pbitsize = TREE_INT_CST_LOW (size_tree);
+	mode = BLKmode, *pbitsize = -1;
+      else
+	*pbitsize = TREE_INT_CST_LOW (size_tree);
     }
 
   /* Compute cumulative bit-offset for nested component-refs and array-refs,
@@ -4395,6 +4397,7 @@ expand_expr (exp, target, tmode, modifier)
 					      ? integer_one_node
 					      : integer_zero_node)),
 			       0, 0);
+	    do_pending_stack_adjust ();
 	    emit_label (label);
 	    return const0_rtx;
 	  }
@@ -4527,7 +4530,9 @@ get_pointer_alignment (exp, max_align)
 	case ADDR_EXPR:
 	  /* See what we are pointing at and look at its alignment.  */
 	  exp = TREE_OPERAND (exp, 0);
-	  if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd')
+	  if (TREE_CODE (exp) == FUNCTION_DECL)
+	    align = MAX (align, FUNCTION_BOUNDARY);
+	  else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd')
 	    align = MAX (align, DECL_ALIGN (exp));
 #ifdef CONSTANT_ALIGNMENT
 	  else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c')
@@ -4665,6 +4670,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
   rtx op0;
+  rtx lab1, lab2, insns;
   enum machine_mode value_mode = TYPE_MODE (TREE_TYPE (exp));
 
   switch (DECL_FUNCTION_CODE (fndecl))
@@ -4687,14 +4693,57 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       /* Compute the argument.  */
       op0 = expand_expr (TREE_VALUE (arglist), subtarget, VOIDmode, 0);
-      /* Compute sqrt, into TARGET if possible.
+
+      /* Make a suitable register to place result in.  */
+      target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+
+      /* Test the argument to make sure it is in the proper domain for
+	 the sqrt function.  If it is not in the domain, branch to a 
+	 library call.  */
+      start_sequence();
+      lab1 = gen_label_rtx();
+      lab2 = gen_label_rtx();
+
+      /* By default check the arguments.  If flag_fast_math is turned on,
+	 then assume sqrt will always be called with valid arguments.  */
+      if (! flag_fast_math) 
+	{
+
+	  /* By checking op >= 1 we are able to catch all of the
+             IEEE special cases with a single if conditional.  */
+          emit_cmp_insn (op0, CONST0_RTX (op0->mode), GT, 0, op0->mode, 0, 0);
+          emit_jump_insn (gen_bgt (lab1));
+
+          /* The arguemnt was not in the domain; do this via library call.  */
+          expand_call (exp, target, 0, 0);
+
+          /* Branch around open coded version */
+          emit_jump_insn (gen_jump (lab2));
+	}
+
+      emit_label (lab1);
+      /* Arg is in the domain, compute sqrt, into TARGET. 
 	 Set TARGET to wherever the result comes back.  */
       target = expand_unop (TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist))),
 			    sqrt_optab, op0, target, 1);
-      if (target == 0)
-	break;
-      return target;
 
+      /* If we were unable to expand via the builtin, stop the
+	 sequence (without outputting the insns) and break, causing
+	 a call the the library function.  */
+      if (target == 0)
+	{
+	  end_sequence();
+	  break;
+        }
+      emit_label (lab2);
+
+
+      /* Output the entire sequence. */
+      insns = get_insns();
+      end_sequence();
+      emit_insns();
+ 
+      return target;
 
     case BUILT_IN_SAVEREGS:
       /* Don't do __builtin_saveregs more than once in a function.
@@ -4975,11 +5024,76 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	return const0_rtx;
       else
 	{
-	  tree len = c_strlen (TREE_VALUE (arglist));
+	  tree src = TREE_VALUE (arglist);
+	  tree len = c_strlen (src);
 
-	  if (len == 0)
+	  int align
+	    = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+
+	  rtx result, src_rtx, char_rtx;
+	  enum machine_mode insn_mode = value_mode, char_mode;
+	  enum insn_code icode;
+
+	  /* If the length is known, just return it. */
+	  if (len != 0)
+	    return expand_expr (len, target, mode, 0);
+
+	  /* If SRC is not a pointer type, don't do this operation inline. */
+	  if (align == 0)
 	    break;
-	  return expand_expr (len, target, mode, 0);
+
+	  /* Call a function if we can't compute strlen in the right mode. */
+
+	  while (insn_mode != VOIDmode)
+	    {
+	      icode = strlen_optab->handlers[(int) insn_mode].insn_code;
+	      if (icode != CODE_FOR_nothing)
+		break;
+
+	      insn_mode = GET_MODE_WIDER_MODE (insn_mode);
+	    }
+	  if (insn_mode == VOIDmode)
+	    break;
+
+	  /* Make a place to write the result of the instruction.  */
+	  result = target;
+	  if (! (result != 0
+		 && GET_CODE (result) == REG
+		 && GET_MODE (result) == insn_mode
+		 && REGNO (result) >= FIRST_PSEUDO_REGISTER))
+	    result = gen_reg_rtx (insn_mode);
+
+	  /* Make the operands are acceptable to the predicates.  */
+
+	  if (! (*insn_operand_predicate[icode][0]) (result, insn_mode))
+	    result = gen_reg_rtx (insn_mode);
+
+	  src_rtx = memory_address (BLKmode,
+				    expand_expr (src, 0, Pmode,
+						 EXPAND_NORMAL));
+	  if (! (*insn_operand_predicate[icode][1]) (src_rtx, Pmode))
+	    src_rtx = copy_to_mode_reg (Pmode, src_rtx);
+
+	  char_rtx = const0_rtx;
+	  char_mode = insn_operand_mode[icode][2];
+	  if (! (*insn_operand_predicate[icode][2]) (char_rtx, char_mode))
+	    char_rtx = copy_to_mode_reg (char_mode, char_rtx);
+
+	  emit_insn (GEN_FCN (icode) (result,
+				      gen_rtx (MEM, BLKmode, src_rtx),
+				      char_rtx,
+				      gen_rtx (CONST_INT, VOIDmode, align)));
+
+	  /* Return the value in the proper mode for this function.  */
+	  if (GET_MODE (result) == value_mode)
+	    return result;
+	  else if (target != 0)
+	    {
+	      convert_move (target, result, 0);
+	      return target;
+	    }
+	  else
+	    return convert_to_mode (value_mode, result, 0);
 	}
 
     case BUILT_IN_STRCPY:
@@ -5452,6 +5566,10 @@ jumpif (exp, label)
    Either of IF_FALSE_LABEL and IF_TRUE_LABEL may be zero,
    meaning fall through in that case.
 
+   do_jump always does any pending stack adjust except when it does not
+   actually perform a jump.  An example where there is no jump
+   is when EXP is `(foo (), 0)' and IF_FALSE_LABEL is null.
+
    This function is responsible for optimizing cases such as
    &&, || and comparison operators in EXP.  */
 
@@ -5574,6 +5692,7 @@ do_jump (exp, if_false_label, if_true_label)
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
       free_temp_slots ();
       emit_queue ();
+      do_pending_stack_adjust ();
       do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
       break;
 
@@ -5592,7 +5711,7 @@ do_jump (exp, if_false_label, if_true_label)
 			     &volatilep);
 
 	type = type_for_size (bitsize, unsignedp);
-	if (type != 0
+	if (type != 0 && bitsize >= 0
 	    && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp)))
 	  {
 	    do_jump (convert (type, exp), if_false_label, if_true_label);
@@ -5620,6 +5739,8 @@ do_jump (exp, if_false_label, if_true_label)
 	  do_jump (TREE_OPERAND (exp, 1),
 		   if_false_label ? if_false_label : drop_through_label,
 		   if_true_label ? if_true_label : drop_through_label);
+	  /* In case the do_jump just above never jumps.  */
+	  do_pending_stack_adjust ();
 	  emit_label (label1);
 	  /* Now the ELSE-expression.  */
 	  do_jump (TREE_OPERAND (exp, 2),
@@ -5739,7 +5860,13 @@ do_jump (exp, if_false_label, if_true_label)
   free_temp_slots ();
 
   if (drop_through_label)
-    emit_label (drop_through_label);
+    {
+      /* If do_jump produces code that might be jumped around,
+	 do any stack adjusts from that code, before the place
+	 where control merges in.  */
+      do_pending_stack_adjust ();
+      emit_label (drop_through_label);
+    }
 }
 
 /* Given a comparison expression EXP for values too wide to be compared
@@ -6028,7 +6155,9 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
 }
 
 /* Generate code to calculate EXP using a store-flag instruction
-   and return an rtx for the result.
+   and return an rtx for the result.  EXP is either a comparison
+   or a TRUTH_NOT_EXPR whose operand is a comparison.
+
    If TARGET is nonzero, store the result there if convenient.
 
    If ONLY_CHEAP is non-zero, only do this if it is likely to be very
@@ -6053,16 +6182,29 @@ do_store_flag (exp, target, mode, only_cheap)
      int only_cheap;
 {
   enum rtx_code code;
-  tree arg0 = TREE_OPERAND (exp, 0);
-  tree arg1 = TREE_OPERAND (exp, 1);
+  tree arg0, arg1, type;
   tree tem;
-  tree type = TREE_TYPE (arg0);
-  enum machine_mode operand_mode = TYPE_MODE (type);
-  int unsignedp = TREE_UNSIGNED (type);
+  enum machine_mode operand_mode;
+  int invert = 0;
+  int unsignedp;
   rtx op0, op1;
   enum insn_code icode;
   rtx subtarget = target;
   rtx result, label, pattern, jump_pat;
+
+  /* If this is a TRUTH_NOT_EXPR, set a flag indicating we must invert the
+     result at the end.  We can't simply invert the test since it would
+     have already been inverted if it were valid.  This case occurs for
+     some floating-point comparisons.  */
+
+  if (TREE_CODE (exp) == TRUTH_NOT_EXPR)
+    invert = 1, exp = TREE_OPERAND (exp, 0);
+
+  arg0 = TREE_OPERAND (exp, 0);
+  arg1 = TREE_OPERAND (exp, 1);
+  type = TREE_TYPE (arg0);
+  operand_mode = TYPE_MODE (type);
+  unsignedp = TREE_UNSIGNED (type);
 
   /* We won't bother with BLKmode store-flag operations because it would mean
      passing a lot of information to emit_store_flag.  */
@@ -6156,7 +6298,7 @@ do_store_flag (exp, target, mode, only_cheap)
       if (bitnum != TYPE_PRECISION (type) - 1)
 	op0 = expand_and (op0, const1_rtx, target);
 
-      if (code == EQ)
+      if ((code == EQ && ! invert) || (code == NE && invert))
 	op0 = expand_binop (mode, xor_optab, op0, const1_rtx, target, 0,
 			    OPTAB_LIB_WIDEN);
 
@@ -6203,24 +6345,31 @@ do_store_flag (exp, target, mode, only_cheap)
 			    unsignedp, 1);
 
   if (result)
-    return result;
+    {
+      if (invert)
+	result = expand_binop (mode, xor_optab, result, const1_rtx,
+			       result, 0, OPTAB_LIB_WIDEN);
+      return result;
+    }
 
   /* If this failed, we have to do this with set/compare/jump/set code.  */
   if (target == 0 || GET_CODE (target) != REG
       || reg_mentioned_p (target, op0) || reg_mentioned_p (target, op1))
     target = gen_reg_rtx (GET_MODE (target));
 
-  emit_move_insn (target, const1_rtx);
+  emit_move_insn (target, invert ? const0_rtx : const1_rtx);
   result = compare_from_rtx (op0, op1, code, unsignedp, operand_mode, 0, 0);
   if (GET_CODE (result) == CONST_INT)
-    return result == const0_rtx ? const0_rtx : const1_rtx;
+    return (((result == const0_rtx && ! invert)
+	     || (result != const0_rtx && invert))
+	    ? const0_rtx : const1_rtx);
 
   label = gen_label_rtx ();
   if (bcc_gen_fctn[(int) code] == 0)
     abort ();
 
   emit_jump_insn ((*bcc_gen_fctn[(int) code]) (label));
-  emit_move_insn (target, const0_rtx);
+  emit_move_insn (target, invert ? const1_rtx : const0_rtx);
   emit_label (label);
 
   return target;

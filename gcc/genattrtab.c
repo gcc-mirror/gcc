@@ -769,7 +769,7 @@ check_attr_value (exp, attr)
 	  for (p = XSTR (exp, 0); *p; p++)
 	    if (*p > '9' || *p < '0')
 	      fatal ("Non-numeric value for numeric `%s' attribute",
-		     attr ? "internal" : attr->name);
+		     attr ? attr->name : "internal");
 	  break;
 	}
 
@@ -780,7 +780,7 @@ check_attr_value (exp, attr)
 
       if (av == NULL)
 	fatal ("Unknown value `%s' for `%s' attribute",
-	       XSTR (exp, 0), attr ? "internal" : attr->name);
+	       XSTR (exp, 0), attr ? attr->name : "internal");
 
       return;
 
