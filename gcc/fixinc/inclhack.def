@@ -2587,16 +2587,12 @@ fix = {
     sed = "/^extern char$/N";
     sed = "s/^extern char\\(\\n\t\\*memccpy(),\\)$/extern void\\1/";
 
-    /*
-     *  This sed expression is broken inside fixincl.
-     *  The same expression seems to work outside, however :-(
-     */
+    sed = "/^extern int$/N";
+    sed = "s/^extern int\\(\\n\tstrlen(),\\)/extern size_t\\1/";
+
     sed = "/^\tstrncmp(),$/N";
     sed = 's/^\(' "\t" 'strncmp()\),\n\(' "\t" 'strlen(),\)$/'
             '\1;' "\\\nextern unsigned int\\\n\\2/";
-
-    sed = "/^extern int$/N";
-    sed = "s/^extern int\\(\\n\tstrlen(),\\)/extern size_t\\1/";
 
     test_text =
     "extern int strlen();\n"
@@ -2608,6 +2604,7 @@ fix = {
     "\tmemcpy();\n"
 
     "extern int\n"
+    "\tstrcmp(),\n"
     "\tstrncmp(),\n"
     "\tstrlen(),\n"
     "\tstrspn();\n"

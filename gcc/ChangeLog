@@ -1,3 +1,8 @@
+2000-08-12  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* fixinc/inclhack.def (sysv68_string): Fix the Sed script so it
+	works inside fixincl.
+
 Wed Aug 23 04:55:48 2000  Alexandre Oliva  <aoliva@redhat.com>
 
 	* simplify-rtx.c (simplify_rtx): Don't pass VOIDmode to
