@@ -51,13 +51,17 @@ Boston, MA 02111-1307, USA.  */
 #include "optabs.h"
 
 static bool s390_assemble_integer PARAMS ((rtx, unsigned int, int));
-static int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
-static int s390_adjust_priority PARAMS ((rtx, int));
 static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx, 
 					     unsigned HOST_WIDE_INT));
 static void s390_encode_section_info PARAMS ((tree, int));
 static void s390_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
+static enum attr_type s390_safe_attr_type PARAMS ((rtx));
+
+static int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static int s390_issue_rate PARAMS ((void));
+static int s390_use_dfa_pipeline_interface PARAMS ((void));
+
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -75,12 +79,6 @@ static void s390_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 #undef	TARGET_ASM_SELECT_RTX_SECTION
 #define	TARGET_ASM_SELECT_RTX_SECTION  s390_select_rtx_section
 
-#undef  TARGET_SCHED_ADJUST_COST
-#define TARGET_SCHED_ADJUST_COST s390_adjust_cost
-
-#undef  TARGET_SCHED_ADJUST_PRIORITY
-#define TARGET_SCHED_ADJUST_PRIORITY s390_adjust_priority
-
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
 
@@ -88,6 +86,14 @@ static void s390_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 #define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+
+#undef  TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST s390_adjust_cost
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE s390_issue_rate
+#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE s390_use_dfa_pipeline_interface
+
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -936,6 +942,17 @@ const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
   ADDR_REGS,    NO_REGS,   ADDR_REGS 
 };
 
+/* Return attribute type of insn.  */
+
+static enum attr_type
+s390_safe_attr_type (insn)
+     rtx insn;
+{
+  if (recog_memoized (insn) >= 0)
+    return get_attr_type (insn);
+  else
+    return TYPE_NONE;
+}
 
 /* Return true if OP a (const_int 0) operand.
    OP is the current operation.
@@ -2892,9 +2909,6 @@ s390_assemble_integer (x, size, aligned_p)
   return default_assemble_integer (x, size, aligned_p);
 }
 
-
-#define DEBUG_SCHED 0
-
 /* Returns true if register REGNO is used  for forming 
    a memory address in expression X.  */
 
@@ -2946,6 +2960,9 @@ addr_generation_dependency_p (dep_rtx, insn)
 {
   rtx target, pat;
 
+  if (GET_CODE (dep_rtx) == INSN)
+      dep_rtx = PATTERN (dep_rtx);
+
   if (GET_CODE (dep_rtx) == SET)
     {
       target = SET_DEST (dep_rtx);
@@ -2958,7 +2975,7 @@ addr_generation_dependency_p (dep_rtx, insn)
 	{
 	  int regno = REGNO (target);
 
-	  if (get_attr_type (insn) == TYPE_LA)
+	  if (s390_safe_attr_type (insn) == TYPE_LA)
 	    {
 	      pat = PATTERN (insn);
 	      if (GET_CODE (pat) == PARALLEL)
@@ -2972,8 +2989,33 @@ addr_generation_dependency_p (dep_rtx, insn)
 	      else
 		abort();
 	    }
-	  else if (get_attr_atype (insn) == ATYPE_MEM)
+	  else if (get_attr_atype (insn) == ATYPE_AGEN)
 	    return reg_used_in_mem_p (regno, PATTERN (insn));
+	}
+    }
+  return 0;
+}
+
+/* Return 1, if dep_insn sets register used in insn in the agen unit.  */
+
+
+int 
+s390_agen_dep_p(dep_insn, insn)
+     rtx dep_insn;
+     rtx insn;
+{ 
+  rtx dep_rtx = PATTERN (dep_insn);
+  int i;
+  
+  if (GET_CODE (dep_rtx) == SET  
+      && addr_generation_dependency_p (dep_rtx, insn))
+    return 1;
+  else if (GET_CODE (dep_rtx) == PARALLEL)
+    {
+      for (i = 0; i < XVECLEN (dep_rtx, 0); i++)
+	{
+	  if (addr_generation_dependency_p (XVECEXP (dep_rtx, 0, i), insn))
+	    return 1;
 	}
     }
   return 0;
@@ -3012,87 +3054,46 @@ s390_adjust_cost (insn, link, dep_insn, cost)
   if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
     return cost;
 
+  /* DFA based scheduling checks address dependency in md file.  */
+  if (s390_use_dfa_pipeline_interface ())
+     return cost;
+
   dep_rtx = PATTERN (dep_insn);
 
-  if (GET_CODE (dep_rtx) == SET)
-    {
-      if (addr_generation_dependency_p (dep_rtx, insn))
-	{
-	  cost += (get_attr_type (dep_insn) == TYPE_LA) ? 1 : 4;  
-	  if (DEBUG_SCHED)
-	    {
-	      fprintf (stderr, "\n\nAddress dependency detected: cost %d\n",
-		       cost);
-	      debug_rtx (dep_insn);
-	      debug_rtx (insn);
-	    }
-	}
-    }
+  if (GET_CODE (dep_rtx) == SET 
+      && addr_generation_dependency_p (dep_rtx, insn))
+    cost += (s390_safe_attr_type (dep_insn) == TYPE_LA) ? 1 : 4;  
   else if (GET_CODE (dep_rtx) == PARALLEL)
     {
       for (i = 0; i < XVECLEN (dep_rtx, 0); i++)
 	{
-	  if (addr_generation_dependency_p (XVECEXP (dep_rtx, 0, i),
-					    insn))
-	    {
-	      cost += (get_attr_type (dep_insn) == TYPE_LA) ? 1 : 4;  
-	      if (DEBUG_SCHED)
-		{
-		  fprintf (stderr, "\n\nAddress dependency detected: cost %d\n"
-			   ,cost);
-		  debug_rtx (dep_insn);
-		  debug_rtx (insn);
-		}
-	    }
+	  if (addr_generation_dependency_p (XVECEXP (dep_rtx, 0, i), insn))
+	    cost += (s390_safe_attr_type (dep_insn) == TYPE_LA) ? 1 : 4;  
 	}
     }
 
   return cost;
 }
 
-
-/* A C statement (sans semicolon) to update the integer scheduling priority
-   INSN_PRIORITY (INSN).  Reduce the priority to execute the INSN earlier,
-   increase the priority to execute INSN later.  Do not define this macro if
-   you do not need to adjust the scheduling priorities of insns. 
-
-   A LA instruction maybe scheduled later, since the pipeline bypasses the
-   calculated value.  */
+/* The number of instructions that can be issued per cycle.  */
 
 static int
-s390_adjust_priority (insn, priority)
-     rtx insn ATTRIBUTE_UNUSED;
-     int priority;
+s390_issue_rate ()
 {
-  if (! INSN_P (insn))
-    return priority;
-
-  if (GET_CODE (PATTERN (insn)) == USE 
-      || GET_CODE (PATTERN (insn)) == CLOBBER)
-    return priority;
-  
-  switch (get_attr_type (insn))
-    {
-    default:
-      break;
-      
-    case TYPE_LA:
-      if (priority >= 0 && priority < 0x01000000)
-	priority <<= 3;
-      break;
-    case TYPE_LM:
-      /* LM in epilogue should never be scheduled. This
-	 is due to literal access done in function body.
-	 The usage of register 13 is not mentioned explicitly,
-	 leading to scheduling 'LM' accross this instructions.  
-      */ 
-      priority = 0x7fffffff;
-      break;
-    }
-  
-  return priority;
+  return 1;
 }
 
+/* If the following function returns TRUE, we will use the the DFA
+   insn scheduler.  */
+
+static int
+s390_use_dfa_pipeline_interface ()
+{
+  if (s390_cpu == PROCESSOR_2064_Z900)
+    return 1;
+  return 0;
+
+}
 
 /* Split all branches that exceed the maximum distance.  
    Returns true if this created a new literal pool entry.  
