@@ -1,6 +1,6 @@
 2003-08-08  Andreas Schwab  <schwab@suse.de>
 
-	* configure.in: (gcc_cv_as_ia64_ltoffx_ldxmov_relocs): Fix quoting
+	* configure.in (gcc_cv_as_ia64_ltoffx_ldxmov_relocs): Fix quoting
 	and insert missing empty argument.
 	* configure: Regenerate.
 
