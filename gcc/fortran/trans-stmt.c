@@ -485,13 +485,113 @@ gfc_trans_arithmetic_if (gfc_code * code)
 }
 
 
+/* Translate the simple DO construct.  This is where the loop varable has
+   integer type and step +-1.  We can't use this in the general case
+   because integer overflow and floating point errors could give incorrect
+   results.
+   We translate a do loop from:
+
+   DO dovar = from, to, step
+      body
+   END DO
+
+   to:
+
+   [Evaluate loop bounds and step]
+   dovar = from;
+   if ((step > 0) ? (dovar <= to) : (dovar => to))
+    {
+      for (;;)
+        {
+	  body;
+   cycle_label:
+	  cond = (dovar == to);
+	  dovar += step;
+	  if (cond) goto end_label;
+	}
+      }
+   end_label:
+
+   This helps the optimizers by avoiding the extra induction variable
+   used in the general case.  */
+
+static tree
+gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
+		     tree from, tree to, tree step)
+{
+  stmtblock_t body;
+  tree type;
+  tree cond;
+  tree tmp;
+  tree cycle_label;
+  tree exit_label;
+  
+  type = TREE_TYPE (dovar);
+
+  /* Initialize the DO variable: dovar = from.  */
+  gfc_add_modify_expr (pblock, dovar, from);
+
+  /* Cycle and exit statements are implemented with gotos.  */
+  cycle_label = gfc_build_label_decl (NULL_TREE);
+  exit_label = gfc_build_label_decl (NULL_TREE);
+
+  /* Put the labels where they can be found later. See gfc_trans_do().  */
+  code->block->backend_decl = tree_cons (cycle_label, exit_label, NULL);
+
+  /* Loop body.  */
+  gfc_start_block (&body);
+
+  /* Main loop body.  */
+  tmp = gfc_trans_code (code->block->next);
+  gfc_add_expr_to_block (&body, tmp);
+
+  /* Label for cycle statements (if needed).  */
+  if (TREE_USED (cycle_label))
+    {
+      tmp = build1_v (LABEL_EXPR, cycle_label);
+      gfc_add_expr_to_block (&body, tmp);
+    }
+
+  /* Evaluate the loop condition.  */
+  cond = build2 (EQ_EXPR, boolean_type_node, dovar, to);
+  cond = gfc_evaluate_now (cond, &body);
+
+  /* Increment the loop variable.  */
+  tmp = build2 (PLUS_EXPR, type, dovar, step);
+  gfc_add_modify_expr (&body, dovar, tmp);
+
+  /* The loop exit.  */
+  tmp = build1_v (GOTO_EXPR, exit_label);
+  TREE_USED (exit_label) = 1;
+  tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
+  gfc_add_expr_to_block (&body, tmp);
+
+  /* Finish the loop body.  */
+  tmp = gfc_finish_block (&body);
+  tmp = build1_v (LOOP_EXPR, tmp);
+
+  /* Only execute the loop if the number of iterations is positive.  */
+  if (tree_int_cst_sgn (step) > 0)
+    cond = fold (build2 (LE_EXPR, boolean_type_node, dovar, to));
+  else
+    cond = fold (build2 (GE_EXPR, boolean_type_node, dovar, to));
+  tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
+  gfc_add_expr_to_block (pblock, tmp);
+
+  /* Add the exit label.  */
+  tmp = build1_v (LABEL_EXPR, exit_label);
+  gfc_add_expr_to_block (pblock, tmp);
+
+  return gfc_finish_block (pblock);
+}
+
 /* Translate the DO construct.  This obviously is one of the most
    important ones to get right with any compiler, but especially
    so for Fortran.
 
-   Currently we calculate the loop count before entering the loop, but
-   it may be possible to optimize if step is a constant. The main
-   advantage is that the loop test is a single GENERIC node
+   We special case some loop forms as described in gfc_trans_simple_do.
+   For other cases we implement them with a separate loop count,
+   as described in the standard.
 
    We translate a do loop from:
 
@@ -501,30 +601,24 @@ gfc_trans_arithmetic_if (gfc_code * code)
 
    to:
 
-   pre_dovar;
-   pre_from;
-   pre_to;
-   pre_step;
-   temp1=to_expr-from_expr;
-   step_temp=step_expr;
-   range_temp=step_tmp/range_temp;
-   for ( ; range_temp > 0 ; range_temp = range_temp - 1)
+   [evaluate loop bounds and step]
+   count = to + step - from;
+   dovar = from;
+   for (;;)
      {
        body;
 cycle_label:
-       dovar_temp = dovar
-       dovar=dovar_temp + step_temp;
+       dovar += step
+       count--;
+       if (count <=0) goto exit_label;
      }
 exit_label:
 
-   Some optimization is done for empty do loops. We can't just let
-   dovar=to because it's possible for from+range*loopcount!=to.  Anyone
-   who writes empty DO deserves sub-optimal (but correct) code anyway.
-
    TODO: Large loop counts
-   Does not work loop counts which do not fit into a signed integer kind,
+   The code above assumes the loop count fits into a signed integer kind,
    i.e. Does not work for loop counts > 2^31 for integer(kind=4) variables
-   We must support the full range.  */
+   We must support the full range.
+   TODO: Real type do variables.  */
 
 tree
 gfc_trans_do (gfc_code * code)
@@ -545,8 +639,7 @@ gfc_trans_do (gfc_code * code)
 
   gfc_start_block (&block);
 
-  /* Create GIMPLE versions of all expressions in the iterator.  */
-
+  /* Evaluate all the expressions in the iterator.  */
   gfc_init_se (&se, NULL);
   gfc_conv_expr_lhs (&se, code->ext.iterator->var);
   gfc_add_block_to_block (&block, &se.pre);
@@ -556,21 +649,24 @@ gfc_trans_do (gfc_code * code)
   gfc_init_se (&se, NULL);
   gfc_conv_expr_type (&se, code->ext.iterator->start, type);
   gfc_add_block_to_block (&block, &se.pre);
-  from = se.expr;
+  from = gfc_evaluate_now (se.expr, &block);
 
   gfc_init_se (&se, NULL);
   gfc_conv_expr_type (&se, code->ext.iterator->end, type);
   gfc_add_block_to_block (&block, &se.pre);
-  to = se.expr;
+  to = gfc_evaluate_now (se.expr, &block);
 
   gfc_init_se (&se, NULL);
   gfc_conv_expr_type (&se, code->ext.iterator->step, type);
-
-  /* We don't want this changing part way through.  */
-  gfc_make_safe_expr (&se);
   gfc_add_block_to_block (&block, &se.pre);
-  step = se.expr;
+  step = gfc_evaluate_now (se.expr, &block);
 
+  /* Special case simple loops.  */
+  if (TREE_CODE (type) == INTEGER_TYPE
+      && (integer_onep (step)
+	|| tree_int_cst_equal (step, integer_minus_one_node)))
+    return gfc_trans_simple_do (code, &block, dovar, from, to, step);
+      
   /* Initialize loop count. This code is executed before we enter the
      loop body. We generate: count = (to + step - from) / step.  */
 

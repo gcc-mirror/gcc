@@ -1,3 +1,9 @@
+2004-10-06  Paul Brook  <paul@codesourcery.com>
+
+	* trans-stmt.c (gfc_trans_simple_do): New function.
+	(gfc_trans_do): Use it.  Evaluate iteration bounds before entering
+	loop.  Update comments.
+
 2004-10-04  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17283
