@@ -5273,7 +5273,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 
 ;; Split the load of an address into a four-insn sequence on Unicos/Mk.
 ;; Always generate a REG_EQUAL note for the last instruction to facilitate
-;; optimisations. If the symbolic operand is a label_ref, generate REG_LABEL
+;; optimizations. If the symbolic operand is a label_ref, generate REG_LABEL
 ;; notes and update LABEL_NUSES because this is not done automatically.
 ;; Labels may be incorrectly deleted if we don't do this.
 ;;
