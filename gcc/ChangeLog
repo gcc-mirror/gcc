@@ -1,4 +1,11 @@
-Thu Nov  4 14:22:12 1999  David Billinghurst  <David.Billinghurst@riotinto.com.au>,  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+Thu Nov  4 12:49:52 1999  Richard Henderson  <rth@cygnus.com>
+
+	* cse.c (cse_main): Use xmalloc, not alloca.
+	(cse_basic_block): Likewise.
+	* local-alloc.c (local_alloc): Likewise.
+
+Thu Nov  4 14:22:12 1999  David Billinghurst  <David.Billinghurst@riotinto.com.au>
+			  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* rtl.c: Include toplev.h.
 	(fatal): Remove declaration.
