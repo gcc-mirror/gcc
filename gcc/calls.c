@@ -473,10 +473,9 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 #if defined (HAVE_sibcall_pop) && defined (HAVE_sibcall_value_pop)
   if ((ecf_flags & ECF_SIBCALL)
       && HAVE_sibcall_pop && HAVE_sibcall_value_pop
-      && (RETURN_POPS_ARGS (fndecl, funtype, stack_size) > 0
-	  || stack_size == 0))
+      && (n_popped > 0 || stack_size == 0))
     {
-      rtx n_pop = GEN_INT (RETURN_POPS_ARGS (fndecl, funtype, stack_size));
+      rtx n_pop = GEN_INT (n_popped));
       rtx pat;
 
       /* If this subroutine pops its own args, record that in the call insn

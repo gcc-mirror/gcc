@@ -1,3 +1,8 @@
+2000-11-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* calls.c (emit_call_1) [sibcall_pop]: Use n_popped instead of
+	RETURN_POPS_ARGS().
+
 2000-11-03  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* builtins.c (expand_builtin_strlen): Remove unused mode
