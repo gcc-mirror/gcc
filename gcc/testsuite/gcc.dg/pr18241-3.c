@@ -1,4 +1,4 @@
-/* { dg-do execute } */
+/* { dg-do run } */
 /* { dg-options "-O1" } */ 
 
 void abort (void);

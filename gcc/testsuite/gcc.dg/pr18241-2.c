@@ -1,4 +1,4 @@
-/* { dg-do execute } */
+/* { dg-do run } */
 /* { dg-options "-std=gnu99 -Wall -Wextra -O1" } */ 
 
 extern void *memset (void*, int, unsigned long);
