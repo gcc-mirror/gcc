@@ -25,7 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
- "-Dsun -Dsparc -Dunix -D__svr4__ \
+ "-Dsun -Dsparc -Dunix -D__svr4__ -D__SVR4 \
   -Asystem(unix) -Asystem(svr4) -Acpu(sparc) -Amachine(sparc)\
   -D__GCC_NEW_VARARGS__"
 
