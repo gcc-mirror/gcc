@@ -1,3 +1,7 @@
+Wed Dec 31 10:05:44 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10200.md (addsi3, subsi3): Fix thinkos.
+
 Tue Dec 30 00:04:49 1997  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.h (ASM_OUTPUT_MI_THUNK): Move %o7 through %g1 instead of
