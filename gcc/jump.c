@@ -1041,14 +1041,19 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	    {
 	      rtx new = gen_reg_rtx (GET_MODE (temp2));
 
-	      if (validate_change (temp, &SET_DEST (temp1), new, 0))
+	      if ((temp5 = find_insert_position (insn, temp))
+		  && (temp6 = find_insert_position (insn, temp3))
+		  && validate_change (temp, &SET_DEST (temp1), new, 0))
 		{
+		  /* Use the earliest of temp5 and temp6. */
+		  if (temp5 != insn)
+		    temp6 = temp5;
 		  next = emit_insn_after (gen_move_insn (temp2, new), insn);
 		  emit_insn_after_with_line_notes (PATTERN (temp),
-						   PREV_INSN (insn), temp);
+						   PREV_INSN (temp6), temp);
 		  emit_insn_after_with_line_notes
 		    (replace_rtx (PATTERN (temp3), temp2, new),
-		     PREV_INSN (insn), temp3);
+		     PREV_INSN (temp6), temp3);
 		  delete_insn (temp);
 		  delete_insn (temp3);
 		  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
@@ -1097,13 +1102,18 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	    {
 	      rtx new = gen_reg_rtx (GET_MODE (temp2));
 
-	      if (validate_change (temp3, &SET_DEST (temp4), new, 0))
+	      if ((temp5 = find_insert_position (insn, temp))
+		  && (temp6 = find_insert_position (insn, temp3))
+		  && validate_change (temp3, &SET_DEST (temp4), new, 0))
 		{
+		  /* Use the earliest of temp5 and temp6. */
+		  if (temp5 != insn)
+		    temp6 = temp5;
 		  next = emit_insn_after (gen_move_insn (temp2, new), insn);
 		  emit_insn_after_with_line_notes (PATTERN (temp),
-						   PREV_INSN (insn), temp);
+						   PREV_INSN (temp6), temp);
 		  emit_insn_after_with_line_notes (PATTERN (temp3),
-						   PREV_INSN (insn), temp3);
+						   PREV_INSN (temp6), temp3);
 		  delete_insn (temp);
 		  delete_insn (temp3);
 		  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
