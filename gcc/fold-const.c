@@ -5007,16 +5007,6 @@ tree_swap_operands_p (tree arg0, tree arg1)
   if (TREE_CONSTANT (arg0))
     return 1;
 
-  if (DECL_P (arg1))
-    return 0;
-  if (DECL_P (arg0))
-    return 1;
-
-  if (TREE_CODE (arg1) == SAVE_EXPR)
-    return 0;
-  if (TREE_CODE (arg0) == SAVE_EXPR)
-    return 1;
-
   return 0;
 }
 
