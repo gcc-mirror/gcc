@@ -1140,14 +1140,21 @@ package body Exp_Ch7 is
 
       --  Case of a dynamically allocated object. The final list is the
       --  corresponding list controller (The next entity in the scope of
-      --  the access type with the right type)
+      --  the access type with the right type). If the type comes from a
+      --  With_Type clause, no controller was created, and we use the
+      --  global chain instead.
 
       elsif Is_Access_Type (E) then
-         return
-           Make_Selected_Component (Loc,
-             Prefix        =>
-               New_Reference_To (Associated_Final_Chain (Base_Type (E)), Loc),
-             Selector_Name => Make_Identifier (Loc, Name_F));
+         if not From_With_Type (E) then
+            return
+              Make_Selected_Component (Loc,
+                Prefix        =>
+                  New_Reference_To
+                    (Associated_Final_Chain (Base_Type (E)), Loc),
+                Selector_Name => Make_Identifier (Loc, Name_F));
+         else
+            return New_Reference_To (RTE (RE_Global_Final_List), Sloc (E));
+         end if;
 
       else
          if Is_Dynamic_Scope (E) then

@@ -1,5 +1,10 @@
 2001-10-11  Ed Schonberg <schonber@gnat.com>
 
+	* exp_ch7.adb (Find_Final_List): for a type appearing in a with_type 
+	clause, return the gobal finalization list, for lack of anthing else. 
+
+2001-10-11  Ed Schonberg <schonber@gnat.com>
+
 	* exp_ch7.adb (Make_Transient_Block): if statement is within 
 	exception handler, always use new transient scope to place Clean 
 	procedure.
