@@ -1,3 +1,7 @@
+Fri Aug 20 22:32:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (STARTFILE_SPEC): Don't define.
+
 1999-08-19 18:43 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* tree.c (expr_check): Fix typo in last change.
