@@ -1,5 +1,5 @@
 /* java.util.SimpleTimeZone
-   Copyright (C) 1998, 1999, 2000, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,7 +71,7 @@ public class SimpleTimeZone extends TimeZone
   /**
    * The daylight savings offset.  This is a positive offset in
    * milliseconds with respect to standard time.  Typically this
-   * is one hour, but for some time zones this may be half an our.
+   * is one hour, but for some time zones this may be half an hour.
    * @serial
    * @since JDK1.1.4
    */
@@ -228,6 +228,7 @@ public class SimpleTimeZone extends TimeZone
    * startMode, endMode and dstSavings.  And there is a optional section
    * as described in writeObject.
    * </dd>
+   * </dl>
    *
    * XXX - JDK 1.2 Beta 4 docu states 1.1.4, but my 1.1.5 has the old
    * version.

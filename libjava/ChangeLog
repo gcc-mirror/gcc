@@ -1,3 +1,16 @@
+2005-02-22  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/DirectByteBufferImpl.java
+	(owner): Fixed formatting of javadoc.
+	* java/text/DateFormat.java
+	(getAvailableLocales): Fixed formatting.
+	* java/text/SimpleDateFormat.java:
+	Fixed formatting and import statement order.
+	* java/util/Calendar.java
+	(Calendar): Fixed javadoc to be HTML compliant.
+	* java/util/SimpleTimeZone.java:
+	Fixed javadocs.
+
 2005-02-22  Roman Kennke <roman@ontographics.com>
 
 	* javax/swing/plaf/basic/BasicLookAndFeel.java
