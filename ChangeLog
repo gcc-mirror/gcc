@@ -1,3 +1,8 @@
+2002-04-26	Joel Sherrill <joel@OARcorp.com>
+
+	* configure.in (h8300*-*-rtems*): Disable libf2c and libgcj.
+	(sparc-*-elf*, sparc64-*-elf*): Disable libgcj.
+
 2002-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.in: Disable libgcj on s390-linux targets.
