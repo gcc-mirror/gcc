@@ -173,8 +173,11 @@ extern GTY(()) rtx aof_pic_label;
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT	(ARM_FLAG_APCS_32 | ARM_FLAG_APCS_FRAME)
 #endif /* TARGET_CPU_DEFAULT */
+#if TARGET_CPU_DEFAULT == TARGET_CPU_iwmmxt
+#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_5TE__ -D__XSCALE__ -D__IWMMXT__"
 #else
-Unrecognized value in TARGET_CPU_DEFAULT.
+#error Unrecognized value in TARGET_CPU_DEFAULT.
+#endif
 #endif
 #endif
 #endif

@@ -1,3 +1,9 @@
+2003-09-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.h: Handle TARGET_CPU_iwmmxt.
+	Use #error to generate the message if TARGET_DEFAULT is not
+	recognised.
+
 2003-09-03  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (MASK_UNUSED1): Remove.
