@@ -1,5 +1,5 @@
 /* YACC parser for C syntax and for Objective C.  -*-c-*-
-   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -408,6 +408,8 @@ unary_expr:
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
 		{ tree label = lookup_label ($2);
+		  if (pedantic)
+		    pedwarn ("ANSI C forbids `&&'");
 		  if (label == 0)
 		    $$ = null_pointer_node;
 		  else
