@@ -2152,8 +2152,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       break;
 
     case ABS_EXPR:
-      if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
-	    || typecode == COMPLEX_TYPE))
+      if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE))
 	{
 	  error ("wrong type argument to abs");
 	  return error_mark_node;

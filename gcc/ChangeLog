@@ -1,5 +1,13 @@
 2003-08-11  Roger Sayle  <roger@eyesopen.com>
 
+	* expr.c (expand_expr): If an ABS_EXPR has a complex type, abort.
+	* c-typeck.c (build_unary_op): COMPLEX_TYPE is not a valid
+	typecode for an ABS_EXPR.
+
+	* doc/c-tree.texi: Document ABS_EXPR.
+
+2003-08-11  Roger Sayle  <roger@eyesopen.com>
+
 	* fold-const.c (fold): Optimize any associative floating point
 	operator with -funsafe-math-optimizations, not just MULT_EXPR.
 
