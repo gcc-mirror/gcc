@@ -107,7 +107,7 @@ AC_PROVIDE([AC_PROG_CXX])
 # the environment, respect that here.
 glibcpp_CXX=$CXX
 AC_CHECK_PROGS(glibcpp_CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
-AC_SUBST(glibcpp_CXX)
+AC_SUBST(CXX)
 CXX=$glibcpp_CXX
 test -z "$glibcpp_CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
 
