@@ -1,3 +1,7 @@
+2000-02-25 Mark Elbrecht <snowball3@bigfoot.com>
+
+	* i386/djgpp.h (CPP_PREDEFINES): Remove Unix defines.
+
 2000-02-25  John Wehle  (john@feith.com)
 
 	* rtlanal.c (find_last_value): Allow NULL_RTX for valid_to.
