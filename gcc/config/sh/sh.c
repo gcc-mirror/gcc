@@ -155,6 +155,7 @@ static HOST_WIDE_INT rounded_frame_size PARAMS ((int));
 static rtx mark_constant_pool_use PARAMS ((rtx));
 static int sh_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
 static void sh_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void sh_insert_attributes PARAMS ((tree, tree *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_DECL_ATTRIBUTE
@@ -162,6 +163,9 @@ static void sh_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE sh_output_function_epilogue
+
+#undef TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES sh_insert_attributes
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4603,8 +4607,8 @@ sh_pr_nosave_low_regs (pfile)
 
 /* Generate 'handle_interrupt' attribute for decls */
 
-void
-sh_pragma_insert_attributes (node, attributes)
+static void
+sh_insert_attributes (node, attributes)
      tree node;
      tree * attributes;
 {

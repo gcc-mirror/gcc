@@ -190,10 +190,14 @@ static int c4x_r11_set_p PARAMS ((rtx));
 static int c4x_rptb_valid_p PARAMS ((rtx, rtx));
 static int c4x_label_ref_used_p PARAMS ((rtx, rtx));
 static int c4x_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
+static void c4x_insert_attributes PARAMS ((tree, tree *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_TYPE_ATTRIBUTE
 #define TARGET_VALID_TYPE_ATTRIBUTE c4x_valid_type_attribute_p
+
+#undef TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES c4x_insert_attributes
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4717,14 +4721,13 @@ c4x_check_attribute (attrib, list, decl, attributes)
 	 != IDENTIFIER_POINTER (DECL_NAME (decl)))
     list = TREE_CHAIN (list);
   if (list)
-    *attributes = chainon (*attributes,
-			   build_tree_list (get_identifier (attrib),
-					    TREE_VALUE (list)));
+    *attributes = tree_cons (get_identifier (attrib), TREE_VALUE (list),
+			     *attributes);
 }
 
 
-void
-c4x_set_default_attributes(decl, attributes)
+static void
+c4x_insert_attributes (decl, attributes)
      tree decl, *attributes;
 {
   switch (TREE_CODE (decl))

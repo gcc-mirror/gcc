@@ -2293,9 +2293,6 @@ extern int current_function_interrupt;
    for interrupt functions.  */
 extern struct rtx_def *sp_switch;
 
-#define PRAGMA_INSERT_ATTRIBUTES(node, pattr) \
-  sh_pragma_insert_attributes (node, pattr)
-
 extern int rtx_equal_function_value_matters;
 extern struct rtx_def *fpscr_rtx;
 

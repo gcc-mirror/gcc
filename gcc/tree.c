@@ -2707,8 +2707,8 @@ build_type_attribute_variant (ttype, attribute)
   return ttype;
 }
 
-/* Default value of target.valid_decl_attribute_p and
-   target.valid_type_attribute_p that always returns false.  */
+/* Default value of targetm.valid_decl_attribute_p and
+   targetm.valid_type_attribute_p that always returns false.  */
 
 int
 default_valid_attribute_p PARAMS ((attr_name, attr_args, decl, type))
@@ -2720,7 +2720,7 @@ default_valid_attribute_p PARAMS ((attr_name, attr_args, decl, type))
   return 0;
 }
 
-/* Default value of target.comp_type_attributes that always returns 1.  */
+/* Default value of targetm.comp_type_attributes that always returns 1.  */
 
 int
 default_comp_type_attributes (type1, type2)
@@ -2730,12 +2730,20 @@ default_comp_type_attributes (type1, type2)
   return 1;
 }
 
-/* Default version of target.set_default_type_attributes that always does
+/* Default version of targetm.set_default_type_attributes that always does
    nothing.  */
 
 void
 default_set_default_type_attributes (type)
      tree type ATTRIBUTE_UNUSED;
+{
+}
+
+/* Default version of targetm.insert_attributes that always does nothing.  */
+void
+default_insert_attributes (decl, attr_ptr)
+     tree decl ATTRIBUTE_UNUSED;
+     tree *attr_ptr ATTRIBUTE_UNUSED;
 {
 }
 

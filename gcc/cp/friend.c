@@ -446,10 +446,6 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
       prefix_attributes = NULL_TREE;
     } 
 
-#ifdef SET_DEFAULT_DECL_ATTRIBUTES
-  SET_DEFAULT_DECL_ATTRIBUTES (decl, attributes);
-#endif
-  
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   cplus_decl_attributes (decl, attributes, prefix_attributes);
 

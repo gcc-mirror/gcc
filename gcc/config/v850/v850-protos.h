@@ -73,7 +73,6 @@ extern rtx    v850_va_arg                   PARAMS ((tree, tree));
 
 #ifdef TREE_CODE
 extern void   v850_encode_data_area         PARAMS ((tree));
-extern void   v850_set_default_decl_attr    PARAMS ((tree));
 extern int    v850_interrupt_function_p     PARAMS ((tree));
 extern void   v850_output_aligned_bss       PARAMS ((FILE *, tree, const char *, int, int));
 extern void   v850_output_common            PARAMS ((FILE *, tree, const char *, int, int));

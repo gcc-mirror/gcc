@@ -87,6 +87,9 @@ struct gcc_target
 
   /* Assign default attributes to the newly defined TYPE.  */
   void (* set_default_type_attributes) PARAMS ((tree type));
+
+  /* Insert attributes on the newly created DECL.  */
+  void (* insert_attributes) PARAMS ((tree decl, tree *attributes));
 };
 
 extern struct gcc_target targetm;
