@@ -28,7 +28,7 @@ if { [istarget mmix-*-*]
 set tool g++
 set profile_option -fprofile-arcs
 set feedback_option -fbranch-probabilities
-set prof_ext da
+set prof_ext gcda
 
 if $tracelevel then {
     strace $tracelevel
