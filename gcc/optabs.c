@@ -4277,7 +4277,7 @@ init_optabs ()
   sjthrow_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__sjthrow");
   sjpopnthrow_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__sjpopnthrow");
   terminate_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__terminate");
-#ifdef USE_BUILTIN_SETJMP
+#ifndef DONT_USE_BUILTIN_SETJMP
   setjmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__builtin_setjmp");
   longjmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__builtin_longjmp");
 #else
