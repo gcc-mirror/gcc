@@ -1,3 +1,7 @@
+2003-05-15  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/thread/pthread4.cc: Further tweak to avoid fini race.
+
 2003-05-15  Paolo Carlini  <pcarlini@unitus.it>
 	    Nathan Myers  <ncm@cantrip.org>
 
