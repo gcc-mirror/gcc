@@ -1,3 +1,15 @@
+2004-07-03  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/bugreport.texi, doc/configterms.texi, doc/contrib.texi,
+	doc/contribute.texi, doc/cpp.texi, doc/cppinternals.texi,
+	doc/extend.texi, doc/install.texi, doc/invoke.texi, doc/md.texi,
+	doc/portability.texi, doc/tree-ssa.texi, doc/trouble.texi: Avoid
+	some first-person references and patronizing comments.  Based on
+	printed manual.
+	* doc/invoke.texi: Don't reference fortran@gnu.org.
+	* doc/trouble.texi (Warning when a non-void function value is
+	ignored): Rewrite.  From Russ Allbery and Chris Devers.
+
 2004-07-02  Daniel Berlin  <dberlin@dberlin.org)
 
 	* tree-ssa-pre.c (bitmap_set_t): New.

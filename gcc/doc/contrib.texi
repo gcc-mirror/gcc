@@ -59,7 +59,7 @@ Jon Beniston for his Microsoft Windows port of Java.
 
 @item
 Daniel Berlin for better DWARF2 support, faster/better optimizations,
-improved alias analysis, plus migrating us to Bugzilla.
+improved alias analysis, plus migrating GCC to Bugzilla.
 
 @item
 Geoff Berry for his Java object serialization work and various patches.
@@ -84,7 +84,7 @@ Eric Botcazou for fixing middle- and backend bugs left and right.
 
 @item
 Per Bothner for his direction via the steering committee and various
-improvements to our infrastructure for supporting new languages.  Chill
+improvements to the infrastructure for supporting new languages.  Chill
 front end implementation.  Initial implementations of
 cpplib, fix-header, config.guess, libio, and past C++ library (libg++)
 maintainer.  Dreaming up, designing and implementing much of GCJ.
@@ -289,7 +289,7 @@ via the steering committee.
 Anthony Green for his @option{-Os} contributions and Java front end work.
 
 @item
-Stu Grossman for gdb hacking, allowing GCJ developers to debug our code.
+Stu Grossman for gdb hacking, allowing GCJ developers to debug Java code.
 
 @item
 Michael K. Gschwind contributed the port to the PDP-11.
@@ -340,7 +340,7 @@ Kazu Hirata for caring and feeding the Renesas H8/300 port and various fixes.
 
 @item
 Manfred Hollstein for his ongoing work to keep the m88k alive, lots
-of testing and bug fixing, particularly of our configury code.
+of testing and bug fixing, particularly of GCC configury code.
 
 @item
 Steve Holmgren for MachTen patches.
@@ -630,7 +630,7 @@ Stefan Olsson for work on mt_alloc.
 Melissa O'Neill for various NeXT fixes.
 
 @item
-Rainer Orth for random MIPS work, including improvements to our o32
+Rainer Orth for random MIPS work, including improvements to GCC's o32
 ABI support, improvements to dejagnu's MIPS support, Java configuration
 clean-ups and porting work, etc.
 
@@ -701,7 +701,7 @@ documentation in texinfo format by contributing a first pass at a
 translation of the old @file{g77-0.5.16/f/DOC} file.
 
 @item
-Ken Rose for fixes to our delay slot filling code.
+Ken Rose for fixes to GCC's delay slot filling code.
 
 @item
 Paul Rubin wrote most of the preprocessor.
@@ -763,7 +763,7 @@ folding and help with the original VAX & m68k ports.
 
 @item
 Kenny Simpson for prompting libstdc++ fixes due to defect reports from
-the LWG (thereby keeping us in line with updates from the ISO).
+the LWG (thereby keeping GCC in line with updates from the ISO).
 
 @item
 Franz Sirl for his ongoing work with making the PPC port stable

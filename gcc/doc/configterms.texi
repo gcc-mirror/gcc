@@ -1,4 +1,4 @@
-@c Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+@c Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -34,8 +34,8 @@ different system.  Some people call this a @dfn{host-x-host},
 @dfn{crossed native}, or @dfn{cross-built native}.  If build and target
 are the same, but host is different, you are using a cross compiler to
 build a cross compiler that produces code for the machine you're
-building on.  This is rare, so there is no common way of describing it
-(although I propose calling it a @dfn{crossback}).
+building on.  This is rare, so there is no common way of describing it.
+There is a proposal to call this a @dfn{crossback}.
 
 If build and host are the same, the GCC you are building will also be
 used to build the target libraries (like @code{libstdc++}).  If build and host

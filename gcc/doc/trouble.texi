@@ -129,7 +129,7 @@ Older GDB versions sometimes fail to read the output of GCC version
 DBX rejects some files produced by GCC, though it accepts similar
 constructs in output from PCC@.  Until someone can supply a coherent
 description of what is valid DBX input and what is not, there is
-nothing I can do about these problems.  You are on your own.
+nothing that can be done about these problems.
 
 @item
 The GNU assembler (GAS) does not support PIC@.  To generate PIC code, you
@@ -509,8 +509,7 @@ ISO C does not permit such a construct.
 
 @item
 K&R compilers allow comments to cross over an inclusion boundary
-(i.e.@: started in an include file and ended in the including file).  I think
-this would be quite ugly and can't imagine it could be needed.
+(i.e.@: started in an include file and ended in the including file).
 
 @cindex external declaration scope
 @cindex scope of external declarations
@@ -1242,11 +1241,16 @@ more annoyance than good.
 @item
 Warning when a non-void function value is ignored.
 
-Coming as I do from a Lisp background, I balk at the idea that there is
-something dangerous about discarding a value.  There are functions that
-return values which some callers may find useful; it makes no sense to
-clutter the program with a cast to @code{void} whenever the value isn't
-useful.
+C contains many standard functions that return a value that most
+programs choose to ignore.  One obvious example is @code{printf}.
+Warning about this practice only leads the defensive programmer to
+clutter programs with dozens of casts to @code{void}.  Such casts are
+required so frequently that they become visual noise.  Writing those
+casts becomes so automatic that they no longer convey useful
+information about the intentions of the programmer.  For functions
+where the return value should never be ignored, use the
+@code{warn_unused_result} function attribute (@pxref{Function
+Attributes}).
 
 @item
 @opindex fshort-enums

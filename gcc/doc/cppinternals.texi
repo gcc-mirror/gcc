@@ -16,7 +16,7 @@
 @ifinfo
 This file documents the internals of the GNU C Preprocessor.
 
-Copyright 2000, 2001, 2002 Free Software Foundation, Inc.
+Copyright 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -47,7 +47,7 @@ into another language, under the above conditions for modified versions.
 @page
 @vskip 0pt plus 1filll
 @c man begin COPYRIGHT
-Copyright @copyright{} 2000, 2001, 2002
+Copyright @copyright{} 2000, 2001, 2002, 2004
 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -368,8 +368,8 @@ chaining a new token run on to the end of the existing one.
 
 The tokens forming a macro's replacement list are collected by the
 @code{#define} handler, and placed in storage that is only freed by
-@code{cpp_destroy}.  So if a macro is expanded in our line of tokens,
-the pointers to the tokens of its expansion that we return will always
+@code{cpp_destroy}.  So if a macro is expanded in the line of tokens,
+the pointers to the tokens of its expansion that are returned will always
 remain valid.  However, macros are a little trickier than that, since
 they give rise to three sources of fresh tokens.  They are the built-in
 macros like @code{__LINE__}, and the @samp{#} and @samp{##} operators
@@ -640,8 +640,8 @@ is safe.
 @cindex spacing
 @cindex token spacing
 
-First, let's look at an issue that only concerns the stand-alone
-preprocessor: we want to guarantee that re-reading its preprocessed
+First, consider an issue that only concerns the stand-alone
+preprocessor: there needs to be a guarantee that re-reading its preprocessed
 output results in an identical token stream.  Without taking special
 measures, this might not be the case because of macro substitution.
 For example:
@@ -670,7 +670,7 @@ expansion, but accidental pasting can occur in many places: both before
 and after each macro replacement, each argument replacement, and
 additionally each token created by the @samp{#} and @samp{##} operators.
 
-Let's look at how the preprocessor gets whitespace output correct
+Look at how the preprocessor gets whitespace output correct
 normally.  The @code{cpp_token} structure contains a flags byte, and one
 of those flags is @code{PREV_WHITE}.  This is flagged by the lexer, and
 indicates that the token was preceded by whitespace of some form other
@@ -719,11 +719,11 @@ a macro's first replacement token expands straight into another macro.
 
 Here, two padding tokens are generated with sources the @samp{foo} token
 between the brackets, and the @samp{bar} token from foo's replacement
-list, respectively.  Clearly the first padding token is the one we
-should use, so our output code should contain a rule that the first
+list, respectively.  Clearly the first padding token is the one to
+use, so the output code should contain a rule that the first
 padding token in a sequence is the one that matters.
 
-But what if we happen to leave a macro expansion?  Adjusting the above
+But what if a macro expansion is left?  Adjusting the above
 example slightly:
 
 @smallexample

@@ -524,7 +524,7 @@ follows:
 @cindex side effects, macro argument
 But this definition computes either @var{a} or @var{b} twice, with bad
 results if the operand has side effects.  In GNU C, if you know the
-type of the operands (here let's assume @code{int}), you can define
+type of the operands (here taken as @code{int}), you can define
 the macro safely as follows:
 
 @smallexample
@@ -1021,7 +1021,7 @@ char *y[4];
 @end smallexample
 
 To see the meaning of the declaration using @code{typeof}, and why it
-might be a useful way to write, let's rewrite it with these macros:
+might be a useful way to write, rewrite it with these macros:
 
 @smallexample
 #define pointer(T)  typeof(T *)
@@ -8063,7 +8063,7 @@ intelligence from the environment than one usually finds on a UNIX
 system.  Somehow the compiler and linker have to make sure that each
 template instance occurs exactly once in the executable if it is needed,
 and not at all otherwise.  There are two basic approaches to this
-problem, which I will refer to as the Borland model and the Cfront model.
+problem, which are referred to as the Borland model and the Cfront model.
 
 @table @asis
 @item Borland model
