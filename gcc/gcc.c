@@ -86,13 +86,6 @@ compilation is specified by a string called a "spec".  */
 #include "gcc.h"
 #include "flags.h"
 
-#ifdef HAVE_SYS_RESOURCE_H
-#include <sys/resource.h>
-#endif
-#if defined (HAVE_DECL_GETRUSAGE) && !HAVE_DECL_GETRUSAGE
-extern int getrusage (int, struct rusage *);
-#endif
-
 /* By default there is no special suffix for target executables.  */
 /* FIXME: when autoconf is fixed, remove the host check - dj */
 #if defined(TARGET_EXECUTABLE_SUFFIX) && defined(HOST_EXECUTABLE_SUFFIX)
@@ -282,12 +275,6 @@ static struct obstack obstack;
    and destructors.  */
 
 static struct obstack collect_obstack;
-
-/* These structs are used to collect resource usage information for
-   subprocesses.  */
-#ifdef HAVE_GETRUSAGE
-static struct rusage rus, prus;
-#endif
 
 /* Forward declaration for prototypes.  */
 struct path_prefix;
@@ -2653,11 +2640,11 @@ execute (void)
   int i;
   int n_commands;		/* # of command.  */
   char *string;
+  struct pex_obj *pex;
   struct command
   {
     const char *prog;		/* program name.  */
     const char **argv;		/* vector of args.  */
-    int pid;			/* pid of process for this command.  */
   };
 
   struct command *commands;	/* each command buffer with above info.  */
@@ -2790,24 +2777,32 @@ execute (void)
 
   /* Run each piped subprocess.  */
 
+  pex = pex_init (PEX_USE_PIPES | (report_times ? PEX_RECORD_TIMES : 0),
+		  programname, temp_filename);
+  if (pex == NULL)
+    pfatal_with_name (_("pex_init failed"));
+
   for (i = 0; i < n_commands; i++)
     {
-      char *errmsg_fmt, *errmsg_arg;
+      const char *errmsg;
+      int err;
       const char *string = commands[i].argv[0];
 
-      /* For some bizarre reason, the second argument of execvp() is
-	 char *const *, not const char *const *.  */
-      commands[i].pid = pexecute (string, (char *const *) commands[i].argv,
-				  programname, temp_filename,
-				  &errmsg_fmt, &errmsg_arg,
-				  ((i == 0 ? PEXECUTE_FIRST : 0)
-				   | (i + 1 == n_commands ? PEXECUTE_LAST : 0)
-				   | (string == commands[i].prog
-				      ? PEXECUTE_SEARCH : 0)
-				   | (verbose_flag ? PEXECUTE_VERBOSE : 0)));
-
-      if (commands[i].pid == -1)
-	pfatal_pexecute (errmsg_fmt, errmsg_arg);
+      errmsg = pex_run (pex,
+			((i + 1 == n_commands ? PEX_LAST : 0)
+			 | (string == commands[i].prog ? PEX_SEARCH : 0)),
+			string, (char * const *) commands[i].argv,
+			NULL, NULL, &err);
+      if (errmsg != NULL)
+	{
+	  if (err == 0)
+	    fatal (errmsg);
+	  else
+	    {
+	      errno = err;
+	      pfatal_with_name (errmsg);
+	    }
+	}
 
       if (string != commands[i].prog)
 	free ((void *) string);
@@ -2815,88 +2810,76 @@ execute (void)
 
   execution_count++;
 
-  /* Wait for all the subprocesses to finish.
-     We don't care what order they finish in;
-     we know that N_COMMANDS waits will get them all.
-     Ignore subprocesses that we don't know about,
-     since they can be spawned by the process that exec'ed us.  */
+  /* Wait for all the subprocesses to finish.  */
 
   {
+    int *statuses;
+    struct pex_time *times = NULL;
     int ret_code = 0;
-#ifdef HAVE_GETRUSAGE
-    struct timeval d;
-    double ut = 0.0, st = 0.0;
-#endif
 
-    for (i = 0; i < n_commands;)
+    statuses = alloca (n_commands * sizeof (int));
+    if (!pex_get_status (pex, n_commands, statuses))
+      pfatal_with_name (_("failed to get exit status"));
+
+    if (report_times)
       {
-	int j;
-	int status;
-	int pid;
+	times = alloca (n_commands * sizeof (struct pex_time));
+	if (!pex_get_times (pex, n_commands, times))
+	  pfatal_with_name (_("failed to get process times"));
+      }
 
-	pid = pwait (commands[i].pid, &status, 0);
-	gcc_assert (pid >= 0);
+    pex_free (pex);
 
-#ifdef HAVE_GETRUSAGE
-	if (report_times)
+    for (i = 0; i < n_commands; ++i)
+      {
+	int status = statuses[i];
+
+	if (WIFSIGNALED (status))
 	  {
-	    /* getrusage returns the total resource usage of all children
-	       up to now.  Copy the previous values into prus, get the
-	       current statistics, then take the difference.  */
-
-	    prus = rus;
-	    getrusage (RUSAGE_CHILDREN, &rus);
-	    d.tv_sec = rus.ru_utime.tv_sec - prus.ru_utime.tv_sec;
-	    d.tv_usec = rus.ru_utime.tv_usec - prus.ru_utime.tv_usec;
-	    ut = (double) d.tv_sec + (double) d.tv_usec / 1.0e6;
-
-	    d.tv_sec = rus.ru_stime.tv_sec - prus.ru_stime.tv_sec;
-	    d.tv_usec = rus.ru_stime.tv_usec - prus.ru_stime.tv_usec;
-	    st = (double) d.tv_sec + (double) d.tv_usec / 1.0e6;
-	  }
-#endif
-
-	for (j = 0; j < n_commands; j++)
-	  if (commands[j].pid == pid)
-	    {
-	      i++;
-	      if (WIFSIGNALED (status))
-		{
 #ifdef SIGPIPE
-		  /* SIGPIPE is a special case.  It happens in -pipe mode
-		     when the compiler dies before the preprocessor is
-		     done, or the assembler dies before the compiler is
-		     done.  There's generally been an error already, and
-		     this is just fallout.  So don't generate another error
-		     unless we would otherwise have succeeded.  */
-		  if (WTERMSIG (status) == SIGPIPE
-		      && (signal_count || greatest_status >= MIN_FATAL_STATUS))
-		    ;
-		  else
+	    /* SIGPIPE is a special case.  It happens in -pipe mode
+	       when the compiler dies before the preprocessor is done,
+	       or the assembler dies before the compiler is done.
+	       There's generally been an error already, and this is
+	       just fallout.  So don't generate another error unless
+	       we would otherwise have succeeded.  */
+	    if (WTERMSIG (status) == SIGPIPE
+		&& (signal_count || greatest_status >= MIN_FATAL_STATUS))
+	      ;
+	    else
 #endif
-		    fatal ("\
+	      fatal ("\
 Internal error: %s (program %s)\n\
 Please submit a full bug report.\n\
 See %s for instructions.",
-			   strsignal (WTERMSIG (status)), commands[j].prog,
-			   bug_report_url);
-		  signal_count++;
-		  ret_code = -1;
-		}
-	      else if (WIFEXITED (status)
-		       && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
-		{
-		  if (WEXITSTATUS (status) > greatest_status)
-		    greatest_status = WEXITSTATUS (status);
-		  ret_code = -1;
-		}
-#ifdef HAVE_GETRUSAGE
-	      if (report_times && ut + st != 0)
-		notice ("# %s %.2f %.2f\n", commands[j].prog, ut, st);
-#endif
-	      break;
-	    }
+		     strsignal (WTERMSIG (status)), commands[i].prog,
+		     bug_report_url);
+	    signal_count++;
+	    ret_code = -1;
+	  }
+	else if (WIFEXITED (status)
+		 && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
+	  {
+	    if (WEXITSTATUS (status) > greatest_status)
+	      greatest_status = WEXITSTATUS (status);
+	    ret_code = -1;
+	  }
+
+	if (report_times)
+	  {
+	    struct pex_time *pt = &times[i];
+	    double ut, st;
+
+	    ut = ((double) pt->user_seconds
+		  + (double) pt->user_microseconds / 1.0e6);
+	    st = ((double) pt->system_seconds
+		  + (double) pt->system_microseconds / 1.0e6);
+
+	    if (ut + st != 0)
+	      notice ("# %s %.2f %.2f\n", commands[i].prog, ut, st);
+	  }
       }
+
     return ret_code;
   }
 }
@@ -3773,16 +3756,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	}
     }
 
-  if ((save_temps_flag || report_times) && use_pipes)
+  if (save_temps_flag && use_pipes)
     {
       /* -save-temps overrides -pipe, so that temp files are produced */
       if (save_temps_flag)
 	error ("warning: -pipe ignored because -save-temps specified");
-      /* -time overrides -pipe because we can't get correct stats when
-	 multiple children are running at once.  */
-      else if (report_times)
-	error ("warning: -pipe ignored because -time specified");
-
       use_pipes = 0;
     }
 
