@@ -1,5 +1,9 @@
 2005-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/19608
+	* parser.c (cp_parser_late_parsing_for_member): Use
+	current_function_decl as scope to push to and from.
+
 	PR c++/19884
 	* pt.c (check_explicit_specialization): Make sure namespace
 	binding lookup found an overloaded function.
