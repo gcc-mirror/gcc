@@ -1,3 +1,11 @@
+2003-09-22  Petur Runolfsson  <peturr02@ru.is>
+
+	* include/bits/istream.tcc (basic_istream::read,
+	basic_istream::readsome, basic_istream::putback,
+	basic_istream::unget, operator>>(basic_istream, CharT)):
+	Avoid redundant setstate(failbit) calls when sentry::operator bool()
+	returns false.
+
 2003-09-22  Carlo Wood  <carlo@alinoe.com>
 
 	PR libstdc++/12365
