@@ -1,5 +1,27 @@
 2000-04-01  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cpplib.c: Include symcat.h.  Add 'origin' field to struct
+	directive.  Add origin values to DIRECTIVE_TABLE.  Generate
+	the strings and function names on the fly.  Take the #sccs
+	entry out of the table if SCCS_DIRECTIVE is not defined.
+	(_cpp_handle_directive): Decide if the # was at the beginning
+	of the line here.  Issue -pedantic warnings for extended
+	directives here.  Warn about K+R directives with the #
+	indented, and C89/extended directives with the # not indented,
+	here.
+	(do_import, do_include_next, do_warning, do_ident, do_sccs,
+	do_assert, do_unassert): Don't issue pedantic warning here.
+
+	* cpphash.h: Add CPP_WTRADITIONAL macro.
+	* cpplib.h (struct cpp_options): Rename warn_stringify to
+	warn_traditional; update comments.
+	* cppinit.c (handle_option): Set warn_traditional not
+	warn_stringify.
+	* cpphash.c: Replace CPP_OPTION (pfile, warn_stringify) with
+	CPP_WTRADITIONAL (pfile).
+	* cpplex.c (_cpp_lex_token): Don't decide if directives should
+	be ignored in -traditional mode here.
+
 	* cpplex.c: Copy ISTABLE macros from cppinit.c, and adapt them
 	to initialize speccase[] and trigraph_map[].  Delete all
 	references to pfile->input_speccase.  Always treat '?' as a

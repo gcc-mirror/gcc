@@ -1647,7 +1647,7 @@ handle_option (pfile, argc, argv)
 	      CPP_OPTION (pfile, warn_comments) = 1;
 	    }
 	  else if (!strcmp (argv[i], "-Wtraditional"))
-	    CPP_OPTION (pfile, warn_stringify) = 1;
+	    CPP_OPTION (pfile, warn_traditional) = 1;
 	  else if (!strcmp (argv[i], "-Wtrigraphs"))
 	    CPP_OPTION (pfile, warn_trigraphs) = 1;
 	  else if (!strcmp (argv[i], "-Wcomment"))
@@ -1661,7 +1661,7 @@ handle_option (pfile, argc, argv)
 	  else if (!strcmp (argv[i], "-Werror"))
 	    CPP_OPTION (pfile, warnings_are_errors) = 1;
 	  else if (!strcmp (argv[i], "-Wno-traditional"))
-	    CPP_OPTION (pfile, warn_stringify) = 0;
+	    CPP_OPTION (pfile, warn_traditional) = 0;
 	  else if (!strcmp (argv[i], "-Wno-trigraphs"))
 	    CPP_OPTION (pfile, warn_trigraphs) = 0;
 	  else if (!strcmp (argv[i], "-Wno-comment"))

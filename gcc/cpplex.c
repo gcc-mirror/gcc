@@ -729,12 +729,6 @@ _cpp_lex_token (pfile)
 
       if (!pfile->only_seen_white)
 	goto randomchar;
-      /* -traditional directives are recognized only with the # in
-	 column 1.
-	 XXX Layering violation.  */
-      if (CPP_TRADITIONAL (pfile)
-	  && CPP_BUFFER (pfile)->cur - CPP_BUFFER (pfile)->line_base != 1)
-	goto randomchar;
       return CPP_DIRECTIVE;
 
     case '\"':

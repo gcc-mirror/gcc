@@ -236,8 +236,9 @@ struct cpp_options
   unsigned char warn_import;
 
   /* Nonzero means warn if a macro argument is (or would be)
-     stringified with -traditional.  */
-  unsigned char warn_stringify;
+     stringified with -traditional, and warn about directives
+     with the # indented from the beginning of the line.  */
+  unsigned char warn_traditional;
 
   /* Nonzero means turn warnings into errors.  */
   unsigned char warnings_are_errors;
