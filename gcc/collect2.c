@@ -1171,7 +1171,7 @@ scan_prog_file (prog_name, which_pass)
      char *prog_name;
      enum pass which_pass;
 {
-  LDFILE *ldptr;
+  LDFILE *ldptr = NULL;
   int sym_index, sym_count;
 
   if (which_pass != PASS_FIRST)
