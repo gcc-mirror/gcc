@@ -1,5 +1,5 @@
 /* Definitions for DEC Alpha/AXP running FreeBSD using the ELF format
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
 This file is part of GNU CC.
@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
   %{mieee-with-inexact:-D_IEEE_FP -D_IEEE_FP_INEXACT}"
 
 #undef  LINK_SPEC
-#define LINK_SPEC "-m elf64alpha %{G*} %{relax:-relax}			\
+#define LINK_SPEC "%{G*} %{relax:-relax}				\
   %{p:%e`-p' not supported; use `-pg' and gprof(1)}			\
   %{Wl,*:%*}								\
   %{assert*} %{R*} %{rpath*} %{defsym*}					\
