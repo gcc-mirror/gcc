@@ -1,3 +1,8 @@
+2001-04-30  Richard Henderson  <rth@redhat.com>
+
+	* cvt.c: Downcase C_PROMOTING_INTEGER_TYPE_P invocations.
+	* decl.c: Likewise.
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* gxxint.texi: Remove.
@@ -345,7 +350,7 @@ Mon Apr 30 16:14:10 2001  Mark P Mitchell  <mark@codesourcery.com>
 	* class.c (build_clone): Clear DECL_ASSEMBLER_NAME.
 
 2001-03-21  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-            based on an idea from Joe Buck <jbuck@synopsys.com>
+	    based on an idea from Joe Buck <jbuck@synopsys.com>
 
 	* parse.y (bad_decl, template_arg_list_ignore, arg_list_ignore):
 	New nonterminals.
@@ -560,8 +565,8 @@ Mon Apr 30 16:14:10 2001  Mark P Mitchell  <mark@codesourcery.com>
 
 2001-02-19  Mark Mitchell  <mark@codesourcery.com>
 
-        * decl2.c (set_decl_namespace): Allow explicit instantiations in
-        any namespace.
+	* decl2.c (set_decl_namespace): Allow explicit instantiations in
+	any namespace.
 
 2001-02-21  Jason Merrill  <jason@redhat.com>
 
@@ -1139,8 +1144,8 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-16 Daniel Berlin <dberlin@redhat.com>
 
-        * cvt.c (ocp_convert): Handle vector type conversion
-        * typeck2.c (digest_init): Handle vector type initializations
+	* cvt.c (ocp_convert): Handle vector type conversion
+	* typeck2.c (digest_init): Handle vector type initializations
 
 2001-01-16  Phil Edwards  <pme@sources.redhat.com>
 
@@ -1347,7 +1352,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cp/decl2.c (cxx_post_options): Call cpp_post_options.
+	* cp/decl2.c (cxx_post_options): Call cpp_post_options.
 
 2001-01-05  Nathan Sidwell  <nathan@codesourcery.com>
 

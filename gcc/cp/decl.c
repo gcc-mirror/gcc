@@ -13582,7 +13582,7 @@ start_function (declspecs, declarator, attrs, flags)
     cplus_decl_attributes (decl1, NULL_TREE, attrs);
 
   /* Promote the value to int before returning it.  */
-  if (C_PROMOTING_INTEGER_TYPE_P (restype))
+  if (c_promoting_integer_type_p (restype))
     restype = type_promotes_to (restype);
 
   if (DECL_RESULT (decl1) == NULL_TREE)

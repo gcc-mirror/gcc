@@ -5999,7 +5999,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
 
   restype = TREE_TYPE (TREE_TYPE (current_function_decl));
   /* Promote the value to int before returning it.  */
-  if (C_PROMOTING_INTEGER_TYPE_P (restype))
+  if (c_promoting_integer_type_p (restype))
     {
       /* It retains unsignedness if traditional
 	 or if not really getting wider.  */

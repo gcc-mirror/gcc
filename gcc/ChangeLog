@@ -1,3 +1,14 @@
+2001-04-30  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (c_promoting_integer_type_p): New function, from the
+	corpse of old macro.  Properly promote too-small enumerations and
+	booleans.  Adjust all callers.
+	* c-common.h (C_PROMOTING_INTEGER_TYPE_P): Remove.
+	(c_promoting_integer_type_p): Declare.
+	* c-decl.c: Adjust C_PROMOTING_INTEGER_TYPE_P invocations.
+	* c-typeck.c: Likewise.
+	(default_conversion): Remove now redundant boolean check.
+
 2001-04-30  Jan Hubicka  <jh@suse.cz>
 	    Richard Henderson  <rth@redhat.com>
 
@@ -23,8 +34,8 @@
 
 2001-04-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
-        * pa.c (hppa_init_pic_save): Update last_parm_insn after emitting
-        pic save insn.
+	* pa.c (hppa_init_pic_save): Update last_parm_insn after emitting
+	pic save insn.
 
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
@@ -50,8 +61,8 @@ Sat Apr 28 10:32:26 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-04-28  Andreas Jaeger  <aj@suse.de>
 
-        * md.texi: Use XX-bit instead of XXbit or XX bit where
-        appropriate.
+	* md.texi: Use XX-bit instead of XXbit or XX bit where
+	appropriate.
 
 2001-04-28  Andreas Jaeger  <aj@suse.de>
 	    Richard Henderson  <rth@redhat.com>

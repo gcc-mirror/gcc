@@ -533,17 +533,7 @@ extern tree build_va_arg			PARAMS ((tree, tree));
 
 extern void c_common_lang_init			PARAMS ((void));
 
-/* Nonzero if the type T promotes to itself.
-   ANSI C states explicitly the list of types that promote;
-   in particular, short promotes to int even if they have the same width.  */
-#define C_PROMOTING_INTEGER_TYPE_P(t)				\
-  (TREE_CODE ((t)) == INTEGER_TYPE				\
-   && (TYPE_MAIN_VARIANT (t) == char_type_node			\
-       || TYPE_MAIN_VARIANT (t) == signed_char_type_node	\
-       || TYPE_MAIN_VARIANT (t) == unsigned_char_type_node	\
-       || TYPE_MAIN_VARIANT (t) == short_integer_type_node	\
-       || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node))
-
+extern bool c_promoting_integer_type_p		PARAMS ((tree));
 extern int self_promoting_args_p		PARAMS ((tree));
 extern tree simple_type_promotes_to		PARAMS ((tree));
 extern tree strip_array_types                   PARAMS ((tree));
