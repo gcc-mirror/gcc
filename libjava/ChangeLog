@@ -1,3 +1,8 @@
+2003-12-02  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java: Make
+	BufferedImageBuilder class static.
+
 2003-12-02  Mark Wielaard  <mark@klomp.org>
 
 	* java/security/Security.java: Don't use &nbsp; in the api doc.
