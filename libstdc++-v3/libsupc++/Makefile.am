@@ -34,8 +34,10 @@ noinst_LTLIBRARIES = libsupc++convenience.la
 headers = \
 	exception new typeinfo cxxabi.h exception_defines.h
 
-c_sources = \
+if GLIBCXX_HOSTED
+  c_sources = \
 	cp-demangle.c 
+endif
 
 sources = \
 	del_op.cc \

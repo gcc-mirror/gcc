@@ -30,6 +30,7 @@
 #include <bits/c++config.h>
 #include "unwind-cxx.h"
 
+#if _GLIBCXX_HOSTED
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 # define writestr(str)	write(2, str, sizeof(str) - 1)
@@ -41,6 +42,9 @@
 #else
 # include <cstdio>
 # define writestr(str)	std::fputs(str, stderr)
+#endif
+#else
+# define writestr(str) /* Empty */
 #endif
 
 extern "C" void

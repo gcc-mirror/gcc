@@ -33,7 +33,14 @@
 
 using std::new_handler;
 using std::bad_alloc;
+#if _GLIBCXX_HOSTED
 using std::malloc;
+#else
+// In a freestanding environment, "malloc" may not be available.  In
+// that case, it may make sense not to define "operator new" at all.
+// For now, we assume that "malloc" will work.
+extern "C" void *malloc (std::size_t);
+#endif
 
 extern new_handler __new_handler;
 

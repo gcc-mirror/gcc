@@ -28,6 +28,7 @@
 // the GNU General Public License.
 
 #include <bits/c++config.h>
+#if _GLIBCXX_HOSTED
 #include <cstdlib>
 #include <exception>
 #include <exception_defines.h>
@@ -96,3 +97,4 @@ namespace __gnu_cxx
     abort();
   }
 } // namespace __gnu_cxx
+#endif
