@@ -686,9 +686,9 @@ insert_save_restore (insn, save_p, regno, insn_mode, maxrestore)
 	  if (regno_save_mem[regno][i] != 0)
 	    for (j = 0; j < i; j++)
 	      {
-		if (! call_used_regs[regno + j] && call_fixed_regs[regno + j]
-		    && ! TEST_HARD_REG_BIT (hard_regs_live, regno + j)
-		    && TEST_HARD_REG_BIT (hard_regs_saved, regno + j))
+		if (! call_used_regs[regno + j] || call_fixed_regs[regno + j]
+		    || ! TEST_HARD_REG_BIT (hard_regs_live, regno + j)
+		    || TEST_HARD_REG_BIT (hard_regs_saved, regno + j))
 		  ok = 0;
 	      }
 	  else 
