@@ -3566,6 +3566,13 @@ print_operand (file, x, code)
 
 	  /* Like above, but reverse condition */
 	case 'c':
+	  /* Check to see if argument to %c is really a constant
+	     and not a condition code which needs to be reversed.  */
+	  if (GET_RTX_CLASS (GET_CODE (x)) != '<')
+	  {
+	    output_operand_lossage ("operand is neither a constant nor a condition code, invalid operand code 'c'");
+	    return;
+	  }
 	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)), 1, 0, file);
 	  return;
 	case 'f':

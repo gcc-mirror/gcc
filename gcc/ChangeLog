@@ -1,3 +1,10 @@
+2001-11-29  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR other/4932
+	* config/i386/i386.c (print_operand):  Verify that the
+	  argument to %c is a constant and not a conditional which
+	  needs to be reversed.
+
 2001-11-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gcc.c (set_input): Export.
