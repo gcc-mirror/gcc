@@ -1,3 +1,7 @@
+1999-12-31  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.am (INCLUDES): Added -I$(top_srcdir)/src.
+
 1999-09-01  Tom Tromey  <tromey@cygnus.com>
 
 	* include/ffi.h.in: Removed PACKAGE and VERSION defines and
