@@ -1,3 +1,6 @@
+2002-11-28  Jonathan Wakely  <redi@gcc.gnu.org>
+	* docs/html/faq/index.html: Add tip about a namespace for extensions.
+
 2002-11-28  Paolo Carlini  <pcarlini@unitus.it>
             Nathan Myers  <ncm@cantrip.org>
 

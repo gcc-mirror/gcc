@@ -877,6 +877,34 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          that of other headers whose directories are not searched directly,
          e.g., <code>&lt;sys/stat.h&gt;</code>, <code>&lt;X11/Xlib.h&gt;</code>.
       </p>
+
+      <p>The extensions are no longer in the global or <code>std</code>
+         namespaces, instead they are declared in the <code>__gnu_cxx</code>
+         namespace. For maximum portability, consider defining a namespace
+         alias to use to talk about extensions, e.g.:
+      </p>
+      <pre>
+      #ifdef __GNUC__
+      #if __GNUC__ &lt; 3
+        #include &lt;hash_map.h&gt;
+        namespace Sgi { using ::hash_map; }; // inherit globals
+      #else
+        #include &lt;ext/hash_map&gt;
+        #if __GNUC_MINOR__ == 0
+          namespace Sgi = std;               // GCC 3.0
+        #else
+          namespace Sgi = ::__gnu_cxx;       // GCC 3.1 and later
+        #endif
+      #endif
+      #else      // ...  there are other compilers, right?
+        namespace Sgi = std;
+      #endif
+
+      Sgi::hash_map&lt;int,int&gt; my_map; </pre>
+      <p>This is a bit cleaner than defining typedefs for all the
+         instantiations you might need.
+      </p>
+
       <p>Extensions to the library have
          <a href="../ext/howto.html">their own page</a>.
       </p>
