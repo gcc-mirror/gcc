@@ -10,11 +10,11 @@ public:
 };
 
 class miami : public bahamian
-{
+{ // WARNING - // WARNING -
 public:
    miami ();
    ~miami ();
-}; // WARNING - // WARNING -        
+};
 
 
 

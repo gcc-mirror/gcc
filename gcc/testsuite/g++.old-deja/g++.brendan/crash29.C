@@ -7,9 +7,9 @@ union Value
 };
 
 struct GlobalAddress
-{
+{// ERROR -  candidates .*
 	GlobalAddress(Value *nvar){}// ERROR - .*
-};// ERROR -  candidates .*
+};
 
 int
 main()

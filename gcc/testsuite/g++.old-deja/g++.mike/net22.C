@@ -4,8 +4,8 @@ public:
   Parent( char *s ) {}
 };
 
-class Child : public Parent {
-};				// ERROR - called
+class Child : public Parent {		// ERROR - called
+};
 
 int main() {
   Child c( "String initializer" );	// ERROR - bad

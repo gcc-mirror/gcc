@@ -9,18 +9,18 @@ protected:
   friend class D2;
 };
 
-class D : public B {
+class D : public B { // ERROR - within this context
 public:
   using B::a;
   using B::b;
-}; // ERROR - within this context
+};
 
-class D2 : public B {
+class D2 : public B { // ERROR - conflicting access specifications
 public:
   using B::a;
   using B::b;
 
 private:
   using B::b; 
-}; // ERROR - conflicting access specifications
+};
  

@@ -15,10 +15,10 @@ friend class   D;
   unsigned      counter;
 };
 
-class   D {
+class   D {		//WARNING - only private members
 
   int                   ins( B*&);
-};                    //WARNING - only private members
+};
 
 int
 D::ins( B*& tempN)

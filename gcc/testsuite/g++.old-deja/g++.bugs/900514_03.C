@@ -13,12 +13,12 @@
 
 struct t_0_st_0;
 
-struct t_0_st_1 {
+struct t_0_st_1 { // ERROR - 
   int member;
 
   t_0_st_1 (t_0_st_0&);// ERROR - 
   t_0_st_1 ();
-};// ERROR - 
+};
 
 struct t_0_st_0 {
   int member;
@@ -80,12 +80,12 @@ void t_1_local_init ()
 
 struct t_2_st_0;
 
-struct t_2_st_1 {
+struct t_2_st_1 {		// ERROR - candidate
   int member;
 
   t_2_st_1 (t_2_st_0);		// ERROR - candidate
   t_2_st_1 ();
-};				// ERROR - candidate
+};
 
 struct t_2_st_0 {
   int member;

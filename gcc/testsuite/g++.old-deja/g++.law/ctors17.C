@@ -9,10 +9,10 @@
 
 #include <fstream.h>
 
-class X : public ifstream {
+class X : public ifstream { // ERROR - candidate
     public:
       X(int a, char *b) {} // ERROR - candidate
-}; // ERROR - candidate
+};
 int main()
 {
     X *y = new X(10, "123");

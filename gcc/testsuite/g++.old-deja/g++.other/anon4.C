@@ -10,7 +10,7 @@
 struct A
 {
   union
-  {
+  {  // ERROR - anon union cannot have member fns
     void bad();
-  };  // ERROR - anon union cannot have member fns
+  };
 };

@@ -123,10 +123,10 @@ struct B1 : A
 };
 
 struct C : A, A1
-{
+{ // ERROR - looser throw - A::~A()
   virtual void foo() throw(int);    // ERROR - looser throw - A::foo
   virtual void bar() throw(int);    // ERROR - looser throw - A1::bar
-}; // ERROR - looser throw - A::~A()
+};
 
 struct D : A, A1
 {

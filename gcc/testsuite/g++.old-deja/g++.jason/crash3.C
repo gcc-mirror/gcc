@@ -3,9 +3,9 @@
 // Build don't link:
 
 struct Node
-{
+{				// ERROR - 
   Node* child[2];
-};				// ERROR - 
+};
 
 void bug(int i)
 {
