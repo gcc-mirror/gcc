@@ -774,7 +774,7 @@ extern int current_function_pretend_args_size;
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     if (INTVAL (RTX) < 0x2000 && INTVAL (RTX) >= -0x2000) return 1; \
   case CONST:							\
