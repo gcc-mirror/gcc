@@ -2,6 +2,8 @@ Sat Dec  6 22:22:22 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* cccp.c: Fix typo brought over in merge.
 
+	* Merge in changes from from gcc-2.8.
+
 Mon Nov  3 05:45:32 1997  Philippe De Muyter  <phdm@macqel.be>
 
 	* m68k.c: Include tree.h for dwarf2out_cfi_label.
