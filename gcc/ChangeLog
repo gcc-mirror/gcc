@@ -1,3 +1,7 @@
+Wed Feb 10 23:28:28 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* reorg.c: Finish deleting half-deleted comment.
+
 Wed Feb 10 17:12:21 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* emit-rtl.c (operand_subword): Sign extend REAL_VALUE_TO_TARGET_SINGLE
