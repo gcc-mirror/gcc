@@ -1,5 +1,10 @@
 2004-04-29  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/mips/mips.md, config/mips/sb1.md,
+	config/rs6000/rs6000.c: Fix comment typos.
+
+2004-04-29  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* builtins.c, cgraph.c, cgraphunit.c, final.c, fold-const.c:
 	Fix comment typos.
 

@@ -5236,7 +5236,7 @@ dsrl\t%3,%3,1\n\
 
 ;; The HI and LO registers are not truly independent.  If we move an mthi
 ;; instruction before an mflo instruction, it will make the result of the
-;; mflo unpredicatable.  The same goes for mtlo and mfhi.
+;; mflo unpredictable.  The same goes for mtlo and mfhi.
 ;;
 ;; We cope with this by making the mflo and mfhi patterns use both HI and LO.
 ;; Operand 1 is the register we want, operand 2 is the other one.
