@@ -5794,10 +5794,14 @@ output_parallel_addb (operands, length)
     }
 }
 
-/* Return nonzero if INSN (a jump insn) immediately follows a call.  This
-   is used to discourage creating parallel movb/addb insns since a jump
-   which immediately follows a call can execute in the delay slot of the
-   call.  */
+/* Return nonzero if INSN (a jump insn) immediately follows a call to
+   a named function.  This is used to discourage creating parallel movb/addb
+   insns since a jump which immediately follows a call can execute in the
+   delay slot of the call.
+
+   It is also used to avoid filling the delay slot of a jump which
+   immediately follows a call since the jump can usually be eliminated
+   completely by modifying RP in the delay slot of the call.  */
    
 following_call (insn)
      rtx insn;
@@ -5809,7 +5813,8 @@ following_call (insn)
 
   /* Check for CALL_INSNs and millicode calls.  */
   if (insn
-      && (GET_CODE (insn) == CALL_INSN
+      && ((GET_CODE (insn) == CALL_INSN
+	   && get_attr_type (insn) != TYPE_DYNCALL)
 	  || (GET_CODE (insn) == INSN
 	      && GET_CODE (PATTERN (insn)) != SEQUENCE
 	      && GET_CODE (PATTERN (insn)) != USE
