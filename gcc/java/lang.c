@@ -131,10 +131,6 @@ const char *current_encoding = NULL;
 /* When nonzero, print extra version information.  */
 static int v_flag = 0;
 
-/* Set nonzero if the user specified -finline-functions on the command
-   line.  */
-int flag_really_inline = 0;
-
 JCF *current_jcf;
 
 /* Variable controlling how dependency tracking is enabled in
@@ -322,11 +318,6 @@ java_handle_option (size_t scode, const char *arg, int value)
       jcf_path_extdirs_arg (arg);
       break;
 
-    case OPT_finline_functions:
-      flag_inline_functions = value;
-      flag_really_inline = value;
-      break;
-
     case OPT_foutput_class_dir_:
       jcf_write_base_directory = arg;
       break;
@@ -354,9 +345,6 @@ java_init (void)
   extern int flag_minimal_debug;
   flag_minimal_debug = 0;
 #endif
-
-  if (flag_inline_functions)
-    flag_inline_trees = 1;
 
   /* FIXME: Indirect dispatch isn't yet compatible with static class
      init optimization.  */
@@ -603,10 +591,7 @@ java_post_options (const char **pfilename)
   if (!flag_no_inline)
     flag_no_inline = 1;
   if (flag_inline_functions)
-    {
-      flag_inline_trees = 2;
-      flag_inline_functions = 0;
-    }
+    flag_inline_trees = 2;
 
   /* Open input file.  */
 

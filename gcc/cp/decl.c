@@ -2990,10 +2990,7 @@ cxx_init_decl_processing (void)
       flag_no_inline = 1;
     }
   if (flag_inline_functions)
-    {
-      flag_inline_trees = 2;
-      flag_inline_functions = 0;
-    }
+    flag_inline_trees = 2;
 
   /* Force minimum function alignment if using the least significant
      bit of function pointers to store the virtual bit.  */

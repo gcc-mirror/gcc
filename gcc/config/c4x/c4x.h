@@ -29,14 +29,12 @@
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
     {						\
-      /* ??? HACK.  We shouldn't have flag_inline_trees at all.  */ \
       extern int flag_inline_trees;		\
       if (!TARGET_SMALL)			\
 	builtin_define ("_BIGMODEL");		\
       if (!TARGET_MEMPARM)			\
 	builtin_define ("_REGPARM");		\
-      if (flag_inline_functions			\
-	  || flag_inline_trees)			\
+      if (flag_inline_functions)		\
 	builtin_define ("_INLINE");		\
       if (TARGET_C3X)				\
 	{					\
