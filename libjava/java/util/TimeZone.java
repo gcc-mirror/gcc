@@ -134,7 +134,8 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
   /* initialize this static field lazily to overhead if
    * it is not needed: 
    */
-  private static synchronized HashMap timezones()
+  // Package-private to avoid a trampoline.
+  static synchronized HashMap timezones()
   {
     if (timezones0 == null) 
       {

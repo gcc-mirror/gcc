@@ -1,5 +1,17 @@
 2004-11-06  Tom Tromey  <tromey@redhat.com>
 
+	* java/net/URLClassLoader.java (URLClassLoader): Now
+	package-private.
+	* java/nio/charset/CoderResult.java (CoderResult): Now
+	package-private.
+	(get): Likewise.
+	(Cache): Likewise.  Don't synchronize on `this'.
+	* java/rmi/server/RMIClassLoader.java (MyClassLoader): Now
+	package-private.
+	* java/util/TimeZone.java (timezones): Now package-private.
+
+2004-11-06  Tom Tromey  <tromey@redhat.com>
+
 	* java/security/Permissions.java (perms): Now package-private.
 	* java/security/UnresolvedPermission.java (permissions): Now
 	package-private.
