@@ -44,6 +44,11 @@ extern struct cpp_reader* parse_in;
 #define HANDLE_PRAGMA_PACK 1
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
 
+/* It's safe to always leave visibility pragma enabled as if
+   visibility is not supported on the host OS platform the
+   statements are ignored.  */
+#define HANDLE_PRAGMA_VISIBILITY 1
+
 extern void init_pragma (void);
 
 /* Front-end wrapper for pragma registration to avoid dragging

@@ -182,7 +182,8 @@ in the following sections.
 -fno-optional-diags  -fpermissive @gol
 -frepo  -fno-rtti  -fstats  -ftemplate-depth-@var{n} @gol
 -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
--fno-default-inline  -Wabi  -Wctor-dtor-privacy @gol
+-fno-default-inline  -fvisibility-inlines-hidden @gol
+-Wabi  -Wctor-dtor-privacy @gol
 -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wno-deprecated @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
@@ -696,7 +697,8 @@ See S/390 and zSeries Options.
 -fargument-alias  -fargument-noalias @gol
 -fargument-noalias-global  -fleading-underscore @gol
 -ftls-model=@var{model} @gol
--ftrapv  -fwrapv  -fbounds-check}
+-ftrapv  -fwrapv  -fbounds-check @gol
+-fvisibility}
 @end table
 
 @menu
@@ -1456,6 +1458,20 @@ Register destructors for objects with static storage duration with the
 This option is required for fully standards-compliant handling of static
 destructors, but will only work if your C library supports
 @code{__cxa_atexit}.
+
+@item -fvisibility-inlines-hidden
+@opindex fvisibility-inlines-hidden
+Causes all inlined methods to be marked with
+@code{__attribute__ ((visibility ("hidden")))} so that they do not
+appear in the export table of a DSO and do not require a PLT indirection
+when used within the DSO. Enabling this option can have a dramatic effect
+on load and link times of a DSO as it massively reduces the size of the
+dynamic export table when the library makes heavy use of templates. While
+it can cause bloating through duplication of code within each DSO where
+it is used, often the wastage is less than the considerable space occupied
+by a long symbol name in the export table which is typical when using
+templates and namespaces. For even more savings, combine with the
+@code{-fvisibility=hidden} switch.
 
 @item -fno-weak
 @opindex fno-weak
@@ -11630,6 +11646,54 @@ The @var{model} argument should be one of @code{global-dynamic},
 
 The default without @option{-fpic} is @code{initial-exec}; with
 @option{-fpic} the default is @code{global-dynamic}.
+
+@item -fvisibility=@var{default|internal|hidden|protected}
+@opindex fvisibility
+Set the default ELF image symbol visibility to the specified option - all
+symbols will be marked with this unless overrided within the code.
+Using this feature can very substantially improve linking and
+load times of shared object libraries, produce more optimised
+code, provide near-perfect API export and prevent symbol clashes.
+It is @strong{strongly} recommended that you use this in any shared objects
+you distribute.
+     
+Despite the nomenclature, @code{default} always means public ie;
+available to be linked against from outside the shared object.
+@code{protected} and @code{internal} are pretty useless in real-world
+usage so the only other commonly used option will be @code{hidden}.
+The default if -fvisibility isn't specified is @code{default} ie; make every
+symbol public - this causes the same behaviour as previous versions of
+GCC.
+     
+A good explanation of the benefits offered by ensuring ELF
+symbols have the correct visibility is given by ``How To Write
+Shared Libraries'' by Ulrich Drepper (which can be found at
+@w{@uref{http://people.redhat.com/~drepper/}}) - however a superior
+solution made possible by this option to marking things hidden when
+the default is public is to make the default hidden and mark things
+public. This is the norm with DLL's on Windows and with @option{-fvisibility=hidden}
+and @code{__attribute__ ((visibility("default")))} instead of
+@code{__declspec(dllexport)} you get almost identical semantics with
+identical syntax. This is a great boon to those working with
+cross-platform projects.
+
+For those adding visibility support to existing code, you may find
+@samp{#pragma GCC visibility} of use. This works by you enclosing
+the declarations you wish to set visibility for with (for example)
+@samp{#pragma GCC visibility push(hidden)} and
+@samp{#pragma GCC visibility pop}. These can be nested up to sixteen
+times. Bear in mind that symbol visibility should be viewed @strong{as
+part of the API interface contract} and thus all new code should
+always specify visibility when it is not the default ie; declarations
+only for use within the local DSO should @strong{always} be marked explicitly
+as hidden as so to avoid PLT indirection overheads - making this
+abundantly clear also aids readability and self-documentation of the code.
+Note that due to ISO C++ specification requirements, operator new and
+operator delete must always be of default visibility.
+
+An overview of these techniques, their benefits and how to use them
+is at @w{@uref{http://www.nedprod.com/programs/gccvisibility.html}}.
+
 @end table
 
 @c man end

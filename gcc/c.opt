@@ -683,6 +683,10 @@ fuse-cxa-atexit
 C++ ObjC++
 Use __cxa_atexit to register destructors
 
+fvisibility-inlines-hidden
+C++
+Marks all inlined methods as having hidden visibility
+
 fvtable-gc
 C++ ObjC++
 Discard unused virtual functions

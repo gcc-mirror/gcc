@@ -607,6 +607,10 @@ build_vtable (tree class_type, tree name, tree vtable_type)
   DECL_ALIGN (decl) = MAX (TYPE_ALIGN (double_type_node),
 			   DECL_ALIGN (decl));
 
+  /* The vtable's visibility is the class visibility.  There is no way
+     to override the visibility for just the vtable. */
+  DECL_VISIBILITY (decl) = CLASSTYPE_VISIBILITY (class_type);
+  DECL_VISIBILITY_SPECIFIED (decl) = CLASSTYPE_VISIBILITY_SPECIFIED (class_type);
   import_export_vtable (decl, class_type, 0);
 
   return decl;
@@ -2914,7 +2918,25 @@ check_field_decls (tree t, tree *access_decls,
 	continue;
 	  
       if (TREE_CODE (x) == CONST_DECL || TREE_CODE (x) == VAR_DECL)
-	continue;
+	{
+	  /* Apply the class's visibility attribute to static members
+	     which do not have a visibility attribute. */
+	  if (! lookup_attribute ("visibility", DECL_ATTRIBUTES (x)))
+            {
+              if (visibility_options.inlines_hidden && DECL_INLINE (x))
+                {
+                  DECL_VISIBILITY (x) = VISIBILITY_HIDDEN;
+                  DECL_VISIBILITY_SPECIFIED (x) = 1;
+                }
+              else
+                {
+                  DECL_VISIBILITY (x) = CLASSTYPE_VISIBILITY (current_class_type);
+                  DECL_VISIBILITY_SPECIFIED (x) = CLASSTYPE_VISIBILITY_SPECIFIED (current_class_type);
+                }
+            }
+
+	  continue;
+	}
 
       /* Now it can only be a FIELD_DECL.  */
 
@@ -3669,6 +3691,22 @@ check_methods (tree t)
       check_for_override (x, t);
       if (DECL_PURE_VIRTUAL_P (x) && ! DECL_VINDEX (x))
 	cp_error_at ("initializer specified for non-virtual method `%D'", x);
+ 
+      /* Apply the class's visibility attribute to methods which do
+	 not have a visibility attribute. */
+      if (! lookup_attribute ("visibility", DECL_ATTRIBUTES (x)))
+        {
+          if (visibility_options.inlines_hidden && DECL_INLINE (x))
+            {
+              DECL_VISIBILITY (x) = VISIBILITY_HIDDEN;
+              DECL_VISIBILITY_SPECIFIED (x) = 1;
+            }
+          else
+            {
+              DECL_VISIBILITY (x) = CLASSTYPE_VISIBILITY (current_class_type);
+              DECL_VISIBILITY_SPECIFIED (x) = CLASSTYPE_VISIBILITY_SPECIFIED (current_class_type);
+            }
+        }
 
       /* The name of the field is the original field name
 	 Save this in auxiliary field for later overloading.  */
@@ -7763,3 +7801,4 @@ cp_fold_obj_type_ref (tree ref, tree known_type)
 
   return build_address (fndecl);
 }
+

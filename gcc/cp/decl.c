@@ -1866,17 +1866,34 @@ duplicate_decls (tree newdecl, tree olddecl)
   DECL_COMMON (newdecl) = DECL_COMMON (olddecl);
   COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
-  /* If either declaration has a nondefault visibility, use it.  */
-  if (DECL_VISIBILITY (olddecl) != VISIBILITY_DEFAULT)
+  /* Warn about conflicting visibility specifications.  */
+  if (DECL_VISIBILITY_SPECIFIED (olddecl) && DECL_VISIBILITY_SPECIFIED (newdecl)
+      && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
     {
-      if (DECL_VISIBILITY (newdecl) != VISIBILITY_DEFAULT
-	  && DECL_VISIBILITY (newdecl) != DECL_VISIBILITY (olddecl))
-	{
-	  warning ("%J'%D': visibility attribute ignored because it",
-		   newdecl, newdecl);
-	  warning ("%Jconflicts with previous declaration here", olddecl);
-	}
+      warning ("%J'%D': visibility attribute ignored because it",
+        newdecl, newdecl);
+      warning ("%Jconflicts with previous declaration here", olddecl);
+    }
+  /* Choose the declaration which specified visibility.  */
+  if (DECL_VISIBILITY_SPECIFIED (olddecl))
+    {
       DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
+      DECL_VISIBILITY_SPECIFIED (newdecl) = 1;
+    }
+  /* If it's a definition of a global operator new or operator
+     delete, it must be default visibility.  */
+  if (NEW_DELETE_OPNAME_P (DECL_NAME (newdecl)) && DECL_INITIAL (newdecl) != NULL_TREE)
+    {
+      if (!DECL_FUNCTION_MEMBER_P (newdecl) && VISIBILITY_DEFAULT != DECL_VISIBILITY (newdecl))
+        {
+          warning ("%J`%D': ignoring non-default symbol",
+            newdecl, newdecl);
+          warning ("%Jvisibility on global operator new or delete", newdecl);
+          DECL_VISIBILITY (olddecl) = VISIBILITY_DEFAULT;
+          DECL_VISIBILITY_SPECIFIED (olddecl) = 1;
+          DECL_VISIBILITY (newdecl) = VISIBILITY_DEFAULT;
+          DECL_VISIBILITY_SPECIFIED (newdecl) = 1;
+        }
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
