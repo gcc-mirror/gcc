@@ -1473,7 +1473,8 @@ override_options (void)
 
   /* If the architecture always has an FPU, turn off NO_FANCY_MATH_387,
      since the insns won't need emulation.  */
-  if (x86_arch_always_fancy_math_387 & (1 << ix86_arch))
+  if (!(target_flags_explicit & MASK_NO_FANCY_MATH_387)
+      && (x86_arch_always_fancy_math_387 & (1 << ix86_arch)))
     target_flags &= ~MASK_NO_FANCY_MATH_387;
 
   /* Likewise, if the target doesn't have a 387, or we've specified
@@ -1489,15 +1490,33 @@ override_options (void)
   if (TARGET_SSE2)
     target_flags |= MASK_SSE;
 
+  /* Turn on MMX builtins for -msse.  */
+  if (TARGET_SSE)
+    {
+      target_flags |= MASK_MMX & ~target_flags_explicit;
+      x86_prefetch_sse = true;
+    }
+
+  /* Turn on MMX builtins for 3Dnow.  */
+  if (TARGET_3DNOW)
+    target_flags |= MASK_MMX;
+
   if (TARGET_64BIT)
     {
       if (TARGET_ALIGN_DOUBLE)
 	error ("-malign-double makes no sense in the 64bit mode");
       if (TARGET_RTD)
 	error ("-mrtd calling convention not supported in the 64bit mode");
-      /* Enable by default the SSE and MMX builtins.  */
-      target_flags |= (MASK_SSE2 | MASK_SSE | MASK_MMX | MASK_128BIT_LONG_DOUBLE);
-      ix86_fpmath = FPMATH_SSE;
+
+      /* Enable by default the SSE and MMX builtins.  Do allow the user to
+	 explicitly disable any of these.  In particular, disabling SSE and
+	 MMX for kernel code is extremely useful.  */
+      target_flags
+	|= ((MASK_SSE2 | MASK_SSE | MASK_MMX | MASK_128BIT_LONG_DOUBLE)
+	    & ~target_flags_explicit);
+
+      if (TARGET_SSE)
+	ix86_fpmath = FPMATH_SSE;
      }
   else
     {
@@ -1546,23 +1565,6 @@ override_options (void)
   if (! (ix86_fpmath & FPMATH_387))
     target_flags |= MASK_NO_FANCY_MATH_387;
 
-  /* It makes no sense to ask for just SSE builtins, so MMX is also turned
-     on by -msse.  */
-  if (TARGET_SSE)
-    {
-      target_flags |= MASK_MMX;
-      x86_prefetch_sse = true;
-    }
-
-  /* If it has 3DNow! it also has MMX so MMX is also turned on by -m3dnow */
-  if (TARGET_3DNOW)
-    {
-      target_flags |= MASK_MMX;
-      /* If we are targeting the Athlon architecture, enable the 3Dnow/MMX
-	 extensions it adds.  */
-      if (x86_3dnow_a & (1 << ix86_arch))
-	target_flags |= MASK_3DNOW_A;
-    }
   if ((x86_accumulate_outgoing_args & TUNEMASK)
       && !(target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
       && !optimize_size)
@@ -1576,8 +1578,9 @@ override_options (void)
     internal_label_prefix_len = p - internal_label_prefix;
     *p = '\0';
   }
-  /* When scheduling description is not available, disable scheduler pass so it
-     won't slow down the compilation and make x87 code slower.  */
+
+  /* When scheduling description is not available, disable scheduler pass
+     so it won't slow down the compilation and make x87 code slower.  */
   if (!TARGET_SCHEDULE)
     flag_schedule_insns_after_reload = flag_schedule_insns = 0;
 }
@@ -2542,6 +2545,22 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
     return NULL;
   if (needed_intregs > nintregs || needed_sseregs > nsseregs)
     return NULL;
+
+  /* We allowed the user to turn off SSE for kernel mode.  Don't crash if
+     some less clueful developer tries to use floating-point anyway.  */
+  if (needed_sseregs && !TARGET_SSE)
+    {
+      static bool issued_error;
+      if (!issued_error)
+	{
+	  issued_error = true;
+	  if (in_return)
+	    error ("SSE register return with SSE disabled");
+	  else
+	    error ("SSE register argument with SSE disabled");
+	}
+      return NULL;
+    }
 
   /* First construct simple cases.  Avoid SCmode, since we want to use
      single register to pass this type.  */
