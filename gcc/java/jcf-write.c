@@ -1099,7 +1099,7 @@ generate_bytecode_conditional (exp, true_label, false_label,
 	case REAL_TYPE:
 	  generate_bytecode_insns (exp0, STACK_TARGET, state);
 	  generate_bytecode_insns (exp1, STACK_TARGET, state);
-	  if (op == OPCODE_if_icmplt || op == op == OPCODE_if_icmple)
+	  if (op == OPCODE_if_icmplt || op == OPCODE_if_icmple)
 	    opf = OPCODE_fcmpg;
 	  else
 	    opf = OPCODE_fcmpl;
