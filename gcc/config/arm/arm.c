@@ -701,8 +701,8 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 
     case IOR:
     case XOR:
-      /* If we have IOR or XOR, and the inverse of the constant can be loaded
-	 in a single instruction, and we can find a temporary to put it in,
+      /* If we have IOR or XOR, and the constant can be loaded in a
+	 single instruction, and we can find a temporary to put it in,
 	 then this can be done in two instructions instead of 3-4.  */
       if (subtargets
 	  || (reload_completed && ! reg_mentioned_p (target, source)))
@@ -713,8 +713,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 		{
 		  rtx sub = subtargets ? gen_reg_rtx (mode) : target;
 
-		  emit_insn (gen_rtx (SET, VOIDmode, sub,
-				      GEN_INT (ARM_SIGN_EXTEND (~ val))));
+		  emit_insn (gen_rtx (SET, VOIDmode, sub, GEN_INT (val)));
 		  emit_insn (gen_rtx (SET, VOIDmode, target, 
 				      gen_rtx (code, mode, source, sub)));
 		}
