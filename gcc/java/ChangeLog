@@ -1,3 +1,15 @@
+2000-07-05  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (PARSE_DIR): New macro.
+	(PARSE_RELDIR): Likewise.
+	(PARSE_C): Likewise.
+	(PARSE_SCAN_C): Likewise.
+	($(PARSE_C)): New target.
+	($(PARSE_SCAN_C)): Likewise.
+	(SET_BISON): New macro.
+	(BISONFLAGS): Likewise.
+	(JAVABISONFLAGS): Likewise.
+
 2000-07-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
         * gjavah.c (HANDLE_METHOD): Call print_method_info with a NULL stream

@@ -112,6 +112,28 @@ gcjh$(exeext): $(GCJH_SOURCES) $(LIBDEPS) $(TREE_H)
 
 $(INTL_TARGETS): $(srcdir)/java/parse.c $(srcdir)/java/parse-scan.c
 
+# Separating PARSE_DIR from PARSE_RELDIR lets us easily change the
+# code to support building parse.c in the build directory, at some
+# expense in readability.
+# This code must be kept in sync with Makefile.in.
+PARSE_DIR = $(srcdir)/java
+PARSE_RELDIR = .
+PARSE_C = $(PARSE_DIR)/parse.c
+PARSE_SCAN_C = $(PARSE_DIR)/parse-scan.c
+
+SET_BISON = here=`pwd`; sdir=`cd $(srcdir) && pwd`; if test -f ../bison; then bison="$$here/../bison/bison -L $$sdir"; else bison=bison; fi
+BISONFLAGS =
+JAVABISONFLAGS = --name-prefix=java_
+
+$(PARSE_C):  $(srcdir)/java/parse.y
+	$(SET_BISON); \
+	cd $(PARSE_DIR) && $$bison -t $(BISONFLAGS) $(JAVABISONFLAGS) \
+	    -o parse.c $(PARSE_RELDIR)/parse.y
+$(PARSE_SCAN_C):  $(srcdir)/java/parse-scan.y
+	$(SET_BISON); \
+	cd $(PARSE_DIR) && $$bison -t $(BISONFLAGS) -o parse-scan.c \
+	    $(PARSE_RELDIR)/parse-scan.y
+
 # This must be kept in sync with dependencies in Makefile.in.
 JV_SCAN_SOURCES = $(srcdir)/java/parse-scan.y $(srcdir)/java/lex.c \
        $(srcdir)/java/parse.h $(srcdir)/java/lex.h $(srcdir)/java/jv-scan.c
