@@ -28,6 +28,22 @@ Boston, MA 02111-1307, USA.  */
 #include <varargs.h>
 #endif
 
+/*
+
+@deftypefn Extension int asprintf (char **@var{resptr}, char *@var{format}, ...)
+
+Like @code{sprintf}, but instead of passing a pointer to a buffer, you
+pass a pointer to a pointer.  This function will compute the size of
+the buffer needed, allocate memory with @code{malloc}, and store a
+pointer to the allocated memory in @code{*@var{resptr}}.  The value
+returned is the same as @code{sprintf} would return.  If memory could
+not be allocated, zero is returned and @code{NULL} is stored in
+@code{*@var{resptr}}.
+
+@end deftypefn
+
+*/
+
 int
 asprintf VPARAMS ((char **buf, const char *fmt, ...))
 {

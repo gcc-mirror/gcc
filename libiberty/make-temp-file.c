@@ -83,6 +83,17 @@ static const char vartmp[] =
 
 static char *memoized_tmpdir;
 
+/*
+
+@deftypefn Replacement char* choose_tmpdir ()
+
+Returns a pointer to a directory path suitable for creating temporary
+files in.
+
+@end deftypefn
+
+*/
+
 char *
 choose_tmpdir ()
 {
@@ -122,9 +133,17 @@ choose_tmpdir ()
   return tmpdir;
 }
 
-/* Return a temporary file name (as a string) or NULL if unable to create
-   one.  SUFFIX is a suffix to append to the file name.  The string is
-   malloced, and the temporary file has been created.  */
+/*
+
+@deftypefn Replacement char* make_temp_file (const char *@var{suffix})
+
+Return a temporary file name (as a string) or @code{NULL} if unable to
+create one.  @var{suffix} is a suffix to append to the file name.  The
+string is malloced, and the temporary file has been created.
+
+@end deftypefn
+
+*/
 
 char *
 make_temp_file (suffix)

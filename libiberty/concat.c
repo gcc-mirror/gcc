@@ -21,24 +21,14 @@ Boston, MA 02111-1307, USA.  */
 
 /*
 
-NAME
+@deftypefn Extension char* concat (char *@var{s1}, char *@var{s2}, ..., @code{NULL})
 
-	concat -- concatenate a variable number of strings
+Concatenate zero or more of strings and return the result in freshly
+xmalloc'd memory.  Returns @code{NULL} if insufficient memory is
+available.  The argument list is terminated by the first @code{NULL}
+pointer encountered.  Pointers to empty strings are ignored.
 
-SYNOPSIS
-
-	#include <varargs.h>
-
-	char *concat (s1, s2, s3, ..., NULL)
-
-DESCRIPTION
-
-	Concatenate a variable number of strings and return the result
-	in freshly malloc'd memory.
-
-	Returns NULL if insufficient memory is available.  The argument
-	list is terminated by the first NULL pointer encountered.  Pointers
-	to empty strings are ignored.
+@end deftypefn
 
 NOTES
 
@@ -50,6 +40,7 @@ NOTES
 	deal with low memory situations itself, it should supply an xmalloc
 	that just directly invokes malloc and blindly returns whatever
 	malloc returns.
+
 */
 
 
@@ -114,6 +105,8 @@ vconcat_copy (dst, first, args)
   return dst;
 }
 
+/* @undocumented concat_length */
+
 unsigned long
 concat_length VPARAMS ((const char *first, ...))
 {
@@ -126,6 +119,8 @@ concat_length VPARAMS ((const char *first, ...))
 
   return length;
 }
+
+/* @undocumented concat_copy */
 
 char *
 concat_copy VPARAMS ((char *dst, const char *first, ...))
@@ -143,6 +138,8 @@ concat_copy VPARAMS ((char *dst, const char *first, ...))
 }
 
 char *libiberty_concat_ptr;
+
+/* @undocumented concat_copy2 */
 
 char *
 concat_copy2 VPARAMS ((const char *first, ...))
@@ -174,6 +171,23 @@ concat VPARAMS ((const char *first, ...))
 
   return newstr;
 }
+
+/*
+
+@deftypefn Extension char* reconcat (char *@var{optr}, char *@var{s1}, ..., @code{NULL})
+
+Same as @code{concat}, except that if @var{optr} is not @code{NULL} it
+is freed after the string is created.  This is intended to be useful
+when you're extending an existing string or building up a string in a
+loop:
+
+@example
+  str = reconcat (str, "pre-", str, NULL);
+@end example
+
+@end deftypefn
+
+*/
 
 char *
 reconcat VPARAMS ((char *optr, const char *first, ...))

@@ -19,23 +19,22 @@ not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /*
-NAME
-	lbasename -- return pointer to last component of a pathname
 
-SYNOPSIS
-	const char *lbasename (const char *name)
+@deftypefn Replacement {const char*} lbasename (const char *@var{name})
 
-DESCRIPTION
-	Given a pointer to a string containing a typical pathname
-	(/usr/src/cmd/ls/ls.c for example), returns a pointer to the
-	last component of the pathname ("ls.c" in this case).  The
-	returned pointer is guaranteed to lie within the original
-	string.  This latter fact is not true of many vendor C
-	libraries, which return special strings or modify the passed
-	strings for particular input.
+Given a pointer to a string containing a typical pathname
+(@samp{/usr/src/cmd/ls/ls.c} for example), returns a pointer to the
+last component of the pathname (@samp{ls.c} in this case).  The
+returned pointer is guaranteed to lie within the original
+string.  This latter fact is not true of many vendor C
+libraries, which return special strings or modify the passed
+strings for particular input.
 
-	In particular, the empty string returns the same empty string,
-	and a path ending in '/' returns the empty string after it.
+In particular, the empty string returns the same empty string,
+and a path ending in @code{/} returns the empty string after it.
+
+@end deftypefn
+
 */
 
 #include "ansidecl.h"

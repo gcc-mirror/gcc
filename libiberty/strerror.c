@@ -563,7 +563,7 @@ init_error_tables ()
 /*
 
 
-@deftypefn Replacement int errno_max (void)
+@deftypefn Extension int errno_max (void)
 
 Returns the maximum @code{errno} value for which a corresponding
 symbolic name or message is available.  Note that in the case where we
@@ -599,7 +599,7 @@ errno_max ()
 
 /*
 
-@deftypefn Replacement char* strerror (int @var{errnoval})
+@deftypefn Supplemental char* strerror (int @var{errnoval})
 
 Maps an @code{errno} number to an error message string, the contents
 of which are implementation defined.  On systems which have the
@@ -608,7 +608,7 @@ strings will be the same as the ones used by @code{perror}.
 
 If the supplied error number is within the valid range of indices for
 the @code{sys_errlist}, but no message is available for the particular
-error number, then returns the string @samp{"Error @var{num}"}, where
+error number, then returns the string @samp{Error @var{num}}, where
 @var{num} is the error number.
 
 If the supplied error number is not a valid index into
@@ -667,7 +667,7 @@ strerror (errnoval)
 
 /*
 
-@deftypefn Replacement const char* strerrno (int @var{errnum})
+@deftypefn Replacement {const char*} strerrno (int @var{errnum})
 
 Given an error number returned from a system call (typically returned
 in @code{errno}), returns a pointer to a string containing the
@@ -675,7 +675,7 @@ symbolic name of that error number, as found in @code{<errno.h>}.
 
 If the supplied error number is within the valid range of indices for
 symbolic names, but no name is available for the particular error
-number, then returns the string @samp{"Error @var{num}"}, where @var{num}
+number, then returns the string @samp{Error @var{num}}, where @var{num}
 is the error number.
 
 If the supplied error number is not within the range of valid
@@ -727,7 +727,7 @@ strerrno (errnoval)
 
 /*
 
-@deftypefn Replacement int strtoerrno (const char *@var{name})
+@deftypefn Extension int strtoerrno (const char *@var{name})
 
 Given the symbolic name of a error number (e.g., @code{EACCES}), map it
 to an errno value.  If no translation is found, returns 0.

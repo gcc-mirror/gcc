@@ -150,6 +150,8 @@ static header *last_alloca_header = NULL;	/* -> last alloca header.  */
    caller, but that method cannot be made to work for some
    implementations of C, for example under Gould's UTX/32.  */
 
+/* @undocumented C_alloca */
+
 PTR
 C_alloca (size)
      size_t size;

@@ -64,53 +64,66 @@ static char *install_error_msg = "installation problem, cannot exec `%s'";
 
 /* pexecute: execute a program.
 
-   PROGRAM and ARGV are the arguments to execv/execvp.
+@deftypefn Extension int pexecute (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int flags)
 
-   THIS_PNAME is name of the calling program (i.e. argv[0]).
+Executes a program.
 
-   TEMP_BASE is the path name, sans suffix, of a temporary file to use
-   if needed.  This is currently only needed for MSDOS ports that don't use
-   GO32 (do any still exist?).  Ports that don't need it can pass NULL.
+@var{program} and @var{argv} are the arguments to
+@code{execv}/@code{execvp}.
 
-   (FLAGS & PEXECUTE_SEARCH) is non-zero if $PATH should be searched
-   (??? It's not clear that GCC passes this flag correctly).
-   (FLAGS & PEXECUTE_FIRST) is nonzero for the first process in chain.
-   (FLAGS & PEXECUTE_FIRST) is nonzero for the last process in chain.
-   FIRST_LAST could be simplified to only mark the last of a chain of processes
-   but that requires the caller to always mark the last one (and not give up
-   early if some error occurs).  It's more robust to require the caller to
-   mark both ends of the chain.
+@var{this_pname} is name of the calling program (i.e. @code{argv[0]}).
 
-   The result is the pid on systems like Unix where we fork/exec and on systems
-   like WIN32 and OS2 where we use spawn.  It is up to the caller to wait for
-   the child.
+@var{temp_base} is the path name, sans suffix, of a temporary file to
+use if needed.  This is currently only needed for MS-DOS ports that
+don't use @code{go32} (do any still exist?).  Ports that don't need it
+can pass @code{NULL}.
 
-   The result is the WEXITSTATUS on systems like MSDOS where we spawn and wait
-   for the child here.
+(@var{flags} & @code{PEXECUTE_SEARCH}) is non-zero if @code{$PATH} should be searched
+(??? It's not clear that GCC passes this flag correctly). (@var{flags} &
+@code{PEXECUTE_FIRST}) is nonzero for the first process in chain.
+(@var{flags} & @code{PEXECUTE_FIRST}) is nonzero for the last process
+in chain.  The first/last flags could be simplified to only mark the
+last of a chain of processes but that requires the caller to always
+mark the last one (and not give up early if some error occurs).
+It's more robust to require the caller to mark both ends of the chain.
 
-   Upon failure, ERRMSG_FMT and ERRMSG_ARG are set to the text of the error
-   message with an optional argument (if not needed, ERRMSG_ARG is set to
-   NULL), and -1 is returned.  `errno' is available to the caller to use.
+The result is the pid on systems like Unix where we
+@code{fork}/@code{exec} and on systems like WIN32 and OS/2 where we
+use @code{spawn}.  It is up to the caller to wait for the child.
 
-   pwait: cover function for wait.
+The result is the WEXITSTATUS on systems like MS-DOS where we
+@code{spawn} and wait for the child here.
 
-   PID is the process id of the task to wait for.
-   STATUS is the `status' argument to wait.
-   FLAGS is currently unused (allows future enhancement without breaking
-   upward compatibility).  Pass 0 for now.
+Upon failure, @var{errmsg_fmt} and @var{errmsg_arg} are set to the
+text of the error message with an optional argument (if not needed,
+@var{errmsg_arg} is set to @code{NULL}), and -1 is returned.
+@code{errno} is available to the caller to use.
 
-   The result is the pid of the child reaped,
-   or -1 for failure (errno says why).
+@end deftypefn
 
-   On systems that don't support waiting for a particular child, PID is
-   ignored.  On systems like MSDOS that don't really multitask pwait
-   is just a mechanism to provide a consistent interface for the caller.
+@deftypefn Extension int pwait (int @var{pid}, int *@var{status}, int @var{flags})
+
+Waits for a program started by @code{pexecute} to finish.
+
+@var{pid} is the process id of the task to wait for. @var{status} is
+the `status' argument to wait. @var{flags} is currently unused (allows
+future enhancement without breaking upward compatibility).  Pass 0 for now.
+
+The result is the pid of the child reaped, or -1 for failure
+(@code{errno} says why).
+
+On systems that don't support waiting for a particular child, @var{pid} is
+ignored.  On systems like MS-DOS that don't really multitask @code{pwait}
+is just a mechanism to provide a consistent interface for the caller.
+
+@end deftypefn
+
+@undocumented pfinish
 
    pfinish: finish generation of script
 
    pfinish is necessary for systems like MPW where a script is generated that
-   runs the requested programs.
-*/
+   runs the requested programs.  */
 
 #ifdef __MSDOS__
 
@@ -254,7 +267,7 @@ extern int _spawnvp ();
 /* This is a kludge to get around the Microsoft C spawn functions' propensity
    to remove the outermost set of double quotes from all arguments.  */
 
-const char * const *
+static const char * const *
 fix_argv (argvec)
      char **argvec;
 {

@@ -37,13 +37,21 @@ extern char *choose_tmpdir PARAMS ((void));
 #define TEMP_FILE "ccXXXXXX"
 #define TEMP_FILE_LEN (sizeof(TEMP_FILE) - 1)
 
-/* Return a prefix for temporary file names or NULL if unable to find one.
-   The current directory is chosen if all else fails so the program is
-   exited if a temporary directory can't be found (mktemp fails).
-   The buffer for the result is obtained with xmalloc. 
+/*
 
-   This function is provided for backwards compatability only.  It use
-   is not recommended.  */
+@deftypefn Extension char* choose_temp_base ()
+
+Return a prefix for temporary file names or @code{NULL} if unable to
+find one.  The current directory is chosen if all else fails so the
+program is exited if a temporary directory can't be found (@code{mktemp}
+fails).  The buffer for the result is obtained with @code{xmalloc}.
+
+This function is provided for backwards compatability only.  Its use is
+not recommended.
+
+@end deftypefn
+
+*/
 
 char *
 choose_temp_base ()

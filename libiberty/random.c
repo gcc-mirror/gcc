@@ -34,6 +34,24 @@
  * It was reworked for the GNU C Library by Roland McGrath.
  */
 
+/*
+
+@deftypefn Supplement {long int} random ()
+@deftypefnx Supplement void srandom (unsigned int @var{seed})
+@deftypefnx Supplement void* initstate (unsigned int @var{seed}, void *@var{arg_state}, unsigned long @var{n})
+@deftypefnx Supplement void* setstate (void *@var{arg_state})
+
+Random number functions.  @code{random} returns a random number in the
+range @code{0..LONG_MAX}.  @code{srandom} initializes the random
+number generator to some starting point determined by @var{seed}
+(else, the values returned by @code{random} are always the same for each
+run of the program).  @code{initstate} and @code{setstate} allow fine-grain
+control over the state of the random number generator.
+
+@end deftypefn
+
+*/
+
 #include <errno.h>
 
 #if 0

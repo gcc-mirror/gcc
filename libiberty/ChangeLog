@@ -1,3 +1,16 @@
+2001-10-15  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.in (TEXIFILES): Add fnmatch.txh.
+	(maint-undoc): New.
+	maint-tool: Add "undoc" tool.
+	* alloca.c, argv.c, asprintf.c, choose-temp.c, concat.c,
+	fdmatch.c, ffs.c, getruntime.c, insque.c, lbasename.c,
+	make-temp-file.c, mkstemps.c, pexecute.c, random.c, spaces.c,
+	strerror.s, strsignal.c, strtol.c, vasprintf.c: Add or update
+	documentation.
+	* fnmatch.txh: New.
+	* functions.texi: Regenerate.
+	
 2001-10-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* bcmp.c, setenv.c: Use "nonzero" instead of "non-zero".
