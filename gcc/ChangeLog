@@ -1,3 +1,8 @@
+Thu Jun 10 01:22:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (strength_reduce): Disable biv->giv translations and
+	giv recombination.  For the release branch only.
+
 Wed Jun  9 15:57:57 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000.md (movsi_got_internal_mem): Delete.

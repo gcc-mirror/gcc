@@ -4134,8 +4134,15 @@ strength_reduce (scan_start, end, loop_top, insn_count,
     n_extra_increment += bl->biv_count - 1;
 
   /* If the loop contains volatile memory references do not allow any
-     replacements to take place, since this could loose the volatile markers.  */
-  if (n_extra_increment  && ! loop_has_volatile)
+     replacements to take place, since this could loose the volatile
+     markers.
+
+     Disabled for the gcc-2.95 release.  There are still some problems with
+     giv recombination.  We have a patch from Joern which should fix those
+     problems.  But the patch is fairly complex and not really suitable for
+     the gcc-2.95 branch at this stage.  */
+  if (0 && n_extra_increment  && ! loop_has_volatile)
+
     {
       int nregs = first_increment_giv + n_extra_increment;
 
@@ -4740,7 +4747,13 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  VARRAY_GROW (reg_iv_type, nregs);
 	  VARRAY_GROW (reg_iv_info, nregs);
 	}
+#if 0
+      /* Disabled for the gcc-2.95 release.  There are still some problems with
+	 giv recombination.  We have a patch from Joern which should fix those
+	 problems.  But the patch is fairly complex and not really suitable for
+	 the gcc-2.95 branch at this stage.  */
       recombine_givs (bl, loop_start, loop_end, unroll_p);
+#endif
 
       /* Reduce each giv that we decided to reduce.  */
 
