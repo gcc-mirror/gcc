@@ -49,6 +49,8 @@ man page gfdl(7).
 @c man end
 @end ignore
 
+@c man begin COPYRIGHT
+
 (a) The FSF's Front-Cover Text is:
 
      A GNU Manual
@@ -58,6 +60,7 @@ man page gfdl(7).
      You have freedom to copy and modify this GNU Manual, like GNU
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
+@c man end
 @end ifinfo
 
 @titlepage
