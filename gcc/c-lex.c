@@ -230,7 +230,6 @@ cb_file_change (pfile, fc)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      const cpp_file_change *fc;
 {
-  /* Do the actions implied by the preceding numbers.  */
   if (fc->reason == FC_ENTER)
     {
       /* Don't stack the main buffer on the input stack.  */
@@ -284,7 +283,7 @@ cb_file_change (pfile, fc)
     }
 
   update_header_times (fc->to.filename);
-  in_system_header = fc->sysp;
+  in_system_header = fc->sysp != 0;
   input_filename = fc->to.filename;
   lineno = fc->to.lineno;	/* Do we need this?  */
 
