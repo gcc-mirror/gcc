@@ -24,6 +24,8 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 
 static int rtx_addr_can_trap_p	PROTO((rtx));
+static void reg_set_p_1		PROTO((rtx, rtx));
+static void reg_set_last_1	PROTO((rtx, rtx));
 
 
 /* Forward declarations */

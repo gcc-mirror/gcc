@@ -159,6 +159,12 @@ static void mark_constants		PROTO((rtx));
 static int output_addressed_constants	PROTO((tree));
 static void output_after_function_constants PROTO((void));
 static void output_constructor		PROTO((tree, int));
+#ifdef ASM_OUTPUT_BSS
+static void asm_output_bss		PROTO((FILE *, tree, char *, int, int));
+#endif
+#ifdef ASM_OUTPUT_ALIGNED_BSS
+static void asm_output_aligned_bss	PROTO((FILE *, tree, char *, int, int));
+#endif
 
 static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP

@@ -55,6 +55,7 @@ struct match {
   int early_clobber[MAX_RECOG_OPERANDS];
 };
 
+static int try_auto_increment PROTO((rtx, rtx, rtx, rtx, HOST_WIDE_INT, int));
 static int find_matches PROTO((rtx, struct match *));
 static int fixup_match_1 PROTO((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
 ;
