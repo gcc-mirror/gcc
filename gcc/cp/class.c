@@ -5864,6 +5864,15 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
   if (TREE_CODE (rhs) == BASELINK)
     rhs = BASELINK_FUNCTIONS (rhs);
 
+  /* If we are in a template, and have a NON_DEPENDENT_EXPR, we cannot
+     deduce any type information.  */
+  if (TREE_CODE (rhs) == NON_DEPENDENT_EXPR)
+    {
+      if (flags & tf_error)
+	error ("not enough type information");
+      return error_mark_node;
+    }
+
   /* We don't overwrite rhs if it is an overloaded function.
      Copying it would destroy the tree link.  */
   if (TREE_CODE (rhs) != OVERLOAD)
@@ -5904,14 +5913,15 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 
     case COMPONENT_REF:
       {
-	tree addr = instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
+	tree member = TREE_OPERAND (rhs, 1);
 
-	if (addr != error_mark_node
+	member = instantiate_type (lhstype, member, flags);
+	if (member != error_mark_node
 	    && TREE_SIDE_EFFECTS (TREE_OPERAND (rhs, 0)))
 	  /* Do not lose object's side effects.  */
-	  addr = build2 (COMPOUND_EXPR, TREE_TYPE (addr),
-			 TREE_OPERAND (rhs, 0), addr);
-	return addr;
+	  return build2 (COMPOUND_EXPR, TREE_TYPE (member),
+			 TREE_OPERAND (rhs, 0), member);
+	return member;
       }
 
     case OFFSET_REF:
@@ -5942,12 +5952,6 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 	resolve_address_of_overloaded_function (lhstype, rhs, flags_in,
 						/*template_only=*/false,
 						/*explicit_targs=*/NULL_TREE);
-
-    case TREE_LIST:
-      /* Now we should have a baselink.  */
-      gcc_assert (BASELINK_P (rhs));
-
-      return instantiate_type (lhstype, BASELINK_FUNCTIONS (rhs), flags);
 
     case CALL_EXPR:
       /* This is too hard for now.  */

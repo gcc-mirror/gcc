@@ -1,3 +1,16 @@
+2004-11-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18001
+	* c-common.h (lvalue_use): Move here from c-ctypeck.c.
+	(lvalue_or_else): Declare.
+	* c-common.c (lvalue_or_else): Move here from c-typeck.c.
+	* c-typeck.c (lvalue_use): Remove.
+	(lvalue_or_else): Remove.
+
+	PR c++/18556
+	* toplev.c (check_global_declarations): Set DECL_IGNORED_P on
+	unemitted variables with static storage duration.
+
 2004-11-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* tree-cfg.c (tree_verify_flow_info): Do not terminate error()
