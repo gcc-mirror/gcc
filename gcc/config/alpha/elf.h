@@ -149,7 +149,7 @@ do {									\
    not defined, the default value is `BIGGEST_ALIGNMENT'. 
 
    This value is really 2^63.  Since gcc figures the alignment in bits,
-   we could only potentially get to 2^60 on suitible hosts.  Due to other
+   we could only potentially get to 2^60 on suitable hosts.  Due to other
    considerations in varasm, we must restrict this to what fits in an int.  */
 
 #undef  MAX_OFILE_ALIGNMENT

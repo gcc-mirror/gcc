@@ -974,7 +974,7 @@ call_operand (rtx op, enum machine_mode mode)
     {
       if (TARGET_ABI_OSF)
 	{
-	  /* Disallow virtual registers to cope with pathalogical test cases
+	  /* Disallow virtual registers to cope with pathological test cases
 	     such as compile/930117-1.c in which the virtual reg decomposes
 	     to the frame pointer.  Which is a hard reg that is not $27.  */
 	  return (REGNO (op) == 27 || REGNO (op) > LAST_VIRTUAL_REGISTER);
@@ -2006,7 +2006,7 @@ split_small_symbolic_operand (rtx x)
    that we've marked with gpdisp relocs, since those have to stay in
    1-1 correspondence with one another.
 
-   Techinically we could copy them if we could set up a mapping from one
+   Technically we could copy them if we could set up a mapping from one
    sequence number to another, across the set of insns to be duplicated.
    This seems overly complicated and error-prone since interblock motion
    from sched-ebb could move one of the pair of insns to a different block.  */
@@ -7253,7 +7253,7 @@ alpha_expand_prologue (void)
 	       => alpha_procedure_type != PT_NULL,
 
 	     so when we are not setting the bit here, we are guaranteed to
-	     have emited an FRP frame pointer update just before.  */
+	     have emitted an FRP frame pointer update just before.  */
 	  RTX_FRAME_RELATED_P (seq) = ! frame_pointer_needed;
 	}
     }
@@ -8267,7 +8267,7 @@ alpha_handle_trap_shadows (void)
 }
 
 /* Alpha can only issue instruction groups simultaneously if they are
-   suitibly aligned.  This is very processor-specific.  */
+   suitably aligned.  This is very processor-specific.  */
 
 enum alphaev4_pipe {
   EV4_STOP = 0,
@@ -8857,7 +8857,7 @@ alpha_elf_select_rtx_section (enum machine_mode mode, rtx x,
 			      unsigned HOST_WIDE_INT align)
 {
   if (TARGET_SMALL_DATA && GET_MODE_SIZE (mode) <= g_switch_value)
-    /* ??? Consider using mergable sdata sections.  */
+    /* ??? Consider using mergeable sdata sections.  */
     sdata_section ();
   else
     default_elf_select_rtx_section (mode, x, align);

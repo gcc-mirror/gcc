@@ -32,7 +32,7 @@
    the assembler:
    
      -mfpu=softvfp   This is the default.  It indicates thats doubles are
-                     stored in a format compatable with the VFP
+                     stored in a format compatible with the VFP
 		     specification.  This is the newer double format, whereby
 		     the endian-ness of the doubles matches the endian-ness
 		     of the memory architecture.
@@ -43,8 +43,8 @@
 		     is what happens].
 		     
      -mfpu=softfpa   This is when -msoft-float is specified.
-                     This is the normal beahviour of other arm configurations,
-		     which for backwards compatability purposes default to
+                     This is the normal behavior of other arm configurations,
+		     which for backwards compatibility purposes default to
 		     supporting the old FPA format which was always big
 		     endian, regardless of the endian-ness of the memory
 		     system.  */

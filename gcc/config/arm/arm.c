@@ -2085,7 +2085,7 @@ arm_va_arg (tree valist, tree type)
       tree t;
 
       /* Maintain 64-bit alignment of the valist pointer by
-	 contructing:   valist = ((valist + (8 - 1)) & -8).  */
+	 constructing:   valist = ((valist + (8 - 1)) & -8).  */
       minus_eight = build_int_2 (- (IWMMXT_ALIGNMENT / BITS_PER_UNIT), -1);
       t = build_int_2 ((IWMMXT_ALIGNMENT / BITS_PER_UNIT) - 1, 0);
       t = build (PLUS_EXPR,    TREE_TYPE (valist), valist, t);
@@ -6124,7 +6124,7 @@ get_jump_table_size (rtx insn)
 
 /* Move a minipool fix MP from its current location to before MAX_MP.
    If MAX_MP is NULL, then MP doesn't need moving, but the addressing
-   contrains may need updating.  */
+   constraints may need updating.  */
 static Mnode *
 move_minipool_fix_forward_ref (Mnode *mp, Mnode *max_mp,
 			       HOST_WIDE_INT max_address)
@@ -6747,7 +6747,7 @@ push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
   Mfix * fix = (Mfix *) obstack_alloc (&minipool_obstack, sizeof (* fix));
 
 #ifdef AOF_ASSEMBLER
-  /* PIC symbol refereneces need to be converted into offsets into the
+  /* PIC symbol references need to be converted into offsets into the
      based area.  */
   /* XXX This shouldn't be done here.  */
   if (flag_pic && GET_CODE (value) == SYMBOL_REF)
@@ -9490,13 +9490,13 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	 
 	 In a pair of registers containing a DI or DF value the 'Q'
 	 operand returns the register number of the register containing
-	 the least signficant part of the value.  The 'R' operand returns
+	 the least significant part of the value.  The 'R' operand returns
 	 the register number of the register containing the most
 	 significant part of the value.
 	 
 	 The 'H' operand returns the higher of the two register numbers.
 	 On a run where WORDS_BIG_ENDIAN is true the 'H' operand is the
-	 same as the 'Q' operand, since the most signficant part of the
+	 same as the 'Q' operand, since the most significant part of the
 	 value is held in the lower number register.  The reverse is true
 	 on systems where WORDS_BIG_ENDIAN is false.
 	 
@@ -11702,7 +11702,7 @@ thumb_unexpanded_epilogue (void)
       high_regs_pushed++;
 
   /* The prolog may have pushed some high registers to use as
-     work registers.  eg the testuite file:
+     work registers.  eg the testsuite file:
      gcc/testsuite/gcc/gcc.c-torture/execute/complex-2.c
      compiles to produce:
 	push	{r4, r5, r6, r7, lr}

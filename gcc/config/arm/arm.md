@@ -1726,7 +1726,7 @@
 	/* A Trick, since we are setting the bottom bits in the word,
 	   we can shift operand[3] up, operand[0] down, OR them together
 	   and rotate the result back again.  This takes 3 insns, and
-	   the third might be mergable into another op.  */
+	   the third might be mergeable into another op.  */
 	/* The shift up copes with the possibility that operand[3] is
            wider than the bitfield.  */
 	rtx op0 = gen_reg_rtx (SImode);
