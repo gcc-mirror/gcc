@@ -1360,8 +1360,18 @@ push_reload (in, out, inloc, outloc, class,
 	     are identical in content, there might be duplicate address
 	     reloads.  Remove the extra set now, so that if we later find
 	     that we can inherit this reload, we can get rid of the
-	     address reloads altogether.  */
-	  if (reload_in[i] != in && rtx_equal_p (in, reload_in[i]))
+	     address reloads altogether.
+
+	     Do not do this if both reloads are optional since the result
+	     would be an optional reload which could potentially leave
+	     unresolved address replacements.
+
+	     It is not sufficient to call transfer_replacements since
+	     choose_reload_regs will remove the replacements for address
+	     reloads of inherited reloads which results in the same
+	     problem.  */
+	  if (reload_in[i] != in && rtx_equal_p (in, reload_in[i])
+	      && ! (reload_optional[i] && optional))
 	    {
 	      /* We must keep the address reload with the lower operand
 		 number alive.  */
