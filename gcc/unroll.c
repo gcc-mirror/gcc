@@ -1606,10 +1606,15 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      for (tv = bl->giv; tv; tv = tv->next_iv)
 		if (tv->giv_type == DEST_ADDR && tv->same == v)
 		  {
-		    int this_giv_inc = INTVAL (giv_inc);
+		    int this_giv_inc;
+
+		    /* If this DEST_ADDR giv was not split, then ignore it.  */
+		    if (*tv->location != tv->dest_reg)
+		      continue;
 
 		    /* Scale this_giv_inc if the multiplicative factors of
 		       the two givs are different.  */
+		    this_giv_inc = INTVAL (giv_inc);
 		    if (tv->mult_val != v->mult_val)
 		      this_giv_inc = (this_giv_inc / INTVAL (v->mult_val)
 				      * INTVAL (tv->mult_val));
@@ -2780,7 +2785,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 			 Try to validate both the first and the last
 			 address resulting from loop unrolling, if
 			 one fails, then can't do const elim here.  */
-		      if (! verify_addresses (v, giv_inc, unroll_number))
+		      if (verify_addresses (v, giv_inc, unroll_number))
 			{
 			  /* Save the negative of the eliminated const, so
 			     that we can calculate the dest_reg's increment
