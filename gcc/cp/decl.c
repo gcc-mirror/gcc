@@ -10431,15 +10431,23 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		   but not both.  If it appears in the class, the member is
 		   a member constant.  The file-scope definition is always
 		   required.  */
-		if (! constp)
-		  /* According to Mike Stump, we generate bad code for
-		     this case, so we might as well always make it an
-		     error.  */
+		if (IS_AGGR_TYPE (type)
+		    || TREE_CODE (type) == REFERENCE_TYPE)
+		  {
+		    cp_error ("in-class initialization of static data member of non-integral type `%T'", 
+			      type);
+		    /* If we just return the declaration, crashes will
+		       sometimes occur.  We therefore return
+		       void_type_node, as if this was a friend
+		       declaration, to cause callers to completely
+		       ignore this declaration.  */
+		    return void_type_node;
+		  }
+		else if (!constp)
 		  cp_error ("ANSI C++ forbids in-class initialization of non-const static member `%D'",
 			    declarator);
-		
-		if (pedantic && ! INTEGRAL_TYPE_P (type) 
-		    && !uses_template_parms (type))
+		else if (pedantic && ! INTEGRAL_TYPE_P (type) 
+			 && !uses_template_parms (type))
 		  cp_pedwarn ("ANSI C++ forbids initialization of member constant `%D' of non-integral type `%T'", declarator, type);
 	      }
 
@@ -10452,7 +10460,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 		/* C++ allows static class members.
 		   All other work for this is done by grokfield.
-		   This VAR_DECL is built by build_lang_field_decl.
+		   This VAR_DCL is built by build_lang_field_decl.
 		   All other VAR_DECLs are built by build_decl.  */
 		decl = build_lang_field_decl (VAR_DECL, declarator, type);
 		TREE_STATIC (decl) = 1;
