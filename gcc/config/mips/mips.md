@@ -2769,6 +2769,20 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
+  /* If operands[1] is a constant address illegal for pic, then we need to
+     handle it just like LEGITIMIZE_ADDRESS does.  */
+  if (flag_pic && pic_address_needs_scratch (operands[1]))
+    {
+      rtx temp = force_reg (SImode, XEXP (XEXP (operands[1], 0), 0));
+      rtx temp2 = XEXP (XEXP (operands[1], 0), 1);
+
+      if (! SMALL_INT (temp2))
+	temp2 = force_reg (SImode, temp2);
+
+      emit_move_insn (operands[0], gen_rtx (PLUS, SImode, temp, temp2));
+      DONE;
+    }
+
   if ((reload_in_progress | reload_completed) == 0
       && !register_operand (operands[0], SImode)
       && !register_operand (operands[1], SImode)
@@ -5350,20 +5364,38 @@ move\\t%0,%z4\\n\\
 	(match_operand:SI 0 "register_operand" "d"))
    (use (label_ref (match_operand 1 "" "")))]
   "!TARGET_LONG64"
-  "%*j\\t%0"
+  "*
+{
+  /* .cpadd expands to add REG,REG,$gp when pic, and nothing when not pic.  */
+  if (TARGET_ABICALLS)
+    output_asm_insn (\".cpadd\\t%0\", operands);
+  return \"%*j\\t%0\";
+}"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
-   (set_attr "length"	"1")])
+   (set (attr "length")
+	(if_then_else (eq_attr "abicalls" "yes")
+		      (const_int 2)
+		      (const_int 1)))])
 
 (define_insn "tablejump_internal2"
   [(set (pc)
 	(match_operand:DI 0 "register_operand" "d"))
    (use (label_ref (match_operand 1 "" "")))]
   "TARGET_LONG64"
-  "%*j\\t%0"
+  "*
+{
+  /* .cpdadd expands to dadd REG,REG,$gp when pic, and nothing when not pic. */
+  if (TARGET_ABICALLS)
+    output_asm_insn (\".cpdadd\\t%0\", operands);
+  return \"%*j\\t%0\";
+}"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
-   (set_attr "length"	"1")])
+   (set (attr "length")
+	(if_then_else (eq_attr "abicalls" "yes")
+		      (const_int 2)
+		      (const_int 1)))])
 
 ;; Function return, only allow after optimization, so that we can
 ;; eliminate jumps to jumps if no stack space is used.
