@@ -8005,6 +8005,8 @@ instantiate_decl (d)
   tree gen_tmpl;
   int nested = in_function_p ();
   int pattern_defined;
+  int line = lineno;
+  char *file = input_filename;
 
   /* This function should only be used to instantiate templates for
      functions and static member variables.  */
@@ -8140,7 +8142,11 @@ instantiate_decl (d)
 	       && ! at_eof))
     {
       /* Defer all templates except inline functions used in another
-         function.  */
+         function.  We restore the source position here because it's used
+         by add_pending_template.  */
+      lineno = line;
+      input_filename = file;
+
       if (at_eof && !pattern_defined 
 	  && DECL_EXPLICIT_INSTANTIATION (d))
 	/* [temp.explicit]
@@ -8213,6 +8219,9 @@ instantiate_decl (d)
     }
 
 out:
+  lineno = line;
+  input_filename = file;
+
   pop_from_top_level ();
   pop_tinst_level ();
 

@@ -1527,6 +1527,7 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
      and figure out its name without any extra encoding.  */
 
   OB_PUTC2 ('_', '_');
+  numeric_output_need_bar = 0;
 
   if (tparms)
     {

@@ -1,4 +1,18 @@
-Tue Oct  6 00:07:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1998-10-05  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_decl): Do save and restore file position.
+
+1998-10-05  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* method.c (build_decl_overload_real): Clear
+	numeric_output_need_bar after __.
+
+1998-10-05  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (build_new_method_call): Issue 'incomplete type' error,
+	if class is not defined.
+
+1998-10-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* call.c (build_object_call): Move declaration of variable
 	`fn' into the scope where it is used.  Don't access variable
