@@ -1,5 +1,17 @@
 2002-06-27  Neil Booth  <neil@daikokuya.co.uk>
 
+	* cpphash.h (_cpp_set_trad_context): Remove.
+	* cpplib.c (prepare_directive_trad): Do nothing for #define.
+	(cpp_push_buffer, _cpp_pop_buffer): Don't call _cpp_set_trad_context.
+	* cpptrad.c: Update comments.
+	(_cpp_read_logical_line_trad): Let scan_logical_line handle
+	updating the current context.
+	(scan_logical_line): Update the current context.
+	(_cpp_create_trad_definition): Similarly.
+	(_cpp_set_trad_context): Remove.
+
+2002-06-27  Neil Booth  <neil@daikokuya.co.uk>
+
 	PR preprocessor/7070
 	* c-lex.c (cb_def_pragma): Don't try to spell CPP_EOF.
 

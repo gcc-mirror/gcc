@@ -23,12 +23,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* The replacement text of a function-like macro is stored as a
    contiguous sequence of aligned blocks, each representing the text
-   between subsequent parameters in that text.
+   between subsequent parameters.
 
-   Each block comprises the length of text contained therein, the
-   one-based index of the argument that immediately follows that text,
-   and the text itself.  The final block in the macro expansion is
-   easily recognizable as it has an argument index of zero.  */
+   Each block comprises the text between its surrounding parameters,
+   the length of that text, and the one-based index of the following
+   parameter.  The final block in the replacement text is easily
+   recognizable as it has an argument index of zero.  */
 
 struct block
 {
@@ -139,9 +139,9 @@ handle_newline (pfile, cur)
   return cur + 1;
 }
 
-/* CUR points to any character in the buffer, not necessarily a
-   backslash.  Advances CUR until all escaped newlines are skipped,
-   and returns the new position.
+/* CUR points to any character in the current context, not necessarily
+   a backslash.  Advances CUR until all escaped newlines are skipped,
+   and returns the new position without updating the context.
 
    Warns if a file buffer ends in an escaped newline.  */
 static const uchar *
@@ -160,9 +160,9 @@ skip_escaped_newlines (pfile, cur)
   return cur;
 }
 
-/* CUR points to the asterisk introducing a comment in the input
-   buffer.  IN_DEFINE is true if we are in the replacement text
-   of a macro.
+/* CUR points to the asterisk introducing a comment in the current
+   context.  IN_DEFINE is true if we are in the replacement text of a
+   macro.
 
    The asterisk and following comment is copied to the buffer pointed
    to by pfile->out.cur, which must be of sufficient size.
@@ -364,31 +364,24 @@ bool
 _cpp_read_logical_line_trad (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *buffer = pfile->buffer;
-
   do
     {
-      if (buffer->cur == buffer->rlimit)
+      if (pfile->buffer->cur == pfile->buffer->rlimit)
 	{
 	  bool stop = true;
 
 	  /* Don't pop the last buffer.  */
-	  if (buffer->prev)
+	  if (pfile->buffer->prev)
 	    {
-	      stop = buffer->return_at_eof;
+	      stop = pfile->buffer->return_at_eof;
 	      _cpp_pop_buffer (pfile);
-	      buffer = pfile->buffer;
 	    }
 
 	  if (stop)
 	    return false;
 	}
 
-      CUR (pfile->context) = buffer->cur;
-      RLIMIT (pfile->context) = buffer->rlimit;
       scan_out_logical_line (pfile, NULL);
-      buffer = pfile->buffer;
-      buffer->cur = CUR (pfile->context);
     }
   while (pfile->state.skipping);
 
@@ -426,9 +419,9 @@ save_argument (macro, offset)
     macro->args[macro->argc] = offset;
 }
 
-/* Copies the next logical line in the current buffer to the output
-   buffer.  The output is guaranteed to terminate with a NUL
-   character.
+/* Copies the next logical line in the current buffer (starting at
+   buffer->cur) to the output buffer.  The output is guaranteed to
+   terminate with a NUL character.  buffer->cur is updated.
 
    If MACRO is non-NULL, then we are scanning the replacement list of
    MACRO, and we call save_replacement_text() every time we meet an
@@ -448,6 +441,8 @@ scan_out_logical_line (pfile, macro)
   fmacro.buff = NULL;
 
  start_logical_line:
+  CUR (pfile->context) = pfile->buffer->cur;
+  RLIMIT (pfile->context) = pfile->buffer->rlimit;
   pfile->out.cur = pfile->out.base;
   pfile->out.first_line = pfile->line;
  new_context:
@@ -721,6 +716,8 @@ scan_out_logical_line (pfile, macro)
 			 preprocessor lex the next token.  */
 		      pfile->buffer->cur = cur;
 		      _cpp_handle_directive (pfile, false /* indented */);
+		      /* #include changes pfile->buffer so we need to
+			 update the limits of the current context.  */
 		      goto start_logical_line;
 		    }
 		}
@@ -759,7 +756,7 @@ scan_out_logical_line (pfile, macro)
 
  done:
   out[-1] = '\0';
-  CUR (context) = cur;
+  pfile->buffer->cur = cur;
   pfile->out.cur = out - 1;
   if (fmacro.buff)
     _cpp_release_buff (pfile, fmacro.buff);
@@ -1072,11 +1069,17 @@ _cpp_create_trad_definition (pfile, macro)
 {
   const uchar *cur;
   uchar *limit;
+  cpp_context *context = pfile->context;
 
-  CUR (pfile->context) = pfile->buffer->cur;
+  /* The context has not been set up for command line defines, and CUR
+     has not been updated for the macro name for in-file defines.  */
+  pfile->out.cur = pfile->out.base;
+  CUR (context) = pfile->buffer->cur;
+  RLIMIT (context) = pfile->buffer->rlimit;
+  check_output_buffer (pfile, RLIMIT (context) - CUR (context));
 
   /* Is this a function-like macro?  */
-  if (* CUR (pfile->context) == '(')
+  if (* CUR (context) == '(')
     {
       /* Setting macro to NULL indicates an error occurred, and
 	 prevents unnecessary work in scan_out_logical_line.  */
@@ -1092,8 +1095,8 @@ _cpp_create_trad_definition (pfile, macro)
     }
 
   /* Skip leading whitespace in the replacement text.  */
-  CUR (pfile->context)
-    = skip_whitespace (pfile, CUR (pfile->context),
+  pfile->buffer->cur
+    = skip_whitespace (pfile, CUR (context),
 		       CPP_OPTION (pfile, discard_comments_in_macro_exp));
 
   pfile->state.prevent_expansion++;
@@ -1201,21 +1204,4 @@ _cpp_expansions_different_trad (macro1, macro2)
 
   free (p1);
   return mismatch;
-}
-
-/* Prepare to be able to scan the current buffer.  */
-void
-_cpp_set_trad_context (pfile)
-     cpp_reader *pfile;
-{
-  cpp_buffer *buffer = pfile->buffer;
-  cpp_context *context = pfile->context;
-
-  if (pfile->context->prev)
-    abort ();
-
-  pfile->out.cur = pfile->out.base;
-  CUR (context) = buffer->cur;
-  RLIMIT (context) = buffer->rlimit;
-  check_output_buffer (pfile, RLIMIT (context) - CUR (context));
 }
