@@ -1110,7 +1110,12 @@ sdbout_one_type (type)
 	    if (TREE_CODE (TYPE_NAME (child_type)) == IDENTIFIER_NODE)
 	      child_type_name = TYPE_NAME (child_type);
 	    else if (TREE_CODE (TYPE_NAME (child_type)) == TYPE_DECL)
-	      child_type_name = DECL_NAME (TYPE_NAME (child_type));
+	      {
+		child_type_name = DECL_NAME (TYPE_NAME (child_type));
+		if (child_type_name && template_name_p (child_type_name))
+		  child_type_name
+		    = DECL_ASSEMBLER_NAME (TYPE_NAME (child_type));
+	      }
 	    else
 	      continue;
 
