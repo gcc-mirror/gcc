@@ -1,3 +1,12 @@
+Mon Mar  2 12:11:06 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (explicit_template_type): Remove TEMPLATE keyword.
+	(nested_name_specifier): And add it before this use.
+	(typename_sub0): And this use.  Also add use without the keyword.
+	(typename_sub1): Likewise.
+	* pt.c (instantiate_class_template): Don't actually instantiate 
+	anything if our type uses template parms.
+
 Mon Mar  2 11:04:59 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* decl.c (start_function): Don't call temporary_allocation for a
