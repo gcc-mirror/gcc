@@ -276,6 +276,7 @@ static tree ia64_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void ia64_encode_section_info (tree, rtx, int);
 static rtx ia64_struct_value_rtx (tree, int);
 static tree ia64_gimplify_va_arg (tree, tree, tree *, tree *);
+static bool ia64_scalar_mode_supported_p (enum machine_mode mode);
 
 
 /* Table of valid machine attributes.  */
@@ -415,6 +416,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_UNWIND_EMIT
 #define TARGET_UNWIND_EMIT process_for_unwind_directive
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P ia64_scalar_mode_supported_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8476,6 +8480,31 @@ ia64_struct_value_rtx (tree fntype,
   if (fntype && ia64_struct_retval_addr_is_first_parm_p (fntype))
     return NULL_RTX;
   return gen_rtx_REG (Pmode, GR_REG (8));
+}
+
+static bool
+ia64_scalar_mode_supported_p (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case QImode:
+    case HImode:
+    case SImode:
+    case DImode:
+    case TImode:
+      return true;
+
+    case SFmode:
+    case DFmode:
+    case XFmode:
+      return true;
+
+    case TFmode:
+      return TARGET_HPUX;
+
+    default:
+      return false;
+    }
 }
 
 #include "gt-ia64.h"
