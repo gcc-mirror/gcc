@@ -6399,8 +6399,9 @@ alpha_build_va_list ()
    not the most efficient way to implement varargs with just one register
    class, but it isn't worth doing anything more efficient in this rare
    case.  */
-#ifndef TARGET_ABI_UNICOSMK
-void   
+
+#if TARGET_ABI_OSF
+void
 alpha_setup_incoming_varargs(cum, mode, type, pretend_size, no_rtl)
      CUMULATIVE_ARGS cum;
      enum machine_mode mode ATTRIBUTE_UNUSED;
