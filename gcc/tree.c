@@ -5265,6 +5265,14 @@ get_callee_fndecl (call)
      called.  */
   addr = TREE_OPERAND (call, 0);
 
+  STRIP_NOPS (addr);
+
+  /* If this is a readonly function pointer, extract its initial value.  */
+  if (DECL_P (addr) && TREE_CODE (addr) != FUNCTION_DECL
+      && TREE_READONLY (addr) && ! TREE_THIS_VOLATILE (addr)
+      && DECL_INITIAL (addr))
+    addr = DECL_INITIAL (addr);
+
   /* If the address is just `&f' for some function `f', then we know
      that `f' is being called.  */
   if (TREE_CODE (addr) == ADDR_EXPR

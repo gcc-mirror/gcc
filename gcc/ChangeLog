@@ -1,3 +1,8 @@
+2000-04-28  Jason Merrill  <jason@casey.cygnus.com>
+
+	* tree.c (get_callee_fndecl): Extract the initial value from
+	a readonly decl.
+
 2000-04-28  Richard Henderson  <rth@cygnus.com>
 
 	* varasm.c (record_constant_1): Record the CODE_LABEL when
