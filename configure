@@ -1279,7 +1279,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ld target-libgloss ${libgcj}"
     ;;
   avr-*-*)
-    noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 build-fixincludes ${libgcj}"
     ;;
   c4x-*-* | tic4x-*-*)
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"

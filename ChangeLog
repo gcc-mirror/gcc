@@ -1,3 +1,9 @@
+2004-10-28  Eric B. Weddington  <ericw@evcohs.com>
+
+	PR target/18151
+	* configure.in (case ${target}): Do not build fixincludes for avr.
+	* configure: Regenerated.
+
 2004-10-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.in (case ${target}): Do not build fixincludes
