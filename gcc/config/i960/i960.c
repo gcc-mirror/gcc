@@ -2110,10 +2110,13 @@ i960_output_double (file, value)
      REAL_VALUE_TYPE value;
 {
   long value_long[2];
-  REAL_VALUE_TO_TARGET_DOUBLE (value, value_long);
+  char dstr[30];
 
-  fprintf (file, "\t.word\t0x%08lx\n\t.word\t0x%08lx\n",
-	   value_long[0], value_long[1]);
+  REAL_VALUE_TO_TARGET_DOUBLE (value, value_long);
+  REAL_VALUE_TO_DECIMAL (value, "%.20g", dstr);
+
+  fprintf (file, "\t.word\t0x%08lx\t\t# %s\n\t.word\t0x%08lx\n",
+	   value_long[0], dstr, value_long[1]);
 }
   
 void
@@ -2122,9 +2125,12 @@ i960_output_float (file, value)
      REAL_VALUE_TYPE value;
 {
   long value_long;
-  REAL_VALUE_TO_TARGET_SINGLE (value, value_long);
+  char dstr[30];
 
-  fprintf (file, "\t.word\t0x%08lx\n", value_long);
+  REAL_VALUE_TO_TARGET_SINGLE (value, value_long);
+  REAL_VALUE_TO_DECIMAL (value, "%.12g", dstr);
+
+  fprintf (file, "\t.word\t0x%08lx\t\t# %s (float)\n", value_long, dstr);
 }
 
 /* Return the number of bits that an object of size N bytes is aligned to.  */
