@@ -103,6 +103,7 @@ static bool promoted_arithmetic_type_p (tree);
 static tree conditional_conversion (tree, tree);
 static char *name_as_c_string (tree, tree, bool *);
 static tree call_builtin_trap (void);
+static tree prep_operand (tree);
 
 tree
 build_vfield_ref (tree datum, tree type)
@@ -145,8 +146,8 @@ build_field_call (tree instance_ptr, tree decl, tree parms)
 	return error_mark_node;
 
       if (IS_AGGR_TYPE (TREE_TYPE (instance)))
-	return build_opfncall (CALL_EXPR, LOOKUP_NORMAL,
-			       instance, parms, NULL_TREE);
+	return build_new_op (CALL_EXPR, LOOKUP_NORMAL,
+			     instance, parms, NULL_TREE);
       else if (TREE_CODE (TREE_TYPE (instance)) == FUNCTION_TYPE
 	       || (TREE_CODE (TREE_TYPE (instance)) == POINTER_TYPE
 		   && (TREE_CODE (TREE_TYPE (TREE_TYPE (instance)))
@@ -3295,6 +3296,27 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
   return result;
 }
 
+/* OPERAND is an operand to an expression.  Perform necessary steps
+   required before using it.  If OPERAND is NULL_TREE, NULL_TREE is
+   returned.  */
+
+static tree
+prep_operand (tree operand)
+{
+  if (operand)
+    {
+      if (TREE_CODE (operand) == OFFSET_REF)
+	operand = resolve_offset_ref (operand);
+      operand = convert_from_reference (operand);
+      if (CLASS_TYPE_P (TREE_TYPE (operand))
+	  && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (operand)))
+	/* Make sure the template type is instantiated now.  */
+	instantiate_class_template (TYPE_MAIN_VARIANT (TREE_TYPE (operand)));
+    }
+
+  return operand;
+}
+
 tree
 build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
 {
@@ -3310,14 +3332,6 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
       || error_operand_p (arg3))
     return error_mark_node;
 
-  /* This can happen if a template takes all non-type parameters, e.g.
-     undeclared_template<1, 5, 72>a;  */
-  if (code == LT_EXPR && TREE_CODE (arg1) == TEMPLATE_DECL)
-    {
-      error ("`%D' must be declared before use", arg1);
-      return error_mark_node;
-    }
-
   if (code == MODIFY_EXPR)
     {
       code2 = TREE_CODE (arg3);
@@ -3327,13 +3341,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
   else
     fnname = ansi_opname (code);
 
-  if (TREE_CODE (arg1) == OFFSET_REF)
-    arg1 = resolve_offset_ref (arg1);
-  arg1 = convert_from_reference (arg1);
-  if (CLASS_TYPE_P (TREE_TYPE (arg1))
-      && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (arg1)))
-    /* Make sure the template type is instantiated now.  */
-    instantiate_class_template (TYPE_MAIN_VARIANT (TREE_TYPE (arg1)));
+  arg1 = prep_operand (arg1);
   
   switch (code)
     {
@@ -3351,24 +3359,8 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
       break;
     }
 
-  if (arg2)
-    {
-      if (TREE_CODE (arg2) == OFFSET_REF)
-	arg2 = resolve_offset_ref (arg2);
-      arg2 = convert_from_reference (arg2);
-      if (CLASS_TYPE_P (TREE_TYPE (arg2))
-	  && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (arg2)))
-	instantiate_class_template (TYPE_MAIN_VARIANT (TREE_TYPE (arg2)));
-    }
-  if (arg3)
-    {
-      if (TREE_CODE (arg3) == OFFSET_REF)
-	arg3 = resolve_offset_ref (arg3);
-      arg3 = convert_from_reference (arg3);
-      if (CLASS_TYPE_P (TREE_TYPE (arg3))
-	  && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (arg3)))
-	instantiate_class_template (TYPE_MAIN_VARIANT (TREE_TYPE (arg3)));
-    }
+  arg2 = prep_operand (arg2);
+  arg3 = prep_operand (arg3);
   
   if (code == COND_EXPR)
     {
@@ -3553,7 +3545,6 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
 
   if (TREE_CODE (cand->fn) == FUNCTION_DECL)
     {
-      extern int warn_synth;
       if (warn_synth
 	  && fnname == ansi_assopname (NOP_EXPR)
 	  && DECL_ARTIFICIAL (cand->fn)

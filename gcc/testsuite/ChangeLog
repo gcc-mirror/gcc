@@ -1,3 +1,7 @@
+2003-01-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/parser/constant1.C: New test.
+
 2003-01-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/8591

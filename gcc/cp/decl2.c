@@ -423,8 +423,8 @@ grok_array_decl (tree array_expr, tree index_exp)
 
   /* If they have an `operator[]', use that.  */
   if (IS_AGGR_TYPE (type) || IS_AGGR_TYPE (TREE_TYPE (index_exp)))
-    return build_opfncall (ARRAY_REF, LOOKUP_NORMAL,
-			   array_expr, index_exp, NULL_TREE);
+    return build_new_op (ARRAY_REF, LOOKUP_NORMAL,
+			 array_expr, index_exp, NULL_TREE);
 
   /* Otherwise, create an ARRAY_REF for a pointer or array type.  It
      is a little-known fact that, if `a' is an array and `i' is an
@@ -685,6 +685,7 @@ check_classfn (tree ctype, tree function)
       bool is_conv_op;
       const char *format = NULL;
       
+      push_scope (ctype);
       for (fndecls = TREE_VEC_ELT (methods, ix);
 	   fndecls; fndecls = OVL_NEXT (fndecls))
 	{
@@ -713,8 +714,11 @@ check_classfn (tree ctype, tree function)
 	      && (!DECL_TEMPLATE_SPECIALIZATION (function)
 		  || (DECL_TI_TEMPLATE (function) 
 		      == DECL_TI_TEMPLATE (fndecl))))
-	    return fndecl;
+	    break;
 	}
+      pop_scope (ctype);
+      if (fndecls)
+	return OVL_CURRENT (fndecls);
       error ("prototype for `%#D' does not match any in class `%T'",
 	     function, ctype);
       is_conv_op = DECL_CONV_FN_P (fndecl);
@@ -1069,30 +1073,6 @@ grokbitfield (tree declarator, tree declspecs, tree width)
 
   DECL_IN_AGGR_P (value) = 1;
   return value;
-}
-
-/* Convert a conversion operator name to an identifier. SCOPE is the
-   scope of the conversion operator, if explicit.  */
-
-tree
-grokoptypename (tree declspecs, tree declarator, tree scope)
-{
-  tree t = grokdeclarator (declarator, declspecs, TYPENAME, 0, NULL);
-
-  /* Resolve any TYPENAME_TYPEs that refer to SCOPE, before mangling
-     the name, so that we mangle the right thing.  */
-  if (scope && current_template_parms
-      && uses_template_parms (t)
-      && uses_template_parms (scope))
-    {
-      tree args = current_template_args ();
-      
-      push_scope (scope);
-      t = tsubst (t, args, tf_error | tf_warning, NULL_TREE);
-      pop_scope (scope);
-    }
-  
-  return mangle_conv_op_name_for_type (t);
 }
 
 /* When a function is declared with an initializer,
@@ -3749,7 +3729,7 @@ push_scope (tree t)
   if (TREE_CODE (t) == NAMESPACE_DECL)
     push_decl_namespace (t);
   else if CLASS_TYPE_P (t)
-    push_nested_class (t, 2);
+    push_nested_class (t);
 }
 
 /* Leave scope pushed by push_scope.  */

@@ -1511,8 +1511,8 @@ build_member_call (type, name, parmlist)
 	  return error_mark_node;
 	}
       if (TYPE_LANG_SPECIFIC (TREE_TYPE (decl)))
-	return build_opfncall (CALL_EXPR, LOOKUP_NORMAL, decl,
-			       parmlist, NULL_TREE);
+	return build_new_op (CALL_EXPR, LOOKUP_NORMAL, decl,
+			     parmlist, NULL_TREE);
       return build_function_call (decl, parmlist);
     }
   else

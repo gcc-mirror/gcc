@@ -5758,7 +5758,7 @@ init_class_processing (void)
    that name becomes `error_mark_node'.  */
 
 void
-pushclass (tree type, int modify)
+pushclass (tree type, bool modify)
 {
   type = TYPE_MAIN_VARIANT (type);
 
@@ -5880,10 +5880,11 @@ int
 currently_open_class (tree t)
 {
   int i;
-  if (t == current_class_type)
+  if (current_class_type && same_type_p (t, current_class_type))
     return 1;
   for (i = 1; i < current_class_depth; ++i)
-    if (current_class_stack [i].type == t)
+    if (current_class_stack[i].type
+	&& same_type_p (current_class_stack [i].type, t))
       return 1;
   return 0;
 }
@@ -5912,14 +5913,13 @@ currently_open_derived_class (tree t)
 }
 
 /* When entering a class scope, all enclosing class scopes' names with
-   static meaning (static variables, static functions, types and enumerators)
-   have to be visible.  This recursive function calls pushclass for all
-   enclosing class contexts until global or a local scope is reached.
-   TYPE is the enclosed class and MODIFY is equivalent with the pushclass
-   formal of the same name.  */
+   static meaning (static variables, static functions, types and
+   enumerators) have to be visible.  This recursive function calls
+   pushclass for all enclosing class contexts until global or a local
+   scope is reached.  TYPE is the enclosed class.  */
 
 void
-push_nested_class (tree type, int modify)
+push_nested_class (tree type)
 {
   tree context;
 
@@ -5935,8 +5935,8 @@ push_nested_class (tree type, int modify)
   context = DECL_CONTEXT (TYPE_MAIN_DECL (type));
 
   if (context && CLASS_TYPE_P (context))
-    push_nested_class (context, 2);
-  pushclass (type, modify);
+    push_nested_class (context);
+  pushclass (type, true);
 }
 
 /* Undoes a push_nested_class call.  */

@@ -1044,8 +1044,8 @@ build_x_arrow (datum)
 
   if (IS_AGGR_TYPE (type))
     {
-      while ((rval = build_opfncall (COMPONENT_REF, LOOKUP_NORMAL, rval,
-				     NULL_TREE, NULL_TREE)))
+      while ((rval = build_new_op (COMPONENT_REF, LOOKUP_NORMAL, rval,
+				   NULL_TREE, NULL_TREE)))
 	{
 	  if (rval == error_mark_node)
 	    return error_mark_node;

@@ -171,8 +171,11 @@ static void copy_default_args_to_explicit_spec PARAMS ((tree));
 static int invalid_nontype_parm_type_p PARAMS ((tree, tsubst_flags_t));
 static int eq_local_specializations (const void *, const void *);
 static tree template_for_substitution (tree);
-static bool value_dependent_expression_p (tree);
 static bool dependent_template_id_p (tree, tree);
+static tree tsubst (tree, tree, tsubst_flags_t, tree);
+static tree tsubst_expr	(tree, tree, tsubst_flags_t, tree);
+static tree tsubst_copy	(tree, tree, tsubst_flags_t, tree);
+static tree tsubst_copy_and_build (tree, tree, tsubst_flags_t, tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -215,7 +218,7 @@ push_access_scope_real (t, args, context)
   if (!context)
     context = DECL_CONTEXT (t);
   if (context && TYPE_P (context))
-    push_nested_class (context, 2);
+    push_nested_class (context);
   else
     push_to_top_level ();
     
@@ -5043,7 +5046,7 @@ tsubst_friend_class (friend_tmpl, args)
       if (TREE_CODE (context) == NAMESPACE_DECL)
 	push_nested_namespace (context);
       else
-	push_nested_class (tsubst (context, args, tf_none, NULL_TREE), 2);
+	push_nested_class (tsubst (context, args, tf_none, NULL_TREE)); 
     }
 
   /* First, we look for a class template.  */
@@ -5328,7 +5331,7 @@ instantiate_class_template (type)
      correctly.  This is precisely analogous to what we do in
      begin_class_definition when defining an ordinary non-template
      class.  */
-  pushclass (type, 1);
+  pushclass (type, true);
 
   /* Now members are processed in the order of declaration.  */
   for (member = CLASSTYPE_DECL_LIST (pattern); member; member = TREE_CHAIN (member))
@@ -6467,7 +6470,7 @@ tsubst_call_declarator_parms (parms, args, complain, in_decl)
    This function is used for dealing with types, decls and the like;
    for expressions, use tsubst_expr or tsubst_copy.  */
 
-tree
+static tree
 tsubst (t, args, complain, in_decl)
      tree t, args;
      tsubst_flags_t complain;
@@ -7103,7 +7106,7 @@ tsubst (t, args, complain, in_decl)
    template parms; to finish processing the resultant expression, use
    tsubst_expr.  */
 
-tree
+static tree
 tsubst_copy (t, args, complain, in_decl)
      tree t, args;
      tsubst_flags_t complain;
@@ -7505,7 +7508,7 @@ tsubst_copy (t, args, complain, in_decl)
 /* Like tsubst_copy for expressions, etc. but also does semantic
    processing.  */
 
-tree
+static tree
 tsubst_expr (t, args, complain, in_decl)
      tree t, args;
      tsubst_flags_t complain;
@@ -7832,7 +7835,7 @@ tsubst_expr (t, args, complain, in_decl)
 /* Like tsubst but deals with expressions and performs semantic
    analysis.  */
 
-tree
+static tree
 tsubst_copy_and_build (t, args, complain, in_decl)
      tree t, args;
      tsubst_flags_t complain;
@@ -11314,15 +11317,16 @@ dependent_type_p (type)
 
 /* Returns TRUE if the EXPRESSION is value-dependent.  */
 
-static bool
+bool
 value_dependent_expression_p (tree expression)
 {
   if (!processing_template_decl)
     return false;
 
   /* A name declared with a dependent type.  */
-  if (DECL_P (expression)
-      && dependent_type_p (TREE_TYPE (expression)))
+  if (TREE_CODE (expression) == LOOKUP_EXPR
+      || (DECL_P (expression)
+	  && dependent_type_p (TREE_TYPE (expression))))
     return true;
   /* A non-type template parameter.  */
   if ((TREE_CODE (expression) == CONST_DECL
@@ -11370,11 +11374,14 @@ value_dependent_expression_p (tree expression)
 	case 'e':
 	  {
 	    int i;
-	    for (i = 0; 
-		 i < TREE_CODE_LENGTH (TREE_CODE (expression));
-		 ++i)
-	      if (value_dependent_expression_p
-		  (TREE_OPERAND (expression, i)))
+	    for (i = 0; i < first_rtl_op (TREE_CODE (expression)); ++i)
+	      /* In some cases, some of the operands may be missing.
+		 (For example, in the case of PREDECREMENT_EXPR, the
+		 amount to increment by may be missing.)  That doesn't
+		 make the expression dependent.  */
+	      if (TREE_OPERAND (expression, i)
+		  && (value_dependent_expression_p
+		      (TREE_OPERAND (expression, i))))
 		return true;
 	    return false;
 	  }
@@ -11476,6 +11483,90 @@ dependent_template_p (tree tmpl)
   if (TYPE_P (CP_DECL_CONTEXT (tmpl)))
     return dependent_type_p (DECL_CONTEXT (tmpl));
   return false;
+}
+
+/* TYPE is a TYPENAME_TYPE.  Returns the ordinary TYPE to which the
+   TYPENAME_TYPE corresponds.  Returns ERROR_MARK_NODE if no such TYPE
+   can be found.  Note that this function peers inside uninstantiated
+   templates and therefore should be used only in extremely limited
+   situations.  */
+
+tree
+resolve_typename_type (tree type, bool only_current_p)
+{
+  tree scope;
+  tree name;
+  tree decl;
+  int quals;
+
+  my_friendly_assert (TREE_CODE (type) == TYPENAME_TYPE,
+		      20010702);
+
+  scope = TYPE_CONTEXT (type);
+  name = TYPE_IDENTIFIER (type);
+
+  /* If the SCOPE is itself a TYPENAME_TYPE, then we need to resolve
+     it first before we can figure out what NAME refers to.  */
+  if (TREE_CODE (scope) == TYPENAME_TYPE)
+    scope = resolve_typename_type (scope, only_current_p);
+  /* If we don't know what SCOPE refers to, then we cannot resolve the
+     TYPENAME_TYPE.  */
+  if (scope == error_mark_node || TREE_CODE (scope) == TYPENAME_TYPE)
+    return error_mark_node;
+  /* If the SCOPE is a template type parameter, we have no way of
+     resolving the name.  */
+  if (TREE_CODE (scope) == TEMPLATE_TYPE_PARM)
+    return type;
+  /* If the SCOPE is not the current instantiation, there's no reason
+     to look inside it.  */
+  if (only_current_p && !currently_open_class (scope))
+    return error_mark_node;
+  /* Enter the SCOPE so that name lookup will be resolved as if we
+     were in the class definition.  In particular, SCOPE will no
+     longer be considered a dependent type.  */
+  push_scope (scope);
+  /* Look up the declaration.  */
+  decl = lookup_member (scope, name, /*protect=*/0, /*want_type=*/1);
+  /* Obtain the set of qualifiers applied to the TYPE.  */
+  quals = cp_type_quals (type);
+  /* For a TYPENAME_TYPE like "typename X::template Y<T>", we want to
+     find a TEMPLATE_DECL.  Otherwise, we want to find a TYPE_DECL.  */
+  if (!decl)
+    type = error_mark_node;
+  else if (TREE_CODE (TYPENAME_TYPE_FULLNAME (type)) == IDENTIFIER_NODE
+	   && TREE_CODE (decl) == TYPE_DECL)
+    type = TREE_TYPE (decl);
+  else if (TREE_CODE (TYPENAME_TYPE_FULLNAME (type)) == TEMPLATE_ID_EXPR
+	   && DECL_CLASS_TEMPLATE_P (decl))
+    {
+      tree tmpl;
+      tree args;
+      /* Obtain the template and the arguments.  */
+      tmpl = TREE_OPERAND (TYPENAME_TYPE_FULLNAME (type), 0);
+      args = TREE_OPERAND (TYPENAME_TYPE_FULLNAME (type), 1);
+      /* Instantiate the template.  */
+      type = lookup_template_class (tmpl, args, NULL_TREE, NULL_TREE,
+				    /*entering_scope=*/0, 
+				    tf_error);
+    }
+  else
+    type = error_mark_node;
+  /* Qualify the resulting type.  */
+  if (type != error_mark_node && quals)
+    type = cp_build_qualified_type (type, quals);
+  /* Leave the SCOPE.  */
+  pop_scope (scope);
+
+  return type;
+}
+
+tree
+resolve_typename_type_in_current_instantiation (tree type)
+{
+  tree t;
+
+  t = resolve_typename_type (type, /*only_current_p=*/true);
+  return (t != error_mark_node) ? t : type;
 }
 
 #include "gt-cp-pt.h"

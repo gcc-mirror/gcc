@@ -1,3 +1,100 @@
+2003-01-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_field_call): Use build_new_op, not build_opfncall.
+	(prep_operand): New function.
+	(build_new_op): Use it.  Remove dead code.
+	* class.c (pushclass): Change "modify" parameter type from int to
+	bool.
+	(currently_open_class): Use same_type_p, not pointer equality.
+	(push_nested_class): Adjust calls to pushclass, remove modify
+	parameter.
+	* cp-tree.h (INTEGRAL_OR_ENUMERATION_TYPE_P): New macro.
+	(pushclass): Change prototype.
+	(push_nested_class): Likewise.
+	(grokoptypename): Remove.
+	(build_opfncall): Remove.
+	(value_dependent_expression_p): Declare.
+	(resolve_typename_type): Likewise.
+	(resolve_typename_type_in_current_instantiation): Likewise.
+	(enter_scope_of): Remove.
+	(tsubst): Remove.
+	(tsubst_expr): Likewise.
+	(tsubst_copy): Likewise.
+	(tsubst_copy_and_build): Likewise.
+	* decl.c (warn_about_implicit_typename_lookup): Remove.
+	(finish_case_label): Return error_mark_node for erroneous labels.
+	(start_decl): Adjust calls to push_nested_class.
+	(grokfndecl): Call push_scope/pop_scope around call to
+	duplicate_decls.
+	(grokdeclarator): Do not call tsubst.
+	(start_function): Adjust calls to push_nested_class.
+	* decl2.c (grok_array_decl): Use build_new_op, not build_opfncall.
+	(check_classfn): Use push_scope/pop_scope around type comparisions.
+	(grokoptypename): Remove.
+	(push_sscope): Adjust call to push_nested_class.
+	* error.c (dump_type): Show cv-qualification of typename types.
+	* init.c (build_member_call): Use build_new_op, not
+	build_opfncall.
+	* method.c (build_opfncall): Remove.
+	* parser.c (cp_parser): Add allow_non_constant_expression_p and
+	non_constant_expression_p.
+	(cp_parser_constant_expression): Adjust prototype.
+	(cp_parser_resolve_typename_type): Remove.
+	(cp_parser_non_constant_expression): New function.
+	(cp_parser_non_constant_id_expression): Likewise.
+	(cp_parser_new): Set allow_non_constant_expression_p and
+	non_constant_expression_p.
+	(cp_parser_primary_expression): Reject `this' and `va_arg' in
+	constant-expressions.  Note that dependent names aren't really
+	constant.
+	(cp_parser_postfix_expression): Reject conversions to non-integral
+	types in constant-expressions.  Neither are increments or
+	decrements.
+	(cp_parser_unary_expression): Reject increments and decrements in
+	constant-expressions.
+	(cp_parser_direct_new_declarator): Adjust call to
+	cp_parser_constant_expression.
+	(cp_parser_cast_expression): Reject conversions to non-integral
+	types in constant-expressions.
+	(cp_parser_assignment_expression): Rejects assignments in
+	constant-expressions.
+	(cp_parser_expression): Reject commas in constant-expressions.
+	(cp_parser_labeled_statement): Adjust call to
+	cp_parser_constant_expression.
+	(cp_parser_direct_declarator): Simplify array bounds, even in
+	templates, when they are non-dependent.  Use
+	resolve_typename_type, not cp_parser_resolve_typename_type.
+	(cp_parser_class_head): Use resolve_typename_type, not
+	cp_parser_resolve_typename_type.
+	(cp_parser_member_declaration): Adjust call to
+	cp_parser_constant_expression.
+	(cp_parser_constant_initializer): Likewise.
+	(cp_parser_constructor_declarator): Use resolve_typename_type, not
+	cp_parser_resolve_typename_type.
+	(cp_parser_late_parsing_default_args): Adjust call to
+	push_nested_class.
+	* pt.c (tsubst): Give it internal linkage.
+	(tsubst_expr): Likewise.
+	(tsubst_copy): Likewise.
+	(tsubst_copy_and_build): Likewise.
+	(push_access_scope_real): Likewise.
+	(tsubst_friend_class): Likewise.
+	(instantiate_class_template): Adjust call to pushclass.
+	(value_dependent_expression_p): Give it external linkage.
+	Robustify.
+	(resolve_typename_type): New function.
+	* semantics.c (finish_call_expr): Use build_new_op, not
+	build_opfncall.
+	(begin_constructor_declarator): Remove.
+	(begin_class_definition): Adjust call to pushclass.
+	(enter_scope_of): Remove.
+	* typeck.c (comptypes): Resolve typename types as appropriate.
+	(build_x_indirect_ref): Use build_new_op, not build_opfncall.
+	(build_x_compound_expr): Likewise.
+	(build_modify_expr): Likewise.
+	(build_x_modify_expr): Likewise.
+	* typeck2.c (build_x_arrow): Likewise.
+	
 2003-01-29  Fariborz Jahanian  <fjahanian@apple.com>
 
         * pt.c (last_pending_template) Declare GTY().

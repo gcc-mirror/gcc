@@ -105,7 +105,6 @@ static tree record_builtin_java_type (const char *, int);
 static const char *tag_name (enum tag_types code);
 static void find_class_binding_level (void);
 static struct cp_binding_level *innermost_nonclass_level (void);
-static void warn_about_implicit_typename_lookup (tree, tree);
 static int walk_namespaces_r (tree, walk_namespaces_fn, void *);
 static int walk_globals_r (tree, void*);
 static int walk_vtables_r (tree, void*);
@@ -5072,8 +5071,6 @@ finish_case_label (tree low_value, tree high_value)
     cond = TREE_VALUE (cond);
 
   r = c_add_case_label (switch_stack->cases, cond, low_value, high_value);
-  if (r == error_mark_node)
-    r = NULL_TREE;
 
   check_switch_goto (switch_stack->level);
 
@@ -5783,30 +5780,6 @@ qualify_lookup (tree val, int flags)
   if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
     return NULL_TREE;
   return val;
-}
-
-/* Any other BINDING overrides an implicit TYPENAME.  Warn about
-   that.  */
-
-static void
-warn_about_implicit_typename_lookup (tree typename, tree binding)
-{
-  tree subtype = TREE_TYPE (TREE_TYPE (typename));
-  tree name = DECL_NAME (typename);
-
-  if (! (TREE_CODE (binding) == TEMPLATE_DECL
-	 && CLASSTYPE_TEMPLATE_INFO (subtype)
-	 && CLASSTYPE_TI_TEMPLATE (subtype) == binding)
-      && ! (TREE_CODE (binding) == TYPE_DECL
-	    && same_type_p (TREE_TYPE (binding), subtype)))
-    {
-      warning ("lookup of `%D' finds `%#D'",
-		  name, binding);
-      warning ("  instead of `%D' from dependent base class",
-		  typename);
-      warning ("  (use `typename %T::%D' if that's what you meant)",
-		  constructor_name (current_class_type), name);
-    }
 }
 
 /* Look up NAME (an IDENTIFIER_NODE) in SCOPE (either a NAMESPACE_DECL
@@ -7078,7 +7051,7 @@ start_decl (tree declarator,
 
   if (context && COMPLETE_TYPE_P (complete_type (context)))
     {
-      push_nested_class (context, 2);
+      push_nested_class (context);
 
       if (TREE_CODE (decl) == VAR_DECL)
 	{
@@ -9086,9 +9059,11 @@ grokfndecl (tree ctype,
 
 	  /* Attempt to merge the declarations.  This can fail, in
 	     the case of some invalid specialization declarations.  */
+	  push_scope (ctype);
 	  if (!duplicate_decls (decl, old_decl))
 	    error ("no `%#D' member function declared in class `%T'",
 		      decl, ctype);
+	  pop_scope (ctype);
 	  return old_decl;
 	}
     }
@@ -11053,35 +11028,6 @@ grokdeclarator (tree declarator,
 	*attrlist = chainon (returned_attrs, *attrlist);
       else
 	attrlist = &returned_attrs;
-    }
-
-  /* Resolve any TYPENAME_TYPEs from the decl-specifier-seq that refer
-     to ctype.  They couldn't be resolved earlier because we hadn't
-     pushed into the class yet.  
-
-     For example, consider:
-
-       template <typename T>
-       struct S {
-         typedef T X;
-         X f();
-       };
-
-       template <typename T>
-       typename S<T>::X f() {}
-
-       When parsing the decl-specifier-seq for the definition of `f',
-       we construct a TYPENAME_TYPE for `S<T>::X'.  By substituting
-       here, we resolve it to the correct type.  */
-  if (scope && CLASS_TYPE_P (scope)
-      && current_template_parms
-      && uses_template_parms (scope))
-    {
-      tree args = current_template_args ();
-      push_scope (scope);
-      type = tsubst (type, args, tf_error | tf_warning,
-		     NULL_TREE);
-      pop_scope (scope);
     }
 
   /* Now TYPE has the actual type.  */
@@ -13470,9 +13416,9 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
   /* Set up current_class_type, and enter the scope of the class, if
      appropriate.  */
   if (ctype)
-    push_nested_class (ctype, 1);
+    push_nested_class (ctype);
   else if (DECL_STATIC_FUNCTION_P (decl1))
-    push_nested_class (DECL_CONTEXT (decl1), 2);
+    push_nested_class (DECL_CONTEXT (decl1));
 
   /* Now that we have entered the scope of the class, we must restore
      the bindings for any template parameters surrounding DECL1, if it

@@ -946,6 +946,13 @@ comptypes (t1, t2, strict)
   if (TYPE_PTRMEMFUNC_P (t2))
     t2 = TYPE_PTRMEMFUNC_FN_TYPE (t2);
 
+  /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
+     current instantiation.  */
+  if (TREE_CODE (t1) == TYPENAME_TYPE)
+    t1 = resolve_typename_type_in_current_instantiation (t1);
+  if (TREE_CODE (t2) == TYPENAME_TYPE)
+    t2 = resolve_typename_type_in_current_instantiation (t2);
+
   /* Different classes of types can't be compatible.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return 0;
@@ -2301,8 +2308,8 @@ build_x_indirect_ref (ptr, errorstring)
   if (processing_template_decl)
     return build_min_nt (INDIRECT_REF, ptr);
 
-  rval = build_opfncall (INDIRECT_REF, LOOKUP_NORMAL, ptr, NULL_TREE,
-			 NULL_TREE);
+  rval = build_new_op (INDIRECT_REF, LOOKUP_NORMAL, ptr, NULL_TREE,
+		       NULL_TREE);
   if (rval)
     return rval;
   return build_indirect_ref (ptr, errorstring);
@@ -2972,6 +2979,183 @@ build_x_binary_op (code, arg1, arg2)
 
   return build_new_op (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE);
 }
+
+#if 0
+
+tree
+build_template_expr (enum tree_code code, tree op0, tree op1, tree op2)
+{
+  tree type;
+
+  /* If any of the operands is erroneous the result is erroneous too.  */
+  if (error_operand_p (op0)
+      || (op1 && error_operand_p (op1))
+      || (op2 && error_operand_p (op2)))
+    return error_mark_node;
+      
+  if (dependent_type_p (TREE_TYPE (op0))
+      || (op1 && dependent_type_p (TREE_TYPE (op1)))
+      || (op2 && dependent_type_p (TREE_TYPE (op2))))
+    /* If at least one operand has a dependent type, we cannot
+       determine the type of the expression until instantiation time.  */
+    type = NULL_TREE;
+  else
+    {
+      struct z_candidate *cand;
+      tree op0_type;
+      tree op1_type;
+      tree op2_type;
+
+      /* None of the operands is dependent, so we can compute the type
+	 of the expression at this point.  We must compute the type so
+	 that in things like:
+
+	   template <int I>
+	   void f() { S<sizeof(I + 3)> s; ... }
+
+	 we can tell that the type of "s" is non-dependent.
+
+	 If we're processing a template argument, we do not want to
+	 actually change the operands in any way.  Adding conversions,
+	 performing constant folding, etc., would all change mangled
+	 names.  For example, in:
+	 
+	   template <int I>
+	   void f(S<sizeof(3 + 4 + I)>);
+	 
+	 we need to determine that "3 + 4 + I" has type "int", without
+	 actually turning the expression into "7 + I".  */
+      cand = find_overloaded_op (code, op0, op1, op2);
+      if (cand) 
+	/* If an overloaded operator was found, the expression will
+	   have the type returned by the function.  */
+	type = non_reference (TREE_TYPE (cand->fn));
+      else
+	{
+	  /* There is no overloaded operator so we can just use the
+	     default rules for determining the type of the operand.  */
+	  op0_type = TREE_TYPE (op0);
+	  op1_type = op1 ? TREE_TYPE (op1) : NULL_TREE;
+	  op2_type = op2 ? TREE_TYPE (op2) : NULL_TREE;
+	  type = NULL_TREE;
+
+	  switch (code)
+	    {
+	    case MODIFY_EXPR:
+	      /* [expr.ass]
+
+		 The result of the assignment operation is the value
+		 stored in the left operand.  */
+	      type = op0_type;
+	      break;
+	    case COMPONENT_REF:
+	      /* Implement this case.  */
+	      break;
+	    case POSTINCREMENT_EXPR:
+	    case POSTDECREMENT_EXPR:
+	      /* [expr.post.incr]
+
+		 The type of the result is the cv-unqualified version
+		 of the type of the operand.  */
+	      type = TYPE_MAIN_VARIANT (op0_type);
+	      break;
+	    case PREINCREMENT_EXPR:
+	    case PREDECREMENT_EXPR:
+	      /* [expr.pre.incr]
+
+		 The value is the new value of the operand.  */
+	      type = op0_type;
+	      break;
+	    case INDIRECT_REF:
+	      /* [expr.unary.op]
+
+		 If the type of the expression is "pointer to T", the
+		 type of the result is "T".  */
+	      type = TREE_TYPE (op0_type);
+	      break;
+	    case ADDR_EXPR:
+	      /* [expr.unary.op]
+
+		 If the type of the expression is "T", the type of the
+		 result is "pointer to T".  */
+	      /* FIXME: Handle the pointer-to-member case.  */
+	      break;
+	    case MEMBER_REF:
+	      /* FIXME: Implement this case.  */
+	      break;
+	    case LSHIFT_EXPR:
+	    case RSHIFT_EXPR:
+	      /* [expr.shift]
+
+		 The type of the result is that of the promoted left
+		 operand.  */
+	      break;
+	    case PLUS_EXPR:
+	    case MINUS_EXPR:
+	      /* FIXME: Be careful of special pointer-arithmetic
+		 cases.  */
+	      /* Fall through. */
+	    case MAX_EXPR:
+	    case MIN_EXPR:
+	      /* These are GNU extensions; the result type is computed
+		 as it would be for other arithmetic operators.  */
+	      /* Fall through. */
+	    case BIT_AND_EXPR:
+	    case BIT_XOR_EXPR:
+	    case BIT_IOR_EXPR:
+	    case MULT_EXPR:
+	    case TRUNC_DIV_EXPR:
+	    case TRUNC_MOD_EXPR:
+	      /* [expr.bit.and], [expr.xor], [expr.or], [expr.mul]
+
+		 The usual arithmetic conversions are performed on the
+		 operands and determine the type of the result.  */
+	      /* FIXME: Check that this is possible.  */
+	      type = type_after_usual_arithmetic_conversions (t1, t2);
+	      break;
+	    case GT_EXPR:
+	    case LT_EXPR:
+	    case GE_EXPR:
+	    case LE_EXPR:
+	    case EQ_EXPR:
+	    case NE_EXPR:
+	      /* [expr.rel]
+
+		 The type of the result is bool.  */
+	      type = boolean_type_node;
+	      break;
+	    case TRUTH_ANDIF_EXPR:
+	    case TRUTH_ORIF_EXPR:
+	      /* [expr.log.and], [expr.log.org]
+		 
+		 The result is a bool.  */
+	      type = boolean_type_node;
+	      break;
+	    case COND_EXPR:
+	      /* FIXME: Handle special rules for conditioanl
+		 expressions.  */
+	      break;
+	    case COMPOUND_EXPR:
+	      type = op1_type;
+	      break;
+	    default:
+	      abort ();
+	    }
+	  /* If the type of the expression could not be determined,
+	     something is wrong.  */
+	  if (!type)
+	    abort ();
+	  /* If the type is erroneous, the expression is erroneous
+	     too.  */
+	  if (type == error_mark_node)
+	    return error_mark_node;
+	}
+    }
+  
+  return build_min (code, type, op0, op1, op2, NULL_TREE);
+}
+
+#endif
 
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
@@ -4602,8 +4786,8 @@ build_x_compound_expr (list)
   if (rest == NULL_TREE)
     return build_compound_expr (list);
 
-  result = build_opfncall (COMPOUND_EXPR, LOOKUP_NORMAL,
-			   TREE_VALUE (list), TREE_VALUE (rest), NULL_TREE);
+  result = build_new_op (COMPOUND_EXPR, LOOKUP_NORMAL,
+			 TREE_VALUE (list), TREE_VALUE (rest), NULL_TREE);
   if (result)
     return build_x_compound_expr (tree_cons (NULL_TREE, result,
 						  TREE_CHAIN (rest)));
@@ -5235,8 +5419,8 @@ build_modify_expr (lhs, modifycode, rhs)
 	    /* Do the default thing */;
 	  else
 	    {
-	      result = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL,
-				       lhs, rhs, make_node (NOP_EXPR));
+	      result = build_new_op (MODIFY_EXPR, LOOKUP_NORMAL,
+				     lhs, rhs, make_node (NOP_EXPR));
 	      if (result == NULL_TREE)
 		return error_mark_node;
 	      return result;
@@ -5488,8 +5672,8 @@ build_x_modify_expr (lhs, modifycode, rhs)
 
   if (modifycode != NOP_EXPR)
     {
-      tree rval = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL, lhs, rhs,
-				  make_node (modifycode));
+      tree rval = build_new_op (MODIFY_EXPR, LOOKUP_NORMAL, lhs, rhs,
+				make_node (modifycode));
       if (rval)
 	return rval;
     }
