@@ -4672,18 +4672,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 				   convert (index_type, size),
 				   convert (index_type, size_one_node)));
 
-	      /* If that overflowed, the array is too big.
-		 ??? While a size of INT_MAX+1 technically shouldn't cause
-		 an overflow (because we subtract 1), the overflow is recorded
-		 during the conversion to index_type, before the subtraction.
-		 Handling this case seems like an unnecessary complication.  */
-	      if (TREE_OVERFLOW (itype))
-		{
-		  error ("size of array `%s' is too large", name);
-		  type = error_mark_node;
-		  continue;
-		}
-
 	      if (size_varies)
 		itype = variable_size (itype);
 	      itype = build_index_type (itype);
@@ -4858,13 +4846,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     }
 
   /* Now TYPE has the actual type.  */
-
-  /* Did array size calculations overflow?  */
-
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_SIZE (type)
-      && TREE_OVERFLOW (TYPE_SIZE (type)))
-    error ("size of array `%s' is too large", name);
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
 

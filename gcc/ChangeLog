@@ -1,3 +1,8 @@
+Fri Aug 29 16:13:51 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (reload_peepholes): Make sure operand is a REG before
+	examining REGNO.  Allow general registers too.
+
 Fri Aug 29 11:42:04 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* varasm.c (mark_constants): Don't look inside CONST_DOUBLEs.
@@ -84,11 +89,6 @@ Wed Aug 27 11:52:58 1997  Jim Wilson  <wilson@cygnus.com>
 Wed Aug 27 01:56:18 1997  Doug Evans  <dje@seba.cygnus.com>
 
 	* loop.c (combine_movables): Earlier insns don't match later ones.
-
-	* c-decl.c (grokdeclarator): If array index or size calculations
-	overflow, issue an error.
-	* fold-const.c (int_const_binop): New static function.
-	(const_binop, size_binop): Call it.
 
 Wed Aug 27 01:24:25 1997  H.J. Lu   (hjl@gnu.ai.mit.edu)
 
