@@ -1,3 +1,8 @@
+2003-05-02  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/bits/basic_string.h (swap): Remove redundant template
+	parameters from declaration of non-template member function.
+
 2003-05-01  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acconfig.h (_GLIBCPP_USE_NLS):  New symbol.
