@@ -1,3 +1,9 @@
+2003-07-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* g++.dg/ext/dll-MI1.h: New file.
+	* g++.dg/ext/dllexport-MI1.C: New file.
+	* g++.dg/ext/dllimport-MI1.C: New file.
+
 2003-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/string-opt-8.c (main): Remove i370 and s390,
@@ -227,18 +233,18 @@
 2003-07-04  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c++/5287, PR c++/7910,  PR c++/11021
-	* testsuite/g++.dg/ext/dllimport1.C: Add mingw32 as target. Add
+	* g++.dg/ext/dllimport1.C: Add mingw32 as target. Add
 	tests for warnings.
-	* testsuite/g++.dg/ext/dllimport2.C: Add tests for warnings.
-	* testsuite/g++.dg/ext/dllimport3.C: Likewise.
-	* testsuite/g++.dg/ext/dllimport4.C: New file.
-	* testsuite/g++.dg/ext/dllimport5.C: New file.
-	* testsuite/g++.dg/ext/dllimport6.C: New file.
-	* testsuite/g++.dg/ext/dllimport7.C: New file.
-	* testsuite/g++.dg/ext/dllimport8.C: New file.
-	* testsuite/g++.dg/ext/dllimport9.C: New file.
-	* testsuite/g++.dg/ext/dllimport10.C: New file.
-	* testsuite/g++.dg/ext/dllexport1.C: New file.
+	* g++.dg/ext/dllimport2.C: Add tests for warnings.
+	* g++.dg/ext/dllimport3.C: Likewise.
+	* g++.dg/ext/dllimport4.C: New file.
+	* g++.dg/ext/dllimport5.C: New file.
+	* g++.dg/ext/dllimport6.C: New file.
+	* g++.dg/ext/dllimport7.C: New file.
+	* g++.dg/ext/dllimport8.C: New file.
+	* g++.dg/ext/dllimport9.C: New file.
+	* g++.dg/ext/dllimport10.C: New file.
+	* g++.dg/ext/dllexport1.C: New file.
 
 2003-07-03  Mark Mitchell  <mark@codesourcery.com>
 
