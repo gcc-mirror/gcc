@@ -1,3 +1,8 @@
+2003-07-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-common.c (c_common_type_for_mode): Return integer types for
+	pointer modes.
+
 2003-07-22  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-decl.c (start_decl): Don't call maybe_apply_pragma_weak here.
