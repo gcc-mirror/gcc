@@ -86,6 +86,19 @@ Boston, MA 02111-1307, USA.  */
 	      || GET_MODE_CLASS (MODE) == MODE_INT)))			\
       ? downward : upward))
 
+/* Modified version of the macro in expr.h.  */
+#define MUST_PASS_IN_STACK(MODE,TYPE)			\
+  ((TYPE) != 0						\
+   && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
+       || TREE_ADDRESSABLE (TYPE)			\
+       || ((MODE) == BLKmode 				\
+	   && mips_abi != ABI_32 && mips_abi != ABI_O64 \
+	   && ! ((TYPE) != 0 && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST \
+		 && 0 == (int_size_in_bytes (TYPE)	\
+			  % (PARM_BOUNDARY / BITS_PER_UNIT))) \
+	   && (FUNCTION_ARG_PADDING (MODE, TYPE)	\
+	       == (BYTES_BIG_ENDIAN ? upward : downward)))))
+
 /* Under the old (i.e., 32 and O64 ABIs) all BLKmode objects are
    returned in memory.  Under the new (N32 and 64-bit MIPS ABIs) small
    structures are returned in a register.  Objects with varying size
