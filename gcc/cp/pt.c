@@ -7262,7 +7262,6 @@ tsubst_expr (t, args, complain, in_decl)
 	maybe_push_decl (decl);
 	if (TREE_CODE (decl) == VAR_DECL)
 	  DECL_TEMPLATE_INSTANTIATED (decl) = 1;
-	maybe_push_decl (decl);
 	start_decl_1 (decl);
 	cp_finish_decl
 	  (decl, init, NULL_TREE, 0, /*init ? LOOKUP_ONLYCONVERTING :*/ 0);
