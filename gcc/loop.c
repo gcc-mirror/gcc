@@ -1594,7 +1594,8 @@ rtx_equal_for_loop_p (x, y, movables, regs)
 }
 
 /* If X contains any LABEL_REF's, add REG_LABEL notes for them to all
-  insns in INSNS which use the reference.  */
+   insns in INSNS which use the reference.  LABEL_NUSES for CODE_LABEL
+   references is incremented once for each added note. */
 
 static void
 add_label_notes (x, insns)
@@ -1615,8 +1616,12 @@ add_label_notes (x, insns)
          mark_jump_label for additional information).  */
       for (insn = insns; insn; insn = NEXT_INSN (insn))
 	if (reg_mentioned_p (XEXP (x, 0), insn))
-	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, XEXP (x, 0),
-						REG_NOTES (insn));
+	  {
+	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, XEXP (x, 0),
+						  REG_NOTES (insn));
+	    if (LABEL_P (XEXP (x, 0)))
+	      LABEL_NUSES (XEXP (x, 0))++;
+	  }
     }
 
   fmt = GET_RTX_FORMAT (code);

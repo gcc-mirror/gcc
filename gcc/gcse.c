@@ -1,6 +1,6 @@
 /* Global common subexpression elimination/Partial redundancy elimination
    and global constant/copy propagation for GNU compiler.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4839,8 +4839,9 @@ one_pre_gcse_pass (pass)
 }
 
 /* If X contains any LABEL_REF's, add REG_LABEL notes for them to INSN.
-   We have to add REG_LABEL notes, because the following loop optimization
-   pass requires them.  */
+   If notes are added to an insn which references a CODE_LABEL, the
+   LABEL_NUSES count is incremented.  We have to add REG_LABEL notes,
+   because the following loop optimization pass requires them.  */
 
 /* ??? This is very similar to the loop.c add_label_notes function.  We
    could probably share code here.  */
@@ -4868,6 +4869,8 @@ add_label_notes (x, insn)
 
       REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, XEXP (x, 0),
 					    REG_NOTES (insn));
+      if (LABEL_P (XEXP (x, 0)))
+        LABEL_NUSES (XEXP (x, 0))++;
       return;
     }
 
