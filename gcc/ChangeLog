@@ -1,3 +1,39 @@
+2004-10-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/17672
+	Fix PR tree-optimization/18168
+	
+	* lambda-code.c (lambda_lattice_compute_base): Fix reversed
+	assert test.
+	(gcc_tree_to_linear_expression): Add extra to existing constant.
+	(depth_of_nest): Factor out function used in various places.
+	(gcc_loop_to_lambda_loop): Clean up code a little bit. No
+	functional changes.
+	(find_induction_var_from_exit_cond): Stop guessing, and just
+	get the right answer :).
+	(gcc_loopnest_to_lambda_loopnest): Remove useless pre-allocation.
+	Print out message about result of attempt to create perfect nest.
+	(lbv_to_gcc_expression): Add type argument, use it to do math
+	and induction variable creation.
+	(lle_to_gcc_expression): Ditto.
+	(lambda_loopnest_to_gcc_loopnest): Create new iv with same type as
+	oldiv. Pass type argument to lle_to_gcc_expression and 
+	lbv_to_gcc_expression.
+	Reset number of iterations after transformation.
+	(perfect_nestify): Remove useless pre-allocation, and cleanup
+	a small amount.
+
+	* tree-data-ref.c (build_classic_dist_vector): Return false for
+	dependences completely outside of the loop nest we asked about.
+	(build_classic_dir_vector): Ditto.
+	(compute_data_dependences_for_loop): Only add dependence relations
+	inside the loop we asked about.
+	
+	* tree-loop-linear.c (linear_transform_loops): Use DDR_SIZE_VECT.
+	Compute immediate uses.
+	
+	* tree-optimize.c: Move linear_transform_loops to before ivcanon.
+	
 2004-11-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (thread_jumps): Fix a comment typo.
