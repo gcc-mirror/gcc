@@ -2317,7 +2317,7 @@ struct lang_decl
    the class definition.  We have saved away the text of the function,
    but have not yet processed it.  */
 #define DECL_PENDING_INLINE_P(NODE) \
-  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->decl_flags.pending_inline_p)
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.pending_inline_p)
    
 /* If DECL_PENDING_INLINE_P holds, this is the saved text of the
    function.  */
