@@ -1,3 +1,8 @@
+Mon Jan  7 11:59:34 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* unroll.c (copy_loop_body): Always properly update JUMP_LABEL and
+	LABEL_NUSES.
+
 2002-01-07  Graham Stott  <grahams@redhat.com>
 
         * config/i386/i386.h: Update copyright date.
