@@ -1,3 +1,11 @@
+2003-12-10  Benjamin Kosnik  <bkoz@redhat.com>
+            Alexandre Oliva  <aoliva@redhat.com>
+	
+	PR libstdc++/11612
+	* testsuite/Makefile.am (GLIBCXX_DIR): New.
+	(GLIBGCC_DIR): New.
+	(CXXLINK): Use both with -R so libtool links the correct libs.
+
 2003-12-10  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/13217

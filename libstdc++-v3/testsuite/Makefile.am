@@ -32,9 +32,12 @@ AM_RUNTESTFLAGS =
 testsuite_flags_script=${glibcxx_builddir}/scripts/testsuite_flags
 CXX=`${testsuite_flags_script} --build-cxx`
 
+GLIBGCC_DIR=`$(CC) -print-libgcc-file-name | sed 's,/[^/]*$$,,'`
+GLIBCXX_DIR=${glibcxx_builddir}/src/.libs
+
 CXXLINK = \
-	LD_RUN_PATH=$${LD_RUN_PATH:+$$LD_RUN_PATH:}${glibcxx_builddir}/src/.libs\
 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
+	-R $(GLIBGCC_DIR) -R $(GLIBCXX_DIR) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 
 # Generated lists of files to run.  All of these names are valid make
