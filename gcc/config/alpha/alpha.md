@@ -5959,12 +5959,35 @@
   [(set_attr "length" "12")
    (set_attr "type" "multi")])
 
-(define_insn "exception_receiver"
-  [(unspec_volatile [(const_int 0)] 7)]
+(define_expand "exception_receiver"
+  [(unspec_volatile [(match_dup 0)] 7)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
+  "
+{
+  if (TARGET_LD_BUGGY_LDGP)
+    operands[0] = alpha_gp_save_rtx ();
+  else
+    operands[0] = const0_rtx;
+}")
+
+(define_insn "*exception_receiver_1"
+  [(unspec_volatile [(const_int 0)] 7)]
+  "! TARGET_LD_BUGGY_LDGP"
   "ldgp $29,0($26)"
   [(set_attr "length" "8")
    (set_attr "type" "multi")])
+
+;; ??? We don't represent the usage of $29 properly in address loads
+;; and function calls.  This leads to the following move being deleted
+;; as dead code unless it is represented as a volatile unspec.
+
+(define_insn "*exception_receiver_2"
+  [(unspec_volatile [(match_operand:DI 0 "nonimmediate_operand" "r,m")] 7)]
+  "TARGET_LD_BUGGY_LDGP"
+  "@
+   mov %0,$29
+   ldq $29,%0"
+  [(set_attr "type" "ilog,ild")])
 
 (define_expand "nonlocal_goto_receiver"
   [(unspec_volatile [(const_int 0)] 1)

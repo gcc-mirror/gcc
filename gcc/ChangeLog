@@ -1,5 +1,16 @@
 2001-06-11  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/osf5.h (TARGET_LD_BUGGY_LDGP): New.
+	* config/alpha/alpha.h (TARGET_LD_BUGGY_LDGP): Default.
+	(struct machine_function): Add gp_save_rtx.
+	* config/alpha/alpha.c (alpha_mark_machine_status): Mark it.
+	(alpha_gp_save_rtx): New.
+	* config/alpha/alpha-protos.h: Declare it.
+	* config/alpha/alpha.md (exception_receiver): Make an expander.
+	Use alpha_gp_save_rtx if TARGET_LD_BUGGY_LDGP.
+
+2001-06-11  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/osf.h (LINK_SPEC): Hide _GLOBAL_* symbols.
 
 2001-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
@@ -42,7 +53,7 @@ Mon Jun 11 15:47:45 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-06-11  Aldy Hernandez  <aldyh@redhat.com>
 
-        * loop.c (scan_loop): Do not combine asm statements.
+	* loop.c (scan_loop): Do not combine asm statements.
 
 2001-06-11  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 

@@ -46,3 +46,9 @@
 
 #undef ASM_OLDAS_SPEC
 #define ASM_OLDAS_SPEC "-oldas -c"
+
+/* The linker appears to perform invalid code optimizations that result
+   in the ldgp emitted for the exception_receiver pattern being incorrctly
+   linked.  */
+#undef TARGET_LD_BUGGY_LDGP
+#define TARGET_LD_BUGGY_LDGP 1

@@ -192,6 +192,9 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #ifndef TARGET_PROFILING_NEEDS_GP
 #define TARGET_PROFILING_NEEDS_GP 0
 #endif
+#ifndef TARGET_LD_BUGGY_LDGP
+#define TARGET_LD_BUGGY_LDGP 0
+#endif
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -1188,6 +1191,9 @@ struct machine_function
 {
   /* If non-null, this rtx holds the return address for the function.  */
   struct rtx_def *ra_rtx;
+
+  /* If non-null, this rtx holds a saved copy of the GP for the function.  */
+  struct rtx_def *gp_save_rtx;
 };
 
 /* Make (or fake) .linkage entry for function call.
