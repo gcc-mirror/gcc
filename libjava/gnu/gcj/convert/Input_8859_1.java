@@ -8,6 +8,12 @@ details.  */
 
 package gnu.gcj.convert;
 
+/**
+ * Convert ISO-Latin-1 (8851-1) text to Unicode.
+ * @author Per Bothner <bothner@cygnus.com>
+ * @date Match 1999.
+ */
+
 public class Input_8859_1 extends BytesToUnicode
 {
   public String getName() { return "8859_1"; }

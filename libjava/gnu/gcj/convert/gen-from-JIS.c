@@ -16,6 +16,11 @@ struct chval
 
 #define MAP(B1, B2, C) { B1, B2, C },
 
+struct chval chtab_0201[] = {
+#include "JIS0201.h"
+  { 255, 255, 0}
+};
+
 struct chval chtab_0208[] = {
 #include "JIS0208.h"
   { 255, 255, 0}
@@ -50,9 +55,9 @@ int
 main(int argc, char** argv)
 {
   FILE *out = stdout;
-  unsigned min1 = 256, max1 = 0, min2 = 256, max2 = 0, count = 0;
-  unsigned short low1_uc = 0xFFFF, high1_uc = 0;
-  unsigned short low2_uc = 0xFFFF, high2_uc = 0;
+  int min1 = 256, max1 = 0, min2 = 256, max2 = 0, count = 0;
+  int low1_uc = 0xFFFF, high1_uc = 0;
+  int low2_uc = 0xFFFF, high2_uc = 0;
   int i;  int row, col;
   if (strcmp (argv[1], "JIS0208") == 0)
     chtab = chtab_0208;
@@ -61,14 +66,26 @@ main(int argc, char** argv)
   else if (strcmp (argv[1], "toJIS") == 0)
     {
       int i;
-      int count = sizeof(sorted)/sizeof(struct chval);
-      qsort (sorted, count, sizeof(struct chval),
-	     compare);
-      for (i = 0;  i < count;  i++)
+      for (i = 0;  chtab_0201[i].b1 != 255;  i++)
 	{
-	  fprintf (out, "  0x%04x -> 0x%02x, 0x%02x\n",
-		   sorted[i].uc, sorted[i].b1, sorted[i].b2);
+	  enter(chtab_0201[i].uc, chtab_0201[i].b2);
 	}
+      for (i = 0;  i < 0x20;  i++)
+	{
+	  enter (i, i);
+	}
+      enter (127, 127);
+      for (i = 0;  chtab_0208[i].b1 != 255;  i++)
+	{
+	  enter(chtab_0208[i].uc,
+		(chtab_0208[i].b1 << 8) | chtab_0208[i].b2);
+	}
+      for (i = 0;  chtab_0212[i].b1 != 255;  i++)
+	{
+	  enter(chtab_0212[i].uc,
+		0x8000 | (chtab_0212[i].b1 << 8) | chtab_0212[i].b2);
+	}
+      print_table ("Unicode_to_JIS", stdout);
       exit(0);
     }
   else
@@ -111,7 +128,7 @@ main(int argc, char** argv)
 	    {
 	      if (row == chtab[i].b1 && col == chtab[i].b2)
 		{
-		  unsigned uc = chtab[i].uc;
+		  int uc = chtab[i].uc;
 		  if (uc < 0x2000)
 		    {
 		      if (uc > high1_uc)
