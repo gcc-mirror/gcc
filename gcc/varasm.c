@@ -3576,6 +3576,7 @@ mark_constants (x)
 	case 'w':
 	case 'n':
 	case 'u':
+	case 'B':
 	  break;
 
 	default:

@@ -1,3 +1,7 @@
+2002-06-04  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* varasm.c (mark_constants): Handle RTX format 'B'.
+
 2002-06-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (FIRST, LAST, CUR, RLIMIT): New.
