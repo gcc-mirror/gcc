@@ -1,3 +1,7 @@
+2001-02-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/c++config: Revert.
+
 2001-02-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/bits/istream.tcc: Use ios_base::iostate in place of
