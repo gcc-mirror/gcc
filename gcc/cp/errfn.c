@@ -72,6 +72,8 @@ cp_thing (errfn, atarg1, format, ap)
   const char *f;
   tree atarg = 0;
 
+  /* We call this here so that the calls to cp_error in
+     print_template_context don't bash buf.  */
   maybe_print_template_context ();
 
   len = strlen (format) + 1;
