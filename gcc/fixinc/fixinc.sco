@@ -185,7 +185,7 @@ cd ${INPUT}
 # Fix first broken decl of getcwd present on some svr4 systems.
 
 file=stdlib.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -213,7 +213,7 @@ fi
 # fix the incorrect decl of profil present on some svr4 systems.
 
 file=unistd.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -241,7 +241,7 @@ fi
 # Fix third broken decl of getcwd on SCO.  Also fix incorrect decl of
 # link.
 file=prototypes.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -313,7 +313,7 @@ fi
 # we blow over that one (with C++ linkage) and stick a new one in stdlib.h
 # with C linkage.   So we eat the one out of math.h.
 file=math.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else

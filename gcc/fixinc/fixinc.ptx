@@ -118,7 +118,7 @@ fi
 # In pwd.h, PTX 1.x needs stdio.h included since FILE * was added in a
 # prototype later on in the file.
 file=pwd.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
@@ -173,7 +173,7 @@ fi
 # include <sys/byteorder.h> written out by the fixinc.svr4 script which has
 # these same routines written in an asm format supported by gcc.
 file=netinet/in.h
-base=`basename $file`
+base=`basename $file`.$$
 if [ -r ${LIB}/$file ]; then
   file_to_fix=${LIB}/$file
 else
