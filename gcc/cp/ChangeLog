@@ -1,3 +1,10 @@
+Thu Feb 19 10:15:55 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
+
+	* pt.c (coerce_template_parms) Add a new parameter, is_tmpl_parm,
+	all callers changed.  Rely on the new parameter instead of arg 
+	being a TREE_LIST when determine whether we are working inside
+	template template parameter.  Clean up is_type test.
+	
 Thu Feb 19 10:04:12 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cvt.c (cp_convert_to_pointer): Preserve TREE_CONSTANT.
