@@ -147,12 +147,12 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 pex-unix.c pex-win32.c						\
          physmem.c putenv.c						\
 	random.c regex.c rename.c rindex.c				\
-	safe-ctype.c setenv.c sigsetmask.c sort.c spaces.c		\
+	safe-ctype.c setenv.c sigsetmask.c snprintf.c sort.c spaces.c	\
 	 splay-tree.c stpcpy.c stpncpy.c strcasecmp.c strchr.c strdup.c	\
 	 strerror.c strncasecmp.c strncmp.c strrchr.c strsignal.c	\
 	 strstr.c strtod.c strtol.c strtoul.c				\
 	ternary.c tmpnam.c						\
-	vasprintf.c vfork.c vfprintf.c vprintf.c vsprintf.c		\
+	vasprintf.c vfork.c vfprintf.c vprintf.c vsnprintf.c vsprintf.c	\
 	waitpid.c							\
 	xatexit.c xexit.c xmalloc.c xmemdup.c xstrdup.c xstrerror.c
 
@@ -191,11 +191,11 @@ CONFIGURED_OFILES = asprintf.o atexit.o					\
 	 pex-unix.o pex-win32.o						\
 	 putenv.o							\
 	random.o rename.o rindex.o					\
-	setenv.o sigsetmask.o stpcpy.o stpncpy.o strcasecmp.o strchr.o	\
-	 strdup.o strncasecmp.o strncmp.o strrchr.o strstr.o strtod.o	\
-	 strtol.o strtoul.o						\
+	setenv.o sigsetmask.o snprintf.o stpcpy.o stpncpy.o strcasecmp.o \
+	 strchr.o strdup.o strncasecmp.o strncmp.o strrchr.o strstr.o	\
+	 strtod.o strtol.o strtoul.o					\
 	tmpnam.o							\
-	vasprintf.o vfork.o vfprintf.o vprintf.o vsprintf.o		\
+	vasprintf.o vfork.o vfprintf.o vprintf.o vsnprintf.o vsprintf.o	\
 	waitpid.o
 
 # These files are installed if the library has been configured to do so.
@@ -486,6 +486,7 @@ rename.o: config.h $(INCDIR)/ansidecl.h
 safe-ctype.o: $(INCDIR)/ansidecl.h $(INCDIR)/safe-ctype.h
 setenv.o: config.h $(INCDIR)/ansidecl.h
 sigsetmask.o: $(INCDIR)/ansidecl.h
+snprintf.o: $(INCDIR)/ansidecl.h
 sort.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/sort.h
 spaces.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
@@ -510,6 +511,7 @@ vasprintf.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 vfork.o: $(INCDIR)/ansidecl.h
 vfprintf.o: $(INCDIR)/ansidecl.h
 vprintf.o: $(INCDIR)/ansidecl.h
+vsnprintf.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 vsprintf.o: $(INCDIR)/ansidecl.h
 waitpid.o: config.h
 xatexit.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h

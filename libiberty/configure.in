@@ -185,6 +185,7 @@ funcs="$funcs random"
 funcs="$funcs rename"
 funcs="$funcs rindex"
 funcs="$funcs setenv"
+funcs="$funcs snprintf"
 funcs="$funcs sigsetmask"
 funcs="$funcs stpcpy"
 funcs="$funcs stpncpy"
@@ -201,6 +202,7 @@ funcs="$funcs tmpnam"
 funcs="$funcs vasprintf"
 funcs="$funcs vfprintf"
 funcs="$funcs vprintf"
+funcs="$funcs vsnprintf"
 funcs="$funcs vsprintf"
 funcs="$funcs waitpid"
 
@@ -221,7 +223,7 @@ if test "x" = "y"; then
   AC_CHECK_FUNCS(strcasecmp setenv stpcpy stpncpy strchr strdup strncasecmp strrchr strstr)
   AC_CHECK_FUNCS(strtod strtol strtoul tmpnam vasprintf vfprintf vprintf)
   AC_CHECK_FUNCS(vsprintf waitpid getrusage on_exit psignal strerror strsignal)
-  AC_CHECK_FUNCS(sysconf times sbrk gettimeofday ffs)
+  AC_CHECK_FUNCS(sysconf times sbrk gettimeofday ffs snprintf vsnprintf)
   AC_CHECK_FUNCS(pstat_getstatic pstat_getdynamic sysmp getsysinfo table sysctl)
   AC_CHECK_FUNCS(realpath canonicalize_file_name)
   AC_DEFINE(HAVE_SYS_ERRLIST, 1, [Define if you have the sys_errlist variable.])
