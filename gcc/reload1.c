@@ -5055,7 +5055,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum)
       rtx reg = reload_reg_rtx[i];
       if (reg && GET_CODE (reg) == REG
 	  && ((unsigned) regno - true_regnum (reg)
-	      <= HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)) - 1U)
+	      <= HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)) - (unsigned)1)
 	  && i != reloadnum)
 	{
 	  if (out

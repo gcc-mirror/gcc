@@ -3740,7 +3740,7 @@ strip_compound_expr (t, s)
 /* Return a node which has the indicated constant VALUE (either 0 or
    1), and is of the indicated TYPE.  */
 
-tree
+static tree
 constant_boolean_node (value, type)
      int value;
      tree type;

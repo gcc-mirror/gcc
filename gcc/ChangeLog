@@ -1,3 +1,14 @@
+Sat Jun  6 12:17:12 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gencheck.c: Remove redundant stdio.h include.  Add a definition
+ 	of xmalloc for when we are forced to link with alloca.o.
+
+	* reload1.c (reload_reg_free_for_value_p): Use `(unsigned)1'
+	instead of `1U'.
+
+	* fold-const.c (constant_boolean_node): Make definition static to
+	match the prototype.
+
 Fri Jun  5 15:53:17 1998  Per Bothner  <bothner@cygnus.com>
 
 	* gcc.c (lang_specific_pre_link):  New LANG_SPECIFIC_DRIVER function.
