@@ -1158,12 +1158,18 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     enum machine_mode imode = int_mode_for_mode (GET_MODE (op0));
     if (imode != GET_MODE (op0))
       {
-	op0 = gen_lowpart (imode, op0);
+	if (MEM_P (op0))
+	  op0 = adjust_address (op0, imode, 0);
+	else
+	  {
+	    gcc_assert (imode != BLKmode);
+	    op0 = gen_lowpart (imode, op0);
 
-	/* If we got a SUBREG, force it into a register since we aren't going
-	   to be able to do another SUBREG on it.  */
-	if (GET_CODE (op0) == SUBREG)
-	  op0 = force_reg (imode, op0);
+	    /* If we got a SUBREG, force it into a register since we
+	       aren't going to be able to do another SUBREG on it.  */
+	    if (GET_CODE (op0) == SUBREG)
+	      op0 = force_reg (imode, op0);
+	  }
       }
   }
 
