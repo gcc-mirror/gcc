@@ -1,3 +1,8 @@
+Wed Apr  1 14:58:35 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* call.c (build_over_call): Do name resolution for default
+	arguments of function templates in the scope of the templates.
+
 Tue Mar 31 13:43:57 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* call.c: Include system.h.  Remove includes, declarations and
