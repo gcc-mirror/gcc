@@ -1,3 +1,10 @@
+2002-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/5547:
+	* config/i386/i386.c (i386_simplify_dwarf_addr): Simplify
+	all valid IA-32 address modes involving non-scaled %ebx and
+	GOT/GOTOFF as displacement.
+
 2002-02-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_final_chunkify): Re-run shorten_branches
