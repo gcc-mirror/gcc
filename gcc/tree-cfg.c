@@ -3655,7 +3655,7 @@ tree_make_forwarder_block (edge fallthru)
   edge e;
   edge_iterator ei;
   basic_block dummy, bb;
-  tree phi, new_phi, var, prev, next;
+  tree phi, new_phi, var;
 
   dummy = fallthru->src;
   bb = fallthru->dest;
@@ -3675,14 +3675,7 @@ tree_make_forwarder_block (edge fallthru)
     }
 
   /* Ensure that the PHI node chain is in the same order.  */
-  prev = NULL;
-  for (phi = phi_nodes (bb); phi; phi = next)
-    {
-      next = PHI_CHAIN (phi);
-      PHI_CHAIN (phi) = prev;
-      prev = phi;
-    }
-  set_phi_nodes (bb, prev);
+  set_phi_nodes (bb, phi_reverse (phi_nodes (bb)));
 
   /* Add the arguments we have stored on edges.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -4281,7 +4274,7 @@ tree_duplicate_bb (basic_block bb)
       mark_for_rewrite (PHI_RESULT (phi));
       create_phi_node (PHI_RESULT (phi), new_bb);
     }
-  set_phi_nodes (new_bb, nreverse (phi_nodes (new_bb)));
+  set_phi_nodes (new_bb, phi_reverse (phi_nodes (new_bb)));
 
   bsi_tgt = bsi_start (new_bb);
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
