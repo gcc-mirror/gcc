@@ -674,6 +674,9 @@ combine_instructions (f, nregs)
   total_successes += combine_successes;
 
   nonzero_sign_valid = 0;
+
+  /* Make recognizer allow volatile MEMs again.  */
+  init_recog ();
 }
 
 /* Wipe the reg_last_xxx arrays in preparation for another pass.  */
