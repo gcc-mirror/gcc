@@ -275,7 +275,7 @@ most consistent with the @command{g77} product in that version.
 
 * M: Diagnostics.   Diagnostics produced by @command{g77}.
 
-* Index::           Index of concepts and symbol names.
+* Keyword Index::   Index of concepts and symbol names.
 @end menu
 @c yes, the "M: " @emph{is} intentional -- bad.def references it (CMPAMBIG)!
 
@@ -12262,8 +12262,8 @@ that is not Year-2000 (Y2K) compliant.
 
 @end ifset
 
-@node Index
-@unnumbered Index
+@node Keyword Index
+@unnumbered Keyword Index
 
 @printindex cp
 @bye
