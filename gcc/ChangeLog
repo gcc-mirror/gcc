@@ -1,3 +1,9 @@
+2003-12-17  Fred Fish  <fnf@redhat.com>
+
+	* configure.in: Remove code to examine linker scripts and set
+	HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES.
+	* configure, config.in: Regenerate.
+
 2003-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12218
