@@ -65,7 +65,7 @@ gnu::gcj::runtime::StackTrace::fillInStackTrace (jint maxlen, jint offset)
 #ifdef INTERPRETER
       extern void *const _Jv_StartOfInterpreter;
       extern void * _Jv_EndOfInterpreter;
-      
+
       java::lang::Thread *thread = java::lang::Thread::currentThread();
       _Jv_MethodChain *interp_frame
 	= (thread ? reinterpret_cast<_Jv_MethodChain *> (thread->interp_frame)
@@ -92,20 +92,23 @@ gnu::gcj::runtime::StackTrace::fillInStackTrace (jint maxlen, jint offset)
 	      // less than _Jv_EndOfInterpreter it might be in the
 	      // interpreter: we call _Unwind_FindEnclosingFunction to
 	      // find out.
-	      if ((_Jv_EndOfInterpreter == NULL || pc < _Jv_EndOfInterpreter)
-		  && (_Unwind_FindEnclosingFunction (pc) 
-		      == _Jv_StartOfInterpreter))
+	      if (pc >= _Jv_StartOfInterpreter
+		  && (pc < _Jv_EndOfInterpreter
+		      || _Jv_EndOfInterpreter == NULL))
 		{
-		  frame[n].interp = (void *) interp_frame->self;
-		  interp_frame = interp_frame->next;
-		}
-	      else
-		{
-		  // We've found an address that we know is not within
-		  // the interpreter.  We use that to refine our upper
-		  // bound on where the interpreter ends.
-		  if (_Jv_EndOfInterpreter == NULL || pc < _Jv_EndOfInterpreter)
-		    _Jv_EndOfInterpreter = pc;
+		  if (_Unwind_FindEnclosingFunction (pc) 
+		      == _Jv_StartOfInterpreter)
+		    {
+		      frame[n].interp = (void *) interp_frame->self;
+		      interp_frame = interp_frame->next;
+		    }
+		  else
+		    {
+		      // We've found an address that we know is not within
+		      // the interpreter.  We use that to refine our upper
+		      // bound on where the interpreter ends.
+		      _Jv_EndOfInterpreter = pc;
+		    }
 		}
 	    }
 #endif // INTERPRETER
