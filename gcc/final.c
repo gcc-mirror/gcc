@@ -891,19 +891,19 @@ final_start_function (first, file, optimize)
       last_linenum = high_block_linenum = high_function_linenum
 	= NOTE_LINE_NUMBER (first);
 
+      /* For SDB and XCOFF, the function beginning must be marked between
+	 the function label and the prologue.  */
+#ifdef SDB_DEBUGGING_INFO
       if (write_symbols == SDB_DEBUG)
-	/* For sdb, let's not, but say we did.
-	   We need to set last_linenum for sdbout_function_begin,
-	   but we can't have an actual line number before the .bf symbol.
-	   (sdb_begin_function_line is not set,
-	   and other compilers don't do it.)  */
-	;
-#ifdef XCOFF_DEBUGGING_INFO
-      else if (write_symbols == XCOFF_DEBUG)
-	xcoffout_output_first_source_line (file, last_linenum);
-#endif	  
+	sdbout_begin_function (last_linenum);
       else
-	output_source_line (file, first);
+#endif
+#ifdef XCOFF_DEBUGGING_INFO
+	if (write_symbols == XCOFF_DEBUG)
+	  xcoffout_begin_function (file, last_linenum);
+	else
+#endif	  
+	  output_source_line (file, first);
     }
 
 #ifdef LEAF_REG_REMAP
@@ -1312,15 +1312,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	break;
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
 	{
-#ifdef SDB_DEBUGGING_INFO
-	  if (write_symbols == SDB_DEBUG)
-	    sdbout_begin_function (last_linenum);
-#endif
-#ifdef XCOFF_DEBUGGING_INFO
-	  if (write_symbols == XCOFF_DEBUG)
-	    xcoffout_begin_function (file, last_linenum);
-#endif
 #ifdef DWARF_DEBUGGING_INFO
+	  /* This outputs a marker where the function body starts, so it
+	     must be after the prologue.  */
 	  if (write_symbols == DWARF_DEBUG)
 	    dwarfout_begin_function ();
 #endif
