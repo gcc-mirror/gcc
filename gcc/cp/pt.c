@@ -1458,16 +1458,25 @@ int comp_template_parms (parms1, parms2)
 int decl_template_parm_p (old_decl)
      tree old_decl;
 {
-  if (TREE_CODE_CLASS (TREE_CODE (old_decl)) == 'd'
-      /* For template type parameters. */
-      && ((TREE_TYPE (old_decl)
-	   && TREE_CODE (TREE_TYPE (old_decl)) == TEMPLATE_TYPE_PARM)
-	  /* For non-type template parameters. */
-	  || (DECL_INITIAL (old_decl) 
-	      && TREE_CODE (DECL_INITIAL (old_decl)) == TEMPLATE_PARM_INDEX)))
+  /* For template template parms. */
+  if (TREE_CODE (old_decl) == TEMPLATE_DECL
+      && TREE_TYPE (old_decl)
+      && TREE_CODE (TREE_TYPE (old_decl)) == TEMPLATE_TEMPLATE_PARM)
     return 1;
-  else
-    return 0;
+
+  /* For template type parms. */
+  if (TREE_CODE (old_decl) == TYPE_DECL
+      && TREE_TYPE (old_decl)
+      && TREE_CODE (TREE_TYPE (old_decl)) == TEMPLATE_TYPE_PARM)
+    return 1;
+
+  /* For template non-type parms. */
+  if (TREE_CODE (old_decl) == CONST_DECL
+      && DECL_INITIAL (old_decl) 
+      && TREE_CODE (DECL_INITIAL (old_decl)) == TEMPLATE_PARM_INDEX)
+    return 1;
+
+  return 0;
 }
 
 
