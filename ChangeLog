@@ -1,3 +1,12 @@
+2004-02-10  Arnaud Charlet  <charlet@act-europe.fr>,
+	    Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR ada/6637, PR ada/5911
+        Merge with libada-branch:
+	* configure.in, Makefile.tpl, Makefile.def: Add target-libada,
+	with appropriate dependencies. Add --enable-libada configure switch.
+	* configure, Makefile.in: Regenerate.
+
 2004-02-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* MAINTAINERS: Add myself to write-after-approval.

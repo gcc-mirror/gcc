@@ -611,7 +611,8 @@ configure-target:  \
     maybe-configure-target-zlib \
     maybe-configure-target-boehm-gc \
     maybe-configure-target-qthreads \
-    maybe-configure-target-rda
+    maybe-configure-target-rda \
+    maybe-configure-target-libada
 
 # The target built for a native build.
 .PHONY: all.normal
@@ -700,7 +701,8 @@ all-target:  \
     maybe-all-target-zlib \
     maybe-all-target-boehm-gc \
     maybe-all-target-qthreads \
-    maybe-all-target-rda
+    maybe-all-target-rda \
+    maybe-all-target-libada
 
 # Do a target for all the subdirectories.  A ``make do-X'' will do a
 # ``make X'' in all subdirectories (because, in general, there is a
@@ -794,7 +796,8 @@ info-target:  \
     maybe-info-target-zlib \
     maybe-info-target-boehm-gc \
     maybe-info-target-qthreads \
-    maybe-info-target-rda
+    maybe-info-target-rda \
+    maybe-info-target-libada
 
 # GCC, the eternal special case
 .PHONY: maybe-info-gcc info-gcc
@@ -2582,6 +2585,28 @@ info-target-rda: \
 	  || exit 1
 
 
+.PHONY: maybe-info-target-libada info-target-libada
+maybe-info-target-libada:
+
+info-target-libada: \
+    configure-target-libada 
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing info in $(TARGET_SUBDIR)/libada" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
+
+
 
 .PHONY: do-dvi
 do-dvi: dvi-host dvi-target
@@ -2670,7 +2695,8 @@ dvi-target:  \
     maybe-dvi-target-zlib \
     maybe-dvi-target-boehm-gc \
     maybe-dvi-target-qthreads \
-    maybe-dvi-target-rda
+    maybe-dvi-target-rda \
+    maybe-dvi-target-libada
 
 # GCC, the eternal special case
 .PHONY: maybe-dvi-gcc dvi-gcc
@@ -4458,6 +4484,28 @@ dvi-target-rda: \
 	  || exit 1
 
 
+.PHONY: maybe-dvi-target-libada dvi-target-libada
+maybe-dvi-target-libada:
+
+dvi-target-libada: \
+    configure-target-libada 
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libada" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
+
+
 
 .PHONY: do-TAGS
 do-TAGS: TAGS-host TAGS-target
@@ -4546,7 +4594,8 @@ TAGS-target:  \
     maybe-TAGS-target-zlib \
     maybe-TAGS-target-boehm-gc \
     maybe-TAGS-target-qthreads \
-    maybe-TAGS-target-rda
+    maybe-TAGS-target-rda \
+    maybe-TAGS-target-libada
 
 # GCC, the eternal special case
 .PHONY: maybe-TAGS-gcc TAGS-gcc
@@ -6334,6 +6383,28 @@ TAGS-target-rda: \
 	  || exit 1
 
 
+.PHONY: maybe-TAGS-target-libada TAGS-target-libada
+maybe-TAGS-target-libada:
+
+TAGS-target-libada: \
+    configure-target-libada 
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libada" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          TAGS) \
+	  || exit 1
+
+
 
 .PHONY: do-install-info
 do-install-info: install-info-host install-info-target
@@ -6422,7 +6493,8 @@ install-info-target:  \
     maybe-install-info-target-zlib \
     maybe-install-info-target-boehm-gc \
     maybe-install-info-target-qthreads \
-    maybe-install-info-target-rda
+    maybe-install-info-target-rda \
+    maybe-install-info-target-libada
 
 # GCC, the eternal special case
 .PHONY: maybe-install-info-gcc install-info-gcc
@@ -8291,6 +8363,29 @@ install-info-target-rda: \
 	  || exit 1
 
 
+.PHONY: maybe-install-info-target-libada install-info-target-libada
+maybe-install-info-target-libada:
+
+install-info-target-libada: \
+    configure-target-libada \
+    info-target-libada 
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libada" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
+
+
 
 .PHONY: do-installcheck
 do-installcheck: installcheck-host installcheck-target
@@ -8379,7 +8474,8 @@ installcheck-target:  \
     maybe-installcheck-target-zlib \
     maybe-installcheck-target-boehm-gc \
     maybe-installcheck-target-qthreads \
-    maybe-installcheck-target-rda
+    maybe-installcheck-target-rda \
+    maybe-installcheck-target-libada
 
 # GCC, the eternal special case
 .PHONY: maybe-installcheck-gcc installcheck-gcc
@@ -10167,6 +10263,28 @@ installcheck-target-rda: \
 	  || exit 1
 
 
+.PHONY: maybe-installcheck-target-libada installcheck-target-libada
+maybe-installcheck-target-libada:
+
+installcheck-target-libada: \
+    configure-target-libada 
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libada" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
+
+
 
 .PHONY: do-mostlyclean
 do-mostlyclean: mostlyclean-host mostlyclean-target
@@ -10255,7 +10373,8 @@ mostlyclean-target:  \
     maybe-mostlyclean-target-zlib \
     maybe-mostlyclean-target-boehm-gc \
     maybe-mostlyclean-target-qthreads \
-    maybe-mostlyclean-target-rda
+    maybe-mostlyclean-target-rda \
+    maybe-mostlyclean-target-libada
 
 # GCC, the eternal special case
 .PHONY: maybe-mostlyclean-gcc mostlyclean-gcc
@@ -11920,6 +12039,27 @@ mostlyclean-target-rda:
 	  || exit 1
 
 
+.PHONY: maybe-mostlyclean-target-libada mostlyclean-target-libada
+maybe-mostlyclean-target-libada:
+
+mostlyclean-target-libada: 
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libada" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          mostlyclean) \
+	  || exit 1
+
+
 
 .PHONY: do-clean
 do-clean: clean-host clean-target
@@ -12008,7 +12148,8 @@ clean-target:  \
     maybe-clean-target-zlib \
     maybe-clean-target-boehm-gc \
     maybe-clean-target-qthreads \
-    maybe-clean-target-rda
+    maybe-clean-target-rda \
+    maybe-clean-target-libada
 
 # GCC, the eternal special case
 .PHONY: maybe-clean-gcc clean-gcc
@@ -13687,6 +13828,27 @@ clean-target-rda:
 	  || exit 1
 
 
+.PHONY: maybe-clean-target-libada clean-target-libada
+maybe-clean-target-libada:
+
+clean-target-libada: 
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libada" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          clean) \
+	  || exit 1
+
+
 
 .PHONY: do-distclean
 do-distclean: distclean-host distclean-target
@@ -13775,7 +13937,8 @@ distclean-target:  \
     maybe-distclean-target-zlib \
     maybe-distclean-target-boehm-gc \
     maybe-distclean-target-qthreads \
-    maybe-distclean-target-rda
+    maybe-distclean-target-rda \
+    maybe-distclean-target-libada
 
 # GCC, the eternal special case
 .PHONY: maybe-distclean-gcc distclean-gcc
@@ -15454,6 +15617,27 @@ distclean-target-rda:
 	  || exit 1
 
 
+.PHONY: maybe-distclean-target-libada distclean-target-libada
+maybe-distclean-target-libada:
+
+distclean-target-libada: 
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libada" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          distclean) \
+	  || exit 1
+
+
 
 .PHONY: do-maintainer-clean
 do-maintainer-clean: maintainer-clean-host maintainer-clean-target
@@ -15542,7 +15726,8 @@ maintainer-clean-target:  \
     maybe-maintainer-clean-target-zlib \
     maybe-maintainer-clean-target-boehm-gc \
     maybe-maintainer-clean-target-qthreads \
-    maybe-maintainer-clean-target-rda
+    maybe-maintainer-clean-target-rda \
+    maybe-maintainer-clean-target-libada
 
 # GCC, the eternal special case
 .PHONY: maybe-maintainer-clean-gcc maintainer-clean-gcc
@@ -17221,6 +17406,27 @@ maintainer-clean-target-rda:
 	  || exit 1
 
 
+.PHONY: maybe-maintainer-clean-target-libada maintainer-clean-target-libada
+maybe-maintainer-clean-target-libada:
+
+maintainer-clean-target-libada: 
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libada" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          maintainer-clean) \
+	  || exit 1
+
+
 
 
 # Here are the targets which correspond to the do-X targets.
@@ -17363,7 +17569,8 @@ do-check: maybe-check-gcc  \
     maybe-check-target-zlib \
     maybe-check-target-boehm-gc \
     maybe-check-target-qthreads \
-    maybe-check-target-rda
+    maybe-check-target-rda \
+    maybe-check-target-libada
 
 # Automated reporting of test results.
 
@@ -17542,7 +17749,8 @@ install-target:  \
     maybe-install-target-zlib \
     maybe-install-target-boehm-gc \
     maybe-install-target-qthreads \
-    maybe-install-target-rda
+    maybe-install-target-rda \
+    maybe-install-target-libada
 
 uninstall:
 	@echo "the uninstall target is not supported in this tree"
@@ -23254,6 +23462,107 @@ install-target-rda: installdirs
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
 
 
+.PHONY: configure-target-libada maybe-configure-target-libada
+maybe-configure-target-libada:
+
+# There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+$(TARGET_SUBDIR)/libada/multilib.out: multilib.out
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libada ; \
+	rm -f $(TARGET_SUBDIR)/libada/Makefile || : ; \
+	cp multilib.out $(TARGET_SUBDIR)/libada/multilib.out
+
+configure-target-libada: $(TARGET_SUBDIR)/libada/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libada/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libada ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	AR="$(AR_FOR_TARGET)"; export AR; \
+	AS="$(AS_FOR_TARGET)"; export AS; \
+	CC="$(CC_FOR_TARGET)"; export CC; \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
+	CXX="$(CXX_FOR_TARGET)"; export CXX; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
+	LD="$(LD_FOR_TARGET)"; export LD; \
+	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
+	NM="$(NM_FOR_TARGET)"; export NM; \
+	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
+	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
+	echo Configuring in $(TARGET_SUBDIR)/libada; \
+	cd "$(TARGET_SUBDIR)/libada" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(TARGET_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	    esac ;; \
+	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
+	    if $(SHELL) $$s/symlink-tree $${topdir}/libada "no-such-file" ; then \
+	      if [ -f Makefile ]; then \
+	        if $(MAKE) distclean; then \
+	          true; \
+	        else \
+	          exit 1; \
+	        fi; \
+	      else \
+	        true; \
+	      fi; \
+	    else \
+	      exit 1; \
+	    fi; \
+	  else \
+	    true; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
+	  srcdiroption="--srcdir=$${topdir}/libada"; \
+	  libsrcdir="$$s/libada"; \
+	fi; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) $${srcdiroption} \
+	  --with-target-subdir="$(TARGET_SUBDIR)" \
+	  || exit 1
+
+.PHONY: all-target-libada maybe-all-target-libada
+maybe-all-target-libada:
+all-target-libada: configure-target-libada
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  all)
+
+.PHONY: check-target-libada maybe-check-target-libada
+maybe-check-target-libada:
+
+check-target-libada:
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  check)
+
+
+.PHONY: install-target-libada maybe-install-target-libada
+maybe-install-target-libada:
+
+install-target-libada: installdirs
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
+
+
 
 # ----------
 # GCC module
@@ -23549,6 +23858,7 @@ ALL_GCC_CXX = $(ALL_GCC_C) maybe-all-target-libstdc++-v3
 configure-target-boehm-gc: $(ALL_GCC_C) maybe-configure-target-qthreads
 configure-target-fastjar: maybe-configure-target-zlib
 all-target-fastjar: maybe-all-target-zlib maybe-all-target-libiberty
+configure-target-libada: $(ALL_GCC_C)
 configure-target-libf2c: $(ALL_GCC_C)
 all-target-libf2c: maybe-all-target-libiberty
 configure-target-libffi: $(ALL_GCC_C) 
