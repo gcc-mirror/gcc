@@ -474,7 +474,7 @@ public class DecimalFormat extends NumberFormat
 	    intPart = Math.floor(intPart / 10);
 
 	    // Append group separator if required.
-	    if (groupingUsed && count > 0 && count % groupingSize == 0)
+	    if (groupingUsed && count > 0 && groupingSize != 0 && count % groupingSize == 0)
 	      dest.insert(index, symbols.getGroupingSeparator());
 
 	    dest.insert(index, (char) (symbols.getZeroDigit() + dig));
@@ -602,7 +602,7 @@ public class DecimalFormat extends NumberFormat
 	  }
 
 	// Append group separator if required.
-	if (groupingUsed && count > 0 && count % groupingSize == 0)
+	if (groupingUsed && count > 0 && groupingSize != 0 && count % groupingSize == 0)
 	  dest.insert(index, symbols.getGroupingSeparator());
 
 	dest.insert(index, (char) (symbols.getZeroDigit() + dig));
@@ -748,7 +748,8 @@ public class DecimalFormat extends NumberFormat
 	// FIXME: what about grouping size?
 	if (groupingUsed && c == symbols.getGroupingSeparator())
 	  {
-	    if (last_group != -1
+	    if (last_group != -1 
+		&& groupingSize != 0  
 		&& (index - last_group) % groupingSize != 0)
 	      {
 		pos.setErrorIndex(index);
@@ -765,7 +766,8 @@ public class DecimalFormat extends NumberFormat
 	  break;
 	else if (c == symbols.getDecimalSeparator())
 	  {
-	    if (last_group != -1
+	    if (last_group != -1 
+		&& groupingSize != 0 
 		&& (index - last_group) % groupingSize != 0)
 	      {
 		pos.setErrorIndex(index);
