@@ -1,3 +1,11 @@
+2001-07-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.h (TDI_inlined): New ast dump phase.
+	(dump_flag_name): New function.
+	* c-dump.c (dump_files): Add inlined phase.
+	(dump_flag_name): Define.
+	* doc/invoke.texi (-fdump-ast-inlined): Document.
+
 Mon Jul  2 06:29:36 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (layout_decl): Revert change to handling of alignment

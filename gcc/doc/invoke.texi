@@ -239,6 +239,7 @@ in the following sections.
 -a  -ax  -d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fdump-unnumbered -fdump-translation-unit@r{[}-@var{n}@r{]} -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-ast-original@r{[}-@var{n}@r{]} -fdump-ast-optimized@r{[}-@var{n}@r{]} @gol
+-fdump-ast-inlined@r{[}-@var{n}@r{]} @gol
 -fmem-report  -fpretend-float @gol
 -fprofile-arcs  -ftest-coverage  -ftime-report @gol
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2 @gol
@@ -3029,6 +3030,9 @@ The following tree dumps are possible:
 Dump before any tree based optimization, to @file{@var{file}.original}.
 @item optimized
 Dump after all tree based optimization, to @file{@var{file}.optimized}.
+@item inlined
+Dump after inlining within the body of the function, to
+@file{@var{file}.inlined}.
 @end table
 
 @item -fpretend-float
@@ -3867,8 +3871,8 @@ the directories you have specified with @option{-I} options (and the
 current directory, if appropriate) are searched.  @xref{Directory
 Options}, for information on @option{-I}.
 
-By using both @option{-nostdinc} and @option{-I-}, you can limit the include-file
-search path to only those directories you specify explicitly.
+By using both @option{-nostdinc} and @option{-I-}, you can limit the
+include-file search path to only those directories you specify explicitly.
 
 @item -remap
 @opindex remap
@@ -4351,6 +4355,10 @@ not use this option to add directories that contain vendor-supplied
 system header files (use @option{-isystem} for that).  If you use more than
 one @option{-I} option, the directories are scanned in left-to-right
 order; the standard system directories come after.
+
+GCC will detect and warn you, if a directory is specified with both the
+@option{-I} and also is a system search directory (either by default, or
+with @option{-isystem}).
 
 @item -I-
 @opindex I-

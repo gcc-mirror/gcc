@@ -799,9 +799,10 @@ struct dump_file_info
 static struct dump_file_info dump_files[TDI_end] =
 {
   {".tu", "dump-translation-unit", 0, 0},
+  {".class", "dump-class-hierarchy", 0, 0},
   {".original", "dump-ast-original", 0, 0},
   {".optimized", "dump-ast-optimized", 0, 0},
-  {".class", "dump-class-hierarchy", 0, 0},
+  {".inlined", "dump-ast-inlined", 0, 0},
 };
 
 /* Begin a tree dump for PHASE. Stores any user supplied flag in
@@ -835,16 +836,27 @@ dump_begin (phase, flag_ptr)
 
 /* Returns non-zero if tree dump PHASE is enabled. */
 
-int dump_enabled_p (phase)
+int
+dump_enabled_p (phase)
      enum tree_dump_index phase;
 {
   return dump_files[phase].state;
 }
 
+/* Returns the switch name of PHASE. */
+
+const char *
+dump_flag_name (phase)
+     enum tree_dump_index phase;
+{
+  return dump_files[phase].swtch;
+}
+
 /* Finish a tree dump for PHASE. STREAM is the stream created by
    dump_begin. */
 
-void dump_end (phase, stream)
+void
+dump_end (phase, stream)
      enum tree_dump_index phase ATTRIBUTE_UNUSED;
      FILE *stream;
 {
@@ -854,7 +866,8 @@ void dump_end (phase, stream)
 /* Parse ARG as a dump switch. Return non-zero if it is, and store the
    relevant details in the dump_files array. */
 
-int dump_switch_p (arg)
+int
+dump_switch_p (arg)
      const char *arg;
 {
   unsigned ix;
