@@ -668,10 +668,10 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
       TYPE_MODE (record_type) = BLKmode;
 
       if (!had_size_unit)
-	  TYPE_SIZE_UNIT (record_type) = size_zero_node;
-
+	TYPE_SIZE_UNIT (record_type) = size_zero_node;
       if (!had_size)
 	TYPE_SIZE (record_type) = bitsize_zero_node;
+
       /* For all-repped records with a size specified, lay the QUAL_UNION_TYPE
 	 out just like a UNION_TYPE, since the size will be fixed.  */
       else if (code == QUAL_UNION_TYPE)
@@ -796,9 +796,11 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
 	   : convert (sizetype, size_binop (CEIL_DIV_EXPR, size,
 					    bitsize_unit_node)));
 
-      TYPE_SIZE (record_type) = round_up (size, TYPE_ALIGN (record_type));
+      TYPE_SIZE (record_type)
+	= variable_size (round_up (size, TYPE_ALIGN (record_type)));
       TYPE_SIZE_UNIT (record_type)
-	= round_up (size_unit, TYPE_ALIGN (record_type) / BITS_PER_UNIT);
+	= variable_size (round_up (size_unit,
+				   TYPE_ALIGN (record_type) / BITS_PER_UNIT));
 
       compute_record_mode (record_type);
     }
