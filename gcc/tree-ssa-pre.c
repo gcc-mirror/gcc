@@ -372,16 +372,10 @@ get_value_handle (tree expr)
     {
       return SSA_NAME_VALUE (expr);
     }
-  else if (TREE_CODE_CLASS (TREE_CODE (expr)) == 'c')
+  else if (TREE_CODE_CLASS (TREE_CODE (expr)) == 'c'
+	   || EXPR_P (expr))
     {
-      cst_ann_t ann = cst_ann (expr);  
-      if (ann)
-	return ann->common.value_handle;
-      return NULL;
-    }
-  else if (EXPR_P (expr))
-    {
-      expr_ann_t ann = expr_ann (expr);
+      tree_ann_t ann = tree_ann (expr);  
       if (ann)
 	return ann->common.value_handle;
       return NULL;
@@ -399,10 +393,9 @@ set_value_handle (tree e, tree v)
     abort ();
   else if (TREE_CODE (e) == SSA_NAME)
     SSA_NAME_VALUE (e) = v;
-  else if (TREE_CODE_CLASS (TREE_CODE (e)) == 'c')
-    get_cst_ann (e)->common.value_handle = v;
-  else if (EXPR_P (e))
-    get_expr_ann (e)->common.value_handle = v;
+  else if (TREE_CODE_CLASS (TREE_CODE (e)) == 'c'
+	   || EXPR_P (e))
+    get_tree_ann (e)->common.value_handle = v;
 }
 
 /* A three tuple {e, pred, v} used to cache phi translations in the
@@ -978,7 +971,7 @@ phi_translate (tree expr, value_set_t set,  basic_block pred,
 	  {
 	    newexpr = pool_alloc (binary_node_pool);
 	    memcpy (newexpr, expr, tree_size (expr));
-	    create_expr_ann (newexpr);
+	    create_tree_ann (newexpr);
 	    TREE_OPERAND (newexpr, 0) = newop1 == oldop1 ? oldop1 : get_value_handle (newop1);
 	    TREE_OPERAND (newexpr, 1) = newop2 == oldop2 ? oldop2 : get_value_handle (newop2);
 	    lookup_or_add (value_table, newexpr);
@@ -1001,7 +994,7 @@ phi_translate (tree expr, value_set_t set,  basic_block pred,
 	  {
 	    newexpr = pool_alloc (unary_node_pool);
 	    memcpy (newexpr, expr, tree_size (expr));
-	    create_expr_ann (newexpr);	 
+	    create_tree_ann (newexpr);	 
 	    TREE_OPERAND (newexpr, 0) = get_value_handle (newop1);
 	    lookup_or_add (value_table, newexpr);
 	    expr = newexpr;

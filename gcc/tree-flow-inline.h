@@ -50,56 +50,6 @@ get_var_ann (tree var)
   return (ann) ? ann : create_var_ann (var);
 }
 
-
-/* Return the constant annotation for T, which must be a _CST node.
-   Return NULL if the constant annotation doesn't already exist.  */
-static inline cst_ann_t
-cst_ann (tree t)
-{
-#if defined ENABLE_CHECKING
-  if (TREE_CODE_CLASS (TREE_CODE (t)) != 'c'
-      || (t->common.ann
-	  && t->common.ann->common.type != CST_ANN))
-    abort ();
-#endif
-
-  return (cst_ann_t) t->common.ann;
-}
-
-/* Return the constant annotation for T, which must be a _CST node.
-   Create the constant annotation if it doesn't exist.  */
-static inline cst_ann_t
-get_cst_ann (tree var)
-{
-  cst_ann_t ann = cst_ann (var);
-  return (ann) ? ann : create_cst_ann (var);
-}
-
-/* Return the expression annotation for T, which must be an expression
-   node.  Return NULL if the expression annotation doesn't already
-   exist.  */
-static inline expr_ann_t
-expr_ann (tree t)
-{
-#if defined ENABLE_CHECKING
-  if (!EXPR_P (t)
-      || (t->common.ann
-	  && t->common.ann->common.type != EXPR_ANN))
-    abort ();
-#endif
-
-  return (expr_ann_t) t->common.ann;
-}
-
-/* Return the expression annotation for T, which must be an expression
-   node.  Create the expression annotation if it doesn't exist.  */
-static inline expr_ann_t
-get_expr_ann (tree t)
-{
-  expr_ann_t ann = expr_ann (t);
-  return (ann) ? ann : create_expr_ann (t);
-}
-
 /* Return the statement annotation for T, which must be a statement
    node.  Return NULL if the statement annotation doesn't exist.  */
 static inline stmt_ann_t
@@ -125,7 +75,7 @@ get_stmt_ann (tree stmt)
 
 /* Return the annotation type for annotation ANN.  */
 static inline enum tree_ann_type
-ann_type (tree_ann ann)
+ann_type (tree_ann_t ann)
 {
   return ann->common.type;
 }
@@ -796,6 +746,23 @@ mark_non_addressable (tree var)
   bitmap_clear_bit (call_clobbered_vars, var_ann (var)->uid);
   DECL_NEEDS_TO_LIVE_IN_MEMORY_INTERNAL (var) = 0;
   TREE_ADDRESSABLE (var) = 0;
+}
+
+/* Return the common annotation for T.  Return NULL if the annotation
+   doesn't already exist.  */
+static inline tree_ann_t
+tree_ann (tree t)
+{
+  return t->common.ann;
+}
+
+/* Return a common annotation for T.  Create the constant annotation if it
+   doesn't exist.  */
+static inline tree_ann_t
+get_tree_ann (tree t)
+{
+  tree_ann_t ann = tree_ann (t);
+  return (ann) ? ann : create_tree_ann (t);
 }
 
 #endif /* _TREE_FLOW_INLINE_H  */

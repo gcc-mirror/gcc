@@ -1,3 +1,31 @@
+2004-06-18  Daniel Berlin  <dberlin@dberlin.org>
+			Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-dfa.c (create_var_ann): tree_ann -> tree_ann_t.
+	(create_stmt_ann): Ditto.
+	(create_tree_ann): New function.
+	(create_cst_ann): Remove.
+	(create_expr_ann): Ditto.
+
+	* tree-flow-inline.h (cst_ann): Remove.
+	(get_cst_ann): Ditto.
+	(get_expr_ann): Ditto.
+	(expr_ann): Ditto.
+	(get_tree_ann): New function.
+	(tree_ann): Ditto.
+	(ann_type): tree_ann -> tree_ann_t.
+	* tree-flow.h (tree_ann_type): CST_ANN, EXPR_ANN removed.
+	(struct cst_ann_d): Removed.
+	(struct expr_ann_d): Ditto.
+	(union tree_ann_d): Removed cst and expr.
+	(tree_ann): Renamed to tree_ann_t.
+	* tree-ssa-ccp.c (set_rhs): tree_ann -> tree_ann_t.
+	* tree-ssa-pre.c (get_value_handle): Rewrite for single common
+	annotation.
+	(set_value_handle): Ditto.
+	(phi_translate): Ditto.
+	* tree-tailcall.c (adjust_return_value): tree_ann -> tree_ann_t.
+
 2004-06-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/t-linux64: New file.

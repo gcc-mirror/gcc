@@ -2077,7 +2077,7 @@ set_rhs (tree *stmt_p, tree expr)
 	 effects, then replace *STMT_P with an empty statement.  */
       stmt_ann_t ann = stmt_ann (stmt);
       *stmt_p = TREE_SIDE_EFFECTS (expr) ? expr : build_empty_stmt ();
-      (*stmt_p)->common.ann = (tree_ann) ann;
+      (*stmt_p)->common.ann = (tree_ann_t) ann;
 
       if (TREE_SIDE_EFFECTS (expr))
 	{
