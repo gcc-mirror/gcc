@@ -128,7 +128,7 @@
 *** inc/curses.h
 --- res/curses.h
 ***************
-*** 1,11 ****
+*** 1,16 ****
   
   
   #ifndef AVOID_BOOL_CHECK
@@ -140,7 +140,12 @@
   #ifndef BAD_STRUCT_TERM_CHECK
 ! typedef struct term;
   #endif  /* BAD_STRUCT_TERM_CHECK */
---- 1,15 ----
+  
+  
+  #ifndef LYNX_VOID_INT_CHECK
+! # define	void	int 	/* curses foiled again */
+  #endif  /* LYNX_VOID_INT_CHECK */
+--- 1,20 ----
   
   
   #ifndef AVOID_BOOL_CHECK
@@ -156,6 +161,41 @@
   #ifndef BAD_STRUCT_TERM_CHECK
 ! struct term;
   #endif  /* BAD_STRUCT_TERM_CHECK */
+  
+  
+  #ifndef LYNX_VOID_INT_CHECK
+! /* curses foiled again */
+  #endif  /* LYNX_VOID_INT_CHECK */
+*** inc/fcntl.h
+--- res/fcntl.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef LYNXOS_FCNTL_PROTO_CHECK
+! extern int fcntl(int, int, int);
+  #endif  /* LYNXOS_FCNTL_PROTO_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef LYNXOS_FCNTL_PROTO_CHECK
+! extern int fcntl(int, int, ...);
+  #endif  /* LYNXOS_FCNTL_PROTO_CHECK */
+*** inc/inttypes.h
+--- res/inttypes.h
+***************
+*** 2,6 ****
+  
+  #ifndef HPUX11_UINT32_C_CHECK
+  #define CONCAT_U__(__c)	__CONCAT__(__c,u)
+! #define UINT32_C(__c)	__CONCAT__(__CONCAT_U__(__c),l)
+  #endif  /* HPUX11_UINT32_C_CHECK */
+--- 2,6 ----
+  
+  #ifndef HPUX11_UINT32_C_CHECK
+  #define CONCAT_U__(__c)	__CONCAT__(__c,u)
+! #define UINT32_C(__c) __CONCAT__(__c,ul)
+  #endif  /* HPUX11_UINT32_C_CHECK */
 *** inc/libgen.h
 --- res/libgen.h
 ***************
@@ -173,10 +213,22 @@
 ! #define something _FOOsomething
   #define mumble _FOOmumble
   #endif  /* BAD_LVAL_CHECK */
+*** inc/limits.h
+--- res/limits.h
+***************
+*** 1,5 ****
+--- 1,7 ----
+  
+  
+  #ifndef LIMITS_IFNDEFS_CHECK
++ #ifndef DBL_DIG
+   #	define	DBL_DIG 	 0  /* somthin' */
++ #endif
+  #endif  /* LIMITS_IFNDEFS_CHECK */
 *** inc/math.h
 --- res/math.h
 ***************
-*** 1,10 ****
+*** 1,35 ****
   
   
   #ifndef BROKEN_CABS_CHECK
@@ -187,7 +239,32 @@
   #endif
   #endif  /* BROKEN_CABS_CHECK */
   
---- 1,14 ----
+  
+  #ifndef FIX_HEADER_BREAKAGE_CHECK
+! extern double floor(), ceil(), fmod(), fabs();
+  #endif  /* FIX_HEADER_BREAKAGE_CHECK */
+  
+  
+  #ifndef HPUX8_BOGUS_INLINES_CHECK
+! inline int abs(int v) { return (v>=0)?v:-v; }
+! inline double sqr(double v) { return v**0.5; }
+  #endif  /* HPUX8_BOGUS_INLINES_CHECK */
+  
+  
+  #ifndef ISC_FMOD_CHECK
+! extern double	fmod(double);
+  #endif  /* ISC_FMOD_CHECK */
+  
+  
+  #ifndef M88K_BAD_HYPOT_OPT_CHECK
+  extern double hypot();
+  #endif  /* M88K_BAD_HYPOT_OPT_CHECK */
+  
+  
+  #ifndef MATH_EXCEPTION_CHECK
+  typedef struct exception t_math_exception;
+  #endif  /* MATH_EXCEPTION_CHECK */
+--- 1,56 ----
 + #ifndef FIXINC_MATH_EXCEPTION_CHECK
 + #define FIXINC_MATH_EXCEPTION_CHECK 1
 + 
@@ -202,9 +279,40 @@
   #endif
   #endif  /* BROKEN_CABS_CHECK */
   
-***************
-*** 12,14 ****
---- 16,23 ----
+  
+  #ifndef FIX_HEADER_BREAKAGE_CHECK
+! extern double floor(), ceil(), fmod(), fabs _PARAMS((double));
+  #endif  /* FIX_HEADER_BREAKAGE_CHECK */
+  
+  
+  #ifndef HPUX8_BOGUS_INLINES_CHECK
+! extern "C" int abs(int);
+! 
+  #endif  /* HPUX8_BOGUS_INLINES_CHECK */
+  
+  
+  #ifndef ISC_FMOD_CHECK
+! extern double	fmod(double, double);
+  #endif  /* ISC_FMOD_CHECK */
+  
+  
+  #ifndef M88K_BAD_HYPOT_OPT_CHECK
+  extern double hypot();
++ /* Workaround a stupid Motorola optimization if one
++    of x or y is 0.0 and the other is negative!  */
++ #ifdef __STDC__
++ static __inline__ double fake_hypot (double x, double y)
++ #else
++ static __inline__ double fake_hypot (x, y)
++ 	double x, y;
++ #endif
++ {
++ 	return fabs (hypot (x, y));
++ }
++ #define hypot	fake_hypot
+  #endif  /* M88K_BAD_HYPOT_OPT_CHECK */
+  
+  
   #ifndef MATH_EXCEPTION_CHECK
   typedef struct exception t_math_exception;
   #endif  /* MATH_EXCEPTION_CHECK */
@@ -213,6 +321,77 @@
 + #endif
 + 
 + #endif  /* FIXINC_MATH_EXCEPTION_CHECK */
+*** inc/netinet/ip.h
+--- res/netinet/ip.h
+***************
+*** 4,10 ****
+  struct mumble {
+    union {
+      int x;
+!   }
+  }; /* mumbled struct */
+  
+  #endif  /* IP_MISSING_SEMI_CHECK */
+--- 4,10 ----
+  struct mumble {
+    union {
+      int x;
+!   };
+  }; /* mumbled struct */
+  
+  #endif  /* IP_MISSING_SEMI_CHECK */
+*** inc/rpc/auth.h
+--- res/rpc/auth.h
+***************
+*** 1,5 ****
+--- 1,6 ----
+  
+  
+  #ifndef STRUCT_SOCKADDR_CHECK
++ struct sockaddr;
+  extern AUTH* authdes_create( struct sockaddr* );
+  #endif  /* STRUCT_SOCKADDR_CHECK */
+*** inc/rpc/rpc.h
+--- res/rpc/rpc.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef NESTED_AUTH_DES_CHECK
+! /*#include <rpc/auth_des.h> /* skip this */
+  #endif  /* NESTED_AUTH_DES_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef NESTED_AUTH_DES_CHECK
+! /*#include <rpc/auth_des.h> */ /* skip this */
+  #endif  /* NESTED_AUTH_DES_CHECK */
+*** inc/rpc/xdr.h
+--- res/rpc/xdr.h
+***************
+*** 1,5 ****
+--- 1,6 ----
+  
+  
+  #ifndef STRUCT_FILE_CHECK
++ struct __file_s;
+  extern void xdrstdio_create( struct __file_s* );
+  #endif  /* STRUCT_FILE_CHECK */
+*** inc/sparc/asm_linkage.h
+--- res/sparc/asm_linkage.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef KANDR_CONCAT_CHECK
+! #define __CONCAT__(a,b) a/**/b
+  #endif  /* KANDR_CONCAT_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef KANDR_CONCAT_CHECK
+! #define __CONCAT__(a,b) a##b
+  #endif  /* KANDR_CONCAT_CHECK */
 *** inc/stdio.h
 --- res/stdio.h
 ***************
@@ -327,6 +506,21 @@
   extern int foo;
   #endif
   #endif  /* ALPHA_PARENS_CHECK */
+*** inc/sys/asm.h
+--- res/sys/asm.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef IRIX_ASM_APOSTROPHE_CHECK
+! # and we're on vacation
+  #endif  /* IRIX_ASM_APOSTROPHE_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef IRIX_ASM_APOSTROPHE_CHECK
+! # and we are on vacation
+  #endif  /* IRIX_ASM_APOSTROPHE_CHECK */
 *** inc/sys/file.h
 --- res/sys/file.h
 ***************
@@ -342,6 +536,25 @@
   #ifndef HP_SYSFILE_CHECK
 ! extern void foo(struct file *, ...); /* HPUX_SOURCE - bad varargs */
   #endif  /* HP_SYSFILE_CHECK */
+*** inc/sys/limits.h
+--- res/sys/limits.h
+***************
+*** 2,8 ****
+  
+  #ifndef NESTED_SYS_LIMITS_CHECK
+  /*
+! #define CHILD_MAX 20 /* Max, Max, ... */ /*
+! #define OPEN_MAX  20 /* Max, Max, ... */
+  
+  #endif  /* NESTED_SYS_LIMITS_CHECK */
+--- 2,8 ----
+  
+  #ifndef NESTED_SYS_LIMITS_CHECK
+  /*
+! #define CHILD_MAX 20  Max, Max, ... */ /*
+! #define OPEN_MAX  20  Max, Max, ... */
+  
+  #endif  /* NESTED_SYS_LIMITS_CHECK */
 *** inc/sys/mman.h
 --- res/sys/mman.h
 ***************
@@ -426,6 +639,21 @@
   # include "../machine/dontfix.h"
 ! # include <machine/psl.h>
   #endif  /* HP_INLINE_CHECK */
+*** inc/sys/stat.h
+--- res/sys/stat.h
+***************
+*** 1,5 ****
+  
+  
+  #ifndef M88K_BAD_S_IF_CHECK
+! #define S_ISREG(m) (m & S_IFREG) /* is regular? */
+  #endif  /* M88K_BAD_S_IF_CHECK */
+--- 1,5 ----
+  
+  
+  #ifndef M88K_BAD_S_IF_CHECK
+! #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG) /* is regular? */
+  #endif  /* M88K_BAD_S_IF_CHECK */
 *** inc/sys/time.h
 --- res/sys/time.h
 ***************
@@ -441,6 +669,23 @@
   #ifndef HPUX_SYSTIME_CHECK
 ! struct sigevent;
   #endif  /* HPUX_SYSTIME_CHECK */
+*** inc/sys/types.h
+--- res/sys/types.h
+***************
+*** 1,6 ****
+  
+  
+  #ifndef IRIX_MULTILINE_CMNT_CHECK
+! /* we check the type of the result
+! // of the sizeof something.  This is a bad test :-( */
+  #endif  /* IRIX_MULTILINE_CMNT_CHECK */
+--- 1,6 ----
+  
+  
+  #ifndef IRIX_MULTILINE_CMNT_CHECK
+! /* we check the type of the result */
+! // /* of the sizeof something.  This is a bad test :-( */
+  #endif  /* IRIX_MULTILINE_CMNT_CHECK */
 *** inc/sys/wait.h
 --- res/sys/wait.h
 ***************
