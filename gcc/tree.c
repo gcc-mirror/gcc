@@ -48,6 +48,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-iterator.h"
 #include "basic-block.h"
 #include "tree-flow.h"
+#include "params.h"
 
 /* obstack.[ch] explicitly declined to prototype this.  */
 extern int _obstack_allocated_p (struct obstack *h, void *obj);
@@ -427,15 +428,84 @@ tree
 build_int_cst (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 {
   tree t;
+  int ix = -1;
+  int limit = 0;
 
   if (!type)
     type = integer_type_node;
-
+  
+  switch (TREE_CODE (type))
+    {
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      /* Cache NULL pointer.  */
+      if (!hi && !low)
+	{
+	  limit = 1;
+	  ix = 0;
+	}
+      break;
+      
+    case BOOLEAN_TYPE:
+      /* Cache false or true.  */
+      limit = 2;
+      if (!hi && low < 2)
+	ix = low;
+      break;
+      
+    case INTEGER_TYPE:
+    case CHAR_TYPE:
+    case OFFSET_TYPE:
+      if (TYPE_UNSIGNED (type))
+	{
+	  /* Cache 0..N */
+	  limit = INTEGER_SHARE_LIMIT;
+	  if (!hi && low < (unsigned HOST_WIDE_INT)INTEGER_SHARE_LIMIT)
+	    ix = low;
+	}
+      else
+	{
+	  /* Cache -1..N */
+	  limit = INTEGER_SHARE_LIMIT + 1;
+	  if (!hi && low < (unsigned HOST_WIDE_INT)INTEGER_SHARE_LIMIT)
+	    ix = low + 1;
+	  else if (hi == -1 && low == -(unsigned HOST_WIDE_INT)1)
+	    ix = 0;
+	}
+      break;
+    default:
+      break;
+    }
+  
+  if (ix >= 0)
+    {
+      if (!TYPE_CACHED_VALUES_P (type))
+	{
+	  TYPE_CACHED_VALUES_P (type) = 1;
+	  TYPE_CACHED_VALUES (type) = make_tree_vec (limit);
+	}
+      
+      t = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix);
+      if (t)
+	{
+	  /* Make sure no one is clobbering the shared constant.  */
+	  if (TREE_TYPE (t) != type)
+	    abort ();
+	  if (TREE_INT_CST_LOW (t) != low || TREE_INT_CST_HIGH (t) != hi)
+	    abort ();
+	  return t;
+	}
+    }
+  
   t = make_node (INTEGER_CST);
 
   TREE_INT_CST_LOW (t) = low;
   TREE_INT_CST_HIGH (t) = hi;
   TREE_TYPE (t) = type;
+
+  if (ix >= 0)
+    TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
+  
   return t;
 }
 
@@ -3097,6 +3167,14 @@ build_type_copy (tree type)
   tree t, m = TYPE_MAIN_VARIANT (type);
 
   t = copy_node (type);
+  if (TYPE_CACHED_VALUES_P(t))
+    {
+      /* Do not copy the values cache.  */
+      if (TREE_CODE (t) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t))
+	abort ();
+      TYPE_CACHED_VALUES_P (t) = 0;
+      TYPE_CACHED_VALUES (t) = NULL_TREE;
+    }
 
   TYPE_POINTER_TO (t) = 0;
   TYPE_REFERENCE_TO (t) = 0;

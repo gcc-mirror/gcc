@@ -230,6 +230,8 @@ struct tree_common GTY(())
            VAR_DECL or FUNCTION_DECL or IDENTIFIER_NODE
        ASM_VOLATILE_P in
            ASM_EXPR
+       TYPE_CACHED_VALUES_P in
+          ..._TYPE
 
    private_flag:
 
@@ -781,6 +783,10 @@ extern void tree_operand_check_failed (int, enum tree_code,
    accessible from outside this module was previously seen
    for this name in an inner scope.  */
 #define TREE_PUBLIC(NODE) ((NODE)->common.public_flag)
+
+/* In a _TYPE, indicates whether TYPE_CACHED_VALUES contains a vector
+   of cached values, or is something else.  */
+#define TYPE_CACHED_VALUES_P(NODE) (TYPE_CHECK(NODE)->common.public_flag)
 
 /* In any expression, decl, or constant, nonzero means it has side effects or
    reevaluation of the whole expression could produce a different value.
@@ -1377,10 +1383,13 @@ struct tree_block GTY(())
 #define TYPE_SIZE(NODE) (TYPE_CHECK (NODE)->type.size)
 #define TYPE_SIZE_UNIT(NODE) (TYPE_CHECK (NODE)->type.size_unit)
 #define TYPE_MODE(NODE) (TYPE_CHECK (NODE)->type.mode)
-#define TYPE_ORIG_SIZE_TYPE(NODE) (INTEGER_TYPE_CHECK (NODE)->type.values)
 #define TYPE_VALUES(NODE) (ENUMERAL_TYPE_CHECK (NODE)->type.values)
 #define TYPE_DOMAIN(NODE) (SET_OR_ARRAY_CHECK (NODE)->type.values)
 #define TYPE_FIELDS(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.values)
+#define TYPE_CACHED_VALUES(NODE) (TYPE_CHECK(NODE)->type.values)
+#define TYPE_ORIG_SIZE_TYPE(NODE)			\
+  (INTEGER_TYPE_CHECK (NODE)->type.values		\
+  ? TREE_TYPE ((NODE)->type.values) : NULL_TREE)
 #define TYPE_METHODS(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.maxval)
 #define TYPE_VFIELD(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.minval)
 #define TYPE_ARG_TYPES(NODE) (FUNC_OR_METHOD_CHECK (NODE)->type.values)

@@ -1,7 +1,14 @@
+2004-08-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* parse.h (JAVA_RADIX10_FLAG): Rename to ...
+	(JAVA_NOT_RADIX10_FLAG): ... here.  Invert meaning.
+	* lex.c (do_java_lex): Adjust.
+	(error_if_numeric_overflow): Likewise.
+
 2004-08-18  Andrew Pinski  <apinski@apple.com>
 
-	* class.c (make_local_function_alias): Only make a new decl if we support
-	alias attribute on all decls.
+	* class.c (make_local_function_alias): Only make a new decl if we
+	support alias attribute on all decls.
 
 2004-08-18  Bryce McKinlay  <mckinlay@redhat.com>
 

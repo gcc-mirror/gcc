@@ -1303,9 +1303,14 @@ do_java_lex (YYSTYPE *java_lval)
       value = build_int_cst (long_suffix ? long_type_node : int_type_node,
 			     low, high);
       value = force_fit_type (value, 0, false, false);
-      SET_LVAL_NODE (value);
+
+      if (radix != 10)
+	{
+	  value = copy_node (value);
+	  JAVA_NOT_RADIX10_FLAG (value) = 1;
+	}
       
-      JAVA_RADIX10_FLAG (value) = radix == 10;
+      SET_LVAL_NODE (value);
 #endif
       return INT_LIT_TK;
     }
@@ -1733,7 +1738,7 @@ static void
 error_if_numeric_overflow (tree value)
 {
   if (TREE_CODE (value) == INTEGER_CST
-      && JAVA_RADIX10_FLAG (value)
+      && !JAVA_NOT_RADIX10_FLAG (value)
       && tree_int_cst_sgn (value) < 0)
     {
       if (TREE_TYPE (value) == long_type_node)

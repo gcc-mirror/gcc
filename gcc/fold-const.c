@@ -268,18 +268,21 @@ force_fit_type (tree t, int overflowable,
   if (overflowed || overflowed_const
       || low != TREE_INT_CST_LOW (t) || high != TREE_INT_CST_HIGH (t))
     {
+      t = build_int_cst (TREE_TYPE (t), low, high);
+      
       if (overflowed
 	  || overflowable < 0
 	  || (overflowable > 0 && sign_extended_type))
 	{
+	  t = copy_node (t);
 	  TREE_OVERFLOW (t) = 1;
 	  TREE_CONSTANT_OVERFLOW (t) = 1;
 	}
       else if (overflowed_const)
-	TREE_CONSTANT_OVERFLOW (t) = 1;
-      
-      TREE_INT_CST_LOW (t) = low;
-      TREE_INT_CST_HIGH (t) = high;
+	{
+	  t = copy_node (t);
+	  TREE_CONSTANT_OVERFLOW (t) = 1;
+	}
     }
   
   return t;
@@ -1425,11 +1428,16 @@ int_const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
       /* Propagate overflow flags ourselves.  */
       if (((!uns || is_sizetype) && overflow)
 	  | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2))
-	TREE_OVERFLOW (t) = 1;
-
-      if (TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1)
-	  | TREE_CONSTANT_OVERFLOW (arg2))
-	TREE_CONSTANT_OVERFLOW (t) = 1;
+	{
+	  t = copy_node (t);
+	  TREE_OVERFLOW (t) = 1;
+	  TREE_CONSTANT_OVERFLOW (t) = 1;
+	}
+      else if (TREE_CONSTANT_OVERFLOW (arg1) | TREE_CONSTANT_OVERFLOW (arg2))
+	{
+	  t = copy_node (t);
+	  TREE_CONSTANT_OVERFLOW (t) = 1;
+	}
     }
   else
     t = force_fit_type (t, 1,

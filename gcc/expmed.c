@@ -4550,7 +4550,8 @@ make_tree (tree type, rtx x)
    UNSIGNEDP is nonzero to do unsigned multiplication.  */
 
 bool
-const_mult_add_overflow_p (rtx x, rtx mult, rtx add, enum machine_mode mode, int unsignedp)
+const_mult_add_overflow_p (rtx x, rtx mult, rtx add,
+			   enum machine_mode mode, int unsignedp)
 {
   tree type, mult_type, add_type, result;
 
@@ -4561,7 +4562,15 @@ const_mult_add_overflow_p (rtx x, rtx mult, rtx add, enum machine_mode mode, int
   mult_type = type;
   if (unsignedp)
     {
+      /* FIXME:It would be nice if we could step directly from this
+	 type to its sizetype equivalent.  */
       mult_type = copy_node (type);
+      if (TYPE_CACHED_VALUES_P (mult_type))
+	{
+	  /* Clear any set of cached values it has. */
+	  TYPE_CACHED_VALUES_P (mult_type) = 0;
+	  TYPE_CACHED_VALUES (mult_type) = NULL_TREE;
+	}
       TYPE_IS_SIZETYPE (mult_type) = 1;
     }
 

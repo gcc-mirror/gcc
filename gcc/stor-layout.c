@@ -35,6 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 #include "regs.h"
+#include "params.h"
 
 /* Set to one when set_sizetype has been called.  */
 static int sizetype_set;
@@ -1900,7 +1901,9 @@ set_sizetype (tree type)
 
   /* Make copies of nodes since we'll be setting TYPE_IS_SIZETYPE.  */
   sizetype = copy_node (type);
-  TYPE_ORIG_SIZE_TYPE (sizetype) = type;
+  TYPE_CACHED_VALUES (sizetype) = make_tree_vec (INTEGER_SHARE_LIMIT);
+  TYPE_CACHED_VALUES_P (sizetype) = 1;
+  TREE_TYPE (TYPE_CACHED_VALUES (sizetype)) = type;
   TYPE_IS_SIZETYPE (sizetype) = 1;
   bitsizetype = make_node (INTEGER_TYPE);
   TYPE_NAME (bitsizetype) = TYPE_NAME (type);
@@ -2047,6 +2050,8 @@ fixup_unsigned_type (tree type)
   if (precision > HOST_BITS_PER_WIDE_INT * 2)
     precision = HOST_BITS_PER_WIDE_INT * 2;
 
+  TYPE_UNSIGNED (type) = 1;
+  
   set_min_and_max_values_for_integral_type (type, precision, 
 					    /*is_unsigned=*/true);
 

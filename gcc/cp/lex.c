@@ -354,8 +354,10 @@ cxx_init (void)
 
   cxx_init_decl_processing ();
 
-  /* Create the built-in __null node.  */
-  null_node = build_int_cst (c_common_type_for_size (POINTER_SIZE, 0), 0, 0);
+  /* Create the built-in __null node.  It is important that this is
+     not shared. */
+  null_node = make_node (INTEGER_CST);
+  TREE_TYPE (null_node) = c_common_type_for_size (POINTER_SIZE, 0);
   ridpointers[RID_NULL] = null_node;
 
   interface_unknown = 1;
