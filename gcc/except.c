@@ -428,69 +428,10 @@ int protect_cleanup_actions_with_terminate;
 
 rtx exception_handler_labels;
 
-/* The EH context.  Nonzero if the function has already
-   fetched a pointer to the EH context  for exception handling.  */
-
-rtx current_function_ehc;
-
-/* A stack used for keeping track of the currently active exception
-   handling region.  As each exception region is started, an entry
-   describing the region is pushed onto this stack.  The current
-   region can be found by looking at the top of the stack, and as we
-   exit regions, the corresponding entries are popped. 
-
-   Entries cannot overlap; they can be nested. So there is only one
-   entry at most that corresponds to the current instruction, and that
-   is the entry on the top of the stack.  */
-
-static struct eh_stack ehstack;
-
-
-/* This stack is used to represent what the current eh region is
-   for the catch blocks beings processed */
-
-static struct eh_stack catchstack;
-
-/* A queue used for tracking which exception regions have closed but
-   whose handlers have not yet been expanded. Regions are emitted in
-   groups in an attempt to improve paging performance.
-
-   As we exit a region, we enqueue a new entry. The entries are then
-   dequeued during expand_leftover_cleanups and expand_start_all_catch,
-
-   We should redo things so that we either take RTL for the handler,
-   or we expand the handler expressed as a tree immediately at region
-   end time.  */
-
-static struct eh_queue ehqueue;
-
-/* Insns for all of the exception handlers for the current function.
-   They are currently emitted by the frontend code.  */
-
-rtx catch_clauses;
-
-/* A TREE_CHAINed list of handlers for regions that are not yet
-   closed. The TREE_VALUE of each entry contains the handler for the
-   corresponding entry on the ehstack.  */
-
-static tree protect_list;
-
-/* Stacks to keep track of various labels.  */
-
-/* Keeps track of the label to resume to should one want to resume
-   normal control flow out of a handler (instead of, say, returning to
-   the caller of the current function or exiting the program).  */
-
-struct label_node *caught_return_label_stack = NULL;
-
 /* Keeps track of the label used as the context of a throw to rethrow an
    exception to the outer exception region.  */
 
 struct label_node *outer_context_label_stack = NULL;
-
-/* A random data area for the front end's own use.  */
-
-struct label_node *false_label_stack = NULL;
 
 /* Pseudos used to hold exception return data in the interim between
    __builtin_eh_return and the end of the function.  */
@@ -498,11 +439,6 @@ struct label_node *false_label_stack = NULL;
 static rtx eh_return_context;
 static rtx eh_return_stack_adjust;
 static rtx eh_return_handler;
-
-/* Used to mark the eh return stub for flow, so that the Right Thing
-   happens with the values for the hardregs therin.  */
-
-rtx eh_return_stub_label;
 
 /* This is used for targets which can call rethrow with an offset instead
    of an address. This is subtracted from the rethrow label we are
@@ -2415,6 +2351,8 @@ init_eh ()
 void
 init_eh_for_function ()
 {
+  current_function->eh = (struct eh_status *) xmalloc (sizeof (struct eh_status));
+
   ehstack.top = 0;
   catchstack.top = 0;
   ehqueue.head = ehqueue.tail = 0;
@@ -2427,53 +2365,6 @@ init_eh_for_function ()
   eh_return_stack_adjust = NULL_RTX;
   eh_return_handler = NULL_RTX;
   eh_return_stub_label = NULL_RTX;
-}
-
-/* Save some of the per-function EH info into the save area denoted by
-   P. 
-
-   This is currently called from save_stmt_status.  */
-
-void
-save_eh_status (p)
-     struct function *p;
-{
-  if (p == NULL)
-    abort ();
-
-  p->ehstack = ehstack;
-  p->catchstack = catchstack;
-  p->ehqueue = ehqueue;
-  p->catch_clauses = catch_clauses;
-  p->false_label_stack = false_label_stack;
-  p->caught_return_label_stack = caught_return_label_stack;
-  p->protect_list = protect_list;
-  p->ehc = current_function_ehc;
-  p->eh_return_stub_label = eh_return_stub_label;
-
-  init_eh_for_function ();
-}
-
-/* Restore the per-function EH info saved into the area denoted by P.  
-
-   This is currently called from restore_stmt_status.  */
-
-void
-restore_eh_status (p)
-     struct function *p;
-{
-  if (p == NULL)
-    abort ();
-
-  protect_list = p->protect_list;
-  caught_return_label_stack = p->caught_return_label_stack;
-  false_label_stack = p->false_label_stack;
-  catch_clauses	= p->catch_clauses;
-  ehqueue = p->ehqueue;
-  ehstack = p->ehstack;
-  catchstack = p->catchstack;
-  current_function_ehc = p->ehc;
-  eh_return_stub_label = p->eh_return_stub_label;
 }
 
 /* This section is for the exception handling specific optimization

@@ -1,3 +1,10 @@
+1999-07-31  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* decl.c: Include "function.h".
+	* except.c: Likewise.
+	* parse.y: Likewise.
+	* Makefile.in: Update dependencies.
+
 1999-07-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* expr.c (build_java_soft_divmod): Provide a default case in switch.

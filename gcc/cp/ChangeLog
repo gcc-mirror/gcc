@@ -1,3 +1,7 @@
+1999-07-31  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* except.c (catch_clauses): Delete declaration.
+
 1999-07-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_conditional_expr): Call convert_from_reference to

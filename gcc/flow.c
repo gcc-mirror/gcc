@@ -127,6 +127,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "flags.h"
 #include "output.h"
+#include "function.h"
 #include "except.h"
 #include "toplev.h"
 #include "recog.h"

@@ -467,7 +467,6 @@ save_stmt_status (p)
   p->emit_filename = emit_filename;
   p->emit_lineno = emit_lineno;
   p->goto_fixup_chain = goto_fixup_chain;
-  save_eh_status (p);
 }
 
 void
@@ -488,7 +487,6 @@ restore_stmt_status (p)
   emit_filename = p->emit_filename;
   emit_lineno = p->emit_lineno;
   goto_fixup_chain = p->goto_fixup_chain;
-  restore_eh_status (p);
 }
 
 /* Emit a no-op instruction.  */
