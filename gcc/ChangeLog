@@ -1,3 +1,19 @@
+1999-12-12  David S. Miller  <davem@redhat.com>
+	    Jakub Jelinek    <jakub@redhat.com>
+
+	* config/sparc/sparc.md (movtf reg/reg split): Don't generate
+	SUBREGs by hand, gen the appropriate hard reg directly.
+	(movtf reg/mem split): Likewise and alter_subreg on destination
+	if necessary.
+	(movtf mem/reg split): Similarly.
+	(movdf_cc_sp64): Rename from hidden pattern.
+	(movtf_cc_hq_sp64): Renamed from movtf_cc_sp64.
+	(movtf_cc_sp64, following split): New pattern and splitter.
+	(movdf_cc_reg_sp64): Rename from hidden pattern.
+	(movtf_cc_reg_hq_sp64): Renamed from movtf_cc_reg_sp64, require
+	TARGET_HARD_QUAD.
+	(movtf_cc_reg_sp64, following split): New pattern and splitter.
+
 1999-12-12  Stephen L Moshier <moshier@mediaone.net>
 
 	* loop.c (load_mems): Don't hoist written floating point mem
