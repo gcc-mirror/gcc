@@ -3522,8 +3522,24 @@ ia64_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
     return gen_rtx_REG (mode, FR_ARG_FIRST);
   else
     {
+      bool need_parallel = false;
+
+      /* In big-endian mode, we need to manage the layout of aggregates
+	 in the registers so that we get the bits properly aligned in
+	 the highpart of the registers.  */
       if (BYTES_BIG_ENDIAN
 	  && (mode == BLKmode || (valtype && AGGREGATE_TYPE_P (valtype))))
+	need_parallel = true;
+
+      /* Something like struct S { long double x; char a[0] } is not an
+	 HFA structure, and therefore doesn't go in fp registers.  But
+	 the middle-end will give it XFmode anyway, and XFmode values
+	 don't normally fit in integer registers.  So we need to smuggle
+	 the value inside a parallel.  */
+      else if (mode == XFmode || mode == XCmode)
+	need_parallel = true;
+
+      if (need_parallel)
 	{
 	  rtx loc[8];
 	  int offset;
@@ -3542,8 +3558,8 @@ ia64_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 	    }
 	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
 	}
-      else
-	return gen_rtx_REG (mode, GR_RET_FIRST);
+
+      return gen_rtx_REG (mode, GR_RET_FIRST);
     }
 }
 
