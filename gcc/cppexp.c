@@ -176,21 +176,31 @@ interpret_number (pfile, tok)
      const cpp_token *tok;
 {
   cpp_num result;
-  const uchar *start = tok->val.str.text;
-  const uchar *end = start + tok->val.str.len;
-  const uchar *p = start;
+  cpp_num_part max;
+  const uchar *p = tok->val.str.text;
+  const uchar *end;
   const struct suffix *sufftab;
-  size_t precision = CPP_OPTION (pfile, precision);
-  unsigned int i, nsuff, base = 10, c = 0, largest_digit = 0;
-  bool overflow = false;
+  size_t precision;
+  unsigned int i, nsuff, base, c;
+  bool overflow, big_digit;
 
-  result.low = result.high = 0;
+  result.low = 0;
+  result.high = 0;
   result.unsignedp = 0;
   result.overflow = 0;
 
+  /* Common case of a single digit.  */
+  end = p + tok->val.str.len;
+  if (tok->val.str.len == 1 && (unsigned int) (p[0] - '0') <= 9)
+    {
+      result.low = p[0] - '0';
+      return result;
+    }
+
+  base = 10;
   if (p[0] == '0')
     {
-      if (end - start >= 3 && (p[1] == 'x' || p[1] == 'X'))
+      if (end - p >= 3 && (p[1] == 'x' || p[1] == 'X'))
 	{
 	  p += 2;
 	  base = 16;
@@ -202,6 +212,18 @@ interpret_number (pfile, tok)
 	}
     }
 
+  c = 0;
+  overflow = big_digit = false;
+  precision = CPP_OPTION (pfile, precision);
+
+  /* We can add a digit to numbers less than this without needing
+     double integers.  9 is the maximum digit for octal and decimal;
+     for hex it is annihilated by the division anyway.  */
+  max = ~(cpp_num_part) 0;
+  if (precision < PART_PRECISION)
+    max >>= PART_PRECISION - precision;
+  max = (max - 9) / base + 1;
+
   for(; p < end; p++)
     {
       c = *p;
@@ -211,10 +233,18 @@ interpret_number (pfile, tok)
       else
 	break;
 
-      result = append_digit (result, c, base, precision);
-      overflow |= result.overflow;
-      if (largest_digit < c)
-	largest_digit = c;
+      if (c >= base)
+	big_digit = true;
+
+      /* Strict inequality for when max is set to zero.  */
+      if (result.low < max)
+	result.low = result.low * base + c;
+      else
+	{
+	  result = append_digit (result, c, base, precision);
+	  overflow |= result.overflow;
+	  max = 0;
+	}
     }
 
   if (p < end)
@@ -256,7 +286,7 @@ interpret_number (pfile, tok)
 		   "too many 'l' suffixes in integer constant");
     }
 
-  if (base <= largest_digit)
+  if (big_digit)
     cpp_error (pfile, DL_PEDWARN,
 	       "integer constant contains digits beyond the radix");
 
@@ -787,12 +817,12 @@ num_trim (num, precision)
     {
       precision -= PART_PRECISION;
       if (precision < PART_PRECISION)
-	num.high &= (1UL << precision) - 1;
+	num.high &= ((cpp_num_part) 1 << precision) - 1;
     }
   else
     {
       if (precision < PART_PRECISION)
-	num.low &= (1UL << precision) - 1;
+	num.low &= ((cpp_num_part) 1 << precision) - 1;
       num.high = 0;
     }
 
@@ -808,10 +838,10 @@ num_positive (num, precision)
   if (precision > PART_PRECISION)
     {
       precision -= PART_PRECISION;
-      return (num.high & (1UL << (precision - 1))) == 0;
+      return (num.high & (cpp_num_part) 1 << (precision - 1)) == 0;
     }
 
-  return (num.low & (1UL << (precision - 1))) == 0;
+  return (num.low & (cpp_num_part) 1 << (precision - 1)) == 0;
 }
 
 /* Returns the negative of NUM.  */
@@ -1245,7 +1275,7 @@ num_div_op (pfile, lhs, rhs, op)
   if (rhs.high)
     {
       i = precision - 1;
-      mask = 1UL << (i - PART_PRECISION);
+      mask = (cpp_num_part) 1 << (i - PART_PRECISION);
       for (; ; i--, mask >>= 1)
 	if (rhs.high & mask)
 	  break;
@@ -1256,7 +1286,7 @@ num_div_op (pfile, lhs, rhs, op)
 	i = precision - PART_PRECISION - 1;
       else
 	i = precision - 1;
-      mask = 1UL << i;
+      mask = (cpp_num_part) 1 << i;
       for (; ; i--, mask >>= 1)
 	if (rhs.low & mask)
 	  break;
@@ -1284,9 +1314,9 @@ num_div_op (pfile, lhs, rhs, op)
 	{
 	  lhs = num_binary_op (pfile, lhs, sub, CPP_MINUS);
 	  if (i >= PART_PRECISION)
-	    result.high |= 1UL << (i - PART_PRECISION);
+	    result.high |= (cpp_num_part) 1 << (i - PART_PRECISION);
 	  else
-	    result.low |= 1UL << i;
+	    result.low |= (cpp_num_part) 1 << i;
 	}
       if (i-- == 0)
 	break;

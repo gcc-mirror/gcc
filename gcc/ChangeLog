@@ -1,3 +1,9 @@
+2002-05-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppexp.c (interpret_number): Optimize for single-digit
+	and less-than-half-precision cases.
+	(num_trim, num_positive, num_div_op): Cast constants.
+
 2002-05-27  Roger Sayle  <roger@eyesopen.com>
 
 	* c-common.c: Add support for __attribute__((nothrow)) to specify
