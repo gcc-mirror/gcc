@@ -1,3 +1,9 @@
+2001-08-13  Roman Zippel  <zippel@linux-m68k.org>
+	    Richard Henderson  <rth@redhat.com>
+
+	* regmove.c (regmove_optimize): Avoid setting a register twice in
+	a parallel set.
+
 2001-08-12  David Edelsohn  <edelsohn@gnu.org>
 
 	Revert:

@@ -1306,6 +1306,14 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      if (! set)
 		continue;
 
+	      /* Note that single_set ignores parts of a parallel set for
+		 which one of the destinations is REG_UNUSED.  We can't
+		 handle that here, since we can wind up rewriting things
+		 such that a single register is set twice within a single
+		 parallel.  */
+	      if (reg_set_p (src, insn))
+		continue;
+
 	      /* match_no/dst must be a write-only operand, and
 		 operand_operand/src must be a read-only operand.  */
 	      if (match.use[op_no] != READ
