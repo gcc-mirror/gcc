@@ -160,14 +160,14 @@ foo (unsigned int *b, unsigned int n, unsigned int s, const unsigned int *d,
   return y != 0 && g != 1 ? (-5) : 0;
 }
 
-int a[19] = { 3, 4, 0, 2, 2, [17] = 3, 3 };
-int d[19];
+unsigned int a[19] = { 3, 4, 0, 2, 2, [17] = 3, 3 };
+unsigned int d[19];
 A h[1440];
 
 int
 main (void)
 {
-  int b = 0, c = 0;
+  unsigned int b = 0, c = 0;
   A *e = 0;
   foo (a, 19, 19, 0, 0, &e, &b, h, &c, d);
   exit (0);
