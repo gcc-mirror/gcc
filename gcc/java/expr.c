@@ -1750,7 +1750,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    {
 	      tree catch = java_get_catch_block (current, has_finally_p);
 	      tree decl = BLOCK_EXPR_DECLS (catch);
-	      type = TREE_TYPE (TREE_TYPE (decl));
+	      type = (decl ? TREE_TYPE (TREE_TYPE (decl)) : NULL_TREE);
 	    }
 	  start_catch_handler (prepare_eh_table_type (type));
 	  expand_expr_stmt (TREE_OPERAND (current, 0));
@@ -1772,7 +1772,8 @@ java_lang_expand_expr (exp, target, tmode, modifier)
       if (has_finally_p)
 	{
 	  tree finally = TREE_OPERAND (exp, 2);
-	  emit_label (label_rtx (FINALLY_EXPR_LABEL (finally)));
+	  if (FINALLY_EXPR_LABEL (finally))
+	    emit_label (label_rtx (FINALLY_EXPR_LABEL (finally)));
 	  expand_expr_stmt (FINALLY_EXPR_BLOCK (finally));
 	}
       expand_end_all_catch ();

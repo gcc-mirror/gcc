@@ -55,3 +55,12 @@ DEFTREECODE (CATCH_EXPR, "catch", '1', 1)
    Operand 0 is the finally label.
    Operand 1 is the finally block.  */
 DEFTREECODE (FINALLY_EXPR, "finally", 'e', 2) 
+
+/* Synchronized statement.
+   Operand 0 is the expression on which we whish to synchronize,
+   Operand 1 is the synchronized expression block.  */
+DEFTREECODE (SYNCHRONIZED_EXPR, "synchronized", 'e', 2)
+
+/* Throw statement.
+   Operand 0 is the throw expresion.  */
+DEFTREECODE (THROW_EXPR, "throw", '1', 1)

@@ -250,6 +250,8 @@ tree object_type_node;
 tree object_ptr_type_node;
 tree string_type_node;
 tree throwable_type_node;
+tree runtime_exception_type_node;
+tree error_exception_type_node;
 
 tree boolean_type_node;
 
@@ -518,6 +520,10 @@ init_decl_processing ()
   string_type_node = lookup_class (get_identifier ("java.lang.String"));
   class_type_node = lookup_class (get_identifier ("java.lang.Class"));
   throwable_type_node = lookup_class (get_identifier ("java.lang.Throwable"));
+  runtime_exception_type_node = 
+    lookup_class (get_identifier ("java.lang.RuntimeException"));
+  error_exception_type_node = 
+    lookup_class (get_identifier ("java.lang.Error"));
 
   methodtable_type = make_node (RECORD_TYPE);
   layout_type (methodtable_type);
