@@ -2259,6 +2259,42 @@ output_function_epilogue (file, size, leaf_function)
       target_flags |= old_target_epilogue;
     }
 }
+
+/* Do what is necessary for `va_start'.  The argument is ignored;
+   We look at the current function to determine if stdarg or varargs
+   is used and return the address of the first unnamed parameter.  */
+
+rtx
+sparc_builtin_saveregs (arglist)
+     tree arglist;
+{
+  tree fntype = TREE_TYPE (current_function_decl);
+  int stdarg = (TYPE_ARG_TYPES (fntype) != 0
+		&& (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		    != void_type_node));
+  int first_reg = current_function_args_info;
+  rtx address;
+  int regno;
+
+  if (! stdarg)
+    first_reg = 0;
+
+  for (regno = first_reg; regno < NPARM_REGS; regno++)
+    emit_move_insn (gen_rtx (MEM, word_mode,
+			     gen_rtx (PLUS, Pmode,
+				      frame_pointer_rtx,
+				      GEN_INT (STACK_POINTER_OFFSET
+					       + UNITS_PER_WORD * regno))),
+		    gen_rtx (REG, word_mode, BASE_INCOMING_ARG_REG (word_mode)
+			     + regno));
+
+  address = gen_rtx (PLUS, Pmode,
+		     frame_pointer_rtx,
+		     GEN_INT (STACK_POINTER_OFFSET
+			      + UNITS_PER_WORD * first_reg));
+
+  return address;
+}
 
 /* Return the string to output a conditional branch to LABEL, which is
    the operand number of the label.  OP is the conditional expression.  The
