@@ -1,4 +1,10 @@
+Thu Apr 25 14:55:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Fix list walking logic.
+
 Wed Apr 24 00:36:21 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Only use a sentry if the decl is public.
 
 	* pt.c (tsubst_expr, DECL_STMT): If we don't have an initializer,
 	don't pass LOOKUP_ONLYCONVERTING.
