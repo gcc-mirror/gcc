@@ -1,5 +1,8 @@
 Mon Apr 10 07:21:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expmed.c (init_expmed): Don't free objects we make.
+	* emit-rtl.c (gen_rtx_CONST_INT, init_emit_once): Minor cleanups.
+
 	* expr.c (get_inner_reference): Correct some WITH_RECORD_EXPR cases.
 	(expand_expr, case CONVERT_EXPR): Pass proper alignment to store_field.
 

@@ -248,27 +248,26 @@ gen_rtx_CONST_INT (mode, arg)
 #endif
 
   /* Look up the CONST_INT in the hash table.  */
-  slot = htab_find_slot_with_hash (const_int_htab, 
-				   &arg,
-				   (hashval_t) arg,
-				   /*insert=*/1);
-  if (!*slot)
+  slot = htab_find_slot_with_hash (const_int_htab, &arg, (hashval_t) arg, 1);
+  if (*slot == 0)
     {
       if (!ggc_p)
 	{
 	  push_obstacks_nochange ();
 	  end_temporary_allocation ();
+	  *slot = gen_rtx_raw_CONST_INT (VOIDmode, arg);
+	  pop_obstacks ();
 	}
-      *slot = gen_rtx_raw_CONST_INT (VOIDmode, arg);
-      if (!ggc_p)
-	pop_obstacks ();
+      else
+	*slot = gen_rtx_raw_CONST_INT (VOIDmode, arg);
     }
 
   return (rtx) *slot;
 }
 
-/* CONST_DOUBLEs needs special handling because its length is known
+/* CONST_DOUBLEs needs special handling because their length is known
    only at run-time.  */
+
 rtx
 gen_rtx_CONST_DOUBLE (mode, arg0, arg1, arg2)
      enum machine_mode mode;
@@ -4157,10 +4156,8 @@ init_emit_once (line_numbers)
   ggc_add_rtx_root (&return_address_pointer_rtx, 1);
 
   /* Initialize the CONST_INT hash table.  */
-  const_int_htab = htab_create (37, 
-				const_int_htab_hash, 
-				const_int_htab_eq, 
-				NULL);
+  const_int_htab = htab_create (37, const_int_htab_hash, 
+				const_int_htab_eq, NULL);
   ggc_add_root (&const_int_htab, 1, sizeof (const_int_htab), 
 		rtx_htab_mark);
 }
