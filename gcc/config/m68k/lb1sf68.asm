@@ -373,7 +373,7 @@ L1:	addl	d0,d0		| shift reg pair (p,a) one bit left
 	movl	d2,d3		| subtract b from p, store in tmp.
 	subl	d1,d3
 	jmi	L2		| if the result is not is negative, set the
-	bset	#0,d0		| low order bit of a to 1 and store tmp in p.
+	bset	IMM (0),d0	| low order bit of a to 1 and store tmp in p.
 	movl	d3,d2
 L2:	subql	IMM (1),d4
 	jcc	L1
