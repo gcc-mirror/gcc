@@ -1,3 +1,9 @@
+Tue Aug  3 00:03:41 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixincludes: Fix the return type of bsearch, char* -> void*.
+
+	* fixinc/inclhack.def: Likewise.
+
 Mon Aug  2 18:29:32 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* invoke.texi (-fdump-translation-unit): New option.

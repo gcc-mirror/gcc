@@ -1002,6 +1002,7 @@ if [ -r ${LIB}/$file ]; then
   -e 's/char[ 	]*\*[ 	]*calloc/void \*	calloc/g' \
   -e 's/char[ 	]*\*[ 	]*malloc/void \*	malloc/g' \
   -e 's/char[ 	]*\*[ 	]*realloc/void \*	realloc/g' \
+  -e 's/char[ 	]*\*[ 	]*bsearch/void \*	bsearch/g' \
   -e 's/int[ 	][ 	]*exit/void	exit/g' \
   -e "/$size_t_pattern/"'i\
 #ifndef _GCC_SIZE_T\
