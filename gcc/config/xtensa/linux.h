@@ -26,8 +26,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
     builtin_define ("__ELF__");					\
     builtin_define ("__gnu_linux__");				\
     builtin_assert ("system=posix");				\
-    builtin_define ("__PIC__");					\
-    builtin_define ("__pic__");					\
   } while (0)
 
 #undef SUBTARGET_CPP_SPEC

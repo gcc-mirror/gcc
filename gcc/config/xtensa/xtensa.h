@@ -214,7 +214,7 @@ extern unsigned xtensa_current_frame_size;
 #define SUBTARGET_CPP_SPEC ""
 #endif
 
-#define EXTRA_SPECS                                             \
+#define EXTRA_SPECS							\
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },
 
 /* Define this to set the endianness to use in libgcc2.c, which can

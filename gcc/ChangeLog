@@ -1,5 +1,11 @@
 2003-04-25  Bob Wilson  <bob.wilson@acm.org>
 
+	* config/xtensa/linux.h (TARGET_OS_CPP_BUILTINS): Back out previous
+	addition of __PIC__ and __pic__ macros.
+	* config/xtensa/xtensa.h: Clean up indentation.
+
+2003-04-25  Bob Wilson  <bob.wilson@acm.org>
+
 	* config/xtensa/linux.h (TARGET_OS_CPP_BUILTINS): Remove definition of
 	_GNU_SOURCE.  Add definitions of __PIC__ and __pic__.
 	(SUBTARGET_CPP_SPEC): Define.
