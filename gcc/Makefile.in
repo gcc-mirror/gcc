@@ -1647,6 +1647,8 @@ cppexp.o: cppexp.c $(CONFIG_H) cpplib.h
 
 cpphash.o: cpphash.c cpplib.h cpphash.h
 
+cppalloc.o: cppalloc.c $(CONFIG_H)
+
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
 
