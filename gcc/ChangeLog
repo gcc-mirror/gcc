@@ -1,3 +1,7 @@
+2004-07-14  Ben Elliston  <bje@au.ibm.com>
+
+	* vec.h: Comment fix.
+
 2004-07-13  Richard Henderson  <rth@redhat.com>
 
 	* target.h (struct gcc_target): Add calls.pass_by_reference.
