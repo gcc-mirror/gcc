@@ -71,7 +71,7 @@ GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
 endif # CANADIAN
 
-GCJCOMPILE = CLASSPATH=$(here) $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled $(JC1FLAGS) -c
+GCJCOMPILE = CLASSPATH=$(here) $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -L$(here) $(JC1FLAGS) -c
 
 JAVAC = $(GCJ) -C
 
@@ -91,8 +91,8 @@ else
 AM_CFLAGS = @LIBGCJ_CFLAGS@
 endif
 
-JCFLAGS = -g -L$(here)
-JC1FLAGS = -g -L$(here) @LIBGCJ_JAVAFLAGS@
+JCFLAGS = -g
+JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
 
 LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I$(MULTIBUILDTOP)../libffi/include
 
@@ -128,7 +128,7 @@ libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
 libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
 	$(THREADOBJS) $(libffi_files) $(LIBLTDL)
-libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
+libgcj_la_LDFLAGS = -L../libstdc++ -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
@@ -154,7 +154,7 @@ $(built_java_source_files:.java=.class): $(built_java_source_files)
 ## This little nastiness is here so that the backquoted stuff in the
 ## GCJ definition can be correctly expanded, if required.
 	javac="$(JAVAC)"; \
-	$$javac $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
+	$$javac -L$(here) $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
 	  -d $(here) $?
 
 ## We have the zip file depend on the java sources and not the class
@@ -170,7 +170,7 @@ libgcj.zip: $(java_source_files) $(cond_awt_java_source_files)
 ## This little nastiness is here so that the backquoted stuff in the
 ## GCJ definition can be correctly expanded, if required.
 	javac="$(JAVAC)"; cd $(srcdir); \
-	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
+	  $$javac -L$(here) $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
 	    $(subst $(srcdir)/,,$?)
 	-@rm -f libgcj.zip
 ## Note that we explicitly want to include directory information.
@@ -361,8 +361,8 @@ EXTRA_jv_convert_SOURCES = $(convert_source_files)
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
 jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
-	-rpath $(toolexeclibdir)
-jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
+	-rpath `if test -d ../libstdc++; then cd ../libstdc++; pwd; fi` -rpath $(toolexeclibdir)
+jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) \
 	-o jv-convert
 ## We explicitly link in the libraries we need.  This way we don't
 ## need -nodefaultlibs, so we can still rely on gcj picking up the
@@ -380,8 +380,8 @@ gij_SOURCES = gij.cc
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
-gij_LDFLAGS = -rpath $(toolexeclibdir)
-gij_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
+gij_LDFLAGS = -rpath `if test -d ../libstdc++; then cd ../libstdc++; pwd; fi` -rpath $(toolexeclibdir)
+gij_LINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) \
 	-o gij
 ## We explicitly link in the libraries we need.  This way we don't
 ## need -nodefaultlibs, so we can still rely on gcj picking up the
