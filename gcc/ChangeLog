@@ -1,3 +1,8 @@
+Thu Mar 19 20:30:31 1998  Philippe De Muyter  <phdm@macqel.be>
+
+	* fold-const.c (fold): Replace sign-extension of a zero extended
+	value by a single zero extension.
+
 Thu Mar 19 00:58:07 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (init_eh): Do nothing.
