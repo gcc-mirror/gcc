@@ -1,3 +1,12 @@
+Thu May 25 02:09:10 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* rtl.h (loc_mentioned_in_p): Declare.
+	* reload.c (loc_mentioned_in_p): Moved from here...
+	* rtlanal.c (loc_mentioned_in_p): to here.  No longer static.
+	Fix loop increment for 'E' handling.
+	* loop.c (strength_reduce): When doing biv->giv conversion,
+	take multi-insn biv increments into account.
+
 2000-05-24  Jason Merrill  <jason@casey.soma.redhat.com>
 
 	* stmt.c (expand_end_bindings): Look through NOTEs to find a
