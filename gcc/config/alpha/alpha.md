@@ -295,7 +295,7 @@
 					   
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=&r")
-	(plus:SI (plus:SI (mult:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
+	(plus:SI (plus:SI (mult:SI (match_operand:SI 1 "some_operand" "rJ")
 				   (match_operand:SI 2 "const48_operand" "I"))
 			  (match_operand:SI 3 "register_operand" "r"))
 		 (match_operand:SI 4 "add_operand" "rIOKL")))]
@@ -319,7 +319,7 @@
   [(set (match_operand:DI 0 "register_operand" "=&r")
 	(sign_extend:DI
 	 (plus:SI (plus:SI
-		   (mult:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
+		   (mult:SI (match_operand:SI 1 "some_operand" "rJ")
 			    (match_operand:SI 2 "const48_operand" "I"))
 		   (match_operand:SI 3 "register_operand" "r"))
 		  (match_operand:SI 4 "add_operand" "rIOKL"))))]
@@ -345,7 +345,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=&r")
-	(plus:DI (plus:DI (mult:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+	(plus:DI (plus:DI (mult:DI (match_operand:DI 1 "some_operand" "rJ")
 				   (match_operand:DI 2 "const48_operand" "I"))
 			  (match_operand:DI 3 "register_operand" "r"))
 		 (match_operand:DI 4 "add_operand" "rIOKL")))]
