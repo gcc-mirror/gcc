@@ -1,3 +1,8 @@
+2003-11-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Warning Options): Simplify and clarify the
+	description of -Wnonnull.
+
 2003-11-14  Matthias Klose  <doko@debian.org>
 
 	Backport from mainline

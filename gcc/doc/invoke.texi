@@ -2040,7 +2040,7 @@ Enable @option{-Wformat} plus format checks not included in
 
 @item -Wnonnull
 @opindex Wnonnull
-Enable warning about passing a null pointer for arguments marked as
+Warn about passing a null pointer for arguments marked as
 requiring a non-null value by the @code{nonnull} function attribute.
 
 @option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
