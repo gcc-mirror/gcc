@@ -4124,7 +4124,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
       /* Pick which pointer to use as a base register.  */
       fp_offset  = current_frame_info.fp_sp_offset;
-      end_offset = fp_offset - (current_frame_info.fp_reg_size - UNITS_PER_WORD);
+      end_offset = fp_offset - (current_frame_info.fp_reg_size - 2*UNITS_PER_WORD);
 
       if (fp_offset < 0 || end_offset < 0)
 	fatal ("fp_offset (%ld) or end_offset (%ld) is less than zero.",
