@@ -41,11 +41,20 @@ is_friend (type, supplicant)
 {
   int declp;
   register tree list;
+  tree context;
 
   if (supplicant == NULL_TREE || type == NULL_TREE)
     return 0;
 
   declp = (TREE_CODE_CLASS (TREE_CODE (supplicant)) == 'd');
+
+  /* Local classes have the same access as the enclosing function.  */
+  context = hack_decl_function_context (supplicant);
+  if (context)
+    {
+      supplicant = context;
+      declp = 1;
+    }
 
   if (declp)
     /* It's a function decl.  */
@@ -113,26 +122,14 @@ is_friend (type, supplicant)
 	  return 1;
     }      
 
-  {
-    tree context;
+  if (declp && DECL_FUNCTION_MEMBER_P (supplicant))
+    context = DECL_CLASS_CONTEXT (supplicant);
+  else
+    /* Nested classes don't inherit the access of their enclosing class.  */
+    context = NULL_TREE;
 
-    if (! declp)
-      {
-	/* Are we a nested or local class?  If so, we aren't friends
-           with the CONTEXT.  */
-	if (IS_AGGR_TYPE (supplicant))
-	  context = NULL_TREE;
-	else
-	  context = DECL_CONTEXT (TYPE_MAIN_DECL (supplicant));
-      }
-    else if (DECL_FUNCTION_MEMBER_P (supplicant))
-      context = DECL_CLASS_CONTEXT (supplicant);
-    else
-      context = NULL_TREE;
-
-    if (context)
-      return is_friend (type, context);
-  }
+  if (context)
+    return is_friend (type, context);
 
   return 0;
 }
