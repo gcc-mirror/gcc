@@ -1,3 +1,9 @@
+2003-12-05  Stuart Menefy <stuart.menefy@st.com>
+            J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR target/13302
+	* sh.c (sh_build_builtin_va_list): Use (*lang_hooks.types.make_type).
+
 2003-12-05  Roger Sayle  <roger@eyesopen.com>
 
 	* dojump.c (do_jump): If the expression being compared against
