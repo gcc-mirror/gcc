@@ -1,3 +1,9 @@
+Tue Sep  2 12:48:11 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* config/alpha/elf.h (CPP_PREDEFINES): Add -D__PIC__ -D__pic__.
+	(STARTFILE_SPEC): Always use crtbegin.o%s
+	(ENDFILE_SPEC): Always use crtend.o%s.
+
 Tue Sep  2 12:00:36 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* alpha/alpha.h (PREFERRED_RELOAD_CLASS): Return NO_REGS if NO_REGS

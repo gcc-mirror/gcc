@@ -36,7 +36,7 @@ Currently only Linux uses this. */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
 -D__alpha -D__alpha__ -D__linux__ -D__linux -D_LONGLONG -Dlinux -Dunix \
--Asystem(linux) -Acpu(alpha) -Amachine(alpha) -D__ELF__"
+-Asystem(linux) -Acpu(alpha) -Amachine(alpha) -D__ELF__ -D__PIC__ -D__pic__"
 
 #undef LINK_SPEC
 #ifdef USE_GNULIBC_1
@@ -498,7 +498,7 @@ do {									 \
 #define STARTFILE_SPEC \
   "%{!shared: \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
-   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+   crti.o%s crtbegin.o%s"
 
 /* Provide a ENDFILE_SPEC appropriate for Linux.  Here we tack on
    the Linux magical crtend.o file (see crtstuff.c) which
@@ -508,4 +508,4 @@ do {									 \
 
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+  "crtend.o%s crtn.o%s"
