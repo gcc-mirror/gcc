@@ -161,8 +161,8 @@ Boston, MA 02111-1307, USA.  */
 ({  const tree __t = NODE;					\
     enum tree_code __c = TREE_CODE(__t);			\
     if (__c != VAR_DECL && __c != FUNCTION_DECL)		\
-      tree_check_failed (__t, VAR_DECL, __FILE__,		\
-			 __LINE__, __PRETTY_FUNCTION__);	\
+      tree_check_failed (__t, VAR_DECL, __FILE__, __LINE__,	\
+			 __FUNCTION__);				\
     __t; })
 
 #define VAR_FUNCTION_OR_PARM_DECL_CHECK(NODE)			\
@@ -171,8 +171,8 @@ Boston, MA 02111-1307, USA.  */
     if (__c != VAR_DECL 					\
 	&& __c != FUNCTION_DECL 				\
         && __c != PARM_DECL)					\
-      tree_check_failed (__t, VAR_DECL, __FILE__,		\
-			 __LINE__, __PRETTY_FUNCTION__);	\
+      tree_check_failed (__t, VAR_DECL, __FILE__, __LINE__,	\
+			 __FUNCTION__);				\
     __t; })
 
 #define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE)		\
@@ -182,16 +182,16 @@ Boston, MA 02111-1307, USA.  */
 	&& __c != FUNCTION_DECL					\
 	&& __c != TYPE_DECL					\
 	&& __c != TEMPLATE_DECL)				\
-      tree_check_failed (__t, VAR_DECL, __FILE__,		\
-			 __LINE__, __PRETTY_FUNCTION__);	\
+      tree_check_failed (__t, VAR_DECL, __FILE__, __LINE__,	\
+			 __FUNCTION__);				\
     __t; })
 
 #define RECORD_OR_UNION_TYPE_CHECK(NODE)			\
 ({  const tree __t = NODE;					\
     enum tree_code __c = TREE_CODE(__t);			\
     if (__c != RECORD_TYPE && __c != UNION_TYPE)		\
-      tree_check_failed (__t, RECORD_TYPE, __FILE__,		\
-			 __LINE__, __PRETTY_FUNCTION__);	\
+      tree_check_failed (__t, RECORD_TYPE, __FILE__, __LINE__,	\
+			 __FUNCTION__);				\
     __t; })
 
 #else /* not ENABLE_TREE_CHECKING, or not gcc */
@@ -4629,9 +4629,15 @@ extern tree binfo_or_else			PARAMS ((tree, tree));
 extern void readonly_error			PARAMS ((tree, const char *, int));
 extern int abstract_virtuals_error		PARAMS ((tree, tree));
 extern void incomplete_type_error		PARAMS ((tree, tree));
-extern void my_friendly_abort			PARAMS ((int))
+extern void friendly_abort			PARAMS ((int, const char *,
+							 int, const char *))
   ATTRIBUTE_NORETURN;
-extern void my_friendly_assert			PARAMS ((int, int));
+
+#define my_friendly_abort(N) \
+  friendly_abort (N, __FILE__, __LINE__, __FUNCTION__)
+#define my_friendly_assert(EXP, N) \
+ (((EXP) == 0) ? (friendly_abort (N, __FILE__, __LINE__, __FUNCTION__), 0) : 0)
+
 extern tree store_init_value			PARAMS ((tree, tree));
 extern tree digest_init				PARAMS ((tree, tree, tree *));
 extern tree build_scoped_ref			PARAMS ((tree, tree));

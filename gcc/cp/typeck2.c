@@ -40,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 
 static tree process_init_constructor PARAMS ((tree, tree, tree *));
-static void ack PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 
 /* Print an error message stemming from an attempt to use
    BASETYPE as a base class for TYPE.  */
@@ -246,102 +245,23 @@ retry:
     cp_error_at ("incomplete `%D' defined here", value);
 }
 
-/* Like error(), but don't call report_error_function().  */
-
-static void
-ack VPARAMS ((const char *msg, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *msg;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msg);
-
-#ifndef ANSI_PROTOTYPES
-  msg = va_arg (ap, const char *);
-#endif
-  
-  if (input_filename)
-    fprintf (stderr, "%s:%d: ", input_filename, lineno);
-  else
-    fprintf (stderr, "%s: ", progname);
-
-  vfprintf (stderr, msg, ap);
-  va_end (ap);
-  
-  fprintf (stderr, "\n");
-}
-  
-/* There are times when the compiler can get very confused, confused
-   to the point of giving up by aborting, simply because of previous
-   input errors.  It is much better to have the user go back and
-   correct those errors first, and see if it makes us happier, than it
-   is to abort on him.  This is because when one has a 10,000 line
-   program, and the compiler comes back with ``core dump'', the user
-   is left not knowing even where to begin to fix things and no place
-   to even try and work around things.
-
-   The parameter is to uniquely identify the problem to the user, so
-   that they can say, I am having problem 59, and know that fix 7 will
-   probably solve their problem.  Or, we can document what problem
-   59 is, so they can understand how to work around it, should they
-   ever run into it.
-
-   We used to tell people to "fix the above error[s] and try recompiling
-   the program" via a call to fatal, but that message tended to look
-   silly.  So instead, we just do the equivalent of a call to fatal in the
-   same situation (call exit).
-
-   We used to assign sequential numbers for the aborts; now we use an
-   encoding of the date the abort was added, since that has more meaning
-   when we only see the error message.  */
-
-static int abortcount = 0;
-
+/* This is a wrapper around fancy_abort, as used in the back end and
+   other front ends.  It will also report the magic number assigned to
+   this particular abort.  That is for backward compatibility with the
+   old C++ abort handler, which would just report the magic number.  */
 void
-my_friendly_abort (i)
-     int i;
+friendly_abort (where, file, line, func)
+     int where;
+     const char *file;
+     int line;
+     const char *func;
 {
-  /* if the previous error came through here, i.e. report_error_function
-     ended up calling us again, don't just exit; we want a diagnostic of
-     some kind.  */
-  if (abortcount == 1)
-    current_function_decl = NULL_TREE;
-  else if (errorcount > 0 || sorrycount > 0)
-    {
-      if (abortcount > 1)
-	{
-	  if (i == 0)
-	    ack ("Internal compiler error.");
-	  else
-	    ack ("Internal compiler error %d.", i);
-	  ack ("Please submit a full bug report.");
-	  ack ("See %s for instructions.", GCCBUGURL);
-	}
-      else
-	error ("confused by earlier errors, bailing out");
-      
-      exit (34);
-    }
-  ++abortcount;
+  if (where > 0)
+    error ("Internal error #%d.", where);
 
-  if (i == 0)
-    error ("Internal compiler error.");
-  else
-    error ("Internal compiler error %d.", i);
-
-  error ("Please submit a full bug report.");
-  fatal ("See %s for instructions.", GCCBUGURL);
+  fancy_abort (file, line, func);
 }
 
-void
-my_friendly_assert (cond, where)
-     int cond, where;
-{
-  if (cond == 0)
-    my_friendly_abort (where);
-}
 
 /* Perform appropriate conversions on the initial value of a variable,
    store it in the declaration DECL,

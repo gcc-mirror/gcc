@@ -6105,7 +6105,7 @@ end_only_namespace_names ()
 
 static void
 signal_catch (sig)
-     int sig ATTRIBUTE_UNUSED;
+     int sig;
 {
   signal (SIGSEGV, SIG_DFL);
 #ifdef SIGIOT
@@ -6120,7 +6120,10 @@ signal_catch (sig)
 #ifdef SIGBUS
   signal (SIGBUS, SIG_DFL);
 #endif
-  my_friendly_abort (0);
+
+  fatal ("Internal error: %s\n\
+Please submit a full bug report.\n\
+See %s for instructions.", strsignal (sig), GCCBUGURL);
 }
 
 /* Push the declarations of builtin types into the namespace.
