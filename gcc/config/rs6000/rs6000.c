@@ -1104,36 +1104,35 @@ logical_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  /* an unsigned representation of 'op'.  */
-  unsigned HOST_WIDE_INT opl, oph;
+  HOST_WIDE_INT opl, oph;
 
   if (gpc_reg_operand (op, mode))
     return 1;
 
   if (GET_CODE (op) == CONST_INT)
-    opl = INTVAL (op);
+    {
+      opl = INTVAL (op) & GET_MODE_MASK (mode);
+
+#if HOST_BITS_PER_WIDE_INT <= 32
+      if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT && opl < 0)
+	return 0;
+#endif
+    }
   else if (GET_CODE (op) == CONST_DOUBLE)
     {
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-	abort();
+	abort ();
 
       opl = CONST_DOUBLE_LOW (op);
       oph = CONST_DOUBLE_HIGH (op);
-
-      if (oph != ((unsigned HOST_WIDE_INT)0
-		  - ((opl & ((unsigned HOST_WIDE_INT)1
-			     << (HOST_BITS_PER_WIDE_INT - 1))) != 0)))
+      if (oph != 0)
 	return 0;
     }
   else
     return 0;
 
-  /* This must really be SImode, not MODE.  */
-  if (opl != (unsigned HOST_WIDE_INT) trunc_int_for_mode (opl, SImode))
-    return 0;
-
-  return ((opl & 0xffff) == 0
-	  || (opl & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0);
+  return ((opl & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0
+	  || (opl & ~ (unsigned HOST_WIDE_INT) 0xffff0000) == 0);
 }
 
 /* Return 1 if C is a constant that is not a logical operand (as
@@ -1740,10 +1739,10 @@ rs6000_emit_set_long_const (dest, c1, c2)
 #endif
 
       /* Construct the high word */
-      if (d4)
+      if (d4 != 0)
 	{
 	  emit_move_insn (dest, GEN_INT (d4));
-	  if (d3)
+	  if (d3 != 0)
 	    emit_move_insn (dest,
 			    gen_rtx_PLUS (DImode, dest, GEN_INT (d3)));
 	}
@@ -1751,12 +1750,13 @@ rs6000_emit_set_long_const (dest, c1, c2)
 	emit_move_insn (dest, GEN_INT (d3));
 
       /* Shift it into place */
-      emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
+      if (d3 != 0 || d4 != 0)
+	emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
 
       /* Add in the low bits.  */
-      if (d2)
+      if (d2 != 0)
 	emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, GEN_INT (d2)));
-      if (d1)
+      if (d1 != 0)
 	emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, GEN_INT (d1)));
     }
 
@@ -7834,7 +7834,7 @@ output_profile_hook (labelno)
   if (DEFAULT_ABI == ABI_AIX)
     {
       char buf[30];
-      char *label_name;
+      const char *label_name;
       rtx fun;
 
       labelno += 1;

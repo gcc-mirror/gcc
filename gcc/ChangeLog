@@ -1,3 +1,18 @@
+2001-09-19  Alan Modra  <amodra@bigpond.net.au>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	Revert:
+	* config/rs6000/rs6000.c (logical_operand): CONST_INTs are
+	already sign-extended.
+
+	* config/rs6000/aix.h (INIT_TARGET_OPTABS): Define TFmode handlers.
+	* config/rs6000/rs6000.c (logical_operand): Always compare op as
+	HOST_WIDE_INT.
+	(rs6000_emit_set_long_const): Avoid unnecessary shift.
+	(output_profile_hook): Declare label_name const.
+	* config/rs6000/rs6000.md (boolcsi3, boolcdi3): Change predicates
+	to match constraints.
+
 2001-09-19  Stan Shebs  <shebs@apple.com>
 
 	* alias.c: Fix typos in comments.
