@@ -23,92 +23,90 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define __XTENSA_PROTOS_H__
 
 /* Functions to test whether an immediate fits in a given field. */
-extern int xtensa_simm7 PARAMS ((int));
-extern int xtensa_simm8 PARAMS ((int));
-extern int xtensa_simm8x256 PARAMS ((int));
-extern int xtensa_simm12b PARAMS ((int));
-extern int xtensa_uimm8 PARAMS ((int));
-extern int xtensa_uimm8x2 PARAMS ((int));
-extern int xtensa_uimm8x4 PARAMS ((int));
-extern int xtensa_ai4const PARAMS ((int));
-extern int xtensa_lsi4x4 PARAMS ((int));
-extern int xtensa_b4const PARAMS ((int));
-extern int xtensa_b4constu PARAMS ((int));
-extern int xtensa_tp7 PARAMS ((int));
+extern int xtensa_simm7 (int);
+extern int xtensa_simm8 (int);
+extern int xtensa_simm8x256 (int);
+extern int xtensa_simm12b (int);
+extern int xtensa_uimm8 (int);
+extern int xtensa_uimm8x2 (int);
+extern int xtensa_uimm8x4 (int);
+extern int xtensa_ai4const (int);
+extern int xtensa_lsi4x4 (int);
+extern int xtensa_b4const (int);
+extern int xtensa_b4constu (int);
+extern int xtensa_tp7 (int);
 
 /* Functions within xtensa.c that we reference.  */
 #ifdef RTX_CODE
-extern int xt_true_regnum PARAMS ((rtx));
-extern int add_operand PARAMS ((rtx, enum machine_mode));
-extern int arith_operand PARAMS ((rtx, enum machine_mode));
-extern int nonimmed_operand PARAMS ((rtx, enum machine_mode));
-extern int mem_operand PARAMS ((rtx, enum machine_mode));
-extern int xtensa_valid_move PARAMS ((enum machine_mode, rtx *operands));
-extern int mask_operand PARAMS ((rtx, enum machine_mode));
-extern int extui_fldsz_operand PARAMS ((rtx, enum machine_mode));
-extern int sext_operand PARAMS ((rtx, enum machine_mode));
-extern int sext_fldsz_operand PARAMS ((rtx, enum machine_mode));
-extern int lsbitnum_operand PARAMS ((rtx, enum machine_mode));
-extern int branch_operand PARAMS ((rtx, enum machine_mode));
-extern int ubranch_operand PARAMS ((rtx, enum machine_mode));
-extern int call_insn_operand PARAMS ((rtx, enum machine_mode));
-extern int move_operand PARAMS ((rtx, enum machine_mode));
-extern int smalloffset_mem_p PARAMS ((rtx));
-extern int constantpool_address_p PARAMS ((rtx));
-extern int constantpool_mem_p PARAMS ((rtx));
-extern int const_float_1_operand PARAMS ((rtx, enum machine_mode));
-extern int fpmem_offset_operand PARAMS ((rtx, enum machine_mode));
-extern void xtensa_extend_reg PARAMS ((rtx, rtx));
-extern int branch_operator PARAMS ((rtx, enum machine_mode));
-extern int ubranch_operator PARAMS ((rtx, enum machine_mode));
-extern int boolean_operator PARAMS ((rtx, enum machine_mode));
-extern void xtensa_expand_conditional_branch PARAMS ((rtx *, enum rtx_code));
-extern int xtensa_expand_conditional_move PARAMS ((rtx *, int));
-extern int xtensa_expand_scc PARAMS ((rtx *));
-extern int xtensa_expand_block_move PARAMS ((rtx *));
-extern void xtensa_split_operand_pair PARAMS ((rtx *, enum machine_mode));
-extern int xtensa_emit_move_sequence PARAMS ((rtx *, enum machine_mode));
-extern bool xtensa_copy_incoming_a7 PARAMS ((rtx *, enum machine_mode));
-extern void xtensa_emit_block_move PARAMS ((rtx *, rtx *, int));
-extern void xtensa_expand_nonlocal_goto PARAMS ((rtx *));
-extern void xtensa_emit_loop_end PARAMS ((rtx, rtx *));
-extern char * xtensa_emit_call PARAMS ((int, rtx *));
+extern int xt_true_regnum (rtx);
+extern int add_operand (rtx, enum machine_mode);
+extern int arith_operand (rtx, enum machine_mode);
+extern int nonimmed_operand (rtx, enum machine_mode);
+extern int mem_operand (rtx, enum machine_mode);
+extern int xtensa_valid_move (enum machine_mode, rtx *);
+extern int mask_operand (rtx, enum machine_mode);
+extern int extui_fldsz_operand (rtx, enum machine_mode);
+extern int sext_operand (rtx, enum machine_mode);
+extern int sext_fldsz_operand (rtx, enum machine_mode);
+extern int lsbitnum_operand (rtx, enum machine_mode);
+extern int branch_operand (rtx, enum machine_mode);
+extern int ubranch_operand (rtx, enum machine_mode);
+extern int call_insn_operand (rtx, enum machine_mode);
+extern int move_operand (rtx, enum machine_mode);
+extern int smalloffset_mem_p (rtx);
+extern int constantpool_address_p (rtx);
+extern int constantpool_mem_p (rtx);
+extern int const_float_1_operand (rtx, enum machine_mode);
+extern int fpmem_offset_operand (rtx, enum machine_mode);
+extern void xtensa_extend_reg (rtx, rtx);
+extern int branch_operator (rtx, enum machine_mode);
+extern int ubranch_operator (rtx, enum machine_mode);
+extern int boolean_operator (rtx, enum machine_mode);
+extern void xtensa_expand_conditional_branch (rtx *, enum rtx_code);
+extern int xtensa_expand_conditional_move (rtx *, int);
+extern int xtensa_expand_scc (rtx *);
+extern int xtensa_expand_block_move (rtx *);
+extern void xtensa_split_operand_pair (rtx *, enum machine_mode);
+extern int xtensa_emit_move_sequence (rtx *, enum machine_mode);
+extern bool xtensa_copy_incoming_a7 (rtx *, enum machine_mode);
+extern void xtensa_emit_block_move (rtx *, rtx *, int);
+extern void xtensa_expand_nonlocal_goto (rtx *);
+extern void xtensa_emit_loop_end (rtx, rtx *);
+extern char *xtensa_emit_call (int, rtx *);
 
 #ifdef TREE_CODE
-extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));
-extern void xtensa_va_start PARAMS ((tree, rtx));
-extern rtx xtensa_va_arg PARAMS ((tree, tree));
+extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);
+extern void xtensa_va_start (tree, rtx);
+extern rtx xtensa_va_arg (tree, tree);
 #endif /* TREE_CODE */
 
-extern void print_operand PARAMS ((FILE *, rtx, int));
-extern void print_operand_address PARAMS ((FILE *, rtx));
-extern void xtensa_output_literal
-  PARAMS ((FILE *, rtx, enum machine_mode, int labelno));
-extern rtx xtensa_return_addr PARAMS ((int, rtx));
-extern rtx xtensa_builtin_saveregs PARAMS ((void));
-extern enum reg_class xtensa_preferred_reload_class
-  PARAMS ((rtx, enum reg_class, int));
-extern enum reg_class xtensa_secondary_reload_class
-  PARAMS ((enum reg_class, enum machine_mode, rtx, int));
-extern int a7_overlap_mentioned_p PARAMS ((rtx x));
+extern void print_operand (FILE *, rtx, int);
+extern void print_operand_address (FILE *, rtx);
+extern void xtensa_output_literal (FILE *, rtx, enum machine_mode, int);
+extern rtx xtensa_return_addr (int, rtx);
+extern rtx xtensa_builtin_saveregs (void);
+extern enum reg_class xtensa_preferred_reload_class (rtx, enum reg_class, int);
+extern enum reg_class xtensa_secondary_reload_class (enum reg_class,
+						     enum machine_mode, rtx,
+						     int);
+extern int a7_overlap_mentioned_p (rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern void function_arg_advance
-  PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree));
-extern struct rtx_def * function_arg
-  PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
-extern tree xtensa_build_va_list PARAMS ((void));
+extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree);
+extern struct rtx_def *function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+				     tree, int);
+extern tree xtensa_build_va_list (void);
 #endif /* TREE_CODE */
 
-extern int xtensa_mask_immediate PARAMS ((int));
-extern int xtensa_mem_offset PARAMS ((unsigned, enum machine_mode));
-extern void xtensa_setup_frame_addresses PARAMS ((void));
-extern int xtensa_dbx_register_number PARAMS ((int));
-extern void override_options PARAMS ((void));
-extern long compute_frame_size PARAMS ((int));
-extern int xtensa_frame_pointer_required PARAMS ((void));
-extern void xtensa_expand_prologue PARAMS ((void));
-extern void order_regs_for_local_alloc PARAMS ((void));
+extern int xtensa_mask_immediate (int);
+extern int xtensa_mem_offset (unsigned, enum machine_mode);
+extern void xtensa_setup_frame_addresses (void);
+extern int xtensa_dbx_register_number (int);
+extern void override_options (void);
+extern long compute_frame_size (int);
+extern int xtensa_frame_pointer_required (void);
+extern void xtensa_expand_prologue (void);
+extern void order_regs_for_local_alloc (void);
 
 #endif /* !__XTENSA_PROTOS_H__ */

@@ -1,3 +1,8 @@
+2003-09-22  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa-protos.h: Convert to ISO C90.
+	* config/xtensa/xtensa.c: Convert to ISO C90.  Minor formatting fixes.
+
 2003-09-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300.md: Revert 2003-09-17's patch.
