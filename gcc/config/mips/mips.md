@@ -104,7 +104,7 @@
 (define_attr "length" ""
    (cond [(eq_attr "type" "branch")
           (cond [(lt (abs (minus (match_dup 1) (plus (pc) (const_int 4))))
-                     (const_int 131072))
+                     (const_int 65536))
                  (const_int 4)
 		 (ne (symbol_ref "flag_pic && ! TARGET_EMBEDDED_PIC")
 		     (const_int 0))
@@ -9625,7 +9625,7 @@ move\\t%0,%z4\\n\\
 		  (const_int 0))
 	      (lt (abs (minus (match_dup 0)
 			      (plus (pc) (const_int 4))))
-		  (const_int 131072)))
+		  (const_int 65536)))
 	 (const_int 4) (const_int 16)))])
 
 ;; We need a different insn for the mips16, because a mips16 branch
