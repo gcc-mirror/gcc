@@ -617,7 +617,8 @@ safe_read (desc, ptr, len)
       }
     if (nchars == 0)
       break;
-    ptr += nchars;
+    /* Arithmetic on void pointers is a gcc extention.  */
+    ptr = (char *) ptr + nchars;
     left -= nchars;
   }
   return len - left;
@@ -646,7 +647,8 @@ safe_write (desc, ptr, len, out_fname)
 		pname, shortpath (NULL, out_fname), xstrerror (errno_val));
 	return;
       }
-    ptr += written;
+    /* Arithmetic on void pointers is a gcc extention.  */
+    ptr = (char *) ptr + written;
     len -= written;
   }
 }
