@@ -674,7 +674,6 @@ int flag_pedantic_errors = 0;
 int flag_schedule_insns = 0;
 int flag_schedule_insns_after_reload = 0;
 
-#ifdef HAIFA
 /* The following flags have effect only for scheduling before register
    allocation:
 
@@ -689,7 +688,6 @@ int flag_schedule_interblock = 1;
 int flag_schedule_speculative = 1;
 int flag_schedule_speculative_load = 0;
 int flag_schedule_speculative_load_dangerous = 0;
-#endif  /* HAIFA */
 
 /* flag_on_branch_count_reg means try to replace add-1,compare,branch tupple
    by a cheaper branch, on a count register. */
@@ -905,7 +903,6 @@ lang_independent_options f_options[] =
    "Reschedule instructions to avoid pipeline stalls"},
   {"schedule-insns2", &flag_schedule_insns_after_reload, 1,
   "Run two passes of the instruction scheduler"},
-#ifdef HAIFA
   {"sched-interblock",&flag_schedule_interblock, 1,
    "Enable scheduling across basic blocks" },
   {"sched-spec",&flag_schedule_speculative, 1,
@@ -914,7 +911,6 @@ lang_independent_options f_options[] =
    "Allow speculative motion of some loads" },
   {"sched-spec-load-dangerous",&flag_schedule_speculative_load_dangerous, 1,
    "Allow speculative motion of more loads" },
-#endif  /* HAIFA */
   {"branch-count-reg",&flag_branch_on_count_reg, 1,
    "Replace add,compare,branch with branch on count reg"},
   {"pic", &flag_pic, 1,
@@ -4570,7 +4566,7 @@ display_help ()
   printf ("  -version                Display the compiler's version\n");
   printf ("  -d[letters]             Enable dumps from specific passes of the compiler\n");
   printf ("  -dumpbase <file>        Base name to be used for dumps from specific passes\n");
-#if defined HAIFA || defined INSN_SCHEDULING
+#if defined INSN_SCHEDULING
   printf ("  -sched-verbose-<number> Set the verbosity level of the scheduler\n");
 #endif
   printf ("  --help                  Display this information\n");
@@ -5097,12 +5093,10 @@ main (argc, argv)
 	      else if (!strncmp (p, "inline-limit-", 13))
 	        inline_max_insns =
 		  read_integral_parameter (p + 13, p - 2, inline_max_insns);
-#ifdef HAIFA
 #ifdef INSN_SCHEDULING
 	      else if (!strncmp (p, "sched-verbose-",14))
 		fix_sched_param("verbose",&p[14]);
 #endif
-#endif  /* HAIFA */
 	      else if (!strncmp (p, "fixed-", 6))
 		fix_register (&p[6], 1, 1);
 	      else if (!strncmp (p, "call-used-", 10))

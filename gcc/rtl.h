@@ -1346,9 +1346,7 @@ extern void dump_combine_total_stats	PROTO ((FILE *));
 #ifdef BUFSIZ
 extern void schedule_insns		PROTO ((FILE *));
 #endif
-#ifdef HAIFA
 extern void fix_sched_param		PROTO ((const char *, const char *));
-#endif
 
 /* In print-rtl.c */
 extern void debug_rtx			PROTO ((rtx));
