@@ -718,7 +718,7 @@ signed_or_unsigned_type (unsignedp, type)
      int unsignedp;
      tree type;
 {
-  if (TREE_CODE (type) != INTEGER_TYPE)
+  if (! INTEGRAL_TYPE_P (type))
     return type;
   if (TYPE_PRECISION (type) == TYPE_PRECISION (signed_char_type_node))
     return unsignedp ? unsigned_char_type_node : signed_char_type_node;
