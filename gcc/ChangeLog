@@ -1,5 +1,16 @@
 2004-01-20  Jan Hubicka  <jh@suse.cz>
 
+	* emit-rtl.c (verify_rtx_sharing, copy_insn_1,
+	emit_copy_of_insn_after, emit_copy_of_insn_after): Clobbers
+	containing hard regs are shared.
+	(gen_hard_reg_clobber): New function.
+	(hard_reg_clobbers): New array.
+	* genemit.c (gen_exp): Use gen_hard_reg_clobber.
+	(copy_rtx): Do not copy clobbers containing hard regs.
+	* rtl.h (gen_hard_reg_clobber): Declare.
+
+2004-01-20  Jan Hubicka  <jh@suse.cz>
+
 	* varray.c:  Include hashtab.h
 	(varray_descriptor): New structure.
 	(hash_descriptor, eq_descriptor, varray_descriptor,

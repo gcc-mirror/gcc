@@ -224,6 +224,10 @@ copy_rtx (rtx orig)
       /* SCRATCH must be shared because they represent distinct values.  */
     case ADDRESSOF:
       return orig;
+    case CLOBBER:
+      if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER)
+	return orig;
+      break;
 
     case CONST:
       /* CONST can be shared if it contains a SYMBOL_REF.  If it contains

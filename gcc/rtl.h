@@ -2308,6 +2308,7 @@ extern void end_alias_analysis (void);
 extern rtx addr_side_effect_eval (rtx, int, int);
 extern bool memory_modified_in_insn_p (rtx, rtx);
 extern rtx find_base_term (rtx);
+extern rtx gen_hard_reg_clobber (enum machine_mode, unsigned int);
 
 /* In sibcall.c */
 typedef enum {
