@@ -43,6 +43,11 @@ public final class FileDescriptor
   static final int SET = 0;
   static final int CUR = 1;
 
+  // This constructor is specified to create an invalid descriptor.
+  public FileDescriptor ()
+  {
+  }
+
   // Open a file.  MODE is a combination of the above mode flags.
   FileDescriptor (String path, int mode) throws FileNotFoundException
   {

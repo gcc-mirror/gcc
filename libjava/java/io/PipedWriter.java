@@ -104,9 +104,9 @@ public class PipedWriter extends Writer
     * @exception IOException If the stream has not been connected or has
     *                        been closed.
     */  
-  public void write(char b) throws IOException
+  public void write(int b) throws IOException
   {
-    read_buf[0] = b;
+    read_buf[0] = (char) (b & 0xffff);
     sink.receive (read_buf, 0, 1);
   }
   

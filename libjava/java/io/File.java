@@ -157,7 +157,7 @@ public class File implements Serializable, Comparable
   }
 
   /** @since 1.2 */
-  public File getAbsoluteFile () throws IOException
+  public File getAbsoluteFile ()
   {
     return new File (getAbsolutePath());
   }

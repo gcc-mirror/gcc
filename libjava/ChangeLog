@@ -1,5 +1,13 @@
 2001-08-31  Tom Tromey  <tromey@redhat.com>
 
+	Re-merge with Classpath:
+	* java/util/Comparator (equals): Added.
+	* java/io/PipedWriter.java (write): Changed argument to `int'.
+
+	* java/io/FileDescriptor.java (FileDescriptor()): New
+	constructor.
+	* java/io/File.java (getAbsoluteFile): Doesn't throw IOException.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (ordinary_java_source_files): Removed
 	EnumerationChain, added DoubleEnumeration.
