@@ -1299,11 +1299,13 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			 /* Check that the mask is a power of two,
 			    so that it can probably be generated
 			    with a shift.  */
+			    && GET_CODE (temp3) == CONST_INT
 			    && exact_log2 (INTVAL (temp3)) >= 0))
 		       && (reversep = 0, temp2 == const0_rtx))
 		      || ((BRANCH_COST >= 2
 			   || STORE_FLAG_VALUE == -1
 			   || (STORE_FLAG_VALUE == 1
+			       && GET_CODE (temp2) == CONST_INT
 			       && exact_log2 (INTVAL (temp2)) >= 0))
 			  && temp3 == const0_rtx
 			  && (reversep = can_reverse_comparison_p (temp4, insn)))
