@@ -1705,7 +1705,6 @@ output_move_himode (operands)
     }
   else if (CONSTANT_P (operands[1]))
     return "move%.l %1,%0";
-#ifndef SGS_NO_LI
   /* Recognize the insn before a tablejump, one that refers
      to a table of offsets.  Such an insn will need to refer
      to a label on the insn.  So output one.  Use the label-number
@@ -1736,7 +1735,6 @@ output_move_himode (operands)
 #endif /* SGS_SWITCH_TABLES */
 #endif /* SGS_SWITCH_TABLES or not MOTOROLA */
     }
-#endif /* SGS_NO_LI */
   return "move%.w %1,%0";
 }
 
@@ -2512,10 +2510,6 @@ standard_68881_constant_p (x)
 {
   REAL_VALUE_TYPE r;
   int i;
-
-#ifdef NO_ASM_FMOVECR
-  return 0;
-#endif
 
   /* fmovecr must be emulated on the 68040 and 68060, so it shouldn't be
      used at all on those chips.  */
