@@ -1,6 +1,5 @@
 /* Definitions for rtems targetting an Intel i386 using coff.
-
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -27,5 +26,3 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Di386 -Drtems -D__rtems__ \
    -Asystem(rtems) -Acpu(i386) -Amachine(i386)"
-
-/* end of i386-rtems.h */

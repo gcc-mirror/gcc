@@ -1,6 +1,5 @@
 /* Definitions for rtems targetting a MIPS ORION using ecoff.
-
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -27,5 +26,3 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dmips -DMIPSEB -DR4000 -D_mips -D_MIPSEB -D_R4000 \
    -Drtems -D__rtems__ -Asystem(rtems)"
-
-/* end of rtems64.h */
