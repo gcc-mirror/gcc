@@ -12,6 +12,10 @@
 	* cpplex.c (forms_identifier_p): Tweak for new location of
 	warn_dollars.
 
+	* configure.in (assembler dwarf2 debug_line support): Define insn
+	for cris-*-* and mmix-*-*.
+	* configure: Regenerate.
+
 2003-06-11  Uwe Stieber  <uwe@kaos-group.de>
 
 	* config.gcc (arm*-*-kaos*, i[34567]86-*-kaos*, powerpc-*-kaos*,
