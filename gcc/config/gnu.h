@@ -5,7 +5,7 @@
 "-D" machine " -Acpu(" machine ") -Amachine(" machine ")" \
 "-Dunix -Asystem(unix) \
 -DMACH -Asystem(mach) \
--D__GNU__ -Asystem(gnu) -D__HURD__"
+-D__GNU__ -Asystem(gnu)"
 
 /* Provide GCC options for standard feature-test macros.  */
 #undef CPP_SPEC
