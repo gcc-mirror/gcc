@@ -1,5 +1,12 @@
 2003-07-04  Paolo Carlini  <pcarlini@unitus.it>
 
+	PR libstdc++/11378
+	* include/std/std_fstream.h (xsputn): In the unbuffered case,
+	provided always_noconv(), issue directly _M_file.xsputn.
+	* testsuite/performance/filebuf_unbuf_sputn.cc: New.
+
+2003-07-04  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/stl_list.h: Fully qualify standard
 	functions with std::, thus avoiding Koenig lookup.
 	* include/bits/stl_queue.h: Likewise.
