@@ -54,22 +54,6 @@ static char * gen_formal_list_for_func_def ();
 static char * gen_type ();
 static char * gen_decl ();
 void   gen_aux_info_record ();
-
-#if 0
-/* Virtually every UN*X system now in common use (except for pre-4.3-tahoe
-   BSD systems) now provides getcwd as called for by POSIX.  Allow for
-   the few exceptions to the general rule here.  */
-
-#if !(defined (USG) || defined (VMS))
-extern char *getwd ();
-#define getcwd(buf,len) getwd(buf)
-#define GUESSPATHLEN (MAXPATHLEN + 1)
-#else /* (defined (USG) || defined (VMS)) */
-extern char *getcwd ();
-/* We actually use this as a starting point, not a limit.  */
-#define GUESSPATHLEN 100
-#endif /* (defined (USG) || defined (VMS)) */
-#endif /* 0 */
 
 /*  Take two strings and mash them together into a newly allocated area.  */
 
@@ -622,26 +606,6 @@ gen_aux_info_record (fndecl, is_definition, is_implicit, is_prototyped)
 
       if (! compiled_from_record++)
 	{
-#if 0
-	  int size;
-	  char *wd;
-	  char *value;
-
-	  /* Read the working directory, avoiding arbitrary limit.  */
-	  size = GUESSPATHLEN;
-	  while (1)
-	    {
-	      wd = (char *) xmalloc (size);
-	      value = getcwd (wd, size);
-	      if (value != 0 || errno != ERANGE)
-		break;
-	      free (wd);
-	      size *= 2;
-	    }
-
-	  if (value != 0)
-	    fprintf (aux_info_file, "/* compiled from: %s */\n", wd);
-#endif
 	  /* The first line tells which directory file names are relative to.
 	     Currently, -fgen-aux-info works only for files in the working
 	     directory, so just use a `.' as a placeholder for now.  */
