@@ -1,3 +1,10 @@
+2004-11-13  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18347
+	* config/mmix/mmix.c (mmix_function_outgoing_value): Handle
+	TImode.  Sorry for other non-complex larger-than-64-bit modes.
+	* config/mmix/mmix.h (MIN_UNITS_PER_WORD): Do not define.
+
 2004-11-13  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* doc/install.texi (automake): Document that everything now uses 1.9.
