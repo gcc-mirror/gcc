@@ -4417,6 +4417,14 @@
 	      emit_insn (gen_movsi (reg, GEN_INT (val)));
 	      operands[1] = gen_lowpart (HImode, reg);
 	    }
+	  else if (arm_arch4 && !no_new_pseudos && optimize > 0
+		   && GET_CODE (operands[1]) == MEM)
+	    {
+	      rtx reg = gen_reg_rtx (SImode);
+
+	      emit_insn (gen_zero_extendhisi2 (reg, operands[1]));
+	      operands[1] = gen_lowpart (HImode, reg);
+	    }
           else if (!arm_arch4)
 	    {
 	     /* Note: We do not have to worry about TARGET_MMU_TRAPS
@@ -4814,9 +4822,16 @@
 	      emit_insn (gen_movsi (reg, operands[1]));
 	      operands[1] = gen_lowpart (QImode, reg);
 	    }
-         if (GET_CODE (operands[0]) == MEM)
-	   operands[1] = force_reg (QImode, operands[1]);
-       }
+	  if (GET_CODE (operands[1]) == MEM && optimize > 0)
+	    {
+	      rtx reg = gen_reg_rtx (SImode);
+
+	      emit_insn (gen_zero_extendqisi2 (reg, operands[1]));
+	      operands[1] = gen_lowpart (QImode, reg);
+	    }
+          if (GET_CODE (operands[0]) == MEM)
+	    operands[1] = force_reg (QImode, operands[1]);
+        }
     }
   else /* TARGET_THUMB */
     {
