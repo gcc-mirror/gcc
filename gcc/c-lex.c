@@ -142,7 +142,7 @@ init_c_lex (filename)
   /* Start it at 0.  */
   lineno = 0;
 
-  if (filename == NULL)
+  if (filename == NULL || !strcmp (filename, "-"))
     filename = "";
 
   return cpp_read_main_file (parse_in, filename, ident_hash);
