@@ -1807,39 +1807,42 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
   /* If rvalue is a NULL() or NULLIFY, we're done. Otherwise the type,
      kind, etc for lvalue and rvalue must match, and rvalue must be a
      pure variable if we're in a pure function.  */
-  if (rvalue->expr_type != EXPR_NULL)
+  if (rvalue->expr_type == EXPR_NULL)
+    return SUCCESS;
+
+  if (!gfc_compare_types (&lvalue->ts, &rvalue->ts))
     {
+      gfc_error ("Different types in pointer assignment at %L",
+		 &lvalue->where);
+      return FAILURE;
+    }
 
-      if (!gfc_compare_types (&lvalue->ts, &rvalue->ts))
-	{
-	  gfc_error ("Different types in pointer assignment at %L",
-		     &lvalue->where);
-	  return FAILURE;
-	}
+  if (lvalue->ts.kind != rvalue->ts.kind)
+    {
+      gfc_error	("Different kind type parameters in pointer "
+		 "assignment at %L", &lvalue->where);
+      return FAILURE;
+    }
 
-      if (lvalue->ts.kind != rvalue->ts.kind)
-	{
-	  gfc_error
-	    ("Different kind type parameters in pointer assignment at %L",
-	     &lvalue->where);
-	  return FAILURE;
-	}
+  attr = gfc_expr_attr (rvalue);
+  if (!attr.target && !attr.pointer)
+    {
+      gfc_error	("Pointer assignment target is neither TARGET "
+		 "nor POINTER at %L", &rvalue->where);
+      return FAILURE;
+    }
 
-      attr = gfc_expr_attr (rvalue);
-      if (!attr.target && !attr.pointer)
-	{
-	  gfc_error
-	    ("Pointer assignment target is neither TARGET nor POINTER at "
-	     "%L", &rvalue->where);
-	  return FAILURE;
-	}
+  if (is_pure && gfc_impure_variable (rvalue->symtree->n.sym))
+    {
+      gfc_error	("Bad target in pointer assignment in PURE "
+		 "procedure at %L", &rvalue->where);
+    }
 
-      if (is_pure && gfc_impure_variable (rvalue->symtree->n.sym))
-	{
-	  gfc_error
-	    ("Bad target in pointer assignment in PURE procedure at %L",
-	     &rvalue->where);
-	}
+  if (lvalue->rank != rvalue->rank)
+    {
+      gfc_error ("Unequal ranks %d and %d in pointer assignment at %L", 
+		 lvalue->rank, rvalue->rank, &rvalue->where);
+      return FAILURE;
     }
 
   return SUCCESS;
