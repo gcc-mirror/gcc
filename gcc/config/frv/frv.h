@@ -3023,12 +3023,14 @@ do {                                                                    \
 					  CONST_DOUBLE, CONST,		\
 					  SYMBOL_REF, LABEL_REF }},	\
   { "move_destination_operand",		{ REG, SUBREG, MEM }},		\
+  { "movcc_fp_destination_operand",	{ REG, SUBREG, MEM }},		\
   { "condexec_source_operand",		{ REG, SUBREG, CONST_INT, MEM,	\
 					  CONST_DOUBLE }},		\
   { "condexec_dest_operand",		{ REG, SUBREG, MEM }},		\
   { "reg_or_0_operand",			{ REG, SUBREG, CONST_INT }},	\
   { "lr_operand",			{ REG }},			\
   { "gpr_or_memory_operand",		{ REG, SUBREG, MEM }},		\
+  { "gpr_or_memory_operand_with_scratch", { REG, SUBREG, MEM }},	\
   { "fpr_or_memory_operand",		{ REG, SUBREG, MEM }},		\
   { "int12_operand",			{ CONST_INT }},			\
   { "int_2word_operand",		{ CONST_INT, CONST_DOUBLE,	\

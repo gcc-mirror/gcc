@@ -1,3 +1,14 @@
+2005-02-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/frv/frv.c (movcc_fp_destination_operand): New.
+	(gpr_or_memory_operand): Fix typo in comment.
+	(gpr_or_memory_operand_with_scratch): New.
+	* config/frv/frv.h (PREDICATE_CODES): Add the two new predicates.
+	* config/frv/frv.md (movcc_fp, movcc_fp_internal): Use
+	movcc_fp_destination_operand.
+	(reload_incc_fp): Use gpr_or_memory_operand_with_scratch.
+	Legitimize memory addresses using a scratch register.
+
 2005-01-31  Jeff Law  <law@redhat.com>
 
 	* tree-into-ssa.c (mark_def_sites_global_data): Make KILLS

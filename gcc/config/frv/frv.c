@@ -4569,6 +4569,19 @@ move_destination_operand (rtx op, enum machine_mode mode)
   return FALSE;
 }
 
+/* Return true if we the operand is a valid destination for a movcc_fp
+   instruction.  This means rejecting fcc_operands, since we need
+   scratch registers to write to them.  */
+
+int
+movcc_fp_destination_operand (rtx op, enum machine_mode mode)
+{
+  if (fcc_operand (op, mode))
+    return FALSE;
+
+  return move_destination_operand (op, mode);
+}
+
 /* Look for a SYMBOL_REF of a function in an rtx.  We always want to
    process these separately from any offsets, such that we add any
    offsets to the function descriptor (the actual pointer), not to the
@@ -4832,13 +4845,46 @@ const_unspec_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
   return frv_const_unspec_p (op, &unspec);
 }
-/* Return true if operand is a gpr register or a valid memory operation.  */
+
+/* Return true if operand is a gpr register or a valid memory operand.  */
 
 int
 gpr_or_memory_operand (rtx op, enum machine_mode mode)
 {
   return (integer_register_operand (op, mode)
 	  || frv_legitimate_memory_operand (op, mode, FALSE));
+}
+
+/* Return true if operand is a gpr register, a valid memory operand,
+   or a memory operand that can be made valid using an additional gpr
+   register.  */
+
+int
+gpr_or_memory_operand_with_scratch (rtx op, enum machine_mode mode)
+{
+  rtx addr;
+
+  if (gpr_or_memory_operand (op, mode))
+    return TRUE;
+
+  if (GET_CODE (op) != MEM)
+    return FALSE;
+
+  if (GET_MODE (op) != mode)
+    return FALSE;
+
+  addr = XEXP (op, 0);
+
+  if (GET_CODE (addr) != PLUS)
+    return FALSE;
+      
+  if (!integer_register_operand (XEXP (addr, 0), Pmode))
+    return FALSE;
+
+  if (GET_CODE (XEXP (addr, 1)) != CONST_INT)
+    return FALSE;
+
+  return TRUE;
 }
 
 /* Return true if operand is a fpr register or a valid memory operation.  */
