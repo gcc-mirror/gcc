@@ -398,8 +398,9 @@ struct compiler
 {
   char *suffix;			/* Use this compiler for input files
 				   whose names end in this suffix.  */
-  char *spec;			/* To use this compiler, pass this spec
-				   to do_spec.  */
+
+  char *spec[4];		/* To use this compiler, concatenate these
+				   specs and pass to do_spec.  */
 };
 
 /* Pointer to a vector of `struct compiler' that gives the spec for
@@ -431,8 +432,8 @@ static struct compiler default_compilers[] =
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
-    %{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
+   "%{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
@@ -463,8 +464,8 @@ static struct compiler default_compilers[] =
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
-    %{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n"
+   "%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
@@ -499,8 +500,8 @@ static struct compiler default_compilers[] =
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional} %{trigraphs}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
-    %{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.i} %1 %2\
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n"
+   "%{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.i} %1 %2\
 		   %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} %{traditional}\
 		   %{v:-version} %{pg:-p} %{p} %{f*}\
@@ -544,8 +545,8 @@ static struct compiler default_compilers[] =
         %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
-    %{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n"
+   "%{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
                     %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
 		    %{!pipe:%g.s} %A\n }}}}"},
   /* Mark end of table */
@@ -691,7 +692,9 @@ read_specs (filename)
 	    = ((struct compiler *)
 	       xrealloc (compilers, (n_compilers + 2) * sizeof (struct compiler)));
 	  compilers[n_compilers].suffix = suffix;
-	  compilers[n_compilers].spec = spec;
+	  bzero (compilers[n_compilers].spec,
+		 sizeof compilers[n_compilers].spec);
+	  compilers[n_compilers].spec[0] = spec;
 	  n_compilers++;
 	}
 
@@ -3332,6 +3335,7 @@ main (argc, argv)
 	  /* Ok, we found an applicable compiler.  Run its spec.  */
 	  /* First say how much of input_filename to substitute for %b  */
 	  register char *p;
+	  int len;
 
 	  input_basename = input_filename;
 	  for (p = input_filename; *p; p++)
@@ -3351,7 +3355,21 @@ main (argc, argv)
 	  else
 	    input_suffix = "";
 
-	  value = do_spec (cp->spec);
+	  len = 0;
+	  for (i = 0; i < sizeof cp->spec / sizeof cp->spec[0]; i++)
+	    len += strlen (cp->spec[i]);
+
+	  p = (char *) xmalloc (len + 1);
+
+	  len = 0;
+	  for (i = 0; i < sizeof cp->spec / sizeof cp->spec[0]; i++)
+	    {
+	      strcpy (p + len, cp->spec[i]);
+	      len += strlen (cp->spec[i]);
+	    }
+
+	  value = do_spec (p);
+	  free (p);
 	  if (value < 0)
 	    this_file_error = 1;
 	}
@@ -3480,17 +3498,18 @@ lookup_compiler (name, length, language)
 	       /* The suffix `-' matches only the file name `-'.  */
 	       && !(!strcmp (cp->suffix, "-") && length != 1))
 	{
-	  if (cp->spec[0] == '@')
+	  if (cp->spec[0][0] == '@')
 	    {
 	      struct compiler *new;
 	      /* An alias entry maps a suffix to a language.
 		 Search for the language; pass 0 for NAME and LENGTH
 		 to avoid infinite recursion if language not found.
 		 Construct the new compiler spec.  */
-	      language = cp->spec + 1;
+	      language = cp->spec[0] + 1;
 	      new = (struct compiler *) xmalloc (sizeof (struct compiler));
 	      new->suffix = cp->suffix;
-	      new->spec = lookup_compiler (NULL_PTR, 0, language)->spec;
+	      bcopy (lookup_compiler (NULL_PTR, 0, language)->spec,
+		     new->spec, sizeof new->spec);
 	      return new;
 	    }
 	  /* A non-alias entry: return it.  */
@@ -3668,17 +3687,21 @@ validate_all_switches ()
   register char c;
   struct spec_list *spec;
 
-  for (comp = compilers; comp->spec; comp++)
+  for (comp = compilers; comp->spec[0]; comp++)
     {
-      p = comp->spec;
-      while (c = *p++)
-	if (c == '%' && *p == '{')
-	  /* We have a switch spec.  */
-	  validate_switches (p + 1);
+      int i;
+      for (i = 0; i < sizeof comp->spec / sizeof comp->spec[0]; i++)
+	{
+	  p = comp->spec[i];
+	  while (c = *p++)
+	    if (c == '%' && *p == '{')
+	      /* We have a switch spec.  */
+	      validate_switches (p + 1);
+	}
     }
 
   /* look through the linked list of extra specs read from the specs file */
-  for (spec = specs ; spec ; spec = spec->next)
+  for (spec = specs; spec ; spec = spec->next)
     {
       p = spec->spec;
       while (c = *p++)
