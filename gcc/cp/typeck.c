@@ -971,11 +971,9 @@ comptypes (t1, t2, strict)
   if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     return 1;
 
-  if (strict & COMPARE_NO_ATTRIBUTES)
-    attrval = 1;
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  else if (! (attrval = (*targetm.comp_type_attributes) (t1, t2)))
-     return 0;
+  if (! (attrval = (*targetm.comp_type_attributes) (t1, t2)))
+    return 0;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
   val = 0;

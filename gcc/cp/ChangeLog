@@ -1,5 +1,11 @@
 2003-05-15  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (build_op_delete_call): Avoid creating unnecessary types.
+	* class.c (instantiate_type): Remove tests for tf_no_attributes.
+	* cp-tree.h (tsubst_flags_t): Remove tf_no_attributes.
+	(COMPARE_NO_ATTRIBUTES): Remove.
+	* typeck.c (comptypes): Do not check COMPARE_NO_ATTRIBUTES.
+
 	PR c++/8385
 	* semantics.c (finish_typeof): Refine type-dependency check.
 

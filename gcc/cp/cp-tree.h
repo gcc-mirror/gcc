@@ -3007,12 +3007,10 @@ typedef enum tsubst_flags_t {
   tf_none = 0,               /* nothing special */
   tf_error = 1 << 0,         /* give error messages  */
   tf_warning = 1 << 1,       /* give warnings too  */
-  tf_no_attributes = 1 << 2, /* ignore attributes on comparisons
-				(instantiate_type use) */
-  tf_ignore_bad_quals = 1 << 3, /* ignore bad cvr qualifiers */
-  tf_keep_type_decl = 1 << 4,	/* retain typedef type decls
+  tf_ignore_bad_quals = 1 << 2, /* ignore bad cvr qualifiers */
+  tf_keep_type_decl = 1 << 3,	/* retain typedef type decls
 				   (make_typename_type use) */
-  tf_ptrmem_ok = 1 << 5      /* pointers to member ok (internal
+  tf_ptrmem_ok = 1 << 4      /* pointers to member ok (internal
 				instantiate_type use) */
 } tsubst_flags_t;
 
@@ -3372,8 +3370,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define COMPARE_REDECLARATION 4 /* The comparsion is being done when
 				   another declaration of an existing
 				   entity is seen.  */
-#define COMPARE_NO_ATTRIBUTES 8 /* The comparison should ignore
-				   extra-linguistic type attributes.  */
 
 /* Used with push_overloaded_decl.  */
 #define PUSH_GLOBAL          0  /* Push the DECL into namespace scope,
