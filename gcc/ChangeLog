@@ -1,5 +1,8 @@
 2001-02-08  Jason Merrill  <jason@redhat.com>
 
+	* diagnostic.c (internal_error): Say "confused" after 1 error, not
+	two.  Print file and line with "confused" message.
+
 	* dwarf2out.c (dwarf2out_line): Include filename in -dA output.
 
 Thu Feb  8 11:21:28 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>

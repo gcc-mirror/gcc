@@ -1456,9 +1456,10 @@ internal_error VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (errorcount > 1 || sorrycount > 0)
+  if (errorcount > 0 || sorrycount > 0)
     {
-      fprintf (stderr, "confused by earlier errors, bailing out\n");
+      fprintf (stderr, "%s:%d: confused by earlier errors, bailing out\n",
+	       input_filename, lineno);
       exit (FATAL_EXIT_CODE);
     }
 
