@@ -114,11 +114,6 @@ extern int warn_return_type;
 
 extern int warn_cast_align;
 
-/* Nonzero means warn that dbx info for template class methods isn't fully
-   supported yet.  */
-
-extern int warn_template_debugging;
-
 /* Nonzero means warn about any identifiers that match in the first N
    characters.  The value N is in `id_clash_len'.  */
 

@@ -1,4 +1,4 @@
-.\" Copyright (c) 1991, 1992, 1993, 1994 Free Software Foundation    -*-Text-*-
+.\" Copyright (c) 1991, 1992, 1993, 1994, 2000 Free Software Foundation    -*-Text-*-
 .\" See section COPYING for conditions for redistribution
 .\"
 .\" Set up \*(lq, \*(rq if -man hasn't already set it up.
@@ -20,7 +20,7 @@
 .if n .sp
 .if t .sp 0.4
 ..
-.Id $Id: gcc.1,v 1.12 1999/10/22 02:32:26 law Exp $
+.Id $Id: gcc.1,v 1.13 1999/11/02 10:23:46 law Exp $
 .TH GCC 1 "\*(Dt" "GNU Tools" "GNU Tools"
 .SH NAME
 gcc, g++ \- GNU project C and C++ Compiler (gcc-2.96)
@@ -150,10 +150,8 @@ in the following sections.
 .TP
 .B Language Options
 \-ansi
-\-fall\-virtual
 \-fcond\-mismatch
 \-fdollars\-in\-identifiers
-\-fenum\-int\-equiv
 \-fexternal\-templates
 \-fno\-asm
 \-fno\-builtin
@@ -164,7 +162,6 @@ in the following sections.
 \-fno\-strict\-prototype
 \-fsigned\-bitfields
 \-fsigned\-char
-\-fthis\-is\-variable
 \-funsigned\-bitfields
 \-funsigned\-char
 \-fwritable\-strings
@@ -185,7 +182,6 @@ in the following sections.
 \-Wchar\-subscript
 \-Wcomment
 \-Wconversion
-\-Wenum\-clash
 \-Werror
 \-Wformat
 .RI \-Wid\-clash\- len
@@ -206,7 +202,6 @@ in the following sections.
 \-Wshadow
 \-Wstrict\-prototypes
 \-Wswitch
-\-Wtemplate\-debugging
 \-Wtraditional
 \-Wtrigraphs
 \-Wuninitialized
@@ -836,14 +831,6 @@ Attempt to support some aspects of traditional C compilers.
 For details, see the GNU C Manual; the duplicate list here
 has been deleted so that we won't get complaints when it
 is out of date.
-.Sp
-But one note about C++ programs only (not C).  `\|\c
-.B \-traditional\c
-\&\|' has one additional effect for C++: assignment to
-.B this
-is permitted.  This is the same as the effect of `\|\c
-.B \-fthis\-is\-variable\c
-\&\|'.
 .TP
 .B \-traditional\-cpp
 Attempt to support some aspects of traditional C preprocessors.
@@ -865,17 +852,6 @@ Permit the use of `\|\c
 .B $\c
 \&\|' by default on some target systems
 but not others.)
-.TP
-.B \-fenum\-int\-equiv
-Permit implicit conversion of \c
-.B int\c
-\& to enumeration types (C++
-only).  Normally GNU C++ allows conversion of \c
-.B enum\c
-\& to \c
-.B int\c
-\&,
-but not the other way around.
 .TP
 .B \-fexternal\-templates
 Produce smaller code for template declarations, by generating only a
@@ -902,40 +878,9 @@ Conversely, when you compile using the default option
 \&\|', all template instantiations are
 explicitly internal.
 .TP
-.B \-fall\-virtual
-Treat all possible member functions as virtual, implicitly.  All
-member functions (except for constructor functions and
-.B new
-or
-.B delete
-member operators) are treated as virtual functions of the class where
-they appear.
-.Sp
-This does not mean that all calls to these member functions will be
-made through the internal table of virtual functions.  Under some
-circumstances, the compiler can determine that a call to a given
-virtual function can be made directly; in these cases the calls are
-direct in any case.
-.TP
 .B \-fcond\-mismatch
 Allow conditional expressions with mismatched types in the second and
 third arguments.  The value of such an expression is void.
-.TP
-.B \-fthis\-is\-variable
-Permit assignment to \c
-.B this\c
-\& (C++ only).  The incorporation of
-user-defined free store management into C++ has made assignment to
-`\|\c
-.B this\c
-\&\|' an anachronism.  Therefore, by default it is invalid to
-assign to \c
-.B this\c
-\& within a class member function.  However, for
-backwards compatibility, you can make it valid with
-`\|\c
-.B \-fthis-is-variable\c
-\&\|'.
 .TP
 .B \-funsigned\-char
 Let the type \c
@@ -1863,10 +1808,6 @@ Some spurious warnings can be avoided if you declare as
 .B \-Wparentheses
 Warn if parentheses are omitted in certain contexts.
 .TP
-.B \-Wtemplate\-debugging
-When using templates in a C++ program, warn if debugging is not yet
-fully available (C++ only).
-.TP
 .B \-Wall
 All of the above `\|\c
 .B \-W\c
@@ -1994,14 +1935,6 @@ header files.
 .B \-Wredundant-decls
 Warn if anything is declared more than once in the same scope, even in
 cases where multiple declaration is valid and changes nothing.
-.TP
-.B \-Wnested-externs
-Warn if an \c
-.B extern\c
-\& declaration is encountered within an function.
-.TP
-.B \-Wenum\-clash
-Warn about conversion between different enumeration types (C++ only).
 .TP
 .B \-Wlong-long
 Warn if

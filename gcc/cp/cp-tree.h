@@ -396,10 +396,6 @@ struct tree_srcloc
   int linenum;
 };
 
-/* To identify to the debug emitters if it should pay attention to the
-   flag `-Wtemplate-debugging'.  */
-#define HAVE_TEMPLATES 1
-
 /* Macros for access to language-specific slots in an identifier.  */
 
 #define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\

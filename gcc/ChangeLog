@@ -1,3 +1,10 @@
+2000-04-11  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* extend.texi (-fthis-is-variable): Undocument.
+	* flags.h (warn_template_debugging): Remove declaration.
+	* gcc.1 (-fall-virtual, -fenum-int-equiv, -fthis-is-variable,
+	-Wenum-clash, -Wtemplate-debugging): Undocument.
+
 2000-04-10  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.h (HOST_INT): New macro: Declare a HOST_WIDE_INT

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96,98, 99 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,96,98,99,2000 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3224,13 +3224,6 @@ cases, the feature might be gone already.
 
 While the list below is not exhaustive, it documents some of the options
 that are now deprecated:
-
-@table @code
-@item -fthis-is-variable
-In early versions of C++, assignment to this could be used to implement
-application-defined memory allocation. Now, allocation functions
-(@samp{operator new}) are the standard-conforming way to achieve the
-same effect.
 
 @item -fexternal-templates
 @itemx -falt-external-templates
