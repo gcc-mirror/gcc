@@ -2616,7 +2616,7 @@ extern int rtx_equal_function_value_matters;
 #define N_ALLOCATABLE_REGISTERS						\
   (6 - (flag_pic != 0) - (outer_function_chain != 0)                    \
    + (flag_omit_frame_pointer && ! rtx_equal_function_value_matters     \
-      && ! current_function_calls_alloca))                              \
+      && ! current_function_calls_alloca))
 
 
 /* Functions in i386.c */
