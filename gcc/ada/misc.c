@@ -75,17 +75,16 @@
 #include "gigi.h"
 #include "adadecode.h"
 #include "opts.h"
+#include "aoptions.h"
 
 extern FILE *asm_out_file;
 extern int save_argc;
 extern char **save_argv;
-const unsigned int cl_options_count;
-const struct cl_option cl_options[1];
 
 static size_t gnat_tree_size		PARAMS ((enum tree_code));
 static bool gnat_init			PARAMS ((void));
 static int gnat_init_options		PARAMS ((void));
-static int gnat_decode_option		PARAMS ((int, char **));
+static int gnat_handle_option (size_t scode, const char *arg, int value);
 static HOST_WIDE_INT gnat_get_alias_set	PARAMS ((tree));
 static void gnat_print_decl		PARAMS ((FILE *, tree, int));
 static void gnat_print_type		PARAMS ((FILE *, tree, int));
@@ -108,8 +107,8 @@ static rtx gnat_expand_expr		PARAMS ((tree, rtx, enum machine_mode,
 #define LANG_HOOKS_INIT			gnat_init
 #undef  LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS		gnat_init_options
-#undef  LANG_HOOKS_DECODE_OPTION
-#define LANG_HOOKS_DECODE_OPTION	gnat_decode_option
+#undef  LANG_HOOKS_HANDLE_OPTION
+#define LANG_HOOKS_HANDLE_OPTION	gnat_handle_option
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE		gnat_parse_file
 #undef LANG_HOOKS_HONOR_READONLY
@@ -219,58 +218,50 @@ gnat_parse_file (set_yydebug)
    from ARGV that it successfully decoded; 0 indicates failure.  */
 
 static int
-gnat_decode_option (argc, argv)
-     int argc ATTRIBUTE_UNUSED;
-     char **argv;
+gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
 {
-  char *p = argv[0];
+  const struct cl_option *option = &cl_options[scode];
+  enum opt_code code = (enum opt_code) scode;
+  char *q;
   int i;
 
-  if (!strncmp (p, "-I", 2))
+  /* Ignore file names.  */
+  if (code == N_OPTS)
+      return 1;
+
+  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
     {
-      /* We might get -I foo or -Ifoo.  Canonicalize to the latter.  */
-      if (p[2] == '\0')
-	{
-	  char *q;
-
-	  if (argv[1] == 0)
-	    return 0;
-
-	  q = xmalloc (sizeof("-I") + strlen (argv[1]));
-	  strcpy (q, "-I");
-	  strcat (q, argv[1]);
-
-	  gnat_argv[gnat_argc] = q;
-	  gnat_argc ++;
-	  return 2;  /* consumed argument */
-	}
-      else
-	{
-	  gnat_argv[gnat_argc] = p;
-	  gnat_argc ++;
-	  return 1;
-	}
-    }
-
-  else if (!strncmp (p, "-gant", 5))
-    {
-      char *q = xstrdup (p);
-
-      warning ("`-gnat' misspelled as `-gant'");
-      q[2] = 'n', q[3] = 'a';
-      p = q;
+      error ("missing argument to \"-%s\"", option->opt_text);
       return 1;
     }
 
-  else if (!strncmp (p, "-gnat", 5))
+  switch (code)
     {
-      /* Recopy the switches without the 'gnat' prefix */
+    case OPT_I:
+      q = xmalloc (sizeof("-I") + strlen (arg));
+      strcpy (q, "-I");
+      strcat (q, arg);
+      gnat_argv[gnat_argc] = q;
+      gnat_argc++;
+      break;
 
-      gnat_argv[gnat_argc] =  (char *) xmalloc (strlen (p) - 3);
+    case OPT_fRTS:
+      gnat_argv[gnat_argc] = "-fRTS";
+      gnat_argc++;
+      break;
+
+    case OPT_gant:
+      warning ("`-gnat' misspelled as `-gant'");
+      break;
+
+    case OPT_gnat:
+      /* Recopy the switches without the 'gnat' prefix */
+      gnat_argv[gnat_argc] = xmalloc (strlen (arg) + 2);
       gnat_argv[gnat_argc][0] = '-';
-      strcpy (gnat_argv[gnat_argc] + 1, p + 5);
-      gnat_argc ++;
-      if (p[5] == 'O')
+      strcpy (gnat_argv[gnat_argc] + 1, arg);
+      gnat_argc++;
+
+      if (arg[0] == 'O')
 	for (i = 1; i < save_argc - 1; i++) 
 	  if (!strncmp (save_argv[i], "-gnatO", 6))
 	    if (save_argv[++i][0] != '-')
@@ -280,25 +271,10 @@ gnat_decode_option (argc, argv)
 		gnat_argc++;
 		break;
 	      }
-
-      return 1;
+      break;
     }
 
-  /* Handle the --RTS switch.  The real option we get is -fRTS. This
-     modification is done by the driver program.  */
-  if (!strncmp (p, "-fRTS", 5))
-    {
-      gnat_argv[gnat_argc] = p;
-      gnat_argc ++;
-      return 1;
-    }
-
-  /* Ignore -W flags since people may want to use the same flags for all
-     languages.  */
-  else if (p[0] == '-' && p[1] == 'W' && p[2] != 0)
-    return 1;
-
-  return 0;
+  return 1;
 }
 
 /* Initialize for option processing.  */
