@@ -1,3 +1,10 @@
+Thu Aug 10 22:47:09 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* configure.in:
+	* configure:
+	* gthr-posix.h:
+	* config.in: Reverted the check for <sched.h>.
+
 2000-08-10  Chris Demetriou  <cgd@sibyte.com>
 
 	* mips/elf.h (CTOR_SECTION_NAME, DTOR_SECTION_NAME): New
