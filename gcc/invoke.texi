@@ -103,17 +103,17 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @smallexample
--fno-access-control  -fcheck-new  -fconserve-space  -fdollars-in-identifiers
--fno-elide-constructors  -fexternal-templates  -ffor-scope  
--fno-for-scope  -fno-gnu-keywords  -fguiding-decls
--fhonor-std -fhuge-objects  -fno-implicit-templates  -finit-priority
--fno-implement-inlines -fname-mangling-version-@var{n}  -fno-default-inline  
--foperator-names  -fno-optional-diags  -fpermissive -frepo  -fstrict-prototype
--fsquangle  -ftemplate-depth-@var{n} -fuse-cxa-atexit -fvtable-thunks
--nostdinc++  -Wctor-dtor-privacy -Wno-deprecated -Weffc++  
--Wno-non-template-friend 
--Wnon-virtual-dtor  -Wold-style-cast  -Woverloaded-virtual  
--Wno-pmf-conversions  -Wreorder  -Wsign-promo  -Wsynth
+-fno-access-control -fcheck-new -fconserve-space
+-fdollars-in-identifiers -fno-elide-constructors -fexternal-templates
+-ffor-scope -fno-for-scope -fno-gnu-keywords -fguiding-decls -fhonor-std
+-fhuge-objects -fno-implicit-templates -finit-priority
+-fno-implement-inlines -fname-mangling-version-@var{n}
+-fno-default-inline -fno-operator-names -fno-optional-diags -fpermissive
+-frepo -fstrict-prototype -fsquangle -ftemplate-depth-@var{n}
+-fuse-cxa-atexit -fvtable-thunks -nostdinc++ -Wctor-dtor-privacy
+-Wno-deprecated -Weffc++ -Wno-non-template-friend -Wnon-virtual-dtor
+-Wold-style-cast -Woverloaded-virtual -Wno-pmf-conversions -Wreorder
+-Wsign-promo -Wsynth
 @end smallexample
 
 @item Warning Options
@@ -672,19 +672,17 @@ from C, such as C++ and Objective C) that the compiler accepts:
 @cindex ANSI support
 @item -ansi
 In C mode, support all ANSI standard C programs.  In C++ mode,
-remove GNU extensions that conflict with ANSI C++.
+remove GNU extensions that conflict with ISO C++.
 @c shouldn't we be saying "ISO"?
 
 This turns off certain features of GCC that are incompatible with ANSI
-C (when compiling C code), or of ANSI standard C++ (when compiling C++ code),
+C (when compiling C code), or of standard C++ (when compiling C++ code),
 such as the @code{asm} and @code{typeof} keywords, and
 predefined macros such as @code{unix} and @code{vax} that identify the
 type of system you are using.  It also enables the undesirable and
 rarely used ANSI trigraph feature.  For the C compiler, 
 it disables recognition of C++ style @samp{//} comments as well as
-the @code{inline} keyword.  For the C++ compiler,
-@samp{-foperator-names} is enabled as well.
-
+the @code{inline} keyword.
 
 The alternate keywords @code{__asm__}, @code{__extension__},
 @code{__inline__} and @code{__typeof__} continue to work despite
@@ -1180,11 +1178,10 @@ template <class T, class U> void foo(T t);
 Like all options that change the ABI, all C++ code, @emph{including
 libgcc} must be built with the same setting of this option.
 
-@item -foperator-names
-Recognize the operator name keywords @code{and}, @code{bitand},
+@item -fno-operator-names
+Do not treat the operator name keywords @code{and}, @code{bitand},
 @code{bitor}, @code{compl}, @code{not}, @code{or} and @code{xor} as
-synonyms for the symbols they refer to.  @samp{-ansi} implies
-@samp{-foperator-names}.
+synonyms as keywords.
 
 @item -fno-optional-diags
 Disable diagnostics that the standard says a compiler does not need to

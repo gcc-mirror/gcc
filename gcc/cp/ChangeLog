@@ -1,6 +1,8 @@
 2000-04-10  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* lex.c (init_parse): Remove traces of classof and headof.
+	* decl2.c (flag_operator_names): Default to 1.
+	(lang_decode_option): Do not set it for -ansi.
 
 2000-04-09  Mark Mitchell  <mark@codesourcery.com>
 
