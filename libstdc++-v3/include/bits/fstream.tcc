@@ -429,15 +429,16 @@ namespace std
     {
       if (!this->is_open() && __s == 0 && __n == 0)
 	this->_M_buf_size = 1;
-      else if (__s && __n > 1)
+      else if (__s && __n >= 1)
 	{
 	  // This is implementation-defined behavior, and assumes that
-	  // an external char_type array of length (__s + __n) exists
-	  // and has been pre-allocated. If this is not the case,
-	  // things will quickly blow up. The length argument __n must
-	  // be greater than 1 because __n - 1 positions will be used
-	  // for the get and put areas, and 1 position is needed to
-	  // host the overflow char of a full put area.
+	  // an external char_type array of length __n exists and has
+	  // been pre-allocated. If this is not the case, things will
+	  // quickly blow up. When __n > 1, __n - 1 positions will be
+	  // used for the get area, __n - 1 for the put area and 1
+	  // position to host the overflow char of a full put area.
+	  // When __n == 1, 1 position will be used for the get area
+	  // and 0 for the put area, as in the unbuffered case above.
 
 	  // Step 1: Destroy the current internal array.
 	  _M_destroy_internal_buffer();

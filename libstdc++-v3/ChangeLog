@@ -1,3 +1,10 @@
+2003-06-18  Nathan C. Myers  <ncm-nospam@cantrip.org>
+            Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/fstream.tcc (setbuf): Allow (__s, 1) too,
+	simply equivalent to the unbuffered case (0, 0) as far as
+	_M_buf_size is concerned.
+
 2003-06-18  Andreas Jaeger  <aj@suse.de>
 
 	* testsuite/Makefile.am (new-abi-baseline): Create baseline
