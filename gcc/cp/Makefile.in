@@ -163,9 +163,10 @@ CXX_OBJS = call.o decl.o errfn.o expr.o pt.o sig.o typeck2.o \
 
 # Language-independent object files.
 OBJS = `cat ../stamp-objlist` ../c-common.o
+OBJDEPS = ../stamp-objlist ../c-common.o
 
 compiler: ../cc1plus
-../cc1plus: $(P) $(CXX_OBJS) $(LIBDEPS)
+../cc1plus: $(P) $(CXX_OBJS) $(OBJDEPS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o ../cc1plus \
 	      $(CXX_OBJS) $(OBJS) $(LIBS)
 
