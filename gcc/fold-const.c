@@ -115,6 +115,7 @@ static bool tree_swap_operands_p (tree, tree, bool);
 
 static tree fold_negate_const (tree, tree);
 static tree fold_abs_const (tree, tree);
+static tree fold_relational_const (enum tree_code, tree, tree, tree);
 
 /* The following constants represent a bit based encoding of GCC's
    comparison operators.  This encoding simplifies transformations
@@ -5391,7 +5392,6 @@ fold (tree expr)
   tree arg0 = NULL_TREE, arg1 = NULL_TREE;
   enum tree_code code = TREE_CODE (t);
   int kind = TREE_CODE_CLASS (code);
-  int invert;
   /* WINS will be nonzero when the switch is done
      if all operands are constant.  */
   int wins = 1;
@@ -7919,92 +7919,9 @@ fold (tree expr)
 				integer_zero_node));
 	}
 
-      /* From here on, the only cases we handle are when the result is
-	 known to be a constant.
-
-	 To compute GT, swap the arguments and do LT.
-	 To compute GE, do LT and invert the result.
-	 To compute LE, swap the arguments, do LT and invert the result.
-	 To compute NE, do EQ and invert the result.
-
-	 Therefore, the code below must handle only EQ and LT.  */
-
-      if (code == LE_EXPR || code == GT_EXPR)
-	{
-	  tem = arg0, arg0 = arg1, arg1 = tem;
-	  code = swap_tree_comparison (code);
-	}
-
-      /* Note that it is safe to invert for real values here because we
-	 will check below in the one case that it matters.  */
-
-      t1 = NULL_TREE;
-      invert = 0;
-      if (code == NE_EXPR || code == GE_EXPR)
-	{
-	  invert = 1;
-	  code = invert_tree_comparison (code);
-	}
-
-      /* Compute a result for LT or EQ if args permit;
-	 otherwise return T.  */
-      if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
-	{
-	  if (code == EQ_EXPR)
-	    t1 = build_int_2 (tree_int_cst_equal (arg0, arg1), 0);
-	  else
-	    t1 = build_int_2 ((TREE_UNSIGNED (TREE_TYPE (arg0))
-			       ? INT_CST_LT_UNSIGNED (arg0, arg1)
-			       : INT_CST_LT (arg0, arg1)),
-			      0);
-	}
-
-#if 0 /* This is no longer useful, but breaks some real code.  */
-      /* Assume a nonexplicit constant cannot equal an explicit one,
-	 since such code would be undefined anyway.
-	 Exception: on sysvr4, using #pragma weak,
-	 a label can come out as 0.  */
-      else if (TREE_CODE (arg1) == INTEGER_CST
-	       && !integer_zerop (arg1)
-	       && TREE_CONSTANT (arg0)
-	       && TREE_CODE (arg0) == ADDR_EXPR
-	       && code == EQ_EXPR)
-	t1 = build_int_2 (0, 0);
-#endif
-      /* Two real constants can be compared explicitly.  */
-      else if (TREE_CODE (arg0) == REAL_CST && TREE_CODE (arg1) == REAL_CST)
-	{
-	  /* If either operand is a NaN, the result is false with two
-	     exceptions: First, an NE_EXPR is true on NaNs, but that case
-	     is already handled correctly since we will be inverting the
-	     result for NE_EXPR.  Second, if we had inverted a LE_EXPR
-	     or a GE_EXPR into a LT_EXPR, we must return true so that it
-	     will be inverted into false.  */
-
-	  if (REAL_VALUE_ISNAN (TREE_REAL_CST (arg0))
-	      || REAL_VALUE_ISNAN (TREE_REAL_CST (arg1)))
-	    t1 = build_int_2 (invert && code == LT_EXPR, 0);
-
-	  else if (code == EQ_EXPR)
-	    t1 = build_int_2 (REAL_VALUES_EQUAL (TREE_REAL_CST (arg0),
-						 TREE_REAL_CST (arg1)),
-			      0);
-	  else
-	    t1 = build_int_2 (REAL_VALUES_LESS (TREE_REAL_CST (arg0),
-						TREE_REAL_CST (arg1)),
-			      0);
-	}
-
-      if (t1 == NULL_TREE)
-	return t;
-
-      if (invert)
-	TREE_INT_CST_LOW (t1) ^= 1;
-
-      TREE_TYPE (t1) = type;
-      if (TREE_CODE (type) == BOOLEAN_TYPE)
-	return lang_hooks.truthvalue_conversion (t1);
-      return t1;
+      /* Both ARG0 and ARG1 are known to be constants at this point.  */
+      t1 = fold_relational_const (code, type, arg0, arg1);
+      return (t1 == NULL_TREE ? t : t1);
 
     case COND_EXPR:
       /* Pedantic ANSI C says that a conditional expression is never an lvalue,
@@ -8963,6 +8880,106 @@ tree_expr_nonnegative_p (tree t)
   return 0;
 }
 
+/* Return true when T is an address and is known to be nonzero.
+   For floating point we further ensure that T is not denormal.
+   Similar logic is present in nonzero_address in rtlanal.h  */
+
+static bool
+tree_expr_nonzero_p (tree t)
+{
+  tree type = TREE_TYPE (t);
+
+  /* Doing something usefull for floating point would need more work.  */
+  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
+    return false;
+
+  switch (TREE_CODE (t))
+    {
+    case ABS_EXPR:
+      if (!TREE_UNSIGNED (type) && !flag_wrapv)
+	return tree_expr_nonzero_p (TREE_OPERAND (t, 0));
+
+    case INTEGER_CST:
+      return !integer_zerop (t);
+
+    case PLUS_EXPR:
+      if (!TREE_UNSIGNED (type) && !flag_wrapv)
+	{
+	  /* With the presence of negative values it is hard
+	     to say something.  */
+	  if (!tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
+	      || !tree_expr_nonnegative_p (TREE_OPERAND (t, 1)))
+	    return false;
+	  /* One of operands must be positive and the other non-negative.  */
+	  return (tree_expr_nonzero_p (TREE_OPERAND (t, 0))
+	          || tree_expr_nonzero_p (TREE_OPERAND (t, 1)));
+	}
+      break;
+
+    case MULT_EXPR:
+      if (!TREE_UNSIGNED (type) && !flag_wrapv)
+	{
+	  return (tree_expr_nonzero_p (TREE_OPERAND (t, 0))
+	          && tree_expr_nonzero_p (TREE_OPERAND (t, 1)));
+	}
+      break;
+
+    case NOP_EXPR:
+      {
+	tree inner_type = TREE_TYPE (TREE_OPERAND (t, 0));
+	tree outer_type = TREE_TYPE (t);
+
+	return (TYPE_PRECISION (inner_type) >= TYPE_PRECISION (outer_type)
+		&& tree_expr_nonzero_p (TREE_OPERAND (t, 0)));
+      }
+      break;
+
+   case ADDR_EXPR:
+      /* Weak declarations may link to NULL.  */
+      if (DECL_P (TREE_OPERAND (t, 0)))
+	return !DECL_WEAK (TREE_OPERAND (t, 0));
+      /* Constants and all other cases are never weak.  */
+      return true;
+
+    case COND_EXPR:
+      return (tree_expr_nonzero_p (TREE_OPERAND (t, 1))
+	      && tree_expr_nonzero_p (TREE_OPERAND (t, 2)));
+
+    case MIN_EXPR:
+      return (tree_expr_nonzero_p (TREE_OPERAND (t, 0))
+	      && tree_expr_nonzero_p (TREE_OPERAND (t, 1)));
+
+    case MAX_EXPR:
+      if (tree_expr_nonzero_p (TREE_OPERAND (t, 0)))
+	{
+	  /* When both operands are nonzero, then MAX must be too.  */
+	  if (tree_expr_nonzero_p (TREE_OPERAND (t, 1)))
+	    return true;
+
+	  /* MAX where operand 0 is positive is positive.  */
+	  return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
+	}
+      /* MAX where operand 1 is positive is positive.  */
+      else if (tree_expr_nonzero_p (TREE_OPERAND (t, 1))
+	       && tree_expr_nonnegative_p (TREE_OPERAND (t, 1)))
+	return true;
+      break;
+
+    case COMPOUND_EXPR:
+    case MODIFY_EXPR:
+    case BIND_EXPR:
+      return tree_expr_nonzero_p (TREE_OPERAND (t, 1));
+
+    case SAVE_EXPR:
+    case NON_LVALUE_EXPR:
+      return tree_expr_nonzero_p (TREE_OPERAND (t, 0));
+
+    default:
+      break;
+    }
+  return false;
+}
+
 /* Return true if `r' is known to be non-negative.
    Only handles constants at the moment.  */
 
@@ -9092,6 +9109,97 @@ fold_abs_const (tree arg0, tree type)
 #endif
     
   return t;
+}
+
+/* Given CODE, a relational operator, the target type, TYPE and two
+   constant operands OP0 and OP1, return the result of the
+   relational operation.  If the result is not a compile time
+   constant, then return NULL_TREE.  */
+
+static tree
+fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
+{
+  tree tem;
+  int invert;
+
+  /* From here on, the only cases we handle are when the result is
+     known to be a constant.
+
+     To compute GT, swap the arguments and do LT.
+     To compute GE, do LT and invert the result.
+     To compute LE, swap the arguments, do LT and invert the result.
+     To compute NE, do EQ and invert the result.
+
+     Therefore, the code below must handle only EQ and LT.  */
+
+  if (code == LE_EXPR || code == GT_EXPR)
+    {
+      tem = op0, op0 = op1, op1 = tem;
+      code = swap_tree_comparison (code);
+    }
+
+  /* Note that it is safe to invert for real values here because we
+     will check below in the one case that it matters.  */
+
+  tem = NULL_TREE;
+  invert = 0;
+  if (code == NE_EXPR || code == GE_EXPR)
+    {
+      invert = 1;
+      code = invert_tree_comparison (code);
+    }
+
+  /* Compute a result for LT or EQ if args permit;
+     Otherwise return T.  */
+  if (TREE_CODE (op0) == INTEGER_CST && TREE_CODE (op1) == INTEGER_CST)
+    {
+      if (code == EQ_EXPR)
+        tem = build_int_2 (tree_int_cst_equal (op0, op1), 0);
+      else
+        tem = build_int_2 ((TREE_UNSIGNED (TREE_TYPE (op0))
+			    ? INT_CST_LT_UNSIGNED (op0, op1)
+			    : INT_CST_LT (op0, op1)),
+			   0);
+    }
+
+  else if (code == EQ_EXPR && !TREE_SIDE_EFFECTS (op0)
+           && integer_zerop (op1) && tree_expr_nonzero_p (op0))
+    tem = build_int_2 (0, 0);
+
+  /* Two real constants can be compared explicitly.  */
+  else if (TREE_CODE (op0) == REAL_CST && TREE_CODE (op1) == REAL_CST)
+    {
+      /* If either operand is a NaN, the result is false with two
+	 exceptions: First, an NE_EXPR is true on NaNs, but that case
+	 is already handled correctly since we will be inverting the
+	 result for NE_EXPR.  Second, if we had inverted a LE_EXPR
+	 or a GE_EXPR into a LT_EXPR, we must return true so that it
+	 will be inverted into false.  */
+
+      if (REAL_VALUE_ISNAN (TREE_REAL_CST (op0))
+          || REAL_VALUE_ISNAN (TREE_REAL_CST (op1)))
+        tem = build_int_2 (invert && code == LT_EXPR, 0);
+
+      else if (code == EQ_EXPR)
+        tem = build_int_2 (REAL_VALUES_EQUAL (TREE_REAL_CST (op0),
+					      TREE_REAL_CST (op1)),
+			   0);
+      else
+        tem = build_int_2 (REAL_VALUES_LESS (TREE_REAL_CST (op0),
+					     TREE_REAL_CST (op1)),
+			   0);
+    }
+
+  if (tem == NULL_TREE)
+    return NULL_TREE;
+
+  if (invert)
+    TREE_INT_CST_LOW (tem) ^= 1;
+
+  TREE_TYPE (tem) = type;
+  if (TREE_CODE (type) == BOOLEAN_TYPE)
+    return (*lang_hooks.truthvalue_conversion) (tem);
+  return tem;
 }
 
 #include "gt-fold-const.h"
