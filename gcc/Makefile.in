@@ -1881,11 +1881,11 @@ cppmain.o: cppmain.c $(CONFIG_H) cpplib.h system.h gansidecl.h
 cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status system.h \
 	gansidecl.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
-	  -DCROSS_INCLUDE_DIR=\"$(tooldir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
+  	-DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
+  	-DGPLUSPLUS_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include/g++\" \
+  	-DLOCAL_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include\" \
+  	-DCROSS_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/../$(target_alias)/sys-include\" \
+  	-DTOOL_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/../$(target_alias)/include\" \
 	  -c `echo $(srcdir)/cpplib.c | sed 's,^\./,,'`
 
 cpperror.o: cpperror.c $(CONFIG_H) cpplib.h system.h gansidecl.h
