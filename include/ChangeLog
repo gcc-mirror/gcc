@@ -1,3 +1,8 @@
+2001-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* include/libiberty.h: Add lbasename.
+
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
 	* libiberty.h: Prototype C_alloca; define alloca to either
