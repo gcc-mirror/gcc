@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -265,6 +265,8 @@ package body Styleg is
          S : Source_Ptr;
 
       begin
+         --  Do we need to worry about UTF_32 line terminators here ???
+
          S := Scan_Ptr + 3;
          while Source (S) not in Line_Terminator loop
             S := S + 1;
@@ -462,17 +464,35 @@ package body Styleg is
    end Check_Left_Paren;
 
    ---------------------------
+   -- Check_Line_Max_Length --
+   ---------------------------
+
+   --  In check max line length mode (-gnatym), the line length must
+   --  not exceed the permitted maximum value.
+
+   procedure Check_Line_Max_Length (Len : Int) is
+   begin
+      if Style_Check_Max_Line_Length then
+         if Len > Style_Max_Line_Length then
+            Error_Msg
+              ("(style) this line is too long",
+               Current_Line_Start + Source_Ptr (Style_Max_Line_Length));
+         end if;
+      end if;
+   end Check_Line_Max_Length;
+
+   ---------------------------
    -- Check_Line_Terminator --
    ---------------------------
 
    --  In check blanks at end mode (-gnatyb), lines may not end with a
    --  trailing space.
 
-   --  In check max line length mode (-gnatym), the line length must
-   --  not exceed the permitted maximum value.
-
    --  In check form feeds mode (-gnatyf), the line terminator may not
    --  be either of the characters FF or VT.
+
+   --  In check DOS line terminators node (-gnatyd), the line terminator
+   --  must be a single LF, without a following CR.
 
    procedure Check_Line_Terminator (Len : Int) is
       S : Source_Ptr;
@@ -483,18 +503,30 @@ package body Styleg is
       if Style_Check_Form_Feeds then
          if Source (Scan_Ptr) = ASCII.FF then
             Error_Msg_S ("(style) form feed not allowed");
-
          elsif Source (Scan_Ptr) = ASCII.VT then
             Error_Msg_S ("(style) vertical tab not allowed");
          end if;
       end if;
 
-      --  We are now possibly going to check for trailing spaces and maximum
-      --  line length. There is no point in doing this if the current line is
-      --  empty. It is actually wrong in the case of trailing spaces, because
-      --  we scan backwards for this purpose, so we would end up looking at a
-      --  different line, or even at invalid buffer locations if we have the
-      --  first source line at hand.
+      --  Check DOS line terminator (ignore EOF, since we only get called
+      --  with an EOF if it is the last character in the buffer, and was
+      --  therefore not present in the sources
+
+      if Style_Check_DOS_Line_Terminator then
+         if Source (Scan_Ptr) = EOF then
+            null;
+         elsif Source (Scan_Ptr) /= LF
+           or else Source (Scan_Ptr + 1) = CR
+         then
+            Error_Msg_S ("(style) incorrect line terminator");
+         end if;
+      end if;
+
+      --  We are now possibly going to check for trailing spaces. There is no
+      --  point in doing this if the current line is empty. It is actually
+      --  wrong to do so, because we scan backwards for this purpose, so we
+      --  would end up looking at different line, or even at invalid buffer
+      --  locations if we have the first source line at hand.
 
       if Len = 0 then
          return;
@@ -515,17 +547,6 @@ package body Styleg is
             end if;
          end if;
       end if;
-
-      --  Check max line length
-
-      if Style_Check_Max_Line_Length then
-         if Len > Style_Max_Line_Length then
-            Error_Msg
-              ("(style) this line is too long",
-               Current_Line_Start + Source_Ptr (Style_Max_Line_Length));
-         end if;
-      end if;
-
    end Check_Line_Terminator;
 
    --------------------------

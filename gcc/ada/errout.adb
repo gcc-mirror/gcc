@@ -493,6 +493,9 @@ package body Errout is
       --  since there may be white space inside the literal and we don't want
       --  to stop on that white space.
 
+      --  Note: since this is an error recovery issue anyway, it is not worth
+      --  worrying about special UTF_32 line terminator characters here.
+
       if Prev_Token = Tok_String_Literal then
          loop
             S1 := S1 + 1;
@@ -512,7 +515,10 @@ package body Errout is
 
       --  Otherwise we search forward for the end of the current token, marked
       --  by a line terminator, white space, a comment symbol or if we bump
-      --  into the following token (i.e. the current token)
+      --  into the following token (i.e. the current token).
+
+      --  Again, it is not worth worrying about UTF_32 special line terminator
+      --  characters in this context, since this is only for error recovery.
 
       else
          while Source (S1) not in Line_Terminator
@@ -528,7 +534,6 @@ package body Errout is
       --  S1 is now set to the location for the flag
 
       Error_Msg (Msg, S1);
-
    end Error_Msg_AP;
 
    ------------------

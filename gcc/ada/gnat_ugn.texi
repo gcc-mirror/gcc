@@ -4567,6 +4567,26 @@ This switch suppresses all optional warning messages, see remaining list
 in this section for details on optional warning messages that can be
 individually controlled.
 
+@item -gnatwb
+@emph{Activate warnings on bad fixed values.}
+@cindex @option{-gnatwb} (@command{gcc})
+@cindex Bad fixed values
+@cindex Fixed-point Small value
+@cindex Small value
+This switch activates warnings for static fixed-point expressions whose
+value is not an exact multiple of Small. Such values are implementation
+dependent, since an implementation is free to choose either of the multiples
+that surround the value. GNAT always chooses the closer one, but this is not
+required behavior, and it is better to specify a value that is an exact
+multiple, ensuring predictable execution. The default is that such warnings
+are not generated.
+
+@item -gnatwB
+@emph{Suppress warnings on bad fixed values.}
+@cindex @option{-gnatwB} (@command{gcc})
+This switch suppresses warnings for static fixed-point expressions whose
+value is not an exact multiple of Small.
+
 @item -gnatwc
 @emph{Activate warnings on conditionals.}
 @cindex @option{-gnatwc} (@command{gcc})
@@ -5340,6 +5360,12 @@ example:
 ---------------------------
 @end smallexample
 @end itemize
+
+@item ^d^DOS_LINE_ENDINGS^
+@emph{Check no DOS line terminators present.}
+If the ^letter d^word NOCRLF^ appears in the string after @option{-gnaty}
+then all lines must be terminated by a single ASCII.LF character (in
+particular the DOS line terminator sequence CR/LF is not allowed).
 
 @item ^e^END^
 @emph{Check end/exit labels.}
@@ -14646,7 +14672,8 @@ Align @code{:=} in assignment statements
 Align @code{=>} in associations
 
 @item ^-A5^/ALIGN=COMPONENT_CLAUSES^
-Align @code{at} keywords in the component clauses in record representation clauses
+Align @code{at} keywords in the component clauses in record
+representation clauses
 @end table
 
 @noindent
@@ -15420,8 +15447,9 @@ the casing defined by the dictionary; no subwords are checked for this word
 
 @item
 for every subword @command{gnatpp} checks if the dictionary contains the
-corresponding string of the form @code{*@var{simple_identifier}*}, and if it does, the
-casing of this @var{simple_identifier} is used for this subword
+corresponding string of the form @code{*@var{simple_identifier}*},
+and if it does, the casing of this @var{simple_identifier} is used
+for this subword
 
 @item
 if the whole name does not contain any ``_'' inside, and if for this name

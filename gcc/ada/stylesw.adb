@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,25 +34,26 @@ package body Stylesw is
 
    procedure Reset_Style_Check_Options is
    begin
-      Style_Check_Indentation       := 0;
-      Style_Check_Attribute_Casing  := False;
-      Style_Check_Blanks_At_End     := False;
-      Style_Check_Comments          := False;
-      Style_Check_End_Labels        := False;
-      Style_Check_Form_Feeds        := False;
-      Style_Check_Horizontal_Tabs   := False;
-      Style_Check_If_Then_Layout    := False;
-      Style_Check_Keyword_Casing    := False;
-      Style_Check_Layout            := False;
-      Style_Check_Max_Line_Length   := False;
-      Style_Check_Max_Nesting_Level := False;
-      Style_Check_Order_Subprograms := False;
-      Style_Check_Pragma_Casing     := False;
-      Style_Check_References        := False;
-      Style_Check_Specs             := False;
-      Style_Check_Standard          := False;
-      Style_Check_Tokens            := False;
-      Style_Check_Xtra_Parens       := False;
+      Style_Check_Indentation         := 0;
+      Style_Check_Attribute_Casing    := False;
+      Style_Check_Blanks_At_End       := False;
+      Style_Check_Comments            := False;
+      Style_Check_DOS_Line_Terminator := False;
+      Style_Check_End_Labels          := False;
+      Style_Check_Form_Feeds          := False;
+      Style_Check_Horizontal_Tabs     := False;
+      Style_Check_If_Then_Layout      := False;
+      Style_Check_Keyword_Casing      := False;
+      Style_Check_Layout              := False;
+      Style_Check_Max_Line_Length     := False;
+      Style_Check_Max_Nesting_Level   := False;
+      Style_Check_Order_Subprograms   := False;
+      Style_Check_Pragma_Casing       := False;
+      Style_Check_References          := False;
+      Style_Check_Specs               := False;
+      Style_Check_Standard            := False;
+      Style_Check_Tokens              := False;
+      Style_Check_Xtra_Parens         := False;
    end Reset_Style_Check_Options;
 
    ------------------------------
@@ -107,6 +108,7 @@ package body Stylesw is
       Add ('a', Style_Check_Attribute_Casing);
       Add ('b', Style_Check_Blanks_At_End);
       Add ('c', Style_Check_Comments);
+      Add ('d', Style_Check_DOS_Line_Terminator);
       Add ('e', Style_Check_End_Labels);
       Add ('f', Style_Check_Form_Feeds);
       Add ('h', Style_Check_Horizontal_Tabs);
@@ -186,31 +188,34 @@ package body Stylesw is
                   := Character'Pos (C) - Character'Pos ('0');
 
             when 'a' =>
-               Style_Check_Attribute_Casing  := True;
+               Style_Check_Attribute_Casing    := True;
 
             when 'b' =>
-               Style_Check_Blanks_At_End     := True;
+               Style_Check_Blanks_At_End       := True;
 
             when 'c' =>
-               Style_Check_Comments          := True;
+               Style_Check_Comments            := True;
+
+            when 'd' =>
+               Style_Check_DOS_Line_Terminator := True;
 
             when 'e' =>
-               Style_Check_End_Labels        := True;
+               Style_Check_End_Labels          := True;
 
             when 'f' =>
-               Style_Check_Form_Feeds        := True;
+               Style_Check_Form_Feeds          := True;
 
             when 'h' =>
-               Style_Check_Horizontal_Tabs   := True;
+               Style_Check_Horizontal_Tabs     := True;
 
             when 'i' =>
-               Style_Check_If_Then_Layout    := True;
+               Style_Check_If_Then_Layout      := True;
 
             when 'k' =>
-               Style_Check_Keyword_Casing    := True;
+               Style_Check_Keyword_Casing      := True;
 
             when 'l' =>
-               Style_Check_Layout            := True;
+               Style_Check_Layout              := True;
 
             when 'L' =>
                Style_Max_Nesting_Level := 0;
@@ -242,11 +247,11 @@ package body Stylesw is
                Style_Check_Max_Nesting_Level := Style_Max_Nesting_Level /= 0;
 
             when 'm' =>
-               Style_Check_Max_Line_Length   := True;
-               Style_Max_Line_Length         := 79;
+               Style_Check_Max_Line_Length     := True;
+               Style_Max_Line_Length           := 79;
 
             when 'n' =>
-               Style_Check_Standard          := True;
+               Style_Check_Standard            := True;
 
             when 'N' =>
                Reset_Style_Check_Options;
@@ -281,22 +286,22 @@ package body Stylesw is
                Style_Check_Max_Line_Length   := Style_Max_Line_Length /= 0;
 
             when 'o' =>
-               Style_Check_Order_Subprograms := True;
+               Style_Check_Order_Subprograms   := True;
 
             when 'p' =>
-               Style_Check_Pragma_Casing     := True;
+               Style_Check_Pragma_Casing       := True;
 
             when 'r' =>
-               Style_Check_References        := True;
+               Style_Check_References          := True;
 
             when 's' =>
-               Style_Check_Specs             := True;
+               Style_Check_Specs               := True;
 
             when 't' =>
-               Style_Check_Tokens            := True;
+               Style_Check_Tokens              := True;
 
             when 'x' =>
-               Style_Check_Xtra_Parens       := True;
+               Style_Check_Xtra_Parens         := True;
 
             when ' ' =>
                null;

@@ -346,6 +346,10 @@ begin
    Write_Line ("Enable selected warning modes, xx = list of parameters:");
    Write_Line ("        a    turn on all optional warnings (except d,h,l)");
    Write_Line ("        A    turn off all optional warnings");
+   Write_Line ("        b    turn on warnings for bad fixed value " &
+                                                  "(not multiple of small)");
+   Write_Line ("        B*   turn off warnings for bad fixed value " &
+                                                  "(not multiple of small)");
    Write_Line ("        c    turn on warnings for constant conditional");
    Write_Line ("        C*   turn off warnings for constant conditional");
    Write_Line ("        d    turn on warnings for implicit dereference");
@@ -430,6 +434,7 @@ begin
    Write_Line ("        a    check attribute casing");
    Write_Line ("        b    check no blanks at end of lines");
    Write_Line ("        c    check comment format");
+   Write_Line ("        d    check no DOS line terminators");
    Write_Line ("        e    check end/exit labels present");
    Write_Line ("        f    check no form feeds/vertical tabs in source");
    Write_Line ("        h    check no horizontal tabs in source");

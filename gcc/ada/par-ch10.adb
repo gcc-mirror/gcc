@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1089,6 +1089,8 @@ package body Ch10 is
          Loc := Prev_Token_Ptr;
          loop
             exit when Loc = Token_Ptr;
+
+            --  Should we worry about UTF_32 line terminators here
 
             if Source (Loc) in Line_Terminator then
                Skip_Line_Terminators (Loc, Physical);
