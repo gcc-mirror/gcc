@@ -1,3 +1,8 @@
+2002-11-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8389
+	* g++.dg/template/access6.C: New test.
+
 Fri Nov  8 10:52:15 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/20021108-1.c: New testcase for x86-64 failure.

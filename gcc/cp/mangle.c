@@ -656,7 +656,7 @@ write_encoding (decl)
       tree fn_type;
 
       if (decl_is_template_id (decl, NULL))
-	fn_type = get_mostly_instantiated_function_type (decl, NULL, NULL);
+	fn_type = get_mostly_instantiated_function_type (decl);
       else
 	fn_type = TREE_TYPE (decl);
 
@@ -1011,8 +1011,7 @@ write_unqualified_name (decl)
       tree type;
       if (decl_is_template_id (decl, NULL))
 	{
-	  tree fn_type = get_mostly_instantiated_function_type (decl, NULL,
-								NULL);
+	  tree fn_type = get_mostly_instantiated_function_type (decl);
 	  type = TREE_TYPE (fn_type);
 	}
       else

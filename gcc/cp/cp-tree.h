@@ -4013,7 +4013,7 @@ extern void print_candidates                    PARAMS ((tree));
 extern int instantiate_pending_templates        PARAMS ((void));
 extern tree tsubst_default_argument             PARAMS ((tree, tree, tree));
 extern tree most_general_template		PARAMS ((tree));
-extern tree get_mostly_instantiated_function_type PARAMS ((tree, tree *, tree *));
+extern tree get_mostly_instantiated_function_type PARAMS ((tree));
 extern int problematic_instantiation_changed    PARAMS ((void));
 extern void record_last_problematic_instantiation PARAMS ((void));
 extern tree current_instantiation               PARAMS ((void));

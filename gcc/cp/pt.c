@@ -7786,9 +7786,19 @@ instantiate_template (tmpl, targ_ptr)
 	}
     }
 
+  /* Make sure that we can see identifiers, and compute access
+     correctly.  */
+  if (DECL_CLASS_SCOPE_P (gen_tmpl))
+    pushclass (tsubst (DECL_CONTEXT (gen_tmpl), targ_ptr, tf_error,
+		       gen_tmpl), 1);
+
   /* substitute template parameters */
   fndecl = tsubst (DECL_TEMPLATE_RESULT (gen_tmpl),
 		   targ_ptr, tf_error, gen_tmpl);
+
+  if (DECL_CLASS_SCOPE_P (gen_tmpl))
+    popclass ();
+
   /* The DECL_TI_TEMPLATE should always be the immediate parent
      template, not the most general template.  */
   DECL_TI_TEMPLATE (fndecl) = tmpl;
@@ -10414,18 +10424,12 @@ tsubst_enum (tag, newtag, args)
 /* DECL is a FUNCTION_DECL that is a template specialization.  Return
    its type -- but without substituting the innermost set of template
    arguments.  So, innermost set of template parameters will appear in
-   the type.  If CONTEXTP is non-NULL, then the partially substituted
-   DECL_CONTEXT (if any) will also be filled in.  Similarly, TPARMSP
-   will be filled in with the substituted template parameters, if it
-   is non-NULL.  */
+   the type.  */
 
 tree 
-get_mostly_instantiated_function_type (decl, contextp, tparmsp)
+get_mostly_instantiated_function_type (decl)
      tree decl;
-     tree *contextp;
-     tree *tparmsp;
 {
-  tree context = NULL_TREE;
   tree fn_type;
   tree tmpl;
   tree targs;
@@ -10442,8 +10446,6 @@ get_mostly_instantiated_function_type (decl, contextp, tparmsp)
   my_friendly_assert (parm_depth == TMPL_ARGS_DEPTH (targs), 0);
 
   fn_type = TREE_TYPE (tmpl);
-  if (DECL_STATIC_FUNCTION_P (decl))
-    context = DECL_CONTEXT (decl);
 
   if (parm_depth == 1)
     /* No substitution is necessary.  */
@@ -10463,11 +10465,17 @@ get_mostly_instantiated_function_type (decl, contextp, tparmsp)
 			   TMPL_ARGS_DEPTH (targs),
 			   make_tree_vec (DECL_NTPARMS (tmpl)));
 
+      /* Make sure that we can see identifiers, and compute access
+	 correctly.  We can just use the context of DECL for the
+	 partial substitution here.  It depends only on outer template
+	 parameters, regardless of whether the innermost level is
+	 specialized or not.  */
+      if (DECL_CLASS_SCOPE_P (decl))
+	pushclass (DECL_CONTEXT (decl), 1);
+
       /* Now, do the (partial) substitution to figure out the
 	 appropriate function type.  */
       fn_type = tsubst (fn_type, partial_args, tf_error, NULL_TREE);
-      if (DECL_STATIC_FUNCTION_P (decl))
-	context = tsubst (context, partial_args, tf_error, NULL_TREE);
 
       /* Substitute into the template parameters to obtain the real
 	 innermost set of parameters.  This step is important if the
@@ -10475,12 +10483,10 @@ get_mostly_instantiated_function_type (decl, contextp, tparmsp)
 	 parameters whose types depend on outer template parameters.  */
       TREE_VEC_LENGTH (partial_args)--;
       tparms = tsubst_template_parms (tparms, partial_args, tf_error);
-    }
 
-  if (contextp)
-    *contextp = context;
-  if (tparmsp)
-    *tparmsp = tparms;
+      if (DECL_CLASS_SCOPE_P (decl))
+	popclass ();
+    }
 
   return fn_type;
 }
