@@ -351,32 +351,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
   1, 1, 1, 1, 					\
   1, 1, 1 }
 
-#define CONDITIONAL_REGISTER_USAGE				\
-do								\
-  {								\
-    int i;							\
-								\
-    if (flag_pic)						\
-      {								\
-	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
-	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
-      }								\
-    if (TARGET_CPU_ZARCH)					\
-      {								\
-	fixed_regs[RETURN_REGNUM] = 0;				\
-	call_used_regs[RETURN_REGNUM] = 0;			\
-      }								\
-    if (TARGET_64BIT)						\
-      {								\
-        for (i = 24; i < 32; i++)				\
-	    call_used_regs[i] = call_really_used_regs[i] = 0;	\
-      }								\
-    else							\
-      {								\
-        for (i = 18; i < 20; i++)				\
-	    call_used_regs[i] = call_really_used_regs[i] = 0;	\
-      }								\
- } while (0)
+#define CONDITIONAL_REGISTER_USAGE s390_conditional_register_usage ()
 
 /* Preferred register allocation order.  */
 #define REG_ALLOC_ORDER                                         \

@@ -768,7 +768,7 @@ s390_branch_condition_mnemonic (rtx code, int inv)
 
 /* Return the part of op which has a value different from def.
    The size of the part is determined by mode.
-   Use this function only if you already know that op really 
+   Use this function only if you already know that op really
    contains such a part.  */
 
 unsigned HOST_WIDE_INT
@@ -779,18 +779,18 @@ s390_extract_part (rtx op, enum machine_mode mode, int def)
   int part_bits = GET_MODE_BITSIZE (mode);
   unsigned HOST_WIDE_INT part_mask = (1 << part_bits) - 1;
   int i;
-  
+
   for (i = 0; i < max_parts; i++)
     {
       if (i == 0)
 	value = (unsigned HOST_WIDE_INT) INTVAL (op);
       else
 	value >>= part_bits;
-      
+
       if ((value & part_mask) != (def & part_mask))
 	return value & part_mask;
     }
-  
+
   abort ();
 }
 
@@ -799,8 +799,8 @@ s390_extract_part (rtx op, enum machine_mode mode, int def)
    part. Otherwise, return -1.  */
 
 int
-s390_single_part (rtx op, 
-		  enum machine_mode mode, 
+s390_single_part (rtx op,
+		  enum machine_mode mode,
 		  enum machine_mode part_mode,
 		  int def)
 {
@@ -811,14 +811,14 @@ s390_single_part (rtx op,
 
   if (GET_CODE (op) != CONST_INT)
     return -1;
-  
+
   for (i = 0; i < n_parts; i++)
     {
       if (i == 0)
 	value = (unsigned HOST_WIDE_INT) INTVAL (op);
       else
 	value >>= GET_MODE_BITSIZE (part_mode);
-      
+
       if ((value & part_mask) != (def & part_mask))
 	{
 	  if (part != -1)
@@ -1123,10 +1123,10 @@ general_s_operand (register rtx op, enum machine_mode mode,
 	  return 0;
 	if (addr.indx)
 	  return 0;
-	/* Do not allow literal pool references unless ALLOW_IMMEDIATE 
-	   is true.  This prevents compares between two literal pool 
+	/* Do not allow literal pool references unless ALLOW_IMMEDIATE
+	   is true.  This prevents compares between two literal pool
 	   entries from being accepted.  */
-	if (!allow_immediate 
+	if (!allow_immediate
 	    && addr.base && REGNO (addr.base) == BASE_REGISTER)
 	  return 0;
 	return 1;
@@ -1347,8 +1347,8 @@ s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
       return value >= -32768 && value < 32768;
 
     case 'L':
-      return (TARGET_LONG_DISPLACEMENT ? 
-	      (value >= -524288 && value <= 524287) 
+      return (TARGET_LONG_DISPLACEMENT ?
+	      (value >= -524288 && value <= 524287)
 	      : (value >= 0 && value <= 4095));
     case 'M':
       return value == 2147483647;
@@ -1362,7 +1362,7 @@ s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
 	case 'Q': part_mode = QImode; break;
 	default:  return 0;
 	}
-      
+
       switch (str[3])
 	{
 	case 'H': mode = HImode; break;
@@ -2626,15 +2626,15 @@ static void
 s390_emit_tls_call_insn (rtx result_reg, rtx tls_call)
 {
   rtx insn;
-  
+
   if (!flag_pic)
     abort ();
 
   if (!s390_tls_symbol)
     s390_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tls_get_offset");
 
-  insn = s390_emit_call (s390_tls_symbol, tls_call, result_reg, 
-			 gen_rtx_REG (Pmode, RETURN_REGNUM)); 
+  insn = s390_emit_call (s390_tls_symbol, tls_call, result_reg,
+			 gen_rtx_REG (Pmode, RETURN_REGNUM));
 
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), result_reg);
   CONST_OR_PURE_CALL_P (insn) = 1;
@@ -3007,7 +3007,7 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
 
       expand_end_loop ();
 
-      emit_insn (gen_movstr_short (dst, src, 
+      emit_insn (gen_movstr_short (dst, src,
 				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
     }
@@ -3177,7 +3177,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 
       expand_end_loop ();
 
-      emit_insn (gen_cmpmem_short (op0, op1, 
+      emit_insn (gen_cmpmem_short (op0, op1,
 				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
 
@@ -3318,7 +3318,7 @@ get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
   return 0;
 }
 
-/* Output machine-dependent UNSPECs occurring in address constant X 
+/* Output machine-dependent UNSPECs occurring in address constant X
    in assembler syntax to stdio stream FILE.  Returns true if the
    constant X could be recognized, false otherwise.  */
 
@@ -3536,11 +3536,11 @@ print_operand (FILE *file, rtx x, int code)
       else if (code == 'h')
         fprintf (file, HOST_WIDE_INT_PRINT_DEC, ((INTVAL (x) & 0xffff) ^ 0x8000) - 0x8000);
       else if (code == 'i')
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, 
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
 		 s390_extract_part (x, HImode, 0));
       else if (code == 'j')
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, 
-		 s390_extract_part (x, HImode, -1));	
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+		 s390_extract_part (x, HImode, -1));
       else
         fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
       break;
@@ -4282,7 +4282,7 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
 	insn = emit_label_after (c->label, insn);
 	INSN_ADDRESSES_NEW (insn, -1);
 
-	value = gen_rtx_UNSPEC_VOLATILE (constant_modes[i], 
+	value = gen_rtx_UNSPEC_VOLATILE (constant_modes[i],
 					 gen_rtvec (1, value),
 					 UNSPECV_POOL_ENTRY);
 	insn = emit_insn_after (value, insn);
@@ -4430,8 +4430,8 @@ s390_mainpool_finish (struct constant_pool *pool, rtx base_reg)
       insn = emit_insn_after (insn, pool->pool_insn);
       INSN_ADDRESSES_NEW (insn, -1);
       remove_insn (pool->pool_insn);
-     
-      insn = get_last_insn (); 
+
+      insn = get_last_insn ();
       pool->pool_insn = emit_insn_after (gen_pool (const0_rtx), insn);
       INSN_ADDRESSES_NEW (pool->pool_insn, -1);
 
@@ -5131,7 +5131,7 @@ s390_reorg (void)
   /* Install the main literal pool and the associated base
      register load insns.
 
-     In addition, there are two problematic situations we need 
+     In addition, there are two problematic situations we need
      to correct:
 
      - the literal pool might be > 4096 bytes in size, so that
@@ -5686,7 +5686,7 @@ s390_emit_prologue (void)
 	 algorithms located at the branch target.
 
 	 This must use register 1.  */
-      s390_emit_call (GEN_INT (0xfe0), NULL_RTX, NULL_RTX, 
+      s390_emit_call (GEN_INT (0xfe0), NULL_RTX, NULL_RTX,
 		      gen_rtx_REG (Pmode, 1));
 
       /* Emit a blockage here so that all code
@@ -5718,7 +5718,7 @@ s390_emit_epilogue (bool sibcall)
          lies between the profiling mechanisms.  */
       emit_insn (gen_blockage ());
 
-      s390_emit_call (GEN_INT (0xfe6), NULL_RTX, NULL_RTX, 
+      s390_emit_call (GEN_INT (0xfe6), NULL_RTX, NULL_RTX,
 		      gen_rtx_REG (Pmode, 1));
     }
 
@@ -5759,7 +5759,7 @@ s390_emit_epilogue (bool sibcall)
 	      area_bottom = 16*UNITS_PER_WORD + 8*(i-16);
 	    if (area_top < 16*UNITS_PER_WORD + 8*(i-16) + 8)
 	      area_top = 16*UNITS_PER_WORD + 8*(i-16) + 8;
-	  } 
+	  }
     }
 
   /* Check whether we can access the register save area.
@@ -5811,7 +5811,7 @@ s390_emit_epilogue (bool sibcall)
     {
       for (i = 18; i < 20; i++)
 	if (regs_ever_live[i] && !global_regs[i])
-	  restore_fpr (frame_pointer, 
+	  restore_fpr (frame_pointer,
 		       offset + 16*UNITS_PER_WORD + 8*(i-16), i);
     }
 
@@ -5855,7 +5855,7 @@ s390_emit_epilogue (bool sibcall)
 	{
 	  /* Fetch return address from stack before load multiple,
 	     this will do good for scheduling.  */
-	  
+
 	  if (cfun->machine->save_return_addr_p
 	      || (cfun->machine->first_restore_gpr < BASE_REGISTER
 		  && cfun->machine->last_save_gpr > RETURN_REGNUM))
@@ -5864,7 +5864,7 @@ s390_emit_epilogue (bool sibcall)
 	      if (!return_regnum)
 		return_regnum = 4;
 	      return_reg = gen_rtx_REG (Pmode, return_regnum);
-	      
+
 	      addr = plus_constant (frame_pointer,
 				    offset + RETURN_REGNUM * UNITS_PER_WORD);
 	      addr = gen_rtx_MEM (Pmode, addr);
@@ -5889,9 +5889,9 @@ s390_emit_epilogue (bool sibcall)
     {
 
       /* Return to caller.  */
-      
+
       p = rtvec_alloc (2);
-      
+
       RTVEC_ELT (p, 0) = gen_rtx_RETURN (VOIDmode);
       RTVEC_ELT (p, 1) = gen_rtx_USE (VOIDmode, return_reg);
       emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));
@@ -5979,13 +5979,13 @@ s390_function_arg_integer (enum machine_mode mode, tree type)
 
   /* We accept small integral (and similar) types.  */
   if (INTEGRAL_TYPE_P (type)
-      || POINTER_TYPE_P (type) 
+      || POINTER_TYPE_P (type)
       || TREE_CODE (type) == OFFSET_TYPE
       || (TARGET_SOFT_FLOAT && TREE_CODE (type) == REAL_TYPE))
     return true;
 
   /* We also accept structs of size 1, 2, 4, 8 that are not
-     passed in floating-point registers.  */  
+     passed in floating-point registers.  */
   if (AGGREGATE_TYPE_P (type)
       && exact_log2 (size) >= 0
       && !s390_function_arg_float (mode, type))
@@ -6111,7 +6111,7 @@ s390_return_in_memory (tree type, tree fundecl ATTRIBUTE_UNUSED)
 {
   /* We accept small integral (and similar) types.  */
   if (INTEGRAL_TYPE_P (type)
-      || POINTER_TYPE_P (type) 
+      || POINTER_TYPE_P (type)
       || TREE_CODE (type) == OFFSET_TYPE
       || TREE_CODE (type) == REAL_TYPE)
     return int_size_in_bytes (type) > 8;
@@ -6142,7 +6142,7 @@ s390_function_value (tree type, enum machine_mode mode)
       mode = promote_mode (type, TYPE_MODE (type), &unsignedp, 1);
     }
 
-  if (GET_MODE_CLASS (mode) != MODE_INT 
+  if (GET_MODE_CLASS (mode) != MODE_INT
       && GET_MODE_CLASS (mode) != MODE_FLOAT)
     abort ();
   if (GET_MODE_SIZE (mode) > 8)
@@ -7042,7 +7042,7 @@ s390_call_saved_register_used (tree argument_list)
 
       if (! (type = TREE_TYPE (parameter)))
 	abort();
-      
+
       if (! (mode = TYPE_MODE (TREE_TYPE (parameter))))
 	abort();
 
@@ -7051,15 +7051,15 @@ s390_call_saved_register_used (tree argument_list)
  	  mode = Pmode;
  	  type = build_pointer_type (type);
  	}
-      
+
        parm_rtx = s390_function_arg (&cum, mode, type, 0);
 
        s390_function_arg_advance (&cum, mode, type, 0);
- 
+
        if (parm_rtx && REG_P (parm_rtx))
 	 {
 	   for (reg = 0;
-		reg < HARD_REGNO_NREGS (REGNO (parm_rtx), GET_MODE (parm_rtx)); 
+		reg < HARD_REGNO_NREGS (REGNO (parm_rtx), GET_MODE (parm_rtx));
 		reg++)
 	     if (! call_used_regs[reg + REGNO (parm_rtx)])
 	       return true;
@@ -7068,11 +7068,11 @@ s390_call_saved_register_used (tree argument_list)
   return false;
 }
 
-/* Return true if the given call expression can be 
-   turned into a sibling call.  
+/* Return true if the given call expression can be
+   turned into a sibling call.
    DECL holds the declaration of the function to be called whereas
    EXP is the call expression itself.  */
-   
+
 static bool
 s390_function_ok_for_sibcall (tree decl, tree exp)
 {
@@ -7080,14 +7080,14 @@ s390_function_ok_for_sibcall (tree decl, tree exp)
   if (TARGET_TPF)
     return false;
 
-  /* The 31 bit PLT code uses register 12 (GOT pointer - caller saved) 
+  /* The 31 bit PLT code uses register 12 (GOT pointer - caller saved)
      which would have to be restored before the sibcall.  */
   if (!TARGET_64BIT && flag_pic && decl && TREE_PUBLIC (decl))
     return false;
 
   /* Register 6 on s390 is available as an argument register but unfortunately
      "caller saved". This makes functions needing this register for arguments
-     not suitable for sibcalls.  */ 
+     not suitable for sibcalls.  */
   if (TREE_OPERAND (exp, 1)
       && s390_call_saved_register_used (TREE_OPERAND (exp, 1)))
       return false;
@@ -7095,8 +7095,8 @@ s390_function_ok_for_sibcall (tree decl, tree exp)
   return true;
 }
 
-/* This function is used by the call expanders of the machine description. 
-   It emits the call insn itself together with the necessary operations 
+/* This function is used by the call expanders of the machine description.
+   It emits the call insn itself together with the necessary operations
    to adjust the target address and returns the emitted insn.
    ADDR_LOCATION is the target address rtx
    TLS_CALL the location of the thread-local symbol
@@ -7106,7 +7106,7 @@ s390_function_ok_for_sibcall (tree decl, tree exp)
                to be a sibling call.  */
 
 rtx
-s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg, 
+s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
 		rtx retaddr_reg)
 {
   bool plt_call = false;
@@ -7122,13 +7122,13 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
          replace the symbol itself with the PLT stub.  */
       if (flag_pic && !SYMBOL_REF_LOCAL_P (addr_location))
         {
-	  addr_location = gen_rtx_UNSPEC (Pmode, 
-					  gen_rtvec (1, addr_location), 
+	  addr_location = gen_rtx_UNSPEC (Pmode,
+					  gen_rtvec (1, addr_location),
 					  UNSPEC_PLT);
 	  addr_location = gen_rtx_CONST (Pmode, addr_location);
 	  plt_call = true;
         }
-      
+
       /* Unless we can use the bras(l) insn, force the
          routine address into a register.  */
       if (!TARGET_SMALL_EXEC && !TARGET_CPU_ZARCH)
@@ -7138,10 +7138,10 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
 	  else
 	    addr_location = force_reg (Pmode, addr_location);
 	}
-    } 
+    }
 
   /* If it is already an indirect call or the code above moved the
-     SYMBOL_REF to somewhere else make sure the address can be found in 
+     SYMBOL_REF to somewhere else make sure the address can be found in
      register 1.  */
   if (retaddr_reg == NULL_RTX
       && GET_CODE (addr_location) != SYMBOL_REF
@@ -7150,19 +7150,19 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
       emit_move_insn (gen_rtx_REG (Pmode, SIBCALL_REGNUM), addr_location);
       addr_location = gen_rtx_REG (Pmode, SIBCALL_REGNUM);
     }
-  
+
   addr_location = gen_rtx_MEM (QImode, addr_location);
   call = gen_rtx_CALL (VOIDmode, addr_location, const0_rtx);
 
   if (result_reg != NULL_RTX)
     call = gen_rtx_SET (VOIDmode, result_reg, call);
-    
+
   if (retaddr_reg != NULL_RTX)
     {
       clobber = gen_rtx_CLOBBER (VOIDmode, retaddr_reg);
 
       if (tls_call != NULL_RTX)
-	vec = gen_rtvec (3, call, clobber, 
+	vec = gen_rtvec (3, call, clobber,
 			 gen_rtx_USE (VOIDmode, tls_call));
       else
 	vec = gen_rtvec (2, call, clobber);
@@ -7171,18 +7171,48 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
     }
 
   insn = emit_call_insn (call);
- 
+
   /* 31-bit PLT stubs and tls calls use the GOT register implicitly.  */
   if ((!TARGET_64BIT && plt_call) || tls_call != NULL_RTX)
     {
-      /* s390_function_ok_for_sibcall should 
+      /* s390_function_ok_for_sibcall should
 	 have denied sibcalls in this case.  */
       if (retaddr_reg == NULL_RTX)
 	abort ();
-      
+
       use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
     }
   return insn;
 }
+
+/* Implement CONDITIONAL_REGISTER_USAGE.  */
+
+void
+s390_conditional_register_usage (void)
+{
+  int i;
+
+  if (flag_pic)
+    {
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+    }
+  if (TARGET_CPU_ZARCH)
+    {
+      fixed_regs[RETURN_REGNUM] = 0;
+      call_used_regs[RETURN_REGNUM] = 0;
+    }
+  if (TARGET_64BIT)
+    {
+      for (i = 24; i < 32; i++)
+	call_used_regs[i] = call_really_used_regs[i] = 0;
+    }
+  else
+    {
+      for (i = 18; i < 20; i++)
+	call_used_regs[i] = call_really_used_regs[i] = 0;
+    }
+}
+
 
 #include "gt-s390.h"
