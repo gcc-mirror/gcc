@@ -22,7 +22,7 @@
     0, 
     [Cls meth1], 
     [2 + 1] = 3, 
-    [2 * 2 ... 5] = (int)[0 meth2], /* { dg-warning "invalid receiver type" } */ 
+    [2 * 2 ... 5] = (size_t)[0 meth2], /* { dg-warning "invalid receiver type" } */ 
        /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } 25 } */
        /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } 25 } */
        /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } 25 } */
