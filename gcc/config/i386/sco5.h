@@ -876,8 +876,8 @@ dtors_section ()							\
    %{fPIC:%e-fPIC only valid with -melf}} \
   -R%{Xa:a}%{!Xa:%{Xc:c}%{!Xc:%{Xk:k}%{!Xk:%{Xt:t}%{!Xt:a}}}},%{ansi:ansi}%{!ansi:%{posix:posix}%{!posix:%{Xpg4:xpg4}%{!Xpg4:%{Xpg4plus:XPG4PLUS}%{!Xpg4plus:%{Xods30:ods30}%{!Xods30:XPG4PLUS}}}}},%{melf:ELF}%{!melf:COFF} \
   %{Wl,*%*} %{YP,*} %{YL,*} %{YU,*} \
-  %{!YP,*:%{p:-YP,/usr/ccs/libp:/usr/libp:/usr/ccs/lib:/usr/lib} \
-   %{!p:-YP,/usr/ccs/lib:/usr/lib}} \
+  %{!YP,*:%{p:-YP,/usr/ccs/libp:/lib/libp:/usr/lib/libp:/usr/ccs/lib:/lib:/usr/lib} \
+   %{!p:-YP,/usr/ccs/lib:/lib:/usr/lib}} \
   %{h*} %{static:-dn -Bstatic} %{shared:-G -dy %{!z*:-z text}} \
   %{symbolic:-Bsymbolic -G -dy %{!z*:-z text}} \
   %{G:-G} %{melf:%{Qn:} %{!Qy:-Qn}}"
