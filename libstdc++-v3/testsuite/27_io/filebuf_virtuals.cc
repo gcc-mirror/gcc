@@ -71,7 +71,8 @@ const char carray_02[] = "memphis, new orleans, and savanah";
 const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
 const char name_02[] = "filebuf_virtuals-2.txt"; // empty file, need to create
 const char name_03[] = "filebuf_virtuals-3.txt"; // empty file, need to create
-
+const char name_04[] = "filebuf_virtuals-4.txt"; // empty file, need to create
+const char name_05[] = "filebuf_virtuals-5.txt"; // empty file, need to create
 
 class derived_filebuf: public std::filebuf
 {
@@ -607,14 +608,14 @@ void test10()
   {
     ofstream out;
     out.imbue(loc);
-    out.open("filebuf_virtuals-4.txt");
+    out.open(name_04);
     copy(str.begin(), str.end(),
 	 ostreambuf_iterator<char>(out));
   }
 
   {
     ifstream in;
-    in.open("filebuf_virtuals-4.txt");
+    in.open(name_04);
     copy(istreambuf_iterator<char>(in),
 	 istreambuf_iterator<char>(),
 	 back_inserter(tmp));
@@ -622,6 +623,62 @@ void test10()
 
   VERIFY( tmp.size() == str.size() );
   VERIFY( tmp == str );
+}
+
+bool over_called;
+
+class Derived_filebuf : public std::filebuf
+{
+public:
+  int_type overflow(int_type c)
+  {
+    over_called = true;
+    return std::filebuf::overflow(c);
+  }
+  
+  const char_type* pub_epptr() const
+  {
+    return epptr();
+  }
+  
+  const char_type* pub_pptr() const
+  {
+    return pptr();
+  }
+};
+
+// libstdc++/9701 (partial)
+void test11()
+{
+  bool test = true;
+
+  bool over_expected;
+
+  // sputc
+  Derived_filebuf dfbuf_01;
+  dfbuf_01.open(name_05, std::ios_base::out);
+  over_called = false;
+  dfbuf_01.sputc('i');
+  VERIFY( !over_called );
+  over_expected = dfbuf_01.pub_epptr() == dfbuf_01.pub_pptr();
+  over_called = false;
+  dfbuf_01.sputc('v');
+  VERIFY( (!over_expected && !over_called)
+	  || (over_expected && over_called) );
+  dfbuf_01.close();
+
+  // sputn
+  Derived_filebuf dfbuf_02;
+  dfbuf_02.open(name_05, std::ios_base::out);
+  over_called = false;
+  dfbuf_02.sputn("sonne's", 7);
+  VERIFY( !over_called );
+  over_expected = dfbuf_02.pub_epptr() == dfbuf_02.pub_pptr();
+  over_called = false;
+  dfbuf_02.sputn(" peak", 5);
+  VERIFY( (!over_expected && !over_called)
+	  || (over_expected && over_called) );
+  dfbuf_02.close();
 }
 
 main() 
@@ -638,5 +695,6 @@ main()
   test08();
   test09();
   test10();
+  test11();
   return 0;
 }

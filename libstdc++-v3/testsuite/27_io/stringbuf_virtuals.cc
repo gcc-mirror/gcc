@@ -92,6 +92,61 @@ void test08()
   VERIFY( ob.getloc() == loc_de );
 }
 
+bool over_called;
+
+class Derived_stringbuf : public std::stringbuf
+{
+public:
+  int_type overflow(int_type c)
+  {
+    over_called = true;
+    return std::stringbuf::overflow(c);
+  }
+  
+  const char_type* pub_epptr() const
+  {
+    return epptr();
+  }
+  
+  const char_type* pub_pptr() const
+  {
+    return pptr();
+  }
+};
+
+// libstdc++/9404
+void test09()
+{
+  bool test = true;
+
+  bool over_expected;
+
+  // sputc
+  Derived_stringbuf dsbuf_01;
+  over_called = false;
+  dsbuf_01.sputc('i');
+  VERIFY( over_called );
+  over_expected = dsbuf_01.pub_epptr() == dsbuf_01.pub_pptr();
+  over_called = false;
+  dsbuf_01.sputc('v');
+  VERIFY( (!over_expected && !over_called)
+	  || (over_expected && over_called) );
+  dsbuf_01.sputc('i');
+  VERIFY( dsbuf_01.str() == "ivi" ); // Sanity check.
+
+  // sputn
+  Derived_stringbuf dsbuf_02;
+  over_called = false;
+  dsbuf_02.sputn("sonne's", 7);
+  VERIFY( over_called );
+  over_expected = dsbuf_02.pub_epptr() == dsbuf_02.pub_pptr();
+  over_called = false;
+  dsbuf_02.sputn(" peak", 5);
+  VERIFY( (!over_expected && !over_called)
+	  || (over_expected && over_called) );
+  VERIFY( dsbuf_02.str() == "sonne's peak" ); // Sanity check.
+}
+
 int main() 
 {
   using namespace std;
@@ -106,5 +161,6 @@ int main()
   test02(in3, false);
 
   test08();
+  test09();
   return 0;
 }
