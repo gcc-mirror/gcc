@@ -237,9 +237,14 @@ package Snames is
 
    --  Names of implementations of the distributed systems annex
 
+   First_PCS_Name                      : constant Name_Id := N + 064;
    Name_No_DSA                         : constant Name_Id := N + 064;
    Name_GARLIC_DSA                     : constant Name_Id := N + 065;
    Name_PolyORB_DSA                    : constant Name_Id := N + 066;
+   Last_PCS_Name                       : constant Name_Id := N + 066;
+
+   subtype PCS_Names is Name_Id
+     range First_PCS_Name .. Last_PCS_Name;
 
    --  Names of identifiers used in expanding distribution stubs
 

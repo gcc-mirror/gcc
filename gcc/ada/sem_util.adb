@@ -58,6 +58,7 @@ with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
+with Uname;    use Uname;
 
 package body Sem_Util is
 
@@ -2620,6 +2621,22 @@ package body Sem_Util is
       end if;
    end Get_Index_Bounds;
 
+   ----------------------------------
+   -- Get_Library_Unit_Name_string --
+   ----------------------------------
+
+   procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id) is
+      Unit_Name_Id : constant Unit_Name_Type := Get_Unit_Name (Decl_Node);
+
+   begin
+      Get_Unit_Name_String (Unit_Name_Id);
+
+      --  Remove seven last character (" (spec)" or " (body)").
+
+      Name_Len := Name_Len - 7;
+      pragma Assert (Name_Buffer (Name_Len + 1) = ' ');
+   end Get_Library_Unit_Name_String;
+
    ------------------------
    -- Get_Name_Entity_Id --
    ------------------------
@@ -2863,6 +2880,43 @@ package body Sem_Util is
          return False;
       end if;
    end Has_Private_Component;
+
+   ----------------
+   -- Has_Stream --
+   ----------------
+
+   function Has_Stream (T : Entity_Id) return Boolean is
+      E : Entity_Id;
+
+   begin
+      if No (T) then
+         return False;
+
+      elsif Is_RTE (Root_Type (T), RE_Root_Stream_Type) then
+         return True;
+
+      elsif Is_Array_Type (T) then
+         return Has_Stream (Component_Type (T));
+
+      elsif Is_Record_Type (T) then
+         E := First_Component (T);
+         while Present (E) loop
+            if Has_Stream (Etype (E)) then
+               return True;
+            else
+               Next_Component (E);
+            end if;
+         end loop;
+
+         return False;
+
+      elsif Is_Private_Type (T) then
+         return Has_Stream (Underlying_Type (T));
+
+      else
+         return False;
+      end if;
+   end Has_Stream;
 
    --------------------------
    -- Has_Tagged_Component --
@@ -5267,7 +5321,13 @@ package body Sem_Util is
                   goto Continue;
                end if;
 
-               Generate_Reference (Ent, Exp, 'm');
+               --  Generate a reference only if the assignment comes from
+               --  source. This excludes, for example, calls to a dispatching
+               --  assignment operation when the left-hand side is tagged.
+
+               if Modification_Comes_From_Source then
+                  Generate_Reference (Ent, Exp, 'm');
+               end if;
             end if;
 
             Kill_Checks (Ent);
