@@ -21,24 +21,10 @@ Boston, MA 02111-1307, USA.  */
 /* This is the contribution to the `default_compilers' array in gcc.c for
    CHILL.  */
 
-  {".ch",  {"@chill"}},
-  {".chi", {"@chill"}},
+  {".ch",  "@chill"},
+  {".chi", "@chill"},
   {"@chill",
-     {"tradcpp -lang-chill %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
-	%{C:%{!E:%eGNU CHILL does not support -C without using -E}}\
-        %{!no-gcc:-D__GNUCHILL__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:-D__OPTIMIZE__} \
-	%{!undef:%{!ansi:%p} %P} \
-	%{fshow-column} %{fno-show-column}\
-	%{g*} %{W*} %{w} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{!E:%g.i}%{E:%W{o*}} \n",
-   "%{!E:cc1chill %g.i %1 \
-		   %{!Q:-quiet} -dumpbase %b.ch %{d*} %{m*} %{a}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{itu} \
-		   %{v:-version} %{pg:-p} %{p} %{f*} %{I*} \
-		   %{aux-info*} %{Qn:-fno-ident} %X \
-		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %a %Y \
-		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}"}},
+     "tradcpp -lang-chill %{!no-gcc:-D__GNUCHILL__=%v1} %(cpp_options)\
+	      %{!M:%{!MM:%{!E:%{!pipe:%g.i} |\n\
+      cc1chill %{!pipe:%g.i} %(cc1_options) %{!S:-o %{|!pipe:%g.s} |\n\
+      as %(asm_options) %{!pipe:%g.s} %A }}}}\n"},

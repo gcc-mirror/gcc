@@ -1,3 +1,23 @@
+2000-07-13  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.c (do_spec_1): Add new %B operator.
+	(set_input): Prepare for %B.
+
+	(link_command_spec): Move up with the other tm.h-
+	overrideable specs.  Factor out the portion conditional on
+	LINK_LIBGCC_SPECIAL into a new spec, %(link_libgcc).
+	(struct compiler): Just have a single spec string.  All users
+	updated.
+	(default_compilers): Remove unnecessary braces.
+	(static_specs): Update.
+
+	(trad_capable_cpp, cpp_options, cc1_options, asm_options): New
+	named specs.
+	(C and assembly specs): Use the new named specs, as appropriate.
+
+	* objc/lang-specs.h: Use the new named specs.  
+	Remove unnecessary braces.
+
 2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.c (execute): If a subprocess gets a fatal signal, report

@@ -267,6 +267,7 @@ or with constant text in a single argument.
  %b     substitute the basename of the input file being processed.
 	This is the substring up to (and not including) the last period
 	and not including the directory.
+ %B	same as %b, but include the file suffix (text after the last period).
  %gSUFFIX
 	substitute a file name that has suffix SUFFIX and is chosen
 	once per compilation, and mark the argument a la %d.  To reduce
@@ -496,6 +497,33 @@ proper position among the other output files.  */
 #define LINKER_NAME "collect2"
 #endif
 
+/* Here is the spec for running the linker, after compiling all files.  */
+
+/* -u* was put back because both BSD and SysV seem to support it.  */
+/* %{static:} simply prevents an error message if the target machine
+   doesn't handle -static.  */
+/* We want %{T*} after %{L*} and %D so that it can be used to specify linker
+   scripts which exist in user specified directories, or in standard
+   directories.  */
+#ifndef LINK_COMMAND_SPEC
+#define LINK_COMMAND_SPEC "\
+%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
+    %(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r} %{s} %{t}\
+    %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
+    %{static:} %{L*} %(link_libgcc) %o %{!nostdlib:%{!nodefaultlibs:%G %L %G}}\
+    %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
+#endif
+
+#ifndef LINK_LIBGCC_SPEC
+# ifdef LINK_LIBGCC_SPECIAL
+/* Don't generate -L options for startfile prefix list.  */
+#  define LINK_LIBGCC_SPEC ""
+# else
+/* Do generate them.  */
+#  define LINK_LIBGCC_SPEC "%D"
+# endif
+#endif
+
 static const char *cpp_spec = CPP_SPEC;
 static const char *cpp_predefines = CPP_PREDEFINES;
 static const char *cc1_spec = CC1_SPEC;
@@ -510,6 +538,43 @@ static const char *endfile_spec = ENDFILE_SPEC;
 static const char *startfile_spec = STARTFILE_SPEC;
 static const char *switches_need_spaces = SWITCHES_NEED_SPACES;
 static const char *linker_name_spec = LINKER_NAME;
+static const char *link_command_spec = LINK_COMMAND_SPEC;
+static const char *link_libgcc_spec = LINK_LIBGCC_SPEC;
+
+/* Standard options to cpp, cc1, and as, to reduce duplication in specs.
+   There should be no need to override these in target dependent files,
+   but we need to copy them to the specs file so that newer versions
+   of the GCC driver can correctly drive older tool chains with the
+   appropriate -B options.  */
+
+static const char *trad_capable_cpp =
+"%{traditional|ftraditional|traditional-cpp:trad}cpp";
+
+static const char *cpp_options =
+"%{C:%{!E:%eGNU C does not support -C without using -E}}\
+ %{std*} %{nostdinc*}\
+ %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+ %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
+ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
+ %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
+ %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+ %{ffast-math:-D__FAST_MATH__}\
+ %{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
+ %{fshow-column} %{fno-show-column}\
+ %{fleading-underscore} %{fno-leading-underscore}\
+ %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z %i\
+ %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}";
+
+static const char *cc1_options =
+"%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+ %1 %{!Q:-quiet} -dumpbase %B %{d*} %{m*} %{a*}\
+ %{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*} %{ansi}\
+ %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
+ %{aux-info*} %{Qn:-fno-ident} %{--help:--help}\
+ %{S:%W{o*}%{!o*:-o %b.s}}";
+
+static const char *asm_options =
+"%a %Y %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}";
 
 /* Some compilers have limits on line lengths, and the multilib_select
    and/or multilib_matches strings can be very long, so we build them at
@@ -583,8 +648,7 @@ struct compiler
   const char *suffix;		/* Use this compiler for input files
 				   whose names end in this suffix.  */
 
-  const char *spec[4];		/* To use this compiler, concatenate these
-				   specs and pass to do_spec.  */
+  const char *spec;		/* To use this compiler, run this spec.  */
 };
 
 /* Pointer to a vector of `struct compiler' that gives the spec for
@@ -610,199 +674,60 @@ static struct compiler default_compilers[] =
      were not present when we built the driver, we will hit these copies
      and be given a more meaningful error than "file not used since
      linking is not done".  */
-  {".m", {"#Objective-C"}},
-  {".cc", {"#C++"}}, {".cxx", {"#C++"}}, {".cpp", {"#C++"}},
-  {".c++", {"#C++"}}, {".C", {"#C++"}},
-  {".ads", {"#Ada"}}, {".adb", {"#Ada"}}, {".ada", {"#Ada"}},
-  {".f", {"#Fortran"}}, {".for", {"#Fortran"}}, {".F", {"#Fortran"}},
-  {".fpp", {"#Fortran"}},
-  {".p", {"#Pascal"}}, {".pas", {"#Pascal"}},
+  {".m",  "#Objective-C"},
+  {".cc", "#C++"}, {".cxx", "#C++"}, {".cpp", "#C++"},
+  {".c++", "#C++"}, {".C", "#C++"},
+  {".ads", "#Ada"}, {".adb", "#Ada"}, {".ada", "#Ada"},
+  {".f", "#Fortran"}, {".for", "#Fortran"}, {".F", "#Fortran"},
+  {".fpp", "#Fortran"}, {".r", "#Ratfor"},
+  {".p", "#Pascal"}, {".pas", "#Pascal"},
+  {".ch", "#Chill"}, {".chi", "#Chill"},
+  {".java", "#Java"}, {".class", "#Java"},
+  {".zip", "#Java"}, {".jar", "#Java"},
   /* Next come the entries for C.  */
-  {".c", {"@c"}},
+  {".c", "@c"},
   {"@c",
-   {
 #if USE_CPPLIB
-     "%{E|M|MM:cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
-	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
-	%{C:%{!E:%eGNU C does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
-	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-	%{ffast-math:-D__FAST_MATH__}\
-	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-        %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional}\
-	%{fleading-underscore} %{fno-leading-underscore}\
-	%{fshow-column} %{fno-show-column}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}\
-      %{!E:%{!M:%{!MM:cc1 %i %1 \
-                  %{std*} %{nostdinc*} %{A*} %{I*} %I\
-                  %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
-                  %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-                  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
-		  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
-                  %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-		  %{ffast-math:-D__FAST_MATH__}\
-		  %{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-		  %{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-                  %{H} %C %{D*} %{U*} %{i*} %Z\
-                  %{ftraditional:-traditional}\
-                  %{traditional-cpp:-traditional}\
-		  %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
-		  %{aux-info*} %{Qn:-fno-ident}\
-		  %{--help:--help}\
-		  %{g*} %{O*} %{W*} %{w} %{pedantic*}\
-		  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		  %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-                  %{!S:as %a %Y\
-		     %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                     %{!pipe:%g.s} %A\n }}}}"
+     "%{E|M|MM:cpp -lang-c %{ansi:-std=c89} %(cpp_options)}\
+      %{!E:%{!M:%{!MM:cc1 -lang-c %{ansi:-std=c89} %(cpp_options)\
+			  %(cc1_options) %{!S:-o %{|!pipe:%g.s} |\n\
+      as %(asm_options) %{!pipe:%g.s} %A }}}}"
 #else /* ! USE_CPPLIB */
-    "%{traditional|ftraditional|traditional-cpp:trad}cpp -lang-c \
-	%{ansi:-std=c89} %{std*} %{nostdinc*}\
-	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
-	%{C:%{!E:%eGNU C does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
-	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-	%{ffast-math:-D__FAST_MATH__}\
-	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-	%{fshow-column} %{fno-show-column}\
-	%{fleading-underscore} %{fno-leading-underscore}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-   "%{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
-		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*}\
-		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
-		   %{aux-info*} %{Qn:-fno-ident}\
-		   %{--help:--help} \
-		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}"
+     "%(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options) \
+			  %{!M:%{!MM:%{!E:%{!pipe:%g.i} |\n\
+      cc1 %{!pipe:%g.i} %(cc1_options)  %{!S:-o %{|!pipe:%g.s} |\n\
+      as %(asm_options) %{!pipe:%g.s} %A }}}}\n"
 #endif /* ! USE_CPPLIB */
-  }},
+  },
   {"-",
-   {"%{E:%{traditional|ftraditional|traditional-cpp:trad}cpp \
-        -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
-	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
-	%{C:%{!E:%eGNU C does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
-	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-	%{ffast-math:-D__FAST_MATH__}\
-	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-	%{fshow-column} %{fno-show-column}\
-	%{fleading-underscore} %{fno-leading-underscore}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %W{o*}}\
-    %{!E:%e-E required when input is from standard input}"}},
-  {".h", {"@c-header"}},
+   "%{!E:%e-E required when input is from standard input}\
+    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)"},
+  {".h", "@c-header"},
   {"@c-header",
-   {"%{!E:%eCompilation of header file requested} \
-     %{traditional|ftraditional|traditional-cpp:trad}cpp \
-	%{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
-	%{C:%{!E:%eGNU C does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
-	%{!undef:%{!std=*:%p}%{std=gnu*:%p} %P} %{trigraphs}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-	%{ffast-math:-D__FAST_MATH__}\
-	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-	%{fshow-column} %{fno-show-column}\
-	%{fleading-underscore} %{fno-leading-underscore}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %W{o*}"}},
-  {".i", {"@cpp-output"}},
+   "%{!E:%eCompilation of header file requested} \
+    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp-options)"},
+  {".i", "@cpp-output"},
   {"@cpp-output",
-   {"%{!M:%{!MM:%{!E:cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a*}\
-			%{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*}\
-			%{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
-			%{aux-info*} %{Qn:-fno-ident} -fpreprocessed\
-			%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-			%{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-		     %{!S:as %a %Y\
-			     %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-			     %{!pipe:%g.s} %A\n }}}}"}},
-  {".s", {"@assembler"}},
+   "%{!M:%{!MM:%{!E:\
+    cc1 %i %(cc1_options) %{!S:|\n\
+    as %(asm_options) %{!pipe:%g.s} %A }}}}"},
+  {".s", "@assembler"},
   {"@assembler",
-   {"%{!M:%{!MM:%{!E:%{!S:as %a %Y\
-		            %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-			    %i %A\n }}}}"}},
-  {".S", {"@assembler-with-cpp"}},
+   "%{!M:%{!MM:%{!E:%{!S:as %(asm_options) %i %A }}}}"},
+  {".S", "@assembler-with-cpp"},
   {"@assembler-with-cpp",
-   {"%{traditional|ftraditional|traditional-cpp:trad}cpp -lang-asm \
-	%{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
-	%{C:%{!E:%eGNU C does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} %{trigraphs}\
-        -$ %{!undef:%p %P} \
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-	%{ffast-math:-D__FAST_MATH__}\
-	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-	%{fshow-column} %{fno-show-column}\
-	%{fleading-underscore} %{fno-leading-underscore}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-    "%{!M:%{!MM:%{!E:%{!S:as %a %Y\
-                    %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-		    %{!pipe:%g.s} %A\n }}}}"}},
+   "%(trad_capable_cpp) -lang-asm %(cpp_options) \
+			%{!M:%{!MM:%{!E:%{!S: %{!pipe:%g.s} |\n\
+    as %(asm_options) %{!pipe:%g.s} %A }}}}"},
 #include "specs.h"
   /* Mark end of table */
-  {0, {0}}
+  {0, 0}
 };
 
 /* Number of elements in default_compilers, not counting the terminator.  */
 
 static int n_default_compilers
   = (sizeof default_compilers / sizeof (struct compiler)) - 1;
-
-/* Here is the spec for running the linker, after compiling all files.  */
-
-/* -u* was put back because both BSD and SysV seem to support it.  */
-/* %{static:} simply prevents an error message if the target machine
-   doesn't handle -static.  */
-/* We want %{T*} after %{L*} and %D so that it can be used to specify linker
-   scripts which exist in user specified directories, or in standard
-   directories.  */
-#ifdef LINK_COMMAND_SPEC
-/* Provide option to override link_command_spec from machine specific
-   configuration files.  */
-static const char *link_command_spec = 
-	LINK_COMMAND_SPEC;
-#else
-#ifdef LINK_LIBGCC_SPECIAL
-/* Don't generate -L options.  */
-static const char *link_command_spec = "\
-%{!fsyntax-only: \
- %{!c:%{!M:%{!MM:%{!E:%{!S:%(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
-			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
-			%{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
-			%{static:} %{L*} %o\
-			%{!nostdlib:%{!nodefaultlibs:%G %L %G}}\
-			%{!A:%{!nostdlib:%{!nostartfiles:%E}}}\
-			%{T*}\
-			\n }}}}}}";
-#else
-/* Use -L.  */
-static const char *link_command_spec = "\
-%{!fsyntax-only: \
- %{!c:%{!M:%{!MM:%{!E:%{!S:%(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
-			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
-			%{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
-			%{static:} %{L*} %D %o\
-			%{!nostdlib:%{!nodefaultlibs:%G %L %G}}\
-			%{!A:%{!nostdlib:%{!nostartfiles:%E}}}\
-			%{T*}\
-			\n }}}}}}";
-#endif
-#endif
 
 /* A vector of options to give to the linker.
    These options are accumulated by %x,
@@ -1137,8 +1062,12 @@ static struct spec_list static_specs[] =
 {
   INIT_STATIC_SPEC ("asm",			&asm_spec),
   INIT_STATIC_SPEC ("asm_final",		&asm_final_spec),
+  INIT_STATIC_SPEC ("asm_options",		&asm_options),
   INIT_STATIC_SPEC ("cpp",			&cpp_spec),
+  INIT_STATIC_SPEC ("cpp_options",		&cpp_options),
+  INIT_STATIC_SPEC ("trad_capable_cpp",		&trad_capable_cpp),
   INIT_STATIC_SPEC ("cc1",			&cc1_spec),
+  INIT_STATIC_SPEC ("cc1_options",		&cc1_options),
   INIT_STATIC_SPEC ("cc1plus",			&cc1plus_spec),
   INIT_STATIC_SPEC ("endfile",			&endfile_spec),
   INIT_STATIC_SPEC ("link",			&link_spec),
@@ -1156,6 +1085,7 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("multilib_matches",		&multilib_matches),
   INIT_STATIC_SPEC ("multilib_exclusions",	&multilib_exclusions),
   INIT_STATIC_SPEC ("linker",			&linker_name_spec),
+  INIT_STATIC_SPEC ("link_libgcc",		&link_libgcc_spec),
 };
 
 #ifdef EXTRA_SPECS		/* additional specs needed */
@@ -1732,9 +1662,7 @@ read_specs (filename, main_p)
 			 (n_compilers + 2) * sizeof (struct compiler)));
 
 	  compilers[n_compilers].suffix = suffix;
-	  memset (compilers[n_compilers].spec, 0,
-		  sizeof compilers[n_compilers].spec);
-	  compilers[n_compilers].spec[0] = spec;
+	  compilers[n_compilers].spec = spec;
 	  n_compilers++;
 	  memset (&compilers[n_compilers], 0, sizeof compilers[n_compilers]);
 	}
@@ -3716,6 +3644,7 @@ const char *input_filename;
 static int input_file_number;
 size_t input_filename_length;
 static int basename_length;
+static int suffixed_basename_length;
 static const char *input_basename;
 static const char *input_suffix;
 
@@ -3897,6 +3826,11 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	  case 'b':
 	    obstack_grow (&obstack, input_basename, basename_length);
+	    arg_going = 1;
+	    break;
+
+	  case 'B':
+	    obstack_grow (&obstack, input_basename, suffixed_basename_length);
 	    arg_going = 1;
 	    break;
 
@@ -5118,6 +5052,7 @@ set_input (filename)
   /* Find a suffix starting with the last period,
      and set basename_length to exclude that suffix.  */
   basename_length = strlen (input_basename);
+  suffixed_basename_length = basename_length;
   p = input_basename + basename_length;
   while (p != input_basename && *p != '.') --p;
   if (*p == '.' && p != input_basename)
@@ -5150,8 +5085,7 @@ main (argc, argv)
      int argc;
      char **argv;
 {
-  register size_t i;
-  size_t j;
+  size_t i;
   int value;
   int linker_was_run = 0;
   char *explicit_link_files;
@@ -5550,32 +5484,11 @@ main (argc, argv)
       if (cp)
 	{
 	  /* Ok, we found an applicable compiler.  Run its spec.  */
-	  /* First say how much of input_filename to substitute for %b  */
-	  int len;
 
-	  if (cp->spec[0][0] == '#')
+	  if (cp->spec[0] == '#')
 	    error ("%s: %s compiler not installed on this system",
-		   input_filename, &cp->spec[0][1]);
-
-	  len = 0;
-	  for (j = 0; j < sizeof cp->spec / sizeof cp->spec[0]; j++)
-	    if (cp->spec[j])
-	      len += strlen (cp->spec[j]);
-
-	  {
-	    char *p1 = (char *) xmalloc (len + 1);
-	    
-	    len = 0;
-	    for (j = 0; j < sizeof cp->spec / sizeof cp->spec[0]; j++)
-	      if (cp->spec[j])
-		{
-		  strcpy (p1 + len, cp->spec[j]);
-		  len += strlen (cp->spec[j]);
-		}
-	    
-	    value = do_spec (p1);
-	    free (p1);
-	  }
+		   input_filename, &cp->spec[1]);
+	  value = do_spec (cp->spec);
 	  if (value < 0)
 	    this_file_error = 1;
 	}
@@ -5726,30 +5639,17 @@ lookup_compiler (name, length, language)
       }
 #endif
 
-
   if (cp >= compilers)
     {
-      if (cp->spec[0][0] == '@')
-	{
-	  struct compiler *new;
-
-	  /* An alias entry maps a suffix to a language.
-	     Search for the language; pass 0 for NAME and LENGTH
-	     to avoid infinite recursion if language not found.
-	     Construct the new compiler spec.  */
-	  language = cp->spec[0] + 1;
-	  new = (struct compiler *) xmalloc (sizeof (struct compiler));
-	  new->suffix = cp->suffix;
-	  memcpy (new->spec,
-		  lookup_compiler (NULL_PTR, 0, language)->spec,
-		  sizeof new->spec);
-	  return new;
-	}
-
-      /* A non-alias entry: return it.  */
-      return cp;
+      if (cp->spec[0] != '@')
+	/* A non-alias entry: return it.  */
+	return cp;
+      
+      /* An alias entry maps a suffix to a language.
+	 Search for the language; pass 0 for NAME and LENGTH
+	 to avoid infinite recursion if language not found.  */
+      return lookup_compiler (NULL_PTR, 0, cp->spec + 1);
     }
-
   return 0;
 }
 
@@ -5881,17 +5781,13 @@ validate_all_switches ()
   register char c;
   struct spec_list *spec;
 
-  for (comp = compilers; comp->spec[0]; comp++)
+  for (comp = compilers; comp->spec; comp++)
     {
-      size_t i;
-      for (i = 0; i < sizeof comp->spec / sizeof comp->spec[0] && comp->spec[i]; i++)
-	{
-	  p = comp->spec[i];
-	  while ((c = *p++))
-	    if (c == '%' && *p == '{')
-	      /* We have a switch spec.  */
-	      validate_switches (p + 1);
-	}
+      p = comp->spec;
+      while ((c = *p++))
+	if (c == '%' && *p == '{')
+	  /* We have a switch spec.  */
+	  validate_switches (p + 1);
     }
 
   /* Look through the linked list of specs read from the specs file.  */
