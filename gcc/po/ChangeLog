@@ -1,3 +1,8 @@
+2001-04-03  Zack Weinberg  <zackw@stanford.edu>
+
+	* POTFILES.in: Remove all the files deleted by the xm-host.h
+	purge, also frame.c, frame-dwarf2.c, and gansidecl.h.
+
 2001-01-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* Makefile.in.in (distclean): Also remove *.gmo during `make
