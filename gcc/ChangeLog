@@ -1,3 +1,7 @@
+2003-03-04  Steve Ellcey  <sje@cup.hp.com>
+
+	* expr.c (expand_expr): Call promote_mode to set unsignedp.
+
 2003-03-04  Daniel Jacobowitz  <drow@mvista.com>
 
 	* configure.in: Don't always define TARGET_SYSTEM_ROOT.
