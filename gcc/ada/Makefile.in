@@ -1411,6 +1411,9 @@ ifeq ($(strip $(filter-out powerpc darwin%,$(arch) $(osys))),)
   SO_OPTS = -Wl,-flat_namespace
   RANLIB = ranlib -c
   LIBRARY_VERSION := $(LIB_VERSION)
+
+  soext = .dylib
+
 endif
 
 # The runtime library for gnat comprises two directories.  One contains the
