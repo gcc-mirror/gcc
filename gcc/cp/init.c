@@ -137,7 +137,7 @@ dfs_initialize_vtbl_ptrs (binfo, data)
      tree binfo;
      void *data;
 {
-  if (!BINFO_PRIMARY_MARKED_P (binfo) 
+  if ((!BINFO_PRIMARY_P (binfo) || TREE_VIA_VIRTUAL (binfo))
       && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
     {
       tree base_ptr = TREE_VALUE ((tree) data);
@@ -802,16 +802,27 @@ static tree
 build_vtbl_address (binfo)
      tree binfo;
 {
+  tree binfo_for = binfo;
   tree vtbl;
+
+  if (BINFO_VPTR_INDEX (binfo) && TREE_VIA_VIRTUAL (binfo)
+      && BINFO_PRIMARY_P (binfo))
+    /* If this is a virtual primary base, then the vtable we want to store
+       is that for the base this is being used as the primary base of.  We
+       can't simply skip the initialization, because we may be expanding the
+       inits of a subobject constructor where the virtual base layout
+       can be different.  */
+    while (BINFO_PRIMARY_BASE_OF (binfo_for))
+      binfo_for = BINFO_PRIMARY_BASE_OF (binfo_for);
 
   /* Figure out what vtable BINFO's vtable is based on, and mark it as
      used.  */
-  vtbl = get_vtbl_decl_for_binfo (binfo);
+  vtbl = get_vtbl_decl_for_binfo (binfo_for);
   assemble_external (vtbl);
   TREE_USED (vtbl) = 1;
 
   /* Now compute the address to use when initializing the vptr.  */
-  vtbl = BINFO_VTABLE (binfo);
+  vtbl = BINFO_VTABLE (binfo_for);
   if (TREE_CODE (vtbl) == VAR_DECL)
     {
       vtbl = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (vtbl)), vtbl);

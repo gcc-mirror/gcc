@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
       TYPE_POLYMORHPIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
       BINDING_HAS_LEVEL_P (in CPLUS_BINDING)
-      BINFO_OVERRIDE_ALONG_VIRTUAL_PATH_P (in BINFO)
+      BINFO_LOST_PRIMARY_P (in BINFO)
       TREE_PARMLIST (in TREE_LIST)
    3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
       BINFO_VTABLE_PATH_MARKED.
@@ -1158,6 +1158,10 @@ extern int flag_access_control;
 
 extern int flag_check_new;
 
+/* Nonnull if we want to dump class heirarchies. */
+
+extern const char *flag_dump_class_layout;
+
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
@@ -1672,11 +1676,11 @@ struct lang_type
   (TREE_LANG_FLAG_4 (CANONICAL_BINFO (B, C)))
 
 /* Any subobject that needs a new vtable must have a vptr and must not
-   be a primary base (since it would then use the vtable from a
-   derived class.)  */
+   be a non-virtual primary base (since it would then use the vtable from a
+   derived class and never become non-primary.)  */
 #define SET_BINFO_NEW_VTABLE_MARKED(B, C)				 \
   (BINFO_NEW_VTABLE_MARKED (B, C) = 1,					 \
-   my_friendly_assert (!BINFO_PRIMARY_MARKED_P (B), 20000517),		 \
+   my_friendly_assert (!BINFO_PRIMARY_P (B) || TREE_VIA_VIRTUAL (B), 20000517),		 \
    my_friendly_assert (CLASSTYPE_VFIELDS (BINFO_TYPE (B)) != NULL_TREE,  \
 		       20000517))
 
@@ -1691,7 +1695,7 @@ struct lang_type
    class of a non-primary virtual base.  This flag is only valid for
    paths (given by BINFO_INHERITANCE_CHAIN) that really exist in the
    final object.  */
-#define BINFO_PRIMARY_MARKED_P(NODE) \
+#define BINFO_PRIMARY_P(NODE) \
   (BINFO_PRIMARY_BASE_OF (NODE) != NULL_TREE)
 
 /* The index in the VTT where this subobject's sub-VTT can be found.
@@ -1708,9 +1712,10 @@ struct lang_type
    immediate base.)  */
 #define BINFO_PRIMARY_BASE_OF(NODE) TREE_VEC_ELT ((NODE), 10)
 
-/* Nonzero if this binfo declares a virtual function which is
-   overridden along a virtual path.  */
-#define BINFO_OVERRIDE_ALONG_VIRTUAL_PATH_P(NODE) TREE_LANG_FLAG_2 (NODE)
+/* Nonzero if this binfo has lost its primary base binfo (because that
+   is a nearly-empty virtual base that has been taken by some other
+   base in the complete heirarchy.  */
+#define BINFO_LOST_PRIMARY_P(NODE) TREE_LANG_FLAG_2 (NODE)
 
 /* Nonzero if this binfo is an indirect primary base, i.e. a virtual
    base that is a primary base of some of other class in the
@@ -4248,6 +4253,7 @@ extern tree unmarked_vtable_pathp               PARAMS ((tree, void *));
 extern tree convert_pointer_to_vbase            PARAMS ((tree, tree));
 extern tree find_vbase_instance                 PARAMS ((tree, tree));
 extern tree binfo_for_vbase                     PARAMS ((tree, tree));
+extern tree binfo_via_virtual                   PARAMS ((tree, tree));
 extern void fixup_all_virtual_upcast_offsets    PARAMS ((tree));
 
 /* in semantics.c */
