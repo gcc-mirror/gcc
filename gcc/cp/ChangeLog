@@ -1,3 +1,8 @@
+2002-09-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/7788
+	* rtti.c (unemitted_tinfo_decl_p): Check it has a field.
+
 2002-09-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cp-tree.h: Fix comment typos.

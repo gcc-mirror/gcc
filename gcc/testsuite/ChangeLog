@@ -1,3 +1,7 @@
+2002-09-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/rtti/crash1.C: New test.
+
 2002-09-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/sibcall-1.c, gcc.dg/sibcall-2.c, gcc.dg/sibcall-3.c,
