@@ -1,3 +1,7 @@
+Mon Jun 25 11:10:51 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movsi_insv_1, movsi_insv_1_rex64): Fix constraints.
+
 2001-06-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi, doc/contrib.texi, doc/extend.texi,
