@@ -7812,6 +7812,11 @@ loc_descriptor_from_tree (loc, addressp)
       indirect_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (loc)));
       break;
 
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+      return loc_descriptor_from_tree (TREE_OPERAND (loc, 0), addressp);
+      
     case COMPONENT_REF:
     case BIT_FIELD_REF:
     case ARRAY_REF:
@@ -7866,7 +7871,6 @@ loc_descriptor_from_tree (loc, addressp)
     case INTEGER_CST:
       if (host_integerp (loc, 0))
 	ret = int_loc_descriptor (tree_low_cst (loc, 0));
-      break;
       break;
 
     case BIT_AND_EXPR:

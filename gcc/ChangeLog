@@ -1,3 +1,9 @@
+Sun Dec 17 12:41:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (loc_descriptor_from_tree, case NOP_EXPR): New case.
+	(loc_descriptor_from_tree, case CONVERT_EXPR): Likewise.
+	(loc_descriptor_from_tree, case NON_LVALUE_EXPR): Likewise.
+
 2000-12-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	* Makefile.in (check-po): Use $(MAKE).
@@ -11,6 +17,7 @@
         * cpperror.c (print_location): Initialize col.
 
 2000-12-14  Philipp Thomas  <pthomas@suse.de>
+
 	* protoize.c (main): Correctly set locale categories.
 	* gcc.c (main): Likewise.
 	* cppmain.c (general_init): Likewise.
