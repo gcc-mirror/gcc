@@ -36,7 +36,6 @@ Jim Wilson					wilson@redhat.com
 
 			CPU Port Maintainers	(CPU alphabetical order)
 
-a29k port		Jim Wilson		wilson@redhat.com
 alpha port		Richard Henderson	rth@redhat.com
 arc port		Richard Kenner		kenner@nyu.edu
 arm port		Nick Clifton		nickc@redhat.com
@@ -150,17 +149,21 @@ in changes outside of the parts of the compiler they maintain.
 
 			Write After Approval	(last name alphabetical order)
 Scott Bambrough					scottb@netwinder.org
+Daniel Berlin					dan@dberlin.org
 David Billinghurst				David.Billinghurst@riotinto.com
 Laurynas Biveinis				lauras@softhome.net
+Jim Blandy					jimb@redhat.com
 Phil Blundell					pb@futuretv.com
 Hans Boehm					hboehm@gcc.gnu.org
 Andrew Cagney					cagney@redhat.com
 Paolo Carlini					pcarlini@unitus.it
+Chandra Chavva					cchavva@redhat.com
 William Cohen					wcohen@redhat.com
 Chris Demetriou					cgd@broadcom.com
 *Paul Eggert					eggert@twinsun.com
 Ben Elliston					bje@redhat.com
 Marc Espie					espie@cvs.openbsd.org
+Doug Evans					devans@transmeta.com
 Kaveh Ghazi					ghazi@caip.rutgers.edu
 Matthew Gingell					gingell@gnat.com
 Anthony Green					green@redhat.com
@@ -191,8 +194,10 @@ Martin v. Löwis					loewis@informatik.hu-berlin.de
 *HJ Lu						hjl@lucon.org
 Andrew Macleod					amacleod@redhat.com
 Vladimir Makarov				vmakarov@redhat.com
+Michael Matz					matz@suse.de
 Greg McGary					gkm@gnu.org
 Bryce McKinlay					bryce@gcc.gnu.org
+Adam Megacz					adam@xwt.org
 Alan Modra					amodra@bigpond.net.au
 Toon Moene					toon@moene.indiv.nluug.nl
 Catherine Moore					clm@redhat.com
@@ -208,11 +213,13 @@ Ken Raeburn					raeburn@redhat.com
 Rolf Rasmussen					rolfwr@gcc.gnu.org
 Gabriel Dos Reis                                dosreis@cmla.ens-cachan.fr
 Loren J. Rittle					ljrittle@acm.org
+Tom Rix						trix@redhat.com
 Craig Rodrigues					rodrigc@gcc.gnu.org
 Gavin Romig-Koch				gavin@redhat.com
 Ira Ruben					ira@apple.com
 Alex Samuel					samuel@codesourcery.com
 Richard Sandiford				rsandifo@redhat.com
+Roger Sayle					roger@eyesopen.com
 Bernd Schmidt					bernds@redhat.com
 Andreas Schwab					schwab@suse.de
 Stan Shebs					shebs@apple.com
@@ -220,6 +227,8 @@ Nathan Sidwell					nathan@acm.org
 Franz Sirl					franz.sirl-kernel@lauterbach.com
 Danny Smith					dannysmith@users.sourceforge.net
 Michael Sokolov					msokolov@ivan.Harhan.ORG
+Richard Stallman				rms@gnu.org
+Graham Stott					grahams@redhat.com
 Mike Stump					mrs@windriver.com
 Ian Taylor					ian@zembu.com
 Michael Tiemann					tiemann@redhat.com
@@ -227,19 +236,8 @@ Philipp Thomas					pthomas@suse.de
 Kresten Krab Thorup				krab@gcc.gnu.org
 Tom Tromey					tromey@redhat.com
 John Wehle					john@feith.com
-Mark Wielaard					mark@gcc.gnu.org
-Graham Stott					grahams@redhat.com
-Daniel Berlin					dan@cgsoftware.com
-Jim Blandy					jimb@redhat.com
-Chandra Chavva					cchavva@redhat.com
-Chris Demetriou					cgd@sibyte.com
-Doug Evans					devans@transmeta.com
-Michael Matz
-Tom Rix						trix@redhat.com
-Richard Stallman				rms@gnu.org
-Graham Stott					grahams@redhat.com
 Florian Weimer					fw@deneb.enyo.de
-Adam Megacz					adam@xwt.org
+Mark Wielaard					mark@gcc.gnu.org
 
 GNATS only accounts
 Peter Bienstman(?)
