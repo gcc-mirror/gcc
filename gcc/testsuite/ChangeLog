@@ -1,3 +1,7 @@
+2001-10-04  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	* lib/g77.exp: set libg2c_dir correctly.
+
 2001-10-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/macro11.c: New test.

@@ -116,10 +116,14 @@ proc g77_init { args } {
 }
 
 proc g77_target_compile { source dest type options } {
+    global rootme;
     global tmpdir;
     global gluefile wrap_flags;
     global G77_UNDER_TEST
     global TOOL_OPTIONS
+    global ld_library_path;
+
+    set ld_library_path ".:${rootme}"
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
@@ -143,12 +147,21 @@ proc g77_target_compile { source dest type options } {
     }
     if ![is_remote host] {
       set gccpath "[get_multilibs]"
-      set libg2c_dir [lookfor_file ${gccpath} libf2c/libg2c.a]
+      set libg2c_dir [lookfor_file ${gccpath} libf2c/libg2c.la]
       if { $libg2c_dir != "" } {
 	set libg2c_link_flags "-L[file dirname ${libg2c_dir}]"
 	lappend options "additional_flags=${libg2c_link_flags}"
       }
     }
+    set g2cpath "[get_multilibs]"
+    set libg2c_dir [lookfor_file ${g2cpath} libf2c/.libs/libg2c.a]
+    if { $libg2c_dir != "" } {
+        set libg2c_dir [file dirname ${libg2c_dir}]
+        set g2c_link_flags "-L${libg2c_dir}"
+        lappend options "additional_flags=${g2c_link_flags}"
+        append ld_library_path ":${libg2c_dir}"
+    }
+ 
     lappend options "compiler=$G77_UNDER_TEST"
     return [target_compile $source $dest $type $options]
 }
