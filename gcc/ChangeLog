@@ -1,5 +1,19 @@
 2000-09-12  Michael Hayes  <mhayes@cygnus.com>
 
+	* basic-block.h (LOOP_TREE, LOOP_PRE_HEADER, LOOP_EDGES): New.
+	(LOOP_EXITS_DOMS, LOOP_ALL): Likewise.
+	(flow_loops_update): New prototype.
+	(flow_loops_find): Add flags to prototype.
+	(struct loop): Add `pre_header_root' and `pre_header_trace' fields.
+	* flow.c (flow_loop_pre_header_scan): New.
+	(flow_loop_dump): Dump pre-header root and trace and exit dominators.
+	(flow_loop_free): Free pre-header root and trace and exit dominators.
+	(flow_loops_find): New argument flags.
+	(flow_loops_update): New function.
+	* toplev.c (rest_of_compilation): Add flag argument to flow_loops_find.
+
+2000-09-12  Michael Hayes  <mhayes@cygnus.com>
+
 	* basic-block.h (split_block, update_bb_for_insn): New prototypes.
 	* flow.c (split_block, update_bb_for_insn): New functions.
 

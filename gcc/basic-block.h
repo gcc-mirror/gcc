@@ -276,6 +276,12 @@ struct loop
   /* Basic block of loop pre-header or NULL if it does not exist.  */
   basic_block pre_header;
 
+  /* Root node of pre_header extended basic block.  */
+  basic_block pre_header_root;
+
+  /* Bitmap of blocks of trace from pre_header root to pre_header.  */
+  sbitmap pre_header_trace;
+
   /* The first block in the loop.  This is not necessarily the same as
      the loop header.  */
   basic_block first;
@@ -301,6 +307,9 @@ struct loop
 
   /* Number of edges that exit the loop.  */
   int num_exits;
+
+  /* Bitmap of blocks that dominate all exits of the loop.  */
+  sbitmap exits_doms;
 
   /* The loop nesting depth.  */
   int depth;
@@ -404,7 +413,8 @@ struct loops
   sbitmap shared_headers;
 };
 
-extern int flow_loops_find PARAMS ((struct loops *));
+extern int flow_loops_find PARAMS ((struct loops *, int flags));
+extern int flow_loops_update PARAMS ((struct loops *, int flags));
 extern void flow_loops_free PARAMS ((struct loops *));
 extern void flow_loops_dump PARAMS ((const struct loops *, FILE *,
 				     void (*)(const struct loop *,
@@ -467,6 +477,15 @@ enum update_life_extent
 #define PROP_SCAN_DEAD_CODE	16	/* Scan for dead code.  */
 #define PROP_AUTOINC		32	/* Create autoinc mem references.  */
 #define PROP_FINAL		63	/* All of the above.  */
+
+
+/* Flags for loop discovery.  */
+
+#define LOOP_TREE		1 	/* Build loop hierarchy tree.  */
+#define LOOP_PRE_HEADER		2	/* Analyse loop pre-header.  */
+#define LOOP_EDGES		4 	/* Find entry and exit edges.  */
+#define LOOP_EXITS_DOMS		8 	/* Find nodes that dom. all exits.  */
+#define LOOP_ALL	       15 	/* All of the above  */
 
 extern void life_analysis	PARAMS ((rtx, FILE *, int));
 extern void update_life_info	PARAMS ((sbitmap, enum update_life_extent,

@@ -3211,7 +3211,7 @@ rest_of_compilation (decl)
 
       /* Discover and record the loop depth at the head of each basic
 	 block.  The loop infrastructure does the real job for us.  */
-      flow_loops_find (&loops);
+      flow_loops_find (&loops, LOOP_TREE);
 
       /* Estimate using heuristics if no profiling info is available.  */
       estimate_probability (&loops);
