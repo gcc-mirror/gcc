@@ -223,8 +223,8 @@
 (define_insn ""
   [(set (reg:CCFP 0)
 	(match_operator:CCFP 2 "comparison_operator"
-			     [(match_operand:SF 0 "reg_or_0_operand" "fxG")
-			      (match_operand:SF 1 "reg_or_0_operand" "fxG")]))]
+			     [(match_operand:SF 0 "reg_or_0_operand" "fG")
+			      (match_operand:SF 1 "reg_or_0_operand" "fG")]))]
   ""
   "fcmp,sgl,%Y2 %r0,%r1"
   [(set_attr "type" "fpcc")])
@@ -232,8 +232,8 @@
 (define_insn ""
   [(set (reg:CCFP 0)
 	(match_operator:CCFP 2 "comparison_operator"
-			     [(match_operand:DF 0 "reg_or_0_operand" "fxG")
-			      (match_operand:DF 1 "reg_or_0_operand" "fxG")]))]
+			     [(match_operand:DF 0 "reg_or_0_operand" "fG")
+			      (match_operand:DF 1 "reg_or_0_operand" "fG")]))]
   ""
   "fcmp,dbl,%Y2 %r0,%r1"
   [(set_attr "type" "fpcc")])
@@ -997,9 +997,9 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
-				"=r,r,r,r,r,Q,*q,!fx,fx,*T")
+				"=r,r,r,r,r,Q,*q,!f,f,*T")
 	(match_operand:SI 1 "move_operand"
-				"r,J,N,K,Q,rM,rM,!fxM,*T,fx"))]
+				"r,J,N,K,Q,rM,rM,!fM,*T,f"))]
   "register_operand (operands[0], SImode)
    || reg_or_0_operand (operands[1], SImode)"
   "@
@@ -1261,8 +1261,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!fx")
-	(match_operand:HI 1 "move_operand" "r,J,N,K,Q,rM,rM,!fxM"))]
+  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!f")
+	(match_operand:HI 1 "move_operand" "r,J,N,K,Q,rM,rM,!fM"))]
   "register_operand (operands[0], HImode)
    || reg_or_0_operand (operands[1], HImode)"
   "@
@@ -1362,8 +1362,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!fx")
-	(match_operand:QI 1 "move_operand" "r,J,N,K,Q,rM,rM,!fxM"))]
+  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!f")
+	(match_operand:QI 1 "move_operand" "r,J,N,K,Q,rM,rM,!fM"))]
   "register_operand (operands[0], QImode)
    || reg_or_0_operand (operands[1], QImode)"
   "@
@@ -1461,7 +1461,7 @@
 ;; This must come before the movdf pattern, and it must be present
 ;; to handle obscure reloading cases.
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=?r,fx")
+  [(set (match_operand:DF 0 "general_operand" "=?r,f")
 	(match_operand:DF 1 "" "?E,m"))]
   "GET_CODE (operands[1]) == CONST_DOUBLE
    && operands[1] != CONST0_RTX (DFmode)"
@@ -1482,9 +1482,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
-			  "=fx,*r,Q,?o,?Q,fx,*&r,*&r")
+			  "=f,*r,Q,?o,?Q,f,*&r,*&r")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fxG,*rG,fx,*r,*r,Q,o,Q"))]
+			  "fG,*rG,f,*r,*r,Q,o,Q"))]
   "register_operand (operands[0], DFmode)
    || reg_or_0_operand (operands[1], DFmode)"
   "*
@@ -1498,7 +1498,7 @@
    (set_attr "length" "4,8,4,8,16,4,8,16")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=fx")
+  [(set (match_operand:DF 0 "register_operand" "=f")
 	(mem:DF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 8))
 			 (match_operand:SI 2 "register_operand" "r"))))]
@@ -1518,7 +1518,7 @@
 ;; Ugh. Output is a FP register; so we need to earlyclobber something
 ;; else as a temporary.
 (define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=fx")
+  [(set (match_operand:DF 0 "register_operand" "=f")
 	(mem:DF (plus:SI
 		  (plus:SI
 		    (mult:SI (match_operand:SI 1 "register_operand" "+&r")
@@ -1540,7 +1540,7 @@
   [(set (mem:DF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 8))
 			 (match_operand:SI 2 "register_operand" "r")))
-	(match_operand:DF 0 "register_operand" "fx"))]
+	(match_operand:DF 0 "register_operand" "f"))]
   "! TARGET_DISABLE_INDEXING"
   "fstdx,s %0,%1(0,%2)"
   [(set_attr "type" "fpstore")
@@ -1563,7 +1563,7 @@
 			      (const_int 8))
 		     (match_operand:SI 2 "register_operand" "r"))
 		  (match_operand:SI 3 "const_int_operand" "rL")))
-	(match_operand:DF 0 "register_operand" "fx"))]
+	(match_operand:DF 0 "register_operand" "f"))]
   "! TARGET_DISABLE_INDEXING && reload_in_progress"
   "*
 {
@@ -1586,7 +1586,7 @@
 }")
 
 (define_expand "reload_indi"
-  [(set (match_operand:DI 0 "register_operand" "=z")
+  [(set (match_operand:DI 0 "register_operand" "=f")
 	(match_operand:DI 1 "general_operand" ""))
    (clobber (match_operand:SI 2 "register_operand" "=&r"))]
   ""
@@ -1602,7 +1602,7 @@
 
 (define_expand "reload_outdi"
   [(set (match_operand:DI 0 "general_operand" "")
-	(match_operand:DI 1 "register_operand" "z"))
+	(match_operand:DI 1 "register_operand" "f"))
    (clobber (match_operand:SI 2 "register_operand" "=&r"))]
   ""
   "
@@ -1657,9 +1657,9 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,o,Q,&r,&r,&r,x,x,*T")
+			  "=r,o,Q,&r,&r,&r,f,f,*T")
 	(match_operand:DI 1 "general_operand"
-			  "rM,r,r,o,Q,i,xM,*T,x"))]
+			  "rM,r,r,o,Q,i,fM,*T,f"))]
   "register_operand (operands[0], DImode)
    || reg_or_0_operand (operands[1], DImode)"
   "*
@@ -1701,7 +1701,7 @@
 ;; This must come before the movsf pattern, and it must be present
 ;; to handle obscure reloading cases.
 (define_insn ""
-  [(set (match_operand:SF 0 "general_operand" "=?r,fx")
+  [(set (match_operand:SF 0 "general_operand" "=?r,f")
 	(match_operand:SF 1 "" "?E,m"))]
   "GET_CODE (operands[1]) == CONST_DOUBLE
    && operands[1] != CONST0_RTX (SFmode)"
@@ -1722,9 +1722,9 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand"
-			  "=fx,r,fx,r,Q,Q")
+			  "=f,r,f,r,Q,Q")
 	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fxG,rG,Q,Q,fx,rG"))]
+			  "fG,rG,Q,Q,f,rG"))]
   "register_operand (operands[0], SFmode)
    || reg_or_0_operand (operands[1], SFmode)"
   "@
@@ -1738,7 +1738,7 @@
    (set_attr "length" "4,4,4,4,4,4")])
 
 (define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=fx")
+  [(set (match_operand:SF 0 "register_operand" "=f")
 	(mem:SF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 4))
 			 (match_operand:SI 2 "register_operand" "r"))))]
@@ -1758,7 +1758,7 @@
 ;; Ugh. Output is a FP register; so we need to earlyclobber something
 ;; else as a temporary.
 (define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=fx")
+  [(set (match_operand:SF 0 "register_operand" "=f")
 	(mem:SF (plus:SI
 		  (plus:SI
 		    (mult:SI (match_operand:SI 1 "register_operand" "+&r")
@@ -1780,7 +1780,7 @@
   [(set (mem:SF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 4))
 			 (match_operand:SI 2 "register_operand" "r")))
-	(match_operand:SF 0 "register_operand" "fx"))]
+	(match_operand:SF 0 "register_operand" "f"))]
   "! TARGET_DISABLE_INDEXING"
   "fstwx,s %0,%1(0,%2)"
   [(set_attr "type" "fpstore")
@@ -1803,7 +1803,7 @@
 			      (const_int 4))
 		     (match_operand:SI 2 "register_operand" "r"))
 		  (match_operand:SI 3 "const_int_operand" "rL")))
-	(match_operand:SF 0 "register_operand" "fx"))]
+	(match_operand:SF 0 "register_operand" "f"))]
   "! TARGET_DISABLE_INDEXING && reload_in_progress"
   "*
 {
@@ -1873,17 +1873,17 @@
 ;; Conversions between float and double.
 
 (define_insn "extendsfdf2"
-  [(set (match_operand:DF 0 "register_operand" "=fx")
+  [(set (match_operand:DF 0 "register_operand" "=f")
 	(float_extend:DF
-	 (match_operand:SF 1 "register_operand" "fx")))]
+	 (match_operand:SF 1 "register_operand" "f")))]
   ""
   "fcnvff,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "truncdfsf2"
-  [(set (match_operand:SF 0 "register_operand" "=fx")
+  [(set (match_operand:SF 0 "register_operand" "=f")
 	(float_truncate:SF
-	 (match_operand:DF 1 "register_operand" "fx")))]
+	 (match_operand:DF 1 "register_operand" "f")))]
   ""
   "fcnvff,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")])
@@ -1900,7 +1900,7 @@
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general floatsisf2 pattern.
 (define_insn ""
-  [(set (match_operand:SF 0 "general_operand" "=fx")
+  [(set (match_operand:SF 0 "general_operand" "=f")
 	(float:SF (match_operand:SI 1 "const_int_operand" "m")))]
   ""
   "fldws %1,%0\;fcnvxf,sgl,sgl %0,%0"
@@ -1908,8 +1908,8 @@
    (set_attr "length" "8")])
 
 (define_insn "floatsisf2"
-  [(set (match_operand:SF 0 "general_operand" "=fx")
-	(float:SF (match_operand:SI 1 "register_operand" "fx")))]
+  [(set (match_operand:SF 0 "general_operand" "=f")
+	(float:SF (match_operand:SI 1 "register_operand" "f")))]
   ""
   "fcnvxf,sgl,sgl %1,%0"
   [(set_attr "type" "fpalu")])
@@ -1918,7 +1918,7 @@
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general floatsidf2 pattern.
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=fx")
+  [(set (match_operand:DF 0 "general_operand" "=f")
 	(float:DF (match_operand:SI 1 "const_int_operand" "m")))]
   ""
   "fldws %1,%0\;fcnvxf,sgl,dbl %0,%0"
@@ -1926,8 +1926,8 @@
    (set_attr "length" "8")])
 
 (define_insn "floatsidf2"
-  [(set (match_operand:DF 0 "general_operand" "=fx")
-	(float:DF (match_operand:SI 1 "register_operand" "fx")))]
+  [(set (match_operand:DF 0 "general_operand" "=f")
+	(float:DF (match_operand:SI 1 "register_operand" "f")))]
   ""
   "fcnvxf,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")])
@@ -1953,15 +1953,15 @@
   "operands[2] = gen_reg_rtx (DImode);")
 
 (define_insn "floatdisf2"
-  [(set (match_operand:SF 0 "general_operand" "=x")
-	(float:SF (match_operand:DI 1 "register_operand" "x")))]
+  [(set (match_operand:SF 0 "general_operand" "=f")
+	(float:SF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_SNAKE"
   "fcnvxf,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "floatdidf2"
-  [(set (match_operand:DF 0 "general_operand" "=x")
-	(float:DF (match_operand:DI 1 "register_operand" "x")))]
+  [(set (match_operand:DF 0 "general_operand" "=f")
+	(float:DF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_SNAKE"
   "fcnvxf,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")])
@@ -1970,29 +1970,29 @@
 ;; Truncation is performed as part of the conversion.
 
 (define_insn "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=fx")
-	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "fx"))))]
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
   ""
   "fcnvfxt,sgl,sgl %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "fix_truncdfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=fx")
-	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "fx"))))]
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
   ""
   "fcnvfxt,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "fix_truncsfdi2"
-  [(set (match_operand:DI 0 "register_operand" "=x")
-	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "x"))))]
+  [(set (match_operand:DI 0 "register_operand" "=f")
+	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
   "TARGET_SNAKE"
   "fcnvfxt,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "fix_truncdfdi2"
-  [(set (match_operand:DI 0 "register_operand" "=x")
-	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "x"))))]
+  [(set (match_operand:DI 0 "register_operand" "=f")
+	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
   "TARGET_SNAKE"
   "fcnvfxt,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")])
@@ -2116,7 +2116,7 @@
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
    (parallel [(set (reg:SI 29) (mult:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_operand:SI 3 "register_operand" ""))
+	      (clobber (match_dup 3))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (reg:SI 31))])
@@ -2135,21 +2135,21 @@
 			  gen_rtx (SUBREG, SImode, scratch, 1)));
       DONE;
     }
-  operands[3] = gen_reg_rtx(SImode);
+  operands[3] = gen_reg_rtx (SImode);
 }")
 
 (define_insn "umulsidi3"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "x"))
-		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "x"))))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=f")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
+		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "f"))))]
   "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS"
   "xmpyu %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=x")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "x"))
-		 (match_operand:DI 2 "uint32_operand" "x")))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=f")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
+		 (match_operand:DI 2 "uint32_operand" "f")))]
   "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS"
   "xmpyu %1,%R2,%0"
   [(set_attr "type" "fpmul")])
@@ -2528,107 +2528,107 @@
 ;; Floating point arithmetic instructions.
 
 (define_insn "adddf3"
-  [(set (match_operand:DF 0 "register_operand" "=fx")
-	(plus:DF (match_operand:DF 1 "register_operand" "fx")
-		 (match_operand:DF 2 "register_operand" "fx")))]
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(plus:DF (match_operand:DF 1 "register_operand" "f")
+		 (match_operand:DF 2 "register_operand" "f")))]
   ""
   "fadd,dbl %1,%2,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "addsf3"
-  [(set (match_operand:SF 0 "register_operand" "=fx")
-	(plus:SF (match_operand:SF 1 "register_operand" "fx")
-		 (match_operand:SF 2 "register_operand" "fx")))]
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(plus:SF (match_operand:SF 1 "register_operand" "f")
+		 (match_operand:SF 2 "register_operand" "f")))]
   ""
   "fadd,sgl %1,%2,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "subdf3"
-  [(set (match_operand:DF 0 "register_operand" "=fx")
-	(minus:DF (match_operand:DF 1 "register_operand" "fx")
-		  (match_operand:DF 2 "register_operand" "fx")))]
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(minus:DF (match_operand:DF 1 "register_operand" "f")
+		  (match_operand:DF 2 "register_operand" "f")))]
   ""
   "fsub,dbl %1,%2,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "subsf3"
-  [(set (match_operand:SF 0 "register_operand" "=fx")
-	(minus:SF (match_operand:SF 1 "register_operand" "fx")
-		  (match_operand:SF 2 "register_operand" "fx")))]
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(minus:SF (match_operand:SF 1 "register_operand" "f")
+		  (match_operand:SF 2 "register_operand" "f")))]
   ""
   "fsub,sgl %1,%2,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "muldf3"
-  [(set (match_operand:DF 0 "register_operand" "=fx")
-	(mult:DF (match_operand:DF 1 "register_operand" "fx")
-		 (match_operand:DF 2 "register_operand" "fx")))]
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(mult:DF (match_operand:DF 1 "register_operand" "f")
+		 (match_operand:DF 2 "register_operand" "f")))]
   ""
   "fmpy,dbl %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
 (define_insn "mulsf3"
-  [(set (match_operand:SF 0 "register_operand" "=fx")
-	(mult:SF (match_operand:SF 1 "register_operand" "fx")
-		 (match_operand:SF 2 "register_operand" "fx")))]
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mult:SF (match_operand:SF 1 "register_operand" "f")
+		 (match_operand:SF 2 "register_operand" "f")))]
   ""
   "fmpy,sgl %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
 (define_insn "divdf3"
-  [(set (match_operand:DF 0 "register_operand" "=fx")
-	(div:DF (match_operand:DF 1 "register_operand" "fx")
-		(match_operand:DF 2 "register_operand" "fx")))]
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(div:DF (match_operand:DF 1 "register_operand" "f")
+		(match_operand:DF 2 "register_operand" "f")))]
   ""
   "fdiv,dbl %1,%2,%0"
   [(set_attr "type" "fpdivdbl")])
 
 (define_insn "divsf3"
-  [(set (match_operand:SF 0 "register_operand" "=fx")
-	(div:SF (match_operand:SF 1 "register_operand" "fx")
-		(match_operand:SF 2 "register_operand" "fx")))]
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(div:SF (match_operand:SF 1 "register_operand" "f")
+		(match_operand:SF 2 "register_operand" "f")))]
   ""
   "fdiv,sgl %1,%2,%0"
   [(set_attr "type" "fpdivsgl")])
 
 (define_insn "negdf2"
-  [(set (match_operand:DF 0 "register_operand" "=fx")
-	(neg:DF (match_operand:DF 1 "register_operand" "fx")))]
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (match_operand:DF 1 "register_operand" "f")))]
   ""
   "fsub,dbl 0,%1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "negsf2"
-  [(set (match_operand:SF 0 "register_operand" "=fx")
-	(neg:SF (match_operand:SF 1 "register_operand" "fx")))]
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (match_operand:SF 1 "register_operand" "f")))]
   ""
   "fsub,sgl 0,%1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "absdf2"
-  [(set (match_operand:DF 0 "register_operand" "=fx")
-	(abs:DF (match_operand:DF 1 "register_operand" "fx")))]
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(abs:DF (match_operand:DF 1 "register_operand" "f")))]
   ""
   "fabs,dbl %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "abssf2"
-  [(set (match_operand:SF 0 "register_operand" "=fx")
-	(abs:SF (match_operand:SF 1 "register_operand" "fx")))]
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(abs:SF (match_operand:SF 1 "register_operand" "f")))]
   ""
   "fabs,sgl %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "sqrtdf2"
-  [(set (match_operand:DF 0 "register_operand" "=fx")
-	(sqrt:DF (match_operand:DF 1 "register_operand" "fx")))]
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(sqrt:DF (match_operand:DF 1 "register_operand" "f")))]
   ""
   "fsqrt,dbl %1,%0"
   [(set_attr "type" "fpsqrtdbl")])
 
 (define_insn "sqrtsf2"
-  [(set (match_operand:SF 0 "register_operand" "=fx")
-	(sqrt:SF (match_operand:SF 1 "register_operand" "fx")))]
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(sqrt:SF (match_operand:SF 1 "register_operand" "f")))]
   ""
   "fsqrt,sgl %1,%0"
   [(set_attr "type" "fpsqrtsgl")])
@@ -3147,7 +3147,7 @@
 }")
 
 (define_insn "call_value_internal_symref"
-  [(set (match_operand 0 "" "=rfx")
+  [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
    (clobber (reg:SI 2))
@@ -3163,7 +3163,7 @@
    (set_attr "length" "4")])
 
 (define_insn "call_value_internal_reg"
-  [(set (match_operand 0 "" "=rfx")
+  [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "register_operand" "r"))
 	      (match_operand 2 "" "i")))
    (clobber (reg:SI 2))
@@ -3290,7 +3290,7 @@
   [(set (pc)
 	(if_then_else
 	  (match_operator 2 "comparison_operator"
-	   [(plus:SI (match_operand:SI 0 "register_operand" "+!r,!*f*x,!*m")
+	   [(plus:SI (match_operand:SI 0 "register_operand" "+!r,!*f,!*m")
 		     (match_operand:SI 1 "int5_operand" "L,L,L"))
 	    (const_int 0)])
 	  (label_ref (match_operand 3 "" ""))
@@ -3347,7 +3347,7 @@
   [(set (pc)
 	(if_then_else
 	  (match_operator 2 "eq_neq_comparison_operator"
-	   [(match_operand:SI 0 "register_operand" "+!r,!*f*x,!*m")
+	   [(match_operand:SI 0 "register_operand" "+!r,!*f,!*m")
 	    (match_operand:SI 5 "const_int_operand" "")])
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))
@@ -3403,7 +3403,7 @@
 	   [(match_operand:SI 1 "register_operand" "r,r,r") (const_int 0)])
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))
-   (set (match_operand:SI 0 "register_operand" "=!r,!*f*x,!*m")
+   (set (match_operand:SI 0 "register_operand" "=!r,!*f,!*m")
 	(match_dup 1))]
   ""
 "* return output_movb (operands, insn, which_alternative, 0); "
@@ -3449,7 +3449,7 @@
 	   [(match_operand:SI 1 "register_operand" "r,r,r") (const_int 0)])
 	  (pc)
 	  (label_ref (match_operand 3 "" ""))))
-   (set (match_operand:SI 0 "register_operand" "=!r,!*f*x,!*m")
+   (set (match_operand:SI 0 "register_operand" "=!r,!*f,!*m")
 	(match_dup 1))]
   ""
 "* return output_movb (operands, insn, which_alternative, 1); "
@@ -3494,12 +3494,12 @@
 ;; combine will not try to combine such insns...  Thus we have
 ;; to use a peephole.
 (define_peephole
-  [(set (match_operand 0 "register_operand" "=fx")
-	(mult (match_operand 1 "register_operand" "fx")
-	      (match_operand 2 "register_operand" "fx")))
-   (set (match_operand 3 "register_operand" "+fx")
-	(plus (match_operand 4 "register_operand" "fx")
-	      (match_operand 5 "register_operand" "fx")))]
+  [(set (match_operand 0 "register_operand" "=f")
+	(mult (match_operand 1 "register_operand" "f")
+	      (match_operand 2 "register_operand" "f")))
+   (set (match_operand 3 "register_operand" "+f")
+	(plus (match_operand 4 "register_operand" "f")
+	      (match_operand 5 "register_operand" "f")))]
   "TARGET_SNAKE && fmpyaddoperands (operands)"
   "*
 {
@@ -3520,12 +3520,12 @@
 }")
 
 (define_peephole
-  [(set (match_operand 3 "register_operand" "+fx")
-	(plus (match_operand 4 "register_operand" "fx")
-	      (match_operand 5 "register_operand" "fx")))
-   (set (match_operand 0 "register_operand" "=fx")
-	(mult (match_operand 1 "register_operand" "fx")
-	      (match_operand 2 "register_operand" "fx")))]
+  [(set (match_operand 3 "register_operand" "+f")
+	(plus (match_operand 4 "register_operand" "f")
+	      (match_operand 5 "register_operand" "f")))
+   (set (match_operand 0 "register_operand" "=f")
+	(mult (match_operand 1 "register_operand" "f")
+	      (match_operand 2 "register_operand" "f")))]
   "TARGET_SNAKE && fmpyaddoperands (operands)"
   "*
 {
@@ -3548,12 +3548,12 @@
 ;; Note fsub subtracts the second operand from the first while fmpysub
 ;; does the opposite for the subtraction operands!
 (define_peephole
-  [(set (match_operand 0 "register_operand" "=fx")
-	(mult (match_operand 1 "register_operand" "fx")
-	      (match_operand 2 "register_operand" "fx")))
-   (set (match_operand 3 "register_operand" "+fx")
-	(minus (match_operand 4 "register_operand" "fx")
-	       (match_operand 5 "register_operand" "fx")))]
+  [(set (match_operand 0 "register_operand" "=f")
+	(mult (match_operand 1 "register_operand" "f")
+	      (match_operand 2 "register_operand" "f")))
+   (set (match_operand 3 "register_operand" "+f")
+	(minus (match_operand 4 "register_operand" "f")
+	       (match_operand 5 "register_operand" "f")))]
   "TARGET_SNAKE && fmpysuboperands (operands)"
   "*
 {
@@ -3564,12 +3564,12 @@
 }")
 
 (define_peephole
-  [(set (match_operand 3 "register_operand" "+fx")
-	(minus (match_operand 4 "register_operand" "fx")
-	       (match_operand 5 "register_operand" "fx")))
-   (set (match_operand 0 "register_operand" "=fx")
-	(mult (match_operand 1 "register_operand" "fx")
-	      (match_operand 2 "register_operand" "fx")))]
+  [(set (match_operand 3 "register_operand" "+f")
+	(minus (match_operand 4 "register_operand" "f")
+	       (match_operand 5 "register_operand" "f")))
+   (set (match_operand 0 "register_operand" "=f")
+	(mult (match_operand 1 "register_operand" "f")
+	      (match_operand 2 "register_operand" "f")))]
   "TARGET_SNAKE && fmpysuboperands (operands)"
   "*
 {
