@@ -51,7 +51,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 
 /**
- * The Basic L&F UI delegate for JSeparator.
+ * The Basic Look and Feel UI delegate for JSeparator.
  */
 public class BasicSeparatorUI extends SeparatorUI
 {
@@ -113,7 +113,7 @@ public class BasicSeparatorUI extends SeparatorUI
 
   /**
    * This method installs the defaults that are given by
-   * the Basic L&F.
+   * the Basic Look and Feel.
    *
    * @param s The JSeparator that is being installed.
    */
@@ -128,7 +128,7 @@ public class BasicSeparatorUI extends SeparatorUI
 
   /**
    * This method removes the defaults that were given
-   * by the Basic L&F.
+   * by the Basic Look and Feel.
    *
    * @param s The JSeparator that is being uninstalled.
    */

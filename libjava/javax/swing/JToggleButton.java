@@ -115,8 +115,8 @@ public class JToggleButton extends AbstractButton implements Accessible
   }
   
   /**
-   * Returns a string that specifies the name of the L&amp;F class that renders
-   * this component.
+   * Returns a string that specifies the name of the Look and Feel
+   * class that renders this component.
    */
   public String getUIClassID()
   {

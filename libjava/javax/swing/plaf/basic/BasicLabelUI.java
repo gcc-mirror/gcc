@@ -59,7 +59,7 @@ import javax.swing.plaf.LabelUI;
 
 /**
  * This is the Basic Look and Feel class for the JLabel.  One BasicLabelUI
- * object is used to paint all JLabels that utilize the Basic L&F.
+ * object is used to paint all JLabels that utilize the Basic Look and Feel.
  */
 public class BasicLabelUI extends LabelUI implements PropertyChangeListener
 {
@@ -81,7 +81,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
    *
    * @param c The {@link JComponent} that a UI is being created for.
    *
-   * @return A label UI for the Basic L&F.
+   * @return A label UI for the Basic Look and Feel.
    */
   public static ComponentUI createUI(JComponent c)
   {

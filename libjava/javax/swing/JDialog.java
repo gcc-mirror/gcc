@@ -76,7 +76,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   /** The default action taken when closed. */
   private int close_action = HIDE_ON_CLOSE;
   
-  /** Whether JDialogs are decorated by the L&F. */
+  /** Whether JDialogs are decorated by the Look and Feel. */
   private static boolean decorated = false;
 
   /**
@@ -237,7 +237,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
    * This method returns whether JDialogs will have their
    * window decorations provided by the Look and Feel.
    *
-   * @return Whether the window decorations are L&F provided.
+   * @return Whether the window decorations are Look and Feel provided.
    */
   public static boolean isDefaultLookAndFeelDecorated()
   {
@@ -249,7 +249,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
    * window decorations provided by the Look and Feel.
    *
    * @param defaultLookAndFeelDecorated Whether the window
-   * decorations are L&F provided.
+   * decorations are Look and Feel provided.
    */
   public static void setDefaultLookAndFeelDecorated(boolean defaultLookAndFeelDecorated)
   {

@@ -252,7 +252,7 @@ public class TitledBorder
    * The border underneath the title. If this value is
    * <code>null</code>, the border will be retrieved from the {@link
    * javax.swing.UIManager}&#x2019;s defaults table using the key
-   * <code>&quot;TitledBorder.border&quot;</code>.
+   * <code>TitledBorder.border</code>.
    */
   protected Border border;
 
@@ -279,7 +279,7 @@ public class TitledBorder
    * The font for displaying the title text. If this value is
    * <code>null</code>, the font will be retrieved from the {@link
    * javax.swing.UIManager}&#x2019;s defaults table using the key
-   * <code>&quot;TitledBorder.font&quot;</code>.
+   * <code>TitledBorder.font</code>.
    */
   protected Font titleFont;
 
@@ -288,7 +288,7 @@ public class TitledBorder
    * The color for displaying the title text. If this value is
    * <code>null</code>, the color will be retrieved from the {@link
    * javax.swing.UIManager}&#x2019;s defaults table using the key
-   * <code>&quot;TitledBorder.titleColor&quot;</code>.
+   * <code>TitledBorder.titleColor</code>.
    */
   protected Color titleColor;
 
@@ -717,11 +717,11 @@ public class TitledBorder
    * Retrieves the border underneath the title. If no border has been
    * set, or if it has been set to<code>null</code>, the current
    * {@link javax.swing.LookAndFeel} will be asked for a border
-   * using the key <code>&quot;TitledBorder.border&quot;</code>.
+   * using the key <code>TitledBorder.border</code>.
    *
    * @return a border, or <code>null</code> if the current LookAndFeel
    *         does not provide a border for the key
-   *         <code>&quot;TitledBorder.border&quot;</code>.
+   *         <code>TitledBorder.border</code>.
    *
    * @see javax.swing.UIManager#getBorder(Object)
    */
@@ -766,11 +766,11 @@ public class TitledBorder
    * Retrieves the font for displaying the title text. If no font has
    * been set, or if it has been set to<code>null</code>, the current
    * {@link javax.swing.LookAndFeel} will be asked for a font
-   * using the key <code>&quot;TitledBorder.font&quot;</code>.
+   * using the key <code>TitledBorder.font</code>.
    *
    * @return a font, or <code>null</code> if the current LookAndFeel
    *         does not provide a font for the key
-   *         <code>&quot;TitledBorder.font&quot;</code>.
+   *         <code>TitledBorder.font</code>.
    *
    * @see javax.swing.UIManager#getFont(Object)
    */
@@ -787,11 +787,11 @@ public class TitledBorder
    * Retrieves the color for displaying the title text. If no color has
    * been set, or if it has been set to<code>null</code>, the current
    * {@link javax.swing.LookAndFeel} will be asked for a color
-   * using the key <code>&quot;TitledBorder.titleColor&quot;</code>.
+   * using the key <code>TitledBorder.titleColor</code>.
    *
    * @return a color, or <code>null</code> if the current LookAndFeel
    *         does not provide a color for the key
-   *         <code>&quot;TitledBorder.titleColor&quot;</code>.
+   *         <code>TitledBorder.titleColor</code>.
    *
    * @see javax.swing.UIManager#getColor(Object)
    */
@@ -1088,7 +1088,7 @@ public class TitledBorder
 
 
     /**
-     * The border that constitues the &quot;interior&quot; border
+     * The border that constitues the interior border
      * underneath the title text.
      */
     Border border;
