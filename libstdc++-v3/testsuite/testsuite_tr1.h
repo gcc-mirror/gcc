@@ -32,10 +32,10 @@
 #define _GLIBCXX_TESTSUITE_TR1_H
 
 namespace __gnu_test
-{  
+{
   // For tr1/type_traits.
   template<template<typename> class Category,
-	   typename Type>
+           typename Type>
     bool
     test_category(bool value)
     {
@@ -52,7 +52,7 @@ namespace __gnu_test
     }
 
   template<template<typename> class Property,
-	   typename Type>
+           typename Type>
     bool
     test_property(typename Property<Type>::value_type value)
     {
@@ -63,7 +63,7 @@ namespace __gnu_test
     }
 
   template<template<typename> class Property,
-	   typename Type>
+           typename Type>
     bool
     test_copy_property(bool value)
     {
@@ -80,7 +80,7 @@ namespace __gnu_test
     }
 
   template<template<typename> class Property,
-	   typename Type>
+           typename Type>
     bool
     test_assign_property(bool value)
     {
@@ -97,7 +97,7 @@ namespace __gnu_test
     }
 
   template<template<typename, typename> class Relationship,
-	   typename Type1, typename Type2>
+           typename Type1, typename Type2>
     bool
     test_relationship(bool value)
     {
@@ -122,7 +122,68 @@ namespace __gnu_test
 
   class AbstractClass
   { virtual void rotate(int) = 0; };
-  
+
+
+ int truncate_float(float x) { return (int)x; }
+ long truncate_double(double x) { return (long)x; }
+
+ struct do_truncate_float_t
+ {
+   do_truncate_float_t()
+   {
+     ++live_objects;
+   }
+
+   do_truncate_float_t(const do_truncate_float_t&)
+   {
+     ++live_objects;
+   }
+
+   ~do_truncate_float_t()
+   {
+     --live_objects;
+   }
+
+   int operator()(float x) { return (int)x; }
+
+   static int live_objects;
+ };
+
+ int do_truncate_float_t::live_objects = 0;
+
+ struct do_truncate_double_t
+ {
+   do_truncate_double_t()
+   {
+     ++live_objects;
+   }
+
+   do_truncate_double_t(const do_truncate_double_t&)
+   {
+     ++live_objects;
+   }
+
+   ~do_truncate_double_t()
+   {
+     --live_objects;
+   }
+
+   long operator()(double x) { return (long)x; }
+
+   static int live_objects;
+ };
+
+ int do_truncate_double_t::live_objects = 0;
+
+ struct X
+ {
+   int bar;
+
+   int foo()                   { return 1; }
+   int foo_c() const           { return 2; }
+   int foo_v()  volatile       { return 3; }
+   int foo_cv() const volatile { return 4; }
+ };
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_TR1_H

@@ -1,3 +1,31 @@
+2005-02-23	Douglas Gregor <doug.gregor@gmail.com>
+
+	* include/tr1/functional (function): New class template.
+	(mem_fn): New function template.
+	Implementations of TR1 function and mem_fn facilities.
+	* include/tr1/functional_iterate.h: Implementations of TR1
+	function and mem_fn facilities. 
+	* testsuite/tr1/3_function_objects/function/1.cc: New
+	test of std::tr1::function.
+	* testsuite/tr1/3_function_objects/function/2.cc: New
+	test of std::tr1::function.
+	* testsuite/tr1/3_function_objects/function/3.cc: New
+	test of std::tr1::function.
+	* testsuite/tr1/3_function_objects/function/4.cc: New
+	test of std::tr1::function.
+	* testsuite/tr1/3_function_objects/function/5.cc: New
+	test of std::tr1::function.
+	* testsuite/tr1/3_function_objects/function/6.cc: New
+	test of std::tr1::function.
+	* testsuite/tr1/3_function_objects/function/7.cc: New
+	test of std::tr1::function.
+	* testsuite/tr1/3_function_objects/function/8.cc: New
+	test of std::tr1::function.
+	* testsuite/tr1/3_function_objects/function/9.cc: New
+	test of std::tr1::function.
+	* testsuite/tr1/3_function_objects/mem_fn.cc: New test of
+	std::tr1::mem_fn. 
+	
 2005-02-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement is_convertible.
