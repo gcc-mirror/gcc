@@ -1,6 +1,7 @@
 2001-11-03  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure.in: Cope with missing makeinfo.
+	* configure: Regenerate.
 
 2001-10-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
