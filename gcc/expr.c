@@ -5579,8 +5579,7 @@ expand_expr (exp, target, tmode, modifier)
 	    && (TREE_CODE (binary_op) == PLUS_EXPR
 		|| TREE_CODE (binary_op) == MINUS_EXPR
 		|| TREE_CODE (binary_op) == BIT_IOR_EXPR
-		|| TREE_CODE (binary_op) == BIT_XOR_EXPR
-		|| TREE_CODE (binary_op) == BIT_AND_EXPR)
+		|| TREE_CODE (binary_op) == BIT_XOR_EXPR)
 	    && integer_onep (TREE_OPERAND (binary_op, 1))
 	    && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == '<')
 	  {
