@@ -1,5 +1,5 @@
 # Makefile for GNU C compiler.
-#   Copyright (C) 1987, 88, 90-94, 1995 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90-95, 1996 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -246,7 +246,7 @@ LIBGCC2 = libgcc2.a
 # -g1 causes output of debug info only for file-scope entities.
 # we use this here because that should be enough, and also
 # so that -g1 will be tested.
-LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) -g1
+LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) -g1 -DIN_LIBGCC2
 
 # Additional options to use when compiling libgcc2.a.
 # Some targets override this to -Iinclude
@@ -764,6 +764,10 @@ libgcc1.cross:
 # Compile the library of arithmetic subroutines with the native compiler.
 # Don't compile it with GCC!
 # (That would cause most arithmetic functions to call themselves.)
+#
+# NOTE: If you modify these rules substantially, please be sure to
+# check at least config/i386/t-sco5 and possibly other makefile
+# fragments.
 libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	-rm -f tmplibgcc1.a
 # Actually build it in tmplibgcc1.a, then rename at end,
@@ -778,7 +782,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	do \
 	  echo $${name}; \
 	  rm -f $${name}$(objext); \
-	  $(OLDCC) $(CCLIBFLAGS) $(INCLUDES) -c -DL$${name} $(srcdir)/libgcc1.c; \
+	  $(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES) -c -DL$${name} $(srcdir)/libgcc1.c; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	  mv libgcc1$(objext) $${name}$(objext); \
 	  $(OLDAR) $(OLDAR_FLAGS) tmplibgcc1.a $${name}$(objext); \
@@ -798,7 +802,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	    if [ $${name}.asm = $${file} ]; then \
 	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
 	    else true; fi; \
-	    $(OLDCC) $(CCLIBFLAGS) $(INCLUDES) -c $${file}; \
+	    $(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES) -c $${file}; \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	    $(OLDAR) $(OLDAR_FLAGS) tmplibgcc1.a $${name}$(objext); \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
@@ -844,7 +848,7 @@ libgcc1.S: libgcc1.c $(CONFIG_H) config.status
 	for name in $(LIB1FUNCS); \
 	do \
 	  echo $${name}; \
-	  $(OLDCC) $(CCLIBFLAGS) $(INCLUDES) -S -DL$${name} $(srcdir)/libgcc1.c; \
+	  $(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES) -S -DL$${name} $(srcdir)/libgcc1.c; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	  echo '#ifdef ' L$${name} >> libgcc1.S; \
 	  cat  libgcc1.s >> libgcc1.S; \
@@ -1036,13 +1040,13 @@ stamp-crt:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 crtbeginS.o crtendS.o: stamp-crtS ; @true
 
 stamp-crtS:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
 	  -DCRT_BEGIN -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/crtstuff.c -fPIC
+	  -g0 -c $(srcdir)/crtstuff.c 
 	mv crtstuff$(objext) crtbeginS$(objext)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
 	  -DCRT_END -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/crtstuff.c -fPIC
+	  -g0 -c $(srcdir)/crtstuff.c
 	mv crtstuff$(objext) crtendS$(objext)
 	touch stamp-crtS
 
