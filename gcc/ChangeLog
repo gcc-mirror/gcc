@@ -1,3 +1,8 @@
+2004-03-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* combine.c (if_then_else_cond): Check for NULL return value of
+	simplify_gen_subreg.
+
 2004-03-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/14496
