@@ -1,3 +1,7 @@
+2002-08-10  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang-specs.h: Remove -ansi.
+
 2002-08-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.c (maybe_dummy_object): Replace // with /* */

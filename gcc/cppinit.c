@@ -102,7 +102,6 @@ static void merge_include_chains	PARAMS ((cpp_reader *));
 static bool push_include		PARAMS ((cpp_reader *,
 						 struct pending_option *));
 static void free_chain			PARAMS ((struct pending_option *));
-static void set_lang			PARAMS ((cpp_reader *, enum c_lang));
 static void init_dependency_output	PARAMS ((cpp_reader *));
 static void init_standard_includes	PARAMS ((cpp_reader *));
 static void read_original_filename	PARAMS ((cpp_reader *));
@@ -403,8 +402,8 @@ static const struct lang_flags lang_defaults[] =
 };
 
 /* Sets internal flags correctly for a given language.  */
-static void
-set_lang (pfile, lang)
+void
+cpp_set_lang (pfile, lang)
      cpp_reader *pfile;
      enum c_lang lang;
 {
@@ -471,7 +470,7 @@ cpp_create_reader (lang)
 
   pfile = (cpp_reader *) xcalloc (1, sizeof (cpp_reader));
 
-  set_lang (pfile, lang);
+  cpp_set_lang (pfile, lang);
   CPP_OPTION (pfile, warn_import) = 1;
   CPP_OPTION (pfile, warn_multichar) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
@@ -1123,13 +1122,11 @@ new_pending_directive (pend, text, handler)
 /* Irix6 "cc -n32" and OSF4 cc have problems with char foo[] = ("string");
    I.e. a const string initializer with parens around it.  That is
    what N_("string") resolves to, so we make no_* be macros instead.  */
-#define no_arg N_("argument missing after %s")
 #define no_ass N_("assertion missing after %s")
 #define no_dir N_("directory name missing after %s")
 #define no_fil N_("file name missing after %s")
 #define no_mac N_("macro name missing after %s")
 #define no_pth N_("path name missing after %s")
-#define no_num N_("number missing after %s")
 #define no_tgt N_("target missing after %s")
 
 /* This is the list of all command line options, with the leading
@@ -1155,24 +1152,8 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("isystem",                  no_dir, OPT_isystem)                    \
   DEF_OPT("iwithprefix",              no_dir, OPT_iwithprefix)                \
   DEF_OPT("iwithprefixbefore",        no_dir, OPT_iwithprefixbefore)          \
-  DEF_OPT("lang-asm",                 0,      OPT_lang_asm)                   \
-  DEF_OPT("lang-c",                   0,      OPT_lang_c)                     \
-  DEF_OPT("lang-c++",                 0,      OPT_lang_cplusplus)             \
-  DEF_OPT("lang-c89",                 0,      OPT_lang_c89)                   \
-  DEF_OPT("lang-objc",                0,      OPT_lang_objc)                  \
   DEF_OPT("o",                        no_fil, OPT_o)                          \
-  DEF_OPT("remap",                    0,      OPT_remap)                      \
-  DEF_OPT("std=c++98",                0,      OPT_std_cplusplus98)            \
-  DEF_OPT("std=c89",                  0,      OPT_std_c89)                    \
-  DEF_OPT("std=c99",                  0,      OPT_std_c99)                    \
-  DEF_OPT("std=c9x",                  0,      OPT_std_c9x)                    \
-  DEF_OPT("std=gnu89",                0,      OPT_std_gnu89)                  \
-  DEF_OPT("std=gnu99",                0,      OPT_std_gnu99)                  \
-  DEF_OPT("std=gnu9x",                0,      OPT_std_gnu9x)                  \
-  DEF_OPT("std=iso9899:1990",         0,      OPT_std_iso9899_1990)           \
-  DEF_OPT("std=iso9899:199409",       0,      OPT_std_iso9899_199409)         \
-  DEF_OPT("std=iso9899:1999",         0,      OPT_std_iso9899_1999)           \
-  DEF_OPT("std=iso9899:199x",         0,      OPT_std_iso9899_199x)
+  DEF_OPT("remap",                    0,      OPT_remap)
 
 #define DEF_OPT(text, msg, code) code,
 enum opt_code
@@ -1328,42 +1309,6 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_iprefix:
 	  CPP_OPTION (pfile, include_prefix) = arg;
 	  CPP_OPTION (pfile, include_prefix_len) = strlen (arg);
-	  break;
-	case OPT_lang_c:
-	  set_lang (pfile, CLK_GNUC89);
-	  break;
-	case OPT_lang_cplusplus:
-	  set_lang (pfile, CLK_GNUCXX);
-	  break;
-	case OPT_lang_objc:
-	  CPP_OPTION (pfile, objc) = 1;
-	  break;
-	case OPT_lang_asm:
-	  set_lang (pfile, CLK_ASM);
-	  break;
-	case OPT_std_cplusplus98:
-	  set_lang (pfile, CLK_CXX98);
-	  break;
-	case OPT_std_gnu89:
-	  set_lang (pfile, CLK_GNUC89);
-	  break;
-	case OPT_std_gnu9x:
-	case OPT_std_gnu99:
-	  set_lang (pfile, CLK_GNUC99);
-	  break;
-	case OPT_std_iso9899_199409:
-	  set_lang (pfile, CLK_STDC94);
-	  break;
-	case OPT_std_iso9899_1990:
-	case OPT_std_c89:
-	case OPT_lang_c89:
-	  set_lang (pfile, CLK_STDC89);
-	  break;
-	case OPT_std_iso9899_199x:
-	case OPT_std_iso9899_1999:
-	case OPT_std_c9x:
-	case OPT_std_c99:
-	  set_lang (pfile, CLK_STDC99);
 	  break;
 	case OPT_o:
 	  if (CPP_OPTION (pfile, out_fname) == NULL)

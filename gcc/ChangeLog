@@ -1,3 +1,19 @@
+2002-08-10  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (set_std_cxx98, set_std_c89): New.
+	(COMMAND_LINE_OPTIONS): Move more from cppinit.c.
+	(c_common_decode_option): Handle new switches from cppinit.c.
+	Add -std=gnu++98.
+	* cppinit.c (set_lang): Rename cpp_set_lang.  Export.
+	(no_arg, no_num): Remove.
+	(COMMAND_LINE_OPTIONS): Move more to c-opts.c.  Drop all lang-
+	switches apart from -lang-objc and lang-asm.
+	(cpp_handle_option): Similarly.
+	* cpplib.h (cpp_set_lang): New.
+	* doc/cppopts.texi, doc/invoke.texi: Document -std=c++98,
+	-std=gnu++98.
+	* objc/lang-specs.h: Remove -ansi.
+
 Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 			       Graham Stott
 

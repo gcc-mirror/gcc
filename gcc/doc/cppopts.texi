@@ -326,9 +326,8 @@ option.
 @itemx -ansi
 @opindex ansi
 @opindex std=
-Specify the standard to which the code should conform.  Currently cpp
-only knows about the standards for C; other language standards will be
-added in the future.
+Specify the standard to which the code should conform.  Currently CPP
+knows about C and C++ standards; others may be added in the future.
 
 @var{standard}
 may be one of:
@@ -356,6 +355,13 @@ The 1990 C standard plus GNU extensions.  This is the default.
 @item gnu99
 @itemx gnu9x
 The 1999 C standard plus GNU extensions.
+
+@item c++98
+The 1998 ISO C++ standard plus amendments.
+
+@item gnu++98
+The same as @option{-std=c++98} plus GNU extensions.  This is the
+default for C++ code.
 @end table
 
 @item -I-
