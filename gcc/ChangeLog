@@ -1,3 +1,8 @@
+Thu Dec  9 11:36:24 MET 1999 Jan Hubicka  <hubicka@freesoft.cz>
+
+	* combine.c (try_combine, distribute_notes): Remove REG_N_REFS
+	updating code.
+
 1999-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/linux64.h (TARGET_DEFAULT): Make -mapp-regs
