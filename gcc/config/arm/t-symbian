@@ -22,3 +22,6 @@ MULTILIB_DIRNAMES    = softfp
 # There is no C library to link against on Symbian OS -- at least when 
 # building GCC.
 SHLIB_LC = 
+
+# Symbian OS provides its own startup code.
+EXTRA_MULTILIB_PARTS=

@@ -45,10 +45,13 @@
   "%{!fshort-wchar:%{!fno-short-wchar:-fshort-wchar}} "
 #define CC1PLUS_SPEC CC1_SPEC
 
-/* Symbian OS does not use crt0.o, unlike the generic unknown-elf
+/* Symbian OS does not use crt*.o, unlike the generic unknown-elf
    configuration.  */
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "crti%O%s crtbegin%O%s"
+#define STARTFILE_SPEC ""
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC ""
 
 /* Do not link with any libraries by default.  On Symbian OS, the user
    must supply all required libraries on the command line.  */
