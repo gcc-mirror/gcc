@@ -1,3 +1,12 @@
+2004-03-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	BackPort:
+		2004-01-09  Andrew Pinski <pinskia@physics.uc.edu>
+	
+		PR debug/11231
+		* dbxout.c (dbxout_type_fields): Return if any item is error_mark_node or the
+		type is error_mark_node.
+
 2004-03-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/14470
