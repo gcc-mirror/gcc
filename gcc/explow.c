@@ -1019,7 +1019,7 @@ allocate_dynamic_stack_space (size, target, known_align)
      If we have to align, we must leave space in SIZE for the hole
      that might result from the alignment operation.  */
 
-#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET) || defined (ALLOCATE_OUTGOING_ARGS) || ! defined (STACK_BOUNDARY)
+#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET) || ! defined (STACK_BOUNDARY)
 #define MUST_ALIGN 1
 #else
 #define MUST_ALIGN (STACK_BOUNDARY < BIGGEST_ALIGNMENT)
