@@ -39,8 +39,10 @@ extern void   asm_file_start                PARAMS ((FILE *));
 extern void   override_options              PARAMS ((void));
 extern int    compute_register_save_size    PARAMS ((long *));
 extern int    compute_frame_size            PARAMS ((int, long *));
+extern void   v850_init_expanders           PARAMS ((void));
 
 #ifdef RTX_CODE
+extern rtx    v850_return_addr              PARAMS ((int));
 extern void   print_operand                 PARAMS ((FILE *, rtx, int ));
 extern void   print_operand_address         PARAMS ((FILE *, rtx));
 extern int    const_costs                   PARAMS ((rtx, enum rtx_code));

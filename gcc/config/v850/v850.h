@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -681,6 +681,7 @@ enum reg_class
 
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
+#define RETURN_ADDR_RTX(COUNT, FP) v850_return_addr (COUNT)
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -788,6 +789,10 @@ extern int current_function_anonymous_args;
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 1
+
+/* Initialize data used by insn expanders.  This is called from insn_emit,
+   once for every function before code is generated.  */
+#define INIT_EXPANDERS  v850_init_expanders ()
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
@@ -1618,7 +1623,6 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
    matched by the predicate.  The list should have a trailing comma.  */
 
 #define PREDICATE_CODES							\
-{ "ep_memory_operand",		{ MEM }},				\
 { "reg_or_0_operand",		{ REG, SUBREG, CONST_INT, CONST_DOUBLE }}, \
 { "reg_or_int5_operand",	{ REG, SUBREG, CONST_INT }},		\
 { "call_address_operand",	{ REG, SYMBOL_REF }},			\

@@ -1,3 +1,17 @@
+2001-01-05  DJ Delorie <dj@redhat.com>
+
+	* config/v850/v850.h (RETURN_ADDR_RTX): Define.
+	(INIT_EXPANDERS): Define.
+
+	* config/v850/v850.c (struct machine_function): Define.
+	(v850_save_machine_status): New function.
+	(v850_restore_machine_status): New function.
+	(v850_return_addr): New function.
+	(v850_init_expanders): New function.
+
+	* config/v850/v850-protos.h: Add prototypes for v850_return_addr
+	and v850_init_expanders.
+	
 2001-01-05  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* cpplib.h (struct cpp_reader): Add help_only field.
