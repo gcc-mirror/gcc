@@ -7,6 +7,8 @@ Wed Nov 25 08:02:23 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 Wed Nov 25 07:53:24 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* libgcc2.c (__bb_init_prg): Avoid use of bzero.
+
 	* combine.c (make_extraction): Make extraction even if may
 	span if INNER is not MEM.
 
