@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#ifndef NO_LABEL_VALUES
+#if !defined(NO_LABEL_VALUES) && (!defined(STACK_SIZE) || STACK_SIZE >= 4000)
 #if __INT_MAX__ == 32767
 typedef unsigned long uint32;
 typedef signed long sint32;

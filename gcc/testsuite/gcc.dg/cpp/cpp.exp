@@ -16,6 +16,13 @@
 
 # GCC testsuite that uses the `dg.exp' driver.
 
+# There's a bunch of headers we need.
+if [is_remote host] {
+    foreach header [glob -nocomplain $srcdir/$subdir/*.{h,def} ] {
+	remote_download host $header
+    }
+}
+
 # Load support procs.
 load_lib gcc-dg.exp
 

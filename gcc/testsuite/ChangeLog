@@ -1,3 +1,14 @@
+2001-11-19  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.dg/cpp/cpp.exp: For testing on a remote host, copy
+	across all the headers.
+	* gcc.dg/format/format.exp: For testing on a remote host,
+	copy format.h.
+
+	* gcc.c-torture/execute/20011008-3.c: Allow for small STACK_SIZE.
+	* gcc.c-torture/execute/930406-1.c: Likewise.
+	* gcc.c-torture/execute/comp-goto-1.c: Likewise.
+
 2001-11-19  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/altivec-1.c: New.
