@@ -1,3 +1,10 @@
+Mon Mar 16 10:54:21 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (tsubst_copy): Deal with BIND_EXPR in a way that more
+	closely mimics the behavior in parse.y.
+	(tsubst_expr): Return the resuting BLOCK when making a tsubst'ing
+	into a compound statement.
+	
 Sun Mar 15 02:07:26 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (TEMPLATE_PARMS_FOR_INLINE): New macro.
