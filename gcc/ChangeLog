@@ -1,3 +1,10 @@
+2004-03-23  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcse.c (can_assign_to_reg_p): New function, split out from...
+	(want_to_gcse_p): ...here.
+	(compute_ld_motion_mems): Use can_assign_to_reg_p to validate
+	the rhs of a store.
+
 2004-03-22  Diego Novillo  <dnovillo@redhat.com>
 
 	* c-typeck.c (same_translation_unit_p): Fix pasto.

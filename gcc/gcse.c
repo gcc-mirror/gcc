@@ -568,6 +568,7 @@ static void hash_scan_set (rtx, rtx, struct hash_table *);
 static void hash_scan_clobber (rtx, rtx, struct hash_table *);
 static void hash_scan_call (rtx, rtx, struct hash_table *);
 static int want_to_gcse_p (rtx);
+static bool can_assign_to_reg_p (rtx);
 static bool gcse_constant_p (rtx);
 static int oprs_unchanged_p (rtx, rtx, int);
 static int oprs_anticipatable_p (rtx, rtx);
@@ -1269,13 +1270,9 @@ static basic_block current_bb;
 /* See whether X, the source of a set, is something we want to consider for
    GCSE.  */
 
-static GTY(()) rtx test_insn;
 static int
 want_to_gcse_p (rtx x)
 {
-  int num_clobbers = 0;
-  int icode;
-
   switch (GET_CODE (x))
     {
     case REG:
@@ -1288,8 +1285,21 @@ want_to_gcse_p (rtx x)
       return 0;
 
     default:
-      break;
+      return can_assign_to_reg_p (x);
     }
+}
+
+/* Used internally by can_assign_to_reg_p.  */
+
+static GTY(()) rtx test_insn;
+
+/* Return true if we can assign X to a pseudo register.  */
+
+static bool
+can_assign_to_reg_p (rtx x)
+{
+  int num_clobbers = 0;
+  int icode;
 
   /* If this is a valid operand, we are OK.  If it's VOIDmode, we aren't.  */
   if (general_operand (x, GET_MODE (x)))
@@ -6838,7 +6848,7 @@ compute_ld_motion_mems (void)
 			  && GET_CODE (src) != ASM_OPERANDS
 			  /* Check for REG manually since want_to_gcse_p
 			     returns 0 for all REGs.  */
-			  && (REG_P (src) || want_to_gcse_p (src)))
+			  && can_assign_to_reg_p (src))
 			ptr->stores = alloc_INSN_LIST (insn, ptr->stores);
 		      else
 			ptr->invalid = 1;
