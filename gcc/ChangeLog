@@ -1,3 +1,22 @@
+Tue Jul 27 16:05:52 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* aix43.h (ASM_CPU_SPEC, CPP_CPU_SPEC): Add rs64a and PPC630.
+	* rs6000.c (processor_target_table): Add powerpc64, rs64a, and PPC630.
+	(rs6000_cpu): Choose between 32-bit and 64-bit default processors.
+	(secndary_reload_class): Make TARGET_ELF conditional compile.
+	(print_operand_address): Similar.
+	(output_toc): Print all values as hex.
+	(get_issue_rate): Rearrange and add RS64A and PPC630.
+	* rs6000.h (processor_type): Add RS64A and PPC630.
+	(PROCESSOR_POWERPC64): New.
+	(PROMOTE_MODE): Use word_mode.
+	(RTX_COSTS): Add RS64A and PPC630.
+	* rs6000.md (scheduling information): Add lmul and ldiv
+	representing 64-bit integer multiply and divide.  Add rs64a and
+	PPC630 information.
+	(ashldi3): Add support for "rldic" instruction.
+	* sysv4.h (PROCESSOR_DEFAULT): Change to PROCESSOR_750.
+	
 Tue Jul 27 15:31:53 1999  Vladimir Makarov  <vmakarov@toad.to.cygnus.com>
 
 	* config/sparc/sparc.c (sparc_override_options): Enable SPARCLITE

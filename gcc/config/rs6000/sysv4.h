@@ -276,7 +276,7 @@ do {									\
 #define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS)
 
 #undef PROCESSOR_DEFAULT
-#define PROCESSOR_DEFAULT PROCESSOR_PPC601
+#define PROCESSOR_DEFAULT PROCESSOR_PPC750
 
 /* System V.4 uses register 13 as a pointer to the small data area,
    so it is not available to the normal user.  */
