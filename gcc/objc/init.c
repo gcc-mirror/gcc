@@ -118,8 +118,11 @@ __objc_exec_class (Module_t module)
    }
 
   /* Replace referenced selectors from names to SEL's.  */
-  for (i = 0; selectors[i]; ++i)
-    selectors[i] = sel_register_name ((const char *) selectors[i]);
+  if (selectors)
+    {
+      for (i = 0; selectors[i]; ++i)
+	selectors[i] = sel_register_name ((const char *) selectors[i]);
+    }
 
   /* Process category information from the module.  */
   for (i = 0; i < symtab->cat_def_cnt; ++i)
