@@ -1,5 +1,10 @@
 2002-11-18  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/sh/sh.c (calc_live_regs): Update check for PIC liveness
+	in compact code.
+
+2002-11-18  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/sh/sh.md (initialize_trampoline): Do not force the
 	trampoline address into R0_REGS here.
 

@@ -4456,7 +4456,11 @@ calc_live_regs (count_ptr, live_regs_mask)
 	     && reg != RETURN_ADDRESS_POINTER_REGNUM
 	     && reg != T_REG && reg != GBR_REG)
 	  : (/* Only push those regs which are used and need to be saved.  */
-	     regs_ever_live[reg] && ! call_used_regs[reg]))
+	     (TARGET_SHCOMPACT
+	      && flag_pic
+	      && current_function_args_info.call_cookie
+	      && reg == PIC_OFFSET_TABLE_REGNUM)
+	     || (regs_ever_live[reg] && ! call_used_regs[reg])))
 	{
 	  live_regs_mask[reg / 32] |= 1 << (reg % 32);
 	  count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
