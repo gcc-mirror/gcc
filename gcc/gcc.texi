@@ -2674,13 +2674,13 @@ GNU CC distribution.
 
 If you would like to help pretest GNU CC releases to assure they work
 well, or if you would like to work on improving GNU CC, please contact
-the maintainers at @code{egcs@@egcs.cygnus.com}.  A pretester should
+the maintainers at @code{gcc@@gcc.gnu.org}.  A pretester should
 be willing to try to investigate bugs as well as report them.
 
 If you'd like to work on improvements, please ask for suggested projects
 or suggest your own ideas.  If you have already written an improvement,
 please tell us about it.  If you have not yet started work, it is useful
-to contact @code{egcs@@egcs.cygnus.com} before you start; the
+to contact @code{gcc@@gcc.gnu.org} before you start; the
 maintainers may be able to suggest ways to make your extension fit in
 better with the rest of GNU CC and with other development plans.
 
