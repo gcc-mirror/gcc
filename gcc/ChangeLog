@@ -1,3 +1,11 @@
+Fri Oct 23 16:08:39 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.h (EXTRA_SPECS): Add missing initializers.
+	(sparc_defer_case_vector): Provide a prototype.
+
+	* svr4.h (ASM_OUTPUT_ASCII): Cast STRING_LIMIT to (long) when
+ 	comparing it to the result of a pointer subtraction.
+
 Fri Oct 23 15:34:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha.c (override_options): Use ISDIGIT(), not isdigit().  Cast
