@@ -1,5 +1,5 @@
 /* Output routines for GCC for picoJava II
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -509,7 +509,7 @@ pj_output_rval (op, mode, outer_op)
 	break;
 
       case SUBREG:
-	pj_output_rval (alter_subreg (op), mode, outer_op);
+	pj_output_rval (alter_subreg (&op), mode, outer_op);
 	break;
 
       case POST_INC:
