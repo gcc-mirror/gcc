@@ -47,7 +47,8 @@ underlying instruction stream.  The chain of basic blocks is updated
 transparently by the provided API for manipulating the CFG.  The macro
 @code{FOR_EACH_BB} can be used to visit all the basic blocks in
 lexicographical order.  Dominator traversals are also possible using
-@code{walk_dominator_tree}.
+@code{walk_dominator_tree}.  Given two basic blocks A and B, block A
+dominates block B if A is @emph{always} executed before B.
 
 @findex BASIC_BLOCK
 The @code{BASIC_BLOCK} array contains all basic blocks in an
@@ -145,7 +146,7 @@ in GCC with the @code{edge} data type.  Each @code{edge} acts as a
 link between two basic blocks: the @code{src} member of an edge
 points to the predecessor basic block of the @code{dest} basic block.
 The members @code{pred} and @code{succ} of the @code{basic_block} data
-type point to single linked lists of edges to the predecessors and
+type point to singly linked lists of edges to the predecessors and
 successors of the block.  The edges are linked via the
 @code{succ_next} and @code{pred_next} members of the @code{edge} data
 type.
