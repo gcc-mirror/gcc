@@ -1,6 +1,17 @@
+2002-01-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.old-deja/g++.brendan/crash8.C: Don't expect an error on
+	line 12.
+	* g++.old-deja/g++.brendan/parse3.C,
+	g++.old-deja/g++.other/crash26.C,
+	g++.old-deja/g++.other/crash28.C,
+	g++.old-deja/g++.other/crash29.C,
+	g++.old-deja/g++.other/crash30.C,
+	g++.old-deja/g++.other/crash35.C: Remove XFAILs where appropriate.
+
 2002-01-23  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/20020115-1.c: New.
+	* gcc.dg/20020115-1.c: New.
 
 2002-01-23  Bob Wilson  <bob.wilson@acm.org>
 
@@ -84,7 +95,7 @@
 
 2002-01-18  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/20020118-1.c: New.
+	* gcc.dg/20020118-1.c: New.
 
 2002-01-18  Kazu Hirata  <kazu@hxi.com>
 
@@ -92,11 +103,10 @@
 
 2001-01-18  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* g++.dg/other/deprecated.C: Fix FAIL from 
+	* g++.dg/other/deprecated.C: Fix FAIL from
 	"At global scope" message
-	* g++.dg/ext/align1.C: Fix fail on cygwin from maximum 
-	alignment warnings
-
+	* g++.dg/ext/align1.C: Fix fail on cygwin from maximum
+	alignment warnings.
 
 2001-01-18  David Billinghurst <David.Billinghurst@riotinto.com>
 
@@ -142,8 +152,8 @@
 
 2001-01-14  David Billinghurst <David.Billinghurst@riotinto.com>
 
-        * g77.f-torture/execute/intrinsic-unix-bessel.f:
-        Uncomment additional cases that now pass.
+	* g77.f-torture/execute/intrinsic-unix-bessel.f:
+	Uncomment additional cases that now pass.
 
 2002-01-11  Richard Henderson  <rth@redhat.com>
 
@@ -156,8 +166,8 @@ Fri Jan 11 12:13:30 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-01-10  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-4.c: Add tests for lvebx, lvehx, lvewx, lvxl,
-        lvx, stvx, stvebx, stvehx, stvewx, stvxl.
+	* gcc.dg/altivec-4.c: Add tests for lvebx, lvehx, lvewx, lvxl,
+	lvx, stvx, stvebx, stvehx, stvewx, stvxl.
 
 2002-01-10  Dale Johannesen  <dalej@apple.com>
 
@@ -165,7 +175,7 @@ Fri Jan 11 12:13:30 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-01-08  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-4.c: Add test for mtvscr, dssall, mfvscr,
+	* gcc.dg/altivec-4.c: Add test for mtvscr, dssall, mfvscr,
 	dss, lvsl, lvsr, dstt, dstst, dststt, dst.
 
 2002-01-09  Richard Henderson  <rth@redhat.com>
@@ -230,7 +240,7 @@ Wed Jan  9 14:03:20 2002  Jeffrey A Law  (law@redhat.com)
 
 002-01-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-4.c: Test altivec predicates.
+	* gcc.dg/altivec-4.c: Test altivec predicates.
 
 2002-01-07  Jakub Jelinek  <jakub@redhat.com>
 
@@ -247,10 +257,10 @@ Wed Jan  9 14:03:20 2002  Jeffrey A Law  (law@redhat.com)
 
 2002-01-04  Loren J. Rittle  <ljrittle@acm.org>
 
-        * g++.old-deja/g++.abi/aggregates.C: Corrected last patch: removed
+	* g++.old-deja/g++.abi/aggregates.C: Corrected last patch: removed
 	extra triple that slipped in.
-        * g++.old-deja/g++.abi/align.C: Likewise.
-        * g++.old-deja/g++.abi/bitfields.C: Likewise.
+	* g++.old-deja/g++.abi/align.C: Likewise.
+	* g++.old-deja/g++.abi/bitfields.C: Likewise.
 
 2002-01-04  Loren J. Rittle  <ljrittle@acm.org>
 
@@ -425,9 +435,9 @@ Wed Jan  9 14:03:20 2002  Jeffrey A Law  (law@redhat.com)
 2001-12-20  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* gcc.misc-test/arm-isr.exp: New file.  Control running of the
-        arm-isr.c test.
-        * gcc.misc-tests/arm-isr.c: New file.  Test prologue and
-        epilogue generation for ARM ISR routines.
+	arm-isr.c test.
+	* gcc.misc-tests/arm-isr.c: New file.  Test prologue and
+	epilogue generation for ARM ISR routines.
 
 2001-12-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
