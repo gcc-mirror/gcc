@@ -1786,7 +1786,14 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 						 fn_address_insn);
 
 			      if (GET_CODE (temp) == CALL_INSN)
-				i1 = emit_call_insn_before (body, loop_start);
+				{
+				  i1 = emit_call_insn_before (body, loop_start);
+				  /* Because the USAGE information potentially
+				     contains objects other than hard registers
+				     we need to copy it.  */
+				  CALL_INSN_FUNCTION_USAGE (i1) =
+				    copy_rtx (CALL_INSN_FUNCTION_USAGE (temp));
+				}
 			      else
 				i1 = emit_insn_before (body, loop_start);
 			      if (first == 0)
@@ -1822,7 +1829,14 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 			  i1 = emit_insn_before (sequence, loop_start);
 			}
 		      else if (GET_CODE (p) == CALL_INSN)
-			i1 = emit_call_insn_before (PATTERN (p), loop_start);
+			{
+			  i1 = emit_call_insn_before (PATTERN (p), loop_start);
+			  /* Because the USAGE information potentially
+			     contains objects other than hard registers
+			     we need to copy it.  */
+			  CALL_INSN_FUNCTION_USAGE (i1) =
+			    copy_rtx (CALL_INSN_FUNCTION_USAGE (p));
+			}
 		      else
 			i1 = emit_insn_before (PATTERN (p), loop_start);
 
