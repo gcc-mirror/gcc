@@ -1,3 +1,9 @@
+2005-02-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cse.c (delete_trivially_dead_insns): Speed up by using
+	NEXT_INSN and PREV_INSN directly instead of next_real_insn and
+	prev_real_insn.
+
 2005-02-24  Andrea Tarani  <andrea.tarani@gilbarco.com>
 
 	* config/m68k/m68k.c (m68k_save_reg): Also save A5 for non-leaf
