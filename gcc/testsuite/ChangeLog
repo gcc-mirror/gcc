@@ -1,3 +1,8 @@
+2003-09-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR target/11184
+	* gcc.dg/builtin-apply1.c: New test.
+
 2003-09-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9848

@@ -1,3 +1,40 @@
+2003-09-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR target/11184
+	* builtins.c (expand_builtin_apply): Use convert_memory_address
+	before returning the value.
+	
+	* alias.c (find_base_value): Simplify use of
+	convert_memory_address.
+	(find_base_term): Likewise.
+	* builtins.c (expand_builtin_stejmp_setup): Likewise.
+	(expand_builtin_longjmp): Likewise.
+	(expand_builtin_prefetch): Likewise.
+	(get_memory_rtx): Likewise.
+	(expand_builtin_return): Likewise.
+	(expand_builtin_memcpy): Likewise.
+	(expand_builtin_strncpy): Likewise.
+	(expand_builtin_memset): Likewise.
+	(expand_builtin_va_arg): Likewise.
+	(expand_builtin_va_copy): Likewise.
+	(expand_builtin_alloca): Likewise.
+	* calls.c (expand_call): Likewise.
+	* except.c (expand_builtin_extract_return_addr): Likewise.
+	(expand_builtin_eh_return): Likewise.
+	* explow.c (convert_memory_address): Define even when
+	POINTER_EXTEND_UNSIGNED is not defined.  Do nothing if the address
+	is already in the right mode.
+	* explow.c (memory_address): Simplify use of convert_memory_address.
+	(probe_stack_range): Likewise.
+	* expmed.c (make_tree): Likewise.
+	* expr.c (emit_block_move_in_libcall): Likewise.
+	(expand_assignment): Likewise.
+	(expand_expr): Likewise.
+	* function.c (assign_parms): Likewise.
+	(expand_function_end): Likewise.
+	* integrate.c (copy_rtx_and_substitute): Likewise.
+	* stmt.c (expand_computed_goto): Likewise.
+
 2003-09-18  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_unary_operation): Only transform

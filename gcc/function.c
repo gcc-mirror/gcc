@@ -5182,11 +5182,7 @@ assign_parms (tree fndecl)
       rtx addr = DECL_RTL (function_result_decl);
       rtx x;
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-      if (GET_MODE (addr) != Pmode)
-	addr = convert_memory_address (Pmode, addr);
-#endif
-
+      addr = convert_memory_address (Pmode, addr);
       x = gen_rtx_MEM (DECL_MODE (result), addr);
       set_mem_attributes (x, result, 1);
       SET_DECL_RTL (result, x);
@@ -7069,12 +7065,9 @@ expand_function_end (void)
 	 assignment and USE below when inlining this function.  */
       REG_FUNCTION_VALUE_P (outgoing) = 1;
 
-#ifdef POINTERS_EXTEND_UNSIGNED
       /* The address may be ptr_mode and OUTGOING may be Pmode.  */
-      if (GET_MODE (outgoing) != GET_MODE (value_address))
-	value_address = convert_memory_address (GET_MODE (outgoing),
-						value_address);
-#endif
+      value_address = convert_memory_address (GET_MODE (outgoing),
+					      value_address);
 
       emit_move_insn (outgoing, value_address);
 

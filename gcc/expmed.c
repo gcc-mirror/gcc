@@ -4115,12 +4115,10 @@ make_tree (tree type, rtx x)
       t = make_node (RTL_EXPR);
       TREE_TYPE (t) = type;
 
-#ifdef POINTERS_EXTEND_UNSIGNED
       /* If TYPE is a POINTER_TYPE, X might be Pmode with TYPE_MODE being
 	 ptr_mode.  So convert.  */
-      if (POINTER_TYPE_P (type) && GET_MODE (x) != TYPE_MODE (type))
+      if (POINTER_TYPE_P (type))
 	x = convert_memory_address (TYPE_MODE (type), x);
-#endif
 
       RTL_EXPR_RTL (t) = x;
       /* There are no insns to be output

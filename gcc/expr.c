@@ -1957,10 +1957,8 @@ emit_block_move_via_libcall (rtx dst, rtx src, rtx size)
   dst_addr = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   src_addr = copy_to_mode_reg (Pmode, XEXP (src, 0));
 
-#ifdef POINTERS_EXTEND_UNSIGNED
   dst_addr = convert_memory_address (ptr_mode, dst_addr);
   src_addr = convert_memory_address (ptr_mode, src_addr);
-#endif
 
   dst_tree = make_tree (ptr_type_node, dst_addr);
   src_tree = make_tree (ptr_type_node, src_addr);
@@ -4299,11 +4297,8 @@ expand_assignment (tree to, tree from, int want_value)
 	emit_block_move (to_rtx, value, expr_size (from), BLOCK_OP_NORMAL);
       else
 	{
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (POINTER_TYPE_P (TREE_TYPE (to))
-	      && GET_MODE (to_rtx) != GET_MODE (value))
+	  if (POINTER_TYPE_P (TREE_TYPE (to)))
 	    value = convert_memory_address (GET_MODE (to_rtx), value);
-#endif
 	  emit_move_insn (to_rtx, value);
 	}
       preserve_temp_slots (to_rtx);
@@ -9228,11 +9223,8 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	  if (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER)
 	    {
 	      op0 = XEXP (op0, 0);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	      if (GET_MODE (op0) == Pmode && GET_MODE (op0) != mode
-		  && mode == ptr_mode)
+	      if (GET_MODE (op0) == Pmode && mode == ptr_mode)
 		op0 = convert_memory_address (ptr_mode, op0);
-#endif
 	      return op0;
 	    }
 
@@ -9293,11 +9285,8 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	  && ! REG_USERVAR_P (op0))
 	mark_reg_pointer (op0, TYPE_ALIGN (TREE_TYPE (type)));
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-      if (GET_MODE (op0) == Pmode && GET_MODE (op0) != mode
-	  && mode == ptr_mode)
+      if (GET_MODE (op0) == Pmode && mode == ptr_mode)
 	op0 = convert_memory_address (ptr_mode, op0);
-#endif
 
       return op0;
 

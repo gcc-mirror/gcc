@@ -520,10 +520,7 @@ expand_computed_goto (tree exp)
 {
   rtx x = expand_expr (exp, NULL_RTX, VOIDmode, 0);
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-  if (GET_MODE (x) != Pmode)
-    x = convert_memory_address (Pmode, x);
-#endif
+  x = convert_memory_address (Pmode, x);
 
   emit_queue ();
 

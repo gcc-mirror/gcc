@@ -3026,11 +3026,8 @@ expand_call (tree exp, rtx target, int ignore)
 	 structure value.  */
       if (pass != 0 && structure_value_addr && ! structure_value_addr_parm)
 	{
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (structure_value_addr) != Pmode)
-	    structure_value_addr = convert_memory_address
-					(Pmode, structure_value_addr);
-#endif
+	  structure_value_addr 
+	    = convert_memory_address (Pmode, structure_value_addr);
 	  emit_move_insn (struct_value,
 			  force_reg (Pmode,
 				     force_operand (structure_value_addr,
