@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -583,8 +583,7 @@ static struct compiler default_compilers[] =
   {".adb", "@ada"},
   {".ada", "@ada"},
   {"@ada",
-   "gnat1 %{gnat*} %{k8:-gnatk8} %{w:-gnatws}\
-       -dumpbase %b.ada\
+   "gnat1 %{k8:-gnatk8} %{w:-gnatws} %{!Q:-quiet} -dumpbase %b.ada\
        %{g*} %{O*} %{p} %{pg:-p} %{f*} %{d*}\
        %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
        %i %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} | \n",
