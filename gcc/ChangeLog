@@ -1,3 +1,12 @@
+Thu Sep  9 15:24:59 BST 1999  Richard Earnshaw <rearnsha@arm.com>
+
+	* arm.c: Include "ggc.h".
+	(arm_add_gc_roots): New function.
+	(arm_override_options): Call it.
+	(aof_pic_entry): Add a GC root for aof_pic_label when it's allocated.
+
+	* arm.md (define_asm_attributes): Add a pool_range attribute.
+
 Thu Sep  9 12:32:57 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* extend.texi (Volatiles): New node.

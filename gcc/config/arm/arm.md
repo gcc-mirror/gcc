@@ -62,9 +62,12 @@
 (define_attr "pool_range" "" (const_int 0))
 
 ; An assembler sequence may clobber the condition codes without us knowing
+; If such an insn references the pool, then we have no way of knowing how,
+; so use the most conservative value for pool_range.
 (define_asm_attributes
  [(set_attr "conds" "clob")
-  (set_attr "length" "4")])
+  (set_attr "length" "4")
+  (set_attr "pool_range" "250")])
 
 ; TYPE attribute is used to detect floating point instructions which, if
 ; running on a co-processor can run in parallel with other, basic instructions
