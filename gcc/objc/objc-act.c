@@ -1978,8 +1978,8 @@ get_proto_encoding (proto)
    identifier_node that represent the selector.  */
 
 static tree
-build_typed_selector_reference (ident, proto)
-     tree ident, proto;
+build_typed_selector_reference (ident, prototype)
+     tree ident, prototype;
 {
   tree *chain = &sel_ref_chain;
   tree expr;
@@ -1987,14 +1987,14 @@ build_typed_selector_reference (ident, proto)
 
   while (*chain)
     {
-      if (TREE_PURPOSE (*chain) == ident && TREE_VALUE (*chain) == proto)
+      if (TREE_PURPOSE (*chain) == prototype && TREE_VALUE (*chain) == ident)
 	goto return_at_index;
 
       index++;
       chain = &TREE_CHAIN (*chain);
     }
 
-  *chain = tree_cons (proto, ident, NULL_TREE);
+  *chain = tree_cons (prototype, ident, NULL_TREE);
 
  return_at_index:
   expr = build_unary_op (ADDR_EXPR,
