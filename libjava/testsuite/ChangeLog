@@ -1,3 +1,7 @@
+2000-03-26  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.lang/Array_1.xfail: Removed.
+
 2000-03-23  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libjava.lang/Thread_Wait.java: New file.
