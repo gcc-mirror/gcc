@@ -9469,19 +9469,19 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 	}
       break;
 
-    /* Convert a>0 into (unsigned)a<0x7fffffff.  */
+    /* Convert a>=0 into (unsigned)a<0x80000000.  */
     case LT:
     case GE:
       if (mode == DImode || op1 != const0_rtx)
 	return false;
-      op1 = gen_int_mode (~(1 << (GET_MODE_BITSIZE (mode) - 1)), mode);
+      op1 = gen_int_mode (1 << (GET_MODE_BITSIZE (mode) - 1), mode);
       code = (code == LT ? GEU : LTU);
       break;
     case LE:
     case GT:
       if (mode == DImode || op1 != constm1_rtx)
 	return false;
-      op1 = gen_int_mode (~(1 << (GET_MODE_BITSIZE (mode) - 1)), mode);
+      op1 = gen_int_mode (1 << (GET_MODE_BITSIZE (mode) - 1), mode);
       code = (code == LE ? GEU : LTU);
       break;
 
