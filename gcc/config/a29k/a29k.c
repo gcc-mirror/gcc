@@ -233,7 +233,7 @@ accum_reg_operand (op, mode)
      enum machine_mode mode;
 {
   return (GET_CODE (op) == REG
-	  && REGNO (op) >= R_ACC (0) && REGNO (op) <= R_ACC (3));
+	  && REGNO (op) >= R_ACU (0) && REGNO (op) <= R_ACU (3));
 }
 
 /* Returns 1 if OP is a normal data register.  */

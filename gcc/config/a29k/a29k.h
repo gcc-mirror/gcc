@@ -292,7 +292,7 @@ extern int target_flags;
 #define R_EXO	199
 
 /* Define the number for floating-point accumulator N.  */
-#define R_ACC(N)	((N) + 200)
+#define R_ACU(N)	((N) + 200)
 
 /* Now define the registers used in the calling sequence.  */
 #define R_TAV	R_GR (121)
@@ -390,7 +390,7 @@ extern int target_flags;
    R_LR (117), R_LR (118), R_LR (119), R_LR (120), R_LR (121),		\
    R_LR (122), R_LR (123), R_LR (124), R_LR (124), R_LR (126),		\
    R_LR (127),								\
-   R_ACC (3), R_ACC (2), R_ACC (1), R_ACC (0),				\
+   R_ACU (3), R_ACU (2), R_ACU (1), R_ACU (0),				\
    R_GR (112), R_GR (113), R_GR (114), R_GR (115), R_GR (121),		\
    R_GR (122), R_GR (123), R_GR (124), R_GR (125), R_GR (126),		\
    R_GR (127),								\
@@ -411,7 +411,7 @@ extern int target_flags;
    but can be less for certain modes in special long registers.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
-  ((REGNO) >= R_ACC (0) && (REGNO) <= R_ACC (3)? 1		\
+  ((REGNO) >= R_ACU (0) && (REGNO) <= R_ACU (3)? 1		\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
@@ -428,12 +428,12 @@ extern int target_flags;
    (I'd like to use the "?:" syntax to make this more readable, but Sun's
    compiler doesn't seem to accept it.)  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)  				\
-(((REGNO) >= R_ACC (0) && (REGNO) <= R_ACC (3)				\
+(((REGNO) >= R_ACU (0) && (REGNO) <= R_ACU (3)				\
     && (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
 	|| GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT))		\
    || ((REGNO) >= R_BP && (REGNO) <= R_CR				\
        && GET_MODE_CLASS (MODE) == MODE_PARTIAL_INT)			\
-   || ((REGNO) >= R_Q && (REGNO) < R_ACC (0)				\
+   || ((REGNO) >= R_Q && (REGNO) < R_ACU (0)				\
        && GET_MODE_CLASS (MODE) != MODE_FLOAT				\
        && GET_MODE_CLASS (MODE) != MODE_COMPLEX_FLOAT)			\
    || (((REGNO) < R_BP || (REGNO) >= R_KR (0))				 \
@@ -556,9 +556,9 @@ enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
    : (REGNO) == R_CR ? CR_REGS		\
    : (REGNO) == R_Q ? Q_REGS		\
    : (REGNO) > R_BP && (REGNO) <= R_EXO ? SPECIAL_REGS	\
-   : (REGNO) == R_ACC (0) ? ACCUM0_REGS	\
+   : (REGNO) == R_ACU (0) ? ACCUM0_REGS	\
    : (REGNO) >= R_KR (0) ? GENERAL_REGS \
-   : (REGNO) > R_ACC (0) ? ACCUM_REGS	\
+   : (REGNO) > R_ACU (0) ? ACCUM_REGS	\
    : (REGNO) == R_LR (0) ? LR0_REGS	\
    : GENERAL_REGS)
 
