@@ -1,3 +1,11 @@
+Thu Aug 16 17:39:45 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* function.c (put_var_into_stack): Temporarily clear DECL_RTL.
+	(assign_params): Avoid setting DECL_RTL to unfinished RTX.
+	(expand_function_start): Likewise.
+	* stmt.c (expand_decl): Likewise.
+	* varasm.c (make_decl_rtx): Likewise.
+
 2001-08-16  Jason Merrill  <jason_merrill@redhat.com>
 
 	* stor-layout.c (layout_decl): Don't set DECL_USER_ALIGN.
