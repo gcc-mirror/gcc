@@ -1180,6 +1180,7 @@ typedef struct rs6000_stack {
   int cr_save_offset;		/* offset to save CR from initial SP */
   int toc_save_offset;		/* offset to save the TOC pointer */
   int varargs_save_offset;	/* offset to save the varargs registers */
+  int ehrd_offset;		/* offset to EH return data */
   int reg_size;			/* register size (4 or 8) */
   int varargs_size;		/* size to hold V.4 args passed in regs */
   int vars_size;		/* variable save area size */
@@ -1569,8 +1570,11 @@ typedef struct rs6000_args
    and frame pointer registers are already be assumed to be used as
    needed.  */
 
-#define	EPILOGUE_USES(REGNO)	\
-  (reload_completed && (REGNO) == LINK_REGISTER_REGNUM)
+#define	EPILOGUE_USES(REGNO)					\
+  ((reload_completed && (REGNO) == LINK_REGISTER_REGNUM)	\
+   || (current_function_calls_eh_return				\
+       && TARGET_TOC						\
+       && (REGNO) == TOC_REGISTER))
 
 /* This macro generates the assembly code for function exit,
    on machines that need it.  If FUNCTION_EPILOGUE is not defined
@@ -2640,6 +2644,10 @@ do {									\
 
 #define INCOMING_RETURN_ADDR_RTX   gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
 #define DWARF_FRAME_RETURN_COLUMN  DWARF_FRAME_REGNUM (LINK_REGISTER_REGNUM)
+
+/* Describe how we implement __builtin_eh_return.  */
+#define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 3 : INVALID_REGNUM)
+#define EH_RETURN_STACKADJ_RTX  gen_rtx_REG (Pmode, 10)
 
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007

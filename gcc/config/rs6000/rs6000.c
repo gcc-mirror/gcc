@@ -4808,6 +4808,7 @@ rs6000_stack_info ()
   rs6000_stack_t *info_ptr = &info;
   int reg_size = TARGET_POWERPC64 ? 8 : 4;
   enum rs6000_abi abi;
+  int ehrd_size;
   int total_raw_size;
 
   /* Zero all fields portably */
@@ -4860,6 +4861,19 @@ rs6000_stack_info ()
 	info_ptr->cr_size = reg_size;
     }
 
+  /* If the current function calls __builtin_eh_return, then we need
+     to allocate stack space for registers that will hold data for
+     the exception handler.  */
+  if (current_function_calls_eh_return)
+    {
+      unsigned int i;
+      for (i = 0; EH_RETURN_DATA_REGNO (i) != INVALID_REGNUM; ++i)
+	continue;
+      ehrd_size = i * UNITS_PER_WORD;
+    }
+  else
+    ehrd_size = 0;
+
   /* Determine various sizes */
   info_ptr->reg_size     = reg_size;
   info_ptr->fixed_size   = RS6000_SAVE_AREA;
@@ -4868,6 +4882,7 @@ rs6000_stack_info ()
   info_ptr->parm_size    = RS6000_ALIGN (current_function_outgoing_args_size, 8);
   info_ptr->save_size    = RS6000_ALIGN (info_ptr->fp_size
 				  + info_ptr->gp_size
+				  + ehrd_size
 				  + info_ptr->cr_size
 				  + info_ptr->lr_size
 				  + info_ptr->toc_size, 8);
@@ -4883,6 +4898,7 @@ rs6000_stack_info ()
     case ABI_AIX_NODESC:
       info_ptr->fp_save_offset   = - info_ptr->fp_size;
       info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
+      info_ptr->ehrd_offset      = info_ptr->gp_save_offset - ehrd_size;
       info_ptr->cr_save_offset   = reg_size; /* first word when 64-bit.  */
       info_ptr->lr_save_offset   = 2*reg_size;
       break;
@@ -4893,6 +4909,7 @@ rs6000_stack_info ()
       info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
       info_ptr->cr_save_offset   = info_ptr->gp_save_offset - info_ptr->cr_size;
       info_ptr->toc_save_offset  = info_ptr->cr_save_offset - info_ptr->toc_size;
+      info_ptr->ehrd_offset      = info_ptr->toc_save_offset - ehrd_size;
       info_ptr->lr_save_offset   = reg_size;
       break;
     }
@@ -5585,7 +5602,7 @@ rs6000_frame_related (insn, reg, val, reg2, rreg)
 /* Emit function prologue as insns.  */
 
 void
-rs6000_emit_prologue()
+rs6000_emit_prologue ()
 {
   rs6000_stack_t *info = rs6000_stack_info ();
   enum machine_mode reg_mode = TARGET_POWERPC64 ? DImode : SImode;
@@ -5741,6 +5758,31 @@ rs6000_emit_prologue()
 	  }
     }
 
+  /* ??? There's no need to emit actual instructions here, but it's the
+     easiest way to get the frame unwind information emitted.  */
+  if (current_function_calls_eh_return)
+    {
+      unsigned int i, regno;
+      for (i = 0; ; ++i)
+	{
+	  rtx addr, reg, mem;
+
+	  regno = EH_RETURN_DATA_REGNO (i);
+	  if (regno == INVALID_REGNUM)
+	    break;
+
+	  reg = gen_rtx_REG (reg_mode, regno);
+	  addr = plus_constant (frame_reg_rtx,
+				info->ehrd_offset + sp_offset + reg_size * i);
+	  mem = gen_rtx_MEM (reg_mode, addr);
+	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+
+	  insn = emit_move_insn (mem, reg);
+	  rs6000_frame_related (insn, frame_ptr_rtx, info->total_size, 
+				NULL_RTX, NULL_RTX);
+	}
+    }
+
   /* Save lr if we used it.  */
   if (info->lr_save_p)
     {
@@ -5876,7 +5918,7 @@ output_prolog (file, size)
    need special notes to explain where r11 is in relation to the stack.  */
 
 void
-rs6000_emit_epilogue(sibcall)
+rs6000_emit_epilogue (sibcall)
      int sibcall;
 {
   rs6000_stack_t *info;
@@ -5895,6 +5937,7 @@ rs6000_emit_epilogue(sibcall)
   using_load_multiple = (TARGET_MULTIPLE && ! TARGET_POWERPC64
 			 && info->first_gp_reg_save < 31);
   restoring_FPRs_inline = (sibcall
+			   || current_function_calls_eh_return
 			   || info->first_fp_reg_save == 64
 			   || FP_SAVE_INLINE (info->first_fp_reg_save));
   use_backchain_to_restore_sp = (frame_pointer_needed 
@@ -5960,6 +6003,26 @@ rs6000_emit_epilogue(sibcall)
     emit_move_insn (gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM),
 		    gen_rtx_REG (Pmode, 0));
   
+  /* Load exception handler data registers, if needed.  */
+  if (current_function_calls_eh_return)
+    {
+      unsigned int i, regno;
+      for (i = 0; ; ++i)
+	{
+	  rtx addr, mem;
+
+	  regno = EH_RETURN_DATA_REGNO (i);
+	  if (regno == INVALID_REGNUM)
+	    break;
+
+	  addr = plus_constant (frame_reg_rtx,
+				info->ehrd_offset + sp_offset + reg_size * i);
+	  mem = gen_rtx_MEM (reg_mode, addr);
+	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+
+	  emit_move_insn (gen_rtx_REG (reg_mode, regno), mem);
+	}
+    }
   
   /* Restore GPRs.  This is done as a PARALLEL if we are using
      the load-multiple instructions.  */
@@ -6093,6 +6156,14 @@ rs6000_emit_epilogue(sibcall)
 		     : gen_adddi3 (sp_reg_rtx, sp_reg_rtx,
 				   GEN_INT (sp_offset)));
 	}
+    }
+
+  if (current_function_calls_eh_return)
+    {
+      rtx sa = EH_RETURN_STACKADJ_RTX;
+      emit_insn (Pmode == SImode
+		 ? gen_addsi3 (sp_reg_rtx, sp_reg_rtx, sa)
+		 : gen_adddi3 (sp_reg_rtx, sp_reg_rtx, sa));
     }
 
   if (!sibcall)
