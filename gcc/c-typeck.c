@@ -1263,21 +1263,9 @@ default_function_array_conversion (tree exp)
 
       ptrtype = build_pointer_type (restype);
 
-      if (TREE_CODE (exp) == VAR_DECL)
-	{
-	  /* We are making an ADDR_EXPR of ptrtype.  This is a valid
-	     ADDR_EXPR because it's the best way of representing what
-	     happens in C when we take the address of an array and place
-	     it in a pointer to the element type.  */
-	  adr = build1 (ADDR_EXPR, ptrtype, exp);
-	  if (!c_mark_addressable (exp))
-	    return error_mark_node;
-	  TREE_SIDE_EFFECTS (adr) = 0;   /* Default would be, same as EXP.  */
-	  return adr;
-	}
       /* This way is better for a COMPONENT_REF since it can
 	 simplify the offset for a component.  */
-      adr = build_unary_op (ADDR_EXPR, exp, 1);
+      adr = build_unary_op (ADDR_EXPR, build_array_ref (exp, integer_zero_node), 1);
       return convert (ptrtype, adr);
     }
   return exp;
@@ -2631,13 +2619,12 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	  return TREE_OPERAND (arg, 0);
 	}
 
-      /* For &x[y], return x+y */
+      /* For &x[y], just return &x[y] */
       if (TREE_CODE (arg) == ARRAY_REF)
 	{
 	  if (!c_mark_addressable (TREE_OPERAND (arg, 0)))
 	    return error_mark_node;
-	  return build_binary_op (PLUS_EXPR, TREE_OPERAND (arg, 0),
-				  TREE_OPERAND (arg, 1), 1);
+          return build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (arg)), arg);
 	}
 
       /* Anything not already handled and not a true memory reference

@@ -1,3 +1,9 @@
+2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* c-typeck.c (default_function_array_conversion): Always create
+	&a[0] for array types.
+	(build_unary_op): Do not fold &a[x] into a + x.
+
 2004-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* pointer-set.c (hash1): Use integer part of 2^64 / phi
