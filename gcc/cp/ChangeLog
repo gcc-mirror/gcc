@@ -1,5 +1,8 @@
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (resolve_scoped_fn_name): Return error_mark_node for
+	erroneous cases.
+
 	PR c++/11137
 	* decl2.c (generate_ctor_or_dtor_function): Tolerate a
 	non-existant ssdf_decls array.
