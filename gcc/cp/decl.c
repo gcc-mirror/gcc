@@ -6545,7 +6545,25 @@ grokdeclarator (const cp_declarator *declarator,
 	    longlong = 1;
 	} 
       else if (declspecs->specs[(int)ds] > 1)
-	error ("duplicate decl-specifier");
+	{
+	  static const char *decl_spec_names[] = {
+	    "signed",
+	    "unsigned",
+	    "short",
+	    "long",
+	    "const",
+	    "volatile",
+	    "restrict",
+	    "inline",
+	    "virtual",
+	    "explicit",
+	    "friend",
+	    "typedef",
+	    "__complex",
+	    "__thread"
+	  };
+	  error ("duplicate `%s'", decl_spec_names[(int)ds]);
+	}
     }
 
 #if 0
@@ -6796,9 +6814,19 @@ grokdeclarator (const cp_declarator *declarator,
      kinds of declarations (parameters, typenames, etc.).  */
   if (declspecs->multiple_storage_classes_p)
     error ("multiple storage classes in declaration of `%s'", name);
+  else if (declspecs->specs[(int)ds_thread]
+	   && ((declspecs->storage_class 
+		&& declspecs->storage_class != sc_extern
+		&& declspecs->storage_class != sc_static)
+	       || declspecs->specs[(int)ds_typedef]))
+    {
+      error ("multiple storage classes in declaration of `%s'", name);
+      declspecs->specs[(int)ds_thread] = 0;
+    }
   else if (decl_context != NORMAL 
-	   && declspecs->storage_class != sc_none
-	   && declspecs->storage_class != sc_mutable)
+	   && ((declspecs->storage_class != sc_none
+		&& declspecs->storage_class != sc_mutable)
+	       || declspecs->specs[(int)ds_thread]))
     {
       if ((decl_context == PARM || decl_context == CATCHPARM)
 	  && (declspecs->storage_class == sc_register
