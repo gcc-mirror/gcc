@@ -1281,7 +1281,7 @@ struct c_fileinfo
 struct c_fileinfo *get_fileinfo			PARAMS ((const char *));
 extern void dump_time_statistics		PARAMS ((void));
 
-extern int c_dump_tree				PARAMS ((void *, tree));
+extern bool c_dump_tree				PARAMS ((void *, tree));
 
 extern void pch_init				PARAMS ((void));
 extern int c_common_valid_pch			PARAMS ((cpp_reader *pfile,

@@ -1,3 +1,11 @@
+2003-03-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* c-common.h (c_dump_tree), c-dump.c (c_dump_tree),
+	langhooks-def.h (lhd_tree_dump_dump_tree),
+	langhooks.c (lhd_tree_dump_dump_tree), langhooks.h (*dump_tree):
+	Change return type from 'int' to 'bool'.  Replace 0 and 1 with
+	true and false in return statements.
+
 2003-03-19  Kevin Buettner  <kevinb@redhat.com>
 
 	* dwarf2out.c (DWARF_INITIAL_LENGTH_SIZE): Define.

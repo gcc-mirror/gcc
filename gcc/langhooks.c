@@ -426,12 +426,12 @@ lhd_tree_inlining_convert_parm_for_inlining (parm, value, fndecl)
    nodes.  Returns nonzero if it does not want the usual dumping of the
    second argument.  */
 
-int
+bool
 lhd_tree_dump_dump_tree (di, t)
      void *di ATTRIBUTE_UNUSED;
      tree t ATTRIBUTE_UNUSED;
 {
-  return 0;
+  return false;
 }
 
 /* lang_hooks.tree_dump.type_qual:  Determine type qualifiers in a

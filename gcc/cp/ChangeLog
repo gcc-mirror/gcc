@@ -1,3 +1,9 @@
+2003-03-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* dump.c (cp_dump_tree), cp-tree.h (cp_dump_tree): Change return
+	type from 'int' to 'bool'. Replace 0 and 1 with true and false in
+	return statements.
+
 2003-03-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/8316, c++/9315, c++/10136

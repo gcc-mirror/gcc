@@ -4407,7 +4407,7 @@ extern tree mangle_guard_variable               (tree);
 extern tree mangle_ref_init_variable            (tree);
 
 /* in dump.c */
-extern int cp_dump_tree                         (void *, tree);
+extern bool cp_dump_tree                         (void *, tree);
 
 /* -- end of C++ */
 

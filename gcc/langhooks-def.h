@@ -183,7 +183,7 @@ void write_global_declarations PARAMS ((void));
 }
 
 /* Tree dump hooks.  */
-int lhd_tree_dump_dump_tree 			PARAMS ((void *, tree));
+bool lhd_tree_dump_dump_tree 			PARAMS ((void *, tree));
 int lhd_tree_dump_type_quals			PARAMS ((tree));
 
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN lhd_tree_dump_dump_tree
