@@ -70,7 +70,9 @@ extern rtx reload_reg_rtx[MAX_RELOADS];
 				something used before or after the insn
    RELOAD_FOR_INPUT_ADDRESS	reload for parts of the address of an object
 				that is an input reload
-   RELOAD_FOR_OUTPUT_ADDRESS	likewise, for output reload
+   RELOAD_FOR_INPADDR_ADDRESS	reload needed for RELOAD_FOR_INPUT_ADDRESS
+   RELOAD_FOR_OUTPUT_ADDRESS	like RELOAD_FOR INPUT_ADDRESS, for output
+   RELOAD_FOR_OUTADDR_ADDRESS	reload needed for RELOAD_FOR_OUTPUT_ADDRESS
    RELOAD_FOR_OPERAND_ADDRESS	reload for the address of a non-reloaded
 				operand; these don't conflict with
 				any other addresses.
@@ -86,7 +88,8 @@ extern rtx reload_reg_rtx[MAX_RELOADS];
 enum reload_type
 {
   RELOAD_FOR_INPUT, RELOAD_FOR_OUTPUT, RELOAD_FOR_INSN, 
-  RELOAD_FOR_INPUT_ADDRESS, RELOAD_FOR_OUTPUT_ADDRESS,
+  RELOAD_FOR_INPUT_ADDRESS, RELOAD_FOR_INPADDR_ADDRESS,
+  RELOAD_FOR_OUTPUT_ADDRESS, RELOAD_FOR_OUTADDR_ADDRESS,
   RELOAD_FOR_OPERAND_ADDRESS, RELOAD_FOR_OPADDR_ADDR,
   RELOAD_OTHER, RELOAD_FOR_OTHER_ADDRESS
 };
