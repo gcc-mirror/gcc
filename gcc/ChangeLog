@@ -1,3 +1,8 @@
+2000-10-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* contrib.texi: Update references to steering committee members
+	and Jeff Law's entry.
+
 2000-10-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (CPLUSPLUS_STD_VER, C_STD_VER, C_STD_NAME): Define.
