@@ -1,5 +1,9 @@
 2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/builtin-prefetch-1.c: Update expected diagnostic.
+
+2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/builtin-prefetch-1.c: Adjust expected messages.
 
 2004-11-08  Steve Ellcey  <sje@cup.hp.com>

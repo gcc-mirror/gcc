@@ -28,12 +28,12 @@ good (int *p)
 void
 bad (int *p)
 {
-  __builtin_prefetch (p, -1, 0);  /* { dg-warning "invalid second arg to '__builtin_prefetch'; using zero" } */
-  __builtin_prefetch (p, 2, 0);   /* { dg-warning "invalid second arg to '__builtin_prefetch'; using zero" } */
-  __builtin_prefetch (p, bogus, 0);   /* { dg-warning "invalid second arg to '__builtin_prefetch'; using zero" } */
-  __builtin_prefetch (p, 0, -1);  /* { dg-warning "invalid third arg to '__builtin_prefetch'; using zero" } */
-  __builtin_prefetch (p, 0, 4);   /* { dg-warning "invalid third arg to '__builtin_prefetch'; using zero" } */
-  __builtin_prefetch (p, 0, bogus);   /* { dg-warning "invalid third arg to '__builtin_prefetch'; using zero" } */
+  __builtin_prefetch (p, -1, 0);  /* { dg-warning "invalid second argument to '__builtin_prefetch'; using zero" } */
+  __builtin_prefetch (p, 2, 0);   /* { dg-warning "invalid second argument to '__builtin_prefetch'; using zero" } */
+  __builtin_prefetch (p, bogus, 0);   /* { dg-warning "invalid second argument to '__builtin_prefetch'; using zero" } */
+  __builtin_prefetch (p, 0, -1);  /* { dg-warning "invalid third argument to '__builtin_prefetch'; using zero" } */
+  __builtin_prefetch (p, 0, 4);   /* { dg-warning "invalid third argument to '__builtin_prefetch'; using zero" } */
+  __builtin_prefetch (p, 0, bogus);   /* { dg-warning "invalid third argument to '__builtin_prefetch'; using zero" } */
 }
 
 int

@@ -1,5 +1,10 @@
 2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* builtins.c, c-common.c, c-decl.c, c-format.c: Say "argument"
+	instead of "arg" in diagnostics.
+
+2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* builtins.c, c-common.c, c-decl.c, c-format.c, c-format.h,
 	c-parse.in, c-pch.c, c-pragma.c, collect2.c, final.c, gcc.c,
 	gcov.c, opts.c, pretty-print.h, protoize.c, reg-stack.c, rtl.c,

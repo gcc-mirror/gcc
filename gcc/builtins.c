@@ -922,28 +922,29 @@ expand_builtin_prefetch (tree arglist)
   /* Argument 1 (read/write flag) must be a compile-time constant int.  */
   if (TREE_CODE (arg1) != INTEGER_CST)
     {
-      error ("second arg to %<__builtin_prefetch%> must be a constant");
+      error ("second argument to %<__builtin_prefetch%> must be a constant");
       arg1 = integer_zero_node;
     }
   op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
   /* Argument 1 must be either zero or one.  */
   if (INTVAL (op1) != 0 && INTVAL (op1) != 1)
     {
-      warning ("invalid second arg to %<__builtin_prefetch%>; using zero");
+      warning ("invalid second argument to %<__builtin_prefetch%>;"
+	       " using zero");
       op1 = const0_rtx;
     }
 
   /* Argument 2 (locality) must be a compile-time constant int.  */
   if (TREE_CODE (arg2) != INTEGER_CST)
     {
-      error ("third arg to %<__builtin_prefetch%> must be a constant");
+      error ("third argument to %<__builtin_prefetch%> must be a constant");
       arg2 = integer_zero_node;
     }
   op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
   /* Argument 2 must be 0, 1, 2, or 3.  */
   if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
     {
-      warning ("invalid third arg to %<__builtin_prefetch%>; using zero");
+      warning ("invalid third argument to %<__builtin_prefetch%>; using zero");
       op2 = const0_rtx;
     }
 
@@ -4158,9 +4159,9 @@ expand_builtin_frame_address (tree fndecl, tree arglist)
   else if (! host_integerp (TREE_VALUE (arglist), 1))
     {
       if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
-	error ("invalid arg to %<__builtin_frame_address%>");
+	error ("invalid argument to %<__builtin_frame_address%>");
       else
-	error ("invalid arg to %<__builtin_return_address%>");
+	error ("invalid argument to %<__builtin_return_address%>");
       return const0_rtx;
     }
   else
@@ -4174,9 +4175,9 @@ expand_builtin_frame_address (tree fndecl, tree arglist)
       if (tem == NULL)
 	{
 	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
-	    warning ("unsupported arg to %<__builtin_frame_address%>");
+	    warning ("unsupported argument to %<__builtin_frame_address%>");
 	  else
-	    warning ("unsupported arg to %<__builtin_return_address%>");
+	    warning ("unsupported argument to %<__builtin_return_address%>");
 	  return const0_rtx;
 	}
 
@@ -4279,7 +4280,7 @@ expand_builtin_expect (tree arglist, rtx target)
 
   if (TREE_CODE (c) != INTEGER_CST)
     {
-      error ("second arg to %<__builtin_expect%> must be a constant");
+      error ("second argument to %<__builtin_expect%> must be a constant");
       c = integer_zero_node;
     }
 

@@ -4577,7 +4577,7 @@ handle_alias_attribute (tree *node, tree name, tree args,
       id = TREE_VALUE (args);
       if (TREE_CODE (id) != STRING_CST)
 	{
-	  error ("alias arg not a string");
+	  error ("alias argument not a string");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -4632,7 +4632,7 @@ handle_visibility_attribute (tree *node, tree name, tree args,
 
   if (TREE_CODE (id) != STRING_CST)
     {
-      error ("visibility arg not a string");
+      error ("visibility argument not a string");
       return NULL_TREE;
     }
 
@@ -4653,7 +4653,7 @@ handle_visibility_attribute (tree *node, tree name, tree args,
   else if (strcmp (TREE_STRING_POINTER (id), "protected") == 0)
     DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;
   else
-    error ("visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\"");
+    error ("visibility argument must be one of \"default\", \"hidden\", \"protected\" or \"internal\"");
   DECL_VISIBILITY_SPECIFIED (decl) = 1;
 
   /* For decls only, go ahead and attach the attribute to the node as well.
@@ -4722,7 +4722,7 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
       id = TREE_VALUE (args);
       if (TREE_CODE (id) != STRING_CST)
 	{
-	  error ("tls_model arg not a string");
+	  error ("tls_model argument not a string");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -4731,7 +4731,7 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
 	  && strcmp (TREE_STRING_POINTER (id), "local-dynamic")
 	  && strcmp (TREE_STRING_POINTER (id), "global-dynamic"))
 	{
-	  error ("tls_model arg must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\"");
+	  error ("tls_model argument must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\"");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -4993,7 +4993,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 
       if (!get_nonnull_operand (TREE_VALUE (args), &arg_num))
 	{
-	  error ("nonnull argument has invalid operand number (arg %lu)",
+	  error ("nonnull argument has invalid operand number (argument %lu)",
 		 (unsigned long) attr_arg_num);
 	  *no_add_attrs = true;
 	  return NULL_TREE;
@@ -5012,7 +5012,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 	  if (!argument
 	      || TREE_CODE (TREE_VALUE (argument)) == VOID_TYPE)
 	    {
-	      error ("nonnull argument with out-of-range operand number (arg %lu, operand %lu)",
+	      error ("nonnull argument with out-of-range operand number (argument %lu, operand %lu)",
 		     (unsigned long) attr_arg_num, (unsigned long) arg_num);
 	      *no_add_attrs = true;
 	      return NULL_TREE;
@@ -5020,7 +5020,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 
 	  if (TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE)
 	    {
-	      error ("nonnull argument references non-pointer operand (arg %lu, operand %lu)",
+	      error ("nonnull argument references non-pointer operand (argument %lu, operand %lu)",
 		   (unsigned long) attr_arg_num, (unsigned long) arg_num);
 	      *no_add_attrs = true;
 	      return NULL_TREE;
@@ -5154,7 +5154,7 @@ check_nonnull_arg (void * ARG_UNUSED (ctx), tree param,
     return;
 
   if (integer_zerop (param))
-    warning ("null argument where non-null required (arg %lu)",
+    warning ("null argument where non-null required (argument %lu)",
 	     (unsigned long) param_num);
 }
 
@@ -5225,14 +5225,14 @@ handle_cleanup_attribute (tree *node, tree name, tree args,
   cleanup_id = TREE_VALUE (args);
   if (TREE_CODE (cleanup_id) != IDENTIFIER_NODE)
     {
-      error ("cleanup arg not an identifier");
+      error ("cleanup argument not an identifier");
       *no_add_attrs = true;
       return NULL_TREE;
     }
   cleanup_decl = lookup_name (cleanup_id);
   if (!cleanup_decl || TREE_CODE (cleanup_decl) != FUNCTION_DECL)
     {
-      error ("cleanup arg not a function");
+      error ("cleanup argument not a function");
       *no_add_attrs = true;
       return NULL_TREE;
     }
