@@ -1,3 +1,8 @@
+2004-01-30  Felix Yen  <fwy@alumni.brown.edu>
+
+	* testsuite/performance/20_util/allocator_thread.cc (do_loop):
+	Don't use clear, but instead assign. Use insert.
+
 2004-01-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/demangle.cc: Add instantiations.
