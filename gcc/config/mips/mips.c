@@ -77,6 +77,7 @@ extern rtx gen_movhi ();
 extern rtx gen_movsi ();
 extern rtx gen_movsi_ulw ();
 extern rtx gen_movsi_usw ();
+extern rtx gen_movstrsi_internal ();
 extern rtx gen_addsi3 ();
 extern rtx gen_iorsi3 ();
 extern rtx gen_andsi3 ();
@@ -1029,7 +1030,7 @@ mips_move_1word (operands, insn, unsignedp)
 	      else if (FP_REG_P (regno0))
 		{
 		  delay = DELAY_LOAD;
-		  return "mtc1\t%z1,%0";
+		  ret = "mtc1\t%z1,%0";
 		}
 	    }
 
@@ -1074,7 +1075,8 @@ mips_move_1word (operands, insn, unsignedp)
 	  if (HALF_PIC_P () && CONSTANT_P (op1) && HALF_PIC_ADDRESS_P (op1))
 	    {
 	      delay = DELAY_LOAD;
-	      ret = "la\t%0,%a1\t\t# pic reference";
+	      ret = "lw\t%0,%2\t\t# pic reference";
+	      operands[2] = HALF_PIC_PTR (op1);
 	    }
 	  else
 	    ret = "la\t%0,%a1";
@@ -1619,12 +1621,13 @@ fail:
    The load is emitted directly, and the store insn is returned.  */
 
 static rtx
-block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align)
+block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align, orig_src)
      rtx src_reg;		/* register holding source memory addresss */
      rtx dest_reg;		/* register holding dest. memory addresss */
      int *p_bytes;		/* pointer to # bytes remaining */
      int *p_offset;		/* pointer to current offset */
      int align;			/* alignment */
+     rtx orig_src;		/* original source for making a reg note */
 {
   int bytes;			/* # bytes remaining */
   int offset;			/* offset to use */
@@ -1633,6 +1636,8 @@ block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align)
   rtx reg;			/* temporary register */
   rtx src_addr;			/* source address */
   rtx dest_addr;		/* destination address */
+  rtx insn;			/* insn of the load */
+  rtx orig_src_addr;		/* original source address */
   rtx (*load_func)();		/* function to generate load insn */
   rtx (*store_func)();		/* function to generate destination insn */
 
@@ -1648,6 +1653,9 @@ block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align)
       store_func = gen_movsi;
     }
 
+#if 0
+  /* Don't generate unligned moves here, rather defer those to the
+     general movestrsi_internal pattern.  */
   else if (bytes >= UNITS_PER_WORD)
     {
       mode = SImode;
@@ -1655,6 +1663,7 @@ block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align)
       load_func = gen_movsi_ulw;
       store_func = gen_movsi_usw;
     }
+#endif
 
   else if (bytes >= UNITS_PER_SHORT && align >= UNITS_PER_SHORT)
     {
@@ -1688,7 +1697,13 @@ block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align)
     }
 
   reg = gen_reg_rtx (mode);
-  emit_insn ((*load_func) (reg, gen_rtx (MEM, mode, src_addr)));
+  insn = emit_insn ((*load_func) (reg, gen_rtx (MEM, mode, src_addr)));
+  orig_src_addr = XEXP (orig_src, 0);
+  if (CONSTANT_P (orig_src_addr))
+    REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUIV,
+				plus_constant (orig_src_addr, offset),
+				REG_NOTES (insn));
+
   return (*store_func) (gen_rtx (MEM, mode, dest_addr), reg);
 }
 
@@ -1710,11 +1725,12 @@ block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align)
    in deference to the R4000.  */
 
 static void
-block_move_sequence (dest_reg, src_reg, bytes, align)
+block_move_sequence (dest_reg, src_reg, bytes, align, orig_src)
      rtx dest_reg;		/* register holding destination address */
      rtx src_reg;		/* register holding source address */
      int bytes;			/* # bytes to move */
      int align;			/* max alignment to assume */
+     rtx orig_src;		/* original source for making a reg note */
 {
   int offset		= 0;
   rtx prev2_store	= (rtx)0;
@@ -1729,7 +1745,9 @@ block_move_sequence (dest_reg, src_reg, bytes, align)
 
       prev2_store = prev_store;
       prev_store = cur_store;
-      cur_store = block_move_load_store (dest_reg, src_reg, &bytes, &offset, align);
+      cur_store = block_move_load_store (dest_reg, src_reg,
+					 &bytes, &offset,
+					 align, orig_src);
     }
 
   /* Finish up last three stores.  */
@@ -1751,11 +1769,11 @@ block_move_sequence (dest_reg, src_reg, bytes, align)
      temp2 = src[1];
      ...
      temp<last> = src[MAX_MOVE_REGS-1];
-     src += MAX_MOVE_REGS;
      dest[0] = temp1;
      dest[1] = temp2;
      ...
      dest[MAX_MOVE_REGS-1] = temp<last>;
+     src += MAX_MOVE_REGS;
      dest += MAX_MOVE_REGS;
    } while (src != final);
 
@@ -1770,19 +1788,21 @@ block_move_sequence (dest_reg, src_reg, bytes, align)
 #define MAX_MOVE_BYTES (MAX_MOVE_REGS * UNITS_PER_WORD)
 
 static void
-block_move_loop (dest_reg, src_reg, bytes, align)
+block_move_loop (dest_reg, src_reg, bytes, align, orig_src)
      rtx dest_reg;		/* register holding destination address */
      rtx src_reg;		/* register holding source address */
      int bytes;			/* # bytes to move */
      int align;			/* alignment */
+     rtx orig_src;		/* original source for making a reg note */
 {
-  rtx stores[MAX_MOVE_REGS];
+  rtx dest_mem		= gen_rtx (MEM, BLKmode, dest_reg);
+  rtx src_mem		= gen_rtx (MEM, BLKmode, src_reg);
+  rtx align_rtx		= gen_rtx (CONST_INT, VOIDmode, align);
   rtx label;
   rtx final_src;
   rtx bytes_rtx;
   int i;
   int leftover;
-  int offset;
 
   if (bytes < 2*MAX_MOVE_BYTES)
     abort ();
@@ -1804,20 +1824,17 @@ block_move_loop (dest_reg, src_reg, bytes, align)
 
   emit_label (label);
 
-  offset = 0;
-  for (i = 0; i < MAX_MOVE_REGS; i++)
-    stores[i] = block_move_load_store (dest_reg, src_reg, &bytes, &offset, align);
-
-  emit_insn (gen_addsi3 (src_reg, src_reg, gen_rtx (CONST_INT, VOIDmode, MAX_MOVE_BYTES)));
-  for (i = 0; i < MAX_MOVE_REGS; i++)
-    emit_insn (stores[i]);
-
-  emit_insn (gen_addsi3 (dest_reg, dest_reg, gen_rtx (CONST_INT, VOIDmode, MAX_MOVE_BYTES)));
+  bytes_rtx = gen_rtx (CONST_INT, VOIDmode, MAX_MOVE_BYTES);
+  emit_insn (gen_movstrsi_internal (dest_mem, src_mem, bytes_rtx, align_rtx));
+  emit_insn (gen_addsi3 (src_reg, src_reg, bytes_rtx));
+  emit_insn (gen_addsi3 (dest_reg, dest_reg, bytes_rtx));
   emit_insn (gen_cmpsi (src_reg, final_src));
   emit_jump_insn (gen_bne (label));
 
   if (leftover)
-    block_move_sequence (dest_reg, src_reg, leftover, align);
+    emit_insn (gen_movstrsi_internal (dest_mem, src_mem,
+				      gen_rtx (CONST_INT, VOIDmode, leftover),
+				      align_rtx));
 }
 
 
@@ -1857,27 +1874,39 @@ expand_block_move (operands)
      rtx operands[];
 {
   rtx bytes_rtx	= operands[2];
+  rtx align_rtx = operands[3];
   int constp	= (GET_CODE (bytes_rtx) == CONST_INT);
   int bytes	= (constp ? INTVAL (bytes_rtx) : 0);
-  int align	= INTVAL (operands[3]);
+  int align	= INTVAL (align_rtx);
+  rtx orig_src	= operands[1];
   rtx src_reg;
   rtx dest_reg;
 
   if (constp && bytes <= 0)
     return;
 
+  if (align > UNITS_PER_WORD)
+    align = UNITS_PER_WORD;
+
   /* Move the address into scratch registers.  */
   dest_reg = copy_addr_to_reg (XEXP (operands[0], 0));
-  src_reg  = copy_addr_to_reg (XEXP (operands[1], 0));
+  src_reg  = copy_addr_to_reg (XEXP (orig_src, 0));
 
   if (TARGET_MEMCPY)
     block_move_call (dest_reg, src_reg, bytes_rtx);
 
+#if 0
+  else if (constp && bytes <= 3*align)
+    block_move_sequence (dest_reg, src_reg, bytes, align, orig_src);
+#endif
+
   else if (constp && bytes <= 2*MAX_MOVE_BYTES)
-    block_move_sequence (dest_reg, src_reg, bytes, align);
+    emit_insn (gen_movstrsi_internal (gen_rtx (MEM, BLKmode, dest_reg),
+				      gen_rtx (MEM, BLKmode, src_reg),
+				      bytes_rtx, align_rtx));
 
   else if (constp && align >= UNITS_PER_WORD && optimize)
-    block_move_loop (dest_reg, src_reg, bytes, align);
+    block_move_loop (dest_reg, src_reg, bytes, align, orig_src);
 
   else if (constp && optimize)
     {
@@ -1898,22 +1927,182 @@ expand_block_move (operands)
       emit_jump_insn (gen_beq (aligned_label));
 
       /* Unaligned loop.  */
-      block_move_loop (dest_reg, src_reg, bytes, 1);
+      block_move_loop (dest_reg, src_reg, bytes, 1, orig_src);
       emit_jump_insn (gen_jump (join_label));
       emit_barrier ();
 
       /* Aligned loop.  */
       emit_label (aligned_label);
-      block_move_loop (dest_reg, src_reg, bytes, UNITS_PER_WORD);
+      block_move_loop (dest_reg, src_reg, bytes, UNITS_PER_WORD, orig_src);
       emit_label (join_label);
 
       /* Bytes at the end of the loop.  */
       if (leftover)
-	block_move_sequence (dest_reg, src_reg, leftover, align);
+	{
+#if 0
+	  if (leftover <= 3*align)
+	    block_move_sequence (dest_reg, src_reg, leftover, align, orig_src);
+
+	  else
+#endif
+	    emit_insn (gen_movstrsi_internal (gen_rtx (MEM, BLKmode, dest_reg),
+					      gen_rtx (MEM, BLKmode, src_reg),
+					      gen_rtx (CONST_INT, VOIDmode, leftover),
+					      gen_rtx (CONST_INT, VOIDmode, align)));
+	}
     }
 
   else
     block_move_call (dest_reg, src_reg, bytes_rtx);
+}
+
+
+/* Emit load/stores for a small constant block_move. 
+
+   operands[0] is the memory address of the destination.
+   operands[1] is the memory address of the source.
+   operands[2] is the number of bytes to move.
+   operands[3] is the alignment.
+   operands[4] is a temp register.
+   operands[5] is a temp register.
+   ... */
+
+char *
+output_block_move (insn, operands, num_regs)
+     rtx insn;
+     rtx operands[];
+     int num_regs;
+{
+  rtx dest_reg		= XEXP (operands[0], 0);
+  rtx src_reg		= XEXP (operands[1], 0);
+  int bytes		= INTVAL (operands[2]);
+  int align		= INTVAL (operands[3]);
+  int num		= 0;
+  int offset		= 0;
+  int i;
+  rtx xoperands[10];
+
+  struct {
+    char *load;			/* load insn without nop */
+    char *load_nop;		/* load insn with trailing nop */
+    char *store;		/* store insn */
+    int offset;			/* current offset */
+    enum machine_mode mode;	/* mode to use on (MEM) */
+  } load_store[4];
+
+  /* If we are given global or static addresses, and we would be
+     emitting a few instructions, try to save time by using a
+     temporary register for the pointer.  */
+  if (bytes > 2*align)
+    {
+      if (CONSTANT_P (src_reg))
+	{
+	  xoperands[1] = operands[1];
+	  xoperands[0] = src_reg = operands[ 3 + num_regs-- ];
+	  output_asm_insn ("la\t%0,%1", xoperands);
+	}
+
+      if (CONSTANT_P (dest_reg))
+	{
+	  xoperands[1] = operands[1];
+	  xoperands[0] = dest_reg = operands[ 3 + num_regs-- ];
+	  output_asm_insn ("la\t%0,%1", xoperands);
+	}
+    }
+
+  if (num_regs > (sizeof (load_store) / sizeof (load_store[0])))
+    num_regs = (sizeof (load_store) / sizeof (load_store[0]));
+
+  else if (num_regs < 1)
+    abort ();
+
+  if (TARGET_GAS && set_noreorder++ == 0)
+    output_asm_insn (".set\tnoreorder", operands);
+
+  while (bytes > 0)
+    {
+      load_store[num].offset = offset;
+
+      if (bytes >= UNITS_PER_WORD && align >= UNITS_PER_WORD)
+	{
+	  load_store[num].load     = "lw\t%0,%1";
+	  load_store[num].load_nop = "lw\t%0,%1%#";
+	  load_store[num].store    = "sw\t%0,%1";
+	  load_store[num].mode     = SImode;
+	  offset += UNITS_PER_WORD;
+	  bytes -= UNITS_PER_WORD;
+	}
+
+      else if (bytes >= UNITS_PER_WORD)
+	{
+	  load_store[num].load     = "ulw\t%0,%1";
+	  load_store[num].load_nop = "ulw\t%0,%1%#";
+	  load_store[num].store    = "usw\t%0,%1";
+	  load_store[num].mode     = SImode;
+	  offset += UNITS_PER_WORD;
+	  bytes -= UNITS_PER_WORD;
+	}
+
+      else if (bytes >= UNITS_PER_SHORT && align >= UNITS_PER_SHORT)
+	{
+	  load_store[num].load     = "lh\t%0,%1";
+	  load_store[num].load_nop = "lh\t%0,%1%#";
+	  load_store[num].store    = "sh\t%0,%1";
+	  load_store[num].offset   = offset;
+	  load_store[num].mode     = HImode;
+	  offset += UNITS_PER_SHORT;
+	  bytes -= UNITS_PER_SHORT;
+	}
+
+      else
+	{
+	  load_store[num].load     = "lb\t%0,%1";
+	  load_store[num].load_nop = "lb\t%0,%1%#";
+	  load_store[num].store    = "sb\t%0,%1";
+	  load_store[num].mode     = QImode;
+	  offset++;
+	  bytes--;
+	}
+
+      /* Emit load/stores now if we have run out of registers or are
+	 at the end of the move.  */
+
+      if (++num == 4 || bytes == 0)
+	{
+	  /* If only load/store, we need a NOP after the load.  */
+	  if (num == 1)
+	    load_store[0].load = load_store[0].load_nop;
+
+	  for (i = 0; i < num; i++)
+	    {
+	      if (!operands[i+4])
+		abort ();
+
+	      if (GET_MODE (operands[i+4]) != load_store[i].mode)
+		operands[i+4] = gen_rtx (REG, load_store[i].mode, REGNO (operands[i+4]));
+
+	      xoperands[0] = operands[i+4];
+	      xoperands[1] = gen_rtx (MEM, load_store[i].mode,
+				      plus_constant (src_reg, load_store[i].offset));
+	      output_asm_insn (load_store[i].load, xoperands);
+	    }
+
+	  for (i = 0; i < num; i++)
+	    {
+	      xoperands[0] = operands[i+4];
+	      xoperands[1] = gen_rtx (MEM, load_store[i].mode,
+				      plus_constant (dest_reg, load_store[i].offset));
+	      output_asm_insn (load_store[i].store, xoperands);
+	    }
+
+	  num = 0;		/* reset load_store */
+	}
+    }
+
+  if (TARGET_GAS && --set_noreorder == 0)
+    output_asm_insn (".set\treorder", operands);
+
+  return "";
 }
 
 
@@ -2234,20 +2423,26 @@ static void
 siginfo (signo)
      int signo;
 {
-  char print_pid[50];
+  char select_pgrp[15];
   char *argv[4];
   pid_t pid;
+  pid_t pgrp;
   int status;
 
   fprintf (stderr, "compiling '%s' in '%s'\n",
 	   (current_function_name != (char *)0) ? current_function_name : "<toplevel>",
 	   (current_function_file != (char *)0) ? current_function_file : "<no file>");
 
+  pgrp = getpgrp ();
+  if (pgrp != -1)
+    sprintf (select_pgrp, "-g%d", pgrp);
+  else
+    strcpy (select_pgrp, "-a");
+
   /* Spawn a ps to tell about current memory usage, etc. */
-  sprintf (print_pid, "-p%d,%d", getpid (), getppid ());
   argv[0] = "ps";
-  argv[1] = print_pid;
-  argv[2] = "-ouser,state,pid,pri,nice,wchan,tt,start,usertime,systime,pcpu,cp,inblock,oublock,vsize,rss,pmem,ucomm";
+  argv[1] = "-ouser,pid,pri,nice,usertime,systime,pcpu,cp,inblock,oublock,vsize,rss,pmem,ucomm";
+  argv[2] = select_pgrp;
   argv[3] = (char *)0;
 
   pid = vfork ();
@@ -2270,10 +2465,7 @@ siginfo (signo)
       (void) signal (SIGINT,  sigint);
       (void) signal (SIGQUIT, sigquit);
     }
-
-  signal (SIGINFO, siginfo);
 }
-
 #endif /* SIGINFO */
 
 
@@ -2415,6 +2607,12 @@ override_options ()
       action.sa_flags = SA_RESTART;
       sigaction (SIGINFO, &action, (struct sigaction *)0);
     }
+#endif
+
+#ifdef _IOLBF
+  /* If -mstats and -quiet, make stderr line buffered.  */
+  if (quiet_flag && TARGET_STATS)
+    setvbuf (stderr, (char *)0, _IOLBF, BUFSIZ);
 #endif
 
   /* Set up the classification arrays now.  */
@@ -3104,6 +3302,9 @@ mips_asm_file_end (file)
   tree name_tree;
   struct extern_list *p;
   int len;
+
+  if (HALF_PIC_P ())
+    HALF_PIC_FINISH (file);
 
   if (TARGET_GP_OPT)
     {
