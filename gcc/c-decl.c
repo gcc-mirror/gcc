@@ -1294,39 +1294,33 @@ duplicate_decls (newdecl, olddecl)
   if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
     {
       if (TREE_CODE (olddecl) == FUNCTION_DECL
-	  && DECL_BUILT_IN (olddecl))
+	  && (DECL_BUILT_IN (olddecl)
+	      || DECL_BUILT_IN_NONANSI (olddecl)))
 	{
-	  /* If you declare a built-in function name as static, the
-	     built-in definition is overridden,
+	  /* If you declare a built-in or predefined function name as static,
+	     the old definition is overridden,
 	     but optionally warn this was a bad choice of name.  */
 	  if (!TREE_PUBLIC (newdecl))
 	    {
-	      if (warn_shadow)
+	      if (!warn_shadow)
+		;
+	      else if (DECL_BUILT_IN (olddecl))
 		warning_with_decl (newdecl, "shadowing built-in function `%s'");
+	      else
+		warning_with_decl (newdecl, "shadowing library function `%s'");
 	    }
 	  /* Likewise, if the built-in is not ansi, then programs can
 	     override it even globally without an error.  */
+	  else if (! DECL_BUILT_IN (olddecl))
+	    warning_with_decl (newdecl,
+			       "library function `%s' declared as non-function");
+
 	  else if (DECL_BUILT_IN_NONANSI (olddecl))
 	    warning_with_decl (newdecl,
 			       "built-in function `%s' declared as non-function");
 	  else
-	    error_with_decl (newdecl,
-			     "built-in function `%s' declared as non-function");
-	}
-      else if (TREE_CODE (olddecl) == FUNCTION_DECL
-	       && DECL_BUILT_IN_NONANSI (olddecl))
-	{
-	  /* If overriding decl is static,
-	     optionally warn this was a bad choice of name.  */
-	  if (!TREE_PUBLIC (newdecl))
-	    {
-	      if (warn_shadow)
-		warning_with_decl (newdecl, "shadowing library function `%s'");
-	    }
-	  /* Otherwise, always warn.  */
-	  else
 	    warning_with_decl (newdecl,
-			       "library function `%s' declared as non-function");
+			     "built-in function `%s' declared as non-function");
 	}
       else
 	{
@@ -3474,9 +3468,11 @@ finish_decl (decl, init, asmspec_tree)
 	      ?
 		/* A static variable with an incomplete type
 		   is an error if it is initialized.
+		   Also if it is not file scope.
 		   Otherwise, let it through, but if it is not `extern'
 		   then it may cause an error message later.  */
-		DECL_INITIAL (decl) != 0
+		(DECL_INITIAL (decl) != 0
+		 || current_binding_level != global_binding_level)
 	      :
 		/* An automatic variable with an incomplete type
 		   is an error.  */
