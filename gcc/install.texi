@@ -71,7 +71,7 @@ see @ref{Cross-Compiler}.)
 Here is an example:
 
 @smallexample
-./configure --build=sparc-sun-sunos4.1
+./configure --host=sparc-sun-sunos4.1
 @end smallexample
 
 A configuration name may be canonical or it may be more or less
