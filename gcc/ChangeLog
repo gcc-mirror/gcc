@@ -1,3 +1,8 @@
+Sat Apr 29 01:15:27 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (calls_function_1):  Propertly handle TREE_LIST expressions;
+	use special_function_p to detect alloca.
+
 Fri Apr 28 16:30:33 2000  Marc Espie <espie@cvs.openbsd.org>
 
 	* gcc.texi: Fixes for makeinfo 4.0 --html.
