@@ -156,6 +156,13 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
       // of the object.
       meth = _Jv_LookupDeclaredMethod (k, meth->name, meth->signature);
     }
+  else
+    {
+      // We have to initialize a static class.  It is safe to do this
+      // here and not in _Jv_CallAnyMethodA because JNI initializes a
+      // class whenever a method lookup is done.
+      _Jv_InitClass (declaringClass);
+    }
 
   return _Jv_CallAnyMethodA (obj, return_type, meth, false,
 			     parameter_types, args);
@@ -404,8 +411,6 @@ _Jv_CallAnyMethodA (jobject obj,
       memcpy (p, &args[arg], tsize);
       p += tsize;
     }
-
-  // FIXME: initialize class here.
 
   using namespace java::lang;
   using namespace java::lang::reflect;
