@@ -1,3 +1,12 @@
+2002-10-22  Jim Wilson  <wilson@redhat.com>
+
+	* config/i386/i386.md (subdi3_1): Add call to ix86_binary_operator_ok.
+
+2002-10-15  Jim Wilson  <wilson@redhat.com>
+
+	PR target/6981
+	* config/i386/i386.md (adddi3_1): Add call to ix86_binary_operator_ok.
+
 2002-10-24  Richard Henderson  <rth@redhat.com>
 
 	PR opt/7944
