@@ -1,3 +1,7 @@
+Mon Jan 19 10:14:55 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* unprotoize.c: Define UNPROTOIZE first, to actually take effect.
+
 Mon Jan 19 10:11:52 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in: Add cpp stringify test.
