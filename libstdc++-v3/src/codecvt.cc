@@ -64,8 +64,9 @@ namespace std
 	 extern_type* __to, extern_type* __to_end, 
 	 extern_type*& __to_next) const
   { 
-    size_t __len = min(__from_end - __from, __to_end - __to);
-    memcpy(__to, __from, __len);
+    // _GLIBCPP_RESOLVE_LIB_DEFECTS
+    // According to the resolution of DR19, "If returns noconv [...]
+    // there are no changes to the values in [to, to_limit)."
     __from_next = __from; 
     __to_next = __to;
     return noconv;  
@@ -86,9 +87,10 @@ namespace std
 	const extern_type* __from_end, const extern_type*& __from_next,
 	intern_type* __to, intern_type* __to_end, 
 	intern_type*& __to_next) const
-  { 
-    size_t __len = min(__from_end - __from, __to_end - __to);
-    memcpy(__to, __from, __len);
+  {
+    // _GLIBCPP_RESOLVE_LIB_DEFECTS
+    // According to the resolution of DR19, "If returns noconv [...]
+    // there are no changes to the values in [to, to_limit)."
     __from_next = __from; 
     __to_next = __to;
     return noconv;  
