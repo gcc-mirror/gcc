@@ -1,3 +1,7 @@
+2003-01-12  Alan Modra  <amodra@bigpond.net.au>
+
+	* expr.c (expand_expr <RDIV_EXPR>): Correct recursive call args.
+
 Sat Jan 11 11:10:19 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR target/9068
