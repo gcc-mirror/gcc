@@ -66,9 +66,9 @@ $ call make_lang_incl "options.h"
 $ !
 $ call make_lang_incl "specs.h"
 $ !
-$ if f$search("md.") .nes. "" then delete md..*
-$ copy [.config.vax]vax.md []md.
-$ echo "Linked `md' to `[.config.vax]vax.md'.
+$ if f$search("vax.md") .nes. "" then delete vax.md;*
+$ copy [.config.vax]vax.md []vax.md
+$ echo "Copied `vax.md' from `[.config.vax]vax.md'."
 $ !
 $ if f$search("aux-output.c") .nes. "" then delete aux-output.c.*
 $ copy [.config.vax]vax.c []aux-output.c
@@ -145,6 +145,10 @@ PROCEDURE process_makefile( )
   SET (NO_WRITE, makefile_buf, ON);	! Used as workspace; don't save it.
   SET (OUTPUT_FILE, complist_buf, "compilers.list");
   !
+  ! Make some textual substitutions.
+  !
+  configure_makefile ();
+  !
   ! Collect a list of supported compilers (``COMPILERS=xxx'' macro).
   !
   identify_compilers ();
@@ -163,7 +167,7 @@ PROCEDURE process_makefile( )
   !
   generate_option_file ("OBJS",      "=", "independent.opt");
   generate_option_file ("LIB2FUNCS", "=", "libgcc2.list");
-  generate_option_file ("BC_ALL",    "=", "bc_all.opt");
+  generate_option_file ("BC_ALL",    "=", "bc_all.list");
   generate_option_file ("BI_OBJ",    "=", "bi_all.opt");
   !
   ! Now change OBJS in the Makefile, so each language specific options file
@@ -186,6 +190,43 @@ PROCEDURE process_makefile( )
     MOVE_VERTICAL (1);		! Go to the next line.
   ENDLOOP;
 ENDPROCEDURE; !process_makefile
+!!
+
+PROCEDURE process_objc_lib( )
+  !
+  ! Intrepret objc/Makefile, after finishing the top makefile.
+  !
+  ON_ERROR
+    [TPU$_OPENIN]:
+      MESSAGE ("Cannot load objc/Makefile for ""ObjClib""; skipping it.");
+      RETURN;
+  ENDON_ERROR;
+
+  ERASE (makefile_buf);			!discard top Makefile
+  POSITION (END_OF (makefile_buf));
+  READ_FILE ("[.objc]Makefile");	!load objc one
+  MESSAGE ("objclib");
+  pat_replace (ASCII(9), " ");		!change any <tab> to <space>
+  generate_option_file ("OBJC_O", "=", "objc-objs.opt");
+  POSITION (BEGINNING_OF (makefile_buf));
+  ! Join any continuation lines; we want the header list to be one line.
+  pat_replace ("\" & LINE_END, );
+  generate_option_file ("OBJC_H", "=", "objc-hdrs.list");
+ENDPROCEDURE; !process_objc_lib
+!!
+
+PROCEDURE configure_makefile( )
+  !
+  ! Plug in some values normally handled by `configure'.  Rather than
+  ! replacing the dummy entries, insert the real entries before them.
+  !
+  POSITION (BEGINNING_OF (makefile_buf));
+  COPY_TEXT ("target=vax-vms");			SPLIT_LINE;
+  COPY_TEXT ("out_file=aux-output.c");		SPLIT_LINE;	! vax/vax.c
+  COPY_TEXT ("out_object_file=aux-output.o");	SPLIT_LINE;	! aux-output.obj
+  COPY_TEXT ("md_file=vax.md");			SPLIT_LINE;	! vax/vax.md
+  COPY_TEXT ("tm_file=tm.h");			SPLIT_LINE;	! vax/tm-vms.h
+ENDPROCEDURE; !configure_makefile
 !!
 
 PROCEDURE identify_compilers( )
@@ -259,10 +300,11 @@ PROCEDURE generate_option_file( tag_name, punct, outfile_name )
   ! Now fix up a few things in the output buffer.
   pat_replace (("bytecode"|"Makefile") & (SPAN(" ")|LINE_END), " ");
 !#  FILL (CURRENT_BUFFER, " ", 1, 80, 0);	! Condense things a bit.
-  pat_replace ("." & ("o"|"c"|"h"|"y") & ((SPAN(" ")&LINE_END)|LINE_END), LINE_END);
-  pat_replace ("." & ("o"|"c"|"h"|"y") & SPAN(" "), ",");
-!#  ! Remove trailing commas, if present.  {Above patterns preclude any such.}
-!#  pat_replace ("," & ((SPAN(" ")&LINE_END)|LINE_END), LINE_END);
+  pat_replace ("." & ("o"|"c"|"y") & ((SPAN(" ")&LINE_END)|LINE_END), LINE_END);
+  pat_replace ("." & ("o"|"c"|"y") & SPAN(" "), ",");
+  pat_replace (".h" & (SPAN(" ")|LINE_END), ".h,");
+  ! Remove trailing commas, if present.
+  pat_replace ("," & ((SPAN(" ")&LINE_END)|LINE_END), LINE_END);
   ! Get rid of spaces and blank lines.
   pat_replace (SPAN(" "), LINE_END);
   pat_replace (LINE_BEGIN & LINE_END, );
@@ -389,14 +431,14 @@ ENDPROCEDURE; !pat_replace
 ! This is the main routine.
 !
 process_makefile ();
+process_objc_lib ();	!this uses a different makefile
 QUIT;	! All done; don't write any modified buffers.
 !!
 $ echo ""
 $!
 $! Remove excessive versions of the option files...
 $!
-$ purge *.opt
-$ purge compilers.list,libgcc2.list
+$ purge *.opt,*.list
 $!
 $!
 $!
