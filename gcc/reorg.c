@@ -3592,6 +3592,10 @@ dbr_schedule (first, file)
   /* It is not clear why the line below is needed, but it does seem to be.  */
   unfilled_firstobj = (rtx *) obstack_alloc (&unfilled_slots_obstack, 0);
 
+  /* Reposition the prologue and epilogue notes in case we moved the
+     prologue/epilogue insns.  */
+  reposition_prologue_and_epilogue_notes (first);
+
   if (file)
     {
       register int i, j, need_comma;
