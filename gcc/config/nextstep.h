@@ -41,11 +41,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   }
 #endif /* CROSS_COMPILE */
 
-/* Search for compiler tools in /lib.  */
-
-#undef	STANDARD_EXEC_PREFIX
-#define STANDARD_EXEC_PREFIX "/lib/"
-
 #undef	EXTRA_FORMAT_FUNCTIONS
 #define EXTRA_FORMAT_FUNCTIONS \
       "NXPrintf",	FALSE,	2,	FALSE,	\
@@ -56,13 +51,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       "bsd_sprintf",	FALSE,	2,	FALSE,	\
       "bsd_vsprintf",	FALSE,	2,	TRUE,
 
-/* Use NeXT's special calling convention for sending an Objc message.  */
+/* Make -fnext-runtime the default.  */
 
 #define NEXT_OBJC_RUNTIME
-
-/* NeXT-private compiler modifications */
-
-#define NeXT_OBJC
 
 /* We have atexit.  */
 
