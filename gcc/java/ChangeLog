@@ -1,3 +1,20 @@
+Mon Mar 15 12:18:29 1999  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (make_class):  Don't set CLASS_P here (because
+	this function is also called by build_java_array_type).
+	(push_class):  Set CLASS_P here instead.
+	* parse.h (TYPE_CLASS_P):  Check for TYPE_ARRAY_P is redundant.
+
+	* jcf-dump.c (print_access_flags):  Take extra parameter to indicate
+	context.  If the context is class, perfer "super" over "synchronized".
+	* jcf-write.c (generate_classfile):  Don't add ACC_SUPER if interface.
+
+	* parse.y (create_class):  Don't call parser_check_super here;
+	it is not robust.  Always wait until later.
+
+	* parse.y (method_header):  For interfaces, set ACC_ABSTRACT (to
+	match what JDK 1.2 does), but don't set ACC_PUBLIC.
+
 Sat Mar 13 18:16:34 1999  Per Bothner  <bothner@cygnus.com>
 
 	* lex.c (java_read_char):  UNGET invalid non-initial utf8 character.
