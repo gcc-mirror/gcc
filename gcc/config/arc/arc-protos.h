@@ -18,11 +18,7 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifdef RTX_CODE
-#ifdef TREE_CODE
 extern void arc_va_start (tree, rtx);
-extern rtx arc_va_arg (tree, tree);
-#endif /* TREE_CODE */
 
 extern enum machine_mode arc_select_cc_mode (enum rtx_code, rtx, rtx);
 
@@ -55,11 +51,8 @@ extern int const_sint32_operand (rtx, enum machine_mode);
 extern int const_uint32_operand (rtx, enum machine_mode);
 extern int proper_comparison_operator (rtx, enum machine_mode);
 extern int shift_operator (rtx, enum machine_mode);
-#endif /* RTX_CODE */
 
-#ifdef TREE_CODE
 extern enum arc_function_type arc_compute_function_type (tree);
-#endif /* TREE_CODE */
 
 
 extern void arc_init (void);
@@ -71,4 +64,3 @@ extern void arc_finalize_pic (void);
 extern void arc_ccfsm_at_label (const char *, int);
 extern int arc_ccfsm_branch_deleted_p (void);
 extern void arc_ccfsm_record_branch_deleted (void);
-
