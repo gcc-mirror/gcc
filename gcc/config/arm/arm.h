@@ -1469,7 +1469,9 @@ enum reg_class
    `S' means any symbol that has the SYMBOL_REF_FLAG set or a CONSTANT_POOL
    address.  This means that the symbol is in the text segment and can be
    accessed without using a load.
-   'U' is an address valid for VFP load/store insns.  */
+   'U' Prefixes an extended memory constraint where:
+   'Uv' is an address valid for VFP load/store insns.  
+   'Uq' is an address valid for ldrsb.  */
 
 #define EXTRA_CONSTRAINT_STR_ARM(OP, C, STR)			\
   (((C) == 'Q') ? (GET_CODE (OP) == MEM				\
