@@ -1,3 +1,9 @@
+2004-08-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	* sched-deps.c (get_condition): Rewrite using jump support functions.
+	Use reversed_comparison_code.
+	(conditions_mutex_p): Use reversed_comparison_code.
+
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (override_options): Disable hot/cold partitioning
