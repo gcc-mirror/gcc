@@ -4203,7 +4203,7 @@ strength_reduce (loop, insn_count, flags)
 	    {
 	      unsigned int align = REGNO_POINTER_ALIGN (REGNO (v->add_val));
 
-	      if (align == 0
+	      if (align == 0 || GET_CODE (v->mult_val) != CONST_INT
 		  || INTVAL (v->mult_val) % (align / BITS_PER_UNIT) != 0)
 		align = 0;
 
