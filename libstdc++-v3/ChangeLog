@@ -1,3 +1,13 @@
+2000-12-20  Benjamin Kosnik  <bkoz@fillmore.constant.com>
+
+	* testsuite/17_intro/headers_c.cc (main): New file.
+
+	* acinclude.m4 (SECTION_FLAGS): Only set if --enable-debug is not
+	passed.
+	(OPT_LDFLAGS): And here.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	
 2000-12-19  Curtis Janssen  <cljanss@ca.sandia.gov>
 
 	* src/ios.cc (ios_base::_M_grow_words(int ix)): Fix libstdc++/1089.

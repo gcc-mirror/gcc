@@ -230,7 +230,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
     # this is the suspicious part
     CXXFLAGS=''
   fi
-  if test "$ac_gabydiags" = "yes"; then
+  if test x"$ac_gabydiags" = x"yes"; then
     WFMT_FLAGS='-fdiagnostics-show-location=once'
   fi
   AC_MSG_RESULT($ac_gabydiags)
@@ -246,7 +246,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
     # this is the suspicious part
     CXXFLAGS=''
   fi
-  if test "$ac_fdsections" = "yes"; then
+  if test x"$ac_fdsections" = x"yes" && x"$enable_debug" = x"no"; then
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
   fi
   AC_MSG_RESULT($ac_fdsections)
@@ -314,7 +314,7 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   fi
 
   # Set linker optimization flags.
-  if test "$ac_cv_prog_gnu_ld" = "yes"; then
+  if test x"$ac_cv_prog_gnu_ld" = x"yes" && x"$enable_debug" = x"no"; then
     OPT_LDFLAGS='-Wl,-O1'
   fi
 
@@ -1167,7 +1167,7 @@ dnl Option parsed, now set things appropriately
 case "${enable_debug}" in
     yes) 
         DEBUG_FLAGS='-O0 -ggdb3'                        
-        ;;
+        ;; 
     no)   
         DEBUG_FLAGS='-g'
         ;;

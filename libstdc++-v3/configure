@@ -2593,7 +2593,7 @@ fi
 case "${enable_debug}" in
     yes) 
         DEBUG_FLAGS='-O0 -ggdb3'                        
-        ;;
+        ;; 
     no)   
         DEBUG_FLAGS='-g'
         ;;
@@ -3334,7 +3334,7 @@ fi
   fi
 
   # Set linker optimization flags.
-  if test "$ac_cv_prog_gnu_ld" = "yes"; then
+  if test x"$ac_cv_prog_gnu_ld" = x"yes" && x"$enable_debug" = x"no"; then
     OPT_LDFLAGS='-Wl,-O1'
   fi
 
@@ -4493,7 +4493,7 @@ rm -f conftest*
     # this is the suspicious part
     CXXFLAGS=''
   fi
-  if test "$ac_gabydiags" = "yes"; then
+  if test x"$ac_gabydiags" = x"yes"; then
     WFMT_FLAGS='-fdiagnostics-show-location=once'
   fi
   echo "$ac_t""$ac_gabydiags" 1>&6
@@ -4527,7 +4527,7 @@ rm -f conftest*
     # this is the suspicious part
     CXXFLAGS=''
   fi
-  if test "$ac_fdsections" = "yes"; then
+  if test x"$ac_fdsections" = x"yes" && x"$enable_debug" = x"no"; then
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
   fi
   echo "$ac_t""$ac_fdsections" 1>&6
@@ -4610,7 +4610,7 @@ fi
   fi
 
   # Set linker optimization flags.
-  if test "$ac_cv_prog_gnu_ld" = "yes"; then
+  if test x"$ac_cv_prog_gnu_ld" = x"yes" && x"$enable_debug" = x"no"; then
     OPT_LDFLAGS='-Wl,-O1'
   fi
 
