@@ -2086,7 +2086,7 @@ write_action (struct decision *p, struct decision_test *test,
 	  break;
 
 	case SPLIT:
-	  printf ("%sreturn gen_split_%d (operands);\n",
+	  printf ("%sreturn gen_split_%d (insn, operands);\n",
 		  indent, test->u.insn.code_number);
 	  break;
 
@@ -2583,7 +2583,7 @@ make_insn_sequence (rtx insn, enum routine_type type)
 
     case SPLIT:
       /* Define the subroutine we will call below and emit in genemit.  */
-      printf ("extern rtx gen_split_%d (rtx *);\n", next_insn_code);
+      printf ("extern rtx gen_split_%d (rtx, rtx *);\n", next_insn_code);
       break;
 
     case PEEPHOLE2:

@@ -61,8 +61,8 @@ const struct attribute_spec arm_attribute_table[];
 /* Forward function declarations.  */
 static arm_stack_offsets *arm_get_frame_offsets (void);
 static void arm_add_gc_roots (void);
-static int arm_gen_constant (enum rtx_code, enum machine_mode, HOST_WIDE_INT,
-			     rtx, rtx, int, int);
+static int arm_gen_constant (enum rtx_code, enum machine_mode, rtx,
+			     HOST_WIDE_INT, rtx, rtx, int, int);
 static unsigned bit_count (unsigned long);
 static int arm_address_register_rtx_p (rtx, int);
 static int arm_legitimate_index_p (enum machine_mode, rtx, RTX_CODE, int);
@@ -140,6 +140,7 @@ static rtx safe_vector_operand (rtx, enum machine_mode);
 static rtx arm_expand_binop_builtin (enum insn_code, tree, rtx);
 static rtx arm_expand_unop_builtin (enum insn_code, tree, rtx, int);
 static rtx arm_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+static void emit_constant_insn (rtx cond, rtx pattern);
 
 #ifdef OBJECT_FORMAT_ELF
 static void arm_elf_asm_named_section (const char *, unsigned int);
@@ -1343,9 +1344,16 @@ const_ok_for_op (HOST_WIDE_INT i, enum rtx_code code)
    Return value is the number of insns emitted.  */
 
 int
-arm_split_constant (enum rtx_code code, enum machine_mode mode,
+arm_split_constant (enum rtx_code code, enum machine_mode mode, rtx insn,
 		    HOST_WIDE_INT val, rtx target, rtx source, int subtargets)
 {
+  rtx cond;
+
+  if (insn && GET_CODE (PATTERN (insn)) == COND_EXEC)
+    cond = COND_EXEC_TEST (PATTERN (insn));
+  else
+    cond = NULL_RTX;
+
   if (subtargets || code == SET
       || (GET_CODE (target) == REG && GET_CODE (source) == REG
 	  && REGNO (target) != REGNO (source)))
@@ -1360,7 +1368,9 @@ arm_split_constant (enum rtx_code code, enum machine_mode mode,
 	 Ref: gcc -O1 -mcpu=strongarm gcc.c-torture/compile/980506-2.c
       */
       if (!after_arm_reorg
-	  && (arm_gen_constant (code, mode, val, target, source, 1, 0)
+	  && !cond
+	  && (arm_gen_constant (code, mode, NULL_RTX, val, target, source, 
+				1, 0)
 	      > arm_constant_limit + (code != SET)))
 	{
 	  if (code == SET)
@@ -1388,7 +1398,8 @@ arm_split_constant (enum rtx_code code, enum machine_mode mode,
 	}
     }
 
-  return arm_gen_constant (code, mode, val, target, source, subtargets, 1);
+  return arm_gen_constant (code, mode, cond, val, target, source, subtargets, 
+			   1);
 }
 
 static int
@@ -1418,11 +1429,23 @@ count_insns_for_constant (HOST_WIDE_INT remainder, int i)
   return num_insns;
 }
 
+/* Emit an instruction with the indicated PATTERN.  If COND is
+   non-NULL, conditionalize the execution of the instruction on COND
+   being true.  */
+
+static void
+emit_constant_insn (rtx cond, rtx pattern)
+{
+  if (cond)
+    pattern = gen_rtx_COND_EXEC (VOIDmode, copy_rtx (cond), pattern);
+  emit_insn (pattern);
+}
+
 /* As above, but extra parameter GENERATE which, if clear, suppresses
    RTL generation.  */
 
 static int
-arm_gen_constant (enum rtx_code code, enum machine_mode mode,
+arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 		  HOST_WIDE_INT val, rtx target, rtx source, int subtargets,
 		  int generate)
 {
@@ -1460,8 +1483,9 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
       if (remainder == 0xffffffff)
 	{
 	  if (generate)
-	    emit_insn (gen_rtx_SET (VOIDmode, target,
-				    GEN_INT (ARM_SIGN_EXTEND (val))));
+	    emit_constant_insn (cond,
+				gen_rtx_SET (VOIDmode, target,
+					     GEN_INT (ARM_SIGN_EXTEND (val))));
 	  return 1;
 	}
       if (remainder == 0)
@@ -1469,7 +1493,8 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 	  if (reload_completed && rtx_equal_p (target, source))
 	    return 0;
 	  if (generate)
-	    emit_insn (gen_rtx_SET (VOIDmode, target, source));
+	    emit_constant_insn (cond,
+				gen_rtx_SET (VOIDmode, target, source));
 	  return 1;
 	}
       break;
@@ -1478,7 +1503,8 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
       if (remainder == 0)
 	{
 	  if (generate)
-	    emit_insn (gen_rtx_SET (VOIDmode, target, const0_rtx));
+	    emit_constant_insn (cond,
+				gen_rtx_SET (VOIDmode, target, const0_rtx));
 	  return 1;
 	}
       if (remainder == 0xffffffff)
@@ -1486,7 +1512,8 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 	  if (reload_completed && rtx_equal_p (target, source))
 	    return 0;
 	  if (generate)
-	    emit_insn (gen_rtx_SET (VOIDmode, target, source));
+	    emit_constant_insn (cond,
+				gen_rtx_SET (VOIDmode, target, source));
 	  return 1;
 	}
       can_invert = 1;
@@ -1498,14 +1525,16 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 	  if (reload_completed && rtx_equal_p (target, source))
 	    return 0;
 	  if (generate)
-	    emit_insn (gen_rtx_SET (VOIDmode, target, source));
+	    emit_constant_insn (cond,
+				gen_rtx_SET (VOIDmode, target, source));
 	  return 1;
 	}
       if (remainder == 0xffffffff)
 	{
 	  if (generate)
-	    emit_insn (gen_rtx_SET (VOIDmode, target,
-				    gen_rtx_NOT (mode, source)));
+	    emit_constant_insn (cond,
+				gen_rtx_SET (VOIDmode, target,
+					     gen_rtx_NOT (mode, source)));
 	  return 1;
 	}
 
@@ -1518,16 +1547,18 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
       if (remainder == 0)
 	{
 	  if (generate)
-	    emit_insn (gen_rtx_SET (VOIDmode, target,
-				    gen_rtx_NEG (mode, source)));
+	    emit_constant_insn (cond,
+				gen_rtx_SET (VOIDmode, target,
+					     gen_rtx_NEG (mode, source)));
 	  return 1;
 	}
       if (const_ok_for_arm (val))
 	{
 	  if (generate)
-	    emit_insn (gen_rtx_SET (VOIDmode, target, 
-				    gen_rtx_MINUS (mode, GEN_INT (val),
-						   source)));
+	    emit_constant_insn (cond,
+				gen_rtx_SET (VOIDmode, target, 
+					     gen_rtx_MINUS (mode, GEN_INT (val),
+							    source)));
 	  return 1;
 	}
       can_negate = 1;
@@ -1544,10 +1575,12 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
       || (can_invert && const_ok_for_arm (~val)))
     {
       if (generate)
-	emit_insn (gen_rtx_SET (VOIDmode, target,
-				(source ? gen_rtx_fmt_ee (code, mode, source,
-						   GEN_INT (val))
-				 : GEN_INT (val))));
+	emit_constant_insn (cond,
+			    gen_rtx_SET (VOIDmode, target,
+					 (source 
+					  ? gen_rtx_fmt_ee (code, mode, source,
+							    GEN_INT (val))
+					  : GEN_INT (val))));
       return 1;
     }
 
@@ -1600,10 +1633,12 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 	      if (generate)
 		{
 		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
-		  emit_insn (gen_rtx_SET (VOIDmode, new_src, 
-					  GEN_INT (temp1)));
-		  emit_insn (gen_ashrsi3 (target, new_src, 
-					  GEN_INT (set_sign_bit_copies - 1)));
+		  emit_constant_insn (cond,
+				      gen_rtx_SET (VOIDmode, new_src, 
+						   GEN_INT (temp1)));
+		  emit_constant_insn (cond,
+				      gen_ashrsi3 (target, new_src, 
+						   GEN_INT (set_sign_bit_copies - 1)));
 		}
 	      return 2;
 	    }
@@ -1615,10 +1650,12 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 	      if (generate)
 		{
 		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
-		  emit_insn (gen_rtx_SET (VOIDmode, new_src,
-					  GEN_INT (temp1)));
-		  emit_insn (gen_ashrsi3 (target, new_src, 
-					  GEN_INT (set_sign_bit_copies - 1)));
+		  emit_constant_insn (cond,
+				      gen_rtx_SET (VOIDmode, new_src,
+						   GEN_INT (temp1)));
+		  emit_constant_insn (cond,
+				      gen_ashrsi3 (target, new_src, 
+						   GEN_INT (set_sign_bit_copies - 1)));
 		}
 	      return 2;
 	    }
@@ -1643,16 +1680,18 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 		  rtx new_src = (subtargets
 				 ? (generate ? gen_reg_rtx (mode) : NULL_RTX)
 				 : target);
-		  insns = arm_gen_constant (code, mode, temp2, new_src,
+		  insns = arm_gen_constant (code, mode, cond, temp2, new_src,
 					    source, subtargets, generate);
 		  source = new_src;
 		  if (generate)
-		    emit_insn (gen_rtx_SET
-			       (VOIDmode, target,
-				gen_rtx_IOR (mode,
-					     gen_rtx_ASHIFT (mode, source,
-							     GEN_INT (i)),
-					     source)));
+		    emit_constant_insn 
+		      (cond,
+		       gen_rtx_SET
+		       (VOIDmode, target,
+			gen_rtx_IOR (mode,
+				     gen_rtx_ASHIFT (mode, source,
+						     GEN_INT (i)),
+				     source)));
 		  return insns + 1;
 		}
 	    }
@@ -1666,12 +1705,13 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 		  rtx new_src = (subtargets
 				 ? (generate ? gen_reg_rtx (mode) : NULL_RTX)
 				 : target);
-		  insns = arm_gen_constant (code, mode, temp1, new_src,
+		  insns = arm_gen_constant (code, mode, cond, temp1, new_src,
 					    source, subtargets, generate);
 		  source = new_src;
 		  if (generate)
-		    emit_insn
-		      (gen_rtx_SET (VOIDmode, target,
+		    emit_constant_insn
+		      (cond,
+		       gen_rtx_SET (VOIDmode, target,
 				    gen_rtx_IOR
 				    (mode,
 				     gen_rtx_LSHIFTRT (mode, source,
@@ -1698,9 +1738,13 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 		{
 		  rtx sub = subtargets ? gen_reg_rtx (mode) : target;
 
-		  emit_insn (gen_rtx_SET (VOIDmode, sub, GEN_INT (val)));
-		  emit_insn (gen_rtx_SET (VOIDmode, target, 
-					  gen_rtx_fmt_ee (code, mode, source, sub)));
+		  emit_constant_insn (cond,
+				      gen_rtx_SET (VOIDmode, sub, 
+						   GEN_INT (val)));
+		  emit_constant_insn (cond,
+				      gen_rtx_SET (VOIDmode, target, 
+						   gen_rtx_fmt_ee (code, mode,
+								   source, sub)));
 		}
 	      return 2;
 	    }
@@ -1717,15 +1761,19 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 	      rtx sub = subtargets ? gen_reg_rtx (mode) : target;
 	      rtx shift = GEN_INT (set_sign_bit_copies);
 
-	      emit_insn (gen_rtx_SET (VOIDmode, sub,
-				      gen_rtx_NOT (mode, 
-						   gen_rtx_ASHIFT (mode,
-								   source, 
-								   shift))));
-	      emit_insn (gen_rtx_SET (VOIDmode, target,
-				      gen_rtx_NOT (mode,
-						   gen_rtx_LSHIFTRT (mode, sub,
-								     shift))));
+	      emit_constant_insn 
+		(cond,
+		 gen_rtx_SET (VOIDmode, sub,
+			      gen_rtx_NOT (mode, 
+					   gen_rtx_ASHIFT (mode,
+							   source, 
+							   shift))));
+	      emit_constant_insn 
+		(cond,
+		 gen_rtx_SET (VOIDmode, target,
+			      gen_rtx_NOT (mode,
+					   gen_rtx_LSHIFTRT (mode, sub,
+							     shift))));
 	    }
 	  return 2;
 	}
@@ -1738,15 +1786,19 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 	      rtx sub = subtargets ? gen_reg_rtx (mode) : target;
 	      rtx shift = GEN_INT (set_zero_bit_copies);
 
-	      emit_insn (gen_rtx_SET (VOIDmode, sub,
-				      gen_rtx_NOT (mode,
-						   gen_rtx_LSHIFTRT (mode,
-								     source,
-								     shift))));
-	      emit_insn (gen_rtx_SET (VOIDmode, target,
-				      gen_rtx_NOT (mode,
-						   gen_rtx_ASHIFT (mode, sub,
-								   shift))));
+	      emit_constant_insn
+		(cond,
+		 gen_rtx_SET (VOIDmode, sub,
+			      gen_rtx_NOT (mode,
+					   gen_rtx_LSHIFTRT (mode,
+							     source,
+							     shift))));
+	      emit_constant_insn 
+		(cond,
+		 gen_rtx_SET (VOIDmode, target,
+			      gen_rtx_NOT (mode,
+					   gen_rtx_ASHIFT (mode, sub,
+							   shift))));
 	    }
 	  return 2;
 	}
@@ -1756,16 +1808,19 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 	  if (generate)
 	    {
 	      rtx sub = subtargets ? gen_reg_rtx (mode) : target;
-	      emit_insn (gen_rtx_SET (VOIDmode, sub,
-				      gen_rtx_NOT (mode, source)));
+	      emit_constant_insn (cond,
+				  gen_rtx_SET (VOIDmode, sub,
+					       gen_rtx_NOT (mode, source)));
 	      source = sub;
 	      if (subtargets)
 		sub = gen_reg_rtx (mode);
-	      emit_insn (gen_rtx_SET (VOIDmode, sub,
-				      gen_rtx_AND (mode, source, 
-						   GEN_INT (temp1))));
-	      emit_insn (gen_rtx_SET (VOIDmode, target,
-				      gen_rtx_NOT (mode, sub)));
+	      emit_constant_insn (cond,
+				  gen_rtx_SET (VOIDmode, sub,
+					       gen_rtx_AND (mode, source, 
+							    GEN_INT (temp1))));
+	      emit_constant_insn (cond,
+				  gen_rtx_SET (VOIDmode, target,
+					       gen_rtx_NOT (mode, sub)));
 	    }
 	  return 3;
 	}
@@ -1784,14 +1839,16 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 	      if (generate)
 		{
 		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
-		  insns = arm_gen_constant (AND, mode, remainder | shift_mask,
+		  insns = arm_gen_constant (AND, mode, cond, 
+					    remainder | shift_mask,
 					    new_src, source, subtargets, 1);
 		  source = new_src;
 		}
 	      else
 		{
 		  rtx targ = subtargets ? NULL_RTX : target;
-		  insns = arm_gen_constant (AND, mode, remainder | shift_mask,
+		  insns = arm_gen_constant (AND, mode, cond,
+					    remainder | shift_mask,
 					    targ, source, subtargets, 0);
 		}
 	    }
@@ -1818,7 +1875,8 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 		{
 		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
 
-		  insns = arm_gen_constant (AND, mode, remainder | shift_mask,
+		  insns = arm_gen_constant (AND, mode, cond,
+					    remainder | shift_mask,
 					    new_src, source, subtargets, 1);
 		  source = new_src;
 		}
@@ -1826,7 +1884,8 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 		{
 		  rtx targ = subtargets ? NULL_RTX : target;
 
-		  insns = arm_gen_constant (AND, mode, remainder | shift_mask,
+		  insns = arm_gen_constant (AND, mode, cond,
+					    remainder | shift_mask,
 					    targ, source, subtargets, 0);
 		}
 	    }
@@ -1971,7 +2030,9 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode,
 		else
 		  temp1_rtx = gen_rtx_fmt_ee (code, mode, source, temp1_rtx);
 
-		emit_insn (gen_rtx_SET (VOIDmode, new_src, temp1_rtx));
+		emit_constant_insn (cond,
+				    gen_rtx_SET (VOIDmode, new_src, 
+						 temp1_rtx));
 		source = new_src;
 	      }
 
