@@ -1,3 +1,8 @@
+2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * g++.old-deja/g++.other/syshdr1.C: Update.
+        * gcc.dg/cpp/lineflags.c: Remove temporarily.
+
 2000-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.old-deja/g++.oliva/template5.C: Remove XFAILs.
