@@ -1,3 +1,7 @@
+2002-07-15  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/sparc/netbsd-elf.h (TRANSFER_FROM_TRAMPOLINE): Remove.
+
 2002-07-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* bb-reorder.c (make_reorder_chain_1): Search harder for the vax

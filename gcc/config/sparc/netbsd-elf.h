@@ -115,9 +115,6 @@ Boston, MA 02111-1307, USA.  */
  * Clean up afterwards generic SPARC ELF configuration.
  */
 
-#undef TRANSFER_FROM_TRAMPOLINE
-#define TRANSFER_FROM_TRAMPOLINE
-
 /* FIXME: Aren't these supposed to be available for SPARC ELF?  */
 #undef MULDI3_LIBCALL
 #undef DIVDI3_LIBCALL
