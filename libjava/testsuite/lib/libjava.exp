@@ -296,14 +296,16 @@ proc libjava_arguments {{mode compile}} {
     global env
     set env(CLASSPATH) ".:$srcdir/$subdir:$objdir:$objdir/../libgcj.jar"
 
-    global wrapper_file wrap_compile_flags;
-    lappend args "additional_flags=$wrap_compile_flags";
-    lappend args "libs=$wrapper_file";
-    lappend args "libs=$libjava";
-    lappend args "libs=$libgc";
-    lappend args "libs=$libqthreads"
-    lappend args "libs=$libz"
-    lappend args debug
+    if {$mode == "link"} {
+	global wrapper_file wrap_compile_flags;
+	lappend args "additional_flags=$wrap_compile_flags";
+	lappend args "libs=$wrapper_file";
+	lappend args "libs=$libjava";
+	lappend args "libs=$libgc";
+	lappend args "libs=$libqthreads"
+	lappend args "libs=$libz"
+	lappend args debug
+    }
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
 	lappend args "libs=${gluefile}"
