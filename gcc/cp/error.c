@@ -831,10 +831,10 @@ dump_decl (tree t, int flags)
       /* Fall through.  */
 
     case FUNCTION_DECL:
-      if (DECL_GLOBAL_CTOR_P (t) || DECL_GLOBAL_DTOR_P (t))
-	dump_global_iord (t);
-      else if (! DECL_LANG_SPECIFIC (t))
+      if (! DECL_LANG_SPECIFIC (t))
 	pp_identifier (cxx_pp, "<built-in>");
+      else if (DECL_GLOBAL_CTOR_P (t) || DECL_GLOBAL_DTOR_P (t))
+	dump_global_iord (t);
       else
         dump_function_decl (t, flags);
       break;
