@@ -473,9 +473,6 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	  return 0;
 	}
 
-      if  (handler_pc >= start_pc && handler_pc < end_pc)
-	warning ("exception handler inside code that is being protected");
-
       add_handler (start_pc, end_pc,
 		   lookup_label (handler_pc),
 		   catch_type == 0 ? NULL_TREE

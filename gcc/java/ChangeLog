@@ -1,3 +1,8 @@
+2003-10-28  Frank Ch. Eigler  <fche@redhat.com>
+
+	* verify.c (verify_jvm_instructions): Don't warn about legal
+	eh binding regions generated for example by jdk 1.4.1.
+
 2003-10-24  David S. Miller  <davem@redhat.com>
 
 	* jcf-parse.c (jcf_parse): Fix args to fatal_error().
