@@ -4844,21 +4844,6 @@ choose_reload_regs (insn, avoid_return_reg)
 				reload_when_needed[j], reload_mode[j]);
     }
 
-  /* Ban all registers used for argument passing to the current
-     function call.  */
-  if (GET_CODE (insn) == CALL_INSN)
-    {
-      rtx link;
-
-      for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
-	if (GET_CODE (XEXP (link, 0)) == USE)
-          {
-	    register rtx reg = SET_DEST (XEXP (link, 0));
-	    mark_reload_reg_in_use (REGNO (reg), 0, RELOAD_FOR_INPUT,
-				    GET_MODE (reg));
-          }
-    }
-
   if (n_reloads > 1)
     qsort (reload_order, n_reloads, sizeof (short), reload_reg_class_lower);
 
