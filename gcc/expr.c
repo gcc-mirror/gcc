@@ -6298,7 +6298,8 @@ expand_increment (exp, post)
 
   /* Stabilize any component ref that might need to be
      evaluated more than once below.  */
-  if (TREE_CODE (incremented) == BIT_FIELD_REF
+  if (!post
+      || TREE_CODE (incremented) == BIT_FIELD_REF
       || (TREE_CODE (incremented) == COMPONENT_REF
 	  && (TREE_CODE (TREE_OPERAND (incremented, 0)) != INDIRECT_REF
 	      || DECL_BIT_FIELD (TREE_OPERAND (incremented, 1)))))
@@ -6333,14 +6334,15 @@ expand_increment (exp, post)
     this_optab = sub_optab;
 
   /* If OP0 is not the actual lvalue, but rather a copy in a register,
-     then we cannot just increment OP0.  We must
-     therefore contrive to increment the original value.
-     Then we can return OP0 since it is a copy of the old value.  */
-  if (op0_is_copy)
+     then we cannot just increment OP0.  We must therefore contrive to
+     increment the original value.  Then, for postincrement, we can return
+     OP0 since it is a copy of the old value.  For preincrement, we want
+     to always expand here, since this generates better or equivalent code.  */
+  if (!post || op0_is_copy)
     {
       /* This is the easiest way to increment the value wherever it is.
-	 Problems with multiple evaluation of INCREMENTED
-	 are prevented because either (1) it is a component_ref,
+	 Problems with multiple evaluation of INCREMENTED are prevented
+	 because either (1) it is a component_ref or preincrement,
 	 in which case it was stabilized above, or (2) it is an array_ref
 	 with constant index in an array in a register, which is
 	 safe to reevaluate.  */
