@@ -169,31 +169,3 @@ Boston, MA 02111-1307, USA.  */
 %{!fno-PIC:%{!fno-pic:-KPIC}} \
 %{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
 
-/* Undefine the following which were defined in elf.h.  This will cause the linux
-   port to continue to use collect2 for constructors/destructors.  These may be removed
-   when .ctor/.dtor section support is desired. */
-
-#undef CTORS_SECTION_ASM_OP
-#undef DTORS_SECTION_ASM_OP
-
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_sbss, in_rdata
-
-#undef INVOKE__main
-#undef NAME__MAIN
-#undef SYMBOL__MAIN
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS                                         \
-  SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \
-  SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP) \
-  SECTION_FUNCTION_TEMPLATE(rdata_section, in_rdata, RDATA_SECTION_ASM_OP)
-
-#undef ASM_OUTPUT_CONSTRUCTOR
-#undef ASM_OUTPUT_DESTRUCTOR
-
-#undef CTOR_LIST_BEGIN
-#undef CTOR_LIST_END
-#undef DTOR_LIST_BEGIN
-#undef DTOR_LIST_END
-/*  End of undefines to turn off .ctor/.dtor section support */
