@@ -17,10 +17,14 @@ static const char str??(??) = "0123456789??/n";
 int
 main(void)
 ??<
+  unsigned char x = 5;
+
   if (sizeof str != TWELVE)
     abort ();
 
-  if ((5 ??' 3) != 6)
+  /* Test ^=, the only multi-character token to come from trigraphs.  */
+  x ??'= 3;
+  if (x != 6)
     abort ();
 
   if ((5 ??! 3) != 7)
