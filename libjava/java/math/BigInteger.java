@@ -144,20 +144,36 @@ public class BigInteger extends Number implements Comparable
 
   public BigInteger(int numBits, Random rnd)
   {
-    this(1, randBytes(numBits, rnd));
-  }
-
-  private static byte[] randBytes(int numBits, Random rnd)
-  {
     if (numBits < 0)
       throw new IllegalArgumentException();
 
-    int extra = numBits % 8;
-    byte[] b = new byte[numBits / 8 + (extra > 0 ? 1 : 0)];
-    rnd.nextBytes(b);
-    if (extra > 0)
-      b[0] &= ~((~0) << (8 - extra));
-    return b;
+    init(numBits, rnd);
+  }
+
+  private void init(int numBits, Random rnd)
+  {
+    int highbits = numBits & 31;
+    if (highbits > 0)
+      highbits = rnd.nextInt() >>> (32 - highbits);
+    int nwords = numBits / 32;
+
+    while (highbits == 0 && nwords > 0)
+      {
+	highbits = rnd.nextInt();
+	--nwords;
+      }
+    if (nwords == 0 && highbits >= 0)
+      {
+	ival = highbits;
+      }
+    else
+      {
+	ival = highbits < 0 ? nwords + 2 : nwords + 1;
+	words = new int[ival];
+	words[nwords] = highbits;
+	while (--nwords >= 0)
+	  words[nwords] = rnd.nextInt();
+      }
   }
 
   public BigInteger(int bitLength, int certainty, Random rnd)
@@ -170,9 +186,7 @@ public class BigInteger extends Number implements Comparable
 	if (isProbablePrime(certainty))
 	  return;
 
-	BigInteger next = new BigInteger(bitLength, rnd);
-	this.ival = next.ival;
-	this.words = next.words;
+	init(bitLength, rnd);
       }
   }
 

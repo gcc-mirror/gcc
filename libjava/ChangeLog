@@ -1,3 +1,11 @@
+2001-08-28  Per Bothner  <per@bothner.com>
+
+	* java/math/BigInteger.java (init(int,Random)):  New method.
+	Move body of constructor <init>(int,Random)) here.
+	Re-write it to avoid constructing unneeded temporaries.
+	(<init>(int,int,Random)):  Use new init method to avoid constructing
+	extra temporary BigIntegers.
+	
 2001-08-27  Tom Tromey  <tromey@redhat.com>
 
 	* java/rmi/activation/Activatable.java,
