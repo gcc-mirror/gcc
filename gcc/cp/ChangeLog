@@ -1,3 +1,14 @@
+2003-03-02  Matt Austern  <austern@apple.com>
+
+	* decl.c (cp_binding_level): Add static_decls varray member.
+	(add_decl_to_level): Add static/inline namespace scope
+	declarations to static_decls array.
+	(wrapup_global_for_namespace): Pass static_decls only, instead of
+	all decls, to wrapup_global_declarations/check_global_declarations.
+	(push_namespace): Initialize static_decls for ordinary namespaces.
+	(cxx_init_decl_processing): Initialize static_decls for global
+	namespace.
+	
 2003-03-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (end_of_class): Correct thinko.
