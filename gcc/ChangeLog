@@ -10,6 +10,7 @@
 	* output.h (default_assemble_visibility): Update prototype.
 	* config/rs6000/rs6000.c (rs6000_assemble_visibility): Take
 	visibility arg as integer.
+	* doc/extend.texi: Document default visibility.
 
 2002-11-26  Kazu Hirata  <kazu@cs.umass.edu>
 
