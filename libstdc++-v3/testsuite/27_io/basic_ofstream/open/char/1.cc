@@ -1,4 +1,4 @@
-// Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,9 +41,10 @@ void test01()
   
   ofs1.open(name_02);
   VERIFY( ofs1.is_open() );
-  // fail bit still true
-  VERIFY( !(ofs1) );
-  VERIFY( ofs1.rdstate() == std::ios_base::failbit );
+
+  // As per the resolution of DR 409.
+  VERIFY( (ofs1) );
+  VERIFY( ofs1.rdstate() == std::ios_base::goodbit );
 
   ofs1.close();
 }

@@ -721,6 +721,9 @@ which is no longer available, thanks deja...-->
          DR #22</a> is to leave the flags unchanged.  You must insert a call
          to <code>fs.clear()</code> between the calls to close() and open(),
          and then everything will work like we all expect it to work.
+	 <strong>Update:</strong> for GCC 4.0 we implemented the resolution
+	 of <a href="../ext/howto.html#5">DR #409</a> and open() now calls
+	 <code>clear()</code> on success!
       </p>
       <p><a name="4_4_rel_ops"><strong>rel_ops</strong></a>
          Another is the <code>rel_ops</code> namespace and the template
