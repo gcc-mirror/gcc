@@ -1,5 +1,12 @@
 2001-06-27  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/cpp.texi, doc/cppinternals.texi, doc/extend.texi,
+	doc/gcc.texi, doc/install.texi, doc/invoke.texi, doc/md.texi,
+	doc/tm.texi: Use @: where necessary when a full stop does not end
+	a sentence.
+
+2001-06-27  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/gcc.texi, doc/install.texi, doc/invoke.texi: Remove trailing
 	whitespace.
 

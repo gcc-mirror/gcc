@@ -1153,8 +1153,8 @@ it when @option{-traditional} is used, but it is too much work to
 implement.
 
 @item
-K&R compilers allow comments to cross over an inclusion boundary (i.e.
-started in an include file and ended in the including file).  I think
+K&R compilers allow comments to cross over an inclusion boundary
+(i.e.@: started in an include file and ended in the including file).  I think
 this would be quite ugly and can't imagine it could be needed.
 
 @cindex external declaration scope
@@ -2603,7 +2603,7 @@ preprocessor then uses this name with no prefix in an attempt to open
 the include file.
 
 @item
-If the file specification is not a valid VMS filename (i.e. does not
+If the file specification is not a valid VMS filename (i.e.@: does not
 contain a device or a directory specifier, and contains a @samp{/}
 character), the preprocessor tries to convert it from Unix syntax to
 VMS syntax.
