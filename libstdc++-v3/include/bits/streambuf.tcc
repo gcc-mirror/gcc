@@ -209,7 +209,8 @@ namespace std
 	{
 	  while (__testput && __bufsize != -1)
   	    {
- 	      if (__bufsize != 0 && __sbin->gptr() != NULL) 
+ 	      if (__bufsize != 0 && __sbin->gptr() != NULL
+		  && __sbin->gptr() + __bufsize <= __sbin->egptr()) 
 		{
 		  __xtrct = __sbout->sputn(__sbin->gptr(), __bufsize);
 		  __ret += __xtrct;
@@ -219,8 +220,11 @@ namespace std
 		}
  	      else 
 		{
-		  _CharT __buf[256];
-		  streamsize __charsread = __sbin->sgetn(__buf, sizeof(__buf));
+		  size_t __size =
+		    __sbin->_M_buf_size_opt > 0 ? __sbin->_M_buf_size_opt : 1;
+		  _CharT* __buf =
+		    static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __size));
+		  streamsize __charsread = __sbin->sgetn(__buf, __size);
 		  __xtrct = __sbout->sputn(__buf, __charsread);
 		  __ret += __xtrct;
 		  if (__xtrct != __charsread)

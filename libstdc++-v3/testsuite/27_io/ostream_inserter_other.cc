@@ -198,6 +198,28 @@ private:
   std::string::const_iterator it;
 };
 
+class test_buffer_4 : public std::streambuf {
+public:
+  test_buffer_4(const std::string& s) : str(s), it(str.begin())
+  {
+    if (it != str.end()) {
+      buf[0] = *it++;
+      setg(buf, buf, buf+1);
+    }
+  }
+
+protected:
+  virtual int underflow() { return (it != str.end() ? *it : EOF); }
+  virtual int uflow() { return (it != str.end() ? *it++ : EOF); }
+  virtual std::streamsize showmanyc() {
+    std::streamsize ret = std::distance(it, str.end());
+    return ret > 0 ? ret : -1;
+  }
+private:
+  const std::string str;
+  std::string::const_iterator it;
+  char buf[1];
+};
 
 void test(const std::string& str, std::streambuf& buf)
 {
@@ -218,8 +240,6 @@ void test(const std::string& str, std::streambuf& buf)
 // Jonathan Lennox  <lennox@cs.columbia.edu>
 void test05()
 {
-  std::ostringstream out_1, out_2, out_3, out_4;
-
   std::string string_a("Hello, world!");
   std::string string_b("");
 
@@ -232,6 +252,9 @@ void test05()
   test_buffer_3 buf3a(string_a);
   test_buffer_3 buf3b(string_b);
 
+  test_buffer_4 buf4a(string_a);
+  test_buffer_4 buf4b(string_b);
+
   test(string_a, buf1a);
   test(string_b, buf1b);
 
@@ -240,6 +263,9 @@ void test05()
 
   test(string_a, buf3a);
   test(string_b, buf3b);
+
+  test(string_a, buf4a);
+  test(string_b, buf4b);
 }
 
 int 
