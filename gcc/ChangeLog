@@ -1,3 +1,7 @@
+Sun Feb 13 13:21:55 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* combine.c (simplify_comparison): Fix typo.
+
 Sun Feb 13 12:57:52 2000  Neil Booth <NeilB@earthling.net>
 
 	* prefix.c (concat, lookup_key): Use xmalloc and xrealloc
