@@ -21,16 +21,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 
-#ifndef TREE_CODE
-union tree_node;
-#define tree union tree_node *
-#endif
-
-#ifndef RTX_CODE
-struct rtx_def;
-#define rtx struct rtx_def *
-#endif
-
 #ifndef GCC_VARRAY_H
 struct varray_head_tag;
 #define varray_type struct varray_head_tag *
@@ -161,14 +151,6 @@ extern int (*lang_eh_type_covers) PARAMS ((tree a, tree b));
 
 /* Map a type to a runtime object to match type.  */
 extern tree (*lang_eh_runtime_type) PARAMS ((tree));
-
-#ifndef TREE_CODE
-#undef tree
-#endif
-
-#ifndef RTX_CODE
-#undef rtx
-#endif
 
 #ifndef GCC_VARRAY_H
 #undef varray_type
