@@ -1,7 +1,7 @@
 # classes.pl - A perl program to generate most of the contents of
 # javaprims.h automatically.
 
-# Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
+# Copyright (C) 1998, 1999, 2000, 2002  Red Hat, Inc.
 #
 # This file is part of libjava.
 #
@@ -119,5 +119,5 @@ sub scan
 	&scan ("$dir/$_", $indent + 2);
     }
 
-    print $spaces, "};\n";
+    print $spaces, "}\n";
 }
