@@ -29,6 +29,7 @@ details.  */
 #include <gnu/gcj/convert/BytesToUnicode.h>
 #include <jvm.h>
 
+static void unintern (jobject);
 static jstring* strhash = NULL;
 static int strhash_count = 0;  /* Number of slots used in strhash. */
 static int strhash_size = 0;  /* Number of slots available in strhash.
@@ -174,17 +175,19 @@ java::lang::String::intern()
       *ptr = (jstring) MASK_PTR (*ptr);
       return (jstring) UNMASK_PTR (*ptr);
     }
-  SET_STRING_IS_INTERNED(this);
+  jstring str = this->data == this ? this
+    : _Jv_NewString(JvGetStringChars(this), this->length());
+  SET_STRING_IS_INTERNED(str);
   strhash_count++;
-  *ptr = this;
+  *ptr = str;
   // When string is GC'd, clear the slot in the hash table.
-  _Jv_RegisterFinalizer ((void *) this, unintern);
-  return this;
+  _Jv_RegisterFinalizer ((void *) str, unintern);
+  return str;
 }
 
 /* Called by String fake finalizer. */
-void
-java::lang::String::unintern (jobject obj)
+static void
+unintern (jobject obj)
 {
   JvSynchronize sync (&StringClass);
   jstring str = reinterpret_cast<jstring> (obj);
