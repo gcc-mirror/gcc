@@ -49,9 +49,23 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+
 #include "gcov-io.h"
 
-extern char * rindex ();
+#ifdef NEED_DECLARATION_RINDEX
+extern char *rindex ();
+#endif
 
 /* The .bb file format consists of several lists of 4-byte integers
    which are the line numbers of each basic block in the file.  Each

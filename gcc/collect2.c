@@ -34,6 +34,18 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/file.h>
 #include <sys/stat.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+
 #define COLLECT
 
 #include "demangle.h"
@@ -292,9 +304,17 @@ static void scan_libraries	PROTO((char *));
 char *xcalloc ();
 char *xmalloc ();
 
+#ifdef NEED_DECLARATION_INDEX
 extern char *index ();
+#endif
+
+#ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
+#endif
+
+#ifdef NEED_DECLARATION_FREE
 extern void free ();
+#endif
 
 #ifdef NO_DUP2
 int

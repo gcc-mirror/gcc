@@ -74,6 +74,18 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include <setjmp.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+
 #include "gansidecl.h"
 
 /* Include getopt.h for the sake of getopt_long.
@@ -212,7 +224,9 @@ extern size_t   strlen ()
 
 #endif /* !defined (POSIX) */
 
+#ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
+#endif
 
 /* Look for these where the `const' qualifier is intentionally cast aside.  */
 
