@@ -1,3 +1,8 @@
+2003-03-04  Hans Boehm <Hans.Boehm@hp.com>
+	* include/private/gcconfig.h (GC_data_start): declare when needed.
+	* include/private/gc_priv.h: Include gcconfig.h after ptr_t
+	declaration.
+
 2003-03-03  Hans Boehm  <Hans.Boehm@hp.com>
 	* mark_rts.c (GC_cond_register_dynamic_libraries): add.
 	(GC_push_roots): explicitly mark free list headers, register
