@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{1998-10-27}%
+\def\texinfoversion{1998-10-31}%
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -978,7 +978,7 @@ where each line of input produces a line of output.}
 % 
 \def\expandablevalue#1{%
   \expandafter\ifx\csname SET#1\endcsname\relax
-    {[No value for ``#1'']v}%
+    {[No value for ``#1'']}%
   \else
     \csname SET#1\endcsname
   \fi
@@ -2406,6 +2406,8 @@ width0pt\relax} \fi
 \def\copyright{\realbackslash copyright}%
 \def\tclose##1{\realbackslash tclose {##1}}%
 \def\code##1{\realbackslash code {##1}}%
+\def\uref##1{\realbackslash uref {##1}}%
+\def\url##1{\realbackslash url {##1}}%
 \def\env##1{\realbackslash env {##1}}%
 \def\command##1{\realbackslash command {##1}}%
 \def\option##1{\realbackslash option {##1}}%
@@ -2488,6 +2490,8 @@ width0pt\relax} \fi
 %\let\tt=\indexdummyfont
 \let\tclose=\indexdummyfont
 \let\code=\indexdummyfont
+\let\url=\indexdummyfont
+\let\uref=\indexdummyfont
 \let\env=\indexdummyfont
 \let\command=\indexdummyfont
 \let\option=\indexdummyfont
