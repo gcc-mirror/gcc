@@ -1,5 +1,15 @@
 2004-03-12  Roger Sayle  <roger@eyesopen.com>
 
+	* combine.c (unmentioned_reg_p): New function to check whether an
+	expression is a "specialization" of another, i.e. that there are
+	no registers or memory references mentioned in the first that don't
+	appear in the second.
+	(unmentioned_reg_p_1): New helper subroutine of unmentioned_reg_p.
+	(combine_instructions): Also try combining instructions using the
+	REG_EQUAL note from a preceding log-linked instruction.
+
+2004-03-12  Roger Sayle  <roger@eyesopen.com>
+
 	* config/i386/i386.c (ix86_split_ashrdi): Optimize shift by 63.
 
 2004-03-12  Matt Austern  <austern@apple.com>
