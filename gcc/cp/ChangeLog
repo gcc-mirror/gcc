@@ -1,3 +1,18 @@
+Fri Mar  8 11:47:26 1996  Mike Stump  <mrs@cygnus.com>
+
+	* tree.c (unsave_expr): Don't unsave, UNSAVE_EXPRs.
+
+Fri Mar  8 11:29:06 1996  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (cp_finish_decl): The exception regions have to be
+	nested, not overlapping.  We start the exception region for a
+	decl, after it has been fully built, and all temporaries for it
+	have been cleaned up.
+
+Thu Mar  7 17:46:06 1996  Mike Stump  <mrs@cygnus.com>
+
+	* tree.c (vec_binfo_member): Don't core dump if we have no bases.
+
 Thu Mar  7 14:11:49 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.def: Add RETURN_INIT.
