@@ -1162,12 +1162,19 @@ ggc_collect ()
 }
 
 /* Print allocation statistics.  */
+#define SCALE(x) ((unsigned long) ((x) < 1024*10 \
+		  ? (x) \
+		  : ((x) < 1024*1024*10 \
+		     ? (x) / 1024 \
+		     : (x) / (1024*1024))))
+#define LABEL(x) ((x) < 1024*10 ? ' ' : ((x) < 1024*1024*10 ? 'k' : 'M'))
 
 void
-ggc_page_print_statistics ()
+ggc_print_statistics ()
 {
   struct ggc_statistics stats;
   unsigned int i;
+  size_t total_overhead = 0;
 
   /* Clear the statistics.  */
   memset (&stats, 0, sizeof (stats));
@@ -1176,7 +1183,7 @@ ggc_page_print_statistics ()
   G.allocated_last_gc = 0;
 
   /* Collect and print the statistics common across collectors.  */
-  ggc_print_statistics (stderr, &stats);
+  ggc_print_common_statistics (stderr, &stats);
 
   /* Release free pages so that we will not count the bytes allocated
      there as part of the total allocated memory.  */
@@ -1184,34 +1191,41 @@ ggc_page_print_statistics ()
 
   /* Collect some information about the various sizes of 
      allocation.  */
-  fprintf (stderr, "\n%-4s%-16s%-16s\n", "Log", "Allocated", "Used");
+  fprintf (stderr, "\n%-5s %10s  %10s  %10s\n",
+	   "Log", "Allocated", "Used", "Overhead");
   for (i = 0; i < HOST_BITS_PER_PTR; ++i)
     {
       page_entry *p;
       size_t allocated;
       size_t in_use;
+      size_t overhead;
 
       /* Skip empty entries.  */
       if (!G.pages[i])
 	continue;
 
-      allocated = in_use = 0;
+      overhead = allocated = in_use = 0;
 
       /* Figure out the total number of bytes allocated for objects of
-	 this size, and how many of them are actually in use.  */
+	 this size, and how many of them are actually in use.  Also figure
+	 out how much memory the page table is using.  */
       for (p = G.pages[i]; p; p = p->next)
 	{
 	  allocated += p->bytes;
 	  in_use += 
 	    (OBJECTS_PER_PAGE (i) - p->num_free_objects) * (1 << i);
-	}
-      fprintf (stderr, "%-3d %-15lu %-15lu\n", i, 
-	       (unsigned long) allocated, (unsigned long) in_use);
-    }
 
-  /* Print out some global information.  */
-  fprintf (stderr, "\nTotal bytes marked: %lu\n", 
-	   (unsigned long) G.allocated);
-  fprintf (stderr, "Total bytes mapped: %lu\n", 
-	   (unsigned long) G.bytes_mapped);
+	  overhead += (sizeof (page_entry) - sizeof (long)
+		       + BITMAP_SIZE (OBJECTS_PER_PAGE (i) + 1));
+	}
+      fprintf (stderr, "%-5d %10ld%c %10ld%c %10ld%c\n", i,
+	       SCALE (allocated), LABEL (allocated),
+	       SCALE (in_use), LABEL (in_use),
+	       SCALE (overhead), LABEL (overhead));
+      total_overhead += overhead;
+    }
+  fprintf (stderr, "%-5s %10ld%c %10ld%c %10ld%c\n", "Total",
+	   SCALE (G.bytes_mapped), LABEL (G.bytes_mapped),
+	   SCALE (G.allocated), LABEL(G.allocated),
+	   SCALE (total_overhead), LABEL (total_overhead));
 }

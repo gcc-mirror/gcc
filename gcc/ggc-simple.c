@@ -137,10 +137,13 @@ static void clear_marks PARAMS ((struct ggc_mem *));
 static void sweep_objs PARAMS ((struct ggc_mem **));
 static void ggc_pop_context_1 PARAMS ((struct ggc_mem *, int));
 
+/* For use from debugger.  */
+extern void debug_ggc_tree PARAMS ((struct ggc_mem *, int));
+
 #ifdef GGC_BALANCE
 extern void debug_ggc_balance PARAMS ((void));
-static void tally_leaves PARAMS ((struct ggc_mem *, int, size_t *, size_t *));
 #endif
+static void tally_leaves PARAMS ((struct ggc_mem *, int, size_t *, size_t *));
 
 /* Insert V into the search tree.  */
 
@@ -434,7 +437,7 @@ debug_ggc_tree (p, indent)
 
   for (i = 0; i < indent; ++i)
     putc (' ', stderr);
-  fprintf (stderr, "%lx %p\n", PTR_KEY (p), p);
+  fprintf (stderr, "%lx %p\n", (unsigned long)PTR_KEY (p), p);
  
   if (p->sub[1])
     debug_ggc_tree (p->sub[1], indent + 1);
@@ -460,7 +463,9 @@ debug_ggc_balance ()
 	   (float)sumdepth / (float)nleaf,
 	   log ((double) G.objects) / M_LN2);
 }
+#endif
 
+/* Used by debug_ggc_balance, and also by ggc_print_statistics.  */
 static void
 tally_leaves (x, depth, nleaf, sumdepth)
      struct ggc_mem *x;
@@ -481,4 +486,45 @@ tally_leaves (x, depth, nleaf, sumdepth)
 	tally_leaves (x->sub[1], depth + 1, nleaf, sumdepth);
     }
 }
-#endif
+
+#define SCALE(x) ((unsigned long) ((x) < 1024*10 \
+		  ? (x) \
+		  : ((x) < 1024*1024*10 \
+		     ? (x) / 1024 \
+		     : (x) / (1024*1024))))
+#define LABEL(x) ((x) < 1024*10 ? ' ' : ((x) < 1024*1024*10 ? 'k' : 'M'))
+
+/* Report on GC memory usage.  */
+void
+ggc_print_statistics ()
+{
+  struct ggc_statistics stats;
+  size_t nleaf = 0, sumdepth = 0;
+
+  /* Clear the statistics.  */
+  memset (&stats, 0, sizeof (stats));
+  
+  /* Make sure collection will really occur.  */
+  G.allocated_last_gc = 0;
+
+  /* Collect and print the statistics common across collectors.  */
+  ggc_print_common_statistics (stderr, &stats);
+
+  /* Report on tree balancing.  */
+  tally_leaves (G.root, 0, &nleaf, &sumdepth);
+
+  fprintf (stderr, "\n\
+Total internal data (bytes)\t%ld%c\n\
+Number of leaves in tree\t%d\n\
+Average leaf depth\t\t%.1f\n",
+	   SCALE(G.objects * offsetof (struct ggc_mem, u)),
+	   LABEL(G.objects * offsetof (struct ggc_mem, u)),
+	   nleaf, (double)sumdepth / (double)nleaf);
+
+  /* Report overall memory usage.  */
+  fprintf (stderr, "\n\
+Total objects allocated\t\t%d\n\
+Total memory in GC arena\t%ld%c\n",
+	   G.objects,
+	   SCALE(G.allocated), LABEL(G.allocated));
+}

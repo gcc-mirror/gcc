@@ -63,6 +63,15 @@ extern int optimize_size;
 
 extern int quiet_flag;
 
+/* Print times taken by the various passes.  -ftime-report.  */
+
+extern int time_report;
+
+/* Print memory still in use at end of compilation (which may have little
+   to do with peak memory consumption).  -fmem-report.  */
+
+extern int mem_report;
+
 /* Don't print warning messages.  -w.  */
 
 extern int inhibit_warnings;
