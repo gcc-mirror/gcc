@@ -324,6 +324,7 @@ inline bool operator==(const hash_multiset<Val, HashFcn, EqualKey, Alloc>& hs1,
 template <class Val, class HashFcn, class EqualKey, class Alloc>
 inline void swap(hash_multiset<Val, HashFcn, EqualKey, Alloc>& hs1,
                  hash_multiset<Val, HashFcn, EqualKey, Alloc>& hs2)
+{
   hs1.swap(hs2);
 }
 
