@@ -1940,7 +1940,33 @@ alter_cond (cond)
 	value = 2;
 	break;
       }
-  
+
+  if (cc_status.flags & CC_NOT_SIGNED)
+    /* The flags are valid if signed condition operators are converted
+       to unsigned.  */
+    switch (GET_CODE (cond))
+      {
+      case LE:
+	PUT_CODE (cond, LEU);
+	value = 2;
+	break;
+
+      case LT:
+	PUT_CODE (cond, LTU);
+	value = 2;
+	break;
+
+      case GT:
+	PUT_CODE (cond, GTU);
+	value = 2;
+	break;
+
+      case GE:
+	PUT_CODE (cond, GEU);
+	value = 2;
+	break;
+      }
+
   return value;
 }
 #endif
