@@ -2509,6 +2509,11 @@ import_export_decl (decl)
     }
   else if (tinfo_decl_p (decl, 0))
     {
+      /* Here, we only decide whether or not the tinfo node should be
+	 emitted with the vtable.  The decl we're considering isn't
+	 actually the one which gets emitted; that one is generated in
+	 create_real_tinfo_var.  */
+
       tree ctype = TREE_TYPE (DECL_NAME (decl));
 
       if (IS_AGGR_TYPE (ctype))
@@ -2528,20 +2533,14 @@ import_export_decl (decl)
 	  && same_type_p (ctype, TYPE_MAIN_VARIANT (ctype)))
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
-	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
-		 || (DECL_DECLARED_INLINE_P (decl) 
-		     && ! flag_implement_inlines
-		     && !DECL_VINDEX (decl)));
-
-	  /* Always make artificials weak.  */
-	  if (flag_weak)
-	    comdat_linkage (decl);
+	    = ! CLASSTYPE_INTERFACE_ONLY (ctype);
+	  DECL_COMDAT (decl) = 0;
 	}
-      else if (TYPE_BUILT_IN (ctype) 
-	       && same_type_p (ctype, TYPE_MAIN_VARIANT (ctype)))
-	DECL_NOT_REALLY_EXTERN (decl) = 0;
       else
-	comdat_linkage (decl);
+	{
+	  DECL_NOT_REALLY_EXTERN (decl) = 1;
+	  DECL_COMDAT (decl) = 1;
+	}
     } 
   else
     comdat_linkage (decl);

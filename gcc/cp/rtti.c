@@ -59,7 +59,7 @@ static tree dfs_class_hint_mark PARAMS ((tree, void *));
 static tree dfs_class_hint_unmark PARAMS ((tree, void *));
 static int class_hint_flags PARAMS((tree));
 static tree class_initializer PARAMS((tree, tree, tree));
-static tree synthesize_tinfo_var PARAMS((tree, tree));
+static tree synthesize_tinfo_var PARAMS((tree));
 static tree create_real_tinfo_var PARAMS((tree, tree, tree, tree, int));
 static tree create_pseudo_type_info PARAMS((const char *, int, ...));
 static tree get_vmi_pseudo_type_info PARAMS((int));
@@ -309,9 +309,8 @@ get_tinfo_decl (type)
       TREE_STATIC (d) = 1;
       DECL_EXTERNAL (d) = 1;
       TREE_PUBLIC (d) = 1;
-      if (flag_weak || !typeinfo_in_lib_p (type))
-	comdat_linkage (d);
       SET_DECL_ASSEMBLER_NAME (d, name);
+      DECL_COMDAT (d) = 1;
       cp_finish_decl (d, NULL_TREE, NULL_TREE, 0);
 
       pushdecl_top_level (d);
@@ -929,19 +928,23 @@ typeinfo_in_lib_p (type)
 }
 
 /* Generate a pseudo_type_info VAR_DECL suitable for the supplied
-   TARGET_TYPE and given the REAL_NAME. This is the structure expected by
+   TARGET_TYPE and corresponding to PUBLIC_DECL. This is the structure expected by
    the runtime, and therefore has additional fields.  If we need not emit a
    definition (because the runtime must contain it), return NULL_TREE,
    otherwise return the VAR_DECL.  */
 
 static tree
-synthesize_tinfo_var (target_type, real_name)
-     tree target_type;
-     tree real_name;
+synthesize_tinfo_var (public_decl)
+     tree public_decl;
 {
   tree var_init = NULL_TREE;
   tree var_type = NULL_TREE;
   int non_public = 0;
+  tree target_type = TREE_TYPE (DECL_NAME (public_decl));
+  my_friendly_assert (target_type != NULL_TREE, 20000120);
+  
+  /* Say we've dealt with it.  */
+  TREE_TYPE (DECL_NAME (public_decl)) = NULL_TREE;
   
   switch (TREE_CODE (target_type))
     {
@@ -1079,7 +1082,7 @@ synthesize_tinfo_var (target_type, real_name)
     }
   
   return create_real_tinfo_var (target_type,
-				real_name, TINFO_PSEUDO_TYPE (var_type),
+				public_decl, TINFO_PSEUDO_TYPE (var_type),
                                 var_init, non_public);
 }
 
@@ -1087,9 +1090,9 @@ synthesize_tinfo_var (target_type, real_name)
    make this variable public (comdat). */
 
 static tree
-create_real_tinfo_var (target_type, name, type, init, non_public)
+create_real_tinfo_var (target_type, public_decl, type, init, non_public)
      tree target_type;
-     tree name;
+     tree public_decl;
      tree type;
      tree init;
      int non_public;
@@ -1098,6 +1101,7 @@ create_real_tinfo_var (target_type, name, type, init, non_public)
   tree decl;
   tree hidden_name;
   char hidden[30];
+  tree name = DECL_ASSEMBLER_NAME (public_decl);
 
   /* We cannot give this the name NAME, as that already is globally
      bound to the tinfo_decl we originally created for this type in
@@ -1115,7 +1119,8 @@ create_real_tinfo_var (target_type, name, type, init, non_public)
   if (!non_public)
     {
       TREE_PUBLIC (decl) = 1;
-      if (flag_weak || !typeinfo_in_lib_p (target_type))
+      if (flag_weak
+	  || (DECL_COMDAT (public_decl) && !typeinfo_in_lib_p (target_type)))
 	comdat_linkage (decl);
     }
   SET_DECL_ASSEMBLER_NAME (decl, name);
@@ -1457,19 +1462,16 @@ emit_tinfo_decl (decl_ptr, data)
      void *data ATTRIBUTE_UNUSED;
 {
   tree tinfo_decl = *decl_ptr;
-  tree tinfo_type, decl;
+  tree decl;
   
   my_friendly_assert (TREE_TYPE (tinfo_decl) == tinfo_decl_type, 20000121);
-  tinfo_type = TREE_TYPE (DECL_NAME (tinfo_decl));
-  my_friendly_assert (tinfo_type != NULL_TREE, 20000120);
-  
-  if (!DECL_NEEDED_P (tinfo_decl))
+
+  import_export_decl (tinfo_decl);
+  if (DECL_REALLY_EXTERN (tinfo_decl) || !DECL_NEEDED_P (tinfo_decl))
     return 0;
-  /* Say we've dealt with it.  */
-  TREE_TYPE (DECL_NAME (tinfo_decl)) = NULL_TREE;
-  
+
   create_tinfo_types ();
-  decl = synthesize_tinfo_var (tinfo_type, DECL_ASSEMBLER_NAME (tinfo_decl));
+  decl = synthesize_tinfo_var (tinfo_decl);
   
   return decl != 0;
 }
