@@ -3095,11 +3095,58 @@
   [(set_attr "type" "fpmove,fpmove,move,move,move,*,load,fpload,fpstore,store")
    (set_attr "length" "1")])
 
+;; Exactly the same as above, except that all `f' cases are deleted.
+;; This is necessary to prevent reload from ever trying to use a `f' reg
+;; when -mno-fpu.
+
+(define_insn "*movsf_no_f_insn"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r,r,r,m")
+	(match_operand:SF 1 "input_operand"    "G,Q,rR,S,m,rG"))]
+  "! TARGET_FPU
+   && (register_operand (operands[0], SFmode)
+       || register_operand (operands[1], SFmode)
+       || fp_zero_operand (operands[1], SFmode))"
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_DOUBLE
+      && (which_alternative == 1
+          || which_alternative == 2
+          || which_alternative == 3))
+    {
+      REAL_VALUE_TYPE r;
+      long i;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+      REAL_VALUE_TO_TARGET_SINGLE (r, i);
+      operands[1] = GEN_INT (i);
+    }
+
+  switch (which_alternative)
+    {
+    case 0:
+      return \"clr\\t%0\";
+    case 1:
+      return \"sethi\\t%%hi(%a1), %0\";
+    case 2:
+      return \"mov\\t%1, %0\";
+    case 3:
+      return \"#\";
+    case 4:
+      return \"ld\\t%1, %0\";
+    case 5:
+      return \"st\\t%r1, %0\";
+    default:
+      abort();
+    }
+}"
+  [(set_attr "type" "move,move,move,*,load,store")
+   (set_attr "length" "1")])
+
 (define_insn "*movsf_lo_sum"
-  [(set (match_operand:SF 0 "register_operand" "")
-        (lo_sum:SF (match_operand:SF 1 "register_operand" "")
-                   (match_operand:SF 2 "const_double_operand" "")))]
-  "TARGET_FPU && fp_high_losum_p (operands[2])"
+  [(set (match_operand:SF 0 "register_operand" "=r")
+        (lo_sum:SF (match_operand:SF 1 "register_operand" "r")
+                   (match_operand:SF 2 "const_double_operand" "S")))]
+  "fp_high_losum_p (operands[2])"
   "*
 {
   REAL_VALUE_TYPE r;
@@ -3114,9 +3161,9 @@
    (set_attr "length" "1")])
 
 (define_insn "*movsf_high"
-  [(set (match_operand:SF 0 "register_operand" "")
-        (high:SF (match_operand:SF 1 "const_double_operand" "")))]
-  "TARGET_FPU && fp_high_losum_p (operands[1])"
+  [(set (match_operand:SF 0 "register_operand" "=r")
+        (high:SF (match_operand:SF 1 "const_double_operand" "S")))]
+  "fp_high_losum_p (operands[1])"
   "*
 {
   REAL_VALUE_TYPE r;
@@ -3133,29 +3180,11 @@
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
         (match_operand:SF 1 "const_double_operand" ""))]
-  "TARGET_FPU
-   && fp_high_losum_p (operands[1])
+  "fp_high_losum_p (operands[1])
    && (GET_CODE (operands[0]) == REG
        && REGNO (operands[0]) < 32)"
   [(set (match_dup 0) (high:SF (match_dup 1)))
    (set (match_dup 0) (lo_sum:SF (match_dup 0) (match_dup 1)))])
-
-;; Exactly the same as above, except that all `f' cases are deleted.
-;; This is necessary to prevent reload from ever trying to use a `f' reg
-;; when -mno-fpu.
-
-(define_insn "*movsf_no_f_insn"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m")
-	(match_operand:SF 1 "input_operand"    "r,m,r"))]
-  "! TARGET_FPU
-   && (register_operand (operands[0], SFmode)
-       || register_operand (operands[1], SFmode))"
-  "@
-   mov\\t%1, %0
-   ld\\t%1, %0
-   st\\t%1, %0"
-  [(set_attr "type" "move,load,store")
-   (set_attr "length" "1")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_operand" "")

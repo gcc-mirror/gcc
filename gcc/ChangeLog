@@ -1,3 +1,13 @@
+2001-04-26  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/sparc/sparc.md (movsf_no_f_insn): Add more alternatives
+	common to other movsf patterns.  Move up so that in future
+	people who change the other patterns will change it too.
+	(movsf_lo_sum): Allow even for soft-float; add appropriate
+	constraints.
+	(movsf_high): Likewise.
+	(movsf_high+1): Allow even for soft-float.
+
 2001-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* invoke.texi: Document more C++ command-line options.
