@@ -1,3 +1,10 @@
+2004-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/18123
+	* parser.c (cp_parser_type_specifier): Don't create new enum
+	type if it is not in the form 'enum [identifier] { [...] };'.
+	Catch template declaration of enum. 
+
 2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/17431
