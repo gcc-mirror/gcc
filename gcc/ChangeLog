@@ -1,3 +1,10 @@
+2000-06-13  Andreas Jaeger  <aj@suse.de>
+
+	* configure.in: Use --enable-checking=misc,tree,gc by default if
+	no --enable-checking option is given and for
+	--enable-checking=yes.
+	* configure: Rebuilt.
+
 2000-06-13  Richard Henderson  <rth@cygnus.com>
 
 	* libgcc2.c (ia64_throw_helper): Use __builtin_return_address.
@@ -93,6 +100,7 @@
 	* configure.in: Add AC_TYPE_GETGROUPS test.
 	* sys-protos.h: Use GETGROUPS_T * for second arg of getgroups.
 	* configure: Rebuilt.
+	* config.in: Rebuilt.
 
 2000-06-13  Richard Henderson  <rth@cygnus.com>
 
