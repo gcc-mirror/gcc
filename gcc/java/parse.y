@@ -295,7 +295,7 @@ static int pop_current_osb PARAMS ((struct parser_ctxt *));
 /* JDK 1.1 work. FIXME */
 
 static tree maybe_make_nested_class_name PARAMS ((tree));
-static void make_nested_class_name PARAMS ((tree));
+static int make_nested_class_name PARAMS ((tree));
 static void set_nested_class_simple_name_value PARAMS ((tree, int));
 static void link_nested_class_to_enclosing PARAMS ((void));
 static tree resolve_inner_class PARAMS ((struct hash_table *, tree, tree *,
@@ -422,6 +422,10 @@ static tree currently_caught_type_list;
    to the switch itself; then it could be referenced via
    `ctxp->current_loop'.  */
 static tree case_label_list; 
+
+/* Anonymous class counter. Will be reset to 1 every time a non
+   anonymous class gets created. */
+static int anonymous_class_counter = 1;
 
 static tree src_parse_roots[1];
 
@@ -3497,24 +3501,28 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
   return 0;
 }
 
-static void
+/* Construct a nested class name.  If the final component starts with
+   a digit, return true.  Otherwise return false.  */
+static int
 make_nested_class_name (cpc_list)
      tree cpc_list;
 {
   tree name;
 
   if (!cpc_list)
-    return;
-  else
-    make_nested_class_name (TREE_CHAIN (cpc_list));
+    return 0;
+
+  make_nested_class_name (TREE_CHAIN (cpc_list));
 
   /* Pick the qualified name when dealing with the first upmost
      enclosing class */
-  name = (TREE_CHAIN (cpc_list) ? 
-	  TREE_PURPOSE (cpc_list) : DECL_NAME (TREE_VALUE (cpc_list)));
+  name = (TREE_CHAIN (cpc_list)
+	  ? TREE_PURPOSE (cpc_list) : DECL_NAME (TREE_VALUE (cpc_list)));
   obstack_grow (&temporary_obstack,
 		IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
   obstack_1grow (&temporary_obstack, '$');
+
+  return ISDIGIT (IDENTIFIER_POINTER (name)[0]);
 }
 
 /* Can't redefine a class already defined in an earlier scope. */
@@ -3723,7 +3731,20 @@ maybe_make_nested_class_name (name)
 
   if (CPC_INNER_P ())
     {
-      make_nested_class_name (GET_CPC_LIST ());
+      /* If we're in a function, we must append a number to create the
+	 nested class name.  However, we don't do this if the class we
+	 are constructing is anonymous, because in that case we'll
+	 already have a number as the class name.  */
+      if (! make_nested_class_name (GET_CPC_LIST ())
+	  && current_function_decl != NULL_TREE
+	  && ! ISDIGIT (IDENTIFIER_POINTER (name)[0]))
+	{
+	  char buf[10];
+	  sprintf (buf, "%d", anonymous_class_counter);
+	  ++anonymous_class_counter;
+	  obstack_grow (&temporary_obstack, buf, strlen (buf));
+	  obstack_1grow (&temporary_obstack, '$');
+	}
       obstack_grow0 (&temporary_obstack,
 		     IDENTIFIER_POINTER (name), 
 		     IDENTIFIER_LENGTH (name));
@@ -3862,10 +3883,6 @@ create_interface (flags, id, super)
 
   return decl;
 }
-
-/* Anonymous class counter. Will be reset to 1 every time a non
-   anonymous class gets created. */
-static int anonymous_class_counter = 1;
 
 /* Patch anonymous class CLASS, by either extending or implementing
    DEP.  */

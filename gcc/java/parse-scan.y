@@ -1,5 +1,5 @@
 /* Parser grammar for quick source code scan of Java(TM) language programs.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -43,6 +43,9 @@ definitions and other extensions.  */
 #include "obstack.h"
 #include "toplev.h"
 
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free free
+
 extern char *input_filename;
 extern FILE *finput, *out;
 
@@ -62,12 +65,8 @@ int lineno;
 static int absorber;
 #define USE_ABSORBER absorber = 0
 
-/* Keep track of the current class name and package name.  */
-static char *current_class;
+/* Keep track of the current package name.  */
 static const char *package_name;
-
-/* Keep track of the current inner class qualifier. */
-static int current_class_length;
 
 /* Keep track of whether things have be listed before.  */
 static int previous_output;
@@ -85,6 +84,22 @@ static int bracket_count;
 /* Numbers anonymous classes */
 static int anonymous_count;
 
+/* This is used to record the current class context.  */
+struct class_context
+{
+  char *name;
+  struct class_context *next;
+};
+
+/* The global class context.  */
+static struct class_context *current_class_context;
+
+/* A special constant used to represent an anonymous context.  */
+static const char *anonymous_context = "ANONYMOUS";
+
+/* Count of method depth.  */
+static int method_depth; 
+
 /* Record a method declaration  */
 struct method_declarator {
   const char *method_name;
@@ -99,6 +114,9 @@ struct method_declarator {
 }
 
 /* Two actions for this grammar */
+static int make_class_name_recursive PARAMS ((struct obstack *stack,
+					      struct class_context *ctx));
+static char *get_class_name PARAMS ((void));
 static void report_class_declaration PARAMS ((const char *));
 static void report_main_declaration PARAMS ((struct method_declarator *));
 static void push_class_context PARAMS ((const char *));
@@ -430,7 +448,10 @@ variable_initializer:
 
 /* 19.8.3 Productions from 8.4: Method Declarations  */
 method_declaration:
-	method_header method_body
+	method_header
+		{ ++method_depth; }
+	method_body
+		{ --method_depth; }
 ;
 
 method_header:	
@@ -923,10 +944,10 @@ class_instance_creation_expression:
 
 anonymous_class_creation:
 	NEW_TK class_type OP_TK CP_TK
-		{ report_class_declaration (NULL); }
+		{ report_class_declaration (anonymous_context); }
 	class_body         
 |	NEW_TK class_type OP_TK argument_list CP_TK
-		{ report_class_declaration (NULL); }
+		{ report_class_declaration (anonymous_context); }
 	class_body
 ;
 
@@ -1155,58 +1176,100 @@ static void
 push_class_context (name)
     const char *name;
 {
-  /* If we already have CURRENT_CLASS set, we're in an inter
-     class. Mangle its name. */
-  if (current_class)
-    {
-      const char *p;
-      char anonymous [3];
-      int additional_length;
-      
-      /* NAME set to NULL indicates an anonymous class, which are named by
-	 numbering them. */
-      if (!name)
-	{
-	  sprintf (anonymous, "%d", ++anonymous_count);
-	  p = anonymous;
-	}
-      else
-	p = name;
-      
-      additional_length = strlen (p)+1; /* +1 for `$' */
-      current_class = xrealloc (current_class, 
-				current_class_length + additional_length + 1);
-      current_class [current_class_length] = '$';
-      strcpy (&current_class [current_class_length+1], p);
-      current_class_length += additional_length;
-    }
-  else
-    {
-      if (!name)
-	return;
-      current_class_length = strlen (name);
-      current_class = xmalloc (current_class_length+1);
-      strcpy (current_class, name);
-    }
+  struct class_context *ctx;
+
+  ctx = (struct class_context *) xmalloc (sizeof (struct class_context));
+  ctx->name = (char *) name;
+  ctx->next = current_class_context;
+  current_class_context = ctx;
 }
 
 static void
 pop_class_context ()
 {
-  /* Go back to the last `$' and cut. */
-  while (--current_class_length > 0
-        && current_class [current_class_length] != '$')
-    ;
-  if (current_class_length)
+  struct class_context *ctx;
+
+  if (current_class_context == NULL)
+    return;
+
+  ctx = current_class_context->next;
+  if (current_class_context->name != anonymous_context)
+    free (current_class_context->name);
+  free (current_class_context);
+
+  current_class_context = ctx;
+  if (current_class_context == NULL)
+    anonymous_count = 0;
+}
+
+/* Recursively construct the class name.  This is just a helper
+   function for get_class_name().  */
+static int
+make_class_name_recursive (stack, ctx)
+     struct obstack *stack;
+     struct class_context *ctx;
+{
+  if (! ctx)
+    return 0;
+
+  make_class_name_recursive (stack, ctx->next);
+
+  /* Replace an anonymous context with the appropriate counter value.  */
+  if (ctx->name == anonymous_context)
     {
-      current_class = xrealloc (current_class, current_class_length+1);
-      current_class [current_class_length] = '\0';
+      char buf[50];
+      ++anonymous_count;
+      sprintf (buf, "%d", anonymous_count);
+      ctx->name = xstrdup (buf);
+    }
+
+  obstack_grow (stack, ctx->name, strlen (ctx->name));
+  obstack_1grow (stack, '$');
+
+  return ISDIGIT (ctx->name[0]);
+}
+
+/* Return a newly allocated string holding the name of the class.  */
+static char *
+get_class_name ()
+{
+  char *result;
+  int last_was_digit;
+  struct obstack name_stack;
+
+  obstack_init (&name_stack);
+
+  /* Duplicate the logic of parse.y:maybe_make_nested_class_name().  */
+  last_was_digit = make_class_name_recursive (&name_stack,
+					      current_class_context->next);
+
+  if (! last_was_digit
+      && method_depth
+      && current_class_context->name != anonymous_context)
+    {
+      char buf[50];
+      ++anonymous_count;
+      sprintf (buf, "%d", anonymous_count);
+      obstack_grow (&name_stack, buf, strlen (buf));
+      obstack_1grow (&name_stack, '$');
+    }
+
+  if (current_class_context->name == anonymous_context)
+    {
+      char buf[50];
+      ++anonymous_count;
+      sprintf (buf, "%d", anonymous_count);
+      current_class_context->name = xstrdup (buf);
+      obstack_grow0 (&name_stack, buf, strlen (buf));
     }
   else
-    {
-      current_class = NULL;
-      anonymous_count = 0;
-    }
+    obstack_grow0 (&name_stack, current_class_context->name,
+		   strlen (current_class_context->name));
+
+  result = xstrdup (obstack_finish (&name_stack));
+  obstack_free (&name_stack, NULL);
+
+  return result;
 }
 
 /* Actions defined here */
@@ -1220,17 +1283,21 @@ report_class_declaration (name)
   push_class_context (name);
   if (flag_dump_class)
     {
+      char *name = get_class_name ();
+
       if (!previous_output)
 	{
 	  if (flag_list_filename)
 	    fprintf (out, "%s: ", input_filename);
 	  previous_output = 1;
 	}
-	
+
       if (package_name)
-	fprintf (out, "%s.%s ", package_name, current_class);
+	fprintf (out, "%s.%s ", package_name, name);
       else
-	fprintf (out, "%s ", current_class);
+	fprintf (out, "%s ", name);
+
+      free (name);
     }
 }
 
@@ -1247,14 +1314,16 @@ report_main_declaration (declarator)
       && declarator->args [0] == '[' 
       && (! strcmp (declarator->args+1, "String")
 	  || ! strcmp (declarator->args + 1, "java.lang.String"))
-      && current_class)
+      && current_class_context)
     {
       if (!previous_output)
 	{
+	  char *name = get_class_name ();
 	  if (package_name)
-	    fprintf (out, "%s.%s ", package_name, current_class);
+	    fprintf (out, "%s.%s ", package_name, name);
 	  else
-	    fprintf (out, "%s", current_class);
+	    fprintf (out, "%s", name);
+	  free (name);
 	  previous_output = 1;
 	}
     }
@@ -1274,7 +1343,7 @@ void reset_report ()
 {
   previous_output = 0;
   package_name = NULL;
-  current_class = NULL;
+  current_class_context = NULL;
   complexity = 0;
 }
 

@@ -1,3 +1,12 @@
+2002-06-02  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/1343, PR java/6336:
+	* parse.y (make_nested_class_name): Remove extraneous `else'; fix
+	formatting.  Changed return type.
+	(anonymous_class_counter): Moved to top of file.
+	(maybe_make_nested_class_name): Append number to class name for
+	function-local classes.
+
 2002-05-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl.c, jcf-parse.c, parse.y, typeck.c: Include real.h.
