@@ -1,4 +1,11 @@
 2004-05-16  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+	Paul Brook  <paul@codesourcery.com>
+
+	* io/write.c (write_logical): Don't print extra blank.
+	(write_integer): Base field width on kind.
+	(list_formatted_write): Output initial blank.
+
+2004-05-16  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	* io/io.h (flush): Add prototype.
 	* io/transfer.c (finalize_transfer): Flush partial records.
