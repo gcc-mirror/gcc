@@ -515,7 +515,7 @@ ELSE {
 }
 LEFT_BRACE variable_defs_opt statements_opt RIGHT_BRACE {
   struct prod_token_parm_item* tok;
-  tok = $12;
+  tok = $1;
   tree_code_if_end (tok->tp.tok.location);
 }
 ;
