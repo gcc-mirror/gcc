@@ -1,3 +1,90 @@
+Tue Oct 13 22:12:11 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* reload.h (compute_use_by_pseudos): Declare.
+
+	* reload1.c (spilled_pseudos, insns_need_reload): New variables.
+	(something_needs_reloads): Delete variable.
+	(finish_spills): New function.
+	(compute_use_by_pseudos): New function.
+
+	(delete_caller_save_insns): Lose argument FIRST.  All callers changed.
+	Use the reload_insn_chain instead of walking the rtl directly.
+
+	(reload): Allocate and free spilled_pseudos.
+	Ensure that all calls of spill_hard_reg are followed by a call to
+	finish_spills.
+	Use the insns_need_reload list instead of something_needs_reloads
+	to find out if reload_as_needed must be called.
+	Clear unused_insn_chains at the end.
+
+	(calculate_needs_all_insns): Lose FIRST parameter.  All callers
+	changed.
+	Delete code to keep track of current basic block.
+	Walk reload_insn_chain instead of the rtl structure.  Build the
+	insns_need_reload chain.
+	Remember which insns need reloading/elimination by setting the
+	appropriate fields in struct insn_chain, not by putting modes on the
+	insn.
+
+	(calculate_needs): Lose THIS_BLOCK arg.  Accept arg CHAIN instead of
+	arg INSN.  All callers changed.
+	Delete declaration of struct needs.
+	Don't set something_needs_reloads.
+	Record insn needs in the CHAIN argument.
+
+	(spill_hard_reg): Record the affected pseudos in spilled_pseudos.
+
+	(reload_as_needed): Lose FIRST arg.  All callers changed.
+	Walk the reload_insn_chain instead of the rtx structure.
+	Delete code to keep track of current basic block.
+	Rename one of the NEXT variables to OLD_NEXT.
+
+	(allocate_reload_reg): Accept arg CHAIN instead of arg INSN.  All
+	callers changed.
+	(choose_reload_regs): Likewise.
+
+	(emit_reload_insns): Replace INSN and BB args with arg CHAIN.  All
+	callers changed.
+	
+	* caller-save.c (MOVE_MAX_WORDS): New macro.  Use it throughout
+	instead of (MOVE_MAX / UNITS_PER_WORD) computation.
+	(hard_regs_live, hard_regs_need_restore): Delete variables.
+	(n_regs_saved): Now static.
+	(referenced_regs, this_insn_sets): New variables.
+
+	(setup_save_areas): Restructure the code a bit.
+
+	(restore_referenced_regs): Delete function.
+	(mark_referenced_regs): New function, similar to the old
+	restore_referenced_regs, but mark registers in referenced_regs.
+
+	(clear_reg_live): Delete function.
+	(mark_set_regs): Renamed from set_reg_live.  All callers changed.
+	Only mark registers in this_insn_sets.
+
+	(save_call_clobbered_regs): Rework this function to walk the
+	reload_insn_chain instead of using the list of instructions directly.
+	Delete code to keep track of register lives, compute live regs on the
+	fly from information in the chain.
+	Instead of calling restore_referenced_regs, use mark_referenced_regs,
+	then walk the set it computes and call insert_restore as appropriate.
+
+	(insert_restore): Lose INSN and BLOCK args.  Add CHAIN arg.  All
+	callers changed.
+	Restructure the code a bit.  Test hard_regs_saved instead of
+	hard_regs_need_restore.
+	(insert_save): Lose INSN and BLOCK args.  Add CHAIN and TO_SAVE
+	args.  All callers changed.
+	Restructure the code a bit.  Use TO_SAVE to determine which regs to
+	save instead of more complicated test.
+	(insert_one_arg): Lose INSN and BLOCK args.  Add CHAIN arg.  All
+	callers changed.
+	Create a new insn_chain structure for the new insn and place it
+	into the chain.
+
+	* rtl.texi: Update documentation to reflect that reload no longer
+	puts modes on the insns.
+
 1998-10-14  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* function.c (purge_addressof_1): Force the first argument of a

@@ -177,12 +177,10 @@ static short spill_regs[FIRST_PSEUDO_REGISTER];
    registers.  This information is used in reorg.c, to help figure out
    what registers are live at any point.  It is assumed that all spill_regs
    are dead at every CODE_LABEL.  */
-
 HARD_REG_SET used_spill_regs;
 
 /* Index of last register assigned as a spill register.  We allocate in
    a round-robin fashion.  */
-
 static int last_spill_reg;
 
 /* Describes order of preference for putting regs into spill_regs.
@@ -213,32 +211,29 @@ static HARD_REG_SET counted_for_nongroups;
    value indicates the level of indirect addressing supported, e.g., two
    means that (MEM (MEM (REG n))) is also valid if (REG n) does not get
    a hard register.  */
-
 static char spill_indirect_levels;
 
 /* Nonzero if indirect addressing is supported when the innermost MEM is
    of the form (MEM (SYMBOL_REF sym)).  It is assumed that the level to
    which these are valid is the same as spill_indirect_levels, above.   */
-
 char indirect_symref_ok;
 
 /* Nonzero if an address (plus (reg frame_pointer) (reg ...)) is valid.  */
-
 char double_reg_address_ok;
 
 /* Record the stack slot for each spilled hard register.  */
-
 static rtx spill_stack_slot[FIRST_PSEUDO_REGISTER];
 
 /* Width allocated so far for that stack slot.  */
-
 static int spill_stack_slot_width[FIRST_PSEUDO_REGISTER];
+
+/* Record which pseudos needed to be spilled.  */
+static regset spilled_pseudos;
 
 /* Indexed by register class and basic block number, nonzero if there is
    any need for a spill register of that class in that basic block.
    The pointer is 0 if we did stupid allocation and don't know
    the structure of basic blocks.  */
-
 char *basic_block_needs[N_REG_CLASSES];
 
 /* First uid used by insns created by reload in this function.
@@ -247,7 +242,6 @@ int reload_first_uid;
 
 /* Flag set by local-alloc or global-alloc if anything is live in
    a call-clobbered reg across calls.  */
-
 int caller_save_needed;
 
 /* The register class to use for a base register when reloading an
@@ -297,6 +291,9 @@ extern rtx forced_labels;
 /* List of insn_chain instructions, one for every insn that reload needs to
    examine.  */
 struct insn_chain *reload_insn_chain;
+
+/* List of insns needing reloads.  */
+static struct insn_chain *insns_need_reload;
 
 /* This structure is used to record information about register eliminations.
    Each array entry describes one possible way of eliminating a register
@@ -360,8 +357,8 @@ static int num_labels;
 struct hard_reg_n_uses { int regno; int uses; };
 
 static void dump_needs			PROTO((FILE *));
-static int calculate_needs_all_insns	PROTO((rtx, int));
-static int calculate_needs		PROTO((int, rtx, rtx, int));
+static int calculate_needs_all_insns	PROTO((int));
+static int calculate_needs		PROTO((struct insn_chain *, rtx, int));
 static int find_reload_regs		PROTO((int, FILE *));
 static int find_tworeg_group		PROTO((int, int, FILE *));
 static int find_group			PROTO((int, int, FILE *));
@@ -371,7 +368,7 @@ static void count_possible_groups	PROTO((int *, enum machine_mode *,
 static int modes_equiv_for_class_p	PROTO((enum machine_mode,
 					       enum machine_mode,
 					       enum reg_class));
-static void delete_caller_save_insns	PROTO((rtx));
+static void delete_caller_save_insns	PROTO((void));
 static void spill_failure		PROTO((rtx));
 static int new_spill_reg		PROTO((int, int, int *, int *, int,
 					       FILE *));
@@ -384,11 +381,12 @@ static void set_initial_elim_offsets	PROTO((void));
 static void init_elim_table		PROTO((void));
 static void update_eliminables		PROTO((HARD_REG_SET *));
 static int spill_hard_reg		PROTO((int, int, FILE *, int));
+static void finish_spills		PROTO((int, FILE *));
 static void scan_paradoxical_subregs	PROTO((rtx));
 static int hard_reg_use_compare		PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static void order_regs_for_reload	PROTO((void));
 static int compare_spill_regs		PROTO((const GENERIC_PTR, const GENERIC_PTR));
-static void reload_as_needed		PROTO((rtx, int));
+static void reload_as_needed		PROTO((int));
 static void forget_old_reloads_1	PROTO((rtx, rtx));
 static int reload_reg_class_lower	PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static void mark_reload_reg_in_use	PROTO((int, int, enum reload_type,
@@ -399,10 +397,10 @@ static int reload_reg_free_p		PROTO((int, int, enum reload_type));
 static int reload_reg_free_before_p	PROTO((int, int, enum reload_type, int));
 static int reload_reg_free_for_value_p	PROTO((int, int, enum reload_type, rtx, rtx, int));
 static int reload_reg_reaches_end_p	PROTO((int, int, enum reload_type));
-static int allocate_reload_reg		PROTO((int, rtx, int, int));
-static void choose_reload_regs		PROTO((rtx, rtx));
+static int allocate_reload_reg		PROTO((struct insn_chain *, int, int, int));
+static void choose_reload_regs		PROTO((struct insn_chain *, rtx));
 static void merge_assigned_reloads	PROTO((rtx));
-static void emit_reload_insns		PROTO((rtx, int));
+static void emit_reload_insns		PROTO((struct insn_chain *));
 static void delete_output_reload	PROTO((rtx, int, rtx));
 static void inc_for_reload		PROTO((rtx, rtx, int));
 static int constraint_accepts_reg_p	PROTO((char *, rtx));
@@ -560,10 +558,29 @@ new_insn_chain ()
   return c;
 }
 
+/* Small utility function to set all regs in hard reg set TO which are
+   allocated to pseudos in regset FROM.  */
+void
+compute_use_by_pseudos (to, from)
+     HARD_REG_SET *to;
+     regset from;
+{
+  int regno;
+  EXECUTE_IF_SET_IN_REG_SET
+    (from, FIRST_PSEUDO_REGISTER, regno,
+     {
+       int r = reg_renumber[regno];
+       int nregs;
+       if (r < 0)
+	 abort ();
+       nregs = HARD_REGNO_NREGS (r, PSEUDO_REGNO_MODE (regno));
+       while (nregs-- > 0)
+	 SET_HARD_REG_BIT (*to, r + nregs);
+     });
+}
+
 /* Global variables used by reload and its subroutines.  */
 
-/* Set during calculate_needs if an insn needs reloading.  */
-static int something_needs_reloads;
 /* Set during calculate_needs if an insn needs register elimination.  */
 static int something_needs_elimination;
 
@@ -866,6 +883,8 @@ reload (first, global, dumpfile)
   if (! SMALL_REGISTER_CLASSES)
     COPY_HARD_REG_SET (forbidden_regs, bad_spill_regs);
 
+  spilled_pseudos = ALLOCA_REG_SET ();
+
   /* Spill any hard regs that we know we can't eliminate.  */
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if (! ep->can_eliminate)
@@ -875,6 +894,8 @@ reload (first, global, dumpfile)
   if (frame_pointer_needed)
     spill_hard_reg (HARD_FRAME_POINTER_REGNUM, global, dumpfile, 1);
 #endif
+
+  finish_spills (global, dumpfile);
 
   if (global)
     for (i = 0; i < N_REG_CLASSES; i++)
@@ -894,8 +915,7 @@ reload (first, global, dumpfile)
      reg does not necessarily imply any pseudo reg was spilled;
      sometimes we find a reload reg that no pseudo reg was allocated in.  */
   something_changed = 1;
-  /* This flag is set if there are any insns that require reloading.  */
-  something_needs_reloads = 0;
+
   /* This flag is set if there are any insns that require register
      eliminations.  */
   something_needs_elimination = 0;
@@ -1002,7 +1022,7 @@ reload (first, global, dumpfile)
 	  reload_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
 	}
 
-      something_changed |= calculate_needs_all_insns (first, global);
+      something_changed |= calculate_needs_all_insns (global);
 
       /* If we allocated any new memory locations, make another pass
 	 since it might have changed elimination offsets.  */
@@ -1023,6 +1043,8 @@ reload (first, global, dumpfile)
 	      something_changed = 1;
 	    }
       }
+
+      finish_spills (global, dumpfile);
 
       /* If all needs are met, we win.  */
 
@@ -1075,8 +1097,10 @@ reload (first, global, dumpfile)
       if (failure)
 	goto failed;
 
+      finish_spills (global, dumpfile);
+
       if (something_changed)
-	delete_caller_save_insns (first);
+	delete_caller_save_insns ();
     }
 
   /* If global-alloc was run, notify it of any register eliminations we have
@@ -1111,8 +1135,8 @@ reload (first, global, dumpfile)
      by generating move instructions to move the must-be-register
      values into or out of the reload registers.  */
 
-  if (something_needs_reloads || something_needs_elimination)
-    reload_as_needed (first, global);
+  if (insns_need_reload != 0 || something_needs_elimination)
+    reload_as_needed (global);
 
   /* If we were able to eliminate the frame pointer, show that it is no
      longer live at the start of any basic block.  If it ls live by
@@ -1225,8 +1249,6 @@ reload (first, global, dumpfile)
 	warning ("frame size too large for reliable stack checking");
     }
 
-  obstack_free (&reload_obstack, reload_startobj);
-
   /* Indicate that we no longer have known memory locations or constants.  */
   if (reg_equiv_constant)
     free (reg_equiv_constant);
@@ -1245,9 +1267,15 @@ reload (first, global, dumpfile)
   free (reg_equiv_address);
   free (reg_max_ref_width);
 
+  FREE_REG_SET (spilled_pseudos);
+
   CLEAR_HARD_REG_SET (used_spill_regs);
   for (i = 0; i < n_spills; i++)
     SET_HARD_REG_BIT (used_spill_regs, spill_regs[i]);
+
+  /* Free all the insn_chain structures at once.  */
+  obstack_free (&reload_obstack, reload_startobj);
+  unused_insn_chains = 0;
 
   return failure;
 }
@@ -1256,24 +1284,20 @@ reload (first, global, dumpfile)
    information about the need to do register elimination and the need to
    perform reloads.  */
 static int
-calculate_needs_all_insns (first, global)
-     rtx first;
+calculate_needs_all_insns (global)
      int global;
 {
-  rtx insn;
   int something_changed = 0;
   rtx after_call = 0;
-  /* Keep track of which basic blocks are needing the reloads.  */
-  int this_block = 0;
+  struct insn_chain **pprev_reload = &insns_need_reload;
+  struct insn_chain *chain;
 
   /* Compute the most additional registers needed by any instruction.
      Collect information separately for each class of regs.  */
-
-  for (insn = first; insn; insn = NEXT_INSN (insn))
+  
+  for (chain = reload_insn_chain; chain; chain = chain->next)
     {
-      if (global && this_block + 1 < n_basic_blocks
-	  && insn == basic_block_head[this_block+1])
-	++this_block;
+      rtx insn = chain->insn;
 
       /* If this is a label, a JUMP_INSN, or has REG_NOTES (which
 	 might include REG_LABEL), we need to see what effects this
@@ -1326,23 +1350,9 @@ calculate_needs_all_insns (first, global)
 			spill_reg_order);
 
 	  /* Remember for later shortcuts which insns had any reloads or
-	     register eliminations.
-
-	     One might think that it would be worthwhile to mark insns
-	     that need register replacements but not reloads, but this is
-	     not safe because find_reloads may do some manipulation of
-	     the insn (such as swapping commutative operands), which would
-	     be lost when we restore the old pattern after register
-	     replacement.  So the actions of find_reloads must be redone in
-	     subsequent passes or in reload_as_needed.
-
-	     However, it is safe to mark insns that need reloads
-	     but not register replacement.  */
-
-	  PUT_MODE (insn, (did_elimination ? QImode
-			   : n_reloads ? HImode
-			   : GET_MODE (insn) == DImode ? DImode
-			   : VOIDmode));
+	     register eliminations.  */
+	  chain->need_elim = did_elimination;
+	  chain->need_reload = n_reloads > 0;
 
 	  /* Discard any register replacements done.  */
 	  if (did_elimination)
@@ -1355,12 +1365,15 @@ calculate_needs_all_insns (first, global)
 	    }
 
 	  if (n_reloads != 0)
-	    something_changed |= calculate_needs (this_block, insn,
-						  avoid_return_reg, global);
+	    {
+	      *pprev_reload = chain;
+	      pprev_reload = &chain->next_need_reload;
+	      something_changed |= calculate_needs (chain, avoid_return_reg,
+						    global);
+	    }
 	}
-
-      /* Note that there is a continue statement above.  */
     }
+  *pprev_reload = 0;
   return something_changed;
 }
 
@@ -1383,20 +1396,14 @@ calculate_needs_all_insns (first, global)
    inputs and outputs.  */
 
 static int
-calculate_needs (this_block, insn, avoid_return_reg, global)
-     int this_block;
-     rtx insn, avoid_return_reg;
+calculate_needs (chain, avoid_return_reg, global)
+     struct insn_chain *chain;
+     rtx avoid_return_reg;
      int global;
 {
+  rtx insn = chain->insn;
   int something_changed = 0;
   int i;
-
-  struct needs
-  {
-    /* [0] is normal, [1] is nongroup.  */
-    int regs[2][N_REG_CLASSES];
-    int groups[N_REG_CLASSES];
-  };
 
   /* Each `struct needs' corresponds to one RELOAD_... type.  */
   struct {
@@ -1413,7 +1420,6 @@ calculate_needs (this_block, insn, avoid_return_reg, global)
     struct needs out_addr_addr[MAX_RECOG_OPERANDS];
   } insn_needs;
 
-  something_needs_reloads = 1;
   bzero ((char *) &insn_needs, sizeof insn_needs);
 
   /* Count each reload once in every class
@@ -1441,9 +1447,9 @@ calculate_needs (this_block, insn, avoid_return_reg, global)
 	 in this basic block.  We do not use insn_needs and
 	 insn_groups because they are overly conservative for
 	 this purpose.  */
-      if (global && ! basic_block_needs[(int) class][this_block])
+      if (global && ! basic_block_needs[(int) class][chain->block])
 	{
-	  basic_block_needs[(int) class][this_block] = 1;
+	  basic_block_needs[(int) class][chain->block] = 1;
 	  something_changed = 1;
 	}
 
@@ -1703,6 +1709,10 @@ calculate_needs (this_block, insn, avoid_return_reg, global)
 	  max_nongroups_insn[i] = insn;
 	}
     }
+
+  /* Record the needs for later.  */
+  chain->need = insn_needs.other;
+
   return something_changed;
 }
 
@@ -2064,41 +2074,39 @@ dump_needs (dumpfile)
 /* Delete all insns that were inserted by emit_caller_save_insns during
    this iteration.  */
 static void
-delete_caller_save_insns (first)
-     rtx first;
+delete_caller_save_insns ()
 {
-  rtx insn = first;
-  int b = -1;
+  struct insn_chain *c = reload_insn_chain;
 
-  while (insn != 0)
+  while (c != 0)
     {
-      if (b + 1 != n_basic_blocks
-	  && basic_block_head[b + 1] == insn)
-	b++;
-
-      while (insn != 0 && INSN_UID (insn) >= reload_first_uid)
+      while (c != 0 && c->is_caller_save_insn)
 	{
-	  rtx next = NEXT_INSN (insn);
-	  rtx prev = PREV_INSN (insn);
+	  struct insn_chain *next = c->next;
+	  rtx insn = c->insn;
 
-	  if (insn == basic_block_head[b])
-	    basic_block_head[b] = next;
-	  if (insn == basic_block_end[b])
-	    basic_block_end[b] = prev;
+	  if (insn == basic_block_head[c->block])
+	    basic_block_head[c->block] = NEXT_INSN (insn);
+	  if (insn == basic_block_end[c->block])
+	    basic_block_end[c->block] = PREV_INSN (insn);
+	  if (c == reload_insn_chain)
+	    reload_insn_chain = next;
 
-	  if (next != 0)
-	    PREV_INSN (next) = prev;
-	  if (prev != 0)
-	    NEXT_INSN (prev) = next;
+	  if (NEXT_INSN (insn) != 0)
+	    PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+	  if (PREV_INSN (insn) != 0)
+	    NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 
-	  insn = next;
-
-	  if (b + 1 != n_basic_blocks
-	      && basic_block_head[b + 1] == insn)
-	    b++;
+	  if (next)
+	    next->prev = c->prev;
+	  if (c->prev)
+	    c->prev->next = next;
+	  c->next = unused_insn_chains;
+	  unused_insn_chains = c;
+	  c = next;
 	}
-      if (insn != 0)
-	insn = NEXT_INSN (insn);
+      if (c != 0)
+	c = c->next;
     }
 }
 
@@ -3809,6 +3817,10 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
 	  retry_global_alloc (i, forbidden_regs);
 
 	alter_reg (i, regno);
+
+	if (reg_renumber[i] == -1)
+	  SET_REGNO_REG_SET (spilled_pseudos, i);
+
 	if (dumpfile)
 	  {
 	    if (reg_renumber[i] == -1)
@@ -3820,6 +3832,22 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
       }
 
   return something_changed;
+}
+
+/* Clear the contents of spilled_pseudos from the life information in all
+   insn chains.  */
+static void
+finish_spills (global, dumpfile)
+     int global;
+     FILE *dumpfile;
+{
+  struct insn_chain *chain;
+
+  for (chain = reload_insn_chain; chain; chain = chain->next)
+    {
+      AND_COMPL_REG_SET (chain->live_before, spilled_pseudos);
+      AND_COMPL_REG_SET (chain->live_after, spilled_pseudos);
+    }
 }
 
 /* Find all paradoxical subregs within X and update reg_max_ref_width. 
@@ -4025,13 +4053,11 @@ compare_spill_regs (r1p, r2p)
    as the insns are scanned.  */
 
 static void
-reload_as_needed (first, live_known)
-     rtx first;
+reload_as_needed (live_known)
      int live_known;
 {
-  register rtx insn;
+  struct insn_chain *chain;
   register int i;
-  int this_block = 0;
   rtx x;
   rtx after_call = 0;
 
@@ -4068,14 +4094,10 @@ reload_as_needed (first, live_known)
 	spill_reg_order[spill_regs[i]] = i;
     }
 
-  for (insn = first; insn;)
+  for (chain = reload_insn_chain; chain; chain = chain->next)
     {
-      register rtx next = NEXT_INSN (insn);
-
-      /* Notice when we move to a new basic block.  */
-      if (live_known && this_block + 1 < n_basic_blocks
-	  && insn == basic_block_head[this_block+1])
-	++this_block;
+      rtx insn = chain->insn;
+      rtx old_next = NEXT_INSN (insn);
 
       /* If we pass a label, copy the offsets from the label information
 	 into the current offsets of each elimination.  */
@@ -4133,17 +4155,21 @@ reload_as_needed (first, live_known)
 
 	  /* If we need to do register elimination processing, do so.
 	     This might delete the insn, in which case we are done.  */
-	  if (num_eliminable && GET_MODE (insn) == QImode)
+	  if (num_eliminable && chain->need_elim)
 	    {
 	      eliminate_regs_in_insn (insn, 1);
 	      if (GET_CODE (insn) == NOTE)
-		{
-		  insn = next;
-		  continue;
-		}
+		continue;
 	    }
 
-	  if (GET_MODE (insn) == VOIDmode)
+	  /* If need_elim is nonzero but need_reload is zero, one might think
+	     that we could simply set n_reloads to 0.  However, find_reloads
+	     could have done some manipulation of the insn (such as swapping
+	     commutative operands), and these manipulations are lost during
+	     the first pass for every insn that needs register elimination.
+	     So the actions of find_reloads must be redone here.  */
+
+	  if (! chain->need_elim && ! chain->need_reload)
 	    n_reloads = 0;
 	  /* First find the pseudo regs that must be reloaded for this insn.
 	     This info is returned in the tables reload_... (see reload.h).
@@ -4170,7 +4196,7 @@ reload_as_needed (first, live_known)
 
 	      for (class = 0; class < N_REG_CLASSES; class++)
 		if (basic_block_needs[class] != 0
-		    && basic_block_needs[class][this_block] == 0)
+		    && basic_block_needs[class][chain->block] == 0)
 		  for (i = 0; i < n_reloads; i++)
 		    if (class == (int) reload_reg_class[i]
 			&& reload_reg_rtx[i] == 0
@@ -4183,7 +4209,7 @@ reload_as_needed (first, live_known)
 		 reusing reload regs from previous insns, or else output
 		 load insns to reload them.  Maybe output store insns too.
 		 Record the choices of reload reg in reload_reg_rtx.  */
-	      choose_reload_regs (insn, avoid_return_reg);
+	      choose_reload_regs (chain, avoid_return_reg);
 
 	      /* Merge any reloads that we didn't combine for fear of 
 		 increasing the number of spill registers needed but now
@@ -4193,7 +4219,7 @@ reload_as_needed (first, live_known)
 
 	      /* Generate the insns to reload operands into or out of
 		 their reload regs.  */
-	      emit_reload_insns (insn, this_block);
+	      emit_reload_insns (chain);
 
 	      /* Substitute the chosen reload regs from reload_reg_rtx
 		 into the insn's body (or perhaps into the bodies of other
@@ -4229,7 +4255,7 @@ reload_as_needed (first, live_known)
 
 	  /* There may have been CLOBBER insns placed after INSN.  So scan
 	     between INSN and NEXT and use them to forget old reloads.  */
-	  for (x = NEXT_INSN (insn); x != next; x = NEXT_INSN (x))
+	  for (x = NEXT_INSN (insn); x != old_next; x = NEXT_INSN (x))
 	    if (GET_CODE (x) == INSN && GET_CODE (PATTERN (x)) == CLOBBER)
 	      note_stores (PATTERN (x), forget_old_reloads_1);
 
@@ -4270,8 +4296,6 @@ reload_as_needed (first, live_known)
 	    && INSN_CLOBBERS_REGNO_P (insn, i))
 	  CLEAR_HARD_REG_BIT (reg_reloaded_valid, i);
 #endif
-
-      insn = next;
 
 #ifdef USE_C_ALLOCA
       alloca (0);
@@ -5216,12 +5240,13 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum)
    or 0 if we couldn't find a spill reg and we didn't change anything.  */
 
 static int
-allocate_reload_reg (r, insn, last_reload, noerror)
+allocate_reload_reg (chain, r, last_reload, noerror)
+     struct insn_chain *chain;
      int r;
-     rtx insn;
      int last_reload;
      int noerror;
 {
+  rtx insn = chain->insn;
   int i;
   int pass;
   int count;
@@ -5422,10 +5447,11 @@ allocate_reload_reg (r, insn, last_reload, noerror)
    finding a reload reg in the proper class.  */
 
 static void
-choose_reload_regs (insn, avoid_return_reg)
-     rtx insn;
+choose_reload_regs (chain, avoid_return_reg)
+     struct insn_chain *chain;
      rtx avoid_return_reg;
 {
+  rtx insn = chain->insn;
   register int i, j;
   int max_group_size = 1;
   enum reg_class group_class = NO_REGS;
@@ -5668,7 +5694,7 @@ choose_reload_regs (insn, avoid_return_reg)
 		   || reload_secondary_p[reload_order[i]])
 		  && ! reload_optional[reload_order[i]]
 		  && reload_reg_rtx[reload_order[i]] == 0)
-		allocate_reload_reg (reload_order[i], insn, 0, inheritance);
+		allocate_reload_reg (chain, reload_order[i], 0, inheritance);
 #endif
 
 	  /* First see if this pseudo is already available as reloaded
@@ -5994,7 +6020,7 @@ choose_reload_regs (insn, avoid_return_reg)
 	  if (i == n_reloads)
 	    continue;
 
-	  allocate_reload_reg (r, insn, j == n_reloads - 1, inheritance);
+	  allocate_reload_reg (chain, r, j == n_reloads - 1, inheritance);
 #endif
 	}
 
@@ -6013,7 +6039,7 @@ choose_reload_regs (insn, avoid_return_reg)
 	  if (reload_reg_rtx[r] != 0 || reload_optional[r])
 	    continue;
 
-	  if (! allocate_reload_reg (r, insn, j == n_reloads - 1, inheritance))
+	  if (! allocate_reload_reg (chain, r, j == n_reloads - 1, inheritance))
 	    break;
 	}
 
@@ -6312,10 +6338,11 @@ merge_assigned_reloads (insn)
 /* Output insns to reload values in and out of the chosen reload regs.  */
 
 static void
-emit_reload_insns (insn, bb)
-     rtx insn;
-     int bb;
+emit_reload_insns (chain)
+     struct insn_chain *chain;
 {
+  rtx insn = chain->insn;
+
   register int j;
   rtx input_reload_insns[MAX_RECOG_OPERANDS];
   rtx other_input_address_reload_insns = 0;
@@ -7259,10 +7286,10 @@ emit_reload_insns (insn, bb)
   /* Keep basic block info up to date.  */
   if (n_basic_blocks)
     {
-      if (basic_block_head[bb] == insn)
-        basic_block_head[bb] = NEXT_INSN (before_insn);
-      if (basic_block_end[bb] == insn)
-        basic_block_end[bb] = PREV_INSN (following_insn);
+      if (basic_block_head[chain->block] == insn)
+        basic_block_head[chain->block] = NEXT_INSN (before_insn);
+      if (basic_block_end[chain->block] == insn)
+        basic_block_end[chain->block] = PREV_INSN (following_insn);
     }
 
   /* Move death notes from INSN

@@ -215,6 +215,7 @@ extern struct insn_chain *reload_insn_chain;
 /* Allocate a new insn_chain structure.  */
 extern struct insn_chain *new_insn_chain	PROTO((void));
 
+extern void compute_use_by_pseudos		PROTO((HARD_REG_SET *, regset));
 #endif
 
 /* Functions from reload.c:  */
