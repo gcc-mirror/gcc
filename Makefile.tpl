@@ -389,70 +389,9 @@ all: all.normal
 ###
 
 # Flags to pass down to all sub-makes.
-# Please keep these in alphabetical order.
-BASE_FLAGS_TO_PASS = \
-	"AR_FLAGS=$(AR_FLAGS)" \
-	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
-	"AS_FOR_TARGET=$(AS_FOR_TARGET)" \
-	"BISON=$(BISON)" \
-	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
-	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
-	"CFLAGS=$(CFLAGS)" \
-	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
-	"GCJ_FOR_TARGET=$(GCJ_FOR_TARGET)" \
-	"CXX_FOR_BUILD=$(CXX_FOR_BUILD)" \
-	"CXXFLAGS=$(CXXFLAGS)" \
-	"CXXFLAGS_FOR_TARGET=$(CXXFLAGS_FOR_TARGET)" \
-	"CXX_FOR_TARGET=$(CXX_FOR_TARGET)" \
-	"DESTDIR=$(DESTDIR)" \
-	"DLLTOOL_FOR_TARGET=$(DLLTOOL_FOR_TARGET)" \
-	"INSTALL=$(INSTALL)" \
-	"INSTALL_DATA=$(INSTALL_DATA)" \
-	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
-	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
-	"LDFLAGS=$(LDFLAGS)" \
-	"LEX=$(LEX)" \
-	"LD_FOR_TARGET=$(LD_FOR_TARGET)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
-	"LIBCXXFLAGS=$(LIBCXXFLAGS)" \
-	"LIBCXXFLAGS_FOR_TARGET=$(LIBCXXFLAGS_FOR_TARGET)" \
-	"M4=$(M4)" \
-	"MAKE=$(MAKE)" \
-	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
-	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
-	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
-	"RPATH_ENVVAR=$(RPATH_ENVVAR)" \
-	"SHELL=$(SHELL)" \
-	"EXPECT=$(EXPECT)" \
-	"RUNTEST=$(RUNTEST)" \
-	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
-	"TARGET_SUBDIR=$(TARGET_SUBDIR)" \
-	"WINDRES_FOR_TARGET=$(WINDRES_FOR_TARGET)" \
-	"YACC=$(YACC)" \
-	"bindir=$(bindir)" \
-	"datadir=$(datadir)" \
-	"exec_prefix=$(exec_prefix)" \
-	"includedir=$(includedir)" \
-	"infodir=$(infodir)" \
-	"libdir=$(libdir)" \
-	"libexecdir=$(libexecdir)" \
-	"lispdir=$(lispdir)" \
-	"libstdcxx_incdir=$(libstdcxx_incdir)" \
-	"libsubdir=$(libsubdir)" \
-	"localstatedir=$(localstatedir)" \
-	"mandir=$(mandir)" \
-	"oldincludedir=$(oldincludedir)" \
-	"prefix=$(prefix)" \
-	"sbindir=$(sbindir)" \
-	"sharedstatedir=$(sharedstatedir)" \
-	"sysconfdir=$(sysconfdir)" \
-	"tooldir=$(tooldir)" \
-	"build_tooldir=$(build_tooldir)" \
-	"gxx_include_dir=$(gxx_include_dir)" \
-	"gcc_version=$(gcc_version)" \
-	"gcc_version_trigger=$(gcc_version_trigger)" \
-	"target_alias=$(target_alias)" 
+BASE_FLAGS_TO_PASS = [+ FOR flags_to_pass +]\
+	"[+flag+]=$([+flag+])" [+ ENDFOR flags_to_pass +]\
+	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 
 
 # For any flags above that may contain shell code that varies from one
 # target library to another.  When doing recursive invocations of the

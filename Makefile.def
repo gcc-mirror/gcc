@@ -136,3 +136,74 @@ recursive_targets = { make_target= mostlyclean; };
 recursive_targets = { make_target= clean; };
 recursive_targets = { make_target= distclean; };
 recursive_targets = { make_target= maintainer-clean; };
+
+// Flags which need to be passed down.
+
+// Directories etc.
+flags_to_pass = { flag= DESTDIR ; };
+flags_to_pass = { flag= RPATH_ENVVAR ; };
+flags_to_pass = { flag= TARGET_SUBDIR ; };
+flags_to_pass = { flag= bindir ; };
+flags_to_pass = { flag= datadir ; };
+flags_to_pass = { flag= exec_prefix ; };
+flags_to_pass = { flag= includedir ; };
+flags_to_pass = { flag= infodir ; };
+flags_to_pass = { flag= libdir ; };
+flags_to_pass = { flag= libexecdir ; };
+flags_to_pass = { flag= lispdir ; };
+flags_to_pass = { flag= libstdcxx_incdir ; };
+flags_to_pass = { flag= libsubdir ; };
+flags_to_pass = { flag= localstatedir ; };
+flags_to_pass = { flag= mandir ; };
+flags_to_pass = { flag= oldincludedir ; };
+flags_to_pass = { flag= prefix ; };
+flags_to_pass = { flag= sbindir ; };
+flags_to_pass = { flag= sharedstatedir ; };
+flags_to_pass = { flag= sysconfdir ; };
+flags_to_pass = { flag= tooldir ; };
+flags_to_pass = { flag= build_tooldir ; };
+flags_to_pass = { flag= gxx_include_dir ; };
+flags_to_pass = { flag= gcc_version ; };
+flags_to_pass = { flag= gcc_version_trigger ; };
+flags_to_pass = { flag= target_alias ; };
+
+// Build tools
+flags_to_pass = { flag= BISON ; };
+flags_to_pass = { flag= CC_FOR_BUILD ; };
+flags_to_pass = { flag= CXX_FOR_BUILD ; };
+flags_to_pass = { flag= EXPECT ; };
+flags_to_pass = { flag= INSTALL ; };
+flags_to_pass = { flag= INSTALL_DATA ; };
+flags_to_pass = { flag= INSTALL_PROGRAM ; };
+flags_to_pass = { flag= INSTALL_SCRIPT ; };
+flags_to_pass = { flag= LEX ; };
+flags_to_pass = { flag= M4 ; };
+flags_to_pass = { flag= MAKE ; };
+flags_to_pass = { flag= RUNTEST ; };
+flags_to_pass = { flag= RUNTESTFLAGS ; };
+flags_to_pass = { flag= SHELL ; };
+flags_to_pass = { flag= YACC ; };
+
+// Host tools
+flags_to_pass = { flag= AR_FLAGS ; };
+flags_to_pass = { flag= CFLAGS ; };
+flags_to_pass = { flag= CXXFLAGS ; };
+flags_to_pass = { flag= LDFLAGS ; };
+flags_to_pass = { flag= LIBCFLAGS ; };
+flags_to_pass = { flag= LIBCXXFLAGS ; };
+
+// Target tools
+flags_to_pass = { flag= AR_FOR_TARGET ; };
+flags_to_pass = { flag= AS_FOR_TARGET ; };
+flags_to_pass = { flag= CC_FOR_TARGET ; };
+flags_to_pass = { flag= CFLAGS_FOR_TARGET ; };
+flags_to_pass = { flag= CXX_FOR_TARGET ; };
+flags_to_pass = { flag= CXXFLAGS_FOR_TARGET ; };
+flags_to_pass = { flag= DLLTOOL_FOR_TARGET ; };
+flags_to_pass = { flag= GCJ_FOR_TARGET ; };
+flags_to_pass = { flag= LD_FOR_TARGET ; };
+flags_to_pass = { flag= LIBCFLAGS_FOR_TARGET ; };
+flags_to_pass = { flag= LIBCXXFLAGS_FOR_TARGET ; };
+flags_to_pass = { flag= NM_FOR_TARGET ; };
+flags_to_pass = { flag= RANLIB_FOR_TARGET ; };
+flags_to_pass = { flag= WINDRES_FOR_TARGET ; };
