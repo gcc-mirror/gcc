@@ -1,5 +1,10 @@
 2001-10-08  Geert Bosch  <bosch@gnat.com>
 
+	* Makefile.in (treeprs.ads, einfo.h, sinfo.h, nmake.adb, nmake.ads):
+	Automatically build utilities when files need to be regenerated.
+
+2001-10-08  Geert Bosch  <bosch@gnat.com>
+
 	* xsnames.adb: New utility for updating snames.ads and snames.adb
 
 2001-10-08  Zack Weinberg  <zack@codesourcery.com>
