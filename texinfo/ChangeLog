@@ -16,6 +16,11 @@ Mon May 26 12:44:43 1997  Ian Lance Taylor  <ian@cygnus.com>
 
 	* texinfo.tex: Update to newest FSF version (2.201).
 
+Fri Mar 14 15:05:17 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* info/terminal.c (terminal_prep_terminal): Only use OCRNL and
+		ONLCR if they are defined.  Reported by many people.
+
 Wed Feb 12 11:15:16 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* util/texindex.c (main): Make main an int function, not void.
