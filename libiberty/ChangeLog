@@ -1,3 +1,8 @@
+2000-07-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/regress-demangle (failed test): Show result and
+	expected output.
+
 2000-07-07  Andrew Haley  <aph@cygnus.com>
 
 	* cplus-dem.c (main): fflush() after emitting last char before
