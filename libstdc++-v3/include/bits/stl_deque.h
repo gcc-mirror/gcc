@@ -591,14 +591,14 @@ namespace _GLIBCXX_STD
 
     public:
       typedef _Tp                                value_type;
-      typedef value_type*                        pointer;
-      typedef const value_type*                  const_pointer;
+      typedef typename _Alloc::pointer           pointer;
+      typedef typename _Alloc::const_pointer     const_pointer;
+      typedef typename _Alloc::reference         reference;
+      typedef typename _Alloc::const_reference   const_reference;
       typedef typename _Base::iterator           iterator;
       typedef typename _Base::const_iterator     const_iterator;
       typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
       typedef std::reverse_iterator<iterator>         reverse_iterator;
-      typedef value_type&                        reference;
-      typedef const value_type&                  const_reference;
       typedef size_t                             size_type;
       typedef ptrdiff_t                          difference_type;
       typedef typename _Base::allocator_type     allocator_type;

@@ -1,3 +1,22 @@
+2004-06-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/15775
+	* include/bits/stl_deque.h: Consistently with stl_set.h, define
+	pointer as allocator's pointer, likewise for reference,
+	const_pointer, and const_reference.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+
+2004-06-11  Dhruv Matani  <dhruvbird@gmx.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/testsuite_performance.h
+	(resource_counter::allocated_memory): Make it return the right
+	number of bytes requested by the allocators/application. This is
+	the sbrk+mmaped memory.
+
 2004-06-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* crossconfig.m4: Remove signbit, signbitf, signbitl.	
