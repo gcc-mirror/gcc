@@ -1042,7 +1042,6 @@ static void pfatal_with_name PROTO((char *)) __attribute__ ((noreturn));
 static void pipe_closed PROTO((int)) __attribute__ ((noreturn));
 
 static void memory_full PROTO((void)) __attribute__ ((noreturn));
-static char *savestring PROTO((char *));
 static void print_help PROTO((void));
 
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
@@ -1276,7 +1275,7 @@ main (argc, argv)
   {
     /* Remove extension from PROGNAME.  */
     char *p;
-    char *s = progname = savestring (progname);
+    char *s = progname = xstrdup (progname);
 
     if ((p = rindex (s, ';')) != 0) *p = '\0';	/* strip version number */
     if ((p = rindex (s, '.')) != 0		/* strip type iff ".exe" */
@@ -1378,7 +1377,7 @@ main (argc, argv)
 	  if (include_prefix != 0)
 	    prefix = include_prefix;
 	  else {
-	    prefix = savestring (GCC_INCLUDE_DIR);
+	    prefix = xstrdup (GCC_INCLUDE_DIR);
 	    /* Remove the `include' from /usr/local/lib/gcc.../include.  */
 	    if (!strcmp (prefix + strlen (prefix) - 8, "/include"))
 	      prefix[strlen (prefix) - 7] = 0;
@@ -1403,7 +1402,7 @@ main (argc, argv)
 	  if (include_prefix != 0)
 	    prefix = include_prefix;
 	  else {
-	    prefix = savestring (GCC_INCLUDE_DIR);
+	    prefix = xstrdup (GCC_INCLUDE_DIR);
 	    /* Remove the `include' from /usr/local/lib/gcc.../include.  */
 	    if (!strcmp (prefix + strlen (prefix) - 8, "/include"))
 	      prefix[strlen (prefix) - 7] = 0;
@@ -1977,7 +1976,7 @@ main (argc, argv)
 	if (c == PATH_SEPARATOR || !c) {
 	  endp[-1] = 0;
 	  include_defaults[num_dirs].fname
-	    = startp == endp ? "." : savestring (startp);
+	    = startp == endp ? "." : xstrdup (startp);
 	  endp[-1] = c;
 	  include_defaults[num_dirs].component = 0;
 	  include_defaults[num_dirs].cplusplus = cplusplus;
@@ -2003,7 +2002,7 @@ main (argc, argv)
   if (!no_standard_includes) {
     struct default_include *p = include_defaults;
     char *specd_prefix = include_prefix;
-    char *default_prefix = savestring (GCC_INCLUDE_DIR);
+    char *default_prefix = xstrdup (GCC_INCLUDE_DIR);
     int default_len = 0;
     /* Remove the `include' from /usr/local/lib/gcc.../include.  */
     if (!strcmp (default_prefix + strlen (default_prefix) - 8, "/include")) {
@@ -5067,7 +5066,7 @@ read_name_map (dirname)
 
   map_list_ptr = ((struct file_name_map_list *)
 		  xmalloc (sizeof (struct file_name_map_list)));
-  map_list_ptr->map_list_name = savestring (dirname);
+  map_list_ptr->map_list_name = xstrdup (dirname);
   map_list_ptr->map_list_map = NULL;
 
   dirlen = strlen (dirname);
@@ -10762,13 +10761,13 @@ xcalloc (number, size)
   return ptr;
 }
 
-static char *
-savestring (input)
-     char *input;
+char *
+xstrdup (input)
+  const char *input;
 {
-  size_t size = strlen (input);
-  char *output = xmalloc (size + 1);
-  strcpy (output, input);
+  register size_t len = strlen (input) + 1;
+  register char *output = xmalloc (len);
+  memcpy (output, input, len);
   return output;
 }
 

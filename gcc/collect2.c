@@ -1,6 +1,6 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
-   Copyright (C) 1992, 93-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -551,13 +551,12 @@ file_exists (name)
 /* Make a copy of a string INPUT with size SIZE.  */
 
 char *
-savestring (input, size)
-     char *input;
-     int size;
+xstrdup (input)
+  const char *input;
 {
-  char *output = (char *) xmalloc (size + 1);
-  bcopy (input, output, size);
-  output[size] = 0;
+  register size_t len = strlen (input) + 1;
+  register char *output = xmalloc (len);
+  memcpy (output, input, len);
   return output;
 }
 
@@ -874,7 +873,7 @@ add_prefix (pprefix, prefix)
     pprefix->max_len = len;
 
   pl = (struct prefix_list *) xmalloc (sizeof (struct prefix_list));
-  pl->prefix = savestring (prefix, len);
+  pl->prefix = xstrdup (prefix);
 
   if (*prev)
     pl->next = *prev;

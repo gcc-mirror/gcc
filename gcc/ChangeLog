@@ -1,3 +1,20 @@
+Wed Jan 13 13:30:08 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cccp.c (xstrdup): Renamed from `savestring'.  All callers changed.
+	Remove prototype which we get from libiberty.h.
+
+	* collect2.c (xstrdup): Likewise.
+
+	* genextract.c (xstrdup): Likewise for `copystr'.
+	(mybzero): Remove it and use `memset' instead.
+
+	* genoutput.c (mybcopy, mybzero): Remove these.  All callers changed
+	to use `memcpy' and `memset' instead.
+
+	* genrecog.c (xstrdup): Renamed from `copystr'.  All callers
+ 	changed.  Remove prototype.
+	(mybcopy, mybzero): Remove these and use memcpy/memset.
+
 Wed Jan 13 00:59:04 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.h (LOAD_EXTEND_OP): Correct for SImode and CCmode moves when
