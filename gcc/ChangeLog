@@ -1,3 +1,8 @@
+2002-02-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (ic_invalidate_line): Make sure the immediate
+	constant is a valid sign-extension for Pmode.
+
 2002-02-02  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c: Fix formatting.

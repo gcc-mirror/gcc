@@ -2501,7 +2501,8 @@
   "
 {
   operands[0] = force_reg (Pmode, operands[0]);
-  operands[1] = force_reg (Pmode, GEN_INT (0xf0000008));
+  operands[1] = force_reg (Pmode, GEN_INT (trunc_int_for_mode (0xf0000008,
+							       Pmode)));
 }")
 
 ;; The address %0 is assumed to be 4-aligned at least.  Thus, by ORing
