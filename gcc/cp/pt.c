@@ -5898,6 +5898,9 @@ tsubst_aggr_type (tree t,
 tree
 tsubst_default_argument (tree fn, tree type, tree arg)
 {
+  tree saved_class_ptr = NULL_TREE;
+  tree saved_class_ref = NULL_TREE;
+
   /* This default argument came from a template.  Instantiate the
      default argument here, not in tsubst.  In the case of
      something like: 
@@ -5915,11 +5918,26 @@ tsubst_default_argument (tree fn, tree type, tree arg)
      within the scope of FN.  Since push_access_scope sets
      current_function_decl, we must explicitly clear it here.  */
   current_function_decl = NULL_TREE;
+  /* The "this" pointer is not valid in a default argument.  */
+  if (cfun)
+    {
+      saved_class_ptr = current_class_ptr;
+      cp_function_chain->x_current_class_ptr = NULL_TREE;
+      saved_class_ref = current_class_ref;
+      cp_function_chain->x_current_class_ref = NULL_TREE;
+    }
 
   push_deferring_access_checks(dk_no_deferred);
   arg = tsubst_expr (arg, DECL_TI_ARGS (fn),
 		     tf_error | tf_warning, NULL_TREE);
   pop_deferring_access_checks();
+
+  /* Restore the "this" pointer.  */
+  if (cfun)
+    {
+      cp_function_chain->x_current_class_ptr = saved_class_ptr;
+      cp_function_chain->x_current_class_ref = saved_class_ref;
+    }
 
   pop_access_scope (fn);
 
@@ -8531,6 +8549,21 @@ tsubst_copy_and_build (tree t,
 		qualified_name_lookup_error (TREE_TYPE (object), tmpl);
 		return error_mark_node;
 	      }
+	  }
+	else if (TREE_CODE (member) == SCOPE_REF
+		 && !CLASS_TYPE_P (TREE_OPERAND (member, 0))
+		 && TREE_CODE (TREE_OPERAND (member, 0)) != NAMESPACE_DECL)
+	  {
+	    if (complain & tf_error)
+	      {
+		if (TYPE_P (TREE_OPERAND (member, 0)))
+		  error ("`%T' is not a class or namespace", 
+			 TREE_OPERAND (member, 0));
+		else
+		  error ("`%D' is not a class or namespace", 
+			 TREE_OPERAND (member, 0));
+	      }
+	    return error_mark_node;
 	  }
 	else if (TREE_CODE (member) == FIELD_DECL)
 	  return finish_non_static_data_member (member, object, NULL_TREE);
