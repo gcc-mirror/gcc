@@ -156,6 +156,9 @@
 /* Define if you have the gettimeofday function.  */
 #undef HAVE_GETTIMEOFDAY
 
+/* Define if you have the iconv function.  */
+#undef HAVE_ICONV
+
 /* Define if you have the index function.  */
 #undef HAVE_INDEX
 
@@ -167,6 +170,9 @@
 
 /* Define if you have the munmap function.  */
 #undef HAVE_MUNMAP
+
+/* Define if you have the nl_langinfo function.  */
+#undef HAVE_NL_LANGINFO
 
 /* Define if you have the popen function.  */
 #undef HAVE_POPEN
@@ -224,6 +230,9 @@
 
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
+
+/* Define if you have the <langinfo.h> header file.  */
+#undef HAVE_LANGINFO_H
 
 /* Define if you have the <limits.h> header file.  */
 #undef HAVE_LIMITS_H
