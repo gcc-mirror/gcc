@@ -2444,9 +2444,7 @@
 
 (define_insn "*sethi_di_medlow_embmedany_pic"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (high:DI (match_operand:DI 1 "sp64_medium_pic_operand" "")))
-  ;; The clobber is here because emit_move_sequence assumes the worst case.
-   (clobber (reg:DI 1))]
+        (high:DI (match_operand:DI 1 "sp64_medium_pic_operand" "")))]
   "(TARGET_CM_MEDLOW || TARGET_CM_EMBMEDANY) && check_pic (1)"
   "sethi\\t%%hi(%a1), %0"
   [(set_attr "type" "move")
@@ -2454,9 +2452,7 @@
 
 (define_insn "*sethi_di_medlow"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (high:DI (match_operand:DI 1 "symbolic_operand" "")))
-  ;; The clobber is here because emit_move_sequence assumes the worst case.
-   (clobber (reg:DI 1))]
+        (high:DI (match_operand:DI 1 "symbolic_operand" "")))]
   "TARGET_CM_MEDLOW && check_pic (1)"
   "sethi\\t%%hi(%a1), %0"
   [(set_attr "type" "move")
