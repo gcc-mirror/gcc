@@ -1,3 +1,21 @@
+2003-06-21  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Update.
+	* common.opt: New switches.
+	* opts.c: Include diagnostic.h.
+	(common_handle_option): Handle new switches.
+	* toplev.c (flag_loop_optimize, flag_crossjumping, flag_if_conversion,
+	flag_if_conversion2, flag_delete_null_pointer_checks,
+	flag_rerun_cse_after_loop): Make extern.
+	(flag_dummy): New.
+	(f_options): Update to use flag_dummy for moved options.
+	(decode_f_option): Some switches moved to opts.c.
+	* toplev.h (flag_loop_optimize, flag_crossjumping, flag_if_conversion,
+	flag_if_conversion2, flag_delete_null_pointer_checks,
+	flag_rerun_cse_after_loop, flag_keep_static_consts, flag_peel_loops,
+	flag_tracer, flag_thread_jumps, flag_unroll_loops,
+	flag_unroll_all_loops, flag_unswitch_loops): New.
+
 Sat Jun 21 13:41:00 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_va_arg): Fix allocation of temporary slot.

@@ -214,6 +214,9 @@ F77
 fpedantic
 F77
 
+fpreprocessed
+F77
+
 fsecond-underscore
 F77
 

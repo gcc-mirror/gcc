@@ -654,24 +654,24 @@ int flag_syntax_only = 0;
 
 /* Nonzero means perform loop optimizer.  */
 
-static int flag_loop_optimize;
+int flag_loop_optimize;
 
 /* Nonzero means perform crossjumping.  */
 
-static int flag_crossjumping;
+int flag_crossjumping;
 
 /* Nonzero means perform if conversion.  */
 
-static int flag_if_conversion;
+int flag_if_conversion;
 
 /* Nonzero means perform if conversion after reload.  */
 
-static int flag_if_conversion2;
+int flag_if_conversion2;
 
 /* Nonzero means to use global dataflow analysis to eliminate
    useless null pointer tests.  */
 
-static int flag_delete_null_pointer_checks;
+int flag_delete_null_pointer_checks;
 
 /* Nonzero means perform global CSE.  */
 
@@ -702,7 +702,7 @@ int flag_branch_target_load_optimize2 = 0;
 /* Nonzero means to rerun cse after loop optimization.  This increases
    compilation time about 20% and picks up a few more common expressions.  */
 
-static int flag_rerun_cse_after_loop;
+int flag_rerun_cse_after_loop;
 
 /* Nonzero means to run loop optimizations twice.  */
 
@@ -1040,6 +1040,9 @@ static const param_info lang_independent_params[] = {
   { NULL, 0, NULL }
 };
 
+/* Used for the f_options array temporarily.  */
+static int flag_dummy;
+
 /* Table of language-independent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -1048,107 +1051,107 @@ static const param_info lang_independent_params[] = {
 
 static const lang_independent_options f_options[] =
 {
-  {"eliminate-dwarf2-dups", &flag_eliminate_dwarf2_dups, 1,
+  {"eliminate-dwarf2-dups", &flag_dummy, 1,
    N_("Perform DWARF2 duplicate elimination") },
-  {"eliminate-unused-debug-types", &flag_eliminate_unused_debug_types, 1,
+  {"eliminate-unused-debug-types", &flag_dummy, 1,
    N_("Perform unused type elimination in debug info") },
-  {"float-store", &flag_float_store, 1,
+  {"float-store", &flag_dummy, 1,
    N_("Do not store floats in registers") },
-  {"defer-pop", &flag_defer_pop, 1,
+  {"defer-pop", &flag_dummy, 1,
    N_("Defer popping functions args from stack until later") },
-  {"omit-frame-pointer", &flag_omit_frame_pointer, 1,
+  {"omit-frame-pointer", &flag_dummy, 1,
    N_("When possible do not generate stack frames") },
-  {"optimize-sibling-calls", &flag_optimize_sibling_calls, 1,
+  {"optimize-sibling-calls", &flag_dummy, 1,
    N_("Optimize sibling and tail recursive calls") },
-  {"tracer", &flag_tracer, 1,
+  {"tracer", &flag_dummy, 1,
    N_("Perform superblock formation via tail duplication") },
-  {"unit-at-a-time", &flag_unit_at_a_time, 1,
+  {"unit-at-a-time", &flag_dummy, 1,
    N_("Compile whole compilation unit at a time") },
-  {"cse-follow-jumps", &flag_cse_follow_jumps, 1,
+  {"cse-follow-jumps", &flag_dummy, 1,
    N_("When running CSE, follow jumps to their targets") },
-  {"cse-skip-blocks", &flag_cse_skip_blocks, 1,
+  {"cse-skip-blocks", &flag_dummy, 1,
    N_("When running CSE, follow conditional jumps") },
-  {"expensive-optimizations", &flag_expensive_optimizations, 1,
+  {"expensive-optimizations", &flag_dummy, 1,
    N_("Perform a number of minor, expensive optimizations") },
-  {"thread-jumps", &flag_thread_jumps, 1,
+  {"thread-jumps", &flag_dummy, 1,
    N_("Perform jump threading optimizations") },
-  {"strength-reduce", &flag_strength_reduce, 1,
+  {"strength-reduce", &flag_dummy, 1,
    N_("Perform strength reduction optimizations") },
-  {"unroll-loops", &flag_unroll_loops, 1,
+  {"unroll-loops", &flag_dummy, 1,
    N_("Perform loop unrolling when iteration count is known") },
-  {"unroll-all-loops", &flag_unroll_all_loops, 1,
+  {"unroll-all-loops", &flag_dummy, 1,
    N_("Perform loop unrolling for all loops") },
-  {"old-unroll-loops", &flag_old_unroll_loops, 1,
+  {"old-unroll-loops", &flag_dummy, 1,
    N_("Perform loop unrolling when iteration count is known") },
-  {"old-unroll-all-loops", &flag_old_unroll_all_loops, 1,
+  {"old-unroll-all-loops", &flag_dummy, 1,
    N_("Perform loop unrolling for all loops") },
-  {"peel-loops", &flag_peel_loops, 1,
+  {"peel-loops", &flag_dummy, 1,
    N_("Perform loop peeling") },
-  {"unswitch-loops", &flag_unswitch_loops, 1,
+  {"unswitch-loops", &flag_dummy, 1,
    N_("Perform loop unswitching") },
-  {"prefetch-loop-arrays", &flag_prefetch_loop_arrays, 1,
+  {"prefetch-loop-arrays", &flag_dummy, 1,
    N_("Generate prefetch instructions, if available, for arrays in loops") },
-  {"move-all-movables", &flag_move_all_movables, 1,
+  {"move-all-movables", &flag_dummy, 1,
    N_("Force all loop invariant computations out of loops") },
-  {"reduce-all-givs", &flag_reduce_all_givs, 1,
+  {"reduce-all-givs", &flag_dummy, 1,
    N_("Strength reduce all loop general induction variables") },
-  {"writable-strings", &flag_writable_strings, 1,
+  {"writable-strings", &flag_dummy, 1,
    N_("Store strings in writable data section") },
-  {"peephole", &flag_no_peephole, 0,
+  {"peephole", &flag_dummy, 0,
    N_("Enable machine specific peephole optimizations") },
-  {"force-mem", &flag_force_mem, 1,
+  {"force-mem", &flag_dummy, 1,
    N_("Copy memory operands into registers before using") },
-  {"force-addr", &flag_force_addr, 1,
+  {"force-addr", &flag_dummy, 1,
    N_("Copy memory address constants into regs before using") },
-  {"function-cse", &flag_no_function_cse, 0,
+  {"function-cse", &flag_dummy, 0,
    N_("Allow function addresses to be held in registers") },
-  {"inline-functions", &flag_inline_functions, 1,
+  {"inline-functions", &flag_dummy, 1,
    N_("Integrate simple functions into their callers") },
-  {"keep-inline-functions", &flag_keep_inline_functions, 1,
+  {"keep-inline-functions", &flag_dummy, 1,
    N_("Generate code for funcs even if they are fully inlined") },
-  {"inline", &flag_no_inline, 0,
+  {"inline", &flag_dummy, 0,
    N_("Pay attention to the 'inline' keyword") },
-  {"keep-static-consts", &flag_keep_static_consts, 1,
+  {"keep-static-consts", &flag_dummy, 1,
    N_("Emit static const variables even if they are not used") },
-  {"syntax-only", &flag_syntax_only, 1,
+  {"syntax-only", &flag_dummy, 1,
    N_("Check for syntax errors, then stop") },
-  {"shared-data", &flag_shared_data, 1,
+  {"shared-data", &flag_dummy, 1,
    N_("Mark data as shared rather than private") },
-  {"caller-saves", &flag_caller_saves, 1,
+  {"caller-saves", &flag_dummy, 1,
    N_("Enable saving registers around function calls") },
-  {"pcc-struct-return", &flag_pcc_struct_return, 1,
+  {"pcc-struct-return", &flag_dummy, 1,
    N_("Return 'short' aggregates in memory, not registers") },
-  {"reg-struct-return", &flag_pcc_struct_return, 0,
+  {"reg-struct-return", &flag_dummy, 0,
    N_("Return 'short' aggregates in registers") },
-  {"delayed-branch", &flag_delayed_branch, 1,
+  {"delayed-branch", &flag_dummy, 1,
    N_("Attempt to fill delay slots of branch instructions") },
-  {"gcse", &flag_gcse, 1,
+  {"gcse", &flag_dummy, 1,
    N_("Perform the global common subexpression elimination") },
-  {"gcse-lm", &flag_gcse_lm, 1,
+  {"gcse-lm", &flag_dummy, 1,
    N_("Perform enhanced load motion during global subexpression elimination") },
-  {"gcse-sm", &flag_gcse_sm, 1,
+  {"gcse-sm", &flag_dummy, 1,
    N_("Perform store motion after global subexpression elimination") },
-  {"branch-target-load-optimize", &flag_branch_target_load_optimize, 1,
+  {"branch-target-load-optimize", &flag_dummy, 1,
    N_("Perform branch target load optimization before prologue / epilogue threading") },
-  {"branch-target-load-optimize2", &flag_branch_target_load_optimize2, 1,
+  {"branch-target-load-optimize2", &flag_dummy, 1,
    N_("Perform branch target load optimization after prologue / epilogue threading") },
-  {"loop-optimize", &flag_loop_optimize, 1,
+  {"loop-optimize", &flag_dummy, 1,
    N_("Perform the loop optimizations") },
-  {"crossjumping", &flag_crossjumping, 1,
+  {"crossjumping", &flag_dummy, 1,
    N_("Perform cross-jumping optimization") },
-  {"if-conversion", &flag_if_conversion, 1,
+  {"if-conversion", &flag_dummy, 1,
    N_("Perform conversion of conditional jumps to branchless equivalents") },
-  {"if-conversion2", &flag_if_conversion2, 1,
+  {"if-conversion2", &flag_dummy, 1,
    N_("Perform conversion of conditional jumps to conditional execution") },
-  {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1,
+  {"rerun-cse-after-loop", &flag_dummy, 1,
    N_("Run CSE pass after loop optimizations") },
-  {"rerun-loop-opt", &flag_rerun_loop_opt, 1,
+  {"rerun-loop-opt", &flag_dummy, 1,
    N_("Run the loop optimizer twice") },
-  {"delete-null-pointer-checks", &flag_delete_null_pointer_checks, 1,
+  {"delete-null-pointer-checks", &flag_dummy, 1,
    N_("Delete useless null pointer checks") },
-  {"schedule-insns", &flag_schedule_insns, 1,
+  {"schedule-insns", &flag_dummy, 1,
    N_("Reschedule instructions before register allocation") },
-  {"schedule-insns2", &flag_schedule_insns_after_reload, 1,
+  {"schedule-insns2", &flag_dummy, 1,
    N_("Reschedule instructions after register allocation") },
   {"sched-interblock",&flag_schedule_interblock, 1,
    N_("Enable scheduling across basic blocks") },
@@ -4191,36 +4194,6 @@ decode_f_option (const char *arg)
 	    set_param_value ("min-inline-insns", 10);
 	}
     }
-#ifdef INSN_SCHEDULING
-  else if ((option_value = skip_leading_substring (arg, "sched-verbose=")))
-    fix_sched_param ("verbose", option_value);
-#endif
-  else if ((option_value
-	    = skip_leading_substring (arg, "message-length=")))
-    output_set_maximum_length
-      (&global_dc->buffer, read_integral_parameter
-       (option_value, arg - 2, diagnostic_line_cutoff (global_dc)));
-  else if ((option_value
-	    = skip_leading_substring (arg, "diagnostics-show-location=")))
-    {
-      if (!strcmp (option_value, "once"))
-	diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
-      else if (!strcmp (option_value, "every-line"))
-	diagnostic_prefixing_rule (global_dc)
-	  = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
-      else
-	error ("unrecognized option `%s'", arg - 2);
-    }
-  else if (!strcmp (arg, "no-stack-limit"))
-    stack_limit_rtx = NULL_RTX;
-  else if ((option_value = skip_leading_substring (arg, "random-seed=")))
-    flag_random_seed = option_value;
-  else if (!strcmp (arg, "no-random-seed"))
-    flag_random_seed = NULL;
-  else if (!strcmp (arg, "preprocessed"))
-    /* Recognize this switch but do nothing.  This prevents warnings
-       about an unrecognized switch if cpplib has not been linked in.  */
-    ;
   else
     return 0;
 
