@@ -88,7 +88,7 @@
 ;; type "call_no_delay_slot" is a call followed by an unimp instruction.
 
 (define_attr "type"
-  "move,unary,binary,compare,load,sload,store,ialu,shift,uncond_branch,branch,call,call_no_delay_slot,return,address,imul,fpload,fpstore,fp,fpmove,fpcmove,fpcmp,fpmul,fpdivs,fpdivd,fpsqrts,fpsqrtd,cmove,multi,misc"
+  "move,unary,binary,compare,load,sload,store,ialu,shift,uncond_branch,branch,call,sibcall,call_no_delay_slot,return,address,imul,fpload,fpstore,fp,fpmove,fpcmove,fpcmp,fpmul,fpdivs,fpdivd,fpsqrts,fpsqrtd,cmove,multi,misc"
   (const_string "binary"))
 
 ;; Set true if insn uses call-clobbered intermediate register.
@@ -131,7 +131,7 @@
 ;; Attributes for instruction and branch scheduling
 
 (define_attr "in_call_delay" "false,true"
-  (cond [(eq_attr "type" "uncond_branch,branch,call,call_no_delay_slot,return,multi")
+  (cond [(eq_attr "type" "uncond_branch,branch,call,sibcall,call_no_delay_slot,return,multi")
 	 	(const_string "false")
 	 (eq_attr "type" "load,fpload,store,fpstore")
 	 	(if_then_else (eq_attr "length" "1")
@@ -147,6 +147,12 @@
 
 (define_delay (eq_attr "type" "call")
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
+
+(define_attr "eligible_for_sibcall_delay" "false,true"
+  (symbol_ref "eligible_for_sibcall_delay(insn)"))
+
+(define_delay (eq_attr "type" "sibcall")
+  [(eq_attr "eligible_for_sibcall_delay" "true") (nil) (nil)])
 
 (define_attr "leaf_function" "false,true"
   (const (symbol_ref "current_function_uses_only_leaf_regs")))
@@ -179,19 +185,19 @@
 ;; because it prevents us from moving back the final store of inner loops.
 
 (define_attr "in_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,call_no_delay_slot,multi")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,sibcall,call_no_delay_slot,multi")
 		     (eq_attr "length" "1"))
 		(const_string "true")
 		(const_string "false")))
 
 (define_attr "in_uncond_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,call_no_delay_slot,multi")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,sibcall,call_no_delay_slot,multi")
 		     (eq_attr "length" "1"))
 		(const_string "true")
 		(const_string "false")))
 
 (define_attr "in_annul_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,call_no_delay_slot,multi")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,sibcall,call_no_delay_slot,multi")
 		     (eq_attr "length" "1"))
 		(const_string "true")
 		(const_string "false")))
@@ -453,7 +459,7 @@
 
 (define_function_unit "ieuN" 2 0
   (and (eq_attr "cpu" "ultrasparc")
-    (eq_attr "type" "ialu,binary,move,unary,shift,compare,call,call_no_delay_slot,uncond_branch"))
+    (eq_attr "type" "ialu,binary,move,unary,shift,compare,call,sibcall,call_no_delay_slot,uncond_branch"))
   1 1)
 
 (define_function_unit "ieu0" 1 0
@@ -468,7 +474,7 @@
 
 (define_function_unit "ieu1" 1 0
   (and (eq_attr "cpu" "ultrasparc")
-    (eq_attr "type" "compare,call,call_no_delay_slot,uncond_branch"))
+    (eq_attr "type" "compare,call,sibcall,call_no_delay_slot,uncond_branch"))
   1 1)
 
 (define_function_unit "cti" 1 0
@@ -8569,6 +8575,59 @@
 
   DONE;
 }")
+
+;;- tail calls
+(define_expand "sibcall"
+  [(parallel [(call (match_operand 0 "call_operand" "") (const_int 0))
+	      (return)])]
+  ""
+  "")
+
+(define_insn "*sibcall_symbolic_sp32"
+  [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "s"))
+	 (match_operand 1 "" ""))
+   (return)]
+  "! TARGET_PTR64"
+  "* return output_sibcall(insn, operands[0]);"
+  [(set_attr "type" "sibcall")])
+
+(define_insn "*sibcall_symbolic_sp64"
+  [(call (mem:SI (match_operand:DI 0 "symbolic_operand" "s"))
+	 (match_operand 1 "" ""))
+   (return)]
+  "TARGET_PTR64"
+  "* return output_sibcall(insn, operands[0]);"
+  [(set_attr "type" "sibcall")])
+
+(define_expand "sibcall_value"
+  [(parallel [(set (match_operand 0 "register_operand" "=rf")
+		(call (match_operand:SI 1 "" "") (const_int 0)))
+	      (return)])]
+  ""
+  "")
+
+(define_insn "*sibcall_value_symbolic_sp32"
+  [(set (match_operand 0 "" "=rf")
+	(call (mem:SI (match_operand:SI 1 "symbolic_operand" "s"))
+	      (match_operand 2 "" "")))
+   (return)]
+  "! TARGET_PTR64"
+  "* return output_sibcall(insn, operands[1]);"
+  [(set_attr "type" "sibcall")])
+
+(define_insn "*sibcall_value_symbolic_sp64"
+  [(set (match_operand 0 "" "")
+	(call (mem:SI (match_operand:DI 1 "symbolic_operand" "s"))
+	      (match_operand 2 "" "")))
+   (return)]
+  "TARGET_PTR64"
+  "* return output_sibcall(insn, operands[1]);"
+  [(set_attr "type" "sibcall")])
+
+(define_expand "sibcall_epilogue"
+  [(const_int 0)]
+  ""
+  "DONE;")
 
 ;; UNSPEC_VOLATILE is considered to use and clobber all hard registers and
 ;; all of memory.  This blocks insns from being moved across this point.

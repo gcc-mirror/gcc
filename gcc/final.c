@@ -4015,7 +4015,8 @@ leaf_function_p ()
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == CALL_INSN)
+      if (GET_CODE (insn) == CALL_INSN
+	  && ! SIBLING_CALL_P (insn))
 	return 0;
       if (GET_CODE (insn) == INSN
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE
@@ -4025,7 +4026,8 @@ leaf_function_p ()
     }
   for (insn = current_function_epilogue_delay_list; insn; insn = XEXP (insn, 1))
     {
-      if (GET_CODE (XEXP (insn, 0)) == CALL_INSN)
+      if (GET_CODE (XEXP (insn, 0)) == CALL_INSN
+	  && ! SIBLING_CALL_P (insn))
 	return 0;
       if (GET_CODE (XEXP (insn, 0)) == INSN
 	  && GET_CODE (PATTERN (XEXP (insn, 0))) == SEQUENCE
@@ -4048,8 +4050,6 @@ leaf_function_p ()
 
 #ifdef LEAF_REGISTERS
 
-static char permitted_reg_in_leaf_functions[] = LEAF_REGISTERS;
-
 /* Return 1 if this function uses only the registers that can be
    safely renumbered.  */
 
@@ -4057,6 +4057,7 @@ int
 only_leaf_regs_used ()
 {
   int i;
+  char *permitted_reg_in_leaf_functions = LEAF_REGISTERS;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if ((regs_ever_live[i] || global_regs[i])

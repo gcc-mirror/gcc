@@ -165,7 +165,7 @@ static void initialize_argument_information	PARAMS ((int,
 							 int, tree, tree,
 							 CUMULATIVE_ARGS *,
 							 int, rtx *, int *,
-							 int *, int *));
+							 int *, int *, int));
 static void compute_argument_addresses		PARAMS ((struct arg_data *,
 							 rtx, int));
 static rtx rtx_for_function_call		PARAMS ((tree, tree));
@@ -980,7 +980,8 @@ static void
 initialize_argument_information (num_actuals, args, args_size, n_named_args,
 				 actparms, fndecl, args_so_far,
 				 reg_parm_stack_space, old_stack_level,
-				 old_pending_adj, must_preallocate, is_const)
+				 old_pending_adj, must_preallocate, is_const,
+				 ecf_flags)
      int num_actuals ATTRIBUTE_UNUSED;
      struct arg_data *args;
      struct args_size *args_size;
@@ -993,6 +994,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
      int *old_pending_adj;
      int *must_preallocate;
      int *is_const;
+     int ecf_flags;
 {
   /* 1 if scanning parms front to back, -1 if scanning back to front.  */
   int inc;
@@ -1150,8 +1152,19 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 
       args[i].unsignedp = unsignedp;
       args[i].mode = mode;
-      args[i].reg = FUNCTION_ARG (*args_so_far, mode, type,
-				  argpos < n_named_args);
+
+#ifdef FUNCTION_INCOMING_ARG
+      /* If this is a sibling call and the machine has register windows, the
+	 register window has to be unwinded before calling the routine, so
+	 arguments have to go into the incoming registers.  */
+      if (ecf_flags & ECF_SIBCALL)
+	args[i].reg = FUNCTION_INCOMING_ARG (*args_so_far, mode, type,
+					     argpos < n_named_args);
+      else
+#endif
+	args[i].reg = FUNCTION_ARG (*args_so_far, mode, type,
+				    argpos < n_named_args);
+
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
       if (args[i].reg)
 	args[i].partial
@@ -2131,7 +2144,7 @@ expand_call (exp, target, ignore)
 	 call expansion.  */
       int save_pending_stack_adjust;
       rtx insns;
-      rtx before_call;
+      rtx before_call, next_arg_reg;
 
       if (pass == 0)
 	{
@@ -2284,7 +2297,8 @@ expand_call (exp, target, ignore)
 				       n_named_args, actparms, fndecl,
 				       &args_so_far, reg_parm_stack_space,
 				       &old_stack_level, &old_pending_adj,
-				       &must_preallocate, &is_const);
+				       &must_preallocate, &is_const,
+				       (pass == 0) ? ECF_SIBCALL : 0);
 
 #ifdef FINAL_REG_PARM_STACK_SPACE
       reg_parm_stack_space = FINAL_REG_PARM_STACK_SPACE (args_size.constant,
@@ -2302,6 +2316,13 @@ expand_call (exp, target, ignore)
 
 	  is_const = 0;
 	  must_preallocate = 1;
+	  sibcall_failure = 1;
+	}
+
+      if (args_size.constant > current_function_args_size)
+	{
+	  /* If this function requires more stack slots than the current
+	     function, we cannot change it into a sibling call.  */
 	  sibcall_failure = 1;
 	}
 
@@ -2569,9 +2590,9 @@ expand_call (exp, target, ignore)
 	{
 	  if (pcc_struct_value)
 	    valreg = hard_function_value (build_pointer_type (TREE_TYPE (exp)),
-					  fndecl, 0);
+					  fndecl, (pass == 0));
 	  else
-	    valreg = hard_function_value (TREE_TYPE (exp), fndecl, 0);
+	    valreg = hard_function_value (TREE_TYPE (exp), fndecl, (pass == 0));
 	}
 
       /* Precompute all register parameters.  It isn't safe to compute anything
@@ -2665,14 +2686,24 @@ expand_call (exp, target, ignore)
 	 later safely search backwards to find the CALL_INSN.  */
       before_call = get_last_insn ();
 
+      /* Set up next argument register.  For sibling calls on machines
+	 with register windows this should be the incoming register.  */
+#ifdef FUNCTION_INCOMING_ARG
+      if (pass == 0)
+	next_arg_reg = FUNCTION_INCOMING_ARG (args_so_far, VOIDmode,
+					      void_type_node, 1);
+      else
+#endif
+	next_arg_reg = FUNCTION_ARG (args_so_far, VOIDmode,
+				     void_type_node, 1);
+
       /* All arguments and registers used for the call must be set up by
 	 now!  */
 
       /* Generate the actual call instruction.  */
       emit_call_1 (funexp, fndecl, funtype, unadjusted_args_size,
 		   args_size.constant, struct_value_size,
-		   FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
-		   valreg, old_inhibit_defer_pop, call_fusage,
+		   next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
 		   ((is_const ? ECF_IS_CONST : 0)
 		    | (nothrow ? ECF_NOTHROW : 0)
 		    | (pass == 0 ? ECF_SIBCALL : 0)));
@@ -2956,11 +2987,9 @@ expand_call (exp, target, ignore)
 	{
 	  tail_call_insns = insns;
 
-	  /* If the current function's argument block is not large enough
-	     to hold the outoing arguments, or we encountered some other
-	     situation we couldn't handle, zero out the sequence.  */
-	  if (current_function_args_size < args_size.constant
-	      || sibcall_failure)
+	  /* If something prevents making this a sibling call,
+	     zero out the sequence.  */
+	  if (sibcall_failure)
 	    tail_call_insns = NULL_RTX;
 
 	  /* Restore the pending stack adjustment now that we have

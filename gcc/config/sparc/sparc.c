@@ -99,6 +99,24 @@ char leaf_reg_remap[] =
   88, 89, 90, 91, 92, 93, 94, 95,
   96, 97, 98, 99, 100};
 
+/* Vector, indexed by hard register number, which contains 1
+   for a register that is allowable in a candidate for leaf
+   function treatment.  */
+char sparc_leaf_regs[] =
+{ 1, 1, 1, 1, 1, 1, 1, 1,
+  0, 0, 0, 0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  1, 1, 1, 1, 1, 1, 0, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1};
+
 #endif
 
 /* Name of where we pretend to think the frame pointer points.
@@ -2458,6 +2476,98 @@ eligible_for_epilogue_delay (trial, slot)
   return 0;
 }
 
+/* Return nonzero if TRIAL can go into the sibling call
+   delay slot.  */
+
+int
+eligible_for_sibcall_delay (trial)
+     rtx trial;
+{
+  rtx pat, src;
+
+  if (GET_CODE (trial) != INSN || GET_CODE (PATTERN (trial)) != SET)
+    return 0;
+
+  if (get_attr_length (trial) != 1 || profile_block_flag == 2)
+    return 0;
+
+  pat = PATTERN (trial);
+
+  if (current_function_uses_only_leaf_regs)
+    {
+      /* If the tail call is done using the call instruction,
+	 we have to restore %o7 in the delay slot.  */
+      if (TARGET_ARCH64 && ! TARGET_CM_MEDLOW)
+	return 0;
+
+      /* %g1 is used to build the function address */
+      if (reg_mentioned_p (gen_rtx_REG (Pmode, 1), pat))
+	return 0;
+
+      return 1;
+    }
+
+  /* Otherwise, only operations which can be done in tandem with
+     a `restore' insn can go into the delay slot.  */
+  if (GET_CODE (SET_DEST (pat)) != REG
+      || REGNO (SET_DEST (pat)) < 24
+      || REGNO (SET_DEST (pat)) >= 32)
+    return 0;
+
+  /* If it mentions %o7, it can't go in, because sibcall will clobber it
+     in most cases.  */
+  if (reg_mentioned_p (gen_rtx_REG (Pmode, 15), pat))
+    return 0;
+
+  src = SET_SRC (pat);
+
+  if (arith_operand (src, GET_MODE (src)))
+    {
+      if (TARGET_ARCH64)
+        return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
+      else
+        return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (SImode);
+    }
+
+  else if (arith_double_operand (src, GET_MODE (src)))
+    return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
+
+  else if (! TARGET_FPU && restore_operand (SET_DEST (pat), SFmode)
+	   && register_operand (src, SFmode))
+    return 1;
+
+  else if (GET_CODE (src) == PLUS
+	   && arith_operand (XEXP (src, 0), SImode)
+	   && arith_operand (XEXP (src, 1), SImode)
+	   && (register_operand (XEXP (src, 0), SImode)
+	       || register_operand (XEXP (src, 1), SImode)))
+    return 1;
+
+  else if (GET_CODE (src) == PLUS
+	   && arith_double_operand (XEXP (src, 0), DImode)
+	   && arith_double_operand (XEXP (src, 1), DImode)
+	   && (register_operand (XEXP (src, 0), DImode)
+	       || register_operand (XEXP (src, 1), DImode)))
+    return 1;
+
+  else if (GET_CODE (src) == LO_SUM
+	   && ! TARGET_CM_MEDMID
+	   && ((register_operand (XEXP (src, 0), SImode)
+	        && immediate_operand (XEXP (src, 1), SImode))
+	       || (TARGET_ARCH64
+		   && register_operand (XEXP (src, 0), DImode)
+		   && immediate_operand (XEXP (src, 1), DImode))))
+    return 1;
+
+  else if (GET_CODE (src) == ASHIFT
+	   && (register_operand (XEXP (src, 0), SImode)
+	       || register_operand (XEXP (src, 0), DImode))
+	   && XEXP (src, 1) == const1_rtx)
+    return 1;
+
+  return 0;
+}
+
 static int
 check_return_regs (x)
      rtx x;
@@ -3423,6 +3533,40 @@ output_function_prologue (file, size, leaf_function)
     }
 }
 
+/* Output code to restore any call saved registers.  */
+
+static void
+output_restore_regs (file, leaf_function)
+     FILE *file;
+     int leaf_function;
+{
+  int offset, n_regs;
+  const char *base;
+
+  offset = -apparent_fsize + frame_base_offset;
+  if (offset < -4096 || offset + num_gfregs * 4 > 4096 - 8 /*double*/)
+    {
+      build_big_number (file, offset, "%g1");
+      fprintf (file, "\tadd\t%s, %%g1, %%g1\n", frame_base_name);
+      base = "%g1";
+      offset = 0;
+    }
+  else
+    {
+      base = frame_base_name;
+    }
+
+  n_regs = 0;
+  if (TARGET_EPILOGUE && ! leaf_function)
+    /* ??? Originally saved regs 0-15 here.  */
+    n_regs = restore_regs (file, 0, 8, base, offset, 0);
+  else if (leaf_function)
+    /* ??? Originally saved regs 0-31 here.  */
+    n_regs = restore_regs (file, 0, 8, base, offset, 0);
+  if (TARGET_EPILOGUE)
+    restore_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs);
+}
+
 /* Output code for the function epilogue.  */
 
 void
@@ -3457,35 +3601,8 @@ output_function_epilogue (file, size, leaf_function)
       goto output_vectors;                                                    
     }
 
-  /* Restore any call saved registers.  */
   if (num_gfregs)
-    {
-      int offset, n_regs;
-      const char *base;
-
-      offset = -apparent_fsize + frame_base_offset;
-      if (offset < -4096 || offset + num_gfregs * 4 > 4096 - 8 /*double*/)
-	{
-	  build_big_number (file, offset, "%g1");
-	  fprintf (file, "\tadd\t%s, %%g1, %%g1\n", frame_base_name);
-	  base = "%g1";
-	  offset = 0;
-	}
-      else
-	{
-	  base = frame_base_name;
-	}
-
-      n_regs = 0;
-      if (TARGET_EPILOGUE && ! leaf_function)
-	/* ??? Originally saved regs 0-15 here.  */
-	n_regs = restore_regs (file, 0, 8, base, offset, 0);
-      else if (leaf_function)
-	/* ??? Originally saved regs 0-31 here.  */
-	n_regs = restore_regs (file, 0, 8, base, offset, 0);
-      if (TARGET_EPILOGUE)
-	restore_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs);
-    }
+    output_restore_regs (file, leaf_function);
 
   /* Work out how to skip the caller's unimp instruction if required.  */
   if (leaf_function)
@@ -3574,6 +3691,139 @@ output_function_epilogue (file, size, leaf_function)
 
  output_vectors:
   sparc_output_deferred_case_vectors ();
+}
+
+/* Output a sibling call.  */
+
+const char *
+output_sibcall (insn, call_operand)
+     rtx insn, call_operand;
+{
+  int leaf_regs = current_function_uses_only_leaf_regs;
+  rtx operands[3];
+  int delay_slot = dbr_sequence_length () > 0;
+
+  if (num_gfregs)
+    {
+      /* Call to restore global regs might clobber
+	 the delay slot. Instead of checking for this
+	 output the delay slot now.  */
+      if (delay_slot)
+	{
+	  rtx delay = NEXT_INSN (insn);
+
+	  if (! delay)
+	    abort ();
+
+	  final_scan_insn (delay, asm_out_file, 1, 0, 1);
+	  PATTERN (delay) = gen_blockage ();
+	  INSN_CODE (delay) = -1;
+	  delay_slot = 0;
+	}
+      output_restore_regs (asm_out_file, leaf_regs);
+    }
+
+  operands[0] = call_operand;
+
+  if (leaf_regs)
+    {
+      int spare_slot = (TARGET_ARCH32 || TARGET_CM_MEDLOW);
+      int size = 0;
+
+      if ((actual_fsize || ! spare_slot) && delay_slot)
+	{
+	  rtx delay = NEXT_INSN (insn);
+
+	  if (! delay)
+	    abort ();
+
+	  final_scan_insn (delay, asm_out_file, 1, 0, 1);
+	  PATTERN (delay) = gen_blockage ();
+	  INSN_CODE (delay) = -1;
+	  delay_slot = 0;
+	}
+      if (actual_fsize)
+	{
+	  if (actual_fsize <= 4096)
+	    size = actual_fsize;
+	  else if (actual_fsize <= 8192)
+	    {
+	      fputs ("\tsub\t%sp, -4096, %sp\n", asm_out_file);
+	      size = actual_fsize - 4096;
+	    }
+	  else if ((actual_fsize & 0x3ff) == 0)
+	    fprintf (asm_out_file,
+		     "\tsethi\t%%hi(%d), %%g1\n\tadd\t%%sp, %%g1, %%sp\n",
+		     actual_fsize);
+	  else
+	    {
+	      fprintf (asm_out_file,
+		       "\tsethi\t%%hi(%d), %%g1\n\tor\t%%g1, %%lo(%d), %%g1\n",
+		       actual_fsize, actual_fsize);
+	      fputs ("\tadd\t%%sp, %%g1, %%sp\n", asm_out_file);
+	    }
+	}
+      if (spare_slot)
+	{
+	  output_asm_insn ("sethi\t%%hi(%a0), %%g1", operands);
+	  output_asm_insn ("jmpl\t%%g1 + %%lo(%a0), %%g0", operands);
+	  if (size)
+	    fprintf (asm_out_file, "\t sub\t%%sp, -%d, %%sp\n", size);
+	  else if (! delay_slot)
+	    fputs ("\t nop\n", asm_out_file);
+	}
+      else
+	{
+	  if (size)
+	    fprintf (asm_out_file, "\tsub\t%%sp, -%d, %%sp\n", size);
+	  output_asm_insn ("mov\t%%o7, %%g1", operands);
+	  output_asm_insn ("call\t%a0, 0", operands);
+	  output_asm_insn (" mov\t%%g1, %%o7", operands);
+	}
+      return "";
+    }
+
+  output_asm_insn ("call\t%a0, 0", operands);
+  if (delay_slot)
+    {
+      rtx delay = NEXT_INSN (insn), pat;
+
+      if (! delay)
+	abort ();
+
+      pat = PATTERN (delay);
+      if (GET_CODE (pat) != SET)
+	abort ();
+
+      operands[0] = SET_DEST (pat);
+      pat = SET_SRC (pat);
+      switch (GET_CODE (pat))
+	{
+	case PLUS:
+	  operands[1] = XEXP (pat, 0);
+	  operands[2] = XEXP (pat, 1);
+	  output_asm_insn (" restore %r1, %2, %Y0", operands);
+	  break;
+	case LO_SUM:
+	  operands[1] = XEXP (pat, 0);
+	  operands[2] = XEXP (pat, 1);
+	  output_asm_insn (" restore %r1, %%lo(%a2), %Y0", operands);
+	  break;
+	case ASHIFT:
+	  operands[1] = XEXP (pat, 0);
+	  output_asm_insn (" restore %r1, %r1, %Y0", operands);
+	  break;
+	default:
+	  operands[1] = pat;
+	  output_asm_insn (" restore %%g0, %1, %Y0", operands);
+	  break;
+	}
+      PATTERN (delay) = gen_blockage ();
+      INSN_CODE (delay) = -1;
+    }
+  else
+    fputs ("\t restore\n", asm_out_file);
+  return "";
 }
 
 /* Functions for handling argument passing.
@@ -7014,6 +7264,7 @@ ultra_code_from_mask (type_mask)
     return IEU0;
   else if (type_mask & (TMASK (TYPE_COMPARE) |
 			TMASK (TYPE_CALL) |
+			TMASK (TYPE_SIBCALL) |
 			TMASK (TYPE_UNCOND_BRANCH)))
     return IEU1;
   else if (type_mask & (TMASK (TYPE_IALU) | TMASK (TYPE_BINARY) |
@@ -7486,6 +7737,7 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
 	/* If we are not in the process of emptying out the pipe, try to
 	   obtain an instruction which must be the first in it's group.  */
 	ip = ultra_find_type ((TMASK (TYPE_CALL) |
+			       TMASK (TYPE_SIBCALL) |
 			       TMASK (TYPE_CALL_NO_DELAY_SLOT) |
 			       TMASK (TYPE_UNCOND_BRANCH)),
 			      ready, this_insn);

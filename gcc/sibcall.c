@@ -140,9 +140,13 @@ skip_copy_to_return_value (orig_insn, hardret, softret)
      called function's return value was copied.  Otherwise we're returning
      some other value.  */
 
+#ifndef OUTGOING_REGNO
+#define OUTGOING_REGNO(N) (N)
+#endif
+
   if (SET_DEST (set) == current_function_return_rtx
       && REG_P (SET_DEST (set))
-      && REGNO (SET_DEST (set)) == REGNO (hardret)
+      && OUTGOING_REGNO (REGNO (SET_DEST (set))) == REGNO (hardret)
       && SET_SRC (set) == softret)
     return insn;
 
@@ -352,7 +356,6 @@ replace_call_placeholder (insn, use)
   NOTE_SOURCE_FILE (insn) = 0;
   NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 }
-
 
 /* Given a (possibly empty) set of potential sibling or tail recursion call
    sites, determine if optimization is possible.
