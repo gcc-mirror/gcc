@@ -214,8 +214,14 @@ static void give_switch		PROTO((int, int));
 static void pfatal_with_name	PROTO((char *));
 static void perror_with_name	PROTO((char *));
 static void perror_exec		PROTO((char *));
+#ifdef HAVE_VPRINTF
 static void fatal		PROTO((char *, ...));
 static void error		PROTO((char *, ...));
+#else
+/* We must not provide any prototype here, even if ANSI C.  */
+static void fatal		PROTO(());
+static void error		PROTO(());
+#endif
 
 void fancy_abort ();
 char *xmalloc ();
