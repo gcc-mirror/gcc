@@ -1,5 +1,8 @@
 2005-02-22  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/20073
+	* g++.dg/init/const1.C: New test.
+
 	PR c++/19991
 	* g++.dg/parse/constant7.C: New test.
 
