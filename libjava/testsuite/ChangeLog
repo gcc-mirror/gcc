@@ -1,5 +1,9 @@
 1999-07-06  Tom Tromey  <tromey@cygnus.com>
 
+	* libjava.lang/Throw_1.xfail: New file.
+	* libjava.lang/Invoke_2.xfail: New file.
+	* libjava.lang/Shazam.xfail: New file.
+
 	* libjava.lang/Final.xfail: New file.
 	* libjava.compile/Case.xfail: New file.
 	* libjava.compile/Where.xfail: New file.
