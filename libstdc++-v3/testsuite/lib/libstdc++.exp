@@ -1,0 +1,240 @@
+# Copyright (C) 2001 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# Please email any bugs, comments, and/or additions to this file to:
+# libstdc++@gcc.gnu.org
+#
+# This file is contributed by Gabriel Dos Reis <gdr@codesourcery.com>
+
+## This file contains support routines for dg.exp-based testsuite
+## framework.
+
+## The global associative array lib_env contains the totality
+## of options necessary to run testcases; the meanings of which are
+## as follows:
+##    lib_env(CXX):  The compiler used to run testcases
+##    lib_env(CXXFLAGS): Special flags passed to the compiler
+##    lib_env(INCLUDES):
+##    lib_env(LDFLAGS): Additional library flags 
+##    lib_env(LIBTOOL):
+##    lib_env(SRC_DIR):
+##    lib_env(BUILD_DIR):
+
+load_lib dg.exp
+
+## Initialization routine.
+proc libstdc++-dg-init { args } {
+    global lib_env
+    global srcdir
+    global outdir
+    global dg-do-what-default
+
+    # By default, we assume we want to run program images.
+    set dg-do-what-default run
+
+    # Get out the source and the build directories.
+    set src-dir [lookfor_file $srcdir libstdc++-v3]
+    set build-dir [lookfor_file $outdir libstdc++-v3]
+
+    # Set proper environment variables for the framework.
+    libstdc++-setup-flags ${src-dir} ${build-dir}
+    
+    # FIXME: Is this necessary?  Isn't the framework supposed to
+    #        do this for us?
+    file delete -force $outdir/*.exe
+    file delete -force $outdir/*core*
+    
+    # mkcheck.in used to output these information.  Maybe we should
+    # abandon that practice and define proper libstdc++_version and such.
+    set output [remote_exec host $lib_env(CXX) -v]
+    if { [lindex $output 0] == 0 } {
+	set output [lindex $output 1]
+	regexp "gcc version.*$" $output version
+	regsub "\n+" $version "" version
+	clone_output "Compiler: $version"
+	clone_output "Compiler flags: $lib_env(CXXFLAGS)"
+    } else {
+	perror "Cannot determine compiler version: [lindex $output 1]"
+    }
+}
+
+## dg.exp callback.  Called from dg-test to run PROGRAM images.
+## Normally, we would have left this job to ${tool}_load 
+## (from standard.exp) but because we use surrogate to run programs,
+##  we have to do this ourseleves.
+proc libstdc++_load { prog } {
+    global lib_env
+    return [remote_load target $lib_env(LIBTOOL) "--mode=execute $prog"]
+}
+
+## Nothing particular to do.
+proc libstdc++_exit { } {
+}
+
+## Output the version of the libs tested.
+proc libstdc++_version { } {
+    global lib_env
+    set version "undeterminated" 
+
+    # This file contains the library configuration, built at configure time.
+    set config-file $lib_env(BUILD_DIR)/include/bits/c++config.h
+    
+    set version_pattern "__GLIBCPP__\[ \t\]\+\[0-9\]\+"
+    if [file exists ${config-file}] {
+	set version [grep ${config-file} $version_pattern]
+	regexp "\[0-9\]\+" $version version
+    }
+    clone_output "$lib_env(SRC_DIR) version $version"
+    return 0
+}
+
+## Main loop.  Loop over TEST-DIRECTORIES and run each testcase
+## found therein.
+proc libstdc++_runtest { testdirs } {
+    global runtests
+    global srcdir
+    global outdir
+
+    foreach d $testdirs {
+	set testfiles [glob -nocomplain $d/*.C $d/*.cc]
+	if { [llength $testfiles] == 0 } {
+	    continue
+	}
+	
+	# Make the appropriate test-dirs with accompaning .libs/
+	# to keep libtool happy.
+	set td "$outdir/[dg-trim-dirname $srcdir $d]"
+	maybe-make-directory $td
+	maybe-make-directory $td/.lib
+
+	foreach testfile $testfiles {
+	    # We're not supposed to test this file, just skip it.
+	    if ![runtest_file_p $runtests $testfile] {
+		continue
+	    }
+	    
+	    verbose "Testing [dg-trim-dirname $srcdir $testfile]"
+	    libstdc++_do_test $testfile static
+	    libstdc++_do_test $testfile shared
+	}
+    }
+}
+
+## dg.exp callback.  Main test-running routine.  Called from
+## dg-test.
+##
+## TESTCASE is the file-name of the program to test;
+## COMPILE_TYPE is the kind of compilation to apply to TESTCASE; 
+##              current compilation kinds are: preprocessing(preprocess),
+##              compiling-only-no-assembling-nor-linking(compile),
+##              compiling-and-assmbling-no-linking(assemble),
+##              linking-no-running(link), running(run).
+proc libstdc++-dg-test { testfile compile_type additional-options } {
+    global srcdir; global outdir
+    global lib_env
+    global which_library
+    
+    # Prepare for compilation output
+    set comp_output ""
+
+    # By default, we want to use libtool to run tests.
+    set lt $lib_env(LIBTOOL)
+    set lt_args "--tag=CXX"
+    
+    set output_file $outdir/[dg-trim-dirname $srcdir [file rootname $testfile]]
+    switch $compile_type {
+	"preprocess" {
+	    set lt $lib_env(CXX)
+	    set lt_args "-E $lib_env(INCLUDES) $testfile -o $output_file.ii"
+	}
+	"compile" {
+	    set lt $lib_env(CXX)
+	    set lt_args "-S $lib_env(INCLUDES) $testfile -o $output_file.s"
+	}
+	"assemble" {
+	    append lt_args " --mode=compile $lib_env(FLAGS) $testfile"
+	}
+	"run" -
+	"link" {
+	    # If we're asked to run a testcase, then just do a `link'.
+	    # The framework will load the program image latter through
+	    # libstdc++_load callback.
+	    if { $which_library == "static" } {
+		append output_file ".st-exe"
+	    } else {
+		append output_file ".sh-exe"
+	    }
+	    append lt_args " --mode=link $lib_env(FLAGS) \
+		    $lib_env($which_library) $testfile \
+		    -o $output_file $lib_env(LDFLAGS)"
+	}
+	default {
+	    perror "$compile_type: option not recognized"
+	}
+    }
+
+    set results [remote_exec host $lt "$lt_args ${additional-options}"]
+    if { [lindex $results 0] != 0 } {
+	set comp_output [lindex $results 1];
+    }
+    return [list $comp_output $output_file]
+}
+
+## Get options necessary to properly run testcases. 
+## SRC-DIR is the library top source directory e.g. something like
+##         /codesourcery/egcs/libstdc++
+## BUILD-DIR is top build directory e.g. something like
+##           /tmp/egcs/i686-pc-linux-gnu/libstdc++
+proc libstdc++-setup-flags {src-dir build-dir} {
+    global lib_env
+    
+    set tmp [remote_exec host ${build-dir}/tests_flags "--built-library ${build-dir} ${src-dir}"]
+    set status [lindex $tmp 0]
+    set output [lindex $tmp 1]
+    if { $status == 0 } {
+	set flags [split $output :]
+	set lib_env(BUILD_DIR) [lindex $flags 0]
+	set lib_env(SRC_DIR) [lindex $flags 1]
+	set lib_env(CXX) [lindex $flags 3]
+	set lib_env(CXXFLAGS) [lindex $flags 4]
+	set lib_env(INCLUDES) [lindex $flags 5]
+	set lib_env(LDFLAGS) [lindex $flags 6]
+	
+	# This is really really fragile.  We should find away to
+	# tell which flags to use for static/libraries.
+	set lib_env(static) "-static"
+	set lib_env(shared) ""
+
+	set lib_env(LIBTOOL) "$lib_env(BUILD_DIR)/libtool"
+	set lib_env(FLAGS) "$lib_env(CXX) -B$lib_env(BUILD_DIR)/ \
+		$lib_env(INCLUDES) $lib_env(CXXFLAGS)"
+    } else {
+	warning "$output"
+	exit $status
+    }
+}
+
+proc maybe-make-directory {dir} {
+    if {![file isdirectory $dir]} {
+	verbose "Making directory $dir" 2
+	file mkdir $dir
+    }
+}
+
+proc libstdc++_do_test { testfile lib } {
+    global which_library; set which_library $lib
+    dg-test $testfile "" ""
+}
