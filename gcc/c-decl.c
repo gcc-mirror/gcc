@@ -4660,9 +4660,8 @@ finish_struct (t, fieldlist)
 	C_TYPE_VARIABLE_SIZE (t) = 1;
 
       /* Detect invalid bit-field size.  */
-      while (DECL_INITIAL (x)
-	     && TREE_CODE (DECL_INITIAL (x)) == NON_LVALUE_EXPR)
-	DECL_INITIAL (x) = TREE_OPERAND (DECL_INITIAL (x), 0);
+      if (DECL_INITIAL (x))
+	STRIP_NOPS (DECL_INITIAL (x));
       if (DECL_INITIAL (x) && TREE_CODE (DECL_INITIAL (x)) != INTEGER_CST)
 	{
 	  error_with_decl (x, "bit-field `%s' width not an integer constant");
@@ -5050,10 +5049,7 @@ build_enumerator (name, value)
   /* Validate and default VALUE.  */
 
   /* Remove no-op casts from the value.  */
-  while (value != 0
-	 && (TREE_CODE (value) == NOP_EXPR
-	     || TREE_CODE (value) == NON_LVALUE_EXPR))
-    value = TREE_OPERAND (value, 0);
+  STRIP_NOPS (value);
 
   if (value != 0 && TREE_CODE (value) != INTEGER_CST)
     {
