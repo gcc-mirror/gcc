@@ -1,12 +1,15 @@
-/* This is just like the default gvarargs.h
-   except for differences described below.  */
+/* The ! __SH3E_VARG case is similar to the default gvarargs.h .  */
+
+#if (defined (__SH3E__) || defined (__SH4_SINGLE__) || defined (__SH4__) || defined (__SH4_SINGLE_ONLY__)) && ! defined (__HITACHI__)
+#define __SH3E_VARG
+#endif
 
 /* Define __gnuc_va_list.  */
 
 #ifndef __GNUC_VA_LIST
 #define __GNUC_VA_LIST
 
-#if defined (__SH3E__) || defined (__SH4_SINGLE__) || defined (__SH4__) || defined (__SH4_SINGLE_ONLY__)
+#ifdef __SH3E_VARG
 
 typedef long __va_greg;
 typedef float __va_freg;
@@ -33,7 +36,7 @@ typedef void *__gnuc_va_list;
 
 #ifdef _STDARG_H
 
-#if defined (__SH3E__) || defined (__SH4_SINGLE__) || defined (__SH4__) || defined (__SH4_SINGLE_ONLY__)
+#ifdef __SH3E_VARG
 
 #define va_start(AP, LASTARG) \
 __extension__ \
@@ -59,7 +62,7 @@ __extension__ \
 #define va_alist  __builtin_va_alist
 #define va_dcl    int __builtin_va_alist;...
 
-#if defined (__SH3E__) || defined (__SH4_SINGLE__) || defined (__SH4__) || defined (__SH4_SINGLE_ONLY__)
+#ifdef __SH3E_VARG
 
 #define va_start(AP) \
 __extension__ \
@@ -164,7 +167,7 @@ enum __va_type_classes {
    ? (((union { TYPE t; int i;} *__VA_REF) (AP))++)->t			\
    : ((union {TYPE t;TYPE u;}*) ((char *)++(int *__VA_REF)(AP) - sizeof (TYPE)))->t);})
 
-#if defined (__SH3E__) || defined (__SH4_SINGLE__) || defined (__SH4__) || defined (__SH4_SINGLE_ONLY__)
+#ifdef __SH3E_VARG
 
 #define __PASS_AS_FLOAT(TYPE_CLASS,SIZE) \
   (TYPE_CLASS == __real_type_class && SIZE == 4)

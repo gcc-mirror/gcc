@@ -3717,7 +3717,7 @@ sh_expand_prologue ()
       current_function_anonymous_args = 0;
 
       /* This is not used by the SH3E calling convention  */
-      if (!TARGET_SH3E)
+      if (! TARGET_SH3E && ! TARGET_HITACHI)
 	{
 	  /* Push arg regs as if they'd been provided by caller in stack.  */
 	  for (i = 0; i < NPARM_REGS(SImode); i++)

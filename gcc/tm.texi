@@ -3789,6 +3789,15 @@ are treated as named.  Otherwise, all named arguments except the last
 are treated as named.
 
 You need not define this macro if it always returns zero.
+
+@findex PRETEND_OUTGOING_VARARGS_NAMED
+@item PRETEND_OUTGOING_VARARGS_NAMED
+If you need to conditionally change ABIs so that one works with
+@code{SETUP_INCOMING_VARARGS}, but the other works like neither
+@code{SETUP_INCOMING_VARARGS} nor @code{STRICT_ARGUMENT_NAMING} was
+defined, then define this macro to return nonzero if
+@code{SETUP_INCOMING_VARARGS} is used, zero otherwise.
+Otherwise, you should not define this macro.
 @end table
 
 @node Trampolines

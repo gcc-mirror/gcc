@@ -1731,21 +1731,18 @@ expand_call (exp, target, ignore)
      (If no anonymous args follow, the result of list_length is actually
      one too large.  This is harmless.)
 
-     If SETUP_INCOMING_VARARGS is defined and STRICT_ARGUMENT_NAMING is zero,
-     this machine will be able to place unnamed args that were passed in
+     If PRETEND_OUTGOING_VARARGS_NAMED is set and STRICT_ARGUMENT_NAMING is
+     zero, this machine will be able to place unnamed args that were passed in
      registers into the stack.  So treat all args as named.  This allows the
      insns emitting for a specific argument list to be independent of the
      function declaration.
 
-     If SETUP_INCOMING_VARARGS is not defined, we do not have any reliable
+     If PRETEND_OUTGOING_VARARGS_NAMED is not set, we do not have any reliable
      way to pass unnamed args in registers, so we must force them into
      memory.  */
 
   if ((STRICT_ARGUMENT_NAMING
-#ifndef SETUP_INCOMING_VARARGS
-       || 1
-#endif
-       )
+       || ! PRETEND_OUTGOING_VARARGS_NAMED)
       && TYPE_ARG_TYPES (funtype) != 0)
     n_named_args
       = (list_length (TYPE_ARG_TYPES (funtype))

@@ -216,6 +216,17 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 #define STRICT_ARGUMENT_NAMING 0
 #endif
 
+/* Provide a default value for PRETEND_OUTGOING_VARARGS_NAMED.  */
+#ifdef SETUP_INCOMING_VARARGS
+#ifndef PRETEND_OUTGOING_VARARGS_NAMED
+#define PRETEND_OUTGOING_VARARGS_NAMED 1
+#endif
+#else
+/* It is an error to define PRETEND_OUTGOING_VARARGS_NAMED without
+   defining SETUP_INCOMING_VARARGS.  */
+#define PRETEND_OUTGOING_VARARGS_NAMED 0
+#endif
+
 /* Nonzero if we do not know how to pass TYPE solely in registers.
    We cannot do so in the following cases:
 

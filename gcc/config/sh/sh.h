@@ -46,7 +46,8 @@ extern int code_for_indirect_jump_scratch;
 %{m4-single-only:-D__SH4_SINGLE_ONLY__} \
 %{m4-single:-D__SH4_SINGLE__} \
 %{m4:-D__SH4__} \
-%{!m1:%{!m2:%{!m3:%{!m3e:%{!m4:%{!m4-single:%{!m4-single-only:-D__sh1__}}}}}}}"
+%{!m1:%{!m2:%{!m3:%{!m3e:%{!m4:%{!m4-single:%{!m4-single-only:-D__sh1__}}}}}}} \
+%{mhitachi:-D__HITACHI__}"
 
 #define CPP_PREDEFINES "-D__sh__ -Acpu(sh) -Amachine(sh)"
 
@@ -1004,7 +1005,9 @@ struct sh_args {
    This macro is only used in this file. */
 
 #define PASS_IN_REG_P(CUM, MODE, TYPE) \
-  (((TYPE) == 0 || ! TREE_ADDRESSABLE ((tree)(TYPE))) \
+  (((TYPE) == 0 \
+    || (! TREE_ADDRESSABLE ((tree)(TYPE))) \
+	&& (! TARGET_HITACHI || ! AGGREGATE_TYPE_P (TYPE))) \
    && (TARGET_SH3E \
        ? ((MODE) == BLKmode \
 	  ? (((CUM).arg_count[(int) SH_ARG_INT] * UNITS_PER_WORD \
@@ -1037,12 +1040,15 @@ extern int current_function_varargs;
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   ((PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
-    && ((NAMED) || TARGET_SH3E || ! current_function_varargs))		\
+    && ((NAMED)								\
+	|| (! TARGET_HITACHI && (TARGET_SH3E || ! current_function_varargs)))) \
    ? gen_rtx (REG, (MODE),						\
 	      ((BASE_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))) 	\
 	       ^ ((MODE) == SFmode && TARGET_SH4			\
 		  && TARGET_LITTLE_ENDIAN != 0)))			\
    : 0)
+
+#define PRETEND_OUTGOING_VARARGS_NAMED (! TARGET_HITACHI)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
