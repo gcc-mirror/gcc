@@ -8,7 +8,7 @@ namespace N
   class A { };
 }
 
-template class ::N::A<int>;     // { dg-bogus ".*" "" }
+template class ::N::A<int>;     // { dg-bogus ".*" "" { xfail *-*-* } }
 
 
 

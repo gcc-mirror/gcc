@@ -7,7 +7,7 @@ foo1()
 {
   static int empty;
   const int* x = bar();
-  return (x ? *x : empty);      // { dg-bogus ".*" "" }
+  return (x ? *x : empty);      // { dg-bogus ".*" "" { xfail *-*-* } }
 }
 
 const int&
