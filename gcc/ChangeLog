@@ -1,3 +1,8 @@
+Thu Sep  9 16:03:06 1999  Richard Henderson  <rth@cygnus.com>
+
+	* function.c (assign_stack_local_1): Allocate from
+	function->x_frame_offset, not frame_offset.
+
 Thu Sep  9 14:36:31 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc.h (lang_cleanup_tree): Remove.
