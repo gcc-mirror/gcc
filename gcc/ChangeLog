@@ -1,3 +1,22 @@
+2001-10-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* aclocal.m4 (AM_WITH_NLS): AC_DEFINE HAVE_LIBINTL_H and
+	USE_INCLUDED_LIBINTL when appropriate.
+	* configure, config.in: Regenerate.
+	* Makefile.in (datadir): Set to @datadir@.
+	(intl.o): Also depend on $(CONFIG_H) and system.h.
+
+	* intl.c: Factor out common gettext initialization sequence.
+	(gcc_init_libintl):  New function.
+	* intl.h: Include intl/libgnuintl.h if USE_INCLUDED_LIBINTL;
+	otherwise include libintl.h if HAVE_LIBINTL_H; otherwise turn
+	off NLS.  Add multiple include guard.  No need to #ifdef-guard
+	an #undef.  Prototype gcc_init_libintl here.
+
+	* collect2.c (main), cppmain.c (general_init), gcc.c (main),
+	gcov.c (main), protoize.c (main), toplev.c (toplev_main):
+	Use gcc_init_libintl.
+
 2001-10-19  Catherine Moore  <clm@redhat.com>
 
         * config/stormy16/stormy16.h (ASM_COMMENT_START): Define.

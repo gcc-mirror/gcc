@@ -1,3 +1,7 @@
+2001-10-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in: Don't copy libgnuintl.h anywhere.
+
 2001-10-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* Update entire directory from gettext 0.10.40.

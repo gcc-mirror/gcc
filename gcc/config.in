@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -511,8 +511,15 @@
    is requested. */
 #undef ENABLE_NLS
 
+/* Define if you have the <libintl.h> header file. */
+#undef HAVE_LIBINTL_H
+
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
+
+/* Define to use the libintl included with this package instead of any
+   version in the system libraries. */
+#undef USE_INCLUDED_LIBINTL
 
 /* Define to 1 if installation paths should be looked up in Windows32
    Registry. Ignored on non windows32 hosts. */
