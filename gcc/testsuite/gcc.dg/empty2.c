@@ -2,7 +2,7 @@
 
 double d=0;
 
-struct A {} a;
+struct A {} a; /* { dg-warning "(has no members)" } */
 
 void foo(struct A x)
 {
