@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "elfos.h"
 #include "svr4.h"
-#include "linux.h"		/* some common stuff */
+#include <linux.h>		/* some common stuff */
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k GNU/Linux with ELF)");
