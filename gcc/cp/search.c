@@ -93,7 +93,7 @@ static void dfs_check_overlap PROTO((tree));
 static int dfs_no_overlap_yet PROTO((tree));
 static void envelope_add_decl PROTO((tree, tree, tree *));
 static int get_base_distance_recursive
-	PROTO((tree, int, int, int, int *, tree *, tree, tree *,
+	PROTO((tree, int, int, int, int *, tree *, tree,
 	       int, int *, int, int));
 static void expand_upcast_fixups 
 	PROTO((tree, tree, tree, tree, tree, tree, tree *));
@@ -156,8 +156,6 @@ pop_search_level (obstack)
   return stack;
 }
 
-/* Obstack used for memoizing member and member function lookup.  */
-
 static tree _vptr_name;
 
 /* Variables for gathering statistics.  */
@@ -177,7 +175,10 @@ static tree closed_envelopes = NULL_TREE;
 /* Get a virtual binfo that is found inside BINFO's hierarchy that is
    the same type as the type given in PARENT.  To be optimal, we want
    the first one that is found by going through the least number of
-   virtual bases.  */
+   virtual bases.
+
+   This uses a clever algorithm that updates *depth when we find the vbase,
+   and cuts off other paths of search when they reach that depth.  */
 
 static tree
 get_vbase_1 (parent, binfo, depth)
@@ -215,6 +216,9 @@ get_vbase_1 (parent, binfo, depth)
   *depth = *depth+1;
   return rval;
 }
+
+/* Return the shortest path to vbase PARENT within BINFO, ignoring
+   access and ambiguity.  */
 
 tree
 get_vbase (parent, binfo)
@@ -292,13 +296,13 @@ get_binfo (parent, binfo, protect)
 
 static int
 get_base_distance_recursive (binfo, depth, is_private, rval,
-			     rval_private_ptr, new_binfo_ptr, parent, path_ptr,
+			     rval_private_ptr, new_binfo_ptr, parent,
 			     protect, via_virtual_ptr, via_virtual,
 			     current_scope_in_chain)
      tree binfo;
      int depth, is_private, rval;
      int *rval_private_ptr;
-     tree *new_binfo_ptr, parent, *path_ptr;
+     tree *new_binfo_ptr, parent;
      int protect, *via_virtual_ptr, via_virtual;
      int current_scope_in_chain;
 {
@@ -312,38 +316,42 @@ get_base_distance_recursive (binfo, depth, is_private, rval,
 
   if (BINFO_TYPE (binfo) == parent || binfo == parent)
     {
+      int better = 0;
+
       if (rval == -1)
+	/* This is the first time we've found parent.  */
+	better = 1;
+      else if (tree_int_cst_equal (BINFO_OFFSET (*new_binfo_ptr),
+				   BINFO_OFFSET (binfo))
+	       && *via_virtual_ptr && via_virtual)
+	{
+	  /* A new path to the same vbase.  If this one has better
+	     access or is shorter, take it.  */
+
+	  if (protect)
+	    better = *rval_private_ptr - is_private;
+	  if (better == 0)
+	    better = rval - depth;
+	}
+      else
+	{
+	  /* Ambiguous base class.  */
+	  rval = depth = -2;
+
+	  /* If we get an ambiguity between virtual and non-virtual base
+	     class, return the non-virtual in case we are ignoring
+	     ambiguity.  */
+	  better = *via_virtual_ptr - via_virtual;
+	}
+
+      if (better > 0)
 	{
 	  rval = depth;
 	  *rval_private_ptr = is_private;
 	  *new_binfo_ptr = binfo;
 	  *via_virtual_ptr = via_virtual;
 	}
-      else
-	{
-	  int same_object = (tree_int_cst_equal (BINFO_OFFSET (*new_binfo_ptr),
-						 BINFO_OFFSET (binfo))
-			     && *via_virtual_ptr && via_virtual);
-			     
-	  if (*via_virtual_ptr && via_virtual==0)
-	    {
-	      *rval_private_ptr = is_private;
-	      *new_binfo_ptr = binfo;
-	      *via_virtual_ptr = via_virtual;
-	    }
-	  else if (same_object)
-	    {
-	      if (*rval_private_ptr && ! is_private)
-		{
-		  *rval_private_ptr = is_private;
-		  *new_binfo_ptr = binfo;
-		  *via_virtual_ptr = via_virtual;
-		}
-	      return rval;
-	    }
 
-	  rval = -2;
-	}
       return rval;
     }
 
@@ -356,44 +364,26 @@ get_base_distance_recursive (binfo, depth, is_private, rval,
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
 
-      /* Find any specific instance of a virtual base, when searching with
-	 a binfo...  */
-      if (BINFO_MARKED (base_binfo) == 0 || TREE_CODE (parent) == TREE_VEC)
-	{
-	  int via_private
-	    = (protect
-	       && (is_private
-		   || (!TREE_VIA_PUBLIC (base_binfo)
-		       && !(TREE_VIA_PROTECTED (base_binfo)
-			    && current_scope_in_chain)
-		       && !is_friend (BINFO_TYPE (binfo), current_scope ()))));
-	  int this_virtual = via_virtual || TREE_VIA_VIRTUAL (base_binfo);
-	  int was;
+      int via_private
+	= (protect
+	   && (is_private
+	       || (!TREE_VIA_PUBLIC (base_binfo)
+		   && !(TREE_VIA_PROTECTED (base_binfo)
+			&& current_scope_in_chain)
+		   && !is_friend (BINFO_TYPE (binfo), current_scope ()))));
+      int this_virtual = via_virtual || TREE_VIA_VIRTUAL (base_binfo);
 
-	  /* When searching for a non-virtual, we cannot mark
-	     virtually found binfos.  */
-	  if (! this_virtual)
-	    SET_BINFO_MARKED (base_binfo);
+      rval = get_base_distance_recursive (base_binfo, depth, via_private,
+					  rval, rval_private_ptr,
+					  new_binfo_ptr, parent,
+					  protect, via_virtual_ptr,
+					  this_virtual,
+					  current_scope_in_chain);
 
-#define WATCH_VALUES(rval, via_private) (rval == -1 ? 3 : via_private)
-
-	  was = WATCH_VALUES (rval, *via_virtual_ptr);
-	  rval = get_base_distance_recursive (base_binfo, depth, via_private,
-					      rval, rval_private_ptr,
-					      new_binfo_ptr, parent, path_ptr,
-					      protect, via_virtual_ptr,
-					      this_virtual,
-					      current_scope_in_chain);
-	  /* watch for updates; only update if path is good.  */
-	  if (path_ptr && WATCH_VALUES (rval, *via_virtual_ptr) != was)
-	    my_friendly_assert (BINFO_INHERITANCE_CHAIN (base_binfo) == binfo,
-				980827);
-	  if (rval == -2 && *via_virtual_ptr == 0)
-	    return rval;
-
-#undef WATCH_VALUES
-
-	}
+      /* If we've found a non-virtual, ambiguous base class, we don't need
+	 to keep searching.  */
+      if (rval == -2 && *via_virtual_ptr == 0)
+	return rval;
     }
 
   return rval;
@@ -402,7 +392,7 @@ get_base_distance_recursive (binfo, depth, is_private, rval,
 /* Return the number of levels between type PARENT and the type given
    in BINFO, following the leftmost path to PARENT not found along a
    virtual path, if there are no real PARENTs (all come from virtual
-   base classes), then follow the leftmost path to PARENT.
+   base classes), then follow the shortest public path to PARENT.
 
    Return -1 if TYPE is not derived from PARENT.
    Return -2 if PARENT is an ambiguous base class of TYPE, and PROTECT is
@@ -465,10 +455,8 @@ get_base_distance (parent, binfo, protect, path_ptr)
 
   rval = get_base_distance_recursive (binfo, 0, 0, -1,
 				      &rval_private, &new_binfo, parent,
-				      path_ptr, watch_access, &via_virtual, 0,
+				      watch_access, &via_virtual, 0,
 				      0);
-
-  dfs_walk (binfo, dfs_unmark, markedp);
 
   /* Access restrictions don't count if we found an ambiguous basetype.  */
   if (rval == -2 && protect >= 0)
@@ -477,11 +465,13 @@ get_base_distance (parent, binfo, protect, path_ptr)
   if (rval && protect && rval_private)
     return -3;
 
-  /* find real virtual base classes.  */
+  /* If they gave us the real vbase binfo, which isn't in the main binfo
+     tree, deal with it.  */
   if (rval == -1 && TREE_CODE (parent) == TREE_VEC
       && parent == binfo_member (BINFO_TYPE (parent),
 				 CLASSTYPE_VBASECLASSES (type)))
     {
+      my_friendly_abort (980901);
       my_friendly_assert (BINFO_INHERITANCE_CHAIN (parent) == binfo, 980827);
       new_binfo = parent;
       rval = 1;

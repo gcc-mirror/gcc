@@ -1,3 +1,12 @@
+1998-09-02  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (convert_pointer_to_real): Tidy.
+	* search.c (get_base_distance_recursive): Simplify.
+	(get_base_distance): Likewise.
+
+	* pt.c (unify): Only special-case INTEGER_TYPE if it uses template
+	parms.
+
 Wed Sep 02 09:25:29 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* lex.c (check_newline):  Call HANDLE_PRAGMA before
