@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define SYM(x) CONCAT1 (__USER_LABEL_PREFIX__, x)
 
-#ifdef __elf__
+#ifdef __ELF__
 #define __PLT__ (PLT)
 #define TYPE(x) .type SYM(x),function
 #define SIZE(x) .size SYM(x), . - SYM(x)
