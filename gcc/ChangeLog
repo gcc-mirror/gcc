@@ -1,3 +1,12 @@
+Tue May  9 06:30:20 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (nonlocal_reference_p): Minor reformatting.
+	* reload.c (find_equiv_reg): Simplify logic for
+	CALL_INSN_FUNCTION_USAGE since can't have SUBREG or pseudos and
+	some some reformatting.
+	* reload1.c (reload_combine): Don't assume everything in
+	CALL_INSN_FUNCTION_USAGE is a REG and clean up code a bit.
+
 2000-05-08  Richard Henderson  <rth@cygnus.com>
 
 	* final.c (current_insn_predicate): New.
