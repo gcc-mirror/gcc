@@ -2201,6 +2201,7 @@ extern void setjmp_protect_args		PROTO ((void));
 extern void setjmp_protect		PROTO ((tree));
 extern void expand_main_function	PROTO ((void));
 extern void mark_varargs		PROTO ((void));
+extern void init_dummy_function_start	PROTO ((void));
 extern void init_function_start		PROTO ((tree, char *, int));
 extern void assign_parms		PROTO ((tree, int));
 extern void put_var_into_stack		PROTO ((tree));
