@@ -4617,6 +4617,11 @@ arg_assoc_class (k, type)
   tree list, friends, context;
   int i;
   
+  /* Backend build structures, such as __builtin_va_list, aren't
+     affected by all this.  */
+  if (!CLASS_TYPE_P (type))
+    return 0;
+
   if (purpose_member (type, k->classes))
     return 0;
   k->classes = tree_cons (type, NULL_TREE, k->classes);
