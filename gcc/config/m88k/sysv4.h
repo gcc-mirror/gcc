@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola 88100 in an 88open ABI environment.
-   Copyright (C) 1990, 1991, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 2000, 2001 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com).
    Contributed to FSF by Network Computing Devices.
@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #define AS_BUG_POUND_TYPE
 #endif
 
-#include "svr4.h"
+/* TODO: convert includes to ${tm_file} list in config.gcc.  */
 #include "m88k/m88k.h"
 
 /* Identify the compiler.  */

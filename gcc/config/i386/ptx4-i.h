@@ -22,9 +22,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "i386/i386.h"	/* Base i386 target machine definitions */
-#include "i386/att.h"	/* Use the i386 AT&T assembler syntax */
-#include "ptx4.h"	/* Rest of definitions (non architecture dependent) */
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 Sequent Dynix/ptx Version 4)");

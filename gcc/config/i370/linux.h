@@ -37,9 +37,8 @@ Boston, MA 02111-1307, USA.  */
 #define REAL_ARITHMETIC
 
 /* Include system common definitions */
-
-#include "config/linux.h"
-#include "config/i370/i370.h"
+/* TODO: convert include to ${tm_file} list in config.gcc.  */
+#include "i370/i370.h"
 
 /* Names to predefine in the preprocessor for this target machine.  */
 

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running DG/UX.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 2001
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
@@ -22,7 +22,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "m88k/dgux.h"
 
 /* dgux.h builds an elf gcc which compiles elf objects by default.
    dguxbcs.h builds a bcs gcc which compiles bcs objects by default.

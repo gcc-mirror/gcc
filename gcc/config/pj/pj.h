@@ -1162,10 +1162,12 @@ do { fputs (current_function_varargs || current_function_stdarg         \
 #define LOCAL_LABEL_PREFIX "."
 
 /* Make an internal label into a string.  */
+#undef  ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \
   sprintf ((STRING), "*%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUM))
 
 /* Output an internal label definition.  */
+#undef  ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM) \
   asm_fprintf ((FILE), "%L%s%d:\n", (PREFIX), (NUM))
 
@@ -1220,6 +1222,7 @@ do { char dstr[30];                                     \
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
 
+#undef  ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE) \
   fprintf ((FILE), "\t.space %d\n", (SIZE))
 

@@ -157,6 +157,7 @@ Boston, MA 02111-1307, USA.  */
 #define DBX_MEMPARM_STABS_LETTER 'k'
 #define DBX_REGPARM_STABS_LETTER 'r'
 
+#undef  ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(file,num)		\
 	fprintf (file, "\t.stab \"\",.,0x%x,0,%d\n",	\
 		N_SLINE,num)

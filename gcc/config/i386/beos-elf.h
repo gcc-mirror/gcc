@@ -1,5 +1,5 @@
 /* Definitions for Intel x86 running BeOS
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,9 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <i386/i386.h>	/* Base i386 target machine definitions */
-#include <i386/att.h>	/* Use the i386 AT&T assembler syntax */
-#include <svr4.h>	/* some common stuff */
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 BeOS/ELF)");

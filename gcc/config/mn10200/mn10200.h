@@ -21,7 +21,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "svr4.h"
 
 /* Get rid of svr4.h stuff we don't want/need.  */
 #undef ASM_SPEC

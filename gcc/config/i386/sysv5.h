@@ -20,8 +20,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include "i386/sysv4.h"
-
 /* Dwarf2 is supported by native debuggers  */
 
 #undef PREFERRED_DEBUGGING_TYPE

@@ -1,5 +1,5 @@
 /* Definitions of MCore target. 
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GNU CC.
@@ -26,9 +26,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fputs (" (Motorola MCORE/elf)", stderr)
 
 #define SUBTARGET_CPP_PREDEFINES " -D__ELF__"
-
-#include "svr4.h"
-#include "mcore/mcore.h"
 
 /* Use DWARF2 debugging info.  */
 #ifndef DWARF2_DEBUGGING_INFO

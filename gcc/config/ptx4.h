@@ -30,11 +30,9 @@ Boston, MA 02111-1307, USA.
 
 /* Use DWARF debugging info by default.  */
 
-#ifndef PREFERRED_DEBUGGING_TYPE
+#undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
-#endif
 
-#include "elfos.h"
 
 /* Cpp, assembler, linker, library, and startfile spec's.  */
 

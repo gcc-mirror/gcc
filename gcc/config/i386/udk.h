@@ -6,8 +6,6 @@
 /* We're very much the SVR4 target with "/udk" prepended to everything that's
    interesting */
 
-#include "i386/sysv5.h"
-
 #undef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX 		"/udk/usr/ccs/bin/" 
 

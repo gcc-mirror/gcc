@@ -28,8 +28,6 @@ Boston, MA 02111-1307, USA.  */
    - print active compiler options in assembler output
 */
 
-/* ??? Create elf.h and have svr4.h include it.  */
-#include "svr4.h"
 
 #undef ASM_SPEC
 #undef LINK_SPEC

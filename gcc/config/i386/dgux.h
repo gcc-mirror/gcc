@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80x86 running DG/ux
-   Copyright (C) 1993, 1995, 1996, 1997, 1998, 2000
+   Copyright (C) 1993, 1995, 1996, 1997, 1998, 2000, 2001
    Free Software Foundation, Inc.
    Currently maintained by gcc@dg-rtp.dg.com.
 
@@ -24,10 +24,8 @@ Boston, MA 02111-1307, USA.  */
    few hacks
 */
 
-#include "i386/sysv4.h"
-
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.13 $"
+#define VERSION_INFO2   "$Revision: 1.14 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -80,6 +78,7 @@ Boston, MA 02111-1307, USA.  */
 #undef  DBX_DEBUGGING_INFO
 #define DBX_DEBUGGING_INFO
 
+#undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
 
 /* Override svr[34].h.  */
