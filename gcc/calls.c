@@ -902,8 +902,9 @@ expand_call (exp, target, ignore)
 
   /* Operand 0 is a pointer-to-function; get the type of the function.  */
   funtype = TREE_TYPE (TREE_OPERAND (exp, 0));
-  if (TREE_CODE (funtype) != POINTER_TYPE)
+  if (! POINTER_TYPE_P (funtype))
     abort ();
+
   funtype = TREE_TYPE (funtype);
 
   /* Push the temporary stack slot level so that we can free any temporaries
