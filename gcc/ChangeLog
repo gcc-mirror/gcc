@@ -1,3 +1,11 @@
+Wed Mar 18 12:43:20 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* loop.c (struct movable): New field move_insn_first.
+	(scan_loop): In consec sets code, set it.  Clear it otherwise.
+	(move_movables): In consec sets code, use it.  Copy REG_NOTES from
+	p to i1 only if i1 does not have REG_NOTES.  Delete obsolete ifdefed
+	out code.
+
 Wed Mar 18 09:52:56 1998  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.c (read_rtx): Fall back on homebrew atoll if HOST_WIDE_INT
