@@ -4371,7 +4371,9 @@ check_member_decl_is_same_in_complete_scope (t, x)
       else
 	icv = NULL_TREE;
 
-      if (icv
+      /* This should match pushdecl_class_level.  */
+      if (icv && icv != x
+	  && flag_optional_diags
 	  /* Don't complain about constructors.  */
 	  && name != constructor_name (current_class_type)
 	  /* Or inherited names.  */

@@ -2934,8 +2934,7 @@ do_identifier (token, parsing, args)
 	my_friendly_abort (61);
       else
 	{
-	  cp_error ("invalid use of member `%D' from base class `%T'", field,
-		    DECL_FIELD_CONTEXT (field));
+	  cp_error ("invalid use of member `%D'", field);
 	  id = error_mark_node;
 	  return id;
 	}
