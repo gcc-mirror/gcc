@@ -1,3 +1,12 @@
+Tue Sep 14 16:20:24 1999  Richard Henderson  <rth@cygnus.com>
+
+	* recog.h (struct recog_data): Make dup_num, operand_address_p,
+	n_operands, n_dups, n_alternatives `char' instead of `unsigned char'.
+	(struct insn_data): Likewise with n_operands, n_dups, 
+	n_alternatives, output_format.
+	* regclass.c (scan_one_insn): Cast n_operands to int before
+	arithmetic inside comparison.
+
 Tue Sep 14 15:13:36 1999  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (compile_function): Unconditionally emit nop.
