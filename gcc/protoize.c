@@ -80,12 +80,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "getopt.h"
 #undef getopt
 
+#ifndef errno
 extern int errno;
-#if defined(bsd4_4) || defined(__NetBSD__)
+#endif
+
+#ifndef HAVE_STRERROR
+#if defined(bsd4_4)
 extern const char *const sys_errlist[];
 #else
 extern char *sys_errlist[];
 #endif
+#else
+extern char *strerror();
+#endif
+
 extern char *version_string;
 
 /* Systems which are compatible only with POSIX 1003.1-1988 (but *not*
@@ -614,6 +622,28 @@ static char * saved_repl_write_ptr;
 
 static const char *shortpath ();
 
+char *
+my_strerror(e)
+     int e;
+{
+
+#ifdef HAVE_STRERROR
+  return strerror(e);
+
+#else
+
+  static char buffer[30];
+  if (!e)
+    return "";
+
+  if (e > 0 && e < sys_nerr)
+    return sys_errlist[e];
+
+  sprintf (buffer, "Unknown error %d", e);
+  return buffer;
+#endif
+}
+
 /* Allocate some space, but check that the allocation was successful.  */
 /* alloca.c uses this, so don't make it static.  */
 
@@ -789,7 +819,7 @@ safe_write (desc, ptr, len, out_fname)
 	  continue;
 #endif
 	fprintf (stderr, "%s: error writing file `%s': %s\n",
-		 pname, shortpath (NULL, out_fname), sys_errlist[errno]);
+		 pname, shortpath (NULL, out_fname), my_strerror(errno));
 	return;
       }
     ptr += written;
@@ -1481,7 +1511,7 @@ find_file (filename, do_not_stat)
           if (my_stat (filename, &stat_buf) == -1)
             {
               fprintf (stderr, "%s: %s: can't get status: %s\n",
-		       pname, shortpath (NULL, filename), sys_errlist[errno]);
+		       pname, shortpath (NULL, filename), my_strerror(errno));
               stat_buf.st_mtime = (time_t) -1;
             }
         }
@@ -2082,7 +2112,7 @@ gen_aux_info_file (base_filename)
       if (child_pid == -1)
         {
           fprintf (stderr, "%s: could not fork process: %s\n",
-		   pname, sys_errlist[errno]);
+		   pname, my_strerror(errno));
           return 0;
         }
 
@@ -2110,7 +2140,7 @@ gen_aux_info_file (base_filename)
         if (wait (&wait_status) == -1)
           {
             fprintf (stderr, "%s: wait failed: %s\n",
-		     pname, sys_errlist[errno]);
+		     pname, my_strerror(errno));
             return 0;
           }
 	if (WIFSIGNALED (wait_status))
@@ -2197,7 +2227,7 @@ start_over: ;
 	{
 	  fprintf (stderr, "%s: can't read aux info file `%s': %s\n",
 		   pname, shortpath (NULL, aux_info_filename),
-		   sys_errlist[errno]);
+		   my_strerror(errno));
 	  errors++;
 	  return;
 	}
@@ -2225,7 +2255,7 @@ start_over: ;
 	{
 	  fprintf (stderr, "%s: can't read aux info file `%s': %s\n",
 		   pname, shortpath (NULL, aux_info_filename),
-		   sys_errlist[errno]);
+		   my_strerror(errno));
 	  errors++;
 	  return;
 	}
@@ -2240,7 +2270,7 @@ start_over: ;
       {
         fprintf (stderr, "%s: can't get status of aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
-		 sys_errlist[errno]);
+		 my_strerror(errno));
         errors++;
         return;
       }
@@ -2267,7 +2297,7 @@ start_over: ;
 	  {
 	    fprintf (stderr, "%s: can't get status of aux info file `%s': %s\n",
 		     pname, shortpath (NULL, base_source_filename),
-		     sys_errlist[errno]);
+		     my_strerror(errno));
 	    errors++;
 	    return;
 	  }
@@ -2288,7 +2318,7 @@ start_over: ;
       {
         fprintf (stderr, "%s: can't open aux info file `%s' for reading: %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
-		 sys_errlist[errno]);
+		 my_strerror(errno));
         return;
       }
   
@@ -2304,7 +2334,7 @@ start_over: ;
       {
         fprintf (stderr, "%s: error reading aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
-		 sys_errlist[errno]);
+		 my_strerror(errno));
         free (aux_info_base);
         close (aux_info_file);
         return;
@@ -2316,7 +2346,7 @@ start_over: ;
       {
         fprintf (stderr, "%s: error closing aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
-		 sys_errlist[errno]);
+		 my_strerror(errno));
         free (aux_info_base);
         close (aux_info_file);
         return;
@@ -2330,7 +2360,7 @@ start_over: ;
     if (my_unlink (aux_info_filename) == -1)
       fprintf (stderr, "%s: can't delete aux info file `%s': %s\n",
 	       pname, shortpath (NULL, aux_info_filename),
-	       sys_errlist[errno]);
+	       my_strerror(errno));
 
   /* Save a pointer into the first line of the aux_info file which
      contains the filename of the directory from which the compiler
@@ -2396,7 +2426,7 @@ start_over: ;
                   {
                     fprintf (stderr, "%s: can't delete file `%s': %s\n",
 			     pname, shortpath (NULL, aux_info_filename),
-			     sys_errlist[errno]);
+			     my_strerror(errno));
                     return;
                   }
 		must_create = 1;
@@ -2472,7 +2502,7 @@ rename_c_file (hp)
     {
       fprintf (stderr, "%s: warning: can't link file `%s' to `%s': %s\n",
 	       pname, shortpath (NULL, filename),
-	       shortpath (NULL, new_filename), sys_errlist[errno]);
+	       shortpath (NULL, new_filename), my_strerror(errno));
       errors++;
       return;
     }
@@ -2480,7 +2510,7 @@ rename_c_file (hp)
   if (my_unlink (filename) == -1)
     {
       fprintf (stderr, "%s: warning: can't delete file `%s': %s\n",
-	       pname, shortpath (NULL, filename), sys_errlist[errno]);
+	       pname, shortpath (NULL, filename), my_strerror(errno));
       errors++;
       return;
     }
@@ -4176,7 +4206,7 @@ edit_file (hp)
   if (my_stat ((char *)convert_filename, &stat_buf) == -1)
     {
       fprintf (stderr, "%s: can't get status for file `%s': %s\n",
-	       pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
+	       pname, shortpath (NULL, convert_filename), my_strerror(errno));
       return;
     }
   orig_size = stat_buf.st_size;
@@ -4211,7 +4241,7 @@ edit_file (hp)
       {
         fprintf (stderr, "%s: can't open file `%s' for reading: %s\n",
 		 pname, shortpath (NULL, convert_filename),
-		 sys_errlist[errno]);
+		 my_strerror(errno));
         return;
       }
 
@@ -4224,7 +4254,7 @@ edit_file (hp)
         close (input_file);
         fprintf (stderr, "\n%s: error reading input file `%s': %s\n",
 		 pname, shortpath (NULL, convert_filename),
-		 sys_errlist[errno]);
+		 my_strerror(errno));
         return;
       }
 
@@ -4257,7 +4287,7 @@ edit_file (hp)
       {
         fprintf (stderr, "%s: can't create/open clean file `%s': %s\n",
 		 pname, shortpath (NULL, clean_filename),
-		 sys_errlist[errno]);
+		 my_strerror(errno));
         return;
       }
   
@@ -4366,7 +4396,7 @@ edit_file (hp)
 		       pname,
 		       shortpath (NULL, convert_filename),
 		       shortpath (NULL, new_filename),
-		       sys_errlist[errno]);
+		       my_strerror(errno));
               return;
             }
         }
@@ -4375,7 +4405,7 @@ edit_file (hp)
   if (my_unlink (convert_filename) == -1)
     {
       fprintf (stderr, "%s: can't delete file `%s': %s\n",
-	       pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
+	       pname, shortpath (NULL, convert_filename), my_strerror(errno));
       return;
     }
 
@@ -4388,7 +4418,7 @@ edit_file (hp)
       {
         fprintf (stderr, "%s: can't create/open output file `%s': %s\n",
 		 pname, shortpath (NULL, convert_filename),
-		 sys_errlist[errno]);
+		 my_strerror(errno));
         return;
       }
   
@@ -4414,7 +4444,7 @@ edit_file (hp)
   /* The cast avoids an erroneous warning on AIX.  */
   if (my_chmod ((char *)convert_filename, stat_buf.st_mode) == -1)
     fprintf (stderr, "%s: can't change mode of file `%s': %s\n",
-	     pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
+	     pname, shortpath (NULL, convert_filename), my_strerror(errno));
 
   /* Note:  We would try to change the owner and group of the output file
      to match those of the input file here, except that may not be a good
@@ -4557,7 +4587,7 @@ main (argc, argv)
   if (!cwd_buffer)
     {
       fprintf (stderr, "%s: cannot get working directory: %s\n",
-	       pname, sys_errlist[errno]);
+	       pname, my_strerror(errno));
       exit (1);
     }
 
