@@ -3200,10 +3200,8 @@ override_options ()
 	    mips_cpu = PROCESSOR_R4000;
 	  else if (!strcmp (p, "4600"))
 	    mips_cpu = PROCESSOR_R4600;
-	  /* Although the r4650 adds a couple of instructions, it uses
-             the r4600 pipeline.  */
 	  else if (!strcmp (p, "4650"))
-	    mips_cpu = PROCESSOR_R4600;
+	    mips_cpu = PROCESSOR_R4650;
 	  break;
 
 	case '6':
@@ -3231,7 +3229,9 @@ override_options ()
 
   if ((mips_cpu == PROCESSOR_R3000 && mips_isa > 1)
       || (mips_cpu == PROCESSOR_R6000 && mips_isa > 2)
-      || ((mips_cpu == PROCESSOR_R4000 || mips_cpu == PROCESSOR_R4600)
+      || ((mips_cpu == PROCESSOR_R4000
+	   || mips_cpu == PROCESSOR_R4600
+	   || mips_cpu == PROCESSOR_R4650)
 	  && mips_isa > 3))
     error ("-mcpu=%s does not support -mips%d", mips_cpu_string, mips_isa);
 
