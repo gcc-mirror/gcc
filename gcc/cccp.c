@@ -377,6 +377,10 @@ static int warn_stringify;
 
 static int warn_trigraphs;
 
+/* Nonzero means warn if #import is used.  */
+
+static int warn_import = 1;
+
 /* Nonzero means turn warnings into errors.  */
 
 static int warnings_are_errors;
@@ -1081,6 +1085,10 @@ main (argc, argv)
 	  warn_stringify = 1;
 	else if (!strcmp (argv[i], "-Wno-traditional"))
 	  warn_stringify = 0;
+	else if (!strcmp (argv[i], "-Wimport"))
+	  warn_import = 1;
+	else if (!strcmp (argv[i], "-Wno-import"))
+	  warn_import = 0;
 	else if (!strcmp (argv[i], "-Werror"))
 	  warnings_are_errors = 1;
 	else if (!strcmp (argv[i], "-Wno-error"))
@@ -1446,7 +1454,13 @@ main (argc, argv)
       startp = endp = epath;
       num_dirs = 0;
       while (1) {
-	if ((*endp == ':') || (*endp == '\0')) {
+        /* Handle cases like c:/usr/lib:d:/gcc/lib */
+        if ((*endp == ':'
+#ifdef __MSDOS__
+	     && (endp-startp != 1 || !isalpha (*startp)))
+#endif
+	     )
+            || (*endp == 0)) {
 	  strncpy (nstore, startp, endp-startp);
 	  if (endp == startp)
 	    strcpy (nstore, ".");
@@ -1813,7 +1827,12 @@ path_include (path)
       struct file_name_list *dirtmp;
 
       /* Find the end of this name.  */
+#ifdef __MSDOS__
+      /* Handle cases like c:/usr/lib:d:/gcc/lib */
+      while (*q != 0 && (*q != ':' || (q - p == 1 && isalpha (*p)))) q++;
+#else
       while (*q != 0 && *q != ':') q++;
+#endif
       if (p == q) {
 	/* An empty name in the path stands for the current directory.  */
 	name = (char *) xmalloc (2);
@@ -1924,7 +1943,7 @@ trigraph_pcp (buf)
 
 /* Move all backslash-newline pairs out of embarrassing places.
    Exchange all such pairs following BP
-   with any potentially-embarrasing characters that follow them.
+   with any potentially-embarrassing characters that follow them.
    Potentially-embarrassing characters are / and *
    (because a backslash-newline inside a comment delimiter
    would cause it not to be recognized).  */
@@ -3042,7 +3061,7 @@ handle_directive (ip, op)
       bp++;
     } else if (*bp == '/' && bp[1] == '*') {
       ip->bufp = bp;
-      skip_to_end_of_comment (ip, &ip->lineno);
+      skip_to_end_of_comment (ip, &ip->lineno, 0);
       bp = ip->bufp;
     } else if (*bp == '\\' && bp[1] == '\n') {
       bp += 2; ip->lineno++;
@@ -3186,7 +3205,7 @@ handle_directive (ip, op)
 	      || ((cplusplus || objc) && *bp == '/')) {
 	    U_CHAR *obp = bp - 1;
 	    ip->bufp = bp + 1;
-	    skip_to_end_of_comment (ip, &ip->lineno);
+	    skip_to_end_of_comment (ip, &ip->lineno, 0);
 	    bp = ip->bufp;
 	    /* No need to copy the command because of a comment at the end;
 	       just don't include the comment in the directive.  */
@@ -3320,7 +3339,7 @@ handle_directive (ip, op)
 	      ip->bufp = xp + 1;
 	      /* If we already copied the command through,
 		 already_output != 0 prevents outputting comment now.  */
-	      skip_to_end_of_comment (ip, already_output);
+	      skip_to_end_of_comment (ip, already_output, 0);
 	      if (keep_comments)
 		while (xp != ip->bufp)
 		  *cp++ = *xp++;
@@ -3588,7 +3607,8 @@ do_include (buf, limit, op, keyword)
   int pcfnum;
   f= -1;			/* JF we iz paranoid! */
 
-  if (importing && !instack[indepth].system_header_p && !import_warning) {
+  if (importing && warn_import
+      && !instack[indepth].system_header_p && !import_warning) {
     import_warning = 1;
     warning ("using `#import' is not recommended");
     fprintf (stderr, "The fact that a certain header file need not be processed more than once\n");
@@ -4336,7 +4356,7 @@ pcfinclude (buf, limit, name, op)
     if (nkeys == -1)
       str->writeflag = 1;
     else
-      /* Otherwist, for each key, */
+      /* Otherwise, for each key, */
       for (; nkeys--; free (tmpbuf.buf), cp = endofthiskey + 1) {
 	KEYDEF *kp = (KEYDEF *) cp;
 	HASHNODE *hp;
@@ -4441,7 +4461,7 @@ write_output ()
 }
 
 /* Pass a directive through to the output file.
-   BUF points to the contents of the directive, as a continguous string.
+   BUF points to the contents of the directive, as a contiguous string.
    LIMIT points to the first character past the end of the directive.
    KEYWORD is the keyword-table entry for the directive.  */
 
@@ -4618,7 +4638,7 @@ create_definition (buf, limit, op)
 }
  
 /* Process a #define command.
-BUF points to the contents of the #define command, as a continguous string.
+BUF points to the contents of the #define command, as a contiguous string.
 LIMIT points to the first character past the end of the definition.
 KEYWORD is the keyword-table entry for #define.  */
 
@@ -5558,6 +5578,8 @@ do_line (buf, limit, op, keyword)
 	file_change = enter_file;
       else if (*bp == '2')
 	file_change = leave_file;
+      else if (*bp == '3')
+	ip->system_header_p = 1;
       else {
 	error ("invalid format `#line' command");
 	return 0;
@@ -5565,6 +5587,11 @@ do_line (buf, limit, op, keyword)
 
       bp++;
       SKIP_WHITE_SPACE (bp);
+      if (*bp == '3') {
+	ip->system_header_p = 1;
+	bp++;
+	SKIP_WHITE_SPACE (bp);
+      }
       if (*bp) {
 	error ("invalid format `#line' command");
 	return 0;
@@ -5908,7 +5935,7 @@ do_xifdef (buf, limit, op, keyword)
 	  int junk;
 	  U_CHAR *save_bufp = ip->bufp;
 	  ip->bufp = p + 1;
-	  p = skip_to_end_of_comment (ip, &junk);
+	  p = skip_to_end_of_comment (ip, &junk, 1);
 	  ip->bufp = save_bufp;
 	}
 	break;
@@ -6027,7 +6054,7 @@ skip_if_group (ip, any)
       if (*bp == '*'
 	  || ((cplusplus || objc) && *bp == '/')) {
 	ip->bufp = ++bp;
-	bp = skip_to_end_of_comment (ip, &ip->lineno);
+	bp = skip_to_end_of_comment (ip, &ip->lineno, 0);
       }
       break;
     case '\"':
@@ -6302,7 +6329,7 @@ do_endif (buf, limit, op, keyword)
 	    int junk;
 	    U_CHAR *save_bufp = ip->bufp;
 	    ip->bufp = p + 1;
-	    p = skip_to_end_of_comment (ip, &junk);
+	    p = skip_to_end_of_comment (ip, &junk, 1);
 	    ip->bufp = save_bufp;
 	  }
 	  break;
@@ -6365,17 +6392,21 @@ validate_else (p)
     pedwarn ("text following `#else' or `#endif' violates ANSI standard");
 }
 
-/*
- * Skip a comment, assuming the input ptr immediately follows the
- * initial slash-star.  Bump line counter as necessary.
- * (The canonical line counter is &ip->lineno).
- * Don't use this routine (or the next one) if bumping the line
- * counter is not sufficient to deal with newlines in the string.
- */
+/* Skip a comment, assuming the input ptr immediately follows the
+   initial slash-star.  Bump *LINE_COUNTER for each newline.
+   (The canonical line counter is &ip->lineno.)
+   Don't use this routine (or the next one) if bumping the line
+   counter is not sufficient to deal with newlines in the string.
+
+   If NOWARN is nonzero, don't warn about slash-star inside a comment.
+   This feature is useful when processing a comment that is going to be
+   processed or was processed at another point in the preprocessor,
+   to avoid a duplicate warning.  */
 static U_CHAR *
-skip_to_end_of_comment (ip, line_counter)
+skip_to_end_of_comment (ip, line_counter, nowarn)
      register FILE_BUF *ip;
      int *line_counter;		/* place to remember newlines, or NULL */
+     int nowarn;
 {
   register U_CHAR *limit = ip->buf + ip->length;
   register U_CHAR *bp = ip->bufp;
@@ -6415,7 +6446,7 @@ skip_to_end_of_comment (ip, line_counter)
       *op->bufp++ = *bp;
     switch (*bp++) {
     case '/':
-      if (warn_comments && bp < limit && *bp == '*')
+      if (warn_comments && !nowarn && bp < limit && *bp == '*')
 	warning ("`/*' within comment");
       break;
     case '\n':
@@ -6525,7 +6556,7 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
    IP->bufp is updated.  Use this with IP->bufp pointing at an open-paren.
 
    This does not handle newlines, because it's used for the arg of #if,
-   where there aren't any newlines.  Also, bacslash-newline can't appear.  */
+   where there aren't any newlines.  Also, backslash-newline can't appear.  */
 
 static U_CHAR *
 skip_paren_group (ip)
@@ -6552,7 +6583,7 @@ skip_paren_group (ip)
     case '/':
       if (*p == '*') {
 	ip->bufp = p;
-	p = skip_to_end_of_comment (ip, &lines_dummy);
+	p = skip_to_end_of_comment (ip, &lines_dummy, 0);
 	p = ip->bufp;
       }
 
@@ -6610,6 +6641,13 @@ output_line_command (ip, op, conditional, file_change)
       }
       return;
     }
+  }
+
+  /* Don't output a line number of 0 if we can help it.  */
+  if (ip->lineno == 0 && ip->bufp - ip->buf < ip->length
+      && *ip->bufp == '\n') {
+    ip->lineno++;
+    ip->bufp++;
   }
 
 #ifdef OUTPUT_LINE_COMMANDS
@@ -8455,7 +8493,7 @@ hack_vms_include_specification (fname)
   if (((cp - fname) > 1) && ((cp[-1] == ']') || (cp[-1] == '>'))) {
     if (cp[-2] != '.') {
       /*
-       * The VMS part ends in a `]', and the preceeding character is not a `.'.
+       * The VMS part ends in a `]', and the preceding character is not a `.'.
        * We strip the `]', and then splice the two parts of the name in the
        * usual way.  Given the default locations for include files in cccp.c,
        * we will only use this code if the user specifies alternate locations
