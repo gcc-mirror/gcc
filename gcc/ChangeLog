@@ -1,3 +1,7 @@
+2001-10-17  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (direct_call_operand): Don't fall off end.
+
 2001-10-16  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* c-tree.texi: Eliminate duplicated word.

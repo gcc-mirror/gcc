@@ -868,6 +868,8 @@ direct_call_operand (op, mode)
   if (! TARGET_PROFILING_NEEDS_GP
       && ! profile_flag && ! profile_block_flag)
     return 0;
+
+  return 1;
 }
 
 /* Return true if OP is a LABEL_REF, or SYMBOL_REF or CONST referencing
