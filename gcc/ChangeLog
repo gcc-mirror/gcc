@@ -1,3 +1,9 @@
+Wed Jan  6 02:23:36 1999  "Charles M. Hannum" <root@ihack.net>
+
+	* expr.c (store_expr): If the lhs is a memory location pointed
+	to be a postincremented (or postdecremented) pointer, always
+	force the rhs to be evaluated into a pseudo.
+
 Wed Jan  6 00:54:21 1999  Geoff Keating  <geoffk@ozemail.com.au>
 
 	* real.c (mtherr): Print more reasonable warning messages.
