@@ -1,3 +1,8 @@
+Wed Mar 11 02:37:41 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (find_basic_blocks_1): Keep the cfg accurate when removing
+	an unconditional jump around deleted blocks.
+
 Mon Mar  9 12:02:23 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* profile.c (branch_prob): If see computed goto, call fatal instead of
