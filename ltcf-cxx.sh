@@ -223,6 +223,51 @@ case $host_os in
         ;;
     esac
     ;;
+
+  darwin* | rhapsody*)
+    case "$host_os" in
+	rhapsody* | darwin1.[[012]])
+	    allow_undefined_flag='-undefined suppress'
+	;;
+	*) # Darwin 1.3 on
+	    if test -z ${MACOSX_DEPLOYMENT_TARGET} ; then
+		allow_undefined_flag='-flat_namespace -undefined suppress'
+      else
+	case ${MACOSX_DEPLOYMENT_TARGET} in
+	    10.[[012]])
+		allow_undefined_flag='-flat_namespace -undefined suppress'
+	    ;;
+	    10.*)
+		allow_undefined_flag='-undefined dynamic_lookup'
+	    ;;
+	esac
+    fi
+    ;;
+    esac
+    # Disable shared library build on OS-X older than 10.3.
+    case $host_os in
+	darwin[1-6]*)
+	    can_build_shared=no
+	    ;;
+	darwin7*)
+	    can_build_shared=yes
+	    ;;
+    esac
+    output_verbose_link_cmd='echo'
+    archive_cmds='$CC -r ${wl}-bind_at_load -keep_private_externs -nostdlib -o ${lib}-master.o $libobjs~$CC -dynamiclib $allow_undefined_flag -o $lib ${lib}-master.o $deplibs $compiler_flags -install_name $rpath/$soname $verstring'
+    module_cmds='$CC ${wl}-bind_at_load $allow_undefined_flag -o $lib -bundle $libobjs $deplibs$compiler_flags'
+
+    # Don't fix this by using the ld -exported_symbols_list flag,
+    # it doesn't exist in older darwin ld's
+    archive_expsym_cmds='sed -e "s,#.*,," -e "s,^[    ]*,," -e "s,^\(..*\),_&," < $export_symbols > $output_objdir/${libname}-symbols.expsym~$CC -r ${wl}-bind_at_load -keep_private_externs -nostdlib -o ${lib}-master.o $libobjs~$CC -dynamiclib $allow_undefined_flag -o $lib ${lib}-master.o $deplibs $compiler_flags -install_name $rpath/$soname $verstring~nmedit -s $output_objdir/${libname}-symbols.expsym ${lib}'
+    module_expsym_cmds='sed -e "s,#.*,," -e "s,^[    ]*,," -e "s,^\(..*\),_&," < $export_symbols > $output_objdir/${libname}-symbols.expsym~$CC $allow_undefined_flag  -o $lib -bundle $libobjs $deplibs$compiler_flags~nmedit -s $output_objdir/${libname}-symbols.expsym ${lib}'
+    hardcode_direct=no
+    hardcode_automatic=yes
+    hardcode_shlibpath_var=unsupported
+    whole_archive_flag_spec='-all_load $convenience'
+    link_all_deplibs=yes
+    ;;
+
   dgux*)
     case $cc_basename in
       ec++)
@@ -712,7 +757,7 @@ if test "$with_gcc" = yes; then
   darwin* | rhapsody*)
     # PIC is the default on this platform
     # Common symbols not allowed in MH_DYLIB files
-    lt_cv_prog_cc_pic='-fno-common'
+    ac_cv_prog_cc_pic='-fno-common'
     ;;
   *djgpp*)
     # DJGPP does not support shared libraries at all

@@ -1,3 +1,13 @@
+2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* libtool.m4: Sync darwin bits from libtool cvs to build a gcc with
+	shared/dylibed libraries.
+	* ltmain.sh: Likewise.
+	* ltcf-c.sh: Likewise, disable shared library build for OS-X < 10.3.
+	* ltcf-cxx.sh: Likewise.
+	* ltcf-gcj.sh: Likewise.
+	* ltconfig: Likewise.
+
 2003-11-17  Stan Cox  <scox@redhat.com>
 
 	* MAINTAINERS: Add myself as iq2000 port maintainer.
