@@ -874,7 +874,7 @@ target_negative (x)
 
 int
 target_isinf (x)
-     REAL_VALUE_TYPE x;
+     REAL_VALUE_TYPE x ATTRIBUTE_UNUSED;
 {
   return 0;
 }
@@ -884,7 +884,7 @@ target_isinf (x)
 
 int
 target_isnan (x)
-     REAL_VALUE_TYPE x;
+     REAL_VALUE_TYPE x ATTRIBUTE_UNUSED;
 {
   return 0;
 }
