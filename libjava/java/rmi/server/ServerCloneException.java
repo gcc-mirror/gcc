@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* ServerCloneException.java -- a UnicastRemoteObject could not be cloned
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,50 +37,81 @@ exception statement from your version. */
 
 package java.rmi.server;
 
-import java.lang.CloneNotSupportedException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+/**
+ * Thrown if a remote exception occurs during the cloning process of a
+ * <code>UnicastRemoteObject</code>.
+ *
+ * @author unknown
+ * @see UnicastRemoteObject#clone()
+ * @since 1.1
+ * @status updated to 1.4
+ */
+public class ServerCloneException extends CloneNotSupportedException
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 6617456357664815945L;
 
-public class ServerCloneException
-	extends CloneNotSupportedException {
+  /**
+   * The cause of this exception. This pre-dates the exception chaining
+   * of Throwable; and although you can change this field, you are wiser
+   * to leave it alone.
+   *
+   * @serial the exception cause
+   */
+  public Exception detail;
 
-public Exception detail;
+  /**
+   * Create an exception with a message.
+   *
+   * @param s the message
+   */
+  public ServerCloneException(String s)
+  {
+    this(s, null);
+  }
 
-public ServerCloneException(String s) {
-	super(s);
-	detail = null;
-}
+  /**
+   * Create an exception with a message and a cause.
+   *
+   * @param s the message
+   * @param e the cause
+   */
+  public ServerCloneException(String s, Exception e)
+  {
+    super(s);
+    initCause(e);
+    detail = e;
+  }
 
-public ServerCloneException(String s, Exception e) {
-	super(s);
-	detail = e;
-}
+  /**
+   * This method returns a message indicating what went wrong, in this
+   * format:
+   * <code>super.getMessage() + (detail == null ? ""
+   *    : "; nested exception is:\n\t" + detail)<code>.
+   *
+   * @return the chained message
+   */
+  public String getMessage()
+  {
+    if (detail == this || detail == null)
+      return super.getMessage();
+    return super.getMessage() + "; nested exception is:\n\t" + detail;
+  }
 
-public String getMessage() {
-	if (detail != null) {
-		return (super.getMessage() + ":" + detail.getMessage());
-	}
-	else {
-		return (super.getMessage());
-	}
-}
-
-public void printStackTrace(PrintStream s) {
-	if (detail != null) {
-		detail.printStackTrace(s);
-	}
-	super.printStackTrace(s);
-}
-
-public void printStackTrace() {
-	printStackTrace(System.err);
-}
-
-public void printStackTrace(PrintWriter s) {
-	if (detail != null) {
-		detail.printStackTrace(s);
-	}
-	super.printStackTrace(s);
-}
-
+  /**
+   * Returns the cause of this exception. Note that this may not be the
+   * original cause, thanks to the <code>detail</code> field being public
+   * and non-final (yuck). However, to avoid violating the contract of
+   * Throwable.getCause(), this returns null if <code>detail == this</code>,
+   * as no exception can be its own cause.
+   *
+   * @return the cause
+   * @since 1.4
+   */
+  public Throwable getCause()
+  {
+    return detail == this ? null : detail;
+  }
 }

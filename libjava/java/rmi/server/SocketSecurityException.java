@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* SocketSecurityException.java -- the socket could not be created
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,17 +37,39 @@ exception statement from your version. */
 
 package java.rmi.server;
 
-import java.rmi.server.ExportException;
+/**
+ * Thrown during remote object export if the code does not have permission
+ * to create a <code>java.net.ServerSocket</code> on the specified port.
+ *
+ * @author unknown
+ * @since 1.1
+ * @status updated to 1.4
+ */
+public class SocketSecurityException extends ExportException
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -7622072999407781979L;
 
-public class SocketSecurityException
-	extends ExportException {
+  /**
+   * Create an exception with the specified message.
+   *
+   * @param s the message
+   */
+  public SocketSecurityException(String s)
+  {
+    super(s);
+  }
 
-public SocketSecurityException(String s) {
-	super(s);
-}
-
-public SocketSecurityException(String s, Exception e) {
-	super(s, e);
-}
-
+  /**
+   * Create an exception with the specified message and cause.
+   *
+   * @param s the message
+   * @param e the cause
+   */
+  public SocketSecurityException(String s, Exception e)
+  {
+    super(s, e);
+  }
 }

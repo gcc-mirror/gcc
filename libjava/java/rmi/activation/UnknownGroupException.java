@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* UnknownGroupException.java -- thrown on an invalid ActivationGroupID 
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,11 +37,33 @@ exception statement from your version. */
 
 package java.rmi.activation;
 
-public class UnknownGroupException
-	extends ActivationException {
+/**
+ * Thrown when an <code>ActivationGroupID</code> parameter is invalid or
+ * unknown.
+ *
+ * @author unknown
+ * @see Activatable
+ * @see ActivationGroup
+ * @see ActivationID
+ * @see ActivationMonitor
+ * @see ActivationSystem
+ * @since 1.2
+ * @status updated to 1.4
+ */
+public class UnknownGroupException extends ActivationException
+{
+  /**
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = 7056094974750002460L;
 
-public UnknownGroupException(String s) {
-	super(s);
-}
-
+  /**
+   * Create an exception with a message.
+   *
+   * @param s the message
+   */
+  public UnknownGroupException(String s)
+  {
+    super(s);
+  }
 }

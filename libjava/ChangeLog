@@ -1,3 +1,17 @@
+2002-06-17  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* java/rmi/activation/ActivateFailedException.java: Remerge from
+	Classpath version.
+	* java/rmi/activation/ActivationException.java: Ditto.
+	* java/rmi/activation/UnknownGroupException.java: Ditto.
+	* java/rmi/activation/UnknownObjectException.java: Ditto.
+	* java/rmi/server/ExportException: Ditto.
+	* java/rmi/server/ServerCloneException: Ditto.
+	* java/rmi/server/ServerNotActiveException: Ditto.
+	* java/rmi/server/SkeletonMismatchException: Ditto.
+	* java/rmi/server/SkeletonNotFoundException: Ditto.
+	* java/rmi/server/SocketSecurityException: Ditto.
+
 2002-06-16  Tom Tromey  <tromey@redhat.com>
 
 	* gcj/javaprims.h: Updated class declaration list.
