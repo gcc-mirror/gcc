@@ -1878,8 +1878,16 @@ some_small_symbolic_mem_operand (x, mode)
   while (GET_RTX_CLASS (GET_CODE (x)) == '1')
     x = XEXP (x, 0);
 
-  return (GET_CODE (x) == MEM
-	  && small_symbolic_operand (XEXP (x, 0), Pmode));
+  if (GET_CODE (x) != MEM)
+    return 0;
+
+  x = XEXP (x, 0);
+  /* If this is an ldq_u type address, discard the outer AND.  */
+  if (GET_CODE (x) == AND && GET_MODE (x) == DImode
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && INTVAL (XEXP (x, 1)) == -8)
+    x = XEXP (x, 0);
+  return small_symbolic_operand (x, Pmode);
 }
 
 rtx
@@ -1890,7 +1898,17 @@ split_small_symbolic_mem_operand (x)
 
   if (GET_CODE (x) == MEM)
     {
-      rtx tmp = gen_rtx_LO_SUM (DImode, pic_offset_table_rtx, XEXP (x, 0));
+      rtx tmp = XEXP (x, 0);
+
+      if (GET_CODE (tmp) == AND && GET_MODE (tmp) == DImode
+	  && GET_CODE (XEXP (tmp, 1)) == CONST_INT
+	  && INTVAL (XEXP (tmp, 1)) == -8)
+	{
+	  tmp = gen_rtx_LO_SUM (DImode, pic_offset_table_rtx, XEXP (tmp, 0));
+	  tmp = gen_rtx_AND (DImode, tmp, GEN_INT (-8));
+	}
+      else
+	tmp = gen_rtx_LO_SUM (DImode, pic_offset_table_rtx, tmp);
       return replace_equiv_address (x, tmp);
     }
 
