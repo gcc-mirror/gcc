@@ -1,3 +1,7 @@
+Wed Mar 25 23:53:11 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (pa_adjust_cost): Avoid redundant calls to get_attr_type.
+
 Wed Mar 25 13:40:48 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* c-common.c (check_format_info): Initialize type, is_type.  New local
