@@ -318,7 +318,7 @@ objc_mutex_lock(objc_mutex_t mutex)
     return -1;
 
   /* If we already own the lock then increment depth */
-  thread_id = objc_thread_id();
+  thread_id = __objc_thread_id();
   if (mutex->owner == thread_id)
     return ++mutex->depth;
 
@@ -350,7 +350,7 @@ objc_mutex_trylock(objc_mutex_t mutex)
     return -1;
 
   /* If we already own the lock then increment depth */ 
-  thread_id = objc_thread_id();
+  thread_id = __objc_thread_id();
   if (mutex->owner == thread_id)
     return ++mutex->depth;
     
@@ -385,7 +385,7 @@ objc_mutex_unlock(objc_mutex_t mutex)
     return -1;
 
   /* If another thread owns the lock then abort */
-  thread_id = objc_thread_id();
+  thread_id = __objc_thread_id();
   if (mutex->owner != thread_id)
     return -1;
 
@@ -477,7 +477,7 @@ objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
     return -1;
 
   /* Make sure we are owner of mutex */
-  thread_id = objc_thread_id();
+  thread_id = __objc_thread_id();
   if (mutex->owner != thread_id)
     return -1;
 
