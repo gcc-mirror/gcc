@@ -1278,7 +1278,7 @@ extern char *a29k_function_name;
    and some other value for true.  This is the value stored for true, which
    is just the sign bit.  */
 
-#define STORE_FLAG_VALUE -2147483648
+#define STORE_FLAG_VALUE (-2147483647 - 1)
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
