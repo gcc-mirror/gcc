@@ -536,6 +536,11 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 15")))
 
+;; Match 0 to 63.
+(define_predicate "const_0_to_63_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 63")))
+
 ;; Match 0 to 255.
 (define_predicate "const_0_to_255_operand"
   (and (match_code "const_int")
@@ -835,3 +840,6 @@
 
 (define_predicate "compare_operator"
   (match_code "compare"))
+
+(define_predicate "absneg_operator"
+  (match_code "abs,neg"))

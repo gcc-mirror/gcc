@@ -247,6 +247,7 @@ extern const int x86_sse_partial_reg_dependency, x86_sse_partial_regs;
 extern const int x86_sse_typeless_stores, x86_sse_load0_by_pxor;
 extern const int x86_use_ffreep, x86_sse_partial_regs_for_cvtsd2ss;
 extern const int x86_inter_unit_moves, x86_schedule;
+extern const int x86_use_bt;
 extern int x86_prefetch_sse;
 
 #define TARGET_USE_LEAVE (x86_use_leave & TUNEMASK)
@@ -302,6 +303,7 @@ extern int x86_prefetch_sse;
 #define TARGET_INTER_UNIT_MOVES (x86_inter_unit_moves & TUNEMASK)
 #define TARGET_FOUR_JUMP_LIMIT (x86_four_jump_limit & TUNEMASK)
 #define TARGET_SCHEDULE (x86_schedule & TUNEMASK)
+#define TARGET_USE_BT (x86_use_bt & TUNEMASK)
 
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 

@@ -579,6 +579,7 @@ const int x86_ext_80387_constants = m_K6 | m_ATHLON | m_PENT4 | m_NOCONA | m_PPR
    the 16 byte window.  */
 const int x86_four_jump_limit = m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
 const int x86_schedule = m_PPRO | m_ATHLON_K8 | m_K6 | m_PENT;
+const int x86_use_bt = m_ATHLON_K8;
 
 /* In case the average insn count for single function invocation is
    lower than this constant, emit fast (but longer) prologue and
@@ -7636,7 +7637,7 @@ ix86_expand_unary_operator (enum rtx_code code, enum machine_mode mode,
   /* If the destination is memory, and we do not have matching source
      operands, do things in registers.  */
   matching_memory = 0;
-  if (GET_CODE (dst) == MEM)
+  if (MEM_P (dst))
     {
       if (rtx_equal_p (dst, src))
 	matching_memory = 1;
@@ -7645,10 +7646,10 @@ ix86_expand_unary_operator (enum rtx_code code, enum machine_mode mode,
     }
 
   /* When source operand is memory, destination must match.  */
-  if (!matching_memory && GET_CODE (src) == MEM)
+  if (MEM_P (src) && !matching_memory)
     src = force_reg (mode, src);
 
-  /* If optimizing, copy to regs to improve CSE */
+  /* If optimizing, copy to regs to improve CSE.  */
   if (optimize && ! no_new_pseudos)
     {
       if (GET_CODE (dst) == MEM)
@@ -7693,6 +7694,91 @@ ix86_unary_operator_ok (enum rtx_code code ATTRIBUTE_UNUSED,
       && ! rtx_equal_p (operands[0], operands[1]))
     return FALSE;
   return TRUE;
+}
+
+/* Generate code for floating point ABS or NEG.  */
+
+void
+ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
+				rtx operands[])
+{
+  rtx mask, set, use, clob, dst, src;
+  bool matching_memory;
+  bool use_sse = false;
+
+  if (TARGET_SSE_MATH)
+    {
+      if (mode == SFmode)
+	use_sse = true;
+      else if (mode == DFmode && TARGET_SSE2)
+	use_sse = true;
+    }
+
+  /* NEG and ABS performed with SSE use bitwise mask operations.
+     Create the appropriate mask now.  */
+  if (use_sse)
+    {
+      HOST_WIDE_INT hi, lo;
+      int shift = 63;
+
+      /* Find the sign bit, sign extended to 2*HWI.  */
+      if (mode == SFmode)
+        lo = 0x80000000, hi = lo < 0;
+      else if (HOST_BITS_PER_WIDE_INT >= 64)
+        lo = (HOST_WIDE_INT)1 << shift, hi = -1;
+      else
+        lo = 0, hi = (HOST_WIDE_INT)1 << (shift - HOST_BITS_PER_WIDE_INT);
+
+      /* If we're looking for the absolute value, then we want
+	 the compliment.  */
+      if (code == ABS)
+        lo = ~lo, hi = ~hi;
+
+      /* Force this value into the low part of a fp vector constant.  */
+      mask = immed_double_const (lo, hi, mode == SFmode ? SImode : DImode);
+      mask = gen_lowpart (mode, mask);
+      if (mode == SFmode)
+        mask = gen_rtx_CONST_VECTOR (V4SFmode,
+				     gen_rtvec (4, mask, CONST0_RTX (SFmode),
+						CONST0_RTX (SFmode),
+						CONST0_RTX (SFmode)));
+      else
+        mask = gen_rtx_CONST_VECTOR (V2DFmode,
+				     gen_rtvec (2, mask, CONST0_RTX (DFmode)));
+      mask = force_reg (GET_MODE (mask), mask);
+    }
+  else
+    {
+      /* When not using SSE, we don't use the mask, but prefer to keep the
+	 same general form of the insn pattern to reduce duplication when
+	 it comes time to split.  */
+      mask = const0_rtx;
+    }
+
+  dst = operands[0];
+  src = operands[1];
+
+  /* If the destination is memory, and we don't have matching source
+     operands, do things in registers.  */
+  matching_memory = false;
+  if (MEM_P (dst))
+    {
+      if (rtx_equal_p (dst, src) && (!optimize || no_new_pseudos))
+	matching_memory = true;
+      else
+	dst = gen_reg_rtx (mode);
+    }
+  if (MEM_P (src) && !matching_memory)
+    src = force_reg (mode, src);
+
+  set = gen_rtx_fmt_e (code, mode, src);
+  set = gen_rtx_SET (VOIDmode, dst, set);
+  use = gen_rtx_USE (VOIDmode, mask);
+  clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, set, use, clob)));
+
+  if (dst != operands[0])
+    emit_move_insn (operands[0], dst);
 }
 
 /* Return TRUE or FALSE depending on whether the first SET in INSN
