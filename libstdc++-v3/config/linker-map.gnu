@@ -88,7 +88,7 @@ GLIBCPP_3.2 {
     _ZNSbIwSt11char_traitsIwESaIwEE[0-9]_[A-Ra-z]*;
     _ZNSbIwSt11char_traitsIwESaIwEE[0-9][0-9]_[A-Ra-z]*;
     _ZNSbIwSt11char_traitsIwESaIwEE13_S_copy_chars*;
-    _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructEjwRKS1_;
+    _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructE[jm]wRKS1_;
     _ZNSbIwSt11char_traitsIwESaIwEE12_S_empty_repEv;
     _ZSt24__uninitialized_copy_auxIN9*;
     _ZSt26__uninitialized_fill_n_aux*;
@@ -105,10 +105,7 @@ GLIBCPP_3.2 {
     # std::codecvt<char>::~codecvt
     _ZNSt7codecvtIcc11__mbstate_tED*;
     # std::codecvt<char>::codecvt(size_t), where size_t variable.
-    _ZNSt7codecvtIcc11__mbstate_tEC1Ej;
-    _ZNSt7codecvtIcc11__mbstate_tEC2Ej;
-    _ZNSt7codecvtIcc11__mbstate_tEC1Em;
-    _ZNSt7codecvtIcc11__mbstate_tEC2Em;
+    _ZNSt7codecvtIcc11__mbstate_tEC[12]E[jm];
     # std::codecvt<char>::id
     _ZNSt7codecvtIcc11__mbstate_tE2idE;
 
@@ -117,10 +114,7 @@ GLIBCPP_3.2 {
     # std::codecvt<wchar_t>::~codecvt
     _ZNSt7codecvtIwc11__mbstate_tED*;
     # std::codecvt<wchar_t>::codecvt(size_t), where size_t variable.
-    _ZNSt7codecvtIwc11__mbstate_tEC1Ej;
-    _ZNSt7codecvtIwc11__mbstate_tEC2Ej;
-    _ZNSt7codecvtIwc11__mbstate_tEC1Em;
-    _ZNSt7codecvtIwc11__mbstate_tEC2Em;
+    _ZNSt7codecvtIwc11__mbstate_tEC[12]E[jm];
     # std::codecvt<wchar_t>::id
     _ZNSt7codecvtIwc11__mbstate_tE2idE;
 
