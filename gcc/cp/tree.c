@@ -41,7 +41,7 @@ static tree list_hash_lookup PROTO((int, int, int, int, tree, tree,
 static void propagate_binfo_offsets PROTO((tree, tree));
 static int avoid_overlap PROTO((tree, tree));
 static int lvalue_p_1 PROTO((tree, int));
-static int equal_function PROTO((tree, tree));
+static int equal_functions PROTO((tree, tree));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 

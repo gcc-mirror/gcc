@@ -4900,7 +4900,7 @@ do_local_using_decl (decl)
 				  PUSH_LOCAL | PUSH_USING);
 	}
       else
-	push_local_binding (name, newval);
+	push_local_binding (name, newval, PUSH_USING);
     }
   if (newtype)
     set_identifier_type_value (name, newtype);

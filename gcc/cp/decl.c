@@ -1117,12 +1117,15 @@ add_binding (id, decl)
     }
 }
 
-/* Bind DECL to ID in the current_binding_level.  */
+/* Bind DECL to ID in the current_binding_level.
+   If PUSH_USING is set in FLAGS, we know that DECL doesn't really belong
+   to this binding level, that it got here through a using-declaration.  */
 
 void
-push_local_binding (id, decl)
+push_local_binding (id, decl, flags)
      tree id;
      tree decl;
+     int flags;
 {
   tree d = decl;
 
@@ -1133,8 +1136,7 @@ push_local_binding (id, decl)
     /* Create a new binding.  */
     push_binding (id, d, current_binding_level);
 
-  if (TREE_CODE (decl) == OVERLOAD
-      || (DECL_P (decl) && DECL_NAMESPACE_SCOPE_P (decl)))
+  if (TREE_CODE (decl) == OVERLOAD || (flags & PUSH_USING))
     /* We must put the OVERLOAD into a TREE_LIST since the
        TREE_CHAIN of an OVERLOAD is already used.  Similarly for
        decls that got here through a using-declaration.  */
@@ -1425,12 +1427,13 @@ poplevel (keep, reverse, functionbody)
       else 
 	{
 	  /* Remove the binding.  */
-	  if (TREE_CODE (link) == TREE_LIST)
-	    link = TREE_VALUE (link);
-	  if (TREE_CODE_CLASS (TREE_CODE (link)) == 'd')
-	    pop_binding (DECL_NAME (link), link);
-	  else if (TREE_CODE (link) == OVERLOAD)
-	    pop_binding (DECL_NAME (OVL_FUNCTION (link)), link);
+	  decl = link;
+	  if (TREE_CODE (decl) == TREE_LIST)
+	    decl = TREE_VALUE (decl);
+	  if (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd')
+	    pop_binding (DECL_NAME (decl), decl);
+	  else if (TREE_CODE (decl) == OVERLOAD)
+	    pop_binding (DECL_NAME (OVL_FUNCTION (decl)), decl);
 	  else 
 	    my_friendly_abort (0);
 	}
@@ -3798,7 +3801,7 @@ pushdecl (x)
 
 	  if (need_new_binding)
 	    {
-	      push_local_binding (name, x);
+	      push_local_binding (name, x, 0);
 	      /* Because push_local_binding will hook X on to the
 		 current_binding_level's name list, we don't want to
 		 do that again below.  */
@@ -4296,7 +4299,7 @@ push_overloaded_decl (decl, flags)
 	}
 
       /* Install the new binding.  */
-      push_local_binding (name, new_binding);
+      push_local_binding (name, new_binding, flags);
     }
 
   return decl;
