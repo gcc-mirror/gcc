@@ -38,102 +38,76 @@ void
 trace (s, s1, s2)
      char *s, *s1, *s2;
 {
-    fprintf (stderr, s, s1, s2);
+  fprintf (stderr, s, s1, s2);
 }
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE. */ 
 
 int
-hard_regno_mode_ok( regno, mode )
-int regno;
-int mode;
+hard_regno_mode_ok (regno, mode)
+     int regno;
+     int mode;
 {
-	switch( mode ) {
-		case QImode:
-		case HImode:
-		case PSImode:
-		case SImode:
-		case PDImode:
-		case VOIDmode:
-		case BLKmode:
-			if( (regno < 8) || (regno == 16) || (regno == 17) ) {
-				return( 1 );
-			}
-			else {
-				return( 0 );
-			}
+  switch (mode)
+    {
+    case QImode:
+    case HImode:
+    case PSImode:
+    case SImode:
+    case PDImode:
+    case VOIDmode:
+    case BLKmode:
+      if (regno < 8 || regno == 16 || regno == 17)
+	return 1;
+      else
+	return 0;
 
-		case DImode:
-			if( (regno < 8) && ((regno & 1) == 0) ) {
-				return( 1 );
-			}
-			else {
-				return( 0 );
-			}
+    case DImode:
+      if (regno < 8 && (regno & 1) == 0)
+	return 1;
+      else
+	return 0;
 
-
-		case SFmode:
-		case SCmode:
-			if( TARGET_32081 ) {
-				if( regno < 16 ) {
-					return( 1 );
-				}
-				else {
-					return( 0 );
-				}
-			}
-			else {
-				if( regno < 8 ) {
-					return( 1 );
-				}
-				else {
-					return( 0 );
-				}
-			}
-
-		case DFmode:
-		case DCmode:
-			if( (regno & 1) == 0 ) {
-				if( TARGET_32081 ) {
-					if( regno < 16 ) {
-						return( 1 );
-					}
-					else {
-						return( 0 );
-					}
-				}
-				else {
-					if( regno < 8 ) {
-						return( 1 );
-					}
-					else {
-						return( 0 );
-					}
-				}
-			}
-			else {
-				return( 0 );
-			}
- 
-		case XFmode:
-			abort( 0 );
-		case CCmode:
-			abort( 0 );
-		case TImode:
-			abort( 0 );
-		case XCmode:	
-			abort( 0 );
-		case TFmode:
-			abort( 0 );
-		case TCmode:
-			abort( 0 );
-
-
-		default:
-			fprintf( stderr, "cant match mode %d\n", mode );
-			abort( 0 );
+    case SFmode:
+    case SCmode:
+      if (TARGET_32081)
+	{
+	  if (regno < 16)
+	    return 1;
+	  else
+	    return 0;
 	}
-	abort(0);
+      else
+	{
+	  if (regno < 8)
+	    return 1;
+	  else 
+	    return 0;
+	}
+
+    case DFmode:
+    case DCmode:
+      if ((regno & 1) == 0)
+	{	
+	  if (TARGET_32081)
+	    {
+	      if (regno < 16)
+		return 1;
+	      else
+		return 0;
+	    }
+	  else
+	    {
+	      if (regno < 8)
+		return 1;
+	      else
+		return 0;
+	    }
+	}
+      else
+	return 0;
+    }
+  abort(0);
 }
 
 /* ADDRESS_COST calls this.  This function is not optimal
@@ -201,9 +175,16 @@ secondary_reload_class (class, mode, in)
   if (class == GENERAL_REGS || (regno >= 0 && regno < 8))
     return NO_REGS;
 
-  /* Constants, memory, and FP registers can go into FP registers */
+  /* Constants, memory, and FP registers can go into FP registers.  */
   if ((regno == -1 || (regno >= 8 && regno < 16)) && (class == FLOAT_REGS))
     return NO_REGS;
+
+#if 0 /* This isn't strictly true (can't move fp to sp or vice versa),
+	 so it's cleaner to use PREFERRED_RELOAD_CLASS
+	 to make the right things happen.  */
+  if (regno >= 16 && class == GEN_AND_MEM_REGS)
+    return NO_REGS;
+#endif
 
   /* Otherwise, we need GENERAL_REGS. */
   return GENERAL_REGS;
