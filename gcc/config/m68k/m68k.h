@@ -2094,6 +2094,7 @@ extern char *m68k_align_funcs_string;
 extern int m68k_align_loops;
 extern int m68k_align_jumps;
 extern int m68k_align_funcs;
+extern int m68k_last_compare_had_fp_operands;
 
 
 /*
