@@ -76,7 +76,7 @@ public final class MarshalledObject
   
   public boolean equals(Object obj) 
   {
-    if(obj == null || !(obj instanceof MarshalledObject) )
+    if (! (obj instanceof MarshalledObject))
       return false;
 
     // hashCode even differs, don't do the time-consuming comparisons

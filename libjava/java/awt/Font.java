@@ -1226,9 +1226,6 @@ hashCode()
 public boolean
 equals(Object obj)
 {
-  if (obj == null)
-    return(false);
-
   if (!(obj instanceof Font))
     return(false);
 

@@ -240,7 +240,7 @@ public class CompoundName implements Name, Cloneable, Serializable
 
   public int compareTo (Object obj)
   {
-    if (obj == null || ! (obj instanceof CompoundName))
+    if (! (obj instanceof CompoundName))
       throw new ClassCastException ("CompoundName.compareTo() expected CompoundName");
     CompoundName cn = (CompoundName) obj;
     int last = Math.min (cn.elts.size (), elts.size ());

@@ -215,8 +215,7 @@ public class CertStore
     catch (java.lang.reflect.InvocationTargetException ite)
       {
         Throwable cause = ite.getCause();
-        if (cause != null &&
-           (cause instanceof InvalidAlgorithmParameterException))
+        if (cause instanceof InvalidAlgorithmParameterException)
           throw (InvalidAlgorithmParameterException) cause;
         else
           throw new NoSuchAlgorithmException(type);

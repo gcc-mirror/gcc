@@ -1565,7 +1565,7 @@ public class BigInteger extends Number implements Comparable
   /* Assumes this and obj are both canonicalized. */
   public boolean equals(Object obj)
   {
-    if (obj == null || ! (obj instanceof BigInteger))
+    if (! (obj instanceof BigInteger))
       return false;
     return equals(this, (BigInteger) obj);
   }
