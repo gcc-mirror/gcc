@@ -1,3 +1,7 @@
+2001-03-20  Jason Merrill  <jason@redhat.com>
+
+	* error.c (GLOBAL_THING): Always use '__'.
+
 2001-03-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_clone): Clear DECL_ASSEMBLER_NAME.

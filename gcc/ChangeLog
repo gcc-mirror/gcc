@@ -1,3 +1,10 @@
+2001-03-20  Jason Merrill  <jason@redhat.com>
+
+	* collect2.c (is_ctor_dtor): Always use '_' in the file fn names,
+	not '.' or '$'.
+	* tree.c (FILE_FUNCTION_FORMAT): Likewise.
+	* varasm.c (CHKR_PREFIX): Likewise.
+
 Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcse.c (hash_scan_set): An expression is not anticipatible if it

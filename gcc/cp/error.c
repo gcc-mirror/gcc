@@ -873,15 +873,7 @@ ident_fndecl (t)
   return NULL_TREE;
 }
 
-#ifndef NO_DOLLAR_IN_LABEL
-#  define GLOBAL_THING "_GLOBAL_$"
-#else
-#  ifndef NO_DOT_IN_LABEL
-#    define GLOBAL_THING "_GLOBAL_."
-#  else
-#    define GLOBAL_THING "_GLOBAL__"
-#  endif
-#endif
+#define GLOBAL_THING "_GLOBAL__"
 
 static void
 dump_global_iord (t)

@@ -4448,15 +4448,7 @@ dump_tree_statistics ()
 
 #define FILE_FUNCTION_PREFIX_LEN 9
 
-#ifndef NO_DOLLAR_IN_LABEL
-#define FILE_FUNCTION_FORMAT "_GLOBAL_$%s$%s"
-#else /* NO_DOLLAR_IN_LABEL */
-#ifndef NO_DOT_IN_LABEL
-#define FILE_FUNCTION_FORMAT "_GLOBAL_.%s.%s"
-#else /* NO_DOT_IN_LABEL */
 #define FILE_FUNCTION_FORMAT "_GLOBAL__%s_%s"
-#endif	/* NO_DOT_IN_LABEL */
-#endif	/* NO_DOLLAR_IN_LABEL */
 
 /* Appends 6 random characters to TEMPLATE to (hopefully) avoid name
    clashes in cases where we can't reliably choose a unique name.
