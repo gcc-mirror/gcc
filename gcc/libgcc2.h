@@ -163,7 +163,8 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define UDWtype	UTItype
 #define __NW(a,b)	__ ## a ## di ## b
 #define __NDW(a,b)	__ ## a ## ti ## b
-#elif MIN_UNITS_PER_WORD > 2 || LONG_LONG_TYPE_SIZE > 32
+#elif MIN_UNITS_PER_WORD > 2 \
+      || (MIN_UNITS_PER_WORD > 1 && LONG_LONG_TYPE_SIZE > 32)
 #define W_TYPE_SIZE (4 * BITS_PER_UNIT)
 #define Wtype	SItype
 #define UWtype	USItype

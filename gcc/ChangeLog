@@ -1,3 +1,8 @@
+2001-01-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* libgcc2.h (W_TYPE_SIZE): Fix case where MIN_UNITS_PER_WORD == 1
+	and LONG_LONG_TYPE_SIZE > 32.
+
 2001-01-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* jump.c (reversed_comparison_code_parts): Fix typo introduced by
