@@ -1,3 +1,8 @@
+2002-09-25  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	* testsuite/18_support/numeric_limits.cc: Check the maximum and
+	minimum values of the wchar_t type.
+
 2002-09-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/std/std_limits.h (numeric_limits<unsigned char>::digits): 
