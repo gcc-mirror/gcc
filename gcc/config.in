@@ -125,9 +125,6 @@
 /* Define if you have the gettimeofday function.  */
 #undef HAVE_GETTIMEOFDAY
 
-/* Define if you have the iconv function.  */
-#undef HAVE_ICONV
-
 /* Define if you have the isascii function.  */
 #undef HAVE_ISASCII
 
@@ -199,9 +196,6 @@
 
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
-
-/* Define if you have the <iconv.h> header file.  */
-#undef HAVE_ICONV_H
 
 /* Define if you have the <langinfo.h> header file.  */
 #undef HAVE_LANGINFO_H
@@ -364,6 +358,12 @@
 
 /* Define if read-only mmap of a plain file works. */
 #undef HAVE_MMAP_FILE
+
+/* Define if you have the iconv() function. */
+#undef HAVE_ICONV
+
+/* Define as const if the declaration of iconv() needs const. */
+#undef ICONV_CONST
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_GETENV

@@ -1,3 +1,11 @@
+2001-07-18  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/2812:
+	* configure: Rebuilt.
+	* configure.in: Don't check for iconv.h or iconv(); use AM_ICONV
+	instead.
+	* aclocal.m4 (AM_ICONV): New macro from Bruno Haible.
+
 Wed Jul 18 18:46:30 CEST 2001  Richard Henderson <rth@cygnus.com>
 			       Jan Hubicka  <jh@suse.cz>
 
