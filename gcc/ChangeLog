@@ -1,3 +1,8 @@
+Fri Mar 27 00:49:46 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* regclass.c (reg_scan_mark_refs): Be more selective about
+	when we mark a register with REGNO_POINTER_FLAG.
+
 Thu Mar 26 23:00:11 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	reload inheritance improvement:

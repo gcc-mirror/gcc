@@ -1919,6 +1919,12 @@ reg_scan_mark_refs (x, insn, note_flag)
 
       if (GET_CODE (SET_DEST (x)) == REG
 	  && REGNO (SET_DEST (x)) >= FIRST_PSEUDO_REGISTER
+	  /* If the destination pseudo is set more than once, then other
+	     sets might not be to a pointer value (consider access to a
+	     union in two threads of control in the presense of global
+	     optimizations).  So only set REGNO_POINTER_FLAG on the destination
+	     pseudo if this is the only set of that pseudo.  */
+	  && REG_N_SETS (REGNO (SET_DEST (x))) == 1
 	  && ! REG_USERVAR_P (SET_DEST (x))
 	  && ! REGNO_POINTER_FLAG (REGNO (SET_DEST (x)))
 	  && ((GET_CODE (SET_SRC (x)) == REG
