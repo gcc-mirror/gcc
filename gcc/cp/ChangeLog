@@ -1,3 +1,9 @@
+2001-04-03  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	Correct semantics restrictions checking in throw-expression.
+	* except.c (is_admissible_throw_operand): New function.
+	(build_throw): Use it.
+
 2001-04-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (import_export_decl): Don't call import_export_class 
