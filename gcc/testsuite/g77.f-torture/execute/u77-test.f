@@ -50,7 +50,7 @@
      +     stat, lstat, getcwd, gmtime, etime, chmod, itime, date,
      +     chdir, fgetc, fputc, system_clock, second, idate, secnds,
      +     time, ctime, fdate, ttynam, date_and_time, mclock, mclock8,
-     +     cpu_time, dtime
+     +     cpu_time, dtime, ftell
       external lenstr, ctrlc
       integer lenstr
       logical l
