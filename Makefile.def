@@ -143,6 +143,8 @@ recursive_targets = { make_target= info;
                       depend=configure; };
 recursive_targets = { make_target= dvi; 
                       depend=configure; };
+recursive_targets = { make_target= html; 
+                      depend=configure; };
 recursive_targets = { make_target= TAGS; 
                       depend=configure; };
 recursive_targets = { make_target= install-info; 

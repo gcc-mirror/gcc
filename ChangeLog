@@ -1,3 +1,9 @@
+2004-11-12  Mike Stump  <mrs@apple.com>
+
+	* Makefile.def: Add html support.
+	* Makefile.tpl: Likewise.
+	* Makefile.in: Regenerate.
+
 2004-11-11  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 18423
