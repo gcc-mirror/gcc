@@ -2925,7 +2925,7 @@ maybe_generate_finit ()
 
   mdecl = create_artificial_method (TREE_TYPE (ctxp->current_parsed_class),
 				    ACC_PRIVATE|ACC_FINAL, void_type_node,
-				    finit_identifier_node, NULL_TREE);
+				    finit_identifier_node, end_params_node);
   start_artificial_method_body (mdecl);
 
   ctxp->non_static_initialized = nreverse (ctxp->non_static_initialized);
@@ -2953,7 +2953,7 @@ maybe_generate_clinit ()
 
   mdecl = create_artificial_method (TREE_TYPE (ctxp->current_parsed_class),
 				    ACC_STATIC, void_type_node,
-				    clinit_identifier_node, NULL_TREE);
+				    clinit_identifier_node, end_params_node);
   start_artificial_method_body (mdecl);
 
   /* Keep initialization in order to enforce 8.5 */
@@ -3179,7 +3179,7 @@ fix_method_argument_names (orig_arg, meth)
       TREE_PURPOSE (arg) = this_identifier_node;
       arg = TREE_CHAIN (arg);
     }
-  while (orig_arg)
+  while (orig_arg != end_params_node)
     {
       TREE_PURPOSE (arg) = TREE_PURPOSE (orig_arg);
       orig_arg = TREE_CHAIN (orig_arg);
@@ -3370,7 +3370,7 @@ method_declarator (id, list)
       TREE_CHAIN (arg_node) = arg_types;
       arg_types = arg_node;
     }
-  TYPE_ARG_TYPES (meth) = nreverse (arg_types);
+  TYPE_ARG_TYPES (meth) = chainon (nreverse (arg_types), end_params_node);
   node = build_tree_list (id, meth);
   return node;
 }
@@ -4340,7 +4340,7 @@ java_check_regular_methods (class_decl)
       flags = (get_access_flags_from_decl (class_decl) & ACC_PUBLIC ?
 	       ACC_PUBLIC : 0);
       decl = create_artificial_method (class, flags, void_type_node, 
-				       init_identifier_node, NULL_TREE);
+				       init_identifier_node, end_params_node);
       DECL_CONSTRUCTOR_P (decl) = 1;
       layout_class_method (TREE_TYPE (class_decl), NULL_TREE, decl, NULL_TREE);
     }
@@ -5031,7 +5031,7 @@ source_start_java_method (fndecl)
   /* New scope for the function */
   enter_block ();
   for (tem = TYPE_ARG_TYPES (TREE_TYPE (fndecl)), i = 0;
-       tem != NULL_TREE; tem = TREE_CHAIN (tem), i++)
+       tem != end_params_node; tem = TREE_CHAIN (tem), i++)
     {
       tree type = TREE_VALUE (tem);
       tree name = TREE_PURPOSE (tem);
@@ -5341,12 +5341,7 @@ java_complete_expand_methods ()
       /* Make the class data, register it and run the rest of decl
          compilation on it */
       if (!java_error_count && ! flag_emit_class_files)
-	{
-	  make_class_data (current_class);
-	  register_class ();
-	  rest_of_decl_compilation (TYPE_NAME (current_class), 
-				    (char*) 0, 1, 0);
-	}
+	finish_class (current_class);
     }
 }
 
@@ -5514,7 +5509,7 @@ verify_constructor_super ()
       for (mdecl = TYPE_METHODS (class); mdecl; mdecl = TREE_CHAIN (mdecl))
 	{
 	  if (DECL_CONSTRUCTOR_P (mdecl)
-	      && !TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (mdecl))))
+	      && TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (mdecl))) == end_params_node)
 	    return 0;
 	}
     }
@@ -6588,7 +6583,7 @@ patch_invoke (patch, method, args, from_super)
   t = TYPE_ARG_TYPES (TREE_TYPE (method));
   if (TREE_CODE (patch) == NEW_CLASS_EXPR)
     t = TREE_CHAIN (t);
-  for (ta = args; t && ta; t = TREE_CHAIN (t), ta = TREE_CHAIN (ta))
+  for (ta = args; t != end_params_node && ta; t = TREE_CHAIN (t), ta = TREE_CHAIN (ta))
     if (JPRIMITIVE_TYPE_P (TREE_TYPE (TREE_VALUE (ta))) &&
 	TREE_TYPE (TREE_VALUE (ta)) != TREE_VALUE (t))
       TREE_VALUE (ta) = convert (TREE_VALUE (t), TREE_VALUE (ta));
@@ -6698,7 +6693,7 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
      tree cl;
      tree class, name, arg_list;
 {
-  tree atl = NULL_TREE;		/* Arg Type List */
+  tree atl = end_params_node;		/* Arg Type List */
   tree method, signature, list, node;
   char *candidates;		/* Used for error report */
 
@@ -6899,7 +6894,7 @@ argument_types_convertible (m1, m2_or_arglist)
       m2_arg_cache = m2_arg;
     }
 
-  while (m1_arg && m2_arg)
+  while (m1_arg != end_params_node && m2_arg != end_params_node)
     {
       resolve_and_layout (TREE_VALUE (m1_arg), NULL_TREE);
       if (!valid_method_invocation_conversion_p (TREE_VALUE (m1_arg),
@@ -6908,7 +6903,7 @@ argument_types_convertible (m1, m2_or_arglist)
       m1_arg = TREE_CHAIN (m1_arg);
       m2_arg = TREE_CHAIN (m2_arg);
     }
-  return (!m1_arg && !m2_arg ? 1 : 0);
+  return m1_arg == end_params_node && m2_arg == end_params_node;
 }
 
 /* Qualification routines */
@@ -7421,7 +7416,6 @@ java_complete_tree (node)
 
     case NEW_CLASS_EXPR:
     case CALL_EXPR:
-      CAN_COMPLETE_NORMALLY (node) = 1;
       /* Complete function's argument(s) first */
       if (complete_function_arguments (node))
 	return error_mark_node;
@@ -7441,6 +7435,7 @@ java_complete_tree (node)
 	    DECL_CONSTRUCTOR_CALLS (current_function_decl) = 
 	      tree_cons (wfl, decl, 
 			 DECL_CONSTRUCTOR_CALLS (current_function_decl));
+	  CAN_COMPLETE_NORMALLY (node) = 1;
 	  return node;
 	}
 
@@ -10015,6 +10010,7 @@ build_jump_to_finally (block, decl, finally_label, type)
   stmt = build (MODIFY_EXPR, void_type_node, decl,
 		build_address_of (LABELED_BLOCK_LABEL (new_block)));
   TREE_SIDE_EFFECTS (stmt) = 1;
+  CAN_COMPLETE_NORMALLY (stmt) = 1;
   add_stmt_to_block (block, type, stmt);
   stmt = build (GOTO_EXPR, void_type_node, finally_label);
   TREE_SIDE_EFFECTS (stmt) = 1;

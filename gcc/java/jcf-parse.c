@@ -692,9 +692,8 @@ parse_class_file ()
 
   if (flag_emit_class_files)
     write_classfile (current_class);
-  make_class_data (current_class);
-  register_class ();
-  rest_of_decl_compilation (TYPE_NAME (current_class), (char*) 0, 1, 0);
+
+  finish_class (current_class);
 
   debug_end_source_file (save_lineno);
   input_filename = save_input_filename;
