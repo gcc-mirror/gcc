@@ -45,6 +45,9 @@ static void d30v_print_operand_memory_reference PARAMS ((FILE *, rtx));
 static void d30v_build_long_insn PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
 					  rtx, rtx));
 static void d30v_add_gc_roots PARAMS ((void));
+static void d30v_init_machine_status PARAMS ((struct function *));
+static void d30v_mark_machine_status PARAMS ((struct function *));
+static void d30v_free_machine_status PARAMS ((struct function *));
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -3596,7 +3599,7 @@ d30v_init_machine_status (p)
      struct function *p;
 {
   p->machine =
-    (struct machine_function *) xmalloc (sizeof (struct machine_function));
+    (machine_function *) xcalloc (1, sizeof (machine_function));
 }
 
 static void
