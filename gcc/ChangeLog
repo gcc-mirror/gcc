@@ -1,3 +1,10 @@
+Wed May 27 02:48:31 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.c (arm_gen_constant): Rework to eliminate uninitialized
+	variable warnings.  Don't generate scratch registers if only
+	counting insns.
+	(find_barrier): Eliminate unused variable SRC.
+
 1998-05-27  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* toplev.h (rtx_def): Provide global declaration to avoid
