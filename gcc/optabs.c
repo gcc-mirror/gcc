@@ -2678,7 +2678,7 @@ expand_abs (enum machine_mode mode, rtx op0, rtx target,
    is that we have a split register file, and leaving op0 in fp registers,
    and not playing with subregs so much, will help the register allocator.  */
 
-rtx
+static rtx
 expand_copysign_absneg (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 		        int bitpos, bool op0_is_abs)
 {
