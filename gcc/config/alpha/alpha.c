@@ -1036,7 +1036,7 @@ alpha_builtin_saveregs (arglist)
 
   emit_move_insn (change_address (block, DImode, XEXP (block, 0)),
 		  force_operand (plus_constant (virtual_incoming_args_rtx,
-						-6 * UNITS_PER_WORD),
+						6 * UNITS_PER_WORD),
 				 NULL_RTX));
 
   /* Store the argsize as the __va_offset member.  */
