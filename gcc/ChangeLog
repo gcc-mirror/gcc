@@ -1,3 +1,21 @@
+2004-08-03  Zack Weinberg  <zack@codesourcery.com>
+
+	* gensupport.c (init_md_reader_args_cb): Renamed from
+	init_md_reader_args.  Add third option, callback function for
+	parsing program-specific options.  Add diagnosis of incorrect
+	number of input files.
+	(init_md_reader): Fold into init_md_reader_args_cb.
+	(init_md_reader_args): Now a thin wrapper around
+	init_md_reader_args_cb.
+	* gensupport.h: Update prototypes.
+
+	* genattr.c, genattrtab.c, gencodes.c, genconfig.c, genemit.c
+	* genextract.c, genflags.c, genopinit.c, genoutput.c, genpeep.c
+	* genrecog.c: No need to diagnose lack of an input file;
+	init_md_reader_args will handle it.
+	* genconditions.c: Likewise, and use init_md_reader_args.
+	* genconstants.c: Likewise, and no need to call read_md_rtx.
+
 2004-08-03  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-decl.c (implicitly_declare): Diagnose incompatible implicit
@@ -26,8 +44,8 @@
 
 2004-08-03  Maciej W. Rozycki  <macro@linux-mips.org>
 
-	* aclocal.m4 (gcc_AC_FUNC_MMAP_BLACKLIST): Check for <sys/mman.h> 
-	and mmap() explicitly instead of relying on preset autoconf cache 
+	* aclocal.m4 (gcc_AC_FUNC_MMAP_BLACKLIST): Check for <sys/mman.h>
+	and mmap() explicitly instead of relying on preset autoconf cache
 	variables.
 	* configure: Regenerate.
 
@@ -42,7 +60,7 @@
 
 	* config/i386/t-gmm_malloc: New file.
 	* config/i386/t-pmm_malloc: Likewise.
-	
+
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
@@ -58,7 +76,7 @@
 
 	* config/rs6000/rs6000.c (machopic_output_stub):  Align Darwin stubs.
 	* c-common.c: Include opts.h.
-	(c_common_get_alias_set): Fix check for a single input file. 
+	(c_common_get_alias_set): Fix check for a single input file.
 	* toplev.c: Remove current_file_decl.
 	* tree.h: Ditto.
 
@@ -144,9 +162,9 @@
 	(warn_B, warn_std_ptr): Remove.
 
 2004-08-03  Yossi Markovich <yossim@il.ibm.com>
-            Mostafa Hagog <mustafa@il.ibm.com>
+	    Mostafa Hagog <mustafa@il.ibm.com>
 
-        * config/rs6000/altivec.md (altivec_vnmsubfp): Fix wrong pattern.
+	* config/rs6000/altivec.md (altivec_vnmsubfp): Fix wrong pattern.
 
 2004-08-02  Geoffrey Keating  <geoffk@apple.com>
 
@@ -168,7 +186,7 @@
 2004-08-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* vec.h (DEF_VEC_P): Add proper cast to uses of vec_o_reserve and
-	vec_p_reserve. 
+	vec_p_reserve.
 	* langhooks.h (lang_hooks::builtin_function): Rename parameter
 	from "class" to "bt_class".
 
@@ -184,7 +202,7 @@
 	* gengtype.c (create_option): Convert initializer for option::info to
 	appropiate type.
 	(adjust_field_type, walk_type, write_func_for_structure,
-	write_root, write_roots): Remove pointless cast. 
+	write_root, write_roots): Remove pointless cast.
 
 2004-08-02  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -195,10 +213,10 @@
 	* rtl.h (union rtunion_def): Have all members  start with the
 	prefix "rt_".
 	(XINT, XSTR, XEXP, XVEC, XMODE, XBITMAP, XTREE, XBBDEF, XTMPL,
-	X0INT, X0UINT, X0STR, X0EXP, X0VEC, X0MODE, X0BITMAP, X0TREE, 
+	X0INT, X0UINT, X0STR, X0EXP, X0VEC, X0MODE, X0BITMAP, X0TREE,
 	X0MEMATTR, X0BBDEF, X0REGATTR, XCINT, XCUINT, XCSTR, XCEXP,
 	XCVEC, XCMODE, XCBITMAP, XCTREE, XCBBDEF, XC2EXP): Adjust members
-	access. 
+	access.
 	* gengtype.c (adjust_field_rtx_def): Likewise.
 	* rtlanal.c (loc_mentioned_in_p): Likewise.
 
