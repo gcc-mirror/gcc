@@ -1,3 +1,10 @@
+2002-01-13  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/DatagramSocket.java (getReceiveBufferSize): new 1.2 method.
+	* java/net/DatagramSocket.java (getSendBufferSize): Likewise.
+	* java/net/DatagramSocket.java (setReceiveBufferSize): Likewise.
+	* java/net/DatagramSocket.java (setSendBufferSize): Likewise.
+
 2002-01-11  Mark Wielaard  <mark@klomp.org>
 
 	* java/net/InetAddress.java (ANY_IF): moved from ServerSocket.
