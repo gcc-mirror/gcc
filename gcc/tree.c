@@ -2352,16 +2352,20 @@ do { tree _node = (NODE); \
     }
 	      
   /* Now see what's inside.  If it's an INDIRECT_REF, copy our properties from
-     it.  If it's a decl, it's definitely invariant and it's constant if the
-     decl is static.  (Taking the address of a volatile variable is not
-     volatile.)  If it's a constant, the address is both invariant and
-     constant.  Otherwise it's neither.  */
+     it.  If it's a decl, it's invariant and constant if the decl is static.
+     It's also invariant if it's a decl in the current function.  (Taking the
+     address of a volatile variable is not volatile.)  If it's a constant,
+     the address is both invariant and constant.  Otherwise it's neither.  */
   if (TREE_CODE (node) == INDIRECT_REF)
     UPDATE_TITCSE (node);
   else if (DECL_P (node))
     {
-      if (!staticp (node))
+      if (staticp (node))
+	;
+      else if (decl_function_context (node) == current_function_decl)
 	tc = false;
+      else
+	ti = tc = false;
     }
   else if (TREE_CODE_CLASS (TREE_CODE (node)) == 'c')
     ;
@@ -4685,20 +4689,49 @@ int_fits_type_p (tree c, tree type)
     }
 }
 
+/* Subprogram of following function.  Called by walk_tree.
+
+   Return *TP if it is an automatic variable or parameter of the
+   function passed in as DATA.  */
+
+static tree
+find_var_from_fn (tree *tp, int *walk_subtrees, void *data)
+{
+  tree fn = (tree) data;
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+
+  else if (DECL_P (*tp) && lang_hooks.tree_inlining.auto_var_in_fn_p (*tp, fn))
+    return *tp;
+
+  return NULL_TREE;
+}
+
 /* Returns true if T is, contains, or refers to a type with variable
-   size.  This concept is more general than that of C99 'variably
-   modified types': in C99, a struct type is never variably modified
-   because a VLA may not appear as a structure member.  However, in
-   GNU C code like:
+   size.  If FN is nonzero, only return true if a modifier of the type
+   or position of FN is a variable or parameter inside FN.
+
+   This concept is more general than that of C99 'variably modified types':
+   in C99, a struct type is never variably modified because a VLA may not
+   appear as a structure member.  However, in GNU C code like:
 
      struct S { int i[f()]; };
 
    is valid, and other languages may define similar constructs.  */
 
 bool
-variably_modified_type_p (tree type)
+variably_modified_type_p (tree type, tree fn)
 {
   tree t;
+
+/* Test if T is either variable (if FN is zero) or an expression containing
+   a variable in FN.  */
+#define RETURN_TRUE_IF_VAR(T)						\
+  do { tree _t = (T);							\
+    if (_t && _t != error_mark_node && TREE_CODE (_t) != INTEGER_CST	\
+        && (!fn || walk_tree (&_t, find_var_from_fn, fn, NULL)))	\
+      return true;  } while (0)
 
   if (type == error_mark_node)
     return false;
@@ -4708,9 +4741,8 @@ variably_modified_type_p (tree type)
      We do not yet have a representation of the C99 '[*]' syntax.
      When a representation is chosen, this function should be modified
      to test for that case as well.  */
-  t = TYPE_SIZE (type);
-  if (t && t != error_mark_node && TREE_CODE (t) != INTEGER_CST)
-    return true;
+  RETURN_TRUE_IF_VAR (TYPE_SIZE (type));
+  RETURN_TRUE_IF_VAR (TYPE_SIZE_UNIT(type));
 
   switch (TREE_CODE (type))
     {
@@ -4719,7 +4751,7 @@ variably_modified_type_p (tree type)
     case ARRAY_TYPE:
     case SET_TYPE:
     case VECTOR_TYPE:
-      if (variably_modified_type_p (TREE_TYPE (type)))
+      if (variably_modified_type_p (TREE_TYPE (type), fn))
 	return true;
       break;
 
@@ -4727,13 +4759,13 @@ variably_modified_type_p (tree type)
     case METHOD_TYPE:
       /* If TYPE is a function type, it is variably modified if any of the
          parameters or the return type are variably modified.  */
-      if (variably_modified_type_p (TREE_TYPE (type)))
+      if (variably_modified_type_p (TREE_TYPE (type), fn))
 	  return true;
 
       for (t = TYPE_ARG_TYPES (type);
 	   t && t != void_list_node;
 	   t = TREE_CHAIN (t))
-	if (variably_modified_type_p (TREE_VALUE (t)))
+	if (variably_modified_type_p (TREE_VALUE (t), fn))
 	  return true;
       break;
 
@@ -4744,13 +4776,8 @@ variably_modified_type_p (tree type)
     case CHAR_TYPE:
       /* Scalar types are variably modified if their end points
 	 aren't constant.  */
-      t = TYPE_MIN_VALUE (type);
-      if (t && t != error_mark_node && TREE_CODE (t) != INTEGER_CST)
-	return true;
-
-      t = TYPE_MAX_VALUE (type);
-      if (t && t != error_mark_node && TREE_CODE (t) != INTEGER_CST)
-	return true;
+      RETURN_TRUE_IF_VAR (TYPE_MIN_VALUE (type));
+      RETURN_TRUE_IF_VAR (TYPE_MAX_VALUE (type));
       break;
 
     case RECORD_TYPE:
@@ -4763,14 +4790,12 @@ variably_modified_type_p (tree type)
       for (t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
 	if (TREE_CODE (t) == FIELD_DECL)
 	  {
-	    tree t1 = DECL_FIELD_OFFSET (t);
+	    RETURN_TRUE_IF_VAR (DECL_FIELD_OFFSET (t));
+	    RETURN_TRUE_IF_VAR (DECL_SIZE (t));
+	    RETURN_TRUE_IF_VAR (DECL_SIZE_UNIT (t));
 
-	    if (t1 && t1 != error_mark_node && TREE_CODE (t1) != INTEGER_CST)
-	      return true;
-
-	    t1 = DECL_SIZE (t);
-	    if (t1 && t1 != error_mark_node && TREE_CODE (t1) != INTEGER_CST)
-	      return true;
+	    if (TREE_CODE (type) == QUAL_UNION_TYPE)
+	      RETURN_TRUE_IF_VAR (DECL_QUALIFIER (t));
 	  }
 	break;
 
@@ -4780,7 +4805,9 @@ variably_modified_type_p (tree type)
 
   /* The current language may have other cases to check, but in general,
      all other types are not variably modified.  */
-  return lang_hooks.tree_inlining.var_mod_type_p (type);
+  return lang_hooks.tree_inlining.var_mod_type_p (type, fn);
+
+#undef RETURN_TRUE_IF_VAR
 }
 
 /* Given a DECL or TYPE, return the scope in which it was declared, or

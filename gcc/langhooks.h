@@ -43,7 +43,7 @@ struct lang_hooks_for_tree_inlining
   tree (*copy_res_decl_for_inlining) (tree, tree, tree,
 				      void *, int *, tree);
   int (*anon_aggr_type_p) (tree);
-  bool (*var_mod_type_p) (tree);
+  bool (*var_mod_type_p) (tree, tree);
   int (*start_inlining) (tree);
   void (*end_inlining) (tree);
   tree (*convert_parm_for_inlining) (tree, tree, tree, int);

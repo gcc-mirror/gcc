@@ -4497,11 +4497,11 @@ count_type_elements (tree type)
 	tree telts = array_type_nelts (type);
 	if (telts && host_integerp (telts, 1))
 	  {
-	    HOST_WIDE_INT n = tree_low_cst (telts, 1);
+	    HOST_WIDE_INT n = tree_low_cst (telts, 1) + 1;
 	    HOST_WIDE_INT m = count_type_elements (TREE_TYPE (type));
 	    if (n == 0)
 	      return 0;
-	    if (max / n < m)
+	    else if (max / n > m)
 	      return n * m;
 	  }
 	return -1;

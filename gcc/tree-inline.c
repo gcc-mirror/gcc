@@ -155,35 +155,21 @@ insert_decl_map (inline_data *id, tree key, tree value)
 		       (splay_tree_value) value);
 }
 
-/* Remap DECL during the copying of the BLOCK tree for the function.  */
+/* Remap DECL during the copying of the BLOCK tree for the function. 
+   We are only called to remap local variables in the current function.  */
 
 static tree
 remap_decl (tree decl, inline_data *id)
 {
-  splay_tree_node n;
-  tree fn;
+  splay_tree_node n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
+  tree fn = VARRAY_TOP_TREE (id->fns);
 
-  /* We only remap local variables in the current function.  */
-  fn = VARRAY_TOP_TREE (id->fns);
-#if 0
-  /* We need to remap statics, too, so that they get expanded even if the
-     inline function is never emitted out of line.  We might as well also
-     remap extern decls so that they show up in the debug info.  */
-  if (! lang_hooks.tree_inlining.auto_var_in_fn_p (decl, fn))
-    return NULL_TREE;
-#endif
-
-  /* See if we have remapped this declaration.  */
-  n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
-
-  /* If we didn't already have an equivalent for this declaration,
-     create one now.  */
+  /* See if we have remapped this declaration.  If we didn't already have an
+     equivalent for this declaration, create one now.  */
   if (!n)
     {
-      tree t;
-
       /* Make a copy of the variable or label.  */
-      t = copy_decl_for_inlining (decl, fn, VARRAY_TREE (id->fns, 0));
+      tree t = copy_decl_for_inlining (decl, fn, VARRAY_TREE (id->fns, 0));
 
       /* Remap types, if necessary.  */
       TREE_TYPE (t) = remap_type (TREE_TYPE (t), id);
@@ -196,6 +182,14 @@ remap_decl (tree decl, inline_data *id)
       /* Remap sizes as necessary.  */
       walk_tree (&DECL_SIZE (t), copy_body_r, id, NULL);
       walk_tree (&DECL_SIZE_UNIT (t), copy_body_r, id, NULL);
+
+      /* If fields, do likewise for offset and qualifier. */
+      if (TREE_CODE (t) == FIELD_DECL)
+	{
+	  walk_tree (&DECL_FIELD_OFFSET (t), copy_body_r, id, NULL);
+	  if (TREE_CODE (DECL_CONTEXT (t)) == QUAL_UNION_TYPE)
+	    walk_tree (&DECL_QUALIFIER (t), copy_body_r, id, NULL);
+	}
 
 #if 0
       /* FIXME handle anon aggrs.  */
@@ -243,8 +237,9 @@ remap_type (tree type, inline_data *id)
   if (node)
     return (tree) node->value;
 
-  /* The type only needs remapping if it's variably modified.  */
-  if (! variably_modified_type_p (type))
+  /* The type only needs remapping if it's variably modified by a variable
+     in the function we are inlining.  */
+  if (! variably_modified_type_p (type, VARRAY_TOP_TREE (id->fns)))
     {
       insert_decl_map (id, type, type);
       return type;
@@ -458,12 +453,8 @@ copy_bind_expr (tree *tp, int *walk_subtrees, inline_data *id)
 static tree
 copy_body_r (tree *tp, int *walk_subtrees, void *data)
 {
-  inline_data* id;
-  tree fn;
-
-  /* Set up.  */
-  id = (inline_data *) data;
-  fn = VARRAY_TOP_TREE (id->fns);
+  inline_data *id = (inline_data *) data;
+  tree fn = VARRAY_TOP_TREE (id->fns);
 
 #if 0
   /* All automatic variables should have a DECL_CONTEXT indicating
@@ -507,7 +498,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
   /* Local variables and labels need to be replaced by equivalent
      variables.  We don't want to copy static variables; there's only
      one of those, no matter how many times we inline the containing
-     function.  */
+     function.  Similarly for globals from an outer function.  */
   else if (lang_hooks.tree_inlining.auto_var_in_fn_p (*tp, fn))
     {
       tree new_decl;
@@ -603,13 +594,13 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	      value = (tree) n->value;
 	      if (TREE_CODE (value) == INDIRECT_REF)
 		{
-		  /* Assume that the argument types properly match the
-		     parameter types.  We can't compare them well enough
-		     without a comptypes langhook, and we don't want to
-		     call convert and introduce a NOP_EXPR to convert
-		     between two equivalent types (i.e. that only differ
-		     in use of typedef names).  */
-		  *tp = TREE_OPERAND (value, 0);
+		  if  (!lang_hooks.types_compatible_p
+		       (TREE_TYPE (*tp), TREE_TYPE (TREE_OPERAND (value, 0))))
+		    *tp = fold_convert (TREE_TYPE (*tp),
+					TREE_OPERAND (value, 0));
+		  else
+		    *tp = TREE_OPERAND (value, 0);
+
 		  return copy_body_r (tp, walk_subtrees, data);
 		}
 	    }
@@ -626,7 +617,9 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	    {
 	      value = (tree) n->value;
 	      STRIP_NOPS (value);
-	      if (TREE_CODE (value) == ADDR_EXPR)
+	      if (TREE_CODE (value) == ADDR_EXPR
+		  && (lang_hooks.types_compatible_p
+		      (TREE_TYPE (*tp), TREE_TYPE (TREE_OPERAND (value, 0)))))
 		{
 		  *tp = TREE_OPERAND (value, 0);
 		  return copy_body_r (tp, walk_subtrees, data);
@@ -739,9 +732,10 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
 	}
     }
 
-  /* Make an equivalent VAR_DECL with the remapped type.  */
+  /* Make an equivalent VAR_DECL.  Note that we must NOT remap the type
+     here since the type of this decl must be visible to the calling
+     function. */
   var = copy_decl_for_inlining (p, fn, VARRAY_TREE (id->fns, 0));
-  TREE_TYPE (var) = remap_type (TREE_TYPE (var), id);
 
   /* See if the frontend wants to pass this by invisible reference.  If
      so, our new VAR_DECL will have REFERENCE_TYPE, and we need to
@@ -1072,7 +1066,7 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	 then the type node for S doesn't get adjusted properly when
 	 F is inlined, and we abort in find_function_data.  */
       for (t = TYPE_FIELDS (node); t; t = TREE_CHAIN (t))
-	if (variably_modified_type_p (TREE_TYPE (t)))
+	if (variably_modified_type_p (TREE_TYPE (t), NULL))
 	  {
 	    inline_forbidden_reason
 	      = N_("%Jfunction '%F' can never be inlined "

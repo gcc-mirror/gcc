@@ -105,9 +105,8 @@ function_attribute_inlinable_p (tree fndecl)
   return true;
 }
 
-/* Copy NODE (which must be a DECL, but not a PARM_DECL).  The DECL
-   originally was in the FROM_FN, but now it will be in the
-   TO_FN.  */
+/* Copy NODE (which must be a DECL).  The DECL originally was in the FROM_FN,
+   but now it will be in the TO_FN.  */
 
 tree
 copy_decl_for_inlining (tree decl, tree from_fn, tree to_fn)
@@ -132,7 +131,7 @@ copy_decl_for_inlining (tree decl, tree from_fn, tree to_fn)
       else
 	type = TREE_TYPE (decl);
 
-      /* For a parameter, we must make an equivalent VAR_DECL, not a
+      /* For a parameter or result, we must make an equivalent VAR_DECL, not a
 	 new PARM_DECL.  */
       copy = build_decl (VAR_DECL, DECL_NAME (decl), type);
       if (!invisiref)
