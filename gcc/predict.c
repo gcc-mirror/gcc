@@ -61,6 +61,8 @@ static REAL_VALUE_TYPE real_zero, real_one, real_almost_one, real_br_prob_base,
 #define PROB_VERY_LIKELY	(REG_BR_PROB_BASE - PROB_VERY_UNLIKELY)
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
 
+static bool predicted_by_p		 PARAMS ((basic_block,
+						  enum br_predictor));
 static void combine_predictions_for_insn PARAMS ((rtx, basic_block));
 static void dump_prediction		 PARAMS ((enum br_predictor, int,
 						  basic_block, int));
@@ -68,6 +70,11 @@ static void estimate_loops_at_level	 PARAMS ((struct loop *loop));
 static void propagate_freq		 PARAMS ((basic_block));
 static void estimate_bb_frequencies	 PARAMS ((struct loops *));
 static void counts_to_freqs		 PARAMS ((void));
+static void process_note_predictions	 PARAMS ((basic_block, int *, int *,
+                                                  sbitmap *));
+static void process_note_prediction	 PARAMS ((basic_block, int *, int *,
+                                                  sbitmap *, int, int));
+static bool last_basic_block_p           PARAMS ((basic_block));
 
 /* Information we hold about each branch predictor.
    Filled using information from predict.def.  */
@@ -96,6 +103,23 @@ static const struct predictor_info predictor_info[]= {
   {NULL, 0, 0}
 };
 #undef DEF_PREDICTOR
+/* Return true if the one of outgoing edges is already predicted by
+   PREDICTOR.  */
+
+static bool
+predicted_by_p (bb, predictor)
+     basic_block bb;
+     enum br_predictor predictor;
+{
+  rtx note;
+  if (!INSN_P (bb->end))
+    return false;
+  for (note = REG_NOTES (bb->end); note; note = XEXP (note, 1))
+    if (REG_NOTE_KIND (note) == REG_BR_PRED
+	&& INTVAL (XEXP (XEXP (note, 0), 0)) == (int)predictor)
+      return true;
+  return false;
+}
 
 void
 predict_insn (insn, predictor, probability)
@@ -333,7 +357,6 @@ estimate_probability (loops_info)
 {
   sbitmap *dominators, *post_dominators;
   int i;
-  int found_noreturn = 0;
 
   dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
   post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
@@ -356,6 +379,13 @@ estimate_probability (loops_info)
 	  {
 	    int header_found = 0;
 	    edge e;
+
+	  /* Bypass loop heuristics on continue statement.  These
+	     statements construct loops via "non-loop" constructs
+	     in the source language and are better to be handled
+	     separately.  */
+	  if (predicted_by_p (BASIC_BLOCK (j), PRED_CONTINUE))
+	    continue;
 
 	    /* Loop branch heuristics - predict an edge back to a
 	       loop's head as taken.  */
@@ -389,37 +419,22 @@ estimate_probability (loops_info)
       rtx cond, earliest;
       edge e;
 
-      /* If block has no successor, predict all possible paths to it as
-         improbable, as the block contains a call to a noreturn function and
-         thus can be executed only once.  */
-      if (bb->succ == NULL && !found_noreturn)
-	{
-	  int y;
-
-	  /* ??? Postdominator claims each noreturn block to be postdominated
-	     by each, so we need to run only once.  This needs to be changed
-	     once postdominace algorithm is updated to say something more
-	     sane.  */
-	  found_noreturn = 1;
-	  for (y = 0; y < n_basic_blocks; y++)
-	    if (!TEST_BIT (post_dominators[y], i))
-	      for (e = BASIC_BLOCK (y)->succ; e; e = e->succ_next)
-		if (e->dest->index >= 0
-		    && TEST_BIT (post_dominators[e->dest->index], i))
-		  predict_edge_def (e, PRED_NORETURN, NOT_TAKEN);
-	}
-
       if (GET_CODE (last_insn) != JUMP_INSN || ! any_condjump_p (last_insn))
 	continue;
 
       for (e = bb->succ; e; e = e->succ_next)
 	{
-	  /* Predict edges to blocks that return immediately to be
-	     improbable.  These are usually used to signal error states.  */
-	  if (e->dest == EXIT_BLOCK_PTR
-	      || (e->dest->succ && !e->dest->succ->succ_next
-		  && e->dest->succ->dest == EXIT_BLOCK_PTR))
-	    predict_edge_def (e, PRED_ERROR_RETURN, NOT_TAKEN);
+	  /* Predict early returns to be probable, as we've already taken
+	     care for error returns and other are often used for fast paths
+	     trought function.  */
+	  if ((e->dest == EXIT_BLOCK_PTR
+	       || (e->dest->succ && !e->dest->succ->succ_next
+		   && e->dest->succ->dest == EXIT_BLOCK_PTR))
+	       && !predicted_by_p (bb, PRED_NULL_RETURN)
+	       && !predicted_by_p (bb, PRED_CONST_RETURN)
+	       && !predicted_by_p (bb, PRED_NEGATIVE_RETURN)
+	       && !last_basic_block_p (e->dest))
+	    predict_edge_def (e, PRED_EARLY_RETURN, TAKEN);
 
 	  /* Look for block we are guarding (ie we dominate it,
 	     but it doesn't postdominate us).  */
@@ -538,7 +553,8 @@ estimate_probability (loops_info)
   /* Attach the combined probability to each conditional jump.  */
   for (i = 0; i < n_basic_blocks; i++)
     if (GET_CODE (BLOCK_END (i)) == JUMP_INSN
-	&& any_condjump_p (BLOCK_END (i)))
+	&& any_condjump_p (BLOCK_END (i))
+	&& BASIC_BLOCK (i)->succ->succ_next != NULL)
       combine_predictions_for_insn (BLOCK_END (i), BASIC_BLOCK (i));
 
   sbitmap_vector_free (post_dominators);
@@ -618,6 +634,181 @@ expected_value_to_br_prob ()
       predict_insn_def (insn, PRED_BUILTIN_EXPECT,
 		        cond == const_true_rtx ? TAKEN : NOT_TAKEN);
     }
+}
+
+/* Check whether this is the last basic block of function.  Commonly tehre
+   is one extra common cleanup block.  */
+static bool
+last_basic_block_p (bb)
+     basic_block bb;
+{
+  return (bb->index == n_basic_blocks - 1
+	  || (bb->index == n_basic_blocks - 2
+	      && bb->succ && !bb->succ->succ_next
+	      && bb->succ->dest->index == n_basic_blocks - 1));
+}
+
+/* Sets branch probabilities according to PREDiction and FLAGS. HEADS[bb->index]
+   should be index of basic block in that we need to alter branch predictions
+   (i.e. the first of our dominators such that we do not post-dominate it)
+   (but we fill this information on demand, so -1 may be there in case this
+   was not needed yet). */
+
+static void
+process_note_prediction (bb, heads, dominators, post_dominators, pred, flags)
+     basic_block bb;
+     int *heads;
+     int *dominators;
+     sbitmap *post_dominators;
+     int pred;
+     int flags;
+{
+  edge e;
+  int y;
+  bool taken;
+
+  taken = flags & IS_TAKEN;
+
+  if (heads[bb->index] < 0)
+    {
+      /* This is first time we need this field in heads array; so
+         find first dominator that we do not post-dominate (we are
+         using already known members of heads array).  */
+      int ai = bb->index;
+      int next_ai = dominators[bb->index];
+      int head;
+
+      while (heads[next_ai] < 0)
+	{
+	  if (!TEST_BIT (post_dominators[next_ai], bb->index))
+	    break;
+	  heads[next_ai] = ai;
+	  ai = next_ai;
+	  next_ai = dominators[next_ai];
+	}
+      if (!TEST_BIT (post_dominators[next_ai], bb->index))
+	head = next_ai;
+      else
+	head = heads[next_ai];
+      while (next_ai != bb->index)
+	{
+	  next_ai = ai;
+	  ai = heads[ai];
+	  heads[next_ai] = head;
+	}
+    }
+  y = heads[bb->index];
+
+  /* Now find the edge that leads to our branch and aply the prediction.  */
+
+  if (y == n_basic_blocks)
+    return;
+  for (e = BASIC_BLOCK (y)->succ; e; e = e->succ_next)
+    if (e->dest->index >= 0
+	&& TEST_BIT (post_dominators[e->dest->index], bb->index))
+      predict_edge_def (e, pred, taken);
+}
+
+/* Gathers NOTE_INSN_PREDICTIONs in given basic block and turns them
+   into branch probabilities.  For description of heads array, see
+   process_note_prediction.  */
+
+static void
+process_note_predictions (bb, heads, dominators, post_dominators)
+     basic_block bb;
+     int *heads;
+     int *dominators;
+     sbitmap *post_dominators;
+{
+  rtx insn;
+  edge e;
+
+  /* Additionaly, we check here for blocks with no successors.  */
+  int contained_noreturn_call = 0;
+  int was_bb_head = 0;
+  int noreturn_block = 1;
+
+  for (insn = bb->end; insn;
+       was_bb_head |= (insn == bb->head), insn = PREV_INSN (insn))
+    {
+      if (GET_CODE (insn) != NOTE)
+	{
+	  if (was_bb_head)
+	    break;
+	  else
+	    {
+	      /* Noreturn calls cause program to exit, therefore they are
+	         always predicted as not taken.  */
+	      if (GET_CODE (insn) == CALL_INSN
+		  && find_reg_note (insn, REG_NORETURN, NULL))
+		contained_noreturn_call = 1;
+	      continue;
+	    }
+	}
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PREDICTION)
+	{
+	  int alg = (int) NOTE_PREDICTION_ALG (insn);
+	  /* Process single prediction note.  */
+	  process_note_prediction (bb,
+				   heads,
+				   dominators,
+				   post_dominators,
+				   alg, (int) NOTE_PREDICTION_FLAGS (insn));
+	  delete_insn (insn);
+	}
+    }
+  for (e = bb->succ; e; e = e->succ_next)
+    if (!(e->flags & EDGE_FAKE))
+      noreturn_block = 0;
+  if (contained_noreturn_call)
+    {
+      /* This block ended from other reasons than because of return.
+         If it is because of noreturn call, this should certainly not
+         be taken.  Otherwise it is probably some error recovery.  */
+      process_note_prediction (bb,
+			       heads,
+			       dominators,
+			       post_dominators, PRED_NORETURN, NOT_TAKEN);
+    }
+}
+
+/* Gathers NOTE_INSN_PREDICTIONs and turns them into
+   branch probabilities.  */
+
+void
+note_prediction_to_br_prob ()
+{
+  int i;
+  sbitmap *post_dominators;
+  int *dominators, *heads;
+
+  /* To enable handling of noreturn blocks.  */
+  add_noreturn_fake_exit_edges ();
+  connect_infinite_loops_to_exit ();
+
+  dominators = xmalloc (sizeof (int) * n_basic_blocks);
+  memset (dominators, -1, sizeof (int) * n_basic_blocks);
+  post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+  calculate_dominance_info (NULL, post_dominators, CDI_POST_DOMINATORS);
+  calculate_dominance_info (dominators, NULL, CDI_DOMINATORS);
+
+  heads = xmalloc (sizeof (int) * n_basic_blocks);
+  memset (heads, -1, sizeof (int) * n_basic_blocks);
+  heads[0] = n_basic_blocks;
+
+  /* Process all prediction notes.  */
+
+  for (i = 0; i < n_basic_blocks; ++i)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      process_note_predictions (bb, heads, dominators, post_dominators);
+    }
+
+  sbitmap_vector_free (post_dominators);
+  free (dominators);
+  free (heads);
+
+  remove_fake_edges ();
 }
 
 /* This is used to carry information about basic blocks.  It is

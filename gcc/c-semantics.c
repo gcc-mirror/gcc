@@ -36,6 +36,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "expr.h"
 #include "output.h"
 #include "timevar.h"
+#include "predict.h"
 
 /* If non-NULL, the address of a language-specific function for
    expanding statements.  */
@@ -834,6 +835,14 @@ expand_stmt (t)
 	  break;
 
 	case GOTO_STMT:
+	  /* Emit information for branch prediction.  */
+	  if (!GOTO_FAKE_P (t)
+	      && TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL)
+	    {
+	      rtx note = emit_note (NULL, NOTE_INSN_PREDICTION);
+
+	      NOTE_PREDICTION (note) = NOTE_PREDICT (PRED_GOTO, NOT_TAKEN);
+	    }
 	  genrtl_goto_stmt (GOTO_DESTINATION (t));
 	  break;
 

@@ -21,9 +21,12 @@
 /* Structure to hold information about the blocks during reordering.  */
 typedef struct reorder_block_def
 {
-  rtx eff_head;
-  rtx eff_end;
+  rtx header;
+  rtx footer;
   basic_block next;
+  basic_block original;
+
+  /* These fields are used by bb-reorder pass.  */
   int visited;
 } *reorder_block_def;
 
@@ -31,6 +34,8 @@ typedef struct reorder_block_def
 
 extern void cfg_layout_initialize	PARAMS ((void));
 extern void cfg_layout_finalize		PARAMS ((void));
-
+extern bool cfg_layout_can_duplicate_bb_p PARAMS ((basic_block));
+extern basic_block cfg_layout_duplicate_bb PARAMS ((basic_block, edge));
 extern void scope_to_insns_initialize	PARAMS ((void));
 extern void scope_to_insns_finalize	PARAMS ((void));
+extern void cfg_layout_redirect_edge	PARAMS ((edge, basic_block));

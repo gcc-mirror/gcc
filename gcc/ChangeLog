@@ -1,3 +1,61 @@
+Wed May  8 11:08:50 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfglayout.c (function_tail_eff_head): Rename to ...
+	(function_footer): ... this one.
+	(unlink_insn_chain): New functions.
+	(label_for_bb): Only call block_label and emit debug message.
+	(record_effective_endpoints): Actually unlink the headers and footers.
+	(fixup_reorder_cahin): Re-insert the unlinked sequences.
+	(cfg_layout_duplicate_bb): Use duplicate_insn_chain.
+	* cfglayout.h (struct reorder_block_def): New fields footer/header;
+	remove eff_head/eff_end.
+	* rtl.h (set_first_insn): Declare.
+	* emit-rtl.c (set_first_insn): New function.
+
+	* cfglayout.c (fixup_reorder_chain): Dump duplicated
+	(cfg_layout_can_duplicate_bb_p, cfg_layout_rerirect_edge,
+	cfg_layout_duplicate_bb): New global function.
+	(duplicate_insn_chain): New static function.
+	* cfglayout.h (cfg_layout_can_duplicate_bb_p, cfg_layout_rerirect_edge,
+	cfg_layout_duplicate_bb): Declare.
+	(struct reorder_block_def): Add "original" field.
+	* emit-rtl.c (emit_copy_of_insn_after): New function.
+	* rtl.h (emit_copy_of_insn_after): Declare.
+
+	* cfglayout.c (fixup_fallthru_exit_predecessor): Kill.
+	(fixup_reorder_chain): properly handle edges to exit block.
+
+Wed May  8 11:10:31 CEST 2002  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+			       Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (note_prediction_to_br_prob): declare.
+	* c-semantics.c: Inlucde predit.h
+	(expand_stmt): predict GOTO_STMT as not taken.
+	* cfgcleanup.c: (delete_unreachable_blocks): Make global.
+	(cleanup_cfg): Do not free tail_recursion_list.
+	* cfgrtl.c (can_delete_note_p): Delete NOTE_INSN_PREDICTION.
+	(flow_delete_block): Kill predictions past end of basic block.
+	* output.h (delete_unreachable_blocks): Declare.
+	* predict.c (predicted_by_p, process_note_predictions,
+	process_note_prediction, last_block_p): New function.
+	(estimate_probability): Bypass loop on PRED_CONTINUE;
+	do not handle noreturn heuristics; kill PRED_RETURN; add
+	PRED_EARLY_RETURN.
+	* predict.def (PRED_CONTINUE, PRED_EARLY_RETURN, PRED_GOTO,
+	PRED_CONST_RETURN, PRED_NEGATIVE_RETURN, PRED_NULL_RETURN): New.
+	* predict.h (IS_TAKEN): New constant.
+	* print-rtl.c (print_rtx): Pretty print NOTE_INSN_PREDICTION.
+	* rtl.c (NOTE_INSN_PREDICTION): New.
+	* rtl.h (NOTE_PREDICTION, NOTE_PREDICTION_ALG, NOTE_PREDICTION_FLAGS):
+	New macro.
+	(insn_note): add NOTE_INSN_PREDICTION.
+	* sibcall.c (optimize_sibling_and_tail_recursive_call): Do not build
+	CFG; free tail_recursion_label_list.
+	* stmt.c: Include predict.h;
+	(return_prediction): New.
+	(expand_value_return): Use it.
+	* toplev.c: Lower NOTE_INSN_PREDICTION before sibcall.
+
 2002-05-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md: Name the unspecs with define_constant.
