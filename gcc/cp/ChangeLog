@@ -1,3 +1,15 @@
+2004-06-23  Roger Sayle  <roger@eyesopen.com>
+
+	* call.c (build_cxx_call): Don't call expand_tree_builtin.  No
+	longer take both "args" and "convert_args" as arguments.
+	(build_op_delete_call): Update call to build_cxx_call.
+	(build_over_call): Likewise, update call to build_cxx_call.
+	* cp-tree.h (build_cxx_call): Update funtion prototype.
+	* typeck.c (build_function_call): Don't call expand_tree_builtin.
+	* rtti.c (throw_bad_cast): Update call to build_cxx_call.
+	(throw_bad_typeid): Likewise.
+	(build_dynamic_cast_1): Likewise.
+
 2004-06-22  Richard Henderson  <rth@redhat.com>
 
 	* class.c (build_vfn_ref): Take a pointer not object.  Build

@@ -1032,8 +1032,6 @@ extern tree default_conversion (tree);
 
 extern tree common_type (tree, tree);
 
-extern tree expand_tree_builtin (tree, tree, tree);
-
 extern tree decl_constant_value (tree);
 
 /* Handle increment and decrement of boolean types.  */
