@@ -52,4 +52,4 @@ using std::towupper;
 using std::wctrans;
 using std::wctype;
 
-#endif 
+#endif

@@ -33,7 +33,7 @@
 #include <cstdio>
 
 using std::FILE;
-using std::fpos_t; 
+using std::fpos_t;
 
 using std::remove;
 using std::rename;

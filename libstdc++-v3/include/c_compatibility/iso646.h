@@ -32,4 +32,4 @@
 
 #include <ciso646>
 
-#endif 
+#endif

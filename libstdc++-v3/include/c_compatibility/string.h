@@ -55,4 +55,4 @@ using std::memset;
 using std::strerror;
 using std::strlen;
 
-#endif 
+#endif

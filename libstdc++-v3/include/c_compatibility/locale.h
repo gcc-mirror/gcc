@@ -36,4 +36,4 @@ using std::lconv;
 using std::setlocale;
 using std::localeconv;
 
-#endif 
+#endif
