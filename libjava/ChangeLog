@@ -1,3 +1,10 @@
+2001-12-03  Tom Tromey  <tromey@redhat.com>
+
+	* defineclass.cc (handleMethodsEnd): Invoke verifier here...
+	(handleCodeAttribute): ... not here.
+	* verify.cc (_Jv_BytecodeVerifier::state::state): Use `copy', not
+	structure assignment.
+
 2001-12-02  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.am (nat_files, x_nat_files): Make sure the dependencies
