@@ -546,9 +546,8 @@ namespace std
 
     // num_put
     // Construct and return valid scanf format for floating point types.
-    static bool
-    _S_format_float(const ios_base& __io, char* __fptr, char __mod, 
-		    streamsize __prec);
+    static void
+    _S_format_float(const ios_base& __io, char* __fptr, char __mod);
     
     // Construct and return valid scanf format for integer types.
     static void
