@@ -1,3 +1,8 @@
+2004-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gimplify.c (gimple_push_condition): Make sure that we don't
+	have any saved condition cleanup if we were at the top level.
+
 2004-10-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/frv/frv.md (*adddi3_internal): Change name to...
