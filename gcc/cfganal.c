@@ -56,7 +56,31 @@ static void flow_dfs_compute_reverse_finish
 static void remove_fake_successors	PARAMS ((basic_block));
 static bool need_fake_edge_p		PARAMS ((rtx));
 static bool keep_with_call_p		PARAMS ((rtx));
+static bool flow_active_insn_p		PARAMS ((rtx));
 
+/* Like active_insn_p, except keep the return value clobber around
+   even after reload.  */
+
+static bool
+flow_active_insn_p (insn)
+     rtx insn;
+{
+  if (active_insn_p (insn))
+    return true;
+
+  /* A clobber of the function return value exists for buggy 
+     programs that fail to return a value.  It's effect is to
+     keep the return value from being live across the entire
+     function.  If we allow it to be skipped, we introduce the
+     possibility for register livetime aborts.  */
+  if (GET_CODE (PATTERN (insn)) == CLOBBER
+      && GET_CODE (XEXP (PATTERN (insn), 0)) == REG
+      && REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))
+    return true;
+
+  return false;
+}
+
 /* Return true if the block has no effect and only forwards control flow to
    its single destination.  */
 
@@ -71,12 +95,12 @@ forwarder_block_p (bb)
     return false;
 
   for (insn = bb->head; insn != bb->end; insn = NEXT_INSN (insn))
-    if (INSN_P (insn) && active_insn_p (insn))
+    if (INSN_P (insn) && flow_active_insn_p (insn))
       return false;
 
   return (!INSN_P (insn)
 	  || (GET_CODE (insn) == JUMP_INSN && simplejump_p (insn))
-	  || !active_insn_p (insn));
+	  || !flow_active_insn_p (insn));
 }
 
 /* Return nonzero if we can reach target from src by falling through.  */
