@@ -1,3 +1,8 @@
+2002-04-03  Richard Henderson  <rth@redhat.com>
+
+	* cp-lang.c (cxx_warn_unused_global_decl): New.
+	(LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL): New.
+
 2002-04-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_SET_DECL_ASSEMBLER_NAME): Redefine.

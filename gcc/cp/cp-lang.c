@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
 static bool ok_to_generate_alias_set_for_type PARAMS ((tree));
+static bool cxx_warn_unused_global_decl PARAMS ((tree));
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU C++"
@@ -87,6 +88,8 @@ static bool ok_to_generate_alias_set_for_type PARAMS ((tree));
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION	cxx_print_error_function
 #undef LANG_HOOKS_SET_YYDEBUG
 #define LANG_HOOKS_SET_YYDEBUG cxx_set_yydebug
+#undef LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
+#define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL cxx_warn_unused_global_decl
 
 #undef LANG_HOOKS_TREE_INLINING_WALK_SUBTREES
 #define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES \
@@ -132,6 +135,47 @@ static bool ok_to_generate_alias_set_for_type PARAMS ((tree));
 
 /* Each front end provides its own hooks, for toplev.c.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+
+/* Tree code classes. */
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
+
+const char tree_code_type[] = {
+#include "tree.def"
+  'x',
+#include "c-common.def"
+  'x',
+#include "cp-tree.def"
+};
+#undef DEFTREECODE
+
+/* Table indexed by tree code giving number of expression
+   operands beyond the fixed part of the node structure.
+   Not used for types or decls.  */
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
+
+const unsigned char tree_code_length[] = {
+#include "tree.def"
+  0,
+#include "c-common.def"
+  0,
+#include "cp-tree.def"
+};
+#undef DEFTREECODE
+
+/* Names of tree components.
+   Used for printing out the tree and error messages.  */
+#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
+
+const char *const tree_code_name[] = {
+#include "tree.def"
+  "@@dummy",
+#include "c-common.def"
+  "@@dummy",
+#include "cp-tree.def"
+};
+#undef DEFTREECODE
 
 /* Check if a C++ type is safe for aliasing.
    Return TRUE if T safe for aliasing FALSE otherwise.  */
@@ -185,47 +229,6 @@ ok_to_generate_alias_set_for_type (t)
     return true;
 }
 
-/* Tree code classes. */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
-
-const char tree_code_type[] = {
-#include "tree.def"
-  'x',
-#include "c-common.def"
-  'x',
-#include "cp-tree.def"
-};
-#undef DEFTREECODE
-
-/* Table indexed by tree code giving number of expression
-   operands beyond the fixed part of the node structure.
-   Not used for types or decls.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
-
-const unsigned char tree_code_length[] = {
-#include "tree.def"
-  0,
-#include "c-common.def"
-  0,
-#include "cp-tree.def"
-};
-#undef DEFTREECODE
-
-/* Names of tree components.
-   Used for printing out the tree and error messages.  */
-#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
-
-const char *const tree_code_name[] = {
-#include "tree.def"
-  "@@dummy",
-#include "c-common.def"
-  "@@dummy",
-#include "cp-tree.def"
-};
-#undef DEFTREECODE
-
 /* Special routine to get the alias set for C++.  */
 
 static HOST_WIDE_INT
@@ -237,4 +240,22 @@ cxx_get_alias_set (t)
     return 0;
 
   return c_common_get_alias_set (t);
+}
+
+/* Called from check_global_declarations.  */
+
+static bool
+cxx_warn_unused_global_decl (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
+    return false;
+  if (DECL_IN_SYSTEM_HEADER (decl))
+    return false;
+
+  /* Const variables take the place of #defines in C++.  */
+  if (TREE_CODE (decl) == VAR_DECL && TREE_READONLY (decl))
+    return false;
+
+  return true;
 }

@@ -237,6 +237,7 @@ extern const char *c_objc_common_init		PARAMS ((const char *));
 extern int c_missing_noreturn_ok_p		PARAMS ((tree));
 extern void c_objc_common_finish_file		PARAMS ((void));
 extern int defer_fn				PARAMS ((tree));
+extern bool c_warn_unused_global_decl		PARAMS ((tree));
 
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
   c_build_qualified_type ((TYPE),				  \

@@ -68,6 +68,9 @@ static void objc_post_options                   PARAMS ((void));
 #define LANG_HOOKS_DECL_PRINTABLE_NAME objc_printable_name
 #undef LANG_HOOKS_SET_YYDEBUG
 #define LANG_HOOKS_SET_YYDEBUG c_set_yydebug
+#undef LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
+#define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL c_warn_unused_global_decl
+
 /* Inlining hooks same as the C front end.  */
 #undef LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN
 #define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \

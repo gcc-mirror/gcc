@@ -209,6 +209,20 @@ c_cannot_inline_tree_fn (fnp)
   return 0;
 }
 
+/* Called from check_global_declarations.  */
+
+bool
+c_warn_unused_global_decl (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
+    return false;
+  if (DECL_IN_SYSTEM_HEADER (decl))
+    return false;
+
+  return true;
+}
+
 /* Initialization common to C and Objective-C front ends.  */
 const char *
 c_objc_common_init (filename)
