@@ -6036,16 +6036,20 @@ fold (expr)
 	}
 
       /* If this is a comparison of a field, we may be able to simplify it.  */
-      if ((TREE_CODE (arg0) == COMPONENT_REF
-	   || TREE_CODE (arg0) == BIT_FIELD_REF)
-	  && (code == EQ_EXPR || code == NE_EXPR)
-	  /* Handle the constant case even without -O
-	     to make sure the warnings are given.  */
-	  && (optimize || TREE_CODE (arg1) == INTEGER_CST))
-	{
-	  t1 = optimize_bit_field_compare (code, type, arg0, arg1);
-	  return t1 ? t1 : t;
-	}
+      {
+	tree xarg0 = arg0;
+	STRIP_NOPS (xarg0);
+	if ((TREE_CODE (xarg0) == COMPONENT_REF
+	     || TREE_CODE (xarg0) == BIT_FIELD_REF)
+	    && (code == EQ_EXPR || code == NE_EXPR)
+	    /* Handle the constant case even without -O
+	       to make sure the warnings are given.  */
+	    && (optimize || TREE_CODE (arg1) == INTEGER_CST))
+	  {
+	    t1 = optimize_bit_field_compare (code, type, xarg0, arg1);
+	    return t1 ? t1 : t;
+	  }
+      }
 
       /* If this is a comparison of complex values and either or both sides
 	 are a COMPLEX_EXPR or COMPLEX_CST, it is best to split up the
