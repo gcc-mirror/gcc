@@ -1,3 +1,8 @@
+2001-01-13  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c-torture/execute/bf64-1.x: Expect to fail on M*Core
+	target.
+
 2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/compile/20010113-1.c: New test.
