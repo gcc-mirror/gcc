@@ -2444,9 +2444,6 @@ build_new_1 (exp)
 
 	  if (cleanup)
 	    {
-#if 0
-	      /* Disable this until flow is fixed so that it doesn't
-		 think the initialization of sentry is a dead write.  */
 	      tree end, sentry, begin, buf, t = TREE_TYPE (rval);
 
 	      begin = get_target_expr (boolean_true_node);
@@ -2469,14 +2466,6 @@ build_new_1 (exp)
 	      rval = build (COMPOUND_EXPR, t, begin,
 			    build (COMPOUND_EXPR, t, rval,
 				   build (COMPOUND_EXPR, t, end, buf)));
-#else
-	      /* FIXME: this is a workaround for a crash due to overlapping
-		 exception regions.  Cleanups shouldn't really happen here.  */
-	      rval = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (rval), rval);
-
-	      rval = build (TRY_CATCH_EXPR, TREE_TYPE (rval), rval, cleanup);
-	      rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
-#endif
 	    }
 	}
     }

@@ -1,3 +1,7 @@
+1998-10-22  Martin v. Löwis <loewis@informatik.hu-berlin.de>
+
+        * init.c (build_new_1): Delay cleanup until end of full expression.
+
 1998-10-21  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (build_component_ref): Use of a type here is an error.
