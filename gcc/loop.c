@@ -1824,6 +1824,16 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 
 		      REG_NOTES (i1) = REG_NOTES (p);
 
+		      /* If there is a REG_EQUAL note present whose value is
+			 not loop invariant, then delete it, since it may
+			 cause problems with later optimization passes.
+			 It is possible for cse to create such notes
+			 like this as a result of record_jump_cond.  */
+		      
+		      if ((temp = find_reg_note (i1, REG_EQUAL, NULL_RTX))
+			  && ! invariant_p (XEXP (temp, 0)))
+			remove_note (i1, temp);
+
 		      if (new_start == 0)
 			new_start = i1;
 
