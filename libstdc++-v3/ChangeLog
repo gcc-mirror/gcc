@@ -1,3 +1,20 @@
+2003-02-05  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/26_numerics/valarray_name_lookup.cc: Fix typo.
+
+2003-02-05  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9439, PR libstdc++/9425
+	* config/io/basic_file_stdio.cc
+	(__basic_file<char>::seekoff, seekpos): Return -1L if
+	fseek fails.
+	* include/bits/fstream.tcc (basic_filebuf::seekoff):
+	Check _M_file.seekoff return value; always return
+	pos_type(off_type(-1)) in case of failure.
+	(basic_filebuf::pbackfail): Check this->seekoff return
+	value and return traits_type::eof() in case of failure.
+	* testsuite/27_io/filebuf_virtuals.cc (test09): Add.
+
 2003-02-05  Benjamin Kosnik  <bkoz@redhat.com>
 
         * testsuite/26_numerics/valarray_name_lookup.cc: Fix.
