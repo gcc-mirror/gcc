@@ -1,3 +1,7 @@
+2000-11-06  Loren J. Rittle  <ljrittle@acm.org>
+
+	* g++.old-deja/g++.mike/p6610a.C: Update XFAIL.
+
 2000-11-07  Jeffrey Oldham  <oldham@oz.codesourcery.com>
 
 	* gcc.c-torture/execute/va-arg-15.x: Changed to mips*-sgi-irix6.*.
