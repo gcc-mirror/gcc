@@ -5786,8 +5786,13 @@ finish_function (nested)
 #ifdef DEFAULT_MAIN_RETURN
   if (! strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main"))
     {
-      /* Make it so that `main' always returns success by default.  */
-      DEFAULT_MAIN_RETURN;
+      if (TREE_TYPE (fndecl) != integer_type_node)
+	warning_with_decl (fndecl, "return type of `%s' is not `int'");
+      else
+	{
+	  /* Make it so that `main' always returns success by default.  */
+	  DEFAULT_MAIN_RETURN;
+	}
     }
 #endif
 
