@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  HP-UX 68000/68020 version.
-   Copyright (C) 1987, 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -160,6 +160,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_APP_OFF
 #undef TEXT_SECTION_ASM_OP
 #undef DATA_SECTION_ASM_OP
+#undef READONLY_DATA_SECTION
 #undef ASM_OUTPUT_DOUBLE
 #undef ASM_OUTPUT_FLOAT
 #undef ASM_OUTPUT_INT
@@ -211,7 +212,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     mask &= ~ (1 << (15-FRAME_POINTER_REGNUM));			\
   if (exact_log2 (mask) >= 0)					\
     fprintf (FILE, "\tmov.l %s,-(%%sp)\n", reg_names[15 - exact_log2 (mask)]);  \
-  else if (mask) fprintf (FILE, "\tmovm.l &0x%x,-(%%sp)\n", mask); }
+  else if (mask) fprintf (FILE, "\tmovm.l &0x%x,-(%%sp)\n", mask); }\
+  if (flag_pic && current_function_uses_pic_offset_table)       \
+    {                                                           \
+      fprintf (FILE, "\tmov.l &DLT, %s\n",\
+		   reg_names[PIC_OFFSET_TABLE_REGNUM]);         \
+      fprintf (FILE, "\tlea.l -0x6(%%pc,%s.l),%s\n",          \
+		   reg_names[PIC_OFFSET_TABLE_REGNUM],          \
+		   reg_names[PIC_OFFSET_TABLE_REGNUM]);         \
+    }
 
 #define FUNCTION_PROFILER(FILE, LABEL_NO) \
    fprintf (FILE, "\tmov.l &LP%d,%%a0\n\tjsr mcount\n", (LABEL_NO));
@@ -307,7 +316,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TEXT_SECTION_ASM_OP "text"
 #define DATA_SECTION_ASM_OP "data"
 #endif
-
+#define READONLY_DATA_SECTION data_section
 #define	ASCII_DATA_ASM_OP "byte"
  
 /* This is the command to make the user-level label named NAME
@@ -669,3 +678,9 @@ do { register int i;			\
 	   (LABEL_NO));
 
 #endif /* not HPUX_ASM */
+/* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is an
+   operand of a function call. */
+#undef LEGITIMATE_PIC_OPERAND_P
+#define LEGITIMATE_PIC_OPERAND_P(X) \
+  (! symbolic_operand (X, VOIDmode) \
+   || ((GET_CODE(X) == SYMBOL_REF) && SYMBOL_REF_FLAG(X)))
