@@ -69,23 +69,23 @@ namespace std
     protected:
       // Data Members:
       __string_type 		_M_string;
-      
+
     public:
       // Constructors:
-      explicit 
+      explicit
       basic_stringbuf(ios_base::openmode __mode = ios_base::in | ios_base::out)
       : __streambuf_type(), _M_string()
       { _M_stringbuf_init(__mode); }
 
-      explicit 
+      explicit
       basic_stringbuf(const __string_type& __str,
 		      ios_base::openmode __mode = ios_base::in | ios_base::out)
       : __streambuf_type(), _M_string(__str.data(), __str.size())
       { _M_stringbuf_init(__mode); }
 
       // Get and set:
-      __string_type 
-      str() const 
+      __string_type
+      str() const
       {
 	if (_M_mode & ios_base::out)
 	  {
@@ -102,7 +102,7 @@ namespace std
 	  return _M_string;
       }
 
-      void 
+      void
       str(const __string_type& __s)
       {
 	_M_string = __s;
@@ -127,14 +127,14 @@ namespace std
 	// suite particular needs.
 	_M_buf_size_opt = 512;
 	_M_mode = __mode;
-	if (_M_mode & ios_base::ate)
-	  _M_really_sync(0, _M_buf_size); 
-	else  
+	if (_M_mode & (ios_base::ate | ios_base::app))
+	  _M_really_sync(0, _M_buf_size);
+	else
 	  _M_really_sync(0, 0);
       }
 
       // Overridden virtual functions:
-      virtual int_type 
+      virtual int_type
       underflow()
       {
 	if (_M_in_cur && _M_in_cur < _M_in_end)
@@ -143,38 +143,38 @@ namespace std
 	  return traits_type::eof();
       }
 
-      virtual int_type 
+      virtual int_type
       pbackfail(int_type __c = traits_type::eof());
 
-      virtual int_type 
+      virtual int_type
       overflow(int_type __c = traits_type::eof());
 
-      virtual __streambuf_type* 
+      virtual __streambuf_type*
       setbuf(char_type* __s, streamsize __n)
-      { 
-	if (__s && __n) 
+      {
+	if (__s && __n)
 	  {
 	    _M_string = __string_type(__s, __n);
 	    _M_really_sync(0, 0);
 	  }
-	return this; 
-      } 
+	return this;
+      }
 
-      virtual pos_type 
+      virtual pos_type
       seekoff(off_type __off, ios_base::seekdir __way,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
-      virtual pos_type 
-      seekpos(pos_type __sp, 
+      virtual pos_type
+      seekpos(pos_type __sp,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
       // Internal function for correctly updating the internal buffer
       // for a particular _M_string, due to initialization or
       // re-sizing of an existing _M_string.
       // Assumes: contents of _M_string and internal buffer match exactly.
-      // __i == _M_in_cur - _M_in_beg      
+      // __i == _M_in_cur - _M_in_beg
       // __o == _M_out_cur - _M_out_beg
-      virtual int 
+      virtual int
       _M_really_sync(__size_type __i, __size_type __o)
       {
 	char_type* __base = const_cast<char_type*>(_M_string.data());
@@ -221,12 +221,12 @@ namespace std
 
     public:
       // Constructors:
-      explicit 
+      explicit
       basic_istringstream(ios_base::openmode __mode = ios_base::in)
       : __istream_type(NULL), _M_stringbuf(__mode | ios_base::in)
       { this->init(&_M_stringbuf); }
 
-      explicit 
+      explicit
       basic_istringstream(const __string_type& __str,
 			  ios_base::openmode __mode = ios_base::in)
       : __istream_type(NULL), _M_stringbuf(__str, __mode | ios_base::in)
@@ -236,15 +236,15 @@ namespace std
       { }
 
       // Members:
-      __stringbuf_type* 
+      __stringbuf_type*
       rdbuf() const
       { return const_cast<__stringbuf_type*>(&_M_stringbuf); }
 
       __string_type
       str() const
       { return _M_stringbuf.str(); }
-  
-      void 
+
+      void
       str(const __string_type& __s)
       { _M_stringbuf.str(__s); }
     };
@@ -276,12 +276,12 @@ namespace std
 
     public:
      // Constructors/destructor:
-      explicit 
+      explicit
       basic_ostringstream(ios_base::openmode __mode = ios_base::out)
       : __ostream_type(NULL), _M_stringbuf(__mode | ios_base::out)
       { this->init(&_M_stringbuf); }
 
-      explicit 
+      explicit
       basic_ostringstream(const __string_type& __str,
 			  ios_base::openmode __mode = ios_base::out)
       : __ostream_type(NULL), _M_stringbuf(__str, __mode | ios_base::out)
@@ -291,20 +291,20 @@ namespace std
       { }
 
       // Members:
-      __stringbuf_type* 
+      __stringbuf_type*
       rdbuf() const
       { return const_cast<__stringbuf_type*>(&_M_stringbuf); }
 
       __string_type
       str() const
       { return _M_stringbuf.str(); }
- 
-      void 
+
+      void
       str(const __string_type& __s)
       { _M_stringbuf.str(__s); }
     };
-  
-  
+
+
   // 27.7.4  Template class basic_stringstream
   template <typename _CharT, typename _Traits, typename _Alloc>
     class basic_stringstream : public basic_iostream<_CharT, _Traits>
@@ -331,12 +331,12 @@ namespace std
 
     public:
       // Constructors/destructors
-      explicit 
+      explicit
       basic_stringstream(ios_base::openmode __m = ios_base::out | ios_base::in)
       : __iostream_type(NULL), _M_stringbuf(__m)
       { this->init(&_M_stringbuf); }
 
-      explicit 
+      explicit
       basic_stringstream(const __string_type& __str,
 			 ios_base::openmode __m = ios_base::out | ios_base::in)
       : __iostream_type(NULL), _M_stringbuf(__str, __m)
@@ -346,7 +346,7 @@ namespace std
       { }
 
       // Members:
-      __stringbuf_type* 
+      __stringbuf_type*
       rdbuf() const
       { return const_cast<__stringbuf_type*>(&_M_stringbuf); }
 
@@ -354,7 +354,7 @@ namespace std
       str() const
       { return _M_stringbuf.str(); }
 
-      void 
+      void
       str(const __string_type& __s)
       { _M_stringbuf.str(__s); }
     };
