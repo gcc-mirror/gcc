@@ -751,12 +751,22 @@
   [(set (match_operand:SI 0 "register_operand" "=a,&?*r")
 	(plus:SI (match_operand:SI 1 "register_operand" "r,r")
 		 (high:SI (match_operand 2 "" ""))))]
-  ""
+  "!TARGET_KERNEL"
   "@
    addil L'%G2,%1
    ldil L'%G2,%0\;add %0,%1,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "1,2")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(plus:SI (match_operand:SI 1 "register_operand" "r")
+		 (high:SI (match_operand 2 "" ""))))]
+  "TARGET_KERNEL"
+  "@
+   addil L'%G2,%1"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
