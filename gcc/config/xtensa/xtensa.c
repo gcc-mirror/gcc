@@ -212,7 +212,6 @@ static bool xtensa_rtx_costs (rtx, int, int, int *);
 static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (tree, tree);
 
-static int current_function_arg_words;
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
 
@@ -2392,7 +2391,7 @@ static rtx
 xtensa_builtin_saveregs (void)
 {
   rtx gp_regs, dest;
-  int arg_words = current_function_arg_words;
+  int arg_words = current_function_args_info.arg_words;
   int gp_left = MAX_ARGS_IN_REGISTERS - arg_words;
 
   if (gp_left <= 0)
@@ -2438,7 +2437,6 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   ndx = build (COMPONENT_REF, TREE_TYPE (f_ndx), valist, f_ndx);
 
   /* Call __builtin_saveregs; save the result in __va_reg */
-  current_function_arg_words = arg_words;
   u = make_tree (ptr_type_node, expand_builtin_saveregs ());
   t = build (MODIFY_EXPR, ptr_type_node, reg, u);
   TREE_SIDE_EFFECTS (t) = 1;

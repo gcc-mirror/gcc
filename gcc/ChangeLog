@@ -1,3 +1,9 @@
+2004-03-18  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (current_function_arg_words): Delete.
+	(xtensa_builtin_saveregs): Use current_function_args_info.arg_words.
+	(xtensa_va_start): Remove assignment to current_function_arg_words.
+
 2004-03-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* alias.c (record_set): Detect the case where a register is assigned
