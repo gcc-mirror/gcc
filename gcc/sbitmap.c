@@ -250,9 +250,16 @@ sbitmap_not (sbitmap dst, sbitmap src)
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   sbitmap_ptr srcp = src->elms;
+  unsigned int last_bit;
 
   for (i = 0; i < n; i++)
     *dstp++ = ~*srcp++;
+
+  /* Zero all bits past n_bits, by ANDing dst with sbitmap_ones.  */
+  last_bit = src->n_bits % SBITMAP_ELT_BITS;
+  if (last_bit)
+    dst->elms[n-1] = dst->elms[n-1]
+      & ((SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit));
 }
 
 /* Set the bits in DST to be the difference between the bits
@@ -298,7 +305,7 @@ sbitmap_a_and_b_cg (sbitmap dst, sbitmap a, sbitmap b)
   for (i = 0; i < n; i++)
     {
       SBITMAP_ELT_TYPE tmp = *ap++ & *bp++;
-      changed = *dstp ^ tmp;
+      changed |= *dstp ^ tmp;
       *dstp++ = tmp;
     }
 
@@ -332,7 +339,7 @@ sbitmap_a_xor_b_cg (sbitmap dst, sbitmap a, sbitmap b)
   for (i = 0; i < n; i++)
     {
       SBITMAP_ELT_TYPE tmp = *ap++ ^ *bp++;
-      changed = *dstp ^ tmp;
+      changed |= *dstp ^ tmp;
       *dstp++ = tmp;
     }
 
@@ -366,7 +373,7 @@ sbitmap_a_or_b_cg (sbitmap dst, sbitmap a, sbitmap b)
   for (i = 0; i < n; i++)
     {
       SBITMAP_ELT_TYPE tmp = *ap++ | *bp++;
-      changed = *dstp ^ tmp;
+      changed |= *dstp ^ tmp;
       *dstp++ = tmp;
     }
 
