@@ -7898,7 +7898,7 @@ simplify_shift_const (x, code, result_mode, varop, count)
 		 ASHIFTRT.
 
 		 If the mode of this shift is not the mode of the outer shift,
-		 we can't do this if either shift is ASHIFTRT or ROTATE.
+		 we can't do this if either shift is a right shift or ROTATE.
 
 		 Finally, we can't do any of these if the mode is too wide
 		 unless the codes are the same.
@@ -7909,7 +7909,8 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	      if (code == first_code)
 		{
 		  if (GET_MODE (varop) != result_mode
-		      && (code == ASHIFTRT || code == ROTATE))
+		      && (code == ASHIFTRT || code == LSHIFTRT
+			  || code == ROTATE))
 		    break;
 
 		  count += first_count;
@@ -7921,7 +7922,8 @@ simplify_shift_const (x, code, result_mode, varop, count)
 		  || (code == ROTATE && first_code == ASHIFTRT)
 		  || GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT
 		  || (GET_MODE (varop) != result_mode
-		      && (first_code == ASHIFTRT || first_code == ROTATE
+		      && (first_code == ASHIFTRT || first_code == LSHIFTRT
+			  || first_code == ROTATE
 			  || code == ROTATE)))
 		break;
 
