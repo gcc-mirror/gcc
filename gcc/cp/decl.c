@@ -4555,14 +4555,6 @@ make_typename_type (context, name)
 	      return error_mark_node;
 	    }
 
-	  /* If this is really from a base that uses template parms,
-	     push the TYPENAME_TYPE down.  */
-	  if (processing_template_decl
-	      && context == current_class_type
-	      && DECL_CONTEXT (t) != context
-	      && uses_template_parms (DECL_CONTEXT (t)))
-	    return make_implicit_typename (context, t);
-
 	  return TREE_TYPE (t);
 	}
     }
@@ -4582,49 +4574,6 @@ make_typename_type (context, name)
   CLASSTYPE_GOT_SEMICOLON (t) = 1;
 
   return t;
-}
-
-/* Given a TYPE_DECL T looked up in CONTEXT, return a TYPENAME_TYPE
-   where the scope is the first class along the inheritance chain to T
-   that is not current_class_type.
-
-   Called from lookup_name_real to implement the implicit typename
-   extension.  */
-
-static tree
-make_implicit_typename (context, t)
-     tree context, t;
-{
-  tree retval;
-
-  if (context == current_class_type)
-    {
-      tree binfos = TYPE_BINFO_BASETYPES (context);
-      int n_baselinks = TREE_VEC_LENGTH (binfos);
-      int i;
-
-      /* We can't use DECL_CONTEXT (t) to help us here, because it refers
-	 to the uninstantiated template type that t comes from, which is
-	 probably not a base of ours.  This happens because we don't
-         actually do partial instantiation of types in
-         instantiate_class_template.  */
-
-      for (i = 0; i < n_baselinks; ++i)
-	{
-	  tree basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
-	  if (lookup_field (basetype, DECL_NAME (t), 0, 1))
-	    {
-	      context = basetype;
-	      break;
-	    }
-	}
-    }
-
-  retval = make_typename_type (context, DECL_NAME (t));
-
-  if (TREE_CODE (retval) == TYPENAME_TYPE)
-    TREE_TYPE (retval) = TREE_TYPE (t);
-  return retval;
 }
 
 /* Look up NAME in the current binding level and its superiors in the
@@ -4716,17 +4665,6 @@ lookup_name_real (name, prefer_type, nonclass)
       else
 	val = NULL_TREE;
 
-      /* Add implicit 'typename' to scoped types from other classes.  */
-      if (got_scope && processing_template_decl
-	  && got_scope != current_class_type
-	  && uses_template_parms (got_scope)
-	  && val && TREE_CODE (val) == TYPE_DECL
-	  && ! DECL_ARTIFICIAL (val))
-	{
-	  tree t = make_implicit_typename (got_scope, val);
-	  val = TYPE_MAIN_DECL (t);
-	}
-
       if (got_scope)
 	goto done;
       else if (got_object && val)
@@ -4756,16 +4694,14 @@ lookup_name_real (name, prefer_type, nonclass)
       if (classval == NULL_TREE)
 	classval = lookup_nested_field (name, ! yylex);
 
-      /* Add implicit 'typename' to types from base classes.  */
+      /* Add implicit 'typename' to types from template bases.  lookup_field
+         will do this for us.  */
       if (processing_template_decl
 	  && classval && TREE_CODE (classval) == TYPE_DECL
 	  && DECL_CONTEXT (classval) != current_class_type
-	  && uses_template_parms (DECL_CONTEXT (classval))
+	  && uses_template_parms (current_class_type)
 	  && ! DECL_ARTIFICIAL (classval))
-	{
-	  tree t = make_implicit_typename (current_class_type, classval);
-	  classval = TYPE_MAIN_DECL (t);
-	}
+	classval = lookup_field (current_class_type, name, 0, 1);
     }
 
   if (locval && classval)

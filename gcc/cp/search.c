@@ -1304,28 +1304,8 @@ lookup_field (xbasetype, name, protect, want_type)
 	    }
 	}
 
-      if (entry)
-	{
-	  if (errstr)
-	    {
-	      /* This depends on behavior of lookup_field_1!  */
-	      tree error_string = my_build_string (errstr);
-	      TREE_TYPE (entry) = error_string;
-	    }
-	  else
-	    {
-	      /* Let entry know there is no problem with this access.  */
-	      TREE_TYPE (entry) = NULL_TREE;
-	    }
-	  TREE_VALUE (entry) = rval;
-	}
-
-      if (errstr && protect)
-	{
-	  cp_error (errstr, name, type);
-	  return error_mark_node;
-	}
-      return rval;
+      rval_binfo = basetype_path;
+      goto out;
     }
 
   basetype_chain = build_expr_list (NULL_TREE, basetype_path);
@@ -1522,6 +1502,7 @@ lookup_field (xbasetype, name, protect, want_type)
 	    : "member `%D' is from protected base class";
     }
 
+ out:
   if (entry)
     {
       if (errstr)
@@ -1550,6 +1531,26 @@ lookup_field (xbasetype, name, protect, want_type)
       cp_error (errstr, name, type);
       rval = error_mark_node;
     }
+
+  /* Do implicit typename stuff.  */
+  if (rval && TREE_CODE (rval) == TYPE_DECL
+      && ! DECL_ARTIFICIAL (rval)
+      && processing_template_decl
+      && BINFO_TYPE (rval_binfo) != current_class_type
+      && uses_template_parms (type))
+    {
+      binfo = rval_binfo;
+      for (; ; binfo = BINFO_INHERITANCE_CHAIN (binfo))
+	if (BINFO_INHERITANCE_CHAIN (binfo) == NULL_TREE
+	    || (BINFO_TYPE (BINFO_INHERITANCE_CHAIN (binfo))
+		== current_class_type))
+	  break;
+
+      entry = make_typename_type (BINFO_TYPE (binfo), name);
+      TREE_TYPE (entry) = TREE_TYPE (rval);
+      rval = TYPE_MAIN_DECL (entry);
+    }
+
   return rval;
 }
 
