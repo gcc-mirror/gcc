@@ -3937,6 +3937,12 @@ arguments to @code{va_arg}; the latter two are as in
 @code{gimplify.c:gimplify_expr}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_VALID_POINTER_MODE (enum machine_mode @var{mode})
+Define this to return nonzero if the port can handle pointers
+with machine mode @var{mode}.  The default version of this
+hook returns true for both @code{ptr_mode} and @code{Pmode}.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_SCALAR_MODE_SUPPORTED_P (enum machine_mode @var{mode})
 Define this to return nonzero if the port is prepared to handle
 insns involving scalar mode @var{mode}.  For a scalar mode to be
