@@ -237,6 +237,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LD_INIT_SWITCH
 #undef LD_FINI_SWITCH
 
+#define EH_FRAME_IN_DATA_SECTION
 
 /* Note that there appears to be two different ways to support const
    sections at the moment.  You can either #define the symbol
@@ -410,10 +411,10 @@ extern void i386_pe_unique_section ();
 #define UNIQUE_SECTION(DECL,RELOC) i386_pe_unique_section (DECL, RELOC)
 
 #define SUPPORTS_ONE_ONLY 1
+#endif /* 0 */
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_pe_asm_named_section
-#endif /* 0 */
 
 /* DWARF2 Unwinding doesn't work with exception handling yet.  */
 #define DWARF2_UNWIND_INFO 0
@@ -421,3 +422,11 @@ extern void i386_pe_unique_section ();
 /* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
+/* MSVC returns structs of up to 8 bytes via registers. */
+
+#define DEFAULT_PCC_STRUCT_RETURN 0
+
+#undef RETURN_IN_MEMORY
+#define RETURN_IN_MEMORY(TYPE) \
+  (TYPE_MODE (TYPE) == BLKmode || \
+     (AGGREGATE_TYPE_P (TYPE) && int_size_in_bytes(TYPE) > 8 ))
