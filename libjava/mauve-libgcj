@@ -9,6 +9,8 @@ JLS1.1
 JLS1.2
 JDBC2.0
 
+!java.sql
+
 # These 2 are tests that fail with JDBC2.0 but the tags don't seem to
 # have the right effect.
 !java.sql.Connection.TestJdbc10

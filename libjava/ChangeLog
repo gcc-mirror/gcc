@@ -1,3 +1,8 @@
+2002-07-10  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Use `test' after `&&'.  From Chris Faylor.
+
 2002-07-08  Mark Wielaard  <mark@klomp.org>
 
 	* mauve-libgcj: Don't compile java.sql.Blob.BlobTest,
