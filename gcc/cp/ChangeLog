@@ -1,5 +1,7 @@
 1999-03-14  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* call.c (add_function_candidate): Fix uninitialized variable.
+
 	* Makefile.in (search.o): Add dependency on varray.h.
 
 1999-03-13  Jason Merrill  <jason@yorick.cygnus.com>

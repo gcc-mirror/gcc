@@ -1151,6 +1151,7 @@ add_function_candidate (candidates, fn, arglist, flags)
     }
 
   len = list_length (arglist);
+  convs = make_scratch_vec (len);
 
   /* 13.3.2 - Viable functions [over.match.viable]
      First, to be a viable function, a candidate function shall have enough
@@ -1188,7 +1189,6 @@ add_function_candidate (candidates, fn, arglist, flags)
 
   parmnode = parmlist;
   argnode = arglist;
-  convs = make_scratch_vec (len);
 
   for (i = 0; i < len; ++i)
     {
