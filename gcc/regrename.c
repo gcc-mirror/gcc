@@ -345,6 +345,7 @@ regrename_optimize (void)
 
 	  do_replace (this, best_new_reg);
 	  tick[best_new_reg] = ++this_tick;
+	  regs_ever_live[best_new_reg] = 1;
 
 	  if (dump_file)
 	    fprintf (dump_file, ", renamed as %s\n", reg_names[best_new_reg]);
