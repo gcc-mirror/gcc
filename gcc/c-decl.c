@@ -3513,6 +3513,8 @@ init_decl_processing ()
   init_iterators ();
 
   incomplete_decl_finalize_hook = finish_incomplete_decl;
+
+  lang_get_alias_set = &c_get_alias_set;
 }
 
 /* Return a definition for a builtin function named NAME and whose data type

@@ -561,6 +561,17 @@ extern char *note_insn_name[];
 /* For a MEM rtx, 1 if it refers to a field of an aggregate.  */
 #define MEM_IN_STRUCT_P(RTX) ((RTX)->in_struct)
 
+/* For a MEM rtx, the alias set.  If 0, this MEM is not in any alias
+   set, and may alias anything.  Otherwise, the MEM can only alias
+   MEMs in the same alias set.  This value is set in a
+   language-dependent manner in the front-end, and should not be
+   altered in the back-end.  These set numbers are tested for zero,
+   and compared for equality; they have no other significance.  In
+   some front-ends, these numbers may correspond in some way to types,
+   or other language-level entities, but they need not, and the
+   back-end makes no such assumptions.  */
+#define MEM_ALIAS_SET(RTX) (XINT (RTX, 1))
+
 /* For a LABEL_REF, 1 means that this reference is to a label outside the
    loop containing the reference.  */
 #define LABEL_OUTSIDE_LOOP_P(RTX) ((RTX)->in_struct)
@@ -1057,11 +1068,13 @@ extern rtx static_chain_incoming_rtx;
 #include "genrtl.h"
 #endif
 
-/* There are two RTL codes that require special attention; the generation
-   functions included above do the raw handling.  */
+/* There are some RTL codes that require special attention; the
+   generation functions included above do the raw handling.  If you
+   add to this list, modify special_rtx in gengenrtl.c as well.  */
 
 extern rtx gen_rtx_CONST_INT PROTO((enum machine_mode, HOST_WIDE_INT));
 extern rtx gen_rtx_REG PROTO((enum machine_mode, int));
+extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));
 
 /* We need the cast here to ensure that we get the same result both with
    and without prototypes.  */

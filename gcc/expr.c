@@ -415,6 +415,7 @@ protect_from_queue (x, modify)
 	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (x);
 	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
 	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (x);
+	  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (x);
 
 	  if (QUEUED_INSN (y))
 	    {
@@ -3063,7 +3064,11 @@ expand_assignment (to, from, want_value, suggest_reg)
      Don't re-expand if it was expanded already (in COMPONENT_REF case).  */
 
   if (to_rtx == 0)
-    to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_WO);
+    {
+      to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_WO);
+      if (GET_CODE (to_rtx) == MEM)
+	MEM_ALIAS_SET (to_rtx) = get_alias_set (to);
+    }
 
   /* Don't move directly into a return register.  */
   if (TREE_CODE (to) == RESULT_DECL && GET_CODE (to_rtx) == REG)
@@ -5719,6 +5724,7 @@ expand_expr (exp, target, tmode, modifier)
 		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2))))
 	  MEM_IN_STRUCT_P (temp) = 1;
 	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) | flag_volatile;
+	MEM_ALIAS_SET (temp) = get_alias_set (exp);
 
 	/* It is incorrect to set RTX_UNCHANGING_P from TREE_READONLY
 	   here, because, in C and C++, the fact that a location is accessed
@@ -6094,6 +6100,10 @@ expand_expr (exp, target, tmode, modifier)
 	  op0 = change_address (op0, mode1,
 				plus_constant (XEXP (op0, 0),
 					       (bitpos / BITS_PER_UNIT)));
+
+	if (GET_CODE (op0) == MEM)
+	  MEM_ALIAS_SET (op0) = get_alias_set (exp);
+
 	if (GET_CODE (XEXP (op0, 0)) == REG)
 	  mark_reg_pointer (XEXP (op0, 0), alignment);
 

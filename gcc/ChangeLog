@@ -1,3 +1,57 @@
+Thu Jun 25 15:08:16 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* invoke.texi (-fstrict-aliasing): Document.
+	* rtl.texi (MEM_ALIAS_SET): Document.
+
+	* flags.h (flag_strict_aliasing): Declare.
+	* toplev.c (flag_strict_aliasing): Define.
+	(f_options): Add -strict-aliasing.
+	(main): Set flag_strict_aliasing if -O2 or higher.
+
+	* tree.h (tree_type): Add alias_set field.
+	(TYPE_ALIAS_SET): New macro.
+	(TYPE_ALIAS_SET_KNOWN_P): Likewise.
+	(get_alias_set): Declare.
+	* tree.c (lang_get_alias_set): Define.
+	(make_node): Initialize TYPE_ALIAS_SET.
+	(get_alias_set): New function.
+	* print-tree.c (print_node): Dump the alias set for a type.
+
+	* c-tree.h (c_get_alias_set): Declare.
+	* c-common.c (c_get_alias_set): New function.
+	* c-decl.c (init_decl_processing): Set lang_get_alias_set.
+
+	* expr.c (protect_from_queue): Propogage alias sets.
+	(expand_assignment): Calculate alias set for new MEMs.
+	(expand_expr): Likewise.
+	* function.c (put_var_into_stack): Likewise.
+	(put_reg_into_stack): Likewise.
+	(gen_mem_addressof): Likewise.
+	(assign_parms): Likewise.
+	* stmt.c (expand_decl): Likewise.
+	* varasm.c (make_decl_rtl): Eliminate redundant clearing of
+	DECL_RTL.  Calculate alias set for new MEMs. 
+
+	* rtl.def (REG): Add dummy operand.
+	(MEM): Add extra operand to store the MEM_ALIAS_SET.
+	* rtl.h (MEM_ALIAS_SET): New macro.
+	(gen_rtx_MEM): Declare.
+	* emit-rtl.c (gen_rtx_MEM): New function.
+	* gengenrtl.c (sepcial_rtx): Make MEMs special.
+
+	* alias.c (CHECK_ALIAS_SETS_FOR_CONSISTENCY): New macro.
+	(DIFFERENT_ALIAS_SETS_P): Likewise.
+	(canon_rtx): Propogate the alias set to the new MEM.
+	(true_dependence): Check the alias sets.
+	(anti_dependence): Likewise.
+	(output_dependence): Likewise.
+	* explow.c (stabilize): Progoate alias sets.
+	* integrate.c (copy_rtx_and_substitute): Likewise.
+	* final.c (alter_subreg): Make sure not to leave MEM_IN_STRUCT_P
+	in an unpredictable state.  Propogate alias sets.
+	* reload1.c (reload): Clear MEM_ALIAS_SET for new MEMs about which
+	we have no alias information.
+	
 Thu Jun 25 16:59:18 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.h (CATCH_ALL_TYPE): Definition moved to eh-common.h.

@@ -129,7 +129,8 @@ special_rtx (idx)
      int idx;
 {
   return (strcmp (defs[idx].enumname, "CONST_INT") == 0
-	  || strcmp (defs[idx].enumname, "REG") == 0);
+	  || strcmp (defs[idx].enumname, "REG") == 0
+	  || strcmp (defs[idx].enumname, "MEM") == 0);
 }
 
 static void

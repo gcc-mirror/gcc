@@ -479,6 +479,7 @@ print_node (file, prefix, node, indent)
 
       fprintf (file, " align %d", TYPE_ALIGN (node));
       fprintf (file, " symtab %d", TYPE_SYMTAB_ADDRESS (node));
+      fprintf (file, " alias set %d", TYPE_ALIAS_SET (node));
 
       print_node (file, "attributes", TYPE_ATTRIBUTES (node), indent + 4);
 

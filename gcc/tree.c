@@ -261,6 +261,10 @@ static int next_decl_uid;
 /* Unique id for next type created.  */
 static int next_type_uid = 1;
 
+/* The language-specific function for alias analysis.  If NULL, the
+   language does not do any special alias analysis.  */
+int (*lang_get_alias_set) PROTO((tree));
+
 /* Here is how primitive or already-canonicalized types' hash
    codes are made.  */
 #define TYPE_HASH(TYPE) ((unsigned long) (TYPE) & 0777777)
@@ -1112,6 +1116,9 @@ make_node (code)
 #ifdef SET_DEFAULT_TYPE_ATTRIBUTES
       SET_DEFAULT_TYPE_ATTRIBUTES (t);
 #endif
+      /* Note that we have not yet computed the alias set for this
+	 type.  */
+      TYPE_ALIAS_SET (t) = -1;
       break;
 
     case 'c':
@@ -5019,3 +5026,17 @@ expr_check (node, ignored, file, line, nofatal)
   return node;
 }
 #endif
+
+/* Return the alias set for T, which may be either a type or an
+   expression.  */
+
+int get_alias_set (t)
+     tree t;
+{
+  if (!flag_strict_aliasing || !lang_get_alias_set)
+    /* If we're not doing any lanaguage-specific alias analysis, just
+       assume everything aliases everything else.  */
+    return 0;
+  else
+    return (*lang_get_alias_set) (t);
+}

@@ -156,7 +156,7 @@ in the following sections.
 -frerun-cse-after-loop  -frerun-loop-opt -fschedule-insns
 -fschedule-insns2  -fstrength-reduce  -fthread-jumps
 -funroll-all-loops  -funroll-loops
--fmove-all-movables  -freduce-all-givs
+-fmove-all-movables  -freduce-all-givs -fstrict-aliasing
 -O  -O0  -O1  -O2  -O3 -Os
 @end smallexample
 
@@ -2419,6 +2419,57 @@ Some machines only support 2 operands per instruction.  On such
 machines, GNU CC might have to do extra copies.  The @samp{-fregmove}
 option overrides the default for the machine to do the copy before
 register allocation.
+
+@item -fstrict-aliasing
+Allows the compiler to assume the strictest aliasing rules applicable to
+the language being compiled.  For C (and C++), this activates
+optimizations based on the type of expressions.  In particular, an
+object of one type is assumed never to reside at the same address as an
+object of a different type, unless the types are almost the same.  For
+example, an @code{unsigned int} can alias an @code{int}, but not a
+@code{void*} or a @code{double}.  A character type may alias any other
+type.  
+
+Pay special attention to code like this:
+@example
+union a_union @{ 
+  int i;
+  double d;
+@};
+
+int f() @{
+  a_union t;
+  t.d = 3.0;
+  return t.i;
+@}
+@end example
+The practice of reading from a different union member than the one most
+recently written to (called ``type-punning'') is common.  Even with
+@samp{-fstrict-aliasing}, type-punning is allowed, provided the memory
+is accessed through the union type.  So, the code above will work as
+expected.  However, this code might not:
+@example
+int f() @{ 
+  a_union t;
+  int* ip;
+  t.d = 3.0;
+  ip = &t.i;
+  return *ip;
+@}
+@end example
+
+This option is not enabled by default at any optimization level because
+it is new and has yet to be subjected to thorough testing.  You may
+of course enable it manually with @samp{-fstrict-aliasing}.
+
+@ifset INTERNALS
+Every language that wishes to perform language-specific alias analysis
+should define a function that computes, given an @code{tree}
+node, an alias set for the node.  Nodes in different alias sets are not
+allowed to alias.  For an example, see the C front-end function
+@code{c_get_alias_set}.
+@end ifset
+
 @end table
 
 @node Preprocessor Options

@@ -3178,6 +3178,8 @@ expand_decl (decl)
       if (flag_float_store && TREE_CODE (type) == REAL_TYPE)
 	MEM_VOLATILE_P (DECL_RTL (decl)) = 1;
 #endif
+
+      MEM_ALIAS_SET (DECL_RTL (decl)) = get_alias_set (decl);
     }
   else
     /* Dynamic-size object: must push space on the stack.  */

@@ -3020,6 +3020,8 @@ alter_subreg (x)
 		   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (y))));
       PUT_CODE (x, MEM);
       MEM_VOLATILE_P (x) = MEM_VOLATILE_P (y);
+      MEM_IN_STRUCT_P (x) = MEM_IN_STRUCT_P (y);
+      MEM_ALIAS_SET (x) = MEM_ALIAS_SET (y);
       XEXP (x, 0) = plus_constant (XEXP (y, 0), offset);
     }
 

@@ -42,6 +42,28 @@ static rtx find_base_value		PROTO((rtx));
 
 #define SIZE_FOR_MODE(X) (GET_MODE_SIZE (GET_MODE (X)))
 
+/* Perform a basic sanity check.  Namely, that there are	
+   no alias sets if we're not doing strict aliasing.  This helps     
+   to catch bugs whereby someone uses PUT_CODE, but doesn't clear
+   MEM_ALIAS_SET, or where a MEM is allocated in some way other
+   than by the use of gen_rtx_MEM, and the MEM_ALIAS_SET is not
+   cleared.  */			
+#ifdef ENABLE_CHECKING	
+#define CHECK_ALIAS_SETS_FOR_CONSISTENCY(MEM1, MEM2)	\
+  (!flag_strict_aliasing				\
+   && (MEM_ALIAS_SET (MEM1) || MEM_ALIAS_SET (MEM2))	\
+   ? (abort (), 0) : 0)
+#else 
+#define CHECK_ALIAS_SETS_FOR_CONSISTENCY(MEM1, MEM2) 0
+#endif
+
+/* Returns nonzero if MEM1 and MEM2 do not alias because they are in
+   different alias sets.  */
+#define DIFFERENT_ALIAS_SETS_P(MEM1, MEM2)		\
+  (CHECK_ALIAS_SETS_FOR_CONSISTENCY(MEM1, MEM2),	\
+   MEM_ALIAS_SET (MEM1) && MEM_ALIAS_SET (MEM2)		\
+   && MEM_ALIAS_SET (MEM1) != MEM_ALIAS_SET (MEM2))
+
 /* Cap the number of passes we make over the insns propagating alias
    information through set chains.
 
@@ -372,6 +394,7 @@ canon_rtx (x)
 	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (x);
 	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
 	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (x);
+	  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (x);
 	  x = new;
 	}
     }
@@ -874,6 +897,9 @@ true_dependence (mem, mem_mode, x, varies)
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
 
+  if (DIFFERENT_ALIAS_SETS_P (x, mem))
+    return 0;
+
   /* If X is an unchanging read, then it can't possibly conflict with any
      non-unchanging store.  It may conflict with an unchanging write though,
      because there may be a single store to this address to initialize it.
@@ -947,6 +973,9 @@ anti_dependence (mem, x)
   x = canon_rtx (x);
   mem = canon_rtx (mem);
 
+  if (DIFFERENT_ALIAS_SETS_P (x, mem))
+    return 0;
+
   x_addr = XEXP (x, 0);
   mem_addr = XEXP (mem, 0);
 
@@ -977,6 +1006,9 @@ output_dependence (mem, x)
 
   x = canon_rtx (x);
   mem = canon_rtx (mem);
+
+  if (DIFFERENT_ALIAS_SETS_P (x, mem))
+    return 0;
 
   return (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
 			      SIZE_FOR_MODE (x), XEXP (x, 0), 0)
