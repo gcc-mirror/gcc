@@ -6735,6 +6735,38 @@ toc_hash_mark_table (vht)
   htab_traverse (*ht, toc_hash_mark_entry, (void *)0);
 }
 
+/* These are the names given by the C++ front-end to vtables, and
+   vtable-like objects.  Ideally, this logic should not be here;
+   instead, there should be some programmatic way of inquiring as
+   to whether or not an object is a vtable.  */
+
+#define VTABLE_NAME_P(NAME)				\
+  (strncmp ("_vt.", name, strlen("_vt.")) == 0		\
+  || strncmp ("_ZTV", name, strlen ("_ZTV")) == 0	\
+  || strncmp ("_ZTT", name, strlen ("_ZTT")) == 0	\
+  || strncmp ("_ZTC", name, strlen ("_ZTC")) == 0) 
+
+void
+rs6000_output_symbol_ref (file, x)
+     FILE *file;
+     rtx x;
+{
+  /* Currently C++ toc references to vtables can be emitted before it
+     is decided whether the vtable is public or private.  If this is
+     the case, then the linker will eventually complain that there is
+     a reference to an unknown section.  Thus, for vtables only, 
+     we emit the TOC reference to reference the symbol and not the
+     section.  */
+  const char *name = XSTR (x, 0);
+
+  if (VTABLE_NAME_P (name)) 
+    {
+      RS6000_OUTPUT_BASENAME (file, name);
+    }
+  else
+    assemble_name (file, name);
+}
+
 /* Output a TOC entry.  We derive the entry name from what is
    being written.  */
 
@@ -6942,7 +6974,7 @@ output_toc (file, x, labelno, mode)
      a TOC reference to an unknown section.  Thus, for vtables only,
      we emit the TOC reference to reference the symbol and not the
      section.  */
-  if (strncmp ("_vt.", name, 4) == 0)
+  if (VTABLE_NAME_P (name))
     {
       RS6000_OUTPUT_BASENAME (file, name);
       if (offset < 0)

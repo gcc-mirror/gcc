@@ -1,3 +1,11 @@
+2001-02-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/rs6000/rs6000.h (ASM_OUTPUT_SYMBOL_REF): Define.
+	* config/rs6000/rs6000-protos.h (rs6000_output_symbol_ref): Declare.
+	* config/rs6000/rs6000.c (VTABLE_NAME_P): New macro.
+	(rs6000_output_symbol_ref): New function.
+	(output_toc): Use VTABLE_NAME_P.
+	
 Tue Feb  6 07:54:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* print-tree.c (print_node, case PARM_DECL):
