@@ -247,6 +247,10 @@ TAROUTOPTS = xpBf
 FIXINCLUDES=fixincludes
 
 # Additional directories of header files to run fixincludes on.
+# These should be directories searched automatically by default
+# just as /usr/include is.
+# *Do not* use this for directories that happen to contain 
+# header files, but are not searched automatically by default.
 # On most systems, this is empty.
 OTHER_FIXINCLUDES_DIRS=
 
