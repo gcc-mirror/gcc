@@ -175,8 +175,7 @@ static void mips_legitimize_const_move (enum machine_mode, rtx, rtx);
 static int m16_check_op (rtx, int, int, int);
 static bool mips_rtx_costs (rtx, int, int, int *);
 static int mips_address_cost (rtx);
-static void get_float_compare_codes (enum rtx_code, enum rtx_code *,
-				     enum rtx_code *);
+static void mips_emit_compare (enum rtx_code *, rtx *, rtx *, bool);
 static void mips_load_call_address (rtx, rtx, int);
 static bool mips_function_ok_for_sibcall (tree, tree);
 static void mips_block_move_straight (rtx, rtx, HOST_WIDE_INT);
@@ -2784,6 +2783,87 @@ mips_zero_if_equal (rtx cmp0, rtx cmp1)
 		       cmp0, cmp1, 0, 0, OPTAB_DIRECT);
 }
 
+/* Convert a comparison into something that can be used in a branch or
+   conditional move.  cmp_operands[0] and cmp_operands[1] are the values
+   being compared and *CODE is the code used to compare them.
+
+   Update *CODE, *OP0 and *OP1 so that they describe the final comparison.
+   If NEED_EQ_NE_P, then only EQ/NE comparisons against zero are possible,
+   otherwise any standard branch condition can be used.  The standard branch
+   conditions are:
+
+      - EQ/NE between two registers.
+      - any comparison between a register and zero.  */
+
+static void
+mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
+{
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) == MODE_INT)
+    {
+      if (!need_eq_ne_p && cmp_operands[1] == const0_rtx)
+	{
+	  *op0 = cmp_operands[0];
+	  *op1 = cmp_operands[1];
+	}
+      else if (*code == EQ || *code == NE)
+	{
+	  if (need_eq_ne_p)
+	    {
+	      *op0 = mips_zero_if_equal (cmp_operands[0], cmp_operands[1]);
+	      *op1 = const0_rtx;
+	    }
+	  else
+	    {
+	      *op0 = cmp_operands[0];
+	      *op1 = force_reg (GET_MODE (*op0), cmp_operands[1]);
+	    }
+	}
+      else
+	{
+	  /* The comparison needs a separate scc instruction.  Store the
+	     result of the scc in *OP0 and compare it against zero.  */
+	  bool invert = false;
+	  *op0 = gen_reg_rtx (GET_MODE (cmp_operands[0]));
+	  *op1 = const0_rtx;
+	  mips_emit_int_relational (*code, &invert, *op0,
+				    cmp_operands[0], cmp_operands[1]);
+	  *code = (invert ? EQ : NE);
+	}
+    }
+  else
+    {
+      enum rtx_code cmp_code;
+
+      /* Floating-point tests use a separate c.cond.fmt comparison to
+	 set a condition code register.  The branch or conditional move
+	 will then compare that register against zero.
+
+	 Set CMP_CODE to the code of the comparison instruction and
+	 *CODE to the code that the branch or move should use.  */
+      switch (*code)
+	{
+	case NE:
+	case UNGE:
+	case UNGT:
+	case LTGT:
+	case ORDERED:
+	  cmp_code = reverse_condition_maybe_unordered (*code);
+	  *code = EQ;
+	  break;
+
+	default:
+	  cmp_code = *code;
+	  *code = NE;
+	  break;
+	}
+      *op0 = (ISA_HAS_8CC
+	      ? gen_reg_rtx (CCmode)
+	      : gen_rtx_REG (CCmode, FPSW_REGNUM));
+      *op1 = const0_rtx;
+      mips_emit_binary (cmp_code, *op0, cmp_operands[0], cmp_operands[1]);
+    }
+}
+
 /* Try comparing cmp_operands[0] and cmp_operands[1] using rtl code CODE.
    Store the result in TARGET and return true if successful.
 
@@ -2806,100 +2886,20 @@ mips_emit_scc (enum rtx_code code, rtx target)
 			      cmp_operands[0], cmp_operands[1]);
   return true;
 }
-
-/* Work out how to check a floating-point condition.  We need a
-   separate comparison instruction (C.cond.fmt), followed by a
-   branch or conditional move.  Given that IN_CODE is the
-   required condition, set *CMP_CODE to the C.cond.fmt code
-   and *action_code to the branch or move code.  */
-
-static void
-get_float_compare_codes (enum rtx_code in_code, enum rtx_code *cmp_code,
-			 enum rtx_code *action_code)
-{
-  switch (in_code)
-    {
-    case NE:
-    case UNGE:
-    case UNGT:
-    case LTGT:
-    case ORDERED:
-      *cmp_code = reverse_condition_maybe_unordered (in_code);
-      *action_code = EQ;
-      break;
-
-    default:
-      *cmp_code = in_code;
-      *action_code = NE;
-      break;
-    }
-}
 
 /* Emit the common code for doing conditional branches.
    operand[0] is the label to jump to.
    The comparison operands are saved away by cmp{si,di,sf,df}.  */
 
 void
-gen_conditional_branch (rtx *operands, enum rtx_code test_code)
+gen_conditional_branch (rtx *operands, enum rtx_code code)
 {
-  rtx cmp0, cmp1, target;
-  enum machine_mode mode;
-  enum rtx_code cmp_code;
+  rtx op0, op1, target;
 
-  switch (GET_MODE (cmp_operands[0]))
-    {
-    case SImode:
-    case DImode:
-      mode = GET_MODE (cmp_operands[0]);
-      if (!TARGET_MIPS16 && cmp_operands[1] == const0_rtx)
-	{
-	  cmp0 = cmp_operands[0];
-	  cmp1 = cmp_operands[1];
-	}
-      else if (test_code == EQ || test_code == NE)
-	{
-	  if (TARGET_MIPS16)
-	    {
-	      cmp0 = mips_zero_if_equal (cmp_operands[0], cmp_operands[1]);
-	      cmp1 = const0_rtx;
-	    }
-	  else
-	    {
-	      cmp0 = cmp_operands[0];
-	      cmp1 = force_reg (mode, cmp_operands[1]);
-	    }
-	}
-      else
-	{
-	  bool invert = false;
-	  cmp0 = gen_reg_rtx (mode);
-	  cmp1 = const0_rtx;
-	  mips_emit_int_relational (test_code, &invert, cmp0,
-				    cmp_operands[0], cmp_operands[1]);
-	  test_code = (invert ? EQ : NE);
-	}
-      break;
-
-    case SFmode:
-    case DFmode:
-      mode = CCmode;
-      if (!ISA_HAS_8CC)
-	cmp0 = gen_rtx_REG (mode, FPSW_REGNUM);
-      else
-	cmp0 = gen_reg_rtx (mode);
-      cmp1 = const0_rtx;
-
-      get_float_compare_codes (test_code, &cmp_code, &test_code);
-      mips_emit_binary (cmp_code, cmp0, cmp_operands[0], cmp_operands[1]);
-      break;
-
-    default:
-      abort ();
-    }
-
-  /* Generate the branch.  */
+  mips_emit_compare (&code, &op0, &op1, TARGET_MIPS16);
   target = gen_rtx_IF_THEN_ELSE (VOIDmode,
-				 gen_rtx_fmt_ee (test_code, mode, cmp0, cmp1),
+				 gen_rtx_fmt_ee (code, GET_MODE (op0),
+						 op0, op1),
 				 gen_rtx_LABEL_REF (VOIDmode, operands[0]),
 				 pc_rtx);
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, target));
@@ -2911,84 +2911,15 @@ gen_conditional_branch (rtx *operands, enum rtx_code test_code)
 void
 gen_conditional_move (rtx *operands)
 {
-  rtx op0 = cmp_operands[0];
-  rtx op1 = cmp_operands[1];
-  enum machine_mode mode = GET_MODE (cmp_operands[0]);
-  enum rtx_code cmp_code = GET_CODE (operands[1]);
-  enum rtx_code move_code = NE;
-  enum machine_mode op_mode = GET_MODE (operands[0]);
-  enum machine_mode cmp_mode;
-  rtx cmp_reg;
+  enum rtx_code code;
+  rtx op0, op1;
 
-  if (GET_MODE_CLASS (mode) != MODE_FLOAT)
-    {
-      switch (cmp_code)
-	{
-	case EQ:
-	  cmp_code = XOR;
-	  move_code = EQ;
-	  break;
-	case NE:
-	  cmp_code = XOR;
-	  break;
-	case LT:
-	  break;
-	case GE:
-	  cmp_code = LT;
-	  move_code = EQ;
-	  break;
-	case GT:
-	  cmp_code = LT;
-	  op0 = force_reg (mode, cmp_operands[1]);
-	  op1 = cmp_operands[0];
-	  break;
-	case LE:
-	  cmp_code = LT;
-	  op0 = force_reg (mode, cmp_operands[1]);
-	  op1 = cmp_operands[0];
-	  move_code = EQ;
-	  break;
-	case LTU:
-	  break;
-	case GEU:
-	  cmp_code = LTU;
-	  move_code = EQ;
-	  break;
-	case GTU:
-	  cmp_code = LTU;
-	  op0 = force_reg (mode, cmp_operands[1]);
-	  op1 = cmp_operands[0];
-	  break;
-	case LEU:
-	  cmp_code = LTU;
-	  op0 = force_reg (mode, cmp_operands[1]);
-	  op1 = cmp_operands[0];
-	  move_code = EQ;
-	  break;
-	default:
-	  abort ();
-	}
-    }
-  else
-    get_float_compare_codes (cmp_code, &cmp_code, &move_code);
-
-  if (mode == SImode || mode == DImode)
-    cmp_mode = mode;
-  else if (mode == SFmode || mode == DFmode)
-    cmp_mode = CCmode;
-  else
-    abort ();
-
-  cmp_reg = gen_reg_rtx (cmp_mode);
-  emit_insn (gen_rtx_SET (cmp_mode, cmp_reg,
-			  gen_rtx_fmt_ee (cmp_code, cmp_mode, op0, op1)));
-
-  emit_insn (gen_rtx_SET (op_mode, operands[0],
-			  gen_rtx_IF_THEN_ELSE (op_mode,
-						gen_rtx_fmt_ee (move_code,
-								VOIDmode,
-								cmp_reg,
-								const0_rtx),
+  code = GET_CODE (operands[1]);
+  mips_emit_compare (&code, &op0, &op1, true);
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			  gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+						gen_rtx_fmt_ee (code, VOIDmode,
+								op0, op1),
 						operands[2], operands[3])));
 }
 
