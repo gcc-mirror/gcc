@@ -106,8 +106,7 @@ package body Exp_Aggr is
       Target                        : Node_Id;
       Flist                         : Node_Id   := Empty;
       Obj                           : Entity_Id := Empty;
-      Is_Limited_Ancestor_Expansion : Boolean   := False)
-      return List_Id;
+      Is_Limited_Ancestor_Expansion : Boolean   := False) return List_Id;
    --  N is an N_Aggregate or a N_Extension_Aggregate. Typ is the type
    --  of the aggregate. Target is an expression containing the
    --  location on which the component by component assignments will
@@ -175,8 +174,7 @@ package body Exp_Aggr is
       Into        : Node_Id;
       Scalar_Comp : Boolean;
       Indices     : List_Id := No_List;
-      Flist       : Node_Id := Empty)
-      return        List_Id;
+      Flist       : Node_Id := Empty) return List_Id;
    --  This recursive routine returns a list of statements containing the
    --  loops and assignments that are needed for the expansion of the array
    --  aggregate N.
@@ -207,8 +205,7 @@ package body Exp_Aggr is
       Typ    : Entity_Id;
       Target : Node_Id;
       Flist  : Node_Id := Empty;
-      Obj    : Entity_Id := Empty)
-      return   List_Id;
+      Obj    : Entity_Id := Empty) return List_Id;
    --  N is a nested (record or array) aggregate that has been marked
    --  with 'Delay_Expansion'. Typ is the expected type of the
    --  aggregate and Target is a (duplicable) expression that will
@@ -225,8 +222,7 @@ package body Exp_Aggr is
    function Make_OK_Assignment_Statement
      (Sloc       : Source_Ptr;
       Name       : Node_Id;
-      Expression : Node_Id)
-      return       Node_Id;
+      Expression : Node_Id) return Node_Id;
    --  This is like Make_Assignment_Statement, except that Assignment_OK
    --  is set in the left operand. All assignments built by this unit
    --  use this routine. This is needed to deal with assignments to
@@ -405,8 +401,7 @@ package body Exp_Aggr is
       Into        : Node_Id;
       Scalar_Comp : Boolean;
       Indices     : List_Id := No_List;
-      Flist       : Node_Id := Empty)
-      return        List_Id
+      Flist       : Node_Id := Empty) return List_Id
    is
       Loc          : constant Source_Ptr := Sloc (N);
       Index_Base   : constant Entity_Id  := Base_Type (Etype (Index));
@@ -1281,8 +1276,7 @@ package body Exp_Aggr is
       Target                        : Node_Id;
       Flist                         : Node_Id   := Empty;
       Obj                           : Entity_Id := Empty;
-      Is_Limited_Ancestor_Expansion : Boolean   := False)
-      return List_Id
+      Is_Limited_Ancestor_Expansion : Boolean   := False) return List_Id
    is
       Loc     : constant Source_Ptr := Sloc (N);
       L       : constant List_Id    := New_List;
@@ -1333,8 +1327,7 @@ package body Exp_Aggr is
          Typ     : Entity_Id;
          F       : Node_Id;
          Attach  : Node_Id;
-         Init_Pr : Boolean)
-         return    List_Id;
+         Init_Pr : Boolean) return List_Id;
       --  returns the list of statements necessary to initialize the internal
       --  controller of the (possible) ancestor typ into target and attach
       --  it to finalization list F. Init_Pr conditions the call to the
@@ -1530,8 +1523,7 @@ package body Exp_Aggr is
          Typ     : Entity_Id;
          F       : Node_Id;
          Attach  : Node_Id;
-         Init_Pr : Boolean)
-         return    List_Id
+         Init_Pr : Boolean) return List_Id
       is
          L   : constant List_Id := New_List;
          Ref : Node_Id;
@@ -2432,10 +2424,9 @@ package body Exp_Aggr is
       Typ : constant Entity_Id := Etype (N);
 
       function Flatten
-        (N    : Node_Id;
-         Ix   : Node_Id;
-         Ixb  : Node_Id)
-         return Boolean;
+        (N   : Node_Id;
+         Ix  : Node_Id;
+         Ixb : Node_Id) return Boolean;
       --  Convert the aggregate into a purely positional form if possible.
 
       function Is_Flat (N : Node_Id; Dims : Int) return Boolean;
@@ -2446,10 +2437,9 @@ package body Exp_Aggr is
       -------------
 
       function Flatten
-        (N    : Node_Id;
-         Ix   : Node_Id;
-         Ixb  : Node_Id)
-         return Boolean
+        (N   : Node_Id;
+         Ix  : Node_Id;
+         Ixb : Node_Id) return Boolean
       is
          Loc : constant Source_Ptr := Sloc (N);
          Blo : constant Node_Id    := Type_Low_Bound (Etype (Ixb));
@@ -4483,8 +4473,9 @@ package body Exp_Aggr is
    ----------------------------
 
    function Has_Default_Init_Comps (N : Node_Id) return Boolean is
-      Comps  : constant List_Id := Component_Associations (N);
-      C      : Node_Id;
+      Comps : constant List_Id := Component_Associations (N);
+      C     : Node_Id;
+
    begin
       pragma Assert (Nkind (N) = N_Aggregate
                      or else Nkind (N) = N_Extension_Aggregate);
@@ -4533,8 +4524,7 @@ package body Exp_Aggr is
       Typ    : Entity_Id;
       Target : Node_Id;
       Flist  : Node_Id   := Empty;
-      Obj    : Entity_Id := Empty)
-      return   List_Id
+      Obj    : Entity_Id := Empty) return List_Id
    is
    begin
       if Is_Record_Type (Etype (N)) then
@@ -4558,8 +4548,7 @@ package body Exp_Aggr is
    function Make_OK_Assignment_Statement
      (Sloc       : Source_Ptr;
       Name       : Node_Id;
-      Expression : Node_Id)
-      return       Node_Id
+      Expression : Node_Id) return Node_Id
    is
    begin
       Set_Assignment_OK (Name);

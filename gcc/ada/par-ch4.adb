@@ -1402,6 +1402,7 @@ package body Ch4 is
       else
          Set_Expression (Assoc_Node, P_Expression);
       end if;
+
       return Assoc_Node;
    end P_Record_Or_Array_Component_Association;
 

@@ -2202,6 +2202,10 @@ package body Sem_Aggr is
          --         C : Lim := (..., others => <>);
          --      end record;
 
+         ----------------------------
+         -- Check_Non_Limited_Type --
+         ----------------------------
+
          procedure Check_Non_Limited_Type is
          begin
             if Is_Limited_Type (Etype (Compon))
@@ -2222,6 +2226,8 @@ package body Sem_Aggr is
 
             end if;
          end Check_Non_Limited_Type;
+
+      --  Start of processing for Get_Value
 
       begin
          Mbox_Present := False;
@@ -2254,8 +2260,8 @@ package body Sem_Aggr is
                         else
                            return Expression (Parent (Compon));
                         end if;
-                     else
 
+                     else
                         Check_Non_Limited_Type;
 
                         if Present (Others_Etype) and then
@@ -2295,8 +2301,8 @@ package body Sem_Aggr is
                         else
                            Expr := Expression (Parent (Compon));
                         end if;
-                     else
 
+                     else
                         Check_Non_Limited_Type;
 
                         if Present (Next (Selector_Name)) then
@@ -2926,13 +2932,11 @@ package body Sem_Aggr is
                   Typech := Base_Type (Etype (Component));
 
                elsif Typech /= Base_Type (Etype (Component)) then
-
                   if not Box_Present (Parent (Selectr)) then
                      Error_Msg_N
                        ("components in choice list must have same type",
                         Selectr);
                   end if;
-
                end if;
 
                Next (Selectr);

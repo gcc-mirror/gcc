@@ -300,9 +300,14 @@ package body Ch10 is
             Append_List (P_Context_Clause, Context_Items (Comp_Unit_Node));
 
          else
-            Error_Msg_SC ("compilation unit expected");
-            Cunit_Error_Flag := True;
-            Resync_Cunit;
+            if Operating_Mode = Check_Syntax and then Token = Tok_EOF then
+               Error_Msg_SC ("?file contains no compilation units");
+
+            else
+               Error_Msg_SC ("compilation unit expected");
+               Cunit_Error_Flag := True;
+               Resync_Cunit;
+            end if;
 
             --  If we are at an end of file, then just quit, the above error
             --  message was complaint enough.

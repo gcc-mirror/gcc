@@ -306,7 +306,8 @@ package body Prj is
          Element :=
            (Index => Lang,
             Index_Case_Sensitive => False,
-            Value => (Kind     => Single,
+            Value => (Project  => No_Project,
+                      Kind     => Single,
                       Location => No_Location,
                       Default  => False,
                       Value    => Default_Spec_Suffix),
@@ -341,7 +342,8 @@ package body Prj is
          Element :=
            (Index => Lang,
             Index_Case_Sensitive => False,
-            Value => (Kind     => Single,
+            Value => (Project  => No_Project,
+                      Kind     => Single,
                       Location => No_Location,
                       Default  => False,
                       Value    => Default_Body_Suffix),

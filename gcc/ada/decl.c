@@ -1992,6 +1992,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  debug_no_type_hash = 0;
 	  TYPE_CONVENTION_FORTRAN_P (gnu_type)
 	    = (Convention (gnat_entity) == Convention_Fortran);
+	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
+	    = Is_Packed_Array_Type (gnat_entity);
 
 	  /* If our size depends on a placeholder and the maximum size doesn't
 	     overflow, use it.  */
@@ -5752,11 +5754,6 @@ validate_size (Uint uint_size,
   else
     gnat_error_node = gnat_object;
 
-  /* Don't give errors on packed array types; we'll be giving the error on
-     the type itself soon enough.  */
-  if (Is_Packed_Array_Type (gnat_object))
-    gnat_error_node = Empty;
-
   /* Return 0 if no size was specified, either because Esize was not Present or
      the specified size was zero.  */
   if (No (uint_size) || uint_size == No_Uint)
@@ -5791,11 +5788,11 @@ validate_size (Uint uint_size,
       return 0;
     }
 
-  /* If this is an integral type, the front-end has verified the size, so we
-     need not do it here (which would entail checking against the bounds).
-     However, if this is an aliased object, it may not be smaller than the
-     type of the object.  */
-  if (INTEGRAL_TYPE_P (gnu_type) && ! TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
+  /* If this is an integral type or a packed array type, the front-end has
+     verified the size, so we need not do it here (which would entail
+     checking against the bounds).  However, if this is an aliased object, it
+     may not be smaller than the type of the object.  */
+  if ((INTEGRAL_TYPE_P (gnu_type) || TYPE_IS_PACKED_ARRAY_TYPE_P (gnu_type))
       && ! (kind == VAR_DECL && Is_Aliased (gnat_object)))
     return size;
 

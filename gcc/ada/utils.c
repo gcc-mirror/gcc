@@ -148,7 +148,7 @@ static tree merge_sizes (tree, tree, tree, int, int);
 static tree compute_related_constant (tree, tree);
 static tree split_plus (tree, tree *);
 static int value_zerop (tree);
-static tree float_type_for_size (int, enum machine_mode);
+static tree float_type_for_precision (int, enum machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
 static tree convert_to_thin_pointer (tree, tree);
 static tree make_descriptor_field (const char *,tree, tree, tree);
@@ -1992,7 +1992,7 @@ gnat_type_for_size (unsigned precision, int unsignedp)
 /* Likewise for floating-point types.  */
 
 static tree
-float_type_for_size (int precision, enum machine_mode mode)
+float_type_for_precision (int precision, enum machine_mode mode)
 {
   tree t;
   char type_name[20];
@@ -2023,7 +2023,7 @@ tree
 gnat_type_for_mode (enum machine_mode mode, int unsignedp)
 {
   if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-    return float_type_for_size (GET_MODE_BITSIZE (mode), mode);
+    return float_type_for_precision (GET_MODE_PRECISION (mode), mode);
   else
     return gnat_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
 }

@@ -1660,9 +1660,9 @@ package Einfo is
 --    Is_Bit_Packed_Array (Flag122) [implementation base type only]
 --       Present in all entities. This flag is set for a packed array
 --       type that is bit packed (i.e. the component size is known by the
---       front end and is in the range 1-7, 9-15, or 17-31). Is_Packed is
---       always set if Is_Bit_Packed_Array is set, but it is possible for
---       Is_Packed to be set without Is_Bit_Packed_Array or the case of an
+--       front end and is in the range 1-7, 9-15, 17-31, or 33-63). Is_Packed
+--       is always set if Is_Bit_Packed_Array is set, but it is possible for
+--       Is_Packed to be set without Is_Bit_Packed_Array for the case of an
 --       array having one or more index types that are enumeration types
 --       with non-standard enumeration representations.
 

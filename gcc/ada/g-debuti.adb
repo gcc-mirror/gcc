@@ -39,9 +39,11 @@ package body GNAT.Debug_Utilities is
       H : constant array (0 .. 15) of Character := "0123456789ABCDEF";
       --  Table of hex digits
 
-   --------------------------
-   -- Image (address case) --
-   --------------------------
+   -----------
+   -- Image --
+   -----------
+
+   --  Address case
 
    function Image (A : Address) return Image_String is
       S : Image_String;
@@ -71,9 +73,11 @@ package body GNAT.Debug_Utilities is
       return S;
    end Image;
 
-   -------------------------
-   -- Image (string case) --
-   -------------------------
+   -----------
+   -- Image --
+   -----------
+
+   --  String case
 
    function Image (S : String) return String is
       W : String (1 .. 2 * S'Length + 2);

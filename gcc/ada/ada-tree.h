@@ -72,9 +72,13 @@ struct lang_type GTY(())
 #define TYPE_FAT_POINTER_P(NODE)  \
   (TREE_CODE (NODE) == RECORD_TYPE && TYPE_IS_FAT_POINTER_P (NODE))
 
-/* For integral types, nonzero if this is a packed array type.  Such
-   types should not be extended to a larger size.  */
+/* For integral types and array types, nonzero if this is a packed array type.
+   Such types should not be extended to a larger size.  */
 #define TYPE_PACKED_ARRAY_TYPE_P(NODE) TYPE_LANG_FLAG_0 (NODE)
+
+#define TYPE_IS_PACKED_ARRAY_TYPE_P(NODE) \
+  ((TREE_CODE (NODE) == INTEGER_TYPE || TREE_CODE (NODE) == ARRAY_TYPE) \
+   && TYPE_PACKED_ARRAY_TYPE_P (NODE))
 
 /* For INTEGER_TYPE, nonzero if this is a modular type with a modulus that
    is not equal to two to the power of its mode's size.  */

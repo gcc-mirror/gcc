@@ -41,9 +41,8 @@ package body Exception_Data is
    -----------------------
 
    function Address_Image (A : System.Address) return String;
-   --  Returns at string of the form 0xhhhhhhhhh for 32-bit addresses
-   --  or 0xhhhhhhhhhhhhhhhh for 64-bit addresses. Hex characters are
-   --  in lower case.
+   --  Returns at string of the form 0xhhhhhhhhh for an address, with
+   --  leading zeros suppressed. Hex characters a-f are in lower case.
 
    procedure Append_Info_Nat
      (N    : Natural;
@@ -66,22 +65,19 @@ package body Exception_Data is
    --  we then use three intermediate functions :
 
    function Basic_Exception_Information
-     (X    : Exception_Occurrence)
-      return String;
+     (X : Exception_Occurrence) return String;
    --  Returns the basic exception information string associated with a
    --  given exception occurrence. This is the common part shared by both
    --  Exception_Information and Tailored_Exception_Infomation.
 
    function Basic_Exception_Traceback
-     (X    : Exception_Occurrence)
-      return String;
+     (X : Exception_Occurrence) return String;
    --  Returns an image of the complete call chain associated with an
    --  exception occurence in its most basic form, that is as a raw sequence
    --  of hexadecimal binary addresses.
 
    function Tailored_Exception_Traceback
-     (X    : Exception_Occurrence)
-      return String;
+     (X : Exception_Occurrence) return String;
    --  Returns an image of the complete call chain associated with an
    --  exception occurrence, either in its basic form if no decorator is
    --  in place, or as formatted by the decorator otherwise.
@@ -121,10 +117,11 @@ package body Exception_Data is
    begin
       P := S'Last;
       N := To_Integer (A);
-      while N /= 0 loop
+      loop
          S (P) := H (Integer (N mod 16));
          P := P - 1;
          N := N / 16;
+         exit when N = 0;
       end loop;
 
       S (P - 1) := '0';
@@ -184,8 +181,7 @@ package body Exception_Data is
    ---------------------------------
 
    function Basic_Exception_Information
-     (X    : Exception_Occurrence)
-      return String
+     (X : Exception_Occurrence) return String
    is
       Name : constant String := Exception_Name (X);
       Msg  : constant String := Exception_Message (X);
@@ -251,8 +247,7 @@ package body Exception_Data is
    -------------------------------
 
    function Basic_Exception_Traceback
-     (X    : Exception_Occurrence)
-      return String
+     (X : Exception_Occurrence) return String
    is
       Info_Maxlen : constant Natural := 35 + X.Num_Tracebacks * 19;
       --  Maximum length of the information string we are building, with :
@@ -460,8 +455,7 @@ package body Exception_Data is
    ----------------------------------
 
    function Tailored_Exception_Traceback
-     (X    : Exception_Occurrence)
-      return String
+     (X : Exception_Occurrence) return String
    is
       --  We indeed reference the decorator *wrapper* from here and not the
       --  decorator itself. The purpose of the local variable Wrapper is to
@@ -491,8 +485,7 @@ package body Exception_Data is
    ------------------------------------
 
    function Tailored_Exception_Information
-     (X    : Exception_Occurrence)
-      return String
+     (X : Exception_Occurrence) return String
    is
       --  The tailored exception information is simply the basic information
       --  associated with the tailored call chain backtrace.

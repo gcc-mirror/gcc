@@ -1408,6 +1408,12 @@ package body Errout is
          Warnings.Table (Warnings.Last).Start := Source_Ptr'First;
          Warnings.Table (Warnings.Last).Stop  := Source_Ptr'Last;
       end if;
+
+      --  Set all (???) the error nodes to Empty:
+
+      Error_Msg_Node_1 := Empty;
+      Error_Msg_Node_2 := Empty;
+
    end Initialize;
 
    -----------------

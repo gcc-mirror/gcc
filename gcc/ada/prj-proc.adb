@@ -56,8 +56,9 @@ package body Prj.Proc is
    --  arguments are not null string.
 
    procedure Add_Attributes
-     (Decl     : in out Declarations;
-      First    : Attribute_Node_Id);
+     (Project : Project_Id;
+      Decl    : in out Declarations;
+      First   : Attribute_Node_Id);
    --  Add all attributes, starting with First, with their default
    --  values to the package or project with declarations Decl.
 
@@ -66,21 +67,18 @@ package body Prj.Proc is
       From_Project_Node : Project_Node_Id;
       Pkg               : Package_Id;
       First_Term        : Project_Node_Id;
-      Kind              : Variable_Kind)
-      return              Variable_Value;
+      Kind              : Variable_Kind) return Variable_Value;
    --  From N_Expression project node From_Project_Node, compute the value
    --  of an expression and return it as a Variable_Value.
 
    function Imported_Or_Extended_Project_From
      (Project   : Project_Id;
-      With_Name : Name_Id)
-      return      Project_Id;
+      With_Name : Name_Id) return Project_Id;
    --  Find an imported or extended project of Project whose name is With_Name
 
    function Package_From
      (Project   : Project_Id;
-      With_Name : Name_Id)
-      return      Package_Id;
+      With_Name : Name_Id) return Package_Id;
    --  Find the package of Project whose name is With_Name
 
    procedure Process_Declarative_Items
@@ -143,8 +141,9 @@ package body Prj.Proc is
    --------------------
 
    procedure Add_Attributes
-     (Decl           : in out Declarations;
-      First          : Attribute_Node_Id)
+     (Project : Project_Id;
+      Decl    : in out Declarations;
+      First   : Attribute_Node_Id)
    is
       The_Attribute  : Attribute_Node_Id := First;
       Attribute_Data : Attribute_Record;
@@ -171,7 +170,8 @@ package body Prj.Proc is
 
                   when Single =>
                      New_Attribute :=
-                       (Kind     => Single,
+                       (Project  => Project,
+                        Kind     => Single,
                         Location => No_Location,
                         Default  => True,
                         Value    => Empty_String);
@@ -180,7 +180,8 @@ package body Prj.Proc is
 
                   when List =>
                      New_Attribute :=
-                       (Kind     => List,
+                       (Project  => Project,
+                        Kind     => List,
                         Location => No_Location,
                         Default  => True,
                         Values   => Nil_String);
@@ -225,8 +226,7 @@ package body Prj.Proc is
       From_Project_Node : Project_Node_Id;
       Pkg               : Package_Id;
       First_Term        : Project_Node_Id;
-      Kind              : Variable_Kind)
-      return              Variable_Value
+      Kind              : Variable_Kind) return Variable_Value
    is
       The_Term : Project_Node_Id := First_Term;
       --  The term in the expression list
@@ -241,6 +241,7 @@ package body Prj.Proc is
       --  Reference to the last string elements in Result, when Kind is List.
 
    begin
+      Result.Project := Project;
       Result.Location := Location_Of (First_Term);
 
       --  Process each term of the expression, starting with First_Term
@@ -536,14 +537,16 @@ package body Prj.Proc is
                              Expression_Kind_Of (The_Current_Term) = List
                            then
                               The_Variable :=
-                                (Kind     => List,
+                                (Project  => Project,
+                                 Kind     => List,
                                  Location => No_Location,
                                  Default  => True,
                                  Values   => Nil_String);
 
                            else
                               The_Variable :=
-                                (Kind     => Single,
+                                (Project  => Project,
+                                 Kind     => Single,
                                  Location => No_Location,
                                  Default  => True,
                                  Value    => Empty_String);
@@ -739,8 +742,7 @@ package body Prj.Proc is
 
    function Imported_Or_Extended_Project_From
      (Project   : Project_Id;
-      With_Name : Name_Id)
-      return      Project_Id
+      With_Name : Name_Id) return Project_Id
    is
       Data : constant Project_Data := Projects.Table (Project);
       List : Project_List          := Data.Imported_Projects;
@@ -779,8 +781,7 @@ package body Prj.Proc is
 
    function Package_From
      (Project   : Project_Id;
-      With_Name : Name_Id)
-      return      Package_Id
+      With_Name : Name_Id) return Package_Id
    is
       Data   : constant Project_Data := Projects.Table (Project);
       Result : Package_Id := Data.Decl.Packages;
@@ -1035,7 +1036,8 @@ package body Prj.Proc is
                         --  Set the default values of the attributes
 
                         Add_Attributes
-                          (Packages.Table (New_Pkg).Decl,
+                          (Project,
+                           Packages.Table (New_Pkg).Decl,
                            Package_Attributes.Table
                              (Package_Id_Of (Current_Item)).First_Attribute);
 
@@ -1260,6 +1262,8 @@ package body Prj.Proc is
 
                            Array_Elements.Table (New_Element) :=
                              Array_Elements.Table (Orig_Element);
+                           Array_Elements.Table (New_Element).Value.Project :=
+                             Project;
 
                            --  Adjust the Next link
 
@@ -1856,7 +1860,7 @@ package body Prj.Proc is
             Processed_Data.Extended_By := Extended_By;
             Processed_Data.Naming      := Standard_Naming_Data;
 
-            Add_Attributes (Processed_Data.Decl, Attribute_First);
+            Add_Attributes (Project, Processed_Data.Decl, Attribute_First);
             With_Clause := First_With_Clause_Of (From_Project_Node);
 
             while With_Clause /= Empty_Node loop
