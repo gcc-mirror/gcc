@@ -5181,14 +5181,18 @@ struct initializer_stack *initializer_stack;
 /* Prepare to parse and output the initializer for variable DECL.  */
 
 void
-start_init (decl, asmspec, top_level)
+start_init (decl, asmspec_tree, top_level)
      tree decl;
-     char *asmspec;
+     tree asmspec_tree;
      int top_level;
 {
   char *locus;
   struct initializer_stack *p
     = (struct initializer_stack *) xmalloc (sizeof (struct initializer_stack));
+  char *asmspec = 0;
+
+  if (asmspec_tree)
+    asmspec = TREE_STRING_POINTER (asmspec_tree);
 
   p->decl = constructor_decl;
   p->asmspec = constructor_asmspec;
