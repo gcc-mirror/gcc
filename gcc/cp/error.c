@@ -1899,9 +1899,19 @@ dump_expr (t, flags)
 		}
 	    }
 	}
-      output_add_character (scratch_buffer, '{');
-      dump_expr_list (CONSTRUCTOR_ELTS (t), flags);
-      output_add_character (scratch_buffer, '}');
+      /* We've gotten an rvalue of the form 'T()'.  */
+      else if (TREE_TYPE (t))
+        {
+          dump_type (TREE_TYPE (t), flags);
+          print_left_paren (scratch_buffer);
+          print_right_paren (scratch_buffer);
+        }
+      else
+        {
+          output_add_character (scratch_buffer, '{');
+          dump_expr_list (CONSTRUCTOR_ELTS (t), flags);
+          output_add_character (scratch_buffer, '}');
+        }
       break;
 
     case OFFSET_REF:
