@@ -68,17 +68,17 @@ Like @code{bootstrap}, except that the various stages are removed once
 they're no longer needed.  This saves disk space.
 
 @item bubblestrap
-Once bootstrapped, this incrementally rebuilds each of the three stages,
-one at a time.  It does this by ``bubbling'' the stages up from their
-subdirectories, rebuilding them, and copying them back to their
-subdirectories.  This will allow you to, for example, quickly rebuild a
-bootstrapped compiler after changing the sources, without having to do a
-full bootstrap.
+This incrementally rebuilds each of the three stages, one at a time.
+It does this by ``bubbling'' the stages up from their subdirectories
+(if they had been built previously), rebuilding them, and copying them
+back to their subdirectories.  This will allow you to, for example,
+continue a bootstrap after fixing a bug which causes the stage2 build
+to crash.
 
 @item quickstrap
 Rebuilds the most recently built stage.  Since each stage requires
-special invocation, using this target means you don't have to keep track
-of which stage you're on or what invocation that stage needs.
+special invocation, using this target means you don't have to keep
+track of which stage you're on or what invocation that stage needs.
 
 @item cleanstrap
 Removed everything (@samp{make clean}) and rebuilds (@samp{make bootstrap}).
