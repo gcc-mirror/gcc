@@ -1839,6 +1839,8 @@ literal_section ()						\
   {"call_operand", {REG, SYMBOL_REF}},			\
   {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,	\
 		     SYMBOL_REF, CONST, LABEL_REF}},	\
+  {"some_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE, \
+		    SYMBOL_REF, CONST, LABEL_REF}},	\
   {"aligned_memory_operand", {MEM}},			\
   {"unaligned_memory_operand", {MEM}},			\
   {"any_memory_operand", {MEM}},
