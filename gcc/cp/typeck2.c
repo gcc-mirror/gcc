@@ -329,7 +329,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 360.  Free:  */
+/* First used: 0 (reserved), Last used: 360.  Free: 261.  */
 
 static int abortcount = 0;
 

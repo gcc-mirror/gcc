@@ -2875,7 +2875,7 @@ linenum:
 		  if (c_header_level && --c_header_level == 0)
 		    {
 		      if (entering_c_header)
-			warning ("Badly nested C headers from preprocessor");
+			warning ("badly nested C headers from preprocessor");
 		      --pending_lang_change;
 		    }
 		  if (flag_cadillac)

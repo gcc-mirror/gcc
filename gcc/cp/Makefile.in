@@ -193,7 +193,7 @@ parse.o : $(srcdir)/parse.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h
   `echo $(srcdir)/parse.c | sed 's,^\./,,'`
 
 $(srcdir)/parse.c $(srcdir)/parse.h : $(srcdir)/parse.y
-	@echo expect 1 shift/reduce confict and 33 reduce/reduce conflicts.
+	@echo expect 1 shift/reduce confict and 34 reduce/reduce conflicts.
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
 	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
 

@@ -1392,7 +1392,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	     separately from the object being initialized.  */
 	  if (TREE_CODE (init) == TARGET_EXPR)
 	    {
-	      if (init_type == type)
+	      if (TYPE_MAIN_VARIANT (init_type) == TYPE_MAIN_VARIANT (type))
 		{
 		  if (TREE_CODE (exp) == VAR_DECL
 		      || TREE_CODE (exp) == RESULT_DECL)

@@ -221,7 +221,7 @@ empty_parms ()
 %type <ttype> type_id absdcl type_quals
 %type <ttype> direct_abstract_declarator conversion_declarator
 %type <ttype> new_type_id new_declarator direct_new_declarator
-%type <ttype> xexpr parmlist parms parm bad_parm
+%type <ttype> xexpr parmlist parms parm bad_parm full_parm
 %type <ttype> identifiers_or_typenames
 %type <ttype> fcast_or_absdcl regcast_or_absdcl sub_cast_expr
 %type <ttype> expr_or_declarator complex_notype_declarator
@@ -250,6 +250,7 @@ empty_parms ()
 %type <ttype> nonmomentary_expr
 %type <itype> forhead.2 initdcl0 notype_initdcl0 member_init_list
 %type <ttype> template_header template_parm_list template_parm
+%type <ttype> template_type_parm
 %type <ttype> template_type template_arg_list template_arg
 %type <ttype> template_instantiation template_type_name tmpl.2
 %type <ttype> template_instantiate_once template_instantiate_some
@@ -373,6 +374,20 @@ template_parm_list:
 		{ $$ = process_template_parm ($1, $3); }
 	;
 
+template_type_parm:
+	  aggr
+		{ 
+		  $$ = build_tree_list ($1, NULL_TREE);
+		 ttpa:
+		  if (TREE_PURPOSE ($$) == signature_type_node)
+		    sorry ("signature as template type parameter");
+		  else if (TREE_PURPOSE ($$) != class_type_node)
+		    pedwarn ("template type parameters must use the keyword `class'");
+		}
+	| aggr identifier
+		{ $$ = build_tree_list ($1, $2); goto ttpa; }
+	;
+
 template_parm:
 	/* The following rules introduce a new reduce/reduce
 	   conflict on the ',' and '>' input tokens: they are valid
@@ -381,24 +396,11 @@ template_parm:
 	   By putting them before the `parm' rule, we get
 	   their match before considering them nameless parameter
 	   declarations.  */
-	  aggr identifier
-		{
-		  if ($1 == signature_type_node)
-		    sorry ("signature as template type parameter");
-		  else if ($1 != class_type_node)
-		    error ("template type parameter must use keyword `class'");
-		  $$ = build_tree_list ($2, NULL_TREE);
-		}
-	| aggr identifier_defn ':' base_class.1
-		{
-		  if ($1 == signature_type_node)
-		    sorry ("signature as template type parameter");
-		  else if ($1 != class_type_node)
-		    error ("template type parameter must use keyword `class'");
-		  warning ("restricted template type parameters not yet implemented");
-		  $$ = build_tree_list ($2, $4);
-		}
-	| parm
+	  template_type_parm
+		{ $$ = build_tree_list (NULL_TREE, $$); }
+	| template_type_parm '=' typespec
+		{ $$ = build_tree_list ($3, $$); }
+	| full_parm
 	;
 
 overloaddef:
@@ -782,6 +784,8 @@ template_type:
 template_type_name:
 	  PTYPENAME '<' template_arg_list '>'
 		{ $$ = lookup_template_class ($$, $3, NULL_TREE); }
+	| PTYPENAME '<' '>'
+		{ $$ = lookup_template_class ($$, NULL_TREE, NULL_TREE); }
 	| TYPENAME  '<' template_arg_list '>'
 		{ $$ = lookup_template_class ($$, $3, NULL_TREE); }
 	;
@@ -3550,10 +3554,8 @@ parms:
 		{ $$ = build_tree_list (NULL_TREE, $$); }
 	| parm '=' init
 		{ $$ = build_tree_list ($3, $$); }
-	| parms_comma parm
-		{ $$ = chainon ($$, build_tree_list (NULL_TREE, $2)); }
-	| parms_comma parm '=' init
-		{ $$ = chainon ($$, build_tree_list ($4, $2)); }
+	| parms_comma full_parm
+		{ $$ = chainon ($$, $2); }
 	| parms_comma bad_parm
 		{ $$ = chainon ($$, build_tree_list (NULL_TREE, $2)); }
 	| parms_comma bad_parm '=' init
@@ -3597,6 +3599,13 @@ named_parm:
 		{ $$ = build_tree_list ($$, NULL_TREE); }
 	| declmods notype_declarator
 		{ $$ = build_tree_list ($$, $2); }
+	;
+
+full_parm:
+	  parm
+		{ $$ = build_tree_list (NULL_TREE, $$); }
+	| parm '=' init
+		{ $$ = build_tree_list ($3, $$); }
 	;
 
 parm:

@@ -1830,8 +1830,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	{
 	  tree parmtype = TREE_VALUE (FUNCTION_ARG_CHAIN (fn_fields));
 
-	  if (TREE_CODE (parmtype) == REFERENCE_TYPE
-	      && TYPE_MAIN_VARIANT (TREE_TYPE (parmtype)) == t)
+	  if (copy_assignment_arg_p (parmtype, DECL_VIRTUAL_P (fn_fields)))
 	    {
 	      if (TREE_PROTECTED (fn_fields))
 		TYPE_HAS_NONPUBLIC_ASSIGN_REF (t) = 1;
@@ -2151,6 +2150,86 @@ overrides (fndecl, base_fndecl)
   return 0;
 }
 
+static tree
+get_class_offset_1 (parent, binfo, context, t, fndecl)
+     tree parent, binfo, context, t, fndecl;
+{
+  tree binfos = BINFO_BASETYPES (binfo);
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  tree rval = NULL_TREE;
+
+  if (binfo == parent)
+    return error_mark_node;
+
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      tree nrval;
+
+      if (TREE_VIA_VIRTUAL (base_binfo))
+	base_binfo = binfo_member (BINFO_TYPE (base_binfo),
+				   CLASSTYPE_VBASECLASSES (t));
+      nrval = get_class_offset_1 (parent, base_binfo, context, t, fndecl);
+      /* See if we have a new value */
+      if (nrval && (nrval != error_mark_node || rval==0))
+	{
+	  /* Only compare if we have two offsets */
+	  if (rval && rval != error_mark_node
+	      && ! tree_int_cst_equal (nrval, rval))
+	    {
+	      /* Only give error if the two offsets are different */
+	      error ("every virtual function must have a unique final overrider");
+	      cp_error ("  found two (or more) `%T' class subobjects in `%T'", context, t);
+	      cp_error ("  with virtual `%D' from virtual base class", fndecl);
+	      return rval;
+	    }
+	  rval = nrval;
+	}
+	
+      if (rval && BINFO_TYPE (binfo) == context)
+	{
+	  my_friendly_assert (rval == error_mark_node
+			      || tree_int_cst_equal (rval, BINFO_OFFSET (binfo)), 999);
+	  rval = BINFO_OFFSET (binfo);
+	}
+    }
+  return rval;
+}
+
+/* Get the offset to the CONTEXT subobject that is related to the
+   given BINFO.  */
+static tree
+get_class_offset (context, t, binfo, fndecl)
+     tree context, t, binfo, fndecl;
+{
+  tree first_binfo = binfo;
+  tree offset;
+  int i;
+
+  if (context == t)
+    return integer_zero_node;
+
+  if (BINFO_TYPE (binfo) == context)
+    return BINFO_OFFSET (binfo);
+
+  /* Check less derived binfos first.  */
+  while (BINFO_BASETYPES (binfo)
+	 && (i=CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo))) != -1)
+    {
+      tree binfos = BINFO_BASETYPES (binfo);
+      binfo = TREE_VEC_ELT (binfos, i);
+      if (BINFO_TYPE (binfo) == context)
+	return BINFO_OFFSET (binfo);
+    }
+
+  /* Ok, not found in the less derived binfos, now check the more
+     derived binfos. */
+  offset = get_class_offset_1 (first_binfo, TYPE_BINFO (t), context, t, fndecl);
+  if (offset==0 || TREE_CODE (offset) != INTEGER_CST)
+    my_friendly_abort (999);	/* we have to find it.  */
+  return offset;
+}
+
 static void
 modify_one_vtable (binfo, t, fndecl, pfn)
      tree binfo, t, fndecl, pfn;
@@ -2174,16 +2253,7 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 	  tree vfield = CLASSTYPE_VFIELD (t);
 	  tree this_offset;
 
-	  offset = integer_zero_node;
-	  if (context != t && TYPE_USES_COMPLEX_INHERITANCE (t))
-	    {
-	      offset = virtual_offset (context, CLASSTYPE_VBASECLASSES (t), offset);
-	      if (offset == NULL_TREE)
-		{
-		  tree binfo = get_binfo (context, t, 0);
-		  offset = BINFO_OFFSET (binfo);
-		}
-	    }
+	  offset = get_class_offset (context, t, binfo, fndecl);
 
 	  /* Find the right offset for the this pointer based on the
 	     base class we just found.  We have to take into
@@ -2288,16 +2358,7 @@ fixup_vtable_deltas (binfo, t)
 	  tree vfield = CLASSTYPE_VFIELD (t);
 	  tree this_offset;
 
-	  offset = integer_zero_node;
-	  if (context != t && TYPE_USES_COMPLEX_INHERITANCE (t))
-	    {
-	      offset = virtual_offset (context, CLASSTYPE_VBASECLASSES (t), offset);
-	      if (offset == NULL_TREE)
-		{
-		  tree binfo = get_binfo (context, t, 0);
-		  offset = BINFO_OFFSET (binfo);
-		}
-	    }
+	  offset = get_class_offset (context, t, binfo, fndecl);
 
 	  /* Find the right offset for the this pointer based on the
 	     base class we just found.  We have to take into
@@ -3498,6 +3559,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	    tree uelt = TYPE_FIELDS (TREE_TYPE (field));
 	    for (; uelt; uelt = TREE_CHAIN (uelt))
 	      {
+		if (TREE_CODE (uelt) != FIELD_DECL)
+		  continue;
+
 		DECL_FIELD_CONTEXT (uelt) = DECL_FIELD_CONTEXT (field);
 		DECL_FIELD_BITPOS (uelt) = DECL_FIELD_BITPOS (field);
 	      }
@@ -3552,6 +3616,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	    tree uelt = TYPE_FIELDS (TREE_TYPE (field));
 	    for (; uelt; uelt = TREE_CHAIN (uelt))
 	      {
+		if (TREE_CODE (uelt) != FIELD_DECL)
+		  continue;
+
 		DECL_FIELD_CONTEXT (uelt) = DECL_FIELD_CONTEXT (field);
 		DECL_FIELD_BITPOS (uelt) = DECL_FIELD_BITPOS (field);
 	      }

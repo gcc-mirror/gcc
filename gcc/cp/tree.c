@@ -35,66 +35,75 @@ int
 lvalue_p (ref)
      tree ref;
 {
-  register enum tree_code code = TREE_CODE (ref);
+  if (! language_lvalue_valid (ref))
+    return 0;
+  
+  if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
+    return 1;
 
-  if (language_lvalue_valid (ref))
+  if (ref == current_class_decl && flag_this_is_variable <= 0)
+    return 0;
+
+  switch (TREE_CODE (ref))
     {
-      if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
+      /* preincrements and predecrements are valid lvals, provided
+	 what they refer to are valid lvals. */
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
+    case COMPONENT_REF:
+    case SAVE_EXPR:
+      return lvalue_p (TREE_OPERAND (ref, 0));
+
+    case STRING_CST:
+      return 1;
+
+    case VAR_DECL:
+      if (TREE_READONLY (ref) && ! TREE_STATIC (ref)
+	  && DECL_LANG_SPECIFIC (ref)
+	  && DECL_IN_AGGR_P (ref))
+	return 0;
+    case INDIRECT_REF:
+    case ARRAY_REF:
+    case PARM_DECL:
+    case RESULT_DECL:
+    case ERROR_MARK:
+      if (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
+	  && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
 	return 1;
-      
-      switch (code)
-	{
-	  /* preincrements and predecrements are valid lvals, provided
-	     what they refer to are valid lvals. */
-	case PREINCREMENT_EXPR:
-	case PREDECREMENT_EXPR:
-	case COMPONENT_REF:
-	case SAVE_EXPR:
-	  return lvalue_p (TREE_OPERAND (ref, 0));
+      break;
 
-	case STRING_CST:
-	  return 1;
+    case WITH_CLEANUP_EXPR:
+      return lvalue_p (TREE_OPERAND (ref, 0));
 
-	case VAR_DECL:
-	  if (TREE_READONLY (ref) && ! TREE_STATIC (ref)
-	      && DECL_LANG_SPECIFIC (ref)
-	      && DECL_IN_AGGR_P (ref))
-	    return 0;
-	case INDIRECT_REF:
-	case ARRAY_REF:
-	case PARM_DECL:
-	case RESULT_DECL:
-	case ERROR_MARK:
-	  if (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
-	      && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
-	    return 1;
-	  break;
+    case TARGET_EXPR:
+      return 1;
 
-	case TARGET_EXPR:
-	case WITH_CLEANUP_EXPR:
-	  return 1;
+    case CALL_EXPR:
+      if (TREE_ADDRESSABLE (TREE_TYPE (ref)))
+	return 1;
+      break;
 
-	  /* A currently unresolved scope ref.  */
-	case SCOPE_REF:
-	  my_friendly_abort (103);
-	case OFFSET_REF:
-	  if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
-	    return 1;
-	  return lvalue_p (TREE_OPERAND (ref, 0))
-	    && lvalue_p (TREE_OPERAND (ref, 1));
-	  break;
+      /* A currently unresolved scope ref.  */
+    case SCOPE_REF:
+      my_friendly_abort (103);
+    case OFFSET_REF:
+      if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
+	return 1;
+      return lvalue_p (TREE_OPERAND (ref, 0))
+	&& lvalue_p (TREE_OPERAND (ref, 1));
+      break;
 
-	case COND_EXPR:
-	  return (lvalue_p (TREE_OPERAND (ref, 1))
-		  && lvalue_p (TREE_OPERAND (ref, 2)));
+    case COND_EXPR:
+      return (lvalue_p (TREE_OPERAND (ref, 1))
+	      && lvalue_p (TREE_OPERAND (ref, 2)));
 
-	case MODIFY_EXPR:
-	  return 1;
+    case MODIFY_EXPR:
+      return 1;
 
-	case COMPOUND_EXPR:
-	  return lvalue_p (TREE_OPERAND (ref, 1));
-	}
+    case COMPOUND_EXPR:
+      return lvalue_p (TREE_OPERAND (ref, 1));
     }
+
   return 0;
 }
 
@@ -1182,50 +1191,6 @@ virtual_member (elem, list)
 	  }
     }
   return rval;
-}
-
-/* Return the offset (as an INTEGER_CST) for ELEM in LIST.
-   INITIAL_OFFSET is the value to add to the offset that ELEM's
-   binfo entry in LIST provides.
-
-   Returns NULL if ELEM does not have an binfo value in LIST.  */
-
-tree
-virtual_offset (elem, list, initial_offset)
-     tree elem;
-     tree list;
-     tree initial_offset;
-{
-  tree vb, offset;
-  tree rval, nval;
-
-  for (vb = list; vb; vb = TREE_CHAIN (vb))
-    if (elem == BINFO_TYPE (vb))
-      return size_binop (PLUS_EXPR, initial_offset, BINFO_OFFSET (vb));
-  rval = 0;
-  for (vb = list; vb; vb = TREE_CHAIN (vb))
-    {
-      tree binfos = BINFO_BASETYPES (vb);
-      int i;
-
-      if (binfos == NULL_TREE)
-	continue;
-
-      for (i = TREE_VEC_LENGTH (binfos)-1; i >= 0; i--)
-	{
-	  nval = binfo_value (elem, BINFO_TYPE (TREE_VEC_ELT (binfos, i)));
-	  if (nval)
-	    {
-	      if (rval && BINFO_OFFSET (nval) != BINFO_OFFSET (rval))
-		my_friendly_abort (105);
-	      offset = BINFO_OFFSET (vb);
-	      rval = nval;
-	    }
-	}
-    }
-  if (rval == NULL_TREE)
-    return rval;
-  return size_binop (PLUS_EXPR, offset, BINFO_OFFSET (rval));
 }
 
 void

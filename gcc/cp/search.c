@@ -1913,6 +1913,10 @@ get_matching_virtual (binfo, fndecl, dtorp)
       if (IDENTIFIER_VIRTUAL_P (declarator) == 0)
 	return NULL_TREE;
 
+      baselink = get_virtuals_named_this (binfo);
+      if (baselink == NULL_TREE)
+	return NULL_TREE;
+
       drettype = TREE_TYPE (TREE_TYPE (fndecl));
       dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
       if (DECL_STATIC_FUNCTION_P (fndecl))
@@ -1920,8 +1924,7 @@ get_matching_virtual (binfo, fndecl, dtorp)
       else
 	instptr_type = TREE_TYPE (TREE_VALUE (dtypes));
 
-      for (baselink = get_virtuals_named_this (binfo);
-	   baselink; baselink = next_baselink (baselink))
+      for (; baselink; baselink = next_baselink (baselink))
 	{
 	  for (tmp = TREE_VALUE (baselink); tmp; tmp = DECL_CHAIN (tmp))
 	    {
@@ -1945,7 +1948,7 @@ get_matching_virtual (binfo, fndecl, dtorp)
 		      && ! comptypes (TREE_TYPE (TREE_TYPE (tmp)), drettype, 1))
 		    {
 		      cp_error ("conflicting return type specified for virtual function `%#D'", fndecl);
-		      cp_error ("overriding definition as `%#D'", tmp);
+		      cp_error_at ("overriding definition as `%#D'", tmp);
 		      SET_IDENTIFIER_ERROR_LOCUS (name, basetype);
 		    }
 		  break;
@@ -2697,13 +2700,22 @@ free_mi_matrix ()
 /* If we want debug info for a type TYPE, make sure all its base types
    are also marked as being potentially interesting.  This avoids
    the problem of not writing any debug info for intermediate basetypes
-   that have abstract virtual functions.  */
+   that have abstract virtual functions.  Also mark member types.  */
 
 void
 note_debug_info_needed (type)
      tree type;
 {
+  tree field;
   dfs_walk (TYPE_BINFO (type), dfs_debug_mark, dfs_debug_unmarkedp);
+  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    {
+      tree ttype;
+      if (TREE_CODE (field) == FIELD_DECL
+	  && IS_AGGR_TYPE (ttype = target_type (TREE_TYPE (field)))
+	  && dfs_debug_unmarkedp (TYPE_BINFO (ttype)))
+	note_debug_info_needed (ttype);
+    }
 }
 
 /* Subroutines of push_class_decls ().  */

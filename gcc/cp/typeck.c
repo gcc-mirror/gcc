@@ -1410,8 +1410,19 @@ tree
 build_object_ref (datum, basetype, field)
      tree datum, basetype, field;
 {
+  tree dtype;
   if (datum == error_mark_node)
     return error_mark_node;
+
+  dtype = TREE_TYPE (datum);
+  if (TREE_CODE (dtype) == REFERENCE_TYPE)
+    dtype = TREE_TYPE (dtype);
+  if (! IS_AGGR_TYPE_CODE (TREE_CODE (dtype)))
+    {
+      cp_error ("request for member `%T::%D' in expression of non-aggregate type `%T'",
+		basetype, field, dtype);
+      return error_mark_node;
+    }
   else if (IS_SIGNATURE (IDENTIFIER_TYPE_VALUE (basetype)))
     {
       warning ("signature name in scope resolution ignored");
@@ -3247,6 +3258,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
+      result_type = bool_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
 	   && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	short_compare = 1;
@@ -3295,7 +3307,8 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	    warning ("comparison between pointer and integer");
 	  op0 = convert (TREE_TYPE (op1), op0);
 	}
-      result_type = bool_type_node;
+      else
+	result_type = 0;
       converted = 1;
       break;
     }
@@ -3717,7 +3730,7 @@ build_component_addr (arg, argtype, msg)
     }
   else
     /* This conversion is harmless.  */
-    rval = convert (argtype, rval);
+    rval = convert_force (argtype, rval);
 
   if (! integer_zerop (DECL_FIELD_BITPOS (field)))
     {
@@ -4939,7 +4952,7 @@ build_c_cast (type, expr)
     value = TREE_VALUE (value);
 
   if (TREE_CODE (type) == VOID_TYPE)
-    value = build1 (NOP_EXPR, type, value);
+    value = build1 (CONVERT_EXPR, type, value);
   else if (TREE_TYPE (value) == NULL_TREE
       || type_unknown_p (value))
     {
@@ -6445,7 +6458,8 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		add_quals = 1;
 	      left_const &= TYPE_READONLY (ttl);
 
-	      if (TREE_CODE (ttl) != POINTER_TYPE)
+	      if (TREE_CODE (ttl) != POINTER_TYPE
+		  || TREE_CODE (ttr) != POINTER_TYPE)
 		break;
 	    }
 	  unsigned_parity = TREE_UNSIGNED (ttl) - TREE_UNSIGNED (ttr);
@@ -7028,6 +7042,7 @@ c_expand_return (retval)
 	  && TREE_CODE (TREE_OPERAND (retval, 0)) == TARGET_EXPR)
 	retval = TREE_OPERAND (retval, 0);
       expand_aggr_init (result, retval, 0);
+      expand_cleanups_to (NULL_TREE);
       DECL_INITIAL (result) = NULL_TREE;
       retval = 0;
     }
@@ -7046,6 +7061,7 @@ c_expand_return (retval)
 	       && any_pending_cleanups (1))
 	{
 	  retval = get_temp_regvar (valtype, retval);
+	  expand_cleanups_to (NULL_TREE);
 	  use_temp = obey_regdecls;
 	  result = 0;
 	}
@@ -7071,7 +7087,10 @@ c_expand_return (retval)
     {
       /* Everything's great--RETVAL is in RESULT.  */
       if (original_result_rtx)
-	store_expr (result, original_result_rtx, 0);
+	{
+	  store_expr (result, original_result_rtx, 0);
+	  expand_cleanups_to (NULL_TREE);
+	}
       else if (retval && retval != result)
 	{
 	  /* Clear this out so the later call to decl_function_context
@@ -7083,6 +7102,7 @@ c_expand_return (retval)
 	     RESULT from cleanups.  */
 	  retval = build (INIT_EXPR, TREE_TYPE (result), result, retval);
 	  TREE_SIDE_EFFECTS (retval) = 1;
+	  retval = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (result), retval);
 	  expand_return (retval);
 	}
       else
