@@ -1,3 +1,8 @@
+2000-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20001012-1.c: New test.
+	* gcc.dg/20001012-2.c: New test.
+
 2000-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/format-attr-1.c: New test.

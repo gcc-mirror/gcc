@@ -50,7 +50,6 @@
 ;;			2	goto_handler_and_restore
 ;;			3	goto_handler_and_restore_v9*
 ;;			4	flush
-;;			5	nonlocal_goto_receiver
 ;;
 
 ;; The upper 32 fp regs on the v9 can't hold SFmode values.  To deal with this
@@ -9439,17 +9438,37 @@
    && in_same_eh_region (insn, operands[2])
    && in_same_eh_region (insn, ins1)"
   "call\\t%a0, %1\\n\\tadd\\t%%o7, (%l2-.-4), %%o7")
+
+(define_expand "prologue"
+  [(const_int 1)]
+  "flag_pic && current_function_uses_pic_offset_table"
+  "
+{
+  load_pic_register ();
+  DONE;
+}")
 
-;; After a nonlocal goto, we need to restore the PIC register, but only
-;; if we need it.  So do nothing much here, but we'll check for this in
-;; finalize_pic.
+;; We need to reload %l7 for -mflat -fpic,
+;; otherwise %l7 should be preserved simply
+;; by loading the function's register window
+(define_expand "exception_receiver"
+  [(const_int 0)]
+  "TARGET_FLAT && flag_pic"
+  "
+{
+  load_pic_register ();
+  DONE;
+}")
 
-;; Make sure this unspec_volatile number agrees with finalize_pic.
-(define_insn "nonlocal_goto_receiver"
-  [(unspec_volatile [(const_int 0)] 5)]
-  "flag_pic"
-  ""
-  [(set_attr "length" "0")])
+;; Likewise
+(define_expand "builtin_setjmp_receiver"
+  [(label_ref (match_operand 0 "" ""))]
+  "TARGET_FLAT && flag_pic"
+  "
+{
+  load_pic_register ();
+  DONE;
+}")
 
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 5))]
