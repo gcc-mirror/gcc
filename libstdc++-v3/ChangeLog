@@ -1,3 +1,10 @@
+2002-06-21  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/stl_map.h, include/bits/stl_multimap.h,
+	include/bits/stl_queue.h, include/bits/stl_stack.h:  Reformat and
+	complete doxygenation.
+	* include/bits/boost_concept_check.h:  Minor comment.
+
 2002-06-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_compatibility: New.
