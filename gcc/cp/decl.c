@@ -9607,6 +9607,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      type = TREE_TYPE (type);
 	    }
 
+	  if (decl_context == PARM && TREE_CODE (type) == ARRAY_TYPE
+	      && TYPE_DOMAIN (type) == NULL_TREE)
+	    cp_error ("parameter type includes pointer to array of unknown bound `%T'",
+		      type);
+
 	  /* Merge any constancy or volatility into the target type
 	     for the pointer.  */
 
