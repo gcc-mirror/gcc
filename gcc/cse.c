@@ -5517,32 +5517,11 @@ cse_insn (insn, libcall_insn)
 		&& GET_CODE (XEXP (XEXP (src_const, 0), 0)) == LABEL_REF
 		&& GET_CODE (XEXP (XEXP (src_const, 0), 1)) == LABEL_REF))
 	{
-	  rtx simplified_src_const;
 	  tem = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 	  
 	  /* Make sure that the rtx is not shared with any other insn.  */
 	  src_const = copy_rtx (src_const);
 
-	  /* Try to simplify SRC_CONST.
-
-	     The primary purpose behind simplifying the note is to allow
-	     for easier removal of library call sequences later.  Consider
-	     a udiv libcall where we can determine the second argument is
-	     a constant.  SRC_CONST would look like:
-
-	     	(udiv (reg) (const_int 2**n))
-
-	     That RTL expression will simplify into:
-
-		(lshiftrt (reg) (const_int n))
-
-	     A target using library calls for division is more likely to
-	     have a lshiftrt insn.  Thus, it is more likely that the libcall
-	     can be deleted in delete_trivially_dead_insns if we simplify
-	     the note.  */
-	  simplified_src_const = simplify_rtx (src_const);
-	  src_const = simplified_src_const ? simplified_src_const : src_const;
-	  
 	  /* Record the actual constant value in a REG_EQUAL note, making
 	     a new one if one does not already exist.  */
 	  if (tem)
