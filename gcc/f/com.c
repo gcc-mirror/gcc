@@ -367,6 +367,7 @@ static int duplicate_decls (tree newdecl, tree olddecl);
 static void finish_decl (tree decl, tree init, bool is_top_level);
 static void finish_function (int nested);
 static const char *ffe_printable_name (tree decl, int v);
+static void ffe_print_error_function (diagnostic_context *, const char *);
 static tree lookup_name_current_level (tree name);
 static struct binding_level *make_binding_level (void);
 static void pop_f_function_context (void);
@@ -13655,8 +13656,8 @@ ffe_printable_name (tree decl, int v)
    an error.  */
 
 static void
-lang_print_error_function (diagnostic_context *context __attribute__((unused)),
-                           const char *file)
+ffe_print_error_function (diagnostic_context *context __attribute__((unused)),
+			  const char *file)
 {
   static ffeglobal last_g = NULL;
   static ffesymbol last_s = NULL;
@@ -14227,6 +14228,8 @@ static void ffe_mark_tree (tree);
 #define LANG_HOOKS_PRINT_IDENTIFIER	ffe_print_identifier
 #undef  LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	ffe_printable_name
+#undef  LANG_HOOKS_PRINT_ERROR_FUNCTION
+#define LANG_HOOKS_PRINT_ERROR_FUNCTION ffe_print_error_function
 #undef  LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE	ffe_type_for_mode
 #undef  LANG_HOOKS_TYPE_FOR_SIZE
@@ -14293,7 +14296,6 @@ ffe_init (filename)
 #endif
 
   ffecom_init_decl_processing ();
-  print_error_function = lang_print_error_function;
 
   /* If the file is output from cpp, it should contain a first line
      `# 1 "real-filename"', and the current design of gcc (toplev.c

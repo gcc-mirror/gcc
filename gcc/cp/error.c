@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "flags.h"
 #include "diagnostic.h"
+#include "langhooks-def.h"
 
 enum pad { none, before, after };
 
@@ -104,8 +105,6 @@ static void dump_scope PARAMS ((tree, int));
 static void dump_template_parms PARAMS ((tree, int, int));
 
 static const char *function_category PARAMS ((tree));
-static void lang_print_error_function PARAMS ((diagnostic_context *,
-                                               const char *));
 static void maybe_print_instantiation_context PARAMS ((output_buffer *));
 static void print_instantiation_full_context PARAMS ((output_buffer *));
 static void print_instantiation_partial_context PARAMS ((output_buffer *, tree,
@@ -125,7 +124,6 @@ static tree locate_error PARAMS ((const char *, va_list));
 void
 init_error ()
 {
-  print_error_function = lang_print_error_function;
   diagnostic_starter (global_dc) = cp_diagnostic_starter;
   diagnostic_finalizer (global_dc) = cp_diagnostic_finalizer;
   diagnostic_format_decoder (global_dc) = cp_printer;
@@ -2375,14 +2373,15 @@ cv_to_string (p, v)
   return output_finalize_message (scratch_buffer);
 }
 
-static void
-lang_print_error_function (context, file)
+/* Langhook for print_error_function.  */
+void
+cxx_print_error_function (context, file)
      diagnostic_context *context;
      const char *file;
 {
   output_state os;
 
-  default_print_error_function (context, file);
+  lhd_print_error_function (context, file);
   os = output_buffer_state (context);
   output_set_prefix ((output_buffer *)context, file);
   maybe_print_instantiation_context ((output_buffer *)context);

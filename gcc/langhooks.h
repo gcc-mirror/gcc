@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* This file should be #include-d after tree.h.  */
 
+struct diagnostic_context;
+
 /* A print hook for print_tree ().  */
 typedef void (*lang_print_tree_hook) PARAMS ((FILE *, tree, int indent));
 
@@ -238,6 +240,10 @@ struct lang_hooks
      information that might be interesting, such as function parameter
      types in C++.  */
   const char *(*decl_printable_name) PARAMS ((tree decl, int verbosity));
+
+  /* Called by report_error_function to print out function name.  */
+  void (*print_error_function) PARAMS ((struct diagnostic_context *,
+					const char *));
 
   /* Set yydebug for bison-based parsers, when -dy is given on the
      command line.  By default, if the parameter is non-zero, prints a

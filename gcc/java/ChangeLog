@@ -1,3 +1,12 @@
+2002-03-31  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* lang.c (LANG_HOOKS_PRINT_ERROR_FUNCTION): Redefine.
+	(java_dummy_print): Remove.
+	(lang_print_error): Rename.  Exit early if inhibiting output.
+	(inhibit_error_printing_function): New.
+	(java_init): Don't set hook.
+	(lang_init_source): Use new boolean.
+
 2002-03-29  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* parse.y (do_resolve_class): Fix infinite recursion.

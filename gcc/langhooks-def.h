@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_LANG_HOOKS_DEF_H
 #define GCC_LANG_HOOKS_DEF_H
 
+struct diagnostic_context;
+
 /* Provide a hook routine for alias sets that always returns 1.  This is
    used by languages that haven't deal with alias sets yet.  */
 extern HOST_WIDE_INT hook_get_alias_set_0	PARAMS ((tree));
@@ -50,6 +52,8 @@ extern void lhd_print_tree_nothing PARAMS ((FILE *, tree, int));
 extern const char *lhd_decl_printable_name PARAMS ((tree, int));
 extern void lhd_set_yydebug PARAMS ((int));
 extern rtx lhd_expand_expr PARAMS ((tree, rtx, enum machine_mode, int));
+extern void lhd_print_error_function PARAMS ((struct diagnostic_context *,
+					      const char *));
 
 /* Declarations of default tree inlining hooks.  */
 tree lhd_tree_inlining_walk_subtrees		PARAMS ((tree *, int *,
@@ -93,6 +97,7 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_PRINT_DECL		lhd_print_tree_nothing
 #define LANG_HOOKS_PRINT_TYPE		lhd_print_tree_nothing
 #define LANG_HOOKS_PRINT_IDENTIFIER	lhd_print_tree_nothing
+#define LANG_HOOKS_PRINT_ERROR_FUNCTION lhd_print_error_function
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	lhd_decl_printable_name
 #define LANG_HOOKS_SET_YYDEBUG		lhd_set_yydebug
 
@@ -202,6 +207,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_PRINT_TYPE, \
   LANG_HOOKS_PRINT_IDENTIFIER, \
   LANG_HOOKS_DECL_PRINTABLE_NAME, \
+  LANG_HOOKS_PRINT_ERROR_FUNCTION, \
   LANG_HOOKS_SET_YYDEBUG, \
   LANG_HOOKS_TREE_INLINING_INITIALIZER, \
   LANG_HOOKS_TREE_DUMP_INITIALIZER, \

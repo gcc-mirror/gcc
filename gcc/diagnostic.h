@@ -310,12 +310,4 @@ extern int error_function_changed	PARAMS ((void));
 extern void record_last_error_function	PARAMS ((void));
 extern void report_problematic_module	PARAMS ((output_buffer *));     
 
-/* Called by report_error_function to print out function name.
- * Default may be overridden by language front-ends.  */
-extern void (*print_error_function) PARAMS ((diagnostic_context *,
-                                             const char *));
-
-extern void default_print_error_function PARAMS ((diagnostic_context *,
-                                                  const char *));
-
 #endif /* ! GCC_DIAGNOSTIC_H */
