@@ -1,3 +1,10 @@
+2003-04-10  Eric Blake  <ebb9@email.byu.edu>
+
+	PR java/10253:
+	* parse.y (string_convert_int_cst): Always use at least one digit
+	in string conversion. Remove ASCII dependence.
+	(merge_string_cste): Fix merging of 3-byte UTF-8 characters.
+
 2003-03-16  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* Make-lang.in: added win32-host.c

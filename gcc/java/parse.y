@@ -12489,17 +12489,18 @@ build_assignment (int op, int op_location, tree lhs, tree rhs)
 static char *
 string_convert_int_cst (tree node)
 {
-  static char buffer[80];
+  /* Long.MIN_VALUE is -9223372036854775808, 20 characters.  */
+  static char buffer[21];
 
   unsigned HOST_WIDE_INT lo = TREE_INT_CST_LOW (node);
   unsigned HOST_WIDE_INT hi = TREE_INT_CST_HIGH (node);
-  char *p = buffer + sizeof (buffer) - 1;
+  char *p = buffer + sizeof (buffer);
   int neg = 0;
 
   unsigned HOST_WIDE_INT hibit = (((unsigned HOST_WIDE_INT) 1)
 				  << (HOST_BITS_PER_WIDE_INT - 1));
 
-  *p-- = '\0';
+  *--p = '\0';
 
   /* If negative, note the fact and negate the value.  */
   if ((hi & hibit))
@@ -12512,7 +12513,7 @@ string_convert_int_cst (tree node)
     }
 
   /* Divide by 10 until there are no bits left.  */
-  while (hi || lo)
+  do
     {
       unsigned HOST_WIDE_INT acc = 0;
       unsigned HOST_WIDE_INT outhi = 0, outlo = 0;
@@ -12544,17 +12545,18 @@ string_convert_int_cst (tree node)
 	    }
 	}
 
-      /* FIXME: ASCII assumption.  */
-      *p-- = '0' + acc;
+      /* '0' == 060 in Java, but might not be here (think EBCDIC).  */
+      *--p = '\060' + acc;
 
       hi = outhi;
       lo = outlo;
     }
+  while (hi || lo);
 
   if (neg)
-    *p-- = '-';
+    *--p = '\055'; /* '-' == 055 in Java, but might not be here.  */
 
-  return p + 1;
+  return p;
 }
 
 /* Print an INTEGER_CST node in a static buffer, and return the
@@ -13678,23 +13680,23 @@ do_merge_string_cste (tree cste, const char *string, int string_len, int after)
 }
 
 /* Tries to merge OP1 (a STRING_CST) and OP2 (if suitable). Return a
-   new STRING_CST on success, NULL_TREE on failure */
+   new STRING_CST on success, NULL_TREE on failure.  */
 
 static tree
 merge_string_cste (tree op1, tree op2, int after)
 {
-  /* Handle two string constants right away */
+  /* Handle two string constants right away.  */
   if (TREE_CODE (op2) == STRING_CST)
     return do_merge_string_cste (op1, TREE_STRING_POINTER (op2),
 				 TREE_STRING_LENGTH (op2), after);
 
-  /* Reasonable integer constant can be treated right away */
+  /* Reasonable integer constant can be treated right away.  */
   if (TREE_CODE (op2) == INTEGER_CST && !TREE_CONSTANT_OVERFLOW (op2))
     {
       static const char *const boolean_true = "true";
       static const char *const boolean_false = "false";
       static const char *const null_pointer = "null";
-      char ch[3];
+      char ch[4];
       const char *string;
 
       if (op2 == boolean_true_node)
@@ -13702,22 +13704,30 @@ merge_string_cste (tree op1, tree op2, int after)
       else if (op2 == boolean_false_node)
 	string = boolean_false;
       else if (op2 == null_pointer_node)
+	/* FIXME: null is not a compile-time constant, so it is only safe to
+	   merge if the overall expression is non-constant. However, this
+	   code always merges without checking the overall expression.  */
 	string = null_pointer;
       else if (TREE_TYPE (op2) == char_type_node)
 	{
 	  /* Convert the character into UTF-8.	*/
-	  unsigned char c = (unsigned char) TREE_INT_CST_LOW (op2);
+	  unsigned int c = (unsigned int) TREE_INT_CST_LOW (op2);
 	  unsigned char *p = (unsigned char *) ch;
-	  if (0x01 <= c
-	      && c <= 0x7f)
-	    *p++ = c;
+	  if (0x01 <= c && c <= 0x7f)
+	    *p++ = (unsigned char) c;
+	  else if (c < 0x7ff)
+	    {
+	      *p++ = (unsigned char) (c >> 6 | 0xc0);
+	      *p++ = (unsigned char) ((c & 0x3f) | 0x80);
+	    }
 	  else
 	    {
-	      *p++ = c >> 6 | 0xc0;
-	      *p++ = (c & 0x3f) | 0x80;
+	      *p++ = (unsigned char) (c >> 12 | 0xe0);
+	      *p++ = (unsigned char) (((c >> 6) & 0x3f) | 0x80);
+	      *p++ = (unsigned char) ((c & 0x3f) | 0x80);
 	    }
 	  *p = '\0';
- 
+
 	  string = ch;
 	}
       else
