@@ -2877,6 +2877,10 @@ init_emit ()
   REGNO_POINTER_FLAG (VIRTUAL_STACK_VARS_REGNUM) = 1;
   REGNO_POINTER_FLAG (VIRTUAL_STACK_DYNAMIC_REGNUM) = 1;
   REGNO_POINTER_FLAG (VIRTUAL_OUTGOING_ARGS_REGNUM) = 1;
+
+#ifdef INIT_EXPANDERS
+  INIT_EXPANDERS;
+#endif
 }
 
 /* Create some permanent unique rtl objects shared between all functions.
