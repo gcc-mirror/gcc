@@ -2760,7 +2760,8 @@ copy_most_rtx (rtx orig, rtx may_share)
 }
 
 /* Mark ORIG as in use, and return a copy of it if it was already in use.
-   Recursively does the same for subexpressions.  */
+   Recursively does the same for subexpressions.  Uses
+   copy_rtx_if_shared_1 to reduce stack space.  */
 
 rtx
 copy_rtx_if_shared (rtx orig)
@@ -2768,6 +2769,9 @@ copy_rtx_if_shared (rtx orig)
   copy_rtx_if_shared_1 (&orig);
   return orig;
 }
+
+/* Mark *ORIG1 as in use, and set it to a copy of it if it was already in
+   use.  Recursively does the same for subexpressions.  */
 
 static void
 copy_rtx_if_shared_1 (rtx *orig1)
