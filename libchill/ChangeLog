@@ -1,3 +1,8 @@
+Fri Nov 20 18:48:34 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* basicio.c (PATH_MAX): Define only to _POSIX_PATH_MAX if that is
+	defined.  Otherwise, try MAXPATHLEN.
+
 Thu Oct 22 14:37:35 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Use AC_CONFIG_AUX_DIR($topsrcdir).
