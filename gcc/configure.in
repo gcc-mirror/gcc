@@ -2853,9 +2853,9 @@ do
 			cc_set_by_configure="\$(CC)"
 			stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
 		else
-			cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`,"
+			cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`"
 
-			stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`,"
+			stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`"
 		fi
 
 	# Otherwise, this is a language subdirectory.  If the host supports
@@ -3070,8 +3070,6 @@ float_format='${float_format}'
 use_collect2='${use_collect2}'
 will_use_collect2='${will_use_collect2}'
 maybe_use_collect2='${maybe_use_collect2}'
-cc_set_by_configure='${cc_set_by_configure}'
-stage_prefix_set_by_configure='${stage_prefix_set_by_configure}'
 gdb_needs_out_file_path='${gdb_needs_out_file_path}'
 SET_MAKE='${SET_MAKE}'
 build_broken_install='${build_broken_install}'
