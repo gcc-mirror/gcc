@@ -30,16 +30,24 @@ void do_check(struct s *x)
     abort();
 }
 
-asm ("
-___checkme:
-  pushl %eax; pushl %ebx; pushl %ecx; pushl %edx; pushl %esi; pushl %edi; pushl $0; pushl $0
-  pushl $0; pushl $0; pushl $0; pushl $0; pushl $0; pushl $0; pushl $0; pushl $0
-  movl %ecx, %eax
-  call do_check
-  popl %eax; popl %eax; popl %eax; popl %eax; popl %eax; popl %eax; popl %eax; popl %eax
-  popl %eax; popl %eax; popl %edi; popl %esi; popl %edx; popl %ecx; popl %ebx; popl %eax
-  ret
-");
+#define NT "\n\t"
+
+asm ("\n"
+"___checkme:"
+NT	"pushl %eax; pushl %ebx; pushl %ecx; pushl %edx; pushl %esi; pushl %edi"
+
+NT	"pushl $0; pushl $0; pushl $0; pushl $0; pushl $0"
+NT	"pushl $0; pushl $0; pushl $0; pushl $0; pushl $0"
+
+NT	"movl %ecx, %eax"
+NT	"call do_check"
+
+NT	"popl %eax; popl %eax; popl %eax; popl %eax; popl %eax"
+NT	"popl %eax; popl %eax; popl %eax; popl %eax; popl %eax"
+
+NT	"popl %edi; popl %esi; popl %edx; popl %ecx; popl %ebx;	popl %eax"
+NT	"ret"
+);
 
 extern inline void do_asm(struct s * x)
 {
