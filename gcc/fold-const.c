@@ -4428,6 +4428,24 @@ fold (expr)
 				 constop, TREE_OPERAND (varop, 1)));
 		TREE_SET_CODE (varop, PREINCREMENT_EXPR);
 
+		/* If VAROP is a reference to a bitfield, we must mask
+		   the constant by the width of the field.  */
+		if (TREE_CODE (TREE_OPERAND (varop, 0)) == COMPONENT_REF
+		    && DECL_BIT_FIELD(TREE_OPERAND
+				      (TREE_OPERAND (varop, 0), 1)))
+		  {
+		    int size
+		      = TREE_INT_CST_LOW (DECL_SIZE
+					  (TREE_OPERAND
+					   (TREE_OPERAND (varop, 0), 1)));
+
+		    newconst = fold (build (BIT_AND_EXPR,
+					    TREE_TYPE (varop), newconst,
+					    convert (TREE_TYPE (varop),
+						     build_int_2 (size, 0))));
+		  }
+							 
+
 		t = build (code, type, TREE_OPERAND (t, 0),
 			   TREE_OPERAND (t, 1));
 		TREE_OPERAND (t, constopnum) = newconst;
@@ -4444,6 +4462,23 @@ fold (expr)
 		  = fold (build (MINUS_EXPR, TREE_TYPE (varop),
 				 constop, TREE_OPERAND (varop, 1)));
 		TREE_SET_CODE (varop, PREDECREMENT_EXPR);
+
+		if (TREE_CODE (TREE_OPERAND (varop, 0)) == COMPONENT_REF
+		    && DECL_BIT_FIELD(TREE_OPERAND
+				      (TREE_OPERAND (varop, 0), 1)))
+		  {
+		    int size
+		      = TREE_INT_CST_LOW (DECL_SIZE
+					  (TREE_OPERAND
+					   (TREE_OPERAND (varop, 0), 1)));
+
+		    newconst = fold (build (BIT_AND_EXPR,
+					    TREE_TYPE (varop), newconst,
+					    convert (TREE_TYPE (varop),
+						     build_int_2 (size, 0))));
+		  }
+							 
+
 		t = build (code, type, TREE_OPERAND (t, 0),
 			   TREE_OPERAND (t, 1));
 		TREE_OPERAND (t, constopnum) = newconst;
