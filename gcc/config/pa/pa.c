@@ -3348,6 +3348,7 @@ hppa_init_pic_save ()
 
   picreg = gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM);
   PIC_OFFSET_TABLE_SAVE_RTX = gen_reg_rtx (Pmode);
+  RTX_UNCHANGING_P (PIC_OFFSET_TABLE_SAVE_RTX) = 1;
   insn = gen_rtx_SET (VOIDmode, PIC_OFFSET_TABLE_SAVE_RTX, picreg);
 
   /* Emit the insn at the beginning of the function after the prologue.  */
