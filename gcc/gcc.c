@@ -374,9 +374,9 @@ or with constant text in a single argument.
 	specified to CC.  Note that the tail part of the -S option
 	(i.e. the part matched by the `*') will be substituted for each
 	occurrence of %* within X.
- %{<S}  remove all occurences of S from the command line.
+ %{<S}  remove all occurences of -S from the command line.
         Note - this option is position dependent.  % commands in the
-        spec string before this option will see S, % commands in the
+        spec string before this option will see -S, % commands in the
         spec string after this option will not.
  %{S:X} substitutes X, but only if the -S switch was given to CC.
  %{!S:X} substitutes X, but only if the -S switch was NOT given to CC.
