@@ -46,8 +46,6 @@ static rtx extract_split_bit_field	PROTO((rtx, int, int, int, int));
 static void do_cmp_and_jump		PROTO((rtx, rtx, enum rtx_code,
 					       enum machine_mode, rtx));
 
-#define CEIL(x,y) (((x) + (y) - 1) / (y))
-
 /* Non-zero means divides or modulus operations are relatively cheap for
    powers of two, so don't use branches; emit the operation instead. 
    Usually, this will mean that the MD file will emit non-branch

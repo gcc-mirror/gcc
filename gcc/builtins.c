@@ -43,8 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #define CALLED_AS_BUILT_IN(NODE) \
    (!strncmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__builtin_", 10))
 
-#define CEIL(x,y) (((x) + (y) - 1) / (y))
-
 /* Register mappings for target machines without register windows.  */
 #ifndef INCOMING_REGNO
 #define INCOMING_REGNO(OUT) (OUT)
