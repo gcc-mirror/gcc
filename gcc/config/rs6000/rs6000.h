@@ -725,6 +725,23 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    1						   \
 }
 
+/* Like `CALL_USED_REGISTERS' except this macro doesn't require that
+   the entire set of `FIXED_REGISTERS' be included.
+   (`CALL_USED_REGISTERS' must be a superset of `FIXED_REGISTERS').
+   This macro is optional.  If not specified, it defaults to the value
+   of `CALL_USED_REGISTERS'.  */
+		       
+#define CALL_REALLY_USED_REGISTERS  \
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, FIXED_R13, 0, 0, \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1,	   \
+   /* AltiVec registers.  */			   \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   0						   \
+}
 
 #define MQ_REGNO     64
 #define CR0_REGNO    68
@@ -928,23 +945,27 @@ extern int rs6000_debug_arg;		/* debug argument handling */
   if (! TARGET_POWER)							\
     fixed_regs[64] = 1;							\
   if (TARGET_64BIT)							\
-    fixed_regs[13] = call_used_regs[13] = 1; 				\
+    fixed_regs[13] = call_used_regs[13]					\
+      = call_really_used_regs[13] = 1; 					\
   if (TARGET_SOFT_FLOAT)						\
     for (i = 32; i < 64; i++)						\
-      fixed_regs[i] = call_used_regs[i] = 1; 				\
+      fixed_regs[i] = call_used_regs[i]					\
+        = call_really_used_regs[i] = 1;					\
   if (DEFAULT_ABI == ABI_V4 && flag_pic == 1)				\
     fixed_regs[PIC_OFFSET_TABLE_REGNUM]					\
-      = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
+      = call_used_regs[PIC_OFFSET_TABLE_REGNUM]				\
+      = call_really_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
   if (DEFAULT_ABI == ABI_DARWIN && flag_pic)				\
     global_regs[PIC_OFFSET_TABLE_REGNUM]				\
       = fixed_regs[PIC_OFFSET_TABLE_REGNUM]				\
-        = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
+      = call_used_regs[PIC_OFFSET_TABLE_REGNUM]				\
+      = call_really_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
   if (! TARGET_ALTIVEC)							\
     for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)		\
-      fixed_regs[i] = call_used_regs[i] = 1;				\
+      fixed_regs[i] = call_used_regs[i] = call_really_used_regs[i] = 1;	\
   if (TARGET_ALTIVEC_ABI)						\
     for (i = FIRST_ALTIVEC_REGNO; i < FIRST_ALTIVEC_REGNO + 20; ++i)	\
-      call_used_regs[i] = 1;						\
+      call_used_regs[i] = call_really_used_regs[i] = 1;			\
 }
 
 /* Specify the registers used for certain standard purposes.

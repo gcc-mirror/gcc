@@ -1,3 +1,9 @@
+2001-11-30  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.h (CALL_REALLY_USED_REGISTERS): New.
+        (CONDITIONAL_REGISTER_USAGE): Set call_really_used_registers to
+        the values in call_used_registers.
+
 Fri Nov 30 12:48:26 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* gthr-dce.h: If _DCE_THREADS is not defined, then just include
