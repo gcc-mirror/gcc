@@ -1,5 +1,10 @@
 2004-02-15  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Remove unnecessary parallels from
+	all define_insn and define_split patterns.
+
+2004-02-15  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Remove explicit (set_attr "cc"
 	"clobber").
 
