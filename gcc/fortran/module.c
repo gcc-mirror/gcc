@@ -78,7 +78,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define MODULE_EXTENSION ".mod"
 
 
-/* Structure that describes a position within a module file */
+/* Structure that describes a position within a module file.  */
 
 typedef struct
 {
@@ -105,7 +105,7 @@ typedef struct fixup_t
 fixup_t;
 
 
-/* Structure for holding extra info needed for pointers being read */
+/* Structure for holding extra info needed for pointers being read.  */
 
 typedef struct pointer_info
 {
@@ -114,13 +114,13 @@ typedef struct pointer_info
   pointer_t type;
 
   /* The first component of each member of the union is the pointer
-     being stored */
+     being stored.  */
 
   fixup_t *fixup;
 
   union
   {
-    void *pointer;	/* Member for doing pointer searches */
+    void *pointer;	/* Member for doing pointer searches.  */
 
     struct
     {
@@ -153,7 +153,7 @@ pointer_info;
 #define gfc_get_pointer_info() gfc_getmem(sizeof(pointer_info))
 
 
-/* Lists of rename info for the USE statement */
+/* Lists of rename info for the USE statement.  */
 
 typedef struct gfc_use_rename
 {
@@ -197,7 +197,6 @@ static int symbol_number;	/* Counter for assigning symbol numbers */
 static void
 free_pi_tree (pointer_info * p)
 {
-
   if (p == NULL)
     return;
 
