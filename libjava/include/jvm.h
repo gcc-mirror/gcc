@@ -335,13 +335,14 @@ extern jobject _Jv_CallAnyMethodA (jobject obj, jclass return_type,
 				   jobjectArray args);
 
 union jvalue;
-extern jthrowable _Jv_CallAnyMethodA (jobject obj,
-				      jclass return_type,
-				      jmethodID meth,
-				      jboolean is_constructor,
-				      JArray<jclass> *parameter_types,
-				      jvalue *args,
-				      jvalue *result);
+extern void _Jv_CallAnyMethodA (jobject obj,
+				jclass return_type,
+				jmethodID meth,
+				jboolean is_constructor,
+				JArray<jclass> *parameter_types,
+				jvalue *args,
+				jvalue *result,
+				jboolean is_jni_call = true);
 
 extern jobject _Jv_NewMultiArray (jclass, jint ndims, jint* dims)
   __attribute__((__malloc__));

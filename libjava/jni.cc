@@ -777,12 +777,9 @@ static T
 	return_type = klass;
 
       jvalue result;
-      jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
-					  style == constructor,
-					  arg_types, args, &result);
-
-      if (ex != NULL)
-	env->ex = ex;
+      _Jv_CallAnyMethodA (obj, return_type, id,
+			  style == constructor,
+			  arg_types, args, &result);
 
       // We cheat a little here.  FIXME.
       return wrap_value (env, * (T *) &result);
@@ -847,12 +844,9 @@ static T
 	}
 
       jvalue result;
-      jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
-					  style == constructor,
-					  arg_types, arg_copy, &result);
-
-      if (ex != NULL)
-	env->ex = ex;
+      _Jv_CallAnyMethodA (obj, return_type, id,
+			  style == constructor,
+			  arg_types, arg_copy, &result);
 
       // We cheat a little here.  FIXME.
       return wrap_value (env, * (T *) &result);
@@ -893,12 +887,9 @@ static void
       if (style == constructor)
 	return_type = klass;
 
-      jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
-					  style == constructor,
-					  arg_types, args, NULL);
-
-      if (ex != NULL)
-	env->ex = ex;
+      _Jv_CallAnyMethodA (obj, return_type, id,
+			  style == constructor,
+			  arg_types, args, NULL);
     }
   catch (jthrowable t)
     {
@@ -947,12 +938,9 @@ static void
 	    arg_copy[i].l = unwrap (args[i].l);
 	}
 
-      jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
-					  style == constructor,
-					  arg_types, args, NULL);
-
-      if (ex != NULL)
-	env->ex = ex;
+      _Jv_CallAnyMethodA (obj, return_type, id,
+			  style == constructor,
+			  arg_types, args, NULL);
     }
   catch (jthrowable t)
     {
