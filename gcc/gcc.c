@@ -212,6 +212,14 @@ static const char *target_system_root = 0;
 
 static int target_system_root_changed;
 
+/* Nonzero means append this string to target_system_root.  */
+
+static const char *target_sysroot_suffix = 0;
+
+/* Nonzero means append this string to target_system_root for headers.  */
+
+static const char *target_sysroot_hdrs_suffix = 0;
+
 /* Nonzero means write "temp" files in source directory
    and use the source file's name in them, and don't delete them.  */
 
@@ -703,6 +711,14 @@ proper position among the other output files.  */
 # define STARTFILE_PREFIX_SPEC ""
 #endif
 
+#ifndef SYSROOT_SUFFIX_SPEC
+# define SYSROOT_SUFFIX_SPEC ""
+#endif
+
+#ifndef SYSROOT_HEADERS_SUFFIX_SPEC
+# define SYSROOT_HEADERS_SUFFIX_SPEC ""
+#endif
+
 static const char *asm_debug;
 static const char *cpp_spec = CPP_SPEC;
 static const char *cc1_spec = CC1_SPEC;
@@ -720,6 +736,8 @@ static const char *linker_name_spec = LINKER_NAME;
 static const char *link_command_spec = LINK_COMMAND_SPEC;
 static const char *link_libgcc_spec = LINK_LIBGCC_SPEC;
 static const char *startfile_prefix_spec = STARTFILE_PREFIX_SPEC;
+static const char *sysroot_suffix_spec = SYSROOT_SUFFIX_SPEC;
+static const char *sysroot_hdrs_suffix_spec = SYSROOT_HEADERS_SUFFIX_SPEC;
 
 /* Standard options to cpp, cc1, and as, to reduce duplication in specs.
    There should be no need to override these in target dependent files,
@@ -1499,6 +1517,8 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("md_startfile_prefix",	&md_startfile_prefix),
   INIT_STATIC_SPEC ("md_startfile_prefix_1",	&md_startfile_prefix_1),
   INIT_STATIC_SPEC ("startfile_prefix_spec",	&startfile_prefix_spec),
+  INIT_STATIC_SPEC ("sysroot_suffix_spec",	&sysroot_suffix_spec),
+  INIT_STATIC_SPEC ("sysroot_hdrs_suffix_spec",	&sysroot_hdrs_suffix_spec),
 };
 
 #ifdef EXTRA_SPECS		/* additional specs needed */
@@ -2611,7 +2631,10 @@ add_sysrooted_prefix (pprefix, prefix, component, priority,
 
   if (target_system_root)
     {
+      if (target_sysroot_suffix)
+	  prefix = concat (target_sysroot_suffix, prefix, NULL);
       prefix = concat (target_system_root, prefix, NULL);
+
       /* We have to override this because GCC's notion of sysroot
 	 moves along with GCC.  */
       component = "GCC";
@@ -4824,12 +4847,15 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  do_spec_1 (" ", 0, NULL);
 		}
 
-	      if (target_system_root_changed)
+	      if (target_system_root_changed ||
+		  (target_system_root && target_sysroot_hdrs_suffix))
 		{
 		  do_spec_1 ("-isysroot", 1, NULL);
 		  /* Make this a separate argument.  */
 		  do_spec_1 (" ", 0, NULL);
 		  do_spec_1 (target_system_root, 1, NULL);
+		  if (target_sysroot_hdrs_suffix)
+		    do_spec_1 (target_sysroot_hdrs_suffix, 1, NULL);
 		  do_spec_1 (" ", 0, NULL);
 		}
 
@@ -5040,8 +5066,13 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    /* We assume there is a directory
 	       separator at the end of this string.  */
 	    if (target_system_root)
-	      obstack_grow (&obstack, target_system_root, 
-			    strlen (target_system_root));
+	      { 
+	        obstack_grow (&obstack, target_system_root, 
+			      strlen (target_system_root));
+		if (target_sysroot_suffix)
+		  obstack_grow (&obstack, target_sysroot_suffix, 
+				strlen (target_sysroot_suffix));
+	      }
 	    break;
 
 	  case 'S':
@@ -6122,6 +6153,26 @@ main (argc, argv)
 	  add_prefix (&exec_prefixes, md_exec_prefix, "GCC",
 		      PREFIX_PRIORITY_LAST, 0, NULL, 0);
 	}
+    }
+
+  /* Process sysroot_suffix_spec. */
+  if (*sysroot_suffix_spec != 0
+      && do_spec_2 (sysroot_suffix_spec) == 0)
+    {
+      if (argbuf_index > 1)
+        error ("spec failure: more than one arg to SYSROOT_SUFFIX_SPEC.");
+      else if (argbuf_index == 1)
+        target_sysroot_suffix = xstrdup (argbuf[argbuf_index -1]);
+    }
+
+  /* Process sysroot_hdrs_suffix_spec. */
+  if (*sysroot_hdrs_suffix_spec != 0
+      && do_spec_2 (sysroot_hdrs_suffix_spec) == 0)
+    {
+      if (argbuf_index > 1)
+        error ("spec failure: more than one arg to SYSROOT_HEADERS_SUFFIX_SPEC.");
+      else if (argbuf_index == 1)
+        target_sysroot_hdrs_suffix = xstrdup (argbuf[argbuf_index -1]);
     }
 
   /* Look for startfiles in the standard places.  */

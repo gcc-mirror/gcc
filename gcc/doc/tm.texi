@@ -320,6 +320,19 @@ blanks that names one of the recognized thread models.  @code{%*}, the
 default value of this macro, will expand to the value of
 @code{thread_file} set in @file{config.gcc}.
 
+@findex SYSROOT_SUFFIX_SPEC
+@item SYSROOT_SUFFIX_SPEC
+Define this macro to add a suffix to the target sysroot when GCC is 
+configured with a sysroot.  This will cause GCC to search for usr/lib, 
+et al, within sysroot+suffix. 
+
+@findex SYSROOT_HEADERS_SUFFIX_SPEC
+@item SYSROOT_HEADERS_SUFFIX_SPEC
+Define this macro to add a headers_suffix to the target sysroot when 
+GCC is configured with a sysroot.  This will cause GCC to pass the 
+updated sysroot+headers_suffix to CPP@, causing it to search for
+usr/include, et al, within sysroot+headers_suffix.
+
 @findex EXTRA_SPECS
 @item EXTRA_SPECS
 Define this macro to provide additional specifications to put in the
