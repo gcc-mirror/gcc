@@ -600,17 +600,31 @@ htab_find_slot (htab, element, insert)
 }
 
 /* This function deletes an element with the given value from hash
-   table.  If there is no matching element in the hash table, this
-   function does nothing.  */
+   table (the hash is computed from the element).  If there is no matching
+   element in the hash table, this function does nothing.  */
 
 void
 htab_remove_elt (htab, element)
      htab_t htab;
      PTR element;
 {
+  htab_remove_elt_with_hash (htab, element, (*htab->hash_f) (element));
+}
+
+
+/* This function deletes an element with the given value from hash
+   table.  If there is no matching element in the hash table, this
+   function does nothing.  */
+
+void
+htab_remove_elt_with_hash (htab, element, hash)
+     htab_t htab;
+     PTR element;
+     hashval_t hash;
+{
   PTR *slot;
 
-  slot = htab_find_slot (htab, element, NO_INSERT);
+  slot = htab_find_slot_with_hash (htab, element, hash, NO_INSERT);
   if (*slot == EMPTY_ENTRY)
     return;
 
