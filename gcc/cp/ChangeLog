@@ -1,3 +1,18 @@
+2004-12-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18378
+	* call.c (convert_like_real): Do not permit the use of a copy
+	constructor to copy a packed field.
+
+	PR c++/17413
+	* decl.c (grokdeclarator): Return error_mark_node, not
+	void_type_node, to indicate errors.
+	* parser.c (cp_parser_template_parameter_list): Robustify.
+	(cp_parser_template_parameter): Likewise.
+
+	PR c++/19034
+	* tree.c (cp_tree_equal): Handle OVERLOAD.
+
 2004-12-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* decl.c (define_label): Use POP_TIMEVAR_AND_RETURN.

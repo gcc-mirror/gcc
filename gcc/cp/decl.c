@@ -6745,7 +6745,7 @@ grokdeclarator (const cp_declarator *declarator,
       && ! (ctype && !declspecs->any_specifiers_p))
     {
       error ("declaration of %qD as non-function", dname);
-      return void_type_node;
+      return error_mark_node;
     }
 
   /* Anything declared one level down from the top level
