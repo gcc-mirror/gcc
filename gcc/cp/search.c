@@ -286,7 +286,7 @@ struct dcast_data_s
 		     derived.  */
   tree offset;    /* Best hint offset discovered so far.  */
   bool repeated_base;  /* Whether there are repeated bases in the
-			  heirarchy.  */
+			  hierarchy.  */
 };
 
 /* Worker for dcast_base_hint.  Search for the base type being cast
@@ -1722,7 +1722,7 @@ dfs_walk_once_accessible (tree binfo, bool friends_p,
     {
       if (!BINFO_INHERITANCE_CHAIN (binfo))
 	{
-	  /* We are at the top of the hierachy, and can use the
+	  /* We are at the top of the hierarchy, and can use the
              CLASSTYPE_VBASECLASSES list for unmarking the virtual
              bases.  */
 	  VEC (tree) *vbases;
