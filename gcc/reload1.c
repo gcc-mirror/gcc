@@ -2449,7 +2449,8 @@ delete_dead_insn (insn)
   if (prev && GET_CODE (PATTERN (prev)) == SET
       && (prev_dest = SET_DEST (PATTERN (prev)), GET_CODE (prev_dest) == REG)
       && reg_mentioned_p (prev_dest, PATTERN (insn))
-      && find_regno_note (insn, REG_DEAD, REGNO (prev_dest)))
+      && find_regno_note (insn, REG_DEAD, REGNO (prev_dest))
+      && ! side_effects_p (SET_SRC (PATTERN (prev))))
     delete_dead_insn (prev);
 
   PUT_CODE (insn, NOTE);
