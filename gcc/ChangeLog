@@ -1,7 +1,11 @@
+2001-06-28  Jan van Male  <jan.vanmale@fenk.wau.nl>
+
+	* predict.c (dump_prediction): Eliminate fprintf warning.
+
 2001-06-28  Diego Novillo  <dnovillo@redhat.com>
 
-      * flow.c (dump_bb): Remove unused third argument to call
-      to fprintf when displaying the basic block header.
+	* flow.c (dump_bb): Remove unused third argument to call
+	to fprintf when displaying the basic block header.
 
 2001-06-28  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	    Jeff Law <law@redhat.com>
