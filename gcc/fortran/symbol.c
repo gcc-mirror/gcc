@@ -179,8 +179,7 @@ gfc_merge_new_implicit (gfc_typespec * ts)
 }
 
 
-/* Given a symbol, return a pointer to the typespec for it's default
-   type.  */
+/* Given a symbol, return a pointer to the typespec for its default type.  */
 
 gfc_typespec *
 gfc_get_default_type (gfc_symbol * sym, gfc_namespace * ns)
@@ -483,9 +482,9 @@ check_used (symbol_attribute * attr, const char * name, locus * where)
 
 
 /* Used to prevent changing the attributes of a symbol after it has been
-   used.  This check is only done from dummy variable as only these can be
+   used.  This check is only done for dummy variables as only these can be
    used in specification expressions.  Applying this to all symbols causes
-   error when we reach the body of a contained function.  */
+   an error when we reach the body of a contained function.  */
 
 static int
 check_done (symbol_attribute * attr, locus * where)
@@ -684,7 +683,7 @@ gfc_add_dummy (symbol_attribute * attr, const char *name, locus * where)
   if (check_used (attr, name, where))
     return FAILURE;
 
-  /* Duplicate dummy arguments are allow due to ENTRY statements.  */
+  /* Duplicate dummy arguments are allowed due to ENTRY statements.  */
   attr->dummy = 1;
   return check_conflict (attr, name, where);
 }
@@ -836,7 +835,7 @@ gfc_add_generic (symbol_attribute * attr, const char *name, locus * where)
 }
 
 
-/* Flavors are special because some flavors are not what fortran
+/* Flavors are special because some flavors are not what Fortran
    considers attributes and can be reaffirmed multiple times.  */
 
 try
@@ -1102,7 +1101,7 @@ gfc_copy_attr (symbol_attribute * dest, symbol_attribute * src, locus * where)
     goto fail;
 
   /* The subroutines that set these bits also cause flavors to be set,
-     and that has already happened in the original, so don't let to
+     and that has already happened in the original, so don't let it
      happen again.  */
   if (src->external)
     dest->external = 1;
@@ -1147,7 +1146,7 @@ gfc_add_component (gfc_symbol * sym, const char *name, gfc_component ** componen
       tail = p;
     }
 
-  /* Allocate new component */
+  /* Allocate a new component.  */
   p = gfc_get_component ();
 
   if (tail == NULL)
@@ -1194,7 +1193,7 @@ switch_types (gfc_symtree * st, gfc_symbol * from, gfc_symbol * to)
    have to have a derived type in a parent unit.  We find the node in
    the other namespace and point the symtree node in this namespace to
    that node.  Further reference to this name point to the correct
-   node.  If we can't find the node in a parent namespace, then have
+   node.  If we can't find the node in a parent namespace, then we have
    an error.
 
    This subroutine takes a pointer to a symbol node and returns a
@@ -1521,7 +1520,7 @@ done:
    the internal subprograms must be read before we can start
    generating code for the host.
 
-   Given the tricky nature of the fortran grammar, we must be able to
+   Given the tricky nature of the Fortran grammar, we must be able to
    undo changes made to a symbol table if the current interpretation
    of a statement is found to be incorrect.  Whenever a symbol is
    looked up, we make a copy of it and link to it.  All of these
