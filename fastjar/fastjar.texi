@@ -35,7 +35,7 @@
 Copyright (C) @value{copyrights-fastjar} Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
+under the terms of the GNU Free Documentation License, Version 1.2 or
 any later version published by the Free Software Foundation; with the
 Invariant Sections being ``GNU General Public License'', the Front-Cover
 texts being (a) (see below), and with the Back-Cover Texts being (b)
@@ -78,7 +78,7 @@ Published by the Free Software Foundation @*
 Boston, MA 02111-1307, USA@*
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
+under the terms of the GNU Free Documentation License, Version 1.2 or
 any later version published by the Free Software Foundation; with the
 Invariant Sections being ``GNU General Public License'', the Front-Cover
 texts being (a) (see below), and with the Back-Cover Texts being (b)
