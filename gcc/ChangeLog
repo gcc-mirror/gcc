@@ -1,3 +1,11 @@
+2003-10-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/clzhi2.c: Fix warnings.
+	* config/h8300/ctzhi2.c: Likewise.
+	* config/h8300/fixunssfsi.c: Likewise.
+	* config/h8300/parityhi2.c: Likewise.
+	* config/h8300/popcounthi2.c: Likewise.
+
 2003-10-23  James E Wilson  <wilson@specifixinc.com>
 
 	* gcc.c (option_map): Delete --target and --use-version.
