@@ -1,3 +1,7 @@
+Sat Mar  4 11:32:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* toplev.c (debug_ignore_block): Mark arg BLOCK as possibly unused.
+
 2000-03-04  Jason Merrill  <jason@casey.cygnus.com>
 
 	* stmt.c (is_body_block): Move...

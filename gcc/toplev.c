@@ -5166,7 +5166,7 @@ debug_undef (lineno, buffer)
 
 void
 debug_ignore_block (block)
-     tree block;
+     tree block ATTRIBUTE_UNUSED;
 {
 #ifdef DWARF2_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
