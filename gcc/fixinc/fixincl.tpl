@@ -9,9 +9,9 @@ x=fixincl.x =]
  *
  * This file contains [=_eval fix _count =] fixup descriptions.
  *
- * See README-fixinc for more information.
+ * See README for more information.
  *
- *  inclhack copyright (c) 1998, 1999, 2000
+ *  inclhack copyright (c) 1998, 1999, 2000, 2001
  *  The Free Software Foundation, Inc.
  *
 [=_eval inclhack "# *  " _gpl=]
