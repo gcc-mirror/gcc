@@ -33,9 +33,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern FILE *finput;
 
-struct pending_input *save_pending_input ();
-void restore_pending_input ();
-
 struct input_source {
   /* saved string */
   char *str;
@@ -61,6 +58,17 @@ extern int lineno;
 #else
 #define inline
 #endif
+
+extern void feed_input PROTO((char *, int));
+extern void put_input PROTO((int));
+extern void put_back PROTO((int));
+extern int getch PROTO((void));
+extern int input_redirected PROTO((void));
+
+static inline struct input_source * allocate_input PROTO((void));
+static inline void free_input PROTO((struct input_source *));
+static inline void end_input PROTO((void));
+static inline int sub_getch PROTO((void));
 
 static inline struct input_source *
 allocate_input ()

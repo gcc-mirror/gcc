@@ -32,9 +32,25 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "obstack.h"
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
 extern char * rindex ();
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#else
 extern char * getenv ();
-extern char * getpwd ();
+#endif
+extern char * getpwd PROTO((void));
+
+static tree repo_get_id PROTO((tree));
+static char *save_string PROTO((char *, int));
+static char *extract_string PROTO((char **));
+static char *get_base_filename PROTO((char *));
+static void open_repo_file PROTO((char *));
+static char *afgets PROTO((FILE *));
+static void reopen_repo_file_for_write PROTO((void));
 
 static tree pending_repo;
 static tree original_repo;

@@ -1,3 +1,22 @@
+Wed Aug 20 17:25:08 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (is_subseq): Don't try to be clever.
+
+Wed Aug 20 03:13:36 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* parse.y, pt.c: Include "except.h".
+	* call.c, class.c, class.h, cp-tree.h, cvt.c, decl.c, decl2.c,
+ 	error.c, except.c, expr.c, friend.c, g++spec.c, init.c, input.c,
+ 	lex.c, lex.h, method.c, parse.y, pt.c, repo.c, rtti.c, search.c,
+ 	sig.c, spew.c, tree.c, typeck.c, typeck2.c, xref.c: Finish
+ 	prototyping.
+
+Wed Aug 20 01:34:40 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (mark_vtable_entries): Instead of replacing pure
+	virtuals with a reference to __pure_virtual, copy the decl and
+	change the RTL.
+
 Tue Aug 19 02:26:07 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (lookup_nested_type_by_name): Handle typedef wierdness.

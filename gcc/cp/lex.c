@@ -44,6 +44,21 @@ Boston, MA 02111-1307, USA.  */
 #include <locale.h>
 #endif
 
+#ifdef HAVE_STDLIB_H
+#ifndef MULTIBYTE_CHARS
+#include <stdlib.h>
+#endif
+#else
+extern double atof ();
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+extern char *index ();
+extern char *rindex ();
+#endif
+
 #ifndef errno
 extern int errno;		/* needed for VAX.  */
 #endif
@@ -54,9 +69,27 @@ extern int errno;		/* needed for VAX.  */
 extern struct obstack permanent_obstack;
 extern struct obstack *current_obstack, *saveable_obstack;
 
-extern double atof ();
+extern void yyprint PROTO((FILE *, int, YYSTYPE));
+extern void set_float_handler PROTO((jmp_buf));
+extern void compiler_error PROTO((char *, HOST_WIDE_INT,
+				  HOST_WIDE_INT));
 
-extern char *get_directive_line ();	/* In c-common.c */
+static tree get_time_identifier PROTO((char *));
+static int check_newline PROTO((void));
+static int skip_white_space PROTO((int));
+static int yynextch PROTO((void));
+static void finish_defarg PROTO((void));
+static int my_get_run_time PROTO((void));
+static int get_last_nonwhite_on_line PROTO((void));
+static int interface_strcmp PROTO((char *));
+static int readescape PROTO((int *));
+static char *extend_token_buffer PROTO((char *));
+static void consume_string PROTO((struct obstack *, int));
+static void set_typedecl_interface_info PROTO((tree, tree));
+static void feed_defarg PROTO((tree, tree));
+static int set_vardecl_interface_info PROTO((tree, tree));
+static void store_pending_inline PROTO((tree, struct pending_inline *));
+static void reinit_parse_for_expr PROTO((struct obstack *));
 
 /* Given a file name X, return the nondirectory portion.
    Keep in mind that X can be computed more than once.  */
@@ -64,10 +97,6 @@ extern char *get_directive_line ();	/* In c-common.c */
 #define FILE_NAME_NONDIRECTORY(X)		\
  (rindex (X, '/') != 0 ? rindex (X, '/') + 1 : X)
 #endif
-
-extern char *index ();
-extern char *rindex ();
-void yyerror ();
 
 /* This obstack is needed to hold text.  It is not safe to use
    TOKEN_BUFFER because `check_newline' calls `yylex'.  */
@@ -123,7 +152,6 @@ tree ridpointers[(int) RID_MAX];
 
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
-static tree get_time_identifier ();
 static tree filename_times;
 static tree this_filename_time;
 
@@ -272,12 +300,9 @@ char *token_buffer;		/* Pointer to token buffer.
 
 #include "hash.h"
 
-static int check_newline ();
 
 /* Nonzero tells yylex to ignore \ in string constants.  */
 static int ignore_escape_flag = 0;
-
-static int skip_white_space ();
 
 static tree
 get_time_identifier (name)
@@ -402,12 +427,9 @@ reinit_lang_specific ()
 }
 #endif
 
-int *init_parse ();
-
 void
 init_lex ()
 {
-  extern char *(*decl_printable_name) ();
   extern int flag_no_gnu_keywords;
   extern int flag_operator_names;
 
@@ -1414,8 +1436,6 @@ store_pending_inline (decl, t)
   pending_inlines = t;
 }
 
-static void reinit_parse_for_block PROTO((int, struct obstack *));
-
 void
 reinit_parse_for_method (yychar, decl)
      int yychar;
@@ -1465,7 +1485,7 @@ reinit_parse_for_method (yychar, decl)
 /* Consume a block -- actually, a method beginning
    with `:' or `{' -- and save it away on the specified obstack.  */
 
-static void
+void
 reinit_parse_for_block (pyychar, obstackp)
      int pyychar;
      struct obstack *obstackp;
@@ -2159,9 +2179,9 @@ get_last_nonwhite_on_line ()
 int linemode;
 
 #ifdef HANDLE_SYSV_PRAGMA
-static int handle_sysv_pragma ();
+static int handle_sysv_pragma PROTO((FILE *, int));
 #endif
-static int handle_cp_pragma ();
+static int handle_cp_pragma PROTO((char *));
 
 static int
 check_newline ()
@@ -2691,7 +2711,6 @@ readescape (ignore_ptr)
 int looking_for_typename = 0;
 
 #ifdef __GNUC__
-extern __inline int identifier_type ();
 __inline
 #endif
 int
@@ -3122,7 +3141,7 @@ real_yylex ()
 		  p = extend_token_buffer (p);
 
 		*p++ = c;
-		c = getch (finput);
+		c = getc (finput);
 	      }
 
 	    if (linemode && c == '\n')
@@ -3633,7 +3652,7 @@ real_yylex ()
 		      p = extend_token_buffer (p);
 		    *p++ = c;
 		    *p = 0;
-		    c = getch (finput);
+		    c = getc (finput);
 		  }
 
 		/* The second argument, machine_mode, of REAL_VALUE_ATOF
@@ -3741,7 +3760,7 @@ real_yylex ()
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
 		*p++ = c;
-		c = getch (finput);
+		c = getc (finput);
 	      }
 
 	    /* If the constant is not long long and it won't fit in an

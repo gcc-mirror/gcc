@@ -103,7 +103,7 @@ struct candidate
 				   -5 if contravariance violation.  */
     } u;
 };
-int rank_for_overload ();
+int rank_for_overload PROTO ((struct candidate *, struct candidate *));
 
 /* Variables shared between class.c and call.c.  */
 

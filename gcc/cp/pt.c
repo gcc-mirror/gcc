@@ -40,6 +40,11 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "output.h"
 #include "defaults.h"
+#include "except.h"
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 extern struct obstack permanent_obstack;
 
@@ -61,18 +66,17 @@ int minimal_parse_mode;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-static int unify ();
-
-void pop_template_decls ();
-
-static tree classtype_mangled_name ();
-static char * mangle_class_name_for_template ();
-static tree tsubst_expr_values ();
+static int unify PROTO((tree, tree *, int, tree, tree, int *, int));
+static void add_pending_template PROTO((tree));
+static int push_tinst_level PROTO((tree));
+static tree classtype_mangled_name PROTO((tree));
+static char *mangle_class_name_for_template PROTO((char *, tree, tree));
+static tree tsubst_expr_values PROTO((tree, tree));
 static int comp_template_args PROTO((tree, tree));
-tree most_specialized_class PROTO((tree, tree));
+static int list_eq PROTO((tree, tree));
 static tree get_class_bindings PROTO((tree, tree, tree));
-tree make_temp_vec PROTO((int));
-static tree tsubst_enum				PROTO((tree, tree *, int));
+static tree coerce_template_parms PROTO((tree, tree, tree));
+static tree tsubst_enum	PROTO((tree, tree *, int));
 
 /* We've got a template header coming up; push to a new level for storing
    the parms.  */

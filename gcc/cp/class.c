@@ -82,7 +82,50 @@ tree current_class_type;	/* _TYPE: the type of the current class */
 tree previous_class_type;	/* _TYPE: the previous type that was a class */
 tree previous_class_values;		/* TREE_LIST: copy of the class_shadowed list
 				   when leaving an outermost class scope.  */
+
+struct base_info;
+
 static tree get_vfield_name PROTO((tree));
+static void finish_struct_anon PROTO((tree));
+static tree build_vbase_pointer PROTO((tree, tree));
+static int complete_type_p PROTO((tree));
+static int typecode_p PROTO((tree, enum tree_code));
+static tree build_vtable_entry PROTO((tree, tree));
+static tree get_vtable_name PROTO((tree));
+static tree get_derived_offset PROTO((tree, tree));
+static tree get_basefndecls PROTO((tree, tree));
+static void set_rtti_entry PROTO((tree, tree, tree));
+static tree build_vtable PROTO((tree, tree));
+static tree build_type_pathname PROTO((char *, tree, tree));
+static void prepare_fresh_vtable PROTO((tree, tree));
+static void fixup_vtable_deltas1 PROTO((tree, tree));
+static void fixup_vtable_deltas PROTO((tree, int, tree));
+static void grow_method PROTO((tree, tree *));
+static void finish_vtbls PROTO((tree, int, tree));
+static void modify_vtable_entry PROTO((tree, tree, tree));
+static tree get_vtable_entry_n PROTO((tree, unsigned HOST_WIDE_INT));
+static tree add_virtual_function PROTO((tree, int *, tree, tree));
+static tree delete_duplicate_fields_1 PROTO((tree, tree));
+static void delete_duplicate_fields PROTO((tree));
+static void finish_struct_bits PROTO((tree, int));
+static int alter_access PROTO((tree, tree, tree));
+static int overrides PROTO((tree, tree));
+static int strictly_overrides PROTO((tree, tree));
+static void merge_overrides PROTO((tree, tree, int, tree));
+static void override_one_vtable PROTO((tree, tree, tree));
+static void mark_overriders PROTO((tree, tree));
+static void check_for_override PROTO((tree, tree));
+static tree maybe_fixup_vptrs PROTO((tree, tree, tree));
+static tree get_class_offset_1 PROTO((tree, tree, tree, tree, tree));
+static tree get_class_offset PROTO((tree, tree, tree, tree));
+static void modify_one_vtable PROTO((tree, tree, tree, tree));
+static void modify_all_vtables PROTO((tree, tree, tree));
+static void modify_all_direct_vtables PROTO((tree, int, tree, tree,
+					     tree));
+static void modify_all_indirect_vtables PROTO((tree, int, int, tree,
+					       tree, tree));
+static void build_class_init_list PROTO((tree));
+static int finish_base_struct PROTO((tree, struct base_info *, tree));
 
 /* Way of stacking language names.  */
 tree *current_lang_base, *current_lang_stack;

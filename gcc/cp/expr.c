@@ -28,6 +28,9 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "cp-tree.h"
 
+static tree extract_aggr_init PROTO((tree, tree));
+static tree extract_scalar_init PROTO((tree, tree));
+
 /* Hook used by expand_expr to expand language-specific tree codes.  */
 
 rtx

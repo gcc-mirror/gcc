@@ -28,10 +28,22 @@ Boston, MA 02111-1307, USA.  */
 
 #include <ctype.h>
 
-extern char *getpwd ();
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+extern char *getpwd PROTO((void));
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
 extern char *index ();
 extern char *rindex ();
+#endif
 
 /* The character(s) used to join a directory specification (obtained with
    getwd or equivalent) with a non-absolute file name.  */
@@ -125,30 +137,14 @@ static	tree		last_fndecl = NULL;
 /*	Forward definitions						*/
 /*									*/
 /************************************************************************/
-
-extern	void		GNU_xref_begin();
-extern	void		GNU_xref_end();
-extern	void		GNU_xref_file();
-extern	void		GNU_xref_start_scope();
-extern	void		GNU_xref_end_scope();
-extern	void		GNU_xref_ref();
-extern	void		GNU_xref_decl();
-extern	void		GNU_xref_call();
-extern	void		GNU_xref_function();
-extern	void		GNU_xref_assign();
-extern	void		GNU_xref_hier();
-extern	void		GNU_xref_member();
-
-static	void		gen_assign();
-static	XREF_FILE	find_file();
-static	char *		filename();
-static	char *		fctname();
-static	char *		declname();
-static	void		simplify_type();
-static	char *		fixname();
-static	void		open_xref_file();
-
-extern	char *		type_as_string();
+static	void		gen_assign PROTO((XREF_FILE, tree));
+static	XREF_FILE	find_file PROTO((char *));
+static	char *		filename PROTO((XREF_FILE));
+static	char *		fctname PROTO((tree));
+static	char *		declname PROTO((tree));
+static	void		simplify_type PROTO((char *));
+static	char *		fixname PROTO((char *, char *));
+static	void		open_xref_file PROTO((char *));
 
 /* Start cross referencing.  FILE is the name of the file we xref.  */
 

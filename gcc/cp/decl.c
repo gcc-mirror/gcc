@@ -39,6 +39,8 @@ Boston, MA 02111-1307, USA.  */
 #include <signal.h>
 #include "obstack.h"
 #include "defaults.h"
+#include "output.h"
+#include "except.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -130,8 +132,43 @@ static void revert_static_member_fn		PROTO((tree *, tree *, tree *));
 static tree push_overloaded_decl		PROTO((tree, int));
 static void push_overloaded_decl_top_level	PROTO((tree, int));
 
-tree define_function		
-	PROTO((char *, tree, enum built_in_function, void (*)(), char *));
+static struct stack_level *push_decl_level PROTO((struct stack_level *,
+						  struct obstack *));
+static void push_binding_level PROTO((struct binding_level *, int,
+				      int));
+static void pop_binding_level PROTO((void));
+static void suspend_binding_level PROTO((void));
+static void resume_binding_level PROTO((struct binding_level *));
+static struct binding_level *make_binding_level PROTO((void));
+static int namespace_bindings_p PROTO((void));
+static void declare_namespace_level PROTO((void));
+static tree get_unique_name PROTO((void));
+static void signal_catch PROTO((int));
+static void storedecls PROTO((tree));
+static void storetags PROTO((tree));
+static void require_complete_types_for_parms PROTO((tree));
+static void push_overloaded_decl_1 PROTO((tree));
+static int ambi_op_p PROTO((tree));
+static int unary_op_p PROTO((tree));
+static tree store_bindings PROTO((tree, tree));
+static tree lookup_tag_reverse PROTO((tree, tree));
+static tree obscure_complex_init PROTO((tree, tree));
+static tree maybe_build_cleanup_1 PROTO((tree, tree));
+static tree lookup_name_real PROTO((tree, int, int));
+static void warn_extern_redeclared_static PROTO((tree, tree));
+static void grok_reference_init PROTO((tree, tree, tree, tree *));
+static tree grokfndecl PROTO((tree, tree, tree, int,
+			      enum overload_flags,
+			      tree, tree, tree, int, int, int, int));
+static tree grokvardecl PROTO((tree, tree, RID_BIT_TYPE *, int, int));
+static tree lookup_tag PROTO((enum tree_code, tree,
+			      struct binding_level *, int));
+static void set_identifier_type_value_with_scope
+	PROTO((tree, tree, struct binding_level *));
+static void record_builtin_type PROTO((enum rid, char *, tree));
+static int member_function_or_else PROTO((tree, tree, char *));
+static void bad_specifiers PROTO((tree, char *, int, int, int, int,
+				  int));
 
 /* a node which has tree code ERROR_MARK, and whose type is itself.
    All erroneous expressions are replaced with this node.  All functions
@@ -4625,7 +4662,7 @@ auto_function (name, type, code)
      enum built_in_function code;
 {
   return define_function
-    (IDENTIFIER_POINTER (name), type, code, (void (*)())push_overloaded_decl_1,
+    (IDENTIFIER_POINTER (name), type, code, push_overloaded_decl_1,
      IDENTIFIER_POINTER (build_decl_overload (name, TYPE_ARG_TYPES (type),
 					      0)));
 }
@@ -5555,7 +5592,7 @@ define_function (name, type, function_code, pfn, library_name)
      char *name;
      tree type;
      enum built_in_function function_code;
-     void (*pfn)();
+     void (*pfn) PROTO((tree));
      char *library_name;
 {
   tree decl = build_lang_decl (FUNCTION_DECL, get_identifier (name), type);
