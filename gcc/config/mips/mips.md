@@ -1,6 +1,6 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
 ;;  Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+;;  1999, 2000, 2001, 2002, 2005 Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -163,7 +163,8 @@
 
 ;; Describe a user's asm statement.
 (define_asm_attributes
-  [(set_attr "type" "multi")])
+  [(set_attr "type" "multi")
+   (set_attr "can_delay" "no")])
 
 ;; whether or not generating calls to position independent functions
 (define_attr "abicalls" "no,yes"
