@@ -7264,8 +7264,11 @@ tsubst_qualified_id (tree qualified_id, tree args,
 		     ? DECL_TEMPLATE_RESULT (expr) : expr) == TYPE_DECL)
 	{
 	  if (complain & tf_error)
-	    error ("`%E' names a type, but a non-type is expected",
-		   qualified_id);
+	    {
+	      error ("dependent-name `%E' is parsed as a non-type, but "
+		     "instantiation yields a type", qualified_id);
+	      inform ("say `typename %E' if a type is meant", qualified_id);
+	    }
 	  return error_mark_node;
 	}
     }

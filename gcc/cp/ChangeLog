@@ -1,3 +1,9 @@
+2004-02-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13957
+	* pt.c (tsubst_qualified_id): Improved error message when a type
+	is expected but	not found.
+
 2004-01-30  Michael Matz  <matz@suse.de>
 
 	* parser.c (cp_parser_labeled_statement): Accept case ranges.
