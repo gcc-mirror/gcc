@@ -134,6 +134,9 @@ extern int target_flags;
    function, and one less allocatable register.  */
 #define MASK_MINIMAL_TOC	0x200
 
+/* Nonzero for the 64bit model: ints, longs, and pointers are 64 bits.  */
+#define MASK_64BIT		0x400
+
 #define TARGET_POWER			(target_flags & MASK_POWER)
 #define TARGET_POWER2			(target_flags & MASK_POWER2)
 #define TARGET_POWERPC			(target_flags & MASK_POWERPC)
@@ -144,6 +147,7 @@ extern int target_flags;
 #define TARGET_NO_FP_IN_TOC		(target_flags & MASK_NO_FP_IN_TOC)
 #define TARGET_NO_SUM_IN_TOC		(target_flags & MASK_NO_SUM_IN_TOC)
 #define TARGET_MINIMAL_TOC		(target_flags & MASK_MINIMAL_TOC)
+#define TARGET_64BIT			(target_flags & MASK_64BIT)
 
 /* Run-time compilation parameters selecting different hardware subsets.
 
@@ -294,12 +298,56 @@ extern char *rs6000_cpu_string;
 /* Width of wchar_t in bits.  */
 #define WCHAR_TYPE_SIZE 16
 
+/* A C expression for the size in bits of the type `short' on the
+   target machine.  If you don't define this, the default is half a
+   word.  (If this would be less than one storage unit, it is
+   rounded up to one unit.)  */
+#define SHORT_TYPE_SIZE 16
+
+/* A C expression for the size in bits of the type `int' on the
+   target machine.  If you don't define this, the default is one
+   word.  */
+#define INT_TYPE_SIZE (TARGET_64BIT ? 64 : 32)
+#define MAX_INT_TYPE_SIZE 64
+
+/* A C expression for the size in bits of the type `long' on the
+   target machine.  If you don't define this, the default is one
+   word.  */
+#define LONG_TYPE_SIZE (TARGET_64BIT ? 64 : 32)
+#define MAX_LONG_TYPE_SIZE 64
+
+/* A C expression for the size in bits of the type `long long' on the
+   target machine.  If you don't define this, the default is two
+   words.  */
+#define LONG_LONG_TYPE_SIZE 64
+
+/* A C expression for the size in bits of the type `char' on the
+   target machine.  If you don't define this, the default is one
+   quarter of a word.  (If this would be less than one storage unit,
+   it is rounded up to one unit.)  */
+#define CHAR_TYPE_SIZE BITS_PER_UNIT
+
+/* A C expression for the size in bits of the type `float' on the
+   target machine.  If you don't define this, the default is one
+   word.  */
+#define FLOAT_TYPE_SIZE 32
+
+/* A C expression for the size in bits of the type `double' on the
+   target machine.  If you don't define this, the default is two
+   words.  */
+#define DOUBLE_TYPE_SIZE 64
+
+/* A C expression for the size in bits of the type `long double' on
+   the target machine.  If you don't define this, the default is two
+   words.  */
+#define LONG_DOUBLE_TYPE_SIZE 64
+
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE 32
+#define POINTER_SIZE (TARGET_64BIT ? 64 : 32)
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-#define PARM_BOUNDARY 32
+#define PARM_BOUNDARY (TARGET_64BIT ? 64 : 32)
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY 64
@@ -308,7 +356,7 @@ extern char *rs6000_cpu_string;
 #define FUNCTION_BOUNDARY 32
 
 /* No data type wants to be aligned rounder than this.  */
-#define BIGGEST_ALIGNMENT 32
+#define BIGGEST_ALIGNMENT (TARGET_64BIT ? 64 : 32)
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
@@ -754,7 +802,8 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
    except for dynamic allocations.  So we start after the fixed area and
    outgoing parameter area.  */
 
-#define STARTING_FRAME_OFFSET (current_function_outgoing_args_size + 24)
+#define STARTING_FRAME_OFFSET (current_function_outgoing_args_size \
+			       + (TARGET_64BIT ? 48 : 24))
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -764,12 +813,12 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 /* Offset of first parameter from the argument pointer register value.
    On the RS/6000, we define the argument pointer to the start of the fixed
    area.  */
-#define FIRST_PARM_OFFSET(FNDECL) 24
+#define FIRST_PARM_OFFSET(FNDECL) (TARGET_64BIT ? 48 : 24)
 
 /* Define this if stack space is still allocated for a parameter passed
    in a register.  The value is the number of bytes allocated to this
    area.  */
-#define REG_PARM_STACK_SPACE(FNDECL)	32
+#define REG_PARM_STACK_SPACE(FNDECL)	(TARGET_64BIT ? 64 : 32)
 
 /* Define this if the above stack space is to be considered part of the
    space allocated by the caller.  */
@@ -778,7 +827,7 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 /* This is the difference between the logical top of stack and the actual sp.
 
    For the RS/6000, sp points past the fixed area. */
-#define STACK_POINTER_OFFSET 24
+#define STACK_POINTER_OFFSET (TARGET_64BIT ? 48 : 24)
 
 /* Define this if the maximum size of all the outgoing args is to be
    accumulated and pushed during the prologue.  The amount can be
@@ -1416,12 +1465,12 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode SImode
+#define Pmode (TARGET_64BIT ? DImode : SImode)
 
 /* Mode of a function address in a call instruction (for indexing purposes).
 
    Doesn't matter on RS/6000.  */
-#define FUNCTION_MODE SImode
+#define FUNCTION_MODE (TARGET_64BIT ? DImode : SImode)
 
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
