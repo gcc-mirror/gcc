@@ -103,21 +103,21 @@ public abstract class JarURLConnection extends URLConnection
    *
    * @specnote This constructor is protected since JDK 1.4
    */
-  protected JarURLConnection(URL url)
+  protected JarURLConnection (URL url)
     throws MalformedURLException
   {
-    super(url);
+    super (url);
 
     String spec = url.getFile();
-    int bang = spec.indexOf ("!/", 0);
+    int bang = spec.indexOf ("!/");
     if (bang == -1)
       throw new MalformedURLException (url + ": No `!/' in spec.");
 
-    // Extact the url for the jar itself.
-    jarFileURL = new URL(spec.substring (0, bang));
+    // Extract the url for the jar itself.
+    jarFileURL = new URL (spec.substring (0, bang));
 
     // Get the name of the element, if any.
-    element = (bang+2==spec.length() ? null : spec.substring (bang+2));
+    element = (spec.length() == (bang + 2) ? null : spec.substring (bang + 2));
   }
 
   /**
@@ -428,7 +428,9 @@ public abstract class JarURLConnection extends URLConnection
    */
   public Certificate[] getCertificates () throws IOException
   {
-    return getJarEntry ().getCertificates ();
+    JarEntry entry = getJarEntry();
+    
+    return entry != null ? entry.getCertificates() : null;
   }
 
   /**
@@ -441,7 +443,9 @@ public abstract class JarURLConnection extends URLConnection
    */
   public Attributes getMainAttributes () throws IOException
   {
-    return getManifest ().getMainAttributes ();
+    Manifest manifest = getManifest();
+    
+    return manifest != null ? manifest.getMainAttributes() : null;
   }
 
   /**
@@ -455,8 +459,9 @@ public abstract class JarURLConnection extends URLConnection
    */
   public Attributes getAttributes () throws IOException
   {
-    // FIXME: implement this
-    return null;
+    JarEntry entry = getJarEntry();
+
+    return entry != null ? entry.getAttributes() : null;
   }
 
   /**
@@ -469,8 +474,8 @@ public abstract class JarURLConnection extends URLConnection
    */
   public Manifest getManifest () throws IOException
   {
-    JarFile file = getJarFile ();
+    JarFile file = getJarFile();
 
-    return (file != null) ? file.getManifest() : null;
+    return file != null ? file.getManifest() : null;
   }
 }
