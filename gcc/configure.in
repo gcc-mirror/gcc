@@ -1383,7 +1383,7 @@ EOF
 		as_ver=`$gcc_cv_as --version 2>/dev/null | head -1`
 		if echo "$as_ver" | grep GNU > /dev/null; then
 changequote(,)dnl
-			as_ver=`echo $as_ver | sed -e 's/.* \([0-9.][0-9.]*\) .*/\1/'`
+			as_ver=`echo $as_ver | sed -e 's/GNU assembler \([0-9.][0-9.]*\).*/\1/'`
 			as_major=`echo $as_ver | sed 's/\..*//'`
 			as_minor=`echo $as_ver | sed 's/[^.]*\.\([0-9]*\).*/\1/'`
 changequote([,])dnl

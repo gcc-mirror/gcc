@@ -1,3 +1,10 @@
+2001-10-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.in: Correct previous change: don't assume that
+	gas's version number _isn't_ the last thing on the line, or
+	isn't the only number on the line, either.
+	* configure: Regenerate.
+
 2001-10-30  Kazu Hirata  <kazu@hxi.com>
 
 	* cfgcleanup.c: Fix a comment typo.
