@@ -172,6 +172,9 @@ function_cannot_inline_p (tree fndecl)
   if (current_function_calls_alloca)
     return N_("function using alloca cannot be inline");
 
+  if (current_function_calls_longjmp)
+    return N_("function using longjmp cannot be inline");
+  
   if (current_function_calls_setjmp)
     return N_("function using setjmp cannot be inline");
 
