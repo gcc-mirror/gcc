@@ -66,19 +66,19 @@ namespace std {
     private:
       // Data Members:
       __file_type* 		_M_file;
-      bool			_M_last_overflowed;  // XXX Needed?
       __state_type		_M_state_cur;// Current state type for codecvt.
       __state_type 		_M_state_beg; 	
       const __codecvt_type*	_M_fcvt;       // Cached value from use_facet.
       __mutext_type           	_M_lock;
-
+      bool			_M_last_overflowed;  // XXX Needed?
+      bool			_M_fileno_based; // Open/closed via filenos.
+ 
     public:
       // Constructors/destructor:
       basic_filebuf();
 
       // Non-standard ctor:
-      basic_filebuf(int __fd, const char* __name = "unknown", 
-		    ios_base::openmode __mode = ios_base::in | ios_base::out);
+      basic_filebuf(int __fd, const char* __name, ios_base::openmode __mode);
 
       virtual 
       ~basic_filebuf() 
