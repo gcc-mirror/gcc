@@ -111,7 +111,7 @@ unformatted_backspace (void)
   if (p == NULL)
     goto io_error;
 
-  new = file_position (current_unit->s) - *p - length;
+  new = file_position (current_unit->s) - *p - 2*length;
   if (sseek (current_unit->s, new) == FAILURE)
     goto io_error;
 
@@ -155,16 +155,23 @@ st_backspace (void)
     u->endfile = AT_ENDFILE;
   else
     {
-      if (u->current_record)
-	next_record (1);
-
       if (file_position (u->s) == 0)
 	goto done;		/* Common special case */
+
+      if (u->mode == WRITING)
+      {
+	flush (u->s);
+	struncate (u->s);
+	u->mode = READING;
+      }
 
       if (u->flags.form == FORM_FORMATTED)
 	formatted_backspace ();
       else
 	unformatted_backspace ();
+
+      u->endfile = NO_ENDFILE;
+      u->current_record = 0;
     }
 
  done:
