@@ -69,6 +69,15 @@ lang_init ()
   if (flag_bounds_check < 0)
     flag_bounds_check = flag_bounded_pointers;
 
+  /* If still unspecified, make it match pedantic && -std=c99.  */
+  if (mesg_implicit_function_declaration < 0)
+    {
+      if (pedantic && flag_isoc99)
+	mesg_implicit_function_declaration = flag_pedantic_errors ? 2 : 1;
+      else
+	mesg_implicit_function_declaration = 0;
+    }
+
   /* the beginning of the file is a new line; check for # */
   /* With luck, we discover the real source file's name from that
      and put it in input_filename.  */

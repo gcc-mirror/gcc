@@ -1,3 +1,16 @@
+2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-decl.c (mesg_implicit_function_declaration): Init to -1.
+	(implicit_decl_warning): New function.
+	(implicitly_declare): Use it.
+	* c-typeck.c (build_external_ref): Use implicit_decl_warning
+	to complain about implicit decls of builtins.
+
+	* c-lang.c (lang_init): Set mesg_implicit_function_declaration
+	based on pedantic && flag_isoc99, if not already set.
+	* c-tree.h: Declare mesg_implicit_function_declaration.
+	Prototype implicit_decl_warning.
+
 2000-07-30  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* Makefile.in (ssa.o): Updated header files in dependences.

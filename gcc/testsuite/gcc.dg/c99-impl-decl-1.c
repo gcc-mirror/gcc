@@ -7,7 +7,7 @@ void
 foo (void)
 {
   bar (); /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "implicit" "C99 implicit declaration error" { xfail *-*-* } 9 } */
+ /* { dg-error "implicit" "C99 implicit declaration error" { target *-*-* } 9 } */
 }
 
 /* C90 subclause 7.1.7 says we can implicitly declare strcmp; C99 removes

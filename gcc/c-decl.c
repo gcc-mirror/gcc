@@ -358,7 +358,7 @@ int warn_long_long = 1;
 /* Nonzero means message about use of implicit function declarations;
  1 means warning; 2 means error. */
 
-int mesg_implicit_function_declaration;
+int mesg_implicit_function_declaration = -1;
 
 /* Nonzero means give string constants the type `const char *'
    to get extra warnings from them.  These warnings will be too numerous
@@ -2525,15 +2525,8 @@ implicitly_declare (functionid)
 
   rest_of_decl_compilation (decl, NULL_PTR, 0, 0);
 
-  if (mesg_implicit_function_declaration && implicit_warning)
-    {
-      if (mesg_implicit_function_declaration == 2)
-        error ("implicit declaration of function `%s'",
-                 IDENTIFIER_POINTER (functionid));
-      else
-        warning ("implicit declaration of function `%s'",
-                 IDENTIFIER_POINTER (functionid));
-    }
+  if (implicit_warning)
+    implicit_decl_warning (functionid);
   else if (warn_traditional && traditional_warning)
     warning ("function `%s' was previously declared within a block",
 	     IDENTIFIER_POINTER (functionid));
@@ -2544,6 +2537,17 @@ implicitly_declare (functionid)
   gen_aux_info_record (decl, 0, 1, 0);
 
   return decl;
+}
+
+void
+implicit_decl_warning (id)
+     tree id;
+{
+  char *name = IDENTIFIER_POINTER (id);
+  if (mesg_implicit_function_declaration == 2)
+    error ("implicit declaration of function `%s'", name);
+  else if (mesg_implicit_function_declaration == 1)
+    warning ("implicit declaration of function `%s'", name);
 }
 
 /* Return zero if the declaration NEWDECL is valid
