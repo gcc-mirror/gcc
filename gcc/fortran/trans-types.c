@@ -903,7 +903,6 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
 static tree
 gfc_build_pointer_type (gfc_symbol * sym, tree type)
 {
-
   /* Array pointer types aren't actually pointers.  */
   if (sym->attr.dimension)
     return type;
@@ -1377,6 +1376,7 @@ tree
 gfc_unsigned_type (tree type)
 {
   tree type1 = TYPE_MAIN_VARIANT (type);
+
   if (type1 == signed_char_type_node || type1 == char_type_node)
     return unsigned_char_type_node;
   if (type1 == integer_type_node)
@@ -1413,6 +1413,7 @@ tree
 gfc_signed_type (tree type)
 {
   tree type1 = TYPE_MAIN_VARIANT (type);
+
   if (type1 == unsigned_char_type_node || type1 == char_type_node)
     return signed_char_type_node;
   if (type1 == unsigned_type_node)
