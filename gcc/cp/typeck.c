@@ -2483,10 +2483,10 @@ build_function_call (tree function, tree params)
   if (coerced_params == error_mark_node)
     return error_mark_node;
 
-  /* Check for errors in format strings.  */
+  /* Check for errors in format strings and inappropriately
+     null parameters.  */
 
-  if (warn_format)
-    check_function_format (TYPE_ATTRIBUTES (fntype), coerced_params);
+  check_function_arguments (TYPE_ATTRIBUTES (fntype), coerced_params);
 
   return build_cxx_call (function, coerced_params);
 }
