@@ -35,7 +35,7 @@ extern "C" {
 /*
 ** Definition of the boolean type.  
 */
-typedef char  BOOL;
+typedef unsigned char  BOOL;
 #define YES   (BOOL)1
 #define NO    (BOOL)0
 
