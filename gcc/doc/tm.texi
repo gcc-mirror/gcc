@@ -4154,7 +4154,7 @@ You need not define this macro if you did not define
 @end table
 
 @findex TARGET_ASM_OUTPUT_MI_THUNK
-@deftypefn {Target Hook} void TARGET_ASM_OUTPUT_MI_THUNK (FILE *@var{file}, tree @var{thunk_fndecl}, int @var{delta}, tree @var{function})
+@deftypefn {Target Hook} void TARGET_ASM_OUTPUT_MI_THUNK (FILE *@var{file}, tree @var{thunk_fndecl}, HOST_WIDE_INT @var{delta}, tree @var{function})
 A function that outputs the assembler code for a thunk
 function, used to implement C++ virtual function calls with multiple
 inheritance.  The thunk acts as a wrapper around a virtual function,
@@ -4189,7 +4189,7 @@ not support varargs.
 @end deftypefn
 
 @findex TARGET_ASM_OUTPUT_MI_VCALL_THUNK
-@deftypefn {Target Hook} void TARGET_ASM_OUTPUT_MI_VCALL_THUNK (FILE *@var{file}, tree @var{thunk_fndecl}, int @var{delta}, int @var{vcall_offset}, tree @var{function})
+@deftypefn {Target Hook} void TARGET_ASM_OUTPUT_MI_VCALL_THUNK (FILE *@var{file}, tree @var{thunk_fndecl}, HOST_WIDE_INT @var{delta}, int @var{vcall_offset}, tree @var{function})
 A function like @code{TARGET_ASM_OUTPUT_MI_THUNK}, except that if
 @var{vcall_offset} is non-zero, an additional adjustment should be made
 after adding @code{delta}.  In particular, if @var{p} is the

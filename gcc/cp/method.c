@@ -422,9 +422,12 @@ use_thunk (thunk_fndecl, emit_p)
       assemble_start_function (thunk_fndecl, fnname);
       if (targetm.asm_out.output_mi_vcall_thunk)
 	{
-	  int vcall_value = (vcall_offset
-			     ? tree_low_cst (vcall_offset, /*pos=*/0)
-			     : 0);
+	  HOST_WIDE_INT vcall_value;
+
+	  if (vcall_offset)
+	    vcall_value = tree_low_cst (vcall_offset, /*pos=*/0);
+	  else
+	    vcall_value = 0;
 	  targetm.asm_out.output_mi_vcall_thunk (asm_out_file, 
 						 thunk_fndecl, delta, 
 						 vcall_value,

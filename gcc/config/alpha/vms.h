@@ -454,7 +454,7 @@ do {									\
   sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
 
 /* ??? VMS uses different linkage.  */
-#undef ASM_OUTPUT_MI_THUNK
+#undef TARGET_ASM_OUTPUT_MI_THUNK
 
 #undef ASM_SPEC
 #undef ASM_FINAL_SPEC

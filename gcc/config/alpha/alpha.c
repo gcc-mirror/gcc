@@ -6700,10 +6700,11 @@ alpha_sa_mask (imaskP, fmaskP)
   unsigned int i;
 
   /* Irritatingly, there are two kinds of thunks -- those created with
-     ASM_OUTPUT_MI_THUNK and those with DECL_THUNK_P that go through
-     the regular part of the compiler.  In the ASM_OUTPUT_MI_THUNK case
-     we don't have valid register life info, but assemble_start_function
-     wants to output .frame and .mask directives.  */
+     TARGET_ASM_OUTPUT_MI_THUNK and those with DECL_THUNK_P that go
+     through the regular part of the compiler.  In the
+     TARGET_ASM_OUTPUT_MI_THUNK case we don't have valid register life
+     info, but assemble_start_function wants to output .frame and
+     .mask directives.  */
   if (current_function_is_thunk && !no_new_pseudos)
     {
       *imaskP = 0;

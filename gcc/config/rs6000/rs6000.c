@@ -9456,10 +9456,9 @@ rs6000_ra_ever_killed ()
   rtx reg;
   rtx insn;
 
-#ifdef ASM_OUTPUT_MI_THUNK
-  if (current_function_is_thunk)
+  if (targetm.asm_out.output_mi_thunk && current_function_is_thunk)
     return 0;
-#endif
+
   /* regs_ever_live has LR marked as used if any sibcalls are present,
      but this should not force saving and restoring in the
      pro/epilogue.  Likewise, reg_set_between_p thinks a sibcall
@@ -11236,7 +11235,7 @@ void
 output_mi_thunk (file, thunk_fndecl, delta, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
-     int delta;
+     HOST_WIDE_INT delta;
      tree function;
 {
   const char *this_reg =
@@ -11254,9 +11253,9 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
   if (delta >= -32768 && delta <= 32767)
     {
       if (! TARGET_NEW_MNEMONICS)
-	fprintf (file, "\tcal %s,%d(%s)\n", this_reg, delta, this_reg);
+	fprintf (file, "\tcal %s,%d(%s)\n", this_reg, (int) delta, this_reg);
       else
-	fprintf (file, "\taddi %s,%s,%d\n", this_reg, this_reg, delta);
+	fprintf (file, "\taddi %s,%s,%d\n", this_reg, this_reg, (int) delta);
     }
 
   /* 64-bit constants.  If "int" is 32 bits, we'll never hit this abort.  */
@@ -11266,7 +11265,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
   /* Large constants that can be done by one addis instruction.  */
   else if ((delta & 0xffff) == 0)
     asm_fprintf (file, "\t{cau|addis} %s,%s,%d\n", this_reg, this_reg,
-		 delta >> 16);
+		 (int) (delta >> 16));
 
   /* 32-bit constants that can be done by an add and addis instruction.  */
   else

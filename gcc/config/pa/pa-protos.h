@@ -126,7 +126,7 @@ extern int eq_neq_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int insn_refs_are_delayed PARAMS ((rtx));
 #endif /* RTX_CODE */
 
-/* Prototype function used in macro ASM_OUTPUT_MI_THUNK.  */
+/* Prototype function used in macro TARGET_ASM_OUTPUT_MI_THUNK.  */
 extern void pa_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Prototype function used in macro CONST_OK_FOR_LETTER_P.  */

@@ -1,3 +1,47 @@
+2002-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+            Mark Mitchell  <mark@codesourcery.com>
+
+	* alpha-protos.h (alpha_output_mi_thunk_osf): Update signature to
+	match target.h.
+	* arm-protos.h, arm.c (arm_output_mi_thunk): Likewise.
+	* cris-protos.h, cris.c (cris_asm_output_mi_thunk): Likewise.
+	* frv-protos.h, frv.c (frv_asm_output_mi_thunk): Likewise.
+	* i386-protos.h, i386.c (x86_output_mi_vcall_thunk,
+	x86_output_mi_thunk): Likewise.
+	* i960-protos.h, i960.c (i960_output_mi_thunk): Likewise.
+	* ia64-protos.h, ia64.c (ia64_output_mi_thunk): Likewise.
+	* m68k-protos.h, m68k.c (m68k_output_mi_thunk): Likewise.
+	* mmix-protos.h, mmix.c (mmix_asm_output_mi_thunk): Likewise.
+	* rs6000-protos.h, rs6000.c (output_mi_thunk): Likewise.
+	* s390-protos.h, s390.c (s390_output_mi_thunk): Likewise.
+	* stormy16-protos.h, stormy16.c (xstormy16_asm_output_mi_thunk):
+	Likewise.
+	* vax-protos.h, vax.c (vax_output_mi_thunk): Likewise.
+	
+	* target.h (gcc_target): Update output_mi_thunk and
+	output_mi_vcall_thunk to take a HOST_WIDE_INT delta and
+	vcall_index.
+
+	* config/alpha/alpha.c: Replace ASM_OUTPUT_MI_THUNK with
+	TARGET_ASM_OUTPUT_MI_THUNK in comments.
+	* config/alpha/vms.h (ASM_OUTPUT_MI_THUNK): Don't #undef it.
+	(TARGET_ASM_OUTPUT_MI_THUNK): #undef it.
+	* config/frv/frv.h (DEFAULT_VTABLE_THUNKS): Remove definition.
+	* config/i386/i386-protos.h (x86_output_mi_vcall_thunk): Update
+	signature.
+	* config/i386/i386.c (x86_output_mi_vcall_thunk): Likewise.
+	* config/i386/openbsd.h: Replace ASM_OUTPUT_MI_THUNK with
+	TARGET_ASM_OUTPUT_MI_THUNK in comments.
+	* config/i960/i960.h (ASM_OUTPUT_MI_THUNK): Don't define.
+	(TARGET_ASM_OUTPUT_MI_THUNK): Do define.
+	* config/m68k/openbsd.h: Replace ASM_OUTPUT_MI_THUNK with
+	TARGET_ASM_OUTPUT_MI_THUNK in comments.
+	* config/rs6000/rs6000.c (rs6000_ra_ever_killed): Remove #ifdef
+	ASM_OUTPUT_MI_THUNK and replace with check of targetm.
+
+	* doc/tm.texi (TARGET_ASM_OUTPUT_MI_THUNK): Update signature.
+	(TARGET_ASM_OUTPU_MI_VCALL_THUNK): Likewise.
+	
 2002-10-19  Brad Lucier  <lucier@math.purdue.edu>
 
 	* real.c (do_add): Fix 0+0 sign corner case.

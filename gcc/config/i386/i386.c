@@ -13906,8 +13906,8 @@ void
 x86_output_mi_vcall_thunk (file, thunk, delta, vcall_index, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
-     int delta;
-     int vcall_index;
+     HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_index;
      tree function;
 {
   rtx xops[3];
@@ -14010,7 +14010,7 @@ void
 x86_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk;
-     int delta;
+     HOST_WIDE_INT delta;
      tree function;
 {
   x86_output_mi_vcall_thunk (file, thunk, delta, /*vcall_index=*/0, 

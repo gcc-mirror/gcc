@@ -11135,7 +11135,7 @@ void
 arm_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
-     int delta;
+     HOST_WIDE_INT delta;
      tree function;
 {
   int mi_delta = delta;

@@ -1908,7 +1908,7 @@ typedef struct d30v_stack {
    frontend will generate a less efficient heavyweight thunk that calls
    FUNCTION instead of jumping to it.  The generic approach does not support
    varargs.  */
-/* #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) */
+/* #define TARGET_ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) */
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */

@@ -770,13 +770,13 @@ mmix_target_asm_function_epilogue (stream, locals_size)
   fputc ('\n', stream);
 }
 
-/* ASM_OUTPUT_MI_THUNK.  */
+/* TARGET_ASM_OUTPUT_MI_THUNK.  */
 
 void
 mmix_asm_output_mi_thunk (stream, fndecl, delta, func)
      FILE * stream;
      tree fndecl ATTRIBUTE_UNUSED;
-     int delta;
+     HOST_WIDE_INT delta;
      tree func;
 {
   /* If you define STRUCT_VALUE to 0, rather than use STRUCT_VALUE_REGNUM,
@@ -785,9 +785,9 @@ mmix_asm_output_mi_thunk (stream, fndecl, delta, func)
   const char *regname = reg_names[MMIX_FIRST_INCOMING_ARG_REGNUM];
 
   if (delta >= 0 && delta < 65536)
-    fprintf (stream, "\tINCL %s,%d\n", regname, delta);
+    fprintf (stream, "\tINCL %s,%d\n", regname, (int)delta);
   else if (delta < 0 && delta >= -255)
-    fprintf (stream, "\tSUBU %s,%s,%d\n", regname, regname, -delta);
+    fprintf (stream, "\tSUBU %s,%s,%d\n", regname, regname, (int)-delta);
   else
     {
       mmix_output_register_setting (stream, 255, delta, 1);

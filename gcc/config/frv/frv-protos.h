@@ -115,8 +115,7 @@ extern rtx frv_index_memory			PARAMS ((rtx,
 							 int));
 
 #ifdef TREE_CODE
-extern void frv_asm_output_mi_thunk		PARAMS ((FILE *, tree, long,
-							 tree));
+extern void frv_asm_output_mi_thunk		PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 #endif	/* TREE_CODE */
 
 extern const char *frv_asm_output_opcode

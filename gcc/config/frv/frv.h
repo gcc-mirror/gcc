@@ -748,18 +748,6 @@ extern int g_switch_set;          /* whether -G xx was passed.  */
    Defined in svr4.h.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* GNU CC supports two ways of implementing C++ vtables: traditional or with
-   so-called "thunks".  The flag `-fvtable-thunk' chooses between them.  Define
-   this macro to be a C expression for the default value of that flag.  If
-   `DEFAULT_VTABLE_THUNKS' is 0, GNU CC uses the traditional implementation by
-   default.  The "thunk" implementation is more efficient (especially if you
-   have provided an implementation of `ASM_OUTPUT_MI_THUNK', but is not binary
-   compatible with code compiled using the traditional implementation.  If you
-   are writing a new ports, define `DEFAULT_VTABLE_THUNKS' to 1.
-
-   If you do not define this macro, the default for `-fvtable-thunk' is 0.  */
-#define DEFAULT_VTABLE_THUNKS 1
-
 
 /* Layout of Source Language Data Types.  */
 
