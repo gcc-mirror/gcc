@@ -1,3 +1,10 @@
+2004-07-07  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR bootstrap/16250
+	* Make-lang.in (doc/gnat_ugn_unw.texi): Eliminate explicit
+	dependency on xgnatugn, instead build it via a submake.
+	(ADA_INFOFILES): Add doc/gnat_ugn_unw.texi.
+
 2004-07-01  Release Manager
 
 	* GCC 3.4.1 released.
