@@ -209,7 +209,7 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   #glibcpp_pch_comp=no
   #enable_cheaders=c
   #c_compatibility=no
-  enable_abi_check=no
+  #enable_abi_check=no
   #enable_symvers=no
 
   # Find platform-specific directories containing configuration info.  In
@@ -2049,20 +2049,33 @@ dnl the testsuite_hooks.h header.
 dnl
 dnl GLIBCPP_CONFIGURE_TESTSUITE  [no args]
 AC_DEFUN(GLIBCPP_CONFIGURE_TESTSUITE, [
-  GLIBCPP_CHECK_SETRLIMIT
 
-  # Look for setenv, so that extended locale tests can be performed.
-  GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
+  if test  x"$GLIBCPP_IS_CROSS_COMPILING" = xfalse; then
+    # Do checks for memory limit functions.
+    GLIBCPP_CHECK_SETRLIMIT
+
+    # Look for setenv, so that extended locale tests can be performed.
+    GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
+  fi
 
   # Export file names for ABI checking.
   baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)/baseline_symbols.txt"
   AC_SUBST(baseline_file)
 
-  dnl XXX move to configure.host?
-  case "$target" in
-    *-*-cygwin* ) enable_abi_check=no ;;
-    * ) enable_abi_check=yes ;;
-  esac
+  # Determine if checking the ABI is desirable.
+  if test x$enable_symvers = xno; then
+    enable_abi_check=no
+  else
+    case "$host" in
+      *-*-cygwin*) 
+	enable_abi_check=no ;;
+      *) 
+        enable_abi_check=yes ;;
+    esac
+  fi
+
+  AM_CONDITIONAL(GLIBCPP_TEST_WCHAR_T, test "$enable_wchar_t" = yes)	
+  AM_CONDITIONAL(GLIBCPP_TEST_ABI, test "$enable_abi_check" = yes)
 ])
 
 
