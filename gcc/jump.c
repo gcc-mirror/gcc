@@ -1716,7 +1716,9 @@ invert_jump_1 (rtx jump, rtx nlabel)
   if (num_validated_changes () == ochanges)
     return 0;
 
-  return redirect_jump_1 (jump, nlabel);
+  /* redirect_jump_1 will fail of nlabel == olabel, and the current use is
+     in Pmode, so checking this is not merely an optimization.  */
+  return nlabel == JUMP_LABEL (jump) || redirect_jump_1 (jump, nlabel);
 }
 
 /* Invert the condition of the jump JUMP, and make it jump to label
