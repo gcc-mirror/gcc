@@ -1,3 +1,17 @@
+2003-04-17  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite_flags.in (PCHFLAGS): Find PCH in new home.
+	* include/Makefile.am (pch_input): Find in ${target_builddir}.
+	(pch_output): Rename to...
+	(pch_output_builddir): ..this.  Find in ${target_builddir}.
+	(pch_source): Tweak.
+	(pch_build): Key off a built file.
+	(pch_output rule): Rename to...
+	(pch_input rule): ...this.  Produce ${pch_output_builddir}
+	instead of ${pch_output}.
+	(install-pch rule): Install ${pch_output_builddir}.
+	* include/Makefile.in: Regenerated.
+
 2003-04-17  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_streambuf.h (setp): _M_out_lim, being

@@ -340,12 +340,12 @@ thread_target_headers = \
 	${target_builddir}/gthr-posix.h \
 	${target_builddir}/gthr-default.h
 
-pch_input = stdc++.h
-pch_output = stdc++.h.gch
-pch_source = ${glibcpp_srcdir}/include/${pch_input}
+pch_input = ${target_builddir}/stdc++.h
+pch_output_builddir = ${target_builddir}/stdc++.h.gch
+pch_source = ${glibcpp_srcdir}/include/stdc++.h
 PCHFLAGS=-Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
 if GLIBCPP_BUILD_PCH
-pch_build = ${pch_output}
+pch_build = ${pch_input}
 pch_install = install-pch
 else
 pch_build = 
@@ -500,9 +500,13 @@ ${target_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcpp_thread_h} \
 	    < ${toplevel_srcdir}/gcc/${glibcpp_thread_h} > $@
 
 # Build a precompiled C++ include, stdc++.h.gch.
-${pch_output}: ${allstamped} ${target_builddir}/c++config.h ${pch_source}
+${pch_input}: ${allstamped} ${target_builddir}/c++config.h ${pch_source}
 	touch ${pch_input}; \
-	$(CXX) $(PCHFLAGS) $(INCLUDES) ${pch_source} -o ${pch_output}; 
+	if [ ! -d "${pch_output_builddir}" ]; then \
+	  mkdir -p ${pch_output_builddir}; \
+	fi; \
+	$(CXX) $(PCHFLAGS) $(INCLUDES) ${pch_source} -O0 -g -o ${pch_output_builddir}/O0g; \
+	$(CXX) $(PCHFLAGS) $(INCLUDES) ${pch_source} -O2 -g -o ${pch_output_builddir}/O2g;
 
 # For robustness sake (in light of junk files or in-source
 # configuration), copy from the build or source tree to the install
@@ -545,7 +549,9 @@ install-headers:
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${target_builddir}; done
 
 install-pch:
-	$(INSTALL_DATA) ${std_builddir}/${pch_output} $(DESTDIR)${gxx_include_dir}/${std_builddir}
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${pch_output_builddir}
+	for file in ${pch_output_builddir}/*; do \
+	  $(INSTALL_DATA) $$file $(DESTDIR)${gxx_include_dir}/${pch_output_builddir}; done
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.gch 
