@@ -1066,15 +1066,16 @@ for f in $build_xm_file; do
   esac
 done
 
-# Define macro CROSS_COMPILE in compilation
-# if this is a cross-compiler.
-# Also use all.cross instead of all.internal
-# and add cross-make to Makefile.
-cross_overrides="/dev/null"
+# Define macro CROSS_COMPILE in compilation if this is a cross-compiler.
+# Also use all.cross instead of all.internal and adjust SYSTEM_HEADER_DIR.
+CROSS=						AC_SUBST(CROSS)
+ALL=all.internal				AC_SUBST(ALL)
+SYSTEM_HEADER_DIR='$(NATIVE_SYSTEM_HEADER_DIR)'	AC_SUBST(SYSTEM_HEADER_DIR)
 if test x$host != x$target
 then
-	cross_defines="CROSS=-DCROSS_COMPILE"
-	cross_overrides="${topdir}/cross-make"
+	CROSS="-DCROSS_COMPILE"
+	ALL=all.cross
+	SYSTEM_HEADER_DIR='$(CROSS_SYSTEM_HEADER_DIR)'
 fi
 
 # If this is a cross-compiler that does not
@@ -1094,13 +1095,31 @@ else
 fi
 AC_SUBST(inhibit_libc)
 
-# When building gcc with a cross-compiler, we need to fix a few things.
-# This must come after cross-make as we want all.build to override
-# all.cross.
-build_overrides="/dev/null"
+# When building gcc with a cross-compiler, we need to adjust things so
+# that the generator programs are still built with the native compiler.
+# Also, we cannot run fixincludes or fix-header.
+# Note that the terminology here is wrong; it should be BUILD_* throughout.
+# FIXME.
+
+# These are the normal (build=host) settings:
+HOST_PREFIX=			AC_SUBST(HOST_PREFIX)
+HOST_PREFIX_1=ignore-		AC_SUBST(HOST_PREFIX_1)
+HOST_CC='$(CC)'			AC_SUBST(HOST_CC)
+HOST_CFLAGS='$(ALL_CFLAGS)'	AC_SUBST(HOST_CFLAGS)
+
+STMP_FIXINC=stmp-fixinc		AC_SUBST(STMP_FIXINC)
+STMP_FIXPROTO=stmp-fixproto	AC_SUBST(STMP_FIXPROTO)
+
+# And these apply if build != host.
 if test x$build != x$host
 then
-	build_overrides="${topdir}/build-make"
+    HOST_PREFIX=build-
+    HOST_PREFIX_1=build-
+    HOST_CC='$(CC_FOR_BUILD)'
+    HOST_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD) $(XCFLAGS)'
+
+    STMP_FIXINC=
+    STMP_FIXPROTO=
 fi
 
 # Expand extra_headers to include complete path.
@@ -2168,7 +2187,6 @@ AC_SUBST(quoted_cc_set_by_configure)
 AC_SUBST(cpp_install_dir)
 AC_SUBST(dep_host_xmake_file)
 AC_SUBST(dep_tmake_file)
-AC_SUBST(extra_c_flags)
 AC_SUBST(extra_headers_list)
 AC_SUBST(extra_objs)
 AC_SUBST(extra_parts)
@@ -2210,9 +2228,6 @@ AC_SUBST(target_cpu_default)
 
 AC_SUBST_FILE(target_overrides)
 AC_SUBST_FILE(host_overrides)
-AC_SUBST(cross_defines)
-AC_SUBST_FILE(cross_overrides)
-AC_SUBST_FILE(build_overrides)
 AC_SUBST_FILE(language_fragments)
 AC_SUBST_FILE(language_hooks)
 
@@ -2313,8 +2328,5 @@ SET_MAKE='${SET_MAKE}'
 target_list='${target_list}'
 target_overrides='${target_overrides}'
 host_overrides='${host_overrides}'
-cross_defines='${cross_defines}'
-cross_overrides='${cross_overrides}'
-build_overrides='${build_overrides}'
 cpp_install_dir='${cpp_install_dir}'
 ])

@@ -6716,15 +6716,16 @@ for f in $build_xm_file; do
   esac
 done
 
-# Define macro CROSS_COMPILE in compilation
-# if this is a cross-compiler.
-# Also use all.cross instead of all.internal
-# and add cross-make to Makefile.
-cross_overrides="/dev/null"
+# Define macro CROSS_COMPILE in compilation if this is a cross-compiler.
+# Also use all.cross instead of all.internal and adjust SYSTEM_HEADER_DIR.
+CROSS=						
+ALL=all.internal				
+SYSTEM_HEADER_DIR='$(NATIVE_SYSTEM_HEADER_DIR)'	
 if test x$host != x$target
 then
-	cross_defines="CROSS=-DCROSS_COMPILE"
-	cross_overrides="${topdir}/cross-make"
+	CROSS="-DCROSS_COMPILE"
+	ALL=all.cross
+	SYSTEM_HEADER_DIR='$(CROSS_SYSTEM_HEADER_DIR)'
 fi
 
 # If this is a cross-compiler that does not
@@ -6744,13 +6745,31 @@ else
 fi
 
 
-# When building gcc with a cross-compiler, we need to fix a few things.
-# This must come after cross-make as we want all.build to override
-# all.cross.
-build_overrides="/dev/null"
+# When building gcc with a cross-compiler, we need to adjust things so
+# that the generator programs are still built with the native compiler.
+# Also, we cannot run fixincludes or fix-header.
+# Note that the terminology here is wrong; it should be BUILD_* throughout.
+# FIXME.
+
+# These are the normal (build=host) settings:
+HOST_PREFIX=			
+HOST_PREFIX_1=ignore-		
+HOST_CC='$(CC)'			
+HOST_CFLAGS='$(ALL_CFLAGS)'	
+
+STMP_FIXINC=stmp-fixinc		
+STMP_FIXPROTO=stmp-fixproto	
+
+# And these apply if build != host.
 if test x$build != x$host
 then
-	build_overrides="${topdir}/build-make"
+    HOST_PREFIX=build-
+    HOST_PREFIX_1=build-
+    HOST_CC='$(CC_FOR_BUILD)'
+    HOST_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD) $(XCFLAGS)'
+
+    STMP_FIXINC=
+    STMP_FIXPROTO=
 fi
 
 # Expand extra_headers to include complete path.
@@ -6795,7 +6814,7 @@ fi
 
 # Figure out what assembler we will be using.
 echo $ac_n "checking what assembler to use""... $ac_c" 1>&6
-echo "configure:6799: checking what assembler to use" >&5
+echo "configure:6818: checking what assembler to use" >&5
 gcc_cv_as=
 gcc_cv_gas_major_version=
 gcc_cv_gas_minor_version=
@@ -6881,7 +6900,7 @@ fi
 
 # Figure out what nm we will be using.
 echo $ac_n "checking what nm to use""... $ac_c" 1>&6
-echo "configure:6885: checking what nm to use" >&5
+echo "configure:6904: checking what nm to use" >&5
 if test -x nm$host_exeext; then
 	gcc_cv_nm=./nm$host_exeext
 elif test x$host = x$target; then
@@ -6892,7 +6911,7 @@ echo "$ac_t""$gcc_cv_nm" 1>&6
 
 # Figure out what objdump we will be using.
 echo $ac_n "checking what objdump to use""... $ac_c" 1>&6
-echo "configure:6896: checking what objdump to use" >&5
+echo "configure:6915: checking what objdump to use" >&5
 if test -x objdump$host_exeext; then
 	gcc_cv_objdump=./objdump$host_exeext
 elif test x$host = x$target; then
@@ -6903,7 +6922,7 @@ echo "$ac_t""$gcc_cv_objdump" 1>&6
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:6907: checking assembler alignment features" >&5
+echo "configure:6926: checking assembler alignment features" >&5
 gcc_cv_as_alignment_features=none
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
 	# Gas version 2.6 and later support for .balign and .p2align.
@@ -6951,7 +6970,7 @@ fi
 echo "$ac_t""$gcc_cv_as_alignment_features" 1>&6
 
 echo $ac_n "checking assembler subsection support""... $ac_c" 1>&6
-echo "configure:6955: checking assembler subsection support" >&5
+echo "configure:6974: checking assembler subsection support" >&5
 gcc_cv_as_subsections=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -6991,7 +7010,7 @@ fi
 echo "$ac_t""$gcc_cv_as_subsections" 1>&6
 
 echo $ac_n "checking assembler weak support""... $ac_c" 1>&6
-echo "configure:6995: checking assembler weak support" >&5
+echo "configure:7014: checking assembler weak support" >&5
 gcc_cv_as_weak=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 2 -o "$gcc_cv_gas_major_version" -gt 2; then
@@ -7014,7 +7033,7 @@ fi
 echo "$ac_t""$gcc_cv_as_weak" 1>&6
 
 echo $ac_n "checking assembler hidden support""... $ac_c" 1>&6
-echo "configure:7018: checking assembler hidden support" >&5
+echo "configure:7037: checking assembler hidden support" >&5
 gcc_cv_as_hidden=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 10 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7038,7 +7057,7 @@ fi
 echo "$ac_t""$gcc_cv_as_hidden" 1>&6
 
 echo $ac_n "checking assembler leb128 support""... $ac_c" 1>&6
-echo "configure:7042: checking assembler leb128 support" >&5
+echo "configure:7061: checking assembler leb128 support" >&5
 gcc_cv_as_leb128=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 11 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7083,7 +7102,7 @@ fi
 echo "$ac_t""$gcc_cv_as_leb128" 1>&6
 
 echo $ac_n "checking assembler eh_frame optimization""... $ac_c" 1>&6
-echo "configure:7087: checking assembler eh_frame optimization" >&5
+echo "configure:7106: checking assembler eh_frame optimization" >&5
 gcc_cv_as_eh_frame=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 12 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7164,7 +7183,7 @@ fi
 echo "$ac_t""$gcc_cv_as_eh_frame" 1>&6
 
 echo $ac_n "checking assembler section merging support""... $ac_c" 1>&6
-echo "configure:7168: checking assembler section merging support" >&5
+echo "configure:7187: checking assembler section merging support" >&5
 gcc_cv_as_shf_merge=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 12 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7189,7 +7208,7 @@ echo "$ac_t""$gcc_cv_as_shf_merge" 1>&6
 case "$target" in 
   sparc*-*-*)
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:7193: checking assembler .register pseudo-op support" >&5
+echo "configure:7212: checking assembler .register pseudo-op support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7217,7 +7236,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler supports -relax""... $ac_c" 1>&6
-echo "configure:7221: checking assembler supports -relax" >&5
+echo "configure:7240: checking assembler supports -relax" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_relax_opt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7247,7 +7266,7 @@ EOF
     case "$tm_file" in
     *64*)
 	echo $ac_n "checking for 64 bit support in assembler ($gcc_cv_as)""... $ac_c" 1>&6
-echo "configure:7251: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
+echo "configure:7270: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_flags64'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7292,7 +7311,7 @@ EOF
 
     if test "x$gcc_cv_as_flags64" != xno; then
 	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:7296: checking for assembler offsetable %lo() support" >&5
+echo "configure:7315: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7332,7 +7351,7 @@ EOF
 
   i[34567]86-*-* | x86_64-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:7336: checking assembler instructions" >&5
+echo "configure:7355: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
       if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2; then
@@ -7359,7 +7378,7 @@ EOF
     echo "$ac_t""$gcc_cv_as_instructions" 1>&6
 
     echo $ac_n "checking assembler GOTOFF in data directives""... $ac_c" 1>&6
-echo "configure:7363: checking assembler GOTOFF in data directives" >&5
+echo "configure:7382: checking assembler GOTOFF in data directives" >&5
     gcc_cv_as_gotoff_in_data=no
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x
     then
@@ -7389,7 +7408,7 @@ EOF
 esac
 
 echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6
-echo "configure:7393: checking assembler dwarf2 debug_line support" >&5
+echo "configure:7412: checking assembler dwarf2 debug_line support" >&5
 gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
@@ -7445,7 +7464,7 @@ fi
 echo "$ac_t""$gcc_cv_as_dwarf2_debug_line" 1>&6
 
 echo $ac_n "checking assembler --gdwarf2 support""... $ac_c" 1>&6
-echo "configure:7449: checking assembler --gdwarf2 support" >&5
+echo "configure:7468: checking assembler --gdwarf2 support" >&5
 gcc_cv_as_gdwarf2_flag=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
 then
@@ -7474,7 +7493,7 @@ fi
 echo "$ac_t""$gcc_cv_as_gdwarf2_flag" 1>&6
 
 echo $ac_n "checking assembler --gstabs support""... $ac_c" 1>&6
-echo "configure:7478: checking assembler --gstabs support" >&5
+echo "configure:7497: checking assembler --gstabs support" >&5
 gcc_cv_as_gstabs_flag=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
 then
@@ -7644,7 +7663,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:7648: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:7667: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
@@ -7951,10 +7970,6 @@ ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xma
 
 
 
-
-
-
-
 # Echo that links are built
 if test x$host = x$target
 then
@@ -8192,7 +8207,16 @@ s%@INSTOBJEXT@%$INSTOBJEXT%g
 s%@GENCAT@%$GENCAT%g
 s%@MKINSTALLDIRS@%$MKINSTALLDIRS%g
 s%@INTL_LIBTOOL_SUFFIX_PREFIX@%$INTL_LIBTOOL_SUFFIX_PREFIX%g
+s%@CROSS@%$CROSS%g
+s%@ALL@%$ALL%g
+s%@SYSTEM_HEADER_DIR@%$SYSTEM_HEADER_DIR%g
 s%@inhibit_libc@%$inhibit_libc%g
+s%@HOST_PREFIX@%$HOST_PREFIX%g
+s%@HOST_PREFIX_1@%$HOST_PREFIX_1%g
+s%@HOST_CC@%$HOST_CC%g
+s%@HOST_CFLAGS@%$HOST_CFLAGS%g
+s%@STMP_FIXINC@%$STMP_FIXINC%g
+s%@STMP_FIXPROTO@%$STMP_FIXPROTO%g
 s%@gthread_flags@%$gthread_flags%g
 s%@GGC@%$GGC%g
 s%@zlibdir@%$zlibdir%g
@@ -8225,7 +8249,6 @@ s%@quoted_cc_set_by_configure@%$quoted_cc_set_by_configure%g
 s%@cpp_install_dir@%$cpp_install_dir%g
 s%@dep_host_xmake_file@%$dep_host_xmake_file%g
 s%@dep_tmake_file@%$dep_tmake_file%g
-s%@extra_c_flags@%$extra_c_flags%g
 s%@extra_headers_list@%$extra_headers_list%g
 s%@extra_objs@%$extra_objs%g
 s%@extra_parts@%$extra_parts%g
@@ -8268,11 +8291,6 @@ s%@target_cpu_default@%$target_cpu_default%g
 s%@target_overrides@%%g
 /@host_overrides@/r $host_overrides
 s%@host_overrides@%%g
-s%@cross_defines@%$cross_defines%g
-/@cross_overrides@/r $cross_overrides
-s%@cross_overrides@%%g
-/@build_overrides@/r $build_overrides
-s%@build_overrides@%%g
 /@language_fragments@/r $language_fragments
 s%@language_fragments@%%g
 /@language_hooks@/r $language_hooks
@@ -8511,9 +8529,6 @@ SET_MAKE='${SET_MAKE}'
 target_list='${target_list}'
 target_overrides='${target_overrides}'
 host_overrides='${host_overrides}'
-cross_defines='${cross_defines}'
-cross_overrides='${cross_overrides}'
-build_overrides='${build_overrides}'
 cpp_install_dir='${cpp_install_dir}'
 
 EOF
