@@ -1,5 +1,8 @@
 Sat Jan 17 21:16:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* jump.c (jump_optimize): Remove Dec 17, 1997 chance in
+	favor of an equivalent change from gcc-2.8.
+
 	* i386/x-sco5 (CC): Remove trailing whitespace.
 
 Sat Jan 17 21:09:46 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -672,7 +675,7 @@ Wed Dec 17 15:06:04 1997  Richard Henderson  <rth@cygnus.com>
 
 Wed Dec 17 00:51:36 1997  Stan Cox (scox@cygnus.com)
 
-	* jump.c: (optimize_jump): Don't use the return register as a 
+	* jump.c: (jump_optimize): Don't use the return register as a 
 	source1 of a conditional move.
 
 Tue Dec 16 23:45:40 1997  Richard Henderson  <rth@cygnus.com>
