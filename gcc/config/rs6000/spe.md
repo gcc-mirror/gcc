@@ -2148,6 +2148,13 @@
   "evxor %0,%0,%0"
   [(set_attr "type" "vecsimple")])
 
+(define_insn "*movv1di_const0"
+  [(set (match_operand:V1DI 0 "gpc_reg_operand" "=r")
+	(match_operand:V1DI 1 "zero_constant" ""))]
+  "TARGET_SPE"
+  "evxor %0,%0,%0"
+  [(set_attr "type" "vecsimple")])
+
 ;; Vector move instructions.
 
 (define_expand "movv2si"

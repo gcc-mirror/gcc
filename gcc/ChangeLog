@@ -1,3 +1,7 @@
+2002-12-03  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/spe.md (*movv1di_const0): New pattern.
+
 2002-12-03  Richard Henderson  <rth@redhat.com>
 
 	* libgcc-std.ver: Inherit GCC_3.3 from GCC_3.0.
