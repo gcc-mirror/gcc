@@ -914,6 +914,7 @@ java/lang/ArrayStoreException.java \
 java/lang/Boolean.java \
 java/lang/Byte.java \
 java/lang/Character.java \
+java/lang/CharSequence.java \
 java/lang/ClassCastException.java \
 java/lang/ClassCircularityError.java \
 java/lang/ClassFormatError.java	\
@@ -1179,6 +1180,7 @@ java/lang/reflect/Modifier.java	\
 java/lang/reflect/ReflectPermission.java \
 java/math/BigDecimal.java \
 java/math/BigInteger.java \
+java/net/Authenticator.java \
 java/net/BindException.java \
 java/net/ConnectException.java \
 java/net/ContentHandler.java \
@@ -1194,6 +1196,7 @@ java/net/MalformedURLException.java \
 java/net/MulticastSocket.java \
 java/net/NetPermission.java \
 java/net/NoRouteToHostException.java \
+java/net/PasswordAuthentication.java \
 java/net/PlainDatagramSocketImpl.java \
 java/net/PlainSocketImpl.java \
 java/net/ProtocolException.java	\

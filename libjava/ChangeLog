@@ -1,3 +1,19 @@
+2001-10-01  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am: Add new classes
+	(core_java_source_files): CharSequence
+	(ordinary_java_source_files): Authenticator, PasswordAuthentication
+	* Makefile.in: regenerate
+	* gcj/javaprims.h: ditto
+	* java/lang/CharSequence: new class from Classpath
+	* java/lang/String.java: implements CharSequence
+	(subSequence (int,int)): new method
+	* java/lang/SubString.java: implements CharSequence
+	(subSequence (int,int)): new method
+	remerge comments with Classpath
+	* java/net/Authenticator.java: new class from Classpath
+	* java/net/PasswordAuthentication.java: ditto
+
 2001-10-01  Tom Tromey  <tromey@redhat.com>
 
 	* gcj/javaprims.h: Rebuilt class list.
