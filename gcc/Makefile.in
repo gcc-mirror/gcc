@@ -1597,7 +1597,7 @@ cppmain: cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cppmain.o cpplib.o cpphash.o \
 	  cppalloc.o cpperror.o cppexp.o version.o $(LIBS)
 
-cpplib.o: cpplib.c $(CONFIG_H) pcp.h version.c config.status
+cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1605,6 +1605,12 @@ cpplib.o: cpplib.c $(CONFIG_H) pcp.h version.c config.status
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -c `echo $(srcdir)/cpplib.c | sed 's,^\./,,'`
+
+cpperror.o: cpperror.c $(CONFIG_H) cpplib.h
+
+cppexp.o: cppexp.c $(CONFIG_H) cpplib.h
+
+cpphash.o: cpphash.c cpplib.h cpphash.h
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
@@ -1785,7 +1791,7 @@ fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
 	   scan-decls.o scan.o cpplib.o cpphash.o cppalloc.o version.o \
 	   cppexp.o $(HOST_LIBS)
 
-fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h $(build_xm_file)
+fix-header.o: fix-header.c obstack.h scan.h $(build_xm_file)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
 
 scan-decls.o: scan-decls.c scan.h cpplib.h $(build_xm_file)
