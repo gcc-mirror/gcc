@@ -75,10 +75,6 @@ Thu Sep  9 12:32:57 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* extend.texi (Volatiles): New node.
 
-Thu Sep  9 12:20:34 1999  Nick Clifton  <nickc@cygnus.com>
-
-	* toplev.c (documented_lang_options): 
-
 Thu Sep  9 03:37:31 1999  Richard Henderson  <rth@cygnus.com>
 
 	* ggc-simple.c (IS_MARKED, IGNORE_MARK): New.

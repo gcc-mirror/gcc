@@ -1143,7 +1143,6 @@ documented_lang_options[] =
   { "-lang-c", "" },
   { "-lang-c89", "" },
   { "-lang-c++", "" },
-  { "-pedantic", "" },
   { "-remap", "" },
   { "-nostdinc", "" },
   { "-nostdinc++", "" },
