@@ -1482,23 +1482,6 @@ print_lang_statistics ()
 #endif
 }
 
-/* This is used by the `assert' macro.  It is provided in libgcc.a,
-   which `cc' doesn't know how to link.  Note that the C++ front-end
-   no longer actually uses the `assert' macro (instead, it calls
-   my_friendly_assert).  But all of the back-end files still need this.  */
-
-void
-__eprintf (string, expression, line, filename)
-     const char *string;
-     const char *expression;
-     unsigned line;
-     const char *filename;
-{
-  fprintf (stderr, string, expression, line, filename);
-  fflush (stderr);
-  abort ();
-}
-
 /* Return, as an INTEGER_CST node, the number of elements for TYPE
    (which is an ARRAY_TYPE).  This counts only elements of the top
    array.  */

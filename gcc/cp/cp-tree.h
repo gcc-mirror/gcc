@@ -1409,21 +1409,21 @@ struct lang_type
 /* Mark bits for depth-first and breath-first searches.  */
 
 /* Get the value of the Nth mark bit.  */
-#define CLASSTYPE_MARKED_N(NODE, N)					\
+#define CLASSTYPE_MARKED_N(NODE, N)				\
   (((CLASS_TYPE_P (NODE) ? TYPE_LANG_SPECIFIC (NODE)->marks	\
-     : TYPE_ALIAS_SET (NODE)) & (1 << N)) != 0)
+     : ((unsigned) TYPE_ALIAS_SET (NODE))) & (1 << N)) != 0)
 
 /* Set the Nth mark bit.  */
-#define SET_CLASSTYPE_MARKED_N(NODE, N)					\
-  (CLASS_TYPE_P (NODE)							\
-   ? (TYPE_LANG_SPECIFIC (NODE)->marks |= (1 << (N)))	\
-   : (TYPE_ALIAS_SET (NODE) |= (1 << (N))))
+#define SET_CLASSTYPE_MARKED_N(NODE, N)				\
+  (CLASS_TYPE_P (NODE)						\
+   ? (void) (TYPE_LANG_SPECIFIC (NODE)->marks |= (1 << (N)))	\
+   : (void) (TYPE_ALIAS_SET (NODE) |= (1 << (N))))
 
 /* Clear the Nth mark bit.  */
-#define CLEAR_CLASSTYPE_MARKED_N(NODE, N)				\
-  (CLASS_TYPE_P (NODE)							\
-   ? (TYPE_LANG_SPECIFIC (NODE)->marks &= ~(1 << (N)))	\
-   : (TYPE_ALIAS_SET (NODE) &= ~(1 << (N))))
+#define CLEAR_CLASSTYPE_MARKED_N(NODE, N)			\
+  (CLASS_TYPE_P (NODE)						\
+   ? (void) (TYPE_LANG_SPECIFIC (NODE)->marks &= ~(1 << (N)))	\
+   : (void) (TYPE_ALIAS_SET (NODE) &= ~(1 << (N))))
 
 /* Get the value of the mark bits.  */
 #define CLASSTYPE_MARKED(NODE) CLASSTYPE_MARKED_N(NODE, 0)
@@ -4164,8 +4164,6 @@ extern const char *lang_printable_name		PROTO((tree, int));
 extern tree build_exception_variant		PROTO((tree, tree));
 extern tree copy_template_template_parm		PROTO((tree));
 extern void print_lang_statistics		PROTO((void));
-extern void __eprintf
-	PROTO((const char *, const char *, unsigned, const char *));
 extern tree array_type_nelts_total		PROTO((tree));
 extern tree array_type_nelts_top		PROTO((tree));
 extern tree break_out_target_exprs		PROTO((tree));
