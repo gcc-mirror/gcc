@@ -1,3 +1,8 @@
+2003-12-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* stor-layout.c (layout_decl): Turn bitfields into ordinary
+	fields, even if they are the first field in a structure.
+
 2003-12-30  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold) <COND_EXPR>: Don't require strict type
