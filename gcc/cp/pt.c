@@ -9844,10 +9844,10 @@ regenerate_decl_from_template (decl, tmpl)
      register_specialization for it.  */
   my_friendly_assert (unregistered, 0);
 
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (DECL_CLASS_SCOPE_P (decl))
     /* Make sure that we can see identifiers, and compute access
        correctly, for the class members used in the declaration of
-       this static variable.  */
+       this static variable or function.  */
     pushclass (DECL_CONTEXT (decl), 2);
 
   /* Do the substitution to get the new declaration.  */
@@ -9859,8 +9859,6 @@ regenerate_decl_from_template (decl, tmpl)
       DECL_INITIAL (new_decl) = 
 	tsubst_expr (DECL_INITIAL (code_pattern), args, 
 		     tf_error, DECL_TI_TEMPLATE (decl));
-      /* Pop the class context we pushed above.  */
-      popclass ();
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -9870,6 +9868,10 @@ regenerate_decl_from_template (decl, tmpl)
       /* And don't complain about a duplicate definition.  */
       DECL_INITIAL (decl) = NULL_TREE;
     }
+
+  /* Pop the class context we pushed above.  */
+  if (DECL_CLASS_SCOPE_P (decl))
+    popclass ();
 
   /* The immediate parent of the new template is still whatever it was
      before, even though tsubst sets DECL_TI_TEMPLATE up as the most
@@ -10052,6 +10054,11 @@ instantiate_decl (d, defer_ok)
       tree gen = DECL_TEMPLATE_RESULT (gen_tmpl);
       tree type = TREE_TYPE (gen);
 
+      /* Make sure that we can see identifiers, and compute access
+	 correctly.  */
+      if (DECL_CLASS_SCOPE_P (d))
+	pushclass (DECL_CONTEXT (d), 1);
+
       if (TREE_CODE (gen) == FUNCTION_DECL)
 	{
 	  tsubst (DECL_ARGUMENTS (gen), args, tf_error | tf_warning, d);
@@ -10064,6 +10071,9 @@ instantiate_decl (d, defer_ok)
 	  type = TREE_TYPE (type);
 	}
       tsubst (type, args, tf_error | tf_warning, d);
+
+      if (DECL_CLASS_SCOPE_P (d))
+	popclass ();
     }
   
   if (TREE_CODE (d) == VAR_DECL && DECL_INITIALIZED_IN_CLASS_P (d)

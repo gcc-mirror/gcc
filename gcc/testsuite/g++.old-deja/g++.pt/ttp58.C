@@ -15,7 +15,7 @@ struct Z
   const static int value_ = false;
 };
 
-class Outer
+struct Outer
 {
   template <class T>
   struct A : 

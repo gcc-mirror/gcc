@@ -4,7 +4,7 @@
 // by Paul Burchard <burchard@pobox.com>, Level Set Systems, Inc.
 // Copyright (C) 1999 Free Software Foundation
 
-class Q {
+struct Q {
 	template<class>
 	class X {
 	};

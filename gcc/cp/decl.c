@@ -5659,8 +5659,10 @@ make_typename_type (context, name, complain)
 	      return error_mark_node;
 	    }
 
-	  if (!enforce_access (context, tmpl))
-	    return error_mark_node;
+	  if (complain & tf_parsing)
+	    type_access_control (context, tmpl);
+	  else
+	    enforce_access (context, tmpl);
 
 	  return lookup_template_class (tmpl,
 					TREE_OPERAND (fullname, 1),
@@ -5682,8 +5684,10 @@ make_typename_type (context, name, complain)
 	  t = lookup_field (context, name, 0, 1);
 	  if (t)
 	    {
-	      if (!enforce_access (context, t))
-		return error_mark_node;
+	      if (complain & tf_parsing)
+		type_access_control (context, t);
+	      else
+		enforce_access (context, t);
 
 	      if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
 		t = TREE_TYPE (t);
@@ -5711,7 +5715,6 @@ make_typename_type (context, name, complain)
 	error ("no type named `%#T' in `%#T'", name, context);
       return error_mark_node;
     }
-
 
   return build_typename_type (context, name, fullname,  NULL_TREE);
 }
@@ -5752,8 +5755,10 @@ make_unbound_class_template (context, name, complain)
 	  return error_mark_node;
 	}
       
-      if (!enforce_access (context, tmpl))
-	return error_mark_node;
+      if (complain & tf_parsing)
+	type_access_control (context, tmpl);
+      else
+	enforce_access (context, tmpl);
 
       return tmpl;
     }
@@ -6078,7 +6083,8 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	  else
 	    {
 	      val = lookup_member (type, name, 0, prefer_type);
-	      type_access_control (type, val);
+	      if (!uses_template_parms (type))
+		type_access_control (type, val);
 
 	      /* Restore the containing TYPENAME_TYPE if we looked
 		 through it before.  */
