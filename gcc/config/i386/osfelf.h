@@ -22,10 +22,10 @@ Boston, MA 02111-1307, USA.  */
 #include "config/i386/osfrose.h"
 
 #undef	CPP_PREDEFINES
-#define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Di386 -Asystem(unix) -Asystem(xpg4) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Asystem(xpg4)"
 
 #undef  CPP_SPEC
-#define CPP_SPEC "\
+#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \
 %{mrose: -D__ROSE__ %{!pic-none: -D__SHARED__}} \
 %{!mrose: -D__ELF__ %{fpic: -D__SHARED__}} \
 %{mno-underscores: -D__NO_UNDERSCORES__} \

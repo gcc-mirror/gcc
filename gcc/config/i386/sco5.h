@@ -807,13 +807,13 @@ dtors_section ()							\
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
- "-Di386 -Asystem(unix) -Asystem(svr3) -Acpu(i386) -Amachine(i386)"
+ "-Asystem(svr3)"
 
 /* You are in a maze of GCC specs ... all alike */
 
 #undef CPP_SPEC
-#define CPP_SPEC \
- "%{fpic:%{!melf:%e-fpic is only valid with -melf}} \
+#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \
+  %{fpic:%{!melf:%e-fpic is only valid with -melf}} \
   %{fPIC:%{!melf:%e-fPIC is only valid with -melf}} \
   -D__i386 -D__unix -D_SCO_DS=1 -D_M_I386 -D_M_XENIX -D_M_UNIX \
   %{!Xods30:-D_STRICT_NAMES} \
