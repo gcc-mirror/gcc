@@ -1,3 +1,26 @@
+Mon Sep  8 01:21:43 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (begin_member_template_processing): Take a function as
+	argument, not a set of template arguments.  Use the template
+	parameters, rather than the arguments.  Handle non-type parameters
+	correctly.  Push a binding level for the parameters so that multiple
+	member templates using the same parameter names can be declared.
+	(end_member_template_processing): Pop the binding level.
+	(push_template_decl): Mark member templates as static when
+	appropriate. 
+
+	* lex.c (do_pending_inlines): Pass the function, not its template
+	arguments, to begin_member_template_processing.
+	(process_next_inline): Likewise.
+	(do_pending_defargs): Likewise.
+
+	* error.c (dump_expr): Obtain the correct declaration for a
+	TEMPLATE_CONST_PARM. 
+
+	* call.c (add_template_conv_candidate): New function.
+	(build_object_call): Handle member templates, as done in the other
+	build_ functions.
+	
 Sat Sep  6 10:20:27 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* decl.c (replace_defag): Undo previous change.

@@ -1366,13 +1366,15 @@ dump_expr (t, nop)
       if (current_template_parms)
 	{
 	  int i;
-	  tree parms;
+	  int l = list_length (current_template_parms);
+	  tree parms = current_template_parms;
 	  tree r;
 
-	  for (parms = current_template_parms;
-	       TREE_CHAIN (parms);
-	       parms = TREE_CHAIN (parms))
-	    ;
+	  for (i = 0; i < l - TEMPLATE_CONST_LEVEL (t); ++i)
+	    {
+	      parms = TREE_CHAIN (parms);
+	      my_friendly_assert (parms != NULL_TREE, 0);
+	    }
 
 	  r = TREE_VEC_ELT (TREE_VALUE (parms),
 			    TEMPLATE_CONST_IDX (t));
