@@ -4,7 +4,9 @@
         * include/c_std/langinfo.h: New file.
         * include/bits/codecvt.h (__enc_trants::__enc_traits()): Bring in
 	CODESET from _C_legacy::CODESET if using shadow headers.
-
+	* src/Makefile.am: Add new files.
+	* src/Makefile.in: Regenerate.
+	
 2000-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/c/bits/std_cmath.h (abs): Change extern "C" declaration
