@@ -1,3 +1,16 @@
+2003-03-05  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* jcf.h (COMPARE_FILENAMES): New macro similar to "strcmp" to
+	compare file name components depending on the case-sensitivity
+	or otherwise of the host file system.
+
+	* jcf-path.c (add_entry): Use COMPARE_FILENAMES instead of
+	"strcmp" to compare file name components.
+	Use IS_DIR_SEPARATOR instead of comparing directly against
+	DIR_SEPARATOR.
+	(jcf_path_extdirs_arg): Use IS_DIR_SEPARATOR instead of 
+	comparing directly against DIR_SEPARATOR.
+
 2003-03-04  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (java.tags): New target.
