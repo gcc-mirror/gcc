@@ -1,3 +1,16 @@
+2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* argv.c (buildargv, tests, main): Const-ify.
+	* cp-demangle.c (operator_code): Likewise.
+	* cplus-dem.c (optable, libiberty_demanglers,
+	cplus_demangle_set_style, cplus_demangle_name_to_style,
+	print_demangler_list): Likewise.
+	* hashtab.c (higher_prime_number): Likewise.
+	* strcasecmp.c (charmap): Likewise.
+	* strerror.c (error_info, strerror, main): Likewise.
+	* strncasecmp.c (charmap): Likewise.
+	* strsignal.c (signal_info): Likewise.
+
 2001-09-29  DJ Delorie  <dj@redhat.com>
 
 	* configure: Regenerate.

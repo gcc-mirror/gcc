@@ -67,10 +67,10 @@ static void init_signal_tables PARAMS ((void));
 
 struct signal_info
 {
-  int value;		/* The numeric value from <signal.h> */
-  const char *name;	/* The equivalent symbolic value */
+  const int value;		/* The numeric value from <signal.h> */
+  const char *const name;	/* The equivalent symbolic value */
 #ifndef HAVE_SYS_SIGLIST
-  const char *msg;	/* Short message about this value */
+  const char *const msg;	/* Short message about this value */
 #endif
 };
 

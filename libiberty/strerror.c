@@ -58,10 +58,10 @@ static void init_error_tables PARAMS ((void));
 
 struct error_info
 {
-  int value;		/* The numeric value from <errno.h> */
-  const char *name;	/* The equivalent symbolic value */
+  const int value;		/* The numeric value from <errno.h> */
+  const char *const name;	/* The equivalent symbolic value */
 #ifndef HAVE_SYS_ERRLIST
-  const char *msg;	/* Short message about this value */
+  const char *const msg;	/* Short message about this value */
 #endif
 };
 
@@ -625,7 +625,7 @@ char *
 strerror (errnoval)
   int errnoval;
 {
-  char *msg;
+  const char *msg;
   static char buf[32];
 
 #ifndef HAVE_SYS_ERRLIST
@@ -783,7 +783,7 @@ main ()
   int errn;
   int errnmax;
   const char *name;
-  char *msg;
+  const char *msg;
   char *strerror ();
 
   errnmax = errno_max ();

@@ -51,7 +51,7 @@ extern "C" {
 /* Build an argument vector from a string.  Allocates memory using
    malloc.  Use freeargv to free the vector.  */
 
-extern char **buildargv PARAMS ((char *)) ATTRIBUTE_MALLOC;
+extern char **buildargv PARAMS ((const char *)) ATTRIBUTE_MALLOC;
 
 /* Free a vector returned by buildargv.  */
 
