@@ -1,6 +1,7 @@
 /* Subroutines needed for unwinding IA-64 standard format stack frame
    info for exception handling.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@cygnus.com>
 	          Andrew Haley  <aph@cygnus.com>
 		  David Mosberger-Tang <davidm@hpl.hp.com>
@@ -747,7 +748,7 @@ desc_spill_sprel_p (unsigned char qp, unw_word t, unsigned char abreg,
 #define UNW_DEC_PROLOGUE_GR(fmt,r,m,gr,arg)	desc_prologue(0,r,m,gr,arg)
 #define UNW_DEC_PROLOGUE(fmt,b,r,arg)		desc_prologue(b,r,0,32,arg)
 
-/* Prologue descriptors. */
+/* Prologue descriptors.  */
 #define UNW_DEC_ABI(fmt,a,c,arg)		desc_abi(a,c,arg)
 #define UNW_DEC_BR_GR(fmt,b,g,arg)		desc_br_gr(b,g,arg)
 #define UNW_DEC_BR_MEM(fmt,b,arg)		desc_br_mem(b,arg)
@@ -1744,7 +1745,7 @@ static void
 uw_init_context_1 (struct _Unwind_Context *context, void *bsp)
 {
   void *rp = __builtin_extract_return_addr (__builtin_return_address (0));
-  /* Set psp to the caller's stack pointer. */
+  /* Set psp to the caller's stack pointer.  */
   void *psp = __builtin_dwarf_cfa () - 16;
   _Unwind_FrameState fs;
 

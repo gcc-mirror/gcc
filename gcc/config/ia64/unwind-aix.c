@@ -1,5 +1,5 @@
 /* Implements unwind table entry lookup for AIX (cf. fde-glibc.c). 
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
    Contributed by Timothy Wall <twall@redhat.com>
 
    This file is part of GNU CC.
@@ -63,7 +63,7 @@ find_fde_for_dso (Elf64_Addr pc, rt_link_map *map,
         lo = mid + 1;
       else {
         /* AIX executables are *always* dynamic.  Look up GP for this
-           object. */ 
+           object.  */ 
         Elf64_Dyn *dyn = map->l_ld;
         *pgp = 0;
         for (; dyn->d_tag != DT_NULL ; dyn++) 
@@ -82,7 +82,7 @@ find_fde_for_dso (Elf64_Addr pc, rt_link_map *map,
 }
 
 /* Return a pointer to the unwind table entry for the function containing
-   PC. */  
+   PC.  */  
 struct unw_table_entry *
 _Unwind_FindTableEntry (void *pc, unsigned long *pseg_base, unsigned long *pgp)
 {
@@ -95,7 +95,7 @@ _Unwind_FindTableEntry (void *pc, unsigned long *pseg_base, unsigned long *pgp)
   ret = find_fde_for_dso ((Elf64_Addr)pc, map, pseg_base, pgp);
   if (ret) 
     {
-      /* If we're in the main application, use the current GP value. */
+      /* If we're in the main application, use the current GP value.  */
       register unsigned long gp __asm__("gp");
       *pgp = gp;
       return ret;

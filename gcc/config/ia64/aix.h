@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64/AIX version.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Timothy Wall (twall@cygnus.com)
 
 This file is part of GNU CC.
@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* AIX5 (aka Monterey): a mix of AIX and UnixWare.  
-   This file is loosely based on ia64/linux.h. */
+   This file is loosely based on ia64/linux.h.  */
 
 /* This macro is a C statement to print on `stderr' a string describing the
    particular machine description choice.  */
@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
 /* Provide a STARTFILE_SPEC appropriate for AIX.  Here we add
    the crti C++ startup files file which provide part of the support
    for getting C++ file-scope static object constructed before entering
-   `main'. */ 
+   `main'.  */ 
    
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC \
@@ -63,7 +63,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Provide a ENDFILE_SPEC appropriate for AIX.  Here we tack on
    the crtn file which provides termination of the support for getting C++
-   file-scope static object constructed before entering `main'. */
+   file-scope static object constructed before entering `main'.  */
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
@@ -75,7 +75,7 @@ Boston, MA 02111-1307, USA.  */
    CPP.  It can also specify how to translate options you give to GNU CC into
    options for GNU CC to pass to the CPP.  */
 
-/* If -ansi, we need to define _ANSI_C_SOURCE to get the right headers. */
+/* If -ansi, we need to define _ANSI_C_SOURCE to get the right headers.  */
 #undef CPP_SPEC
 #define CPP_SPEC "\
 %{mcpu=itanium:-D__itanium__} %{mbig-endian:-D__BIG_ENDIAN__} \
@@ -90,7 +90,7 @@ Boston, MA 02111-1307, USA.  */
 -D__LP64__ -D__ELF__ -Asystem=unix -Asystem=aix -Acpu=ia64 -Amachine=ia64 \
 -D__64BIT__ -D_LONG_LONG -D_IA64 -D__int128=__size128_t"
 
-/* The GNU C++ standard library requires that these macros be defined. */
+/* The GNU C++ standard library requires that these macros be defined.  */
 #undef CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC                      \
   "-D_XOPEN_SOURCE=500                          \
@@ -104,7 +104,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic}"
 
-/* Define this for shared library support. */
+/* Define this for shared library support.  */
 
 #undef LINK_SPEC
 #define LINK_SPEC "\
@@ -135,7 +135,7 @@ Boston, MA 02111-1307, USA.  */
 do {							\
 } while (0)
 
-/* Tell the linker where to find the crt*.o files. */
+/* Tell the linker where to find the crt*.o files.  */
 
 #ifndef CROSS_COMPILE
 #undef STANDARD_STARTFILE_PREFIX
@@ -240,7 +240,7 @@ extern unsigned int ia64_section_threshold;
     }								\
   while (0)
 
-/* Override ia64/sysv4.h setting with that used by AIX5. */
+/* Override ia64/sysv4.h setting with that used by AIX5.  */
 #undef WCHAR_TYPE
 #ifdef __64BIT__
 #define WCHAR_TYPE "unsigned int"

@@ -663,7 +663,7 @@ shladd_operand (op, mode)
 	      || INTVAL (op) == 8 || INTVAL (op) == 16));
 }
 
-/* Return 1 if OP is a -16, -8, -4, -1, 1, 4, 8, or 16 immediate operand. */
+/* Return 1 if OP is a -16, -8, -4, -1, 1, 4, 8, or 16 immediate operand.  */
 
 int
 fetchadd_operand (op, mode)
@@ -3578,7 +3578,7 @@ ia64_print_operand (file, x, code)
     case POST_DEC:
     case POST_MODIFY:
       x = XEXP (x, 0);
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case REG:
       fputs (reg_names [REGNO (x)], file);
@@ -4175,7 +4175,7 @@ rws_access_regno (regno, flags, pred)
 	      && ! rws_sum[regno].written_by_fp)
 	    /* The predicates of a branch are available within the
 	       same insn group as long as the predicate was written by
-	       something other than a floating-point instruction.   */
+	       something other than a floating-point instruction.  */
 	    return 0;
 	}
 
@@ -4292,7 +4292,7 @@ update_set_flags (x, pflags, ppred, pcond)
 	     type compares.  We do not generate such instructions
 	     currently.  */
 	}
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     default:
       if (GET_RTX_CLASS (GET_CODE (src)) == '<'
@@ -6942,7 +6942,7 @@ ia64_encode_section_info (decl)
   /* This decl is marked as being in small data/bss but it shouldn't
      be; one likely explanation for this is that the decl has been
      moved into a different section from the one it was in when
-     ENCODE_SECTION_INFO was first called.  Remove the '@'.*/
+     ENCODE_SECTION_INFO was first called.  Remove the '@'.  */
   else if (symbol_str[0] == SDATA_NAME_FLAG_CHAR)
     {
       XSTR (XEXP (DECL_RTL (decl), 0), 0)
@@ -7006,7 +7006,7 @@ process_set (asm_out_file, pat)
       return 1;
     }
 
-  /* Look for SP = .... */
+  /* Look for SP = ....  */
   if (GET_CODE (dest) == REG && REGNO (dest) == STACK_POINTER_REGNUM)
     {
       if (GET_CODE (src) == PLUS)
@@ -7803,14 +7803,14 @@ ia64_hpux_function_arg_padding (mode, type)
      enum machine_mode mode;
      tree type;
 {
-   /* Exception to normal case for structures/unions/etc. */
+   /* Exception to normal case for structures/unions/etc.  */
 
    if (type && AGGREGATE_TYPE_P (type)
        && int_size_in_bytes (type) < UNITS_PER_WORD)
      return upward;
 
    /* This is the standard FUNCTION_ARG_PADDING with !BYTES_BIG_ENDIAN
-      hardwired to be true. */
+      hardwired to be true.  */
 
    return((mode == BLKmode
        ? (type && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST

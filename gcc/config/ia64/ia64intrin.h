@@ -2,7 +2,7 @@
 #define _IA64INTRIN_H_INCLUDED
 
 /* Actually, everything is a compiler builtin, but just so
-   there's no confusion... */
+   there's no confusion...  */
 #ifdef __cplusplus
 extern "C" {
 #endif

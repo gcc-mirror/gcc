@@ -53,7 +53,7 @@ extern int target_flags;
 
 #define MASK_VOL_ASM_STOP 0x00000010	/* Emit stop bits for vol ext asm.  */
 
-#define MASK_ILP32      0x00000020      /* Generate ILP32 code. */
+#define MASK_ILP32      0x00000020      /* Generate ILP32 code.  */
 
 #define MASK_B_STEP	0x00000040	/* Emit code for Itanium B step.  */
 
@@ -1846,7 +1846,7 @@ do {									\
 
 /* If a variable is weakened, made one only or moved into a different
    section, it may be necessary to redo the section info to move the
-   variable out of sdata. */
+   variable out of sdata.  */
 
 #define REDO_SECTION_INFO_P(DECL)					\
    ((TREE_CODE (DECL) == VAR_DECL)					\
@@ -2370,7 +2370,7 @@ do {									\
 
 /* Cross Compilation and Floating Point.  */
 
-/* Define to enable software floating point emulation. */
+/* Define to enable software floating point emulation.  */
 #define REAL_ARITHMETIC
 
 
@@ -2533,7 +2533,7 @@ struct machine_function
   /* The new stack pointer when unwinding from EH.  */
   struct rtx_def* ia64_eh_epilogue_sp;
 
-  /* The new bsp value when unwinding from EH. */
+  /* The new bsp value when unwinding from EH.  */
   struct rtx_def* ia64_eh_epilogue_bsp;
 
   /* The GP value save register.  */
@@ -2598,7 +2598,7 @@ enum ia64_builtins
   IA64_BUILTIN_FLUSHRS
 };
 
-/* Codes for expand_compare_and_swap and expand_swap_and_compare. */
+/* Codes for expand_compare_and_swap and expand_swap_and_compare.  */
 enum fetchop_code {
   IA64_ADD_OP, IA64_SUB_OP, IA64_OR_OP, IA64_AND_OP, IA64_XOR_OP, IA64_NAND_OP
 };
