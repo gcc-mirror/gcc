@@ -34,6 +34,9 @@
 # include <endian.h>
 #else
 # ifdef HAVE_MACHINE_ENDIAN_H
+#  ifdef HAVE_SYS_TYPES_H
+#   include <sys/types.h>
+#  endif
 #  include <machine/endian.h>
 # else
 #  ifdef HAVE_SYS_MACHINE_H
