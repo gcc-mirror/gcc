@@ -3342,6 +3342,22 @@ fold (expr)
     case CONVERT_EXPR:
     case FIX_TRUNC_EXPR:
       /* Other kinds of FIX are not handled properly by fold_convert.  */
+
+      /* In addition to the cases of two conversions in a row 
+	 handled below, if we are converting something to its own
+	 type via an object of identical or wider precision, neither
+	 conversion is needed.  */
+      if ((TREE_CODE (TREE_OPERAND (t, 0)) == NOP_EXPR
+	   || TREE_CODE (TREE_OPERAND (t, 0)) == CONVERT_EXPR)
+	  && TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)) == TREE_TYPE (t)
+	  && ((INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0)))
+	       && INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	      || (FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0)))
+		  && FLOAT_TYPE_P (TREE_TYPE (t))))
+	  && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
+	      >= TYPE_PRECISION (TREE_TYPE (t))))
+	return TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+
       /* Two conversions in a row are not needed unless:
 	 - the intermediate type is narrower than both initial and final, or
 	 - the intermediate type and innermost type differ in signedness,
