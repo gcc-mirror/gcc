@@ -36,9 +36,7 @@ target_noncanonical = @target_noncanonical@
 gcc_version = @gcc_version@
 top_srcdir = @top_srcdir@
 toplevel_srcdir = @toplevel_srcdir@
-toolexecdir = @glibcpp_toolexecdir@
-glibcpp_toolexecdir = @glibcpp_toolexecdir@
-glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
+toolexeclibdir = @toolexeclibdir@
 
 top_builddir = .
 
@@ -255,12 +253,12 @@ doc: info dvi html
 
 libobjc.la: $(OBJS)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS) \
-		-rpath $(glibcpp_toolexeclibdir) \
+		-rpath $(toolexeclibdir) \
 		-version-info $(LIBOBJC_VERSION)
 
 libobjc_gc.la: $(OBJS_GC)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS_GC) \
-		-rpath $(glibcpp_toolexeclibdir) \
+		-rpath $(toolexeclibdir) \
 		-version-info $(LIBOBJC_GC_VERSION)
 
 #
@@ -311,14 +309,14 @@ ${srcdir}/configure: configure.in
 install: install-libs install-headers
 
 install-libs: installdirs
-	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(glibcpp_toolexeclibdir)
-	$(LIBTOOL_INSTALL) $(INSTALL) libobjc.la $(DESTDIR)$(glibcpp_toolexeclibdir);
+	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(toolexeclibdir)
+	$(LIBTOOL_INSTALL) $(INSTALL) libobjc.la $(DESTDIR)$(toolexeclibdir);
 	if [ "$(OBJC_BOEHM_GC)" ]; then \
 	  $(LIBTOOL_INSTALL) $(INSTALL) libobjc_gc.la \
-				$(DESTDIR)$(glibcpp_toolexeclibdir);\
+				$(DESTDIR)$(toolexeclibdir);\
 	fi
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
-	@-$(LIBTOOL) --mode=finish $(DESTDIR)$(glibcpp_toolexeclibdir)
+	@-$(LIBTOOL) --mode=finish $(DESTDIR)$(toolexeclibdir)
 
 # Copy Objective C headers to installation include directory.
 install-headers:

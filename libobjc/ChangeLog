@@ -1,5 +1,13 @@
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.in: Remove toolexecdir, glibcpp_toolexecdir (unused).
+	Replace glibcpp_toolexeclibdir with toolexeclibdir.
+	* configure.in: Remove glibcpp_toolexecdir (unused).
+	Replace glibcpp_toolexeclibdir with toolexeclibdir.  Don't generate
+	config.h or stamp-h (unused).  Move one comment to the right place.
+	* configure: Regenerate.
+	* config.h.in: Remove (unused).
+
 	* config.h.in: Regenerate with autoheader.
 
 	* Makefile.in: Remove (unused) gcc_version_trigger.
