@@ -781,8 +781,7 @@ extern void cpp_stop_lookahead		PARAMS ((cpp_reader *, int));
 
 /* In cppfiles.c */
 extern int cpp_included	PARAMS ((cpp_reader *, const char *));
-extern int cpp_read_file PARAMS ((cpp_reader *, const char *));
-extern void cpp_make_system_header PARAMS ((cpp_reader *, cpp_buffer *, int));
+extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
 
 /* These are inline functions instead of macros so we can get type
    checking.  */

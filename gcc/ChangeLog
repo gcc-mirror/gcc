@@ -1,3 +1,15 @@
+2000-12-04  Neil Booth  <neilb@earthling.net>
+
+        * cppfiles.c (cpp_make_system_header): Take 2 booleans,
+        and operate on current buffer.
+        (cpp_read_file): Rename _cpp_read_file.  
+        * cpplib.c (do_line, do_pragma_system_header): Update calls to
+        cpp_make_system_header.
+        * fix-header.c: Similarly.
+        * cpphash.h (_cpp_read_file): Move from... 
+        * cpplib.h: ... here.
+        * cppinit.c (do_includes, cpp_start_read): Update appropriately.
+
 2000-12-03  Kaveh R. Ghazi  <ghazi@teal.rutgers.edu>
 
 	* builtins.c (expand_builtin_strspn, expand_builtin_strcspn):
