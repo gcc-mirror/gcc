@@ -617,7 +617,10 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 # so that libgcc1.a itself remains nonexistent if compilation is aborted.
 # -e causes any failing command to make this rule fail.
 # -e doesn't work in certain shells, so we test $$? as well.
-	set -e; \
+# lynx has a broken ar, it always complains when the initial library is
+# empty, thus this command works only if we don't do -e
+# There is a trailing backslash (\) deleted from the following line.
+#	set -e;
 	for name in $(LIB1FUNCS); \
 	do \
 	  echo $${name}; \
@@ -669,7 +672,10 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 	-rm -f tmplibgcc2.a
 # -e causes any failing command to make this rule fail.
 # -e doesn't work in certain shells, so we test $$? as well.
-	set -e; \
+# lynx has a broken ar, it always complains when the initial library is
+# empty, thus this command works only if we don't do -e
+# There is a trailing backslash (\) deleted from the following line.
+#	set -e;
 	for name in $(LIB2FUNCS); \
 	do \
 	  echo $${name}; \
