@@ -1,3 +1,8 @@
+2001-10-21  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR debug/4252
+	* doc/invoke.texi: Remove references to -fdump-translation-unit.
+
 2001-10-22  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_clear): New.
