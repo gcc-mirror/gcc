@@ -63,19 +63,19 @@ int main()
 /* When optimizing, all the above cases should be transformed into
    something else.  So any remaining calls to the original function
    should abort.  */
-__SIZE_TYPE__
+static __SIZE_TYPE__
 strlen (const char *s)
 {
   abort ();
 }
 
-int
+static int
 strcmp (const char *s1, const char *s2)
 {
   abort ();
 }
 
-char *
+static char *
 strrchr (const char *s, int c)
 {
   abort ();
