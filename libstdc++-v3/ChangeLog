@@ -1,3 +1,7 @@
+2004-03-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/fpos/14320-2.cc: Remove xfail.
+
 2004-03-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/23_containers/multiset/insert/1.cc: Test result string.

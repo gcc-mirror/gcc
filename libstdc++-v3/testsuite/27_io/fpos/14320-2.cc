@@ -20,8 +20,6 @@
 
 // 27.4.3 fpos
 
-// { dg-do run { xfail *-*-* } } 
-
 #include <iterator>
 #include <limits>
 #include <testsuite_hooks.h>
