@@ -323,17 +323,16 @@
     (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
     (eq_attr "cpu" "7100LC,7200")) 1 1)
 
-;; Shifts and memory ops actually execute in one of the integer
-;; ALUs, but we can't really model that.
+;; Shifts and memory ops execute in only one of the integer ALUs
 (define_function_unit "pa7100LCshiftmem" 1 1
   (and
     (eq_attr "type" "shift,nullshift,load,fpload,store,fpstore")
     (eq_attr "cpu" "7100LC,7200")) 1 1)
 
 ;; We have two basic ALUs.
-(define_function_unit "pa7100LCalu" 2 2
+(define_function_unit "pa7100LCalu" 2 1
   (and
-    (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl,load,fpload,store,fpstore,shift,nullshift")
+    (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
    (eq_attr "cpu" "7100LC,7200")) 1 1)
 
 ;; I don't have complete information on the PA7200; however, most of
