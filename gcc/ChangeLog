@@ -1,4 +1,4 @@
-2004-08-18  Danny Smith  <dannysmith@users.sourceforge.net>
+2004-08-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR  c++/16030
 	* config/i386/winnt/c (gen_stdcall_suffix, gen_fastcall_suffix):
