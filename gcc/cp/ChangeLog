@@ -1,3 +1,9 @@
+2003-01-12  Steven Bosscher  <stevenb@suse.de>
+
+	PR c++/13558
+	* parser.c (cp_parser_member_declaration): Any non-type is also
+	not a class or a function.
+
 2004-01-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/12815
