@@ -1,3 +1,11 @@
+2001-07-16  Daniel Berlin  <dan@cgsoftware.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* cse.c (set_live_p): Take INSN argument for cc0; update callers.
+	(insn_live_p): Fix fall off end of function.
+	(dead_libcall_p): Remove COUNTS argument; update callers.
+	(delete_trivially_dead_insns): Remove unused variables.
+
 2001-07-17  Andreas Jaeger  <aj@suse.de>
 
 	* config/i386/unix.h (ASM_OUTPUT_MI_THUNK): Fix output format for
