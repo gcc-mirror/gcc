@@ -449,6 +449,20 @@ reversed_comparison_code (rtx comparison, rtx insn)
 					 XEXP (comparison, 0),
 					 XEXP (comparison, 1), insn);
 }
+
+/* Return comparison with reversed code of EXP.
+   Return NULL_RTX in case we fail to do the reversal.  */
+rtx
+reversed_comparison (rtx exp, enum machine_mode mode)
+{
+  enum rtx_code reversed_code = reversed_comparison_code (exp, NULL_RTX);
+  if (reversed_code == UNKNOWN)
+    return NULL_RTX;
+  else
+    return simplify_gen_relational (reversed_code, mode, VOIDmode,
+                                    XEXP (exp, 0), XEXP (exp, 1));
+}
+
 
 /* Given an rtx-code for a comparison, return the code for the negated
    comparison.  If no such code exists, return UNKNOWN.
