@@ -73,6 +73,20 @@ namespace std
 
   template 
     S::basic_string(S::iterator, S::iterator, const allocator<C>&);
+
+  template
+    S&
+    S::_M_replace(S::iterator, S::iterator, C*, C*, forward_iterator_tag);  
+
+  template
+    S&
+    S::_M_replace(S::iterator, S::iterator, const C*, const C*, 
+		  forward_iterator_tag);  
+
+  template
+    C*
+    S::_S_construct(const C*, const C*, const allocator<C>&, 
+		    forward_iterator_tag);
 } // namespace std
 
 
