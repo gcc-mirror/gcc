@@ -1135,13 +1135,13 @@ ifeq ($(strip $(filter-out rtems%,$(osys))),)
   a-intnam.ads<4rintnam.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  s-osinte.adb<5rosinte.adb \
-  s-osinte.ads<5rosinte.ads \
+  s-osinte.adb<s-osinte-rtems.adb \
+  s-osinte.ads<s-osinte-rtems.ads \
   s-osprim.adb<s-osprim-posix.adb \
-  s-parame.adb<5rparame.adb \
+  s-parame.adb<s-parame-rtems.adb \
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
-  s-tpopsp.adb<5rtpopsp.adb
+  s-tpopsp.adb<s-tpopsp-rtems.adb
 endif
 
 ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)
