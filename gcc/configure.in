@@ -1134,10 +1134,11 @@ changequote([,])dnl
 		if test x$enable_threads = x; then
 		    enable_threads=$have_pthread_h
 		fi
- 		if test x$enable_threads = xyes; then
-			thread_file='dce'
+ 		case x${enable_threads} in
+		xyes | xdce)
 			tmake_file="${tmake_file} pa/t-dce-thr"
-		fi
+			;;
+		esac
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -1154,10 +1155,11 @@ changequote([,])dnl
 		if test x$enable_threads = x; then
 		    enable_threads=$have_pthread_h
 		fi
- 		if test x$enable_threads = xyes; then
-			thread_file='dce'
+ 		case x${enable_threads} in
+		xyes | xdce)
 			tmake_file="${tmake_file} pa/t-dce-thr"
-		fi
+			;;
+		esac
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
