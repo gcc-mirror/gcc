@@ -837,6 +837,28 @@ layout_type (type)
 	}
       break;
 
+    /* Pascal types */
+    case BOOLEAN_TYPE:		 /* store one byte/boolean for now. */
+      TYPE_MODE (type) = QImode;
+      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+      TYPE_PRECISION (type) = 1;
+      TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
+      break;
+
+    case CHAR_TYPE:
+      TYPE_MODE (type) = QImode;
+      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+      TYPE_PRECISION (type) = GET_MODE_BITSIZE (TYPE_MODE (type));
+      TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
+      break;
+
+    case FILE_TYPE:
+      /* The size may vary in different languages, so the language front end
+	 should fill in the size.  */
+      TYPE_ALIGN (type) = BIGGEST_ALIGNMENT;
+      TYPE_MODE  (type) = BLKmode;
+      break;
+
     default:
       abort ();
     } /* end switch */
@@ -948,6 +970,36 @@ make_unsigned_type (precision)
 
   fixup_unsigned_type (type);
   return type;
+}
+
+/* Set the extreme values of TYPE based on its precision in bits,
+   the lay it out.  Used when make_signed_type won't do
+   because the tree code is not INTEGER_TYPE.
+   E.g. for Pascal, when the -fsigned-char option is given.  */
+
+void
+fixup_signed_type (type)
+     tree type;
+{
+  register int precision = TYPE_PRECISION (type);
+
+  TYPE_MIN_VALUE (type)
+    = build_int_2 ((precision-BITS_PER_WORD > 0 ? 0 : (-1)<<(precision-1)),
+		   (-1)<<(precision-BITS_PER_WORD-1 > 0
+			  ? precision-BITS_PER_WORD-1
+			  : 0));
+  TYPE_MAX_VALUE (type)
+    = build_int_2 ((precision-BITS_PER_WORD > 0 ? -1 : (1<<(precision-1))-1),
+		   (precision-BITS_PER_WORD-1 > 0
+		    ? (1<<(precision-BITS_PER_WORD-1))-1
+		    : 0));
+
+  TREE_TYPE (TYPE_MIN_VALUE (type)) = type;
+  TREE_TYPE (TYPE_MAX_VALUE (type)) = type;
+
+  /* Lay out the type: set its alignment, size, etc.  */
+
+  layout_type (type);
 }
 
 /* Set the extreme values of TYPE based on its precision in bits,
