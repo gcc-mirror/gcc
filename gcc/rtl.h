@@ -87,6 +87,7 @@ typedef struct rtx_def
   /* 1 in a MEM or REG if value of this expression will never change
      during the current function, even though it is not
      manifestly constant.
+     1 in a SUBREG if it is from a promoted variable that is unsigned.
      1 in a SYMBOL_REF if it addresses something in the per-function
      constants pool.
      1 in a CALL_INSN if it is a const call.
@@ -104,6 +105,8 @@ typedef struct rtx_def
      0 if the MEM was a variable or the result of a * operator in C;
      1 if it was the result of a . or -> operator (on a struct) in C.
      1 in a REG if the register is used only in exit code a loop.
+     1 in a SUBREG expression if was generated from a variable with a 
+     promoted mode.
      1 in a CODE_LABEL if the label is used for nonlocal gotos
      and must not be deleted even if its count is zero.
      1 in a LABEL_REF if this is a reference to a label outside the
@@ -442,6 +445,17 @@ extern char *note_insn_name[];
 
 #define SUBREG_REG(RTX) ((RTX)->fld[0].rtx)
 #define SUBREG_WORD(RTX) ((RTX)->fld[1].rtint)
+
+/* 1 if the REG contained in SUBREG_REG is already known to be
+   sign- or zero-extended from the mode of the SUBREG to the mode of
+   the reg.  SUBREG_PROMOTED_UNSIGNED_P gives the signedness of the
+   extension.  
+
+   When used as a LHS, is means that this extension must be done
+   when assigning to SUBREG_REG.  */
+
+#define SUBREG_PROMOTED_VAR_P(RTX) ((RTX)->in_struct)
+#define SUBREG_PROMOTED_UNSIGNED_P(RTX) ((RTX)->unchanging)
 
 /* Access various components of an ASM_OPERANDS rtx.  */
 
