@@ -23,13 +23,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Set PCC_BITFIELD_TYPE_MATTERS to 0 to ignore the type of bitfields
    when calculating alignment.  */
 #define	MASK_NO_BITFIELD_TYPE	0x40000000
+#define	MASK_STRICT_ALIGN	0x20000000
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
+#define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
 
 #define SUBTARGET_SWITCHES						\
   { "bit-align",	-MASK_NO_BITFIELD_TYPE },			\
-  { "no-bit-align",	 MASK_NO_BITFIELD_TYPE },
+  { "no-bit-align",	 MASK_NO_BITFIELD_TYPE },			\
+  { "strict-align",	 MASK_STRICT_ALIGN },				\
+  { "no-strict-align",	-MASK_STRICT_ALIGN },
 
 #include "rs6000/sysv4.h"
 
@@ -41,6 +45,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	PCC_BITFIELD_TYPE_MATTERS
 #define	PCC_BITFIELD_TYPE_MATTERS (TARGET_BITFIELD_TYPE)
+
+/* Define this macro to be the value 1 if instructions will fail to
+   work if given data not on the nominal alignment.  If instructions
+   will merely go slower in that case, define this macro as 0. */
+#undef	STRICT_ALIGNMENT
+#define	STRICT_ALIGNMENT (TARGET_STRICT_ALIGN)
 
 /* Align stack to 8 byte boundaries, rather than 16 bytes Sys V.4 uses */
 #undef	STACK_BOUNDARY
