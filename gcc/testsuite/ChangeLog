@@ -1,4 +1,13 @@
-2003-02-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR middle-end/13750
+	Revert:
+	2004-01-15  Geoffrey Keating  <geoffk@apple.com>
+	PR pch/13361
+	* testsuite/g++.dg/pch/wchar-1.C: New.
+	* testsuite/g++.dg/pch/wchar-1.Hs: New.
+
+2004-02-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14008
 	* g++.dg/parse/error15.C: New test.
