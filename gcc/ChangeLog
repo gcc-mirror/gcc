@@ -1,3 +1,7 @@
+2003-04-22  Kean Johnston  <jkj@sco.com>
+
+	* tlink.c (recompile_files): Add missing '=' to putenv calls
+
 2003-04-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* ginclude/stddef.h: Provide C++ safe offsetof.
