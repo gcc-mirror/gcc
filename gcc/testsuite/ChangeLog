@@ -1,3 +1,8 @@
+2004-11-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/pragma-align.c (sixteen): Use 8-byte alignment
+	on LP64 targets.
+
 2004-11-04  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/asm-qual-1.c, gcc.dg/declspec-15.c, gcc.dg/declspec-16.c,

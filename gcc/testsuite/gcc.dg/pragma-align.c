@@ -9,7 +9,11 @@ struct {
         long two;
 } defaultalign;
 
+#if defined(__LP64__)
+#pragma pack(8)
+#else
 #pragma pack(4)
+#endif
 struct {
         char one;
         long two;
