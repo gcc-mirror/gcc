@@ -1782,6 +1782,10 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  ASM_OUTPUT_DEBUG_LABEL (file, "L", CODE_LABEL_NUMBER (insn));
 	  break;
 
+	case NOTE_INSN_VAR_LOCATION:
+	  (*debug_hooks->var_location) (insn);
+	  break;
+
 	case 0:
 	  break;
 

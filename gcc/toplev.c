@@ -158,6 +158,7 @@ static void rest_of_handle_reorder_blocks (tree, rtx);
 #ifdef STACK_REGS
 static void rest_of_handle_stack_regs (tree, rtx);
 #endif
+static void rest_of_handle_variable_tracking (tree, rtx);
 static void rest_of_handle_machine_reorg (tree, rtx);
 #ifdef DELAY_SLOTS
 static void rest_of_handle_delay_slots (tree, rtx);
@@ -289,6 +290,7 @@ enum dump_file_index
   DFI_branch_target_load,
   DFI_sched2,
   DFI_stack,
+  DFI_vartrack,
   DFI_mach,
   DFI_dbr,
   DFI_MAX
@@ -340,6 +342,7 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "btl",	'd', 1, 0, 0 }, /* Yes, duplicate enable switch.  */
   { "sched2",	'R', 1, 0, 0 },
   { "stack",	'k', 1, 0, 0 },
+  { "vartrack",	'V', 1, 0, 0 }, /* Yes, duplicate enable switch.  */
   { "mach",	'M', 1, 0, 0 },
   { "dbr",	'd', 0, 0, 0 },
 };
@@ -965,6 +968,13 @@ int flag_tracer = 0;
 
 int flag_unit_at_a_time = 0;
 
+/* Nonzero if we should track variables.  When
+   flag_var_tracking == AUTODETECT_FLAG_VAR_TRACKING it will be set according
+   to optimize, debug_info_level and debug_hooks in process_options ().  */
+ 
+#define AUTODETECT_FLAG_VAR_TRACKING 2
+int flag_var_tracking = AUTODETECT_FLAG_VAR_TRACKING;
+
 /* Values of the -falign-* flags: how much to align labels in code.
    0 means `use default', 1 means `don't align'.
    For each variable, there is an _log variant which is the power
@@ -1145,7 +1155,8 @@ static const lang_independent_options f_options[] =
   {"mem-report", &mem_report, 1 },
   { "trapv", &flag_trapv, 1 },
   { "wrapv", &flag_wrapv, 1 },
-  { "new-ra", &flag_new_regalloc, 1 }
+  { "new-ra", &flag_new_regalloc, 1 },
+  { "var-tracking", &flag_var_tracking, 1}
 };
 
 /* Here is a table, controlled by the tm.h file, listing each -m switch
@@ -2148,6 +2159,18 @@ rest_of_handle_stack_regs (tree decl, rtx insns)
 }
 #endif
 
+/* Track the variables, ie. compute where the variable is stored at each position in function.  */
+static void
+rest_of_handle_variable_tracking (tree decl, rtx insns)
+{
+  timevar_push (TV_VAR_TRACKING);
+  open_dump_file (DFI_vartrack, decl);
+
+  variable_tracking_main ();
+
+  close_dump_file (DFI_vartrack, print_rtl_with_bb, insns);
+  timevar_pop (TV_VAR_TRACKING);
+}
 
 /* Machine independent reorg pass.  */
 static void
@@ -3562,6 +3585,9 @@ rest_of_compilation (tree decl)
 
   compute_alignments ();
 
+  if (flag_var_tracking)
+    rest_of_handle_variable_tracking (decl, insns);
+
   /* CFG is no longer maintained up-to-date.  */
   free_bb_for_insn ();
 
@@ -4413,6 +4439,16 @@ process_options (void)
   else
     error ("target system does not support the \"%s\" debug format",
 	   debug_type_names[write_symbols]);
+
+  /* Now we know which debug output will be used so we can set
+     flag_var_tracking if user has not specified it.  */
+  if (flag_var_tracking == AUTODETECT_FLAG_VAR_TRACKING)
+    {
+      /* User has not specified -f(no-)var-tracking so autodetect it.  */
+      flag_var_tracking
+	= (optimize >= 1 && debug_info_level >= DINFO_LEVEL_NORMAL
+	   && debug_hooks->var_location != do_nothing_debug_hooks.var_location);
+    }
 
   /* If auxiliary info generation is desired, open the output file.
      This goes in the same directory as the source file--unlike

@@ -3280,7 +3280,8 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
      something tries to reference them.  */
   dwarf2out_abstract_function,	/* outlining_inline_function */
   debug_nothing_rtx,		/* label */
-  debug_nothing_int		/* handle_pch */
+  debug_nothing_int,		/* handle_pch */
+  debug_nothing_rtx		/* var_location */
 };
 #endif
 

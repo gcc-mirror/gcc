@@ -450,6 +450,7 @@ adjust_field_rtx_def (type_p t, options_p opt ATTRIBUTE_UNUSED)
 	    break;
 
 	  case NOTE_INSN_EXPECTED_VALUE:
+	  case NOTE_INSN_VAR_LOCATION:
 	    note_flds->name = "rtx";
 	    note_flds->type = rtx_tp;
 	    break;

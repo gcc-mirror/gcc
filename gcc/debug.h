@@ -108,6 +108,9 @@ struct gcc_debug_hooks
   /* Called after the start and before the end of writing a PCH file.
      The parameter is 0 if after the start, 1 if before the end.  */
   void (* handle_pch) (unsigned int);
+
+  /* Called from final_scan_insn for any NOTE_INSN_VAR_LOCATION note.  */
+  void (* var_location) (rtx);
 };
 
 extern const struct gcc_debug_hooks *debug_hooks;

@@ -507,6 +507,19 @@ The option @option{-dB} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.bbro} to
 the input file name.
 
+@cindex variable tracking
+@item
+Variable tracking.  This pass computes where the variables are stored at each
+position in code and generates notes describing the variable locations
+to RTL code.  The location lists are then generated according to these
+notes to debug information if the debugging information format supports
+location lists.
+
+@opindex dV
+The option @option{-dV} causes a debugging dump of the RTL code after
+this pass.  This dump file's name is made by appending @samp{.vartrack}
+to the input file name.
+
 @cindex delayed branch scheduling
 @cindex scheduling, delayed branch
 @item
