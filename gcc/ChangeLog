@@ -1,3 +1,8 @@
+2001-10-26  Andreas Schwab  <schwab@suse.de>
+
+	* reload1.c (emit_input_reload_insns): Fix parens in last
+	(undocumented) change that was supposed to change only whitespace.
+
 Fri Oct 26 07:18:08 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cfgcleanup.c (BB_SET_FLAG, BB_CLEAR_FLAG): Add cast to avoid warning.

@@ -6566,9 +6566,9 @@ emit_input_reload_insns (chain, rl, old, j)
 		  || (reg_equiv_constant
 		      [REGNO (SUBREG_REG (oldequiv))] != 0)))
 	  || (CONSTANT_P (oldequiv)
-	      && PREFERRED_RELOAD_CLASS (oldequiv,
-					 (REGNO_REG_CLASS (REGNO (reloadreg)))
-					 == NO_REGS)))
+	      && (PREFERRED_RELOAD_CLASS (oldequiv,
+					  REGNO_REG_CLASS (REGNO (reloadreg)))
+		  == NO_REGS)))
 	real_oldequiv = rl->in;
       gen_reload (reloadreg, real_oldequiv, rl->opnum,
 		  rl->when_needed);
