@@ -1,3 +1,8 @@
+1998-08-09  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (check_explicit_specialization): Don't abort on bogus
+	explicit instantiations.
+
 1998-08-07  Mark Mitchell  <mark@markmitchell.com>
 
 	* typeck.c (require_complete_type): Use complete_type_or_else.
