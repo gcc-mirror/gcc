@@ -1,5 +1,5 @@
 /* java.beans.PropertyChangeSupport
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -28,6 +28,11 @@ executable file might be covered by the GNU General Public License. */
 package java.beans;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.Enumeration;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
  ** PropertyChangeSupport makes it easy to fire property
@@ -39,16 +44,47 @@ import java.util.Vector;
  **/
 
 public class PropertyChangeSupport implements java.io.Serializable {
-	Hashtable propertyListeners = new Hashtable();
-	Vector listeners = new Vector();
-	Object bean;
+	transient Hashtable propertyListeners = new Hashtable();
+	transient Vector listeners = new Vector();
+	Hashtable children;
+	Object source;
+	int propertyChangeSupportSerializedDataVersion = 2;
+	private static final long serialVersionUID = 6401253773779951803L;
+
+	/**
+	 * Saves the state of the object to the stream. */
+	private void writeObject(ObjectOutputStream stream) throws IOException {
+		children = propertyListeners.isEmpty() ? null : propertyListeners;
+		stream.defaultWriteObject();
+		for (Enumeration e = listeners.elements(); e.hasMoreElements(); ) {
+			PropertyChangeListener l = (PropertyChangeListener)e.nextElement();
+			if (l instanceof Serializable)
+			  stream.writeObject(l);
+		}
+		stream.writeObject(null);
+	}
+
+	/**
+	 * Reads the object back from stream (deserialization).
+	 */
+	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		stream.defaultReadObject();
+		propertyListeners = (children == null) ? new Hashtable() : children;
+		PropertyChangeListener l;
+		while ((l = (PropertyChangeListener)stream.readObject()) != null) {
+			addPropertyChangeListener(l);
+		}
+		// FIXME: XXX: There is no spec for JDK 1.1 serialization
+		// so it is unclear what to do if the value of
+		// propertyChangeSupportSerializedDataVersion is 1.
+	}
 
 	/** Create PropertyChangeSupport to work with a specific
 	 ** source bean.
-	 ** @param bean the source bean to use.
+	 ** @param source the source bean to use.
 	 **/
-	public PropertyChangeSupport(Object bean) {
-		this.bean = bean;
+	public PropertyChangeSupport(Object source) {
+		this.source = source;
 	}
 
 	/** Adds a PropertyChangeListener to the list of listeners.
@@ -166,7 +202,7 @@ public class PropertyChangeSupport implements java.io.Serializable {
 	 ** @param newVal the new value.
 	 **/
 	public void firePropertyChange(String propertyName, Object oldVal, Object newVal) {
-		firePropertyChange(new PropertyChangeEvent(bean,propertyName,oldVal,newVal));
+		firePropertyChange(new PropertyChangeEvent(source,propertyName,oldVal,newVal));
 	}
 
 	/** Fire a PropertyChangeEvent containing the old and new values of the property to all the listeners.
@@ -176,7 +212,7 @@ public class PropertyChangeSupport implements java.io.Serializable {
 	 ** @param newVal the new value.
 	 **/
 	public void firePropertyChange(String propertyName, boolean oldVal, boolean newVal) {
-		firePropertyChange(new PropertyChangeEvent(bean, propertyName, new Boolean(oldVal), new Boolean(newVal)));
+		firePropertyChange(new PropertyChangeEvent(source, propertyName, new Boolean(oldVal), new Boolean(newVal)));
 	}
 
 	/** Fire a PropertyChangeEvent containing the old and new values of the property to all the listeners.
@@ -186,7 +222,7 @@ public class PropertyChangeSupport implements java.io.Serializable {
 	 ** @param newVal the new value.
 	 **/
 	public void firePropertyChange(String propertyName, int oldVal, int newVal) {
-		firePropertyChange(new PropertyChangeEvent(bean, propertyName, new Integer(oldVal), new Integer(newVal)));
+		firePropertyChange(new PropertyChangeEvent(source, propertyName, new Integer(oldVal), new Integer(newVal)));
 	}
 
 	/** Tell whether the specified property is being listened on or not.

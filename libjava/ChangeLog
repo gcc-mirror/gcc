@@ -1,3 +1,27 @@
+2000-11-16  Warren Levy  <warrenl@cygnus.com>
+
+	* java/beans/PropertyChangeSupport.java (propertyListeners): Made
+	transient.
+	(listeners): Made transient.
+	(source): Renamed from 'bean'.
+	(children): New field for serialization.
+	(propertyChangeSupportSerializedDataVersion): Ditto.
+	(serialVersionUID): Ditto.
+	(writeObject): New serialization method.
+	(readObject): New serialization method.
+	* java/beans/VetoableChangeSupport.java (propertyListeners): Made
+	transient.
+	(listeners): Made transient.
+	(source): Renamed from 'bean'.
+	(children): New field for serialization.
+	(vetoableChangeSupportSerializedDataVersion): Ditto.
+	(serialVersionUID): Ditto.
+	(writeObject): New serialization method.
+	(readObject): New serialization method.
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Fixed assert
+	to allow constructor to have a return type (i.e. the class that the
+	constructor constructs).
+
 2000-11-14  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.

@@ -312,7 +312,7 @@ _Jv_CallAnyMethodA (jobject obj,
 		    jvalue *result)
 {
   JvAssert (! is_constructor || ! obj);
-  JvAssert (! is_constructor || ! return_type);
+  JvAssert (! is_constructor || return_type);
 
   // See whether call needs an object as the first argument.  A
   // constructor does need a `this' argument, but it is one we create.
