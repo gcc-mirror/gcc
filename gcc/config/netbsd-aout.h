@@ -45,8 +45,7 @@ Boston, MA 02111-1307, USA.  */
        %{p:mcrt0%O%s}			\
        %{!p:				\
 	 %{!static:crt0%O%s}		\
-	 %{static:scrt0%O%s}}}}		\
-   %{shared:c++rt0%O%s}"
+	 %{static:scrt0%O%s}}}}"
 
 /* Provide a LINK_SPEC appropriate for NetBSD a.out.  Here we provide
    support for the special GCC options -static, -assert, and -nostdlib.  */

@@ -70,12 +70,12 @@
   "%{!symbolic:			\
      %{!shared:			\
        %{!p:			\
-	 %{!pg:-lgcc}}}		\
-     %{shared:-lgcc_pic}	\
-     %{p:-lgcc_p}		\
-     %{pg:-lgcc_p}}"
+	 %{!pg: -lgcc}}}		\
+     %{shared: -lgcc_pic}	\
+     %{p: -lgcc_p}		\
+     %{pg: -lgcc_p}}"
 #else
-#define LIBGCC_SPEC "%{!shared:%{!symbolic:-lgcc}}"
+#define LIBGCC_SPEC "%{!shared:%{!symbolic: -lgcc}}"
 #endif
 
 /* When building shared libraries, the initialization and finalization 
