@@ -1,3 +1,7 @@
+Tue Jul  7 11:49:04 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/980707-1.c: New test.
+
 Mon Jul  6 18:20:27 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 
 	* gcc.c-torture/compile/980706-1.c: New test.
