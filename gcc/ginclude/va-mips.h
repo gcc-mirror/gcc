@@ -29,16 +29,30 @@ typedef char * __gnuc_va_list;
 #define __va_ellipsis
 #endif
 
+#if __mips==3
+#define __va_rounded_size(__TYPE)  \
+  (((sizeof (__TYPE) + 8 - 1) / 8) * 8)
+#else
 #define __va_rounded_size(__TYPE)  \
   (((sizeof (__TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
+#endif
 
 #ifdef _STDARG_H
+#if __mips==3
+#define va_start(__AP, __LASTARG)	(__AP = __builtin_next_arg ())
+#else
 #define va_start(__AP, __LASTARG) 						\
  (__AP = ((char *) &(__LASTARG) + __va_rounded_size (__LASTARG)))
+#endif
 
 #else
 #define va_alist  __builtin_va_alist
+#if __mips==3
+/* This assumes that `long long int' is always a 64 bit type.  */
+#define va_dcl    long long int __builtin_va_alist; __va_ellipsis
+#else
 #define va_dcl    int __builtin_va_alist; __va_ellipsis
+#endif
 #define va_start(__AP)  __AP = (char *) &__builtin_va_alist
 #endif
 
@@ -49,6 +63,11 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 
 /* We cast to void * and then to TYPE * because this avoids
    a warning about increasing the alignment requirement.  */
+#if __mips==3
+#define va_arg(__AP, __type)                                    \
+  ((__type *) (void *) (__AP = (char *) ((((int)__AP + 8 - 1) & -8)     \
+                     + __va_rounded_size (__type))))[-1]
+#else
 #ifdef __MIPSEB__
 /* For big-endian machines.  */
 #define va_arg(__AP, __type)					\
@@ -64,6 +83,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 					  ? ((int)__AP + 8 - 1) & -8	    \
 					  : ((int)__AP + 4 - 1) & -4)	    \
 					 + __va_rounded_size(__type))))[-1]
+#endif
 #endif
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
