@@ -123,7 +123,7 @@ Boston, MA 02111-1307, USA.
    support here for as many of the other svr4 linker options as seems
    reasonable, given that some of them conflict with options for other
    svr4 tools (e.g. the assembler).  In particular, we do support the
-   -h*, -z*, -V, -b, -t, -Qy, -Qn, and -YP* options here, and the -e*,
+   -z*, -V, -b, -t, -Qy, -Qn, and -YP* options here, and the -e*,
    -l*, -o*, -r, -s, -u*, and -L* options are directly supported
    by gcc.c itself.  We don't directly support the -m (generate load
    map) option because that conflicts with the -m (run m4) option of
@@ -143,8 +143,8 @@ Boston, MA 02111-1307, USA.
 #define LINK_SPEC "%{h*} %{v:-V} \
 		   %{b} %{Wl,*:%*} \
 		   %{static:-dn -Bstatic} \
-		   %{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
-		   %{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
+		   %{shared:-G -dy -z text} \
+		   %{symbolic:-Bsymbolic -G -dy -z text} \
 		   %{G:-G} \
 		   %{YP,*} \
 		   %{!YP,*:%{p:-Y P,/lib/libp:/usr/lib/libp:/lib:/usr/lib} \
