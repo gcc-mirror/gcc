@@ -5280,10 +5280,10 @@ expand_end_case_type (orig_index, orig_type)
     {
       /* If the switch expression was an enumerated type, check that
 	 exactly all enumeration literals are covered by the cases.
-	 The check is made -Wswitch was specified and there is no
-	 default case.  */
-
-      if ((warn_switch && !thiscase->data.case_stmt.default_label)
+	 The check is made when -Wswitch was specified and there is no
+	 default case, or when -Wswitch-enum was specified.  */
+      if (((warn_switch && !thiscase->data.case_stmt.default_label)
+	   || warn_switch_enum)
 	  && TREE_CODE (orig_type) == ENUMERAL_TYPE
 	  && TREE_CODE (index_expr) != INTEGER_CST)
 	check_for_full_enumeration_handling (orig_type);

@@ -1,3 +1,8 @@
+2002-03-26  Andrew Cagney  <ac131313@redhat.com>
+
+	* gcc.dg/Wswitch-enum.c: New test.
+	Fix PR c/5044.
+
 2002-03-26  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/20020307-2.c (main): Pass a variable sized

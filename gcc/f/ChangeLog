@@ -1,3 +1,8 @@
+Tue Mar 26 10:30:05 2002  Andrew Cagney  <ac131313@redhat.com>
+
+	* invoke.texi (Warning Options): Mention -Wswitch-enum.
+	Fix PR c/5044.
+
 Tue Mar 26 07:30:51 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (LANG_HOOKS_MARK_TREE): Redefine.

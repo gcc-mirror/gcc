@@ -135,6 +135,11 @@ extern int warn_switch;
 
 extern int warn_switch_default;
 
+/* Warn if a switch on an enum fails to have a case for every enum
+   value (regardless of the presence or otherwise of a default case).  */
+
+extern int warn_switch_enum;
+
 /* Nonzero means warn about function definitions that default the return type
    or that use a null return and have a return-type other than void.  */
 
