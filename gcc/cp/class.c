@@ -6617,7 +6617,7 @@ dump_class_hierarchy_1 (FILE *stream, int flags, tree t)
   fprintf (stream, "\n");
 }
 
-/* Debug interface to heirarchy dumping.  */
+/* Debug interface to hierarchy dumping.  */
 
 extern void
 debug_class (tree t)

@@ -1996,7 +1996,7 @@ cp_walk_subtrees (tree* tp,
     case TYPENAME_TYPE:
     case TYPEOF_TYPE:
     case BASELINK:
-      /* None of thse have subtrees other than those already walked
+      /* None of these have subtrees other than those already walked
          above.  */
       *walk_subtrees_p = 0;
       break;

@@ -3409,7 +3409,7 @@ prep_operand (tree operand)
    CANDIDATES.  The ARGS are the arguments provided to the call,
    without any implicit object parameter.  The EXPLICIT_TARGS are
    explicit template arguments provided.  TEMPLATE_ONLY is true if
-   only template fucntions should be considered.  CONVERSION_PATH,
+   only template functions should be considered.  CONVERSION_PATH,
    ACCESS_PATH, and FLAGS are as for add_function_candidate.  */
 
 static void

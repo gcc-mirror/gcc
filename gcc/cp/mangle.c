@@ -2114,7 +2114,7 @@ write_template_arg (tree node)
 
   MANGLE_TRACE_TREE ("template-arg", node);
 
-  /* A template template paramter's argument list contains TREE_LIST
+  /* A template template parameter's argument list contains TREE_LIST
      nodes of which the value field is the the actual argument.  */
   if (code == TREE_LIST)
     {
