@@ -6745,7 +6745,7 @@ schedule_block (bb, rgn_n_insns)
 
       if (sched_verbose)
 	{
-	  fprintf (dump, ";;\tReady list (t =%3d):  ", clock_var);
+	  fprintf (dump, "\n;;\tReady list (t =%3d):  ", clock_var);
 	  debug_ready_list (ready, n_ready);
 	}
 

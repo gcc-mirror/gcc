@@ -16,6 +16,7 @@ Wed May 13 13:09:19 1998  Jim Wilson  <wilson@cygnus.com>
 Wed May 13 15:28:59 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* haifa-sched.c (schedule_block): Make verbose output line up.
+	Also add a blank line in printing the individual ready lists.
 
 Wed May 13 15:43:44 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
