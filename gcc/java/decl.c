@@ -614,7 +614,9 @@ java_init_decl_processing ()
   dtable_type = make_node (RECORD_TYPE);
   dtable_ptr_type = build_pointer_type (dtable_type);
 
-  otable_type = make_node (RECORD_TYPE);
+  one_elt_array_domain_type = build_index_type (integer_one_node);
+  otable_type = build_array_type (integer_type_node, 
+				  one_elt_array_domain_type);
   otable_ptr_type = build_pointer_type (otable_type);
 
   method_symbol_type = make_node (RECORD_TYPE);
@@ -623,15 +625,12 @@ java_init_decl_processing ()
   PUSH_FIELD (method_symbol_type, field, "signature", utf8const_ptr_type);
   FINISH_RECORD (method_symbol_type);
 
-  one_elt_array_domain_type = build_index_type (integer_one_node);
   method_symbols_array_type = build_array_type (method_symbol_type, 
 						one_elt_array_domain_type);
   method_symbols_array_ptr_type = build_pointer_type 
 				  (method_symbols_array_type);
 
-  otable_decl = build_decl (VAR_DECL, get_identifier ("otable"), 
-			    build_array_type (integer_type_node, 
-			    one_elt_array_domain_type));
+  otable_decl = build_decl (VAR_DECL, get_identifier ("otable"), otable_type);
   DECL_EXTERNAL (otable_decl) = 1;
   TREE_STATIC (otable_decl) = 1;
   TREE_READONLY (otable_decl) = 1;
