@@ -1138,7 +1138,7 @@ check_phi_redundancy (tree phi, tree *eq_to)
 	}
 
       if (val
-	  && !operand_equal_p (val, def, 0))
+	  && !operand_equal_for_phi_arg_p (val, def))
 	return;
 
       val = def;

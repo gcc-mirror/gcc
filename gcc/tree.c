@@ -6150,4 +6150,20 @@ lower_bound_in_type (tree outer, tree inner)
 		       build_int_cst_wide (inner, lo, hi));
 }
 
+/* Return nonzero if two operands that are suitable for PHI nodes are
+   necessarily equal.  Specifically, both ARG0 and ARG1 must be either
+   SSA_NAME or invariant.  Note that this is strictly an optimization.
+   That is, callers of this function can directly call operand_equal_p
+   and get the same result, only slower.  */
+
+int
+operand_equal_for_phi_arg_p (tree arg0, tree arg1)
+{
+  if (arg0 == arg1)
+    return 1;
+  if (TREE_CODE (arg0) == SSA_NAME || TREE_CODE (arg1) == SSA_NAME)
+    return 0;
+  return operand_equal_p (arg0, arg1, 0);
+}
+
 #include "gt-tree.h"
