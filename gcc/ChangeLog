@@ -1,3 +1,8 @@
+2005-02-13  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR tree-optimization/19944
+	* fold-const.c (fold): Re-add ABS_EXPR folding.
+
 2005-02-13  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/19019
