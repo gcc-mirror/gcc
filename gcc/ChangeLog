@@ -1,3 +1,8 @@
+2002-11-02  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Use string
+	instructions when optimizing for size.
+
 2002-11-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h: Fix comment typos.

@@ -558,10 +558,10 @@ rs6000_override_options (default_cpu)
   if (rs6000_cpu == PROCESSOR_PPC8540)
     rs6000_isel = 1;
 
-  /* If we are optimizing big endian systems for space, use the store
-     multiple instructions.  */
+  /* If we are optimizing big endian systems for space, use the load/store
+     multiple and string instructions.  */
   if (BYTES_BIG_ENDIAN && optimize_size)
-    target_flags |= MASK_MULTIPLE;
+    target_flags |= MASK_MULTIPLE | MASK_STRING;
 
   /* If -mmultiple or -mno-multiple was explicitly used, don't
      override with the processor default */
