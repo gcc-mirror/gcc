@@ -1,5 +1,10 @@
 2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* acconfig.h: Delete macros already ACDEFINED.
+	* config.h.in: Regenerate.
+
+2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* acconfig.h (HAVE_MODF): Remove.
 	* linkage.m4: Check for modf.
 	* config.h.in, configure: Regenerate.
