@@ -2395,7 +2395,6 @@ reg_scan_mark_refs (rtx x, rtx insn, int note_flag, unsigned int min_regno)
 
 	if (regno >= min_regno)
 	  {
-	    REGNO_LAST_NOTE_UID (regno) = INSN_UID (insn);
 	    if (!note_flag)
 	      REGNO_LAST_UID (regno) = INSN_UID (insn);
 	    if (REGNO_FIRST_UID (regno) == 0)

@@ -1,3 +1,11 @@
+2004-10-09  Steven Bosscher  <stevenb@suse.de>
+
+	* regs.h (struct reg_info_def): Remove the last_node_uid and
+	changes_mode fields.
+	(REGNO_LAST_NOTE_UID): Don't define.
+	* regclass.c (reg_scan_mark_refs): Don't set REGNO_LAST_NOTE_UID.
+	* regmove.c (copy_src_to_dest): Likewise.
+
 2004-10-09  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/17894

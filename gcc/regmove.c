@@ -834,9 +834,6 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest, int old_max_uid)
 
       if (REGNO_LAST_UID (src_regno) == insn_uid)
 	REGNO_LAST_UID (src_regno) = move_uid;
-
-      if (REGNO_LAST_NOTE_UID (src_regno) == insn_uid)
-	REGNO_LAST_NOTE_UID (src_regno) = move_uid;
     }
 }
 
