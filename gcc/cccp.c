@@ -2561,22 +2561,25 @@ do { ip = &instack[indepth];		\
 
     switch (c) {
     case '\\':
-      if (ibp >= limit)
-	break;
-      if (*ibp == '\n') {
-	/* Always merge lines ending with backslash-newline,
-	   even in middle of identifier.  */
+      if (*ibp == '\n' && !ip->macro) {
+	/* At the top level, always merge lines ending with backslash-newline,
+	   even in middle of identifier.  But do not merge lines in a macro,
+	   since backslash might be followed by a newline-space marker.  */
 	++ibp;
 	++ip->lineno;
 	--obp;		/* remove backslash from obuf */
 	break;
       }
+      /* If ANSI, backslash is just another character outside a string.  */
+      if (!traditional)
+	goto randomchar;
       /* Otherwise, backslash suppresses specialness of following char,
 	 so copy it here to prevent the switch from seeing it.
 	 But first get any pending identifier processed.  */
       if (ident_length > 0)
 	goto specialchar;
-      *obp++ = *ibp++;
+      if (ibp < limit)
+	*obp++ = *ibp++;
       break;
 
     case '#':
@@ -3582,8 +3585,9 @@ handle_directive (ip, op)
 	    if (*bp == '\n') {
 	      ip->lineno++;
 	      copy_command = 1;
-	    }
-	    bp++;
+	      bp++;
+	    } else if (traditional)
+	      bp++;
 	  }
 	  break;
 
@@ -5742,16 +5746,8 @@ collect_expansion (buf, end, nargs, arglist)
           expected_delimiter = c;
 	break;
 
-	/* Special hack: if a \# is written in the #define
-	   include a # in the definition.  This is useless for C code
-	   but useful for preprocessing other things.  */
-
       case '\\':
-	/* \# quotes a # even outside of strings.  */
-	if (p < limit && *p == '#' && !expected_delimiter) {
-	  exp_p--;
-	  *exp_p++ = *p++;
-	} else if (p < limit && expected_delimiter) {
+	if (p < limit && expected_delimiter) {
 	  /* In a string, backslash goes through
 	     and makes next char ordinary.  */
 	  *exp_p++ = *p++;
