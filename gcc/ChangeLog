@@ -1,3 +1,11 @@
+2003-07-01  Andreas Jaeger  <aj@suse.de>
+
+	* final.c: Convert prototypes to ISO C90.
+	* flow.c: Likewise.
+	* flags.h: Likewise.
+	* gcov-io.c: Likewise.
+	* gcov-io.h: Likewise.
+
 2003-06-30  Bruno Haible  <bruno@clisp.org>
 
 	PR middle-end/6578
@@ -45,14 +53,14 @@
 	* config/rs6000/spe.h (__ev_set_spefscr_frmc): Set the flag.
 
 2003-06-30  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/lib1funcs.asm: Use "xtensa-config.h" from
 	top-level include directory.
 	* config/xtensa/lib2funcs.S: Likewise.
 	* config/xtensa/xtensa.h: Likewise.
 	* config/xtensa/xtensa-config.h: Remove.
 	* doc/install.texi: Update location of "xtensa-config.h" header.
-	
+
 2003-06-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_extra_constraint): New function.
@@ -82,18 +90,18 @@
 	"*tstsi", "*tstsi_cconly", "*tsthiCCT", "*tsthiCCT_cconly",
 	"*tsthi", "*tsthi_cconly", "*tstqiCCT", "*tstqiCCT_cconly",
 	"*tstqi", "*tstqi_cconly", "*cmpsi_ccs_sign", "*cmpsi_ccs",
-	"*cmpsi_ccu", "*cmphi_ccu", "*cmpqi_ccu", "*cli", 
+	"*cmpsi_ccu", "*cmphi_ccu", "*cmpqi_ccu", "*cli",
 	"movti", "*movdi_64", "*movdi_31", "*movsi", "movhi", "movqi_64",
 	"movqi", "*movstrictqi", "*movstricthi", "movstrictsi",
-	"*movdf_64", "*movdf_31", "*movsf", 
+	"*movdf_64", "*movdf_31", "*movsf",
 	"*load_multiple_si", "*store_multiple_di",
-	"*sethighqisi", "*sethighhisi", "*sethighqidi_31", "*extendhisi2", 
-	"*la_64", "*la_31", "*la_31_and", "force_la_31", 
+	"*sethighqisi", "*sethighhisi", "*sethighqidi_31", "*extendhisi2",
+	"*la_64", "*la_31", "*la_31_and", "force_la_31",
 	"*addsi3_carry1_cc", *addsi3_carry1_cconly",
 	"*addsi3_carry2_cc", *addsi3_carry2_cconly",
 	"*addsi3_cc", "*addsi3_cconly", "*addsi3_cconly2",
-	"*addsi3_sign", "*addsi3_sub", "addsi3", 
-	"*subsi3_borrow_cc", "*subsi3_borrow_cconly", "*subsi3_cc", 
+	"*addsi3_sign", "*addsi3_sub", "addsi3",
+	"*subsi3_borrow_cc", "*subsi3_borrow_cconly", "*subsi3_cc",
 	"*subsi3_cconly", "*subsi3_sign", "*subsi3_sub", "subsi3",
 	"mulsi3"
 	"*andsi3_cc", "*andsi3_cconly", "andsi3",
@@ -106,7 +114,7 @@
 
 	("*cmpdf_ccs", "*cmpdf_ccs_ibm", "*cmpsf_ccs", "*cmpsf_ccs_ibm",
 	"*load_multiple_di", "*store_multiple_di",
-	"*sethighqidi_64", "*zero_extendhisi2_31", 
+	"*sethighqidi_64", "*zero_extendhisi2_31",
 	"truncdfsf2_ibm", "extendsfdf2_ieee", "extendsfdf2_ibm",
 	"adddf3", "*adddf3", "*adddf3_ibm",
 	"addsf3", "*addsf3", "*addsf3_ibm",
@@ -117,11 +125,11 @@
 	"mulsf3", "*mulsf3", "*mulsf3_ibm",
 	"divdf3", "*divdf3", "*divdf3_ibm",
 	"divsf3", "div*sf3", "*divsf3_ibm",
-	"sqrtdf2", "sqrtsf2", 
+	"sqrtdf2", "sqrtsf2",
 	"*cjump_long", "*icjump_long", "indirect_jump", "casesi_jump",
 	"*doloop_si_long", "*doloop_di_long", "bas_64", "bas_31",
-	"bas_r_64", "bas_r_31", "bas_tls_31", "bas_tls_64"): Adapt memory 
-	and address constraints for instructions that do not accept long 
+	"bas_r_64", "bas_r_31", "bas_tls_31", "bas_tls_64"): Adapt memory
+	and address constraints for instructions that do not accept long
 	displacements.
 
 2003-06-30  Hartmut Penner  <hpenner@de.ibm.com>
@@ -180,14 +188,14 @@ Mon Jun 30 23:47:33 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	architecture to assembler.
 	(LINK_SPEC): Merge 31-bit and 64-bit variants.
 	(LINK_ARCH31_SPEC, LINK_ARCH64_SPEC, EXTRA_SPECS): Remove.
-	* config/s390/s390.c (override_options): New default rules for 
+	* config/s390/s390.c (override_options): New default rules for
 	architecture mode and cpu architecture selection.
 	* doc/invoke.texi (-mesa, -mzarch, -march, -mtune): Document
 	new default rules.
-	
+
 	* config/s390/s390.h (enum processor_type): Add PROCESSOR_2084_Z990.
 	* config/s390/s390.md (attr "cpu"): Add "z990" processor type.
-	* config/s390/s390.c (override_options): Add "z990" to 
+	* config/s390/s390.c (override_options): Add "z990" to
 	processor_alias_table.
 	* doc/invoke.texi (-march): Document "z990" processor type.
 
@@ -195,7 +203,7 @@ Mon Jun 30 23:47:33 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/s390/s390.h (s390_tune_flags, s390_arch_flags): Declare.
 	(enum processor_flags, TARGET_CPU_IEEE_FLOAT, TARGET_CPU_ZARCH,
 	TARGET_CPU_LONG_DISPLACEMENT, TARGET_LONG_DISPLACEMENT): New.
-	* config/s390/s390.c (override_options): Replace enum pta_flags by 
+	* config/s390/s390.c (override_options): Replace enum pta_flags by
 	enum processor_flags.  Fill in s390_tune_flags and s390_arch_flags.
 
 	* config/s390/s390.c (s390_cpu): Rename to ...
@@ -263,7 +271,7 @@ Mon Jun 30 15:36:29 CEST 2003  Jan Hubicka  <jh@suse.cz>
         * config/rs6000/rs6000.c (rs6000_split_altivec_in_gprs): New function.
         (altivec_in_gprs_p): New function.
 
-	* config/rs6000/rs6000-protos (rs6000_split_altivec_in_gprs): New 
+	* config/rs6000/rs6000-protos (rs6000_split_altivec_in_gprs): New
 	prototype.
 	(altivec_in_gprs_p): New prototype.
 
@@ -370,7 +378,7 @@ Sun Jun 29 23:06:32 CEST 2003  Jan Hubicka  <jh@suse.cz>
 2003-06-29  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* loop.c (count_one_set): Fix detection of registers set in more
-	than one basic block.	
+	than one basic block.
 
 2003-06-29  Andreas Jaeger  <aj@suse.de>
 

@@ -1,6 +1,6 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -205,35 +205,34 @@ rtx current_insn_predicate;
 #endif
 
 #ifdef HAVE_ATTR_length
-static int asm_insn_count	PARAMS ((rtx));
+static int asm_insn_count (rtx);
 #endif
-static void profile_function	PARAMS ((FILE *));
-static void profile_after_prologue PARAMS ((FILE *));
-static bool notice_source_line	PARAMS ((rtx));
-static rtx walk_alter_subreg	PARAMS ((rtx *));
-static void output_asm_name	PARAMS ((void));
-static void output_alternate_entry_point PARAMS ((FILE *, rtx));
-static tree get_mem_expr_from_op	PARAMS ((rtx, int *));
-static void output_asm_operand_names PARAMS ((rtx *, int *, int));
-static void output_operand	PARAMS ((rtx, int));
+static void profile_function (FILE *);
+static void profile_after_prologue (FILE *);
+static bool notice_source_line (rtx);
+static rtx walk_alter_subreg (rtx *);
+static void output_asm_name (void);
+static void output_alternate_entry_point (FILE *, rtx);
+static tree get_mem_expr_from_op (rtx, int *);
+static void output_asm_operand_names (rtx *, int *, int);
+static void output_operand (rtx, int);
 #ifdef LEAF_REGISTERS
-static void leaf_renumber_regs	PARAMS ((rtx));
+static void leaf_renumber_regs (rtx);
 #endif
 #ifdef HAVE_cc0
-static int alter_cond		PARAMS ((rtx));
+static int alter_cond (rtx);
 #endif
 #ifndef ADDR_VEC_ALIGN
-static int final_addr_vec_align PARAMS ((rtx));
+static int final_addr_vec_align (rtx);
 #endif
 #ifdef HAVE_ATTR_length
-static int align_fuzz		PARAMS ((rtx, rtx, int, unsigned));
+static int align_fuzz (rtx, rtx, int, unsigned);
 #endif
 
 /* Initialize data in final at the beginning of a compilation.  */
 
 void
-init_final (filename)
-     const char *filename ATTRIBUTE_UNUSED;
+init_final (const char *filename ATTRIBUTE_UNUSED)
 {
   app_on = 0;
   final_sequence = 0;
@@ -248,16 +247,14 @@ init_final (filename)
    If not overridden for epilogue code, then the function body itself
    contains return instructions wherever needed.  */
 void
-default_function_pro_epilogue (file, size)
-     FILE *file ATTRIBUTE_UNUSED;
-     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
+default_function_pro_epilogue (FILE *file ATTRIBUTE_UNUSED,
+			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
 }
 
 /* Default target hook that outputs nothing to a stream.  */
 void
-no_asm_to_stream (file)
-     FILE *file ATTRIBUTE_UNUSED;
+no_asm_to_stream (FILE *file ATTRIBUTE_UNUSED)
 {
 }
 
@@ -265,7 +262,7 @@ no_asm_to_stream (file)
    Used before the output from an `asm' statement.  */
 
 void
-app_enable ()
+app_enable (void)
 {
   if (! app_on)
     {
@@ -278,7 +275,7 @@ app_enable ()
    Called from varasm.c before most kinds of output.  */
 
 void
-app_disable ()
+app_disable (void)
 {
   if (app_on)
     {
@@ -293,7 +290,7 @@ app_disable ()
 
 #ifdef DELAY_SLOTS
 int
-dbr_sequence_length ()
+dbr_sequence_length (void)
 {
   if (final_sequence != 0)
     return XVECLEN (final_sequence, 0) - 1;
@@ -346,7 +343,7 @@ static struct label_alignment *label_align;
 /* Indicate that branch shortening hasn't yet been done.  */
 
 void
-init_insn_lengths ()
+init_insn_lengths (void)
 {
   if (uid_shuid)
     {
@@ -373,8 +370,7 @@ init_insn_lengths ()
    get its actual length.  Otherwise, get its maximum length.  */
 
 int
-get_attr_length (insn)
-     rtx insn ATTRIBUTE_UNUSED;
+get_attr_length (rtx insn ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_ATTR_length
   rtx body;
@@ -508,8 +504,7 @@ get_attr_length (insn)
 
 #ifndef ADDR_VEC_ALIGN
 static int
-final_addr_vec_align (addr_vec)
-     rtx addr_vec;
+final_addr_vec_align (rtx addr_vec)
 {
   int align = GET_MODE_SIZE (GET_MODE (PATTERN (addr_vec)));
 
@@ -539,8 +534,7 @@ static int min_labelno, max_labelno;
 /* For the benefit of port specific code do this also as a function.  */
 
 int
-label_to_alignment (label)
-     rtx label;
+label_to_alignment (rtx label)
 {
   return LABEL_TO_ALIGNMENT (label);
 }
@@ -575,10 +569,7 @@ label_to_alignment (label)
    The return value is undefined for any other value of GROWTH.  */
 
 static int
-align_fuzz (start, end, known_align_log, growth)
-     rtx start, end;
-     int known_align_log;
-     unsigned growth;
+align_fuzz (rtx start, rtx end, int known_align_log, unsigned int growth)
 {
   int uid = INSN_UID (start);
   rtx align_label;
@@ -617,8 +608,7 @@ align_fuzz (start, end, known_align_log, growth)
    to exclude the branch size.  */
 
 int
-insn_current_reference_address (branch)
-     rtx branch;
+insn_current_reference_address (rtx branch)
 {
   rtx dest, seq;
   int seq_uid;
@@ -655,7 +645,7 @@ insn_current_reference_address (branch)
 #endif /* HAVE_ATTR_length */
 
 void
-compute_alignments ()
+compute_alignments (void)
 {
   int log, max_skip, max_log;
   basic_block bb;
@@ -755,8 +745,7 @@ compute_alignments ()
    slots.  */
 
 void
-shorten_branches (first)
-     rtx first ATTRIBUTE_UNUSED;
+shorten_branches (rtx first ATTRIBUTE_UNUSED)
 {
   rtx insn;
   int max_uid;
@@ -1311,8 +1300,7 @@ shorten_branches (first)
    This is used to compute its length.  */
 
 static int
-asm_insn_count (body)
-     rtx body;
+asm_insn_count (rtx body)
 {
   const char *template;
   int count = 1;
@@ -1341,10 +1329,8 @@ asm_insn_count (body)
      test and compare insns.  */
 
 void
-final_start_function (first, file, optimize)
-     rtx first ATTRIBUTE_UNUSED;
-     FILE *file;
-     int optimize ATTRIBUTE_UNUSED;
+final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
+		      int optimize ATTRIBUTE_UNUSED)
 {
   block_depth = 0;
 
@@ -1416,8 +1402,7 @@ final_start_function (first, file, optimize)
 }
 
 static void
-profile_after_prologue (file)
-     FILE *file ATTRIBUTE_UNUSED;
+profile_after_prologue (FILE *file ATTRIBUTE_UNUSED)
 {
 #ifndef PROFILE_BEFORE_PROLOGUE
   if (current_function_profile)
@@ -1426,8 +1411,7 @@ profile_after_prologue (file)
 }
 
 static void
-profile_function (file)
-     FILE *file ATTRIBUTE_UNUSED;
+profile_function (FILE *file ATTRIBUTE_UNUSED)
 {
 #ifndef NO_PROFILE_COUNTERS
 # define NO_PROFILE_COUNTERS	0
@@ -1508,7 +1492,7 @@ profile_function (file)
    even though not all of them are needed.  */
 
 void
-final_end_function ()
+final_end_function (void)
 {
   app_disable ();
 
@@ -1540,11 +1524,7 @@ final_end_function ()
    Prescanning is done only on certain machines.  */
 
 void
-final (first, file, optimize, prescan)
-     rtx first;
-     FILE *file;
-     int optimize;
-     int prescan;
+final (rtx first, FILE *file, int optimize, int prescan)
 {
   rtx insn;
   int max_line = 0;
@@ -1636,9 +1616,7 @@ final (first, file, optimize, prescan)
 }
 
 const char *
-get_insn_template (code, insn)
-     int code;
-     rtx insn;
+get_insn_template (int code, rtx insn)
 {
   const void *output = insn_data[code].output;
   switch (insn_data[code].output_format)
@@ -1663,9 +1641,7 @@ get_insn_template (code, insn)
 
    The case fall-through in this function is intentional.  */
 static void
-output_alternate_entry_point (file, insn)
-     FILE *file;
-     rtx insn;
+output_alternate_entry_point (FILE *file, rtx insn)
 {
   const char *name = LABEL_NAME (insn);
 
@@ -1699,12 +1675,8 @@ output_alternate_entry_point (file, insn)
    used for within delayed branch sequence output).  */
 
 rtx
-final_scan_insn (insn, file, optimize, prescan, nopeepholes)
-     rtx insn;
-     FILE *file;
-     int optimize ATTRIBUTE_UNUSED;
-     int prescan;
-     int nopeepholes ATTRIBUTE_UNUSED;
+final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
+		 int prescan, int nopeepholes ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_cc0
   rtx set;
@@ -2527,8 +2499,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
    based on the NOTE-insn INSN, assumed to be a line number.  */
 
 static bool
-notice_source_line (insn)
-     rtx insn;
+notice_source_line (rtx insn)
 {
   const char *filename = insn_file (insn);
   int linenum = insn_line (insn);
@@ -2548,8 +2519,7 @@ notice_source_line (insn)
    directly to the desired hard register.  */
 
 void
-cleanup_subreg_operands (insn)
-     rtx insn;
+cleanup_subreg_operands (rtx insn)
 {
   int i;
   extract_insn_cached (insn);
@@ -2583,8 +2553,7 @@ cleanup_subreg_operands (insn)
    based on the thing it is a subreg of.  */
 
 rtx
-alter_subreg (xp)
-     rtx *xp;
+alter_subreg (rtx *xp)
 {
   rtx x = *xp;
   rtx y = SUBREG_REG (x);
@@ -2616,8 +2585,7 @@ alter_subreg (xp)
 /* Do alter_subreg on all the SUBREGs contained in X.  */
 
 static rtx
-walk_alter_subreg (xp)
-     rtx *xp;
+walk_alter_subreg (rtx *xp)
 {
   rtx x = *xp;
   switch (GET_CODE (x))
@@ -2654,8 +2622,7 @@ walk_alter_subreg (xp)
    2 means that COND has been altered.  */
 
 static int
-alter_cond (cond)
-     rtx cond;
+alter_cond (rtx cond)
 {
   int value = 0;
 
@@ -2814,7 +2781,7 @@ output_operand_lossage (const char *msgid, ...)
   char *new_message;
   const char *pfx_str;
   va_list ap;
-  
+
   va_start (ap, msgid);
 
   pfx_str = this_is_asm_operands ? _("invalid `asm': ") : "output_operand: ";
@@ -2837,7 +2804,7 @@ output_operand_lossage (const char *msgid, ...)
    alternative used.  */
 
 static void
-output_asm_name ()
+output_asm_name (void)
 {
   if (debug_insn)
     {
@@ -2862,9 +2829,7 @@ output_asm_name ()
    corresponds to the address of the object and 0 if to the object.  */
 
 static tree
-get_mem_expr_from_op (op, paddressp)
-     rtx op;
-     int *paddressp;
+get_mem_expr_from_op (rtx op, int *paddressp)
 {
   tree expr;
   int inner_addressp;
@@ -2905,10 +2870,7 @@ get_mem_expr_from_op (op, paddressp)
    is the number of operands to write.  */
 
 static void
-output_asm_operand_names (operands, oporder, nops)
-     rtx *operands;
-     int *oporder;
-     int nops;
+output_asm_operand_names (rtx *operands, int *oporder, int nops)
 {
   int wrote = 0;
   int i;
@@ -2952,9 +2914,7 @@ output_asm_operand_names (operands, oporder, nops)
       of the operand, with no other punctuation.  */
 
 void
-output_asm_insn (template, operands)
-     const char *template;
-     rtx *operands;
+output_asm_insn (const char *template, rtx *operands)
 {
   const char *p;
   int c;
@@ -3160,8 +3120,7 @@ output_asm_insn (template, operands)
 /* Output a LABEL_REF, or a bare CODE_LABEL, as an assembler symbol.  */
 
 void
-output_asm_label (x)
-     rtx x;
+output_asm_label (rtx x)
 {
   char buf[256];
 
@@ -3188,9 +3147,7 @@ output_asm_label (x)
    by PRINT_OPERAND.  */
 
 static void
-output_operand (x, code)
-     rtx x;
-     int code ATTRIBUTE_UNUSED;
+output_operand (rtx x, int code ATTRIBUTE_UNUSED)
 {
   if (x && GET_CODE (x) == SUBREG)
     x = alter_subreg (&x);
@@ -3209,8 +3166,7 @@ output_operand (x, code)
    The macro PRINT_OPERAND_ADDRESS exists just to control this function.  */
 
 void
-output_address (x)
-     rtx x;
+output_address (rtx x)
 {
   walk_alter_subreg (&x);
   PRINT_OPERAND_ADDRESS (asm_out_file, x);
@@ -3221,9 +3177,7 @@ output_address (x)
    that may appear in these expressions.  */
 
 void
-output_addr_const (file, x)
-     FILE *file;
-     rtx x;
+output_addr_const (FILE *file, rtx x)
 {
   char buf[256];
 
@@ -3355,7 +3309,7 @@ asm_fprintf (FILE *file, const char *p, ...)
   char buf[10];
   char *q, c;
   va_list argptr;
-  
+
   va_start (argptr, p);
 
   buf[0] = '%';
@@ -3447,7 +3401,7 @@ asm_fprintf (FILE *file, const char *p, ...)
 		*q = 0;
 		fprintf (file, buf, va_arg (argptr, long));
 	      }
-	    
+
 	    break;
 
 	  case 's':
@@ -3515,9 +3469,7 @@ asm_fprintf (FILE *file, const char *p, ...)
    and in *SECOND the other.  */
 
 void
-split_double (value, first, second)
-     rtx value;
-     rtx *first, *second;
+split_double (rtx value, rtx *first, rtx *second)
 {
   if (GET_CODE (value) == CONST_INT)
     {
@@ -3656,7 +3608,7 @@ split_double (value, first, second)
 /* Return nonzero if this function has no function calls.  */
 
 int
-leaf_function_p ()
+leaf_function_p (void)
 {
   rtx insn;
   rtx link;
@@ -3699,8 +3651,7 @@ leaf_function_p ()
    output templates to customary add branch prediction hints.
  */
 int
-final_forward_branch_p (insn)
-     rtx insn;
+final_forward_branch_p (rtx insn)
 {
   int insn_id, label_id;
   if (!uid_shuid)
@@ -3728,7 +3679,7 @@ final_forward_branch_p (insn)
    safely renumbered.  */
 
 int
-only_leaf_regs_used ()
+only_leaf_regs_used (void)
 {
   int i;
   const char *const permitted_reg_in_leaf_functions = LEAF_REGISTERS;
@@ -3751,8 +3702,7 @@ only_leaf_regs_used ()
    available in leaf functions.  */
 
 static void
-leaf_renumber_regs (first)
-     rtx first;
+leaf_renumber_regs (rtx first)
 {
   rtx insn;
 
@@ -3773,8 +3723,7 @@ leaf_renumber_regs (first)
    available in leaf functions.  */
 
 void
-leaf_renumber_regs_insn (in_rtx)
-     rtx in_rtx;
+leaf_renumber_regs_insn (rtx in_rtx)
 {
   int i, j;
   const char *format_ptr;
@@ -3872,15 +3821,15 @@ static int symbol_queue_size = 0;
    the nesting depth goes to 0 is this routine called.  */
 
 void
-debug_flush_symbol_queue ()
+debug_flush_symbol_queue (void)
 {
   int i;
- 
+
   /* Make sure that additionally queued items are not flushed
      prematurely.  */
-    
+
   ++debug_nesting;
- 
+
   for (i = 0; i < symbol_queue_index; ++i)
     {
       /* If we pushed queued symbols then such symbols are must be
@@ -3902,17 +3851,17 @@ debug_flush_symbol_queue ()
     }
 
   symbol_queue_index = 0;
-  --debug_nesting;       
+  --debug_nesting;
 }
 
 /* Queue a type symbol needed as part of the definition of a decl
    symbol.  These symbols are generated when debug_flush_symbol_queue()
    is called.  */
 
-void     
+void
 debug_queue_symbol (tree decl)
 {
-  if (symbol_queue_index >= symbol_queue_size)    
+  if (symbol_queue_index >= symbol_queue_size)
     {
       symbol_queue_size += 10;
       symbol_queue = (tree *) xrealloc (symbol_queue,
@@ -3920,11 +3869,11 @@ debug_queue_symbol (tree decl)
     }
 
   symbol_queue[symbol_queue_index++] = decl;
-}     
+}
 
 /* Free symbol queue.  */
 void
-debug_free_queue ()
+debug_free_queue (void)
 {
   if (symbol_queue)
     {

@@ -99,7 +99,7 @@ extern bool warnings_are_errors;
    set_Wunused() to update the -Wunused-* flags that correspond to the
    -Wunused option.  */
 
-extern void set_Wunused PARAMS ((int setting));
+extern void set_Wunused (int setting);
 
 extern bool warn_unused_function;
 extern bool warn_unused_label;

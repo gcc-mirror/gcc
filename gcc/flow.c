@@ -206,7 +206,7 @@ rtx regs_may_share;
 
 /* Callback that determines if it's ok for a function to have no
    noreturn attribute.  */
-int (*lang_missing_noreturn_ok_p) PARAMS ((tree));
+int (*lang_missing_noreturn_ok_p) (tree);
 
 /* Set of registers that may be eliminable.  These are handled specially
    in updating regs_ever_live.  */
@@ -286,64 +286,52 @@ static int ndead;
 #define MAX_MEM_SET_LIST_LEN	100
 
 /* Forward declarations */
-static int verify_wide_reg_1		PARAMS ((rtx *, void *));
-static void verify_wide_reg		PARAMS ((int, basic_block));
-static void verify_local_live_at_start	PARAMS ((regset, basic_block));
-static void notice_stack_pointer_modification_1 PARAMS ((rtx, rtx, void *));
-static void notice_stack_pointer_modification PARAMS ((rtx));
-static void mark_reg			PARAMS ((rtx, void *));
-static void mark_regs_live_at_end	PARAMS ((regset));
-static int set_phi_alternative_reg      PARAMS ((rtx, int, int, void *));
-static void calculate_global_regs_live	PARAMS ((sbitmap, sbitmap, int));
-static void propagate_block_delete_insn PARAMS ((rtx));
-static rtx propagate_block_delete_libcall PARAMS ((rtx, rtx));
-static int insn_dead_p			PARAMS ((struct propagate_block_info *,
-						 rtx, int, rtx));
-static int libcall_dead_p		PARAMS ((struct propagate_block_info *,
-						 rtx, rtx));
-static void mark_set_regs		PARAMS ((struct propagate_block_info *,
-						 rtx, rtx));
-static void mark_set_1			PARAMS ((struct propagate_block_info *,
-						 enum rtx_code, rtx, rtx,
-						 rtx, int));
-static int find_regno_partial		PARAMS ((rtx *, void *));
+static int verify_wide_reg_1 (rtx *, void *);
+static void verify_wide_reg (int, basic_block);
+static void verify_local_live_at_start (regset, basic_block);
+static void notice_stack_pointer_modification_1 (rtx, rtx, void *);
+static void notice_stack_pointer_modification (rtx);
+static void mark_reg (rtx, void *);
+static void mark_regs_live_at_end (regset);
+static int set_phi_alternative_reg (rtx, int, int, void *);
+static void calculate_global_regs_live (sbitmap, sbitmap, int);
+static void propagate_block_delete_insn (rtx);
+static rtx propagate_block_delete_libcall (rtx, rtx);
+static int insn_dead_p (struct propagate_block_info *, rtx, int, rtx);
+static int libcall_dead_p (struct propagate_block_info *, rtx, rtx);
+static void mark_set_regs (struct propagate_block_info *, rtx, rtx);
+static void mark_set_1 (struct propagate_block_info *, enum rtx_code, rtx,
+			rtx, rtx, int);
+static int find_regno_partial (rtx *, void *);
 
 #ifdef HAVE_conditional_execution
-static int mark_regno_cond_dead		PARAMS ((struct propagate_block_info *,
-						 int, rtx));
-static void free_reg_cond_life_info	PARAMS ((splay_tree_value));
-static int flush_reg_cond_reg_1		PARAMS ((splay_tree_node, void *));
-static void flush_reg_cond_reg		PARAMS ((struct propagate_block_info *,
-						 int));
-static rtx elim_reg_cond		PARAMS ((rtx, unsigned int));
-static rtx ior_reg_cond			PARAMS ((rtx, rtx, int));
-static rtx not_reg_cond			PARAMS ((rtx));
-static rtx and_reg_cond			PARAMS ((rtx, rtx, int));
+static int mark_regno_cond_dead (struct propagate_block_info *, int, rtx);
+static void free_reg_cond_life_info (splay_tree_value);
+static int flush_reg_cond_reg_1 (splay_tree_node, void *);
+static void flush_reg_cond_reg (struct propagate_block_info *, int);
+static rtx elim_reg_cond (rtx, unsigned int);
+static rtx ior_reg_cond (rtx, rtx, int);
+static rtx not_reg_cond (rtx);
+static rtx and_reg_cond (rtx, rtx, int);
 #endif
 #ifdef AUTO_INC_DEC
-static void attempt_auto_inc		PARAMS ((struct propagate_block_info *,
-						 rtx, rtx, rtx, rtx, rtx));
-static void find_auto_inc		PARAMS ((struct propagate_block_info *,
-						 rtx, rtx));
-static int try_pre_increment_1		PARAMS ((struct propagate_block_info *,
-						 rtx));
-static int try_pre_increment		PARAMS ((rtx, rtx, HOST_WIDE_INT));
+static void attempt_auto_inc (struct propagate_block_info *, rtx, rtx, rtx,
+			      rtx, rtx);
+static void find_auto_inc (struct propagate_block_info *, rtx, rtx);
+static int try_pre_increment_1 (struct propagate_block_info *, rtx);
+static int try_pre_increment (rtx, rtx, HOST_WIDE_INT);
 #endif
-static void mark_used_reg		PARAMS ((struct propagate_block_info *,
-						 rtx, rtx, rtx));
-static void mark_used_regs		PARAMS ((struct propagate_block_info *,
-						 rtx, rtx, rtx));
-void debug_flow_info			PARAMS ((void));
-static void add_to_mem_set_list		PARAMS ((struct propagate_block_info *,
-						 rtx));
-static int invalidate_mems_from_autoinc PARAMS ((rtx *, void *));
-static void invalidate_mems_from_set	PARAMS ((struct propagate_block_info *,
-						 rtx));
-static void clear_log_links		PARAMS ((sbitmap));
+static void mark_used_reg (struct propagate_block_info *, rtx, rtx, rtx);
+static void mark_used_regs (struct propagate_block_info *, rtx, rtx, rtx);
+void debug_flow_info (void);
+static void add_to_mem_set_list (struct propagate_block_info *, rtx);
+static int invalidate_mems_from_autoinc (rtx *, void *);
+static void invalidate_mems_from_set (struct propagate_block_info *, rtx);
+static void clear_log_links (sbitmap);
 
 
 void
-check_function_return_warnings ()
+check_function_return_warnings (void)
 {
   if (warn_missing_noreturn
       && !TREE_THIS_VOLATILE (cfun->decl)
@@ -387,8 +375,7 @@ check_function_return_warnings ()
    note associated with the BLOCK.  */
 
 rtx
-first_insn_after_basic_block_note (block)
-     basic_block block;
+first_insn_after_basic_block_note (basic_block block)
 {
   rtx insn;
 
@@ -410,10 +397,7 @@ first_insn_after_basic_block_note (block)
    to be used in accumulating flow info.  */
 
 void
-life_analysis (f, file, flags)
-     rtx f;
-     FILE *file;
-     int flags;
+life_analysis (rtx f, FILE *file, int flags)
 {
 #ifdef ELIMINABLE_REGS
   int i;
@@ -502,9 +486,7 @@ life_analysis (f, file, flags)
    word_mode.  */
 
 static int
-verify_wide_reg_1 (px, pregno)
-     rtx *px;
-     void *pregno;
+verify_wide_reg_1 (rtx *px, void *pregno)
 {
   rtx x = *px;
   unsigned int regno = *(int *) pregno;
@@ -522,9 +504,7 @@ verify_wide_reg_1 (px, pregno)
    of BB looking for register REGNO.  */
 
 static void
-verify_wide_reg (regno, bb)
-     int regno;
-     basic_block bb;
+verify_wide_reg (int regno, basic_block bb)
 {
   rtx head = bb->head, end = bb->end;
 
@@ -555,9 +535,7 @@ verify_wide_reg (regno, bb)
    changes in live_at_start during a local update.  */
 
 static void
-verify_local_live_at_start (new_live_at_start, bb)
-     regset new_live_at_start;
-     basic_block bb;
+verify_local_live_at_start (regset new_live_at_start, basic_block bb)
 {
   if (reload_completed)
     {
@@ -622,10 +600,7 @@ verify_local_live_at_start (new_live_at_start, bb)
    unless the caller resets it to zero.  */
 
 int
-update_life_info (blocks, extent, prop_flags)
-     sbitmap blocks;
-     enum update_life_extent extent;
-     int prop_flags;
+update_life_info (sbitmap blocks, enum update_life_extent extent, int prop_flags)
 {
   regset tmp;
   regset_head tmp_head;
@@ -689,7 +664,7 @@ update_life_info (blocks, extent, prop_flags)
 	     Further improvement may be possible.  */
 	  cleanup_cfg (CLEANUP_EXPENSIVE);
 
-	  /* Zap the life information from the last round.  If we don't 
+	  /* Zap the life information from the last round.  If we don't
 	     do this, we can wind up with registers that no longer appear
 	     in the code being marked live at entry, which twiggs bogus
 	     warnings from regno_uninitialized.  */
@@ -775,9 +750,7 @@ update_life_info (blocks, extent, prop_flags)
 /* Update life information in all blocks where BB_DIRTY is set.  */
 
 int
-update_life_info_in_dirty_blocks (extent, prop_flags)
-     enum update_life_extent extent;
-     int prop_flags;
+update_life_info_in_dirty_blocks (enum update_life_extent extent, int prop_flags)
 {
   sbitmap update_life_blocks = sbitmap_alloc (last_basic_block);
   int n = 0;
@@ -817,8 +790,7 @@ update_life_info_in_dirty_blocks (extent, prop_flags)
    KEEP_HEAD_END_P is nonzero if basic_block_info is not to be freed.  */
 
 void
-free_basic_block_vars (keep_head_end_p)
-     int keep_head_end_p;
+free_basic_block_vars (int keep_head_end_p)
 {
   if (! keep_head_end_p)
     {
@@ -840,8 +812,7 @@ free_basic_block_vars (keep_head_end_p)
 /* Delete any insns that copy a register to itself.  */
 
 int
-delete_noop_moves (f)
-     rtx f ATTRIBUTE_UNUSED;
+delete_noop_moves (rtx f ATTRIBUTE_UNUSED)
 {
   rtx insn, next;
   basic_block bb;
@@ -886,7 +857,7 @@ delete_noop_moves (f)
    insns computing the destination, so we delay deleting and garbagecollect
    them once life information is computed.  */
 void
-delete_dead_jumptables ()
+delete_dead_jumptables (void)
 {
   rtx insn, next;
   for (insn = get_insns (); insn; insn = next)
@@ -911,10 +882,8 @@ delete_dead_jumptables ()
    Only useful before prologues have been emitted.  */
 
 static void
-notice_stack_pointer_modification_1 (x, pat, data)
-     rtx x;
-     rtx pat ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+notice_stack_pointer_modification_1 (rtx x, rtx pat ATTRIBUTE_UNUSED,
+				     void *data ATTRIBUTE_UNUSED)
 {
   if (x == stack_pointer_rtx
       /* The stack pointer is only modified indirectly as the result
@@ -927,8 +896,7 @@ notice_stack_pointer_modification_1 (x, pat, data)
 }
 
 static void
-notice_stack_pointer_modification (f)
-     rtx f;
+notice_stack_pointer_modification (rtx f)
 {
   rtx insn;
 
@@ -955,9 +923,7 @@ notice_stack_pointer_modification (f)
    of their component registers set as well.  */
 
 static void
-mark_reg (reg, xset)
-     rtx reg;
-     void *xset;
+mark_reg (rtx reg, void *xset)
 {
   regset set = (regset) xset;
   int regno = REGNO (reg);
@@ -978,8 +944,7 @@ mark_reg (reg, xset)
    at the end of the last basic block.  */
 
 static void
-mark_regs_live_at_end (set)
-     regset set;
+mark_regs_live_at_end (regset set)
 {
   unsigned int i;
 
@@ -1073,11 +1038,9 @@ mark_regs_live_at_end (set)
    INSN, in the regset.  */
 
 static int
-set_phi_alternative_reg (insn, dest_regno, src_regno, data)
-     rtx insn ATTRIBUTE_UNUSED;
-     int dest_regno ATTRIBUTE_UNUSED;
-     int src_regno;
-     void *data;
+set_phi_alternative_reg (rtx insn ATTRIBUTE_UNUSED,
+			 int dest_regno ATTRIBUTE_UNUSED, int src_regno,
+			 void *data)
 {
   regset live = (regset) data;
   SET_REGNO_REG_SET (live, src_regno);
@@ -1091,9 +1054,7 @@ set_phi_alternative_reg (insn, dest_regno, src_regno, data)
    BLOCKS_OUT is set for every block that was changed.  */
 
 static void
-calculate_global_regs_live (blocks_in, blocks_out, flags)
-     sbitmap blocks_in, blocks_out;
-     int flags;
+calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 {
   basic_block *queue, *qhead, *qtail, *qend, bb;
   regset tmp, new_live_at_end, invalidated_by_call;
@@ -1405,9 +1366,7 @@ typedef struct {
    part of an expression which only uses part of the register.  Return
    it in the structure passed in.  */
 static int
-find_regno_partial (ptr, data)
-     rtx *ptr;
-     void *data;
+find_regno_partial (rtx *ptr, void *data)
 {
   find_regno_partial_param *param = (find_regno_partial_param *)data;
   unsigned reg = param->regno_to_find;
@@ -1452,7 +1411,7 @@ find_regno_partial (ptr, data)
    bits we don't want.  */
 
 int
-initialize_uninitialized_subregs ()
+initialize_uninitialized_subregs (void)
 {
   rtx insn;
   edge e;
@@ -1507,7 +1466,7 @@ initialize_uninitialized_subregs ()
    of life analysis.  Not static since used also for stupid life analysis.  */
 
 void
-allocate_bb_life_data ()
+allocate_bb_life_data (void)
 {
   basic_block bb;
 
@@ -1521,7 +1480,7 @@ allocate_bb_life_data ()
 }
 
 void
-allocate_reg_life_data ()
+allocate_reg_life_data (void)
 {
   int i;
 
@@ -1548,8 +1507,7 @@ allocate_reg_life_data ()
 /* Delete dead instructions for propagate_block.  */
 
 static void
-propagate_block_delete_insn (insn)
-     rtx insn;
+propagate_block_delete_insn (rtx insn)
 {
   rtx inote = find_reg_note (insn, REG_LABEL, NULL_RTX);
 
@@ -1598,8 +1556,7 @@ propagate_block_delete_insn (insn)
    before the libcall.  */
 
 static rtx
-propagate_block_delete_libcall ( insn, note)
-     rtx insn, note;
+propagate_block_delete_libcall (rtx insn, rtx note)
 {
   rtx first = XEXP (note, 0);
   rtx before = PREV_INSN (first);
@@ -1612,9 +1569,7 @@ propagate_block_delete_libcall ( insn, note)
 /* Update the life-status of regs for one insn.  Return the previous insn.  */
 
 rtx
-propagate_one_insn (pbi, insn)
-     struct propagate_block_info *pbi;
-     rtx insn;
+propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 {
   rtx prev = PREV_INSN (insn);
   int flags = pbi->flags;
@@ -1672,16 +1627,16 @@ propagate_one_insn (pbi, insn)
 	   as a whole is not dead, then we want to remove INSN, but
 	   not the whole libcall sequence.
 
-	   However, we need to also remove the dangling REG_LIBCALL	
+	   However, we need to also remove the dangling REG_LIBCALL
 	   note so that we do not have mis-matched LIBCALL/RETVAL
 	   notes.  In theory we could find a new location for the
-	   REG_RETVAL note, but it hardly seems worth the effort. 
+	   REG_RETVAL note, but it hardly seems worth the effort.
 
 	   NOTE at this point will be the RETVAL note if it exists.  */
 	  if (note)
 	    {
 	      rtx libcall_note;
-	 
+
 	      libcall_note
 		= find_reg_note (XEXP (note, 0), REG_LIBCALL, NULL_RTX);
 	      remove_note (XEXP (note, 0), libcall_note);
@@ -1880,10 +1835,8 @@ propagate_one_insn (pbi, insn)
    the user can use the regsets provided here.  */
 
 struct propagate_block_info *
-init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
-     basic_block bb;
-     regset live, local_set, cond_local_set;
-     int flags;
+init_propagate_block_info (basic_block bb, regset live, regset local_set,
+			   regset cond_local_set, int flags)
 {
   struct propagate_block_info *pbi = xmalloc (sizeof (*pbi));
 
@@ -2042,8 +1995,7 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
 /* Release a propagate_block_info struct.  */
 
 void
-free_propagate_block_info (pbi)
-     struct propagate_block_info *pbi;
+free_propagate_block_info (struct propagate_block_info *pbi)
 {
   free_EXPR_LIST_list (&pbi->mem_set_list);
 
@@ -2079,12 +2031,8 @@ free_propagate_block_info (pbi)
    Return nonzero if an INSN is deleted (i.e. by dead code removal).  */
 
 int
-propagate_block (bb, live, local_set, cond_local_set, flags)
-     basic_block bb;
-     regset live;
-     regset local_set;
-     regset cond_local_set;
-     int flags;
+propagate_block (basic_block bb, regset live, regset local_set,
+		 regset cond_local_set, int flags)
 {
   struct propagate_block_info *pbi;
   rtx insn, prev;
@@ -2136,11 +2084,8 @@ propagate_block (bb, live, local_set, cond_local_set, flags)
    pertaining to the insn.  */
 
 static int
-insn_dead_p (pbi, x, call_ok, notes)
-     struct propagate_block_info *pbi;
-     rtx x;
-     int call_ok;
-     rtx notes ATTRIBUTE_UNUSED;
+insn_dead_p (struct propagate_block_info *pbi, rtx x, int call_ok,
+	     rtx notes ATTRIBUTE_UNUSED)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -2333,10 +2278,7 @@ insn_dead_p (pbi, x, call_ok, notes)
    NOTE is the REG_RETVAL note of the insn.  */
 
 static int
-libcall_dead_p (pbi, note, insn)
-     struct propagate_block_info *pbi;
-     rtx note;
-     rtx insn;
+libcall_dead_p (struct propagate_block_info *pbi, rtx note, rtx insn)
 {
   rtx x = single_set (insn);
 
@@ -2390,8 +2332,7 @@ libcall_dead_p (pbi, note, insn)
    fixed hard registers.  */
 
 int
-regno_uninitialized (regno)
-     unsigned int regno;
+regno_uninitialized (unsigned int regno)
 {
   if (n_basic_blocks == 0
       || (regno < FIRST_PSEUDO_REGISTER
@@ -2408,8 +2349,7 @@ regno_uninitialized (regno)
    Such regs may be clobbered by `longjmp'.  */
 
 int
-regno_clobbered_at_setjmp (regno)
-     int regno;
+regno_clobbered_at_setjmp (int regno)
 {
   if (n_basic_blocks == 0)
     return 0;
@@ -2422,9 +2362,7 @@ regno_clobbered_at_setjmp (regno)
 /* Add MEM to PBI->MEM_SET_LIST.  MEM should be canonical.  Respect the
    maximal list size; look for overlaps in mode and select the largest.  */
 static void
-add_to_mem_set_list (pbi, mem)
-     struct propagate_block_info *pbi;
-     rtx mem;
+add_to_mem_set_list (struct propagate_block_info *pbi, rtx mem)
 {
   rtx i;
 
@@ -2471,9 +2409,7 @@ add_to_mem_set_list (pbi, mem)
    to an address change.  */
 
 static int
-invalidate_mems_from_autoinc (px, data)
-     rtx *px;
-     void *data;
+invalidate_mems_from_autoinc (rtx *px, void *data)
 {
   rtx x = *px;
   struct propagate_block_info *pbi = data;
@@ -2490,9 +2426,7 @@ invalidate_mems_from_autoinc (px, data)
 /* EXP is a REG.  Remove any dependent entries from pbi->mem_set_list.  */
 
 static void
-invalidate_mems_from_set (pbi, exp)
-     struct propagate_block_info *pbi;
-     rtx exp;
+invalidate_mems_from_set (struct propagate_block_info *pbi, rtx exp)
 {
   rtx temp = pbi->mem_set_list;
   rtx prev = NULL_RTX;
@@ -2525,9 +2459,7 @@ invalidate_mems_from_set (pbi, exp)
    FLAGS is the set of operations to perform.  */
 
 static void
-mark_set_regs (pbi, x, insn)
-     struct propagate_block_info *pbi;
-     rtx x, insn;
+mark_set_regs (struct propagate_block_info *pbi, rtx x, rtx insn)
 {
   rtx cond = NULL_RTX;
   rtx link;
@@ -2598,11 +2530,7 @@ mark_set_regs (pbi, x, insn)
    will be the condition.  */
 
 static void
-mark_set_1 (pbi, code, reg, cond, insn, flags)
-     struct propagate_block_info *pbi;
-     enum rtx_code code;
-     rtx reg, cond, insn;
-     int flags;
+mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx cond, rtx insn, int flags)
 {
   int regno_first = -1, regno_last = -1;
   unsigned long not_dead = 0;
@@ -2906,10 +2834,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
    Return true if the register is now unconditionally dead.  */
 
 static int
-mark_regno_cond_dead (pbi, regno, cond)
-     struct propagate_block_info *pbi;
-     int regno;
-     rtx cond;
+mark_regno_cond_dead (struct propagate_block_info *pbi, int regno, rtx cond)
 {
   /* If this is a store to a predicate register, the value of the
      predicate is changing, we don't know that the predicate as seen
@@ -2992,8 +2917,7 @@ mark_regno_cond_dead (pbi, regno, cond)
 /* Called from splay_tree_delete for pbi->reg_cond_life.  */
 
 static void
-free_reg_cond_life_info (value)
-     splay_tree_value value;
+free_reg_cond_life_info (splay_tree_value value)
 {
   struct reg_cond_life_info *rcli = (struct reg_cond_life_info *) value;
   free (rcli);
@@ -3002,9 +2926,7 @@ free_reg_cond_life_info (value)
 /* Helper function for flush_reg_cond_reg.  */
 
 static int
-flush_reg_cond_reg_1 (node, data)
-     splay_tree_node node;
-     void *data;
+flush_reg_cond_reg_1 (splay_tree_node node, void *data)
 {
   struct reg_cond_life_info *rcli;
   int *xdata = (int *) data;
@@ -3036,9 +2958,7 @@ flush_reg_cond_reg_1 (node, data)
 /* Flush all (sub) expressions referring to REGNO from REG_COND_LIVE.  */
 
 static void
-flush_reg_cond_reg (pbi, regno)
-     struct propagate_block_info *pbi;
-     int regno;
+flush_reg_cond_reg (struct propagate_block_info *pbi, int regno)
 {
   int pair[2];
 
@@ -3061,9 +2981,7 @@ flush_reg_cond_reg (pbi, regno)
    ADD.  */
 
 static rtx
-ior_reg_cond (old, x, add)
-     rtx old, x;
-     int add;
+ior_reg_cond (rtx old, rtx x, int add)
 {
   rtx op0, op1;
 
@@ -3151,8 +3069,7 @@ ior_reg_cond (old, x, add)
 }
 
 static rtx
-not_reg_cond (x)
-     rtx x;
+not_reg_cond (rtx x)
 {
   enum rtx_code x_code;
 
@@ -3176,9 +3093,7 @@ not_reg_cond (x)
 }
 
 static rtx
-and_reg_cond (old, x, add)
-     rtx old, x;
-     int add;
+and_reg_cond (rtx old, rtx x, int add)
 {
   rtx op0, op1;
 
@@ -3271,9 +3186,7 @@ and_reg_cond (old, x, add)
    is used when the value of REGNO changes.  */
 
 static rtx
-elim_reg_cond (x, regno)
-     rtx x;
-     unsigned int regno;
+elim_reg_cond (rtx x, unsigned int regno)
 {
   rtx op0, op1;
 
@@ -3337,9 +3250,8 @@ elim_reg_cond (x, regno)
    else.  */
 
 static void
-attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
-     struct propagate_block_info *pbi;
-     rtx inc, insn, mem, incr, incr_reg;
+attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
+		  rtx mem, rtx incr, rtx incr_reg)
 {
   int regno = REGNO (incr_reg);
   rtx set = single_set (incr);
@@ -3481,10 +3393,7 @@ attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
    reference.  */
 
 static void
-find_auto_inc (pbi, x, insn)
-     struct propagate_block_info *pbi;
-     rtx x;
-     rtx insn;
+find_auto_inc (struct propagate_block_info *pbi, rtx x, rtx insn)
 {
   rtx addr = XEXP (x, 0);
   HOST_WIDE_INT offset = 0;
@@ -3573,11 +3482,8 @@ find_auto_inc (pbi, x, insn)
 #endif /* AUTO_INC_DEC */
 
 static void
-mark_used_reg (pbi, reg, cond, insn)
-     struct propagate_block_info *pbi;
-     rtx reg;
-     rtx cond ATTRIBUTE_UNUSED;
-     rtx insn;
+mark_used_reg (struct propagate_block_info *pbi, rtx reg,
+	       rtx cond ATTRIBUTE_UNUSED, rtx insn)
 {
   unsigned int regno_first, regno_last, i;
   int some_was_live, some_was_dead, some_not_set;
@@ -3765,9 +3671,7 @@ mark_used_reg (pbi, reg, cond, insn)
    is not called.  */
 
 static void
-mark_used_regs (pbi, x, cond, insn)
-     struct propagate_block_info *pbi;
-     rtx x, cond, insn;
+mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
 {
   RTX_CODE code;
   int regno;
@@ -4046,9 +3950,7 @@ mark_used_regs (pbi, x, cond, insn)
 #ifdef AUTO_INC_DEC
 
 static int
-try_pre_increment_1 (pbi, insn)
-     struct propagate_block_info *pbi;
-     rtx insn;
+try_pre_increment_1 (struct propagate_block_info *pbi, rtx insn)
 {
   /* Find the next use of this reg.  If in same basic block,
      make it do pre-increment or pre-decrement if appropriate.  */
@@ -4094,9 +3996,7 @@ try_pre_increment_1 (pbi, insn)
    This checks all about the validity of the result of modifying INSN.  */
 
 static int
-try_pre_increment (insn, reg, amount)
-     rtx insn, reg;
-     HOST_WIDE_INT amount;
+try_pre_increment (rtx insn, rtx reg, HOST_WIDE_INT amount)
 {
   rtx use;
 
@@ -4174,10 +4074,7 @@ try_pre_increment (insn, reg, amount)
    return (rtx) 1.  */
 
 rtx
-find_use_as_address (x, reg, plusconst)
-     rtx x;
-     rtx reg;
-     HOST_WIDE_INT plusconst;
+find_use_as_address (rtx x, rtx reg, HOST_WIDE_INT plusconst)
 {
   enum rtx_code code = GET_CODE (x);
   const char * const fmt = GET_RTX_FORMAT (code);
@@ -4236,9 +4133,7 @@ find_use_as_address (x, reg, plusconst)
    This is part of making a debugging dump.  */
 
 void
-dump_regset (r, outf)
-     regset r;
-     FILE *outf;
+dump_regset (regset r, FILE *outf)
 {
   int i;
   if (r == NULL)
@@ -4261,8 +4156,7 @@ dump_regset (r, outf)
    debugger.  */
 
 void
-debug_regset (r)
-     regset r;
+debug_regset (regset r)
 {
   dump_regset (r, stderr);
   putc ('\n', stderr);
@@ -4288,9 +4182,7 @@ debug_regset (r)
    possibly other information which is used by the register allocators.  */
 
 void
-recompute_reg_usage (f, loop_step)
-     rtx f ATTRIBUTE_UNUSED;
-     int loop_step ATTRIBUTE_UNUSED;
+recompute_reg_usage (rtx f ATTRIBUTE_UNUSED, int loop_step ATTRIBUTE_UNUSED)
 {
   allocate_reg_life_data ();
   update_life_info (NULL, UPDATE_LIFE_LOCAL, PROP_REG_INFO);
@@ -4301,9 +4193,7 @@ recompute_reg_usage (f, loop_step)
    of the number of registers that died.  */
 
 int
-count_or_remove_death_notes (blocks, kill)
-     sbitmap blocks;
-     int kill;
+count_or_remove_death_notes (sbitmap blocks, int kill)
 {
   int count = 0;
   basic_block bb;
@@ -4369,8 +4259,7 @@ count_or_remove_death_notes (blocks, kill)
    if blocks is NULL.  */
 
 static void
-clear_log_links (blocks)
-     sbitmap blocks;
+clear_log_links (sbitmap blocks)
 {
   rtx insn;
   int i;
@@ -4399,9 +4288,7 @@ clear_log_links (blocks)
    with moving single words, but probably isn't worth the trouble.  */
 
 void
-reg_set_to_hard_reg_set (to, from)
-     HARD_REG_SET *to;
-     bitmap from;
+reg_set_to_hard_reg_set (HARD_REG_SET *to, bitmap from)
 {
   int i;
 
