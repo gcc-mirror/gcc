@@ -541,8 +541,7 @@ lang_decode_option (argc, argv)
 #endif /* ! USE_CPPLIB */
 
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
-    flag_writable_strings = 1,
-    flag_this_is_variable = 1, flag_new_for_scope = 0;
+    /* ignore */;
   /* The +e options are for cfront compatibility.  They come in as
      `-+eN', to kludge around gcc.c's argument handling.  */
   else if (p[0] == '-' && p[1] == '+' && p[2] == 'e')

@@ -4506,12 +4506,12 @@ build_unary_op (code, xarg, noconvert)
       /* Note that this operation never does default_conversion
 	 regardless of NOCONVERT.  */
 
-      argtype = TREE_TYPE (arg);
+      argtype = lvalue_type (arg);
       if (TREE_CODE (argtype) == REFERENCE_TYPE)
 	{
 	  arg = build1
 	    (CONVERT_EXPR,
-	     build_pointer_type (TREE_TYPE (TREE_TYPE (arg))), arg);
+	     build_pointer_type (TREE_TYPE (argtype)), arg);
 	  TREE_CONSTANT (arg) = TREE_CONSTANT (TREE_OPERAND (arg, 0));
 	  return arg;
 	}
@@ -4638,18 +4638,6 @@ build_unary_op (code, xarg, noconvert)
 	       && TREE_CODE (argtype) != METHOD_TYPE
 	       && !lvalue_or_else (arg, "unary `&'"))
 	return error_mark_node;
-
-      /* Ordinary case; arg is a COMPONENT_REF or a decl.  */
-      /* If the lvalue is const or volatile,
-	 merge that into the type that the address will point to.  */
-      if (TREE_CODE_CLASS (TREE_CODE (arg)) == 'd'
-	  || TREE_CODE_CLASS (TREE_CODE (arg)) == 'r')
-	{
-	  if (TREE_READONLY (arg) || TREE_THIS_VOLATILE (arg))
-	    argtype = cp_build_type_variant (argtype,
-					    TREE_READONLY (arg),
-					    TREE_THIS_VOLATILE (arg));
-	}
 
       argtype = build_pointer_type (argtype);
 

@@ -448,13 +448,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       if (flags & LOOKUP_COMPLAIN)
 	{
 	  tree ttl = TREE_TYPE (reftype);
-	  tree ttr;
-	  
-	  {
-	    int r = TREE_READONLY (expr);
-	    int v = TREE_THIS_VOLATILE (expr);
-	    ttr = cp_build_type_variant (TREE_TYPE (expr), r, v);
-	  }
+	  tree ttr = lvalue_type (expr);
 
 	  if (! real_lvalue_p (expr) && ! TYPE_READONLY (ttl))
 	    {
