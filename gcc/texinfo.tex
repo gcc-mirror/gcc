@@ -35,7 +35,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.178 $
+\deftexinfoversion$Revision: 2.179 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1197,7 +1197,7 @@ where each line of input produces a line of output.}
 \def\key#1{{\smallrm\textfont2=\smallsy \leavevmode\hbox{%
   \raise0.4pt\hbox{$\langle$}\kern-.08em\vtop{%
     \vbox{\hrule\kern-0.4pt
-     \hbox{\raise0.4pt\hbox{\vphantom{$\langle$}}\uppercase{#1}}}%
+     \hbox{\raise0.4pt\hbox{\vphantom{$\langle$}}#1}}%
     \kern-0.4pt\hrule}%
   \kern-.06em\raise0.4pt\hbox{$\rangle$}}}}
 %\def\key #1{{\ttsl \nohyphenation \uppercase{#1}}\null}
