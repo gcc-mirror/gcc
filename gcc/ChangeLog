@@ -1,3 +1,21 @@
+1999-11-30  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (scope_die_for): Only handle types.  Only search for
+	containing types.
+	(decl_scope_table): Just an array of trees now.
+	(push_decl_scope): Simplify.
+	(dwarf2out_init): Adjust.
+	(local_scope_p): New fn.
+	(gen_inlined_enumeration_type_die): Don't call scope_die_for.
+	(gen_inlined_union_type_die, gen_inlined_structure_type_die): Likewise.
+	(gen_typedef_die): Likewise.
+	(gen_lexical_block_die): Don't call push/pop_decl_scope.
+	(gen_inlined_subroutine_die): Likewise.
+	(gen_abstract_function): Set current_function_decl temporarily.
+	(gen_subprogram_die): Don't check DECL_ABSTRACT to set declaration.
+	Handle block extern declarations.  Don't call push/pop_decl_scope.
+	(gen_decl_die): Fix logic for block externs.
+
 1999-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* calls.c (special_function_p): Remove `realloc' and add `strdup'

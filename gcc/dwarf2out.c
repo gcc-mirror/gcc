@@ -2227,23 +2227,12 @@ static unsigned decl_die_table_in_use;
    decl_die_table.  */
 #define DECL_DIE_TABLE_INCREMENT 256
 
-/* Structure used for the decl_scope table.  scope is the current declaration
-   scope, and previous is the entry that is the parent of this scope.  This
-   is usually but not always the immediately preceeding entry.  */
-
-typedef struct decl_scope_struct
-{
-  tree scope;
-  int previous;
-}
-decl_scope_node;
-
 /* A pointer to the base of a table of references to declaration
    scopes.  This table is a display which tracks the nesting
    of declaration scopes at the current scope and containing
    scopes.  This table is used to find the proper place to
    define type declaration DIE's.  */
-static decl_scope_node *decl_scope_table;
+static tree *decl_scope_table;
 
 /* Number of elements currently allocated for the decl_scope_table.  */
 static int decl_scope_table_allocated;
@@ -7589,34 +7578,28 @@ push_decl_scope (scope)
     {
       decl_scope_table_allocated += DECL_SCOPE_TABLE_INCREMENT;
       decl_scope_table
-	= (decl_scope_node *) xrealloc (decl_scope_table,
-					(decl_scope_table_allocated
-					 * sizeof (decl_scope_node)));
+	= (tree *) xrealloc (decl_scope_table,
+			     decl_scope_table_allocated * sizeof (tree));
     }
 
-  decl_scope_table[decl_scope_depth].scope = scope;
-
-  /* If we're starting to emit a global class while we're in the middle
-     of emitting a function, we need to find the proper .previous.  */
-
-  if (AGGREGATE_TYPE_P (scope))
-    {
-      tree containing_scope = TYPE_CONTEXT (scope);
-      int i;
-
-      for (i = decl_scope_depth - 1; i >= 0; --i)
-	if (decl_scope_table[i].scope == containing_scope)
-	  break;
-
-      decl_scope_table[decl_scope_depth].previous = i;
-    }
-  else
-    decl_scope_table[decl_scope_depth].previous = decl_scope_depth - 1;
-
+  decl_scope_table[decl_scope_depth] = scope;
   decl_scope_depth++;
 }
 
-/* Return the DIE for the scope that immediately contains this declaration.  */
+/* Pop a declaration scope.  */
+static inline void
+pop_decl_scope ()
+{
+  if (decl_scope_depth <= 0)
+    abort ();
+  --decl_scope_depth;
+}
+
+/* Return the DIE for the scope that immediately contains this type.
+   Non-named types get global scope.  Named types nested in other
+   types get their containing scope if it's open, or global scope
+   otherwise.  All other types (i.e. function-local named types) get
+   the current active scope.  */
 
 static dw_die_ref
 scope_die_for (t, context_die)
@@ -7627,14 +7610,11 @@ scope_die_for (t, context_die)
   register tree containing_scope;
   register int i;
 
-  /* Walk back up the declaration tree looking for a place to define
-     this type.  */
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
-    containing_scope = TYPE_CONTEXT (t);
-  else if (TREE_CODE (t) == FUNCTION_DECL && DECL_VINDEX (t))
-    containing_scope = decl_class_context (t);
-  else
-    containing_scope = DECL_CONTEXT (t);
+  /* Non-types always go in the current scope.  */
+  if (! TYPE_P (t))
+    abort ();
+
+  containing_scope = TYPE_CONTEXT (t);
 
   /* Ignore namespaces for the moment.  */
   if (containing_scope && TREE_CODE (containing_scope) == NAMESPACE_DECL)
@@ -7646,34 +7626,20 @@ scope_die_for (t, context_die)
   if (containing_scope && TREE_CODE (containing_scope) == FUNCTION_TYPE)
     containing_scope = NULL_TREE;
 
-  /* Function-local tags and functions get stuck in limbo until they are
-     fixed up by decls_for_scope.  */
-  if (context_die == NULL && containing_scope != NULL_TREE
-      && (TREE_CODE (t) == FUNCTION_DECL || is_tagged_type (t)))
-    return NULL;
-
   if (containing_scope == NULL_TREE)
     scope_die = comp_unit_die;
-  else if (TYPE_P (containing_scope) || DECL_P (containing_scope))
+  else if (TYPE_P (containing_scope))
     {
-      /* For types and decls, we can just look up the appropriate DIE.  But
-	 first we check to see if we're in the middle of emitting it so we
-	 know where the new DIE should go.  */
+      /* For types, we can just look up the appropriate DIE.  But
+	 first we check to see if we're in the middle of emitting it
+	 so we know where the new DIE should go.  */
 
       for (i = decl_scope_depth - 1; i >= 0; --i)
-	if (decl_scope_table[i].scope == containing_scope)
+	if (decl_scope_table[i] == containing_scope)
 	  break;
 
       if (i < 0)
 	{
-	  /* Function-local tags and functions get stuck in limbo
-	     until they are fixed up by decls_for_scope.  */
-	  if (TREE_CODE (containing_scope) == FUNCTION_DECL
-	      && (TREE_CODE (t) == FUNCTION_DECL || is_tagged_type (t)))
-	    return NULL;
-	    
-	  if (! TYPE_P (containing_scope))
-	    abort ();
 	  if (debug_info_level > DINFO_LEVEL_TERSE
 	      && !TREE_ASM_WRITTEN (containing_scope))
 	    abort ();
@@ -7682,56 +7648,25 @@ scope_die_for (t, context_die)
 	  scope_die = comp_unit_die;
 	}
       else
-	{
-	  if (TYPE_P (containing_scope))
-	    scope_die = lookup_type_die (containing_scope);
-	  else
-	    scope_die = lookup_decl_die (containing_scope);
-	}
+	scope_die = lookup_type_die (containing_scope);
     }
   else
-    {
-      /* Something that we can't just look up the DIE for, such as a
-         BLOCK.  */
-
-      for (i = decl_scope_depth - 1, scope_die = context_die;
-	   i >= 0 && decl_scope_table[i].scope != containing_scope;
-	   (scope_die = scope_die->die_parent,
-	    i = decl_scope_table[i].previous))
-	;
-
-      /* ??? Integrate_decl_tree does not handle BLOCK_TYPE_TAGS, nor
-	 does it try to handle types defined by TYPE_DECLs.  Such types
-	 thus have an incorrect TYPE_CONTEXT, which points to the block
-	 they were originally defined in, instead of the current block
-	 created by function inlining.  We try to detect that here and
-	 work around it.  */
-
-      if (i < 0 && scope_die == comp_unit_die
-	  && TREE_CODE (containing_scope) == BLOCK
-	  && is_tagged_type (t)
-	  && (block_ultimate_origin (decl_scope_table[decl_scope_depth - 1].scope)
-	      == containing_scope))
-	{
-	  scope_die = context_die;
-	  /* Since the checks below are no longer applicable.  */
-	  i = 0;
-	}
-
-      if (i < 0)
-	abort ();
-    }
+    scope_die = context_die;
 
   return scope_die;
 }
 
-/* Pop a declaration scope.  */
-static inline void
-pop_decl_scope ()
+/* Returns nonzero iff CONTEXT_DIE is internal to a function.  */
+
+static inline int
+local_scope_p (context_die)
+     dw_die_ref context_die;
 {
-  if (decl_scope_depth <= 0)
-    abort ();
-  --decl_scope_depth;
+  for (; context_die; context_die = context_die->die_parent)
+    if (context_die->die_tag == DW_TAG_inlined_subroutine
+	|| context_die->die_tag == DW_TAG_subprogram)
+      return 1;
+  return 0;
 }
 
 /* Many forms of DIEs require a "type description" attribute.  This
@@ -7981,7 +7916,7 @@ gen_inlined_enumeration_type_die (type, context_die)
      register dw_die_ref context_die;
 {
   register dw_die_ref type_die = new_die (DW_TAG_enumeration_type,
-					  scope_die_for (type, context_die));
+					  context_die);
   /* We do not check for TREE_ASM_WRITTEN (type) being set, as the type may
      be incomplete and such types are not marked.  */
   add_abstract_origin_attribute (type_die, type);
@@ -7994,8 +7929,8 @@ gen_inlined_structure_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref type_die = new_die (DW_TAG_structure_type,
-					  scope_die_for (type, context_die));
+  register dw_die_ref type_die = new_die (DW_TAG_structure_type, context_die);
+
   /* We do not check for TREE_ASM_WRITTEN (type) being set, as the type may
      be incomplete and such types are not marked.  */
   add_abstract_origin_attribute (type_die, type);
@@ -8008,8 +7943,8 @@ gen_inlined_union_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref type_die = new_die (DW_TAG_union_type,
-					  scope_die_for (type, context_die));
+  register dw_die_ref type_die = new_die (DW_TAG_union_type, context_die);
+
   /* We do not check for TREE_ASM_WRITTEN (type) being set, as the type may
      be incomplete and such types are not marked.  */
   add_abstract_origin_attribute (type_die, type);
@@ -8247,14 +8182,20 @@ gen_abstract_function (decl)
      tree decl;
 {
   register dw_die_ref old_die = lookup_decl_die (decl);
+  tree save_fn;
 
   if (old_die && get_AT_unsigned (old_die, DW_AT_inline))
     /* We've already generated the abstract instance.  */
     return;
 
+  save_fn = current_function_decl;
+  current_function_decl = decl;
+
   set_decl_abstract_flags (decl, 1);
   dwarf2out_decl (decl);
   set_decl_abstract_flags (decl, 0);
+
+  current_function_decl = save_fn;
 }
 
 /* Generate a DIE to represent a declared function (either file-scope or
@@ -8273,7 +8214,7 @@ gen_subprogram_die (decl, context_die)
   register tree outer_scope;
   register dw_die_ref old_die = lookup_decl_die (decl);
   register int declaration
-    = ((current_function_decl != decl && ! DECL_ABSTRACT (decl))
+    = (current_function_decl != decl
        || (context_die
 	   && (context_die->die_tag == DW_TAG_structure_type
 	       || context_die->die_tag == DW_TAG_union_type)));
@@ -8287,7 +8228,7 @@ gen_subprogram_die (decl, context_die)
 
   if (origin != NULL)
     {
-      if (declaration)
+      if (declaration && ! local_scope_p (context_die))
 	abort ();
 
       subr_die = new_die (DW_TAG_subprogram, context_die);
@@ -8355,15 +8296,7 @@ gen_subprogram_die (decl, context_die)
     }
   else
     {
-      register dw_die_ref scope_die;
-
-      if (DECL_CONTEXT (decl))
-	scope_die = scope_die_for (decl, context_die);
-      else
-	/* Don't put block extern declarations under comp_unit_die.  */
-	scope_die = context_die;
-
-      subr_die = new_die (DW_TAG_subprogram, scope_die);
+      subr_die = new_die (DW_TAG_subprogram, context_die);
 			 
       if (TREE_PUBLIC (decl))
 	add_AT_flag (subr_die, DW_AT_external, 1);
@@ -8388,13 +8321,14 @@ gen_subprogram_die (decl, context_die)
 
   if (declaration)
     {
-      add_AT_flag (subr_die, DW_AT_declaration, 1);
+      if (! origin)
+	add_AT_flag (subr_die, DW_AT_declaration, 1);
 
       /* The first time we see a member function, it is in the context of
          the class to which it belongs.  We make sure of this by emitting
          the class first.  The next time is the definition, which is
          handled above.  The two may come from the same source text.  */
-      if (DECL_CONTEXT (decl))
+      if (DECL_CONTEXT (decl) || DECL_ABSTRACT (decl))
 	equate_decl_number_to_die (decl, subr_die);
     }
   else if (DECL_ABSTRACT (decl))
@@ -8461,7 +8395,6 @@ gen_subprogram_die (decl, context_die)
      FUNCTION_TYPE. If the chain of type nodes hanging off of this
      FUNCTION_TYPE node ends with a void_type_node then there should *not* be 
      an ellipsis at the end.  */
-  push_decl_scope (decl);
 
   /* In the case where we are describing a mere function declaration, all we
      need to do here (and all we *can* do here) is to describe the *types* of 
@@ -8541,8 +8474,6 @@ gen_subprogram_die (decl, context_die)
 	}
 #endif
     }
-
-  pop_decl_scope ();
 }
 
 /* Generate a DIE to represent a declared data object.  */
@@ -8690,9 +8621,7 @@ gen_lexical_block_die (stmt, context_die, depth)
       add_AT_lbl_id (stmt_die, DW_AT_high_pc, label);
     }
 
-  push_decl_scope (stmt);
   decls_for_scope (stmt, stmt_die, depth);
-  pop_decl_scope ();
 }
 
 /* Generate a DIE for an inlined subprogram.  */
@@ -8719,9 +8648,7 @@ gen_inlined_subroutine_die (stmt, context_die, depth)
       add_AT_lbl_id (subr_die, DW_AT_low_pc, label);
       ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL, next_block_number);
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label);
-      push_decl_scope (decl);
       decls_for_scope (stmt, subr_die, depth);
-      pop_decl_scope ();
       current_function_has_inlines = 1;
     }
 }
@@ -9072,7 +8999,7 @@ gen_typedef_die (decl, context_die)
     return;
   TREE_ASM_WRITTEN (decl) = 1;
 
-  type_die = new_die (DW_TAG_typedef, scope_die_for (decl, context_die));
+  type_die = new_die (DW_TAG_typedef, context_die);
   origin = decl_ultimate_origin (decl);
   if (origin != NULL)
     add_abstract_origin_attribute (type_die, origin);
@@ -9195,7 +9122,7 @@ gen_type_die (type, context_die)
 	 written out yet, writing it out will cover this one, too.
          This does not apply to instantiations of member class templates;
 	 they need to be added to the containing class as they are
-	 generated.  FIXME: This breaks the idea of combining type decls
+	 generated.  FIXME: This hurts the idea of combining type decls
          from multiple TUs, since we can't predict what set of template
          instantiations we'll get.  */
       if (TYPE_CONTEXT (type)
@@ -9474,7 +9401,7 @@ gen_decl_die (decl, context_die)
       /* Don't output any DIEs to represent mere function declarations,
 	 unless they are class members or explicit block externs.  */
       if (DECL_INITIAL (decl) == NULL_TREE && DECL_CONTEXT (decl) == NULL_TREE
-	  && (current_function_decl == NULL_TREE || ! DECL_ARTIFICIAL (decl)))
+	  && (current_function_decl == NULL_TREE || DECL_ARTIFICIAL (decl)))
 	break;
 
       /* Emit info for the abstract instance first, if we haven't yet.  */
@@ -9983,8 +9910,7 @@ dwarf2out_init (asm_out_file, main_input_filename)
 
   /* Allocate the initial hunk of the decl_scope_table.  */
   decl_scope_table
-    = (decl_scope_node *) xcalloc (DECL_SCOPE_TABLE_INCREMENT,
-				   sizeof (decl_scope_node));
+    = (tree *) xcalloc (DECL_SCOPE_TABLE_INCREMENT, sizeof (tree));
   decl_scope_table_allocated = DECL_SCOPE_TABLE_INCREMENT;
   decl_scope_depth = 0;
 
