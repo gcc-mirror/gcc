@@ -66,7 +66,7 @@ const struct floatformat floatformat_ieee_double_littlebyte_bigword =
 {
   floatformat_littlebyte_bigword, 64, 0, 1, 11, 1023, 2047, 12, 52,
   floatformat_intbit_no,
-  "floatformat_ieee_double_little"
+  "floatformat_ieee_double_littlebyte_bigword"
 };
 
 const struct floatformat floatformat_i387_ext =

@@ -1,3 +1,8 @@
+2001-08-13  Andrew Cagney  <ac131313@redhat.com>
+
+	* floatformat.c (floatformat_ieee_double_littlebyte_bigword): Fix
+	name.
+
 2001-08-12  Isamu Hasegawa  <isamu@yamato.ibm.com>
 
 	* regex.c (wcs_regex_compile): Use appropriate string
