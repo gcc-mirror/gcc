@@ -192,6 +192,10 @@ extern _Unwind_Ptr _Unwind_GetDataRelBase (struct _Unwind_Context *);
 extern _Unwind_Ptr _Unwind_GetTextRelBase (struct _Unwind_Context *);
 #endif
 
+/* @@@ Given an address, return the entry point of the function that
+   contains it.  */
+extern void * _Unwind_FindEnclosingFunction (void *pc);
+
 #ifdef __cplusplus
 }
 #endif
