@@ -237,6 +237,14 @@ extern void ggc_record_overhead (size_t, size_t MEM_STAT_DECL);
 
 extern void dump_ggc_loc_statistics (void);
 
+/* Type-safe, C++-friendly versions of ggc_alloc() and gcc_calloc().  */
+#define GGC_NEW(T)		((T *) ggc_alloc (sizeof (T)))
+#define GGC_CNEW(T)		((T *) ggc_alloc_cleared (sizeof (T)))
+#define GGC_NEWVEC(T, N)	((T *) ggc_alloc ((N) * sizeof(T)))
+#define GGC_CNEWVEC(T, N)	((T *) ggc_alloc_cleared ((N) * sizeof(T)))
+#define GGC_NEWVAR(T, S)	((T *) ggc_alloc ((S)))
+#define GGC_CNEWVAR(T, S)	((T *) ggc_alloc_cleared ((S)))
+
 #define ggc_alloc_rtx(CODE)                    \
   ((rtx) ggc_alloc_typed (gt_ggc_e_7rtx_def, RTX_SIZE (CODE)))
 
