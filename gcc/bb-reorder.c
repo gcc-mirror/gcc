@@ -690,8 +690,7 @@ fixup_reorder_chain ()
 	      BASIC_BLOCK (nb->index)->local_set = 0;
 
 	      nb->aux = xcalloc (1, sizeof (struct reorder_block_def));
-	      REORDER_BLOCK_INDEX (BASIC_BLOCK (n_basic_blocks - 1))
-		= REORDER_BLOCK_INDEX (bbi) + 1;
+	      REORDER_BLOCK_INDEX (nb) = REORDER_BLOCK_INDEX (bbi) + 1;
 	      /* Relink to new block.  */
 	      nb->succ = bbi->succ;
 	      nb->succ->src = nb;
@@ -834,6 +833,22 @@ reorder_basic_blocks ()
 	  rtx prev_eff_end = REORDER_BLOCK_EFF_END (BASIC_BLOCK (i - 1));
 	  REORDER_BLOCK_EFF_HEAD (bbi) = NEXT_INSN (prev_eff_end);
 	}
+    }
+
+  /* If we've not got epilogue in RTL, we must fallthru to the exit.
+     Force the last block to be at the end.  */
+  /* ??? Some ABIs (e.g. MIPS) require the return insn to be at the
+     end of the function for stack unwinding purposes.  */
+
+#ifndef HAVE_epilogue
+#define HAVE_epilogue 0
+#endif
+
+  if (! HAVE_epilogue)
+    {
+      basic_block last = BASIC_BLOCK (n_basic_blocks - 1);
+      REORDER_BLOCK_INDEX (last) = n_basic_blocks - 1;
+      REORDER_BLOCK_FLAGS (last) |= REORDER_BLOCK_VISITED;
     }
       
   make_reorder_chain (BASIC_BLOCK (0));
