@@ -2055,6 +2055,9 @@ make_thunk (function, delta, vcall_index)
   if (thunk == NULL_TREE)
     {
       thunk = build_decl (FUNCTION_DECL, thunk_id, TREE_TYPE (func_decl));
+      DECL_LANG_SPECIFIC (thunk) = DECL_LANG_SPECIFIC (func_decl);
+      copy_lang_decl (func_decl);
+      DECL_CONTEXT (thunk) = DECL_CONTEXT (func_decl);
       TREE_READONLY (thunk) = TREE_READONLY (func_decl);
       TREE_THIS_VOLATILE (thunk) = TREE_THIS_VOLATILE (func_decl);
       comdat_linkage (thunk);
@@ -2063,12 +2066,22 @@ make_thunk (function, delta, vcall_index)
       THUNK_DELTA (thunk) = delta;
       THUNK_VCALL_OFFSET (thunk) 
 	= vcall_index * int_size_in_bytes (vtable_entry_type);
+      /* The thunk itself is not a constructor or destructor, even if
+       the thing it is thunking to is.  */
+      DECL_INTERFACE_KNOWN (thunk) = 1;
+      DECL_NOT_REALLY_EXTERN (thunk) = 1;
+      DECL_SAVED_FUNCTION_DATA (thunk) = NULL;
+      DECL_DESTRUCTOR_P (thunk) = 0;
+      DECL_CONSTRUCTOR_P (thunk) = 0;
       DECL_EXTERNAL (thunk) = 1;
       DECL_ARTIFICIAL (thunk) = 1;
-      DECL_CONTEXT (thunk) = DECL_CONTEXT (func_decl);
       /* Even if this thunk is a member of a local class, we don't
 	 need a static chain.  */
       DECL_NO_STATIC_CHAIN (thunk) = 1;
+      /* The THUNK is not a pending inline, even if the FUNC_DECL is.  */
+      DECL_PENDING_INLINE_P (thunk) = 0;
+      /* Nor has it been deferred.  */
+      DECL_DEFERRED_FN (thunk) = 0;
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
     }
@@ -2081,15 +2094,25 @@ void
 emit_thunk (thunk_fndecl)
      tree thunk_fndecl;
 {
-  tree fnaddr = DECL_INITIAL (thunk_fndecl);
-  tree function = TREE_OPERAND (fnaddr, 0);
-  int delta = THUNK_DELTA (thunk_fndecl);
-  int vcall_offset = THUNK_VCALL_OFFSET (thunk_fndecl);
+  tree fnaddr;
+  tree function;
+  int delta;
+  int vcall_offset;
 
   if (TREE_ASM_WRITTEN (thunk_fndecl))
     return;
 
-  TREE_ASM_WRITTEN (thunk_fndecl) = 1;
+  if (TREE_CODE (DECL_INITIAL (thunk_fndecl)) != ADDR_EXPR)
+    /* We already turned this thunk into an ordinary function.
+       There's no need to process this thunk again.  (We can't just
+       clear DECL_THUNK_P because that will confuse
+       FNADDR_FROM_VTABLE_ENTRY and friends.)  */
+    return;
+
+  fnaddr = DECL_INITIAL (thunk_fndecl);
+  function = TREE_OPERAND (fnaddr, 0);
+  delta = THUNK_DELTA (thunk_fndecl);
+  vcall_offset = THUNK_VCALL_OFFSET (thunk_fndecl);
 
   TREE_ADDRESSABLE (function) = 1;
   mark_used (function);
@@ -2097,8 +2120,14 @@ emit_thunk (thunk_fndecl)
   if (current_function_decl)
     abort ();
 
+  if (flag_syntax_only)
+    {
+      TREE_ASM_WRITTEN (thunk_fndecl) = 1;
+      return;
+    }
+
 #ifdef ASM_OUTPUT_MI_THUNK
-  if (!flag_syntax_only && vcall_offset == 0)
+  if (vcall_offset == 0)
     {
       const char *fnname;
       current_function_decl = thunk_fndecl;
@@ -2115,6 +2144,7 @@ emit_thunk (thunk_fndecl)
       assemble_end_function (thunk_fndecl, fnname);
       current_function_decl = 0;
       cfun = 0;
+      TREE_ASM_WRITTEN (thunk_fndecl) = 1;
     }
   else
 #endif /* ASM_OUTPUT_MI_THUNK */
@@ -2141,21 +2171,10 @@ emit_thunk (thunk_fndecl)
     a = nreverse (t);
     DECL_ARGUMENTS (thunk_fndecl) = a;
     DECL_RESULT (thunk_fndecl) = NULL_TREE;
-    DECL_LANG_SPECIFIC (thunk_fndecl) = DECL_LANG_SPECIFIC (function);
-    copy_lang_decl (thunk_fndecl);
-    DECL_INTERFACE_KNOWN (thunk_fndecl) = 1;
-    DECL_NOT_REALLY_EXTERN (thunk_fndecl) = 1;
-    DECL_SAVED_FUNCTION_DATA (thunk_fndecl) = NULL;
-
-    /* The thunk itself is not a constructor or destructor, even if
-       the thing it is thunking to is.  */
-    DECL_DESTRUCTOR_P (thunk_fndecl) = 0;
-    DECL_CONSTRUCTOR_P (thunk_fndecl) = 0;
 
     push_to_top_level ();
     start_function (NULL_TREE, thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
     store_parm_decls ();
-    current_function_is_thunk = 1;
 
     /* Adjust the this pointer by the constant.  */
     t = ssize_int (delta);
@@ -2199,19 +2218,12 @@ emit_thunk (thunk_fndecl)
       finish_expr_stmt (t);
 
     /* The back-end expects DECL_INITIAL to contain a BLOCK, so we
-       clear this here.  */
-    DECL_INITIAL (thunk_fndecl) = NULL_TREE;
+       create one.  */
     DECL_INITIAL (thunk_fndecl) = make_node (BLOCK);
     BLOCK_VARS (DECL_INITIAL (thunk_fndecl)) 
       = DECL_ARGUMENTS (thunk_fndecl);
     expand_body (finish_function (0));
-    /* Restore the DECL_INITIAL for the THUNK_DECL.  */
-    DECL_INITIAL (thunk_fndecl) = fnaddr;
     pop_from_top_level ();
-
-    /* Don't let the backend defer this function.  */
-    if (DECL_DEFER_OUTPUT (thunk_fndecl))
-      output_inline_function (thunk_fndecl);
   }
 }
 

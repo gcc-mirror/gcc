@@ -1294,13 +1294,6 @@ enum languages { lang_c, lang_cplusplus, lang_java };
   ((CP_TYPE_QUALS (NODE) & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))	\
    == TYPE_QUAL_CONST)
 
-#define DELTA_FROM_VTABLE_ENTRY(ENTRY)				\
-  (!flag_vtable_thunks ?					\
-     TREE_VALUE (CONSTRUCTOR_ELTS (ENTRY))			\
-   : !DECL_THUNK_P (TREE_OPERAND ((ENTRY), 0)) 			\
-   ? integer_zero_node						\
-   : build_int_2 (THUNK_DELTA (TREE_OPERAND ((ENTRY), 0)), 0))
-
 /* Virtual function addresses can be gotten from a virtual function
    table entry using this macro.  */
 #define FNADDR_FROM_VTABLE_ENTRY(ENTRY)					\
@@ -1310,8 +1303,6 @@ enum languages { lang_c, lang_cplusplus, lang_java };
    ? (ENTRY)								\
    : DECL_INITIAL (TREE_OPERAND ((ENTRY), 0)))
 
-#define SET_FNADDR_FROM_VTABLE_ENTRY(ENTRY,VALUE) \
-  (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (ENTRY)))) = (VALUE))
 #define FUNCTION_ARG_CHAIN(NODE) (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (NODE))))
 #define PROMOTES_TO_AGGR_TYPE(NODE,CODE)	\
   (((CODE) == TREE_CODE (NODE)			\
@@ -1900,6 +1891,10 @@ struct lang_decl_flags
     /* In a namespace-scope FUNCTION_DECL, this is
        GLOBAL_INIT_PRIORITY.  */
     int init_priority;
+
+    /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
+       THUNK_VCALL_OFFSET.  */
+    HOST_WIDE_INT vcall_offset;
   } u2;
 };
 
@@ -3039,7 +3034,8 @@ extern int flag_new_for_scope;
    vtable for the `this' pointer to find the vcall offset.  (The vptr
    is always located at offset zero from the f `this' pointer.)  If
    zero, then there is no vcall offset.  */
-#define THUNK_VCALL_OFFSET(DECL) (DECL_CHECK (DECL)->decl.u2.i)
+#define THUNK_VCALL_OFFSET(DECL) \
+  (DECL_LANG_SPECIFIC (DECL)->decl_flags.u2.vcall_offset)
 
 /* DECL_NEEDED_P holds of a declaration when we need to emit its
    definition.  This is true when the back-end tells us that

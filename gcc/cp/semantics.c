@@ -2775,6 +2775,7 @@ expand_body (fn)
 
   start_function (NULL_TREE, fn, NULL_TREE, SF_PRE_PARSED | SF_EXPAND);
   store_parm_decls ();
+  current_function_is_thunk = DECL_THUNK_P (fn);
 
   /* We don't need to redeclare __FUNCTION__, __PRETTY_FUNCTION__, or
      any of the other magic variables we set up when starting a
