@@ -330,10 +330,10 @@ static void
 handler (signo)
      int signo;
 {
-  if (c_file[0])
+  if (c_file != 0 && c_file[0])
     maybe_unlink (c_file);
 
-  if (o_file[0])
+  if (o_file != 0 && o_file[0])
     maybe_unlink (o_file);
 
   signal (signo, SIG_DFL);
