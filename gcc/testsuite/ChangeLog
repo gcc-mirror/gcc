@@ -1,3 +1,8 @@
+2004-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/13392
+	* g++.dg/opt/expect2.C: New test.
+
 2004-01-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/Wshadow-1.c, gcc.dg/attr-noinline.c, gcc.dg/decl3.c
