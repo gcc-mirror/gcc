@@ -2185,6 +2185,37 @@ emit_insns_before (insn, before)
   return last;
 }
 
+/* Emit the insns in a chain starting with FIRST and place them in back of
+   the insn AFTER.  Return the last insn emitted.  */
+
+rtx
+emit_insns_after (first, after)
+     register rtx first;
+     register rtx after;
+{
+  register rtx last;
+  register rtx after_after;
+
+  if (!after)
+    abort ();
+
+  if (!first)
+    return first;
+
+  for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
+    continue;
+
+  after_after = NEXT_INSN (after);
+
+  NEXT_INSN (after) = first;
+  PREV_INSN (first) = after;
+  NEXT_INSN (last) = after_after;
+  if (after_after)
+    PREV_INSN (after_after) = last;
+
+  return last;
+}
+
 /* Make an insn of code JUMP_INSN with pattern PATTERN
    and add it to the end of the doubly-linked list.  */
 
