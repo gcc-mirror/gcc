@@ -10319,7 +10319,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      continue;
 
 	    /* VC++ spells a zero-sized array with [].  */
-	    if (size == NULL_TREE && decl_context == FIELD && ! staticp)
+	    if (size == NULL_TREE && decl_context == FIELD && !	staticp
+		&& ! RIDBIT_SETP (RID_TYPEDEF, specbits))
 	      size = integer_zero_node;
 
 	    if (size)

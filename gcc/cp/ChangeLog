@@ -1,5 +1,8 @@
 1999-05-20  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (grokdeclarator): Don't treat [] as indicating a
+	zero-sized array in a typedef.
+
 	* call.c (build_object_call): Don't look at DECL_NAME for a type.
 	(pt.c): Or CP_TYPE_QUALS for an ERROR_MARK.
 	(typeck.c): Or TYPE_MAIN_VARIANT for a type.
