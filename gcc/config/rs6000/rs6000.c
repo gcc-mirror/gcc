@@ -1782,10 +1782,10 @@ rs6000_build_va_list ()
   if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
     return ptr_type_node;
 
-  record = make_node (RECORD_TYPE);
+  record = make_lang_type (RECORD_TYPE);
   type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
   uchar_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
-  
+
   f_gpr = build_decl (FIELD_DECL, get_identifier ("gpr"), uchar_type_node);
   f_fpr = build_decl (FIELD_DECL, get_identifier ("fpr"), uchar_type_node);
   f_ovf = build_decl (FIELD_DECL, get_identifier ("overflow_arg_area"),
