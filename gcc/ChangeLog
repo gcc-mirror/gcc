@@ -1,3 +1,7 @@
+2002-12-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c (handle_braces): Allow '@' as a switch name.
+
 2002-12-16  Jason Merrill  <jason@redhat.com>
 
 	* c-semantics.c (add_scope_stmt): Abort if the end SCOPE_STMT
