@@ -18,10 +18,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
-#include "config.h"
 #include <stdio.h>
 #include <setjmp.h>
 #include <ctype.h>
+#include "config.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -103,6 +103,9 @@ struct processor_costs *ix86_cost = &pentium_cost;
 
 extern FILE *asm_out_file;
 extern char *strcat ();
+
+static void ix86_epilogue PROTO((int));
+static void ix86_prologue PROTO((int));
 
 char *singlemove_string ();
 char *output_move_const_single ();
@@ -1853,20 +1856,17 @@ asm_output_function_prefix (file, name)
     }
 }
 
-/* Set up the stack and frame (if desired) for the function.  */
+#define EMIT_PROLOGUE_AS_RTL 1
+
+/* Generate the assembly code for function entry.
+   FILE is an stdio stream to output the code to.
+   SIZE is an int: how many units of temporary storage to allocate. */
 
 void
 function_prologue (file, size)
      FILE *file;
      int size;
 {
-  register int regno;
-  int limit;
-  rtx xops[4];
-  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
-				  || current_function_uses_const_pool);
-  long tsize = get_frame_size ();
-
   /* pic references don't explicitly mention pic_offset_table_rtx */
   if (TARGET_SCHEDULE_PROLOGUE)
     {
@@ -1874,74 +1874,26 @@ function_prologue (file, size)
       return;
     }
   
-  xops[0] = stack_pointer_rtx;
-  xops[1] = frame_pointer_rtx;
-  xops[2] = GEN_INT (tsize);
-
-  if (frame_pointer_needed)
-    {
-      output_asm_insn ("push%L1 %1", xops); 
-      output_asm_insn (AS2 (mov%L0,%0,%1), xops); 
-    }
-
-  if (tsize == 0)
-    ;
-  else if (! TARGET_STACK_PROBE || tsize < CHECK_STACK_LIMIT)
-    output_asm_insn (AS2 (sub%L0,%2,%0), xops);
-  else 
-    {
-      xops[3] = gen_rtx (REG, SImode, 0);
-      output_asm_insn (AS2 (mov%L0,%2,%3), xops);
-      
-      xops[3] = gen_rtx (SYMBOL_REF, Pmode, "_alloca");
-      output_asm_insn (AS1 (call,%P3), xops);
-    }
-
-  /* Note If use enter it is NOT reversed args.
-     This one is not reversed from intel!!
-     I think enter is slower.  Also sdb doesn't like it.
-     But if you want it the code is:
-     {
-     xops[3] = const0_rtx;
-     output_asm_insn ("enter %2,%3", xops);
-     }
-     */
-  limit = (frame_pointer_needed ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
-  for (regno = limit - 1; regno >= 0; regno--)
-    if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
-      {
-	xops[0] = gen_rtx (REG, SImode, regno);
-	output_asm_insn ("push%L0 %0", xops);
-      }
-
-  if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
-    {
-      xops[0] = pic_offset_table_rtx;
-      xops[1] = gen_rtx (SYMBOL_REF, Pmode, LABEL_NAME (pic_label_rtx));
-
-      output_asm_insn (AS1 (call,%P1), xops);
-      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);
-      pic_label_rtx = 0;
-    }
-  else if (pic_reg_used)
-    {
-    xops[0] = pic_offset_table_rtx;
-    xops[1] = (rtx) gen_label_rtx ();
- 
-      output_asm_insn (AS1 (call,%P1), xops);
-      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (xops[1]));
-      output_asm_insn (AS1 (pop%L0,%0), xops);
-      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
-  } 
+  ix86_prologue (! EMIT_PROLOGUE_AS_RTL);
 }
 
-/* This function generates the assembly code for function entry.
-   FILE is an stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate. */
+/* Generate the assembly code for function entry. */
 
 void
 ix86_expand_prologue ()
+{
+  /* pic references don't explicitly mention pic_offset_table_rtx */
+  if (!TARGET_SCHEDULE_PROLOGUE)
+    {
+      return;
+    }
+ 
+  ix86_prologue (EMIT_PROLOGUE_AS_RTL);
+}
+
+static void
+ix86_prologue (do_rtl)
+     int do_rtl;
 {
   register int regno;
   int limit;
@@ -1959,6 +1911,8 @@ ix86_expand_prologue ()
   xops[2] = GEN_INT (tsize);
   if (frame_pointer_needed)
     {
+      if (do_rtl)
+	{
       insn = emit_insn
 	(gen_rtx (SET, 0,
 		  gen_rtx (MEM, SImode,
@@ -1968,22 +1922,42 @@ ix86_expand_prologue ()
       insn = emit_move_insn (xops[1], xops[0]);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
+      else
+	{
+	  output_asm_insn ("push%L1 %1", xops); 
+	  output_asm_insn (AS2 (mov%L0,%0,%1), xops); 
+	}
+    }
 
   if (tsize == 0)
     ;
   else if (! TARGET_STACK_PROBE || tsize < CHECK_STACK_LIMIT)
     {
+      if (do_rtl)
+	{
       insn = emit_insn (gen_prologue_set_stack_ptr (xops[2]));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else 
     {
+	  output_asm_insn (AS2 (sub%L0,%2,%0), xops);
+	}
+    }
+  else 
+    {
       xops[3] = gen_rtx (REG, SImode, 0);
+      if (do_rtl)
       emit_move_insn (xops[3], xops[2]);
+      else
+	output_asm_insn (AS2 (mov%L0,%2,%3), xops);
+
       xops[3] = gen_rtx (MEM, FUNCTION_MODE,
 			 gen_rtx (SYMBOL_REF, Pmode, "_alloca"));
+      if (do_rtl)
       emit_call_insn (gen_rtx (CALL, VOIDmode,
 			       xops[3], const0_rtx));
+      else
+	output_asm_insn (AS1 (call,%P3), xops);
     }
 
   /* Note If use enter it is NOT reversed args.
@@ -2001,13 +1975,17 @@ ix86_expand_prologue ()
 	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
       {
 	xops[0] = gen_rtx (REG, SImode, regno);
+	if (do_rtl)
+	  {
 	insn = emit_insn
 	  (gen_rtx (SET, 0,
 		    gen_rtx (MEM, SImode,
 			     gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
 		    xops[0]));
-	
 	RTX_FRAME_RELATED_P (insn) = 1;
+      }
+	else
+	  output_asm_insn ("push%L0 %0", xops);
       }
 
   if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
@@ -2021,31 +1999,41 @@ ix86_expand_prologue ()
 	}
       xops[1] = gen_rtx (MEM, QImode, gen_rtx (SYMBOL_REF, Pmode, LABEL_NAME (pic_label_rtx)));
 
+      if (do_rtl)
+	{
       emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
       emit_insn (gen_prologue_set_got (xops[0], 
 		 gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
 		 gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
+    }
+      else
+	{
+	  output_asm_insn (AS1 (call,%P1), xops);
+	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);
+	  pic_label_rtx = 0;
+	}
     }
   else if (pic_reg_used)
     {
     xops[0] = pic_offset_table_rtx;
     xops[1] = (rtx) gen_label_rtx ();
  
+      if (do_rtl)
+	{
       emit_insn (gen_prologue_get_pc (xops[0], gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
       emit_insn (gen_pop (xops[0]));
       emit_insn (gen_prologue_set_got (xops[0], 
 		 gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
 		 gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER (xops[1]))));
   } 
-}
-
-/* Restore function stack, frame, and registers. */ 
-
-void
-function_epilogue (file, size)
-     FILE *file;
-     int size;
-{
+      else
+	{
+	  output_asm_insn (AS1 (call,%P1), xops);
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[1]));
+	  output_asm_insn (AS1 (pop%L0,%0), xops);
+	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
+	}
+    } 
 }
 
 /* Return 1 if it is appropriate to emit `ret' instructions in the
@@ -2086,13 +2074,35 @@ ix86_can_use_return_insn_p ()
   return nregs == 0 || ! frame_pointer_needed;
 }
 
-
 /* This function generates the assembly code for function exit.
    FILE is an stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to deallocate. */
 
 void
+function_epilogue (file, size)
+     FILE *file;
+     int size;
+{
+  if (TARGET_SCHEDULE_PROLOGUE)
+    return;
+  
+  ix86_epilogue (!EMIT_PROLOGUE_AS_RTL);
+}
+
+/* Restore function stack, frame, and registers. */ 
+
+void
 ix86_expand_epilogue ()
+{
+  if (!TARGET_SCHEDULE_PROLOGUE)
+    return;
+  
+  ix86_epilogue (EMIT_PROLOGUE_AS_RTL);
+}
+
+static void
+ix86_epilogue (do_rtl)
+     int do_rtl;
 {
   register int regno;
   register int nregs, limit;
@@ -2133,8 +2143,10 @@ ix86_expand_epilogue ()
       if (frame_pointer_needed)
 	{
 	  xops[0] = adj_offsettable_operand (AT_BP (QImode), offset);
+	  if (do_rtl)
 	  emit_insn (gen_movsi_lea (xops[2], XEXP (xops[0], 0)));
-/*	  output_asm_insn (AS2 (lea%L2,%0,%2), xops);*/
+	  else
+	    output_asm_insn (AS2 (lea%L2,%0,%2), xops);
 	}
 
       for (regno = 0; regno < limit; regno++)
@@ -2142,8 +2154,10 @@ ix86_expand_epilogue ()
 	    || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
 	  {
 	    xops[0] = gen_rtx (REG, SImode, regno);
+	    if (do_rtl)
 	    emit_insn (gen_pop (xops[0]));
-/*	    output_asm_insn ("pop%L0 %0", xops);*/
+	    else
+	      output_asm_insn ("pop%L0 %0", xops);
 	  }
     }
   else
@@ -2153,8 +2167,10 @@ ix86_expand_epilogue ()
 	{
 	  xops[0] = gen_rtx (REG, SImode, regno);
 	  xops[1] = adj_offsettable_operand (AT_BP (Pmode), offset);
+	  if (do_rtl)
 	  emit_move_insn (xops[0], xops[1]);
-/*	  output_asm_insn (AS2 (mov%L0,%1,%0), xops);*/
+	  else
+	    output_asm_insn (AS2 (mov%L0,%1,%0), xops);
 	  offset += 4;
 	}
 
@@ -2163,16 +2179,26 @@ ix86_expand_epilogue ()
       /* If not an i386, mov & pop is faster than "leave". */
 
       if (TARGET_USE_LEAVE)
+	{
+	  if (do_rtl)
 	emit_insn (gen_leave());
-/*	output_asm_insn ("leave", xops);*/
+	  else
+	    output_asm_insn ("leave", xops);
+	}
       else
 	{
 	  xops[0] = frame_pointer_rtx;
 	  xops[1] = stack_pointer_rtx;
+	  if (do_rtl)
+	    {
 	  emit_insn (gen_epilogue_set_stack_ptr());
-/*	  output_asm_insn (AS2 (mov%L2,%0,%2), xops);*/
 	  emit_insn (gen_pop (xops[0]));
-/*	  output_asm_insn ("pop%L0 %0", xops);*/
+	    }
+	  else
+	    {
+	      output_asm_insn (AS2 (mov%L2,%0,%2), xops);
+	      output_asm_insn ("pop%L0 %0", xops);
+	    }
 	}
     }
   else if (tsize)
@@ -2180,12 +2206,14 @@ ix86_expand_epilogue ()
       /* If there is no frame pointer, we must still release the frame. */
 
       xops[0] = GEN_INT (tsize);
+      if (do_rtl)
       emit_insn (gen_rtx (SET, SImode,
 			  xops[2],
 			  gen_rtx (PLUS, SImode,
 				   xops[2],
 				   xops[0])));
-/*      output_asm_insn (AS2 (add%L2,%0,%2), xops);*/
+      else
+	output_asm_insn (AS2 (add%L2,%0,%2), xops);
     }
 
 #ifdef FUNCTION_BLOCK_PROFILER_EXIT
@@ -2207,24 +2235,38 @@ ix86_expand_epilogue ()
 	{
 	  /* ??? Which register to use here? */
 	  xops[0] = gen_rtx (REG, SImode, 2);
+	  if (do_rtl)
+	    {
 	  emit_insn (gen_pop (xops[0]));
-/*	  output_asm_insn ("pop%L0 %0", xops);*/
 	  emit_insn (gen_rtx (SET, SImode,
 			      xops[2],
 			      gen_rtx (PLUS, SImode,
 				       xops[1],
 				       xops[2])));
-/*	  output_asm_insn (AS2 (add%L2,%1,%2), xops);*/
 	  emit_jump_insn (xops[0]);
-/*	  output_asm_insn ("jmp %*%0", xops);*/
 	}
       else
+	    {
+	      output_asm_insn ("pop%L0 %0", xops);
+	      output_asm_insn (AS2 (add%L2,%1,%2), xops);
+	      output_asm_insn ("jmp %*%0", xops);
+	    }
+	}
+      else 
+	{
+	  if (do_rtl)
 	emit_jump_insn (gen_return_pop_internal (xops[1]));
-/*	  output_asm_insn ("ret %1", xops);*/
+	  else
+	    output_asm_insn ("ret %1", xops);
+	}
     }
   else
-/*    output_asm_insn ("ret", xops);*/
+    {
+      if (do_rtl)
  emit_jump_insn (gen_return_internal ());
+      else
+	output_asm_insn ("ret", xops);
+    }
 }
 
 
