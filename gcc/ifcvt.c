@@ -2018,6 +2018,11 @@ find_cond_trap (test_bb, then_edge, else_edge)
   else
     return FALSE;
 
+  /* Don't confuse a conditional return with something we want to
+     optimize here.  */
+  if (trap_bb == EXIT_BLOCK_PTR)
+    return FALSE;
+
   /* The only instruction in the THEN block must be the trap.  */
   trap = first_active_insn (trap_bb);
   if (! (trap == trap_bb->end
