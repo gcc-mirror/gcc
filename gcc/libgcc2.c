@@ -935,7 +935,7 @@ __floatdisf (u)
 #endif
 
 #ifdef L_fixunsdfsi
-#include "limits.h"
+#include "glimits.h"
 
 USItype
 __fixunsdfsi (a)
@@ -948,7 +948,7 @@ __fixunsdfsi (a)
 #endif
 
 #ifdef L_fixunssfsi
-#include "limits.h"
+#include "glimits.h"
 
 USItype
 __fixunssfsi (SFtype a)
