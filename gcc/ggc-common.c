@@ -916,7 +916,7 @@ cmp_statistic (const void *loc1, const void *loc2)
   struct loc_descriptor *l1 = *(struct loc_descriptor **) loc1;
   struct loc_descriptor *l2 = *(struct loc_descriptor **) loc2;
   return ((l1->allocated + l1->overhead - l1->freed) -
-	  (l2->allocated + l2->overhead - l1->freed));
+	  (l2->allocated + l2->overhead - l2->freed));
 }
 
 /* Collect array of the descriptors from hashtable.  */
