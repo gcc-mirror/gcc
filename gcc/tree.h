@@ -202,6 +202,16 @@ struct tree_common
 	 && (TYPE_MODE (TREE_TYPE (EXP))			\
 	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0)))))	\
     (EXP) = TREE_OPERAND (EXP, 0);
+
+/* Like STRIP_NOPS, but don't alter the TREE_TYPE either.  */
+
+#define STRIP_TYPE_NOPS(EXP) \
+  while ((TREE_CODE (EXP) == NOP_EXPR				\
+	  || TREE_CODE (EXP) == CONVERT_EXPR			\
+	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
+	 && (TREE_TYPE (EXP)					\
+	     == TREE_TYPE (TREE_OPERAND (EXP, 0))))		\
+    (EXP) = TREE_OPERAND (EXP, 0);
 
 /* Define many boolean fields that all tree nodes have.  */
 
