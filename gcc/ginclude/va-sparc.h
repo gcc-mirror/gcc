@@ -33,7 +33,7 @@ typedef void * __gnuc_va_list;
 #else
 
 #define va_alist  __builtin_va_alist
-#define va_dcl
+#define va_dcl    int __builtin_va_alist;
 
 #ifdef __GCC_NEW_VARARGS__
 #define va_start(AP)		((AP) = (char *) __builtin_saveregs ())
