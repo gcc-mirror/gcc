@@ -382,7 +382,7 @@ f77.mostlyclean:
 	-rm -f f/*$(objext)
 	-rm -f f/fini f/f771$(exeext) f/stamp-str f/str-*.h f/str-*.j f/intdoc f/ansify f/intdoc.h0
 f77.clean:
-	-rm -f g77.c
+	-rm -f g77.c g77.o g77spec.o g77version.o
 f77.distclean:
 	-rm -f f/Makefile
 # realclean is the pre-2.7.0 name for maintainer-clean
@@ -392,7 +392,7 @@ f77.maintainer-clean f77.realclean: f77.distclean
 # Stage hooks:
 # The main makefile has already created stage?/f.
 
-G77STAGESTUFF = f/*$(objext) f/fini f/stamp-str f/str-*.h f/str-*.j
+G77STAGESTUFF = f/*$(objext) f/fini f/stamp-str f/str-*.h f/str-*.j g77.o g77spec.o g77version.o
 
 f77.stage1: stage1-start
 	-mv $(G77STAGESTUFF) stage1/f
