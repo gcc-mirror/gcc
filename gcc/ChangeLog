@@ -1,3 +1,8 @@
+2000-10-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-semantics.c (make_rtl_for_local_static): Don't clobber
+	DECL_ASSEMBLER_NAME.
+
 2000-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* configure.in: Determine and substitute gcc_version_full.
