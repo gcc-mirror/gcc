@@ -311,14 +311,27 @@ struct rtvec_def GTY(()) {
 #define GET_NUM_ELEM(RTVEC)		((RTVEC)->num_elem)
 #define PUT_NUM_ELEM(RTVEC, NUM)	((RTVEC)->num_elem = (NUM))
 
-/* Predicate yielding nonzero iff X is an rtl for a register.  */
+/* Predicate yielding nonzero iff X is an rtx for a register.  */
 #define REG_P(X) (GET_CODE (X) == REG)
+
+/* Predicate yielding nonzero iff X is an rtx for a memory location.  */
+#define MEM_P(X) (GET_CODE (X) == MEM)
 
 /* Predicate yielding nonzero iff X is a label insn.  */
 #define LABEL_P(X) (GET_CODE (X) == CODE_LABEL)
 
 /* Predicate yielding nonzero iff X is a jump insn.  */
 #define JUMP_P(X) (GET_CODE (X) == JUMP_INSN)
+
+/* Predicate yielding nonzero iff X is a call insn.  */
+#define CALL_P(X) (GET_CODE (X) == CALL_INSN)
+
+/* Predicate yielding nonzero iff X is an insn that cannot jump.  */
+#define NONJUMP_INSN_P(X) (GET_CODE (X) == INSN)
+
+/* Predicate yielding nonzero iff X is a real insn.  */
+#define INSN_P(X) \
+  (NONJUMP_INSN_P (X) || JUMP_P (X) || CALL_P (X))
 
 /* Predicate yielding nonzero iff X is a note insn.  */
 #define NOTE_P(X) (GET_CODE (X) == NOTE)
@@ -330,11 +343,6 @@ struct rtvec_def GTY(()) {
 #define JUMP_TABLE_DATA_P(INSN) \
   (JUMP_P (INSN) && (GET_CODE (PATTERN (INSN)) == ADDR_VEC || \
 		     GET_CODE (PATTERN (INSN)) == ADDR_DIFF_VEC))
-
-
-/* 1 if X is an insn.  */
-#define INSN_P(X)    \
-  (GET_RTX_CLASS (GET_CODE(X)) == RTX_INSN)
 
 /* 1 if X is a unary operator.  */
 
