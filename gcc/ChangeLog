@@ -1,5 +1,9 @@
 Mon Jun  7 22:30:37 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* fixinc/inclhack.def (avoid_bool): Also catch
+	"typedef [unsigned] int bool".
+	* fixinc/inclhack.sh, fixinc/fixincl.x, fixinc/fixincl.sh: Rebuilt.
+
 	* m68k/x-hp3bsd44: Delete obsolete and incorrect file.
 	* configure.in (m68k-hp-bsd4.4): No longer use x-hp3bsd44.
 	* configure: Rebuilt.
