@@ -1,3 +1,7 @@
+2004-10-13  Nick Clifton  <nickc@redhat.com>
+
+	* config/c4x/c4x.c: Remove inclusion of loop.h.
+
 2004-10-12  Ben Elliston  <bje@au.ibm.com>
 
 	* basic-block.h (edge_iterator): Keep the address of VEC(edge) *.

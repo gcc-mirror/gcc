@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #include "optabs.h"
 #include "libfuncs.h"
 #include "flags.h"
-#include "loop.h"
 #include "recog.h"
 #include "ggc.h"
 #include "cpplib.h"
