@@ -1,4 +1,4 @@
-2004-10-10  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+2004-10-19  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* adaint.c (__gnat_get_libraries_from_registry): Cast value
 	to LPBYTE.
