@@ -143,7 +143,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Prefetch even if the GIV is in conditional code.  */
 #ifndef PREFETCH_CONDITIONAL
-#define PREFETCH_CONDITIONAL 0
+#define PREFETCH_CONDITIONAL 1
 #endif
 
 /* If the loop requires more prefetches than the target can process in
@@ -2462,6 +2462,7 @@ prescan_loop (loop)
   loop_info->pre_header_has_call = 0;
   loop_info->has_call = 0;
   loop_info->has_nonconst_call = 0;
+  loop_info->has_prefetch = 0;
   loop_info->has_volatile = 0;
   loop_info->has_tablejump = 0;
   loop_info->has_multiple_exit_targets = 0;
@@ -3587,11 +3588,9 @@ struct prefetch_info
 				   This is set only for loops with known
 				   iteration counts and is 0xffffffff
 				   otherwise.  */
+  int prefetch_in_loop;		/* Number of prefetch insns in loop.  */
+  int prefetch_before_loop;	/* Number of prefetch insns before loop.  */
   unsigned int write : 1;	/* 1 for read/write prefetches.  */
-  unsigned int prefetch_in_loop : 1;
-  				/* 1 for those chosen for prefetching.  */
-  unsigned int prefetch_before_loop : 1;
-  				/* 1 for those chosen for prefetching.  */
 };
 
 /* Data used by check_store function.  */
@@ -3778,7 +3777,9 @@ emit_prefetch_instructions (loop)
   int num_prefetches = 0;
   int num_real_prefetches = 0;
   int num_real_write_prefetches = 0;
-  int ahead;
+  int num_prefetches_before = 0;
+  int num_write_prefetches_before = 0;
+  int ahead = 0;
   int i;
   struct iv_class *bl;
   struct induction *iv;
@@ -3886,29 +3887,29 @@ emit_prefetch_instructions (loop)
 	    {
 	      stride = INTVAL (iv->mult_val) * basestride;
 	      if (stride < 0)
-	        {
+		{
 		  stride = -stride;
 		  stride_sign = -1;
-	        }
+		}
 
 	      /* On some targets, reversed order prefetches are not
-	         worthwhile.  */
+		 worthwhile.  */
 	      if (PREFETCH_NO_REVERSE_ORDER && stride_sign < 0)
 		ignore_reason = "reversed order stride";
 
 	      /* Prefetch of accesses with an extreme stride might not be
-	         worthwhile, either.  */
+		 worthwhile, either.  */
 	      else if (PREFETCH_NO_EXTREME_STRIDE
 		       && stride > PREFETCH_EXTREME_STRIDE)
 		ignore_reason = "extreme stride";
 
 	      /* Ignore GIVs with varying add values; we can't predict the
-	         value for the next iteration.  */
+		 value for the next iteration.  */
 	      else if (!loop_invariant_p (loop, iv->add_val))
 		ignore_reason = "giv has varying add value";
 
 	      /* Ignore GIVs in the nested loops; they ought to have been
-	         handled already.  */
+		 handled already.  */
 	      else if (iv->maybe_multiple)
 		ignore_reason = "giv is in nested loop";
 	    }
@@ -3930,7 +3931,6 @@ emit_prefetch_instructions (loop)
 	  address = simplify_gen_binary (PLUS, Pmode, temp, address);
 	  index = remove_constant_addition (&address);
 
-	  index += size;
 	  d.mem_write = 0;
 	  d.mem_address = *iv->location;
 
@@ -3938,6 +3938,13 @@ emit_prefetch_instructions (loop)
 	     not dirtying the cache pages.  */
 	  if (PREFETCH_CONDITIONAL || iv->always_executed)
 	    note_stores (PATTERN (iv->insn), check_store, &d);
+	  else
+	    {
+	      if (loop_dump_stream)
+		fprintf (loop_dump_stream, "Prefetch: Ignoring giv at %d: %s\n",
+			 INSN_UID (iv->insn), "in conditional code.");
+	      continue;
+	    }
 
 	  /* Attempt to find another prefetch to the same array and see if we
 	     can merge this one.  */
@@ -4004,7 +4011,7 @@ emit_prefetch_instructions (loop)
       /* Attempt to calculate the total number of bytes fetched by all
 	 iterations of the loop.  Avoid overflow.  */
       if (LOOP_INFO (loop)->n_iterations
-          && ((unsigned HOST_WIDE_INT) (0xffffffff / info[i].stride)
+	  && ((unsigned HOST_WIDE_INT) (0xffffffff / info[i].stride)
 	      >= LOOP_INFO (loop)->n_iterations))
 	info[i].total_bytes = info[i].stride * LOOP_INFO (loop)->n_iterations;
       else
@@ -4016,14 +4023,14 @@ emit_prefetch_instructions (loop)
       if (PREFETCH_ONLY_DENSE_MEM)
 	if (density * 256 > PREFETCH_DENSE_MEM * 100
 	    && (info[i].total_bytes / PREFETCH_BLOCK
-	        >= PREFETCH_BLOCKS_BEFORE_LOOP_MIN))
+		>= PREFETCH_BLOCKS_BEFORE_LOOP_MIN))
 	  {
 	    info[i].prefetch_before_loop = 1;
 	    info[i].prefetch_in_loop
 	      = (info[i].total_bytes / PREFETCH_BLOCK
-	         > PREFETCH_BLOCKS_BEFORE_LOOP_MAX);
+		 > PREFETCH_BLOCKS_BEFORE_LOOP_MAX);
 	  }
-        else
+	else
 	  {
 	    info[i].prefetch_in_loop = 0, info[i].prefetch_before_loop = 0;
 	    if (loop_dump_stream)
@@ -4034,19 +4041,54 @@ emit_prefetch_instructions (loop)
       else
 	info[i].prefetch_in_loop = 1, info[i].prefetch_before_loop = 1;
 
-      if (info[i].prefetch_in_loop)
+      /* Find how many prefetch instructions we'll use within the loop.  */
+      if (info[i].prefetch_in_loop != 0)
 	{
-	  num_real_prefetches += ((info[i].stride + PREFETCH_BLOCK - 1)
+	  info[i].prefetch_in_loop = ((info[i].stride + PREFETCH_BLOCK - 1)
 				  / PREFETCH_BLOCK);
+	  num_real_prefetches += info[i].prefetch_in_loop;
 	  if (info[i].write)
-	    num_real_write_prefetches
-	      += (info[i].stride + PREFETCH_BLOCK - 1) / PREFETCH_BLOCK;
+	    num_real_write_prefetches += info[i].prefetch_in_loop;
 	}
     }
 
-  if (loop_dump_stream)
+  /* Determine how many iterations ahead to prefetch within the loop, based
+     on how many prefetches we currently expect to do within the loop.  */
+  if (num_real_prefetches != 0)
     {
-      for (i = 0; i < num_prefetches; i++)
+      if ((ahead = SIMULTANEOUS_PREFETCHES / num_real_prefetches) == 0)
+	{
+	  if (loop_dump_stream)
+	    fprintf (loop_dump_stream,
+		     "Prefetch: ignoring prefetches within loop: ahead is zero; %d < %d\n",
+		     SIMULTANEOUS_PREFETCHES, num_real_prefetches);
+	  num_real_prefetches = 0, num_real_write_prefetches = 0;
+	}
+    }
+  /* We'll also use AHEAD to determine how many prefetch instructions to
+     emit before a loop, so don't leave it zero.  */
+  if (ahead == 0)
+    ahead = PREFETCH_BLOCKS_BEFORE_LOOP_MAX;
+
+  for (i = 0; i < num_prefetches; i++)
+    {
+      /* Update if we've decided not to prefetch anything within the loop.  */
+      if (num_real_prefetches == 0)
+	info[i].prefetch_in_loop = 0;
+
+      /* Find how many prefetch instructions we'll use before the loop.  */
+      if (info[i].prefetch_before_loop != 0)
+	{
+	  int n = info[i].total_bytes / PREFETCH_BLOCK;
+	  if (n > ahead)
+	    n = ahead;
+	  info[i].prefetch_before_loop = n;
+	  num_prefetches_before += n;
+	  if (info[i].write)
+	    num_write_prefetches_before += n;
+	}
+
+      if (loop_dump_stream)
 	{
 	  if (info[i].prefetch_in_loop == 0
 	      && info[i].prefetch_before_loop == 0)
@@ -4054,9 +4096,9 @@ emit_prefetch_instructions (loop)
 	  fprintf (loop_dump_stream, "Prefetch insn: %d",
 		   INSN_UID (info[i].giv->insn));
 	  fprintf (loop_dump_stream,
-		   "; in loop: %s; before: %s; %s\n",
-		   info[i].prefetch_in_loop ? "yes" : "no",
-		   info[i].prefetch_before_loop ? "yes" : "no",
+		   "; in loop: %d; before: %d; %s\n",
+		   info[i].prefetch_in_loop,
+		   info[i].prefetch_before_loop,
 		   info[i].write ? "read/write" : "read only");
 	  fprintf (loop_dump_stream,
 		   " density: %d%%; bytes_accessed: %u; total_bytes: %u\n",
@@ -4070,93 +4112,89 @@ emit_prefetch_instructions (loop)
 	  print_rtl (loop_dump_stream, info[i].base_address);
 	  fprintf (loop_dump_stream, "\n");
 	}
-
-      fprintf (loop_dump_stream, "Real prefetches needed: %d (write: %d)\n",
-	       num_real_prefetches, num_real_write_prefetches);
     }
 
-  if (!num_real_prefetches)
-    return;
-
-  ahead = SIMULTANEOUS_PREFETCHES / num_real_prefetches;
-
-  if (ahead == 0)
+  if (num_real_prefetches + num_prefetches_before > 0)
     {
+      /* Record that this loop uses prefetch instructions.  */
+      LOOP_INFO (loop)->has_prefetch = 1;
+
       if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Prefetch: ignoring loop: ahead is zero; %d < %d\n",
-		 SIMULTANEOUS_PREFETCHES, num_real_prefetches);
-      return;
+	{
+	  fprintf (loop_dump_stream, "Real prefetches needed within loop: %d (write: %d)\n",
+		   num_real_prefetches, num_real_write_prefetches);
+	  fprintf (loop_dump_stream, "Real prefetches needed before loop: %d (write: %d)\n",
+		   num_prefetches_before, num_write_prefetches_before);
+	}
     }
 
   for (i = 0; i < num_prefetches; i++)
     {
-      if (info[i].prefetch_in_loop)
+      int y;
+
+      for (y = 0; y < info[i].prefetch_in_loop; y++)
 	{
-	  int y;
+	  rtx loc = copy_rtx (*info[i].giv->location);
+	  rtx insn;
+	  int bytes_ahead = PREFETCH_BLOCK * (ahead + y);
+	  rtx before_insn = info[i].giv->insn;
+	  rtx prev_insn = PREV_INSN (info[i].giv->insn);
 
-	  for (y = 0; y < ((info[i].stride + PREFETCH_BLOCK - 1)
-			   / PREFETCH_BLOCK); y++)
+	  /* We can save some effort by offsetting the address on
+	     architectures with offsettable memory references.  */
+	  if (offsettable_address_p (0, VOIDmode, loc))
+	    loc = plus_constant (loc, bytes_ahead);
+	  else
 	    {
-	      rtx loc = copy_rtx (*info[i].giv->location);
-	      rtx insn;
-	      int bytes_ahead = PREFETCH_BLOCK * (ahead + y);
-	      rtx before_insn = info[i].giv->insn;
-	      rtx prev_insn = PREV_INSN (info[i].giv->insn);
+	      rtx reg = gen_reg_rtx (Pmode);
+	      loop_iv_add_mult_emit_before (loop, loc, const1_rtx,
+		      			    GEN_INT (bytes_ahead), reg,
+				  	    0, before_insn);
+	      loc = reg;
+	    }
 
-	      /* We can save some effort by offsetting the address on
-		 architectures with offsettable memory references.  */
-	      if (offsettable_address_p (0, VOIDmode, loc))
-		loc = plus_constant (loc, bytes_ahead);
-	      else
-		{
-		  rtx reg = gen_reg_rtx (Pmode);
-		  loop_iv_add_mult_emit_before (loop, loc, const1_rtx,
-		      				GEN_INT (bytes_ahead), reg,
-				  		0, before_insn);
-		  loc = reg;
-		}
+	  /* Make sure the address operand is valid for prefetch.  */
+	  if (! (*insn_data[(int)CODE_FOR_prefetch].operand[0].predicate)
+		  (loc, insn_data[(int)CODE_FOR_prefetch].operand[0].mode))
+	    loc = force_reg (Pmode, loc);
+	  emit_insn_before (gen_prefetch (loc, GEN_INT (info[i].write),
+					  GEN_INT (3)),
+			    before_insn);
 
-	      /* Make sure the address operand is valid for prefetch.  */
-	      if (! (*insn_data[(int)CODE_FOR_prefetch].operand[0].predicate)
-		    (loc,
-		     insn_data[(int)CODE_FOR_prefetch].operand[0].mode))
-		loc = force_reg (Pmode, loc);
-	      emit_insn_before (gen_prefetch (loc, GEN_INT (info[i].write),
-		                              GEN_INT (3)),
-				before_insn);
-
-	      /* Check all insns emitted and record the new GIV
-		 information.  */
-	      insn = NEXT_INSN (prev_insn);
-	      while (insn != before_insn)
-		{
-		  insn = check_insn_for_givs (loop, insn,
-					      info[i].giv->always_executed,
-					      info[i].giv->maybe_multiple);
-		  insn = NEXT_INSN (insn);
-		}
+	  /* Check all insns emitted and record the new GIV
+	     information.  */
+	  insn = NEXT_INSN (prev_insn);
+	  while (insn != before_insn)
+	    {
+	      insn = check_insn_for_givs (loop, insn,
+					  info[i].giv->always_executed,
+					  info[i].giv->maybe_multiple);
+	      insn = NEXT_INSN (insn);
 	    }
 	}
 
-      if (PREFETCH_BEFORE_LOOP && info[i].prefetch_before_loop)
+      if (PREFETCH_BEFORE_LOOP)
 	{
-	  int y;
-
-	  /* Emit INSNs before the loop to fetch the first cache lines.  */
-	  for (y = 0;
-	       (!info[i].prefetch_in_loop || y < ahead)
-	       && y * PREFETCH_BLOCK < (int) info[i].total_bytes; y ++)
+	  /* Emit insns before the loop to fetch the first cache lines or,
+	     if we're not prefetching within the loop, everything we expect
+	     to need.  */
+	  for (y = 0; y < info[i].prefetch_before_loop; y++)
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
 	      rtx loop_start = loop->start;
+	      rtx init_val = info[i].class->initial_value;
 	      rtx add_val = simplify_gen_binary (PLUS, Pmode,
 						 info[i].giv->add_val,
 						 GEN_INT (y * PREFETCH_BLOCK));
 
-	      loop_iv_add_mult_emit_before (loop, info[i].class->initial_value,
+	      /* Functions called by LOOP_IV_ADD_EMIT_BEFORE expect a
+		 non-constant INIT_VAL to have the same mode as REG, which
+		 in this case we know to be Pmode.  */
+	      if (GET_MODE (init_val) != Pmode && !CONSTANT_P (init_val))
+		init_val = convert_to_mode (Pmode, init_val, 0);
+	      loop_iv_add_mult_emit_before (loop, init_val,
 					    info[i].giv->mult_val,
-				            add_val, reg, 0, loop_start);
+					    add_val, reg, 0, loop_start);
 	      emit_insn_before (gen_prefetch (reg, GEN_INT (info[i].write),
 					      GEN_INT (3)),
 				loop_start);
@@ -8195,12 +8233,13 @@ check_dbra_loop (loop, insn_count)
 
       if ((num_nonfixed_reads <= 1
 	   && ! loop_info->has_nonconst_call
+	   && ! loop_info->has_prefetch
 	   && ! loop_info->has_volatile
 	   && reversible_mem_store
 	   && (bl->giv_count + bl->biv_count + loop_info->num_mem_sets
 	       + num_unmoved_movables (loop) + compare_and_branch == insn_count)
 	   && (bl == ivs->list && bl->next == 0))
-	  || no_use_except_counting)
+	  || (no_use_except_counting && ! loop_info->has_prefetch))
 	{
 	  rtx tem;
 
