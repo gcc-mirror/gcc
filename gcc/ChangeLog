@@ -1,3 +1,12 @@
+1999-12-08  Brendan Kehoe  <brendan@cygnus.com>
+
+	* Makefile.in (FPBIT_FUNCS, DPBIT_FUNCS): Add _sf_to_usi
+	_df_to_usi.  Required by some targets, so US_SOFTWARE_GOFAST calls to
+	functions like dptoul will be resolved.
+	(libgcc2.a): Make sure that the object files from DPBIT are named
+	differently (prefix `_dp') from those that would be coming from
+	FPBIT.
+
 1999-12-08  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>,  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in: When target is sparc* and tm_file contains 64,
