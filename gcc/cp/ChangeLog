@@ -1,3 +1,10 @@
+Tue Apr 21 14:22:00 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* cp-tree.h (intTI_type_node, unsigned_intTI_type_node): Declare.
+	* decl.c (intTI_type_node, unsigned_intTI_type_node): Define.
+	(init_decl_processing): Handle TI types.
+	* typeck.c (unsigned_type, signed_type): Handle TI types.
+
 Sat Apr 18 15:25:21 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* g++spec.c (lang_specific_driver): New argument in_added_libraries.
