@@ -101,40 +101,36 @@ DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_LIST, ATTR_MALLOC,	\
 DEF_ATTR_TREE_LIST (ATTR_SENTINEL_NOTHROW_LIST, ATTR_SENTINEL,	\
 			ATTR_NULL, ATTR_NOTHROW_LIST)
 
+/* Functions whose pointer parameter(s) are all nonnull.  */
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_LIST, ATTR_NONNULL, ATTR_NULL, ATTR_NULL)
+/* Functions whose first parameter is a nonnull pointer.  */
 DEF_ATTR_TREE_LIST (ATTR_NONNULL_1, ATTR_NONNULL, ATTR_LIST_1, ATTR_NULL)
+/* Functions whose second parameter is a nonnull pointer.  */
 DEF_ATTR_TREE_LIST (ATTR_NONNULL_2, ATTR_NONNULL, ATTR_LIST_2, ATTR_NULL)
-/* Functions whose first and second parameters are nonnull pointers.  */
-DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_2, ATTR_NONNULL, ATTR_LIST_2, \
-			ATTR_NONNULL_1)
-/* Functions whose first and fourth parameters are nonnull pointers.  */
-DEF_ATTR_TREE_LIST (ATTR_NONNULL_1_4, ATTR_NONNULL, ATTR_LIST_4, \
-			ATTR_NONNULL_1)
+/* Nothrow functions with the sentinel(1) attribute. */
 DEF_ATTR_TREE_LIST (ATTR_NOTHROW_SENTINEL_1, ATTR_SENTINEL, ATTR_LIST_1, \
 			ATTR_NOTHROW_LIST)
+/* Nothrow functions whose pointer parameter(s) are all nonnull.  */
+DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL, ATTR_NONNULL, ATTR_NULL, \
+			ATTR_NOTHROW_LIST)
+/* Nothrow functions whose first parameter is a nonnull pointer.  */
 DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1, ATTR_NONNULL, ATTR_LIST_1, \
 			ATTR_NOTHROW_LIST)
+/* Nothrow functions whose second parameter is a nonnull pointer.  */
 DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_2, ATTR_NONNULL, ATTR_LIST_2, \
 			ATTR_NOTHROW_LIST)
+/* Nothrow functions whose third parameter is a nonnull pointer.  */
 DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_3, ATTR_NONNULL, ATTR_LIST_3, \
 			ATTR_NOTHROW_LIST)
-/* Nothrow functions whose first and second parameters are nonnull pointers.  */
-DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_2, ATTR_NONNULL, ATTR_LIST_2, \
-			ATTR_NOTHROW_NONNULL_1)
-/* Nothrow functions whose first and fourth parameters are nonnull pointers.  */
-DEF_ATTR_TREE_LIST (ATTR_NOTHROW_NONNULL_1_4, ATTR_NONNULL, ATTR_LIST_4, \
-			ATTR_NOTHROW_NONNULL_1)
-/* Nothrow const functions whose first parameter is a nonnull pointer.  */
-DEF_ATTR_TREE_LIST (ATTR_CONST_NOTHROW_NONNULL_1, ATTR_CONST, ATTR_NULL, \
-			ATTR_NOTHROW_NONNULL_1)
-/* Nothrow pure functions whose first parameter is a nonnull pointer.  */
-DEF_ATTR_TREE_LIST (ATTR_PURE_NOTHROW_NONNULL_1, ATTR_PURE, ATTR_NULL, \
-			ATTR_NOTHROW_NONNULL_1)
-/* Nothrow pure functions whose first and second parameters are nonnull pointers.  */
-DEF_ATTR_TREE_LIST (ATTR_PURE_NOTHROW_NONNULL_1_2, ATTR_PURE, ATTR_NULL, \
-			ATTR_NOTHROW_NONNULL_1_2)
-/* Nothrow malloc functions whose first parameter is a nonnull pointer.  */
-DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_NONNULL_1, ATTR_MALLOC, ATTR_NULL, \
-			ATTR_NOTHROW_NONNULL_1)
+/* Nothrow const functions whose pointer parameter(s) are all nonnull.  */
+DEF_ATTR_TREE_LIST (ATTR_CONST_NOTHROW_NONNULL, ATTR_CONST, ATTR_NULL, \
+			ATTR_NOTHROW_NONNULL)
+/* Nothrow pure functions whose pointer parameter(s) are all nonnull.  */
+DEF_ATTR_TREE_LIST (ATTR_PURE_NOTHROW_NONNULL, ATTR_PURE, ATTR_NULL, \
+			ATTR_NOTHROW_NONNULL)
+/* Nothrow malloc functions whose pointer parameter(s) are all nonnull.  */
+DEF_ATTR_TREE_LIST (ATTR_MALLOC_NOTHROW_NONNULL, ATTR_MALLOC, ATTR_NULL, \
+			ATTR_NOTHROW_NONNULL)
 
 /* Construct a tree for a format attribute.  */
 #define DEF_FORMAT_ATTRIBUTE(TYPE, FA, VALUES)				 \

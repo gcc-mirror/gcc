@@ -1,3 +1,16 @@
+2005-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtin-attrs.def (ATTR_NONNULL_LIST, ATTR_NOTHROW_NONNULL,
+	ATTR_CONST_NOTHROW_NONNULL, ATTR_PURE_NOTHROW_NONNULL,
+	ATTR_MALLOC_NOTHROW_NONNULL): New "nonnull" attribute lists which
+	are non-specific regarding the nonnull parameter positions.
+	(ATTR_NONNULL_1_2, ATTR_NONNULL_1_4, ATTR_NOTHROW_NONNULL_1_2,
+	ATTR_NOTHROW_NONNULL_1_4, ATTR_CONST_NOTHROW_NONNULL_1,
+	ATTR_PURE_NOTHROW_NONNULL_1, ATTR_PURE_NOTHROW_NONNULL_1_2,
+	ATTR_MALLOC_NOTHROW_NONNULL_1): Delete.
+	
+	* builtins.def: Use the non-specific "nonnull" attibute lists.
+
 2005-03-11  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* basic-block.h (single_succ_p, single_pred_p, single_succ_edge,
