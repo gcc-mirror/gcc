@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 %{!static: \
   %{!shared: %{!non_shared: %{!call_shared: -call_shared}}}} \
 %{rpath} -init __do_global_ctors -fini __do_global_dtors \
-%{mabi=32: -melf32bsmip}%{mabi=n32: -melfbmipn32}%{mabi=64: -melf64bmip}%{!mabi*: -melf32bmipn32}"
+%{mabi=32: -melf32bsmip}%{mabi=n32: -melf32bmipn32}%{mabi=64: -melf64bmip}%{!mabi*: -melf32bmipn32}"
 
 /* The GNU linker supports one-only sections.  */
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
