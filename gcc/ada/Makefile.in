@@ -1364,7 +1364,7 @@ endif
 
 ifeq ($(strip $(filter-out alpha% linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<a-intnam-linux-alpha.ads \
+  a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-osinte.ads<s-osinte-linux-alpha.ads \
@@ -1373,7 +1373,7 @@ ifeq ($(strip $(filter-out alpha% linux%,$(arch) $(osys))),)
   s-taprop.adb<s-taprop-linux.adb \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   s-taspri.ads<s-taspri-linux.ads \
-  system.ads<system-linux-ia64.ads
+  system.ads<system-linux-alpha.ads
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt.adb<mlib-tgt-linux.adb \
