@@ -1,3 +1,12 @@
+2004-01-03  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR bootstrap/11932, PR bootstrap/11933
+	(I don't know if it will fix either of them, but it relates
+	to them.)
+	* configure.in: Don't use shared config.cache for target
+	directories.
+	* configure: Regenerate.
+
 2004-01-02  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* MAINTAINERS: Add myself to 'Write After Approval' section.
