@@ -970,7 +970,8 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
 		if (target)
 		  {
-		    rtx seq1,seq2,last;
+		    rtx seq1, seq2, last;
+		    int copy_ok;
 
 		    /* Save the conditional move sequence but don't emit it
 		       yet.  On some machines, like the alpha, it is possible
@@ -980,8 +981,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		    seq2 = get_insns ();
 		    end_sequence ();
 
-		    /* Now that we can't fail, generate the copy insns that
-		       preserve the compared values.  */
+		    /* "Now that we can't fail..."  Famous last words.
+		       Generate the copy insns that preserve the compared
+		       values.  */
 		    start_sequence ();
 		    emit_move_insn (cond0, XEXP (temp4, 0));
 		    if (cond1 != XEXP (temp4, 1))
@@ -989,25 +991,42 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		    seq1 = get_insns ();
 		    end_sequence ();
 
-		    emit_insns_before (seq1, temp5);
-		    /* Insert conditional move after insn, to be sure that
-		       the jump and a possible compare won't be separated */
-		    last = emit_insns_after (seq2, insn);
+		    /* Validate the sequence -- this may be some weird
+		       bit-extract-and-test instruction for which there
+		       exists no complimentary bit-extract insn.  */
+		    copy_ok = 1;
+		    for (last = seq1; last ; last = NEXT_INSN (last))
+		      if (recog_memoized (last) < 0)
+			{
+			  copy_ok = 0;
+			  break;
+			}
 
-		    /* ??? We can also delete the insn that sets X to A.
-		       Flow will do it too though.  */
-		    delete_insn (temp);
-		    next = NEXT_INSN (insn);
-		    delete_jump (insn);
-
-		    if (after_regscan)
+		    if (copy_ok)
 		      {
-			reg_scan_update (seq1, NEXT_INSN (last), old_max_reg);
-			old_max_reg = max_reg_num ();
-		      }
+		        emit_insns_before (seq1, temp5);
 
-		    changed = 1;
-		    continue;
+		        /* Insert conditional move after insn, to be sure
+			   that the jump and a possible compare won't be
+			   separated.  */
+		        last = emit_insns_after (seq2, insn);
+
+		        /* ??? We can also delete the insn that sets X to A.
+		           Flow will do it too though.  */
+		        delete_insn (temp);
+		        next = NEXT_INSN (insn);
+		        delete_jump (insn);
+
+		        if (after_regscan)
+		          {
+			    reg_scan_update (seq1, NEXT_INSN (last),
+					     old_max_reg);
+			    old_max_reg = max_reg_num ();
+		          }
+
+		        changed = 1;
+		        continue;
+		      }
 		  }
 		else
 		  end_sequence ();
