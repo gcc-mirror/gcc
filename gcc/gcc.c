@@ -73,7 +73,7 @@ compilation is specified by a string called a "spec".  */
    because there's no place else we can expect to use.  */
 #if __MSDOS__
 #ifndef P_tmpdir
-#define P_tmpdir "./"
+#define P_tmpdir "."
 #endif
 #endif
 
@@ -1339,26 +1339,43 @@ clear_failure_queue ()
 /* Compute a string to use as the base of all temporary file names.
    It is substituted for %g.  */
 
+static char *
+choose_temp_base_try (try, base)
+char *try;
+char *base;
+{
+  char *rv;
+  if (base)
+    rv = base;
+  else if (try == (char *)0)
+    rv = 0;
+  else if (access (try, R_OK | W_OK) != 0)
+    rv = 0;
+  else
+    rv = try;
+  return rv;
+}
+
 static void
 choose_temp_base ()
 {
-  char *base = getenv ("TMPDIR");
+  char *base = 0;
   int len;
 
-  if (base == (char *)0)
-    {
+  base = choose_temp_base_try (getenv ("TMPDIR"), base);
+  base = choose_temp_base_try (getenv ("TMP"), base);
+  base = choose_temp_base_try (getenv ("TEMP"), base);
+
 #ifdef P_tmpdir
-      if (access (P_tmpdir, R_OK | W_OK) == 0)
-	base = P_tmpdir;
+  base = choose_temp_base_try (P_tmpdir, base);
 #endif
-      if (base == (char *)0)
-	{
-	  if (access ("/usr/tmp", R_OK | W_OK) == 0)
-	    base = "/usr/tmp/";
-	  else
-	    base = "/tmp/";
-	}
-    }
+
+  base = choose_temp_base_try ("/usr/tmp", base);
+  base = choose_temp_base_try ("/tmp", base);
+
+  /* If all else fails, use the current directory! */  
+  if (base == (char *)0)
+    base = "./";
 
   len = strlen (base);
   temp_filename = xmalloc (len + sizeof("/ccXXXXXX"));
@@ -1727,32 +1744,41 @@ pexecute (search_flag, program, argv, not_last)
      char *argv[];
      int not_last;
 {
-  char *scmd;
+  char *scmd, *rf;
   FILE *argfile;
-  int i;
+  int i, el = search_flag ? 0 : 4;
 
-  scmd = (char *)malloc (strlen (program) + strlen (temp_filename) + 6);
-  sprintf (scmd, "%s @%s.gp", program, temp_filename);
-  argfile = fopen (scmd+strlen (program) + 2, "w");
+  scmd = (char *)malloc (strlen (program) + strlen (temp_filename) + 6 + el);
+  rf = scmd + strlen(program) + 2 + el;
+  sprintf (scmd, "%s%s @%s.gp", program,
+	   (search_flag ? "" : ".exe"), temp_filename);
+  argfile = fopen (rf, "w");
   if (argfile == 0)
-    pfatal_with_name (scmd + strlen (program) + 2);
+    pfatal_with_name (rf);
 
   for (i=1; argv[i]; i++)
-  {
-    char *cp;
-    for (cp = argv[i]; *cp; cp++)
-      {
-	if (*cp == '"' || *cp == '\'' || *cp == '\\' || isspace (*cp))
-	  fputc ('\\', argfile);
-	fputc (*cp, argfile);
-      }
-    fputc ('\n', argfile);
-  }
+    {
+      char *cp;
+      for (cp = argv[i]; *cp; cp++)
+	{
+	  if (*cp == '"' || *cp == '\'' || *cp == '\\' || isspace (*cp))
+	    fputc ('\\', argfile);
+	  fputc (*cp, argfile);
+	}
+      fputc ('\n', argfile);
+    }
   fclose (argfile);
 
   i = system (scmd);
 
-  remove (scmd + strlen (program) + 2);
+  remove (rf);
+  
+  if (i == -1)
+    {
+      perror_exec (program);
+      return MIN_FATAL_STATUS << 8;
+    }
+
   return i << 8;
 }
 
