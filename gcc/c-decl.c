@@ -4985,10 +4985,18 @@ get_parm_info (void_at_end)
   tree new_parms = 0;
   tree order = current_binding_level->parm_order;
 
-  /* Just `void' (and no ellipsis) is special.  There are really no parms.  */
+  /* Just `void' (and no ellipsis) is special.  There are really no parms.
+     But if the `void' is qualified (by `const' or `volatile') or has a
+     storage class specifier (`register'), then the behavior is undefined;
+     by not counting it as the special case of `void' we will cause an
+     error later.  Typedefs for `void' are OK (see DR#157).
+  */
   if (void_at_end && parms != 0
       && TREE_CHAIN (parms) == 0
       && VOID_TYPE_P (TREE_TYPE (parms))
+      && ! TREE_THIS_VOLATILE (parms)
+      && ! TREE_READONLY (parms)
+      && ! DECL_REGISTER (parms)
       && DECL_NAME (parms) == 0)
     {
       parms = NULL_TREE;
