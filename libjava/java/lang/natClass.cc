@@ -39,6 +39,7 @@ details.  */
 #include <java/lang/System.h>
 #include <java/lang/SecurityManager.h>
 #include <java/lang/StringBuffer.h>
+#include <gcj/method.h>
 
 #include <java-cpool.h>
 
