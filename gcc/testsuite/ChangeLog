@@ -1,3 +1,35 @@
+2003-07-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/3004
+	* g++.dg/parse/typedef3.C: New test.
+
+	PR c++/7906
+	* g++.dg/parse/operator2.C: New test.
+
+	PR c++/8895
+	* g++.dg/parse/def-tmpl-arg1.C: New test.
+
+	PR c++/9282
+	* g++.dg/parse/funptr1.C: New test.
+
+	PR c++/9452
+	* g++.dg/parse/ambig3.C: New test.
+
+	PR c++/9454
+	* g++.dg/parse/operator3.C: New test.
+
+	PR c++/9486
+	* g++.dg/parse/template10.C: New test.
+
+	PR c++/9488
+	* g++.dg/parse/template11.C: New test.
+
+	PR c++/10150
+	* g++.dg/parse/invalid-op1.C: New test.
+
+	PR c++/10247
+	* g++.dg/parse/condexpr1.C: New test.
+
 2003-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/ext/packed3.C: New test.
