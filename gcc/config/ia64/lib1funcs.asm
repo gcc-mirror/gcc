@@ -100,7 +100,7 @@ __divdi3:
 	fcvt.xf f9 = f9
 	;;
 	// Compute the reciprocal approximation.
-	frcpa f10, p6 = f8, f9
+	frcpa.s1 f10, p6 = f8, f9
 	;;
 	// 3 Newton-Raphson iterations.
 (p6)	fma.s1 f11 = farg0, f10, f0
@@ -119,10 +119,10 @@ __divdi3:
 	;;
 (p6)	fnma.s1 f8 = f9, f11, f8
 	;;
-(p6)	fma f10 = f8, f10, f11
+(p6)	fma.s1 f10 = f8, f10, f11
 	;;
 	// Round quotient to an integer.
-	fcvt.fx.trunc f8 = f10
+	fcvt.fx.trunc.s1 f8 = f10
 	;;
 	// Transfer result to GP registers.
 	getf.sig ret0 = f8
@@ -160,7 +160,7 @@ __moddi3:
 	fcvt.xf f9 = f9
 	;;
 	// Compute the reciprocal approximation.
-	frcpa f10, p6 = f8, f9
+	frcpa.s1 f10, p6 = f8, f9
 	;;
 	// 3 Newton-Raphson iterations.
 (p6)	fma.s1 f11 = farg0, f10, f0
@@ -179,19 +179,19 @@ __moddi3:
 	;;
 (p6)	fnma.s1 f12 = f9, f11, f8
 	;;
-(p6)	fma f10 = f12, f10, f11
+(p6)	fma.s1 f10 = f12, f10, f11
 	;;
 	// Round quotient to an integer.
-	fcvt.fx.trunc f10 = f10
+	fcvt.fx.trunc.s1 f10 = f10
 	;;
 	// Renormalize.
 	fcvt.xf f10 = f10
 	;;
 	// Compute remainder.
-	fnma f8 = f10, f9, f8
+	fnma.s1 f8 = f10, f9, f8
 	;;
 	// Round remainder to an integer.
-	fcvt.fx.trunc f8 = f8
+	fcvt.fx.trunc.s1 f8 = f8
 	;;
 	// Transfer result to GP registers.
 	getf.sig ret0 = f8
@@ -225,11 +225,11 @@ __udivdi3:
 	setf.sig f9 = in1
 	;;
 	// Convert the inputs to FP, to avoid FP software-assist faults.
-	fcvt.xuf f8 = f8
-	fcvt.xuf f9 = f9
+	fcvt.xuf.s1 f8 = f8
+	fcvt.xuf.s1 f9 = f9
 	;;
 	// Compute the reciprocal approximation.
-	frcpa f10, p6 = f8, f9
+	frcpa.s1 f10, p6 = f8, f9
 	;;
 	// 3 Newton-Raphson iterations.
 (p6)	fma.s1 f11 = farg0, f10, f0
@@ -248,10 +248,10 @@ __udivdi3:
 	;;
 (p6)	fnma.s1 f8 = f9, f11, f8
 	;;
-(p6)	fma f10 = f8, f10, f11
+(p6)	fma.s1 f10 = f8, f10, f11
 	;;
 	// Round quotient to an unsigned integer.
-	fcvt.fxu.trunc f8 = f10
+	fcvt.fxu.trunc.s1 f8 = f10
 	;;
 	// Transfer result to GP registers.
 	getf.sig ret0 = f8
@@ -285,11 +285,11 @@ __umoddi3:
 	setf.sig f9 = in1
 	;;
 	// Convert the inputs to FP, to avoid FP software assist faults.
-	fcvt.xuf f8 = f8
-	fcvt.xuf f9 = f9
+	fcvt.xuf.s1 f8 = f8
+	fcvt.xuf.s1 f9 = f9
 	;;
 	// Compute the reciprocal approximation.
-	frcpa f10, p6 = f8, f9
+	frcpa.s1 f10, p6 = f8, f9
 	;;
 	// 3 Newton-Raphson iterations.
 (p6)	fma.s1 f11 = farg0, f10, f0
@@ -308,19 +308,19 @@ __umoddi3:
 	;;
 (p6)	fnma.s1 f12 = f9, f11, f8
 	;;
-(p6)	fma f10 = f12, f10, f11
+(p6)	fma.s1 f10 = f12, f10, f11
 	;;
 	// Round quotient to an unsigned integer.
-	fcvt.fxu.trunc f10 = f10
+	fcvt.fxu.trunc.s1 f10 = f10
 	;;
 	// Renormalize.
-	fcvt.xuf f10 = f10
+	fcvt.xuf.s1 f10 = f10
 	;;
 	// Compute remainder.
-	fnma f8 = f10, f9, f8
+	fnma.s1 f8 = f10, f9, f8
 	;;
 	// Round remainder to an integer.
-	fcvt.fxu.trunc f8 = f8
+	fcvt.fxu.trunc.s1 f8 = f8
 	;;
 	// Transfer result to GP registers.
 	getf.sig ret0 = f8
