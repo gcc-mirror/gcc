@@ -1,3 +1,7 @@
+2003-03-03  Andreas Tobler <a.tobler@schweiz.ch>
+
+        * src/powerpc/darwin_closure.S: Recode to fit dynamic libraries.
+
 2003-02-06  Andreas Tobler <a.tobler@schweiz.ch>
 
 	* libffi/src/powerpc/darwin_closure.S:
