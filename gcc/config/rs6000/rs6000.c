@@ -1768,7 +1768,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
    to a block copy.  This is similar to the way we do things on Alpha.  */
 
 struct rtx_def *
-expand_builtin_saveregs ()
+rs6000_expand_builtin_saveregs ()
 {
   rtx block, mem_gpr_fpr, mem_reg_save_area, mem_overflow, tmp;
   tree fntype;

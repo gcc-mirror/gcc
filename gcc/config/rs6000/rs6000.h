@@ -1569,7 +1569,7 @@ typedef struct rs6000_args
    contains the value to use as the return of `__builtin_saveregs'.  */
 
 #define EXPAND_BUILTIN_SAVEREGS() \
-  expand_builtin_saveregs ()
+  rs6000_expand_builtin_saveregs ()
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
@@ -3273,7 +3273,7 @@ extern struct rtx_def *function_arg ();
 extern int function_arg_partial_nregs ();
 extern int function_arg_pass_by_reference ();
 extern void setup_incoming_varargs ();
-extern struct rtx_def *expand_builtin_saveregs ();
+extern struct rtx_def *rs6000_expand_builtin_saveregs ();
 extern struct rtx_def *rs6000_stack_temp ();
 extern int expand_block_move ();
 extern int load_multiple_operation ();
