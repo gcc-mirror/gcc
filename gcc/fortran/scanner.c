@@ -468,7 +468,7 @@ restart:
 	goto done;
 
       /* If the next nonblank character is a ! or \n, we've got a
-         continuation line. */
+         continuation line.  */
       old_loc = gfc_current_locus;
 
       c = next_char ();
@@ -981,7 +981,7 @@ include_line (char *line)
   if (*c != '\0' && *c != '!')
     return false;
 
-  /* We have an include line at this point. */
+  /* We have an include line at this point.  */
 
   *stop = '\0'; /* It's ok to trash the buffer, as this line won't be
 		   read by anything else.  */
@@ -1093,7 +1093,7 @@ load_file (char *filename, bool initial)
 
 
 /* Determine the source form from the filename extension.  We assume
-   case insensitivity. */
+   case insensitivity.  */
 
 static gfc_source_form
 form_from_filename (const char *filename)

@@ -308,7 +308,7 @@ tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, bt);
 /* Translate COMMON blocks.  */
 void gfc_trans_common (gfc_namespace *);
 
-/* Translate a derived type constructor. */
+/* Translate a derived type constructor.  */
 void gfc_conv_structure (gfc_se *, gfc_expr *, int);
 
 /* Return an expression which determines if a dummy parameter is present.  */

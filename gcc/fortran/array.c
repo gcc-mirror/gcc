@@ -968,7 +968,7 @@ check_element_type (gfc_expr * expr)
 }
 
 
-/* Recursive work function for gfc_check_constructor_type(). */
+/* Recursive work function for gfc_check_constructor_type().  */
 
 static try
 check_constructor_type (gfc_constructor * c)
@@ -1609,7 +1609,7 @@ gfc_get_array_element (gfc_expr * array, int element)
 
 /* These are needed just to accommodate RESHAPE().  There are no
    diagnostics here, we just return a negative number if something
-   goes wrong. */
+   goes wrong.  */
 
 
 /* Get the size of single dimension of an array specification.  The

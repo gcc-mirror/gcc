@@ -205,7 +205,7 @@ gfc_arith_init_1 (void)
          is compiled with -pedantic, and reflects the belief that
          Standard Fortran requires integers to be symmetrical, i.e.
          every negative integer must have a representable positive
-         absolute value, and vice versa. */
+         absolute value, and vice versa.  */
          
       mpz_init (int_info->pedantic_min_int);
       mpz_neg (int_info->pedantic_min_int, int_info->huge);

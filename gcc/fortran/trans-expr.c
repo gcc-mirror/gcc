@@ -156,7 +156,7 @@ gfc_get_expr_charlen (gfc_expr *e)
 
   /* First candidate: if the variable is of type CHARACTER, the
      expression's length could be the length of the character
-     variable. */
+     variable.  */
   if (e->symtree->n.sym->ts.type == BT_CHARACTER)
     length = e->symtree->n.sym->ts.cl->backend_decl;
 

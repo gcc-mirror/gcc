@@ -68,24 +68,24 @@ Boston, MA 02111-1307, USA.  */
    skip over.  */
 typedef enum
 {
-  OPTION_b,			/* Aka --prefix. */
-  OPTION_B,			/* Aka --target. */
-  OPTION_c,			/* Aka --compile. */
-  OPTION_E,			/* Aka --preprocess. */
-  OPTION_help,			/* --help. */
-  OPTION_i,			/* -imacros, -include, -include-*. */
+  OPTION_b,			/* Aka --prefix.  */
+  OPTION_B,			/* Aka --target.  */
+  OPTION_c,			/* Aka --compile.  */
+  OPTION_E,			/* Aka --preprocess.  */
+  OPTION_help,			/* --help.  */
+  OPTION_i,			/* -imacros, -include, -include-*.  */
   OPTION_l,
-  OPTION_L,			/* Aka --library-directory. */
+  OPTION_L,			/* Aka --library-directory.  */
   OPTION_nostdlib,		/* Aka --no-standard-libraries, or
-				   -nodefaultlibs. */
-  OPTION_o,			/* Aka --output. */
-  OPTION_S,			/* Aka --assemble. */
-  OPTION_syntax_only,		/* -fsyntax-only. */
-  OPTION_v,			/* Aka --verbose. */
-  OPTION_version,		/* --version. */
-  OPTION_V,			/* Aka --use-version. */
-  OPTION_x,			/* Aka --language. */
-  OPTION_			/* Unrecognized or unimportant. */
+				   -nodefaultlibs.  */
+  OPTION_o,			/* Aka --output.  */
+  OPTION_S,			/* Aka --assemble.  */
+  OPTION_syntax_only,		/* -fsyntax-only.  */
+  OPTION_v,			/* Aka --verbose.  */
+  OPTION_version,		/* --version.  */
+  OPTION_V,			/* Aka --use-version.  */
+  OPTION_x,			/* Aka --language.  */
+  OPTION_			/* Unrecognized or unimportant.  */
 }
 Option;
 
@@ -133,7 +133,7 @@ lookup_option (Option *xopt, int *xskip, const char **xarg, const char *text)
   const char *arg = NULL;
 
   if ((skip = SWITCH_TAKES_ARG (text[1])))
-    skip -= (text[2] != '\0');	/* See gcc.c. */
+    skip -= (text[2] != '\0');	/* See gcc.c.  */
 
   if (text[1] == 'B')
     opt = OPTION_B, skip = (text[2] == '\0'), arg = text + 2;
@@ -161,7 +161,7 @@ lookup_option (Option *xopt, int *xskip, const char **xarg, const char *text)
     opt = OPTION_x, arg = text + 2;
   else
     {
-      if ((skip = WORD_SWITCH_TAKES_ARG (text + 1)) != 0)	/* See gcc.c. */
+      if ((skip = WORD_SWITCH_TAKES_ARG (text + 1)) != 0)	/* See gcc.c.  */
 	;
       else if (!strcmp (text, "-fhelp"))	/* Really --help!! */
 	opt = OPTION_help;
@@ -212,14 +212,14 @@ append_arg (const char *arg)
 	  || !strcmp (arg, g77_xargv[g77_newargc])))
     {
       ++g77_newargc;
-      return;			/* Nothing new here. */
+      return;			/* Nothing new here.  */
     }
 
   if (g77_newargv == g77_xargv)
-    {				/* Make new arglist. */
+    {				/* Make new arglist.  */
       int i;
 
-      newargsize = (g77_xargc << 2) + 20;	/* This should handle all. */
+      newargsize = (g77_xargc << 2) + 20;	/* This should handle all.  */
       g77_newargv = (const char **) xmalloc (newargsize * sizeof (char *));
 
       /* Copy what has been done so far.  */
@@ -384,13 +384,13 @@ For more information about these matters, see the file named COPYING\n\
 
   /* Second pass through arglist, transforming arguments as appropriate.  */
 
-  append_arg (argv[0]);		/* Start with command name, of course. */
+  append_arg (argv[0]);		/* Start with command name, of course.  */
 
   for (i = 1; i < argc; ++i)
     {
       if (argv[i][0] == '\0')
 	{
-	  append_arg (argv[i]);	/* Interesting.  Just append as is. */
+	  append_arg (argv[i]);	/* Interesting.  Just append as is.  */
 	  continue;
 	}
 
@@ -417,9 +417,9 @@ For more information about these matters, see the file named COPYING\n\
 
       if ((argv[i][0] == '-') && (argv[i][1] != 'l'))
 	{
-	  /* Not a filename or library. */
+	  /* Not a filename or library.  */
 
-	  if (saw_library == 1 && need_math)	/* -l<library>. */
+	  if (saw_library == 1 && need_math)	/* -l<library>.  */
 	    append_arg (MATH_LIBRARY);
 
 	  saw_library = 0;
@@ -428,13 +428,13 @@ For more information about these matters, see the file named COPYING\n\
 
 	  if (argv[i][1] == '\0')
 	    {
-	      append_arg (argv[i]);	/* "-" == Standard input. */
+	      append_arg (argv[i]);	/* "-" == Standard input.  */
 	      continue;
 	    }
 
 	  if (opt == OPTION_x)
 	    {
-	      /* Track input language. */
+	      /* Track input language.  */
 	      const char *lang;
 
 	      if (arg == NULL)
@@ -453,16 +453,16 @@ For more information about these matters, see the file named COPYING\n\
 	  continue;
 	}
 
-      /* A filename/library, not an option. */
+      /* A filename/library, not an option.  */
 
       if (saw_speclang)
-	saw_library = 0;	/* -xfoo currently active. */
+	saw_library = 0;	/* -xfoo currently active.  */
       else
-	{			/* -lfoo or filename. */
+	{			/* -lfoo or filename.  */
 	  if (strcmp (argv[i], MATH_LIBRARY) == 0)
 	    {
 	      if (saw_library == 1)
-		saw_library = 2;	/* -l<library> -lm. */
+		saw_library = 2;	/* -l<library> -lm.  */
 	      else
 		{
 		  if (0 == use_init)
@@ -474,9 +474,9 @@ For more information about these matters, see the file named COPYING\n\
 		}
 	    }
 	  else if (strcmp (argv[i], FORTRAN_LIBRARY) == 0)
-	    saw_library = 1;	/* -l<library>. */
+	    saw_library = 1;	/* -l<library>.  */
 	  else
-	    {			/* Other library, or filename. */
+	    {			/* Other library, or filename.  */
 	      if (saw_library == 1 && need_math)
 		append_arg (MATH_LIBRARY);
 	      saw_library = 0;
@@ -488,7 +488,7 @@ For more information about these matters, see the file named COPYING\n\
   /* Append `-lg2c -lm' as necessary.  */
 
   if (library)
-    {				/* Doing a link and no -nostdlib. */
+    {				/* Doing a link and no -nostdlib.  */
       if (saw_speclang)
 	append_arg ("-xnone");
 
@@ -538,12 +538,12 @@ For more information about these matters, see the file named COPYING\n\
   *in_argv = g77_newargv;
 }
 
-/* Called before linking.  Returns 0 on success and -1 on failure. */
+/* Called before linking.  Returns 0 on success and -1 on failure.  */
 int
-lang_specific_pre_link (void)	/* Not used for F77. */
+lang_specific_pre_link (void)	/* Not used for F77.  */
 {
   return 0;
 }
 
-/* Number of extra output files that lang_specific_pre_link may generate. */
-int lang_specific_extra_outfiles = 0;	/* Not used for F77. */
+/* Number of extra output files that lang_specific_pre_link may generate.  */
+int lang_specific_extra_outfiles = 0;	/* Not used for F77.  */

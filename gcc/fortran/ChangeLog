@@ -1,3 +1,11 @@
+2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* arith.c, array.c, decl.c, expr.c, f95-lang.c, gfortran.h,
+	gfortranspec.c, interface.c, intrinsic.c, iresolve.c, match.c,
+	module.c, parse.c, parse.h, primary.c, resolve.c, scanner.c,
+	trans-array.c, trans-array.h, trans-expr.c, trans-intrinsic.c,
+	trans-io.c, trans-stmt.c, trans.h: Fix comment formatting.
+
 2004-11-06  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18023

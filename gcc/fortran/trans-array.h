@@ -90,7 +90,7 @@ void gfc_conv_array_parameter (gfc_se *, gfc_expr *, gfc_ss *, int);
 /* These work with both descriptors and descriptorless arrays.  */
 tree gfc_conv_array_data (tree);
 tree gfc_conv_array_offset (tree);
-/* Return either an INT_CST or an expression for that part of the descriptor. */
+/* Return either an INT_CST or an expression for that part of the descriptor.  */
 tree gfc_conv_array_stride (tree, int);
 tree gfc_conv_array_lbound (tree, int);
 tree gfc_conv_array_ubound (tree, int);
