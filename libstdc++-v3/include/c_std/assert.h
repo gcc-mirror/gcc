@@ -41,8 +41,8 @@
 
 #include <cassert>
  
-  // expose global C names, including non-standard ones, but shadow
-  //   some names and types with the std:: C++ version.
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
 
 #ifdef _ASSERT_NEED_C_LEGACY_
   // dive back into the "swamp"

@@ -57,7 +57,6 @@ namespace _C_legacy {
 # endif
 } // namespace _C_legacy
 
-#  undef size_t
 #  undef wchar_t
 #  undef div_t
 #  undef ldiv_t
@@ -68,6 +67,9 @@ namespace _C_legacy {
 #  undef strtod
 #  undef strtol
 #  undef strtoul
+#ifdef _GLIBCPP_HAVE_STRTOLD
+#  undef strtold
+#endif
 #  undef rand
 #  undef srand
 #  undef calloc
@@ -124,9 +126,9 @@ namespace std {
   using _C_legacy::malloc;
   using _C_legacy::realloc;
 
-  using _C_legacy::abort;
+  //  using _C_legacy::abort;
   using _C_legacy::atexit;
-  using _C_legacy::exit;
+  //  using _C_legacy::exit;
   using _C_legacy::bsearch;
   using _C_legacy::qsort; 
 
@@ -137,10 +139,14 @@ namespace std {
   using _C_legacy::mbstowcs;
   using _C_legacy::wcstombs;
 
+  using _C_legacy::strtof;
+
 #ifdef _GLIBCPP_USE_LONG_LONG
   using _C_legacy::strtoll;
   using _C_legacy::strtoull;
-  using _C_legacy::strtof;
+#endif
+
+#ifdef _GLIBCPP_HAVE_STRTOLD
   using _C_legacy::strtold;
 #endif
 

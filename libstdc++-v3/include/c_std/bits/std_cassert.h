@@ -31,19 +31,31 @@
 // ISO C++ 14882: 19.2  Assertions
 //
 
-#ifndef _CPP_CASSERT
-#define _CPP_CASSERT 1
+// NB: This is assumed to be a conforming implementation.
 
-namespace _C_legacy {
+// ISO/IEC 9899:1999 (E), section 7.2
+// assert.h
+// ..defines the assert macro...
+
+// ISO 14882
+// 17.4.1.2 Headers
+// ... declarations and definitions (except for macros) are within
+// namespace scope of the namepace std...
+
+
+//#ifndef _CPP_CASSERT
+//#define _CPP_CASSERT 1
+
+//namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
+//#   define _IN_C_LEGACY_
 #   pragma GCC system_header
 #   include_next <assert.h>
   }
-} // namespace _C_legacy
+//} // namespace _C_legacy
 
-#undef _IN_C_LEGACY_
+//#undef _IN_C_LEGACY_
 
-#endif
+//#endif
 
 

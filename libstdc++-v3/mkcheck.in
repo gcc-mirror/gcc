@@ -72,18 +72,16 @@ fi
 #LIB_PATH == where to find the build library binaries.
 if [ $WHICH != "1" ]; then
   LIB_PATH="$BUILD_DIR/src/.libs"
-  CXX="../../gcc/g++"
-  CXX_BASE="-B../../gcc/"
+  CXX="$BUILD_DIR/../../gcc/g++ -B$BUILD_DIR/../../gcc/"
 elif [ $WHICH -eq 1 ]; then
   LIB_PATH="$PREFIX_DIR/lib"
   CXX="$PREFIX_DIR/bin/g++"
-  CXX_BASE=""
 fi
 
 # gcc compiler flags
 #CXX_FLAG="-fsquangle -fhonor-std -fnew-exceptions -g -O2 -DDEBUG_ASSERT "
 #CXX_FLAG="-g -O2 -DDEBUG_ASSERT "
-CXX_FLAG="-g $CXX_BASE -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
+CXX_FLAG="-g -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
 
 # a specific flag(s) to force the use of shared libraries, if any
 SH_FLAG=""

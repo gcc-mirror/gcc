@@ -75,6 +75,10 @@ test01()
   std::string 	str_1("costa marbella");
   std::string 	str_2;
 
+  using std::strcmp;
+  using std::strncmp;
+  using std::memcmp;
+
   //sanity check
   test_value(strcmp("costa marbella", "costa rica"), lt); 
   test_value(strcmp("costa rica", "costa rica"), z);
