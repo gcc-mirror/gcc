@@ -7427,7 +7427,7 @@ ix86_init_builtins ()
 {
   struct builtin_description * d;
   int i;
-  tree endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
+  tree endlink = void_list_node;
 
   tree pchar_type_node = build_pointer_type (char_type_node);
   tree pfloat_type_node = build_pointer_type (float_type_node);

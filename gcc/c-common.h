@@ -143,7 +143,6 @@ enum c_tree_index
     CTI_C_BOOL_TRUE,
     CTI_C_BOOL_FALSE,
     CTI_DEFAULT_FUNCTION_TYPE,
-    CTI_VOID_LIST,
 
     CTI_VOID_FTYPE,
     CTI_VOID_FTYPE_PTR,
@@ -192,7 +191,6 @@ enum c_tree_index
 #define const_string_type_node		c_global_trees[CTI_CONST_STRING_TYPE]
 
 #define default_function_type		c_global_trees[CTI_DEFAULT_FUNCTION_TYPE]
-#define void_list_node			c_global_trees[CTI_VOID_LIST]
 #define void_ftype			c_global_trees[CTI_VOID_FTYPE]
 #define void_ftype_ptr			c_global_trees[CTI_VOID_FTYPE_PTR]
 #define int_ftype_int			c_global_trees[CTI_INT_FTYPE_INT]

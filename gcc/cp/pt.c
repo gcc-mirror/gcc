@@ -6449,8 +6449,13 @@ tsubst (t, args, complain, in_decl)
 	    && value == TREE_VALUE (t)
 	    && chain == TREE_CHAIN (t))
 	  return t;
-	result = hash_tree_cons (purpose, value, chain);
-	TREE_PARMLIST (result) = TREE_PARMLIST (t);
+	if (TREE_PARMLIST (t))
+	  {
+	    result = tree_cons (purpose, value, chain);
+	    TREE_PARMLIST (result) = 1;
+	  }
+	else
+	  result = hash_tree_cons (purpose, value, chain);
 	return result;
       }
     case TREE_VEC:

@@ -8794,7 +8794,7 @@ arm_init_builtins ()
      front-end that causes a failure while building libstdc++-v3.  When
      that bug is fixed, this code can be re-enabled.  */
 
-  tree endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
+  tree endlink = void_list_node;
   tree int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
   tree pchar_type_node = build_pointer_type (char_type_node);
 

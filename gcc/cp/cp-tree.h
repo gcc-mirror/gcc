@@ -61,6 +61,7 @@ Boston, MA 02111-1307, USA.  */
       ICS_THIS_FLAG (in _CONV)
       BINDING_HAS_LEVEL_P (in CPLUS_BINDING)
       BINFO_OVERRIDE_ALONG_VIRTUAL_PATH_P (in BINFO)
+      TREE_PARMLIST (in TREE_LIST)
    3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
       BINFO_VTABLE_PATH_MARKED.
       BINFO_PUSHDECLS_MARKED.
@@ -1755,7 +1756,7 @@ struct lang_type
 
 /* Nonzero for TREE_LIST node means that this list of things
    is a list of parameters, as opposed to a list of expressions.  */
-#define TREE_PARMLIST(NODE) ((NODE)->common.unsigned_flag) /* overloaded! */
+#define TREE_PARMLIST(NODE) (TREE_LANG_FLAG_2 (NODE))
 
 /* Nonzero for a parmlist means that this parmlist ended in ...  */
 #define PARMLIST_ELLIPSIS_P(NODE) TREE_LANG_FLAG_0 (NODE)
