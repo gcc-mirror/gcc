@@ -1,3 +1,7 @@
+2004-12-07  Volker Reichelt  <reichelt@gcc.gnu.org>
+
+	* g++.dg/other/unreachable-1.C: New test.
+
 2004-12-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/17011, c++/17971

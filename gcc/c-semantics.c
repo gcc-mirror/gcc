@@ -937,6 +937,9 @@ expand_unreachable_if_stmt (tree t)
       return true;
     }
 
+  /* Account for declarations as conditions.  */
+  expand_cond (IF_COND (t));
+
   if (THEN_CLAUSE (t) && ELSE_CLAUSE (t))
     {
       n = expand_unreachable_stmt (THEN_CLAUSE (t), 0);
