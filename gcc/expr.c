@@ -8226,7 +8226,11 @@ expand_expr (exp, target, tmode, modifier)
 	  || mode != ptr_mode)
 	{
 	  op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
-	  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
+	  if (! operand_equal_p (TREE_OPERAND (exp, 0),
+				 TREE_OPERAND (exp, 1), 0))
+	    op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
+	  else
+	    op1 = op0;
 	  if (op0 == const0_rtx)
 	    return op1;
 	  if (op1 == const0_rtx)
@@ -8235,7 +8239,12 @@ expand_expr (exp, target, tmode, modifier)
 	}
 
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, modifier);
-      op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, modifier);
+      if (! operand_equal_p (TREE_OPERAND (exp, 0),
+			     TREE_OPERAND (exp, 1), 0))
+	op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
+			   VOIDmode, modifier);
+      else
+	op1 = op0;
 
       /* We come here from MINUS_EXPR when the second operand is a
          constant.  */
@@ -8457,7 +8466,11 @@ expand_expr (exp, target, tmode, modifier)
 	    }
 	}
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
-      op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
+      if (! operand_equal_p (TREE_OPERAND (exp, 0),
+			     TREE_OPERAND (exp, 1), 0))
+	op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
+      else
+	op1 = op0;
       return expand_mult (mode, op0, op1, target, unsignedp);
 
     case TRUNC_DIV_EXPR:
