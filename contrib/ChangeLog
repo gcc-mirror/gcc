@@ -1,3 +1,7 @@
+2001-05-18  Andreas Jaeger  <aj@suse.de>
+
+	* gcc_update: Add rules for libf2c/libI77.
+
 2001-05-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc_update (touch_files): Use simpler, yet as portable, syntax.
@@ -169,7 +173,7 @@ Sat Nov 11 17:29:03 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-09-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_update (touch_files): Add some informative output.
-	
+
 2000-09-16  Andreas Jaeger  <aj@suse.de>
 
 	* gcc_update: Remove gcc/c-parse.gperf.

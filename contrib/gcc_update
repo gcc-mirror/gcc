@@ -76,6 +76,8 @@ libchill/configure: libchill/configure.in
 libf2c/configure: libf2c/configure.in
 libf2c/libF77/configure: libf2c/libF77/configure.in
 libf2c/libI77/configure: libf2c/libI77/configure.in
+libf2c/libI77/stamp-h.in: libf2c/libI77/configure.in
+libf2c/libI77/config.h.in: libf2c/libI77/configure.in libf2c/libI77/stamp-h.in
 libf2c/libU77/configure: libf2c/libU77/configure.in
 libf2c/libU77/stamp-h.in: libf2c/libU77/configure.in libf2c/libU77/acconfig.h
 libobjc/configure: libobjc/configure.in
