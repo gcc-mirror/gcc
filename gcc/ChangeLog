@@ -4,6 +4,18 @@ Wed Jul 29 22:39:21 1998  Jeffrey A Law  (law@cygnus.com)
 	or UNROLL_COMPLETELY loop that starts with a jump to its
 	exit code.
 
+Wed Jul 29 22:18:14 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000/rs6000.md (absdi2 define_split): Swap operands of MINUS.
+	* rs6000/rs6000.c (mask64_operand): Use HOST_BITS_PER_WIDE_INT.
+	(print_operand, case 'B'): Don't fall through.
+	(print_operand, case 'S'): Correct mask begin/end computation.
+	Use HOST_BITS_PER_WIDE_INT.
+	* rs6000/rs6000.h (CPP_PREDEFINES): Define _LONG_LONG.
+	(CONDITIONAL_REGISTER_USAGE): GPR13 fixed if TARGET_64BIT.
+	* rs6000/aix41.h (CPP_PREDEFINES): Same.
+	* rs6000/aix43.h (CPP_PREDEFINES): Same.
+
 Tue Jul 28 23:29:04 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* configure.in: Fix --without/--disable cases for local-prefix, 

@@ -938,7 +938,7 @@ mask64_operand (op, mode)
 	if (((c >>= 1) & 1) != last_bit_value)
 	  last_bit_value ^= 1, transitions++;
 
-#if HOST_BITS_PER_INT == 32
+#if HOST_BITS_PER_WIDE_INT == 32
       /* Consider CONST_INT sign-extended.  */
       transitions += (last_bit_value != 1);
 #endif
@@ -949,7 +949,7 @@ mask64_operand (op, mode)
 	   && (mode == VOIDmode || mode == DImode))
     {
       HOST_WIDE_INT low = CONST_DOUBLE_LOW (op);
-#if HOST_BITS_PER_INT == 32
+#if HOST_BITS_PER_WIDE_INT == 32
       HOST_WIDE_INT high = CONST_DOUBLE_HIGH (op);
 #endif
       int i;
@@ -957,12 +957,12 @@ mask64_operand (op, mode)
       int transitions = 0;
 
       if ((low == 0
-#if HOST_BITS_PER_INT == 32
+#if HOST_BITS_PER_WIDE_INT == 32
 	  && high == 0
 #endif
 	   )
 	  || (low == ~0
-#if HOST_BITS_PER_INT == 32
+#if HOST_BITS_PER_WIDE_INT == 32
 	      && high == ~0
 #endif
 	      ))
@@ -974,7 +974,7 @@ mask64_operand (op, mode)
 	if (((low >>= 1) & 1) != last_bit_value)
 	  last_bit_value ^= 1, transitions++;
 
-#if HOST_BITS_PER_INT == 32
+#if HOST_BITS_PER_WIDE_INT == 32
       if ((high & 1) != last_bit_value)
 	last_bit_value ^= 1, transitions++;
 
@@ -2544,6 +2544,7 @@ print_operand (file, x, code)
       /* If the low-order bit is zero, write 'r'; otherwise, write 'l'
 	 for 64-bit mask direction.  */
       putc (((INT_LOWPART(x) & 1) == 0 ? 'r' : 'l'), file);
+      return;
 
     case 'C':
       /* This is an optional cror needed for LE or GE floating-point
@@ -2824,58 +2825,54 @@ print_operand (file, x, code)
 
       if (val & 1)      /* Clear Left */
 	{
-	  if (val == 1)
-	    i = 0;
-	  else
-	    for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
-	      if (!((val >>= 1) & 1))
-		break;
+	  for (i = 0; i < HOST_BITS_PER_WIDE_INT; i++)
+	    if (!((val >>= 1) & 1))
+	      break;
 
-#if HOST_BITS_PER_INT == 32
-	if (GET_CODE (x) == CONST_DOUBLE && i == 32)
-	  {
-	    val = CONST_DOUBLE_HIGH (x);
+#if HOST_BITS_PER_WIDE_INT == 32
+	  if (GET_CODE (x) == CONST_DOUBLE && i == 32)
+	    {
+	      val = CONST_DOUBLE_HIGH (x);
 
-	    if (val == 0)
-	      --i;
-	    else if (val == 1)
-	      ;
-	    else
-	      for (i = 33; i < 64; i++)
-		if (!((val >>= 1) & 1))
-		  break;
-	  }
+	      if (val == 0)
+		--i;
+	      else
+		for (i = 32; i < 64; i++)
+		  if (!((val >>= 1) & 1))
+		    break;
+	    }
 #endif
+	/* i = index of last set bit from right
+	   mask begins at 63 - i from left */
+	  if (i > 63)
+	    output_operand_lossage ("%%S computed all 1's mask");
 	  fprintf (file, "%d", 63 - i);
 	  return;
 	}
       else	/* Clear Right */
 	{
-	  val = (GET_CODE (x) == CONST_INT ? INTVAL (x) : CONST_DOUBLE_HIGH (x));
+	  for (i = 0; i < HOST_BITS_PER_WIDE_INT; i++)
+	    if ((val >>= 1) & 1)
+	      break;
 
-	  if (val == (-1 << (HOST_BITS_PER_WIDE_INT-1)))
-	    i = 0;
-	  else
-	    for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
-	      if ((val <<= 1) < 0)
-		break;
-
-#if HOST_BITS_PER_INT == 32
+#if HOST_BITS_PER_WIDE_INT == 32
 	if (GET_CODE (x) == CONST_DOUBLE && i == 32)
 	  {
-	    val = CONST_DOUBLE_LOW (x);
+	    val = CONST_DOUBLE_HIGH (x);
 
-	    if (val == 0)
+	    if (val == (HOST_WIDE_INT) -1)
 	      --i;
-	    else if (val == (-1 << (HOST_BITS_PER_WIDE_INT-1)))
-	      ;
 	    else
-	      for (i = 33; i < 64; i++)
-		if ((val <<= 1) < 0)
+	      for (i = 32; i < 64; i++)
+		if ((val >>= 1) & 1)
 		  break;
 	  }
 #endif
-	  fprintf (file, "%d", i);
+	/* i = index of last clear bit from right
+	   mask ends at 62 - i from left */
+	  if (i > 62)
+	    output_operand_lossage ("%%S computed all 0's mask");
+	  fprintf (file, "%d", 62 - i);
 	  return;
 	}
 
