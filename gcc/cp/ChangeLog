@@ -1,3 +1,27 @@
+2003-07-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (begin_compound_stmt): No scope arg is a bool.
+	(finish_compound_stmt): Remove no scope arg.
+	* decl.c (register_dtor_fn): Adjust begin_compound_stmt and
+	end_compound_stmt calls.
+	(expand_static_init, begin_destructor_body, begin_function_body,
+	finish_function_body): Likewise.
+	* decl2.c (start_objects, finish_objects,
+	start_static_storage_duration_function,
+	finish_static_storage_duration_function): Likewise.
+	* init.c (begin_init_stmts, finish_init_stmts,
+	construct_virtual_base, build_vec_init): Likewise.
+	* method.c (do_build_assign_ref, synthesize_method): Likewise.
+	* parser.c (cp_parser_compound_statement,
+	cp_parser_implicitly_scoped_statement,
+	cp_parser_already_scoped_statement): Likewise.
+	* pt.c (tsubst_expr): Likewise.
+	* semantics.c (begin_compound_stmt): No scope arg is a bool.
+	(finish_compound_stmt): Remove no scope arg.
+
+	* error.c (dump_expr) <COMPOUND_EXPR case>: A compound expr is
+	always dyadic.
+
 2003-07-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (standard_conversion): Tweak handling of

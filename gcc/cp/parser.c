@@ -5280,11 +5280,11 @@ cp_parser_compound_statement (cp_parser *parser)
   if (!cp_parser_require (parser, CPP_OPEN_BRACE, "`{'"))
     return error_mark_node;
   /* Begin the compound-statement.  */
-  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+  compound_stmt = begin_compound_stmt (/*has_no_scope=*/false);
   /* Parse an (optional) statement-seq.  */
   cp_parser_statement_seq_opt (parser);
   /* Finish the compound-statement.  */
-  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
+  finish_compound_stmt (compound_stmt);
   /* Consume the `}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, "`}'");
 
@@ -5762,11 +5762,11 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser)
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
     {
       /* Create a compound-statement.  */
-      statement = begin_compound_stmt (/*has_no_scope=*/0);
+      statement = begin_compound_stmt (/*has_no_scope=*/false);
       /* Parse the dependent-statement.  */
       cp_parser_statement (parser);
       /* Finish the dummy compound-statement.  */
-      finish_compound_stmt (/*has_no_scope=*/0, statement);
+      finish_compound_stmt (statement);
     }
   /* Otherwise, we simply parse the statement directly.  */
   else
@@ -5790,11 +5790,11 @@ cp_parser_already_scoped_statement (cp_parser* parser)
       tree statement;
 
       /* Create a compound-statement.  */
-      statement = begin_compound_stmt (/*has_no_scope=*/1);
+      statement = begin_compound_stmt (/*has_no_scope=*/true);
       /* Parse the dependent-statement.  */
       cp_parser_statement (parser);
       /* Finish the dummy compound-statement.  */
-      finish_compound_stmt (/*has_no_scope=*/1, statement);
+      finish_compound_stmt (statement);
     }
   /* Otherwise, we simply parse the statement directly.  */
   else

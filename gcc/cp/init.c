@@ -72,7 +72,7 @@ begin_init_stmts (tree *stmt_expr_p, tree *compound_stmt_p)
   bool is_global = !building_stmt_tree ();
   
   *stmt_expr_p = begin_stmt_expr ();
-  *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
+  *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/true);
 
   return is_global;
 }
@@ -83,7 +83,7 @@ begin_init_stmts (tree *stmt_expr_p, tree *compound_stmt_p)
 static tree
 finish_init_stmts (bool is_global, tree stmt_expr, tree compound_stmt)
 {  
-  finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
+  finish_compound_stmt (compound_stmt);
   
   stmt_expr = finish_stmt_expr (stmt_expr);
   STMT_EXPR_NO_SCOPE (stmt_expr) = true;
@@ -842,7 +842,7 @@ construct_virtual_base (tree vbase, tree arguments)
   flag = TREE_CHAIN (DECL_ARGUMENTS (current_function_decl));
   inner_if_stmt = begin_if_stmt ();
   finish_if_stmt_cond (flag, inner_if_stmt);
-  compound_stmt = begin_compound_stmt (/*has_no_scope=*/1);
+  compound_stmt = begin_compound_stmt (/*has_no_scope=*/true);
 
   /* Compute the location of the virtual base.  If we're
      constructing virtual bases, then we must be the most derived
@@ -852,7 +852,7 @@ construct_virtual_base (tree vbase, tree arguments)
 
   expand_aggr_init_1 (vbase, current_class_ref, exp, arguments, 
 		      LOOKUP_COMPLAIN);
-  finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
+  finish_compound_stmt (compound_stmt);
   finish_then_clause (inner_if_stmt);
   finish_if_stmt ();
 
@@ -2485,7 +2485,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
       && from_array != 2)
     {
       try_block = begin_try_block ();
-      try_body = begin_compound_stmt (/*has_no_scope=*/1);
+      try_body = begin_compound_stmt (/*has_no_scope=*/true);
     }
 
   if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR)
@@ -2564,7 +2564,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
 		       for_stmt);
 
       /* Otherwise, loop through the elements.  */
-      for_body = begin_compound_stmt (/*has_no_scope=*/1);
+      for_body = begin_compound_stmt (/*has_no_scope=*/true);
 
       if (from_array)
 	{
@@ -2605,7 +2605,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
       if (base2)
 	finish_expr_stmt (build_unary_op (PREINCREMENT_EXPR, base2, 0));
 
-      finish_compound_stmt (/*has_no_scope=*/1, for_body);
+      finish_compound_stmt (for_body);
       finish_for_stmt (for_stmt);
     }
 
@@ -2625,7 +2625,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
 	  type = strip_array_types (type);
 	}
 
-      finish_compound_stmt (/*has_no_scope=*/1, try_body);
+      finish_compound_stmt (try_body);
       finish_cleanup_try_block (try_block);
       e = build_vec_delete_1 (rval, m,
 			      type,

@@ -7732,7 +7732,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (COMPOUND_STMT_BODY_BLOCK (t))
 	  finish_function_body (stmt);
 	else
-	  finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), stmt);
+	  finish_compound_stmt (stmt);
       }
       break;
 
