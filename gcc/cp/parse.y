@@ -441,9 +441,9 @@ program:
 extdefs:
 		{ $<ttype>$ = NULL_TREE; }
 	  lang_extdef
-		{ $<ttype>$ = NULL_TREE; }
+		{ $<ttype>$ = NULL_TREE; ggc_collect (); }
 	| extdefs lang_extdef
-		{ $<ttype>$ = NULL_TREE; }
+		{ $<ttype>$ = NULL_TREE; ggc_collect (); }
 	;
 
 extdefs_opt:
