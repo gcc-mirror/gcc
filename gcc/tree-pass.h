@@ -125,6 +125,7 @@ extern struct tree_opt_pass pass_tail_calls;
 extern struct tree_opt_pass pass_loop;
 extern struct tree_opt_pass pass_loop_init;
 extern struct tree_opt_pass pass_lim;
+extern struct tree_opt_pass pass_unswitch;
 extern struct tree_opt_pass pass_iv_canon;
 extern struct tree_opt_pass pass_if_conversion;
 extern struct tree_opt_pass pass_vectorize;

@@ -1,3 +1,7 @@
+2004-09-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcc.dg/tree-ssa/loop-6.c: New test.
+
 2004-09-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/17620
