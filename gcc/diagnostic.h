@@ -23,7 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_DIAGNOSTIC_H
 
 #include "obstack.h"
-#include "location.h"
+#include "input.h"
 
 /* The type of a text to be formatted according a format specification
    along with a list of things.  */

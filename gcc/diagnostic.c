@@ -1383,11 +1383,11 @@ diagnostic_report_current_module (context)
 	if (p == input_file_stack->next)
 	  output_verbatim (&context->buffer,
                            "In file included from %s:%d",
-			   p->name, p->line);
+			   p->location.file, p->location.line);
 	else
 	  output_verbatim (&context->buffer,
                            ",\n                 from %s:%d",
-			   p->name, p->line);
+			   p->location.file, p->location.line);
       output_verbatim (&context->buffer, ":\n");
       diagnostic_set_last_module (context);
     }

@@ -24,7 +24,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "machmode.h"
 #include "version.h"
-#include "location.h"
+#include "input.h"
 
 /* Codes of tree nodes */
 
@@ -2777,13 +2777,6 @@ extern const char *function_cannot_inline_p 	PARAMS ((tree));
 extern int real_zerop PARAMS ((tree));
 
 /* Declare commonly used variables for tree structure.  */
-
-/* Points to the name of the input file from which the current input
-   being parsed originally came (before it went into cpp).  */
-extern const char *input_filename;
-
-/* Current line number in input file.  */
-extern int input_line;
 
 /* Nonzero means lvalues are limited to those valid in pedantic ANSI C.
    Zero means allow extended lvalues.  */

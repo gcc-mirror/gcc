@@ -1,3 +1,11 @@
+2003-05-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lex.h (input_lineno): Remove declaration.
+	* parse-scan.y: #include input.h.
+	(input_filename): Remove declaration.
+	(input_location): Add definition.
+	(input_line): Remove definition.
+
 2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lex.h (lineno): Rename to ...
