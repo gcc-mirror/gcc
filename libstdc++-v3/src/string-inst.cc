@@ -76,6 +76,11 @@ namespace std
     C*
     S::_S_construct(const C*, const C*, const allocator<C>&,
 		    forward_iterator_tag);
+
+  // Used in str::find.
+  template
+    const C*
+    search(const C*, const C*, const C*, const C*, bool(*)(const C&, const C&));
 } // namespace std
 
 namespace __gnu_cxx

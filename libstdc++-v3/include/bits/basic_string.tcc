@@ -685,12 +685,17 @@ namespace std
     find(const _CharT* __s, size_type __pos, size_type __n) const
     {
       __glibcxx_requires_string_len(__s, __n);
+      size_type __ret = npos;
       const size_type __size = this->size();
-      const _CharT* __data = _M_data();
-      for (; __pos + __n <= __size; ++__pos)
-	if (traits_type::compare(__data + __pos, __s, __n) == 0)
-	  return __pos;
-      return npos;
+      if (__pos + __n <= __size)
+	{
+	  const _CharT* __data = _M_data();
+	  const _CharT* __p = std::search(__data + __pos, __data + __size,
+					  __s, __s + __n, traits_type::eq);
+	  if (__p != __data + __size || __n == 0)
+	    __ret = __p - __data;
+	}
+      return __ret;
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -698,8 +703,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find(_CharT __c, size_type __pos) const
     {
-      const size_type __size = this->size();
       size_type __ret = npos;
+      const size_type __size = this->size();
       if (__pos < __size)
 	{
 	  const _CharT* __data = _M_data();

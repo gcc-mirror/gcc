@@ -1,3 +1,20 @@
+2004-06-12  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/algorithm: Trivial formatting fixes.
+	* include/ext/functional: Likewise.
+	* include/ext/hash_fun.h: Likewise.
+	* include/ext/iterator: Likewise.
+
+2004-06-12  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (find(const _CharT*, size_type,
+	size_type)): Reimplement using std::search.
+	* src/string-inst.cc: Instantiate std::search for char/wchar_t.
+
+2004-06-12  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* testsuite/performance/21_strings/string_find.cc: New.
+
 2004-06-10  Aaron W. LaFramboise  <aaronraolete36@aaronwl.com>
 
 	* include/bits/istream.tcc (istream::ignore): Fix for -Wuninitialized.
