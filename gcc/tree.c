@@ -488,7 +488,7 @@ build_real (tree type, REAL_VALUE_TYPE d)
    and whose value is the integer value of the INTEGER_CST node I.  */
 
 REAL_VALUE_TYPE
-real_value_from_int_cst (tree type ATTRIBUTE_UNUSED, tree i)
+real_value_from_int_cst (tree type, tree i)
 {
   REAL_VALUE_TYPE d;
 
@@ -496,12 +496,9 @@ real_value_from_int_cst (tree type ATTRIBUTE_UNUSED, tree i)
      bitwise comparisons to see if two values are the same.  */
   memset (&d, 0, sizeof d);
 
-  if (! TREE_UNSIGNED (TREE_TYPE (i)))
-    REAL_VALUE_FROM_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i),
-			 TYPE_MODE (type));
-  else
-    REAL_VALUE_FROM_UNSIGNED_INT (d, TREE_INT_CST_LOW (i),
-				  TREE_INT_CST_HIGH (i), TYPE_MODE (type));
+  real_from_integer (&d, type ? TYPE_MODE (type) : VOIDmode,
+		     TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i),
+		     TREE_UNSIGNED (TREE_TYPE (i)));
   return d;
 }
 
