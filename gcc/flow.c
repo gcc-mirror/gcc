@@ -287,6 +287,7 @@ static void commit_one_edge_insertion	PROTO((edge));
 
 static void delete_unreachable_blocks	PROTO((void));
 static void delete_eh_regions		PROTO((void));
+static int can_delete_note_p		PROTO((rtx));
 static void delete_insn_chain		PROTO((rtx, rtx));
 static int delete_block			PROTO((basic_block));
 static void expunge_block		PROTO((basic_block));
@@ -779,6 +780,10 @@ create_basic_block (index, head, end, bb_note)
 	}
       NOTE_BASIC_BLOCK (bb_note) = bb;
     }
+
+  /* Always include the bb note in the block.  */
+  if (NEXT_INSN (end) == bb_note)
+    end = bb_note;
 
   bb->head = head;
   bb->end = end;
@@ -1600,7 +1605,7 @@ delete_eh_regions ()
    so that we may simply delete them.  */
 
 static int
-delete_note_p (note)
+can_delete_note_p (note)
      rtx note;
 {
   return (NOTE_LINE_NUMBER (note) == NOTE_INSN_DELETED
@@ -1623,7 +1628,11 @@ delete_insn_chain (start, finish)
   while (1)
     {
       next = NEXT_INSN (start);
-      if (GET_CODE (start) != NOTE || delete_note_p (start))
+      if (GET_CODE (start) == NOTE && !can_delete_note_p (start))
+	;
+      else if (GET_CODE (start) == CODE_LABEL && !can_delete_label_p (start))
+	;
+      else
 	next = flow_delete_insn (start);
 
       if (start == finish)
@@ -1950,26 +1959,19 @@ tidy_fallthru_edge (e, b, c)
      edge e;
      basic_block b, c;
 {
-  rtx q, h;
+  rtx q;
 
   /* ??? In a late-running flow pass, other folks may have deleted basic
      blocks by nopping out blocks, leaving multiple BARRIERs between here
      and the target label. They ought to be chastized and fixed.
 
-     In the mean time, search for the last barrier in a sequence of
-     barriers and notes.  */
+     We can also wind up with a sequence of undeletable labels between
+     one block and the next.
 
-  q = NEXT_INSN (b->end);
-  if (q && GET_CODE (q) == NOTE)
-    q = next_nonnote_insn (q);
-  while (q && GET_CODE (q) == BARRIER)
-    q = next_nonnote_insn (q);
+     So search through a sequence of barriers, labels, and notes for
+     the head of block C and assert that we really do fall through.  */
 
-  /* Assert that we now actually do fall through.  */
-  h = c->head;
-  if (GET_CODE (h) == NOTE)
-    h = next_nonnote_insn (h);
-  if (q != h)
+  if (next_real_insn (b->end) != next_real_insn (PREV_INSN (c->head)))
     return;
 
   /* Remove what will soon cease being the jump insn from the source block.
