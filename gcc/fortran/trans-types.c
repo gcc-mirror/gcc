@@ -26,14 +26,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include <stdio.h>
+#include "tm.h"
+#include "target.h"
 #include "ggc.h"
 #include "toplev.h"
-#include <assert.h>
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-types.h"
 #include "trans-const.h"
+#include "real.h"
+#include <assert.h>
 
 
 #if (GFC_MAX_DIMENSIONS < 10)
@@ -58,6 +60,299 @@ tree pchar_type_node;
 static GTY(()) tree gfc_desc_dim_type = NULL;
 
 static GTY(()) tree gfc_max_array_element_size;
+
+/* Arrays for all integral and real kinds.  We'll fill this in at runtime
+   after the target has a chance to process command-line options.  */
+
+#define MAX_INT_KINDS 5
+gfc_integer_info gfc_integer_kinds[MAX_INT_KINDS + 1];
+gfc_logical_info gfc_logical_kinds[MAX_INT_KINDS + 1];
+
+#define MAX_REAL_KINDS 4
+gfc_real_info gfc_real_kinds[MAX_REAL_KINDS + 1];
+
+/* The integer kind to use for array indices.  This will be set to the
+   proper value based on target information from the backend.  */
+
+int gfc_index_integer_kind;
+
+/* The default kinds of the various types.  */
+
+static int gfc_default_integer_kind_1;
+static int gfc_default_real_kind_1;
+static int gfc_default_double_kind_1;
+static int gfc_default_character_kind_1;
+static int gfc_default_logical_kind_1;
+static int gfc_default_complex_kind_1;
+
+/* Query the target to determine which machine modes are available for
+   computation.  Choose KIND numbers for them.  */
+
+void
+gfc_init_kinds (void)
+{
+  enum machine_mode mode;
+  int i_index, r_index;
+  bool saw_i4 = false, saw_i8 = false;
+  bool saw_r4 = false, saw_r8 = false, saw_r16 = false;
+
+  for (i_index = 0, mode = MIN_MODE_INT; mode <= MAX_MODE_INT; mode++)
+    {
+      int kind, bitsize;
+
+      if (!targetm.scalar_mode_supported_p (mode))
+	continue;
+
+      if (i_index == MAX_INT_KINDS)
+	abort ();
+
+      /* Let the kind equal the bit size divided by 8.  This insulates the
+	 programmer from the underlying byte size.  */
+      bitsize = GET_MODE_BITSIZE (mode);
+      kind = bitsize / 8;
+
+      if (kind == 4)
+	saw_i4 = true;
+      if (kind == 8)
+	saw_i8 = true;
+
+      gfc_integer_kinds[i_index].kind = kind;
+      gfc_integer_kinds[i_index].radix = 2;
+      gfc_integer_kinds[i_index].digits = bitsize - 1;
+      gfc_integer_kinds[i_index].bit_size = bitsize;
+
+      gfc_logical_kinds[i_index].kind = kind;
+      gfc_logical_kinds[i_index].bit_size = bitsize;
+
+      i_index += 1;
+    }
+
+  for (r_index = 0, mode = MIN_MODE_FLOAT; mode <= MAX_MODE_FLOAT; mode++)
+    {
+      const struct real_format *fmt = REAL_MODE_FORMAT (mode);
+      int kind;
+
+      if (fmt == NULL)
+	continue;
+      if (!targetm.scalar_mode_supported_p (mode))
+	continue;
+
+      /* Let the kind equal the precision divided by 8, rounding up.  Again,
+	 this insulates the programmer from the underlying byte size.
+
+	 Also, it effectively deals with IEEE extended formats.  There, the
+	 total size of the type may equal 16, but it's got 6 bytes of padding
+	 and the increased size can get in the way of a real IEEE quad format
+	 which may also be supported by the target.
+
+	 We round up so as to handle IA-64 __floatreg (RFmode), which is an
+	 82 bit type.  Not to be confused with __float80 (XFmode), which is
+	 an 80 bit type also supported by IA-64.  So XFmode should come out
+	 to be kind=10, and RFmode should come out to be kind=11.  Egads.  */
+
+      kind = (GET_MODE_PRECISION (mode) + 7) / 8;
+
+      if (kind == 4)
+	saw_r4 = true;
+      if (kind == 8)
+	saw_r8 = true;
+      if (kind == 16)
+	saw_r16 = true;
+
+      /* Careful we don't stumble a wierd internal mode.  */
+      if (r_index > 0 && gfc_real_kinds[r_index-1].kind == kind)
+	abort ();
+      /* Or have too many modes for the allocated space.  */
+      if (r_index == MAX_REAL_KINDS)
+	abort ();
+
+      gfc_real_kinds[r_index].kind = kind;
+      gfc_real_kinds[r_index].radix = fmt->b;
+      gfc_real_kinds[r_index].digits = fmt->p;
+      gfc_real_kinds[r_index].min_exponent = fmt->emin;
+      gfc_real_kinds[r_index].max_exponent = fmt->emax;
+      r_index += 1;
+    }
+
+  /* Choose the default integer kind.  We choose 4 unless the user
+     directs us otherwise.  */
+  if (gfc_option.i8)
+    {
+      if (!saw_i8)
+	fatal_error ("integer kind=8 not available for -i8 option");
+      gfc_default_integer_kind_1 = 8;
+    }
+  else if (saw_i4)
+    gfc_default_integer_kind_1 = 4;
+  else
+    gfc_default_integer_kind_1 = gfc_integer_kinds[i_index - 1].kind;
+
+  /* Choose the default real kind.  Again, we choose 4 when possible.  */
+  if (gfc_option.r8)
+    {
+      if (!saw_r8)
+	fatal_error ("real kind=8 not available for -r8 option");
+      gfc_default_real_kind_1 = 8;
+    }
+  else if (saw_r4)
+    gfc_default_real_kind_1 = 4;
+  else
+    gfc_default_real_kind_1 = gfc_real_kinds[0].kind;
+
+  /* Choose the default double kind.  If -r8 is specified, we use kind=16,
+     if it's available, otherwise we do not change anything.  */
+  if (gfc_option.r8 && saw_r16)
+    gfc_default_double_kind_1 = 16;
+  else if (saw_r4 && saw_r8)
+    gfc_default_double_kind_1 = 8;
+  else
+    {
+      /* F95 14.6.3.1: A nonpointer scalar object of type double precision
+	 real ... occupies two contiguous numeric storage units.
+
+	 Therefore we must be supplied a kind twice as large as we chose
+	 for single precision.  There are loopholes, in that double
+	 precision must *occupy* two storage units, though it doesn't have
+	 to *use* two storage units.  Which means that you can make this
+	 kind artificially wide by padding it.  But at present there are
+	 no GCC targets for which a two-word type does not exist, so we
+	 just let gfc_validate_kind abort and tell us if something breaks.  */
+
+      gfc_default_double_kind_1
+	= gfc_validate_kind (BT_REAL, gfc_default_real_kind_1 * 2, false);
+    }
+
+  /* The default logical kind is constrained to be the same as the
+     default integer kind.  Similarly with complex and real.  */
+  gfc_default_logical_kind_1 = gfc_default_integer_kind_1;
+  gfc_default_complex_kind_1 = gfc_default_real_kind_1;
+
+  /* Choose the smallest integer kind for our default character.  */
+  gfc_default_character_kind_1 = gfc_integer_kinds[0].kind;
+
+  /* Choose the integer kind the same size as "void*" for our index kind.  */
+  gfc_index_integer_kind = POINTER_SIZE / 8;
+}
+
+/* ??? These functions should go away in favor of direct access to
+   the relevant variables.  */
+
+int
+gfc_default_integer_kind (void)
+{
+  return gfc_default_integer_kind_1;
+}
+
+int
+gfc_default_real_kind (void)
+{
+  return gfc_default_real_kind_1;
+}
+
+int
+gfc_default_double_kind (void)
+{
+  return gfc_default_double_kind_1;
+}
+
+int
+gfc_default_character_kind (void)
+{
+  return gfc_default_character_kind_1;
+}
+
+int
+gfc_default_logical_kind (void)
+{
+  return gfc_default_logical_kind_1;
+}
+
+int
+gfc_default_complex_kind (void)
+{
+  return gfc_default_complex_kind_1;
+}
+
+/* Make sure that a valid kind is present.  Returns an index into the
+   associated kinds array, -1 if the kind is not present.  */
+
+static int
+validate_integer (int kind)
+{
+  int i;
+
+  for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
+    if (gfc_integer_kinds[i].kind == kind)
+      return i;
+
+  return -1;
+}
+
+static int
+validate_real (int kind)
+{
+  int i;
+
+  for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+    if (gfc_real_kinds[i].kind == kind)
+      return i;
+
+  return -1;
+}
+
+static int
+validate_logical (int kind)
+{
+  int i;
+
+  for (i = 0; gfc_logical_kinds[i].kind; i++)
+    if (gfc_logical_kinds[i].kind == kind)
+      return i;
+
+  return -1;
+}
+
+static int
+validate_character (int kind)
+{
+  return kind == gfc_default_character_kind_1 ? 0 : -1;
+}
+
+/* Validate a kind given a basic type.  The return value is the same
+   for the child functions, with -1 indicating nonexistence of the
+   type.  If MAY_FAIL is false, then -1 is never returned, and we ICE.  */
+
+int
+gfc_validate_kind (bt type, int kind, bool may_fail)
+{
+  int rc;
+
+  switch (type)
+    {
+    case BT_REAL:		/* Fall through */
+    case BT_COMPLEX:
+      rc = validate_real (kind);
+      break;
+    case BT_INTEGER:
+      rc = validate_integer (kind);
+      break;
+    case BT_LOGICAL:
+      rc = validate_logical (kind);
+      break;
+    case BT_CHARACTER:
+      rc = validate_character (kind);
+      break;
+
+    default:
+      gfc_internal_error ("gfc_validate_kind(): Got bad type");
+    }
+
+  if (rc < 0 && !may_fail)
+    gfc_internal_error ("gfc_validate_kind(): Got bad kind");
+
+  return rc;
+}
+
 
 /* Create the backend type nodes. We map them to their
    equivalent C type, at least for now.  We also give
@@ -148,7 +443,6 @@ gfc_init_types (void)
   ppvoid_type_node = build_pointer_type (pvoid_type_node);
   pchar_type_node = build_pointer_type (gfc_character1_type_node);
 
-  gfc_index_integer_kind = TYPE_PRECISION (long_unsigned_type_node) / 8;
   gfc_array_index_type = gfc_get_int_type (gfc_index_integer_kind);
 
   /* The maximum array element size that can be handled is determined

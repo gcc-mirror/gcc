@@ -242,9 +242,13 @@ Conform to the specified standard.  Allowed values for @var{std} are
 @item -i8
 @item -r8
 @item -d8
-The @option{-i8} and @option{-j8} options set the default INTEGER and REAL
-kinds to KIND=8.  The @option{-d8} option is equivalent to specifying
-both @option{-i8} and @option{-r8}.
+The @option{-i8} and @option{-r8} options set the default @code{INTEGER}
+and @code{REAL} kinds to @code{KIND=8}.  The @option{-d8} option is
+equivalent to specifying both @option{-i8} and @option{-r8}.
+
+When @option{-r8} is specified, the @code{DOUBLE PRECISION} kind is set
+to @code{KIND=16} if the target supports a 16 byte floating point format.
+If no such format exists, the @code{DOUBLE PRECISION} kind is unchanged.
 
 @end table
 

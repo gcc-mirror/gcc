@@ -105,6 +105,7 @@ extern GTY(()) tree pchar_type_node;
 void gfc_convert_function_code (gfc_namespace *);
 
 /* trans-types.c */
+void gfc_init_kinds (void);
 void gfc_init_types (void);
 
 tree gfc_get_int_type (int);
