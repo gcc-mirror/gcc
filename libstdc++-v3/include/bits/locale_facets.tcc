@@ -2079,7 +2079,7 @@ namespace std
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const char_type*  __dates[2];
       __tp._M_date_formats(__dates);
-      __beg = _M_extract_via_format(__beg, __end, __io, __err,
+      __beg = _M_extract_via_format(__beg, __end, __io, __err, 
 				    __tm, __dates[0]);
       if (__beg == __end)
 	__err |= ios_base::eofbit;
