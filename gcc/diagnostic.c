@@ -279,23 +279,6 @@ diagnostic_action_after_output (diagnostic_context *context,
     }
 }
 
-/* Called when the start of a function definition is parsed,
-   this function prints on stderr the name of the function.  */
-void
-announce_function (tree decl)
-{
-  if (!quiet_flag)
-    {
-      if (rtl_dump_and_exit)
-	verbatim ("%s ", IDENTIFIER_POINTER (DECL_NAME (decl)));
-      else
-	verbatim (" %s", (*lang_hooks.decl_printable_name) (decl, 2));
-      fflush (stderr);
-      global_dc->printer->need_newline = true;
-      diagnostic_set_last_function (global_dc);
-    }
-}
-
 /* The default function to print out name of current function that caused
    an error.  */
 void

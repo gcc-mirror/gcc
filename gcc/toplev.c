@@ -1205,6 +1205,23 @@ get_src_pwd (void)
    return src_pwd;
 }
 
+/* Called when the start of a function definition is parsed,
+   this function prints on stderr the name of the function.  */
+void
+announce_function (tree decl)
+{
+  if (!quiet_flag)
+    {
+      if (rtl_dump_and_exit)
+	verbatim ("%s ", IDENTIFIER_POINTER (DECL_NAME (decl)));
+      else
+	verbatim (" %s", (*lang_hooks.decl_printable_name) (decl, 2));
+      fflush (stderr);
+      pp_needs_newline (global_dc->printer) = true;
+      diagnostic_set_last_function (global_dc);
+    }
+}
+
 /* Set up a default flag_random_seed and local_tick, unless the user
    already specified one.  */
 
