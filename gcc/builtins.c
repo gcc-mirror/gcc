@@ -90,6 +90,7 @@ static int apply_result_size		PARAMS ((void));
 #if defined (HAVE_untyped_call) || defined (HAVE_untyped_return)
 static rtx result_vector		PARAMS ((int, rtx));
 #endif
+static rtx expand_builtin_setjmp	PARAMS ((tree, rtx));
 static rtx expand_builtin_apply_args	PARAMS ((void));
 static rtx expand_builtin_apply_args_1	PARAMS ((void));
 static rtx expand_builtin_apply		PARAMS ((rtx, rtx, rtx));
@@ -453,29 +454,18 @@ expand_builtin_return_addr (fndecl_code, count, tem)
 /* Alias set used for setjmp buffer.  */
 static HOST_WIDE_INT setjmp_alias_set = -1;
 
-/* __builtin_setjmp is passed a pointer to an array of five words (not
-   all will be used on all machines).  It operates similarly to the C
-   library function of the same name, but is more efficient.  Much of
-   the code below (and for longjmp) is copied from the handling of
-   non-local gotos.
+/* Construct the leading half of a __builtin_setjmp call.  Control will
+   return to RECEIVER_LABEL.  This is used directly by sjlj exception
+   handling code.  */
 
-   NOTE: This is intended for use by GNAT and the exception handling
-   scheme in the compiler and will only work in the method used by
-   them.  */
-
-rtx
-expand_builtin_setjmp (buf_addr, target, first_label, next_label)
+void
+expand_builtin_setjmp_setup (buf_addr, receiver_label)
      rtx buf_addr;
-     rtx target;
-     rtx first_label, next_label;
+     rtx receiver_label;
 {
-  rtx lab1 = gen_label_rtx ();
   enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
-  enum machine_mode value_mode;
   rtx stack_save;
   rtx mem;
-
-  value_mode = TYPE_MODE (integer_type_node);
 
   if (setjmp_alias_set == -1)
     setjmp_alias_set = new_alias_set ();
@@ -486,15 +476,11 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
 
   buf_addr = force_reg (Pmode, force_operand (buf_addr, NULL_RTX));
 
-  if (target == 0 || GET_CODE (target) != REG
-      || REGNO (target) < FIRST_PSEUDO_REGISTER)
-    target = gen_reg_rtx (value_mode);
-
   emit_queue ();
 
-  /* We store the frame pointer and the address of lab1 in the buffer
-     and use the rest of it for the stack save area, which is
-     machine-dependent.  */
+  /* We store the frame pointer and the address of receiver_label in
+     the buffer and use the rest of it for the stack save area, which
+     is machine-dependent.  */
 
 #ifndef BUILTIN_SETJMP_FRAME_VALUE
 #define BUILTIN_SETJMP_FRAME_VALUE virtual_stack_vars_rtx
@@ -508,7 +494,7 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
   MEM_ALIAS_SET (mem) = setjmp_alias_set;
 
   emit_move_insn (validize_mem (mem),
-		  force_reg (Pmode, gen_rtx_LABEL_REF (Pmode, lab1)));
+		  force_reg (Pmode, gen_rtx_LABEL_REF (Pmode, receiver_label)));
 
   stack_save = gen_rtx_MEM (sa_mode,
 			    plus_constant (buf_addr,
@@ -522,21 +508,18 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
     emit_insn (gen_builtin_setjmp_setup (buf_addr));
 #endif
 
-  /* Set TARGET to zero and branch to the first-time-through label.  */
-  emit_move_insn (target, const0_rtx);
-  emit_jump_insn (gen_jump (first_label));
-  emit_barrier ();
-  emit_label (lab1);
-
-  /* Tell flow about the strange goings on.  Putting `lab1' on
-     `nonlocal_goto_handler_labels' to indicates that function
-     calls may traverse the arc back to this label.  */
-
-  current_function_has_nonlocal_label = 1;
+  /* Tell optimize_save_area_alloca that extra work is going to
+     need to go on during alloca.  */
   current_function_calls_setjmp = 1;
-  nonlocal_goto_handler_labels
-    = gen_rtx_EXPR_LIST (VOIDmode, lab1, nonlocal_goto_handler_labels);
+}
 
+/* Construct the trailing part of a __builtin_setjmp call.
+   This is used directly by sjlj exception handling code.  */
+
+void
+expand_builtin_setjmp_receiver (receiver_label)
+      rtx receiver_label ATTRIBUTE_UNUSED;
+{
   /* Clobber the FP when we get here, so we have to make sure it's
      marked as used by this function.  */
   emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
@@ -583,7 +566,7 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
 
 #ifdef HAVE_builtin_setjmp_receiver
   if (HAVE_builtin_setjmp_receiver)
-    emit_insn (gen_builtin_setjmp_receiver (lab1));
+    emit_insn (gen_builtin_setjmp_receiver (receiver_label));
   else
 #endif
 #ifdef HAVE_nonlocal_goto_receiver
@@ -591,14 +574,60 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
       emit_insn (gen_nonlocal_goto_receiver ());
     else
 #endif
-      {
-	; /* Nothing */
-      }
+      { /* Nothing */ }
+}
 
-  /* Set TARGET, and branch to the next-time-through label.  */
-  emit_move_insn (target, const1_rtx);
-  emit_jump_insn (gen_jump (next_label));
+/* __builtin_setjmp is passed a pointer to an array of five words (not
+   all will be used on all machines).  It operates similarly to the C
+   library function of the same name, but is more efficient.  Much of
+   the code below (and for longjmp) is copied from the handling of
+   non-local gotos.
+
+   NOTE: This is intended for use by GNAT and the exception handling
+   scheme in the compiler and will only work in the method used by
+   them.  */
+
+static rtx
+expand_builtin_setjmp (arglist, target)
+     tree arglist;
+     rtx target;
+{
+  rtx buf_addr, next_lab, cont_lab;
+
+  if (arglist == 0
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+    return NULL_RTX;
+
+  if (target == 0 || GET_CODE (target) != REG
+      || REGNO (target) < FIRST_PSEUDO_REGISTER)
+    target = gen_reg_rtx (TYPE_MODE (integer_type_node));
+
+  buf_addr = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
+
+  next_lab = gen_label_rtx ();
+  cont_lab = gen_label_rtx ();
+
+  expand_builtin_setjmp_setup (buf_addr, next_lab);
+
+  /* Set TARGET to zero and branch to the continue label.  */
+  emit_move_insn (target, const0_rtx);
+  emit_jump_insn (gen_jump (cont_lab));
   emit_barrier ();
+  emit_label (next_lab);
+
+  expand_builtin_setjmp_receiver (next_lab);
+
+  /* Set TARGET to one.  */
+  emit_move_insn (target, const1_rtx);
+  emit_label (cont_lab);
+
+  /* Tell flow about the strange goings on.  Putting `next_lab' on
+     `nonlocal_goto_handler_labels' to indicates that function
+     calls may traverse the arc back to this label.  */
+
+  current_function_has_nonlocal_label = 1;
+  nonlocal_goto_handler_labels
+    = gen_rtx_EXPR_LIST (VOIDmode, next_lab, nonlocal_goto_handler_labels);
 
   return target;
 }
@@ -3569,18 +3598,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 #endif
 
     case BUILT_IN_SETJMP:
-      if (arglist == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
-	break;
-      else
-	{
-	  rtx buf_addr = expand_expr (TREE_VALUE (arglist), subtarget,
-				      VOIDmode, 0);
-	  rtx lab = gen_label_rtx ();
-	  rtx ret = expand_builtin_setjmp (buf_addr, target, lab, lab);
-	  emit_label (lab);
-	  return ret;
-	}
+      target = expand_builtin_setjmp (arglist, target);
+      if (target)
+	return target;
+      break;
 
       /* __builtin_longjmp is passed a pointer to an array of five words.
 	 It's similar to the C library longjmp function but works with

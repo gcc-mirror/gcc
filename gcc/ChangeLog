@@ -1,3 +1,18 @@
+2000-12-03  Richard Henderson  <rth@redhat.com>
+
+	* bb-reorder.c (reorder_basic_blocks): Don't check for EH edges
+	unless exception handling is enabled, and if not using sjlj.
+
+	* builtins.c (expand_builtin_setjmp_setup): New.
+	(expand_builtin_setjmp_receiver): New.
+	(expand_builtin_setjmp): Split out _setup and _receiver functions.
+	Move argument parsing in from ...
+	(expand_builtin): ... here.
+	* except.c (receive_exception_label): Branch around receiver
+	unless new-style exceptions.  Call expand_builtin_setjmp_receiver.
+	(start_dynamic_handler): Call expand_builtin_setjmp_setup.
+	* expr.h: Update builtin setjmp decls.
+
 2000-12-03  Bruce Korb  <bkorb@gcc.org>
 
 	* fixinc/mkfixinc.sh(build machine): Sometimes, there is no canonical

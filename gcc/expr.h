@@ -924,7 +924,8 @@ extern rtx std_expand_builtin_va_arg PARAMS ((tree, tree));
 extern rtx expand_builtin_va_arg PARAMS ((tree, tree));
 #endif
 
-extern rtx expand_builtin_setjmp PARAMS ((rtx, rtx, rtx, rtx));
+extern void expand_builtin_setjmp_setup PARAMS ((rtx, rtx));
+extern void expand_builtin_setjmp_receiver PARAMS ((rtx));
 extern void expand_builtin_longjmp PARAMS ((rtx, rtx));
 extern rtx expand_builtin_saveregs PARAMS ((void));
 extern HOST_WIDE_INT get_varargs_alias_set PARAMS ((void));

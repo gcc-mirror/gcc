@@ -1346,14 +1346,16 @@ reorder_basic_blocks ()
   if (n_basic_blocks <= 1)
     return;
 
-  /* We do not currently handle correct re-placement of EH notes.  */
-  for (i = 0; i < n_basic_blocks; i++)
-    {
-      edge e;
-      for (e = BASIC_BLOCK (i)->succ; e ; e = e->succ_next)
-        if (e->flags & EDGE_EH)
-	  return;
-    }
+  /* We do not currently handle correct re-placement of EH notes.
+     But that does not matter unless we intend to use them.  */
+  if (flag_exceptions && ! exceptions_via_longjmp)
+    for (i = 0; i < n_basic_blocks; i++)
+      {
+	edge e;
+	for (e = BASIC_BLOCK (i)->succ; e ; e = e->succ_next)
+	  if (e->flags & EDGE_EH)
+	    return;
+      }
 
   for (i = 0; i < n_basic_blocks; i++)
     BASIC_BLOCK (i)->aux = xcalloc (1, sizeof (struct reorder_block_def));
