@@ -222,7 +222,7 @@ c*-convex-*)
 i[34567]86-*-*)
 	cpu_type=i386
 	;;
-hppa*-*-*)
+hppa*-*-* | parisc*-*-*)
 	cpu_type=pa
 	;;
 m68000-*-*)
@@ -640,12 +640,21 @@ h8300-*-rtems*)
 h8300-*-*)
 	float_format=i32
 	;;
-hppa*-*-linux*)
-	target_cpu_default="(MASK_PA_11 | MASK_GAS | MASK_JUMP_IN_DELAY)"
-	tm_file="${tm_file} pa/elf.h linux.h pa/pa-linux.h"
-	tmake_file="t-linux pa/t-linux"
-	extra_parts="crtbegin.o crtend.o"
-	xmake_file=
+hppa*64*-*-linux* | parisc*64*-*-linux*)
+	target_cpu_default="(MASK_PA_11 | MASK_PA_20)"
+	tm_file="pa/pa64-start.h ${tm_file} linux.h pa/pa-linux.h \
+		 pa/pa64-regs.h pa/pa-64.h pa/pa64-linux.h"
+	tmake_file=pa/t-linux64
+	xmake_file=x-linux
+	gas=yes gnu_ld=yes
+	;;
+hppa*-*-linux* | parisc*-*-linux*)
+	target_cpu_default="MASK_PA_11"
+	tm_file="${tm_file} linux.h pa/pa-linux.h \
+		 pa/pa32-regs.h pa/pa32-linux.h"
+	tmake_file=pa/t-linux
+	xmake_file=x-linux
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -694,10 +703,6 @@ hppa1.0-*-hpux7*)
 	tm_file="pa/pa-oldas.h ${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux7.h"
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/gas.h"
-	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
@@ -705,10 +710,8 @@ hppa1.0-*-hpux8.0[0-2]*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
-	if test x$gas = xyes
+	if test x$gas != xyes
 	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	else
 		tm_file="pa/pa-oldas.h ${tm_file}"
 	fi
 	install_headers_dir=install-headers-cpio
@@ -719,10 +722,8 @@ hppa1.1-*-hpux8.0[0-2]*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
-	if test x$gas = xyes
+	if test x$gas != xyes
 	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	else
 		tm_file="pa/pa-oldas.h ${tm_file}"
 	fi
 	install_headers_dir=install-headers-cpio
@@ -733,10 +734,6 @@ hppa1.1-*-hpux8*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
@@ -744,10 +741,6 @@ hppa1.0-*-hpux8*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
@@ -758,10 +751,6 @@ hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 	if test x$enable_threads = x; then
 	    enable_threads=$have_pthread_h
 	fi
@@ -779,10 +768,6 @@ hppa1.0-*-hpux10*)
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 	if test x$enable_threads = x; then
 	    enable_threads=$have_pthread_h
 	fi
@@ -803,10 +788,6 @@ hppa*64*-*-hpux11*)
 	tmake_file=pa/t-pa64
 	target_cpu_default="(MASK_PA_11|MASK_PA_20|MASK_GAS)"
 
-	if [ x$gas = xyes ]
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 #	if [ x$enable_threads = x ]; then
 #	    enable_threads=$have_pthread_h
 #	fi
@@ -824,10 +805,6 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 #	if test x$enable_threads = x; then
 #	    enable_threads=$have_pthread_h
 #	fi
@@ -843,10 +820,6 @@ hppa1.0-*-hpux11*)
 	float_format=i128
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 #	if test x$enable_threads = x; then
 #	    enable_threads=$have_pthread_h
 #	fi
@@ -862,10 +835,6 @@ hppa1.1-*-hpux* | hppa2*-*-hpux*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
@@ -873,10 +842,6 @@ hppa1.0-*-hpux*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
@@ -885,10 +850,6 @@ hppa1.1-*-hiux* | hppa2*-*-hiux*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
@@ -896,10 +857,6 @@ hppa1.0-*-hiux*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
 	xm_defines=USG
 	xmake_file=pa/x-pa-hpux
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} pa/pa-gas.h"
-	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
@@ -912,6 +869,7 @@ hppa*-*-mpeix*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-mpeix.h"
 	xmake_file=pa/x-pa-mpeix 
 	echo "You must use gas. Assuming it is already installed." 
+	gas=yes
 	install_headers_dir=install-headers-tar
 	use_collect2=yes 
 	;; 
@@ -3339,6 +3297,13 @@ arm*-*-*)
 			fi
 			;;
 	esac
+	;;
+
+hppa*-*-* | parisc*-*-*)
+	if test x$gas = xyes
+	then
+		target_cpu_default2="MASK_GAS|MASK_JUMP_IN_DELAY"
+	fi
 	;;
 
 mips*-*-ecoff* | mips*-*-elf*)
