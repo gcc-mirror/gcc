@@ -1,3 +1,8 @@
+2000-01-28  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* jump.c (jump_optimize_1): Delete an optimization that is also done
+	by merge_blocks in flow.
+
 2000-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* diagnostic.c (build_message_string, output_printf,
