@@ -47,15 +47,9 @@ case $machine in
         ;;
 
     alpha*-dec-*vms* | \
-    arm-semi-aout | \
-    armel-semi-aout | \
     arm-semi-aof | \
-    armel-semi-aof | \
     hppa1.1-*-osf* | \
-    hppa1.0-*-osf* | \
     hppa1.1-*-bsd* | \
-    hppa1.0-*-bsd* | \
-    hppa*-*-lites* | \
     i370-*-openedition | \
     i?86-moss-msdos* | \
     i?86-*-moss* | \
