@@ -1,3 +1,7 @@
+Wed Feb 19 14:22:42 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (cosxf2):  Fix conditional.
+
 2003-02-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (extendqisi2): Change to an expander.
