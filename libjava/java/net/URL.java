@@ -753,18 +753,21 @@ public final class URL implements Serializable
   {
     URLStreamHandler ph;
 
-    // See if a handler has been cached for this protocol.
-    if ((ph = (URLStreamHandler) ph_cache.get(protocol)) != null)
-      return ph;
+    // First, see if a protocol handler is in our cache.
+    if (cache_handlers)
+      {
+        if ((ph = (URLStreamHandler) ph_cache.get(protocol)) != null)
+          return ph;
+      }
 
     // If a non-default factory has been set, use it to find the protocol.
     if (factory != null)
       {
-	ph = factory.createURLStreamHandler(protocol);
+	ph = factory.createURLStreamHandler (protocol);
       }
     else if (protocol.equals ("core"))
       {
- 	ph = new gnu.gcj.protocol.core.Handler ();
+ 	ph = new gnu.gcj.protocol.core.Handler();
       }
     else if (protocol.equals ("file"))
       {
@@ -778,7 +781,7 @@ public final class URL implements Serializable
 	// fix this problem.  If other protocols are required in a
 	// statically linked application they will need to be handled in
 	// the same way as "file".
-	ph = new gnu.gcj.protocol.file.Handler ();
+	ph = new gnu.gcj.protocol.file.Handler();
       }
 
     // Non-default factory may have returned null or a factory wasn't set.
@@ -793,22 +796,30 @@ public final class URL implements Serializable
 	propVal = (propVal == null) ? "" : (propVal + "|");
 	propVal = propVal + "gnu.gcj.protocol|sun.net.www.protocol";
 
-	StringTokenizer pkgPrefix = new StringTokenizer(propVal, "|");
+	// Finally loop through our search path looking for a match.
+	StringTokenizer pkgPrefix = new StringTokenizer (ph_search_path, "|");
+        
 	do
-	  {
-	    String facName = pkgPrefix.nextToken() + "." + protocol +
-				".Handler";
-	    try
-	      {
-		ph = (URLStreamHandler) Class.forName(facName).newInstance();
-	      }
-	    catch (Exception e)
-	      {
-		// Can't instantiate; handler still null, go on to next element.
-	      }
-	  } while ((ph == null ||
-		    ! (ph instanceof URLStreamHandler)) &&
-		   pkgPrefix.hasMoreTokens());
+          {
+            String clsName = pkgPrefix.nextToken() + "." + protocol + ".Handler";
+         
+            try
+              {
+                Object obj = Class.forName (clsName).newInstance();
+	    
+                if (!(obj instanceof URLStreamHandler))
+                  continue;
+                else
+                  ph = (URLStreamHandler) obj;
+              }
+            catch (Exception e)
+              {
+                // Can't instantiate; handler still null, go on to next element.
+              }
+          }
+	while ((ph == null ||
+		!(ph instanceof URLStreamHandler))
+               && pkgPrefix.hasMoreTokens());
       }
 
     // Update the hashtable with the new protocol handler.
