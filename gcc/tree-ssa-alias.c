@@ -691,7 +691,10 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 		     that pointer OP will be dereferenced in a store
 		     operation inside the called function.  */
 		  if (get_call_expr_in (stmt))
-		    bitmap_set_bit (ai->dereferenced_ptrs_store, v_ann->uid);
+		    {
+		      bitmap_set_bit (ai->dereferenced_ptrs_store, v_ann->uid);
+		      pi->is_dereferenced = 1;
+		    }
 		}
 	    }
 
@@ -1863,35 +1866,32 @@ static void
 add_pointed_to_var (struct alias_info *ai, tree ptr, tree value)
 {
   struct ptr_info_def *pi = get_ptr_info (ptr);
+  tree pt_var;
+  size_t uid;
 
-  if (TREE_CODE (value) == ADDR_EXPR)
+#if defined ENABLE_CHECKING
+  if (TREE_CODE (value) != ADDR_EXPR)
+    abort ();
+#endif
+
+  pt_var = TREE_OPERAND (value, 0);
+  if (TREE_CODE_CLASS (TREE_CODE (pt_var)) == 'r')
+    pt_var = get_base_address (pt_var);
+
+  if (pt_var && SSA_VAR_P (pt_var))
     {
-      tree pt_var;
-      size_t uid;
+      uid = var_ann (pt_var)->uid;
+      bitmap_set_bit (ai->addresses_needed, uid);
 
-      pt_var = TREE_OPERAND (value, 0);
-      if (TREE_CODE_CLASS (TREE_CODE (pt_var)) == 'r')
-	pt_var = get_base_address (pt_var);
-
-      if (pt_var && SSA_VAR_P (pt_var))
+      /* If PTR has already been found to point anywhere, don't
+	 add the variable to PTR's points-to set.  */
+      if (!pi->pt_anything)
 	{
-	  uid = var_ann (pt_var)->uid;
-	  bitmap_set_bit (ai->addresses_needed, uid);
-
-	  /* If PTR has already been found to point anywhere, don't
-	     add the variable to PTR's points-to set.  */
-	  if (!pi->pt_anything)
-	    {
-	      if (pi->pt_vars == NULL)
-		pi->pt_vars = BITMAP_GGC_ALLOC ();
-	      bitmap_set_bit (pi->pt_vars, uid);
-	    }
+	  if (pi->pt_vars == NULL)
+	    pi->pt_vars = BITMAP_GGC_ALLOC ();
+	  bitmap_set_bit (pi->pt_vars, uid);
 	}
-      else
-	add_pointed_to_expr (ptr, value);
     }
-  else
-    add_pointed_to_expr (ptr, value);
 }
 
 
@@ -1922,8 +1922,8 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
       tree rhs = TREE_OPERAND (stmt, 1);
       STRIP_NOPS (rhs);
 
-      /* Found P_i = CONST.  */
-      if (is_gimple_min_invariant (rhs))
+      /* Found P_i = ADDR_EXPR  */
+      if (TREE_CODE (rhs) == ADDR_EXPR)
 	add_pointed_to_var (ai, var, rhs);
 
       /* Found P_i = Q_j.  */
@@ -1944,9 +1944,9 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 	  else if (TREE_CODE (op1) == SSA_NAME
 		   && POINTER_TYPE_P (TREE_TYPE (op1)))
 	    merge_pointed_to_info (ai, var, op1);
-	  else if (is_gimple_min_invariant (op0))
+	  else if (TREE_CODE (op0) == ADDR_EXPR)
 	    add_pointed_to_var (ai, var, op0);
-	  else if (is_gimple_min_invariant (op1))
+	  else if (TREE_CODE (op1) == ADDR_EXPR)
 	    add_pointed_to_var (ai, var, op1);
 	  else
 	    add_pointed_to_expr (var, rhs);
@@ -1978,7 +1978,7 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 	 variable that we are analyzing is the LHS of the PHI node.  */
       tree lhs = PHI_RESULT (stmt);
 
-      if (is_gimple_min_invariant (var))
+      if (TREE_CODE (var) == ADDR_EXPR)
 	add_pointed_to_var (ai, lhs, var);
       else if (TREE_CODE (var) == SSA_NAME)
 	{
@@ -1987,6 +1987,8 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 	  else
 	    set_pt_anything (lhs);
 	}
+      else if (is_gimple_min_invariant (var))
+	add_pointed_to_expr (lhs, var);
       else
 	abort ();
     }
