@@ -1,6 +1,7 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2265,20 +2266,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		  }
 	      }
 	  }
-#endif
-
-#ifndef STACK_REGS
-	/* Don't bother outputting obvious no-ops, even without -O.
-	   This optimization is fast and doesn't interfere with debugging.
-	   Don't do this if the insn is in a delay slot, since this
-	   will cause an improper number of delay insns to be written.  */
-	if (final_sequence == 0
-	    && prescan >= 0
-	    && NONJUMP_INSN_P (insn) && GET_CODE (body) == SET
-	    && REG_P (SET_SRC (body))
-	    && REG_P (SET_DEST (body))
-	    && REGNO (SET_SRC (body)) == REGNO (SET_DEST (body)))
-	  break;
 #endif
 
 #ifdef HAVE_cc0
