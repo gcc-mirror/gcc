@@ -1,5 +1,28 @@
 2001-08-11  Zack Weinberg  <zackw@panix.com>
 
+	* toplev.c (set_float_handler): Make static.
+	* toplev.h: Don't prototype set_float_handler.
+
+	* simplify-rtx.c: Don't include setjmp.h.
+	(simplify_unary_real, simplify_binary_real, simplify_binary_is2orm1):
+	New functions.
+	(simplify_unary_operation, simplify_binary_operation): Use them,
+	via do_float_handler.
+
+	* fold-const.c: Don't include setjmp.h.
+	(exact_real_inverse_1): New function.
+	(exact_real_inverse): Use it, via do_float_handler.
+
+	* varasm.c: Don't include setjmp.h.
+	(assemble_real_1): New function.
+	(assemble_real): Use it, via do_float_handler.
+	Call internal_error if we get a trap here.
+
+	* c-parse.in, cse.c, cselib.c, config/i386/i386.c,
+	config/pj/pj.c, config/s390/s390.c: Don't include setjmp.h.
+
+2001-08-11  Zack Weinberg  <zackw@panix.com>
+
 	* defaults.h: Define PREFERRED_STACK_BOUNDARY to
 	STACK_BOUNDARY if not already defined.
 

@@ -161,6 +161,7 @@ static const char *decl_name PARAMS ((tree, int));
 
 static void float_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void crash_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
+static void set_float_handler PARAMS ((jmp_buf));
 static void compile_file PARAMS ((const char *));
 static void display_help PARAMS ((void));
 static void display_target_options PARAMS ((void));
@@ -1679,7 +1680,7 @@ float_signal (signo)
 /* Specify where to longjmp to when a floating arithmetic error happens.
    If HANDLER is 0, it means don't handle the errors any more.  */
 
-void
+static void
 set_float_handler (handler)
      jmp_buf handler;
 {

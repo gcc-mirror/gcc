@@ -22,7 +22,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include <setjmp.h>
 
 #include "rtl.h"
 #include "tm_p.h"
@@ -99,6 +98,12 @@ Boston, MA 02111-1307, USA.  */
 static rtx simplify_plus_minus		PARAMS ((enum rtx_code,
 						 enum machine_mode, rtx, rtx));
 static void check_fold_consts		PARAMS ((PTR));
+#if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
+static void simplify_unary_real		PARAMS ((PTR));
+static void simplify_binary_real	PARAMS ((PTR));
+#endif
+static void simplify_binary_is2orm1	PARAMS ((PTR));
+
 
 /* Make a binary operation by properly ordering the operands and 
    seeing if the expression folds.  */
@@ -324,10 +329,70 @@ simplify_replace_rtx (x, old, new)
   return x;
 }
 
+#if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
+/* Subroutine of simplify_unary_operation, called via do_float_handler.
+   Handles simplification of unary ops on floating point values.  */
+struct simplify_unary_real_args
+{
+  rtx operand;
+  rtx result;
+  enum machine_mode mode;
+  enum rtx_code code;
+  bool want_integer;
+};
+#define REAL_VALUE_ABS(d_) \
+   (REAL_VALUE_NEGATIVE (d_) ? REAL_VALUE_NEGATE (d_) : (d_))
+
+static void
+simplify_unary_real (p)
+     PTR p;
+{
+  REAL_VALUE_TYPE d;
+
+  struct simplify_unary_real_args *args =
+    (struct simplify_unary_real_args *) p;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (d, args->operand);
+
+  if (args->want_integer)
+    {
+      HOST_WIDE_INT i;
+
+      switch (args->code)
+	{
+	case FIX:		i = REAL_VALUE_FIX (d);		  break;
+	case UNSIGNED_FIX:	i = REAL_VALUE_UNSIGNED_FIX (d);  break;
+	default:
+	  abort ();
+	}
+      args->result = GEN_INT (trunc_int_for_mode (i, args->mode));
+    }
+  else
+    {
+      switch (args->code)
+	{
+	case SQRT:
+	  /* We don't attempt to optimize this.  */
+	  args->result = 0;
+	  return;
+
+	case ABS:	      d = REAL_VALUE_ABS (d);			break;
+	case NEG:	      d = REAL_VALUE_NEGATE (d);		break;
+	case FLOAT_TRUNCATE:  d = real_value_truncate (args->mode, d);  break;
+	case FLOAT_EXTEND:    /* All this does is change the mode.  */  break;
+	case FIX:	      d = REAL_VALUE_RNDZINT (d);		break;
+	case UNSIGNED_FIX:    d = REAL_VALUE_UNSIGNED_RNDZINT (d);	break;
+	default:
+	  abort ();
+	}
+      args->result = CONST_DOUBLE_FROM_REAL_VALUE (d, args->mode);
+    }
+}
+#endif
+
 /* Try to simplify a unary operation CODE whose output mode is to be
    MODE with input operand OP whose mode was originally OP_MODE.
    Return zero if no simplification can be made.  */
-
 rtx
 simplify_unary_operation (code, mode, op, op_mode)
      enum rtx_code code;
@@ -586,57 +651,16 @@ simplify_unary_operation (code, mode, op, op_mode)
   else if (GET_CODE (trueop) == CONST_DOUBLE
 	   && GET_MODE_CLASS (mode) == MODE_FLOAT)
     {
-      REAL_VALUE_TYPE d;
-      jmp_buf handler;
-      rtx x;
+      struct simplify_unary_real_args args;
+      args.operand = trueop;
+      args.mode = mode;
+      args.code = code;
+      args.want_integer = false;
 
-      if (setjmp (handler))
-	/* There used to be a warning here, but that is inadvisable.
-	   People may want to cause traps, and the natural way
-	   to do it should not get a warning.  */
-	return 0;
+      if (do_float_handler (simplify_unary_real, (PTR) &args))
+	return args.result;
 
-      set_float_handler (handler);
-
-      REAL_VALUE_FROM_CONST_DOUBLE (d, trueop);
-
-      switch (code)
-	{
-	case NEG:
-	  d = REAL_VALUE_NEGATE (d);
-	  break;
-
-	case ABS:
-	  if (REAL_VALUE_NEGATIVE (d))
-	    d = REAL_VALUE_NEGATE (d);
-	  break;
-
-	case FLOAT_TRUNCATE:
-	  d = real_value_truncate (mode, d);
-	  break;
-
-	case FLOAT_EXTEND:
-	  /* All this does is change the mode.  */
-	  break;
-
-	case FIX:
-	  d = REAL_VALUE_RNDZINT (d);
-	  break;
-
-	case UNSIGNED_FIX:
-	  d = REAL_VALUE_UNSIGNED_RNDZINT (d);
-	  break;
-
-	case SQRT:
-	  return 0;
-
-	default:
-	  abort ();
-	}
-
-      x = CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
-      set_float_handler (NULL);
-      return x;
+      return 0;
     }
 
   else if (GET_CODE (trueop) == CONST_DOUBLE
@@ -644,36 +668,16 @@ simplify_unary_operation (code, mode, op, op_mode)
 	   && GET_MODE_CLASS (mode) == MODE_INT
 	   && width <= HOST_BITS_PER_WIDE_INT && width > 0)
     {
-      REAL_VALUE_TYPE d;
-      jmp_buf handler;
-      HOST_WIDE_INT val;
+      struct simplify_unary_real_args args;
+      args.operand = trueop;
+      args.mode = mode;
+      args.code = code;
+      args.want_integer = true;
 
-      if (setjmp (handler))
-	return 0;
+      if (do_float_handler (simplify_unary_real, (PTR) &args))
+	return args.result;
 
-      set_float_handler (handler);
-
-      REAL_VALUE_FROM_CONST_DOUBLE (d, trueop);
-
-      switch (code)
-	{
-	case FIX:
-	  val = REAL_VALUE_FIX (d);
-	  break;
-
-	case UNSIGNED_FIX:
-	  val = REAL_VALUE_UNSIGNED_FIX (d);
-	  break;
-
-	default:
-	  abort ();
-	}
-
-      set_float_handler (NULL);
-
-      val = trunc_int_for_mode (val, mode);
-
-      return GEN_INT (val);
+      return 0;
     }
 #endif
   /* This was formerly used only for non-IEEE float.
@@ -749,12 +753,101 @@ simplify_unary_operation (code, mode, op, op_mode)
     }
 }
 
+#if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
+/* Subroutine of simplify_binary_operation, called via do_float_handler.
+   Handles simplification of binary ops on floating point values.  */
+struct simplify_binary_real_args
+{
+  rtx trueop0, trueop1;
+  rtx result;
+  enum rtx_code code;
+  enum machine_mode mode;
+};
+
+static void
+simplify_binary_real (p)
+     PTR p;
+{
+  REAL_VALUE_TYPE f0, f1, value;
+  struct simplify_binary_real_args *args =
+    (struct simplify_binary_real_args *) p;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (f0, args->trueop0);
+  REAL_VALUE_FROM_CONST_DOUBLE (f1, args->trueop1);
+  f0 = real_value_truncate (args->mode, f0);
+  f1 = real_value_truncate (args->mode, f1);
+
+#ifdef REAL_ARITHMETIC
+#ifndef REAL_INFINITY
+  if (args->code == DIV && REAL_VALUES_EQUAL (f1, dconst0))
+    {
+      args->result = 0;
+      return;
+    }
+#endif
+  REAL_ARITHMETIC (value, rtx_to_tree_code (args->code), f0, f1);
+#else
+  switch (args->code)
+    {
+    case PLUS:
+      value = f0 + f1;
+      break;
+    case MINUS:
+      value = f0 - f1;
+      break;
+    case MULT:
+      value = f0 * f1;
+      break;
+    case DIV:
+#ifndef REAL_INFINITY
+      if (f1 == 0)
+	return 0;
+#endif
+      value = f0 / f1;
+      break;
+    case SMIN:
+      value = MIN (f0, f1);
+      break;
+    case SMAX:
+      value = MAX (f0, f1);
+      break;
+    default:
+      abort ();
+    }
+#endif
+
+  value = real_value_truncate (args->mode, value);
+  args->result = CONST_DOUBLE_FROM_REAL_VALUE (value, args->mode);
+}
+#endif
+
+/* Another subroutine called via do_float_handler.  This one tests
+   the floating point value given against 2. and -1.  */
+struct simplify_binary_is2orm1_args
+{
+  rtx value;
+  bool is_2;
+  bool is_m1;
+};
+
+static void
+simplify_binary_is2orm1 (p)
+     PTR p;
+{
+  REAL_VALUE_TYPE d;
+  struct simplify_binary_is2orm1_args *args =
+    (struct simplify_binary_is2orm1_args *) p;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (d, args->value);
+  args->is_2 = REAL_VALUES_EQUAL (d, dconst2);
+  args->is_m1 = REAL_VALUES_EQUAL (d, dconstm1);
+}
+
 /* Simplify a binary operation CODE with result mode MODE, operating on OP0
    and OP1.  Return 0 if no simplification is possible.
 
    Don't use this for relational operations such as EQ or LT.
    Use simplify_relational_operation instead.  */
-
 rtx
 simplify_binary_operation (code, mode, op0, op1)
      enum rtx_code code;
@@ -790,58 +883,15 @@ simplify_binary_operation (code, mode, op0, op1)
       && GET_CODE (trueop1) == CONST_DOUBLE
       && mode == GET_MODE (op0) && mode == GET_MODE (op1))
     {
-      REAL_VALUE_TYPE f0, f1, value;
-      jmp_buf handler;
+      struct simplify_binary_real_args args;
+      args.trueop0 = trueop0;
+      args.trueop1 = trueop1;
+      args.mode = mode;
+      args.code = code;
 
-      if (setjmp (handler))
-	return 0;
-
-      set_float_handler (handler);
-
-      REAL_VALUE_FROM_CONST_DOUBLE (f0, trueop0);
-      REAL_VALUE_FROM_CONST_DOUBLE (f1, trueop1);
-      f0 = real_value_truncate (mode, f0);
-      f1 = real_value_truncate (mode, f1);
-
-#ifdef REAL_ARITHMETIC
-#ifndef REAL_INFINITY
-      if (code == DIV && REAL_VALUES_EQUAL (f1, dconst0))
-	return 0;
-#endif
-      REAL_ARITHMETIC (value, rtx_to_tree_code (code), f0, f1);
-#else
-      switch (code)
-	{
-	case PLUS:
-	  value = f0 + f1;
-	  break;
-	case MINUS:
-	  value = f0 - f1;
-	  break;
-	case MULT:
-	  value = f0 * f1;
-	  break;
-	case DIV:
-#ifndef REAL_INFINITY
-	  if (f1 == 0)
-	    return 0;
-#endif
-	  value = f0 / f1;
-	  break;
-	case SMIN:
-	  value = MIN (f0, f1);
-	  break;
-	case SMAX:
-	  value = MAX (f0, f1);
-	  break;
-	default:
-	  abort ();
-	}
-#endif
-
-      value = real_value_truncate (mode, value);
-      set_float_handler (NULL);
-      return CONST_DOUBLE_FROM_REAL_VALUE (value, mode);
+      if (do_float_handler (simplify_binary_real, (PTR) &args))
+	return args.result;
+      return 0;
     }
 #endif  /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 
@@ -1263,24 +1313,17 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (GET_CODE (trueop1) == CONST_DOUBLE
 	      && GET_MODE_CLASS (GET_MODE (trueop1)) == MODE_FLOAT)
 	    {
-	      REAL_VALUE_TYPE d;
-	      jmp_buf handler;
-	      int op1is2, op1ism1;
+	      struct simplify_binary_is2orm1_args args;
 
-	      if (setjmp (handler))
+	      args.value = trueop1;
+	      if (! do_float_handler (simplify_binary_is2orm1, (PTR) &args))
 		return 0;
 
-	      set_float_handler (handler);
-	      REAL_VALUE_FROM_CONST_DOUBLE (d, trueop1);
-	      op1is2 = REAL_VALUES_EQUAL (d, dconst2);
-	      op1ism1 = REAL_VALUES_EQUAL (d, dconstm1);
-	      set_float_handler (NULL);
-
 	      /* x*2 is x+x and x*(-1) is -x */
-	      if (op1is2 && GET_MODE (op0) == mode)
+	      if (args.is_2 && GET_MODE (op0) == mode)
 		return gen_rtx_PLUS (mode, op0, copy_rtx (op0));
 
-	      else if (op1ism1 && GET_MODE (op0) == mode)
+	      else if (args.is_m1 && GET_MODE (op0) == mode)
 		return gen_rtx_NEG (mode, op0);
 	    }
 	  break;

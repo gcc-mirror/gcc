@@ -44,7 +44,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include <setjmp.h>
 #include "flags.h"
 #include "tree.h"
 #include "rtl.h"
@@ -59,6 +58,9 @@ static void encode		PARAMS ((HOST_WIDE_INT *,
 static void decode		PARAMS ((HOST_WIDE_INT *,
 					 unsigned HOST_WIDE_INT *,
 					 HOST_WIDE_INT *));
+#ifndef REAL_ARITHMETIC
+static void exact_real_inverse_1 PARAMS ((PTR));
+#endif
 static tree negate_expr		PARAMS ((tree));
 static tree split_tree		PARAMS ((tree, enum tree_code, tree *, tree *,
 					 int));
@@ -956,51 +958,41 @@ target_negative (x)
 
 /* Try to change R into its exact multiplicative inverse in machine mode
    MODE.  Return nonzero function value if successful.  */
-
-int
-exact_real_inverse (mode, r)
-     enum machine_mode mode;
-     REAL_VALUE_TYPE *r;
+struct exact_real_inverse_args
 {
-  jmp_buf float_error;
+  REAL_VALUE_TYPE *r;
+  enum machine_mode mode;
+  int success;
+};
+
+static void
+exact_real_inverse_1 (p)
+     PTR p;
+{
+  struct exact_real_inverse_args *args =
+    (struct exact_real_inverse_args *) p;
+
+  enum machine_mode mode = args->mode;
+  REAL_VALUE_TYPE *r = args->r;
+
   union
-    {
-      double d;
-      unsigned short i[4];
-    }x, t, y;
+  {
+    double d;
+    unsigned short i[4];
+  }
+  x, t, y;
 #ifdef CHECK_FLOAT_VALUE
   int i;
 #endif
 
-  /* Usually disable if bounds checks are not reliable.  */
-  if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT) && !flag_pretend_float)
-    return 0;
-
   /* Set array index to the less significant bits in the unions, depending
-     on the endian-ness of the host doubles.
-     Disable if insufficient information on the data structure.  */
-#if HOST_FLOAT_FORMAT == UNKNOWN_FLOAT_FORMAT
-  return 0;
+     on the endian-ness of the host doubles.  */
+#if HOST_FLOAT_FORMAT == VAX_FLOAT_FORMAT \
+ || HOST_FLOAT_FORMAT == IBM_FLOAT_FORMAT
+# define K 2
 #else
-#if HOST_FLOAT_FORMAT == VAX_FLOAT_FORMAT
-#define K 2
-#else
-#if HOST_FLOAT_FORMAT == IBM_FLOAT_FORMAT
-#define K 2
-#else
-#define K (2 * HOST_FLOAT_WORDS_BIG_ENDIAN)
+# define K (2 * HOST_FLOAT_WORDS_BIG_ENDIAN)
 #endif
-#endif
-#endif
-
-  if (setjmp (float_error))
-    {
-      /* Don't do the optimization if there was an arithmetic error.  */
-fail:
-      set_float_handler (NULL);
-      return 0;
-    }
-  set_float_handler (float_error);
 
   /* Domain check the argument.  */
   x.d = *r;
@@ -1040,9 +1032,40 @@ fail:
 #endif
 
   /* Output the reciprocal and return success flag.  */
-  set_float_handler (NULL);
   *r = y.d;
-  return 1;
+  args->success = 1;
+  return;
+
+ fail:
+  args->success = 0;
+  return;
+
+#undef K
+}
+
+
+int
+exact_real_inverse (mode, r)
+     enum machine_mode mode;
+     REAL_VALUE_TYPE *r;
+{
+  struct exact_real_inverse_args args;
+
+  /* Disable if insufficient information on the data structure.  */
+#if HOST_FLOAT_FORMAT == UNKNOWN_FLOAT_FORMAT
+  return 0;
+#endif
+
+  /* Usually disable if bounds checks are not reliable.  */
+  if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT) && !flag_pretend_float)
+    return 0;
+
+  args.mode = mode;
+  args.r = r;
+
+  if (do_float_handler (exact_real_inverse_1, (PTR) &args))
+    return args.success;
+  return 0;
 }
 
 /* Convert C99 hexadecimal floating point string constant S.  Return
