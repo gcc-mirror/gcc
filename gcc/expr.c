@@ -2006,7 +2006,6 @@ emit_block_move_via_libcall (rtx dst, rtx src, rtx size)
   call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
   call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
 		     call_expr, arg_list, NULL_TREE);
-  TREE_SIDE_EFFECTS (call_expr) = 1;
 
   retval = expand_expr (call_expr, NULL_RTX, VOIDmode, 0);
 
@@ -3120,7 +3119,6 @@ clear_storage_via_libcall (rtx object, rtx size)
   call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
   call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
 		     call_expr, arg_list, NULL_TREE);
-  TREE_SIDE_EFFECTS (call_expr) = 1;
 
   retval = expand_expr (call_expr, NULL_RTX, VOIDmode, 0);
 

@@ -303,10 +303,8 @@ build_call (tree function, tree parms)
 				    TREE_VALUE (tmp), t);
 	}
 
-  function = build_nt (CALL_EXPR, function, parms, NULL_TREE);
+  function = build (CALL_EXPR, result_type, function, parms);
   TREE_HAS_CONSTRUCTOR (function) = is_constructor;
-  TREE_TYPE (function) = result_type;
-  TREE_SIDE_EFFECTS (function) = 1;
   TREE_NOTHROW (function) = nothrow;
   
   return function;
@@ -4918,7 +4916,7 @@ build_new_method_call (tree instance, tree fns, tree args,
     {
       call = build_field_call (instance_ptr, fns, args);
       if (call)
-	return call;
+	goto finish;
       error ("call to non-function `%D'", fns);
       return error_mark_node;
     }
@@ -5079,13 +5077,11 @@ build_new_method_call (tree instance, tree fns, tree args,
       if (!is_dummy_object (instance_ptr) && TREE_SIDE_EFFECTS (instance))
 	call = build (COMPOUND_EXPR, TREE_TYPE (call), instance, call);
     }
-
+ finish:;
+  
   if (processing_template_decl && call != error_mark_node)
-    return build_min (CALL_EXPR,
-		      TREE_TYPE (call),
-		      build_min_nt (COMPONENT_REF,
-				    orig_instance, 
-				    orig_fns),
+    return build_min (CALL_EXPR, TREE_TYPE (call),
+		      build_min_nt (COMPONENT_REF, orig_instance, orig_fns),
 		      orig_args);
   return call;
 }

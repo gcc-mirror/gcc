@@ -1,3 +1,10 @@
+2003-08-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (build_call): Don't set TREE_SIDE_EFFECTS here.
+	(build_new_method_call): Add goto finish.
+	* semantics.c (simplify_aggr_init_exprs_r): Don't set
+	TREE_SIDE_EFFECTS on a call.
+
 2003-08-25  Richard Henderson  <rth@redhat.com>
 
 	* cxx-pretty-print.c (pp_cxx_class_name): Remove unused function.
