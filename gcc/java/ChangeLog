@@ -1,3 +1,13 @@
+2003-06-08  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (define_builtin_type, builtin_types): Delete.
+	(define_builtin): Rewritten to take just the built-in code,
+	the function's name, type and fallback library function name.
+	All built-ins used by Java are implicit and BUILT_IN_NORMAL.
+	(initialize_builtins): Overhaul to define the GCC builtins
+	used by gcj manually, providing the Java run-time's
+	implementations as the fallback library function.
+
 2003-06-08  Anthony Green  <green@redhat.com>
 
 	* parse.y (patch_cast): Fix conversions from floating-point to

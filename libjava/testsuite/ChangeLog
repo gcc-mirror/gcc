@@ -1,3 +1,8 @@
+2003-06-08  Roger Sayle  <roger@eyesopen.com>
+
+	* libjava.lang/MathBuiltin.java: New test case.
+	* libjava.lang/MathBuiltin.out: New file.
+
 2003-06-05  Mark Wielaard  <mark@klomp.org>
 
 	* libjava.mauve/mauve.exp (test_mauve): Add -wno-deprecated to GCJ.
