@@ -1,3 +1,10 @@
+2001-09-29  Juergen Pfeifer  <juergen.pfeifer@gmx.net>
+
+	Make libf2c a shared library.
+
+	* Make-lang.in: Pass define of frtbegin.o to compilation of g77spec.c.
+	* g77spec.c (lang_specific_driver): Treat linking in of frtbegin.o.
+
 2001-09-28  Robert Anderson  <rwa@alumni.princeton.edu>
 
 	* expr.c (ffeexpr_sym_rhs_dimlist_): Allow array elements

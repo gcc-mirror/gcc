@@ -73,6 +73,7 @@ define([AC_PROG_CC_WORKS],[])
 # the makefiles
 
 AC_PROG_CC
+AM_PROG_LIBTOOL
 
 dnl These should be inherited in the recursive make, but ensure they are
 dnl defined:

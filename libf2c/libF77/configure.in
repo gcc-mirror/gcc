@@ -32,6 +32,9 @@ define([AC_PROG_CC_WORKS],[])
 # the makefiles
 AC_PROG_CC
 
+LIBTOOL='$(SHELL) ../libtool'
+AC_SUBST(LIBTOOL)
+
 test "$AR" || AR=ar
 AC_SUBST(AR)
 AC_PROG_MAKE_SET
