@@ -3925,6 +3925,11 @@ The default value of this hook is @code{NULL}, which is treated as always
 false.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_BUILD_BUILTIN_VA_LIST (void)
+This hook returns a type node for @code{va_list} for the target.
+The default version of the hook returns @code{void*}.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_GIMPLIFY_VA_ARG_EXPR (tree @var{valist}, tree @var{type}, tree *@var{pre_p}, tree *@var{post_p})
 This hook performs target-specific gimplification of
 @code{VA_ARG_EXPR}.  The first two parameters correspond to the
@@ -5150,6 +5155,18 @@ an immediate operand on the target machine.  You can assume that
 @samp{1} is a suitable definition for this macro on machines where
 anything @code{CONSTANT_P} is valid.
 @end defmac
+
+@deftypefn {Target Hook} bool TARGET_CANNOT_FORCE_CONST_MEM (rtx @var{x})
+This hook should return true if @var{x} is of a form that cannot (or
+should not) be spilled to the constant pool.  The default version of
+this hook returns false.
+
+The primary reason to define this hook is to prevent reload from
+deciding that a non-legitimate constant would be better reloaded
+from the constant pool instead of spilling and reloading a register
+holding the constant.  This restriction is often true of addresses
+of TLS symbols for various targets.
+@end deftypefn
 
 @node Condition Code
 @section Condition Code Status
