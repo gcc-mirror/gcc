@@ -65,56 +65,75 @@ public abstract class CharBuffer extends Buffer
    * Wraps a <code>char</code> array into a <code>CharBuffer</code>
    * object.
    *
+   * @param array the array to wrap
+   * @param offset the offset of the region in the array to wrap
+   * @param length the length of the region in the array to wrap
+   *
+   * @return a new <code>CharBuffer</code> object
+   * 
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public static CharBuffer wrap (char[] array, int offset, int length)
+  final public static CharBuffer wrap(char[] array, int offset, int length)
   {
-    return new CharBufferImpl (array, 0, array.length, offset + length, offset, -1, false);
+    return new CharBufferImpl(array, 0, array.length, offset + length, offset, -1, false);
   }
   
   /**
    * Wraps a character sequence into a <code>CharBuffer</code> object.
+   *
+   * @param seq the sequence to wrap
+   *
+   * @return a new <code>CharBuffer</code> object
    */
-  final public static CharBuffer wrap (CharSequence a)
+  final public static CharBuffer wrap(CharSequence seq)
   {
-    return wrap (a, 0, a.length ());
+    return wrap(seq, 0, seq.length());
   }
   
   /**
    * Wraps a character sequence into a <code>CharBuffer</code> object.
    * 
+   * @param seq the sequence to wrap
+   * @param start the index of the first character to wrap
+   * @param end the index of the first character not to wrap
+   *
+   * @return a new <code>CharBuffer</code> object
+   * 
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public static CharBuffer wrap (CharSequence a, int offset, int length)
+  final public static CharBuffer wrap(CharSequence seq, int start, int end)
   {
     // FIXME: implement better handling of java.lang.String.
     // Probably share data with String via reflection.
 	  
-    if ((offset < 0)
-        || (offset > a.length ())
-        || (length < 0)
-        || (length > (a.length () - offset)))
-      throw new IndexOutOfBoundsException ();
+    if ((start < 0)
+        || (start > seq.length())
+        || (end < start)
+        || (end > (seq.length() - start)))
+      throw new IndexOutOfBoundsException();
     
-    char [] buffer = new char [a.length ()];
+    int len = end - start;
+    char[] buffer = new char[len];
     
-    for (int i = offset; i < length; i++)
-      {
-        buffer [i] = a.charAt (i);
-      }
+    for (int i = 0; i < len; i++)
+      buffer[i] = seq.charAt(i + start);
     
-    return wrap (buffer, offset, length).asReadOnlyBuffer ();
+    return wrap(buffer, 0, len).asReadOnlyBuffer();
   }
 
   /**
    * Wraps a <code>char</code> array into a <code>CharBuffer</code>
    * object.
+   *
+   * @param array the array to wrap
+   *
+   * @return a new <code>CharBuffer</code> object
    */
-  final public static CharBuffer wrap (char[] array)
+  final public static CharBuffer wrap(char[] array)
   {
-    return wrap (array, 0, array.length);
+    return wrap(array, 0, array.length);
   }
   
   /**
