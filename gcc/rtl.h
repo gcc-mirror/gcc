@@ -148,7 +148,9 @@ typedef struct rtx_def
      together with the preceding insn.  Valid only within sched.
      1 in an INSN, JUMP_INSN, or CALL_INSN if insn is in a delay slot and
      from the target of a branch.  Valid from reorg until end of compilation;
-     cleared before used.  */
+     cleared before used.
+     1 in an INSN if this insn is dead code.  Valid only during
+     dead-code elimination phase; cleared before use. */
   unsigned int in_struct : 1;
   /* 1 if this rtx is used.  This is used for copying shared structure.
      See `unshare_all_rtl'.
@@ -202,9 +204,25 @@ typedef struct rtvec_def{
 #define GET_NUM_ELEM(RTVEC)		((RTVEC)->num_elem)
 #define PUT_NUM_ELEM(RTVEC, NUM)	((RTVEC)->num_elem = (NUM))
 
-/* 1 if X is a REG.  */
-
+/* Predicate yielding nonzero iff X is an rtl for a register.  */
 #define REG_P(X) (GET_CODE (X) == REG)
+
+/* Predicate yielding nonzero iff X is a label insn.  */
+#define LABEL_P(X) (GET_CODE (X) == CODE_LABEL)
+
+/* Predicate yielding nonzero iff X is a jump insn.  */
+#define JUMP_P(X) (GET_CODE (X) == JUMP_INSN)
+
+/* Predicate yielding nonzero iff X is a note insn.  */
+#define NOTE_P(X) (GET_CODE (X) == NOTE)
+
+/* Predicate yielding nonzero iff X is a barrier insn.  */
+#define BARRIER_P(X) (GET_CODE (X) == BARRIER)
+
+/* Predicate yielding nonzero iff X is a data for a jump table.  */
+#define JUMP_TABLE_DATA_P(INSN) \
+  (JUMP_P (INSN) && (GET_CODE (PATTERN (INSN)) == ADDR_VEC || \
+		     GET_CODE (PATTERN (INSN)) == ADDR_DIFF_VEC))
 
 /* 1 if X is a constant value that is an integer.  */
 
@@ -373,6 +391,9 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 /* 1 if insn is a branch that should not unconditionally execute its
    delay slots, i.e., it is an annulled branch.   */
 #define INSN_ANNULLED_BRANCH_P(INSN) ((INSN)->unchanging)
+
+/* 1 if insn is a dead code.  Valid only for dead-code elimination phase. */
+#define INSN_DEAD_CODE_P(INSN) ((INSN)->in_struct)
 
 /* 1 if insn is in a delay slot and is from the target of the branch.  If
    the branch insn has INSN_ANNULLED_BRANCH_P set, this insn should only be

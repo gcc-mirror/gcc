@@ -1,3 +1,45 @@
+2000-08-01  Jeffrey Oldham  <oldham@codesourcery.com>
+            Mark Mitchell <mark@codesourcery.com>
+	
+	* Makefile.in (OBJS): Added dce.o.
+	(ssa.o): Updated target to include ssa.h.
+	(flow.o): Likewise.
+	(toplev.o): Likewise.
+	(dce.o): Created target.
+	* basic-block.h: Added comments.
+	(INVALID_BLOCK): Added definition.
+	(connect_infinite_loops_to_exit): Added declaration.
+	Moved SSA declarations to ssa.h.	
+	* flow.c: Added inclusion of ssa.h.
+	(struct depth_first_search_dsS, depth_first_search_ds):
+	Added definitions.
+	(compute_immediate_postdominators): Added definition.
+	(connect_infinite_loops_to_exit): Likewise.
+	(flow_dfs_compute_reverse_init): Likewise.
+	(flow_dfs_compute_reverse_add_bb): Likewise.
+	(flow_dfs_compute_reverse_execute): Likewise.
+	(flow_dfs_compute_reverse_finish): Likewise.
+	* rtl.h (rtx/in_struct): Added use to determine insn necessity.
+	(LABEL_P): Added definition.
+	(JUMP_P): Likewise.
+	(NOTE_P): Likewise.
+	(BARRIER_P): Likewise.
+	(JUMP_TABLE_DATA_P): Likewise.
+	(INSN_DEAD_CODE_P): Likewise.
+	* ssa.c: Replaced inclusions with ssa.h inclusion.
+	(CONVERT_HARD_REGISTER_TO_SSA_P): Moved to ssa.h.
+	(rename_registers): Removed unnecessary variables.
+	* ssa.h: Created by moving declarations from ssa.c and
+	basic-block.h.
+	* timevar.def: Defined TV_DEAD_CODE_ELIM.
+	* toplev.c: Added ssa.h inclusion.
+	(dump_file_index): Added DFI_dce.
+	(dump_file): Added "dce" entry.
+	Defined flag_ssa.
+	(f_options): Added dce entry.
+	* invoke.texi: Document -fdce.  Emphasize experimental status of
+	-fssa. 
+	
 2000-08-01  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpperror.c (v_message): Split into _cpp_begin_message and

@@ -696,7 +696,7 @@ OBJS = diagnostic.o							      \
  profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o	      \
  mbchar.o splay-tree.o graph.o sbitmap.o resource.o hash.o predict.o	      \
  lists.o ggc-common.o $(GGC) simplify-rtx.o ssa.o bb-reorder.o		      \
- sibcall.o conflict.o timevar.o ifcvt.o
+ sibcall.o conflict.o timevar.o ifcvt.o dce.o
 
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
@@ -1242,7 +1242,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
    flags.h input.h $(INSN_ATTR_H) xcoffout.h defaults.h output.h diagnostic.h \
    insn-codes.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h dwarfout.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
-   graph.h loop.h  except.h regs.h $(TIMEVAR_H) $(lang_options_files)
+   graph.h loop.h  except.h regs.h $(TIMEVAR_H) $(lang_options_files) ssa.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
@@ -1326,10 +1326,11 @@ resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h system.h \
    $(INSN_ATTR_H) except.h
 lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(INSN_ATTR_H) $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
-ssa.o : ssa.c $(CONFIG_H) system.h $(RTL_H) varray.h sbitmap.h		\
-   $(HASHTAB_H) $(REGS_H) hard-reg-set.h flags.h function.h real.h	\
-   insn-config.h $(RECOG_H) $(BASIC_BLOCK_H)				\
-   output.h
+ssa.o : ssa.c $(CONFIG_H) system.h $(REGS_H) varray.h			\
+   hard-reg-set.h flags.h function.h real.h insn-config.h $(RECOG_H)	\
+   $(BASIC_BLOCK_H) output.h ssa.h
+dce.o : dce.c $(CONFIG_H) system.h $(RTL_H) hard-reg-set.h $(BASIC_BLOCK_H) \
+   ssa.h insn-config.h $(RECOG_H) output.h
 conflict.o : conflict.c $(CONFIG_H) system.h $(OBSTACK_H) $(HASHTAB_H) \
    $(RTL_H) hard-reg-set.h $(BASIC_BLOCK_H)
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
@@ -1345,7 +1346,7 @@ unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h function.h \
    hard-reg-set.h varray.h $(BASIC_BLOCK_H)
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
-   insn-flags.h function.h except.h $(EXPR_H)
+   insn-flags.h function.h except.h $(EXPR_H) ssa.h
 combine.o : combine.c $(CONFIG_H) system.h $(RTL_H) flags.h function.h \
    insn-config.h insn-flags.h insn-codes.h $(INSN_ATTR_H) $(REGS_H) $(EXPR_H) \
    $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h

@@ -141,6 +141,18 @@ typedef struct edge_def {
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
 
+/* Basic blocks need not start with a label nor end with a jump insn.
+   For example, a previous basic block may just "conditionally fall"
+   into the succeeding basic block, and the last basic block need not
+   end with a jump insn.  Block 0 is a descendant of the entry block.
+
+   A basic block beginning with two labels cannot have notes between
+   the labels.
+
+   Data for jump tables are stored in jump_insns that occur in no
+   basic block even though these insns can follow or precede insns in
+   basic blocks.  */
+
 /* Basic block information indexed by block number.  */
 typedef struct basic_block_def {
   /* The first and last insns of the block.  */
@@ -210,6 +222,9 @@ extern regset regs_live_at_setjmp;
 #define ENTRY_BLOCK (-1)
 #define EXIT_BLOCK (-2)
 
+/* Special block number not valid for any block. */
+#define INVALID_BLOCK (-3)
+
 /* Similarly, block pointers for the edge list.  */
 extern struct basic_block_def entry_exit_blocks[2];
 #define ENTRY_BLOCK_PTR	(&entry_exit_blocks[0])
@@ -230,6 +245,7 @@ extern void insert_insn_on_edge		PARAMS ((rtx, edge));
 extern void commit_edge_insertions	PARAMS ((void));
 extern void remove_fake_edges		PARAMS ((void));
 extern void add_noreturn_fake_exit_edges	PARAMS ((void));
+extern void connect_infinite_loops_to_exit	PARAMS ((void));
 extern rtx flow_delete_insn		PARAMS ((rtx));
 extern void flow_delete_insn_chain	PARAMS ((rtx, rtx));
 extern void make_edge			PARAMS ((sbitmap *, basic_block,
@@ -513,14 +529,5 @@ extern void conflict_graph_print        PARAMS ((conflict_graph, FILE*));
 extern conflict_graph conflict_graph_compute 
                                         PARAMS ((regset,
 						 partition));
-
-/* In ssa.c */
-extern void convert_to_ssa		PARAMS ((void));
-extern void convert_from_ssa		PARAMS ((void));
-typedef int (*successor_phi_fn)         PARAMS ((rtx, int, int, void *));
-extern int for_each_successor_phi       PARAMS ((basic_block bb,
-						 successor_phi_fn,
-						 void *));
-extern int in_ssa_form;
 
 #endif /* _BASIC_BLOCK_H */

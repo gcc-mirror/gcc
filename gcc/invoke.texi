@@ -168,7 +168,7 @@ in the following sections.
 -falign-functions=@var{n}  -falign-labels=@var{n}  -falign-loops=@var{n} 
 -falign-jumps=@var{n}  -fbranch-probabilities  
 -fcaller-saves  -fcse-follow-jumps  -fcse-skip-blocks
--fdelayed-branch  -fdelete-null-pointer-checks -fexpensive-optimizations
+-fdce -fdelayed-branch  -fdelete-null-pointer-checks -fexpensive-optimizations
 -ffast-math  -ffloat-store  -fforce-addr  -fforce-mem -fno-math-errno
 -fdata-sections  -ffunction-sections  -fgcse 
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions
@@ -2900,9 +2900,12 @@ If @var{n} is not specified, use a machine-dependent default.
 @item -fssa
 Perform optimizations in static single assignment form.  Each function's
 flow graph is translated into SSA form, optimizations are performed, and
-the flow graph is translated back from SSA form.  (Currently, no
-SSA-based optimizations are implemented, but converting into and out of
-SSA form is not an invariant operation, and generated code may differ.)
+the flow graph is translated back from SSA form.  User's should not
+specify this option, since it is not yet ready for production use.
+
+@item -fdce
+Perform dead-code elimination in SSA form.  Requires @samp{-fssa}.  Like
+@samp{-fssa}, this is an experimental feature.
 
 @item -fsingle-precision-constant
 Treat floating point constant as single precision constant instead of
