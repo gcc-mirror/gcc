@@ -147,63 +147,96 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES  \
-  { { "68020", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY)},	\
-    { "c68020", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY)},	\
-    { "68020", (MASK_68020|MASK_BITFIELD)},				\
-    { "c68020", (MASK_68020|MASK_BITFIELD)},				\
+#define TARGET_SWITCHES							\
+  { { "68020", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
+      N_("Generate code for a 68020") },				\
+    { "c68020", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
+      N_("Generate code for a 68020") },				\
+    { "68020", (MASK_68020|MASK_BITFIELD), "" },			\
+    { "c68020", (MASK_68020|MASK_BITFIELD), "" },			\
     { "68000", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
-		|MASK_68020|MASK_BITFIELD|MASK_68881)},			\
+		|MASK_68020|MASK_BITFIELD|MASK_68881),			\
+      N_("Generate code for a 68000") },				\
     { "c68000", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
-		|MASK_68020|MASK_BITFIELD|MASK_68881)},			\
-    { "bitfield", MASK_BITFIELD},					\
-    { "nobitfield", - MASK_BITFIELD},					\
-    { "rtd", MASK_RTD},							\
-    { "nortd", - MASK_RTD},						\
-    { "short", MASK_SHORT},						\
-    { "noshort", - MASK_SHORT},						\
-    { "fpa", -(MASK_SKY|MASK_68040_ONLY|MASK_68881)},			\
-    { "fpa", MASK_FPA},							\
-    { "nofpa", - MASK_FPA},						\
-    { "sky", -(MASK_FPA|MASK_68040_ONLY|MASK_68881)},			\
-    { "sky", MASK_SKY},							\
-    { "nosky", - MASK_SKY},						\
-    { "68881", - (MASK_FPA|MASK_SKY)},					\
-    { "68881", MASK_68881},						\
-    { "soft-float", - (MASK_FPA|MASK_SKY|MASK_68040_ONLY|MASK_68881)},	\
-    { "68020-40", -(MASK_5200|MASK_68060|MASK_68040_ONLY)},		\
-    { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040)},	\
-    { "68020-60", -(MASK_5200|MASK_68040_ONLY)},			\
+		|MASK_68020|MASK_BITFIELD|MASK_68881),			\
+      N_("Generate code for a 68000") },				\
+    { "bitfield", MASK_BITFIELD,					\
+      N_("Use the bit-field instructions") },				\
+    { "nobitfield", - MASK_BITFIELD,					\
+      N_("Do not use the bit-field instructions") },			\
+    { "rtd", MASK_RTD,							\
+      N_("Use different calling convention using 'rtd'") },		\
+    { "nortd", - MASK_RTD,						\
+      N_("Use normal calling convention") },				\
+    { "short", MASK_SHORT,						\
+      N_("Consider type `int' to be 16 bits wide") },			\
+    { "noshort", - MASK_SHORT,						\
+      N_("Consider type `int' to be 32 bits wide") },			\
+    { "fpa", -(MASK_SKY|MASK_68040_ONLY|MASK_68881),			\
+      N_("Generate code for a Sun FPA") },				\
+    { "fpa", MASK_FPA, "" },						\
+    { "nofpa", - MASK_FPA,						\
+      N_("Do not generate code for a Sun FPA") },			\
+    { "sky", -(MASK_FPA|MASK_68040_ONLY|MASK_68881),			\
+      N_("") },								\
+    { "sky", MASK_SKY,							\
+      N_("") },								\
+    { "nosky", - MASK_SKY,						\
+      N_("") },								\
+    { "68881", - (MASK_FPA|MASK_SKY),					\
+      N_("Generate code for a 68881") },				\
+    { "68881", MASK_68881, "" },					\
+    { "soft-float", - (MASK_FPA|MASK_SKY|MASK_68040_ONLY|MASK_68881),	\
+      N_("Generate code with library calls for floating point") },	\
+    { "68020-40", -(MASK_5200|MASK_68060|MASK_68040_ONLY),		\
+      N_("Generate code for a 68040, without any new instructions") },	\
+    { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040), ""},\
+    { "68020-60", -(MASK_5200|MASK_68040_ONLY),				\
+      N_("Generate code for a 68060, without any new instructions") },	\
     { "68020-60", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040	\
-		   |MASK_68060)},					\
-    { "68030", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY)},	\
-    { "68030", (MASK_68020|MASK_BITFIELD)},				\
-    { "68040", - (MASK_5200|MASK_68060)},				\
+		   |MASK_68060), "" },					\
+    { "68030", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
+      N_("Generate code for a 68030") },				\
+    { "68030", (MASK_68020|MASK_BITFIELD), "" },			\
+    { "68040", - (MASK_5200|MASK_68060),				\
+      N_("Generate code for a 68040") },				\
     { "68040", (MASK_68020|MASK_68881|MASK_BITFIELD			\
-		|MASK_68040_ONLY|MASK_68040)},				\
-    { "68060", - (MASK_5200|MASK_68040)},				\
+		|MASK_68040_ONLY|MASK_68040), "" },			\
+    { "68060", - (MASK_5200|MASK_68040),				\
+      N_("Generate code for a 68060") },				\
     { "68060", (MASK_68020|MASK_68881|MASK_BITFIELD			\
-		|MASK_68040_ONLY|MASK_68060)},				\
+		|MASK_68040_ONLY|MASK_68060), "" },			\
     { "5200", - (MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
-		|MASK_BITFIELD|MASK_68881)},				\
-    { "5200", (MASK_5200)},						\
-    { "68851", 0},							\
-    { "no-68851", 0},							\
+		|MASK_BITFIELD|MASK_68881),				\
+      N_("Generate code for a 520X") },					\
+    { "5200", (MASK_5200), "" },					\
+    { "68851", 0,							\
+      N_("Generate code for a 68851") },				\
+    { "no-68851", 0,							\
+      N_("Do no generate code for a 68851") },				\
     { "68302", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
-		  |MASK_68020|MASK_BITFIELD|MASK_68881)},		\
+		  |MASK_68020|MASK_BITFIELD|MASK_68881),		\
+      N_("Generate code for a 68302") },				\
     { "68332", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
-		  |MASK_BITFIELD|MASK_68881)},				\
-    { "68332", MASK_68020},						\
+		  |MASK_BITFIELD|MASK_68881),				\
+      N_("Generate code for a 68332") },				\
+    { "68332", MASK_68020, "" },					\
     { "cpu32", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
-		  |MASK_BITFIELD|MASK_68881)},				\
-    { "cpu32", MASK_68020},						\
-    { "align-int", MASK_ALIGN_INT },					\
-    { "no-align-int", -MASK_ALIGN_INT },				\
-    { "pcrel", MASK_PCREL},						\
-    { "strict-align", -MASK_NO_STRICT_ALIGNMENT},			\
-    { "no-strict-align", MASK_NO_STRICT_ALIGNMENT},			\
+		  |MASK_BITFIELD|MASK_68881),				\
+      N_("Generate code for a cpu32") },				\
+    { "cpu32", MASK_68020, "" },					\
+    { "align-int", MASK_ALIGN_INT, 					\
+      N_("Align variables on a 32-bit boundary") },			\
+    { "no-align-int", -MASK_ALIGN_INT, 					\
+      N_("Align variables on a 16-bit boundary") },			\
+    { "pcrel", MASK_PCREL,						\
+      N_("Generate pc-relative code") },				\
+    { "strict-align", -MASK_NO_STRICT_ALIGNMENT,			\
+      N_("Do not use unaligned memory references") },			\
+    { "no-strict-align", MASK_NO_STRICT_ALIGNMENT,			\
+      N_("Use unaligned memory references") },				\
     SUBTARGET_SWITCHES							\
-    { "", TARGET_DEFAULT}}
+    { "", TARGET_DEFAULT, "" }}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
@@ -216,9 +249,12 @@ extern int target_flags;
    option if the fixed part matches.  The actual option name is made
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
-{ { "align-loops=",	&m68k_align_loops_string },			\
-  { "align-jumps=",	&m68k_align_jumps_string },			\
-  { "align-functions=",	&m68k_align_funcs_string },			\
+{ { "align-loops=",	&m68k_align_loops_string,			\
+    N_("Loop code aligned to this power of 2") },			\
+  { "align-jumps=",	&m68k_align_jumps_string,			\
+    N_("Jump targets are aligned to this power of 2") },		\
+  { "align-functions=",	&m68k_align_funcs_string,			\
+    N_("Function starts are aligned to this power of 2") },		\
   SUBTARGET_OPTIONS							\
 }
 
