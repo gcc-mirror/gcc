@@ -1,3 +1,14 @@
+2004-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport from mainline
+	
+	2004-01-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR optimization/12440
+	* loop.c: Include ggc.h.
+	(loop_optimize): Run garbage collector between optimization of loops.
+	* Makefile.in (loop.o): Add GGC_H dependency.
+
 2004-01-24  Matthias Klose  <doko@debian.org>
 
 	* objc/objc-act.c (is_public): Fix typo in message.
