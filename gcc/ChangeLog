@@ -1,3 +1,10 @@
+2000-05-28  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* toplev.h (skip_leading_substring): New macro.
+	* toplev.c (decode_f_option): Use skip_leading_substring instead
+	of strncmp.
+	(decode_W_option): Likewise.
+
 2000-05-28  Nick Clifton  <nickc@cygnus.com>
 
 	* tm.texi (CONDITIONAL_REGISTER_USAGE): Document that it can

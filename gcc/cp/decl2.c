@@ -590,6 +590,7 @@ lang_decode_option (argc, argv)
       /* Some kind of -f option.
 	 P's value is the option sans `-f'.
 	 Search for it in the table of options.  */
+      const char *option_value = NULL;
       size_t j;
 
       p += 2;
@@ -639,31 +640,36 @@ lang_decode_option (argc, argv)
 	  flag_new_abi = 0;
 	  flag_do_squangling = 0;
 	}
-      else if (!strncmp (p, "template-depth-", 15))
+      else if ((option_value
+                = skip_leading_substring (p, "template-depth-")))
 	max_tinst_depth
-	  = read_integral_parameter (p + 15, p - 2, max_tinst_depth);
-      else if (!strncmp (p, "name-mangling-version-", 22))
+	  = read_integral_parameter (option_value, p - 2, max_tinst_depth);
+      else if ((option_value
+                = skip_leading_substring (p, "name-mangling-version-")))
 	name_mangling_version 
-	  = read_integral_parameter (p + 22, p - 2, name_mangling_version);
-      else if (!strncmp (p, "message-length=", 15))
+	  = read_integral_parameter (option_value, p - 2, name_mangling_version);
+      else if ((option_value
+                = skip_leading_substring (p, "message-length=")))
 	set_message_length
-	  (read_integral_parameter (p + 15, p - 2,
+	  (read_integral_parameter (option_value, p - 2,
 				    /* default line-wrap length */ 72));
-      else if (!strncmp (p, "diagnostics-show-location=", 26))
+      else if ((option_value
+                = skip_leading_substring (p, "diagnostics-show-location=")))
         {
-          if (!strncmp (p + 26, "once", 4))
+          if (!strcmp (option_value, "once"))
             set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
-          else if (!strncmp (p + 26, "every-line", 10))
+          else if (!strcmp (option_value, "every-line"))
             set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE);
           else
             error ("Unrecognized option `%s'", p - 2);
         }
-      else if (!strncmp (p, "dump-translation-unit-", 22))
+      else if ((option_value
+                = skip_leading_substring (p, "dump-translation-unit-")))
 	{
 	  if (p[22] == '\0')
 	    error ("no file specified with -fdump-translation-unit");
 	  else
-	    flag_dump_translation_unit = p + 22;
+	    flag_dump_translation_unit = option_value;
 	}
       else 
 	{
