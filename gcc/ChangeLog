@@ -1,4 +1,10 @@
 2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-opt/18400
+	* tree-vectorizer.c (make_loop_iterate_ntimes): Set loop->nb_iterations.
+	(vect_transform_loop_bound): Set loop->nb_iterations.
+
+2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
             Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18425
