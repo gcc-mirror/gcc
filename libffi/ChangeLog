@@ -1,6 +1,11 @@
+2003-11-06  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/prep_cif.c (ffi_prep_cif): Move the validity check after
+	the initialization.
+
 2003-10-23  Andreas Tobler  <a.tobler@schweiz.ch>
 
-	* src/java_raw_api.c (ffi_java_ptrarray_to_raw): Replace 
+	* src/java_raw_api.c (ffi_java_ptrarray_to_raw): Replace
 	FFI_ASSERT(FALSE) with FFI_ASSERT(0).
 
 2003-10-22  David Daney  <ddaney@avtrex.com>
