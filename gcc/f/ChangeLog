@@ -1,3 +1,10 @@
+Thu Sep 20 15:05:20 JST 2001  George Helffrich  <george@geo.titech.ac.jp>
+
+	* com.c (ffecom_subscript_check_): Loosen subscript checking rules
+	for character strings, to permit substring expressions like
+	string(1:0).
+	* news.texi: Document this as a new feature.
+ 
 Thu Sep 13 10:33:27 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bad.c (ffebad_finish): Const-ification and/or static-ization.

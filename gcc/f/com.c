@@ -671,16 +671,46 @@ ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
     }
 
   element = ffecom_save_tree (element);
-  cond = ffecom_2 (LE_EXPR, integer_type_node,
-		   low,
-		   element);
-  if (high)
+  if (total_dims == 0)
     {
-      cond = ffecom_2 (TRUTH_ANDIF_EXPR, integer_type_node,
-		       cond,
-		       ffecom_2 (LE_EXPR, integer_type_node,
-				 element,
-				 high));
+      /* Special handling for substring range checks.  Fortran allows the
+         end subscript < begin subscript, which means that expressions like
+       string(1:0) are valid (and yield a null string).  In view of this,
+       enforce two simpler conditions:
+          1) element<=high for end-substring;
+          2) element>=low for start-substring.
+       Run-time character movement will enforce remaining conditions.
+
+       More complicated checks would be better, but present structure only
+       provides one index element at a time, so it is not possible to
+       enforce a check of both i and j in string(i:j).  If it were, the
+       complete set of rules would read,
+         if ( ((j<i) && ((low<=i<=high) || (low<=j<=high))) ||
+              ((low<=i<=high) && (low<=j<=high)) )
+           ok ;
+         else
+           range error ;
+      */
+      if (dim)
+        cond = ffecom_2 (LE_EXPR, integer_type_node, element, high);
+      else
+        cond = ffecom_2 (LE_EXPR, integer_type_node, low, element);
+    }
+  else
+    {
+      /* Array reference substring range checking.  */
+        
+      cond = ffecom_2 (LE_EXPR, integer_type_node,
+                     low,
+                     element);
+      if (high)
+        {
+          cond = ffecom_2 (TRUTH_ANDIF_EXPR, integer_type_node,
+                         cond,
+                         ffecom_2 (LE_EXPR, integer_type_node,
+                                   element,
+                                   high));
+        }
     }
 
   {
