@@ -2,7 +2,7 @@
 
 namespace N {}
 
-void f(int N::k); // ERROR - cannot use `::' in parameter declaration
+void f(int N::k); // ERROR - 
 
 class Foo
 {

@@ -8129,28 +8129,32 @@ tsubst_copy_and_build (t, args, complain, in_decl)
 
     case CALL_EXPR:
       {
-	tree function
-	  = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
-	if (TREE_CODE (function) == SCOPE_REF)
+	tree function, copy_args;
+
+	function = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
+	copy_args = tsubst_copy_and_build (TREE_OPERAND (t, 1), args,
+					   complain, in_decl);
+	  
+	if (BASELINK_P (function))
+	  return build_call_from_tree (function, copy_args, 1);
+	else if (TREE_CODE (function) == SCOPE_REF)
 	  {
 	    tree name = TREE_OPERAND (function, 1);
 	    if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
 	      name = build_nt (TEMPLATE_ID_EXPR,
 			       TREE_OPERAND (name, 0),
 			       TREE_OPERAND (name, 1));
-
-	    return build_call_from_tree
-	      (resolve_scoped_fn_name (TREE_OPERAND (function, 0), name),
-	       tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain,
-				      in_decl),
-	       1);
+	    
+	    function = resolve_scoped_fn_name (TREE_OPERAND (function, 0),
+					       name);
+	    
+	    return build_call_from_tree (function, copy_args, 1);
 	  }
 	else
 	  {
 	    tree name = function;
 	    tree id;
-	    tree copy_args = tsubst_copy_and_build
-	      (TREE_OPERAND (t, 1), args, complain, in_decl);
+	    
 	    if (copy_args != NULL_TREE && TREE_CODE (name) == LOOKUP_EXPR
 		&& !LOOKUP_EXPR_GLOBAL (name)
 		&& (TREE_CODE ((id = TREE_OPERAND (name, 0)))
