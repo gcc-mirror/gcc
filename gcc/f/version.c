@@ -1,4 +1,4 @@
 #include "ansidecl.h"
 #include "f/version.h"
 
-const char *const ffe_version_string = "3.2 20020719 (experimental)";
+const char *const ffe_version_string = "3.2 20020720 (experimental)";
