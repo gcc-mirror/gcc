@@ -1,5 +1,12 @@
 2002-02-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
+	* lib/prune.exp: Remove "In (program|subroutine"block-data)"
+	message from g77
+	* lib/g77-dg.exp: Trim g77 error messages so that they are
+	recognised by dg.exp.
+
+2002-02-07  David Billinghurst <David.Billinghurst@riotinto.com>
+
 	PR fortran/5473
 	* g77.dg/pr5473.f: Now dg-error.  Add additional cases.  
 
