@@ -173,7 +173,8 @@ proc compat-get-options { src } {
     set tmp [dg-get-options $src]
     foreach op $tmp {
 	set cmd [lindex $op 0]
-	if { ![string compare "dg-options" $cmd] || ![string compare "dg-xfail-if" $cmd] } {
+	if { ![string compare "dg-options" $cmd] \
+	     || ![string compare "dg-xfail-if" $cmd] } {
 	    set status [catch "$op" errmsg]
 	    if { $status != 0 } {
 		perror "src: $errmsg for \"$op\"\n"
@@ -278,15 +279,19 @@ proc compat-execute { src1 sid use_alt } {
 	# later.  Skip this if we don't have an alternate compiler.
 	if { $use_alt != 0 } then {
 	    compat-use-alt-compiler
-	    compat-obj "$src2" "$obj2_alt" $alt_option $extra_flags_2 $optstr $compile_xfail_2
-	    compat-obj "$src3" "$obj3_alt" $alt_option $extra_flags_3 $optstr $compile_xfail_3
+	    compat-obj "$src2" "$obj2_alt" $alt_option $extra_flags_2 \
+		       $optstr $compile_xfail_2
+	    compat-obj "$src3" "$obj3_alt" $alt_option $extra_flags_3 \
+		       $optstr $compile_xfail_3
 	}
 
 	# Compile pieces with the compiler under test.
 	compat-use-tst-compiler
 	compat-obj "$src1" "$obj1" $tst_option $extra_flags_1 $optstr ""
-	compat-obj "$src2" "$obj2_tst" $tst_option $extra_flags_2 $optstr $compile_xfail_2
-	compat-obj "$src3" "$obj3_tst" $tst_option $extra_flags_3 $optstr $compile_xfail_3
+	compat-obj "$src2" "$obj2_tst" $tst_option $extra_flags_2 \
+		   $optstr $compile_xfail_2
+	compat-obj "$src3" "$obj3_tst" $tst_option $extra_flags_3 \
+		   $optstr $compile_xfail_3
 
 	# Link (using the compiler under test), run, and clean up tests.
 	compat-run "${obj2_tst}-${obj3_tst}" \
