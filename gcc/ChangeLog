@@ -1,3 +1,7 @@
+2000-09-12  Kazu Hirata  <kazu@hxi.com>
+
+	* unroll.c: Fix formatting.
+
 2000-09-12  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixfixes.c: make a type for the fix procedure & use it,
