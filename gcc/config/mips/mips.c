@@ -6052,6 +6052,11 @@ mips_global_pointer (void)
   if (current_function_profile)
     return GLOBAL_POINTER_REGNUM;
 
+  /* If the function has a nonlocal goto, $gp must hold the correct
+     global pointer for the target function.  */
+  if (current_function_has_nonlocal_goto)
+    return GLOBAL_POINTER_REGNUM;
+
   /* If the gp is never referenced, there's no need to initialize it.
      Note that reload can sometimes introduce constant pool references
      into a function that otherwise didn't need them.  For example,

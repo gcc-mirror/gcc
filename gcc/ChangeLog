@@ -1,3 +1,8 @@
+2003-12-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_global_pointer): Force functions with
+	a nonlocal goto to set up $gp.
+
 2003-12-11  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/13132
