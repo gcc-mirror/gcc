@@ -1,3 +1,9 @@
+2005-01-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config.gcc (Obsolete configurations): Remove 'dummy', add
+	sparclite-*-coff*, sparclite-*-elf*, sparc86x-*-elf* and
+	sparc-*-openbsd*.
+
 2005-01-26  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/19633
