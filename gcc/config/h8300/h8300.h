@@ -99,17 +99,12 @@ extern int target_flags;
     {"exp",8192},		\
     { "", TARGET_DEFAULT}}
 
-/* Merge the meaning of -mdouble64 and -fshort-double.
-   ??? Unfortunately, there's no way to detect -fno-short-double
-   (our default is the opposite of theirs).
-   Also do other things that must be done once at start up.  */
+/* Do things that must be done once at start up.  */
 
 #define OVERRIDE_OPTIONS \
-{				\
-  /*extern int flag_short_double; \
-  flag_short_double = TARGET_DOUBLE32;*/ \
+do {				\
   h8300_init_once ();		\
-}
+} while (0)
 
 /* Default target_flags if no switches specified.  */
 
