@@ -746,7 +746,8 @@ update_alignment_for_field (rli, field, known_align)
     {
       /* A zero-length bit-field affects the alignment of the next
 	 field.  */
-      if (!DECL_PACKED (field) && integer_zerop (DECL_SIZE (field)))
+      if (!DECL_PACKED (field) && !user_align
+	  && integer_zerop (DECL_SIZE (field)))
 	{
 	  desired_align = TYPE_ALIGN (type);
 #ifdef ADJUST_FIELD_ALIGN
