@@ -1,5 +1,10 @@
 2005-03-07  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Recognize '-f'.
+	(usage): Document '-f'.
+
+2005-03-07  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/VMCompiler.java (md5Digest): New field.
 	(compileClass): Clone md5Digest instead of looking up a new one.
 

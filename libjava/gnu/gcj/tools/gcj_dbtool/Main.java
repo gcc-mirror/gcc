@@ -75,7 +75,7 @@ public class Main
 	return;
       }
 
-    if (s[0].equals("-a"))
+    if (s[0].equals("-a") || s[0].equals("-f"))
       {
 	// Add a jar file to a database, creating it if necessary.
 	// Copies the database, adds the jar file to the copy, and
@@ -94,7 +94,7 @@ public class Main
 	      map = PersistentByteMap.emptyPersistentByteMap(database, 
 							     100, 100*32);
 	    File soFile = new File(s[3]);
-	    if (! soFile.isFile())
+	    if (! s[0].equals("-f") && ! soFile.isFile())
 	      throw new IllegalArgumentException(s[3] + " is not a file");
  	    map = addJar(jar, map, soFile);
 	  }
@@ -278,6 +278,8 @@ public class Main
        + "  Usage: \n"
        + "    gcj-dbtool -n file.gcjdb [size]     - Create a new gcj map database\n"
        + "    gcj-dbtool -a file.gcjdb file.jar file.so\n"
+       + "            - Add the contents of file.jar to a new gcj map database\n"
+       + "    gcj-dbtool -f file.gcjdb file.jar file.so\n"
        + "            - Add the contents of file.jar to a new gcj map database\n"
        + "    gcj-dbtool -t file.gcjdb            - Test a gcj map database\n"
        + "    gcj-dbtool -l file.gcjdb            - List a gcj map database\n"
