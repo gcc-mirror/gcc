@@ -2553,7 +2553,11 @@ compensate_edge (e, file)
       abort ();
     eh1:
 
+      /* We are sure that there is st(0) live, otherwise we won't compensate.
+	 For complex return values, we may have st(1) live as well.  */
       SET_HARD_REG_BIT (tmp, FIRST_STACK_REG);
+      if (TEST_HARD_REG_BIT (regstack.reg_set, FIRST_STACK_REG + 1))
+        SET_HARD_REG_BIT (tmp, FIRST_STACK_REG + 1);
       GO_IF_HARD_REG_EQUAL (regstack.reg_set, tmp, eh2);
       abort ();
     eh2:
