@@ -135,8 +135,15 @@ public class GtkListPeer extends GtkComponentPeer
 	if (!me.isConsumed ()
 	    && (me.getModifiers () & MouseEvent.BUTTON1_MASK) != 0
 	    && me.getClickCount() == 2)
-	  postActionEvent (((List)awtComponent).getSelectedItem (), 
-			   me.getModifiers ());
+	  {
+            String selectedItem = ((List)awtComponent).getSelectedItem ();
+
+            /* Double-click only generates an Action event
+	       if something is selected */
+            if (selectedItem != null)
+	      postActionEvent (((List)awtComponent).getSelectedItem (), 
+			       me.getModifiers ());
+	  }
       }
 
     if (e.getID () == KeyEvent.KEY_PRESSED)
