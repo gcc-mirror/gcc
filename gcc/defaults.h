@@ -296,6 +296,10 @@ do {								\
 #define BUILD_VA_LIST_TYPE(X) ((X) = ptr_type_node)
 #endif
 
+#ifndef PIC_OFFSET_TABLE_REGNUM
+#define PIC_OFFSET_TABLE_REGNUM INVALID_REGNUM
+#endif
+
 /* By default, the preprocessor should be invoked the same way in C++
    as in C.  */
 #ifndef CPLUSPLUS_CPP_SPEC

@@ -7119,7 +7119,7 @@ cse_main (f, nregs, after_loop, file)
 #if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
 	 && ! (i == ARG_POINTER_REGNUM && fixed_regs[i])
 #endif
-#if defined (PIC_OFFSET_TABLE_REGNUM) && !defined (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED)
+#if !defined (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED)
 	 && ! (i == PIC_OFFSET_TABLE_REGNUM && flag_pic)
 #endif
 	 )
