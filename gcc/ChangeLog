@@ -1,3 +1,9 @@
+2004-09-28  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* cse.c (cse_insn): Avoid creating direct non-local jumps.
+	* combine.c (can_combine_p): Likewise.
+	* local-alloc. (update_equiv_regs): Likewise.
+
 2004-09-28  Richard Henderson  <rth@redhat.com>
 
 	PR 17531

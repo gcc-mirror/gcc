@@ -5395,6 +5395,11 @@ cse_insn (rtx insn, rtx libcall_insn)
 		  || (GET_CODE (trial) == LABEL_REF
 		      && ! condjump_p (insn))))
 	    {
+	      /* Don't substitute non-local labels, this confuses CFG.  */
+	      if (GET_CODE (trial) == LABEL_REF
+		  && LABEL_REF_NONLOCAL_P (trial))
+		continue;
+
 	      SET_SRC (sets[i].rtl) = trial;
 	      cse_jumps_altered = 1;
 	      break;
