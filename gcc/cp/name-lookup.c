@@ -32,12 +32,15 @@ Boston, MA 02111-1307, USA.  */
 /* Compute the chain index of a binding_entry given the HASH value of its
    name and the total COUNT of chains.  COUNT is assumed to be a power
    of 2.  */
+
 #define ENTRY_INDEX(HASH, COUNT) (((HASH) >> 3) & ((COUNT) - 1))
 
 /* A free list of "binding_entry"s awaiting for re-use.  */
+
 static GTY((deletable(""))) binding_entry free_binding_entry = NULL;
 
 /* Create a binding_entry object for (NAME, TYPE).  */
+
 static inline binding_entry
 binding_entry_make (tree name, tree type)
 {
@@ -59,6 +62,7 @@ binding_entry_make (tree name, tree type)
 }
 
 /* Put ENTRY back on the free list.  */
+
 static inline void
 binding_entry_free (binding_entry entry)
 {
@@ -82,6 +86,7 @@ struct binding_table_s GTY(())
 };
 
 /* Construct TABLE with an initial CHAIN_COUNT.  */
+
 static inline void
 binding_table_construct (binding_table table, size_t chain_count)
 {
@@ -91,15 +96,18 @@ binding_table_construct (binding_table table, size_t chain_count)
     (table->chain_count * sizeof (binding_entry));
 }
 
-/* Free TABLE by making its entries ready for reuse.  */
+/* Make TABLE's entries ready for reuse.  */
+
 void
 binding_table_free (binding_table table)
 {
   size_t i;
+  size_t count;
+
   if (table == NULL)
     return;
 
-  for (i = 0; i < table->chain_count; ++i)
+  for (i = 0, count = table->chain_count; i < count; ++i)
     {
       binding_entry temp = table->chain[i];
       while (temp != NULL)
@@ -109,12 +117,13 @@ binding_table_free (binding_table table)
           entry->chain = NULL; 
           binding_entry_free (entry);
         }
-      table->chain[i] = temp;
+      table->chain[i] = NULL;
     }
   table->entry_count = 0;
 }
 
 /* Allocate a table with CHAIN_COUNT, assumed to be a power of two.  */
+
 binding_table
 binding_table_new (size_t chain_count)
 {
@@ -125,6 +134,7 @@ binding_table_new (size_t chain_count)
 }
 
 /* Expand TABLE to twice its current chain_count.  */
+
 static void
 binding_table_expand (binding_table table)
 {
@@ -151,7 +161,8 @@ binding_table_expand (binding_table table)
   table->entry_count = old_entry_count;
 }
 
-/* Insert a binding for NAME to TYPe into TABLE.  */
+/* Insert a binding for NAME to TYPE into TABLE.  */
+
 void
 binding_table_insert (binding_table table, tree name, tree type)
 {
@@ -168,6 +179,7 @@ binding_table_insert (binding_table table, tree name, tree type)
 }
 
 /* Return the binding_entry, if any, that maps NAME.  */
+
 binding_entry
 binding_table_find (binding_table table, tree name)
 {
@@ -180,7 +192,8 @@ binding_table_find (binding_table table, tree name)
   return entry;
 }
 
-/* Return the binding_entry, if any, that maps name to an anonymous type.  */
+/* Return the binding_entry, if any, that maps NAME to an anonymous type.  */
+
 tree
 binding_table_find_anon_type (binding_table table, tree name)
 {
@@ -195,6 +208,7 @@ binding_table_find_anon_type (binding_table table, tree name)
 
 /* Return the binding_entry, if any, that has TYPE as target.  If NAME
    is non-null, then set the domain and rehash that entry.  */
+
 binding_entry
 binding_table_reverse_maybe_remap (binding_table table, tree type, tree name)
 {
@@ -230,6 +244,7 @@ binding_table_reverse_maybe_remap (binding_table table, tree type, tree name)
 
 /* Remove from TABLE all entries that map to anonymous enums or
    class-types.  */
+
 void
 binding_table_remove_anonymous_types (binding_table table)
 {
@@ -254,6 +269,7 @@ binding_table_remove_anonymous_types (binding_table table)
 }
 
 /* Apply PROC -- with DATA -- to all entries in TABLE.  */
+
 void
 binding_table_foreach (binding_table table, bt_foreach_proc proc, void *data)
 {
@@ -270,9 +286,11 @@ binding_table_foreach (binding_table table, bt_foreach_proc proc, void *data)
 
 
 /* A free list of "cxx_binding"s, connected by their PREVIOUS.  */
+
 static GTY((deletable (""))) cxx_binding *free_bindings;
 
 /* (GC)-allocate a binding object with VALUE and TYPE member initialized.  */
+
 cxx_binding *
 cxx_binding_make (tree value, tree type)
 {
@@ -293,9 +311,11 @@ cxx_binding_make (tree value, tree type)
 }
 
 /* Put BINDING back on the free list.  */
+
 void
 cxx_binding_free (cxx_binding *binding)
 {
+  binding->scope = NULL;
   binding->previous = free_bindings;
   free_bindings = binding;
 }
@@ -402,6 +422,7 @@ find_binding (cxx_scope *scope, cxx_binding *binding)
 }
 
 /* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
+
 cxx_binding *
 cxx_scope_find_binding_for_name (cxx_scope *scope, tree name)
 {
