@@ -60,6 +60,11 @@ void test04()
   VERIFY(before._M_singular());
 }
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<int>;
+#endif
+
 int main()
 {
   test04();

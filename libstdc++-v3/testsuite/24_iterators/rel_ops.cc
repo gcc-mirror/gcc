@@ -1,6 +1,6 @@
 // 2002-04-13  Paolo Carlini  <pcarlini@unitus.it>
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,11 @@ void test01()
   vi <= v.begin();
   vi >= v.begin();
 }
+
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<int>;
+#endif
 
 int main()
 {
