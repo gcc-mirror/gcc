@@ -2,7 +2,7 @@
 
 ########################################################################
 #
-# File:   build-gcc.sh
+# File:   gcc_build
 # Author: Mark Mitchell
 # Date:   07/10/2000
 #
