@@ -270,17 +270,6 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 # endif
 #endif
 
-/* This determines whether this target supports hidden visibility.
-   This is a weaker condition than HAVE_GAS_HIDDEN, which probes for
-   specific assembler syntax.  */
-#ifndef TARGET_SUPPORTS_HIDDEN
-# ifdef HAVE_GAS_HIDDEN
-#  define TARGET_SUPPORTS_HIDDEN 1
-# else
-#  define TARGET_SUPPORTS_HIDDEN 0
-# endif
-#endif
-
 /* Determines whether we may use common symbols to represent one-only
    semantics (a.k.a. "vague linkage").  */
 #ifndef USE_COMMON_FOR_ONE_ONLY
