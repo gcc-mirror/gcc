@@ -508,6 +508,9 @@ extern void emit_cmp_insn ();
 /* Generate rtl to compare two rtx's, will call emit_cmp_insn.  */
 extern rtx compare_from_rtx ();
 
+/* Emit insns to set X from Y, with no frills.  */
+extern rtx emit_move_insn_1 ();
+
 /* Emit some rtl insns to move data between rtx's, converting machine modes.
    Both modes must be floating or both fixed.  */
 extern void convert_move ();
