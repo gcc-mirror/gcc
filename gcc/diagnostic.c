@@ -757,21 +757,14 @@ vbuild_message_string (msg, ap)
 static char *
 build_message_string VPARAMS ((const char *msg, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msg;
-#endif
-  va_list ap;
   char *str;
 
-  VA_START (ap, msg);
-
-#ifndef ANSI_PROTOTYPES
-  msg = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msg);
+  VA_FIXEDARG (ap, const char *, msg);
 
   str = vbuild_message_string (msg, ap);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 
   return str;
 }
@@ -830,23 +823,17 @@ output_do_printf (buffer, msg)
 void
 output_printf VPARAMS ((struct output_buffer *buffer, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  struct output_buffer *buffer;
-  const char *msgid;
-#endif
-  va_list ap;
   va_list *old_args;
 
-  VA_START (ap, msgid);
-#ifndef ANSI_PROTOTYPES
-  buffer = va_arg (ap, output_buffer *);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, output_buffer *, buffer);
+  VA_FIXEDARG (ap, const char *, msgid);
+
   old_args = output_buffer_ptr_to_format_args (buffer);
   output_buffer_ptr_to_format_args (buffer) = &ap;
   output_do_printf (buffer, _(msgid));
   output_buffer_ptr_to_format_args (buffer) = old_args;
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Print a message relevant to the given DECL.  */
@@ -966,21 +953,12 @@ count_error (warningp)
 void
 fnotice VPARAMS ((FILE *file, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  FILE *file;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  file = va_arg (ap, FILE *);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, FILE *, file);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   vfprintf (file, _(msgid), ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 
@@ -990,18 +968,12 @@ fnotice VPARAMS ((FILE *file, const char *msgid, ...))
 void
 fatal_io_error VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
   output_state os;
 
-  os = output_buffer_state (diagnostic_buffer);
-  VA_START (ap, msgid);
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  os = output_buffer_state (diagnostic_buffer);
 
   output_printf (diagnostic_buffer, "%s: %s: ", progname, xstrerror (errno));
   output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
@@ -1009,7 +981,7 @@ fatal_io_error VPARAMS ((const char *msgid, ...))
   output_format (diagnostic_buffer);
   diagnostic_finish ((output_buffer *)global_dc);
   output_buffer_state (diagnostic_buffer) = os;
-  va_end (ap);
+  VA_CLOSE (ap);
   exit (FATAL_EXIT_CODE);
 }
 
@@ -1018,22 +990,15 @@ fatal_io_error VPARAMS ((const char *msgid, ...))
 void
 pedwarn VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
   diagnostic_context dc;
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   set_diagnostic_context
     (&dc, msgid, &ap, input_filename, lineno, !flag_pedantic_errors);
   report_diagnostic (&dc);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Issue a pedantic waring about DECL.  */
@@ -1041,18 +1006,10 @@ pedwarn VPARAMS ((const char *msgid, ...))
 void
 pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  tree decl;
-  const char *msgid;
-#endif
-  va_list ap;
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, tree, decl);
+  VA_FIXEDARG (ap, const char *, msgid);
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  decl = va_arg (ap, tree);
-  msgid = va_arg (ap, const char *);
-#endif
   /* We don't want -pedantic-errors to cause the compilation to fail from
      "errors" in system header files.  Sometimes fixincludes can't fix what's
      broken (eg: unsigned char bitfields - fixing it may change the alignment
@@ -1061,7 +1018,7 @@ pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
      warning either, it's just unnecessary noise.  */
   if (!DECL_IN_SYSTEM_HEADER (decl))
     diagnostic_for_decl (decl, msgid, &ap, !flag_pedantic_errors);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Same as above but within the context FILE and LINE.  */
@@ -1070,25 +1027,16 @@ void
 pedwarn_with_file_and_line VPARAMS ((const char *file, int line,
 				     const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *file;
-  int line;
-  const char *msgid;
-#endif
-  va_list ap;
   diagnostic_context dc;
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  file = va_arg (ap, const char *);
-  line = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, file);
+  VA_FIXEDARG (ap, int, line);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   set_diagnostic_context (&dc, msgid, &ap, file, line, !flag_pedantic_errors);
   report_diagnostic (&dc);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Just apologize with MSGID.  */
@@ -1096,18 +1044,13 @@ pedwarn_with_file_and_line VPARAMS ((const char *file, int line,
 void
 sorry VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
   output_state os;
 
-  os = output_buffer_state (diagnostic_buffer);
-  VA_START (ap, msgid);
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  os = output_buffer_state (diagnostic_buffer);
+
   ++sorrycount;
   output_set_prefix
     (diagnostic_buffer, context_as_prefix (input_filename, lineno, 0));
@@ -1117,7 +1060,7 @@ sorry VPARAMS ((const char *msgid, ...))
   output_format (diagnostic_buffer);
   diagnostic_finish ((output_buffer *)global_dc);
   output_buffer_state (diagnostic_buffer) = os;
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Called when the start of a function definition is parsed,
@@ -1193,45 +1136,27 @@ void
 error_with_file_and_line VPARAMS ((const char *file, int line,
 				   const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *file;
-  int line;
-  const char *msgid;
-#endif
-  va_list ap;
   diagnostic_context dc;
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  file = va_arg (ap, const char *);
-  line = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, file);
+  VA_FIXEDARG (ap, int, line);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   set_diagnostic_context (&dc, msgid, &ap, file, line, /* warn = */ 0);
   report_diagnostic (&dc);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 error_with_decl VPARAMS ((tree decl, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  tree decl;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  decl = va_arg (ap, tree);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, tree, decl);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   diagnostic_for_decl (decl, msgid, &ap, /* warn = */ 0);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 
@@ -1240,22 +1165,15 @@ error_with_decl VPARAMS ((tree decl, const char *msgid, ...))
 void
 error VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
   diagnostic_context dc;
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   set_diagnostic_context
     (&dc, msgid, &ap, input_filename, lineno, /* warn = */ 0);
   report_diagnostic (&dc);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Likewise, except that the compilation is terminated after printing the
@@ -1264,22 +1182,15 @@ error VPARAMS ((const char *msgid, ...))
 void
 fatal_error VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
   diagnostic_context dc;
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   set_diagnostic_context
     (&dc, msgid, &ap, input_filename, lineno, /* warn = */ 0);
   report_diagnostic (&dc);
-  va_end (ap);
+  VA_CLOSE (ap);
 
   fnotice (stderr, "compilation terminated.\n");
   exit (FATAL_EXIT_CODE);
@@ -1302,17 +1213,10 @@ set_internal_error_function (f)
 void
 internal_error VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
   diagnostic_context dc;
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   if (diagnostic_lock)
     error_recursion ();
@@ -1330,7 +1234,7 @@ internal_error VPARAMS ((const char *msgid, ...))
   set_diagnostic_context
     (&dc, msgid, &ap, input_filename, lineno, /* warn = */0);
   report_diagnostic (&dc);
-  va_end (ap);
+  VA_CLOSE (ap);
 
   fnotice (stderr,
 "Please submit a full bug report,\n\
@@ -1343,66 +1247,41 @@ void
 warning_with_file_and_line VPARAMS ((const char *file, int line,
 				     const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *file;
-  int line;
-  const char *msgid;
-#endif
-  va_list ap;
   diagnostic_context dc;
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  file = va_arg (ap, const char *);
-  line = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, file);
+  VA_FIXEDARG (ap, int, line);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   set_diagnostic_context (&dc, msgid, &ap, file, line, /* warn = */ 1);
   report_diagnostic (&dc);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 warning_with_decl VPARAMS ((tree decl, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  tree decl;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  decl = va_arg (ap, tree);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, tree, decl);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   diagnostic_for_decl (decl, msgid, &ap, /* warn = */ 1);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 warning VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
   diagnostic_context dc;
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   set_diagnostic_context
     (&dc, msgid, &ap, input_filename, lineno, /* warn = */ 1);
   report_diagnostic (&dc);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Flush diagnostic_buffer content on stderr.  */
@@ -1443,19 +1322,12 @@ output_do_verbatim (buffer, msgid, args_ptr)
 void
 output_verbatim VPARAMS ((output_buffer *buffer, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  output_buffer *buffer;
-  const char *msgid;
-#endif
-  va_list ap;
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, output_buffer *, buffer);
+  VA_FIXEDARG (ap, const char *, msgid);
 
-  VA_START (ap, msgid);
-#ifndef ANSI_PROTOTYPES
-  buffer = va_arg (ap, output_buffer *);
-  msg = va_arg (ap, const char *);
-#endif
   output_do_verbatim (buffer, msgid, &ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Same as above but use diagnostic_buffer.  */
@@ -1463,18 +1335,12 @@ output_verbatim VPARAMS ((output_buffer *buffer, const char *msgid, ...))
 void
 verbatim VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
-  VA_START (ap, msgid);
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
   output_do_verbatim (diagnostic_buffer, msgid, &ap);
   output_buffer_to_stream (diagnostic_buffer);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Report a diagnostic message (an error or a warning) as specified by

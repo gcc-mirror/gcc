@@ -4203,26 +4203,15 @@ void
 emit_library_call VPARAMS((rtx orgfun, enum libcall_type fn_type,
 			   enum machine_mode outmode, int nargs, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  rtx orgfun;
-  int fn_type;
-  enum machine_mode outmode;
-  int nargs;
-#endif
-  va_list p;
-
-  VA_START (p, nargs);
-
-#ifndef ANSI_PROTOTYPES
-  orgfun = va_arg (p, rtx);
-  fn_type = va_arg (p, int);
-  outmode = va_arg (p, enum machine_mode);
-  nargs = va_arg (p, int);
-#endif
+  VA_OPEN (p, nargs);
+  VA_FIXEDARG (p, rtx, orgfun);
+  VA_FIXEDARG (p, int, fn_type);
+  VA_FIXEDARG (p, enum machine_mode, outmode);
+  VA_FIXEDARG (p, int, nargs);
 
   emit_library_call_value_1 (0, orgfun, NULL_RTX, fn_type, outmode, nargs, p);
 
-  va_end (p);
+  VA_CLOSE (p);
 }
 
 /* Like emit_library_call except that an extra argument, VALUE,
@@ -4238,28 +4227,16 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value,
 				 enum libcall_type fn_type,
 				 enum machine_mode outmode, int nargs, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  rtx orgfun;
-  rtx value;
-  int fn_type;
-  enum machine_mode outmode;
-  int nargs;
-#endif
-  va_list p;
-
-  VA_START (p, nargs);
-
-#ifndef ANSI_PROTOTYPES
-  orgfun = va_arg (p, rtx);
-  value = va_arg (p, rtx);
-  fn_type = va_arg (p, int);
-  outmode = va_arg (p, enum machine_mode);
-  nargs = va_arg (p, int);
-#endif
+  VA_OPEN (p, nargs);
+  VA_FIXEDARG (p, rtx, orgfun);
+  VA_FIXEDARG (p, rtx, value);
+  VA_FIXEDARG (p, int, fn_type);
+  VA_FIXEDARG (p, enum machine_mode, outmode);
+  VA_FIXEDARG (p, int, nargs);
 
   value = emit_library_call_value_1 (1, orgfun, value, fn_type, outmode, nargs, p);
 
-  va_end (p);
+  VA_CLOSE (p);
 
   return value;
 }
