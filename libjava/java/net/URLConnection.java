@@ -322,25 +322,29 @@ public abstract class URLConnection
    * is not present or cannot be parsed as an integer, the default value
    * will be returned.
    *
-   * @param name The name of the header field
-   * @param val The default value
+   * @param name The header field key to lookup
+   * @param defaultValue The defaule value if the header field is not found
+   * or can't be parsed.
    *
    * @return The value of the header field or the default value if the field
    * is missing or malformed
    */
-  public int getHeaderFieldInt(String name, int val)
+  public int getHeaderFieldInt(String name, int defaultValue)
   {
     String str = getHeaderField(name);
+    int result = defaultValue;
+    
     try
       {
 	if (str != null)
-	  val = Integer.parseInt(str);
+	  result = Integer.parseInt (str);
       }
-    catch (NumberFormatException e)
-      {
-	; // Do nothing; val is the default.
+    catch (NumberFormatException e) 
+      { 
+	; // Do nothing; defaultValue is the default.
       }
-    return val;
+    
+    return result;
   }
 
   /**
