@@ -133,6 +133,10 @@ Boston, MA 02111-1307, USA.  */
 /* Import list of registers used as spill regs from reload.  */
 extern HARD_REG_SET used_spill_regs;
 
+/* Import highest label used in function at end of reload.  */
+extern int max_label_num_after_reload;
+
+
 #ifdef DELAY_SLOTS
 
 #define obstack_chunk_alloc xmalloc
@@ -2468,11 +2472,14 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 	  AND_COMPL_HARD_REG_SET (res->regs, pending_dead_regs);
 	  CLEAR_HARD_REG_SET (pending_dead_regs);
 
-	  /* All spill registers are dead at a label, so kill all of the
-	     ones that aren't needed also.  */
-	  COPY_HARD_REG_SET (scratch, used_spill_regs);
-	  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
-	  AND_COMPL_HARD_REG_SET (res->regs, scratch);
+	  if (CODE_LABEL_NUMBER (insn) < max_label_num_after_reload)
+	    {
+	      /* All spill registers are dead at a label, so kill all of the
+		 ones that aren't needed also.  */
+	      COPY_HARD_REG_SET (scratch, used_spill_regs);
+	      AND_COMPL_HARD_REG_SET (scratch, needed.regs);
+	      AND_COMPL_HARD_REG_SET (res->regs, scratch);
+	    }
 	  continue;
 
 	case BARRIER:
