@@ -1476,11 +1476,6 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
   if (version_ref_count (map, def) != 1)
     return false;
 
-  /* Assignments to variables assigned to hard registers are not
-     replaceable.  */
-  if (DECL_HARD_REGISTER (SSA_NAME_VAR (def)))
-    return false;
-
   /* There must be no V_MAY_DEFS.  */
   if (NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) != 0)
     return false;

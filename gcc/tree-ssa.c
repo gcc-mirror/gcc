@@ -1273,7 +1273,7 @@ warn_uninit (tree t, const char *msgid, location_t *locus)
     return;
 
   /* Hard register variables get their initial value from the ether.  */
-  if (DECL_HARD_REGISTER (var))
+  if (TREE_CODE (var) == VAR_DECL && DECL_HARD_REGISTER (var))
     return;
 
   /* TREE_NO_WARNING either means we already warned, or the front end

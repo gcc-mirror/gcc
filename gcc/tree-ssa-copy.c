@@ -145,11 +145,10 @@ may_propagate_copy (tree dest, tree orig)
       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig))
     return false;
 
-  /* If DEST is an SSA_NAME that flows from an abnormal edge or if it
-     represents a hard register, then it cannot be replaced.  */
+  /* If DEST is an SSA_NAME that flows from an abnormal edge, then it
+     cannot be replaced.  */
   if (TREE_CODE (dest) == SSA_NAME
-      && (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (dest)
-	  || DECL_HARD_REGISTER (SSA_NAME_VAR (dest))))
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (dest))
     return false;
 
   /* Anything else is OK.  */
@@ -163,6 +162,7 @@ may_propagate_copy_into_asm (tree dest)
 {
   /* Hard register operands of asms are special.  Do not bypass.  */
   return !(TREE_CODE (dest) == SSA_NAME
+	   && TREE_CODE (SSA_NAME_VAR (dest)) == VAR_DECL
 	   && DECL_HARD_REGISTER (SSA_NAME_VAR (dest)));
 }
 

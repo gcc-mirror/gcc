@@ -146,19 +146,6 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
   root1 = SSA_NAME_VAR (rep1);
   root2 = SSA_NAME_VAR (rep2);
 
-  if (DECL_HARD_REGISTER (root1) || DECL_HARD_REGISTER (root2))
-    {
-      if (debug)
-        {
-	  if (DECL_HARD_REGISTER (root1))
-	    print_generic_expr (debug, var1, TDF_SLIM);
-	  else
-	    print_generic_expr (debug, var2, TDF_SLIM);
-	  fprintf (debug, " is a hardware register.  No Coalescing.\n");
-	}
-      return;
-    }
-
   ann1 = var_ann (root1);
   ann2 = var_ann (root2);
 

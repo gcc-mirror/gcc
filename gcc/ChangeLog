@@ -1,3 +1,19 @@
+2004-09-29  Richard Henderson  <rth@redhat.com>
+
+	PR 17739
+	* tree-gimple.c (is_gimple_reg): Reject hard registers.
+	(is_gimple_asm_val): New.
+	* tree-gimple.h (is_gimple_asm_val): Declare.
+	* gimplify.c (gimplify_asm_expr): Use it.
+	* tree-pretty-print.c (print_declaration): Dump hard regs.
+	* tree-outof-ssa.c (check_replaceable): Don't check for hard regs.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Likewise.
+	* tree-ssa-pre.c (is_undefined_value): Likewise.
+	* tree-ssa-copy.c (may_propagate_copy): Likewise.
+	(may_propagate_copy_into_asm): Protect DECL_HARD_REGISTER.
+	* tree-ssa.c (warn_uninit): Likewise.
+	* tree.h (DECL_HARD_REGISTER): Check for VAR_DECL.
+
 2004-09-29  Fariborz Jahanian <fjahanian@apple.com>
 
 	* c-decl.c (merge_decls): Use comptype when comparing
