@@ -1,4 +1,4 @@
-#   Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2001, 2003, 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,6 +45,12 @@ proc check_weak_available { } {
     # DEC OSF/1/Digital UNIX/Tru64 UNIX supports it
 
     if { [regexp "alpha.*osf.*" $target_triplet] } {
+	return 1
+    }
+
+    # Windows targets Cygwin and MingW32 support it
+
+    if { [regexp ".*mingw32|.*cygwin" $target_triplet] } {
 	return 1
     }
 

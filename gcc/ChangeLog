@@ -1,3 +1,9 @@
+2004-11-06  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	PR target/18106
+	* config/i386/cygming.h
+	[HAVE_GAS_WEAK] (ASM_WEAKEN_LABEL): Macro defined.
+
 2004-11-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/sh/sh4a.md: Fix copyright.
