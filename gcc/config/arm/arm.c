@@ -2905,6 +2905,91 @@ thumb_legitimate_offset_p (mode, val)
     }
 }
 
+/* Try machine-dependent ways of modifying an illegitimate address
+   to be legitimate.  If we find one, return the new, valid address.  */
+
+rtx
+arm_legitimize_address (x, orig_x, mode)
+     rtx x;
+     rtx orig_x;
+     enum machine_mode mode;
+{
+  if (GET_CODE (x) == PLUS)
+    {
+      rtx xop0 = XEXP (x, 0);
+      rtx xop1 = XEXP (x, 1);
+
+      if (CONSTANT_P (xop0) && !symbol_mentioned_p (xop0))
+	xop0 = force_reg (SImode, xop0);
+
+      if (CONSTANT_P (xop1) && !symbol_mentioned_p (xop1))
+	xop1 = force_reg (SImode, xop1);
+
+      if (ARM_BASE_REGISTER_RTX_P (xop0)
+	  && GET_CODE (xop1) == CONST_INT)
+	{
+	  HOST_WIDE_INT n, low_n;
+	  rtx base_reg, val;
+	  n = INTVAL (xop1);
+
+	  if (mode == DImode || (TARGET_SOFT_FLOAT && mode == DFmode))
+	    {
+	      low_n = n & 0x0f;
+	      n &= ~0x0f;
+	      if (low_n > 4)
+		{
+		  n += 16;
+		  low_n -= 16;
+		}
+	    }
+	  else
+	    {
+	      low_n = ((mode) == TImode ? 0
+		       : n >= 0 ? (n & 0xfff) : -((-n) & 0xfff));
+	      n -= low_n;
+	    }
+
+	  base_reg = gen_reg_rtx (SImode);
+	  val = force_operand (gen_rtx_PLUS (SImode, xop0,
+					     GEN_INT (n)), NULL_RTX);
+	  emit_move_insn (base_reg, val);
+	  x = (low_n == 0 ? base_reg
+	       : gen_rtx_PLUS (SImode, base_reg, GEN_INT (low_n)));
+	}
+      else if (xop0 != XEXP (x, 0) || xop1 != XEXP (x, 1))
+	x = gen_rtx_PLUS (SImode, xop0, xop1);
+    }
+
+  /* XXX We don't allow MINUS any more -- see comment in
+     arm_legitimate_address_p ().  */
+  else if (GET_CODE (x) == MINUS)
+    {
+      rtx xop0 = XEXP (x, 0);
+      rtx xop1 = XEXP (x, 1);
+
+      if (CONSTANT_P (xop0))
+	xop0 = force_reg (SImode, xop0);
+
+      if (CONSTANT_P (xop1) && ! symbol_mentioned_p (xop1))
+	xop1 = force_reg (SImode, xop1);
+
+      if (xop0 != XEXP (x, 0) || xop1 != XEXP (x, 1))
+	x = gen_rtx_MINUS (SImode, xop0, xop1);
+    }
+
+  if (flag_pic)
+    {
+      /* We need to find and carefully transform any SYMBOL and LABEL
+	 references; so go back to the original address expression.  */
+      rtx new_x = legitimize_pic_address (orig_x, mode, NULL_RTX);
+
+      if (new_x != orig_x)
+	x = new_x;
+    }
+
+  return x;
+}
+
 
 
 #define REG_OR_SUBREG_REG(X)						\
