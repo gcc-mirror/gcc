@@ -4977,7 +4977,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	    }
 	  
 	  /* If a variable is defined, and then a subsequent
-	     definintion with external linkage is encountered, we will
+	     definition with external linkage is encountered, we will
 	     get here twice for the same variable.  We want to avoid
 	     calling expand_static_init more than once.  For variables
 	     that are not static data members, we can call
