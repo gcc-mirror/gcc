@@ -1,5 +1,9 @@
 2004-11-18  Ben Elliston  <bje@au.ibm.com>
 
+	* cgraph.h: Replace "it's" with "its" throughout.
+
+2004-11-18  Ben Elliston  <bje@au.ibm.com>
+
 	* doc/rtl.texi (Flags): Grammar fix.
 
 2004-11-17  Kazu Hirata  <kazu@cs.umass.edu>
