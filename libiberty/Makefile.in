@@ -125,7 +125,7 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c	      \
         cp-demangle.c dyn-string.c fdmatch.c fnmatch.c getcwd.c		      \
 	getpwd.c getopt.c getopt1.c getpagesize.c getruntime.c		      \
 	floatformat.c hashtab.c hex.c index.c insque.c lbasename.c            \
-	md5.c memchr.c							      \
+	md5.c make-temp-file.c memchr.c					      \
 	memcmp.c memcpy.c memmove.c memset.c mkstemps.c objalloc.c obstack.c  \
 	partition.c pexecute.c putenv.c random.c rename.c rindex.c setenv.c   \
 	sigsetmask.c safe-ctype.c sort.c spaces.c splay-tree.c strcasecmp.c   \
@@ -138,7 +138,7 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c	      \
 REQUIRED_OFILES = argv.o alloca.o choose-temp.o concat.o cplus-dem.o          \
 	cp-demangle.o dyn-string.o fdmatch.o fnmatch.o getopt.o getopt1.o     \
 	getpwd.o getruntime.o hashtab.o hex.o floatformat.o lbasename.o       \
-        md5.o objalloc.o						      \
+        md5.o make-temp-file.o objalloc.o				      \
 	obstack.o partition.o pexecute.o safe-ctype.o sort.o spaces.o         \
 	splay-tree.o strerror.o strsignal.o xatexit.o xexit.o xmalloc.o       \
 	xmemdup.o xstrdup.o xstrerror.o

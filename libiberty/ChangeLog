@@ -1,3 +1,12 @@
+2001-03-20  Zack Weinberg  <zackw@stanford.edu>
+
+	* choose-temp.c: Split off make_temp_file, and the code
+	duplicated between it and choose_temp_base, into...
+	* make-temp-file.c: ... here; new file.
+
+	* Makefile.in (CFILES): Add make-temp-file.c.
+	(REQUIRED_OFILES): Add make-temp-file.o.
+
 2001-03-20  Jason Merrill  <jason@redhat.com>
 
 	* cplus-dem.c (main): Skip initial $.
