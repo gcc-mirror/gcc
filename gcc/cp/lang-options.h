@@ -75,6 +75,8 @@ Boston, MA 02111-1307, USA.  */
   "-fno-repo",
   "-fsave-memoized",
   "-fno-save-memoized",
+  "-fsquangle",
+  "-fno-squangle",
   "-fstats",
   "-fno-stats",
   "-fstrict-prototype",
