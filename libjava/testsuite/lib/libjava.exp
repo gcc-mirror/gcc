@@ -292,9 +292,9 @@ proc libjava_arguments {{mode compile}} {
     verbose "LD_LIBRARY_PATH = $env(LD_LIBRARY_PATH)"
 
     # Set the CLASSPATH environment variable
-    verbose "CLASSPATH is .:$srcdir/$subdir:$objdir:$objdir/../libgcj.jar"
+    verbose "CLASSPATH is .:$srcdir/$subdir:$objdir:$objdir/../libgcj-3.1.jar"
     global env
-    set env(CLASSPATH) ".:$srcdir/$subdir:$objdir:$objdir/../libgcj.jar"
+    set env(CLASSPATH) ".:$srcdir/$subdir:$objdir:$objdir/../libgcj-3.1.jar"
 
     if {$mode == "link"} {
 	global wrapper_file wrap_compile_flags;
