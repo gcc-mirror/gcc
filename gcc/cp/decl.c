@@ -4539,14 +4539,15 @@ push_using_directive (used)
   if (purpose_member (used, ud) != NULL_TREE)
     return NULL_TREE;
 
-  /* Recursively add all namespaces used. */
-  for (iter = DECL_NAMESPACE_USING (used); iter; iter = TREE_CHAIN (iter))
-    push_using_directive (TREE_PURPOSE (iter));
-
   ancestor = namespace_ancestor (current_decl_namespace (), used);
   ud = current_binding_level->using_directives;
   ud = tree_cons (used, ancestor, ud);
   current_binding_level->using_directives = ud;
+
+  /* Recursively add all namespaces used. */
+  for (iter = DECL_NAMESPACE_USING (used); iter; iter = TREE_CHAIN (iter))
+    push_using_directive (TREE_PURPOSE (iter));
+
   return ud;
 }
 

@@ -1,3 +1,8 @@
+2003-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9798
+	* decl.c (push_using_directive): Push before recursing.
+
 2003-02-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9602
