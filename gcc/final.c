@@ -1393,6 +1393,10 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
      int nopeepholes;
 {
   register int i;
+#ifdef HAVE_cc0
+  rtx set;
+#endif
+
   insn_counter++;
 
   /* Ignore deleted insns.  These can occur when we split insns (due to a
