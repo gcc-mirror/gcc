@@ -1,3 +1,9 @@
+2003-01-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (make_class): Use BINFO_ELTS.
+	(set_super_info): Likewse.
+	(add_interface_do): Likewise.
+
 2003-01-30  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-parse.c (read_class): Update identifier's class value if it

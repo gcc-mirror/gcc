@@ -1,3 +1,10 @@
+2003-01-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX,
+	BINFO_PRIMARY_BASE_OF): Use BINFO_ELTS.
+	(BINFO_LANG_ELTS): New #define.
+	* tree.c (make_binfo): Use BINFO_LANG_ELTS.
+
 2003-01-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* cp/Make-lang.in: Remove -Wno-error from cp/decl.o.

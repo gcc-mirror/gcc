@@ -1,3 +1,17 @@
+2003-01-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (TYPE_BINFO_SIZE, TYPE_BINFO_SIZE_UNIT): Remove.
+	(BINFO_ELTS): New #define.
+	* stor-layout.c (finalize_record_size): Don't set them.
+	* cp/cp-tree.h (BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX,
+	BINFO_PRIMARY_BASE_OF): Use BINFO_ELTS.
+	(BINFO_LANG_ELTS): New #define.
+	* cp/tree.c (make_binfo): Use BINFO_LANG_ELTS.
+	* java/class.c (make_class): Use BINFO_ELTS.
+	(set_super_info): Likewse.
+	(add_interface_do): Likewise.
+	* objc/objc-act.c (start_class): Use BINFO_ELTS.
+
 2003-01-31 Danny Smith <dannysmith@users.sourceforge.net>
 
 	* timevar.c (getrusage): Don't ever declare if not HAVE_GETRUSAGE.
