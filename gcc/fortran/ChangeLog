@@ -1,3 +1,9 @@
+2005-03-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/19673
+	* trans-expr.c (gfc_conv_function_call): Correctly dereference
+	argument from a pointer function also if it has a result clause.
+
 2005-03-04  Steven G. Kargl  <kargls@comcast.net>
 
 	* expr.c (gfc_copy_shape_excluding): Change && to ||.

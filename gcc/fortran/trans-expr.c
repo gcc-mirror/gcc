@@ -1220,7 +1220,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
      something like
         x = f()
      where f is pointer valued, we have to dereference the result.  */
-  if (sym->attr.pointer && !se->want_pointer && !byref)
+  if (!se->want_pointer && !byref
+      && (sym->attr.pointer || (sym->result && sym->result->attr.pointer)))
     se->expr = gfc_build_indirect_ref (se->expr);
 
   /* A pure function may still have side-effects - it may modify its
