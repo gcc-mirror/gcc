@@ -1,3 +1,12 @@
+2003-08-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/11811
+	* cxx-pretty-print.c (pp_cxx_canonical_template_parameter): New
+	function. 
+	* cxx-pretty-print.h: Declare.
+	* error.c (dump_template_parameter): Use it.
+	(dump_type): Likewise.
+
 2003-08-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* init.c (decl_constant_value): Deal with COND_EXPR specially.

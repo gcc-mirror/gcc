@@ -227,7 +227,7 @@ dump_template_parameter (tree parm, int flags)
       else if (DECL_NAME (p))
         pp_tree_identifier (cxx_pp, DECL_NAME (p));
       else
-        pp_identifier (cxx_pp, "<template default argument error>");
+        pp_cxx_canonical_template_parameter (cxx_pp, TREE_TYPE (p));
     }
   else
     dump_decl (p, flags | TFF_DECL_SPECIFIERS);
@@ -384,7 +384,7 @@ dump_type (tree t, int flags)
       if (TYPE_IDENTIFIER (t))
 	pp_tree_identifier (cxx_pp, TYPE_IDENTIFIER (t));
       else
-	pp_identifier (cxx_pp, "<anonymous template template parameter>");
+        pp_cxx_canonical_template_parameter (cxx_pp, t);
       break;
 
     case BOUND_TEMPLATE_TEMPLATE_PARM:
@@ -402,7 +402,8 @@ dump_type (tree t, int flags)
       if (TYPE_IDENTIFIER (t))
 	pp_tree_identifier (cxx_pp, TYPE_IDENTIFIER (t));
       else
-	pp_identifier (cxx_pp, "<anonymous template type parameter>");
+        pp_cxx_canonical_template_parameter
+          (cxx_pp, TEMPLATE_TYPE_PARM_INDEX (t));
       break;
 
       /* This is not always necessary for pointers and such, but doing this

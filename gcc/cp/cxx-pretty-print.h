@@ -47,6 +47,7 @@ void pp_cxx_pretty_printer_init (cxx_pretty_printer *);
 
 void pp_cxx_declaration (cxx_pretty_printer *, tree);
 void pp_cxx_function_definition (cxx_pretty_printer *, tree);
+void pp_cxx_canonical_template_parameter (cxx_pretty_printer *, tree);
 void pp_cxx_statement (cxx_pretty_printer *, tree);
 
 
