@@ -1054,7 +1054,7 @@
 #   ifdef OSF1
 #	define OS_TYPE "OSF1"
 #   	define DATASTART ((ptr_t) 0x140000000)
-	extern _end;
+	extern int _end;
 #   	define DATAEND ((ptr_t) &_end)
 #   	define HEURISTIC2
 	/* Normally HEURISTIC2 is too conervative, since		*/
