@@ -1,3 +1,17 @@
+2005-02-07  Hans Boehm  <Hans.Boehm@hp.com>
+
+	* allchblk.c (GC_allochblk_nth): Dont overlook available space if
+	  GC disabled, correctly convert GC_finalizer_mem_freed to byte,
+	  total_size to words.
+	* dyn_load.c (win32 GC_register_dynamic_libraries): Consider only
+	  MEM_IMAGE regions.
+	* mach_dep.c (GC_with_callee_saves_pushed): separate into new function,
+	  and indent appropriately.
+	* mark_rts.c (GC_approx_sp): Access stack.
+	* pthread_stop_world.c: (GC_suspend_handler): Explicitly push
+	  callee-saves registers when appropriate.
+	  (GC_stop_world): Handle EINTR from sem_wait (sync with Mono GC).
+
 2005-01-01  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* configure.ac (AC_CONFIG_HEADERS): Build both include/gc_config.h 

@@ -590,8 +590,9 @@ int n;
 	    GET_HDR(hbp, hhdr);
 	    size_avail = hhdr->hb_sz;
 	    if (size_avail < size_needed) continue;
-	    if (!GC_use_entire_heap
-		&& size_avail != size_needed
+	    if (size_avail != size_needed
+		&& !GC_use_entire_heap
+		&& !GC_dont_gc
 		&& USED_HEAP_SIZE >= GC_requested_heapsize
 		&& !TRUE_INCREMENTAL && GC_should_collect()) {
 #		ifdef USE_MUNMAP
@@ -608,7 +609,8 @@ int n;
 		    /* If we are deallocating lots of memory from	*/
 		    /* finalizers, fail and collect sooner rather	*/
 		    /* than later.					*/
-		    if (GC_finalizer_mem_freed > (GC_heapsize >> 4))  {
+		    if (WORDS_TO_BYTES(GC_finalizer_mem_freed)
+			> (GC_heapsize >> 4))  {
 		      continue;
 		    }
 #		endif /* !USE_MUNMAP */
@@ -698,7 +700,7 @@ int n;
 	              struct hblk * h;
 		      struct hblk * prev = hhdr -> hb_prev;
 	              
-		      GC_words_wasted += total_size;
+		      GC_words_wasted += BYTES_TO_WORDS(total_size);
 		      GC_large_free_bytes -= total_size;
 		      GC_remove_from_fl(hhdr, n);
 	              for (h = hbp; h < limit; h++) {
