@@ -948,8 +948,14 @@ ffecom_convert_narrow_ (type, expr)
   if (code == RECORD_TYPE)
     {
       assert (TREE_CODE (TREE_TYPE (e)) == RECORD_TYPE);
+      /* Check that at least the first field name agrees.  */
+      assert (DECL_NAME (TYPE_FIELDS (type))
+	      == DECL_NAME (TYPE_FIELDS (TREE_TYPE (e))));
       assert (TYPE_PRECISION (TREE_TYPE (TYPE_FIELDS (type)))
 	      <= TYPE_PRECISION (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (e)))));
+      if (TYPE_PRECISION (TREE_TYPE (TYPE_FIELDS (type)))
+	  == TYPE_PRECISION (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (e)))))
+	return e;
       return fold (ffecom_convert_to_complex_ (type, e));
     }
 
@@ -1012,8 +1018,14 @@ ffecom_convert_widen_ (type, expr)
   if (code == RECORD_TYPE)
     {
       assert (TREE_CODE (TREE_TYPE (e)) == RECORD_TYPE);
+      /* Check that at least the first field name agrees.  */
+      assert (DECL_NAME (TYPE_FIELDS (type))
+	      == DECL_NAME (TYPE_FIELDS (TREE_TYPE (e))));
       assert (TYPE_PRECISION (TREE_TYPE (TYPE_FIELDS (type)))
 	      >= TYPE_PRECISION (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (e)))));
+      if (TYPE_PRECISION (TREE_TYPE (TYPE_FIELDS (type)))
+	  == TYPE_PRECISION (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (e)))))
+	return e;
       return fold (ffecom_convert_to_complex_ (type, e));
     }
 
@@ -3062,6 +3074,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	ffebld right = ffebld_right (expr);
 	ffecomGfrt code;
 	ffeinfoKindtype rtkt;
+	ffeinfoKindtype ltkt;
 
 	switch (ffeinfo_basictype (ffebld_info (right)))
 	  {
@@ -3073,6 +3086,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 		  return item;
 	      }
 
+	    ltkt = FFEINFO_kindtypeINTEGER1;
 	    rtkt = FFEINFO_kindtypeINTEGER1;
 	    switch (ffeinfo_basictype (ffebld_info (left)))
 	      {
@@ -3083,6 +3097,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 			== FFEINFO_kindtypeINTEGER4))
 		  {
 		    code = FFECOM_gfrtPOW_QQ;
+		    ltkt = FFEINFO_kindtypeINTEGER4;
 		    rtkt = FFEINFO_kindtypeINTEGER4;
 		  }
 		else
@@ -3110,10 +3125,10 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 		code = FFECOM_gfrtPOW_CI;	/* Overlapping result okay. */
 		break;
 	      }
-	    if (ffeinfo_kindtype (ffebld_info (left)) != rtkt)
+	    if (ffeinfo_kindtype (ffebld_info (left)) != ltkt)
 	      left = ffeexpr_convert (left, NULL, NULL,
 				      FFEINFO_basictypeINTEGER,
-				      rtkt, 0,
+				      ltkt, 0,
 				      FFETARGET_charactersizeNONE,
 				      FFEEXPR_contextLET);
 	    if (ffeinfo_kindtype (ffebld_info (right)) != rtkt)
