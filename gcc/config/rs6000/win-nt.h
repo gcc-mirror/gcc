@@ -177,23 +177,12 @@ do {									\
 
 /* Stuff to force fit us into the Motorola PPC assembler */
 
-#if 0
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)					\
-{								\
-  output_file_directive (FILE, main_input_filename);		\
-  fprintf (FILE, "\n#\tDirective section\n");                   \
-  fprintf (FILE, "\t.section\t.drectve,\"iR\"\n");              \
-  fprintf (FILE, "\t.byte\t\"-defaultlib:LIBC\" \n");           \
-  fprintf (FILE, "\t.previous\n\n");                              \
-}
-#endif
-
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)					\
-do {								\
-  output_file_directive ((FILE), main_input_filename);		\
-  data_section ();						\
+#undef ASM_FILE_START							\
+#define ASM_FILE_START(FILE)						\
+do {									\
+  output_file_directive ((FILE), main_input_filename);			\
+  rs6000_file_start (FILE, TARGET_CPU_DEFAULT);				\
+  data_section ();							\
 } while (0)
 
 #undef ASM_FILE_END

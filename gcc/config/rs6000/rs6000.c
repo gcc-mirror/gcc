@@ -296,6 +296,55 @@ rs6000_override_options (default_cpu)
 #endif
 }
 
+/* Do anything needed at the start of the asm file.  */
+
+void
+rs6000_file_start (file, default_cpu)
+     FILE *file;
+     char *default_cpu;
+{
+  int i;
+  char buffer[80];
+  char *start = buffer;
+  struct rs6000_cpu_select *ptr;
+
+  if (flag_verbose_asm)
+    {
+      sprintf (buffer, "\n%s rs6000/powerpc options:", ASM_COMMENT_START);
+      rs6000_select[0].string = default_cpu;
+
+      for (i = 0; i < sizeof (rs6000_select) / sizeof (rs6000_select[0]); i++)
+	{
+	  ptr = &rs6000_select[i];
+	  if (ptr->string != (char *)0 && ptr->string[0] != '\0')
+	    {
+	      fprintf (file, "%s %s%s", start, ptr->name, ptr->string);
+	      start = "";
+	    }
+	}
+
+#ifdef USING_SVR4_H
+      switch (rs6000_sdata)
+	{
+	case SDATA_NONE: fprintf (file, "%s -msdata=none", start); start = ""; break;
+	case SDATA_DATA: fprintf (file, "%s -msdata=data", start); start = ""; break;
+	case SDATA_SYSV: fprintf (file, "%s -msdata=sysv", start); start = ""; break;
+	case SDATA_EABI: fprintf (file, "%s -msdata=eabi", start); start = ""; break;
+	}
+
+      if (rs6000_sdata && g_switch_value)
+	{
+	  fprintf (file, "%s -G %d", start, g_switch_value);
+	  start = "";
+	}
+#endif
+
+      if (*start == '\0')
+	fputs ("\n", file);
+    }
+}
+
+
 /* Create a CONST_DOUBLE from a string.  */
 
 struct rtx_def *
