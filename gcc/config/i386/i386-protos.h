@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
-   2000, 2001 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -121,7 +121,6 @@ extern const char *output_fp_compare PARAMS ((rtx, rtx*, int, int));
 
 extern void i386_dwarf_output_addr_const PARAMS ((FILE*, rtx));
 extern void i386_output_dwarf_dtprel PARAMS ((FILE*, int, rtx));
-extern rtx i386_simplify_dwarf_addr PARAMS ((rtx));
 
 extern void ix86_expand_clear PARAMS ((rtx));
 extern void ix86_expand_move PARAMS ((enum machine_mode, rtx[]));

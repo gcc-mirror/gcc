@@ -56,6 +56,7 @@ static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx,
 static void s390_encode_section_info PARAMS ((tree, int));
 static const char *s390_strip_name_encoding PARAMS ((const char *));
 static bool s390_cannot_force_const_mem PARAMS ((rtx));
+static rtx s390_delegitimize_address PARAMS ((rtx));
 static void s390_init_builtins PARAMS ((void));
 static rtx s390_expand_builtin PARAMS ((tree, rtx, rtx, 
 					enum machine_mode, int));
@@ -97,6 +98,9 @@ static int s390_address_cost PARAMS ((rtx));
 #endif
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM s390_cannot_force_const_mem
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS s390_delegitimize_address
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS s390_init_builtins
@@ -3056,8 +3060,8 @@ s390_expand_cmpstr (target, op0, op1, len)
    general assembler losage, recognize various UNSPEC sequences
    and turn them back into a direct symbol reference.  */
 
-rtx
-s390_simplify_dwarf_addr (orig_x)
+static rtx
+s390_delegitimize_address (orig_x)
      rtx orig_x;
 {
   rtx x = orig_x, y;

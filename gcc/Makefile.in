@@ -1497,11 +1497,12 @@ sdbout.o : sdbout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_
    sdbout.h toplev.h $(TM_P_H) except.h debug.h langhooks.h gt-sdbout.h
 dwarfout.o : dwarfout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) dwarf.h flags.h insn-config.h reload.h output.h toplev.h $(TM_P_H) \
-   debug.h langhooks.h
+   debug.h langhooks.h $(TARGET_H)
 dwarf2out.o : dwarf2out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) dwarf2.h debug.h flags.h insn-config.h reload.h output.h diagnostic.h real.h \
    hard-reg-set.h $(REGS_H) $(EXPR_H) libfuncs.h toplev.h dwarf2out.h varray.h \
-   $(GGC_H) except.h dwarf2asm.h $(TM_P_H) langhooks.h $(HASHTAB_H) gt-dwarf2out.h
+   $(GGC_H) except.h dwarf2asm.h $(TM_P_H) langhooks.h $(HASHTAB_H) \
+   gt-dwarf2out.h $(TARGET_H)
 dwarf2asm.o : dwarf2asm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) flags.h $(RTL_H) \
    $(TREE_H) output.h dwarf2asm.h $(TM_P_H) $(GGC_H) gt-dwarf2asm.h
 vmsdbgout.o : vmsdbgout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \

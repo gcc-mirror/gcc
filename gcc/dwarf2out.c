@@ -1,6 +1,6 @@
 /* Output Dwarf2 format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
-   Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+   2003 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -8270,9 +8270,7 @@ mem_loc_descriptor (rtl, mode)
      actually within the array.  That's *not* necessarily the same as the
      zeroth element of the array.  */
 
-#ifdef ASM_SIMPLIFY_DWARF_ADDR
-  rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
-#endif
+  rtl = (*targetm.delegitimize_address) (rtl);
 
   switch (GET_CODE (rtl))
     {
@@ -9370,9 +9368,7 @@ rtl_for_decl_location (decl)
 	      || (GET_CODE (rtl) == MEM
 	          && CONSTANT_P (XEXP (rtl, 0)))))
 	{
-#ifdef ASM_SIMPLIFY_DWARF_ADDR
-	  rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
-#endif
+	  rtl = (*targetm.delegitimize_address) (rtl);
 	  return rtl;
 	}
       rtl = NULL_RTX;
@@ -9478,10 +9474,8 @@ rtl_for_decl_location (decl)
 	}
     }
 
-#ifdef ASM_SIMPLIFY_DWARF_ADDR
   if (rtl)
-    rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
-#endif
+    rtl = (*targetm.delegitimize_address) (rtl);
 
   /* If we don't look past the constant pool, we risk emitting a
      reference to a constant pool entry that isn't referenced from

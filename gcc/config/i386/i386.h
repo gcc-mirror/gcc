@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2841,11 +2841,6 @@ do {									\
 
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE, X) \
   i386_dwarf_output_addr_const ((FILE), (X))
-
-/* Either simplify a location expression, or return the original.  */
-
-#define ASM_SIMPLIFY_DWARF_ADDR(X) \
-  i386_simplify_dwarf_addr (X)
 
 /* Emit a dtp-relative reference to a TLS variable.  */
 

@@ -1,3 +1,28 @@
+2003-02-05  Roger Sayle  <roger@eyesopen.com>
+
+	* dwarf2out.c (mem_loc_descriptor): Replace ASM_SIMPLIFY_DWARF_ADDR
+	with *targetm.delegitimize_address.
+	(rtl_for_decl_location): Likewise.
+	* dwarfout.c (output_mem_loc_descriptor): Likewise.  Include target.h.
+	* Makefile.in (dwarf2out.c, dwarfout.c): Depend upon $(TARGET_H)
+
+	* config/i386/i386.h (ASM_SIMPLIFY_DWARF_ADDR): Remove definition.
+	* config/i386/i386-protos.h (i386_simplify_dwarf_addr): Remove
+	prototype.
+	* config/i386/i386.c (ix86_delegitimize_address): Renamed from
+	i386_simplify_dwarf_addr.  Made static.  Prototyped.
+	(TARGET_DELEGITIMIZE_ADDRESS): Update definition from
+	i386_simplify_dwarf_addr to ix86_delegitimize_address.
+	(ix86_find_base_term): Likewise.
+	(maybe_get_pool_constant): Likewise.
+
+	* config/s390/s390.h (ASM_SIMPLIFY_DWARF_ADDR): Remove definition.
+	* config/s390/s390-protos.h (s390_simplify_dwarf_addr): Remove
+	prototype.
+	* config/s390/s390.c (s390_delegitimize_address): Renamed from
+	s390_simplify_dwarf_addr.  Made static.  Prototyped.
+	(TARGET_DELEGITIMIZE_ADDRESS): Define as s390_delegitimize_address.
+
 2003-02-05  Richard Henderson  <rth@redhat.com>
 
 	PR c/8602
