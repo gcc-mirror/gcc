@@ -127,11 +127,11 @@ do {									\
   "%{h*} %{V} %{v:%{!V:-V}} \
    %{b} %{Wl,*:%*} \
    %{static:-dn -Bstatic} \
-   %{shared:-G -dy -z text} \
-   %{symbolic:-Bsymbolic -G -dy -z text} \
+   %{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
+   %{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
    %{G:-G} \
    %{YP,*} \
-   %{R*} \
+   %{R*} %{!static:%{!R*:%{L*:-R %*}}} \
    %{compat-bsd: \
      %{!YP,*:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
        %{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}} \

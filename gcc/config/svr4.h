@@ -169,8 +169,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #define LINK_SPEC "%{h*} %{V} %{v:%{!V:-V}} \
 		   %{b} %{Wl,*:%*} \
 		   %{static:-dn -Bstatic} \
-		   %{shared:-G -dy -z text} \
-		   %{symbolic:-Bsymbolic -G -dy -z text} \
+		   %{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
+		   %{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
 		   %{G:-G} \
 		   %{YP,*} \
 		   %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
