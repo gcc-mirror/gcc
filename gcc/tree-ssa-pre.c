@@ -1106,20 +1106,19 @@ DEF_VEC_MALLOC_P (basic_block);
 
 /* Compute the ANTIC set for BLOCK.
 
-ANTIC_OUT[BLOCK] = intersection of ANTIC_IN[b] for all succ(BLOCK), if
-succs(BLOCK) > 1
-ANTIC_OUT[BLOCK] = phi_translate (ANTIC_IN[succ(BLOCK)]) if
-succs(BLOCK) == 1
+   If succs(BLOCK) > 1 then
+     ANTIC_OUT[BLOCK] = intersection of ANTIC_IN[b] for all succ(BLOCK)
+   else if succs(BLOCK) == 1 then
+     ANTIC_OUT[BLOCK] = phi_translate (ANTIC_IN[succ(BLOCK)])
 
-ANTIC_IN[BLOCK] = clean(ANTIC_OUT[BLOCK] U EXP_GEN[BLOCK] -
-TMP_GEN[BLOCK])
+   ANTIC_IN[BLOCK] = clean(ANTIC_OUT[BLOCK] U EXP_GEN[BLOCK] - TMP_GEN[BLOCK])
 
-Iterate until fixpointed.
+   Iterate until fixpointed.
 
-XXX: It would be nice to either write a set_clear, and use it for
-antic_out, or to mark the antic_out set as deleted at the end
-of this routine, so that the pool can hand the same memory back out
-again for the next antic_out.  */
+   XXX: It would be nice to either write a set_clear, and use it for
+   ANTIC_OUT, or to mark the antic_out set as deleted at the end
+   of this routine, so that the pool can hand the same memory back out
+   again for the next ANTIC_OUT.  */
 
 
 static bool
@@ -1733,44 +1732,59 @@ create_value_expr_from (tree expr, basic_block block, vuse_optype vuses)
 }
 
 
-/* Compute the AVAIL set for BLOCK.
-   This function performs value numbering of the statements in BLOCK. 
-   The AVAIL sets are built from information we glean while doing this
-   value numbering, since the AVAIL sets contain only one entry per
+/* Compute the AVAIL set for all basic blocks.
+
+   This function performs value numbering of the statements in each basic
+   block.  The AVAIL sets are built from information we glean while doing
+   this value numbering, since the AVAIL sets contain only one entry per
    value.
    
    AVAIL_IN[BLOCK] = AVAIL_OUT[dom(BLOCK)].
    AVAIL_OUT[BLOCK] = AVAIL_IN[BLOCK] U PHI_GEN[BLOCK] U TMP_GEN[BLOCK].  */
 
 static void
-compute_avail (basic_block block)
+compute_avail (void)
 {
-  basic_block son;
-  
+  basic_block block, son;
+  basic_block *worklist;
+  size_t sp = 0;
+  tree param;
+
   /* For arguments with default definitions, we pretend they are
      defined in the entry block.  */
-  if (block == ENTRY_BLOCK_PTR)
+  for (param = DECL_ARGUMENTS (current_function_decl);
+       param;
+       param = TREE_CHAIN (param))
     {
-      tree param;
-      for (param = DECL_ARGUMENTS (current_function_decl);
-	   param;
-	   param = TREE_CHAIN (param))
+      if (default_def (param) != NULL)
 	{
-	  if (default_def (param) != NULL)
-	    {
-	      tree val;
-	      tree def = default_def (param);
-	      val = vn_lookup_or_add (def, NULL);
-	      bitmap_insert_into_set (TMP_GEN (block), def);
-	      bitmap_value_insert_into_set (AVAIL_OUT (block), def);
-	    }
+	  tree val;
+	  tree def = default_def (param);
+	  val = vn_lookup_or_add (def, NULL);
+	  bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR), def);
+	  bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR), def);
 	}
     }
-  else if (block)
+
+  /* Allocate the worklist.  */
+  worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
+
+  /* Seed the algorithm by putting the dominator children of the entry
+     block on the worklist.  */
+  for (son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR);
+       son;
+       son = next_dom_son (CDI_DOMINATORS, son))
+    worklist[sp++] = son;
+
+  /* Loop until the worklist is empty.  */
+  while (sp)
     {
       block_stmt_iterator bsi;
       tree stmt, phi;
       basic_block dom;
+
+      /* Pick a block from the worklist.  */
+      block = worklist[--sp];
 
       /* Initially, the set of available values in BLOCK is that of
 	 its immediate dominator.  */
@@ -1857,13 +1871,16 @@ compute_avail (basic_block block)
 			    AVAIL_OUT (block));
 	    }
 	}
+
+      /* Put the dominator children of BLOCK on the worklist of blocks
+	 to compute available sets for.  */
+      for (son = first_dom_son (CDI_DOMINATORS, block);
+	   son;
+	   son = next_dom_son (CDI_DOMINATORS, son))
+	worklist[sp++] = son;
     }
 
-  /* Compute available sets for the dominator children of BLOCK.  */
-  for (son = first_dom_son (CDI_DOMINATORS, block);
-       son;
-       son = next_dom_son (CDI_DOMINATORS, son))
-    compute_avail (son);
+  free (worklist);
 }
 
 
@@ -2048,9 +2065,8 @@ execute_pre (bool do_fre)
 {
   init_pre ();
 
-  /* Collect and value number expressions computed in each basic
-     block.  */
-  compute_avail (ENTRY_BLOCK_PTR);
+  /* Collect and value number expressions computed in each basic block.  */
+  compute_avail ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

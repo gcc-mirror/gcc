@@ -1,3 +1,11 @@
+2004-12-07  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/17340
+	* tree-ssa-pre.c (compute_antic): Fix comment.
+	(compute_avail): Do not recurse, instead do a DFS using a stack
+	and a loop.
+	(execute_pre): Adjust.
+
 2004-12-07  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-tree.h (struct lang_type): Rename 'objc_protocols' field
