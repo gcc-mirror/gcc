@@ -49,12 +49,7 @@ namespace std
 	  _M_buf_size = _M_buf_size_opt;
 
 	  // Allocate internal buffer.
-	  try { _M_buf = new char_type[_M_buf_size]; }
-	  catch(...) 
-	    {
-	      delete [] _M_buf;
-	      __throw_exception_again;
-	    }
+	  _M_buf = new char_type[_M_buf_size]; 
 	  _M_buf_allocated = true;
 	}
     }
