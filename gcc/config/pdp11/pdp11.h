@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994, 1995, 1996, 1998, 1999, 2000
+   Copyright (C) 1994, 1995, 1996, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
@@ -979,7 +979,8 @@ extern int may_call_alloca;
     return 4;
 
 /* cost of moving one register class to another */
-#define REGISTER_MOVE_COST(CLASS1, CLASS2) register_move_cost(CLASS1, CLASS2)
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
+  register_move_cost (CLASS1, CLASS2)
 
 /* Tell emit-rtl.c how to initialize special values on a per-function base.  */
 extern int optimize;

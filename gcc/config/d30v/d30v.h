@@ -1,5 +1,6 @@
 /* Definitions of target machine for Mitsubishi D30V.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GNU CC.
@@ -3766,7 +3767,7 @@ do {									\
    the constraints are met.  You should do this if the `movM' pattern's
    constraints do not allow such copying.  */
 
-#define REGISTER_MOVE_COST(FROM, TO)					\
+#define REGISTER_MOVE_COST(MODE, FROM, TO)				\
   (((FROM) != GPR_REGS && (FROM) != EVEN_REGS				\
    && (TO) != GPR_REGS && (TO) != EVEN_REGS) ? 4 : 2)
 

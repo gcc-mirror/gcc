@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  TMS320C[34]x
    Copyright (C) 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
               and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl).
@@ -1889,7 +1889,7 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
 /* Compute extra cost of moving data between one register class
    and another.  */
 
-#define REGISTER_MOVE_COST(FROM, TO)	2
+#define REGISTER_MOVE_COST(MODE, FROM, TO)	2
 
 /* Memory move cost is same as fast register move.  Maybe this should
    be bumped up?.  */

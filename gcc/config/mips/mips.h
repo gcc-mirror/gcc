@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -3622,7 +3622,7 @@ while (0)
    compare/branch to test the input value to see which instruction we
    need to use.  This gets pretty messy, but it is feasible. */
 
-#define REGISTER_MOVE_COST(FROM, TO)	\
+#define REGISTER_MOVE_COST(MODE, FROM, TO)	\
   ((FROM) == M16_REGS && GR_REG_CLASS_P (TO) ? 2			\
    : (FROM) == M16_NA_REGS && GR_REG_CLASS_P (TO) ? 2			\
    : GR_REG_CLASS_P (FROM) && (TO) == M16_REGS ? 2			\

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for picoJava
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1030,7 +1030,7 @@ struct pj_args
 /* Compute extra cost of moving data between one register class and
    another.  */
 
-#define REGISTER_MOVE_COST(SRC_CLASS, DST_CLASS)                \
+#define REGISTER_MOVE_COST(MODE, SRC_CLASS, DST_CLASS)                \
       ((SRC_CLASS == STD_REGS || SRC_CLASS == ARG_REGS)?  2 : 10)
 
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Argonaut ARC cpu.
-   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000
+   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -1098,7 +1098,7 @@ arc_select_cc_mode (OP, X, Y)
 
 /* Compute extra cost of moving data between one register class
    and another.  */
-#define REGISTER_MOVE_COST(CLASS1, CLASS2) 2
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) 2
 
 /* Compute the cost of moving data between registers and memory.  */
 /* Memory is 3 times as expensive as registers.

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Motorola M*CORE Processor.
-   Copyright (C) 1993, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1066,7 +1066,7 @@ extern enum reg_class reg_class_from_letter[];
 
 /* Compute extra cost of moving data between one register class
    and another.  All register moves are cheap.  */
-#define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS) 2
+#define REGISTER_MOVE_COST(MODE, SRCCLASS, DSTCLASS) 2
 
 #define WORD_REGISTER_OPERATIONS
 

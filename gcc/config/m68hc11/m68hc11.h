@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@worldnet.fr)
 
 This file is part of GNU CC.
@@ -1511,7 +1511,7 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
 #define ADDRESS_COST(RTX) m68hc11_address_cost (RTX)
 
 /* Move costs between classes of registers */
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)	\
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
     (m68hc11_register_move_cost (CLASS1, CLASS2))
 
 /* Move cost between register and memory.

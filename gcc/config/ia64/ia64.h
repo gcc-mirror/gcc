@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -1885,7 +1885,7 @@ do {									\
 /* A C expression for the cost of moving data from a register in class FROM to
    one in class TO.  */
 
-#define REGISTER_MOVE_COST(FROM, TO) \
+#define REGISTER_MOVE_COST(MODE, FROM, TO) \
   ia64_register_move_cost((FROM), (TO))
 
 /* A C expression for the cost of moving data of mode M between a

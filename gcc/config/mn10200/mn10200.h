@@ -1,5 +1,7 @@
-/* Definitions of target machine for GNU compiler. Matsushita MN10200 series
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler.
+   Matsushita MN10200 series
+   Copyright (C) 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -781,7 +783,7 @@ struct cum_arg { int nbytes; };
 
 /* Make moves between different classes more expensive than moves
    within the same class.  */
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)  (CLASS1 != CLASS2 ? 4 : 2)
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)  (CLASS1 != CLASS2 ? 4 : 2)
 
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE. 

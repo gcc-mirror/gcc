@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T DSP1600.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998,2000
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Michael Collison (collison@world.std.com).
 
@@ -1517,7 +1517,7 @@ extern struct dsp16xx_frame_info current_frame_info;
    class FROM to one in class TO. The classes are expressed using
    the enumeration values such as GENERAL_REGS. A value of 2 is
    the default. */
-#define REGISTER_MOVE_COST(FROM,TO)  dsp16xx_register_move_cost (FROM, TO)
+#define REGISTER_MOVE_COST(MODE,FROM,TO)  dsp16xx_register_move_cost (FROM, TO)
 
 /* A C expression for the cost of moving data of mode MODE between
    a register and memory. A value of 2 is the default. */

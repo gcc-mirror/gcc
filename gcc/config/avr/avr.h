@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
 
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
 This file is part of GNU CC.
@@ -1864,9 +1864,9 @@ do {									    \
    This macro will normally either not be defined or be defined as a
    constant.  */
 
-#define REGISTER_MOVE_COST(FROM, TO) ((FROM) == STACK_REG ? 6 : \
-				      (TO) == STACK_REG ? 12    \
-				      : 2)
+#define REGISTER_MOVE_COST(MODE, FROM, TO) ((FROM) == STACK_REG ? 6 \
+					    : (TO) == STACK_REG ? 12 \
+					    : 2)
 /* A C expression for the cost of moving data from a register in class
    FROM to one in class TO.  The classes are expressed using the
    enumeration values such as `GENERAL_REGS'.  A value of 2 is the
