@@ -754,10 +754,10 @@ private:
     bool equals (const type &other, _Jv_BytecodeVerifier *vfy)
     {
       // Only works for reference types.
-      if (key != reference_type
-	  || key != uninitialized_reference_type
-	  || other.key != reference_type
-	  || other.key != uninitialized_reference_type)
+      if ((key != reference_type
+	   && key != uninitialized_reference_type)
+	  || (other.key != reference_type
+	      && other.key != uninitialized_reference_type))
 	return false;
       // Only for single-valued types.
       if (klass->ref_next || other.klass->ref_next)
