@@ -1212,6 +1212,14 @@ by incrementing it, but there is no need to mention this in the RTL.
 This RTX represents a reference to main memory at an address
 represented by the expression @var{addr}.  @var{m} specifies how large
 a unit of memory is accessed.
+
+@findex addressof
+@item (addressof:@var{m} @var{reg})
+This RTX represents a request for the address of register @var{reg}.  Its mode
+is always @code{Pmode}.  If there are any @code{addressof}
+expressions left in the function after CSE, @var{reg} is forced into the
+stack and the @code{addressof} expression is replaced with a @code{plus}
+expression for the address of its stack slot.
 @end table
 
 @node Arithmetic, Comparisons, Regs and Memory, RTL
