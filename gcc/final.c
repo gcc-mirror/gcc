@@ -887,24 +887,26 @@ final_start_function (first, file, optimize)
      so that the function's address will not appear to be
      in the last statement of the preceding function.  */
   if (NOTE_LINE_NUMBER (first) != NOTE_INSN_DELETED)
-    {
-      last_linenum = high_block_linenum = high_function_linenum
-	= NOTE_LINE_NUMBER (first);
+    last_linenum = high_block_linenum = high_function_linenum
+      = NOTE_LINE_NUMBER (first);
 
-      /* For SDB and XCOFF, the function beginning must be marked between
-	 the function label and the prologue.  */
+  /* For SDB and XCOFF, the function beginning must be marked between
+     the function label and the prologue.  We always need this, even when
+     -g1 was used.  */
 #ifdef SDB_DEBUGGING_INFO
-      if (write_symbols == SDB_DEBUG)
-	sdbout_begin_function (last_linenum);
-      else
+  if (write_symbols == SDB_DEBUG)
+    sdbout_begin_function (last_linenum);
+  else
 #endif
 #ifdef XCOFF_DEBUGGING_INFO
-	if (write_symbols == XCOFF_DEBUG)
-	  xcoffout_begin_function (file, last_linenum);
-	else
+    if (write_symbols == XCOFF_DEBUG)
+      xcoffout_begin_function (file, last_linenum);
+    else
 #endif	  
-	  output_source_line (file, first);
-    }
+      /* But only output line number for other debug info types if -g2
+	 or better.  */
+      if (NOTE_LINE_NUMBER (first) != NOTE_INSN_DELETED)
+	output_source_line (file, first);
 
 #ifdef LEAF_REG_REMAP
   if (leaf_function)
