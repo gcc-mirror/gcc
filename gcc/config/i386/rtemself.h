@@ -1,8 +1,6 @@
-/* Definitions for Intel 386 running Linux-based GNU systems with ELF format.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000
-   Free Software Foundation, Inc.
-   Contributed by Eric Youngdale.
-   Modified for stabs-in-ELF by H.J. Lu.
+/* Definitions for rtems targeting a ix86 using ELF.
+   Copyright (C) 1996, 1997, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
 
@@ -21,60 +19,14 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define LINUX_DEFAULT_ELF
+/* Specify predefined symbols in preprocessor.  */
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (i386 RTEMS with ELF)");
-
-/* The svr4 ABI for the i386 says that records and unions are returned
-   in memory.  */
-#undef DEFAULT_PCC_STRUCT_RETURN
-#define DEFAULT_PCC_STRUCT_RETURN 1
-
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
-
-/* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  */
-
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-{									\
-  if (flag_pic)								\
-    {									\
-      fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%edx\n",		\
-	       LPREFIX, (LABELNO));					\
-      fprintf (FILE, "\tcall *mcount@GOT(%%ebx)\n");			\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\tmovl $%sP%d,%%edx\n", LPREFIX, (LABELNO));	\
-      fprintf (FILE, "\tcall mcount\n");				\
-    }									\
-}
-
-#undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
- 
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
-  
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "long int"
-   
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE BITS_PER_WORD
-    
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES  "-Drtems -D__rtems__ -Asystem=rtems"
+#define CPP_PREDEFINES  "-D__rtems__ -Asystem=rtems \
+    -D__ELF__ -D__i386__ -D__USE_INIT_FINI__"
 
-/* A C statement (sans semicolon) to output to the stdio stream
-   FILE the assembler definition of uninitialized global DECL named
-   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
-   Try to use asm_output_aligned_bss to implement this macro.  */
-
-#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
-  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+#undef CPP_SPEC
+#define CPP_SPEC "%(cpp_cpu) %{msoft-float:-D_SOFT_FLOAT}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
@@ -82,4 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC   "crtend.o%s crtn.o%s"
 
-/* end of i386/rtemself.h */
+/* Generate calls to memcpy, memcmp and memset.  */
+#ifndef TARGET_MEM_FUNCTIONS
+#define TARGET_MEM_FUNCTIONS
+#endif

@@ -1,7 +1,7 @@
 /* Configuration for an i386 running RTEMS on top of MS-DOS with
    DJGPP v2.x.
 
-   Copyright (C) 1996,1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1999, 2002 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
  
 This file is part of GNU CC.
@@ -21,20 +21,15 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "i386/djgpp.h"
-
 /* Specify predefined symbols in preprocessor.  */
 
 #ifdef CPP_PREDEFINES
 #undef CPP_PREDEFINES
 #endif
-#define CPP_PREDEFINES "-Dunix -DGO32 -DDJGPP=2 -DMSDOS \
+#define CPP_PREDEFINES "-Dunix -DGO32 -DDJGPP=2 -DMSDOS -D__rtems__ \
   -Asystem=unix -Asystem=msdos -Asystem=rtems"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS
 #endif
-
-/* end of i386/djgpp-rtems.h */
-

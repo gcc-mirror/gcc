@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a Motorola m68k using elf.
-   Copyright (C) 1999, 2000, National Research Council of Canada.
+   Copyright (C) 1999, 2000, 2002 National Research Council of Canada.
    Contributed by Charles-Antoine Gauthier (charles.gauthier@nrc.ca).
 
 This file is part of GNU CC.
@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68000 -Drtems -D__rtems__ -D__ELF__ \
+#define CPP_PREDEFINES "-Dmc68000 -D__rtems__ -D__ELF__ -D__USE_INIT_FINI__ \
    -Asystem=rtems -Acpu=mc68000 -Acpu=m68k -Amachine=m68k"
 
 /* Generate calls to memcpy, memcmp and memset.  */
@@ -60,8 +60,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* Do I need this? */
 #undef INVOKE__main
-
-/* Get machine-independent configuration parameters for RTEMS.  */
-#include <rtems.h>
-
-/* end of m68k/rtemself.h */

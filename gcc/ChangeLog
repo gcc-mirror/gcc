@@ -1,3 +1,34 @@
+2002-02-13	Joel Sherrill <joel@OARcorp.com>
+
+	* config.gcc (a29k-*-rtems), config/a29k/rtems.h: General cleanup across
+	all RTEMS targets including removal of #includes from config/*/rtems*.h
+	file and adding them to tm_file setting. Added xm_defines=POSIX to
+	many targets.
+	* config.gcc (c4x-*-rtems), config/c4x/rtems.h: Ditto.
+	* config.gcc (h8300-*-rtems), config/h8300/rtems.h: Ditto.
+	* config.gcc (hppa1.1-*-rtems), config/pa/rtems.h: Ditto.
+	* config.gcc (i960-*-rtems), config/i960/rtems.h: Ditto.
+	* config.gcc (m68k-*-rtems*), config/m68k/rtems.h,
+	config/m68k/rtemself.h: Ditto.
+	* config.gcc (mips*-*-rtems*), config/mips/rtems.h,
+	config/mips/rtems64.h: Ditto.
+	* config.gcc (powerpc-*-rtems*), config/rs6000/rtems.h: Ditto.
+	* config.gcc (sh-*-rtems*), config/sh/rtems.h, config/sh/rtemself.h:
+	Ditto.
+	* config.gcc (sparc-*-rtems*), config/sparc/rtems.h,
+	config/sparc/rtemself.h: Ditto.
+	* config.gcc (v850-*-rtems*), config/v850/rtems.h: Ditto.
+	* config.gcc (arm-rtems), config/arm/rtems-elf.h: Ditto plus moved
+	arm-rtems stanza closer to other arm-elf targets and made arm-rtems
+	more like arm-elf.
+	* config.gcc (i[34567]86-*-rtems*), config/i386/djgpp-rtems.h,
+	config/i386/rtems.h, config/i386/rtemself.h: Ditto plus i386-rtemself
+	target made more similar to i386-elf.
+	* config/i386/t-rtems-i386: Added soft float support and multilibs.
+	* config/m68k/t-m68kbare: Add 68040 and 68060 as multilib alternatives to
+	be similar to config/m68k/t-m68kelf.
+	* gthr-rtems.h: Encapsulate with extern "C" for C++.
+
 Wed Feb 13 23:41:15 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* regmove.c (kill_value): Handle subregs.
