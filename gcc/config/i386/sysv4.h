@@ -22,6 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i386.h"	/* Base i386 target machine definitions */
 #include "att386.h"	/* Use the i386 AT&T assembler syntax */
 #include "svr4.h"	/* Definitions common to all SVR4 targets */
+#include "machmode.h"
 #include "real.h"
 
 #undef TARGET_VERSION
@@ -254,31 +255,5 @@ extern int maximum_field_alignment;
 #undef PCC_BITFIELD_TYPE_MATTERS
 #define PCC_BITFIELD_TYPE_MATTERS (maximum_field_alignment == 0)
 
-/* Code to handle #pragma directives.  The interface is a bit messy,
-   but there's no simpler way to do this while still using yylex.  */
-#define HANDLE_PRAGMA(FILE)					\
-  do {								\
-    while (c == ' ' || c == '\t')				\
-      c = getc (FILE);						\
-    if (c == '\n' || c == EOF)					\
-      {								\
-	handle_pragma_token (0, 0);				\
-	return c;						\
-      }								\
-    ungetc (c, FILE);						\
-    switch (yylex ())						\
-      {								\
-      case IDENTIFIER:						\
-      case TYPENAME:						\
-      case STRING:						\
-      case CONSTANT:						\
-	handle_pragma_token (token_buffer, yylval.ttype);	\
-	break;							\
-      default:							\
-	handle_pragma_token (token_buffer, 0);			\
-      }								\
-    if (nextchar >= 0)						\
-      c = nextchar, nextchar = -1;				\
-    else							\
-      c = getc (FILE);						\
-  } while (1)
+/* Handle #pragma pack and sometimes #pragma weak.  */
+#define HANDLE_SYSV_PRAGMA
