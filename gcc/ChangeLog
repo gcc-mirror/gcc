@@ -1,3 +1,8 @@
+2002-06-23  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (convert_regs_exit): Push the registers to stack in
+	proper order.
+
 2002-06-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR middle-end/6963
@@ -98,7 +103,7 @@ Mon Jun 17 00:31:46 CEST 2002  Jan Hubicka  <jH@suse.cz>
 	the conversion if the target type is a smaller type.
 
 Thu Jun 13 18:27:05 CEST 2002  Jan Hubicka  <jh@suse.cz>
-	
+
 	* i386.c (ix86_expand_movstr):  Fix pasto.
 
 Thu Jun 13 18:02:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
@@ -127,19 +132,19 @@ Thu Jun 13 18:02:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md (reload_base, ltorg): Remove.
-	* s390.c (s390_stop_dump_lit_p, s390_dump_literal_pool, 
+	* s390.c (s390_stop_dump_lit_p, s390_dump_literal_pool,
 	s390_asm_output_pool_prologue, s390_pool_start_insn): Remove.
-	* s390-protos.h (s390_stop_dump_lit_p, s390_dump_literal_pool, 
+	* s390-protos.h (s390_stop_dump_lit_p, s390_dump_literal_pool,
 	s390_asm_output_pool_prologue): Likewise.
 	* s390.h (s390_pool_start_insn): Likewise.
 
-	* s390.c (s390_output_symbolic_const): Remove support for 
+	* s390.c (s390_output_symbolic_const): Remove support for
 	old-style pool chunks.
 	(s390_function_epilogue): Likewise.
-	(s390_output_constant_pool): Likewise.  Also, fix incorrect 
+	(s390_output_constant_pool): Likewise.  Also, fix incorrect
 	alignment for 64-bit literal pools.
 	(print_operand_address): Remove 'y' and 'Y' format flags.
-	* s390.h (ASM_OUTPUT_POOL_PROLOGUE): Remove support for 
+	* s390.h (ASM_OUTPUT_POOL_PROLOGUE): Remove support for
 	old-style pool chunks.
 	(ASM_OUTPUT_SPECIAL_POOL_ENTRY): Likewise.
 	(ASM_OUTPUT_POOL_EPILOGUE): Remove.
@@ -148,23 +153,23 @@ Thu Jun 13 18:02:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* s390.c (consttable_operand): New function.
 	* s390-protos.h (consttable_operand): Declare it.
 	* s390.h (PREDICATE_CODES): Add consttable_operand.
-	* s390.md (consttable_qi, consttable_hi, consttable_si, consttable_di, 
-	consttable_sf, consttable_df, pool_start_31, pool_end_31, 
+	* s390.md (consttable_qi, consttable_hi, consttable_si, consttable_di,
+	consttable_sf, consttable_df, pool_start_31, pool_end_31,
 	pool_start_64, pool_end_64, reload_base, reload_base2): New insns.
 	* s390.c (struct constant, struct constant_pool): New data types.
 	(constant_modes, gen_consttable): New variables.
-	(s390_start_pool, s390_end_pool, s390_add_pool, 
+	(s390_start_pool, s390_end_pool, s390_add_pool,
 	s390_dump_pool, s390_free_pool): New functions.
-	(s390_chunkify_pool): Completely reimplement literal pool 
+	(s390_chunkify_pool): Completely reimplement literal pool
 	overflow handling.
 
 	* s390.c (s390_pool_overflow): New variable.
 	* s390.h (s390_pool_overflow): Declare it.
-	* s390.md (cjump, icjump): Use it to adapt length for out-of-range 
+	* s390.md (cjump, icjump): Use it to adapt length for out-of-range
 	jumps in literal pool overflow situations.
 
 	* s390.c (s390_decompose_address): Accept new-style pool chunk offsets.
-	(s390_frame_info): Account for possible use of RETURN_REGNUM 
+	(s390_frame_info): Account for possible use of RETURN_REGNUM
 	by new literal pool overflow code.
 	(s390_emit_prologue): Likewise.
 
@@ -265,7 +270,7 @@ Tue Jun  4 13:09:18 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* pa-linux.h (WCHAR_UNSIGNED): Define to 0.
 	* pa.h (WCHAR_UNSIGNED): Define to 1.
-	
+
 2002-05-31  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (output_millicode_call): Correct "be,l" insn for TARGET_PA_20.
@@ -299,8 +304,8 @@ Tue Jun  4 13:09:18 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/i386/netbsd64.h (CPP_LP64_SPEC): Define.
 	(CPP_SUBTARGET_SPEC): Define.
 	(SUBTARGET_EXTRA_SPECS): Redefine, adding cpp_lp64 and
-	cpp_subtarget specs. 
-	(CPP_SPEC): Redefine to include %(cpp_subtarget).               
+	cpp_subtarget specs.
+	(CPP_SPEC): Redefine to include %(cpp_subtarget).
 
 2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -314,7 +319,7 @@ Tue Jun  4 13:09:18 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(CPP_ARCH32_SPEC): Redefine to match the non-bi-arch version
 	from sparc.h.
 	(CPP_ARCH64_SPEC): Likewise.
-	(NO_BUILTIN_PTRDIFF_TYPE): Undef. 
+	(NO_BUILTIN_PTRDIFF_TYPE): Undef.
 	(NO_BUILTIN_SIZE_TYPE): Undef.
 
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
@@ -351,11 +356,11 @@ Tue Jun  4 13:09:18 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/s390/s390.c (legitimate_pic_operand_p): Do not
 	accept symbolic LARL operands.
-	(s390_emit_epilogue): Do not set FRAME_RELATED_P on 
+	(s390_emit_epilogue): Do not set FRAME_RELATED_P on
 	epilogue insns.
 
 2002-05-28	Marc Espie <espie@openbsd.org>
-	* config/i386/openbsd.h (HAVE_GAS_MAX_SKIP_P2ALIGN):  Remove, 
+	* config/i386/openbsd.h (HAVE_GAS_MAX_SKIP_P2ALIGN):  Remove,
 	inherited from gas.h.
 	(ASM_QUAD):  Undef.  OpenBSD does not support it.
 
@@ -378,7 +383,7 @@ Mon May 27 10:37:28 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-05-26  Richard Henderson  <rth@redhat.com>
 
 	2002-05-25  Richard Henderson  <rth@redhat.com>
-	* c-pragma.c (apply_pragma_weak): Convert value identifier to 
+	* c-pragma.c (apply_pragma_weak): Convert value identifier to
 	string for decl_attributes.
 	(handle_pragma_weak): Call assemble_alias if we're modifying
 	an existing decl.
@@ -542,7 +547,7 @@ Wed May 22 14:16:07 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (display_help): Kill -a -ax help.
 
-	* config/1750a/1750a.h, config/alpha/alpha.h, 
+	* config/1750a/1750a.h, config/alpha/alpha.h,
 	config/clipper/clipper.h, config/dsp16xx/dsp16xx.h,
 	config/h8300/h8300.h, config/i960/i960.h, config/m68k/tower-as.h,
 	config/m88k/m88k.h, config/vax/vax.h, config/we32k/we32k.h:
@@ -697,16 +702,16 @@ Wed May 15 10:38:27 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-05-09  Mark Mitchell  <mark@codesourcery.com>
 
-	* config/rs6000/rs6000.h: Revert previous patch. 
+	* config/rs6000/rs6000.h: Revert previous patch.
 
 2002-05-09	Joel Sherrill <joel@OARcorp.com>
 
-	* config/rs6000/rs6000.h CPP_CPU_SPEC): Correct 
+	* config/rs6000/rs6000.h CPP_CPU_SPEC): Correct
 	403 and 405 arguments for binutils 2.12.
 
 Thu May  9 12:21:48 2002  Jeffrey A Law  (law@redhat.com)
 
- 	* pa.c (hppa_profile_hook): Use force_reg to get the address
+	* pa.c (hppa_profile_hook): Use force_reg to get the address
 	of the profile hook into an appropriate pseudo register.
 
 2002-05-09  Jakub Jelinek  <jakub@redhat.com>
@@ -1546,7 +1551,7 @@ Sat Apr 20 02:17:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/ia64/ia64.c (ia64_function_arg_pass_by_reference): New.
 	(ia64_va_arg): Expect variable sized types by reference.
 	* config/ia64/ia64-protos.h: Update.
-	* config/ia64/ia64.h (FUNCTION_ARG_PASS_BY_REFERENCE): Use 
+	* config/ia64/ia64.h (FUNCTION_ARG_PASS_BY_REFERENCE): Use
 	ia64_function_arg_pass_by_reference.
 
 2002-04-18  Hans-Peter Nilsson  <hp@bitrange.com>
@@ -1686,7 +1691,7 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* stmt.c (expand_start_stmt_expr): Add has_scope parameter.
 	* tree-inline.c (expand_call_inline): Set STMT_EXPR_NO_SCOPE
 	on the STMT_EXPR created for the inline function.
-	
+
 2002-04-16  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sol2-bi.h (AS_SPARC64_FLAG): New.
@@ -1722,7 +1727,7 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	PR target/6305
 	* config/s390/s390.md (mulsidi3): Set both subregs of the
-	multiword register. 
+	multiword register.
 
 2002-04-16  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -1776,7 +1781,7 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* doc/frontends.texi: Remove information about Chill.
 	* doc/sourcebuild.texi: Likewise.
 	* doc/standards.texi: Likewise.
-	
+
 2002-04-15  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/vms.h (INCLUDE_DEFAULTS): Add /gnu/lib/gcc-lib/include.
@@ -1791,7 +1796,7 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(sparc64_initialize_trampoline): Likewise.
 	(sparc_profile_hook): Likewise.
 	* config/sparc/sparc.md: Likewise.
-	
+
 	* config/sparc/sparc.c (sparc_extra_constraint_check):
 	Fix type of argument 'c'.
 	* config/sparc/sparc-protos.h (sparc_extra_constraint_check):
@@ -1918,7 +1923,7 @@ Fri Apr 12 15:42:59 2002  Jeffrey A Law  (law@redhat.com)
 	* config/ia64/ia64.h (ASM_SPEC): Moved from here ...
 	* config/ia64/sysv4.h (ASM_SPEC): ... to here, so that it
 	overrides the definition in config/svr4.h.
-	
+
 2002-04-12	Eric Norum <eric.norum@usask.ca>
 
 	* config/rtems.h, config/a29k/rtems.h, config/arm/rtems-elf.h,
@@ -2028,7 +2033,7 @@ Fri Apr 12 08:06:54 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2002-04-11  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.md (movdi_insn_sp32): Add o/J alternative.
-	(movdi_insn_sp32_v9): Likewise.  Only allow stx with aligned memory.  
+	(movdi_insn_sp32_v9): Likewise.  Only allow stx with aligned memory.
 	(dimode mem/zero splitter): New.
 
 2002-04-11  Hans-Peter Nilsson  <hp@axis.com>
@@ -2603,7 +2608,7 @@ Sun Mar 31 14:43:24 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c (LIBGCC_SPEC): Folded %L and duplicate %G here...
 	(LINK_COMMAND_SPEC): ... from here.
-	(init_gcc_specs): Duplicate it here too, omitting 
+	(init_gcc_specs): Duplicate it here too, omitting
 	shared_name in the second copy.
 	(init_spec): Test for duplicate
 	* config/i386/djgpp.h (LINK_COMMAND_SPEC): Remove `%L %G'.
@@ -2644,7 +2649,7 @@ Sun Mar 31 14:43:24 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/sparc/freebsd.h, config/sparc/linux64.h, config/sparc/lite.h,
 	config/sparc/liteelf.h, config/sparc/netbsd-elf.h,
 	config/sparc/sol2-sld-64.h, config/sparc/sol2.h,
-	config/sparc/sp64-aout.h, config/sparc/sp64-elf.h, 
+	config/sparc/sp64-aout.h, config/sparc/sp64-elf.h,
 	config/sparc/sp86x-aout.h, config/sparc/sp86x-elf.h,
 	config/sparc/splet.h, config/sparc/vxsparc64.h (TARGET_DEFAULT):
 	Remove MASK_EPILOGUE.
@@ -2993,7 +2998,7 @@ Wed Mar 27 22:46:04 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-03-24  Richard Henderson  <rth@redhat.com>
 
-	* recog.c (peephole2_optimize): Split blocks when EH insns are 
+	* recog.c (peephole2_optimize): Split blocks when EH insns are
 	generated in the middle of a block.  Do global life update if
 	zapped EH edges.
 
@@ -3004,7 +3009,7 @@ Wed Mar 27 22:46:04 CET 2002  Jan Hubicka  <jh@suse.cz>
 2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	preprocessor/3951
-	* gcc.c (cpp_options): Pass -MD through as -MD not -M -MF.	
+	* gcc.c (cpp_options): Pass -MD through as -MD not -M -MF.
 	* cppinit.c (cpp_handle_option): Set no_ouput if -MD or -MMD.
 	(init_dependency_output): Don't make no_output decision here.
 
@@ -3072,10 +3077,10 @@ Wed Mar 27 22:46:04 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* c-decl.c (finish_decl): Call it.
 	* cp/decl.c (cp_finish_decl): Likewise.
 	* doc/extend.texi: Document the new pragmas.
- 
+
 	* config/alpha/osf.h (CPP_SUBTARGET_SPEC): Add __EXTERN_PREFIX.
 	(HANDLE_PRAGMA_EXTERN_PREFIX): New.
- 
+
 	* config/i386/sol2.h (CPP_PREDEFINES): Add __PRAGMA_REDEFINE_EXTNAME.
 	(HANDLE_PRAGMA_REDEFINE_EXTNAME): New.
 	* config/sparc/sol2.h: Likewise.
@@ -3093,7 +3098,7 @@ Wed Mar 27 22:46:04 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(PREFERRED_RELOAD_CLASS): Move code to xtensa_preferred_reload_class.
 	* config/xtensa/xtensa.md (movsi_internal, movhi_internal,
 	movqi_internal): Use xtensa_valid_move instead of non_acc_reg_operand.
-	
+
 2002-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/5854
@@ -3383,7 +3388,7 @@ Tue Mar 19 14:12:32 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-03-18  Mark Mitchell  <mark@codesourcery.com>
 
-	* calls.c (precompute_arguments): Do not assume that temporaries 
+	* calls.c (precompute_arguments): Do not assume that temporaries
 	can be destroyed after expanding the argument.
 	(expand_call): Likewise.
 
@@ -3392,7 +3397,7 @@ Tue Mar 19 14:12:32 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* gcc.c (struct compiler default_compilers): Add
 	-no-integrated-cpp flag to invoke an external cpp.
 	(struct option_map option_map[]): Likewise.
-	* objc/lang-specs.h (struct compiler default_compilers): Add      
+	* objc/lang-specs.h (struct compiler default_compilers): Add
 	-no-integrated-cpp flag to invoke an external cpp.
 	* doc/invoke.texi: Document -no-integrated-cpp flag.
 
@@ -3415,7 +3420,7 @@ Tue Mar 19 14:12:32 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(COLLECT_EXPORT_LIST): Delete.
 	* config/rs6000/aix.h (HANDLE_SYSV_PRAGMA): Define.
 	* config/rs6000/darwin.h (HANDLE_SYSV_PRAGMA): Define.
-	
+
 2002-03-18  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (GO_IF_MODE_DEPENDENT_ADDRESS): Treat
@@ -3469,7 +3474,7 @@ Mon Mar 18 18:12:48 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* config/arm/coff.h (JUMP_TABLES_IN_TEXT_SECTION): Likewise.
 	* arm.c (get_jump_table_size): If the table is not in the text
 	section, return zero.
-	
+
 2002-03-17  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_emit_set_const_1): Build add insns
@@ -4063,7 +4068,7 @@ Fri Mar  8 06:48:45 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-03-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* simplify-rtx.c (simplify_plus_minus): Do not abort, 
+	* simplify-rtx.c (simplify_plus_minus): Do not abort,
 	but simply fail if the expression is too complex to simplify.
 	(simplify_gen_binary): Handle simplify_plus_minus failures.
 
@@ -5915,7 +5920,7 @@ Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* config/sh/sh.h (FUNCTION_ARG_ADVANCE): Use trampoline to
 	copy FP regs to general-purpose regs only in outgoing calls.
 	* config/sh/sh.md (movdf_media, movsf_media): Revert incorrect
-	change from 	2000-10-30.  Adjust for 64-bit (or 32-bit)
+	change from	2000-10-30.  Adjust for 64-bit (or 32-bit)
 	HOST_WIDE_INT.
 	* config/sh/sh.h (struct sh_args): Document all fields.
 	(FUNCTION_OK_FOR_SIBCALL): Functions that receive arguments
@@ -6008,7 +6013,7 @@ Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* config/sh/sh.md (call, call_value, sibcall): Simplify
 	copying of non-branch-target register.
 	2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
-	* glimits.h (__LONG_MAX__): Revert 	2000-12-13's patch.
+	* glimits.h (__LONG_MAX__): Revert	2000-12-13's patch.
 	* config/sh/sh.h (CPP_SPEC): Define it here for 64-bit SHmedia.
 	2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
 	* config/sh/sh.h (GET_SH_ARG_CLASS): Handle complex
@@ -6238,7 +6243,7 @@ Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(UNSPEC_COMPACT_ARGS): New.
 	(type): Added pt and ptabs.
 	(length): Default to 4 on SHmedia.  Default pt length to 12
-	and 	20 on SHmedia32 and SHmedia64, respectively.
+	and	20 on SHmedia32 and SHmedia64, respectively.
 	(pt): New function unit.
 	(movdi, movsi): Add types pt and ptabs.  Don't increment LABEL_NUSES.
 	Add whitespace between operands of SHmedia instructions.

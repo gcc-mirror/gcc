@@ -2468,7 +2468,7 @@ convert_regs_exit ()
       output_stack->top = value_reg_high - value_reg_low;
       for (reg = value_reg_low; reg <= value_reg_high; ++reg)
 	{
-	  output_stack->reg[reg - value_reg_low] = reg;
+	  output_stack->reg[value_reg_high - reg] = reg;
 	  SET_HARD_REG_BIT (output_stack->reg_set, reg);
 	}
     }

@@ -1,3 +1,7 @@
+2002-06-23  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c-torture/execute/complex-6.c: New.
+
 2002-06-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.dg/template/ttp4.C: New test.
