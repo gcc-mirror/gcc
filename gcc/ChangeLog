@@ -1,3 +1,9 @@
+2001-08-13  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/xcoff.h (EH_FRAME_IN_DATA_SECTION): New.
+	* defaults.h (EH_FRAME_SECTION_NAME): Respect it.
+	* doc/tm.texi (Exception Region Output): Document it.
+
 2001-08-13  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/sysv4.h (PREFERRED_DEBUGGING_TYPE): Use
@@ -226,7 +232,7 @@ Mon Aug 13 02:27:39 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* s390.c, s390.h, s390.md, s390-protos.h, linux.h, t-linux:
 	Clean up code: add missing comments and prototypes, fix warnings,
-        remove obsolete code, fix spacing to conform to coding style.
+	remove obsolete code, fix spacing to conform to coding style.
 
 2001-08-11  Ulrich Weigand  <uweigand@de.ibm.com>
 

@@ -7068,6 +7068,16 @@ provide a default definition if the target supports named sections.
 You should define this symbol if your target supports DWARF 2 frame
 unwind information and the default definition does not work.
 
+@findex EH_FRAME_IN_DATA_SECTION
+@item EH_FRAME_IN_DATA_SECTION
+If defined, DWARF 2 frame unwind information will be placed in the
+data section even though the target supports named sections.  This
+might be necessary, for instance, if the system linker does garbage
+collection and sections cannot be marked as not to be collected.
+
+Do not define this macro unless @code{TARGET_ASM_NAMED_SECTION} is
+also defined.
+
 @findex OMIT_EH_TABLE
 @item OMIT_EH_TABLE ()
 A C expression that is nonzero if the normal exception table output

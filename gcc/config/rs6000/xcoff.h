@@ -492,8 +492,11 @@ toc_section ()						\
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  xcoff_asm_named_section
 
-/* Define the name of the section to use for the exception tables.
-   TODO: test and see if we can use read_only_data_section, if so,
-   remove this.  */
-
+/* Define the name of the section to use for the EH language specific
+   data areas (.gcc_except_table on most other systems).  */
 #define EXCEPTION_SECTION data_section
+
+/* Define to prevent DWARF2 unwind info in the data section rather
+   than in the .eh_frame section.  We do this because the AIX linker
+   would otherwise garbage collect these sections.  */
+#define EH_FRAME_IN_DATA_SECTION 1
