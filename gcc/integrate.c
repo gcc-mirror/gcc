@@ -1294,6 +1294,13 @@ copy_insn_list (insns, map, static_chain_value)
 		break;
 	    }
 
+	  /* Similarly if an ignored return value is clobbered.  */
+	  else if (map->inline_target == 0
+		   && GET_CODE (pattern) == CLOBBER
+		   && GET_CODE (XEXP (pattern, 0)) == REG
+		   && REG_FUNCTION_VALUE_P (XEXP (pattern, 0)))
+	    break;
+
 	  /* If this is setting the static chain rtx, omit it.  */
 	  else if (static_chain_value != 0
 		   && set != 0
