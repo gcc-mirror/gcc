@@ -1,3 +1,7 @@
+2001-08-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/os/gnu-linux/bits/os_defines.h: Correct __s390__ definitions.
+
 2001-08-23  Jason Merrill  <jason_merrill@redhat.com>
 
 	* testsuite_flags.in (build-includes): Re-add backward.
