@@ -1,0 +1,23 @@
+This file describes the implementation notes of the GNU C Compiler for
+the ATMEL AVR micro controllers family.
+
+The generated assembly code requires the GNU assembler (GAS).  This is
+not currently included as part of the binutils package.
+Patches against binutils-2.9.5.0.13 can be obtained from
+http://medo.fov.uni-mb.si/mapp/uTools.  This site also has patches for
+the GNU debugger (GDB).
+
+
+GCC can be configured as a cross compiler for the AVR architectures
+on the same system.  Use `configure --target=avr' to configure GCC.
+
+
+Further installation notes and other useful information about AVR tools
+can also be obtained from http://medo.fov.uni-mb.si/mapp/uTools.
+
+
+Mailing list, avr@fov.uni-mb.si, exists to discuss related issues and
+suggestions for further optimizations and improvements.
+
+
+Denis Chertykov <denisc@overta.ru>,  30 Jan 2000
