@@ -285,6 +285,10 @@ do {								\
 #define BITS_PER_UNIT 8
 #endif
 
+#ifndef BITS_PER_WORD
+#define BITS_PER_WORD (BITS_PER_UNIT * UNITS_PER_WORD)
+#endif
+
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif

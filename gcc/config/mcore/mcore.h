@@ -247,11 +247,6 @@ extern const char * mcore_stack_increment_string;
 #define LIBGCC2_WORDS_BIG_ENDIAN 0
 #endif
 
-/* Width in bits of a "word", which is the contents of a machine register.
-   Note that this is not necessarily the width of data type `int';
-   if using 16-bit ints on a 68000, this would still be 32.
-   But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD  32
 #define MAX_BITS_PER_WORD 32
 
 /* Width of a word, in units (bytes).  */

@@ -339,7 +339,6 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
    sizeof(int) = sizeof(long) = sizeof(float) = sizeof(double) = 1.  */
 
 #define BITS_PER_UNIT		32
-#define BITS_PER_WORD		32
 #define UNITS_PER_WORD		1
 #define POINTER_SIZE		32
 #define PARM_BOUNDARY	        32

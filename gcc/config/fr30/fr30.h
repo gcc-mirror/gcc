@@ -83,8 +83,6 @@ extern int target_flags;
 
 #define WORDS_BIG_ENDIAN 1
 
-#define BITS_PER_WORD 	32
-
 #define UNITS_PER_WORD 	4
 
 #define POINTER_SIZE 	32

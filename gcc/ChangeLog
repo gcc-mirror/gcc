@@ -1,5 +1,15 @@
 2002-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* 1750a.h, a29k.h, alpha.h, arc.h, arm.h, avr.h, c4x.h, clipper.h,
+	convex.h, cris.h, d30v.h, dsp16xx.h, elxsi.h, fr30.h, h8300.h,
+	i370.h, i386.h, i860.h, i960.h, ia64.h, m32r.h, m68hc11.h, m68k.h,
+	m88k.h, mcore.h, mips.h, mmix.h, mn10200.h, mn10300.h, ns32k.h,
+	pa.h, pdp11.h, pj.h, romp.h, rs6000.h, s390.h, sh.h, sparc.h,
+	stormy16.h, v850.h, vax.h, we32k.h, xtensa.h (BITS_PER_WORD):
+	Delete.
+	* defaults.h (BITS_PER_WORD): Define.
+	* doc/tm.texi (BITS_PER_WORD): Document default value.	
+
 	* 1750a.h, avr.h, convex.h, d30v.h, dsp16xx.h, fr30.h, ia64.h,
 	m68hc11.h, m88k.h, mips.h, pdp11.h, rs6000.h, sparc.c,
 	stormy16.h, xtensa.h, vmsdbgout.c (CHAR_TYPE_SIZE): Delete.
