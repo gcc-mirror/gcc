@@ -21,6 +21,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "m68kv4.h"
 
+/* Alter assembler syntax for fsgldiv.  */
+
+#define FSGLDIV_USE_S
+
 /* Names to predefine in the preprocessor for this target machine.  For the
    Amiga, these definitions match those of the native AT&T compiler.  Note
    that we override the definition in m68kv4.h, where SVR4 is defined and
