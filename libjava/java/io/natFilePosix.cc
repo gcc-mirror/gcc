@@ -118,7 +118,69 @@ java::io::File::getCanonicalPath (void)
 
 #ifdef HAVE_REALPATH
   if (realpath (buf, buf2) == NULL)
-    throw new IOException (JvNewStringLatin1 (strerror (errno)));
+    {
+      // If realpath failed, we have to come up with a canonical path
+      // anyway.  We do this with purely textual manipulation.
+      // FIXME: this isn't perfect.  You can construct a case where
+      // we get a different answer from the JDK:
+      // mkdir -p /tmp/a/b/c
+      // ln -s /tmp/a/b /tmp/a/z
+      // ... getCanonicalPath("/tmp/a/z/c/nosuchfile")
+      // We will give /tmp/a/z/c/nosuchfile, while the JDK will
+      // give /tmp/a/b/c/nosuchfile.
+      int out_idx;
+      if (buf[0] != '/')
+	{
+	  // Not absolute, so start with current directory.
+	  if (getcwd (buf2, sizeof (buf2)) == NULL)
+	    throw new IOException ();
+	  out_idx = strlen (buf2);
+	}
+      else
+	{
+	  buf2[0] = '/';
+	  out_idx = 1;
+	} 
+      int in_idx = 0;
+      while (buf[in_idx] != '\0')
+	{
+	  // Skip '/'s.
+	  while (buf[in_idx] == '/')
+	    ++in_idx;
+	  int elt_start = in_idx;
+	  // Find next '/' or end of path.
+	  while (buf[in_idx] != '\0' && buf[in_idx] != '/')
+	    ++in_idx;
+	  if (in_idx == elt_start)
+	    {
+	      // An empty component means we've reached the end.
+	      break;
+	    }
+	  int len = in_idx - elt_start;
+	  if (len == 1 && buf[in_idx] == '.')
+	    continue;
+	  if (len == 2 && buf[in_idx] == '.' && buf[in_idx + 1] == '.')
+	    {
+	      // Found ".." component, lop off last part from existing
+	      // buffer.
+	      --out_idx;
+	      while (out_idx > 0 && buf[out_idx] != '/')
+		--out_idx;
+	      // Can't go up past "/".
+	      if (out_idx == 0)
+		++out_idx;
+	    }
+	  else
+	    {
+	      // Append a real path component to the output.
+	      if (out_idx > 1)
+		buf2[out_idx++] = '/';
+	      strncpy (&buf2[out_idx], &buf[elt_start], len);
+	      out_idx += len;
+	    }
+	}
+      buf[out_idx] = '\0';
+    }
 
   // FIXME: what encoding to assume for file names?  This affects many
   // calls.
