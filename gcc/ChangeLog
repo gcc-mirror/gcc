@@ -1,3 +1,39 @@
+2003-07-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/elf64.h (TARGET_ASM_UNIQUE_SECTION): Delete.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Delete.
+	(SECTION_FUNCTION_TEMPLATE): Delete.
+	* config/mips/elf.h: As for elf64.h.
+	(ASM_OUTPUT_ALIGNED_BSS): Use named_section rather than sbss_section.
+	* config/mips/linux.h: As for elf.h
+	* config/mips/iris6gld.h (TARGET_ASM_UNIQUE_SECTION): Delete.
+	* config/mips/iris6.h (EXTRA_SECTIONS): Delete.
+	(EXTRA_SECTION_FUNCTIONS): Remove sdata_section.  Remove the handling
+	of in_sdata from current_section_name and current_section_flags.
+	* config/mips/iris6gld.h (TARGET_ASM_UNIQUE_SECTION): Delete.
+	* config/mips/mips.h (sdata_section, sbss_section): Remove prototypes.
+	(MASK_GP_OPT, TARGET_GP_OPT): Delete.
+	(MASK_NO_FUSED_MADD): Use MASK_GP_OPT's old value.
+	(TARGET_SWITCHES): Neuter gpOPT, gpopt, no-gpOPT and no-gpopt.
+	(SMALL_DATA_SECTION, EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Remove.
+	* config/mips/mips.c (TARGET_IN_SMALL_DATA_P): Override.
+	(TARGET_SECTION_TYPE_FLAGS): Override if TARGET_IRIX6.
+	(mips_classify_symbol): Use SYMBOL_REF_SMALL_P.
+	(override_options): Remove setting of MASK_GPOPT.
+	(mips_output_external): Use mips_in_small_data_p to check whether a
+	symbol needs an .extern directive.  Don't emit such directives for
+	TARGET_EXPLICIT_RELOCS.
+	(mips_declare_object): Update accordingly.
+	(mips_select_rtx_section): Call named_section rather than
+	SMALL_DATA_SECTION.
+	(mips_select_section): Use default_elf_section_section for everything
+	except .text string constants.
+	(mips_in_small_data_p): New function.
+	(mips_encode_section_info): Remove small data handling.
+	(mips_unique_section): Delete.
+	(iris6_section_type_flags): New function.
+	* doc/tm.texi: Remove documentation of -mgpopt and -mhalf-pic.
+
 2003-07-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR Target/11453

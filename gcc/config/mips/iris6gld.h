@@ -49,4 +49,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* The GNU linker supports one-only sections.  */
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-#define TARGET_ASM_UNIQUE_SECTION  mips_unique_section

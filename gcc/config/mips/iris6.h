@@ -281,30 +281,11 @@ Boston, MA 02111-1307, USA.  */
    ? READONLY_DATA_SECTION_ASM_OP_64		\
    : READONLY_DATA_SECTION_ASM_OP_32)
 
-/* A default list of other sections which we might be "in" at any given
-   time.  For targets that use additional sections (e.g. .tdesc) you
-   should override this definition in the target-specific file which
-   includes this file.  */
-
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata
-
-/* A default list of extra section function definitions.  For targets
-   that use additional sections (e.g. .tdesc) you should override this
-   definition in the target-specific file which includes this file.  */
+/* Define functions to read the name and flags of the current section.
+   They are used by iris6_asm_output_align.  */
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
-void									\
-sdata_section ()							\
-{									\
-  if (in_section != in_sdata)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
-      in_section = in_sdata;						\
-    }									\
-}									\
-									\
 const char *								\
 current_section_name ()							\
 {									\
@@ -313,7 +294,6 @@ current_section_name ()							\
     case no_section:	return NULL;					\
     case in_text:	return ".text";					\
     case in_data:	return ".data";					\
-    case in_sdata:	return ".sdata";				\
     case in_bss:	return ".bss";					\
     case in_readonly_data:						\
       if (mips_abi != ABI_32 && mips_abi != ABI_O64)			\
@@ -334,7 +314,6 @@ current_section_flags ()						\
     case no_section:	return 0;					\
     case in_text:	return SECTION_CODE;				\
     case in_data:	return SECTION_WRITE;				\
-    case in_sdata:	return SECTION_WRITE | SECTION_SMALL;		\
     case in_bss:	return SECTION_WRITE | SECTION_BSS;		\
     case in_readonly_data: return 0;					\
     case in_named:	return get_named_section_flags (in_named_name);	\

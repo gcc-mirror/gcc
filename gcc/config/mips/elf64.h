@@ -142,27 +142,6 @@ do {									 \
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
 
-#define TARGET_ASM_UNIQUE_SECTION mips_unique_section
-
-/* A list of other sections which the compiler might be "in" at any
-   given time.  */
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS                                         \
-  SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP)
-
-#define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)                               \
-void FN ()                                                            \
-{                                                                     \
-  if (in_section != ENUM)                                             \
-    {                                                                 \
-      fprintf (asm_out_file, "%s\n", OP);                             \
-      in_section = ENUM;                                              \
-    }                                                                 \
-}
-
 /* On elf, we *do* have support for the .init and .fini sections, and we
    can put stuff in there to be executed before and after `main'.  We let
    crtstuff.c and other files know this by defining the following symbols.
