@@ -4136,6 +4136,62 @@
 }"
 [(set_attr "conds" "set")
  (set_attr "length" "5")])
+
+;; These are similar, but are needed when the mla pattern contains the
+;; eliminated register as operand 3.
+
+(define_insn ""
+  [(set (match_operand:SI 0 "" "=&r,&r")
+	(plus:SI (plus:SI (mult:SI (match_operand:SI 1 "" "%0,r")
+				   (match_operand:SI 2 "" "r,r"))
+			  (match_operand:SI 3 "" "r,r"))
+		 (match_operand:SI 4 "const_int_operand" "n,n")))]
+  "reload_in_progress"
+  "*
+  arm_output_asm_insn (\"mla\\t%0, %2, %1, %3\", operands);
+  operands[2] = operands[4];
+  operands[1] = operands[0];
+  return output_add_immediate (operands);
+"
+[(set_attr "length" "5")])
+
+(define_insn ""
+  [(set (reg:CC_NOOV 24)
+	(compare:CC_NOOV (plus:SI (plus:SI (mult:SI
+					    (match_operand:SI 3 "" "r")
+					    (match_operand:SI 4 "" "r"))
+					   (match_operand:SI 1 "" "r"))
+				  (match_operand:SI 2 "const_int_operand" "n"))
+			 (const_int 0)))
+   (set (match_operand:SI 0 "" "=&r")
+	(plus:SI (plus:SI (mult:SI (match_dup 3) (match_dup 4)) (match_dup 1))
+		 (match_dup 2)))]
+  "reload_in_progress"
+  "*
+  output_add_immediate (operands);
+  return arm_output_asm_insn (\"mlas\\t%0, %3, %4, %0\", operands);
+"
+[(set_attr "length" "5")
+ (set_attr "conds" "set")])
+
+(define_insn ""
+  [(set (reg:CC_NOOV 24)
+	(compare:CC_NOOV (plus:SI (plus:SI (mult:SI
+					    (match_operand:SI 3 "" "r")
+					    (match_operand:SI 4 "" "r"))
+					   (match_operand:SI 1 "" "r"))
+				  (match_operand:SI 2 "const_int_operand" "n"))
+			 (const_int 0)))
+   (clobber (match_scratch:SI 0 "=&r"))]
+  "reload_in_progress"
+  "*
+  output_add_immediate (operands);
+  return arm_output_asm_insn (\"mlas\\t%0, %3, %4, %0\", operands);
+"
+[(set_attr "length" "5")
+ (set_attr "conds" "set")])
+
+
 
 
 (define_insn ""
