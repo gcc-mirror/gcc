@@ -1,3 +1,8 @@
+2004-03-16  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JTabbedPane.java
+	(serialVersionUID): New field.
+
 2004-03-16  Norbert Frese  <postfach@nfrese.net>
 
 	* java/net/InetAddress.java
