@@ -1,4 +1,4 @@
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -309,32 +309,15 @@ gnu::java::net::PlainSocketImpl::close()
   timeout = 0;
 }
 
+static void
+write_helper (jint native_fd, jbyte *bytes, jint len);
+
 // Write a byte to the socket.
 void
 gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jint b)
 {
-  jbyte d =(jbyte) b;
-  int r = 0;
-
-  while (r != 1)
-    {
-      r = _Jv_write (this$0->native_fd, &d, 1);
-      if (r == -1)
-        {
-          if (::java::lang::Thread::interrupted())
-            {
-              ::java::io::InterruptedIOException *iioe
-                = new ::java::io::InterruptedIOException 
-                (JvNewStringLatin1 (strerror (errno)));
-              iioe->bytesTransferred = 0;
-              throw iioe;
-            }
-          // Some errors should not cause exceptions.
-          if (errno != ENOTCONN && errno != ECONNRESET && errno != EBADF)
-            throw new ::java::io::IOException (JvNewStringUTF (strerror (errno)));
-          break;
-        }
-    }
+  jbyte data = (jbyte) b;
+  write_helper (this$0->native_fd, &data, 1);
 }
 
 // Write some bytes to the socket.
@@ -346,12 +329,17 @@ gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jbyteArray b, jint off
   if (offset < 0 || len < 0 || offset + len > JvGetArrayLength (b))
     throw new ::java::lang::ArrayIndexOutOfBoundsException;
 
-  jbyte *bytes = elements (b) + offset;
+  write_helper (this$0->native_fd, elements (b) + offset * sizeof (jbyte), len);
+}
+
+static void
+write_helper(jint native_fd, jbyte *bytes, jint len)
+{
   int written = 0;
 
   while (len > 0)
     {
-      int r = _Jv_write (this$0->native_fd, bytes, len);
+      int r = _Jv_write (native_fd, bytes, len);
 
       if (r == -1)
         {
@@ -382,61 +370,19 @@ gnu::java::net::PlainSocketImpl::sendUrgentData (jint)
     "PlainSocketImpl: sending of urgent data not supported by this socket"));
 }
 
+static jint
+read_helper (jint native_fd, jint timeout, jbyte *bytes, jint count);
+
 // Read a single byte from the socket.
 jint
 gnu::java::net::PlainSocketImpl$SocketInputStream::read(void)
 {
-  jbyte b;
-  jint timeout = this$0->timeout;
-  jint native_fd = this$0->native_fd;
+  jbyte data;
 
-  // Do timeouts via select.
-  if (timeout > 0 && native_fd >= 0 && native_fd < FD_SETSIZE)
-    {
-      // Create the file descriptor set.
-      fd_set read_fds;
-      FD_ZERO (&read_fds);
-      FD_SET (native_fd,&read_fds);
-      // Create the timeout struct based on our internal timeout value.
-      struct timeval timeout_value;
-      timeout_value.tv_sec = timeout / 1000;
-      timeout_value.tv_usec = (timeout % 1000) * 1000;
-      // Select on the fds.
-      int sel_retval =
-        _Jv_select (native_fd + 1, &read_fds, NULL, NULL, &timeout_value);
-      // If select returns 0 we've waited without getting data...
-      // that means we've timed out.
-      if (sel_retval == 0)
-        throw new ::java::net::SocketTimeoutException
-          (JvNewStringUTF ("Read timed out") );
-      // If select returns ok we know we either got signalled or read some data...
-      // either way we need to try to read.
-    }
+  if (read_helper (this$0->native_fd, this$0->timeout, &data, 1) == 1)
+    return data;
 
-  int r = _Jv_read (native_fd, &b, 1);
-
-  if (r == 0)
-    return -1;
-
-  if (::java::lang::Thread::interrupted())
-    {
-      ::java::io::InterruptedIOException *iioe =
-        new ::java::io::InterruptedIOException
-        (JvNewStringUTF("Read interrupted"));
-      iioe->bytesTransferred = r == -1 ? 0 : r;
-      throw iioe;
-    }
-  else if (r == -1)
-    {
-      // Some errors cause us to return end of stream...
-      if (errno == ENOTCONN)
-        return -1;
-
-      // Other errors need to be signalled.
-      throw new ::java::io::IOException (JvNewStringUTF (strerror (errno)));
-    }
-
-  return b & 0xFF;
+  return -1;
 }
 
 // Read count bytes into the buffer, starting at offset.
@@ -444,10 +390,7 @@ jint
 gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer, jint offset, 
   jint count)
 {
-  jint native_fd = this$0->native_fd;
-  jint timeout = this$0->timeout;
-
-  if (! buffer)
+ if (! buffer)
     throw new ::java::lang::NullPointerException;
 
   jsize bsize = JvGetArrayLength (buffer);
@@ -455,8 +398,13 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer, jint 
   if (offset < 0 || count < 0 || offset + count > bsize)
     throw new ::java::lang::ArrayIndexOutOfBoundsException;
 
-  jbyte *bytes = elements (buffer) + offset;
+  return read_helper (this$0->native_fd, this$0->timeout,
+		      elements (buffer) + offset * sizeof (jbyte), count);
+}
 
+static jint
+read_helper (jint native_fd, jint timeout, jbyte *bytes, jint count)
+{
   // Do timeouts via select.
   if (timeout > 0 && native_fd >= 0 && native_fd < FD_SETSIZE)
     {
