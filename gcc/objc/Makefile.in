@@ -67,7 +67,7 @@ OBJC_H = hash.h list.h sarray.h objc.h \
 # copy objc headers to installation include directory
 copy-headers: $(OBJC_H)
 	-rm -fr $(incinstalldir)/objc
-	mkdir $(incinstalldir)/objc
+	-mkdir $(incinstalldir)/objc
 	for file in $(OBJC_H); do \
 	  realfile=$(srcdir)/objc/$$file; \
 	  cp $$realfile $(incinstalldir)/objc; \
