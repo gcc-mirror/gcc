@@ -4,6 +4,12 @@
 	lang_printable_name call in a scratch buffer, so it 
 	won't be clobbered by the second call.
 
+2001-03-28  Hans Boehm  <boehm@acm.org>
+
+	* boehm.c (PROCEDURE_OBJECT_DESCRIPTOR): Set to use `build_int_2.'
+	(get_boehm_type_descriptor): Set type on returned value to be a
+	pointer length integer.
+
 2001-03-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* expr.c (pop_type_0): Call `concat' rather than building the
@@ -12,12 +18,6 @@
 
 	* parse.y (patch_method_invocation): Avoid casting away
 	const-ness.
-
-2001-03-21  Alexandre Petit-Bianco  <apbianco@redhat.com>
-
-	* parse.y (qualify_ambiguous_name): Broaden `length'
-	recognition. Help MODIFY_EXPR be resolved as expression names.
-	Fixes PR java/2066. Fixes PR java/2400.
 
 2001-03-28  Jeffrey Oldham  <oldham@codesourcery.com>
 
@@ -173,6 +173,12 @@
 
 	* gjavah.c (cxx_keywords): Update from the definitive list in cp/lex.c.
 	* lex.c (cxx_keywords): Likewise.
+
+2001-03-21  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (qualify_ambiguous_name): Broaden `length'
+	recognition. Help MODIFY_EXPR be resolved as expression names.
+	Fixes PR java/2066. Fixes PR java/2400.
 
 2001-03-21  Bryce McKinlay  <bryce@albatross.co.nz>
 
