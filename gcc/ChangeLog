@@ -1,3 +1,7 @@
+2003-10-22  Andrew Haley  <aph@redhat.com>
+
+	* toplev.c (output_file_directive): Allow for null input_name.
+
 2003-10-22  Waldek Hebisch <hebisch@math.uni.wroc.pl>
 
 	* config/i386/i386.c (classify_argument): Handle SET_TYPE.
