@@ -153,7 +153,7 @@ cross-gnattools: force
 	   gnatbl$(exeext) gnatchop$(exeext) gnatcmd$(exeext) \
 	   gnatkr$(exeext) gnatlink$(exeext) \
 	   gnatls$(exeext) gnatmake$(exeext) \
-	   gnatprep$(exeext) \
+	   gnatprep$(exeext) gnatpsta$(exeext) gnatpsys$(exeext) \
 	   gnatxref$(exeext) gnatfind$(exeext) $(EXTRA_GNATTOOLS)
 
 # use target-gcc

@@ -2181,7 +2181,7 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 #	../xgcc -B../ -dD -E ../tconfig.h $(INCLUDES) > rts/tconfig.h
 	$(MAKE) -C rts CC="../../xgcc -B../../" \
 	        INCLUDES="$(INCLUDES_FOR_SUBDIR) -I./../.." \
-                CFLAGS="$(GNATLIBCFLAGS) $(LIBGCC2_CFLAGS) -DIN_RTS" \
+                CFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS) -DIN_RTS" \
 		ADA_CFLAGS="$(GNATLIBCFLAGS)" \
 		srcdir=$(fsrcdir) \
 	        -f ../Makefile $(LIBGNAT_OBJS)
@@ -2279,14 +2279,14 @@ ravenppclib:
 gnatlib-shared-default:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(LIBGCC2_CFLAGS)" \
+	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
 	$(RM) rts/libgnat$(soext) rts/libgnarl$(soext)
-	cd rts; ../../xgcc -B../../ -shared $(LIBGCC2_CFLAGS) \
+	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnat-$(LIBRARY_VERSION)$(soext) $(SO_OPTS)libgnat-$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) $(MISCLIB) -lm
-	cd rts; ../../xgcc -B../../ -shared $(LIBGCC2_CFLAGS) \
+	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnarl-$(LIBRARY_VERSION)$(soext) $(SO_OPTS)libgnarl-$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) $(THREADSLIB)
 	cd rts; $(LN) libgnat-$(LIBRARY_VERSION)$(soext) libgnat$(soext)
