@@ -4382,7 +4382,7 @@ expand_end_case (orig_index)
 		{
 		  index_expr
 		    = build_int_2 (INTVAL (index),
-				   !unsignedp && INTVAL (index) >= 0 ? 0 : -1);
+				   unsignedp || INTVAL (index) >= 0 ? 0 : -1);
 		  index_expr = convert (TREE_TYPE (index_expr), index_expr);
 		}
 
