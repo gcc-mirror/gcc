@@ -8936,6 +8936,66 @@ ix86_local_alignment (type, align)
     }
   return align;
 }
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function.  */
+void
+x86_initialize_trampoline (tramp, fnaddr, cxt)
+     rtx tramp, fnaddr, cxt;
+{
+  if (!TARGET_64BIT)
+    {
+      /* Compute offset from the end of the jmp to the target function.  */
+      rtx disp = expand_binop (SImode, sub_optab, fnaddr,
+			       plus_constant (tramp, 10),
+			       NULL_RTX, 1, OPTAB_DIRECT);
+      emit_move_insn (gen_rtx_MEM (QImode, tramp),
+		      GEN_INT (trunc_int_for_mode (0xb9, QImode)));
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 1)), cxt);
+      emit_move_insn (gen_rtx_MEM (QImode, plus_constant (tramp, 5)),
+		      GEN_INT (trunc_int_for_mode (0xe9, QImode)));
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 6)), disp);
+    }
+  else
+    {
+      int offset = 0;
+      /* Try to load address using shorter movl instead of movabs.
+         We may want to support movq for kernel mode, but kernel does not use
+         trampolines at the moment.  */
+      if (x86_64_zero_extended_value (fnaddr))
+	{
+	  fnaddr = copy_to_mode_reg (DImode, fnaddr);
+	  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
+			  GEN_INT (trunc_int_for_mode (0xbb41, HImode)));
+	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, offset + 2)),
+			  gen_lowpart (SImode, fnaddr));
+	  offset += 6;
+	}
+      else
+	{
+	  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
+			  GEN_INT (trunc_int_for_mode (0xbb49, HImode)));
+	  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, offset + 2)),
+			  fnaddr);
+	  offset += 10;
+	}
+      /* Load static chain using movabs to r10.  */
+      emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
+		      GEN_INT (trunc_int_for_mode (0xba49, HImode)));
+      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, offset + 2)),
+		      cxt);
+      offset += 10;
+      /* Jump to the r11 */
+      emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
+		      GEN_INT (trunc_int_for_mode (0xff49, HImode)));
+      emit_move_insn (gen_rtx_MEM (QImode, plus_constant (tramp, offset+2)),
+		      GEN_INT (trunc_int_for_mode (0xe3, HImode)));
+      offset += 3;
+      if (offset > TRAMPOLINE_SIZE)
+	abort();
+    }
+}
 
 #define def_builtin(NAME, TYPE, CODE) \
   builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL_PTR)
