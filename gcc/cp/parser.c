@@ -12825,7 +12825,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	     may be instantiated during name lookup.  In that case,
 	     errors may be issued.  Even if we rollback the current
 	     tentative parse, those errors are valid.  */
-	  decl = lookup_qualified_name (parser->scope, name, is_type);
+	  decl = lookup_qualified_name (parser->scope, name, is_type,
+					/*complain=*/true);
 	  if (dependent_p)
 	    pop_scope (parser->scope);
 	}

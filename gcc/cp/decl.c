@@ -5761,10 +5761,12 @@ qualify_lookup (tree val, int flags)
    bindings.  
 
    Returns a DECL (or OVERLOAD, or BASELINK) representing the
-   declaration found.  */
+   declaration found.  If no suitable declaration can be found,
+   ERROR_MARK_NODE is returned.  Iif COMPLAIN is true and SCOPE is
+   neither a class-type nor a namespace a diagnostic is issued.  */
 
 tree
-lookup_qualified_name (tree scope, tree name, bool is_type_p)
+lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
 {
   int flags = 0;
 
@@ -5776,15 +5778,19 @@ lookup_qualified_name (tree scope, tree name, bool is_type_p)
       flags |= LOOKUP_COMPLAIN;
       if (is_type_p)
 	flags |= LOOKUP_PREFER_TYPES;
-      if (!qualified_lookup_using_namespace (name, scope, &binding, 
-					     flags))
-	return NULL_TREE;
-      return select_decl (&binding, flags);
+      if (qualified_lookup_using_namespace (name, scope, &binding, 
+					    flags))
+	return select_decl (&binding, flags);
     }
-  else if (is_aggr_type (scope, /*or_else=*/1))
-    return lookup_member (scope, name, 0, is_type_p);
-  else
-    return error_mark_node;
+  else if (is_aggr_type (scope, complain))
+    {
+      tree t;
+      t = lookup_member (scope, name, 0, is_type_p);
+      if (t)
+	return t;
+    }
+
+  return error_mark_node;
 }
 
 /* Check to see whether or not DECL is a variable that would have been

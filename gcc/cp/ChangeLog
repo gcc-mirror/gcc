@@ -1,3 +1,16 @@
+2003-07-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7019
+	* cp-tree.h (lookup_qualified_name): Adjust prototype.
+	* decl.c (lookup_qualified_name): Add complain parameter.  Adjust
+	call to is_aggr_type.
+	* parser.c (cp_parser_lookup_name): Adjust call to
+	lookup_qualified_name.
+	* pt.c (tsubst_qualified_id): Likewise.
+	(tsubst_copy_and_build): Likewise.
+	* semantics.c (finish_qualified_id_expr): Deal with erroneous
+	expressions.
+
 2003-07-14  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	PR c++/11510
