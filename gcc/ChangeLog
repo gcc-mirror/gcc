@@ -1,5 +1,23 @@
 2002-05-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* Makefile.in: Update for cpptrad.c.
+	* cpphash.h (struct cpp_buffer): New members for buffer
+	overlays.
+	(struct cpp_reader): New members for traditional output.
+	(_cpp_read_logical_line, _cpp_overlay_buffer): New.
+	* cppinit.c (cpp_create_reader): Set trad_line.
+	(cpp_destroy): Free trad_out_base if used.
+	(cpp_read_main_file): Overlay an empty buffer if traditional.
+	(cpp_finish_options): Don't do builtins.
+	(COMMAND_LINE_OPTIONS): Add -traditional-cpp.
+	(cpp_handle_option): Handle it.
+	* cpplex.c (continue_after_nul): New.
+	(_cpp_lex_direct): Use handle_nul.
+	* cpplib.h (struct cpp_options): New traditional option.
+	* cpptrad.c: New file.
+
+2002-05-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* c-common.c (c_common_init_options): Use C89 for Objective-C,
 	and set the options flag.
 	* cppinit.c (lang_flags): Remove objc.

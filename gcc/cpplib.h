@@ -387,6 +387,9 @@ struct cpp_options
      parsing; drivers might want to continue printing help.  */
   unsigned char help_only;
 
+  /* True for traditional preprocessing.  */
+  unsigned char traditional;
+
   /* Target-specific features set by the front end or client.  */
 
   /* Precision for target CPP arithmetic, target characters, target

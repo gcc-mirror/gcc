@@ -1993,7 +1993,7 @@ PREPROCESSOR_DEFINES = \
   -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
   -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\"
 
-LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o \
+LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o cpptrad.o \
 		cpphash.o cpperror.o cppinit.o cppdefault.o cppmain.o \
 		hashtable.o line-map.o mkdeps.o prefix.o version.o mbchar.o
 
@@ -2015,6 +2015,7 @@ cpplex.o:   cpplex.c   $(CONFIG_H) $(LIBCPP_DEPS) mbchar.h
 cppmacro.o: cppmacro.c $(CONFIG_H) $(LIBCPP_DEPS)
 cpplib.o:   cpplib.c   $(CONFIG_H) $(LIBCPP_DEPS)
 cpphash.o:  cpphash.c  $(CONFIG_H) $(LIBCPP_DEPS)
+cpptrad.o:  cpptrad.c  $(CONFIG_H) $(LIBCPP_DEPS)
 cppfiles.o: cppfiles.c $(CONFIG_H) $(LIBCPP_DEPS) $(SPLAY_TREE_H) mkdeps.h
 cppinit.o:  cppinit.c  $(CONFIG_H) $(LIBCPP_DEPS) cppdefault.h \
 		mkdeps.h prefix.h version.h

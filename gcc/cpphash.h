@@ -245,6 +245,9 @@ struct cpp_buffer
   /* The directory of the this buffer's file.  Its NAME member is not
      allocated, so we don't need to worry about freeing it.  */
   struct search_path dir;
+
+  /* Used for buffer overlays by cpptrad.c.  */
+  const uchar *saved_cur, *saved_rlimit, *saved_line_base;
 };
 
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
@@ -355,6 +358,11 @@ struct cpp_reader
 
   /* Whether cpplib owns the hashtable.  */
   unsigned char our_hashtable;
+
+  /* Traditional preprocessing output buffer.  */
+  uchar *trad_out_base, *trad_out_limit;
+  uchar *trad_out_cur;
+  unsigned int trad_line;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.
@@ -446,6 +454,11 @@ extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum lc_reason,
 					 const char *,
 					 unsigned int, unsigned int));
 extern void _cpp_pop_buffer PARAMS ((cpp_reader *));
+
+/* In cpptrad.c.  */
+extern bool _cpp_read_logical_line_trad PARAMS ((cpp_reader *));
+extern void _cpp_overlay_buffer PARAMS ((cpp_reader *pfile, const uchar *,
+					 size_t));
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1
