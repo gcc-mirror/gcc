@@ -1749,7 +1749,7 @@ distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y cp-parse.y \
 	done
 	cd config; \
 	for file in *[0-9a-zA-Z+]; do \
-	  if test -d $$file; then \
+	  if test -d $$file && test "$$file" != RCS; then \
 	    mkdir ../tmp/config/$$file; \
 	    cd $$file; \
 	    for subfile in *[0-9a-zA-Z+]; do \
