@@ -14,8 +14,9 @@ noinst_HEADERS = \
 	include/symtab.h internal.h system.h ucnid.h
 
 LIBINTL = @LIBINTL@
+LIBICONV = @LIBICONV@
 noinst_PROGRAMS = makedepend
-makedepend_LDADD = libcpp.a ../libiberty/libiberty.a $(LIBINTL)
+makedepend_LDADD = libcpp.a ../libiberty/libiberty.a $(LIBINTL) $(LIBICONV)
 
 XGETTEXT = @XGETTEXT@
 GMSGFMT = @GMSGFMT@

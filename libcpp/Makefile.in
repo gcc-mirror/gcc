@@ -75,7 +75,7 @@ makedepend_SOURCES = makedepend.c
 makedepend_OBJECTS = makedepend.$(OBJEXT)
 am__DEPENDENCIES_1 =
 makedepend_DEPENDENCIES = libcpp.a ../libiberty/libiberty.a \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -221,7 +221,7 @@ noinst_HEADERS = \
 	include/cpplib.h include/line-map.h include/mkdeps.h \
 	include/symtab.h internal.h system.h ucnid.h
 
-makedepend_LDADD = libcpp.a ../libiberty/libiberty.a $(LIBINTL)
+makedepend_LDADD = libcpp.a ../libiberty/libiberty.a $(LIBINTL) $(LIBICONV)
 MSGMERGE = msgmerge
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
