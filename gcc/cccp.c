@@ -308,6 +308,7 @@ static char *macarg ();
 static U_CHAR *skip_to_end_of_comment ();
 static U_CHAR *skip_quoted_string ();
 static U_CHAR *skip_paren_group ();
+static void quote_string ();
 
 static char *check_precompiled ();
 /* static struct macrodef create_definition ();	[moved below] */
@@ -3663,8 +3664,8 @@ special_symbol (hp, op)
 
       if (string)
 	{
-	  buf = (char *) alloca (3 + strlen (string));
-	  sprintf (buf, "\"%s\"", string);
+	  buf = (char *) alloca (3 + 2 * strlen (string));
+	  quote_string (buf, string);
 	}
       else
 	buf = "\"\"";
@@ -6905,6 +6906,31 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
       break;
   }
   return bp;
+}
+
+/* Place into DST a quoted string representing the string SRC.  */
+static void
+quote_string (dst, src)
+     char *dst, *src;
+{
+  char c;
+
+  for (*dst++ = '\"'; ; *dst++ = c)
+    switch ((c = *src++))
+      {
+      case '\n':
+	c = 'n';
+	/* fall through */
+      case '\"':
+      case '\\':
+	*dst++ = '\\';
+	break;
+      
+      case '\0':
+	*dst++ = '\"';
+	*dst = '\0';
+	return;
+      }
 }
 
 /* Skip across a group of balanced parens, starting from IP->bufp.
