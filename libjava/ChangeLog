@@ -1,3 +1,11 @@
+2005-02-22  David Gilbert  <david.gilbert@object-refinery.com>
+
+	* java/awt/font/TransformAttribute.java,
+	(TransformAttribute(AffineTransform)): throw
+	IllegalArgumentException for null transform.
+	(getTransform): return a copy of transform.
+	Added doc comments to all.
+
 2005-02-22  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/io/Externalizable.java,
