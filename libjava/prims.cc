@@ -687,6 +687,8 @@ main_init ()
   sigemptyset (&act.sa_mask);
   act.sa_flags = 0;
   sigaction (SIGPIPE, &act, NULL);
+
+  _Jv_JNI_Init ();
 }
 
 #ifndef DISABLE_GETENV_PROPERTIES
@@ -914,6 +916,14 @@ _Jv_SetMaximumHeapSize (const char *arg)
 }
 
 
+
+void *
+_Jv_MallocUnchecked (jsize size)
+{
+  if (size == 0)
+    size = 1;
+  return malloc ((size_t) size);
+}
 
 void *
 _Jv_Malloc (jsize size)

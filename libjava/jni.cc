@@ -17,6 +17,7 @@ details.  */
 #include <config.h>
 
 #include <stddef.h>
+#include <string.h>
 
 // Define this before including jni.h.
 #define __GCJ_JNI_IMPL__
@@ -37,6 +38,9 @@ details.  */
 #include <java/lang/reflect/Constructor.h>
 #include <java/lang/reflect/Method.h>
 #include <java/lang/reflect/Modifier.h>
+#include <java/lang/OutOfMemoryError.h>
+#include <java/util/Hashtable.h>
+#include <java/lang/Integer.h>
 
 #include <gcj/method.h>
 #include <gcj/field.h>
@@ -62,20 +66,202 @@ enum invocation_type
 // Forward declaration.
 extern struct JNINativeInterface _Jv_JNIFunctions;
 
+// Number of slots in the default frame.  The VM must allow at least
+// 16.
+#define FRAME_SIZE 32
+
+// This structure is used to keep track of local references.
+struct _Jv_JNI_LocalFrame
+{
+  // This is true if this frame object represents a pushed frame (eg
+  // from PushLocalFrame).
+  int marker :  1;
+
+  // Number of elements in frame.
+  int size   : 31;
+
+  // Next frame in chain.
+  _Jv_JNI_LocalFrame *next;
+
+  // The elements.  These are allocated using the C "struct hack".
+  jobject vec[0];
+};
+
+// This holds a reference count for all local and global references.
+static java::util::Hashtable *ref_table;
+
 
+
+void
+_Jv_JNI_Init (void)
+{
+  ref_table = new java::util::Hashtable;
+}
 
 // Tell the GC that a certain pointer is live.
 static void
-mark_for_gc (void *)
+mark_for_gc (jobject obj)
 {
-  // FIXME.
+  JvSynchronize sync (ref_table);
+
+  using namespace java::lang;
+  Integer *refcount = (Integer *) ref_table->get (obj);
+  jint val = (refcount == NULL) ? 0 : refcount->intValue ();
+  ref_table->put (obj, new Integer (val + 1));
 }
 
 // Unmark a pointer.
 static void
-unmark_for_gc (void *)
+unmark_for_gc (jobject obj)
 {
-  // FIXME.
+  JvSynchronize sync (ref_table);
+
+  using namespace java::lang;
+  Integer *refcount = (Integer *) ref_table->get (obj);
+  JvAssert (refcount);
+  jint val = refcount->intValue () - 1;
+  if (val == 0)
+    ref_table->remove (obj);
+  else
+    ref_table->put (obj, new Integer (val));
+}
+
+
+
+static jobject
+_Jv_JNI_NewGlobalRef (JNIEnv *, jobject obj)
+{
+  mark_for_gc (obj);
+  return obj;
+}
+
+static void
+_Jv_JNI_DeleteGlobalRef (JNIEnv *, jobject obj)
+{
+  unmark_for_gc (obj);
+}
+
+static void
+_Jv_JNI_DeleteLocalRef (JNIEnv *env, jobject obj)
+{
+  _Jv_JNI_LocalFrame *frame;
+
+  for (frame = env->locals; frame != NULL; frame = frame->next)
+    {
+      for (int i = 0; i < FRAME_SIZE; ++i)
+	{
+	  if (frame->vec[i] == obj)
+	    {
+	      frame->vec[i] = NULL;
+	      unmark_for_gc (obj);
+	      return;
+	    }
+	}
+
+      // Don't go past a marked frame.
+      JvAssert (! frame->marker);
+    }
+
+  JvAssert (0);
+}
+
+static jint
+_Jv_JNI_EnsureLocalCapacity (JNIEnv *env, jint size)
+{
+  // It is easier to just always allocate a new frame of the requested
+  // size.  This isn't the most efficient thing, but for now we don't
+  // care.  Note that _Jv_JNI_PushLocalFrame relies on this right now.
+
+  _Jv_JNI_LocalFrame *frame
+    = (_Jv_JNI_LocalFrame *) _Jv_MallocUnchecked (sizeof (_Jv_JNI_LocalFrame)
+						  + size * sizeof (jobject));
+  if (frame == NULL)
+    {
+      // FIXME: exception processing.
+      env->ex = new java::lang::OutOfMemoryError;
+      return -1;
+    }
+
+  frame->marker = true;
+  frame->size = size;
+  memset (&frame->vec[0], 0, size * sizeof (jobject));
+  frame->next = env->locals;
+  env->locals = frame;
+
+  return 0;
+}
+
+static jint
+_Jv_JNI_PushLocalFrame (JNIEnv *env, jint size)
+{
+  jint r = _Jv_JNI_EnsureLocalCapacity (env, size);
+  if (r < 0)
+    return r;
+
+  // The new frame is on top.
+  env->locals->marker = true;
+
+  return 0;
+}
+
+static jobject
+_Jv_JNI_NewLocalRef (JNIEnv *env, jobject obj)
+{
+  // Try to find an open slot somewhere in the topmost frame.
+  _Jv_JNI_LocalFrame *frame = env->locals;
+  bool done = false, set = false;
+  while (frame != NULL && ! done)
+    {
+      for (int i = 0; i < frame->size; ++i)
+	if (frame->vec[i] == NULL)
+	  {
+	    set = true;
+	    done = true;
+	    frame->vec[i] = obj;
+	    break;
+	  }
+    }
+
+  if (! set)
+    {
+      // No slots, so we allocate a new frame.  According to the spec
+      // we could just die here.  FIXME: return value.
+      _Jv_JNI_EnsureLocalCapacity (env, 16);
+      // We know the first element of the new frame will be ok.
+      env->locals->vec[0] = obj;
+    }
+
+  mark_for_gc (obj);
+  return obj;
+}
+
+static jobject
+_Jv_JNI_PopLocalFrame (JNIEnv *env, jobject result)
+{
+  _Jv_JNI_LocalFrame *rf = env->locals;
+
+  bool done = false;
+  while (rf != NULL && ! done)
+    {  
+      for (int i = 0; i < rf->size; ++i)
+	if (rf->vec[i] != NULL)
+	  unmark_for_gc (rf->vec[i]);
+
+      // If the frame we just freed is the marker frame, we are done.
+      done = rf->marker;
+
+      _Jv_JNI_LocalFrame *n = rf->next;
+      // When N==NULL, we've reached the stack-allocated frame, and we
+      // must not free it.  However, we must be sure to clear all its
+      // elements, since we might conceivably reuse it.
+      if (n == NULL)
+	memset (&rf->vec[0], 0, rf->size * sizeof (jobject));
+      else
+	_Jv_Free (rf);
+      rf = n;
+    }
+
+  return result == NULL ? NULL : _Jv_JNI_NewLocalRef (env, result);
 }
 
 
@@ -87,7 +273,7 @@ _Jv_JNI_GetVersion (JNIEnv *)
 }
 
 static jclass
-_Jv_JNI_DefineClass (JNIEnv *, jobject loader, 
+_Jv_JNI_DefineClass (JNIEnv *env, jobject loader, 
 		     const jbyte *buf, jsize bufLen)
 {
   jbyteArray bytes = JvNewByteArray (bufLen);
@@ -99,7 +285,7 @@ _Jv_JNI_DefineClass (JNIEnv *, jobject loader,
 
   // FIXME: exception processing.
   jclass result = l->defineClass (bytes, 0, bufLen);
-  return result;
+  return (jclass) _Jv_JNI_NewLocalRef (env, result);
 }
 
 static jclass
@@ -125,13 +311,13 @@ _Jv_JNI_FindClass (JNIEnv *env, const char *name)
   // FIXME: exception processing.
   jclass r = loader->findClass (n);
 
-  return r;
+  return (jclass) _Jv_JNI_NewLocalRef (env, r);
 }
 
 static jclass
-_Jv_JNI_GetSuperclass (JNIEnv *, jclass clazz)
+_Jv_JNI_GetSuperclass (JNIEnv *env, jclass clazz)
 {
-  return clazz->getSuperclass ();
+  return (jclass) _Jv_JNI_NewLocalRef (env, clazz->getSuperclass ());
 }
 
 static jboolean
@@ -175,8 +361,7 @@ _Jv_JNI_ThrowNew (JNIEnv *env, jclass clazz, const char *message)
 static jthrowable
 _Jv_JNI_ExceptionOccurred (JNIEnv *env)
 {
-  // FIXME: create local reference.
-  return env->ex;
+  return (jthrowable) _Jv_JNI_NewLocalRef (env, env->ex);
 }
 
 static void
@@ -204,6 +389,8 @@ _Jv_JNI_FatalError (JNIEnv *, const char *message)
   JvFail (message);
 }
 
+
+
 static jboolean
 _Jv_JNI_IsSameObject (JNIEnv *, jobject obj1, jobject obj2)
 {
@@ -224,13 +411,13 @@ _Jv_JNI_AllocObject (JNIEnv *env, jclass clazz)
       obj = JvAllocObject (clazz);
     }
 
-  return obj;
+  return _Jv_JNI_NewLocalRef (env, obj);
 }
 
 static jclass
-_Jv_JNI_GetObjectClass (JNIEnv *, jobject obj)
+_Jv_JNI_GetObjectClass (JNIEnv *env, jobject obj)
 {
-  return obj->getClass();
+  return (jclass) _Jv_JNI_NewLocalRef (env, obj->getClass());
 }
 
 static jboolean
@@ -346,6 +533,14 @@ _Jv_JNI_CallAnyMethodV (JNIEnv *env, jobject obj, jclass klass,
   if (ex != NULL)
     env->ex = ex;
 
+  if (! return_type->isPrimitive ())
+    {
+      // Make sure we create a local reference.  The cast hackery is
+      // to avoid problems for template instantations we know won't be
+      // used.
+      return (T) (long long) _Jv_JNI_NewLocalRef (env, result.l);
+    }
+
   // We cheat a little here.  FIXME.
   return * (T *) &result;
 }
@@ -389,6 +584,14 @@ _Jv_JNI_CallAnyMethodA (JNIEnv *env, jobject obj, jclass klass,
 
   if (ex != NULL)
     env->ex = ex;
+
+  if (! return_type->isPrimitive ())
+    {
+      // Make sure we create a local reference.  The cast hackery is
+      // to avoid problems for template instantations we know won't be
+      // used.
+      return (T) (long long) _Jv_JNI_NewLocalRef (env, result.l);
+    }
 
   // We cheat a little here.  FIXME.
   return * (T *) &result;
@@ -608,6 +811,7 @@ _Jv_JNI_NewObjectA (JNIEnv *env, jclass klass, jmethodID id,
 
 
 
+// FIXME: local reference
 template<typename T>
 static T
 _Jv_JNI_GetField (JNIEnv *, jobject obj, jfieldID field) 
@@ -675,6 +879,7 @@ _Jv_JNI_GetAnyFieldID (JNIEnv *env, jclass clazz,
   return NULL;
 }
 
+// FIXME: local reference
 template<typename T>
 static T
 _Jv_JNI_GetStaticField (JNIEnv *, jclass, jfieldID field)
@@ -692,11 +897,11 @@ _Jv_JNI_SetStaticField (JNIEnv *, jclass, jfieldID field, T value)
 }
 
 static jstring
-_Jv_JNI_NewString (JNIEnv *, const jchar *unichars, jsize len)
+_Jv_JNI_NewString (JNIEnv *env, const jchar *unichars, jsize len)
 {
   // FIXME: exception processing.
   jstring r = _Jv_NewString (unichars, len);
-  return r;
+  return (jstring) _Jv_JNI_NewLocalRef (env, r);
 }
 
 static jsize
@@ -709,24 +914,24 @@ static const jchar *
 _Jv_JNI_GetStringChars (JNIEnv *, jstring string, jboolean *isCopy)
 {
   jchar *result = _Jv_GetStringChars (string);
-  mark_for_gc (result);
+  mark_for_gc (string);
   if (isCopy)
     *isCopy = false;
   return (const jchar *) result;
 }
 
 static void
-_Jv_JNI_ReleaseStringChars (JNIEnv *, jstring, const jchar *chars)
+_Jv_JNI_ReleaseStringChars (JNIEnv *, jstring string, const jchar *)
 {
-  unmark_for_gc ((void *) chars);
+  unmark_for_gc (string);
 }
 
 static jstring
-_Jv_JNI_NewStringUTF (JNIEnv *, const char *bytes)
+_Jv_JNI_NewStringUTF (JNIEnv *env, const char *bytes)
 {
   // FIXME: exception processing.
-  jstring r = JvNewStringUTF (bytes);
-  return r;
+  jstring result = JvNewStringUTF (bytes);
+  return (jstring) _Jv_JNI_NewLocalRef (env, result);
 }
 
 static jsize
@@ -801,19 +1006,19 @@ _Jv_JNI_GetArrayLength (JNIEnv *, jarray array)
 }
 
 static jarray
-_Jv_JNI_NewObjectArray (JNIEnv *, jsize length, jclass elementClass,
+_Jv_JNI_NewObjectArray (JNIEnv *env, jsize length, jclass elementClass,
 			jobject init)
 {
   // FIXME: exception processing.
   jarray result = JvNewObjectArray (length, elementClass, init);
-  return result;
+  return (jarray) _Jv_JNI_NewLocalRef (env, result);
 }
 
 static jobject
-_Jv_JNI_GetObjectArrayElement (JNIEnv *, jobjectArray array, jsize index)
+_Jv_JNI_GetObjectArrayElement (JNIEnv *env, jobjectArray array, jsize index)
 {
   jobject *elts = elements (array);
-  return elts[index];
+  return _Jv_JNI_NewLocalRef (env, elts[index]);
 }
 
 static void
@@ -828,9 +1033,11 @@ _Jv_JNI_SetObjectArrayElement (JNIEnv *, jobjectArray array, jsize index,
 
 template<typename T, jclass K>
 static JArray<T> *
-_Jv_JNI_NewPrimitiveArray (JNIEnv *, jsize length)
+_Jv_JNI_NewPrimitiveArray (JNIEnv *env, jsize length)
 {
-  return (JArray<T> *) _Jv_NewPrimArray (K, length);
+  // FIXME: exception processing.
+  return (JArray<T> *) _Jv_JNI_NewLocalRef (env,
+					    _Jv_NewPrimArray (K, length));
 }
 
 template<typename T>
@@ -844,19 +1051,19 @@ _Jv_JNI_GetPrimitiveArrayElements (JNIEnv *, JArray<T> *array,
       // We elect never to copy.
       *isCopy = false;
     }
-  mark_for_gc (elts);
+  mark_for_gc (array);
   return elts;
 }
 
 template<typename T>
 static void
-_Jv_JNI_ReleasePrimitiveArrayElements (JNIEnv *, JArray<T> *,
-				       T *elems, jint /* mode */)
+_Jv_JNI_ReleasePrimitiveArrayElements (JNIEnv *, JArray<T> *array,
+				       T *, jint /* mode */)
 {
   // Note that we ignore MODE.  We can do this because we never copy
   // the array elements.  My reading of the JNI documentation is that
   // this is an option for the implementor.
-  unmark_for_gc (elems);
+  unmark_for_gc (array);
 }
 
 template<typename T>
@@ -931,7 +1138,7 @@ _Jv_JNI_MonitorExit (JNIEnv *, jobject obj)
 
 // JDK 1.2
 jobject
-_Jv_JNI_ToReflectedField (JNIEnv *, jclass cls, jfieldID fieldID,
+_Jv_JNI_ToReflectedField (JNIEnv *env, jclass cls, jfieldID fieldID,
 			  jboolean)
 {
   // FIXME: exception processing.
@@ -939,8 +1146,7 @@ _Jv_JNI_ToReflectedField (JNIEnv *, jclass cls, jfieldID fieldID,
   field->declaringClass = cls;
   field->offset = (char*) fieldID - (char *) cls->fields;
   field->name = _Jv_NewStringUtf8Const (fieldID->getNameUtf8Const (cls));
-  // FIXME: make a local reference.
-  return field;
+  return _Jv_JNI_NewLocalRef (env, field);
 }
 
 // JDK 1.2
@@ -954,7 +1160,7 @@ _Jv_JNI_FromReflectedField (JNIEnv *, jobject f)
 }
 
 jobject
-_Jv_JNI_ToReflectedMethod (JNIEnv *, jclass klass, jmethodID id,
+_Jv_JNI_ToReflectedMethod (JNIEnv *env, jclass klass, jmethodID id,
 			   jboolean)
 {
   using namespace java::lang::reflect;
@@ -979,8 +1185,7 @@ _Jv_JNI_ToReflectedMethod (JNIEnv *, jclass klass, jmethodID id,
       result = meth;
     }
 
-  // FIXME: make a local reference.
-  return result;
+  return _Jv_JNI_NewLocalRef (env, result);
 }
 
 static jmethodID
@@ -1003,12 +1208,25 @@ static T
 _Jv_JNI_conversion_call (fixme)
 {
   JNIEnv env;
+  _Jv_JNI_LocalFrame *frame
+    = (_Jv_JNI_LocalFrame *) alloca (sizeof (_Jv_JNI_LocalFrame)
+				     + FRAME_SIZE * sizeof (jobject));
 
   env.p = &_Jv_JNIFunctions;
   env.ex = NULL;
   env.klass = FIXME;
+  env.locals = frame;
+
+  frame->marker = true;
+  frame->next = NULL;
+  frame->size = FRAME_SIZE;
+  for (int i = 0; i < frame->size; ++i)
+    frame->vec[i] = NULL;
 
   T result = FIXME_ffi_call (args);
+
+  while (env.locals != NULL)
+    _Jv_JNI_PopLocalFrame (&env, result);
 
   if (env.ex)
     JvThrow (env.ex);
@@ -1043,14 +1261,18 @@ struct JNINativeInterface _Jv_JNIFunctions =
   _Jv_JNI_ExceptionDescribe,
   _Jv_JNI_ExceptionClear,
   _Jv_JNI_FatalError,
-  NOT_IMPL,
-  NOT_IMPL,
-  NOT_IMPL /* NewGlobalRef */,
-  NOT_IMPL /* DeleteGlobalRef */,
-  NOT_IMPL /* DeleteLocalRef */,
+
+  _Jv_JNI_PushLocalFrame,
+  _Jv_JNI_PopLocalFrame,
+  _Jv_JNI_NewGlobalRef,
+  _Jv_JNI_DeleteGlobalRef,
+  _Jv_JNI_DeleteLocalRef,
+
   _Jv_JNI_IsSameObject,
-  NOT_IMPL,
-  NOT_IMPL,
+
+  _Jv_JNI_NewLocalRef,
+  _Jv_JNI_EnsureLocalCapacity,
+
   _Jv_JNI_AllocObject,
   _Jv_JNI_NewObject,
   _Jv_JNI_NewObjectV,

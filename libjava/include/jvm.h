@@ -72,6 +72,10 @@ void _Jv_InitGC (void);
 /* Register a finalizer.  */
 void _Jv_RegisterFinalizer (void *object, _Jv_FinalizerFunc *method);
 
+/* Allocate some unscanned, unmoveable memory.  Return NULL if out of
+   memory.  */
+void *_Jv_MallocUnchecked (jsize size) __attribute__((__malloc__));
+
 /* Run finalizers for objects ready to be finalized..  */
 void _Jv_RunFinalizers (void);
 /* Run all finalizers.  Should be called only before exit.  */
@@ -196,5 +200,9 @@ extern "C"
 /* get/set the name of the running executable. */
 extern char *_Jv_ThisExecutable (void);
 extern void _Jv_ThisExecutable (const char *);
+
+/* Initialize JNI.  */
+extern void _Jv_JNI_Init (void);
+
 
 #endif /* __JAVA_JVM_H__ */
