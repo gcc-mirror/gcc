@@ -2193,6 +2193,7 @@ gnu/java/nio/SelectionKeyImpl.java \
 gnu/java/nio/SelectorImpl.java \
 gnu/java/nio/SelectorProviderImpl.java \
 gnu/java/nio/ServerSocketChannelImpl.java \
+gnu/java/nio/ServerSocketChannelSelectionKey.java \
 gnu/java/nio/SocketChannelImpl.java \
 gnu/java/nio/SocketChannelSelectionKey.java \
 gnu/java/nio/charset/ISO_8859_1.java \
@@ -2658,6 +2659,7 @@ gnu/java/net/natPlainSocketImpl.cc \
 gnu/java/net/protocol/core/natCoreInputStream.cc \
 gnu/java/nio/natFileLockImpl.cc \
 gnu/java/nio/natSelectorImpl.cc \
+gnu/java/nio/natServerSocketChannelImpl.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/io/natObjectInputStream.cc \
