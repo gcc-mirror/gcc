@@ -38,9 +38,9 @@ case $BASH_VERSION in
     *)   ;;   # ??
 esac
 
-BUILD_DIR=@glibcpp_builddir@
-SRC_DIR=@glibcpp_srcdir@
-PREFIX_DIR=@glibcpp_prefixdir@
+BUILD_DIR=@glibcxx_builddir@
+SRC_DIR=@glibcxx_srcdir@
+PREFIX_DIR=@glibcxx_prefixdir@
 if [ "$WHICH"x = 0x ]; then
   CXX=`$BUILD_DIR/scripts/testsuite_flags --build-cxx`
   INCLUDES=`$BUILD_DIR/scripts/testsuite_flags --build-includes`
