@@ -88,7 +88,7 @@ namespace tr1
 
   #define tr1_hashtable_define_trivial_hash(T) 				    \
     template <> struct hash<T> {						    \
-      std::size_t operator()(T val) { return static_cast<std::size_t>(val); } \
+      std::size_t operator()(T val) const { return static_cast<std::size_t>(val); } \
     }									    \
 
   tr1_hashtable_define_trivial_hash(bool);

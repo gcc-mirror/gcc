@@ -1,3 +1,17 @@
+2005-02-19  Matt Austern  <austern@gmail.com>
+
+	* include/tr1/functional (tr1_hashtable_define_trivial_hash): Make
+	hash<T>::operator() a const member function for T a fundamental type
+	* include/tr1/hashtable (extract1st::operator()): Declare const.
+	(hash_code_base): Declare all member functions const
+	(hashtable::find): fix call to this->bucket_count()
+	(hashtable::count): Likewise.
+	(hashtable::equal_range): m_incr_bucket applies to iterator, not node.
+	* testsuite/tr1/6_containers/unordered/find/set1.cc: New test.
+	* testsuite/tr1/6_containers/unordered/find/map1.cc: New test.
+	* testsuite/tr1/6_containers/unordered/find/multimap1.cc: New test.
+	* testsuite/tr1/6_containers/unordered/find/multiset1.cc: New test.
+	
 2005-02-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR libstdc++/20071
