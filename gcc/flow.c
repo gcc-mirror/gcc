@@ -3764,35 +3764,31 @@ propagate_one_insn (pbi, insn)
   note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
   if (flags & PROP_SCAN_DEAD_CODE)
     {
-      insn_is_dead = insn_dead_p (pbi, PATTERN (insn), 0,
-				  REG_NOTES (insn));
+      insn_is_dead = insn_dead_p (pbi, PATTERN (insn), 0, REG_NOTES (insn));
       libcall_is_dead = (insn_is_dead && note != 0
 			 && libcall_dead_p (pbi, note, insn));
-    }
-
-  /* We almost certainly don't want to delete prologue or epilogue
-     instructions.  Warn about probable compiler losage.  */
-  if (insn_is_dead
-      && reload_completed
-      && (((HAVE_epilogue || HAVE_prologue)
-	   && prologue_epilogue_contains (insn))
-	  || (HAVE_sibcall_epilogue
-	      && sibcall_epilogue_contains (insn)))
-      && find_reg_note (insn, REG_MAYBE_DEAD, NULL_RTX) == 0)
-    {
-      if (flags & PROP_KILL_DEAD_CODE)
-	{
-	  warning ("ICE: would have deleted prologue/epilogue insn");
-	  if (!inhibit_warnings)
-	    debug_rtx (insn);
-	}
-      libcall_is_dead = insn_is_dead = 0;
     }
 
   /* If an instruction consists of just dead store(s) on final pass,
      delete it.  */
   if ((flags & PROP_KILL_DEAD_CODE) && insn_is_dead)
     {
+      /* If we're trying to delete a prologue or epilogue instruction
+	 that isn't flagged as possibly being dead, something is wrong.
+	 But if we are keeping the stack pointer depressed, we might well
+	 be deleting insns that are used to compute the amount to update
+	 it by, so they are fine.  */
+      if (reload_completed
+	  && !(TREE_CODE (TREE_TYPE (current_function_decl)) == FUNCTION_TYPE
+		&& (TYPE_RETURNS_STACK_DEPRESSED
+		    (TREE_TYPE (current_function_decl))))
+	  && (((HAVE_epilogue || HAVE_prologue)
+	       && prologue_epilogue_contains (insn))
+	      || (HAVE_sibcall_epilogue
+		  && sibcall_epilogue_contains (insn)))
+	  && find_reg_note (insn, REG_MAYBE_DEAD, NULL_RTX) == 0)
+	abort ();
+
       /* Record sets.  Do this even for dead instructions, since they
 	 would have killed the values if they hadn't been deleted.  */
       mark_set_regs (pbi, PATTERN (insn), insn);
