@@ -13,6 +13,7 @@
 # LIBGCOV
 # LIB2ADD
 # LIB2ADD_ST 
+# LIB2ADD_SH
 # LIB2ADDEH
 # LIB2ADDEHSTATIC
 # LIB2ADDEHSHARED
@@ -279,6 +280,26 @@ for file in $LIB2ADD_ST; do
   libgcc2_st_objs="$libgcc2_st_objs ${oname}${objext}"
 done
 
+if [ "$SHLIB_LINK" ]; then
+  for file in $LIB2ADD_SH; do
+    name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//' -e 's/[.]txt$//'`
+    oname=`echo $name | sed -e 's,.*/,,'`
+
+    for ml in $MULTILIBS; do
+      dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+      flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+      out="libgcc/${dir}/${oname}${objext}"
+      if [ ${name}.asm = ${file} ]; then
+	flags="$flags -xassembler-with-cpp"
+      fi
+
+      echo $out: stmp-dirs $file
+      echo "	$gcc_compile" $flags -c $file -o $out
+    done
+    libgcc2_sh_objs="$libgcc2_sh_objs ${oname}${objext}"
+  done
+fi
+
 if [ "$LIBUNWIND" ]; then
   libunwind_static_objs=""
   libunwind_shared_objs=""
@@ -346,6 +367,9 @@ for ml in $MULTILIBS; do
     libgcc_eh_shared_objs="$libgcc_eh_shared_objs libgcc/${dir}/$o"
   done
   libgcc_sh_objs="$libgcc_objs $libgcc_eh_shared_objs"
+  for o in $libgcc2_sh_objs; do
+    libgcc_sh_objs="$libgcc_sh_objs libgcc/${dir}/$o"
+  done
   shlib_deps="$libgcc_sh_objs"
 
   libgcc_st_objs=""

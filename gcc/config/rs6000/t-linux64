@@ -1,8 +1,9 @@
 
 #rs6000/t-linux64
 
-LIB2FUNCS_EXTRA = tramp.S $(srcdir)/config/rs6000/ppc64-fp.c \
-	$(srcdir)/config/rs6000/darwin-ldouble.c
+LIB2FUNCS_EXTRA = tramp.S $(srcdir)/config/rs6000/ppc64-fp.c
+LIB2FUNCS_STATIC_EXTRA = eabi.S $(srcdir)/config/rs6000/darwin-ldouble.c
+LIB2FUNCS_SHARED_EXTRA = $(srcdir)/config/rs6000/darwin-ldouble-shared.c
 
 TARGET_LIBGCC2_CFLAGS = -mno-minimal-toc -fPIC -specs=bispecs
 

@@ -1,3 +1,16 @@
+2005-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/19019
+	* Makefile.in (LIB2FUNCS_SHARED_EXTRA, LIB2ADD_SH): New.
+	(libgcc.mk): Depend on $(LIB2ADD_SH), pass LIB2ADD_SH to mklibgcc.
+	(LIBGCC_DEPS): Add $(LIB2ADD_SH).
+	* mklibgcc.in: Handle LIB2ADD_SH.
+	* config/rs6000/t-linux64 (LIB2FUNCS_EXTRA): Remove darwin-ldouble.c.
+	(LIB2FUNCS_STATIC_EXTRA, LIB2FUNCS_SHARED_EXTRA): Set.
+	* config/rs6000/darwin-ldouble.c: Protect .symver asm also with
+	defined IN_LIBGCC2_S.
+	* config/rs6000/darwin-ldouble-shared.c: New file.
+
 2005-02-23  Michael Beach  <michaelb@ieee.org>
 
 	PR target/20159
