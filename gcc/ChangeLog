@@ -1,3 +1,7 @@
+2001-11-08  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2asm.c (dw2_force_const_mem): Fix typo.
+
 2001-11-08  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config.gcc: Rename stormy16 to xstormy16.

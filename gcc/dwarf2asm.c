@@ -782,7 +782,7 @@ dw2_force_const_mem (x)
 
       if (USE_LINKONCE_INDIRECT)
 	{
-	  char *ref_name = alloca (strlen (XSTR (x, 0) + sizeof "DW.ref."));
+	  char *ref_name = alloca (strlen (XSTR (x, 0)) + sizeof "DW.ref.");
 
 	  sprintf (ref_name, "DW.ref.%s", XSTR (x, 0));
 	  id = get_identifier (ref_name);
