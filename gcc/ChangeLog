@@ -1,3 +1,10 @@
+2000-12-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (and64_operand): Use logical_u_operand.
+	(first_reg_to_save): Don't save fixed or call-used registers
+	except PIC_OFFSET_TABLE_REGNUM when -fpic even though it is fixed.
+	* rs6000.md (anddi3): Prefer rldic? over andis instruction.
+
 2000-12-18  Zack Weinberg <zackw@Stanford.EDU>:
 
 	* Makefile.in: Rename cpp to cpp0, tradcpp to tradcpp0, and
