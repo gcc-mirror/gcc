@@ -1,5 +1,16 @@
 2004-10-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR c++/17554
+	* g++.dg/init/for3.C: New test.
+
+	PR c++/17657
+	* g++.dg/opt/switch2.C: New test.
+
+	PR middle-end/17703
+	* g++.dg/warn/Wreturn-2.C: New test.
+
+2004-10-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR c++/17907
 	* g++.dg/eh/cleanup5.C: New test.
 

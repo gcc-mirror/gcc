@@ -3538,6 +3538,7 @@ extern tree nondestructive_fold_binary_to_constant (enum tree_code, tree, tree, 
 extern tree fold_read_from_constant_string (tree);
 extern tree int_const_binop (enum tree_code, tree, tree, int);
 extern tree build_fold_addr_expr (tree);
+tree fold_build_cleanup_point_expr (tree type, tree expr);
 extern tree build_fold_addr_expr_with_type (tree, tree);
 extern tree build_fold_indirect_ref (tree);
 extern tree constant_boolean_node (int, tree);

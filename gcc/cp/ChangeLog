@@ -1,5 +1,21 @@
 2004-10-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR c++/17554
+	part of c++/17657
+	middle-end/17703
+	* semantics.c (maybe_cleanup_point_expr): Call
+	fold_build_cleanup_point_expr.
+	(maybe_cleanup_point_expr_void): New function.
+	(add_decl_expr): Call maybe_cleanup_point_expr_void.
+	(finish_expr_stmt): Likewise.
+	(finish_return_stmt): Likewise.
+	(finish_for_expr): Likewise.
+	(finish_asm_stmt): Likewise.
+	* typeck.c (condition_conversion): Call
+	fold_build_cleanup_point_expr.
+
+2004-10-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR c++/17907
 	* semantics.c (add_decl_expr): If the decl has a size which
 	has side effects then the decl expression needs a cleanup point.

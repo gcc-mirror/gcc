@@ -358,9 +358,24 @@ static tree
 maybe_cleanup_point_expr (tree expr)
 {
   if (!processing_template_decl && stmts_are_full_exprs_p ())
-    expr = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (expr), expr);
+    expr = fold_build_cleanup_point_expr (TREE_TYPE (expr), expr);
   return expr;
 }
+
+/* Like maybe_cleanup_point_expr except have the type of the new expression be
+   void so we don't need to create a temprary variable to hold the inner
+   expression.  The reason why we do this is because the orginal type might be
+   an aggregate and we cannot create a temprary variable for that type.  */
+
+static tree
+maybe_cleanup_point_expr_void (tree expr)
+{
+  if (!processing_template_decl && stmts_are_full_exprs_p ())
+    expr = fold_build_cleanup_point_expr (void_type_node, expr);
+  return expr;
+}
+
+
 
 /* Create a declaration statement for the declaration given by the DECL.  */
 
@@ -370,7 +385,7 @@ add_decl_expr (tree decl)
   tree r = build_stmt (DECL_EXPR, decl);
   if (DECL_INITIAL (decl)
       || (DECL_SIZE (decl) && TREE_SIDE_EFFECTS (DECL_SIZE (decl))))
-    r = maybe_cleanup_point_expr (r);
+    r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 }
 
@@ -556,7 +571,7 @@ finish_expr_stmt (tree expr)
 	{
 	  if (TREE_CODE (expr) != EXPR_STMT)
 	    expr = build_stmt (EXPR_STMT, expr);
-	  expr = maybe_cleanup_point_expr (expr);
+	  expr = maybe_cleanup_point_expr_void (expr);
 	}
 
       r = add_stmt (expr);
@@ -719,7 +734,7 @@ finish_return_stmt (tree expr)
     }
 
   r = build_stmt (RETURN_EXPR, expr);
-  r = maybe_cleanup_point_expr (r);
+  r = maybe_cleanup_point_expr_void (r);
   r = add_stmt (r);
   finish_stmt ();
 
@@ -783,7 +798,7 @@ finish_for_expr (tree expr, tree for_stmt)
       cxx_incomplete_type_error (expr, TREE_TYPE (expr));
       expr = error_mark_node;
     }
-  expr = maybe_cleanup_point_expr (expr);
+  expr = maybe_cleanup_point_expr_void (expr);
   FOR_EXPR (for_stmt) = expr;
 }
 
@@ -1179,7 +1194,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		  output_operands, input_operands,
 		  clobbers);
   ASM_VOLATILE_P (r) = volatile_p;
-  r = maybe_cleanup_point_expr (r);
+  r = maybe_cleanup_point_expr_void (r);
   return add_stmt (r);
 }
 
