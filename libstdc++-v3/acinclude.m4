@@ -269,6 +269,9 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
+    # XXX This test is broken at the moment, as symbols required for
+    # linking are now in libsupc++ (not built yet.....). In addition, 
+    # this test has cored on solaris in the past.
     AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
     AC_TRY_RUN([
      int main(void) 
@@ -277,7 +280,7 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
        //catch (...) { };
        return 0;
      }
-    ], [ac_sectionLDflags=yes], [ac_sectionLFflags=no], [ac_sectionLDflags=yes])
+    ], [ac_sectionLDflags=yes],[ac_sectionLFflags=no], [ac_sectionLDflags=yes])
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -1476,19 +1479,83 @@ changequote([, ])
   dnl NB: these things may be duplicated in c++config.h as well.
   case "$enable_cshadow_headers" in
     yes) 
-	CSHADOWFLAGS="-fno-builtin"
+	CSHADOW_FLAGS="-fno-builtin"
+	C_INCLUDE_DIR='$(top_srcdir)/include/c_std'
         AC_DEFINE(_GLIBCPP_USE_SHADOW_HEADERS)
-	c_include_dir=c_std
 	;;
     no)   
-	CSHADOWFLAGS=""
-	c_include_dir=c
+	CSHADOW_FLAGS=""
+	C_INCLUDE_DIR='$(top_srcdir)/include/c'
         ;;
   esac
 
-  AC_SUBST(CSHADOWFLAGS)
-  AC_SUBST(c_include_dir)
+  AC_SUBST(CSHADOW_FLAGS)
+  AC_SUBST(C_INCLUDE_DIR)
   AM_CONDITIONAL(GLIBCPP_USE_CSHADOW, test "$enable_cshadow_headers" = yes)
+])
+
+dnl
+dnl Set up *_INCLUDES and *_INCLUDE_DIR variables for all sundry Makefile.am's.
+dnl
+dnl GLIBCPP_INCLUDE_DIR
+dnl C_INCLUDE_DIR
+dnl TOPLEVEL_INCLUDES
+dnl LIBMATH_INCLUDES
+dnl LIBSUPCXX_INCLUDES
+dnl LIBIO_INCLUDES
+dnl CSHADOW_INCLUDES
+dnl
+dnl GLIBCPP_EXPORT_INCLUDE
+AC_DEFUN(GLIBCPP_EXPORT_INCLUDES, [
+  # Root level of the include sources.
+  GLIBCPP_INCLUDE_DIR='$(top_srcdir)/include'
+
+  # Can either use include/c or include/c_std to grab "C" headers. This
+  # variable is set to the include directory currently in use.
+  # set with C_INCLUDE_DIR in GLIBCPP_ENABLE_SHADOW
+   
+  # Passed down for cross compilers, canadian crosses.
+  TOPLEVEL_INCLUDES='-I$(includedir)'
+
+  LIBMATH_INCLUDES='-I$(top_srcdir)/libmath'
+
+  LIBSUPCXX_INCLUDES='-I$(top_srcdir)/libsupc++'
+
+  #if GLIBCPP_NEED_LIBIO
+  LIBIO_INCLUDES='-I$(top_builddir)/libio -I$(top_srcdir)/libio'
+  #else
+  #LIBIO_INCLUDES='-I$(top_srcdir)/libio'
+  #endif
+
+  #if GLIBCPP_USE_CSHADOW
+  #  CSHADOW_INCLUDES='-I$(GLIBCPP_INCLUDE_DIR)/std -I$(C_INCLUDE_DIR) \
+  #                   -I$(top_blddir)/cshadow'
+  #else
+  CSHADOW_INCLUDES='-I$(GLIBCPP_INCLUDE_DIR)/std -I$(C_INCLUDE_DIR)'
+  #endif
+
+  # Now, export this to all the little Makefiles....
+  AC_SUBST(GLIBCPP_INCLUDE_DIR)
+  AC_SUBST(TOPLEVEL_INCLUDES)
+  AC_SUBST(LIBMATH_INCLUDES)
+  AC_SUBST(LIBSUPCXX_INCLUDES)
+  AC_SUBST(LIBIO_INCLUDES)
+  AC_SUBST(CSHADOW_INCLUDES)
+])
+
+
+dnl
+dnl Set up *_FLAGS and *FLAGS variables for all sundry Makefile.am's.
+dnl
+AC_DEFUN(GLIBCPP_EXPORT_FLAGS, [
+  # Optimization flags that are probably a good idea for thrill-seekers. Just
+  # uncomment the lines below and make, everything else is ready to go... 
+  # OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc 
+  OPTIMIZE_CXXFLAGS=
+  AC_SUBST(OPTIMIZE_CXXFLAGS)
+
+  WARN_FLAGS='-Wall -Wno-format -W -Wwrite-strings -Winline'
+  AC_SUBST(WARN_FLAGS)
 ])
 
 

@@ -67,9 +67,11 @@ AR = @AR@
 AS = @AS@
 CC = @CC@
 CPP = @CPP@
-CSHADOWFLAGS = @CSHADOWFLAGS@
+CSHADOW_FLAGS = @CSHADOW_FLAGS@
+CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
+C_INCLUDE_DIR = @C_INCLUDE_DIR@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
@@ -79,25 +81,31 @@ GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 GLIBCPP_CFLAGS = @GLIBCPP_CFLAGS@
 GLIBCPP_CXXFLAGS = @GLIBCPP_CXXFLAGS@
+GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@
+LIBIO_INCLUDES = @LIBIO_INCLUDES@
 LIBMATHOBJS = @LIBMATHOBJS@
+LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSTRINGOBJS = @LIBSTRINGOBJS@
+LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
+OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 OPT_LDFLAGS = @OPT_LDFLAGS@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 STRIP = @STRIP@
+TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
 VERSION = @VERSION@
+WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
 WFMT_FLAGS = @WFMT_FLAGS@
-c_include_dir = @c_include_dir@
 glibcpp_basedir = @glibcpp_basedir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
@@ -111,44 +119,6 @@ INTERFACE = v3
 gxx_include_dir = $(includedir)/g++
 
 SUBDIRS = libio libmath libsupc++ src
-
-# Compile flags that should be constant throughout the build, both for
-# SUBDIRS and for libstdc++-v3 in general.
-# Optimization flags that are probably a good idea for thrill-seekers. Just
-# uncomment the lines below and make, everything else is ready to go... 
-# OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc 
-OPTIMIZE_CXXFLAGS = 
-
-# Warning flags to use.
-WARN_CXXFLAGS =  	-Wall -Wno-format -W -Wwrite-strings -Winline 	$(WERROR) @WFMT_FLAGS@
-
-
-# These bits are all figured out from configure. Look in acinclude.m4
-# or configure.in to see how they are set.
-# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-CONFIG_CXXFLAGS =  	@EXTRA_CXX_FLAGS@ 	@SECTION_FLAGS@ @CSHADOWFLAGS@ @DEBUG_FLAGS@ 
-
-
-# Root level of the include sources.
-GLIBCPP_INCLUDE_DIR = $(top_srcdir)/include
-
-# Can either use include/c or include/c_std to grab "C" headers. This
-# variable is set to the include directory currently in use.
-C_INCLUDE_DIR = $(GLIBCPP_INCLUDE_DIR)/@c_include_dir@
-
-# Passed down for cross compilers, canadian crosses.
-TOPLEVEL_INCLUDES = -I$(includedir)
-
-LIBMATH_INCLUDES = -I$(top_srcdir)/libmath
-@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_INCLUDES = 	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
-@GLIBCPP_NEED_LIBIO_FALSE@LIBIO_INCLUDES = -I$(top_srcdir)/libio
-
-LIBSUPCXX_INCLUDES = -I$(top_srcdir)/libsupc++
-
-# XXX May need to add this in later to enabled shadow header includes
-#	-I$(top_builddir)/cshadow
-CSHADOW_INCLUDES =  	-I$(GLIBCPP_INCLUDE_DIR)/std -I$(C_INCLUDE_DIR)
-
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -164,7 +134,7 @@ MULTICLEAN = true
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
-AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"EXPECT=$(EXPECT)" 	"RUNTEST=$(RUNTEST)" 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"includedir=$(includedir)" 	"prefix=$(prefix)" 	"tooldir=$(tooldir)" 	"AR=$(AR)" 	"AS=$(AS)" 	"CC=$(CC)" 	"CXX=$(CXX)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"NM=$(NM)" 	"NM_FOR_BUILD=$(NM_FOR_BUILD)" 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" 	"DESTDIR=$(DESTDIR)" 	"WERROR=$(WERROR)" 	"OPTIMIZE_CXXFLAGS=$(OPTIMIZE_CXXFLAGS)" 	"WARN_CXXFLAGS=$(WARN_CXXFLAGS)" 	"CONFIG_CXXFLAGS=$(CONFIG_CXXFLAGS)" 	"GLIBCPP_INCLUDE_DIR=$(GLIBCPP_INCLUDE_DIR)" 	"C_INCLUDE_DIR=$(C_INCLUDE_DIR)" 	"TOPLEVEL_INCLUDES=$(TOPLEVEL_INCLUDES)" 	"LIBMATH_INCLUDES=$(LIBMATH_INCLUDES)" 	"LIBIO_INCLUDES=$(LIBIO_INCLUDES)" 	"CSHADOW_INCLUDES=$(CSHADOW_INCLUDES)" 	"LIBSUPCXX_INCLUDES=$(LIBSUPCXX_INCLUDES)"
+AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"EXPECT=$(EXPECT)" 	"RUNTEST=$(RUNTEST)" 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"includedir=$(includedir)" 	"prefix=$(prefix)" 	"tooldir=$(tooldir)" 	"AR=$(AR)" 	"AS=$(AS)" 	"CC=$(CC)" 	"CXX=$(CXX)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"NM=$(NM)" 	"NM_FOR_BUILD=$(NM_FOR_BUILD)" 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" 	"DESTDIR=$(DESTDIR)" 	"WERROR=$(WERROR)" 
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs

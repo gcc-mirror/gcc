@@ -32,54 +32,6 @@ gxx_include_dir=$(includedir)/g++
 SUBDIRS = libio libmath libsupc++ src
 
 
-# Compile flags that should be constant throughout the build, both for
-# SUBDIRS and for libstdc++-v3 in general.
-# Optimization flags that are probably a good idea for thrill-seekers. Just
-# uncomment the lines below and make, everything else is ready to go... 
-# OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc 
-OPTIMIZE_CXXFLAGS = 
-
-# Warning flags to use.
-WARN_CXXFLAGS = \
-	-Wall -Wno-format -W -Wwrite-strings -Winline \
-	$(WERROR) @WFMT_FLAGS@
-
-# These bits are all figured out from configure. Look in acinclude.m4
-# or configure.in to see how they are set.
-# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-CONFIG_CXXFLAGS = \
-	@EXTRA_CXX_FLAGS@ \
-	@SECTION_FLAGS@ @CSHADOWFLAGS@ @DEBUG_FLAGS@ 
-
-
-# Root level of the include sources.
-GLIBCPP_INCLUDE_DIR = $(top_srcdir)/include
-
-# Can either use include/c or include/c_std to grab "C" headers. This
-# variable is set to the include directory currently in use.
-C_INCLUDE_DIR = $(GLIBCPP_INCLUDE_DIR)/@c_include_dir@
-
-
-# Passed down for cross compilers, canadian crosses.
-TOPLEVEL_INCLUDES = -I$(includedir)
-
-LIBMATH_INCLUDES = -I$(top_srcdir)/libmath
-
-if GLIBCPP_NEED_LIBIO
-LIBIO_INCLUDES = \
-	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
-else
-LIBIO_INCLUDES = -I$(top_srcdir)/libio
-endif
-
-LIBSUPCXX_INCLUDES = -I$(top_srcdir)/libsupc++
-
-# XXX May need to add this in later to enabled shadow header includes
-#	-I$(top_builddir)/cshadow
-CSHADOW_INCLUDES = \
-	-I$(GLIBCPP_INCLUDE_DIR)/std -I$(C_INCLUDE_DIR)
-
-
 # Use $(blddir) instead of $(top_builddir) for arguments to "mkcheck"
 # because then the paths will be full pathnames, not relative
 # pathnames. (-Wl,--rpath seems to like this better.)
@@ -174,14 +126,4 @@ AM_MAKEFLAGS = \
 	"NM_FOR_BUILD=$(NM_FOR_BUILD)" \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
-	"WERROR=$(WERROR)" \
-	"OPTIMIZE_CXXFLAGS=$(OPTIMIZE_CXXFLAGS)" \
-	"WARN_CXXFLAGS=$(WARN_CXXFLAGS)" \
-	"CONFIG_CXXFLAGS=$(CONFIG_CXXFLAGS)" \
-	"GLIBCPP_INCLUDE_DIR=$(GLIBCPP_INCLUDE_DIR)" \
-	"C_INCLUDE_DIR=$(C_INCLUDE_DIR)" \
-	"TOPLEVEL_INCLUDES=$(TOPLEVEL_INCLUDES)" \
-	"LIBMATH_INCLUDES=$(LIBMATH_INCLUDES)" \
-	"LIBIO_INCLUDES=$(LIBIO_INCLUDES)" \
-	"CSHADOW_INCLUDES=$(CSHADOW_INCLUDES)" \
-	"LIBSUPCXX_INCLUDES=$(LIBSUPCXX_INCLUDES)"
+	"WERROR=$(WERROR)" 
