@@ -23,11 +23,14 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
 
+#ifdef IN_GCC
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 
 #ifdef IN_GCC
-#include "config.h"
 #include "gansidecl.h"
 /* ??? Need to find a suitable header file.  */
 #define PEXECUTE_FIRST   1
@@ -217,11 +220,17 @@ pwait (pid, status, flags)
 
 #endif /* MSDOS */
 
-#if defined (_WIN32) && !defined (__CYGWIN32__)
+#if defined (_WIN32)
 
 #include <process.h>
 extern int _spawnv ();
 extern int _spawnvp ();
+
+#ifdef __CYGWIN32__
+
+#define fix_argv(argvec) (argvec)
+
+#else
 
 /* This is a kludge to get around the Microsoft C spawn functions' propensity
    to remove the outermost set of double quotes from all arguments.  */
@@ -259,6 +268,8 @@ fix_argv (argvec)
 
   return (const char * const *) argvec;
 }
+
+#endif /* ! defined (__CYGWIN32__) */
 
 int
 pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
@@ -478,7 +489,7 @@ pfinish ()
 
 /* include for Unix-like environments but not for Dos-like environments */
 #if ! defined (__MSDOS__) && ! defined (OS2) && ! defined (MPW) \
-    && (defined (__CYGWIN32__) || ! defined (_WIN32))
+    && ! defined (_WIN32)
 
 #ifdef VMS
 #define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \

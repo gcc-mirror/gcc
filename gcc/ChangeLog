@@ -1,3 +1,10 @@
+Wed Oct  1 11:13:25 1997  Ian Lance Taylor  <ian@cygnus.com>
+
+        * pexecute.c: Use spawn if __CYGWIN32__.
+
+        * pexecute.c: Include "config.h" first, as per autoconf manual
+	(from Paul Eggert  <eggert@twinsun.com>).
+
 Wed Oct  1 01:44:36 1997  Philippe De Muyter  <phdm@info.ucl.ac.be>
 
 	* m68k/x-mot3300 (XCFLAGS): Disable as's long/short jump
