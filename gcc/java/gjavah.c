@@ -1463,7 +1463,7 @@ add_namelet (name, name_limit, parent)
 	return;
     }
 
-  for (p = name; p < name_limit && *p != '/' && *p != '$'; ++p)
+  for (p = name; p < name_limit && *p != '/'; ++p)
     ;
 
   /* Search for this name beneath the PARENT node.  */
@@ -1484,7 +1484,7 @@ add_namelet (name, name_limit, parent)
       n->name = xmalloc (p - name + 1);
       strncpy (n->name, name, p - name);
       n->name[p - name] = '\0';
-      n->is_class = (p == name_limit || *p == '$');
+      n->is_class = (p == name_limit);
       n->subnamelets = NULL;
       n->next = parent->subnamelets;
       parent->subnamelets = n;
@@ -1492,7 +1492,7 @@ add_namelet (name, name_limit, parent)
 
   /* We recurse if there is more text, and if the trailing piece does
      not represent an inner class. */
-  if (p < name_limit && *p != '$')
+  if (p < name_limit)
     add_namelet (p + 1, name_limit, n);
 }
 
@@ -1568,7 +1568,7 @@ add_class_decl (out, jcf, signature)
 
   for (i = 0; i < len; ++i)
     {
-      int start, saw_dollar;
+      int start;
 
       /* If we see an array, then we include the array header.  */
       if (s[i] == '[')
@@ -1582,26 +1582,10 @@ add_class_decl (out, jcf, signature)
       if (s[i] != 'L')
 	continue;
 
-      saw_dollar = 0;
       for (start = ++i; i < len && s[i] != ';'; ++i)
-	{
-	  if (! saw_dollar && s[i] == '$' && out)
-	    {
-	      saw_dollar = 1;
-	      /* If this class represents an inner class, then
-		 generate a `#include' for the outer class.  However,
-		 don't generate the include if the outer class is the
-		 class we are processing.  */
-	      if (i - start < tlen || strncmp (&s[start], tname, i - start))
-		print_include (out, &s[start], i - start);
-	      break;
-	    }
-	}
+	;
 
-      /* If we saw an inner class, then the generated #include will
-	 declare the class.  So in this case we needn't bother.  */
-      if (! saw_dollar)
-	add_namelet (&s[start], &s[i], &root);
+      add_namelet (&s[start], &s[i], &root);
     }
 }
 
