@@ -1,3 +1,8 @@
+2003-02-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9704
+	* g++.dg/init/copy5.C: New test.
+
 2003-02-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9459
