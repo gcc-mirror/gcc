@@ -95,7 +95,7 @@ package Exp_Ch7 is
    --  initialized. Typ is the expected type of Ref, which is a controlled
    --  type (Is_Controlled) or a type with controlled components
    --  (Has_Controlled). With_Attach is an integer expression representing
-   --  the level of attachment, see Attach_To_Final_Lists' NB_Link param
+   --  the level of attachment, see Attach_To_Final_List's Nb_Link param
    --  documentation in s-finimp.ads.
    --
    --  This function will generate the appropriate calls to make
@@ -114,7 +114,7 @@ package Exp_Ch7 is
    --  adjusted. Typ is the expected type of Ref, which is a controlled
    --  type (Is_Controlled) or a type with controlled components
    --  (Has_Controlled).  With_Attach is an integer expression representing
-   --  the level of attachment, see Attach_To_Final_Lists' NB_Link param
+   --  the level of attachment, see Attach_To_Final_List's Nb_Link param
    --  documentation in s-finimp.ads.
    --
    --  This function will generate the appropriate calls to make
@@ -133,10 +133,9 @@ package Exp_Ch7 is
    --  to have been previously analyzed) that references the object to
    --  be Finalized. Typ is the expected type of Ref, which is a
    --  controlled type (Is_Controlled) or a type with controlled
-   --  components (Has_Controlled). With_Attach is an integer
-   --  expression representing the level of attachment, see
-   --  Attach_To_Final_Lists' NB_Link param documentation in
-   --  s-finimp.ads.
+   --  components (Has_Controlled). With_Detach is a boolean expression
+   --  indicating whether to detach the controlled object from whatever
+   --  finalization list it is currently attached to.
    --
    --  This function will generate the appropriate calls to make
    --  sure that the objects referenced by Ref are finalized. The generated

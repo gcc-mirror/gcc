@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -679,12 +679,10 @@ package body Exp_Strm is
       --  be outside the range of a 32-bit signed integer, so this must be
       --  treated as 32-bit unsigned.
 
-      --  Similarly, if we have
+      --  Similarly, the representation is also unsigned if we have:
 
       --     type W is range -1 .. +254;
       --     for W'Size use 8;
-
-      --  then the representation is also unsigned.
 
       elsif not Is_Unsigned_Type (FST)
         and then
@@ -772,34 +770,24 @@ package body Exp_Strm is
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
-      Stms  : List_Id;
-      Disc  : Entity_Id;
-      Comp  : Node_Id;
+      Stms : List_Id;
+      --  Statements for the 'Read body
+
+      Tmp : constant Entity_Id := Make_Defining_Identifier (Loc, Name_V);
+      --  Temporary, must hide formal (assignments to components of the
+      --  record are always generated with V as the identifier for the record).
+
+      Cstr : List_Id;
+      --  List of constraints to be applied on temporary
+
+      Disc     : Entity_Id;
+      Disc_Ref : Node_Id;
+      Block    : Node_Id;
 
    begin
       Stms := New_List;
+      Cstr := New_List;
       Disc := First_Discriminant (Typ);
-
-      --  Generate Reads for the discriminants of the type.
-
-      while Present (Disc) loop
-         Comp :=
-           Make_Selected_Component (Loc,
-             Prefix => Make_Identifier (Loc, Name_V),
-             Selector_Name => New_Occurrence_Of (Disc, Loc));
-
-         Set_Assignment_OK (Comp);
-
-         Append_To (Stms,
-           Make_Attribute_Reference (Loc,
-             Prefix => New_Occurrence_Of (Etype (Disc), Loc),
-               Attribute_Name => Name_Read,
-               Expressions => New_List (
-                 Make_Identifier (Loc, Name_S),
-                 Comp)));
-
-         Next_Discriminant (Disc);
-      end loop;
 
       --  A mutable type cannot be a tagged type, so we generate a new name
       --  for the stream procedure.
@@ -807,29 +795,88 @@ package body Exp_Strm is
       Pnam :=
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Read));
+
+      --  Generate Reads for the discriminants of the type. The discriminants
+      --  need to be read before the rest of the components, so that
+      --  variants are initialized correctly.
+
+      while Present (Disc) loop
+         Disc_Ref :=
+           Make_Selected_Component (Loc,
+             Prefix        => Make_Selected_Component (Loc,
+                                Prefix => New_Occurrence_Of (Pnam, Loc),
+                                Selector_Name =>
+                                  Make_Identifier (Loc, Name_V)),
+             Selector_Name => New_Occurrence_Of (Disc, Loc));
+
+         Set_Assignment_OK (Disc_Ref);
+
+         Append_To (Stms,
+           Make_Attribute_Reference (Loc,
+             Prefix => New_Occurrence_Of (Etype (Disc), Loc),
+               Attribute_Name => Name_Read,
+               Expressions => New_List (
+                 Make_Identifier (Loc, Name_S),
+                 Disc_Ref)));
+
+         Append_To (Cstr,
+           Make_Discriminant_Association (Loc,
+             Selector_Names => New_List (New_Occurrence_Of (Disc, Loc)),
+             Expression     => New_Copy_Tree (Disc_Ref)));
+         Next_Discriminant (Disc);
+      end loop;
+
+      --  Generate reads for the components of the record (including
+      --  those that depend on discriminants).
+
       Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Read);
 
-      --  Read the discriminants before the rest of the components, so
-      --  that discriminant values are properly set of variants, etc.
-      --  If this is an empty record with discriminants, there are no
-      --  previous statements. If this is an unchecked union, the stream
-      --  procedure is erroneous, because there are no discriminants to read.
+      --  If Typ has controlled components (i.e. if it is classwide
+      --  or Has_Controlled), or components constrained using the discriminants
+      --  of Typ, then we need to ensure that all component assignments
+      --  are performed on an object that has been appropriately constrained
+      --  prior to being initialized. To this effect, we wrap the component
+      --  assignments in a block where V is a constrained temporary.
+
+      Block :=
+        Make_Block_Statement (Loc,
+          Declarations => New_List (
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Tmp,
+             Object_Definition   =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                 Constraint =>
+                   Make_Index_Or_Discriminant_Constraint (Loc,
+                     Constraints => Cstr)))),
+          Handled_Statement_Sequence =>
+            Handled_Statement_Sequence (Decl));
+
+      Append_To (Stms, Block);
+
+      Append_To (Statements (Handled_Statement_Sequence (Block)),
+        Make_Assignment_Statement (Loc,
+          Name => Make_Selected_Component (Loc,
+                    Prefix => New_Occurrence_Of (Pnam, Loc),
+                    Selector_Name => Make_Identifier (Loc, Name_V)),
+          Expression => Make_Identifier (Loc, Name_V)));
 
       if Is_Unchecked_Union (Typ) then
+
+         --  If this is an unchecked union, the stream procedure is erroneous,
+         --  because there are no discriminants to read.
+
+         --  This should generate a warning ???
+
          Stms :=
            New_List (
              Make_Raise_Program_Error (Loc,
                Reason => PE_Unchecked_Union_Restriction));
       end if;
 
-      if Is_Non_Empty_List (
-        Statements (Handled_Statement_Sequence (Decl)))
-      then
-         Insert_List_Before
-           (First (Statements (Handled_Statement_Sequence (Decl))), Stms);
-      else
-         Set_Statements (Handled_Statement_Sequence (Decl), Stms);
-      end if;
+      Set_Handled_Statement_Sequence (Decl,
+        Make_Handled_Sequence_Of_Statements (Loc,
+          Statements => Stms));
    end Build_Mutable_Record_Read_Procedure;
 
    ------------------------------------------
@@ -849,7 +896,7 @@ package body Exp_Strm is
       Stms := New_List;
       Disc := First_Discriminant (Typ);
 
-      --  Generate Writes for the discriminants of the type.
+      --  Generate Writes for the discriminants of the type
 
       while Present (Disc) loop
 
