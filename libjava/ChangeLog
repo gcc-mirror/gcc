@@ -1,3 +1,8 @@
+2002-10-25  Krister Walfridsson  <cato@df.lth.se>
+
+	* configure.in: Disable hash sync when not using threads.
+	* configure: Regenerated.
+
 2002-10-24  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natRuntime.cc (_Jv_SetDLLSearchPath): New function.

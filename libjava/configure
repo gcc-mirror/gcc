@@ -3327,7 +3327,7 @@ if test -d sysdep; then true; else mkdir sysdep; fi
 
 HASH_SYNC_SPEC=
 # Hash synchronization is only useful with posix threads right now.
-if test "$enable_hash_synchronization" = yes; then
+if test "$enable_hash_synchronization" = yes && test "$THREADS" != "none"; then
    HASH_SYNC_SPEC=-fhash-synchronization
    cat >> confdefs.h <<\EOF
 #define JV_HASH_SYNCHRONIZATION 1
