@@ -5534,6 +5534,17 @@ expand_end_case (orig_index)
 			    table_label, default_label))
 	    {
 	      index_type = thiscase->data.case_stmt.nominal_type;
+
+              /* Index jumptables from zero for suitable values of
+                 minval to avoid a subtraction.  */
+              if (! optimize_size
+                  && compare_tree_int (minval, 0) > 0
+                  && compare_tree_int (minval, 3) < 0)
+                {
+                  minval = integer_zero_node;
+                  range = maxval;
+                }
+
 	      if (! try_tablejump (index_type, index_expr, minval, range,
 				   table_label, default_label))
 		abort ();
@@ -5541,7 +5552,7 @@ expand_end_case (orig_index)
 	  
 	  /* Get table of labels to jump to, in order of case index.  */
 
-	  ncases = TREE_INT_CST_LOW (range) + 1;
+	  ncases = tree_low_cst (range, 0) + 1;
 	  labelvec = (rtx *) alloca (ncases * sizeof (rtx));
 	  memset ((char *) labelvec, 0, ncases * sizeof (rtx));
 
