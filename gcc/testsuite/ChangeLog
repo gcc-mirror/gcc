@@ -1,3 +1,8 @@
+2005-01-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/18761
+	* g++.dg/abi/align1.C: New test.
+
 2005-01-11  Alan Modra  <amodra@bigpond.net.au>
 
 	* g++.dg/ext/altivec-3.C (baz, baz2): Check one component of structs
