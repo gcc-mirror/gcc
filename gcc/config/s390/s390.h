@@ -1330,9 +1330,8 @@ extern int s390_nr_constants;
 /* Function is splitted in chunk, if literal pool could overflow
    Value need to be lowered, if problems with displacement overflow.  */
 
-#define S390_REL_MAX 55000
-#define S390_CHUNK_MAX 0x2000
-#define S390_CHUNK_OV 0x8000
+#define S390_CHUNK_MAX 0xe00
+#define S390_CHUNK_OV 0x1000
 #define S390_POOL_MAX 0xe00
 
 #define ASM_OUTPUT_POOL_PROLOGUE(FILE, FUNNAME, fndecl, size)  	        \

@@ -1,3 +1,17 @@
+2002-02-16  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (pool_stop_uid, other_chunk, far_away, 
+	check_and_change_labels, s390_final_chunkify): Delete.
+	(s390_split_branches, s390_chunkify_pool): New functions.
+	(s390_function_prologue): Call them.
+	
+	* config/s390/s390.h (S390_REL_MAX): Delete.
+	(S390_CHUNK_MAX, S390_CHUNK_OV): Adjust values.
+
+	* config/s390/s390.md (cjump, icjump, jump): Fix length 
+	attribute calculation.
+
+
 2002-02-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/linux64.h (STRIP_NAME_ENCODING): Delete.
