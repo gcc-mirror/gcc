@@ -1,3 +1,9 @@
+2004-12-27  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_eliminate_indexed_memrefs):
+	Do not break apart constant pool addresses.
+	(rs6000_emit_move): Only force source into REG if target is MEM.
+
 2004-12-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19148
