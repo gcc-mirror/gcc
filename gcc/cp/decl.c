@@ -2481,6 +2481,12 @@ pop_from_top_level ()
 
   free (s);
 }
+
+int
+saved_scope_p ()
+{
+  return current_saved_scope != NULL;
+}
 
 /* Push a definition of struct, union or enum tag "name".
    into binding_level "b".   "type" should be the type node, 
