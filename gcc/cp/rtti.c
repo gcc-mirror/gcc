@@ -558,7 +558,7 @@ build_dynamic_cast_1 (type, expr)
      tree type, expr;
 {
   enum tree_code tc = TREE_CODE (type);
-  tree exprtype;
+  tree exprtype = TREE_TYPE (expr);
   tree dcast_fn;
   tree old_expr = expr;
   const char *errstr = NULL;
@@ -589,10 +589,10 @@ build_dynamic_cast_1 (type, expr)
     }
 
   if (TREE_CODE (expr) == OFFSET_REF)
-    expr = resolve_offset_ref (expr);
-
-  exprtype = TREE_TYPE (expr);
-  assert (exprtype != NULL_TREE);
+    {
+      expr = resolve_offset_ref (expr);
+      exprtype = TREE_TYPE (expr);
+    }
 
   if (tc == POINTER_TYPE)
     expr = convert_from_reference (expr);
@@ -676,7 +676,12 @@ build_dynamic_cast_1 (type, expr)
       }
 
     if (distance >= 0)
-      return build_vbase_path (PLUS_EXPR, type, expr, path, 0);
+      {
+	expr = build_vbase_path (PLUS_EXPR, type, expr, path, 0);
+	if (TREE_CODE (exprtype) == POINTER_TYPE)
+	  expr = non_lvalue (expr);
+	return expr;
+      }
   }
 
   /* Otherwise *exprtype must be a polymorphic class (have a vtbl).  */

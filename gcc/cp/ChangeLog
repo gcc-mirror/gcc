@@ -1,3 +1,30 @@
+2000-04-10  Jason Merrill  <jason@casey.cygnus.com>
+
+	* class.c (instantiate_type): Handle object-relative template-id.
+
+	* semantics.c (finish_expr_stmt): Call convert_to_void here.
+	* decl.c (cplus_expand_expr_stmt): Not here.
+
+	* rtti.c (build_dynamic_cast_1): Call non_lvalue.
+	Initialize exprtype earlier.
+
+	* parse.y (fn.def1): Check for defining types in return types.
+
+	* decl.c (check_tag_decl): Notice extra fundamental types.
+	Diagnose empty decls in classes, too.
+
+	* decl.c (grokdeclarator): Don't override an anonymous name if no 
+	declarator was given.
+
+	* cvt.c (convert_to_void): Call resolve_offset_ref.
+
+	* typeck.c (build_x_function_call): Abort if we get an OFFSET_REF.
+
+	* decl2.c (decl_namespace): Handle getting a type.
+
+	* typeck.c (build_c_cast): Re-enable warning for cast between
+	pointer and integer of different size.
+
 2000-04-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* inc/cxxabi.h (__pointer_type_info): Add restrict and

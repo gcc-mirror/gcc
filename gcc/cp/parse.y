@@ -776,7 +776,8 @@ constructor_declarator:
 
 fn.def1:
 	  typed_declspecs declarator
-		{ if (!begin_function_definition ($1.t, $2))
+		{ check_for_new_type ("return type", $1);
+		  if (!begin_function_definition ($1.t, $2))
 		    YYERROR1; }
 	| declmods notype_declarator
 		{ if (!begin_function_definition ($1.t, $2))

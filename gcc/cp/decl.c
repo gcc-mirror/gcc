@@ -6781,6 +6781,7 @@ check_tag_decl (declspecs)
      tree declspecs;
 {
   int found_type = 0;
+  int saw_friend = 0;
   tree ob_modifier = NULL_TREE;
   register tree link;
   register tree t = NULL_TREE;
@@ -6789,7 +6790,10 @@ check_tag_decl (declspecs)
     {
       register tree value = TREE_VALUE (link);
 
-      if (TYPE_P (value))
+      if (TYPE_P (value)
+	  || (TREE_CODE (value) == IDENTIFIER_NODE
+	      && IDENTIFIER_GLOBAL_VALUE (value)
+	      && TYPE_P (IDENTIFIER_GLOBAL_VALUE (value))))
 	{
 	  ++found_type;
 
@@ -6804,6 +6808,8 @@ check_tag_decl (declspecs)
 	  if (current_class_type == NULL_TREE
 	      || current_scope () != current_class_type)
 	    ob_modifier = value;
+	  else
+	    saw_friend = 1;
 	}
       else if (value == ridpointers[(int) RID_STATIC]
 	       || value == ridpointers[(int) RID_EXTERN]
@@ -6820,9 +6826,7 @@ check_tag_decl (declspecs)
   if (found_type > 1)
     error ("multiple types in one declaration");
 
-  /* Inside a class, we might be in a friend or access declaration.
-     Until we have a good way of detecting the latter, don't warn.  */
-  if (t == NULL_TREE && ! current_class_type)
+  if (t == NULL_TREE && ! saw_friend)
     pedwarn ("declaration does not declare anything");
 
   /* Check for an anonymous union.  We're careful
@@ -10922,6 +10926,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	 Nothing can refer to it, so nothing needs know about the name
 	 change.  */
       if (type != error_mark_node
+	  && declarator
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (type))
@@ -14586,9 +14591,6 @@ void
 cplus_expand_expr_stmt (exp)
      tree exp;
 {
-  if (stmts_are_full_exprs_p)
-    exp = convert_to_void (exp, "statement");
-
 #if 0
   /* We should do this eventually, but right now this causes regex.o from
      libg++ to miscompile, and tString to core dump.  */
