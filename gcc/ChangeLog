@@ -21,6 +21,11 @@
 	* explow.c (round_push): Make it static.
 	* expr.h: Remove the corresponding prototype.
 
+	* varasm.c (get_named_section_flags, decl_tls_model): Make
+	them static.
+	* output.h: Remove the prototype for get_named_section_flags.
+	* tree.h: Remove the prototype for decl_tls_model.
+
 2004-11-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* function.c (expand_function_end): Remove an "if" statement

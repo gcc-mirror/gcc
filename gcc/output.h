@@ -476,7 +476,6 @@ extern void no_asm_to_stream (FILE *);
 #define SECTION_NOTYPE	 0x80000	/* don't output @progbits */
 #define SECTION_MACH_DEP 0x100000	/* subsequent bits reserved for target */
 
-extern unsigned int get_named_section_flags (const char *);
 extern bool set_named_section_flags (const char *, unsigned int);
 #define named_section_flags(NAME, FLAGS) \
   named_section_real((NAME), (FLAGS), /*decl=*/NULL_TREE)
