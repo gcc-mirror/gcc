@@ -264,12 +264,19 @@
 	(eq:SI (match_dup 1) (const_int 0)))]
   ""
   "
-{ if (GET_MODE (sparc_compare_op0) == SImode)
+{
+  if (GET_MODE (sparc_compare_op0) == SImode)
     {
       emit_insn (gen_seq_special (operands[0], sparc_compare_op0,
 				  sparc_compare_op1));
       DONE;
     }
+  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, EQ);
+      emit_insn (gen_sne (operands[0]));
+      DONE;
+    }      
   else
     operands[1] = gen_compare_reg (EQ, sparc_compare_op0, sparc_compare_op1);
 }")
@@ -279,12 +286,19 @@
 	(ne:SI (match_dup 1) (const_int 0)))]
   ""
   "
-{ if (GET_MODE (sparc_compare_op0) == SImode)
+{
+  if (GET_MODE (sparc_compare_op0) == SImode)
     {
       emit_insn (gen_sne_special (operands[0], sparc_compare_op0,
 				  sparc_compare_op1));
       DONE;
     }
+  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, NE);
+      emit_insn (gen_sne (operands[0]));
+      DONE;
+    }      
   else
     operands[1] = gen_compare_reg (NE, sparc_compare_op0, sparc_compare_op1);
 }")
@@ -294,28 +308,60 @@
 	(gt:SI (match_dup 1) (const_int 0)))]
   ""
   "
-{ operands[1] = gen_compare_reg (GT, sparc_compare_op0, sparc_compare_op1); }")
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GT);
+      emit_insn (gen_sne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (GT, sparc_compare_op0, sparc_compare_op1);
+}")
 
 (define_expand "slt"
   [(set (match_operand:SI 0 "register_operand" "")
 	(lt:SI (match_dup 1) (const_int 0)))]
   ""
   "
-{ operands[1] = gen_compare_reg (LT, sparc_compare_op0, sparc_compare_op1); }")
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LT);
+      emit_insn (gen_sne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (LT, sparc_compare_op0, sparc_compare_op1);
+}")
 
 (define_expand "sge"
   [(set (match_operand:SI 0 "register_operand" "")
 	(ge:SI (match_dup 1) (const_int 0)))]
   ""
   "
-{ operands[1] = gen_compare_reg (GE, sparc_compare_op0, sparc_compare_op1); }")
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GE);
+      emit_insn (gen_sne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (GE, sparc_compare_op0, sparc_compare_op1);
+}")
 
 (define_expand "sle"
   [(set (match_operand:SI 0 "register_operand" "")
 	(le:SI (match_dup 1) (const_int 0)))]
   ""
   "
-{ operands[1] = gen_compare_reg (LE, sparc_compare_op0, sparc_compare_op1); }")
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LE);
+      emit_insn (gen_sne (operands[0]));
+      DONE;
+    }
+  operands[1] = gen_compare_reg (LE, sparc_compare_op0, sparc_compare_op1);
+}")
 
 (define_expand "sgtu"
   [(set (match_operand:SI 0 "register_operand" "")
