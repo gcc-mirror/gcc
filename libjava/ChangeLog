@@ -1,3 +1,26 @@
+2003-02-10  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* java/lang/Win32Process.java (destroy): Declare as native.
+	(hasExited): New native method.
+	(exitValue): Define.
+	(getErrorStream): Likewise.
+	(getInputStream): Likewise.
+	(getOutputStream): Likewise.
+	(waitFor): Declare as native.
+	(startProcess): New native method.
+	(cleanup): Likewise.
+	(ConcreteProcess): Define.
+	(outputStream, inputStream, errorStream): New members.
+	(procHandle, exitCode): Likewise.
+
+	* java/lang/natWin32Process.cc
+	(java::lang::ConcreteProcess::cleanup): Define.
+	(java::lang::ConcreteProcess::destroy): Likewise.
+	(java::lang::ConcreteProcess::hasExited): Likewise.
+	(java::lang::ConcreteProcess::waitFor): Likewise.
+	(new_string): Likewise.
+	(java::lang::ConcreteProcess::startProcess): Likewise.
+
 2003-02-10  Raif S. Naffah <raif@fl.net.au>
 
 	* java/math/BigInteger.java:
