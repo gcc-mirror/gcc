@@ -1026,7 +1026,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 		      && (GET_MODE_SIZE (inmode)
 			  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
 		      && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (in)))
-		      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (in))) != NIL)
+		      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (in))) != UNKNOWN)
 #endif
 #ifdef WORD_REGISTER_OPERATIONS
 		  || ((GET_MODE_SIZE (inmode)
@@ -2971,7 +2971,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			      && (GET_MODE_SIZE (operand_mode[i])
 				  > GET_MODE_SIZE (GET_MODE (operand)))
 			      && INTEGRAL_MODE_P (GET_MODE (operand))
-			      && LOAD_EXTEND_OP (GET_MODE (operand)) != NIL)
+			      && LOAD_EXTEND_OP (GET_MODE (operand)) != UNKNOWN)
 #endif
 			  )
 #endif

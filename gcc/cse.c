@@ -5123,7 +5123,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	  && (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	  && GET_MODE_CLASS (mode) == MODE_INT
 	  && MEM_P (src) && ! do_not_record
-	  && LOAD_EXTEND_OP (mode) != NIL)
+	  && LOAD_EXTEND_OP (mode) != UNKNOWN)
 	{
 	  enum machine_mode tmode;
 

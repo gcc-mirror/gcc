@@ -214,7 +214,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
   cselib_val *val;
   struct elt_loc_list *l;
 #ifdef LOAD_EXTEND_OP
-  enum rtx_code extend_op = NIL;
+  enum rtx_code extend_op = UNKNOWN;
 #endif
 
   dreg = true_regnum (SET_DEST (set));
@@ -234,7 +234,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
      the destination must be a register that we can widen.  */
   if (MEM_P (src)
       && GET_MODE_BITSIZE (GET_MODE (src)) < BITS_PER_WORD
-      && (extend_op = LOAD_EXTEND_OP (GET_MODE (src))) != NIL
+      && (extend_op = LOAD_EXTEND_OP (GET_MODE (src))) != UNKNOWN
       && !REG_P (SET_DEST (set)))
     return 0;
 #endif
@@ -260,7 +260,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
       if (CONSTANT_P (this_rtx) && ! references_value_p (this_rtx, 0))
 	{
 #ifdef LOAD_EXTEND_OP
-	  if (extend_op != NIL)
+	  if (extend_op != UNKNOWN)
 	    {
 	      HOST_WIDE_INT this_val;
 
@@ -290,7 +290,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
       else if (REG_P (this_rtx))
 	{
 #ifdef LOAD_EXTEND_OP
-	  if (extend_op != NIL)
+	  if (extend_op != UNKNOWN)
 	    {
 	      this_rtx = gen_rtx_fmt_e (extend_op, word_mode, this_rtx);
 	      this_cost = rtx_cost (this_rtx, SET);
@@ -313,7 +313,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
 	{
 #ifdef LOAD_EXTEND_OP
 	  if (GET_MODE_BITSIZE (GET_MODE (SET_DEST (set))) < BITS_PER_WORD
-	      && extend_op != NIL
+	      && extend_op != UNKNOWN
 #ifdef CANNOT_CHANGE_MODE_CLASS
 	      && !CANNOT_CHANGE_MODE_CLASS (GET_MODE (SET_DEST (set)),
 					    word_mode,
@@ -406,7 +406,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 #ifdef LOAD_EXTEND_OP
       if (MEM_P (op)
 	  && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
-	  && LOAD_EXTEND_OP (mode) != NIL)
+	  && LOAD_EXTEND_OP (mode) != UNKNOWN)
 	{
 	  rtx set = single_set (insn);
 

@@ -4926,7 +4926,7 @@ simplify_if_then_else (rtx x)
       rtx f = make_compound_operation (false_rtx, SET);
       rtx cond_op0 = XEXP (cond, 0);
       rtx cond_op1 = XEXP (cond, 1);
-      enum rtx_code op = NIL, extend_op = NIL;
+      enum rtx_code op = UNKNOWN, extend_op = UNKNOWN;
       enum machine_mode m = mode;
       rtx z = 0, c1 = NULL_RTX;
 
@@ -5025,7 +5025,7 @@ simplify_if_then_else (rtx x)
 	  temp = subst (temp, pc_rtx, pc_rtx, 0, 0);
 	  temp = gen_binary (op, m, gen_lowpart (m, z), temp);
 
-	  if (extend_op != NIL)
+	  if (extend_op != UNKNOWN)
 	    temp = simplify_gen_unary (extend_op, mode, temp, m);
 
 	  return temp;
@@ -5319,7 +5319,7 @@ simplify_set (rtx x)
      zero_extend to avoid the reload that would otherwise be required.  */
 
   if (GET_CODE (src) == SUBREG && subreg_lowpart_p (src)
-      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (src))) != NIL
+      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (src))) != UNKNOWN
       && SUBREG_BYTE (src) == 0
       && (GET_MODE_SIZE (GET_MODE (src))
 	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))))
@@ -8285,7 +8285,7 @@ extended_count (rtx x, enum machine_mode mode, int unsignedp)
    the width of this mode matter.  It is assumed that the width of this mode
    is smaller than or equal to HOST_BITS_PER_WIDE_INT.
 
-   If *POP0 or OP1 are NIL, it means no operation is required.  Only NEG, PLUS,
+   If *POP0 or OP1 are UNKNOWN, it means no operation is required.  Only NEG, PLUS,
    IOR, XOR, and AND are supported.  We may set *POP0 to SET if the proper
    result is simply *PCONST0.
 
@@ -8305,13 +8305,13 @@ merge_outer_ops (enum rtx_code *pop0, HOST_WIDE_INT *pconst0, enum rtx_code op1,
   if (op0 == AND)
     const1 &= const0;
 
-  /* If OP0 or OP1 is NIL, this is easy.  Similarly if they are the same or
+  /* If OP0 or OP1 is UNKNOWN, this is easy.  Similarly if they are the same or
      if OP0 is SET.  */
 
-  if (op1 == NIL || op0 == SET)
+  if (op1 == UNKNOWN || op0 == SET)
     return 1;
 
-  else if (op0 == NIL)
+  else if (op0 == UNKNOWN)
     op0 = op1, const0 = const1;
 
   else if (op0 == op1)
@@ -8331,7 +8331,7 @@ merge_outer_ops (enum rtx_code *pop0, HOST_WIDE_INT *pconst0, enum rtx_code op1,
 	  const0 += const1;
 	  break;
 	case NEG:
-	  op0 = NIL;
+	  op0 = UNKNOWN;
 	  break;
 	default:
 	  break;
@@ -8384,12 +8384,12 @@ merge_outer_ops (enum rtx_code *pop0, HOST_WIDE_INT *pconst0, enum rtx_code op1,
   const0 &= GET_MODE_MASK (mode);
   if (const0 == 0
       && (op0 == IOR || op0 == XOR || op0 == PLUS))
-    op0 = NIL;
+    op0 = UNKNOWN;
   else if (const0 == 0 && op0 == AND)
     op0 = SET;
   else if ((unsigned HOST_WIDE_INT) const0 == GET_MODE_MASK (mode)
 	   && op0 == AND)
-    op0 = NIL;
+    op0 = UNKNOWN;
 
   /* ??? Slightly redundant with the above mask, but not entirely.
      Moving this above means we'd have to sign-extend the mode mask
@@ -8423,7 +8423,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
   unsigned int mode_words
     = (GET_MODE_SIZE (mode) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
   /* We form (outer_op (code varop count) (outer_const)).  */
-  enum rtx_code outer_op = NIL;
+  enum rtx_code outer_op = UNKNOWN;
   HOST_WIDE_INT outer_const = 0;
   rtx const_rtx;
   int complement_p = 0;
@@ -9091,7 +9091,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 
   /* We have now finished analyzing the shift.  The result should be
      a shift of type CODE with SHIFT_MODE shifting VAROP COUNT places.  If
-     OUTER_OP is non-NIL, it is an operation that needs to be applied
+     OUTER_OP is non-UNKNOWN, it is an operation that needs to be applied
      to the result of the shift.  OUTER_CONST is the relevant constant,
      but we must turn off all bits turned off in the shift.
 
@@ -9127,7 +9127,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
      for the outer operation.  So try to do the simplification
      recursively.  */
 
-  if (outer_op != NIL && GET_CODE (x) == code
+  if (outer_op != UNKNOWN && GET_CODE (x) == code
       && GET_CODE (XEXP (x, 1)) == CONST_INT)
     x = simplify_shift_const (x, code, shift_mode, XEXP (x, 0),
 			      INTVAL (XEXP (x, 1)));
@@ -9146,7 +9146,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
   if (complement_p)
     x = simplify_gen_unary (NOT, result_mode, x, result_mode);
 
-  if (outer_op != NIL)
+  if (outer_op != UNKNOWN)
     {
       if (GET_MODE_BITSIZE (result_mode) < HOST_BITS_PER_WIDE_INT)
 	outer_const = trunc_int_for_mode (outer_const, result_mode);
@@ -10506,7 +10506,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
      those bits.
 
      3. SUBREG_REG (op0) is a memory and LOAD_EXTEND_OP is defined and not
-     NIL.  In that case we know those bits are zeros or ones.  We must
+     UNKNOWN.  In that case we know those bits are zeros or ones.  We must
      also be sure that they are the same as the upper bits of op1.
 
      We can never remove a SUBREG for a non-equality comparison because

@@ -2782,11 +2782,11 @@ m68hc11_expand_compare_and_branch (enum rtx_code code, rtx op0, rtx op1,
 	    break;
 
 	  case EQ:
-	    code1 = NIL;
+	    code1 = UNKNOWN;
 	    code2 = NE;
 	    break;
 	  case NE:
-	    code2 = NIL;
+	    code2 = UNKNOWN;
 	    break;
 
 	  default:
@@ -2800,14 +2800,14 @@ m68hc11_expand_compare_and_branch (enum rtx_code code, rtx op0, rtx op1,
 	 *    if (lo(a) < lo(b)) goto true;
 	 *  false:
 	 */
-	if (code1 != NIL)
+	if (code1 != UNKNOWN)
 	  m68hc11_expand_compare_and_branch (code1, hi[0], hi[1], label);
-	if (code2 != NIL)
+	if (code2 != UNKNOWN)
 	  m68hc11_expand_compare_and_branch (code2, hi[0], hi[1], label2);
 
 	m68hc11_expand_compare_and_branch (code3, lo[0], lo[1], label);
 
-	if (code2 != NIL)
+	if (code2 != UNKNOWN)
 	  emit_label (label2);
 	return 0;
       }

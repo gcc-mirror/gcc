@@ -2701,12 +2701,12 @@ mmix_output_condition (FILE *stream, rtx x, int reversed)
   {
     enum machine_mode cc_mode;
 
-    /* Terminated with {NIL, NULL, NULL} */
+    /* Terminated with {UNKNOWN, NULL, NULL} */
     const struct cc_conv *const convs;
   };
 
 #undef CCEND
-#define CCEND {NIL, NULL, NULL}
+#define CCEND {UNKNOWN, NULL, NULL}
 
   static const struct cc_conv cc_fun_convs[]
     = {{ORDERED, "Z", "P"},
@@ -2764,7 +2764,7 @@ mmix_output_condition (FILE *stream, rtx x, int reversed)
     {
       if (mode == cc_convs[i].cc_mode)
 	{
-	  for (j = 0; cc_convs[i].convs[j].cc != NIL; j++)
+	  for (j = 0; cc_convs[i].convs[j].cc != UNKNOWN; j++)
 	    if (cc == cc_convs[i].convs[j].cc)
 	      {
 		const char *mmix_cc

@@ -6016,7 +6016,7 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
     {
       enum rtx_code second_code, bypass_code;
       ix86_fp_comparison_codes (code, &bypass_code, &code, &second_code);
-      if (bypass_code != NIL || second_code != NIL)
+      if (bypass_code != UNKNOWN || second_code != UNKNOWN)
 	abort ();
       code = ix86_fp_compare_code_to_integer (code);
       mode = CCmode;
@@ -7961,7 +7961,7 @@ ix86_fp_compare_code_to_integer (enum rtx_code code)
 /* Split comparison code CODE into comparisons we can do using branch
    instructions.  BYPASS_CODE is comparison code for branch that will
    branch around FIRST_CODE and SECOND_CODE.  If some of branches
-   is not required, set value to NIL.
+   is not required, set value to UNKNOWN.
    We never require more than two branches.  */
 
 void
@@ -7970,8 +7970,8 @@ ix86_fp_comparison_codes (enum rtx_code code, enum rtx_code *bypass_code,
 			  enum rtx_code *second_code)
 {
   *first_code = code;
-  *bypass_code = NIL;
-  *second_code = NIL;
+  *bypass_code = UNKNOWN;
+  *second_code = UNKNOWN;
 
   /* The fcomi comparison sets flags as follows:
 
@@ -8021,8 +8021,8 @@ ix86_fp_comparison_codes (enum rtx_code code, enum rtx_code *bypass_code,
     }
   if (!TARGET_IEEE_FP)
     {
-      *second_code = NIL;
-      *bypass_code = NIL;
+      *second_code = UNKNOWN;
+      *bypass_code = UNKNOWN;
     }
 }
 
@@ -8074,7 +8074,7 @@ ix86_fp_comparison_fcomi_cost (enum rtx_code code)
   if (!TARGET_CMOVE)
     return 1024;
   ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
-  return (bypass_code != NIL || second_code != NIL) + 2;
+  return (bypass_code != UNKNOWN || second_code != UNKNOWN) + 2;
 }
 
 /* Return cost of comparison done using sahf operation.
@@ -8088,7 +8088,7 @@ ix86_fp_comparison_sahf_cost (enum rtx_code code)
   if (!TARGET_USE_SAHF && !optimize_size)
     return 1024;
   ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
-  return (bypass_code != NIL || second_code != NIL) + 3;
+  return (bypass_code != UNKNOWN || second_code != UNKNOWN) + 3;
 }
 
 /* Compute cost of the comparison done using any method.
@@ -8132,8 +8132,8 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch,
   ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
 
   /* Do fcomi/sahf based test when profitable.  */
-  if ((bypass_code == NIL || bypass_test)
-      && (second_code == NIL || second_test)
+  if ((bypass_code == UNKNOWN || bypass_test)
+      && (second_code == UNKNOWN || second_test)
       && ix86_fp_comparison_arithmetics_cost (code) > cost)
     {
       if (TARGET_CMOVE)
@@ -8156,11 +8156,11 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch,
       /* The FP codes work out to act like unsigned.  */
       intcmp_mode = fpcmp_mode;
       code = first_code;
-      if (bypass_code != NIL)
+      if (bypass_code != UNKNOWN)
 	*bypass_test = gen_rtx_fmt_ee (bypass_code, VOIDmode,
 				       gen_rtx_REG (intcmp_mode, FLAGS_REG),
 				       const0_rtx);
-      if (second_code != NIL)
+      if (second_code != UNKNOWN)
 	*second_test = gen_rtx_fmt_ee (second_code, VOIDmode,
 				       gen_rtx_REG (intcmp_mode, FLAGS_REG),
 				       const0_rtx);
@@ -8326,7 +8326,7 @@ ix86_fp_jump_nontrivial_p (enum rtx_code code)
   if (!TARGET_CMOVE)
     return true;
   ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
-  return bypass_code != NIL || second_code != NIL;
+  return bypass_code != UNKNOWN || second_code != UNKNOWN;
 }
 
 void
@@ -8363,7 +8363,7 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	/* Check whether we will use the natural sequence with one jump.  If
 	   so, we can expand jump early.  Otherwise delay expansion by
 	   creating compound insn to not confuse optimizers.  */
-	if (bypass_code == NIL && second_code == NIL
+	if (bypass_code == UNKNOWN && second_code == UNKNOWN
 	    && TARGET_CMOVE)
 	  {
 	    ix86_split_fp_branch (code, ix86_compare_op0, ix86_compare_op1,
@@ -8476,8 +8476,8 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	  case LEU:  code1 = LTU; code2 = GTU; break;
 	  case GEU:  code1 = GTU; code2 = LTU; break;
 
-	  case EQ:   code1 = NIL; code2 = NE;  break;
-	  case NE:   code2 = NIL; break;
+	  case EQ:   code1 = UNKNOWN; code2 = NE;  break;
+	  case NE:   code2 = UNKNOWN; break;
 
 	  default:
 	    abort ();
@@ -8494,16 +8494,16 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	ix86_compare_op0 = hi[0];
 	ix86_compare_op1 = hi[1];
 
-	if (code1 != NIL)
+	if (code1 != UNKNOWN)
 	  ix86_expand_branch (code1, label);
-	if (code2 != NIL)
+	if (code2 != UNKNOWN)
 	  ix86_expand_branch (code2, label2);
 
 	ix86_compare_op0 = lo[0];
 	ix86_compare_op1 = lo[1];
 	ix86_expand_branch (code3, label);
 
-	if (code2 != NIL)
+	if (code2 != UNKNOWN)
 	  emit_label (label2);
 	return;
       }
@@ -8968,7 +8968,7 @@ ix86_expand_int_movcc (rtx operands[])
 	    }
 	}
 
-      compare_code = NIL;
+      compare_code = UNKNOWN;
       if (GET_MODE_CLASS (GET_MODE (ix86_compare_op0)) == MODE_INT
 	  && GET_CODE (ix86_compare_op1) == CONST_INT)
 	{
@@ -8985,7 +8985,7 @@ ix86_expand_int_movcc (rtx operands[])
 	}
 
       /* Optimize dest = (op0 < 0) ? -1 : cf.  */
-      if (compare_code != NIL
+      if (compare_code != UNKNOWN
 	  && GET_MODE (ix86_compare_op0) == GET_MODE (out)
 	  && (cf == -1 || ct == -1))
 	{
@@ -9113,12 +9113,12 @@ ix86_expand_int_movcc (rtx operands[])
 	      else
 		{
 		  code = reverse_condition (code);
-		  if (compare_code != NIL)
+		  if (compare_code != UNKNOWN)
 		    compare_code = reverse_condition (compare_code);
 		}
 	    }
 
-	  if (compare_code != NIL)
+	  if (compare_code != UNKNOWN)
 	    {
 	      /* notl op1	(if needed)
 		 sarl $31, op1
