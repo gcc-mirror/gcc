@@ -1,3 +1,13 @@
+Sat Nov  6 11:38:39 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (struct haifa_insn_data, h_i_d): New.
+	(insn_luid, insn_priority, insn_costs, insn_units): Remove.
+	(insn_reg_weight, insn_depend, insn_dep_count): Remove.
+	(insn_blockage, insn_ref_count, line_note, insn_tick): Remove.
+	(cant_move, fed_by_spec_load, is_load_insn): Remove.
+	(schedule_region): Remove unused variable.
+	(schedule_insns): Allocate h_i_d, and not all the separate arrays.
+
 Sat Nov  6 10:00:34 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* local-alloc.c (local_alloc): Use xmalloc/xcalloc, not alloca.
