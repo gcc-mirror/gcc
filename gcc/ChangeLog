@@ -1,3 +1,7 @@
+2001-12-17  Andreas Jaeger  <aj@suse.de>
+
+	* c-common.def: Fix typo in comment.
+
 2001-12-16  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc (sparc64-*-freebsd*): Add target.
@@ -143,7 +147,7 @@ Sun Dec 16 13:13:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
         * config/sparc/sparc.c (mems_ok_for_ldd_peep): Rename from
 	addrs_ok_for_ldd_peep_withmem; take MEMs as parameters, not
         addrs; eliminate restriction of only using fp and sp as base
-        registers. 
+        registers.
         * config/sparc/sparc-protos.h: Update.
         * config/sparc/sparc.md (movdi): Use TARGET_V9 not TARGET_ARCH64.
         (*cmp_cc_set, *cmp_ccx_set64, *movdi_zero): New insns derived
@@ -153,7 +157,7 @@ Sun Dec 16 13:13:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-12-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* s390.md (prologue, epilogue, *return_si, *return_di): New.
-	s390.c (find_unused_clobbered_reg, s390_frame_info, 
+	s390.c (find_unused_clobbered_reg, s390_frame_info,
 	save_fpr, restore_fpr, s390_emit_prologue, s390_emit_epilogue): New.
 	s390-protos.h (s390_emit_prologue, s390_emit_epilogue): Declare.
 	s390.c (s390_arg_frame_offset): Use s390_frame_info.
@@ -188,7 +192,7 @@ Sun Dec 16 13:13:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* s390.c (general_s_operand, s_imm_operand): New.
 	(s_operand): Remove old definition, call general_s_operand instead.
 	s390-protos.h (s_imm_operand): Declare.
-	s390.c (base_n_index_p, r_or_s_operand, r_or_s_or_im8_operand, 
+	s390.c (base_n_index_p, r_or_s_operand, r_or_s_or_im8_operand,
 	r_or_x_or_im16_operand, r_or_im8_operand): Remove.
 	s390-protos.h (r_or_s_operand, r_or_s_or_im8_operand,
 	r_or_x_or_im16_operand, r_or_im8_operand): Likewise.
@@ -207,7 +211,7 @@ Sun Dec 16 13:13:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	s390-protos.h (legitimate_reload_constant_p): Declare.
 	s390.c (print_operand): Clean up CONST_INT case, add CONST_DOUBLE case.
 
-	* s390.h (FIRST_PSEUDO_REGISTER, FRAME_POINTER_REGNUM, 
+	* s390.h (FIRST_PSEUDO_REGISTER, FRAME_POINTER_REGNUM,
 	HARD_FRAME_POINTER_REGNUM, REGISTER_NAMES): Add virtual frame pointer.
 	(CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS): Update.
 	(ELIMINABLE_REGS, INITIAL_ELIMINATION_OFFSET): Likewise.
@@ -218,7 +222,7 @@ Sun Dec 16 13:13:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	s390.md (*la_ccclobber, *addaddr_ccclobber): New.
 	(addaddr, addsi_64): Delete.
 
-	* s390.h (HARD_REGNO_MODE_OK): Allow SImode and DImode values in 
+	* s390.h (HARD_REGNO_MODE_OK): Allow SImode and DImode values in
 	floating point registers.
 	(CLASS_CANNOT_CHANGE_MODE, CLASS_CANNOT_CHANGE_MODE_P): Define.
 	(ADDR_FP_REGS, GENERAL_FP_REGS): New register classes.
@@ -246,9 +250,9 @@ Sun Dec 16 13:13:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	zero_extendqisi2_reg_31, zero_extendqihi2, *zero_extendqisi2_64,
 	zero_extendqihi2, zero_extendqihi2_64, zero_extendqihi2_31,
 	and associated splitters): Likewise.
-	(*sethighqisi, *sethighhisi, *sethighqidi_64, *sethighqidi_31 
+	(*sethighqisi, *sethighhisi, *sethighqidi_64, *sethighqidi_31
 	and associated splitters): New.
-	(truncdisi2, truncdihi2, truncdiqi2, truncsihi2, do_truncsihi2, 
+	(truncdisi2, truncdihi2, truncdiqi2, truncsihi2, do_truncsihi2,
 	*truncsihi2_64, truncsiqi2, trunchiqi2): Remove.
 	(ashlhi3, ashrhi3, lshrhi3, abshi3): Remove.
 	s390.h (PROMOTE_PROTOTYPES): Remove.
@@ -293,9 +297,9 @@ Sun Dec 16 13:13:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(cmpsi_tm_reg, cmpsi_tm_mem): ... these.
 	(cmpdi_tm2, cmpsi_tm2): Improve.
 	(cmphi_tm_sub, cmpqi_tm_sub, cmpqi_tm2, cmpqi_tm): New.
-	s390.c (s390_single_hi, s390_extract_hi, 
+	s390.c (s390_single_hi, s390_extract_hi,
 	s390_single_qi, s390_extract_qi): New helper routines.
-	s390-protos.h (s390_single_hi, s390_extract_hi, 
+	s390-protos.h (s390_single_hi, s390_extract_hi,
 	s390_single_qi, s390_extract_qi): Declare.
 	s390.c (tmxx_operand, const1_operand): Remove.
 	s390-protos.h (tmxx_operand, const1_operand): Likewise.
@@ -306,14 +310,14 @@ Sun Dec 16 13:13:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* s390.h (CRT_CALL_STATIC_FUNCTION): Define.
 	(check_and_change_labels): Remove section-change special case.
 
-	* s390.h (RETURN_ADDR_RTX): Fix use of __builtin_return_address 
+	* s390.h (RETURN_ADDR_RTX): Fix use of __builtin_return_address
 	in leaf functions.  Needs ...
 	(DYNAMIC_CHAIN_RTX):  ... this.  New.
 
 	* s390.c (emit_pic_move): Don't generate pseudos if no_new_pseudos.
 
 	* s390.md (movstrdix_64, movstrsix_31, movstrdi_64, movstrsi_31,
-	clrstrsi_64, clrstrsi_31, cmpstr_64, cmpstr_31): Do not clobber 
+	clrstrsi_64, clrstrsi_31, cmpstr_64, cmpstr_31): Do not clobber
 	input operands using a match_dup clause.
 	(movstrdi, movstrsi, clrstrdi, clrstrsi, cmpstrdi, cmpstrsi): Adapt.
 
@@ -349,7 +353,7 @@ Sun Dec 16 13:13:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	MASK_EXPLICIT_RELOCS if the assembler supports it.
 	* configure.in (HAVE_AS_EXPLICIT_RELOCS): New.
 	* configure, config.in: Rebuild.
-	
+
 Sat Dec 15 17:53:03 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* calls.c (emit_call_1): If ECF_SP_DEPRESSED, pretend have adjusted
@@ -449,7 +453,7 @@ Sat Dec 15 14:13:03 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-12-14  Richard Henderson  <rth@redhat.com>
 
-	* config/ia64/ia64.c (spill_restore_mem): Mark iterator 
+	* config/ia64/ia64.c (spill_restore_mem): Mark iterator
 	initialization as possibly dead.
 
 2001-12-14  Richard Henderson  <rth@redhat.com>
