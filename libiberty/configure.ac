@@ -159,13 +159,47 @@ AC_SUBST_FILE(host_makefile_frag)
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h)
+AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h)
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 
 libiberty_AC_DECLARE_ERRNO
 
 AC_CHECK_TYPE(uintptr_t, unsigned long)
+
+# Look for a 64-bit type.
+AC_MSG_CHECKING([for a 64-bit type])
+AC_CACHE_VAL(liberty_cv_uint64,
+[AC_TRY_COMPILE(
+[#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif],
+[extern uint64_t foo;],
+liberty_cv_uint64=uint64_t,
+[AC_TRY_COMPILE(
+[#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
+#ifndef CHAR_BIT
+#define CHAR_BIT 8
+#endif],
+[extern char foo[sizeof(long) * CHAR_BIT >= 64 ? 1 : -1];],
+liberty_cv_uint64="unsigned long",
+[AC_TRY_COMPILE(
+[#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
+#ifndef CHAR_BIT
+#define CHAR_BIT 8
+#endif],
+[extern char foo[sizeof(long long) * CHAR_BIT >= 64 ? 1 : -1];],
+liberty_cv_uint64="unsigned long long", liberty_cv_uint64=none)])])])
+AC_MSG_RESULT($liberty_cv_uint64)
+if test "$liberty_cv_uint64" != none; then
+  AC_DEFINE(UNSIGNED_64BIT_TYPE, $liberty_cv_uint64,
+            [Define to an unsigned 64-bit type available in the compiler.])
+fi
+
 # Given the above check, we always have uintptr_t or a fallback
 # definition.  So define HAVE_UINTPTR_T in case any imported code
 # relies on it.
