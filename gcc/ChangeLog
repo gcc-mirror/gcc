@@ -1,3 +1,9 @@
+2004-02-03  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/13914
+	* config/rs6000/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Use ap
+	for retaddr_column.
+
 2004-02-03  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* opts.c (OPT_fwritable_strings): Deprecate -fwritable-strings.

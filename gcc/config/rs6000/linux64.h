@@ -648,10 +648,10 @@ enum { SIGNAL_FRAMESIZE = 64 };
        get the same result for multiple evaluation of the same signal	\
        frame.  */							\
     sc_->regs->gpr[47] = sc_->regs->nip + 4;  				\
-    (FS)->regs.reg[CR0_REGNO].how = REG_SAVED_OFFSET;			\
-    (FS)->regs.reg[CR0_REGNO].loc.offset 				\
+    (FS)->regs.reg[ARG_POINTER_REGNUM].how = REG_SAVED_OFFSET;		\
+    (FS)->regs.reg[ARG_POINTER_REGNUM].loc.offset 			\
       = (long)&(sc_->regs->gpr[47]) - new_cfa_;				\
-    (FS)->retaddr_column = CR0_REGNO;					\
+    (FS)->retaddr_column = ARG_POINTER_REGNUM;				\
     goto SUCCESS;							\
   } while (0)
 
