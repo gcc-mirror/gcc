@@ -2464,7 +2464,7 @@ __asm__("\n"								\
    with suitable punctuation to prevent any ambiguity.  Allocate the new name
    in `saveable_obstack'.  You will have to modify `ASM_OUTPUT_LABELREF' to
    remove and decode the added text and output the name accordingly, and define
-   `STRIP_NAME_ENCODING' to access the original name string.
+   `(* targetm.strip_name_encoding)' to access the original name string.
 
    You can check the information stored here into the `symbol_ref' in the
    definitions of the macros `GO_IF_LEGITIMATE_ADDRESS' and
@@ -2722,17 +2722,6 @@ __asm__("\n"								\
    same word of the structure, but to different bytes.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* Define this macro if zero-extension (of a `char' or `short' to an `int') can
-   be done faster if the destination is a register that is known to be zero.
-
-   If you define this macro, you must have instruction patterns that recognize
-   RTL structures like this:
-
-        (set (strict_low_part (subreg:QI (reg:SI ...) 0)) ...)
-
-   and likewise for `HImode'.  */
-#define SLOW_ZERO_EXTEND 0
-
 /* Define this macro if it is as good or better to call a constant function
    address than to call an address kept in a register.  */
 #define NO_FUNCTION_CSE
@@ -2837,59 +2826,9 @@ fixup_section ()							\
     }									\
 }									\
 
-/* A C statement or statements to switch to the appropriate section for output
-   of EXP.  You can assume that EXP is either a `VAR_DECL' node or a constant
-   of some sort.  RELOC indicates whether the initial value of EXP requires
-   link-time relocations.  Select the section by calling `text_section' or one
-   of the alternatives for other sections.
-
-   Do not define this macro if you put all read-only variables and constants in
-   the read-only data section (usually the text section).
-
-   Defined in svr4.h.  */
-#undef	SELECT_SECTION
-#define SELECT_SECTION(EXP, RELOC, ALIGN) frv_select_section ((EXP), (RELOC))
-
-/* A C statement or statements to switch to the appropriate section for output
-   of RTX in mode MODE.  You can assume that RTX is some kind of constant in
-   RTL.  The argument MODE is redundant except in the case of a `const_int'
-   rtx.  Select the section by calling `text_section' or one of the
-   alternatives for other sections.
-
-   Do not define this macro if you put all constants in the read-only data
-   section.
-
-   Defined in svr4.h.  */
-#undef	SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN) frv_select_rtx_section (MODE, RTX)
-
 #define SDATA_FLAG_CHAR '@'
 
 #define SDATA_NAME_P(NAME) (*(NAME) == SDATA_FLAG_CHAR)
-
-#define ENCODE_SECTION_INFO(DECL, FIRST)	\
-  do						\
-    {						\
-      if (FIRST)				\
-        frv_encode_section_info (DECL);		\
-    }						\
-  while (0)
-
-/* Decode SYM_NAME and store the real name part in VAR, sans
-   the characters that encode section info.  Define this macro if
-   ENCODE_SECTION_INFO alters the symbol's name string.  */
-
-#define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME)			\
-  do								\
-    {								\
-      const char * _name = (SYMBOL_NAME);			\
-								\
-      while (* _name == '*' || * _name == SDATA_FLAG_CHAR)	\
-	_name ++;						\
-      (VAR) = _name;						\
-    }								\
-  while (0)
-
 
 /* Position Independent Code.  */
 
@@ -3366,12 +3305,6 @@ do {                                                                    \
    Defined in svr4.h.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
-/* This version of UNIQUE_SECTION overrides the one in elfos.h.  We
-   need to check whether DECL is destined for the .sdata section.  */
-
-#undef  UNIQUE_SECTION
-#define UNIQUE_SECTION(DECL,RELOC) frv_unique_section (DECL, RELOC)
 
 /* Miscellaneous Parameters.  */
 
@@ -3493,14 +3426,6 @@ do {                                                                    \
 
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND
-
-/* An alias for a tree code that is the easiest kind of division to compile
-   code for in the general case.  It may be `TRUNC_DIV_EXPR', `FLOOR_DIV_EXPR',
-   `CEIL_DIV_EXPR' or `ROUND_DIV_EXPR'.  These four division operators differ
-   in how they round the result to an integer.  `EASY_DIV_EXPR' is used when it
-   is permissible to use any of those kinds of division and the choice should
-   be made on the basis of efficiency.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* The maximum number of bytes that a single instruction can move quickly from
    memory to memory.  */
@@ -3725,13 +3650,6 @@ enum frv_builtins
   FRV_BUILTIN_MHDSETS,
   FRV_BUILTIN_MHDSETH
 };
-
-#define MD_INIT_BUILTINS do { \
-    frv_init_builtins (); \
-  } while (0)
-
-#define MD_EXPAND_BUILTIN(EXP, TARGET, SUBTARGET, MODE, IGNORE) \
-    frv_expand_builtin ((EXP), (TARGET), (SUBTARGET), (MODE), (IGNORE))
 
 /* Enable prototypes on the call rtl functions.  */
 #define MD_CALL_PROTOTYPES 1
