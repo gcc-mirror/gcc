@@ -1,3 +1,7 @@
+2001-12-03  Geert Bosch <bosch@gnat.com>
+
+ 	* make.adb: Minor reformatting.
+
 2001-12-03   <dewar@gnat.com>
 
 	* sem_ch12.adb: Minor reformatting
