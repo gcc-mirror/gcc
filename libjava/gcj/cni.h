@@ -1,6 +1,6 @@
-// cni.h -*- c++ -*-
+// gcj/cni.h -*- c++ -*-
 // This file describes the Cygnus Native Interface, CNI.
-// It provides a nicer interface to many of the things in javaprims.h.
+// It provides a nicer interface to many of the things in gcj/javaprims.h.
 
 /* Copyright (C) 1998, 1999  Cygnus Solutions
 
@@ -10,14 +10,13 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-#ifndef __JAVA_CNI_H__
-#define __JAVA_CNI_H__
+#ifndef __GCJ_CNI_H__
+#define __GCJ_CNI_H__
 
 #include <java/lang/Object.h>
 #include <java/lang/Class.h>
 
-#include <java-threads.h>
-#include <java-array.h>
+#include <gcj/array.h>
 
 extern inline jobject
 JvAllocObject (jclass cls)
@@ -130,4 +129,4 @@ JvFree (void *ptr)
 {
   return _Jv_Free (ptr);
 }
-#endif /* __JAVA_CNI_H__ */
+#endif /* __GCJ_CNI_H__ */

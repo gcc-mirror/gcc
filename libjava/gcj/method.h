@@ -8,9 +8,14 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
+#ifndef __GCJ_METHOD_H__
+#define __GCJ_METHOD_H__
+
 extern inline jmethodID
 _Jv_FromReflectedMethod(java::lang::reflect::Method *method)
 {
   return (jmethodID)
     ((char *) method->declaringClass->methods + method->offset);
 }
+
+#endif /* __GCJ_METHOD_H__ */

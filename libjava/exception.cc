@@ -15,7 +15,7 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/NullPointerException.h>
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 
 // eh-common.h needs gansidecl.h.

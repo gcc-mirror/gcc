@@ -13,10 +13,7 @@ details.  */
 
 #pragma interface
 
-#include <javaprims.h>
-#include <java-assert.h>
-#include <java-threads.h>
-#include <java-gc.h>
+#include <gcj/javaprims.h>
 
 // This class is mainly here as a kludge to get G++ to allocate
 // vtable pointer as the *first* word of each Object, instead of

@@ -18,7 +18,7 @@ details.  */
 #include <java/lang/String.h>
 #include <java/net/URL.h>
 
-// We declare these here to avoid including cni.h.
+// We declare these here to avoid including gcj/cni.h.
 extern "C" void _Jv_InitClass (jclass klass);
 extern "C" void _Jv_RegisterClasses (jclass *classes);
 

@@ -12,7 +12,7 @@ details.  */
 
 #include <stdlib.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 #include <java/lang/Runtime.h>
 #include <java/lang/UnknownError.h>

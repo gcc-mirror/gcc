@@ -15,8 +15,12 @@ details.  */
 #include <stdlib.h>
 #include <string.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
+
+#include <java-threads.h>
+#include <java-interp.h>
+
 #include <java/lang/Character.h>
 #include <java/lang/Thread.h>
 #include <java/lang/ClassLoader.h>
@@ -30,8 +34,6 @@ details.  */
 #include <java/lang/ClassCircularityError.h>
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/reflect/Modifier.h>
-
-#include <java-interp.h>
 
 #define CloneableClass _CL_Q34java4lang9Cloneable
 extern java::lang::Class CloneableClass;

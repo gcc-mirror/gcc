@@ -13,7 +13,7 @@ details.  */
 #include <stdlib.h>
 
 #include <jvm.h>
-#include <cni.h>
+#include <gcj/cni.h>
 #include <java/lang/reflect/Array.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/Byte.h>

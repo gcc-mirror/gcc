@@ -10,7 +10,7 @@ details.  */
 
 /*#define ENABLE_GTK*/
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <java/awt/Toolkit.h>
 #ifdef ENABLE_GTK
 #include <java/awt/peer/GtkToolkit.h>

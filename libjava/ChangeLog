@@ -1,3 +1,39 @@
+1999-09-10  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Build include/Makefile.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (SUBDIRS): Added gcj and include.
+	(install-data-local): New target.
+	(extra_headers): New macro.
+	* include/Makefile.in: New file.
+	* include/Makefile.am: New file.
+
+	* interpret.cc: Don't include gcj/field.h or gcj/cni.h.
+	* java/lang/reflect/natField.cc: Don't include gcj/field.h or
+	gcj/cni.h.
+	* boehm.cc: Don't include java-threads.h or gcj/field.h.
+	* resolve.cc: Include config.h.
+	* defineclass.cc: Include config.h.
+	* include/java-interp.h: Don't include config.h.
+	* include/jvm.h: Include java-threads.h, Object.h, java-gc.h,
+	cni.h.
+
+	* gcj/javaprims.h: Regenerated namespace decls.
+	* classes.pl (scan): Don't put `;' after closing brace.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (INCLUDES): Added -I for top_srcdir.
+	* configure.in: Create gcj/Makefile.
+	* gcj/Makefile.in: New file.
+	* gcj/Makefile.am: New file.
+	* java/lang/Object.h: Don't include any other headers.
+	* gcj/array.h: Renamed from include/java-array.h.
+	* gcj/field.h: Renamed from include/java-field.h.
+	* gcj/method.h: Renamed from include/java-method.h.
+	* gcj/cni.h, gcj/javaprims.h: Moved from include/.
+	Updated all files to reflect new include structure.
+
 1999-09-09  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.

@@ -35,7 +35,7 @@ details.  */
 #include <netdb.h>
 #endif
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 #include <java/net/InetAddress.h>
 #include <java/net/UnknownHostException.h>

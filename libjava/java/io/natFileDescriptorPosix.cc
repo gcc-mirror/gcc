@@ -34,7 +34,7 @@ details.  */
 #include <sys/filio.h>
 #endif
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 #include <java/io/FileDescriptor.h>
 #include <java/io/SyncFailedException.h>

@@ -29,7 +29,7 @@ details.  */
 #endif
 #include <string.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 #include <java/io/File.h>
 #include <java/io/IOException.h>

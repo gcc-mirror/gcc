@@ -10,10 +10,12 @@ details.  */
 
 /* Author: Kresten Krab Thorup <krab@gnu.org>  */
 
+#include <config.h>
+
 #include <java-interp.h>
 
-#include <cni.h>
 #include <jvm.h>
+#include <gcj/cni.h>
 #include <string.h>
 #include <java-cpool.h>
 #include <java/lang/Class.h>

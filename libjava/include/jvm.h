@@ -11,8 +11,18 @@ details.  */
 #ifndef __JAVA_JVM_H__
 #define __JAVA_JVM_H__
 
+#include <gcj/javaprims.h>
+
 #include <java-assert.h>
-#include <java-field.h>
+#include <java-threads.h>
+// Must include java-gc.h before Object.h for the implementation.
+#include <java-gc.h>
+
+#include <java/lang/Object.h>
+
+// Include cni.h before field.h to enable all definitions.  FIXME.
+#include <gcj/cni.h>
+#include <gcj/field.h>
 
 /* Structure of the virtual table.  */
 struct _Jv_VTable

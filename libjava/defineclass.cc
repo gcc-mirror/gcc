@@ -18,12 +18,14 @@ details.  */
    currently being ignored ("InnerClasses", "LineNumber", etc...).  
 */
 
+#include <config.h>
+
 #include <java-interp.h>
 
 #ifdef INTERPRETER
 
 #include <java-cpool.h>
-#include <cni.h>
+#include <gcj/cni.h>
 
 #include <java/lang/Class.h>
 #include <java/lang/Float.h>

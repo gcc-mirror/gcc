@@ -11,8 +11,6 @@ details.  */
 #ifndef __JAVA_INTERP_H__
 #define __JAVA_INTERP_H__
 
-#include <config.h>
-
 #include <jvm.h>
 #include <java-cpool.h>
 

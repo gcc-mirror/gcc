@@ -624,7 +624,7 @@ fi
 here=`pwd`
 AC_SUBST(here)
 
-AC_OUTPUT(Makefile libgcj.spec testsuite/Makefile,
+AC_OUTPUT(Makefile libgcj.spec gcj/Makefile include/Makefile testsuite/Makefile,
 [if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
 fi],

@@ -13,7 +13,7 @@ details.  */
 #include <string.h>
 #include <stdlib.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <java/lang/Character.h>
 #include <java/lang/String.h>
 #include <java/lang/IndexOutOfBoundsException.h>

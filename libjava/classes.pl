@@ -10,7 +10,7 @@
 # details.
 
 # Usage: cd <top-srcdir> ; perl classes.pl.
-# Can also be run from the `include' directory; this lets us
+# Can also be run from the `gcj' directory; this lets us
 # more easily insert the output into javaprims.h (which is where it goes).
 
 use DirHandle;
@@ -100,5 +100,5 @@ sub scan
 	&scan ("$dir/$_", $indent + 2);
     }
 
-    print $spaces, "};\n";
+    print $spaces, "}\n";
 }

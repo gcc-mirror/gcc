@@ -25,7 +25,7 @@ char *alloca ();
 
 #include <stdlib.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <java/lang/String.h>
 #include <java/lang/Double.h>
 #include <java/lang/NumberFormatException.h>

@@ -6,8 +6,8 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-#ifndef __JAVA_JNI_H__
-#define __JAVA_JNI_H__
+#ifndef __GCJ_JNI_H__
+#define __GCJ_JNI_H__
 
 #include <stdarg.h>
 #define _Jv_va_list va_list
@@ -15,7 +15,7 @@ details.  */
 #ifdef __cplusplus
 
 // This is wrong, because it pollutes the name-space too much!
-#include <javaprims.h>
+#include <gcj/javaprims.h>
 
 typedef struct _Jv_JNIEnv JNIEnv;
 #else
@@ -293,4 +293,4 @@ _Jv_JNIEnv::GetStringLength (jstring str)
 
 #endif
 
-#endif /* __JAVA_JNI_H__ */
+#endif /* __GCJ_JNI_H__ */

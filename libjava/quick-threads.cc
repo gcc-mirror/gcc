@@ -10,7 +10,7 @@ details.  */
 
 #include <config.h>
 
-#include <cni.h>
+#include <gcj/cni.h>
 #include <jvm.h>
 
 #include <java/lang/Thread.h>

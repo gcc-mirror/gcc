@@ -12,7 +12,6 @@ details.  */
 
 #include <stdlib.h>
 
-#include <cni.h>
 #include <jvm.h>
 #include <java/lang/reflect/Field.h>
 #include <java/lang/reflect/Modifier.h>
@@ -26,7 +25,6 @@ details.  */
 #include <java/lang/Double.h>
 #include <java/lang/Boolean.h>
 #include <java/lang/Character.h>
-#include <java-field.h>
 
 jint
 java::lang::reflect::Field::getModifiers ()

@@ -25,8 +25,8 @@ details.  */
 #include <bstring.h>
 #endif
 
-#include <cni.h>
-#include <javaprims.h>
+#include <gcj/cni.h>
+#include <gcj/javaprims.h>
 #include <java/io/IOException.h>
 #include <java/io/FileDescriptor.h>
 #include <java/io/InterruptedIOException.h>
