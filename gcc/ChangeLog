@@ -1,3 +1,8 @@
+2003-04-15  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* optabs.c (expand_binop): In multi-word add cases, ensure
+	XTARGET is copied to TARGET if they are different.
+
 2003-04-15  Olivier Hainque <hainque@act-europe.fr>
 
 	* except.c (resolve_fixup_regions): Avoid dereferencing null pointer
