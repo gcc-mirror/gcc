@@ -1,3 +1,9 @@
+2004-12-23  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/18733
+	* pt.c (check_explicit_specialization): Use special logic to validate
+	befriended specializations.
+
 2004-12-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* rtti.c (emit_support_tinfos): Avoid using C99 semantics.
