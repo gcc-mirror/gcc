@@ -128,6 +128,8 @@
   (symbol_ref "flag_delayed_branch != 0"))
 
 ;; Length (in # of insns).
+;; Beware that setting a length greater or equal to 3 for conditional branches
+;; has a side-effect (see output_cbranch and output_v9branch).
 (define_attr "length" ""
   (cond [(eq_attr "type" "uncond_branch,call")
 	   (if_then_else (eq_attr "empty_delay_slot" "true")
