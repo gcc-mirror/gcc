@@ -3061,8 +3061,6 @@ init_decl_processing ()
   make_fname_decl = c_make_fname_decl;
   start_fname_decls ();
 
-  start_identifier_warnings ();
-
   /* Prepare to check format strings against argument lists.  */
   init_function_format_info ();
 
