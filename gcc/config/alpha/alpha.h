@@ -1200,9 +1200,16 @@ extern struct rtx_def *alpha_emit_conditional_move ();
 extern struct rtx_def *alpha_compare_op0, *alpha_compare_op1;
 extern int alpha_compare_fp_p;
 
-/* Define the information needed to modify the epilogue for EH.  */
+/* Machine specific function data.  */
 
-extern struct rtx_def *alpha_eh_epilogue_sp_ofs;
+struct machine_function
+{
+  /* An offset to apply to the stack pointer when unwinding from EH.  */
+  struct rtx_def *eh_epilogue_sp_ofs;
+
+  /* If non-null, this rtx holds the return address for the function.  */
+  struct rtx_def *ra_rtx;
+};
 
 /* Make (or fake) .linkage entry for function call.
    IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
@@ -1327,12 +1334,6 @@ extern struct rtx_def *alpha_return_addr ();
 
 /* Before the prologue, RA lives in $26. */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, 26)
-
-/* Initialize data used by insn expanders.  This is called from insn_emit,
-   once for every function before code is generated.  */
-
-#define INIT_EXPANDERS  alpha_init_expanders ()
-extern void alpha_init_expanders ();
 
 /* Addressing modes, and classification of registers for them.  */
 
