@@ -1201,6 +1201,7 @@ main (argc, argv)
       return 0;
     }
 
+  maybe_unlink(output_file);
   outf = fopen (c_file, "w");
   if (outf == (FILE *)0)
     fatal_perror ("%s", c_file);
