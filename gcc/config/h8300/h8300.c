@@ -865,17 +865,15 @@ two_insn_adds_subs_operand (op, mode)
    instead of adds/subs.  */
 
 void
-split_adds_subs (mode, operands, use_incdec_p)
+split_adds_subs (mode, operands)
      enum machine_mode mode;
      rtx *operands;
-     int use_incdec_p;
 {
   HOST_WIDE_INT val = INTVAL (operands[1]);
   rtx reg = operands[0];
   HOST_WIDE_INT sign = 1;
   HOST_WIDE_INT amount;
-  rtx (*gen_last) (rtx, rtx, rtx);
-  rtx (*gen_normal) (rtx, rtx, rtx);
+  rtx (*gen_add) (rtx, rtx, rtx);
 
   /* Force VAL to be positive so that we do not have to consider the
      sign.  */
@@ -888,13 +886,11 @@ split_adds_subs (mode, operands, use_incdec_p)
   switch (mode)
     {
     case HImode:
-      gen_normal = gen_addhi3;
-      gen_last   = gen_addhi3_incdec;
+      gen_add = gen_addhi3;
       break;
 
     case SImode:
-      gen_normal = gen_addsi3;
-      gen_last   = gen_addsi3_incdec;
+      gen_add = gen_addsi3;
       break;
 
     default:
@@ -907,13 +903,7 @@ split_adds_subs (mode, operands, use_incdec_p)
        amount /= 2)
     {
       for (; val >= amount; val -= amount)
-	{
-	  /* If requested, generate the last insn using inc/dec.  */
-	  if (use_incdec_p && amount <= 2 && val == amount)
-	    emit_insn (gen_last (reg, reg, GEN_INT (sign * amount)));
-	  else
-	    emit_insn (gen_normal (reg, reg, GEN_INT (sign * amount)));
-	}
+	emit_insn (gen_add (reg, reg, GEN_INT (sign * amount)));
     }
 
   return;
@@ -1833,30 +1823,6 @@ stack_pointer_operand (x, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return x == stack_pointer_rtx;
-}
-
-/* Return nonzero if X is a constant whose absolute value is no
-   greater than 2.  */
-
-int
-const_int_le_2_operand (x, mode)
-     rtx x;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  return (GET_CODE (x) == CONST_INT
-	  && abs (INTVAL (x)) <= 2);
-}
-
-/* Return nonzero if X is a constant whose absolute value is no
-   greater than 6.  */
-
-int
-const_int_le_6_operand (x, mode)
-     rtx x;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  return (GET_CODE (x) == CONST_INT
-	  && abs (INTVAL (x)) <= 6);
 }
 
 /* Return nonzero if X is a constant whose absolute value is greater
