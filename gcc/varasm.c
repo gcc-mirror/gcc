@@ -4544,7 +4544,7 @@ default_assemble_visibility (tree decl, int vis)
 
   const char *name, *type;
 
-  name = (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   type = visibility_types[vis];
 
 #ifdef HAVE_GAS_HIDDEN
