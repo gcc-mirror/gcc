@@ -91,7 +91,7 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
   # GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT
   # GLIBCPP_CHECK_MATH_SUPPORT
 
-  case "$target_alias" in
+  case "$target" in
     *-linux*)
       # Check for available headers.
       AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
@@ -185,7 +185,7 @@ changequote([,])dnl
       ;;
   esac
 
-  case "$target_alias" in
+  case "$target" in
     *-mingw32*)
       ;;
     *)

@@ -1,3 +1,9 @@
+2002-10-21  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in:  Use target, not target_alias, when matching triplet
+	patterns.
+	* configure:  Regenerate.
+
 2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
 
         * include/bits/locale_facets.h (__timepunct::__timepunct): Allocate
