@@ -1,3 +1,10 @@
+2004-08-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/sh/sh.h (TARGET_SWITCHES): Add no-renesas to select the
+	GCC ABI.
+	* doc/invoke.texi: Document this new switch and also the -mrenesas
+	switch.
+
 2004-08-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cfglayout.c (insn_locators_initialize): Update the current

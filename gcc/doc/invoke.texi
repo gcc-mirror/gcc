@@ -626,7 +626,7 @@ See RS/6000 and PowerPC Options.
 -m5-32media  -m5-32media-nofpu @gol
 -m5-compact  -m5-compact-nofpu @gol
 -mb  -ml  -mdalign  -mrelax @gol
--mbigtable  -mfmovd  -mhitachi  -mnomacsave @gol
+-mbigtable  -mfmovd  -mhitachi -mrenesas -mno-renesas -mnomacsave @gol
 -mieee  -misize  -mpadstruct  -mspace @gol
 -mprefergot  -musermode}
 
@@ -10584,6 +10584,16 @@ Enable the use of the instruction @code{fmovd}.
 @item -mhitachi
 @opindex mhitachi
 Comply with the calling conventions defined by Renesas.
+
+@item -mrenesas
+@opindex mhitachi
+Comply with the calling conventions defined by Renesas.
+
+@item -mno-renesas
+@opindex mhitachi
+Comply with the calling conventions defined for GCC before the Renesas
+conventions were available.  This option is the default for all
+targets of the SH toolchain except for @samp{sh-symbianelf}.
 
 @item -mnomacsave
 @opindex mnomacsave
