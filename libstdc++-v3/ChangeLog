@@ -1,3 +1,7 @@
+2003-02-05  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/26_numerics/valarray_name_lookup.cc: Fix typo.
+
 2003-02-04  Nathan Myers  <ncm@cantrip.org>
 
 	* testsuite/25_algorithms/min_max.cc (test02): Add.
