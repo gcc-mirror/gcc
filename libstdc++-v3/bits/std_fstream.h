@@ -59,7 +59,7 @@ namespace std {
       typedef __basic_file				  __file_type;
       typedef typename _Traits::state_type                __state_type;
       typedef codecvt<_CharT, char, __state_type>         __codecvt_type;
-      typedef codecvt<_CharT, char, __state_type>::result __res_type;
+      typedef typename __codecvt_type::result 		  __res_type;
       
       friend ios_base; // For sync_with_stdio.
 

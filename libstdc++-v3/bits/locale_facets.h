@@ -747,10 +747,10 @@ namespace std
     {
     public: 
       // Types:
-      typedef _CharT 			char_type;
-      typedef char_traits<_CharT> 	traits_type;
-      typedef basic_string<_CharT>	string_type;
-      typedef string_type::size_type	size_type;
+      typedef _CharT 				char_type;
+      typedef char_traits<_CharT> 		traits_type;
+      typedef basic_string<_CharT>		string_type;
+      typedef typename string_type::size_type	size_type;
 
       // Forward decls and Friends:
       friend class locale;
