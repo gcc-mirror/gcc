@@ -12,7 +12,10 @@ fi
 
 output=$1
 rm -f $output.T
-exec > $output.T
+
+# We used to exec > $output.T but apparently this has bugs.
+# Use a redirected subshell instead.
+(
 
 # Define TARGET_CPU_DEFAULT if the system wants one.
 # This substitutes for lots of *.h files.
@@ -53,10 +56,10 @@ echo "#include \"insn-codes.h\""
 echo "#include \"insn-flags.h\""
 echo "#endif"
 
-exec >&-
+) > $output.T
 
 # Avoid changing the actual file if possible.
-if [ -f $output ] && cmp $output.T $output; then
+if [ -f $output ] && cmp $output.T $output >/dev/null 2>&1; then
     echo $output is unchanged >&2
     rm -f $output.T
 else
