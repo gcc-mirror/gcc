@@ -380,11 +380,6 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_SUPPORT], [
   ac_save_LIBS="$LIBS"
   LIBS="$LIBS $libm"
 
-  dnl Check libmx
-  AC_CHECK_LIB(mx, sqrtf, libmx="-lmx")
-  dnl ac_save_LIBS="$LIBS"
-  LIBS="$LIBS $libmx"
-
   dnl Check to see if certain C math functions exist.
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isinf)
   GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isnan)

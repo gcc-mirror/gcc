@@ -39,13 +39,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define OBJECT_FORMAT_MACHO
 
-/* Suppress g++ attempt to link in the math library automatically.
-   (Some Darwin versions have a libm, but they seem to cause problems
-   for C++ executables.) This needs to be -lmx for Darwin 7.0 and
-   above.  */
-#ifndef MATH_LIBRARY
+/* Suppress g++ attempt to link in the math library automatically. */
 #define MATH_LIBRARY ""
-#endif
 
 /* We have atexit.  */
 
@@ -276,10 +271,12 @@ Boston, MA 02111-1307, USA.  */
    %{dylinker} %{Mach} "
 
 
-/* Machine dependent libraries.  */
+/* Machine dependent libraries but do not redefine it if we already on 7.0 and
+   above as it needs to link with libmx also.  */
 
-#undef	LIB_SPEC
+#ifndef	LIB_SPEC
 #define LIB_SPEC "%{!static:-lSystem}"
+#endif
 
 /* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
 
