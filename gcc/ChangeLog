@@ -1,3 +1,9 @@
+2001-03-15  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_OFFSET): New.
+	(ASM_OUTPUT_DWARF_PCREL): New.
+	* config/ia64/hpux.h (ASM_OUTPUT_DWARF_OFFSET): Remove.
+
 2001-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cppfiles.c (stack_include_file): Use MAX of sysp.
