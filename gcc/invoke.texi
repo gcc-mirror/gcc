@@ -1724,6 +1724,17 @@ struct s x = @{ 3, 4 @};
 @item -Wfloat-equal
 Warn if floating point values are used in equality comparisons.
 
+The idea behind this is that sometimes it is convenient (for the
+programmer) to consider floating-point values as approximations to
+infinitely precise real numbers.  If you are doing this, then you need
+to compute (by analysing the code, or in some other way) the maximum or
+likely maximum error that the computation introduces, and allow for it
+when performing comparisons (and when producing output, but that's a
+different problem).  In particular, instead of testing for equality, you
+would check to see whether the two values have ranges that overlap; and
+this is done with the relational operators, so equality comparisons are
+probably mistaken.
+
 @item -Wtraditional (C only)
 Warn about certain constructs that behave differently in traditional and
 ANSI C.
