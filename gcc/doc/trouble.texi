@@ -251,7 +251,7 @@ impossible to generate them.
 
 @item
 Debugging (@option{-g}) is not supported on the HP PA machine, unless you use
-the preliminary GNU tools (@pxref{Installation}).
+the preliminary GNU tools.
 
 @item
 Taking the address of a label may generate errors from the HP-UX
@@ -355,7 +355,7 @@ assembler has this bug.
 @item
 On VMS, GAS versions 1.38.1 and earlier may cause spurious warning
 messages from the linker.  These warning messages complain of mismatched
-psect attributes.  You can ignore them.  @xref{VMS Install}.
+psect attributes.  You can ignore them.
 
 @item
 On NewsOS version 3, if you include both of the files @file{stddef.h}

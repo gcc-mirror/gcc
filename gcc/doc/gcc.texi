@@ -217,14 +217,14 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 
 @ifset INTERNALS
 @ifset USING
-This manual documents how to run, install and port the GNU
+This manual documents how to run and port the GNU
 compiler, as well as its new features and incompatibilities, and how to
 report bugs.  It corresponds to GCC version 3.1.
 @end ifset
 @end ifset
 
 @ifclear INTERNALS
-This manual documents how to run and install the GNU compiler,
+This manual documents how to run the GNU compiler,
 as well as its new features and incompatibilities, and how to report
 bugs.  It corresponds to GCC version 3.1.
 @end ifclear
@@ -239,7 +239,7 @@ bugs.  It corresponds to GCC version 3.1.
 * G++ and GCC::     You can compile C or C++ programs.
 * Standards::       Language standards supported by GCC.
 * Invoking GCC::    Command options supported by @samp{gcc}.
-* Installation::    How to configure, compile and install GCC.
+* Installation::    How to configure, compile and install GCC (out of date).
 * C Implementation:: How GCC implements the ISO C specification.
 * C Extensions::    GNU extensions to the C language family.
 * C++ Extensions::  GNU extensions to the C++ language.

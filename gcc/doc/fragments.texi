@@ -7,8 +7,8 @@
 @chapter Makefile Fragments
 @cindex makefile fragment
 
-When you configure GCC using the @file{configure} script
-(@pxref{Installation}), it will construct the file @file{Makefile} from
+When you configure GCC using the @file{configure} script,
+it will construct the file @file{Makefile} from
 the template file @file{Makefile.in}.  When it does this, it will
 incorporate makefile fragment files from the @file{config} directory,
 named @file{t-@var{target}} and @file{x-@var{host}}.  If these files do
