@@ -30,9 +30,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* lstat isn't posix */
 
-void g_char(const char *a, ftnlen alen, char *b);
+void g_char (const char *a, ftnlen alen, char *b);
 
-integer G77_lstat_0 (const char *name, integer statb[13], const ftnlen Lname)
+integer
+G77_lstat_0 (const char *name, integer statb[13], const ftnlen Lname)
 {
 #if HAVE_LSTAT
   char *buff;
@@ -40,8 +41,9 @@ integer G77_lstat_0 (const char *name, integer statb[13], const ftnlen Lname)
   int err;
   struct stat buf;
 
-  buff = malloc (Lname+1);
-  if (buff == NULL) return -1;
+  buff = malloc (Lname + 1);
+  if (buff == NULL)
+    return -1;
   g_char (name, Lname, buff);
   err = lstat (buff, &buf);
   free (buff);
@@ -71,7 +73,7 @@ integer G77_lstat_0 (const char *name, integer statb[13], const ftnlen Lname)
   statb[12] = -1;
 #endif
   return err;
-#else	/* !HAVE_LSTAT */
+#else /* !HAVE_LSTAT */
   return errno = ENOSYS;
-#endif	/* !HAVE_LSTAT */
+#endif /* !HAVE_LSTAT */
 }

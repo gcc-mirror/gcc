@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double r_cosh(real *x)
+double
+r_cosh (real * x)
 {
-return( cosh(*x) );
+  return (cosh (*x));
 }

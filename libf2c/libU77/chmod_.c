@@ -41,10 +41,13 @@ Boston, MA 02111-1307, USA.  */
 #define CHMOD_PATH "/bin/chmod"
 #endif
 
-extern void s_cat(char *lp, char *rpp[], ftnlen rnp[], ftnlen *np, ftnlen ll);
-void g_char(const char *a, ftnlen alen, char *b);
+extern void s_cat (char *lp, char *rpp[], ftnlen rnp[], ftnlen * np,
+		   ftnlen ll);
+void g_char (const char *a, ftnlen alen, char *b);
 
-integer G77_chmod_0 (/* const */ char *name, /* const */ char *mode, const ftnlen Lname, const ftnlen Lmode)
+integer
+G77_chmod_0 ( /* const */ char *name, /* const */ char *mode,
+	     const ftnlen Lname, const ftnlen Lmode)
 {
   char *buff;
   char *bp, *blast;
@@ -53,20 +56,27 @@ integer G77_chmod_0 (/* const */ char *name, /* const */ char *mode, const ftnle
   ftnlen six = 6;
   address a[6];
   ftnlen ii[6];
-  char chmod_path [] = CHMOD_PATH;
+  char chmod_path[] = CHMOD_PATH;
   l = strlen (chmod_path);
-  buff = malloc (Lname+Lmode+l+3+13+1);
-  if (!buff) return -1;
-  ii[0] = l; a[0] = chmod_path;
-  ii[1] = 1; a[1] = " ";
-  ii[2] = Lmode; a[2] = mode;
-  ii[3] = 2; a[3] = " '";
-  for (l2=Lname; (l2 > 1) && (name[l2-1] == ' '); )
+  buff = malloc (Lname + Lmode + l + 3 + 13 + 1);
+  if (!buff)
+    return -1;
+  ii[0] = l;
+  a[0] = chmod_path;
+  ii[1] = 1;
+  a[1] = " ";
+  ii[2] = Lmode;
+  a[2] = mode;
+  ii[3] = 2;
+  a[3] = " '";
+  for (l2 = Lname; (l2 > 1) && (name[l2 - 1] == ' ');)
     l2--;
-  ii[4] = l2; a[4] = name;
-  ii[5] = 13; a[5] = "' 2>/dev/null";
-  s_cat (buff, a, ii, &six, Lname+Lmode+l+3+13);
-  buff[Lname+Lmode+l+3+13] = '\0';
+  ii[4] = l2;
+  a[4] = name;
+  ii[5] = 13;
+  a[5] = "' 2>/dev/null";
+  s_cat (buff, a, ii, &six, Lname + Lmode + l + 3 + 13);
+  buff[Lname + Lmode + l + 3 + 13] = '\0';
   i = system (buff);
   free (buff);
   return i;

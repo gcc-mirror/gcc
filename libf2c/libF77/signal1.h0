@@ -12,12 +12,12 @@
 #endif
 #ifndef Sigarg_t
 #define Sigarg_t int
-#endif /*Sigarg_t*/
+#endif /*Sigarg_t */
 
-#ifdef USE_SIG_PF	/* compile with -DUSE_SIG_PF under IRIX */
+#ifdef USE_SIG_PF		/* compile with -DUSE_SIG_PF under IRIX */
 #define sig_pf SIG_PF
 #else
-typedef Sigret_t (*sig_pf)(Sigarg_t);
+typedef Sigret_t (*sig_pf) (Sigarg_t);
 #endif
 
 #define signal1(a,b) signal(a,(sig_pf)b)

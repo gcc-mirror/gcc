@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double r_int(real *x)
+double
+r_int (real * x)
 {
-return( (*x>0) ? floor(*x) : -floor(- *x) );
+  return ((*x > 0) ? floor (*x) : -floor (-*x));
 }

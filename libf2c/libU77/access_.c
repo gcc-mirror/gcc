@@ -45,27 +45,40 @@ Boston, MA 02111-1307, USA.  */
 #  define F_OK 0
 #endif
 
-void g_char(const char *a, ftnlen alen, char *b);
+void g_char (const char *a, ftnlen alen, char *b);
 
-integer G77_access_0 (const char *name, const char *mode, ftnlen Lname, ftnlen Lmode)
+integer
+G77_access_0 (const char *name, const char *mode, ftnlen Lname, ftnlen Lmode)
 {
   char *buff;
   char *bp, *blast;
   int amode, i;
 
-  buff = malloc (Lname+1);
-  if (!buff) return -1;
+  buff = malloc (Lname + 1);
+  if (!buff)
+    return -1;
   g_char (name, Lname, buff);
   amode = 0;
-  for (i=0;i<Lmode;i++) {
-    switch (mode[i]) {
-    case 'r': amode |= R_OK; break;
-    case 'w': amode |= W_OK; break;
-    case 'x': amode |= X_OK; break;
-    case ' ': amode |= F_OK; break; /* as per Sun, at least */
-    default: return EINVAL;
+  for (i = 0; i < Lmode; i++)
+    {
+      switch (mode[i])
+	{
+	case 'r':
+	  amode |= R_OK;
+	  break;
+	case 'w':
+	  amode |= W_OK;
+	  break;
+	case 'x':
+	  amode |= X_OK;
+	  break;
+	case ' ':
+	  amode |= F_OK;
+	  break;		/* as per Sun, at least */
+	default:
+	  return EINVAL;
+	}
     }
-  }
   i = access (buff, amode);
   free (buff);
   return i;

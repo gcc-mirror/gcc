@@ -39,11 +39,12 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 
 /* Subroutine */
-void G77_vxttime_0 (char chtime[8], const ftnlen Lchtime)
+void
+G77_vxttime_0 (char chtime[8], const ftnlen Lchtime)
 {
   time_t tim;
   char *ctim;
-  tim = time(NULL);
+  tim = time (NULL);
   ctim = ctime (&tim);
-  strncpy (chtime, ctim+11, 8);
+  strncpy (chtime, ctim + 11, 8);
 }

@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double r_log(real *x)
+double
+r_log (real * x)
 {
-return( log(*x) );
+  return (log (*x));
 }

@@ -31,20 +31,21 @@ Boston, MA 02111-1307, USA.  */
 /* we shouldn't rely on this... */
 #define RETSIGTYPE void
 #endif
-typedef RETSIGTYPE (*sig_type)();
+typedef RETSIGTYPE (*sig_type) ();
 
 #include <signal.h>
-typedef int (*sig_proc)(int);
+typedef int (*sig_proc) (int);
 
 #ifndef SIG_ERR
 #define SIG_ERR ((sig_type) -1)
 #endif
 
-integer G77_alarm_0 (integer *seconds, sig_proc proc)
+integer
+G77_alarm_0 (integer * seconds, sig_proc proc)
 {
   int status;
 #if defined (HAVE_ALARM) && defined (SIGALRM)
-  if (signal(SIGALRM, (sig_type)proc) == SIG_ERR)
+  if (signal (SIGALRM, (sig_type) proc) == SIG_ERR)
     status = -1;
   else
     status = alarm (*seconds);

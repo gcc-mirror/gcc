@@ -35,7 +35,8 @@ Boston, MA 02111-1307, USA.  */
 /* As well as this external function some compilers have an intrinsic
    subroutine which fills a character argument (which is the VMS way)
    -- caveat emptor. */
-longint G77_time_0 (void)
+longint
+G77_time_0 (void)
 {
   /* There are potential problems with the cast of the time_t here. */
   return time (NULL);

@@ -28,7 +28,8 @@ Boston, MA 02111-1307, USA.  */
 
 extern integer G77_fnum_0 (const integer *);
 
-integer G77_fstat_0 (const integer *lunit, integer statb[13])
+integer
+G77_fstat_0 (const integer * lunit, integer statb[13])
 {
   int err;
   struct stat buf;

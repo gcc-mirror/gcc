@@ -24,8 +24,9 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include "f2c.h"
 
-/* Subroutine */ 
-int G77_srand_0 (const integer *seed)
+/* Subroutine */
+int
+G77_srand_0 (const integer * seed)
 {
   srand ((unsigned int) *seed);
   return 0;

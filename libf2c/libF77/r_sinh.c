@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double r_sinh(real *x)
+double
+r_sinh (real * x)
 {
-return( sinh(*x) );
+  return (sinh (*x));
 }

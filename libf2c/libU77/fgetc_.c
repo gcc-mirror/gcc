@@ -26,30 +26,36 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 #include "fio.h"
 
-integer G77_fgetc_0 (const integer *lunit, char *c, ftnlen Lc)
+integer
+G77_fgetc_0 (const integer * lunit, char *c, ftnlen Lc)
 {
   int err;
   FILE *f = f__units[*lunit].ufd;
 
-  if (*lunit>=MXUNIT || *lunit<0)
+  if (*lunit >= MXUNIT || *lunit < 0)
     return 101;			/* bad unit error */
   err = getc (f);
-  if (err == EOF) {
-    if (feof (f))
-      return -1;
-    else
-      return ferror (f); }
-  else {
-    if (Lc == 0)
-      return 0;
+  if (err == EOF)
+    {
+      if (feof (f))
+	return -1;
+      else
+	return ferror (f);
+    }
+  else
+    {
+      if (Lc == 0)
+	return 0;
 
-    c[0] = err;
-    while (--Lc)
-      *++c = ' ';
-    return 0; }
+      c[0] = err;
+      while (--Lc)
+	*++c = ' ';
+      return 0;
+    }
 }
 
-integer G77_fget_0 (char *c, const ftnlen Lc)
+integer
+G77_fget_0 (char *c, const ftnlen Lc)
 {
   integer five = 5;
 

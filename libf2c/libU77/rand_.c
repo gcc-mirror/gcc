@@ -34,16 +34,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* Note this is per SunOS -- other s may have no arg. */
 
-double G77_rand_0 (integer *flag)
+double
+G77_rand_0 (integer * flag)
 {
-  switch (*flag) {
-  case 0:
-    break;
-  case 1:
-    srand (0);			/* Arbitrary choice of initialiser. */
-    break;
-  default:
-    srand (*flag);
-  }
+  switch (*flag)
+    {
+    case 0:
+      break;
+    case 1:
+      srand (0);		/* Arbitrary choice of initialiser. */
+      break;
+    default:
+      srand (*flag);
+    }
   return (float) rand () / RAND_MAX;
 }

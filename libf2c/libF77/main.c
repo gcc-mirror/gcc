@@ -5,28 +5,28 @@
 
 #include <stdlib.h>
 
-extern void f_exit(void);
+extern void f_exit (void);
 #ifndef NO_ONEXIT
 #define ONEXIT atexit
-extern int atexit(void (*)(void));
+extern int atexit (void (*)(void));
 #endif
 
-extern void f_init(void);
-extern int MAIN__(void);
+extern void f_init (void);
+extern int MAIN__ (void);
 
-main(int argc, char **argv)
+main (int argc, char **argv)
 {
-f_setarg(argc, argv);
-f_setsig();
-f_init();
+  f_setarg (argc, argv);
+  f_setsig ();
+  f_init ();
 #ifndef NO_ONEXIT
-ONEXIT(f_exit);
+  ONEXIT (f_exit);
 #endif
-MAIN__();
+  MAIN__ ();
 #ifdef NO_ONEXIT
-f_exit();
+  f_exit ();
 #endif
-exit(0);	/* exit(0) rather than return(0) to bypass Cray bug */
-return 0;	/* For compilers that complain of missing return values; */
-		/* others will complain that this is unreachable code. */
+  exit (0);			/* exit(0) rather than return(0) to bypass Cray bug */
+  return 0;			/* For compilers that complain of missing return values; */
+  /* others will complain that this is unreachable code. */
 }

@@ -11,76 +11,76 @@
 
 #include <stdlib.h>
 
-extern void sig_die(char*, int);
+extern void sig_die (char *, int);
 
 static void
-sigfdie(Sigarg)
+sigfdie (Sigarg)
 {
-Use_Sigarg;
-sig_die("Floating Exception", 1);
+  Use_Sigarg;
+  sig_die ("Floating Exception", 1);
 }
 
 
 static void
-sigidie(Sigarg)
+sigidie (Sigarg)
 {
-Use_Sigarg;
-sig_die("IOT Trap", 1);
+  Use_Sigarg;
+  sig_die ("IOT Trap", 1);
 }
 
 #ifdef SIGQUIT
 static void
-sigqdie(Sigarg)
+sigqdie (Sigarg)
 {
-Use_Sigarg;
-sig_die("Quit signal", 1);
+  Use_Sigarg;
+  sig_die ("Quit signal", 1);
 }
 #endif
 
 
 static void
-sigindie(Sigarg)
+sigindie (Sigarg)
 {
-Use_Sigarg;
-sig_die("Interrupt", 0);
+  Use_Sigarg;
+  sig_die ("Interrupt", 0);
 }
 
 static void
-sigtdie(Sigarg)
+sigtdie (Sigarg)
 {
-Use_Sigarg;
-sig_die("Killed", 0);
+  Use_Sigarg;
+  sig_die ("Killed", 0);
 }
 
 #ifdef SIGTRAP
 static void
-sigtrdie(Sigarg)
+sigtrdie (Sigarg)
 {
-Use_Sigarg;
-sig_die("Trace trap", 1);
+  Use_Sigarg;
+  sig_die ("Trace trap", 1);
 }
 #endif
 
 
- void
-f_setsig()
+void
+f_setsig ()
 {
-signal1(SIGFPE, sigfdie);	/* ignore underflow, enable overflow */
+  signal1 (SIGFPE, sigfdie);	/* ignore underflow, enable overflow */
 #ifdef SIGIOT
-signal1(SIGIOT, sigidie);
+  signal1 (SIGIOT, sigidie);
 #endif
 #ifdef SIGTRAP
-signal1(SIGTRAP, sigtrdie);
+  signal1 (SIGTRAP, sigtrdie);
 #endif
 #ifdef SIGQUIT
-if(signal1(SIGQUIT,sigqdie) == SIG_IGN)
-	signal1(SIGQUIT, SIG_IGN);
+  if (signal1 (SIGQUIT, sigqdie) == SIG_IGN)
+    signal1 (SIGQUIT, SIG_IGN);
 #endif
-if(signal1(SIGINT, sigindie) == SIG_IGN)
-	signal1(SIGINT, SIG_IGN);
-signal1(SIGTERM,sigtdie);
+  if (signal1 (SIGINT, sigindie) == SIG_IGN)
+    signal1 (SIGINT, SIG_IGN);
+  signal1 (SIGTERM, sigtdie);
 
 #ifdef pdp11
-	ldfps(01200); /* detect overflow as an exception */
+  ldfps (01200);		/* detect overflow as an exception */
 #endif
 }

@@ -27,11 +27,12 @@ Boston, MA 02111-1307, USA.  */
 
 extern integer G77_fnum_0 (integer *);
 
-logical G77_isatty_0 (integer *lunit)
+logical
+G77_isatty_0 (integer * lunit)
 {
-  if (*lunit>=MXUNIT || *lunit<0)
-    err(1,101,"isatty");
+  if (*lunit >= MXUNIT || *lunit < 0)
+    err (1, 101, "isatty");
   /* f__units is a table of descriptions for the unit numbers (defined
      in io.h) with file descriptors rather than streams */
-  return (isatty(G77_fnum_0 (lunit)) ? TRUE_ : FALSE_);
+  return (isatty (G77_fnum_0 (lunit)) ? TRUE_ : FALSE_);
 }

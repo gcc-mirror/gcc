@@ -2,10 +2,10 @@
 #include "signal1.h"
 
 void *
-G77_signal_0 (integer *sigp, sig_pf proc)
+G77_signal_0 (integer * sigp, sig_pf proc)
 {
-	int sig;
-	sig = (int)*sigp;
+  int sig;
+  sig = (int) *sigp;
 
-	return (void *) signal(sig, proc);
-	}
+  return (void *) signal (sig, proc);
+}

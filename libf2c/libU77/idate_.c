@@ -37,12 +37,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* libU77 one: */
 
-/* Subroutine */ int G77_idate_0 (int iarray[3])
+/* Subroutine */ int
+G77_idate_0 (int iarray[3])
 {
   struct tm *lt;
   time_t tim;
-  tim = time(NULL);
-  lt = localtime(&tim);
+  tim = time (NULL);
+  lt = localtime (&tim);
   iarray[0] = lt->tm_mday;
   iarray[1] = lt->tm_mon + 1;	/* in range 1-12 in SunOS (experimentally) */
   /* The `+1900' is consistent with SunOS and Irix, but they don't say

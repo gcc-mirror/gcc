@@ -26,25 +26,28 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 #include "fio.h"
 
-integer G77_fputc_0 (const integer *lunit, const char *c, const ftnlen Lc)
+integer
+G77_fputc_0 (const integer * lunit, const char *c, const ftnlen Lc)
 {
   int err;
   FILE *f = f__units[*lunit].ufd;
 
-  if (*lunit>=MXUNIT || *lunit<0)
+  if (*lunit >= MXUNIT || *lunit < 0)
     return 101;			/* bad unit error */
   err = putc (c[0], f);
-  if (err == EOF) {
-    if (feof (f))
-      return -1;
-    else
-      return ferror (f);
-  }
+  if (err == EOF)
+    {
+      if (feof (f))
+	return -1;
+      else
+	return ferror (f);
+    }
   else
     return 0;
 }
 
-integer G77_fput_0 (const char *c, const ftnlen Lc)
+integer
+G77_fput_0 (const char *c, const ftnlen Lc)
 {
   integer six = 6;
 

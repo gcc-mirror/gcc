@@ -4,7 +4,7 @@
 /* FMAX = max number of nonzero digits passed to atof() */
 /* EXPMAX = 10^EXPMAXDIGS - 1 = largest allowed exponent absolute value */
 
-#ifdef V10 /* Research Tenth-Edition Unix */
+#ifdef V10			/* Research Tenth-Edition Unix */
 #include "local.h"
 #endif
 

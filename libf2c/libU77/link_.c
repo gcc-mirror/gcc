@@ -34,23 +34,28 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
-void g_char(const char *a, ftnlen alen, char *b);
+void g_char (const char *a, ftnlen alen, char *b);
 
-integer G77_link_0 (const char *path1, const char *path2, const ftnlen Lpath1, const ftnlen Lpath2)
+integer
+G77_link_0 (const char *path1, const char *path2, const ftnlen Lpath1,
+	    const ftnlen Lpath2)
 {
 #if defined (HAVE_LINK)
   char *buff1, *buff2;
   char *bp, *blast;
   int i;
 
-  buff1 = malloc (Lpath1+1);
-  if (buff1 == NULL) return -1;
+  buff1 = malloc (Lpath1 + 1);
+  if (buff1 == NULL)
+    return -1;
   g_char (path1, Lpath1, buff1);
-  buff2 = malloc (Lpath2+1);
-  if (buff2 == NULL) return -1;
+  buff2 = malloc (Lpath2 + 1);
+  if (buff2 == NULL)
+    return -1;
   g_char (path2, Lpath2, buff2);
   i = link (buff1, buff2);
-  free (buff1); free (buff2);
+  free (buff1);
+  free (buff2);
   return i ? errno : 0;
 #else /* ! HAVE_LINK */
   errno = ENOSYS;

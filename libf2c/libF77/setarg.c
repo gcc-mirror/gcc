@@ -6,9 +6,9 @@
 int f__xargc;
 char **f__xargv;
 
- void
-f_setarg(int argc, char **argv)
+void
+f_setarg (int argc, char **argv)
 {
-f__xargc = argc;
-f__xargv = argv;
+  f__xargc = argc;
+  f__xargv = argv;
 }

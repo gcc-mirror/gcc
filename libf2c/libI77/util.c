@@ -9,34 +9,44 @@
 #include "fio.h"
 
 void
-g_char(char *a, ftnlen alen, char *b)
+g_char (char *a, ftnlen alen, char *b)
 {
-	char *x = a + alen, *y = b + alen;
+  char *x = a + alen, *y = b + alen;
 
-	for(;; y--) {
-		if (x <= a) {
-			*b = 0;
-			return;
-			}
-		if (*--x != ' ')
-			break;
-		}
-	*y-- = 0;
-	do *y-- = *x;
-		while(x-- > a);
+  for (;; y--)
+    {
+      if (x <= a)
+	{
+	  *b = 0;
+	  return;
 	}
+      if (*--x != ' ')
+	break;
+    }
+  *y-- = 0;
+  do
+    *y-- = *x;
+  while (x-- > a);
+}
 
 void
-b_char(char *a, char *b, ftnlen blen)
-{	int i;
-	for(i=0;i<blen && *a!=0;i++) *b++= *a++;
-	for(;i<blen;i++) *b++=' ';
+b_char (char *a, char *b, ftnlen blen)
+{
+  int i;
+  for (i = 0; i < blen && *a != 0; i++)
+    *b++ = *a++;
+  for (; i < blen; i++)
+    *b++ = ' ';
 }
+
 #ifndef NON_UNIX_STDIO
-long f__inode(char *a, int *dev)
-{	struct stat x;
-	if(stat(a,&x)<0) return(-1);
-	*dev = x.st_dev;
-	return(x.st_ino);
+long
+f__inode (char *a, int *dev)
+{
+  struct stat x;
+  if (stat (a, &x) < 0)
+    return (-1);
+  *dev = x.st_dev;
+  return (x.st_ino);
 }
 #endif

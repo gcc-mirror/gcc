@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double d_sqrt(doublereal *x)
+double
+d_sqrt (doublereal * x)
 {
-return( sqrt(*x) );
+  return (sqrt (*x));
 }

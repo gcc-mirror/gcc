@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double r_exp(real *x)
+double
+r_exp (real * x)
 {
-return( exp(*x) );
+  return (exp (*x));
 }
