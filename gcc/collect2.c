@@ -2,7 +2,7 @@
    that can be traversed by C++ initialization and finalization
    routines.
 
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@osf.org),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -81,7 +81,7 @@ extern int sys_nerr;
 
 /* On MSDOS, write temp files in current dir
    because there's no place else we can expect to use.  */
-#if __MSDOS__
+#ifdef __MSDOS__
 #ifndef P_tmpdir
 #define P_tmpdir "./"
 #endif
