@@ -4036,11 +4036,25 @@ output_fp_compare (insn, operands, eflags_p, unordered_p)
   int stack_top_dies;
   rtx cmp_op0 = operands[0];
   rtx cmp_op1 = operands[1];
+  int is_sse = SSE_REG_P (operands[0]) | SSE_REG_P (operands[1]);
 
   if (eflags_p == 2)
     {
       cmp_op0 = cmp_op1;
       cmp_op1 = operands[2];
+    }
+  if (is_sse)
+    {
+      if (GET_MODE (operands[0]) == SFmode)
+	if (unordered_p)
+	  return "ucomiss\t{%1, %0|%0, %1}";
+	else
+	  return "comiss\t{%1, %0|%0, %y}";
+      else
+	if (unordered_p)
+	  return "ucomisd\t{%1, %0|%0, %1}";
+	else
+	  return "comisd\t{%1, %0|%0, %y}";
     }
 
   if (! STACK_TOP_P (cmp_op0))
@@ -4797,15 +4811,17 @@ ix86_prepare_fp_compare_args (code, pop0, pop1)
   enum machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
   rtx op0 = *pop0, op1 = *pop1;
   enum machine_mode op_mode = GET_MODE (op0);
+  int is_sse = SSE_REG_P (op0) | SSE_REG_P (op1);
 
   /* All of the unordered compare instructions only work on registers.
      The same is true of the XFmode compare instructions.  The same is
      true of the fcomi compare instructions.  */
 
-  if (fpcmp_mode == CCFPUmode
-      || op_mode == XFmode
-      || op_mode == TFmode
-      || ix86_use_fcomi_compare (code))
+  if (!is_sse
+      && (fpcmp_mode == CCFPUmode
+	  || op_mode == XFmode
+	  || op_mode == TFmode
+	  || ix86_use_fcomi_compare (code)))
     {
       op0 = force_reg (op_mode, op0);
       op1 = force_reg (op_mode, op1);

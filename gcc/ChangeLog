@@ -1,3 +1,16 @@
+Tue Feb 13 23:19:27 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (output_fp_compare): Support SSE.
+	(prepare_fp_compare_args): SSE comparisons always support memory.
+	* i386.h (TARGET_CMOVE): SSE imply cmove.
+	* i386.md (cmp?f2): Enable for SSE too.
+	(cmpfp_i*): Support SSE.
+	(cmpfp_i_sse): New.
+	(cmpfp_i_sse_only): New.
+	(s*, b* fp expanters): Enable for SSE too.
+	(fp_jcc_1_sse, fp_jcc_1_sse_only, fp_jcc_2_sse, fp_jcc_2_sse_only):
+	New patterns.
+
 Tue Feb 13 23:05:42 CET 2001  Jan Hubicka  <jh@suse.cz>
 
  	* regclass.c (init_reg_sets_1): Silence warning.
