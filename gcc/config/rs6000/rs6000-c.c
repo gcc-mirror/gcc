@@ -62,13 +62,13 @@ rs6000_pragma_longcall (cpp_reader *pfile ATTRIBUTE_UNUSED)
   if (c_lex (&x) != CPP_CLOSE_PAREN)
     SYNTAX_ERROR ("missing close paren");
 
-  if (n != integer_zero_node && n != integer_one_node)
+  if (!integer_zerop (n) && !integer_onep (n))
     SYNTAX_ERROR ("number must be 0 or 1");
 
   if (c_lex (&x) != CPP_EOF)
     warning ("junk at end of #pragma longcall");
 
-  rs6000_default_long_calls = (n == integer_one_node);
+  rs6000_default_long_calls = integer_onep (n);
 }
 
 /* Handle defining many CPP flags based on TARGET_xxx.  As a general
