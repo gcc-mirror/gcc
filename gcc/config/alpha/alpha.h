@@ -1255,16 +1255,17 @@ __enable_execute_stack (addr)						\
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.
    FRAMEADDR is the frame pointer of the COUNT frame, or the frame pointer of
-   the COUNT-1 frame if RETURN_ADDR_IN_PREVIOUS_FRAME} is defined.
+   the COUNT-1 frame if RETURN_ADDR_IN_PREVIOUS_FRAME} is defined.  */
 
-   This definition for Alpha is broken, but is put in at the request of
-   Mike Stump.  */
+#define RETURN_ADDR_RTX  alpha_return_addr
+extern struct rtx_def *alpha_return_addr ();
 
-#define RETURN_ADDR_RTX(COUNT, FRAME)					\
-((COUNT == 0 && alpha_sa_size () == 0 && 0 /* not right. */)		\
- ? gen_rtx (REG, Pmode, 26)						\
- : gen_rtx (MEM, Pmode,							\
-	    memory_address (Pmode, FRAME)))
+/* Initialize data used by insn expanders.  This is called from insn_emit,
+   once for every function before code is generated.  */
+
+#define INIT_EXPANDERS  alpha_init_expanders ()
+extern void alpha_init_expanders ();
+
 
 /* Addressing modes, and classification of registers for them.  */
 

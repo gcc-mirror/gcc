@@ -33,7 +33,7 @@
 ;; separately.
 
 (define_attr "type"
-  "ld,st,ibr,fbr,jsr,iadd,ilog,shift,cmov,icmp,imull,imulq,imulh,fadd,fmul,fcpys,fdivs,fdivt,ldsym,isubr,misc"
+  "ld,st,ibr,fbr,jsr,iadd,ilog,shift,cmov,icmp,imull,imulq,imulh,fadd,fmul,fcpys,fdivs,fdivt,ldsym,misc"
   (const_string "iadd"))
 
 ;; The TRAP_TYPE attribute marks instructions that may generate traps
@@ -744,7 +744,7 @@
 ;   (clobber (reg:DI 28))]
 ;  "!TARGET_OPEN_VMS"
 ;  "%E1 $24,$25,$27"
-;  [(set_attr "type" "isubr")])
+;  [(set_attr "type" "jsr")])
 
 (define_insn ""
   [(set (reg:DI 27)
@@ -754,7 +754,7 @@
    (clobber (reg:DI 28))]
   "!TARGET_OPEN_VMS"
   "%E1 $24,$25,$27"
-  [(set_attr "type" "isubr")])
+  [(set_attr "type" "jsr")])
 
 ;; Next are the basic logical operations.  These only exist in DImode.
 
@@ -3289,7 +3289,7 @@
    jsr $26,($27),0\;ldgp $29,0($26)
    bsr $26,%0..ng
    jsr $26,%0\;ldgp $29,0($26)"
-  [(set_attr "type" "jsr,jsr,ibr")])
+  [(set_attr "type" "jsr,ibr,jsr")])
       
 (define_insn ""
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,i"))
@@ -3299,7 +3299,7 @@
   "@
    jsr $26,(%0)
    bsr $26,%0"
-  [(set_attr "type" "jsr")])
+  [(set_attr "type" "jsr,ibr")])
       
 (define_insn ""
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,i"))
@@ -3325,7 +3325,7 @@
    jsr $26,($27),0\;ldgp $29,0($26)
    bsr $26,%1..ng
    jsr $26,%1\;ldgp $29,0($26)"
-  [(set_attr "type" "jsr,jsr,ibr")])
+  [(set_attr "type" "jsr,ibr,jsr")])
 
 (define_insn ""
   [(set (match_operand 0 "register_operand" "=rf,rf")
@@ -3336,7 +3336,7 @@
   "@
    jsr $26,(%1)
    bsr $26,%1"
-  [(set_attr "type" "jsr")])
+  [(set_attr "type" "jsr,ibr")])
 
 (define_insn ""
   [(set (match_operand 0 "register_operand" "")
@@ -3568,11 +3568,15 @@
 
 ;; Cache flush.  Used by INITIALIZE_TRAMPOLINE.  0x86 is PAL_imb, but we don't
 ;; want to have to include pal.h in our .s file.
+;;
+;; Technically the type for call_pal is jsr, but we use that for determining
+;; if we need a GP.  Use ibr instead since it has the same scheduling 
+;; characteristics.
 (define_insn ""
   [(unspec_volatile [(const_int 0)] 0)]
   ""
   "call_pal 0x86"
-  [(set_attr "type" "isubr")])
+  [(set_attr "type" "ibr")])
 
 ;; Finally, we have the basic data motion insns.  The byte and word insns
 ;; are done via define_expand.  Start with the floating-point insns, since
