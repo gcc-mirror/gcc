@@ -38,6 +38,12 @@ public abstract class Component implements ImageObserver, MenuContainer,
 			    RIGHT_ALIGNMENT  = 1.0f,
 			    TOP_ALIGNMENT    = 0.0f;
 
+    /* Make the treelock a String so that it can easily be identified
+       in debug dumps. We clone the String in order to avoid a conflict in 
+       the unlikely event that some other package uses exactly the same string
+       as a lock object. */
+    static Object treeLock = new String("AWT_TREE_LOCK");
+
   /* Serialized fields from the serialization spec. */
   // FIXME: Default values?
   int x;
@@ -70,8 +76,6 @@ public abstract class Component implements ImageObserver, MenuContainer,
   /* Anything else is non-serializable, and should be declared "transient". */
   transient Container parent;
   transient java.awt.peer.ComponentPeer peer;
-
-  transient Object treeLock;
 
   transient ComponentListener componentListener;
   transient FocusListener focusListener;
