@@ -473,7 +473,7 @@ in the following sections.
 -mpreferred-stack-boundary=@var{num} @gol
 -mthreads -mno-align-stringops -minline-all-stringops @gol
 -mpush-args -maccumulate-outgoing-args -m128bit-long-double @gol
--m96bit-long-double -mregparm=@var{num}}
+-m96bit-long-double -mregparm=@var{num} -momit-leaf-frame-pointer}
 
 @emph{HPPA Options}
 @gccoptlist{
@@ -6924,6 +6924,14 @@ By default GCC inlines string operations only when destination is known to be
 aligned at least to 4 byte boundary. This enables more inlining, increase code
 size, but may improve performance of code that depends on fast memcpy, strlen
 and memset for short lengths.
+
+@item -momit-leaf-frame-pointer
+@kindex -momit-leaf-frame-pointer
+Don't keep the frame pointer in a register for leaf functions.  This
+avoids the instructions to save, set up and restore frame pointers and
+makes an extra register available in leaf functions.  The option
+@samp{-fomit-frame-pointer} removes the frame pointer for all functions
+which might make debugging harder.
 @end table
 
 @node HPPA Options
