@@ -1795,7 +1795,8 @@ namespace std
       // NB: This size is arbitrary. Should this be a data member,
       // initialized at construction?
       const size_t __maxlen = 64;
-      char_type* __res = static_cast<char_type*>(__builtin_alloca(__maxlen));
+      char_type* __res =
+	static_cast<char_type*>(__builtin_alloca(sizeof(char_type) * __maxlen));
 
       // NB: In IEE 1003.1-200x, and perhaps other locale models, it
       // is possible that the format character will be longer than one
@@ -1854,16 +1855,18 @@ namespace std
     collate<_CharT>::
     do_transform(const _CharT* __lo, const _CharT* __hi) const
     {
-      size_t __len = __hi - __lo;
-      _CharT* __c = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len));
+      size_t __len = (__hi - __lo) * 2;
+      // First try a buffer perhaps big enough.
+      _CharT* __c =
+	static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len));
       size_t __res = _M_transform_helper(__c, __lo, __len);
+      // If the buffer was not large enough, try again with the correct size.
       if (__res >= __len)
 	{
-	  // Try to increment size of translated string.
-	  size_t __len2 = __len * 2;
-	  _CharT* __c2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len2));
-	  __res = _M_transform_helper(__c2, __lo, __len);
-	  // XXX Throw exception if still indeterminate?
+	  _CharT* __c2 =
+	    static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * (__res + 1)));
+	  _M_transform_helper(__c2, __lo, __res + 1);
+	  return string_type(__c2);
 	}
       return string_type(__c);
     }

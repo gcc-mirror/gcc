@@ -1,3 +1,11 @@
+2002-03-11  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (collate::do_transform):
+	Rewrite to fix problems with long transformed strings.
+
+	* include/bits/locale_facets.tcc (time_put::do_put):
+	Consider sizeof(char_type) in allocating the buffer.
+
 2002-03-10  Anthony Green  <green@redhat.com>
 
 	* configure.in: Support cross builds to mingw32 target.
