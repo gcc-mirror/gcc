@@ -1,5 +1,12 @@
+2004-09-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* reg-notes.def (REG_DEP_TRUE): New entry, place first so it
+	gets value 0.
+	* print-rtl.c (print_rtx): Print the name of a REG_NOTE even
+	if it has value 0.
+
 2004-09-21  Daniel Berlin <dberlin@dberlin.org>
-	
+
 	* c-typeck.c (build_function_call): Give name of object
 	we are attempting to call in error message.
 	* c-objc-common.c (c_tree_printer): Call pp_expression,
@@ -30,7 +37,7 @@
 	precedence of stripped constant.
 
 2004-09-20 Jeff Law  <law@redhat.com>
-           Jan Hubicka  <jh@suse.cz>
+	   Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssanames.c (make_ssa_name): No longer need to clear, then
 	initialize key elements here.
