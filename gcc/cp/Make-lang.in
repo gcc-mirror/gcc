@@ -76,7 +76,7 @@ g++.c: $(srcdir)/gcc.c
 	ln -s $(srcdir)/gcc.c $@ || cp $(srcdir)/gcc.c $@
 
 g++spec.o: $(srcdir)/cp/g++spec.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/cp/g++spec.c
 
 # N.B.: This is a copy of the gcc.o rule, with -DLANG_SPECIFIC_DRIVER added.
 # It'd be nice if we could find an easier way to do this---rather than have

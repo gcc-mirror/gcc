@@ -7227,7 +7227,9 @@ grokvardecl (type, declarator, specbits_in, initialized, constp)
      int constp;
 {
   tree decl;
-  RID_BIT_TYPE specbits = *specbits_in;
+  RID_BIT_TYPE specbits;
+
+  specbits = *specbits_in;
 
   if (TREE_CODE (type) == OFFSET_TYPE)
     {
@@ -9935,7 +9937,7 @@ grok_ctor_properties (ctype, decl)
       if (TREE_CHAIN (parmtypes) != NULL_TREE
 	  && TREE_CHAIN (parmtypes) == void_list_node)
 	{
-	  cp_error ("invalid constructor; you probably meant `%T (%T&)'",
+	  cp_error ("invalid constructor; you probably meant `%T (const %T&)'",
 		    ctype, ctype);
 	  SET_IDENTIFIER_ERROR_LOCUS (DECL_NAME (decl), ctype);
 
