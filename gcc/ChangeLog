@@ -1,3 +1,11 @@
+2004-04-22  Josef Zlomek  <zlomekj@suse.cz>
+
+	Revert
+	2004-04-20  Josef Zlomek  <zlomekj@suse.cz>
+
+		* var-tracking.c (variable_part_different_p): Variable parts
+		differ when the most recent locations differ.
+
 2004-04-22  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Remove the MIPS -membedded-pic option.
