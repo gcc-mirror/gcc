@@ -1,3 +1,12 @@
+2004-09-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/17363
+	Backport from mainline
+	2003-07-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+		PR bootstrap/11593
+		* sched-rgn.c (find_rgns): Initialize current_edge correctly.
+
 2004-09-17  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/17455

@@ -626,7 +626,8 @@ find_rgns (edge_list, dom)
   int *max_hdr, *dfs_nr, *stack, *degree;
   char no_loops = 1;
   int node, child, loop_head, i, head, tail;
-  int count = 0, sp, idx = 0, current_edge = out_edges[0];
+  int count = 0, sp, idx = 0;
+  int current_edge = out_edges[ENTRY_BLOCK_PTR->succ->dest->index];
   int num_bbs, num_insns, unreachable;
   int too_large_failure;
   basic_block bb;
