@@ -206,6 +206,10 @@ do {									\
       else								\
 	data_section ();						\
     }									\
+  /* This could be a CONSTRUCTOR containing ADDR_EXPR of a VAR_DECL,	\
+     in which case we can't put it in a shared library rodata.  */	\
+  else if (flag_pic && (RELOC))						\
+    data_section ();							\
   else									\
     const_section ();							\
 }
