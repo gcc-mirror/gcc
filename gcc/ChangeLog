@@ -1,5 +1,10 @@
 2001-06-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* jump.c (mark_modified_reg): Allow jump threading if condition
+	codes are represented by a hard register.
+
+2001-06-08  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/ia64/ia64.h (CC1_SPEC): Define.
 	* config/ia64/linux.h (CC1_SPEC): Define.
 
