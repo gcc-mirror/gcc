@@ -1764,7 +1764,14 @@ regmove_profitable_p ()
 
 	  reg0 = gen_rtx (REG, insn_operand_mode[icode][0], i);
 	  reg1 = gen_rtx (REG, insn_operand_mode[icode][1], i + 1);
-	  reg2 = gen_rtx (REG, insn_operand_mode[icode][2], i + 2);
+
+	  /* Use CONST_INT for a shift since some machines do odd things
+	     in the register case (e.g., PA).  */
+	  if (tstoptab->code == ASHIFT)
+	    reg2 = const1_rtx;
+	  else
+	    reg2 = gen_rtx (REG, insn_operand_mode[icode][2], i + 2);
+
 	  if (! (*insn_operand_predicate[icode][0]) (reg0, VOIDmode)
 	      || ! (*insn_operand_predicate[icode][1]) (reg1, VOIDmode)
 	      || ! (*insn_operand_predicate[icode][2]) (reg2, VOIDmode))
