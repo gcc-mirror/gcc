@@ -2120,7 +2120,9 @@ if [ -r ${LIB}/$file ]; then
       true
     else
       echo "Fixing $file (needs stdio.h)"
-      echo '#include <stdio.h>' >>${LIB}/$file
+      echo '#ifdef __cplusplus
+#include <stdio.h>
+#endif' >>${LIB}/$file
     fi
   fi
   if grep 'exit *(' ${LIB}/$file >/dev/null 2>/dev/null || 
@@ -2129,7 +2131,9 @@ if [ -r ${LIB}/$file ]; then
       true
     else
       echo "Fixing $file (needs stdlib.h)"
-      echo '#include <stdlib.h>' >>${LIB}/$file
+      echo '#ifdef __cplusplus
+#include <stdlib.h>
+#endif' >>${LIB}/$file
     fi
   fi
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
