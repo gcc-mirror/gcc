@@ -1053,12 +1053,13 @@ sdbout_field_types (type)
   tree tail;
 
   for (tail = TYPE_FIELDS (type); tail; tail = TREE_CHAIN (tail))
-    /* This condition should match the one for emitting the actual members
-       below.  */
+    /* This condition should match the one for emitting the actual
+       members below.  */
     if (TREE_CODE (tail) == FIELD_DECL
-	&& DECL_NAME (tail) != 0
-	&& ! host_integerp (DECL_SIZE (tail), 1)
-	&& ! host_integerp (bit_position (tail), 0))
+	&& DECL_NAME (tail)
+	&& DECL_SIZE (tail)
+	&& host_integerp (DECL_SIZE (tail), 1)
+	&& host_integerp (bit_position (tail), 0))
       {
 	if (POINTER_TYPE_P (TREE_TYPE (tail)))
 	  sdbout_one_type (TREE_TYPE (TREE_TYPE (tail)));
@@ -1237,7 +1238,8 @@ sdbout_one_type (type)
 	       Also omit fields with variable size or position.
 	       Also omit non FIELD_DECL nodes that GNU C++ may put here.  */
 	    if (TREE_CODE (tem) == FIELD_DECL
-		&& DECL_NAME (tem) != 0
+		&& DECL_NAME (tem)
+		&& DECL_SIZE (tem)
 		&& host_integerp (DECL_SIZE (tem), 1)
 		&& host_integerp (bit_position (tem), 0))
 	      {

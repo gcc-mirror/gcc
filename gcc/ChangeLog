@@ -1,3 +1,8 @@
+2000-11-29  Laurynas Biveinis  <lauras@softhome.net>
+
+	* sdbout.c (sdbout_one_type): Skip types with indeterminate size.
+	(sdbout_field_types): Likwise.  Fix use of host_integerp.
+
 2001-01-29  Thomas Pfaff  <tpfaff@gmx.net>
 
 	* mingw32.h: Override STARTFILE_SPEC and LINK_SPEC declared in
