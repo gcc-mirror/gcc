@@ -3202,6 +3202,9 @@
   ""
   "*
 {
+  if (TARGET_FAST_INDIRECT_CALLS)
+    return \"blr 0,%%r2\;bv,n 0(%r0)\;ldo 4(%%r2),%%r2\";
+
   /* Yuk!  bl may not be able to reach $$dyncall.  */
   if (TARGET_LONG_CALLS)
     return \"copy %r0,%%r22\;ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n 0(%%r31)\;nop\";
@@ -3290,6 +3293,9 @@
   ""
   "*
 {
+  if (TARGET_FAST_INDIRECT_CALLS)
+    return \"blr 0,%%r2\;bv,n 0(%r1)\;ldo 4(%%r2),%%r2\";
+
   /* Yuk!  bl may not be able to reach $$dyncall.  */
   if (TARGET_LONG_CALLS)
     return \"copy %r1,%%r22\;ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n 0(%%r31)\;nop\";

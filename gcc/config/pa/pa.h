@@ -47,6 +47,13 @@ extern int target_flags;
 
 #define TARGET_DISABLE_FPREGS (target_flags & 2)
 
+/* Generate code which assumes that calls through function pointers will
+   never cross a space boundary.  Such assumptions are generally safe for
+   building kernels and statically linked executables.  Code compiled with
+   this option will fail miserably if the executable is dynamically linked
+   or uses nested functions!  */
+#define TARGET_FAST_INDIRECT_CALLS (target_flags & 4)
+
 /* Allow unconditional jumps in the delay slots of call instructions.  */
 #define TARGET_JUMP_IN_DELAY (target_flags & 8)
 
@@ -89,6 +96,8 @@ extern int target_flags;
    {"pa-risc-1-1", 1},		\
    {"disable-fpregs", 2},	\
    {"no-disable-fpregs", 2},	\
+   {"fast-indirect-calls", 4},	\
+   {"no-fast-indirect-calls", -4},\
    {"jump-in-delay", 8},	\
    {"no-jump-in-delay", -8},	\
    {"long-calls", 16},		\
