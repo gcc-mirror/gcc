@@ -1,3 +1,7 @@
+Sun Mar 17 18:50:15 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.h (ffe_parse_file): Prototype.
+
 Sun Mar 17 20:57:30 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (LANG_HOOKS_PARSE_FILE): Redefine.
