@@ -85,7 +85,7 @@ typedef HANDLE __gthread_mutex_t;
 #if __MINGW32_MAJOR_VERSION >= 1 || \
   (__MINGW32_MAJOR_VERSION == 0 && __MINGW32_MINOR_VERSION > 2)
 #define MINGW32_SUPPORTS_MT_EH 1
-extern int __mingwthr_key_dtor PROTO((DWORD, void (*) (void *)));
+extern int __mingwthr_key_dtor PARAMS ((DWORD, void (*) (void *)));
 /* Mingw runtime >= v0.3 provides a magic variable that is set to non-zero
    if -mthreads option was specified, or 0 otherwise. This is to get around 
    the lack of weak symbols in PE-COFF.  */

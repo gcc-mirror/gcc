@@ -46,23 +46,23 @@ struct varray_head_tag;
 extern char *empty_string;
 
 /* Manipulate global roots that are needed between calls to gc.  */
-void ggc_add_root PROTO ((void *base, int nelt, int size, void (*)(void *)));
-void ggc_add_rtx_root PROTO ((struct rtx_def **, int nelt));
-void ggc_add_tree_root PROTO ((union tree_node **, int nelt));
-void ggc_add_string_root PROTO ((char **, int nelt));
-void ggc_add_tree_varray_root PROTO ((struct varray_head_tag **, int nelt));
-void ggc_add_tree_hash_table_root PROTO ((struct hash_table **, int nelt));
-void ggc_del_root PROTO ((void *base));
+void ggc_add_root PARAMS ((void *base, int nelt, int size, void (*)(void *)));
+void ggc_add_rtx_root PARAMS ((struct rtx_def **, int nelt));
+void ggc_add_tree_root PARAMS ((union tree_node **, int nelt));
+void ggc_add_string_root PARAMS ((char **, int nelt));
+void ggc_add_tree_varray_root PARAMS ((struct varray_head_tag **, int nelt));
+void ggc_add_tree_hash_table_root PARAMS ((struct hash_table **, int nelt));
+void ggc_del_root PARAMS ((void *base));
 
 /* Mark nodes from the gc_add_root callback.  These functions follow
    pointers to mark other objects too.  */
-extern void ggc_mark_tree_varray PROTO ((struct varray_head_tag *));
-extern void ggc_mark_tree_hash_table PROTO ((struct hash_table *));
-extern void ggc_mark_roots PROTO((void));
+extern void ggc_mark_tree_varray PARAMS ((struct varray_head_tag *));
+extern void ggc_mark_tree_hash_table PARAMS ((struct hash_table *));
+extern void ggc_mark_roots PARAMS ((void));
 
-extern void ggc_mark_rtx_children PROTO ((struct rtx_def *));
-extern void ggc_mark_rtvec_children PROTO ((struct rtvec_def *));
-extern void ggc_mark_tree_children PROTO ((union tree_node *));
+extern void ggc_mark_rtx_children PARAMS ((struct rtx_def *));
+extern void ggc_mark_rtvec_children PARAMS ((struct rtvec_def *));
+extern void ggc_mark_tree_children PARAMS ((union tree_node *));
 
 /* If EXPR is not NULL and previously unmarked, mark it and evaluate
    to true.  Otherwise evaluate to false.  */
@@ -105,25 +105,25 @@ extern void ggc_mark_tree_children PROTO ((union tree_node *));
   } while (0)
 
 /* Mark, but only if it was allocated in collectable memory.  */
-extern void ggc_mark_if_gcable PROTO ((void *));
+extern void ggc_mark_if_gcable PARAMS ((void *));
 
 /* A GC implementation must provide these functions.  */
 
 /* Initialize the garbage collector.   */
-extern void init_ggc PROTO ((void));
+extern void init_ggc PARAMS ((void));
 
 /* Start a new GGC context.  Memory allocated in previous contexts
    will not be collected while the new context is active.  */
-extern void ggc_push_context PROTO ((void));
+extern void ggc_push_context PARAMS ((void));
 
 /* Finish a GC context.  Any uncollected memory in the new context
    will be merged with the old context.  */
-extern void ggc_pop_context PROTO ((void));
+extern void ggc_pop_context PARAMS ((void));
 
 /* Allocation.  */
 
 /* The internal primitive.  */
-void *ggc_alloc_obj PROTO ((size_t, int));
+void *ggc_alloc_obj PARAMS ((size_t, int));
 
 #define ggc_alloc_rtx(NSLOTS)						     \
   ((struct rtx_def *) ggc_alloc_obj (sizeof (struct rtx_def)		     \
@@ -138,38 +138,38 @@ void *ggc_alloc_obj PROTO ((size_t, int));
 
 #define ggc_alloc(SIZE)  ggc_alloc_obj((SIZE), 0)
 
-char *ggc_alloc_string PROTO ((const char *contents, int length));
+char *ggc_alloc_string PARAMS ((const char *contents, int length));
 
 /* Invoke the collector.  This is really just a hint, but in the case of
    the simple collector, the only time it will happen.  */
-void ggc_collect PROTO ((void));
+void ggc_collect PARAMS ((void));
 
 /* Actually set the mark on a particular region of memory, but don't
    follow pointers.  This function is called by ggc_mark_*.  It
    returns zero if the object was not previously marked; non-zero if
    the object was already marked, or if, for any other reason,
    pointers in this data structure should not be traversed.  */
-int ggc_set_mark PROTO ((void *));
+int ggc_set_mark PARAMS ((void *));
 
 /* Callbacks to the languages.  */
 
 /* This is the language's opportunity to mark nodes held through
    the lang_specific hooks in the tree.  */
-void lang_mark_tree PROTO ((union tree_node *));
+void lang_mark_tree PARAMS ((union tree_node *));
 
 /* The FALSE_LABEL_STACK, declared in except.h, has
    language-dependent semantics.  Each front-end should define this
    function appropriately.  */
-void lang_mark_false_label_stack PROTO ((struct label_node *));
+void lang_mark_false_label_stack PARAMS ((struct label_node *));
 
 /* Mark functions for various structs scattered about.  */
 
-void mark_eh_status PROTO ((struct eh_status *));
-void mark_emit_status PROTO ((struct emit_status *));
-void mark_expr_status PROTO ((struct expr_status *));
-void mark_stmt_status PROTO ((struct stmt_status *));
-void mark_varasm_status PROTO ((struct varasm_status *));
-void mark_optab PROTO ((void *));
+void mark_eh_status PARAMS ((struct eh_status *));
+void mark_emit_status PARAMS ((struct emit_status *));
+void mark_expr_status PARAMS ((struct expr_status *));
+void mark_stmt_status PARAMS ((struct stmt_status *));
+void mark_varasm_status PARAMS ((struct varasm_status *));
+void mark_optab PARAMS ((void *));
 
 /* Statistics.  */
 
@@ -198,8 +198,8 @@ typedef struct ggc_statistics
 } ggc_statistics;
 
 /* Return the number of bytes allocated at the indicated address.  */
-size_t ggc_get_size PROTO ((void *));
+size_t ggc_get_size PARAMS ((void *));
 
 /* Used by the various collectors to gather and print statistics that
    do not depend on the collector in use.  */
-void ggc_print_statistics PROTO ((FILE *, ggc_statistics *));
+void ggc_print_statistics PARAMS ((FILE *, ggc_statistics *));

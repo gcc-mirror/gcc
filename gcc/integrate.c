@@ -62,24 +62,24 @@ extern struct obstack *function_maybepermanent_obstack;
    : (8 * (8 + list_length (DECL_ARGUMENTS (DECL)))))
 #endif
 
-static rtvec initialize_for_inline	PROTO((tree));
-static void note_modified_parmregs	PROTO((rtx, rtx, void *));
-static void integrate_parm_decls	PROTO((tree, struct inline_remap *,
+static rtvec initialize_for_inline	PARAMS ((tree));
+static void note_modified_parmregs	PARAMS ((rtx, rtx, void *));
+static void integrate_parm_decls	PARAMS ((tree, struct inline_remap *,
 					       rtvec));
-static tree integrate_decl_tree		PROTO((tree,
+static tree integrate_decl_tree		PARAMS ((tree,
 					       struct inline_remap *));
-static void subst_constants		PROTO((rtx *, rtx,
+static void subst_constants		PARAMS ((rtx *, rtx,
 					       struct inline_remap *, int));
-static void set_block_origin_self	PROTO((tree));
-static void set_decl_origin_self	PROTO((tree));
-static void set_block_abstract_flags	PROTO((tree, int));
-static void process_reg_param		PROTO((struct inline_remap *, rtx,
+static void set_block_origin_self	PARAMS ((tree));
+static void set_decl_origin_self	PARAMS ((tree));
+static void set_block_abstract_flags	PARAMS ((tree, int));
+static void process_reg_param		PARAMS ((struct inline_remap *, rtx,
 					       rtx));
-void set_decl_abstract_flags		PROTO((tree, int));
-static rtx expand_inline_function_eh_labelmap PROTO((rtx));
-static void mark_stores                 PROTO((rtx, rtx, void *));
-static int compare_blocks               PROTO((const PTR, const PTR));
-static int find_block                   PROTO((const PTR, const PTR));
+void set_decl_abstract_flags		PARAMS ((tree, int));
+static rtx expand_inline_function_eh_labelmap PARAMS ((rtx));
+static void mark_stores                 PARAMS ((rtx, rtx, void *));
+static int compare_blocks               PARAMS ((const PTR, const PTR));
+static int find_block                   PARAMS ((const PTR, const PTR));
 
 /* The maximum number of instructions accepted for inlining a
    function.  Increasing values mean more agressive inlining.

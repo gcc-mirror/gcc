@@ -63,24 +63,24 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 
 /* Edge based LCM routines.  */
-static void compute_antinout_edge  PROTO ((sbitmap *, sbitmap *,
+static void compute_antinout_edge  PARAMS ((sbitmap *, sbitmap *,
 					   sbitmap *, sbitmap *));
-static void compute_earliest  PROTO((struct edge_list *, int, sbitmap *,
+static void compute_earliest  PARAMS ((struct edge_list *, int, sbitmap *,
 				     sbitmap *, sbitmap *, sbitmap *,
 				     sbitmap *));
-static void compute_laterin  PROTO((struct edge_list *, sbitmap *,
+static void compute_laterin  PARAMS ((struct edge_list *, sbitmap *,
 				    sbitmap *, sbitmap *, sbitmap *));
-static void compute_insert_delete  PROTO ((struct edge_list *edge_list,
+static void compute_insert_delete  PARAMS ((struct edge_list *edge_list,
 					   sbitmap *, sbitmap *, sbitmap *,
 					   sbitmap *, sbitmap *));
 
 /* Edge based LCM routines on a reverse flowgraph.  */
-static void compute_farthest	PROTO  ((struct edge_list *, int, sbitmap *,
+static void compute_farthest	PARAMS ((struct edge_list *, int, sbitmap *,
 					 sbitmap *, sbitmap*, sbitmap *,
 					 sbitmap *));
-static void compute_nearerout	PROTO((struct edge_list *, sbitmap *,
+static void compute_nearerout	PARAMS ((struct edge_list *, sbitmap *,
 				       sbitmap *, sbitmap *, sbitmap *));
-static void compute_rev_insert_delete  PROTO ((struct edge_list *edge_list,
+static void compute_rev_insert_delete  PARAMS ((struct edge_list *edge_list,
 					       sbitmap *, sbitmap *, sbitmap *,
 					       sbitmap *, sbitmap *));
 

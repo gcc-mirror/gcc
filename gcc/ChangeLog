@@ -1,5 +1,24 @@
 2000-01-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* ggc-common.c: PROTO -> PARAMS.
+	* ggc-page.c: Likewise.
+	* ggc-simple.c: Likewise.
+	* ggc.h: Likewise.
+	* global.c: Likewise.
+	* graph.c: Likewise.
+	* gthr-win32.h: Likewise.
+	* haifa-sched.c: Likewise.
+	* halfpic.h: Likewise.
+	* integrate.c: Likewise.
+	* integrate.h: Likewise.
+	* jump.c: Likewise.
+	* lcm.c: Likewise.
+	* local-alloc.c: Likewise.
+	* loop.c: Likewise.
+	* loop.h: Likewise.
+
+2000-01-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* genattr.c: PROTO -> PARAMS.
 	* genattrtab.c: Likewise.
 	* gencheck.c: Likewise.

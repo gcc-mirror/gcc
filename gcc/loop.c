@@ -234,70 +234,70 @@ FILE *loop_dump_stream;
 
 /* Forward declarations.  */
 
-static void verify_dominator PROTO((struct loop *));
-static void find_and_verify_loops PROTO((rtx, struct loops *));
-static void mark_loop_jump PROTO((rtx, struct loop *));
-static void prescan_loop PROTO((struct loop *));
-static int reg_in_basic_block_p PROTO((rtx, rtx));
-static int consec_sets_invariant_p PROTO((rtx, int, rtx));
-static int labels_in_range_p PROTO((rtx, int));
-static void count_one_set PROTO((rtx, rtx, varray_type, rtx *));
+static void verify_dominator PARAMS ((struct loop *));
+static void find_and_verify_loops PARAMS ((rtx, struct loops *));
+static void mark_loop_jump PARAMS ((rtx, struct loop *));
+static void prescan_loop PARAMS ((struct loop *));
+static int reg_in_basic_block_p PARAMS ((rtx, rtx));
+static int consec_sets_invariant_p PARAMS ((rtx, int, rtx));
+static int labels_in_range_p PARAMS ((rtx, int));
+static void count_one_set PARAMS ((rtx, rtx, varray_type, rtx *));
 
-static void count_loop_regs_set PROTO((rtx, rtx, varray_type, varray_type,
+static void count_loop_regs_set PARAMS ((rtx, rtx, varray_type, varray_type,
 				       int *, int)); 
-static void note_addr_stored PROTO((rtx, rtx, void *));
-static void note_set_pseudo_multiple_uses PROTO((rtx, rtx, void *));
-static int loop_reg_used_before_p PROTO((const struct loop *, rtx, rtx));
-static void scan_loop PROTO((struct loop*, int, int));
+static void note_addr_stored PARAMS ((rtx, rtx, void *));
+static void note_set_pseudo_multiple_uses PARAMS ((rtx, rtx, void *));
+static int loop_reg_used_before_p PARAMS ((const struct loop *, rtx, rtx));
+static void scan_loop PARAMS ((struct loop*, int, int));
 #if 0
-static void replace_call_address PROTO((rtx, rtx, rtx));
+static void replace_call_address PARAMS ((rtx, rtx, rtx));
 #endif
-static rtx skip_consec_insns PROTO((rtx, int));
-static int libcall_benefit PROTO((rtx));
-static void ignore_some_movables PROTO((struct movable *));
-static void force_movables PROTO((struct movable *));
-static void combine_movables PROTO((struct movable *, int));
-static int regs_match_p PROTO((rtx, rtx, struct movable *));
-static int rtx_equal_for_loop_p PROTO((rtx, rtx, struct movable *));
-static void add_label_notes PROTO((rtx, rtx));
-static void move_movables PROTO((struct movable *, int, int, rtx, rtx, int));
-static int count_nonfixed_reads PROTO((rtx));
-static void strength_reduce PROTO((struct loop *, int, int, int));
-static void find_single_use_in_loop PROTO((rtx, rtx, varray_type));
-static int valid_initial_value_p PROTO((rtx, rtx, int, rtx));
-static void find_mem_givs PROTO((rtx, rtx, int, int, rtx, rtx));
-static void record_biv PROTO((struct induction *, rtx, rtx, rtx, rtx, rtx *, int, int, int));
-static void check_final_value PROTO((struct induction *, rtx, rtx, 
+static rtx skip_consec_insns PARAMS ((rtx, int));
+static int libcall_benefit PARAMS ((rtx));
+static void ignore_some_movables PARAMS ((struct movable *));
+static void force_movables PARAMS ((struct movable *));
+static void combine_movables PARAMS ((struct movable *, int));
+static int regs_match_p PARAMS ((rtx, rtx, struct movable *));
+static int rtx_equal_for_loop_p PARAMS ((rtx, rtx, struct movable *));
+static void add_label_notes PARAMS ((rtx, rtx));
+static void move_movables PARAMS ((struct movable *, int, int, rtx, rtx, int));
+static int count_nonfixed_reads PARAMS ((rtx));
+static void strength_reduce PARAMS ((struct loop *, int, int, int));
+static void find_single_use_in_loop PARAMS ((rtx, rtx, varray_type));
+static int valid_initial_value_p PARAMS ((rtx, rtx, int, rtx));
+static void find_mem_givs PARAMS ((rtx, rtx, int, int, rtx, rtx));
+static void record_biv PARAMS ((struct induction *, rtx, rtx, rtx, rtx, rtx *, int, int, int));
+static void check_final_value PARAMS ((struct induction *, rtx, rtx, 
 				     unsigned HOST_WIDE_INT));
-static void record_giv PROTO((struct induction *, rtx, rtx, rtx, rtx, rtx, int, enum g_types, int, int, rtx *, rtx, rtx));
-static void update_giv_derive PROTO((rtx));
-static int basic_induction_var PROTO((rtx, enum machine_mode, rtx, rtx, int, rtx *, rtx *, rtx **, int *));
-static rtx simplify_giv_expr PROTO((rtx, int *));
-static int general_induction_var PROTO((rtx, rtx *, rtx *, rtx *, int, int *));
-static int consec_sets_giv PROTO((int, rtx, rtx, rtx, rtx *, rtx *, rtx *));
-static int check_dbra_loop PROTO((struct loop *, int));
-static rtx express_from_1 PROTO((rtx, rtx, rtx));
-static rtx combine_givs_p PROTO((struct induction *, struct induction *));
-static void combine_givs PROTO((struct iv_class *));
+static void record_giv PARAMS ((struct induction *, rtx, rtx, rtx, rtx, rtx, int, enum g_types, int, int, rtx *, rtx, rtx));
+static void update_giv_derive PARAMS ((rtx));
+static int basic_induction_var PARAMS ((rtx, enum machine_mode, rtx, rtx, int, rtx *, rtx *, rtx **, int *));
+static rtx simplify_giv_expr PARAMS ((rtx, int *));
+static int general_induction_var PARAMS ((rtx, rtx *, rtx *, rtx *, int, int *));
+static int consec_sets_giv PARAMS ((int, rtx, rtx, rtx, rtx *, rtx *, rtx *));
+static int check_dbra_loop PARAMS ((struct loop *, int));
+static rtx express_from_1 PARAMS ((rtx, rtx, rtx));
+static rtx combine_givs_p PARAMS ((struct induction *, struct induction *));
+static void combine_givs PARAMS ((struct iv_class *));
 struct recombine_givs_stats;
-static int find_life_end PROTO((rtx, struct recombine_givs_stats *, rtx, rtx));
-static void recombine_givs PROTO((struct iv_class *, rtx, rtx, int));
-static int product_cheap_p PROTO((rtx, rtx));
-static int maybe_eliminate_biv PROTO((struct iv_class *, rtx, rtx, int, int, int));
-static int maybe_eliminate_biv_1 PROTO((rtx, rtx, struct iv_class *, int, rtx));
-static int last_use_this_basic_block PROTO((rtx, rtx));
-static void record_initial PROTO((rtx, rtx, void *));
-static void update_reg_last_use PROTO((rtx, rtx));
-static rtx next_insn_in_loop PROTO((const struct loop *, rtx));
-static void load_mems_and_recount_loop_regs_set PROTO((const struct loop*,
+static int find_life_end PARAMS ((rtx, struct recombine_givs_stats *, rtx, rtx));
+static void recombine_givs PARAMS ((struct iv_class *, rtx, rtx, int));
+static int product_cheap_p PARAMS ((rtx, rtx));
+static int maybe_eliminate_biv PARAMS ((struct iv_class *, rtx, rtx, int, int, int));
+static int maybe_eliminate_biv_1 PARAMS ((rtx, rtx, struct iv_class *, int, rtx));
+static int last_use_this_basic_block PARAMS ((rtx, rtx));
+static void record_initial PARAMS ((rtx, rtx, void *));
+static void update_reg_last_use PARAMS ((rtx, rtx));
+static rtx next_insn_in_loop PARAMS ((const struct loop *, rtx));
+static void load_mems_and_recount_loop_regs_set PARAMS ((const struct loop*,
 						       int *));
-static void load_mems PROTO((const struct loop *));
-static int insert_loop_mem PROTO((rtx *, void *));
-static int replace_loop_mem PROTO((rtx *, void *));
-static int replace_loop_reg PROTO((rtx *, void *));
-static void note_reg_stored PROTO((rtx, rtx, void *));
-static void try_copy_prop PROTO((const struct loop *, rtx, int));
-static int replace_label PROTO((rtx *, void *));
+static void load_mems PARAMS ((const struct loop *));
+static int insert_loop_mem PARAMS ((rtx *, void *));
+static int replace_loop_mem PARAMS ((rtx *, void *));
+static int replace_loop_reg PARAMS ((rtx *, void *));
+static void note_reg_stored PARAMS ((rtx, rtx, void *));
+static void try_copy_prop PARAMS ((const struct loop *, rtx, int));
+static int replace_label PARAMS ((rtx *, void *));
 
 typedef struct rtx_and_int {
   rtx r;
@@ -317,19 +317,19 @@ typedef struct rtx_pair {
 
 #ifdef HAVE_decrement_and_branch_on_count
 /* Test whether BCT applicable and safe.  */
-static void insert_bct PROTO((struct loop *));
+static void insert_bct PARAMS ((struct loop *));
 
 /* Auxiliary function that inserts the BCT pattern into the loop.  */
-static void instrument_loop_bct PROTO((rtx, rtx, rtx));
+static void instrument_loop_bct PARAMS ((rtx, rtx, rtx));
 #endif /* HAVE_decrement_and_branch_on_count */
 
 /* Indirect_jump_in_function is computed once per function.  */
 int indirect_jump_in_function = 0;
-static int indirect_jump_in_function_p PROTO((rtx));
+static int indirect_jump_in_function_p PARAMS ((rtx));
 
-static int compute_luids PROTO((rtx, rtx, int));
+static int compute_luids PARAMS ((rtx, rtx, int));
 
-static int biv_elimination_giv_has_0_offset PROTO((struct induction *,
+static int biv_elimination_giv_has_0_offset PARAMS ((struct induction *,
 						   struct induction *, rtx));
 
 /* Relative gain of eliminating various kinds of operations.  */
