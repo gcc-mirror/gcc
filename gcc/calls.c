@@ -3898,7 +3898,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	    {
 	      save_area = assign_stack_temp (BLKmode, num_to_save, 0);
 	      set_mem_align (save_area, PARM_BOUNDARY);
-	      emit_block_move (validize_mem (save_area), stack_area);
+	      emit_block_move (validize_mem (save_area), stack_area,
+			       GEN_INT (num_to_save));
 	    }
 	  else
 	    {
