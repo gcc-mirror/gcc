@@ -1236,6 +1236,8 @@ binary_op_error (code)
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.
+   This function is also responsible for converting the two operands
+   to the proper common type for comparison.
 
    The arguments of this function are all pointers to local variables
    of build_binary_op: OP0_PTR is &OP0, OP1_PTR is &OP1,
@@ -1258,13 +1260,6 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
   int real1, real2;
   tree primop0, primop1;
   enum tree_code code = *rescode_ptr;
-
-  /* Don't do anything if both args are constant.
-     This avoids confusing warnings.  The caller will fold properly.  */
-  if ((TREE_CODE (op0) == INTEGER_CST || TREE_CODE (op0) == REAL_CST)
-      &&
-      (TREE_CODE (op1) == INTEGER_CST || TREE_CODE (op1) == REAL_CST))
-    return 0;
 
   /* Throw away any conversions to wider types
      already present in the operands.  */
@@ -1452,7 +1447,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	  type = unsigned_type (type);
 	}
 
-      if (!max_gt && !unsignedp0)
+      if (!max_gt && !unsignedp0 && TREE_CODE (primop1) != INTEGER_CST)
 	{
 	  /* This is the case of (char)x >?< 0x80, which people used to use
 	     expecting old C compilers to change the 0x80 into -0x80.  */
@@ -1462,7 +1457,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	    warning ("comparison is always 1 due to limited range of data type");
 	}
 
-      if (!min_lt && unsignedp0)
+      if (!min_lt && unsignedp0 && TREE_CODE (primop1) != INTEGER_CST)
 	{
 	  /* This is the case of (unsigned char)x >?< -1 or < 0.  */
 	  if (val == integer_zero_node)
