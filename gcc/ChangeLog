@@ -1,3 +1,8 @@
+2003-11-14  Jason Merrill  <jason@redhat.com>
+
+	* function.c (assign_parms): Use TREE_TYPE to determine the real
+	type of the argument object.
+
 2003-11-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/lib1funcs.asm (___udivsi3): Peel off the first
