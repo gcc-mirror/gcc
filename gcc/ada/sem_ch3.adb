@@ -3061,14 +3061,21 @@ package body Sem_Ch3 is
       --  declared in a closed scope (e.g., a subprogram), then we
       --  need to explicitly introduce the new type's concatenation
       --  operator since Derive_Subprograms will not inherit the
-      --  parent's operator.
+      --  parent's operator. If the parent type is unconstrained, the
+      --  operator is of the unconstrained base type.
 
       if Number_Dimensions (Parent_Type) = 1
         and then not Is_Limited_Type (Parent_Type)
         and then not Is_Derived_Type (Parent_Type)
         and then not Is_Package (Scope (Base_Type (Parent_Type)))
       then
-         New_Concatenation_Op (Derived_Type);
+         if not Is_Constrained (Parent_Type)
+           and then Is_Constrained (Derived_Type)
+         then
+            New_Concatenation_Op (Implicit_Base);
+         else
+            New_Concatenation_Op (Derived_Type);
+         end if;
       end if;
    end Build_Derived_Array_Type;
 

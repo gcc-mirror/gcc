@@ -544,24 +544,8 @@ package body Exp_Ch6 is
 
             --  If the formal is an (in-)out parameter, capture the name
             --  of the variable in order to build the post-call assignment.
-            --  The variable itself may have been expanded, for example if
-            --  it is a complex bit-packed array, so we need to recover the
-            --  original to ensure that we have the proper target for the
-            --  assignment. Examine the slocs of the two nodes to determine
-            --  whether the rewriting is an expansion, or a substitution done
-            --  on an inlined body, in which case it must be respected.
 
-            declare
-               Orig : constant Node_Id := Original_Node (Expression (Actual));
-            begin
-               if Orig /= Expression (Actual)
-                 and then Sloc (Orig) = Sloc (Expression (Actual))
-               then
-                  Var := Make_Var (Orig);
-               else
-                  Var := Make_Var (Expression (Actual));
-               end if;
-            end;
+            Var := Make_Var (Expression (Actual));
 
             Crep  := not Same_Representation
                        (Etype (Formal), Etype (Expression (Actual)));

@@ -56,6 +56,7 @@ package System.Rident is
       No_Asynchronous_Control,                 -- (RM D.7(10))
       No_Calendar,                             -- GNAT
       No_Delay,                                -- (RM H.4(21))
+      No_Direct_Boolean_Operators,             -- GNAT
       No_Dispatch,                             -- (RM H.4(19))
       No_Dynamic_Interrupts,                   -- GNAT
       No_Dynamic_Priorities,                   -- (RM D.9(9))

@@ -34,6 +34,7 @@
 with Ada.Streams;                use Ada.Streams;
 with Ada.Exceptions;             use Ada.Exceptions;
 with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 with Interfaces.C.Strings;
 
@@ -776,6 +777,17 @@ package body GNAT.Sockets is
          Thin.Finalize;
       end if;
    end Finalize;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Stream : in out Stream_Access) is
+      procedure Do_Free is new Ada.Unchecked_Deallocation
+        (Ada.Streams.Root_Stream_Type'Class, Stream_Access);
+   begin
+      Do_Free (Stream);
+   end Free;
 
    ---------
    -- Get --

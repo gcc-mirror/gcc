@@ -88,6 +88,11 @@ package body Sem_Res is
    --  Give list of candidate interpretations when a character literal cannot
    --  be resolved.
 
+   procedure Check_Direct_Boolean_Op (N : Node_Id);
+   --  N is a binary operator node which may possibly operate on Boolean
+   --  operands. If the operator does have Boolean operands, then a call is
+   --  made to check the restriction No_Direct_Boolean_Operators.
+
    procedure Check_Discriminant_Use (N : Node_Id);
    --  Enforce the restrictions on the use of discriminants when constraining
    --  a component of a discriminated type (record or concurrent type).
@@ -341,6 +346,17 @@ package body Sem_Res is
            Scope_Suppress;
       end if;
    end Analyze_And_Resolve;
+
+   -----------------------------
+   -- Check_Direct_Boolean_Op --
+   -----------------------------
+
+   procedure Check_Direct_Boolean_Op (N : Node_Id) is
+   begin
+      if Root_Type (Etype (Left_Opnd (N))) = Standard_Boolean then
+         Check_Restriction (No_Direct_Boolean_Operators, N);
+      end if;
+   end Check_Direct_Boolean_Op;
 
    ----------------------------
    -- Check_Discriminant_Use --
@@ -3852,6 +3868,8 @@ package body Sem_Res is
       T : Entity_Id;
 
    begin
+      Check_Direct_Boolean_Op (N);
+
       --  If this is an intrinsic operation which is not predefined, use
       --  the types of its declared arguments to resolve the possibly
       --  overloaded operands. Otherwise the operands are unambiguous and
@@ -4591,6 +4609,8 @@ package body Sem_Res is
    --  Start of processing for Resolve_Equality_Op
 
    begin
+      Check_Direct_Boolean_Op (N);
+
       Set_Etype (N, Base_Type (Typ));
       Generate_Reference (T, N, ' ');
 
@@ -4972,6 +4992,8 @@ package body Sem_Res is
       B_Typ : Entity_Id;
 
    begin
+      Check_Direct_Boolean_Op (N);
+
       --  Predefined operations on scalar types yield the base type. On
       --  the other hand, logical operations on arrays yield the type of
       --  the arguments (and the context).

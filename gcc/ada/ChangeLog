@@ -1,3 +1,62 @@
+2003-11-26  Thomas Quinot  <quinot@act-europe.fr>
+
+	* g-socket.ads, g-socket.adb: 
+	Clarify documentation of function Stream. Introduce a Free procedure
+	to release the returned Stream once it becomes unused.
+
+	* 5asystem.ads: For Alpha Tru64, enable ZCX by default.
+
+2003-11-26  Arnaud Charlet  <charlet@act-europe.fr>
+
+	(Cond_Timed_Wait): Introduce new constant Time_Out_Max,
+	since NT 4 cannot handle timeout values that are too large,
+	e.g. DWORD'Last - 1.
+
+2003-11-26  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch4.adb: 
+	(Expand_N_Slice): Recognize all cases of slices that appear as actuals
+	in procedure calls and whose expansion must be deferred.
+
+	* exp_ch6.adb (Add_Call_By_Copy_Node): Remove previous fix. Proper fix
+	is in exp_ch4.
+
+	* sem_ch3.adb: 
+	(Build_Derived_Array_Type): Create operator for unconstrained type
+	if ancestor is unconstrained.
+
+2003-11-26  Vincent Celier  <celier@gnat.com>
+
+	* make.adb (Project_Object_Directory): New global variable
+	(Change_To_Object_Directory): New procedure
+	(Collect_Arguments_And_Compile): Call Change_To_Object_Directory instead
+	of Change_Dir directly. Do not change working directory to object
+	directory of main project after each compilation.
+	(Gnatmake): Use Change_To_Object_Directory instead of Change_Dir
+	directly.
+	Change to object directory of main project before binding step.
+	(Initialize): Initialize Project_Object_Directory to No_Project
+
+	* mlib-prj.adb: 
+	(Build_Library): Take into account Builder'Default_Switches ("Ada") when
+	binding a Stand-Alone Library.
+
+	* output.adb: Update Copyright notice
+	(Write_Char): Output buffer when full
+
+2003-11-26  Robert Dewar  <dewar@gnat.com>
+
+	* sem_ch13.adb: (Check_Size): Reset size if size is too small
+
+	* sem_ch13.ads: 
+	(Check_Size): Fix documentation to include bit-packed array case
+
+	* sem_res.adb: Implement restriction No_Direct_Boolean_Operators
+
+	* s-rident.ads: Put No_Direct_Boolean_Operators in proper order
+
+	* s-rident.ads: Add new restriction No_Direct_Boolean_Operators
+
 2003-11-24  Arnaud Charlet <charlet@act-europe.fr>
 
 	PR ada/13142

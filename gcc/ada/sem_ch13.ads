@@ -79,14 +79,17 @@ package Sem_Ch13 is
       Biased : out Boolean);
    --  Called when size Siz is specified for subtype T. This subprogram checks
    --  that the size is appropriate, posting errors on node N as required.
-   --  For non-elementary types, a check is only made if an explicit size
-   --  has been given for the type (and the specified size must match). The
-   --  parameter Biased is set False if the size specified did not require
+   --  This check is effective for elementary types and bit-packed arrays.
+   --  For other non-elementary types, a check is only made if an explicit
+   --  size has been given for the type (and the specified size must match).
+   --  The parameter Biased is set False if the size specified did not require
    --  the use of biased representation, and True if biased representation
    --  was required to meet the size requirement. Note that Biased is only
    --  set if the type is not currently biased, but biasing it is the only
    --  way to meet the requirement. If the type is currently biased, then
    --  this biased size is used in the initial check, and Biased is False.
+   --  If the size is too small, and an error message is given, then both
+   --  Esize and RM_Size are reset to the allowed minimum value in T.
 
    procedure Record_Rep_Item (T : Entity_Id; N : Node_Id);
    --  N is the node for either a representation pragma or an attribute
