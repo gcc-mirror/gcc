@@ -1,3 +1,25 @@
+1998-11-18  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (cplus_expand_expr_stmt): Always complain about unresolved
+	type.
+
+	* tree.c (lvalue_p_1): An INDIRECT_REF to a function is an lvalue.
+	* call.c (build_object_call): Also support references to functions.
+	* typeck.c (convert_for_initialization): Don't decay a function
+	if the target is a reference to function.
+
+	* search.c (add_conversions): Get all the overloads from a class.
+
+	* decl.c (grok_ctor_properties): Complain about any constructor
+	that will take a single arg of the class type by value.
+
+	* typeck2.c (build_functional_cast): Can't create objects of 
+	abstract classes this way.
+	* cvt.c (ocp_convert): Likewise.
+
+	* decl.c (grokfndecl): Member functions of local classes are not
+	public.
+
 1998-11-18  Mark Mitchell  <mark@markmitchell.com>
 
 	* Make-lang.in (cc1plus): Add dependency on hash.o.

@@ -8139,8 +8139,10 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       publicp = 1;
     }
 
-  /* Members of anonymous types have no linkage; make them internal.  */
-  if (ctype && ANON_AGGRNAME_P (TYPE_IDENTIFIER (ctype)))
+  /* Members of anonymous types and local classes have no linkage; make
+     them internal.  */
+  if (ctype && (ANON_AGGRNAME_P (TYPE_IDENTIFIER (ctype))
+		|| hack_decl_function_context (TYPE_MAIN_DECL (ctype))))
     publicp = 0;
 
   if (publicp)
@@ -11377,8 +11379,9 @@ grok_ctor_properties (ctype, decl)
 	TYPE_HAS_CONST_INIT_REF (ctype) = 1;
     }
   else if (TYPE_MAIN_VARIANT (parmtype) == ctype
-	   && TREE_CHAIN (parmtypes) != NULL_TREE
-	   && TREE_CHAIN (parmtypes) == void_list_node)
+	   && (TREE_CHAIN (parmtypes) == NULL_TREE
+	       || TREE_CHAIN (parmtypes) == void_list_node
+	       || TREE_PURPOSE (TREE_CHAIN (parmtypes))))
     {
       cp_error ("invalid constructor; you probably meant `%T (const %T&)'",
 		ctype, ctype);
@@ -13967,10 +13970,10 @@ cplus_expand_expr_stmt (exp)
 
   if (TREE_TYPE (exp) == unknown_type_node)
     {
-      if (TREE_CODE (exp) == ADDR_EXPR || TREE_CODE (exp) == TREE_LIST)
-	error ("address of overloaded function with no contextual type information");
-      else if (TREE_CODE (exp) == COMPONENT_REF)
+      if (TREE_CODE (exp) == COMPONENT_REF)
 	error ("invalid reference to a member function name, did you forget the ()?");
+      else
+	error ("address of overloaded function with no contextual type information");
     }
   else
     {

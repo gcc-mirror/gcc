@@ -3297,6 +3297,7 @@ add_conversions (binfo)
 {
   int i;
   tree method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
+  tree name = NULL_TREE;
 
   for (i = 2; i < TREE_VEC_LENGTH (method_vec); ++i)
     {
@@ -3305,13 +3306,25 @@ add_conversions (binfo)
       if (!tmp || ! DECL_CONV_FN_P (OVL_CURRENT (tmp)))
 	break;
 
+      /* We don't want to mark 'name' until we've seen all the overloads
+	 in this class; we could be overloading on the quals of 'this'.  */
+      if (name && name != DECL_NAME (tmp))
+	{
+	  IDENTIFIER_MARKED (name) = 1;
+	  name = NULL_TREE;
+	}
+
       /* Make sure we don't already have this conversion.  */
       if (! IDENTIFIER_MARKED (DECL_NAME (tmp)))
 	{
 	  conversions = scratch_tree_cons (binfo, tmp, conversions);
-	  IDENTIFIER_MARKED (DECL_NAME (tmp)) = 1;
+	  name = DECL_NAME (tmp);
 	}
     }
+
+  if (name)
+     IDENTIFIER_MARKED (name) = 1;
+
   return NULL_TREE;
 }
 
