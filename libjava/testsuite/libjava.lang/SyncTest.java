@@ -3,8 +3,11 @@ public class SyncTest implements Runnable {
   static int counter;
 
   public void run() {
+    // We cache the .class value; otherwise this code is
+    // slow enough that it will time out in some situations.
+    Object lock = SyncTest.class;
     for (int n = 0; n < 1000000; n++)
-      synchronized (SyncTest.class) {
+      synchronized (lock) {
         counter++;
       }
   }
