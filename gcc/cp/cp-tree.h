@@ -1223,6 +1223,11 @@ extern int flag_enforce_eh_specs;
 
 extern int flag_access_control;
 
+/* Nonzero if we want to check the return value of new and avoid calling
+   constructors if it is a null pointer.  */
+
+extern int flag_check_new;
+
 /* If this variable is defined to a non-NULL value, it will be called
    after the file has been completely parsed.  The argument will be
    the GLOBAL_NAMESPACE.  */

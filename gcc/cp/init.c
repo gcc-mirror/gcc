@@ -58,7 +58,7 @@ static tree build_vtbl_address PARAMS ((tree));
 /* Set up local variable for this file.  MUST BE CALLED AFTER
    INIT_DECL_PROCESSING.  */
 
-static tree BI_header_type, BI_header_size;
+static tree BI_header_type;
 
 void init_init_processing ()
 {
@@ -71,16 +71,10 @@ void init_init_processing ()
   BI_header_type = make_aggr_type (RECORD_TYPE);
   fields[0] = build_decl (FIELD_DECL, nelts_identifier, sizetype);
 
-  /* Use the biggest alignment supported by the target to prevent operator
-     new from returning misaligned pointers. */
-  TYPE_ALIGN (BI_header_type) = BIGGEST_ALIGNMENT;
-  TYPE_USER_ALIGN (BI_header_type) = 0;
   finish_builtin_type (BI_header_type, "__new_cookie", fields,
-		       0, BI_header_type);
-  BI_header_size = size_in_bytes (BI_header_type);
+		       0, double_type_node);
 
   ggc_add_tree_root (&BI_header_type, 1);
-  ggc_add_tree_root (&BI_header_size, 1);
 }
 
 /* We are about to generate some complex initialization code.
@@ -1975,8 +1969,6 @@ build_builtin_delete_call (addr)
 
    PLACEMENT is the `placement' list for user-defined operator new ().  */
 
-extern int flag_check_new;
-
 tree
 build_new (placement, decl, init, use_global_new)
      tree placement;
@@ -2205,7 +2197,12 @@ get_cookie_size (type)
 	cookie_size = type_align;
     }
   else
-    cookie_size = BI_header_size;
+    {
+      if (TYPE_ALIGN (type) > TYPE_ALIGN (BI_header_type))
+	return size_int (TYPE_ALIGN_UNIT (type));
+      else
+	return size_in_bytes (BI_header_type);
+    }
 
   return cookie_size;
 }
@@ -2385,8 +2382,8 @@ build_new_1 (exp)
   else
     alloc_expr = NULL_TREE;
 
-  /* if rval is NULL_TREE I don't have to allocate it, but are we totally
-     sure we have some extra bytes in that case for the BI_header_size
+  /* if rval is NULL_TREE I don't have to allocate it, but are we
+     totally sure we have some extra bytes in that case for the
      cookies? And how does that interact with the code below? (mrs) */
   /* Finish up some magic for new'ed arrays */
   if (use_cookie && rval != NULL_TREE)
@@ -2633,7 +2630,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
       goto no_destructor;
     }
 
-  /* The below is short by BI_header_size */
+  /* The below is short by the cookie size.  */
   virtual_size = size_binop (MULT_EXPR, size_exp,
 			     convert (sizetype, maxindex));
 
@@ -2676,7 +2673,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
     {
       tree base_tbd;
 
-      /* The below is short by BI_header_size */
+      /* The below is short by the cookie size.  */
       virtual_size = size_binop (MULT_EXPR, size_exp,
 				 convert (sizetype, maxindex));
 
@@ -3378,6 +3375,7 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
       /* Step back one from start of vector, and read dimension.  */
       tree cookie_addr;
 
+      type = strip_array_types (TREE_TYPE (type));
       if (flag_new_abi)
 	{
 	  cookie_addr = build (MINUS_EXPR,
@@ -3391,13 +3389,11 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
 	  tree cookie;
 
 	  cookie_addr = build (MINUS_EXPR, build_pointer_type (BI_header_type),
-			       base, BI_header_size);
+			       base, get_cookie_size (type));
 	  cookie = build_indirect_ref (cookie_addr, NULL_PTR);
 	  maxindex = build_component_ref (cookie, nelts_identifier, 
 					  NULL_TREE, 0);
 	}
-
-      type = strip_array_types (TREE_TYPE (type));
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {

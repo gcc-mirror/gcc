@@ -61,6 +61,7 @@ static tree lookup_anon_field PARAMS ((tree, tree));
 static tree pointer_diff PARAMS ((tree, tree, tree));
 static tree build_component_addr PARAMS ((tree, tree));
 static tree qualify_type PARAMS ((tree, tree));
+static tree qualify_type_recursive PARAMS ((tree, tree));
 static tree get_delta_difference PARAMS ((tree, tree, int));
 static int comp_cv_target_types PARAMS ((tree, tree, int));
 static void casts_away_constness_r PARAMS ((tree *, tree *));
@@ -208,6 +209,44 @@ qualify_type (type, like)
   /* @@ Must do member pointers here.  */
   return cp_build_qualified_type (type, (CP_TYPE_QUALS (type) 
 					 | CP_TYPE_QUALS (like)));
+}
+
+/* Return a pointer or pointer to member type similar to T1, with a
+   cv-qualification signature that is the union of the cv-qualification
+   signatures of T1 and T2: [expr.rel], [expr.eq].  */
+
+static tree
+qualify_type_recursive (t1, t2)
+     tree t1, t2;
+{
+  if ((TYPE_PTR_P (t1) && TYPE_PTR_P (t2))
+      || (TYPE_PTRMEM_P (t1) && TYPE_PTRMEM_P (t2)))
+    {
+      tree tt1 = TREE_TYPE (t1);
+      tree tt2 = TREE_TYPE (t2);
+      tree b1;
+      int type_quals;
+      tree target;
+      tree attributes = merge_machine_type_attributes (t1, t2);
+
+      if (TREE_CODE (tt1) == OFFSET_TYPE)
+	{
+	  b1 = TYPE_OFFSET_BASETYPE (tt1);
+	  tt1 = TREE_TYPE (tt1);
+	  tt2 = TREE_TYPE (tt2);
+	}
+      else
+	b1 = NULL_TREE;
+
+      type_quals = (CP_TYPE_QUALS (tt1) | CP_TYPE_QUALS (tt2));
+      target = qualify_type_recursive (tt1, tt2);
+      target = cp_build_qualified_type (target, type_quals);
+      if (b1)
+	target = build_offset_type (b1, target);
+      t1 = build_pointer_type (target);
+      t1 = build_type_attribute_variant (t1, attributes);
+    }
+  return t1;
 }
 
 /* Return the common type of two parameter lists.
@@ -441,49 +480,35 @@ composite_pointer_type (t1, t2, arg1, arg2, location)
   if (TYPE_PTRMEMFUNC_P (t2))
     t2 = TYPE_PTRMEMFUNC_FN_TYPE (t2);
   
-  if (comp_target_types (t1, t2, 1))
-    result_type = common_type (t1, t2);
-  else if (VOID_TYPE_P (TREE_TYPE (t1)))
+  if (VOID_TYPE_P (TREE_TYPE (t1)))
     {
-      if (pedantic && TREE_CODE (t2) == FUNCTION_TYPE)
+      if (pedantic && TYPE_PTRFN_P (t2))
 	pedwarn ("ISO C++ forbids %s between pointer of type `void *' and pointer-to-function", location);
       result_type = qualify_type (t1, t2);
     }
   else if (VOID_TYPE_P (TREE_TYPE (t2)))
     {
-      if (pedantic && TREE_CODE (t1) == FUNCTION_TYPE)
+      if (pedantic && TYPE_PTRFN_P (t1))
 	pedwarn ("ISO C++ forbids %s between pointer of type `void *' and pointer-to-function", location);
       result_type = qualify_type (t2, t1);
     }
-  /* C++ */
-  else if (same_or_base_type_p (t2, t1))
-    result_type = t2;
-  else if (IS_AGGR_TYPE (TREE_TYPE (t1))
-	   && IS_AGGR_TYPE (TREE_TYPE (t2))
-	   && (result_type = common_base_type (TREE_TYPE (t1),
-					       TREE_TYPE (t2))))
-    {
-      if (result_type == error_mark_node)
-	{
-	  cp_error ("common base type of types `%T' and `%T' is ambiguous",
-		    TREE_TYPE (t1), TREE_TYPE (t2));
-	  result_type = ptr_type_node;
-	}
-      else
-	{
-	  if (pedantic
-	      && result_type != TREE_TYPE (t1)
-	      && result_type != TREE_TYPE (t2))
-	    cp_pedwarn ("types `%T' and `%T' converted to `%T *' in %s",
-			t1, t2, result_type, location);
-	  
-	  result_type = build_pointer_type (result_type);
-	}
-    }
   else
     {
-      cp_pedwarn ("pointer type mismatch in %s", location);
-      result_type = ptr_type_node;
+      tree full1 = qualify_type_recursive (t1, t2);
+      tree full2 = qualify_type_recursive (t2, t1);
+
+      int val = comp_target_types (full1, full2, 1);
+
+      if (val > 0)
+	result_type = full1;
+      else if (val < 0)
+	result_type = full2;
+      else
+	{
+	  cp_pedwarn ("%s between distinct pointer types `%T' and `%T' lacks a cast",
+		      location, t1, t2);
+	  result_type = ptr_type_node;
+	}
     }
 
   return result_type;
@@ -3578,33 +3603,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      || code1 == COMPLEX_TYPE))
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
-	{
-	  register tree tt0 = TYPE_MAIN_VARIANT (TREE_TYPE (type0));
-	  register tree tt1 = TYPE_MAIN_VARIANT (TREE_TYPE (type1));
-
-	  if (comp_target_types (type0, type1, 1))
-	    result_type = common_type (type0, type1);
-	  else if (VOID_TYPE_P (tt0))
-	    {
-	      if (pedantic && TREE_CODE (tt1) == FUNCTION_TYPE
-		  && tree_int_cst_lt (TYPE_SIZE (type0), TYPE_SIZE (type1)))
-		pedwarn ("ISO C++ forbids comparison of `void *' with function pointer");
-	      else if (TREE_CODE (tt1) == OFFSET_TYPE)
-		pedwarn ("ISO C++ forbids conversion of a pointer to member to `void *'");
-	    }
-	  else if (VOID_TYPE_P (tt1))
-	    {
-	      if (pedantic && TREE_CODE (tt0) == FUNCTION_TYPE
-		  && tree_int_cst_lt (TYPE_SIZE (type1), TYPE_SIZE (type0)))
-		pedwarn ("ISO C++ forbids comparison of `void *' with function pointer");
-	    }
-	  else
-	    cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
-			type0, type1);
-
-	  if (result_type == NULL_TREE)
-	    result_type = ptr_type_node;
-	}
+	result_type = composite_pointer_type (type0, type1, op0, op1,
+					      "comparison");
       else if (code0 == POINTER_TYPE && null_ptr_cst_p (op1))
 	result_type = type0;
       else if (code1 == POINTER_TYPE && null_ptr_cst_p (op0))
@@ -3723,16 +3723,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	   && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	shorten = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
-	{
-	  if (comp_target_types (type0, type1, 1))
-	    result_type = common_type (type0, type1);
-	  else
-	    {
-	      cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
-			  type0, type1);
-	      result_type = ptr_type_node;
-	    }
-	}
+	result_type = composite_pointer_type (type0, type1, op0, op1,
+					      "comparison");
       break;
 
     case LE_EXPR:
@@ -3744,16 +3736,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	   && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
-	{
-	  if (comp_target_types (type0, type1, 1))
-	    result_type = common_type (type0, type1);
-	  else
-	    {
-	      cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
-			  type0, type1);
-	      result_type = ptr_type_node;
-	    }
-	}
+	result_type = composite_pointer_type (type0, type1, op0, op1,
+					      "comparison");
       else if (code0 == POINTER_TYPE && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
 	result_type = type0;
@@ -6844,8 +6828,9 @@ check_return_expr (retval)
   if ((DECL_OVERLOADED_OPERATOR_P (current_function_decl) == NEW_EXPR
        || DECL_OVERLOADED_OPERATOR_P (current_function_decl) == VEC_NEW_EXPR)
       && !TYPE_NOTHROW_P (TREE_TYPE (current_function_decl))
+      && ! flag_check_new
       && null_ptr_cst_p (retval))
-    cp_warning ("`operator new' should throw an exception, not return NULL");
+    cp_warning ("`operator new' must not return NULL unless it is declared `throw()' (or -fcheck-new is in effect)");
 
   /* Effective C++ rule 15.  See also start_function.  */
   if (warn_ecpp
