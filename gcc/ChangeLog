@@ -1,3 +1,8 @@
+2003-08-03  Neil Booth  <neil@daikokuya.co.uk>
+
+        PR preprocessor/11534
+        * cppexp.c (parse_defined): Warn only if -pedantic.
+
 2003-08-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Pass AR.

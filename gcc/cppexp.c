@@ -502,7 +502,7 @@ parse_defined (pfile)
 
   if (node)
     {
-      if (pfile->context != initial_context)
+      if (pfile->context != initial_context && CPP_PEDANTIC (pfile))
 	cpp_error (pfile, DL_WARNING,
 		   "this use of \"defined\" may not be portable");
 
