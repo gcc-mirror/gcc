@@ -7,7 +7,7 @@ mn10200, mn10300		Jeff Law
 hppa				Jeff Law
 m68k				Jeff Law (?)
 rs6000				Michael Meissner, David Edelsohn
-mips				Jim Wilson, Gavin Koch
+mips				Jim Wilson
 i960, a29k			Jim Wilson
 alpha				Richard Henderson
 sparc				Richard Henderson, David Miller
