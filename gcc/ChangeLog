@@ -1,3 +1,7 @@
+2003-01-29  Andrew Haley  <aph@redhat.com>
+
+	* tree-inline.c (walk_tree): Add CHAR_TYPE.
+
 Wed Jan 29 10:26:12 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (subdi3_carry_rex64): Fix typo.
