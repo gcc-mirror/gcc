@@ -1,3 +1,8 @@
+2002-04-29  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* toplev.c (f_options): Add "profile" switch so that
+	-fno-profile can be used to disable -p.
+
 2002-04-29  Bernd Schmidt  <bernds@redhat.com>
 
 	* c-common.c (type_for_mode): Add support for V2DFmode, V2DImode,

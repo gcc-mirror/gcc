@@ -1065,6 +1065,8 @@ static const lang_independent_options f_options[] =
    N_("Create data files needed by gcov") },
   {"branch-probabilities", &flag_branch_probabilities, 1,
    N_("Use profiling information for branch probabilities") },
+  {"profile", &profile_flag, 1,
+   N_("Enable basic program profiling code") },
   {"reorder-blocks", &flag_reorder_blocks, 1,
    N_("Reorder basic blocks to improve code placement") },
   {"rename-registers", &flag_rename_registers, 1,
