@@ -49,6 +49,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    message within this initializer.  */
 static int missing_braces_mentioned;
 
+static int require_constant_value;
+static int require_constant_elements;
+
 static tree qualify_type (tree, tree);
 static int same_translation_unit_p (tree, tree);
 static int tagged_types_tu_compatible_p (tree, tree, int);
@@ -1773,7 +1776,18 @@ build_function_call (tree function, tree params)
   result = build (CALL_EXPR, TREE_TYPE (fntype),
 		  function, coerced_params, NULL_TREE);
   TREE_SIDE_EFFECTS (result) = 1;
-  result = fold (result);
+
+  if (require_constant_value)
+    {
+      result = fold_initializer (result);
+
+      if (TREE_CONSTANT (result)
+	  && (name == NULL_TREE
+	      || strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10) != 0))
+	pedwarn_init ("initializer element is not constant");
+    }
+  else
+    result = fold (result);
 
   if (VOID_TYPE_P (TREE_TYPE (result)))
     return result;
@@ -2544,7 +2558,8 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 
   if (argtype == 0)
     argtype = TREE_TYPE (arg);
-  return fold (build1 (code, argtype, arg));
+  val = build1 (code, argtype, arg);
+  return require_constant_value ? fold_initializer (val) : fold (val);
 }
 
 /* Return nonzero if REF is an lvalue valid for this language.
@@ -4314,9 +4329,6 @@ static int constructor_depth;
 
 /* 0 if implicitly pushing constructor levels is allowed.  */
 int constructor_no_implicit = 0; /* 0 for C; 1 for some other languages.  */
-
-static int require_constant_value;
-static int require_constant_elements;
 
 /* DECL node for which an initializer is being read.
    0 means we are reading a constructor expression
@@ -7287,8 +7299,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     tree folded;
 
     /* Treat expressions in initializers specially as they can't trap.  */
-    folded = initializer_stack ? fold_initializer (result)
-			       : fold (result);
+    folded = require_constant_value ? fold_initializer (result)
+				    : fold (result);
     if (folded == result)
       TREE_CONSTANT (folded) = TREE_CONSTANT (op0) & TREE_CONSTANT (op1);
     if (final_type != 0)

@@ -1,3 +1,16 @@
+2004-06-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/14649
+	* c-typeck.c (require_constant_value, require_constant_elements):
+	Move declarations to the top of the file.
+	(build_function_call): If we require a constant value, fold with
+	fold_initializer.  If the result is a constant, and the function
+	wasn't called using __builtin_foo, issue a pedantic warning.
+	(build_unary_op): If we require a constant value, fold tree with
+	fold_initializer.
+	(build_binary_op): Use require_constant_value to determine whether
+	to call fold or fold_initializer.
+
 2004-06-08  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/15228
