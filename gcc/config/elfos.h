@@ -372,6 +372,8 @@ dtors_section ()						\
 	sec = 2;						\
       								\
       name   = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+      /* Strip off any encoding in name.  */			\
+      STRIP_NAME_ENCODING (name, name);				\
       prefix = prefixes[sec][DECL_ONE_ONLY(DECL)];		\
       len    = strlen (name) + strlen (prefix);			\
       string = alloca (len + 1);				\
