@@ -64,13 +64,11 @@ static int       eliminate_lr2ip		PARAMS ((rtx *));
 static rtx	 emit_multi_reg_push		PARAMS ((int));
 static rtx	 emit_sfm			PARAMS ((int, int));
 static char *    fp_const_from_val		PARAMS ((REAL_VALUE_TYPE *));
-static int       function_really_clobbers_lr	PARAMS ((rtx));
 static arm_cc    get_arm_condition_code		PARAMS ((rtx));
 static void      init_fpa_table			PARAMS ((void));
 static Hint      int_log2			PARAMS ((Hint));
 static rtx       is_jump_table 			PARAMS ((rtx));
 static char *    output_multi_immediate		PARAMS ((rtx *, char *, char *, int, Hint));
-static int       pattern_really_clobbers_lr	PARAMS ((rtx));
 static void      print_multi_reg		PARAMS ((FILE *, char *, int, int, int));
 static Mmode     select_dominance_cc_mode	PARAMS ((rtx, rtx, Hint));
 static char *    shift_op			PARAMS ((rtx, Hint *));
@@ -171,6 +169,9 @@ int arm_is_strong = 0;
 /* Nonzero if this chip is a an ARM6 or an ARM7.  */
 int arm_is_6_or_7 = 0;
 
+/* Nonzero if generating Thumb instructions.  */
+int thumb_code = 0;
+
 /* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference, we
    must report the mode of the memory reference from PRINT_OPERAND to
    PRINT_OPERAND_ADDRESS.  */
@@ -182,10 +183,6 @@ int current_function_anonymous_args;
 /* The register number to be used for the PIC offset register.  */
 const char * arm_pic_register_string = NULL;
 int arm_pic_register = 9;
-
-/* Set to one if we think that lr is only saved because of subroutine calls,
-   but all of these can be `put after' return insns.  */
-int lr_save_eliminated;
 
 /* Set to 1 when a return insn is output, this means that the epilogue
    is not needed.  */
@@ -569,6 +566,7 @@ arm_override_options ()
   
   arm_ld_sched      = (tune_flags & FL_LDSCHED) != 0;
   arm_is_strong     = (tune_flags & FL_STRONG) != 0;
+  thumb_code	    = (TARGET_ARM == 0);
   arm_is_6_or_7     = (((tune_flags & (FL_MODE26 | FL_MODE32))
 		       && !(tune_flags & FL_ARCH4))) != 0;
   
@@ -6449,151 +6447,6 @@ output_ascii_pseudo_op (stream, p, len)
 }
 
 
-/* Try to determine whether a pattern really clobbers the link register.
-   This information is useful when peepholing, so that lr need not be pushed
-   if we combine a call followed by a return.
-   NOTE: This code does not check for side-effect expressions in a SET_SRC:
-   such a check should not be needed because these only update an existing
-   value within a register; the register must still be set elsewhere within
-   the function.  */
-static int
-pattern_really_clobbers_lr (x)
-     rtx x;
-{
-  int i;
-  
-  switch (GET_CODE (x))
-    {
-    case SET:
-      switch (GET_CODE (SET_DEST (x)))
-	{
-	case REG:
-	  return REGNO (SET_DEST (x)) == LR_REGNUM;
-
-        case SUBREG:
-	  if (GET_CODE (XEXP (SET_DEST (x), 0)) == REG)
-	    return REGNO (XEXP (SET_DEST (x), 0)) == LR_REGNUM;
-
-	  if (GET_CODE (XEXP (SET_DEST (x), 0)) == MEM)
-	    return 0;
-	  abort ();
-
-        default:
-	  return 0;
-        }
-
-    case PARALLEL:
-      for (i = 0; i < XVECLEN (x, 0); i++)
-	if (pattern_really_clobbers_lr (XVECEXP (x, 0, i)))
-	  return 1;
-      return 0;
-
-    case CLOBBER:
-      switch (GET_CODE (XEXP (x, 0)))
-        {
-	case REG:
-	  return REGNO (XEXP (x, 0)) == LR_REGNUM;
-
-        case SUBREG:
-	  if (GET_CODE (XEXP (XEXP (x, 0), 0)) == REG)
-	    return REGNO (XEXP (XEXP (x, 0), 0)) == LR_REGNUM;
-	  abort ();
-
-        default:
-	  return 0;
-        }
-
-    case UNSPEC:
-      return 1;
-
-    default:
-      return 0;
-    }
-}
-
-static int
-function_really_clobbers_lr (first)
-     rtx first;
-{
-  rtx insn, next;
-  
-  for (insn = first; insn; insn = next_nonnote_insn (insn))
-    {
-      switch (GET_CODE (insn))
-        {
-	case BARRIER:
-	case NOTE:
-	case CODE_LABEL:
-	case JUMP_INSN:		/* Jump insns only change the PC (and conds) */
-	  break;
-
-        case INSN:
-	  if (pattern_really_clobbers_lr (PATTERN (insn)))
-	    return 1;
-	  break;
-
-        case CALL_INSN:
-	  /* Don't yet know how to handle those calls that are not to a 
-	     SYMBOL_REF.  */
-	  if (GET_CODE (PATTERN (insn)) != PARALLEL)
-	    abort ();
-
-	  switch (GET_CODE (XVECEXP (PATTERN (insn), 0, 0)))
-	    {
-	    case CALL:
-	      if (GET_CODE (XEXP (XEXP (XVECEXP (PATTERN (insn), 0, 0), 0), 0))
-		  != SYMBOL_REF)
-		return 1;
-	      break;
-
-	    case SET:
-	      if (GET_CODE (XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn),
-							  0, 0)), 0), 0))
-		  != SYMBOL_REF)
-		return 1;
-	      break;
-
-	    default:	/* Don't recognize it, be safe.  */
-	      return 1;
-	    }
-
-	  /* A call can be made (by peepholing) not to clobber lr iff it is
-	     followed by a return.  There may, however, be a use insn iff
-	     we are returning the result of the call. 
-	     If we run off the end of the insn chain, then that means the
-	     call was at the end of the function.  Unfortunately we don't
-	     have a return insn for the peephole to recognize, so we
-	     must reject this.  (Can this be fixed by adding our own insn?) */
-	  if ((next = next_nonnote_insn (insn)) == NULL)
-	    return 1;
-
-	  /* No need to worry about lr if the call never returns.  */
-	  if (GET_CODE (next) == BARRIER)
-	    break;
-
-	  if (GET_CODE (next) == INSN
-	      && GET_CODE (PATTERN (next)) == USE
-	      && (GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == SET)
-	      && (GET_CODE (XEXP (PATTERN (next), 0)) == REG)
-	      && (REGNO (SET_DEST (XVECEXP (PATTERN (insn), 0, 0)))
-		  == REGNO (XEXP (PATTERN (next), 0))))
-	    if ((next = next_nonnote_insn (next)) == NULL)
-	      return 1;
-
-	  if (GET_CODE (next) == JUMP_INSN
-	      && GET_CODE (PATTERN (next)) == RETURN)
-	    break;
-	  return 1;
-
-        default:
-	  abort ();
-        }
-    }
-
-  /* We have reached the end of the chain so lr was _not_ clobbered.  */
-  return 0;
-}
-
 char *
 output_return_instruction (operand, really_return, reverse)
      rtx operand;
@@ -6646,7 +6499,7 @@ output_return_instruction (operand, really_return, reverse)
       && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     live_regs++;
 
-  if (live_regs || (regs_ever_live[LR_REGNUM] && ! lr_save_eliminated))
+  if (live_regs || regs_ever_live[LR_REGNUM])
     live_regs++;
 
   if (frame_pointer_needed)
@@ -6656,21 +6509,17 @@ output_return_instruction (operand, really_return, reverse)
      load a single register.  On other architectures, the cost is the same.  */
   if (live_regs == 1
       && regs_ever_live[LR_REGNUM]
-      && ! lr_save_eliminated
-      /* FIXME: We ought to handle the case TARGET_APCS_32 is true,
-	 really_return is true, and only the PC needs restoring.  */
       && ! really_return)
     output_asm_insn (reverse ? "ldr%?%D0\t%|lr, [%|sp], #4" 
 		     : "ldr%?%d0\t%|lr, [%|sp], #4", &operand);
   else if (live_regs == 1
 	   && regs_ever_live[LR_REGNUM]
-	   && ! lr_save_eliminated
 	   && TARGET_APCS_32)
     output_asm_insn (reverse ? "ldr%?%D0\t%|pc, [%|sp], #4"
 		     : "ldr%?%d0\t%|pc, [%|sp], #4", &operand);
   else if (live_regs)
     {
-      if (lr_save_eliminated || ! regs_ever_live[LR_REGNUM])
+      if (! regs_ever_live[LR_REGNUM])
         live_regs++;
 
       if (frame_pointer_needed)
@@ -6835,7 +6684,6 @@ output_arm_prologue (f, frame_size)
     return;
 
   return_used_this_function = 0;
-  lr_save_eliminated = 0;
   
   asm_fprintf (f, "\t%@ args = %d, pretend = %d, frame = %d\n",
 	       current_function_args_size,
@@ -6868,26 +6716,15 @@ output_arm_prologue (f, frame_size)
     live_regs_mask |= 0xD800;
   else if (regs_ever_live[LR_REGNUM])
     {
-      if (! current_function_args_size
-	  && ! function_really_clobbers_lr (get_insns ()))
-	lr_save_eliminated = 1;
-      else
-        live_regs_mask |= 1 << LR_REGNUM;
+      live_regs_mask |= 1 << LR_REGNUM;
     }
 
   if (live_regs_mask)
-    {
-      /* If a di mode load/store multiple is used, and the base register
-	 is r3, then r4 can become an ever live register without lr
-	 doing so,  in this case we need to push lr as well, or we
-	 will fail to get a proper return.  */
-      live_regs_mask |= 1 << LR_REGNUM;
-      lr_save_eliminated = 0;
-
-    }
-
-  if (lr_save_eliminated)
-    asm_fprintf (f,"\t%@ I don't think this function clobbers lr\n");
+    /* If a di mode load/store multiple is used, and the base register
+       is r3, then r4 can become an ever live register without lr
+       doing so,  in this case we need to push lr as well, or we
+       will fail to get a proper return.  */
+    live_regs_mask |= 1 << LR_REGNUM;
 
 #ifdef AOF_ASSEMBLER
   if (flag_pic)
@@ -6896,7 +6733,8 @@ output_arm_prologue (f, frame_size)
 }
 
 char *
-arm_output_epilogue ()
+arm_output_epilogue (really_return)
+     int really_return;
 {
   int reg;
   int live_regs_mask = 0;
@@ -6919,6 +6757,11 @@ arm_output_epilogue ()
   /* If we are throwing an exception, the address we want to jump to is in
      R1; otherwise, it's in LR.  */
   return_regnum = eh_ofs ? 2 : LR_REGNUM;
+
+  /* If we are throwing an exception, then we really must be doing a return,
+     so we can't tail-call.  */
+  if (eh_ofs && ! really_return)
+    abort();
 
   /* A volatile function should never return.  Call abort.  */
   if (TARGET_ABORT_NORETURN && volatile_func)
@@ -7010,17 +6853,22 @@ arm_output_epilogue ()
 	  if (eh_ofs)
 	    asm_fprintf (f, "\tadd\t%r, %r, %r\n", SP_REGNUM, SP_REGNUM,
 			 REGNO (eh_ofs));
-	  asm_fprintf (f, "\tbx\t%r\n", return_regnum);
+	  if (really_return)
+	    asm_fprintf (f, "\tbx\t%r\n", return_regnum);
 	}
-      else if (eh_ofs)
+      else if (eh_ofs || ! really_return)
 	{
 	  live_regs_mask |= 0x6800;
 	  print_multi_reg (f, "ldmea\t%r", FP_REGNUM, live_regs_mask, FALSE);
-	  asm_fprintf (f, "\tadd\t%r, %r, %r\n", SP_REGNUM, SP_REGNUM,
-		       REGNO (eh_ofs));
-	  /* Even in 26-bit mode we do a mov (rather than a movs) because
-	     we don't have the PSR bits set in the address.  */
-	  asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, return_regnum);
+	  if (eh_ofs)
+	    {
+	      asm_fprintf (f, "\tadd\t%r, %r, %r\n", SP_REGNUM, SP_REGNUM,
+			   REGNO (eh_ofs));
+	      /* Even in 26-bit mode we do a mov (rather than a movs)
+		 because we don't have the PSR bits set in the
+		 address.  */
+	      asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, return_regnum);
+	    }
 	}
       else
 	{
@@ -7083,8 +6931,7 @@ arm_output_epilogue ()
 	{
 	  if (TARGET_INTERWORK)
 	    {
-	      if (! lr_save_eliminated)
-		live_regs_mask |= 1 << LR_REGNUM;
+	      live_regs_mask |= 1 << LR_REGNUM;
 
 	      /* Handle LR on its own.  */
 	      if (live_regs_mask == (1 << LR_REGNUM))
@@ -7104,12 +6951,9 @@ arm_output_epilogue ()
 		asm_fprintf (f, "\tadd\t%r, %r, %r\n", SP_REGNUM, SP_REGNUM,
 			     REGNO (eh_ofs));
 
-	      asm_fprintf (f, "\tbx\t%r\n", return_regnum);
+	      if (really_return)
+		asm_fprintf (f, "\tbx\t%r\n", return_regnum);
 	    }
-	  else if (lr_save_eliminated)
-	    asm_fprintf (f,
-			 TARGET_APCS_32 ? "\tmov\t%r, %r\n" : "\tmovs\t%r, %r\n",
-			 PC_REGNUM, LR_REGNUM);
 	  else if (eh_ofs)
 	    {
 	      if (live_regs_mask == 0)
@@ -7123,8 +6967,13 @@ arm_output_epilogue ()
 	      /* Jump to the target; even in 26-bit mode.  */
 	      asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, return_regnum);
 	    }
-	  else if (TARGET_APCS_32 && live_regs_mask == 0)
+	  else if (TARGET_APCS_32 && live_regs_mask == 0 && ! really_return)
+	    asm_fprintf (f, "\tldr\t%r, [%r], #4\n", LR_REGNUM, SP_REGNUM);
+	  else if (TARGET_APCS_32 && live_regs_mask == 0 && really_return)
 	    asm_fprintf (f, "\tldr\t%r, [%r], #4\n", PC_REGNUM, SP_REGNUM);
+	  else if (! really_return)
+	    print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM,
+			     live_regs_mask | (1 << LR_REGNUM), FALSE);
 	  else
 	    print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM,
 			     live_regs_mask | (1 << PC_REGNUM),
@@ -7135,8 +6984,7 @@ arm_output_epilogue ()
 	  if (live_regs_mask || regs_ever_live[LR_REGNUM])
 	    {
 	      /* Restore the integer regs, and the return address into lr.  */
-	      if (! lr_save_eliminated)
-		live_regs_mask |= 1 << LR_REGNUM;
+	      live_regs_mask |= 1 << LR_REGNUM;
 
 	      if (live_regs_mask == (1 << LR_REGNUM))
 		{
@@ -7163,14 +7011,17 @@ arm_output_epilogue ()
 	  if (eh_ofs)
 	    asm_fprintf (f, "\tadd\t%r, %r, %r\n", SP_REGNUM, SP_REGNUM,
 			 REGNO (eh_ofs));
-	  
-	  /* And finally, go home.  */
-	  if (TARGET_INTERWORK)
-	    asm_fprintf (f, "\tbx\t%r\n", return_regnum);
-	  else if (TARGET_APCS_32 || eh_ofs)
-	    asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, return_regnum);
-	  else
-	    asm_fprintf (f, "\tmovs\t%r, %r\n", PC_REGNUM, return_regnum);
+
+	  if (really_return)
+	    {
+	      /* And finally, go home.  */
+	      if (TARGET_INTERWORK)
+		asm_fprintf (f, "\tbx\t%r\n", return_regnum);
+	      else if (TARGET_APCS_32 || eh_ofs)
+		asm_fprintf (f, "\tmov\t%r, %r\n", PC_REGNUM, return_regnum);
+	      else
+		asm_fprintf (f, "\tmovs\t%r, %r\n", PC_REGNUM, return_regnum);
+	    }
 	}
     }
 

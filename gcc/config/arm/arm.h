@@ -66,9 +66,6 @@ extern char * arm_condition_codes[];
 extern int arm_target_label;
 extern int arm_ccfsm_state;
 extern struct rtx_def * arm_target_insn;
-extern int lr_save_eliminated;
-/* This is needed by the tail-calling peepholes */
-extern int frame_pointer_needed;
 /* Run-time compilation parameters selecting different hardware subsets.  */
 extern int target_flags;
 /* The floating point instruction architecture, can be 2 or 3 */
@@ -539,6 +536,9 @@ extern int arm_arch5;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 extern int arm_ld_sched;
+
+/* Nonzero if generating thumb code.  */
+extern int thumb_code;
 
 /* Nonzero if this chip is a StrongARM.  */
 extern int arm_is_strong;

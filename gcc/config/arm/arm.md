@@ -40,7 +40,7 @@
 
 ;; Attributes
 
-(define_attr "is_thumb" "no,yes" (const (symbol_ref "TARGET_ARM")))
+(define_attr "is_thumb" "no,yes" (const (symbol_ref "thumb_code")))
 
 ; PROG_MODE attribute is used to determine whether condition codes are
 ; clobbered by a call insn: they are if in prog32 mode.  This is controlled
@@ -6024,7 +6024,8 @@
 	 (match_operand:SI 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI 14))]
-  "TARGET_THUMB && operands[2] == const0_rtx && (GET_CODE (operands[0]) == SYMBOL_REF)"
+  "TARGET_THUMB
+   && operands[2] == const0_rtx && (GET_CODE (operands[0]) == SYMBOL_REF)"
   "bl\\t%a0"
   [(set_attr "length" "4")
    (set_attr "type" "call")]
@@ -6036,10 +6037,77 @@
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI 14))]
-  "TARGET_THUMB && operands[3] == const0_rtx && (GET_CODE (operands[1]) == SYMBOL_REF)"
+  "TARGET_THUMB
+   && operands[3] == const0_rtx && (GET_CODE (operands[1]) == SYMBOL_REF)"
   "bl\\t%a1"
   [(set_attr "length" "4")
    (set_attr "type" "call")]
+)
+
+;; We may also be able to do sibcalls for Thumb, but it's much harder...
+(define_expand "sibcall"
+  [(parallel [(call (match_operand 0 "memory_operand" "")
+		    (match_operand 1 "general_operand" ""))
+	      (use (match_operand 2 "" ""))])]
+  "TARGET_ARM"
+  "
+  {
+    if (operands[2] == NULL_RTX)
+      operands[2] = const0_rtx;
+
+    /* If we need to emit a long-call, we can't do it as a sibling call,
+       so fail over to a normal call.  */
+    if (arm_is_longcall_p (operands[0], INTVAL (operands[2]), 0))
+      {
+	emit_call_insn (gen_call (operands[0], operands[1], operands[2]));
+	DONE;
+      }
+  }"
+)
+
+(define_expand "sibcall_value"
+  [(parallel [(set (match_operand 0 "register_operand" "")
+		   (call (match_operand 1 "memory_operand" "")
+			 (match_operand 2 "general_operand" "")))
+	      (use (match_operand 3 "" ""))])]
+  "TARGET_ARM"
+  "
+  {
+    if (operands[3] == NULL_RTX)
+      operands[3] = const0_rtx;
+
+    /* If we need to emit a long-call, we can't do it as a sibling call,
+       so fail over to a normal call.  */
+    if (arm_is_longcall_p (operands[1], INTVAL (operands[3]), 0))
+      {
+	emit_call_insn (gen_call_value (operands[0], operands[1], operands[2],
+					operands[3]));
+	DONE;
+      }
+  }"
+)
+
+(define_insn "*sibcall_insn"
+ [(call (mem:SI (match_operand:SI 0 "" "X"))
+	(match_operand 1 "" ""))
+  (use (match_operand 2 "" ""))]
+  "TARGET_ARM && GET_CODE (operands[0]) == SYMBOL_REF"
+  "*
+  return NEED_PLT_RELOC ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
+  "
+  [(set_attr "type" "call")]
+)
+
+(define_insn "*sibcall_value_insn"
+ [(set (match_operand 0 "s_register_operand" "=rf")
+       (call (mem:SI (match_operand:SI 1 "" "X"))
+	     (match_operand 2 "" "")))
+  (use (match_operand 3 "" ""))]
+  "TARGET_ARM && GET_CODE (operands[1]) == SYMBOL_REF"
+  "*
+  return NEED_PLT_RELOC ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
+  "
+  [(set_attr "type" "call")]
 )
 
 ;; Often the return insn will be the same as loading from memory, so set attr
@@ -7791,103 +7859,6 @@
   return emit_stm_seq (operands, 2);
 ")
 
-;; A call followed by return can be replaced by restoring the regs and
-;; jumping to the subroutine, provided we aren't passing the address of
-;; any of our local variables.  If we call alloca then this is unsafe
-;; since restoring the frame frees the memory, which is not what we want.
-;; Sometimes the return might have been targeted by the final prescan:
-;; if so then emit a proper return insn as well.
-;; Unfortunately, if the frame pointer is required, we don't know if the
-;; current function has any implicit stack pointer adjustments that will 
-;; be restored by the return: we can't therefore do a tail call.
-;; Another unfortunate that we can't handle is if current_function_args_size
-;; is non-zero: in this case elimination of the argument pointer assumed
-;; that lr was pushed onto the stack, so eliminating upsets the offset
-;; calculations.
-
-(define_peephole
-  [(parallel [(call (mem:SI (match_operand:SI 0 "" "X"))
-			  (match_operand:SI 1 "general_operand" "g"))
-		    (use (match_operand 2 "" ""))
-		    (clobber (reg:SI 14))])
-   (return)]
-  "TARGET_ARM
-   && (GET_CODE (operands[0]) == SYMBOL_REF && USE_RETURN_INSN (FALSE)
-    && !get_frame_size () && !current_function_calls_alloca
-    && !frame_pointer_needed && !current_function_args_size)"
-  "*
-{
-  if (arm_ccfsm_state && arm_target_insn && INSN_DELETED_P (arm_target_insn))
-    {
-      arm_current_cc = ARM_INVERSE_CONDITION_CODE (arm_current_cc);
-      output_return_instruction (NULL, TRUE, FALSE);
-      arm_ccfsm_state = 0;
-      arm_target_insn = NULL;
-    }
-
-  output_return_instruction (NULL, FALSE, FALSE);
-  return NEED_PLT_RELOC ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
-}"
-[(set_attr "type" "call")
- (set_attr "length" "8")])
-
-(define_peephole
-  [(parallel [(set (match_operand 0 "s_register_operand" "=rf")
-		   (call (mem:SI (match_operand:SI 1 "" "X"))
-			 (match_operand:SI 2 "general_operand" "g")))
-	      (use (match_operand 3 "" ""))
-	      (clobber (reg:SI 14))])
-   (return)]
-  "TARGET_ARM && (GET_CODE (operands[1]) == SYMBOL_REF && USE_RETURN_INSN (FALSE)
-    && !get_frame_size () && !current_function_calls_alloca
-    && !frame_pointer_needed && !current_function_args_size)"
-  "*
-{
-  if (arm_ccfsm_state && arm_target_insn && INSN_DELETED_P (arm_target_insn))
-    {
-      arm_current_cc = ARM_INVERSE_CONDITION_CODE (arm_current_cc);
-      output_return_instruction (NULL, TRUE, FALSE);
-      arm_ccfsm_state = 0;
-      arm_target_insn = NULL;
-    }
-
-  output_return_instruction (NULL, FALSE, FALSE);
-  return NEED_PLT_RELOC ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
-}"
-[(set_attr "type" "call")
- (set_attr "length" "8")])
-
-;; As above but when this function is not void, we must be returning the
-;; result of the called subroutine.
-
-(define_peephole
-  [(parallel [(set (match_operand 0 "s_register_operand" "=rf")
-		   (call (mem:SI (match_operand:SI 1 "" "X"))
-			 (match_operand:SI 2 "general_operand" "g")))
-	      (use (match_operand 3 "" ""))
-	      (clobber (reg:SI 14))])
-   (use (match_dup 0))
-   (return)]
-  "TARGET_ARM
-   && (GET_CODE (operands[1]) == SYMBOL_REF && USE_RETURN_INSN (FALSE)
-    && !get_frame_size () && !current_function_calls_alloca
-    && !frame_pointer_needed && !current_function_args_size)"
-  "*
-{
-  if (arm_ccfsm_state && arm_target_insn && INSN_DELETED_P (arm_target_insn))
-    {
-      arm_current_cc = ARM_INVERSE_CONDITION_CODE (arm_current_cc);
-      output_return_instruction (NULL, TRUE, FALSE);
-      arm_ccfsm_state = 0;
-      arm_target_insn = NULL;
-    }
-
-  output_return_instruction (NULL, FALSE, FALSE);
-  return \"b%?\\t%a1\";
-}"
-[(set_attr "type" "call")
- (set_attr "length" "8")])
-
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(and:SI (ge:SI (match_operand:SI 1 "s_register_operand" "")
@@ -7952,12 +7923,26 @@
   "
 )
 
+(define_insn "sibcall_epilogue"
+  [(unspec_volatile [(const_int 0)] 1)]
+  "TARGET_ARM"
+  "*
+  output_asm_insn (\"%@ Sibcall epilogue\", operands);
+  if (USE_RETURN_INSN (FALSE))
+    return output_return_instruction (NULL, FALSE, FALSE);
+  return arm_output_epilogue (FALSE);
+  "
+;; Length is absolute worst case
+  [(set_attr "length" "44")
+   (set_attr "type" "block")]
+)
+
 (define_insn "*epilogue_insns"
   [(unspec_volatile [(return)] 1)]
   "TARGET_EITHER"
   "*
   if (TARGET_ARM)
-    return arm_output_epilogue ();
+    return arm_output_epilogue (TRUE);
   else /* TARGET_THUMB */
     return thumb_unexpanded_epilogue ();
   "
@@ -8094,25 +8079,16 @@
   "TARGET_ARM"
   "*
 {
-  extern int lr_save_eliminated;
   int num_saves = XVECLEN (operands[2], 0);
      
-  if (lr_save_eliminated)
-    {
-      if (num_saves > 1)
-	abort ();
-    }
   /* For the StrongARM at least it is faster to
      use STR to store only a single register.  */
-  else if (num_saves == 1)
+  if (num_saves == 1)
     output_asm_insn (\"str\\t%1, [%m0, #-4]!\", operands);
   else
     {
       int i;
       char pattern[100];
-
-      if (lr_save_eliminated)
-	abort ();
 
       strcpy (pattern, \"stmfd\\t%m0!, {%1\");
 		       
