@@ -1757,6 +1757,20 @@ xrealloc (ptr, size)
     fatal ("virtual memory exhausted");
   return result;
 }
+
+/* Same as `strdup' but report error if no memory available.  */
+
+char *
+xstrdup (s)
+     register char *s;
+{
+  register char *result = (char *) malloc (strlen (s) + 1);
+
+  if (! result)
+    fatal ("virtual memory exhausted");
+  strcpy (result, s);
+  return result;
+}
 
 /* Return the logarithm of X, base 2, considering X unsigned,
    if X is a power of 2.  Otherwise, returns -1.
