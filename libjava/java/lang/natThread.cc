@@ -302,7 +302,7 @@ java::lang::Thread::start (void)
 }
 
 void
-java::lang::Thread::stop (java::lang::Throwable *e)
+java::lang::Thread::stop (java::lang::Throwable *)
 {
   JvFail ("java::lang::Thread::stop unimplemented");
 }

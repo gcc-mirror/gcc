@@ -1,3 +1,12 @@
+1999-11-05  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natThread.cc (stop): Removed argument name.
+
+	* java/lang/ThreadGroup.java (ThreadGroup(int)): No longer
+	`private'; now has default access.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (java/lang/ThreadGroup.h): Removed.
+
 1999-11-04  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natClass.cc (method_cache_count): Removed.
