@@ -1,3 +1,11 @@
+2001-05-31  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/mips/mips.h (ASM_OUTPUT_ASCII): Convert to function.
+	* config/mips/mips.c (mips_output_ascii): New function.
+	* config/mips/mips-protos.h (mips_output_ascii): Prototype.
+
+	* config/mips/mips.h (DWARF_CIE_DATA_ALIGNMENT): Force to 4.
+
 Thu May 31 19:09:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (set_block_for_new_insns): Remove bogus shortcut.
