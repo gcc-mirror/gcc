@@ -915,44 +915,64 @@ static void
 dwarf2out_stack_adjust (insn)
      rtx insn;
 {
-  rtx src, dest;
-  enum rtx_code code;
   long offset;
   char *label;
 
-  if (GET_CODE (insn) != SET)
-    return;
-
-  src = SET_SRC (insn);
-  dest = SET_DEST (insn);
-  if (dest == stack_pointer_rtx)
+  if (GET_CODE (insn) == BARRIER)
     {
-      /* (set (reg sp) (plus (reg sp) (const_int))) */
-      code = GET_CODE (src);
-      if (! (code == PLUS || code == MINUS)
-	  || XEXP (src, 0) != stack_pointer_rtx
-	  || GET_CODE (XEXP (src, 1)) != CONST_INT)
-	return;
-
-      offset = INTVAL (XEXP (src, 1));
+      /* When we see a BARRIER, we know to reset args_size to 0.  Usually
+	 the compiler will have already emitted a stack adjustment, but
+	 doesn't bother for calls to noreturn functions.  */
+#ifdef STACK_GROWS_DOWNWARD
+      offset = -args_size;
+#else
+      offset = args_size;
+#endif
     }
-  else if (GET_CODE (dest) == MEM)
+  else if (GET_CODE (PATTERN (insn)) == SET)
     {
-      /* (set (mem (pre_dec (reg sp))) (foo)) */
-      src = XEXP (dest, 0);
-      code = GET_CODE (src);
+      rtx src, dest;
+      enum rtx_code code;
 
-      if (! (code == PRE_DEC || code == PRE_INC)
-	  || XEXP (src, 0) != stack_pointer_rtx)
+      insn = PATTERN (insn);
+      src = SET_SRC (insn);
+      dest = SET_DEST (insn);
+
+      if (dest == stack_pointer_rtx)
+	{
+	  /* (set (reg sp) (plus (reg sp) (const_int))) */
+	  code = GET_CODE (src);
+	  if (! (code == PLUS || code == MINUS)
+	      || XEXP (src, 0) != stack_pointer_rtx
+	      || GET_CODE (XEXP (src, 1)) != CONST_INT)
+	    return;
+
+	  offset = INTVAL (XEXP (src, 1));
+	}
+      else if (GET_CODE (dest) == MEM)
+	{
+	  /* (set (mem (pre_dec (reg sp))) (foo)) */
+	  src = XEXP (dest, 0);
+	  code = GET_CODE (src);
+
+	  if (! (code == PRE_DEC || code == PRE_INC)
+	      || XEXP (src, 0) != stack_pointer_rtx)
+	    return;
+
+	  offset = GET_MODE_SIZE (GET_MODE (dest));
+	}
+      else
 	return;
 
-      offset = GET_MODE_SIZE (GET_MODE (dest));
+      if (code == PLUS || code == PRE_INC)
+	offset = -offset;
     }
   else
     return;
 
-  if (code == PLUS || code == PRE_INC)
-    offset = -offset;
+  if (offset == 0)
+    return;
+
   if (cfa_reg == STACK_POINTER_REGNUM)
     cfa_offset += offset;
 
@@ -999,7 +1019,7 @@ dwarf2out_frame_debug (insn)
 
   if (! RTX_FRAME_RELATED_P (insn))
     {
-      dwarf2out_stack_adjust (PATTERN (insn));
+      dwarf2out_stack_adjust (insn);
       return;
     }
 
