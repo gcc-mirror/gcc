@@ -1,5 +1,12 @@
 2004-02-02  Jerry Quinn  <jlquinn@optonline.net>
 
+	* include/bits/gslice.h, include/bits/gslice_array.h,
+	include/bits/indirect_array.h, include/bits/mask_array.h,
+	include/bits/slice_array.h, include/bits/stl_numeric.h,
+	include/std/std_valarray.h:  Update copyright years.
+
+2004-02-02  Jerry Quinn  <jlquinn@optonline.net>
+
 	* include/bits/gslice.h (gslice):  Document.
 	* include/bits/gslice_array.h (gslice_array):  Document.
 	* include/bits/indirect_array (indirect_array):  Document.
