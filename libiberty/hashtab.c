@@ -71,35 +71,69 @@ static PTR *find_empty_slot_for_expand  PARAMS ((htab_t, hashval_t));
 htab_hash htab_hash_pointer = hash_pointer;
 htab_eq htab_eq_pointer = eq_pointer;
 
-/* The following function returns the nearest prime number which is
-   greater than a given source number, N. */
+/* The following function returns a nearest prime number which is
+   greater than N, and near a power of two. */
 
 static unsigned long
 higher_prime_number (n)
      unsigned long n;
 {
-  unsigned long i;
+  /* These are primes that are near, but slightly smaller than, a
+     power of two.  */
+  static unsigned long primes[] = {
+    2,
+    7,
+    13,
+    31,
+    61,
+    127,
+    251,
+    509,
+    1021,
+    2039,
+    4093,
+    8191,
+    16381,
+    32749,
+    65521,
+    131071,
+    262139,
+    524287,
+    1048573,
+    2097143,
+    4194301,
+    8388593,
+    16777213,
+    33554393,
+    67108859,
+    134217689,
+    268435399,
+    536870909,
+    1073741789,
+    2147483647,
+    4294967291
+  };
 
-  /* Ensure we have a larger number and then force to odd.  */
-  n++;  
-  n |= 0x01; 
+  unsigned long* low = &primes[0];
+  unsigned long* high = &primes[sizeof(primes) / sizeof(primes[0])];
 
-  /* All odd numbers < 9 are prime.  */
-  if (n < 9)
-    return n;
+  while (low != high)
+    {
+      unsigned long* mid = low + (high - low) / 2;
+      if (n > *mid)
+	low = mid + 1;
+      else
+	high = mid;
+    }
 
-  /* Otherwise find the next prime using a sieve.  */
+  /* If we've run out of primes, abort.  */
+  if (n > *low)
+    {
+      fprintf (stderr, "Cannot find prime bigger than %lu\n", n);
+      abort ();
+    }
 
- next:
-
-  for (i = 3; i * i <= n; i += 2)
-    if (n % i == 0)
-      {
-	 n += 2;
-	 goto next;
-       }
-
-  return n;
+  return *low;
 }
 
 /* Returns a hash code for P.  */

@@ -1,3 +1,8 @@
+2000-11-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* hashtab.c (higher_prime_number): Use a table, rather than a
+	seive, to find the next prime.
+
 2000-11-22  H.J. Lu  <hjl@gnu.org>
 
 	* cplus-dem.c (main): Handle gnat_demangling.
