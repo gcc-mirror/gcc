@@ -49,7 +49,8 @@ is_friend (type, supplicant)
   declp = (TREE_CODE_CLASS (TREE_CODE (supplicant)) == 'd');
 
   /* Local classes have the same access as the enclosing function.  */
-  context = hack_decl_function_context (supplicant);
+  context = declp ? supplicant : TYPE_MAIN_DECL (supplicant);
+  context = hack_decl_function_context (context);
   if (context)
     {
       supplicant = context;

@@ -1,3 +1,16 @@
+Mon Mar 30 08:55:42 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_method_call): Handle non-scoped destructors, too.
+	* pt.c (tsubst_copy): Likewise.
+
+	* pt.c (print_template_context): Split out...
+	(push_tinst_level): ...from here.
+
+	* friend.c (is_friend): Don't pass a type to decl_function_context.
+
+	* typeck.c (convert_for_initialization): Always hand off
+	conversions to class type.
+
 Sun Mar 29 20:01:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* friend.c (is_friend): Local classes have the same access as the

@@ -3133,6 +3133,28 @@ extern int max_tinst_depth;
 int depth_reached = 0;
 #endif
 
+/* Print out all the template instantiations that we are currently
+   working on.  */
+
+void
+print_template_context ()
+{
+  struct tinst_level *p = current_tinst_level;
+  int line = lineno;
+  char *file = input_filename;
+
+  for (; p; p = p->next)
+    {
+      cp_error ("  instantiated from `%D'", p->decl);
+      lineno = p->line;
+      input_filename = p->file;
+    }
+  error ("  instantiated from here");
+
+  lineno = line;
+  input_filename = file;
+}
+
 static int
 push_tinst_level (d)
      tree d;
@@ -3141,10 +3163,6 @@ push_tinst_level (d)
 
   if (tinst_depth >= max_tinst_depth)
     {
-      struct tinst_level *p = current_tinst_level;
-      int line = lineno;
-      char *file = input_filename;
-
       /* If the instantiation in question still has unbound template parms,
 	 we don't really care if we can't instantiate it, so just return.
          This happens with base instantiation for implicit `typename'.  */
@@ -3156,16 +3174,7 @@ push_tinst_level (d)
       error (" (use -ftemplate-depth-NN to increase the maximum)");
       cp_error ("  instantiating `%D'", d);
 
-      for (; p; p = p->next)
-	{
-	  cp_error ("  instantiated from `%D'", p->decl);
-	  lineno = p->line;
-	  input_filename = p->file;
-	}
-      error ("  instantiated from here");
-
-      lineno = line;
-      input_filename = file;
+      print_template_context ();
 
       return 0;
     }
@@ -4836,7 +4845,9 @@ tsubst_copy (t, args, in_decl)
 	if (TREE_CODE (name) == BIT_NOT_EXPR)
 	  {
 	    name = tsubst_copy (TREE_OPERAND (name, 0), args, in_decl);
-	    name = build1 (BIT_NOT_EXPR, NULL_TREE, TYPE_MAIN_VARIANT (name));
+	    if (TREE_CODE (name) != IDENTIFIER_NODE)
+	      name = TYPE_MAIN_VARIANT (name);
+	    name = build1 (BIT_NOT_EXPR, NULL_TREE, name);
 	  }
 	else if (TREE_CODE (name) == SCOPE_REF
 		 && TREE_CODE (TREE_OPERAND (name, 1)) == BIT_NOT_EXPR)

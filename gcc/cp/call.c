@@ -571,8 +571,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
     {
       if (TREE_CODE (name) == BIT_NOT_EXPR)
 	{
-	  tree type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 1);
-	  name = build_min_nt (BIT_NOT_EXPR, type);
+	  tree type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 0);
+	  if (type)
+	    name = build_min_nt (BIT_NOT_EXPR, type);
 	}
 
       return build_min_nt (METHOD_CALL_EXPR, name, instance, parms, NULL_TREE);
