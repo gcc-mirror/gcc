@@ -1,3 +1,7 @@
+2003-09-26  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/i386/unix.h: Remove (unused) DEFAULT_ASSEMBLER_DIALECT.
+
 2003-09-26  Loren James Rittle  <ljrittle@acm.org>
 
 	* config/i386/i386.h (ix86_return_in_memory): Revert my last patch.
