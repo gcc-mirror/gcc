@@ -1151,6 +1151,9 @@ handle_using_decl (using_decl, t)
   tree flist = NULL_TREE;
   tree old_value;
 
+  if (ctype == error_mark_node)
+    return;
+
   binfo = lookup_base (t, ctype, ba_any, NULL);
   if (! binfo)
     {

@@ -1,12 +1,11 @@
-// PR c++/9798
+template <typename T, bool=T::X> struct A
+{
+  int i;
+};
 
-namespace std { }
-namespace STL { using namespace std; }
-namespace std {
-  using namespace STL;
-}
-namespace STL {
-  struct A {
-    void B() { using namespace std; }
-  };
-}
+template <typename T> struct B : A<T>
+{
+  using A<T>::i; // { dg-error "" } 
+};
+
+B<void> b; // { dg-error "" }
