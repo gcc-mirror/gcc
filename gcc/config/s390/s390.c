@@ -117,6 +117,15 @@ struct s390_address
   int pointer;
 };
 
+/* Which cpu are we scheduling for.  */
+enum processor_type s390_cpu;
+/* Which instruction set architecture to use.  */
+enum processor_type s390_arch;
+
+/* Strings to hold which cpu and instruction set architecture  to use.  */
+const char *s390_cpu_string;		/* for -mcpu=<xxx> */
+const char *s390_arch_string;		/* for -march=<xxx> */
+
 /* Define the structure for the machine field in struct function.  */
 
 struct machine_function GTY(())
@@ -832,11 +841,85 @@ optimization_options (level, size)
 void
 override_options ()
 {
+  int i;
+  static const char * const cpu_names[] = TARGET_CPU_DEFAULT_NAMES;
+  static struct pta
+    {
+      const char *const name;		/* processor name or nickname.  */
+      const enum processor_type processor;
+      const enum pta_flags
+	{
+	  PTA_IEEE_FLOAT = 1,
+	  PTA_ZARCH = 2
+	} flags;
+    }
+  const processor_alias_table[] =
+    {
+      {"g5", PROCESSOR_9672_G5, PTA_IEEE_FLOAT},
+      {"g6", PROCESSOR_9672_G6, PTA_IEEE_FLOAT},
+      {"z900", PROCESSOR_2064_Z900, PTA_IEEE_FLOAT | PTA_ZARCH},
+    };
+
+  int const pta_size = ARRAY_SIZE (processor_alias_table);
+
   /* Acquire a unique set number for our register saves and restores.  */
   s390_sr_alias_set = new_alias_set ();
 
   /* Set up function hooks.  */
   init_machine_status = s390_init_machine_status;
+ 
+  /* Set cpu and arch, if only partially given.  */
+  if (!s390_cpu_string && s390_arch_string)
+    s390_cpu_string = s390_arch_string;
+  if (!s390_cpu_string)
+    s390_cpu_string = cpu_names [TARGET_64BIT ? TARGET_CPU_DEFAULT_2064
+                                              :	TARGET_CPU_DEFAULT_9672];
+  if (!s390_arch_string)
+#ifdef DEFAULT_TARGET_64BIT
+    s390_arch_string = "z900";
+#else
+    s390_arch_string = "g5";
+#endif
+
+  for (i = 0; i < pta_size; i++)
+    if (! strcmp (s390_arch_string, processor_alias_table[i].name))
+      {
+	s390_arch = processor_alias_table[i].processor;
+	/* Default cpu tuning to the architecture.  */
+	s390_cpu = s390_arch;
+     
+	if (!(processor_alias_table[i].flags & PTA_ZARCH) 
+            && TARGET_64BIT)
+          error ("64-bit ABI not supported on %s", s390_arch_string);
+
+	if (!(processor_alias_table[i].flags & PTA_ZARCH) 
+            && TARGET_ZARCH)
+          error ("z/Architecture not supported on %s", s390_arch_string);
+
+	break;
+      }
+
+  if (i == pta_size)
+    error ("bad value (%s) for -march= switch", s390_arch_string);
+
+  /* ESA implies 31 bit mode.  */
+  if ((target_flags_explicit & MASK_ZARCH) && !TARGET_ZARCH)
+    {
+      if ((target_flags_explicit & MASK_64BIT) && TARGET_64BIT)
+	error ("64-bit ABI not possible in ESA/390 mode");
+      else
+	target_flags &= ~MASK_64BIT;
+    }
+
+  for (i = 0; i < pta_size; i++)
+    if (! strcmp (s390_cpu_string, processor_alias_table[i].name))
+      {
+	s390_cpu = processor_alias_table[i].processor;
+	break;
+      }
+
+  if (i == pta_size)
+    error ("bad value (%s) for -mcpu= switch", s390_cpu_string);
 }
 
 /* Map for smallest class containing reg regno.  */

@@ -656,9 +656,10 @@ in the following sections.
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{
+-mcpu=@var{cpu-type} -march=@var{cpu-type} @gol
 -mhard-float  -msoft-float  -mbackchain  -mno-backchain @gol
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
--m64 -m31 -mdebug -mno-debug}
+-m64 -m31 -mdebug -mno-debug -mesa -mzarch}
 
 @emph{CRIS Options}
 @gccoptlist{
@@ -9803,6 +9804,18 @@ particular to generate 64-bit instructions.  For the @samp{s390}
 targets, the default is @option{-m31}, while the @samp{s390x}
 targets default to @option{-m64}.
 
+@item -mzarch
+@itemx -mesa
+@opindex mzarch
+@opindex mesa
+When @option{-mzarch} is specified, generate code using the 
+instructions available on z/Architecture. 
+When @option{-mesa} is specified, generate code using the 
+instructions available on ESA/390. Note that @option{-mesa} is
+not possible with @option{-m64}.
+For the @samp{s390} targets, the default is @option{-mesa}, 
+while the @samp{s390x} targets default to @option{-mzarch}.
+
 @item -mmvcle
 @itemx -mno-mvcle
 @opindex mmvcle
@@ -9817,6 +9830,18 @@ use a @code{mvc} loop instead.  This is the default.
 @opindex mno-debug
 Print (or do not print) additional debug information when compiling.
 The default is to not print debug information.
+
+@item -march=@var{arch}
+@opindex march
+Generate code that will run on @var{arch}, which is the name of system
+representing a certain processor type. Possible values for
+@var{cpu-type} are @samp{g5}, @samp{g6} and @samp{z900}. 
+
+@item -mcpu=@var{arch}
+@opindex mcpu
+Tune to @var{cpu-type} everything applicable about the generated code,
+ except for the ABI and the set of available instructions. 
+The list of @var{arch} values is the same as for @option{-march}.
 
 @end table
 
