@@ -1,7 +1,8 @@
-/* C code produced by gperf version 2.7 */
-/* Command-line: gperf -L C -C -F , 0 -p -t -j1 -i 1 -g -o -N java_keyword -k1,4,$ keyword.gperf  */
+/* C code produced by gperf version 2.7.2 */
+/* Command-line: gperf -L C -C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k'1,4,$' keyword.gperf  */
 /* Keyword definition for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 2001, 2002, 2003
+   Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GCC.
@@ -44,6 +45,10 @@ const struct java_keyword *java_keyword	PARAMS ((const char *, unsigned int));
 
 #ifdef __GNUC__
 __inline
+#else
+#ifdef __cplusplus
+inline
+#endif
 #endif
 static unsigned int
 hash (str, len)
@@ -105,7 +110,8 @@ java_keyword (str, len)
 {
   static const struct java_keyword wordlist[] =
     {
-      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0},
       {"else", ELSE_TK},
       {"true", TRUE_TK},
       {"case", CASE_TK},
@@ -163,8 +169,9 @@ java_keyword (str, len)
       {"", 0},
       {"finally", FINALLY_TK},
       {"throw", THROW_TK},
-      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
       {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0}, {"", 0}, {"", 0},
       {"strictfp", STRICT_TK},
       {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
       {"private", PRIVATE_TK}
