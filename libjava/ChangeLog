@@ -1,3 +1,8 @@
+1999-08-21  Tom Tromey  <tromey@cygnus.com>
+
+	* posix-threads.cc (_Jv_CondWait): Treat a timeout as a normal
+	result.  PR 40.
+
 1999-08-21  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* configure.in: Check for in_addr_t in netinet/in.h too.  Check
