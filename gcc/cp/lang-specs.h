@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
 	-undef -D__GNUC__=%v1 -D__GNUG__=%v1 -D__cplusplus -D__GNUC_MINOR__=%v2\
-	%{ansi:-trigraphs -$ -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
+	%{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
 	%{!fno-exceptions:-D__EXCEPTIONS}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\

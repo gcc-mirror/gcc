@@ -271,8 +271,7 @@ int warn_sign_promo;
 
 int warn_old_style_cast;
 
-/* Nonzero means `$' can be in an identifier.
-   See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
+/* Nonzero means `$' can be in an identifier.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 #define DOLLARS_IN_IDENTIFIERS 1
@@ -476,7 +475,7 @@ lang_decode_option (p)
      char *p;
 {
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
-    dollars_in_ident = 1, flag_writable_strings = 1,
+    flag_writable_strings = 1,
     flag_this_is_variable = 1, flag_new_for_scope = 0;
   /* The +e options are for cfront compatibility.  They come in as
      `-+eN', to kludge around gcc.c's argument handling.  */
@@ -690,7 +689,7 @@ lang_decode_option (p)
       else return 0;
     }
   else if (!strcmp (p, "-ansi"))
-    dollars_in_ident = 0, flag_no_nonansi_builtin = 1, flag_ansi = 1,
+    flag_no_nonansi_builtin = 1, flag_ansi = 1,
     flag_no_gnu_keywords = 1, flag_operator_names = 1;
 #ifdef SPEW_DEBUG
   /* Undocumented, only ever used when you're invoking cc1plus by hand, since
