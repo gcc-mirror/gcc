@@ -18,7 +18,8 @@
 
       integer i, j, k, ltarray (9), idat (3), count, rate, count_max,
      +     pid, mask
-      real tarray1(2), tarray2(2), r1, r2, sum
+      real tarray1(2), tarray2(2), r1, r2
+      logical issum
       intrinsic getpid, getuid, getgid, ierrno, gerror,
      +     fnum, isatty, getarg, access, unlink, fstat,
      +     stat, lstat, getcwd, gmtime, etime, chmod,
@@ -99,14 +100,12 @@ c consistency-check etime vs. dtime for first call
      +       r1, r2
         call doabort
       end if
-      call sgladd (sum, tarray1(1), tarray1(2))
-      if (r1 .ne. sum) then
+      if (.not. issum (r1, tarray1(1), tarray1(2))) then
         write (6,*) '*** ETIME didn''t return sum of the array: ',
      +       r1, ' /= ', tarray1(1), '+', tarray1(2)
         call doabort
       end if
-      call sgladd (sum, tarray2(1), tarray2(2))
-      if (r2 .ne. sum) then
+      if (.not. issum (r2, tarray2(1), tarray2(2))) then
         write (6,*) '*** DTIME didn''t return sum of the array: ',
      +       r2, ' /= ', tarray2(1), '+', tarray2(2)
         call doabort
@@ -124,14 +123,12 @@ c now try to get times to change enough to see in etime/dtime
       if (tarray2(1) .ne. 0. .or. tarray2(2) .ne. 0.) exit
       end do
       r1 = etime (tarray1)
-      call sgladd (sum, tarray1(1), tarray1(2))
-      if (r1 .ne. sum) then
+      if (.not. issum (r1, tarray1(1), tarray1(2))) then
         write (6,*) '*** ETIME didn''t return sum of the array: ',
      +       r1, ' /= ', tarray1(1), '+', tarray1(2)
         call doabort
       end if
-      call sgladd (sum, tarray2(1), tarray2(2))
-      if (r2 .ne. sum) then
+      if (.not. issum (r2, tarray2(1), tarray2(2))) then
         write (6,*) '*** DTIME didn''t return sum of the array: ',
      +       r2, ' /= ', tarray2(1), '+', tarray2(2)
         call doabort
@@ -280,33 +277,39 @@ C     WRITE (6,*) 'You should see exit status 1'
       CALL EXIT(0)
  99   END
 
+* Return length of STR not including trailing blanks, but always > 0.
       integer function lenstr (str)
-C     return length of STR not including trailing blanks, but always
-C     return >0
-      character *(*) str
+      character*(*) str
       if (str.eq.' ') then
         lenstr=1
       else
         lenstr = lnblnk (str)
       end if
       end
-* just make sure SECOND() doesn't "magically" work the second time.
+
+* Just make sure SECOND() doesn't "magically" work the second time.
       subroutine dumdum(r)
       r = 3.14159
       end
-* do an add that is most likely to be done in single precision.
-      subroutine sgladd(sum,left,right)
+
+* Test whether sum is approximately left+right.
+      logical function issum (sum, left, right)
       implicit none
-      real sum,left,right
-      sum = left+right
+      real sum, left, right
+      real mysum, delta, width
+      mysum = left + right
+      delta = abs (mysum - sum)
+      width = abs (left) + abs (right)
+      issum = (delta .le. .0001 * width)
       end
 
-*     signal handler
+* Signal handler
       subroutine ctrlc
       print *, 'Got ^C'
       call doabort
       end
 
+* A problem has been noticed, so maybe abort the test.
       subroutine doabort
 * For this version, call the ABORT intrinsic.
       intrinsic abort

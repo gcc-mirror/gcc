@@ -1,3 +1,11 @@
+Sat May  1 23:57:18 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/execute/u77-test.f: Generalize sum-checking to
+	use a new function, which allows for some slop.
+	Clean up some commentary.
+	(issum): The new function.
+	(sgladd): Deleted subroutine.
+
 1999-05-01  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/u77-test.f: Modify to be more like
