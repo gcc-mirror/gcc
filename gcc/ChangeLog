@@ -1,3 +1,8 @@
+2004-04-22  Per Bothner  <per@bothner.com>
+
+	* cppinit.c (cpp_read_main_file):  Return NULL rather than false.
+	Fixes PR preprocessor/15067.
+
 2004-04-23  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64intrin.h: Add intermediate cast to void * to
