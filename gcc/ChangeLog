@@ -1,3 +1,7 @@
+Mon Sep 21 20:19:41 1998  John Carr  <jfc@mit.edu>
+
+	* final.c (final_scan_insn): Disable tracking CC across branches.
+
 Mon Sep 21 17:15:26 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* expr.h (eh_rtime_match_libfunc): New extern declaration.
