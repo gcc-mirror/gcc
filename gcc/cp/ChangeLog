@@ -1,3 +1,73 @@
+2000-04-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Prepend __ to implementation defined names.
+	* inc/typeinfo (type_info): Rename _name to __name.
+	(type_info::type_info): Rename parameter.
+	(type_info::operator==, type_info::operator!=,
+	type_info::before): Likewise.
+	(type_info::is_pointer_p, type_info::is_function_p,
+	type_info::do_catch, type_info::do_upcast): Prepend __. Rename
+	parameters.
+	* inc/cxxabi.h
+	(__fundamental_type_info::__fundamental_type_info) Rename parameters.
+	(__pointer_type_info::__pointer_type_info): Likewise.
+	(__pointer_type_info::is_pointer_p,
+	__pointer_type_info::do_catch): Prepend __. Rename parameters.
+	(__array_type_info::__array_type_info): Rename parameters.
+	(__function_type_info::__function_type_info): Likewise.
+	(__function_type_info::is_function_p): Prepend __.
+	(__enum_type_info::__enum_type_info): Rename parameters.
+	(__pointer_to_member_type_info::__pointer_to_member_type_info):
+	Likewise.
+	(__pointer_to_member_type_info::do_catch): Prepend __. Rename
+	parameters.
+	(__base_class_info::is_virtual_p, is_public_p, offset): Prepend	__.
+	(__class_type_info::__class_type_info): Rename parameters.
+	(__class_type_info::sub_kind): Prepend __. Adjust member names.
+	(__class_type_info::upcast_result,
+	__class_type_info::dyncast_result): Prepend __. Move definition
+	into tinfo.cc.
+	(__class_type_info::do_upcast, __class_type_info::do_catch,
+	__class_type_info::find_public_src,
+	__class_type_info::do_dyncast,
+	__class_type_info::do_find_public_src): Prepend __. Rename
+	parameters.
+	(__si_class_type_info::__si_class_type_info): Rename parameters.
+	(__si_class_type_info::do_upcast, __si_class_type_info::do_dyncast,
+	__si_class_type_info::do_find_public_src): Prepent __. Rename
+	parameters.
+	(__vmi_class_type_info::__vmi_class_type_info): Rename parameters.
+	(__vmi_class_type_info::do_upcast, __vmi_class_type_info::do_dyncast,
+	__vmi_class_type_info::do_find_public_src): Prepent __. Rename
+	parameters.
+	(__dynamic_cast): Rename parameters.
+	* tinfo.cc (type_info::is_pointer_p, type_info::is_function_p,
+	type_info::do_catch, type_info::do_upcast): Prepend __.
+	(contained_p, public_p, virtual_p, contained_public_p,
+	contained_nonpublic_p, contained_nonvirtual_p): Adjust.
+	(__class_type_info::do_catch,
+	__class_type_info::do_upcast): Prepend __. Adjust.
+	(__class_type_info::__upcast_result,
+	__class_type_info::__dyncast_result): Move from inc/cxxabi.h.
+	Adjust.
+	(__class_type_info::find_public_src): Prepend __. Adjust.
+	(__class_type_info::do_find_public_src, 
+	__si_class_type_info::do_find_public_src, 
+	__vmi_class_type_info::do_find_public_src): Likewise.
+	(__class_type_info::do_dyncast,
+	__si_class_type_info::do_dyncast,
+	__vmi_class_type_info::do_dyncast): Likewise.
+	(__class_type_info::do_upcast,
+	__si_class_type_info::do_upcast,
+	__vmi_class_type_info::do_upcast): Likewise.
+	(__dynamic_cast): Adjust.
+	* tinfo2.cc (__pointer_type_info::is_pointer_p): Prepend __.
+	(__function_type_info::is_function_p): Likewise.
+	(__pointer_type_info::do_catch): Likewise. Adjust.
+	(__pointer_to_member_type_info::do_catch): Likewise. Adjust.
+	(__throw_type_match_rtti_2): Adjust.
+	(__is_pointer): Adjust.
+
 2000-04-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (cp_tree_index): Add CPTI_COMPLETE_CTOR_IDENTIFIER.

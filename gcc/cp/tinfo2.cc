@@ -127,21 +127,21 @@ __pointer_to_member_type_info::
 {}
 
 bool __pointer_type_info::
-is_pointer_p () const
+__is_pointer_p () const
 {
   return true;
 }
 
 bool __function_type_info::
-is_function_p () const
+__is_function_p () const
 {
   return true;
 }
 
 bool __pointer_type_info::
-do_catch (const type_info *thr_type,
-          void **thr_obj,
-          unsigned outer) const
+__do_catch (const type_info *thr_type,
+            void **thr_obj,
+            unsigned outer) const
 {
   if (*this == *thr_type)
     return true;      // same type
@@ -167,16 +167,16 @@ do_catch (const type_info *thr_type,
   if (outer < 2 && *type == typeid (void))
     {
       // conversion to void
-      return !thrown_type->is_function_p ();
+      return !thrown_type->__is_function_p ();
     }
   
-  return type->do_catch (thrown_type->type, thr_obj, outer + 2);
+  return type->__do_catch (thrown_type->type, thr_obj, outer + 2);
 }
 
 bool __pointer_to_member_type_info::
-do_catch (const type_info *thr_type,
-          void **thr_obj,
-          unsigned outer) const
+__do_catch (const type_info *thr_type,
+            void **thr_obj,
+            unsigned outer) const
 {
   if (*this == *thr_type)
     return true;      // same type
@@ -202,7 +202,7 @@ do_catch (const type_info *thr_type,
   if (*klass != *thrown_type->klass)
     return false;     // not pointers to member of same class
   
-  return type->do_catch (thrown_type->type, thr_obj, outer + 2);
+  return type->__do_catch (thrown_type->type, thr_obj, outer + 2);
 }
 
 } // namespace std
@@ -338,7 +338,7 @@ __throw_type_match_rtti_2 (const void *catch_type_r, const void *throw_type_r,
 #else
 // new abi
   
-  return catch_type.do_catch (&throw_type, valp, 1);
+  return catch_type.__do_catch (&throw_type, valp, 1);
 #endif
   return 0;
 }
@@ -371,7 +371,7 @@ __is_pointer (void *p)
   return pt != 0;
 #else
 // new abi
-  return t->is_pointer_p ();
+  return t->__is_pointer_p ();
 #endif
 }
 
