@@ -5093,12 +5093,13 @@ globalize_decl (decl)
 
       /* Remove this function from the pending weak list so that
 	 we do not emit multiple .weak directives for it.  */
-      for (p = &weak_decls; (t = *p) ; p = &TREE_CHAIN (t))
-	if (TREE_VALUE (t) == decl)
-	  {
+      for (p = &weak_decls; (t = *p) ; )
+	{
+	  if (DECL_ASSEMBLER_NAME (decl) == DECL_ASSEMBLER_NAME (TREE_VALUE (t)))
 	    *p = TREE_CHAIN (t);
-	    break;
-	  }
+	  else
+	    p = &TREE_CHAIN (t);
+	}
       return;
     }
 #endif
