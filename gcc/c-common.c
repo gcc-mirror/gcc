@@ -4827,7 +4827,13 @@ handle_alias_attribute (tree *node, tree name, tree args,
       error ("%J'%D' defined both normally and as an alias", decl, decl);
       *no_add_attrs = true;
     }
-  else if (decl_function_context (decl) == 0)
+
+  /* Note that the very first time we process a nested declaration,
+     decl_function_context will not be set.  Indeed, *would* never
+     be set except for the DECL_INITIAL/DECL_EXTERNAL frobbery that
+     we do below.  After such frobbery, pushdecl would set the context.
+     In any case, this is never what we want.  */
+  else if (decl_function_context (decl) == 0 && current_function_decl == NULL)
     {
       tree id;
 
