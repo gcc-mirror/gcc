@@ -1,3 +1,8 @@
+2004-08-03  Yossi Markovich <yossim@il.ibm.com>
+            Mostafa Hagog <mustafa@il.ibm.com>
+
+        * config/rs6000/altivec.md (altivec_vnmsubfp): Fix wrong pattern.
+
 2004-07-31  Andrew Pinski  <apinski@apple.com>
 
 	PR other/16842

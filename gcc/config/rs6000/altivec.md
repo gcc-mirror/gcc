@@ -594,9 +594,9 @@
 ;; Fused multiply subtract 
 (define_insn "altivec_vnmsubfp"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
-	(minus:V4SF (mult:V4SF (match_operand:V4SF 1 "register_operand" "v")
+	(neg:V4SF (minus:V4SF (mult:V4SF (match_operand:V4SF 1 "register_operand" "v")
 			       (match_operand:V4SF 2 "register_operand" "v"))
-	  	    (match_operand:V4SF 3 "register_operand" "v")))]
+	  	    (match_operand:V4SF 3 "register_operand" "v"))))]
   "TARGET_ALTIVEC"
   "vnmsubfp %0,%1,%2,%3"
   [(set_attr "type" "vecfloat")])
