@@ -1,3 +1,11 @@
+2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10026
+	* g++.dg/lookup/koenig1.C: New test.
+
+	PR C++/10199
+	* g++.dg/lookup/template2.C: New test.
+
 2003-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/opt/rtti1.C: New test.
