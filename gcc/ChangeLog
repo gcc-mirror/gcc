@@ -1,3 +1,11 @@
+2002-10-23  Ziemowit Laski <zlaski@apple.com>
+
+	* objc/objc-act.c (get_static_reference): Remove unneeded
+	TYPE_BINFO initialization.
+	(get_object-reference): Likewise.
+	(build_constructor): Tighten precondition check.
+	(finish_message_expr): Likewise.
+
 2002-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (local_symbolic_operand): Move LABEL_REF test
