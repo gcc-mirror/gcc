@@ -153,7 +153,7 @@ extern const char *xcoff_lastfile;
 /* .stabx has the type in a different place.  */
 #if 0  /* Do not emit any marker for XCOFF until assembler allows XFT_CV.  */
 #define DBX_OUTPUT_GCC_MARKER(FILE) \
-  fprintf ((FILE), "%s\"%s\",0,%d,0\n", ASM_STABS_OP, STABS_GCC_MARKER, \
+  fprintf ((FILE), "%s\"gcc2_compiled.\",0,%d,0\n", ASM_STABS_OP, \
 	   stab_to_sclass (N_GSYM))
 #else
 #define DBX_OUTPUT_GCC_MARKER(FILE)
