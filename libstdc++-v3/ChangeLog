@@ -1,3 +1,10 @@
+2004-10-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/array_allocator.h (array::allocate): Check for valid
+	array object, use its size member function directly.
+	* testsuite/ext/array_allocator/3.cc: New.
+	* docs/html/20_util/allocator.html: Add docs.
+	
 2004-10-25  Geoffrey Keating  <geoffk@apple.com>
 
 	* libsupc++/new_op.cc (new): Make weak.

@@ -297,7 +297,7 @@
     <td>&lt;memory&gt;</td>
   </tr>
   <tr>
-    <td>__gnu_cxx::__pool_alloc&lt;bool, int&gt;</td>
+    <td>__gnu_cxx::__pool_alloc&lt;T&gt;</td>
     <td>&lt;ext/pool_allocator.h&gt;</td>
     <td>std::__default_alloc_template&lt;bool,int&gt;</td>
     <td>&lt;memory&gt;</td>
@@ -316,7 +316,26 @@
   </tr>
 </table>
 
-   <p>More details on each of these allocators follows. </p>
+   <p> Releases after gcc-3.4 have continued to add to the collection
+   of available allocators. All of these new allocators are
+   standard-style. The following table includes details, along with
+   the first released version of GCC that included the extension allocator.
+   </p>
+
+<table title="more extension allocators" border="1">
+  <tr>
+    <th>Allocator</th>
+    <th>Include</th>
+    <th>Version</th>
+  </tr>
+  <tr>
+    <td>__gnu_cxx::array_allocator&lt;T&gt;</td>
+    <td>&lt;ext/array_allocator.h&gt;</td>
+    <td>4.0.0</td>
+  </tr>
+</table>
+
+   <p>More details on each of these extension allocators follows. </p>
    <ul>
      <li><code>new_allocator</code> 
      <p>Simply wraps <code>::operator new</code>
@@ -328,6 +347,18 @@
          <code>malloc</code> and <code>free</code>.  There is also a hook
          for an out-of-memory handler (for new/delete this is taken care of
          elsewhere).  
+     </p>
+     </li>
+     <li><code>array_allocator</code> 
+     <p>Allows allocations of known and fixed sizes using existing
+         global or external storage allocated via construction of
+         std::tr1::array objects. By using this allocator, fixed size
+         containers (including std::string) can be used without
+         instances calling <code>::operator new</code> and
+         <code>::operator delete</code>. This capability allows the
+         use of STL abstractions without runtime complications or
+         overhead, even in situations such as program startup. For
+         usage examples, please consult the libstdc++ testsuite.
      </p>
      </li>
      <li><code>debug_allocator</code> 
@@ -347,10 +378,15 @@
       and the allocate/deallocate request is passed to
       <code>::operator new</code> directly.  </p>
 
-   <p> This class take a boolean template parameter, called
-      <code>thr</code>, and an integer template parameter, called
-      <code>inst</code>.
+   <p> For versions of <code>__pool_alloc</code> after 3.4.0, there is
+   only one template parameter, as per the standard.
    </p>
+
+   <p> Older versions of this class take a boolean template parameter,
+      called <code>thr</code>, and an integer template parameter,
+      called <code>inst</code>.
+   </p>
+
    <p>The <code>inst</code> number is used to track additional memory
       pools.  The point of the number is to allow multiple
       instantiations of the classes without changing the semantics at
@@ -374,6 +410,12 @@
       is is threadsafe, while thr=false, and is slightly faster but
       unsafe for multiple threads.
    </p>
+
+   <p>For thread-enabled configurations, the pool is locked with a
+   single big lock. In some situations, this implementation detail may
+   result in severe performance degredation.
+   </p>
+
    <p>(Note that the GCC thread abstraction layer allows us to provide safe
       zero-overhead stubs for the threading routines, if threads were
       disabled at configuration time.)
