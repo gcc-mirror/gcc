@@ -1,4 +1,4 @@
-/* IIOReadProgressListener.java --
+/* ImageReadParam.java --
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,20 +36,75 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package javax.imageio.event;
+package javax.imageio;
 
-import java.util.EventListener;
+import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 
-import javax.imageio.ImageReader;
-
-public interface IIOReadWarningListener extends EventListener
+/**
+ * @author Michel Koch (konqueror@gmx.de)
+ */
+public class ImageReadParam extends IIOParam
 {
-  /**
-   * Reports the occurrence of a non-fatal error in decoding.
-   * Decoding will continue after this method is called.
-   *
-   * @param source the <code>ImageReader</code> object calling this method
-   * @param warning the warning
-   */
-  void warningOccurred(ImageReader source, String warning);
+  protected boolean canSetSourceRenderSize;
+  protected BufferedImage destination;
+  protected int[] destinationBands;
+  protected int minProgressivePass;
+  protected int numProgressivePasses = Integer.MAX_VALUE;
+  protected Dimension sourceRenderSize;
+
+  public ImageReadParam()
+  {
+  }
+
+  public boolean canSetSourceRenderSize()
+  {
+    return canSetSourceRenderSize;
+  }
+
+  public BufferedImage getDestination()
+  {
+    return destination;
+  }
+
+  public int[] getDestinationBands()
+  {
+    return destinationBands;
+  }
+
+  public int getSourceMaxProgressivePass()
+  {
+    if (getSourceNumProgressivePasses() == Integer.MAX_VALUE)
+      return Integer.MAX_VALUE;
+
+    return getSourceMinProgressivePass() + getSourceNumProgressivePasses() - 1;
+  }
+
+  public int getSourceMinProgressivePass()
+  {
+    return minProgressivePass;
+  }
+
+  public int getSourceNumProgressivePasses()
+  {
+    return numProgressivePasses;
+  }
+
+  public Dimension getSourceRenderSize()
+  {
+    return sourceRenderSize;
+  }
+  
+  public void setSourceRenderSize(Dimension size)
+    throws UnsupportedOperationException
+  {
+    if (! canSetSourceRenderSize())
+      throw new UnsupportedOperationException
+	("setting source render size not supported");
+    
+    if (size.width <= 0 || size.height <= 0)
+      throw new IllegalArgumentException("negative dimension not allowed");
+    
+    sourceRenderSize = size;
+  }
 }

@@ -39,6 +39,7 @@ exception statement from your version. */
 package javax.imageio.stream;
 
 import java.io.DataOutput;
+import java.io.IOException;
 
 
 /**
@@ -52,7 +53,217 @@ import java.io.DataOutput;
 public interface ImageOutputStream
   extends ImageInputStream, DataOutput
 {
-  // FIXME: Incomplete. This interface is merely present in order to
-  // allow compilation of the javax.imageio.spi package, for which GNU
-  // Classpath does provide an implementation.
+  /**
+   * @param postion
+   *
+   * @throws IOException if an errror occurs
+   */
+  void flushBefore(long position) throws IOException;
+
+  /**
+   * Writes an array into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void write(byte[] data) throws IOException;
+
+  /**
+   * Writes a region of data from an array into the stream.
+   *
+   * @param data the data to be written
+   * @param offset the offset in the array
+   * @param len the length in the array
+   *
+   * @throws IOException if an errror occurs
+   */
+  void write(byte[] data, int offset, int len) throws IOException;
+
+  /**
+   * Writes an <code>int</code> into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void write(int data) throws IOException;
+
+  /**
+   * Writes a bit value to the stream.
+   *
+   * @throws IOException if an error occurs
+   */
+  void writeBit(int bit) throws IOException;
+
+  /**
+   * Writes a number of bit values to the stream.
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeBits(long bits, int numBits) throws IOException;
+
+  /**
+   * Writes a <code>boolean</code> value into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeBoolean(boolean data) throws IOException;
+
+  /**
+   * Writes a <code>byte</code> value into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeByte(int data) throws IOException;
+
+  /**
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeBytes(String data) throws IOException;
+
+  /**
+   * Writes a character into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeChar(int data) throws IOException;
+
+  /**
+   * Writes characters to the stream.
+   *
+   * @param data the data to be written
+   * @param offset the offset in the array
+   * @param len the lenth in the array
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeChars(char[] data, int offset, int len) throws IOException;
+
+  /**
+   * Writes characters from a given <code>String</code> into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeChars(String data) throws IOException;
+
+  /**
+   * Writes a <code>double</code> into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeDouble(double data) throws IOException;
+
+  /**
+   * Writes an array of <code>double</code> into the stream.
+   *
+   * @param data the data to be written
+   * @param offset the offset in the array
+   * @param len the lenth in the array
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeDoubles(double[] data, int offset, int len)
+    throws IOException;
+
+  /**
+   * Writes a <code>float</code> into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeFloat(float data) throws IOException;
+
+  /**
+   * Writes an array of <code>float</code> into the stream.
+   *
+   * @param data the data to be written
+   * @param offset the offset in the array
+   * @param len the lenth in the array
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeFloats(float[] data, int offset, int len) throws IOException;
+
+  /**
+   * Writes a <code>int</code> into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeInt(int data) throws IOException;
+
+  /**
+   * Writes an array of <code>int</code> into the stream.
+   *
+   * @param data the data to be written
+   * @param offset the offset in the array
+   * @param len the lenth in the array
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeInts(int[] data, int offset, int len) throws IOException;
+
+  /**
+   * Writes a <code>long</code> into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeLong(long data) throws IOException;
+
+  /**
+   * Writes an array of <code>long</code> into the stream.
+   *
+   * @param data the data to be written
+   * @param offset the offset in the array
+   * @param len the lenth in the array
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeLongs(long[] data, int offset, int len) throws IOException;
+
+  /**
+   * Writes a <code>short</code> into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeShort(int data) throws IOException;
+
+  /**
+   * Writes an array of <code>short</code> into the stream.
+   *
+   * @param data the data to be written
+   * @param offset the offset in the array
+   * @param len the lenth in the array
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeShorts(short[] data, int offset, int len) throws IOException;
+
+  /**
+   * Writes a <code>String</code> into the stream.
+   *
+   * @param data the data to be written
+   *
+   * @throws IOException if an errror occurs
+   */
+  void writeUTF(String data) throws IOException;
 }

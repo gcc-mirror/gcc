@@ -1,4 +1,4 @@
-/* IIOReadProgressListener.java --
+/* FileImageOutputStream.java --
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,20 +36,55 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package javax.imageio.event;
+package javax.imageio.stream;
 
-import java.util.EventListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
-import javax.imageio.ImageReader;
-
-public interface IIOReadWarningListener extends EventListener
+/**
+ * @author Michael Koch (konqueror@gmx.de)
+ */
+public class FileImageOutputStream
 {
-  /**
-   * Reports the occurrence of a non-fatal error in decoding.
-   * Decoding will continue after this method is called.
-   *
-   * @param source the <code>ImageReader</code> object calling this method
-   * @param warning the warning
-   */
-  void warningOccurred(ImageReader source, String warning);
+  private RandomAccessFile file;
+  
+  public FileImageOutputStream(File file)
+    throws FileNotFoundException, IOException
+  {
+    if (file == null)
+      throw new IllegalArgumentException("file may not be null");
+
+    // Do security check.
+    file.canRead();
+
+    this.file = new RandomAccessFile(file, "r");
+  }
+
+  public FileImageOutputStream(RandomAccessFile file)
+  {
+    if (file == null)
+      throw new IllegalArgumentException("file may not be null");
+
+    this.file = file;
+  }
+
+  public void close()
+    throws IOException
+  {
+    file.close();
+  }
+
+  public long length()
+  {
+    try
+      {
+        return file.length();
+      }
+    catch (IOException e)
+      {
+        return -1L;
+      }
+  }
 }

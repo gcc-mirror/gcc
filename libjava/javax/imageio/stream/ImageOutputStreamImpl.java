@@ -1,4 +1,4 @@
-/* IIOReadProgressListener.java --
+/* ImageOutputStream.java --
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,20 +36,30 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package javax.imageio.event;
+package javax.imageio.stream;
 
-import java.util.EventListener;
+import java.io.IOException;
 
-import javax.imageio.ImageReader;
-
-public interface IIOReadWarningListener extends EventListener
+/**
+ * @author Michael Koch (konqueror@gmx.de)
+ */
+public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
+  implements ImageOutputStream
 {
-  /**
-   * Reports the occurrence of a non-fatal error in decoding.
-   * Decoding will continue after this method is called.
-   *
-   * @param source the <code>ImageReader</code> object calling this method
-   * @param warning the warning
-   */
-  void warningOccurred(ImageReader source, String warning);
+  public ImageOutputStreamImpl()
+  {
+    // Do nothing here.
+  }
+
+  public void write(byte[] data)
+    throws IOException
+  {
+    write(data, 0, data.length);
+  }
+
+  public abstract void write(byte[] data, int offset, int len)
+    throws IOException;
+
+  public abstract void write(int value)
+    throws IOException;
 }

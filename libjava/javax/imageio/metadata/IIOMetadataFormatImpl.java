@@ -1,4 +1,4 @@
-/* IIOReadProgressListener.java --
+/* IIOMetadataFormatImpl.java --
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,20 +36,8 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package javax.imageio.event;
+package javax.imageio.metadata;
 
-import java.util.EventListener;
-
-import javax.imageio.ImageReader;
-
-public interface IIOReadWarningListener extends EventListener
+public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
 {
-  /**
-   * Reports the occurrence of a non-fatal error in decoding.
-   * Decoding will continue after this method is called.
-   *
-   * @param source the <code>ImageReader</code> object calling this method
-   * @param warning the warning
-   */
-  void warningOccurred(ImageReader source, String warning);
 }

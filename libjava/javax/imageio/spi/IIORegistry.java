@@ -1,4 +1,4 @@
-/* IIOReadProgressListener.java --
+/* IIORegistry.java --
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,20 +36,68 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package javax.imageio.event;
+package javax.imageio.spi;
 
-import java.util.EventListener;
+import gnu.classpath.ServiceFactory;
 
-import javax.imageio.ImageReader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 
-public interface IIOReadWarningListener extends EventListener
+public final class IIORegistry extends ServiceRegistry
 {
+  private static final HashSet defaultCategories = new HashSet();
+  
+  private static HashMap instances = new HashMap();
+
+  static
+  {
+    //defaultCategories.add(ImageReaderSpi.class);
+    //defaultCategories.add(ImageWriterSpi.class);
+    defaultCategories.add(ImageTranscoderSpi.class);
+    defaultCategories.add(ImageInputStreamSpi.class);
+    defaultCategories.add(ImageOutputStreamSpi.class);
+  }
+  
+  public static synchronized IIORegistry getDefaultInstance()
+  {
+    ThreadGroup group = Thread.currentThread().getThreadGroup();
+    IIORegistry registry = (IIORegistry) instances.get(group);
+    
+    if (registry == null)
+      {
+        registry = new IIORegistry();
+        instances.put(group, registry);
+      }
+    
+    return registry;
+  }
+
+  private IIORegistry()
+  {
+    super(defaultCategories.iterator());
+
+    // XXX: Register built-in Spis here.
+    
+    registerApplicationClasspathSpis();
+  }
+
   /**
-   * Reports the occurrence of a non-fatal error in decoding.
-   * Decoding will continue after this method is called.
-   *
-   * @param source the <code>ImageReader</code> object calling this method
-   * @param warning the warning
+   * Registers all available service providers found on the application
+   * classpath.
    */
-  void warningOccurred(ImageReader source, String warning);
+  public void registerApplicationClasspathSpis()
+  {
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
+    Iterator categories = getCategories();
+
+    while (categories.hasNext())
+      {
+	Class category = (Class) categories.next();
+	Iterator providers = ServiceFactory.lookupProviders(category, loader);
+
+	while (providers.hasNext())
+	  registerServiceProvider((IIOServiceProvider) providers.next());
+      }
+  }
 }

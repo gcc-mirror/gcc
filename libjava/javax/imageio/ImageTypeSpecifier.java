@@ -1,4 +1,4 @@
-/* IIOReadProgressListener.java --
+/* ImageTypeSpecifier.java --
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,20 +36,59 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package javax.imageio.event;
+package javax.imageio;
 
-import java.util.EventListener;
+import java.awt.image.ColorModel;
+import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 
-import javax.imageio.ImageReader;
-
-public interface IIOReadWarningListener extends EventListener
+public class ImageTypeSpecifier
 {
-  /**
-   * Reports the occurrence of a non-fatal error in decoding.
-   * Decoding will continue after this method is called.
-   *
-   * @param source the <code>ImageReader</code> object calling this method
-   * @param warning the warning
-   */
-  void warningOccurred(ImageReader source, String warning);
+  protected ColorModel colorModel;
+  protected SampleModel sampleModel;
+
+  public ImageTypeSpecifier(ColorModel colorModel, SampleModel sampleModel)
+  {
+    if (colorModel == null)
+      throw new IllegalArgumentException("colorModel may not be null");
+
+    if (sampleModel == null)
+      throw new IllegalArgumentException("sampleModel may not be null");
+
+    if (!colorModel.isCompatibleSampleModel(sampleModel))
+      throw new IllegalArgumentException
+        ("sample Model not compatible with colorModel");
+    
+    this.colorModel = colorModel;
+    this.sampleModel = sampleModel;
+  }
+
+  public ImageTypeSpecifier(RenderedImage image)
+  {
+    if (image == null)
+      throw new IllegalArgumentException("image may not be null");
+    
+    this.colorModel = image.getColorModel();
+    this.sampleModel = image.getSampleModel();
+  }
+
+  public ColorModel getColorModel()
+  {
+    return colorModel;
+  }
+
+  public int getNumBands()
+  {
+    return sampleModel.getNumBands();
+  }
+
+  public int getNumComponents()
+  {
+    return colorModel.getNumComponents();
+  }
+
+  public SampleModel getSampleModel()
+  {
+    return sampleModel;
+  }
 }
