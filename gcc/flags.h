@@ -337,7 +337,7 @@ extern int flag_errno_math;
 
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
-   2 means C9X-like requirements for complex divide (not yet implemented).  */
+   2 means C99-like requirements for complex divide (not yet implemented).  */
 
 extern int flag_complex_divide_method;
 
