@@ -1,3 +1,9 @@
+2003-06-27  Gunther Nikl  <gni@gecko.de>
+
+	PR target/11014
+	* config/m68k/m68k.c (m68k_output_mi_thunk): Use correct assembly
+	syntax for MIT / MOTOROLA.
+
 2003-06-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (SECONDARY_OUTPUT_RELOAD_CLASS): Define.
