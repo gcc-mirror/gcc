@@ -1,3 +1,10 @@
+2005-04-01  Ian Lance Taylor  <ian@airs.com>
+
+	* gcc.c: Don't include <sys/resource.h> or declare getrusage.
+	(rus, prus): Remove static variables.
+	(execute): Use pex_run/pex_get_status rather than pexecute/pwait.
+	(process_command): Permit report_times and use_pipes together.
+
 2005-04-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (validate_proto_after_old_defn): Look at
