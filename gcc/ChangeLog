@@ -1,3 +1,13 @@
+2002-05-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinit.c (MAX_WCHAR_TYPE_SIZE): Move to cpplib.h
+	(cpp_post_options): Move sanity checks to...
+	(sanity_checks): New.
+	* cpplex.c (maybe_read_ucs): Fix prototype.
+	(parse_string, cpp_parse_escape): Cast for %c format specifier.
+	* cpplib.h (cppchar_t): Use unsigned long or unsigned long long
+	if necessary.
+
 2002-05-04  Bernd Schmidt  <bernds@redhat.com>
 
 	* config/i386/i386.c (bdesc_2arg): Add a couple of missing SSE2

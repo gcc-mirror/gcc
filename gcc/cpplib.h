@@ -191,11 +191,22 @@ struct cpp_token
 };
 
 /* A type wide enough to hold any multibyte source character.
-   cpplib's character constant interpreter uses shifts, and so
-   requires an unsigned type.  */
-typedef unsigned int cppchar_t;
-/* Its signed equivalent.  */
-typedef int cppchar_signed_t;
+   cpplib's character constant interpreter requires an unsigned type.
+   Also, a typedef for the signed equivalent.  */
+#ifndef MAX_WCHAR_TYPE_SIZE
+# define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
+#endif
+#if SIZEOF_INT >= MAX_WCHAR_TYPE_SIZE
+# define CPPCHAR_SIGNED_T int
+#else
+# if SIZEOF_LONG >= MAX_WCHAR_TYPE_SIZE || !HAVE_LONG_LONG
+#  define CPPCHAR_SIGNED_T long
+# else
+#  define CPPCHAR_SIGNED_T long long
+# endif
+#endif
+typedef unsigned CPPCHAR_SIGNED_T cppchar_t;
+typedef CPPCHAR_SIGNED_T cppchar_signed_t;
 
 /* Values for opts.dump_macros.
   dump_only means inhibit output of the preprocessed text

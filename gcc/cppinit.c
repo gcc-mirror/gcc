@@ -509,9 +509,6 @@ cpp_create_reader (lang)
 #define MAX_CHAR_TYPE_SIZE CHAR_TYPE_SIZE
 #endif
   CPP_OPTION (pfile, char_precision) = MAX_CHAR_TYPE_SIZE;
-#ifndef MAX_WCHAR_TYPE_SIZE
-#define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
-#endif
   CPP_OPTION (pfile, wchar_precision) = MAX_WCHAR_TYPE_SIZE;
 
   /* It's simplest to just create this struct whether or not it will
@@ -1793,12 +1790,46 @@ cpp_handle_options (pfile, argc, argv)
   return i;
 }
 
+/* Sanity-checks are dependent on command-line options, so it is
+   called as a subroutine of cpp_post_options ().  */
+#if ENABLE_CHECKING
+static void sanity_checks PARAMS ((cpp_reader *));
+static void sanity_checks (pfile)
+     cpp_reader *pfile;
+{
+  cppchar_t test = 0;
+  size_t max_prec;
+
+  /* Sanity checks for CPP arithmetic.  */
+  test--;
+  if (test < 1)
+    cpp_error (pfile, DL_FATAL, "cppchar_t must be an unsigned type");
+
+  if (CPP_OPTION (pfile, precision) > BITS_PER_HOST_WIDEST_INT)
+    cpp_error (pfile, DL_FATAL,
+	       "preprocessor arithmetic has maximum precision of %u bits; target requires %u bits",
+	       BITS_PER_HOST_WIDEST_INT, CPP_OPTION (pfile, precision));
+
+  max_prec = CPP_OPTION (pfile, char_precision);
+  if (max_prec < CPP_OPTION (pfile, wchar_precision))
+    max_prec = CPP_OPTION (pfile, wchar_precision);
+  if (max_prec > BITS_PER_CPPCHAR_T)
+    cpp_error (pfile, DL_FATAL,
+	       "CPP on this host cannot handle (wide) character constants over %u bits, but the target requires %u bits",
+	       BITS_PER_CPPCHAR_T, max_prec);
+}
+#else
+# define sanity_checks(PFILE)
+#endif
+
 /* Extra processing when all options are parsed, after all calls to
    cpp_handle_option[s].  Consistency checks etc.  */
 void
 cpp_post_options (pfile)
      cpp_reader *pfile;
 {
+  sanity_checks (pfile);
+
   if (pfile->print_version)
     {
       fprintf (stderr, _("GNU CPP version %s (cpplib)"), version_string);
@@ -1807,27 +1838,6 @@ cpp_post_options (pfile)
 #endif
       fputc ('\n', stderr);
     }
-
-#if ENABLE_CHECKING
-  /* Sanity checks for CPP arithmetic.  */
-  if (CPP_OPTION (pfile, precision) > BITS_PER_HOST_WIDEST_INT)
-    cpp_error (pfile, DL_FATAL,
-	       "preprocessor arithmetic has maximum precision of %u bits; target requires %u bits",
-	       BITS_PER_HOST_WIDEST_INT, CPP_OPTION (pfile, precision));
-
-  if (CPP_OPTION (pfile, char_precision) > BITS_PER_CPPCHAR_T
-      || CPP_OPTION (pfile, wchar_precision) > BITS_PER_CPPCHAR_T)
-    cpp_error (pfile, DL_FATAL,
-	       "CPP cannot handle (wide) character constants over %u bits",
-	       BITS_PER_CPPCHAR_T);
-
-  {
-    cppchar_t test = 0;
-    test--;
-    if (test < 1)
-      cpp_error (pfile, DL_FATAL, "cppchar_t must be an unsigned type");
-  }
-#endif
 
   /* Canonicalize in_fname and out_fname.  We guarantee they are not
      NULL, and that the empty string represents stdin / stdout.  */
