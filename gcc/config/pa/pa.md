@@ -1689,7 +1689,7 @@
 		 (match_operand:SI 2 "const_int_operand" "")))
    (clobber (match_operand:SI 4 "register_operand" ""))]
   "! cint_ok_for_move (INTVAL (operands[2])) 
-   && VAL_14_BITS_P (INTVAL (operands[2]) / 2)"
+   && VAL_14_BITS_P (INTVAL (operands[2]) >> 1)"
   [(set (match_dup 4) (plus:SI (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (plus:SI (match_dup 4) (match_dup 3)))]
   "
