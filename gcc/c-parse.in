@@ -2947,44 +2947,27 @@ ivar_declarator:
                 }
 	;
 
-methoddef:
+methodtype:
 	  '+'
-		{
-		  objc_pq_context = 1;
-		  if (objc_implementation_context)
-		    objc_inherit_code = CLASS_METHOD_DECL;
-                  else
-		    fatal_error ("method definition not in class context");
-		}
-	  methoddecl
-		{
-		  objc_pq_context = 0;
-		  add_class_method (objc_implementation_context, $3);
-		  start_method_def ($3);
-		  objc_method_context = $3;
-		}
-	  optarglist
-		{
-		  continue_method_def ();
-		}
-	  compstmt_or_error
-		{
-		  finish_method_def ();
-		  objc_method_context = NULL_TREE;
-		}
-
+		{ objc_inherit_code = CLASS_METHOD_DECL; }
 	| '-'
+		{ objc_inherit_code = INSTANCE_METHOD_DECL; }
+	;
+
+methoddef:
+	  methodtype
 		{
 		  objc_pq_context = 1;
-		  if (objc_implementation_context)
-		    objc_inherit_code = INSTANCE_METHOD_DECL;
-                  else
+		  if (!objc_implementation_context)
 		    fatal_error ("method definition not in class context");
 		}
 	  methoddecl
 		{
 		  objc_pq_context = 0;
-		  add_instance_method (objc_implementation_context, $3);
+		  if (objc_inherit_code == CLASS_METHOD_DECL)
+		    add_class_method (objc_implementation_context, $3);
+		  else
+		    add_instance_method (objc_implementation_context, $3);
 		  start_method_def ($3);
 		  objc_method_context = $3;
 		}
@@ -3021,31 +3004,19 @@ semi_or_error:
 	;
 
 methodproto:
-	  '+'
+	  methodtype
 		{
 		  /* Remember protocol qualifiers in prototypes.  */
 		  objc_pq_context = 1;
-		  objc_inherit_code = CLASS_METHOD_DECL;
 		}
 	  methoddecl
 		{
 		  /* Forget protocol qualifiers here.  */
 		  objc_pq_context = 0;
-		  add_class_method (objc_interface_context, $3);
-		}
-	  semi_or_error
-
-	| '-'
-		{
-		  /* Remember protocol qualifiers in prototypes.  */
-		  objc_pq_context = 1;
-		  objc_inherit_code = INSTANCE_METHOD_DECL;
-		}
-	  methoddecl
-		{
-		  /* Forget protocol qualifiers here.  */
-		  objc_pq_context = 0;
-		  add_instance_method (objc_interface_context, $3);
+		  if (objc_inherit_code == CLASS_METHOD_DECL)
+		    add_class_method (objc_interface_context, $3);
+		  else
+		    add_instance_method (objc_interface_context, $3);
 		}
 	  semi_or_error
 	;
