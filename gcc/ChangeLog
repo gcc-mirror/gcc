@@ -1,5 +1,10 @@
 2002-03-10  Richard Henderson  <rth@redhat.com>
 
+	* loop.c (strength_reduce): Compute number of iterations as
+	unsigned HOST_WIDE_INT.
+
+2002-03-10  Richard Henderson  <rth@redhat.com>
+
 	* sched-rgn.c (add_branch_dependences): Don't allow insns that throw
 	to move away from the end of the block.
 
