@@ -1,3 +1,21 @@
+2002-02-05  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/netbsd.h (WCHAR_TYPE): Define.
+	(WCHAR_TYPE_SIZE): Ditto.
+	(WINT_TYPE): Ditto.
+	* config/alpha/netbsd.h (WCHAR_TYPE): Remove.
+	(WCHAR_UNSIGNED): Ditto.
+	(WCHAR_TYPE_SIZE): Ditto.
+	(WINT_TYPE): Ditto.
+	* config/arm/netbsd.h: Likewise.
+	* config/i386/netbsd-elf.h: Likewise.
+	* config/i386/netbsd.h: Likewise.
+	* config/m68k/netbsd-elf.h: Likewise.
+	* config/m68k/netbsd.h: Likewise.
+	* config/ns32k/netbsd.h: Likewise.
+	* config/sparc/netbsd.h: Likewise.
+	* config/vax/netbsd.: Likewise.
+
 2002-02-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* target.h (struct gcc_target): Added ms_bitfield_layout_p.

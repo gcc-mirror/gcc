@@ -149,15 +149,6 @@ while (0)
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
 
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "int"
-
-#undef WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
-
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE 32
-
 
 /* XXX
    Here is a bunch of stuff lifted from m68kelf.h.  We don't use that
