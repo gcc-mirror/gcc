@@ -129,6 +129,10 @@ LIB_AC_PROG_CXX
   # automake happy, but we dont execute it, since we dont care about
   # the result.
   if false; then
+    # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands
+    # to nothing, so nothing would remain between `then' and `fi' if it
+    # were not for the `:' below.
+    :
     AC_EXEEXT
   fi
 
