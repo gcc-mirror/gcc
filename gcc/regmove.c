@@ -664,6 +664,7 @@ optimize_reg_copy_3 (insn, dest, src)
   if (src_no < FIRST_PSEUDO_REGISTER
       || dst_no < FIRST_PSEUDO_REGISTER
       || ! find_reg_note (insn, REG_DEAD, src_reg)
+      || REG_N_DEATHS (src_no) != 1
       || REG_N_SETS (src_no) != 1)
     return;
   for (p = PREV_INSN (insn); p && ! reg_set_p (src_reg, p); p = PREV_INSN (p))
