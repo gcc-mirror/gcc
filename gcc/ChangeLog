@@ -1,3 +1,8 @@
+2002-01-29  Richard Henderson  <rth@redhat.com>
+
+	2001-10-19  Jakub Jelinek  <jakub@redhat.com>
+	* config/alpha/alpha.c (summarize_insn): Don't abort on ASM_INPUT.
+
 2002-01-26  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/cpp.1, doc/fsf-funding.7, doc/gcc.1, doc/gcov.1, doc/gfdl.7,

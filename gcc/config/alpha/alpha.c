@@ -5532,7 +5532,7 @@ summarize_insn (x, sum, set)
 
     case CONST_INT:   case CONST_DOUBLE:
     case SYMBOL_REF:  case LABEL_REF:     case CONST:
-    case SCRATCH:
+    case SCRATCH:     case ASM_INPUT:
       break;
 
       /* Handle common unary and binary ops for efficiency.  */
