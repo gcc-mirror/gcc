@@ -389,9 +389,15 @@ store_init_value (decl, init)
 
   /* End of special C++ code.  */
 
-  /* Digest the specified initializer into an expression.  */
-
-  value = digest_init (type, init, (tree *) 0);
+  /* We might have already run this bracketed initializer through
+     digest_init.  Don't do so again.  */
+  if (TREE_CODE (init) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (init)
+      && TREE_TYPE (init)
+      && TYPE_MAIN_VARIANT (TREE_TYPE (init)) == TYPE_MAIN_VARIANT (type))
+    value = init;
+  else
+    /* Digest the specified initializer into an expression.  */
+    value = digest_init (type, init, (tree *) 0);
 
   /* Store the expression if valid; else report error.  */
 

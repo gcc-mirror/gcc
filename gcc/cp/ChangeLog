@@ -1,3 +1,11 @@
+2001-10-11  Jason Merrill  <jason_merrill@redhat.com>
+
+	* typeck2.c (store_init_value): Don't re-digest a bracketed
+	initializer.
+
+	* class.c (finish_struct_anon): Use TYPE_ANONYMOUS_P instead of
+	ANON_AGGR_TYPE_P.
+
 2001-10-11  Richard Henderson  <rth@redhat.com>
 
 	* class.c (build_vtable_entry_ref): Create a VTABLE_REF instead
