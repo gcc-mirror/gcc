@@ -325,12 +325,6 @@
   "
 {
   /* Everything except mem = const or mem = mem can be done easily.  */
-
-#if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-  if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = force_const_mem (SFmode, operands[1]);
-#endif
-
   if (GET_CODE (operands[0]) == MEM)
     operands[1] = force_reg (SFmode, operands[1]);
 }")
@@ -354,12 +348,6 @@
   "
 {
   /* Everything except mem = const or mem = mem can be done easily.  */
-
-#if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-  if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = force_const_mem (DFmode, operands[1]);
-#endif
-
   if (GET_CODE (operands[0]) == MEM)
     operands[1] = force_reg (DFmode, operands[1]);
 }")
