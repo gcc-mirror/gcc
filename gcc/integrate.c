@@ -1239,6 +1239,10 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   rtvec arg_vector = ORIGINAL_ARG_VECTOR (header);
   rtx static_chain_value = 0;
 
+  /* The pointer used to track the true location of the memory used
+     for MAP->LABEL_MAP.  */
+  rtx *real_label_map = NULL_PTR;
+
   /* Allow for equivalences of the pseudos we make for virtual fp and ap.  */
   max_regno = MAX_REGNUM (header) + 3;
   if (max_regno < FIRST_PSEUDO_REGISTER)
@@ -1379,8 +1383,12 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   map->reg_map = (rtx *) alloca (max_regno * sizeof (rtx));
   bzero ((char *) map->reg_map, max_regno * sizeof (rtx));
 
-  map->label_map = (rtx *)alloca ((max_labelno - min_labelno) * sizeof (rtx));
-  map->label_map -= min_labelno;
+  /* We used to use alloca here, but the size of what it would try to
+     allocate would occasionally cause it to exceed the stack limit and
+     cause unpredictable core dumps.  */
+  real_label_map
+    = (rtx *) xmalloc ((max_labelno - min_labelno) * sizeof (rtx));
+  map->label_map = real_label_map - min_labelno;
 
   map->insn_map = (rtx *) alloca (INSN_UID (header) * sizeof (rtx));
   bzero ((char *) map->insn_map, INSN_UID (header) * sizeof (rtx));
@@ -2019,6 +2027,11 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 			memory_address (TYPE_MODE (type), structure_value_addr));
       MEM_IN_STRUCT_P (target) = 1;
     }
+
+  /* Make sure we free the things we explicitly allocated with xmalloc.  */
+  if (real_label_map)
+    free (real_label_map);
+
   return target;
 }
 
