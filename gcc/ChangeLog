@@ -1,3 +1,10 @@
+2004-01-17  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (HAVE_conditional_execution): Provide default.
+	(rest_of_handle_reorder_blocks): For conditional_execution target
+	update liveness once after all transformations
+	(rest_of_compilation): Do crossjumping before ce3.
+
 2004-01-17  Geoffrey Keating  <geoffk@apple.com>
 
 	* alias.c (new_alias_set): Mark last_alias_set for PCH.
