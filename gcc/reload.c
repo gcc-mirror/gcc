@@ -267,6 +267,7 @@ static int push_reload		PROTO((rtx, rtx, rtx *, rtx *, enum reg_class,
 static void push_replacement	PROTO((rtx *, int, enum machine_mode));
 static void combine_reloads	PROTO((void));
 static rtx find_dummy_reload	PROTO((rtx, rtx, rtx *, rtx *,
+				       enum machine_mode, enum machine_mode,
 				       enum reg_class, int));
 static int hard_reg_set_here_p	PROTO((int, int, rtx));
 static struct decomposition decompose PROTO((rtx));
@@ -1294,6 +1295,7 @@ push_reload (in, out, inloc, outloc, class,
   if (in != 0 && out != 0 && in != out && reload_reg_rtx[i] == 0)
     {
       reload_reg_rtx[i] = find_dummy_reload (in, out, inloc, outloc,
+					     inmode, outmode,
 					     reload_reg_class[i], i);
 
       /* If the outgoing register already contains the same value
@@ -1591,9 +1593,11 @@ combine_reloads ()
    is just to see if a register can be found, not to find and install it.  */
 
 static rtx
-find_dummy_reload (real_in, real_out, inloc, outloc, class, for_real)
+find_dummy_reload (real_in, real_out, inloc, outloc,
+		   inmode, outmode, class, for_real)
      rtx real_in, real_out;
      rtx *inloc, *outloc;
+     enum machine_mode inmode, outmode;
      enum reg_class class;
      int for_real;
 {
@@ -1605,9 +1609,9 @@ find_dummy_reload (real_in, real_out, inloc, outloc, class, for_real)
 
   /* If operands exceed a word, we can't use either of them
      unless they have the same size.  */
-  if (GET_MODE_SIZE (GET_MODE (real_out)) != GET_MODE_SIZE (GET_MODE (real_in))
-      && (GET_MODE_SIZE (GET_MODE (real_out)) > UNITS_PER_WORD
-	  || GET_MODE_SIZE (GET_MODE (real_in)) > UNITS_PER_WORD))
+  if (GET_MODE_SIZE (outmode) != GET_MODE_SIZE (inmode)
+      && (GET_MODE_SIZE (outmode) > UNITS_PER_WORD
+	  || GET_MODE_SIZE (inmode) > UNITS_PER_WORD))
     return 0;
 
   /* Find the inside of any subregs.  */
@@ -1631,7 +1635,7 @@ find_dummy_reload (real_in, real_out, inloc, outloc, class, for_real)
       && REGNO (out) < FIRST_PSEUDO_REGISTER)
     {
       register int regno = REGNO (out) + out_offset;
-      int nwords = HARD_REGNO_NREGS (regno, GET_MODE (real_out));
+      int nwords = HARD_REGNO_NREGS (regno, outmode);
       rtx saved_rtx;
 
       /* When we consider whether the insn uses OUT,
@@ -1666,7 +1670,7 @@ find_dummy_reload (real_in, real_out, inloc, outloc, class, for_real)
 	      if (GET_CODE (real_out) == REG)
 		value = real_out;
 	      else
-		value = gen_rtx (REG, GET_MODE (real_out), regno);
+		value = gen_rtx (REG, outmode, regno);
 	    }
 	}
 
@@ -1685,10 +1689,16 @@ find_dummy_reload (real_in, real_out, inloc, outloc, class, for_real)
 	  || find_reg_note (this_insn, REG_UNUSED, real_out))
       && find_reg_note (this_insn, REG_DEAD, real_in)
       && !fixed_regs[REGNO (in)]
-      && HARD_REGNO_MODE_OK (REGNO (in), GET_MODE (out)))
+      && HARD_REGNO_MODE_OK (REGNO (in),
+			     /* The only case where out and real_out might
+				have different modes is where real_out
+				is a subreg, and in that case, out
+				has a real mode.  */
+			     (GET_MODE (out) != VOIDmode
+			      ? GET_MODE (out) : outmode)))
     {
       register int regno = REGNO (in) + in_offset;
-      int nwords = HARD_REGNO_NREGS (regno, GET_MODE (real_in));
+      int nwords = HARD_REGNO_NREGS (regno, inmode);
 
       if (! refers_to_regno_for_reload_p (regno, regno + nwords, out, NULL_PTR)
 	  && ! hard_reg_set_here_p (regno, regno + nwords,
@@ -1710,7 +1720,7 @@ find_dummy_reload (real_in, real_out, inloc, outloc, class, for_real)
 	      if (GET_CODE (real_in) == REG)
 		value = real_in;
 	      else
-		value = gen_rtx (REG, GET_MODE (real_in), regno);
+		value = gen_rtx (REG, inmode, regno);
 	    }
 	}
     }
@@ -2690,6 +2700,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		    value
 		      = find_dummy_reload (recog_operand[i], recog_operand[c],
 					   recog_operand_loc[i], recog_operand_loc[c],
+					   insn_operand_mode[insn_code_number][i],
+					   insn_operand_mode[insn_code_number][c],
 					   this_alternative[c], -1);
 
 		    if (value != 0)
