@@ -1,7 +1,7 @@
 /* Check if bitfield ivars are correctly @encode'd when
    the NeXT runtime is used.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-fnext-runtime" } */
+/* { dg-options "-fnext-runtime -fsigned-char" } */
 /* { dg-do run } */
 
 struct objc_object { struct objc_class *class_pointer; } *id;
