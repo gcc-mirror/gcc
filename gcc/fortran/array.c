@@ -1490,7 +1490,7 @@ resolve_array_list (gfc_constructor * p)
   for (; p; p = p->next)
     {
       if (p->iterator != NULL
-	  && gfc_resolve_iterator (p->iterator) == FAILURE)
+	  && gfc_resolve_iterator (p->iterator, false) == FAILURE)
 	t = FAILURE;
 
       if (gfc_resolve_expr (p->expr) == FAILURE)

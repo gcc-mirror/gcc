@@ -1743,7 +1743,7 @@ void gfc_resolve (gfc_namespace *);
 int gfc_impure_variable (gfc_symbol *);
 int gfc_pure (gfc_symbol *);
 int gfc_elemental (gfc_symbol *);
-try gfc_resolve_iterator (gfc_iterator *);
+try gfc_resolve_iterator (gfc_iterator *, bool);
 try gfc_resolve_index (gfc_expr *, int);
 
 /* array.c */
