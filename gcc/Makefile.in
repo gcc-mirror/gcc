@@ -1280,7 +1280,7 @@ expr.o : expr.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h regs.h \
    typeclass.h bytecode.h bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h \
    bc-emit.h modemap.def hard-reg-set.h
 calls.o : calls.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h expr.h insn-codes.h \
-   insn-flags.h
+   insn-flags.h regs.h
 expmed.o : expmed.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h  \
    insn-flags.h insn-config.h insn-codes.h expr.h recog.h real.h
 explow.o : explow.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h hard-reg-set.h \
@@ -1315,7 +1315,7 @@ stupid.o : stupid.c $(CONFIG_H) $(RTL_H) regs.h hard-reg-set.h flags.h
 cse.o : cse.c $(CONFIG_H) $(RTL_H) regs.h hard-reg-set.h flags.h real.h \
    insn-config.h recog.h
 profile.o : profile.c $(CONFIG_H) $(RTL_H) flags.h insn-flags.h gcov-io.h \
-   tree.h output.h
+   tree.h output.h regs.h
 loop.o : loop.c $(CONFIG_H) $(RTL_H) flags.h loop.h insn-config.h \
    insn-flags.h insn-codes.h regs.h hard-reg-set.h recog.h expr.h real.h
 unroll.o : unroll.c $(CONFIG_H) $(RTL_H) insn-config.h integrate.h regs.h \
