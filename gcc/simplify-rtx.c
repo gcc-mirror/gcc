@@ -1013,6 +1013,22 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 					    XEXP (op, 1));
 	    }
 
+	  /* (neg (ashiftrt X C)) can be replaced by (lshiftrt X C) when
+	     C is equal to the width of MODE minus 1.  */
+	  if (GET_CODE (op) == ASHIFTRT
+	      && GET_CODE (XEXP (op, 1)) == CONST_INT
+	      && INTVAL (XEXP (op, 1)) == GET_MODE_BITSIZE (mode) - 1)
+		return simplify_gen_binary (LSHIFTRT, mode,
+					    XEXP (op, 0), XEXP (op, 1));
+
+	  /* (neg (lshiftrt X C)) can be replaced by (ashiftrt X C) when
+	     C is equal to the width of MODE minus 1.  */
+	  if (GET_CODE (op) == LSHIFTRT
+	      && GET_CODE (XEXP (op, 1)) == CONST_INT
+	      && INTVAL (XEXP (op, 1)) == GET_MODE_BITSIZE (mode) - 1)
+		return simplify_gen_binary (ASHIFTRT, mode,
+					    XEXP (op, 0), XEXP (op, 1));
+
 	  break;
 
 	case SIGN_EXTEND:
