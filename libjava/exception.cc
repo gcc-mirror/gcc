@@ -10,7 +10,6 @@ details.  */
 
 #include <config.h>
 
-#include "exception"
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -101,7 +100,7 @@ _Jv_eh_alloc ()
      apparently can sometimes free() this value itself.  */
   java_eh_info *p = (java_eh_info *) malloc (sizeof (java_eh_info));
   if (p == 0)
-    terminate ();
+    abort ();
 
   p->value = 0;
   java_eh_info ** info_ptr = __get_eh_info ();
