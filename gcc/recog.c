@@ -2746,7 +2746,7 @@ peephole2_optimize (dump_file)
       for (insn = bb->end; ; insn = prev)
 	{
 	  prev = PREV_INSN (insn);
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (INSN_P (insn))
 	    {
 	      rtx try, last_insn;
 
