@@ -89,7 +89,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 /* Check first for thread specific defines.  */
-#if _PTHREADS
+#if defined (__tpf__)
+#include "gthr-tpf.h"
+#elif _PTHREADS
 #include "gthr-posix.h"
 #elif _DCE_THREADS
 #include "gthr-dce.h"
