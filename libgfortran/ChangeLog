@@ -1,3 +1,9 @@
+2004-05-14  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/15149
+	* libgfortan.h,intrinsics/random.c: Made random_seed visible.
+	* runtime/main.c(init): Call random_seed as part of MAIN init.
+
 2004-05-13  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* io/format.c: (parse_format_list): No comma is required after

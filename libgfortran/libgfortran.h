@@ -396,5 +396,11 @@ void internal_unpack_8 (gfc_array_i8 *, const GFC_INTEGER_8 *);
 GFC_INTEGER_4 compare_string (GFC_INTEGER_4, const char *,
 			      GFC_INTEGER_4, const char *);
 
+/* random.c */
+
+#define random_seed prefix(random_seed)
+void random_seed (GFC_INTEGER_4 * size, const gfc_array_i4 * put,
+             const gfc_array_i4 * get);
+
 #endif
 
