@@ -140,6 +140,10 @@ proc libjava_init { args } {
     global libjava_libgcc_s_path
     global target_triplet
 
+    # We set LC_ALL and LANG to C so that we get the same error messages as expected.
+    setenv LC_ALL C
+    setenv LANG C
+
     if { $libjava_initialized == 1 } { return; }
 
     if ![info exists GCJ_UNDER_TEST] {

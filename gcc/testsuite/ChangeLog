@@ -1,3 +1,12 @@
+2004-11-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR other/14264
+	* lib/g++.exp: Set LC_ALL and LANG to C.
+	* lib/gcc-dg.exp: Likewise.
+	* lib/gfortran.exp: Likewise.
+	* lib/objc.exp: Likewise.
+	* lib/treelang.exp: Likewise.
+
 2004-11-12  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.dg/pr16286.c: Fix last change.

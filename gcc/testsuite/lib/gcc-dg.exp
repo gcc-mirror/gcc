@@ -22,6 +22,10 @@ load_lib scantree.exp
 load_lib prune.exp
 load_lib libgloss.exp
 
+# We set LC_ALL and LANG to C so that we get the same error messages as expected.
+setenv LC_ALL C
+setenv LANG C
+
 if ![info exists TORTURE_OPTIONS] {
     # It is theoretically beneficial to group all of the O2/O3 options together,
     # as in many cases the compiler will generate identical executables for
