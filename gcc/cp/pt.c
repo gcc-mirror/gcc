@@ -5919,6 +5919,7 @@ tsubst_function_type (t, args, complain, in_decl)
 					(arg_types));
     }
   fntype = build_qualified_type (fntype, TYPE_QUALS (t));
+  fntype = build_type_attribute_variant (fntype, TYPE_ATTRIBUTES (t));
   
   return fntype;  
 }
