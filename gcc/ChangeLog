@@ -1,3 +1,17 @@
+2004-05-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* testsuite/g++.dg/charset/function.cc: New.
+
+	* testsuite/gcc.dg/charset/function.c: New.
+
+	* c-decl.c (c_make_fname_decl): Free return value from
+	fname_as_string.
+
+	* cp/decl.c (cp_make_fname_decl): Free return value from
+	fname_as_string.
+
+	* c-common.c (fname_as_string): Translate if necessary.
+
 2004-05-28  Geoffrey Keating  <geoffk@apple.com>
 
 	* stringpool.c: Add comments to PCH saving/restoring routines.
