@@ -1,3 +1,11 @@
+2000-12-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (register_local_specialization): Don't return a value.
+	(lookup_template_class): Use move-to-front heuristic when looking
+	up template instantiations.
+	(instantiate_decl): Only push_to_top_level when we're actually
+	going to instantiate the template.
+
 2000-12-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* search.c (binfo_for_vtable): Return least derived class, not

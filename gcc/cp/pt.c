@@ -128,7 +128,7 @@ static void push_inline_template_parms_recursive PARAMS ((tree, int));
 static tree retrieve_specialization PARAMS ((tree, tree));
 static tree retrieve_local_specialization PARAMS ((tree));
 static tree register_specialization PARAMS ((tree, tree, tree));
-static tree register_local_specialization PARAMS ((tree, tree));
+static void register_local_specialization PARAMS ((tree, tree));
 static int unregister_specialization PARAMS ((tree, tree));
 static tree reduce_template_parm_level PARAMS ((tree, tree, int));
 static tree build_template_decl PARAMS ((tree, tree));
@@ -923,7 +923,7 @@ unregister_specialization (spec, tmpl)
 /* Like register_specialization, but for local declarations.  We are
    registering SPEC, an instantiation of TMPL.  */
 
-static tree
+static void
 register_local_specialization (spec, tmpl)
      tree spec;
      tree tmpl;
@@ -932,8 +932,6 @@ register_local_specialization (spec, tmpl)
 
   slot = htab_find_slot (local_specializations, tmpl, INSERT);
   *slot = spec;
-
-  return spec;
 }
 
 /* Print the list of candidate FNS in an error message.  */
@@ -3842,6 +3840,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       tree gen_tmpl;
       tree type_decl;
       tree found = NULL_TREE;
+      tree *tp;
       int arg_depth;
       int parm_depth;
       int is_partial_instantiation;
@@ -3956,11 +3955,19 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	}
       if (found)
         return found;
-      
-      for (found = DECL_TEMPLATE_INSTANTIATIONS (template);
-	   found; found = TREE_CHAIN (found))
-	if (comp_template_args (TREE_PURPOSE (found), arglist))
-	   return TREE_VALUE (found);
+
+      for (tp = &DECL_TEMPLATE_INSTANTIATIONS (template);
+	   *tp;
+	   tp = &TREE_CHAIN (*tp))
+	if (comp_template_args (TREE_PURPOSE (*tp), arglist))
+	  {
+	    found = *tp;
+	    *tp = TREE_CHAIN (*tp);
+	    TREE_CHAIN (found) 
+	      = DECL_TEMPLATE_INSTANTIATIONS (template);
+	    DECL_TEMPLATE_INSTANTIATIONS (template) = found;
+	    return TREE_VALUE (found);
+	  }
 
       /* This type is a "partial instantiation" if any of the template
 	 arguments still involve template parameters.  Note that we set
@@ -9702,7 +9709,6 @@ instantiate_decl (d, defer_ok)
   else
     pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
 
-  push_to_top_level ();
   lineno = DECL_SOURCE_LINE (d);
   input_filename = DECL_SOURCE_FILE (d);
 
@@ -9766,6 +9772,8 @@ instantiate_decl (d, defer_ok)
       goto out;
     }
 
+  push_to_top_level ();
+
   /* We're now committed to instantiating this template.  Mark it as
      instantiated so that recursive calls to instantiate_decl do not
      try to instantiate it again.  */
@@ -9828,11 +9836,12 @@ instantiate_decl (d, defer_ok)
   /* We're not deferring instantiation any more.  */
   TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
 
+  pop_from_top_level ();
+
 out:
   lineno = line;
   input_filename = file;
 
-  pop_from_top_level ();
   pop_tinst_level ();
 
   timevar_pop (TV_PARSE);
