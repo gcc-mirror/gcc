@@ -1,11 +1,17 @@
 2000-09-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.in: Allow enable_threads_flag value of "aix".  Define
-	thread_file as "aix" for AIX 4.3 and above..
+	thread_file as "aix" for AIX 4.3 and above.
 	* configure: Regenerated.
+
+	* gthr-aix.h: New file.
+
 	* rs6000/t-aix43: Replace soft-float multilib with pthread.
 	Remove 403 processor multilib match.  Fix rios2 processor multilib
 	match.
+
+	* rs6000/aix.h (ASM_DECLARE_FUNCTION_NAME): Use function_section
+	to return to appropriate csect.
 
 2000-09-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
