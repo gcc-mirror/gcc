@@ -461,7 +461,7 @@ in the following sections.
 -malign-functions=@var{num} -mpreferred-stack-boundary=@var{num} @gol
 -mthreads -mno-align-stringops -minline-all-stringops @gol
 -mpush-args -maccumulate-outgoing-args -m128bit-long-double @gol
--m96bit-long-double} -mregparm=@var{num} @gol
+-m96bit-long-double -mregparm=@var{num}}
 
 @emph{HPPA Options}
 @gccoptlist{
