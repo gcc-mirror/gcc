@@ -1,3 +1,9 @@
+2003-05-18  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* intdoc.in: Fix documentation of IDATE.
+	* intdoc.texi: Regenerate.
+	* news.texi: Update due to also fixing it in 3.3.1.
+
 2003-05-16  Wolfgang Bangerth <bangerth@dealii.org>
 
 	* g77.texi: Remove most of the of the preface of the

@@ -5948,12 +5948,13 @@ and the year in @var{Y} (in the range 0--99).
 @cindex Year 2000 compliance
 @cindex wraparound, Y2K
 @cindex limits, Y2K
-This intrinsic is not recommended, due to the year 2000 approaching.
-Therefore, programs making use of this intrinsic
-might not be Year 2000 (Y2K) compliant.
+This intrinsic is not recommended, due to the fact that
+its return value for year wraps around century boundaries
+(change from a larger value to a smaller one).
+Therefore, programs making use of this intrinsic, for
+instance, might not be Year 2000 (Y2K) compliant.
 For example, the date might appear,
 to such programs, to wrap around
-(change from a larger value to a smaller one)
 as of the Year 2000.
 
 @xref{IDate Intrinsic (UNIX)}, for information on obtaining more digits
