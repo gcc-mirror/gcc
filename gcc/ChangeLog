@@ -1,3 +1,10 @@
+2003-10-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config.gcc (s390x-ibm-tpf*): New target.
+	* doc/invoke.texi: Document it.
+	* config/s390/t-tpf: New file.
+	* config/s390/tpf.h: New file.
+
 2003-10-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/12598
