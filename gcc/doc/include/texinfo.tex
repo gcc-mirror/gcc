@@ -3,10 +3,10 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2002-01-04.07}
+\def\texinfoversion{2002-03-01.06}
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
-%               2000, 01 Free Software Foundation, Inc.
+%               2000, 01, 02 Free Software Foundation, Inc.
 %
 % This texinfo.tex file is free software; you can redistribute it and/or
 % modify it under the terms of the GNU General Public License as
@@ -54,12 +54,12 @@
 %   tex foo.texi
 %   tex foo.texi
 %   dvips foo.dvi -o # or whatever, to process the dvi file; this makes foo.ps.
-% The extra runs of TeX get the cross-reference information correct.
+% The extra TeX runs get the cross-reference information correct.
 % Sometimes one run after texindex suffices, and sometimes you need more
 % than two; texi2dvi does it as many times as necessary.
 %
 % It is possible to adapt texinfo.tex for other languages.  You can get
-% the existing language-specific files from ftp://ftp.gnu.org/gnu/texinfo/.
+% the existing language-specific files from the full Texinfo distribution.
 
 \message{Loading texinfo [version \texinfoversion]:}
 
@@ -836,18 +836,32 @@ where each line of input produces a line of output.}
 %
 \def\asis#1{#1}
 
-% @math means output in math mode.
-% We don't use $'s directly in the definition of \math because control
-% sequences like \math are expanded when the toc file is written.  Then,
-% we read the toc file back, the $'s will be normal characters (as they
-% should be, according to the definition of Texinfo).  So we must use a
-% control sequence to switch into and out of math mode.
+% @math outputs its argument in math mode.
+% We don't use $'s directly in the definition of \math because we need
+% to set catcodes according to plain TeX first, to allow for subscripts,
+% superscripts, special math chars, etc.
+% 
+% @math does not do math typesetting in section titles, index
+% entries, and other such contexts where the catcodes are set before
+% @math gets a chance to work.  This could perhaps be fixed, but for now
+% at least we can have real math in the main text, where it's needed most.
 %
-% This isn't quite enough for @math to work properly in indices, but it
-% seems unlikely it will ever be needed there.
+% 
+\let\implicitmath = $%$ font-lock fix
 %
-\let\implicitmath = $
-\def\math#1{\implicitmath #1\implicitmath}
+% One complication: _ usually means subscripts, but it could also mean
+% an actual _ character, as in @math{@var{some_variable} + 1}.  So make
+% _ within @math be active (mathcode "8000), and distinguish by seeing
+% if the current family is \slfam, which is what @var uses.
+% 
+{\catcode95 = \active  % 95 = _
+\gdef\mathunderscore{%
+  \catcode95=\active
+  \def_{\ifnum\fam=\slfam\_\else\sb\fi}%
+}}
+%
+\def\math{\tex\mathcode`\_="8000\mathunderscore \implicitmath\finishmath}
+\def\finishmath#1{#1\implicitmath\Etex}
 
 % @bullet and @minus need the same treatment as @math, just above.
 \def\bullet{\implicitmath\ptexbullet\implicitmath}
@@ -960,7 +974,7 @@ where each line of input produces a line of output.}
     \expandafter\xdef\csname#1\endcsname{\the\tempnum}}
   \def\pdfmakeoutlines{{%
     \openin 1 \jobname.toc
-    \ifeof 1\else\bgroup
+    \ifeof 1\else\begingroup
       \closein 1 
       \indexnofonts
       \def\tt{}
@@ -970,6 +984,7 @@ where each line of input produces a line of output.}
       \edef\myrbrace{\iffalse{\else\string}\fi}\let\}=\myrbrace
       %
       \def\chapentry ##1##2##3{}
+      \let\appendixentry = \chapentry
       \def\unnumbchapentry ##1##2{}
       \def\secentry ##1##2##3##4{\advancenumber{chap##2}}
       \def\unnumbsecentry ##1##2{}
@@ -980,6 +995,7 @@ where each line of input produces a line of output.}
       \input \jobname.toc
       \def\chapentry ##1##2##3{%
         \pdfoutline goto name{\pdfmkpgn{##3}}count-\expnumber{chap##2}{##1}}
+      \let\appendixentry = \chapentry
       \def\unnumbchapentry ##1##2{%
         \pdfoutline goto name{\pdfmkpgn{##2}}{##1}}
       \def\secentry ##1##2##3##4{%
@@ -995,7 +1011,7 @@ where each line of input produces a line of output.}
       \def\unnumbsubsubsecentry ##1##2{%
         \pdfoutline goto name{\pdfmkpgn{##2}}{##1}}
       \input \jobname.toc
-    \egroup\fi
+    \endgroup\fi
   }}
   \def\makelinks #1,{%
     \def\params{#1}\def\E{END}%
@@ -1112,9 +1128,6 @@ where each line of input produces a line of output.}
   }%
 }
 
-% Use Computer Modern fonts at \magstephalf (11pt).
-\newcount\mainmagstep \mainmagstep=\magstephalf
-
 % Set the font macro #1 to the font named #2, adding on the
 % specified font prefix (normally `cm').
 % #3 is the font's design size, #4 is a scale factor
@@ -1143,13 +1156,16 @@ where each line of input produces a line of output.}
 \def\scshape{csc}
 \def\scbshape{csc}
 
+\newcount\mainmagstep
 \ifx\bigger\relax
-\let\mainmagstep=\magstep1
-\setfont\textrm\rmshape{12}{1000}
-\setfont\texttt\ttshape{12}{1000}
+  % not really supported.
+  \let\mainmagstep=\magstep1
+  \setfont\textrm\rmshape{12}{1000}
+  \setfont\texttt\ttshape{12}{1000}
 \else
-\setfont\textrm\rmshape{10}{\mainmagstep}
-\setfont\texttt\ttshape{10}{\mainmagstep}
+  \mainmagstep=\magstephalf
+  \setfont\textrm\rmshape{10}{\mainmagstep}
+  \setfont\texttt\ttshape{10}{\mainmagstep}
 \fi
 % Instead of cmb10, you many want to use cmbx10.
 % cmbx10 is a prettier font on its own, but cmb10
@@ -1229,20 +1245,6 @@ where each line of input produces a line of output.}
 \font\seci=cmmi12 scaled \magstep1
 \font\secsy=cmsy10 scaled \magstep2
 
-% \setfont\ssecrm\bxshape{10}{\magstep1}    % This size an font looked bad.
-% \setfont\ssecit\itshape{10}{\magstep1}    % The letters were too crowded.
-% \setfont\ssecsl\slshape{10}{\magstep1}
-% \setfont\ssectt\ttshape{10}{\magstep1}
-% \setfont\ssecsf\sfshape{10}{\magstep1}
-
-%\setfont\ssecrm\bfshape{10}{1315}      % Note the use of cmb rather than cmbx.
-%\setfont\ssecit\itshape{10}{1315}      % Also, the size is a little larger than
-%\setfont\ssecsl\slshape{10}{1315}      % being scaled magstep1.
-%\setfont\ssectt\ttshape{10}{1315}
-%\setfont\ssecsf\sfshape{10}{1315}
-
-%\let\ssecbf=\ssecrm
-
 % Subsection fonts (13.15pt).
 \setfont\ssecrm\rmbshape{12}{\magstephalf}
 \setfont\ssecit\itbshape{10}{1315}
@@ -1259,16 +1261,15 @@ where each line of input produces a line of output.}
 
 % In order for the font changes to affect most math symbols and letters,
 % we have to define the \textfont of the standard families.  Since
-% texinfo doesn't allow for producing subscripts and superscripts, we
-% don't bother to reset \scriptfont and \scriptscriptfont (which would
-% also require loading a lot more fonts).
+% texinfo doesn't allow for producing subscripts and superscripts except
+% in the main text, we don't bother to reset \scriptfont and
+% \scriptscriptfont (which would also require loading a lot more fonts).
 %
 \def\resetmathfonts{%
-  \textfont0 = \tenrm \textfont1 = \teni \textfont2 = \tensy
-  \textfont\itfam = \tenit \textfont\slfam = \tensl \textfont\bffam = \tenbf
-  \textfont\ttfam = \tentt \textfont\sffam = \tensf
+  \textfont0=\tenrm \textfont1=\teni \textfont2=\tensy
+  \textfont\itfam=\tenit \textfont\slfam=\tensl \textfont\bffam=\tenbf
+  \textfont\ttfam=\tentt \textfont\sffam=\tensf
 }
-
 
 % The font-changing commands redefine the meanings of \tenSTYLE, instead
 % of just \STYLE.  We do this so that font changes will continue to work
@@ -2758,9 +2759,23 @@ width0pt\relax} \fi
 \def\docodeindex#1{\edef\indexname{#1}\parsearg\singlecodeindexer}
 \def\singlecodeindexer #1{\doind{\indexname}{\code{#1}}}
 
+% Take care of texinfo commands likely to appear in an index entry.
+% (Must be a way to avoid doing expansion at all, and thus not have to
+% laboriously list every single command here.)
+% 
 \def\indexdummies{%
 \def\ { }%
+\def\@{@}% change to @@ when we switch to @ as escape char in aux files.
+% Need these in case \tex is in effect and \{ is a \delimiter again.
+% But can't use \lbracecmd and \rbracecmd because texindex assumes
+% braces and backslashes are used only as delimiters.  
+\let\{ = \mylbrace
+\let\} = \myrbrace
+\def\_{{\realbackslash _}}%
+\normalturnoffactive
+%
 % Take care of the plain tex accent commands.
+\def\,##1{\realbackslash ,{##1}}%
 \def\"{\realbackslash "}%
 \def\`{\realbackslash `}%
 \def\'{\realbackslash '}%
@@ -2773,69 +2788,66 @@ width0pt\relax} \fi
 \def\u{\realbackslash u}%
 \def\v{\realbackslash v}%
 \def\H{\realbackslash H}%
-% Take care of the plain tex special European modified letters.
-\def\oe{\realbackslash oe}%
-\def\ae{\realbackslash ae}%
-\def\aa{\realbackslash aa}%
-\def\OE{\realbackslash OE}%
-\def\AE{\realbackslash AE}%
-\def\AA{\realbackslash AA}%
-\def\o{\realbackslash o}%
-\def\O{\realbackslash O}%
-\def\l{\realbackslash l}%
-\def\L{\realbackslash L}%
-\def\ss{\realbackslash ss}%
-% Take care of texinfo commands likely to appear in an index entry.
-% (Must be a way to avoid doing expansion at all, and thus not have to
-% laboriously list every single command here.)
-\def\@{@}% will be @@ when we switch to @ as escape char.
-% Need these in case \tex is in effect and \{ is a \delimiter again.
-% But can't use \lbracecmd and \rbracecmd because texindex assumes
-% braces and backslashes are used only as delimiters.  
-\let\{ = \mylbrace
-\let\} = \myrbrace
-\def\_{{\realbackslash _}}%
-\def\w{\realbackslash w }%
-\def\bf{\realbackslash bf }%
-%\def\rm{\realbackslash rm }%
-\def\sl{\realbackslash sl }%
-\def\sf{\realbackslash sf}%
-\def\tt{\realbackslash tt}%
-\def\gtr{\realbackslash gtr}%
-\def\less{\realbackslash less}%
-\def\hat{\realbackslash hat}%
-\def\TeX{\realbackslash TeX}%
-\def\dots{\realbackslash dots }%
-\def\result{\realbackslash result}%
-\def\equiv{\realbackslash equiv}%
-\def\expansion{\realbackslash expansion}%
-\def\print{\realbackslash print}%
-\def\error{\realbackslash error}%
-\def\point{\realbackslash point}%
-\def\copyright{\realbackslash copyright}%
-\def\tclose##1{\realbackslash tclose {##1}}%
-\def\code##1{\realbackslash code {##1}}%
-\def\uref##1{\realbackslash uref {##1}}%
-\def\url##1{\realbackslash url {##1}}%
-\def\env##1{\realbackslash env {##1}}%
-\def\command##1{\realbackslash command {##1}}%
-\def\option##1{\realbackslash option {##1}}%
 \def\dotless##1{\realbackslash dotless {##1}}%
-\def\samp##1{\realbackslash samp {##1}}%
-\def\,##1{\realbackslash ,{##1}}%
+% Take care of the plain tex special European modified letters.
+\def\AA{\realbackslash AA}%
+\def\AE{\realbackslash AE}%
+\def\L{\realbackslash L}%
+\def\OE{\realbackslash OE}%
+\def\O{\realbackslash O}%
+\def\aa{\realbackslash aa}%
+\def\ae{\realbackslash ae}%
+\def\l{\realbackslash l}%
+\def\oe{\realbackslash oe}%
+\def\o{\realbackslash o}%
+\def\ss{\realbackslash ss}%
+%
+% Although these internals commands shouldn't show up, sometimes they do.
+\def\bf{\realbackslash bf }%
+\def\gtr{\realbackslash gtr}%
+\def\hat{\realbackslash hat}%
+\def\less{\realbackslash less}%
+%\def\rm{\realbackslash rm }%
+\def\sf{\realbackslash sf}%
+\def\sl{\realbackslash sl }%
+\def\tclose##1{\realbackslash tclose {##1}}%
+\def\tt{\realbackslash tt}%
+%
+\def\b##1{\realbackslash b {##1}}%
+\def\i##1{\realbackslash i {##1}}%
+\def\sc##1{\realbackslash sc {##1}}%
 \def\t##1{\realbackslash t {##1}}%
 \def\r##1{\realbackslash r {##1}}%
-\def\i##1{\realbackslash i {##1}}%
-\def\b##1{\realbackslash b {##1}}%
-\def\sc##1{\realbackslash sc {##1}}%
-\def\cite##1{\realbackslash cite {##1}}%
-\def\key##1{\realbackslash key {##1}}%
-\def\file##1{\realbackslash file {##1}}%
-\def\var##1{\realbackslash var {##1}}%
-\def\kbd##1{\realbackslash kbd {##1}}%
-\def\dfn##1{\realbackslash dfn {##1}}%
-\def\emph##1{\realbackslash emph {##1}}%
+%
+\def\TeX{\realbackslash TeX}%
 \def\acronym##1{\realbackslash acronym {##1}}%
+\def\cite##1{\realbackslash cite {##1}}%
+\def\code##1{\realbackslash code {##1}}%
+\def\command##1{\realbackslash command {##1}}%
+\def\dfn##1{\realbackslash dfn {##1}}%
+\def\dots{\realbackslash dots }%
+\def\emph##1{\realbackslash emph {##1}}%
+\def\env##1{\realbackslash env {##1}}%
+\def\file##1{\realbackslash file {##1}}%
+\def\kbd##1{\realbackslash kbd {##1}}%
+\def\key##1{\realbackslash key {##1}}%
+\def\math##1{\realbackslash math {##1}}%
+\def\option##1{\realbackslash option {##1}}%
+\def\samp##1{\realbackslash samp {##1}}%
+\def\strong##1{\realbackslash strong {##1}}%
+\def\uref##1{\realbackslash uref {##1}}%
+\def\url##1{\realbackslash url {##1}}%
+\def\var##1{\realbackslash var {##1}}%
+\def\w{\realbackslash w }%
+%
+% These math commands don't seem likely to be used in index entries.
+\def\copyright{\realbackslash copyright}%
+\def\equiv{\realbackslash equiv}%
+\def\error{\realbackslash error}%
+\def\expansion{\realbackslash expansion}%
+\def\point{\realbackslash point}%
+\def\print{\realbackslash print}%
+\def\result{\realbackslash result}%
 %
 % Handle some cases of @value -- where the variable name does not
 % contain - or _, and the value does not contain any
@@ -2860,7 +2872,10 @@ width0pt\relax} \fi
 \def\indexdummydots{...}
 
 \def\indexnofonts{%
-% Just ignore accents.
+\def\@{@}%
+% how to handle braces?
+\def\_{\normalunderscore}%
+%
 \let\,=\indexdummyfont
 \let\"=\indexdummyfont
 \let\`=\indexdummyfont
@@ -2876,45 +2891,49 @@ width0pt\relax} \fi
 \let\H=\indexdummyfont
 \let\dotless=\indexdummyfont
 % Take care of the plain tex special European modified letters.
-\def\oe{oe}%
-\def\ae{ae}%
-\def\aa{aa}%
-\def\OE{OE}%
-\def\AE{AE}%
 \def\AA{AA}%
-\def\o{o}%
-\def\O{O}%
-\def\l{l}%
+\def\AE{AE}%
 \def\L{L}%
+\def\OE{OE}%
+\def\O{O}%
+\def\aa{aa}%
+\def\ae{ae}%
+\def\l{l}%
+\def\oe{oe}%
+\def\o{o}%
 \def\ss{ss}%
-\let\w=\indexdummyfont
-\let\t=\indexdummyfont
-\let\r=\indexdummyfont
-\let\i=\indexdummyfont
-\let\b=\indexdummyfont
-\let\emph=\indexdummyfont
-\let\strong=\indexdummyfont
-\let\cite=\indexdummyfont
-\let\sc=\indexdummyfont
-%Don't no-op \tt, since it isn't a user-level command
-% and is used in the definitions of the active chars like <, >, |...
+%
+% Don't no-op \tt, since it isn't a user-level command
+% and is used in the definitions of the active chars like <, >, |, etc.
+% Likewise with the other plain tex font commands.
 %\let\tt=\indexdummyfont
-\let\tclose=\indexdummyfont
-\let\code=\indexdummyfont
-\let\url=\indexdummyfont
-\let\uref=\indexdummyfont
-\let\env=\indexdummyfont
+%
+\let\b=\indexdummyfont
+\let\i=\indexdummyfont
+\let\r=\indexdummyfont
+\let\sc=\indexdummyfont
+\let\t=\indexdummyfont
+%
+\let\TeX=\indexdummytex
 \let\acronym=\indexdummyfont
+\let\cite=\indexdummyfont
+\let\code=\indexdummyfont
 \let\command=\indexdummyfont
-\let\option=\indexdummyfont
+\let\dfn=\indexdummyfont
+\let\dots=\indexdummydots
+\let\emph=\indexdummyfont
+\let\env=\indexdummyfont
 \let\file=\indexdummyfont
-\let\samp=\indexdummyfont
 \let\kbd=\indexdummyfont
 \let\key=\indexdummyfont
+\let\math=\indexdummyfont
+\let\option=\indexdummyfont
+\let\samp=\indexdummyfont
+\let\strong=\indexdummyfont
+\let\uref=\indexdummyfont
+\let\url=\indexdummyfont
 \let\var=\indexdummyfont
-\let\TeX=\indexdummytex
-\let\dots=\indexdummydots
-\def\@{@}%
+\let\w=\indexdummyfont
 }
 
 % To define \realbackslash, we must make \ not be an escape.
@@ -3516,8 +3535,8 @@ width0pt\relax} \fi
 \gdef\thischaptername{#1}%
 \xdef\thischapter{\putwordAppendix{} \appendixletter: \noexpand\thischaptername}%
 \toks0 = {#1}%
-\edef\temp{\noexpand\writetocentry{\realbackslash chapentry{\the\toks0}%
-                       {\putwordAppendix{} \appendixletter}}}%
+\edef\temp{\noexpand\writetocentry{\realbackslash appendixentry{\the\toks0}%
+                       {\appendixletter}}}%
 \temp
 \appendixnoderef
 \global\let\section = \appendixsec
@@ -3950,6 +3969,7 @@ width0pt\relax} \fi
    \startcontents{\putwordShortTOC}%
       %
       \let\chapentry = \shortchapentry
+      \let\appendixentry = \shortappendixentry
       \let\unnumbchapentry = \shortunnumberedentry
       % We want a true roman here for the page numbers.
       \secfonts
@@ -3985,16 +4005,23 @@ width0pt\relax} \fi
 % The last argument is the page number.
 % The arguments in between are the chapter number, section number, ...
 
-% Chapter-level things, for both the long and short contents.
+% Chapters, in the main contents.
 \def\chapentry#1#2#3{\dochapentry{#2\labelspace#1}{#3}}
-
-% See comments in \dochapentry re vbox and related settings
+%
+% Chapters, in the short toc.
+% See comments in \dochapentry re vbox and related settings.
 \def\shortchapentry#1#2#3{%
   \tocentry{\shortchaplabel{#2}\labelspace #1}{\doshortpageno\bgroup#3\egroup}%
 }
 
+% Appendices, in the main contents.
+\def\appendixentry#1#2#3{\dochapentry{\putwordAppendix{} #2\labelspace#1}{#3}}
+%
+% Appendices, in the short toc.
+\let\shortappendixentry = \shortchapentry
+
 % Typeset the label for a chapter or appendix for the short contents.
-% The arg is, e.g. `Appendix A' for an appendix, or `3' for a chapter.
+% The arg is, e.g., `Appendix A' for an appendix, or `3' for a chapter.
 % We could simplify the code here by writing out an \appendixentry
 % command in the toc file for appendices, instead of using \chapentry
 % for both, but it doesn't seem worth it.
@@ -4002,23 +4029,16 @@ width0pt\relax} \fi
 \newdimen\shortappendixwidth
 %
 \def\shortchaplabel#1{%
-  % Compute width of word "Appendix", may change with language.
-  \setbox0 = \hbox{\shortcontrm \putwordAppendix}%
-  \shortappendixwidth = \wd0
-  %
-  % We typeset #1 in a box of constant width, regardless of the text of
-  % #1, so the chapter titles will come out aligned.
-  \setbox0 = \hbox{#1}%
-  \dimen0 = \ifdim\wd0 > \shortappendixwidth \shortappendixwidth \else 0pt \fi
-  %
-  % This space should be plenty, since a single number is .5em, and the
+  % This space should be enough, since a single number is .5em, and the
   % widest letter (M) is 1em, at least in the Computer Modern fonts.
+  % But use \hss just in case.
   % (This space doesn't include the extra space that gets added after
   % the label; that gets put in by \shortchapentry above.)
-  \advance\dimen0 by 1.1em
-  \hbox to \dimen0{#1\hfil}%
+  \dimen0 = 1em
+  \hbox to \dimen0{#1\hss}%
 }
 
+% Unnumbered chapters.
 \def\unnumbchapentry#1#2{\dochapentry{#1}{#2}}
 \def\shortunnumberedentry#1#2{\tocentry{#1}{\doshortpageno\bgroup#2\egroup}}
 
@@ -4074,7 +4094,7 @@ width0pt\relax} \fi
 \def\tocentry#1#2{\begingroup
   \vskip 0pt plus1pt % allow a little stretch for the sake of nice page breaks
   % Do not use \turnoffactive in these arguments.  Since the toc is
-  % typeset in cmr, so characters such as _ would come out wrong; we
+  % typeset in cmr, characters such as _ would come out wrong; we
   % have to do the usual translation tricks.
   \entry{#1}{#2}%
 \endgroup}
@@ -4903,7 +4923,7 @@ width0pt\relax} \fi
 % #1 is the data type, #2 the name, #3 the args.
 \def\deftypefunheaderx #1#2 #3\relax{%
 \doind {fn}{\code{#2}}% Make entry in function index
-\begingroup\defname {\defheaderxcond#1\relax$$$#2}{\putwordDeftypefun}%
+\begingroup\defname {\defheaderxcond#1\relax$.$#2}{\putwordDeftypefun}%
 \deftypefunargs {#3}\endgroup %
 \catcode 61=\other % Turn off change made in \defparsebody
 }
@@ -4912,9 +4932,9 @@ width0pt\relax} \fi
 
 \def\deftypefn{\defmethparsebody\Edeftypefn\deftypefnx\deftypefnheader}
 
-% \defheaderxcond#1\relax$$$
+% \defheaderxcond#1\relax$.$
 % puts #1 in @code, followed by a space, but does nothing if #1 is null.
-\def\defheaderxcond#1#2$$${\ifx#1\relax\else\code{#1#2} \fi}
+\def\defheaderxcond#1#2$.${\ifx#1\relax\else\code{#1#2} \fi}
 
 % #1 is the classification.  #2 is the data type.  #3 is the name and args.
 \def\deftypefnheader #1#2#3{\deftypefnheaderx{#1}{#2}#3 \relax}
@@ -4924,7 +4944,7 @@ width0pt\relax} \fi
 \begingroup
 \normalparens % notably, turn off `&' magic, which prevents
 %               at least some C++ text from working
-\defname {\defheaderxcond#2\relax$$$#3}{#1}%
+\defname {\defheaderxcond#2\relax$.$#3}{#1}%
 \deftypefunargs {#4}\endgroup %
 \catcode 61=\other % Turn off change made in \defparsebody
 }
@@ -4970,7 +4990,7 @@ width0pt\relax} \fi
 \def\deftypeopheader#1#2#3#4{%
   \dosubind{fn}{\code{#3}}{\putwordon\ \code{#1}}% entry in function index
   \begingroup
-    \defname{\defheaderxcond#2\relax$$$#3}
+    \defname{\defheaderxcond#2\relax$.$#3}
             {\deftypeopcategory\ \putwordon\ \code{#1}}%
     \deftypefunargs{#4}%
   \endgroup
@@ -4985,7 +5005,7 @@ width0pt\relax} \fi
 \def\deftypemethodheader#1#2#3#4{%
   \dosubind{fn}{\code{#3}}{\putwordon\ \code{#1}}% entry in function index
   \begingroup
-    \defname{\defheaderxcond#2\relax$$$#3}{\putwordMethodon\ \code{#1}}%
+    \defname{\defheaderxcond#2\relax$.$#3}{\putwordMethodon\ \code{#1}}%
     \deftypefunargs{#4}%
   \endgroup
 }
@@ -4999,7 +5019,7 @@ width0pt\relax} \fi
 \def\deftypeivarheader#1#2#3{%
   \dosubind{vr}{\code{#3}}{\putwordof\ \code{#1}}% entry in variable index
   \begingroup
-    \defname{\defheaderxcond#2\relax$$$#3}
+    \defname{\defheaderxcond#2\relax$.$#3}
             {\putwordInstanceVariableof\ \code{#1}}%
     \defvarargs{#3}%
   \endgroup
@@ -5082,7 +5102,7 @@ width0pt\relax} \fi
 % is actually part of the data type, which should not be put into the index.
 \def\deftypevarheader #1#2{%
 \dovarind#2 \relax% Make entry in variables index
-\begingroup\defname {\defheaderxcond#1\relax$$$#2}{\putwordDeftypevar}%
+\begingroup\defname {\defheaderxcond#1\relax$.$#2}{\putwordDeftypevar}%
 \interlinepenalty=10000
 \endgraf\nobreak\vskip -\parskip\nobreak
 \endgroup}
@@ -5093,7 +5113,7 @@ width0pt\relax} \fi
 \def\deftypevr{\defvrparsebody\Edeftypevr\deftypevrx\deftypevrheader}
 
 \def\deftypevrheader #1#2#3{\dovarind#3 \relax%
-\begingroup\defname {\defheaderxcond#2\relax$$$#3}{#1}
+\begingroup\defname {\defheaderxcond#2\relax$.$#3}{#1}
 \interlinepenalty=10000
 \endgraf\nobreak\vskip -\parskip\nobreak
 \endgroup}
@@ -5904,7 +5924,7 @@ width0pt\relax} \fi
 % #5 is (ignored optional) extension.
 % #6 is just the usual extra ignored arg for parsing this stuff.
 \newif\ifimagevmode
-\def\imagexxx#1,#2,#3,#4,#5,#6\finish{\begingroup \loggingall
+\def\imagexxx#1,#2,#3,#4,#5,#6\finish{\begingroup
   \catcode`\^^M = 5     % in case we're inside an example
   \normalturnoffactive  % allow _ et al. in names
   % If the image is by itself, center it.
@@ -6153,7 +6173,7 @@ should work if nowhere else does.}
 \def\normalless{<}
 \def\normalgreater{>}
 \def\normalplus{+}
-\def\normaldollar{$}
+\def\normaldollar{$}%$ font-lock fix
 
 % This macro is used to make a character print one way in ttfont
 % where it can probably just be output, and another way in other fonts,
@@ -6202,7 +6222,7 @@ should work if nowhere else does.}
 \catcode`\+=\active
 \def+{{\tt \char 43}}
 \catcode`\$=\active
-\def${\ifusingit{{\sl\$}}\normaldollar}
+\def${\ifusingit{{\sl\$}}\normaldollar}%$ font-lock fix
 %\catcode 27=\active
 %\def^^[{$\diamondsuit$}
 
@@ -6247,7 +6267,7 @@ should work if nowhere else does.}
 @let<=@normalless
 @let>=@normalgreater
 @let+=@normalplus
-@let$=@normaldollar}
+@let$=@normaldollar}%$ font-lock fix
 
 @def@normalturnoffactive{@let"=@normaldoublequote
 @let\=@normalbackslash
@@ -6258,7 +6278,7 @@ should work if nowhere else does.}
 @let<=@normalless
 @let>=@normalgreater
 @let+=@normalplus
-@let$=@normaldollar}
+@let$=@normaldollar}%$ font-lock fix
 
 % Make _ and + \other characters, temporarily.
 % This is canceled by @fixbackslash.

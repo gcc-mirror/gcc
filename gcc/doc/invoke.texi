@@ -8684,8 +8684,8 @@ count register BK@.
 Enable (disable) generation of code using decrement and branch,
 DBcond(D), instructions.  This is enabled by default for the C4x.  To be
 on the safe side, this is disabled for the C3x, since the maximum
-iteration count on the C3x is @math{2^23 + 1} (but who iterates loops more than
-@math{2^23} times on the C3x?).  Note that GCC will try to reverse a loop so
+iteration count on the C3x is @math{2^{23} + 1} (but who iterates loops more than
+@math{2^{23}} times on the C3x?).  Note that GCC will try to reverse a loop so
 that it can utilise the decrement and branch instruction, but will give
 up if there is more than one memory reference in the loop.  Thus a loop
 where the loop counter is decremented can generate slightly more
@@ -8753,9 +8753,9 @@ instruction, it is disabled by default.
 @opindex mloop-unsigned
 @opindex mno-loop-unsigned
 The maximum iteration count when using RPTS and RPTB (and DB on the C40)
-is @math{2^31 + 1} since these instructions test if the iteration count is
+is @math{2^{31} + 1} since these instructions test if the iteration count is
 negative to terminate the loop.  If the iteration count is unsigned
-there is a possibility than the @math{2^31 + 1} maximum iteration count may be
+there is a possibility than the @math{2^{31} + 1} maximum iteration count may be
 exceeded.  This switch allows an unsigned iteration count.
 
 @item -mti
