@@ -1,3 +1,8 @@
+Fri Oct  9 14:26:44 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* global.c (build_insn_chain): Verify no real insns exist past the
+	end of the last basic block, then exit the loop.
+
 Fri Oct  9 11:44:47 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* loop.c (insert_bct): Ensure loop_iteration_var non-zero before use.
