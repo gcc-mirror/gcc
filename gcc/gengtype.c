@@ -20,7 +20,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "hconfig.h"
 #include "system.h"
-#include <ctype.h>
 #include "gengtype.h"
 
 /* Nonzero iff an error has occurred.  */
@@ -687,7 +686,7 @@ get_output_file_with_visibility (input_file)
       fm->output_name = s = xmalloc (sizeof ("gt-") + len);
       sprintf (s, "gt-%s", basename);
       for (; *s != '.'; s++)
-	if (! isalnum (*s) && *s != '-')
+	if (! ISALNUM (*s) && *s != '-')
 	  *s = '-';
       memcpy (s, ".h", sizeof (".h"));
     }
@@ -1435,7 +1434,7 @@ put_mangled_filename (f, fn)
 {
   const char *name = get_output_file_name (fn);
   for (; *name != 0; name++)
-    if (isalnum (*name))
+    if (ISALNUM (*name))
       fputc (*name, f);
     else
       fputc ('_', f);

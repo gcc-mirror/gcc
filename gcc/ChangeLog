@@ -1,3 +1,13 @@
+2002-06-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genautomata.c: Don't include ctype.h or limits.h.  Use ISSPACE,
+	not isspace.
+	* gengtype-lex.l: Don't include ctype.h and use ISSPACE/ISIDNUM in
+	lieu of isspace/IDchar.
+	* gengtype.c: Likewise for ctype.h and ISALNUM vs isalnum.
+	* read-rtl.c: Likewise for ctype.h.  Don't define ISDIGIT or
+	ISSPACE.
+
 2002-06-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (LIBCPP_OBJS): Take out version.o.

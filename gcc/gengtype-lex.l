@@ -25,7 +25,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "hconfig.h"
 #include "system.h"
-#include <ctype.h>
 #include "gengtype.h"
 #include "gengtype-yacc.h"
 
@@ -44,7 +43,6 @@ update_lineno (l, len)
       lexer_line.line++;
 }
 
-#define IDchar(c) (isalnum(c) || (c) == '_')
 %}
 
 ID	[[:alpha:]][[:alnum:]_]*
@@ -67,20 +65,20 @@ ITYPE	{IWORD}({WS}{IWORD})*
   int union_p;
 
   tagstart = yytext + strlen (" typedef ");
-  while (isspace (*tagstart))
+  while (ISSPACE (*tagstart))
     tagstart++;
   union_p = tagstart[0] == 'u';
   tagstart += strlen ("union ");
-  while (isspace (*tagstart))
+  while (ISSPACE (*tagstart))
     tagstart++;
-  for (taglen = 1; IDchar (tagstart[taglen]); taglen++)
+  for (taglen = 1; ISIDNUM (tagstart[taglen]); taglen++)
     ;
   for (namestart = tagstart + taglen; 
-       ! IDchar (*namestart);
+       ! ISIDNUM (*namestart);
        namestart++)
     if (*namestart == '*')
       is_pointer = 1;
-  for (namelen = 1; IDchar (namestart[namelen]); namelen++)
+  for (namelen = 1; ISIDNUM (namestart[namelen]); namelen++)
     ;
   t = find_structure (xmemdup (tagstart, taglen, taglen+1), union_p);
   if (is_pointer)
@@ -97,17 +95,17 @@ ITYPE	{IWORD}({WS}{IWORD})*
   char *typestart;
   size_t typelen;
 
-  for (namestart = yytext + yyleng - 2; isspace (*namestart); namestart--)
+  for (namestart = yytext + yyleng - 2; ISSPACE (*namestart); namestart--)
     ;
-  for (namelen = 1; !isspace (namestart[-namelen]); namelen++)
+  for (namelen = 1; !ISSPACE (namestart[-namelen]); namelen++)
     ;
   namestart -= namelen - 1;
   for (typestart = yytext + strlen (" typedef "); 
-       isspace(*typestart);
+       ISSPACE(*typestart);
        typestart++)
     ;
   for (typelen = namestart - typestart; 
-       isspace(typestart[typelen-1]); 
+       ISSPACE(typestart[typelen-1]); 
        typelen--)
     ;
 
@@ -121,9 +119,9 @@ ITYPE	{IWORD}({WS}{IWORD})*
   size_t namelen;
   struct type *t;
 
-  for (namestart = yytext + yyleng - 7; isspace (*namestart); namestart--)
+  for (namestart = yytext + yyleng - 7; ISSPACE (*namestart); namestart--)
     ;
-  for (namelen = 1; !isspace (namestart[-namelen]); namelen++)
+  for (namelen = 1; !ISSPACE (namestart[-namelen]); namelen++)
     ;
   namestart -= namelen - 1;
 
@@ -136,9 +134,9 @@ ITYPE	{IWORD}({WS}{IWORD})*
   size_t namelen;
   struct type *t;
 
-  for (namestart = yytext + yyleng - 7; !IDchar (*namestart); namestart--)
+  for (namestart = yytext + yyleng - 7; !ISIDNUM (*namestart); namestart--)
     ;
-  for (namelen = 1; IDchar (namestart[-namelen]); namelen++)
+  for (namelen = 1; ISIDNUM (namestart[-namelen]); namelen++)
     ;
   namestart -= namelen - 1;
 
@@ -156,7 +154,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
   typedef_p = yytext[1] == 't';
   if (typedef_p)
     for (tagstart = yytext + strlen (" typedef "); 
-	 isspace(*tagstart);
+	 ISSPACE(*tagstart);
 	 tagstart++)
       ;
   else
@@ -164,9 +162,9 @@ ITYPE	{IWORD}({WS}{IWORD})*
 
   union_p = tagstart[0] == 'u';
   tagstart += strlen ("union ");
-  while (isspace (*tagstart))
+  while (ISSPACE (*tagstart))
     tagstart++;
-  for (taglen = 1; IDchar (tagstart[taglen]); taglen++)
+  for (taglen = 1; ISIDNUM (tagstart[taglen]); taglen++)
     ;
 
   yylval.t = find_structure (xmemdup (tagstart, taglen, taglen + 1), union_p);
@@ -209,7 +207,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
 "ENUM_BITFIELD"{WS}?"("{WS}?{ID}{WS}?")"	{
   size_t len;
 
-  for (len = yyleng; isspace (yytext[len-1]); len--)
+  for (len = yyleng; ISSPACE (yytext[len-1]); len--)
     ;
 
   yylval.t = create_scalar_type (yytext, len);

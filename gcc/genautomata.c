@@ -106,17 +106,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "errors.h"
 
-#include <ctype.h>
 #include <math.h>
 #include "hashtab.h"
 #include "varray.h"
 
-#ifdef HAVE_LIMITS_H
-#include <limits.h>
-#else
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
-#endif
 #endif
 
 #include "genattrtab.h"
@@ -1301,7 +1296,7 @@ next_sep_el (pstr, sep, par_flag)
   int n_spaces;
 
   /* Remove leading whitespaces.  */
-  while (isspace ((int) **pstr))
+  while (ISSPACE ((int) **pstr))
     (*pstr)++;
 
   if (**pstr == '\0')
@@ -1316,7 +1311,7 @@ next_sep_el (pstr, sep, par_flag)
 	pars_num--;
       else if (pars_num == 0 && *p == sep)
 	break;
-      if (pars_num == 0 && isspace ((int) *p))
+      if (pars_num == 0 && ISSPACE ((int) *p))
 	n_spaces++;
       else
 	{
