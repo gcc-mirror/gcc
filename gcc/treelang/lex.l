@@ -4,7 +4,7 @@
 
    ---------------------------------------------------------------------
 
-   Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    
    This program is free software; you can redistribute it and/or modify it 
@@ -233,6 +233,9 @@ update_lineno_charno (void)
    int yyl;
    ((struct prod_token_parm_item *)yylval)->tp.tok.location = input_location;
    ((struct prod_token_parm_item *)yylval)->tp.tok.charno = next_tree_charno;
+   if (input_line == 0)
+     input_line = 1;
+
    for ( yyl = 0; yyl < yyleng; ++yyl ) 
       {
          if ( yytext[yyl] == '\n' ) 

@@ -1,3 +1,63 @@
+2004-07-31  James A. Morrison  <phython@gcc.gnu.org>
+
+	* Make-lang.in (TREE_BE_LIBS): Remove.
+	(tree1): Depend on BACKEND and LIBDEPS.  Use BACKEND and LIBS instead
+	of TREE_BE_LIBS.
+	* parse.y: Add variable_defs_opt before statements_opt.
+	Use tree_code_get_type instead of get_type_for_numeric_type.
+	Reformat long lines.
+	(parameters_opt): New rule.
+	(function_prototype): Use parameters_opt.
+	(return): Remove calls to print_token in error cases.  Use VOID_TYPE.
+	(check_type_match): Use VOID_TYPE.
+	* lex.l (update_lineno_charno): Ensure INPUT_LINE starts at 1.
+	* tree1.c: Include version.h and cgraph.h
+	(treelang_parse_file): Call cgraph_finalize_compilation_unit and
+	cgraph_optimize.
+	* treelang.h (item): Remove extraneous GTY.
+	* treetree.h (get_type_for_numeric_type): Remove.
+	* treetree.c: Include tree-dump.h, tree-iterator.h, tree-gimple.h,
+	function.h, and cgraph.h.  Don't include rtl.h
+	(keep_level_p): Remove.
+	(tree_push_atomic_type_decl): Remove.
+	(get_type_for_numeric_type): Remove.
+	(tree_code_get_numeric_type): Remove.
+	(global_bindings_p): Make static.
+	(getdecls): Likewise.
+	(insert_block): Likewise.
+	(tree_code_if_start): Create a COND_EXPR and add it to the tree
+	instead of creating rtl.
+	(tree_code_if_else): Create a BIND_EXPR if any variables were created
+	in the if statement.
+	(tree_code_end_if): Likewise.
+	(tree_code_create_function_prototype): Use tree_code_get_type.
+	Don't use SET_DECL_ASSEMBLER_NAME.
+	(tree_code_create_function_initial): Set DECL_ARTIFICIAL and
+	DECL_IGNORING_P on RESULT_DECL.  Use tree_code_get_type.  Don't call
+	layout_decl on RESULT_DECL.  Don't call rtl expand functions.
+	(tree_code_create_function_wrapup): Don't call rtl expand functions.
+	Create a BIND_EXPR for each function.  Dump original and gimplified
+	copies of the function tree.  Gimplify function.
+	(tree_code_create_variable): Use tree_code_get_type.  Don't call
+	layout_decl or expand_decl.  Fold CONVERT_EXPRs.
+	(tree_code_generate_return): Fold CONVERT_EXPRs and MODIFY_EXPRs.
+	Add RETURN_EXPR to the current statement list.  Don't call rtl expand
+	functions.
+	(tree_code_output_expression_statement): Append CODE to current
+	statement list.
+	(tree_code_get_expression): Fold expressions.  Build a pointer to
+	a FUNCTION_TYPE intead of the called functions return type.
+	(struct binding_level): Add statement list STMTS.
+	(getstmtlist): New Function.
+	(pushlevel): Make static.  Allocate an empty statement list.
+	(poplevel): Make static.  Don't clear BLOCK_NODE's BLOCK_VARS.
+	Don't use DECL_ASSEMBLER_NAME.
+	(tree_push_type_decl): Set TYPE_NAME of TYPE_NODE to ID.
+	(treelang_init_decl_processing): Define basic types after unused types.
+	Don't call tree_push_atomic_type_decl.
+	(builtin_function): Don't call make_decl_rtl.
+	(treelang_expand_function). New Function.
+
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* treetree.c (set_block): Remove.

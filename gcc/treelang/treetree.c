@@ -1,13 +1,13 @@
 /*
 
-    TREELANG Compiler back end interface (treetree.c)
+    TREELANG Compiler interface to GCC's middle end (treetree.c)
     Called by the parser.
 
     If you want a working example of how to write a front end to GCC,
     you are in the right place.
 
     Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-    1999, 2000, 2001, 2002, 2003, Free Software Foundation, Inc.
+    1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
     This code is based on toy.c written by Richard Kenner.
 
@@ -18,6 +18,8 @@
     GCC evolved, for COBOLForGCC, by Tim Josling.
 
     It was adapted to TREELANG by Tim Josling 2001.
+
+    Updated to function-at-a-time by James A. Morrison, 2004.
 
     ---------------------------------------------------------------------------
 
@@ -51,8 +53,8 @@
   need for a *lot* of bother to ensure everything is in the mark trees
   at all times.  */
 
-  /* Note it is OK to use GCC extensions such as long long in a compiler front end.
-     This is because the GCC front ends are built using GCC. */
+/* Note, it is OK to use GCC extensions such as long long in a compiler front
+   end.  This is because the GCC front ends are built using GCC.   */
 
 /* GCC headers.  */
 
@@ -61,15 +63,20 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "tree-dump.h"
+#include "tree-iterator.h"
+#include "tree-gimple.h"
+#include "function.h"
 #include "flags.h"
 #include "output.h"
-#include "rtl.h"
 #include "ggc.h"
 #include "toplev.h"
 #include "varray.h"
 #include "langhooks-def.h"
 #include "langhooks.h"
 #include "target.h"
+
+#include "cgraph.h"
 
 #include "treelang.h"
 #include "treetree.h"
@@ -130,17 +137,22 @@ static tree tree_lang_unsigned_type (tree type_node);
 static tree tree_lang_signed_type (tree type_node);
 static tree tree_lang_signed_or_unsigned_type (int unsignedp, tree type);
 
-/* XXX these should be static */
-void pushlevel (int ignore);
-tree poplevel (int keep, int reverse, int functionbody);
-int global_bindings_p (void);
-void insert_block (tree block);
-tree pushdecl (tree decl);
-tree getdecls (void);
-int kept_level_p (void);
+/* Functions to keep track of the current scope.  */
+static void pushlevel (int ignore);
+static tree poplevel (int keep, int reverse, int functionbody);
+static tree pushdecl (tree decl);
+static tree* getstmtlist (void);
+
+/* Langhooks.  */
+static tree builtin_function (const char *name, tree type, int function_code,
+		  enum built_in_class class, const char *library_name,
+		  tree attrs);
+static tree getdecls (void);
+static int global_bindings_p (void);
+static void insert_block (tree);
 
 static void tree_push_type_decl (tree id, tree type_node);
-static void tree_push_atomic_type_decl (tree id, tree type_node);
+static void treelang_expand_function (tree fndecl);
 
 /* The front end language hooks (addresses of code for this front
    end).  These are not really very language-dependent, i.e.
@@ -163,6 +175,12 @@ static void tree_push_atomic_type_decl (tree id, tree type_node);
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE treelang_parse_file
 
+#undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
+#define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION treelang_expand_function
+
+/* #undef LANG_HOOKS_TYPES_COMPATIBLE_P
+#define LANG_HOOKS_TYPES_COMPATIBLE_P hook_bool_tree_tree_true
+*/
 /* Hook routines and data unique to treelang.  */
 
 #undef LANG_HOOKS_INIT
@@ -243,33 +261,54 @@ tree_code_get_type (int type_num)
 void
 tree_code_if_start (tree exp, location_t loc)
 {
-  tree cond_exp;
-  cond_exp = build (NE_EXPR,
-                 TREE_TYPE (exp),
-                 exp,
-                 build1 (CONVERT_EXPR, TREE_TYPE (exp), integer_zero_node));
-  emit_line_note (loc); /* Output the line number information.  */
-  expand_start_cond (cond_exp, /* Exit-able if nonzero.  */ 0);
+  tree cond_exp, cond;
+  cond_exp = fold (build2 (NE_EXPR, boolean_type_node, exp,
+                     fold (build1 (CONVERT_EXPR, TREE_TYPE (exp), integer_zero_node))));
+  SET_EXPR_LOCATION (cond_exp, loc);
+  cond = build3 (COND_EXPR, void_type_node, cond_exp, NULL_TREE,
+                 NULL_TREE);
+  SET_EXPR_LOCATION (cond, loc);
+  append_to_statement_list_force (cond, getstmtlist ());
+  pushlevel (0);
 }
 
 /* Output the code for the else of an if statement.  The else occurred
    at line LINENO in file FILENAME.  */
 
 void
-tree_code_if_else (location_t loc)
+tree_code_if_else (location_t loc ATTRIBUTE_UNUSED)
 {
-  emit_line_note (loc); /* Output the line number information.  */
-  expand_start_else ();
+  tree stmts = *getstmtlist ();
+  tree block = poplevel (1, 0, 0);
+  if (BLOCK_VARS (block))
+    {
+      tree bindexpr = build3 (BIND_EXPR, void_type_node, BLOCK_VARS (block),
+                              stmts, block);
+      stmts = alloc_stmt_list ();
+      append_to_statement_list (bindexpr, &stmts);
+    }
+
+  TREE_OPERAND (STATEMENT_LIST_TAIL (*getstmtlist ())->stmt, 1) = stmts;
+  pushlevel (0);
 }
 
-/* Output the code for the end_if an if statement.  The end_if (final brace) occurred
-   at line LINENO in file FILENAME.  */
+/* Output the code for the end_if an if statement.  The end_if (final brace)
+   occurred at line LINENO in file FILENAME.  */
 
 void
-tree_code_if_end (location_t loc)
+tree_code_if_end (location_t loc ATTRIBUTE_UNUSED)
 {
-  emit_line_note (loc); /* Output the line number information.  */
-  expand_end_cond ();
+  tree stmts = *getstmtlist ();
+  tree block = poplevel (1, 0, 0);
+  if (BLOCK_VARS (block))
+    {
+       tree bindexpr = build3 (BIND_EXPR, void_type_node, BLOCK_VARS (block),
+                               stmts, block);
+       stmts = alloc_stmt_list ();
+       append_to_statement_list (bindexpr, &stmts);
+    }
+
+  TREE_OPERAND (STATEMENT_LIST_TAIL (*getstmtlist ())->stmt, 2) = stmts;
 }
 
 /* Create a function.  The prototype name is NAME, storage class is
@@ -297,7 +336,7 @@ tree_code_create_function_prototype (unsigned char* chars,
     {
       if (parm->category != parameter_category)
         abort ();
-      type_node = get_type_for_numeric_type (parm->type);
+      type_node = tree_code_get_type (parm->type);
       type_list = tree_cons (NULL_TREE, type_node, type_list);
     }
   /* Last parm if void indicates fixed length list (as opposed to
@@ -306,19 +345,17 @@ tree_code_create_function_prototype (unsigned char* chars,
   /* The back end needs them in reverse order.  */
   type_list = nreverse (type_list);
 
-  type_node = get_type_for_numeric_type (ret_type);
+  type_node = tree_code_get_type (ret_type);
   fn_type = build_function_type (type_node, type_list);
 
   id = get_identifier ((const char*)chars);
   fn_decl = build_decl (FUNCTION_DECL, id, fn_type);
 
-  DECL_CONTEXT (fn_decl) = NULL_TREE; /* Nested functions not supported here.  */
+  /* Nested functions not supported here.  */
+  DECL_CONTEXT (fn_decl) = NULL_TREE;
   DECL_SOURCE_LOCATION (fn_decl) = loc;
 
   TREE_USED (fn_decl) = 1;
-
-  /* Real name (optional).  */
-  SET_DECL_ASSEMBLER_NAME (fn_decl, DECL_NAME (fn_decl));
 
   TREE_PUBLIC (fn_decl) = 0;
   DECL_EXTERNAL (fn_decl) = 0;
@@ -339,7 +376,6 @@ tree_code_create_function_prototype (unsigned char* chars,
       TREE_PUBLIC (fn_decl) = 0;
       DECL_EXTERNAL (fn_decl) = 1;
       break;
-
 
     case AUTOMATIC_STORAGE:
     default:
@@ -364,8 +400,6 @@ tree_code_create_function_initial (tree prev_saved,
 {
   tree fn_decl;
   tree param_decl;
-  tree next_param;
-  tree first_param;
   tree parm_decl;
   tree parm_list;
   tree resultdecl;
@@ -388,15 +422,14 @@ tree_code_create_function_initial (tree prev_saved,
 
   DECL_SOURCE_LOCATION (fn_decl) = loc;
 
-  /* Prepare creation of rtl for a new function.  */
-
-  resultdecl = DECL_RESULT (fn_decl) 
-    = build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (TREE_TYPE (fn_decl)));
-  DECL_CONTEXT (DECL_RESULT (fn_decl)) = fn_decl;
+  /* Create a DECL for the functions result.  */
+  resultdecl =
+    build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (TREE_TYPE (fn_decl)));
+  DECL_CONTEXT (resultdecl) = fn_decl;
+  DECL_ARTIFICIAL (resultdecl) = 1;
+  DECL_IGNORED_P (resultdecl) = 1;
   DECL_SOURCE_LOCATION (resultdecl) = loc;
-
-  /* Work out the size. ??? is this needed.  */
-  layout_decl (DECL_RESULT (fn_decl), 0);
+  DECL_RESULT (fn_decl) = resultdecl;
 
   /* Make the argument variable decls.  */
   parm_list = NULL_TREE;
@@ -404,7 +437,7 @@ tree_code_create_function_initial (tree prev_saved,
     {
       parm_decl = build_decl (PARM_DECL, get_identifier
                               ((const char*) (parm->tp.par.variable_name)),
-                              get_type_for_numeric_type (parm->type));
+                              tree_code_get_type (parm->type));
 
       /* Some languages have different nominal and real types.  */
       DECL_ARG_TYPE (parm_decl) = TREE_TYPE (parm_decl);
@@ -436,58 +469,15 @@ tree_code_create_function_initial (tree prev_saved,
   if (this_parm)
     abort (); /* Too many.  */
 
-  /* Output the decl rtl (not the rtl for the function code).  ???.
-     If the function is not defined in this file, when should you
-     execute this?  */
-  make_decl_rtl (fn_decl);
-
-  init_function_start (fn_decl);
-
-  /* Create rtl for startup code of function, such as saving registers.  */
-
-  expand_function_start (fn_decl, 0);
-
-  /* Function.c requires a push at the start of the function. that
-     looks like a bug to me but let's make it happy.  */
+  /* Create a new level at the start of the function.  */
 
   pushlevel (0);
-
-  /* Create rtl for the start of a new scope.  */
-
-  expand_start_bindings (2);
-
-  /* Put the parameters into the symbol table.  */
-
-  for (first_param = param_decl = nreverse (DECL_ARGUMENTS (fn_decl));
-       param_decl;
-       param_decl = next_param)
-    {
-      next_param = TREE_CHAIN (param_decl);
-      TREE_CHAIN (param_decl) = NULL;
-      /* layout_decl (param_decl, 0);  Already done in build_decl tej 13/4/2002.  */
-      pushdecl (param_decl);
-      if (DECL_CONTEXT (param_decl) != current_function_decl)
-        abort ();
-    }
-
-  /* Store back the PARM_DECL nodes.  They appear in the right order.  */
-  DECL_ARGUMENTS (fn_decl) = getdecls ();
 
   /* Force it to be output, else may be solely inlined.  */
   TREE_ADDRESSABLE (fn_decl) = 1;
 
   /* Stop -O3 from deleting it.  */
   TREE_USED (fn_decl) = 1;
-
-  /* Add a new level to the debugger symbol table.  */
-
-  pushlevel (0);
-
-  /* Create rtl for the start of a new scope.  */
-
-  expand_start_bindings (0);
-
-  emit_line_note (loc); /* Output the line number information.  */
 }
 
 /* Wrapup a function contained in file FILENAME, ending at line LINENO.  */
@@ -496,22 +486,9 @@ tree_code_create_function_wrapup (location_t loc)
 {
   tree block;
   tree fn_decl;
+  tree stmts = *getstmtlist ();
 
   fn_decl = current_function_decl;
-
-  emit_line_note (loc); /* Output the line number information.  */
-
-  /* Get completely built level from debugger symbol table.  */
-
-  block = poplevel (1, 0, 0);
-
-  /* Emit rtl for end of scope.  */
-
-  expand_end_bindings (block, 0, 1);
-
-  /* Emit rtl for end of function.  */
-
-  expand_function_end ();
 
   /* Pop the level.  */
 
@@ -519,19 +496,28 @@ tree_code_create_function_wrapup (location_t loc)
 
   /* And attach it to the function.  */
 
-  DECL_INITIAL (fn_decl) = block;
+  DECL_SAVED_TREE (fn_decl) = build3 (BIND_EXPR, void_type_node,
+                                      BLOCK_VARS (block),
+			              stmts, block);
 
-  /* Emit rtl for end of scope.  */
+  allocate_struct_function (fn_decl);
+  cfun->function_end_locus = loc;
 
-  expand_end_bindings (block, 0, 1);
 
-  /* Call optimization and convert optimized rtl to assembly code.  */
+  /* Dump the original tree to a file.  */
+  dump_function (TDI_original, fn_decl);
 
-  rest_of_compilation (fn_decl);
+  /* Convert current function to GIMPLE for the middle end.  */
+  gimplify_function_tree (fn_decl);
+  dump_function (TDI_generic, fn_decl);
 
   /* We are not inside of any scope now.  */
-
   current_function_decl = NULL_TREE;
+  cfun = NULL;
+
+  /* Pass the current function off to the middle end.  */
+  (void)cgraph_node (fn_decl);
+  cgraph_finalize_function (fn_decl, false);
 }
 
 /*
@@ -556,7 +542,7 @@ tree_code_create_variable (unsigned int storage_class,
   tree var_decl;
 
   /* 1. Build the type.  */
-  var_type = get_type_for_numeric_type (expression_type);
+  var_type = tree_code_get_type (expression_type);
 
   /* 2. Build the name.  */
   if (chars[length] != 0)
@@ -569,12 +555,9 @@ tree_code_create_variable (unsigned int storage_class,
 
   /* 3a. Initialization.  */
   if (init)
-    DECL_INITIAL (var_decl) = build1 (CONVERT_EXPR, var_type, init);
+    DECL_INITIAL (var_decl) = fold (build1 (CONVERT_EXPR, var_type, init));
   else
     DECL_INITIAL (var_decl) = NULL_TREE;
-
-  /* 4. Compute size etc.  */
-  layout_decl (var_decl, 0);
 
   if (TYPE_SIZE (var_type) == 0)
     abort (); /* Did not calculate size.  */
@@ -617,13 +600,8 @@ tree_code_create_variable (unsigned int storage_class,
 
   if (TREE_STATIC (var_decl))
     rest_of_decl_compilation (var_decl, 0, 0);
-  else
-    {
-      expand_decl (var_decl);
-      if (DECL_INITIAL (var_decl))
-        expand_decl_init (var_decl);
-    }
 
+  TYPE_NAME (TREE_TYPE (var_decl)) = TYPE_NAME (var_type);
   return pushdecl (copy_node (var_decl));
 
 }
@@ -646,28 +624,33 @@ tree_code_generate_return (tree type, tree exp)
         abort ();
     }
 
-  if (exp)
+  if (exp && TREE_TYPE (TREE_TYPE (current_function_decl)) != void_type_node)
     {
-      setret = build (MODIFY_EXPR, type, DECL_RESULT (current_function_decl),
-                     build1 (CONVERT_EXPR, type, exp));
+      setret = fold (build2 (MODIFY_EXPR, type, 
+                             DECL_RESULT (current_function_decl),
+                             fold (build1 (CONVERT_EXPR, type, exp))));
       TREE_SIDE_EFFECTS (setret) = 1;
       TREE_USED (setret) = 1;
-      expand_expr_stmt (setret);
+      setret = build1 (RETURN_EXPR, type, setret);
     }
-  expand_return (DECL_RESULT (current_function_decl));
+   else
+     setret = build1 (RETURN_EXPR, type, NULL_TREE);
+
+   append_to_statement_list_force (setret, getstmtlist ());
 }
 
-/* Output the code for this expression statement CODE.  */
 
+/* Output the code for this expression statement CODE.  */
 
 void
 tree_code_output_expression_statement (tree code, location_t loc)
 {
   /* Output the line number information.  */
-  emit_line_note (loc);
+  SET_EXPR_LOCATION (code, loc);
   TREE_USED (code) = 1;
   TREE_SIDE_EFFECTS (code) = 1;
-  expand_expr_stmt (code);
+  /* put CODE into the code list.  */
+  append_to_statement_list_force (code, getstmtlist ());
 }
 
 /* Return a tree for a constant integer value in the token TOK.  No
@@ -716,9 +699,8 @@ tree_code_get_expression (unsigned int exp_type,
       if (!op1 || !op2)
         abort ();
       operator = MODIFY_EXPR;
-      ret1 = build (operator, type,
-                 op1,
-                 build1 (CONVERT_EXPR, type, op2));
+      ret1 = fold (build2 (operator, void_type_node, op1,
+                           fold (build1 (CONVERT_EXPR, TREE_TYPE (op1), op2))));
 
       break;
 
@@ -734,13 +716,13 @@ tree_code_get_expression (unsigned int exp_type,
       operator = EQ_EXPR;
       goto binary_expression;
 
-      /* Expand a binary expression.  Ensure the operands are the right type.  */
+    /* Expand a binary expression.  Ensure the operands are the right type.  */
     binary_expression:
       if (!op1 || !op2)
         abort ();
-      ret1  =  build (operator, type,
-                   build1 (CONVERT_EXPR, type, op1),
-                   build1 (CONVERT_EXPR, type, op2));
+      ret1  =  fold (build2 (operator, type,
+                       fold (build1 (CONVERT_EXPR, type, op1)),
+                       fold (build1 (CONVERT_EXPR, type, op2))));
       break;
 
       /* Reference to a variable.  This is dead easy, just return the
@@ -752,16 +734,18 @@ tree_code_get_expression (unsigned int exp_type,
       if (type == TREE_TYPE (op1))
         ret1 = op1;
       else
-        ret1 = build1 (CONVERT_EXPR, type, op1);
+        ret1 = fold (build1 (CONVERT_EXPR, type, op1));
       break;
 
     case EXP_FUNCTION_INVOCATION:
       if (!op1 || !op2)
         abort ();
+
       {
         tree fun_ptr;
-        fun_ptr = build1 (ADDR_EXPR, build_pointer_type (type), op1);
-        ret1 = build (CALL_EXPR, type, fun_ptr, nreverse (op2));
+        fun_ptr = fold (build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (op1)),
+                                op1));
+        ret1 = build3 (CALL_EXPR, type, fun_ptr, nreverse (op2), NULL_TREE);
       }
       break;
 
@@ -788,81 +772,11 @@ tree_code_add_parameter (tree list, tree proto_exp, tree exp)
 {
   tree new_exp;
   new_exp = tree_cons (NULL_TREE,
-                    build1 (CONVERT_EXPR, TREE_TYPE (proto_exp), exp),
-                    NULL_TREE);
+                       fold (build1 (CONVERT_EXPR, TREE_TYPE (proto_exp), exp)),
+                       NULL_TREE);
   if (!list)
     return new_exp;
   return chainon (new_exp, list);
-}
-
-/* Get the tree type for this type whose number is NUMERIC_TYPE.  */
-
-tree
-get_type_for_numeric_type (unsigned int numeric_type)
-{
-
-  int size1;
-  int sign1;
-  switch (numeric_type)
-    {
-    case VOID_TYPE:
-      return void_type_node;
-
-    case SIGNED_INT:
-      size1 = tree_code_int_size;
-      sign1 = 1;
-      break;
-
-    case UNSIGNED_INT:
-      size1 = tree_code_int_size;
-      sign1 = 0;
-      break;
-
-    case SIGNED_CHAR:
-      size1 = tree_code_char_size;
-      sign1 = 1;
-      break;
-
-    case UNSIGNED_CHAR:
-      size1 = tree_code_char_size;
-      sign1 = 0;
-      break;
-
-    default:
-      abort ();
-    }
-
-  return tree_code_get_numeric_type (size1, sign1);
-
-}
-
-/* Return tree representing a numeric type of size SIZE1 bits and
-   signed if SIGN1 !=  0.  */
-tree
-tree_code_get_numeric_type (unsigned int size1, unsigned int sign1)
-{
-  tree ret1;
-  if (!size1)
-    abort ();
-  if (size1 == tree_code_int_size)
-    {
-      if (sign1)
-        ret1 = integer_type_node;
-      else
-        ret1 = unsigned_type_node;
-    }
-  else
-    if (size1 == tree_code_char_size)
-      {
-        if (sign1)
-          ret1 = signed_char_type_node;
-        else
-          ret1 = unsigned_char_type_node;
-      }
-    else
-      abort ();
-
-  return ret1;
 }
 
 /* Get a stringpool entry for a string S of length L.  This is needed
@@ -1056,6 +970,8 @@ struct binding_level
   /* For each level (except the global one), a chain of BLOCK nodes for all
      the levels that were entered and exited one level down from this one.  */
   tree blocks;
+
+  tree stmts;
   /* The binding level containing this one (the enclosing binding level). */
   struct binding_level *level_chain;
 };
@@ -1068,37 +984,38 @@ static struct binding_level *current_binding_level = NULL;
 static struct binding_level *global_binding_level;
 
 /* Binding level structures are initialized by copying this one.  */
-static struct binding_level clear_binding_level = {NULL, NULL, NULL };
+static struct binding_level clear_binding_level = {NULL, NULL, NULL, NULL };
 
 /* Return non-zero if we are currently in the global binding level.  */
 
-int
+static int
 global_bindings_p (void)
 {
   return current_binding_level == global_binding_level ? -1 : 0;
 }
 
+
 /* Return the list of declarations in the current level. Note that this list
    is in reverse order (it has to be so for back-end compatibility).  */
 
-tree
+static tree
 getdecls (void)
 {
   return current_binding_level->names;
 }
 
-/* Nonzero if the current level needs to have a BLOCK made.  */
+/* Return a STATMENT_LIST for the current block.  */
 
-int
-kept_level_p (void)
+static tree*
+getstmtlist (void)
 {
-  return (current_binding_level->names != 0);
+  return &current_binding_level->stmts;
 }
 
 /* Enter a new binding level. The input parameter is ignored, but has to be
    specified for back-end compatibility.  */
 
-void
+static void
 pushlevel (int ignore ATTRIBUTE_UNUSED)
 {
   struct binding_level *newlevel = xmalloc (sizeof (struct binding_level));
@@ -1109,6 +1026,7 @@ pushlevel (int ignore ATTRIBUTE_UNUSED)
      active.  */
   newlevel->level_chain = current_binding_level;
   current_binding_level = newlevel;
+  current_binding_level->stmts = alloc_stmt_list ();
 }
 
 /* Exit a binding level.
@@ -1126,7 +1044,7 @@ pushlevel (int ignore ATTRIBUTE_UNUSED)
    If REVERSE is nonzero, reverse the order of decls before putting
    them into the BLOCK.  */
 
-tree
+static tree
 poplevel (int keep, int reverse, int functionbody)
 {
   /* Points to a BLOCK tree node. This is the BLOCK node construted for the
@@ -1166,8 +1084,6 @@ poplevel (int keep, int reverse, int functionbody)
 	{
 	  if (TREE_USED (subblock_node))
 	    TREE_USED (DECL_NAME (subblock_node)) = 1;
-	  if (TREE_ADDRESSABLE (subblock_node))
-	    TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (subblock_node)) = 1;
 	}
 
   /* Pop the current level.  */
@@ -1175,12 +1091,8 @@ poplevel (int keep, int reverse, int functionbody)
 
   if (functionbody)
     {
-      /* This is the top level block of a function. The ..._DECL chain stored
-	 in BLOCK_VARS are the function's parameters (PARM_DECL nodes). Don't
-	 leave them in the BLOCK because they are found in the FUNCTION_DECL
-	 instead.  */
+      /* This is the top level block of a function.  */
       DECL_INITIAL (current_function_decl) = block_node;
-      BLOCK_VARS (block_node) = 0;
     }
   else if (block_node)
     {
@@ -1205,13 +1117,14 @@ poplevel (int keep, int reverse, int functionbody)
    current binding level.  This is used when a BIND_EXPR is expanded,
    to handle the BLOCK node inside the BIND_EXPR.  */
 
-void
+static void
 insert_block (tree block)
 {
   TREE_USED (block) = 1;
   current_binding_level->blocks
     = chainon (current_binding_level->blocks, block);
 }
+
 
 /* Records a ..._DECL node DECL as belonging to the current lexical scope.
    Returns the ..._DECL node. */
@@ -1247,20 +1160,8 @@ static void
 tree_push_type_decl(tree id, tree type_node)
 {
   tree decl = build_decl (TYPE_DECL, id, type_node);
-  TYPE_NAME (type_node) = decl;
-  TYPE_STUB_DECL (type_node) = decl;
+  TYPE_NAME (type_node) = id;
   pushdecl (decl);
-}
-
-/* push_atomic_type_decl() ensures that the type's type is itself. 
-   Needed for DBX.  Must only be used for atomic types,
-   not for e.g. pointer or array types.  */
-
-static void
-tree_push_atomic_type_decl(tree id, tree type_node)
-{
-  TREE_TYPE (type_node) = type_node;
-  tree_push_type_decl (id, type_node);
 }
 
 #define NULL_BINDING_LEVEL (struct binding_level *) NULL                        
@@ -1282,53 +1183,52 @@ treelang_init_decl_processing (void)
 
   /* set standard type names */
 
-  /* Define `int' and `char' first so that dbx will output them first.  */
+  /* Define `int' and `char' last so that they are not overwritten.  */
+  tree_push_type_decl (NULL_TREE, intQI_type_node);
+  tree_push_type_decl (NULL_TREE, intHI_type_node);
+  tree_push_type_decl (NULL_TREE, intSI_type_node);
+  tree_push_type_decl (NULL_TREE, intDI_type_node);
+#if HOST_BITS_PER_WIDE_INT >= 64
+  tree_push_type_decl (NULL_TREE, intTI_type_node);
+#endif
+  tree_push_type_decl (NULL_TREE, unsigned_intQI_type_node);
+  tree_push_type_decl (NULL_TREE, unsigned_intHI_type_node);
+  tree_push_type_decl (NULL_TREE, unsigned_intSI_type_node);
+  tree_push_type_decl (NULL_TREE, unsigned_intDI_type_node);
+#if HOST_BITS_PER_WIDE_INT >= 64
+  tree_push_type_decl (NULL_TREE, unsigned_intTI_type_node);
+#endif
 
-  tree_push_atomic_type_decl (get_identifier ("int"), integer_type_node);
-  tree_push_atomic_type_decl (get_identifier ("char"), char_type_node);
-  tree_push_atomic_type_decl (get_identifier ("long int"),
+  tree_push_type_decl (get_identifier ("int"), integer_type_node);
+  tree_push_type_decl (get_identifier ("char"), char_type_node);
+  tree_push_type_decl (get_identifier ("long int"),
 			      long_integer_type_node);
-  tree_push_atomic_type_decl (get_identifier ("unsigned int"),
+  tree_push_type_decl (get_identifier ("unsigned int"),
 			      unsigned_type_node);
-  tree_push_atomic_type_decl (get_identifier ("long unsigned int"),
+  tree_push_type_decl (get_identifier ("long unsigned int"),
 			      long_unsigned_type_node);
-  tree_push_atomic_type_decl (get_identifier ("long long int"),
+  tree_push_type_decl (get_identifier ("long long int"),
 			      long_long_integer_type_node);
-  tree_push_atomic_type_decl (get_identifier ("long long unsigned int"),
+  tree_push_type_decl (get_identifier ("long long unsigned int"),
 			      long_long_unsigned_type_node);
-  tree_push_atomic_type_decl (get_identifier ("short int"),
+  tree_push_type_decl (get_identifier ("short int"),
 			      short_integer_type_node);
-  tree_push_atomic_type_decl (get_identifier ("short unsigned int"),
+  tree_push_type_decl (get_identifier ("short unsigned int"),
 			      short_unsigned_type_node);
-  tree_push_atomic_type_decl (get_identifier ("signed char"),
+  tree_push_type_decl (get_identifier ("signed char"),
 			      signed_char_type_node);
-  tree_push_atomic_type_decl (get_identifier ("unsigned char"),
+  tree_push_type_decl (get_identifier ("unsigned char"),
 			      unsigned_char_type_node);
-  tree_push_atomic_type_decl (NULL_TREE, intQI_type_node);
-  tree_push_atomic_type_decl (NULL_TREE, intHI_type_node);
-  tree_push_atomic_type_decl (NULL_TREE, intSI_type_node);
-  tree_push_atomic_type_decl (NULL_TREE, intDI_type_node);
-#if HOST_BITS_PER_WIDE_INT >= 64
-  tree_push_atomic_type_decl (NULL_TREE, intTI_type_node);
-#endif
-  tree_push_atomic_type_decl (NULL_TREE, unsigned_intQI_type_node);
-  tree_push_atomic_type_decl (NULL_TREE, unsigned_intHI_type_node);
-  tree_push_atomic_type_decl (NULL_TREE, unsigned_intSI_type_node);
-  tree_push_atomic_type_decl (NULL_TREE, unsigned_intDI_type_node);
-#if HOST_BITS_PER_WIDE_INT >= 64
-  tree_push_atomic_type_decl (NULL_TREE, unsigned_intTI_type_node);
-#endif
-  
   size_type_node = make_unsigned_type (POINTER_SIZE);
-  tree_push_atomic_type_decl (get_identifier ("size_t"), size_type_node);
+  tree_push_type_decl (get_identifier ("size_t"), size_type_node);
   set_sizetype (size_type_node);
 
   build_common_tree_nodes_2 (/* short_double= */ 0);
 
-  tree_push_atomic_type_decl (get_identifier ("float"), float_type_node);
-  tree_push_atomic_type_decl (get_identifier ("double"), double_type_node);
-  tree_push_atomic_type_decl (get_identifier ("long double"), long_double_type_node);
-  tree_push_atomic_type_decl (get_identifier ("void"), void_type_node);
+  tree_push_type_decl (get_identifier ("float"), float_type_node);
+  tree_push_type_decl (get_identifier ("double"), double_type_node);
+  tree_push_type_decl (get_identifier ("long double"), long_double_type_node);
+  tree_push_type_decl (get_identifier ("void"), void_type_node);
 
   /* Add any target-specific builtin functions.  */
   (*targetm.init_builtins) ();
@@ -1348,7 +1248,7 @@ treelang_init_decl_processing (void)
    copied from gcc/c-decl.c
 */
 
-tree
+static tree
 builtin_function (const char *name, tree type, int function_code,
 		  enum built_in_class class, const char *library_name,
 		  tree attrs)
@@ -1358,7 +1258,6 @@ builtin_function (const char *name, tree type, int function_code,
   TREE_PUBLIC (decl) = 1;
   if (library_name)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
-  make_decl_rtl (decl);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;
@@ -1370,6 +1269,15 @@ builtin_function (const char *name, tree type, int function_code,
     decl_attributes (&decl, NULL_TREE, 0);
 
   return decl;
+}
+
+/* Treelang expand function langhook.  */
+
+static void
+treelang_expand_function (tree fndecl)
+{
+  /* We have nothing special to do while expanding functions for treelang.  */
+  tree_rest_of_compilation (fndecl, 0);
 }
 
 #include "debug.h" /* for debug_hooks, needed by gt-treelang-treetree.h */

@@ -45,10 +45,6 @@
 TREELANGSED = sed
 TREELANGSEDFLAGS = -n
 
-# back end compiler libraries etc
-TREE_BE_LIBS = $(BACKEND) $(LIBIBERTY) $(INTLIBS) $(LIBS) $(LIBDEPS)
-
-
 GCC_EXTRAS = -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
 
 # ./xgcc is the just built compiler. See GCC_FOR_TARGET in the GCC Makefile.in.
@@ -83,11 +79,11 @@ treelang.done: tree1$(exeext)
 # core compiler
 tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/tree-convert.o \
 	treelang/lex.o treelang/parse.o \
-	$(TREE_BE_LIBS) attribs.o
+	$(BACKEND) $(LIBSDEPS) attribs.o
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	treelang/tree1.o treelang/treetree.o treelang/tree-convert.o \
 	treelang/lex.o treelang/parse.o \
-	$(TREE_BE_LIBS) attribs.o
+	$(BACKEND) $(LIBS) attribs.o
 
 #
 # Compiling object files from source files.

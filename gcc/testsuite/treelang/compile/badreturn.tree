@@ -1,0 +1,14 @@
+// { dg-do compile }
+
+external_definition void bar ();
+external_definition int gar (int arg0);
+
+bar
+{
+	return 0; // { dg-warning "return" }
+}
+
+gar
+{
+	return; // { dg-error "return" }
+}

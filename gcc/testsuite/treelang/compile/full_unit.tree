@@ -1,0 +1,16 @@
+// { dg-do compile }
+// { dg-options "-funit-at-a-time" }
+external_definition int add (int arga, int argb);
+external_definition char sub (char argc, char argd);
+
+add
+{
+	return arga + argb + +3;
+}
+
+sub
+{
+	return argd - argc + +2;
+}
+// { dg-final { scan-assembler "add" } }
+// { dg-final { scan-assembler "sub" } }
