@@ -1449,6 +1449,11 @@ expand_call (exp, target, ignore)
 
 	  addr = plus_constant (addr, arg_offset);
 	  args[i].stack = gen_rtx (MEM, args[i].mode, addr);
+	  MEM_IN_STRUCT_P (args[i].stack)
+	    = (TREE_CODE (TREE_TYPE (args[i].tree_value)) == RECORD_TYPE
+	       || TREE_CODE (TREE_TYPE (args[i].tree_value)) == UNION_TYPE
+	       || TREE_CODE (TREE_TYPE (args[i].tree_value)) == QUAL_UNION_TYPE
+	       || TREE_CODE (TREE_TYPE (args[i].tree_value)) == ARRAY_TYPE);
 
 	  if (GET_CODE (slot_offset) == CONST_INT)
 	    addr = plus_constant (arg_reg, INTVAL (slot_offset));
