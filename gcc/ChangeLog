@@ -1,3 +1,9 @@
+Mon Aug 17 21:07:19 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* rs6000.c (secondary_reload_class): For TARGET_ELF, indicate that
+	a BASE_REGS register is needed as an intermediate when copying
+	a symbolic value into any register class other than BASE_REGS.
+
 Mon Aug 17 11:25:52 1998  Richard Earnshaw <rearnsha@arm.com>
 
 	* arm.h (SECONDARY_INPUT_RELOAD_CLASS): Return NO_REGS if compiling
