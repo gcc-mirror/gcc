@@ -1892,14 +1892,21 @@ reg_unused_after (reg, insn)
     {
       code = GET_CODE (insn);
 
+#if 0
+      /* If this is a label that existed before reload, then the register
+	 if dead here.  However, if this is a label added by reorg, then
+	 the register may still be live here.  We can't tell the difference,
+	 so we just ignore labels completely.  */
       if (code == CODE_LABEL)
 	return 1;
+      /* else */
+#endif
 
       /* If this is a sequence, we must handle them all at once.
 	 We could have for instance a call that sets the target register,
 	 and a insn in a delay slot that uses the register.  In this case,
 	 we must return 0.  */
-      else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+      if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{
 	  int i;
 	  int retval = 0;
