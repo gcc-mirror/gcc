@@ -113,8 +113,8 @@ package body MLib.Tgt is
       pragma Unreferenced (Symbol_Data);
 
       Lib_File : constant String :=
-        Lib_Dir & Directory_Separator & "lib" &
-        MLib.Fil.Ext_To (Lib_Filename, DLL_Ext);
+                   Lib_Dir & Directory_Separator & "lib" &
+                   MLib.Fil.Ext_To (Lib_Filename, DLL_Ext);
 
       Version_Arg          : String_Access;
       Symbolic_Link_Needed : Boolean := False;
@@ -135,6 +135,7 @@ package body MLib.Tgt is
       end if;
 
       --  If specified, add automatic elaboration/finalization
+
       if Auto_Init then
          Init_Fini := Init_Fini_List;
          Init_Fini (2) := new String'("-Wl," & Lib_Filename & "init");

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,7 @@ package body Ada.Strings.Maps is
    -- "=" --
    ---------
 
-   function "=" (Left, Right : in Character_Set) return Boolean is
+   function "=" (Left, Right : Character_Set) return Boolean is
    begin
       return Character_Set_Internal (Left) = Character_Set_Internal (Right);
    end "=";
@@ -63,7 +63,7 @@ package body Ada.Strings.Maps is
    -- "and" --
    -----------
 
-   function "and" (Left, Right : in Character_Set) return Character_Set is
+   function "and" (Left, Right : Character_Set) return Character_Set is
    begin
       return Character_Set
         (Character_Set_Internal (Left) and Character_Set_Internal (Right));
@@ -73,7 +73,7 @@ package body Ada.Strings.Maps is
    -- "not" --
    -----------
 
-   function "not" (Right : in Character_Set) return Character_Set is
+   function "not" (Right : Character_Set) return Character_Set is
    begin
       return Character_Set (not Character_Set_Internal (Right));
    end "not";
@@ -82,7 +82,7 @@ package body Ada.Strings.Maps is
    -- "or" --
    ----------
 
-   function "or" (Left, Right : in Character_Set) return Character_Set is
+   function "or" (Left, Right : Character_Set) return Character_Set is
    begin
       return Character_Set
         (Character_Set_Internal (Left) or Character_Set_Internal (Right));
@@ -92,7 +92,7 @@ package body Ada.Strings.Maps is
    -- "xor" --
    -----------
 
-   function "xor" (Left, Right : in Character_Set) return Character_Set is
+   function "xor" (Left, Right : Character_Set) return Character_Set is
    begin
       return Character_Set
         (Character_Set_Internal (Left) xor Character_Set_Internal (Right));
@@ -104,8 +104,7 @@ package body Ada.Strings.Maps is
 
    function Is_In
      (Element : Character;
-      Set     : Character_Set)
-      return    Boolean
+      Set     : Character_Set) return Boolean
    is
    begin
       return Set (Element);
@@ -117,8 +116,7 @@ package body Ada.Strings.Maps is
 
    function Is_Subset
      (Elements : Character_Set;
-      Set      : Character_Set)
-      return     Boolean
+      Set      : Character_Set) return Boolean
    is
    begin
       return (Elements and Set) = Elements;
@@ -128,7 +126,7 @@ package body Ada.Strings.Maps is
    -- To_Domain --
    ---------------
 
-   function To_Domain (Map : in Character_Mapping) return Character_Sequence
+   function To_Domain (Map : Character_Mapping) return Character_Sequence
    is
       Result : String (1 .. Map'Length);
       J      : Natural;
@@ -150,8 +148,7 @@ package body Ada.Strings.Maps is
    ----------------
 
    function To_Mapping
-     (From, To : in Character_Sequence)
-      return     Character_Mapping
+     (From, To : Character_Sequence) return Character_Mapping
    is
       Result   : Character_Mapping;
       Inserted : Character_Set := Null_Set;
@@ -183,11 +180,10 @@ package body Ada.Strings.Maps is
    -- To_Range --
    --------------
 
-   function To_Range (Map : in Character_Mapping) return Character_Sequence
+   function To_Range (Map : Character_Mapping) return Character_Sequence
    is
       Result : String (1 .. Map'Length);
       J      : Natural;
-
    begin
       J := 0;
       for C in Map'Range loop
@@ -204,7 +200,7 @@ package body Ada.Strings.Maps is
    -- To_Ranges --
    ---------------
 
-   function To_Ranges (Set : in Character_Set) return Character_Ranges is
+   function To_Ranges (Set : Character_Set) return Character_Ranges is
       Max_Ranges : Character_Ranges (1 .. Set'Length / 2 + 1);
       Range_Num  : Natural;
       C          : Character;
@@ -214,7 +210,7 @@ package body Ada.Strings.Maps is
       Range_Num := 0;
 
       loop
-         --  Skip gap between subsets.
+         --  Skip gap between subsets
 
          while not Set (C) loop
             exit when C = Character'Last;
@@ -226,7 +222,7 @@ package body Ada.Strings.Maps is
          Range_Num := Range_Num + 1;
          Max_Ranges (Range_Num).Low := C;
 
-         --  Span a subset.
+         --  Span a subset
 
          loop
             exit when not Set (C) or else C = Character'Last;
@@ -248,13 +244,9 @@ package body Ada.Strings.Maps is
    -- To_Sequence --
    -----------------
 
-   function To_Sequence
-     (Set  : Character_Set)
-      return Character_Sequence
-   is
+   function To_Sequence (Set : Character_Set) return Character_Sequence is
       Result : String (1 .. Character'Pos (Character'Last) + 1);
       Count  : Natural := 0;
-
    begin
       for Char in Set'Range loop
          if Set (Char) then
@@ -270,9 +262,8 @@ package body Ada.Strings.Maps is
    -- To_Set --
    ------------
 
-   function To_Set (Ranges : in Character_Ranges) return Character_Set is
+   function To_Set (Ranges : Character_Ranges) return Character_Set is
       Result : Character_Set;
-
    begin
       for C in Result'Range loop
          Result (C) := False;
@@ -287,9 +278,8 @@ package body Ada.Strings.Maps is
       return Result;
    end To_Set;
 
-   function To_Set (Span   : in Character_Range) return Character_Set is
+   function To_Set (Span : Character_Range) return Character_Set is
       Result : Character_Set;
-
    begin
       for C in Result'Range loop
          Result (C) := False;
@@ -304,7 +294,6 @@ package body Ada.Strings.Maps is
 
    function To_Set (Sequence : Character_Sequence) return Character_Set is
       Result : Character_Set := Null_Set;
-
    begin
       for J in Sequence'Range loop
          Result (Sequence (J)) := True;
@@ -315,7 +304,6 @@ package body Ada.Strings.Maps is
 
    function To_Set (Singleton : Character) return Character_Set is
       Result : Character_Set := Null_Set;
-
    begin
       Result (Singleton) := True;
       return Result;
@@ -325,9 +313,10 @@ package body Ada.Strings.Maps is
    -- Value --
    -----------
 
-   function Value (Map : in Character_Mapping; Element : in Character)
-      return Character is
-
+   function Value
+     (Map     : Character_Mapping;
+      Element : Character) return Character
+   is
    begin
       return Map (Element);
    end Value;

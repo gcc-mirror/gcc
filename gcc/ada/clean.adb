@@ -325,15 +325,14 @@ package body Clean is
 
    procedure Clean_Archive (Project : Project_Id) is
       Current_Dir : constant Dir_Name_Str := Get_Current_Dir;
-
       Data        : constant Project_Data := Projects.Table (Project);
 
       Archive_Name : constant String :=
-        "lib" & Get_Name_String (Data.Name) & '.' & Archive_Ext;
+                       "lib" & Get_Name_String (Data.Name) & '.' & Archive_Ext;
       --  The name of the archive file for this project
 
       Archive_Dep_Name : constant String :=
-        "lib" & Get_Name_String (Data.Name) & ".deps";
+                           "lib" & Get_Name_String (Data.Name) & ".deps";
       --  The name of the archive dependency file for this project
 
       Obj_Dir : constant String := Get_Name_String (Data.Object_Directory);
@@ -439,8 +438,7 @@ package body Clean is
             Extract_From_Q (Lib_File);
             Full_Lib_File := Osint.Full_Lib_File_Name (Lib_File);
 
-            --  If we have an existing ALI file that is not read-only,
-            --  process it.
+            --  If we have existing ALI file that is not read-only, process it
 
             if Full_Lib_File /= No_File
               and then not Is_Readonly_Library (Full_Lib_File)
@@ -484,8 +482,7 @@ package body Clean is
                   end if;
                end if;
 
-               --  Now, delete all the existing files corresponding to this
-               --  ALI file.
+               --  Now delete all existing files corresponding to this ALI file
 
                declare
                   Obj_Dir : constant String :=
@@ -515,9 +512,10 @@ package body Clean is
                   for J in 1 .. Sources.Last loop
                      declare
                         Deb : constant String :=
-                                         Debug_File_Name (Sources.Table (J));
+                                Debug_File_Name (Sources.Table (J));
                         Rep : constant String :=
-                                         Repinfo_File_Name (Sources.Table (J));
+                                Repinfo_File_Name (Sources.Table (J));
+
                      begin
                         if Is_Regular_File (Obj_Dir & Dir_Separator & Deb) then
                            Delete (Obj_Dir, Deb);
@@ -557,8 +555,7 @@ package body Clean is
 
    procedure Clean_Project (Project : Project_Id) is
       Main_Source_File : File_Name_Type;
-      --  Name of the executable on the command line, without directory
-      --  information.
+      --  Name of executable on the command line without directory info
 
       Executable : Name_Id;
       --  Name of the executable file
@@ -610,7 +607,8 @@ package body Clean is
          begin
             Change_Dir (Obj_Dir);
 
-            --  First, deal with Ada.
+            --  First, deal with Ada
+
             --  Look through the units to find those that are either immediate
             --  sources or inherited sources of the project.
 
@@ -765,8 +763,9 @@ package body Clean is
             end if;
 
             if Data.Other_Sources_Present then
+
                --  There is non-Ada code: delete the object files and
-               --  the dependency files, if they exist.
+               --  the dependency files if they exist.
 
                Source_Id := Data.First_Other_Source;
 
@@ -1093,8 +1092,8 @@ package body Clean is
 
          Prj.Pars.Set_Verbosity (To => Prj.Com.Current_Verbosity);
 
-         --  Parse the project file.
-         --  If there is an error, Main_Project will still be No_Project.
+         --  Parse the project file. If there is an error, Main_Project
+         --  will still be No_Project.
 
          Prj.Pars.Parse
            (Project           => Main_Project,
@@ -1103,8 +1102,7 @@ package body Clean is
             Process_Languages => All_Languages);
 
          if Main_Project = No_Project then
-            Fail ("""" & Project_File_Name.all &
-                  """ processing failed");
+            Fail ("""" & Project_File_Name.all & """ processing failed");
          end if;
 
          if Opt.Verbose_Mode then
@@ -1311,7 +1309,8 @@ package body Clean is
    procedure Parse_Cmd_Line is
       Source_Index : Int := 0;
       Index : Positive := 1;
-      Last  : constant Natural := Argument_Count;
+      Last         : constant Natural := Argument_Count;
+
    begin
       while Index <= Last loop
          declare

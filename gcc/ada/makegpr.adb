@@ -2395,16 +2395,10 @@ package body Makegpr is
 
       if not Compile_Only then
 
-         --  If there are linking options from the command line,
-         --  transmit them to gnatmake.
+         --  Linking options
 
          if Linker_Options.Last /= 0 then
             Add_Argument (Dash_largs, True);
-
-            for Arg in 1 .. Linker_Options.Last loop
-               Add_Argument (Linker_Options.Table (Arg), True);
-            end loop;
-
          else
             Add_Argument (Dash_largs, Verbose_Mode);
          end if;
@@ -2412,6 +2406,13 @@ package body Makegpr is
          --  Add the archives
 
          Add_Archives (For_Gnatmake => True);
+
+         --  If there are linking options from the command line,
+         --  transmit them to gnatmake.
+
+         for Arg in 1 .. Linker_Options.Last loop
+            Add_Argument (Linker_Options.Table (Arg), True);
+         end loop;
       end if;
 
       --  And invoke gnatmake
@@ -3318,6 +3319,10 @@ package body Makegpr is
                Get_Name_String (Source.Object_Name),
                True);
 
+            --  Add all the archives, in a correct order
+
+            Add_Archives (For_Gnatmake => False);
+
             --  Add the switches specified in package Linker of
             --  the main project.
 
@@ -3344,10 +3349,6 @@ package body Makegpr is
             for Arg in 1 ..  Linker_Options.Last loop
                Add_Argument (Linker_Options.Table (Arg), True);
             end loop;
-
-            --  Add all the archives, in a correct order
-
-            Add_Archives (For_Gnatmake => False);
 
             --  If there are shared libraries and the run path
             --  option is supported, add the run path switch.

@@ -54,7 +54,8 @@
 --     Compile without -g
 --     Run the program, and call Call_Chain
 --     Recompile with -g
---     Use addr2line to interpret the absolute call locations
+--     Use addr2line to interpret the absolute call locations (note that
+--      addr2line expects addresses in hexadecimal format).
 
 --  This capability is currently supported on the following targets:
 

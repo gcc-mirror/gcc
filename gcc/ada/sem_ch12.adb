@@ -6568,9 +6568,11 @@ package body Sem_Ch12 is
                      Next_Non_Pragma (Formal_Node);
 
                   else
-                     --  No further formals to match.
+                     --  No further formals to match, but the generic
+                     --  part may contain inherited operation that are
+                     --  not hidden in the enclosing instance.
 
-                     exit;
+                     Next_Entity (Actual_Ent);
                   end if;
 
                end loop;

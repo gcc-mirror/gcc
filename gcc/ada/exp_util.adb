@@ -2384,34 +2384,6 @@ package body Exp_Util is
    ---------------------------------
 
    function Is_Possibly_Unaligned_Slice (P : Node_Id) return Boolean is
-
-      function Has_Non_Trivial_Component_Clause (E : Entity_Id) return Boolean;
-      --  Check whether the component clause might place the component at an
-      --  alignment that will require the use of a copy when a slice is passed
-      --  as a parameter.  The code is conservative because at this point the
-      --  expander does not know the alignment choice that the back-end will
-      --  make. For now we return true if the component is not the first one
-      --  in the enclosing record. This routine is a place holder for further
-      --  analysis of this kind.
-
-      --------------------------------------
-      -- Has_Non_Trivial_Component_Clause --
-      --------------------------------------
-
-      function Has_Non_Trivial_Component_Clause (E : Entity_Id) return Boolean
-      is
-         Rep_Clause : constant Node_Id := Component_Clause (E);
-      begin
-         if No (Rep_Clause) then
-            return False;
-         else
-            return Intval (Position (Rep_Clause)) /= Uint_0
-              or else Intval (First_Bit (Rep_Clause)) /= Uint_0;
-         end if;
-      end Has_Non_Trivial_Component_Clause;
-
-   --  Start of processing for Is_Possibly_Unaligned_Slice
-
    begin
       --  ??? GCC3 will eventually handle strings with arbitrary alignments,
       --  but for now the following check must be disabled.
@@ -2420,27 +2392,13 @@ package body Exp_Util is
       --     return False;
       --  end if;
 
+      --  For renaming case, go to renamed object
+
       if Is_Entity_Name (P)
         and then Is_Object (Entity (P))
         and then Present (Renamed_Object (Entity (P)))
       then
          return Is_Possibly_Unaligned_Slice (Renamed_Object (Entity (P)));
-      end if;
-
-      --  We only need to worry if the target has strict alignment, unless
-      --  it is a nested record component with a component clause, which
-      --  Gigi does not handle well. This patch should disappear with GCC 3.0
-      --  and it is not clear why it is needed even when the representation
-      --  clause is a confirming one, but in its absence gigi complains that
-      --  the slice is not addressable.???
-
-      if not Target_Strict_Alignment then
-         if Nkind (P) /= N_Slice
-           or else Nkind (Prefix (P)) /= N_Selected_Component
-           or else Nkind (Prefix (Prefix (P))) /= N_Selected_Component
-         then
-            return False;
-         end if;
       end if;
 
       --  The reference must be a slice
@@ -2449,35 +2407,115 @@ package body Exp_Util is
          return False;
       end if;
 
+      --  Always assume the worst for a nested record component with a
+      --  component clause, which gigi/gcc does not appear to handle well.
+      --  It is not clear why this special test is needed at all ???
+
+      if Nkind (Prefix (P)) = N_Selected_Component
+        and then Nkind (Prefix (Prefix (P))) = N_Selected_Component
+        and then
+          Present (Component_Clause (Entity (Selector_Name (Prefix (P)))))
+      then
+         return True;
+      end if;
+
+      --  We only need to worry if the target has strict alignment
+
+      if not Target_Strict_Alignment then
+         return False;
+      end if;
+
       --  If it is a slice, then look at the array type being sliced
 
       declare
-         Pref : constant Node_Id   := Prefix (P);
-         Typ  : constant Entity_Id := Etype (Prefix (P));
+         Sarr : constant Node_Id := Prefix (P);
+         --  Prefix of the slice, i.e. the array being sliced
+
+         Styp : constant Entity_Id := Etype (Prefix (P));
+         --  Type of the array being sliced
+
+         Pref : Node_Id;
+         Ptyp : Entity_Id;
 
       begin
-         --  The worrisome case is one where we don't know the alignment
-         --  of the array, or we know it and it is greater than 1 (if the
-         --  alignment is one, then obviously it cannot be misaligned).
+         --  The problems arise if the array object that is being sliced
+         --  is a component of a record or array, and we cannot guarantee
+         --  the alignment of the array within its containing object.
 
-         if Known_Alignment (Typ) and then Alignment (Typ) = 1 then
-            return False;
-         end if;
+         --  To investigate this, we look at successive prefixes to see
+         --  if we have a worrisome indexed or selected component.
 
-         --  The only way we can be unaligned is if the array being sliced
-         --  is a component of a record, and either the record is packed,
-         --  or the component has a component clause, or the record has
-         --  a specified alignment (that might be too small).
+         Pref := Sarr;
+         loop
+            --  Case of array is part of an indexed component reference
 
-         return
-            Nkind (Pref) = N_Selected_Component
-              and then
-                 (Is_Packed (Etype (Prefix (Pref)))
-                    or else
-                  Known_Alignment (Etype (Prefix (Pref)))
-                    or else
-                      Has_Non_Trivial_Component_Clause
-                        (Entity (Selector_Name (Pref))));
+            if Nkind (Pref) = N_Indexed_Component then
+               Ptyp := Etype (Prefix (Pref));
+
+               --  The only problematic case is when the array is packed,
+               --  in which case we really know nothing about the alignment
+               --  of individual components.
+
+               if Is_Bit_Packed_Array (Ptyp) then
+                  return True;
+               end if;
+
+            --  Case of array is part of a selected component reference
+
+            elsif Nkind (Pref) = N_Selected_Component then
+               Ptyp := Etype (Prefix (Pref));
+
+               --  We are definitely in trouble if the record in question
+               --  has an alignment, and either we know this alignment is
+               --  inconsistent with the alignment of the slice, or we
+               --  don't know what the alignment of the slice should be.
+
+               if Known_Alignment (Ptyp)
+                 and then (Unknown_Alignment (Styp)
+                             or else Alignment (Styp) > Alignment (Ptyp))
+               then
+                  return True;
+               end if;
+
+               --  We are in potential trouble if the record type is packed.
+               --  We could special case when we know that the array is the
+               --  first component, but that's not such a simple case ???
+
+               if Is_Packed (Ptyp) then
+                  return True;
+               end if;
+
+               --  We are in trouble if there is a component clause, and
+               --  either we do not know the alignment of the slice, or
+               --  the alignment of the slice is inconsistent with the
+               --  bit position specified by the component clause.
+
+               declare
+                  Field : constant Entity_Id := Entity (Selector_Name (Pref));
+               begin
+                  if Present (Component_Clause (Field))
+                    and then
+                      (Unknown_Alignment (Styp)
+                        or else
+                         (Component_Bit_Offset (Field) mod
+                           (System_Storage_Unit * Alignment (Styp))) /= 0)
+                  then
+                     return True;
+                  end if;
+               end;
+
+            --  For cases other than selected or indexed components we
+            --  know we are OK, since no issues arise over alignment.
+
+            else
+               return False;
+            end if;
+
+            --  We processed an indexed component or selected component
+            --  reference that looked safe, so keep checking prefixes.
+
+            Pref := Prefix (Pref);
+         end loop;
       end;
    end Is_Possibly_Unaligned_Slice;
 
