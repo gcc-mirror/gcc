@@ -637,7 +637,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
      int keep;
      tree type;
 {
-  int align;
+  unsigned int align;
   struct temp_slot *p, *best_p = 0;
 
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
@@ -795,6 +795,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
      it.  If there's no TYPE, then we don't know anything about the
      alias set for the memory.  */
   set_mem_alias_set (p->slot, type ? get_alias_set (type) : 0);
+  set_mem_align (p->slot, align);
 
   /* If a type is specified, set the relevant flags.  */
   if (type != 0)
@@ -5017,8 +5018,15 @@ assign_parms (fndecl)
       if (parm == function_result_decl)
 	{
 	  tree result = DECL_RESULT (fndecl);
-	  rtx x = gen_rtx_MEM (DECL_MODE (result), DECL_RTL (parm));
+	  rtx addr = DECL_RTL (parm);
+	  rtx x;
 
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (addr) != Pmode)
+	    addr = convert_memory_address (Pmode, addr);
+#endif
+
+	  x = gen_rtx_MEM (DECL_MODE (result), addr);
 	  set_mem_attributes (x, result, 1);
 	  SET_DECL_RTL (result, x);
 	}
@@ -6709,6 +6717,7 @@ expand_function_end (filename, line, end_bindings)
 	{
 	  initial_trampoline
 	    = gen_rtx_MEM (BLKmode, assemble_trampoline_template ());
+	  set_mem_align (initial_trampoline, TRAMPOLINE_ALIGNMENT);
 
 	  ggc_add_rtx_root (&initial_trampoline, 1);
 	}
@@ -6718,10 +6727,9 @@ expand_function_end (filename, line, end_bindings)
       start_sequence ();
       tramp = round_trampoline_addr (XEXP (tramp, 0));
 #ifdef TRAMPOLINE_TEMPLATE
-      blktramp = change_address (initial_trampoline, BLKmode, tramp);
+      blktramp = replace_equiv_address (initial_trampoline, tramp);
       emit_block_move (blktramp, initial_trampoline,
-		       GEN_INT (TRAMPOLINE_SIZE),
-		       TRAMPOLINE_ALIGNMENT);
+		       GEN_INT (TRAMPOLINE_SIZE));
 #endif
       INITIALIZE_TRAMPOLINE (tramp, XEXP (DECL_RTL (function), 0), context);
       seq = get_insns ();
