@@ -291,6 +291,15 @@ Necessary to build the Fortran frontend. If you don't have it
 installed in your library search path, you will have to configure with
 the @option{--with-gmp} or @option{--with-gmp-dir} configure option.
 
+@item MPFR Library
+
+Necessary to build the Fortran frontend.  It can be downloaded from
+@uref{http://http://www.mpfr.org/}.  It is also included in the current GMP
+release (4.1.3) when configured with @option{--enable-mpfr}.
+
+The @option{--with-mpfr} or @option{--with-mpfr-dir} configure option should
+be used if your MPFR Library is not installed in your library search path.
+
 @end table
 
 
@@ -1204,12 +1213,15 @@ The following options apply to the build of the Fortran front end.
 @table @code
 
 @item --with-gmp=@var{pathname}
+@itemx --with-mpfr=@var{pathname}
 @itemx --with-gmp-dir=@var{pathname}
-If you don't have GMP (the GNU Multiple Precision library) installed
-in a standard location and you want to build the Fortran front-end,
-you can explicitly specify the directory where GMP is installed
-(@samp{--with-gmp=gmpinstalldir}) or where you built the GMP library without
-installing (@samp{--with-gmp-dir=gmpbuilddir}).
+@itemx --with-mpfr-dir=@var{pathname}
+If you don't have GMP (the GNU Multiple Precision library) and the MPFR 
+Libraries installed in a standard location and you want to build the Fortran
+front-end, you can explicitly specify the directory where they are installed
+(@samp{--with-gmp=gmpinstalldir}, @samp{--with-mpfr=mpfrinstalldir}) or where
+you built them without installing (@samp{--with-gmp-dir=gmpbuilddir},
+@samp{--with-mpfr-dir=gmpbuilddir}).
 
 @end table
 

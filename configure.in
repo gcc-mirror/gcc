@@ -1030,33 +1030,48 @@ fi
 ACX_PROG_GNAT
 ACX_PROG_CMP_IGNORE_INITIAL
 
-# Check for GMP
+# Check for GMP and MPFR
 gmplibs=
 gmpinc=
 have_gmp=yes
+# Specify a location for mpfr
+# check for this first so it ends up on the link line before gmp.
+AC_ARG_WITH(mpfr-dir, [  --with-mpfr-dir=PATH    Specify source directory for MPFR library])
+
+if test "x$with_mpfr_dir" != x; then
+  gmpinc="-I$with_mpfr_dir/mpfr"
+  gmplibs="$with_mpfr_dir/libmpfr.a"
+else
+  gmplibs="-lmpfr"
+fi
+
+AC_ARG_WITH(mpfr, [  --with-mpfr=PATH        Specify directory for installed MPFR library])
+
+if test "x$with_mpfr" != x; then
+  gmplibs="-L$with_mpfr/lib $gmplibs"
+  gmpinc="-I$with_mpfr/include"
+fi
+
 # Specify a location for gmp
 AC_ARG_WITH(gmp-dir, [  --with-gmp-dir=PATH     Specify source directory for GMP library])
 
-if test "x$with_gmp_dir" != x && test -f "$with_gmp_dir/gmp.h"; then
-  gmpinc="-I$with_gmp_dir"
+if test "x$with_gmp_dir" != x; then
+  gmpinc="$gmpinc -I$with_gmp_dir"
   if test -f "$with_gmp_dir/.libs/libgmp.a"; then
-    gmplibs="$with_gmp_dir/.libs/libgmp.a"
+    gmplibs="$gmplibs $with_gmp_dir/.libs/libgmp.a"
   elif test -f "$with_gmp_dir/_libs/libgmp.a"; then
-    gmplibs="$with_gmp_dir/_libs/libgmp.a"
+    gmplibs="$gmplibs $with_gmp_dir/_libs/libgmp.a"
   fi
   # One of the later tests will catch the error if neither library is present.
+else
+  gmplibs="$gmplibs -lgmp"
 fi
 
 AC_ARG_WITH(gmp, [  --with-gmp=PATH         Specify directory for installed GMP library])
 
-if test "x$with_gmp" != x && test -d "$with_gmp"; then
-  gmplibs="-L$with_gmp/lib -lgmp"
-  gmpinc="-I$with_gmp/include"
-fi
-
-# Use system gmp if nothing else specified
-if test "x$gmplibs" = x; then
-  gmplibs="-lgmp"
+if test "x$with_gmp" != x; then
+  gmplibs="-L$with_gmp/lib $gmplibs"
+  gmpinc="-I$with_gmp/include $gmpinc"
 fi
 
 saved_CFLAGS="$CFLAGS"
@@ -1071,16 +1086,18 @@ choke me
   [AC_MSG_RESULT([no]); have_gmp=no])
 
 if test x"$have_gmp" = xyes; then
-  AC_MSG_CHECKING([for mpf_init in -lgmp])
+  AC_MSG_CHECKING([for MPFR])
 
   saved_LIBS="$LIBS"
   LIBS="$LIBS $gmplibs"
-  AC_TRY_LINK([#include <gmp.h>], [mpf_t n; mpf_init(n);],
+  AC_TRY_LINK([#include <gmp.h>
+#include <mpfr.h>], [mpfr_t n; mpfr_init(n);],
     [AC_MSG_RESULT([yes])],  [AC_MSG_RESULT([no]); have_gmp=no])
   LIBS="$saved_LIBS"
   CFLAGS="$saved_CFLAGS"
 fi
 
+# Flags needed for both GMP and/or MPFR
 AC_SUBST(gmplibs)
 AC_SUBST(gmpinc)
 

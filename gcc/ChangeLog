@@ -1,3 +1,7 @@
+2004-08-03  Paul Brook  <paul@codesourcery.com>
+
+	* gcc/doc/install.texi: Document MPFR requirement.
+
 2004-07-30  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* aclocal.m4 (gcc_AC_FUNC_MMAP_BLACKLIST): Check for <sys/mman.h> 
