@@ -1,3 +1,7 @@
+2004-06-25  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define __ARM_EABI__.
+
 2004-06-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_arch4t): New variable.
