@@ -987,26 +987,23 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	    }
 #endif /* HAVE_cc0 */
 
-	  /* We deal with four cases:
+	  /* Try to use a conditional move (if the target has them), or a
+	     store-flag insn.  The general case is:
 
-	     1) x = a; if (...) x = b; and either A or B is zero,
-	     2) if (...) x = 0; and jumps are expensive,
-	     3) x = a; if (...) x = b; and A and B are constants where all the
-	        set bits in A are also set in B and jumps are expensive, and
-	     4) x = a; if (...) x = b; and A and B non-zero, and jumps are
-	        more expensive.
-	     5) if (...) x = b; if jumps are even more expensive.
+	     1) x = a; if (...) x = b; and
+	     2) if (...) x = b;
 
-	     In each of these try to use a store-flag insn to avoid the jump.
-	     (If the jump would be faster, the machine should not have
-	     defined the scc insns!).  These cases are often made by the
+	     If the jump would be faster, the machine should not have defined
+	     the movcc or scc insns!.  These cases are often made by the
 	     previous optimization.
+
+	     The second case is treated as  x = x; if (...) x = b;.
 
 	     INSN here is the jump around the store.  We set:
 
 	     TEMP to the "x = b;" insn.
 	     TEMP1 to X.
-	     TEMP2 to B (const0_rtx in the second case).
+	     TEMP2 to B.
 	     TEMP3 to A (X in the second case).
 	     TEMP4 to the condition being tested.
 	     TEMP5 to the earliest insn used to find the condition.  */
@@ -1022,25 +1019,18 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 #ifdef SMALL_REGISTER_CLASSES
 	      && REGNO (temp1) >= FIRST_PSEUDO_REGISTER
 #endif
-	      && GET_MODE_CLASS (GET_MODE (temp1)) == MODE_INT
 	      && (GET_CODE (temp2 = SET_SRC (PATTERN (temp))) == REG
 		  || GET_CODE (temp2) == SUBREG
+		  /* ??? How about floating point constants?  */
 		  || GET_CODE (temp2) == CONST_INT)
 	      /* Allow either form, but prefer the former if both apply. 
 		 There is no point in using the old value of TEMP1 if
 		 it is a register, since cse will alias them.  It can
 		 lose if the old value were a hard register since CSE
 		 won't replace hard registers.  */
-	      && (((temp3 = reg_set_last (temp1, insn)) != 0
-		   && GET_CODE (temp3) == CONST_INT)
-		  /* Make the latter case look like  x = x; if (...) x = 0;  */
-		  || (temp3 = temp1,
-		      ((BRANCH_COST >= 2
-			&& temp2 == const0_rtx)
-#ifdef HAVE_conditional_move
-		       || HAVE_conditional_move
-#endif
-		       || BRANCH_COST >= 3)))
+	      && (((temp3 = reg_set_last (temp1, insn)) != 0)
+		  /* Make the latter case look like  x = x; if (...) x = b;  */
+		  || (temp3 = temp1, 1))
 	      /* INSN must either branch to the insn after TEMP or the insn
 		 after TEMP must branch to the same place as INSN.  */
 	      && (reallabelprev == temp
@@ -1052,25 +1042,13 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		 We could handle BLKmode if (1) emit_store_flag could
 		 and (2) we could find the size reliably.  */
 	      && GET_MODE (XEXP (temp4, 0)) != BLKmode
-
-	      /* If B is zero, OK; if A is zero, can only do (1) if we
-		 can reverse the condition.  See if (3) applies possibly
-		 by reversing the condition.  Prefer reversing to (4) when
-		 branches are very expensive.  */
-	      && ((reversep = 0, temp2 == const0_rtx)
-		  || (temp3 == const0_rtx
-		      && (reversep = can_reverse_comparison_p (temp4, insn)))
-		  || (BRANCH_COST >= 2
-		      && GET_CODE (temp2) == CONST_INT
-		      && GET_CODE (temp3) == CONST_INT
-		      && ((INTVAL (temp2) & INTVAL (temp3)) == INTVAL (temp2)
-			  || ((INTVAL (temp2) & INTVAL (temp3)) == INTVAL (temp3)
-			      && (reversep = can_reverse_comparison_p (temp4,
-								       insn)))))
+	      /* No point in doing any of this if branches are cheap or we
+		 don't have conditional moves.  */
+	      && (BRANCH_COST >= 2
 #ifdef HAVE_conditional_move
-		  || HAVE_conditional_move
+		  || 1
 #endif
-		  || BRANCH_COST >= 3)
+		  )
 #ifdef HAVE_cc0
 	      /* If the previous insn sets CC0 and something else, we can't
 		 do this since we are going to delete that insn.  */
@@ -1083,139 +1061,245 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 #endif
 	      )
 	    {
-	      enum rtx_code code = GET_CODE (temp4);
-	      rtx uval, cval, var = temp1;
-	      int normalizep;
-	      rtx target;
+#ifdef HAVE_conditional_move
+	      /* First try a conditional move.  */
+	      {
+		enum rtx_code code = GET_CODE (temp4);
+		rtx var = temp1;
+		rtx cond0, cond1, aval, bval;
+		rtx target;
 
-	      /* If necessary, reverse the condition.  */
-	      if (reversep)
-		code = reverse_condition (code), uval = temp2, cval = temp3;
-	      else
-		uval = temp3, cval = temp2;
+		/* Copy the compared variables into cond0 and cond1, so that
+		   any side effects performed in or after the old comparison,
+		   will not affect our compare which will come later.  */
+		/* ??? Is it possible to just use the comparison in the jump
+		   insn?  After all, we're going to delete it.  We'd have
+		   to modify emit_conditional_move to take a comparison rtx
+		   instead or write a new function.  */
+		cond0 = gen_reg_rtx (GET_MODE (XEXP (temp4, 0)));
+		/* We want the target to be able to simplify comparisons with
+		   zero (and maybe other constants as well), so don't create
+		   pseudos for them.  There's no need to either.  */
+		if (GET_CODE (XEXP (temp4, 1)) == CONST_INT
+		    || GET_CODE (XEXP (temp4, 1)) == CONST_DOUBLE)
+		  cond1 = XEXP (temp4, 1);
+		else
+		  cond1 = gen_reg_rtx (GET_MODE (XEXP (temp4, 1)));
 
-	      /* See if we can do this with a store-flag insn. */
-	      start_sequence ();
+		aval = temp3;
+		bval = temp2;
 
-	      /* If CVAL is non-zero, normalize to -1.  Otherwise,
-		 if UVAL is the constant 1, it is best to just compute
-		 the result directly.  If UVAL is constant and STORE_FLAG_VALUE
-		 includes all of its bits, it is best to compute the flag
-		 value unnormalized and `and' it with UVAL.  Otherwise,
-		 normalize to -1 and `and' with UVAL.  */
-	      normalizep = (cval != const0_rtx ? -1
-			    : (uval == const1_rtx ? 1
-			       : (GET_CODE (uval) == CONST_INT
-				  && (INTVAL (uval) & ~STORE_FLAG_VALUE) == 0)
-			       ? 0 : -1));
+		start_sequence ();
+		target = emit_conditional_move (var, code,
+						cond0, cond1, VOIDmode,
+						aval, bval, GET_MODE (var),
+						(code == LTU || code == GEU
+						 || code == LEU || code == GTU));
 
-	      /* We will be putting the store-flag insn immediately in
-		 front of the comparison that was originally being done,
-		 so we know all the variables in TEMP4 will be valid.
-		 However, this might be in front of the assignment of
-		 A to VAR.  If it is, it would clobber the store-flag
-		 we will be emitting.
+		if (target)
+		  {
+		    rtx seq1,seq2;
 
-		 Therefore, emit into a temporary which will be copied to
-		 VAR immediately after TEMP.  */
+		    /* Save the conditional move sequence but don't emit it
+		       yet.  On some machines, like the alpha, it is possible
+		       that temp5 == insn, so next generate the sequence that
+		       saves the compared values and then emit both
+		       sequences ensuring seq1 occurs before seq2.  */
+		    seq2 = get_insns ();
+		    end_sequence ();
 
-	      target = emit_store_flag (gen_reg_rtx (GET_MODE (var)), code,
-					XEXP (temp4, 0), XEXP (temp4, 1),
-					VOIDmode,
-					(code == LTU || code == LEU 
-					 || code == GEU || code == GTU),
-					normalizep);
-	      if (target)
-		{
-		  rtx before = insn;
-		  rtx seq;
+		    /* Now that we can't fail, generate the copy insns that
+		       preserve the compared values.  */
+		    start_sequence ();
+		    emit_move_insn (cond0, XEXP (temp4, 0));
+		    if (cond1 != XEXP (temp4, 1))
+		      emit_move_insn (cond1, XEXP (temp4, 1));
+		    seq1 = get_insns ();
+		    end_sequence ();
 
-		  /* Put the store-flag insns in front of the first insn
-		     used to compute the condition to ensure that we
-		     use the same values of them as the current 
-		     comparison.  However, the remainder of the insns we
-		     generate will be placed directly in front of the
-		     jump insn, in case any of the pseudos we use
-		     are modified earlier.  */
+		    emit_insns_before (seq1, temp5);
+		    emit_insns_before (seq2, insn);
 
-		  seq = get_insns ();
+		    /* ??? We can also delete the insn that sets X to A.
+		       Flow will do it too though.  */
+		    delete_insn (temp);
+		    next = NEXT_INSN (insn);
+		    delete_jump (insn);
+		    changed = 1;
+		    continue;
+		  }
+		else
 		  end_sequence ();
-
-		  emit_insns_before (seq, temp5);
-
-		  start_sequence ();
-
-		  /* Both CVAL and UVAL are non-zero.  */
-		  if (cval != const0_rtx && uval != const0_rtx)
-		    {
-		      rtx tem1, tem2;
-
-		      tem1 = expand_and (uval, target, NULL_RTX);
-		      if (GET_CODE (cval) == CONST_INT
-			  && GET_CODE (uval) == CONST_INT
-			  && (INTVAL (cval) & INTVAL (uval)) == INTVAL (cval))
-			tem2 = cval;
-		      else
-			{
-			  tem2 = expand_unop (GET_MODE (var), one_cmpl_optab,
-					      target, NULL_RTX, 0);
-			  tem2 = expand_and (cval, tem2,
-					     (GET_CODE (tem2) == REG
-					      ? tem2 : 0));
-			}
-
-		      /* If we usually make new pseudos, do so here.  This
-			 turns out to help machines that have conditional
-			 move insns.  */
-
-		      if (flag_expensive_optimizations)
-			target = 0;
-
-		      target = expand_binop (GET_MODE (var), ior_optab,
-					     tem1, tem2, target,
-					     1, OPTAB_WIDEN);
-		    }
-		  else if (normalizep != 1)
-		    {
-		      /* We know that either CVAL or UVAL is zero.  If
-			 UVAL is zero, negate TARGET and `and' with CVAL.
-			 Otherwise, `and' with UVAL.  */
-		      if (uval == const0_rtx)
-			{
-			  target = expand_unop (GET_MODE (var), one_cmpl_optab,
-						target, NULL_RTX, 0);
-			  uval = cval;
-			}
-
-		      target = expand_and (uval, target,
-					   (GET_CODE (target) == REG
-					    && ! preserve_subexpressions_p ()
-					    ? target : NULL_RTX));
-		    }
-		  
-		  emit_move_insn (var, target);
-		  seq = get_insns ();
-		  end_sequence ();
-
-#ifdef HAVE_cc0
-		  /* If INSN uses CC0, we must not separate it from the
-		     insn that sets cc0.  */
-
-		  if (reg_mentioned_p (cc0_rtx, PATTERN (before)))
-		    before = prev_nonnote_insn (before);
+	      }
 #endif
 
-		  emit_insns_before (seq, before);
+	      /* That didn't work, try a store-flag insn.
 
-		  delete_insn (temp);
-		  next = NEXT_INSN (insn);
+		 We further divide the cases into:
 
-		  delete_jump (insn);
-		  changed = 1;
-		  continue;
+		 1) x = a; if (...) x = b; and either A or B is zero,
+		 2) if (...) x = 0; and jumps are expensive,
+		 3) x = a; if (...) x = b; and A and B are constants where all
+		 the set bits in A are also set in B and jumps are expensive,
+		 4) x = a; if (...) x = b; and A and B non-zero, and jumps are
+		 more expensive, and
+		 5) if (...) x = b; if jumps are even more expensive.  */
+
+	      if (GET_MODE_CLASS (GET_MODE (temp1)) == MODE_INT
+		  && ((GET_CODE (temp3) == CONST_INT)
+		      /* Make the latter case look like
+			 x = x; if (...) x = 0;  */
+		      || (temp3 = temp1,
+			  ((BRANCH_COST >= 2
+			    && temp2 == const0_rtx)
+			   || BRANCH_COST >= 3)))
+		  /* If B is zero, OK; if A is zero, can only do (1) if we
+		     can reverse the condition.  See if (3) applies possibly
+		     by reversing the condition.  Prefer reversing to (4) when
+		     branches are very expensive.  */
+		  && ((reversep = 0, temp2 == const0_rtx)
+		      || (temp3 == const0_rtx
+			  && (reversep = can_reverse_comparison_p (temp4, insn)))
+		      || (BRANCH_COST >= 2
+			  && GET_CODE (temp2) == CONST_INT
+			  && GET_CODE (temp3) == CONST_INT
+			  && ((INTVAL (temp2) & INTVAL (temp3)) == INTVAL (temp2)
+			      || ((INTVAL (temp2) & INTVAL (temp3)) == INTVAL (temp3)
+				  && (reversep = can_reverse_comparison_p (temp4,
+									   insn)))))
+		      || BRANCH_COST >= 3)
+		  )
+		{
+		  enum rtx_code code = GET_CODE (temp4);
+		  rtx uval, cval, var = temp1;
+		  int normalizep;
+		  rtx target;
+
+		  /* If necessary, reverse the condition.  */
+		  if (reversep)
+		    code = reverse_condition (code), uval = temp2, cval = temp3;
+		  else
+		    uval = temp3, cval = temp2;
+
+		  /* If CVAL is non-zero, normalize to -1.  Otherwise, if UVAL
+		     is the constant 1, it is best to just compute the result
+		     directly.  If UVAL is constant and STORE_FLAG_VALUE
+		     includes all of its bits, it is best to compute the flag
+		     value unnormalized and `and' it with UVAL.  Otherwise,
+		     normalize to -1 and `and' with UVAL.  */
+		  normalizep = (cval != const0_rtx ? -1
+				: (uval == const1_rtx ? 1
+				   : (GET_CODE (uval) == CONST_INT
+				      && (INTVAL (uval) & ~STORE_FLAG_VALUE) == 0)
+				   ? 0 : -1));
+
+		  /* We will be putting the store-flag insn immediately in
+		     front of the comparison that was originally being done,
+		     so we know all the variables in TEMP4 will be valid.
+		     However, this might be in front of the assignment of
+		     A to VAR.  If it is, it would clobber the store-flag
+		     we will be emitting.
+
+		     Therefore, emit into a temporary which will be copied to
+		     VAR immediately after TEMP.  */
+
+		  start_sequence ();
+		  target = emit_store_flag (gen_reg_rtx (GET_MODE (var)), code,
+					    XEXP (temp4, 0), XEXP (temp4, 1),
+					    VOIDmode,
+					    (code == LTU || code == LEU 
+					     || code == GEU || code == GTU),
+					    normalizep);
+		  if (target)
+		    {
+		      rtx seq;
+		      rtx before = insn;
+
+		      seq = get_insns ();
+		      end_sequence ();
+
+		      /* Put the store-flag insns in front of the first insn
+			 used to compute the condition to ensure that we
+			 use the same values of them as the current 
+			 comparison.  However, the remainder of the insns we
+			 generate will be placed directly in front of the
+			 jump insn, in case any of the pseudos we use
+			 are modified earlier.  */
+
+		      emit_insns_before (seq, temp5);
+
+		      start_sequence ();
+
+		      /* Both CVAL and UVAL are non-zero.  */
+		      if (cval != const0_rtx && uval != const0_rtx)
+			{
+			  rtx tem1, tem2;
+
+			  tem1 = expand_and (uval, target, NULL_RTX);
+			  if (GET_CODE (cval) == CONST_INT
+			      && GET_CODE (uval) == CONST_INT
+			      && (INTVAL (cval) & INTVAL (uval)) == INTVAL (cval))
+			    tem2 = cval;
+			  else
+			    {
+			      tem2 = expand_unop (GET_MODE (var), one_cmpl_optab,
+						  target, NULL_RTX, 0);
+			      tem2 = expand_and (cval, tem2,
+						 (GET_CODE (tem2) == REG
+						  ? tem2 : 0));
+			    }
+
+			  /* If we usually make new pseudos, do so here.  This
+			     turns out to help machines that have conditional
+			     move insns.  */
+			  /* ??? Conditional moves have already been handled.
+			     This may be obsolete.  */
+
+			  if (flag_expensive_optimizations)
+			    target = 0;
+
+			  target = expand_binop (GET_MODE (var), ior_optab,
+						 tem1, tem2, target,
+						 1, OPTAB_WIDEN);
+			}
+		      else if (normalizep != 1)
+			{
+			  /* We know that either CVAL or UVAL is zero.  If
+			     UVAL is zero, negate TARGET and `and' with CVAL.
+			     Otherwise, `and' with UVAL.  */
+			  if (uval == const0_rtx)
+			    {
+			      target = expand_unop (GET_MODE (var), one_cmpl_optab,
+						    target, NULL_RTX, 0);
+			      uval = cval;
+			    }
+
+			  target = expand_and (uval, target,
+					       (GET_CODE (target) == REG
+						&& ! preserve_subexpressions_p ()
+						? target : NULL_RTX));
+			}
+		  
+		      emit_move_insn (var, target);
+		      seq = get_insns ();
+		      end_sequence ();
+#ifdef HAVE_cc0
+		      /* If INSN uses CC0, we must not separate it from the
+			 insn that sets cc0.  */
+		      if (reg_mentioned_p (cc0_rtx, PATTERN (before)))
+			before = prev_nonnote_insn (before);
+#endif
+		      emit_insns_before (seq, before);
+
+		      delete_insn (temp);
+		      next = NEXT_INSN (insn);
+		      delete_jump (insn);
+		      changed = 1;
+		      continue;
+		    }
+		  else
+		    end_sequence ();
 		}
-	      else
-		end_sequence ();
 	    }
 
 	  /* If branches are expensive, convert
