@@ -1,3 +1,8 @@
+2003-01-14  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natRuntime.cc (_load): StackTrace access needs to be
+	in a try block.
+
 2003-01-10  Andrew Haley  <aph@redhat.com>
 
 	* include/dwarf2-signal.h: Remove x86_64.
