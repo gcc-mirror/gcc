@@ -1,3 +1,11 @@
+2004-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/18825
+	* pt.c (instantiate_class_template): Set input_location for
+	friend function.
+	(tsubst_friend_function): Don't set input_location here.
+	Make sure the context is complete if necessary.
+
 2004-12-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18981

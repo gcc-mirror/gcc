@@ -1,3 +1,8 @@
+2004-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/18825
+	* g++.dg/template/friend32.C: New test.
+
 2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* cpp/pragma-once-1.c: New test.
