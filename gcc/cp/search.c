@@ -937,7 +937,7 @@ accessible_p (tree type, tree decl)
 	    encounter the same binfo twice.  */
       else if (!BINFO_INHERITANCE_CHAIN (binfo))
 	{
-	  /* We are at the top of the hierachy, and can use the
+	  /* We are at the top of the hierarchy, and can use the
              CLASSTYPE_VBASECLASSES list for unmarking the virtual
              bases.  */
 	  VEC (tree) *vbases;
@@ -1653,7 +1653,7 @@ dfs_walk_once (tree binfo, tree (*pre_fn) (tree, void *),
       rval = dfs_walk_once_r (binfo, pre_fn, post_fn, data);
       if (!BINFO_INHERITANCE_CHAIN (binfo))
 	{
-	  /* We are at the top of the hierachy, and can use the
+	  /* We are at the top of the hierarchy, and can use the
              CLASSTYPE_VBASECLASSES list for unmarking the virtual
              bases.  */
 	  VEC (tree) *vbases;

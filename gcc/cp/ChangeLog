@@ -1,3 +1,7 @@
+2004-10-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* pt.c, search.c: Fix comment typos.
+
 2004-10-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (dfs_walk, dfs_walk_real, dfs_unmark, markedp,
