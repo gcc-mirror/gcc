@@ -1,3 +1,13 @@
+2000-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cfns.gperf (hash, libc_name_p): Prototype.
+
+	* rtti.c (build_dynamic_cast_1): Constification.
+
+	* search.c (dfs_debug_unmarkedp, dfs_debug_mark): Unhide prototypes.
+
+	* semantics.c (deferred_type_access_control): Prototype.
+
 2000-04-04  Mark Mitchell  <mark@codesourcery.com>
 
 	Correct many new ABI issues regarding vbase and vcall offset

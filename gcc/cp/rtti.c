@@ -559,7 +559,7 @@ build_dynamic_cast_1 (type, expr)
   tree exprtype;
   tree dcast_fn;
   tree old_expr = expr;
-  char* errstr = NULL;
+  const char *errstr = NULL;
 
   /* T shall be a pointer or reference to a complete class type, or
      `pointer to cv void''.  */

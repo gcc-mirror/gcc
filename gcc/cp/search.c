@@ -108,10 +108,8 @@ static tree marked_new_vtablep PARAMS ((tree, void *));
 static tree unmarked_new_vtablep PARAMS ((tree, void *));
 static tree marked_pushdecls_p PARAMS ((tree, void *));
 static tree unmarked_pushdecls_p PARAMS ((tree, void *));
-#if 0
 static tree dfs_debug_unmarkedp PARAMS ((tree, void *));
 static tree dfs_debug_mark PARAMS ((tree, void *));
-#endif
 static tree dfs_find_vbases PARAMS ((tree, void *));
 static tree dfs_clear_vbase_slots PARAMS ((tree, void *));
 static tree dfs_init_vbase_pointers PARAMS ((tree, void *));

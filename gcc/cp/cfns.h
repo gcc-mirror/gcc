@@ -1,5 +1,13 @@
 /* C code produced by gperf version 2.7 */
-/* Command-line: gperf -o -C -E -k 1-6,$ -j1 -D -N libc_name_p /home/jason/eg/gcc/cp/cfns.gperf  */
+/* Command-line: gperf -o -C -E -k 1-6,$ -j1 -D -N libc_name_p ../../../egcs-CVS20000404/gcc/cp/cfns.gperf  */
+#ifdef __GNUC__
+__inline
+#endif
+static unsigned int hash PARAMS ((const char *, unsigned int));
+#ifdef __GNUC__
+__inline
+#endif
+const char * libc_name_p PARAMS ((const char *, unsigned int));
 /* maximum key range = 1020, duplicates = 1 */
 
 #ifdef __GNUC__
