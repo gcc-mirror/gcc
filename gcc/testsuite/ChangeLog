@@ -1,3 +1,8 @@
+2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/friend10.C: New test.
+	* g++.dg/template/conv5.C: New test.
+
 2002-12-24  Nathan Sidwell  <nathan@codesourcery.com>
 	
 	* g++.dg/lookup/scoped3.C: New test.

@@ -3418,6 +3418,10 @@ build_new_op (code, flags, arg1, arg2, arg3)
   if (TREE_CODE (arg1) == OFFSET_REF)
     arg1 = resolve_offset_ref (arg1);
   arg1 = convert_from_reference (arg1);
+  if (CLASS_TYPE_P (TREE_TYPE (arg1))
+      && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (arg1)))
+    /* Make sure the template type is instantiated now.  */
+    instantiate_class_template (TYPE_MAIN_VARIANT (TREE_TYPE (arg1)));
   
   switch (code)
     {
@@ -3440,12 +3444,18 @@ build_new_op (code, flags, arg1, arg2, arg3)
       if (TREE_CODE (arg2) == OFFSET_REF)
 	arg2 = resolve_offset_ref (arg2);
       arg2 = convert_from_reference (arg2);
+      if (CLASS_TYPE_P (TREE_TYPE (arg2))
+	  && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (arg2)))
+	instantiate_class_template (TYPE_MAIN_VARIANT (TREE_TYPE (arg2)));
     }
   if (arg3)
     {
       if (TREE_CODE (arg3) == OFFSET_REF)
 	arg3 = resolve_offset_ref (arg3);
       arg3 = convert_from_reference (arg3);
+      if (CLASS_TYPE_P (TREE_TYPE (arg3))
+	  && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (arg3)))
+	instantiate_class_template (TYPE_MAIN_VARIANT (TREE_TYPE (arg3)));
     }
   
   if (code == COND_EXPR)
