@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URL;
@@ -55,22 +54,24 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 
 /**
- * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
+ * This subclass of java.net.URLConnection models a URLConnection via
+ * the HTTP protocol.
+ *
  * Status: Minimal subset of functionality.  Proxies only partially
  * handled; Redirects not yet handled.  FileNameMap handling needs to
  * be considered.  useCaches, ifModifiedSince, and
  * allowUserInteraction need consideration as well as doInput and
  * doOutput.
- */
-
-/**
+ * 
+ * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Warren Levy <warrenl@cygnus.com>
- * @date March 29, 1999.
  */
-class Connection extends HttpURLConnection
+public final class Connection extends HttpURLConnection
 {
-  protected Socket sock = null;
+  /**
+   * The socket we are connected to
+   */
+  private Socket socket;
   private static Hashtable defRequestProperties = new Hashtable();
   private Hashtable requestProperties;
   private Hashtable hdrHash = new Hashtable();
@@ -104,7 +105,10 @@ class Connection extends HttpURLConnection
       }
   }
 
-  public Connection(URL url)
+  /**
+   * Calls superclass constructor to initialize
+   */
+  protected Connection(URL url)
   {
     super(url);
     requestProperties = (Hashtable) defRequestProperties.clone();
@@ -140,7 +144,10 @@ class Connection extends HttpURLConnection
     return (String) requestProperties.get(key);
   }
 
-  // Implementation of abstract method.
+  /**
+   * Connects to the remote host, sends the request, and parses the reply
+   * code and header information returned
+   */
   public void connect() throws IOException
   {
     // Call is ignored if already connected.
@@ -152,18 +159,17 @@ class Connection extends HttpURLConnection
     if (proxyInUse)
       {
 	port = proxyPort;
-	sock = new Socket(proxyHost, port);
+	socket = new Socket(proxyHost, port);
       }
     else
       {
-	InetAddress destAddr = InetAddress.getByName(url.getHost());
 	if ((port = url.getPort()) == -1)
 	  port = 80;
 	// Open socket and output stream.
-	sock = new Socket(destAddr, port);
+	socket = new Socket(url.getHost(), port);
       }
 
-    PrintWriter out = new PrintWriter(sock.getOutputStream());
+    PrintWriter out = new PrintWriter(socket.getOutputStream());
 
     // Send request including any request properties that were set.
     out.print(getRequestMethod() + " " + url.getFile() + " HTTP/1.0\r\n");
@@ -178,20 +184,22 @@ class Connection extends HttpURLConnection
     connected = true;
   }
 
-  // Implementation of abstract method.
+  /**
+   * Disconnects from the remote server.
+   */
   public void disconnect()
   {
-    if (sock != null)
+    if (socket != null)
       {
 	try
 	  {
-	    sock.close();
+	    socket.close();
 	  }
 	catch (IOException ex)
 	  {
-	    ; // Ignore errors in closing socket.
+	    // Ignore errors in closing socket.
 	  }
-	sock = null;
+	socket = null;
       }
   }
 
@@ -218,9 +226,9 @@ class Connection extends HttpURLConnection
       connect();
 
     if (! doOutput)
-      throw new
-	ProtocolException("Can't open OutputStream if doOutput is false");
-    return sock.getOutputStream();
+      throw new ProtocolException("Can't open OutputStream if doOutput is false");
+    
+    return socket.getOutputStream();
   }
 
   // Override default method in URLConnection.
@@ -321,7 +329,7 @@ class Connection extends HttpURLConnection
     // It is probably more robust than it needs to be, e.g. the byte[]
     // is unlikely to overflow and a '\r' should always be followed by a '\n',
     // but it is better to be safe just in case.
-    bufferedIn = new BufferedInputStream(sock.getInputStream());
+    bufferedIn = new BufferedInputStream(socket.getInputStream());
 
     int buflen = 100;
     byte[] buf = new byte[buflen];

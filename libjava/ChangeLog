@@ -1,5 +1,16 @@
 2003-12-01  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/http/Connection.java
+	(Connection): Merged class documentation.
+	(socket): Renamed from sock.
+	(Connection): Made protected, documentation added.
+	(connect): Give URL'S host instead of InetAddress to Socket
+	constructor.
+	(disconnect): Documentation added.
+	(getOutputStream): Rewrapped.
+
+2003-12-01  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/file/Connection.java
 	(fileIn): Documentation added.
 	(inputStream): Likewise.
