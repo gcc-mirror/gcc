@@ -3041,11 +3041,12 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 
       else if (node->right != 0 && node->left == 0)
 	{
-	  /* Here we have a right child but no left so we issue conditional
+	  /* Here we have a right child but no left so we issue a conditional
 	     branch to default and process the right child.
 
-	     Omit the conditional branch to default if we it avoid only one
-	     right child; it costs too much space to save so little time.  */
+	     Omit the conditional branch to default if the right child
+	     does not have any children and is single valued; it would
+	     cost too much space to save so little time.  */
 
 	  if (node->right->right || node->right->left
 	      || !tree_int_cst_equal (node->right->low, node->right->high))
