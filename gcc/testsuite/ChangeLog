@@ -1,3 +1,7 @@
+2002-11-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/execute/20021118-1.c: New test.
+
 2002-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20021116-1.c: New test.
