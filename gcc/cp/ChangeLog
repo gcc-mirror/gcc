@@ -1,3 +1,25 @@
+2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (maybe_indent_hierarchy): New function.
+	(dump_class_hierarchy_r): Add flags. Dump extra binfo
+	information, if enabled. Use maybe_indent_hierarchy. Adjust
+	output format.
+	(dump_class_hierarchy): Adjust prototype. Adjust output format.
+	(dump_array, dump_vtable, dump_vtt): New functions.
+	(finish_struct_1): Adjust hierarchy dumping.
+	(initialize_vtable): Call dump_vtable.
+	(build_vtt): Call dump_vtt.
+	(build_ctor_vtbl_group): Call dump_vtable.
+	* decl2.c (flag_dump_class_layout): Remove.
+	(cxx_decode_option): Remove dump translation unit
+	and dump class hierarchy check. Call dump_switch_p.
+	(finish_file): Adjust dumping.
+	(dump.c): Only dump base classes if not TDF_SLIM.
+	Only dump namespace members if not TDF_SLIM.
+	* optimize.c (dump_function): New function.
+	(optimize_function): Call dump_function.
+	* semantics.c (expand_body): Use dump_enabled_p.
+
 2001-06-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR g++/2936

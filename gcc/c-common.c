@@ -189,11 +189,6 @@ int flag_short_double;
 
 int flag_short_wchar;
 
-/* If non-NULL, dump the tree structure for the entire translation
-   unit to this file.  */
-
-const char *flag_dump_translation_unit;
-
 /* Nonzero means warn about possible violations of sequence point rules.  */
 
 int warn_sequence_point;
