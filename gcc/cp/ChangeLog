@@ -34,6 +34,26 @@
 
 2001-02-17  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (new_abi_rtti_p): Remove.
+	(name_mangling_version): Likewise.
+	(flag_do_squangling): Likewise.
+	* class.c (build_rtti_vtbl_entries): Remove old ABI support.
+	* decl.c (grokfndecl): Likewise.
+	* decl2.c (name_mangling_version): Remove.
+	(flag_do_squangling): Likewise.
+	(lang_f_options): Remove `squangle'.
+	(unsupported_options): Add `squangle'.
+	(cxx_decode_option): Issue a warning about uses of
+	-fname-mangling-version.
+	(finish_file): Remove old ABI support.
+	* pt.c (check_explicit_specialization): Likewise.
+	(tsubst_decl): Likewise.
+	* rtti.c (init_rtti_processing): Likewise.
+	(build_headof): Likewise.
+	(get_tinfo_decl_dynamic): Likewise.
+	(tinfo_from_decl): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	(synthesize_tinfo_var): Likewise.
 	* init.c (build_new): Allow enumeration types for the array-bounds
 	in a direct-new-declarator.
 

@@ -7766,35 +7766,16 @@ build_rtti_vtbl_entries (binfo, rtti_binfo, vid)
     }
   offset = size_diffop (BINFO_OFFSET (rtti_binfo), BINFO_OFFSET (b));
 
-  /* The second entry is, in the case of the new ABI, the address of
-     the typeinfo object, or, in the case of the old ABI, a function
-     which returns a typeinfo object.  */
-  if (new_abi_rtti_p ())
-    {
-      if (flag_rtti)
-	decl = build_unary_op (ADDR_EXPR, get_tinfo_decl (t), 0);
-      else
-	decl = integer_zero_node;
-
-      /* Convert the declaration to a type that can be stored in the
-	 vtable.  */
-      init = build1 (NOP_EXPR, vfunc_ptr_type_node, decl);
-      TREE_CONSTANT (init) = 1;
-    }
+  /* The second entry is the address of the typeinfo object.  */
+  if (flag_rtti)
+    decl = build_unary_op (ADDR_EXPR, get_tinfo_decl (t), 0);
   else
-    {
-      if (flag_rtti)
-	decl = get_tinfo_decl (t);
-      else
-	decl = abort_fndecl;
-
-      /* Convert the declaration to a type that can be stored in the
-	 vtable.  */
-      init = build1 (ADDR_EXPR, vfunc_ptr_type_node, decl);
-      TREE_CONSTANT (init) = 1;
-      init = build_vtable_entry (offset, NULL_TREE, init, 
-				 /*generate_with_vtable_p=*/0);
-    }
+    decl = integer_zero_node;
+  
+  /* Convert the declaration to a type that can be stored in the
+     vtable.  */
+  init = build1 (NOP_EXPR, vfunc_ptr_type_node, decl);
+  TREE_CONSTANT (init) = 1;
   *vid->last_init = build_tree_list (NULL_TREE, init);
   vid->last_init = &TREE_CHAIN (*vid->last_init);
 

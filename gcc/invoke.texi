@@ -173,9 +173,9 @@ in the following sections.
 -fhuge-objects  -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
 -fno-implement-inlines  -fms-extensions @gol
--fname-mangling-version-@var{n}  -fno-operator-names @gol
+-fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
--frepo  -fno-rtti  -fsquangle  -ftemplate-depth-@var{n} @gol
+-frepo  -fno-rtti -ftemplate-depth-@var{n} @gol
 -fuse-cxa-atexit  -fvtable-thunks  -nostdinc++ @gol
 -fno-default-inline  -Wctor-dtor-privacy @gol
 -Wnon-virtual-dtor  -Wreorder @gol
@@ -1318,20 +1318,6 @@ errors if these functions are not inlined everywhere they are called.
 Disable pedantic warnings about constructs used in MFC, such as implicit
 int and getting a pointer to member function via non-standard syntax.
 
-@item -fname-mangling-version-@var{n}
-Control the way in which names are mangled.  Version 0 is compatible
-with versions of g++ before 2.8.  Version 1 is the default.  Version 1
-will allow correct mangling of function templates.  For example, 
-version 0 mangling does not mangle foo<int, double> and foo<int, char>
-given this declaration:
-
-@example
-template <class T, class U> void foo(T t);
-@end example
-
-Like all options that change the ABI, all C++ code, @emph{including
-libgcc} must be built with the same setting of this option.
-
 @item -fno-operator-names
 Do not treat the operator name keywords @code{and}, @code{bitand},
 @code{bitor}, @code{compl}, @code{not}, @code{or} and @code{xor} as
@@ -1360,18 +1346,6 @@ functions for use by the C++ runtime type identification features
 of the language, you can save some space by using this flag.  Note that
 exception handling uses the same information, but it will generate it as
 needed.
-
-@item -fsquangle
-@itemx -fno-squangle
-@samp{-fsquangle} will enable a compressed form of name mangling for
-identifiers. In particular, it helps to shorten very long names by recognizing
-types and class names which occur more than once, replacing them with special
-short ID codes.  This option also requires any C++ libraries being used to
-be compiled with this option as well.  The compiler has this disabled (the
-equivalent of @samp{-fno-squangle}) by default.
-
-Like all options that change the ABI, all C++ code, @emph{including
-libgcc.a} must be built with the same setting of this option.
 
 @item -ftemplate-depth-@var{n}
 Set the maximum instantiation depth for template classes to @var{n}.
