@@ -78,6 +78,10 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #undef _VA_LIST
 #endif
 
+#ifdef _BSD_VA_LIST
+#undef _BSD_VA_LIST
+#endif
+
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
 #ifndef _VA_LIST_
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
