@@ -25,23 +25,9 @@ eabi-ctors.c: $(srcdir)/config/rs6000/eabi-ctors.c
 # explicit little endian or big endian libraries, since it depends on the
 # -mbig/-mlittle switches passed to gas.  The -mrelocatable support also needs
 # -mrelocatable passed to gas, so don't use it either.
-MULTILIB_OPTIONS	= msoft-float \
-			  mcall-sysv-noeabi/mcall-sysv-eabi/mcall-aix/mcall-solaris
-
-MULTILIB_DIRNAMES	= nof \
-			  le be \
-			  cs ce ca sol
-
-MULTILIB_MATCHES	= mlittle=mlittle-endian \
-			  mbig=mbig-endian \
-			  mbig=mcall-linux \
-			  msoft-float=mcpu?403 \
-			  msoft-float=mcpu?821 \
-			  msoft-float=mcpu?860 \
-			  mcall-sysv-noeabi=mcall-linux \
-			  mcall-sysv-eabi=meabi \
-			  mcall-sysv-noeabi=mno-eabi
-
+MULTILIB_OPTIONS	= msoft-float
+MULTILIB_DIRNAMES	= nof
+MULTILIB_MATCHES	=
 MULTILIB_EXCEPTIONS	=
 
 LIBGCC = stmp-multilib stmp-crt

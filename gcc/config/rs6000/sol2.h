@@ -169,3 +169,16 @@ while (0)
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s_.%d", (NAME), (LABELNO))) 
+
+
+/* Define this macro as a C expression for the initializer of an
+   array of string to tell the driver program which options are
+   defaults for this target and thus do not need to be handled
+   specially when using `MULTILIB_OPTIONS'.
+
+   Do not define this macro if `MULTILIB_OPTIONS' is not defined in
+   the target makefile fragment or if none of the options listed in
+   `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
+
+#undef	MULTILIB_DEFAULTS
+#define	MULTILIB_DEFAULTS { "mlittle", "mlittle-endian", "mcall-solaris", "mno-sdata" }
