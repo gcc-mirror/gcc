@@ -812,6 +812,7 @@ extern bool control_flow_insn_p (rtx);
 
 /* In bb-reorder.c */
 extern void reorder_basic_blocks (unsigned int);
+extern void duplicate_computed_gotos (void);
 extern void partition_hot_cold_basic_blocks (void);
 
 /* In cfg.c */

@@ -317,6 +317,12 @@ DEFPARAM(PARAM_MIN_CROSSJUMP_INSNS,
      "The minimum number of matching instructions to consider for crossjumping",
      5, 0, 0)
 
+/* The maximum number of insns to duplicate when unfactoring computed gotos.  */
+DEFPARAM(PARAM_MAX_GOTO_DUPLICATION_INSNS,
+     "max-goto-duplication-insns",
+     "The maximum number of insns to duplicate when unfactoring computed gotos",
+     8, 0, 0)
+
 /* The maximum length of path considered in cse.  */
 DEFPARAM(PARAM_MAX_CSE_PATH_LENGTH,
 	 "max-cse-path-length",

@@ -1713,6 +1713,11 @@ rest_of_compilation (void)
 
   compute_alignments ();
 
+  /* Aggressively duplicate basic blocks ending in computed gotos to the
+     tails of their predecessors, unless we are optimizing for size.  */
+  if (flag_expensive_optimizations && !optimize_size)
+    duplicate_computed_gotos ();
+
   if (flag_var_tracking)
     rest_of_handle_variable_tracking ();
 

@@ -5344,6 +5344,14 @@ of two blocks before crossjumping will be performed on them.  This
 value is ignored in the case where all instructions in the block being
 crossjumped from are matched.  The default value is 5.
 
+@item max-goto-duplication-insns
+The maximum number of instructions to duplicate to a block that jumps
+to a computed goto.  To avoid @math{O(N^2)} behavior in a number of
+passes, GCC factors computed gotos early in the compilation process,
+and unfactors them as late as possible.  Only computed jumps at the
+end of a basic blocks with no more than max-goto-duplication-insns are
+unfactored.  The default value is 8.
+
 @item max-delay-slot-insn-search
 The maximum number of instructions to consider when looking for an
 instruction to fill a delay slot.  If more than this arbitrary number of
