@@ -1,3 +1,9 @@
+Wed Feb 18 09:09:50 1998  Jeffrey A Law  (law@cygnus.com)
+
+	Remove this change until we can fix it correctly.
+	* collect2.c: Bracket declaration of 'exportf' and
+	'full_real_ld_suffix'.
+
 Wed Feb 18 08:44:25 1998 Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
 
 	* Makefile.in (STAGESTUFF): Add genrtl.c, genrtl.h and gengenrtl.

@@ -925,9 +925,7 @@ main (argc, argv)
   char *ld_suffix	= "ld";
   char *full_ld_suffix	= ld_suffix;
   char *real_ld_suffix	= "real-ld";
-#ifdef CROSS_COMPILE
   char *full_real_ld_suffix = real_ld_suffix;
-#endif
   char *collect_ld_suffix = "collect-ld";
   char *nm_suffix	= "nm";
   char *full_nm_suffix	= nm_suffix;
@@ -942,10 +940,7 @@ main (argc, argv)
   char *gstrip_suffix	= "gstrip";
   char *full_gstrip_suffix = gstrip_suffix;
   char *arg;
-  FILE *outf;
-#ifdef COLLECT_EXPORT_LIST
-  FILE *exportf;
-#endif /* COLLECT_EXPORT_LIST */
+  FILE *outf, *exportf;
   char *ld_file_name;
   char *collect_name;
   char *collect_names;
