@@ -1775,7 +1775,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 tree
 rs6000_build_va_list ()
 {
-  tree f_gpr, f_fpr, f_ovf, f_sav, record;
+  tree f_gpr, f_fpr, f_ovf, f_sav, record, type_decl;
   tree uchar_type_node;
 
   /* Only SVR4 needs something special.  */
@@ -1783,6 +1783,7 @@ rs6000_build_va_list ()
     return ptr_type_node;
 
   record = make_node (RECORD_TYPE);
+  type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
   uchar_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
   
   f_gpr = build_decl (FIELD_DECL, get_identifier ("gpr"), uchar_type_node);
@@ -1797,6 +1798,8 @@ rs6000_build_va_list ()
   DECL_FIELD_CONTEXT (f_ovf) = record;
   DECL_FIELD_CONTEXT (f_sav) = record;
 
+  TREE_CHAIN (record) = type_decl;
+  TYPE_NAME (record) = type_decl;
   TYPE_FIELDS (record) = f_gpr;
   TREE_CHAIN (f_gpr) = f_fpr;
   TREE_CHAIN (f_fpr) = f_ovf;

@@ -1,3 +1,8 @@
+Thu Sep 30 18:44:50 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.c (rs6000_build_va_list): Create a TYPE_DECL node
+	for the va_list record.
+
 Thu Sep 30 18:34:54 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.c (ix86_adjust_cost): Ignore false ebp dependencies in
