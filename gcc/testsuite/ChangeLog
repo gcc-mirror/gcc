@@ -1,5 +1,8 @@
 2004-08-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16707
+	* g++.dg/lookup/using12.C: New test.
+
 	* g++.dg/init/null1.C: Fix PR number.
 	* g++.dg/parse/namespace10.C: Likewise.
 
