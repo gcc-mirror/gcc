@@ -7481,10 +7481,7 @@ echo "${ECHO_T}boehm" >&6
     GCLIBS=../boehm-gc/libgcjgc_convenience.la
     JC1GCSPEC='-fuse-boehm-gc'
     GCTESTSPEC="-L`${PWDCMD-pwd}`/../boehm-gc/.libs -rpath `${PWDCMD-pwd}`/../boehm-gc/.libs"
-
-    # We also want to pick up some cpp flags required when including
-    # boehm-config.h.  Yuck.
-    GCINCS="`cat ../boehm-gc/boehm-cflags`"
+    GCINCS='-I$(top_srcdir)/../boehm-gc/include -I../boehm-gc/include'
     GCOBJS=boehm.lo
     GCHDR=boehm-gc.h
     # The POSIX thread support needs to know this.

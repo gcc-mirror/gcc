@@ -87,6 +87,12 @@
 #  endif
 #endif
 
+#if (defined(NETBSD) || defined(OPENBSD)) && defined(__ELF__) \
+    && !defined(NEED_FIND_LIMIT)
+   /* Used by GC_init_netbsd_elf() below.	*/
+#  define NEED_FIND_LIMIT
+#endif
+
 #ifdef NEED_FIND_LIMIT
 #   include <setjmp.h>
 #endif
@@ -111,25 +117,30 @@
 # include <sys/uio.h>
 # include <malloc.h>   /* for locking */
 #endif
-#ifdef USE_MMAP
+#if defined(USE_MMAP) || defined(USE_MUNMAP)
+# ifndef USE_MMAP
+    --> USE_MUNMAP requires USE_MMAP
+# endif
 # include <sys/types.h>
 # include <sys/mman.h>
 # include <sys/stat.h>
+# include <errno.h>
 #endif
 
 #ifdef UNIX_LIKE
 # include <fcntl.h>
-#endif
-
-#if defined(SUNOS5SIGS) || defined (HURD) || defined(LINUX)
-# ifdef SUNOS5SIGS
+# if defined(SUNOS5SIGS) && !defined(FREEBSD)
 #  include <sys/siginfo.h>
 # endif
-# undef setjmp
-# undef longjmp
-# define setjmp(env) sigsetjmp(env, 1)
-# define longjmp(env, val) siglongjmp(env, val)
-# define jmp_buf sigjmp_buf
+  /* Define SETJMP and friends to be the version that restores	*/
+  /* the signal mask.						*/
+# define SETJMP(env) sigsetjmp(env, 1)
+# define LONGJMP(env, val) siglongjmp(env, val)
+# define JMP_BUF sigjmp_buf
+#else
+# define SETJMP(env) setjmp(env)
+# define LONGJMP(env, val) longjmp(env, val)
+# define JMP_BUF jmp_buf
 #endif
 
 #ifdef DARWIN
@@ -183,45 +194,41 @@ ssize_t GC_repeat_read(int fd, char *buf, size_t count)
 /*
  * Apply fn to a buffer containing the contents of /proc/self/maps.
  * Return the result of fn or, if we failed, 0.
+ * We currently do nothing to /proc/self/maps other than simply read
+ * it.  This code could be simplified if we could determine its size
+ * ahead of time.
  */
 
 word GC_apply_to_maps(word (*fn)(char *))
 {
     int f;
     int result;
-    int maps_size;
-    char maps_temp[32768];
-    char *maps_buf;
+    size_t maps_size = 4000;  /* Initial guess. 	*/
+    static char init_buf[1];
+    static char *maps_buf = init_buf;
+    static size_t maps_buf_sz = 1;
 
-    /* Read /proc/self/maps	*/
-        /* Note that we may not allocate, and thus can't use stdio.	*/
-        f = open("/proc/self/maps", O_RDONLY);
-        if (-1 == f) return 0;
-	/* stat() doesn't work for /proc/self/maps, so we have to
-	   read it to find out how large it is... */
-	maps_size = 0;
+    /* Read /proc/self/maps, growing maps_buf as necessary.	*/
+        /* Note that we may not allocate conventionally, and	*/
+        /* thus can't use stdio.				*/
 	do {
-	    result = GC_repeat_read(f, maps_temp, sizeof(maps_temp));
-	    if (result <= 0) return 0;
-	    maps_size += result;
-	} while (result == sizeof(maps_temp));
-
-	if (maps_size > sizeof(maps_temp)) {
-	    /* If larger than our buffer, close and re-read it. */
-	    close(f);
+	    if (maps_size >= maps_buf_sz) {
+	      /* Grow only by powers of 2, since we leak "too small" buffers. */
+	      while (maps_size >= maps_buf_sz) maps_buf_sz *= 2;
+	      maps_buf = GC_scratch_alloc(maps_buf_sz);
+	      if (maps_buf == 0) return 0;
+	    }
 	    f = open("/proc/self/maps", O_RDONLY);
 	    if (-1 == f) return 0;
-	    maps_buf = alloca(maps_size);
-	    if (NULL == maps_buf) return 0;
-	    result = GC_repeat_read(f, maps_buf, maps_size);
-	    if (result <= 0) return 0;
-	} else {
-	    /* Otherwise use the fixed size buffer */
-	    maps_buf = maps_temp;
-	}
-
-	close(f);
-        maps_buf[result] = '\0';
+	    maps_size = 0;
+	    do {
+	        result = GC_repeat_read(f, maps_buf, maps_buf_sz-1);
+	        if (result <= 0) return 0;
+	        maps_size += result;
+	    } while (result == maps_buf_sz-1);
+	    close(f);
+	} while (maps_size >= maps_buf_sz);
+        maps_buf[maps_size] = '\0';
 	
     /* Apply fn to result. */
 	return fn(maps_buf);
@@ -352,7 +359,8 @@ char *GC_parse_map_entry(char *buf_ptr, word *start, word *end,
 # endif /* ECOS_GC_MEMORY_SIZE */
 
 // setjmp() function, as described in ANSI para 7.6.1.1
-#define setjmp( __env__ )  hal_setjmp( __env__ )
+#undef SETJMP
+#define SETJMP( __env__ )  hal_setjmp( __env__ )
 
 // FIXME: This is a simple way of allocating memory which is
 // compatible with ECOS early releases.  Later releases use a more
@@ -688,9 +696,11 @@ ptr_t GC_get_stack_base()
 	typedef void (*handler)();
 #   endif
 
-#   if defined(SUNOS5SIGS) || defined(IRIX5) || defined(OSF1) || defined(HURD)
+#   if defined(SUNOS5SIGS) || defined(IRIX5) || defined(OSF1) \
+    || defined(HURD) || defined(NETBSD)
 	static struct sigaction old_segv_act;
-#	if defined(_sigargs) /* !Irix6.x */ || defined(HPUX) || defined(HURD)
+#	if defined(_sigargs) /* !Irix6.x */ || defined(HPUX) \
+	|| defined(HURD) || defined(NETBSD)
 	    static struct sigaction old_bus_act;
 #	endif
 #   else
@@ -704,21 +714,17 @@ ptr_t GC_get_stack_base()
       handler h;
 #   endif
     {
-#     if defined(SUNOS5SIGS) || defined(IRIX5)  \
-        || defined(OSF1) || defined(HURD)
+#	if defined(SUNOS5SIGS) || defined(IRIX5)  \
+        || defined(OSF1) || defined(HURD) || defined(NETBSD)
 	  struct sigaction	act;
 
 	  act.sa_handler	= h;
-#	  ifdef SUNOS5SIGS
+#	  if 0 /* Was necessary for Solaris 2.3 and very temporary 	*/
+	       /* NetBSD bugs.						*/
             act.sa_flags          = SA_RESTART | SA_NODEFER;
 #         else
             act.sa_flags          = SA_RESTART;
 #	  endif
-          /* The presence of SA_NODEFER represents yet another gross    */
-          /* hack.  Under Solaris 2.3, siglongjmp doesn't appear to     */
-          /* interact correctly with -lthread.  We hide the confusion   */
-          /* by making sure that signal handling doesn't affect the     */
-          /* signal mask.                                               */
 
 	  (void) sigemptyset(&act.sa_mask);
 #	  ifdef GC_IRIX_THREADS
@@ -729,7 +735,7 @@ ptr_t GC_get_stack_base()
 #	  else
 	        (void) sigaction(SIGSEGV, &act, &old_segv_act);
 #		if defined(IRIX5) && defined(_sigargs) /* Irix 5.x, not 6.x */ \
-		   || defined(HPUX) || defined(HURD)
+		   || defined(HPUX) || defined(HURD) || defined(NETBSD)
 		    /* Under Irix 5.x or HP/UX, we may get SIGBUS.	*/
 		    /* Pthreads doesn't exist under Irix 5.x, so we	*/
 		    /* don't have to worry in the threads case.		*/
@@ -748,13 +754,13 @@ ptr_t GC_get_stack_base()
 # ifdef NEED_FIND_LIMIT
   /* Some tools to implement HEURISTIC2	*/
 #   define MIN_PAGE_SIZE 256	/* Smallest conceivable page size, bytes */
-    /* static */ jmp_buf GC_jmp_buf;
+    /* static */ JMP_BUF GC_jmp_buf;
     
     /*ARGSUSED*/
     void GC_fault_handler(sig)
     int sig;
     {
-        longjmp(GC_jmp_buf, 1);
+        LONGJMP(GC_jmp_buf, 1);
     }
 
     void GC_setup_temporary_fault_handler()
@@ -764,19 +770,19 @@ ptr_t GC_get_stack_base()
     
     void GC_reset_fault_handler()
     {
-#     if defined(SUNOS5SIGS) || defined(IRIX5) \
-	 || defined(OSF1) || defined(HURD)
-	(void) sigaction(SIGSEGV, &old_segv_act, 0);
-#	if defined(IRIX5) && defined(_sigargs) /* Irix 5.x, not 6.x */ \
-	   || defined(HPUX) || defined(HURD)
-	    (void) sigaction(SIGBUS, &old_bus_act, 0);
-#	endif
-#      else
-	(void) signal(SIGSEGV, old_segv_handler);
-#	ifdef SIGBUS
-	  (void) signal(SIGBUS, old_bus_handler);
-#	endif
-#     endif
+#       if defined(SUNOS5SIGS) || defined(IRIX5) \
+	   || defined(OSF1) || defined(HURD) || defined(NETBSD)
+	  (void) sigaction(SIGSEGV, &old_segv_act, 0);
+#	  if defined(IRIX5) && defined(_sigargs) /* Irix 5.x, not 6.x */ \
+	     || defined(HPUX) || defined(HURD) || defined(NETBSD)
+	      (void) sigaction(SIGBUS, &old_bus_act, 0);
+#	  endif
+#       else
+  	  (void) signal(SIGSEGV, old_segv_handler);
+#	  ifdef SIGBUS
+	    (void) signal(SIGBUS, old_bus_handler);
+#	  endif
+#       endif
     }
 
     /* Return the first nonaddressible location > p (up) or 	*/
@@ -786,31 +792,31 @@ ptr_t GC_get_stack_base()
     ptr_t p;
     GC_bool up;
     {
-      static VOLATILE ptr_t result;
-  		/* Needs to be static, since otherwise it may not be	*/
-  		/* preserved across the longjmp.  Can safely be 	*/
-  		/* static since it's only called once, with the		*/
-  		/* allocation lock held.				*/
+        static VOLATILE ptr_t result;
+    		/* Needs to be static, since otherwise it may not be	*/
+    		/* preserved across the longjmp.  Can safely be 	*/
+    		/* static since it's only called once, with the		*/
+    		/* allocation lock held.				*/
 
 
-      GC_setup_temporary_fault_handler();
-      if (setjmp(GC_jmp_buf) == 0) {
-	result = (ptr_t)(((word)(p))
-			 & ~(MIN_PAGE_SIZE-1));
-	for (;;) {
-	  if (up) {
-	    result += MIN_PAGE_SIZE;
-	  } else {
-	    result -= MIN_PAGE_SIZE;
-	  }
-	  GC_noop1((word)(*result));
+	GC_setup_temporary_fault_handler();
+	if (SETJMP(GC_jmp_buf) == 0) {
+	    result = (ptr_t)(((word)(p))
+			      & ~(MIN_PAGE_SIZE-1));
+	    for (;;) {
+ 	        if (up) {
+		    result += MIN_PAGE_SIZE;
+ 	        } else {
+		    result -= MIN_PAGE_SIZE;
+ 	        }
+		GC_noop1((word)(*result));
+	    }
 	}
-      }
-      GC_reset_fault_handler();
-      if (!up) {
-	result += MIN_PAGE_SIZE;
-      }
-      return(result);
+	GC_reset_fault_handler();
+ 	if (!up) {
+	    result += MIN_PAGE_SIZE;
+ 	}
+	return(result);
     }
 # endif
 
@@ -820,6 +826,29 @@ ptr_t GC_get_stack_base()
     return STACKBOTTOM;
   }
 #endif
+
+#ifdef HPUX_STACKBOTTOM
+
+#include <sys/param.h>
+#include <sys/pstat.h>
+
+  ptr_t GC_get_register_stack_base(void)
+  {
+    struct pst_vm_status vm_status;
+
+    int i = 0;
+    while (pstat_getprocvm(&vm_status, sizeof(vm_status), 0, i++) == 1) {
+      if (vm_status.pst_type == PS_RSESTACK) {
+        return (ptr_t) vm_status.pst_vaddr;
+      }
+    }
+
+    /* old way to get the register stackbottom */
+    return (ptr_t)(((word)GC_stackbottom - BACKING_STORE_DISPLACEMENT - 1)
+                   & ~(BACKING_STORE_ALIGNMENT - 1));
+  }
+
+#endif /* HPUX_STACK_BOTTOM */
 
 #ifdef LINUX_STACKBOTTOM
 
@@ -903,7 +932,11 @@ ptr_t GC_get_stack_base()
     size_t i, buf_offset = 0;
 
     /* First try the easy way.  This should work for glibc 2.2	*/
-      if (0 != &__libc_stack_end) {
+    /* This fails in a prelinked ("prelink" command) executable */
+    /* since the correct value of __libc_stack_end never	*/
+    /* becomes visible to us.  The second test works around 	*/
+    /* this.							*/  
+      if (0 != &__libc_stack_end && 0 != __libc_stack_end ) {
 #       ifdef IA64
 	  /* Some versions of glibc set the address 16 bytes too	*/
 	  /* low while the initialization code is running.		*/
@@ -1328,7 +1361,7 @@ int * etext_addr;
     /* max_page_size to &etext if &etext is at a page boundary	*/
     
     GC_setup_temporary_fault_handler();
-    if (setjmp(GC_jmp_buf) == 0) {
+    if (SETJMP(GC_jmp_buf) == 0) {
     	/* Try writing to the address.	*/
     	*result = *result;
         GC_reset_fault_handler();
@@ -1362,7 +1395,7 @@ int * etext_addr;
 			      & ~((word)max_page_size - 1);
     VOLATILE ptr_t result = (ptr_t)text_end;
     GC_setup_temporary_fault_handler();
-    if (setjmp(GC_jmp_buf) == 0) {
+    if (SETJMP(GC_jmp_buf) == 0) {
 	/* Try reading at the address.				*/
 	/* This should happen before there is another thread.	*/
 	for (; next_page < (word)(DATAEND); next_page += (word)max_page_size)
@@ -1497,8 +1530,7 @@ word bytes;
 
 #else  /* Not RS6000 */
 
-#if defined(USE_MMAP)
-/* Tested only under Linux, IRIX5 and Solaris 2 */
+#if defined(USE_MMAP) || defined(USE_MUNMAP)
 
 #ifdef USE_MMAP_FIXED
 #   define GC_MMAP_FLAGS MAP_FIXED | MAP_PRIVATE
@@ -1507,6 +1539,23 @@ word bytes;
 #else
 #   define GC_MMAP_FLAGS MAP_PRIVATE
 #endif
+
+#ifdef USE_MMAP_ANON
+# define zero_fd -1
+# if defined(MAP_ANONYMOUS)
+#   define OPT_MAP_ANON MAP_ANONYMOUS
+# else
+#   define OPT_MAP_ANON MAP_ANON
+# endif
+#else
+  static int zero_fd;
+# define OPT_MAP_ANON 0
+#endif 
+
+#endif /* defined(USE_MMAP) || defined(USE_MUNMAP) */
+
+#if defined(USE_MMAP)
+/* Tested only under Linux, IRIX5 and Solaris 2 */
 
 #ifndef HEAP_START
 #   define HEAP_START 0
@@ -1520,23 +1569,17 @@ word bytes;
 
 #   ifndef USE_MMAP_ANON
       static GC_bool initialized = FALSE;
-      static int fd;
 
       if (!initialized) {
-	  fd = open("/dev/zero", O_RDONLY);
-	  fcntl(fd, F_SETFD, FD_CLOEXEC);
+	  zero_fd = open("/dev/zero", O_RDONLY);
+	  fcntl(zero_fd, F_SETFD, FD_CLOEXEC);
 	  initialized = TRUE;
       }
 #   endif
 
     if (bytes & (GC_page_size -1)) ABORT("Bad GET_MEM arg");
-#   ifdef USE_MMAP_ANON
-      result = mmap(last_addr, bytes, PROT_READ | PROT_WRITE | OPT_PROT_EXEC,
-		    GC_MMAP_FLAGS | MAP_ANON, -1, 0/* offset */);
-#   else
-      result = mmap(last_addr, bytes, PROT_READ | PROT_WRITE | OPT_PROT_EXEC,
-		    GC_MMAP_FLAGS, fd, 0/* offset */);
-#   endif
+    result = mmap(last_addr, bytes, PROT_READ | PROT_WRITE | OPT_PROT_EXEC,
+		  GC_MMAP_FLAGS | OPT_MAP_ANON, zero_fd, 0/* offset */);
     if (result == MAP_FAILED) return(0);
     last_addr = (ptr_t)result + bytes + GC_page_size - 1;
     last_addr = (ptr_t)((word)last_addr & ~(GC_page_size - 1));
@@ -1794,7 +1837,15 @@ void GC_unmap(ptr_t start, word bytes)
 	  len -= free_len;
       }
 #   else
-      if (munmap(start_addr, len) != 0) ABORT("munmap failed");
+      /* We immediately remap it to prevent an intervening mmap from	*/
+      /* accidentally grabbing the same address space.			*/
+      {
+	void * result;
+        result = mmap(start_addr, len, PROT_NONE,
+		      MAP_PRIVATE | MAP_FIXED | OPT_MAP_ANON,
+		      zero_fd, 0/* offset */);
+        if (result != (void *)start_addr) ABORT("mmap(...PROT_NONE...) failed");
+      }
       GC_unmapped_bytes += len;
 #   endif
 }
@@ -1802,13 +1853,13 @@ void GC_unmap(ptr_t start, word bytes)
 
 void GC_remap(ptr_t start, word bytes)
 {
-    static int zero_descr = -1;
     ptr_t start_addr = GC_unmap_start(start, bytes);
     ptr_t end_addr = GC_unmap_end(start, bytes);
     word len = end_addr - start_addr;
-    ptr_t result;
 
 #   if defined(MSWIN32) || defined(MSWINCE)
+      ptr_t result;
+
       if (0 == start_addr) return;
       while (len != 0) {
           MEMORY_BASIC_INFORMATION mem_info;
@@ -1828,13 +1879,17 @@ void GC_remap(ptr_t start, word bytes)
 	  len -= alloc_len;
       }
 #   else
-      if (-1 == zero_descr) zero_descr = open("/dev/zero", O_RDWR);
-      fcntl(zero_descr, F_SETFD, FD_CLOEXEC);
+      /* It was already remapped with PROT_NONE. */
+      int result; 
+
       if (0 == start_addr) return;
-      result = mmap(start_addr, len, PROT_READ | PROT_WRITE | OPT_PROT_EXEC,
-		    MAP_FIXED | MAP_PRIVATE, zero_descr, 0);
-      if (result != start_addr) {
-	  ABORT("mmap remapping failed");
+      result = mprotect(start_addr, len,
+		        PROT_READ | PROT_WRITE | OPT_PROT_EXEC);
+      if (result != 0) {
+	  GC_err_printf3(
+		"Mprotect failed at 0x%lx (length %ld) with errno %ld\n",
+	        start_addr, len, errno);
+	  ABORT("Mprotect remapping failed");
       }
       GC_unmapped_bytes -= len;
 #   endif
@@ -2170,9 +2225,9 @@ GC_bool is_ptrfree;
 # endif /* !DARWIN */
 # endif /* MSWIN32 || MSWINCE || DARWIN */
 
-#if defined(SUNOS4) || defined(FREEBSD)
+#if defined(SUNOS4) || (defined(FREEBSD) && !defined(SUNOS5SIGS))
     typedef void (* SIG_PF)();
-#endif /* SUNOS4 || FREEBSD */
+#endif /* SUNOS4 || (FREEBSD && !SUNOS5SIGS) */
 
 #if defined(SUNOS5SIGS) || defined(OSF1) || defined(LINUX) \
     || defined(HURD)
@@ -2199,13 +2254,13 @@ GC_bool is_ptrfree;
 #endif /* IRIX5 || OSF1 || HURD */
 
 #if defined(SUNOS5SIGS)
-# ifdef HPUX
-#   define SIGINFO __siginfo
+# if defined(HPUX) || defined(FREEBSD)
+#   define SIGINFO_T siginfo_t
 # else
-#   define SIGINFO siginfo
+#   define SIGINFO_T struct siginfo
 # endif
 # ifdef __STDC__
-    typedef void (* REAL_SIG_PF)(int, struct SIGINFO *, void *);
+    typedef void (* REAL_SIG_PF)(int, SIGINFO_T *, void *);
 # else
     typedef void (* REAL_SIG_PF)();
 # endif
@@ -2225,8 +2280,11 @@ GC_bool is_ptrfree;
 #   if defined(ALPHA) || defined(M68K)
       typedef void (* REAL_SIG_PF)(int, int, s_c *);
 #   else
-#     if defined(IA64) || defined(HP_PA)
+#     if defined(IA64) || defined(HP_PA) || defined(X86_64)
         typedef void (* REAL_SIG_PF)(int, siginfo_t *, s_c *);
+	/* FIXME:						  */
+	/* According to SUSV3, the last argument should have type */
+	/* void * or ucontext_t *				  */
 #     else
         typedef void (* REAL_SIG_PF)(int, s_c);
 #     endif
@@ -2301,7 +2359,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 
 /*ARGSUSED*/
 #if !defined(DARWIN)
-# if defined (SUNOS4) || defined(FREEBSD)
+# if defined (SUNOS4) || (defined(FREEBSD) && !defined(SUNOS5SIGS))
     void GC_write_fault_handler(sig, code, scp, addr)
     int sig, code;
     struct sigcontext *scp;
@@ -2316,7 +2374,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #     define SIG_OK (sig == SIGBUS)
 #     define CODE_OK (code == BUS_PAGE_FAULT)
 #   endif
-# endif /* SUNOS4 || FREEBSD */
+# endif /* SUNOS4 || (FREEBSD && !SUNOS5SIGS) */
 
 # if defined(IRIX5) || defined(OSF1) || defined(HURD)
 #   include <errno.h>
@@ -2339,7 +2397,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #   if defined(ALPHA) || defined(M68K)
       void GC_write_fault_handler(int sig, int code, s_c * sc)
 #   else
-#     if defined(IA64) || defined(HP_PA)
+#     if defined(IA64) || defined(HP_PA) || defined(X86_64)
         void GC_write_fault_handler(int sig, siginfo_t * si, s_c * scp)
 #     else
 #       if defined(ARM32)
@@ -2358,11 +2416,11 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 
 # if defined(SUNOS5SIGS)
 #  ifdef __STDC__
-    void GC_write_fault_handler(int sig, struct SIGINFO *scp, void * context)
+    void GC_write_fault_handler(int sig, SIGINFO_T *scp, void * context)
 #  else
     void GC_write_fault_handler(sig, scp, context)
     int sig;
-    struct SIGINFO *scp;
+    SIGINFO_T *scp;
     void * context;
 #  endif
 #   ifdef HPUX
@@ -2373,9 +2431,14 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 		     || (scp -> si_code == SEGV_UNKNOWN) \
 		     || (scp -> si_code == BUS_OBJERR)
 #   else
-#     define SIG_OK (sig == SIGSEGV)
-#     define CODE_OK (scp -> si_code == SEGV_ACCERR)
-#   endif
+#     ifdef FREEBSD
+#       define SIG_OK (sig == SIGBUS)
+#       define CODE_OK (scp -> si_code == BUS_PAGE_FAULT)
+#     else
+#       define SIG_OK (sig == SIGSEGV)
+#       define CODE_OK (scp -> si_code == SEGV_ACCERR)
+#     endif
+#   endif    
 # endif /* SUNOS5SIGS */
 
 # if defined(MSWIN32) || defined(MSWINCE)
@@ -2400,7 +2463,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 	char * addr = (char *) (scp -> si_addr);
 #   endif
 #   ifdef LINUX
-#     if defined(I386) || defined (X86_64)
+#     if defined(I386)
 	char * addr = (char *) (sc.cr2);
 #     else
 #	if defined(M68K)
@@ -2435,7 +2498,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #	  ifdef ALPHA
             char * addr = get_fault_addr(sc);
 #	  else
-#	    if defined(IA64) || defined(HP_PA)
+#	    if defined(IA64) || defined(HP_PA) || defined(X86_64)
 	      char * addr = si -> si_addr;
 	      /* I believe this is claimed to work on all platforms for	*/
 	      /* Linux 2.3.47 and later.  Hopefully we don't have to	*/
@@ -2478,6 +2541,10 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 	    in_allocd_block = (HDR(addr) != 0);
 #	endif
         if (!in_allocd_block) {
+	    /* FIXME - We should make sure that we invoke the	*/
+	    /* old handler with the appropriate calling 	*/
+	    /* sequence, which often depends on SA_SIGINFO.	*/
+
 	    /* Heap blocks now begin and end on page boundaries */
             SIG_PF old_handler;
             
@@ -2494,11 +2561,17 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 		    return(EXCEPTION_CONTINUE_SEARCH);
 #		endif
             } else {
-#		if defined (SUNOS4) || defined(FREEBSD)
+#		if defined (SUNOS4) \
+                    || (defined(FREEBSD) && !defined(SUNOS5SIGS))
 		    (*old_handler) (sig, code, scp, addr);
 		    return;
 #		endif
 #		if defined (SUNOS5SIGS)
+                    /*
+                     * FIXME: For FreeBSD, this code should check if the 
+                     * old signal handler used the traditional BSD style and
+                     * if so call it using that style.
+                     */
 		    (*(REAL_SIG_PF)old_handler) (sig, scp, context);
 		    return;
 #		endif
@@ -2506,7 +2579,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #		    if defined(ALPHA) || defined(M68K)
 		        (*(REAL_SIG_PF)old_handler) (sig, code, sc);
 #		    else 
-#		      if defined(IA64) || defined(HP_PA)
+#		      if defined(IA64) || defined(HP_PA) || defined(X86_64)
 		        (*(REAL_SIG_PF)old_handler) (sig, si, scp);
 #		      else
 		        (*(REAL_SIG_PF)old_handler) (sig, sc);
@@ -2600,7 +2673,8 @@ void GC_dirty_init()
       struct sigaction	act, oldact;
       /* We should probably specify SA_SIGINFO for Linux, and handle 	*/
       /* the different architectures more uniformly.			*/
-#     if defined(IRIX5) || defined(LINUX) || defined(OSF1) || defined(HURD)
+#     if defined(IRIX5) || defined(LINUX) && !defined(X86_64) \
+	 || defined(OSF1) || defined(HURD)
     	act.sa_flags	= SA_RESTART;
         act.sa_handler  = (SIG_PF)GC_write_fault_handler;
 #     else
@@ -2623,7 +2697,7 @@ void GC_dirty_init()
         GC_err_printf0("Page size not multiple of HBLKSIZE\n");
         ABORT("Page size not multiple of HBLKSIZE");
     }
-#   if defined(SUNOS4) || defined(FREEBSD)
+#   if defined(SUNOS4) || (defined(FREEBSD) && !defined(SUNOS5SIGS))
       GC_old_bus_handler = signal(SIGBUS, GC_write_fault_handler);
       if (GC_old_bus_handler == SIG_IGN) {
         GC_err_printf0("Previously ignored bus error!?");
@@ -2647,13 +2721,13 @@ void GC_dirty_init()
 #	endif
       }
 #   endif
-#   if defined(SUNOS5SIGS) || defined(IRIX5) || defined(LINUX) \
-       || defined(OSF1) || defined(HURD)
+#   if (defined(SUNOS5SIGS) && !defined(FREEBSD)) || defined(IRIX5) \
+       || defined(LINUX) || defined(OSF1) || defined(HURD)
       /* SUNOS5SIGS includes HPUX */
 #     if defined(GC_IRIX_THREADS)
       	sigaction(SIGSEGV, 0, &oldact);
       	sigaction(SIGSEGV, &act, 0);
-#     else
+#     else 
 	{
 	  int res = sigaction(SIGSEGV, &act, &oldact);
 	  if (res != 0) ABORT("Sigaction failed");
@@ -2679,8 +2753,9 @@ void GC_dirty_init()
 	  GC_err_printf0("Replaced other SIGSEGV handler\n");
 #       endif
       }
-#   endif
-#   if defined(HPUX) || defined(LINUX) || defined(HURD)
+#   endif /* (SUNOS5SIGS && !FREEBSD) || IRIX5 || LINUX || OSF1 || HURD */
+#   if defined(HPUX) || defined(LINUX) || defined(HURD) \
+      || (defined(FREEBSD) && defined(SUNOS5SIGS))
       sigaction(SIGBUS, &act, &oldact);
       GC_old_bus_handler = oldact.sa_handler;
       if (GC_old_bus_handler == SIG_IGN) {
@@ -2692,7 +2767,7 @@ void GC_dirty_init()
 	  GC_err_printf0("Replaced other SIGBUS handler\n");
 #       endif
       }
-#   endif /* HPUX || LINUX || HURD */
+#   endif /* HPUX || LINUX || HURD || (FREEBSD && SUNOS5SIGS) */
 #   if defined(MSWIN32)
       GC_old_segv_handler = SetUnhandledExceptionFilter(GC_write_fault_handler);
       if (GC_old_segv_handler != NULL) {
@@ -2977,7 +3052,7 @@ word n;
 #include <sys/procfs.h>
 #include <sys/stat.h>
 
-#define INITIAL_BUF_SZ 4096
+#define INITIAL_BUF_SZ 16384
 word GC_proc_buf_size = INITIAL_BUF_SZ;
 char *GC_proc_buf;
 
@@ -3091,7 +3166,7 @@ int dummy;
                 GC_proc_buf = bufp = new_buf;
                 GC_proc_buf_size = new_size;
             }
-            if (syscall(SYS_read, GC_proc_fd, bufp, GC_proc_buf_size) <= 0) {
+            if (READ(GC_proc_fd, bufp, GC_proc_buf_size) <= 0) {
                 WARN("Insufficient space for /proc read\n", 0);
                 /* Punt:	*/
         	memset(GC_grungy_pages, 0xff, sizeof (page_hash_table));
@@ -3429,6 +3504,8 @@ static void *GC_mprotect_thread(void *arg) {
     } msg;
 
     mach_msg_id_t id;
+
+    GC_darwin_register_mach_handler_thread(mach_thread_self());
     
     for(;;) {
         r = mach_msg(
@@ -3886,12 +3963,14 @@ kern_return_t catch_exception_raise_state_identity(
 
 #endif /* NEED_CALLINFO */
 
+#if defined(GC_HAVE_BUILTIN_BACKTRACE)
+# include <execinfo.h>
+#endif
+
 #ifdef SAVE_CALL_CHAIN
 
 #if NARGS == 0 && NFRAMES % 2 == 0 /* No padding */ \
     && defined(GC_HAVE_BUILTIN_BACKTRACE)
-
-#include <execinfo.h>
 
 void GC_save_callers (info) 
 struct callinfo info[NFRAMES];
@@ -3968,6 +4047,8 @@ struct callinfo info[NFRAMES];
     static int reentry_count = 0;
     GC_bool stop = FALSE;
 
+    /* FIXME: This should probably use a different lock, so that we	*/
+    /* become callable with or without the allocation lock.		*/
     LOCK();
       ++reentry_count;
     UNLOCK();
@@ -4002,7 +4083,8 @@ struct callinfo info[NFRAMES];
 #	  ifdef LINUX
 	    FILE *pipe;
 #	  endif
-#	  if defined(GC_HAVE_BUILTIN_BACKTRACE)
+#	  if defined(GC_HAVE_BUILTIN_BACKTRACE) \
+	     && !defined(GC_BACKTRACE_SYMBOLS_BROKEN)
 	    char **sym_name =
 	      backtrace_symbols((void **)(&(info[i].ci_pc)), 1);
 	    char *name = sym_name[0];
@@ -4021,6 +4103,9 @@ struct callinfo info[NFRAMES];
 #		define RESULT_SZ 200
 		static char result_buf[RESULT_SZ];
 		size_t result_len;
+		char *old_preload;
+#		define PRELOAD_SZ 200
+    		char preload_buf[PRELOAD_SZ];
 		static GC_bool found_exe_name = FALSE;
 		static GC_bool will_fail = FALSE;
 		int ret_code;
@@ -4042,7 +4127,20 @@ struct callinfo info[NFRAMES];
 		/* isn't time critical.					*/
 		sprintf(cmd_buf, "/usr/bin/addr2line -f -e %s 0x%lx", exe_name,
 				 (unsigned long)info[i].ci_pc);
+		old_preload = getenv ("LD_PRELOAD");
+	        if (0 != old_preload) {
+		  if (strlen (old_preload) >= PRELOAD_SZ) {
+		    will_fail = TRUE;
+		    goto out;
+		  }
+		  strcpy (preload_buf, old_preload);
+		  unsetenv ("LD_PRELOAD");
+	        }
 		pipe = popen(cmd_buf, "r");
+		if (0 != old_preload
+		    && 0 != setenv ("LD_PRELOAD", preload_buf, 0)) {
+		  WARN("Failed to reset LD_PRELOAD\n", 0);
+      		}
 		if (pipe == NULL
 		    || (result_len = fread(result_buf, 1, RESULT_SZ - 1, pipe))
 		       == 0) {
@@ -4079,7 +4177,8 @@ struct callinfo info[NFRAMES];
 	    }
 #	  endif /* LINUX */
 	  GC_err_printf1("\t\t%s\n", name);
-#	  if defined(GC_HAVE_BUILTIN_BACKTRACE)
+#	  if defined(GC_HAVE_BUILTIN_BACKTRACE) \
+	     && !defined(GC_BACKTRACE_SYMBOLS_BROKEN)
 	    free(sym_name);  /* May call GC_free; that's OK */
 #         endif
 	}

@@ -104,7 +104,7 @@ ptr_t ofl;
     p[3] = 0;
     p += 4;
     for (; p < lim; p += 4) {
-	PREFETCH_FOR_WRITE(p+64);
+	PREFETCH_FOR_WRITE((ptr_t)(p+64));
         p[0] = (word)(p-4);
         p[1] = 0;
 	CLEAR_DOUBLE(p+2);
@@ -142,7 +142,7 @@ ptr_t ofl;
     p[4] = (word)p;
     p += 8;
     for (; p < lim; p += 8) {
-	PREFETCH_FOR_WRITE(p+64);
+	PREFETCH_FOR_WRITE((ptr_t)(p+64));
         p[0] = (word)(p-4);
         p[4] = (word)p;
     };
@@ -171,10 +171,10 @@ ptr_t list;
   /* If we were more serious about it, these should go inside	*/
   /* the loops.  But write prefetches usually don't seem to	*/
   /* matter much.						*/
-    PREFETCH_FOR_WRITE((char *)h);
-    PREFETCH_FOR_WRITE((char *)h + 128);
-    PREFETCH_FOR_WRITE((char *)h + 256);
-    PREFETCH_FOR_WRITE((char *)h + 378);
+    PREFETCH_FOR_WRITE((ptr_t)h);
+    PREFETCH_FOR_WRITE((ptr_t)h + 128);
+    PREFETCH_FOR_WRITE((ptr_t)h + 256);
+    PREFETCH_FOR_WRITE((ptr_t)h + 378);
   /* Handle small objects sizes more efficiently.  For larger objects 	*/
   /* the difference is less significant.				*/
 #  ifndef SMALL_CONFIG

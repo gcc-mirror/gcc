@@ -16,7 +16,7 @@ link=	 $(bcbin)\ilink32
 cflags=  -O2 -R -v- -vi -H -H=gc.csm -I$(bcinclude);$(gcinclude1);$(gcinclude2) -L$(bclib) \
 	 -w-pro -w-aus -w-par -w-ccc -w-rch -a4 -D__STDC__=0
 #defines= -DSILENT
-defines= -DSMALL_CONFIG -DSILENT -DALL_INTERIOR_POINTERS -DUSE_GENERIC -DNO_GETENV -DJAVA_FINALIZATION -DGC_OPERATOR_NEW_ARRAY
+defines= -DSILENT -DALL_INTERIOR_POINTERS -DUSE_GENERIC -DNO_GETENV -DJAVA_FINALIZATION -DGC_OPERATOR_NEW_ARRAY
 
 .c.obj:
 	$(cc) @&&|

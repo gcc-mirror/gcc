@@ -61,6 +61,7 @@ GC_PTR GC_local_malloc_atomic(size_t bytes);
 #endif
 
 # ifdef GC_DEBUG
+    /* We don't really use local allocation in this case.	*/
 #   define GC_LOCAL_MALLOC(s) GC_debug_malloc(s,GC_EXTRAS)
 #   define GC_LOCAL_MALLOC_ATOMIC(s) GC_debug_malloc_atomic(s,GC_EXTRAS)
 #   ifdef GC_GCJ_SUPPORT

@@ -30,6 +30,8 @@
   extern size_t GC_min_stack_sz;
   extern size_t GC_page_sz;
   extern void GC_thr_init(void);
+  extern ptr_t GC_stack_alloc(size_t * stack_size);
+  extern void GC_stack_free(ptr_t stack, size_t size);
 
 # endif /* GC_SOLARIS_THREADS */
 

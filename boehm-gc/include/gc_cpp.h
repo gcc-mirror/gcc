@@ -152,6 +152,11 @@ by UseGC.  GC is an alias for UseGC, unless GC_NAME_CONFLICT is defined.
 #   define GC_OPERATOR_NEW_ARRAY
 #endif
 
+#if    ! defined ( __BORLANDC__ )  /* Confuses the Borland compiler. */ \
+    && ! defined ( __sgi )
+#  define GC_PLACEMENT_DELETE
+#endif
+
 enum GCPlacement {UseGC,
 #ifndef GC_NAME_CONFLICT
 		  GC=UseGC,
@@ -165,7 +170,7 @@ class gc {public:
     	/* Must be redefined here, since the other overloadings	*/
     	/* hide the global definition.				*/
     inline void operator delete( void* obj );
-#   ifndef __BORLANDC__  /* Confuses the Borland compiler. */
+#   ifdef GC_PLACEMENT_DELETE  
       inline void operator delete( void*, void* );
 #   endif
 
@@ -174,7 +179,7 @@ class gc {public:
     inline void* operator new[]( size_t size, GCPlacement gcp );
     inline void* operator new[]( size_t size, void *p );
     inline void operator delete[]( void* obj );
-#   ifndef __BORLANDC__
+#   ifdef GC_PLACEMENT_DELETE
       inline void gc::operator delete[]( void*, void* );
 #   endif
 #endif /* GC_OPERATOR_NEW_ARRAY */
@@ -282,7 +287,7 @@ inline void* gc::operator new( size_t size, void *p ) {
 inline void gc::operator delete( void* obj ) {
     GC_FREE( obj );}
     
-#ifndef __BORLANDC__
+#ifdef GC_PLACEMENT_DELETE
   inline void gc::operator delete( void*, void* ) {}
 #endif
 
@@ -300,7 +305,7 @@ inline void* gc::operator new[]( size_t size, void *p ) {
 inline void gc::operator delete[]( void* obj ) {
     gc::operator delete( obj );}
 
-#ifndef __BORLANDC__
+#ifdef GC_PLACEMENT_DELETE
   inline void gc::operator delete[]( void*, void* ) {}
 #endif
     

@@ -385,9 +385,9 @@ size_t CORD_str(CORD x, size_t start, CORD s)
         mask <<= 8;
         mask |= 0xff;
         s_buf <<= 8;
-        s_buf |= s_start[i];
+        s_buf |= (unsigned char)s_start[i];
         x_buf <<= 8;
-        x_buf |= CORD_pos_fetch(xpos);
+        x_buf |= (unsigned char)CORD_pos_fetch(xpos);
         CORD_next(xpos);
     }
     for (match_pos = start; ; match_pos++) {
@@ -402,7 +402,7 @@ size_t CORD_str(CORD x, size_t start, CORD s)
 	    return(CORD_NOT_FOUND);
 	}
     	x_buf <<= 8;
-        x_buf |= CORD_pos_fetch(xpos);
+        x_buf |= (unsigned char)CORD_pos_fetch(xpos);
         CORD_next(xpos);
     }
 }

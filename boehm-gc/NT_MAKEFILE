@@ -2,7 +2,8 @@
 # DLLs are included in the root set under NT, but not under win32S.
 # Use "nmake nodebug=1 all" for optimized versions of library, gctest and editor.
 
-CPU= i386
+MY_CPU=X86
+CPU=$(MY_CPU)
 !include <ntwin32.mak>
 
 OBJS= alloc.obj reclaim.obj allchblk.obj misc.obj mach_dep.obj os_dep.obj mark_rts.obj headers.obj mark.obj obj_map.obj blacklst.obj finalize.obj new_hblk.obj dbg_mlc.obj malloc.obj stubborn.obj dyn_load.obj typd_mlc.obj ptr_chck.obj gc_cpp.obj mallocx.obj
@@ -10,10 +11,10 @@ OBJS= alloc.obj reclaim.obj allchblk.obj misc.obj mach_dep.obj os_dep.obj mark_r
 all: gctest.exe cord\de.exe test_cpp.exe
 
 .c.obj:
-	$(cc) $(cdebug) $(cflags) $(cvars) -Iinclude -DSILENT -DALL_INTERIOR_POINTERS -D__STDC__ -DGC_NOT_DLL $*.c /Fo$*.obj
+	$(cc) $(cdebug) $(cflags) $(cvars) -Iinclude -DSILENT -DALL_INTERIOR_POINTERS -D__STDC__ -DGC_NOT_DLL -DGC_BUILD $*.c /Fo$*.obj
 
 .cpp.obj:
-	$(cc) $(cdebug) $(cflags) $(cvars) -Iinclude -DSILENT -DALL_INTERIOR_POINTERS -DGC_NOT_DLL $*.CPP /Fo$*.obj
+	$(cc) $(cdebug) $(cflags) $(cvars) -Iinclude -DSILENT -DALL_INTERIOR_POINTERS -DGC_NOT_DLL -DGC_BUILD $*.CPP /Fo$*.obj
 
 $(OBJS) tests\test.obj: include\private\gc_priv.h include\private\gc_hdrs.h include\gc.h include\private\gcconfig.h include\private\gc_locks.h include\private\gc_pmark.h include\gc_mark.h
 
@@ -30,7 +31,7 @@ gctest.exe: tests\test.obj gc.lib
 #	mapsympe -n -o gctest.sym gctest.exe
 
 cord\de_win.rbj: cord\de_win.res
-	cvtres -$(CPU) cord\de_win.res -o cord\de_win.rbj
+	cvtres /MACHINE:$(MY_CPU) /OUT:cord\de_win.rbj cord\de_win.res
 
 cord\de.obj cord\de_win.obj: include\cord.h include\private\cord_pos.h cord\de_win.h cord\de_cmds.h
 

@@ -36,6 +36,7 @@ register struct obj_kind * kind;
 /* Allocate a large block of size lw words.	*/
 /* The block is not cleared.			*/
 /* Flags is 0 or IGNORE_OFF_PAGE.		*/
+/* We hold the allocation lock.			*/
 ptr_t GC_alloc_large(lw, k, flags)
 word lw;
 int k;
@@ -62,20 +63,21 @@ unsigned flags;
     if (h == 0) {
 	result = 0;
     } else {
-	int total_bytes = BYTES_TO_WORDS(n_blocks * HBLKSIZE);
+	int total_bytes = n_blocks * HBLKSIZE;
 	if (n_blocks > 1) {
-	    GC_large_allocd_bytes += n_blocks * HBLKSIZE;
+	    GC_large_allocd_bytes += total_bytes;
 	    if (GC_large_allocd_bytes > GC_max_large_allocd_bytes)
 	        GC_max_large_allocd_bytes = GC_large_allocd_bytes;
 	}
 	result = (ptr_t) (h -> hb_body);
-	GC_words_wasted += total_bytes - lw;
+	GC_words_wasted += BYTES_TO_WORDS(total_bytes) - lw;
     }
     return result;
 }
 
 
 /* Allocate a large block of size lb bytes.  Clear if appropriate.	*/
+/* We hold the allocation lock.						*/
 ptr_t GC_alloc_large_and_clear(lw, k, flags)
 word lw;
 int k;
@@ -311,6 +313,19 @@ DCL_LOCK_STATE;
 }
 
 # ifdef REDIRECT_MALLOC
+
+/* Avoid unnecessary nested procedure calls here, by #defining some	*/
+/* malloc replacements.  Otherwise we end up saving a 			*/
+/* meaningless return address in the object.  It also speeds things up,	*/
+/* but it is admittedly quite ugly.					*/
+# ifdef GC_ADD_CALLER
+#   define RA GC_RETURN_ADDR,
+# else
+#   define RA
+# endif
+# define GC_debug_malloc_replacement(lb) \
+	GC_debug_malloc(lb, RA "unknown", 0)
+
 # ifdef __STDC__
     GC_PTR malloc(size_t lb)
 # else
@@ -362,6 +377,8 @@ DCL_LOCK_STATE;
  /* If strdup is macro defined, we assume that it actually calls malloc, */
  /* and thus the right thing will happen even without overriding it.	 */
  /* This seems to be true on most Linux systems.			 */
+
+#undef GC_debug_malloc_replacement
 
 # endif /* REDIRECT_MALLOC */
 

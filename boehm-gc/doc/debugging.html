@@ -47,6 +47,10 @@ The garbage collector generates warning messages of the form
 <PRE>
 Needed to allocate blacklisted block at 0x...
 </pre>
+or
+<PRE>
+Repeated allocation of very large block ...
+</pre>
 when it needs to allocate a block at a location that it knows to be
 referenced by a false pointer.  These false pointers can be either permanent
 (<I>e.g.</i> a static integer variable that never changes) or temporary.
@@ -123,7 +127,8 @@ is commonly caused by data structures that are no longer being used,
 but were not cleared, or by caches growing without bounds.
 <LI> Pointer misidentification.  The garbage collector is interpreting
 integers or other data as pointers and retaining the "referenced"
-objects.
+objects.  A common symptom is that GC_dump() shows much of the heap
+as black-listed.
 <LI> Heap fragmentation.  This should never result in unbounded growth,
 but it may account for larger heaps.  This is most commonly caused
 by allocation of large objects.  On some platforms it can be reduced
@@ -180,6 +185,12 @@ primitives is <TT>gc_typed.h</tt>, or separate out the pointerfree component.
 <LI> Consider using <TT>GC_malloc_ignore_off_page()</tt>
 to allocate large objects.  (See <TT>gc.h</tt> and above for details.
 Large means &gt; 100K in most environments.)
+<LI> If your heap size is larger than 100MB or so, build the collector with
+-DLARGE_CONFIG.  This allows the collector to keep more precise black-list
+information.
+<LI> If you are using heaps close to, or larger than, a gigabyte on a 32-bit
+machine, you may want to consider moving to a platform with 64-bit pointers.
+This is very likely to resolve any false pointer issues.
 </ol>
 <H2>Prematurely Reclaimed Objects</h2>
 The usual symptom of this is a segmentation fault, or an obviously overwritten

@@ -1,5 +1,12 @@
 2004-08-13  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* configure.in (GCINCS): Don't use "boehm-cflags". Instead, -I 
+	boehm-gc's include dirs.
+	* configure: Rebuilt.
+	* include/boehm-gc.h: Include gc_config.h.
+
+2004-08-13  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* java/net/InetAddress.java (loopbackAddress): Renamed from 
 	localhostAddress.
 	(getByName): Return loopback address for null hostname, without

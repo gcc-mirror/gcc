@@ -147,6 +147,16 @@ int obj_kind;
 # endif
 
 # ifdef REDIRECT_REALLOC
+
+/* As with malloc, avoid two levels of extra calls here.	*/
+# ifdef GC_ADD_CALLER
+#   define RA GC_RETURN_ADDR,
+# else
+#   define RA
+# endif
+# define GC_debug_realloc_replacement(p, lb) \
+	GC_debug_realloc(p, lb, RA "unknown", 0)
+
 # ifdef __STDC__
     GC_PTR realloc(GC_PTR p, size_t lb)
 # else
@@ -157,6 +167,8 @@ int obj_kind;
   {
     return(REDIRECT_REALLOC(p, lb));
   }
+
+# undef GC_debug_realloc_replacement
 # endif /* REDIRECT_REALLOC */
 
 

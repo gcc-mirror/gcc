@@ -2,7 +2,7 @@
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
  * Copyright (c) 1991-1994 by Xerox Corporation.  All rights reserved.
  * Copyright (c) 1996 by Silicon Graphics.  All rights reserved.
- * Copyright (c) 2000 by Hewlett-Packard Company.  All rights reserved.
+ * Copyright (c) 2000-2004 Hewlett-Packard Development Company, L.P.
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -307,6 +307,10 @@
 #   define I386
 #   define mach_type_known
 # endif
+# if defined(__NetBSD__) && defined(__x86_64__)
+#    define X86_64
+#    define mach_type_known
+# endif
 # if defined(bsdi) && (defined(i386) || defined(__i386__))
 #    define I386
 #    define BSDI
@@ -346,6 +350,11 @@
 #     define I386
 #     define MSWIN32	/* or Win32s */
 #     define mach_type_known
+#   endif
+#   if defined(_MSC_VER) && defined(_M_IA64)
+#     define IA64
+#     define MSWIN32	/* Really win64, but we don't treat 64-bit 	*/
+			/* variants as a differnt platform.		*/
 #   endif
 # endif
 # if defined(__DJGPP__)
@@ -588,7 +597,8 @@
  * USE_GENERIC_PUSH_REGS the preferred approach for marking from registers.
  */
 # if defined(__GNUC__) && ((__GNUC__ >= 3) || \
-			   (__GNUC__ == 2 && __GNUC_MINOR__ >= 8))
+			   (__GNUC__ == 2 && __GNUC_MINOR__ >= 8)) \
+		       && !defined(__INTEL_COMPILER)
 #   define HAVE_BUILTIN_UNWIND_INIT
 # endif
 
@@ -599,8 +609,14 @@
 #   ifdef OPENBSD
 #	define OS_TYPE "OPENBSD"
 #	define HEURISTIC2
-	extern char etext[];
-#	define DATASTART ((ptr_t)(etext))
+#	ifdef __ELF__
+#	  define DATASTART GC_data_start
+#	  define DYNAMIC_LOADING
+#	else
+	  extern char etext[];
+#	  define DATASTART ((ptr_t)(etext))
+#       endif
+#       define USE_GENERIC_PUSH_REGS
 #   endif
 #   ifdef NETBSD
 #	define OS_TYPE "NETBSD"
@@ -612,6 +628,7 @@
 	  extern char etext[];
 #	  define DATASTART ((ptr_t)(etext))
 #       endif
+#	define USE_GENERIC_PUSH_REGS
 #   endif
 #   ifdef LINUX
 #       define OS_TYPE "LINUX"
@@ -925,10 +942,17 @@
 
 # ifdef I386
 #   define MACH_TYPE "I386"
-#   define ALIGNMENT 4	/* Appears to hold for all "32 bit" compilers	*/
+#   if defined(__LP64__) || defined(_WIN64)
+#     define CPP_WORDSZ 64
+#     define ALIGNMENT 8
+#   else
+#     define CPP_WORDSZ 32
+#     define ALIGNMENT 4
+			/* Appears to hold for all "32 bit" compilers	*/
 			/* except Borland.  The -a4 option fixes 	*/
 			/* Borland.					*/
                         /* Ivan Demakov: For Watcom the option is -zp4. */
+#   endif
 #   ifndef SMALL_CONFIG
 #     define ALIGN_DOUBLE /* Not strictly necessary, but may give speed   */
 			  /* improvement on Pentiums.			  */
@@ -1042,7 +1066,7 @@
 	    /* possibly because Linux threads is itself a malloc client */
 	    /* and can't deal with the signals.				*/
 #	endif
-#	define HEAP_START 0x1000
+#	define HEAP_START (ptr_t)0x1000
 		/* This encourages mmap to give us low addresses,	*/
 		/* thus allowing the heap to grow to ~3GB		*/
 #       ifdef __ELF__
@@ -1073,6 +1097,8 @@
 #            define DATASTART ((ptr_t)((((word) (etext)) + 0xfff) & ~0xfff))
 #       endif
 #	ifdef USE_I686_PREFETCH
+	  /* FIXME: Thus should use __builtin_prefetch, but we'll leave that	*/
+	  /* for the next rtelease.						*/
 #	  define PREFETCH(x) \
 	    __asm__ __volatile__ ("	prefetchnta	%0": : "m"(*(char *)(x)))
 	    /* Empirically prefetcht0 is much more effective at reducing	*/
@@ -1562,6 +1588,7 @@
     	/* first putenv call.						*/
 	extern char ** environ;
 #       define STACKBOTTOM ((ptr_t)environ)
+#       define HPUX_STACKBOTTOM
 #       define DYNAMIC_LOADING
 #       include <unistd.h>
 #       define GETPAGESIZE() sysconf(_SC_PAGE_SIZE)
@@ -1571,9 +1598,9 @@
 	/* address minus one page.					*/
 #	define BACKING_STORE_DISPLACEMENT 0x1000000
 #	define BACKING_STORE_ALIGNMENT 0x1000
-#       define BACKING_STORE_BASE \
-	  (ptr_t)(((word)GC_stackbottom - BACKING_STORE_DISPLACEMENT - 1) \
-			& ~(BACKING_STORE_ALIGNMENT - 1))
+	extern ptr_t GC_register_stackbottom;
+#	define BACKING_STORE_BASE GC_register_stackbottom
+	/* Known to be wrong for recent HP/UX versions!!!	*/
 #   endif
 #   ifdef LINUX
 #   	define CPP_WORDSZ 64
@@ -1591,8 +1618,8 @@
 	/* constants:						*/
 #       define BACKING_STORE_ALIGNMENT 0x100000
 #       define BACKING_STORE_DISPLACEMENT 0x80000000
-	extern char * GC_register_stackbottom;
-#	define BACKING_STORE_BASE ((ptr_t)GC_register_stackbottom)
+	extern ptr_t GC_register_stackbottom;
+#	define BACKING_STORE_BASE GC_register_stackbottom
 #	define SEARCH_FOR_DATA_START
 #	ifdef __GNUC__
 #         define DYNAMIC_LOADING
@@ -1606,13 +1633,36 @@
 	extern int _end[];
 #	define DATAEND (_end)
 #       ifdef __GNUC__
-#	  define PREFETCH(x) \
-	    __asm__ ("	lfetch	[%0]": : "r"((void *)(x)))
-#	  define PREFETCH_FOR_WRITE(x) \
-	    __asm__ ("	lfetch.excl	[%0]": : "r"((void *)(x)))
-#	  define CLEAR_DOUBLE(x) \
-	    __asm__ ("	stf.spill	[%0]=f0": : "r"((void *)(x)))
+#	  ifndef __INTEL_COMPILER
+#	    define PREFETCH(x) \
+	      __asm__ ("	lfetch	[%0]": : "r"(x))
+#	    define PREFETCH_FOR_WRITE(x) \
+	      __asm__ ("	lfetch.excl	[%0]": : "r"(x))
+#	    define CLEAR_DOUBLE(x) \
+	      __asm__ ("	stf.spill	[%0]=f0": : "r"((void *)(x)))
+#	  else
+#           include <ia64intrin.h>
+#	    define PREFETCH(x) \
+	      __lfetch(__lfhint_none, (x))
+#	    define PREFETCH_FOR_WRITE(x) \
+	      __lfetch(__lfhint_nta,  (x))
+#	    define CLEAR_DOUBLE(x) \
+	      __stf_spill((void *)(x), 0)
+#	  endif // __INTEL_COMPILER
 #       endif
+#   endif
+#   ifdef MSWIN32
+      /* FIXME: This is a very partial guess.  There is no port, yet.	*/
+#     define OS_TYPE "MSWIN32"
+		/* STACKBOTTOM and DATASTART are handled specially in 	*/
+		/* os_dep.c.						*/
+#     define DATAEND  /* not needed */
+#     if defined(_WIN64)
+#       define CPP_WORDSZ 64
+#     else
+#       define CPP_WORDSZ 32   /* Is this possible?	*/
+#     endif
+#     define ALIGNMENT 8
 #   endif
 # endif
 
@@ -1801,12 +1851,27 @@
 	     extern int etext[];
 #            define DATASTART ((ptr_t)((((word) (etext)) + 0xfff) & ~0xfff))
 #       endif
-#	if defined(__GNUC__) && __GNUC__ >= 3
-#	    define PREFETCH(x) __builtin_prefetch ((x), 0, 0)
-#	    define PREFETCH_FOR_WRITE(x) __builtin_prefetch ((x), 1)
+#       if defined(__GNUC__) && __GNUC >= 3
+#	    define PREFETCH(x) __builtin_prefetch((x), 0, 0)
+#	    define PREFETCH_FOR_WRITE(x) __builtin_prefetch((x), 1)
 #	endif
 #   endif
+#   ifdef NETBSD
+#	define OS_TYPE "NETBSD"
+#	ifdef __ELF__
+#	    define DYNAMIC_LOADING
+#	endif
+#	define HEURISTIC2
+	extern char etext[];
+#	define SEARCH_FOR_DATA_START
+#   endif
 # endif
+
+#if defined(LINUX) && defined(USE_MMAP)
+    /* The kernel may do a somewhat better job merging mappings etc.	*/
+    /* with anonymous mappings.						*/
+#   define USE_MMAP_ANON
+#endif
 
 #if defined(LINUX) && defined(REDIRECT_MALLOC)
     /* Rld appears to allocate some memory with its own allocator, and	*/
@@ -1862,9 +1927,13 @@
 #   define SUNOS5SIGS
 # endif
 
-# if defined(SVR4) || defined(LINUX) || defined(IRIX) || defined(HPUX) \
+# if defined(FREEBSD) && (__FreeBSD__ >= 4)
+#   define SUNOS5SIGS
+# endif
+
+# if defined(SVR4) || defined(LINUX) || defined(IRIX5) || defined(HPUX) \
 	    || defined(OPENBSD) || defined(NETBSD) || defined(FREEBSD) \
-	    || defined(DGUX) || defined(BSD) \
+	    || defined(DGUX) || defined(BSD) || defined(SUNOS4) \
 	    || defined(_AIX) || defined(DARWIN) || defined(OSF1)
 #   define UNIX_LIKE   /* Basic Unix-like system calls work.	*/
 # endif
@@ -1978,6 +2047,10 @@
 	/* The define should move to the individual platform 		*/
 	/* descriptions.						*/
 #	define USE_GENERIC_PUSH_REGS
+# endif
+
+# if defined(MSWINCE)
+#   define NO_GETENV
 # endif
 
 # if defined(SPARC)

@@ -558,8 +558,8 @@ register hdr *hhdr, **new_hdr_p;
 	      current = current - HBLKSIZE*(word)hhdr;
 	      hhdr = HDR(current);
 	    } while(IS_FORWARDING_ADDR_OR_NIL(hhdr));
-	    /* current points to the start of the large object */
-	    if (hhdr -> hb_flags & IGNORE_OFF_PAGE) return(0);
+	    /* current points to near the start of the large object */
+	    if (hhdr -> hb_flags & IGNORE_OFF_PAGE) return(orig);
 	    if ((word *)orig - (word *)current
 	         >= (ptrdiff_t)(hhdr->hb_sz)) {
 	        /* Pointer past the end of the block */
@@ -1739,7 +1739,7 @@ register hdr * hhdr;
 {
     register int sz = hhdr -> hb_sz;
     
-    if (sz < MAXOBJSZ) {
+    if (sz <= MAXOBJSZ) {
          return(GC_page_was_dirty(h));
     } else {
     	 register ptr_t p = (ptr_t)h;

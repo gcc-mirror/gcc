@@ -85,5 +85,10 @@ SRC_M3		Set if the collector is being built as a replacement of the
 		It's there primarily incase someone wants to port to a similar
 		system.
 
+USE_COMPILER_TLS  Assume the existence of __thread-style thread-local
+		storage.  Set automatically for thread-local allocation with
+		the HP/UX vendor compiler.  Usable with gcc on sufficiently
+		up-to-date ELF platforms.
+
 
 

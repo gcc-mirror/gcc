@@ -47,6 +47,7 @@
 /*#define DEBUG_THREADS 1*/
 /*#define GC_ASSERTIONS*/
 
+# include "gc.h"
 # include "private/pthread_support.h"
 
 # if defined(GC_PTHREADS) && !defined(GC_SOLARIS_THREADS) \

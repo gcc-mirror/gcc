@@ -261,7 +261,7 @@ int CORD_vsprintf(CORD * out, CORD format, va_list args)
 #		    ifdef __va_copy
                       __va_copy(vsprintf_args, args);
 #		    else
-#		      if defined(__GNUC__) /* and probably in other cases */
+#		      if defined(__GNUC__) && !defined(__DJGPP__) /* and probably in other cases */
                         va_copy(vsprintf_args, args);
 #		      else
 			vsprintf_args = args;

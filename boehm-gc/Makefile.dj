@@ -29,7 +29,7 @@ EXE_SUFFIX=.exe
 srcdir= .
 VPATH= $(srcdir)
 
-CFLAGS= -O -I$(srcdir)/include -DATOMIC_UNCOLLECTABLE -DNO_SIGNALS -DALL_INTERIOR_POINTERS -DNO_EXECUTE_PERMISSION -DSILENT
+CFLAGS= -gstabs+ -O2 -I$(srcdir)/include -DATOMIC_UNCOLLECTABLE -DNO_SIGNALS -DALL_INTERIOR_POINTERS -DNO_EXECUTE_PERMISSION -DSILENT
 
 # Setjmp_test may yield overly optimistic results when compiled
 # without optimization.
@@ -157,9 +157,9 @@ AR= ar
 RANLIB= ranlib
 
 
-OBJS= alloc.o reclaim.o allchblk.o misc.o mach_dep.o os_dep.o mark_rts.o headers.o mark.o obj_map.o blacklst.o finalize.o new_hblk.o dbg_mlc.o malloc.o stubborn.o checksums.o solaris_threads.o hpux_irix_threads.o linux_threads.o typd_mlc.o ptr_chck.o mallocx.o solaris_pthreads.o gcj_mlc.o specific.o
+OBJS= alloc.o reclaim.o allchblk.o misc.o mach_dep.o os_dep.o mark_rts.o headers.o mark.o obj_map.o blacklst.o finalize.o new_hblk.o dbg_mlc.o malloc.o stubborn.o checksums.o solaris_threads.o typd_mlc.o ptr_chck.o mallocx.o solaris_pthreads.o gcj_mlc.o specific.o
 
-CSRCS= reclaim.c allchblk.c misc.c alloc.c mach_dep.c os_dep.c mark_rts.c headers.c mark.c obj_map.c pcr_interface.c blacklst.c finalize.c new_hblk.c real_malloc.c dyn_load.c dbg_mlc.c malloc.c stubborn.c checksums.c solaris_threads.c hpux_irix_threads.c linux_threads.c typd_mlc.c ptr_chck.c mallocx.c solaris_pthreads.c gcj_mlc.c specific.c
+CSRCS= reclaim.c allchblk.c misc.c alloc.c mach_dep.c os_dep.c mark_rts.c headers.c mark.c obj_map.c pcr_interface.c blacklst.c finalize.c new_hblk.c real_malloc.c dyn_load.c dbg_mlc.c malloc.c stubborn.c checksums.c solaris_threads.c typd_mlc.c ptr_chck.c mallocx.c solaris_pthreads.c gcj_mlc.c specific.c
 
 CORD_SRCS=  cord/cordbscs.c cord/cordxtra.c cord/cordprnt.c cord/de.c cord/cordtest.c include/cord.h include/ec.h include/private/cord_pos.h cord/de_win.c cord/de_win.h cord/de_cmds.h cord/de_win.ICO cord/de_win.RC cord/SCOPTIONS.amiga cord/SMakefile.amiga
 
@@ -181,7 +181,7 @@ SRCS= $(CSRCS) mips_sgi_mach_dep.S rs6000_mach_dep.s alpha_mach_dep.S \
     include/leak_detector.h $(CORD_SRCS)
 
 OTHER_FILES= Makefile PCR-Makefile OS2_MAKEFILE NT_MAKEFILE BCC_MAKEFILE \
-           README test.c test_cpp.cc setjmp_t.c SMakefile.amiga \
+           README tests/test.c test_cpp.cc setjmp_t.c SMakefile.amiga \
            SCoptions.amiga README.amiga README.win32 cord/README \
 	   README.rs6000 README.QUICK callprocs pc_excludes \
            barrett_diagram README.OS2 README.Mac MacProjects.sit.hqx \
@@ -206,7 +206,7 @@ CURSES= -lcurses -ltermlib
 # the SHELL environment variable.
 SHELL= /bin/sh
 
-SPECIALCFLAGS = 
+SPECIALCFLAGS = -I$(srcdir)/include
 # Alternative flags to the C compiler for mach_dep.c.
 # Mach_dep.c often doesn't like optimization, and it's
 # not time-critical anyway.
@@ -224,7 +224,7 @@ $(OBJS) test.o dyn_load.o dyn_load_sunos53.o: \
 # options such as -DSILENT affects the size of GC_arrays,
 # invalidating all .o files that rely on gc_priv.h
 
-mark.o typd_mlc.o finalize.o: $(srcdir)/gc_mark.h
+mark.o typd_mlc.o finalize.o: $(srcdir)/include/gc_mark.h
 
 base_lib gc.a: $(OBJS) dyn_load.o $(UTILS)
 	echo > base_lib
@@ -366,11 +366,11 @@ clean:
 	rm -f threadlibs$(EXE_SUFFIX) cord/cordtest$(EXE_SUFFIX)
 	-rm -f *~
 
-gctest$(EXE_SUFFIX): test.o gc.a if_mach$(EXE_SUFFIX) if_not_there$(EXE_SUFFIX)
+gctest$(EXE_SUFFIX): tests/test.o gc.a if_mach$(EXE_SUFFIX) if_not_there$(EXE_SUFFIX)
 	rm -f gctest gctest$(EXE_SUFFIX)
-	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o gctest  test.o gc.a -lucb
-	./if_mach HP_PA "" $(CC) $(CFLAGS) -o gctest  test.o gc.a -ldld
-	./if_not_there gctest$(EXE_SUFFIX) $(CC) $(CFLAGS) -o gctest$(EXE_SUFFIX) test.o gc.a
+	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o gctest  tests/test.o gc.a -lucb
+	./if_mach HP_PA "" $(CC) $(CFLAGS) -o gctest  tests/test.o gc.a -ldld
+	./if_not_there gctest$(EXE_SUFFIX) $(CC) $(CFLAGS) -o gctest$(EXE_SUFFIX) tests/test.o gc.a
 	rm -f gctest
 
 # If an optimized setjmp_test generates a segmentation fault,
@@ -407,8 +407,8 @@ gc.tar.Z: gc.tar
 gc.tar.gz: gc.tar
 	gzip gc.tar
 
-lint: $(CSRCS) test.c
-	lint -DLINT $(CSRCS) test.c | egrep -v "possible pointer alignment problem|abort|exit|sbrk|mprotect|syscall"
+lint: $(CSRCS) tests/test.c
+	lint -DLINT $(CSRCS) tests/test.c | egrep -v "possible pointer alignment problem|abort|exit|sbrk|mprotect|syscall"
 
 # BTL: added to test shared library version of collector.
 # Currently works only under SunOS5.  Requires GC_INIT call from statically
@@ -417,8 +417,8 @@ ABSDIR = `pwd`
 gctest_dyn_link: test.o libgc.so
 	$(CC) -L$(ABSDIR) -R$(ABSDIR) -o gctest_dyn_link test.o -lgc -ldl -lthread
 
-test_dll.o: test.c libgc_globals.h
-	$(CC) $(CFLAGS) -DGC_USE_DLL -c test.c -o test_dll.o
+test_dll.o: tests/test.c libgc_globals.h
+	$(CC) $(CFLAGS) -DGC_USE_DLL -c tests/test.c -o test_dll.o
 
 test_dll: test_dll.o libgc_dll.a libgc.dll
 	$(CC) test_dll.o -L$(ABSDIR) -lgc_dll -o test_dll

@@ -14,8 +14,6 @@
  */
 /* Boehm, July 31, 1995 5:02 pm PDT */
 
-#ifdef GC_GCJ_SUPPORT
-
 /*
  * This is an allocator interface tuned for gcj (the GNU static
  * java compiler).
@@ -39,6 +37,8 @@
 #include "private/gc_pmark.h"
 #include "gc_gcj.h"
 #include "private/dbg_mlc.h"
+
+#ifdef GC_GCJ_SUPPORT
 
 GC_bool GC_gcj_malloc_initialized = FALSE;
 
@@ -72,46 +72,36 @@ void GC_init_gcj_malloc(int mp_index, void * /* really GC_mark_proc */mp)
         GC_printf0("Gcj-style type information is disabled!\n");
       }
 #   endif
+    GC_ASSERT(GC_mark_procs[mp_index] == (GC_mark_proc)0); /* unused */
     GC_mark_procs[mp_index] = (GC_mark_proc)mp;
     if (mp_index >= GC_n_mark_procs) ABORT("GC_init_gcj_malloc: bad index");
     /* Set up object kind gcj-style indirect descriptor. */
-      GC_gcjobjfreelist = (ptr_t *)
-          GC_INTERNAL_MALLOC((MAXOBJSZ+1)*sizeof(ptr_t), PTRFREE);
-      if (GC_gcjobjfreelist == 0) ABORT("Couldn't allocate GC_gcjobjfreelist");
-      BZERO(GC_gcjobjfreelist, (MAXOBJSZ+1)*sizeof(ptr_t));
-      GC_gcj_kind = GC_n_kinds++;
-      GC_obj_kinds[GC_gcj_kind].ok_freelist = GC_gcjobjfreelist;
-      GC_obj_kinds[GC_gcj_kind].ok_reclaim_list = 0;
+      GC_gcjobjfreelist = (ptr_t *)GC_new_free_list_inner();
       if (ignore_gcj_info) {
 	/* Use a simple length-based descriptor, thus forcing a fully	*/
 	/* conservative scan.						*/
-        GC_obj_kinds[GC_gcj_kind].ok_descriptor = (0 | GC_DS_LENGTH);
-        GC_obj_kinds[GC_gcj_kind].ok_relocate_descr = TRUE;
+	GC_gcj_kind = GC_new_kind_inner((void **)GC_gcjobjfreelist,
+					(0 | GC_DS_LENGTH),
+				        TRUE, TRUE);
       } else {
-	GC_obj_kinds[GC_gcj_kind].ok_descriptor =
-    	  (((word)(-MARK_DESCR_OFFSET - GC_INDIR_PER_OBJ_BIAS))
-	   | GC_DS_PER_OBJECT);
-        GC_obj_kinds[GC_gcj_kind].ok_relocate_descr = FALSE;
+	GC_gcj_kind = GC_new_kind_inner(
+			(void **)GC_gcjobjfreelist,
+			(((word)(-MARK_DESCR_OFFSET - GC_INDIR_PER_OBJ_BIAS))
+	   		 | GC_DS_PER_OBJECT),
+			FALSE, TRUE);
       }
-      GC_obj_kinds[GC_gcj_kind].ok_init = TRUE;
     /* Set up object kind for objects that require mark proc call.	*/
-      GC_gcjdebugobjfreelist = (ptr_t *)
-          GC_INTERNAL_MALLOC((MAXOBJSZ+1)*sizeof(ptr_t), PTRFREE);
-      if (GC_gcjdebugobjfreelist == 0)
-	  ABORT("Couldn't allocate GC_gcjdebugobjfreelist");
-      BZERO(GC_gcjdebugobjfreelist, (MAXOBJSZ+1)*sizeof(ptr_t));
-      GC_gcj_debug_kind = GC_n_kinds++;
-      GC_obj_kinds[GC_gcj_debug_kind].ok_freelist = GC_gcjdebugobjfreelist;
-      GC_obj_kinds[GC_gcj_debug_kind].ok_reclaim_list = 0;
       if (ignore_gcj_info) {
-        GC_obj_kinds[GC_gcj_kind].ok_descriptor = (0 | GC_DS_LENGTH);
-        GC_obj_kinds[GC_gcj_kind].ok_relocate_descr = TRUE;
+	GC_gcj_debug_kind = GC_gcj_kind;
+        GC_gcjdebugobjfreelist = GC_gcjobjfreelist;
       } else {
-        GC_obj_kinds[GC_gcj_debug_kind].ok_descriptor =
-    	  GC_MAKE_PROC(mp_index, 1 /* allocated with debug info */);
-        GC_obj_kinds[GC_gcj_debug_kind].ok_relocate_descr = FALSE;
+        GC_gcjdebugobjfreelist = (ptr_t *)GC_new_free_list_inner();
+	GC_gcj_debug_kind = GC_new_kind_inner(
+				(void **)GC_gcjdebugobjfreelist,
+				GC_MAKE_PROC(mp_index,
+				     	     1 /* allocated with debug info */),
+				FALSE, TRUE);
       }
-      GC_obj_kinds[GC_gcj_debug_kind].ok_init = TRUE;
     UNLOCK();
     ENABLE_SIGNALS();
 }
@@ -123,6 +113,25 @@ ptr_t GC_clear_stack();
     
 #define GENERAL_MALLOC_IOP(lb,k) \
     (GC_PTR)GC_clear_stack(GC_generic_malloc_inner_ignore_off_page(lb, k))
+
+/* We need a mechanism to release the lock and invoke finalizers.	*/
+/* We don't really have an opportunity to do this on a rarely executed	*/
+/* path on which the lock is not held.  Thus we check at a 		*/
+/* rarely executed point at which it is safe to release the lock.	*/
+/* We do this even where we could just call GC_INVOKE_FINALIZERS,	*/
+/* since it's probably cheaper and certainly more uniform.		*/
+/* FIXME - Consider doing the same elsewhere?				*/
+static void maybe_finalize()
+{
+   static int last_finalized_no = 0;
+
+   if (GC_gc_no == last_finalized_no) return;
+   if (!GC_is_initialized) return;
+   UNLOCK();
+   GC_INVOKE_FINALIZERS();
+   last_finalized_no = GC_gc_no;
+   LOCK();
+}
 
 /* Allocate an object, clear it, and store the pointer to the	*/
 /* type structure (vtable in gcj).				*/
@@ -143,7 +152,8 @@ DCL_LOCK_STATE;
 	opp = &(GC_gcjobjfreelist[lw]);
 	LOCK();
 	op = *opp;
-        if( EXPECT(op == 0, 0)) {
+        if(EXPECT(op == 0, 0)) {
+	    maybe_finalize();
             op = (ptr_t)GENERAL_MALLOC((word)lb, GC_gcj_kind);
 	    if (0 == op) {
 		UNLOCK();
@@ -161,6 +171,7 @@ DCL_LOCK_STATE;
 	UNLOCK();
     } else {
 	LOCK();
+	maybe_finalize();
 	op = (ptr_t)GENERAL_MALLOC((word)lb, GC_gcj_kind);
 	if (0 == op) {
 	    UNLOCK();
@@ -179,10 +190,10 @@ GC_PTR GC_debug_gcj_malloc(size_t lb, void * ptr_to_struct_containing_descr,
 {
     GC_PTR result;
 
-    /* We clone the code from GC_debug_gcj_malloc, so that we 	*/
-    /* dont end up with extra frames on the stack, which could	*/
+    /* We're careful to avoid extra calls, which could		 */
     /* confuse the backtrace.					*/
     LOCK();
+    maybe_finalize();
     result = GC_generic_malloc_inner(lb + DEBUG_BYTES, GC_gcj_debug_kind);
     if (result == 0) {
 	UNLOCK();
@@ -215,6 +226,7 @@ DCL_LOCK_STATE;
     LOCK();
     op = *opp;
     if( EXPECT(op == 0, 0) ) {
+	maybe_finalize();
         op = (ptr_t)GC_clear_stack(
 		GC_generic_malloc_words_small_inner(lw, GC_gcj_kind));
 	if (0 == op) {
@@ -242,6 +254,7 @@ void * GC_debug_gcj_fast_malloc(size_t lw,
     /* dont end up with extra frames on the stack, which could	*/
     /* confuse the backtrace.					*/
     LOCK();
+    maybe_finalize();
     result = GC_generic_malloc_inner(lb + DEBUG_BYTES, GC_gcj_debug_kind);
     if (result == 0) {
 	UNLOCK();
@@ -278,6 +291,7 @@ DCL_LOCK_STATE;
 	opp = &(GC_gcjobjfreelist[lw]);
 	LOCK();
         if( (op = *opp) == 0 ) {
+	    maybe_finalize();
             op = (ptr_t)GENERAL_MALLOC_IOP(lb, GC_gcj_kind);
 #	    ifdef MERGE_SIZES
 		lw = GC_size_map[lb];	/* May have been uninitialized.	*/
@@ -289,6 +303,8 @@ DCL_LOCK_STATE;
 	*(void **)op = ptr_to_struct_containing_descr;
 	UNLOCK();
     } else {
+	LOCK();
+	maybe_finalize();
         op = (ptr_t)GENERAL_MALLOC_IOP(lb, GC_gcj_kind);
         if (0 != op) {
           *(void **)op = ptr_to_struct_containing_descr;

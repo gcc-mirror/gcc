@@ -130,7 +130,7 @@ static GC_thread GC_new_thread(void) {
 	ABORT("DuplicateHandle failed");
   }
   thread_table[i].stack_base = GC_get_stack_base();
-  /* Up until this point, GC_psuh_all_stacks considers this thread	*/
+  /* Up until this point, GC_push_all_stacks considers this thread	*/
   /* invalid.								*/
   if (thread_table[i].stack_base == NULL) 
     ABORT("Failed to find stack base in GC_new_thread");

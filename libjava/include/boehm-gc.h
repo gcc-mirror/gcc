@@ -26,6 +26,8 @@ extern "C"
 #include <java/lang/Class.h>
 #include <string.h>
 
+#include <gc_config.h>
+
 extern "C" void * GC_gcj_malloc(size_t, void *);
 extern "C" void * GC_malloc_atomic(size_t);
 #ifdef THREAD_LOCAL_ALLOC

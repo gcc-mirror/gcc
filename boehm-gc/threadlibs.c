@@ -1,3 +1,4 @@
+# include "gc_config_macros.h"
 # include "private/gcconfig.h"
 # include <stdio.h>
 

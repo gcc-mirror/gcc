@@ -348,8 +348,6 @@ mse * GC_array_mark_proc GC_PROTO((register word * addr,
 				   mse * mark_stack_limit,
 				   word env));
 
-GC_descr GC_generic_array_descr;
-
 /* Caller does not hold allocation lock. */
 void GC_init_explicit_typing()
 {
@@ -370,47 +368,25 @@ void GC_init_explicit_typing()
     }
     GC_explicit_typing_initialized = TRUE;
     /* Set up object kind with simple indirect descriptor. */
-      GC_eobjfreelist = (ptr_t *)
-          GC_INTERNAL_MALLOC((MAXOBJSZ+1)*sizeof(ptr_t), PTRFREE);
-      if (GC_eobjfreelist == 0) ABORT("Couldn't allocate GC_eobjfreelist");
-      BZERO(GC_eobjfreelist, (MAXOBJSZ+1)*sizeof(ptr_t));
-      GC_explicit_kind = GC_n_kinds++;
-      GC_obj_kinds[GC_explicit_kind].ok_freelist = GC_eobjfreelist;
-      GC_obj_kinds[GC_explicit_kind].ok_reclaim_list = 0;
-      GC_obj_kinds[GC_explicit_kind].ok_descriptor =
-    		(((word)WORDS_TO_BYTES(-1)) | GC_DS_PER_OBJECT);
-      GC_obj_kinds[GC_explicit_kind].ok_relocate_descr = TRUE;
-      GC_obj_kinds[GC_explicit_kind].ok_init = TRUE;
+      GC_eobjfreelist = (ptr_t *)GC_new_free_list_inner();
+      GC_explicit_kind = GC_new_kind_inner(
+		      	    (void **)GC_eobjfreelist,
+		      	    (((word)WORDS_TO_BYTES(-1)) | GC_DS_PER_OBJECT),
+			    TRUE, TRUE);
     		/* Descriptors are in the last word of the object. */
-      GC_typed_mark_proc_index = GC_n_mark_procs;
-      GC_mark_procs[GC_typed_mark_proc_index] = GC_typed_mark_proc;
-      GC_n_mark_procs++;
-        /* Moving this up breaks DEC AXP compiler.      */
+      GC_typed_mark_proc_index = GC_new_proc_inner(GC_typed_mark_proc);
     /* Set up object kind with array descriptor. */
-      GC_arobjfreelist = (ptr_t *)
-          GC_INTERNAL_MALLOC((MAXOBJSZ+1)*sizeof(ptr_t), PTRFREE);
-      if (GC_arobjfreelist == 0) ABORT("Couldn't allocate GC_arobjfreelist");
-      BZERO(GC_arobjfreelist, (MAXOBJSZ+1)*sizeof(ptr_t));
-      if (GC_n_mark_procs >= MAX_MARK_PROCS)
-      		ABORT("No slot for array mark proc");
-      GC_array_mark_proc_index = GC_n_mark_procs++;
-      if (GC_n_kinds >= MAXOBJKINDS)
-      		ABORT("No kind available for array objects");
-      GC_array_kind = GC_n_kinds++;
-      GC_obj_kinds[GC_array_kind].ok_freelist = GC_arobjfreelist;
-      GC_obj_kinds[GC_array_kind].ok_reclaim_list = 0;
-      GC_obj_kinds[GC_array_kind].ok_descriptor =
-    		GC_MAKE_PROC(GC_array_mark_proc_index, 0);;
-      GC_obj_kinds[GC_array_kind].ok_relocate_descr = FALSE;
-      GC_obj_kinds[GC_array_kind].ok_init = TRUE;
-    		/* Descriptors are in the last word of the object. */
-            GC_mark_procs[GC_array_mark_proc_index] = GC_array_mark_proc;
+      GC_arobjfreelist = (ptr_t *)GC_new_free_list_inner();
+      GC_array_mark_proc_index = GC_new_proc_inner(GC_array_mark_proc);
+      GC_array_kind = GC_new_kind_inner(
+		      	    (void **)GC_arobjfreelist,
+			    GC_MAKE_PROC(GC_array_mark_proc_index, 0),
+			    FALSE, TRUE);
       for (i = 0; i < WORDSZ/2; i++) {
           GC_descr d = (((word)(-1)) >> (WORDSZ - i)) << (WORDSZ - i);
           d |= GC_DS_BITMAP;
           GC_bm_table[i] = d;
       }
-      GC_generic_array_descr = GC_MAKE_PROC(GC_array_mark_proc_index, 0); 
     UNLOCK();
     ENABLE_SIGNALS();
 }

@@ -4,7 +4,7 @@
     <AUTHOR> Hans-J. Boehm, HP Labs (Much of this was written at SGI)</author>
 </HEAD>
 <BODY>
-<H1> <I>This is under construction</i> </h1>
+<H1> <I>This is under construction, and may always be.</i> </h1>
 <H1> Conservative GC Algorithmic Overview </h1>
 <P>
 This is a description of the algorithms and data structures used in our
@@ -27,20 +27,22 @@ We assume the default finalization model, but the code affected by that
 is very localized.
 <H2> Introduction </h2>
 The garbage collector uses a modified mark-sweep algorithm.  Conceptually
-it operates roughly in four phases:
+it operates roughly in four phases, which are performed occasionally
+as part of a memory allocation:
 
 <OL>
 
 <LI>
-<I>Preparation</i> Clear all mark bits, indicating that all objects
+<I>Preparation</i> Each object has an associated mark bit.
+Clear all mark bits, indicating that all objects
 are potentially unreachable.
 
 <LI>
 <I>Mark phase</i> Marks all objects that can be reachable via chains of
-pointers from variables.  Normally the collector has no real information
+pointers from variables.  Often the collector has no real information
 about the location of pointer variables in the heap, so it
 views all static data areas, stacks and registers as potentially containing
-containing pointers.  Any bit patterns that represent addresses inside
+pointers.  Any bit patterns that represent addresses inside
 heap objects managed by the collector are viewed as pointers.
 Unless the client program has made heap object layout information
 available to the collector, any heap objects found to be reachable from
@@ -87,8 +89,12 @@ others are not.  Some may have per-object type descriptors that
 determine pointer locations.  Or a specific kind may correspond
 to one specific object layout.  Two built-in kinds are uncollectable.
 One (<TT>STUBBORN</tt>) is immutable without special precautions.
-In spite of that, it is very likely that most applications currently
+In spite of that, it is very likely that most C clients of the
+collector currently
 use at most two kinds: <TT>NORMAL</tt> and <TT>PTRFREE</tt> objects.
+The <A HREF="http://gcc.gnu.org/java">gcj</a> runtime also makes
+heavy use of a kind (allocated with GC_gcj_malloc) that stores
+type information at a known offset in method tables.
 <P>
 The collector uses a two level allocator.  A large block is defined to
 be one larger than half of <TT>HBLKSIZE</tt>, which is a power of 2,
@@ -175,6 +181,32 @@ for a single pool of physical memory.
 
 <H2>Mark phase</h2>
 
+At each collection, the collector marks all objects that are
+possibly reachable from pointer variables.  Since it cannot generally
+tell where pointer variables are located, it scans the following
+<I>root segments</i> for pointers:
+<UL>
+<LI>The registers.  Depending on the architecture, this may be done using
+assembly code, or by calling a <TT>setjmp</tt>-like function which saves
+register contents on the stack.
+<LI>The stack(s).  In the case of a single-threaded application,
+on most platforms this
+is done by scanning the memory between (an approximation of) the current
+stack pointer and <TT>GC_stackbottom</tt>.  (For Itanium, the register stack
+scanned separately.)  The <TT>GC_stackbottom</tt> variable is set in
+a highly platform-specific way depending on the appropriate configuration
+information in <TT>gcconfig.h</tt>.  Note that the currently active
+stack needs to be scanned carefully, since callee-save registers of
+client code may appear inside collector stack frames, which may
+change during the mark process.  This is addressed by scanning
+some sections of the stack "eagerly", effectively capturing a snapshot
+at one point in time.
+<LI>Static data region(s).  In the simplest case, this is the region
+between <TT>DATASTART</tt> and <TT>DATAEND</tt>, as defined in
+<TT>gcconfig.h</tt>.  However, in most cases, this will also involve
+static data regions associated with dynamic libraries.  These are
+identified by the mostly platform-specific code in <TT>dyn_load.c</tt>.
+</ul> 
 The marker maintains an explicit stack of memory regions that are known
 to be accessible, but that have not yet been searched for contained pointers.
 Each stack entry contains the starting address of the block to be scanned,
@@ -182,8 +214,11 @@ as well as a descriptor of the block.  If no layout information is
 available for the block, then the descriptor is simply a length.
 (For other possibilities, see <TT>gc_mark.h</tt>.)
 <P>
-At the beginning of the mark phase, all root segments are pushed on the
-stack by <TT>GC_push_roots</tt>.  If <TT>ALL_INTERIOR_PTRS</tt> is not
+At the beginning of the mark phase, all root segments
+(as described above) are pushed on the
+stack by <TT>GC_push_roots</tt>.  (Registers and eagerly processed
+stack sections are processed by pushing the referenced objects instead
+of the stack section itself.)  If <TT>ALL_INTERIOR_PTRS</tt> is not
 defined, then stack roots require special treatment.  In this case, the
 normal marking code ignores interior pointers, but <TT>GC_push_all_stack</tt>
 explicitly checks for interior pointers and pushes descriptors for target
@@ -479,8 +514,9 @@ if there is low demand for small pointerfree objects.
 We support several different threading models.  Unfortunately Pthreads,
 the only reasonably well standardized thread model, supports too narrow
 an interface for conservative garbage collection.  There appears to be
-no completely portable way to allow the collector to coexist with various Pthreads
-implementations.  Hence we currently support only a few of the more
+no completely portable way to allow the collector
+to coexist with various Pthreads
+implementations.  Hence we currently support only the more
 common Pthreads implementations.
 <P>
 In particular, it is very difficult for the collector to stop all other
@@ -509,6 +545,10 @@ enumeration of threads and location of thread stacks.  This is current
 accomplished with <TT># define</tt>'s in <TT>gc.h</tt>
 (really <TT>gc_pthread_redirects.h</tt>), or optionally
 by using ld's function call wrapping mechanism under Linux.
+<P>
+Recent versions of the collector support several facilites to enhance
+the processor-scalability and thread performance of the collector.
+These are discussed in more detail <A HREF="scale.html">here</a>.
 <P>
 Comments are appreciated.  Please send mail to
 <A HREF="mailto:boehm@acm.org"><TT>boehm@acm.org</tt></a> or

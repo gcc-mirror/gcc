@@ -37,7 +37,7 @@ _GCC_TOPLEV_NONCANONICAL_TARGET
 mkinstalldirs="`cd $ac_aux_dir && ${PWDCMD-pwd}`/mkinstalldirs"
 AC_SUBST(mkinstalldirs)
 
-AM_INIT_AUTOMAKE(gc, 6.1a1, no-define)
+AM_INIT_AUTOMAKE(gc, 6.3, no-define)
 
 # The autoconf 2.5x version of the no-executables hack.
 sinclude(../config/no-executables.m4)
@@ -79,7 +79,7 @@ case [$]{gc_basedir} in
 *) gc_flagbasedir='[$](top_builddir)/'[$]{gc_basedir} ;;
 esac
 
-gc_cflags="[$]{gc_cflags} -I"'[$](top_builddir)'"/./targ-include -I[$]{gc_flagbasedir}/libc/include"
+gc_cflags="[$]{gc_cflags} -Iinclude -I"'[$](top_builddir)'"/./targ-include -I[$]{gc_flagbasedir}/libc/include"
 case "${host}" in
   *-*-cygwin32*)
     gc_cflags="[$]{gc_cflags} -I[$]{gc_flagbasedir}/../winsup/include"
@@ -480,10 +480,7 @@ else
   multilib_arg=
 fi
 
-AC_CONFIG_COMMANDS(boehm-cflags, [
-dnl Put all the -I and -D options in a file.
-echo "$AM_CPPFLAGS $DEFS" > boehm-cflags], [
-DEFS="$DEFS"
-AM_CPPFLAGS="$AM_CPPFLAGS"])
+AC_CONFIG_HEADERS([include/gc_config.h])
+
 AC_CONFIG_FILES(Makefile include/Makefile)
 AC_OUTPUT

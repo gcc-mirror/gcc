@@ -85,7 +85,7 @@ static __inline__ void * PREFIXED(getspecific) (tsd * key) {
     unsigned hash_val = CACHE_HASH(qtid);
     tse * volatile * entry_ptr = key -> cache + hash_val;
     tse * entry = *entry_ptr;   /* Must be loaded only once.	*/
-   if (EXPECT(entry -> qtid == qtid, 1)) {
+    if (EXPECT(entry -> qtid == qtid, 1)) {
       GC_ASSERT(entry -> thread == pthread_self());
       return entry -> value;
     }
