@@ -5265,7 +5265,7 @@ finish_struct (t, attributes)
     {
       tree scope = current_scope ();
       if (scope && TREE_CODE (scope) == FUNCTION_DECL)
-	add_tree (build_min (TAG_DEFN, t));
+	add_stmt (build_min (TAG_DEFN, t));
     }
 
   return t;

@@ -147,6 +147,8 @@ enum c_tree_index
     CTI_PRETTY_FUNCTION_ID,
     CTI_FUNC_ID,
 
+    CTI_VOID_ZERO,
+
     CTI_MAX
 };
 
@@ -187,6 +189,9 @@ enum c_tree_index
 #define pretty_function_id_node		c_global_trees[CTI_PRETTY_FUNCTION_ID]
 #define func_id_node			c_global_trees[CTI_FUNC_ID]
 
+/* A node for `((void) 0)'.  */
+#define void_zero_node                  c_global_trees[CTI_VOID_ZERO]
+
 extern tree c_global_trees[CTI_MAX];
 
 typedef enum c_language_kind
@@ -197,6 +202,68 @@ typedef enum c_language_kind
   clk_objective_c  /* Objective C */
 } 
 c_language_kind;
+
+/* Information about a statement tree.  */
+
+struct stmt_tree_s {
+  /* The last statement added to the tree.  */
+  tree x_last_stmt;
+  /* The type of the last expression statement.  (This information is
+     needed to implement the statement-expression extension.)  */
+  tree x_last_expr_type;
+  /* In C++, Non-zero if we should treat statements as full
+     expressions.  In particular, this variable is no-zero if at the
+     end of a statement we should destroy any temporaries created
+     during that statement.  Similarly, if, at the end of a block, we
+     should destroy any local variables in this block.  Normally, this
+     variable is non-zero, since those are the normal semantics of
+     C++.
+
+     However, in order to represent aggregate initialization code as
+     tree structure, we use statement-expressions.  The statements
+     within the statement expression should not result in cleanups
+     being run until the entire enclosing statement is complete.  
+
+     This flag has no effect in C.  */
+  int stmts_are_full_exprs_p; 
+};
+
+typedef struct stmt_tree_s *stmt_tree;
+
+/* Global state pertinent to the current function.  Some C dialects
+   extend this structure with additional fields.  */
+
+struct language_function {
+  /* While we are parsing the function, this contains information
+     about the statement-tree that we are building.  */
+  struct stmt_tree_s x_stmt_tree;
+};
+
+/* When building a statement-tree, this is the last statement added to
+   the tree.  */
+
+#define last_tree (current_stmt_tree ()->x_last_stmt)
+
+/* The type of the last expression-statement we have seen.  */
+
+#define last_expr_type (current_stmt_tree ()->x_last_expr_type)
+
+/* The type of a function that walks over tree structure.  */
+
+typedef tree (*walk_tree_fn)                    PARAMS ((tree *, 
+							 int *, 
+							 void *));
+
+extern stmt_tree current_stmt_tree              PARAMS ((void));
+extern void begin_stmt_tree                     PARAMS ((tree *));
+extern void add_stmt				PARAMS ((tree));
+extern void finish_stmt_tree                    PARAMS ((tree *));
+
+extern int statement_code_p                     PARAMS ((enum tree_code));
+extern int (*lang_statement_code_p)             PARAMS ((enum tree_code));
+extern tree walk_stmt_tree			PARAMS ((tree *,
+							 walk_tree_fn,
+							 void *));
 
 /* The variant of the C language being processed.  Each C language
    front-end defines this variable.  */
@@ -337,8 +404,13 @@ extern tree build_va_arg			PARAMS ((tree, tree));
 extern int self_promoting_args_p		PARAMS ((tree));
 extern tree simple_type_promotes_to		PARAMS ((tree));
 
-/* These macros provide convenient access to the various _STMT nodes
-   created when parsing template declarations.  */
+/* These macros provide convenient access to the various _STMT nodes.  */
+
+/* Nonzero if this statement should be considered a full-expression,
+   i.e., if temporaries created during this statement should have
+   their destructors run at the end of this statement.  (In C, this
+   will always be false, since there are no destructors.)  */
+#define STMT_IS_FULL_EXPR_P(NODE) TREE_LANG_FLAG_1 ((NODE))
 
 /* IF_STMT accessors. These give access to the condtion of the if
    statement, the then block of the if statement, and the else block

@@ -1,3 +1,37 @@
+2000-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	Move statement-tree facilities from C++ to C front-end.
+	* c-common.h (c_tree_index): Add CTI_VOID_ZERO.
+	(void_zero_node): New macro.
+	(struct stmt_tree_s): New type.
+	(stmt_tree): New typedef.
+	(struct language_function): New type.
+	(last_tree): New macro.
+	(last_expr_type): Likewise.
+	(walk_tree_fn): New typedef.
+	(current_stmt_tree): New function.
+	(begin_stmt_tree): Likewise.
+	(add_stmt): Likewise.
+	(finish_stmt_tree): Likewise.
+	(statement_code_p): Likewise.
+	(lang_statement_code_p): New variable.
+	(walk_stmt_tree): New function.
+	(STMT_IS_FULL_EXPR_P): New macro.
+	* c-common.c (lang_statement_code_p): New variable.
+	(c_common_nodes_and_builtins): Initialize void_zero_node.
+	(statement_code_p): New function.
+	(walk_stmt_tree): Likewise.
+	* c-decl.c (language_function): Rename to ...
+	(c_language_function): ... this.  Include language_function.
+	(push_c_function_context): Adjust accordingly.
+	(pop_c_function_context): Likewise.
+	(mark_c_function_context): Likewise.
+	(current_stmt_tree): Define.
+	* c-semantics.c (begin_stmt_tree): New function.
+	(add_stmt): Likewise.
+	(prune_unused_decls): Likewise.
+	(finish_stmt_tree): Likewise.
+
 2000-09-06 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
         * flow.c (insn_dead_p): Detect dead memory stores with auto increments.

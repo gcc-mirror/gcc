@@ -48,15 +48,8 @@
 
 static tree maybe_convert_cond PARAMS ((tree));
 static tree simplify_aggr_init_exprs_r PARAMS ((tree *, int *, void *));
-static tree prune_unused_decls PARAMS ((tree *, int *, void *));
 static void deferred_type_access_control PARAMS ((void));
 static void emit_associated_thunks PARAMS ((tree));
-
-/* Record the fact that STMT was the last statement added to the
-   statement tree.  */
-
-#define SET_LAST_STMT(stmt) \
-  (current_stmt_tree->x_last_stmt = (stmt))
 
 /* When parsing a template, LAST_TREE contains the last statement
    parsed.  These are chained together through the TREE_CHAIN field,
@@ -64,11 +57,11 @@ static void emit_associated_thunks PARAMS ((tree));
    bottom-up.  This macro makes LAST_TREE the indicated SUBSTMT of
    STMT.  */
 
-#define RECHAIN_STMTS(stmt, substmt)	\
-  do {					\
-    substmt = TREE_CHAIN (stmt);	\
-    TREE_CHAIN (stmt) = NULL_TREE;	\
-    SET_LAST_STMT (stmt);		\
+#define RECHAIN_STMTS(stmt, substmt)		\
+  do {						\
+    substmt = TREE_CHAIN (stmt);		\
+    TREE_CHAIN (stmt) = NULL_TREE;		\
+    last_tree = stmt;				\
   } while (0)
 
 /* Finish processing the COND, the SUBSTMT condition for STMT.  */
@@ -108,7 +101,19 @@ set_current_function_name_declared (i)
 int
 stmts_are_full_exprs_p ()
 {
-  return current_stmt_tree->stmts_are_full_exprs_p;
+  return current_stmt_tree ()->stmts_are_full_exprs_p;
+}
+
+/* Returns the stmt_tree (if any) to which statements are currently
+   being added.  If there is no active statement-tree, NULL is
+   returned.  */
+
+stmt_tree
+current_stmt_tree ()
+{
+  return (cfun 
+	  ? &cfun->language->x_stmt_tree 
+	  : &scope_chain->x_stmt_tree);
 }
 
 /* One if we have already declared __FUNCTION__ (and related
@@ -170,20 +175,6 @@ do_pushlevel ()
     }
 }
 
-/* T is a statement.  Add it to the statement-tree.  */
-
-void
-add_tree (t)
-     tree t;
-{
-  /* Add T to the statement-tree.  */
-  TREE_CHAIN (last_tree) = t;
-  SET_LAST_STMT (t);
-  /* When we expand a statement-tree, we must know whether or not the
-     statements are full-expresions.  We record that fact here.  */
-  STMT_IS_FULL_EXPR_P (last_tree) = stmts_are_full_exprs_p ();
-}
-
 /* Finish a goto-statement.  */
 
 void
@@ -207,7 +198,7 @@ finish_goto_stmt (destination)
   
   check_goto (destination);
 
-  add_tree (build_stmt (GOTO_STMT, destination));
+  add_stmt (build_stmt (GOTO_STMT, destination));
 }
 
 /* COND is the condition-expression for an if, while, etc.,
@@ -251,7 +242,7 @@ finish_expr_stmt (expr)
       if (!processing_template_decl)
 	expr = break_out_cleanups (expr);
       
-      add_tree (build_stmt (EXPR_STMT, expr));
+      add_stmt (build_stmt (EXPR_STMT, expr));
     }
 
   finish_stmt ();
@@ -271,7 +262,7 @@ begin_if_stmt ()
   tree r;
   do_pushlevel ();
   r = build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
-  add_tree (r);
+  add_stmt (r);
   return r;
 }
 
@@ -295,7 +286,7 @@ finish_then_clause (if_stmt)
      tree if_stmt;
 {
   RECHAIN_STMTS (if_stmt, THEN_CLAUSE (if_stmt));
-  SET_LAST_STMT (if_stmt);
+  last_tree = if_stmt;
   return if_stmt;
 }
 
@@ -346,7 +337,7 @@ begin_while_stmt ()
 {
   tree r;
   r = build_stmt (WHILE_STMT, NULL_TREE, NULL_TREE);
-  add_tree (r);
+  add_stmt (r);
   do_pushlevel ();
   return r;
 }
@@ -382,7 +373,7 @@ tree
 begin_do_stmt ()
 {
   tree r = build_stmt (DO_STMT, NULL_TREE, NULL_TREE);
-  add_tree (r);
+  add_stmt (r);
   return r;
 }
 
@@ -440,7 +431,7 @@ finish_return_stmt (expr)
 	  return;
 	}
     }
-  add_tree (build_stmt (RETURN_STMT, expr));
+  add_stmt (build_stmt (RETURN_STMT, expr));
   finish_stmt ();
 }
 
@@ -454,7 +445,7 @@ begin_for_stmt ()
   r = build_stmt (FOR_STMT, NULL_TREE, NULL_TREE, 
 		  NULL_TREE, NULL_TREE);
   NEW_FOR_SCOPE_P (r) = flag_new_for_scope > 0;
-  add_tree (r);
+  add_stmt (r);
   if (NEW_FOR_SCOPE_P (r))
     {
       do_pushlevel ();
@@ -521,7 +512,7 @@ finish_for_stmt (for_stmt)
 void
 finish_break_stmt ()
 {
-  add_tree (build_stmt (BREAK_STMT));
+  add_stmt (build_stmt (BREAK_STMT));
 }
 
 /* Finish a continue-statement.  */
@@ -529,7 +520,7 @@ finish_break_stmt ()
 void
 finish_continue_stmt ()
 {
-  add_tree (build_stmt (CONTINUE_STMT));
+  add_stmt (build_stmt (CONTINUE_STMT));
 }
 
 /* Begin a switch-statement.  Returns a new SWITCH_STMT if
@@ -540,7 +531,7 @@ begin_switch_stmt ()
 {
   tree r;
   r = build_stmt (SWITCH_STMT, NULL_TREE, NULL_TREE);
-  add_tree (r);
+  add_stmt (r);
   do_pushlevel ();
   return r;
 }
@@ -593,7 +584,7 @@ finish_case_label (low_value, high_value)
 {
   /* Add a representation for the case label to the statement
      tree.  */
-  add_tree (build_stmt (CASE_LABEL, low_value, high_value));
+  add_stmt (build_stmt (CASE_LABEL, low_value, high_value));
   /* And warn about crossing initializations, etc.  */
   if (!processing_template_decl)
     define_case_label ();
@@ -649,7 +640,7 @@ tree
 begin_try_block ()
 {
   tree r = build_stmt (TRY_BLOCK, NULL_TREE, NULL_TREE);
-  add_tree (r);
+  add_stmt (r);
   return r;
 }
 
@@ -660,7 +651,7 @@ begin_function_try_block ()
 {
   tree r = build_stmt (TRY_BLOCK, NULL_TREE, NULL_TREE);
   FN_TRY_BLOCK_P (r) = 1;
-  add_tree (r);
+  add_stmt (r);
   return r;
 }
 
@@ -761,7 +752,7 @@ begin_handler ()
 {
   tree r;
   r = build_stmt (HANDLER, NULL_TREE, NULL_TREE);
-  add_tree (r);
+  add_stmt (r);
   do_pushlevel ();
   return r;
 }
@@ -813,7 +804,7 @@ void
 begin_catch_block (type)
      tree type;
 {
-  add_tree (build (START_CATCH_STMT, type));
+  add_stmt (build (START_CATCH_STMT, type));
 }
 
 /* Finish a handler, which may be given by HANDLER.  The BLOCKs are
@@ -861,7 +852,7 @@ begin_compound_stmt (has_no_scope)
   if (last_tree && TREE_CODE (last_tree) == TRY_BLOCK)
     is_try = 1;
 
-  add_tree (r);
+  add_stmt (r);
   if (has_no_scope)
     COMPOUND_STMT_NO_SCOPE (r) = 1;
 
@@ -957,7 +948,7 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
   r = build_stmt (ASM_STMT, cv_qualifier, string,
 		  output_operands, input_operands,
 		  clobbers);
-  add_tree (r);
+  add_stmt (r);
 }
 
 /* Finish a label with the indicated NAME.  */
@@ -967,7 +958,7 @@ finish_label_stmt (name)
      tree name;
 {
   tree decl = define_label (input_filename, lineno, name);
-  add_tree (build_stmt (LABEL_STMT, decl));
+  add_stmt (build_stmt (LABEL_STMT, decl));
 }
 
 /* Finish a series of declarations for local labels.  G++ allows users
@@ -993,7 +984,7 @@ add_decl_stmt (decl)
 
   /* We need the type to last until instantiation time.  */
   decl_stmt = build_stmt (DECL_STMT, decl);
-  add_tree (decl_stmt); 
+  add_stmt (decl_stmt); 
 }
 
 /* Generate the RTL for a SUBOBJECT. */
@@ -1014,7 +1005,7 @@ finish_subobject (cleanup)
      tree cleanup;
 {
   tree r = build_stmt (SUBOBJECT, cleanup);
-  add_tree (r);
+  add_stmt (r);
 }
 
 /* When DECL goes out of scope, make sure that CLEANUP is executed.  */
@@ -1024,7 +1015,7 @@ finish_decl_cleanup (decl, cleanup)
      tree decl;
      tree cleanup;
 {
-  add_tree (build_stmt (CLEANUP_STMT, decl, cleanup));
+  add_stmt (build_stmt (CLEANUP_STMT, decl, cleanup));
 }
 
 /* Generate the RTL for a RETURN_INIT. */
@@ -1103,10 +1094,10 @@ finish_named_return_value (return_id, init)
       if (!processing_template_decl) 
 	{
 	  cp_finish_decl (decl, init, NULL_TREE, 0);
-	  add_tree (build_stmt (RETURN_INIT, NULL_TREE, NULL_TREE));
+	  add_stmt (build_stmt (RETURN_INIT, NULL_TREE, NULL_TREE));
 	}
       else
-	add_tree (build_stmt (RETURN_INIT, return_id, init));
+	add_stmt (build_stmt (RETURN_INIT, return_id, init));
     }
 
   /* Don't use tree-inlining for functions with named return values.
@@ -1192,7 +1183,7 @@ setup_vtbl_ptr (member_init_list, base_init_list)
   if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
       if (processing_template_decl)
-	add_tree (build_min_nt
+	add_stmt (build_min_nt
 		  (CTOR_INITIALIZER,
 		   member_init_list, base_init_list));
       else
@@ -1202,7 +1193,7 @@ setup_vtbl_ptr (member_init_list, base_init_list)
 	  /* Mark the beginning of the constructor.  */
 	  ctor_stmt = build_stmt (CTOR_STMT);
 	  CTOR_BEGIN_P (ctor_stmt) = 1;
-	  add_tree (ctor_stmt);
+	  add_stmt (ctor_stmt);
 	  
 	  /* And actually initialize the base-classes and members.  */
 	  emit_base_init (member_init_list, base_init_list);
@@ -1299,7 +1290,7 @@ add_scope_stmt (begin_p, partial_p)
     }
 
   /* Add the new statement to the statement-tree.  */
-  add_tree (ss);
+  add_stmt (ss);
 
   return top;
 }
@@ -1391,7 +1382,7 @@ finish_stmt_expr (rtl_expr)
   
   /* Remove the compound statement from the tree structure; it is
      now saved in the STMT_EXPR.  */
-  SET_LAST_STMT (rtl_expr);
+  last_tree = rtl_expr;
   TREE_CHAIN (last_tree) = NULL_TREE;
 
   /* If we created a statement-tree for this statement-expression,
@@ -2223,103 +2214,6 @@ finish_typeof (expr)
   return TREE_TYPE (expr);
 }
 
-/* Remove declarations of internal variables that are not used from a
-   stmt tree.  To qualify, the variable must have a name and must have
-   a zero DECL_SOURCE_LINE.  We tried to remove all variables for
-   which TREE_USED was false, but it turns out that there's tons of
-   variables for which TREE_USED is false but that are still in fact
-   used.  */
-
-static tree
-prune_unused_decls (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
-{
-  tree t = *tp;
-
-  if (t == NULL_TREE)
-    {
-      *walk_subtrees = 0;
-      return NULL_TREE;
-    }
-
-  if (TREE_CODE (t) == DECL_STMT)
-    {
-      tree d = DECL_STMT_DECL (t);
-      if (!TREE_USED (d) && DECL_NAME (d) && DECL_SOURCE_LINE (d) == 0)
-	{
-	  *tp = TREE_CHAIN (t);
-	  /* Recurse on the new value of tp, otherwise we will skip
-	     the next statement.  */
-	  return prune_unused_decls (tp, walk_subtrees, data);
-	}
-    }
-  else if (TREE_CODE (t) == SCOPE_STMT)
-    {
-      /* Remove all unused decls from the BLOCK of this SCOPE_STMT.  */
-      tree block = SCOPE_STMT_BLOCK (t);
-
-      if (block)
-	{
-	  tree *vp;
-
-	  for (vp = &BLOCK_VARS (block); *vp; )
-	    {
-	      tree v = *vp;
-	      if (! TREE_USED (v) && DECL_NAME (v) && DECL_SOURCE_LINE (v) == 0)
-		*vp = TREE_CHAIN (v);  /* drop */
-	      else
-		vp = &TREE_CHAIN (v);  /* advance */
-	    }
-	  /* If there are now no variables, the entire BLOCK can be dropped.
-	     (This causes SCOPE_NULLIFIED_P (t) to be true.)  */
-	  if (BLOCK_VARS (block) == NULL_TREE)
-	    SCOPE_STMT_BLOCK (t) = NULL_TREE;
-	}
-    }
-  return NULL_TREE;
-}
-
-/* Create an empty statement tree rooted at T.  */
-
-void
-begin_stmt_tree (t)
-     tree *t;
-{
-  /* We create a trivial EXPR_STMT so that last_tree is never NULL in
-     what follows.  We remove the extraneous statement in
-     finish_stmt_tree.  */
-  *t = build_nt (EXPR_STMT, void_zero_node);
-  SET_LAST_STMT (*t);
-  last_expr_type = NULL_TREE;
-}
-
-/* Finish the statement tree rooted at T.  */
-
-void
-finish_stmt_tree (t)
-     tree *t;
-{
-  tree stmt;
-  
-  /* Remove the fake extra statement added in begin_stmt_tree.  */
-  stmt = TREE_CHAIN (*t);
-  *t = stmt;
-  SET_LAST_STMT (NULL_TREE);
-
-  /* Remove unused decls from the stmt tree.  */
-  walk_stmt_tree (t, prune_unused_decls, NULL);
-
-  if (cfun)
-    {
-      /* The line-number recorded in the outermost statement in a function
-	 is the line number of the end of the function.  */
-      STMT_LINENO (stmt) = lineno;
-      STMT_LINENO_FOR_FN_P (stmt) = 1;
-    }
-}
-
 /* We're about to expand T, a statement.  Set up appropriate context
    for the substitution.  */
 
@@ -2329,7 +2223,7 @@ prep_stmt (t)
 {
   if (!STMT_LINENO_FOR_FN_P (t))
     lineno = STMT_LINENO (t);
-  current_stmt_tree->stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
+  current_stmt_tree ()->stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
 }
 
 /* Generate RTL for the statement T, and its substatements, and any
@@ -2453,7 +2347,8 @@ lang_expand_stmt (t)
 	}
 
       /* Restore saved state.  */
-      current_stmt_tree->stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
+      current_stmt_tree ()->stmts_are_full_exprs_p = 
+	saved_stmts_are_full_exprs_p;
 
       /* Go on to the next statement in this scope.  */
       t = TREE_CHAIN (t);

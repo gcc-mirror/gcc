@@ -169,8 +169,8 @@ static void mark_binding_level PARAMS ((void *));
 static void mark_named_label_lists PARAMS ((void *, void *));
 static void mark_cp_function_context PARAMS ((struct function *));
 static void mark_saved_scope PARAMS ((void *));
-static void mark_lang_function PARAMS ((struct language_function *));
-static void mark_stmt_tree PARAMS ((struct stmt_tree *));
+static void mark_lang_function PARAMS ((struct cp_language_function *));
+static void mark_stmt_tree PARAMS ((stmt_tree));
 static void save_function_data PARAMS ((tree));
 static void check_function_type PARAMS ((tree));
 static void destroy_local_var PARAMS ((tree));
@@ -200,7 +200,6 @@ tree error_mark_list;
 
    C++ extensions
 	tree wchar_decl_node;
-	tree void_zero_node;
 
 	tree vtable_entry_type;
 	tree delta_type_node;
@@ -2453,7 +2452,7 @@ struct saved_scope *scope_chain;
 
 static void
 mark_stmt_tree (st)
-     struct stmt_tree *st;
+     stmt_tree st;
 {
   ggc_mark_tree (st->x_last_stmt);
   ggc_mark_tree (st->x_last_expr_type);
@@ -6471,10 +6470,6 @@ init_decl_processing ()
   void_list_node = build_tree_list (NULL_TREE, void_type_node);
   TREE_PARMLIST (void_list_node) = 1;
 
-  /* Used for expressions that do nothing, but are not errors.  */
-  void_zero_node = build_int_2 (0, 0);
-  TREE_TYPE (void_zero_node) = void_type_node;
-
   string_type_node = build_pointer_type (char_type_node);
   const_string_type_node
     = build_pointer_type (build_qualified_type (char_type_node,
@@ -7965,12 +7960,13 @@ initialize_local_var (decl, init, flags)
 	  emit_line_note (DECL_SOURCE_FILE (decl),
 			  DECL_SOURCE_LINE (decl));
 	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
-	  current_stmt_tree->stmts_are_full_exprs_p = 1;
+	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  if (building_stmt_tree ())
 	    finish_expr_stmt (build_aggr_init (decl, init, flags));
 	  else
 	    genrtl_expr_stmt (build_aggr_init (decl, init, flags));
-	  current_stmt_tree->stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
+	  current_stmt_tree ()->stmts_are_full_exprs_p = 
+	    saved_stmts_are_full_exprs_p;
 	}
 
       /* Set this to 0 so we can tell whether an aggregate which was
@@ -13244,7 +13240,7 @@ finish_enum (enumtype)
     {
       tree scope = current_scope ();
       if (scope && TREE_CODE (scope) == FUNCTION_DECL)
-	add_tree (build_min (TAG_DEFN, enumtype));
+	add_stmt (build_min (TAG_DEFN, enumtype));
     }
   else
     {
@@ -14037,7 +14033,7 @@ static void
 save_function_data (decl)
      tree decl;
 {
-  struct language_function *f;
+  struct cp_language_function *f;
 
   /* Save the language-specific per-function data so that we can
      get it back when we really expand this function.  */
@@ -14045,15 +14041,15 @@ save_function_data (decl)
 		      19990908);
 
   /* Make a copy.  */
-  f = ((struct language_function *)
-       xmalloc (sizeof (struct language_function)));
+  f = ((struct cp_language_function *)
+       xmalloc (sizeof (struct cp_language_function)));
   bcopy ((char *) cp_function_chain, (char *) f,
-	 sizeof (struct language_function));
+	 sizeof (struct cp_language_function));
   DECL_SAVED_FUNCTION_DATA (decl) = f;
 
   /* Clear out the bits we don't need.  */
-  f->x_stmt_tree.x_last_stmt = NULL_TREE;
-  f->x_stmt_tree.x_last_expr_type = NULL_TREE;
+  f->base.x_stmt_tree.x_last_stmt = NULL_TREE;
+  f->base.x_stmt_tree.x_last_expr_type = NULL_TREE;
   f->x_result_rtx = NULL_RTX;
   f->x_named_label_uses = NULL;
   f->bindings = NULL;
@@ -14075,7 +14071,7 @@ finish_constructor_body ()
 {
   /* Any return from a constructor will end up here.  */
   if (ctor_label)
-    add_tree (build_stmt (LABEL_STMT, ctor_label));
+    add_stmt (build_stmt (LABEL_STMT, ctor_label));
 
   /* Clear CTOR_LABEL so that finish_return_stmt knows to really
      generate the return, rather than a goto to CTOR_LABEL.  */
@@ -14084,7 +14080,7 @@ finish_constructor_body ()
      constructor to a return of `this'.  */
   finish_return_stmt (NULL_TREE);
   /* Mark the end of the constructor.  */
-  add_tree (build_stmt (CTOR_STMT));
+  add_stmt (build_stmt (CTOR_STMT));
 }
 
 /* At the end of every destructor we generate code to restore virtual
@@ -14103,7 +14099,7 @@ finish_destructor_body ()
   compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
 
   /* Any return from a destructor will end up here.  */
-  add_tree (build_stmt (LABEL_STMT, dtor_label));
+  add_stmt (build_stmt (LABEL_STMT, dtor_label));
 
   /* Generate the code to call destructor on base class.  If this
      destructor belongs to a class with virtual functions, then set
@@ -14896,10 +14892,10 @@ static void
 push_cp_function_context (f)
      struct function *f;
 {
-  struct language_function *p
-    = ((struct language_function *)
-       xcalloc (1, sizeof (struct language_function)));
-  f->language = p;
+  struct cp_language_function *p
+    = ((struct cp_language_function *)
+       xcalloc (1, sizeof (struct cp_language_function)));
+  f->language = (struct language_function *) p;
 
   /* It takes an explicit call to expand_body to generate RTL for a
      function.  */
@@ -14907,7 +14903,7 @@ push_cp_function_context (f)
 
   /* Whenever we start a new function, we destroy temporaries in the
      usual way.  */
-  current_stmt_tree->stmts_are_full_exprs_p = 1;
+  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 }
 
 /* Free the language-specific parts of F, now that we've finished
@@ -14926,7 +14922,7 @@ pop_cp_function_context (f)
 
 static void
 mark_lang_function (p)
-     struct language_function *p;
+     struct cp_language_function *p;
 {
   if (!p)
     return;
@@ -14941,7 +14937,7 @@ mark_lang_function (p)
   ggc_mark_rtx (p->x_result_rtx);
 
   mark_named_label_lists (&p->x_named_labels, &p->x_named_label_uses);
-  mark_stmt_tree (&p->x_stmt_tree);
+  mark_stmt_tree (&p->base.x_stmt_tree);
   mark_binding_level (&p->bindings);
 }
 
@@ -14951,7 +14947,7 @@ static void
 mark_cp_function_context (f)
      struct function *f;
 {
-  mark_lang_function (f->language);
+  mark_lang_function ((struct cp_language_function *) f->language);
 }
 
 void

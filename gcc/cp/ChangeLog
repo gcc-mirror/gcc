@@ -1,3 +1,78 @@
+2000-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	Move statement-tree facilities from C++ to C front-end.
+	* cp-tree.h (cp_tree_index): Remove CPTI_VOID_ZERO.
+	(void_zero_node): Remove.
+	(stmt_tree): Likewise.
+	(scope_chain): Adjust.
+	(language_function): Rename to cp_language_function.
+	(cp_function_chain): Adjust.
+	(current_stmt_tree): Remove.
+	(last_tree): Likewise.
+	(last_expr_type): Likewise.
+	(struct lang_decl): Adjust.
+	(STMT_IS_FULL_EXPR_P): Remove.
+	(add_tree): Remove.
+	(begin_stmt_tree): Likewise.
+	(finish_stmt_tree): Likewise.
+	(walk_tree_fn): Likewise.
+	(walk_stmt_tree): Likewise.
+	* class.c (finish_struct): Replace use of add_tree with add_stmt.
+	* decl.c (mark_stmt_tree): Adjust type.
+	(init_decl_processing): Don't build void_zero_node.
+	(initialize_local_var): Adjust usage of current_stmt_tree.
+	(finish_enum): Use add_stmt, not add_tree.
+	(save_function_data): Adjust use of language_function.
+	(finish_constructor_body): Use add_stmt, not add_tree.
+	(finish_destructor_body): Likewise.
+	(push_cp_function_context): Adjust use of language_function.
+	(pop_cp_function_context): Likewise.
+	(mark_lang_function): Likewise.
+	(mark_cp_function_context): Likewise.
+	* init.c (build_aggr_init): Adjust use of current_stmt_tree.
+	(build_vec_init): Likewise.
+	* semantics.c (SET_LAST_STMT): Remove.
+	(RECHAIN_STMTS): Don't use it.
+	(stmts_are_full_exprs_p): Adjust use of current_stmt_tree.
+	(current_stmt_tree): Define.
+	(add_tree): Remove.
+	(finish_goto_stmt): Use add_stmt, not add_tree.
+	(finish_expr_stmt): Likewise.
+	(begin_if_stmt): Likewise.
+	(finish_then_clause): Likewise.
+	(begin_while_stmt): Likewise.
+	(begin_do_stmt): Likewise.
+	(finish_return_stmt): Likewise.
+	(begin_for_stmt): Likewise.
+	(finish_break_stmt): Likewise.
+	(finish_continue_stmt): Likewise.
+	(begin_switch_stmt): Likewise.
+	(finish_case_label): Likewise.
+	(begin_try_block): Likewise.
+	(begin_function_try_block): Likewise.
+	(begin_handler): Likewise.
+	(begin_catch_block): Likewise.
+	(begin_compound_stmt): Likewise.
+	(begin_asm_stmt): Likewise.
+	(finish_asm_stmt): Likewise.
+	(finish_label_stmt): Likewise.
+	(add_decl_stmt): Likewise.
+	(finish_subobject): Likewise.
+	(finish_decl_cleanup): Likewise.
+	(finish_named_return_value): Likewise.
+	(setup_vtbl_ptr): Likewise.
+	(add_scope_stmt): Likewise.
+	(finish_stmt_expr): Likewise.
+	(prune_unused_decls): Remove.
+	(begin_stmt_tree): Likewise.
+	(finish_stmt_tree): Likewise.
+	(prep_stmt): Adjust use of current_stmt_tree.
+	(lang_expand_stmt): Likewise.
+	* tree.c (statement_code_p): Remove.
+	(cp_statement_code_p): New function.
+	(walk_stmt_tree): Remove.
+	(init_tree): Set lang_statement_code_p.
+	
 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
 
 	Integrated preprocessor.
