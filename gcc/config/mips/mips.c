@@ -5326,7 +5326,7 @@ mips_asm_file_end (file)
 	fatal_io_error (temp_filename);
 
       while ((len = fread (buffer, 1, sizeof (buffer), asm_out_text_file)) > 0)
-	if (fwrite (buffer, 1, len, file) != len)
+	if ((int) fwrite (buffer, 1, len, file) != len)
 	  pfatal_with_name (asm_file_name);
 
       if (len < 0)

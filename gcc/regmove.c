@@ -1471,7 +1471,7 @@ find_matches (insn, matchp)
 	  case 'j': case 'k': case 'l': case 'p': case 'q': case 't': case 'u':
 	  case 'v': case 'w': case 'x': case 'y': case 'z': case 'A': case 'B':
 	  case 'C': case 'D': case 'W': case 'Y': case 'Z':
-	    if (CLASS_LIKELY_SPILLED_P (REG_CLASS_FROM_LETTER (c)))
+	    if (CLASS_LIKELY_SPILLED_P (REG_CLASS_FROM_LETTER ((unsigned char)c)))
 	      likely_spilled[op_no] = 1;
 	    break;
 	  }

@@ -982,7 +982,6 @@ duplicate_eh_handlers (old_note_eh_region, new_note_eh_region, map)
 {
   struct handler_info *ptr, *new_ptr;
   int new_region, region;
-  rtx tmp;
 
   region = find_func_region (old_note_eh_region);
   if (region == -1)

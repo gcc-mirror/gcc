@@ -4258,7 +4258,7 @@ compute_pre_ppinout ()
 	    {
 	      int_list_ptr pred;
 	      SBITMAP_ELT_TYPE tmp = *antin & *pavin & (*antloc | (*transp & *ppout));
-	      SBITMAP_ELT_TYPE pred_val = -1L;
+	      SBITMAP_ELT_TYPE pred_val = (SBITMAP_ELT_TYPE) -1;
 
 	      for (pred = s_preds[bb]; pred != NULL; pred = pred->next)
 		{

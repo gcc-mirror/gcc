@@ -3927,10 +3927,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 						 &add_val, &mult_val,
 						 &last_consec_insn))))
 	    {
-	      int count;
 	      struct induction *v
 		= (struct induction *) alloca (sizeof (struct induction));
-	      rtx temp;
 
 	      /* If this is a library call, increase benefit.  */
 	      if (find_reg_note (p, REG_RETVAL, NULL_RTX))

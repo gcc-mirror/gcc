@@ -77,8 +77,8 @@ Here dname is the actual name being declared.
 int
 scan_decls (pfile, argc, argv)
      cpp_reader *pfile;
-     int argc;
-     char **argv;
+     int argc ATTRIBUTE_UNUSED;
+     char **argv ATTRIBUTE_UNUSED;
 {
   int saw_extern, saw_inline;
   int start_written;
@@ -169,7 +169,7 @@ scan_decls (pfile, argc, argv)
 	    }
 	  break;
 	case CPP_OTHER:
-	  if (CPP_WRITTEN (pfile) == start_written + 1
+	  if (CPP_WRITTEN (pfile) == (size_t) start_written + 1
 	      && (CPP_PWRITTEN (pfile)[-1] == '*'
 		  || CPP_PWRITTEN (pfile)[-1] == '&'))
 	    declarator_start = start_written;

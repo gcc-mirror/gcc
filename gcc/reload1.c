@@ -1532,6 +1532,8 @@ calculate_needs (chain)
 	case RELOAD_FOR_OPADDR_ADDR:
 	  this_needs = &insn_needs.op_addr_reload;
 	  break;
+	default:
+	  abort();
 	}
 
       if (size > 1)
@@ -3249,7 +3251,7 @@ eliminate_regs_in_insn (insn, replace)
 		&& ep->to == HARD_FRAME_POINTER_REGNUM)
 	      {
 		rtx src = SET_SRC (old_set);
-		int offset, ok = 0;
+		int offset = 0, ok = 0;
 		rtx prev_insn, prev_set;
 
 		if (src == ep->to_rtx)
@@ -3577,7 +3579,7 @@ static void
 set_offsets_for_label (insn)
      rtx insn;
 {
-  int i;
+  unsigned int i;
   int label_nr = CODE_LABEL_NUMBER (insn);
   struct elim_table *ep;
 
@@ -4153,7 +4155,9 @@ reload_as_needed (live_known)
      int live_known;
 {
   struct insn_chain *chain;
+#if defined (AUTO_INC_DEC) || defined (INSN_CLOBBERS_REGNO_P)
   register int i;
+#endif
   rtx x;
 
   bzero ((char *) spill_reg_rtx, sizeof spill_reg_rtx);
