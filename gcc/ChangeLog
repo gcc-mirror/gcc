@@ -1,3 +1,9 @@
+2003-03-27  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_inf_compare):  New function to simplify FP
+	comparisons against +Infinity or -Infinity.
+	(fold):  Optimize floating point comparisons against Infs and NaNs.
+
 2003-03-27  Janis Johnson  <janis187@us.ibm.com>
 
 	* libgcov.c: Provide only dummy functions if libc is not available.
