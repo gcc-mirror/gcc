@@ -545,7 +545,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 /* Loading and storing HImode or QImode values to and from memory
    usually requires a scratch register.  The exceptions are loading
    QImode and HImode from an aligned address to a general register. 
-   We also cannot load an unaligned address into an FP register.  */
+   We also cannot load an unaligned address or a paradodixal SUBREG into an
+   FP register.   */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,IN)			\
 (((GET_CODE (IN) == MEM 						\
@@ -561,6 +562,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
  ? GENERAL_REGS								\
  : ((CLASS) == FLOAT_REGS && GET_CODE (IN) == MEM			\
     && GET_CODE (XEXP (IN, 0)) == AND) ? GENERAL_REGS			\
+ : ((CLASS) == FLOAT_REGS && GET_CODE (IN) == SUBREG			\
+    && (GET_MODE_SIZE (GET_MODE (IN))					\
+	> GET_MODE_SIZE (GET_MODE (SUBREG_REG (IN))))) ? GENERAL_REGS	\
  : NO_REGS)
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,OUT)			\
@@ -575,7 +579,10 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
  ? GENERAL_REGS								\
  : ((CLASS) == FLOAT_REGS && GET_CODE (OUT) == MEM			\
     && GET_CODE (XEXP (OUT, 0)) == AND) ? GENERAL_REGS			\
-  : NO_REGS)
+ : ((CLASS) == FLOAT_REGS && GET_CODE (OUT) == SUBREG			\
+    && (GET_MODE_SIZE (GET_MODE (OUT))					\
+	> GET_MODE_SIZE (GET_MODE (SUBREG_REG (OUT))))) ? GENERAL_REGS	\
+ : NO_REGS)
 
 /* If we are copying between general and FP registers, we need a memory
    location.  */
@@ -589,6 +596,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    area is very tricky! */
 #define SECONDARY_MEMORY_NEEDED_MODE(MODE)		\
   (GET_MODE_CLASS (MODE) == MODE_FLOAT ? (MODE)		\
+   : GET_MODE_SIZE (MODE) >= 4 ? (MODE)			\
    : mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (MODE), 0))
 
 /* Return the maximum number of consecutive registers
