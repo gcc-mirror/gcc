@@ -35,35 +35,47 @@
 
 __STL_BEGIN_NAMESPACE
 
-template <class T>
-inline void destroy(T* pointer) {
-    pointer->~T();
+// construct and destroy.  These functions are not part of the C++ standard,
+// and are provided for backward compatibility with the HP STL.
+
+template <class _Tp>
+inline void destroy(_Tp* __pointer) {
+  __pointer->~_Tp();
 }
 
-template <class T1, class T2>
-inline void construct(T1* p, const T2& value) {
-  new (p) T1(value);
+template <class _T1, class _T2>
+inline void construct(_T1* __p, const _T2& __value) {
+  new (__p) _T1(__value);
 }
 
-template <class ForwardIterator>
+template <class _T1>
+inline void construct(_T1* __p) {
+  new (__p) _T1();
+}
+
+template <class _ForwardIterator>
 inline void
-__destroy_aux(ForwardIterator first, ForwardIterator last, __false_type) {
-  for ( ; first < last; ++first)
-    destroy(&*first);
+__destroy_aux(_ForwardIterator __first, _ForwardIterator __last, __false_type)
+{
+  for ( ; __first < __last; ++__first)
+    destroy(&*__first);
 }
 
-template <class ForwardIterator> 
-inline void __destroy_aux(ForwardIterator, ForwardIterator, __true_type) {}
+template <class _ForwardIterator> 
+inline void __destroy_aux(_ForwardIterator, _ForwardIterator, __true_type) {}
 
-template <class ForwardIterator, class T>
-inline void __destroy(ForwardIterator first, ForwardIterator last, T*) {
-  typedef typename __type_traits<T>::has_trivial_destructor trivial_destructor;
-  __destroy_aux(first, last, trivial_destructor());
+template <class _ForwardIterator, class _Tp>
+inline void 
+__destroy(_ForwardIterator __first, _ForwardIterator __last, _Tp*)
+{
+  typedef typename __type_traits<_Tp>::has_trivial_destructor
+          _Trivial_destructor;
+  __destroy_aux(__first, __last, _Trivial_destructor());
 }
 
-template <class ForwardIterator>
-inline void destroy(ForwardIterator first, ForwardIterator last) {
-  __destroy(first, last, value_type(first));
+template <class _ForwardIterator>
+inline void destroy(_ForwardIterator __first, _ForwardIterator __last) {
+  __destroy(__first, __last, __VALUE_TYPE(__first));
 }
 
 inline void destroy(char*, char*) {}

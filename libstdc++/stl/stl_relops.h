@@ -33,24 +33,24 @@
 
 __STL_BEGIN_RELOPS_NAMESPACE
 
-template <class T>
-inline bool operator!=(const T& x, const T& y) {
-  return !(x == y);
+template <class _Tp>
+inline bool operator!=(const _Tp& __x, const _Tp& __y) {
+  return !(__x == __y);
 }
 
-template <class T>
-inline bool operator>(const T& x, const T& y) {
-  return y < x;
+template <class _Tp>
+inline bool operator>(const _Tp& __x, const _Tp& __y) {
+  return __y < __x;
 }
 
-template <class T>
-inline bool operator<=(const T& x, const T& y) {
-  return !(y < x);
+template <class _Tp>
+inline bool operator<=(const _Tp& __x, const _Tp& __y) {
+  return !(__y < __x);
 }
 
-template <class T>
-inline bool operator>=(const T& x, const T& y) {
-  return !(x < y);
+template <class _Tp>
+inline bool operator>=(const _Tp& __x, const _Tp& __y) {
+  return !(__x < __y);
 }
 
 __STL_END_RELOPS_NAMESPACE

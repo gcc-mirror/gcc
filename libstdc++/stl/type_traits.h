@@ -40,13 +40,14 @@ attain their correct values by one of these means:
 EXAMPLE:
 
 //Copy an array of elements which have non-trivial copy constructors
-template <class T> void copy(T* source,T* destination,int n,__false_type);
+template <class T> void copy(T* source, T* destination, int n, __false_type);
 //Copy an array of elements which have trivial copy constructors. Use memcpy.
-template <class T> void copy(T* source,T* destination,int n,__true_type);
+template <class T> void copy(T* source, T* destination, int n, __true_type);
 
 //Copy an array of any type by using the most efficient copy mechanism
 template <class T> inline void copy(T* source,T* destination,int n) {
-   copy(source,destination,n,typename __type_traits<T>::has_trivial_copy_constructor());
+   copy(source, destination, n,
+        typename __type_traits<T>::has_trivial_copy_constructor());
 }
 */
 
@@ -57,7 +58,7 @@ struct __true_type {
 struct __false_type {
 };
 
-template <class type>
+template <class _Tp>
 struct __type_traits { 
    typedef __true_type     this_dummy_member_must_be_first;
                    /* Do not remove this member. It informs a compiler which
@@ -90,6 +91,18 @@ struct __type_traits {
 //  have built-in __types_traits support, and essential for compilers
 //  that don't.
 
+#ifndef __STL_NO_BOOL
+
+__STL_TEMPLATE_NULL struct __type_traits<bool> {
+   typedef __true_type    has_trivial_default_constructor;
+   typedef __true_type    has_trivial_copy_constructor;
+   typedef __true_type    has_trivial_assignment_operator;
+   typedef __true_type    has_trivial_destructor;
+   typedef __true_type    is_POD_type;
+};
+
+#endif /* __STL_NO_BOOL */
+
 __STL_TEMPLATE_NULL struct __type_traits<char> {
    typedef __true_type    has_trivial_default_constructor;
    typedef __true_type    has_trivial_copy_constructor;
@@ -113,6 +126,18 @@ __STL_TEMPLATE_NULL struct __type_traits<unsigned char> {
    typedef __true_type    has_trivial_destructor;
    typedef __true_type    is_POD_type;
 };
+
+#ifdef __STL_HAS_WCHAR_T
+
+__STL_TEMPLATE_NULL struct __type_traits<wchar_t> {
+   typedef __true_type    has_trivial_default_constructor;
+   typedef __true_type    has_trivial_copy_constructor;
+   typedef __true_type    has_trivial_assignment_operator;
+   typedef __true_type    has_trivial_destructor;
+   typedef __true_type    is_POD_type;
+};
+
+#endif /* __STL_HAS_WCHAR_T */
 
 __STL_TEMPLATE_NULL struct __type_traits<short> {
    typedef __true_type    has_trivial_default_constructor;
@@ -162,6 +187,26 @@ __STL_TEMPLATE_NULL struct __type_traits<unsigned long> {
    typedef __true_type    is_POD_type;
 };
 
+#ifdef __STL_LONG_LONG
+
+__STL_TEMPLATE_NULL struct __type_traits<long long> {
+   typedef __true_type    has_trivial_default_constructor;
+   typedef __true_type    has_trivial_copy_constructor;
+   typedef __true_type    has_trivial_assignment_operator;
+   typedef __true_type    has_trivial_destructor;
+   typedef __true_type    is_POD_type;
+};
+
+__STL_TEMPLATE_NULL struct __type_traits<unsigned long long> {
+   typedef __true_type    has_trivial_default_constructor;
+   typedef __true_type    has_trivial_copy_constructor;
+   typedef __true_type    has_trivial_assignment_operator;
+   typedef __true_type    has_trivial_destructor;
+   typedef __true_type    is_POD_type;
+};
+
+#endif /* __STL_LONG_LONG */
+
 __STL_TEMPLATE_NULL struct __type_traits<float> {
    typedef __true_type    has_trivial_default_constructor;
    typedef __true_type    has_trivial_copy_constructor;
@@ -188,8 +233,8 @@ __STL_TEMPLATE_NULL struct __type_traits<long double> {
 
 #ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
 
-template <class T>
-struct __type_traits<T*> {
+template <class _Tp>
+struct __type_traits<_Tp*> {
    typedef __true_type    has_trivial_default_constructor;
    typedef __true_type    has_trivial_copy_constructor;
    typedef __true_type    has_trivial_assignment_operator;
@@ -199,7 +244,7 @@ struct __type_traits<T*> {
 
 #else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
-struct __type_traits<char*> {
+__STL_TEMPLATE_NULL struct __type_traits<char*> {
    typedef __true_type    has_trivial_default_constructor;
    typedef __true_type    has_trivial_copy_constructor;
    typedef __true_type    has_trivial_assignment_operator;
@@ -207,7 +252,7 @@ struct __type_traits<char*> {
    typedef __true_type    is_POD_type;
 };
 
-struct __type_traits<signed char*> {
+__STL_TEMPLATE_NULL struct __type_traits<signed char*> {
    typedef __true_type    has_trivial_default_constructor;
    typedef __true_type    has_trivial_copy_constructor;
    typedef __true_type    has_trivial_assignment_operator;
@@ -215,7 +260,31 @@ struct __type_traits<signed char*> {
    typedef __true_type    is_POD_type;
 };
 
-struct __type_traits<unsigned char*> {
+__STL_TEMPLATE_NULL struct __type_traits<unsigned char*> {
+   typedef __true_type    has_trivial_default_constructor;
+   typedef __true_type    has_trivial_copy_constructor;
+   typedef __true_type    has_trivial_assignment_operator;
+   typedef __true_type    has_trivial_destructor;
+   typedef __true_type    is_POD_type;
+};
+
+__STL_TEMPLATE_NULL struct __type_traits<const char*> {
+   typedef __true_type    has_trivial_default_constructor;
+   typedef __true_type    has_trivial_copy_constructor;
+   typedef __true_type    has_trivial_assignment_operator;
+   typedef __true_type    has_trivial_destructor;
+   typedef __true_type    is_POD_type;
+};
+
+__STL_TEMPLATE_NULL struct __type_traits<const signed char*> {
+   typedef __true_type    has_trivial_default_constructor;
+   typedef __true_type    has_trivial_copy_constructor;
+   typedef __true_type    has_trivial_assignment_operator;
+   typedef __true_type    has_trivial_destructor;
+   typedef __true_type    is_POD_type;
+};
+
+__STL_TEMPLATE_NULL struct __type_traits<const unsigned char*> {
    typedef __true_type    has_trivial_default_constructor;
    typedef __true_type    has_trivial_copy_constructor;
    typedef __true_type    has_trivial_assignment_operator;
@@ -225,6 +294,77 @@ struct __type_traits<unsigned char*> {
 
 #endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
+
+// The following could be written in terms of numeric_limits.  
+// We're doing it separately to reduce the number of dependencies.
+
+template <class _Tp> struct _Is_integer {
+  typedef __false_type _Integral;
+};
+
+#ifndef __STL_NO_BOOL
+
+__STL_TEMPLATE_NULL struct _Is_integer<bool> {
+  typedef __true_type _Integral;
+};
+
+#endif /* __STL_NO_BOOL */
+
+__STL_TEMPLATE_NULL struct _Is_integer<char> {
+  typedef __true_type _Integral;
+};
+
+__STL_TEMPLATE_NULL struct _Is_integer<signed char> {
+  typedef __true_type _Integral;
+};
+
+__STL_TEMPLATE_NULL struct _Is_integer<unsigned char> {
+  typedef __true_type _Integral;
+};
+
+#ifdef __STL_HAS_WCHAR_T
+
+__STL_TEMPLATE_NULL struct _Is_integer<wchar_t> {
+  typedef __true_type _Integral;
+};
+
+#endif /* __STL_HAS_WCHAR_T */
+
+__STL_TEMPLATE_NULL struct _Is_integer<short> {
+  typedef __true_type _Integral;
+};
+
+__STL_TEMPLATE_NULL struct _Is_integer<unsigned short> {
+  typedef __true_type _Integral;
+};
+
+__STL_TEMPLATE_NULL struct _Is_integer<int> {
+  typedef __true_type _Integral;
+};
+
+__STL_TEMPLATE_NULL struct _Is_integer<unsigned int> {
+  typedef __true_type _Integral;
+};
+
+__STL_TEMPLATE_NULL struct _Is_integer<long> {
+  typedef __true_type _Integral;
+};
+
+__STL_TEMPLATE_NULL struct _Is_integer<unsigned long> {
+  typedef __true_type _Integral;
+};
+
+#ifdef __STL_LONG_LONG
+
+__STL_TEMPLATE_NULL struct _Is_integer<long long> {
+  typedef __true_type _Integral;
+};
+
+__STL_TEMPLATE_NULL struct _Is_integer<unsigned long long> {
+  typedef __true_type _Integral;
+};
+
+#endif /* __STL_LONG_LONG */
 
 #endif /* __TYPE_TRAITS_H */
 

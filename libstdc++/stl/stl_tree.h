@@ -60,439 +60,566 @@ iterators invalidated are those referring to the deleted node.
 
 __STL_BEGIN_NAMESPACE 
 
-typedef bool __rb_tree_color_type;
-const __rb_tree_color_type __rb_tree_red = false;
-const __rb_tree_color_type __rb_tree_black = true;
+#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
+#pragma set woff 1375
+#endif
 
-struct __rb_tree_node_base
+typedef bool _Rb_tree_Color_type;
+const _Rb_tree_Color_type _S_rb_tree_red = false;
+const _Rb_tree_Color_type _S_rb_tree_black = true;
+
+struct _Rb_tree_node_base
 {
-  typedef __rb_tree_color_type color_type;
-  typedef __rb_tree_node_base* base_ptr;
+  typedef _Rb_tree_Color_type _Color_type;
+  typedef _Rb_tree_node_base* _Base_ptr;
 
-  color_type color; 
-  base_ptr parent;
-  base_ptr left;
-  base_ptr right;
+  _Color_type _M_color; 
+  _Base_ptr _M_parent;
+  _Base_ptr _M_left;
+  _Base_ptr _M_right;
 
-  static base_ptr minimum(base_ptr x)
+  static _Base_ptr _S_minimum(_Base_ptr __x)
   {
-    while (x->left != 0) x = x->left;
-    return x;
+    while (__x->_M_left != 0) __x = __x->_M_left;
+    return __x;
   }
 
-  static base_ptr maximum(base_ptr x)
+  static _Base_ptr _S_maximum(_Base_ptr __x)
   {
-    while (x->right != 0) x = x->right;
-    return x;
+    while (__x->_M_right != 0) __x = __x->_M_right;
+    return __x;
   }
 };
 
-template <class Value>
-struct __rb_tree_node : public __rb_tree_node_base
+template <class _Value>
+struct _Rb_tree_node : public _Rb_tree_node_base
 {
-  typedef __rb_tree_node<Value>* link_type;
-  Value value_field;
+  typedef _Rb_tree_node<_Value>* _Link_type;
+  _Value _M_value_field;
 };
 
 
-struct __rb_tree_base_iterator
+struct _Rb_tree_base_iterator
 {
-  typedef __rb_tree_node_base::base_ptr base_ptr;
+  typedef _Rb_tree_node_base::_Base_ptr _Base_ptr;
   typedef bidirectional_iterator_tag iterator_category;
   typedef ptrdiff_t difference_type;
-  base_ptr node;
+  _Base_ptr _M_node;
 
-  void increment()
+  void _M_increment()
   {
-    if (node->right != 0) {
-      node = node->right;
-      while (node->left != 0)
-        node = node->left;
+    if (_M_node->_M_right != 0) {
+      _M_node = _M_node->_M_right;
+      while (_M_node->_M_left != 0)
+        _M_node = _M_node->_M_left;
     }
     else {
-      base_ptr y = node->parent;
-      while (node == y->right) {
-        node = y;
-        y = y->parent;
+      _Base_ptr __y = _M_node->_M_parent;
+      while (_M_node == __y->_M_right) {
+        _M_node = __y;
+        __y = __y->_M_parent;
       }
-      if (node->right != y)
-        node = y;
+      if (_M_node->_M_right != __y)
+        _M_node = __y;
     }
   }
 
-  void decrement()
+  void _M_decrement()
   {
-    if (node->color == __rb_tree_red &&
-        node->parent->parent == node)
-      node = node->right;
-    else if (node->left != 0) {
-      base_ptr y = node->left;
-      while (y->right != 0)
-        y = y->right;
-      node = y;
+    if (_M_node->_M_color == _S_rb_tree_red &&
+        _M_node->_M_parent->_M_parent == _M_node)
+      _M_node = _M_node->_M_right;
+    else if (_M_node->_M_left != 0) {
+      _Base_ptr __y = _M_node->_M_left;
+      while (__y->_M_right != 0)
+        __y = __y->_M_right;
+      _M_node = __y;
     }
     else {
-      base_ptr y = node->parent;
-      while (node == y->left) {
-        node = y;
-        y = y->parent;
+      _Base_ptr __y = _M_node->_M_parent;
+      while (_M_node == __y->_M_left) {
+        _M_node = __y;
+        __y = __y->_M_parent;
       }
-      node = y;
+      _M_node = __y;
     }
   }
 };
 
-template <class Value, class Ref, class Ptr>
-struct __rb_tree_iterator : public __rb_tree_base_iterator
+template <class _Value, class _Ref, class _Ptr>
+struct _Rb_tree_iterator : public _Rb_tree_base_iterator
 {
-  typedef Value value_type;
-  typedef Ref reference;
-  typedef Ptr pointer;
-  typedef __rb_tree_iterator<Value, Value&, Value*>             iterator;
-  typedef __rb_tree_iterator<Value, const Value&, const Value*> const_iterator;
-  typedef __rb_tree_iterator<Value, Ref, Ptr>                   self;
-  typedef __rb_tree_node<Value>* link_type;
+  typedef _Value value_type;
+  typedef _Ref reference;
+  typedef _Ptr pointer;
+  typedef _Rb_tree_iterator<_Value, _Value&, _Value*>             
+    iterator;
+  typedef _Rb_tree_iterator<_Value, const _Value&, const _Value*> 
+    const_iterator;
+  typedef _Rb_tree_iterator<_Value, _Ref, _Ptr>                   
+    _Self;
+  typedef _Rb_tree_node<_Value>* _Link_type;
 
-  __rb_tree_iterator() {}
-  __rb_tree_iterator(link_type x) { node = x; }
-  __rb_tree_iterator(const iterator& it) { node = it.node; }
+  _Rb_tree_iterator() {}
+  _Rb_tree_iterator(_Link_type __x) { _M_node = __x; }
+  _Rb_tree_iterator(const iterator& __it) { _M_node = __it._M_node; }
 
-  reference operator*() const { return link_type(node)->value_field; }
+  reference operator*() const { return _Link_type(_M_node)->_M_value_field; }
 #ifndef __SGI_STL_NO_ARROW_OPERATOR
   pointer operator->() const { return &(operator*()); }
 #endif /* __SGI_STL_NO_ARROW_OPERATOR */
 
-  self& operator++() { increment(); return *this; }
-  self operator++(int) {
-    self tmp = *this;
-    increment();
-    return tmp;
+  _Self& operator++() { _M_increment(); return *this; }
+  _Self operator++(int) {
+    _Self __tmp = *this;
+    _M_increment();
+    return __tmp;
   }
     
-  self& operator--() { decrement(); return *this; }
-  self operator--(int) {
-    self tmp = *this;
-    decrement();
-    return tmp;
+  _Self& operator--() { _M_decrement(); return *this; }
+  _Self operator--(int) {
+    _Self __tmp = *this;
+    _M_decrement();
+    return __tmp;
   }
 };
 
-inline bool operator==(const __rb_tree_base_iterator& x,
-                       const __rb_tree_base_iterator& y) {
-  return x.node == y.node;
+inline bool operator==(const _Rb_tree_base_iterator& __x,
+                       const _Rb_tree_base_iterator& __y) {
+  return __x._M_node == __y._M_node;
 }
 
-inline bool operator!=(const __rb_tree_base_iterator& x,
-                       const __rb_tree_base_iterator& y) {
-  return x.node != y.node;
+inline bool operator!=(const _Rb_tree_base_iterator& __x,
+                       const _Rb_tree_base_iterator& __y) {
+  return __x._M_node != __y._M_node;
 }
 
 #ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
 
 inline bidirectional_iterator_tag
-iterator_category(const __rb_tree_base_iterator&) {
+iterator_category(const _Rb_tree_base_iterator&) {
   return bidirectional_iterator_tag();
 }
 
-inline __rb_tree_base_iterator::difference_type*
-distance_type(const __rb_tree_base_iterator&) {
-  return (__rb_tree_base_iterator::difference_type*) 0;
+inline _Rb_tree_base_iterator::difference_type*
+distance_type(const _Rb_tree_base_iterator&) {
+  return (_Rb_tree_base_iterator::difference_type*) 0;
 }
 
-template <class Value, class Ref, class Ptr>
-inline Value* value_type(const __rb_tree_iterator<Value, Ref, Ptr>&) {
-  return (Value*) 0;
+template <class _Value, class _Ref, class _Ptr>
+inline _Value* value_type(const _Rb_tree_iterator<_Value, _Ref, _Ptr>&) {
+  return (_Value*) 0;
 }
 
 #endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 inline void 
-__rb_tree_rotate_left(__rb_tree_node_base* x, __rb_tree_node_base*& root)
+_Rb_tree_rotate_left(_Rb_tree_node_base* __x, _Rb_tree_node_base*& __root)
 {
-  __rb_tree_node_base* y = x->right;
-  x->right = y->left;
-  if (y->left !=0)
-    y->left->parent = x;
-  y->parent = x->parent;
+  _Rb_tree_node_base* __y = __x->_M_right;
+  __x->_M_right = __y->_M_left;
+  if (__y->_M_left !=0)
+    __y->_M_left->_M_parent = __x;
+  __y->_M_parent = __x->_M_parent;
 
-  if (x == root)
-    root = y;
-  else if (x == x->parent->left)
-    x->parent->left = y;
+  if (__x == __root)
+    __root = __y;
+  else if (__x == __x->_M_parent->_M_left)
+    __x->_M_parent->_M_left = __y;
   else
-    x->parent->right = y;
-  y->left = x;
-  x->parent = y;
+    __x->_M_parent->_M_right = __y;
+  __y->_M_left = __x;
+  __x->_M_parent = __y;
 }
 
 inline void 
-__rb_tree_rotate_right(__rb_tree_node_base* x, __rb_tree_node_base*& root)
+_Rb_tree_rotate_right(_Rb_tree_node_base* __x, _Rb_tree_node_base*& __root)
 {
-  __rb_tree_node_base* y = x->left;
-  x->left = y->right;
-  if (y->right != 0)
-    y->right->parent = x;
-  y->parent = x->parent;
+  _Rb_tree_node_base* __y = __x->_M_left;
+  __x->_M_left = __y->_M_right;
+  if (__y->_M_right != 0)
+    __y->_M_right->_M_parent = __x;
+  __y->_M_parent = __x->_M_parent;
 
-  if (x == root)
-    root = y;
-  else if (x == x->parent->right)
-    x->parent->right = y;
+  if (__x == __root)
+    __root = __y;
+  else if (__x == __x->_M_parent->_M_right)
+    __x->_M_parent->_M_right = __y;
   else
-    x->parent->left = y;
-  y->right = x;
-  x->parent = y;
+    __x->_M_parent->_M_left = __y;
+  __y->_M_right = __x;
+  __x->_M_parent = __y;
 }
 
 inline void 
-__rb_tree_rebalance(__rb_tree_node_base* x, __rb_tree_node_base*& root)
+_Rb_tree_rebalance(_Rb_tree_node_base* __x, _Rb_tree_node_base*& __root)
 {
-  x->color = __rb_tree_red;
-  while (x != root && x->parent->color == __rb_tree_red) {
-    if (x->parent == x->parent->parent->left) {
-      __rb_tree_node_base* y = x->parent->parent->right;
-      if (y && y->color == __rb_tree_red) {
-        x->parent->color = __rb_tree_black;
-        y->color = __rb_tree_black;
-        x->parent->parent->color = __rb_tree_red;
-        x = x->parent->parent;
+  __x->_M_color = _S_rb_tree_red;
+  while (__x != __root && __x->_M_parent->_M_color == _S_rb_tree_red) {
+    if (__x->_M_parent == __x->_M_parent->_M_parent->_M_left) {
+      _Rb_tree_node_base* __y = __x->_M_parent->_M_parent->_M_right;
+      if (__y && __y->_M_color == _S_rb_tree_red) {
+        __x->_M_parent->_M_color = _S_rb_tree_black;
+        __y->_M_color = _S_rb_tree_black;
+        __x->_M_parent->_M_parent->_M_color = _S_rb_tree_red;
+        __x = __x->_M_parent->_M_parent;
       }
       else {
-        if (x == x->parent->right) {
-          x = x->parent;
-          __rb_tree_rotate_left(x, root);
+        if (__x == __x->_M_parent->_M_right) {
+          __x = __x->_M_parent;
+          _Rb_tree_rotate_left(__x, __root);
         }
-        x->parent->color = __rb_tree_black;
-        x->parent->parent->color = __rb_tree_red;
-        __rb_tree_rotate_right(x->parent->parent, root);
+        __x->_M_parent->_M_color = _S_rb_tree_black;
+        __x->_M_parent->_M_parent->_M_color = _S_rb_tree_red;
+        _Rb_tree_rotate_right(__x->_M_parent->_M_parent, __root);
       }
     }
     else {
-      __rb_tree_node_base* y = x->parent->parent->left;
-      if (y && y->color == __rb_tree_red) {
-        x->parent->color = __rb_tree_black;
-        y->color = __rb_tree_black;
-        x->parent->parent->color = __rb_tree_red;
-        x = x->parent->parent;
+      _Rb_tree_node_base* __y = __x->_M_parent->_M_parent->_M_left;
+      if (__y && __y->_M_color == _S_rb_tree_red) {
+        __x->_M_parent->_M_color = _S_rb_tree_black;
+        __y->_M_color = _S_rb_tree_black;
+        __x->_M_parent->_M_parent->_M_color = _S_rb_tree_red;
+        __x = __x->_M_parent->_M_parent;
       }
       else {
-        if (x == x->parent->left) {
-          x = x->parent;
-          __rb_tree_rotate_right(x, root);
+        if (__x == __x->_M_parent->_M_left) {
+          __x = __x->_M_parent;
+          _Rb_tree_rotate_right(__x, __root);
         }
-        x->parent->color = __rb_tree_black;
-        x->parent->parent->color = __rb_tree_red;
-        __rb_tree_rotate_left(x->parent->parent, root);
+        __x->_M_parent->_M_color = _S_rb_tree_black;
+        __x->_M_parent->_M_parent->_M_color = _S_rb_tree_red;
+        _Rb_tree_rotate_left(__x->_M_parent->_M_parent, __root);
       }
     }
   }
-  root->color = __rb_tree_black;
+  __root->_M_color = _S_rb_tree_black;
 }
 
-inline __rb_tree_node_base*
-__rb_tree_rebalance_for_erase(__rb_tree_node_base* z,
-                              __rb_tree_node_base*& root,
-                              __rb_tree_node_base*& leftmost,
-                              __rb_tree_node_base*& rightmost)
+inline _Rb_tree_node_base*
+_Rb_tree_rebalance_for_erase(_Rb_tree_node_base* __z,
+                             _Rb_tree_node_base*& __root,
+                             _Rb_tree_node_base*& __leftmost,
+                             _Rb_tree_node_base*& __rightmost)
 {
-  __rb_tree_node_base* y = z;
-  __rb_tree_node_base* x = 0;
-  __rb_tree_node_base* x_parent = 0;
-  if (y->left == 0)             // z has at most one non-null child. y == z.
-    x = y->right;               // x might be null.
+  _Rb_tree_node_base* __y = __z;
+  _Rb_tree_node_base* __x = 0;
+  _Rb_tree_node_base* __x_parent = 0;
+  if (__y->_M_left == 0)     // __z has at most one non-null child. y == z.
+    __x = __y->_M_right;     // __x might be null.
   else
-    if (y->right == 0)          // z has exactly one non-null child.  y == z.
-      x = y->left;              // x is not null.
-    else {                      // z has two non-null children.  Set y to
-      y = y->right;             //   z's successor.  x might be null.
-      while (y->left != 0)
-        y = y->left;
-      x = y->right;
+    if (__y->_M_right == 0)  // __z has exactly one non-null child. y == z.
+      __x = __y->_M_left;    // __x is not null.
+    else {                   // __z has two non-null children.  Set __y to
+      __y = __y->_M_right;   //   __z's successor.  __x might be null.
+      while (__y->_M_left != 0)
+        __y = __y->_M_left;
+      __x = __y->_M_right;
     }
-  if (y != z) {                 // relink y in place of z.  y is z's successor
-    z->left->parent = y; 
-    y->left = z->left;
-    if (y != z->right) {
-      x_parent = y->parent;
-      if (x) x->parent = y->parent;
-      y->parent->left = x;      // y must be a left child
-      y->right = z->right;
-      z->right->parent = y;
+  if (__y != __z) {          // relink y in place of z.  y is z's successor
+    __z->_M_left->_M_parent = __y; 
+    __y->_M_left = __z->_M_left;
+    if (__y != __z->_M_right) {
+      __x_parent = __y->_M_parent;
+      if (__x) __x->_M_parent = __y->_M_parent;
+      __y->_M_parent->_M_left = __x;      // __y must be a child of _M_left
+      __y->_M_right = __z->_M_right;
+      __z->_M_right->_M_parent = __y;
     }
     else
-      x_parent = y;  
-    if (root == z)
-      root = y;
-    else if (z->parent->left == z)
-      z->parent->left = y;
+      __x_parent = __y;  
+    if (__root == __z)
+      __root = __y;
+    else if (__z->_M_parent->_M_left == __z)
+      __z->_M_parent->_M_left = __y;
     else 
-      z->parent->right = y;
-    y->parent = z->parent;
-    __STD::swap(y->color, z->color);
-    y = z;
-    // y now points to node to be actually deleted
+      __z->_M_parent->_M_right = __y;
+    __y->_M_parent = __z->_M_parent;
+    __STD::swap(__y->_M_color, __z->_M_color);
+    __y = __z;
+    // __y now points to node to be actually deleted
   }
-  else {                        // y == z
-    x_parent = y->parent;
-    if (x) x->parent = y->parent;   
-    if (root == z)
-      root = x;
+  else {                        // __y == __z
+    __x_parent = __y->_M_parent;
+    if (__x) __x->_M_parent = __y->_M_parent;   
+    if (__root == __z)
+      __root = __x;
     else 
-      if (z->parent->left == z)
-        z->parent->left = x;
+      if (__z->_M_parent->_M_left == __z)
+        __z->_M_parent->_M_left = __x;
       else
-        z->parent->right = x;
-    if (leftmost == z) 
-      if (z->right == 0)        // z->left must be null also
-        leftmost = z->parent;
-    // makes leftmost == header if z == root
+        __z->_M_parent->_M_right = __x;
+    if (__leftmost == __z) 
+      if (__z->_M_right == 0)        // __z->_M_left must be null also
+        __leftmost = __z->_M_parent;
+    // makes __leftmost == _M_header if __z == __root
       else
-        leftmost = __rb_tree_node_base::minimum(x);
-    if (rightmost == z)  
-      if (z->left == 0)         // z->right must be null also
-        rightmost = z->parent;  
-    // makes rightmost == header if z == root
-      else                      // x == z->left
-        rightmost = __rb_tree_node_base::maximum(x);
+        __leftmost = _Rb_tree_node_base::_S_minimum(__x);
+    if (__rightmost == __z)  
+      if (__z->_M_left == 0)         // __z->_M_right must be null also
+        __rightmost = __z->_M_parent;  
+    // makes __rightmost == _M_header if __z == __root
+      else                      // __x == __z->_M_left
+        __rightmost = _Rb_tree_node_base::_S_maximum(__x);
   }
-  if (y->color != __rb_tree_red) { 
-    while (x != root && (x == 0 || x->color == __rb_tree_black))
-      if (x == x_parent->left) {
-        __rb_tree_node_base* w = x_parent->right;
-        if (w->color == __rb_tree_red) {
-          w->color = __rb_tree_black;
-          x_parent->color = __rb_tree_red;
-          __rb_tree_rotate_left(x_parent, root);
-          w = x_parent->right;
+  if (__y->_M_color != _S_rb_tree_red) { 
+    while (__x != __root && (__x == 0 || __x->_M_color == _S_rb_tree_black))
+      if (__x == __x_parent->_M_left) {
+        _Rb_tree_node_base* __w = __x_parent->_M_right;
+        if (__w->_M_color == _S_rb_tree_red) {
+          __w->_M_color = _S_rb_tree_black;
+          __x_parent->_M_color = _S_rb_tree_red;
+          _Rb_tree_rotate_left(__x_parent, __root);
+          __w = __x_parent->_M_right;
         }
-        if ((w->left == 0 || w->left->color == __rb_tree_black) &&
-            (w->right == 0 || w->right->color == __rb_tree_black)) {
-          w->color = __rb_tree_red;
-          x = x_parent;
-          x_parent = x_parent->parent;
+        if ((__w->_M_left == 0 || 
+             __w->_M_left->_M_color == _S_rb_tree_black) &&
+            (__w->_M_right == 0 || 
+             __w->_M_right->_M_color == _S_rb_tree_black)) {
+          __w->_M_color = _S_rb_tree_red;
+          __x = __x_parent;
+          __x_parent = __x_parent->_M_parent;
         } else {
-          if (w->right == 0 || w->right->color == __rb_tree_black) {
-            if (w->left) w->left->color = __rb_tree_black;
-            w->color = __rb_tree_red;
-            __rb_tree_rotate_right(w, root);
-            w = x_parent->right;
+          if (__w->_M_right == 0 || 
+              __w->_M_right->_M_color == _S_rb_tree_black) {
+            if (__w->_M_left) __w->_M_left->_M_color = _S_rb_tree_black;
+            __w->_M_color = _S_rb_tree_red;
+            _Rb_tree_rotate_right(__w, __root);
+            __w = __x_parent->_M_right;
           }
-          w->color = x_parent->color;
-          x_parent->color = __rb_tree_black;
-          if (w->right) w->right->color = __rb_tree_black;
-          __rb_tree_rotate_left(x_parent, root);
+          __w->_M_color = __x_parent->_M_color;
+          __x_parent->_M_color = _S_rb_tree_black;
+          if (__w->_M_right) __w->_M_right->_M_color = _S_rb_tree_black;
+          _Rb_tree_rotate_left(__x_parent, __root);
           break;
         }
-      } else {                  // same as above, with right <-> left.
-        __rb_tree_node_base* w = x_parent->left;
-        if (w->color == __rb_tree_red) {
-          w->color = __rb_tree_black;
-          x_parent->color = __rb_tree_red;
-          __rb_tree_rotate_right(x_parent, root);
-          w = x_parent->left;
+      } else {                  // same as above, with _M_right <-> _M_left.
+        _Rb_tree_node_base* __w = __x_parent->_M_left;
+        if (__w->_M_color == _S_rb_tree_red) {
+          __w->_M_color = _S_rb_tree_black;
+          __x_parent->_M_color = _S_rb_tree_red;
+          _Rb_tree_rotate_right(__x_parent, __root);
+          __w = __x_parent->_M_left;
         }
-        if ((w->right == 0 || w->right->color == __rb_tree_black) &&
-            (w->left == 0 || w->left->color == __rb_tree_black)) {
-          w->color = __rb_tree_red;
-          x = x_parent;
-          x_parent = x_parent->parent;
+        if ((__w->_M_right == 0 || 
+             __w->_M_right->_M_color == _S_rb_tree_black) &&
+            (__w->_M_left == 0 || 
+             __w->_M_left->_M_color == _S_rb_tree_black)) {
+          __w->_M_color = _S_rb_tree_red;
+          __x = __x_parent;
+          __x_parent = __x_parent->_M_parent;
         } else {
-          if (w->left == 0 || w->left->color == __rb_tree_black) {
-            if (w->right) w->right->color = __rb_tree_black;
-            w->color = __rb_tree_red;
-            __rb_tree_rotate_left(w, root);
-            w = x_parent->left;
+          if (__w->_M_left == 0 || 
+              __w->_M_left->_M_color == _S_rb_tree_black) {
+            if (__w->_M_right) __w->_M_right->_M_color = _S_rb_tree_black;
+            __w->_M_color = _S_rb_tree_red;
+            _Rb_tree_rotate_left(__w, __root);
+            __w = __x_parent->_M_left;
           }
-          w->color = x_parent->color;
-          x_parent->color = __rb_tree_black;
-          if (w->left) w->left->color = __rb_tree_black;
-          __rb_tree_rotate_right(x_parent, root);
+          __w->_M_color = __x_parent->_M_color;
+          __x_parent->_M_color = _S_rb_tree_black;
+          if (__w->_M_left) __w->_M_left->_M_color = _S_rb_tree_black;
+          _Rb_tree_rotate_right(__x_parent, __root);
           break;
         }
       }
-    if (x) x->color = __rb_tree_black;
+    if (__x) __x->_M_color = _S_rb_tree_black;
   }
-  return y;
+  return __y;
 }
 
-template <class Key, class Value, class KeyOfValue, class Compare,
-          class Alloc = alloc>
-class rb_tree {
-protected:
-  typedef void* void_pointer;
-  typedef __rb_tree_node_base* base_ptr;
-  typedef __rb_tree_node<Value> rb_tree_node;
-  typedef simple_alloc<rb_tree_node, Alloc> rb_tree_node_allocator;
-  typedef __rb_tree_color_type color_type;
+// Base class to encapsulate the differences between old SGI-style
+// allocators and standard-conforming allocators.  In order to avoid
+// having an empty base class, we arbitrarily move one of rb_tree's
+// data members into the base class.
+
+#ifdef __STL_USE_STD_ALLOCATORS
+
+// _Base for general standard-conforming allocators.
+template <class _Tp, class _Alloc, bool _S_instanceless>
+class _Rb_tree_alloc_base {
 public:
-  typedef Key key_type;
-  typedef Value value_type;
+  typedef typename _Alloc_traits<_Tp, _Alloc>::allocator_type allocator_type;
+  allocator_type get_allocator() const { return _M_node_allocator; }
+
+  _Rb_tree_alloc_base(const allocator_type& __a)
+    : _M_node_allocator(__a), _M_header(0) {}
+
+protected:
+  typename _Alloc_traits<_Rb_tree_node<_Tp>, _Alloc>::allocator_type
+           _M_node_allocator;
+  _Rb_tree_node<_Tp>* _M_header;
+
+  _Rb_tree_node<_Tp>* _M_get_node() 
+    { return _M_node_allocator.allocate(1); }
+  void _M_put_node(_Rb_tree_node<_Tp>* __p) 
+    { _M_node_allocator.deallocate(__p, 1); }
+};
+
+// Specialization for instanceless allocators.
+template <class _Tp, class _Alloc>
+class _Rb_tree_alloc_base<_Tp, _Alloc, true> {
+public:
+  typedef typename _Alloc_traits<_Tp, _Alloc>::allocator_type allocator_type;
+  allocator_type get_allocator() const { return allocator_type(); }
+
+  _Rb_tree_alloc_base(const allocator_type&) : _M_header(0) {}
+
+protected:
+  _Rb_tree_node<_Tp>* _M_header;
+
+  typedef typename _Alloc_traits<_Rb_tree_node<_Tp>, _Alloc>::_Alloc_type
+          _Alloc_type;
+
+  _Rb_tree_node<_Tp>* _M_get_node()
+    { return _Alloc_type::allocate(1); }
+  void _M_put_node(_Rb_tree_node<_Tp>* __p)
+    { _Alloc_type::deallocate(__p, 1); }
+};
+
+template <class _Tp, class _Alloc>
+struct _Rb_tree_base
+  : public _Rb_tree_alloc_base<_Tp, _Alloc,
+                               _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
+{
+  typedef _Rb_tree_alloc_base<_Tp, _Alloc,
+                              _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
+          _Base;
+  typedef typename _Base::allocator_type allocator_type;
+
+  _Rb_tree_base(const allocator_type& __a) 
+    : _Base(__a) { _M_header = _M_get_node(); }
+  ~_Rb_tree_base() { _M_put_node(_M_header); }
+
+};
+
+#else /* __STL_USE_STD_ALLOCATORS */
+
+template <class _Tp, class _Alloc>
+struct _Rb_tree_base
+{
+  typedef _Alloc allocator_type;
+  allocator_type get_allocator() const { return allocator_type(); }
+
+  _Rb_tree_base(const allocator_type&) 
+    : _M_header(0) { _M_header = _M_get_node(); }
+  ~_Rb_tree_base() { _M_put_node(_M_header); }
+
+protected:
+  _Rb_tree_node<_Tp>* _M_header;
+
+  typedef simple_alloc<_Rb_tree_node<_Tp>, _Alloc> _Alloc_type;
+
+  _Rb_tree_node<_Tp>* _M_get_node()
+    { return _Alloc_type::allocate(1); }
+  void _M_put_node(_Rb_tree_node<_Tp>* __p)
+    { _Alloc_type::deallocate(__p, 1); }
+};
+
+#endif /* __STL_USE_STD_ALLOCATORS */
+
+template <class _Key, class _Value, class _KeyOfValue, class _Compare,
+          class _Alloc = __STL_DEFAULT_ALLOCATOR(_Value) >
+class _Rb_tree : protected _Rb_tree_base<_Value, _Alloc> {
+  typedef _Rb_tree_base<_Value, _Alloc> _Base;
+protected:
+  typedef _Rb_tree_node_base* _Base_ptr;
+  typedef _Rb_tree_node<_Value> _Rb_tree_node;
+  typedef _Rb_tree_Color_type _Color_type;
+public:
+  typedef _Key key_type;
+  typedef _Value value_type;
   typedef value_type* pointer;
   typedef const value_type* const_pointer;
   typedef value_type& reference;
   typedef const value_type& const_reference;
-  typedef rb_tree_node* link_type;
+  typedef _Rb_tree_node* _Link_type;
   typedef size_t size_type;
   typedef ptrdiff_t difference_type;
-protected:
-  link_type get_node() { return rb_tree_node_allocator::allocate(); }
-  void put_node(link_type p) { rb_tree_node_allocator::deallocate(p); }
 
-  link_type create_node(const value_type& x) {
-    link_type tmp = get_node();
+  typedef typename _Base::allocator_type allocator_type;
+  allocator_type get_allocator() const { return _Base::get_allocator(); }
+
+protected:
+#ifdef __STL_USE_NAMESPACES
+  using _Base::_M_get_node;
+  using _Base::_M_put_node;
+  using _Base::_M_header;
+#endif /* __STL_USE_NAMESPACES */
+
+protected:
+
+  _Link_type _M_create_node(const value_type& __x)
+  {
+    _Link_type __tmp = _M_get_node();
     __STL_TRY {
-      construct(&tmp->value_field, x);
+      construct(&__tmp->_M_value_field, __x);
     }
-    __STL_UNWIND(put_node(tmp));
-    return tmp;
+    __STL_UNWIND(_M_put_node(__tmp));
+    return __tmp;
   }
 
-  link_type clone_node(link_type x) {
-    link_type tmp = create_node(x->value_field);
-    tmp->color = x->color;
-    tmp->left = 0;
-    tmp->right = 0;
-    return tmp;
+  _Link_type _M_clone_node(_Link_type __x)
+  {
+    _Link_type __tmp = _M_create_node(__x->_M_value_field);
+    __tmp->_M_color = __x->_M_color;
+    __tmp->_M_left = 0;
+    __tmp->_M_right = 0;
+    return __tmp;
   }
 
-  void destroy_node(link_type p) {
-    destroy(&p->value_field);
-    put_node(p);
+  void destroy_node(_Link_type __p)
+  {
+    destroy(&__p->_M_value_field);
+    _M_put_node(__p);
   }
 
 protected:
-  size_type node_count; // keeps track of size of tree
-  link_type header;  
-  Compare key_compare;
+  size_type _M_node_count; // keeps track of size of tree
+  _Compare _M_key_compare;
 
-  link_type& root() const { return (link_type&) header->parent; }
-  link_type& leftmost() const { return (link_type&) header->left; }
-  link_type& rightmost() const { return (link_type&) header->right; }
+  _Link_type& _M_root() const 
+    { return (_Link_type&) _M_header->_M_parent; }
+  _Link_type& _M_leftmost() const 
+    { return (_Link_type&) _M_header->_M_left; }
+  _Link_type& _M_rightmost() const 
+    { return (_Link_type&) _M_header->_M_right; }
 
-  static link_type& left(link_type x) { return (link_type&)(x->left); }
-  static link_type& right(link_type x) { return (link_type&)(x->right); }
-  static link_type& parent(link_type x) { return (link_type&)(x->parent); }
-  static reference value(link_type x) { return x->value_field; }
-  static const Key& key(link_type x) { return KeyOfValue()(value(x)); }
-  static color_type& color(link_type x) { return (color_type&)(x->color); }
+  static _Link_type& _S_left(_Link_type __x)
+    { return (_Link_type&)(__x->_M_left); }
+  static _Link_type& _S_right(_Link_type __x)
+    { return (_Link_type&)(__x->_M_right); }
+  static _Link_type& _S_parent(_Link_type __x)
+    { return (_Link_type&)(__x->_M_parent); }
+  static reference _S_value(_Link_type __x)
+    { return __x->_M_value_field; }
+  static const _Key& _S_key(_Link_type __x)
+    { return _KeyOfValue()(_S_value(__x)); }
+  static _Color_type& _S_color(_Link_type __x)
+    { return (_Color_type&)(__x->_M_color); }
 
-  static link_type& left(base_ptr x) { return (link_type&)(x->left); }
-  static link_type& right(base_ptr x) { return (link_type&)(x->right); }
-  static link_type& parent(base_ptr x) { return (link_type&)(x->parent); }
-  static reference value(base_ptr x) { return ((link_type)x)->value_field; }
-  static const Key& key(base_ptr x) { return KeyOfValue()(value(link_type(x)));} 
-  static color_type& color(base_ptr x) { return (color_type&)(link_type(x)->color); }
+  static _Link_type& _S_left(_Base_ptr __x)
+    { return (_Link_type&)(__x->_M_left); }
+  static _Link_type& _S_right(_Base_ptr __x)
+    { return (_Link_type&)(__x->_M_right); }
+  static _Link_type& _S_parent(_Base_ptr __x)
+    { return (_Link_type&)(__x->_M_parent); }
+  static reference _S_value(_Base_ptr __x)
+    { return ((_Link_type)__x)->_M_value_field; }
+  static const _Key& _S_key(_Base_ptr __x)
+    { return _KeyOfValue()(_S_value(_Link_type(__x)));} 
+  static _Color_type& _S_color(_Base_ptr __x)
+    { return (_Color_type&)(_Link_type(__x)->_M_color); }
 
-  static link_type minimum(link_type x) { 
-    return (link_type)  __rb_tree_node_base::minimum(x);
-  }
-  static link_type maximum(link_type x) {
-    return (link_type) __rb_tree_node_base::maximum(x);
-  }
+  static _Link_type _S_minimum(_Link_type __x) 
+    { return (_Link_type)  _Rb_tree_node_base::_S_minimum(__x); }
+
+  static _Link_type _S_maximum(_Link_type __x)
+    { return (_Link_type) _Rb_tree_node_base::_S_maximum(__x); }
 
 public:
-  typedef __rb_tree_iterator<value_type, reference, pointer> iterator;
-  typedef __rb_tree_iterator<value_type, const_reference, const_pointer> 
+  typedef _Rb_tree_iterator<value_type, reference, pointer> iterator;
+  typedef _Rb_tree_iterator<value_type, const_reference, const_pointer> 
           const_iterator;
 
 #ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
@@ -506,57 +633,60 @@ public:
                                          const_reference, difference_type>
           const_reverse_iterator;
 #endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */ 
+
 private:
-  iterator __insert(base_ptr x, base_ptr y, const value_type& v);
-  link_type __copy(link_type x, link_type p);
-  void __erase(link_type x);
-  void init() {
-    header = get_node();
-    color(header) = __rb_tree_red; // used to distinguish header from 
-                                   // root, in iterator.operator++
-    root() = 0;
-    leftmost() = header;
-    rightmost() = header;
-  }
+  iterator _M_insert(_Base_ptr __x, _Base_ptr __y, const value_type& __v);
+  _Link_type _M_copy(_Link_type __x, _Link_type __p);
+  void _M_erase(_Link_type __x);
+
 public:
                                 // allocation/deallocation
-  rb_tree(const Compare& comp = Compare())
-    : node_count(0), key_compare(comp) { init(); }
+  _Rb_tree()
+    : _Base(allocator_type()), _M_node_count(0), _M_key_compare()
+    { _M_empty_initialize(); }
 
-  rb_tree(const rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& x) 
-    : node_count(0), key_compare(x.key_compare)
+  _Rb_tree(const _Compare& __comp)
+    : _Base(allocator_type()), _M_node_count(0), _M_key_compare(__comp) 
+    { _M_empty_initialize(); }
+
+  _Rb_tree(const _Compare& __comp, const allocator_type& __a)
+    : _Base(__a), _M_node_count(0), _M_key_compare(__comp) 
+    { _M_empty_initialize(); }
+
+  _Rb_tree(const _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& __x) 
+    : _Base(__x.get_allocator()),
+      _M_node_count(0), _M_key_compare(__x._M_key_compare)
   { 
-    header = get_node();
-    color(header) = __rb_tree_red;
-    if (x.root() == 0) {
-      root() = 0;
-      leftmost() = header;
-      rightmost() = header;
-    }
+    if (__x._M_root() == 0)
+      _M_empty_initialize();
     else {
-      __STL_TRY {
-        root() = __copy(x.root(), header);
-      }
-      __STL_UNWIND(put_node(header));
-      leftmost() = minimum(root());
-      rightmost() = maximum(root());
+      _S_color(_M_header) = _S_rb_tree_red;
+      _M_root() = _M_copy(__x._M_root(), _M_header);
+      _M_leftmost() = _S_minimum(_M_root());
+      _M_rightmost() = _S_maximum(_M_root());
     }
-    node_count = x.node_count;
+    _M_node_count = __x._M_node_count;
   }
-  ~rb_tree() {
-    clear();
-    put_node(header);
+  ~_Rb_tree() { clear(); }
+  _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& 
+  operator=(const _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& __x);
+
+private:
+  void _M_empty_initialize() {
+    _S_color(_M_header) = _S_rb_tree_red; // used to distinguish header from 
+                                          // __root, in iterator.operator++
+    _M_root() = 0;
+    _M_leftmost() = _M_header;
+    _M_rightmost() = _M_header;
   }
-  rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& 
-  operator=(const rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& x);
 
 public:    
                                 // accessors:
-  Compare key_comp() const { return key_compare; }
-  iterator begin() { return leftmost(); }
-  const_iterator begin() const { return leftmost(); }
-  iterator end() { return header; }
-  const_iterator end() const { return header; }
+  _Compare key_comp() const { return _M_key_compare; }
+  iterator begin() { return _M_leftmost(); }
+  const_iterator begin() const { return _M_leftmost(); }
+  iterator end() { return _M_header; }
+  const_iterator end() const { return _M_header; }
   reverse_iterator rbegin() { return reverse_iterator(end()); }
   const_reverse_iterator rbegin() const { 
     return const_reverse_iterator(end()); 
@@ -565,530 +695,634 @@ public:
   const_reverse_iterator rend() const { 
     return const_reverse_iterator(begin());
   } 
-  bool empty() const { return node_count == 0; }
-  size_type size() const { return node_count; }
+  bool empty() const { return _M_node_count == 0; }
+  size_type size() const { return _M_node_count; }
   size_type max_size() const { return size_type(-1); }
 
-  void swap(rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& t) {
-    __STD::swap(header, t.header);
-    __STD::swap(node_count, t.node_count);
-    __STD::swap(key_compare, t.key_compare);
+  void swap(_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& __t) {
+    __STD::swap(_M_header, __t._M_header);
+    __STD::swap(_M_node_count, __t._M_node_count);
+    __STD::swap(_M_key_compare, __t._M_key_compare);
   }
     
 public:
                                 // insert/erase
-  pair<iterator,bool> insert_unique(const value_type& x);
-  iterator insert_equal(const value_type& x);
+  pair<iterator,bool> insert_unique(const value_type& __x);
+  iterator insert_equal(const value_type& __x);
 
-  iterator insert_unique(iterator position, const value_type& x);
-  iterator insert_equal(iterator position, const value_type& x);
+  iterator insert_unique(iterator __position, const value_type& __x);
+  iterator insert_equal(iterator __position, const value_type& __x);
 
 #ifdef __STL_MEMBER_TEMPLATES  
-  template <class InputIterator>
-  void insert_unique(InputIterator first, InputIterator last);
-  template <class InputIterator>
-  void insert_equal(InputIterator first, InputIterator last);
+  template <class _InputIterator>
+  void insert_unique(_InputIterator __first, _InputIterator __last);
+  template <class _InputIterator>
+  void insert_equal(_InputIterator __first, _InputIterator __last);
 #else /* __STL_MEMBER_TEMPLATES */
-  void insert_unique(const_iterator first, const_iterator last);
-  void insert_unique(const value_type* first, const value_type* last);
-  void insert_equal(const_iterator first, const_iterator last);
-  void insert_equal(const value_type* first, const value_type* last);
+  void insert_unique(const_iterator __first, const_iterator __last);
+  void insert_unique(const value_type* __first, const value_type* __last);
+  void insert_equal(const_iterator __first, const_iterator __last);
+  void insert_equal(const value_type* __first, const value_type* __last);
 #endif /* __STL_MEMBER_TEMPLATES */
 
-  void erase(iterator position);
-  size_type erase(const key_type& x);
-  void erase(iterator first, iterator last);
-  void erase(const key_type* first, const key_type* last);
+  void erase(iterator __position);
+  size_type erase(const key_type& __x);
+  void erase(iterator __first, iterator __last);
+  void erase(const key_type* __first, const key_type* __last);
   void clear() {
-    if (node_count != 0) {
-      __erase(root());
-      leftmost() = header;
-      root() = 0;
-      rightmost() = header;
-      node_count = 0;
+    if (_M_node_count != 0) {
+      _M_erase(_M_root());
+      _M_leftmost() = _M_header;
+      _M_root() = 0;
+      _M_rightmost() = _M_header;
+      _M_node_count = 0;
     }
   }      
 
 public:
                                 // set operations:
-  iterator find(const key_type& x);
-  const_iterator find(const key_type& x) const;
-  size_type count(const key_type& x) const;
-  iterator lower_bound(const key_type& x);
-  const_iterator lower_bound(const key_type& x) const;
-  iterator upper_bound(const key_type& x);
-  const_iterator upper_bound(const key_type& x) const;
-  pair<iterator,iterator> equal_range(const key_type& x);
-  pair<const_iterator, const_iterator> equal_range(const key_type& x) const;
+  iterator find(const key_type& __x);
+  const_iterator find(const key_type& __x) const;
+  size_type count(const key_type& __x) const;
+  iterator lower_bound(const key_type& __x);
+  const_iterator lower_bound(const key_type& __x) const;
+  iterator upper_bound(const key_type& __x);
+  const_iterator upper_bound(const key_type& __x) const;
+  pair<iterator,iterator> equal_range(const key_type& __x);
+  pair<const_iterator, const_iterator> equal_range(const key_type& __x) const;
 
 public:
                                 // Debugging.
   bool __rb_verify() const;
 };
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-inline bool operator==(const rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& x, 
-                       const rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& y) {
-  return x.size() == y.size() && equal(x.begin(), x.end(), y.begin());
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+inline bool 
+operator==(const _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& __x, 
+           const _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& __y)
+{
+  return __x.size() == __y.size() &&
+         equal(__x.begin(), __x.end(), __y.begin());
 }
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-inline bool operator<(const rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& x, 
-                      const rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& y) {
-  return lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+inline bool 
+operator<(const _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& __x, 
+          const _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& __y)
+{
+  return lexicographical_compare(__x.begin(), __x.end(), 
+                                 __y.begin(), __y.end());
 }
 
 #ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-inline void swap(rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& x, 
-                 rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& y) {
-  x.swap(y);
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+inline void 
+swap(_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& __x, 
+     _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& __y)
+{
+  __x.swap(__y);
 }
 
 #endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& 
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::
-operator=(const rb_tree<Key, Value, KeyOfValue, Compare, Alloc>& x) {
-  if (this != &x) {
-                                // Note that Key may be a constant type.
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& 
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::operator=(const _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>& __x)
+{
+  if (this != &__x) {
+                                // Note that _Key may be a constant type.
     clear();
-    node_count = 0;
-    key_compare = x.key_compare;        
-    if (x.root() == 0) {
-      root() = 0;
-      leftmost() = header;
-      rightmost() = header;
+    _M_node_count = 0;
+    _M_key_compare = __x._M_key_compare;        
+    if (__x._M_root() == 0) {
+      _M_root() = 0;
+      _M_leftmost() = _M_header;
+      _M_rightmost() = _M_header;
     }
     else {
-      root() = __copy(x.root(), header);
-      leftmost() = minimum(root());
-      rightmost() = maximum(root());
-      node_count = x.node_count;
+      _M_root() = _M_copy(__x._M_root(), _M_header);
+      _M_leftmost() = _S_minimum(_M_root());
+      _M_rightmost() = _S_maximum(_M_root());
+      _M_node_count = __x._M_node_count;
     }
   }
   return *this;
 }
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::
-__insert(base_ptr x_, base_ptr y_, const Value& v) {
-  link_type x = (link_type) x_;
-  link_type y = (link_type) y_;
-  link_type z;
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::iterator
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::_M_insert(_Base_ptr __x_, _Base_ptr __y_, const _Value& __v)
+{
+  _Link_type __x = (_Link_type) __x_;
+  _Link_type __y = (_Link_type) __y_;
+  _Link_type __z;
 
-  if (y == header || x != 0 || key_compare(KeyOfValue()(v), key(y))) {
-    z = create_node(v);
-    left(y) = z;                // also makes leftmost() = z when y == header
-    if (y == header) {
-      root() = z;
-      rightmost() = z;
+  if (__y == _M_header || __x != 0 || 
+      _M_key_compare(_KeyOfValue()(__v), _S_key(__y))) {
+    __z = _M_create_node(__v);
+    _S_left(__y) = __z;               // also makes _M_leftmost() = __z 
+                                      //    when __y == _M_header
+    if (__y == _M_header) {
+      _M_root() = __z;
+      _M_rightmost() = __z;
     }
-    else if (y == leftmost())
-      leftmost() = z;           // maintain leftmost() pointing to min node
+    else if (__y == _M_leftmost())
+      _M_leftmost() = __z;   // maintain _M_leftmost() pointing to min node
   }
   else {
-    z = create_node(v);
-    right(y) = z;
-    if (y == rightmost())
-      rightmost() = z;          // maintain rightmost() pointing to max node
+    __z = _M_create_node(__v);
+    _S_right(__y) = __z;
+    if (__y == _M_rightmost())
+      _M_rightmost() = __z;  // maintain _M_rightmost() pointing to max node
   }
-  parent(z) = y;
-  left(z) = 0;
-  right(z) = 0;
-  __rb_tree_rebalance(z, header->parent);
-  ++node_count;
-  return iterator(z);
+  _S_parent(__z) = __y;
+  _S_left(__z) = 0;
+  _S_right(__z) = 0;
+  _Rb_tree_rebalance(__z, _M_header->_M_parent);
+  ++_M_node_count;
+  return iterator(__z);
 }
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_equal(const Value& v)
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::iterator
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::insert_equal(const _Value& __v)
 {
-  link_type y = header;
-  link_type x = root();
-  while (x != 0) {
-    y = x;
-    x = key_compare(KeyOfValue()(v), key(x)) ? left(x) : right(x);
+  _Link_type __y = _M_header;
+  _Link_type __x = _M_root();
+  while (__x != 0) {
+    __y = __x;
+    __x = _M_key_compare(_KeyOfValue()(__v), _S_key(__x)) ? 
+            _S_left(__x) : _S_right(__x);
   }
-  return __insert(x, y, v);
+  return _M_insert(__x, __y, __v);
 }
 
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-pair<typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator, bool>
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_unique(const Value& v)
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+pair<typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::iterator, 
+     bool>
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::insert_unique(const _Value& __v)
 {
-  link_type y = header;
-  link_type x = root();
-  bool comp = true;
-  while (x != 0) {
-    y = x;
-    comp = key_compare(KeyOfValue()(v), key(x));
-    x = comp ? left(x) : right(x);
+  _Link_type __y = _M_header;
+  _Link_type __x = _M_root();
+  bool __comp = true;
+  while (__x != 0) {
+    __y = __x;
+    __comp = _M_key_compare(_KeyOfValue()(__v), _S_key(__x));
+    __x = __comp ? _S_left(__x) : _S_right(__x);
   }
-  iterator j = iterator(y);   
-  if (comp)
-    if (j == begin())     
-      return pair<iterator,bool>(__insert(x, y, v), true);
+  iterator __j = iterator(__y);   
+  if (__comp)
+    if (__j == begin())     
+      return pair<iterator,bool>(_M_insert(__x, __y, __v), true);
     else
-      --j;
-  if (key_compare(key(j.node), KeyOfValue()(v)))
-    return pair<iterator,bool>(__insert(x, y, v), true);
-  return pair<iterator,bool>(j, false);
+      --__j;
+  if (_M_key_compare(_S_key(__j._M_node), _KeyOfValue()(__v)))
+    return pair<iterator,bool>(_M_insert(__x, __y, __v), true);
+  return pair<iterator,bool>(__j, false);
 }
 
 
-template <class Key, class Val, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Val, KeyOfValue, Compare, Alloc>::iterator 
-rb_tree<Key, Val, KeyOfValue, Compare, Alloc>::insert_unique(iterator position,
-                                                             const Val& v) {
-  if (position.node == header->left) // begin()
-    if (size() > 0 && key_compare(KeyOfValue()(v), key(position.node)))
-      return __insert(position.node, position.node, v);
-  // first argument just needs to be non-null 
-    else
-      return insert_unique(v).first;
-  else if (position.node == header) // end()
-    if (key_compare(key(rightmost()), KeyOfValue()(v)))
-      return __insert(0, rightmost(), v);
-    else
-      return insert_unique(v).first;
-  else {
-    iterator before = position;
-    --before;
-    if (key_compare(key(before.node), KeyOfValue()(v))
-        && key_compare(KeyOfValue()(v), key(position.node)))
-      if (right(before.node) == 0)
-        return __insert(0, before.node, v); 
-      else
-        return __insert(position.node, position.node, v);
+template <class _Key, class _Val, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator 
+_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>
+  ::insert_unique(iterator __position, const _Val& __v)
+{
+  if (__position._M_node == _M_header->_M_left) { // begin()
+    if (size() > 0 && 
+        _M_key_compare(_KeyOfValue()(__v), _S_key(__position._M_node)))
+      return _M_insert(__position._M_node, __position._M_node, __v);
     // first argument just needs to be non-null 
     else
-      return insert_unique(v).first;
+      return insert_unique(__v).first;
+  } else if (__position._M_node == _M_header) { // end()
+    if (_M_key_compare(_S_key(_M_rightmost()), _KeyOfValue()(__v)))
+      return _M_insert(0, _M_rightmost(), __v);
+    else
+      return insert_unique(__v).first;
+  } else {
+    iterator __before = __position;
+    --__before;
+    if (_M_key_compare(_S_key(__before._M_node), _KeyOfValue()(__v)) 
+        && _M_key_compare(_KeyOfValue()(__v), _S_key(__position._M_node))) {
+      if (_S_right(__before._M_node) == 0)
+        return _M_insert(0, __before._M_node, __v); 
+      else
+        return _M_insert(__position._M_node, __position._M_node, __v);
+    // first argument just needs to be non-null 
+    } else
+      return insert_unique(__v).first;
   }
 }
 
-template <class Key, class Val, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Val, KeyOfValue, Compare, Alloc>::iterator 
-rb_tree<Key, Val, KeyOfValue, Compare, Alloc>::insert_equal(iterator position,
-                                                            const Val& v) {
-  if (position.node == header->left) // begin()
-    if (size() > 0 && key_compare(KeyOfValue()(v), key(position.node)))
-      return __insert(position.node, position.node, v);
-  // first argument just needs to be non-null 
-    else
-      return insert_equal(v);
-  else if (position.node == header) // end()
-    if (!key_compare(KeyOfValue()(v), key(rightmost())))
-      return __insert(0, rightmost(), v);
-    else
-      return insert_equal(v);
-  else {
-    iterator before = position;
-    --before;
-    if (!key_compare(KeyOfValue()(v), key(before.node))
-        && !key_compare(key(position.node), KeyOfValue()(v)))
-      if (right(before.node) == 0)
-        return __insert(0, before.node, v); 
-      else
-        return __insert(position.node, position.node, v);
+template <class _Key, class _Val, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Val,_KeyOfValue,_Compare,_Alloc>::iterator 
+_Rb_tree<_Key,_Val,_KeyOfValue,_Compare,_Alloc>
+  ::insert_equal(iterator __position, const _Val& __v)
+{
+  if (__position._M_node == _M_header->_M_left) { // begin()
+    if (size() > 0 && 
+        _M_key_compare(_KeyOfValue()(__v), _S_key(__position._M_node)))
+      return _M_insert(__position._M_node, __position._M_node, __v);
     // first argument just needs to be non-null 
     else
-      return insert_equal(v);
+      return insert_equal(__v);
+  } else if (__position._M_node == _M_header) {// end()
+    if (!_M_key_compare(_KeyOfValue()(__v), _S_key(_M_rightmost())))
+      return _M_insert(0, _M_rightmost(), __v);
+    else
+      return insert_equal(__v);
+  } else {
+    iterator __before = __position;
+    --__before;
+    if (!_M_key_compare(_KeyOfValue()(__v), _S_key(__before._M_node))
+        && !_M_key_compare(_S_key(__position._M_node), _KeyOfValue()(__v))) {
+      if (_S_right(__before._M_node) == 0)
+        return _M_insert(0, __before._M_node, __v); 
+      else
+        return _M_insert(__position._M_node, __position._M_node, __v);
+    // first argument just needs to be non-null 
+    } else
+      return insert_equal(__v);
   }
 }
 
 #ifdef __STL_MEMBER_TEMPLATES  
 
-template <class K, class V, class KoV, class Cmp, class Al> template<class II>
-void rb_tree<K, V, KoV, Cmp, Al>::insert_equal(II first, II last) {
-  for ( ; first != last; ++first)
-    insert_equal(*first);
+template <class _Key, class _Val, class _KoV, class _Cmp, class _Alloc>
+  template<class _II>
+void _Rb_tree<_Key,_Val,_KoV,_Cmp,_Alloc>
+  ::insert_equal(_II __first, _II __last)
+{
+  for ( ; __first != __last; ++__first)
+    insert_equal(*__first);
 }
 
-template <class K, class V, class KoV, class Cmp, class Al> template<class II>
-void rb_tree<K, V, KoV, Cmp, Al>::insert_unique(II first, II last) {
-  for ( ; first != last; ++first)
-    insert_unique(*first);
+template <class _Key, class _Val, class _KoV, class _Cmp, class _Alloc> 
+  template<class _II>
+void _Rb_tree<_Key,_Val,_KoV,_Cmp,_Alloc>
+  ::insert_unique(_II __first, _II __last) {
+  for ( ; __first != __last; ++__first)
+    insert_unique(*__first);
 }
 
 #else /* __STL_MEMBER_TEMPLATES */
 
-template <class K, class V, class KoV, class Cmp, class Al>
+template <class _Key, class _Val, class _KoV, class _Cmp, class _Alloc>
 void
-rb_tree<K, V, KoV, Cmp, Al>::insert_equal(const V* first, const V* last) {
-  for ( ; first != last; ++first)
-    insert_equal(*first);
+_Rb_tree<_Key,_Val,_KoV,_Cmp,_Alloc>
+  ::insert_equal(const _Val* __first, const _Val* __last)
+{
+  for ( ; __first != __last; ++__first)
+    insert_equal(*__first);
 }
 
-template <class K, class V, class KoV, class Cmp, class Al>
+template <class _Key, class _Val, class _KoV, class _Cmp, class _Alloc>
 void
-rb_tree<K, V, KoV, Cmp, Al>::insert_equal(const_iterator first,
-                                          const_iterator last) {
-  for ( ; first != last; ++first)
-    insert_equal(*first);
+_Rb_tree<_Key,_Val,_KoV,_Cmp,_Alloc>
+  ::insert_equal(const_iterator __first, const_iterator __last)
+{
+  for ( ; __first != __last; ++__first)
+    insert_equal(*__first);
 }
 
-template <class K, class V, class KoV, class Cmp, class A>
+template <class _Key, class _Val, class _KoV, class _Cmp, class _Alloc>
 void 
-rb_tree<K, V, KoV, Cmp, A>::insert_unique(const V* first, const V* last) {
-  for ( ; first != last; ++first)
-    insert_unique(*first);
+_Rb_tree<_Key,_Val,_KoV,_Cmp,_Alloc>
+  ::insert_unique(const _Val* __first, const _Val* __last)
+{
+  for ( ; __first != __last; ++__first)
+    insert_unique(*__first);
 }
 
-template <class K, class V, class KoV, class Cmp, class A>
-void 
-rb_tree<K, V, KoV, Cmp, A>::insert_unique(const_iterator first,
-                                          const_iterator last) {
-  for ( ; first != last; ++first)
-    insert_unique(*first);
+template <class _Key, class _Val, class _KoV, class _Cmp, class _Alloc>
+void _Rb_tree<_Key,_Val,_KoV,_Cmp,_Alloc>
+  ::insert_unique(const_iterator __first, const_iterator __last)
+{
+  for ( ; __first != __last; ++__first)
+    insert_unique(*__first);
 }
 
 #endif /* __STL_MEMBER_TEMPLATES */
          
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-inline void
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::erase(iterator position) {
-  link_type y = (link_type) __rb_tree_rebalance_for_erase(position.node,
-                                                          header->parent,
-                                                          header->left,
-                                                          header->right);
-  destroy_node(y);
-  --node_count;
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+inline void _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::erase(iterator __position)
+{
+  _Link_type __y = 
+    (_Link_type) _Rb_tree_rebalance_for_erase(__position._M_node,
+                                              _M_header->_M_parent,
+                                              _M_header->_M_left,
+                                              _M_header->_M_right);
+  destroy_node(__y);
+  --_M_node_count;
 }
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::size_type 
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::erase(const Key& x) {
-  pair<iterator,iterator> p = equal_range(x);
-  size_type n = 0;
-  distance(p.first, p.second, n);
-  erase(p.first, p.second);
-  return n;
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::size_type 
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::erase(const _Key& __x)
+{
+  pair<iterator,iterator> __p = equal_range(__x);
+  size_type __n = 0;
+  distance(__p.first, __p.second, __n);
+  erase(__p.first, __p.second);
+  return __n;
 }
 
-template <class K, class V, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<K, V, KeyOfValue, Compare, Alloc>::link_type 
-rb_tree<K, V, KeyOfValue, Compare, Alloc>::__copy(link_type x, link_type p) {
-                                // structural copy.  x and p must be non-null.
-  link_type top = clone_node(x);
-  top->parent = p;
+template <class _Key, class _Val, class _KoV, class _Compare, class _Alloc>
+typename _Rb_tree<_Key, _Val, _KoV, _Compare, _Alloc>::_Link_type 
+_Rb_tree<_Key,_Val,_KoV,_Compare,_Alloc>
+  ::_M_copy(_Link_type __x, _Link_type __p)
+{
+                        // structural copy.  __x and __p must be non-null.
+  _Link_type __top = _M_clone_node(__x);
+  __top->_M_parent = __p;
  
   __STL_TRY {
-    if (x->right)
-      top->right = __copy(right(x), top);
-    p = top;
-    x = left(x);
+    if (__x->_M_right)
+      __top->_M_right = _M_copy(_S_right(__x), __top);
+    __p = __top;
+    __x = _S_left(__x);
 
-    while (x != 0) {
-      link_type y = clone_node(x);
-      p->left = y;
-      y->parent = p;
-      if (x->right)
-        y->right = __copy(right(x), y);
-      p = y;
-      x = left(x);
+    while (__x != 0) {
+      _Link_type __y = _M_clone_node(__x);
+      __p->_M_left = __y;
+      __y->_M_parent = __p;
+      if (__x->_M_right)
+        __y->_M_right = _M_copy(_S_right(__x), __y);
+      __p = __y;
+      __x = _S_left(__x);
     }
   }
-  __STL_UNWIND(__erase(top));
+  __STL_UNWIND(_M_erase(__top));
 
-  return top;
+  return __top;
 }
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::__erase(link_type x) {
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+void _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::_M_erase(_Link_type __x)
+{
                                 // erase without rebalancing
-  while (x != 0) {
-    __erase(right(x));
-    link_type y = left(x);
-    destroy_node(x);
-    x = y;
+  while (__x != 0) {
+    _M_erase(_S_right(__x));
+    _Link_type __y = _S_left(__x);
+    destroy_node(__x);
+    __x = __y;
   }
 }
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::erase(iterator first, 
-                                                            iterator last) {
-  if (first == begin() && last == end())
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+void _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::erase(iterator __first, iterator __last)
+{
+  if (__first == begin() && __last == end())
     clear();
   else
-    while (first != last) erase(first++);
+    while (__first != __last) erase(__first++);
 }
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::erase(const Key* first, 
-                                                            const Key* last) {
-  while (first != last) erase(*first++);
-}
-
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::find(const Key& k) {
-  link_type y = header;        // Last node which is not less than k. 
-  link_type x = root();        // Current node. 
-
-  while (x != 0) 
-    if (!key_compare(key(x), k))
-      y = x, x = left(x);
-    else
-      x = right(x);
-
-  iterator j = iterator(y);   
-  return (j == end() || key_compare(k, key(j.node))) ? end() : j;
-}
-
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::const_iterator 
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::find(const Key& k) const {
-  link_type y = header; /* Last node which is not less than k. */
-  link_type x = root(); /* Current node. */
-
-  while (x != 0) {
-    if (!key_compare(key(x), k))
-      y = x, x = left(x);
-    else
-      x = right(x);
-  }
-  const_iterator j = const_iterator(y);   
-  return (j == end() || key_compare(k, key(j.node))) ? end() : j;
-}
-
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::size_type 
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::count(const Key& k) const {
-  pair<const_iterator, const_iterator> p = equal_range(k);
-  size_type n = 0;
-  distance(p.first, p.second, n);
-  return n;
-}
-
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::lower_bound(const Key& k) {
-  link_type y = header; /* Last node which is not less than k. */
-  link_type x = root(); /* Current node. */
-
-  while (x != 0) 
-    if (!key_compare(key(x), k))
-      y = x, x = left(x);
-    else
-      x = right(x);
-
-  return iterator(y);
-}
-
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::const_iterator 
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::lower_bound(const Key& k) const {
-  link_type y = header; /* Last node which is not less than k. */
-  link_type x = root(); /* Current node. */
-
-  while (x != 0) 
-    if (!key_compare(key(x), k))
-      y = x, x = left(x);
-    else
-      x = right(x);
-
-  return const_iterator(y);
-}
-
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::upper_bound(const Key& k) {
-  link_type y = header; /* Last node which is greater than k. */
-  link_type x = root(); /* Current node. */
-
-   while (x != 0) 
-     if (key_compare(k, key(x)))
-       y = x, x = left(x);
-     else
-       x = right(x);
-
-   return iterator(y);
-}
-
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::const_iterator 
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::upper_bound(const Key& k) const {
-  link_type y = header; /* Last node which is greater than k. */
-  link_type x = root(); /* Current node. */
-
-   while (x != 0) 
-     if (key_compare(k, key(x)))
-       y = x, x = left(x);
-     else
-       x = right(x);
-
-   return const_iterator(y);
-}
-
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-inline pair<typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator,
-            typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator>
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::equal_range(const Key& k) {
-  return pair<iterator, iterator>(lower_bound(k), upper_bound(k));
-}
-
-template <class Key, class Value, class KoV, class Compare, class Alloc>
-inline pair<typename rb_tree<Key, Value, KoV, Compare, Alloc>::const_iterator,
-            typename rb_tree<Key, Value, KoV, Compare, Alloc>::const_iterator>
-rb_tree<Key, Value, KoV, Compare, Alloc>::equal_range(const Key& k) const {
-  return pair<const_iterator,const_iterator>(lower_bound(k), upper_bound(k));
-}
-
-inline int __black_count(__rb_tree_node_base* node, __rb_tree_node_base* root)
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+void _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::erase(const _Key* __first, const _Key* __last) 
 {
-  if (node == 0)
+  while (__first != __last) erase(*__first++);
+}
+
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::iterator 
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::find(const _Key& __k)
+{
+  _Link_type __y = _M_header;      // Last node which is not less than __k. 
+  _Link_type __x = _M_root();      // Current node. 
+
+  while (__x != 0) 
+    if (!_M_key_compare(_S_key(__x), __k))
+      __y = __x, __x = _S_left(__x);
+    else
+      __x = _S_right(__x);
+
+  iterator __j = iterator(__y);   
+  return (__j == end() || _M_key_compare(__k, _S_key(__j._M_node))) ? 
+     end() : __j;
+}
+
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::const_iterator 
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::find(const _Key& __k) const
+{
+  _Link_type __y = _M_header; /* Last node which is not less than __k. */
+  _Link_type __x = _M_root(); /* Current node. */
+
+  while (__x != 0) {
+    if (!_M_key_compare(_S_key(__x), __k))
+      __y = __x, __x = _S_left(__x);
+    else
+      __x = _S_right(__x);
+  }
+  const_iterator __j = const_iterator(__y);   
+  return (__j == end() || _M_key_compare(__k, _S_key(__j._M_node))) ?
+    end() : __j;
+}
+
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::size_type 
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::count(const _Key& __k) const
+{
+  pair<const_iterator, const_iterator> __p = equal_range(__k);
+  size_type __n = 0;
+  distance(__p.first, __p.second, __n);
+  return __n;
+}
+
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::iterator 
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::lower_bound(const _Key& __k)
+{
+  _Link_type __y = _M_header; /* Last node which is not less than __k. */
+  _Link_type __x = _M_root(); /* Current node. */
+
+  while (__x != 0) 
+    if (!_M_key_compare(_S_key(__x), __k))
+      __y = __x, __x = _S_left(__x);
+    else
+      __x = _S_right(__x);
+
+  return iterator(__y);
+}
+
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::const_iterator 
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::lower_bound(const _Key& __k) const
+{
+  _Link_type __y = _M_header; /* Last node which is not less than __k. */
+  _Link_type __x = _M_root(); /* Current node. */
+
+  while (__x != 0) 
+    if (!_M_key_compare(_S_key(__x), __k))
+      __y = __x, __x = _S_left(__x);
+    else
+      __x = _S_right(__x);
+
+  return const_iterator(__y);
+}
+
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::iterator 
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::upper_bound(const _Key& __k)
+{
+  _Link_type __y = _M_header; /* Last node which is greater than __k. */
+  _Link_type __x = _M_root(); /* Current node. */
+
+   while (__x != 0) 
+     if (_M_key_compare(__k, _S_key(__x)))
+       __y = __x, __x = _S_left(__x);
+     else
+       __x = _S_right(__x);
+
+   return iterator(__y);
+}
+
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::const_iterator 
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::upper_bound(const _Key& __k) const
+{
+  _Link_type __y = _M_header; /* Last node which is greater than __k. */
+  _Link_type __x = _M_root(); /* Current node. */
+
+   while (__x != 0) 
+     if (_M_key_compare(__k, _S_key(__x)))
+       __y = __x, __x = _S_left(__x);
+     else
+       __x = _S_right(__x);
+
+   return const_iterator(__y);
+}
+
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+inline 
+pair<typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::iterator,
+     typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::iterator>
+_Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
+  ::equal_range(const _Key& __k)
+{
+  return pair<iterator, iterator>(lower_bound(__k), upper_bound(__k));
+}
+
+template <class _Key, class _Value, class _KoV, class _Compare, class _Alloc>
+inline 
+pair<typename _Rb_tree<_Key, _Value, _KoV, _Compare, _Alloc>::const_iterator,
+     typename _Rb_tree<_Key, _Value, _KoV, _Compare, _Alloc>::const_iterator>
+_Rb_tree<_Key, _Value, _KoV, _Compare, _Alloc>
+  ::equal_range(const _Key& __k) const
+{
+  return pair<const_iterator,const_iterator>(lower_bound(__k),
+                                             upper_bound(__k));
+}
+
+inline int 
+__black_count(_Rb_tree_node_base* __node, _Rb_tree_node_base* __root)
+{
+  if (__node == 0)
     return 0;
   else {
-    int bc = node->color == __rb_tree_black ? 1 : 0;
-    if (node == root)
-      return bc;
+    int __bc = __node->_M_color == _S_rb_tree_black ? 1 : 0;
+    if (__node == __root)
+      return __bc;
     else
-      return bc + __black_count(node->parent, root);
+      return __bc + __black_count(__node->_M_parent, __root);
   }
 }
 
-template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-bool 
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::__rb_verify() const
+template <class _Key, class _Value, class _KeyOfValue, 
+          class _Compare, class _Alloc>
+bool _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::__rb_verify() const
 {
-  if (node_count == 0 || begin() == end())
-    return node_count == 0 && begin() == end() &&
-      header->left == header && header->right == header;
+  if (_M_node_count == 0 || begin() == end())
+    return _M_node_count == 0 && begin() == end() &&
+      _M_header->_M_left == _M_header && _M_header->_M_right == _M_header;
   
-  int len = __black_count(leftmost(), root());
-  for (const_iterator it = begin(); it != end(); ++it) {
-    link_type x = (link_type) it.node;
-    link_type L = left(x);
-    link_type R = right(x);
+  int __len = __black_count(_M_leftmost(), _M_root());
+  for (const_iterator __it = begin(); __it != end(); ++__it) {
+    _Link_type __x = (_Link_type) __it._M_node;
+    _Link_type __L = _S_left(__x);
+    _Link_type __R = _S_right(__x);
 
-    if (x->color == __rb_tree_red)
-      if ((L && L->color == __rb_tree_red) ||
-          (R && R->color == __rb_tree_red))
+    if (__x->_M_color == _S_rb_tree_red)
+      if ((__L && __L->_M_color == _S_rb_tree_red) ||
+          (__R && __R->_M_color == _S_rb_tree_red))
         return false;
 
-    if (L && key_compare(key(x), key(L)))
+    if (__L && _M_key_compare(_S_key(__x), _S_key(__L)))
       return false;
-    if (R && key_compare(key(R), key(x)))
+    if (__R && _M_key_compare(_S_key(__R), _S_key(__x)))
       return false;
 
-    if (!L && !R && __black_count(x, root()) != len)
+    if (!__L && !__R && __black_count(__x, _M_root()) != __len)
       return false;
   }
 
-  if (leftmost() != __rb_tree_node_base::minimum(root()))
+  if (_M_leftmost() != _Rb_tree_node_base::_S_minimum(_M_root()))
     return false;
-  if (rightmost() != __rb_tree_node_base::maximum(root()))
+  if (_M_rightmost() != _Rb_tree_node_base::_S_maximum(_M_root()))
     return false;
 
   return true;
 }
+
+// Class rb_tree is not part of the C++ standard.  It is provided for
+// compatibility with the HP STL.
+
+template <class _Key, class _Value, class _KeyOfValue, class _Compare,
+          class _Alloc = __STL_DEFAULT_ALLOCATOR(_Value) >
+struct rb_tree : public _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
+{
+  typedef _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc> _Base;
+  typedef typename _Base::allocator_type allocator_type;
+
+  rb_tree(const _Compare& __comp = _Compare(),
+          const allocator_type& __a = allocator_type())
+    : _Base(__comp, __a) {}
+  
+  ~rb_tree() {}
+};
+
+#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
+#pragma reset woff 1375
+#endif
 
 __STL_END_NAMESPACE 
 

@@ -34,38 +34,73 @@
 __STL_BEGIN_NAMESPACE
 
 #ifndef __STL_LIMITED_DEFAULT_TEMPLATES
-template <class T, class Sequence = deque<T> >
+template <class _Tp, class _Sequence = deque<_Tp> >
 #else
-template <class T, class Sequence>
+template <class _Tp, class _Sequence>
 #endif
 class stack {
   friend bool operator== __STL_NULL_TMPL_ARGS (const stack&, const stack&);
   friend bool operator< __STL_NULL_TMPL_ARGS (const stack&, const stack&);
 public:
-  typedef typename Sequence::value_type value_type;
-  typedef typename Sequence::size_type size_type;
-  typedef typename Sequence::reference reference;
-  typedef typename Sequence::const_reference const_reference;
+  typedef typename _Sequence::value_type      value_type;
+  typedef typename _Sequence::size_type       size_type;
+  typedef          _Sequence                  container_type;
+
+  typedef typename _Sequence::reference       reference;
+  typedef typename _Sequence::const_reference const_reference;
 protected:
-  Sequence c;
+  _Sequence _M_c;
 public:
-  bool empty() const { return c.empty(); }
-  size_type size() const { return c.size(); }
-  reference top() { return c.back(); }
-  const_reference top() const { return c.back(); }
-  void push(const value_type& x) { c.push_back(x); }
-  void pop() { c.pop_back(); }
+  stack() : _M_c() {}
+  explicit stack(const _Sequence& __s) : _M_c(__s) {}
+
+  bool empty() const { return _M_c.empty(); }
+  size_type size() const { return _M_c.size(); }
+  reference top() { return _M_c.back(); }
+  const_reference top() const { return _M_c.back(); }
+  void push(const value_type& __x) { _M_c.push_back(__x); }
+  void pop() { _M_c.pop_back(); }
 };
 
-template <class T, class Sequence>
-bool operator==(const stack<T, Sequence>& x, const stack<T, Sequence>& y) {
-  return x.c == y.c;
+template <class _Tp, class _Seq>
+bool operator==(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+{
+  return __x._M_c == __y._M_c;
 }
 
-template <class T, class Sequence>
-bool operator<(const stack<T, Sequence>& x, const stack<T, Sequence>& y) {
-  return x.c < y.c;
+template <class _Tp, class _Seq>
+bool operator<(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+{
+  return __x._M_c < __y._M_c;
 }
+
+#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
+
+template <class _Tp, class _Seq>
+bool operator!=(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+{
+  return !(__x == __y);
+}
+
+template <class _Tp, class _Seq>
+bool operator>(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+{
+  return __y < __x;
+}
+
+template <class _Tp, class _Seq>
+bool operator<=(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+{
+  return !(__y < __x);
+}
+
+template <class _Tp, class _Seq>
+bool operator>=(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+{
+  return !(__x < __y);
+}
+
+#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 __STL_END_NAMESPACE
 

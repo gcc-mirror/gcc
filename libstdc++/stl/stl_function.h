@@ -12,7 +12,7 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  *
  *
- * Copyright (c) 1996
+ * Copyright (c) 1996-1998
  * Silicon Graphics Computer Systems, Inc.
  *
  * Permission to use, copy, modify, distribute and sell this software
@@ -33,372 +33,430 @@
 
 __STL_BEGIN_NAMESPACE
 
-template <class Arg, class Result>
+template <class _Arg, class _Result>
 struct unary_function {
-    typedef Arg argument_type;
-    typedef Result result_type;
+  typedef _Arg argument_type;
+  typedef _Result result_type;
 };
 
-template <class Arg1, class Arg2, class Result>
+template <class _Arg1, class _Arg2, class _Result>
 struct binary_function {
-    typedef Arg1 first_argument_type;
-    typedef Arg2 second_argument_type;
-    typedef Result result_type;
+  typedef _Arg1 first_argument_type;
+  typedef _Arg2 second_argument_type;
+  typedef _Result result_type;
 };      
 
-template <class T>
-struct plus : public binary_function<T, T, T> {
-    T operator()(const T& x, const T& y) const { return x + y; }
+template <class _Tp>
+struct plus : public binary_function<_Tp,_Tp,_Tp> {
+  _Tp operator()(const _Tp& __x, const _Tp& __y) const { return __x + __y; }
 };
 
-template <class T>
-struct minus : public binary_function<T, T, T> {
-    T operator()(const T& x, const T& y) const { return x - y; }
+template <class _Tp>
+struct minus : public binary_function<_Tp,_Tp,_Tp> {
+  _Tp operator()(const _Tp& __x, const _Tp& __y) const { return __x - __y; }
 };
 
-template <class T>
-struct multiplies : public binary_function<T, T, T> {
-    T operator()(const T& x, const T& y) const { return x * y; }
+template <class _Tp>
+struct multiplies : public binary_function<_Tp,_Tp,_Tp> {
+  _Tp operator()(const _Tp& __x, const _Tp& __y) const { return __x * __y; }
 };
 
-template <class T>
-struct divides : public binary_function<T, T, T> {
-    T operator()(const T& x, const T& y) const { return x / y; }
+template <class _Tp>
+struct divides : public binary_function<_Tp,_Tp,_Tp> {
+  _Tp operator()(const _Tp& __x, const _Tp& __y) const { return __x / __y; }
 };
 
-template <class T> inline T identity_element(plus<T>) { return T(0); }
+// identity_element (not part of the C++ standard).
 
-template <class T> inline T identity_element(multiplies<T>) { return T(1); }
+template <class _Tp> inline _Tp identity_element(plus<_Tp>) {
+  return _Tp(0);
+}
+template <class _Tp> inline _Tp identity_element(multiplies<_Tp>) {
+  return _Tp(1);
+}
 
-template <class T>
-struct modulus : public binary_function<T, T, T> {
-    T operator()(const T& x, const T& y) const { return x % y; }
+template <class _Tp>
+struct modulus : public binary_function<_Tp,_Tp,_Tp> 
+{
+  _Tp operator()(const _Tp& __x, const _Tp& __y) const { return __x % __y; }
 };
 
-template <class T>
-struct negate : public unary_function<T, T> {
-    T operator()(const T& x) const { return -x; }
+template <class _Tp>
+struct negate : public unary_function<_Tp,_Tp> 
+{
+  _Tp operator()(const _Tp& __x) const { return -__x; }
 };
 
-template <class T>
-struct equal_to : public binary_function<T, T, bool> {
-    bool operator()(const T& x, const T& y) const { return x == y; }
+template <class _Tp>
+struct equal_to : public binary_function<_Tp,_Tp,bool> 
+{
+  bool operator()(const _Tp& __x, const _Tp& __y) const { return __x == __y; }
 };
 
-template <class T>
-struct not_equal_to : public binary_function<T, T, bool> {
-    bool operator()(const T& x, const T& y) const { return x != y; }
+template <class _Tp>
+struct not_equal_to : public binary_function<_Tp,_Tp,bool> 
+{
+  bool operator()(const _Tp& __x, const _Tp& __y) const { return __x != __y; }
 };
 
-template <class T>
-struct greater : public binary_function<T, T, bool> {
-    bool operator()(const T& x, const T& y) const { return x > y; }
+template <class _Tp>
+struct greater : public binary_function<_Tp,_Tp,bool> 
+{
+  bool operator()(const _Tp& __x, const _Tp& __y) const { return __x > __y; }
 };
 
-template <class T>
-struct less : public binary_function<T, T, bool> {
-    bool operator()(const T& x, const T& y) const { return x < y; }
+template <class _Tp>
+struct less : public binary_function<_Tp,_Tp,bool> 
+{
+  bool operator()(const _Tp& __x, const _Tp& __y) const { return __x < __y; }
 };
 
-template <class T>
-struct greater_equal : public binary_function<T, T, bool> {
-    bool operator()(const T& x, const T& y) const { return x >= y; }
+template <class _Tp>
+struct greater_equal : public binary_function<_Tp,_Tp,bool>
+{
+  bool operator()(const _Tp& __x, const _Tp& __y) const { return __x >= __y; }
 };
 
-template <class T>
-struct less_equal : public binary_function<T, T, bool> {
-    bool operator()(const T& x, const T& y) const { return x <= y; }
+template <class _Tp>
+struct less_equal : public binary_function<_Tp,_Tp,bool> 
+{
+  bool operator()(const _Tp& __x, const _Tp& __y) const { return __x <= __y; }
 };
 
-template <class T>
-struct logical_and : public binary_function<T, T, bool> {
-    bool operator()(const T& x, const T& y) const { return x && y; }
+template <class _Tp>
+struct logical_and : public binary_function<_Tp,_Tp,bool>
+{
+  bool operator()(const _Tp& __x, const _Tp& __y) const { return __x && __y; }
 };
 
-template <class T>
-struct logical_or : public binary_function<T, T, bool> {
-    bool operator()(const T& x, const T& y) const { return x || y; }
+template <class _Tp>
+struct logical_or : public binary_function<_Tp,_Tp,bool>
+{
+  bool operator()(const _Tp& __x, const _Tp& __y) const { return __x || __y; }
 };
 
-template <class T>
-struct logical_not : public unary_function<T, bool> {
-    bool operator()(const T& x) const { return !x; }
+template <class _Tp>
+struct logical_not : public unary_function<_Tp,bool>
+{
+  bool operator()(const _Tp& __x) const { return !__x; }
 };
 
-template <class Predicate>
+template <class _Predicate>
 class unary_negate
-  : public unary_function<typename Predicate::argument_type, bool> {
+  : public unary_function<typename _Predicate::argument_type, bool> {
 protected:
-  Predicate pred;
+  _Predicate _M_pred;
 public:
-  explicit unary_negate(const Predicate& x) : pred(x) {}
-  bool operator()(const typename Predicate::argument_type& x) const {
-    return !pred(x);
+  explicit unary_negate(const _Predicate& __x) : _M_pred(__x) {}
+  bool operator()(const typename _Predicate::argument_type& __x) const {
+    return !_M_pred(__x);
   }
 };
 
-template <class Predicate>
-inline unary_negate<Predicate> not1(const Predicate& pred) {
-  return unary_negate<Predicate>(pred);
+template <class _Predicate>
+inline unary_negate<_Predicate> 
+not1(const _Predicate& __pred)
+{
+  return unary_negate<_Predicate>(__pred);
 }
 
-template <class Predicate> 
+template <class _Predicate> 
 class binary_negate 
-  : public binary_function<typename Predicate::first_argument_type,
-                           typename Predicate::second_argument_type,
+  : public binary_function<typename _Predicate::first_argument_type,
+                           typename _Predicate::second_argument_type,
                            bool> {
 protected:
-  Predicate pred;
+  _Predicate _M_pred;
 public:
-  explicit binary_negate(const Predicate& x) : pred(x) {}
-  bool operator()(const typename Predicate::first_argument_type& x, 
-                  const typename Predicate::second_argument_type& y) const {
-    return !pred(x, y); 
+  explicit binary_negate(const _Predicate& __x) : _M_pred(__x) {}
+  bool operator()(const typename _Predicate::first_argument_type& __x, 
+                  const typename _Predicate::second_argument_type& __y) const
+  {
+    return !_M_pred(__x, __y); 
   }
 };
 
-template <class Predicate>
-inline binary_negate<Predicate> not2(const Predicate& pred) {
-  return binary_negate<Predicate>(pred);
+template <class _Predicate>
+inline binary_negate<_Predicate> 
+not2(const _Predicate& __pred)
+{
+  return binary_negate<_Predicate>(__pred);
 }
 
-template <class Operation> 
+template <class _Operation> 
 class binder1st
-  : public unary_function<typename Operation::second_argument_type,
-                          typename Operation::result_type> {
+  : public unary_function<typename _Operation::second_argument_type,
+                          typename _Operation::result_type> {
 protected:
-  Operation op;
-  typename Operation::first_argument_type value;
+  _Operation op;
+  typename _Operation::first_argument_type value;
 public:
-  binder1st(const Operation& x,
-            const typename Operation::first_argument_type& y)
-      : op(x), value(y) {}
-  typename Operation::result_type
-  operator()(const typename Operation::second_argument_type& x) const {
-    return op(value, x); 
+  binder1st(const _Operation& __x,
+            const typename _Operation::first_argument_type& __y)
+      : op(__x), value(__y) {}
+  typename _Operation::result_type
+  operator()(const typename _Operation::second_argument_type& __x) const {
+    return op(value, __x); 
   }
 };
 
-template <class Operation, class T>
-inline binder1st<Operation> bind1st(const Operation& op, const T& x) {
-  typedef typename Operation::first_argument_type arg1_type;
-  return binder1st<Operation>(op, arg1_type(x));
+template <class _Operation, class _Tp>
+inline binder1st<_Operation> 
+bind1st(const _Operation& __opr, const _Tp& __x) 
+{
+  typedef typename _Operation::first_argument_type _Arg1_type;
+  return binder1st<_Operation>(__opr, _Arg1_type(__x));
 }
 
-template <class Operation> 
+template <class _Operation> 
 class binder2nd
-  : public unary_function<typename Operation::first_argument_type,
-                          typename Operation::result_type> {
+  : public unary_function<typename _Operation::first_argument_type,
+                          typename _Operation::result_type> {
 protected:
-  Operation op;
-  typename Operation::second_argument_type value;
+  _Operation op;
+  typename _Operation::second_argument_type value;
 public:
-  binder2nd(const Operation& x,
-            const typename Operation::second_argument_type& y) 
-      : op(x), value(y) {}
-  typename Operation::result_type
-  operator()(const typename Operation::first_argument_type& x) const {
-    return op(x, value); 
+  binder2nd(const _Operation& __x,
+            const typename _Operation::second_argument_type& __y) 
+      : op(__x), value(__y) {}
+  typename _Operation::result_type
+  operator()(const typename _Operation::first_argument_type& __x) const {
+    return op(__x, value); 
   }
 };
 
-template <class Operation, class T>
-inline binder2nd<Operation> bind2nd(const Operation& op, const T& x) {
-  typedef typename Operation::second_argument_type arg2_type;
-  return binder2nd<Operation>(op, arg2_type(x));
+template <class _Operation, class _Tp>
+inline binder2nd<_Operation> 
+bind2nd(const _Operation& __opr, const _Tp& __x) 
+{
+  typedef typename _Operation::second_argument_type _Arg2_type;
+  return binder2nd<_Operation>(__opr, _Arg2_type(__x));
 }
 
-template <class Operation1, class Operation2>
-class unary_compose : public unary_function<typename Operation2::argument_type,
-                                            typename Operation1::result_type> {
+// unary_compose and binary_compose (extensions, not part of the standard).
+
+template <class _Operation1, class _Operation2>
+class unary_compose
+  : public unary_function<typename _Operation2::argument_type,
+                          typename _Operation1::result_type> 
+{
 protected:
-  Operation1 op1;
-  Operation2 op2;
+  _Operation1 __op1;
+  _Operation2 __op2;
 public:
-  unary_compose(const Operation1& x, const Operation2& y) : op1(x), op2(y) {}
-  typename Operation1::result_type
-  operator()(const typename Operation2::argument_type& x) const {
-    return op1(op2(x));
+  unary_compose(const _Operation1& __x, const _Operation2& __y) 
+    : __op1(__x), __op2(__y) {}
+  typename _Operation1::result_type
+  operator()(const typename _Operation2::argument_type& __x) const {
+    return __op1(__op2(__x));
   }
 };
 
-template <class Operation1, class Operation2>
-inline unary_compose<Operation1, Operation2> compose1(const Operation1& op1, 
-                                                      const Operation2& op2) {
-  return unary_compose<Operation1, Operation2>(op1, op2);
+template <class _Operation1, class _Operation2>
+inline unary_compose<_Operation1,_Operation2> 
+compose1(const _Operation1& __op1, const _Operation2& __op2)
+{
+  return unary_compose<_Operation1,_Operation2>(__op1, __op2);
 }
 
-template <class Operation1, class Operation2, class Operation3>
+template <class _Operation1, class _Operation2, class _Operation3>
 class binary_compose
-  : public unary_function<typename Operation2::argument_type,
-                          typename Operation1::result_type> {
+  : public unary_function<typename _Operation2::argument_type,
+                          typename _Operation1::result_type> {
 protected:
-  Operation1 op1;
-  Operation2 op2;
-  Operation3 op3;
+  _Operation1 _M_op1;
+  _Operation2 _M_op2;
+  _Operation3 _M_op3;
 public:
-  binary_compose(const Operation1& x, const Operation2& y, 
-                 const Operation3& z) : op1(x), op2(y), op3(z) { }
-  typename Operation1::result_type
-  operator()(const typename Operation2::argument_type& x) const {
-    return op1(op2(x), op3(x));
+  binary_compose(const _Operation1& __x, const _Operation2& __y, 
+                 const _Operation3& __z) 
+    : _M_op1(__x), _M_op2(__y), _M_op3(__z) { }
+  typename _Operation1::result_type
+  operator()(const typename _Operation2::argument_type& __x) const {
+    return _M_op1(_M_op2(__x), _M_op3(__x));
   }
 };
 
-template <class Operation1, class Operation2, class Operation3>
-inline binary_compose<Operation1, Operation2, Operation3> 
-compose2(const Operation1& op1, const Operation2& op2, const Operation3& op3) {
-  return binary_compose<Operation1, Operation2, Operation3>(op1, op2, op3);
+template <class _Operation1, class _Operation2, class _Operation3>
+inline binary_compose<_Operation1, _Operation2, _Operation3> 
+compose2(const _Operation1& __op1, const _Operation2& __op2, 
+         const _Operation3& __op3)
+{
+  return binary_compose<_Operation1,_Operation2,_Operation3>
+    (__op1, __op2, __op3);
 }
 
-template <class Arg, class Result>
-class pointer_to_unary_function : public unary_function<Arg, Result> {
+template <class _Arg, class _Result>
+class pointer_to_unary_function : public unary_function<_Arg, _Result> {
 protected:
-  Result (*ptr)(Arg);
+  _Result (*_M_ptr)(_Arg);
 public:
   pointer_to_unary_function() {}
-  explicit pointer_to_unary_function(Result (*x)(Arg)) : ptr(x) {}
-  Result operator()(Arg x) const { return ptr(x); }
+  explicit pointer_to_unary_function(_Result (*__x)(_Arg)) : _M_ptr(__x) {}
+  _Result operator()(_Arg __x) const { return _M_ptr(__x); }
 };
 
-template <class Arg, class Result>
-inline pointer_to_unary_function<Arg, Result> ptr_fun(Result (*x)(Arg)) {
-  return pointer_to_unary_function<Arg, Result>(x);
+template <class _Arg, class _Result>
+inline pointer_to_unary_function<_Arg, _Result> ptr_fun(_Result (*__x)(_Arg))
+{
+  return pointer_to_unary_function<_Arg, _Result>(__x);
 }
 
-template <class Arg1, class Arg2, class Result>
-class pointer_to_binary_function : public binary_function<Arg1, Arg2, Result> {
+template <class _Arg1, class _Arg2, class _Result>
+class pointer_to_binary_function : 
+  public binary_function<_Arg1,_Arg2,_Result> {
 protected:
-    Result (*ptr)(Arg1, Arg2);
+    _Result (*_M_ptr)(_Arg1, _Arg2);
 public:
     pointer_to_binary_function() {}
-    explicit pointer_to_binary_function(Result (*x)(Arg1, Arg2)) : ptr(x) {}
-    Result operator()(Arg1 x, Arg2 y) const { return ptr(x, y); }
+    explicit pointer_to_binary_function(_Result (*__x)(_Arg1, _Arg2)) 
+      : _M_ptr(__x) {}
+    _Result operator()(_Arg1 __x, _Arg2 __y) const {
+      return _M_ptr(__x, __y);
+    }
 };
 
-template <class Arg1, class Arg2, class Result>
-inline pointer_to_binary_function<Arg1, Arg2, Result> 
-ptr_fun(Result (*x)(Arg1, Arg2)) {
-  return pointer_to_binary_function<Arg1, Arg2, Result>(x);
+template <class _Arg1, class _Arg2, class _Result>
+inline pointer_to_binary_function<_Arg1,_Arg2,_Result> 
+ptr_fun(_Result (*__x)(_Arg1, _Arg2)) {
+  return pointer_to_binary_function<_Arg1,_Arg2,_Result>(__x);
 }
 
-template <class T>
-struct identity : public unary_function<T, T> {
-  const T& operator()(const T& x) const { return x; }
+// identity is an extensions: it is not part of the standard.
+template <class _Tp>
+struct _Identity : public unary_function<_Tp,_Tp> {
+  const _Tp& operator()(const _Tp& __x) const { return __x; }
 };
 
-template <class Pair>
-struct select1st : public unary_function<Pair, typename Pair::first_type> {
-  const typename Pair::first_type& operator()(const Pair& x) const
-  {
-    return x.first;
+template <class _Tp> struct identity : public _Identity<_Tp> {};
+
+// select1st and select2nd are extensions: they are not part of the standard.
+template <class _Pair>
+struct _Select1st : public unary_function<_Pair, typename _Pair::first_type> {
+  const typename _Pair::first_type& operator()(const _Pair& __x) const {
+    return __x.first;
   }
 };
 
-template <class Pair>
-struct select2nd : public unary_function<Pair, typename Pair::second_type> {
-  const typename Pair::second_type& operator()(const Pair& x) const
-  {
-    return x.second;
+template <class _Pair>
+struct _Select2nd : public unary_function<_Pair, typename _Pair::second_type>
+{
+  const typename _Pair::second_type& operator()(const _Pair& __x) const {
+    return __x.second;
   }
 };
 
-template <class Arg1, class Arg2>
-struct project1st : public binary_function<Arg1, Arg2, Arg1> {
-  Arg1 operator()(const Arg1& x, const Arg2&) const { return x; }
+template <class _Pair> struct select1st : public _Select1st<_Pair> {};
+template <class _Pair> struct select2nd : public _Select2nd<_Pair> {};
+
+// project1st and project2nd are extensions: they are not part of the standard
+template <class _Arg1, class _Arg2>
+struct _Project1st : public binary_function<_Arg1, _Arg2, _Arg1> {
+  _Arg1 operator()(const _Arg1& __x, const _Arg2&) const { return __x; }
 };
 
-template <class Arg1, class Arg2>
-struct project2nd : public binary_function<Arg1, Arg2, Arg2> {
-  Arg2 operator()(const Arg1&, const Arg2& y) const { return y; }
+template <class _Arg1, class _Arg2>
+struct _Project2nd : public binary_function<_Arg1, _Arg2, _Arg2> {
+  _Arg2 operator()(const _Arg1&, const _Arg2& __y) const { return __y; }
 };
 
-template <class Result>
+template <class _Arg1, class _Arg2> 
+struct project1st : public _Project1st<_Arg1, _Arg2> {};
+
+template <class _Arg1, class _Arg2>
+struct project2nd : public _Project2nd<_Arg1, _Arg2> {};
+
+// constant_void_fun, constant_unary_fun, and constant_binary_fun are
+// extensions: they are not part of the standard.  (The same, of course,
+// is true of the helper functions constant0, constant1, and constant2.)
+template <class _Result>
 struct constant_void_fun
 {
-  typedef Result result_type;
-  result_type val;
-  constant_void_fun(const result_type& v) : val(v) {}
-  const result_type& operator()() const { return val; }
+  typedef _Result result_type;
+  result_type __val;
+  constant_void_fun(const result_type& __v) : __val(__v) {}
+  const result_type& operator()() const { return __val; }
 };  
 
 #ifndef __STL_LIMITED_DEFAULT_TEMPLATES
-template <class Result, class Argument = Result>
+template <class _Result, class _Argument = _Result>
 #else
-template <class Result, class Argument>
+template <class _Result, class _Argument>
 #endif
-struct constant_unary_fun : public unary_function<Argument, Result> {
-  Result val;
-  constant_unary_fun(const Result& v) : val(v) {}
-  const Result& operator()(const Argument&) const { return val; }
+struct constant_unary_fun : public unary_function<_Argument, _Result> {
+  _Result _M_val;
+  constant_unary_fun(const _Result& __v) : _M_val(__v) {}
+  const _Result& operator()(const _Argument&) const { return _M_val; }
 };
 
 #ifndef __STL_LIMITED_DEFAULT_TEMPLATES
-template <class Result, class Arg1 = Result, class Arg2 = Arg1>
+template <class _Result, class _Arg1 = _Result, class _Arg2 = _Arg1>
 #else
-template <class Result, class Arg1, class Arg2>
+template <class _Result, class _Arg1, class _Arg2>
 #endif
-struct constant_binary_fun : public binary_function<Arg1, Arg2, Result> {
-  Result val;
-  constant_binary_fun(const Result& v) : val(v) {}
-  const Result& operator()(const Arg1&, const Arg2&) const {
-    return val;
+struct constant_binary_fun : public binary_function<_Arg1, _Arg2, _Result> {
+  _Result _M_val;
+  constant_binary_fun(const _Result& __v) : _M_val(__v) {}
+  const _Result& operator()(const _Arg1&, const _Arg2&) const {
+    return _M_val;
   }
 };
 
-template <class Result>
-inline constant_void_fun<Result> constant0(const Result& val)
+template <class _Result>
+inline constant_void_fun<_Result> constant0(const _Result& __val)
 {
-  return constant_void_fun<Result>(val);
+  return constant_void_fun<_Result>(__val);
 }
 
-template <class Result>
-inline constant_unary_fun<Result,Result> constant1(const Result& val)
+template <class _Result>
+inline constant_unary_fun<_Result,_Result> constant1(const _Result& __val)
 {
-  return constant_unary_fun<Result,Result>(val);
+  return constant_unary_fun<_Result,_Result>(__val);
 }
 
-template <class Result>
-inline constant_binary_fun<Result,Result,Result> constant2(const Result& val)
+template <class _Result>
+inline constant_binary_fun<_Result,_Result,_Result> 
+constant2(const _Result& __val)
 {
-  return constant_binary_fun<Result,Result,Result>(val);
+  return constant_binary_fun<_Result,_Result,_Result>(__val);
 }
 
+// subtractive_rng is an extension: it is not part of the standard.
 // Note: this code assumes that int is 32 bits.
 class subtractive_rng : public unary_function<unsigned int, unsigned int> {
 private:
-  unsigned int table[55];
-  size_t index1;
-  size_t index2;
+  unsigned int _M_table[55];
+  size_t _M_index1;
+  size_t _M_index2;
 public:
-  unsigned int operator()(unsigned int limit) {
-    index1 = (index1 + 1) % 55;
-    index2 = (index2 + 1) % 55;
-    table[index1] = table[index1] - table[index2];
-    return table[index1] % limit;
+  unsigned int operator()(unsigned int __limit) {
+    _M_index1 = (_M_index1 + 1) % 55;
+    _M_index2 = (_M_index2 + 1) % 55;
+    _M_table[_M_index1] = _M_table[_M_index1] - _M_table[_M_index2];
+    return _M_table[_M_index1] % __limit;
   }
 
-  void initialize(unsigned int seed)
+  void _M_initialize(unsigned int __seed)
   {
-    unsigned int k = 1;
-    table[54] = seed;
-    size_t i;
-    for (i = 0; i < 54; i++) {
-        size_t ii = (21 * (i + 1) % 55) - 1;
-        table[ii] = k;
-        k = seed - k;
-        seed = table[ii];
+    unsigned int __k = 1;
+    _M_table[54] = __seed;
+    size_t __i;
+    for (__i = 0; __i < 54; __i++) {
+        size_t __ii = (21 * (__i + 1) % 55) - 1;
+        _M_table[__ii] = __k;
+        __k = __seed - __k;
+        __seed = _M_table[__ii];
     }
-    for (int loop = 0; loop < 4; loop++) {
-        for (i = 0; i < 55; i++)
-            table[i] = table[i] - table[(1 + i + 30) % 55];
+    for (int __loop = 0; __loop < 4; __loop++) {
+        for (__i = 0; __i < 55; __i++)
+            _M_table[__i] = _M_table[__i] - _M_table[(1 + __i + 30) % 55];
     }
-    index1 = 0;
-    index2 = 31;
+    _M_index1 = 0;
+    _M_index2 = 31;
   }
 
-  subtractive_rng(unsigned int seed) { initialize(seed); }
-  subtractive_rng() { initialize(161803398u); }
+  subtractive_rng(unsigned int __seed) { _M_initialize(__seed); }
+  subtractive_rng() { _M_initialize(161803398u); }
 };
 
 
@@ -412,212 +470,226 @@ public:
 //      non-void return type.
 //  (4) Const vs non-const member function.
 
-// Note that choice (4) is not present in the 8/97 draft C++ standard, 
-//  which only allows these adaptors to be used with non-const functions.
-//  This is likely to be recified before the standard becomes final.
-// Note also that choice (3) is nothing more than a workaround: according
+// Note that choice (3) is nothing more than a workaround: according
 //  to the draft, compilers should handle void and non-void the same way.
 //  This feature is not yet widely implemented, though.  You can only use
 //  member functions returning void if your compiler supports partial
 //  specialization.
 
 // All of this complexity is in the function objects themselves.  You can
-//  ignore it by using the helper function mem_fun, mem_fun_ref,
-//  mem_fun1, and mem_fun1_ref, which create whichever type of adaptor
-//  is appropriate.
+//  ignore it by using the helper function mem_fun and mem_fun_ref,
+//  which create whichever type of adaptor is appropriate.
+//  (mem_fun1 and mem_fun1_ref are no longer part of the C++ standard,
+//  but they are provided for backward compatibility.)
 
 
-template <class S, class T>
-class mem_fun_t : public unary_function<T*, S> {
+template <class _Ret, class _Tp>
+class mem_fun_t : public unary_function<_Tp*,_Ret> {
 public:
-  explicit mem_fun_t(S (T::*pf)()) : f(pf) {}
-  S operator()(T* p) const { return (p->*f)(); }
+  explicit mem_fun_t(_Ret (_Tp::*__pf)()) : _M_f(__pf) {}
+  _Ret operator()(_Tp* __p) const { return (__p->*_M_f)(); }
 private:
-  S (T::*f)();
+  _Ret (_Tp::*_M_f)();
 };
 
-template <class S, class T>
-class const_mem_fun_t : public unary_function<const T*, S> {
+template <class _Ret, class _Tp>
+class const_mem_fun_t : public unary_function<const _Tp*,_Ret> {
 public:
-  explicit const_mem_fun_t(S (T::*pf)() const) : f(pf) {}
-  S operator()(const T* p) const { return (p->*f)(); }
+  explicit const_mem_fun_t(_Ret (_Tp::*__pf)() const) : _M_f(__pf) {}
+  _Ret operator()(const _Tp* __p) const { return (__p->*_M_f)(); }
 private:
-  S (T::*f)() const;
+  _Ret (_Tp::*_M_f)() const;
 };
 
 
-template <class S, class T>
-class mem_fun_ref_t : public unary_function<T, S> {
+template <class _Ret, class _Tp>
+class mem_fun_ref_t : public unary_function<_Tp,_Ret> {
 public:
-  explicit mem_fun_ref_t(S (T::*pf)()) : f(pf) {}
-  S operator()(T& r) const { return (r.*f)(); }
+  explicit mem_fun_ref_t(_Ret (_Tp::*__pf)()) : _M_f(__pf) {}
+  _Ret operator()(_Tp& __r) const { return (__r.*_M_f)(); }
 private:
-  S (T::*f)();
+  _Ret (_Tp::*_M_f)();
 };
 
-template <class S, class T>
-class const_mem_fun_ref_t : public unary_function<T, S> {
+template <class _Ret, class _Tp>
+class const_mem_fun_ref_t : public unary_function<_Tp,_Ret> {
 public:
-  explicit const_mem_fun_ref_t(S (T::*pf)() const) : f(pf) {}
-  S operator()(const T& r) const { return (r.*f)(); }
+  explicit const_mem_fun_ref_t(_Ret (_Tp::*__pf)() const) : _M_f(__pf) {}
+  _Ret operator()(const _Tp& __r) const { return (__r.*_M_f)(); }
 private:
-  S (T::*f)() const;
+  _Ret (_Tp::*_M_f)() const;
 };
 
-template <class S, class T, class A>
-class mem_fun1_t : public binary_function<T*, A, S> {
+template <class _Ret, class _Tp, class _Arg>
+class mem_fun1_t : public binary_function<_Tp*,_Arg,_Ret> {
 public:
-  explicit mem_fun1_t(S (T::*pf)(A)) : f(pf) {}
-  S operator()(T* p, A x) const { return (p->*f)(x); }
+  explicit mem_fun1_t(_Ret (_Tp::*__pf)(_Arg)) : _M_f(__pf) {}
+  _Ret operator()(_Tp* __p, _Arg __x) const { return (__p->*_M_f)(__x); }
 private:
-  S (T::*f)(A);
+  _Ret (_Tp::*_M_f)(_Arg);
 };
 
-template <class S, class T, class A>
-class const_mem_fun1_t : public binary_function<const T*, A, S> {
+template <class _Ret, class _Tp, class _Arg>
+class const_mem_fun1_t : public binary_function<const _Tp*,_Arg,_Ret> {
 public:
-  explicit const_mem_fun1_t(S (T::*pf)(A) const) : f(pf) {}
-  S operator()(const T* p, A x) const { return (p->*f)(x); }
+  explicit const_mem_fun1_t(_Ret (_Tp::*__pf)(_Arg) const) : _M_f(__pf) {}
+  _Ret operator()(const _Tp* __p, _Arg __x) const
+    { return (__p->*_M_f)(__x); }
 private:
-  S (T::*f)(A) const;
+  _Ret (_Tp::*_M_f)(_Arg) const;
 };
 
-template <class S, class T, class A>
-class mem_fun1_ref_t : public binary_function<T, A, S> {
+template <class _Ret, class _Tp, class _Arg>
+class mem_fun1_ref_t : public binary_function<_Tp,_Arg,_Ret> {
 public:
-  explicit mem_fun1_ref_t(S (T::*pf)(A)) : f(pf) {}
-  S operator()(T& r, A x) const { return (r.*f)(x); }
+  explicit mem_fun1_ref_t(_Ret (_Tp::*__pf)(_Arg)) : _M_f(__pf) {}
+  _Ret operator()(_Tp& __r, _Arg __x) const { return (__r.*_M_f)(__x); }
 private:
-  S (T::*f)(A);
+  _Ret (_Tp::*_M_f)(_Arg);
 };
 
-template <class S, class T, class A>
-class const_mem_fun1_ref_t : public binary_function<T, A, S> {
+template <class _Ret, class _Tp, class _Arg>
+class const_mem_fun1_ref_t : public binary_function<_Tp,_Arg,_Ret> {
 public:
-  explicit const_mem_fun1_ref_t(S (T::*pf)(A) const) : f(pf) {}
-  S operator()(const T& r, A x) const { return (r.*f)(x); }
+  explicit const_mem_fun1_ref_t(_Ret (_Tp::*__pf)(_Arg) const) : _M_f(__pf) {}
+  _Ret operator()(const _Tp& __r, _Arg __x) const { return (__r.*_M_f)(__x); }
 private:
-  S (T::*f)(A) const;
+  _Ret (_Tp::*_M_f)(_Arg) const;
 };
 
 #ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
 
-template <class T>
-class mem_fun_t<void, T> : public unary_function<T*, void> {
+template <class _Tp>
+class mem_fun_t<void, _Tp> : public unary_function<_Tp*,void> {
 public:
-  explicit mem_fun_t(void (T::*pf)()) : f(pf) {}
-  void operator()(T* p) const { (p->*f)(); }
+  explicit mem_fun_t(void (_Tp::*__pf)()) : _M_f(__pf) {}
+  void operator()(_Tp* __p) const { (__p->*_M_f)(); }
 private:
-  void (T::*f)();
+  void (_Tp::*_M_f)();
 };
 
-template <class T>
-class const_mem_fun_t<void, T> : public unary_function<const T*, void> {
+template <class _Tp>
+class const_mem_fun_t<void, _Tp> : public unary_function<const _Tp*,void> {
 public:
-  explicit const_mem_fun_t(void (T::*pf)() const) : f(pf) {}
-  void operator()(const T* p) const { (p->*f)(); }
+  explicit const_mem_fun_t(void (_Tp::*__pf)() const) : _M_f(__pf) {}
+  void operator()(const _Tp* __p) const { (__p->*_M_f)(); }
 private:
-  void (T::*f)() const;
+  void (_Tp::*_M_f)() const;
 };
 
-template <class T>
-class mem_fun_ref_t<void, T> : public unary_function<T, void> {
+template <class _Tp>
+class mem_fun_ref_t<void, _Tp> : public unary_function<_Tp,void> {
 public:
-  explicit mem_fun_ref_t(void (T::*pf)()) : f(pf) {}
-  void operator()(T& r) const { (r.*f)(); }
+  explicit mem_fun_ref_t(void (_Tp::*__pf)()) : _M_f(__pf) {}
+  void operator()(_Tp& __r) const { (__r.*_M_f)(); }
 private:
-  void (T::*f)();
+  void (_Tp::*_M_f)();
 };
 
-template <class T>
-class const_mem_fun_ref_t<void, T> : public unary_function<T, void> {
+template <class _Tp>
+class const_mem_fun_ref_t<void, _Tp> : public unary_function<_Tp,void> {
 public:
-  explicit const_mem_fun_ref_t(void (T::*pf)() const) : f(pf) {}
-  void operator()(const T& r) const { (r.*f)(); }
+  explicit const_mem_fun_ref_t(void (_Tp::*__pf)() const) : _M_f(__pf) {}
+  void operator()(const _Tp& __r) const { (__r.*_M_f)(); }
 private:
-  void (T::*f)() const;
+  void (_Tp::*_M_f)() const;
 };
 
-template <class T, class A>
-class mem_fun1_t<void, T, A> : public binary_function<T*, A, void> {
+template <class _Tp, class _Arg>
+class mem_fun1_t<void, _Tp, _Arg> : public binary_function<_Tp*,_Arg,void> {
 public:
-  explicit mem_fun1_t(void (T::*pf)(A)) : f(pf) {}
-  void operator()(T* p, A x) const { (p->*f)(x); }
+  explicit mem_fun1_t(void (_Tp::*__pf)(_Arg)) : _M_f(__pf) {}
+  void operator()(_Tp* __p, _Arg __x) const { (__p->*_M_f)(__x); }
 private:
-  void (T::*f)(A);
+  void (_Tp::*_M_f)(_Arg);
 };
 
-template <class T, class A>
-class const_mem_fun1_t<void, T, A> : public binary_function<const T*, A, void> {
+template <class _Tp, class _Arg>
+class const_mem_fun1_t<void, _Tp, _Arg> 
+  : public binary_function<const _Tp*,_Arg,void> {
 public:
-  explicit const_mem_fun1_t(void (T::*pf)(A) const) : f(pf) {}
-  void operator()(const T* p, A x) const { (p->*f)(x); }
+  explicit const_mem_fun1_t(void (_Tp::*__pf)(_Arg) const) : _M_f(__pf) {}
+  void operator()(const _Tp* __p, _Arg __x) const { (__p->*_M_f)(__x); }
 private:
-  void (T::*f)(A) const;
+  void (_Tp::*_M_f)(_Arg) const;
 };
 
-template <class T, class A>
-class mem_fun1_ref_t<void, T, A> : public binary_function<T, A, void> {
+template <class _Tp, class _Arg>
+class mem_fun1_ref_t<void, _Tp, _Arg>
+  : public binary_function<_Tp,_Arg,void> {
 public:
-  explicit mem_fun1_ref_t(void (T::*pf)(A)) : f(pf) {}
-  void operator()(T& r, A x) const { (r.*f)(x); }
+  explicit mem_fun1_ref_t(void (_Tp::*__pf)(_Arg)) : _M_f(__pf) {}
+  void operator()(_Tp& __r, _Arg __x) const { (__r.*_M_f)(__x); }
 private:
-  void (T::*f)(A);
+  void (_Tp::*_M_f)(_Arg);
 };
 
-template <class T, class A>
-class const_mem_fun1_ref_t<void, T, A> : public binary_function<T, A, void> {
+template <class _Tp, class _Arg>
+class const_mem_fun1_ref_t<void, _Tp, _Arg>
+  : public binary_function<_Tp,_Arg,void> {
 public:
-  explicit const_mem_fun1_ref_t(void (T::*pf)(A) const) : f(pf) {}
-  void operator()(const T& r, A x) const { (r.*f)(x); }
+  explicit const_mem_fun1_ref_t(void (_Tp::*__pf)(_Arg) const) : _M_f(__pf) {}
+  void operator()(const _Tp& __r, _Arg __x) const { (__r.*_M_f)(__x); }
 private:
-  void (T::*f)(A) const;
+  void (_Tp::*_M_f)(_Arg) const;
 };
 
 #endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
-// Mem_fun adaptor helper functions.  There are only four:
-//  mem_fun, mem_fun_ref, mem_fun1, mem_fun1_ref.
+// Mem_fun adaptor helper functions.  There are only two:
+//  mem_fun and mem_fun_ref.  (mem_fun1 and mem_fun1_ref 
+//  are provided for backward compatibility, but they are no longer
+//  part of the C++ standard.)
 
-template <class S, class T>
-inline mem_fun_t<S,T> mem_fun(S (T::*f)()) { 
-  return mem_fun_t<S,T>(f);
-}
+template <class _Ret, class _Tp>
+inline mem_fun_t<_Ret,_Tp> mem_fun(_Ret (_Tp::*__f)())
+  { return mem_fun_t<_Ret,_Tp>(__f); }
 
-template <class S, class T>
-inline const_mem_fun_t<S,T> mem_fun(S (T::*f)() const) {
-  return const_mem_fun_t<S,T>(f);
-}
+template <class _Ret, class _Tp>
+inline const_mem_fun_t<_Ret,_Tp> mem_fun(_Ret (_Tp::*__f)() const)
+  { return const_mem_fun_t<_Ret,_Tp>(__f); }
 
-template <class S, class T>
-inline mem_fun_ref_t<S,T> mem_fun_ref(S (T::*f)()) { 
-  return mem_fun_ref_t<S,T>(f);
-}
+template <class _Ret, class _Tp>
+inline mem_fun_ref_t<_Ret,_Tp> mem_fun_ref(_Ret (_Tp::*__f)()) 
+  { return mem_fun_ref_t<_Ret,_Tp>(__f); }
 
-template <class S, class T>
-inline const_mem_fun_ref_t<S,T> mem_fun_ref(S (T::*f)() const) {
-  return const_mem_fun_ref_t<S,T>(f);
-}
+template <class _Ret, class _Tp>
+inline const_mem_fun_ref_t<_Ret,_Tp> mem_fun_ref(_Ret (_Tp::*__f)() const)
+  { return const_mem_fun_ref_t<_Ret,_Tp>(__f); }
 
-template <class S, class T, class A>
-inline mem_fun1_t<S,T,A> mem_fun1(S (T::*f)(A)) { 
-  return mem_fun1_t<S,T,A>(f);
-}
+template <class _Ret, class _Tp, class _Arg>
+inline mem_fun1_t<_Ret,_Tp,_Arg> mem_fun(_Ret (_Tp::*__f)(_Arg))
+  { return mem_fun1_t<_Ret,_Tp,_Arg>(__f); }
 
-template <class S, class T, class A>
-inline const_mem_fun1_t<S,T,A> mem_fun1(S (T::*f)(A) const) {
-  return const_mem_fun1_t<S,T,A>(f);
-}
+template <class _Ret, class _Tp, class _Arg>
+inline const_mem_fun1_t<_Ret,_Tp,_Arg> mem_fun(_Ret (_Tp::*__f)(_Arg) const)
+  { return const_mem_fun1_t<_Ret,_Tp,_Arg>(__f); }
 
-template <class S, class T, class A>
-inline mem_fun1_ref_t<S,T,A> mem_fun1_ref(S (T::*f)(A)) { 
-  return mem_fun1_ref_t<S,T,A>(f);
-}
+template <class _Ret, class _Tp, class _Arg>
+inline mem_fun1_ref_t<_Ret,_Tp,_Arg> mem_fun_ref(_Ret (_Tp::*__f)(_Arg))
+  { return mem_fun1_ref_t<_Ret,_Tp,_Arg>(__f); }
 
-template <class S, class T, class A>
-inline const_mem_fun1_ref_t<S,T,A> mem_fun1_ref(S (T::*f)(A) const) {
-  return const_mem_fun1_ref_t<S,T,A>(f);
-}
+template <class _Ret, class _Tp, class _Arg>
+inline const_mem_fun1_ref_t<_Ret,_Tp,_Arg>
+mem_fun_ref(_Ret (_Tp::*__f)(_Arg) const)
+  { return const_mem_fun1_ref_t<_Ret,_Tp,_Arg>(__f); }
+
+template <class _Ret, class _Tp, class _Arg>
+inline mem_fun1_t<_Ret,_Tp,_Arg> mem_fun1(_Ret (_Tp::*__f)(_Arg))
+  { return mem_fun1_t<_Ret,_Tp,_Arg>(__f); }
+
+template <class _Ret, class _Tp, class _Arg>
+inline const_mem_fun1_t<_Ret,_Tp,_Arg> mem_fun1(_Ret (_Tp::*__f)(_Arg) const)
+  { return const_mem_fun1_t<_Ret,_Tp,_Arg>(__f); }
+
+template <class _Ret, class _Tp, class _Arg>
+inline mem_fun1_ref_t<_Ret,_Tp,_Arg> mem_fun1_ref(_Ret (_Tp::*__f)(_Arg))
+  { return mem_fun1_ref_t<_Ret,_Tp,_Arg>(__f); }
+
+template <class _Ret, class _Tp, class _Arg>
+inline const_mem_fun1_ref_t<_Ret,_Tp,_Arg>
+mem_fun1_ref(_Ret (_Tp::*__f)(_Arg) const)
+  { return const_mem_fun1_ref_t<_Ret,_Tp,_Arg>(__f); }
 
 __STL_END_NAMESPACE
 

@@ -33,35 +33,39 @@
 
 __STL_BEGIN_NAMESPACE
 
-template <class T1, class T2>
+template <class _T1, class _T2>
 struct pair {
-  typedef T1 first_type;
-  typedef T2 second_type;
+  typedef _T1 first_type;
+  typedef _T2 second_type;
 
-  T1 first;
-  T2 second;
-  pair() : first(T1()), second(T2()) {}
-  pair(const T1& a, const T2& b) : first(a), second(b) {}
+  _T1 first;
+  _T2 second;
+  pair() : first(_T1()), second(_T2()) {}
+  pair(const _T1& __a, const _T2& __b) : first(__a), second(__b) {}
 
 #ifdef __STL_MEMBER_TEMPLATES
-  template <class U1, class U2>
-  pair(const pair<U1, U2>& p) : first(p.first), second(p.second) {}
+  template <class _U1, class _U2>
+  pair(const pair<_U1, _U2>& __p) : first(__p.first), second(__p.second) {}
 #endif
 };
 
-template <class T1, class T2>
-inline bool operator==(const pair<T1, T2>& x, const pair<T1, T2>& y) { 
-  return x.first == y.first && x.second == y.second; 
+template <class _T1, class _T2>
+inline bool operator==(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
+{ 
+  return __x.first == __y.first && __x.second == __y.second; 
 }
 
-template <class T1, class T2>
-inline bool operator<(const pair<T1, T2>& x, const pair<T1, T2>& y) { 
-  return x.first < y.first || (!(y.first < x.first) && x.second < y.second); 
+template <class _T1, class _T2>
+inline bool operator<(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
+{ 
+  return __x.first < __y.first || 
+         (!(__y.first < __x.first) && __x.second < __y.second); 
 }
 
-template <class T1, class T2>
-inline pair<T1, T2> make_pair(const T1& x, const T2& y) {
-  return pair<T1, T2>(x, y);
+template <class _T1, class _T2>
+inline pair<_T1, _T2> make_pair(const _T1& __x, const _T2& __y)
+{
+  return pair<_T1, _T2>(__x, __y);
 }
 
 __STL_END_NAMESPACE

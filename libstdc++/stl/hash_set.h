@@ -31,6 +31,7 @@
 #include <stl_hashtable.h>
 #endif 
 
+#include <algobase.h>
 #include <stl_hash_set.h>
 
 #ifdef __STL_USE_NAMESPACES

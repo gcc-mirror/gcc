@@ -25,7 +25,7 @@
  */
 
 /* NOTE: This is an internal header file, included by other STL headers.
- *   You should not attempt to use it directly.
+ * You should not attempt to use it directly.
  */
 
 #ifndef __SGI_STL_INTERNAL_RAW_STORAGE_ITERATOR_H
@@ -33,10 +33,10 @@
 
 __STL_BEGIN_NAMESPACE
 
-template <class ForwardIterator, class T>
+template <class _ForwardIterator, class _Tp>
 class raw_storage_iterator {
 protected:
-  ForwardIterator iter;
+  _ForwardIterator _M_iter;
 public:
   typedef output_iterator_tag iterator_category;
   typedef void                value_type;
@@ -44,37 +44,37 @@ public:
   typedef void                pointer;
   typedef void                reference;
 
-  explicit raw_storage_iterator(ForwardIterator x) : iter(x) {}
-  raw_storage_iterator<ForwardIterator, T>& operator*() { return *this; }
-  raw_storage_iterator<ForwardIterator, T>& operator=(const T& element) {
-    construct(&*iter, element);
+  explicit raw_storage_iterator(_ForwardIterator __x) : _M_iter(__x) {}
+  raw_storage_iterator& operator*() { return *this; }
+  raw_storage_iterator& operator=(const _Tp& __element) {
+    construct(&*_M_iter, __element);
     return *this;
   }        
-  raw_storage_iterator<ForwardIterator, T>& operator++() {
-    ++iter;
+  raw_storage_iterator<_ForwardIterator, _Tp>& operator++() {
+    ++_M_iter;
     return *this;
   }
-  raw_storage_iterator<ForwardIterator, T> operator++(int) {
-    raw_storage_iterator<ForwardIterator, T> tmp = *this;
-    ++iter;
-    return tmp;
+  raw_storage_iterator<_ForwardIterator, _Tp> operator++(int) {
+    raw_storage_iterator<_ForwardIterator, _Tp> __tmp = *this;
+    ++_M_iter;
+    return __tmp;
   }
 };
 
 #ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
 
-template <class ForwardIterator, class T>
+template <class _ForwardIterator, class _Tp>
 inline output_iterator_tag
-iterator_category(const raw_storage_iterator<ForwardIterator, T>&)
+iterator_category(const raw_storage_iterator<_ForwardIterator, _Tp>&)
 {
   return output_iterator_tag();
 }
 
 #endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
-#endif /* __SGI_STL_INTERNAL_RAW_STORAGE_ITERATOR_H */
-
 __STL_END_NAMESPACE
+
+#endif /* __SGI_STL_INTERNAL_RAW_STORAGE_ITERATOR_H */
 
 // Local Variables:
 // mode:C++
