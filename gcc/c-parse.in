@@ -485,21 +485,33 @@ unary_expr:
 		      $$ = build_unary_op (ADDR_EXPR, $$, 0);
 		    } }
 */
-	| SIZEOF unary_expr  %prec UNARY
-		{ if (TREE_CODE ($2) == COMPONENT_REF
+	| sizeof unary_expr  %prec UNARY
+		{ skip_evaluation--;
+		  if (TREE_CODE ($2) == COMPONENT_REF
 		      && DECL_BIT_FIELD (TREE_OPERAND ($2, 1)))
 		    error ("`sizeof' applied to a bit-field");
 		  $$ = c_sizeof (TREE_TYPE ($2)); }
-	| SIZEOF '(' typename ')'  %prec HYPERUNARY
-		{ $$ = c_sizeof (groktypename ($3)); }
-	| ALIGNOF unary_expr  %prec UNARY
-		{ $$ = c_alignof_expr ($2); }
-	| ALIGNOF '(' typename ')'  %prec HYPERUNARY
-		{ $$ = c_alignof (groktypename ($3)); }
+	| sizeof '(' typename ')'  %prec HYPERUNARY
+		{ skip_evaluation--;
+		  $$ = c_sizeof (groktypename ($3)); }
+	| alignof unary_expr  %prec UNARY
+		{ skip_evaluation--;
+		  $$ = c_alignof_expr ($2); }
+	| alignof '(' typename ')'  %prec HYPERUNARY
+		{ skip_evaluation--;
+		  $$ = c_alignof (groktypename ($3)); }
 	| REALPART cast_expr %prec UNARY
 		{ $$ = build_unary_op (REALPART_EXPR, $2, 0); }
 	| IMAGPART cast_expr %prec UNARY
 		{ $$ = build_unary_op (IMAGPART_EXPR, $2, 0); }
+	;
+
+sizeof:
+	SIZEOF { skip_evaluation++; }
+	;
+
+alignof:
+	ALIGNOF { skip_evaluation++; }
 	;
 
 cast_expr:
@@ -564,12 +576,41 @@ expr_no_commas:
 		{ $$ = parser_build_binary_op ($2, $1, $3); }
 	| expr_no_commas '^' expr_no_commas
 		{ $$ = parser_build_binary_op ($2, $1, $3); }
-	| expr_no_commas ANDAND expr_no_commas
-		{ $$ = parser_build_binary_op (TRUTH_ANDIF_EXPR, $1, $3); }
-	| expr_no_commas OROR expr_no_commas
-		{ $$ = parser_build_binary_op (TRUTH_ORIF_EXPR, $1, $3); }
-	| expr_no_commas '?' xexpr ':' expr_no_commas
-		{ $$ = build_conditional_expr ($1, $3, $5); }
+	| expr_no_commas ANDAND
+		{ $1 = truthvalue_conversion (default_conversion ($1));
+		  $<itype>2 = $1 == boolean_false_node;
+		  skip_evaluation += $<itype>2; }
+	  expr_no_commas
+		{ skip_evaluation -= $<itype>2;
+		  $$ = parser_build_binary_op (TRUTH_ANDIF_EXPR, $1, $4); }
+	| expr_no_commas OROR
+		{ $1 = truthvalue_conversion (default_conversion ($1));
+		  $<itype>3 = $1 == boolean_true_node;
+		  skip_evaluation += $<itype>3; }
+	  expr_no_commas
+		{ skip_evaluation -= $<itype>3;
+		  $$ = parser_build_binary_op (TRUTH_ORIF_EXPR, $1, $4); }
+	| expr_no_commas '?'
+		{ $1 = truthvalue_conversion (default_conversion ($1));
+		  $<itype>3 = $1 == boolean_true_node;
+		  $<itype>2 = $1 == boolean_false_node;
+		  skip_evaluation += $<itype>2; }
+          expr ':'
+		{ skip_evaluation += $<itype>3 - $<itype>2; }
+	  expr_no_commas
+		{ skip_evaluation -= $<itype>3;
+		  $$ = build_conditional_expr ($1, $4, $7); }
+	| expr_no_commas '?'
+		{ if (pedantic)
+		    pedwarn ("ANSI C forbids omitting the middle term of a ?: expression");
+		  /* Make sure first operand is calculated only once.  */
+		  $<ttype>2 = save_expr ($1);
+		  $1 = truthvalue_conversion (default_conversion ($<ttype>2));
+		  $<itype>3 = $1 == boolean_true_node;
+		  skip_evaluation += $<itype>3; }
+	  ':' expr_no_commas
+		{ skip_evaluation -= $<itype>3;
+		  $$ = build_conditional_expr ($1, $<ttype>2, $5); }
 	| expr_no_commas '=' expr_no_commas
 		{ $$ = build_modify_expr ($1, NOP_EXPR, $3);
 		  C_SET_EXP_ORIGINAL_CODE ($$, MODIFY_EXPR); }
