@@ -1,5 +1,5 @@
 // Support routines for the -*- C++ -*- dynamic memory management.
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2004 Free Software Foundation
 //
 // This file is part of GCC.
 //
@@ -29,6 +29,7 @@
 
 #include "new"
 #include <exception_defines.h>
+#include <bits/c++config.h>
 
 using std::new_handler;
 using std::bad_alloc;
