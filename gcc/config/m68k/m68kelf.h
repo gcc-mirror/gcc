@@ -22,13 +22,6 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* These are necessary for -fpic/-fPIC to work correctly.  */
-#ifndef MOTOROLA
-#define MOTOROLA                /* Use MOTOROLA syntax.  */
-#endif
-#ifndef  USE_GAS  /* forces jsbr instead of jsr.  */
-#define  USE_GAS
-#endif
 
 #ifndef SWBEG_ASM_OP
 #define SWBEG_ASM_OP "\t.swbeg\t"
@@ -245,8 +238,6 @@ extern int switch_table_difference_label_flag;
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE)		\
   fprintf ((FILE), "%s&%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
 /* end of stuff from m68kv4.h */
-
-#undef SGS_CMP_ORDER
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s"

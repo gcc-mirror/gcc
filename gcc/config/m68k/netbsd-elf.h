@@ -143,9 +143,6 @@ while (0)
    Here is a bunch of stuff lifted from m68kelf.h.  We don't use that
    file directly, because it has a lot of baggage we don't want.  */
 
-#define MOTOROLA	/* Use Motorola syntax */
-#define USE_GAS		/* But GAS wants jbsr instead of jsr */
-
 
 /* The prefix for register names.  Note that REGISTER_NAMES
    is supposed to include this prefix.  Also note that this is NOT an

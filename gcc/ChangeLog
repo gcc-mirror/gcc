@@ -1,3 +1,12 @@
+2003-11-28  Gunther Nikl  <gni@gecko.de>
+
+	* config.gcc (m68020-*-elf*, m68k-*-elf*, m68010-*-netbsdelf*,
+	m68k*-*-netbsdelf*, m68k-*-rtems*): Add tm_defines containing
+	MOTOROLA and USE_GAS.
+	* config/m68k/rtemself.h (MOTOROLA): Delete.
+	* config/m68k/netbsd-elf.h (MOTOROLA, USE_GAS): Delete.
+	* config/m68k/m68kelf.h (MOTOROLA, USE_GAS, SGS_CMP_ORDER): Delete.
+
 2003-11-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (WORDS_BIG_ENDIAN): Update the comment.
