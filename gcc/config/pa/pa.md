@@ -762,6 +762,47 @@
    (set_attr "length" "1")])
 
 (define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operand:SI 1 "zdepi_operand" "n"))]
+  ""
+  "*
+{
+  unsigned long x = INTVAL (operands[1]);
+  int i;
+
+  for (i = 0; i < 32; i++)
+    {
+      if ((x & 1) != 0)
+        break;
+      x >>= 1;
+    }
+
+  if ((x & 0x10) == 0)
+    {
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, x);
+      operands[2] = gen_rtx (CONST_INT, VOIDmode, 31 - i);
+      operands[3] = gen_rtx (CONST_INT, VOIDmode, 32 - i < 4 ? 32 - i : 4);
+    }
+  else
+    {
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, (x & 0xf) - 0x10);
+      operands[2] = gen_rtx (CONST_INT, VOIDmode, 31 - i);
+
+      x >>= 5;
+      for (i = 0; i < 32; i++)
+	{
+	  if ((x & 1) == 0)
+	    break;
+	  x >>= 1;
+	}
+
+      operands[3] = gen_rtx (CONST_INT, VOIDmode, i + 5);
+    }
+
+  return \"zdepi %1,%2,%3,%0\";
+}")
+
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=a,?*r")
 	(plus:SI (match_operand:SI 1 "register_operand" "r,r")
 		 (high:SI (match_operand 2 "" ""))))]
@@ -2159,12 +2200,28 @@
   "extrs %1,%3+%2-1,%2,%0")
 
 (define_insn "insv"
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+r,r")
+			 (match_operand:SI 1 "uint5_operand" "")
+			 (match_operand:SI 2 "uint5_operand" ""))
+	(match_operand:SI 3 "arith5_operand" "r,L"))]
+  ""
+  "@
+   dep %3,%2+%1-1,%1,%0
+   depi %3,%2+%1-1,%1,%0")
+
+;; Optimize insertion of const_int values of type 1...1xxxx.
+(define_insn ""
   [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:SI 1 "uint5_operand" "")
 			 (match_operand:SI 2 "uint5_operand" ""))
-	(match_operand:SI 3 "register_operand" "r"))]
-  ""
-  "dep %3,%2+%1-1,%1,%0")
+	(match_operand:SI 3 "const_int_operand" ""))]
+  "(INTVAL (operands[3]) & 0x10) != 0 &&
+   (~INTVAL (operands[3]) & (1L << INTVAL (operands[1])) - 1 & ~0xf) == 0"
+  "*
+{
+  operands[3] = gen_rtx (CONST_INT, VOIDmode, (INTVAL (operands[3]) & 0xf) - 0x10);
+  return \"depi %3,%2+%1-1,%1,%0\";
+}")
 
 ;; This insn is used for some loop tests, typically loops reversed when
 ;; strength reduction is used.  It is actually created when the instruction
