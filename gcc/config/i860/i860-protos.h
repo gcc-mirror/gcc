@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Intel 860.
-   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004 Free Software Foundation, Inc.
    Hacked substantially by Ron Guilmette (rfg@monkeys.com) to cater to
    the whims of the System V Release 4 assembler.
 
@@ -44,7 +44,6 @@ extern int load_operand (rtx, enum machine_mode);
 extern int small_int (rtx, enum machine_mode);
 extern int logic_int (rtx, enum machine_mode);
 extern int call_insn_operand (rtx, enum machine_mode);
-extern rtx i860_saveregs (void);
 #ifdef TREE_CODE
 extern void i860_va_start (tree, rtx);
 extern rtx i860_va_arg (tree, tree);

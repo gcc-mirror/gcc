@@ -1,5 +1,17 @@
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/i860/i860-protos.h: Remove the prototype for
+	i860_saveregs.
+	* config/i860/i860.c (i860_saveregs): Make it static.
+	(i860_struct_value_rtx): New.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_EXPAND_BUILTIN_SAVEREGS): Likewise.
+	* config/i860/i860.h (STRUCT_VALUE_REGNUM): Rename to
+	I860_STRUCT_VALUE_REGNUM.
+	(EXPAND_BUILTIN_SAVEREGS): Remove.
+
+2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/m68hc11/m68hc11.c (TARGET_STRUCT_VALUE_RTX): New.
 	(TARGET_RETURN_IN_MEMORY): Likewise.
 	(m68hc11_struct_value_rtx): Likewise.
