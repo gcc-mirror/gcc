@@ -1,3 +1,9 @@
+2004-09-11  Ramana Radhakrishnan <ramana.radhakrishnan@codito.com>
+
+	PR target/11476
+	* gcc/config/arc/arc.c (arc_va_args): Call build1 instead
+	of build for unary tree operators.
+
 2004-09-11  Andrew Pinski  <apinski@apple.com>
 
 	PR target/17167

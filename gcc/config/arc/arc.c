@@ -2284,8 +2284,8 @@ arc_va_arg (tree valist, tree type)
     {
       tree type_ptr_ptr = build_pointer_type (type_ptr);
 
-      addr = build (INDIRECT_REF, type_ptr,
-		    build (NOP_EXPR, type_ptr_ptr, valist));
+      addr = build1 (INDIRECT_REF, type_ptr,
+		    build1 (NOP_EXPR, type_ptr_ptr, valist));
 
       incr = build (PLUS_EXPR, TREE_TYPE (valist),
 		    valist, build_int_2 (UNITS_PER_WORD, 0));
@@ -2305,12 +2305,12 @@ arc_va_arg (tree valist, tree type)
 	{
 	  /* AP = (TYPE *)(((int)AP + 7) & -8)  */
 
-	  addr = build (NOP_EXPR, integer_type_node, valist);
+	  addr = build1 (NOP_EXPR, integer_type_node, valist);
 	  addr = fold (build (PLUS_EXPR, integer_type_node, addr,
 			      build_int_2 (7, 0)));
 	  addr = fold (build (BIT_AND_EXPR, integer_type_node, addr,
 			      build_int_2 (-8, 0)));
-	  addr = fold (build (NOP_EXPR, TREE_TYPE (valist), addr));
+	  addr = fold (build1 (NOP_EXPR, TREE_TYPE (valist), addr));
 	}
 
       /* The increment is always rounded_size past the aligned pointer.  */
