@@ -1,3 +1,8 @@
+2003-09-25  Jeff Sturm  <jsturm@one-point.com>
+
+	* aclocal.m4: Rebuilt.
+	* configure: Rebuilt.
+
 2003-09-25  Guilhem Lavaux  <guilhem@kaffe.org>
 
 	* java/text/SimpleDateFormat.java (parse): Don't use class calendar
