@@ -106,12 +106,7 @@ Boston, MA 02111-1307, USA.  */
 /* Machine dependent libraries.  */
 
 #undef	LIB_SPEC
-#define LIB_SPEC \
-     "%{!static:%{!pg:-framework System}%{pg:-framework System,_profile}}"
-
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC "%{!shared:%{static:-lcc} \
-			      %{!static:-lcc_dynamic}}"
+#define LIB_SPEC "%{!static:-lSystem}"
 
 /* We specify crt0.o as -lcrt0.o so that ld will search the library path. */
 
