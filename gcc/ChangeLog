@@ -1,3 +1,7 @@
+2001-04-07  Mumit Khan <khan@NanoTech.Wisc.EDU>
+
+	* mbchar.c: Include config.h first.
+
 2001-04-07  Zack Weinberg  <zackw@stanford.edu>
 
 	* config.gcc: Set default for xmake_file at top, not bottom.

@@ -29,8 +29,8 @@ Boston, MA 02111-1307, USA.  */
    leaves the source character values unchanged (except for removing the
    state shifting markers).  */
 
-#ifdef MULTIBYTE_CHARS
 #include "config.h"
+#ifdef MULTIBYTE_CHARS
 #include "system.h"
 #include "mbchar.h"
 #include <locale.h>
