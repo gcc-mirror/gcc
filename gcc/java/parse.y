@@ -8619,7 +8619,7 @@ build_current_thisn (type)
   static int saved_type_i = 0;
   static int initialized_p;
   tree decl;
-  char buffer [80];
+  char buffer [24];
   int i = 0;
 
   /* Register SAVED_THISN and SAVED_TYPE with the garbage collector.  */
@@ -13769,6 +13769,14 @@ patch_binop (node, wfl_op1, wfl_op2)
 	  TREE_TYPE (node) = boolean_type_node;
 	  error_found = 1;
 	  break;
+	}
+      else if (integer_zerop (op1))
+	{
+	  return code == TRUTH_ANDIF_EXPR ? op1 : op2;
+	}
+      else if (integer_onep (op1))
+	{
+	  return code == TRUTH_ANDIF_EXPR ? op2 : op1;
 	}
       /* The type of the conditional operators is BOOLEAN */
       prom_type = boolean_type_node;

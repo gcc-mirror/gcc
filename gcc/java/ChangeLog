@@ -1,5 +1,11 @@
 2001-12-03  Per Bothner  <per@bothner.com>
 
+	* parse.y (patch_binop):  Minor constant folding.
+
+	* parse.y (build_current_thisn):  Shorter 'buffer'.
+
+2001-12-03  Per Bothner  <per@bothner.com>
+
 	* decl.c (complete_start_java_method):  Now generate TRY_FINALLY_EXPR
 	instead of CLEANUP_POINT_EXPR and WITH_CLEANUP_EXPR.
 	* jcf-write.c (generate_bytecode_insns):  Remove support for
