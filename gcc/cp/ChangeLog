@@ -1,3 +1,9 @@
+2004-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15862
+	* name-lookup.c (unqualified_namespace_lookup): Do not ignore type
+	bindings for undeclared built-ins.
+
 2004-06-11  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* typeck2.c (abstract_virtual_errors): Reword diagnostics, make them
