@@ -3087,7 +3087,7 @@ walk_alter_subreg (xp)
       break;
     }
 
-  return x;
+  return *xp;
 }
 
 #ifdef HAVE_cc0
