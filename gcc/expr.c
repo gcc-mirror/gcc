@@ -8770,6 +8770,7 @@ do_jump_for_compare (comparison, if_false_label, if_true_label)
       if (branch != get_last_insn ())
 	abort ();
 
+      JUMP_LABEL (branch) = if_false_label;
       if (! invert_jump (branch, if_false_label))
 	{
 	  if_true_label = gen_label_rtx ();
