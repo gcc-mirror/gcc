@@ -103,7 +103,7 @@ static void grow_method PROTO((tree, tree *));
 static void finish_vtbls PROTO((tree, int, tree));
 static void modify_vtable_entry PROTO((tree, tree, tree));
 static tree get_vtable_entry_n PROTO((tree, unsigned HOST_WIDE_INT));
-static tree add_virtual_function PROTO((tree, int *, tree, tree));
+static void add_virtual_function PROTO((tree *, tree *, int *, tree, tree));
 static tree delete_duplicate_fields_1 PROTO((tree, tree));
 static void delete_duplicate_fields PROTO((tree));
 static void finish_struct_bits PROTO((tree, int));
@@ -415,11 +415,6 @@ build_vbase_path (code, type, expr, path, alias_this)
 }
 
 /* Virtual function things.  */
-
-/* Virtual functions to be dealt with after laying out our base
-   classes.  We do all overrides after we layout virtual base classes.  */
-
-static tree pending_hard_virtuals;
 
 /* Build an entry in the virtual function table.
    DELTA is the offset for the `this' pointer.
@@ -953,13 +948,16 @@ get_vtable_entry_n (virtuals, n)
    vtable for the type, and we build upon the PENDING_VIRTUALS list
    and return it.  */
 
-static tree
-add_virtual_function (pending_virtuals, has_virtual, fndecl, t)
-     tree pending_virtuals;
+static void
+add_virtual_function (pv, phv, has_virtual, fndecl, t)
+     tree *pv, *phv;
      int *has_virtual;
      tree fndecl;
      tree t; /* Structure type.  */
 {
+  tree pending_virtuals = *pv;
+  tree pending_hard_virtuals = *phv;
+
   /* FUNCTION_TYPEs and OFFSET_TYPEs no longer freely
      convert to void *.  Make such a conversion here.  */
   tree vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fndecl);
@@ -1023,7 +1021,8 @@ add_virtual_function (pending_virtuals, has_virtual, fndecl, t)
          Deal with this after we have laid out our virtual base classes.  */
       pending_hard_virtuals = temp_tree_cons (fndecl, vfn, pending_hard_virtuals);
     }
-  return pending_virtuals;
+  *pv = pending_virtuals;
+  *phv = pending_hard_virtuals;
 }
 
 /* Obstack on which to build the vector of class methods.  */
@@ -3109,6 +3108,7 @@ finish_struct_1 (t, warn_anon)
   int has_virtual;
   int max_has_virtual;
   tree pending_virtuals = NULL_TREE;
+  tree pending_hard_virtuals = NULL_TREE;
   tree abstract_virtuals = NULL_TREE;
   tree vfield;
   tree vfields;
@@ -3275,8 +3275,8 @@ finish_struct_1 (t, warn_anon)
       if (DECL_VINDEX (x)
 	  || (all_virtual == 1 && ! DECL_CONSTRUCTOR_P (x)))
 	{
-	  pending_virtuals = add_virtual_function (pending_virtuals,
-						   &has_virtual, x, t);
+	  add_virtual_function (&pending_virtuals, &pending_hard_virtuals,
+				&has_virtual, x, t);
 	  if (DECL_ABSTRACT_VIRTUAL_P (x))
 	    abstract_virtuals = tree_cons (NULL_TREE, x, abstract_virtuals);
 #if 0
@@ -3663,8 +3663,8 @@ finish_struct_1 (t, warn_anon)
 	  fn_fields = dtor;
 
 	  if (DECL_VINDEX (dtor))
-	    pending_virtuals = add_virtual_function (pending_virtuals,
-						     &has_virtual, dtor, t);
+	    add_virtual_function (&pending_virtuals, &pending_hard_virtuals,
+				  &has_virtual, dtor, t);
 	  nonprivate_method = 1;
 	}
     }
