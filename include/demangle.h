@@ -38,9 +38,10 @@
                                             template arguments, etc. */
 #define DMGL_EDG	 (1 << 13)
 #define DMGL_GNU_NEW_ABI (1 << 14)
+#define DMGL_GNAT	 (1 << 15)
 
 /* If none of these are set, use 'current_demangling_style' as the default. */
-#define DMGL_STYLE_MASK (DMGL_AUTO|DMGL_GNU|DMGL_LUCID|DMGL_ARM|DMGL_HP|DMGL_EDG|DMGL_GNU_NEW_ABI)
+#define DMGL_STYLE_MASK (DMGL_AUTO|DMGL_GNU|DMGL_LUCID|DMGL_ARM|DMGL_HP|DMGL_EDG|DMGL_GNU_NEW_ABI|DMGL_JAVA|DMGL_GNAT)
 
 /* Enumeration of possible demangling styles.
 
@@ -59,7 +60,9 @@ extern enum demangling_styles
   arm_demangling = DMGL_ARM,
   hp_demangling = DMGL_HP,
   edg_demangling = DMGL_EDG,
-  gnu_new_abi_demangling = DMGL_GNU_NEW_ABI
+  gnu_new_abi_demangling = DMGL_GNU_NEW_ABI,
+  java_demangling = DMGL_JAVA,
+  gnat_demangling = DMGL_GNAT
 } current_demangling_style;
 
 /* Define string names for the various demangling styles. */
@@ -71,6 +74,8 @@ extern enum demangling_styles
 #define HP_DEMANGLING_STYLE_STRING	      "hp"
 #define EDG_DEMANGLING_STYLE_STRING	      "edg"
 #define GNU_NEW_ABI_DEMANGLING_STYLE_STRING   "gnu-new-abi"
+#define JAVA_DEMANGLING_STYLE_STRING          "java"
+#define GNAT_DEMANGLING_STYLE_STRING          "gnat"
 
 /* Some macros to test what demangling style is active. */
 
@@ -82,6 +87,8 @@ extern enum demangling_styles
 #define HP_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_HP)
 #define EDG_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_EDG)
 #define GNU_NEW_ABI_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_GNU_NEW_ABI)
+#define JAVA_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_JAVA)
+#define GNAT_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_GNAT)
 
 /* Provide information about the available demangle styles. This code is
    pulled from gdb into libiberty because it is useful to binutils also.  */
