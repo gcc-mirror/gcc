@@ -299,7 +299,10 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       /* Here we transfer the words of the field
 	 in the order least significant first.
 	 This is because the most significant word is the one which may
-	 be less than full.  */
+	 be less than full.
+	 However, only do that if the value is not BLKmode.  */
+
+      int backwards = WORDS_BIG_ENDIAN && fieldmode != BLKmode;
 
       int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
       int i;
@@ -313,8 +316,12 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 
       for (i = 0; i < nwords; i++)
 	{
-	  int wordnum = i;
-	  int bit_offset = i * BITS_PER_WORD;
+	  /* If I is 0, use the low-order word in both field and target;
+	     if I is 1, use the next to lowest word; and so on.  */
+	  int wordnum = (backwards ? nwords - i - 1 : i);
+	  int bit_offset = (backwards
+			    ? MAX (bitsize - (i + 1) * BITS_PER_WORD, 0)
+			    : i * BITS_PER_WORD);
 	  store_bit_field (op0, MIN (BITS_PER_WORD,
 				     bitsize - i * BITS_PER_WORD),
 			   bitnum + bit_offset, word_mode,
