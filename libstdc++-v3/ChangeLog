@@ -1,3 +1,13 @@
+2002-01-11  Loren Rittle <ljrittle@acm.org>
+
+	* include/Makefile.am (extra_target_headers): New list of all
+	target files built with ad hoc naming rules.
+	(stamp-*): Handle LN_S failure in manner portable across make
+	implementations.
+	(install-data-local): Install header files from human-maintained
+	file lists and directory components instead of non-robust find.
+	* include/Makefile.in: Rebuilt.
+
 2002-01-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc (money_get::do_get(string)):
