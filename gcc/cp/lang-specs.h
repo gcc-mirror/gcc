@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
       cc1plus %{save-temps:-fpreprocessed %b.ii}\
 	      %{!save-temps:%(cpp_unique_options) %{!no-gcc:-D__GNUG__=%v1}}\
 	%(cc1_options) %2 %{+e1*}\
-        -o %g.s %{!o*:--output-pch=%i.pch} %W{o*:--output-pch=%*}%V}}}",
+        -o %g.s %{!o*:--output-pch=%i.gch} %W{o*:--output-pch=%*}%V}}}",
      CPLUSPLUS_CPP_SPEC},
   {"@c++",
     "%{E|M|MM:cc1plus -E %{!no-gcc:-D__GNUG__=%v1}\
