@@ -1,3 +1,7 @@
+2004-07-07  Jan Hubicka  <jh@suse.cz>
+
+	* MAINTAINERS: Add self as a profile feedback maintainer.
+
 2004-07-05  Phil Edwards  <phil@codesourcery.com>
 
 	* configure.in:  Do not prepend $srcdir to /dev/null in
