@@ -444,11 +444,15 @@ public class ObjectStreamClass implements Serializable
   				| Modifier.INTERFACE | Modifier.PUBLIC);
       data_out.writeInt (modifiers);
 
-      Class[] interfaces = cl.getInterfaces ();
-      Arrays.sort (interfaces, interfaceComparator);
-      for (int i=0; i < interfaces.length; i++)
-	data_out.writeUTF (interfaces[i].getName ());
-
+      // Pretend that an array has no interfaces, because when array
+      // serialization was defined (JDK 1.1), arrays didn't have it.
+      if (! cl.isArray ())
+	{
+	  Class[] interfaces = cl.getInterfaces ();
+	  Arrays.sort (interfaces, interfaceComparator);
+	  for (int i=0; i < interfaces.length; i++)
+	    data_out.writeUTF (interfaces[i].getName ());
+	}
 
       Field field;
       Field[] fields = cl.getDeclaredFields ();
