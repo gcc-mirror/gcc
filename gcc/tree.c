@@ -3352,3 +3352,68 @@ dump_tree_statistics ()
 #endif
   print_lang_statistics ();
 }
+
+#define FILE_FUNCTION_PREFIX_LEN 9
+
+#ifndef NO_DOLLAR_IN_LABEL
+#define FILE_FUNCTION_FORMAT "_GLOBAL_$D$%s"
+#else /* NO_DOLLAR_IN_LABEL */
+#ifndef NO_DOT_IN_LABEL
+#define FILE_FUNCTION_FORMAT "_GLOBAL_.D.%s"
+#else /* NO_DOT_IN_LABEL */
+#define FILE_FUNCTION_FORMAT "__GLOBAL_D_%s"
+#endif	/* NO_DOT_IN_LABEL */
+#endif	/* NO_DOLLAR_IN_LABEL */
+
+extern char * first_global_object_name;
+
+/* If KIND=='I', return a suitable global initializer (constructor) name.
+   If KIND=='D', return a suitable global clean-up (destructor) name. */
+
+tree
+get_file_function_name (kind)
+     int kind;
+{
+  char *buf;
+  register char *p;
+
+  if (first_global_object_name)
+    p = first_global_object_name;
+  else if (main_input_filename)
+    p = main_input_filename;
+  else
+    p = input_filename;
+
+  buf = (char *) alloca (sizeof (FILE_FUNCTION_FORMAT) + strlen (p));
+
+  /* Set up the name of the file-level functions we may need.  */
+  /* Use a global object (which is already required to be unique over
+     the program) rather than the file name (which imposes extra
+     constraints).  -- Raeburn@MIT.EDU, 10 Jan 1990.  */
+  sprintf (buf, FILE_FUNCTION_FORMAT, p);
+
+  /* Don't need to pull wierd characters out of global names.  */
+  if (p != first_global_object_name)
+    {
+      for (p = buf+11; *p; p++)
+	if (! ((*p >= '0' && *p <= '9')
+#if 0 /* we always want labels, which are valid C++ identifiers (+ `$') */
+#ifndef ASM_IDENTIFY_GCC	/* this is required if `.' is invalid -- k. raeburn */
+	       || *p == '.'
+#endif
+#endif
+#ifndef NO_DOLLAR_IN_LABEL	/* this for `$'; unlikely, but... -- kr */
+	       || *p == '$'
+#endif
+#ifndef NO_DOT_IN_LABEL		/* this for `.'; unlikely, but... */
+	       || *p == '.'
+#endif
+	       || (*p >= 'A' && *p <= 'Z')
+	       || (*p >= 'a' && *p <= 'z')))
+	  *p = '_';
+    }
+
+  buf[FILE_FUNCTION_PREFIX_LEN] = kind;
+
+  return get_identifier (buf);
+}
