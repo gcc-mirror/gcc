@@ -1086,7 +1086,16 @@ note_stores (x, fun)
 	     || GET_CODE (dest) == SIGN_EXTRACT
 	     || GET_CODE (dest) == STRICT_LOW_PART)
 	dest = XEXP (dest, 0);
-      (*fun) (dest, x);
+
+      if (GET_CODE (dest) == PARALLEL
+	  && GET_MODE (dest) == BLKmode)
+	{
+	  register int i;
+	  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
+	    (*fun) (SET_DEST (XVECEXP (dest, 0, i)), x);
+	}
+      else
+	(*fun) (dest, x);
     }
   else if (GET_CODE (x) == PARALLEL)
     {
@@ -1105,7 +1114,15 @@ note_stores (x, fun)
 		     || GET_CODE (dest) == SIGN_EXTRACT
 		     || GET_CODE (dest) == STRICT_LOW_PART)
 		dest = XEXP (dest, 0);
-	      (*fun) (dest, y);
+	      if (GET_CODE (dest) == PARALLEL
+		  && GET_MODE (dest) == BLKmode)
+		{
+		  register int i;
+		  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
+		    (*fun) (SET_DEST (XVECEXP (dest, 0, i)), y);
+		}
+	      else
+		(*fun) (dest, y);
 	    }
 	}
     }
