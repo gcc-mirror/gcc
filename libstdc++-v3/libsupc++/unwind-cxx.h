@@ -105,7 +105,7 @@ extern "C" void __cxa_throw (void *thrown_exception,
      __attribute__((noreturn));
 
 // Used to implement exception handlers.
-extern "C" void *__cxa_begin_catch (_Unwind_Exception *) throw();
+extern "C" void *__cxa_begin_catch (void *) throw();
 extern "C" void __cxa_end_catch ();
 extern "C" void __cxa_rethrow () __attribute__((noreturn));
 
@@ -118,8 +118,7 @@ extern "C" void __cxa_bad_typeid ();
 // Handles re-checking the exception specification if unexpectedHandler
 // throws, and if bad_exception needs to be thrown.  Called from the
 // compiler.
-extern "C" void __cxa_call_unexpected (_Unwind_Exception *)
-     __attribute__((noreturn));
+extern "C" void __cxa_call_unexpected (void *) __attribute__((noreturn));
 
 // Invokes given handler, dying appropriately if the user handler was
 // so inconsiderate as to return.

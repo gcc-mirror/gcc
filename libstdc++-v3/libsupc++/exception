@@ -95,6 +95,12 @@ namespace std
   bool uncaught_exception() throw();
 } // namespace std
 
+namespace __gnu_cxx {
+  /** A replacement for the standard terminate_handler which prints more
+      information about the terminating exception (if any) on stderr.  */
+  void verbose_terminate_handler ();
+} // namespace __gnu_cxx
+  
 } // extern "C++"
 
 #endif

@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -190,10 +190,10 @@ sources = \
 	locale.cc locale-inst.cc localename.cc \
 	collate.cc messages.cc moneypunct.cc numpunct.cc time.cc \
 	misc-inst.cc stdexcept.cc stl-inst.cc string-inst.cc strstream.cc \
-	valarray-inst.cc wstring-inst.cc concept-inst.cc
+	valarray-inst.cc wstring-inst.cc concept-inst.cc vterminate.cc
 
 
-VPATH = $(top_srcdir):$(top_srcdir)/src
+VPATH = $(top_srcdir)/src:$(top_srcdir)
 
 libstdc___la_SOURCES = $(sources)
 
@@ -268,7 +268,7 @@ codecvt.lo complex_io.lo functexcept.lo globals.lo ios.lo limits.lo \
 locale.lo locale-inst.lo localename.lo collate.lo messages.lo \
 moneypunct.lo numpunct.lo time.lo misc-inst.lo stdexcept.lo stl-inst.lo \
 string-inst.lo strstream.lo valarray-inst.lo wstring-inst.lo \
-concept-inst.lo
+concept-inst.lo vterminate.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -495,9 +495,9 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 strstream.lo: strstream.cc
-	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
+	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc
-	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
+	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 
 # Use special rules for the concept-checking instantiations so that all
 # the generated template functions are also instantiated.  Force the checks

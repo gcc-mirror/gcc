@@ -78,6 +78,7 @@ sources = \
 	eh_personality.cc \
 	eh_terminate.cc \
 	eh_throw.cc \
+	eh_type.cc \
 	new_handler.cc \
 	new_op.cc \
 	new_opnt.cc \

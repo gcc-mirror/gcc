@@ -65,9 +65,9 @@ sources = \
 	locale.cc locale-inst.cc localename.cc \
 	collate.cc messages.cc moneypunct.cc numpunct.cc time.cc \
 	misc-inst.cc stdexcept.cc stl-inst.cc string-inst.cc strstream.cc \
-	valarray-inst.cc wstring-inst.cc concept-inst.cc
+	valarray-inst.cc wstring-inst.cc concept-inst.cc vterminate.cc
 
-VPATH = $(top_srcdir):$(top_srcdir)/src
+VPATH = $(top_srcdir)/src:$(top_srcdir)
 
 libstdc___la_SOURCES = $(sources)
 
@@ -84,9 +84,9 @@ libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD)
 # deprecated include files.
 GLIBCPP_INCLUDE_DIR=@glibcpp_builddir@/include
 strstream.lo: strstream.cc
-	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
+	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc
-	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
+	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 
 # Use special rules for the concept-checking instantiations so that all
 # the generated template functions are also instantiated.  Force the checks

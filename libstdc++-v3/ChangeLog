@@ -1,3 +1,19 @@
+2001-11-18  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/eh_personality.cc (__cxa_call_unexpected): Take void*.
+	* libsupc++/eh_catch.cc (__cxa_begin_catch): Likewise.
+	* libsupc++/unwind-cxx.h: Adjust.
+	* src/Makefile.am (strstream.o): Pass -Wno-deprecated.
+
+	* libsupc++/eh_type.cc (__cxa_current_exception_type): New file.
+	* libsupc++/cxxabi.h: Declare it.
+	* libsupc++/Makefile.am (sources): Add it.
+	* src/vterminate.cc (verbose_terminate_handler): New file.
+	* libsupc++/exception: Declare it.
+	* src/Makefile.am (sources): Add it.
+
+	* src/Makefile.am (VPATH): Check the src directory before the top one.
+
 2001-11-16  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/stl_deque.h (deque::erase()):  Fix memory leak.
