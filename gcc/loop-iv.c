@@ -1967,6 +1967,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   unsigned HOST_WIDEST_INT s, size, d, inv;
   HOST_WIDEST_INT up, down, inc;
   int was_sharp = false;
+  rtx old_niter;
 
   /* The meaning of these assumptions is this:
      if !assumptions
@@ -2366,6 +2367,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       desc->niter_expr = delta;
     }
 
+  old_niter = desc->niter_expr;
+
   simplify_using_initial_values (loop, AND, &desc->assumptions);
   if (desc->assumptions
       && XEXP (desc->assumptions, 0) == const0_rtx)
@@ -2408,8 +2411,19 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       desc->const_iter = true;
       desc->niter_max = desc->niter = val & GET_MODE_MASK (desc->mode);
     }
-  else if (!desc->niter_max)
-    desc->niter_max = determine_max_iter (desc);
+  else
+    {
+      if (!desc->niter_max)
+	desc->niter_max = determine_max_iter (desc);
+
+      /* simplify_using_initial_values does a copy propagation on the registers
+	 in the expression for the number of iterations.  This prolongs life
+	 ranges of registers and increases register pressure, and usually
+	 brings no gain (and if it happens to do, the cse pass will take care
+	 of it anyway).  So prevent this behavior, unless it enabled us to
+	 derive that the number of iterations is a constant.  */
+      desc->niter_expr = old_niter;
+    }
 
   return;
 

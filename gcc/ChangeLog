@@ -1,3 +1,9 @@
+2004-07-10  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR rtl-optimization/16001
+	* loop-iv.c (iv_number_of_iterations): Prevent copy propagation in
+	niter_expr.
+
 2004-07-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (LINK_COMMAND_SPEC): Don't call c++filt.
@@ -10,6 +16,7 @@
 
 2004-07-10  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	PR rtl-optimization/15387
 	* calls.c (check_sibcall_argument_overlap_1): Handle pointers
 	to incoming args space correctly.
 
