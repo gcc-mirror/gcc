@@ -1,3 +1,14 @@
+2002-10-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_vtbl_initializer): Don't use build_vtable_entry.
+	(build_vtable_entry): Remove.
+	* cp-tree.h (BINFO_VIRTUALS): Expand documentation.
+	(lang_decl): Add thunks.
+	(DECL_THUNKS): New macro.
+	* decl.c (duplicate_decls): Copy it.
+	* method.c (make_thunk): Simplify, and add thunks to DECL_THUNKS.
+	* semantics.c (emit_associated_thunks): Simplify.
+	
 2002-10-24  David Edelsohn  <edelsohn@gnu.org>
 
 	PR c++/7228
