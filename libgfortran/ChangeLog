@@ -1,3 +1,11 @@
+2004-11-05  Andreas Schwab  <schwab@suse.de>
+
+	* configure.ac: Use AC_PROG_FC, FC and FCFLAGS instead of
+	AC_PROG_F77, F77 and FFLAGS.
+	* Makefile.am (selected_int_kind.inc, selected_real_kind.inc): Use
+	FCCOMPILE instead of F77COMPILE.
+	* configure, Makefile.in: Regenerate.
+
 2004-11-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* acinclude.m4: Properly quote AC_CACHE_CHECK.

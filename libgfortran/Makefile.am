@@ -390,10 +390,10 @@ I_M4_DEPS0=$(I_M4_DEPS) m4/iforeach.m4
 I_M4_DEPS1=$(I_M4_DEPS) m4/ifunction.m4
 
 selected_int_kind.inc: $(srcdir)/mk-sik-inc.sh
-	$(SHELL) $(srcdir)/mk-sik-inc.sh '$(F77COMPILE)' > $@
+	$(SHELL) $(srcdir)/mk-sik-inc.sh '$(FCCOMPILE)' > $@
 
 selected_real_kind.inc: $(srcdir)/mk-srk-inc.sh
-	$(SHELL) $(srcdir)/mk-srk-inc.sh '$(F77COMPILE)' > $@
+	$(SHELL) $(srcdir)/mk-srk-inc.sh '$(FCCOMPILE)' > $@
 
 ## A 'normal' build shouldn't need to regenerate these
 ## so we only include them in maintainer mode
