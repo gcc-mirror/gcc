@@ -1,3 +1,17 @@
+2003-06-30  Hartmut Penner  <hpenner@de.ibm.com>
+            Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/2084.md: New file.
+	* config/s390/s390.md: Include it.
+	* config/s390/s390.c (s390_adjust_priority): New function.
+	(TARGET_SCHED_ADJUST_PRIORITY): Define.
+	(s390_first_cycle_multipass_dfa_lookahead): New function.
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD): Define.
+	(s390_sched_reorder2): New function.
+	(TARGET_SCHED_REORDER2): Define.
+	(s390_adjust_cost): Support PROCESSOR_2084_Z990 cpu type.
+	(s390_issue_rate): Likewise.
+
 Mon Jun 30 23:47:33 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (GTFILES): Add cgraph.h.

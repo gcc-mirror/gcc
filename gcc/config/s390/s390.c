@@ -68,11 +68,15 @@ static void s390_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 static enum attr_type s390_safe_attr_type PARAMS ((rtx));
 
 static int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static int s390_adjust_priority PARAMS ((rtx, int));
 static int s390_issue_rate PARAMS ((void));
 static int s390_use_dfa_pipeline_interface PARAMS ((void));
+static int s390_first_cycle_multipass_dfa_lookahead PARAMS ((void));
+static int s390_sched_reorder2 PARAMS ((FILE *, int, rtx *, int *, int));
 static bool s390_rtx_costs PARAMS ((rtx, int, int, int *));
 static int s390_address_cost PARAMS ((rtx));
 static void s390_reorg PARAMS ((void));
+
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -115,10 +119,16 @@ static void s390_reorg PARAMS ((void));
 
 #undef  TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST s390_adjust_cost
+#undef  TARGET_SCHED_ADJUST_PRIORITY
+#define TARGET_SCHED_ADJUST_PRIORITY s390_adjust_priority
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE s390_issue_rate
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE s390_use_dfa_pipeline_interface
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD s390_first_cycle_multipass_dfa_lookahead
+#undef TARGET_SCHED_REORDER2
+#define TARGET_SCHED_REORDER2 s390_sched_reorder2
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS s390_rtx_costs
@@ -3611,7 +3621,6 @@ addr_generation_dependency_p (dep_rtx, insn)
 
 /* Return 1, if dep_insn sets register used in insn in the agen unit.  */
 
-
 int 
 s390_agen_dep_p(dep_insn, insn)
      rtx dep_insn;
@@ -3633,7 +3642,6 @@ s390_agen_dep_p(dep_insn, insn)
     }
   return 0;
 }
-
 
 /* Return the modified cost of the dependency of instruction INSN
    on instruction DEP_INSN through the link LINK.  COST is the 
@@ -3669,7 +3677,16 @@ s390_adjust_cost (insn, link, dep_insn, cost)
 
   /* DFA based scheduling checks address dependency in md file.  */
   if (s390_use_dfa_pipeline_interface ())
-     return cost;
+  {
+    /* Operand forward in case of lr, load and la.  */ 
+    if (s390_tune == PROCESSOR_2084_Z990
+        && cost == 1
+	&& (s390_safe_attr_type (dep_insn) == TYPE_LA
+	    || s390_safe_attr_type (dep_insn) == TYPE_LR
+	    || s390_safe_attr_type (dep_insn) == TYPE_LOAD))
+      return 0;
+    return cost;
+  }
 
   dep_rtx = PATTERN (dep_insn);
 
@@ -3687,12 +3704,47 @@ s390_adjust_cost (insn, link, dep_insn, cost)
 
   return cost;
 }
+/* A C statement (sans semicolon) to update the integer scheduling priority
+   INSN_PRIORITY (INSN).  Increase the priority to execute the INSN earlier,
+   reduce the priority to execute INSN later.  Do not define this macro if
+   you do not need to adjust the scheduling priorities of insns. 
+
+   A STD instruction should be scheduled earlier, 
+   in order to use the bypass.  */
+
+static int
+s390_adjust_priority (insn, priority)
+     rtx insn ATTRIBUTE_UNUSED;
+     int priority;
+{
+  if (! INSN_P (insn))
+    return priority;
+
+  if (s390_tune != PROCESSOR_2084_Z990)
+    return priority;
+
+  switch (s390_safe_attr_type (insn))
+    {
+      case TYPE_FSTORED:
+      case TYPE_FSTORES:
+	priority = priority << 3;
+	break;
+      case TYPE_STORE:
+	priority = priority << 1;
+	break;
+      default:
+        break;
+    }
+  return priority;
+}
 
 /* The number of instructions that can be issued per cycle.  */
 
 static int
 s390_issue_rate ()
 {
+  if (s390_tune == PROCESSOR_2084_Z990) 
+    return 3;
   return 1;
 }
 
@@ -3702,11 +3754,33 @@ s390_issue_rate ()
 static int
 s390_use_dfa_pipeline_interface ()
 {
-  if (s390_tune == PROCESSOR_2064_Z900)
+  if (s390_tune == PROCESSOR_2064_Z900
+      || s390_tune == PROCESSOR_2084_Z990)
     return 1;
-  return 0;
 
+  return 0;
 }
+
+static int
+s390_first_cycle_multipass_dfa_lookahead ()
+{
+  return s390_use_dfa_pipeline_interface () ? 4 : 0;
+}
+
+/* Called after issuing each insn.
+   Triggers default sort algorithm to better slot instructions.  */
+
+static int
+s390_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     rtx *ready ATTRIBUTE_UNUSED;
+     int *pn_ready ATTRIBUTE_UNUSED;
+     int clock_var ATTRIBUTE_UNUSED;
+{
+    return s390_issue_rate();
+}
+
 
 /* Split all branches that exceed the maximum distance.  
    Returns true if this created a new literal pool entry.  
