@@ -157,14 +157,14 @@ pop_gimplify_context (tree body)
   gimplify_ctxp = NULL;
 }
 
-void
+static void
 gimple_push_bind_expr (tree bind)
 {
   TREE_CHAIN (bind) = gimplify_ctxp->current_bind_expr;
   gimplify_ctxp->current_bind_expr = bind;
 }
 
-void
+static void
 gimple_pop_bind_expr (void)
 {
   gimplify_ctxp->current_bind_expr
@@ -706,7 +706,7 @@ unvisit_body (tree *body_p, tree fndecl)
 
 /* Unshare T and all the trees reached from T via TREE_CHAIN.  */
 
-void
+static void
 unshare_all_trees (tree t)
 {
   walk_tree (&t, copy_if_shared_r, NULL, NULL);
