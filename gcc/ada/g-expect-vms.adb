@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2002-2003 Ada Core Technologies, Inc.          --
+--             Copyright (C) 2002-2005 Ada Core Technologies, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,13 +87,13 @@ package body GNAT.Expect is
    ------------------------------
 
    function Dup (Fd : File_Descriptor) return File_Descriptor;
-   pragma Import (C, Dup);
+   pragma Import (C, Dup, "decc$dup");
 
    procedure Dup2 (Old_Fd, New_Fd : File_Descriptor);
-   pragma Import (C, Dup2);
+   pragma Import (C, Dup2, "decc$dup2");
 
    procedure Kill (Pid : Process_Id; Sig_Num : Integer);
-   pragma Import (C, Kill);
+   pragma Import (C, Kill, "decc$kill");
 
    function Create_Pipe (Pipe : access Pipe_Type) return Integer;
    pragma Import (C, Create_Pipe, "__gnat_pipe");
@@ -835,92 +835,7 @@ package body GNAT.Expect is
       Args        : GNAT.OS_Lib.Argument_List;
       Buffer_Size : Natural := 4096;
       Err_To_Out  : Boolean := False)
-   is
-      function Alloc_Vfork_Blocks return Integer;
-      pragma Import (C, Alloc_Vfork_Blocks, "decc$$alloc_vfork_blocks");
-
-      function Get_Vfork_Jmpbuf return System.Address;
-      pragma Import (C, Get_Vfork_Jmpbuf, "decc$$get_vfork_jmpbuf");
-
-      function Get_Current_Invo_Context
-        (Addr : System.Address) return Process_Id;
-      pragma Import (C, Get_Current_Invo_Context,
-        "LIB$GET_CURRENT_INVO_CONTEXT");
-
-      Pipe1, Pipe2, Pipe3 : aliased Pipe_Type;
-
-      Arg      : String_Access;
-      Arg_List : aliased array (1 .. Args'Length + 2) of System.Address;
-
-      Command_With_Path : String_Access;
-
-   begin
-      --  Create the rest of the pipes
-
-      Set_Up_Communications
-        (Descriptor, Err_To_Out, Pipe1'Access, Pipe2'Access, Pipe3'Access);
-
-      Command_With_Path := Locate_Exec_On_Path (Command);
-
-      if Command_With_Path = null then
-         raise Invalid_Process;
-      end if;
-
-      --  Fork a new process. It's not possible to do this in a subprogram.
-
-      if Alloc_Vfork_Blocks >= 0 then
-         Descriptor.Pid := Get_Current_Invo_Context (Get_Vfork_Jmpbuf);
-      else
-         Descriptor.Pid := -1;
-      end if;
-
-      --  Are we now in the child (or, for Windows, still in the common
-      --  process).
-
-      if Descriptor.Pid = Null_Pid then
-         --  Prepare an array of arguments to pass to C
-
-         Arg   := new String (1 .. Command_With_Path'Length + 1);
-         Arg (1 .. Command_With_Path'Length) := Command_With_Path.all;
-         Arg (Arg'Last)        := ASCII.Nul;
-         Arg_List (1)          := Arg.all'Address;
-
-         for J in Args'Range loop
-            Arg                     := new String (1 .. Args (J)'Length + 1);
-            Arg (1 .. Args (J)'Length)  := Args (J).all;
-            Arg (Arg'Last)              := ASCII.Nul;
-            Arg_List (J + 2 - Args'First) := Arg.all'Address;
-         end loop;
-
-         Arg_List (Arg_List'Last) := System.Null_Address;
-
-         --  This does not return on Unix systems
-
-         Set_Up_Child_Communications
-           (Descriptor, Pipe1, Pipe2, Pipe3, Command_With_Path.all,
-            Arg_List'Address);
-      end if;
-
-      Free (Command_With_Path);
-
-      --  Did we have an error when spawning the child ?
-
-      if Descriptor.Pid < Null_Pid then
-         raise Invalid_Process;
-      else
-         --  We are now in the parent process
-
-         Set_Up_Parent_Communications (Descriptor, Pipe1, Pipe2, Pipe3);
-      end if;
-
-      --  Create the buffer
-
-      Descriptor.Buffer_Size := Buffer_Size;
-
-      if Buffer_Size /= 0 then
-         Descriptor.Buffer := new String (1 .. Positive (Buffer_Size));
-      end if;
-   end Non_Blocking_Spawn;
+   is separate;
 
    -------------------------
    -- Reinitialize_Buffer --
