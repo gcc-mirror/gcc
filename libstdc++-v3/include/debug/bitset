@@ -141,7 +141,7 @@ namespace __gnu_debug_def
       bitset<_Nb>&
       operator|=(const bitset<_Nb>& __rhs)
       {
-	_M_base() != __rhs;
+	_M_base() |= __rhs;
 	return *this;
       }
 

@@ -1,5 +1,11 @@
 2004-01-23  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/13838
+	* include/debug/bitset (operator|=): Fix typo.
+	* testsuite/23_containers/bitset/operations/13838.cc: New.
+
+2004-01-23  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/13831
 	* include/bits/fstream.tcc (underflow): Remove unused
 	variable.
