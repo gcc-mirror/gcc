@@ -64,3 +64,68 @@ Boston, MA 02111-1307, USA.  */
 #define ENDFILE_SPEC "\
   %{m32:%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s} \
   %{!m32:%{!shared:crtend.o%s} %{shared:crtendS.o%s} /usr/lib64/crtn.o%s}"
+
+/* Do code reading to identify a signal frame, and set the frame
+   state data appropriately.  See unwind-dw2.c for the structs.  */
+
+#ifdef IN_LIBGCC2
+#include <signal.h>
+#include <sys/ucontext.h>
+#endif
+
+#define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
+  do {									\
+    unsigned char *pc_ = (CONTEXT)->ra;					\
+    struct sigcontext *sc_;						\
+    long new_cfa_;							\
+									\
+    /* movq __NR_rt_sigreturn, %rax ; syscall  */			\
+    if (*(unsigned char *)(pc_+0) == 0x48				\
+	&& *(unsigned long *)(pc_+1) == 0x050f0000000fc0c7)		\
+      {									\
+	struct ucontext *uc_ = (CONTEXT)->cfa;				\
+	sc_ = (struct sigcontext *) &uc_->uc_mcontext;			\
+      }									\
+    else								\
+      break;								\
+									\
+    new_cfa_ = sc_->rsp;						\
+    (FS)->cfa_how = CFA_REG_OFFSET;					\
+    /* Register 7 is rsp  */						\
+    (FS)->cfa_reg = 7;							\
+    (FS)->cfa_offset = new_cfa_ - (long) (CONTEXT)->cfa;		\
+									\
+    /* The SVR4 register numbering macros aren't usable in libgcc.  */	\
+    (FS)->regs.reg[0].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[0].loc.offset = (long)&sc_->rax - new_cfa_;		\
+    (FS)->regs.reg[1].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[1].loc.offset = (long)&sc_->rbx - new_cfa_;		\
+    (FS)->regs.reg[2].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[2].loc.offset = (long)&sc_->rcx - new_cfa_;		\
+    (FS)->regs.reg[3].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[3].loc.offset = (long)&sc_->rdx - new_cfa_;		\
+    (FS)->regs.reg[4].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[4].loc.offset = (long)&sc_->rbp - new_cfa_;		\
+    (FS)->regs.reg[5].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[5].loc.offset = (long)&sc_->rsi - new_cfa_;		\
+    (FS)->regs.reg[6].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[6].loc.offset = (long)&sc_->rdi - new_cfa_;		\
+    (FS)->regs.reg[8].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[8].loc.offset = (long)&sc_->r8 - new_cfa_;		\
+    (FS)->regs.reg[9].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[9].loc.offset = (long)&sc_->r9 - new_cfa_;		\
+    (FS)->regs.reg[10].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[10].loc.offset = (long)&sc_->r10 - new_cfa_;		\
+    (FS)->regs.reg[11].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[11].loc.offset = (long)&sc_->r11 - new_cfa_;		\
+    (FS)->regs.reg[12].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[12].loc.offset = (long)&sc_->r12 - new_cfa_;		\
+    (FS)->regs.reg[13].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[13].loc.offset = (long)&sc_->r13 - new_cfa_;		\
+    (FS)->regs.reg[14].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[14].loc.offset = (long)&sc_->r14 - new_cfa_;		\
+    (FS)->regs.reg[15].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[15].loc.offset = (long)&sc_->r15 - new_cfa_;		\
+    (FS)->retaddr_column = 16;						\
+    goto SUCCESS;							\
+  } while (0)

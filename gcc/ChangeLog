@@ -1,3 +1,8 @@
+2002-04-26  Bo Thorsen  <bo@suse.co.uk>
+
+	* config/i386/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Define for
+	x86-64.
+
 2002-04-26  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppexp.c (CPP_UMINUS, CPP_UPLUS): New.
