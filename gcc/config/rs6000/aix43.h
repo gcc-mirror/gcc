@@ -199,6 +199,10 @@ do {									\
        %{pthread:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
        %{!pthread:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}}"
 
+/* Since there are separate multilibs for pthreads, determine the
+   thread model based on the command-line arguments.  */
+#define THREAD_MODEL_SPEC "%{pthread:posix}%{!pthread:single}"
+
 /* AIX 4.3 typedefs ptrdiff_t as "long" while earlier releases used "int".  */
 
 #undef PTRDIFF_TYPE

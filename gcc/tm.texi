@@ -248,6 +248,16 @@ the very end of the command given to the linker.
 
 Do not define this macro if it does not need to do anything.
 
+@findex THREAD_MODEL_SPEC
+@item THREAD_MODEL_SPEC
+GCC @code{-v} will print the thread model GCC was configured to use.
+However, this doesn't work on platforms that are multilibbed on thread
+models, such as AIX 4.3.  On such platforms, define
+@code{THREAD_MODEL_SPEC} such that it evaluates to a string without
+blanks that names one of the recognized thread models.  @code{%*}, the
+default value of this macro, will expand to the value of
+@code{thread_file} set in @file{config.gcc}.
+
 @findex EXTRA_SPECS
 @item EXTRA_SPECS
 Define this macro to provide additional specifications to put in the

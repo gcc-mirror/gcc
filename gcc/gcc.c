@@ -5801,10 +5801,23 @@ main (argc, argv)
   if (verbose_flag)
     {
       int n;
+      const char *thrmod;
 
       notice ("Configured with: %s\n", configuration_arguments);
 
-      notice ("Thread model: %s\n", thread_model);
+#ifdef THREAD_MODEL_SPEC
+      /* We could have defined THREAD_MODEL_SPEC to "%*" by default,
+	 but there's no point in doing all this processing just to get
+	 thread_model back.  */
+      obstack_init (&obstack);
+      do_spec_1 (THREAD_MODEL_SPEC, 0, thread_model);
+      obstack_1grow (&obstack, '\0');
+      thrmod = obstack_finish (&obstack);
+#else
+      thrmod = thread_model;
+#endif
+
+      notice ("Thread model: %s\n", thrmod);
 
       /* compiler_version is truncated at the first space when initialized
 	 from version string, so truncate version_string at the first space
