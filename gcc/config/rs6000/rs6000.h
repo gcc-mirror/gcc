@@ -1312,7 +1312,7 @@ extern int rs6000_sysv_varargs_p;
 
 #define LIBCALL_VALUE(MODE)		\
   gen_rtx_REG (MODE, (GET_MODE_CLASS (MODE) == MODE_FLOAT	 \
-		      && TARGET_HARD_FLOAT ? 33 : 3)
+		      && TARGET_HARD_FLOAT ? 33 : 3))
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
