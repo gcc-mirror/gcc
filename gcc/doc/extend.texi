@@ -8226,6 +8226,11 @@ See also @xref{Strong Using}.
 @node Strong Using
 @section Strong Using
 
+@strong{Caution:} The semantics of this extension are not fully
+defined.  Users should refrain from using this extension as its
+semantics may change subtly over time.  It is possible that this
+extension wil be removed in future versions of G++.
+
 A using-directive with @code{__attribute ((strong))} is stronger
 than a normal using-directive in two ways:
 
