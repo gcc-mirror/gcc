@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
 This file is part of GNU CC.
@@ -154,7 +154,6 @@ do {					\
 #define ASM_OUTPUT_LONG_DOUBLE(STREAM,VALUE)				\
 do { char dstr[30];							\
      long l[3];								\
-     arm_increase_location (12);					\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
      REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);			\
      fprintf (STREAM, "\t.long 0x%lx,0x%lx,0x%lx\t%s long double %s\n", \
@@ -165,7 +164,6 @@ do { char dstr[30];							\
 #define ASM_OUTPUT_DOUBLE(STREAM, VALUE)  				\
 do { char dstr[30];							\
      long l[2];								\
-     arm_increase_location (8);						\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
      REAL_VALUE_TO_DECIMAL (VALUE, "%.14g", dstr);			\
      fprintf (STREAM, "\t.long 0x%lx, 0x%lx\t%s double %s\n", l[0],	\
@@ -175,58 +173,49 @@ do { char dstr[30];							\
 #define ASM_OUTPUT_FLOAT(STREAM, VALUE)					\
 do { char dstr[30];							\
      long l;								\
-     arm_increase_location (4);						\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);				\
      REAL_VALUE_TO_DECIMAL (VALUE, "%.7g", dstr);			\
      fprintf (STREAM, "\t.word 0x%lx\t%s float %s\n", l,		\
 	      ASM_COMMENT_START, dstr);					\
    } while (0);
 
-#define ASM_OUTPUT_INT(STREAM, EXP)	\
-  (fprintf (STREAM, "\t.word\t"),	\
-   output_addr_const (STREAM, (EXP)),	\
-   arm_increase_location (4),		\
-   fputc ('\n', STREAM))
+#define ASM_OUTPUT_INT(STREAM, EXP)		\
+  {						\
+    fprintf (STREAM, "\t.word\t");		\
+    OUTPUT_INT_ADDR_CONST (STREAM, (EXP));	\
+    fputc ('\n', STREAM);			\
+  }
 
 #define ASM_OUTPUT_SHORT(STREAM, EXP)  \
   (fprintf (STREAM, "\t.short\t"),     \
    output_addr_const (STREAM, (EXP)),  \
-   arm_increase_location (2),          \
    fputc ('\n', STREAM))
 
 #define ASM_OUTPUT_CHAR(STREAM, EXP)  \
   (fprintf (STREAM, "\t.byte\t"),      \
    output_addr_const (STREAM, (EXP)),  \
-   arm_increase_location (1),          \
    fputc ('\n', STREAM))
 
 #define ASM_OUTPUT_BYTE(STREAM, VALUE)  \
-  (fprintf (STREAM, "\t.byte\t%d\n", VALUE),  \
-   arm_increase_location (1))
+  fprintf (STREAM, "\t.byte\t%d\n", VALUE)
 
 #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN)  \
   output_ascii_pseudo_op ((STREAM), (unsigned char *)(PTR), (LEN))
 
 /* Output a gap.  In fact we fill it with nulls.  */
 #define ASM_OUTPUT_SKIP(STREAM, NBYTES)  \
-  (arm_increase_location (NBYTES),              \
-   fprintf (STREAM, "\t.space\t%d\n", NBYTES))
+   fprintf (STREAM, "\t.space\t%d\n", NBYTES)
 
 /* Align output to a power of two.  Horrible /bin/as.  */
 #define ASM_OUTPUT_ALIGN(STREAM, POWER)  \
   do                                                           \
     {                                                          \
       register int amount = 1 << (POWER);                      \
-      extern int arm_text_location;			       \
                                                                \
       if (amount == 2)                                         \
 	fprintf (STREAM, "\t.even\n");                         \
       else if (amount != 1)                                    \
 	fprintf (STREAM, "\t.align\t%d\n", amount - 4);        \
-                                                               \
-      if (in_text_section ())                                  \
-	arm_text_location = ((arm_text_location + amount - 1)  \
-			     & ~(amount - 1));                 \
     } while (0)
 
 /* Output a common block */
