@@ -81,6 +81,17 @@ ${srcdir}/configure: configure.in
 	rm -f config.cache
 	cd ${srcdir} && autoconf
 
+# autoheader might not change config.h.in, so touch a stamp file.
+${srcdir}/config.h.in: stamp-h.in
+${srcdir}/stamp-h.in: configure.in
+	(cd ${srcdir} && autoheader)
+	@rm -f ${srcdir}/stamp-h.in
+	echo timestamp > ${srcdir}/stamp-h.in
+
+config.h: stamp-h; @true
+stamp-h: config.h.in config.status
+	$(SHELL) config.status
+
 VersionI.o: Version.c
 	$(CC) -c $(ALL_CFLAGS) -o $@ $(srcdir)/Version.c
 
