@@ -1,3 +1,7 @@
+2002-12-17  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* configure.in (noconfigdirs) [mmix-*-*]: Disable libgloss and gdb.
+
 2002-12-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in, Makefile.tpl, Makefile.def: Remove tclX.
