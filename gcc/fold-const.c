@@ -5266,8 +5266,16 @@ fold (expr)
 	{
 	  if (TREE_CODE (arg0) == INTEGER_CST)
 	    {
-	      if (! TREE_UNSIGNED (type)
-		  && TREE_INT_CST_HIGH (arg0) < 0)
+	      /* If the value is unsigned, then the absolute value is
+		 the same as the ordinary value.  */
+	      if (TREE_UNSIGNED (type))
+		return arg0;
+	      /* Similarly, if the value is non-negative.  */
+	      else if (INT_CST_LT (integer_minus_one_node, arg0))
+		return arg0;
+	      /* If the value is negative, then the absolute value is
+		 its negation.  */
+	      else
 		{
 		  unsigned HOST_WIDE_INT low;
 		  HOST_WIDE_INT high;

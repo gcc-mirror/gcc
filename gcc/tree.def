@@ -602,7 +602,13 @@ DEFTREECODE (NEGATE_EXPR, "negate_expr", '1', 1)
 
 DEFTREECODE (MIN_EXPR, "min_expr", '2', 2)
 DEFTREECODE (MAX_EXPR, "max_expr", '2', 2)
+
+/* Represents the absolute value of the operand.
+
+   An ABS_EXPR must have either an INTEGER_TYPE or a REAL_TYPE.  The
+   operand of the ABS_EXPR must have the same type.  */
 DEFTREECODE (ABS_EXPR, "abs_expr", '1', 1)
+
 DEFTREECODE (FFS_EXPR, "ffs_expr", '1', 1)
 
 /* Shift operations for shift and rotate.
