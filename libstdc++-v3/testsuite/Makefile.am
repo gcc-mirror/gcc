@@ -100,12 +100,14 @@ if GLIBCXX_TEST_ABI
 # Use 'new-abi-baseline' to create an initial symbol file.  Then run
 # 'check-abi' to test for changes against that file.
 check-abi: abi_check baseline_symbols current_symbols.txt
-	-@(./abi_check --check ./current_symbols.txt ${baseline_file} \
-	2>&1 | tee libstdc++-abi.sum)
+	-@./abi_check --check ./current_symbols.txt ${baseline_file} \
+	  2>&1 | tee libstdc++-abi.sum
+	-@cp libstdc++-abi.sum libstdc++-abi.log
 
 check-abi-verbose: abi_check baseline_symbols current_symbols.txt
-	-@(./abi_check --check-verbose ./current_symbols.txt ${baseline_file} \
-	2>&1 | tee libstdc++-abi.sum)
+	-@./abi_check --check-verbose ./current_symbols.txt ${baseline_file} \
+	  2>&1 | tee libstdc++-abi.sum
+	-@cp libstdc++-abi.sum libstdc++-abi.log
 
 else
 check-abi:

@@ -607,12 +607,14 @@ new-abi-baseline:
 # Use 'new-abi-baseline' to create an initial symbol file.  Then run
 # 'check-abi' to test for changes against that file.
 @GLIBCXX_TEST_ABI_TRUE@check-abi: abi_check baseline_symbols current_symbols.txt
-@GLIBCXX_TEST_ABI_TRUE@	-@(./abi_check --check ./current_symbols.txt ${baseline_file} \
-@GLIBCXX_TEST_ABI_TRUE@	2>&1 | tee libstdc++-abi.sum)
+@GLIBCXX_TEST_ABI_TRUE@	-@./abi_check --check ./current_symbols.txt ${baseline_file} \
+@GLIBCXX_TEST_ABI_TRUE@	  2>&1 | tee libstdc++-abi.sum
+@GLIBCXX_TEST_ABI_TRUE@	-@cp libstdc++-abi.sum libstdc++-abi.log
 
 @GLIBCXX_TEST_ABI_TRUE@check-abi-verbose: abi_check baseline_symbols current_symbols.txt
-@GLIBCXX_TEST_ABI_TRUE@	-@(./abi_check --check-verbose ./current_symbols.txt ${baseline_file} \
-@GLIBCXX_TEST_ABI_TRUE@	2>&1 | tee libstdc++-abi.sum)
+@GLIBCXX_TEST_ABI_TRUE@	-@./abi_check --check-verbose ./current_symbols.txt ${baseline_file} \
+@GLIBCXX_TEST_ABI_TRUE@	  2>&1 | tee libstdc++-abi.sum
+@GLIBCXX_TEST_ABI_TRUE@	-@cp libstdc++-abi.sum libstdc++-abi.log
 
 @GLIBCXX_TEST_ABI_FALSE@check-abi:
 @GLIBCXX_TEST_ABI_FALSE@check-abi-verbose:
