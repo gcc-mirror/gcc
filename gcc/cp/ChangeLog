@@ -4,6 +4,19 @@
 
 1999-08-28  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (strip_array_types): New function.
+	* decl.c (maybe_deduce_size_from_array_init): New function, split
+	out from cp_finish_decl.
+	(layout_var_decl): Likewise.
+	(maybe_commonize_var): Likewise.
+	(maybe_inject_for_scope_var): Likewise.
+	(initialize_local_var): Likewise.
+	(build_cleanup_on_safe_obstack): Likewise.
+	(check_initializer): Likewise.
+	(make_rtl_for_nonlocal_decl): Likewise.
+	(cp_finish_decl): Use them.
+	* typeck.c (strip_array_types): New function.
+	
 	* cp-tree.def (LABEL_STMT): New tree node.
 	* cp-tree.h (LABEL_STMT_LABEL): New macro.
 	(shadow_label): Remove.
