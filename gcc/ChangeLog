@@ -1,3 +1,7 @@
+2004-11-30  Alan Modra  <amodra@bigpond.net.au>
+
+	* expr.c (emit_group_load_1): Don't die on const_int orig_src.
+
 2004-11-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR pch/14940
