@@ -1,5 +1,7 @@
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/ip2k/ip2k.h: Remove target-independent comments.
+
 	* config.gcc: Explicitly mention elfos.h in ip2k entry.
 	* config/ip2k/ip2k.h: Don't #include it here.
 
