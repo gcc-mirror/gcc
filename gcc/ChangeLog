@@ -1,3 +1,12 @@
+2004-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree.h (BUILTIN_EXP10_P, BUILTIN_EXPONENT_P, BUILTIN_SQRT_P,
+	BUILTIN_CBRT_P, BUILTIN_ROOT_P): New macros.
+
+	* builtins.c (fold_builtin_logarithm, fold_builtin): Use new
+	macros.
+	* fold-const.c (fold_mathfn_compare, fold): Likewise.
+
 2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/14343

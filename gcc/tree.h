@@ -101,6 +101,24 @@ enum built_in_function
 /* Names for the above.  */
 extern const char *const built_in_names[(int) END_BUILTINS];
 
+/* Helper macros for math builtins.  */
+
+#define BUILTIN_EXP10_P(FN) \
+ ((FN) == BUILT_IN_EXP10 || (FN) == BUILT_IN_EXP10F || (FN) == BUILT_IN_EXP10L \
+  || (FN) == BUILT_IN_POW10 || (FN) == BUILT_IN_POW10F || (FN) == BUILT_IN_POW10L)
+
+#define BUILTIN_EXPONENT_P(FN) (BUILTIN_EXP10_P (FN) \
+  || (FN) == BUILT_IN_EXP || (FN) == BUILT_IN_EXPF || (FN) == BUILT_IN_EXPL \
+  || (FN) == BUILT_IN_EXP2 || (FN) == BUILT_IN_EXP2F || (FN) == BUILT_IN_EXP2L)
+
+#define BUILTIN_SQRT_P(FN) \
+ ((FN) == BUILT_IN_SQRT || (FN) == BUILT_IN_SQRTF || (FN) == BUILT_IN_SQRTL)
+
+#define BUILTIN_CBRT_P(FN) \
+ ((FN) == BUILT_IN_CBRT || (FN) == BUILT_IN_CBRTF || (FN) == BUILT_IN_CBRTL)
+
+#define BUILTIN_ROOT_P(FN) (BUILTIN_SQRT_P (FN) || BUILTIN_CBRT_P (FN))
+
 /* An array of _DECL trees for the above.  */
 extern GTY(()) tree built_in_decls[(int) END_BUILTINS];
 extern GTY(()) tree implicit_built_in_decls[(int) END_BUILTINS];
