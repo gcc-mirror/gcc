@@ -1,5 +1,11 @@
 2004-03-23  Tom Tromey  <tromey@redhat.com>
 
+	PR java/14315:
+	* jcf-write.c (make_class_file_name): Don't report if mkdir
+	failed with EEXIST.
+
+2004-03-23  Tom Tromey  <tromey@redhat.com>
+
 	* gcj.texi (Extensions): Document GCJ_PROPERTIES.
 
 2004-03-20  Kazu Hirata  <kazu@cs.umass.edu>
