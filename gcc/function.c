@@ -3372,8 +3372,7 @@ purge_addressof (insns)
   compute_insns_for_mem (insns, NULL_RTX, ht);
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
-	|| GET_CODE (insn) == CALL_INSN)
+    if (INSN_P (insn))
       {
 	if (! purge_addressof_1 (&PATTERN (insn), insn,
 				 asm_noperands (PATTERN (insn)) > 0, 0, ht))

@@ -1,3 +1,9 @@
+2002-01-25  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (purge_builtin_constant_p): Scan insn stream
+	sequentially rather than by basic block.
+	* function.c (purge_addressof): Simplify test with INSN_P.
+
 2003-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (simplify_comparison, case AND): Remove a redundant
