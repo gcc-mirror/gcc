@@ -1,3 +1,7 @@
+2000-04-19  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (cxx_keyword_subst): Avoid potential infinite loop.
+
 2000-04-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (maybe_make_nested_class_name): Use `obstack_grow0'.

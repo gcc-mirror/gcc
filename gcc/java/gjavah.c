@@ -407,12 +407,15 @@ cxx_keyword_subst (str, length)
 {
   int last = sizeof (cxx_keywords) / sizeof (const char *);
   int first = 0;
-  int mid, r;
+  int mid = (last + first) / 2;
+  int old = -1;
 
-  while (last != first)
+  for (mid = (last + first) / 2;
+       mid != old;
+       old = mid, mid = (last + first) / 2)
     {
-      mid = (last + first) / 2;
-      r = utf8_cmp (str, length, cxx_keywords[mid]);
+      int r = utf8_cmp (str, length, cxx_keywords[mid]);
+
       if (r == 0)
 	{
 	  char *str = xmalloc (9 + strlen (cxx_keywords[mid]));
