@@ -1,3 +1,7 @@
+2001-04-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* Makefile.in (STAGE1_CFLAGS): Pass down.
+
 2001-04-13  Alan Modra  <amodra@one.net.au>
 
 	* config.guess: Add hppa64-linux support.  Note for next import that

@@ -59,17 +59,20 @@ INTL_TARGETS = intl.all intl.install
 BOOT_LANGUAGES = c @all_boot_languages@
 
 # Various ways of specifying flags for compilations:
-# CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
-# BOOT_CFLAGS is the value of CFLAGS to pass to the stage2 and stage3
-# compilations.
+# CFLAGS is for the user to override to, e.g., do a cross build with -O2.
+# For recursive  bootstrap builds CFLAGS is used to pass in STAGE1_CFLAGS
+# or BOOT_CFLAGS
+# STAGE1_CFLAGS is set by configure on some targets or passed from toplevel
+# and sets the CFLAGS passed to stage1 of a bootstrap compilation.
+# BOOT_CFLAGS is the value of CFLAGS to pass to the stage2, stage3 and stage4
+# bootstrap compilations.
 # XCFLAGS is used for most compilations but not when using the GCC just built.
 # TCFLAGS is used for compilations with the GCC just built.
-# STAGE1_CFLAGS is set by configure on some targets.
 XCFLAGS =
 TCFLAGS =
-BOOT_CFLAGS = -g -O2
+CFLAGS = -g
 STAGE1_CFLAGS = -g @stage1_cflags@
-CFLAGS = $(STAGE1_CFLAGS)
+BOOT_CFLAGS = -g -O2
 
 # The warning flags are separate from BOOT_CFLAGS because people tend to
 # override optimization flags and we'd like them to still have warnings
@@ -2942,9 +2945,13 @@ STAGE2_FLAGS_TO_PASS = \
 
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the
-# only thing useful for building stage2.
+# only thing useful for building stage2. STAGE1_CFLAGS (via CFLAGS),
+# MAKEINFO and MAKEINFOFLAGS are explicitly passed here to make them
+# overrideable (for a bootstrap build stage1 also builds gcc.info).
 stage1_build:
-	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)"
+	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" \
+		CFLAGS="$(STAGE1_CFLAGS)" MAKEINFO="$(MAKEINFO)" \
+		MAKEINFOFLAGS="$(MAKEINFOFLAGS)"
 	touch stage1_build
 	echo stage1_build > stage_last
 
@@ -2979,7 +2986,7 @@ stage3_copy: stage3_build
 	echo stage4_build > stage_last
 
 stage4_build: stage3_copy
-	$(MAKE) CC="stage3/xgcc$(exeext) -B$(build_tooldir)/bin/ -Bstage3/" \
+	$(MAKE) CC="stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage3/ \
 		 $(STAGE2_FLAGS_TO_PASS)
 	touch stage4_build
