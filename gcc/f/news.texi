@@ -194,7 +194,7 @@ of induction variables in unrolled loops.
 Problem Reports fixed (in chronological order of submission):
 @table @code
 @item 8308
-gcc-3.x does not compile files with suffix .f (RATFOR) [Fixed in 3.2.1]
+gcc-3.x does not compile files with suffix .r (RATFOR) [Fixed in 3.2.1]
 @end table
 @end itemize
 
