@@ -67,6 +67,10 @@ extern const char *pa_fixed_range_string;
 extern const char *pa_cpu_string;
 extern enum processor_type pa_cpu;
 
+/* For -munix= option.  */
+extern const char *pa_unix_string;
+extern int flag_pa_unix;
+
 #define pa_cpu_attr ((enum attr_cpu)pa_cpu)
 
 /* Print subsidiary information on the compiler version in use.  */
@@ -186,6 +190,21 @@ extern int target_flags;
 /* Generate code for SOM 32bit ABI.  */
 #ifndef TARGET_SOM
 #define TARGET_SOM 0
+#endif
+
+/* HP-UX UNIX features.  */
+#ifndef TARGET_HPUX
+#define TARGET_HPUX 0
+#endif
+
+/* HP-UX 10.10 UNIX 95 features.  */
+#ifndef TARGET_HPUX_10_10
+#define TARGET_HPUX_10_10 0
+#endif
+
+/* HP-UX 11i multibyte and UNIX 98 extensions.  */
+#ifndef TARGET_HPUX_11_11
+#define TARGET_HPUX_11_11 0
 #endif
 
 /* The following three defines are potential target switches.  The current
@@ -310,13 +329,18 @@ extern int target_flags;
 #define TARGET_OPTIONS							\
 {									\
   { "arch=",			&pa_arch_string,			\
-    N_("Specify PA-RISC architecture for code generation.  "		\
+    N_("Specify PA-RISC architecture for code generation.\n"		\
        "Values are 1.0, 1.1 and 2.0."), 0},				\
   { "fixed-range=",		&pa_fixed_range_string,			\
-    N_("Specify range of registers to make fixed"), 0},			\
+    N_("Specify range of registers to make fixed."), 0},		\
   { "schedule=",		&pa_cpu_string,				\
-    N_("Specify CPU for scheduling purposes"), 0}			\
+    N_("Specify CPU for scheduling purposes."), 0},			\
+  SUBTARGET_OPTIONS							\
 }
+
+#ifndef SUBTARGET_OPTIONS
+#define SUBTARGET_OPTIONS
+#endif
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-schedule is ignored if -mschedule is specified.

@@ -749,7 +749,7 @@ h8300-*-*)
 	use_fixproto=yes
 	;;
 hppa*64*-*-linux* | parisc*64*-*-linux*)
-	target_cpu_default="(MASK_PA_11 | MASK_PA_20 | MASK_BIG_SWITCH)"
+	target_cpu_default="MASK_PA_11|MASK_PA_20"
 	tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h svr4.h linux.h \
 		 pa/pa-linux.h pa/pa64-regs.h pa/pa-64.h pa/pa64-linux.h"
 	tmake_file="${tmake_file} pa/t-linux64"
@@ -757,7 +757,7 @@ hppa*64*-*-linux* | parisc*64*-*-linux*)
 	need_64bit_hwint=yes
 	;;
 hppa*-*-linux* | parisc*-*-linux*)
-	target_cpu_default="(MASK_PA_11 | MASK_NO_SPACE_REGS | MASK_BIG_SWITCH)"
+	target_cpu_default="MASK_PA_11|MASK_NO_SPACE_REGS"
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
 	tmake_file="${tmake_file} pa/t-linux"
@@ -769,49 +769,45 @@ hppa*-*-linux* | parisc*-*-linux*)
 	;;
 # port not yet contributed.
 #hppa*-*-openbsd*)
-#	target_cpu_default="(MASK_PA_11 | MASK_BIG_SWITCH)"
+#	target_cpu_default="MASK_PA_11"
 #	;;
 hppa1.1-*-pro*)
-	target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT | MASK_BIG_SWITCH)"
-	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h"
+	target_cpu_default="MASK_PORTABLE_RUNTIME|MASK_NO_SPACE_REGS|MASK_SOFT_FLOAT"
+	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h elfos.h pa/elf.h \
+		 pa/pa-pro-end.h libgloss.h"
 	tmake_file="pa/t-pro"
 	;;
 hppa1.1-*-osf*)
-	target_cpu_default="(MASK_PA_11 | MASK_BIG_SWITCH)"
+	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h pa/pa-osf.h"
 	tmake_file="pa/t-pa"
 	use_collect2=yes
 	;;
 hppa1.1-*-rtems*)
-	target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT | MASK_BIG_SWITCH)"
-	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h pa/rtems.h rtems.h"
+	target_cpu_default="MASK_PORTABLE_RUNTIME|MASK_NO_SPACE_REGS|MASK_SOFT_FLOAT"
+	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h elfos.h pa/elf.h \
+		 pa/pa-pro-end.h libgloss.h pa/rtems.h rtems.h"
 	tmake_file="pa/t-pro t-rtems"
 	;;
 hppa1.1-*-bsd*)
-	target_cpu_default="(MASK_PA_11 | MASK_BIG_SWITCH)"
+	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h"
 	tmake_file="pa/t-pa"
 	use_collect2=yes
 	;;
-hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
-	target_cpu_default="(MASK_PA_11 | MASK_BIG_SWITCH)"
-	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
-	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
-	case ${enable_threads} in
-	  "")
-	    if test x$have_pthread_h = xyes ; then
-	      tmake_file="${tmake_file} pa/t-dce-thr"
-	    fi
-	    ;;
-	  yes | dce)
-	    tmake_file="${tmake_file} pa/t-dce-thr"
-	    ;;
+hppa[12]*-*-hpux10*)
+	case ${target} in
+	hppa1.1-*-* | hppa2*-*-*)
+		target_cpu_default="MASK_PA_11"
+		;;
 	esac
-	use_collect2=yes
-	use_fixproto=yes
-	;;
-hppa1.0-*-hpux10*)
-	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
+	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h \
+		 pa/pa-hpux.h pa/pa-hpux10.h"
+	case ${target} in
+	*-*-hpux10.[1-9]*)
+		tm_file="${tm_file} pa/pa-hpux1010.h"
+		;;
+	esac
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
 	case ${enable_threads} in
 	  "")
@@ -827,22 +823,27 @@ hppa1.0-*-hpux10*)
 	use_fixproto=yes
 	;;
 hppa*64*-*-hpux11*)
+	target_cpu_default="MASK_PA_11|MASK_PA_20"
 	if test x$gnu_ld = xyes
 	then
-		target_cpu_default="(MASK_PA_11 | MASK_PA_20 | MASK_GAS | MASK_GNU_LD | MASK_BIG_SWITCH)"
-	else
-		target_cpu_default="(MASK_PA_11 | MASK_PA_20 | MASK_GAS | MASK_BIG_SWITCH)"
+		target_cpu_default="${target_cpu_default}|MASK_GNU_LD"
 	fi
 	if test x$gas = xyes
 	then
-		tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h  \
-			 pa/pa64-regs.h pa/pa-hpux.h \
-			 pa/pa-hpux11.h pa/pa-64.h pa/pa64-hpux.h"
+		tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h \
+			 pa/pa64-regs.h pa/pa-hpux.h pa/pa-hpux11.h"
 	else
 		tm_file="pa/pa64-start.h ${tm_file} dbxelf.h pa/elf.h \
-			 pa/pa64-regs.h pa/pa-hpux.h \
-			 pa/pa-hpux11.h pa/pa-64.h pa/pa64-hpux.h"
+			 pa/pa64-regs.h pa/pa-hpux.h pa/pa-hpux11.h"
 	fi
+	case ${target} in
+	*-*-hpux11.11)
+		tm_file="${tm_file} pa/pa-hpux1111.h pa/pa-64.h pa/pa64-hpux.h"
+		;;
+	*)
+		tm_file="${tm_file} pa/pa-64.h pa/pa64-hpux.h"
+		;;
+	esac
 	need_64bit_hwint=yes
 	tmake_file="pa/t-pa64 pa/t-pa-hpux"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
@@ -852,19 +853,19 @@ hppa*64*-*-hpux11*)
 		;;
 	esac
 	;;
-hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
-	target_cpu_default="(MASK_PA_11 | MASK_BIG_SWITCH)"
-	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
-	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
-	case x${enable_threads} in
-	xyes | xposix )
-		thread_file=posix 
+hppa[12]*-*-hpux11*)
+	case ${target} in
+	hppa1.1-*-* | hppa2*-*-*)
+		target_cpu_default="MASK_PA_11"
 		;;
 	esac
-	use_collect2=yes
-	;;
-hppa1.0-*-hpux11*)
-	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
+	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h \
+		 pa/pa-hpux.h pa/pa-hpux11.h"
+	case ${target} in
+	*-*-hpux11.[1-9]*)
+		tm_file="${tm_file} pa/pa-hpux1111.h"
+		;;
+	esac
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
 	case x${enable_threads} in
 	xyes | xposix )
@@ -2589,9 +2590,10 @@ fi
 		;;
 
 	hppa*-*-* | parisc*-*-*)
+		target_cpu_default2="MASK_BIG_SWITCH"
 		if test x$gas = xyes
 		then
-			target_cpu_default2="MASK_GAS|MASK_JUMP_IN_DELAY"
+			target_cpu_default2="${target_cpu_default2}|MASK_GAS|MASK_JUMP_IN_DELAY"
 		fi
 		;;
 

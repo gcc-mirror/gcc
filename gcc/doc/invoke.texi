@@ -475,7 +475,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-space-regs  -msoft-float  -mpa-risc-1-0 @gol
 -mpa-risc-1-1  -mpa-risc-2-0  -mportable-runtime @gol
 -mschedule=@var{cpu-type}  -mspace-regs  -msio  -mwsio @gol
--nolibdld  -static  -threads}
+-munix=@var{unix-std}  -nolibdld  -static  -threads}
 
 @emph{i386 and x86-64 Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
@@ -7600,6 +7600,53 @@ Use multiply and add/subtract instructions.
 
 Do not use multiply and add/subtract instructions.
 
+@item -mfdpic
+@opindex mfdpic
+
+Select the FDPIC ABI, that uses function descriptors to represent
+pointers to functions.  Without any PIC/PIE-related options, it
+implies @option{-fPIE}.  With @option{-fpic} or @option{-fpie}, it
+assumes GOT entries and small data are within a 12-bit range from the
+GOT base address; with @option{-fPIC} or @option{-fPIE}, GOT offsets
+are computed with 32 bits.
+
+@item -minline-plt
+@opindex minline-plt
+
+Enable inlining of PLT entries in function calls to functions that are
+not known to bind locally.  It has no effect without @option{-mfdpic}.
+It's enabled by default if optimizing for speed and compiling for
+shared libraries (i.e., @option{-fPIC} or @option{-fpic}), or when an
+optimization option such as @option{-O3} or above is present in the
+command line.
+
+@item -mgprel-ro
+@opindex mgprel-ro
+
+Enable the use of @code{GPREL} relocations in the FDPIC ABI for data
+that is known to be in read-only sections.  It's enabled by default,
+except for @option{-fpic} or @option{-fpie}: even though it may help
+make the global offset table smaller, it trades 1 instruction for 4.
+With @option{-fPIC} or @option{-fPIE}, it trades 3 instructions for 4,
+one of which may be shared by multiple symbols, and it avoids the need
+for a GOT entry for the referenced symbol, so it's more likely to be a
+win.  If it is not, @option{-mno-gprel-ro} can be used to disable it.
+
+@item -multilib-library-pic
+@opindex multilib-library-pic
+
+Link with the (library, not FD) pic libraries.  It's implied by
+@option{-mlibrary-pic}, as well as by @option{-fPIC} and
+@option{-fpic} without @option{-mfdpic}.  You should never have to use
+it explicitly.
+
+@item -mlinked-fp
+@opindex mlinked-fp
+
+Follow the EABI requirement of always creating a frame pointer whenever
+a stack frame is allocated.  This option is enabled by default and can
+be disabled with @option{-mno-linked-fp}.
+
 @item -mlibrary-pic
 @opindex mlibrary-pic
 
@@ -7800,10 +7847,6 @@ architecture option for your machine.  Code compiled for lower numbered
 architectures will run on higher numbered architectures, but not the
 other way around.
 
-PA 2.0 support currently requires gas snapshot 19990413 or later.  The
-next release of binutils (current is 2.9.1) will probably contain PA 2.0
-support.
-
 @item -mpa-risc-1-0
 @itemx -mpa-risc-1-1
 @itemx -mpa-risc-2-0
@@ -7934,53 +7977,6 @@ configure option, GCC's program search path, and finally by the user's
 @env{PATH}.  The linker used by GCC can be printed using @samp{which
 `gcc -print-prog-name=ld`}.
 
-@item -mfdpic
-@opindex mfdpic
-
-Select the FDPIC ABI, that uses function descriptors to represent
-pointers to functions.  Without any PIC/PIE-related options, it
-implies @option{-fPIE}.  With @option{-fpic} or @option{-fpie}, it
-assumes GOT entries and small data are within a 12-bit range from the
-GOT base address; with @option{-fPIC} or @option{-fPIE}, GOT offsets
-are computed with 32 bits.
-
-@item -minline-plt
-@opindex minline-plt
-
-Enable inlining of PLT entries in function calls to functions that are
-not known to bind locally.  It has no effect without @option{-mfdpic}.
-It's enabled by default if optimizing for speed and compiling for
-shared libraries (i.e., @option{-fPIC} or @option{-fpic}), or when an
-optimization option such as @option{-O3} or above is present in the
-command line.
-
-@item -mgprel-ro
-@opindex mgprel-ro
-
-Enable the use of @code{GPREL} relocations in the FDPIC ABI for data
-that is known to be in read-only sections.  It's enabled by default,
-except for @option{-fpic} or @option{-fpie}: even though it may help
-make the global offset table smaller, it trades 1 instruction for 4.
-With @option{-fPIC} or @option{-fPIE}, it trades 3 instructions for 4,
-one of which may be shared by multiple symbols, and it avoids the need
-for a GOT entry for the referenced symbol, so it's more likely to be a
-win.  If it is not, @option{-mno-gprel-ro} can be used to disable it.
-
-@item -multilib-library-pic
-@opindex multilib-library-pic
-
-Link with the (library, not FD) pic libraries.  It's implied by
-@option{-mlibrary-pic}, as well as by @option{-fPIC} and
-@option{-fpic} without @option{-mfdpic}.  You should never have to use
-it explicitly.
-
-@item -mlinked-fp
-@opindex mlinked-fp
-
-Follow the EABI requirement of always creating a frame pointer whenever
-a stack frame is allocated.  This option is enabled by default and can
-be disabled with @option{-mno-linked-fp}.
-
 @item -mlong-calls
 @opindex mno-long-calls
 Generate code that uses long call sequences.  This ensures that a call
@@ -8007,6 +8003,32 @@ impact on systems that support long absolute calls, and long pic
 symbol-difference or pc-relative calls should be relatively small.
 However, an indirect call is used on 32-bit ELF systems in pic code
 and it is quite long.
+
+@item -munix=@var{unix-std}
+@opindex march
+Generate compiler predefines and select a startfile for the specified
+UNIX standard.  The choices for @var{unix-std} are @samp{93}, @samp{95}
+and @samp{98}.  @samp{93} is supported on all HP-UX versions.  @samp{95}
+is available on HP-UX 10.10 and later.  @samp{98} is available on HP-UX
+11.11 and later.  The default values are @samp{93} for HP-UX 10.00,
+@samp{95} for HP-UX 10.10 though to 11.00, and @samp{98} for HP-UX 11.11
+and later.
+
+@option{-munix=93} provides the same predefines as GCC 3.3 and 3.4.
+@option{-munix=95} provides additional predefines for @code{XOPEN_UNIX}
+and @code{_XOPEN_SOURCE_EXTENDED}, and the startfile @file{unix95.o}.
+@option{-munix=98} provides additional predefines for @code{_XOPEN_UNIX},
+@code{_XOPEN_SOURCE_EXTENDED}, @code{_INCLUDE__STDC_A1_SOURCE} and
+@code{_INCLUDE_XOPEN_SOURCE_500}, and the startfile @file{unix98.o}.
+
+It is @emph{important} to note that this option changes the interfaces
+for various library routines.  It also affects the operational behavior
+of the C library.  Thus, @emph{extreme} care is needed in using this
+option.
+
+Library code that is intended to operate with more than one UNIX
+standard must test, set and restore the variable @var{__xpg4_extended_mask}
+as appropriate.  Most GNU software doesn't provide this capability.
 
 @item -nolibdld
 @opindex nolibdld

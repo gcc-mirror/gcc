@@ -166,6 +166,12 @@ enum processor_type pa_cpu;
 /* String to hold which cpu we are scheduling for.  */
 const char *pa_cpu_string;
 
+/* String used with the -munix= option.  */
+const char *pa_unix_string;
+
+/* The UNIX standard to use for predefines and linking.  */
+int flag_pa_unix;
+
 /* Counts for the number of callee-saved general and floating point
    registers which were saved by the current function's prologue.  */
 static int gr_saved, fr_saved;
@@ -419,6 +425,36 @@ override_options (void)
   else if (pa_arch_string)
     {
       warning ("unknown -march= option (%s).\nValid options are 1.0, 1.1, and 2.0\n", pa_arch_string);
+    }
+
+  if (TARGET_HPUX)
+    {
+      /* Set the default UNIX standard for HP-UX.  This affects the
+	 predefines and startfiles used for the target.  */
+      if (pa_unix_string == NULL)
+	pa_unix_string
+	  = TARGET_HPUX_11_11 ? "98" : (TARGET_HPUX_10_10 ? "95" : "93");
+
+      if (!strcmp (pa_unix_string, "93"))
+	flag_pa_unix = 1993;
+      else if (!strcmp (pa_unix_string, "95"))
+	flag_pa_unix = 1995;
+      else if (TARGET_HPUX_11_11)
+	{
+	  if (!strcmp (pa_unix_string, "98"))
+	    flag_pa_unix = 1998;
+	  else
+	    warning ("unknown -munix= option (%s).\n"
+		     "Valid options are 93, 95 and 98.\n",
+		     pa_unix_string);
+	}
+      else if (TARGET_HPUX_10_10)
+	warning ("unknown -munix= option (%s)."
+		 "\nValid options are 93 and 95.\n",
+		 pa_unix_string);
+      else
+	warning ("unknown -munix= option (%s).\nValid option is 93.\n",
+		 pa_unix_string);
     }
 
   if (pa_fixed_range_string)
