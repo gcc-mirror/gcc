@@ -34,10 +34,10 @@ Wed Nov 29 00:08:23 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-28  Neil Booth  <neilb@earthling.net>
 
-        * c-common.h: Remove flag_digraphs.
-        * c-decl.c: Remove flag_digraphs.  
-        (c_decode_option): Don't set it. 
-        * c-lex.c (init_c_lex): Don't do anything for digraphs.
+	* c-common.h: Remove flag_digraphs.
+	* c-decl.c: Remove flag_digraphs.  
+	(c_decode_option): Don't set it. 
+	* c-lex.c (init_c_lex): Don't do anything for digraphs.
 
 2000-11-28  Richard Henderson  <rth@redhat.com>
 
@@ -46,12 +46,12 @@ Wed Nov 29 00:08:23 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-28  Neil Booth  <neilb@earthling.net>
 
-        * cppmacro.c (cpp_scan_buffer_nooutput): Take a boolean
-        indicating whether to scan all buffers on the stack or
-        just one.
-        * cppinit.c (do_includes): Update.
-        * cppmain.c (main): Update.
-        * cpplib.h: Update prototype.
+	* cppmacro.c (cpp_scan_buffer_nooutput): Take a boolean
+	indicating whether to scan all buffers on the stack or
+	just one.
+	* cppinit.c (do_includes): Update.
+	* cppmain.c (main): Update.
+	* cpplib.h: Update prototype.
 
 2000-11-28  Richard Henderson  <rth@redhat.com>
 
@@ -111,17 +111,17 @@ Wed Nov 29 00:08:23 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-28  Neil Booth  <neilb@earthling.net>
 
-        * tradcpp.c (enum node_type): New hash types T_ASSERT, T_UNASSERT.
-        (struct directive): Drop 4th argument from handlers.
-        (do_define, do_line, do_include, do_undef, do_else, do_elif,
-        do_endif): Similarly.
-        (do_assert, do_unassert, do_ifdef, do_ifndef): New handlers.
-        (do_ifxdef): Update as common handler of do_ifdef and do_ifndef.
-        (make_definition, make_undef): Take a const char*.
-        (make_assertion): New function.
-        (struct directive_table): Update.
-        (main): Handle -A command line argument.
-        (handle_directive): Drop fourth handler argument.
+	* tradcpp.c (enum node_type): New hash types T_ASSERT, T_UNASSERT.
+	(struct directive): Drop 4th argument from handlers.
+	(do_define, do_line, do_include, do_undef, do_else, do_elif,
+	do_endif): Similarly.
+	(do_assert, do_unassert, do_ifdef, do_ifndef): New handlers.
+	(do_ifxdef): Update as common handler of do_ifdef and do_ifndef.
+	(make_definition, make_undef): Take a const char*.
+	(make_assertion): New function.
+	(struct directive_table): Update.
+	(main): Handle -A command line argument.
+	(handle_directive): Drop fourth handler argument.
 
 2000-11-28  Bernd Schmidt  <bernds@redhat.co.uk>
 
@@ -152,19 +152,19 @@ Tue Nov 28 09:53:50 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-11-27  Neil Booth  <neilb@earthling.net>
 
-        * cppinit.c (cpp_reader_init): Remove handling of warn_paste   
-        command line options.
-        (cpp_handle_option): Similarly.
-        * cpplib.h (struct cpp_options): Remove warn_paste.
-        * cppmacro.c (paste_tokens): Apart from assembler, make
-        unpasteable token warning mandatory.
+	* cppinit.c (cpp_reader_init): Remove handling of warn_paste   
+	command line options.
+	(cpp_handle_option): Similarly.
+	* cpplib.h (struct cpp_options): Remove warn_paste.
+	* cppmacro.c (paste_tokens): Apart from assembler, make
+	unpasteable token warning mandatory.
 
 2000-11-27  Neil Booth  <neilb@earthling.net>
 
-        * tradcpp.c (enum pending_dir_t, struct pending_dir): New.
-        (main): Allocate a pending directive set of these.  Use it.
-        Merge handling of -D and -U.  Update handling of pending
-        directives.  Free the memory after use.
+	* tradcpp.c (enum pending_dir_t, struct pending_dir): New.
+	(main): Allocate a pending directive set of these.  Use it.
+	Merge handling of -D and -U.  Update handling of pending
+	directives.  Free the memory after use.
 
 2000-11-27  Bernd Schmidt  <bernds@redhat.co.uk>
 
@@ -246,28 +246,28 @@ Mon Nov 27 17:22:56 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-11-27  Neil Booth  <neilb@earthling.net>
 
-        * c-lex.c (cb_enter_file, cb_leave_file, cb_rename_file):
-        Combine into the new function cb_change_file.
-        (init_c_lex): Update.
-        * cppfiles.c (stack_include_file): Use _cpp_do_file_change.
-        (cpp_syshdr_flags): Delete.
-        * cpphash.h (_cpp_do_file_change): New prototype.
-        Move struct cpp_buffer here from...
-        * cpplib.h (struct cpp_buffer): ... here.
-        (enum cpp_fc_reason, struct cpp_file_loc,
-        struct_cpp_file_change, change_file): New.
-        (enter_file, leave_file, rename_file, cpp_syshdr_flags): Delete.
-        * cpplib.c (do_line): Update for new cb_change_file callback.
-        (_cpp_do_file_change): New function.
-        (_cpp_pop_buffer): Update to use it.
-        * cppmain.c (move_printer): Delete.
-        (main): Set up single callback cb_change_file.
-        (cb_enter_file, cb_leave_file, cb_rename_file): Delete.
-        (cb_change_file): New.
-        * fix-header.c (cur_file, cb_change_file): New.
-        (recognized_function, read_scan_file): Update.
-        * scan-decls.c (scan_decls): Update.
-        * scan.h (recognized_function): Update prototype.
+	* c-lex.c (cb_enter_file, cb_leave_file, cb_rename_file):
+	Combine into the new function cb_change_file.
+	(init_c_lex): Update.
+	* cppfiles.c (stack_include_file): Use _cpp_do_file_change.
+	(cpp_syshdr_flags): Delete.
+	* cpphash.h (_cpp_do_file_change): New prototype.
+	Move struct cpp_buffer here from...
+	* cpplib.h (struct cpp_buffer): ... here.
+	(enum cpp_fc_reason, struct cpp_file_loc,
+	struct_cpp_file_change, change_file): New.
+	(enter_file, leave_file, rename_file, cpp_syshdr_flags): Delete.
+	* cpplib.c (do_line): Update for new cb_change_file callback.
+	(_cpp_do_file_change): New function.
+	(_cpp_pop_buffer): Update to use it.
+	* cppmain.c (move_printer): Delete.
+	(main): Set up single callback cb_change_file.
+	(cb_enter_file, cb_leave_file, cb_rename_file): Delete.
+	(cb_change_file): New.
+	* fix-header.c (cur_file, cb_change_file): New.
+	(recognized_function, read_scan_file): Update.
+	* scan-decls.c (scan_decls): Update.
+	* scan.h (recognized_function): Update prototype.
 
 2000-11-26  Mark Mitchell  <mark@codesourcery.com>
 
@@ -403,29 +403,29 @@ Sun Nov 26 10:02:37 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-11-25  Neil Booth  <neilb@earthling.net>
 
-        * c-common.c: Remove USE_CPPLIB conditional inclusions.
-        * c-common.h: Similarly.
-        * c-decl.c: Similarly.
+	* c-common.c: Remove USE_CPPLIB conditional inclusions.
+	* c-common.h: Similarly.
+	* c-decl.c: Similarly.
 	* c-lang.c: Similarly.
 	* c-lex.c: Similarly.
-        * c-parse.in: Similarly.
-        * c-pragma.c: Similarly.
-        * c-pragma.h: Similarly.
-        * gcc.c: Similarly.
-        * toplev.c: Similarly.
-        * cp/cp-tree.h: Similarly.
-        * cp/decl2.c: Similarly.
-        * cp/lang-specs.h: Similarly.
-        * cp/lex.c: Similarly.
-        * cp/lex.h: Similarly.
-        * cp/spew.c: Similarly.
-        * java/lang-options.h: Similarly.
-        * objc/lang-specs.h: Similarly.
-        * objc/objc-act.c: Similarly.
+	* c-parse.in: Similarly.
+	* c-pragma.c: Similarly.
+	* c-pragma.h: Similarly.
+	* gcc.c: Similarly.
+	* toplev.c: Similarly.
+	* cp/cp-tree.h: Similarly.
+	* cp/decl2.c: Similarly.
+	* cp/lang-specs.h: Similarly.
+	* cp/lex.c: Similarly.
+	* cp/lex.h: Similarly.
+	* cp/spew.c: Similarly.
+	* java/lang-options.h: Similarly.
+	* objc/lang-specs.h: Similarly.
+	* objc/objc-act.c: Similarly.
 
-        * configure.in: Remove configure option.
-        * config.in: Regenerate.
-        * configure: Regenerate.
+	* configure.in: Remove configure option.
+	* config.in: Regenerate.
+	* configure: Regenerate.
 
 2000-11-25  Richard Henderson  <rth@redhat.com>
 
