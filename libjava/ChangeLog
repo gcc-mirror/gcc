@@ -1,5 +1,10 @@
 2004-03-11  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/PlainDatagramSocketImpl.java:
+	Reformated to match classpath's version more.
+
+2004-03-11  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/awt/peer/ClasspathFontPeer.java:
 	Fixed javadoc to be correct xhtml.
 	* gnu/java/awt/peer/gtk/GtkArgList.java
