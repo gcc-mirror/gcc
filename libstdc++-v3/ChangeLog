@@ -2,6 +2,7 @@
 
 	* include/bits/std_complex.h (_Norm_helper): New class template.
 	(norm): Tweak.
+	(abs): Tweak.
 
 2001-10-31  Benjamin Kosnik  <bkoz@redhat.com>
 
