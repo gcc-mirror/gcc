@@ -5621,6 +5621,37 @@ start_enum (name)
   return enumtype;
 }
 
+/* Return the minimum number of bits needed to represent VALUE in a
+   signed or unsigned type, UNSIGNEDP says which.  */
+
+static int
+min_precision (value, unsignedp)
+     tree value;
+     int unsignedp;
+{
+  int log;
+
+  /* If the value is negative, compute its negative minus 1.  The latter
+     adjustment is because the absolute value of the largest negative value
+     is one larger than the largest positive value.  This is equivalent to
+     a bit-wise negation, so use that operation instead.  */
+
+  if (tree_int_cst_sgn (value) < 0)
+    value = fold (build1 (BIT_NOT_EXPR, TREE_TYPE (value), value));
+
+  /* Return the number of bits needed, taking into account the fact
+     that we need one more bit for a signed than unsigned type.  */
+
+  if (integer_zerop (value))
+    log = 0;
+  else if (TREE_INT_CST_HIGH (value) != 0)
+    log = HOST_BITS_PER_WIDE_INT + floor_log2 (TREE_INT_CST_HIGH (value));
+  else
+    log = floor_log2 (TREE_INT_CST_LOW (value));
+
+  return log + 1 + ! unsignedp;
+}
+
 /* After processing and defining all the values of an enumeration type,
    install their decls in the enumeration type and finish it off.
    ENUMTYPE is the type object and VALUES a list of decl-value pairs.
@@ -5632,9 +5663,7 @@ finish_enum (enumtype, values)
 {
   register tree pair, tem;
   tree minnode = 0, maxnode = 0;
-  register HOST_WIDE_INT maxvalue = 0;
-  register HOST_WIDE_INT minvalue = 0;
-  unsigned precision = 0;
+  int lowprec, highprec, precision;
   int toplevel = global_binding_level == current_binding_level;
 
   if (in_parm_level_p ())
@@ -5662,34 +5691,14 @@ finish_enum (enumtype, values)
   TYPE_MIN_VALUE (enumtype) = minnode;
   TYPE_MAX_VALUE (enumtype) = maxnode;
 
+  /* An enum can have some negative values; then it is signed.  */
+  TREE_UNSIGNED (enumtype) = tree_int_cst_sgn (minnode) >= 0;
+
   /* Determine the precision this type needs.  */
 
-  if (TREE_INT_CST_HIGH (minnode) >= 0
-      ? tree_int_cst_lt (TYPE_MAX_VALUE (unsigned_type_node), maxnode)
-      : (tree_int_cst_lt (minnode, TYPE_MIN_VALUE (integer_type_node))
-	 || tree_int_cst_lt (TYPE_MAX_VALUE (integer_type_node), maxnode)))
-    precision = TYPE_PRECISION (long_long_integer_type_node);
-  else
-    {
-      maxvalue = TREE_INT_CST_LOW (maxnode);
-      minvalue = TREE_INT_CST_LOW (minnode);
-
-      if (maxvalue > 0)
-	precision = floor_log2 (maxvalue) + 1;
-      if (minvalue < 0)
-	{
-	  /* Compute number of bits to represent magnitude of a negative value.
-	     Add one to MINVALUE since range of negative numbers
-	     includes the power of two.  */
-	  unsigned negprecision = floor_log2 (-minvalue - 1) + 1;
-	  if (negprecision > precision)
-	    precision = negprecision;
-	  precision += 1;	/* room for sign bit */
-	}
-
-      if (!precision)
-	precision = 1;
-    }
+  lowprec = min_precision (minnode, TREE_UNSIGNED (enumtype));
+  highprec = min_precision (maxnode, TREE_UNSIGNED (enumtype));
+  precision = MAX (lowprec, highprec);
 
   if (flag_short_enums || precision > TYPE_PRECISION (integer_type_node))
     /* Use the width of the narrowest normal C type which is wide enough.  */
@@ -5699,9 +5708,6 @@ finish_enum (enumtype, values)
 
   TYPE_SIZE (enumtype) = 0;
   layout_type (enumtype);
-
-  /* An enum can have some negative values; then it is signed.  */
-  TREE_UNSIGNED (enumtype) = tree_int_cst_sgn (minnode) >= 0;
 
   if (values != error_mark_node)
     {
