@@ -6818,6 +6818,10 @@ resolve_package (pkg, next)
     for (acc = NULL_TREE, current = EXPR_WFL_QUALIFICATION (pkg); 
 	 current; current = TREE_CHAIN (current))
       {
+	/* If we don't have what we're expecting, exit now. TYPE_NAME
+	   will be null and the error caught later. */
+	if (TREE_CODE (QUAL_WFL (current)) != EXPR_WITH_FILE_LOCATION)
+	  break;
 	acc = merge_qualified_name (acc, EXPR_WFL_NODE (QUAL_WFL (current)));
 	if ((type_name = resolve_no_layout (acc, NULL_TREE)))
 	  {
@@ -10120,7 +10124,9 @@ patch_method_invocation (patch, primary, where, from_super,
      to have an enclosing context passed as a second parameter (the
      constructor is one of an inner class. We extract it from the
      current function.  */
-  if (is_super_init && PURE_INNER_CLASS_TYPE_P (DECL_CONTEXT (list)))
+  if ((is_super_init || 
+       (TREE_CODE (patch) == CALL_EXPR && name == this_identifier_node))
+      && PURE_INNER_CLASS_TYPE_P (DECL_CONTEXT (list)))
     {
       tree enclosing_decl = DECL_CONTEXT (TYPE_NAME (current_class));
       tree extra_arg;
@@ -10986,9 +10992,12 @@ qualify_ambiguous_name (id)
        of the compilation unit containing NAME,
      - NAME is declared by exactly on type-import-on-demand declaration
      of the compilation unit containing NAME. 
-     - NAME is actually a STRING_CST. */
-  else if (TREE_CODE (name) == STRING_CST || TREE_CODE (name) == INTEGER_CST
-	   || (decl = resolve_and_layout (name, NULL_TREE)))
+     - NAME is actually a STRING_CST.
+     This can't happen if the expression was qualified by `this.' */
+  else if (! this_found &&
+	   (TREE_CODE (name) == STRING_CST ||
+	    TREE_CODE (name) == INTEGER_CST ||
+	    (decl = resolve_and_layout (name, NULL_TREE))))
     {
       RESOLVE_TYPE_NAME_P (qual_wfl) = 1;
       QUAL_RESOLUTION (qual) = decl;

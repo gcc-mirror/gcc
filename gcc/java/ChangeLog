@@ -1,3 +1,29 @@
+2001-07-10  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* lang-specs.h: Forbit the use if `-femit-class-file{s}' without
+	`-fsyntax-only.' Fixes PR java/3248
+
+2001-07-10  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* jcf-io.c (find_class): Clarified error message. Fixes PR java/2603
+
+2001-07-10  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.h (INNER_ENCLOSING_SCOPE_CHECK): No `this' is fine if the
+	current function is static. Fixes PR java/1970
+
+2001-07-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (patch_method_invocation): Add enclosing context to ctor
+	calls if necessary. Fixes PR java/2953
+
+2001-07-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (resolve_package): Abort if qualified expression member
+	isn't right.
+	(qualify_ambiguous_name): Don't qualify as type if `this' in use.
+	Fixes PR java/1391
+
 2001-07-07  Zack Weinberg  <zackw@stanford.edu>
 
 	* verify.c: Don't use // comments.
@@ -31,8 +57,7 @@
 2001-07-03  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (resolve_expression_name): Improved error message for
-	inner class cases.
-	Fixes PR java/1958
+	inner class cases. Fixes PR java/1958
 
 2001-06-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 

@@ -844,8 +844,11 @@ struct parser_ctxt {
 	      (TREE_TYPE (DECL_CONTEXT                                        \
 			  (TYPE_NAME (TREE_TYPE (TREE_TYPE (current_this))))),\
 	       TREE_TYPE (DECL_CONTEXT (TYPE_NAME (T)))))                     \
-       /* We don't have a this. */					      \
-       || !current_this))
+       /* We don't have a this, which is OK if the current function is        \
+	  static. */                                                          \
+       || (!current_this						      \
+	   && current_function_decl                                           \
+           && ! METHOD_STATIC (current_function_decl))))
 
 /* Push macro. First argument to PUSH_CPC is a DECL_TYPE, second
    argument is the unqualified currently parsed class name.  */
