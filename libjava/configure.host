@@ -85,6 +85,13 @@ case "${host}" in
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=yes
 	;;
+  xscale*-elf)
+	with_libffi_default=no
+	PROCESS=Ecos
+	enable_java_net_default=no
+	enable_getenv_properties_default=no
+	enable_main_args_default=no
+	;;
 esac
 
 libgcj_cflags="${libgcj_cflags} ${libgcj_flags}"

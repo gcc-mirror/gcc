@@ -1,3 +1,7 @@
+2002-02-08  Anthony Green  <green@redhat.com>
+
+	* configure.host: Add support for xscale-elf embedded target.
+
 2002-02-08  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* jni.cc (_Jv_JNI_NewLocalRef): Make sure, that NULL frame is not
