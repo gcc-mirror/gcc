@@ -233,8 +233,8 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   # If we're not using GNU ld, then there's no point in even trying these
   # tests.  Check for that first.  We should have already tested for gld
   # by now (in libtool), but require it now just to be safe...
-  SECTION_LDFLAGS=''
-  OPT_LDFLAGS=''
+  test -z "$SECTION_LDFLAGS" && SECTION_LDFLAGS=''
+  test -z "$OPT_LDFLAGS" && OPT_LDFLAGS=''
   AC_REQUIRE([AC_PROG_LD])
 
   # Set --gc-sections.
@@ -262,7 +262,7 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
        catch (...) { };
        return 0;
      }
-    ], [ac_sectionLDflags=yes],[ac_sectionLFflags=no], [ac_sectionLDflags=yes])
+    ], [ac_sectionLDflags=yes],[ac_sectionLDflags=no], [ac_sectionLDflags=yes])
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -270,14 +270,14 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
       CFLAGS=''
     fi
     if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS='-Wl,--gc-sections'
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
     AC_MSG_RESULT($ac_sectionLDflags)
   fi
 
   # Set linker optimization flags.
   if test x"$ac_cv_prog_gnu_ld" = x"yes" && test x"$enable_debug" = x"no"; then
-    OPT_LDFLAGS='-Wl,-O1'
+    OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
   fi
 
   AC_SUBST(SECTION_LDFLAGS)
