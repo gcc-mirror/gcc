@@ -164,17 +164,17 @@ management of lexed lines.  I discuss these issues in a separate section
 (@pxref{Lexing a line}).
 
 The lexer places the token it lexes into storage pointed to by the
-variable @var{cur_token}, and then increments it.  This variable is
+variable @code{cur_token}, and then increments it.  This variable is
 important for correct diagnostic positioning.  Unless a specific line
 and column are passed to the diagnostic routines, they will examine the
-@var{line} and @var{col} values of the token just before the location
-that @var{cur_token} points to, and use that location to report the
+@code{line} and @code{col} values of the token just before the location
+that @code{cur_token} points to, and use that location to report the
 diagnostic.
 
 The lexer does not consider whitespace to be a token in its own right.
 If whitespace (other than a new line) precedes a token, it sets the
 @code{PREV_WHITE} bit in the token's flags.  Each token has its
-@var{line} and @var{col} variables set to the line and column of the
+@code{line} and @code{col} variables set to the line and column of the
 first character of the token.  This line number is the line number in
 the translation unit, and can be converted to a source (file, line) pair
 using the line map code.
@@ -193,7 +193,7 @@ New lines are treated specially; exactly how the lexer handles them is
 context-dependent.  The C standard mandates that directives are
 terminated by the first unescaped newline character, even if it appears
 in the middle of a macro expansion.  Therefore, if the state variable
-@var{in_directive} is set, the lexer returns a @code{CPP_EOF} token,
+@code{in_directive} is set, the lexer returns a @code{CPP_EOF} token,
 which is normally used to indicate end-of-file, to indicate
 end-of-directive.  In a directive a @code{CPP_EOF} token never means
 end-of-file.  Conveniently, if the caller was @code{collect_args}, it
@@ -203,14 +203,14 @@ error about an unterminated macro argument list.
 The C standard also specifies that a new line in the middle of the
 arguments to a macro is treated as whitespace.  This white space is
 important in case the macro argument is stringified.  The state variable
-@var{parsing_args} is non-zero when the preprocessor is collecting the
+@code{parsing_args} is non-zero when the preprocessor is collecting the
 arguments to a macro call.  It is set to 1 when looking for the opening
 parenthesis to a function-like macro, and 2 when collecting the actual
 arguments up to the closing parenthesis, since these two cases need to
 be distinguished sometimes.  One such time is here: the lexer sets the
 @code{PREV_WHITE} flag of a token if it meets a new line when
-@var{parsing_args} is set to 2.  It doesn't set it if it meets a new
-line when @var{parsing_args} is 1, since then code like
+@code{parsing_args} is set to 2.  It doesn't set it if it meets a new
+line when @code{parsing_args} is 1, since then code like
 
 @smallexample
 #define foo() bar
@@ -383,7 +383,7 @@ issues, but not all.  The opening parenthesis after a function-like
 macro name might lie on a different line, and the front ends definitely
 want the ability to look ahead past the end of the current line.  So
 cpplib only moves back to the start of the token run at the end of a
-line if the variable @var{keep_tokens} is zero.  Line-buffering is
+line if the variable @code{keep_tokens} is zero.  Line-buffering is
 quite natural for the preprocessor, and as a result the only time cpplib
 needs to increment this variable is whilst looking for the opening
 parenthesis to, and reading the arguments of, a function-like macro.  In
@@ -596,32 +596,93 @@ one is not strictly needed.
 @unnumbered Line numbering
 @cindex line numbers
 
-The preprocessor takes great care to ensure it keeps track of both the
-position of a token in the source file, for diagnostic purposes, and
-where it should appear in the output file, because using CPP for other
-languages like assembler requires this.  The two positions may differ
-for the following reasons:
+@section Just which line number anyway?
+
+There are three reasonable requirements a cpplib client might have for
+the line number of a token passed to it:
 
 @itemize @bullet
 @item
-Escaped newlines are deleted, so lines spliced in this way are joined to
-form a single logical line.
+The source line it was lexed on.
+@item
+The line it is output on.  This can be different to the line it was
+lexed on if, for example, there are intervening escaped newlines or
+C-style comments.  For example:
+
+@smallexample
+foo /* A long
+comment */ bar \
+baz
+@result{}
+foo bar baz
+@end smallexample
 
 @item
-A macro expansion replaces the tokens that form its invocation, but any
-newlines appearing in the macro's arguments are interpreted as a single
-space, with the result that the macro's replacement appears in full on
-the same line that the macro name appeared in the source file.  This is
-particularly important for stringification of arguments---newlines
-embedded in the arguments must appear in the string as spaces.
+If the token results from a macro expansion, the line of the macro name,
+or possibly the line of the closing parenthesis in the case of
+function-like macro expansion.
 @end itemize
 
-The source file location is maintained in the @code{lineno} member of the
-@code{cpp_buffer} structure, and the column number inferred from the
-current position in the buffer relative to the @code{line_base} buffer
-variable, which is updated with every newline whether escaped or not.
+The @code{cpp_token} structure contains @code{line} and @code{col}
+members.  The lexer fills these in with the line and column of the first
+character of the token.  Consequently, but maybe unexpectedly, a token
+from the replacement list of a macro expansion carries the location of
+the token within the @code{#define} directive, because cpplib expands a
+macro by returning pointers to the tokens in its replacement list.  The
+current implementation of cpplib assigns tokens created from built-in
+macros and the @samp{#} and @samp{##} operators the location of the most
+recently lexed token.  This is a because they are allocated from the
+lexer's token runs, and because of the way the diagnostic routines infer
+the appropriate location to report.
 
-@c FINISH THIS
+The diagnostic routines in cpplib display the location of the most
+recently @emph{lexed} token, unless they are passed a specific line and
+column to report.  For diagnostics regarding tokens that arise from
+macro expansions, it might also be helpful for the user to see the
+original location in the macro definition that the token came from.
+Since that is exactly the information each token carries, such an
+enhancement could be made relatively easily in future.
+
+The stand-alone preprocessor faces a similar problem when determining
+the correct line to output the token on: the position attached to a
+token is fairly useless if the token came from a macro expansion.  All
+tokens on a logical line should be output on its first physical line, so
+the token's reported location is also wrong if it is part of a physical
+line other than the first.
+
+To solve these issues, cpplib provides a callback that is generated
+whenever it lexes a preprocessing token that starts a new logical line
+other than a directive.  It passes this token (which may be a
+@code{CPP_EOF} token indicating the end of the translation unit) to the
+callback routine, which can then use the line and column of this token
+to produce correct output.
+
+@section Representation of line numbers
+
+As mentioned above, cpplib stores with each token the line number that
+it was lexed on.  In fact, this number is not the number of the line in
+the source file, but instead bears more resemblance to the number of the
+line in the translation unit.
+
+The preprocessor maintains a monotonic increasing line count, which is
+incremented at every new line character (and also at the end of any
+buffer that does not end in a new line).  Since a line number of zero is
+useful to indicate certain special states and conditions, this variable
+starts counting from one.
+
+This variable therefore uniquely enumerates each line in the translation
+unit.  With some simple infrastructure, it is straight forward to map
+from this to the original source file and line number pair, saving space
+whenever line number information needs to be saved.  The code the
+implements this mapping lies in the files @file{line-map.c} and
+@file{line-map.h}.
+
+Command-line macros and assertions are implemented by pushing a buffer
+containing the right hand side of an equivalent @code{#define} or
+@code{#assert} directive.  Some built-in macros are handled similarly.
+Since these are all processed before the first line of the main input
+file, it will typically have an assigned line closer to twenty than to
+one.
 
 @node Guard Macros
 @unnumbered The Multiple-Include Optimization
@@ -641,7 +702,7 @@ Header files are often of the form
 @noindent
 to prevent the compiler from processing them more than once.  The
 preprocessor notices such header files, so that if the header file
-appears in a subsequent @code{#include} directive and @var{FOO} is
+appears in a subsequent @code{#include} directive and @code{FOO} is
 defined, then it is ignored and it doesn't preprocess or even re-open
 the file a second time.  This is referred to as the @dfn{multiple
 include optimization}.
@@ -665,15 +726,15 @@ the @dfn{null directive} (a line containing nothing other than a single
 @item
 The opening directive must be of the form
 
-@display
+@smallexample
 #ifndef FOO
-@end display
+@end smallexample
 
 or
 
-@display
+@smallexample
 #if !defined FOO     [equivalently, #if !defined(FOO)]
-@end display
+@end smallexample
 
 @item
 In the second form above, the tokens forming the @code{#if} expression
@@ -689,15 +750,15 @@ of interest to a subsequent pass.
 @end enumerate
 
 First, when pushing a new file on the buffer stack,
-@code{_stack_include_file} sets the controlling macro @var{mi_cmacro} to
-@code{NULL}, and sets @var{mi_valid} to @code{true}.  This indicates
+@code{_stack_include_file} sets the controlling macro @code{mi_cmacro} to
+@code{NULL}, and sets @code{mi_valid} to @code{true}.  This indicates
 that the preprocessor has not yet encountered anything that would
 invalidate the multiple-include optimization.  As described in the next
 few paragraphs, these two variables having these values effectively
 indicates top-of-file.
 
 When about to return a token that is not part of a directive,
-@code{_cpp_lex_token} sets @var{mi_valid} to @code{false}.  This
+@code{_cpp_lex_token} sets @code{mi_valid} to @code{false}.  This
 enforces the constraint that tokens outside the controlling conditional
 block invalidate the optimization.
 
@@ -711,24 +772,24 @@ and we're at top-of-file (as described above).  If an @code{#elif} or
 @code{#else} directive is encountered, the controlling macro for that
 block is cleared to @code{NULL}.  Otherwise, it survives until the
 @code{#endif} closing the block, upon which @code{do_endif} sets
-@var{mi_valid} to true and stores the controlling macro in
-@var{mi_cmacro}.
+@code{mi_valid} to true and stores the controlling macro in
+@code{mi_cmacro}.
 
-@code{_cpp_handle_directive} clears @var{mi_valid} when processing any
+@code{_cpp_handle_directive} clears @code{mi_valid} when processing any
 directive other than an opening conditional and the null directive.
 With this, and requiring top-of-file to record a controlling macro, and
 no @code{#else} or @code{#elif} for it to survive and be copied to
-@var{mi_cmacro} by @code{do_endif}, we have enforced the absence of
+@code{mi_cmacro} by @code{do_endif}, we have enforced the absence of
 directives outside the main conditional block for the optimization to be
 on.
 
-Note that whilst we are inside the conditional block, @var{mi_valid} is
+Note that whilst we are inside the conditional block, @code{mi_valid} is
 likely to be reset to @code{false}, but this does not matter since the
 the closing @code{#endif} restores it to @code{true} if appropriate.
 
 Finally, since @code{_cpp_lex_direct} pops the file off the buffer stack
 at @code{EOF} without returning a token, if the @code{#endif} directive
-was not followed by any tokens, @var{mi_valid} is @code{true} and
+was not followed by any tokens, @code{mi_valid} is @code{true} and
 @code{_cpp_pop_file_buffer} remembers the controlling macro associated
 with the file.  Subsequent calls to @code{stack_include_file} result in
 no buffer being pushed if the controlling macro is defined, effecting
@@ -736,17 +797,17 @@ the optimization.
 
 A quick word on how we handle the
 
-@display
+@smallexample
 #if !defined FOO
-@end display
+@end smallexample
 
 @noindent
 case.  @code{_cpp_parse_expr} and @code{parse_defined} take steps to see
 whether the three stages @samp{!}, @samp{defined-expression} and
 @samp{end-of-directive} occur in order in a @code{#if} expression.  If
 so, they return the guard macro to @code{do_if} in the variable
-@var{mi_ind_cmacro}, and otherwise set it to @code{NULL}.
-@code{enter_macro_context} sets @var{mi_valid} to false, so if a macro
+@code{mi_ind_cmacro}, and otherwise set it to @code{NULL}.
+@code{enter_macro_context} sets @code{mi_valid} to false, so if a macro
 was expanded whilst parsing any part of the expression, then the
 top-of-file test in @code{push_conditional} fails and the optimization
 is turned off.
