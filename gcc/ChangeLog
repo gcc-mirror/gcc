@@ -1,5 +1,7 @@
 Wed Feb 25 07:24:22 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* sparc.c (pic_setup_code): If -O0, write USE of pic_offset_table_rtx.
+
 	* expr.c (safe_from_p): Add new arg, TOP_P; all callers changed.
 
 Sat Feb 21 07:02:39 1998  Jim Wilson  <wilson@cygnus.com>
