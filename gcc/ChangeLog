@@ -1,4 +1,8 @@
-2004-12-13  Daniel Berlin  <dberlin@dberlin.org>
+2004-12-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* reg-stack.c (convert_regs_2): Free stack.
+
+2004-12-12  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-loop-ch.c (copy_loop_headers): Loop can be null.
 	* tree-ssa-loop-im.c (determine_lsm): tree_root may not have a real

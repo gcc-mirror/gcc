@@ -3036,6 +3036,8 @@ convert_regs_2 (FILE *file, basic_block block)
     }
   while (sp != stack);
 
+  free (stack);
+
   return inserted;
 }
 
