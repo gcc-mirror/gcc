@@ -1,5 +1,23 @@
 2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* java/util/ResourceBundle.java (bundleCache): Renamed from
+	resourceBundleCache. Update comments.
+	(getObject): Don't catch MissingResourceException.
+	(getBundle(String)): Remove 'final'. Use system classloader if
+	getCallingClassLoader returned null.
+	(getBundle(String, Locale)): Likewise.
+	(BundleKey): New private class. HashMap key for bundle cache lookup.
+	(lookupKey): New. Singleton instance of BundleKey.
+	(nullEntry): New. Cache entry to represent failed lookups.
+	(getBundle(String, Locale, ClassLoader)): Re-written to use new 
+	caching strategy, no-allocation lookup, and new tryBundle methods.
+	(tryBundle(String, ClassLoader)): New. Load a locale-qualified bundle 
+	name using given classloader.
+	(tryBundle(String, Locale, ClassLoader, boolean): New. Qualify 
+	baseName for given Locale and attempt to load bundle.
+
+2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* javax/swing/plaf/basic/BasicMenuUI.java (mousePressed): Remove 
 	illegal protected method calls.
 
