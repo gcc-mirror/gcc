@@ -70,14 +70,26 @@ Boston, MA 02111-1307, USA.  */
 /* We can debug dynamically linked executables on hpux11; we also
    want dereferencing of a NULL pointer to cause a SEGV.  */
 #undef LINK_SPEC
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 1)
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11)
 #define LINK_SPEC \
-  "%{!mpa-risc-1-0:%{!shared:-L/lib/pa1.1 -L/usr/lib/pa1.1 }} -z\
-   %{mlinker-opt:-O} %{!shared:-u main -u __gcc_plt_call}\
+  "%{!mpa-risc-1-0:%{!shared:-L/lib/pa1.1 -L/usr/lib/pa1.1 }}\
+   %{!shared:%{p:-L/lib/libp -L/usr/lib/libp %{!static:\
+     %nWarning: consider linking with `-static' as system libraries with\n\
+     %n  profiling support are only provided in archive format}}}\
+   %{!shared:%{pg:-L/lib/libp -L/usr/lib/libp %{!static:\
+     %nWarning: consider linking with `-static' as system libraries with\n\
+     %n  profiling support are only provided in archive format}}}\
+   -z %{mlinker-opt:-O} %{!shared:-u main -u __gcc_plt_call}\
    %{static:-a archive} %{shared:-b}"
 #else
 #define LINK_SPEC \
-  "-z %{mlinker-opt:-O} %{!shared:-u main -u __gcc_plt_call}\
+  "%{!shared:%{p:-L/lib/libp -L/usr/lib/libp %{!static:\
+     %nWarning: consider linking with `-static' as system libraries with\n\
+     %n  profiling support are only provided in archive format}}}\
+   %{!shared:%{pg:-L/lib/libp -L/usr/lib/libp %{!static:\
+     %nWarning: consider linking with `-static' as system libraries with\n\
+     %n  profiling support are only provided in archive format}}}\
+   -z %{mlinker-opt:-O} %{!shared:-u main -u __gcc_plt_call}\
    %{static:-a archive} %{shared:-b}"
 #endif
 
@@ -88,10 +100,8 @@ Boston, MA 02111-1307, USA.  */
      %{!p:%{!pg:\
        %{!threads:-lc %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}\
        %{threads:-lcma -lc_r}}}\
-     %{p: -L/lib/libp/ -lc\
-       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}\
-     %{pg: -L/lib/libp/ -lc\
-       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}"
+     %{p:%{!pg:-lc %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+     %{pg:-lc %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}"
 
 /* Under hpux11, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */

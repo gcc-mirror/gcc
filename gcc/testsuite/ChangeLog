@@ -1,3 +1,10 @@
+2003-05-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* g++.old-deja/g++.law/profile1.C (dg-options): Add -static to options
+	for hppa*-hp-hpux*.
+	* gcc.dg/20021014-1.c (dg-options): Likewise.
+	* gcc.dg/nest.c (dg-options): Likewise.
+
 2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c++/9738
