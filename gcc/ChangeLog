@@ -1,3 +1,13 @@
+Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (7100lc, 7200, 7300 scheduling): Slightly refine
+	handling of double precision multiplies.
+
+	* pa.md (7100lc, 7200, 7300 scheduling): Refine handling of
+	fpdiv and fpsqrt instructions.
+	(7200 & 7300 scheduling): Fix typo in handling of
+	store-load and store-store penalties.
+
 2002-04-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Use MIPS instead of Mips and
