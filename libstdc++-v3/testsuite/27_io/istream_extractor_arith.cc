@@ -168,7 +168,7 @@ bool test03()
   return test;
 }
 
-// http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00081.html
+// http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00081.html
 // Jim Parsons
 void test06()
 {

@@ -226,7 +226,7 @@ bool test05()
 
 
 // ostringstream and positioning, multiple writes
-// http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00326.html
+// http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00326.html
 void test06()
 {
   bool test = true;

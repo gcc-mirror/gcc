@@ -61,7 +61,7 @@ int test01(void)
 
 #if 0
   // XXX These tests have been temporarily disabled.
-  //http://sources.redhat.com/ml/libstdc++/2000-10/msg00033.html
+  //http://gcc.gnu.org/ml/libstdc++/2000-10/msg00033.html
   // basic_string(const char* s, size_type n, alloc)
   csz01 = str01.max_size();
   // NB: As strlen(str_lit01) != csz01, this test is undefined. It

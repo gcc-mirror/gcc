@@ -44,7 +44,7 @@ void test01()
   return 0;
 }
 
-// http://sources.redhat.com/ml/libstdc++/2000-11/msg00093.html
+// http://gcc.gnu.org/ml/libstdc++/2000-11/msg00093.html
 void test02()
 {
     typedef std::map<int,const int> MapInt;

@@ -320,7 +320,7 @@ test03()
   return 0;
 }
 
-// http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00177.html
+// http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00177.html
 int
 test04()
 {
@@ -351,7 +351,7 @@ test04()
   return 0;
 }
 
-// http://sourceware.cygnus.com/ml/libstdc++/2000-07/msg00003.html
+// http://gcc.gnu.org/ml/libstdc++/2000-07/msg00003.html
 int
 test05()
 {
@@ -421,7 +421,7 @@ aaaaaaaaaaaaaa
 }
 
 
-// http://sources.redhat.com/ml/libstdc++/2000-07/msg00126.html
+// http://gcc.gnu.org/ml/libstdc++/2000-07/msg00126.html
 int
 test06()
 {
@@ -454,7 +454,7 @@ test06()
 }
 
 // bug reported by bgarcia@laurelnetworks.com
-// http://sources.redhat.com/ml/libstdc++-prs/2000-q3/msg00041.html
+// http://gcc.gnu.org/ml/libstdc++-prs/2000-q3/msg00041.html
 int
 test07()
 {

@@ -83,7 +83,7 @@ LOG_FILE="$TEST_DIR/$(date +%Y%m%d)-mkchecklog.txt"
 TESTS_FILE="$TEST_DIR/$(date +%Y%m%d)-mkcheckfiles.txt"
 
 # the heap size limit for testsuite binaries; start with a 2MB limit as per
-# http://sources.redhat.com/ml/libstdc++/2000-10/msg00029.html
+# http://gcc.gnu.org/ml/libstdc++/2000-10/msg00029.html
 MAX_MEM_USAGE=3072
 
 #

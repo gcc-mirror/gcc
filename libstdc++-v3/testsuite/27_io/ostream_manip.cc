@@ -81,7 +81,7 @@ bool test01(void)
 
 
 // based vaguely on this:
-// http://sourceware.cygnus.com/ml/libstdc++/2000-q2/msg00109.html
+// http://gcc.gnu.org/ml/libstdc++/2000-q2/msg00109.html
 bool test02()
 {
   using namespace std;

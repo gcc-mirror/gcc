@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <debug_assert.h>
 
-// http://sourceware.cygnus.com/ml/libstdc++/2000-06/msg00316.html
+// http://gcc.gnu.org/ml/libstdc++/2000-06/msg00316.html
 struct foo { };
 
 bool operator== (const foo&, const foo&) { return true; };
