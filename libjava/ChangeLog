@@ -1,3 +1,10 @@
+2001-12-05  Tom Tromey  <tromey@redhat.com>
+
+	* defineclass.cc (character): Removed.
+	(prepare_character): Removed.
+	(is_identifier_start): Use Character, not character.
+	(is_identifier_part): Likewise.
+
 2001-12-04  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (_Jv_BytecodeVerifier::linked_utf8): New structure.
