@@ -1,3 +1,8 @@
+2001-10-03  Loren J. Rittle  <ljrittle@acm.org>
+
+	* Makefile.in (STAGE2_FLAGS_TO_PASS): Propagate HOST_CFLAGS,
+	HOST_LDFLAGS and HOST_CPPFLAGS.
+
 2001-10-03  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-parse.in (objc_inherit_code, objc_pq_context,
