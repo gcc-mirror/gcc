@@ -298,15 +298,18 @@ restore_buff (pfile)
 /* Reads a logical line into the output buffer.  Returns TRUE if there
    is more text left in the buffer.  */
 bool
-_cpp_read_logical_line_trad (pfile)
+_cpp_read_logical_line_trad (pfile, overlay)
      cpp_reader *pfile;
+     int overlay;
 {
   cpp_buffer *buffer;
-  unsigned int first_line;
+  unsigned int first_line = 0;
 
-  restore_buff (pfile);
-
-  first_line = pfile->line = pfile->trad_line;
+  if (overlay)
+    {
+      restore_buff (pfile);
+      first_line = pfile->line = pfile->trad_line;
+    }
 
   buffer = pfile->buffer;
   if (buffer->cur == buffer->rlimit)
@@ -330,10 +333,14 @@ _cpp_read_logical_line_trad (pfile)
   scan_out_logical_line (pfile, NULL);
   buffer->cur = CUR (pfile->context);
 
-  pfile->trad_line = pfile->line;
-  pfile->line = first_line;
-  _cpp_overlay_buffer (pfile, pfile->trad_out_base,
-		       pfile->trad_out_cur - pfile->trad_out_base);
+  if (overlay)
+    {
+      pfile->trad_line = pfile->line;
+      pfile->line = first_line;
+      _cpp_overlay_buffer (pfile, pfile->trad_out_base,
+			   pfile->trad_out_cur - pfile->trad_out_base);
+    }
+
   return true;
 }
 
@@ -855,7 +862,7 @@ canonicalize_text (dest, src, len, pquote)
    than in the form of their whitespace.  */
 bool
 _cpp_expansions_different_trad (macro1, macro2)
-     cpp_macro *macro1, *macro2;
+     const cpp_macro *macro1, *macro2;
 {
   uchar *p1 = xmalloc (macro1->count + macro2->count);
   uchar *p2 = p1 + macro1->count;

@@ -510,13 +510,14 @@ extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum lc_reason,
 extern void _cpp_pop_buffer PARAMS ((cpp_reader *));
 
 /* In cpptrad.c.  */
-extern bool _cpp_read_logical_line_trad PARAMS ((cpp_reader *));
+extern bool _cpp_read_logical_line_trad PARAMS ((cpp_reader *, int));
 extern void _cpp_overlay_buffer PARAMS ((cpp_reader *pfile, const uchar *,
 					 size_t));
 extern cpp_hashnode *_cpp_lex_identifier_trad PARAMS ((cpp_reader *));
 extern void _cpp_set_trad_context PARAMS ((cpp_reader *));
 extern bool _cpp_create_trad_definition PARAMS ((cpp_reader *, cpp_macro *));
-extern bool _cpp_expansions_different_trad PARAMS ((cpp_macro *, cpp_macro *));
+extern bool _cpp_expansions_different_trad PARAMS ((const cpp_macro *,
+						    const cpp_macro *));
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1

@@ -1,3 +1,15 @@
+2002-06-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (_cpp_read_logical_line_trad,
+	_cpp_expansions_different_trad): Update prototypes.
+	* cpplex.c (continue_after_nul): New.
+	* cppmain.c: Include cpphash.h.
+	(scan_translation_unit_trad): New.
+	(cpp_preprocess_file): Call it.
+	* cpptrad.c (_cpp_read_logical_line_trad): Take new parameter
+	overlay.
+	(_cpp_expansions_different_trad): Update prototype.
+
 Mon Jun 10 18:02:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	Fix cfi generation for SH[1-4]:
