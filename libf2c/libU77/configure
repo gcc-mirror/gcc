@@ -1510,6 +1510,41 @@ test $ac_cv_func_gethostname = yes && MAYBES="$MAYBES hostnm_.o"
 test $ac_cv_func_clock = yes && MAYBES="$MAYBES mclock_.o"
 
 
+echo $ac_n "checking whether struct timezone exists""... $ac_c" 1>&6
+echo "configure:1515: checking whether struct timezone exists" >&5
+if eval "test \"`echo '$''{'libu77_cv_have_struct_timezone'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1520 "configure"
+#include "confdefs.h"
+#include <sys/time.h>
+int main() {
+struct timezone tz;
+; return 0; }
+EOF
+if { (eval echo configure:1527: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  libu77_ac_have_struct_timezone=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  libu77_ac_have_struct_timezone=no
+fi
+rm -f conftest*
+fi
+
+if test $libu77_ac_have_struct_timezone = yes; then
+  echo "$ac_t""yes" 1>&6
+  cat >> confdefs.h <<EOF
+#define HAVE_STRUCT_TIMEZONE 1
+EOF
+
+else
+  echo "$ac_t""no" 1>&6
+fi
+
 
 
 
