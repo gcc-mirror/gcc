@@ -130,7 +130,7 @@ cc1plus$(exeext): $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o c-pragma.
 #
 # Build hooks:
 
-c++.all.build: g++$(exeext) $(DEMANGLER_PROG)
+c++.all.build: g++$(exeext)
 c++.all.cross: g++-cross$(exeext) $(DEMANGLER_PROG)
 c++.start.encap: g++$(exeext)
 c++.rest.encap: $(DEMANGLER_PROG)

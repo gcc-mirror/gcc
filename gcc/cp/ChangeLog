@@ -1,3 +1,8 @@
+Fri Apr 17 09:10:52 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* Make-lang.in (c++.all.build): Don't depend on $(DEMANGLER_PROG),
+	which requires a working target compiler to build.
+
 Fri Apr 17 08:57:35 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* tree.c (avoid_overlap): Add prototype.
