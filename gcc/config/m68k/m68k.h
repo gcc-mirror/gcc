@@ -1012,33 +1012,36 @@ while(0)
    of a trampoline, leaving space for the variable parts.  */
 
 /* On the 68k, the trampoline looks like this:
-     movl pc@(8),a0
-     movl pc@(8),sp@-
-     rts
-     .long STATIC
-     .long FUNCTION
-The use of pc relative addressing mode ensures that the constants are
-accessed through the data cache.  */
+     movl #STATIC,a0
+     jmp  FUNCTION
 
-#define TRAMPOLINE_TEMPLATE(FILE)					\
-{									\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x207a));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x2f3a));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4e75));	\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
-}
+   WARNING: Targets that may run on 68040+ cpus must arrange for
+   the instruction cache to be flushed.  Previous incarnations of
+   the m68k trampoline code attempted to get around this by either
+   using an out-of-line transfer function or pc-relative data, but
+   the fact remains that the code to jump to the transfer function
+   or the code to load the pc-relative data needs to be flushed
+   just as much as the "variable" portion of the trampoline.  
+   Recognizing that a cache flush is going to be required anyway,
+   dispense with such notions and build a smaller trampoline.  */
+
+/* Since more instructions are required to move a template into
+   place than to create it on the spot, don't use a template.  */
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE 18
+#define TRAMPOLINE_SIZE 12
 
-/* Alignment required (in *bits*) for a trampoline.  16 is used to find the
-   beginning of a line in the instruction cache.  */
+/* Alignment required for a trampoline in bits.  */
 
-#define TRAMPOLINE_ALIGNMENT (16 * BITS_PER_UNIT)
+#define TRAMPOLINE_ALIGNMENT 16
+
+/* Targets redefine this to invoke code to either flush the cache,
+   or enable stack execution (or both).  */
+
+#ifndef FINALIZE_TRAMPOLINE
+#define FINALIZE_TRAMPOLINE(TRAMP)
+#endif
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -1046,8 +1049,12 @@ accessed through the data cache.  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 10)), CXT); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 14)), FNADDR); \
+  emit_move_insn (gen_rtx (MEM, HImode, TRAMP), GEN_INT(0x207C));	\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 2)), CXT); \
+  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 6)),	\
+		  GEN_INT(0x4EF9));					\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 8)), FNADDR); \
+  FINALIZE_TRAMPOLINE(TRAMP);						\
 }
 
 /* This is the library routine that is used
