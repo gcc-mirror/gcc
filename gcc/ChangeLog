@@ -1,3 +1,12 @@
+2000-08-01  Geoff Keating  <geoffk@cygnus.com>
+
+	* rtl.h (enum reg_note): Add REG_MAYBE_DEAD.
+	* rtl.c (reg_note_name): Add REG_MAYBE_DEAD.
+	* flow.c (propagate_one_insn): Allow deletion of prologue/epilogue
+	insns if they have a REG_MAYBE_DEAD note attached.
+	* config/rs6000/rs6000.c (rs6000_maybe_dead): New function.
+	(rs6000_emit_load_toc_table): TOC loads may go dead.
+
 2000-08-01  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.c (ia64_function_arg): Fix last change.  Verify

@@ -515,7 +515,13 @@ enum reg_note
   REG_EH_RETHROW,
 
   /* Used by haifa-sched to save NOTE_INSN notes across scheduling.  */
-  REG_SAVE_NOTE
+  REG_SAVE_NOTE,
+
+  /* Indicates that this insn (which is part of the prologue) computes
+     a value which might not be used later, and if so it's OK to delete
+     the insn.  Normally, deleting any insn in the prologue is an error. 
+     At present the parameter is unused and set to (const_int 0).  */
+  REG_MAYBE_DEAD
 };
 
 /* The base value for branch probability notes.  */
