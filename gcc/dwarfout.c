@@ -2141,7 +2141,7 @@ location_attribute (rtl)
 
   if (! is_pseudo_reg (rtl)
       && (GET_CODE (rtl) != MEM || ! is_pseudo_reg (XEXP (rtl, 0))))
-    output_loc_descriptor (eliminate_regs (rtl, 0, NULL_RTX, 0));
+    output_loc_descriptor (rtl);
 
   ASM_OUTPUT_LABEL (asm_out_file, end_label);
 }
@@ -2394,6 +2394,12 @@ location_or_const_value_attribute (decl)
 
   if (rtl == NULL_RTX)
     return;
+
+  rtl = eliminate_regs (rtl, 0, NULL_RTX, 0);
+#ifdef LEAF_REG_REMAP
+  if (leaf_function)
+    leaf_renumber_regs_insn (DECL_RTL (decl));
+#endif
 
   switch (GET_CODE (rtl))
     {
