@@ -23,11 +23,27 @@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
 
+# Passed down for cross compilers, canadian crosses.
+TOPLEVEL_INCLUDES = -I$(includedir)
+
+LIBIO_INCLUDES = @BUILD_LIBIO_INCLUDE@ -I$(top_srcdir)/libio 
+
+CSHADOW_INCLUDES = @CSHADOWFLAGS@ @CSHADOW_INCLUDES@
+
+CONFIG_INCLUDES = \
+	-I$(top_srcdir)/@cpu_include_dir@ \
+	-I$(top_srcdir)/@ctype_include_dir@
+
+INCLUDES = \
+	-D_GNU_SOURCE -nostdinc++ -I$(top_srcdir) \
+	$(LIBIO_INCLUDES) $(CONFIG_INCLUDES) $(CSHADOW_INCLUDES) \
+	$(TOPLEVEL_INCLUDES)	
+
 noinst_LTLIBRARIES = libio.la
 
 LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 
-includes = 
+#includes = 
 
 libio_headers = \
         libio.h libioP.h iolibio.h
@@ -39,35 +55,17 @@ else
 LIBIO_SRCS =
 endif
 
-EXTRA_DIST = iostreamP.h
-
-libio_la_LIBADD = $(LIBIO_SRCS) 
-libio_la_DEPENDENCIES = $(libio_la_LIBADD)
-libio_la_SOURCES = $(LIBIO_SRCS)
-
-if GLIBCPP_NEED_LIBIO_CONFIG_H
-LIBIO_CONFIG_H = _G_config.h
+if GLIBCPP_NEED_WLIBIO
+LIBIO_WSRCS = \
+	iofwide.c wfiledoalloc.c wfileops.c wgenops.c
 else
-LIBIO_CONFIG_H = 
+LIBIO_WSRCS =
 endif
 
-# Specify that *.o depend on this one header
-$(libio_la_OBJECTS): $(LIBIO_CONFIG_H)
 
-# Generate this file.
-_G_config.h: $(srcdir)/gen-params
-	rootme=`pwd`/ ; export rootme; \
-	CC="$(CC) $(CINCLUDES)"; export CC; \
-	CXX="$(CXX) $(CXXINCLUDES) $(NOSTDINC) $(CXXFLAGS)"; export CXX; \
-	CONFIG_NM="$(NM)"; export CONFIG_NM; \
-	$(SHELL) $(srcdir)/gen-params LIB_VERSION=$(VERSION) $(G_CONFIG_ARGS) >tmp-params.h
-	mv tmp-params.h _G_config.h
+EXTRA_DIST = iostreamP.h
 
-
-
-
-
-
-
-
+libio_la_LIBADD = $(LIBIO_SRCS) $(LIBIO_WSRCS) 
+libio_la_DEPENDENCIES = $(libio_la_LIBADD)
+libio_la_SOURCES = $(LIBIO_SRCS) $(LIBIO_WSRCS) 
 

@@ -42,15 +42,17 @@
  # pragma system_header
  # include_next <wchar.h>
 #else
-# ifdef _GLIBCPP_NEED_MBSTATE_T
+# ifdef __cplusplus
 extern "C" 
 {
+#endif
   typedef struct 
   {
     int __fill[6];
   } mbstate_t;
+# ifdef __cplusplus
 }
-#  endif
+# endif
 #endif //_GLIBCPP_USE_WCHAR_T
 
 #endif // _CPP_CWCHAR

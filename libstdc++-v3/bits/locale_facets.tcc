@@ -606,7 +606,7 @@ namespace std
           // Stage 1: extract and determine the conversion specifier.
           // Assuming leading zeros eliminated, thus the size of 32 for
           // integral types.
-          char __xtrc[32]= {'\0'};
+          char __xtrc[32] = {'\0'};
           int __base;
           _M_extract(__beg, __end, __io, __err, __xtrc, __base, false);
 

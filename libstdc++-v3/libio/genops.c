@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1995, 1997, 1998 Free Software Foundation, Inc.
+/* Copyright (C) 1993, 1995, 1997-1999, 2000 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
 
    This library is free software; you can redistribute it and/or
@@ -31,46 +31,63 @@
 #endif
 #include <string.h>
 
+#ifdef _IO_MTSAFE_IO
+static _IO_lock_t list_all_lock = _IO_lock_initializer;
+#endif
+
 void
 _IO_un_link (fp)
-     _IO_FILE *fp;
+     struct _IO_FILE_plus *fp;
 {
-  if (fp->_flags & _IO_LINKED)
+  if (fp->file._flags & _IO_LINKED)
     {
-      _IO_FILE **f;
-      for (f = &_IO_list_all; *f != NULL; f = &(*f)->_chain)
+      struct _IO_FILE_plus **f;
+#ifdef _IO_MTSAFE_IO
+      _IO_lock_lock (list_all_lock);
+#endif
+      for (f = &_IO_list_all; *f != NULL; f = &(*f)->file._chain)
 	{
 	  if (*f == fp)
 	    {
-	      *f = fp->_chain;
+	      *f = fp->file._chain;
 	      break;
 	    }
 	}
-      fp->_flags &= ~_IO_LINKED;
+#ifdef _IO_MTSAFE_IO
+      _IO_lock_unlock (list_all_lock);
+#endif
+      fp->file._flags &= ~_IO_LINKED;
     }
 }
 
 void
 _IO_link_in (fp)
-     _IO_FILE *fp;
+     struct _IO_FILE_plus *fp;
 {
-    if ((fp->_flags & _IO_LINKED) == 0)
+    if ((fp->file._flags & _IO_LINKED) == 0)
       {
-	fp->_flags |= _IO_LINKED;
-	fp->_chain = _IO_list_all;
+	fp->file._flags |= _IO_LINKED;
+#ifdef _IO_MTSAFE_IO
+	_IO_lock_lock (list_all_lock);
+#endif
+	fp->file._chain = _IO_list_all;
 	_IO_list_all = fp;
+#ifdef _IO_MTSAFE_IO
+	_IO_lock_unlock (list_all_lock);
+#endif
       }
 }
 
 /* Return minimum _pos markers
    Assumes the current get area is the main get area. */
-static _IO_size_t _IO_least_marker __P ((_IO_FILE *fp));
+_IO_ssize_t _IO_least_marker __P ((_IO_FILE *fp, char *end_p));
 
-static _IO_size_t
-_IO_least_marker (fp)
+_IO_ssize_t
+_IO_least_marker (fp, end_p)
      _IO_FILE *fp;
+     char *end_p;
 {
-  _IO_ssize_t least_so_far = fp->_IO_read_end - fp->_IO_read_base;
+  _IO_ssize_t least_so_far = end_p - fp->_IO_read_base;
   struct _IO_marker *mark;
   for (mark = fp->_markers; mark != NULL; mark = mark->_next)
     if (mark->_pos < least_so_far)
@@ -94,7 +111,7 @@ _IO_switch_to_main_get_area (fp)
   tmp = fp->_IO_read_base;
   fp->_IO_read_base = fp->_IO_save_base;
   fp->_IO_save_base = tmp;
-
+  /* Set _IO_read_ptr. */
   fp->_IO_read_ptr = fp->_IO_read_base;
 }
 
@@ -110,11 +127,11 @@ _IO_switch_to_backup_area (fp)
   tmp = fp->_IO_read_end;
   fp->_IO_read_end = fp->_IO_save_end;
   fp->_IO_save_end = tmp;
-  /* Swap _gbase and _IO_save_base. */
+  /* Swap _IO_read_base and _IO_save_base. */
   tmp = fp->_IO_read_base;
   fp->_IO_read_base = fp->_IO_save_base;
   fp->_IO_save_base = tmp;
-
+  /* Set _IO_read_ptr.  */
   fp->_IO_read_ptr = fp->_IO_read_end;
 }
 
@@ -180,19 +197,28 @@ __overflow (f, ch)
   return _IO_OVERFLOW (f, ch);
 }
 
-static int save_for_backup __P ((_IO_FILE *fp));
+static int save_for_backup __P ((_IO_FILE *fp, char *end_p))
+#ifdef _LIBC
+     internal_function
+#endif
+     ;
 
-     static int
-save_for_backup (fp)
+static int
+#ifdef _LIBC
+internal_function
+#endif
+save_for_backup (fp, end_p)
      _IO_FILE *fp;
+     char *end_p;
 {
-  /* Append [_IO_read_base.._IO_read_end] to backup area. */
-  int least_mark = _IO_least_marker (fp);
+  /* Append [_IO_read_base..end_p] to backup area. */
+  _IO_ssize_t least_mark = _IO_least_marker (fp, end_p);
   /* needed_size is how much space we need in the backup area. */
-  int needed_size = (fp->_IO_read_end - fp->_IO_read_base) - least_mark;
-  int current_Bsize = fp->_IO_save_end - fp->_IO_save_base;
-  int avail; /* Extra space available for future expansion. */
-  int delta;
+  _IO_size_t needed_size = (end_p - fp->_IO_read_base) - least_mark;
+  /* FIXME: Dubious arithmetic if pointers are NULL */
+  _IO_size_t current_Bsize = fp->_IO_save_end - fp->_IO_save_base;
+  _IO_size_t avail; /* Extra space available for future expansion. */
+  _IO_ssize_t delta;
   struct _IO_marker *mark;
   if (needed_size > current_Bsize)
     {
@@ -203,12 +229,20 @@ save_for_backup (fp)
 	return EOF;		/* FIXME */
       if (least_mark < 0)
 	{
+#ifdef _LIBC
+	  __mempcpy (__mempcpy (new_buffer + avail,
+				fp->_IO_save_end + least_mark,
+				-least_mark),
+		     fp->_IO_read_base,
+		     end_p - fp->_IO_read_base);
+#else
 	  memcpy (new_buffer + avail,
 		  fp->_IO_save_end + least_mark,
 		  -least_mark);
 	  memcpy (new_buffer + avail - least_mark,
 		  fp->_IO_read_base,
-		  fp->_IO_read_end - fp->_IO_read_base);
+		  end_p - fp->_IO_read_base);
+#endif
 	}
       else
 	memcpy (new_buffer + avail,
@@ -229,17 +263,16 @@ save_for_backup (fp)
 		   -least_mark);
 	  memcpy (fp->_IO_save_base + avail - least_mark,
 		  fp->_IO_read_base,
-		  fp->_IO_read_end - fp->_IO_read_base);
+		  end_p - fp->_IO_read_base);
 	}
       else if (needed_size > 0)
 	memcpy (fp->_IO_save_base + avail,
 		fp->_IO_read_base + least_mark,
 		needed_size);
     }
-  /* FIXME: Dubious arithmetic if pointers are NULL */
   fp->_IO_backup_base = fp->_IO_save_base + avail;
   /* Adjust all the streammarkers. */
-  delta = fp->_IO_read_end - fp->_IO_read_base;
+  delta = end_p - fp->_IO_read_base;
   for (mark = fp->_markers; mark != NULL; mark = mark->_next)
     mark->_pos -= delta;
   return 0;
@@ -249,6 +282,11 @@ int
 __underflow (fp)
      _IO_FILE *fp;
 {
+#if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
+  if (fp->_vtable_offset == 0 && _IO_fwide (fp, -1) != -1)
+    return EOF;
+#endif
+
   if (_IO_in_put_mode (fp))
     if (_IO_switch_to_get_mode (fp) == EOF)
       return EOF;
@@ -262,7 +300,7 @@ __underflow (fp)
     }
   if (_IO_have_markers (fp))
     {
-      if (save_for_backup (fp))
+      if (save_for_backup (fp, fp->_IO_read_end))
 	return EOF;
     }
   else if (_IO_have_backup (fp))
@@ -274,6 +312,11 @@ int
 __uflow (fp)
      _IO_FILE *fp;
 {
+#if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
+  if (fp->_vtable_offset == 0 && _IO_fwide (fp, -1) != -1)
+    return EOF;
+#endif
+
   if (_IO_in_put_mode (fp))
     if (_IO_switch_to_get_mode (fp) == EOF)
       return EOF;
@@ -287,7 +330,7 @@ __uflow (fp)
     }
   if (_IO_have_markers (fp))
     {
-      if (save_for_backup (fp))
+      if (save_for_backup (fp, fp->_IO_read_end))
 	return EOF;
     }
   else if (_IO_have_backup (fp))
@@ -361,9 +404,13 @@ _IO_default_xsputn (f, data, n)
 	    count = more;
 	  if (count > 20)
 	    {
+#ifdef _LIBC
+	      f->_IO_write_ptr = __mempcpy (f->_IO_write_ptr, s, count);
+#else
 	      memcpy (f->_IO_write_ptr, s, count);
-	      s += count;
 	      f->_IO_write_ptr += count;
+#endif
+	      s += count;
             }
 	  else if (count <= 0)
 	    count = 0;
@@ -377,7 +424,7 @@ _IO_default_xsputn (f, data, n)
             }
 	  more -= count;
         }
-      if (more == 0 || __overflow (f, (unsigned char) *s++) == EOF)
+      if (more == 0 || _IO_OVERFLOW (f, (unsigned char) *s++) == EOF)
 	break;
       more--;
     }
@@ -412,8 +459,12 @@ _IO_default_xsgetn (fp, data, n)
 	    count = more;
 	  if (count > 20)
 	    {
+#ifdef _LIBC
+	      s = __mempcpy (s, fp->_IO_read_ptr, count);
+#else
 	      memcpy (s, fp->_IO_read_ptr, count);
 	      s += count;
+#endif
 	      fp->_IO_read_ptr += count;
 	    }
 	  else if (count <= 0)
@@ -467,23 +518,14 @@ _IO_default_setbuf (fp, p, len)
     return fp;
 }
 
-#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
 _IO_off64_t
 _IO_default_seekpos (fp, pos, mode)
      _IO_FILE *fp;
      _IO_off64_t pos;
      int mode;
-#else
-_IO_off_t
-_IO_default_seekpos (fp, pos, mode)
-     _IO_FILE *fp;
-     _IO_off_t pos;
-     int mode;
-#endif
 {
   return _IO_SEEKOFF (fp, pos, 0, mode);
 }
-
 
 int
 _IO_default_doallocate (fp)
@@ -501,6 +543,17 @@ _IO_init (fp, flags)
      _IO_FILE *fp;
      int flags;
 {
+  _IO_no_init (fp, flags, -1, NULL, NULL);
+}
+
+void
+_IO_no_init (fp, flags, orientation, wd, jmp)
+     _IO_FILE *fp;
+     int flags;
+     int orientation;
+     struct _IO_wide_data *wd;
+     struct _IO_jump_t *jmp;
+{
   fp->_flags = _IO_MAGIC|flags;
   fp->_IO_buf_base = NULL;
   fp->_IO_buf_end = NULL;
@@ -517,8 +570,31 @@ _IO_init (fp, flags)
   fp->_IO_save_end = NULL;
   fp->_markers = NULL;
   fp->_cur_column = 0;
+#if _IO_JUMPS_OFFSET
+  fp->_vtable_offset = 0;
+#endif
 #ifdef _IO_MTSAFE_IO
   _IO_lock_init (*fp->_lock);
+#endif
+  fp->_mode = orientation;
+#if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
+  if (orientation >= 0)
+    {
+      fp->_wide_data = wd;
+      fp->_wide_data->_IO_buf_base = NULL;
+      fp->_wide_data->_IO_buf_end = NULL;
+      fp->_wide_data->_IO_read_base = NULL;
+      fp->_wide_data->_IO_read_ptr = NULL;
+      fp->_wide_data->_IO_read_end = NULL;
+      fp->_wide_data->_IO_write_base = NULL;
+      fp->_wide_data->_IO_write_ptr = NULL;
+      fp->_wide_data->_IO_write_end = NULL;
+      fp->_wide_data->_IO_save_base = NULL;
+      fp->_wide_data->_IO_backup_base = NULL;
+      fp->_wide_data->_IO_save_end = NULL;
+
+      fp->_wide_data->_wide_vtable = jmp;
+    }
 #endif
 }
 
@@ -557,24 +633,15 @@ _IO_default_finish (fp, dummy)
   _IO_lock_fini (*fp->_lock);
 #endif
 
-  _IO_un_link (fp);
+  _IO_un_link ((struct _IO_FILE_plus *) fp);
 }
 
-#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
 _IO_off64_t
 _IO_default_seekoff (fp, offset, dir, mode)
      _IO_FILE *fp;
      _IO_off64_t offset;
      int dir;
      int mode;
-#else
-_IO_off_t
-_IO_default_seekoff (fp, offset, dir, mode)
-     _IO_FILE *fp;
-     _IO_off_t offset;
-     int dir;
-     int mode;
-#endif
 {
     return _IO_pos_BAD;
 }
@@ -678,10 +745,17 @@ int
 _IO_flush_all ()
 {
   int result = 0;
-  _IO_FILE *fp;
-  for (fp = _IO_list_all; fp != NULL; fp = fp->_chain)
-    if (fp->_IO_write_ptr > fp->_IO_write_base
-	&& _IO_OVERFLOW (fp, EOF) == EOF)
+  struct _IO_FILE_plus *fp;
+  for (fp = _IO_list_all; fp != NULL; fp = fp->file._chain)
+    if (((fp->file._mode < 0 && fp->file._IO_write_ptr > fp->file._IO_write_base)
+#if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
+
+	 || (fp->file._vtable_offset == 0
+	     && fp->file._mode > 0 && (fp->file._wide_data->_IO_write_ptr
+				  > fp->file._wide_data->_IO_write_base))
+#endif
+	 )
+	&& _IO_OVERFLOW (&fp->file, EOF) == EOF)
       result = EOF;
   return result;
 }
@@ -689,27 +763,29 @@ _IO_flush_all ()
 void
 _IO_flush_all_linebuffered ()
 {
-  _IO_FILE *fp;
-  for (fp = _IO_list_all; fp != NULL; fp = fp->_chain)
-    if ((fp->_flags & _IO_NO_WRITES) == 0 && fp->_flags & _IO_LINE_BUF)
-      _IO_OVERFLOW (fp, EOF);
+  struct _IO_FILE_plus *fp;
+  for (fp = _IO_list_all; fp != NULL; fp = fp->file._chain)
+    if ((fp->file._flags & _IO_NO_WRITES) == 0 && fp->file._flags & _IO_LINE_BUF)
+      _IO_OVERFLOW (&fp->file, EOF);
 }
 
-static void _IO_unbuffer_all __P ((void));
+static void _IO_unbuffer_write __P ((void));
 
 static void
-_IO_unbuffer_all ()
+_IO_unbuffer_write ()
 {
-  _IO_FILE *fp;
-  for (fp = _IO_list_all; fp != NULL; fp = fp->_chain)
-    if (! (fp->_flags & _IO_UNBUFFERED))
-      _IO_SETBUF (fp, NULL, 0);
+  struct _IO_FILE_plus *fp;
+  for (fp = _IO_list_all; fp != NULL; fp = fp->file._chain)
+    if (! (fp->file._flags & _IO_UNBUFFERED)
+	&& (! (fp->file._flags & _IO_NO_WRITES)
+	    || (fp->file._flags & _IO_IS_APPENDING)))
+      _IO_SETBUF (&fp->file, NULL, 0);
 }
 
-void
+int
 _IO_cleanup ()
 {
-  _IO_flush_all ();
+  int result = _IO_flush_all ();
 
   /* We currently don't have a reliable mechanism for making sure that
      C++ static destructors are executed in the correct order.
@@ -718,8 +794,11 @@ _IO_cleanup ()
 
      The following will make the standard streambufs be unbuffered,
      which forces any output from late destructors to be written out. */
-  _IO_unbuffer_all ();
+  _IO_unbuffer_write ();
+
+  return result;
 }
+
 
 void
 _IO_init_marker (marker, fp)
@@ -857,23 +936,34 @@ _IO_default_pbackfail (fp, c)
      _IO_FILE *fp;
      int c;
 {
-  if (fp->_IO_read_ptr <= fp->_IO_read_base)
+  if (fp->_IO_read_ptr > fp->_IO_read_base && !_IO_in_backup (fp)
+      && (unsigned char) fp->_IO_read_ptr[-1] == c)
+    --fp->_IO_read_ptr;
+  else
     {
       /* Need to handle a filebuf in write mode (switch to read mode). FIXME!*/
-      if (_IO_have_backup (fp) && !_IO_in_backup (fp))
-	_IO_switch_to_backup_area (fp);
-
-      if (!_IO_have_backup (fp))
+      if (!_IO_in_backup (fp))
 	{
-	  /* No backup buffer: allocate one. */
-	  /* Use nshort buffer, if unused? (probably not)  FIXME */
-	  int backup_size = 128;
-	  char *bbuf = (char *) malloc (backup_size);
-	  if (bbuf == NULL)
-	    return EOF;
-	  fp->_IO_save_base = bbuf;
-	  fp->_IO_save_end = fp->_IO_save_base + backup_size;
-	  fp->_IO_backup_base = fp->_IO_save_end;
+	  /* We need to keep the invariant that the main get area
+	     logically follows the backup area.  */
+	  if (fp->_IO_read_ptr > fp->_IO_read_base && _IO_have_backup (fp))
+	    {
+	      if (save_for_backup (fp, fp->_IO_read_ptr))
+		return EOF;
+	    }
+	  else if (!_IO_have_backup (fp))
+	    {
+	      /* No backup buffer: allocate one. */
+	      /* Use nshort buffer, if unused? (probably not)  FIXME */
+	      int backup_size = 128;
+	      char *bbuf = (char *) malloc (backup_size);
+	      if (bbuf == NULL)
+		return EOF;
+	      fp->_IO_save_base = bbuf;
+	      fp->_IO_save_end = fp->_IO_save_base + backup_size;
+	      fp->_IO_backup_base = fp->_IO_save_end;
+	    }
+	  fp->_IO_read_base = fp->_IO_read_ptr;
 	  _IO_switch_to_backup_area (fp);
 	}
       else if (fp->_IO_read_ptr <= fp->_IO_read_base)
@@ -893,26 +983,17 @@ _IO_default_pbackfail (fp, c)
 		    new_buf + new_size);
 	  fp->_IO_backup_base = fp->_IO_read_ptr;
 	}
+
+      *--fp->_IO_read_ptr = c;
     }
-  --fp->_IO_read_ptr;
-  if (c != EOF && *fp->_IO_read_ptr != c)
-    *fp->_IO_read_ptr = c;
-  return (unsigned char) *fp->_IO_read_ptr;
+  return (unsigned char) c;
 }
 
-#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
 _IO_off64_t
 _IO_default_seek (fp, offset, dir)
      _IO_FILE *fp;
      _IO_off64_t offset;
      int dir;
-#else
-_IO_off_t
-_IO_default_seek (fp, offset, dir)
-     _IO_FILE *fp;
-     _IO_off_t offset;
-     int dir;
-#endif
 {
   return _IO_pos_BAD;
 }
@@ -943,6 +1024,70 @@ _IO_default_write (fp, data, n)
   return 0;
 }
 
+int
+_IO_default_showmanyc (fp)
+     _IO_FILE *fp;
+{
+  return -1;
+}
+
+void
+_IO_default_imbue (fp, locale)
+     _IO_FILE *fp;
+     void *locale;
+{
+}
+
+_IO_ITER
+_IO_iter_begin()
+{
+  return _IO_list_all;
+}
+
+_IO_ITER
+_IO_iter_end()
+{
+  return NULL;
+}
+
+_IO_ITER
+_IO_iter_next(iter)
+    _IO_ITER iter;
+{
+  return iter->file._chain;
+}
+
+_IO_FILE *
+_IO_iter_file(iter)
+    _IO_ITER iter;
+{
+  return (_IO_FILE *) iter;
+}
+
+void
+_IO_list_lock()
+{
+#ifdef _IO_MTSAFE_IO
+  _IO_lock_lock (list_all_lock);
+#endif
+}
+
+void
+_IO_list_unlock()
+{
+#ifdef _IO_MTSAFE_IO
+  _IO_lock_unlock (list_all_lock);
+#endif
+}
+
+void
+_IO_list_resetlock()
+{
+#ifdef _IO_MTSAFE_IO
+  _IO_lock_init (list_all_lock);
+#endif
+}
+
 
 #ifdef TODO
 #if defined(linux)
@@ -963,8 +1108,6 @@ __io_defs io_defs__;
 
 #ifdef weak_alias
 weak_alias (_IO_cleanup, _cleanup)
-#elif defined(_G_STDIO_USES_LIBIO) && defined(_G_HAVE_WEAK_SYMBOL)
-void _cleanup () __attribute__ ((weak, alias ("_IO_cleanup")));
 #endif
 
 #ifdef text_set_element

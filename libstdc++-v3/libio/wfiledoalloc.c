@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1993, 1997, 1999 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
 
    This library is free software; you can redistribute it and/or
@@ -67,27 +67,21 @@
  */
 
 int
-_IO_file_doallocate (fp)
+_IO_wfile_doallocate (fp)
      _IO_FILE *fp;
 {
   _IO_size_t size;
   int couldbetty;
-  char *p;
+  wchar_t *p;
   struct _G_stat64 st;
 
-#ifndef _LIBC
-  /* If _IO_cleanup_registration_needed is non-zero, we should call the
-     function it points to.  This is to make sure _IO_cleanup gets called
-     on exit.  We call it from _IO_file_doallocate, since that is likely
-     to get called by any program that does buffered I/O. */
-  if (_IO_cleanup_registration_needed)
-    (*_IO_cleanup_registration_needed) ();
-#endif
+  /* Allocate room for the external buffer.  */
+  _IO_file_doallocate (fp);
 
   if (fp->_fileno < 0 || _IO_SYSSTAT (fp, &st) < 0)
     {
       couldbetty = 0;
-      size = _IO_BUFSIZ;
+      size = _IO_BUFSIZ * sizeof (wchar_t);
 #if 0
       /* do not try to optimise fseek() */
       fp->_flags |= __SNPT;
@@ -97,13 +91,14 @@ _IO_file_doallocate (fp)
     {
       couldbetty = S_ISCHR (st.st_mode);
 #if _IO_HAVE_ST_BLKSIZE
-      size = st.st_blksize <= 0 ? _IO_BUFSIZ : st.st_blksize;
+      size = ((st.st_blksize <= 0 ? _IO_BUFSIZ : st.st_blksize)
+	      * sizeof (wchar_t));
 #else
-      size = _IO_BUFSIZ;
+      size = _IO_BUFSIZ * sizeof (wchar_t);
 #endif
     }
-  ALLOC_BUF (p, size, EOF);
-  _IO_setb (fp, p, p + size, 1);
+  ALLOC_WBUF (p, size, EOF);
+  _IO_wsetb (fp, p, p + size, 1);
   if (couldbetty && isatty (fp->_fileno))
     fp->_flags |= _IO_LINE_BUF;
   return 1;

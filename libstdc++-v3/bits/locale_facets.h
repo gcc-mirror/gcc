@@ -39,6 +39,10 @@
 #include <bits/std_ctime.h>	// For struct tm
 #include <bits/std_typeinfo.h> 	// For bad_cast, which shouldn't be here.
 #include <bits/std_ios.h>	// For ios_base
+#ifdef _GLIBCPP_USE_WCHAR_T
+// XXX should break this out??
+#include <iconv.h>		// For iconv, iconv_t
+#endif
 
 namespace std
 {
@@ -76,6 +80,60 @@ namespace std
     _Use_facet_failure_handler(const locale&)
     { throw _Bad_use_facet(); }
 
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  // Extensions to use icov for dealing with character encodings,
+  // including conversions and comparisons between various character
+  // sets.  This object encapsulates data that codecvt and possibly
+  // ctype will use.
+  template<typename _IntT, typename _ExtT>
+  class __enc_traits
+  {
+  public:
+    // Types:
+    typedef iconv_t	__conv_type;
+    typedef _IntT	__intc_type;
+    typedef _ExtT	__extc_type;
+
+    // max size of charset encoding name
+    static const int 	__max_size = 32;
+    // name of internal character set encoding.
+    char	       	__intc_enc[__max_size];
+    // name of external character set encoding.
+    char  	       	__extc_enc[__max_size];
+
+    const char* 
+    _M_get_intc_enc(void)
+    { return __intc_enc; }
+
+    void
+    _M_set_intc_enc(const char* __c)
+    { strcpy(__intc_enc, __c); }
+
+    const char* 
+    _M_get_extc_enc(void)
+    { return __extc_enc; }
+
+    void
+    _M_set_extc_enc(const char* __c)
+    { strcpy(__extc_enc, __c); }
+
+    __enc_traits(const char* __int, const char* __ext)
+    {
+      // __intc_end = whatever we are using internally, which is
+      // almost alwyas UCS4 (linux) or UCS2 (microsoft, aix,
+      // whatever...)
+      // __extc_end = nl_langinfo(CODESET)
+      strcpy(__intc_enc, __int);
+      strcpy(__extc_enc, __ext);
+    }
+
+  protected:
+    __enc_traits();
+    __enc_traits(const __enc_traits&);
+  };
+#endif //_GLIBCPP_USE_WCHAR_T
+
   // 22.2.1  The ctype category
   // Include host-specific ctype enums for ctype_base.
   #include <bits/ctype_base.h>
@@ -86,10 +144,10 @@ namespace std
   template<typename _CharT>
     class _Ctype_nois : public locale::facet, public ctype_base
     {
+    public:
       // Types:
       typedef _CharT char_type;
 
-    public:
       char_type 
       toupper(char_type __c) const
       { return this->do_toupper(__c); }
@@ -162,7 +220,6 @@ namespace std
     class _Ctype : public _Ctype_nois<_CharT>
     {
     public:
-
       // Types:
       typedef _CharT 					char_type;
       typedef typename _Ctype_nois<_CharT>::mask 	mask;
@@ -644,8 +701,8 @@ namespace std
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
-    class codecvt<wchar_t,char,mbstate_t> 
-    : public _Codecvt<wchar_t,char,mbstate_t>
+    class codecvt<wchar_t, char, mbstate_t> 
+    : public _Codecvt<wchar_t, char, mbstate_t>
     {
     public:
       // Types:
@@ -687,7 +744,7 @@ namespace std
 
   // 22.2.1.6  Template class codecvt_byname
   template<typename _InternT, typename _ExternT, typename _StateT>
-    class codecvt_byname : public codecvt<_InternT,_ExternT,_StateT>
+    class codecvt_byname : public codecvt<_InternT, _ExternT, _StateT>
     {
     public:
       explicit 
@@ -699,8 +756,8 @@ namespace std
     };
 
   template<>
-    class codecvt_byname<char,char,mbstate_t>
-    : public codecvt<char,char,mbstate_t>
+    class codecvt_byname<char, char, mbstate_t>
+    : public codecvt<char, char, mbstate_t>
     {
     public:
       explicit 
@@ -713,8 +770,8 @@ namespace std
   
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
-    class codecvt_byname<wchar_t,char,mbstate_t>
-      : public codecvt<wchar_t,char,mbstate_t>
+    class codecvt_byname<wchar_t, char, mbstate_t>
+      : public codecvt<wchar_t, char, mbstate_t>
     {
     public:
       explicit 
