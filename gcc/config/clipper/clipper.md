@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Clipper Version
-;;   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
+;;   Copyright (C) 1987, 1988, 1991, 1993 Free Software Foundation, Inc.
 
 ;; Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
@@ -148,8 +148,8 @@
 ;; to recombine a mem -> mem move
 ;; 
 (define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=rf")
-	(match_operand:DF 1 "nonimmediate_operand" "rfo"))]
+  [(set (match_operand:DF 0 "register_operand" "=*rf")
+	(match_operand:DF 1 "nonimmediate_operand" "*rfo"))]
   ""
   "*
 {
@@ -203,7 +203,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "memory_operand" "=o,m")
-	(match_operand:DF 1 "register_operand" "rf,f"))]
+	(match_operand:DF 1 "register_operand" "*rf,f"))]
   ""
   "*
 {
@@ -247,8 +247,8 @@
 ;; to recombine a mem -> mem move
 ;; 
 (define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=rf")
-	(match_operand:SF 1 "nonimmediate_operand" "rfm"))]
+  [(set (match_operand:SF 0 "register_operand" "=*rf")
+	(match_operand:SF 1 "nonimmediate_operand" "*rfm"))]
   ""
   "*
 {
@@ -284,7 +284,7 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "memory_operand" "=m")
-	(match_operand:SF 1 "register_operand" "rf"))]
+	(match_operand:SF 1 "register_operand" "*rf"))]
   ""
   "*
 {
