@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX version 3.x with the fixed assembler.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
@@ -44,12 +44,15 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc: -mpwr} \
 %{mcpu=rsc1: -mpwr} \
 %{mcpu=403: -mppc} \
+%{mcpu=505: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=602: -mppc} \
 %{mcpu=603: -mppc} \
 %{mcpu=603e: -mppc} \
 %{mcpu=604: -mppc} \
-%{mcpu=620: -mppc}"
+%{mcpu=620: -mppc} \
+%{mcpu=821: -mppc} \
+%{mcpu=860: -mppc}"
 
 /* Define the options for the binder: Start text at 512, align all segments
    to 512 bytes, and warn if there is text relocation.

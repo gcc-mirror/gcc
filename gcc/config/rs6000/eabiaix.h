@@ -1,5 +1,5 @@
 /* Embedded ELF system support, using old AIX based calling sequence.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -51,12 +51,15 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc: -D_ARCH_PWR} \
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
+%{mcpu=505: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=602: -D_ARCH_PPC} \
 %{mcpu=603: -D_ARCH_PPC} \
 %{mcpu=603e: -D_ARCH_PPC} \
 %{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=620: -D_ARCH_PPC}"
+%{mcpu=620: -D_ARCH_PPC} \
+%{mcpu=821: -D_ARCH_PPC} \
+%{mcpu=860: -D_ARCH_PPC}"
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are

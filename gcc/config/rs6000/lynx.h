@@ -1,5 +1,5 @@
 /* Definitions for Rs6000 running LynxOS.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by David Henkel-Wallace, Cygnus Support (gumby@cygnus.com)
 
 This file is part of GNU CC.
@@ -91,12 +91,15 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc: -mpwr} \
 %{mcpu=rsc1: -mpwr} \
 %{mcpu=403: -mppc} \
+%{mcpu=505: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=602: -mppc} \
 %{mcpu=603: -mppc} \
 %{mcpu=603e: -mppc} \
 %{mcpu=604: -mppc} \
-%{mcpu=620: -mppc}"
+%{mcpu=620: -mppc} \
+%{mcpu=821: -mppc} \
+%{mcpu=860: -mppc}"
 
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX version 4.1.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@npac.syr.edu).
 
 This file is part of GNU CC.
@@ -41,12 +41,15 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc: -mpwr} \
 %{mcpu=rsc1: -mpwr} \
 %{mcpu=403: -mppc} \
+%{mcpu=505: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=602: -mppc} \
 %{mcpu=603: -mppc} \
 %{mcpu=603e: -mppc} \
 %{mcpu=604: -mppc} \
-%{mcpu=620: -mppc}"
+%{mcpu=620: -mppc} \
+%{mcpu=821: -mppc} \
+%{mcpu=860: -mppc}"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 \
@@ -70,12 +73,15 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc: -D_ARCH_PWR} \
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
+%{mcpu=505: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=602: -D_ARCH_PPC} \
 %{mcpu=603: -D_ARCH_PPC} \
 %{mcpu=603e: -D_ARCH_PPC} \
 %{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=620: -D_ARCH_PPC}"
+%{mcpu=620: -D_ARCH_PPC} \
+%{mcpu=821: -D_ARCH_PPC} \
+%{mcpu=860: -D_ARCH_PPC}"
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT MASK_NEW_MNEMONICS

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -68,12 +68,15 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc: -D_ARCH_PWR} \
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
+%{mcpu=505: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=602: -d_ARCH_PPC} \
 %{mcpu=603: -D_ARCH_PPC} \
 %{mcpu=603e: -D_ARCH_PPC} \
 %{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=620: -D_ARCH_PPC}"
+%{mcpu=620: -D_ARCH_PPC} \
+%{mcpu=821: -D_ARCH_PPC} \
+%{mcpu=860: -D_ARCH_PPC}"
 
 /* Define the options for the binder: Start text at 512, align all segments
    to 512 bytes, and warn if there is text relocation.
@@ -278,6 +281,7 @@ extern int target_flags;
 enum processor_type
  {PROCESSOR_RIOS1,
   PROCESSOR_RIOS2,
+  PROCESSOR_MPCCORE,
   PROCESSOR_PPC403,
   PROCESSOR_PPC601,
   PROCESSOR_PPC602,
@@ -1818,6 +1822,7 @@ typedef struct rs6000_args
 	      : INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
 	      ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));	\
     case PROCESSOR_RIOS2:				\
+    case PROCESSOR_MPCCORE:				\
       return COSTS_N_INSNS (2);				\
     case PROCESSOR_PPC601:				\
     case PROCESSOR_PPC603:				\
@@ -1841,6 +1846,8 @@ typedef struct rs6000_args
       return COSTS_N_INSNS (19);			\
     case PROCESSOR_RIOS2:				\
       return COSTS_N_INSNS (13);			\
+    case PROCESSOR_MPCCORE:				\
+      return COSTS_N_INSNS (6);				\
     case PROCESSOR_PPC403:				\
       return COSTS_N_INSNS (33);			\
     case PROCESSOR_PPC601:				\

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -210,7 +210,8 @@ rs6000_override_options (default_cpu)
       int target_enable;	/* Target flags to enable.  */
       int target_disable;	/* Target flags to disable.  */
     } processor_target_table[]
-      = {{"common", PROCESSOR_COMMON, 0, POWER_MASKS | POWERPC_MASKS},
+      = {{"common", PROCESSOR_COMMON, MASK_NEW_MNEMONICS,
+	    POWER_MASKS | POWERPC_MASKS},
 	 {"power", PROCESSOR_POWER,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
@@ -238,12 +239,15 @@ rs6000_override_options (default_cpu)
 	 {"403", PROCESSOR_PPC403,
 	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	 {"505", PROCESSOR_MPCCORE,
+	    MASK_POWERPC | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"601", PROCESSOR_PPC601,
 	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"602", PROCESSOR_PPC602,
-	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS,
-	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
 	 {"603", PROCESSOR_PPC603,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
@@ -255,7 +259,13 @@ rs6000_override_options (default_cpu)
 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
 	 {"620", PROCESSOR_PPC620,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64}};
+	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	 {"821", PROCESSOR_MPCCORE,
+	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	 {"860", PROCESSOR_MPCCORE,
+	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64}};
 
   int ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
 
@@ -267,8 +277,6 @@ rs6000_override_options (default_cpu)
   /* Identify the processor type */
   rs6000_select[0].string = default_cpu;
   rs6000_cpu = PROCESSOR_DEFAULT;
-  if (rs6000_cpu == PROCESSOR_PPC403)
-    target_flags |= MASK_SOFT_FLOAT;
 
   for (i = 0; i < sizeof (rs6000_select) / sizeof (rs6000_select[0]); i++)
     {
@@ -322,9 +330,6 @@ rs6000_override_options (default_cpu)
 	    warning ("-mstring is not supported on little endian systems");
 	}
     }
-
-  if (!WORDS_BIG_ENDIAN && !TARGET_POWER && !TARGET_POWERPC)
-    error ("-mcpu=common is not supported for little endian platforms");
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -2562,6 +2567,8 @@ rs6000_stack_info ()
       info_ptr->main_p = 1;
 
 #ifdef NAME__MAIN
+      info_ptr->calls_p = 1;
+
       if (DECL_ARGUMENTS (current_function_decl))
 	{
 	  int i;
@@ -2569,7 +2576,6 @@ rs6000_stack_info ()
 
 	  info_ptr->main_save_p = 1;
 	  info_ptr->main_size = 0;
-	  info_ptr->calls_p = 1;
 
 	  for ((i = 0), (arg = DECL_ARGUMENTS (current_function_decl));
 	       arg != NULL_TREE && i < 8;
