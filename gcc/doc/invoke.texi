@@ -4532,7 +4532,7 @@ This number sets the maximum number of instructions (counted in gcc's
 internal representation) in a single function that the tree inliner 
 will consider for inlining.  This only affects functions declared
 inline and methods implemented in a class declaration (C++).
-The default value is 300.
+The default value is 100.
 
 @item max-inline-insns-auto
 When you use @option{-finline-functions} (included in @option{-O3}),
@@ -4540,7 +4540,7 @@ a lot of functions that would otherwise not be considered for inlining
 by the compiler will be investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
-The default value is 300.
+The default value is 100.
 
 @item max-inline-insns
 The tree inliner does decrease the allowable size for single functions 
@@ -4551,7 +4551,7 @@ Higher numbers result in better runtime performance, but incur higher
 compile-time resource (CPU time, memory) requirements and result in
 larger binaries.  Very high values are not advisable, as too large
 binaries may adversely affect runtime performance.
-The default value is 600.
+The default value is 200.
 
 @item max-inline-slope
 After exceeding the maximum number of inlined instructions by repeated
@@ -4565,7 +4565,7 @@ The repeated inlining is throttled more and more by the linear function
 after exceeding the limit.  To avoid too much throttling, a minimum for
 this function is specified here to allow repeated inlining for very small
 functions even when a lot of repeated inlining already has been done.
-The default value is 130.
+The default value is 10.
 
 @item max-inline-insns-rtl
 For languages that use the RTL inliner (this happens at a later stage

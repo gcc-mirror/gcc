@@ -357,7 +357,7 @@ struct c_lang_decl GTY(()) {
      the approximate number of statements in this function.  There is
      no need for this number to be exact; it is only used in various
      heuristics regarding optimization.  */
-#define DECL_NUM_STMTS(NODE) \
+#define DECL_ESTIMATED_INSNS(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
 
 /* Nonzero if we can read a PCH file now.  */
@@ -1296,6 +1296,7 @@ extern void c_common_write_pch (void);
 extern void builtin_define_with_value (const char *, const char *, int);
 extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const struct line_map *);
+extern int c_estimate_num_insns (tree decl);
 
 /* In c-ppoutput.c  */
 extern void init_pp_output (FILE *);

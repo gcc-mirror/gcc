@@ -1471,7 +1471,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level)
 	    DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 	  DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl);
 	  DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
-	  DECL_NUM_STMTS (newdecl) = DECL_NUM_STMTS (olddecl);
+	  DECL_ESTIMATED_INSNS (newdecl) = DECL_ESTIMATED_INSNS (olddecl);
 	  DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 
 	  /* Set DECL_INLINE on the declaration if we've got a body

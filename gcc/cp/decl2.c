@@ -1634,6 +1634,7 @@ maybe_emit_vtables (tree ctype)
 {
   tree vtbl;
   tree primary_vtbl;
+  bool needed = false;
 
   /* If the vtables for this class have already been emitted there is
      nothing more to do.  */
@@ -1651,7 +1652,6 @@ maybe_emit_vtables (tree ctype)
   for (vtbl = CLASSTYPE_VTABLES (ctype); vtbl; vtbl = TREE_CHAIN (vtbl))
     if (!DECL_EXTERNAL (vtbl) && DECL_NEEDED_P (vtbl))
       break;
-  
   if (!vtbl)
     {
       /* If the references to this class' vtables are optimized away,
@@ -1662,6 +1662,9 @@ maybe_emit_vtables (tree ctype)
 	note_debug_info_needed (ctype);
       return false;
     }
+  else if (TREE_PUBLIC (vtbl) && !DECL_COMDAT (vtbl))
+    needed = true;
+  
 
   /* The ABI requires that we emit all of the vtables if we emit any
      of them.  */
@@ -1672,7 +1675,7 @@ maybe_emit_vtables (tree ctype)
       mark_vtable_entries (vtbl);
 
       /* If we know that DECL is needed, mark it as such for the varpool.  */
-      if (CLASSTYPE_EXPLICIT_INSTANTIATION (ctype))
+      if (needed)
 	cgraph_varpool_mark_needed_node (cgraph_varpool_node (vtbl));
 
       if (TREE_TYPE (DECL_INITIAL (vtbl)) == 0)

@@ -1,3 +1,28 @@
+Wed Jul  9 02:25:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* c-common.c (c_estimate_num_insns_1): New static function.
+	(c_estimate_num_insns): New global function.
+	* c-common.h (DECL_NUM_STMTS): Rename to...
+	(DECL_ESTIMATED_INSNS): ... this.
+	(c_estimate_num_insns): Declare.
+	* c-decl.c (duplicate_decls): Use DECL_ESTIMATED_INSNS.
+	* c-lang.c (LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS): New.
+	* c-semantics.c (add_stmt): Do not account statements.
+	* langhooks-def.h (LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS):
+	New.
+	* langhooks.h (lang_hooks_for_tree_inlining): Add
+	estimate_num_insns
+	* params.def (max-inline-insns-auto, max-inline-insns-auto): set
+	to 100.
+	(max-inline-insns): set to 300.
+	(min-inline-insns): set to 10.
+	* tree-inline.c (struct inline_data): Rename inlined_stmts to
+	inlined-insns.
+	(INSNS_PER_STMT): Kill.
+	(inlinable_function_p): Compute and store body size.
+	(expand_call_inline): Likewise.
+	(optimize_inline_calls): Likewise.
+
 2003-07-08  James E Wilson  <wilson@tuliptree.org>
 
 	PR target/10021

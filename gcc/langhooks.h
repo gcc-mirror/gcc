@@ -53,6 +53,7 @@ struct lang_hooks_for_tree_inlining
   union tree_node *(*convert_parm_for_inlining) (union tree_node *,
 						 union tree_node *,
 						 union tree_node *);
+  int (*estimate_num_insns) (union tree_node *);
 };
 
 struct lang_hooks_for_callgraph

@@ -3530,7 +3530,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	      SET_DECL_RTL (newdecl, DECL_RTL (olddecl));
 	    }
 	  else
-	    DECL_NUM_STMTS (newdecl) = DECL_NUM_STMTS (olddecl);
+	    DECL_ESTIMATED_INSNS (newdecl) = DECL_ESTIMATED_INSNS (olddecl);
 
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
 	  /* Don't clear out the arguments if we're redefining a function.  */
@@ -13518,7 +13518,7 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
   begin_stmt_tree (&DECL_SAVED_TREE (decl1));
 
   /* Don't double-count statements in templates.  */
-  DECL_NUM_STMTS (decl1) = 0;
+  DECL_ESTIMATED_INSNS (decl1) = 0;
 
   /* Let the user know we're compiling this function.  */
   announce_function (decl1);
