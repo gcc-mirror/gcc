@@ -60,15 +60,16 @@ Boston, MA 02111-1307, USA.  */
    libc, depending on whether we're doing profiling or need threads support.
    (simular to the default, except no -lg, and no -p).  */
 
-#undef LIB_SPEC
-#define LIB_SPEC							\
-  "%{!shared:								\
-     %{!pg:%{!pthread:%{!kthread:-lc}					\
-       %{kthread:-lpthread -lc}}					\
-       %{pthread:-lc_r}}						\
-     %{pg:%{!pthread:%{!kthread:-lc_p}					\
-       %{kthread:-lpthread_p -lc_p}}					\
-       %{pthread:-lc_r_p}}}"
+#undef  LIB_SPEC
+#define LIB_SPEC "							\
+  %{!shared:								\
+    %{!pg:								\
+      %{!pthread:-lc}							\
+      %{pthread:-lc_r}}							\
+    %{pg:								\
+      %{!pthread:-lc_p}							\
+      %{pthread:-lc_r_p}}						\
+  }"
 
 
 /* Code generation parameters.  */

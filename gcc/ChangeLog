@@ -1,3 +1,7 @@
+2000-12-21  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/freebsd.h (LIB_SPEC): remove -kthread option.
+
 2000-12-22  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* resource.c (mark_set_resources): Use MARK_SRC_DEST for
