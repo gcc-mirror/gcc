@@ -1,3 +1,8 @@
+2004-06-02  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.c (tree_find_edge_insert_loc):  Allow inserting before
+	return_stmt.
+
 2004-06-02  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (TAGS): Don't mess with c-parse.[ch].
