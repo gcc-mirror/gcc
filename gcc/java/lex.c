@@ -36,6 +36,7 @@ Addison Wesley 1996" (http://java.sun.com/docs/books/jls/html/3.doc.html)  */
 
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 #include <setjmp.h>
 
 #ifdef JAVA_LEX_DEBUG
@@ -125,8 +126,7 @@ java_sneak_unicode ()
 }
 
 static void
-java_unget_unicode (c)
-     unicode_t c;
+java_unget_unicode ()
 {
   if (!ctxp->c_line->current)
     fatal ("can't unget unicode - java_unget_unicode");
@@ -137,7 +137,6 @@ java_unget_unicode (c)
 void
 java_allocate_new_line ()
 {
-  int i;
   unicode_t ahead = (ctxp->c_line ? ctxp->c_line->ahead[0] : '\0');
   char ahead_escape_p = (ctxp->c_line ? 
 			 ctxp->c_line->unicode_escape_ahead_p : 0);
@@ -200,25 +199,26 @@ java_read_char ()
     return UEOF;
   else
     {
-      if (c & 0xe0 == 0xc0)
+      if (c & (0xe0 == 0xc0))
         {
           c1 = GETC ();
-	  if (c1 & 0xc0 == 0x80)
+	  if (c1 & (0xc0 == 0x80))
 	    return (unicode_t)(((c &0x1f) << 6) + (c1 & 0x3f));
 	}
-      else if (c & 0xf0 == 0xe0)
+      else if (c & (0xf0 == 0xe0))
         {
           c1 = GETC ();
-	  if (c1 & 0xc0 == 0x80)
+	  if (c1 & (0xc0 == 0x80))
 	    {
 	      c2 = GETC ();
-	      if (c2 & 0xc0 == 0x80)
+	      if (c2 & (0xc0 == 0x80))
 	        return (unicode_t)(((c & 0xf) << 12) + 
 				   (( c1 & 0x3f) << 6) + (c2 & 0x3f));
 	    }
 	}
       java_lex_error ("Bad utf8 encoding", 0);
     }
+  return 0;
 }
 
 static void
@@ -277,7 +277,7 @@ java_read_unicode (term_context, unicode_escape_p)
 	      if (c >= '0' && c <= '9')
 		unicode |= (unicode_t)((c-'0') << shift);
 	      else if ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
-	        unicode |= (unicode_t)(10+(c | 0x20)-'a' << shift);
+	        unicode |= (unicode_t)((10+(c | 0x20)-'a') << shift);
 	      else
 		  java_lex_error 
 		    ("Non hex digit in Unicode escape sequence", 0);
@@ -364,7 +364,7 @@ java_parse_end_comment ()
 	    case '/':
 	      return;
 	    case '*':	/* reparse only '*' */
-	      java_unget_unicode (c);
+	      java_unget_unicode ();
 	    }
 	}
     }
@@ -413,7 +413,7 @@ java_parse_escape_sequence ()
 	     c = java_get_unicode ())
 	  octal_escape [octal_escape_index++] = c;
 
-	java_unget_unicode (c);
+	java_unget_unicode ();
 
 	if ((octal_escape_index == 3) && (octal_escape [0] > '3'))
 	  {
@@ -448,7 +448,6 @@ java_lex (java_lval)
      YYSTYPE *java_lval;
 {
   unicode_t c, first_unicode;
-  int line_terminator;
   int ascii_index, all_ascii;
   char *string;
 
@@ -471,7 +470,7 @@ java_lex (java_lval)
       if ((c = java_get_unicode ()) == UEOF)
 	return 0;		/* Ok here */
       else
-	java_unget_unicode (c);	/* Caught latter at the end the function */
+	java_unget_unicode ();	/* Caught latter at the end the function */
     }
   /* Handle EOF here */
   if (c == UEOF)	/* Should probably do something here... */
@@ -544,7 +543,7 @@ java_lex (java_lval)
 			java_lex_error 
 		          ("Comment not terminated at end of input", 0);
 		      
-		      java_unget_unicode (c);
+		      java_unget_unicode ();
 		      deprecated [deprecated_index] = '\0';
 		      if (!strcmp (deprecated, "deprecated"))
 			{
@@ -555,13 +554,13 @@ java_lex (java_lval)
 		}
 	    }
 	  else
-	    java_unget_unicode (c);
+	    java_unget_unicode ();
 
 	  java_parse_end_comment ();
 	  goto step1;
 	  break;
 	default:
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  c = '/';
 	  break;
 	}
@@ -575,7 +574,6 @@ java_lex (java_lval)
   /* Numeric literals */
   if (JAVA_ASCII_DIGIT (c) || (c == '.'))
     {
-      unicode_t peep;
       /* This section of code is borrowed from gcc/c-lex.c  */
 #define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2 + 2)
       int parts[TOTAL_PARTS];
@@ -614,7 +612,7 @@ java_lex (java_lval)
 	  else if (c == '.')
 	    {
 	      /* Push the '.' back and prepare for a FP parsing... */
-	      java_unget_unicode (c);
+	      java_unget_unicode ();
 	      c = '0';
 	    }
 	  else
@@ -635,7 +633,7 @@ java_lex (java_lval)
 					double_type_node);
 		  return (FP_LIT_TK);
 		default:
-		  java_unget_unicode (c);
+		  java_unget_unicode ();
 		  SET_LVAL_NODE_TYPE (integer_zero_node, int_type_node);
 		  return (INT_LIT_TK);
 		}
@@ -745,7 +743,7 @@ java_lex (java_lval)
 #endif
 
 		  if (stage != 4) /* Don't push back fF/dD */
-		    java_unget_unicode (c);
+		    java_unget_unicode ();
 		  
 		  /* An exponent (if any) must have seen a digit.  */
 		  if (seen_exponent && !seen_digit)
@@ -790,7 +788,7 @@ java_lex (java_lval)
       else if (radix == 16 && !literal_index)
 	java_lex_error ("No digit specified for hexadecimal literal", 0);
       else
-	java_unget_unicode (c);
+	java_unget_unicode ();
 
 #ifdef JAVA_LEX_DEBUG
       literal_token [literal_index] = '\0'; /* So JAVA_LEX_LIT is safe. */
@@ -965,7 +963,7 @@ java_lex (java_lval)
 	     variable_declarator: rule, it has to be seen as '=' as opposed
 	     to being seen as an ordinary assignment operator in
 	     assignment_operators: rule.  */
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (ASSIGN_TK);
 	}
       
@@ -984,17 +982,17 @@ java_lex (java_lval)
 		}
 	      else
 		{
-		  java_unget_unicode (c);
+		  java_unget_unicode ();
 		  BUILD_OPERATOR (ZRS_TK);
 		}
 	    case '=':
 	      BUILD_OPERATOR2 (SRS_ASSIGN_TK);
 	    default:
-	      java_unget_unicode (c);
+	      java_unget_unicode ();
 	      BUILD_OPERATOR (SRS_TK);
 	    }
 	default:
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (GT_TK);
 	}
 	
@@ -1010,11 +1008,11 @@ java_lex (java_lval)
 	    }
 	  else
 	    {
-	      java_unget_unicode (c);
+	      java_unget_unicode ();
 	      BUILD_OPERATOR (LS_TK);
 	    }
 	default:
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (LT_TK);
 	}
 
@@ -1026,7 +1024,7 @@ java_lex (java_lval)
 	case '=':
 	  BUILD_OPERATOR2 (AND_ASSIGN_TK);
 	default:
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (AND_TK);
 	}
 
@@ -1038,7 +1036,7 @@ java_lex (java_lval)
 	case '=':
 	  BUILD_OPERATOR2 (OR_ASSIGN_TK);
 	default:
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (OR_TK);
 	}
 
@@ -1050,7 +1048,7 @@ java_lex (java_lval)
 	case '=':
 	  BUILD_OPERATOR2 (PLUS_ASSIGN_TK);
 	default:
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (PLUS_TK);
 	}
 
@@ -1062,7 +1060,7 @@ java_lex (java_lval)
 	case '=':
 	  BUILD_OPERATOR2 (MINUS_ASSIGN_TK);
 	default:
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  ctxp->minus_seen = 1;
 	  BUILD_OPERATOR (MINUS_TK);
 	}
@@ -1074,7 +1072,7 @@ java_lex (java_lval)
 	}
       else
 	{
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (MULT_TK);
 	}
 
@@ -1085,7 +1083,7 @@ java_lex (java_lval)
 	}
       else
 	{
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (DIV_TK);
 	}
 
@@ -1096,7 +1094,7 @@ java_lex (java_lval)
 	}
       else
 	{
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (XOR_TK);
 	}
 
@@ -1107,7 +1105,7 @@ java_lex (java_lval)
 	}
       else
 	{
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (REM_TK);
 	}
 
@@ -1118,7 +1116,7 @@ java_lex (java_lval)
 	}
       else
 	{
-	  java_unget_unicode (c);
+	  java_unget_unicode ();
 	  BUILD_OPERATOR (NEG_TK);
 	}
 	  
@@ -1144,7 +1142,7 @@ java_lex (java_lval)
 
   obstack_1grow (&temporary_obstack, '\0');
   string = obstack_finish (&temporary_obstack);
-  java_unget_unicode (c);
+  java_unget_unicode ();
 
   /* If we have something all ascii, we consider a keyword, a boolean
      literal, a null literal or an all ASCII identifier.  Otherwise,

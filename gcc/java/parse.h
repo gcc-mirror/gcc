@@ -191,12 +191,12 @@ extern tree stabilize_reference PROTO ((tree));
 #define ERROR_CANT_CONVERT_TO_BOOLEAN(OPERATOR, NODE, TYPE)		\
   parse_error_context							\
     ((OPERATOR), "Incompatible type for `%s'. Can't convert `%s' to "	\
-     "boolean", operator_string ((NODE)), lang_printable_name ((TYPE)))
+     "boolean", operator_string ((NODE)), lang_printable_name ((TYPE),0))
 
 #define ERROR_CANT_CONVERT_TO_NUMERIC(OPERATOR, NODE, TYPE)		\
   parse_error_context							\
     ((OPERATOR), "Incompatible type for `%s'. Can't convert `%s' to "	\
-     "numeric type", operator_string ((NODE)), lang_printable_name ((TYPE)))
+     "numeric type", operator_string ((NODE)), lang_printable_name ((TYPE), 0))
 
 #define ERROR_CAST_NEEDED_TO_INTEGRAL(OPERATOR, NODE, TYPE)		\
   parse_error_context							\
@@ -204,7 +204,7 @@ extern tree stabilize_reference PROTO ((tree));
      "Incompatible type for `%s'. Explicit cast needed to convert "	\
       "`%s' to integral" : "Incompatible type for `%s'. Can't convert "	\
       "`%s' to integral"), operator_string ((NODE)),			\
-      lang_printable_name ((TYPE)))
+      lang_printable_name ((TYPE), 0))
 
 #define ERROR_VARIABLE_NOT_INITIALIZED(WFL, V)			\
   parse_error_context						\
@@ -560,7 +560,7 @@ static tree  create_class PROTO ((int, tree, tree, tree));
 static tree  create_interface PROTO ((int, tree, tree));
 static tree  find_field PROTO ((tree, tree));
 static tree lookup_field_wrapper PROTO ((tree, tree));
-static int   duplicate_declaration_error PROTO ((tree, tree, tree, tree));
+static int   duplicate_declaration_error PROTO ((tree, tree, tree));
 static void  register_fields PROTO ((int, tree, tree));
 static tree parser_qualified_classname PROTO ((tree));
 static int  parser_check_super PROTO ((tree, tree, tree));
@@ -595,12 +595,11 @@ static tree patch_method_invocation_stmt PROTO ((tree, tree, tree, int *, tree *
 static int breakdown_qualified PROTO ((tree *, tree *, tree));
 static tree resolve_and_layout PROTO ((tree, tree));
 static tree resolve_no_layout PROTO ((tree, tree));
-static int identical_subpath_p PROTO ((tree, tree));
 static int invocation_mode PROTO ((tree, int));
 static tree find_applicable_accessible_methods_list PROTO ((tree, tree, tree));
 static tree find_most_specific_methods_list PROTO ((tree));
 static int argument_types_convertible PROTO ((tree, tree));
-static tree patch_invoke PROTO ((tree, tree, tree, tree));
+static tree patch_invoke PROTO ((tree, tree, tree));
 static tree lookup_method_invoke PROTO ((int, tree, tree, tree, tree));
 static tree register_incomplete_type PROTO ((int, tree, tree, tree));
 static tree obtain_incomplete_type PROTO ((tree));
@@ -624,7 +623,7 @@ static tree build_unaryop PROTO ((int, int, tree));
 static tree build_incdec PROTO ((int, int, tree, int));
 static tree patch_unaryop PROTO ((tree, tree));
 static tree build_cast PROTO ((int, tree, tree));
-static tree patch_cast PROTO ((tree, tree, tree));
+static tree patch_cast PROTO ((tree, tree));
 static int valid_ref_assignconv_cast_p PROTO ((tree, tree, int));
 static int valid_builtin_assignconv_identity_widening_p PROTO ((tree, tree));
 static int valid_cast_to_p PROTO ((tree, tree));
@@ -658,7 +657,7 @@ static tree patch_if_else_statement PROTO ((tree));
 static tree add_stmt_to_compound PROTO ((tree, tree, tree));
 static tree add_stmt_to_block PROTO ((tree, tree, tree));
 static tree patch_exit_expr PROTO ((tree));
-static tree build_labeled_block PROTO ((int, tree, tree));
+static tree build_labeled_block PROTO ((int, tree));
 static tree generate_labeled_block PROTO (());
 static tree complete_labeled_statement PROTO ((tree, tree));
 static tree build_bc_statement PROTO ((int, int, tree));
@@ -680,7 +679,7 @@ static tree patch_try_statement PROTO ((tree));
 static tree patch_synchronized_statement PROTO ((tree, tree));
 static tree patch_throw_statement PROTO ((tree, tree));
 static void check_thrown_exceptions PROTO ((int, tree));
-static int check_thrown_exceptions_do PROTO ((int, tree));
+static int check_thrown_exceptions_do PROTO ((tree));
 static void purge_unchecked_exceptions PROTO ((tree));
 static void check_throws_clauses PROTO ((tree, tree, tree));
 

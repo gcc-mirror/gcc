@@ -118,7 +118,7 @@ static int dependency_tracking = 0;
  */
 int
 lang_decode_option (argc, argv)
-     int argc;
+     int argc __attribute__ ((__unused__));
      char **argv;
 {
   char *p = argv[0];
@@ -132,8 +132,9 @@ lang_decode_option (argc, argv)
       p += 2;
 
       for (j = 0;
-		!found && j < sizeof (lang_f_options) / sizeof (lang_f_options[0]);
-		j++)
+	   !found 
+	   && j < (int)(sizeof (lang_f_options) / sizeof (lang_f_options[0]));
+	   j++)
 	{
 	  if (!strcmp (p, lang_f_options[j].string))
 	    {
@@ -363,7 +364,7 @@ put_decl_node (node)
 char *
 lang_printable_name (decl, v)
      tree decl;
-     int v;
+     int v  __attribute__ ((__unused__));
 {
   decl_bufpos = 0;
   put_decl_node (decl);
@@ -389,7 +390,7 @@ lang_print_error (file)
 
       last_error_function_context = DECL_CONTEXT (current_function_decl);
       fprintf (stderr, "In class `%s':\n",
-	       lang_printable_name (last_error_function_context));
+	       lang_printable_name (last_error_function_context, 0));
     }
   if (last_error_function != current_function_decl)
     {
@@ -451,7 +452,7 @@ lang_init ()
    function prototypes.  */
 
 void java_dummy_print (s)
-     char *s;
+     char *s __attribute__ ((__unused__));
 {
 }
 
@@ -493,25 +494,25 @@ lang_identify ()
 
 void
 print_lang_decl (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+     FILE *file __attribute ((__unused__));
+     tree node __attribute ((__unused__));
+     int indent __attribute ((__unused__));
 {
 }
 
 void
 print_lang_type (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+     FILE *file __attribute ((__unused__));
+     tree node __attribute ((__unused__));
+     int indent __attribute ((__unused__));
 {
 }
 
 void
 print_lang_identifier (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+     FILE *file __attribute ((__unused__));
+     tree node __attribute ((__unused__));
+     int indent __attribute ((__unused__));
 {
 }
 
@@ -524,8 +525,8 @@ print_lang_statistics ()
 
 void
 lang_print_xnode (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+     FILE *file __attribute ((__unused__));
+     tree node __attribute ((__unused__));
+     int indent __attribute ((__unused__));
 {
 }

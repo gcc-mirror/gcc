@@ -1,3 +1,114 @@
+Wed Oct 14 18:21:29 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (pop_labeled_block, lang_printable_name,
+ 	maybe_add_interface, set_super_info, get_access_flags_from_decl,
+ 	interface_of_p, inherits_from_p, fix_classpath,
+ 	complete_start_java_method, emit_handlers, init_outgoing_cpool,
+ 	make_class_data, register_class, alloc_name_constant): New
+ 	function prototypes.
+	* lang.c (lang_decode_option): Set argc argument unused. Fixed
+ 	indentation. Added cast to remove warning.
+	(lang_printable_name): Set v argument unused.
+	(lang_print_error): Added argument to lang_printable_name call.
+	(java_dummy_print, print_lang_decl, print_lang_type,
+ 	print_lang_identifier, lang_print_xnode): All argument marked
+ 	unused.
+	* lex.c (java_unget_unicode): Removed unnecessary argument.
+	(java_allocate_new_line): Unused local variable is gone.
+	(java_read_char): Added parenthesis in expressions to remove
+ 	warnings.  Added final return statement.
+	(java_read_unicode): Added parenthesis in expression to remove
+ 	warning.
+	(java_parse_end_comment): Fixed java_unget_unicode invocation.
+	(java_parse_escape_sequence): Likewise.
+	(java_lex): Unused local variables are gone. Fixed
+ 	java_unget_unicode invocation.
+	* lex.h (set_float_handler): Prototype added when JC1_LITE not
+ 	defined.
+	* parse.h (ERROR_CANT_CONVERT_TO_BOOLEAN): Fixed
+ 	lang_printable_name invocation in macro.
+	(ERROR_CANT_CONVERT_TO_NUMERIC, ERROR_CAST_NEEDED_TO_INTEGRAL):
+ 	Likewise.
+	(duplicate_declaration_error): Suppressed unused argument in
+ 	prototype.
+	(identical_subpath_p): Function declaration is gone.
+	(patch_invoke): Suppressed unused argument in prototype.
+	(patch_cast, build_labeled_block, check_thrown_exceptions):
+ 	Likewise.
+	* parse.y (setjmp.h): Included
+	(toplev.h): Likewise.
+	(field_declaration:): Suppressed unused local
+	(label_decl:): Fixed build_labeled_block invocation.
+	(java_pop_parser_context): Put extra parenthesis around assignment
+ 	in if.
+	(yyerror): Suppressed unused local variables.
+	(variable_redefinition_error): Fixed lang_printable_name
+ 	invocation.
+	(create_interface): Suppressed unused local variables.
+	(create_class): Likewise.
+	(duplicate_declaration_error): Suppressed unused argument. Fixed
+ 	lang_printable_name invocation.
+	(register_fields): Suppressed unused local variable. Fixed
+ 	duplicate_declaration_error invocation.
+	(method_header): Suppressed unused local variable.
+	(method_declarator, parser_check_super): Likewise.
+	(java_complete_class): Suppressed unused local variable. Fixed
+ 	fatal error message.
+	(complete_class_report_errors): Added default: in switch.
+	(java_check_regular_methods): Fixed lang_printable_name
+ 	invocations.
+	(check_throws_clauses): Likewise.
+	(java_check_abstract_methods): Suppressed unused local
+ 	variable. Fixed lang_printable_name invocation.
+	(read_import_entry): Added supplemental return statement.
+	(read_import_dir): Suppressed unused local variables.
+	(check_pkg_class_access, declare_local_variables): Likewise.
+	(source_start_java_method): Suppressed unused extern variable
+ 	declarations
+	(expand_start_java_method): Suppressed unused extern and local
+ 	variable declarations.
+	(java_complete_expand_methods): Likewise.
+	(java_complete_expand_method): Suppressed unused local variables.
+	(make_qualified_name): Likewise.
+	(resolve_qualified_expression_name): Added default: in
+ 	switch. Fixed lang_printable_name invocation.
+	(class_instance_creation_expression): Added parenthesis around
+ 	expressions.
+	(patch_method_invocation_stmt): Fixed lang_printable_name and
+ 	patch_invoke invocations.
+	(check_for_static_method_reference): Fixed lang_printable_name
+ 	invocation.
+	(patch_invoke): Suppressed unused arguments and local variables.
+	(lookup_method_invoke): Suppressed unused local variables.
+	(qualify_ambiguous_name): Added default: in switch.
+	(identical_subpath_p): Function removed.
+	(patch_assignment): Suppressed unused local variables. Suppressed
+ 	unnecessary if statement. Fixed lang_printable_name invocations.
+	(try_builtin_assignconv): Fixed lang_printable_name invocations.
+	(valid_ref_assignconv_cast_p): Parenthesis around
+ 	expression. Suppressed unused local variables.
+	(build_binop): Suppressed unused local variables. fixed
+ 	lang_printable_name invocations.
+	(string_constant_concatenation): Suppressed unused local
+ 	variables.
+	(patch_unaryop): Fixed lang_printable_name invocation.
+	(patch_cast): Suppressed unnecessary argument. Fixed
+ 	lang_printable_name invocation.
+	(patch_array_ref): Fixed lang_printable_name invocation.
+	(patch_newarray, patch_return, patch_if_else_statement): Likewise.
+	(build_labeled_block): Suppressed unused argument.
+	(generate_labeled_block): Fixed build_labeled_block invocation.
+	(build_loop_body): Suppressed unused local variables.
+	(patch_loop_statement): Likewise.
+	(patch_exit): Fixed lang_printable_name invocation.
+	(patch_switch_statement): Likewise.
+	(case_identity): First argument marked unused.
+	(patch_try_statement): Fixed lang_printable_name invocations.
+	(patch_synchronized_statement, patch_throw_statement): Likewise.
+	(check_thrown_exceptions): Fixed check_thrown_exceptions and
+ 	lang_printable_name invocations.
+	(check_thrown_exceptions_do): Suppressed unused argument.
+
 1998-10-14  Tom Tromey  <tromey@cygnus.com>
 
 	* jcf-write.c (write_classfile): Add output class file as target.
