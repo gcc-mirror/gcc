@@ -238,15 +238,20 @@ extern int vasprintf PARAMS ((char **, const char *, va_list))
 /* Drastically simplified alloca configurator.  If we're using GCC,
    we use __builtin_alloca; otherwise we use the C alloca.  The C
    alloca is always available.  You can override GCC by defining
-   USE_C_ALLOCA yourself.  */
+   USE_C_ALLOCA yourself.  The canonical autoconf macro C_ALLOCA is
+   also set/unset as it is often used to indicate whether code needs
+   to call alloca(0).  */
 extern PTR C_alloca PARAMS((size_t));
 #undef alloca
 #if GCC_VERSION >= 2000 && !defined USE_C_ALLOCA
 # define alloca(x) __builtin_alloca(x)
+# undef C_ALLOCA
 #else
 # define alloca(x) C_alloca(x)
 # undef USE_C_ALLOCA
 # define USE_C_ALLOCA 1
+# undef C_ALLOCA
+# define C_ALLOCA 1
 #endif
 
 #ifdef __cplusplus

@@ -1,3 +1,7 @@
+2001-03-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (alloca): Handle setting C_ALLOCA.
+
 2001-03-20  Jim Blandy  <jimb@redhat.com>
 
 	* demangle.h (enum gnu_v3_constructor_kinds,
