@@ -339,11 +339,15 @@ build_up_reference (type, arg, flags)
   tree rval;
   tree argtype = TREE_TYPE (arg);
   tree target_type = TREE_TYPE (type);
+  tree stmt_expr = NULL_TREE;
 
   my_friendly_assert (TREE_CODE (type) == REFERENCE_TYPE, 187);
 
   if ((flags & DIRECT_BIND) && ! real_lvalue_p (arg))
     {
+      tree compound_stmt;
+
+      /* Create a new temporary variable.  */
       tree targ = arg;
       if (toplevel_bindings_p ())
 	arg = get_temp_name (argtype, 1);
@@ -351,10 +355,25 @@ build_up_reference (type, arg, flags)
 	{
 	  arg = pushdecl (build_decl (VAR_DECL, NULL_TREE, argtype));
 	  DECL_ARTIFICIAL (arg) = 1;
+	  /* Generate code to initialize it.  We wrap it in a
+	     statement-expression so that when we are building a
+	     statement-tree we will have a representation of this
+	     declaration.  */
+	  begin_init_stmts (&stmt_expr, &compound_stmt);
 	}
+
+      /* Process the initializer for the declaration.  */
       DECL_INITIAL (arg) = targ;
       cp_finish_decl (arg, targ, NULL_TREE, 0,
 		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
+
+      /* And wrap up the statement-expression, if necessary.  */
+      if (!toplevel_bindings_p ())
+	{
+	  if (building_stmt_tree ())
+	    add_decl_stmt (arg);
+	  stmt_expr = finish_init_stmts (stmt_expr, compound_stmt);
+	}
     }
   else if (!(flags & DIRECT_BIND) && ! lvalue_p (arg))
     {
@@ -389,6 +408,13 @@ build_up_reference (type, arg, flags)
       = convert_to_pointer_force (build_pointer_type (target_type), rval);
   rval = build1 (NOP_EXPR, type, rval);
   TREE_CONSTANT (rval) = TREE_CONSTANT (TREE_OPERAND (rval, 0));
+
+  /* If we created and initialized a new temporary variable, add the
+     representation of that initialization to the RVAL.  */
+  if (stmt_expr)
+    rval = build (COMPOUND_EXPR, TREE_TYPE (rval), stmt_expr, rval);
+
+  /* And return the result.  */
   return rval;
 }
 

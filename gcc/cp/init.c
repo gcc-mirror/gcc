@@ -60,8 +60,6 @@ static tree initializing_context PROTO((tree));
 static tree build_java_class_ref PROTO((tree));
 static void expand_cleanup_for_base PROTO((tree, tree));
 static tree get_temp_regvar PROTO((tree, tree));
-static void begin_init_stmts PROTO((tree *, tree *));
-static tree finish_init_stmts PROTO((tree, tree));
 
 /* Cache the identifier nodes for the magic field of a new cookie.  */
 static tree nc_nelts_field_id;
@@ -1007,7 +1005,7 @@ expand_member_init (exp, name, init)
    pass them back to finish_init_stmts when the expression is
    complete.  */
 
-static void
+void
 begin_init_stmts (stmt_expr_p, compound_stmt_p)
      tree *stmt_expr_p;
      tree *compound_stmt_p;
@@ -1020,7 +1018,7 @@ begin_init_stmts (stmt_expr_p, compound_stmt_p)
 /* Finish out the statement-expression begun by the previous call to
    begin_init_stmts.  Returns the statement-expression itself.  */
 
-static tree
+tree
 finish_init_stmts (stmt_expr, compound_stmt)
      tree stmt_expr;
      tree compound_stmt;
