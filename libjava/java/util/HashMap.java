@@ -1,6 +1,6 @@
 /* HashMap.java -- a class providing a basic hashtable data structure,
    mapping Object --> Object
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -162,7 +162,7 @@ public class HashMap extends AbstractMap
    *
    * @author Eric Blake <ebb9@email.byu.edu>
    */
-  static class HashEntry extends BasicMapEntry
+  static class HashEntry extends AbstractMap.BasicMapEntry
   {
     /**
      * The next entry in the linked list. Package visible for use by subclass.
@@ -373,9 +373,9 @@ public class HashMap extends AbstractMap
       {
         Map.Entry e = (Map.Entry) itr.next();
         // Optimize in case the Entry is one of our own.
-        if (e instanceof BasicMapEntry)
+        if (e instanceof AbstractMap.BasicMapEntry)
           {
-            BasicMapEntry entry = (BasicMapEntry) e;
+            AbstractMap.BasicMapEntry entry = (AbstractMap.BasicMapEntry) e;
             put(entry.key, entry.value);
           }
         else
@@ -647,7 +647,8 @@ public class HashMap extends AbstractMap
    * @return the matching entry, if found, or null
    * @see #entrySet()
    */
-  private HashEntry getEntry(Object o)
+  // Package visible, for use in nested classes.
+  HashEntry getEntry(Object o)
   {
     if (!(o instanceof Map.Entry))
       return null;
@@ -710,14 +711,13 @@ public class HashMap extends AbstractMap
   }
 
   /**
-   * Increases the size of the HashMap and rehashes all keys to new array
-   * indices; this is called when the addition of a new value would cause
-   * size() > threshold. Note that the existing Entry objects are reused in
-   * the new hash table.
-   * <p>
+   * Increases the size of the HashMap and rehashes all keys to new
+   * array indices; this is called when the addition of a new value
+   * would cause size() &gt; threshold. Note that the existing Entry
+   * objects are reused in the new hash table.
    *
-   * This is not specified, but the new size is twice the current size plus
-   * one; this number is not always prime, unfortunately.
+   * <p>This is not specified, but the new size is twice the current size
+   * plus one; this number is not always prime, unfortunately.
    */
   private void rehash()
   {

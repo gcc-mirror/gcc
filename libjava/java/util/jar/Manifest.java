@@ -174,10 +174,19 @@ public class Manifest implements Cloneable
   private static void read_main_section(Attributes attr,
 					BufferedReader br) throws IOException
   {
-    read_version_info(attr, br);
+    // According to the spec we should actually call read_version_info() here.
     read_attributes(attr, br);
+    // Explicitly set Manifest-Version attribute if not set in Main
+    // attributes of Manifest.
+    if (attr.getValue(Attributes.Name.MANIFEST_VERSION) == null)
+	    attr.putValue(Attributes.Name.MANIFEST_VERSION, "0.0");
   }
 
+  /**
+   * Pedantic method that requires the next attribute in the Manifest to be
+   * the "Manifest-Version". This follows the Manifest spec closely but
+   * reject some jar Manifest files out in the wild.
+   */
   private static void read_version_info(Attributes attr,
 					BufferedReader br) throws IOException
   {
@@ -185,7 +194,7 @@ public class Manifest implements Cloneable
     try
       {
 	String value = expect_header(version_header, br);
-	attr.putValue(version_header, value);
+	attr.putValue(Attributes.Name.MANIFEST_VERSION, value);
       }
     catch (IOException ioe)
       {

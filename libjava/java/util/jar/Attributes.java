@@ -430,7 +430,7 @@ public class Attributes implements Cloneable, Map
    * @returns the old value of the attribute name or null if it didn't exist
    * yet
    */
-  private String putValue(Name name, String value)
+  String putValue(Name name, String value)
   {
     return (String) put(name, value);
   }

@@ -243,6 +243,7 @@ extern "Java"
       class AbstractCollection;
       class AbstractList;
       class AbstractMap;
+      class AbstractMap$BasicMapEntry;
       class AbstractSequentialList;
       class AbstractSet;
       class ArrayList;
@@ -317,11 +318,13 @@ extern "Java"
       class Map$Entry;
       class Map$Map;
       class MissingResourceException;
+      class MyResources;
       class NoSuchElementException;
       class Observable;
       class Observer;
       class Properties;
       class PropertyPermission;
+      class PropertyPermissionCollection;
       class PropertyResourceBundle;
       class Random;
       class RandomAccess;

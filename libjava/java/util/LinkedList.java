@@ -1,5 +1,5 @@
 /* LinkedList.java -- Linked list implementation of the List interface
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -125,12 +125,13 @@ public class LinkedList extends AbstractSequentialList
    * entry in the list is obtained in constant time, which is a very desirable
    * property.
    * For speed and flexibility, range checking is not done in this method:
-   * Incorrect values will be returned if (n < 0) or (n >= size).
+   * Incorrect values will be returned if (n &lt; 0) or (n &gt;= size).
    *
    * @param n the number of the entry to get
    * @return the entry at position n
    */
-  private Entry getEntry(int n)
+  // Package visible for use in nested classes.
+  Entry getEntry(int n)
   {
     Entry e;
     if (n < size / 2)
@@ -156,7 +157,8 @@ public class LinkedList extends AbstractSequentialList
    *
    * @param e the entry to remove
    */
-  private void removeEntry(Entry e)
+  // Package visible for use in nested classes.
+  void removeEntry(Entry e)
   {
     modCount++;
     size--;

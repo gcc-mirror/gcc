@@ -1,6 +1,6 @@
 /* TreeMap.java -- a class providing a basic Red-Black Tree data structure,
    mapping Object --> Object
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -162,7 +162,7 @@ public class TreeMap extends AbstractMap
    *
    * @author Eric Blake <ebb9@email.byu.edu>
    */
-  private static final class Node extends BasicMapEntry
+  private static final class Node extends AbstractMap.BasicMapEntry
   {
     // All fields package visible for use by nested classes.
     /** The color of this node. */
@@ -623,8 +623,10 @@ public class TreeMap extends AbstractMap
     Node n = getNode(key);
     if (n == nil)
       return null;
+    // Note: removeNode can alter the contents of n, so save value now.
+    Object result = n.value;
     removeNode(n);
-    return n.value;
+    return result;
   }
 
   /**
@@ -1768,7 +1770,7 @@ public class TreeMap extends AbstractMap
             SubMap.this.clear();
           }
         };
-      return this.keys;
+      return this.values;
     }
   } // class SubMap  
 } // class TreeMap

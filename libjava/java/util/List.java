@@ -201,7 +201,7 @@ public interface List extends Collection
    * @see Object#equals(Object)
    * @see #hashCode()
    */
- /* boolean equals(Object o);*/
+  boolean equals(Object o);
 
   /**
    * Get the element at a given index in this list.
@@ -213,18 +213,20 @@ public interface List extends Collection
   Object get(int index);
 
   /**
-   * Obtain a hash code for this list. In order to obey the general contract of
-   * the hashCode method of class Object, this value is calculated as follows:
-   * <pre>
-   *   hashCode = 1;
-   *   Iterator i = list.iterator();
-   *   while (i.hasNext())
-   *     {
-   *       Object obj = i.next();
-   *       hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
-   *     }
-   * </pre>
-   * This ensures that the general contract of Object.hashCode() is adhered to.
+   * Obtains a hash code for this list. In order to obey the general
+   * contract of the hashCode method of class Object, this value is
+   * calculated as follows:
+   * 
+<p><pre>hashCode = 1;
+Iterator i = list.iterator();
+while (i.hasNext())
+{
+  Object obj = i.next();
+  hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
+}</pre>
+   *
+   * <p>This ensures that the general contract of Object.hashCode()
+   * is adhered to.
    *
    * @return the hash code of this list
    * @see Object#hashCode()

@@ -1,5 +1,5 @@
-/* Attributes.java -- exception thrown to indicate an problem with a jar file
-   Copyright (C) 2000 Free Software Foundation, Inc.
+/* JarException.java -- thrown to indicate an problem with a jar file
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,35 +41,34 @@ import java.util.zip.ZipException;
 
 /**
  * This exception is thrown to indicate an problem with a jar file.
- * It can be constructed with or without a descriptive message of the problem.
- * <p>
  * Note that none of the methods in the java.util.jar package actually declare
  * to throw this exception, most just declare that they throw an IOException
  * which is super class of JarException.
- * 
- * @since 1.2
+ *
  * @author Mark Wielaard (mark@klomp.org)
+ * @since 1.2
  */
-
 public class JarException extends ZipException
 {
-  // Constructors
+  /**
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = 7159778400963954473L;
 
   /**
    * Create a new JarException without a descriptive error message.
    */
   public JarException()
   {
-    super();
   }
 
   /**
    * Create a new JarException with a descriptive error message indicating
    * what went wrong. This message can later be retrieved by calling the
    * <code>getMessage()</code> method.
-   * @see java.lang.Throwable@getMessage()
    *
    * @param message The descriptive error message
+   * @see #getMessage()
    */
   public JarException(String message)
   {

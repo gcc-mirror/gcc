@@ -301,8 +301,8 @@ public class Thread implements Runnable
   public static native void yield ();
 
   // Private data.
-  private ThreadGroup group;
-  private String name;
+  ThreadGroup group;
+  String name;
   private Runnable runnable;
   private int priority;
   private boolean daemon_flag;

@@ -1,5 +1,5 @@
 /* Collections.java -- Utility class with methods to operate on collections
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,7 +60,6 @@ import java.io.Serializable;
  * modify the set.
  *
  * @author Original author unknown
- * @author Bryce McKinlay
  * @author Eric Blake <ebb9@email.byu.edu>
  * @see Collection
  * @see Set
@@ -108,24 +107,6 @@ public class Collections
    */
   public static final Set EMPTY_SET = new EmptySet();
 
-  private static final Iterator EMPTY_ITERATOR = new Iterator()
-    {
-      public boolean hasNext()
-      {
-	return false;
-      }
-
-      public Object next()
-      {
-	throw new NoSuchElementException();
-      }
-
-      public void remove()
-      {
-	throw new UnsupportedOperationException();
-      }
-    };
-
   /**
    * The implementation of {@link #EMPTY_SET}. This class name is required
    * for compatibility with Sun's JDK serializability.
@@ -158,9 +139,94 @@ public class Collections
     /**
      * Returns an iterator that does not iterate.
      */
+    // This is really cheating! I think it's perfectly valid, though.
     public Iterator iterator()
     {
-      return EMPTY_ITERATOR;
+      return EMPTY_LIST.iterator();
+    }
+
+    // The remaining methods are optional, but provide a performance
+    // advantage by not allocating unnecessary iterators in AbstractSet.
+    /**
+     * The empty set never contains anything.
+     */
+    public boolean contains(Object o)
+    {
+      return false;
+    }
+
+    /**
+     * This is true only if the given collection is also empty.
+     */
+    public boolean containsAll(Collection c)
+    {
+      return c.isEmpty();
+    }
+
+    /**
+     * Equal only if the other set is empty.
+     */
+    public boolean equals(Object o)
+    {
+      return o instanceof Set && ((Set) o).isEmpty();
+    }
+
+    /**
+     * The hashcode is always 0.
+     */
+    public int hashCode()
+    {
+      return 0;
+    }
+
+    /**
+     * Always succeeds with false result.
+     */
+    public boolean remove(Object o)
+    {
+      return false;
+    }
+
+    /**
+     * Always succeeds with false result.
+     */
+    public boolean removeAll(Collection c)
+    {
+      return false;
+    }
+
+    /**
+     * Always succeeds with false result.
+     */
+    public boolean retainAll(Collection c)
+    {
+      return false;
+    }
+
+    /**
+     * The array is always empty.
+     */
+    public Object[] toArray()
+    {
+      return new Object[0];
+    }
+
+    /**
+     * We don't even need to use reflection!
+     */
+    public Object[] toArray(Object[] a)
+    {
+      if (a.length > 0)
+        a[0] = null;
+      return a;
+    }
+
+    /**
+     * The string never changes.
+     */
+    public String toString()
+    {
+      return "[]";
     }
   } // class EmptySet
 
@@ -207,15 +273,106 @@ public class Collections
     {
       throw new IndexOutOfBoundsException();
     }
-    
+
+    // The remaining methods are optional, but provide a performance
+    // advantage by not allocating unnecessary iterators in AbstractList.
     /**
-     * Returns an iterator that does not iterate. Optional, but avoids 
-     * allocation of an iterator in AbstractList.
+     * Never contains anything.
      */
-    public Iterator iterator()
+    public boolean contains(Object o)
     {
-      return EMPTY_ITERATOR;
-    }    
+      return false;
+    }
+
+    /**
+     * This is true only if the given collection is also empty.
+     */
+    public boolean containsAll(Collection c)
+    {
+      return c.isEmpty();
+    }
+
+    /**
+     * Equal only if the other set is empty.
+     */
+    public boolean equals(Object o)
+    {
+      return o instanceof List && ((List) o).isEmpty();
+    }
+
+    /**
+     * The hashcode is always 1.
+     */
+    public int hashCode()
+    {
+      return 1;
+    }
+
+    /**
+     * Returns -1.
+     */
+    public int indexOf(Object o)
+    {
+      return -1;
+    }
+
+    /**
+     * Returns -1.
+     */
+    public int lastIndexOf(Object o)
+    {
+      return -1;
+    }
+
+    /**
+     * Always succeeds with false result.
+     */
+    public boolean remove(Object o)
+    {
+      return false;
+    }
+
+    /**
+     * Always succeeds with false result.
+     */
+    public boolean removeAll(Collection c)
+    {
+      return false;
+    }
+
+    /**
+     * Always succeeds with false result.
+     */
+    public boolean retainAll(Collection c)
+    {
+      return false;
+    }
+
+    /**
+     * The array is always empty.
+     */
+    public Object[] toArray()
+    {
+      return new Object[0];
+    }
+
+    /**
+     * We don't even need to use reflection!
+     */
+    public Object[] toArray(Object[] a)
+    {
+      if (a.length > 0)
+        a[0] = null;
+      return a;
+    }
+
+    /**
+     * The string never changes.
+     */
+    public String toString()
+    {
+      return "[]";
+    }
   } // class EmptyList
 
   /**
@@ -253,6 +410,64 @@ public class Collections
       return EMPTY_SET;
     }
 
+    // The remaining methods are optional, but provide a performance
+    // advantage by not allocating unnecessary iterators in AbstractMap.
+    /**
+     * No entries!
+     */
+    public boolean containsKey(Object key)
+    {
+      return false;
+    }
+
+    /**
+     * No entries!
+     */
+    public boolean containsValue(Object value)
+    {
+      return false;
+    }
+
+    /**
+     * Equal to all empty maps.
+     */
+    public boolean equals(Object o)
+    {
+      return o instanceof Map && ((Map) o).isEmpty();
+    }
+
+    /**
+     * No mappings, so this returns null.
+     */
+    public Object get(Object o)
+    {
+      return null;
+    }
+
+    /**
+     * The hashcode is always 0.
+     */
+    public int hashCode()
+    {
+      return 0;
+    }
+
+    /**
+     * No entries.
+     */
+    public Set keySet()
+    {
+      return EMPTY_SET;
+    }
+
+    /**
+     * Remove always succeeds, with null result.
+     */
+    public Object remove(Object o)
+    {
+      return null;
+    }
+
     /**
      * Size is always 0.
      */
@@ -269,8 +484,17 @@ public class Collections
     {
       return EMPTY_SET;
     }
+
+    /**
+     * The string never changes.
+     */
+    public String toString()
+    {
+      return "[]";
+    }
   } // class EmptyMap
 
+
   /**
    * Compare two objects with or without a Comparator. If c is null, uses the
    * natural ordering. Slightly slower than doing it inline if the JVM isn't
@@ -502,7 +726,7 @@ public class Collections
   }
 
   /**
-   * Returns an array list holding the elements visited by a given
+   * Returns an ArrayList holding the elements visited by a given
    * Enumeration. This method exists for interoperability between legacy
    * APIs and the new Collection API.
    *
@@ -511,9 +735,9 @@ public class Collections
    * @see ArrayList
    * @since 1.4
    */
-  public static List list(Enumeration e)
+  public static ArrayList list(Enumeration e)
   {
-    List l = new ArrayList();
+    ArrayList l = new ArrayList();
     while (e.hasMoreElements())
       l.add(e.nextElement());
     return l;
@@ -1353,7 +1577,7 @@ public class Collections
     public Set entrySet()
     {
       if (entries == null)
-        entries = singleton(new BasicMapEntry(k, v)
+        entries = singleton(new AbstractMap.BasicMapEntry(k, v)
         {
           public Object setValue(Object o)
           {
@@ -1500,6 +1724,7 @@ public class Collections
     l.set(i, l.set(j, l.get(i)));
   }
 
+
   /**
    * Returns a synchronized (thread-safe) collection wrapper backed by the
    * given collection. Notice that element access through the iterators
@@ -2682,6 +2907,7 @@ public class Collections
     }
   } // class SynchronizedSortedSet
 
+
   /**
    * Returns an unmodifiable view of the given collection. This allows
    * "read-only" access, although changes in the backing collection show up
