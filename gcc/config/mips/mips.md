@@ -6550,12 +6550,6 @@ move\\t%0,%z4\\n\\
 ;; fill a delay slot.  This also prevents a bug in delayed branches
 ;; from showing up, which reuses one of the registers in our clobbers.
 
-;; ??? Disabled because it doesn't preserve alias information for
-;; operands 0 and 1.  Also, the rtl for the second insn doesn't mention
-;; that it uses the registers clobbered by the first.
-;;
-;; It would probably be better to split the block into individual
-;; instructions so that the scheduler can do more with it.
 (define_split
   [(set (mem:BLK (match_operand:SI 0 "register_operand" ""))
 	(mem:BLK (match_operand:SI 1 "register_operand" "")))
@@ -6567,7 +6561,7 @@ move\\t%0,%z4\\n\\
    (use (match_operand:SI 3 "small_int" ""))
    (use (const_int 0))]
 
-  "reload_completed && 0 && INTVAL (operands[2]) > 0"
+  "reload_completed && !TARGET_DEBUG_D_MODE && INTVAL (operands[2]) > 0"
 
   ;; All but the last move
   [(parallel [(set (mem:BLK (match_dup 0))

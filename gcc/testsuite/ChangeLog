@@ -1,7 +1,3 @@
-2002-12-15  Richard Sandiford  <rsandifo@redhat.com>
-
-	* gcc.c-torture/execute/20021215-1.c: New test.
-
 2002-12-12  Devang Patel <dpatel@apple.com>
 	* gcc.dg/darwin-ld-1.c: New test.
 	* gcc.dg/darwin-ld-2.c: New test.
