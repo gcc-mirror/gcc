@@ -1247,7 +1247,7 @@ setup_vtbl_ptr ()
 	  add_tree (ctor_stmt);
 	  
 	  /* And actually initialize the base-classes and members.  */
-	  emit_base_init (current_class_type);
+	  emit_base_init ();
 	}
     }
   else if (DECL_DESTRUCTOR_P (current_function_decl)
@@ -1286,8 +1286,7 @@ setup_vtbl_ptr ()
       /* Make all virtual function table pointers in non-virtual base
 	 classes point to CURRENT_CLASS_TYPE's virtual function
 	 tables.  */
-      initialize_vtbl_ptrs (current_class_type,
-			    current_class_ptr);
+      initialize_vtbl_ptrs (current_class_ptr);
 
       finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
       finish_then_clause (if_stmt);

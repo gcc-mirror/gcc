@@ -14773,7 +14773,6 @@ lang_mark_tree (t)
 	  ggc_mark_tree (lt->vfields);
 	  ggc_mark_tree (lt->vbases);
 	  ggc_mark_tree (lt->tags);
-	  ggc_mark_tree (lt->search_slot);
 	  ggc_mark_tree (lt->size);
 	  ggc_mark_tree (lt->pure_virtuals);
 	  ggc_mark_tree (lt->friend_classes);

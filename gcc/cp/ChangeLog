@@ -1,3 +1,27 @@
+2000-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (struct lang_type): Remove search_slot.
+	(CLASSTYPE_SEARCH_SLOT): Remove.
+	(emit_base_init): Change prototype.
+	(initialize_vtbl_ptrs): Likewise.
+	(expand_indirect_vtbls_init): Likewise.
+	(clear_search_slots): Remove.
+	* decl.c (lang_mark_tree): Don't mark search_slot.
+	* init.c (initialize_vtbl_ptrs): Simplify.
+	(emit_base_init): Likewise.
+	* search.c (struct vbase_info): Document decl_ptr.
+	(convert_pointer_to_single_level): Remove.
+	(dfs_find_vbases): Remove.
+	(dfs_init_base_pointers): Simplify.
+	(dfs_clear_vbase_slots): Remove.
+	(dfs_vtable_path_unmark): New function.
+	(init_vbase_pointers): Simplify.
+	(expand_upcast_fixups): Don't rely on CLASSTYPE_SEARCH_SLOT.
+	(expand_indirect_vtbls_init): Simplify.  Don't call
+	mark_all_temps_used.
+	* semantics.c (setup_vtbl_ptr): Adjust calls to emit_base_init and
+	initialize_vtbl_ptrs.
+
 2000-05-20  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* except.c: Add static prototypes.
