@@ -187,9 +187,8 @@
    int main ()
    {
       std::string  s("Some Kind Of Initial Input Goes Here");
-      std::locale  loc_c("C");
-      ToUpper      up(loc_c);
-      ToLower      down(loc_c);
+      ToUpper      up(std::locale::classic());
+      ToLower      down(std::locale::classic());
    
       // Change everything into upper case.
       std::transform(s.begin(), s.end(), s.begin(), up);
