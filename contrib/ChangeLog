@@ -1,3 +1,8 @@
+1998-11-25  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* test_summary (-p, prepend_logs): add these before the summary
+	(Compiler, Platform): print these just before configflags
+
 Sat Oct 31 10:53:40 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* warn_summary (longLineFilter): New shell function to encapsulate
