@@ -1,3 +1,8 @@
+2002-10-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* MAINTAINERS: Add Wolfgang Bangerth and Volker Reichelt under
+	GNATS only accounts.
+
 2002-10-24  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.in (i[3456]86-*-linux*): Add check to disable
