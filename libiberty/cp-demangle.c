@@ -4144,7 +4144,7 @@ is_gnu_v3_mangled_dtor (const char *name)
 #include "getopt.h"
 #include "dyn-string.h"
 
-static void print_usage PARAMS ((FILE* fp, int exit_value));
+static void print_usage (FILE* fp, int exit_value);
 
 #define IS_ALPHA(CHAR)                                                  \
   (((CHAR) >= 'a' && (CHAR) <= 'z')                                     \

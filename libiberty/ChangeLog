@@ -1,5 +1,27 @@
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	Convert libiberty to use ISO C prototype style 7/n.
+	* regex.c (PARAMS): Remove definition.
+	(PREFIX): Unconditionaly define using ISO C ## operator.
+	(init_syntax_once, extract_number, extract_number_and_incr, 
+	print_fastmap, print_partial_compiled_pattern,
+	print_compiled_pattern, print_double_string, printchar, 
+	convert_mbs_to_wcs, re_set_syntax, regex_grow_registers,
+	regex_compile, store_op1, store_op2, insert_op1, insert_op2,
+	at_begline_loc_p, at_endline_p, group_in_compile_stack, 
+	insert_space, wcs_compile_range, byte_compile_range, 
+	truncate_wchar, re_compile_fastmap, re_compile_fastmap, 
+	re_set_registers, re_search, re_search_2, re_search_3, re_match, 
+	re_match_2, count_mbs_length, wcs_re_match_2_internal,
+	byte_re_match_2_internal, group_match_null_string_p,
+	alt_match_null_string_p, common_op_match_null_string_p,
+	bcmp_translate, re_compile_pattern, re_comp, re_exec, regcomp, 
+	regexec, regerror, regfree): Use ISO C prototype style.
+	* partition.c: (elem_compare): Likewise.
+	* cp-demangle.c (print_usage): Likewise.
+
+2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Convert libiberty to use ISO C prototype style 5/n.
 	* random.c (srandom, initstate, setstate, random): Use ISO C
 	prototypes. 
