@@ -303,6 +303,7 @@ LIB1FUNCS_EXTRA =
 LIB2FUNCS_EXTRA = 
 
 # Default float.h source to use for cross-compiler.
+# This is overidden by configure.
 CROSS_FLOAT_H=float.h-cross
 
 # Program to convert libraries.
@@ -709,6 +710,8 @@ float.h-nat: enquire
 	mv tmp-float.h float.h-nat
 
 # Create a dummy float.h source for a cross-compiler.
+# ??? This isn't used anymore.  Should we create config/float-unkn.h
+# and make that the default float_format in configure?
 float.h-cross:
 	echo "#error float.h values not known for cross-compiler" > t-float.h-cross
 	mv t-float.h-cross float.h-cross
@@ -1984,6 +1987,7 @@ distclean: clean bytecode.distclean lang.distclean
 	-rm -f objc-parse.output
 	-rm -f c-parse.output
 	-rm -f *.asm
+	-rm -f float.h
 
 # Delete anything likely to be found in the source directory
 # that shouldn't be in the distribution.
