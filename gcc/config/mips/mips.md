@@ -1848,18 +1848,52 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  /* If this is a half-pic address being moved to a register, convert the
-     address into a load, so that scheduling and stuff works properly.  */
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+
+  /* If this is a half-pic address being loaded, convert the address
+     into a load, so that scheduling and stuff works properly.  */
 
   if (HALF_PIC_P()
-      && GET_CODE (operands[0]) == REG
-      && GET_CODE (operands[1]) == SYMBOL_REF
-      && HALF_PIC_ADDRESS_P (operands[1]))
+      && CONSTANT_P (op1)
+      && HALF_PIC_ADDRESS_P (op1))
     {
-      rtx ptr = HALF_PIC_PTR (operands[1]);
-      if (XSTR (ptr, 0) != XSTR (operands[1], 0))
+      rtx offset = const0_rtx;
+      rtx ptr;
+
+      if (GET_CODE (op1) == CONST)
+	op1 = eliminate_constant_term (XEXP (op1, 0), &offset);
+
+      ptr = HALF_PIC_PTR (op1);
+      if (GET_CODE (ptr) == SYMBOL_REF
+	  && GET_CODE (op1) == SYMBOL_REF
+	  && XSTR (ptr, 0) != XSTR (op1, 0))
 	{
-	  emit_move_insn (operands[0], gen_rtx (MEM, Pmode, ptr));
+	  rtx mem = gen_rtx (MEM, Pmode, ptr);
+
+	  if (INTVAL (offset) == 0)
+	    emit_move_insn (op0, mem);
+
+	  else if (reload_in_progress)
+	    {
+	      emit_move_insn (op0, mem);
+	      emit_insn (gen_addsi3 (op0, op0, offset));
+	    }
+
+	  else
+	    {
+	      rtx reg = gen_reg_rtx (Pmode);
+
+	      if (!SMALL_INT (offset))
+		{
+		  rtx reg2 = gen_reg_rtx (Pmode);
+		  emit_move_insn (reg2, offset);
+		  offset = reg2;
+		}
+
+	      emit_move_insn (reg, mem);
+	      emit_insn (gen_addsi3 (op0, reg, offset));
+	    }
 	  DONE;
 	}
     }
@@ -2822,7 +2856,7 @@ move\\t%0,%z4\\n\\
 (define_insn "branch_zero"
   [(set (pc)
 	(if_then_else (match_operator:SI 0 "cmp_op"
-					 [(match_operand:SI 1 "arith32_operand" "rn")
+					 [(match_operand:SI 1 "register_operand" "d")
 					  (const_int 0)])
 	(match_operand 2 "pc_or_label_operand" "")
 	(match_operand 3 "pc_or_label_operand" "")))]
@@ -2830,34 +2864,6 @@ move\\t%0,%z4\\n\\
   "*
 {
   mips_branch_likely = (final_sequence && INSN_ANNULLED_BRANCH_P (insn));
-
-  /* Handle places where CSE has folded a constant into the register operand.  */
-  if (GET_CODE (operands[1]) == CONST_INT)
-    {
-      int value = INTVAL (operands[1]);
-      int truth = 0;
-
-      switch (GET_CODE (operands[0]))
-	{
-	default:  abort ();
-	case EQ:  truth = (value == 0);			break;
-	case NE:  truth = (value != 0);			break;
-	case GT:  truth = (value >  0);			break;
-	case GE:  truth = (value >= 0);			break;
-	case LT:  truth = (value <  0);			break;
-	case LE:  truth = (value <= 0);			break;
-	case GTU: truth = (((unsigned)value) >  0);	break;
-	case GEU: truth = 1;				break;
-	case LTU: truth = 0;				break;
-	case LEU: truth = (((unsigned)value) <= 0);	break;
-	}
-
-      if (operands[2] != pc_rtx)
-	return (truth) ? \"%*beq%?\\t%.,%.,%2\" : \"%*bne%?\\t%.,%.,%2\";
-      else
-	return (truth) ? \"%*bne%?\\t%.,%.,%2\" : \"%*beq%?\\t%.,%.,%2\";
-    }
-
   if (operands[2] != pc_rtx)
     {				/* normal jump */
       switch (GET_CODE (operands[0]))
@@ -2867,7 +2873,7 @@ move\\t%0,%z4\\n\\
 	case GTU: return \"%*bne%?\\t%z1,%.,%2\";
 	case LEU: return \"%*beq%?\\t%z1,%.,%2\";
 	case GEU: return \"%*j\\t%2\";
-	case LTU: return \"#%*bltuz\\t%z1,%2\";
+	case LTU: return \"%*bne%?\\t%.,%.,%2\";
 	}
 
       return \"%*b%C0z%?\\t%z1,%2\";
@@ -2880,7 +2886,7 @@ move\\t%0,%z4\\n\\
 	case NE:  return \"%*beq%?\\t%z1,%.,%3\";
 	case GTU: return \"%*beq%?\\t%z1,%.,%3\";
 	case LEU: return \"%*bne%?\\t%z1,%.,%3\";
-	case GEU: return \"#%*bgeuz\\t%z1,%3\";
+	case GEU: return \"%*beq%?\\t%.,%.,%3\";
 	case LTU: return \"%*j\\t%3\";
 	}
 
