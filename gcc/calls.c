@@ -2937,9 +2937,6 @@ expand_call (exp, target, ignore)
 	    valreg = hard_function_value (TREE_TYPE (exp), fndecl, (pass == 0));
 	}
 
-      if (valreg == 0 || GET_CODE (valreg) == PARALLEL)
-        flags &= ~ECF_LIBCALL_BLOCK;
-
       /* Precompute all register parameters.  It isn't safe to compute anything
 	 once we have started filling any specific hard regs.  */
       precompute_register_parameters (num_actuals, args, &reg_parm_seen);
@@ -3071,32 +3068,45 @@ expand_call (exp, target, ignore)
 	 we have no way to move such values into a pseudo register.  */
       if (pass && (flags & ECF_LIBCALL_BLOCK))
 	{
-	  rtx note = 0;
-	  rtx temp = gen_reg_rtx (GET_MODE (valreg));
 	  rtx insns;
 
-	  /* Mark the return value as a pointer if needed.  */
-	  if (TREE_CODE (TREE_TYPE (exp)) == POINTER_TYPE)
-	    mark_reg_pointer (temp, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp))));
+	  if (valreg == 0 || GET_CODE (valreg) == PARALLEL)
+	    {
+	      insns = get_insns ();
+	      end_sequence ();
+	      emit_insns (insns);
+	    }
+	  else
+	    {
+	      rtx note = 0;
+	      rtx temp = gen_reg_rtx (GET_MODE (valreg));
 
-	  /* Construct an "equal form" for the value which mentions all the
-	     arguments in order as well as the function name.  */
-	  for (i = 0; i < num_actuals; i++)
-	    note = gen_rtx_EXPR_LIST (VOIDmode, args[i].initial_value, note);
-	  note = gen_rtx_EXPR_LIST (VOIDmode, funexp, note);
+	      /* Mark the return value as a pointer if needed.  */
+	      if (TREE_CODE (TREE_TYPE (exp)) == POINTER_TYPE)
+		mark_reg_pointer (temp,
+				  TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp))));
 
-	  insns = get_insns ();
-	  end_sequence ();
+	      /* Construct an "equal form" for the value which mentions all the
+		 arguments in order as well as the function name.  */
+	      for (i = 0; i < num_actuals; i++)
+		note = gen_rtx_EXPR_LIST (VOIDmode,
+					  args[i].initial_value, note);
+	      note = gen_rtx_EXPR_LIST (VOIDmode, funexp, note);
 
-	  if (flags & ECF_PURE)
-	    note = gen_rtx_EXPR_LIST (VOIDmode,
-	       gen_rtx_USE (VOIDmode,
-			    gen_rtx_MEM (BLKmode,
-				    	 gen_rtx_SCRATCH (VOIDmode))), note);
+	      insns = get_insns ();
+	      end_sequence ();
 
-	  emit_libcall_block (insns, temp, valreg, note);
+	      if (flags & ECF_PURE)
+		note = gen_rtx_EXPR_LIST (VOIDmode,
+			gen_rtx_USE (VOIDmode,
+				     gen_rtx_MEM (BLKmode,
+						  gen_rtx_SCRATCH (VOIDmode))),
+			note);
 
-	  valreg = temp;
+	      emit_libcall_block (insns, temp, valreg, note);
+
+	      valreg = temp;
+	    }
 	}
       else if (pass && (flags & ECF_MALLOC))
 	{
@@ -4021,8 +4031,6 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   NO_DEFER_POP;
   valreg = (mem_value == 0 && outmode != VOIDmode
 	    ? hard_libcall_value (outmode) : NULL_RTX);
-  if (valreg == 0 || GET_CODE (valreg) == PARALLEL)
-    flags &= ~ECF_LIBCALL_BLOCK;
 
   /* Stack must be properly aligned now.  */
   if (stack_pointer_delta & (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT - 1))
@@ -4078,29 +4086,40 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
      we have no way to move such values into a pseudo register.  */
   if (flags & ECF_LIBCALL_BLOCK)
     {
-      rtx note = 0;
-      rtx temp = gen_reg_rtx (GET_MODE (valreg));
       rtx insns;
-      int i;
 
-      /* Construct an "equal form" for the value which mentions all the
-	 arguments in order as well as the function name.  */
-      for (i = 0; i < nargs; i++)
-	note = gen_rtx_EXPR_LIST (VOIDmode, argvec[i].value, note);
-      note = gen_rtx_EXPR_LIST (VOIDmode, fun, note);
+      if (valreg == 0 || GET_CODE (valreg) == PARALLEL)
+	{
+	  insns = get_insns ();
+	  end_sequence ();
+	  emit_insns (insns);
+	}
+      else
+	{
+	  rtx note = 0;
+	  rtx temp = gen_reg_rtx (GET_MODE (valreg));
+	  int i;
 
-      insns = get_insns ();
-      end_sequence ();
+	  /* Construct an "equal form" for the value which mentions all the
+	     arguments in order as well as the function name.  */
+	  for (i = 0; i < nargs; i++)
+	    note = gen_rtx_EXPR_LIST (VOIDmode, argvec[i].value, note);
+	  note = gen_rtx_EXPR_LIST (VOIDmode, fun, note);
 
-      if (flags & ECF_PURE)
-	note = gen_rtx_EXPR_LIST (VOIDmode,
-	   gen_rtx_USE (VOIDmode,
-			gen_rtx_MEM (BLKmode,
-				     gen_rtx_SCRATCH (VOIDmode))), note);
+	  insns = get_insns ();
+	  end_sequence ();
 
-      emit_libcall_block (insns, temp, valreg, note);
+	  if (flags & ECF_PURE)
+	    note = gen_rtx_EXPR_LIST (VOIDmode,
+			gen_rtx_USE (VOIDmode,
+				     gen_rtx_MEM (BLKmode,
+						  gen_rtx_SCRATCH (VOIDmode))),
+			note);
 
-      valreg = temp;
+	  emit_libcall_block (insns, temp, valreg, note);
+
+	  valreg = temp;
+	}
     }
   pop_temp_slots ();
 
