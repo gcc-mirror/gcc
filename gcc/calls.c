@@ -665,9 +665,6 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 
    Similarly set LONGJMP for if the function is in the longjmp family.
 
-   Set MALLOC for any of the standard memory allocation functions which
-   allocate from the heap.
-
    Set MAY_BE_ALLOCA for any memory allocation function that might allocate
    space from the stack such as alloca.  */
 
@@ -747,19 +744,6 @@ special_function_p (fndecl, flags)
 		       || ((tname[5] == 'p' || tname[5] == 'e')
 			   && tname[6] == '\0'))))
 	flags |= ECF_FORK_OR_EXEC;
-
-      /* Do not add any more malloc-like functions to this list,
-         instead mark them as malloc functions using the malloc attribute.
-         Note, realloc is not suitable for attribute malloc since
-         it may return the same address across multiple calls.
-         C++ operator new is not suitable because it is not required
-         to return a unique pointer; indeed, the standard placement new
-	 just returns its argument.  */
-      else if (TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl))) == Pmode
-	       && (! strcmp (tname, "malloc")
-		   || ! strcmp (tname, "calloc")
-		   || ! strcmp (tname, "strdup")))
-	flags |= ECF_MALLOC;
     }
   return flags;
 }

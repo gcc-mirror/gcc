@@ -1,3 +1,8 @@
+2003-04-13  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-12.c: New test case.
+	* gcc.dg/builtins-13.c: New test case.
+
 2003-04-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/string-opt-18.c: New test.

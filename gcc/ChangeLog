@@ -1,3 +1,16 @@
+2003-04-13  Roger Sayle  <roger@eyesopen.com>
+
+	* builtin-types.def (BT_FN_STRING_CONST_STRING): New builtin type.
+	(BT_FN_PTR_SIZE_SIZE): Likewise.
+	* builtins.def (BUILT_IN_MALLOC, BUILT_IN_CALLOC, BUILT_IN_STRDUP):
+	New built-in functions for malloc, calloc and strdup respectively.
+	* calls.c (special_function_p): No need to handle malloc-like
+	functions any longer.  ECF_MALLOC is set via built-in attributes.
+
+	* c-decl.c (duplicate_decls): Preserve pure and malloc attributes.
+
+	* doc/extend.texi: Document these new built-in functions.
+
 2003-04-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_memcpy): Add `endp' argument, use it.
