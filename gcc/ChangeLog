@@ -1,5 +1,10 @@
 2004-03-20  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* fold-const.c (fold): Replace "t" with "tem" where it is used
+	as a temporary variable.  Remove "orig_t" and all of its uses.
+
+2004-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* fold-const.c (fold): Remove variable "invert".
 	Move the handling of relational expressions that can be folded
 	to a constant ...
