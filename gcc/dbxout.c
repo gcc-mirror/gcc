@@ -2470,6 +2470,24 @@ dbxout_parms (parms)
 	    dbxout_finish_symbol (parms);
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
+		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == MEM)
+	  {
+	    /* Parm was passed via invisible reference, with the reference
+	       living on the stack.  DECL_RTL looks like
+	       (MEM (MEM (PLUS (REG ...) (CONST_INT ...)))).  */
+	    const char *decl_name = (DECL_NAME (parms)
+				     ? IDENTIFIER_POINTER (DECL_NAME (parms))
+				     : "(anon)");
+	    current_sym_value
+	      = INTVAL (XEXP (XEXP (XEXP (DECL_RTL (parms), 0), 0), 1));
+	    current_sym_addr = 0;
+	      
+	    FORCE_TEXT;
+	    fprintf (asmfile, "%s\"%s:v", ASM_STABS_OP, decl_name);
+	    dbxout_type (TREE_TYPE (parms), 0, 0);
+	    dbxout_finish_symbol (parms);
+	  }
+	else if (GET_CODE (DECL_RTL (parms)) == MEM
 		 && XEXP (DECL_RTL (parms), 0) != const0_rtx
 		 /* ??? A constant address for a parm can happen
 		    when the reg it lives in is equiv to a constant in memory.
@@ -2477,22 +2495,14 @@ dbxout_parms (parms)
 		 && ! CONSTANT_P (XEXP (DECL_RTL (parms), 0)))
 	  {
 	    /* Parm was passed in registers but lives on the stack.  */
-	    int aux_sym_value = 0;
 
 	    current_sym_code = N_PSYM;
 	    /* DECL_RTL looks like (MEM (PLUS (REG...) (CONST_INT...))),
 	       in which case we want the value of that CONST_INT,
-	       or (MEM (REG ...)) or (MEM (MEM ...)),
+	       or (MEM (REG ...)),
 	       in which case we use a value of zero.  */
 	    if (GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG)
 	      current_sym_value = 0;
-	    else if (GET_CODE (XEXP (DECL_RTL (parms), 0)) == MEM)
-	      {
-		/* Remember the location on the stack the parm is moved to */
-	        aux_sym_value
-		  = INTVAL (XEXP (XEXP (XEXP (DECL_RTL (parms), 0), 0), 1));
-	        current_sym_value = 0;
-	      }
 	    else
 		current_sym_value
 		  = INTVAL (XEXP (XEXP (DECL_RTL (parms), 0), 1));
@@ -2532,17 +2542,6 @@ dbxout_parms (parms)
 				     XEXP (DECL_RTL (parms), 0));
 	    dbxout_type (TREE_TYPE (parms), 0, 0);
 	    dbxout_finish_symbol (parms);
-	    if (aux_sym_value != 0)
-	      {
-		/* Generate an entry for the stack location */
-
-		fprintf (asmfile, "%s\"%s:", ASM_STABS_OP,
-			 IDENTIFIER_POINTER (DECL_NAME (parms)));
-		current_sym_value = aux_sym_value;
-	        current_sym_code = N_LSYM;
-	        dbxout_type (build_reference_type (TREE_TYPE (parms)), 0, 0);
-	        dbxout_finish_symbol (parms);
-	      }
 	  }
       }
 }

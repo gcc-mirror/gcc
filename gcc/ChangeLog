@@ -1,3 +1,14 @@
+2000-12-01  Jim Blandy  <jimb@redhat.com>
+
+	* dbxout.c (dbxout_parms): Correctly describe parameters passed by
+ 	invisible reference in registers, but then spilled to the stack.
+  	Remove code to emit a second stab for such parameters; it attempts
+ 	to describe the value's location by introducing a synthetic C++
+ 	`reference' type, and then saying the stack slot has that
+ 	reference type.  This loses type information (breaking GDB's
+ 	`ptype' command, among other things) just to describe a location
+ 	which stabs can represent correctly in other ways.
+
 2000-12-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* final.c (output_addr_const) <PLUS>: Don't assume at least one
@@ -533,6 +544,7 @@ Tue Nov 28 09:53:50 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Merge handling of -D and -U.  Update handling of pending
 	directives.  Free the memory after use.
 
+>>>>>>> 1.8477
 2000-11-27  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* flow.c (entry_exit_blocks): Add entry for cond_local_set.
