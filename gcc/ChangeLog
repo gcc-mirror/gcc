@@ -1,3 +1,8 @@
+Thu May 13 21:05:55 1999  Mark Kettenis  <kettenis@gnu.org>
+
+	* fixinc/mkfixinc.sh: Add the Hurd (*-*-gnu*) to the list of
+	targets that do not need any fixes.
+
 Sat May 15 14:12:38 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (set_lo_sum+2): New splitter to load large
