@@ -3657,7 +3657,6 @@ expand_end_case (orig_index)
 
 	      use_cost_table
 		= (TREE_CODE (TREE_TYPE (orig_index)) != ENUMERAL_TYPE
-		   && default_label != 0
 		   && estimate_case_costs (thiscase->data.case_stmt.case_list));
 	      balance_case_nodes (&thiscase->data.case_stmt.case_list, 0);
 	      emit_case_nodes (index, thiscase->data.case_stmt.case_list,
@@ -3678,14 +3677,26 @@ expand_end_case (orig_index)
 	      if (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (index_expr)))
 		  > GET_MODE_BITSIZE (index_mode))
 		{
+		  enum machine_mode omode = TYPE_MODE (TREE_TYPE (index_expr));
+		  rtx rangertx = expand_expr (range, 0, VOIDmode, 0);
+
+		  /* We must handle the endpoints in the original mode.  */
 		  index_expr = build (MINUS_EXPR, TREE_TYPE (index_expr),
 				      index_expr, minval);
 		  minval = integer_zero_node;
+		  index = expand_expr (index_expr, 0, VOIDmode, 0);
+		  emit_cmp_insn (rangertx, index, LTU, 0, omode, 0, 0);
+		  emit_jump_insn (gen_bltu (default_label));
+		  /* Now we can safely truncate.  */
+		  index = convert_to_mode (index_mode, index, 0);
 		}
-	      if (TYPE_MODE (TREE_TYPE (index_expr)) != index_mode)
-		index_expr = convert (type_for_size (index_bits, 0),
-				      index_expr);
-	      index = expand_expr (index_expr, 0, VOIDmode, 0);
+	      else
+		{
+		  if (TYPE_MODE (TREE_TYPE (index_expr)) != index_mode)
+		    index_expr = convert (type_for_size (index_bits, 0),
+					  index_expr);
+		  index = expand_expr (index_expr, 0, VOIDmode, 0);
+		}
 	      emit_queue ();
 	      index = protect_from_queue (index, 0);
 	      do_pending_stack_adjust ();
@@ -3705,13 +3716,11 @@ expand_end_case (orig_index)
 						 index_expr, minval)));
 	      index = expand_expr (index_expr, 0, VOIDmode, 0);
 	      emit_queue ();
-	      /* convert_to_mode calls protect_from_queue.  */
-	      index = convert_to_mode (Pmode, index, 1);
+	      index = protect_from_queue (index, 0);
 	      do_pending_stack_adjust ();
 
-	      do_tablejump (index, Pmode,
-			    gen_rtx (CONST_INT, VOIDmode,
-				     TREE_INT_CST_LOW (range)),
+	      do_tablejump (index, TYPE_MODE (TREE_TYPE (index_expr)),
+			    expand_expr (range, 0, VOIDmode, 0),
 			    table_label, default_label);
 	      win = 1;
 	    }
