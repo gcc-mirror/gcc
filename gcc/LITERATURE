@@ -1,0 +1,27 @@
+Collected papers/sites on standards, compilers, optimization, etc.
+
+- Massively Scalar Compiler Project
+
+	ftp://cs.rice.edu/public/preston/optimizer
+
+- http://www.lpac.ac.uk/SEL-HPC/Articles/CompilersArchive.html
+
+- David M Keaton's site
+
+	http://www.dmk.com, ftp://ftp.dmk.com
+	c9x stuff is in ftp://ftp.dmk.com/DMK/sc22wg14/c9x
+
+- Some information about optimizing for x86 processors, links to
+  x86 manuals and documentation.
+
+	http://www.goof.com/pcg/docs.html
+
+
+- Links related to many compiler topics
+
+	http://www.nullstone.com/htmls/connections.htm
+
+- HPPA information:
+
+	http://www.hp.com/computing/framed/technology/micropro
+
