@@ -1,3 +1,9 @@
+2003-08-10  Richard Henderson  <rth@redhat.com>
+
+	PR target/11693
+	* config/ia64/ia64.c (ia64_emit_nops): Skip L slots when
+	padding before inline assembly.
+
 2003-08-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR c++/11712

@@ -7108,7 +7108,8 @@ ia64_emit_nops ()
 	    {
 	      while (bundle_pos < 3)
 		{
-		  emit_insn_before (gen_nop_type (b->t[bundle_pos]), insn);
+		  if (b->t[bundle_pos] != TYPE_L)
+		    emit_insn_before (gen_nop_type (b->t[bundle_pos]), insn);
 		  bundle_pos++;
 		}
 	      continue;
