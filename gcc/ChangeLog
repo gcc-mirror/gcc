@@ -1,3 +1,9 @@
+2000-06-12  Michael Meissner  <meissner@redhat.com>
+
+	* ifcvt.c (dead_or_predicable): Don't do conditional execution
+	path if the machine needs extra support to do conditional
+	execution.
+
 Mon Jun 12 17:04:17 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* print-rtl.c (print_rtx, case MEM): Use HOST_WIDE_INT_PRINT_DEC
