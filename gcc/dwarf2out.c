@@ -8330,11 +8330,7 @@ add_const_value_attribute (die, rtl)
 	
 	/* ??? We really should be using HOST_WIDE_INT throughout.  */
 	if (val < 0 && (long) val == val)
-	  {
-	    if ((long) val != val)
-	      abort ();
-	    add_AT_int (die, DW_AT_const_value, (long) val);
-	  }
+	  add_AT_int (die, DW_AT_const_value, (long) val);
 	else if ((unsigned long) val == (unsigned HOST_WIDE_INT) val)
 	  add_AT_unsigned (die, DW_AT_const_value, (unsigned long) val);
 	else if (2*HOST_BITS_PER_LONG == HOST_BITS_PER_WIDE_INT)
