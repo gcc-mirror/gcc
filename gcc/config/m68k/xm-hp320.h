@@ -2,9 +2,3 @@
 #define USG
 
 #include "m68k/xm-m68k.h"
-
-/* If compiling with HPUX compiler, we are probably using alloca.c,
-   so help it work right.  */
-#ifndef __GNUC__
-#define USE_C_ALLOCA
-#endif

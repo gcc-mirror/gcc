@@ -1,14 +1,3 @@
-#define MIPS_OVERRIDE_ALLOCA
-#ifndef __GNUC__
-#include <alloca.h>
-#else
-# ifdef __SIZE_TYPE__
-extern void *alloca (__SIZE_TYPE__);
-# else
-extern void *alloca ();
-# endif /* __SIZE_TYPE__ */
-#endif
-
 #include "mips/xm-mips.h"
 
 #define USG

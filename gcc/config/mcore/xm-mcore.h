@@ -22,8 +22,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HOST_BITS_PER_SHORT 16
 #define HOST_BITS_PER_INT   32
 #define HOST_BITS_PER_LONG  32
-
-/* If compiled with GNU C, use the built-in alloca.  */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#endif

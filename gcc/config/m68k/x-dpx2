@@ -1,8 +1,3 @@
-# need this when using cc
-ALLOCA = alloca.o
-# avoid lossage assembling alloca.
-ALLOCA_FLAGS=-S
-ALLOCA_FINISH = $(AS) -o alloca.o alloca.s
 # be sure not to confuse ./as with /bin/as
 AS=`if [ x$(OLDCC) = x$(CC) ] ; then echo /bin/as; else echo $(GAS); fi`
 GAS = gas

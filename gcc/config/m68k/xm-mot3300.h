@@ -21,12 +21,3 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #define USG 1
-
-/* do not use alloca from -lPW with cc, because function epilogues use %sp */
-#ifndef __GNUC__
-#ifdef __STDC__
-extern void *alloca ();
-#else
-extern char *alloca ();
-#endif
-#endif

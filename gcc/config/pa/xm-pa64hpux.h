@@ -18,7 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
 /* HP-UX is a flavor of System V */
 #define USG
 
@@ -35,7 +34,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* HP's compiler has problems with enum bitfields.  */
 #define ONLY_INT_FIELDS
-
-/* Always claim to use C alloca; this prevents losing if building with
-   gcc -fno-builtin ...  */
-#define USE_C_ALLOCA

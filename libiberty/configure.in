@@ -142,8 +142,7 @@ fi
 
 # For each of these functions, if the host does not provide the
 # function we want to put FN.o in LIBOBJS, and if the host does
-# provide the function, we want to define HAVE_FN in config.h.  Also,
-# if the host does not provide alloca, we set ALLOCA to alloca.o
+# provide the function, we want to define HAVE_FN in config.h.
 
 setobjs=
 CHECK=
@@ -158,7 +157,6 @@ if test -n "${with_target_subdir}"; then
   # newlib provide and which ones we will be expected to provide.
 
   if test "x${with_newlib}" = "xyes"; then
-    ALLOCA="alloca.o"
     LIBOBJS="asprintf.o basename.o insque.o random.o strdup.o vasprintf.o"
 
     for f in $funcs; do
@@ -277,28 +275,7 @@ if test -z "${setobjs}"; then
   # tests.  This will only work if the compiler works.
   AC_PROG_CC_WORKS
   AC_REPLACE_FUNCS($funcs)
-
-  case "${host}" in
-  *-*-interix)
-    # On Interix, it wrongly concludes that the MSVC compiler supports alloca.
-    # (MSVC does on Win32, not on Interix.)
-    # This should be temporary.
-
-    ac_cv_header_alloca_h=no
-    ac_cv_func_alloca_works=no
-    ALLOCA=alloca.o
-    cat >> confdefs.h <<\EOF
-#define C_ALLOCA 1
-EOF
-    cat >> confdefs.h <<EOF
-#define STACK_DIRECTION -1
-EOF
-    ;;
-  *)
-    AC_FUNC_ALLOCA
-    ;;
-  esac
-
+  libiberty_AC_FUNC_C_ALLOCA
   AC_FUNC_VFORK
   if test $ac_cv_func_vfork_works = no; then
     LIBOBJS="$LIBOBJS vfork.o"

@@ -3,7 +3,3 @@
 #include "sparc/xm-sparc.h"
 
 #define USG
-
-#ifndef __GNUC__
-#define USE_C_ALLOCA
-#endif

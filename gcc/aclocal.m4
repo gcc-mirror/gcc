@@ -566,7 +566,6 @@ AC_DEFUN(AM_GNU_GETTEXT,
    AC_REQUIRE([AC_C_INLINE])dnl
    AC_REQUIRE([AC_TYPE_OFF_T])dnl
    AC_REQUIRE([AC_TYPE_SIZE_T])dnl
-   AC_REQUIRE([AC_FUNC_ALLOCA])dnl
 
    AC_CHECK_HEADERS([argz.h limits.h locale.h nl_types.h malloc.h string.h \
 unistd.h sys/param.h])

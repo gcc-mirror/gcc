@@ -20,7 +20,3 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "m68k/xm-m68kv.h"	/* Use the System V flavor of m68k host */
-
-#if defined (__GNUC__) && __GNUC__ == 1
-#define alloca __builtin_alloca
-#endif

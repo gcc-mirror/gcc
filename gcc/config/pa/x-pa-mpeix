@@ -1,4 +1,3 @@
-ALLOCA=alloca.o
 X_CFLAGS=-I/usr/contrib/include -DSYSV -D_POSIX_SOURCE -D_SOCKET_SOURCE -D_MPEIX_SOURCE -DPOSIX -D_MPEXL_SOURCE
 CC=gcc
 AR=/bin/ar

@@ -58,10 +58,6 @@ INTL_TARGETS = intl.all intl.install
 # This is overridden by configure.
 BOOT_LANGUAGES = c @all_boot_languages@
 
-ALLOCA =
-ALLOCA_FLAGS =
-ALLOCA_FINISH = true
-
 # Various ways of specifying flags for compilations:
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
 # BOOT_CFLAGS is the value of CFLAGS to pass to the stage2 and stage3
@@ -509,7 +505,6 @@ HOST_CFLAGS=$(ALL_CFLAGS) -DGENERATOR_FILE
 HOST_CLIB=$(CLIB)
 HOST_LDFLAGS=$(LDFLAGS)
 HOST_CPPFLAGS=$(ALL_CPPFLAGS)
-HOST_ALLOCA=$(ALLOCA)
 HOST_MALLOC=$(MALLOC)
 HOST_OBSTACK=$(OBSTACK)
 HOST_VFPRINTF=$(VFPRINTF)
@@ -604,34 +599,32 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) \
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
-# Even if ALLOCA is set, don't use it if compiling with GCC.
-USE_ALLOCA= ${ALLOCA}
-USE_HOST_ALLOCA= ` case "${HOST_ALLOCA}" in ?*) echo ${HOST_PREFIX}${HOST_ALLOCA} ;; esac `
 USE_HOST_MALLOC= ` case "${HOST_MALLOC}" in ?*) echo ${HOST_PREFIX}${HOST_MALLOC} ;; esac `
 USE_HOST_OBSTACK= ` case "${HOST_OBSTACK}" in ?*) echo ${HOST_PREFIX}${HOST_OBSTACK} ;; esac `
 USE_HOST_VFPRINTF= ` case "${HOST_VFPRINTF}" in ?*) echo ${HOST_PREFIX}${HOST_VFPRINTF} ;; esac `
 USE_HOST_DOPRINT= ` case "${HOST_DOPRINT}" in ?*) echo ${HOST_PREFIX}${HOST_DOPRINT} ;; esac `
 USE_HOST_STRSTR= ` case "${HOST_STRSTR}" in ?*) echo ${HOST_PREFIX}${HOST_STRSTR} ;; esac `
 
-# Dependency on obstack, alloca, malloc or whatever library facilities
+# Dependency on obstack, malloc or whatever library facilities
 # are not installed in the system libraries.
-# We don't use USE_ALLOCA because backquote expansion doesn't work in deps.
-LIBDEPS= $(INTLLIBS) $(OBSTACK) $(ALLOCA) $(MALLOC) $(VFPRINTF) $(DOPRINT) $(STRSTR)
+# We don't use USE_* because backquote expansion doesn't work in deps.
+LIBDEPS= $(INTLLIBS) $(OBSTACK) $(MALLOC) $(VFPRINTF) $(DOPRINT) $(STRSTR)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
-# We don't use USE_ALLOCA because backquote expansion doesn't work in deps.
-HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_PREFIX)$(HOST_MALLOC) $(HOST_PREFIX)$(HOST_VFPRINTF) $(HOST_PREFIX)$(HOST_DOPRINT) $(HOST_PREFIX)$(HOST_STRSTR)
+HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_MALLOC) \
+	$(HOST_PREFIX)$(HOST_VFPRINTF) $(HOST_PREFIX)$(HOST_DOPRINT) \
+	$(HOST_PREFIX)$(HOST_STRSTR)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(INTLLIBS) @LIBS@ $(VFPRINTF) $(DOPRINT) $(STRSTR) $(CLIB) ../libiberty/libiberty.a
+LIBS =	$(OBSTACK) $(MALLOC) $(INTLLIBS) @LIBS@ $(VFPRINTF) $(DOPRINT) \
+	$(STRSTR) $(CLIB) ../libiberty/libiberty.a
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
-HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
-	    $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) $(USE_HOST_STRSTR)  \
-	    $(HOST_CLIB)
+HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_MALLOC) $(USE_HOST_VFPRINTF) \
+	    $(USE_HOST_DOPRINT) $(USE_HOST_STRSTR) $(HOST_CLIB)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o \
 		$(HOST_PREFIX)ggc-none.o gensupport.o hashtab.o safe-ctype.o
@@ -1558,15 +1551,6 @@ mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) system.h
 # Build file to support OSF/rose half-pic format.
 halfpic.o: halfpic.c $(CONFIG_H) $(RTL_H) $(TREE_H) system.h
 
-# Normally this target is not used; but it is used if you
-# define ALLOCA=alloca.o.  In that case, you must get a suitable alloca.c
-# from the GNU Emacs distribution.
-alloca.o:	$(srcdir)/../libiberty/alloca.c
-	rm -f alloca.c
-	$(LN_S) $(srcdir)/../libiberty/alloca.c alloca.c
-	$(CC) $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(ALLOCA_FLAGS) -c alloca.c
-	$(ALLOCA_FINISH)
 #
 # Generate header and source files from the machine description,
 # and compile them.
@@ -1819,7 +1803,7 @@ gengenrtl.o : gengenrtl.c $(RTL_BASE_H) system.h real.h
 # Compile the libraries to be used by gen*.
 # If we are not cross-building, gen* use the same .o's that cc1 will use,
 # and HOST_PREFIX_1 is `foobar', just to ensure these rules don't conflict
-# with the rules for rtl.o, alloca.o, etc.
+# with the rules for rtl.o, etc.
 $(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(GCONFIG_H) system.h $(RTL_H) \
   bitmap.h $(GGC_H) toplev.h $(HASHTAB_H)
 	rm -f $(HOST_PREFIX)rtl.c
@@ -1837,11 +1821,6 @@ $(HOST_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(CONFIG_H) system.h $(RTL_H) \
 	rm -f $(HOST_PREFIX)bitmap.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/bitmap.c > $(HOST_PREFIX)bitmap.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)bitmap.c
-
-$(HOST_PREFIX_1)alloca.o: $(srcdir)/../libiberty/alloca.c
-	rm -f $(HOST_PREFIX)alloca.c
-	$(LN_S) $(srcdir)/../libiberty/alloca.c $(HOST_PREFIX)alloca.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)alloca.c
 
 $(HOST_PREFIX_1)obstack.o: $(srcdir)/../libiberty/obstack.c $(GCONFIG_H)
 	rm -f $(HOST_PREFIX)obstack.c
@@ -1875,7 +1854,7 @@ $(HOST_PREFIX_1)errors.o: errors.c
 
 
 # This satisfies the dependency that we get if you cross-compile a compiler
-# that does not need to compile alloca, malloc or whatever.
+# that does not need to compile, malloc or whatever.
 $(HOST_PREFIX_1):
 	touch $(HOST_PREFIX_1)
 
@@ -2294,7 +2273,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -rf libgcc
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c
-	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
+	-rm -f $(HOST_PREFIX_1)malloc.c
 	-rm -f $(HOST_PREFIX_1)obstack.c
 # Delete the temp files made in the course of building libgcc.a.
 	-rm -f xlimits.h libgcc1-test
@@ -2308,7 +2287,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f *.[0-9][0-9].* */*.[0-9][0-9].*
 # Delete some files made during installation.
 	-rm -f specs float.h-* enquire SYSCALLS.c.X SYSCALLS.c
-	-rm -f collect collect2 mips-tfile mips-tdump alloca.s
+	-rm -f collect collect2 mips-tfile mips-tdump
 # Delete files generated for fixproto
 	-rm -rf fix-header xsys-protos.h deduced.h tmp-deduced.h \
 	  gen-protos$(build_exeext) fixproto.list fixtmp.* fixhdr.ready
@@ -2363,7 +2342,7 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
 	-rm -f testsuite/{gcc,g++}.{log,sum}
 	-rm -f intl/libintl.h libintl.h
-	-rm -f cxxmain.c splay-tree.c obstack.c alloca.c hashtab.c safe-ctype.c
+	-rm -f cxxmain.c splay-tree.c obstack.c hashtab.c safe-ctype.c
 	-rm -f mklibgcc libgcc.map gccbug .gdbinit configargs.h
 	-rm -f gcov.pod
 	-rm -f fixinc/Makefile
@@ -2903,11 +2882,6 @@ stage1_copy: stage1_build
 	touch stage1_copy
 	echo stage2_build > stage_last
 
-# This used to define ALLOCA as empty, but that would lead to bad results
-# for a subsequent `make install' since that would not have ALLOCA empty.
-# To prevent `make install' from compiling alloca.o and then relinking cc1
-# because alloca.o is newer, we permit these recursive makes to compile
-# alloca.o.  Then cc1 is newer, so it won't have to be relinked.
 stage2_build: stage1_copy
 	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage1/ \

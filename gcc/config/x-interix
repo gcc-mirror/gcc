@@ -1,11 +1,6 @@
 # These are host overrides
 # From config dir
 
-# Interix doesn't yet have alloca; it's better to use the portable C version for
-# bootstrapping.  Do this by defining ALLOCA.
-
-ALLOCA = alloca.o
-
 # See all the declarations.
 FIXPROTO_DEFINES = -D_XOPEN_SOURCE
 

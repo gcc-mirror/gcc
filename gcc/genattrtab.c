@@ -749,7 +749,7 @@ attr_printf VPARAMS ((register int len, const char *fmt, ...))
   const char *fmt;
 #endif
   va_list p;
-  register char *str;
+  char str[256];
 
   VA_START (p, fmt);
 
@@ -758,8 +758,9 @@ attr_printf VPARAMS ((register int len, const char *fmt, ...))
   fmt = va_arg (p, const char *);
 #endif
 
-  /* Print the string into a temporary location.  */
-  str = (char *) alloca (len);
+  if (len > 255) /* leave room for \0 */
+    abort ();
+
   vsprintf (str, fmt, p);
   va_end (p);
 
@@ -1983,12 +1984,12 @@ expand_units ()
   /* Create an array of ops for each unit.  Add an extra unit for the
      result_ready_cost function that has the ops of all other units.  */
   unit_ops = (struct function_unit_op ***)
-    alloca ((num_units + 1) * sizeof (struct function_unit_op **));
+    xmalloc ((num_units + 1) * sizeof (struct function_unit_op **));
   unit_num = (struct function_unit **)
-    alloca ((num_units + 1) * sizeof (struct function_unit *));
+    xmalloc ((num_units + 1) * sizeof (struct function_unit *));
 
   unit_num[num_units] = unit = (struct function_unit *)
-    alloca (sizeof (struct function_unit));
+    xmalloc (sizeof (struct function_unit));
   unit->num = num_units;
   unit->num_opclasses = 0;
 
@@ -1997,7 +1998,7 @@ expand_units ()
       unit_num[num_units]->num_opclasses += unit->num_opclasses;
       unit_num[unit->num] = unit;
       unit_ops[unit->num] = op_array = (struct function_unit_op **)
-	alloca (unit->num_opclasses * sizeof (struct function_unit_op *));
+	xmalloc (unit->num_opclasses * sizeof (struct function_unit_op *));
 
       for (op = unit->ops; op; op = op->next)
 	op_array[op->num] = op;
@@ -2005,7 +2006,7 @@ expand_units ()
 
   /* Compose the array of ops for the extra unit.  */
   unit_ops[num_units] = op_array = (struct function_unit_op **)
-    alloca (unit_num[num_units]->num_opclasses
+    xmalloc (unit_num[num_units]->num_opclasses
 	    * sizeof (struct function_unit_op *));
 
   for (unit = units, i = 0; unit; i += unit->num_opclasses, unit = unit->next)
@@ -2571,9 +2572,10 @@ simplify_cond (exp, insn_code, insn_index)
   rtx defval = XEXP (exp, 1);
   rtx new_defval = XEXP (exp, 1);
   int len = XVECLEN (exp, 0);
-  rtx *tests = (rtx *) alloca (len * sizeof (rtx));
+  rtx *tests = (rtx *) xmalloc (len * sizeof (rtx));
   int allsame = 1;
   char *first_spacer;
+  rtx ret;
 
   /* This lets us free all storage allocated below, if appropriate.  */
   first_spacer = (char *) obstack_finish (rtl_obstack);
@@ -2656,11 +2658,12 @@ simplify_cond (exp, insn_code, insn_index)
   if (len == 0)
     {
       if (GET_CODE (defval) == COND)
-	return simplify_cond (defval, insn_code, insn_index);
-      return defval;
+	ret = simplify_cond (defval, insn_code, insn_index);
+      else
+	ret = defval;
     }
   else if (allsame)
-    return exp;
+    ret = exp;
   else
     {
       rtx newexp = rtx_alloc (COND);
@@ -2668,8 +2671,10 @@ simplify_cond (exp, insn_code, insn_index)
       XVEC (newexp, 0) = rtvec_alloc (len);
       memcpy (XVEC (newexp, 0)->elem, tests, len * sizeof (rtx));
       XEXP (newexp, 1) = new_defval;
-      return newexp;
+      ret = newexp;
     }
+  free (tests);
+  return ret;
 }
 
 /* Remove an insn entry from an attribute value.  */
@@ -2864,13 +2869,15 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
     }
   else if (GET_CODE (value) == SYMBOL_REF)
     {
-      char *p, *string;
+      char *p;
+      char string[256];
 
       if (GET_CODE (exp) != EQ_ATTR)
 	abort ();
 
-      string = (char *) alloca (2 + strlen (XSTR (exp, 0))
-				+ strlen (XSTR (exp, 1)));
+      if (strlen (XSTR (exp, 0)) + strlen (XSTR (exp, 1)) + 2 > 256)
+	abort ();
+
       strcpy (string, XSTR (exp, 0));
       strcat (string, "_");
       strcat (string, XSTR (exp, 1));
@@ -3513,7 +3520,7 @@ optimize_attrs ()
 
   /* Make 2 extra elements, for "code" values -2 and -1.  */
   insn_code_values
-    = (struct attr_value_list **) alloca ((insn_code_number + 2)
+    = (struct attr_value_list **) xmalloc ((insn_code_number + 2)
 					  * sizeof (struct attr_value_list *));
   memset ((char *) insn_code_values, 0,
 	 (insn_code_number + 2) * sizeof (struct attr_value_list *));
@@ -3521,9 +3528,6 @@ optimize_attrs ()
   /* Offset the table address so we can index by -2 or -1.  */
   insn_code_values += 2;
 
-  /* Allocate the attr_value_list structures using xmalloc rather than
-     alloca, because using alloca can overflow the maximum permitted
-     stack limit on SPARC Lynx.  */
   iv = ivbuf = ((struct attr_value_list *)
 		xmalloc (num_insn_ents * sizeof (struct attr_value_list)));
 
@@ -3593,6 +3597,7 @@ optimize_attrs ()
     }
 
   free (ivbuf);
+  free (insn_code_values - 2);
 }
 
 #if 0
@@ -3641,6 +3646,7 @@ simplify_by_exploding (exp)
   rtx *condtest, *condval;
   int i, j, total, ndim = 0;
   int most_tests, num_marks, new_marks;
+  rtx ret;
 
   /* Locate all the EQ_ATTR expressions.  */
   if (! find_and_mark_used_attributes (exp, &list, &ndim) || ndim == 0)
@@ -3655,7 +3661,7 @@ simplify_by_exploding (exp)
      cover the domain of the attribute.  This makes the expanded COND form
      order independent.  */
 
-  space = (struct dimension *) alloca (ndim * sizeof (struct dimension));
+  space = (struct dimension *) xmalloc (ndim * sizeof (struct dimension));
 
   total = 1;
   for (ndim = 0; list; ndim++)
@@ -3710,8 +3716,8 @@ simplify_by_exploding (exp)
   for (i = 0; i < ndim; i++)
     space[i].current_value = space[i].values;
 
-  condtest = (rtx *) alloca (total * sizeof (rtx));
-  condval = (rtx *) alloca (total * sizeof (rtx));
+  condtest = (rtx *) xmalloc (total * sizeof (rtx));
+  condval = (rtx *) xmalloc (total * sizeof (rtx));
 
   /* Expand the tests and values by iterating over all values in the
      attribute space.  */
@@ -3727,6 +3733,7 @@ simplify_by_exploding (exp)
 
   /* We are now finished with the original expression.  */
   unmark_used_attributes (0, space, ndim);
+  free (space);
 
   /* Find the most used constant value and make that the default.  */
   most_tests = -1;
@@ -3753,27 +3760,32 @@ simplify_by_exploding (exp)
 
   /* Give up if nothing is constant.  */
   if (num_marks == 0)
-    return exp;
-
+    ret = exp;
+  
   /* If all values are the default, use that.  */
-  if (total == most_tests)
-    return defval;
+  else if (total == most_tests)
+    ret = defval;
 
   /* Make a COND with the most common constant value the default.  (A more
      complex method where tests with the same value were combined didn't
      seem to improve things.)  */
-  condexp = rtx_alloc (COND);
-  XVEC (condexp, 0) = rtvec_alloc ((total - most_tests) * 2);
-  XEXP (condexp, 1) = defval;
-  for (i = j = 0; i < total; i++)
-    if (condval[i] != defval)
-      {
-	XVECEXP (condexp, 0, 2 * j) = condtest[i];
-	XVECEXP (condexp, 0, 2 * j + 1) = condval[i];
-	j++;
-      }
-
-  return condexp;
+  else
+    {
+      condexp = rtx_alloc (COND);
+      XVEC (condexp, 0) = rtvec_alloc ((total - most_tests) * 2);
+      XEXP (condexp, 1) = defval;
+      for (i = j = 0; i < total; i++)
+	if (condval[i] != defval)
+	  {
+	    XVECEXP (condexp, 0, 2 * j) = condtest[i];
+	    XVECEXP (condexp, 0, 2 * j + 1) = condval[i];
+	    j++;
+	  }
+      ret = condexp;
+    }
+  free (condtest);
+  free (condval);
+  return ret;
 }
 
 /* Set the MEM_VOLATILE_P flag for all EQ_ATTR expressions in EXP and
@@ -5677,7 +5689,7 @@ write_complex_function (unit, name, connection)
   struct attr_desc *case_attr, *attr;
   struct attr_value *av, *common_av;
   rtx value;
-  char *str;
+  char str[256];
   int using_case;
   int i;
 
@@ -5694,7 +5706,8 @@ write_complex_function (unit, name, connection)
   printf ("    {\n");
 
   /* Write the `switch' statement to get the case value.  */
-  str = (char *) alloca (strlen (unit->name) + strlen (name) + strlen (connection) + 10);
+  if (strlen (unit->name) + sizeof "*_cases" > 256)
+    abort ();
   sprintf (str, "*%s_cases", unit->name);
   case_attr = find_attr (str, 0);
   if (! case_attr)
@@ -6047,18 +6060,6 @@ main (argc, argv)
 
   if (argc <= 1)
     fatal ("No input file name.");
-
-#if defined (RLIMIT_STACK) && defined (HAVE_GETRLIMIT) && defined (HAVE_SETRLIMIT)
-  /* Get rid of any avoidable limit on stack size.  */
-  {
-    struct rlimit rlim;
-
-    /* Set the stack limit huge so that alloca does not fail.  */
-    getrlimit (RLIMIT_STACK, &rlim);
-    rlim.rlim_cur = rlim.rlim_max;
-    setrlimit (RLIMIT_STACK, &rlim);
-  }
-#endif
 
   if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);

@@ -2,10 +2,6 @@
 # Host is an i370 running OpenEdition
 #
 
-# Use GCC alloca
-
-ALLOCA = alloca.o
-
 # Don't bother fixing up header files, they're wierd
 
 STMP_FIXPROTO =

@@ -28,14 +28,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define	HOST_WORDS_BIG_ENDIAN
 
-/* If not compiled with GNU C, use the C alloca and use only int bitfields.  */
+/* If not compiled with GNU C, use only int bitfields.  */
 #ifndef __GNUC__
-#define USE_C_ALLOCA
-#if __STDC__
-extern void *alloca ();
-#else
-extern char *alloca ();
-#endif
 #define	ONLY_INT_FIELDS
 #endif
 

@@ -1,2 +1,1 @@
 X_CFLAGS=-DSVR4
-ALLOCA=alloca.o

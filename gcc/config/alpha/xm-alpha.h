@@ -27,19 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #define	HOST_BITS_PER_LONG	64
 #define HOST_BITS_PER_LONGLONG  64
 
-/* If compiled with GNU C, use the builtin alloca.  */
-#ifndef alloca
-#if defined(__GNUC__) && !defined(USE_C_ALLOCA)
-#define alloca __builtin_alloca
-#else
-#if !defined(_WIN32) && !defined(USE_C_ALLOCA) && !defined(OPEN_VMS) && !defined(__INTERIX)
-#include <alloca.h>
-#else
-extern void *alloca ();
-#endif
-#endif
-#endif
-
 /* The host compiler has problems with enum bitfields since it makes
    them signed so we can't fit all our codes in.  */
 

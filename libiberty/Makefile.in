@@ -64,7 +64,6 @@ MAKEOVERRIDES =
 TARGETLIB = libiberty.a
 
 LIBOBJS = @LIBOBJS@
-ALLOCA = @ALLOCA@
 
 # A configuration can specify extra .o files that should be included,
 # even if they are in libc. (Perhaps the libc version is buggy.)
@@ -118,9 +117,6 @@ install-info: install-info-subdir
 clean-info: clean-info-subdir
 dvi: dvi-subdir
 
-# Include files that are in this directory.
-HFILES = alloca-conf.h
-
 # NOTE: If you add new files to the library, add them to this list
 # (alphabetical), and add them to REQUIRED_OFILES or funcs in
 # configure.in.
@@ -138,17 +134,17 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c	      \
 	xmalloc.c xmemdup.c xstrdup.c xstrerror.c
 
 # These are always included in the library.
-REQUIRED_OFILES = argv.o choose-temp.o concat.o cplus-dem.o cp-demangle.o     \
-	dyn-string.o fdmatch.o fnmatch.o getopt.o getopt1.o getpwd.o          \
-	getruntime.o hashtab.o hex.o floatformat.o md5.o objalloc.o obstack.o \
-	partition.o pexecute.o safe-ctype.o sort.o spaces.o splay-tree.o      \
-	strerror.o strsignal.o xatexit.o xexit.o xmalloc.o xmemdup.o          \
-	xstrdup.o xstrerror.o
+REQUIRED_OFILES = argv.o alloca.o choose-temp.o concat.o cplus-dem.o           \
+	cp-demangle.o dyn-string.o fdmatch.o fnmatch.o getopt.o getopt1.o      \
+	getpwd.o getruntime.o hashtab.o hex.o floatformat.o md5.o objalloc.o   \
+	obstack.o partition.o pexecute.o safe-ctype.o sort.o spaces.o          \
+	splay-tree.o strerror.o strsignal.o xatexit.o xexit.o xmalloc.o        \
+	xmemdup.o xstrdup.o xstrerror.o
 
-$(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA)
+$(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
 	-rm -f $(TARGETLIB)
 	$(AR) $(AR_FLAGS) $(TARGETLIB) \
-	  $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA)
+	  $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
 	$(RANLIB) $(TARGETLIB)
 
 INSTALL_DEST = @INSTALL_DEST@
@@ -197,8 +193,8 @@ stamp-picdir:
 
 etags tags: TAGS etags-subdir
 
-TAGS: $(CFILES) $(HFILES)
-	etags `for i in $(HFILES) $(CFILES); do echo $(srcdir)/$$i ; done`
+TAGS: $(CFILES)
+	etags `for i in $(CFILES); do echo $(srcdir)/$$i ; done`
 
 # The standalone demangler (c++filt) has been moved to binutils.
 demangle:
@@ -207,7 +203,7 @@ demangle:
 	@false
 
 ls:
-	@echo Makefile $(HFILES) $(CFILES)
+	@echo Makefile $(CFILES)
 
 # Need to deal with profiled libraries, too.
 
@@ -243,7 +239,6 @@ stamp-h: config.in config.status
 config.status: $(srcdir)/configure $(srcdir)/config.table
 	$(SHELL) ./config.status --recheck
 
-
 all-subdir check-subdir installcheck-subdir info-subdir	\
 install-info-subdir clean-info-subdir dvi-subdir install-subdir	\
 etags-subdir mostlyclean-subdir clean-subdir distclean-subdir \
@@ -254,11 +249,11 @@ maintainer-clean-subdir:
 	  cd $$dir && $(MAKE) $$target; \
 	done
 
-$(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA): stamp-picdir
+$(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS): stamp-picdir
 
-alloca.o: config.h
+alloca.o: config.h $(INCDIR)/libiberty.h
 atexit.o: config.h
-argv.o: config.h alloca-conf.h $(INCDIR)/libiberty.h
+argv.o: config.h $(INCDIR)/libiberty.h
 basename.o: $(INCDIR)/libiberty.h
 choose-temp.o: config.h
 clock.o: config.h

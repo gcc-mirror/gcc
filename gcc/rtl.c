@@ -997,7 +997,7 @@ rtx
 read_rtx (infile)
      FILE *infile;
 {
-  register int i, j, list_counter;
+  register int i, j;
   RTX_CODE tmp_code;
   register const char *format_ptr;
   /* tmp_char is a buffer used for reading decimal integers
@@ -1111,40 +1111,31 @@ again:
 
       case 'E':
 	{
-	  register struct rtx_list *next_rtx, *rtx_list_link;
-	  struct rtx_list *list_rtx = NULL;
+	  /* Obstack to store scratch vector in.  */
+	  struct obstack vector_stack;
+	  int list_counter = 0;
+	  rtvec return_vec = NULL_RTVEC;
 
 	  c = read_skip_spaces (infile);
 	  if (c != '[')
 	    fatal_expected_char (infile, '[', c);
 
 	  /* add expressions to a list, while keeping a count */
-	  next_rtx = NULL;
-	  list_counter = 0;
+	  obstack_init (&vector_stack);
 	  while ((c = read_skip_spaces (infile)) && c != ']')
 	    {
 	      ungetc (c, infile);
 	      list_counter++;
-	      rtx_list_link = (struct rtx_list *)
-		alloca (sizeof (struct rtx_list));
-	      rtx_list_link->value = read_rtx (infile);
-	      if (next_rtx == 0)
-		list_rtx = rtx_list_link;
-	      else
-		next_rtx->next = rtx_list_link;
-	      next_rtx = rtx_list_link;
-	      rtx_list_link->next = 0;
+	      obstack_ptr_grow (&vector_stack, (PTR) read_rtx (infile));
 	    }
-	  /* get vector length and allocate it */
-	  XVEC (return_rtx, i) = (list_counter
-				  ? rtvec_alloc (list_counter) : NULL_RTVEC);
 	  if (list_counter > 0)
 	    {
-	      next_rtx = list_rtx;
-	      for (j = 0; j < list_counter; j++,
-		   next_rtx = next_rtx->next)
-		XVECEXP (return_rtx, i, j) = next_rtx->value;
+	      return_vec = rtvec_alloc (list_counter);
+	      memcpy (&return_vec->elem[0], obstack_finish (&vector_stack),
+		      list_counter * sizeof (rtx));
 	    }
+	  XVEC (return_rtx, i) = return_vec;
+	  obstack_free (&vector_stack, NULL);
 	  /* close bracket gotten */
 	}
 	break;

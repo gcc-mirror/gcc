@@ -42,16 +42,3 @@ Boston, MA 02111-1307, USA.  */
    for compiling GNU C++.  */
 #define ONLY_INT_FIELDS 1
 #endif
-
-#ifndef MIPS_OVERRIDE_ALLOCA
-#ifndef __GNUC__
-#define USE_C_ALLOCA
-
-#ifdef __STDC__
-extern void * alloca ();
-#else
-extern char * alloca ();
-#endif
-
-#endif
-#endif /* not MIPS_OVERRIDE_ALLOCA */

@@ -34,11 +34,3 @@
 
 /* A C expression for the number of bits in `long' on the host machine.  */
 #define HOST_BITS_PER_LONG 32
-
-/* Define this macro to indicate that the compiler is running with the `alloca'
-   implemented in C.  */
-#ifndef __GNUC__
-#define USE_C_ALLOCA
-#else
-#define alloca __builtin_alloca
-#endif

@@ -27,10 +27,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define HOST_WORDS_BIG_ENDIAN
 
-/* If compiled with hc, use the built-in alloca and memcpy.
+/* If compiled with hc, use the built-in memcpy.
    These definitions assume hc version 2.  */
 #ifdef __HIGHC__
-#define	alloca _Alloca
 #define bcopy(s,d,l) memcpy(d,s,l)
 #define FUNCTION_CONVERSION_BUG
 #endif
