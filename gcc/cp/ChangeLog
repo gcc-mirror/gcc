@@ -1,3 +1,19 @@
+2003-05-27  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* decl.c (global_scope_p): New macro.
+	(pop_binding_level): Use it.
+	(suspend_binding_level): Likewise.
+	(global_bindings_p): Likewise.
+	(print_other_binding_stack): Likewise.
+	(print_binding_stack): Likewise.
+	(maybe_push_to_top_level): Likewise.
+	(pushdecl_namespace_level): Likewise.
+	(start_decl): Likewise.
+	(cp_finish_decl): Likewise.
+	(start_function): Likewise.
+	(cxx_init_decl_processing): Don't refer to global_binding_level.
+	(global_binding_level): Remove.
+
 2003-05-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10849
