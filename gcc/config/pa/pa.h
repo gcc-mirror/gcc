@@ -590,18 +590,22 @@ HP-PA immediate field sizes:
 
    `I' is used for the 11 bit constants.
    `J' is used for the 14 bit constants.
-   `K' is used for unsigned 5 bit constants (extract/deposit operands).
+   `K' is used for values that can be moved with a zdepi insn.
    `L' is used for the 5 bit constants.
-   `M' is used for 0.  */
+   `M' is used for 0.
+   `N' is used for values with the least significant 11 bits equal to zero.
+   `O' is used for numbers n such that n+1 is a power of 2.
+   */
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'I' ? (unsigned) ((VALUE) + 0x400) < 0x800		\
-   : (C) == 'J' ? (unsigned) ((VALUE) + 0x2000) < 0x4000	\
-   : (C) == 'K' ? (unsigned) (VALUE) < 0x20			\
-   : (C) == 'L' ? (unsigned) ((VALUE) + 0x10) < 0x20		\
+  ((C) == 'I' ? VAL_11_BITS_P (VALUE)				\
+   : (C) == 'J' ? VAL_14_BITS_P (VALUE)				\
+   : (C) == 'K' ? zdepi_cint_p (VALUE)				\
+   : (C) == 'L' ? VAL_5_BITS_P (VALUE)				\
    : (C) == 'M' ? (VALUE) == 0					\
+   : (C) == 'N' ? ((VALUE) & 0x7ff) == 0			\
    : (C) == 'O' ? (((VALUE) & ((VALUE) + 1)) == 0)		\
-   : (C) == 'P' ? consec_zeros_p (VALUE)			\
+   : (C) == 'P' ? and_mask_p (VALUE)				\
    : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -1059,9 +1063,8 @@ extern union tree_node *current_function_decl;
 #define CONSTANT_ADDRESS_P(X)  CONSTANT_P (X)
 
 /* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+   It is given that X satisfies CONSTANT_P.  */
 
-/*#define LEGITIMATE_CONSTANT_P(X) (1)*/
 #define LEGITIMATE_CONSTANT_P(X)		\
  (GET_CODE (X) != CONST_DOUBLE)
 
@@ -1162,9 +1165,6 @@ extern union tree_node *current_function_decl;
 
 #define VAL_14_BITS_P(X) ((unsigned)(X) + 0x2000 < 0x4000)
 #define INT_14_BITS(X) VAL_14_BITS_P (INTVAL (X))
-
-#define FITS_14_BITS(X)	\
-   (GET_CODE (X) == CONST_INT && INT_14_BITS (X))
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)  \
 {							\
@@ -1805,7 +1805,6 @@ bss_section ()								\
     }}
 
 
-#define SMALL_INT(OP) INT_14_BITS (OP)
 /* Define functions in pa.c and used in insn-output.c.  */
 
 extern char *output_and ();
