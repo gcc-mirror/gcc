@@ -1,3 +1,7 @@
+Sun Oct 25 06:12:33 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* m68k.md (adddi3, subdi3, anddi3, iordi3, xordi3): Use split_double.
+
 Sat Oct 24 13:41:06 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* local-alloc.c (alloc_qty_for_scratch, requires_inout): Allow
