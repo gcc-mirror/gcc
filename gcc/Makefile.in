@@ -966,6 +966,7 @@ endif
 Makefile: config.status $(srcdir)/Makefile.in $(srcdir)/version.c $(LANG_MAKEFRAGS)
 	LANGUAGES="$(CONFIG_LANGUAGES)" \
 	CONFIG_HEADERS= \
+	CONFIG_SHELL="$(SHELL)" \
 	CONFIG_FILES=$@ $(SHELL) config.status
 
 config.h: cs-config.h ; @true

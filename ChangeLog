@@ -1,3 +1,10 @@
+2003-11-20  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.tpl (BASE_FLAGS_TO_PASS): Pass along CONFIG_SHELL.
+	(configure-build-[+module+], configure-[+module+]): Likewise.
+	(configure-target-[+module+], configure-gcc, config.status): Likewise.
+	* Makefile.in: Regenerate.
+
 2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* libtool.m4: Sync darwin bits from libtool cvs to build a gcc with

@@ -446,6 +446,7 @@ BASE_FLAGS_TO_PASS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
 	"WINDRES_FOR_TARGET=$(WINDRES_FOR_TARGET)" \
+	"CONFIG_SHELL=$(SHELL)" \
 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 
 
 # For any flags above that may contain shell code that varies from one
@@ -17608,6 +17609,7 @@ configure-build-libiberty:
 	AS="$(AS_FOR_BUILD)"; export AS; \
 	CC="$(CC_FOR_BUILD)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_BUILD)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX_FOR_BUILD)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
@@ -17679,6 +17681,7 @@ configure-ash:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -17745,6 +17748,7 @@ configure-autoconf:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -17811,6 +17815,7 @@ configure-automake:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -17877,6 +17882,7 @@ configure-bash:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -17943,6 +17949,7 @@ configure-bfd:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18009,6 +18016,7 @@ configure-opcodes:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18075,6 +18083,7 @@ configure-binutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18141,6 +18150,7 @@ configure-bison:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18210,6 +18220,7 @@ configure-byacc:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18279,6 +18290,7 @@ configure-bzip2:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18345,6 +18357,7 @@ configure-dejagnu:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18411,6 +18424,7 @@ configure-diff:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18477,6 +18491,7 @@ configure-dosutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18539,6 +18554,7 @@ configure-etc:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18605,6 +18621,7 @@ configure-fastjar:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18674,6 +18691,7 @@ configure-fileutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18740,6 +18758,7 @@ configure-findutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18806,6 +18825,7 @@ configure-find:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18872,6 +18892,7 @@ configure-flex:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -18941,6 +18962,7 @@ configure-gas:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19007,6 +19029,7 @@ configure-gawk:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19073,6 +19096,7 @@ configure-gettext:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19139,6 +19163,7 @@ configure-gnuserv:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19205,6 +19230,7 @@ configure-gprof:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19271,6 +19297,7 @@ configure-gzip:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19337,6 +19364,7 @@ configure-hello:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19403,6 +19431,7 @@ configure-indent:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19469,6 +19498,7 @@ configure-intl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19535,6 +19565,7 @@ configure-tcl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19601,6 +19632,7 @@ configure-itcl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19667,6 +19699,7 @@ configure-ld:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19733,6 +19766,7 @@ configure-libgui:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19799,6 +19833,7 @@ configure-libiberty:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19865,6 +19900,7 @@ configure-libtool:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19931,6 +19967,7 @@ configure-m4:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -19997,6 +20034,7 @@ configure-make:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20063,6 +20101,7 @@ configure-mmalloc:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20125,6 +20164,7 @@ configure-patch:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20191,6 +20231,7 @@ configure-perl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20257,6 +20298,7 @@ configure-prms:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20323,6 +20365,7 @@ configure-rcs:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20389,6 +20432,7 @@ configure-readline:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20455,6 +20499,7 @@ configure-release:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20513,6 +20558,7 @@ configure-recode:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20579,6 +20625,7 @@ configure-sed:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20645,6 +20692,7 @@ configure-send-pr:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20711,6 +20759,7 @@ configure-shellutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20777,6 +20826,7 @@ configure-sid:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20843,6 +20893,7 @@ configure-sim:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20909,6 +20960,7 @@ configure-tar:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -20975,6 +21027,7 @@ configure-texinfo:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21037,6 +21090,7 @@ configure-textutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21103,6 +21157,7 @@ configure-time:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21169,6 +21224,7 @@ configure-uudecode:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21235,6 +21291,7 @@ configure-wdiff:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21301,6 +21358,7 @@ configure-zip:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21370,6 +21428,7 @@ configure-zlib:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21428,6 +21487,7 @@ configure-gdb:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21494,6 +21554,7 @@ configure-expect:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21560,6 +21621,7 @@ configure-guile:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21626,6 +21688,7 @@ configure-tk:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21692,6 +21755,7 @@ configure-tix:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21758,6 +21822,7 @@ configure-libtermcap:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21820,6 +21885,7 @@ configure-utils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
@@ -21897,6 +21963,7 @@ configure-target-libstdc++-v3: $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX_FOR_TARGET="$(RAW_CXX_FOR_TARGET)"; export CXX_FOR_TARGET; \
 	CXX="$(RAW_CXX_FOR_TARGET)"; export CXX; \
@@ -21999,6 +22066,7 @@ configure-target-newlib: $(TARGET_SUBDIR)/newlib/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -22100,6 +22168,7 @@ configure-target-libf2c: $(TARGET_SUBDIR)/libf2c/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -22201,6 +22270,7 @@ configure-target-libobjc: $(TARGET_SUBDIR)/libobjc/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -22302,6 +22372,7 @@ configure-target-libtermcap: $(TARGET_SUBDIR)/libtermcap/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -22399,6 +22470,7 @@ configure-target-winsup: $(TARGET_SUBDIR)/winsup/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -22500,6 +22572,7 @@ configure-target-libgloss: $(TARGET_SUBDIR)/libgloss/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -22597,6 +22670,7 @@ configure-target-libiberty: $(TARGET_SUBDIR)/libiberty/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -22698,6 +22772,7 @@ configure-target-gperf: $(TARGET_SUBDIR)/gperf/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -22799,6 +22874,7 @@ configure-target-examples: $(TARGET_SUBDIR)/examples/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -22892,6 +22968,7 @@ configure-target-libffi: $(TARGET_SUBDIR)/libffi/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -22993,6 +23070,7 @@ configure-target-libjava: $(TARGET_SUBDIR)/libjava/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX_FOR_TARGET="$(RAW_CXX_FOR_TARGET)"; export CXX_FOR_TARGET; \
 	CXX="$(RAW_CXX_FOR_TARGET)"; export CXX; \
@@ -23095,6 +23173,7 @@ configure-target-zlib: $(TARGET_SUBDIR)/zlib/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -23196,6 +23275,7 @@ configure-target-boehm-gc: $(TARGET_SUBDIR)/boehm-gc/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -23297,6 +23377,7 @@ configure-target-qthreads: $(TARGET_SUBDIR)/qthreads/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -23398,6 +23479,7 @@ configure-target-rda: $(TARGET_SUBDIR)/rda/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -23499,6 +23581,7 @@ configure-gcc:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
@@ -23832,7 +23915,7 @@ Makefile: $(srcdir)/Makefile.in config.status
 	CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 config.status: configure $(gcc_version_trigger)
-	$(SHELL) ./config.status --recheck
+	CONFIG_SHELL="$(SHELL)" $(SHELL) ./config.status --recheck
 
 # Rebuilding configure.
 AUTOCONF = autoconf
