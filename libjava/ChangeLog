@@ -1,3 +1,9 @@
+2003-10-08  Arnaud Vandyck <arnaud.vandyck@ulg.ac.be>
+
+	* javax/swing/table/AbstractTableModel.java
+	(getColumnName): Simplified code much. Thanks to Yannick Boogaerts who
+	helped stop pulling my hair on this +1 then -1 tricky thing!
+
 2003-10-07  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkTextAreaPeer.java (gtkTextGetSize):

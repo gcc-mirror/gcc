@@ -77,56 +77,15 @@ public abstract class AbstractTableModel implements TableModel, Serializable
    */
   public String getColumnName (int columnIndex)
   {
-    // Ok, this is not the best solution in the world
-    // and it does produce wrong answers starting 1378
-    // but it's a start.  I sure hope there is a more
-    // simple algorithm.  I started with a base 10 to
-    // base 26 converter and later found that there
-    // were so many are exceptions that it has morphed
-    // into a pile of goop.
-		
-    // NOTE2: I have a working algorithm which is much
-    // much simplier and works for all values...I'll
-    // be adding it soon...
-
+    int index = columnIndex + 1;
     StringBuffer buffer = new StringBuffer();
-    int left = columnIndex;
-    boolean foundFirst = false;
-    
-    // Process Exponent levels.
-    for (int index = 6; index >= 0; index--)
-      {
-        int base = (int) (Math.pow (26, index));
-        
-        if (index > 1)
-          {
-            base = base + (int) (Math.pow (26, index - 1));
-          }
-        
-        if (base <= left)
-          {
-            int multiplier = left / base;
-            
-            if (foundFirst == false
-                && index > 0)
-              {
-                buffer.append ((char) (multiplier + 64));
-              }
-            else
-              {
-                buffer.append ((char) (multiplier + 65));
-              }
-            
-            left = left - (base * multiplier);
-            foundFirst = true;
-          }
-        else if (foundFirst == true
-                 || index == 0)
-          {
-            buffer.append('A');
-          }
-    }
 
+    while (index > 0)
+      {
+	buffer.insert (0, (char) ('A' + ((index - 1) % 26)));
+	index = (index - 1) / 26;
+      }
+    
     // Return column name.
     return buffer.toString();
   }
