@@ -1,3 +1,42 @@
+2002-08-09  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-common.c (flag_objc): New.
+	* c-common.h (c_language_kind): Get rid of clk_objective_c
+	enum value.
+	(flag_objc): New extern declaration.
+	* c-decl.c (implicitly_declare): Call objc_check_decl
+	instead of maybe_objc_check_decl.
+	(finish_decl): Likewise.
+	(grokfield): Likewise.
+	(finish_struct): Likewise.
+	* c-lang.c (maybe_objc_check_decl): Rename to objc_check_decl.
+	(maybe_objc_comptypes): Rename to objc_comptypes.
+	(maybe_building_objc_message_expr): Rename to 
+	objc_message_selector.
+	* c-lex.c (lex_charconst): Remove uses of clk_objective_c,
+	replace with flag_objc as needed.
+	* c-opts.c (c_common_init_options): Likewise.
+	(c_common_decode_option): Likewise.
+	* c-parse.in (init_reswords): Likewise.
+	* c-tree.h (maybe_objc_check_decl): Rename to objc_check_decl.
+	(maybe_objc_comptypes): Rename to objc_comptypes.
+	(maybe_building_objc_message_expr): Rename to       
+	objc_message_selector.
+	* c-typeck.c (comptypes): Call objc_comptypes instead of
+	maybe_objc_comptypes, and/or objc_message_selector instead of
+	maybe_building_objc_message_expr.
+	(comp_target_types): Likewise.
+	(convert_for_assignment): Likewise.
+	(warn_for_assignment): Likewise.
+	* cppinit.c (init_builtins): Set __OBJC__ manifest constant
+	independently of those for other languages.
+	* objc/objc-act.c (maybe_objc_comptypes): Delete.
+	(maybe_objc_check_decl): Delete.
+	(maybe_building_objc_message_expr): Rename to 
+	objc_message_selector.
+	* objc/objc-lang.c (objc_init_options): Use clk_c instead of
+	clk_objective_c; set flag_objc flag.
+
 2002-08-09  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
 
 	* ifcvt.c (find_if_case_2): Test correct basic block for size.

@@ -2059,8 +2059,9 @@ implicitly_declare (functionid)
      So we record the decl in the standard fashion.  */
   pushdecl (decl);
 
-  /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
-  maybe_objc_check_decl (decl);
+  /* This is a no-op in c-lang.c or something real in objc-act.c.  */
+  if (flag_objc)
+    objc_check_decl (decl);
 
   rest_of_decl_compilation (decl, NULL, 0, 0);
 
@@ -3097,8 +3098,9 @@ finish_decl (decl, init, asmspec_tree)
 
   if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
     {
-      /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
-      maybe_objc_check_decl (decl);
+      /* This is a no-op in c-lang.c or something real in objc-act.c.  */
+      if (flag_objc)
+	objc_check_decl (decl);
 
       if (!DECL_CONTEXT (decl))
 	{
@@ -3160,8 +3162,9 @@ finish_decl (decl, init, asmspec_tree)
 
   if (TREE_CODE (decl) == TYPE_DECL)
     {
-      /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
-      maybe_objc_check_decl (decl);
+      /* This is a no-op in c-lang.c or something real in objc-act.c.  */
+      if (flag_objc)
+	objc_check_decl (decl);
       rest_of_decl_compilation (decl, NULL, DECL_CONTEXT (decl) == 0, 0);
     }
 
@@ -5009,7 +5012,8 @@ grokfield (filename, line, declarator, declspecs, width)
   finish_decl (value, NULL_TREE, NULL_TREE);
   DECL_INITIAL (value) = width;
 
-  maybe_objc_check_decl (value);
+  if (flag_objc)
+    objc_check_decl (value);
   return value;
 }
 
@@ -5297,8 +5301,9 @@ finish_struct (t, fieldlist, attributes)
 	      && TREE_CODE (decl) != TYPE_DECL)
 	    {
 	      layout_decl (decl, 0);
-	      /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
-	      maybe_objc_check_decl (decl);
+	      /* This is a no-op in c-lang.c or something real in objc-act.c.  */
+	      if (flag_objc)
+		objc_check_decl (decl);
 	      rest_of_decl_compilation (decl, NULL, toplevel, 0);
 	      if (! toplevel)
 		expand_decl (decl);
@@ -5320,7 +5325,8 @@ finish_struct (t, fieldlist, attributes)
 		  if (TREE_CODE (decl) != TYPE_DECL)
 		    {
 		      layout_decl (decl, 0);
-		      maybe_objc_check_decl (decl);
+		      if (flag_objc)
+			objc_check_decl (decl);
 		      rest_of_decl_compilation (decl, NULL, toplevel, 0);
 		      if (! toplevel)
 			expand_decl (decl);

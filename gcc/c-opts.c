@@ -406,11 +406,11 @@ c_common_init_options (lang)
 #endif
 
   c_language = lang;
-  parse_in = cpp_create_reader (lang == clk_c || lang == clk_objective_c
+  parse_in = cpp_create_reader (lang == clk_c
 				? CLK_GNUC89 : CLK_GNUCXX);
   cpp_opts = cpp_get_options (parse_in);
 
-  if (lang == clk_objective_c)
+  if (flag_objc)
     cpp_opts->objc = 1;
 
   flag_const_strings = (lang == clk_cplusplus);
@@ -447,9 +447,14 @@ c_common_decode_option (argc, argv)
 
   switch (c_language)
     {
-    case clk_c:			lang_flag = CL_C_ONLY; break;
-    case clk_cplusplus:		lang_flag = CL_CXX_ONLY; break;
-    case clk_objective_c:	lang_flag = CL_OBJC_ONLY; break;
+    case clk_c:			lang_flag = (flag_objc
+					     ? CL_C
+					     : CL_C_ONLY);
+				break;
+    case clk_cplusplus:		lang_flag = (flag_objc
+					     ? CL_CXX
+					     : CL_CXX_ONLY);
+				break;
     default:			abort ();
     }
 
@@ -557,7 +562,7 @@ c_common_decode_option (argc, argv)
       if (warn_uninitialized != 1)
 	warn_uninitialized = (on ? 2 : 0);
 
-      if (c_language == clk_c || c_language == clk_objective_c)
+      if (c_language == clk_c)
 	/* We set this to 2 here, but 1 in -Wmain, so -ffreestanding
 	   can turn it off only if it's not explicit.  */
 	warn_main = on * 2;
@@ -813,7 +818,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_Wwrite_strings:
-      if (c_language == clk_c || c_language == clk_objective_c)
+      if (c_language == clk_c)
 	flag_const_strings = on;
       else
 	warn_write_strings = on;
@@ -824,7 +829,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_fcond_mismatch:
-      if (c_language == clk_c || c_language == clk_objective_c)
+      if (c_language == clk_c)
 	{
 	  flag_cond_mismatch = on;
 	  break;
@@ -1114,7 +1119,7 @@ c_common_decode_option (argc, argv)
     case OPT_std_iso9899_199409:
     case OPT_ansi:
       /* Note: -ansi is used by both the C and C++ front ends.  */
-      if (c_language == clk_c || c_language == clk_objective_c)
+      if (c_language == clk_c)
 	{
 	  flag_no_asm = 1;
 	  flag_writable_strings = 0;
