@@ -39,50 +39,39 @@
 /*                           Defines                                  */
 /*                           -------                                  */
 /*====================================================================*/
- 
-#define MAX_GPRARGS 5        /* Max. no. of GPR available             */
-#define MAX_FPRARGS 2        /* Max. no. of FPR available             */
- 
-#define STR_GPR     1        /* Structure will fit in 1 or 2 GPR      */
-#define STR_FPR     2        /* Structure will fit in a FPR           */
-#define STR_STACK   3        /* Structure needs to go on stack        */
- 
+
+/* Maximum number of GPRs available for argument passing.  */ 
+#define MAX_GPRARGS 5
+
+/* Maximum number of FPRs available for argument passing.  */ 
+#ifdef __s390x__
+#define MAX_FPRARGS 4
+#else
+#define MAX_FPRARGS 2
+#endif
+
+/* Round to multiple of 16.  */
+#define ROUND_SIZE(size) (((size) + 15) & ~15)
+
+/* If these values change, sysv.S must be adapted!  */
+#define FFI390_RET_VOID		0
+#define FFI390_RET_STRUCT	1
+#define FFI390_RET_FLOAT	2
+#define FFI390_RET_DOUBLE	3
+#define FFI390_RET_INT32	4
+#define FFI390_RET_INT64	5
+
 /*===================== End of Defines ===============================*/
- 
-/*====================================================================*/
-/*                            Types                                   */
-/*                            -----                                   */
-/*====================================================================*/
- 
-typedef struct stackLayout
-{
-  int   *backChain;
-  int   *endOfStack;
-  int   glue[2];
-  int   scratch[2];
-  int   gprArgs[MAX_GPRARGS];
-  int   notUsed;
-  union
-  {
-    float  f;
-    double d;
-  } fprArgs[MAX_FPRARGS];
-  int   unUsed[8];
-  int   outArgs[100];
-} stackLayout;
- 
-/*======================== End of Types ==============================*/
  
 /*====================================================================*/
 /*                          Prototypes                                */
 /*                          ----------                                */
 /*====================================================================*/
  
-void ffi_prep_args(stackLayout *, extended_cif *);
-static int  ffi_check_struct(ffi_type *, unsigned int *);
-static void ffi_insert_int(int, stackLayout *, int *, int *);
-static void ffi_insert_int64(long long, stackLayout *, int *, int *);
-static void ffi_insert_double(double, stackLayout *, int *, int *);
+static void ffi_prep_args (unsigned char *, extended_cif *);
+static int ffi_check_float_struct (ffi_type *);
+void ffi_closure_helper_SYSV (ffi_closure *, unsigned long *, 
+			      unsigned long long *, unsigned long *);
  
 /*====================== End of Prototypes ===========================*/
  
@@ -91,127 +80,65 @@ static void ffi_insert_double(double, stackLayout *, int *, int *);
 /*                          ---------                                 */
 /*====================================================================*/
  
-extern void ffi_call_SYSV(void (*)(stackLayout *, extended_cif *),
+extern void ffi_call_SYSV(unsigned,
 			  extended_cif *,
-			  unsigned, unsigned,
-			  unsigned *,
+			  void (*)(unsigned char *, extended_cif *),
+			  unsigned,
+			  void *,
 			  void (*fn)());
+
+extern void ffi_closure_SYSV(void);
  
 /*====================== End of Externals ============================*/
  
 /*====================================================================*/
 /*                                                                    */
-/* Name     - ffi_check_struct.                                       */
+/* Name     - ffi_check_struct_type.                                  */
 /*                                                                    */
 /* Function - Determine if a structure can be passed within a         */
-/*            general or floating point register.                     */
+/*            general purpose or floating point register.             */
 /*                                                                    */
 /*====================================================================*/
  
-int
-ffi_check_struct(ffi_type *arg, unsigned int *strFlags)
+static int
+ffi_check_struct_type (ffi_type *arg)
 {
- ffi_type *element;
- int      i_Element;
- 
- for (i_Element = 0; arg->elements[i_Element]; i_Element++) {
-   element = arg->elements[i_Element];
-   switch (element->type) {
-   case FFI_TYPE_DOUBLE :
-     *strFlags |= STR_FPR;
-     break;
-     
-   case FFI_TYPE_STRUCT :
-     *strFlags |= ffi_check_struct(element, strFlags);
-     break;
-     
-   default :
-     *strFlags |= STR_GPR;
-   }
- }
- return (*strFlags);
-}
- 
-/*======================== End of Routine ============================*/
- 
-/*====================================================================*/
-/*                                                                    */
-/* Name     - ffi_insert_int.                                         */
-/*                                                                    */
-/* Function - Insert an integer parameter in a register if there are  */
-/*            spares else on the stack.                               */
-/*                                                                    */
-/*====================================================================*/
- 
-void
-ffi_insert_int(int gprValue, stackLayout *stack,
-               int *intArgC, int *outArgC)
-{
-  if (*intArgC < MAX_GPRARGS) {
-    stack->gprArgs[*intArgC] = gprValue;
-    *intArgC += 1;
-  }
-  else {
-    stack->outArgs[*outArgC++] = gprValue;
-    *outArgC += 1;
-  }
-}
- 
-/*======================== End of Routine ============================*/
- 
-/*====================================================================*/
-/*                                                                    */
-/* Name     - ffi_insert_int64.                                       */
-/*                                                                    */
-/* Function - Insert a long long parameter in registers if there are  */
-/*            spares else on the stack.                               */
-/*                                                                    */
-/*====================================================================*/
- 
-void
-ffi_insert_int64(long long llngValue, stackLayout *stack,
-                 int *intArgC, int *outArgC)
-{
- 
-  if (*intArgC < (MAX_GPRARGS-1)) {
-    memcpy(&stack->gprArgs[*intArgC],
-	   &llngValue, sizeof(long long));	
-    *intArgC += 2;
-  }
-  else {
-    memcpy(&stack->outArgs[*outArgC],
-	   &llngValue, sizeof(long long));
-    *outArgC += 2;
-  }
- 
-}
- 
-/*======================== End of Routine ============================*/
- 
-/*====================================================================*/
-/*                                                                    */
-/* Name     - ffi_insert_double.                                      */
-/*                                                                    */
-/* Function - Insert a double parameter in a FP register if there is  */
-/*            a spare else on the stack.                              */
-/*                                                                    */
-/*====================================================================*/
- 
-void
-ffi_insert_double(double dblValue, stackLayout *stack,
-                  int *fprArgC, int *outArgC)
-{
- 
-  if (*fprArgC < MAX_FPRARGS) {
-    stack->fprArgs[*fprArgC].d = dblValue;
-    *fprArgC += 1;
-  }
-  else {
-    memcpy(&stack->outArgs[*outArgC],
-	   &dblValue,sizeof(double));
-    *outArgC += 2;
-  }
- 
+  size_t size = arg->size;
+
+  /* If the struct has just one element, look at that element
+     to find out whether to consider the struct as floating point.  */
+  while (arg->type == FFI_TYPE_STRUCT 
+         && arg->elements[0] && !arg->elements[1])
+    arg = arg->elements[0];
+
+  /* Structs of size 1, 2, 4, and 8 are passed in registers,
+     just like the corresponding int/float types.  */
+  switch (size)
+    {
+      case 1:
+        return FFI_TYPE_UINT8;
+
+      case 2:
+        return FFI_TYPE_UINT16;
+
+      case 4:
+	if (arg->type == FFI_TYPE_FLOAT)
+          return FFI_TYPE_FLOAT;
+	else
+	  return FFI_TYPE_UINT32;
+
+      case 8:
+	if (arg->type == FFI_TYPE_DOUBLE)
+          return FFI_TYPE_DOUBLE;
+	else
+	  return FFI_TYPE_UINT64;
+
+      default:
+	break;
+    }
+
+  /* Other structs are passed via a pointer to the data.  */
+  return FFI_TYPE_POINTER;
 }
  
 /*======================== End of Routine ============================*/
@@ -225,202 +152,168 @@ ffi_insert_double(double dblValue, stackLayout *stack,
 /* ffi_prep_args is called by the assembly routine once stack space   */
 /* has been allocated for the function's arguments.                   */
 /*                                                                    */
-/* The stack layout we want looks like this:                          */
-/* *------------------------------------------------------------*     */
-/* |  0     | Back chain (a 0 here signifies end of back chain) |     */
-/* +--------+---------------------------------------------------+     */
-/* |  4     | EOS (end of stack, not used on Linux for S390)    |     */
-/* +--------+---------------------------------------------------+     */
-/* |  8     | Glue used in other linkage formats                |     */
-/* +--------+---------------------------------------------------+     */
-/* | 12     | Glue used in other linkage formats                |     */
-/* +--------+---------------------------------------------------+     */
-/* | 16     | Scratch area                                      |     */
-/* +--------+---------------------------------------------------+     */
-/* | 20     | Scratch area                                      |     */
-/* +--------+---------------------------------------------------+     */
-/* | 24     | GPR parameter register 1                          |     */
-/* +--------+---------------------------------------------------+     */
-/* | 28     | GPR parameter register 2                          |     */
-/* +--------+---------------------------------------------------+     */
-/* | 32     | GPR parameter register 3                          |     */
-/* +--------+---------------------------------------------------+     */
-/* | 36     | GPR parameter register 4                          |     */
-/* +--------+---------------------------------------------------+     */
-/* | 40     | GPR parameter register 5                          |     */
-/* +--------+---------------------------------------------------+     */
-/* | 44     | Unused                                            |     */
-/* +--------+---------------------------------------------------+     */
-/* | 48     | FPR parameter register 1                          |     */
-/* +--------+---------------------------------------------------+     */
-/* | 56     | FPR parameter register 2                          |     */
-/* +--------+---------------------------------------------------+     */
-/* | 64     | Unused                                            |     */
-/* +--------+---------------------------------------------------+     */
-/* | 96     | Outgoing args (length x)                          |     */
-/* +--------+---------------------------------------------------+     */
-/* | 96+x   | Copy area for structures (length y)               |     */
-/* +--------+---------------------------------------------------+     */
-/* | 96+x+y | Possible stack alignment                          |     */
-/* *------------------------------------------------------------*     */
-/*                                                                    */
 /*====================================================================*/
  
-void
-ffi_prep_args(stackLayout *stack, extended_cif *ecif)
+static void
+ffi_prep_args (unsigned char *stack, extended_cif *ecif)
 {
-  const unsigned bytes = ecif->cif->bytes;
-  const unsigned flags = ecif->cif->flags;
- 
-  /*----------------------------------------------------------*/
-  /* Pointer to the copy area on stack for structures         */
-  /*----------------------------------------------------------*/
-  char *copySpace = (char *) stack + bytes + sizeof(stackLayout);
- 
-  /*----------------------------------------------------------*/
-  /* Count of general and floating point register usage       */
-  /*----------------------------------------------------------*/
-  int intArgC = 0,
-    fprArgC = 0,
-    outArgC = 0;
- 
-  int      i;
+  /* The stack space will be filled with those areas:
+
+	FPR argument register save area     (highest addresses)
+	GPR argument register save area
+	temporary struct copies
+	overflow argument area              (lowest addresses)
+
+     We set up the following pointers:
+
+        p_fpr: bottom of the FPR area (growing upwards)
+	p_gpr: bottom of the GPR area (growing upwards)
+	p_ov: bottom of the overflow area (growing upwards)
+	p_struct: top of the struct copy area (growing downwards)
+
+     All areas are kept aligned to twice the word size.  */
+
+  int gpr_off = ecif->cif->bytes;
+  int fpr_off = gpr_off + ROUND_SIZE (MAX_GPRARGS * sizeof (long));
+
+  unsigned long long *p_fpr = (unsigned long long *)(stack + fpr_off);
+  unsigned long *p_gpr = (unsigned long *)(stack + gpr_off);
+  unsigned char *p_struct = (unsigned char *)p_gpr;
+  unsigned long *p_ov = (unsigned long *)stack;
+
+  int n_fpr = 0;
+  int n_gpr = 0;
+  int n_ov = 0;
+
   ffi_type **ptr;
-  void     **p_argv;
-  size_t   structCopySize;
-  unsigned gprValue, strFlags = 0;
-  unsigned long long llngValue;
-  double   dblValue;
+  void **p_argv = ecif->avalue;
+  int i;
  
+  /* If we returning a structure then we set the first parameter register
+     to the address of where we are returning this structure.  */
+
+  if (ecif->cif->flags == FFI390_RET_STRUCT)
+    p_gpr[n_gpr++] = (unsigned long) ecif->rvalue;
+
   /* Now for the arguments.  */
-  p_argv  = ecif->avalue;
- 
-  /*----------------------------------------------------------------------*/
-  /* If we returning a structure then we set the first parameter register */
-  /* to the address of where we are returning this structure              */
-  /*----------------------------------------------------------------------*/
-  if (flags == FFI_TYPE_STRUCT)
-    stack->gprArgs[intArgC++] = (int) ecif->rvalue;
  
   for (ptr = ecif->cif->arg_types, i = ecif->cif->nargs;
        i > 0;
        i--, ptr++, p_argv++)
     {
-      switch ((*ptr)->type) {
- 
-      case FFI_TYPE_FLOAT:
-	if (fprArgC < MAX_FPRARGS)
-	  stack->fprArgs[fprArgC++].f = *(float *) *p_argv;
-	else
-	  stack->outArgs[outArgC++] = *(int *) *p_argv;
-	break;
- 
-      case FFI_TYPE_DOUBLE:
-	dblValue = *(double *) *p_argv;
-	ffi_insert_double(dblValue, stack, &fprArgC, &outArgC);
-	break;
-	
-      case FFI_TYPE_UINT64:
-      case FFI_TYPE_SINT64:
-	llngValue = *(unsigned long long *) *p_argv;
-	ffi_insert_int64(llngValue, stack, &intArgC, &outArgC);
-	break;
- 
-      case FFI_TYPE_UINT8:
-	gprValue = *(unsigned char *)*p_argv;
-	ffi_insert_int(gprValue, stack, &intArgC, &outArgC);
-	break;
- 
-      case FFI_TYPE_SINT8:
-	gprValue = *(signed char *)*p_argv;
-	ffi_insert_int(gprValue, stack, &intArgC, &outArgC);
-	break;
- 
-      case FFI_TYPE_UINT16:
-	gprValue = *(unsigned short *)*p_argv;
-	ffi_insert_int(gprValue, stack, &intArgC, &outArgC);
-	break;
- 
-      case FFI_TYPE_SINT16:
-	gprValue = *(signed short *)*p_argv;
-	ffi_insert_int(gprValue, stack, &intArgC, &outArgC);
-	break;
- 
-      case FFI_TYPE_STRUCT:
-	/*--------------------------------------------------*/
-	/* If structure > 8 bytes then it goes on the stack */
-	/*--------------------------------------------------*/
-	if (((*ptr)->size > 8) ||
-	    ((*ptr)->size > 4  &&
-	     (*ptr)->size < 8))
-	  strFlags = STR_STACK;
-	else
-	  strFlags = ffi_check_struct((ffi_type *) *ptr, &strFlags);
- 
-	switch (strFlags) {
-	/*-------------------------------------------*/
-	/* Structure that will fit in one or two GPR */
-	/*-------------------------------------------*/
-	case STR_GPR :
-	  if ((*ptr)->size <= 4) {
-	    gprValue = *(unsigned int *) *p_argv;
-	    gprValue = gprValue >> ((4 - (*ptr)->size) * 8);
-	    ffi_insert_int(gprValue, stack, &intArgC, &outArgC);
-	  }
-	  else {
-	    llngValue = *(unsigned long long *) *p_argv;
-	    ffi_insert_int64(llngValue, stack, &intArgC, &outArgC);
-	  }
-	  break;
- 
-	/*-------------------------------------------*/
-	/* Structure that will fit in one FPR        */
-	/*-------------------------------------------*/
-	case STR_FPR :
-	  dblValue = *(double *) *p_argv;
-	  ffi_insert_double(dblValue, stack, &fprArgC, &outArgC);
-	  break;
- 
-	/*-------------------------------------------*/
-	/* Structure that must be copied to stack    */
-	/*-------------------------------------------*/
-	default :
-	  structCopySize = (((*ptr)->size + 15) & ~0xF);
-	  copySpace -= structCopySize;
-	  memcpy(copySpace, (char *)*p_argv, (*ptr)->size);
-	  gprValue = (unsigned) copySpace;
-	  if (intArgC < MAX_GPRARGS)
-	    stack->gprArgs[intArgC++] = gprValue;
-	  else
-	    stack->outArgs[outArgC++] = gprValue;
+      void *arg = *p_argv;
+      int type = (*ptr)->type;
+
+      /* Check how a structure type is passed.  */
+      if (type == FFI_TYPE_STRUCT)
+	{
+	  type = ffi_check_struct_type (*ptr);
+
+	  /* If we pass the struct via pointer, copy the data.  */
+	  if (type == FFI_TYPE_POINTER)
+	    {
+	      p_struct -= ROUND_SIZE ((*ptr)->size);
+	      memcpy (p_struct, (char *)arg, (*ptr)->size);
+	      arg = &p_struct;
+	    }
 	}
-	break;
- 
-#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
-      case FFI_TYPE_LONGDOUBLE:
-	structCopySize = (((*ptr)->size + 15) & ~0xF);
-	copySpace -= structCopySize;
-	memcpy(copySpace, (char *)*p_argv, (*ptr)->size);
-	gprValue = (unsigned) copySpace;
-	if (intArgC < MAX_GPRARGS)
-	  stack->gprArgs[intArgC++] = gprValue;
-	else
-	  stack->outArgs[outArgC++] = gprValue;
-	break;
+
+      /* Pointers are passed like UINTs of the same size.  */
+      if (type == FFI_TYPE_POINTER)
+#ifdef __s390x__
+	type = FFI_TYPE_UINT64;
+#else
+	type = FFI_TYPE_UINT32;
 #endif
+
+      /* Now handle all primitive int/float data types.  */
+      switch (type) 
+	{
+	  case FFI_TYPE_DOUBLE:
+	    if (n_fpr < MAX_FPRARGS)
+	      p_fpr[n_fpr++] = *(unsigned long long *) arg;
+	    else
+#ifdef __s390x__
+	      p_ov[n_ov++] = *(unsigned long *) arg;
+#else
+	      p_ov[n_ov++] = ((unsigned long *) arg)[0],
+	      p_ov[n_ov++] = ((unsigned long *) arg)[1];
+#endif
+	    break;
+	
+	  case FFI_TYPE_FLOAT:
+	    if (n_fpr < MAX_FPRARGS)
+	      p_fpr[n_fpr++] = (long long) *(unsigned int *) arg << 32;
+	    else
+	      p_ov[n_ov++] = *(unsigned int *) arg;
+	    break;
  
-      case FFI_TYPE_INT:
-      case FFI_TYPE_UINT32:
-      case FFI_TYPE_SINT32:
-      case FFI_TYPE_POINTER:
-	gprValue = *(unsigned *)*p_argv;
-	if (intArgC < MAX_GPRARGS)
-	  stack->gprArgs[intArgC++] = gprValue;
-	else
-	  stack->outArgs[outArgC++] = gprValue;
-	break;
+	  case FFI_TYPE_UINT64:
+	  case FFI_TYPE_SINT64:
+#ifdef __s390x__
+	    if (n_gpr < MAX_GPRARGS)
+	      p_gpr[n_gpr++] = *(unsigned long *) arg;
+	    else
+	      p_ov[n_ov++] = *(unsigned long *) arg;
+#else
+	    if (n_gpr == MAX_GPRARGS-1)
+	      n_gpr = MAX_GPRARGS;
+	    if (n_gpr < MAX_GPRARGS)
+	      p_gpr[n_gpr++] = ((unsigned long *) arg)[0],
+	      p_gpr[n_gpr++] = ((unsigned long *) arg)[1];
+	    else
+	      p_ov[n_ov++] = ((unsigned long *) arg)[0],
+	      p_ov[n_ov++] = ((unsigned long *) arg)[1];
+#endif
+	    break;
  
-      }
+	  case FFI_TYPE_UINT32:
+	    if (n_gpr < MAX_GPRARGS)
+	      p_gpr[n_gpr++] = *(unsigned int *) arg;
+	    else
+	      p_ov[n_ov++] = *(unsigned int *) arg;
+	    break;
+ 
+	  case FFI_TYPE_INT:
+	  case FFI_TYPE_SINT32:
+	    if (n_gpr < MAX_GPRARGS)
+	      p_gpr[n_gpr++] = *(signed int *) arg;
+	    else
+	      p_ov[n_ov++] = *(signed int *) arg;
+	    break;
+ 
+	  case FFI_TYPE_UINT16:
+	    if (n_gpr < MAX_GPRARGS)
+	      p_gpr[n_gpr++] = *(unsigned short *) arg;
+	    else
+	      p_ov[n_ov++] = *(unsigned short *) arg;
+	    break;
+ 
+	  case FFI_TYPE_SINT16:
+	    if (n_gpr < MAX_GPRARGS)
+	      p_gpr[n_gpr++] = *(signed short *) arg;
+	    else
+	      p_ov[n_ov++] = *(signed short *) arg;
+	    break;
+
+	  case FFI_TYPE_UINT8:
+	    if (n_gpr < MAX_GPRARGS)
+	      p_gpr[n_gpr++] = *(unsigned char *) arg;
+	    else
+	      p_ov[n_ov++] = *(unsigned char *) arg;
+	    break;
+ 
+	  case FFI_TYPE_SINT8:
+	    if (n_gpr < MAX_GPRARGS)
+	      p_gpr[n_gpr++] = *(signed char *) arg;
+	    else
+	      p_ov[n_ov++] = *(signed char *) arg;
+	    break;
+ 
+	  default:
+	    FFI_ASSERT (0);
+	    break;
+        }
     }
 }
 
@@ -437,106 +330,137 @@ ffi_prep_args(stackLayout *stack, extended_cif *ecif)
 ffi_status
 ffi_prep_cif_machdep(ffi_cif *cif)
 {
-  int i;
+  size_t struct_size = 0;
+  int n_gpr = 0;
+  int n_fpr = 0;
+  int n_ov = 0;
+
   ffi_type **ptr;
-  unsigned bytes;
-  int fpArgC  = 0,
-    intArgC = 0;
-  unsigned flags = 0;
-  unsigned structCopySize = 0;
- 
-  /*-----------------------------------------------------------------*/
-  /* Extra space required in stack for overflow parameters.          */
-  /*-----------------------------------------------------------------*/
-  bytes = 0;
- 
-  /*--------------------------------------------------------*/
-  /* Return value handling.  The rules are as follows:	    */
-  /* - 32-bit (or less) integer values are returned in gpr2 */
-  /* - Structures are returned as pointers in gpr2	    */
-  /* - 64-bit integer values are returned in gpr2 and 3	    */
-  /* - Single/double FP values are returned in fpr0	    */
-  /*--------------------------------------------------------*/
-  flags = cif->rtype->type;
- 
-  /*------------------------------------------------------------------------*/
-  /* The first MAX_GPRARGS words of integer arguments, and the      	    */
-  /* first MAX_FPRARGS floating point arguments, go in registers; the rest  */
-  /* goes on the stack.  Structures and long doubles (if not equivalent     */
-  /* to double) are passed as a pointer to a copy of the structure.	    */
-  /* Stuff on the stack needs to keep proper alignment.  		    */
-  /*------------------------------------------------------------------------*/
-  for (ptr = cif->arg_types, i = cif->nargs; i > 0; i--, ptr++)
+  int i;
+
+  /* Determine return value handling.  */ 
+
+  switch (cif->rtype->type)
     {
-      switch ((*ptr)->type)
-	{
-	case FFI_TYPE_FLOAT:
-	case FFI_TYPE_DOUBLE:
-	  fpArgC++;
-	  if (fpArgC > MAX_FPRARGS && intArgC%2 != 0)
-	    intArgC++;
-	  break;
- 
-	case FFI_TYPE_UINT64:
-	case FFI_TYPE_SINT64:
-	  /*----------------------------------------------------*/
-	  /* 'long long' arguments are passed as two words, but */
-	  /* either both words must fit in registers or both go */
-	  /* on the stack.  If they go on the stack, they must  */
-	  /* be 8-byte-aligned. 			 	      */
-	  /*----------------------------------------------------*/
-	  if ((intArgC == MAX_GPRARGS-1) ||
-	      (intArgC >= MAX_GPRARGS)   &&
-	      (intArgC%2 != 0))
-	    intArgC++;
-	  intArgC += 2;
-	  break;
- 
-	case FFI_TYPE_STRUCT:
-#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
-	case FFI_TYPE_LONGDOUBLE:
+      /* Void is easy.  */
+      case FFI_TYPE_VOID:
+	cif->flags = FFI390_RET_VOID;
+	break;
+
+      /* Structures are returned via a hidden pointer.  */
+      case FFI_TYPE_STRUCT:
+	cif->flags = FFI390_RET_STRUCT;
+	n_gpr++;  /* We need one GPR to pass the pointer.  */
+	break; 
+
+      /* Floating point values are returned in fpr 0.  */
+      case FFI_TYPE_FLOAT:
+	cif->flags = FFI390_RET_FLOAT;
+	break;
+
+      case FFI_TYPE_DOUBLE:
+	cif->flags = FFI390_RET_DOUBLE;
+	break;
+
+      /* Integer values are returned in gpr 2 (and gpr 3
+	 for 64-bit values on 31-bit machines).  */
+      case FFI_TYPE_UINT64:
+      case FFI_TYPE_SINT64:
+	cif->flags = FFI390_RET_INT64;
+	break;
+
+      case FFI_TYPE_INT:
+      case FFI_TYPE_UINT32:
+      case FFI_TYPE_SINT32:
+      case FFI_TYPE_UINT16:
+      case FFI_TYPE_SINT16:
+      case FFI_TYPE_UINT8:
+      case FFI_TYPE_SINT8:
+	/* These are to be extended to word size.  */
+#ifdef __s390x__
+	cif->flags = FFI390_RET_INT64;
+#else
+	cif->flags = FFI390_RET_INT32;
 #endif
-	  /*----------------------------------------------------*/
-	  /* We must allocate space for a copy of these to      */
-	  /* enforce pass-by-value. Pad the space up to a       */
-	  /* multiple of 16 bytes (the maximum alignment 	      */
-	  /* required for anything under the SYSV ABI). 	      */
-	  /*----------------------------------------------------*/
-	  structCopySize += ((*ptr)->size + 15) & ~0xF;
-	  /*----------------------------------------------------*/
-	  /* Fall through (allocate space for the pointer).     */
-	  /*----------------------------------------------------*/
+	break;
  
-	default:
-	  /*----------------------------------------------------*/
-	  /* Everything else is passed as a 4-byte word in a    */
-	  /* GPR either the object itself or a pointer to it.   */
-	  /*----------------------------------------------------*/
-	  intArgC++;
-	  break;
-	}
+      default:
+        FFI_ASSERT (0);
+        break;
     }
+
+  /* Now for the arguments.  */
  
-  /*-----------------------------------------------------------------*/
-  /* Stack space.                                                    */
-  /*-----------------------------------------------------------------*/
-  if (intArgC > MAX_GPRARGS)
-    bytes += (intArgC - MAX_GPRARGS) * sizeof(int);
-  if (fpArgC > MAX_FPRARGS)
-    bytes += (fpArgC - MAX_FPRARGS) * sizeof(double);
- 
-  /*-----------------------------------------------------------------*/
-  /* The stack space allocated needs to be a multiple of 16 bytes.   */
-  /*-----------------------------------------------------------------*/
-  bytes = (bytes + 15) & ~0xF;
- 
-  /*-----------------------------------------------------------------*/
-  /* Add in the space for the copied structures.                     */
-  /*-----------------------------------------------------------------*/
-  bytes += structCopySize;
- 
-  cif->flags = flags;
-  cif->bytes = bytes;
+  for (ptr = cif->arg_types, i = cif->nargs;
+       i > 0;
+       i--, ptr++)
+    {
+      int type = (*ptr)->type;
+
+      /* Check how a structure type is passed.  */
+      if (type == FFI_TYPE_STRUCT)
+	{
+	  type = ffi_check_struct_type (*ptr);
+
+	  /* If we pass the struct via pointer, we must reserve space
+	     to copy its data for proper call-by-value semantics.  */
+	  if (type == FFI_TYPE_POINTER)
+	    struct_size += ROUND_SIZE ((*ptr)->size);
+	}
+
+      /* Now handle all primitive int/float data types.  */
+      switch (type) 
+	{
+	  /* The first MAX_FPRARGS floating point arguments
+	     go in FPRs, the rest overflow to the stack.  */
+
+	  case FFI_TYPE_DOUBLE:
+	    if (n_fpr < MAX_FPRARGS)
+	      n_fpr++;
+	    else
+	      n_ov += sizeof (double) / sizeof (long);
+	    break;
+	
+	  case FFI_TYPE_FLOAT:
+	    if (n_fpr < MAX_FPRARGS)
+	      n_fpr++;
+	    else
+	      n_ov++;
+	    break;
+
+	  /* On 31-bit machines, 64-bit integers are passed in GPR pairs,
+	     if one is still available, or else on the stack.  If only one
+	     register is free, skip the register (it won't be used for any 
+	     subsequent argument either).  */
+	      
+#ifndef __s390x__
+	  case FFI_TYPE_UINT64:
+	  case FFI_TYPE_SINT64:
+	    if (n_gpr == MAX_GPRARGS-1)
+	      n_gpr = MAX_GPRARGS;
+	    if (n_gpr < MAX_GPRARGS)
+	      n_gpr += 2;
+	    else
+	      n_ov += 2;
+	    break;
+#endif
+
+	  /* Everything else is passed in GPRs (until MAX_GPRARGS
+	     have been used) or overflows to the stack.  */
+
+	  default: 
+	    if (n_gpr < MAX_GPRARGS)
+	      n_gpr++;
+	    else
+	      n_ov++;
+	    break;
+        }
+    }
+
+  /* Total stack space as required for overflow arguments
+     and temporary structure copies.  */
+
+  cif->bytes = ROUND_SIZE (n_ov * sizeof (long)) + struct_size;
  
   return FFI_OK;
 }
@@ -557,33 +481,279 @@ ffi_call(ffi_cif *cif,
 	 void *rvalue,
 	 void **avalue)
 {
+  int ret_type = cif->flags;
   extended_cif ecif;
  
   ecif.cif    = cif;
   ecif.avalue = avalue;
- 
-  /*-----------------------------------------------------------------*/
-  /* If the return value is a struct and we don't have a return      */
-  /* value address then we need to make one                          */
-  /*-----------------------------------------------------------------*/
-  if ((rvalue == NULL) &&
-      (cif->rtype->type == FFI_TYPE_STRUCT))
-    ecif.rvalue = alloca(cif->rtype->size);
-  else
-    ecif.rvalue = rvalue;
- 
+  ecif.rvalue = rvalue;
+
+  /* If we don't have a return value, we need to fake one.  */
+  if (rvalue == NULL)
+    {
+      if (ret_type == FFI390_RET_STRUCT)
+	ecif.rvalue = alloca (cif->rtype->size);
+      else
+	ret_type = FFI390_RET_VOID;
+    } 
+
   switch (cif->abi)
     {
-    case FFI_SYSV:
-      ffi_call_SYSV(ffi_prep_args,
-		    &ecif, cif->bytes,
-		    cif->flags, ecif.rvalue, fn);
-      break;
+      case FFI_SYSV:
+        ffi_call_SYSV (cif->bytes, &ecif, ffi_prep_args,
+		       ret_type, ecif.rvalue, fn);
+        break;
  
-    default:
-      FFI_ASSERT(0);
-      break;
+      default:
+        FFI_ASSERT (0);
+        break;
     }
 }
  
 /*======================== End of Routine ============================*/
+
+/*====================================================================*/
+/*                                                                    */
+/* Name     - ffi_closure_helper_SYSV.                                */
+/*                                                                    */
+/* Function - Call a FFI closure target function.                     */
+/*                                                                    */
+/*====================================================================*/
+ 
+void
+ffi_closure_helper_SYSV (ffi_closure *closure,
+			 unsigned long *p_gpr,
+			 unsigned long long *p_fpr,
+			 unsigned long *p_ov)
+{
+  unsigned long long ret_buffer;
+
+  void *rvalue = &ret_buffer;
+  void **avalue;
+  void **p_arg;
+
+  int n_gpr = 0;
+  int n_fpr = 0;
+  int n_ov = 0;
+
+  ffi_type **ptr;
+  int i;
+
+  /* Allocate buffer for argument list pointers.  */
+
+  p_arg = avalue = alloca (closure->cif->nargs * sizeof (void *));
+
+  /* If we returning a structure, pass the structure address 
+     directly to the target function.  Otherwise, have the target 
+     function store the return value to the GPR save area.  */
+
+  if (closure->cif->flags == FFI390_RET_STRUCT)
+    rvalue = (void *) p_gpr[n_gpr++];
+
+  /* Now for the arguments.  */
+
+  for (ptr = closure->cif->arg_types, i = closure->cif->nargs;
+       i > 0;
+       i--, p_arg++, ptr++)
+    {
+      int deref_struct_pointer = 0;
+      int type = (*ptr)->type;
+
+      /* Check how a structure type is passed.  */
+      if (type == FFI_TYPE_STRUCT)
+	{
+	  type = ffi_check_struct_type (*ptr);
+
+	  /* If we pass the struct via pointer, remember to 
+	     retrieve the pointer later.  */
+	  if (type == FFI_TYPE_POINTER)
+	    deref_struct_pointer = 1;
+	}
+
+      /* Pointers are passed like UINTs of the same size.  */
+      if (type == FFI_TYPE_POINTER)
+#ifdef __s390x__
+	type = FFI_TYPE_UINT64;
+#else
+	type = FFI_TYPE_UINT32;
+#endif
+
+      /* Now handle all primitive int/float data types.  */
+      switch (type) 
+	{
+	  case FFI_TYPE_DOUBLE:
+	    if (n_fpr < MAX_FPRARGS)
+	      *p_arg = &p_fpr[n_fpr++];
+	    else
+	      *p_arg = &p_ov[n_ov], 
+	      n_ov += sizeof (double) / sizeof (long);
+	    break;
+	
+	  case FFI_TYPE_FLOAT:
+	    if (n_fpr < MAX_FPRARGS)
+	      *p_arg = &p_fpr[n_fpr++];
+	    else
+	      *p_arg = (char *)&p_ov[n_ov++] + sizeof (long) - 4;
+	    break;
+ 
+	  case FFI_TYPE_UINT64:
+	  case FFI_TYPE_SINT64:
+#ifdef __s390x__
+	    if (n_gpr < MAX_GPRARGS)
+	      *p_arg = &p_gpr[n_gpr++];
+	    else
+	      *p_arg = &p_ov[n_ov++];
+#else
+	    if (n_gpr == MAX_GPRARGS-1)
+	      n_gpr = MAX_GPRARGS;
+	    if (n_gpr < MAX_GPRARGS)
+	      *p_arg = &p_gpr[n_gpr], n_gpr += 2;
+	    else
+	      *p_arg = &p_ov[n_ov], n_ov += 2;
+#endif
+	    break;
+ 
+	  case FFI_TYPE_INT:
+	  case FFI_TYPE_UINT32:
+	  case FFI_TYPE_SINT32:
+	    if (n_gpr < MAX_GPRARGS)
+	      *p_arg = (char *)&p_gpr[n_gpr++] + sizeof (long) - 4;
+	    else
+	      *p_arg = (char *)&p_ov[n_ov++] + sizeof (long) - 4;
+	    break;
+ 
+	  case FFI_TYPE_UINT16:
+	  case FFI_TYPE_SINT16:
+	    if (n_gpr < MAX_GPRARGS)
+	      *p_arg = (char *)&p_gpr[n_gpr++] + sizeof (long) - 2;
+	    else
+	      *p_arg = (char *)&p_ov[n_ov++] + sizeof (long) - 2;
+	    break;
+
+	  case FFI_TYPE_UINT8:
+	  case FFI_TYPE_SINT8:
+	    if (n_gpr < MAX_GPRARGS)
+	      *p_arg = (char *)&p_gpr[n_gpr++] + sizeof (long) - 1;
+	    else
+	      *p_arg = (char *)&p_ov[n_ov++] + sizeof (long) - 1;
+	    break;
+ 
+	  default:
+	    FFI_ASSERT (0);
+	    break;
+        }
+
+      /* If this is a struct passed via pointer, we need to
+	 actually retrieve that pointer.  */
+      if (deref_struct_pointer)
+	*p_arg = *(void **)*p_arg;
+    }
+
+
+  /* Call the target function.  */
+  (closure->fun) (closure->cif, rvalue, avalue, closure->user_data);
+
+  /* Convert the return value.  */
+  switch (closure->cif->rtype->type)
+    {
+      /* Void is easy, and so is struct.  */
+      case FFI_TYPE_VOID:
+      case FFI_TYPE_STRUCT:
+	break;
+
+      /* Floating point values are returned in fpr 0.  */
+      case FFI_TYPE_FLOAT:
+	p_fpr[0] = (long long) *(unsigned int *) rvalue << 32;
+	break;
+
+      case FFI_TYPE_DOUBLE:
+	p_fpr[0] = *(unsigned long long *) rvalue;
+	break;
+
+      /* Integer values are returned in gpr 2 (and gpr 3
+	 for 64-bit values on 31-bit machines).  */
+      case FFI_TYPE_UINT64:
+      case FFI_TYPE_SINT64:
+#ifdef __s390x__
+	p_gpr[0] = *(unsigned long *) rvalue;
+#else
+	p_gpr[0] = ((unsigned long *) rvalue)[0],
+	p_gpr[1] = ((unsigned long *) rvalue)[1];
+#endif
+	break;
+
+      case FFI_TYPE_UINT32:
+	p_gpr[0] = *(unsigned int *) rvalue;
+	break;
+
+      case FFI_TYPE_INT:
+      case FFI_TYPE_SINT32:
+	p_gpr[0] = *(signed int *) rvalue;
+	break;
+
+      case FFI_TYPE_UINT16:
+	p_gpr[0] = *(unsigned short *) rvalue;
+	break;
+
+      case FFI_TYPE_SINT16:
+	p_gpr[0] = *(signed short *) rvalue;
+	break;
+
+      case FFI_TYPE_UINT8:
+	p_gpr[0] = *(unsigned char *) rvalue;
+	break;
+
+      case FFI_TYPE_SINT8:
+	p_gpr[0] = *(signed char *) rvalue;
+	break;
+
+      default:
+        FFI_ASSERT (0);
+        break;
+    }
+}
+ 
+/*======================== End of Routine ============================*/
+
+/*====================================================================*/
+/*                                                                    */
+/* Name     - ffi_prep_closure.                                       */
+/*                                                                    */
+/* Function - Prepare a FFI closure.                                  */
+/*                                                                    */
+/*====================================================================*/
+ 
+ffi_status
+ffi_prep_closure (ffi_closure *closure,
+                  ffi_cif *cif,
+                  void (*fun) (ffi_cif *, void *, void **, void *),
+                  void *user_data)
+{
+  FFI_ASSERT (cif->abi == FFI_SYSV);
+
+#ifndef __s390x__
+  *(short *)&closure->tramp [0] = 0x0d10;   /* basr %r1,0 */
+  *(short *)&closure->tramp [2] = 0x9801;   /* lm %r0,%r1,6(%r1) */
+  *(short *)&closure->tramp [4] = 0x1006;
+  *(short *)&closure->tramp [6] = 0x07f1;   /* br %r1 */
+  *(long  *)&closure->tramp [8] = (long)closure;
+  *(long  *)&closure->tramp[12] = (long)&ffi_closure_SYSV;
+#else
+  *(short *)&closure->tramp [0] = 0x0d10;   /* basr %r1,0 */
+  *(short *)&closure->tramp [2] = 0xeb01;   /* lmg %r0,%r1,14(%r1) */
+  *(short *)&closure->tramp [4] = 0x100e;
+  *(short *)&closure->tramp [6] = 0x0004;
+  *(short *)&closure->tramp [8] = 0x07f1;   /* br %r1 */
+  *(long  *)&closure->tramp[16] = (long)closure;
+  *(long  *)&closure->tramp[24] = (long)&ffi_closure_SYSV;
+#endif 
+ 
+  closure->cif = cif;
+  closure->user_data = user_data;
+  closure->fun = fun;
+ 
+  return FFI_OK;
+}
+
+/*======================== End of Routine ============================*/
+ 
