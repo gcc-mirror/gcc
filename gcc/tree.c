@@ -5140,7 +5140,7 @@ get_set_constructor_bytes (init, buffer, wd_size)
   return non_const_bits;
 }
 
-#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+#if defined ENABLE_CHECKING && HAVE_GCC_VERSION(2,7)
 /* Complain that the tree code of NODE does not match the expected CODE.
    FILE, LINE, and FUNCTION are of the caller.  */
 void

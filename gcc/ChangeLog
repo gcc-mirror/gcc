@@ -1,3 +1,24 @@
+Sun Oct 10 08:40:00 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cppinit.c: Use HAVE_GCC_VERSION instead of explicitly testing
+	__GNUC__ and __GNUC_MINOR__.
+
+	* gansidecl.h: Likewise.
+
+	* rtl.c: Likewise.
+	
+	* rtl.h: Likewise.
+
+	* toplev.h: Likewise.
+
+	* tree.c: Likewise.
+
+	* tree.h: Likewise.
+
+	* varray.c: Likewise.
+
+	* varray.h: Likewise.
+
 Sun Oct 10 13:28:48 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* loop.c (find_and_verify_loops): When looking for a BARRIER, don't

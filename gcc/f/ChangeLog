@@ -1,3 +1,9 @@
+Sun Oct 10 08:40:18 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* proj.h: Use HAVE_GCC_VERSION instead of explicitly testing
+	__GNUC__ and __GNUC_MINOR__.  Don't define BUILT_WITH_270.  Define
+	macro UNUSED in terms of ATTRIBUTE_UNUSED.
+
 Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* com.c (duplicate_decls): Use DECL_BUILT_IN_CLASS rather than

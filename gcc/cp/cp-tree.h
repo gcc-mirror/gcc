@@ -123,7 +123,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Language-specific tree checkers. */
 
-#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+#if defined ENABLE_CHECKING && HAVE_GCC_VERSION(2,7)
 
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE)			\
 ({  const tree __t = NODE;					\

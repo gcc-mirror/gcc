@@ -160,16 +160,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #endif	/* ANSI C.  */
 
+/* This macro will return true if we are using gcc, and it is of a
+   particular minimum version (both major & minor numbers are checked.)  */
+#ifndef HAVE_GCC_VERSION
+#define HAVE_GCC_VERSION(MAJOR, MINOR) \
+  (__GNUC__ > (MAJOR) || (__GNUC__ == (MAJOR) && __GNUC_MINOR__ >= (MINOR)))
+#endif /* ! HAVE_GCC_VERSION */
+
 /* Define macros for some gcc attributes.  This permits us to use the
    macros freely, and know that they will come into play for the
    version of gcc in which they are supported.  */
 
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#if ! HAVE_GCC_VERSION(2,7)
 # define __attribute__(x)
 #endif
 
 #ifndef ATTRIBUTE_UNUSED_LABEL
-# if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 93)
+# if ! HAVE_GCC_VERSION(2,93)
 #  define ATTRIBUTE_UNUSED_LABEL
 # else
 #  define ATTRIBUTE_UNUSED_LABEL ATTRIBUTE_UNUSED
@@ -185,7 +192,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #endif /* ATTRIBUTE_NORETURN */
 
 #ifndef ATTRIBUTE_PRINTF
-#define ATTRIBUTE_PRINTF(m, n) __attribute__ ((format (__printf__, m, n)))
+#define ATTRIBUTE_PRINTF(m, n) __attribute__ ((__format__ (__printf__, m, n)))
 #define ATTRIBUTE_PRINTF_1 ATTRIBUTE_PRINTF(1, 2)
 #define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
 #define ATTRIBUTE_PRINTF_3 ATTRIBUTE_PRINTF(3, 4)
