@@ -1082,11 +1082,21 @@ static basic_block
 construct_init_block (void)
 {
   basic_block init_block, first_block;
-  edge e;
+  edge e = NULL, e2;
 
-  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
-    if (e->dest == ENTRY_BLOCK_PTR->next_bb)
-      break;
+  for (e2 = ENTRY_BLOCK_PTR->succ; e2; e2 = e2->succ_next)
+    {
+      /* Clear EDGE_EXECUTABLE.  This flag is never used in the backend.
+
+	 For all other blocks this edge flag is cleared while expanding
+	 a basic block in expand_gimple_basic_block, but there we never
+	 looked at the successors of the entry block.
+	 This caused PR17513.  */
+      e2->flags &= ~EDGE_EXECUTABLE;
+
+      if (e2->dest == ENTRY_BLOCK_PTR->next_bb)
+	e = e2;
+    }
 
   init_block = create_basic_block (NEXT_INSN (get_insns ()),
 				   get_last_insn (),
