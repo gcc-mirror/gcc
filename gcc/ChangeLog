@@ -1,3 +1,14 @@
+2004-10-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/15014
+	PR middle-end/16973
+	* tree-cfg.c (remove_bb): If we have a label expression in the
+	basic block and the label we have taken the address, move the
+	label expression to the basic block which is previous in the
+	linked list.
+	(tree_verify_flow_info): Fix printing out the label name of the
+	problematic label expression.
+
 2004-10-18  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR rtl-optimization/18002

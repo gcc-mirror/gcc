@@ -1810,12 +1810,25 @@ remove_bb (basic_block bb)
     }
 
   /* Remove all the instructions in the block.  */
-  for (i = bsi_start (bb); !bsi_end_p (i); bsi_remove (&i))
+  for (i = bsi_start (bb); !bsi_end_p (i);)
     {
       tree stmt = bsi_stmt (i);
-      release_defs (stmt);
+      if (TREE_CODE (stmt) == LABEL_EXPR
+          && FORCED_LABEL (LABEL_EXPR_LABEL (stmt)))
+	{
+	  basic_block new_bb = bb->prev_bb;
+	  block_stmt_iterator new_bsi = bsi_after_labels (new_bb);
+	  	  
+	  bsi_remove (&i);
+	  bsi_insert_after (&new_bsi, stmt, BSI_NEW_STMT);
+	}
+      else
+        {
+	  release_defs (stmt);
 
-      set_bb_for_stmt (stmt, NULL);
+	  set_bb_for_stmt (stmt, NULL);
+	  bsi_remove (&i);
+	}
 
       /* Don't warn for removed gotos.  Gotos are often removed due to
 	 jump threading, thus resulting in bogus warnings.  Not great,
@@ -3403,8 +3416,9 @@ tree_verify_flow_info (void)
 
 	  if (label_to_block (LABEL_EXPR_LABEL (bsi_stmt (bsi))) != bb)
 	    {
+	      tree stmt = bsi_stmt (bsi);
 	      error ("Label %s to block does not match in bb %d\n",
-		     IDENTIFIER_POINTER (DECL_NAME (bsi_stmt (bsi))),
+		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
 		     bb->index);
 	      err = 1;
 	    }
@@ -3412,8 +3426,9 @@ tree_verify_flow_info (void)
 	  if (decl_function_context (LABEL_EXPR_LABEL (bsi_stmt (bsi)))
 	      != current_function_decl)
 	    {
+	      tree stmt = bsi_stmt (bsi);
 	      error ("Label %s has incorrect context in bb %d\n",
-		     IDENTIFIER_POINTER (DECL_NAME (bsi_stmt (bsi))),
+		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
 		     bb->index);
 	      err = 1;
 	    }
