@@ -1698,6 +1698,15 @@ do {									    \
    operation to identify the following data as writable initialized
    data.  Normally `"\t.data"' is right.  */
 
+#define BSS_SECTION_ASM_OP "\t.section .bss"
+/* If defined, a C expression whose value is a string, including
+   spacing, containing the assembler operation to identify the
+   following data as uninitialized global data.  If not defined, and
+   neither `ASM_OUTPUT_BSS' nor `ASM_OUTPUT_ALIGNED_BSS' are defined,
+   uninitialized global data will be output in the data section if
+   `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
+   used.  */
+
 #define EXTRA_SECTIONS in_progmem
 /* A list of names for sections other than the standard two, which are
    `in_text' and `in_data'.  You need not define this macro on a
@@ -1841,6 +1850,13 @@ do {									   \
 
    This macro controls how the assembler definitions of uninitialized
    common global variables are output.  */
+
+#define ASM_OUTPUT_BSS(FILE, DECL, NAME, SIZE, ROUNDED)			\
+  asm_output_bss ((FILE), (DECL), (NAME), (SIZE), (ROUNDED))
+/* A C statement (sans semicolon) to output to the stdio stream
+   STREAM the assembler definition of uninitialized global DECL named
+   NAME whose size is SIZE bytes.  The variable ROUNDED is the size
+   rounded up to whatever alignment the caller wants.  */
 
 #define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)			\
 do {									\

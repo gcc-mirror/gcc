@@ -4683,7 +4683,20 @@ avr_handle_progmem_attribute (node, name, args, flags, no_add_attrs)
 {
   if (DECL_P (*node))
     {
-      if (TREE_STATIC (*node) || DECL_EXTERNAL (*node))
+      if (TREE_CODE (*node) == TYPE_DECL)
+	{
+	  /* This is really a decl attribute, not a type attribute,
+	     but try to handle it for GCC 3.0 backwards compatibility.  */
+
+	  tree type = TREE_TYPE (*node);
+	  tree attr = tree_cons (name, args, TYPE_ATTRIBUTES (type));
+	  tree newtype = build_type_attribute_variant (type, attr);
+
+	  TYPE_MAIN_VARIANT (newtype) = TYPE_MAIN_VARIANT (type);
+	  TREE_TYPE (*node) = newtype;
+	  *no_add_attrs = true;
+	}
+      else if (TREE_STATIC (*node) || DECL_EXTERNAL (*node))
 	{
 	  if (DECL_INITIAL (*node) == NULL_TREE && !DECL_EXTERNAL (*node))
 	    {
