@@ -3580,7 +3580,7 @@ parse_file (start)
       || (start_name = local_index (p, '"')) == (char *)0
       || (end_name_p1 = local_rindex (++start_name, '"')) == (char *)0)
     {
-      error ("Illegal .file directive");
+      error ("Invalid .file directive");
       return;
     }
 
@@ -3661,7 +3661,7 @@ parse_stabs_common (string_start, string_end, rest)
   /* Read code from stabs.  */
   if (!isdigit (*rest))
     {
-      error ("Illegal .stabs/.stabn directive, code is non-numeric");
+      error ("Invalid .stabs/.stabn directive, code is non-numeric");
       return;
     }
 
@@ -3681,7 +3681,7 @@ parse_stabs_common (string_start, string_end, rest)
       /* Skip ,0, */
       if (p[0] != ',' || p[1] != '0' || p[2] != ',' || !isdigit (p[3]))
 	{
-	  error ("Illegal line number .stabs/.stabn directive");
+	  error ("Invalid line number .stabs/.stabn directive");
 	  return;
 	}
 
@@ -3689,7 +3689,7 @@ parse_stabs_common (string_start, string_end, rest)
       ch = *++p;
       if (p[-1] != ',' || isdigit (ch) || !IS_ASM_IDENT (ch))
 	{
-	  error ("Illegal line number .stabs/.stabn directive");
+	  error ("Invalid line number .stabs/.stabn directive");
 	  return;
 	}
 
@@ -3710,13 +3710,13 @@ parse_stabs_common (string_start, string_end, rest)
       if (shash_ptr == (shash_t *)0
 	  || (sym_ptr = shash_ptr->sym_ptr) == (SYMR *)0)
 	{
-	  error ("Illegal .stabs/.stabn directive, value not found");
+	  error ("Invalid .stabs/.stabn directive, value not found");
 	  return;
 	}
 
       if ((st_t) sym_ptr->st != st_Label)
 	{
-	  error ("Illegal line number .stabs/.stabn directive");
+	  error ("Invalid line number .stabs/.stabn directive");
 	  return;
 	}
 
@@ -3726,18 +3726,22 @@ parse_stabs_common (string_start, string_end, rest)
     }
   else
     {
-      /* Skip ,0,0, */
-      if (p[0] != ',' || p[1] != '0' || p[2] != ',' || p[3] != '0' || p[4] != ',')
-	{
-	  error ("Illegal .stabs/.stabn directive, mandatory 0 isn't");
-	  return;
-	}
-
-      p += 5;
+      /* Skip ,<num>,<num>, */
+      if (*p++ != ',')
+	goto failure;
+      for (; isdigit (*p); p++)
+	;
+      if (*p++ != ',')
+	goto failure;
+      for (; isdigit (*p); p++)
+	;
+      if (*p++ != ',')
+	goto failure;
       ch = *p;
       if (!IS_ASM_IDENT (ch) && ch != '-')
 	{
-	  error ("Illegal .stabs/.stabn directive, bad character");
+	failure:
+	  error ("Invalid .stabs/.stabn directive, bad character");
 	  return;
 	}
 
@@ -3748,13 +3752,13 @@ parse_stabs_common (string_start, string_end, rest)
 	  value = strtol (p, &p, 0);
 	  if (*p != '\n')
 	    {
-	      error ("Illegal .stabs/.stabn directive, stuff after numeric value");
+	      error ("Invalid .stabs/.stabn directive, stuff after numeric value");
 	      return;
 	    }
 	}
       else if (!IS_ASM_IDENT (ch))
 	{
-	  error ("Illegal .stabs/.stabn directive, bad character");
+	  error ("Invalid .stabs/.stabn directive, bad character");
 	  return;
 	}
       else
@@ -3786,7 +3790,7 @@ parse_stabs_common (string_start, string_end, rest)
 	      if (shash_ptr == (shash_t *)0
 		  || shash_ptr->esym_ptr == (EXTR *)0)
 		{
-		  error ("Illegal .stabs/.stabn directive, value not found");
+		  error ("Invalid .stabs/.stabn directive, value not found");
 		  return;
 		}
 	      else
@@ -3812,7 +3816,7 @@ parse_stabs_common (string_start, string_end, rest)
 	      if (((!isdigit (*end_p1)) && (*end_p1 != '-'))
 		  || ((ch != '+') && (ch != '-')))
 		{
-		  error ("Illegal .stabs/.stabn directive, badly formed value");
+		  error ("Invalid .stabs/.stabn directive, badly formed value");
 		  return;
 		}
 	      if (ch == '+')
@@ -3822,7 +3826,7 @@ parse_stabs_common (string_start, string_end, rest)
 
 	      if (*p != '\n')
 		{
-		  error ("Illegal .stabs/.stabn directive, stuff after numeric value");
+		  error ("Invalid .stabs/.stabn directive, stuff after numeric value");
 		  return;
 		}
 	    }
@@ -3844,7 +3848,7 @@ parse_stabs (start)
 
   if (*start != '"' || end == (const char *)0 || end[1] != ',')
     {
-      error ("Illegal .stabs directive, no string");
+      error ("Invalid .stabs directive, no string");
       return;
     }
 
