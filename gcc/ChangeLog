@@ -1,3 +1,8 @@
+Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* alias.c (init_alias_analysis): Do not call
+	prologue_epilogue_contains until after reload has completed.
+
 2000-07-02  Benjamin Chelf  <chelf@codesourcery.com>
 
 	* c-common.h (genrtl_begin_compound_stmt): Remove declaration.
