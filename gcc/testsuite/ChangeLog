@@ -1,3 +1,8 @@
+2004-12-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/18993
+	* gfotran.dg/nullify_1.f: New test.
+
 2004-12-15  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/i386.exp: New harness.
