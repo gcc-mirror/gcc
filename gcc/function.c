@@ -837,6 +837,11 @@ assign_temp (type, keep, memory_required, dont_promote)
       HOST_WIDE_INT size = int_size_in_bytes (type);
       rtx tmp;
 
+      /* Zero sized arrays are GNU C extension.  Set size to 1 to avoid
+	 problems with allocating the stack space.  */
+      if (size == 0)
+	size = 1;
+
       /* Unfortunately, we don't yet know how to allocate variable-sized
 	 temporaries.  However, sometimes we have a fixed upper limit on
 	 the size (which is stored in TYPE_ARRAY_MAX_SIZE) and can use that
