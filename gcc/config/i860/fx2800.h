@@ -1,7 +1,7 @@
 /* Target definitions for GNU compiler for Alliant FX/2800
    running Concentrix 2.2
 
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996 Free Software Foundation, Inc.
 
    Written by Howard Chu (hyc@hanauma.jpl.nasa.gov).
 
@@ -340,5 +340,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_LABELREF(FILE,NAME) fprintf (FILE, "_%s", NAME)
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
 
+/* ??? Is this used anywhere?  */
 #undef BSS_ASM_OP
 #define BSS_ASM_OP	"\t.lcomm"
