@@ -1,5 +1,6 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 88, 92-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1795,16 +1796,16 @@ const_binop (code, arg1, arg2, notrunc)
   return 0;
 }
 
-/* Return an INTEGER_CST with value whose HOST_BITS_PER_WIDE_INT bits are
-   given by HIGH and whose HOST_BITS_PER_WIDE_INT bits are given by NUMBER.
+/* Return an INTEGER_CST with value whose low-order HOST_BITS_PER_WIDE_INT
+   bits are given by NUMBER.
 
    If BIT_P is nonzero, this represents a size in bit and the type of the
    result will be bitsizetype, othewise it represents a size in bytes and
    the type of the result will be sizetype.  */
 
 tree
-size_int_wide (number, high, bit_p)
-     unsigned HOST_WIDE_INT number, high;
+size_int_wide (number, bit_p)
+     HOST_WIDE_INT number;
      int bit_p;
 {
   /* Type-size nodes already made for small sizes.  */
@@ -1819,12 +1820,15 @@ size_int_wide (number, high, bit_p)
       init_p = 1;
     }
 
-  if (number < 2*HOST_BITS_PER_WIDE_INT + 1 && high == 0
-      && size_table[number][bit_p] != 0)
-    return size_table[number][bit_p];
-
-  if (number < 2*HOST_BITS_PER_WIDE_INT + 1 && high == 0)
+  /* If this is a positive number that fits in the table we use to hold
+     cached entries, see if it is already in the table and put it there
+     if not.  */
+  if (number >= 0
+      && number < (int) (sizeof size_table / sizeof size_table[0]) / 2)
     {
+      if (size_table[number][bit_p] != 0)
+	return size_table[number][bit_p];
+
       if (! ggc_p)
 	{
 	  /* Make this a permanent node.  */
@@ -1842,7 +1846,7 @@ size_int_wide (number, high, bit_p)
       return t;
     }
 
-  t = build_int_2 (number, high);
+  t = build_int_2 (number, 0);
   TREE_TYPE (t) = bit_p ? bitsizetype : sizetype;
   TREE_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (t) = force_fit_type (t, 0);
   return t;
@@ -2809,7 +2813,7 @@ make_bit_field_ref (inner, type, bitsize, bitpos, unsignedp)
      int unsignedp;
 {
   tree result = build (BIT_FIELD_REF, type, inner,
-		       size_int (bitsize), bitsize_int (bitpos, 0L));
+		       size_int (bitsize), bitsize_int (bitpos));
 
   TREE_UNSIGNED (result) = unsignedp;
 

@@ -378,6 +378,7 @@ ggc_mark_tree_children (t)
     case 'd': /* A decl node.  */
       ggc_mark_string (DECL_SOURCE_FILE (t));
       ggc_mark_tree (DECL_SIZE (t));
+      ggc_mark_tree (DECL_SIZE_UNIT (t));
       ggc_mark_tree (DECL_NAME (t));
       ggc_mark_tree (DECL_CONTEXT (t));
       ggc_mark_tree (DECL_ARGUMENTS (t));

@@ -1,5 +1,6 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1796,6 +1797,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	{
 	  /* Since the type is OLDDECL's, make OLDDECL's size go with.  */
 	  DECL_SIZE (newdecl) = DECL_SIZE (olddecl);
+	  DECL_SIZE_UNIT (newdecl) = DECL_SIZE_UNIT (olddecl);
 	  DECL_MODE (newdecl) = DECL_MODE (olddecl);
 	  if (TREE_CODE (olddecl) != FUNCTION_DECL)
 	    if (DECL_ALIGN (olddecl) > DECL_ALIGN (newdecl))
@@ -3477,8 +3479,7 @@ finish_decl (decl, init, asmspec_tree)
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
-      if (DECL_SIZE (decl) == 0
-	  && TYPE_SIZE (TREE_TYPE (decl)) != 0)
+      if (DECL_SIZE (decl) == 0 && TYPE_SIZE (TREE_TYPE (decl)) != 0)
 	layout_decl (decl, 0);
 
       if (DECL_SIZE (decl) == 0
@@ -3563,23 +3564,6 @@ finish_decl (decl, init, asmspec_tree)
       /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
       maybe_objc_check_decl (decl);
       rest_of_decl_compilation (decl, NULL_PTR, DECL_CONTEXT (decl) == 0, 0);
-    }
-
-  /* If requested, warn about definitions of large data objects.  */
-
-  if (warn_larger_than
-      && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
-      && !DECL_EXTERNAL (decl))
-    {
-      register tree decl_size = DECL_SIZE (decl);
-
-      if (decl_size && TREE_CODE (decl_size) == INTEGER_CST)
-	{
-	   unsigned units = TREE_INT_CST_LOW(decl_size) / BITS_PER_UNIT;
-
-	  if (units > larger_than_size)
-	    warning_with_decl (decl, "size of `%s' is %u bytes", units);
-	}
     }
 
   /* At the end of a declaration, throw away any variable type sizes
@@ -5497,6 +5481,7 @@ finish_enum (enumtype, values, attributes)
 
 	  TREE_TYPE (enu) = enumtype;
 	  DECL_SIZE (enu) = TYPE_SIZE (enumtype);
+	  DECL_SIZE_UNIT (enu) = TYPE_SIZE_UNIT (enumtype);
 	  DECL_ALIGN (enu) = TYPE_ALIGN (enumtype);
 	  DECL_MODE (enu) = TYPE_MODE (enumtype);
 	  DECL_INITIAL (enu) = convert (enumtype, DECL_INITIAL (enu));

@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -800,6 +800,7 @@ build_class_ref (type)
 	      push_obstacks (&permanent_obstack, &permanent_obstack);
 	      decl = build_decl (VAR_DECL, decl_name, class_type_node);
 	      DECL_SIZE (decl) = TYPE_SIZE (class_type_node);
+	      DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (class_type_node);
 	      TREE_STATIC (decl) = 1;
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_IGNORED_P (decl) = 1;
@@ -1600,6 +1601,7 @@ push_super_field (this_class, super_class)
   TREE_CHAIN (base_decl) = TYPE_FIELDS (this_class);
   TYPE_FIELDS (this_class) = base_decl;
   DECL_SIZE (base_decl) = TYPE_SIZE (super_class);
+  DECL_SIZE_UNIT (base_decl) = TYPE_SIZE_UNIT (super_class);
 }
 
 /* Handle the different manners we may have to lay out a super class.  */

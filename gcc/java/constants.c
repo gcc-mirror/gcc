@@ -1,5 +1,5 @@
 /* Handle the constant pool of the Java(TM) Virtual Machine.
-   Copyright (C) 1997, 98-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -457,7 +457,8 @@ build_constants_constructor ()
       DECL_INITIAL (data_decl) = build (CONSTRUCTOR, TREE_TYPE (data_decl),
 					NULL_TREE, data_list);
       DECL_SIZE (data_decl) = TYPE_SIZE (TREE_TYPE (data_decl));
-      rest_of_decl_compilation (data_decl, (char*) 0, 1, 0);
+      DECL_SIZE_UNIT (data_decl) = TYPE_SIZE_UNIT (TREE_TYPE (data_decl));
+      rest_of_decl_compilation (data_decl, (char *) 0, 1, 0);
       data_value = build_address_of (data_decl);
 
       tags_type = build_array_type (unsigned_byte_type_node, index_type);

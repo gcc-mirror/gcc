@@ -1,5 +1,5 @@
 /* Name-satisfaction for GNU Chill compiler.
-   Copyright (C) 1993, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -186,6 +186,8 @@ safe_satisfy_decl (decl, prev_chain)
 		}
 	      /* DECL_SIZE is set to prevent re-doing this stuff. */
 	      DECL_SIZE (decl) = TYPE_SIZE (TREE_TYPE (decl));
+	      DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (TREE_TYPE (decl));
+
 	      if (! TREE_CONSTANT (DECL_INITIAL (decl))
 		  && TREE_CODE (DECL_INITIAL (decl)) != ERROR_MARK)
 		{

@@ -1,6 +1,7 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987, 92-97, 1998, 1999, 2000 Free Software Foundation, Inc.
-   Hacked by Michael Tiemann (tiemann@cygnus.com)
+   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
+   Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
 
@@ -1358,6 +1359,7 @@ struct lang_type
   union tree_node *search_slot;
 
   union tree_node *size;
+  union tree_node *size_unit;
 
   union tree_node *pure_virtuals;
   union tree_node *friend_classes;
@@ -1561,6 +1563,7 @@ struct lang_type
 /* These are the size, mode and alignment of the type without its
    virtual base classes, for when we use this type as a base itself.  */
 #define CLASSTYPE_SIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->size)
+#define CLASSTYPE_SIZE_UNIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->size_unit)
 #define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->align)
 
 /* A cons list of virtual functions which cannot be inherited by

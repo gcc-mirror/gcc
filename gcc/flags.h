@@ -1,5 +1,6 @@
 /* Compilation switch flag definitions for GNU CC.
-   Copyright (C) 1987, 88, 94-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -122,14 +123,14 @@ extern int warn_template_debugging;
    characters.  The value N is in `id_clash_len'.  */
 
 extern int warn_id_clash;
-extern unsigned id_clash_len;
+extern int id_clash_len;
 
 /* Nonzero means warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned
    values are larger than N bytes. The value N is in `larger_than_size'.  */
 
 extern int warn_larger_than;
-extern unsigned larger_than_size;
+extern HOST_WIDE_INT larger_than_size;
 
 /* Warn if a function returns an aggregate,
    since there are often incompatible calling conventions for doing this.  */

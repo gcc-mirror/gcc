@@ -1,5 +1,6 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 91-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3498,43 +3499,6 @@ build_conditional_expr (ifexp, op1, op2)
   if (result_type != TREE_TYPE (op2))
     op2 = convert_and_check (result_type, op2);
     
-#if 0
-  if (code1 == RECORD_TYPE || code1 == UNION_TYPE)
-    {
-      result_type = TREE_TYPE (op1);
-      if (TREE_CONSTANT (ifexp))
-	return pedantic_non_lvalue (integer_zerop (ifexp) ? op2 : op1);
-
-      if (TYPE_MODE (result_type) == BLKmode)
-	{
-	  register tree tempvar
-	    = build_decl (VAR_DECL, NULL_TREE, result_type);
-	  register tree xop1 = build_modify_expr (tempvar, op1);
-	  register tree xop2 = build_modify_expr (tempvar, op2);
-	  register tree result = fold (build (COND_EXPR, result_type,
-					      ifexp, xop1, xop2));
-
-	  layout_decl (tempvar, TYPE_ALIGN (result_type));
-	  /* No way to handle variable-sized objects here.
-	     I fear that the entire handling of BLKmode conditional exprs
-	     needs to be redone.  */
-	  if (TREE_CODE (DECL_SIZE (tempvar)) != INTEGER_CST)
-	    abort ();
-	  DECL_RTL (tempvar)
-	    = assign_stack_local (DECL_MODE (tempvar),
-				  (TREE_INT_CST_LOW (DECL_SIZE (tempvar))
-				   + BITS_PER_UNIT - 1)
-				  / BITS_PER_UNIT,
-				  0);
-
-	  TREE_SIDE_EFFECTS (result)
-	    = TREE_SIDE_EFFECTS (ifexp) | TREE_SIDE_EFFECTS (op1)
-	      | TREE_SIDE_EFFECTS (op2);
-	  return build (COMPOUND_EXPR, result_type, result, tempvar);
-	}
-    }
-#endif /* 0 */
-    
   if (TREE_CODE (ifexp) == INTEGER_CST)
     return pedantic_non_lvalue (integer_zerop (ifexp) ? op2 : op1);
 
@@ -5985,6 +5949,7 @@ output_init_element (value, type, field, pending)
 		{
 		  tree temp = size_binop (PLUS_EXPR, DECL_FIELD_BITPOS (field),
 					  DECL_SIZE (field));
+
 		  TREE_INT_CST_LOW (constructor_bit_index)
 		    = TREE_INT_CST_LOW (temp);
 		  TREE_INT_CST_HIGH (constructor_bit_index)

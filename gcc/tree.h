@@ -1,5 +1,6 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 93-98, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1045,9 +1046,11 @@ struct tree_type
 #define BINFO_VPTR_FIELD(NODE) TREE_VEC_ELT ((NODE), 5)
 
 /* The size of a base class subobject of this type.  Not all frontends
-   currently allocate the space for this field.  */
+   currently allocate the space for these fields.  */
 #define BINFO_SIZE(NODE) TREE_VEC_ELT ((NODE), 6)
+#define BINFO_SIZE_UNIT(NODE) TREE_VEC_ELT ((NODE), 7)
 #define TYPE_BINFO_SIZE(NODE) BINFO_SIZE (TYPE_BINFO (NODE))
+#define TYPE_BINFO_SIZE_UNIT(NODE) BINFO_SIZE_UNIT (TYPE_BINFO (NODE))
 
 /* Slot used to build a chain that represents a use of inheritance.
    For example, if X is derived from Y, and Y is derived from Z,
@@ -1113,16 +1116,18 @@ struct tree_type
 #define DECL_INITIAL(NODE) (DECL_CHECK (NODE)->decl.initial)
 /* For a PARM_DECL, records the data type used to pass the argument,
    which may be different from the type seen in the program.  */
-#define DECL_ARG_TYPE(NODE) (DECL_CHECK (NODE)->decl.initial)   /* In PARM_DECL.  */
+#define DECL_ARG_TYPE(NODE) (DECL_CHECK (NODE)->decl.initial)
 /* For a FIELD_DECL in a QUAL_UNION_TYPE, records the expression, which
    if nonzero, indicates that the field occupies the type.  */
 #define DECL_QUALIFIER(NODE) (DECL_CHECK (NODE)->decl.initial)
 /* These two fields describe where in the source code the declaration was.  */
 #define DECL_SOURCE_FILE(NODE) (DECL_CHECK (NODE)->decl.filename)
 #define DECL_SOURCE_LINE(NODE) (DECL_CHECK (NODE)->decl.linenum)
-/* Holds the size of the datum, as a tree expression.
+/* Holds the size of the datum, in bits, as a tree expression.
    Need not be constant.  */
 #define DECL_SIZE(NODE) (DECL_CHECK (NODE)->decl.size)
+/* Likewise for the size in bytes.  */
+#define DECL_SIZE_UNIT(NODE) (DECL_CHECK (NODE)->decl.size_unit)
 /* Holds the alignment required for the datum.  */
 #define DECL_ALIGN(NODE) (DECL_CHECK (NODE)->decl.frame_size.u)
 /* Holds the machine mode corresponding to the declaration of a variable or
@@ -1417,11 +1422,12 @@ struct tree_decl
       } f;
   } frame_size;
 
+  union tree_node *size_unit;
   union tree_node *name;
   union tree_node *context;
-  union tree_node *arguments;
-  union tree_node *result;
-  union tree_node *initial;
+  union tree_node *arguments;	/* Also used for DECL_FIELD_BITPOS */
+  union tree_node *result;	/* Also used for DECL_BIT_FIELD_TYPE */
+  union tree_node *initial;	/* Also used for DECL_QUALIFIER */
   union tree_node *abstract_origin;
   union tree_node *assembler_name;
   union tree_node *section_name;
@@ -1429,6 +1435,7 @@ struct tree_decl
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   struct rtx_def *live_range_rtl;
+
   /* For FUNCTION_DECLs: points to insn that constitutes its definition
      on the permanent obstack.  For FIELD_DECL, this is DECL_FIELD_SIZE.  */
   union {
@@ -1773,13 +1780,10 @@ extern tree size_in_bytes		PARAMS ((tree));
 extern HOST_WIDE_INT int_size_in_bytes	PARAMS ((tree));
 extern tree size_binop			PARAMS ((enum tree_code, tree, tree));
 extern tree ssize_binop			PARAMS ((enum tree_code, tree, tree));
-extern tree size_int_wide		PARAMS ((unsigned HOST_WIDE_INT,
-					       unsigned HOST_WIDE_INT, int));
-#define size_int(L) size_int_2 ((L), 0, 0)
-#define bitsize_int(L, H) size_int_2 ((L), (H), 1)
-#define size_int_2(L, H, T)			\
-  size_int_wide ((unsigned HOST_WIDE_INT) (L),	\
-		 (unsigned HOST_WIDE_INT) (H), (T))
+extern tree size_int_wide		PARAMS ((HOST_WIDE_INT, int));
+
+#define size_int(L) size_int_wide ((HOST_WIDE_INT) (L), 0)
+#define bitsize_int(L) size_int_wide ((HOST_WIDE_INT) (L), 1)
 
 extern tree round_up			PARAMS ((tree, int));
 extern tree get_pending_sizes		PARAMS ((void));

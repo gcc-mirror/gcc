@@ -1,5 +1,6 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1263,7 +1264,7 @@ get_identifier (text)
 
   /* Decide how much of that length to hash on */
   hash_len = len;
-  if (warn_id_clash && (unsigned)len > id_clash_len)
+  if (warn_id_clash && len > id_clash_len)
     hash_len = id_clash_len;
 
   /* Compute hash code */
@@ -1282,7 +1283,7 @@ get_identifier (text)
       return idp;		/* <-- return if found */
 
   /* Not found; optionally warn about a similar identifier */
-  if (warn_id_clash && do_identifier_warnings && (unsigned)len >= id_clash_len)
+  if (warn_id_clash && do_identifier_warnings && len >= id_clash_len)
     for (idp = hash_table[hi]; idp; idp = TREE_CHAIN (idp))
       if (!strncmp (IDENTIFIER_POINTER (idp), text, id_clash_len))
 	{
@@ -1329,7 +1330,7 @@ maybe_get_identifier (text)
 
   /* Decide how much of that length to hash on */
   hash_len = len;
-  if (warn_id_clash && (unsigned)len > id_clash_len)
+  if (warn_id_clash && len > id_clash_len)
     hash_len = id_clash_len;
 
   /* Compute hash code */
@@ -2282,11 +2283,14 @@ expr_align (t)
       align1 = expr_align (TREE_OPERAND (t, 2));
       return MIN (align0, align1);
 
-    case FUNCTION_DECL:  case LABEL_DECL:  case CONST_DECL:
+    case LABEL_DECL:     case CONST_DECL:
     case VAR_DECL:       case PARM_DECL:   case RESULT_DECL:
       if (DECL_ALIGN (t) != 0)
 	return DECL_ALIGN (t);
       break;
+
+    case FUNCTION_DECL:
+      return FUNCTION_BOUNDARY;
 
     default:
       break;
