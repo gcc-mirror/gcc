@@ -39,6 +39,8 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_SPEC \
   "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s"
 
+#define CMOV_SUN_AS_SYNTAX 1
+
 #else /* GAS_REJECTS_MINUS_S */
 
 /* Same as above, except for -s, unsupported by GNU as.  */

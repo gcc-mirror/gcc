@@ -1,3 +1,14 @@
+2002-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/5972
+	* config/i386/i386.md (movdicc_c_rex64, movsicc_noc, movhicc_noc,
+	movsfcc_1, movdfcc_1): Add %O2.
+	* config/i386/i386.c (print_operand): Handle %ON.
+	Print . before float condition codes in Sun as cmov syntax.
+	* config/i386/sol2.h (CMOV_SUN_AS_SYNTAX): Define for Sun as.
+	* config.gcc (i[34567]86-*-solaris2*): Remove comment which is
+	no longer true.
+
 2002-03-20  Philip Blundell  <pb@nexus.co.uk>
 
 	* config/arm/arm.c (arm_output_epilogue): Don't generate separate
