@@ -1,5 +1,8 @@
 2002-07-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* alpha/freebsd.h (TARGET_OS_CPP_BUILTINS): Add missing
+	backslash.
+
 	* Makefile.in (vmsdbgout.o): Depend on function.h.
 
 	* vmsdbgout.c: Include function.h.

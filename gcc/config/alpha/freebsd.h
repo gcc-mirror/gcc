@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 	  builtin_define ("__PIC__");		\
 	  builtin_define ("__pic__");		\
 	}					\
-    }
+    }						\
   while (0)
 
 #undef  CPP_SPEC
