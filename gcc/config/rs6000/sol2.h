@@ -21,6 +21,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "rs6000/sysv4le.h"
 
+/* Default ABI to use */
+#undef	RS6000_ABI_NAME
+#define RS6000_ABI_NAME "solaris"
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
  "-Dsun=1 -Dunix -D__svr4__ -DSVR4 -DPPC \
@@ -82,6 +86,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define	PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 
+#if 0
 #undef	ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
@@ -89,7 +94,7 @@ do {									\
   assemble_name ((FILE), (NAME));					\
   fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
 } while (0)
-
+#endif
 
 /* Like block addresses, stabs line numbers are relative to the
    current function.  */

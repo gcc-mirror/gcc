@@ -795,17 +795,22 @@ do {									\
   fputs (_name, FILE);							\
 } while (0)
 
-#if 0
-/* The Solaris 2.51 linker has a bug in that it doesn't properly
-   resolve references from the .init and .fini sections.  So fall
-   back to the old way of handling constructors and destructors.  */
 #undef ASM_OUTPUT_CONSTRUCTOR
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
   do {									\
-    init_section ();							\
-    fputs ("\tbl ", FILE);						\
-    assemble_name (FILE, NAME);						\
-    fputs ((flag_pic) ? "@plt\n" : "\n", FILE);				\
+    if (DEFAULT_ABI != ABI_SOLARIS)					\
+      {									\
+	ctors_section ();						\
+	fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+	assemble_name (FILE, NAME);					\
+      }									\
+    else								\
+      {									\
+	init_section ();						\
+	fputs ("\tbl ", FILE);						\
+	assemble_name (FILE, NAME);					\
+      }									\
+    fputs ("\n", FILE);							\
   } while (0)
 
 /* A C statement (sans semicolon) to output an element in the table of
@@ -813,12 +818,20 @@ do {									\
 #undef ASM_OUTPUT_DESTRUCTOR
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
   do {									\
-    fini_section ();							\
-    fputs ("\tbl ", FILE);						\
-    assemble_name (FILE, NAME);						\
-    fputs ((flag_pic) ? "@plt\n" : "\n", FILE);				\
+    if (DEFAULT_ABI != ABI_SOLARIS)					\
+      {									\
+	dtors_section ();						\
+	fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+	assemble_name (FILE, NAME);					\
+      }									\
+    else								\
+      {									\
+	fini_section ();						\
+	fputs ("\tbl ", FILE);						\
+	assemble_name (FILE, NAME);					\
+      }									\
+    fputs ("\n", FILE);							\
   } while (0)
-#endif
 
 /* But, to make this work, we have to output the stabs for the function
    name *first*...  */
@@ -836,7 +849,7 @@ do {									\
 
 /* Pass various options to the assembler */
 #undef ASM_SPEC
-#define ASM_SPEC "-u %(asm_cpu) %{mregnames} \
+#define ASM_SPEC "%(asm_cpu) %{mregnames} \
 %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
 %{mrelocatable} %{mrelocatable-lib} \
 %{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb}} \
@@ -856,6 +869,7 @@ do {									\
 %{mno-sdata: -msdata=none } \
 %{meabi: %{!mcall-*: -mcall-sysv }} \
 %{!meabi: %{!mno-eabi: \
+    %{mrelocatable: -meabi } \
     %{mcall-solaris: -mno-eabi } \
     %{mcall-linux: -mno-eabi }}}"
 
