@@ -117,6 +117,10 @@ GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -I./include
 ENQUIRE_CFLAGS = -DNO_MEM -DNO_LONG_DOUBLE_IO -O0
 ENQUIRE_LDFLAGS = $(LDFLAGS)
 
+# Sed command to transform gcc to installed name.  Overwritten by configure.
+program_transform_name = s,x,x,
+program_transform_cross_name = s,^,$(target)-,
+
 # Tools to use when building a cross-compiler.
 # These are used because `configure' appends `cross-make'
 # to the makefile when making a cross-compiler.
@@ -317,6 +321,12 @@ HOST_CPPFLAGS=$(ALL_CPPFLAGS)
 HOST_ALLOCA=$(ALLOCA)
 HOST_MALLOC=$(MALLOC)
 HOST_OBSTACK=$(OBSTACK)
+
+# Actual name to use when installing a native compiler.
+GCC_INSTALL_NAME = `t='$(program_transform_name)'; echo gcc | sed $$t`
+
+# Actual name to use when installing a cross-compiler.
+GCC_CROSS_NAME = `t='$(program_transform_cross_name)'; echo gcc | sed $$t`
 
 # Choose the real default target.
 ALL=all.internal
@@ -1841,6 +1851,7 @@ distclean: clean bytecode.distclean lang.distclean
 	-rm -f */stage1 */stage2 */stage3 */stage4 */include
 	-rm -f objc-parse.output
 	-rm -f c-parse.output
+	-rm -f *.asm
 
 # Delete anything likely to be found in the source directory
 # that shouldn't be in the distribution.
@@ -1952,15 +1963,15 @@ install-common: native install-dir xgcc $(EXTRA_PARTS) lang.install-common
 # Install the driver program as $(target)-gcc
 # and also as either gcc (if native) or $(tooldir)/bin/gcc.
 	-if [ -f gcc-cross ] ; then \
-	  rm -f $(bindir)/$(target)-gcc; \
-	  $(INSTALL_PROGRAM) gcc-cross $(bindir)/$(target)-gcc; \
+	  rm -f $(bindir)/$(GCC_CROSS_NAME); \
+	  $(INSTALL_PROGRAM) gcc-cross $(bindir)/$(GCC_CROSS_NAME); \
 	  if [ -d $(tooldir)/bin/. ] ; then \
 	    rm -f $(tooldir)/bin/gcc; \
 	    $(INSTALL_PROGRAM) gcc-cross $(tooldir)/bin/gcc; \
 	  else true; fi; \
 	else \
-	  rm -f $(bindir)/gcc; \
-	  $(INSTALL_PROGRAM) xgcc $(bindir)/gcc; \
+	  rm -f $(bindir)/$(GCC_INSTALL_NAME); \
+	  $(INSTALL_PROGRAM) xgcc $(bindir)/$(GCC_INSTALL_NAME); \
 	  rm -f $(bindir)/$(target)-gcc-1; \
 	  ln $(bindir)/gcc $(bindir)/$(target)-gcc-1; \
 	  mv $(bindir)/$(target)-gcc-1 $(bindir)/$(target)-gcc; \
@@ -1988,9 +1999,15 @@ install-info: doc install-dir lang.install-info
 
 # Install the man pages.
 install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
-	-rm -f $(mandir)/gcc$(manext)
-	-$(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/gcc$(manext)
-	-chmod a-x $(mandir)/gcc$(manext)
+	-if [ -f gcc-cross ] ; then \
+	  rm -f $(mandir)/$(GCC_CROSS_NAME)$(manext); \
+	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/$(GCC_CROSS_NAME)$(manext); \
+	  chmod a-x $(mandir)/$(GCC_CROSS_NAME)$(manext); \
+	else \
+	  rm -f $(mandir)/$(GCC_INSTALL_NAME)$(manext); \
+	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/$(GCC_INSTALL_NAME)$(manext); \
+	  chmod a-x $(mandir)/$(GCC_INSTALL_NAME)$(manext); \
+	fi
 	-rm -f $(mandir)/cccp$(manext)
 	-$(INSTALL_DATA) $(srcdir)/cccp.1 $(mandir)/cccp$(manext)
 	-chmod a-x $(mandir)/cccp$(manext)
@@ -2093,10 +2110,12 @@ install-collect2: collect2 install-dir
 # Cancel installation by deleting the installed files.
 uninstall: lang.uninstall
 	-rm -rf $(libsubdir)
-	-rm -rf $(bindir)/gcc
+	-rm -rf $(bindir)/$(GCC_INSTALL_NAME)
+	-rm -rf $(bindir)/$(GCC_CROSS_NAME)
 	-rm -rf $(bindir)/protoize
 	-rm -rf $(bindir)/unprotoize
-	-rm -rf $(mandir)/gcc$(manext)
+	-rm -rf $(mandir)/$(GCC_INSTALL_NAME)$(manext)
+	-rm -rf $(mandir)/$(GCC_CROSS_NAME)$(manext)
 	-rm -rf $(mandir)/cccp$(manext)
 	-rm -rf $(mandir)/protoize$(manext)
 	-rm -rf $(mandir)/unprotoize$(manext)
@@ -2317,6 +2336,11 @@ stage1-start:
 	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage1
+# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
+# dir will work properly.
+	-if [ -f as ] ; then cp as stage1 ; else true ; fi
+	-if [ -f ld ] ; then cp ld stage1 ; else true ; fi
+	-if [ -f real-ld ] ; then cp real-ld stage1 ; else true ; fi
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage1/libgcc.a; else true; fi
@@ -2329,6 +2353,11 @@ stage2-start:
 	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage2
+# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
+# dir will work properly.
+	-if [ -f as ] ; then cp as stage2 ; else true ; fi
+	-if [ -f ld ] ; then cp ld stage2 ; else true ; fi
+	-if [ -f real-ld ] ; then cp real-ld stage2 ; else true ; fi
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage2/libgcc.a; else true; fi
@@ -2341,6 +2370,11 @@ stage3-start:
 	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage3
+# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
+# dir will work properly.
+	-if [ -f as ] ; then cp as stage3 ; else true ; fi
+	-if [ -f ld ] ; then cp ld stage3 ; else true ; fi
+	-if [ -f real-ld ] ; then cp real-ld stage3 ; else true ; fi
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage3/libgcc.a; else true; fi
@@ -2353,6 +2387,11 @@ stage4-start:
 	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage4
+# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
+# dir will work properly.
+	-if [ -f as ] ; then cp as stage4 ; else true ; fi
+	-if [ -f ld ] ; then cp ld stage4 ; else true ; fi
+	-if [ -f real-ld ] ; then cp real-ld stage4 ; else true ; fi
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage4/libgcc.a; else true; fi
@@ -2364,6 +2403,11 @@ stage4: force stage4-start lang.stage4
 risky-stage1: force
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
 	-mv $(GCC_PARTS) stage1
+# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
+# dir will work properly.
+	-if [ -f as ] ; then cp as stage1 ; else true ; fi
+	-if [ -f ld ] ; then cp ld stage1 ; else true ; fi
+	-if [ -f real-ld ] ; then cp real-ld stage1 ; else true ; fi
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1 && $(RANLIB) stage1/libgcc.a
 	-make clean
@@ -2371,6 +2415,11 @@ risky-stage1: force
 risky-stage2: force
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
 	-mv $(GCC_PARTS) stage2
+# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
+# dir will work properly.
+	-if [ -f as ] ; then cp as stage2 ; else true ; fi
+	-if [ -f ld ] ; then cp ld stage2 ; else true ; fi
+	-if [ -f real-ld ] ; then cp real-ld stage2 ; else true ; fi
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2 && $(RANLIB) stage2/libgcc.a
 	-make clean
@@ -2378,6 +2427,11 @@ risky-stage2: force
 risky-stage3: force
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
 	-mv $(GCC_PARTS) stage3
+# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
+# dir will work properly.
+	-if [ -f as ] ; then cp as stage3 ; else true ; fi
+	-if [ -f ld ] ; then cp ld stage3 ; else true ; fi
+	-if [ -f real-ld ] ; then cp real-ld stage3 ; else true ; fi
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3 && $(RANLIB) stage3/libgcc.a
 	-make clean
@@ -2385,6 +2439,11 @@ risky-stage3: force
 risky-stage4: force
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
 	-mv $(GCC_PARTS) stage4
+# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
+# dir will work properly.
+	-if [ -f as ] ; then cp as stage4 ; else true ; fi
+	-if [ -f ld ] ; then cp ld stage4 ; else true ; fi
+	-if [ -f real-ld ] ; then cp real-ld stage4 ; else true ; fi
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4 && $(RANLIB) stage4/libgcc.a
 	-make clean
