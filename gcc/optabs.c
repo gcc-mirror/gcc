@@ -1087,8 +1087,12 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       int shift_count, left_shift, outof_word;
 
       /* If TARGET is the same as one of the operands, the REG_EQUAL note
-	 won't be accurate, so use a new target.  */
-      if (target == 0 || target == op0 || target == op1)
+	 won't be accurate, so use a new target. Do this also if target is not
+	 a REG, first because having a register instead may open optimization
+	 oportunities, and second because if target and op0 happen to be MEMs
+	 designating the same location, we would risk clobbering it too early
+	 in the code sequence we generate below.  */
+      if (target == 0 || target == op0 || target == op1 || ! REG_P (target))
 	target = gen_reg_rtx (mode);
 
       start_sequence ();
