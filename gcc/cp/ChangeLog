@@ -1,3 +1,8 @@
+2005-03-01  Per Bothner  <per@bothner.com>
+
+	* decl.c (finish_function): Use SET_EXPR_LOCATION instead of
+	unavailable annotate_with_file_line, if USE_MAPPED_LOCATION.
+
 2005-03-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20232
