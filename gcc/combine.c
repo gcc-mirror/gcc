@@ -1048,6 +1048,43 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
   return 1;
 }
 
+/* Check if PAT is an insn - or a part of it - used to set up an
+   argument for a function in a hard register.  */
+
+static int
+sets_function_arg_p (pat)
+     rtx pat;
+{
+  int i;
+  rtx inner_dest;
+
+  switch (GET_CODE (pat))
+    {
+    case INSN:
+      return sets_function_arg_p (PATTERN (pat));
+
+    case PARALLEL:
+      for (i = XVECLEN (pat, 0); --i >= 0;)
+	if (sets_function_arg_p (XVECEXP (pat, 0, i)))
+	  return 1;
+
+      break;
+
+    case SET:
+      inner_dest = SET_DEST (pat);
+      while (GET_CODE (inner_dest) == STRICT_LOW_PART
+	     || GET_CODE (inner_dest) == SUBREG
+	     || GET_CODE (inner_dest) == ZERO_EXTRACT)
+	inner_dest = XEXP (inner_dest, 0);
+
+      return (GET_CODE (inner_dest) == REG
+	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
+	      && FUNCTION_ARG_REGNO_P (REGNO (inner_dest)));
+    }
+
+  return 0;
+}
+
 /* LOC is the location within I3 that contains its pattern or the component
    of a PARALLEL of the pattern.  We validate that it is valid for combining.
 
@@ -1143,19 +1180,28 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
       if ((inner_dest != dest
 	   && (reg_overlap_mentioned_p (i2dest, inner_dest)
 	       || (i1dest && reg_overlap_mentioned_p (i1dest, inner_dest))))
+
 	  /* This is the same test done in can_combine_p except that we
 	     allow a hard register with SMALL_REGISTER_CLASSES if SRC is a
-	     CALL operation.
-	     Moreover, we can't test all_adjacent; we don't have to, since
-	     this instruction will stay in place, thus we are not considering
-	     to increase the lifetime of INNER_DEST.  */
+	     CALL operation. Moreover, we can't test all_adjacent; we don't
+	     have to, since this instruction will stay in place, thus we are
+	     not considering increasing the lifetime of INNER_DEST.
+
+	     Also, if this insn sets a function argument, combining it with
+	     something that might need a spill could clobber a previous
+	     function argument; the all_adjacent test in can_combine_p also
+	     checks this; here, we do a more specific test for this case.  */
+	     
 	  || (GET_CODE (inner_dest) == REG
 	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
 	      && (! HARD_REGNO_MODE_OK (REGNO (inner_dest),
 					GET_MODE (inner_dest))
 		 || (SMALL_REGISTER_CLASSES && GET_CODE (src) != CALL
 		     && ! REG_USERVAR_P (inner_dest)
-		     && FUNCTION_VALUE_REGNO_P (REGNO (inner_dest)))))
+		     && (FUNCTION_VALUE_REGNO_P (REGNO (inner_dest))
+			 || (FUNCTION_ARG_REGNO_P (REGNO (inner_dest))
+			     && i3 != 0
+			     && sets_function_arg_p (prev_nonnote_insn (i3)))))))
 	  || (i1_not_in_src && reg_overlap_mentioned_p (i1dest, src)))
 	return 0;
 
