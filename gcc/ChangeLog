@@ -1,3 +1,10 @@
+Fri Feb  2 23:15:29 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/cygwin.h (CPP_SPEC): Reorganize YA to better handle cross
+	compilation environment.
+	* config/i386/t-cygwin (T_CPPFLAGS): Define CYGWIN_CROSS_DIR to allow
+	control over location of cygwin includes and libs.
+
 2001-02-03  Michael Hayes  <m.hayes@elec.canterbury.ac.nz)
 
 	* c4x.h	(HARD_REGNO_CALL_PART_CLOBBERED): Fix typo.
