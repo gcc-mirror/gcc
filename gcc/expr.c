@@ -9221,8 +9221,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      if (case_low && case_high)
 		{
 		  /* Case label is less than minimum for type.  */
-		  if ((tree_int_cst_compare (case_low, min_value) < 0)
-		      && (tree_int_cst_compare (case_high, min_value) < 0))
+		  if (TREE_CODE (min_value) == INTEGER_CST
+		      && tree_int_cst_compare (case_low, min_value) < 0
+		      && tree_int_cst_compare (case_high, min_value) < 0)
 		    {
 		      warning ("case label value %d is less than minimum value for type",
 			       TREE_INT_CST (case_low));
@@ -9230,8 +9231,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		    }
 		  
 		  /* Case value is greater than maximum for type.  */
-		  if ((tree_int_cst_compare (case_low, max_value) > 0)
-		      && (tree_int_cst_compare (case_high, max_value) > 0))
+		  if (TREE_CODE (max_value) == INTEGER_CST
+		      && tree_int_cst_compare (case_low, max_value) > 0
+		      && tree_int_cst_compare (case_high, max_value) > 0)
 		    {
 		      warning ("case label value %d exceeds maximum value for type",
 			       TREE_INT_CST (case_high));
@@ -9239,8 +9241,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		    }
 		  
 		  /* Saturate lower case label value to minimum.  */
-		  if ((tree_int_cst_compare (case_high, min_value) >= 0)
-		      && (tree_int_cst_compare (case_low, min_value) < 0))
+		  if (TREE_CODE (min_value) == INTEGER_CST
+		      && tree_int_cst_compare (case_high, min_value) >= 0
+		      && tree_int_cst_compare (case_low, min_value) < 0)
 		    {
 		      warning ("lower value %d in case label range less than minimum value for type",
 			       TREE_INT_CST (case_low));
@@ -9248,8 +9251,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		    }
 		  
 		  /* Saturate upper case label value to maximum.  */
-		  if ((tree_int_cst_compare (case_low, max_value) <= 0)
-		      && (tree_int_cst_compare (case_high, max_value) > 0))
+		  if (TREE_CODE (max_value) == INTEGER_CST
+		      && tree_int_cst_compare (case_low, max_value) <= 0
+		      && tree_int_cst_compare (case_high, max_value) > 0)
 		    {
 		      warning ("upper value %d in case label range exceeds maximum value for type",
 			       TREE_INT_CST (case_high));
