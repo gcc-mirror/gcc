@@ -1011,7 +1011,7 @@ struct sh_args {
 
 #define PASS_IN_REG_P(CUM, MODE, TYPE) \
   (((TYPE) == 0 \
-    || ((! TREE_ADDRESSABLE ((tree)(TYPE))) \
+    || (! TREE_ADDRESSABLE ((tree)(TYPE)) \
 	&& (! TARGET_HITACHI || ! AGGREGATE_TYPE_P (TYPE)))) \
    && (TARGET_SH3E \
        ? ((MODE) == BLKmode \
@@ -1343,7 +1343,7 @@ extern int current_function_anonymous_args;
       if (GET_MODE_SIZE (MODE) <= 8 && BASE_REGISTER_RTX_P (xop0))	\
 	GO_IF_LEGITIMATE_INDEX ((MODE), xop1, LABEL);			\
       if (GET_MODE_SIZE (MODE) <= 4					\
-	  || (TARGET_SH4 && TARGET_FMOVD && MODE == DFmode))	\
+	  || (TARGET_SH4 && TARGET_FMOVD && MODE == DFmode))		\
 	{								\
 	  if (BASE_REGISTER_RTX_P (xop1) && INDEX_REGISTER_RTX_P (xop0))\
 	    goto LABEL;							\
