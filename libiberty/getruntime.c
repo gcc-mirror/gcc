@@ -1,5 +1,5 @@
 /* Return time used so far, in microseconds.
-   Copyright (C) 1994, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -21,6 +21,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "ansidecl.h"
 #include "libiberty.h"
+
+/* On some systems (such as WindISS), you must include <sys/types.h>
+   to get the definition of "time_t" before you include <time.h>.  */
+#include <sys/types.h>
 
 /* There are several ways to get elapsed execution time; unfortunately no
    single way is available for all host systems, nor are there reliable

@@ -138,6 +138,8 @@ then
   AC_DEFINE(HAVE_UINTPTR_T, 1, [Define if you have the \`uintptr_t' type.])
 fi
 
+AC_TYPE_PID_T
+
 # This is the list of functions which libiberty will provide if they
 # are not available on the host.
 
