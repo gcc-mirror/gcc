@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "reload.h"
 #include "output.h"
+#include "tm_p.h"
 #include "ggc.h"
 
 #if defined(USG) || !defined(HAVE_STAB_H)
@@ -62,8 +63,8 @@ Boston, MA 02111-1307, USA.  */
 #define STAB_CODE_TYPE int
 #endif
 
-extern char  *mktemp ();
-extern tree   lookup_name ();
+extern char  *mktemp PARAMS ((char *));
+extern tree   lookup_name PARAMS ((tree));
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -145,7 +146,7 @@ FILE *asm_out_text_file;
 struct extern_list
 {
   struct extern_list *next;	/* next external */
-  char *name;			/* name of the external */
+  const char *name;		/* name of the external */
   int size;			/* size in bytes */
 } *extern_head = 0;
 
@@ -289,7 +290,7 @@ rtx mips16_gp_pseudo_rtx;
 struct string_constant
 {
   struct string_constant *next;
-  char *label;
+  const char *label;
 };
 
 static struct string_constant *string_constants;
@@ -1425,9 +1426,9 @@ m16_usym5_4 (op, mode)
 /* ??? This function no longer does anything useful, because final_prescan_insn
    now will never emit a nop.  */
 
-char *
+const char *
 mips_fill_delay_slot (ret, type, operands, cur_insn)
-     char *ret;			/* normal string to return */
+     const char *ret;		/* normal string to return */
      enum delay_type type;	/* type of delay */
      rtx operands[];		/* operands to use */
      rtx cur_insn;		/* current insn */
@@ -4033,7 +4034,7 @@ mips_va_start (stdarg_p, valist, nextarg)
      rtx nextarg;
 {
   int arg_words, fp_arg_words;
-  tree t, u;
+  tree t;
 
   arg_words = current_function_args_info.arg_words;
   fp_arg_words = current_function_args_info.fp_arg_words;
@@ -4196,7 +4197,7 @@ mips_va_arg (valist, type)
 
       if (! indirect
 	  && ! TARGET_64BIT
-	  && TYPE_ALIGN (type) > BITS_PER_WORD)
+	  && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD)
 	{
 	  t = build (PLUS_EXPR, TREE_TYPE (gpr), gpr,
 		     build_int_2 (2*UNITS_PER_WORD - 1, 0));
@@ -4265,16 +4266,6 @@ abort_with_insn (insn, reason)
   error (reason);
   debug_rtx (insn);
   abort ();
-}
-
-/* Write a message to stderr (for use in macros expanded in files that do not
-   include stdio.h).  */
-
-void
-trace (s, s1, s2)
-     char *s, *s1, *s2;
-{
-  fprintf (stderr, s, s1, s2);
 }
 
 /* Set up the threshold for data to go into the small data area, instead
@@ -5318,7 +5309,7 @@ int
 mips_output_external (file, decl, name)
      FILE *file ATTRIBUTE_UNUSED;
      tree decl;
-     char *name;
+     const char *name;
 {
   register struct extern_list *p;
   int len;
@@ -5362,7 +5353,7 @@ mips_output_external (file, decl, name)
 int
 mips_output_external_libcall (file, name)
      FILE *file;
-     char *name;
+     const char *name;
 {
   register struct extern_list *p;
 
@@ -5436,7 +5427,7 @@ make_temp_file ()
 void
 mips_output_filename (stream, name)
      FILE *stream;
-     char *name;
+     const char *name;
 {
   static int first_time = 1;
   char ltext_label_name[100];
@@ -5692,9 +5683,9 @@ mips_asm_file_end (file)
 void
 mips_declare_object (stream, name, init_string, final_string, size)
      FILE *stream;
-     char *name;
-     char *init_string;
-     char *final_string;
+     const char *name;
+     const char *init_string;
+     const char *final_string;
      int size;
 {
   fputs (init_string, stream);		/* "", "\t.comm\t", or "\t.lcomm\t" */
@@ -6081,7 +6072,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		 split.  */
 	      /* ??? There is no DImode ori immediate pattern, so we can only
 		 do this for 32 bit code.  */
-	      if (large_int (gp_offset_rtx)
+	      if (large_int (gp_offset_rtx, GET_MODE (gp_offset_rtx))
 		  && GET_MODE (base_reg_rtx) == SImode)
 		{
 		  insn = emit_move_insn (base_reg_rtx,
@@ -6299,7 +6290,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		 split.  */
 	      /* ??? There is no DImode ori immediate pattern, so we can only
 		 do this for 32 bit code.  */
-	      if (large_int (fp_offset_rtx)
+	      if (large_int (fp_offset_rtx, GET_MODE (fp_offset_rtx))
 		  && GET_MODE (base_reg_rtx) == SImode)
 		{
 		  insn = emit_move_insn (base_reg_rtx,
@@ -6393,7 +6384,7 @@ function_prologue (file, size)
      int size ATTRIBUTE_UNUSED;
 {
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
-  char *fnname;
+  const char *fnname;
 #endif
   long tsize = current_frame_info.total_size;
 
@@ -6577,7 +6568,7 @@ function_prologue (file, size)
 
   if (TARGET_ABICALLS && (mips_abi == ABI_32 || mips_abi == ABI_O64))
     {
-      char *sp_str = reg_names[STACK_POINTER_REGNUM];
+      const char *const sp_str = reg_names[STACK_POINTER_REGNUM];
 
       fprintf (file, "\t.set\tnoreorder\n\t.cpload\t%s\n\t.set\treorder\n",
 	       reg_names[PIC_FUNCTION_ADDR_REGNUM]);
@@ -6602,7 +6593,7 @@ mips_expand_prologue ()
   int regno;
   HOST_WIDE_INT tsize;
   rtx tmp_rtx = 0;
-  char *arg_name = 0;
+  const char *arg_name = 0;
   tree fndecl = current_function_decl;
   tree fntype = TREE_TYPE (fndecl);
   tree fnargs = DECL_ARGUMENTS (fndecl);
@@ -6830,7 +6821,8 @@ mips_expand_prologue ()
 		 split.  */
 	      /* ??? There is no DImode ori immediate pattern, so we can only
 		 do this for 32 bit code.  */
-	      if (large_int (tsize_rtx) && GET_MODE (tmp_rtx) == SImode)
+	      if (large_int (tsize_rtx, GET_MODE (tsize_rtx))
+		  && GET_MODE (tmp_rtx) == SImode)
 		{
 		  insn = emit_move_insn (tmp_rtx,
 					 GEN_INT (tsize & 0xffff0000));
@@ -6960,7 +6952,7 @@ function_epilogue (file, size)
      FILE *file ATTRIBUTE_UNUSED;
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
-  char *fnname;
+  const char *fnname;
 
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
   /* Get the function name the same way that toplev.c does before calling
@@ -6981,7 +6973,7 @@ function_epilogue (file, size)
       int num_gp_regs = current_frame_info.gp_reg_size / 4;
       int num_fp_regs = current_frame_info.fp_reg_size / 8;
       int num_regs = num_gp_regs + num_fp_regs;
-      char *name = fnname;
+      const char *name = fnname;
 
       if (name[0] == '*')
 	name++;
@@ -7803,7 +7795,7 @@ mips16_constant (x, mode, addr, addend)
          ASM_GENERATE_INTERNAL_LABEL as called by output_constant_def.  */
       if (SYMBOL_REF_FLAG (x))
 	{
-	  char *name = XSTR (x, 0);
+	  const char *name = XSTR (x, 0);
 
 	  return (name[0] == '*'
 		  && strncmp (name + 1, LOCAL_LABEL_PREFIX,
@@ -7902,7 +7894,7 @@ static void
 build_mips16_function_stub (file)
      FILE *file;
 {
-  char *fnname;
+  const char *fnname;
   char *secname, *stubname;
   tree stubid, stubdecl;
   int need_comma;
@@ -8014,7 +8006,8 @@ build_mips16_call_stub (retval, fnmem, arg_size, fp_code)
 {
   int fpret;
   rtx fn;
-  char *fnname, *secname, *stubname;
+  const char *fnname;
+  char *secname, *stubname;
   struct mips16_stub *l;
   tree stubid, stubdecl;
   int need_comma;
@@ -8958,15 +8951,15 @@ mips_output_conditional_branch (insn,
   int need_z_p;
   /* A string to use in the assembly output to represent the first
      operand.  */
-  char *op1 = "%z2";
+  const char *op1 = "%z2";
   /* A string to use in the assembly output to represent the second
      operand.  Use the hard-wired zero register if there's no second
      operand.  */
-  char *op2 = (two_operands_p ? ",%z3" : ",%.");
+  const char *op2 = (two_operands_p ? ",%z3" : ",%.");
   /* The operand-printing string for the comparison.  */
-  char *comp = (float_p ? "%F0" : "%C0");
+  const char *comp = (float_p ? "%F0" : "%C0");
   /* The operand-printing string for the inverted comparison.  */
-  char *inverted_comp = (float_p ? "%W0" : "%N0");
+  const char *inverted_comp = (float_p ? "%W0" : "%N0");
 
   /* The MIPS processors (for levels of the ISA at least two), have
      "likely" variants of each branch instruction.  These instructions
@@ -9067,7 +9060,7 @@ mips_output_conditional_branch (insn,
 	   would otherwise; that way we skip the annulled instruction
 	   in the delay slot.  */
 
-	char *target 
+	const char *target 
 	  = ((mips_branch_likely || length == 16) ? ".+16" : ".+12");
 	char *c;
 
@@ -9144,10 +9137,10 @@ mips_output_conditional_branch (insn,
 	   anything.  */
 
 	/* The target of the reversed branch.  */
-	char *target 
+	const char *target 
 	  = ((mips_branch_likely || length == 20) ? ".+20" : ".+16");
-	char *at_register = mips_reg_names[ASSEMBLER_SCRATCH_REGNUM];
-	char *gp_register = mips_reg_names[PIC_OFFSET_TABLE_REGNUM];
+	const char *at_register = mips_reg_names[ASSEMBLER_SCRATCH_REGNUM];
+	const char *gp_register = mips_reg_names[PIC_OFFSET_TABLE_REGNUM];
 	char *c;
 
 	strcpy (buffer, "%(%<%[");
