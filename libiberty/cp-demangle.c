@@ -3528,7 +3528,7 @@ java_demangle_v3 (mangled)
   char *from;
   char *to;
 
-  demangled = d_demangle (mangled, DMGL_JAVA, &alc);
+  demangled = d_demangle (mangled, DMGL_JAVA | DMGL_PARAMS, &alc);
 
   if (demangled == NULL)
     return NULL;

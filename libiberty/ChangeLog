@@ -1,3 +1,8 @@
+2003-11-25  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (java_demangle_v3): Pass DMGL_PARAMS to
+	d_demangle.
+
 2003-11-22  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (d_encoding): Add top_level parameter.  Change all
