@@ -1,3 +1,7 @@
+2003-08-23  Jason Eckhardt  <jle@rice.edu>
+
+	* config/i860/i860.h: Remove comment mentioning LIBGCC_NEEDS_DOUBLE.
+
 2003-08-22  Jason Eckhardt  <jle@rice.edu>
 
 	* config/i860/i860.c (i860_build_va_list): Create the va_decl
