@@ -4026,6 +4026,10 @@ build_expr_from_tree (t)
     case VAR_DECL:
       return convert_from_reference (t);
 
+    case VA_ARG_EXPR:
+      return build_va_arg (build_expr_from_tree (TREE_OPERAND (t, 0)),
+			   TREE_TYPE (t));
+
     default:
       return t;
     }

@@ -1,3 +1,10 @@
+1999-09-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (build_expr_from_tree): Handle VA_ARG_EXPR.
+	* pt.c (tsubst_copy): Likewise.
+	* tree.c (search_tree): Likewise.
+	(mapcar): Likewise.
+
 1999-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* typeck2.c (ack): Don't declare progname.
