@@ -287,6 +287,13 @@ public class ServerSocket
    */
   public Socket accept () throws IOException
   {
+    if (impl == null)
+      throw new IOException ("Cannot initialize Socket implementation");
+
+    SecurityManager sm = System.getSecurityManager ();
+    if (sm != null)
+      sm.checkListen (impl.getLocalPort ());
+
     Socket s = new Socket();
     implAccept (s);
 
@@ -356,6 +363,17 @@ public class ServerSocket
       }
     
     return true;
+  }
+
+  /**
+   * Returns true if the socket is closed, otherwise false
+   * 
+   * @since 1.4
+   */
+  public boolean isClosed()
+  {
+    // FIXME: implement this
+    return false;
   }
 
   /**

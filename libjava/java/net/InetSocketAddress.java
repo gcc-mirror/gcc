@@ -57,7 +57,7 @@ public class InetSocketAddress extends SocketAddress
    * @param addr Address of the socket
    * @param port Port if the socket
    *
-   * @exception IllegalArgumentException If the port number is illegal
+   * @exception IllegalArgumentException If the port number is illegel
    */
   public InetSocketAddress(InetAddress addr, int port)
     throws IllegalArgumentException
@@ -67,15 +67,7 @@ public class InetSocketAddress extends SocketAddress
   
     this.addr = addr;
     this.port = port;
-
-    try
-      {
-        this.hostname = addr.getHostName ();
-      }
-    catch (UnknownHostException e)
-      {
-        this.hostname = "";
-      }
+    this.hostname = addr.getHostName ();
   }
 
   /**
@@ -140,6 +132,9 @@ public class InetSocketAddress extends SocketAddress
    */
   public final boolean equals (Object obj)
   {
+    // InetSocketAddress objects are equal when addr and port are equal.
+    // The hostname may differ.
+
     if (obj instanceof InetSocketAddress)
       {
         InetSocketAddress a = (InetSocketAddress) obj;

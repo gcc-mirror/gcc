@@ -121,7 +121,7 @@ public final class SocketPermission extends Permission
    * specified host/port combination and actions string.
    *
    * @param hostport The hostname/port number combination
-   * @param perms The actions string
+   * @param actions The actions string
    */
   public SocketPermission(String hostport, String actions)
   {

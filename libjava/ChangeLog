@@ -1,4 +1,18 @@
-2002-09-30  Michael Koch  <konqueror@gmx.de>
+2002-10-03  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramPacket.java
+	(setLength): Fixed typo and be HTML-aware.
+	* java/net/InetSocketAddress.java
+	(InetSocketAddress): Correct initialization of hostname, fixed typo.
+	(equals): Added comment about equality of InetSocketAddress objects.
+	* java/net/ServerSocket.java
+	(accept): Added checks.
+	(isClosed): New stubbed method.
+	* java/net/SocketOptions.java: Reindention.
+	* java/net/SocketPermission
+	(SocketPermission): Documentation fixed.
+	
+2002-10-03  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java
 	(receive): Check with SecurityManager AFTER the packet is received,
