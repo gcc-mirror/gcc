@@ -1420,7 +1420,14 @@ put_var_into_stack (decl)
 
       /* Change the CONCAT into a combined MEM for both parts.  */
       PUT_CODE (reg, MEM);
+
+      /* set_mem_attributes uses DECL_RTL to avoid re-generating of
+         already computed alias sets.  Here we want to re-generate.  */
+      if (DECL_P (decl))
+	SET_DECL_RTL (decl, NULL);
       set_mem_attributes (reg, decl, 1);
+      if (DECL_P (decl))
+	SET_DECL_RTL (decl, reg);
 
       /* The two parts are in memory order already.
 	 Use the lower parts address as ours.  */
@@ -4688,10 +4695,10 @@ assign_parms (fndecl)
 	     appropriately.  */
 	  if (passed_pointer)
 	    {
-	      SET_DECL_RTL (parm,
-			    gen_rtx_MEM (TYPE_MODE (TREE_TYPE (passed_type)), 
-					 parmreg));
-	      set_mem_attributes (DECL_RTL (parm), parm, 1);
+	      rtx x = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (passed_type)),
+			     	   parmreg);
+	      set_mem_attributes (x, parm, 1);
+	      SET_DECL_RTL (parm, x);
 	    }
 	  else
 	    {
@@ -5030,11 +5037,10 @@ assign_parms (fndecl)
       if (parm == function_result_decl)
 	{
 	  tree result = DECL_RESULT (fndecl);
+	  rtx x = gen_rtx_MEM (DECL_MODE (result), DECL_RTL (parm));
 
-	  SET_DECL_RTL (result,
-			gen_rtx_MEM (DECL_MODE (result), DECL_RTL (parm)));
-
-	  set_mem_attributes (DECL_RTL (result), result, 1);
+	  set_mem_attributes (x, result, 1);
+	  SET_DECL_RTL (result, x);
 	}
     }
 
@@ -6451,11 +6457,9 @@ expand_function_start (subr, parms_have_cleanups)
 	}
       if (value_address)
 	{
-	  SET_DECL_RTL (DECL_RESULT (subr),
-			gen_rtx_MEM (DECL_MODE (DECL_RESULT (subr)), 
-				     value_address));
-	  set_mem_attributes (DECL_RTL (DECL_RESULT (subr)),
-			      DECL_RESULT (subr), 1);
+	  rtx x = gen_rtx_MEM (DECL_MODE (DECL_RESULT (subr)), value_address);
+	  set_mem_attributes (x, DECL_RESULT (subr), 1);
+	  SET_DECL_RTL (DECL_RESULT (subr), x);
 	}
     }
   else if (DECL_MODE (DECL_RESULT (subr)) == VOIDmode)
