@@ -76,7 +76,7 @@ namespace std
 	    errno = ERANGE;
 #endif
 #endif
-          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
+          if (__sanity != __s && errno != ERANGE)
 	    __v = __f;
 	  else
 	    __err |= ios_base::failbit;
@@ -98,7 +98,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  double __d = strtod(__s, &__sanity);
-          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
+          if (__sanity != __s && errno != ERANGE)
 	    __v = __d;
 	  else
 	    __err |= ios_base::failbit;
@@ -121,7 +121,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  long double __ld = strtold(__s, &__sanity);
-          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
+          if (__sanity != __s && errno != ERANGE)
 	    __v = __ld;
 #else
 	  typedef char_traits<char>::int_type int_type;

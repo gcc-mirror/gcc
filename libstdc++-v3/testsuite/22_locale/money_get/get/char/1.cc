@@ -100,7 +100,7 @@ void test01()
   ios_base::iostate err04 = ios_base::goodbit;
   mon_get.get(is_it04, end, true, iss, err04, result4);
   VERIFY( result4 == empty );
-  VERIFY( err04 == ios_base::failbit | ios_base::eofbit );
+  VERIFY( err04 == (ios_base::failbit | ios_base::eofbit) );
 
   iss.str("working for enlightenment and peace in a mad world");
   iterator_type is_it05(iss);
