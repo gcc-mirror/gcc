@@ -1,3 +1,8 @@
+Tue Nov  2 21:53:44 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* regclass.c (record_reg_classes): Always use may_move_cost when
+	seeing how operand fits with various register classes.
+
 Tue Nov  2 15:38:17 1999  Richard Henderson  <rth@cygnus.com>
 
 	* resource.c: Revert Oct 26 20:42 and Oct 27 00:56 changes.

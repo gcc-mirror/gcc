@@ -1249,7 +1249,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 		    pp->cost[class]
 		      = (recog_data.operand_type[i] == OP_IN
 			 ? may_move_cost[class][(int) classes[i]]
-			 : move_cost[(int) classes[i]][class]);
+			 : may_move_cost[(int) classes[i]][class]);
 		  
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
@@ -1470,7 +1470,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 		    pp->cost[class]
 		      = (recog_data.operand_type[i] == OP_IN
 			 ? may_move_cost[class][(int) classes[i]]
-			 : move_cost[(int) classes[i]][class]);
+			 : may_move_cost[(int) classes[i]][class]);
 
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
