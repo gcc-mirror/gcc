@@ -994,25 +994,14 @@ extern int alpha_memory_latency;
    On Alpha the value is found in $0 for integer functions and
    $f0 for floating-point functions.  */
 
-#define FUNCTION_VALUE(VALTYPE, FUNC)	\
-  gen_rtx_REG (((INTEGRAL_TYPE_P (VALTYPE)			\
-		 && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
-		|| POINTER_TYPE_P (VALTYPE))			\
-	       ? word_mode : TYPE_MODE (VALTYPE),		\
-	       ((TARGET_FPREGS					\
-		 && (TREE_CODE (VALTYPE) == REAL_TYPE		\
-		     || TREE_CODE (VALTYPE) == COMPLEX_TYPE))	\
-		? 32 : 0))
+#define FUNCTION_VALUE(VALTYPE, FUNC) \
+  function_value (VALTYPE, FUNC, VOIDmode)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)	\
-   gen_rtx_REG (MODE,						\
-		(TARGET_FPREGS					\
-		 && (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
-		     || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
-		 ? 32 : 0))
+#define LIBCALL_VALUE(MODE) \
+  function_value (NULL, NULL, MODE)
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
@@ -1021,10 +1010,7 @@ extern int alpha_memory_latency;
    are integers whose size is larger than 64 bits.  */
 
 #define RETURN_IN_MEMORY(TYPE) \
-  (TYPE_MODE (TYPE) == BLKmode \
-   || TYPE_MODE (TYPE) == TFmode \
-   || TYPE_MODE (TYPE) == TCmode \
-   || (TREE_CODE (TYPE) == INTEGER_TYPE && TYPE_PRECISION (TYPE) > 64))
+  return_in_memory (TYPE, VOIDmode)
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
@@ -1889,3 +1875,6 @@ do {							\
 
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS 1
+
+/* Pass complex arguments independently.  */
+#define SPLIT_COMPLEX_ARGS 1

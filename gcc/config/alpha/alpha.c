@@ -5864,14 +5864,25 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
   int basereg;
   int num_args;
 
-  /* Set up defaults for FP operands passed in FP registers, and
-     integral operands passed in integer registers.  */
-  if (TARGET_FPREGS
-      && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-	  || GET_MODE_CLASS (mode) == MODE_FLOAT))
-    basereg = 32 + 16;
-  else
+  /* Don't get confused and pass small structures in FP registers.  */
+  if (type && AGGREGATE_TYPE_P (type))
     basereg = 16;
+  else
+    {
+#ifdef ENABLE_CHECKING
+      /* With SPLIT_COMPLEX_ARGS, we shouldn't see any raw complex
+	 values here.  */
+      if (COMPLEX_MODE_P (mode))
+	abort ();
+#endif
+
+      /* Set up defaults for FP operands passed in FP registers, and
+	 integral operands passed in integer registers.  */
+      if (TARGET_FPREGS && GET_MODE_CLASS (mode) == MODE_FLOAT)
+	basereg = 32 + 16;
+      else
+	basereg = 16;
+    }
 
   /* ??? Irritatingly, the definition of CUMULATIVE_ARGS is different for
      the three platforms, so we can't avoid conditional compilation.  */
@@ -5884,8 +5895,7 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
       if (num_args >= 6 || MUST_PASS_IN_STACK (mode, type))
 	return NULL_RTX;
     }
-#else
-#if TARGET_ABI_UNICOSMK
+#elif TARGET_ABI_UNICOSMK
     {
       int size;
 
@@ -5949,7 +5959,7 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
 	    }
 	}
     }
-#else
+#elif TARGET_ABI_OSF
     {
       if (cum >= 6)
 	return NULL_RTX;
@@ -5963,10 +5973,117 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
       else if (FUNCTION_ARG_PASS_BY_REFERENCE (cum, mode, type, named))
 	basereg = 16;
     }
-#endif /* TARGET_ABI_UNICOSMK */
-#endif /* TARGET_ABI_OPEN_VMS */
+#else
+#error Unhandled ABI
+#endif
 
   return gen_rtx_REG (mode, num_args + basereg);
+}
+
+/* Return true if TYPE must be returned in memory, instead of in registers.  */
+
+bool
+return_in_memory (tree type, enum machine_mode mode)
+{
+  int size;
+
+  if (type)
+    {
+      mode = TYPE_MODE (type);
+
+      /* All aggregates are returned in memory.  */
+      if (AGGREGATE_TYPE_P (type))
+	return true;
+    }
+
+  size = GET_MODE_SIZE (mode);
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_VECTOR_FLOAT:
+      /* Pass all float vectors in memory, like an aggregate.  */
+      return true;
+
+    case MODE_COMPLEX_FLOAT:
+      /* We judge complex floats on the size of their element,
+	 not the size of the whole type.  */
+      size = GET_MODE_UNIT_SIZE (mode);
+      break;
+
+    case MODE_INT:
+    case MODE_FLOAT:
+    case MODE_COMPLEX_INT:
+    case MODE_VECTOR_INT:
+      break;
+
+    default:
+      /* ??? We get called on all sorts of random stuff from 
+	 aggregate_value_p.  We can't abort, but it's not clear
+	 what's safe to return.  Pretend it's a struct I guess.  */
+      return true;
+    }
+
+  /* Otherwise types must fit in one register.  */
+  return size > UNITS_PER_WORD;
+}
+
+/* Define how to find the value returned by a function.  VALTYPE is the
+   data type of the value (as a tree).  If the precise function being
+   called is known, FUNC is its FUNCTION_DECL; otherwise, FUNC is 0.
+   MODE is set instead of VALTYPE for libcalls.
+
+   On Alpha the value is found in $0 for integer functions and
+   $f0 for floating-point functions.  */
+
+rtx
+function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
+		enum machine_mode mode)
+{
+  unsigned int regnum;
+  enum mode_class class;
+
+#ifdef ENABLE_CHECKING
+  if (return_in_memory (valtype, mode))
+    abort ();
+#endif
+
+  if (valtype)
+    mode = TYPE_MODE (valtype);
+
+  class = GET_MODE_CLASS (mode);
+  switch (class)
+    {
+    case MODE_INT:
+      /* Do the same thing as PROMOTE_MODE.  */
+      mode = DImode;
+      /* FALLTHRU */
+
+    case MODE_COMPLEX_INT:
+    case MODE_VECTOR_INT:
+      regnum = 0;
+      break;
+
+    case MODE_FLOAT:
+      regnum = 32;
+      break;
+
+    case MODE_COMPLEX_FLOAT:
+      {
+	enum machine_mode cmode = GET_MODE_INNER (mode);
+
+	return gen_rtx_PARALLEL
+	  (VOIDmode,
+	   gen_rtvec (2,
+		      gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_REG (cmode, 32),
+				         GEN_INT (0)),
+		      gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_REG (cmode, 33),
+				         GEN_INT (GET_MODE_SIZE (cmode)))));
+      }
+
+    default:
+      abort ();
+    }
+
+  return gen_rtx_REG (mode, regnum);
 }
 
 tree
@@ -6162,7 +6279,27 @@ alpha_va_arg (tree valist, tree type)
       indirect = 1;
       rounded_size = size_int (UNITS_PER_WORD);
     }
-  else if (FLOAT_TYPE_P (type))
+  else if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      rtx real_part, imag_part, value, tmp;
+
+      real_part = alpha_va_arg (valist, TREE_TYPE (type));
+      imag_part = alpha_va_arg (valist, TREE_TYPE (type));
+
+      /* ??? Most irritatingly, we're not returning the value here,
+	 but the address.  Since real_part and imag_part are not
+	 necessarily contiguous, we must copy to local storage.  */
+
+      real_part = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (type)), real_part);
+      imag_part = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (type)), imag_part);
+      value = gen_rtx_CONCAT (TYPE_MODE (type), real_part, imag_part);
+
+      tmp = assign_temp (type, 0, 1, 0);
+      emit_move_insn (tmp, value);
+
+      return XEXP (tmp, 0);
+    }
+  else if (TREE_CODE (type) == REAL_TYPE)
     {
       tree fpaddend, cond;
 
