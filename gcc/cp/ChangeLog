@@ -1,5 +1,9 @@
 Sun Mar 29 00:47:32 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* search.c: Put various prototypes inside #ifdef MI_MATRIX.
+
+	* repo.c (save_string): Delete dead function.
+
 	* method.c (thunk_printable_name): Delete dead function.
 
 	* lex.c (yynextch): Delete dead function.
