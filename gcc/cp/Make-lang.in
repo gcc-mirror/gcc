@@ -154,9 +154,10 @@ c++.install-common: installdirs
 	  fi ; \
 	fi
 
-$(docobjdir)/g++.1:
-	-rm -f $@
-	-echo ".so man1/$(GCC_INSTALL_NAME).1" > $@
+# We can't use links because not everyone supports them, and we can't use
+# .so because Irix 6.5 doesn't support them.  So just copy the manpage.
+$(docobjdir)/g++.1: $(docobjdir)/gcc.1
+	cp $(docobjdir)/gcc.1 $(docobjdir)/g++.1
 
 c++.install-man: installdirs $(docobjdir)/g++.1
 	-if [ -f cc1plus$(exeext) ] ; then \

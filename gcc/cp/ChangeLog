@@ -1,3 +1,8 @@
+2004-01-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR bootstrap/7817
+	* Make-lang.in: Copy gcc.1 to g++.1 rather than using .so.
+
 2004-01-10  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	DR 337
