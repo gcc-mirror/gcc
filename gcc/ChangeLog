@@ -1,3 +1,8 @@
+2003-03-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (processor_target_table): Do not disable
+	GP optional instructions on Power3, Power4, 620, and 630.
+
 2003-03-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* calls.c: Fix comment formatting.
