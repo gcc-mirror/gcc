@@ -1,5 +1,11 @@
 2003-05-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/Calendar.java
+	(get): Not final anymore since JDK 1.4
+	(set): Likewise.
+
+2003-05-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/CollationKey.java:
 	Merged copyright and dat from classpath.
 	* java/text/RuleBasedCollator.java:

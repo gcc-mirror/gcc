@@ -531,8 +531,10 @@ public abstract class Calendar implements Serializable, Cloneable
    * if they are invalid.
    * @param field the time field. One of the time field constants.
    * @return the value of the specified field
+   *
+   * @specnote Not final since JDK 1.4
    */
-  public final int get(int field)
+  public int get(int field)
   {
     // If the requested field is invalid, force all fields to be recomputed.
     if (!isSet[field])
@@ -558,8 +560,10 @@ public abstract class Calendar implements Serializable, Cloneable
    * the time in milliseconds.
    * @param field the time field. One of the time field constants
    * @param value the value to be set.
+   *
+   * @specnote Not final since JDK 1.4
    */
-  public final void set(int field, int value)
+  public void set(int field, int value)
   {
     isTimeSet = false;
     fields[field] = value;
