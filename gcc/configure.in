@@ -259,8 +259,6 @@ if test $ac_cv_c___int64 = yes; then
   AC_COMPILE_CHECK_SIZEOF(__int64)
 fi
 
-gcc_AC_C_CHARSET
-
 # -----------------
 # Find Ada compiler
 # -----------------

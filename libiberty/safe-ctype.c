@@ -33,6 +33,10 @@ Boston, MA 02111-1307, USA.  */
 #include <safe-ctype.h>
 #include <stdio.h>  /* for EOF */
 
+#if EOF != -1
+ #error "<safe-ctype.h> requires EOF == -1"
+#endif
+
 /* Shorthand */
 #define bl _sch_isblank
 #define cn _sch_iscntrl
@@ -64,9 +68,7 @@ Boston, MA 02111-1307, USA.  */
 #define S  (const unsigned short) (nv|sp|bl|pr)	/* space */
 
 /* Are we ASCII? */
-#if '\n' == 0x0A && ' ' == 0x20 && '0' == 0x30 \
-  && 'A' == 0x41 && 'a' == 0x61 && '!' == 0x21 \
-  && EOF == -1
+#if HOST_CHARSET == HC_ASCII
 
 const unsigned short _sch_istable[256] =
 {
@@ -159,5 +161,9 @@ const unsigned char _sch_toupper[256] =
 };
 
 #else
- #error "Unsupported host character set"
-#endif /* not ASCII */
+# if HOST_CHARSET == HC_EBCDIC
+  #error "FIXME: write tables for EBCDIC"
+# else
+  #error "Unrecognized host character set"
+# endif
+#endif
