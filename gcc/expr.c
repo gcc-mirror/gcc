@@ -7356,7 +7356,7 @@ expand_expr (exp, target, tmode, modifier)
          constant.  */
     plus_expr:
       this_optab = ! unsignedp && flag_trapv
-                   && (GET_MODE_CLASS(mode) == MODE_INT)
+                   && (GET_MODE_CLASS (mode) == MODE_INT)
                    ? addv_optab : add_optab;
 
       /* If we are adding a constant, an RTL_EXPR that is sp, fp, or ap, and
