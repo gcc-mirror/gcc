@@ -97,8 +97,6 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-#undef MAX_WCHAR_TYPE_SIZE
-    
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__ELF__ -Dunix -D__sparc__ -Dlinux -Asystem=unix -Asystem=posix"
 
