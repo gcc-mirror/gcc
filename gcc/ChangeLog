@@ -1,3 +1,8 @@
+2002-03-21  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_select_rtx_section): Put symbolic
+	constants in .data when -fpic.
+
 2002-03-21  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Use GNU/Linux instead of Linux
