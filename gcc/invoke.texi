@@ -900,7 +900,7 @@ ISO C as modified in amend. 1
 
 @item iso9899:1999
 ISO C99.  Note that this standard is not yet fully supported; see
-@w{@uref{http://gcc.gnu.org/c99status.html}} for more information.
+@w{@uref{http://gcc.gnu.org/gcc-3.0/c99status.html}} for more information.
 
 @item c89
 same as @option{-std=iso9899:1990}

@@ -1,3 +1,8 @@
+2001-02-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi, invoke.texi: Link to GCC 3.0 version of
+	c99status.html.
+
 2001-02-16  Richard Henderson  <rth@redhat.com>
 	    DJ Delorie  <dj@redhat.com>
 
