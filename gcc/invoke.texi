@@ -2326,7 +2326,7 @@ Perform a number of minor optimizations that are relatively expensive.
 @item -fregmove
 Attempt to reassign register numbers in move instructions and as
 operands of other simple instructions in order to maximize the amount of
-register tying.  This is especially helpfu on machines with two-operand
+register tying.  This is especially helpful on machines with two-operand
 instructions.  GNU CC enables this optimization by default with @samp{-O2}
 or higher.
 
