@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _STDBOOL_H
 #define _STDBOOL_H
 
+#ifndef __cplusplus
 /* The type `_Bool' must promote to `int' or `unsigned int'.  The constants
    `true' and `false' must have the value 0 and 1 respectively.  */
 typedef enum
@@ -45,6 +46,16 @@ typedef enum
 
 /* The macro `bool', which may be undefined, expands to _Bool.  */
 #define bool _Bool
+
+#else /* __cplusplus */
+
+/* Supporting <stdbool.h> in C++ is a GCC extension.  */
+#define _Bool	bool
+#define bool	bool
+#define false	false
+#define true	true
+
+#endif /* __cplusplus */
 
 /* Signal that all the definitions are present.  */
 #define __bool_true_false_are_defined	1
