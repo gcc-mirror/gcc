@@ -1,3 +1,12 @@
+2004-05-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config.gcc (sparc64-*-solaris2*, sparcv9-*-solaris2*): Add
+	tm-dwarf2.h to tm_file.
+	(sparc-*-solaris2*): Add tm-dwarf2.h to tm_file for Solaris 7+.
+	* config/sparc/sol2-bi.h (PREFERRED_DEBUGGING_TYPE): Delete.
+	(ASM_DEBUG_SPEC): Delete.
+
 2004-05-03  Uros Bizjak  <uros@kss-loka.si>
 
 	* optabs.h (enum optab_index): Add new OTI_expm1.
