@@ -1,3 +1,11 @@
+2004-06-21  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* jcf.h (struct JCF): Change java_source, right_zip and finished
+	to unsigned int.
+	* lex.h (struct java_lexer): Change hit_eof, read_anything,
+	byte_swap and use_fallback to unsigned int.
+	* parse.h (struct _jdep): Change flag0 to unsigned int.
+
 2004-06-17  Ranjit Mathew  <rmathew@hotmail.com>
 
 	Fixes PR java/13948

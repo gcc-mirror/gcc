@@ -1,3 +1,7 @@
+2004-06-21  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* trans.h (stmtblock_t): Change has_scope to unsigned int.
+
 2004-06-20  Steven G. Kargl  <kargls@comcast.net>
 
 	* arith.c (gfc_range_check): correct complex underflow.

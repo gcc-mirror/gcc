@@ -31,7 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 typedef struct
 {
   tree head;
-  int has_scope:1;
+  unsigned int has_scope:1;
 }
 stmtblock_t;
 

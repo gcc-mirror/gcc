@@ -115,7 +115,7 @@ struct java_lexer
   unicode_t unget_value;
 
   /* If nonzero, we've hit EOF.  Used only by java_get_unicode().  */
-  int hit_eof : 1;
+  unsigned int hit_eof : 1;
   
   /* Name of the character encoding we're using.  */
   const char *encoding;
@@ -123,13 +123,13 @@ struct java_lexer
 #ifdef HAVE_ICONV
   /* Nonzero if we've read any bytes.  We only recognize the
      byte-order-marker (BOM) as the first word.  */
-  int read_anything : 1;
+  unsigned int read_anything : 1;
 
   /* Nonzero if we have to byte swap.  */
-  int byte_swap : 1;
+  unsigned int byte_swap : 1;
 
   /* Nonzero if we're using the fallback decoder.  */
-  int use_fallback : 1;
+  unsigned int use_fallback : 1;
 
   /* The handle for the iconv converter we're using.  */
   iconv_t handle;

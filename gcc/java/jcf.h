@@ -106,9 +106,9 @@ typedef struct JCF GTY(()) {
   unsigned char * GTY ((skip)) buffer_end;
   unsigned char * GTY ((skip)) read_ptr;
   unsigned char * GTY ((skip)) read_end;
-  int java_source : 1;
-  int right_zip : 1;
-  int finished : 1;
+  unsigned int java_source : 1;
+  unsigned int right_zip : 1;
+  unsigned int finished : 1;
   jcf_filbuf_t filbuf;
   PTR GTY ((skip)) read_state;
   const char *filename;
