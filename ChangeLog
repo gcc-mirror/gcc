@@ -1,3 +1,7 @@
+2003-03-17  Olivier Hainque  <hainque@act-europe.fr>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+ 	
 2003-03-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Move .NOEXPORT, MAKEOVERRIDES back down.
