@@ -929,6 +929,25 @@ dump_decl (t, flags)
       break;
 
     case OVERLOAD:
+      if (OVL_CHAIN (t))
+	{
+	  t = OVL_CURRENT (t);
+	  if (DECL_CLASS_SCOPE_P (t))
+	    {
+	      dump_type (DECL_CONTEXT (t), flags);
+	      output_add_string (scratch_buffer, "::");
+	    }
+	  else if (DECL_CONTEXT (t))
+	    {
+	      dump_decl (DECL_CONTEXT (t), flags);
+	      output_add_string (scratch_buffer, "::");
+	    }
+	  dump_decl (DECL_NAME (t), flags);
+	  break;
+	}
+      
+      /* If there's only one function, just treat it like an ordinary
+	 FUNCTION_DECL.  */
       t = OVL_CURRENT (t);
       /* Fall through.  */
 
