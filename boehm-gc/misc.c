@@ -408,10 +408,6 @@ size_t GC_get_bytes_since_gc GC_PROTO(())
 
 GC_bool GC_is_initialized = FALSE;
 
-#if defined(SOLARIS_THREADS) || defined(IRIX_THREADS)
-    extern void GC_thr_init();
-#endif
-
 void GC_init()
 {
     DCL_LOCK_STATE;
@@ -447,9 +443,6 @@ void GC_init_inner()
 #   ifdef MSWIN32
  	GC_init_win32();
 #   endif
-#   if defined(LINUX) && defined(POWERPC)
-	GC_init_linuxppc();
-#   endif
 #   if defined(LINUX) && \
 	(defined(POWERPC) || defined(ALPHA) || defined(SPARC) || defined(IA64))
 	GC_init_linux_data_start();
@@ -467,7 +460,7 @@ void GC_init_inner()
        || defined(IRIX_THREADS) || defined(LINUX_THREADS) \
        || defined(HPUX_THREADS)
       if (GC_stackbottom == 0) {
-	  GC_stackbottom = GC_get_stack_base();
+	GC_stackbottom = GC_get_stack_base();
       }
 #   endif
     if  (sizeof (ptr_t) != sizeof(word)) {
