@@ -1,5 +1,16 @@
 2004-05-22  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* libsupc++/cxxabi.h: Remove duplicated and useless public and
+        private keywords in class declarations. Format. Use
+        stddef.h. Expose declarations to "C" compilation.
+        * libsupc++/tinfo.cc (__upcast_result): Add copy constructor and
+        assignment operator.
+        (__dyncast_result): Same.
+        * libsupc++/vec.cc (uncatch_exception): Same, use member
+        initialization list.
+                 
+2004-05-22  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/abi_check.cc: Add unistd.h.
 
 2004-05-22  Paolo Carlini  <pcarlini@suse.de>
