@@ -1,8 +1,18 @@
+2002-06-05  Eric Christopher  <echristo@redhat.com>
+
+	* toplev.c: Remove half-pic.
+	* config/mips/mips.c: Ditto.
+	* config/mips/mips.h: Ditto. Remove unused defines.
+	* config/mips/openbsd.h: Update comment to reflect above.
+	* config/mips/mips.md: Remove half-pic constraints.
+	* halfpic.h: Delete.
+	* halfpic.c: Ditto.
+
 2002-06-05  Jeffrey Law  <law@redhat.com>
 
         * pa.h (EXTRA_CONSTRAINT, T case): Further refine so that it
         rejects (mem (lo_sum (reg) (unspec))), but will allow
-        (mem (lo_sum (reg) (symbol_ref)) for PA2.0. 
+        (mem (lo_sum (reg) (symbol_ref)) for PA2.0.
 
 2002-06-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -52,7 +62,7 @@ Wed Jun  5 20:42:31 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(diagnostic_set_info): Declare.
 
 	* diagnostic.c (report_problematic_module): Rename to
-	diagnostic_repor_current_module. 
+	diagnostic_repor_current_module.
 	(set_diagnostic_context): Remove.
 	(count_error): Rename to diagnostic_error_count.
 	(error_function_changed): Remove.
@@ -215,7 +225,7 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
 
 	Merge from pch-branch:
-	
+
 	* gengtype.h (UNION_OR_STRUCT_P): New macro.
 	* gengtype.c (write_gc_structure_fields): Use it.
 	(write_gc_root): Use it here too.
@@ -362,7 +372,7 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	outside ifdefs.
 	(incomplete_types): Likewise.
 	(decl_scope_table): Likewise.
-	(dwarf2out_init): Don't call ggc_add_tree_varray_root.	
+	(dwarf2out_init): Don't call ggc_add_tree_varray_root.
 	* cfglayout.c (scope_to_insns_finalize): Don't use VARRAY_FREE.
 	* c-tree.h (struct lang_type): Update for change to length specifier.
 	* c-parse.in (yylexstring): Don't use VARRAY_FREE.
@@ -436,7 +446,7 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	to list of includes.
 
 	* gengtype.c (write_gc_marker_routine_for_structure): Name
-	the routines 'gt_ggc_mx_*' instead of 'gt_ggc_m_*'.  
+	the routines 'gt_ggc_mx_*' instead of 'gt_ggc_m_*'.
 	(write_gc_types): Arrange for the tests with NULL to be inlined.
 	(write_gc_roots): Update uses of procedure pointers.
 	* ggc-common.c (gt_ggc_mx_rtx_def): Rename from gt_ggc_m_rtx_def.
@@ -579,7 +589,7 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* c-tree.h (struct lang_identifier): Use gengtype.
 	(union lang_tree_node): New.
 	(c_mark_tree): Delete prototype.
-	* dwarf2out.c [!DWARF2_DEBUGGING_INFO]: Define dummy 
+	* dwarf2out.c [!DWARF2_DEBUGGING_INFO]: Define dummy
 	dwarf2_debug_hooks.
 	* gengtype-lex.l (IWORD): Allow 'bool'.
 	(ptr_alias): Match.
@@ -664,7 +674,7 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/d30v/d30v.c (d30v_init_expanders): Likewise.
 	* config/arm/arm.c (arm_init_expanders): Likewise.
 	* config/alpha/alpha.c (override_options): Likewise.
-	* gengtype.h (enum gc_used_enum): Add GC_MAYBE_POINTED_TO. 
+	* gengtype.h (enum gc_used_enum): Add GC_MAYBE_POINTED_TO.
 	* gengtype.c (set_gc_used_type): Handle 'maybe_null' option.
 	(write_gc_structure_fields): Don't handle 'really' option.
 	Handle 'maybe_null' option.
@@ -985,7 +995,7 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* tree.c: Use gengtype for roots.
 	* tree.h: Use gengtype for roots.
 	* varasm.c: Use gengtype for roots.
-	
+
 	* Makefile.in (GTFILES): Add @all_gtfiles@.
 	* configure: Regenerate.
 	* configure.in: Construct all_gtfiles from the gtfiles definitions
@@ -1031,10 +1041,10 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/arm/arm.c (arm_mark_machine_status): Delete.
 	(arm_init_machine_status): Update calling sequence.
 	(arm_init_expanders): Use canonical name for arm_mark_machine_status.
-	* config/cris/cris.c (cris_init_machine_status): Update 
+	* config/cris/cris.c (cris_init_machine_status): Update
 	calling sequence.
 	* config/d30v/d30v.h (struct machine_function): Use gengtype.
-	* config/d30v/d30v.c (d30v_init_machine_status): Update 
+	* config/d30v/d30v.c (d30v_init_machine_status): Update
 	calling sequence.
 	(d30v_mark_machine_status): Delete.
 	* config/i386/i386.c: Include gt-i386.h.
@@ -1043,12 +1053,12 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(ix86_mark_machine_status): Delete.
 	(override_options): Use canonical namke for ix86_mark_machine_status.
 	* config/ia64/ia64.h (struct machine_function): Use gengtype.
-	* config/ia64/ia64.c (ia64_init_machine_status): Update calling 
+	* config/ia64/ia64.c (ia64_init_machine_status): Update calling
 	sequence.
 	(ia64_mark_machine_status): Delete.
-	(ia64_override_options): Use canonical name for 
+	(ia64_override_options): Use canonical name for
 	ia64_mark_machine_status.
-	* config/mmix/mmix.c (mmix_init_machine_status): Update calling 
+	* config/mmix/mmix.c (mmix_init_machine_status): Update calling
 	sequence.
 	* config/rs6000/rs6000.c (rs6000_init_machine_status): Likewise.
 	* config/xtensa/xtensa.c (xtensa_init_machine_status): Likewise.
@@ -1191,7 +1201,7 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	Document that the machine_function structures must be allocated
 	using GC.  Update mark_machine_status documentation.
 	* function.h: Don't declare free_machine_status.
-	* function.c (free_machine_status): Don't define. 
+	* function.c (free_machine_status): Don't define.
 	(free_after_compilation): Don't call free_machine_status.
 	(ggc_mark_struct_function): Mark f->machine.  Call
 	mark_machine_status only on non-NULL pointers.
@@ -1388,7 +1398,7 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-06-03  Gabriel Dos Reis  <gdr@codesourcery.com>
 
-	* diagnostic.h (diagnostic_count): Move from output_buffer to 
+	* diagnostic.h (diagnostic_count): Move from output_buffer to
 	diagnostic_context.
 	(diagnostic_kind_count): Adjust definition.
 
@@ -1555,7 +1565,7 @@ config/h8300:
 2002-06-02  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.h (struct diagnostic_context):  Add new member
-	internal_error. 
+	internal_error.
 	(internal_error_function): Remove declaration.
 	* diagnostic.c (internal_error_function): Remove definition..
 	(internal_error): Adjust use.
@@ -1641,7 +1651,7 @@ Sat Jun  1 23:29:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-06-01  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-inline.c (expand_call_inline): Make the statement
-	expression we generate have a COMPOUND_STMT.	
+	expression we generate have a COMPOUND_STMT.
 
 2002-06-01  Roger Sayle  <roger@eyesopen.com>
 

@@ -172,20 +172,6 @@ extern int mips_string_length;		/* length of strings for mips16 */
 extern void		sdata_section PARAMS ((void));
 extern void		sbss_section PARAMS ((void));
 
-/* Stubs for half-pic support if not OSF/1 reference platform.  */
-
-#ifndef HALF_PIC_P
-#define HALF_PIC_P() 0
-#define HALF_PIC_NUMBER_PTRS 0
-#define HALF_PIC_NUMBER_REFS 0
-#define HALF_PIC_ENCODE(DECL)
-#define HALF_PIC_DECLARE(NAME)
-#define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it")
-#define HALF_PIC_ADDRESS_P(X) 0
-#define HALF_PIC_PTR(X) X
-#define HALF_PIC_FINISH(STREAM)
-#endif
-
 /* Macros to silence warnings about numbers being signed in traditional
    C and unsigned in ISO C when compiled on 32-bit hosts.  */
 
@@ -210,7 +196,7 @@ extern void		sbss_section PARAMS ((void));
 #define MASK_SOFT_FLOAT	   0x00000100	/* software floating point */
 #define MASK_FLOAT64	   0x00000200	/* fp registers are 64 bits */
 #define MASK_ABICALLS	   0x00000400	/* emit .abicalls/.cprestore/.cpload */
-#define MASK_HALF_PIC	   0x00000800	/* Emit OSF-style pic refs to externs*/
+#define MASK_UNUSED1	   0x00000800	/* Unused Mask.  */
 #define MASK_LONG_CALLS	   0x00001000	/* Always call through a register */
 #define MASK_64BIT	   0x00002000	/* Use 64 bit GP registers and insns */
 #define MASK_EMBEDDED_PIC  0x00004000	/* Generate embedded PIC code */
@@ -284,9 +270,6 @@ extern void		sbss_section PARAMS ((void));
 
 					/* .abicalls, etc from Pyramid V.4 */
 #define TARGET_ABICALLS		(target_flags & MASK_ABICALLS)
-
-					/* OSF pic references to externs */
-#define TARGET_HALF_PIC		(target_flags & MASK_HALF_PIC)
 
 					/* software floating point */
 #define TARGET_SOFT_FLOAT	(target_flags & MASK_SOFT_FLOAT)
@@ -417,10 +400,6 @@ extern void		sbss_section PARAMS ((void));
      N_("Use Irix PIC")},						\
   {"no-abicalls",	 -MASK_ABICALLS,				\
      N_("Don't use Irix PIC")},						\
-  {"half-pic",		  MASK_HALF_PIC,				\
-     N_("Use OSF PIC")},						\
-  {"no-half-pic",	 -MASK_HALF_PIC,				\
-     N_("Don't use OSF PIC")},						\
   {"long-calls",	  MASK_LONG_CALLS,				\
      N_("Use indirect calls")},						\
   {"no-long-calls",	 -MASK_LONG_CALLS,				\
@@ -506,11 +485,7 @@ extern void		sbss_section PARAMS ((void));
 #endif
 
 #ifndef TARGET_ENDIAN_DEFAULT
-#ifndef DECSTATION
 #define TARGET_ENDIAN_DEFAULT MASK_BIG_ENDIAN
-#else
-#define TARGET_ENDIAN_DEFAULT 0
-#endif
 #endif
 
 #ifndef MIPS_ISA_DEFAULT
@@ -780,35 +755,6 @@ while (0)
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
 
-/* Complain about missing specs and predefines that should be defined in each
-   of the target tm files to override the defaults.  This is mostly a place-
-   holder until I can get each of the files updated [mm].  */
-
-#if defined(OSF_OS) \
-    || defined(DECSTATION) \
-    || defined(SGI_TARGET) \
-    || defined(MIPS_NEWS) \
-    || defined(MIPS_SYSV) \
-    || defined(MIPS_SVR4) \
-    || defined(MIPS_BSD43)
-
-#ifndef CPP_PREDEFINES
-	#error "Define CPP_PREDEFINES in the appropriate tm.h file"
-#endif
-
-#ifndef LIB_SPEC
-	#error "Define LIB_SPEC in the appropriate tm.h file"
-#endif
-
-#ifndef STARTFILE_SPEC
-	#error "Define STARTFILE_SPEC in the appropriate tm.h file"
-#endif
-
-#ifndef MACHINE_TYPE
-	#error "Define MACHINE_TYPE in the appropriate tm.h file"
-#endif
-#endif
-
 /* Tell collect what flags to pass to nm.  */
 #ifndef NM_FLAGS
 #define NM_FLAGS "-Bn"
@@ -1001,10 +947,6 @@ extern int mips_abi;
 %{mint64|mlong64|mlong32:-mexplicit-type-size }\
 %{mgp32: %{mfp64:%emay not use both -mgp32 and -mfp64} %{!mfp32: -mfp32}} \
 %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
-%{pic-none:   -mno-half-pic} \
-%{pic-lib:    -mhalf-pic} \
-%{pic-extern: -mhalf-pic} \
-%{pic-calls:  -mhalf-pic} \
 %{save-temps: } \
 %(subtarget_cc1_spec) \
 %(cc1_cpu_spec)"
@@ -2234,7 +2176,6 @@ extern enum reg_class mips_char_to_class[256];
 
    `Q'	is for mips16 GP relative constants
    `R'	is for memory references which take 1 word for the instruction.
-   `S'	is for references to extern items which are PIC for OSF/rose.
    `T'	is for memory addresses that can be used to load two words.  */
 
 #define EXTRA_CONSTRAINT(OP,CODE)					\
@@ -2243,8 +2184,6 @@ extern enum reg_class mips_char_to_class[256];
 			     && mips16_gp_offset_p (OP))		\
    : (GET_CODE (OP) != MEM) ? FALSE					\
    : ((CODE) == 'R')	  ? simple_memory_operand (OP, GET_MODE (OP))	\
-   : ((CODE) == 'S')	  ? (HALF_PIC_P () && CONSTANT_P (OP)		\
-			     && HALF_PIC_ADDRESS_P (OP))		\
    : FALSE)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -3092,14 +3031,13 @@ typedef struct mips_args {
    `la $5,s;sw $4,70000($5)' via LEGITIMIZE_ADDRESS.  */
 /* ??? SGI Irix 6 assembler fails for CONST address, so reject them.  */
 #define CONSTANT_ADDRESS_P(X)						\
-  ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
     || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
     || (GET_CODE (X) == CONST						\
 	&& ! (flag_pic && pic_address_needs_scratch (X))		\
 	&& (mips_abi == ABI_32						\
 	    || mips_abi == ABI_O64					\
-	    || mips_abi == ABI_EABI)))					\
-   && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
+	    || mips_abi == ABI_EABI)))
 
 /* Define this, so that when PIC, reload won't try to reload invalid
    addresses which require two reload registers.  */
@@ -3353,13 +3291,6 @@ typedef struct mips_args {
    so give the MEM rtx a words's mode.  */
 
 #define FUNCTION_MODE (Pmode == DImode ? DImode : SImode)
-
-/* Define TARGET_MEM_FUNCTIONS if we want to use calls to memcpy and
-   memset, instead of the BSD functions bcopy and bzero.  */
-
-#if defined(MIPS_SYSV) || defined(OSF_OS)
-#define TARGET_MEM_FUNCTIONS
-#endif
 
 
 /* A part of a C `switch' statement that describes the relative
@@ -4161,7 +4092,7 @@ typedef struct mips_args {
   ALL_COP_ADDITIONAL_REGISTER_NAMES					\
 }
 
-/* This is meant to be redefined in the host dependent files.  It is a 
+/* This is meant to be redefined in the host dependent files.  It is a
    set of alternative names and regnums for mips coprocessors.  */
 
 #define ALL_COP_ADDITIONAL_REGISTER_NAMES
@@ -4282,8 +4213,7 @@ while (0)
 	LM[0-9]+	Silicon Graphics/ECOFF stabs label before each stmt.
 	$Lb[0-9]+	Begin blocks for MIPS debug support
 	$Lc[0-9]+	Label for use in s<xx> operation.
-	$Le[0-9]+	End blocks for MIPS debug support
-	$Lp\..+		Half-pic labels.  */
+	$Le[0-9]+	End blocks for MIPS debug support  */
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.
@@ -4316,7 +4246,6 @@ do {									\
 do									\
  {									\
    mips_declare_object (STREAM, NAME, "", ":\n", 0);			\
-   HALF_PIC_DECLARE (NAME);						\
  }									\
 while (0)
 
@@ -4393,10 +4322,10 @@ do {							\
    emitting the label is moved to function_prologue, so that we can
    get the line number correctly emitted before the .ent directive,
    and after any .file directives.  */
-
+/*
 #undef ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)	\
-  HALF_PIC_DECLARE (NAME)
+#define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)
+*/
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */

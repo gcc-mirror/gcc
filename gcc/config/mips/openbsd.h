@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC OBSD_LIB_SPEC
 
 /* By default, OpenBSD mips is little endian.  This is important to set
-   here as mips/mips.h defaults to big endian unless DECSTATION.  */
+   here as mips/mips.h defaults to big endian.  */
 #ifndef TARGET_ENDIAN_DEFAULT
 #define TARGET_ENDIAN_DEFAULT 0
 #endif
@@ -81,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Controlling the compilation driver.  */
 
-/* LINK_SPEC appropriate for OpenBSD:  support for GCC options 
+/* LINK_SPEC appropriate for OpenBSD:  support for GCC options
    -static, -assert, and -nostdlib. Dynamic loader control.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
