@@ -1,3 +1,8 @@
+Wed Mar 24 22:36:45 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* configure.in (EXEEXT): Define.
+	(compiler_name): Use.
+
 1999-03-24  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* gen-params (CONFIG_NM): test ... -o ... is not portable
