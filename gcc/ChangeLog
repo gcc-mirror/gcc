@@ -1,3 +1,8 @@
+2005-03-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c (fold_binary): Avoid directly using the original
+	expression t as much as possible.
+
 2005-03-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-semantics.c (build_stmt): Use TYPE_P instead of
