@@ -1,3 +1,8 @@
+2004-03-04  Jan Hubicka  <jh@suse.cz>
+
+	* cselib.c (cselib_finish): Fix another miss-application of my previous
+	patch.
+
 2004-03-03  Mike Stump  <mrs@apple.com>
 
 	Add framework support for darwin.
