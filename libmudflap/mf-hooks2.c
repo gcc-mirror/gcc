@@ -63,6 +63,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <limits.h>
 #include <time.h>
 #include <ctype.h>
+#ifdef HAVE_DLFCN_H
+#include <dlfcn.h>
+#endif
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #endif
@@ -89,6 +92,18 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #ifdef HAVE_GRP_H
 #include <grp.h>
+#endif
+#ifdef HAVE_MNTENT_H
+#include <mntent.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
 #endif
 
 #include "mf-runtime.h"
@@ -1868,6 +1883,100 @@ WRAPPER2(const char *, gai_strerror, int errcode)
   if (buf != NULL)
     __mf_register ((void *) buf, strlen(buf)+1, __MF_TYPE_STATIC,
                    "gai_strerror() return");
+  return buf;
+}
+#endif
+
+
+#ifdef HAVE_GETMNTENT
+WRAPPER2(struct mntent *, getmntent, FILE *filep)
+{
+  struct mntent *m;
+  static struct mntent *last = NULL;
+
+  MF_VALIDATE_EXTENT (filep, sizeof (*filep), __MF_CHECK_WRITE,
+    "getmntent stream");
+#define UR(field) __mf_unregister(last->field, strlen (last->field)+1, __MF_TYPE_STATIC)
+  if (last)
+    {
+      UR (mnt_fsname);
+      UR (mnt_dir);
+      UR (mnt_type);
+      UR (mnt_opts);
+      __mf_unregister (last, sizeof (*last), __MF_TYPE_STATIC);
+    }
+#undef UR
+
+  m = getmntent (filep);
+  last = m;
+
+#define R(field) __mf_register(last->field, strlen (last->field)+1, __MF_TYPE_STATIC, "mntent " #field)
+  if (m)
+    {
+      R (mnt_fsname);
+      R (mnt_dir);
+      R (mnt_type);
+      R (mnt_opts);
+      __mf_register (last, sizeof (*last), __MF_TYPE_STATIC, "getmntent result");
+    }
+#undef R
+
+  return m;
+}
+#endif
+
+
+#ifdef HAVE_INET_NTOA
+WRAPPER2(char *, inet_ntoa, struct in_addr in)
+{
+  static char *last_buf = NULL;
+  char *buf;
+  if (last_buf)
+    __mf_unregister (last_buf, strlen (last_buf)+1, __MF_TYPE_STATIC);
+  buf = inet_ntoa (in);
+  last_buf = buf;
+  if (buf)
+    __mf_register (last_buf, strlen (last_buf)+1, __MF_TYPE_STATIC, "inet_ntoa result");
+  return buf;
+}
+#endif
+
+
+#ifdef HAVE_GETPROTOENT
+WRAPPER2(struct protoent *, getprotoent, void)
+{
+  struct protoent *buf;
+  buf = getprotoent ();
+  if (buf != NULL)
+    __mf_register (buf, sizeof(*buf), __MF_TYPE_STATIC, "getproto*() return");
+  return buf;
+}
+#endif
+
+
+#ifdef HAVE_GETPROTOBYNAME
+WRAPPER2(struct protoent *, getprotobyname, const char *name)
+{
+  struct protoent *buf;
+  MF_VALIDATE_EXTENT(name, strlen(name)+1, __MF_CHECK_READ,
+                     "getprotobyname name");
+  buf = getprotobyname (name);
+  if (buf != NULL)
+    __mf_register (buf, sizeof(*buf), __MF_TYPE_STATIC,
+                   "getproto*() return");
+  return buf;
+}
+#endif
+
+
+#ifdef HAVE_GETPROTOBYNUMBER
+WRAPPER2(struct protoent *, getprotobynumber, int port)
+{
+  struct protoent *buf;
+  buf = getprotobynumber (port);
+  if (buf != NULL)
+    __mf_register (buf, sizeof(*buf), __MF_TYPE_STATIC,
+                   "getproto*() return");
   return buf;
 }
 #endif

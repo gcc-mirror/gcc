@@ -1,3 +1,13 @@
+2004-10-04  Frank Ch. Eigler  <fche@redhat.com>
+
+	* configure.ac: Look for more headers & functions.
+	* mf-hooks2.c (getmntent, inet_ntoa, getproto*): New wrapper functions.
+	* mf-runtime.h.in: Add new "#pragma redefine_extname"s for them.
+	* mf-runtime.c (options): Clean up integer signedness warnings.
+	(main): Add a declaration to fix a warning.
+	* mf-hooks3.c (pthread_exit): Add not-reached exit() to wrapper.
+	* configure, config.h.in: Regenerated.
+
 2004-10-02  Frank Ch. Eigler  <fche@redhat.com>
 
 	* testsuite/libmudflap.c/pass50-frag.c, fail33-frag.c, fail34-frag.c:
