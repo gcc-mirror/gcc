@@ -1,3 +1,8 @@
+2001-11-25  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/3957
+	* lang-specs.h: Correct !pipe conditional in tradcpp0 invocation.
+
 2001-11-15  Craig Prescott  <prescott@phys.ufl.edu>
 
 	* target.h (FFETARGET_32bit_longs): Don't define
