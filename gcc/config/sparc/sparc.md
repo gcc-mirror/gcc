@@ -2265,20 +2265,19 @@
 	}
     }
 
-  if (GET_CODE (operands[1]) == LABEL_REF)
-    {
-      if (! TARGET_ARCH64)
-        abort ();
-      /* ??? revisit this... */
-      emit_insn (gen_move_label_di (operands[0], operands[1]));
-      DONE;
-    }
-
   if (flag_pic)
     {
       if (CONSTANT_P (operands[1])
 	  && pic_address_needs_scratch (operands[1]))
 	operands[1] = legitimize_pic_address (operands[1], DImode, 0);
+
+      if (GET_CODE (operands[1]) == LABEL_REF)
+        {
+          if (! TARGET_ARCH64)
+            abort ();
+          emit_insn (gen_movdi_pic_label_ref (operands[0], operands[1]));
+          DONE;
+        }
 
       if (symbolic_operand (operands[1], DImode))
 	{
@@ -2387,20 +2386,43 @@
   [(set_attr "type" "move,move,move,load,store,fpmove,fpload,fpstore,fpmove")
    (set_attr "length" "1")])
 
-;; ??? revisit this...
-(define_insn "move_label_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	; This was previously (label_ref:DI (match_operand 1 "" "")) but that
-	; loses the volatil and other flags of the original label_ref.
-	(match_operand:DI 1 "label_ref_operand" ""))
-   (set (reg:DI 15) (pc))]
-  "TARGET_ARCH64"
-  "*
+(define_expand "movdi_pic_label_ref"
+  [(set (match_dup 3) (high:DI
+     (unspec:DI [(match_operand:DI 1 "label_ref_operand" "")
+                 (match_dup 2)] 5)))
+   (set (match_dup 4) (lo_sum:DI (match_dup 3)
+     (unspec:DI [(match_dup 1) (match_dup 2)] 5)))
+   (set (match_operand:DI 0 "register_operand" "=r")
+        (minus:DI (match_dup 5) (match_dup 4)))]
+  "TARGET_ARCH64 && flag_pic"
+  "
 {
-  return \"\\n1:\\trd\\t%%pc, %%o7\\n\\tsethi\\t%%hi(%l1-1b), %0\\n\\tadd\\t%0, %%lo(%l1-1b), %0\\n\\tsra\\t%0, 0, %0\\n\\tadd\\t%0, %%o7, %0\";
-}"
-  [(set_attr "type" "multi")
-   (set_attr "length" "5")])
+  current_function_uses_pic_offset_table = 1;
+  operands[2] = gen_rtx_SYMBOL_REF (Pmode, \"_GLOBAL_OFFSET_TABLE_\");
+  operands[3] = gen_reg_rtx (DImode);
+  operands[4] = gen_reg_rtx (DImode);
+  operands[5] = pic_offset_table_rtx;
+}")
+
+(define_insn "*movdi_high_pic_label_ref"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (high:DI
+          (unspec:DI [(match_operand:DI 1 "label_ref_operand" "")
+                      (match_operand:DI 2 "" "")] 5)))]
+  "TARGET_ARCH64 && flag_pic"
+  "sethi\\t%%hi(%a2-(%a1-.)), %0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_insn "*movdi_lo_sum_pic_label_ref"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+      (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
+        (unspec:DI [(match_operand:DI 2 "label_ref_operand" "")
+                    (match_operand:DI 3 "" "")] 5)))]
+  "TARGET_ARCH64 && flag_pic"
+  "or\\t%1, %%lo(%a3-(%a2-.)), %0"
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 ;; Sparc-v9 code model support insns.  See sparc_emit_set_symbolic_const64
 ;; in sparc.c to see what is going on here... PIC stuff comes first.
