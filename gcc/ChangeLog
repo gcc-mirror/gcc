@@ -1,5 +1,10 @@
 2002-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/mips/mips.h (CAN_ELIMINATE): Don't eliminate rap to $fp
+	(s8), but rather HARD_FRAME_POINTER_REGNUM.  Add parentheses
+	where appropriate.  Make the second reference to
+	leaf_function_p a function call, as intended.  Reindented.
+
 	* config/mips/mips.h (ISA_HAS_COND_TRAP): Not available on MIPS16.
 	* config/mips/mips.md (trap) [TARGET_MIPS16]: Emit `break 0'.
 

@@ -2509,14 +2509,17 @@ extern struct mips_frame_info current_frame_info;
    */
 
 #define CAN_ELIMINATE(FROM, TO)						\
-  (((FROM) == RETURN_ADDRESS_POINTER_REGNUM && (! leaf_function_p ()	\
-   || (TO == GP_REG_FIRST + 31 && leaf_function_p)))   			\
-  || ((FROM) != RETURN_ADDRESS_POINTER_REGNUM				\
-   && ((TO) == HARD_FRAME_POINTER_REGNUM 				\
-   || ((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed		\
-       && ! (TARGET_MIPS16 && TARGET_64BIT)                             \
-       && (! TARGET_MIPS16						\
-	   || compute_frame_size (get_frame_size ()) < 32768)))))
+  (((FROM) == RETURN_ADDRESS_POINTER_REGNUM				\
+    && ((! leaf_function_p ()						\
+	 && ((TO) == STACK_POINTER_REGNUM				\
+ 	     || (TO) == HARD_FRAME_POINTER_REGNUM))			\
+	|| ((TO) == GP_REG_FIRST + 31 && leaf_function_p ())))  	\
+   || ((FROM) != RETURN_ADDRESS_POINTER_REGNUM				\
+      && ((TO) == HARD_FRAME_POINTER_REGNUM 				\
+	  || ((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed	\
+	      && ! (TARGET_MIPS16 && TARGET_64BIT)			\
+	      && (! TARGET_MIPS16					\
+	          || compute_frame_size (get_frame_size ()) < 32768)))))
 
 /* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
    specifies the initial difference between the specified pair of
