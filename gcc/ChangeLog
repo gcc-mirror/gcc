@@ -1,3 +1,12 @@
+2003-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-parse.in (%union): Replace filename & lineno with location.
+	(save_filename, save_lineno): Remove.
+	(save_location): New.
+	(fndef, old_style_parm_decls_1, lineno_datadecl, lineno_decl,
+	nested_function, notype_nested_function, if_prefix, lineno_stmt,
+	lineno_label, label): Adjust.
+
 2003-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (c_strlen): Add only_value argument.
