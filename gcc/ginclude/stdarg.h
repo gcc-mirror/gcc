@@ -84,9 +84,9 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 /* This is for big-endian machines; small args are padded downward.  */
 #define va_arg(AP, TYPE)						\
  (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\
-  *((TYPE *) (void *) ((char *) (AP) - ((sizeof (TYPE) < 4		\
-					 ? sizeof (TYPE)		\
-					 : __va_rounded_size (TYPE))))))
+  *((TYPE *) (void *) ((char *) (AP)					\
+		       - ((sizeof (TYPE) < __va_rounded_size (char)	\
+			   ? sizeof (TYPE) : __va_rounded_size (TYPE))))))
 #endif /* big-endian */
 #endif /* _STDARG_H */
 
