@@ -1,3 +1,20 @@
+2001-03-17  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (lookup_filename): Emit .file if the assembler
+	is generating .debug_line.
+	(dwarf2out_init): Add main_input_filename to the file table first.
+	* configure.in (as_dwarf2_debug_line): Test with file number 1
+	instead of file number 0.
+
+	* dwarf2out.c: Revert most of 2000-11-25 and 2001-01-24 changes.
+	(LN_PROLOG_AS_LABEL, LN_PROLOG_END_LABEL): New.
+	(size_of_line_prolog): Remove.
+	(output_line_info): Compute prologue size via label difference.
+	(lookup_filename): Return "unspecified" for <internal> and <built-in>.
+	* configure.in (HAVE_AS_DWARF2_DEBUG_LINE): Require that the
+	assembler error when redefining file numbers.
+	* config.in, configure: Rebuild.
+
 2001-03-17  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* config/i386/xm-cygwin.h: Include <sys/cygwin.h.  Remove unused
@@ -14,12 +31,12 @@
 
 2001-03-16  Laurynas Biveinis  <lauras@softhome.net>
 
-        * fixinc/fixincl.c (fix_with_system): Quote file names before
+	* fixinc/fixincl.c (fix_with_system): Quote file names before
 	passing them to shell.
 		 
 2001-03-16  Laurynas Biveinis  <lauras@softhome.net>
 
-        * Makefile.in: Use fix-header$(build_exeext) instead
+	* Makefile.in: Use fix-header$(build_exeext) instead
 	of fix-header.
 
 Fri Mar 16 11:26:01 2001  Christopher Faylor <cgf@cygnus.com>
@@ -46,9 +63,9 @@ Fri Mar 16 11:26:01 2001  Christopher Faylor <cgf@cygnus.com>
 
 2001-03-15  Steve Ellcey  <sje@cup.hp.com>
 
-        * config.gcc (ia64*-*-hpux*): New case.
-        * config/ia64/hpux.h: New file for HP-UX support.
-        * config/ia64/t-hpux: New file for HP-UX support.
+	* config.gcc (ia64*-*-hpux*): New case.
+	* config/ia64/hpux.h: New file for HP-UX support.
+	* config/ia64/t-hpux: New file for HP-UX support.
 
 2001-03-16  Bruce Korb  <bkorb@gnu.org>, Alexandre Oliva  <aoliva@redhat.com>
 

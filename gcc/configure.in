@@ -1476,12 +1476,23 @@ then
     gcc_cv_as_dwarf2_debug_line="yes"
   fi
 elif test x$gcc_cv_as != x -a x"$insn" != x ; then
-	echo '	.file 0 "conftest.s"' > conftest.s
-	echo '	.loc 0 3 0' >> conftest.s
+	echo '	.file 1 "conftest.s"' > conftest.s
+	echo '	.loc 1 3 0' >> conftest.s
 	echo "	$insn" >> conftest.s
 	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
 	   && grep debug_line conftest.o > /dev/null 2>&1 ; then
-		gcc_cv_as_dwarf2_debug_line="yes"
+		# The .debug_line file table must be in the exact order that
+		# we specified the files, since these indicies are also used
+		# by DW_AT_decl_file.  Approximate this test by testing if
+		# the assembler bitches if the same index is assigned twice.
+		echo '  .file 1 "foo.s"' > conftest.s
+		echo '  .file 1 "bar.s"' >> conftest.s
+		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1
+		then
+		  gcc_cv_as_dwarf2_debug_line="no"
+		else
+		  gcc_cv_as_dwarf2_debug_line="yes"
+		fi
 	fi
 	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
 fi
