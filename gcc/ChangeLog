@@ -1,3 +1,8 @@
+2003-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/lib1funcs.asm (LSYM): Define -- on ELF prefix a local symbol with
+	'.'.  Change all local symbol definitions and references to use LSYM.
+
 Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* expr.h (assemble_static_space): Update prototype.

@@ -51,10 +51,12 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #define TYPE(x) .type SYM(x),function
 #define SIZE(x) .size SYM(x), . - SYM(x)
+#define LSYM(x) .x
 #else
 #define __PLT__
 #define TYPE(x)
 #define SIZE(x)
+#define LSYM(x) x
 #endif
 
 /* Function end macros.  Variants for 26 bit APCS and interworking.  */
@@ -64,7 +66,7 @@ Boston, MA 02111-1307, USA.  */
 # define RETc(x)	mov##x##s	pc, lr
 # define RETCOND 	^
 .macro ARM_LDIV0
-Ldiv0:
+LSYM(Ldiv0):
 	str	lr, [sp, #-4]!
 	bl	SYM (__div0) __PLT__
 	mov	r0, #0			@ About as wrong as it could be.
@@ -75,7 +77,7 @@ Ldiv0:
 #  define RET		bx	lr
 #  define RETc(x)	bx##x	lr
 .macro THUMB_LDIV0
-Ldiv0:
+LSYM(Ldiv0):
 	push	{ lr }
 	bl	SYM (__div0)
 	mov	r0, #0			@ About as wrong as it could be.
@@ -83,7 +85,7 @@ Ldiv0:
 	bx	r1
 .endm
 .macro ARM_LDIV0
-Ldiv0:
+LSYM(Ldiv0):
 	str	lr, [sp, #-4]!
 	bl	SYM (__div0) __PLT__
 	mov	r0, #0			@ About as wrong as it could be.
@@ -94,14 +96,14 @@ Ldiv0:
 #  define RET		mov	pc, lr
 #  define RETc(x)	mov##x	pc, lr
 .macro THUMB_LDIV0
-Ldiv0:
+LSYM(Ldiv0):
 	push	{ lr }
 	bl	SYM (__div0)
 	mov	r0, #0			@ About as wrong as it could be.
 	pop	{ pc }
 .endm
 .macro ARM_LDIV0
-Ldiv0:
+LSYM(Ldiv0):
 	str	lr, [sp, #-4]!
 	bl	SYM (__div0) __PLT__
 	mov	r0, #0			@ About as wrong as it could be.
@@ -112,7 +114,7 @@ Ldiv0:
 #endif
 
 .macro FUNC_END name
-Ldiv0:
+LSYM(Ldiv0):
 #ifdef __thumb__
 	THUMB_LDIV0
 #else
@@ -165,7 +167,7 @@ pc		.req	r15
 /*		Bodies of the divsion and modulo routines.		    */
 /* ------------------------------------------------------------------------ */	
 .macro ARM_DIV_MOD_BODY modulo
-Loop1:
+LSYM(Loop1):
 	@ Unless the divisor is very big, shift it up in multiples of
 	@ four bits, since this is the amount of unwinding in the main
 	@ division loop.  Continue shifting until the divisor is 
@@ -174,18 +176,18 @@ Loop1:
 	cmplo	divisor, dividend
 	movlo	divisor, divisor, lsl #4
 	movlo	curbit,  curbit,  lsl #4
-	blo	Loop1
+	blo	LSYM(Loop1)
 
-Lbignum:
+LSYM(Lbignum):
 	@ For very big divisors, we must shift it a bit at a time, or
 	@ we will be in danger of overflowing.
 	cmp	divisor, #0x80000000
 	cmplo	divisor, dividend
 	movlo	divisor, divisor, lsl #1
 	movlo	curbit,  curbit,  lsl #1
-	blo	Lbignum
+	blo	LSYM(Lbignum)
 
-Loop3:
+LSYM(Loop3):
 	@ Test for possible subtractions.  On the final pass, this may 
 	@ subtract too much from the dividend ...
 	
@@ -226,10 +228,10 @@ Loop3:
 	cmp	dividend, #0			@ Early termination?
 	movnes	curbit,   curbit,  lsr #4	@ No, any more bits to do?
 	movne	divisor,  divisor, lsr #4
-	bne	Loop3
+	bne	LSYM(Loop3)
 
   .if \modulo
-Lfixup_dividend:	
+LSYM(Lfixup_dividend):	
 	@ Any subtractions that we should not have done will be recorded in
 	@ the top three bits of OVERDONE.  Exactly which were not needed
 	@ are governed by the position of the bit, stored in IP.
@@ -241,7 +243,7 @@ Lfixup_dividend:
 	@ the bit in ip could be in the top two bits which might then match
 	@ with one of the smaller RORs.
 	tstne	ip, #0x7
-	beq	Lgot_result
+	beq	LSYM(Lgot_result)
 	tst	overdone, ip, ror #3
 	addne	dividend, dividend, divisor, lsr #3
 	tst	overdone, ip, ror #2
@@ -250,39 +252,39 @@ Lfixup_dividend:
 	addne	dividend, dividend, divisor, lsr #1
   .endif
 
-Lgot_result:
+LSYM(Lgot_result):
 .endm
 /* ------------------------------------------------------------------------ */
 .macro THUMB_DIV_MOD_BODY modulo
 	@ Load the constant 0x10000000 into our work register.
 	mov	work, #1
 	lsl	work, #28
-Loop1:
+LSYM(Loop1):
 	@ Unless the divisor is very big, shift it up in multiples of
 	@ four bits, since this is the amount of unwinding in the main
 	@ division loop.  Continue shifting until the divisor is 
 	@ larger than the dividend.
 	cmp	divisor, work
-	bhs	Lbignum
+	bhs	LSYM(Lbignum)
 	cmp	divisor, dividend
-	bhs	Lbignum
+	bhs	LSYM(Lbignum)
 	lsl	divisor, #4
 	lsl	curbit,  #4
-	b	Loop1
-Lbignum:
+	b	LSYM(Loop1)
+LSYM(Lbignum):
 	@ Set work to 0x80000000
 	lsl	work, #3
-Loop2:
+LSYM(Loop2):
 	@ For very big divisors, we must shift it a bit at a time, or
 	@ we will be in danger of overflowing.
 	cmp	divisor, work
-	bhs	Loop3
+	bhs	LSYM(Loop3)
 	cmp	divisor, dividend
-	bhs	Loop3
+	bhs	LSYM(Loop3)
 	lsl	divisor, #1
 	lsl	curbit,  #1
-	b	Loop2
-Loop3:
+	b	LSYM(Loop2)
+LSYM(Loop3):
 	@ Test for possible subtractions ...
   .if \modulo
 	@ ... On the final pass, this may subtract too much from the dividend, 
@@ -290,79 +292,79 @@ Loop3:
 	@ afterwards.
 	mov	overdone, #0
 	cmp	dividend, divisor
-	blo	Lover1
+	blo	LSYM(Lover1)
 	sub	dividend, dividend, divisor
-Lover1:
+LSYM(Lover1):
 	lsr	work, divisor, #1
 	cmp	dividend, work
-	blo	Lover2
+	blo	LSYM(Lover2)
 	sub	dividend, dividend, work
 	mov	ip, curbit
 	mov	work, #1
 	ror	curbit, work
 	orr	overdone, curbit
 	mov	curbit, ip
-Lover2:
+LSYM(Lover2):
 	lsr	work, divisor, #2
 	cmp	dividend, work
-	blo	Lover3
+	blo	LSYM(Lover3)
 	sub	dividend, dividend, work
 	mov	ip, curbit
 	mov	work, #2
 	ror	curbit, work
 	orr	overdone, curbit
 	mov	curbit, ip
-Lover3:
+LSYM(Lover3):
 	lsr	work, divisor, #3
 	cmp	dividend, work
-	blo	Lover4
+	blo	LSYM(Lover4)
 	sub	dividend, dividend, work
 	mov	ip, curbit
 	mov	work, #3
 	ror	curbit, work
 	orr	overdone, curbit
 	mov	curbit, ip
-Lover4:
+LSYM(Lover4):
 	mov	ip, curbit
   .else
 	@ ... and note which bits are done in the result.  On the final pass,
 	@ this may subtract too much from the dividend, but the result will be ok,
 	@ since the "bit" will have been shifted out at the bottom.
 	cmp	dividend, divisor
-	blo	Lover1
+	blo	LSYM(Lover1)
 	sub	dividend, dividend, divisor
 	orr	result, result, curbit
-Lover1:
+LSM(Lover1):
 	lsr	work, divisor, #1
 	cmp	dividend, work
-	blo	Lover2
+	blo	LSYM(Lover2)
 	sub	dividend, dividend, work
 	lsr	work, curbit, #1
 	orr	result, work
-Lover2:
+LSYM(Lover2):
 	lsr	work, divisor, #2
 	cmp	dividend, work
-	blo	Lover3
+	blo	LSYM(Lover3)
 	sub	dividend, dividend, work
 	lsr	work, curbit, #2
 	orr	result, work
-Lover3:
+LSYM(Lover3):
 	lsr	work, divisor, #3
 	cmp	dividend, work
-	blo	Lover4
+	blo	LSYM(Lover4)
 	sub	dividend, dividend, work
 	lsr	work, curbit, #3
 	orr	result, work
-Lover4:
+LSYM(Lover4):
   .endif
 	
 	cmp	dividend, #0			@ Early termination?
-	beq	Lover5
+	beq	LSYM(Lover5)
 	lsr	curbit,  #4			@ No, any more bits to do?
-	beq	Lover5
+	beq	LSYM(Lover5)
 	lsr	divisor, #4
-	b	Loop3
-Lover5:
+	b	LSYM(Loop3)
+LSYM(Lover5):
   .if \modulo
 	@ Any subtractions that we should not have done will be recorded in
 	@ the top three bits of "overdone".  Exactly which were not needed
@@ -370,7 +372,7 @@ Lover5:
 	mov	work, #0xe
 	lsl	work, #28
 	and	overdone, work
-	beq	Lgot_result
+	beq	LSYM(Lgot_result)
 	
 	@ If we terminated early, because dividend became zero, then the 
 	@ bit in ip will not be in the bottom nibble, and we should not
@@ -381,33 +383,33 @@ Lover5:
 	mov	curbit, ip
 	mov	work, #0x7
 	tst	curbit, work
-	beq	Lgot_result
+	beq	LSYM(Lgot_result)
 	
 	mov	curbit, ip
 	mov	work, #3
 	ror	curbit, work
 	tst	overdone, curbit
-	beq	Lover6
+	beq	LSYM(Lover6)
 	lsr	work, divisor, #3
 	add	dividend, work
-Lover6:
+LSYM(Lover6):
 	mov	curbit, ip
 	mov	work, #2
 	ror	curbit, work
 	tst	overdone, curbit
-	beq	Lover7
+	beq	LSYM(Lover7)
 	lsr	work, divisor, #2
 	add	dividend, work
-Lover7:
+LSYM(Lover7):
 	mov	curbit, ip
 	mov	work, #1
 	ror	curbit, work
 	tst	overdone, curbit
-	beq	Lgot_result
+	beq	LSYM(Lgot_result)
 	lsr	work, divisor, #1
 	add	dividend, work
   .endif
-Lgot_result:
+LSYM(Lgot_result):
 .endm	
 /* ------------------------------------------------------------------------ */
 /*		Start of the Real Functions				    */
@@ -419,13 +421,13 @@ Lgot_result:
 #ifdef __thumb__
 
 	cmp	divisor, #0
-	beq	Ldiv0
+	beq	LSYM(Ldiv0)
 	mov	curbit, #1
 	mov	result, #0
 	
 	push	{ work }
 	cmp	dividend, divisor
-	blo	Lgot_result
+	blo	LSYM(Lgot_result)
 
 	THUMB_DIV_MOD_BODY 0
 	
@@ -436,11 +438,11 @@ Lgot_result:
 #else /* ARM version.  */
 	
 	cmp	divisor, #0
-	beq	Ldiv0
+	beq	LSYM(Ldiv0)
 	mov	curbit, #1
 	mov	result, #0
 	cmp	dividend, divisor
-	blo	Lgot_result
+	blo	LSYM(Lgot_result)
 	
 	ARM_DIV_MOD_BODY 0
 	
@@ -460,13 +462,13 @@ Lgot_result:
 #ifdef __thumb__
 
 	cmp	divisor, #0
-	beq	Ldiv0
+	beq	LSYM(Ldiv0)
 	mov	curbit, #1
 	cmp	dividend, divisor
-	bhs	Lover10
+	bhs	LSYM(Lover10)
 	RET	
 
-Lover10:
+LSYM(Lover10):
 	push	{ work }
 
 	THUMB_DIV_MOD_BODY 1
@@ -477,7 +479,7 @@ Lover10:
 #else  /* ARM version.  */
 	
 	cmp	divisor, #0
-	beq	Ldiv0
+	beq	LSYM(Ldiv0)
 	cmp     divisor, #1
 	cmpne	dividend, divisor
 	moveq   dividend, #0
@@ -500,7 +502,7 @@ Lover10:
 
 #ifdef __thumb__
 	cmp	divisor, #0
-	beq	Ldiv0
+	beq	LSYM(Ldiv0)
 	
 	push	{ work }
 	mov	work, dividend
@@ -509,24 +511,24 @@ Lover10:
 	mov	curbit, #1
 	mov	result, #0
 	cmp	divisor, #0
-	bpl	Lover10
+	bpl	LSYM(Lover10)
 	neg	divisor, divisor	@ Loops below use unsigned.
-Lover10:
+LSYM(Lover10):
 	cmp	dividend, #0
-	bpl	Lover11
+	bpl	LSYM(Lover11)
 	neg	dividend, dividend
-Lover11:
+LSYM(Lover11):
 	cmp	dividend, divisor
-	blo	Lgot_result
+	blo	LSYM(Lgot_result)
 
 	THUMB_DIV_MOD_BODY 0
 	
 	mov	r0, result
 	mov	work, ip
 	cmp	work, #0
-	bpl	Lover12
+	bpl	LSYM(Lover12)
 	neg	r0, r0
-Lover12:
+LSYM(Lover12):
 	pop	{ work }
 	RET
 
@@ -537,11 +539,11 @@ Lover12:
 	mov	result, #0
 	cmp	divisor, #0
 	rsbmi	divisor, divisor, #0		@ Loops below use unsigned.
-	beq	Ldiv0
+	beq	LSYM(Ldiv0)
 	cmp	dividend, #0
 	rsbmi	dividend, dividend, #0
 	cmp	dividend, divisor
-	blo	Lgot_result
+	blo	LSYM(Lgot_result)
 
 	ARM_DIV_MOD_BODY 0
 	
@@ -564,29 +566,29 @@ Lover12:
 
 	mov	curbit, #1
 	cmp	divisor, #0
-	beq	Ldiv0
-	bpl	Lover10
+	beq	LSYM(Ldiv0)
+	bpl	LSYM(Lover10)
 	neg	divisor, divisor		@ Loops below use unsigned.
-Lover10:
+LSYM(Lover10):
 	push	{ work }
 	@ Need to save the sign of the dividend, unfortunately, we need
 	@ work later on.  Must do this after saving the original value of
 	@ the work register, because we will pop this value off first.
 	push	{ dividend }
 	cmp	dividend, #0
-	bpl	Lover11
+	bpl	LSYM(Lover11)
 	neg	dividend, dividend
-Lover11:
+LSYM(Lover11):
 	cmp	dividend, divisor
-	blo	Lgot_result
+	blo	LSYM(Lgot_result)
 
 	THUMB_DIV_MOD_BODY 1
 		
 	pop	{ work }
 	cmp	work, #0
-	bpl	Lover12
+	bpl	LSYM(Lover12)
 	neg	dividend, dividend
-Lover12:
+LSYM(Lover12):
 	pop	{ work }
 	RET	
 
@@ -594,14 +596,14 @@ Lover12:
 	
 	cmp	divisor, #0
 	rsbmi	divisor, divisor, #0		@ Loops below use unsigned.
-	beq	Ldiv0
+	beq	LSYM(Ldiv0)
 	@ Need to save the sign of the dividend, unfortunately, we need
 	@ ip later on; this is faster than pushing lr and using that.
 	str	dividend, [sp, #-4]!
 	cmp	dividend, #0			@ Test dividend against zero
 	rsbmi	dividend, dividend, #0		@ If negative make positive
 	cmp	dividend, divisor		@ else if zero return zero
-	blo	Lgot_result			@ if smaller return dividend
+	blo	LSYM(Lgot_result)		@ if smaller return dividend
 	mov	curbit, #1
 
 	ARM_DIV_MOD_BODY 1
