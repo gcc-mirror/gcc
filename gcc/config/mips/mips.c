@@ -2682,7 +2682,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
 	      && p_info->const_add != 0
 	      && ((p_info->unsignedp
 		   ? ((unsigned HOST_WIDE_INT) (value + p_info->const_add)
-		      > INTVAL (cmp1))
+		      > (unsigned HOST_WIDE_INT) INTVAL (cmp1))
 		   : (value + p_info->const_add) > INTVAL (cmp1))
 		  != (p_info->const_add > 0))))
 	cmp1 = force_reg (mode, cmp1);
@@ -2710,7 +2710,8 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
 	     we would get the wrong answer if we follow the usual path;
 	     thus, x > 0xffffffffU would turn into x > 0U.  */
 	  if ((p_info->unsignedp
-	       ? (unsigned HOST_WIDE_INT) new > INTVAL (cmp1)
+	       ? (unsigned HOST_WIDE_INT) new >
+	       (unsigned HOST_WIDE_INT) INTVAL (cmp1)
 	       : new > INTVAL (cmp1))
 	      != (p_info->const_add > 0))
 	    {
@@ -3230,7 +3231,7 @@ output_block_move (insn, operands, num_regs, move_type)
      the number of registers available.  */
   for (i = 4;
        i < last_operand
-       && safe_regs < (sizeof(xoperands) / sizeof(xoperands[0]));
+       && safe_regs < (int)(sizeof(xoperands) / sizeof(xoperands[0]));
        i++)
     if (! reg_mentioned_p (operands[i], operands[0])
 	&& ! reg_mentioned_p (operands[i], operands[1]))
@@ -3326,7 +3327,7 @@ output_block_move (insn, operands, num_regs, move_type)
 	}
     }
 
-  if (num_regs > sizeof (load_store) / sizeof (load_store[0]))
+  if (num_regs > (int)(sizeof (load_store) / sizeof (load_store[0])))
     num_regs = sizeof (load_store) / sizeof (load_store[0]);
 
   else if (num_regs < 1)
@@ -3749,7 +3750,7 @@ function_arg (cum, mode, type, named)
 
       /* Drops through.  */
     case BLKmode:
-      if (type != (tree)0 && TYPE_ALIGN (type) > BITS_PER_WORD
+      if (type != (tree)0 && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD
 	  && ! TARGET_64BIT && mips_abi != ABI_EABI)
 	cum->arg_words += (cum->arg_words & 1);
       regbase = GP_ARG_FIRST;
@@ -5764,7 +5765,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  else
 	    {
 	      fprintf (file, "\tli\t%s,0x%.08lx\t# ",
-		       reg_names[MIPS_TEMP2_REGNUM], base_offset);
+		       reg_names[MIPS_TEMP2_REGNUM], (long) base_offset);
 	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, base_offset);
 	      fprintf (file, "\n\t%s\t%s,%s,%s\n",
 		       Pmode == DImode ? "daddu" : "addu",
@@ -5981,7 +5982,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  else
 	    {
 	      fprintf (file, "\tli\t%s,0x%.08lx\t# ",
-		       reg_names[MIPS_TEMP2_REGNUM], base_offset);
+		       reg_names[MIPS_TEMP2_REGNUM], (long) base_offset);
 	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, base_offset);
 	      fprintf (file, "\n\t%s\t%s,%s,%s\n",
 		       Pmode == DImode ? "daddu" : "addu",

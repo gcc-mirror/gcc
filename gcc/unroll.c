@@ -198,7 +198,7 @@ enum rtx_code loop_comparison_code;
 /* Forward declarations.  */
 
 static void init_reg_map PROTO((struct inline_remap *, int));
-static int precondition_loop_p PROTO((rtx *, rtx *, rtx *, rtx, rtx));
+static int precondition_loop_p PROTO((rtx *, rtx *, rtx *, rtx));
 static rtx calculate_giv_inc PROTO((rtx, rtx, int));
 static rtx initial_reg_note_copy PROTO((rtx, struct inline_remap *));
 static void final_reg_note_copy PROTO((rtx, struct inline_remap *));
@@ -858,7 +858,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
       rtx initial_value, final_value, increment;
 
       if (precondition_loop_p (&initial_value, &final_value, &increment,
-			       loop_start, loop_end))
+			       loop_start))
 	{
 	  register rtx diff ;
 	  enum machine_mode mode;
@@ -1319,10 +1319,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
    whether divide is cheap.  */
 
 static int
-precondition_loop_p (initial_value, final_value, increment, loop_start,
-		     loop_end)
+precondition_loop_p (initial_value, final_value, increment, loop_start)
      rtx *initial_value, *final_value, *increment;
-     rtx loop_start, loop_end;
+     rtx loop_start;
 {
 
   if (loop_n_iterations > 0)

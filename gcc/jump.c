@@ -3328,7 +3328,7 @@ condjump_in_parallel_p (insn)
 
 int
 sets_cc0_p (x)
-     rtx x;
+     rtx x ATTRIBUTE_UNUSED;
 {
 #ifdef HAVE_cc0
   if (GET_CODE (x) == SET && SET_DEST (x) == cc0_rtx)

@@ -94,7 +94,7 @@ rtx *reg_base_value;
 rtx *new_reg_base_value;
 unsigned int reg_base_value_size;	/* size of reg_base_value array */
 #define REG_BASE_VALUE(X) \
-	(REGNO (X) < reg_base_value_size ? reg_base_value[REGNO (X)] : 0)
+  ((unsigned) REGNO (X) < reg_base_value_size ? reg_base_value[REGNO (X)] : 0)
 
 /* Vector of known invariant relationships between registers.  Set in
    loop unrolling.  Indexed by register number, if nonzero the value
@@ -158,7 +158,7 @@ find_base_value (src)
 	 The test above is not sufficient because the scheduler may move
 	 a copy out of an arg reg past the NOTE_INSN_FUNCTION_BEGIN.  */
       if (REGNO (src) >= FIRST_PSEUDO_REGISTER
-	  && REGNO (src) < reg_base_value_size
+	  && (unsigned) REGNO (src) < reg_base_value_size
 	  && reg_base_value[REGNO (src)])
 	return reg_base_value[REGNO (src)];
 
@@ -341,7 +341,7 @@ record_base_value (regno, val, invariant)
      rtx val;
      int invariant;
 {
-  if (regno >= reg_base_value_size)
+  if ((unsigned) regno >= reg_base_value_size)
     return;
 
   /* If INVARIANT is true then this value also describes an invariant
@@ -352,7 +352,7 @@ record_base_value (regno, val, invariant)
 
   if (GET_CODE (val) == REG)
     {
-      if (REGNO (val) < reg_base_value_size)
+      if ((unsigned) REGNO (val) < reg_base_value_size)
 	{
 	  reg_base_value[regno] = reg_base_value[REGNO (val)];
 	}
@@ -799,7 +799,7 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 	/* Are these registers known not to be equal?  */
 	if (alias_invariant)
 	  {
-	    int r_x = REGNO (x), r_y = REGNO (y);
+	    unsigned int r_x = REGNO (x), r_y = REGNO (y);
 	    rtx i_x, i_y;	/* invariant relationships of X and Y */
 
 	    i_x = r_x >= reg_base_value_size ? 0 : alias_invariant[r_x];
@@ -1071,6 +1071,7 @@ init_alias_analysis ()
   int maxreg = max_reg_num ();
   int changed, pass;
   register int i;
+  register unsigned int ui;
   register rtx insn;
 
   reg_known_value_size = maxreg;
@@ -1210,13 +1211,13 @@ init_alias_analysis ()
 	}
 
       /* Now propagate values from new_reg_base_value to reg_base_value.  */
-      for (i = 0; i < reg_base_value_size; i++)
+      for (ui = 0; ui < reg_base_value_size; ui++)
 	{
-	  if (new_reg_base_value[i]
-	      && new_reg_base_value[i] != reg_base_value[i]
-	      && ! rtx_equal_p (new_reg_base_value[i], reg_base_value[i]))
+	  if (new_reg_base_value[ui]
+	      && new_reg_base_value[ui] != reg_base_value[ui]
+	      && ! rtx_equal_p (new_reg_base_value[ui], reg_base_value[ui]))
 	    {
-	      reg_base_value[i] = new_reg_base_value[i];
+	      reg_base_value[ui] = new_reg_base_value[ui];
 	      changed = 1;
 	    }
 	}
@@ -1243,16 +1244,16 @@ init_alias_analysis ()
     {
       changed = 0;
       pass++;
-      for (i = 0; i < reg_base_value_size; i++)
+      for (ui = 0; ui < reg_base_value_size; ui++)
 	{
-	  rtx base = reg_base_value[i];
+	  rtx base = reg_base_value[ui];
 	  if (base && GET_CODE (base) == REG)
 	    {
-	      int base_regno = REGNO (base);
-	      if (base_regno == i)		/* register set from itself */
-		reg_base_value[i] = 0;
+	      unsigned int base_regno = REGNO (base);
+	      if (base_regno == ui)		/* register set from itself */
+		reg_base_value[ui] = 0;
 	      else
-		reg_base_value[i] = reg_base_value[base_regno];
+		reg_base_value[ui] = reg_base_value[base_regno];
 	      changed = 1;
 	    }
 	}

@@ -3387,7 +3387,6 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
   register rtx *last_set = (rtx *) alloca (nregs * sizeof (rtx));
   register rtx insn;
   register int count = 0;
-  register rtx dest;
 
   bzero ((char *) last_set, nregs * sizeof (rtx));
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
@@ -3544,7 +3543,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
      int insn_count;
      rtx loop_start;
      rtx loop_end;
-     int unroll_p, bct_p;
+     int unroll_p, bct_p ATTRIBUTE_UNUSED;
 {
   rtx p;
   rtx set;
@@ -7871,14 +7870,14 @@ get_condition (jump, earliest)
       switch (code)
 	{
 	case LE:
-	  if (const_val != max_val >> 1)
+	  if ((unsigned HOST_WIDE_INT) const_val != max_val >> 1)
 	    code = LT,	op1 = GEN_INT (const_val + 1);
 	  break;
 
 	/* When cross-compiling, const_val might be sign-extended from
 	   BITS_PER_WORD to HOST_BITS_PER_WIDE_INT */
 	case GE:
-	  if ((const_val & max_val)
+	  if ((HOST_WIDE_INT) (const_val & max_val)
 	      != (((HOST_WIDE_INT) 1
 		   << (GET_MODE_BITSIZE (GET_MODE (op0)) - 1))))
 	    code = GT, op1 = GEN_INT (const_val - 1);
@@ -8249,7 +8248,7 @@ indirect_jump_in_function_p (start)
 static int
 insert_loop_mem (mem, data)
      rtx *mem;
-     void *data;
+     void *data ATTRIBUTE_UNUSED;
 {
   int i;
   rtx m = *mem;
@@ -8339,7 +8338,7 @@ load_mems_and_recount_loop_regs_set (scan_start, end, loop_top, start,
       old_nregs = nregs;
       nregs = max_reg_num ();
 
-      if (nregs > n_times_set->num_elements)
+      if ((unsigned) nregs > n_times_set->num_elements)
 	{
 	  /* Grow all the arrays.  */
 	  VARRAY_GROW (n_times_set, nregs);

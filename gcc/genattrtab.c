@@ -368,8 +368,8 @@ static char *attr_printf	PVPROTO((int, char *, ...));
 static char *attr_string        PROTO((char *, int));
 static rtx check_attr_test	PROTO((rtx, int));
 static rtx check_attr_value	PROTO((rtx, struct attr_desc *));
-static rtx convert_set_attr_alternative PROTO((rtx, int, int, int));
-static rtx convert_set_attr	PROTO((rtx, int, int, int));
+static rtx convert_set_attr_alternative PROTO((rtx, int, int));
+static rtx convert_set_attr	PROTO((rtx, int, int));
 static void check_defs		PROTO((void));
 #if 0
 static rtx convert_const_symbol_ref PROTO((rtx, struct attr_desc *));
@@ -1166,10 +1166,10 @@ check_attr_value (exp, attr)
    It becomes a COND with each test being (eq_attr "alternative "n") */
 
 static rtx
-convert_set_attr_alternative (exp, num_alt, insn_code, insn_index)
+convert_set_attr_alternative (exp, num_alt, insn_index)
      rtx exp;
      int num_alt;
-     int insn_code, insn_index;
+     int insn_index;
 {
   rtx condexp;
   int i;
@@ -1207,10 +1207,10 @@ convert_set_attr_alternative (exp, num_alt, insn_code, insn_index)
    list of values is given, convert to SET_ATTR_ALTERNATIVE first.  */
 
 static rtx
-convert_set_attr (exp, num_alt, insn_code, insn_index)
+convert_set_attr (exp, num_alt, insn_index)
      rtx exp;
      int num_alt;
-     int insn_code, insn_index;
+     int insn_index;
 {
   rtx newexp;
   char *name_ptr;
@@ -1234,7 +1234,7 @@ convert_set_attr (exp, num_alt, insn_code, insn_index)
   while ((p = next_comma_elt (&name_ptr)) != NULL)
     XVECEXP (newexp, 1, n++) = attr_rtx (CONST_STRING, p);
 
-  return convert_set_attr_alternative (newexp, num_alt, insn_code, insn_index);
+  return convert_set_attr_alternative (newexp, num_alt, insn_index);
 }
 
 /* Scan all definitions, checking for validity.  Also, convert any SET_ATTR
@@ -1267,13 +1267,12 @@ check_defs ()
 	    case SET_ATTR_ALTERNATIVE:
 	      value = convert_set_attr_alternative (value,
 						    id->num_alternatives,
-						    id->insn_code,
 						    id->insn_index);
 	      break;
 
 	    case SET_ATTR:
 	      value = convert_set_attr (value, id->num_alternatives,
-					id->insn_code, id->insn_index);
+					id->insn_index);
 	      break;
 
 	    default:

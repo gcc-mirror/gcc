@@ -1651,10 +1651,10 @@ calculate_needs (chain, avoid_return_reg, global)
 	}
       else if (size == 1)
 	{
-	  this_needs->regs[reload_nongroup[i]][(int) class] += 1;
+	  this_needs->regs[(unsigned char)reload_nongroup[i]][(int) class] += 1;
 	  p = reg_class_superclasses[(int) class];
 	  while (*p != LIM_REG_CLASSES)
-	    this_needs->regs[reload_nongroup[i]][(int) *p++] += 1;
+	    this_needs->regs[(unsigned char)reload_nongroup[i]][(int) *p++] += 1;
 	}
       else
 	abort ();
@@ -2666,7 +2666,7 @@ set_label_offsets (x, insn, initial_p)
 {
   enum rtx_code code = GET_CODE (x);
   rtx tem;
-  int i;
+  unsigned int i;
   struct elim_table *p;
 
   switch (code)
@@ -2749,7 +2749,7 @@ set_label_offsets (x, insn, initial_p)
 	 offsets.  We want the first field for ADDR_VEC and the second
 	 field for ADDR_DIFF_VEC.  */
 
-      for (i = 0; i < XVECLEN (x, code == ADDR_DIFF_VEC); i++)
+      for (i = 0; i < (unsigned) XVECLEN (x, code == ADDR_DIFF_VEC); i++)
 	set_label_offsets (XVECEXP (x, code == ADDR_DIFF_VEC, i),
 			   insn, initial_p);
       return;
@@ -3669,7 +3669,7 @@ mark_not_eliminable (dest, x)
      rtx dest;
      rtx x;
 {
-  register int i;
+  register unsigned int i;
 
   /* A SUBREG of a hard register here is just changing its mode.  We should
      not see a SUBREG of an eliminable hard register, but check just in
@@ -4043,7 +4043,7 @@ hard_reg_use_compare (p1p, p2p)
 static void
 order_regs_for_reload ()
 {
-  register int i;
+  register unsigned int i;
   register int o = 0;
   int large = 0;
 
@@ -4063,7 +4063,7 @@ order_regs_for_reload ()
       hard_reg_n_uses[i].regno = i;
     }
 
-  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+  for (i = FIRST_PSEUDO_REGISTER; i < (unsigned) max_regno; i++)
     {
       int regno = reg_renumber[i];
       if (regno >= 0)
@@ -4186,7 +4186,7 @@ reload_as_needed (live_known)
 
   /* Reset all offsets on eliminable registers to their initial values.  */
 #ifdef ELIMINABLE_REGS
-  for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
+  for (i = 0; i < (int) NUM_ELIMINABLE_REGS; i++)
     {
       INITIAL_ELIMINATION_OFFSET (reg_eliminate[i].from, reg_eliminate[i].to,
 				  reg_eliminate[i].initial_offset);
@@ -4220,7 +4220,7 @@ reload_as_needed (live_known)
       if (GET_CODE (insn) == CODE_LABEL)
 	{
 	  num_not_at_initial_offset = 0;
-	  for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
+	  for (i = 0; i < (int) NUM_ELIMINABLE_REGS; i++)
 	    {
 	      reg_eliminate[i].offset = reg_eliminate[i].previous_offset
 		= offsets_at[CODE_LABEL_NUMBER (insn)][i];
@@ -6163,7 +6163,9 @@ choose_reload_regs (chain, avoid_return_reg)
       if (j == n_reloads)
 	break;
 
+#if 0
     fail:
+#endif
       /* Loop around and try without any inheritance.  */
       /* First undo everything done by the failed attempt
 	 to allocate with inheritance.  */
@@ -9016,7 +9018,7 @@ reload_cse_simplify_operands (insn)
 
 		default:
 		  class
-		    = reg_class_subunion[(int) class][(int) REG_CLASS_FROM_LETTER (c)];
+		    = reg_class_subunion[(int) class][(int) REG_CLASS_FROM_LETTER ((unsigned char)c)];
 		  break;
 
 		case ',': case '\0':
@@ -9546,7 +9548,7 @@ reload_combine ()
    The second argument, SET, is ignored.  */
 static void
 reload_combine_note_store (dst, set)
-     rtx dst, set;
+     rtx dst, set ATTRIBUTE_UNUSED;
 {
   int regno = 0;
   int i;
@@ -9562,7 +9564,7 @@ reload_combine_note_store (dst, set)
   regno += REGNO (dst);
   /* note_stores might have stripped a STRICT_LOW_PART, so we have to be
      careful with registers / register parts that are not full words.  */
-  if (size < UNITS_PER_WORD)
+  if (size < (unsigned) UNITS_PER_WORD)
     reg_state[regno].use_index = -1;
   else
     {
@@ -9799,7 +9801,6 @@ reload_cse_move2add (first)
 		      && XEXP (SET_SRC (set), 0) == reg
 		      && GET_CODE (XEXP (SET_SRC (set), 1)) == CONST_INT)
 		    {
-		      rtx src2 = SET_SRC (set);
 		      rtx src3 = XEXP (SET_SRC (set), 1);
 		      rtx new_src = GEN_INT (INTVAL (src3)
 					     - INTVAL (reg_offset[regno]));

@@ -363,7 +363,7 @@ global_alloc (file)
       SET_HARD_REG_BIT (regs_used_so_far, i);
 #endif
 
-  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+  for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     if (reg_renumber[i] >= 0)
       SET_HARD_REG_BIT (regs_used_so_far, reg_renumber[i]);
 
@@ -389,7 +389,7 @@ global_alloc (file)
 	reg_may_share[r2] = r1;
     }
 
-  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+  for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     /* Note that reg_live_length[i] < 0 indicates a "constant" reg
        that we are supposed to refrain from putting in a hard reg.
        -2 means do make an allocno but don't allocate it.  */
@@ -419,7 +419,7 @@ global_alloc (file)
   bzero ((char *) allocno_n_refs, max_allocno * sizeof (int));
   bzero ((char *) allocno_live_length, max_allocno * sizeof (int));
 
-  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+  for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     if (reg_allocno[i] >= 0)
       {
 	int allocno = reg_allocno[i];
@@ -436,7 +436,7 @@ global_alloc (file)
      override it.  */
   bzero ((char *) local_reg_live_length, sizeof local_reg_live_length);
   bzero ((char *) local_reg_n_refs, sizeof local_reg_n_refs);
-  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+  for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     if (reg_renumber[i] >= 0)
       {
 	int regno = reg_renumber[i];
@@ -509,7 +509,7 @@ global_alloc (file)
 	 So in either case, we can ignore the conflict.  Likewise for
 	 preferences.  */
 
-      for (i = 0; i < max_allocno; i++)
+      for (i = 0; i < (size_t) max_allocno; i++)
 	{
 	  AND_COMPL_HARD_REG_SET (hard_reg_conflicts[i], eliminable_regset);
 	  AND_COMPL_HARD_REG_SET (hard_reg_copy_preferences[i],
@@ -524,7 +524,7 @@ global_alloc (file)
       /* Determine the order to allocate the remaining pseudo registers.  */
 
       allocno_order = (int *) alloca (max_allocno * sizeof (int));
-      for (i = 0; i < max_allocno; i++)
+      for (i = 0; i < (size_t) max_allocno; i++)
 	allocno_order[i] = i;
 
       /* Default the size to 1, since allocno_compare uses it to divide by.
@@ -534,7 +534,7 @@ global_alloc (file)
 	 allocate it.  So avoid the divide-by-zero and set it to a low
 	 priority.  */
 
-      for (i = 0; i < max_allocno; i++)
+      for (i = 0; i < (size_t) max_allocno; i++)
 	{
 	  if (allocno_size[i] == 0)
 	    allocno_size[i] = 1;
@@ -552,7 +552,7 @@ global_alloc (file)
       /* Try allocating them, one by one, in that order,
 	 except for parameters marked with reg_live_length[regno] == -2.  */
 
-      for (i = 0; i < max_allocno; i++)
+      for (i = 0; i < (size_t) max_allocno; i++)
 	if (reg_renumber[allocno_reg[allocno_order[i]]] < 0
 	    && REG_LIVE_LENGTH (allocno_reg[allocno_order[i]]) >= 0)
 	  {

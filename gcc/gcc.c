@@ -930,7 +930,7 @@ translate_options (argcp, argvp)
      int *argcp;
      char ***argvp;
 {
-  int i, j, k;
+  int i;
   int argc = *argcp;
   char **argv = *argvp;
   char **newv = (char **) xmalloc ((argc + 2) * 2 * sizeof (char *));
@@ -944,6 +944,7 @@ translate_options (argcp, argvp)
       /* Translate -- options.  */
       if (argv[i][0] == '-' && argv[i][1] == '-')
 	{
+	  size_t j;
 	  /* Find a mapping that applies to this option.  */
 	  for (j = 0; j < sizeof (option_map) / sizeof (option_map[0]); j++)
 	    {
@@ -961,6 +962,7 @@ translate_options (argcp, argvp)
 
 		  if (arglen < optlen)
 		    {
+		      size_t k;
 		      for (k = j + 1;
 			   k < sizeof (option_map) / sizeof (option_map[0]);
 			   k++)
@@ -1267,7 +1269,7 @@ set_spec (name, spec)
     }
 
   old_spec = *(sl->ptr_spec);
-  *(sl->ptr_spec) = ((spec[0] == '+' && ISSPACE (spec[1]))
+  *(sl->ptr_spec) = ((spec[0] == '+' && ISSPACE ((unsigned char)spec[1]))
 		     ? concat (old_spec, spec + 1, NULL_PTR)
 		     : save_string (spec, strlen (spec)));
 
@@ -1566,12 +1568,12 @@ read_specs (filename, main_p)
 	      while (*p1 == ' ' || *p1 == '\t')
 		p1++;
 
-	      if (! ISALPHA (*p1))
+	      if (! ISALPHA ((unsigned char)*p1))
 		fatal ("specs %%rename syntax malformed after %d characters",
 		       p1 - buffer);
 
 	      p2 = p1;
-	      while (*p2 && !ISSPACE (*p2))
+	      while (*p2 && !ISSPACE ((unsigned char)*p2))
 		p2++;
 
 	      if (*p2 != ' ' && *p2 != '\t')
@@ -1583,13 +1585,13 @@ read_specs (filename, main_p)
 	      while (*p2 == ' ' || *p2 == '\t')
 		p2++;
 
-	      if (! ISALPHA (*p2))
+	      if (! ISALPHA ((unsigned char)*p2))
 		fatal ("specs %%rename syntax malformed after %d characters",
 		       p2 - buffer);
 
 	      /* Get new spec name */
 	      p3 = p2;
-	      while (*p3 && !ISSPACE (*p3))
+	      while (*p3 && !ISSPACE ((unsigned char)*p3))
 		p3++;
 
 	      if (p3 != p-1)
@@ -2606,7 +2608,7 @@ process_command (argc, argv)
   if (gcc_exec_prefix)
     {
       int len = strlen (gcc_exec_prefix);
-      if (len > sizeof ("/lib/gcc-lib/")-1
+      if (len > (int) sizeof ("/lib/gcc-lib/")-1
 	  && (gcc_exec_prefix[len-1] == '/'
 	      || gcc_exec_prefix[len-1] == DIR_SEPARATOR))
 	{
@@ -3664,7 +3666,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		if (p[0] == '%' && p[1] == 'O')
 		  {
 		    /* We don't support extra suffix characters after %O.  */
-		    if (*p == '.' || ISALPHA (*p))
+		    if (*p == '.' || ISALPHA ((unsigned char)*p))
 		      abort ();
 		    suffix = OBJECT_SUFFIX;
 		    suffix_length = strlen (OBJECT_SUFFIX);
@@ -3672,7 +3674,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  }
 		else
 		  {
-		    while (*p == '.' || ISALPHA (*p))
+		    while (*p == '.' || ISALPHA ((unsigned char)*p))
 		      p++;
 		    suffix_length = p - suffix;
 		  }
@@ -3960,7 +3962,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      *x++ = *y++;
 
 		      if (*y != '_'
-			  || (*(y+1) != '_' && ! ISUPPER (*(y+1))))
+			  || (*(y+1) != '_'
+			      && ! ISUPPER ((unsigned char)*(y+1))))
 		        {
 			  /* Stick __ at front of macro name.  */
 			  *x++ = '_';
@@ -4002,7 +4005,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      y += 2;
 
 		      if (*y != '_'
-			  || (*(y+1) != '_' && ! ISUPPER (*(y+1))))
+			  || (*(y+1) != '_'
+			      && ! ISUPPER ((unsigned char)*(y+1))))
 		        {
 			  /* Stick -D__ at front of macro name.  */
 			  *x++ = '-';
@@ -4304,7 +4308,7 @@ next_member:
   if (suffix)
     {
       int found = (input_suffix != 0
-		   && strlen (input_suffix) == p - filter
+		   && (long) strlen (input_suffix) == (long)(p - filter)
 		   && strncmp (input_suffix, filter, p - filter) == 0);
 
       if (body[0] == '}')
@@ -4748,7 +4752,7 @@ main (argc, argv)
 		  sizeof ("COLLECT_GCC_OPTIONS=")-1);
 
     first_time = TRUE;
-    for (i = 0; i < n_switches; i++)
+    for (i = 0; (int)i < n_switches; i++)
       {
 	char **args;
 	char *p, *q;
@@ -4919,7 +4923,7 @@ main (argc, argv)
 
   /* Warn about any switches that no pass was interested in.  */
 
-  for (i = 0; i < n_switches; i++)
+  for (i = 0; (int)i < n_switches; i++)
     if (! switches[i].valid)
       error ("unrecognized option `-%s'", switches[i].part1);
 
@@ -5018,7 +5022,7 @@ main (argc, argv)
   explicit_link_files = xmalloc (n_infiles);
   bzero (explicit_link_files, n_infiles);
 
-  for (i = 0; i < n_infiles; i++)
+  for (i = 0; (int)i < n_infiles; i++)
     {
       register struct compiler *cp = 0;
       int this_file_error = 0;
@@ -5149,7 +5153,7 @@ main (argc, argv)
      complain about input files to be given to the linker.  */
 
   if (! linker_was_run && error_count == 0)
-    for (i = 0; i < n_infiles; i++)
+    for (i = 0; (int)i < n_infiles; i++)
       if (explicit_link_files[i])
 	error ("%s: linker input file unused since linking not done",
 	       outfiles[i]);
