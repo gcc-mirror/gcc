@@ -1,6 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GNU C compiler
-;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997
-;;   Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -1432,7 +1431,7 @@
 
 (define_insn "pre_ldwm"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "=r")
+	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "+r")
 			 (match_operand:SI 2 "pre_cint_operand" ""))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1447,7 +1446,7 @@
    (set_attr "length" "4")])
 
 (define_insn "pre_stwm"
-  [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "=r")
+  [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:SI 1 "pre_cint_operand" "")))
 	(match_operand:SI 2 "reg_or_0_operand" "rM"))
    (set (match_dup 0)
@@ -1464,7 +1463,7 @@
 
 (define_insn "post_ldwm"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (match_operand:SI 1 "register_operand" "=r")))
+	(mem:SI (match_operand:SI 1 "register_operand" "+r")))
    (set (match_dup 1)
 	(plus:SI (match_dup 1)
 		 (match_operand:SI 2 "post_cint_operand" "")))]
@@ -1479,7 +1478,7 @@
    (set_attr "length" "4")])
 
 (define_insn "post_stwm"
-  [(set (mem:SI (match_operand:SI 0 "register_operand" "=r"))
+  [(set (mem:SI (match_operand:SI 0 "register_operand" "+r"))
 	(match_operand:SI 1 "reg_or_0_operand" "rM"))
    (set (match_dup 0)
 	(plus:SI (match_dup 0)
@@ -1808,7 +1807,7 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "=r")
+	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "+r")
 			 (match_operand:SI 2 "int5_operand" "L"))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1822,7 +1821,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (mem:HI
 			  (plus:SI
-			    (match_operand:SI 1 "register_operand" "=r")
+			    (match_operand:SI 1 "register_operand" "+r")
 			    (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1832,7 +1831,7 @@
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (mem:HI (plus:SI (match_operand:SI 0 "register_operand" "=r")
+  [(set (mem:HI (plus:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:SI 1 "int5_operand" "L")))
 	(match_operand:HI 2 "reg_or_0_operand" "rM"))
    (set (match_dup 0)
@@ -2012,7 +2011,7 @@
 
 (define_insn ""
   [(set (match_operand:QI 0 "register_operand" "=r")
-	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "=r")
+	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "+r")
 			 (match_operand:SI 2 "int5_operand" "L"))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -2024,7 +2023,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (mem:QI (plus:SI
-				  (match_operand:SI 1 "register_operand" "=r")
+				  (match_operand:SI 1 "register_operand" "+r")
 				  (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -2035,7 +2034,7 @@
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(zero_extend:HI (mem:QI (plus:SI
-				  (match_operand:SI 1 "register_operand" "=r")
+				  (match_operand:SI 1 "register_operand" "+r")
 				  (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -2044,7 +2043,7 @@
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (mem:QI (plus:SI (match_operand:SI 0 "register_operand" "=r")
+  [(set (mem:QI (plus:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:SI 1 "int5_operand" "L")))
 	(match_operand:QI 2 "reg_or_0_operand" "rM"))
    (set (match_dup 0)
@@ -2059,18 +2058,20 @@
 ;; that anything generated as this insn will be recognized as one
 ;; and that it will not successfully combine with anything.
 (define_expand "movstrsi"
-  [(parallel [(set (mem:BLK (match_operand:BLK 0 "" ""))
-		   (mem:BLK (match_operand:BLK 1 "" "")))
-	      (clobber (match_dup 0))
-	      (clobber (match_dup 1))
+  [(parallel [(set (match_operand:BLK 0 "" "")
+		   (match_operand:BLK 1 "" ""))
+	      (clobber (match_dup 7))
+	      (clobber (match_dup 8))
 	      (clobber (match_dup 4))
 	      (clobber (match_dup 5))
+	      (clobber (match_dup 6))
 	      (use (match_operand:SI 2 "arith_operand" ""))
 	      (use (match_operand:SI 3 "const_int_operand" ""))])]
   ""
   "
 {
   int size, align;
+
   /* HP provides very fast block move library routine for the PA;
      this routine includes:
 
@@ -2103,22 +2104,25 @@
 
   /* If size/alignment > 8 (eg size is large in respect to alignment),
      then use the library routines.  */
-  if (size/align > 16)
+  if (size / align > 16)
     FAIL;
 
   /* This does happen, but not often enough to worry much about.  */
-  if (size/align < MOVE_RATIO)
+  if (size / align < MOVE_RATIO)
     FAIL;
   
   /* Fall through means we're going to use our block move pattern.  */
-  operands[0] = copy_to_mode_reg (SImode, XEXP (operands[0], 0));
-  operands[1] = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
+  operands[0]
+    = change_address (operands[0], VOIDmode,
+		      copy_to_mode_reg (SImode, XEXP (operands[0], 0)));
+  operands[1]
+    = change_address (operands[1], VOIDmode,
+		      copy_to_mode_reg (SImode, XEXP (operands[1], 0)));
   operands[4] = gen_reg_rtx (SImode);
   operands[5] = gen_reg_rtx (SImode);
-  emit_insn (gen_movstrsi_internal (operands[0], operands[1], operands[4],
-				     operands[5], operands[2], operands[3],
-				     gen_reg_rtx (SImode)));
-  DONE;
+  operands[6] = gen_reg_rtx (SImode);
+  operands[7] = XEXP (operands[0], 0);
+  operands[8] = XEXP (operands[1], 0);
 }")
 
 ;; The operand constraints are written like this to support both compile-time
