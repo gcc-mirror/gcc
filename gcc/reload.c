@@ -266,8 +266,9 @@ static int find_reloads_address_1 PARAMS ((enum machine_mode, rtx, int, rtx *,
 static void find_reloads_address_part PARAMS ((rtx, rtx *, enum reg_class,
 					     enum machine_mode, int,
 					     enum reload_type, int));
-static rtx find_reloads_subreg_address PARAMS ((rtx, int, int, enum reload_type,
-					      int, rtx));
+static rtx find_reloads_subreg_address PARAMS ((rtx, int, int,
+						enum reload_type, int, rtx));
+static void copy_replacements_1 PARAMS ((rtx *, rtx *, int));
 static int find_inc_amount	PARAMS ((rtx, rtx));
 
 #ifdef HAVE_SECONDARY_RELOADS
@@ -5888,46 +5889,67 @@ subst_reloads (insn)
     }
 }
 
-/* Make a copy of any replacements being done into X and move those copies
-   to locations in Y, a copy of X.  We only look at the highest level of
-   the RTL.  */
+/* Make a copy of any replacements being done into X and move those
+   copies to locations in Y, a copy of X.  */
 
 void
 copy_replacements (x, y)
-     rtx x;
-     rtx y;
+     rtx x, y;
 {
-  int i, j;
-  enum rtx_code code = GET_CODE (x);
-  const char *fmt = GET_RTX_FORMAT (code);
-  struct replacement *r;
-
   /* We can't support X being a SUBREG because we might then need to know its
      location if something inside it was replaced.  */
-  if (code == SUBREG)
+  if (GET_CODE (x) == SUBREG)
     abort ();
 
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    if (fmt[i] == 'e')
-      for (j = 0; j < n_replacements; j++)
+  copy_replacements_1 (&x, &y, n_replacements);
+}
+
+static void
+copy_replacements_1 (px, py, orig_replacements)
+     rtx *px;
+     rtx *py;
+     int orig_replacements;
+{
+  int i, j;
+  rtx x, y;
+  struct replacement *r;
+  enum rtx_code code;
+  const char *fmt;
+
+  for (j = 0; j < orig_replacements; j++)
+    {
+      if (replacements[j].subreg_loc == px)
 	{
-	  if (replacements[j].subreg_loc == &XEXP (x, i))
-	    {
-	      r = &replacements[n_replacements++];
-	      r->where = replacements[j].where;
-	      r->subreg_loc = &XEXP (y, i);
-	      r->what = replacements[j].what;
-	      r->mode = replacements[j].mode;
-	    }
-	  else if (replacements[j].where == &XEXP (x, i))
-	    {
-	      r = &replacements[n_replacements++];
-	      r->where = &XEXP (y, i);
-	      r->subreg_loc = 0;
-	      r->what = replacements[j].what;
-	      r->mode = replacements[j].mode;
-	    }
+	  r = &replacements[n_replacements++];
+	  r->where = replacements[j].where;
+	  r->subreg_loc = py;
+	  r->what = replacements[j].what;
+	  r->mode = replacements[j].mode;
 	}
+      else if (replacements[j].where == px)
+	{
+	  r = &replacements[n_replacements++];
+	  r->where = py;
+	  r->subreg_loc = 0;
+	  r->what = replacements[j].what;
+	  r->mode = replacements[j].mode;
+	}
+    }
+
+  x = *px;
+  y = *py;
+  code = GET_CODE (x);
+  fmt = GET_RTX_FORMAT (code);
+
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	copy_replacements_1 (&XEXP (x, i), &XEXP (y, i), orig_replacements);
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i); --j >= 0; )
+	  copy_replacements_1 (&XVECEXP (x, i, j), &XVECEXP (y, i, j),
+			       orig_replacements);
+    }
 }
 
 /* Change any replacements being done to *X to be done to *Y */
