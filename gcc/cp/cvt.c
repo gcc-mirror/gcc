@@ -414,7 +414,11 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 
   if (TREE_CODE (type) == FUNCTION_TYPE && intype == unknown_type_node)
     {
-      expr = instantiate_type (type, expr, 0);
+      expr = instantiate_type (type, expr, 
+			       (flags & LOOKUP_COMPLAIN) != 0);
+      if (expr == error_mark_node)
+	return error_mark_node;
+
       intype = TREE_TYPE (expr);
     }
 

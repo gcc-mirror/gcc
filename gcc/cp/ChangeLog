@@ -1,3 +1,19 @@
+1998-12-09  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (most_specialized_instantiation): New function.
+	(print_candidates): Likewise.
+	* class.c (validate_lhs): Remove.
+	(resolve_address_of_overloaded_function): New function, split out
+	and then substantially reworked, from ...
+	(instantiate_type): Use it.  Simplify.
+	* cvt.c (convert_to_reference): Complain when caller has indicated
+	that's the right thing to do.  Don't crash if instantiate_type
+	fails.
+	* pt.c: Substitute `parameters' for `paramters' throughout.
+	(print_candidates): Don't make it static.
+	(most_specialized_instantiation): Split out from ...
+	(most_specialized): Here.
+
 Wed Dec  9 15:33:01 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* lex.c (lang_init_options): Initialize cpplib.
