@@ -1,3 +1,8 @@
+Fri Oct  8 11:58:34 1999  Richard Henderson  <rth@cygnus.com>
+
+	* lists.c (init_EXPR_INSN_LIST_cache): Don't need to zap the
+	cache every function if ggc_p.
+
 Fri Oct  8 18:46:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* jump.c (duplicate_loop_exit_test): Use copy_insn/copy_insn_1
