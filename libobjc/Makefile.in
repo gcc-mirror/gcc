@@ -62,7 +62,8 @@ CFLAGS = @CFLAGS@
 ALL_CFLAGS = -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) $(CFLAGS)
 
 INCLUDES = -I$(srcdir)/objc  -I$(srcdir)/$(MULTISRCTOP)../gcc \
-  -I$(srcdir)/$(MULTISRCTOP)../gcc/config -I$(MULTIBUILDTOP)../../gcc
+  -I$(srcdir)/$(MULTISRCTOP)../gcc/config -I$(MULTIBUILDTOP)../../gcc \
+  -I$(srcdir)/$(MULTISRCTOP)../include
 
 OBJC_GCFLAGS=-DOBJC_WITH_GC=1
 OBJC_THREAD_FILE=thr-@OBJC_THREAD_FILE@
