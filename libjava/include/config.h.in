@@ -40,8 +40,11 @@
 /* Define if you have strerror.  */
 #undef HAVE_STRERROR
 
-/* Define if you have __int32_t and __uint32_t. */
+/* Define if you have int32_t and uint32_t. */
 #undef HAVE_INT32_DEFINED
+
+/* Define if you have u_int32_t */
+#undef HAVE_BSD_INT32_DEFINED
 
 /* Define if you're running eCos. */
 #undef ECOS
@@ -214,6 +217,9 @@
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
+/* Define if you have the <inttypes.h> header file.  */
+#undef HAVE_INTTYPES_H
+
 /* Define if you have the <netdb.h> header file.  */
 #undef HAVE_NETDB_H
 
@@ -222,6 +228,12 @@
 
 /* Define if you have the <pwd.h> header file.  */
 #undef HAVE_PWD_H
+
+/* Define if you have the <stdint.h> header file.  */
+#undef HAVE_STDINT_H
+
+/* Define if you have the <sys/config.h> header file.  */
+#undef HAVE_SYS_CONFIG_H
 
 /* Define if you have the <sys/filio.h> header file.  */
 #undef HAVE_SYS_FILIO_H

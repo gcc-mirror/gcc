@@ -205,7 +205,7 @@ _DEFUN (_dtoa_r,
 	char **rve _AND
 	int float_type)
 {
-  /*	
+  /*
 	float_type == 0 for double precision, 1 for float.
 
 	Arguments ndigits, decpt, sign are similar to those
@@ -679,7 +679,7 @@ _DEFUN (_dtoa_r,
     {
       if (!word1 (d) && !(word0 (d) & Bndry_mask)
 #ifndef Sudden_Underflow
-	  && word0 (d) & Exp_mask
+	  && word0(d) & Exp_mask
 #endif
 	)
 	{
@@ -893,7 +893,7 @@ _DEFUN (_dtoa,
 	char *buf _AND
 	int float_type)
 {
-  struct _Jv_reent reent;  
+  struct _Jv_reent reent;
   char *p;
   memset (&reent, 0, sizeof reent);
 
@@ -902,5 +902,3 @@ _DEFUN (_dtoa,
 
   return;
 }
-
-  

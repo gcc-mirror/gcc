@@ -6,7 +6,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -43,17 +43,17 @@ TRAD_SYNOPSIS
 
 DESCRIPTION
 	<<sin>> and <<cos>> compute (respectively) the sine and cosine
-	of the argument <[x]>.  Angles are specified in radians. 
+	of the argument <[x]>.  Angles are specified in radians.
 
 	<<sinf>> and <<cosf>> are identical, save that they take and
-	return <<float>> values. 
+	return <<float>> values.
 
 
 RETURNS
 	The sine or cosine of <[x]> is returned.
 
 PORTABILITY
-	<<sin>> and <<cos>> are ANSI C. 
+	<<sin>> and <<cos>> are ANSI C.
 	<<sinf>> and <<cosf>> are extensions.
 
 QUICKREF
@@ -70,8 +70,8 @@ QUICKREF
  *	__ieee754_rem_pio2	... argument reduction routine
  *
  * Method.
- *      Let S,C and T denote the sin, cos and tan respectively on 
- *	[-PI/4, +PI/4]. Reduce the argument x to y1+y2 = x-k*pi/2 
+ *      Let S,C and T denote the sin, cos and tan respectively on
+ *	[-PI/4, +PI/4]. Reduce the argument x to y1+y2 = x-k*pi/2
  *	in [-pi/4 , +pi/4], and let n = k mod 4.
  *	We have
  *
@@ -89,7 +89,7 @@ QUICKREF
  *      trig(NaN)    is that NaN;
  *
  * Accuracy:
- *	TRIG(x) returns trig(x) nearly rounded 
+ *	TRIG(x) returns trig(x) nearly rounded
  */
 
 #include "fdlibm.h"
@@ -104,7 +104,7 @@ QUICKREF
 #endif
 {
 	double y[2],z=0.0;
-	__int32_t n,ix;
+	int32_t n,ix;
 
     /* High word of x. */
 	GET_HIGH_WORD(ix,x);

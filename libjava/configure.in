@@ -1,7 +1,7 @@
 dnl Process this with autoconf to create configure
 AC_INIT(java/lang/System.java)
 
-dnl Can't be done in LIBGCJ_CONFIGURE because that confuses automake. 
+dnl Can't be done in LIBGCJ_CONFIGURE because that confuses automake.
 AC_CONFIG_AUX_DIR(..)
 
 AC_CANONICAL_SYSTEM
@@ -64,8 +64,11 @@ case "$TARGET_ECOS" in
       ;;
 esac
 
-AC_EGREP_HEADER(__uint32_t, sys/types.h, AC_DEFINE(HAVE_INT32_DEFINED))
-AC_EGREP_HEADER(__uint32_t, sys/config.h, AC_DEFINE(HAVE_INT32_DEFINED))
+AC_EGREP_HEADER(uint32_t, stdint.h, AC_DEFINE(HAVE_INT32_DEFINED))
+AC_EGREP_HEADER(uint32_t, inttypes.h, AC_DEFINE(HAVE_INT32_DEFINED))
+AC_EGREP_HEADER(u_int32_t, sys/types.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED))
+AC_EGREP_HEADER(u_int32_t, sys/config.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED))
+
 
 dnl These may not be defined in a non-ANS conformant embedded system.
 dnl FIXME: Should these case a runtime exception in that case?
@@ -466,7 +469,7 @@ AC_SUBST(AM_RUNTESTFLAGS)
 dnl We check for sys/filio.h because Solaris 2.5 defines FIONREAD there.
 dnl On that system, sys/ioctl.h will not include sys/filio.h unless
 dnl BSD_COMP is defined; just including sys/filio.h is simpler.
-AC_CHECK_HEADERS(unistd.h sys/time.h sys/types.h fcntl.h sys/ioctl.h sys/filio.h sys/stat.h sys/select.h sys/socket.h netinet/in.h arpa/inet.h netdb.h pwd.h)
+AC_CHECK_HEADERS(unistd.h sys/time.h sys/types.h fcntl.h sys/ioctl.h sys/filio.h sys/stat.h sys/select.h sys/socket.h netinet/in.h arpa/inet.h netdb.h pwd.h sys/config.h inttypes.h stdint.h)
 dnl We avoid AC_HEADER_DIRENT since we really only care about dirent.h
 dnl for now.  If you change this, you also must update natFile.cc.
 AC_CHECK_HEADERS(dirent.h)
