@@ -5808,7 +5808,7 @@ move\\t%0,%z4\\n\\
   /* ??? I don't know why this is necessary.  This works around an
      assembler problem that appears when a label is defined, then referenced
      in a switch table, then used in a `j' instruction.  */
-  else if (ABI_64BIT && mips_isa >= 3)
+  else if (mips_abi != ABI_32)
     return \"%*b\\t%l0\";
   else	
     return \"%*j\\t%l0\";
@@ -5886,7 +5886,7 @@ move\\t%0,%z4\\n\\
   "*
 {
   /* .cpadd expands to add REG,REG,$gp when pic, and nothing when not pic.  */
-  if (TARGET_ABICALLS && (! ABI_64BIT || mips_isa < 3))
+  if (TARGET_ABICALLS && mips_abi == ABI_32)
     output_asm_insn (\".cpadd\\t%0\", operands);
   return \"%*j\\t%0\";
 }"
@@ -5906,7 +5906,7 @@ move\\t%0,%z4\\n\\
 {
   /* .cpdadd expands to dadd REG,REG,$gp when pic, and nothing when not pic. */
   /*  ??? SGI as does not have a .cpdadd.  */
-  if (TARGET_ABICALLS && (! ABI_64BIT || mips_isa < 3))
+  if (TARGET_ABICALLS && mips_abi == ABI_32)
     output_asm_insn (\".cpadd\\t%0\", operands);
   return \"%*j\\t%0\";
 }"
