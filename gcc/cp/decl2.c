@@ -62,7 +62,6 @@ typedef struct priority_info_s {
 static void mark_vtable_entries (tree);
 static void grok_function_init (tree, tree);
 static bool maybe_emit_vtables (tree);
-static bool is_namespace_ancestor (tree, tree);
 static void add_using_namespace (tree, tree, bool);
 static tree ambiguous_decl (tree, tree, tree,int);
 static tree build_anon_union_vars (tree);
@@ -3352,18 +3351,36 @@ build_call_from_tree (tree fn, tree args, bool disallow_virtual)
   return finish_call_expr (fn, args, disallow_virtual);
 }
 
-/* Return 1 if root encloses child.  */
+/* Returns true if ROOT (a namespace, class, or function) encloses
+   CHILD.  CHILD may be either a class type or a namespace.  */
 
-static bool
-is_namespace_ancestor (tree root, tree child)
+bool
+is_ancestor (tree root, tree child)
 {
-  if (root == child)
-    return true;
+  my_friendly_assert ((TREE_CODE (root) == NAMESPACE_DECL
+		       || TREE_CODE (root) == FUNCTION_DECL
+		       || CLASS_TYPE_P (root)), 20030307);
+  my_friendly_assert ((TREE_CODE (child) == NAMESPACE_DECL
+		       || CLASS_TYPE_P (child)),
+		      20030307);
+  
+  /* The global namespace encloses everything.  */
   if (root == global_namespace)
     return true;
-  if (child == global_namespace)
-    return false;
-  return is_namespace_ancestor (root, CP_DECL_CONTEXT (child));
+
+  while (true)
+    {
+      /* If we've run out of scopes, stop.  */
+      if (!child)
+	return false;
+      /* If we've reached the ROOT, it encloses CHILD.  */
+      if (root == child)
+	return true;
+      /* Go out one level.  */
+      if (TYPE_P (child))
+	child = TYPE_NAME (child);
+      child = DECL_CONTEXT (child);
+    }
 }
   
 
@@ -3374,7 +3391,7 @@ tree
 namespace_ancestor (tree ns1, tree ns2)
 {
   timevar_push (TV_NAME_LOOKUP);
-  if (is_namespace_ancestor (ns1, ns2))
+  if (is_ancestor (ns1, ns2))
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, ns1);
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP,
                           namespace_ancestor (CP_DECL_CONTEXT (ns1), ns2));
@@ -3636,7 +3653,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
   scope = ORIGINAL_NAMESPACE (scope);
   
   /* It is ok for friends to be qualified in parallel space.  */
-  if (!friendp && !is_namespace_ancestor (current_namespace, scope))
+  if (!friendp && !is_ancestor (current_namespace, scope))
     error ("declaration of `%D' not in a namespace surrounding `%D'",
 	      decl, scope);
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
@@ -4494,28 +4511,28 @@ mark_used (tree decl)
     instantiate_decl (decl, /*defer_ok=*/1);
 }
 
-/* Helper function for class_head_decl and class_head_defn
-   nonterminals. AGGR is the class, union or struct tag. SCOPE is the
-   explicit scope used (NULL for no scope resolution). ID is the
-   name. DEFN_P is true, if this is a definition of the class and
-   NEW_TYPE_P is set to nonzero, if we push into the scope containing
-   the to be defined aggregate.
-   
-   Return a TYPE_DECL for the type declared by ID in SCOPE.  */
+/* Called when a class-head is encountered.  TAG_KIND is the class-key
+   for the class.  SCOPE, if non-NULL, is the type or namespace
+   indicated in the nested-name-specifier for the declaration of the
+   class.  ID is the name of the class, if any; it may be a TYPE_DECL,
+   or an IDENTIFIER_NODE.  ATTRIBUTES are attributes that apply to the
+   class.
+
+   Return a TYPE_DECL for the class being defined.  */
 
 tree
 handle_class_head (enum tag_types tag_kind, tree scope, tree id,
-                   tree attributes, bool defn_p, bool *new_type_p)
+                   tree attributes)
 {
   tree decl = NULL_TREE;
   tree current = current_scope ();
   bool xrefd_p = false;
-  
+  bool new_type_p;
+  tree context;
+
   if (current == NULL_TREE)
     current = current_namespace;
 
-  *new_type_p = false;
-  
   if (scope)
     {
       if (TREE_CODE (id) == TYPE_DECL)
@@ -4552,7 +4569,7 @@ handle_class_head (enum tag_types tag_kind, tree scope, tree id,
   
   if (!decl)
     {
-      decl = TYPE_MAIN_DECL (xref_tag (tag_kind, id, attributes, !defn_p));
+      decl = TYPE_MAIN_DECL (xref_tag (tag_kind, id, attributes, false));
       xrefd_p = true;
     }
 
@@ -4562,24 +4579,21 @@ handle_class_head (enum tag_types tag_kind, tree scope, tree id,
       return error_mark_node;
     }
   
-  if (defn_p)
-    {
-      /* For a definition, we want to enter the containing scope
-	 before looking up any base classes etc. Only do so, if this
-	 is different to the current scope.  */
-      tree context = CP_DECL_CONTEXT (decl);
-
-      *new_type_p = (current != context
-		     && TREE_CODE (context) != TEMPLATE_TYPE_PARM
-		     && TREE_CODE (context) != BOUND_TEMPLATE_TEMPLATE_PARM);
-      if (*new_type_p)
-	push_scope (context);
-
-      if (!xrefd_p 
-	  && PROCESSING_REAL_TEMPLATE_DECL_P ()
-	  && !CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
-	decl = push_template_decl (decl);
-    }
+  /* For a definition, we want to enter the containing scope before
+     looking up any base classes etc. Only do so, if this is different
+     to the current scope.  */
+  context = CP_DECL_CONTEXT (decl);
+  
+  new_type_p = (current != context
+		&& TREE_CODE (context) != TEMPLATE_TYPE_PARM
+		&& TREE_CODE (context) != BOUND_TEMPLATE_TEMPLATE_PARM);
+  if (new_type_p)
+    push_scope (context);
+  
+  if (!xrefd_p 
+      && PROCESSING_REAL_TEMPLATE_DECL_P ()
+      && !CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
+    decl = push_template_decl (decl);
 
   return decl;
 }

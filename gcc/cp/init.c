@@ -2163,13 +2163,11 @@ build_new_1 (exp)
   tree cookie_expr, init_expr;
   int has_array = 0;
   enum tree_code code;
-  int use_cookie, nothrow, check_new;
+  int nothrow, check_new;
   /* Nonzero if the user wrote `::new' rather than just `new'.  */
   int globally_qualified_p;
-  /* Nonzero if we're going to call a global operator new, rather than
-     a class-specific version.  */
-  int use_global_new;
   int use_java_new = 0;
+  bool check_cookie = false;
   /* If non-NULL, the number of extra bytes to allocate at the
      beginning of the storage allocated for an array-new expression in
      order to store the number of elements.  */
@@ -2177,6 +2175,7 @@ build_new_1 (exp)
   /* True if the function we are calling is a placement allocation
      function.  */
   bool placement_allocation_fn_p;
+  tree args;
 
   placement = TREE_OPERAND (exp, 0);
   type = TREE_OPERAND (exp, 1);
@@ -2211,10 +2210,6 @@ build_new_1 (exp)
   if (!complete_type_or_else (true_type, exp))
     return error_mark_node;
 
-  size = size_in_bytes (true_type);
-  if (has_array)
-    size = size_binop (MULT_EXPR, size, convert (sizetype, nelts));
-
   if (TREE_CODE (true_type) == VOID_TYPE)
     {
       error ("invalid type `void' for new");
@@ -2224,42 +2219,11 @@ build_new_1 (exp)
   if (abstract_virtuals_error (NULL_TREE, true_type))
     return error_mark_node;
 
-  /* Figure out whether or not we're going to use the global operator
-     new.  */
-  if (!globally_qualified_p
-      && IS_AGGR_TYPE (true_type)
-      && (has_array
-	  ? TYPE_HAS_ARRAY_NEW_OPERATOR (true_type)
-	  : TYPE_HAS_NEW_OPERATOR (true_type)))
-    use_global_new = 0;
-  else
-    use_global_new = 1;
-
-  /* We only need cookies for arrays containing types for which we
-     need cookies.  */
-  if (!has_array || !TYPE_VEC_NEW_USES_COOKIE (true_type))
-    use_cookie = 0;
-  /* When using placement new, users may not realize that they need
-     the extra storage.  We require that the operator called be
-     the global placement operator new[].  */
-  else if (placement && !TREE_CHAIN (placement) 
-	   && same_type_p (TREE_TYPE (TREE_VALUE (placement)),
-			   ptr_type_node))
-    use_cookie = !use_global_new;
-  /* Otherwise, we need the cookie.  */
-  else
-    use_cookie = 1;
-
-  /* Compute the number of extra bytes to allocate, now that we know
-     whether or not we need the cookie.  */
-  if (use_cookie)
-    {
-      cookie_size = get_cookie_size (true_type);
-      size = size_binop (PLUS_EXPR, size, cookie_size);
-    }
+  size = size_in_bytes (true_type);
+  if (has_array)
+    size = size_binop (MULT_EXPR, size, convert (sizetype, nelts));
 
   /* Allocate the object.  */
-  
   if (! placement && TYPE_FOR_JAVA (true_type))
     {
       tree class_addr, alloc_decl;
@@ -2281,20 +2245,42 @@ build_new_1 (exp)
   else
     {
       tree fnname;
-      tree args;
 
-      args = tree_cons (NULL_TREE, size, placement);
       fnname = ansi_opname (code);
 
-      if (use_global_new)
-	alloc_call = (build_new_function_call 
-		      (lookup_function_nonclass (fnname, args),
-		       args));
+      if (!globally_qualified_p 
+	  && CLASS_TYPE_P (true_type)
+	  && (has_array
+	      ? TYPE_HAS_ARRAY_NEW_OPERATOR (true_type)
+	      : TYPE_HAS_NEW_OPERATOR (true_type)))
+	{
+	  /* Use a class-specific operator new.  */
+	  /* If a cookie is required, add some extra space.  */
+	  if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type))
+	    {
+	      cookie_size = get_cookie_size (true_type);
+	      size = size_binop (PLUS_EXPR, size, cookie_size);
+	    }
+	  /* Create the argument list.  */
+	  args = tree_cons (NULL_TREE, size, placement);
+	  /* Call the function.  */
+	  alloc_call = build_method_call (build_dummy_object (true_type),
+					  fnname, args, 
+					  TYPE_BINFO (true_type),
+					  LOOKUP_NORMAL);
+	}
       else
-	alloc_call = build_method_call (build_dummy_object (true_type),
-					fnname, args, 
-					TYPE_BINFO (true_type),
-					LOOKUP_NORMAL);
+	{
+	  /* Use a global operator new.  */
+	  /* Create the argument list.  */
+	  args = tree_cons (NULL_TREE, size, placement);
+	  /* Call the function.  */
+	  alloc_call 
+	    = build_new_function_call (lookup_function_nonclass (fnname, args),
+				       args);
+	  /* We may need to add a cookie.  */
+	  check_cookie = true;
+	}
     }
 
   if (alloc_call == error_mark_node)
@@ -2308,6 +2294,53 @@ build_new_1 (exp)
     t = TREE_OPERAND (t, 1);
   alloc_fn = get_callee_fndecl (t);
   my_friendly_assert (alloc_fn != NULL_TREE, 20020325);
+
+  /* If we postponed deciding whether or not to use a cookie until
+     after we knew what function was being called, that time is
+     now.  */
+  if (check_cookie)
+    {
+      /* If a cookie is required, add some extra space.  Whether
+	 or not a cookie is required cannot be determined until
+	 after we know which function was called.  */
+      if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type))
+	{
+	  bool use_cookie = true;
+	  if (!abi_version_at_least (2))
+	    {
+	      /* In G++ 3.2, the check was implemented incorrectly; it
+		 looked at the placement expression, rather than the
+		 type of the function.  */
+	      if (placement && !TREE_CHAIN (placement)
+		  && same_type_p (TREE_TYPE (TREE_VALUE (placement)),
+				  ptr_type_node))
+		use_cookie = false;
+	    }
+	  else
+	    {
+	      tree arg_types;
+
+	      arg_types = TYPE_ARG_TYPES (TREE_TYPE (alloc_fn));
+	      /* Skip the size_t parameter.  */
+	      arg_types = TREE_CHAIN (arg_types);
+	      /* Check the remaining parameters (if any).  */
+	      if (arg_types 
+		  && !TREE_CHAIN (arg_types)
+		  && same_type_p (TREE_TYPE (TREE_VALUE (arg_types)),
+				  ptr_type_node))
+		use_cookie = false;
+	    }
+	  /* If we need a cookie, adjust the number of bytes allocated.  */
+	  if (use_cookie)
+	    {
+	      cookie_size = get_cookie_size (true_type);
+	      size = size_binop (PLUS_EXPR, size, cookie_size);
+	      /* Update the argument list to reflect the adjusted size.  */
+	      TREE_VALUE (args) = cookie_size;
+	    }
+	}
+    }
+
   /* Now, check to see if this function is actually a placement
      allocation function.  This can happen even when PLACEMENT is NULL
      because we might have something like:
@@ -2337,7 +2370,7 @@ build_new_1 (exp)
 
   alloc_expr = alloc_call;
 
-  if (use_cookie)
+  if (cookie_size)
     /* Adjust so we're pointing to the start of the object.  */
     alloc_expr = build (PLUS_EXPR, TREE_TYPE (alloc_expr),
 			alloc_expr, cookie_size);
@@ -2351,7 +2384,7 @@ build_new_1 (exp)
   alloc_node = TREE_OPERAND (alloc_expr, 0);
 
   /* Now initialize the cookie.  */
-  if (use_cookie)
+  if (cookie_size)
     {
       tree cookie;
 
@@ -2431,7 +2464,7 @@ build_new_1 (exp)
 		       | (globally_qualified_p * LOOKUP_GLOBAL));
 	  tree delete_node;
 
-	  if (use_cookie)
+	  if (cookie_size)
 	    /* Subtract the padding back out to get to the pointer returned
 	       from operator new.  */
 	    delete_node = fold (build (MINUS_EXPR, TREE_TYPE (alloc_node),

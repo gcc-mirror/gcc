@@ -26,7 +26,7 @@ struct B {
   struct A::fink {    // ERROR - no such member
   int m;
   };
-  struct A::Z {       // ERROR - A::Z not a member of B XFAIL 
+  struct A::Z {       // ERROR - A::Z not a member of B
     int m;
   };
   int m;
@@ -66,7 +66,7 @@ namespace NMS
   int N::fn() {       // ERROR - N::fn not a member of NMS
     return 0;
   }
-  struct N::F {       // ERROR - N::F not a member of NMS XFAIL 
+  struct N::F {       // ERROR - N::F not a member of NMS
     int i;
   };
 }
