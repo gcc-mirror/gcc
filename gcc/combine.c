@@ -5134,25 +5134,38 @@ make_compound_operation (x, in_code)
 	      || GET_CODE (XEXP (x, 0)) == PLUS)
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ASHIFT
 	  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT
-	  && INTVAL (XEXP (x, 1)) >= INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))
 	  && INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)) < HOST_BITS_PER_WIDE_INT
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-	  && (INTVAL (XEXP (XEXP (x, 0), 1))
-	      & (((HOST_WIDE_INT) 1
-		  << INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))) - 1)) == 0)
+	  && 0 == (INTVAL (XEXP (XEXP (x, 0), 1))
+		   & (((HOST_WIDE_INT) 1
+		       << (MIN (INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)),
+				INTVAL (XEXP (x, 1)))
+			   - 1)))))
 	{
-	  HOST_WIDE_INT newop1
-	    = (INTVAL (XEXP (XEXP (x, 0), 1))
-	       >> INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)));
+	  rtx c1 = XEXP (XEXP (XEXP (x, 0), 0), 1);
+	  rtx c2 = XEXP (x, 1);
+	  rtx c3 = XEXP (XEXP (x, 0), 1);
+	  HOST_WIDE_INT newop1;
+	  rtx inner = XEXP (XEXP (XEXP (x, 0), 0), 0);
 
-	  new = make_compound_operation (XEXP (XEXP (XEXP (x, 0), 0), 0),
-					 next_code);
+	  /* If C1 > C2, INNER needs to have the shift performed on it
+	     for C1-C2 bits.  */
+	  if (INTVAL (c1) > INTVAL (c2))
+	    {
+	      inner = gen_binary (ASHIFT, mode, inner,
+				  GEN_INT (INTVAL (c1) - INTVAL (c2)));
+	      c1 = c2;
+	    }
+
+	  newop1 = INTVAL (c3) >> INTVAL (c1);
+	  new = make_compound_operation (inner,
+					 GET_CODE (XEXP (x, 0)) == PLUS
+					 ? MEM : GET_CODE (XEXP (x, 0)));
 	  new = make_extraction (mode,
 				 gen_binary (GET_CODE (XEXP (x, 0)), mode, new,
 					     GEN_INT (newop1)),
-				 (INTVAL (XEXP (x, 1))
-				  - INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))),
-				 NULL_RTX, mode_width - INTVAL (XEXP (x, 1)),
+				 INTVAL (c2) - INTVAL (c1),
+				 NULL_RTX, mode_width - INTVAL (c1),
 				 code == LSHIFTRT, 0, in_code == COMPARE);
 	}
 
@@ -5180,11 +5193,21 @@ make_compound_operation (x, in_code)
 	 narrowing the object and it has a different RTL code from
 	 what it originally did, do this SUBREG as a force_to_mode.  */
 
-      tem = make_compound_operation (SUBREG_REG (x), next_code);
+      tem = make_compound_operation (SUBREG_REG (x), in_code);
       if (GET_CODE (tem) != GET_CODE (SUBREG_REG (x))
 	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (tem))
 	  && subreg_lowpart_p (x))
-	return force_to_mode (tem, mode, GET_MODE_BITSIZE (mode), NULL_RTX);
+	{
+	  rtx newer = force_to_mode (tem, mode,
+				     GET_MODE_BITSIZE (mode), NULL_RTX);
+
+	  /* If we have something other than a SUBREG, we might have
+	     done an expansion, so rerun outselves.  */
+	  if (GET_CODE (newer) != SUBREG)
+	    newer = make_compound_operation (newer, in_code);
+
+	  return newer;
+	}
     }
 
   if (new)
