@@ -1,4 +1,8 @@
-2001-04-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+2001-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpplex.c (_cpp_lex_token): Only warn if -Wcomment.
+
+2001-04-09  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* Makefile.in (LIB2FUNCS_STATIC_EXTRA): New macro.
 	(LIB2ADD_ST): New macro, pass it to mklibgcc.

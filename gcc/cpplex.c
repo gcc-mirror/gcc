@@ -1018,7 +1018,7 @@ _cpp_lex_token (pfile, result)
 	    }
 
 	  /* Skip_line_comment updates buffer->read_ahead.  */
-	  if (skip_line_comment (pfile))
+	  if (skip_line_comment (pfile) && CPP_OPTION (pfile, warn_comments))
 	    cpp_warning_with_line (pfile, pfile->lexer_pos.line,
 				   pfile->lexer_pos.col,
 				   "multi-line comment");
