@@ -254,7 +254,7 @@ struct tree_common
    base class is via a `protected' declaration, which preserves
    protected fields from the base class as protected.
    OVERLOADED.  */
-#define TREE_VIA_PROTECTED(NODE) ((NODE)->common.static_flag)
+#define TREE_VIA_PROTECTED(NODE) ((NODE)->common.protected_flag)
 
 /* In any expression, nonzero means it has side effects or reevaluation
    of the whole expression could produce a different value.
