@@ -14540,7 +14540,6 @@ finish_function (flags)
 
   /* Complain if there's just no return statement.  */
   if (warn_return_type
-      && !processing_template_decl
       && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE
       && !current_function_returns_value && !current_function_returns_null
       /* Don't complain if we abort or throw.  */
@@ -14548,7 +14547,7 @@ finish_function (flags)
       && !DECL_NAME (DECL_RESULT (fndecl))
       /* Normally, with -Wreturn-type, flow will complain.  Unless we're an
 	 inline function, as we might never be compiled separately.  */
-      && DECL_INLINE (fndecl))
+      && (DECL_INLINE (fndecl) || processing_template_decl))
     warning ("no return statement in function returning non-void");
     
   /* Clear out memory we no longer need.  */

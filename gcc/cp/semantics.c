@@ -400,8 +400,7 @@ finish_return_stmt (expr)
 {
   tree r;
 
-  if (!processing_template_decl)
-    expr = check_return_expr (expr);
+  expr = check_return_expr (expr);
   if (!processing_template_decl)
     {
       if (DECL_DESTRUCTOR_P (current_function_decl))
