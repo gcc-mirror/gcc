@@ -58,6 +58,7 @@ enum spell_type
   SPELL_OPERATOR = 0,
   SPELL_CHAR,
   SPELL_IDENT,
+  SPELL_NUMBER,
   SPELL_STRING,
   SPELL_NONE
 };
@@ -1412,10 +1413,11 @@ cpp_token_len (token)
   switch (TOKEN_SPELL (token))
     {
     default:		len = 0;				break;
+    case SPELL_NUMBER:
     case SPELL_STRING:	len = token->val.str.len;		break;
     case SPELL_IDENT:	len = NODE_LEN (token->val.node);	break;
     }
-  /* 1 for whitespace, 4 for comment delimeters.  */
+  /* 1 for whitespace, 4 for comment delimiters.  */
   return len + 5;
 }
 
@@ -1449,10 +1451,19 @@ cpp_spell_token (pfile, token, buffer)
       }
       break;
 
+    case SPELL_CHAR:
+      *buffer++ = token->val.c;
+      break;
+
+    spell_ident:
     case SPELL_IDENT:
-      spell_ident:
       memcpy (buffer, NODE_NAME (token->val.node), NODE_LEN (token->val.node));
       buffer += NODE_LEN (token->val.node);
+      break;
+
+    case SPELL_NUMBER:
+      memcpy (buffer, token->val.str.text, token->val.str.len);
+      buffer += token->val.str.len;
       break;
 
     case SPELL_STRING:
@@ -1465,18 +1476,16 @@ cpp_spell_token (pfile, token, buffer)
 	  case CPP_CHAR:	left = '\''; right = '\''; tag = '\0'; break;
     	  case CPP_WCHAR:	left = '\''; right = '\''; tag = 'L';  break;
 	  case CPP_HEADER_NAME:	left = '<';  right = '>';  tag = '\0'; break;
-	  default:		left = '\0'; right = '\0'; tag = '\0'; break;
+	  default:
+	    cpp_ice (pfile, "unknown string token %s\n", TOKEN_NAME (token));
+	    return buffer;
 	  }
 	if (tag) *buffer++ = tag;
-	if (left) *buffer++ = left;
+	*buffer++ = left;
 	memcpy (buffer, token->val.str.text, token->val.str.len);
 	buffer += token->val.str.len;
-	if (right) *buffer++ = right;
+	*buffer++ = right;
       }
-      break;
-
-    case SPELL_CHAR:
-      *buffer++ = token->val.c;
       break;
 
     case SPELL_NONE:
@@ -1541,10 +1550,18 @@ cpp_output_token (token, fp)
       }
       break;
 
+    case SPELL_CHAR:
+      putc (token->val.c, fp);
+      break;
+
     spell_ident:
     case SPELL_IDENT:
       fwrite (NODE_NAME (token->val.node), 1, NODE_LEN (token->val.node), fp);
     break;
+
+    case SPELL_NUMBER:
+      fwrite (token->val.str.text, 1, token->val.str.len, fp);
+      break;
 
     case SPELL_STRING:
       {
@@ -1556,17 +1573,15 @@ cpp_output_token (token, fp)
 	  case CPP_CHAR:	left = '\''; right = '\''; tag = '\0'; break;
     	  case CPP_WCHAR:	left = '\''; right = '\''; tag = 'L';  break;
 	  case CPP_HEADER_NAME:	left = '<';  right = '>';  tag = '\0'; break;
-	  default:		left = '\0'; right = '\0'; tag = '\0'; break;
+	  default:
+	    fprintf (stderr, "impossible STRING token %s\n", TOKEN_NAME (token));
+	    return;
 	  }
 	if (tag) putc (tag, fp);
-	if (left) putc (left, fp);
+	putc (left, fp);
 	fwrite (token->val.str.text, 1, token->val.str.len, fp);
-	if (right) putc (right, fp);
+	putc (right, fp);
       }
-      break;
-
-    case SPELL_CHAR:
-      putc (token->val.c, fp);
       break;
 
     case SPELL_NONE:
@@ -1592,6 +1607,7 @@ _cpp_equiv_tokens (a, b)
 	return (a->type != CPP_MACRO_ARG || a->val.arg_no == b->val.arg_no);
       case SPELL_IDENT:
 	return a->val.node == b->val.node;
+      case SPELL_NUMBER:
       case SPELL_STRING:
 	return (a->val.str.len == b->val.str.len
 		&& !memcmp (a->val.str.text, b->val.str.text,

@@ -819,13 +819,13 @@ _cpp_parse_expr (pfile)
 	{
 	  if (top->flags & HAVE_VALUE)
 	    SYNTAX_ERROR2 ("missing binary operator before '%s'",
-			   op_as_text (pfile, top->op));
+			   op_as_text (pfile, op.op));
 	}
       else
 	{
 	  if (!(top->flags & HAVE_VALUE))
 	    SYNTAX_ERROR2 ("operator '%s' has no left operand",
-			   op_as_text (pfile, top->op));
+			   op_as_text (pfile, op.op));
 	}
 
       /* Check for and handle stack overflow.  */

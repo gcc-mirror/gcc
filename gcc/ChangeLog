@@ -1,3 +1,13 @@
+2001-10-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* cpplex.c (enum spell_type): Add SPELL_NUMBER.
+	(cpp_token_len, cpp_spell_token, cpp_output_token,
+	_cpp_equiv_tokens): Handle it.
+	* cpplib.h (TTYPE_TABLE): Use SPELL_NUMBER for CPP_NUMBER and
+	CPP_COMMENT, SPELL_NONE for CPP_PADDING and CPP_EOF.
+	* cppexp.c (_cpp_parse_expr): Use the correct operator code in
+	error messages.
+
 Sat Oct  6 07:42:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c (default_compilers): Remove .ada.
