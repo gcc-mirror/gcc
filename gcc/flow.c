@@ -2055,14 +2055,15 @@ flow_call_edges_add (blocks)
   return blocks_split;
 }
 
-/* Delete all unreachable basic blocks.   */
+/* Find unreachable blocks.  An unreachable block will have NULL in
+   block->aux, a non-NULL value indicates the block is reachable.  */
 
-static void
-delete_unreachable_blocks ()
+void
+find_unreachable_blocks ()
 {
-  basic_block *worklist, *tos;
   edge e;
   int i, n;
+  basic_block *tos, *worklist;
 
   n = n_basic_blocks;
   tos = worklist = (basic_block *) xmalloc (sizeof (basic_block) * n);
@@ -2098,11 +2099,20 @@ delete_unreachable_blocks ()
 	  }
     }
 
+  free (worklist);
+}
+
+/* Delete all unreachable basic blocks.   */
+static void
+delete_unreachable_blocks ()
+{
+  int i;
+
   /* Delete all unreachable basic blocks.  Count down so that we
      don't interfere with the block renumbering that happens in
      flow_delete_block.  */
 
-  for (i = n - 1; i >= 0; --i)
+  for (i = n_basic_blocks - 1; i >= 0; --i)
     {
       basic_block b = BASIC_BLOCK (i);
 
@@ -2114,8 +2124,6 @@ delete_unreachable_blocks ()
     }
 
   tidy_fallthru_edges ();
-
-  free (worklist);
 }
 
 /* Return true if NOTE is not one of the ones that must be kept paired,

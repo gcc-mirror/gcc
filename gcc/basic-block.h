@@ -555,6 +555,7 @@ extern void debug_bb_n			PARAMS ((int));
 extern void dump_regset			PARAMS ((regset, FILE *));
 extern void debug_regset		PARAMS ((regset));
 extern void allocate_reg_life_data      PARAMS ((void));
+extern void find_unreachable_blocks	PARAMS ((void));
 
 /* This function is always defined so it can be called from the
    debugger, and it is declared extern so we don't get warnings about
