@@ -82,27 +82,17 @@ Boston, MA 02111-1307, USA.  */
     md_exec_prefix = update_path (md_exec_prefix, NULL); \
   } while (0)
 
-/* Canonicalize paths containing '/dev/env/', especially those in
-   prefix.c.  */
-#define UPDATE_PATH_HOST_CANONICALIZE(PATH, KEY) \
-  do { \
-    if (strncmp (PATH, "/dev/env/", sizeof("/dev/env/") - 1) == 0) \
-      { \
-        static char *djdir; \
-        static int djdir_len; \
-        static char fixed_path[FILENAME_MAX + 1]; \
-        char *new_path; \
-        /* The default prefixes all use '/dev/env/DJDIR', so optimize \
-           for this. All other uses of '/dev/env/' go through \
-           libc's canonicalization function.  */ \
-        _fixpath (PATH, fixed_path); \
-        /* _fixpath removes any trailing '/', so add it back.  */ \
-        strcat (fixed_path, "/"); \
-        new_path = xstrdup (fixed_path); \
-        PATH = new_path; \
-        return PATH; \
-      } \
-    /* If DIR_SEPARATOR_2 isn't in PATH, nothing more need be done.  */ \
-    if (strchr (PATH, DIR_SEPARATOR_2) == NULL) \
-      return PATH; \
-  } while (0)
+/* Canonicalize paths containing '/dev/env/'; used in prefix.c.
+   _fixpath is a djgpp-specific function to canonicalize a path.
+   "/dev/env/DJDIR" evaluates to "c:/djgpp" if DJDIR is "c:/djgpp" for
+   example.  It removes any trailing '/', so add it back.  */
+#define UPDATE_PATH_HOST_CANONICALIZE(PATH) \
+  if (memcmp ((PATH), "/dev/env/", sizeof("/dev/env/") - 1) == 0) \
+    {						\
+      static char fixed_path[FILENAME_MAX + 1];	\
+						\
+      _fixpath ((PATH), fixed_path);		\
+      strcat (fixed_path, "/");			\
+      free (PATH);				\
+      (PATH) = xstrdup (fixed_path);		\
+    } 

@@ -4059,12 +4059,13 @@ If defined, a C statement (sans semicolon) that performs host-dependent
 initialization when a compilation driver is being initialized.
 
 @findex UPDATE_PATH_HOST_CANONICALIZE
-@item UPDATE_PATH_HOST_CANONICALIZE (@var{path}, @var{key})
+@item UPDATE_PATH_HOST_CANONICALIZE (@var{path})
 If defined, a C statement (sans semicolon) that performs host-dependent
-canonicalization when a path used in a compilation driver or preprocessor is
-canonicalized.  @var{path} is the path to be canonicalized, and @var{key} is
-a translation prefix when its value isn't @code{NULL}.  If the C statement
-does canonicalize @var{path}, the new path should be returned.
+canonicalization when a path used in a compilation driver or
+preprocessor is canonicalized.  @var{path} is a malloc-ed path to be
+canonicalized.  If the C statement does canonicalize @var{path} into a
+different buffer, the old path should be freed and the new buffer should
+have been allocated with malloc.
 @end table
 
 @findex bzero
