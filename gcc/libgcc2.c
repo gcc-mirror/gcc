@@ -1018,7 +1018,10 @@ SFtype
 __floatdisf (u)
      DItype u;
 {
-  SFtype f;
+  /* Do the calculation in DFmode
+     so that we don't lose any of the precision of the high word
+     while multiplying it.  */
+  DFtype f;
   SItype negate = 0;
 
   if (u < 0)
@@ -1029,7 +1032,7 @@ __floatdisf (u)
   f *= HIGH_HALFWORD_COEFF;
   f += (USItype) (u & (HIGH_WORD_COEFF - 1));
 
-  return (negate ? -f : f);
+  return (SFtype) (negate ? -f : f);
 }
 #endif
 
