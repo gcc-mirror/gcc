@@ -2873,8 +2873,9 @@ build_vec_init (decl, base, maxindex, init, from_array)
 
   if (from_array
       || (TYPE_NEEDS_CONSTRUCTING (type)
-	  && !(TREE_CODE (maxindex) == INTEGER_CST
-	       && num_initialized_elts == TREE_INT_CST_LOW (maxindex) + 1)))
+	  && ! (TREE_CODE (maxindex) == INTEGER_CST
+		&& (num_initialized_elts
+		    == (HOST_WIDE_INT) TREE_INT_CST_LOW (maxindex) + 1))))
     {
       /* If the ITERATOR is equal to -1, then we don't have to loop;
 	 we've already initialized all the elements.  */

@@ -5,6 +5,16 @@
 
 Mon Mar  6 08:46:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* class.c (dfs_modify_vtables): I is now unsigned.
+	(check_bitfield_decl): Use tree_int_cst_sgn and compare_tree_int.
+	(build_base_field): Add casts of TREE_INT_CST_LOW to HOST_WIDE_INT.
+	* error.c (dump_expr): Cast TREE_INT_CST_HIGH to unsigned.
+	* init.c (build_vec_init): Cast TREE_INT_CST_LOW to HOST_WIDE_INT.
+	* method.c (build_overload_int): Cast TREE_INT_CST_HIGH to unsigned.
+	* typeck.c (build_binary_op, case TRUNC_DIV_EXPR):
+	Call integer_all_onesp.
+	* typeck2.c (process_init_constructor): Use compare_tree_int.
+
 	* lang-specs.h (as): Don't call if -syntax-only.
 
 2000-03-06  Mark Mitchell  <mark@codesourcery.com>

@@ -5182,57 +5182,50 @@ finish_struct (t, fieldlist, attributes)
 		   == TYPE_PRECISION (integer_type_node))))
 	pedwarn_with_decl (x, "bit-field `%s' type invalid in ANSI C");
 
-      /* Detect and ignore out of range field width.  */
+      /* Detect and ignore out of range field width and process valid
+	 field widths.  */
       if (DECL_INITIAL (x))
 	{
 	  if (tree_int_cst_sgn (DECL_INITIAL (x)) < 0)
-	    {
-	      DECL_INITIAL (x) = NULL;
-	      error_with_decl (x, "negative width in bit-field `%s'");
-	    }
-	  else if (TREE_INT_CST_HIGH (DECL_INITIAL (x)) != 0
-		   || (TREE_INT_CST_LOW (DECL_INITIAL (x))
-		       > TYPE_PRECISION (TREE_TYPE (x))))
-	    {
-	      DECL_INITIAL (x) = NULL;
-	      pedwarn_with_decl (x, "width of `%s' exceeds its type");
-	    }
+	    error_with_decl (x, "negative width in bit-field `%s'");
+	  else if (0 < compare_tree_int (DECL_INITIAL (x), 
+					 TYPE_PRECISION (TREE_TYPE (x))))
+	    pedwarn_with_decl (x, "width of `%s' exceeds its type");
 	  else if (integer_zerop (DECL_INITIAL (x)) && DECL_NAME (x) != 0)
+	    error_with_decl (x, "zero width for bit-field `%s'");
+	  else
 	    {
-	      error_with_decl (x, "zero width for bit-field `%s'");
-	      DECL_INITIAL (x) = NULL;
-	    }
-	}
+	      /* The test above has assured us that TREE_INT_CST_HIGH is 0.  */
+	      unsigned HOST_WIDE_INT width
+		= TREE_INT_CST_LOW (DECL_INITIAL (x));
 
-      /* Process valid field width.  */
-      if (DECL_INITIAL (x))
-	{
-	  register int width = TREE_INT_CST_LOW (DECL_INITIAL (x));
+	      if (TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
+		  && (width < min_precision (TYPE_MIN_VALUE (TREE_TYPE (x)),
+					     TREE_UNSIGNED (TREE_TYPE (x)))
+		      || (width
+			  < min_precision (TYPE_MAX_VALUE (TREE_TYPE (x)),
+					   TREE_UNSIGNED (TREE_TYPE (x))))))
+		warning_with_decl (x,
+				   "`%s' is narrower than values of its type");
 
-	  if (TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
-	      && (width < min_precision (TYPE_MIN_VALUE (TREE_TYPE (x)),
-					 TREE_UNSIGNED (TREE_TYPE (x)))
-		  || width < min_precision (TYPE_MAX_VALUE (TREE_TYPE (x)),
-					    TREE_UNSIGNED (TREE_TYPE (x)))))
-	    warning_with_decl (x, "`%s' is narrower than values of its type");
+	      DECL_SIZE (x) = bitsize_int (width);
+	      DECL_BIT_FIELD (x) = DECL_C_BIT_FIELD (x) = 1;
 
-	  DECL_SIZE (x) = bitsize_int (width);
-	  DECL_BIT_FIELD (x) = DECL_C_BIT_FIELD (x) = 1;
-	  DECL_INITIAL (x) = NULL;
-
-	  if (width == 0)
-	    {
-	      /* field size 0 => force desired amount of alignment.  */
+	      if (width == 0)
+		{
+		  /* field size 0 => force desired amount of alignment.  */
 #ifdef EMPTY_FIELD_BOUNDARY
-	      DECL_ALIGN (x) = MAX (DECL_ALIGN (x), EMPTY_FIELD_BOUNDARY);
+		  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), EMPTY_FIELD_BOUNDARY);
 #endif
 #ifdef PCC_BITFIELD_TYPE_MATTERS
-	      if (PCC_BITFIELD_TYPE_MATTERS)
-		DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
-				      TYPE_ALIGN (TREE_TYPE (x)));
+		  if (PCC_BITFIELD_TYPE_MATTERS)
+		    DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
+					  TYPE_ALIGN (TREE_TYPE (x)));
 #endif
+		}
 	    }
 	}
+
       else if (TREE_TYPE (x) != error_mark_node)
 	{
 	  unsigned int min_align = (DECL_PACKED (x) ? BITS_PER_UNIT
@@ -5242,9 +5235,9 @@ finish_struct (t, fieldlist, attributes)
 	     fields which require only BITS_PER_UNIT alignment.  */
 	  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), min_align);
 	}
-    }
 
-  /* Now DECL_INITIAL is null on all members.  */
+      DECL_INITIAL (x) = 0;
+    }
 
   /* Delete all duplicate fields from the fieldlist */
   for (x = fieldlist; x && TREE_CHAIN (x);)
@@ -6489,34 +6482,36 @@ finish_function (nested)
 
   if (warn_larger_than && !DECL_EXTERNAL (fndecl) && TREE_TYPE (fndecl))
     {
-      register tree ret_type = TREE_TYPE (TREE_TYPE (fndecl));
+      tree ret_type = TREE_TYPE (TREE_TYPE (fndecl));
 
-      if (ret_type)
+      if (ret_type && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
+	  && 0 < compare_tree_int (TYPE_SIZE_UNIT (ret_type),
+				   larger_than_size))
 	{
-	  register tree ret_type_size = TYPE_SIZE (ret_type);
+	  unsigned int size_as_int
+	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
 
-	  if (TREE_CODE (ret_type_size) == INTEGER_CST)
-	    {
-	      unsigned units
-		= TREE_INT_CST_LOW (ret_type_size) / BITS_PER_UNIT;
-
-	      if (units > larger_than_size)
-		warning_with_decl (fndecl,
-				   "size of return value of `%s' is %u bytes",
-				   units);
-	    }
+	  if (compare_tree_int (TYPE_SIZE_UNIT (ret_type), size_as_int) == 0)
+	    warning_with_decl (fndecl,
+			       "size of return value of `%s' is %u bytes",
+			       size_as_int);
+	  else
+	    warning_with_decl (fndecl,
+		       "size of return value of `%s' is larger than %d bytes",
+			       larger_than_size);
 	}
     }
 
   if (DECL_SAVED_INSNS (fndecl) == 0 && ! nested)
     {
-      /* Stop pointing to the local nodes about to be freed.  */
-      /* But DECL_INITIAL must remain nonzero so we know this
-	 was an actual function definition.  */
-      /* For a nested function, this is done in pop_c_function_context.  */
-      /* If rest_of_compilation set this to 0, leave it 0.  */
+      /* Stop pointing to the local nodes about to be freed. 
+	 But DECL_INITIAL must remain nonzero so we know this
+	 was an actual function definition. 
+	 For a nested function, this is done in pop_c_function_context.
+	 If rest_of_compilation set this to 0, leave it 0.  */
       if (DECL_INITIAL (fndecl) != 0)
 	DECL_INITIAL (fndecl) = error_mark_node;
+
       DECL_ARGUMENTS (fndecl) = 0;
     }
 

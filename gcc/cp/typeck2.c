@@ -754,7 +754,7 @@ process_init_constructor (type, init, elts)
 	    {
 	      if (TREE_PURPOSE (tail)
 		  && (TREE_CODE (TREE_PURPOSE (tail)) != INTEGER_CST
-		      || TREE_INT_CST_LOW (TREE_PURPOSE (tail)) != i))
+		      || compare_tree_int (TREE_PURPOSE (tail), i) != 0))
 		sorry ("non-trivial labeled initializers");
 
 	      if (TREE_VALUE (tail) != 0)
@@ -1305,19 +1305,19 @@ enum_name_string (value, type)
      tree type;
 {
   register tree values = TYPE_VALUES (type);
-  register HOST_WIDE_INT intval = TREE_INT_CST_LOW (value);
 
   my_friendly_assert (TREE_CODE (type) == ENUMERAL_TYPE, 324);
-  while (values
-	 && TREE_INT_CST_LOW (TREE_VALUE (values)) != intval)
+
+  while (values && ! tree_int_cst_equal (TREE_VALUE (values), value))
     values = TREE_CHAIN (values);
+
   if (values == NULL_TREE)
     {
-      char *buf = (char *)oballoc (16 + TYPE_NAME_LENGTH (type));
+      char *buf = (char *) oballoc (16 + TYPE_NAME_LENGTH (type));
 
       /* Value must have been cast.  */
       sprintf (buf, "(enum %s)%ld",
-	       TYPE_NAME_STRING (type), (long) intval);
+	       TYPE_NAME_STRING (type), (long) TREE_INT_CST_LOW (value));
       return buf;
     }
   return IDENTIFIER_POINTER (TREE_PURPOSE (values));

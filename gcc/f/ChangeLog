@@ -1,3 +1,9 @@
+Mon Mar  6 18:05:19 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_f2c_set_lio_code_): Use compare_tree_int.
+	(ffecom_sym_transform_, ffecom_transform_common_): Likewise.
+	(ffecom_transform_equiv_): Likewise.
+
 Mon Mar  6 13:01:19 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ansify.c (die_unless): Don't use ANSI string concatenation.

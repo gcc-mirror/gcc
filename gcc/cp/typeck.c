@@ -3436,8 +3436,8 @@ build_binary_op (code, orig_op0, orig_op1)
 	    shorten = ((TREE_CODE (op0) == NOP_EXPR
 			&& TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
 		       || (TREE_CODE (op1) == INTEGER_CST
-			   && (TREE_INT_CST_LOW (op1) != -1
-			       || TREE_INT_CST_HIGH (op1) != -1)));
+			   && ! integer_all_onesp (op1)));
+
 	  common = 1;
 	}
       break;
@@ -3491,8 +3491,7 @@ build_binary_op (code, orig_op0, orig_op1)
 	  shorten = ((TREE_CODE (op0) == NOP_EXPR
 		      && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
 		     || (TREE_CODE (op1) == INTEGER_CST
-			 && (TREE_INT_CST_LOW (op1) != -1
-			     || TREE_INT_CST_HIGH (op1) != -1)));
+			 && ! integer_all_onesp (op1)));
 	  common = 1;
 	}
       break;

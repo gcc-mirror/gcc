@@ -1040,9 +1040,8 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 	      if (TYPE_SIZE (type) == 0
 		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
 		  || (flag_stack_check && ! STACK_CHECK_BUILTIN
-		      && (TREE_INT_CST_HIGH (TYPE_SIZE (type)) != 0
-			  || (TREE_INT_CST_LOW (TYPE_SIZE (type))
-			      > STACK_CHECK_MAX_VAR_SIZE * BITS_PER_UNIT))))
+		      && (0 < compare_tree_int (TYPE_SIZE_UNIT (type),
+						STACK_CHECK_MAX_VAR_SIZE))))
 		{
 		  /* This is a variable-sized object.  Make space on the stack
 		     for it.  */

@@ -406,6 +406,7 @@ yyprint (file, yychar, yylval)
 
 /* Iff C is a carriage return, warn about it - if appropriate -
    and return nonzero.  */
+
 static int
 whitespace_cr (c)
      int c;

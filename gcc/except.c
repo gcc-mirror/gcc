@@ -1414,8 +1414,7 @@ expand_eh_region_start_tree (decl, cleanup)
 
 	  /* is the second argument 2?  */
 	  && TREE_CODE (TREE_VALUE (args)) == INTEGER_CST
-	  && TREE_INT_CST_LOW (TREE_VALUE (args)) == 2
-	  && TREE_INT_CST_HIGH (TREE_VALUE (args)) == 0
+	  && compare_tree_int (TREE_VALUE (args), 2) == 0
 
 	  /* Make sure there are no other arguments.  */
 	  && TREE_CHAIN (args) == NULL_TREE)

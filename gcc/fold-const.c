@@ -54,13 +54,10 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 
 static void encode		PARAMS ((HOST_WIDE_INT *,
-					 HOST_WIDE_INT, HOST_WIDE_INT));
+					 unsigned HOST_WIDE_INT,
+					 HOST_WIDE_INT));
 static void decode		PARAMS ((HOST_WIDE_INT *,
-					 HOST_WIDE_INT *, HOST_WIDE_INT *));
-int div_and_round_double	PARAMS ((enum tree_code, int, HOST_WIDE_INT,
-					 HOST_WIDE_INT, HOST_WIDE_INT,
-					 HOST_WIDE_INT, HOST_WIDE_INT *,
-					 HOST_WIDE_INT *, HOST_WIDE_INT *,
+					 unsigned HOST_WIDE_INT *,
 					 HOST_WIDE_INT *));
 static tree negate_expr		PARAMS ((tree));
 static tree split_tree		PARAMS ((tree, enum tree_code, tree *, tree *,
@@ -136,7 +133,8 @@ static int count_cond		PARAMS ((tree, int));
 static void
 encode (words, low, hi)
      HOST_WIDE_INT *words;
-     HOST_WIDE_INT low, hi;
+     unsigned HOST_WIDE_INT low;
+     HOST_WIDE_INT hi;
 {
   words[0] = LOWPART (low);
   words[1] = HIGHPART (low);
@@ -151,7 +149,8 @@ encode (words, low, hi)
 static void
 decode (words, low, hi)
      HOST_WIDE_INT *words;
-     HOST_WIDE_INT *low, *hi;
+     unsigned HOST_WIDE_INT *low;
+     HOST_WIDE_INT *hi;
 {
   *low = words[0] + words[1] * BASE;
   *hi = words[2] + words[3] * BASE;
@@ -172,8 +171,9 @@ force_fit_type (t, overflow)
      tree t;
      int overflow;
 {
-  HOST_WIDE_INT low, high;
-  register int prec;
+  unsigned HOST_WIDE_INT low;
+  HOST_WIDE_INT high;
+  unsigned int prec;
 
   if (TREE_CODE (t) == REAL_CST)
     {
@@ -206,7 +206,7 @@ force_fit_type (t, overflow)
     {
       TREE_INT_CST_HIGH (t) = 0;
       if (prec < HOST_BITS_PER_WIDE_INT)
-	TREE_INT_CST_LOW (t) &= ~((HOST_WIDE_INT) (-1) << prec);
+	TREE_INT_CST_LOW (t) &= ~((unsigned HOST_WIDE_INT) (-1) << prec);
     }
 
   /* Unsigned types do not suffer sign extension or overflow.  */
@@ -216,9 +216,11 @@ force_fit_type (t, overflow)
   /* If the value's sign bit is set, extend the sign.  */
   if (prec != 2 * HOST_BITS_PER_WIDE_INT
       && (prec > HOST_BITS_PER_WIDE_INT
-	  ? (TREE_INT_CST_HIGH (t)
-	     & ((HOST_WIDE_INT) 1 << (prec - HOST_BITS_PER_WIDE_INT - 1)))
-	  : TREE_INT_CST_LOW (t) & ((HOST_WIDE_INT) 1 << (prec - 1))))
+	  ? 0 != (TREE_INT_CST_HIGH (t)
+		  & ((HOST_WIDE_INT) 1
+		     << (prec - HOST_BITS_PER_WIDE_INT - 1)))
+	  : 0 != (TREE_INT_CST_LOW (t)
+		  & ((unsigned HOST_WIDE_INT) 1 << (prec - 1)))))
     {
       /* Value is negative:
 	 set to 1 all the bits that are outside this type's precision.  */
@@ -229,7 +231,7 @@ force_fit_type (t, overflow)
 	{
 	  TREE_INT_CST_HIGH (t) = -1;
 	  if (prec < HOST_BITS_PER_WIDE_INT)
-	    TREE_INT_CST_LOW (t) |= ((HOST_WIDE_INT) (-1) << prec);
+	    TREE_INT_CST_LOW (t) |= ((unsigned HOST_WIDE_INT) (-1) << prec);
 	}
     }
 
@@ -246,13 +248,16 @@ force_fit_type (t, overflow)
 
 int
 add_double (l1, h1, l2, h2, lv, hv)
-     HOST_WIDE_INT l1, h1, l2, h2;
-     HOST_WIDE_INT *lv, *hv;
+     unsigned HOST_WIDE_INT l1, l2;
+     HOST_WIDE_INT h1, h2;
+     unsigned HOST_WIDE_INT *lv;
+     HOST_WIDE_INT *hv;
 {
-  HOST_WIDE_INT l, h;
+  unsigned HOST_WIDE_INT l;
+  HOST_WIDE_INT h;
 
   l = l1 + l2;
-  h = h1 + h2 + ((unsigned HOST_WIDE_INT) l < (unsigned HOST_WIDE_INT) l1);
+  h = h1 + h2 + (l < l1);
 
   *lv = l;
   *hv = h;
@@ -266,8 +271,10 @@ add_double (l1, h1, l2, h2, lv, hv)
 
 int
 neg_double (l1, h1, lv, hv)
-     HOST_WIDE_INT l1, h1;
-     HOST_WIDE_INT *lv, *hv;
+     unsigned HOST_WIDE_INT l1;
+     HOST_WIDE_INT h1;
+     unsigned HOST_WIDE_INT *lv;
+     HOST_WIDE_INT *hv;
 {
   if (l1 == 0)
     {
@@ -291,15 +298,18 @@ neg_double (l1, h1, lv, hv)
 
 int
 mul_double (l1, h1, l2, h2, lv, hv)
-     HOST_WIDE_INT l1, h1, l2, h2;
-     HOST_WIDE_INT *lv, *hv;
+     unsigned HOST_WIDE_INT l1, l2;
+     HOST_WIDE_INT h1, h2;
+     unsigned HOST_WIDE_INT *lv;
+     HOST_WIDE_INT *hv;
 {
   HOST_WIDE_INT arg1[4];
   HOST_WIDE_INT arg2[4];
   HOST_WIDE_INT prod[4 * 2];
   register unsigned HOST_WIDE_INT carry;
   register int i, j, k;
-  HOST_WIDE_INT toplow, tophigh, neglow, neghigh;
+  unsigned HOST_WIDE_INT toplow, neglow;
+  HOST_WIDE_INT tophigh, neghigh;
 
   encode (arg1, l1, h1);
   encode (arg2, l2, h2);
@@ -348,9 +358,11 @@ mul_double (l1, h1, l2, h2, lv, hv)
 
 void
 lshift_double (l1, h1, count, prec, lv, hv, arith)
-     HOST_WIDE_INT l1, h1, count;
-     int prec;
-     HOST_WIDE_INT *lv, *hv;
+     unsigned HOST_WIDE_INT l1;
+     HOST_WIDE_INT h1, count;
+     unsigned int prec;
+     unsigned HOST_WIDE_INT *lv;
+     HOST_WIDE_INT *hv;
      int arith;
 {
   if (count < 0)
@@ -373,14 +385,14 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
     }
   else if (count >= HOST_BITS_PER_WIDE_INT)
     {
-      *hv = (unsigned HOST_WIDE_INT) l1 << (count - HOST_BITS_PER_WIDE_INT);
+      *hv = l1 << (count - HOST_BITS_PER_WIDE_INT);
       *lv = 0;
     }
   else
     {
       *hv = (((unsigned HOST_WIDE_INT) h1 << count)
-	     | ((unsigned HOST_WIDE_INT) l1 >> (HOST_BITS_PER_WIDE_INT - count - 1) >> 1));
-      *lv = (unsigned HOST_WIDE_INT) l1 << count;
+	     | (l1 >> (HOST_BITS_PER_WIDE_INT - count - 1) >> 1));
+      *lv = l1 << count;
     }
 }
 
@@ -391,12 +403,15 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
 
 void
 rshift_double (l1, h1, count, prec, lv, hv, arith)
-     HOST_WIDE_INT l1, h1, count;
-     int prec ATTRIBUTE_UNUSED;
-     HOST_WIDE_INT *lv, *hv;
+     unsigned HOST_WIDE_INT l1;
+     HOST_WIDE_INT h1, count;
+     unsigned int prec ATTRIBUTE_UNUSED;
+     unsigned HOST_WIDE_INT *lv;
+     HOST_WIDE_INT *hv;
      int arith;
 {
   unsigned HOST_WIDE_INT signmask;
+
   signmask = (arith
 	      ? -((unsigned HOST_WIDE_INT) h1 >> (HOST_BITS_PER_WIDE_INT - 1))
 	      : 0);
@@ -421,7 +436,7 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
     }
   else
     {
-      *lv = (((unsigned HOST_WIDE_INT) l1 >> count)
+      *lv = ((l1 >> count)
 	     | ((unsigned HOST_WIDE_INT) h1 << (HOST_BITS_PER_WIDE_INT - count - 1) << 1));
       *hv = ((signmask << (HOST_BITS_PER_WIDE_INT - count))
 	     | ((unsigned HOST_WIDE_INT) h1 >> count));
@@ -435,11 +450,14 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
 
 void
 lrotate_double (l1, h1, count, prec, lv, hv)
-     HOST_WIDE_INT l1, h1, count;
-     int prec;
-     HOST_WIDE_INT *lv, *hv;
+     unsigned HOST_WIDE_INT l1;
+     HOST_WIDE_INT h1, count;
+     unsigned int prec;
+     unsigned HOST_WIDE_INT *lv;
+     HOST_WIDE_INT *hv;
 {
-  HOST_WIDE_INT s1l, s1h, s2l, s2h;
+  unsigned HOST_WIDE_INT s1l, s2l;
+  HOST_WIDE_INT s1h, s2h;
 
   count %= prec;
   if (count < 0)
@@ -457,11 +475,14 @@ lrotate_double (l1, h1, count, prec, lv, hv)
 
 void
 rrotate_double (l1, h1, count, prec, lv, hv)
-     HOST_WIDE_INT l1, h1, count;
-     int prec;
-     HOST_WIDE_INT *lv, *hv;
+     unsigned HOST_WIDE_INT l1;
+     HOST_WIDE_INT h1, count;
+     unsigned int prec;
+     unsigned HOST_WIDE_INT *lv;
+     HOST_WIDE_INT *hv;
 {
-  HOST_WIDE_INT s1l, s1h, s2l, s2h;
+  unsigned HOST_WIDE_INT s1l, s2l;
+  HOST_WIDE_INT s1h, s2h;
 
   count %= prec;
   if (count < 0)
@@ -488,23 +509,26 @@ div_and_round_double (code, uns,
 		      lquo, hquo, lrem, hrem)
      enum tree_code code;
      int uns;
-     HOST_WIDE_INT lnum_orig, hnum_orig; /* num == numerator == dividend */
-     HOST_WIDE_INT lden_orig, hden_orig; /* den == denominator == divisor */
-     HOST_WIDE_INT *lquo, *hquo, *lrem, *hrem;
+     unsigned HOST_WIDE_INT lnum_orig; /* num == numerator == dividend */
+     HOST_WIDE_INT hnum_orig;
+     unsigned HOST_WIDE_INT lden_orig; /* den == denominator == divisor */
+     HOST_WIDE_INT hden_orig;
+     unsigned HOST_WIDE_INT *lquo, *lrem;
+     HOST_WIDE_INT *hquo, *hrem;
 {
   int quo_neg = 0;
   HOST_WIDE_INT num[4 + 1];	/* extra element for scaling.  */
   HOST_WIDE_INT den[4], quo[4];
   register int i, j;
   unsigned HOST_WIDE_INT work;
-  register unsigned HOST_WIDE_INT carry = 0;
-  HOST_WIDE_INT lnum = lnum_orig;
+  unsigned HOST_WIDE_INT carry = 0;
+  unsigned HOST_WIDE_INT lnum = lnum_orig;
   HOST_WIDE_INT hnum = hnum_orig;
-  HOST_WIDE_INT lden = lden_orig;
+  unsigned HOST_WIDE_INT lden = lden_orig;
   HOST_WIDE_INT hden = hden_orig;
   int overflow = 0;
 
-  if ((hden == 0) && (lden == 0))
+  if (hden == 0 && lden == 0)
     overflow = 1, lden = 1;
 
   /* calculate quotient sign and convert operands to unsigned.  */
@@ -514,7 +538,8 @@ div_and_round_double (code, uns,
 	{
 	  quo_neg = ~ quo_neg;
 	  /* (minimum integer) / (-1) is the only overflow case.  */
-	  if (neg_double (lnum, hnum, &lnum, &hnum) && (lden & hden) == -1)
+	  if (neg_double (lnum, hnum, &lnum, &hnum)
+	      && ((HOST_WIDE_INT) lden & hden) == -1)
 	    overflow = 1;
 	}
       if (hden < 0) 
@@ -528,7 +553,7 @@ div_and_round_double (code, uns,
     {				/* single precision */
       *hquo = *hrem = 0;
       /* This unsigned division rounds toward zero.  */
-      *lquo = lnum / (unsigned HOST_WIDE_INT) lden;
+      *lquo = lnum / lden;
       goto finish_up;
     }
 
@@ -550,106 +575,113 @@ div_and_round_double (code, uns,
   encode (den, lden, hden);
 
   /* Special code for when the divisor < BASE.  */
-  if (hden == 0 && lden < (HOST_WIDE_INT) BASE)
+  if (hden == 0 && lden < (unsigned HOST_WIDE_INT) BASE)
     {
       /* hnum != 0 already checked.  */
       for (i = 4 - 1; i >= 0; i--)
 	{
 	  work = num[i] + carry * BASE;
-	  quo[i] = work / (unsigned HOST_WIDE_INT) lden;
-	  carry = work % (unsigned HOST_WIDE_INT) lden;
+	  quo[i] = work / lden;
+	  carry = work % lden;
 	}
     }
   else
     {
       /* Full double precision division,
 	 with thanks to Don Knuth's "Seminumerical Algorithms".  */
-    int num_hi_sig, den_hi_sig;
-    unsigned HOST_WIDE_INT quo_est, scale;
+      int num_hi_sig, den_hi_sig;
+      unsigned HOST_WIDE_INT quo_est, scale;
 
-    /* Find the highest non-zero divisor digit.  */
-    for (i = 4 - 1; ; i--)
-      if (den[i] != 0) {
-	den_hi_sig = i;
-	break;
-      }
-
-    /* Insure that the first digit of the divisor is at least BASE/2.
-       This is required by the quotient digit estimation algorithm.  */
-
-    scale = BASE / (den[den_hi_sig] + 1);
-    if (scale > 1) {		/* scale divisor and dividend */
-      carry = 0;
-      for (i = 0; i <= 4 - 1; i++) {
-	work = (num[i] * scale) + carry;
-	num[i] = LOWPART (work);
-	carry = HIGHPART (work);
-      } num[4] = carry;
-      carry = 0;
-      for (i = 0; i <= 4 - 1; i++) {
-	work = (den[i] * scale) + carry;
-	den[i] = LOWPART (work);
-	carry = HIGHPART (work);
-	if (den[i] != 0) den_hi_sig = i;
-      }
-    }
-
-    num_hi_sig = 4;
-
-    /* Main loop */
-    for (i = num_hi_sig - den_hi_sig - 1; i >= 0; i--) {
-      /* guess the next quotient digit, quo_est, by dividing the first
-	 two remaining dividend digits by the high order quotient digit.
-	 quo_est is never low and is at most 2 high.  */
-      unsigned HOST_WIDE_INT tmp;
-
-      num_hi_sig = i + den_hi_sig + 1;
-      work = num[num_hi_sig] * BASE + num[num_hi_sig - 1];
-      if (num[num_hi_sig] != den[den_hi_sig])
-	quo_est = work / den[den_hi_sig];
-      else
-	quo_est = BASE - 1;
-
-      /* refine quo_est so it's usually correct, and at most one high.   */
-      tmp = work - quo_est * den[den_hi_sig];
-      if (tmp < BASE
-	  && den[den_hi_sig - 1] * quo_est > (tmp * BASE + num[num_hi_sig - 2]))
-	quo_est--;
-
-      /* Try QUO_EST as the quotient digit, by multiplying the
-         divisor by QUO_EST and subtracting from the remaining dividend.
-	 Keep in mind that QUO_EST is the I - 1st digit.  */
-
-      carry = 0;
-      for (j = 0; j <= den_hi_sig; j++)
-	{
-	  work = quo_est * den[j] + carry;
-	  carry = HIGHPART (work);
-	  work = num[i + j] - LOWPART (work);
-	  num[i + j] = LOWPART (work);
-	  carry += HIGHPART (work) != 0;
+      /* Find the highest non-zero divisor digit.  */
+      for (i = 4 - 1; ; i--)
+	if (den[i] != 0) {
+	  den_hi_sig = i;
+	  break;
 	}
 
-      /* if quo_est was high by one, then num[i] went negative and
-	 we need to correct things.  */
+      /* Insure that the first digit of the divisor is at least BASE/2.
+	 This is required by the quotient digit estimation algorithm.  */
 
-      if (num[num_hi_sig] < carry)
+      scale = BASE / (den[den_hi_sig] + 1);
+      if (scale > 1)
+	{		/* scale divisor and dividend */
+	  carry = 0;
+	  for (i = 0; i <= 4 - 1; i++)
+	    {
+	      work = (num[i] * scale) + carry;
+	      num[i] = LOWPART (work);
+	      carry = HIGHPART (work);
+	    }
+
+	  num[4] = carry;
+	  carry = 0;
+	  for (i = 0; i <= 4 - 1; i++)
+	    {
+	      work = (den[i] * scale) + carry;
+	      den[i] = LOWPART (work);
+	      carry = HIGHPART (work);
+	      if (den[i] != 0) den_hi_sig = i;
+	    }
+	}
+
+      num_hi_sig = 4;
+
+      /* Main loop */
+      for (i = num_hi_sig - den_hi_sig - 1; i >= 0; i--)
 	{
-	  quo_est--;
-	  carry = 0;		/* add divisor back in */
+	  /* Guess the next quotient digit, quo_est, by dividing the first
+	     two remaining dividend digits by the high order quotient digit.
+	     quo_est is never low and is at most 2 high.  */
+	  unsigned HOST_WIDE_INT tmp;
+
+	  num_hi_sig = i + den_hi_sig + 1;
+	  work = num[num_hi_sig] * BASE + num[num_hi_sig - 1];
+	  if (num[num_hi_sig] != den[den_hi_sig])
+	    quo_est = work / den[den_hi_sig];
+	  else
+	    quo_est = BASE - 1;
+
+	  /* Refine quo_est so it's usually correct, and at most one high.   */
+	  tmp = work - quo_est * den[den_hi_sig];
+	  if (tmp < BASE
+	      && (den[den_hi_sig - 1] * quo_est
+		  > (tmp * BASE + num[num_hi_sig - 2])))
+	    quo_est--;
+
+	  /* Try QUO_EST as the quotient digit, by multiplying the
+	     divisor by QUO_EST and subtracting from the remaining dividend.
+	     Keep in mind that QUO_EST is the I - 1st digit.  */
+
+	  carry = 0;
 	  for (j = 0; j <= den_hi_sig; j++)
 	    {
-	      work = num[i + j] + den[j] + carry;
+	      work = quo_est * den[j] + carry;
 	      carry = HIGHPART (work);
+	      work = num[i + j] - LOWPART (work);
 	      num[i + j] = LOWPART (work);
+	      carry += HIGHPART (work) != 0;
 	    }
-	  num [num_hi_sig] += carry;
-	}
 
-      /* store the quotient digit.  */
-      quo[i] = quo_est;
+	  /* If quo_est was high by one, then num[i] went negative and
+	     we need to correct things.  */
+	  if (num[num_hi_sig] < carry)
+	    {
+	      quo_est--;
+	      carry = 0;		/* add divisor back in */
+	      for (j = 0; j <= den_hi_sig; j++)
+		{
+		  work = num[i + j] + den[j] + carry;
+		  carry = HIGHPART (work);
+		  num[i + j] = LOWPART (work);
+		}
+
+	      num [num_hi_sig] += carry;
+	    }
+
+	  /* Store the quotient digit.  */
+	  quo[i] = quo_est;
+	}
     }
-  }
 
   decode (quo, lquo, hquo);
 
@@ -678,7 +710,8 @@ div_and_round_double (code, uns,
 	  add_double (*lquo, *hquo, (HOST_WIDE_INT) -1, (HOST_WIDE_INT)  -1,
 		      lquo, hquo);
 	}
-      else return overflow;
+      else
+	return overflow;
       break;
 
     case CEIL_DIV_EXPR:
@@ -688,28 +721,33 @@ div_and_round_double (code, uns,
 	  add_double (*lquo, *hquo, (HOST_WIDE_INT) 1, (HOST_WIDE_INT) 0,
 		      lquo, hquo);
 	}
-      else return overflow;
+      else
+	return overflow;
       break;
     
     case ROUND_DIV_EXPR:
     case ROUND_MOD_EXPR:	/* round to closest integer */
       {
-	HOST_WIDE_INT labs_rem = *lrem, habs_rem = *hrem;
-	HOST_WIDE_INT labs_den = lden, habs_den = hden, ltwice, htwice;
+	unsigned HOST_WIDE_INT labs_rem = *lrem;
+	HOST_WIDE_INT habs_rem = *hrem;
+	unsigned HOST_WIDE_INT labs_den = lden, ltwice;
+	HOST_WIDE_INT habs_den = hden, htwice;
 
-	/* get absolute values */
-	if (*hrem < 0) neg_double (*lrem, *hrem, &labs_rem, &habs_rem);
-	if (hden < 0) neg_double (lden, hden, &labs_den, &habs_den);
+	/* Get absolute values */
+	if (*hrem < 0)
+	  neg_double (*lrem, *hrem, &labs_rem, &habs_rem);
+	if (hden < 0)
+	  neg_double (lden, hden, &labs_den, &habs_den);
 
-	/* if (2 * abs (lrem) >= abs (lden)) */
+	/* If (2 * abs (lrem) >= abs (lden)) */
 	mul_double ((HOST_WIDE_INT) 2, (HOST_WIDE_INT) 0,
 		    labs_rem, habs_rem, &ltwice, &htwice);
+
 	if (((unsigned HOST_WIDE_INT) habs_den
 	     < (unsigned HOST_WIDE_INT) htwice)
 	    || (((unsigned HOST_WIDE_INT) habs_den
 		 == (unsigned HOST_WIDE_INT) htwice)
-		&& ((HOST_WIDE_INT unsigned) labs_den
-		    < (unsigned HOST_WIDE_INT) ltwice)))
+		&& (labs_den < ltwice)))
 	  {
 	    if (*hquo < 0)
 	      /* quo = quo - 1;  */
@@ -720,7 +758,8 @@ div_and_round_double (code, uns,
 	      add_double (*lquo, *hquo, (HOST_WIDE_INT) 1, (HOST_WIDE_INT) 0,
 			  lquo, hquo);
 	  }
-	else return overflow;
+	else
+	  return overflow;
       }
       break;
 
@@ -1412,9 +1451,12 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
      register tree arg1, arg2;
      int notrunc, forsize;
 {
-  HOST_WIDE_INT int1l, int1h, int2l, int2h;
-  HOST_WIDE_INT low, hi;
-  HOST_WIDE_INT garbagel, garbageh;
+  unsigned HOST_WIDE_INT int1l, int2l;
+  HOST_WIDE_INT int1h, int2h;
+  unsigned HOST_WIDE_INT low;
+  HOST_WIDE_INT hi;
+  unsigned HOST_WIDE_INT garbagel;
+  HOST_WIDE_INT garbageh;
   register tree t;
   int uns = TREE_UNSIGNED (TREE_TYPE (arg1));
   int overflow = 0;
@@ -1482,13 +1524,14 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
     case FLOOR_DIV_EXPR: case CEIL_DIV_EXPR:
     case EXACT_DIV_EXPR:
       /* This is a shortcut for a common special case.  */
-      if (int2h == 0 && int2l > 0
+      if (int2h == 0 && (HOST_WIDE_INT) int2l > 0
 	  && ! TREE_CONSTANT_OVERFLOW (arg1)
 	  && ! TREE_CONSTANT_OVERFLOW (arg2)
-	  && int1h == 0 && int1l >= 0)
+	  && int1h == 0 && (HOST_WIDE_INT) int1l >= 0)
 	{
 	  if (code == CEIL_DIV_EXPR)
 	    int1l += int2l - 1;
+
 	  low = int1l / int2l, hi = 0;
 	  break;
 	}
@@ -1515,10 +1558,10 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR: case CEIL_MOD_EXPR:
       /* This is a shortcut for a common special case.  */
-      if (int2h == 0 && int2l > 0
+      if (int2h == 0 && (HOST_WIDE_INT) int2l > 0
 	  && ! TREE_CONSTANT_OVERFLOW (arg1)
 	  && ! TREE_CONSTANT_OVERFLOW (arg2)
-	  && int1h == 0 && int1l >= 0)
+	  && int1h == 0 && (HOST_WIDE_INT) int1l >= 0)
 	{
 	  if (code == CEIL_MOD_EXPR)
 	    int1l += int2l - 1;
@@ -1541,13 +1584,10 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
 		< (unsigned HOST_WIDE_INT) int2h)
 	       || (((unsigned HOST_WIDE_INT) int1h
 		    == (unsigned HOST_WIDE_INT) int2h)
-		   && ((unsigned HOST_WIDE_INT) int1l
-		       < (unsigned HOST_WIDE_INT) int2l)));
+		   && int1l < int2l));
       else
-	low = ((int1h < int2h)
-	       || ((int1h == int2h)
-		   && ((unsigned HOST_WIDE_INT) int1l
-		       < (unsigned HOST_WIDE_INT) int2l)));
+	low = (int1h < int2h
+	       || (int1h == int2h && int1l < int2l));
 
       if (low == (code == MIN_EXPR))
 	low = int1l, hi = int1h;
@@ -1559,7 +1599,7 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
       abort ();
     }
 
-  if (forsize && hi == 0 && low >= 0 && low < 1000)
+  if (forsize && hi == 0 && low < 1000)
     return size_int_type_wide (low, TREE_TYPE (arg1));
   else
     {
@@ -1981,9 +2021,7 @@ fold_convert (t, arg1)
 	  /* If we are trying to make a sizetype for a small integer, use
 	     size_int to pick up cached types to reduce duplicate nodes.  */
 	  if (TREE_CODE (type) == INTEGER_CST && TYPE_IS_SIZETYPE (type)
-	      && TREE_INT_CST_HIGH (arg1) == 0
-	      && TREE_INT_CST_LOW (arg1) >= 0
-	      && TREE_INT_CST_LOW (arg1) < 1000)
+	      && compare_tree_int (arg1, 1000) < 0)
 	    return size_int_type_wide (TREE_INT_CST_LOW (arg1), type);
 
 	  /* Given an integer constant, make new constant with new type,
@@ -2280,8 +2318,7 @@ operand_equal_p (arg0, arg1, only_const)
       case INTEGER_CST:
 	return (! TREE_CONSTANT_OVERFLOW (arg0)
 		&& ! TREE_CONSTANT_OVERFLOW (arg1)
-		&& TREE_INT_CST_LOW (arg0) == TREE_INT_CST_LOW (arg1)
-		&& TREE_INT_CST_HIGH (arg0) == TREE_INT_CST_HIGH (arg1));
+		&& tree_int_cst_equal (arg0, arg1));
 
       case REAL_CST:
 	return (! TREE_CONSTANT_OVERFLOW (arg0)
@@ -2691,8 +2728,7 @@ invert_truthvalue (arg)
   switch (code)
     {
     case INTEGER_CST:
-      return convert (type, build_int_2 (TREE_INT_CST_LOW (arg) == 0
-					 && TREE_INT_CST_HIGH (arg) == 0, 0));
+      return convert (type, build_int_2 (integer_zerop (arg), 0));
 
     case TRUTH_AND_EXPR:
       return build (TRUTH_OR_EXPR, type,
@@ -5100,10 +5136,9 @@ fold (expr)
 	  /* Fold an expression like: "foo"[2] */
 	  if (TREE_CODE (arg0) == STRING_CST
 	      && TREE_CODE (arg1) == INTEGER_CST
-	      && !TREE_INT_CST_HIGH (arg1)
-	      && (i = TREE_INT_CST_LOW (arg1)) < TREE_STRING_LENGTH (arg0))
+	      && compare_tree_int (arg1, TREE_STRING_LENGTH (arg0)) < 0)
 	    {
-	      t = build_int_2 (TREE_STRING_POINTER (arg0)[i], 0);
+	      t = build_int_2 (TREE_STRING_POINTER (arg0)[TREE_INT_CST_LOW (arg))], 0);
 	      TREE_TYPE (t) = TREE_TYPE (TREE_TYPE (arg0));
 	      force_fit_type (t, 0);
 	    }
@@ -5391,9 +5426,10 @@ fold (expr)
 	        STRIP_NOPS (tree110);
 	        STRIP_NOPS (tree111);
 	        if (TREE_CODE (tree110) == INTEGER_CST
-		    && TREE_INT_CST_HIGH (tree110) == 0
-		    && (TREE_INT_CST_LOW (tree110)
-		        == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+		    && 0 == compare_tree_int (tree110,
+					      TYPE_PRECISION
+					      (TREE_TYPE (TREE_OPERAND
+							  (arg0, 0))))
 		    && operand_equal_p (tree01, tree111, 0))
 		  return build ((code0 == LSHIFT_EXPR 
 			         ? LROTATE_EXPR 
@@ -5408,9 +5444,10 @@ fold (expr)
 	        STRIP_NOPS (tree010);
 	        STRIP_NOPS (tree011);
 	        if (TREE_CODE (tree010) == INTEGER_CST
-		    && TREE_INT_CST_HIGH (tree010) == 0
-		    && (TREE_INT_CST_LOW (tree010)
-		        == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+		    && 0 == compare_tree_int (tree010,
+					      TYPE_PRECISION
+					      (TREE_TYPE (TREE_OPERAND
+							  (arg0, 0))))
 		    && operand_equal_p (tree11, tree011, 0))
 		  return build ((code0 != LSHIFT_EXPR 
 			         ? LROTATE_EXPR 
@@ -5831,7 +5868,7 @@ fold (expr)
 	  && TREE_INT_CST_HIGH (TREE_OPERAND (arg0, 1)) == 0
 	  && ((TREE_INT_CST_LOW (arg1)
 	       + TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)))
-	      == GET_MODE_BITSIZE (TYPE_MODE (type))))
+	      == (unsigned int) GET_MODE_BITSIZE (TYPE_MODE (type))))
 	return TREE_OPERAND (arg0, 0);
 
       goto binary;
@@ -6414,7 +6451,7 @@ fold (expr)
 	  {
 	    if (TREE_INT_CST_HIGH (arg1) == 0
 		&& (TREE_INT_CST_LOW (arg1)
-		    == ((HOST_WIDE_INT) 1 << (width - 1)) - 1)
+		    == ((unsigned HOST_WIDE_INT) 1 << (width - 1)) - 1)
 		&& ! TREE_UNSIGNED (TREE_TYPE (arg1)))
 	      switch (TREE_CODE (t))
 		{
@@ -6440,7 +6477,7 @@ fold (expr)
 
 	    else if (TREE_INT_CST_HIGH (arg1) == -1
 		     && (- TREE_INT_CST_LOW (arg1)
-			 == ((HOST_WIDE_INT) 1 << (width - 1)))
+			 == ((unsigned HOST_WIDE_INT) 1 << (width - 1)))
 		     && ! TREE_UNSIGNED (TREE_TYPE (arg1)))
 	      switch (TREE_CODE (t))
 		{
@@ -6466,7 +6503,7 @@ fold (expr)
 
 	    else if (TREE_INT_CST_HIGH (arg1) == 0
 		      && (TREE_INT_CST_LOW (arg1)
-			  == ((HOST_WIDE_INT) 1 << (width - 1)) - 1)
+			  == ((unsigned HOST_WIDE_INT) 1 << (width - 1)) - 1)
 		      && TREE_UNSIGNED (TREE_TYPE (arg1)))
 	      
 	      switch (TREE_CODE (t))
@@ -6663,11 +6700,7 @@ fold (expr)
       if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
 	{
 	  if (code == EQ_EXPR)
-	    t1 = build_int_2 ((TREE_INT_CST_LOW (arg0)
-			       == TREE_INT_CST_LOW (arg1))
-			      && (TREE_INT_CST_HIGH (arg0)
-				  == TREE_INT_CST_HIGH (arg1)),
-			      0);
+	    t1 = build_int_2 (tree_int_cst_equal (arg0, arg1), 0);
 	  else
 	    t1 = build_int_2 ((TREE_UNSIGNED (TREE_TYPE (arg0))
 			       ? INT_CST_LT_UNSIGNED (arg0, arg1)

@@ -6043,8 +6043,8 @@ ffecom_f2c_set_lio_code_ (ffeinfoBasictype bt, int size,
   tree t;
 
   for (j = 0; ((size_t) j) < ARRAY_SIZE (ffecom_tree_type[0]); ++j)
-    if (((t = ffecom_tree_type[bt][j]) != NULL_TREE)
-	&& (TREE_INT_CST_LOW (TYPE_SIZE (t)) == size))
+    if ((t = ffecom_tree_type[bt][j]) != NULL_TREE
+	&& compare_tree_int (TYPE_SIZE (t), size) == 0)
       {
 	assert (code != -1);
 	ffecom_f2c_typecode_[bt][j] = code;
@@ -7757,9 +7757,8 @@ ffecom_sym_transform_ (ffesymbol s)
 		if (st != NULL && DECL_SIZE (t) != error_mark_node)
 		  {
 		    assert (TREE_CODE (DECL_SIZE_UNIT (t)) == INTEGER_CST);
-		    assert (TREE_INT_CST_HIGH (DECL_SIZE_UNIT (t)) == 0);
-		    assert (TREE_INT_CST_LOW (DECL_SIZE_UNIT (t))
-			    == ffestorag_size (st));
+		    assert (0 == compare_tree_int (DECL_SIZE_UNIT (t),
+						   ffestorag_size (st)));
 		  }
 
 		resume_momentary (yes);
@@ -8817,9 +8816,9 @@ ffecom_transform_common_ (ffesymbol s)
     {
       assert (DECL_SIZE_UNIT (cbt) != NULL_TREE);
       assert (TREE_CODE (DECL_SIZE_UNIT (cbt)) == INTEGER_CST);
-      assert (TREE_INT_CST_HIGH (DECL_SIZE_UNIT (cbt)) == 0);
-      assert (TREE_INT_CST_LOW (DECL_SIZE_UNIT (cbt))
-	      == ffeglobal_common_size (g) + ffeglobal_common_pad (g));
+      assert (0 == compare_tree_int (DECL_SIZE_UNIT (cbt),
+				     (ffeglobal_common_size (g)
+				      + ffeglobal_common_pad (g))));
     }
 
   ffeglobal_set_hook (g, cbt);
@@ -8951,9 +8950,9 @@ ffecom_transform_equiv_ (ffestorag eqst)
 
   {
     assert (TREE_CODE (DECL_SIZE_UNIT (eqt)) == INTEGER_CST);
-    assert (TREE_INT_CST_HIGH (DECL_SIZE_UNIT (eqt)) == 0);
-    assert (TREE_INT_CST_LOW (DECL_SIZE_UNIT (eqt))
-	    == ffestorag_size (eqst) + ffestorag_modulo (eqst));
+    assert (0 == compare_tree_int (DECL_SIZE_UNIT (eqt),
+				   (ffestorag_size (eqst)
+				    + ffestorag_modulo (eqst))));
   }
 
   ffestorag_set_hook (eqst, eqt);

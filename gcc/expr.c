@@ -3979,7 +3979,7 @@ is_zeros_p (exp)
       return is_zeros_p (TREE_OPERAND (exp, 0));
 
     case INTEGER_CST:
-      return TREE_INT_CST_LOW (exp) == 0 && TREE_INT_CST_HIGH (exp) == 0;
+      return integer_zerop (exp);
 
     case COMPLEX_CST:
       return
@@ -4317,14 +4317,15 @@ store_constructor (exp, target, align, cleared, size)
 		{
 		  tree lo_index = TREE_OPERAND (index, 0);
 		  tree hi_index = TREE_OPERAND (index, 1);
+
 		  if (TREE_CODE (lo_index) != INTEGER_CST
 		      || TREE_CODE (hi_index) != INTEGER_CST)
 		    {
 		      need_to_clear = 1;
 		      break;
 		    }
-		  this_node_count = TREE_INT_CST_LOW (hi_index)
-		    - TREE_INT_CST_LOW (lo_index) + 1;
+		  this_node_count = (TREE_INT_CST_LOW (hi_index)
+				     - TREE_INT_CST_LOW (lo_index) + 1);
 		}
 	      else
 		this_node_count = 1;
@@ -4594,8 +4595,8 @@ store_constructor (exp, target, align, cleared, size)
 		  ? nbits != 1
 		  : (TREE_CODE (TREE_VALUE (elt)) != INTEGER_CST
 		     || TREE_CODE (TREE_PURPOSE (elt)) != INTEGER_CST
-		     || (TREE_INT_CST_LOW (TREE_VALUE (elt))
-			 - TREE_INT_CST_LOW (TREE_PURPOSE (elt)) + 1
+		     || ((HOST_WIDE_INT) TREE_INT_CST_LOW (TREE_VALUE (elt))
+			 - (HOST_WIDE_INT) TREE_INT_CST_LOW (TREE_PURPOSE (elt)) + 1
 			 != nbits))))
 	    clear_storage (target, expr_size (exp),
 			   TYPE_ALIGN (type) / BITS_PER_UNIT);
@@ -4777,10 +4778,9 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
       /* If the RHS and field are a constant size and the size of the
 	 RHS isn't the same size as the bitfield, we must use bitfield
 	 operations.  */
-      || ((bitsize >= 0
-	   && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST)
-	  && (TREE_INT_CST_HIGH (TYPE_SIZE (TREE_TYPE (exp))) != 0
-	      || TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))) != bitsize)))
+      || (bitsize >= 0
+	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST
+	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)), bitsize) != 0))
     {
       rtx temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
 
@@ -6008,8 +6008,7 @@ expand_expr (exp, target, tmode, modifier)
 
     case INTEGER_CST:
       return immed_double_const (TREE_INT_CST_LOW (exp),
-				 TREE_INT_CST_HIGH (exp),
-				 mode);
+				 TREE_INT_CST_HIGH (exp), mode);
 
     case CONST_DECL:
       return expand_expr (DECL_INITIAL (exp), target, VOIDmode,
@@ -6333,9 +6332,10 @@ expand_expr (exp, target, tmode, modifier)
 		&& ((mode == BLKmode
 		     && ! (target != 0 && safe_from_p (target, exp, 1)))
 		    || TREE_ADDRESSABLE (exp)
-		    || (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-			&& (!MOVE_BY_PIECES_P 
-                             (TREE_INT_CST_LOW (TYPE_SIZE (type))/BITS_PER_UNIT,
+		    || (TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
+			&& TREE_INT_CST_HIGH (TYPE_SIZE_UNIT (type)) == 0
+			&& (! MOVE_BY_PIECES_P 
+			    (TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type)),
 			     TYPE_ALIGN (type) / BITS_PER_UNIT))
 			&& ! mostly_zeros_p (exp))))
 	       || (modifier == EXPAND_INITIALIZER && TREE_CONSTANT (exp)))
@@ -6385,18 +6385,17 @@ expand_expr (exp, target, tmode, modifier)
 	tree exp2;
 	tree index;
  	tree string = string_constant (exp1, &index);
- 	int i;
  
 	/* Try to optimize reads from const strings.  */
  	if (string
  	    && TREE_CODE (string) == STRING_CST
  	    && TREE_CODE (index) == INTEGER_CST
- 	    && !TREE_INT_CST_HIGH (index)
- 	    && (i = TREE_INT_CST_LOW (index)) < TREE_STRING_LENGTH (string)
+	    && compare_tree_int (index, TREE_STRING_LENGTH (string)) < 0
  	    && GET_MODE_CLASS (mode) == MODE_INT
  	    && GET_MODE_SIZE (mode) == 1
 	    && modifier != EXPAND_MEMORY_USE_WO)
- 	  return GEN_INT (TREE_STRING_POINTER (string)[i]);
+ 	  return
+	    GEN_INT (TREE_STRING_POINTER (string)[TREE_INT_CST_LOW (index)]);
 
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address (mode, op0);
@@ -6481,31 +6480,33 @@ expand_expr (exp, target, tmode, modifier)
 
 	if (TREE_CODE (array) == STRING_CST
 	    && TREE_CODE (index) == INTEGER_CST
-	    && !TREE_INT_CST_HIGH (index)
-	    && (i = TREE_INT_CST_LOW (index)) < TREE_STRING_LENGTH (array)
+	    && compare_tree_int (index, TREE_STRING_LENGTH (array)) < 0
 	    && GET_MODE_CLASS (mode) == MODE_INT
 	    && GET_MODE_SIZE (mode) == 1)
-	  return GEN_INT (TREE_STRING_POINTER (array)[i]);
+	  return
+	    GEN_INT (TREE_STRING_POINTER (array)[TREE_INT_CST_LOW (index)]);
 
 	/* If this is a constant index into a constant array,
 	   just get the value from the array.  Handle both the cases when
 	   we have an explicit constructor and when our operand is a variable
 	   that was declared const.  */
 
-	if (TREE_CODE (array) == CONSTRUCTOR && ! TREE_SIDE_EFFECTS (array))
+	if (TREE_CODE (array) == CONSTRUCTOR && ! TREE_SIDE_EFFECTS (array)
+	    && TREE_CODE (index) == INTEGER_CST
+	    && 0 > compare_tree_int (index, 
+				     list_length (CONSTRUCTOR_ELTS
+						  (TREE_OPERAND (exp, 0)))))
 	  {
-	    if (TREE_CODE (index) == INTEGER_CST
-		&& TREE_INT_CST_HIGH (index) == 0)
-	      {
-		tree elem = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
+	    tree elem;
 
-		i = TREE_INT_CST_LOW (index);
-		while (elem && i--)
-		  elem = TREE_CHAIN (elem);
-		if (elem)
-		  return expand_expr (fold (TREE_VALUE (elem)), target,
-				      tmode, ro_modifier);
-	      }
+	    for (elem = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0)),
+		 i = TREE_INT_CST_LOW (index);
+		 elem != 0 && i != 0; i--, elem = TREE_CHAIN (elem))
+	      ;
+
+	    if (elem)
+	      return expand_expr (fold (TREE_VALUE (elem)), target,
+				  tmode, ro_modifier);
 	  }
 	  
 	else if (optimize >= 1
@@ -6517,22 +6518,22 @@ expand_expr (exp, target, tmode, modifier)
 	      {
 		tree init = DECL_INITIAL (array);
 
-		i = TREE_INT_CST_LOW (index);
 		if (TREE_CODE (init) == CONSTRUCTOR)
 		  {
 		    tree elem = CONSTRUCTOR_ELTS (init);
 
-		    while (elem
-			   && !tree_int_cst_equal (TREE_PURPOSE (elem), index))
-		      elem = TREE_CHAIN (elem);
+		    for (elem = CONSTRUCTOR_ELTS (init);
+			 ! tree_int_cst_equal (TREE_PURPOSE (elem), index);
+			 elem = TREE_CHAIN (elem))
+		      ;
+
 		    if (elem)
 		      return expand_expr (fold (TREE_VALUE (elem)), target,
 					  tmode, ro_modifier);
 		  }
 		else if (TREE_CODE (init) == STRING_CST
-			 && TREE_INT_CST_HIGH (index) == 0
-			 && (TREE_INT_CST_LOW (index)
-			     < TREE_STRING_LENGTH (init)))
+			 && 0 > compare_tree_int (index,
+						  TREE_STRING_LENGTH (init)))
 		  return (GEN_INT
 			  (TREE_STRING_POINTER
 			   (init)[TREE_INT_CST_LOW (index)]));
@@ -6763,10 +6764,8 @@ expand_expr (exp, target, tmode, modifier)
 		    || ((bitsize >= 0
 			 && (TREE_CODE (TYPE_SIZE (TREE_TYPE (exp)))
 			     == INTEGER_CST)
-			 && ((TREE_INT_CST_HIGH (TYPE_SIZE (TREE_TYPE (exp)))
-			      != 0)
-			     || (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp)))
-				 != bitsize))))))
+			 && 0 != compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)),
+						   bitsize)))))
 	    || (modifier != EXPAND_CONST_ADDRESS
 		&& modifier != EXPAND_INITIALIZER
 		&& mode == BLKmode
@@ -8153,8 +8152,8 @@ expand_expr (exp, target, tmode, modifier)
 		|| TREE_CODE (rhs) == BIT_AND_EXPR)
 	    && TREE_OPERAND (rhs, 0) == lhs
 	    && TREE_CODE (TREE_OPERAND (rhs, 1)) == COMPONENT_REF
-	    && TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (lhs, 1))) == 1
-	    && TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (TREE_OPERAND (rhs, 1), 1))) == 1)
+	    && integer_onep (DECL_SIZE (TREE_OPERAND (lhs, 1)))
+	    && integer_onep (DECL_SIZE (TREE_OPERAND (TREE_OPERAND (rhs, 1), 1))))
 	  {
 	    rtx label = gen_label_rtx ();
 
@@ -8539,20 +8538,20 @@ expand_expr_unaligned (exp, palign)
 	   we have an explicit constructor and when our operand is a variable
 	   that was declared const.  */
 
-	if (TREE_CODE (array) == CONSTRUCTOR && ! TREE_SIDE_EFFECTS (array))
+	if (TREE_CODE (array) == CONSTRUCTOR && ! TREE_SIDE_EFFECTS (array)
+	    && 0 > compare_tree_int (index, 
+				     list_length (CONSTRUCTOR_ELTS
+						  (TREE_OPERAND (exp, 0)))))
 	  {
-	    if (TREE_CODE (index) == INTEGER_CST
-		&& TREE_INT_CST_HIGH (index) == 0)
-	      {
-		tree elem = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
+	    tree elem;
 
-		i = TREE_INT_CST_LOW (index);
-		while (elem && i--)
-		  elem = TREE_CHAIN (elem);
-		if (elem)
-		  return expand_expr_unaligned (fold (TREE_VALUE (elem)),
-						palign);
-	      }
+	    for (elem = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0)),
+		 i = TREE_INT_CST_LOW (index);
+		 elem != 0 && i != 0; i--, elem = TREE_CHAIN (elem))
+	      ;
+
+	    if (elem)
+	      return expand_expr_unaligned (fold (TREE_VALUE (elem)), palign);
 	  }
 	  
 	else if (optimize >= 1
@@ -8564,14 +8563,15 @@ expand_expr_unaligned (exp, palign)
 	      {
 		tree init = DECL_INITIAL (array);
 
-		i = TREE_INT_CST_LOW (index);
 		if (TREE_CODE (init) == CONSTRUCTOR)
 		  {
-		    tree elem = CONSTRUCTOR_ELTS (init);
+		    tree elem;
 
-		    while (elem
-			   && !tree_int_cst_equal (TREE_PURPOSE (elem), index))
-		      elem = TREE_CHAIN (elem);
+		    for (elem = CONSTRUCTOR_ELTS (init);
+			 ! tree_int_cst_equal (TREE_PURPOSE (elem), index);
+			 elem = TREE_CHAIN (elem))
+		      ;
+
 		    if (elem)
 		      return expand_expr_unaligned (fold (TREE_VALUE (elem)),
 						    palign);
@@ -9289,7 +9289,7 @@ do_jump (exp, if_false_label, if_true_label)
       if (! SLOW_BYTE_ACCESS
 	  && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
 	  && TYPE_PRECISION (TREE_TYPE (exp)) <= HOST_BITS_PER_WIDE_INT
-	  && (i = floor_log2 (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)))) >= 0
+	  && (i = tree_floor_log2 (TREE_OPERAND (exp, 1))) >= 0
 	  && (mode = mode_for_size (i + 1, MODE_INT, 0)) != BLKmode
 	  && (type = type_for_mode (mode, 1)) != 0
 	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
@@ -10204,8 +10204,9 @@ do_store_flag (exp, target, mode, only_cheap)
       if (TREE_CODE (inner) == RSHIFT_EXPR
 	  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST
 	  && TREE_INT_CST_HIGH (TREE_OPERAND (inner, 1)) == 0
-	  && (bitnum + TREE_INT_CST_LOW (TREE_OPERAND (inner, 1))
-	      < TYPE_PRECISION (type)))
+	  && bitnum < TYPE_PRECISION (type)
+	  && 0 > compare_tree_int (TREE_OPERAND (inner, 1),
+				   bitnum - TYPE_PRECISION (type)))
 	{
 	  bitnum += TREE_INT_CST_LOW (TREE_OPERAND (inner, 1));
 	  inner = TREE_OPERAND (inner, 0);

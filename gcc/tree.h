@@ -630,23 +630,21 @@ extern void tree_class_check_failed PARAMS ((const tree, char,
 #define INT_CST_LT(A, B)  \
 (TREE_INT_CST_HIGH (A) < TREE_INT_CST_HIGH (B)			\
  || (TREE_INT_CST_HIGH (A) == TREE_INT_CST_HIGH (B)		\
-     && ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (A)		\
-	 < (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (B))))
+     && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
 
 #define INT_CST_LT_UNSIGNED(A, B)  \
 (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)	\
   < (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B))	\
  || (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)	\
-      == (unsigned HOST_WIDE_INT ) TREE_INT_CST_HIGH (B)) \
-     && (((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (A)	\
-	  < (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (B)))))
+      == (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B)) \
+     && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
 
 struct tree_int_cst
 {
   char common[sizeof (struct tree_common)];
   struct rtx_def *rtl;	/* acts as link to register transfer language
 			   (rtl) info */
-  HOST_WIDE_INT int_cst_low;
+  unsigned HOST_WIDE_INT int_cst_low;
   HOST_WIDE_INT int_cst_high;
 };
 
@@ -1698,7 +1696,7 @@ extern tree array_type_nelts		PARAMS ((tree));
 extern tree value_member		PARAMS ((tree, tree));
 extern tree purpose_member		PARAMS ((tree, tree));
 extern tree binfo_member		PARAMS ((tree, tree));
-extern int attribute_hash_list		PARAMS ((tree));
+extern unsigned int attribute_hash_list	PARAMS ((tree));
 extern int attribute_list_equal		PARAMS ((tree, tree));
 extern int attribute_list_contained	PARAMS ((tree, tree));
 extern int tree_int_cst_equal		PARAMS ((tree, tree));
@@ -1787,7 +1785,7 @@ extern void layout_type			PARAMS ((tree));
    How the hash code is computed is up to the caller, as long as any two
    callers that could hash identical-looking type nodes agree.  */
 
-extern tree type_hash_canon		PARAMS ((int, tree));
+extern tree type_hash_canon		PARAMS ((unsigned int, tree));
 
 /* Given a VAR_DECL, PARM_DECL, RESULT_DECL or FIELD_DECL node,
    calculates the DECL_SIZE, DECL_SIZE_UNIT, DECL_ALIGN and DECL_MODE
@@ -2218,26 +2216,34 @@ extern int stmt_loop_nest_empty			PARAMS ((void));
 extern tree fold		PARAMS ((tree));
 
 extern int force_fit_type	PARAMS ((tree, int));
-extern int add_double		PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-				       HOST_WIDE_INT, HOST_WIDE_INT,
-				       HOST_WIDE_INT *, HOST_WIDE_INT *));
-extern int neg_double		PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-				       HOST_WIDE_INT *, HOST_WIDE_INT *));
-extern int mul_double		PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-				       HOST_WIDE_INT, HOST_WIDE_INT,
-				       HOST_WIDE_INT *, HOST_WIDE_INT *));
-extern void lshift_double	PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-				       HOST_WIDE_INT, int, HOST_WIDE_INT *,
-				       HOST_WIDE_INT *, int));
-extern void rshift_double	PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-				       HOST_WIDE_INT, int,
-				       HOST_WIDE_INT *, HOST_WIDE_INT *, int));
-extern void lrotate_double	PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-				       HOST_WIDE_INT, int, HOST_WIDE_INT *,
-				       HOST_WIDE_INT *));
-extern void rrotate_double	PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-				       HOST_WIDE_INT, int, HOST_WIDE_INT *,
-				       HOST_WIDE_INT *));
+extern int add_double		PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+					 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+					 unsigned HOST_WIDE_INT *,
+					 HOST_WIDE_INT *));
+extern int neg_double		PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+					 unsigned HOST_WIDE_INT *,
+					 HOST_WIDE_INT *));
+extern int mul_double		PARAMS ((unsigned HOST_WIDE_INT,
+					 HOST_WIDE_INT,
+					 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+					 unsigned HOST_WIDE_INT *,
+					 HOST_WIDE_INT *));
+extern void lshift_double	PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+					 HOST_WIDE_INT, unsigned int,
+					 unsigned HOST_WIDE_INT *,
+					 HOST_WIDE_INT *, int));
+extern void rshift_double	PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+					 HOST_WIDE_INT, unsigned int,
+					 unsigned HOST_WIDE_INT *,
+					 HOST_WIDE_INT *, int));
+extern void lrotate_double	PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+					 HOST_WIDE_INT, unsigned int,
+					 unsigned HOST_WIDE_INT *,
+					 HOST_WIDE_INT *));
+extern void rrotate_double	PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+					 HOST_WIDE_INT, unsigned int,
+					 unsigned HOST_WIDE_INT *,
+					 HOST_WIDE_INT *));
 extern int operand_equal_p	PARAMS ((tree, tree, int));
 extern tree invert_truthvalue	PARAMS ((tree));
 
@@ -2394,19 +2400,21 @@ extern tree get_file_function_name	PARAMS ((int));
 extern void set_identifier_size		PARAMS ((int));
 extern int int_fits_type_p		PARAMS ((tree, tree));
 extern int tree_log2			PARAMS ((tree));
+extern int tree_floor_log2		PARAMS ((tree));
 extern void preserve_initializer	PARAMS ((void));
 extern void preserve_data		PARAMS ((void));
 extern int object_permanent_p		PARAMS ((tree));
 extern int type_precision		PARAMS ((tree));
 extern int simple_cst_equal		PARAMS ((tree, tree));
+extern int compare_tree_int		PARAMS ((tree, unsigned int));
 extern int type_list_equal		PARAMS ((tree, tree));
 extern int chain_member			PARAMS ((tree, tree));
 extern int chain_member_purpose		PARAMS ((tree, tree));
 extern int chain_member_value		PARAMS ((tree, tree));
 extern tree listify			PARAMS ((tree));
-extern tree type_hash_lookup		PARAMS ((int, tree));
-extern void type_hash_add		PARAMS ((int, tree));
-extern int type_hash_list		PARAMS ((tree));
+extern tree type_hash_lookup		PARAMS ((unsigned int, tree));
+extern void type_hash_add		PARAMS ((unsigned int, tree));
+extern unsigned int type_hash_list	PARAMS ((tree));
 extern int simple_cst_list_equal	PARAMS ((tree, tree));
 extern void debug_obstack		PARAMS ((char *));
 extern void rtl_in_current_obstack	PARAMS ((void));
@@ -2449,6 +2457,7 @@ extern void free_temp_slots		PARAMS ((void));
 extern void pop_temp_slots		PARAMS ((void));
 extern void push_temp_slots		PARAMS ((void));
 extern void preserve_temp_slots		PARAMS ((struct rtx_def *));
+extern void preserve_rtl_expr_temps	PARAMS ((tree));
 extern int aggregate_value_p		PARAMS ((tree));
 extern tree reorder_blocks		PARAMS ((tree,
 						struct rtx_def *));
@@ -2505,7 +2514,7 @@ extern void print_lang_statistics	PARAMS ((void));
 
 /* In c-common.c */
 extern tree truthvalue_conversion	PARAMS ((tree));
-extern int min_precision		PARAMS ((tree, int));
+extern unsigned int min_precision	PARAMS ((tree, int));
 extern void split_specs_attrs		PARAMS ((tree, tree *, tree *));
 
 /* In c-decl.c */
@@ -2537,12 +2546,14 @@ extern void variable_section		PARAMS ((tree, int));
 
 /* In fold-const.c */
 extern int div_and_round_double		PARAMS ((enum tree_code, int,
-						HOST_WIDE_INT, HOST_WIDE_INT,
-						HOST_WIDE_INT, HOST_WIDE_INT,
-						HOST_WIDE_INT *,
-						HOST_WIDE_INT *,
-						HOST_WIDE_INT *,
-						HOST_WIDE_INT *));
+						 unsigned HOST_WIDE_INT,
+						 HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT,
+						 HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT *,
+						 HOST_WIDE_INT *,
+						 unsigned HOST_WIDE_INT *,
+						 HOST_WIDE_INT *));
 
 /* In stmt.c */
 extern void emit_nop			PARAMS ((void));

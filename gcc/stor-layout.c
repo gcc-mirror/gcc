@@ -177,14 +177,10 @@ mode_for_size_tree (size, class, limit)
      int limit;
 {
   if (TREE_CODE (size) != INTEGER_CST
-      || TREE_INT_CST_HIGH (size) != 0
-      /* If the low-order part is so high as to appear negative, we can't
-	 find a mode for that many bits.  */
-      || TREE_INT_CST_LOW (size) < 0
       /* What we really want to say here is that the size can fit in a
 	 host integer, but we know there's no way we'd find a mode for
 	 this many bits, so there's no point in doing the precise test.  */
-      || TREE_INT_CST_LOW (size) > 1000)
+      || compare_tree_int (size, 1000) > 0)
     return BLKmode;
   else
     return mode_for_size (TREE_INT_CST_LOW (size), class, limit);
@@ -236,7 +232,7 @@ int_mode_for_mode (mode)
 
     case MODE_CC:
     default:
-      abort();
+      abort ();
     }
 
   return mode;
@@ -391,13 +387,11 @@ layout_decl (decl, known_align)
       tree size = DECL_SIZE_UNIT (decl);
 
       if (size != 0 && TREE_CODE (size) == INTEGER_CST
-	  && (TREE_INT_CST_HIGH (size) != 0
-	      || TREE_INT_CST_LOW (size) > larger_than_size))
+	  && compare_tree_int (size, larger_than_size) > 0)
 	{
-	  int size_as_int = TREE_INT_CST_LOW (size);
+	  unsigned int size_as_int = TREE_INT_CST_LOW (size);
 
-	  if (size_as_int == TREE_INT_CST_LOW (size)
-	      && TREE_INT_CST_HIGH (size) == 0)
+	  if (compare_tree_int (size, size_as_int) == 0)
 	    warning_with_decl (decl, "size of `%s' is %d bytes", size_as_int);
 	  else
 	    warning_with_decl (decl, "size of `%s' is larger than %d bytes",
@@ -432,7 +426,7 @@ layout_record (rec)
      and VAR_SIZE is a tree expression.
      If VAR_SIZE is null, the size is just CONST_SIZE.
      Naturally we try to avoid using VAR_SIZE.  */
-  HOST_WIDE_INT const_size = 0;
+  unsigned HOST_WIDE_INT const_size = 0;
   tree var_size = 0;
   /* Once we start using VAR_SIZE, this is the maximum alignment
      that we know VAR_SIZE has.  */
@@ -581,7 +575,7 @@ layout_record (rec)
 	{
 	  unsigned int type_align = TYPE_ALIGN (type);
 	  register tree dsize = DECL_SIZE (field);
-	  int field_size = TREE_INT_CST_LOW (dsize);
+	  unsigned int field_size = TREE_INT_CST_LOW (dsize);
 
 	  /* A bit field may not span more units of alignment of its type
 	     than its type itself.  Advance to next boundary if necessary.  */
@@ -778,7 +772,7 @@ layout_union (rec)
   /* The size of the union, based on the fields scanned so far,
      is max (CONST_SIZE, VAR_SIZE).
      VAR_SIZE may be null; then CONST_SIZE by itself is the size.  */
-  register HOST_WIDE_INT const_size = 0;
+  unsigned HOST_WIDE_INT const_size = 0;
   register tree var_size = 0;
 
 #ifdef STRUCTURE_SIZE_BOUNDARY
@@ -946,7 +940,7 @@ layout_type (type)
       break;
 
     case VOID_TYPE:
-      TYPE_SIZE (type) = size_zero_node;
+      TYPE_SIZE (type) = bitsize_int (0);
       TYPE_SIZE_UNIT (type) = size_zero_node;
       TYPE_ALIGN (type) = 1;
       TYPE_MODE (type) = VOIDmode;
@@ -1113,7 +1107,7 @@ layout_type (type)
 	     Unless the member is BLKmode only because it isn't aligned.  */
 	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	    {
-	      int bitpos;
+	      unsigned HOST_WIDE_INT bitpos;
 
 	      if (TREE_CODE (field) != FIELD_DECL
 		  || TREE_CODE (TREE_TYPE (field)) == ERROR_MARK)
@@ -1195,8 +1189,7 @@ layout_type (type)
 	     then stick with BLKmode.  */
 	  && (! STRICT_ALIGNMENT
 	      || TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-	      || ((int) TYPE_ALIGN (type)
-		  >= TREE_INT_CST_LOW (TYPE_SIZE (type)))))
+	      || compare_tree_int (TYPE_SIZE (type), TYPE_ALIGN (type)) <= 0))
 	{
 	  tree field;
 

@@ -786,10 +786,11 @@ build_newarray (atype_value, length)
      int atype_value;
      tree length;
 {
-  tree type = build_java_array_type (decode_newarray_type (atype_value),
-				     TREE_CODE (length) == INTEGER_CST
-				     ? TREE_INT_CST_LOW (length)
-				     : -1);
+  tree type
+    = build_java_array_type (decode_newarray_type (atype_value),
+			     TREE_CODE (length) == INTEGER_CST
+			     ? (HOST_WIDE_INT) TREE_INT_CST_LOW (length) : -1);
+
   return build (CALL_EXPR, promote_type (type),
 		build_address_of (soft_newarray_node),
 		tree_cons (NULL_TREE, 
@@ -806,10 +807,11 @@ build_anewarray (class_type, length)
     tree class_type;
     tree length;
 {
-  tree type = build_java_array_type (class_type,
-				     TREE_CODE (length) == INTEGER_CST
-				     ? TREE_INT_CST_LOW (length)
-				     : -1);
+  tree type
+    = build_java_array_type (class_type,
+			     TREE_CODE (length) == INTEGER_CST
+			     ? (HOST_WIDE_INT) TREE_INT_CST_LOW (length) : -1);
+
   return build (CALL_EXPR, promote_type (type),
 		build_address_of (soft_anewarray_node),
 		tree_cons (NULL_TREE, length,

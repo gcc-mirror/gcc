@@ -500,7 +500,7 @@ void
 chill_handle_on_labels (labels)
      tree labels;
 {
-  int alternative = ++current_handler->prev_on_alternative;
+  unsigned int alternative = ++current_handler->prev_on_alternative;
   if (pass == 1)
     {
       tree handler_number = build_int_2 (alternative, 0);
@@ -510,9 +510,13 @@ chill_handle_on_labels (labels)
   else
     {
       /* Find handler_number saved in pass 1. */
-      tree tmp = current_handler->on_alt_list;
-      while (TREE_INT_CST_LOW (TREE_PURPOSE (tmp)) != alternative)
-	tmp = TREE_CHAIN (tmp);
+      tree tmp;
+
+      for (tmp = current_handler->on_alt_list;
+	   compare_tree_int (TREE_PURPOSE (tmp), alternative) != 0;
+	   tmp = TREE_CHAIN (tmp))
+	;
+
       if (expand_exit_needed)
 	expand_exit_something (), expand_exit_needed = 0;
       chill_handle_case_label (TREE_PURPOSE (tmp),
@@ -618,7 +622,7 @@ expand_goto_except_cleanup (label_level)
   tree last = NULL_TREE;
   for ( ; list != NULL_TREE; list = TREE_CHAIN (list))
     {
-      if (TREE_INT_CST_LOW (TREE_PURPOSE (list)) > label_level)
+      if (compare_tree_int (TREE_PURPOSE (list), label_level) > 0)
 	last = list;
       else
 	break;

@@ -1490,11 +1490,12 @@ dump_expr (t, flags)
 	    dump_char (TREE_INT_CST_LOW (t));
 	    OB_PUTC ('\'');
 	  }
-	else if (TREE_INT_CST_HIGH (t)
+	else if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (t)
 		 != (TREE_INT_CST_LOW (t) >> (HOST_BITS_PER_WIDE_INT - 1)))
 	  {
 	    tree val = t;
-	    if (TREE_INT_CST_HIGH (val) < 0)
+
+	    if (tree_int_cst_sgn (val) < 0)
 	      {
 		OB_PUTC ('-');
 		val = build_int_2 (~TREE_INT_CST_LOW (val),
