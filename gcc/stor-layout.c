@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "expr.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "target.h"
 
 /* Set to one when set_sizetype has been called.  */
 static int sizetype_set;
@@ -503,6 +504,7 @@ start_record_layout (t)
 
   rli->offset = size_zero_node;
   rli->bitpos = bitsize_zero_node;
+  rli->prev_field = 0;
   rli->pending_statics = 0;
   rli->packed_maybe_necessary = 0;
 
@@ -787,8 +789,26 @@ place_field (rli, field)
   /* Record must have at least as much alignment as any field.
      Otherwise, the alignment of the field within the record is
      meaningless.  */
+  if ((* targetm.ms_bitfield_layout_p) (rli->t)
+      && type != error_mark_node
+      && DECL_BIT_FIELD_TYPE (field)
+      && ! integer_zerop (TYPE_SIZE (type))
+      && integer_zerop (DECL_SIZE (field)))
+    {
+      if (rli->prev_field
+	  && DECL_BIT_FIELD_TYPE (rli->prev_field)
+	  && ! integer_zerop (DECL_SIZE (rli->prev_field)))
+	{
+	  rli->record_align = MAX (rli->record_align, desired_align);
+	  rli->unpacked_align = MAX (rli->unpacked_align, TYPE_ALIGN (type));
+	}
+      else
+	desired_align = 1;
+    }	
+  else
 #ifdef PCC_BITFIELD_TYPE_MATTERS
   if (PCC_BITFIELD_TYPE_MATTERS && type != error_mark_node
+      && ! (* targetm.ms_bitfield_layout_p) (rli->t)
       && DECL_BIT_FIELD_TYPE (field)
       && ! integer_zerop (TYPE_SIZE (type)))
     {
@@ -878,6 +898,7 @@ place_field (rli, field)
      variable-sized fields, we need not worry about compatibility.  */
 #ifdef PCC_BITFIELD_TYPE_MATTERS
   if (PCC_BITFIELD_TYPE_MATTERS
+      && ! (* targetm.ms_bitfield_layout_p) (rli->t)
       && TREE_CODE (field) == FIELD_DECL
       && type != error_mark_node
       && DECL_BIT_FIELD (field)
@@ -907,6 +928,7 @@ place_field (rli, field)
 
 #ifdef BITFIELD_NBYTES_LIMITED
   if (BITFIELD_NBYTES_LIMITED
+      && ! (* targetm.ms_bitfield_layout_p) (rli->t)
       && TREE_CODE (field) == FIELD_DECL
       && type != error_mark_node
       && DECL_BIT_FIELD_TYPE (field)
@@ -940,6 +962,50 @@ place_field (rli, field)
     }
 #endif
 
+  /* See the docs for TARGET_MS_BITFIELD_LAYOUT_P for details.  */
+  if ((* targetm.ms_bitfield_layout_p) (rli->t)
+      && TREE_CODE (field) == FIELD_DECL
+      && type != error_mark_node
+      && ! DECL_PACKED (field)
+      && rli->prev_field
+      && DECL_SIZE (field)
+      && host_integerp (DECL_SIZE (field), 1)
+      && DECL_SIZE (rli->prev_field)
+      && host_integerp (DECL_SIZE (rli->prev_field), 1)
+      && host_integerp (rli->offset, 1)
+      && host_integerp (TYPE_SIZE (type), 1)
+      && host_integerp (TYPE_SIZE (TREE_TYPE (rli->prev_field)), 1)
+      && ((DECL_BIT_FIELD_TYPE (rli->prev_field)
+	   && ! integer_zerop (DECL_SIZE (rli->prev_field)))
+	  || (DECL_BIT_FIELD_TYPE (field)
+	      && ! integer_zerop (DECL_SIZE (field))))
+      && (! simple_cst_equal (TYPE_SIZE (type),
+			      TYPE_SIZE (TREE_TYPE (rli->prev_field)))
+	  /* If the previous field was a zero-sized bit-field, either
+	     it was ignored, in which case we must ensure the proper
+	     alignment of this field here, or it already forced the
+	     alignment of this field, in which case forcing the
+	     alignment again is harmless.  So, do it in both cases.  */
+	  || (DECL_BIT_FIELD_TYPE (rli->prev_field)
+	      && integer_zerop (DECL_SIZE (rli->prev_field)))))
+    {
+      unsigned int type_align = TYPE_ALIGN (type);
+
+      if (rli->prev_field
+	  && DECL_BIT_FIELD_TYPE (rli->prev_field)
+	  /* If the previous bit-field is zero-sized, we've already
+	     accounted for its alignment needs (or ignored it, if
+	     appropriate) while placing it.  */
+	  && ! integer_zerop (DECL_SIZE (rli->prev_field)))
+	type_align = MAX (type_align,
+			  TYPE_ALIGN (TREE_TYPE (rli->prev_field)));
+
+      if (maximum_field_alignment != 0)
+	type_align = MIN (type_align, maximum_field_alignment);
+
+      rli->bitpos = round_up (rli->bitpos, type_align);
+    }
+
   /* Offset so far becomes the position of this field after normalizing.  */
   normalize_rli (rli);
   DECL_FIELD_OFFSET (field) = rli->offset;
@@ -965,6 +1031,8 @@ place_field (rli, field)
 
   if (known_align != actual_align)
     layout_decl (field, actual_align);
+
+  rli->prev_field = field;
 
   /* Now add size of this field to the size of the record.  If the size is
      not constant, treat the field as being a multiple of bytes and just

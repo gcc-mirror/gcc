@@ -2736,6 +2736,16 @@ default_function_attribute_inlinable_p (fndecl)
   return false;
 }
 
+/* Default value of targetm.ms_bitfield_layout_p that always returns
+   false.  */
+bool
+default_ms_bitfield_layout_p (record)
+     tree record ATTRIBUTE_UNUSED;
+{
+  /* By default, GCC does not use the MS VC++ bitfield layout rules.  */
+  return false;
+}
+
 /* Return non-zero if IDENT is a valid name for attribute ATTR,
    or zero if not.
 

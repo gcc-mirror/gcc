@@ -1,5 +1,5 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -161,6 +161,10 @@ struct gcc_target
   /* Return true if FNDECL (which has at least one machine attribute)
      can be inlined despite its machine attributes, false otherwise.  */
   bool (* function_attribute_inlinable_p) PARAMS ((tree fndecl));
+
+  /* Return true if bitfields in RECORD_TYPE should follow the
+     Microsoft Visual C++ bitfield layout rules.  */
+  bool (* ms_bitfield_layout_p) PARAMS ((tree record_type));
 
   /* Set up target-specific built-in functions.  */
   void (* init_builtins) PARAMS ((void));
