@@ -1,3 +1,8 @@
+2001-01-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/os/aix/bits/atomicity.h (__compare_and_swap): Remove.
+	(__always_swap): Likewise.
+
 2001-01-23  Chris Demetriou  <cgd@broadcom.com>
 
 	* libsupc++/exception_support.cc (__terminate_func): Remove
