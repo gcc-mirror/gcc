@@ -3192,6 +3192,14 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  /* Call the complete object destructor.  */
 	  auto_delete = sfk_complete_destructor;
 	}
+      else if (auto_delete == sfk_deleting_destructor
+	       && TYPE_GETS_REG_DELETE (type))
+	{
+	  /* Make sure we have access to the member op delete, even though
+	     we'll actually be calling it from the destructor.  */
+	  build_op_delete_call (DELETE_EXPR, addr, c_sizeof_nowarn (type),
+				LOOKUP_NORMAL, NULL_TREE);
+	}
 
       expr = build_dtor_call (build_indirect_ref (addr, NULL),
 			      auto_delete, flags);
