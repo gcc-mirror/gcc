@@ -69,14 +69,6 @@ c_dump_tree (void *dump_info, tree t)
       dump_next_stmt (di, t);
       break;
 
-    case CASE_LABEL:
-      /* Note that a case label is not like other statements; there is
-	 no way to get the line-number of a case label.  */
-      dump_child ("low", CASE_LOW (t));
-      dump_child ("high", CASE_HIGH (t));
-      dump_next_stmt (di, t);
-      break;
-
     case CLEANUP_STMT:
       dump_stmt (di, t);
       dump_child ("decl", CLEANUP_DECL (t));

@@ -7972,7 +7972,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
       break;
 
-    case CASE_LABEL:
+    case CASE_LABEL_EXPR:
       prep_stmt (t);
       finish_case_label (tsubst_expr (CASE_LOW (t), args, complain, in_decl),
 			 tsubst_expr (CASE_HIGH (t), args, complain,

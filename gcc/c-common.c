@@ -3770,8 +3770,8 @@ case_compare (splay_tree_key k1, splay_tree_key k2)
    case label was declared using the usual C/C++ syntax, rather than
    the GNU case range extension.  CASES is a tree containing all the
    case ranges processed so far; COND is the condition for the
-   switch-statement itself.  Returns the CASE_LABEL created, or
-   ERROR_MARK_NODE if no CASE_LABEL is created.  */
+   switch-statement itself.  Returns the CASE_LABEL_EXPR created, or
+   ERROR_MARK_NODE if no CASE_LABEL_EXPR is created.  */
 
 tree
 c_add_case_label (splay_tree cases, tree cond, tree low_value,
@@ -3870,7 +3870,7 @@ c_add_case_label (splay_tree cases, tree cond, tree low_value,
   /* If there was an overlap, issue an error.  */
   if (node)
     {
-      tree duplicate = CASE_LABEL_DECL ((tree) node->value);
+      tree duplicate = CASE_LABEL ((tree) node->value);
 
       if (high_value)
 	{
@@ -3935,10 +3935,10 @@ match_case_to_enum_1 (tree key, tree type, tree label)
 
   if (TYPE_NAME (type) == 0)
     warning ("%Jcase value `%s' not in enumerated type",
-	     CASE_LABEL_DECL (label), buf);
+	     CASE_LABEL (label), buf);
   else
     warning ("%Jcase value `%s' not in enumerated type `%T'",
-	     CASE_LABEL_DECL (label), buf, type);
+	     CASE_LABEL (label), buf, type);
 }
 
 static int

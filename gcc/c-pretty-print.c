@@ -1909,33 +1909,6 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
       }
       break;
 
-       /* labeled-statement:
-             identifier : statement
-             case constant-expression : statement
-             default : statement   */
-    case CASE_LABEL:
-      if (pp_needs_newline (pp))
-        pp_newline_and_indent (pp, -3);
-      else
-        pp_indentation (pp) -= 3;
-      if (CASE_LOW (stmt) == NULL_TREE)
-	pp_identifier (pp, "default");
-      else
-	{
-	  pp_c_identifier (pp, "case");
-	  pp_c_whitespace (pp);
-	  pp_conditional_expression (pp, CASE_LOW (stmt));
-	  if (CASE_HIGH (stmt))
-	    {
-	      pp_identifier (pp, "...");
-	      pp_conditional_expression (pp, CASE_HIGH (stmt));
-	    }
-	}
-      pp_colon (pp);
-      pp_indentation (pp) += 3;
-      pp_needs_newline (pp) = true;
-      break;
-
       /* compound-statement:
             {  block-item-list(opt) }
 

@@ -958,7 +958,6 @@ extern void finish_file	(void);
 #define FOR_BODY(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
 
 #define SWITCH_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
-#define CASE_LABEL_DECL(NODE)   TREE_OPERAND (CASE_LABEL_CHECK (NODE), 2)
 
 /* COMPOUND_STMT accessor. This gives access to the TREE_LIST of
    statements associated with a compound statement. The result is the
@@ -1007,8 +1006,7 @@ enum c_tree_code {
    CLEANUP_STMT,	EXPR_STMT,	COMPOUND_STMT,	\
    DECL_STMT,		IF_STMT,	FOR_STMT,	\
    WHILE_STMT,		DO_STMT,	RETURN_STMT,	\
-   BREAK_STMT,		CONTINUE_STMT,			\
-   SWITCH_STMT,		CASE_LABEL
+   BREAK_STMT,		CONTINUE_STMT,	SWITCH_STMT
 
 /* TRUE if a code represents a statement.  The front end init
    langhook should take care of initialization of this array.  */

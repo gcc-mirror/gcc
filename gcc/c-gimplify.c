@@ -264,15 +264,6 @@ c_gimplify_stmt (tree *stmt_p)
       ret = gimplify_decl_stmt (&stmt);
       break;
 
-    case CASE_LABEL:
-      {
-	tree label = create_artificial_label ();
-	stmt = build (CASE_LABEL_EXPR, void_type_node,
-		      CASE_LOW (stmt), CASE_HIGH (stmt), label);
-	ret = GS_OK;
-      }
-      break;
-
     case CONTINUE_STMT:
       stmt = build_bc_goto (bc_continue);
       ret = GS_OK;

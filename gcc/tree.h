@@ -1066,7 +1066,7 @@ struct tree_vec GTY(())
 #define SWITCH_BODY(NODE)       TREE_OPERAND ((NODE), 1)
 #define SWITCH_LABELS(NODE)     TREE_OPERAND ((NODE), 2)
 
-/* CASE_LABEL accessors. These give access to the high and low values
+/* CASE_LABEL_EXPR accessors. These give access to the high and low values
    of a case label, respectively.  */
 #define CASE_LOW(NODE)          TREE_OPERAND ((NODE), 0)
 #define CASE_HIGH(NODE)         TREE_OPERAND ((NODE), 1)

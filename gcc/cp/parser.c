@@ -5720,8 +5720,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
    labeled-statement:
      case constant-expression ... constant-expression : statement
 
-   Returns the new CASE_LABEL, for a `case' or `default' label.  For
-   an ordinary label, returns a LABEL_EXPR.  */
+   Returns the new CASE_LABEL_EXPR, for a `case' or `default' label.
+   For an ordinary label, returns a LABEL_EXPR.  */
 
 static tree
 cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)

@@ -297,12 +297,12 @@ build_continue_stmt (void)
   return (build_stmt (CONTINUE_STMT));
 }
 
-/* Create a CASE_LABEL tree node and return it.  */
+/* Create a CASE_LABEL_EXPR tree node and return it.  */
 
 tree
 build_case_label (tree low_value, tree high_value, tree label_decl)
 {
-  return build_stmt (CASE_LABEL, low_value, high_value, label_decl);
+  return build_stmt (CASE_LABEL_EXPR, low_value, high_value, label_decl);
 }
 
 /* We're about to expand T, a statement.  Set up appropriate context
