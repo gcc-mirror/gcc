@@ -1721,6 +1721,14 @@ do {									\
   ASM_OUTPUT_INT (FILE, XEXP (DECL_RTL (FUNCTION), 0));			\
 } while (0)
 
+/* A C expression whose value is RTL representing the value of the return
+   address for the frame COUNT steps up from the current frame.  */
+
+#define RETURN_ADDR_RTX(COUNT, FRAME)	\
+  ((COUNT == 0)				\
+   ? gen_rtx (MEM, Pmode, plus_constant (FRAME, -4)) \
+   : (rtx) 0)
+
 /* Used to mask out junk bits from the return address, such as
    processor state, interrupt status, condition codes and the like.  */
 #define MASK_RETURN_ADDR \
