@@ -149,7 +149,7 @@ static void ia64_function_epilogue PARAMS((FILE *, HOST_WIDE_INT));
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ia64_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Return 1 if OP is a valid operand for the MEM of a CALL insn.  */
 

@@ -175,7 +175,7 @@ static char alt_reg_names[][8] =
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE rs6000_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Override command line options.  Mostly we process the processor
    type and sometimes adjust other TARGET_ options.  */

@@ -86,7 +86,7 @@ int m68k_last_compare_had_fp_operands;
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE m68k_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro

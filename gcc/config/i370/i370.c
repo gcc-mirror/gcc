@@ -294,7 +294,7 @@ static const unsigned char ebcasc[256] =
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE i370_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Map characters from one character set to another.
    C is the character to be translated.  */

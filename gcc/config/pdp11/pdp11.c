@@ -61,7 +61,7 @@ static void pdp11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE pdp11_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Nonzero if OP is a valid second operand for an arithmetic insn.  */
 

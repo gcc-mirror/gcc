@@ -163,7 +163,7 @@ static void sh_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE sh_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Print the operand address in x to the stream.  */
 

@@ -1630,7 +1630,7 @@ final_start_function (first, file, optimize)
     }
 
   /* First output the function prologue: code to set up the stack frame.  */
-  (*target.asm_out.function_prologue) (file, get_frame_size ());
+  (*targetm.asm_out.function_prologue) (file, get_frame_size ());
 
   /* If the machine represents the prologue as RTL, the profiling code must
      be emitted when NOTE_INSN_PROLOGUE_END is scanned.  */
@@ -1773,7 +1773,7 @@ final_end_function (first, file, optimize)
 
   /* Finally, output the function epilogue:
      code to restore the stack frame and return to the caller.  */
-  (*target.asm_out.function_epilogue) (file, get_frame_size ());
+  (*targetm.asm_out.function_epilogue) (file, get_frame_size ());
 
 #ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)

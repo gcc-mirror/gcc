@@ -183,7 +183,7 @@ int avr_case_values_threshold = 30000;
 #undef TARGET_VALID_TYPE_ATTRIBUTE
 #define TARGET_VALID_TYPE_ATTRIBUTE avr_valid_type_attribute
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 void
 avr_override_options ()

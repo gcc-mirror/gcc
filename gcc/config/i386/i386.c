@@ -631,7 +631,7 @@ static int ix86_comp_type_attributes PARAMS ((tree, tree));
 #  define TARGET_ASM_FUNCTION_PROLOGUE ix86_osf_output_function_prologue
 #endif
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro

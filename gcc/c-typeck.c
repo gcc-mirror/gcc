@@ -206,7 +206,7 @@ common_type (t1, t2)
     return t1;
 
   /* Merge the attributes.  */
-  attributes = (*target.merge_type_attributes) (t1, t2);
+  attributes = (*targetm.merge_type_attributes) (t1, t2);
 
   /* Treat an enum type as the unsigned integer type of the same width.  */
 
@@ -484,7 +484,7 @@ comptypes (type1, type2)
     return 1;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  if (! (attrval = (*target.comp_type_attributes) (t1, t2)))
+  if (! (attrval = (*targetm.comp_type_attributes) (t1, t2)))
      return 0;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */

@@ -68,7 +68,7 @@ static int out_of_line_epilogue;
 
 /* Initialize the GCC target structure.  */
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Indicate this file was compiled by gcc and what optimization
    level was used.  */

@@ -86,7 +86,7 @@ static int v850_interrupt_p = FALSE;
 #undef TARGET_VALID_DECL_ATTRIBUTE
 #define TARGET_VALID_DECL_ATTRIBUTE v850_valid_decl_attribute
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro

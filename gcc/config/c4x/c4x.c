@@ -195,7 +195,7 @@ static int c4x_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 #undef TARGET_VALID_TYPE_ATTRIBUTE
 #define TARGET_VALID_TYPE_ATTRIBUTE c4x_valid_type_attribute_p
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Called to register all of our global variables with the garbage
    collector.  */

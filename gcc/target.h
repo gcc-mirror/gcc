@@ -33,9 +33,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    includes target.h and target-def.h, and overrides any inappropriate
    defaults by undefining the relevant macro and defining a suitable
    replacement.  That file should then contain the definition of
-   "target" like so:
+   "targetm" like so:
 
-   struct gcc_target target = TARGET_INITIALIZER;
+   struct gcc_target targetm = TARGET_INITIALIZER;
 
    Doing things this way allows us to bring together everything that
    defines a target to GCC.  By supplying a default that is
@@ -83,4 +83,4 @@ struct gcc_target
   void (* set_default_type_attributes) PARAMS ((tree type));
 };
 
-extern struct gcc_target target;
+extern struct gcc_target targetm;

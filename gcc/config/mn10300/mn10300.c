@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Initialize the GCC target structure.  */
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 void
 asm_file_start (file)

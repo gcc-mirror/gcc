@@ -70,7 +70,7 @@ rtx i860_compare_op0, i860_compare_op1;
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE i860_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Return non-zero if this pattern, can be evaluated safely, even if it
    was not asked for.  */

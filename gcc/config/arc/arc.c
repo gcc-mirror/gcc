@@ -99,7 +99,7 @@ static void arc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #undef TARGET_VALID_DECL_ATTRIBUTE
 #define TARGET_VALID_DECL_ATTRIBUTE arc_valid_decl_attribute
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
