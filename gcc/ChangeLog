@@ -1,3 +1,8 @@
+2004-10-26  Geoffrey Keating  <geoffk@apple.com>
+
+	* builtins.c (fold_builtin_unordered_cmp): Always bring both
+	operands to the same type.
+
 2004-10-26  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/18010
