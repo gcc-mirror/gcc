@@ -53,6 +53,7 @@ import java.io.FileDescriptor;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Warren Levy <warrenl@cygnus.com>
+ * @since 1.1
  */
 public abstract class DatagramSocketImpl implements SocketOptions
 {

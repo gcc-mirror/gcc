@@ -117,6 +117,9 @@ public class DatagramSocket
     return impl.getLocalPort();
   }
 
+  /**
+   * @since 1.1
+   */
   public synchronized int getSoTimeout() throws SocketException
   {
     Object timeout = impl.getOption(SocketOptions.SO_TIMEOUT);
@@ -152,6 +155,9 @@ public class DatagramSocket
     impl.send(p);
   }
 
+  /**
+   * @since 1.1
+   */
   public synchronized void setSoTimeout(int timeout) throws SocketException
   {
     if (timeout < 0)

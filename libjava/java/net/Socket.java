@@ -534,7 +534,7 @@ public class Socket
    *
    * @exception SocketException If an error occurs or Socket not connected
    *
-   * @since Java 1.2
+   * @since 1.2
    */
   public void setSendBufferSize (int size) throws SocketException
   {
@@ -556,7 +556,7 @@ public class Socket
    *
    * @exception SocketException If an error occurs or socket not connected
    *
-   * @since Java 1.2
+   * @since 1.2
    */
   public int getSendBufferSize () throws SocketException
   {
@@ -580,7 +580,7 @@ public class Socket
    *
    * @exception SocketException If an error occurs or Socket is not connected
    *
-   * @since Java 1.2
+   * @since 1.2
    */
   public void setReceiveBufferSize (int size) throws SocketException
   {
@@ -602,7 +602,7 @@ public class Socket
    *
    * @exception SocketException If an error occurs or Socket is not connected
    *
-   * @since Java 1.2
+   * @since 1.2
    */
   public int getReceiveBufferSize () throws SocketException
   {

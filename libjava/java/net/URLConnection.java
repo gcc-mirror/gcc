@@ -300,6 +300,9 @@ public abstract class URLConnection
     // default request properties.
   }
 
+  /**
+   * @deprecated 1.3
+   */
   public static String getDefaultRequestProperty(String key)
   {
     // Overridden by subclasses that support default request properties.
@@ -346,13 +349,17 @@ public abstract class URLConnection
 
 // TODO12:  protected void parseURL(URL u, String spec, int start, int limit)
 
-  // JDK1.2
+  /**
+   * @since 1.2
+   */
   public static FileNameMap getFileNameMap()
   {
     return fileNameMap;
   }
 
-  // JDK1.2
+  /**
+   * @since 1.2
+   */
   public static void setFileNameMap(FileNameMap map)
   {
     // Throw an exception if an extant security mgr precludes

@@ -41,6 +41,8 @@ package java.net;
  * InetSocketAddress instances represent socket addresses
  * in the java.nio package. They encapsulate a InetAddress and
  * a port number.
+ *
+ * @since 1.4
  */
 
 public class InetSocketAddress extends SocketAddress

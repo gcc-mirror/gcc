@@ -43,6 +43,7 @@ package java.net;
  *
  * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Warren Levy <warrenl@cygnus.com>
+ * @since 1.1
  * @status updated to 1.4
  */
 public class BindException extends SocketException

@@ -60,6 +60,7 @@ import java.io.IOException;
   *
   * @author Warren Levy <warrenl@cygnus.com>
   * @author Aaron M. Renn (arenn@urbanophile.com) (Documentation comments)
+  * @since 1.1
   * @date May 18, 1999.
   */
 public class MulticastSocket extends DatagramSocket

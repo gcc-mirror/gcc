@@ -13,6 +13,9 @@ import java.util.jar.*;
 import java.util.Enumeration;
 import java.util.Vector;
 
+/**
+ * @since 1.2
+ */
 public class URLClassLoader extends ClassLoader 
 {
   // The URLStreamHandlerFactory

@@ -103,7 +103,7 @@ public final class DatagramPacket
   * @param offset The offset into the buffer to start writing.
   * @param length The maximum number of bytes to read.
   *
-  * @since Java 1.2
+  * @since 1.2
   */
   public DatagramPacket(byte[] buf, int offset, int length)
   {
@@ -146,7 +146,7 @@ public final class DatagramPacket
   * @param addr The address to send to
   * @param port The port to send to
   *
-  * @since Java 1.2
+  * @since 1.2
   */
   public DatagramPacket(byte[] buf, int offset, int length,
 	InetAddress address, int port)
@@ -230,7 +230,7 @@ public final class DatagramPacket
   *
   * @return The buffer offset.
   *
-  * @since Java 1.2
+  * @since 1.2
   */
   public synchronized int getOffset()
   {
@@ -251,6 +251,8 @@ public final class DatagramPacket
   * This sets the address to which the data packet will be transmitted.
   *
   * @param addr The destination address
+  *
+  * @since 1.1
   */
   public synchronized void setAddress(InetAddress iaddr)
   {
@@ -264,6 +266,8 @@ public final class DatagramPacket
   * This sets the port to which the data packet will be transmitted.
   *
   * @param port The destination port
+  *
+  * @since 1.1
   */
   public synchronized void setPort(int iport)
   {
@@ -277,6 +281,8 @@ public final class DatagramPacket
   * Sets the data buffer for this packet.
   *
   * @param buf The new buffer for this packet
+  *
+  * @since 1.1
   */
   public synchronized void setData(byte[] buf)
   {
@@ -295,7 +301,7 @@ public final class DatagramPacket
   * @param offset The offset into the buffer to start reading data from.
   * @param length The number of bytes of data in the buffer.
   *
-  * @since Java 1.2
+  * @since 1.2
   */
   public synchronized void setData(byte[] buf, int offset, int length)
   {
@@ -320,6 +326,8 @@ public final class DatagramPacket
   * Sets the length of the data in the buffer. 
   *
   * @param length The new length.  (Where len <= buf.length)
+  *
+  * @since 1.1
   */
   public synchronized void setLength(int length)
   {
