@@ -1,3 +1,10 @@
+2003-10-01  Per Bothner  <pbothner@apple.com>
+
+	* c-lex.c (src_line):   Remove unneeded static variable.
+	(cb_line_change):  Set input_line directly, instead of src_line.
+	(get_non_padding_token):  We no longer need to compensate for the
+	"horrible things" the C++ front-end does with the current line number,
+
 2003-10-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* target.h (init_libfuncs): New hook.
