@@ -471,6 +471,7 @@ got_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   switch (GET_CODE (op))
     {
     case CONST:
+      /* Accept only (plus (symbol_ref) (const_int)).  */
       op = XEXP (op, 0);
       if (GET_CODE (op) != PLUS)
 	return 0;
@@ -479,11 +480,20 @@ got_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
       op = XEXP (op, 1);
       if (GET_CODE (op) != CONST_INT)
 	return 0;
+
+     /* Ok if we're not using GOT entries at all.  */
+     if (TARGET_NO_PIC || TARGET_AUTO_PIC)
       return 1;
+      
+     /* The low 14 bits of the constant have been forced to zero
+	by ia64_expand_load_address, so that we do not use up so
+	many GOT entries.  Prevent cse from undoing this.  */
+     return (INTVAL (op) & 0x3fff) == 0;
 
     case SYMBOL_REF:
-      if (SYMBOL_REF_SMALL_ADDR_P (op))
-	return 0;
+      /* This sort of load should not be used for things in sdata.  */
+      return !SYMBOL_REF_SMALL_ADDR_P (op);
+
     case LABEL_REF:
       return 1;
 
@@ -1125,7 +1135,7 @@ ia64_expand_load_address (rtx dest, rtx src)
   if (GET_CODE (src) == CONST
       && GET_CODE (XEXP (src, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (src, 0), 1)) == CONST_INT
-      && (INTVAL (XEXP (XEXP (src, 0), 1)) & 0x1fff) != 0)
+      && (INTVAL (XEXP (XEXP (src, 0), 1)) & 0x3fff) != 0)
     {
       rtx sym = XEXP (XEXP (src, 0), 0);
       HOST_WIDE_INT ofs, hi, lo;

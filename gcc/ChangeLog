@@ -1,3 +1,12 @@
+2004-08-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/ia64.c (got_symbolic_operand): Do require a
+	symbol+offset operand to have its offset be zero mod 0x3fff
+	when GOT entries are in use.  Clarify logic in SYMBOL_REF
+	case.  Clarify comments.
+	(ia64_expand_load_address): Split a symbol+offset load when
+	the offset is nonzero mod 0x3fff, not 0x1fff.
+
 2004-08-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Just abort
