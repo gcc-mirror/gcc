@@ -1,3 +1,8 @@
+Sun Feb  8 14:56:03 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* loop.c (strength_reduce): When placing increment for auto-inc
+	case, do comparison in loop order.
+	
 Sun Feb  8 13:21:38 1998  John Carr  <jfc@mit.edu>
 
 	* bitmap.c (bitmap_debug_file): HOST_PTR_PRINTF converts a pointer,
