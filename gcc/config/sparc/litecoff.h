@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define_std ("sparc");		\
 	builtin_define_std ("sparclite");	\
     }						\
   while (0)
