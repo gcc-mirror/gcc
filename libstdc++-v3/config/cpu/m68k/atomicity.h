@@ -94,22 +94,25 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
 {
   _Atomic_word __result;
 
-// bset with no immediate addressing
-#if defined(__mcf5200__) || defined(__mcf5300__) || defined(__mcf5400__)
+// bset with no immediate addressing (not SMP-safe)
+#if defined(__mcf5200__) || defined(__mcf5300__)
   __asm__ __volatile__("1: bset.b #7,%0@\n\tjbne 1b"
 		       : /* no outputs */
 		       : "a"(&__Atomicity_lock<0>::_S_atomicity_lock)
 		       : "cc", "memory");
 
-// bset with immediate addressing
-#elif defined(__mc68000__)
-  __asm__ __volatile__("1: bset.b #7,%0\n\tjbne 1b"
+// CPU32 and MCF5400 support test-and-set (SMP-safe).
+#elif defined(__mcpu32__) || defined(__mcf5400__)
+  __asm__ __volatile__("1: tas %0\n\tjbne 1b"
 		       : "+m"(__Atomicity_lock<0>::_S_atomicity_lock)
 		       : /* none */
 		       : "cc");
 
-#else // 680x0, cpu32, 5400 support test-and-set.
-  __asm__ __volatile__("1: tas %0\n\tjbne 1b"
+// Use bset with immediate addressing for 68000/68010 (not SMP-safe)
+// NOTE: TAS is available on the 68000, but unsupported by some Amiga
+// memory controllers.
+#else
+  __asm__ __volatile__("1: bset.b #7,%0\n\tjbne 1b"
 		       : "+m"(__Atomicity_lock<0>::_S_atomicity_lock)
 		       : /* none */
 		       : "cc");
