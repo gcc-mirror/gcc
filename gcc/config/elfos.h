@@ -262,6 +262,16 @@ Boston, MA 02111-1307, USA.  */
 #define INIT_SECTION_ASM_OP	"\t.section\t.init"
 #define FINI_SECTION_ASM_OP	"\t.section\t.fini"
 
+#ifdef HAVE_GAS_SUBSECTION_ORDERING
+
+#define ASM_SECTION_START_OP	"\t.subsection\t-1"
+
+/* Output assembly directive to move to the beginning of current section.  */
+#define ASM_OUTPUT_SECTION_START(FILE)	\
+  fprintf ((FILE), "%s\n", ASM_SECTION_START_OP)
+
+#endif
+
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
    should override this definition in the target-specific file which
@@ -340,11 +350,14 @@ const_section ()						\
 /* A C statement or statements to switch to the appropriate
    section for output of RTX in mode MODE.  RTX is some kind
    of constant in RTL.  The argument MODE is redundant except
-   in the case of a `const_int' rtx.  Currently, these always
-   go into the const section.  */
+   in the case of a `const_int' rtx.
+   If assembler supports SHF_MERGE sections, put it into
+   a .rodata.cstN section where N is size of the constant,
+   otherwise into const section.  */
 
 #undef  SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX) const_section ()
+#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)	\
+  mergeable_constant_section ((MODE), (ALIGN), 0)
 
 /* A C statement or statements to switch to the appropriate
    section for output of DECL.  DECL is either a `VAR_DECL' node
@@ -352,12 +365,12 @@ const_section ()						\
    the initial value of DECL requires link-time relocations.  */
 
 #undef SELECT_SECTION
-#define SELECT_SECTION(DECL, RELOC)				\
+#define SELECT_SECTION(DECL, RELOC, ALIGN)			\
 {								\
   if (TREE_CODE (DECL) == STRING_CST)				\
     {								\
       if (! flag_writable_strings)				\
-	const_section ();					\
+	mergeable_string_section ((DECL), (ALIGN), 0);		\
       else							\
 	data_section ();					\
     }								\
@@ -369,8 +382,17 @@ const_section ()						\
 	  || (DECL_INITIAL (DECL) != error_mark_node		\
 	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))		\
 	data_section ();					\
-      else							\
+      else if (flag_merge_constants < 2)			\
+	/* C and C++ don't allow different variables to share	\
+	   the same location.  -fmerge-all-constants allows	\
+	   even that (at the expense of not conforming).  */	\
 	const_section ();					\
+      else if (TREE_CODE (DECL_INITIAL (DECL)) == STRING_CST)	\
+	mergeable_string_section (DECL_INITIAL (DECL), (ALIGN),	\
+				  0);				\
+      else							\
+	mergeable_constant_section (DECL_MODE (DECL), (ALIGN),	\
+				    0);				\
     }								\
   else if (TREE_CODE (DECL) == CONSTRUCTOR)			\
     {								\

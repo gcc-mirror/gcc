@@ -1164,7 +1164,7 @@ zbss_section ()								\
    Do not define this macro if you put all read-only variables and
    constants in the read-only data section (usually the text section).  */
 #undef  SELECT_SECTION
-#define SELECT_SECTION(EXP, RELOC)					\
+#define SELECT_SECTION(EXP, RELOC, ALIGN)				\
 do {									\
   if (TREE_CODE (EXP) == VAR_DECL)					\
     {									\
@@ -1227,7 +1227,7 @@ do {									\
 
    Do not define this macro if you put all constants in the read-only
    data section.  */
-/* #define SELECT_RTX_SECTION(MODE, RTX) */
+/* #define SELECT_RTX_SECTION(MODE, RTX, ALIGN) */
 
 /* Output at beginning/end of assembler file.  */
 #undef ASM_FILE_START

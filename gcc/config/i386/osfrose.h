@@ -506,7 +506,7 @@ while (0)
    and select that section.  */
 
 #undef	SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX)					\
+#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)				\
 do									\
   {									\
     if (MODE == Pmode && HALF_PIC_P () && HALF_PIC_ADDRESS_P (RTX))	\
@@ -517,7 +517,7 @@ do									\
 while (0)
 
 #undef	SELECT_SECTION
-#define SELECT_SECTION(DECL, RELOC)					\
+#define SELECT_SECTION(DECL, RELOC, ALIGN)				\
 {									\
   if (RELOC && HALF_PIC_P ())						\
     data_section ();							\

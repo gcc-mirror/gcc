@@ -4477,10 +4477,12 @@ rdata_section ()							\
    and select that section.  */
 
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX)	mips_select_rtx_section (MODE, RTX)
+#define SELECT_RTX_SECTION(MODE, RTX, ALIGN) \
+  mips_select_rtx_section (MODE, RTX)
 
 #undef SELECT_SECTION
-#define SELECT_SECTION(DECL, RELOC)	mips_select_section (DECL, RELOC)
+#define SELECT_SECTION(DECL, RELOC, ALIGN) \
+  mips_select_section (DECL, RELOC)
 
 
 /* Store in OUTPUT a string (made with alloca) containing

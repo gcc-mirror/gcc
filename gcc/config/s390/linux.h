@@ -295,7 +295,7 @@ do {                                                                    \
  */
 
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, X)
+#define SELECT_RTX_SECTION(MODE, X, ALIGN)
 
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.

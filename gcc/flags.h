@@ -544,6 +544,11 @@ extern int flag_bounded_pointers;
    For CHILL: defaults to off.  */
 extern int flag_bounds_check;
 
+/* This will attempt to merge constant section constants, if 1 only
+   string constants and constants from constant pool, if 2 also constant
+   variables.  */
+extern int flag_merge_constants;
+
 /* If one, renumber instruction UIDs to reduce the number of
    unused UIDs if there are a lot of instructions.  If greater than
    one, unconditionally renumber instruction UIDs.  */

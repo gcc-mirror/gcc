@@ -560,7 +560,7 @@ variable_section (decl, reloc)
 	 for them.  */
 
 #ifdef SELECT_SECTION
-      SELECT_SECTION (decl, reloc);
+      SELECT_SECTION (decl, reloc, DECL_ALIGN (decl));
 #else
       if (DECL_READONLY_SECTION (decl, reloc))
 	readonly_data_section ();
@@ -586,6 +586,111 @@ exception_section ()
   else
     readonly_data_section ();
 #endif
+}
+
+/* Tell assembler to switch to the section for string merging.  */
+
+void
+mergeable_string_section (decl, align, flags)
+  tree decl ATTRIBUTE_UNUSED;
+  unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+  unsigned int flags ATTRIBUTE_UNUSED;
+{
+#ifdef HAVE_GAS_SHF_MERGE
+  if (flag_merge_constants
+      && TREE_CODE (decl) == STRING_CST
+      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+      && align <= 256
+      && TREE_STRING_LENGTH (decl) >= int_size_in_bytes (TREE_TYPE (decl)))
+    {
+      enum machine_mode mode;
+      unsigned int modesize;
+      const char *str;
+      int i, j, len, unit;
+      char name[30];
+
+      mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (decl)));
+      modesize = GET_MODE_BITSIZE (mode);
+      if (modesize >= 8 && modesize <= 256
+	  && (modesize & (modesize - 1)) == 0)
+	{
+	  if (align < modesize)
+	    align = modesize;
+
+	  str = TREE_STRING_POINTER (decl);
+	  len = TREE_STRING_LENGTH (decl);
+	  unit = GET_MODE_SIZE (mode);
+
+	  /* Check for embedded NUL characters.  */
+	  for (i = 0; i < len; i += unit)
+	    {
+	      for (j = 0; j < unit; j++)
+		if (str [i + j] != '\0')
+		  break;
+	      if (j == unit)
+		break;
+	    }
+	  if (i == len - unit)
+	    {
+	      sprintf (name, ".rodata.str%d.%d", modesize / 8,
+		       (int) (align / 8));
+	      flags |= (modesize / 8) | SECTION_MERGE | SECTION_STRINGS;
+	      if (!i && modesize < align)
+		{
+		  /* A "" string with requested alignment greater than
+		     character size might cause a problem:
+		     if some other string required even bigger
+		     alignment than "", then linker might think the
+		     "" is just part of padding after some other string
+		     and not put it into the hash table initially.
+		     But this means "" could have smaller alignment
+		     than requested.  */
+#ifdef ASM_OUTPUT_SECTION_START
+		  named_section_flags (name, flags);
+		  ASM_OUTPUT_SECTION_START (asm_out_file);
+#else
+		  readonly_data_section ();
+#endif
+		  return;
+		}
+
+	      named_section_flags (name, flags);
+	      return;
+	    }
+	}
+    }
+#endif
+  readonly_data_section ();
+}  
+
+/* Tell assembler to switch to the section for constant merging.  */
+
+void
+mergeable_constant_section (mode, align, flags)
+  enum machine_mode mode ATTRIBUTE_UNUSED;
+  unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+  unsigned int flags ATTRIBUTE_UNUSED;
+{
+#ifdef HAVE_GAS_SHF_MERGE
+  unsigned int modesize = GET_MODE_BITSIZE (mode);
+
+  if (flag_merge_constants
+      && mode != VOIDmode
+      && mode != BLKmode
+      && modesize <= align
+      && align >= 8
+      && align <= 256
+      && (align & (align - 1)) == 0)
+    {
+      char name[24];
+
+      sprintf (name, ".rodata.cst%d", (int) (align / 8));
+      flags |= (align / 8) | SECTION_MERGE;
+      named_section_flags (name, flags);
+      return;
+    }            
+#endif
+  readonly_data_section ();
 }
 
 /* Given NAME, a putative register name, discard any customary prefixes.  */
@@ -3305,13 +3410,19 @@ output_constant_def_contents (exp, reloc, labelno)
 {
   int align;
 
+  /* Align the location counter as required by EXP's data type.  */
+  align = TYPE_ALIGN (TREE_TYPE (exp));
+#ifdef CONSTANT_ALIGNMENT
+  align = CONSTANT_ALIGNMENT (exp, align);
+#endif
+
   if (IN_NAMED_SECTION (exp))
     named_section (exp, NULL, reloc);
   else
     {
       /* First switch to text section, except for writable strings.  */
 #ifdef SELECT_SECTION
-      SELECT_SECTION (exp, reloc);
+      SELECT_SECTION (exp, reloc, align);
 #else
       if (((TREE_CODE (exp) == STRING_CST) && flag_writable_strings)
 	  || (flag_pic && reloc))
@@ -3320,12 +3431,6 @@ output_constant_def_contents (exp, reloc, labelno)
 	readonly_data_section ();
 #endif
     }
-
-  /* Align the location counter as required by EXP's data type.  */
-  align = TYPE_ALIGN (TREE_TYPE (exp));
-#ifdef CONSTANT_ALIGNMENT
-  align = CONSTANT_ALIGNMENT (exp, align);
-#endif
 
   if (align > BITS_PER_UNIT)
     ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
@@ -3877,7 +3982,7 @@ output_constant_pool (fnname, fndecl)
 
       /* First switch to correct section.  */
 #ifdef SELECT_RTX_SECTION
-      SELECT_RTX_SECTION (pool->mode, x);
+      SELECT_RTX_SECTION (pool->mode, x, pool->align);
 #else
       readonly_data_section ();
 #endif
@@ -5060,7 +5165,7 @@ default_elf_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
 {
-  char flagchars[8], *f = flagchars;
+  char flagchars[10], *f = flagchars;
   const char *type;
 
   if (!(flags & SECTION_DEBUG))
@@ -5071,6 +5176,10 @@ default_elf_asm_named_section (name, flags)
     *f++ = 'x';
   if (flags & SECTION_SMALL)
     *f++ = 's';
+  if (flags & SECTION_MERGE)
+    *f++ = 'M';
+  if (flags & SECTION_STRINGS)
+    *f++ = 'S';
   *f = '\0';
 
   if (flags & SECTION_BSS)
@@ -5078,8 +5187,12 @@ default_elf_asm_named_section (name, flags)
   else
     type = "progbits";
 
-  fprintf (asm_out_file, "\t.section\t%s,\"%s\",@%s\n",
-	   name, flagchars, type);
+  if (flags & SECTION_ENTSIZE)
+    fprintf (asm_out_file, "\t.section\t%s,\"%s\",@%s,%d\n",
+	     name, flagchars, type, flags & SECTION_ENTSIZE);
+  else
+    fprintf (asm_out_file, "\t.section\t%s,\"%s\",@%s\n",
+	     name, flagchars, type);
 }
 
 void

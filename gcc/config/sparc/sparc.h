@@ -912,7 +912,7 @@ if (TARGET_ARCH64				\
 #endif
 
 /* This is defined differently for v9 in a cover file.  */
-#define SELECT_SECTION(T,RELOC)						\
+#define SELECT_SECTION(T,RELOC,ALIGN)					\
 {									\
   if (TREE_CODE (T) == VAR_DECL)					\
     {									\
@@ -945,7 +945,7 @@ if (TARGET_ARCH64				\
 /* Use text section for a constant
    unless we need more alignment than that offers.  */
 /* This is defined differently for v9 in a cover file.  */
-#define SELECT_RTX_SECTION(MODE, X)		\
+#define SELECT_RTX_SECTION(MODE, X, ALIGN)	\
 {						\
   if (GET_MODE_BITSIZE (MODE) <= MAX_TEXT_ALIGN \
       && ! (flag_pic && (symbolic_operand ((X), (MODE)) || SUNOS4_SHARED_LIBRARIES)))  \

@@ -1,3 +1,73 @@
+2001-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in: Check whether assembler supports section merging.
+	* config.in: Rebuilt.
+	* configure: Rebuilt.
+	* varasm.c (variable_section, output_constant_pool): Pass alignment
+	to SELECT_SECTION and SELECT_RTX_SECTION.
+	(mergeable_string_section): New.
+	(mergeable_constant_section): New.
+	(default_elf_asm_named_section): Output SECTION_MERGE and
+	SECTION_STRINGS flags plus SECTION_ENTSIZE entity size.
+	* output.h (mergeable_string_section): New.
+	(mergeable_constant_section): New.
+	(SECTION_MERGE, SECTION_STRINGS, SECTION_ENTSIZE): Define.
+	* toplev.c (flag_merge_constants): New.
+	(f_options): Add -fmerge-constants and -fmerge-all-constants
+	options.
+	(toplev_main): Default to -fno-merge-constants if not optimizing.
+	* flags.h (flag_merge_constants): Add extern.
+	* invoke.texi (-fmerge-constants, -fmerge-all-constants): Document.
+	* tm.texi (SELECT_SECTION, SELECT_RTX_SECTION): Document added third
+	argument.
+	* config/elfos.h (ASM_SECTION_START_OP, ASM_OUTPUT_SECTION_START):
+	Define if assembler has working .subsection -1 support.
+	(SELECT_RTX_SECTION, SELECT_SECTION): Add third macro argument.
+	Put constant into special SHF_MERGE sections if the linker should
+	attempt to merge duplicates.
+	* config/ia64/sysv4.h (SELECT_RTX_SECTION, SELECT_SECTION): Add third
+	macro argument.
+	Put constant into special SHF_MERGE sections if the linker should
+	attempt to merge duplicates.
+	* config/alpha/elf.h: Likewise.
+	(ASM_SECTION_START_OP, ASM_OUTPUT_SECTION_START): Define if assembler
+	has working .subsection -1 support.
+	* config/nextstep.h: Add third argument to SELECT_RTX_SECTION and
+	SELECT_SECTION.
+	* config/svr3.h: Likewise.
+	* config/darwin.h: Likewise.
+	* config/arm/aof.h: Likewise.
+	* config/arm/linux-elf.h: Likewise.
+	* config/avr/avr.h: Likewise.
+	* config/c4x/c4x.h: Likewise.
+	* config/d30v/d30v.h: Likewise.
+	* config/i386/dgux.h: Likewise.
+	* config/i386/osfrose.h: Likewise.
+	* config/i386/sco5.h: Likewise.
+	* config/i386/svr3gas.h: Likewise.
+	* config/ia64/aix.h: Likewise.
+	* config/m32r/m32r.h: Likewise.
+	* config/m68k/m68k.h: Likewise.
+	* config/m88k/dgux.h: Likewise.
+	* config/m88k/m88k.h: Likewise.
+	* config/mcore/mcore-pe.h: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/pa/pa.h: Likewise.
+	* config/pa/pa-linux.h: Likewise.
+	* config/romp/romp.h: Likewise.
+	* config/rs6000/sysv4.h: Likewise.
+	* config/rs6000/xcoff.h: Likewise.
+	* config/s390/linux.h: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/sysv4.h: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/v850/v850.h: Likewise.
+	* config/vax/vms.h: Likewise.
+	* config/arm/arm.c (arm_elf_asm_named_section): Output SECTION_MERGE
+	and SECTION_STRINGS flags plus SECTION_ENTSIZE entity size.
+	* config/sparc/sparc.c (sparc_elf_asm_named_section): Use
+	default_elf_asm_named_section for SHF_MERGE sections.
+
 Tue Sep 11 17:55:54 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* bb-reorder.c (fixup_reorder_chain): Fallthru edge to exit block

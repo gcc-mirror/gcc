@@ -79,7 +79,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Must use data section for relocatable constants when pic.  */
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX)		\
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)	\
 {						\
   if (flag_pic && symbolic_operand ((RTX), (MODE))) \
     data_section ();				\

@@ -139,7 +139,7 @@ const_section ()							\
    section for output of DECL.  DECL is either a `VAR_DECL' node
    or a constant of some sort.  RELOC indicates whether forming
    the initial value of DECL requires link-time relocations.  */
-#define SELECT_SECTION(DECL,RELOC)					\
+#define SELECT_SECTION(DECL,RELOC,ALIGN)				\
 {									\
   if (TREE_CODE (DECL) == STRING_CST)					\
     {									\
@@ -204,7 +204,7 @@ const_section ()							\
    of constant in RTL.  The argument MODE is redundant except
    in the case of a `const_int' rtx.  Currently, these always
    go into the const section.  */
-#define SELECT_RTX_SECTION(MODE,RTX) const_section ()
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN) const_section ()
 
 /* On svr4, we *do* have support for the .init and .fini sections, and we
    can put stuff in there to be executed before and after `main'.  We let

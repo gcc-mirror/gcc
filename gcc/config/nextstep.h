@@ -445,7 +445,7 @@ objc_section_init ()				\
 #define READONLY_DATA_SECTION const_section
 
 #undef	SELECT_SECTION
-#define SELECT_SECTION(exp,reloc)				\
+#define SELECT_SECTION(exp,reloc,align)				\
   do								\
     {								\
       if (TREE_CODE (exp) == STRING_CST)			\
@@ -563,7 +563,7 @@ objc_section_init ()				\
   while (0)
 
 #undef	SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(mode, rtx)					\
+#define SELECT_RTX_SECTION(mode, rtx, align)				\
   do									\
     {									\
       if (GET_MODE_SIZE(mode) == 8)					\

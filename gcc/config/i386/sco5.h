@@ -371,7 +371,7 @@ do {									\
 
 /* Must use data section for relocatable constants when pic.  */
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX)					\
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)				\
 {									\
   if (TARGET_ELF) {							\
     if (flag_pic && symbolic_operand (RTX, VOIDmode))			\
@@ -565,7 +565,7 @@ init_section ()								\
    : 0))
 
 #undef SELECT_SECTION
-#define SELECT_SECTION(DECL,RELOC)					\
+#define SELECT_SECTION(DECL,RELOC,ALIGN)				\
 {									\
   if (TARGET_ELF && flag_pic && RELOC)					\
      data_section ();							\

@@ -207,6 +207,15 @@ extern void function_section		PARAMS ((tree));
 /* Tell assembler to switch to the section for the exception table.  */
 extern void exception_section		PARAMS ((void));
 
+/* Tell assembler to switch to the section for string merging.  */
+extern void mergeable_string_section	PARAMS ((tree, unsigned HOST_WIDE_INT,
+						 unsigned int));
+
+/* Tell assembler to switch to the section for constant merging.  */
+extern void mergeable_constant_section	PARAMS ((enum machine_mode,
+						 unsigned HOST_WIDE_INT,
+						 unsigned int));
+
 /* Declare DECL to be a weak symbol.  */
 extern void declare_weak		PARAMS ((tree));
 #endif /* TREE_CODE */
@@ -450,14 +459,18 @@ extern void default_function_pro_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 extern void no_asm_to_stream PARAMS ((FILE *));
 
 /* Flags controling properties of a section.  */
-#define SECTION_CODE	    1	/* contains code */
-#define SECTION_WRITE	    2	/* data is writable */
-#define SECTION_DEBUG	    4	/* contains debug data */
-#define SECTION_LINKONCE    8	/* is linkonce */
-#define SECTION_SMALL	   16	/* contains "small data" */
-#define SECTION_BSS	   32	/* contains zeros only */
-#define SECTION_FORGET	   64	/* forget that we've entered the section */
-#define SECTION_MACH_DEP  128	/* subsequent bits reserved for target */
+#define SECTION_ENTSIZE	 0x000ff	/* entity size in section */
+#define SECTION_CODE	 0x00100	/* contains code */
+#define SECTION_WRITE	 0x00200	/* data is writable */
+#define SECTION_DEBUG	 0x00400	/* contains debug data */
+#define SECTION_LINKONCE 0x00800	/* is linkonce */
+#define SECTION_SMALL	 0x01000	/* contains "small data" */
+#define SECTION_BSS	 0x02000	/* contains zeros only */
+#define SECTION_FORGET	 0x04000	/* forget that we've entered the section */
+#define SECTION_MERGE	 0x08000	/* contains mergeable data */
+#define SECTION_STRINGS  0x10000	/* contains zero terminated strings without
+					   embedded zeros */
+#define SECTION_MACH_DEP 0x20000	/* subsequent bits reserved for target */
 
 extern unsigned int get_named_section_flags PARAMS ((const char *));
 extern bool set_named_section_flags	PARAMS ((const char *, unsigned int));

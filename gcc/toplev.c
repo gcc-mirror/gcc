@@ -898,6 +898,11 @@ int flag_bounded_pointers = 0;
    For CHILL: defaults to off.  */
 int flag_bounds_check = 0;
 
+/* This will attempt to merge constant section constants, if 1 only
+   string constants and constants from constant pool, if 2 also constant
+   variables.  */
+int flag_merge_constants = 1;
+
 /* If one, renumber instruction UIDs to reduce the number of
    unused UIDs if there are a lot of instructions.  If greater than
    one, unconditionally renumber instruction UIDs.  */
@@ -1139,6 +1144,10 @@ lang_independent_options f_options[] =
    N_("Align all labels") },
   {"align-functions", &align_functions, 0,
    N_("Align the start of functions") },
+  {"merge-constants", &flag_merge_constants, 1,
+   N_("Attempt to merge identical constants accross compilation units") },
+  {"merge-all-constants", &flag_merge_constants, 2,
+   N_("Attempt to merge identical constants and constant variables") },
   {"check-memory-usage", &flag_check_memory_usage, 1,
    N_("Generate code to check every memory access") },
   {"prefix-function-name", &flag_prefix_function_name, 1,
@@ -4678,6 +4687,11 @@ toplev_main (argc, argv)
 		}
 	    }
 	}
+    }
+
+  if (!optimize)
+    {
+      flag_merge_constants = 0;
     }
 
   if (optimize >= 1)

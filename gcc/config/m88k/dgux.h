@@ -294,7 +294,7 @@ func_ptr __DTOR_END__[1] = { (func_ptr) (-1) }
 
 /* Must use data section for relocatable constants when pic.  */
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX)            \
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)      \
 {                                               \
   if (flag_pic && symbolic_operand (RTX))       \
     data_section ();                            \

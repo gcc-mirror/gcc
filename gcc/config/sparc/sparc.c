@@ -8765,6 +8765,14 @@ sparc_elf_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
 {
+  if (flags & SECTION_MERGE)
+    {
+      /* entsize cannot be expressed in this section attributes
+	 encoding style.  */
+      default_elf_asm_named_section (name, flags);
+      return;
+    }
+
   fprintf (asm_out_file, "\t.section\t\"%s\"", name);
 
   if (!(flags & SECTION_DEBUG))

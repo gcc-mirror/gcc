@@ -3470,7 +3470,7 @@ do {							\
    the read-only data section (usually the text section).
 
    Defined in svr4.h.  */
-/* #define SELECT_SECTION(EXP, RELOC) */
+/* #define SELECT_SECTION(EXP, RELOC, ALIGN) */
 
 /* A C statement or statements to switch to the appropriate section for output
    of RTX in mode MODE.  You can assume that RTX is some kind of constant in
@@ -3482,7 +3482,7 @@ do {							\
    section.
 
    Defined in svr4.h.  */
-/* #define SELECT_RTX_SECTION(MODE, RTX) */
+/* #define SELECT_RTX_SECTION(MODE, RTX, ALIGN) */
 
 /* Define this macro if jump tables (for `tablejump' insns) should be output in
    the text section, along with the assembler instructions.  Otherwise, the

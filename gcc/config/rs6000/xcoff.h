@@ -144,7 +144,7 @@ toc_section ()						\
    On the RS/6000, we have a special section for all variables except those
    that are static.  */
 
-#define SELECT_SECTION(EXP,RELOC)			\
+#define SELECT_SECTION(EXP,RELOC,ALIGN)			\
 {							\
   if ((TREE_CODE (EXP) == STRING_CST			\
        && ! flag_writable_strings)			\
@@ -199,7 +199,7 @@ toc_section ()						\
    However, if this is being placed in the TOC it must be output as a
    toc entry.  */
 
-#define SELECT_RTX_SECTION(MODE, X)			\
+#define SELECT_RTX_SECTION(MODE, X, ALIGN)		\
 { if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X, MODE))	\
     toc_section ();					\
   else							\
