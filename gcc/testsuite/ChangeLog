@@ -1,3 +1,9 @@
+2002-05-19  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c-torture/execute/loop-2c.x: Remove, the test should pass
+	now.
+	* gcc.c-torture/execute/loop-2d.x: Likewise.
+
 2002-05-19  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gcc.dg/weak-2.c:  xfail warnings for platforms that don't
@@ -97,7 +103,7 @@
 2002-05-05  Tim Josling  <tej@melbpc.org.au>
 
 	* treelang: Added directory for new sample language treelang. Also
-	lib/treelang.exp: New file to signal treelang should be tested. 
+	lib/treelang.exp: New file to signal treelang should be tested.
 
 2002-05-03  Jakub Jelinek  <jakub@redhat.com>
 
@@ -176,7 +182,7 @@
 
 	PR c++/6497
 	* g++.dg/inherit/access2.C: New test.
-	
+
 2002-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR bootstrap/6445
