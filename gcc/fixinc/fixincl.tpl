@@ -28,10 +28,8 @@ tSCC z[=hackname _cap=]Name[] =
  */[=
 
   _IF files _exist=]
-tSCC z[=hackname _cap=]List[] =[=
-    _FOR files=]
-        "|" [=files _str=][=
-    /files=] "|";[=
+tSCC z[=hackname _cap=]List[] =
+  "[=_FOR files =]|[=files=][=/files=]|";[=
 
   _ELSE =]
 #define z[=hackname _cap=]List (char*)NULL[=
