@@ -5566,8 +5566,12 @@ finish_enum (enumtype, values)
   TYPE_SIZE (enumtype) = 0;
   layout_type (enumtype);
 
-  /* An enum can have some negative values; then it is signed.  */
-  TREE_UNSIGNED (enumtype) = ! tree_int_cst_lt (minnode, integer_zero_node);
+  /* If an enum has no negative values, and it goes beyond the range
+     of the signed integral type, make it unsigned.  */
+  TREE_UNSIGNED (enumtype)
+    = (! tree_int_cst_lt (minnode, integer_zero_node)
+       && ! tree_int_cst_lt (maxnode,
+			     TYPE_MAX_VALUE (type_for_size (precision, 0))));
 
   /* Change the type of the enumerators to be the enum type.
      Formerly this was done only for enums that fit in an int,
