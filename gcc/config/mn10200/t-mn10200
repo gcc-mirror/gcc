@@ -36,8 +36,13 @@ LIB1ASMFUNCS    = _divhi3 \
 
 # We do not have DF or DI types, so fake out the libgcc2 compilation.
 TARGET_LIBGCC2_CFLAGS=-DDF=SF -DDI=SI
-LIB2FUNCS_EXTRA = fp-bit.c $(srcdir)/config/mn10200/udivmodsi4.c \
+LIB2FUNCS_EXTRA = $(srcdir)/config/mn10200/udivmodsi4.c \
 	$(srcdir)/config/mn10200/divmod.c $(srcdir)/config/mn10200/udivmod.c
+
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.  The mn10200 only has single
+# precision floating point.
+FPBIT = fp-bit.c
 
 fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
