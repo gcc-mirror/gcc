@@ -1992,6 +1992,7 @@ maybe_push_to_top_level (pseudo)
   current_lang_name = lang_name_cplusplus;
   strict_prototype = strict_prototypes_lang_cplusplus;
   named_labels = NULL_TREE;
+  shadowed_labels = NULL_TREE;
   minimal_parse_mode = 0;
   previous_class_type = previous_class_values = NULL_TREE;
   processing_specialization = 0;
@@ -4106,7 +4107,6 @@ shadow_label (name)
     {
       shadowed_labels = tree_cons (NULL_TREE, decl, shadowed_labels);
       SET_IDENTIFIER_LABEL_VALUE (name, NULL_TREE);
-      SET_IDENTIFIER_LABEL_VALUE (decl, NULL_TREE);
     }
 
   return lookup_label (name);
