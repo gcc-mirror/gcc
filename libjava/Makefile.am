@@ -169,6 +169,7 @@ AM_CXXFLAGS = \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\""
 
 AM_GCJFLAGS = \
+	@LIBGCJ_JAVAFLAGS@ \
 	--encoding=UTF-8 \
 	-Wno-deprecated
 
