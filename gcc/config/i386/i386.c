@@ -247,7 +247,11 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   /* arg pointer */
   NON_Q_REGS,
   /* flags, fpsr, dirflag, frame */
-  NO_REGS, NO_REGS, NO_REGS, NON_Q_REGS
+  NO_REGS, NO_REGS, NO_REGS, NON_Q_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS,
+  MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
+  MMX_REGS, MMX_REGS
 };
 
 /* The "default" register map.  */
@@ -257,6 +261,8 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   0, 2, 1, 3, 6, 7, 4, 5,		/* general regs */
   12, 13, 14, 15, 16, 17, 18, 19,	/* fp regs */
   -1, -1, -1, -1,			/* arg, flags, fpsr, dir */
+  21, 22, 23, 24, 25, 26, 27, 28,	/* SSE */
+  29, 30, 31, 32, 33, 34, 35, 36,       /* MMX */
 };
 
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -318,6 +324,8 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
   0, 2, 1, 3, 6, 7, 5, 4,		/* general regs */
   11, 12, 13, 14, 15, 16, 17, 18,	/* fp regs */
   -1, 9, -1, -1,			/* arg, flags, fpsr, dir */
+  21, 22, 23, 24, 25, 26, 27, 28,	/* SSE registers */
+  29, 30, 31, 32, 33, 34, 35, 36,	/* MMX registers */
 };
 
 
@@ -625,6 +633,11 @@ override_options ()
   /* If we're planning on using `loop', use it.  */
   if (TARGET_USE_LOOP && optimize)
     flag_branch_on_count_reg = 1;
+
+  /* It makes no sense to ask for just SSE builtins, so MMX is also turned
+     on by -msse.  */
+  if (TARGET_SSE)
+    target_flags |= MASK_MMX;
 }
 
 /* A C statement (sans semicolon) to choose the order in which to
@@ -3092,11 +3105,16 @@ print_reg (x, code, file)
     code = 3;
   else if (code == 'h')
     code = 0;
+  else if (code == 'm' || MMX_REG_P (x))
+    code = 5;
   else
     code = GET_MODE_SIZE (GET_MODE (x));
 
   switch (code)
     {
+    case 5:
+      fputs (hi_reg_name[REGNO (x)], file);
+      break;
     case 3:
       if (STACK_TOP_P (x))
 	{
@@ -3110,6 +3128,7 @@ print_reg (x, code, file)
       if (! FP_REG_P (x))
 	putc ('e', file);
       /* FALLTHRU */
+    case 16:
     case 2:
       fputs (hi_reg_name[REGNO (x)], file);
       break;
@@ -3139,7 +3158,8 @@ print_reg (x, code, file)
    w --  likewise, print the HImode name of the register.
    k --  likewise, print the SImode name of the register.
    h --  print the QImode name for a "high" register, either ah, bh, ch or dh.
-   y --  print "st(0)" instead of "st" as a register.  */
+   y --  print "st(0)" instead of "st" as a register.
+   m --  print "st(n)" as an mmx register.  */
 
 void
 print_operand (file, x, code)
@@ -3243,6 +3263,7 @@ print_operand (file, x, code)
 	case 'k':
 	case 'h':
 	case 'y':
+	case 'm':
 	case 'X':
 	case 'P':
 	  break;
@@ -3297,6 +3318,7 @@ print_operand (file, x, code)
 	    case 4: size = "DWORD"; break;
 	    case 8: size = "QWORD"; break;
 	    case 12: size = "XWORD"; break;
+	    case 16: size = "XMMWORD"; break;
 	    default:
 	      abort ();
 	    }
@@ -5440,6 +5462,8 @@ ix86_split_to_parts (operand, parts, mode)
 {
   int size = GET_MODE_SIZE (mode) / 4;
 
+  if (GET_CODE (operand) == REG && MMX_REGNO_P (REGNO (operand)))
+    abort ();
   if (size < 2 || size > 3)
     abort ();
 
@@ -6862,4 +6886,129 @@ ix86_variable_issue (dump, sched_verbose, insn, can_issue_more)
       }
       return --ix86_sched_data.ppro.issued_this_cycle;
     }
+}
+
+/* Compute the alignment given to a constant that is being placed in memory.
+   EXP is the constant and ALIGN is the alignment that the object would
+   ordinarily have.
+   The value of this function is used instead of that alignment to align
+   the object.  */
+
+int
+ix86_constant_alignment (exp, align)
+     tree exp;
+     int align;
+{
+  if (TREE_CODE (exp) == REAL_CST)
+    {
+      if (TYPE_MODE (TREE_TYPE (exp)) == DFmode && align < 64)
+	return 64;
+      else if (ALIGN_MODE_128 (TYPE_MODE (TREE_TYPE (exp))) && align < 128)
+	return 128;
+    }
+  else if (TREE_CODE (exp) == STRING_CST && TREE_STRING_LENGTH (exp) >= 31
+	   && align < 256)
+    return 256;
+
+  return align;
+}
+
+/* Compute the alignment for a static variable.
+   TYPE is the data type, and ALIGN is the alignment that
+   the object would ordinarily have.  The value of this function is used
+   instead of that alignment to align the object.  */
+
+int
+ix86_data_alignment (type, align)
+     tree type;
+     int align;
+{
+  if (AGGREGATE_TYPE_P (type)
+       && TYPE_SIZE (type)
+       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+       && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 256
+	   || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 256)
+    return 256;
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      if (TYPE_MODE (TREE_TYPE (type)) == DFmode && align < 64)
+	return 64;
+      if (ALIGN_MODE_128 (TYPE_MODE (TREE_TYPE (type))) && align < 128)
+	return 128;
+    }
+  else if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      
+      if (TYPE_MODE (type) == DCmode && align < 64)
+	return 64;
+      if (TYPE_MODE (type) == XCmode && align < 128)
+	return 128;
+    }
+  else if ((TREE_CODE (type) == RECORD_TYPE
+	    || TREE_CODE (type) == UNION_TYPE
+	    || TREE_CODE (type) == QUAL_UNION_TYPE)
+	   && TYPE_FIELDS (type))
+    {
+      if (DECL_MODE (TYPE_FIELDS (type)) == DFmode && align < 64)
+	return 64;
+      if (ALIGN_MODE_128 (DECL_MODE (TYPE_FIELDS (type))) && align < 128)
+	return 128;
+    }
+  else if (TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == VECTOR_TYPE
+	   || TREE_CODE (type) == INTEGER_TYPE)
+    {
+      if (TYPE_MODE (type) == DFmode && align < 64)
+	return 64;
+      if (ALIGN_MODE_128 (TYPE_MODE (type)) && align < 128)
+	return 128;
+    }
+
+  return align;
+}
+
+/* Compute the alignment for a local variable.
+   TYPE is the data type, and ALIGN is the alignment that
+   the object would ordinarily have.  The value of this macro is used
+   instead of that alignment to align the object.  */
+
+int
+ix86_local_alignment (type, align)
+     tree type;
+     int align;
+{
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      if (TYPE_MODE (TREE_TYPE (type)) == DFmode && align < 64)
+	return 64;
+      if (ALIGN_MODE_128 (TYPE_MODE (TREE_TYPE (type))) && align < 128)
+	return 128;
+    }
+  else if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      if (TYPE_MODE (type) == DCmode && align < 64)
+	return 64;
+      if (TYPE_MODE (type) == XCmode && align < 128)
+	return 128;
+    }
+  else if ((TREE_CODE (type) == RECORD_TYPE
+	    || TREE_CODE (type) == UNION_TYPE
+	    || TREE_CODE (type) == QUAL_UNION_TYPE)
+	   && TYPE_FIELDS (type))
+    {
+      if (DECL_MODE (TYPE_FIELDS (type)) == DFmode && align < 64)
+	return 64;
+      if (ALIGN_MODE_128 (DECL_MODE (TYPE_FIELDS (type))) && align < 128)
+	return 128;
+    }
+  else if (TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == VECTOR_TYPE
+	   || TREE_CODE (type) == INTEGER_TYPE)
+    {
+      
+      if (TYPE_MODE (type) == DFmode && align < 64)
+	return 64;
+      if (ALIGN_MODE_128 (TYPE_MODE (type)) && align < 128)
+	return 128;
+    }
+  return align;
 }
