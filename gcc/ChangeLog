@@ -1,3 +1,8 @@
+2000-12-05  Alan Modra <alan@linuxcare.com.au>
+
+	* bb-reorder.c (reorder_basic_blocks): Do check for EH edges even
+	when using sjlj.
+
 2000-12-05  Richard Henderson  <rth@redhat.com>
 
 	* flow.c (calculate_global_regs_live): Only force stack pointer

@@ -1348,7 +1348,7 @@ reorder_basic_blocks ()
 
   /* We do not currently handle correct re-placement of EH notes.
      But that does not matter unless we intend to use them.  */
-  if (flag_exceptions && ! exceptions_via_longjmp)
+  if (flag_exceptions)
     for (i = 0; i < n_basic_blocks; i++)
       {
 	edge e;
