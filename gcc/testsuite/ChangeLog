@@ -1,3 +1,8 @@
+Tue Feb  4 21:58:43 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/i386-ssetype-?.c:  Compile using -march=k8; fix for register
+	passing convetions.
+
 2003-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7129
