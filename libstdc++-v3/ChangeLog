@@ -1,3 +1,32 @@
+2002-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/locale/generic/c++locale_internal.h: New header.
+	* config/locale/gnu/c++locale_internal.h: New header.
+	* config/locale/gnu/c_locale.cc: Include it.
+	* config/locale/gnu/collate_members.cc: Include it.
+	* config/locale/gnu/ctype_members.cc: Include it.
+	* config/locale/gnu/messages_members.cc: Include it.
+	* config/locale/gnu/monetary_members.cc: Include it.
+	* config/locale/gnu/numeric_members.cc: Include it.
+	* config/locale/gnu/time_members.cc: Include it.
+	(_M_put): Reorder __strftime_l and __wcsftime_l arguments to match
+	glibc.
+	(_M_initialize_timepunct): Initialize _M_c_locale_timepunct for
+	C locale.
+	* acinclude.m4: Include string.h when testing strcoll_l.
+	For glibc 2.3 provide __-prefixed prototypes.
+	(CLOCALE_INTERNAL_H): Set, add AC_LINK_FILES line.
+	* aclocal.m4, configure: Rebuilt.
+
+2002-09-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h: Add declaration of specialization
+	here.
+	* config/locale/gnu/messages_members.cc: Add specialization for
+	messages<wchar_t>.
+	* config/locale/gnu/messages_members.h: Remove generic definition
+	of do_get.
+
 2002-09-04  Richard Henderson  <rth@redhat.com>
 
 	* include/std/std_limits.h (__glibcpp_f32_infinity_bytes,

@@ -2971,6 +2971,12 @@ else
 
 	  #define _GNU_SOURCE 1
 	  #include <locale.h>
+	  #include <string.h>
+	  #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+	  extern __typeof(newlocale) __newlocale;
+	  extern __typeof(duplocale) __duplocale;
+	  extern __typeof(strcoll_l) __strcoll_l;
+	  #endif
 	  int main()
 	  {
   	    const char __one[] = "Äuglein Augmen";
@@ -3033,6 +3039,7 @@ fi
       CMONEY_CC=config/locale/generic/monetary_members.cc
       CNUMERIC_CC=config/locale/generic/numeric_members.cc
       CTIME_CC=config/locale/generic/time_members.cc
+      CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
       ;;
     xgnu)
       echo "$ac_t""gnu" 1>&6
@@ -3094,6 +3101,7 @@ fi
       CMONEY_CC=config/locale/gnu/monetary_members.cc
       CNUMERIC_CC=config/locale/gnu/numeric_members.cc
       CTIME_CC=config/locale/gnu/time_members.cc
+      CLOCALE_INTERNAL_H=config/locale/gnu/c++locale_internal.h
       ;;
     xieee_1003.1-2001)
       echo "$ac_t""generic" 1>&6
@@ -3108,6 +3116,7 @@ fi
       CMONEY_CC=config/locale/generic/monetary_members.cc
       CNUMERIC_CC=config/locale/generic/numeric_members.cc
       CTIME_CC=config/locale/generic/time_members.cc
+      CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
       ;;
     *)
       echo "$enable_clocale is an unknown locale package" 1>&2
@@ -22856,8 +22865,8 @@ fi; done
 EOF
 
 cat >> $CONFIG_STATUS <<EOF
-ac_sources="$BASIC_FILE_CC $CLOCALE_CC $CCOLLATE_CC $CCTYPE_CC $CMESSAGES_CC $CMONEY_CC $CNUMERIC_CC $CTIME_CC $LINKER_MAP"
-ac_dests="src/basic_file.cc src/c++locale.cc src/collate.cc src/ctype.cc src/messages.cc src/monetary.cc src/numeric.cc src/time.cc src/linker.map"
+ac_sources="$BASIC_FILE_CC $CLOCALE_CC $CCOLLATE_CC $CCTYPE_CC $CMESSAGES_CC $CMONEY_CC $CNUMERIC_CC $CTIME_CC $CLOCALE_INTERNAL_H $LINKER_MAP"
+ac_dests="src/basic_file.cc src/c++locale.cc src/collate.cc src/ctype.cc src/messages.cc src/monetary.cc src/numeric.cc src/time.cc src/c++locale_internal.h src/linker.map"
 EOF
 
 cat >> $CONFIG_STATUS <<\EOF

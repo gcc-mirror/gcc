@@ -1,6 +1,6 @@
-// std::messages implementation details, GNU version -*- C++ -*-
+// Prototypes for GLIBC thread locale __-prefixed functions -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,34 +27,33 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 22.2.7.1.2  messages virtual functions
-//
+// Written by Jakub Jelinek <jakub@redhat.com>
 
-// Written by Benjamin Kosnik <bkoz@redhat.com>
+#include <clocale>
 
-  // Non-virtual member functions.
-  template<typename _CharT>
-    typename messages<_CharT>::catalog 
-    messages<_CharT>::open(const basic_string<char>& __s, const locale& __loc, 
-			   const char* __dir) const
-    { 
-      bindtextdomain(__s.c_str(), __dir);
-      return this->do_open(__s, __loc); 
-    }
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+                                                  
+extern "C" __typeof(iswctype_l) __iswctype_l;
+extern "C" __typeof(nl_langinfo_l) __nl_langinfo_l;
+extern "C" __typeof(strcoll_l) __strcoll_l;
+extern "C" __typeof(strftime_l) __strftime_l;
+extern "C" __typeof(strtod_l) __strtod_l;
+extern "C" __typeof(strtof_l) __strtof_l;
+extern "C" __typeof(strtold_l) __strtold_l;
+extern "C" __typeof(strtol_l) __strtol_l;
+extern "C" __typeof(strtoll_l) __strtoll_l;
+extern "C" __typeof(strtoul_l) __strtoul_l;
+extern "C" __typeof(strtoull_l) __strtoull_l;
+extern "C" __typeof(strxfrm_l) __strxfrm_l;
+extern "C" __typeof(towlower_l) __towlower_l;
+extern "C" __typeof(towupper_l) __towupper_l;
+extern "C" __typeof(wcscoll_l) __wcscoll_l;
+extern "C" __typeof(wcsftime_l) __wcsftime_l;
+extern "C" __typeof(wcsxfrm_l) __wcsxfrm_l;
+extern "C" __typeof(wctype_l) __wctype_l;
+extern "C" __typeof(newlocale) __newlocale;
+extern "C" __typeof(freelocale) __freelocale;
+extern "C" __typeof(duplocale) __duplocale;
+extern "C" __typeof(uselocale) __uselocale;
 
-  template<typename _CharT>
-    typename messages<_CharT>::catalog 
-    messages<_CharT>::do_open(const basic_string<char>& __s, 
-			      const locale&) const
-    { 
-      // No error checking is done, assume the catalog exists and can
-      // be used.
-      textdomain(__s.c_str());
-      return 0;
-    }
-
-  template<typename _CharT>
-    void    
-    messages<_CharT>::do_close(catalog) const 
-    { }
+#endif // GLIBC 2.3 and later
