@@ -1,3 +1,42 @@
+Sat Jul 17 14:25:46 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/aout.h: Reformat for improved readability.
+	
+	* config/arm/arm.h: Reformat for improved readability.
+	Replace uses of fprintf with asm_fprintf where appropriate.
+	(ARM_DECLARE_FUNCTION_NAME): New macro:  Perform any generic ARM
+	function declaration assembler actions.
+	(NUM_INTS): New macro: Convert from bytes to words.
+	(NUM_REGS): New macro: Compute number of registers required to
+	hold a quanitity of tyep MODE.
+	(NUM_REGS2): New macro: Like NUM_REGS but also copes with BLKmode
+	types.
+	(NUM_ARG_REGS): New macro: The number of argument registers
+	available.
+	(ARG_REGISTER): New macro: Compute the register number of the Nth
+	argument register.
+	(LAST_ARG_REGNUM): New macro: The number of the last argument
+	register.
+	(SP_REGNUM): New macro: Register number of the stack pointer.
+	(FP_REGNUM): New macro: Register number of the frame pointer.
+	(FUNCTION_ARG, FUNCTION_ARG_PARTIAL_NREGS, INIT_CUMULATIVE_AGS,
+	FUNCTION_ARG_ADVANCE, SETUP_INCOMING_VARARGS): Change
+	CUMULATIVE_ARGS so that it counts registers not bytes.
+	
+	* config/arm/arm.c: Rename TARGET_THUMB_INTERWORK to
+	TARGET_INTERWORK.
+	Replace uses of fprintf with asm_fprintf where appropriate.
+	(output_ascii_pseudo_op): Replace with version from thumb.c
+
+	* config/arm/coff.h (ASM_FILE_START): Emit ASM_APP_OFF.
+
+	* config/arm/elf.h (CPP_PREDEFINES): Replace with
+	SUBTARGET_CPP_SPEC.
+	(ASM_DECLARE_FUNCTION_NAME): Use ARM_DECLARE_FUNCTION_NAME.
+	(ASM_FILE_START): Emit ASM_APP_OFF.
+	
+	
+	
 Fri Jul 16 13:48:09 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (compute_frame_size): Round frame according to 
