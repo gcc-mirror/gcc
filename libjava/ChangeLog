@@ -1,3 +1,10 @@
+2004-11-29  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Mention gcj-dbtool.
+	Recognize --help and --version.
+	(usage): Mention gcj-dbtool.  Added "out" argument.
+	(insist): Updated.
+
 2004-11-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* link.cc (link_symbol_table): Do not use intptr_t.

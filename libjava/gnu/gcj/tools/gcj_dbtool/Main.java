@@ -21,10 +21,10 @@ public class Main
   public static void main (String[] s)
   {
     insist (s.length >= 1);
-    if (s[0].equals("-v"))
+    if (s[0].equals("-v") || s[0].equals("--version"))
       {
 	insist (s.length == 1);
-	System.out.println("jv-dbtool ("
+	System.out.println("gcj-dbtool ("
 			   + System.getProperty("java.vm.name")
 			   + ") "
 			   + System.getProperty("java.vm.version"));
@@ -32,6 +32,11 @@ public class Main
 	System.out.println("Copyright 2004 Free Software Foundation, Inc.");
 	System.out.println("This is free software; see the source for copying conditions.  There is NO");
 	System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
+	return;
+      }
+    if (s[0].equals("--help"))
+      {
+	usage(System.out);
 	return;
       }
 
@@ -60,7 +65,7 @@ public class Main
 
 	    if (capacity <= 2)
 	      {
-		usage();
+		usage(System.err);
 		System.exit(1);
 	      }
 	  }
@@ -199,7 +204,7 @@ public class Main
 	return;
       }
     
-    usage();
+    usage(System.err);
     System.exit(1);	    
   }
 
@@ -207,22 +212,22 @@ public class Main
   {
     if (! ok)
       {
-	usage();
+	usage(System.err);
 	System.exit(1);
       }	    
   }
 
-  private static void usage()
+  private static void usage(PrintStream out)
   {
-    System.err.println
-      ("jv-dbtool: Manipulate gcj map database files\n"
+    out.println
+      ("gcj-dbtool: Manipulate gcj map database files\n"
        + "\n"
        + "  Usage: \n"
-       + "    jv-dbtool -n file.gcjdb [size]     - Create a new gcj map database\n"
-       + "    jv-dbtool -a file.gcjdb file.jar file.so\n"
+       + "    gcj-dbtool -n file.gcjdb [size]     - Create a new gcj map database\n"
+       + "    gcj-dbtool -a file.gcjdb file.jar file.so\n"
        + "            - Add the contents of file.jar to the database\n"
-       + "    jv-dbtool -t file.gcjdb            - Test a gcj map database\n"
-       + "    jv-dbtool -l file.gcjdb            - List a gcj map database\n");
+       + "    gcj-dbtool -t file.gcjdb            - Test a gcj map database\n"
+       + "    gcj-dbtool -l file.gcjdb            - List a gcj map database\n");
   }
       
 
