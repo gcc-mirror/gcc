@@ -1,3 +1,10 @@
+2000-11-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	* emit-rtl.c (gen_lowpart_common): Use word 0 if register mode
+	is narrower than requested mode.
+	(gen_highpart): Abort if register mode is narrower than
+	requested mode.
+
 2000-11-23  Graham Stott  <grahams@redhat.com>
 
 	* cse.c (cse_insn): Initialise all regcost variables.

@@ -709,7 +709,8 @@ gen_lowpart_common (mode, x)
 	 regs are sized by the underlying register size.  Better would be
 	 to always interpret the subreg offset parameter as bytes or bits.  */
 
-      if (WORDS_BIG_ENDIAN && REGNO (x) < FIRST_PSEUDO_REGISTER)
+      if (WORDS_BIG_ENDIAN && REGNO (x) < FIRST_PSEUDO_REGISTER
+	  && GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (mode))
 	word = (HARD_REGNO_NREGS (REGNO (x), GET_MODE (x))
 		- HARD_REGNO_NREGS (REGNO (x), mode));
 
@@ -1141,7 +1142,9 @@ gen_highpart (mode, x)
 	 regs are sized by the underlying register size.  Better would be
 	 to always interpret the subreg offset parameter as bytes or bits.  */
 
-      if (WORDS_BIG_ENDIAN)
+      if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode))
+	abort ();
+      else if (WORDS_BIG_ENDIAN)
 	word = 0;
       else if (REGNO (x) < FIRST_PSEUDO_REGISTER)
 	word = (HARD_REGNO_NREGS (REGNO (x), GET_MODE (x))
