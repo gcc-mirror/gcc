@@ -1,3 +1,19 @@
+2000-09-21  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (add_const_value_attribute): Multiply by length, not 4.
+
+	* dwarf2out.c (tree_add_const_value_attribute): New fn.
+	(gen_variable_die): Call it for non-definitions.
+
+	* dwarf2out.c (die_struct): Add die_mark field.
+	(mark_dies, unmark_dies): New fns.
+	(clear_die_sizes): Remove.
+	(print_die): Check die_symbol rather than die_offset.
+	(build_abbrev_table, output_pubnames, output_aranges): Check
+	die_mark rather than die_offset.
+	(output_comp_unit): Move calc_die_sizes after build_abbrev_table.
+	Call mark_dies.
+
 Thu 21-Sep-2000 18:19:05 BST  Neil Booth  <NeilB@earthling.net>
 
 	* cppfiles.c (lookup_include_file): Rename to open_file.

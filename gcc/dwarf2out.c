@@ -3021,6 +3021,7 @@ typedef struct die_struct
   dw_die_ref die_sib;
   dw_offset die_offset;
   unsigned long die_abbrev;
+  int die_mark;
 }
 die_node;
 
@@ -3378,7 +3379,8 @@ static unsigned long size_of_string	PARAMS ((const char *));
 static int constant_size		PARAMS ((long unsigned));
 static unsigned long size_of_die	PARAMS ((dw_die_ref));
 static void calc_die_sizes		PARAMS ((dw_die_ref));
-static void clear_die_sizes		PARAMS ((dw_die_ref));
+static void mark_dies			PARAMS ((dw_die_ref));
+static void unmark_dies			PARAMS ((dw_die_ref));
 static unsigned long size_of_line_prolog PARAMS ((void));
 static unsigned long size_of_pubnames	PARAMS ((void));
 static unsigned long size_of_aranges	PARAMS ((void));
@@ -3418,6 +3420,7 @@ static void add_AT_location_description	PARAMS ((dw_die_ref,
 static void add_data_member_location_attribute PARAMS ((dw_die_ref, tree));
 static void add_const_value_attribute	PARAMS ((dw_die_ref, rtx));
 static void add_location_or_const_value_attribute PARAMS ((dw_die_ref, tree));
+static void tree_add_const_value_attribute PARAMS ((dw_die_ref, tree));
 static void add_name_attribute		PARAMS ((dw_die_ref, const char *));
 static void add_bound_info		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute, tree));
@@ -4893,7 +4896,7 @@ print_die (die, outfile)
 	case dw_val_class_die_ref:
 	  if (AT_ref (a) != NULL)
 	    {
-	      if (AT_ref (a)->die_offset == 0)
+	      if (AT_ref (a)->die_symbol)
 		fprintf (outfile, "die -> label: %s", AT_ref (a)->die_symbol);
 	      else
 		fprintf (outfile, "die -> %lu", AT_ref (a)->die_offset);
@@ -5401,11 +5404,11 @@ build_abbrev_table (die)
   register dw_attr_ref d_attr, a_attr;
 
   /* Scan the DIE references, and mark as external any that refer to
-     DIEs from other CUs (i.e. those with cleared die_offset).  */
+     DIEs from other CUs (i.e. those which are not marked).  */
   for (d_attr = die->die_attr; d_attr; d_attr = d_attr->dw_attr_next)
     {
       if (AT_class (d_attr) == dw_val_class_die_ref
-	  && AT_ref (d_attr)->die_offset == 0)
+	  && AT_ref (d_attr)->die_mark == 0)
 	{
 	  if (AT_ref (d_attr)->die_symbol == 0)
 	    abort ();
@@ -5583,18 +5586,31 @@ calc_die_sizes (die)
     next_die_offset += 1;
 }
 
-/* Clear the offsets and sizes for a die and its children.  We do this so
+/* Set the marks for a die and its children.  We do this so
    that we know whether or not a reference needs to use FORM_ref_addr; only
-   DIEs in the same CU will have non-zero offsets available.  */
+   DIEs in the same CU will be marked.  We used to clear out the offset
+   and use that as the flag, but ran into ordering problems.  */
 
 static void
-clear_die_sizes (die)
+mark_dies (die)
      dw_die_ref die;
 {
   register dw_die_ref c;
-  die->die_offset = 0;
+  die->die_mark = 1;
   for (c = die->die_child; c; c = c->die_sib)
-    clear_die_sizes (c);
+    mark_dies (c);
+}
+
+/* Clear the marks for a die and its children.  */
+
+static void
+unmark_dies (die)
+     dw_die_ref die;
+{
+  register dw_die_ref c;
+  die->die_mark = 0;
+  for (c = die->die_child; c; c = c->die_sib)
+    unmark_dies (c);
 }
 
 /* Return the size of the line information prolog generated for the
@@ -6069,11 +6085,14 @@ output_comp_unit (die)
   if (die->die_child == 0)
     return;
 
+  /* Mark all the DIEs in this CU so we know which get local refs.  */
+  mark_dies (die);
+
+  build_abbrev_table (die);
+
   /* Initialize the beginning DIE offset - and calculate sizes/offsets.   */
   next_die_offset = DWARF_COMPILE_UNIT_HEADER_SIZE;
   calc_die_sizes (die);
-
-  build_abbrev_table (die);
 
   if (die->die_symbol)
     {
@@ -6090,10 +6109,10 @@ output_comp_unit (die)
   output_compilation_unit_header ();
   output_die (die);
 
-  /* Leave the sizes on the main CU, since we do it last and we use the
-     sizes in output_pubnames.  */
+  /* Leave the marks on the main CU, so we can check them in
+     output_pubnames.  */
   if (die->die_symbol)
-    clear_die_sizes (die);
+    unmark_dies (die);
 }
 
 /* The DWARF2 pubname for a nested thingy looks like "A::f".  The output
@@ -6172,7 +6191,7 @@ output_pubnames ()
       register pubname_ref pub = &pubname_table[i];
 
       /* We shouldn't see pubnames for DIEs outside of the main CU.  */
-      if (pub->die->die_offset == 0)
+      if (pub->die->die_mark == 0)
 	abort ();
 
       ASM_OUTPUT_DWARF_DATA (asm_out_file, pub->die->die_offset);
@@ -6289,7 +6308,7 @@ output_aranges ()
       dw_die_ref die = arange_table[i];
 
       /* We shouldn't see aranges for DIEs outside of the main CU.  */
-      if (die->die_offset == 0)
+      if (die->die_mark == 0)
 	abort ();
 
       if (die->die_tag == DW_TAG_subprogram)
@@ -7674,7 +7693,7 @@ add_const_value_attribute (die, rtl)
 	if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	  {
 	    register unsigned length = GET_MODE_SIZE (mode) / sizeof (long);
- 	    long *array = (long *) xmalloc (sizeof (long) * 4);
+ 	    long *array = (long *) xmalloc (sizeof (long) * length);
 	    REAL_VALUE_TYPE rv;
 
 	    REAL_VALUE_FROM_CONST_DOUBLE (rv, rtl);
@@ -7931,6 +7950,40 @@ add_location_or_const_value_attribute (die, decl)
     }
 }
 
+/* If we don't have a copy of this variable in memory for some reason (such
+   as a C++ member constant that doesn't have an out-of-line definition),
+   we should tell the debugger about the constant value.  */
+
+static void
+tree_add_const_value_attribute (var_die, decl)
+     dw_die_ref var_die;
+     tree decl;
+{
+  tree init = DECL_INITIAL (decl);
+  tree type = TREE_TYPE (decl);
+
+  if (TREE_READONLY (decl) && ! TREE_THIS_VOLATILE (decl) && init
+      && initializer_constant_valid_p (init, type) == null_pointer_node)
+    /* OK */;
+  else
+    return;
+
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE:
+      if (host_integerp (init, 0))
+	add_AT_unsigned (var_die, DW_AT_const_value,
+			 TREE_INT_CST_LOW (init));
+      else
+	add_AT_long_long (var_die, DW_AT_const_value,
+			  TREE_INT_CST_HIGH (init),
+			  TREE_INT_CST_LOW (init));
+      break;
+
+    default:;
+    }
+}
+     
 /* Generate an DW_AT_name attribute given some string value to be included as
    the value of the attribute.  */
 
@@ -9369,6 +9422,8 @@ gen_variable_die (decl, context_die)
       add_location_or_const_value_attribute (var_die, decl);
       add_pubname (decl, var_die);
     }
+  else
+    tree_add_const_value_attribute (var_die, decl);
 }
 
 /* Generate a DIE to represent a label identifier.  */
