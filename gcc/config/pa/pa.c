@@ -442,6 +442,14 @@ arith32_operand (op, mode)
 {
   return register_operand (op, mode) || GET_CODE (op) == CONST_INT;
 }
+
+int
+pc_or_label_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == PC || GET_CODE (op) == LABEL_REF);
+}
 
 /* Legitimize PIC addresses.  If the address is already
    position-independent, we return ORIG.  Newly generated
