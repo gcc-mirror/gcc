@@ -2473,10 +2473,10 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		 multiplication sequences.  */
 
 	      insn = get_last_insn ();
-	      REG_NOTES (insn)
-		= gen_rtx_EXPR_LIST (REG_EQUAL,
-				     gen_rtx_MULT (mode, op0, GEN_INT (val_so_far)),
-				     REG_NOTES (insn));
+	      set_unique_reg_note (insn, 
+	      			   REG_EQUAL,
+				   gen_rtx_MULT (mode, op0, 
+				   	         GEN_INT (val_so_far)));
 	    }
 
 	  if (variant == negate_variant)
@@ -3170,10 +3170,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		if (insn != last
 		    && (set = single_set (insn)) != 0
 		    && SET_DEST (set) == quotient)
-		  REG_NOTES (insn)
-		    = gen_rtx_EXPR_LIST (REG_EQUAL,
-					 gen_rtx_UDIV (compute_mode, op0, op1),
-					 REG_NOTES (insn));
+		  set_unique_reg_note (insn, 
+		  		       REG_EQUAL,
+				       gen_rtx_UDIV (compute_mode, op0, op1));
 	      }
 	    else		/* TRUNC_DIV, signed */
 	      {
@@ -3247,12 +3246,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			if (insn != last
 			    && (set = single_set (insn)) != 0
 			    && SET_DEST (set) == quotient)
-			  REG_NOTES (insn)
-			    = gen_rtx_EXPR_LIST (REG_EQUAL,
-						 gen_rtx_DIV (compute_mode,
-							      op0,
-							      GEN_INT (abs_d)),
-				       REG_NOTES (insn));
+			  set_unique_reg_note (insn, 
+			  		       REG_EQUAL,
+					       gen_rtx_DIV (compute_mode,
+							    op0,
+							    GEN_INT (abs_d)));
 
 			quotient = expand_unop (compute_mode, neg_optab,
 						quotient, quotient, 0);
@@ -3317,10 +3315,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		if (insn != last
 		    && (set = single_set (insn)) != 0
 		    && SET_DEST (set) == quotient)
-		  REG_NOTES (insn)
-		    = gen_rtx_EXPR_LIST (REG_EQUAL,
-					 gen_rtx_DIV (compute_mode, op0, op1),
-					 REG_NOTES (insn));
+		  set_unique_reg_note (insn, 
+		  		       REG_EQUAL,
+				       gen_rtx_DIV (compute_mode, op0, op1));
 	      }
 	    break;
 	  }
@@ -3733,12 +3730,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 				     NULL_RTX, unsignedp);
 
 	    insn = get_last_insn ();
-	    REG_NOTES (insn)
-	      = gen_rtx_EXPR_LIST (REG_EQUAL,
-				   gen_rtx_fmt_ee (unsignedp ? UDIV : DIV,
-						   compute_mode,
-						   op0, op1),
-				   REG_NOTES (insn));
+	    set_unique_reg_note (insn,
+	    			 REG_EQUAL,
+				 gen_rtx_fmt_ee (unsignedp ? UDIV : DIV,
+						 compute_mode,
+						 op0, op1));
 	  }
 	break;
 
