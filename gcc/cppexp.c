@@ -254,6 +254,10 @@ static struct token tokentab2[] = {
   {NULL, ERROR}
 };
 
+/* This is used to accumulate the value of a character literal.  It is static
+   so that it only gets allocated once per compilation.  */
+static char *token_buffer = NULL;
+
 /* Read one token.  */
 
 struct operation
@@ -323,11 +327,18 @@ cpp_lex (pfile, skip_evaluation)
 	int wide_flag = 0;
 	int max_chars;
 	U_CHAR *ptr = tok_start;
+
+	/* We need to allocate this buffer dynamically since the size is not
+	   a constant expression on all platforms.  */
+	if (token_buffer == NULL)
+	  {
 #ifdef MULTIBYTE_CHARS
-	char token_buffer[MAX_LONG_TYPE_SIZE/MAX_CHAR_TYPE_SIZE + MB_CUR_MAX];
+	    token_buffer = xmalloc (MAX_LONG_TYPE_SIZE/MAX_CHAR_TYPE_SIZE
+				    + MB_CUR_MAX);
 #else
-	char token_buffer[MAX_LONG_TYPE_SIZE/MAX_CHAR_TYPE_SIZE + 1];
+	    token_buffer = xmalloc (MAX_LONG_TYPE_SIZE/MAX_CHAR_TYPE_SIZE + 1);
 #endif
+	  }
 
 	if (*ptr == 'L')
 	  {
