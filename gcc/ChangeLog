@@ -1,3 +1,16 @@
+2002-06-15  Aldy Hernandez  <aldyh@redhat.com>
+
+        * tm.texi (MEMBER_TYPE_FORCES_BLK): Document MODE argument.
+
+        * stor-layout.c (compute_record_mode): Remove check for
+        FUNCTION_ARG_REG_LITTLE_ENDIAN and VOIDmode when checking for
+        MEMBER_TYPE_FORCES_BLK.  Pass new mode field to
+        MEMBER_TYPE_FORCES_BLK.
+
+        * config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Same.
+
+        * config/c4x/c4x.h (MEMBER_TYPE_FORCES_BLK): Same.
+
 2002-06-14  Jeff Sturm  <jsturm@one-point.com>
 
 	* config/sparc/sparc.h (DYNAMIC_CHAIN_ADDRESS): Add SPARC_STACK_BIAS.
