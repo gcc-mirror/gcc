@@ -1,5 +1,15 @@
 2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
 
+	* parse.y (function_invocation, variable-ref, make_plus_expression):
+	Pass location to tree_code_get_expression.
+	* treetree.c (tree_code_generate_return): Set EXPR_LOCUS on retval.
+	(tree_code_get_expression): Wrap variable references in NOP_EXPRs and
+	set EXPR_LOCATION on ret1.
+	* treetree.h (tree_code_get_expression): Take the location of the
+	expression as an argument.
+
+2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
 	* treelang.texi: Treelang does have warnings.
 	* treetree.c (tree_code_create_function_prototype): Don't set
 	TREE_USED and set TREE_PUBLIC, DECL_EXTERNAL, and TREE_STATIC
