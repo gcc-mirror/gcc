@@ -1,5 +1,44 @@
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config.gcc (mips-*-*): Remove definitions of MASK_GAS and
+	OBJECT_FORMAT_ELF.  Set MASK_SPLIT_ADDR by default if using GNU ld.
+	* config/mips/mips.h (MASK_GAS): Delete.  Shuffle later masks down.
+	(TARGET_GAS, TARGET_MIPS_AS): Delete.
+	(TARGET_GPWORD): Define to true for n32 on IRIX.
+	(TARGET_SWITCHES): Remove -mmips-as.  Turn -mgas into a no-op.
+	(MIPS_AS_ASM_SPEC, SUBTARGET_MIPS_AS_ASM_SPEC): Delete.
+	(GAS_ASM_SPEC): Delete, folding into ASM_SPEC.
+	(ASM_ABI_DEFAULT_SPEC, TARGET_ASM_SPEC): Delete.
+	(MDEBUG_ASM_SPEC): Delete, folding into...
+	(SUBTARGET_ASM_DEBUGGING_SPEC): ...here.
+	(ASM_SPEC): Inline old GAS_ASM_SPEC.  Use GNU names for ABI switches.
+	(EXTRA_SPECS): Remove mips_as_asm_spec, gas_asm_spec, target_asm_spec,
+	subtarget_mips_as_asm_spec, mdebug_asm_spec.  Use MULTILIB_ABI_DEFAULT
+	to define asm_abi_default_spec.
+	(ASM_STABS_OP, ASM_STABN_OP, ASM_STABD_OP): Delete.
+	(TARGET_ASM_SELECT_SECTION): Delete.
+	* config/mips/mips.c (MIPS_MAX_FIRST_STACK_STEP): Define to 0x7ff0
+	for non-mips16 code, removing previous workaround for SGI assemblers.
+	(TARGET_ASM_INTEGER, mips_assemble_integer): Delete.
+	(TARGET_ASM_ALIGNED_DI_OP): Define this instead.
+	(override_options): Remove !TARGET_GAS and !have_named_sections code.
+	(print_operand): Fold TARGET_GAS conditionals into asm strings.
+	(mips_output_filename): Remove !TARGET_GAS code.  Replace use of
+	ASM_STABS_OP and ASM_STABN_OP.
+	(mips_file_start): Remove TARGET_MIPS_AS/TARGET_GAS checks.
+	(mips_output_aligned_decl_common): Remove mention of SGI o32 assembler.
+	(mips_output_function_prologue): Remove !TARGET_GAS code.
+	(mips_select_rtx_section): Remove !have_named_sections code.
+	(mips_select_section): Delete.
+	* config/mips/mips.md (trap): Remove !TARGET_GAS check.
+	* config/mips/linux.h (TARGET_DEFAULT): Remove use of MASK_GAS.
+	* config/mips/sdb.h (PUT_SDB_DEF, PUT_SDB_PLAIN_DEF): Delete.
+	(PUT_SDB_BLOCK_START, PUT_SDB_BLOCK_END): Fold TARGET_GAS conditional.
+	* config/mips/vxworks.h (ASM_SPEC): As for mips.h.
+	* config/mips/windiss.h (ASM_SPEC): Likewise.
+
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* read-rtl.c (map_value, mapping, macro_group): New structures.
 	(BELLWETHER_CODE): New macro.
 	(modes, codes, bellwether_codes): New variables.

@@ -376,8 +376,7 @@
 {
   if (ISA_HAS_COND_TRAP)
     return "teq\t$0,$0";
-  /* The IRIX 6 O32 assembler requires the first break operand.  */
-  else if (TARGET_MIPS16 || !TARGET_GAS)
+  else if (TARGET_MIPS16)
     return "break 0";
   else
     return "break";

@@ -1,3 +1,11 @@
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/special/mips-abi.exp: Expect gcc to pass the GNU ABI flags
+	to the assembler.  Simplify test accordingly.
+	(asm_abi_flags): Use GNU names.
+	(check_mips_abi, default_abi): Use string matches against "-mabi=*"
+	to check for ABI flags.
+
 2004-08-22  Andrew Pinski  <apinski@apple.com>
 
 	* g++.dg/opt/pr14029.C: New test.

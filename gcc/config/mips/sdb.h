@@ -34,20 +34,6 @@ extern int sdb_label_count;
 /* Starting line of current function.  */
 extern int sdb_begin_function_line;
 
-#define PUT_SDB_DEF(a)					\
-do {							\
-  fprintf (asm_out_file, "\t%s.def\t",			\
-	   (TARGET_GAS) ? "" : "#");			\
-  ASM_OUTPUT_LABELREF (asm_out_file, a); 		\
-  fputc (';', asm_out_file);				\
-} while (0)
-
-#define PUT_SDB_PLAIN_DEF(a)				\
-do {							\
-  fprintf (asm_out_file, "\t%s.def\t.%s;",		\
-	   (TARGET_GAS) ? "" : "#", (a));		\
-} while (0)
-
 /* For block start and end, we create labels, so that
    later we can figure out where the correct offset is.
    The normal .ent/.end serve well enough for functions,
@@ -56,10 +42,9 @@ do {							\
 #define PUT_SDB_BLOCK_START(LINE)			\
 do {							\
   fprintf (asm_out_file,				\
-	   "%sLb%d:\n\t%s.begin\t%sLb%d\t%d\n",		\
+	   "%sLb%d:\n\t.begin\t%sLb%d\t%d\n",		\
 	   LOCAL_LABEL_PREFIX,				\
 	   sdb_label_count,				\
-	   (TARGET_GAS) ? "" : "#",			\
 	   LOCAL_LABEL_PREFIX,				\
 	   sdb_label_count,				\
 	   (LINE));					\
@@ -69,10 +54,9 @@ do {							\
 #define PUT_SDB_BLOCK_END(LINE)				\
 do {							\
   fprintf (asm_out_file,				\
-	   "%sLe%d:\n\t%s.bend\t%sLe%d\t%d\n",		\
+	   "%sLe%d:\n\t.bend\t%sLe%d\t%d\n",		\
 	   LOCAL_LABEL_PREFIX,				\
 	   sdb_label_count,				\
-	   (TARGET_GAS) ? "" : "#",			\
 	   LOCAL_LABEL_PREFIX,				\
 	   sdb_label_count,				\
 	   (LINE));					\
