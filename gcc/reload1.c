@@ -4414,17 +4414,37 @@ reload_as_needed (live_known)
 			  break;
 			}
 		      if (n == 1)
-			REG_NOTES (p) = gen_rtx_EXPR_LIST (REG_INC, reload_reg,
-							   REG_NOTES (p));
+			{
+			  REG_NOTES (p)
+			    = gen_rtx_EXPR_LIST (REG_INC, reload_reg,
+						 REG_NOTES (p));
+			  /* Mark this as having an output reload so that the
+			     REG_INC processing code below won't invalidate
+			     the reload for inheritance.  */
+			  SET_HARD_REG_BIT (reg_is_output_reload,
+					    REGNO (reload_reg));
+			  reg_has_output_reload[REGNO (XEXP (in_reg, 0))] = 1;
+			}
 		      else
 			forget_old_reloads_1 (XEXP (in_reg, 0), NULL_RTX);
 		    }
+		  else if ((code == PRE_INC || code == PRE_DEC)
+			   && TEST_HARD_REG_BIT (reg_reloaded_valid,
+						 REGNO (reload_reg_rtx[i]))
+			   /* Make sure it is the inc/dec pseudo, and not
+			      some other (e.g. output operand) pseudo.  */
+			   && (reg_reloaded_contents[REGNO (reload_reg_rtx[i])]
+			       == REGNO (XEXP (in_reg, 0))))
+		    {
+		      SET_HARD_REG_BIT (reg_is_output_reload,
+					REGNO (reload_reg_rtx[i]));
+		      reg_has_output_reload[REGNO (XEXP (in_reg, 0))] = 1;
+		    }
 		}
 	    }
-#if 0 /* ??? Is this code obsolete now?  Need to check carefully. */
-	  /* Likewise for regs altered by auto-increment in this insn.
-	     But note that the reg-notes are not changed by reloading:
-	     they still contain the pseudo-regs, not the spill regs.  */
+	  /* If a pseudo that got a hard register is auto-incremented,
+	     we must purge records of copying it into pseudos without
+	     hard registers.  */
 	  for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
 	    if (REG_NOTE_KIND (x) == REG_INC)
 	      {
@@ -4438,7 +4458,6 @@ reload_as_needed (live_known)
 		if (i == n_reloads)
 		  forget_old_reloads_1 (XEXP (x, 0), NULL_RTX);
 	      }
-#endif
 #endif
 	}
       /* A reload reg's contents are unknown after a label.  */
