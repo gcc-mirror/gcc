@@ -1594,6 +1594,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 {
   /* New patterns for I3 and I2, respectively.  */
   rtx newpat, newi2pat = 0;
+  rtvec newpat_vec_with_clobbers = 0;
   int substed_i2 = 0, substed_i1 = 0;
   /* Indicates need to preserve SET in I1 or I2 in I3 if it is not dead.  */
   int added_sets_1, added_sets_2;
@@ -2154,6 +2155,18 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
   /* Note which hard regs this insn has as inputs.  */
   mark_used_regs_combine (newpat);
 
+  /* If recog_for_combine fails, it strips existing clobbers.  If we'll
+     consider splitting this pattern, we might need these clobbers.  */
+  if (i1 && GET_CODE (newpat) == PARALLEL
+      && GET_CODE (XVECEXP (newpat, 0, XVECLEN (newpat, 0) - 1)) == CLOBBER)
+    {
+      int len = XVECLEN (newpat, 0);
+
+      newpat_vec_with_clobbers = rtvec_alloc (len);
+      for (i = 0; i < len; i++)
+	RTVEC_ELT (newpat_vec_with_clobbers, i) = XVECEXP (newpat, 0, i);
+    }
+
   /* Is the result of combination a valid instruction?  */
   insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 
@@ -2280,6 +2293,13 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 				     i3);
 	    }
 	}
+
+      /* If recog_for_combine has discarded clobbers, try to use them
+	 again for the split.  */
+      if (m_split == 0 && newpat_vec_with_clobbers)
+	m_split
+	  = split_insns (gen_rtx_PARALLEL (VOIDmode,
+					   newpat_vec_with_clobbers), i3);
 
       if (m_split && NEXT_INSN (m_split) == NULL_RTX)
 	{
