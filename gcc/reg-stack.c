@@ -225,9 +225,8 @@ static rtx FP_mode_reg[FIRST_PSEUDO_REGISTER][(int) MAX_MACHINE_MODE];
    definition are validity of this information. */
 
 #define BLOCK_NUM(INSN)  \
-  (((INSN_UID (INSN) > max_uid)	\
-    ? (int *)(abort() , 0)		\
-    : block_number)[INSN_UID (INSN)])
+  ((INSN_UID (INSN) > max_uid)	\
+   ? (abort() , -1) : block_number[INSN_UID (INSN)])
 
 extern rtx forced_labels;
 extern rtx gen_jump ();
@@ -368,8 +367,8 @@ reg_to_stack (first, file)
 
   block_stack_in = (stack) alloca (blocks * sizeof (struct stack_def));
   block_out_reg_set = (HARD_REG_SET *) alloca (blocks * sizeof (HARD_REG_SET));
-  bzero (block_stack_in, blocks * sizeof (struct stack_def));
-  bzero (block_out_reg_set, blocks * sizeof (HARD_REG_SET));
+  bzero ((char *) block_stack_in, blocks * sizeof (struct stack_def));
+  bzero ((char *) block_out_reg_set, blocks * sizeof (HARD_REG_SET));
 
   block_number = (int *) alloca ((max_uid + 1) * sizeof (int));
 
@@ -819,7 +818,7 @@ record_asm_reg_life (insn, regstack, operands, constraints,
      Also enforce rule #5: Output operands must start at the top of
      the reg-stack: output operands may not "skip" a reg. */
 
-  bzero (reg_used_as_output, sizeof (reg_used_as_output));
+  bzero ((char *) reg_used_as_output, sizeof (reg_used_as_output));
   for (i = 0; i < n_outputs; i++)
     if (STACK_REG_P (operands[i]))
       if (reg_class_size[(int) operand_class[i]] != 1)
@@ -852,7 +851,7 @@ record_asm_reg_life (insn, regstack, operands, constraints,
      to the top of the reg-stack than any input that is not implicitly
      popped. */
 
-  bzero (implicitly_dies, sizeof (implicitly_dies));
+  bzero ((char *) implicitly_dies, sizeof (implicitly_dies));
   for (i = first_input; i < first_input + n_inputs; i++)
     if (STACK_REG_P (operands[i]))
       {
@@ -1216,7 +1215,7 @@ find_blocks (first)
 					  label_value_list);
 	}
 
-      BLOCK_NUM (insn) = block;
+      block_number[INSN_UID (insn)] = block;
 
       if (code != NOTE)
 	prev_code = code;
@@ -2342,7 +2341,7 @@ subst_asm_stack_regs (insn, regstack, operands, operands_loc, constraints,
 	  }
     }
 
-  bcopy (regstack, &temp_stack, sizeof (temp_stack));
+  bcopy ((char *) regstack, (char *) &temp_stack, sizeof (temp_stack));
 
   /* Put the input regs into the desired place in TEMP_STACK.  */
 
