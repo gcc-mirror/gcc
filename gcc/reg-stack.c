@@ -419,6 +419,9 @@ reg_to_stack (first, file)
   int max_uid;
   block_info bi;
 
+  if (!optimize)
+    split_all_insns (0);
+
   /* See if there is something to do.  Flow analysis is quite
      expensive so we might save some compilation time.  */
   for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
@@ -429,7 +432,8 @@ reg_to_stack (first, file)
 
   /* Ok, floating point instructions exist.  If not optimizing, 
      build the CFG and run life analysis.  */
-  find_basic_blocks (first, max_reg_num (), file);
+  if (!optimize)
+    find_basic_blocks (first, max_reg_num (), file);
   count_or_remove_death_notes (NULL, 1);
   life_analysis (first, file, PROP_DEATH_NOTES);
 
