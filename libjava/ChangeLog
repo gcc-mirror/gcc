@@ -1,3 +1,9 @@
+2000-01-06  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natClass.cc (_getConstructors): Correctly check
+	whether method name is the init name.
+	(getMethod): Look at accflags on method in `klass', not `this'.
+
 2000-01-05  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natClass.cc (getMethod): Compute offset relative to
