@@ -1,3 +1,7 @@
+Sun May 30 16:03:16 1999  Cort Dougan  <cort@cs.nmt.edu>
+
+	* config.guess (ppc-*-linux-gnu): Also use ld emul elf32ppclinux.
+
 Thu May 20 10:00:42 1999   Stephen L Moshier  <moshier@world.std.com>
 
          * Makefile.in (GCC_FOR_TARGET): Add -I$(build_tooldir)/include.
