@@ -456,7 +456,7 @@ extern char *                 getlogin(void);
 extern int                    getmaxx(WINDOW *);
 extern int                    getmaxy(WINDOW *);
 extern int                    getmntany(FILE *, struct mnttab *, struct mnttab *);
-extern int                    getmntent(FILE *, struct mnttab *);
+extern int                    getmntent(/* ??? */);
 extern long unsigned int      getmouse(void);
 extern int                    getmsg(int, struct strbuf *, struct strbuf *, int *);
 extern struct netent *        getnetbyaddr(/* ??? */);
