@@ -2474,3 +2474,15 @@ C<Test, Test::output> call<Test>(Test &)
 --format=gnu
 fn__FPQ21n1cPMQ21n1cFPQ21n1c_i
 fn(n::c *, int (n::c::*)(n::c *))
+#
+--format=gnu
+f__FGt3Bar1i21i
+f(Bar<2>, i)
+#
+--format=gnu
+f__FGt3Bar1i_21_i
+f(Bar<21>, int)
+#
+--format=gnu
+f__FGt3Bar1i24XY_t
+f(Bar<2>, XY_t)

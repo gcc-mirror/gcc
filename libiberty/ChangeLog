@@ -1,3 +1,17 @@
+1999-10-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* cplus-dem.c (INTBUF_SIZE): New macro.
+	(string_append_template_idx): New function.
+	(demangle_expression): Likewise.
+	(demangle_integral_value): Use it.
+	(demangle_real_value): New function, split out from ...
+	(demangle_template_value_parm): ... here.  Use
+	string_append_template_idx.  Use demangle_real_value.
+	(demangle_template): Use string_append_template_idx.
+	(demangle_qualified): Use consume_count_with_underscores.
+	(get_count): Tweak formatting.
+	(do_type): Use string_append_template_idx.
+	
 1999-10-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* calloc.c: Add a public domain notice.
