@@ -1,3 +1,9 @@
+1999-07-20  Warren Levy  <warrenl@cygnus.com>
+
+	* java/net/DatagramSocket.java (DatagramSocket(int, InetAddress)):
+	Default to using PlainDatagramSocketImpl.
+	* java/net/PlainDatagramSocketImpl.java (close): Catch IOException.
+
 1999-07-19  Tom Tromey  <tromey@cygnus.com>
 
 	* include/stamp-h.in: New file.
