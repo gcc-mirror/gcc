@@ -2201,7 +2201,7 @@ choose_ready (struct ready_list *ready)
   else
     {
       /* Try to choose the better insn.  */
-      int index, i;
+      int index = 0, i;
       rtx insn;
 
       if (cached_first_cycle_multipass_dfa_lookahead != lookahead)
