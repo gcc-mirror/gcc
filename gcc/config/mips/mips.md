@@ -98,7 +98,8 @@
 ;; call		unconditional call
 ;; load		load instruction(s)
 ;; store	store instruction(s)
-;; prefetch	memory prefetch
+;; prefetch	memory prefetch (register + offset)
+;; prefetchx	memory indexed prefetch (register + register)
 ;; move		data movement within same register set
 ;; condmove	conditional moves
 ;; xfer		transfer to/from coprocessor
@@ -123,7 +124,7 @@
 ;; multi	multiword sequence (or user asm statements)
 ;; nop		no operation
 (define_attr "type"
-  "unknown,branch,jump,call,load,store,prefetch,move,condmove,xfer,hilo,const,arith,darith,imul,imadd,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,multi,nop"
+  "unknown,branch,jump,call,load,store,prefetch,prefetchx,move,condmove,xfer,hilo,const,arith,darith,imul,imadd,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,multi,nop"
   (cond [(eq_attr "jal" "!unset")
 	 (const_string "call")]
 	(const_string "unknown")))
@@ -8513,6 +8514,15 @@ ld\t%2,%1-%S1(%2)\;daddu\t%2,%2,$31\;%*j\t%2%/"
   { return mips_emit_prefetch (operands); }
   [(set_attr "type" "prefetch")])
 
+(define_insn "prefetch_indexed_si"
+  [(prefetch (plus:SI (match_operand:SI 0 "register_operand" "r")
+		      (match_operand:SI 3 "register_operand" "r"))
+	     (match_operand:SI 1 "const_int_operand" "n")
+	     (match_operand:SI 2 "const_int_operand" "n"))]
+  "ISA_HAS_PREFETCHX && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && Pmode == SImode"
+  { return mips_emit_prefetch (operands); }
+  [(set_attr "type" "prefetchx")])
+
 (define_insn "prefetch_si"
   [(prefetch (match_operand:SI 0 "register_operand" "r")
 	     (match_operand:SI 1 "const_int_operand" "n")
@@ -8532,6 +8542,15 @@ ld\t%2,%1-%S1(%2)\;daddu\t%2,%2,$31\;%*j\t%2%/"
   "ISA_HAS_PREFETCH && Pmode == DImode"
   { return mips_emit_prefetch (operands); }
   [(set_attr "type" "prefetch")])
+
+(define_insn "prefetch_indexed_di"
+  [(prefetch (plus:DI (match_operand:DI 0 "register_operand" "r")
+		      (match_operand:DI 3 "register_operand" "r"))
+	     (match_operand:DI 1 "const_int_operand" "n")
+	     (match_operand:DI 2 "const_int_operand" "n"))]
+  "ISA_HAS_PREFETCHX && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && Pmode == DImode"
+  { return mips_emit_prefetch (operands); }
+  [(set_attr "type" "prefetchx")])
 
 (define_insn "prefetch_di"
   [(prefetch (match_operand:DI 0 "register_operand" "r")

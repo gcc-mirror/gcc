@@ -823,9 +823,9 @@ extern const struct mips_cpu_info *mips_tune_info;
                          	 || ISA_MIPS32R2                        \
 				 || ISA_MIPS64)
 
-/* This is a catch all for the other new mips4 instructions: indexed load and
-   indexed prefetch instructions, the FP madd and msub instructions,
-   and the FP recip and recip sqrt instructions */
+/* This is a catch all for other mips4 instructions: indexed load, the
+   FP madd and msub instructions, and the FP recip and recip sqrt
+   instructions.  */
 #define ISA_HAS_FP4             ((ISA_MIPS4				\
 				  || ISA_MIPS64)       			\
  				 && !TARGET_MIPS16)
@@ -901,12 +901,20 @@ extern const struct mips_cpu_info *mips_tune_info;
                                      || TARGET_SR71K                    \
                                      ))
 
-/* ISA has data prefetch instruction.  */
+/* ISA has data prefetch instructions.  This controls use of 'pref'.  */
 #define ISA_HAS_PREFETCH	((ISA_MIPS4				\
 				  || ISA_MIPS32				\
 				  || ISA_MIPS32R2			\
 				  || ISA_MIPS64)	       		\
 				 && !TARGET_MIPS16)
+
+/* ISA has data indexed prefetch instructions.  This controls use of
+   'prefx', along with TARGET_HARD_FLOAT and TARGET_DOUBLE_FLOAT.
+   (prefx is a cop1x instruction, so can only be used if FP is
+   enabled.)  */
+#define ISA_HAS_PREFETCHX       ((ISA_MIPS4				\
+				  || ISA_MIPS64)       			\
+ 				 && !TARGET_MIPS16)
 
 /* True if trunc.w.s and trunc.w.d are real (not synthetic)
    instructions.  Both require TARGET_HARD_FLOAT, and trunc.w.d

@@ -9636,30 +9636,22 @@ mips_use_dfa_pipeline_interface (void)
 const char *
 mips_emit_prefetch (rtx *operands)
 {
-  /* For the mips32/64 architectures the hint fields are arranged
-     by operation (load/store) and locality (normal/streamed/retained).
-     Irritatingly, numbers 2 and 3 are reserved leaving no simple
-     algorithm for figuring the hint.  */
-
   int write = INTVAL (operands[1]);
   int locality = INTVAL (operands[2]);
+  int indexed = GET_CODE (operands[3]) == REG;
+  int code;
+  char buffer[30];
+  
+  if (locality <= 0)
+    code = (write ? 5 : 4);	/* store_streamed / load_streamed.  */
+  else if (locality <= 2)
+    code = (write ? 1 : 0);	/* store / load.  */
+  else
+    code = (write ? 7 : 6);	/* store_retained / load_retained.  */
 
-  static const char * const alt[2][4] = {
-    {
-      "pref\t4,%3(%0)",
-      "pref\t0,%3(%0)",
-      "pref\t0,%3(%0)",
-      "pref\t6,%3(%0)"
-    },
-    {
-      "pref\t5,%3(%0)",
-      "pref\t1,%3(%0)",
-      "pref\t1,%3(%0)",
-      "pref\t7,%3(%0)"
-    }
-  };
-
-  return alt[write][locality];
+  sprintf (buffer, "%s\t%d,%%3(%%0)", indexed ? "prefx" : "pref", code);
+  output_asm_insn (buffer, operands);
+  return "";
 }
 
 
