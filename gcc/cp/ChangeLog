@@ -1,3 +1,7 @@
+2000-01-07  Nathan Sidwell  <sidwell@codesourcery.com>
+
+	* lang-specs.h (__GXX_ABI_VERSION): New preprocessor macro.
+
 2000-01-06  Jason Merrill  <jason@casey.cygnus.com>
 
 	* decl2.c (comdat_linkage): Don't set DECL_DEFER_OUTPUT.
