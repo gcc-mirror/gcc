@@ -32,6 +32,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "jcf.h"
 #include "toplev.h"
+#include "except.h"
 
 static tree push_jvm_slot PROTO ((int, tree));
 static tree builtin_function PROTO ((const char *, tree,
@@ -1642,6 +1643,7 @@ void
 end_java_method ()
 {
   tree fndecl = current_function_decl;
+  int flag_asynchronous_exceptions = asynchronous_exceptions;
 
   expand_end_bindings (getdecls (), 1, 0);
   /* pop out of function */
@@ -1657,9 +1659,17 @@ end_java_method ()
   /* Generate rtl for function exit.  */
   expand_function_end (input_filename, lineno, 0);
 
+  /* FIXME: If the current method contains any exception handlers,
+     force asynchronous_exceptions: this is necessary because signal
+     handlers in libjava may throw exceptions.  This is far from being
+     a perfect solution, but it's better than doing nothing at all.*/
+  if (catch_clauses)
+    asynchronous_exceptions = 1;
+
   /* Run the optimizers and output assembler code for this function. */
   rest_of_compilation (fndecl);
 
   current_function_decl = NULL_TREE;
   permanent_allocation (1);
+  asynchronous_exceptions = flag_asynchronous_exceptions;
 }
