@@ -4212,7 +4212,7 @@ fold_rtx (x, insn)
 	from_plus:
 	case SMIN:    case SMAX:      case UMIN:    case UMAX:
 	case IOR:     case AND:       case XOR:
-	case MULT:    case DIV:       case UDIV:
+	case MULT:
 	case ASHIFT:  case LSHIFTRT:  case ASHIFTRT:
 	  /* If we have (<op> <reg> <const_int>) for an associative OP and REG
 	     is known to be of similar form, we may be able to replace the
@@ -4260,11 +4260,9 @@ fold_rtx (x, insn)
 		break;
 
 	      /* Compute the code used to compose the constants.  For example,
-		 A/C1/C2 is A/(C1 * C2), so if CODE == DIV, we want MULT.  */
+		 A-C1-C2 is A-(C1 + C2), so if CODE == MINUS, we want PLUS.  */
 
-	      associate_code
-		= (code == MULT || code == DIV || code == UDIV ? MULT
-		   : is_shift || code == PLUS || code == MINUS ? PLUS : code);
+	      associate_code = (is_shift || code == MINUS ? PLUS : code);
 
 	      new_const = simplify_binary_operation (associate_code, mode,
 						     const_arg1, inner_const);
@@ -4300,6 +4298,14 @@ fold_rtx (x, insn)
 
 	      return simplify_gen_binary (code, mode, y, new_const);
 	    }
+	  break;
+
+	case DIV:       case UDIV:
+	  /* ??? The associative optimization performed immediately above is
+	     also possible for DIV and UDIV using associate_code of MULT.
+	     However, we would need extra code to verify that the
+	     multiplication does not overflow, that is, there is no overflow
+	     in the calculation of new_const.  */
 	  break;
 
 	default:

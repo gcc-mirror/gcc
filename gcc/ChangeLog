@@ -1,3 +1,8 @@
+2002-10-10  Jim Wilson  <wilson@redhat.com>
+
+	* cse.c (fold_rtx): Don't perform associative optimization for DIV and
+	UDIV.
+
 2002-10-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix52.h: New file.
