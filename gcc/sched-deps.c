@@ -398,7 +398,7 @@ set_sched_group_p (rtx insn)
    The MEM is a memory reference contained within INSN, which we are saving
    so that we can do memory aliasing on it.  */
 
-void
+static void
 add_insn_mem_dependence (struct deps *deps, rtx *insn_list, rtx *mem_list,
 			 rtx insn, rtx mem)
 {
