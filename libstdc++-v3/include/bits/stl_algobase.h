@@ -599,7 +599,7 @@ inline bool equal(_InputIter1 __first1, _InputIter1 __last1,
   __STL_REQUIRES(typename iterator_traits<_InputIter2>::value_type,
                  _EqualityComparable);
   for ( ; __first1 != __last1; ++__first1, ++__first2)
-    if (*__first1 != *__first2)
+    if (!(*__first1 == *__first2))
       return false;
   return true;
 }

@@ -1,5 +1,14 @@
 2001-04-06  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* testsuite/25_algorithms/equal.cc: New test.
+
+2001-04-06  Joe Buck  <jbuck@welsh-buck.org>
+
+        * stl_algobase.h (std::equal): avoid use of possibly-undefined
+        operator != (one line patch).
+
+2001-04-06  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* testsuite/26_numerics/c99_macros.cc: Add test.
 
 2001-04-06  Gabriel Dos Reis  <gdr@codesourcery.com>
