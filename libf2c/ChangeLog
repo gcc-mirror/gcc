@@ -1,3 +1,7 @@
+Tue Sep  9 15:22:57 2003  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure: Regenerate.
+
 2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
 
 	* Makefile.in: Replace PWD with PWD_COMMAND.
