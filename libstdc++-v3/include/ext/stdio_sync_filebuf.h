@@ -180,9 +180,13 @@ namespace __gnu_cxx
 	  __whence = SEEK_CUR;
 	else
 	  __whence = SEEK_END;
-	
+#ifdef _GLIBCXX_USE_LFS
+	if (!fseeko64(_M_file, __off, __whence))
+	  __ret = std::streampos(ftello64(_M_file));
+#else	
 	if (!fseek(_M_file, __off, __whence))
 	  __ret = std::streampos(std::ftell(_M_file));
+#endif
 	return __ret;
       }
 
