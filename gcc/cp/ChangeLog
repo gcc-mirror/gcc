@@ -1,3 +1,23 @@
+1999-07-09  Michael Tiemann  <tiemann@happy.cygnus.com>
+	    Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (struct lang_decl): Added field for storing sorted
+	FIELD_DECLs (used in TYPE_DECLs).
+	(DECL_PENDING_INLINE_INFO): Adjusted to use 'u' union.
+	(DECL_SORTED_FIELDS): New macro.
+	* class.c (method_name_cmp): New function.
+	(finish_struct_methods): Modified to support sorting and searching
+	methods.
+	(finish_struct_anon): Changed code in inner loop to use ELT rather 
+	than UELT (which required an extra indirection for every reference).
+	(field_decl_cmp): New function to support sorting FIELD_DECLs.
+	(finish_struct_1): Sort fields.
+	* search.c (lookup_field_1): Use DECL_SORTED_FIELDS if we have them.
+	(lookup_fnfields_1): Search sorted methods in METHOD_VEC.
+	Also, switch to using array indexing rather than a changing pointer.
+	* ptree.c (print_lang_decl): Handle TYPE_DECLs that have
+	DECL_SORTED_FIELDS.
+
 1999-07-09  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (reparse_absdcl_as_casts): Don't warn about old-style
