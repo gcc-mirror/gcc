@@ -1,3 +1,13 @@
+2001-01-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* toplev.c (flag_guess_branch_prob): New.
+	(f_options): Add guess-branch-probability option.
+	(rest_of_decl_compilation): Only estimate branch probability if
+	flag set.
+	(main): set flag_guess_branch_prob.
+
+	* flags.h (flag_guess_branch_prob): New.
+
 2001-01-15  DJ Delorie  <dj@redhat.com>
 
 	* gcc.texi (Makefile): Add documentation for Makefile targets.
