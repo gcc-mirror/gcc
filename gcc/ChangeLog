@@ -1,5 +1,10 @@
 2002-02-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cpplib.c (glue_header_name): Use local buffer to build up
+	header name.
+
+2002-02-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* doc/cpp.texi, doc/invoke.texi: Update documentation for -MM.
 
 2002-02-23  Kazu Hirata  <kazu@hxi.com>
