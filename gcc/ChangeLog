@@ -1,5 +1,14 @@
 2001-12-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/sparc.h (ASM_PREFERRED_EH_DATA_FORMAT,
+	ASM_OUTPUT_DWARF_PCREL): Define.
+	* config/sparc/sol2.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	* configure.in (HAVE_AS_SPARC_UA_PCREL): Check whether as supports
+	.uaword %r_disp32() and linker handles it correctly.
+	* configure, config.in: Rebuilt.
+
+2001-12-28  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-typeck.c (store_init_value): If initializing object with array
 	type of unknown size by a compound literal, set object's size from
 	compound literal size.
