@@ -179,7 +179,7 @@ version_specific_libs=no)dnl
 # Option set, now we can test it.
 AC_MSG_RESULT($version_specific_libs)
 
-gcc_version_trigger=${srcdir}/../gcc/version.c
+gcc_version_trigger=${toplevel_srcdir}/gcc/version.c
 gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/'`
 gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
 AC_SUBST(gcc_version)
