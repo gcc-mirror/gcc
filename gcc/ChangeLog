@@ -1,5 +1,10 @@
 2004-07-15  Aldy Hernandez  <aldyh@redhat.com>
 
+        * config/rs6000/rs6000.md ("bunordered"): Disable for e500.
+        ("bordered"): Same.
+
+2004-07-15  Aldy Hernandez  <aldyh@redhat.com>
+
         * config/rs6000/rs6000.md ("*cceq_ior_compare"): Allow
         unconditionally.
         * config/rs6000/spe.md ("e500_cceq_ior_compare"): Remove.
