@@ -674,8 +674,8 @@ LANG_FLAGS_TO_PASS = $(SUBDIR_FLAGS_TO_PASS) \
 # Lists of files for various purposes.
 
 # Language-specific object files for C and Objective C.
-C_AND_OBJC_OBJS = c-lex.o c-pragma.o c-decl.o c-typeck.o c-convert.o \
-  c-aux-info.o c-common.o c-iterate.o c-semantics.o @extra_c_objs@
+C_AND_OBJC_OBJS = c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
+  c-convert.o c-aux-info.o c-common.o c-iterate.o c-semantics.o @extra_c_objs@
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
@@ -1067,6 +1067,8 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 
 # C language specific files.
 
+c-errors.o: $(srcdir)/c-errors.c $(CONFIG_H) system.h $(TREE_H) c-tree.h \
+    flags.h diagnostic.h
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h $(GGC_H) \
     $(srcdir)/c-parse.h c-tree.h c-common.h input.h flags.h system.h \
     toplev.h output.h

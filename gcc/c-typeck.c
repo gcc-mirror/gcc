@@ -6753,27 +6753,3 @@ c_expand_start_case (exp)
 
   return exp;
 }
-
-/* Issue an ISO C99 pedantic warning MSGID.  */
-
-void
-pedwarn_c99 VPARAMS ((const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
-
-  if (flag_isoc99)
-    vpedwarn (msgid, ap);
-  else
-    vwarning (msgid, ap);
-
-  va_end (ap);
-}

@@ -1,3 +1,12 @@
+2000-07-12  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* c-typeck.c (pedwarn_c99): Move to
+	* c-errors.c: ... Here.
+	* toplev.h (verror, vwarning, vpedwarn): Remove prototypes.
+	* diagnostic.c (verror, vwarning, vpedwarn): Make static.
+	* Makefile.in (C_AND_OBJC_OBJS): Include c-errors.o
+	(c-errors.o): List dependency.
+
 2000-07-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-parse.c: Remove.
