@@ -1,3 +1,9 @@
+2003-01-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9433
+	* libsupc++/tinfo.cc (__vmi_class_type_info::__do_dyncast): Cope
+	with bases which are very ambiguous.
+
 2003-01-28  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* src/Makefile.am (CONFIG_CXXFLAGS): Reverse order of
