@@ -1556,6 +1556,32 @@ output_move_qimode (operands)
   return "move%.b %1,%0";
 }
 
+char *
+output_move_stricthi (operands)
+     rtx *operands;
+{
+  if (operands[1] == const0_rtx
+      /* clr insns on 68000 read before writing.
+	 This isn't so on the 68010, but we have no TARGET_68010.  */
+      && ((TARGET_68020 || TARGET_5200)
+	  || !(GET_CODE (operands[0]) == MEM && MEM_VOLATILE_P (operands[0]))))
+    return "clr%.w %0";
+  return "move%.w %1,%0";
+}
+
+char *
+output_move_strictqi (operands)
+     rtx *operands;
+{
+  if (operands[1] == const0_rtx
+      /* clr insns on 68000 read before writing.
+         This isn't so on the 68010, but we have no TARGET_68010.  */
+      && ((TARGET_68020 || TARGET_5200)
+          || !(GET_CODE (operands[0]) == MEM && MEM_VOLATILE_P (operands[0]))))
+    return "clr%.b %0";
+  return "move%.b %1,%0";
+}
+
 /* Return the best assembler insn template
    for moving operands[1] into operands[0] as a fullword.  */
 
