@@ -1,5 +1,7 @@
 2002-10-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* mips.c (mips_const_double_ok): Delete unused variable.
+
 	* gengtype.c (rtx_next): Change type to int.
 
 2002-10-04  Andreas Jaeger  <aj@suse.de>
