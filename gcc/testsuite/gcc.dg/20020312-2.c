@@ -72,8 +72,8 @@
 /* No pic register.  */
 #elif defined(__pj__)
 /* No pic register.  */
-#elif defined(__powerpc__) || defined(__PPC__)
-# ifdef __darwin__
+#elif defined(__powerpc__) || defined(__PPC__) || defined(__POWERPC__)
+# ifdef __MACH__
 #  define PIC_REG  "31"
 # else
 #  define PIC_REG  "30"
@@ -144,8 +144,9 @@ main()
 
   /* Additionally test that the prologue/epilogue properly does *not*
      save and restore global registers.  Not possible when the PIC
-     register is in a register window, of course.  */
-#ifndef __sparc__
+     register is in a register window, of course.  On Darwin, you can't
+     call library routines from non-PIC code.  */
+#if !defined (__sparc__) && !(defined(__MACH__) && defined(__POWERPC__))
   if (reg)
     abort ();
 #endif
