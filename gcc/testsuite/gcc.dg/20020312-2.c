@@ -98,7 +98,7 @@
 # error "Modify the test for your target."
 #endif
 
-#ifdef PIC_REG
+#if defined PIC_REG && !defined __PIC__ && !defined __pic__
 register void *reg __asm__(PIC_REG);
 #else
 /* We really need a global register variable set to the PIC register
