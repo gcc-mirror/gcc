@@ -1,3 +1,15 @@
+2003-10-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-pch.c: Add comments in various places.
+	(struct c_pch_validity): Add the lengths of various strings.
+	(host_machine): New static.
+	(target_machine): New static.
+	(get_ident): Bump version number.
+	(pch_init): Write out version, host, target validity data.
+	(c_common_valid_pch): Check version, host, target.
+	* Makefile.in (c-pch.o): Add version.h; define HOST_MACHINE and
+	TARGET_MACHINE.
+
 2003-10-21  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (IS_EXPR_CODE_CLASS): Use strchr.

@@ -1360,7 +1360,10 @@ c-dump.o : c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 
 c-pch.o : c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(CPPLIB_H) $(TREE_H) \
 	$(C_COMMON_H) output.h toplev.h c-pragma.h $(GGC_H) debug.h \
-	langhooks.h flags.h hosthooks.h
+	langhooks.h flags.h hosthooks.h version.h
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  -DHOST_MACHINE=\"$(host)\" -DTARGET_MACHINE=\"$(target)\" \
+	  $< $(OUTPUT_OPTION)
 
 # Language-independent files.
 
