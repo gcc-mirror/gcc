@@ -1,3 +1,7 @@
+2003-05-07  David Mosberger <davidm@hpl.hp.com>
+
+        * unwind-libunwind.c (_Unwind_FindEnclosingFunction): New.
+
 2003-05-07  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_split_long_move): Fix base register
