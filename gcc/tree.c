@@ -582,7 +582,7 @@ make_tree_binfo_stat (unsigned base_binfos MEM_STAT_DECL)
   tree t;
   size_t length = (offsetof (struct tree_binfo, base_binfos)
 		   + VEC_embedded_size (tree, base_binfos));
-  
+
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int) binfo_kind]++;
   tree_node_sizes[(int) binfo_kind] += length;
@@ -593,7 +593,7 @@ make_tree_binfo_stat (unsigned base_binfos MEM_STAT_DECL)
   memset (t, 0, offsetof (struct tree_binfo, base_binfos));
 
   TREE_SET_CODE (t, TREE_BINFO);
-  
+
   VEC_embedded_init (tree, BINFO_BASE_BINFOS (t), base_binfos);
 
   return t;
@@ -1217,7 +1217,7 @@ expr_align (tree t)
 
     case SAVE_EXPR:         case COMPOUND_EXPR:       case MODIFY_EXPR:
     case INIT_EXPR:         case TARGET_EXPR:         case WITH_CLEANUP_EXPR:
-    case CLEANUP_POINT_EXPR:  case UNSAVE_EXPR:
+    case CLEANUP_POINT_EXPR:
       /* These don't change the alignment of an object.  */
       return expr_align (TREE_OPERAND (t, 0));
 
@@ -1294,7 +1294,7 @@ staticp (tree arg)
       return true;
 
     case COMPONENT_REF:
-      /* If the thing being referenced is not a field, then it is 
+      /* If the thing being referenced is not a field, then it is
 	 something language specific.  */
       if (TREE_CODE (TREE_OPERAND (arg, 1)) != FIELD_DECL)
 	return (*lang_hooks.staticp) (arg);
@@ -1436,24 +1436,6 @@ skip_simple_arithmetic (tree expr)
   return inner;
 }
 
-/* Arrange for an expression to be expanded multiple independent
-   times.  This is useful for cleanup actions, as the backend can
-   expand them multiple times in different places.  */
-
-tree
-unsave_expr (tree expr)
-{
-  tree t;
-
-  /* If this is already protected, no sense in protecting it again.  */
-  if (TREE_CODE (expr) == UNSAVE_EXPR)
-    return expr;
-
-  t = build1 (UNSAVE_EXPR, TREE_TYPE (expr), expr);
-  TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (expr);
-  return t;
-}
-
 /* Returns the index of the first non-tree operand for CODE, or the number
    of operands if all are trees.  */
 
@@ -1531,106 +1513,6 @@ unsave_expr_1 (tree expr)
 
     default:
       break;
-    }
-}
-
-/* Return 0 if it is safe to evaluate EXPR multiple times,
-   return 1 if it is safe if EXPR is unsaved afterward, or
-   return 2 if it is completely unsafe.
-
-   This assumes that CALL_EXPRs and TARGET_EXPRs are never replicated in
-   an expression tree, so that it safe to unsave them and the surrounding
-   context will be correct.
-
-   SAVE_EXPRs basically *only* appear replicated in an expression tree,
-   occasionally across the whole of a function.  It is therefore only
-   safe to unsave a SAVE_EXPR if you know that all occurrences appear
-   below the UNSAVE_EXPR.  */
-
-int
-unsafe_for_reeval (tree expr)
-{
-  int unsafeness = 0;
-  enum tree_code code;
-  int i, tmp, tmp2;
-  tree exp;
-  int first_rtl;
-
-  if (expr == NULL_TREE)
-    return 1;
-
-  code = TREE_CODE (expr);
-  first_rtl = first_rtl_op (code);
-
-  switch (code)
-    {
-    case SAVE_EXPR:
-      return 2;
-
-      /* A label can only be emitted once.  */
-    case LABEL_EXPR:
-      return 1;
-
-    case BIND_EXPR:
-      unsafeness = 1;
-      break;
-
-    case TREE_LIST:
-      for (exp = expr; exp != 0; exp = TREE_CHAIN (exp))
-	{
-	  tmp = unsafe_for_reeval (TREE_VALUE (exp));
-	  unsafeness = MAX (tmp, unsafeness);
-	}
-
-      return unsafeness;
-
-    case CALL_EXPR:
-      tmp2 = unsafe_for_reeval (TREE_OPERAND (expr, 0));
-      tmp = unsafe_for_reeval (TREE_OPERAND (expr, 1));
-      return MAX (MAX (tmp, 1), tmp2);
-
-    case TARGET_EXPR:
-      unsafeness = 1;
-      break;
-
-    case EXIT_BLOCK_EXPR:
-      /* EXIT_BLOCK_LABELED_BLOCK, a.k.a. TREE_OPERAND (expr, 0), holds
-	 a reference to an ancestor LABELED_BLOCK, so we need to avoid
-	 unbounded recursion in the 'e' traversal code below.  */
-      exp = EXIT_BLOCK_RETURN (expr);
-      return exp ? unsafe_for_reeval (exp) : 0;
-
-    default:
-      tmp = lang_hooks.unsafe_for_reeval (expr);
-      if (tmp >= 0)
-	return tmp;
-      break;
-    }
-
-  switch (TREE_CODE_CLASS (code))
-    {
-    case 'c':  /* a constant */
-    case 't':  /* a type node */
-    case 'x':  /* something random, like an identifier or an ERROR_MARK.  */
-    case 'd':  /* A decl node */
-      return 0;
-
-    case 'e':  /* an expression */
-    case 'r':  /* a reference */
-    case 's':  /* an expression with side effects */
-    case '<':  /* a comparison expression */
-    case '2':  /* a binary arithmetic expression */
-    case '1':  /* a unary arithmetic expression */
-      for (i = first_rtl - 1; i >= 0; i--)
-	{
-	  tmp = unsafe_for_reeval (TREE_OPERAND (expr, i));
-	  unsafeness = MAX (tmp, unsafeness);
-	}
-
-      return unsafeness;
-
-    default:
-      return 2;
     }
 }
 
@@ -2313,7 +2195,7 @@ do { tree _node = (NODE); \
       else if (TREE_CODE (node) == BIT_FIELD_REF)
 	UPDATE_TITCSE (TREE_OPERAND (node, 2));
     }
-	      
+
   /* Now see what's inside.  If it's an INDIRECT_REF, copy our properties from
      it.  If it's a decl, it's invariant and constant if the decl is static.
      It's also invariant if it's a decl in the current function.  (Taking the
@@ -2349,7 +2231,7 @@ do { tree _node = (NODE); \
    Constants, decls, types and misc nodes cannot be.
 
    We define 5 non-variadic functions, from 0 to 4 arguments.  This is
-   enough for all extant tree codes.  These functions can be called 
+   enough for all extant tree codes.  These functions can be called
    directly (preferably!), but can also be obtained via GCC preprocessor
    magic within the build macro.  */
 
@@ -2515,7 +2397,7 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
   TREE_READONLY (t) = read_only;
   TREE_CONSTANT (t) = constant;
   TREE_INVARIANT (t) = invariant;
-  TREE_SIDE_EFFECTS (t) = side_effects;  
+  TREE_SIDE_EFFECTS (t) = side_effects;
   TREE_THIS_VOLATILE (t)
     = TREE_CODE_CLASS (code) == 'r' && arg0 && TREE_THIS_VOLATILE (arg0);
 
@@ -2566,7 +2448,7 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 	  }
     }
 
-  TREE_SIDE_EFFECTS (t) = side_effects;  
+  TREE_SIDE_EFFECTS (t) = side_effects;
   TREE_THIS_VOLATILE (t)
     = TREE_CODE_CLASS (code) == 'r' && arg0 && TREE_THIS_VOLATILE (arg0);
 
@@ -2598,7 +2480,7 @@ build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   PROCESS_ARG(2);
   PROCESS_ARG(3);
 
-  TREE_SIDE_EFFECTS (t) = side_effects;  
+  TREE_SIDE_EFFECTS (t) = side_effects;
   TREE_THIS_VOLATILE (t)
     = TREE_CODE_CLASS (code) == 'r' && arg0 && TREE_THIS_VOLATILE (arg0);
 
@@ -2700,7 +2582,7 @@ build_decl_stat (enum tree_code code, tree name, tree type MEM_STAT_DECL)
     layout_decl (t, 0);
   else if (code == FUNCTION_DECL)
     DECL_MODE (t) = FUNCTION_MODE;
-    
+
   /* Set default visibility to whatever the user supplied with
      visibility_specified depending on #pragma GCC visibility.  */
   DECL_VISIBILITY (t) = default_visibility;
@@ -3230,7 +3112,7 @@ type_hash_eq (const void *va, const void *vb)
 		      && TREE_CODE (TYPE_ARG_TYPES (b->type)) == TREE_LIST
 		      && type_list_equal (TYPE_ARG_TYPES (a->type),
 					  TYPE_ARG_TYPES (b->type)))));
-								      
+
     case ARRAY_TYPE:
     case SET_TYPE:
       return TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type);
@@ -3683,7 +3565,7 @@ simple_cst_equal (tree t1, tree t2)
 			 TREE_STRING_LENGTH (t1)));
 
     case CONSTRUCTOR:
-      return simple_cst_list_equal (CONSTRUCTOR_ELTS (t1), 
+      return simple_cst_list_equal (CONSTRUCTOR_ELTS (t1),
 	                            CONSTRUCTOR_ELTS (t2));
 
     case SAVE_EXPR:
@@ -4325,7 +4207,7 @@ build_method_type (tree basetype, tree type)
   if (TREE_CODE (type) != FUNCTION_TYPE)
     abort ();
 
-  return build_method_type_directly (basetype, 
+  return build_method_type_directly (basetype,
 				     TREE_TYPE (type),
 				     TYPE_ARG_TYPES (type));
 }
@@ -4870,16 +4752,16 @@ decl_type_context (tree decl)
       case UNION_TYPE:
       case QUAL_UNION_TYPE:
 	return context;
-	
+
       case TYPE_DECL:
       case FUNCTION_DECL:
 	context = DECL_CONTEXT (context);
 	break;
-	
+
       case BLOCK:
 	context = BLOCK_SUPERCONTEXT (context);
 	break;
-	
+
       default:
 	abort ();
       }
@@ -4918,7 +4800,7 @@ get_callee_fndecl (tree call)
   if (TREE_CODE (addr) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (addr, 0)) == FUNCTION_DECL)
     return TREE_OPERAND (addr, 0);
-  
+
   /* We couldn't figure out what was being called.  Maybe the front
      end has some idea.  */
   return lang_hooks.lang_get_callee_fndecl (call);
@@ -4970,11 +4852,11 @@ crc32_string (unsigned chksum, const char *string)
     {
       unsigned value = *string << 24;
       unsigned ix;
-      
+
       for (ix = 8; ix--; value <<= 1)
   	{
   	  unsigned feedback;
-  	  
+
   	  feedback = (value ^ chksum) & 0x80000000 ? 0x04c11db7 : 0;
  	  chksum <<= 1;
  	  chksum ^= feedback;
@@ -5189,7 +5071,7 @@ tree_check_failed (const tree node, const char *file,
       length += strlen (tree_code_name[code]);
     }
   va_end (args);
-  
+
   internal_error ("tree check: expected %s, have %s in %s, at %s:%d",
 		  buffer, tree_code_name[TREE_CODE (node)],
 		  function, trim_filename (file), line);
@@ -5226,7 +5108,7 @@ tree_not_check_failed (const tree node, const char *file,
       length += strlen (tree_code_name[code]);
     }
   va_end (args);
-  
+
   internal_error ("tree check: expected none of %s, have %s in %s, at %s:%d",
 		  buffer, tree_code_name[TREE_CODE (node)],
 		  function, trim_filename (file), line);
@@ -5392,7 +5274,7 @@ build_common_tree_nodes (int signed_char)
   unsigned_intSI_type_node = make_or_reuse_type (GET_MODE_BITSIZE (SImode), 1);
   unsigned_intDI_type_node = make_or_reuse_type (GET_MODE_BITSIZE (DImode), 1);
   unsigned_intTI_type_node = make_or_reuse_type (GET_MODE_BITSIZE (TImode), 1);
-  
+
   access_public_node = get_identifier ("public");
   access_protected_node = get_identifier ("protected");
   access_private_node = get_identifier ("private");
@@ -5520,7 +5402,7 @@ reconstruct_complex_type (tree type, tree bottom)
     {
       inner = reconstruct_complex_type (TREE_TYPE (type), bottom);
       outer = build_method_type_directly (TYPE_METHOD_BASETYPE (type),
-					  inner, 
+					  inner,
 					  TYPE_ARG_TYPES (type));
     }
   else
@@ -5650,7 +5532,7 @@ in_array_bounds_p (tree ref)
 
   if (TREE_CODE (idx) != INTEGER_CST)
     return false;
-	    
+
   min = array_ref_low_bound (ref);
   max = array_ref_up_bound (ref);
   if (!min
@@ -5695,7 +5577,7 @@ fields_compatible_p (tree f1, tree f2)
     return false;
 
   if (!lang_hooks.types_compatible_p (TREE_TYPE (f1), TREE_TYPE (f2)))
-    return false; 
+    return false;
 
   return true;
 }
@@ -5746,36 +5628,36 @@ int_cst_value (tree x)
 /* Returns the greatest common divisor of A and B, which must be
    INTEGER_CSTs.  */
 
-tree 
+tree
 tree_fold_gcd (tree a, tree b)
 {
   tree a_mod_b;
   tree type = TREE_TYPE (a);
-  
+
 #if defined ENABLE_CHECKING
   if (TREE_CODE (a) != INTEGER_CST
       || TREE_CODE (b) != INTEGER_CST)
     abort ();
 #endif
-  
-  if (integer_zerop (a)) 
+
+  if (integer_zerop (a))
     return b;
-  
-  if (integer_zerop (b)) 
+
+  if (integer_zerop (b))
     return a;
-  
+
   if (tree_int_cst_sgn (a) == -1)
     a = fold (build2 (MULT_EXPR, type, a,
 		      convert (type, integer_minus_one_node)));
-  
+
   if (tree_int_cst_sgn (b) == -1)
     b = fold (build2 (MULT_EXPR, type, b,
 		      convert (type, integer_minus_one_node)));
- 
+
   while (1)
     {
       a_mod_b = fold (build2 (CEIL_MOD_EXPR, type, a, b));
- 
+
       if (!TREE_INT_CST_LOW (a_mod_b)
 	  && !TREE_INT_CST_HIGH (a_mod_b))
 	return b;

@@ -20,7 +20,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
- 
+
 /* The third argument can be:
    'x' for an exceptional code (fits no category).
    't' for a type object code.
@@ -82,7 +82,7 @@ DEFTREECODE (TREE_VEC, "tree_vec", 'x', 0)
    outermost scope of a particular inlining of a function).
    BLOCK_ABSTRACT is nonzero if the block represents an abstract
    instance of a block (i.e. one which is nested within an abstract
-   instance of an inline function). 
+   instance of an inline function).
    TREE_ASM_WRITTEN is nonzero if the block was actually referenced
    in the generated assembly.  */
 DEFTREECODE (BLOCK, "block", 'x', 0)
@@ -272,7 +272,7 @@ DEFTREECODE (REAL_CST, "real_cst", 'c', 0)
 DEFTREECODE (COMPLEX_CST, "complex_cst", 'c', 0)
 
 /* Contents are in TREE_VECTOR_CST_ELTS field.  */
-DEFTREECODE (VECTOR_CST, "vector_cst", 'c', 0)     
+DEFTREECODE (VECTOR_CST, "vector_cst", 'c', 0)
 
 /* Contents are TREE_STRING_LENGTH and TREE_STRING_POINTER fields.  */
 DEFTREECODE (STRING_CST, "string_cst", 'c', 0)
@@ -369,7 +369,7 @@ DEFTREECODE (COMPONENT_REF, "component_ref", 'r', 3)
    The field can be either a signed or unsigned field;
    BIT_FIELD_REF_UNSIGNED says which.  */
 DEFTREECODE (BIT_FIELD_REF, "bit_field_ref", 'r', 3)
-   
+
 /* C unary `*' or Pascal `^'.  One operand, an expression for a pointer.  */
 DEFTREECODE (INDIRECT_REF, "indirect_ref", 'r', 1)
 
@@ -462,7 +462,7 @@ DEFTREECODE (COND_EXPR, "cond_expr", 'e', 3)
 
 /* Declare local variables, including making RTL and allocating space.
    BIND_EXPR_VARS is a chain of VAR_DECL nodes for the variables.
-   BIND_EXPR_BODY is the body, the expression to be computed using 
+   BIND_EXPR_BODY is the body, the expression to be computed using
    the variables.  The value of operand 1 becomes that of the BIND_EXPR.
    BIND_EXPR_BLOCK is the BLOCK that corresponds to these bindings
    for debugging purposes.  If this BIND_EXPR is actually expanded,
@@ -470,12 +470,12 @@ DEFTREECODE (COND_EXPR, "cond_expr", 'e', 3)
 
    The BIND_EXPR is not responsible for informing parsers
    about these variables.  If the body is coming from the input file,
-   then the code that creates the BIND_EXPR is also responsible for 
+   then the code that creates the BIND_EXPR is also responsible for
    informing the parser of the variables.
 
    If the BIND_EXPR is ever expanded, its TREE_USED flag is set.
    This tells the code for debugging symbol tables not to ignore the BIND_EXPR.
-   If the BIND_EXPR should be output for debugging but will not be expanded, 
+   If the BIND_EXPR should be output for debugging but will not be expanded,
    set the TREE_USED flag by hand.
 
    In order for the BIND_EXPR to be known at all, the code that creates it
@@ -716,14 +716,6 @@ DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", 'r', 1)
    will be replaced by the temporary variable that holds the value.  */
 DEFTREECODE (SAVE_EXPR, "save_expr", 'e', 1)
 
-/* For a UNSAVE_EXPR, operand 0 is the value to unsave.  By unsave, we
-   mean that all _EXPRs such as TARGET_EXPRs, SAVE_EXPRs, CALL_EXPRs,
-   that are protected from being evaluated more than once should be
-   reset so that a new expand_expr call of this expr will cause those
-   to be re-evaluated.  This is useful when we want to reuse a tree in
-   different places, but where we must re-expand.  */
-DEFTREECODE (UNSAVE_EXPR, "unsave_expr", 'e', 1)
-
 /* & in C.  Value is the address at which the operand's value resides.
    Operand may have any mode.  Result mode is Pmode.  */
 DEFTREECODE (ADDR_EXPR, "addr_expr", 'e', 1)
@@ -732,7 +724,7 @@ DEFTREECODE (ADDR_EXPR, "addr_expr", 'e', 1)
    of type EPmode.  Used only for languages that need static chains.  */
 DEFTREECODE (ENTRY_VALUE_EXPR, "entry_value_expr", 'e', 1)
 
-/* Operand0 is a function constant; result is part N of a function 
+/* Operand0 is a function constant; result is part N of a function
    descriptor of type ptr_mode.  */
 DEFTREECODE (FDESC_EXPR, "fdesc_expr", 'e', 2)
 
@@ -827,7 +819,7 @@ DEFTREECODE (SWITCH_EXPR, "switch_expr", 's', 3)
    label.  CASE_LABEL is the corresponding LABEL_DECL.  */
 DEFTREECODE (CASE_LABEL_EXPR, "case_label_expr", 's', 3)
 
-/* RESX.  Resume execution after an exception.  Operand 0 is a 
+/* RESX.  Resume execution after an exception.  Operand 0 is a
    number indicating the exception region that is being left.  */
 DEFTREECODE (RESX_EXPR, "resx_expr", 's', 1)
 

@@ -78,8 +78,6 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL cxx_dup_lang_specific_decl
 #undef LANG_HOOKS_TRUTHVALUE_CONVERSION
 #define LANG_HOOKS_TRUTHVALUE_CONVERSION c_common_truthvalue_conversion
-#undef LANG_HOOKS_UNSAFE_FOR_REEVAL
-#define LANG_HOOKS_UNSAFE_FOR_REEVAL c_common_unsafe_for_reeval
 #undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME mangle_decl
 #undef LANG_HOOKS_MARK_ADDRESSABLE
@@ -225,7 +223,7 @@ cxx_get_alias_set (tree t)
     /* The base variant of a type must be in the same alias set as the
        complete type.  */
     return get_alias_set (TYPE_CONTEXT (t));
-  
+
   /* Punt on PMFs until we canonicalize functions properly.  */
   if (TYPE_PTRMEMFUNC_P (t))
     return 0;
@@ -270,7 +268,7 @@ cp_expr_size (tree exp)
       /* This would be wrong for a type with virtual bases, but they are
 	 caught by the abort above.  */
       return (is_empty_class (TREE_TYPE (exp))
-	      ? size_zero_node 
+	      ? size_zero_node
 	      : CLASSTYPE_SIZE_UNIT (TREE_TYPE (exp)));
     }
   else

@@ -1,3 +1,28 @@
+2004-07-28  Eric Christopher  <echristo@redhat.com>
+
+	* c-common.c (c_common_unsafe_for_reeval): Delete.
+	* c-lang.c (LANG_HOOKS_UNSAFE_FOR_REEVAL): Delete use.
+	* c-pretty-print.c (pp_c_expression): Delete UNSAVE_EXPR case.
+	* calls.c (fix_unsafe_tree): Delete.
+	(expand_call): Delete code which used above.
+	* dojump.c (do_jump): Delete UNSAVE_EXPR case.
+	* expr.c (expand_expr_real_1): Ditto.
+	* fold-const.c (non_lvalue): Ditto.
+	* langhooks-def.h (LANG_HOOKS_UNSAFE_FOR_REEVAL): Delete.
+	(lhd_unsafe_for_reeval): Ditto.
+	* langhooks.c (lhd_unsafe_for_reeval): Ditto.
+	* langhooks.h (unsafe_for_reeval): Ditto.
+	(unsave_expr_now): Adjust comment.
+	* tree-inline.c (copy_body_r): Delete UNSAVE_EXPR bits.
+	(estimate_num_insns_1): Ditto.
+	* tree-pretty-print.c (dump_generic_node): Ditto.
+	* tree.c (expr_align): Ditto.
+	(unsave_expr): Delete.
+	(unsafe_for_reeval): Ditto.
+	* tree.h (unsafe_for_reeval, unsave_expr): Ditto.
+	* tree.def (UNSAVE_EXPR): Delete.
+	* objc/objc-lang.c (LANG_HOOKS_UNSAFE_FOR_REEVAL): Delete.
+
 2004-07-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree.h (enum tls_model): Move ...

@@ -6537,15 +6537,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
         return ret;
       }
 
-    case UNSAVE_EXPR:
-      {
-	rtx temp;
-	temp = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
-	TREE_OPERAND (exp, 0)
-	  = lang_hooks.unsave_expr_now (TREE_OPERAND (exp, 0));
-	return temp;
-      }
-
     case GOTO_EXPR:
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == LABEL_DECL)
 	expand_goto (TREE_OPERAND (exp, 0));

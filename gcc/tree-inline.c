@@ -154,7 +154,7 @@ insert_decl_map (inline_data *id, tree key, tree value)
 		       (splay_tree_value) value);
 }
 
-/* Remap DECL during the copying of the BLOCK tree for the function. 
+/* Remap DECL during the copying of the BLOCK tree for the function.
    We are only called to remap local variables in the current function.  */
 
 static tree
@@ -243,7 +243,7 @@ remap_type (tree type, inline_data *id)
       insert_decl_map (id, type, type);
       return type;
     }
-  
+
   /* We do need a copy.  build and register it now.  If this is a pointer or
      reference type, remap the designated type and make a new pointer or
      reference type.  */
@@ -303,7 +303,7 @@ remap_type (tree type, inline_data *id)
       if (t && TREE_CODE (t) != INTEGER_CST)
         walk_tree (&TYPE_MAX_VALUE (new), copy_body_r, id, NULL);
       return new;
-    
+
     case FUNCTION_TYPE:
       TREE_TYPE (new) = remap_type (TREE_TYPE (new), id);
       walk_tree (&TYPE_ARG_TYPES (new), copy_body_r, id, NULL);
@@ -518,9 +518,6 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
     copy_statement_list (tp);
   else if (TREE_CODE (*tp) == SAVE_EXPR)
     remap_save_expr (tp, id->decl_map, walk_subtrees);
-  else if (TREE_CODE (*tp) == UNSAVE_EXPR)
-    /* UNSAVE_EXPRs should not be generated until expansion time.  */
-    abort ();
   else if (TREE_CODE (*tp) == BIND_EXPR)
     copy_bind_expr (tp, walk_subtrees, id);
   else if (TREE_CODE (*tp) == LABELED_BLOCK_EXPR)
@@ -1206,7 +1203,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     return NULL;
 
   switch (TREE_CODE (x))
-    { 
+    {
     /* Containers have no cost.  */
     case TREE_LIST:
     case TREE_VEC:
@@ -1226,7 +1223,6 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case NOP_EXPR:
     case VIEW_CONVERT_EXPR:
     case SAVE_EXPR:
-    case UNSAVE_EXPR:
     case ADDR_EXPR:
     case COMPLEX_EXPR:
     case EXIT_BLOCK_EXPR:
@@ -1580,7 +1576,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 	 Note we need to save and restore the saved tree statement iterator
 	 to avoid having it clobbered by expand_calls_inline.  */
       tree_stmt_iterator save_tsi;
-     
+
       save_tsi = id->tsi;
       expand_calls_inline (&arg_inits, id);
       id->tsi = save_tsi;
@@ -1701,7 +1697,7 @@ static void
 expand_calls_inline (tree *stmt_p, inline_data *id)
 {
   tree stmt = *stmt_p;
-  enum tree_code code = TREE_CODE (stmt); 
+  enum tree_code code = TREE_CODE (stmt);
   int dummy;
 
   switch (code)
@@ -2326,7 +2322,7 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       if (TREE_CODE (*tp) == BIND_EXPR)
 	BIND_EXPR_BLOCK (*tp) = NULL_TREE;
     }
- 
+
   else if (TREE_CODE_CLASS (code) == 't')
     *walk_subtrees = 0;
   else if (TREE_CODE_CLASS (code) == 'd')
@@ -2392,7 +2388,7 @@ mark_local_for_remap_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 
       /* Copy the decl and remember the copy.  */
       insert_decl_map (id, decl,
-		       copy_decl_for_inlining (decl, DECL_CONTEXT (decl), 
+		       copy_decl_for_inlining (decl, DECL_CONTEXT (decl),
 					       DECL_CONTEXT (decl)));
     }
 
@@ -2416,7 +2412,7 @@ unsave_r (tree *tp, int *walk_subtrees, void *data)
     {
       /* Lookup the declaration.  */
       n = splay_tree_lookup (st, (splay_tree_key) *tp);
-      
+
       /* If it's there, remap it.  */
       if (n)
 	*tp = (tree) n->value;
