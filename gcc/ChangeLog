@@ -1,3 +1,12 @@
+Mon Apr 29 13:36:41 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (flag_if_conversion, flag_if_conversion2): New static
+	variables.
+	(lang_independent_options): Add -fif-conversion, -fif-conversion2
+	(rest_of_compilation): Do if conversion only when asked for.
+	(parse_options_and_default_flags): Set new variables to 1 for -O1
+	* invoke.texi (-fif-conversion, -fif-conversion2): Document.
+
 Mon Apr 29 13:02:50 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (dbx64_register_map): Fix typo.

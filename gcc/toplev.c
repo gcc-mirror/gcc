@@ -600,6 +600,14 @@ static int flag_loop_optimize;
 
 static int flag_crossjumping;
 
+/* Nonzero means perform if conversion.  */
+
+static int flag_if_conversion;
+
+/* Nonzero means perform if conversion after reload.  */
+
+static int flag_if_conversion2;
+
 /* Nonzero means to use global dataflow analysis to eliminate
    useless null pointer tests.  */
 
@@ -1016,6 +1024,10 @@ static const lang_independent_options f_options[] =
    N_("Perform the loop optimizations") },
   {"crossjumping", &flag_crossjumping, 1,
    N_("Perform cross-jumping optimization") },
+  {"if-conversion", &flag_if_conversion, 1,
+   N_("Perform conversion of conditional jumps to branchless equivalents") },
+  {"if-conversion2", &flag_if_conversion2, 1,
+   N_("Perform conversion of conditional jumps to conditional execution") },
   {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1,
    N_("Run CSE pass after loop optimizations") },
   {"rerun-loop-opt", &flag_rerun_loop_opt, 1,
@@ -2635,7 +2647,7 @@ rest_of_compilation (decl)
 
   timevar_push (TV_JUMP);
 
-  if (optimize > 0)
+  if (flag_delete_null_pointer_checks || flag_if_conversion)
     {
       open_dump_file (DFI_null, decl);
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
@@ -2648,7 +2660,8 @@ rest_of_compilation (decl)
 	delete_null_pointer_checks (insns);
 
       timevar_push (TV_IFCVT);
-      if_convert (0);
+      if (flag_if_conversion)
+        if_convert (0);
       timevar_pop (TV_IFCVT);
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       close_dump_file (DFI_null, print_rtl_with_bb, insns);
@@ -2897,7 +2910,8 @@ rest_of_compilation (decl)
 
 	  timevar_push (TV_IFCVT);
 	  cleanup_cfg (CLEANUP_EXPENSIVE);
-	  if_convert (0);
+	  if (flag_if_conversion)
+	    if_convert (0);
 	  timevar_pop(TV_IFCVT);
 
 	  timevar_pop (TV_JUMP);
@@ -2996,7 +3010,7 @@ rest_of_compilation (decl)
 
   /* Rerun if-conversion, as combine may have simplified things enough to
      now meet sequence length restrictions.  */
-  if (optimize > 0)
+  if (flag_if_conversion)
     {
       timevar_push (TV_IFCVT);
       open_dump_file (DFI_ce, decl);
@@ -3237,7 +3251,7 @@ rest_of_compilation (decl)
       timevar_pop (TV_RENAME_REGISTERS);
     }
 
-  if (optimize > 0)
+  if (flag_if_conversion2)
     {
       timevar_push (TV_IFCVT2);
       open_dump_file (DFI_ce2, decl);
@@ -4593,6 +4607,8 @@ parse_options_and_default_flags (argc, argv)
       flag_cprop_registers = 1;
       flag_loop_optimize = 1;
       flag_crossjumping = 1;
+      flag_if_conversion = 1;
+      flag_if_conversion2 = 1;
     }
 
   if (optimize >= 2)
