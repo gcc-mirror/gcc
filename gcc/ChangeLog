@@ -1,3 +1,13 @@
+2000-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/t-linux64 (tcrtbeginS.o, tcrtendS.o): Remove.
+
+2000-04-06  Geoff Keating  <geoffk@cygnus.com>
+
+	* Makefile.in: Build crtbeginS and crtendS like crtbegin and
+	crtend so they can be multilibbed.
+	(STAGESTUFF): Remove s-crt and s-crtS.
+
 2000-04-07  Richard Henderson  <rth@cygnus.com>
 
 	* config/alpha/alpha.c (alpha_emit_conditional_move): Fail
