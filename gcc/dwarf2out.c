@@ -413,11 +413,6 @@ static char *primary_filename;
    assigns numbers to the blocks in the same way.  */
 static unsigned next_block_number = 2;
 
-/* Non-zero if we are performing the file-scope finalization pass and if we
-   should force out Dwarf descriptions of any and all file-scope tagged types
-   which are still incomplete types.  */
-static int finalizing = 0;
-
 /* A pointer to the base of a list of references to DIE's that describe
    types.  The table is indexed by TYPE_UID() which is a unique number,
    indentifying each type.  */
@@ -6062,7 +6057,7 @@ add_name_and_src_coords_attributes (die, decl)
 {
   register tree decl_name;
   register unsigned file_index;
-  if (decl_function_context (decl) == NULL_TREE)
+  if (TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
     decl_name = DECL_ASSEMBLER_NAME (decl);
   else
     decl_name = DECL_NAME (decl); 
@@ -6366,17 +6361,15 @@ gen_inlined_union_type_die (type, context_die)
 
 /* Generate a DIE to represent an enumeration type.  Note that these DIEs
    include all of the information about the enumeration values also. Each
-   enumerated type name/value is listed as a child of the enumerated type DIE */
+   enumerated type name/value is listed as a child of the enumerated type
+   DIE.  */
 static void
-gen_enumeration_type_die (type, is_complete, context_die)
+gen_enumeration_type_die (type, context_die)
      register tree type;
-     register unsigned is_complete;
      register dw_die_ref context_die;
 {
-  register dw_die_ref type_die;
-  register dw_die_ref enum_die;
-  register tree link;
-  type_die = lookup_type_die (type);
+  register dw_die_ref type_die = lookup_type_die (type);
+
   if (type_die == NULL)
     {
       type_die = new_die (DW_TAG_enumeration_type,
@@ -6384,25 +6377,30 @@ gen_enumeration_type_die (type, is_complete, context_die)
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
     }
-  if (is_complete)
+  else if (! TYPE_SIZE (type))
+    return;
+  else
+    remove_AT (type_die, DW_AT_declaration);
+
+  /* Handle a GNU C/C++ extension, i.e. incomplete enum types.  If the
+     given enum type is incomplete, do not generate the DW_AT_byte_size
+     attribute or the DW_AT_element_list attribute.  */
+  if (TYPE_SIZE (type))
     {
-      /* Handle a GNU C/C++ extension, i.e. incomplete enum types.  If the
-         given enum type is incomplete, do not generate the DW_AT_byte_size
-         attribute or the DW_AT_element_list attribute.  */
-      if (TYPE_SIZE (type))
+      register tree link;
+      add_byte_size_attribute (type_die, type);
+      for (link = TYPE_FIELDS (type);
+	   link != NULL; link = TREE_CHAIN (link))
 	{
-	  add_byte_size_attribute (type_die, type);
-	  for (link = TYPE_FIELDS (type);
-	       link != NULL; link = TREE_CHAIN (link))
-	    {
-	      enum_die = new_die (DW_TAG_enumerator, type_die);
-	      add_name_attribute (enum_die,
-				  IDENTIFIER_POINTER (TREE_PURPOSE (link)));
-	      add_AT_unsigned (enum_die, DW_AT_const_value,
+	  register dw_die_ref enum_die = new_die (DW_TAG_enumerator, type_die);
+	  add_name_attribute (enum_die,
+			      IDENTIFIER_POINTER (TREE_PURPOSE (link)));
+	  add_AT_unsigned (enum_die, DW_AT_const_value,
 			   (unsigned) TREE_INT_CST_LOW (TREE_VALUE (link)));
-	    }
 	}
     }
+  else
+    add_AT_flag (type_die, DW_AT_declaration, 1);
 }
 
 
@@ -6610,15 +6608,15 @@ gen_subprogram_die (decl, context_die)
     {
       subr_die = new_die (DW_TAG_subprogram,
 			  scope_die_for (decl, context_die));
-      if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
-	{
-	  add_AT_flag (subr_die, DW_AT_external, 1);
-	}
+      if (TREE_PUBLIC (decl))
+	add_AT_flag (subr_die, DW_AT_external, 1);
       add_name_and_src_coords_attributes (subr_die, decl);
       type = TREE_TYPE (decl);
       add_prototyped_attribute (subr_die, type);
       add_type_attribute (subr_die, TREE_TYPE (type), 0, 0, context_die);
       add_pure_or_virtual_attribute (subr_die, decl);
+      if (DECL_ARTIFICIAL (decl))
+	add_AT_flag (subr_die, DW_AT_artificial, 1);
 
       /* The first time we see a member function, it is in the context of
          the class to which it belongs.  We make sure of this by emitting
@@ -6822,10 +6820,10 @@ gen_variable_die (decl, context_die)
       add_type_attribute (var_die, TREE_TYPE (decl),
 			  TREE_READONLY (decl),
 			  TREE_THIS_VOLATILE (decl), context_die);
-      if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
-	{
-	  add_AT_flag (var_die, DW_AT_external, 1);
-	}
+      if (TREE_PUBLIC (decl))
+	add_AT_flag (var_die, DW_AT_external, 1);
+      if (DECL_ARTIFICIAL (decl))
+	add_AT_flag (var_die, DW_AT_artificial, 1);
     }
   if (DECL_ABSTRACT (decl))
     {
@@ -6953,6 +6951,8 @@ gen_field_die (decl, context_die)
       add_bit_offset_attribute (decl_die, decl);
     }
   add_data_member_location_attribute (decl_die, decl);
+  if (DECL_ARTIFICIAL (decl))
+    add_AT_flag (decl_die, DW_AT_artificial, 1);
 }
 
 #if 0
@@ -6965,7 +6965,8 @@ gen_pointer_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref ptr_die = new_die (DW_TAG_pointer_type, context_die);
+  register dw_die_ref ptr_die = new_die
+    (DW_TAG_pointer_type, scope_die_for (type, context_die));
   equate_type_number_to_die (type, ptr_die);
   add_type_attribute (ptr_die, TREE_TYPE (type), 0, 0, context_die);
   add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
@@ -6980,7 +6981,8 @@ gen_reference_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref ref_die = new_die (DW_TAG_reference_type, context_die);
+  register dw_die_ref ref_die = new_die
+    (DW_TAG_reference_type, scope_die_for (type, context_die));
   equate_type_number_to_die (type, ref_die);
   add_type_attribute (ref_die, TREE_TYPE (type), 0, 0, context_die);
   add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
@@ -6994,7 +6996,7 @@ gen_ptr_to_mbr_type_die (type, context_die)
      register dw_die_ref context_die;
 {
   register dw_die_ref ptr_die = new_die
-    (DW_TAG_ptr_to_member_type, context_die);
+    (DW_TAG_ptr_to_member_type, scope_die_for (type, context_die));
   equate_type_number_to_die (type, ptr_die);
   add_AT_die_ref (ptr_die, DW_AT_containing_type,
 		  lookup_type_die (TYPE_OFFSET_BASETYPE (type)));
@@ -7133,40 +7135,42 @@ gen_member_die (type, context_die)
 
 /* Generate a DIE for a structure or union type.  */
 static void
-gen_struct_or_union_type_die (type, is_complete, context_die)
+gen_struct_or_union_type_die (type, context_die)
      register tree type;
-     register unsigned is_complete;
      register dw_die_ref context_die;
 {
-  register dw_die_ref type_die;
-  type_die = lookup_type_die (type);
-  if (type_die == NULL)
+  register dw_die_ref type_die = lookup_type_die (type);
+
+  if (type_die && ! TYPE_SIZE (type))
+    return;
+  else if (! type_die
+	   || (TYPE_CONTEXT (type)
+	       && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't'))
+    /* First occurrence of type or toplevel definition of nested class.  */
     {
+      register dw_die_ref old_die = type_die;
       type_die = new_die (TREE_CODE (type) == RECORD_TYPE
 			  ? DW_TAG_structure_type : DW_TAG_union_type,
 			  scope_die_for (type, context_die));
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
+      if (old_die)
+	add_AT_die_ref (type_die, DW_AT_specification, old_die);
     }
-  else if (is_complete)
-    remove_AT (type_die, DW_AT_declaration);
   else
-    return;
+    remove_AT (type_die, DW_AT_declaration);
 
   /* If this type has been completed, then give it a byte_size attribute and
      then give a list of members.  */
-  if (is_complete)
+  if (TYPE_SIZE (type))
     {
       /* Prevent infinite recursion in cases where the type of some member of 
          this type is expressed in terms of this type itself.  */
       TREE_ASM_WRITTEN (type) = 1;
-      if (TYPE_SIZE (type))
-	{
-	  add_byte_size_attribute (type_die, type);
-	  push_decl_scope (type);
-	  gen_member_die (type, type_die);
-	  pop_decl_scope ();
-	}
+      add_byte_size_attribute (type_die, type);
+      push_decl_scope (type);
+      gen_member_die (type, type_die);
+      pop_decl_scope ();
     }
   else
     add_AT_flag (type_die, DW_AT_declaration, 1);
@@ -7179,7 +7183,8 @@ gen_subroutine_type_die (type, context_die)
      register dw_die_ref context_die;
 {
   register tree return_type = TREE_TYPE (type);
-  register dw_die_ref subr_die = new_die (DW_TAG_subroutine_type, context_die);
+  register dw_die_ref subr_die = new_die
+    (DW_TAG_subroutine_type, scope_die_for (type, context_die));
   equate_type_number_to_die (type, subr_die);
   add_prototyped_attribute (subr_die, type);
   add_type_attribute (subr_die, return_type, 0, 0, context_die);
@@ -7219,7 +7224,6 @@ gen_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register unsigned is_complete;
   if (type == 0 || type == error_mark_node)
     {
       return;
@@ -7296,48 +7300,14 @@ gen_type_die (type, context_die)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      /* For a function-scope tagged type, we can always go ahead and output
-         a Dwarf description of this type right now, even if the type in
-         question is still incomplete, because if this local type *was* ever
-         completed anywhere within its scope, that complete definition would
-         already have been attached to this RECORD_TYPE, UNION_TYPE,
-         QUAL_UNION_TYPE or ENUMERAL_TYPE node by the time we reach this
-         point.  That's true because of the way the front-end does its
-         processing of file-scope declarations (of functions and class types) 
-         within which other types might be nested.  The C and C++ front-ends
-         always gobble up such "local scope" things en-mass before they try
-         to output *any* debugging information for any of the stuff contained 
-         inside them and thus, we get the benefit here of what is (in effect) 
-         a pre-resolution of forward references to tagged types in local
-         scopes. Note however that for file-scope tagged types we cannot
-         assume that such pre-resolution of forward references has taken
-         place. A given file-scope tagged type may appear to be incomplete
-         when we reach this point, but it may yet be given a full definition
-         (at file-scope) later on during compilation.  In order to avoid
-         generating a premature (and possibly incorrect) set of Dwarf DIEs
-         for such (as yet incomplete) file-scope tagged types, we generate
-         nothing at all for as-yet incomplete file-scope tagged types here
-         unless we are making our special "finalization" pass for file-scope
-         things at the very end of compilation.  At that time, we will
-         certainly know as much about each file-scope tagged type as we are
-         ever going to know, so at that point in time, we can safely generate 
-         correct Dwarf descriptions for these file-scope tagged types.  */
-      is_complete = TYPE_SIZE (type) != 0
-	|| (TYPE_CONTEXT (type) != NULL
-	    && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) != 't')
-	|| finalizing;
       if (TREE_CODE (type) == ENUMERAL_TYPE)
-	{
-	  gen_enumeration_type_die (type, is_complete, context_die);
-	}
+	gen_enumeration_type_die (type, context_die);
       else
-	{
-	  gen_struct_or_union_type_die (type, is_complete, context_die);
-	}
+	gen_struct_or_union_type_die (type, context_die);
 
       /* Don't set TREE_ASM_WRITTEN on an incomplete struct; we want to fix
 	 it up if it is ever completed.  */
-      if (! is_complete)
+      if (TYPE_SIZE (type) == NULL_TREE)
 	return;
       break;
 
@@ -7743,7 +7713,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
          out-of-lines instances of such things (despite the fact that they
          *are* definitions).  The important point is that the C front-end
          marks these "extern inline" functions as DECL_EXTERNAL, but we need
-         to generate DWARf for them anyway. Note that the C++ front-end also
+         to generate DWARF for them anyway. Note that the C++ front-end also
          plays some similar games for inline function definitions appearing
          within include files which also contain 
 	 `#pragma interface' pragmas.  */
@@ -7811,7 +7781,6 @@ dwarfout_file_scope_decl (decl, set_finalizing)
       return;
     }
 
-  finalizing = set_finalizing;
   gen_decl_die (decl, comp_unit_die);
 
   if (TREE_CODE (decl) == FUNCTION_DECL
