@@ -149,6 +149,11 @@ static int warn_about_return_type;
 
 static int current_extern_inline;
 
+/* Nonzero when the current toplevel function contains a declaration
+   of a nested function which is never defined.  */
+
+static bool undef_nested_function;
+
 /* True means global_bindings_p should return false even if the scope stack
    says we are in file scope.  */
 bool c_override_global_bindings_to_false;
@@ -759,6 +764,12 @@ pop_scope (void)
 	      && DECL_ABSTRACT_ORIGIN (p) != 0
 	      && DECL_ABSTRACT_ORIGIN (p) != p)
 	    TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (p)) = 1;
+	  if (!DECL_EXTERNAL (p)
+	      && DECL_INITIAL (p) == 0)
+	    {
+	      error ("%Jnested function %qD declared but never defined", p, p);
+	      undef_nested_function = true;
+	    }
 	  goto common_symbol;
 
 	case VAR_DECL:
@@ -6376,7 +6387,8 @@ finish_function (void)
      until their parent function is genericized.  Since finalizing
      requires GENERIC, delay that as well.  */
 
-  if (DECL_INITIAL (fndecl) && DECL_INITIAL (fndecl) != error_mark_node)
+  if (DECL_INITIAL (fndecl) && DECL_INITIAL (fndecl) != error_mark_node
+      && !undef_nested_function)
     {
       if (!decl_function_context (fndecl))
         {
@@ -6401,6 +6413,9 @@ finish_function (void)
           (void) cgraph_node (fndecl);
         }
     }
+
+  if (!decl_function_context (fndecl))
+    undef_nested_function = false;
 
   /* We're leaving the context of this function, so zap cfun.
      It's still in DECL_STRUCT_FUNCTION, and we'll restore it in
