@@ -30,8 +30,8 @@
 #ifndef _CPP_BITS_BASICIOS_TCC
 #define _CPP_BITS_BASICIOS_TCC 1
 
-namespace std {
-
+namespace std
+{
   template<typename _CharT, typename _Traits>
     basic_streambuf<_CharT, _Traits>* 
     basic_ios<_CharT, _Traits>::rdbuf(basic_streambuf<_CharT, _Traits>* __sb)

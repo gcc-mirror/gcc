@@ -38,6 +38,25 @@
 
 namespace std 
 {
+  // Extern declarations for global objects in src/globals.cc.
+  extern istream cin;
+  extern ostream cout;
+  extern ostream cerr;
+  extern ostream clog;
+  extern filebuf buf_cout;
+  extern filebuf buf_cin;
+  extern filebuf buf_cerr;
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  extern wistream wcin;
+  extern wostream wcout;
+  extern wostream wcerr;
+  extern wostream wclog;
+  extern wfilebuf buf_wcout;
+  extern wfilebuf buf_wcin;
+  extern wfilebuf buf_wcerr;
+#endif
+
   // Definitions for static const data members of __ios_flags.
   const __ios_flags::__int_type __ios_flags::_S_boolalpha;
   const __ios_flags::__int_type __ios_flags::_S_dec;
@@ -109,17 +128,6 @@ namespace std
   int ios_base::Init::_S_ios_base_init = 0;
   bool ios_base::Init::_S_synced_with_stdio = true;
 
-  extern istream cin;
-  extern ostream cout;
-  extern ostream cerr;
-  extern ostream clog;
-#ifdef _GLIBCPP_USE_WCHAR_T
-  extern wistream wcin;
-  extern wostream wcout;
-  extern wostream wcerr;
-  extern wostream wclog;
-#endif
-
   ios_base::failure::failure(const string& __str) throw()
   {
     strncpy(_M_name, __str.c_str(), _M_bufsize);
@@ -137,23 +145,52 @@ namespace std
   ios_base::Init::_S_ios_create(bool __sync)
   {
     int __bufsize = __sync ? 0 : static_cast<int>(BUFSIZ);
-    // NB: The file std_iostream.h creates the four standard files
+
+    // NB: The file globals.cc creates the four standard files
     // with NULL buffers. At this point, we swap out the dummy NULL
-    // buffers with the real deal.
-    new (&cout) ostream(new filebuf(stdout, ios_base::out, __bufsize));
-    new (&cin) istream(new filebuf(stdin, ios_base::in, 1));
-    new (&cerr) ostream(new filebuf(stderr, ios_base::out, __bufsize));
-    new (&clog) ostream(cerr.rdbuf());
+    // [io]stream objects and buffers with the real deal.
+    new (&buf_cout) filebuf(stdout, ios_base::out, __bufsize);
+    new (&buf_cin) filebuf(stdin, ios_base::in, 1);
+    new (&buf_cerr) filebuf(stderr, ios_base::out, __bufsize);
+    new (&cout) ostream(&buf_cout);
+    new (&cin) istream(&buf_cin);
+    new (&cerr) ostream(&buf_cerr);
+    new (&clog) ostream(&buf_cerr);
     cin.tie(&cout);
     cerr.flags(ios_base::unitbuf);
     
 #ifdef _GLIBCPP_USE_WCHAR_T
-    new (&wcout) wostream( new wfilebuf(stdout, ios_base::out, __bufsize));
-    new (&wcin) wistream(new wfilebuf(stdin, ios_base::in, 1));
-    new (&wcerr) wostream(new wfilebuf(stderr, ios_base::out, __bufsize));
-    new (&wclog) wostream(wcerr.rdbuf());
+    new (&buf_wcout) wfilebuf(stdout, ios_base::out, __bufsize);
+    new (&buf_wcin) wfilebuf(stdin, ios_base::in, 1);
+    new (&buf_wcerr) wfilebuf(stderr, ios_base::out, __bufsize);
+    new (&wcout) wostream(&buf_wcout);
+    new (&wcin) wistream(&buf_wcin);
+    new (&wcerr) wostream(&buf_wcerr);
+    new (&wclog) wostream(&buf_wcerr);
     wcin.tie(&wcout);
     wcerr.flags(ios_base::unitbuf);
+#endif
+  }
+
+  void
+  ios_base::Init::_S_ios_destroy()
+  {
+    // Explicitly call dtors to free any memory that is dynamically
+    // allocated by filebuf ctor or member functions, but don't
+    // deallocate all memory by calling operator delete.
+    cout.flush();
+    cerr.flush();
+    clog.flush();
+    buf_cout.~filebuf();
+    buf_cin.~filebuf();
+    buf_cerr.~filebuf();
+#ifdef _GLIBCPP_USE_WCHAR_T
+    wcout.flush();
+    wcerr.flush();
+    wclog.flush();
+    buf_wcout.~wfilebuf();
+    buf_wcin.~wfilebuf();
+    buf_wcerr.~wfilebuf();
 #endif
   }
 
@@ -165,25 +202,6 @@ namespace std
 	ios_base::Init::_S_synced_with_stdio = true;
 	_S_ios_create(ios_base::Init::_S_synced_with_stdio);
       }
-  }
-
-  void
-  ios_base::Init::_S_ios_destroy()
-  {
-    cout.flush();
-    cerr.flush();
-    clog.flush();
-    delete cout.rdbuf();
-    delete cin.rdbuf();
-    delete cerr.rdbuf();
-#ifdef _GLIBCPP_USE_WCHAR_T
-    wcout.flush();
-    wcerr.flush();
-    wclog.flush();
-    delete wcout.rdbuf();
-    delete wcin.rdbuf();
-    delete wcerr.rdbuf();
-#endif
   }
 
   ios_base::Init::~Init()
