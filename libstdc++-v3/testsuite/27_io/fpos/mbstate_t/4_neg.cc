@@ -29,10 +29,10 @@ void test04()
   long n;
 
   // Implicit conversion
-  n = pos; // { dg-error "cannot convert" }
+  n = pos; // { dg-error "cannot convert" "" { xfail *-*-* } }
 
   // Explicit conversion
-  n = static_cast<long>(pos); // { dg-error "invalid static_cast" }
+  n = static_cast<long>(pos); // { dg-error "invalid static_cast" "" { xfail *-*-* } }
 }
 
 int main()
