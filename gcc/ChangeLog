@@ -4,6 +4,7 @@
 
 2003-10-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* Makefile.in ($(docobjdir)/%.info): Honor BUILD_INFO.
 	* Makefile.in ($(DESTDIR)$(infodir)/%.info): Conditionalize chmod
 	on existence of destination file.
 
