@@ -48,6 +48,7 @@
 static tree expand_cond PARAMS ((tree));
 static tree maybe_convert_cond PARAMS ((tree));
 static tree simplify_aggr_init_exprs_r PARAMS ((tree *, int *, void *));
+static void deferred_type_access_control PARAMS ((void));
 
 /* Record the fact that STMT was the last statement added to the
    statement tree.  */

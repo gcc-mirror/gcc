@@ -1,3 +1,13 @@
+%{
+#ifdef __GNUC__
+__inline
+#endif
+static unsigned int hash PARAMS ((const char *, unsigned int));
+#ifdef __GNUC__
+__inline
+#endif
+const char * libc_name_p PARAMS ((const char *, unsigned int));
+%}
 # The standard C library functions, for feeding to gperf; the result is used
 # by nothrow_libfn_p.
 #
