@@ -1,3 +1,8 @@
+2002-07-10  Jeffrey A Law  <law@redhat.com>
+
+        * mn10200.c (expand_epilogue): Fix test to determine which scratch
+        register to use.
+
 Wed Jul 10 16:06:00 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* cse.c (cse_insn): Supply proper SUBREG_BYTE to simplify_gen_subreg.
