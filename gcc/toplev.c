@@ -873,7 +873,7 @@ pfatal_with_name (name)
 {
   fprintf (stderr, "%s: ", progname);
   perror (name);
-  exit (35);
+  exit (FATAL_EXIT_CODE);
 }
 
 void
@@ -881,7 +881,7 @@ fatal_io_error (name)
      char *name;
 {
   fprintf (stderr, "%s: %s: I/O error\n", progname, name);
-  exit (35);
+  exit (FATAL_EXIT_CODE);
 }
 
 /* Called to give a better error message for a bad insn rather than
@@ -1348,7 +1348,7 @@ vfatal (s, ap)
      va_list ap;
 {
   verror (s, ap);
-  exit (34);
+  exit (FATAL_EXIT_CODE);
 }
 
 void
@@ -3939,7 +3939,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
   if (sorrycount)
     exit (FATAL_EXIT_CODE);
   exit (SUCCESS_EXIT_CODE);
-  return 34;
+  return 0;
 }
 
 /* Decode -m switches.  */
