@@ -1,3 +1,8 @@
+Fri Sep 10 11:21:25 BST 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.jason/rfg4.C: Revert erroneous change, add -w.
+	* g++.old-deja/g++.jason/rfg5.C: Likewise.
+
 Thu Sep  9 10:40:36 1999  Richard Henderson  <rth@cygnus.com>
 
 	* g++.old-deja/g++.other/delete6.C: Use size_t with operator new.
