@@ -283,18 +283,6 @@ c_gimplify_stmt (tree *stmt_p)
       ret = GS_OK;
       break;
 
-    case ASM_STMT:
-      {
-	tree new_stmt = build (ASM_EXPR, void_type_node, ASM_STRING (stmt),
-			       ASM_OUTPUTS (stmt), ASM_INPUTS (stmt),
-			       ASM_CLOBBERS (stmt));
-	ASM_INPUT_P (new_stmt) = ASM_INPUT_P (stmt);
-	ASM_VOLATILE_P (new_stmt) = ASM_VOLATILE_P (stmt);
-	stmt = new_stmt;
-	ret = GS_OK;
-      }
-      break;
-
     default:
       if (lang_gimplify_stmt && (*lang_gimplify_stmt) (&stmt))
 	{

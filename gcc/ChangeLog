@@ -1,5 +1,15 @@
 2004-06-16  Richard Henderson  <rth@redhat.com>
 
+	* c-common.def (ASM_STMT): Remove.
+	* c-common.h (c_common_stmt_codes): Remove ASM_STMT.
+	* c-dump.c (c_dump_tree): Likewise.
+	* c-gimplify.c (c_gimplify_stmt): Likewise.
+	* c-pretty-print.c (pp_c_statement): Likewise.
+	* c-typeck.c (build_asm_expr): Use ASM_EXPR.
+	* tree.h: Fix commentary.
+
+2004-06-16  Richard Henderson  <rth@redhat.com>
+
 	* c-common.def (GOTO_STMT, LABEL_STMT): Remove.
 	* c-common.c (c_add_case_label): Use LABEL_EXPR.
 	* c-common.h (GOTO_FAKE_P, LABEL_STMT_LABEL): Remove.

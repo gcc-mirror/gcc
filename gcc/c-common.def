@@ -71,9 +71,6 @@ DEFTREECODE (CONTINUE_STMT, "continue_stmt", 'e', 0)
    SWITCH_COND, SWITCH_BODY and SWITCH_TYPE, respectively.  */
 DEFTREECODE (SWITCH_STMT, "switch_stmt", 'e', 3)
 
-/* Used to represent an inline assembly statement.  */
-DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 4)
-
 /* Used to represent a CASE_LABEL. The operands are CASE_LOW and
    CASE_HIGH, respectively. If CASE_LOW is NULL_TREE, the label is a
    'default' label. If CASE_HIGH is NULL_TREE, the label is a normal case

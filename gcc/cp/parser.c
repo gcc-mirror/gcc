@@ -10035,12 +10035,12 @@ cp_parser_asm_definition (cp_parser* parser)
 					   /*consume_paren=*/true);
   cp_parser_require (parser, CPP_SEMICOLON, "`;'");
 
-  /* Create the ASM_STMT.  */
+  /* Create the ASM_EXPR.  */
   if (at_function_scope_p ())
     {
       asm_stmt = finish_asm_stmt (volatile_p, string, outputs,
 				  inputs, clobbers);
-      /* If the extended syntax was not used, mark the ASM_STMT.  */
+      /* If the extended syntax was not used, mark the ASM_EXPR.  */
       if (!extended_p)
 	ASM_INPUT_P (asm_stmt) = 1;
     }

@@ -30,7 +30,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    0: TREE_NEGATED_INT (in INTEGER_CST).
       IDENTIFIER_MARKED (used by search routines).
       DECL_PRETTY_FUNCTION_P (in VAR_DECL)
-      ASM_INPUT_P (in ASM_STMT)
       STMT_EXPR_NO_SCOPE (in STMT_EXPR)
    1: C_DECLARED_LABEL_FLAG (in LABEL_DECL)
       STMT_IS_FULL_EXPR_P (in _STMT)
@@ -1009,7 +1008,7 @@ enum c_tree_code {
    DECL_STMT,		IF_STMT,	FOR_STMT,	\
    WHILE_STMT,		DO_STMT,	RETURN_STMT,	\
    BREAK_STMT,		CONTINUE_STMT,			\
-   SWITCH_STMT,		ASM_STMT,	CASE_LABEL
+   SWITCH_STMT,		CASE_LABEL
 
 /* TRUE if a code represents a statement.  The front end init
    langhook should take care of initialization of this array.  */
