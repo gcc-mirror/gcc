@@ -266,9 +266,6 @@ int thumb_code = 0;
    PRINT_OPERAND_ADDRESS.  */
 enum machine_mode output_memory_reference_mode;
 
-/* Nonzero if the prologue must setup `fp'.  */
-int current_function_anonymous_args;
-
 /* The register number to be used for the PIC offset register.  */
 const char * arm_pic_register_string = NULL;
 int arm_pic_register = 9;
@@ -909,7 +906,7 @@ use_return_insn (iscond)
   
   /* As do variadic functions.  */
   if (current_function_pretend_args_size
-      || current_function_anonymous_args
+      || cfun->machine->uses_anonymous_args
       /* Of if the function calls __builtin_eh_return () */
       || ARM_FUNC_TYPE (func_type) == ARM_FT_EXCEPTION_HANDLER
       /* Or if there is no frame pointer and there is a stack adjustment.  */
@@ -7457,9 +7454,9 @@ arm_output_function_prologue (f, frame_size)
 	       current_function_args_size,
 	       current_function_pretend_args_size, frame_size);
 
-  asm_fprintf (f, "\t%@ frame_needed = %d, current_function_anonymous_args = %d\n",
+  asm_fprintf (f, "\t%@ frame_needed = %d, uses_anonymous_args = %d\n",
 	       frame_pointer_needed,
-	       current_function_anonymous_args);
+	       cfun->machine->uses_anonymous_args);
 
   if (cfun->machine->lr_save_eliminated)
     asm_fprintf (f, "\t%@ link register save eliminated.\n");
@@ -7754,7 +7751,6 @@ arm_output_function_epilogue (file, frame_size)
 	abort ();
 
       /* Reset the ARM-specific per-function variables.  */
-      current_function_anonymous_args = 0;
       after_arm_reorg = 0;
     }
 }
@@ -8068,7 +8064,7 @@ arm_compute_initial_elimination_offset (from, to)
 	  /* FIXME:  Not sure about this.  Maybe we should always return 0 ?  */
 	  return (frame_pointer_needed
 		  && current_function_needs_context
-		  && ! current_function_anonymous_args) ? 4 : 0;
+		  && ! cfun->machine->uses_anonymous_args) ? 4 : 0;
 
 	case STACK_POINTER_REGNUM:
 	  /* If nothing has been pushed on the stack at all
@@ -8209,7 +8205,7 @@ arm_expand_prologue ()
 	  else
 	    {
 	      /* Store the args on the stack.  */
-	      if (current_function_anonymous_args)
+	      if (cfun->machine->uses_anonymous_args)
 		insn = emit_multi_reg_push
 		  ((0xf0 >> (args_to_push / 4)) & 0xf);
 	      else
@@ -8245,7 +8241,7 @@ arm_expand_prologue ()
   if (args_to_push)
     {
       /* Push the argument registers, or reserve space for them.  */
-      if (current_function_anonymous_args)
+      if (cfun->machine->uses_anonymous_args)
 	insn = emit_multi_reg_push
 	  ((0xf0 >> (args_to_push / 4)) & 0xf);
       else
@@ -9139,20 +9135,8 @@ arm_hard_regno_mode_ok (regno, mode)
     return (NUM_REGS (mode) < 2) || (regno < LAST_LO_REGNUM);
 
   if (regno <= LAST_ARM_REGNUM)
-    /* We allow an SImode or smaller value to be stored in any
-       general purpose register.  This does not mean, for example
-       that GCC will choose to store a variable in the stack pointer
-       since it is a fixed register.  But it is important to allow
-       access to these special registers, so that they can be
-       referenced from C code via the asm assembler alias, eg:
-
-          register char * stack_ptr asm ("sp");
-
-       For any mode requiring more than one register to hold the
-       value we restrict the choice so that r13, r14, and r15
-       cannot be part of the register set.  */
-    return (NUM_REGS (mode) <= 1)
-      || (regno < (SP_REGNUM - (unsigned) NUM_REGS (mode)));
+    /* We allow any value to be stored in the general regisetrs.  */
+    return 1;
 
   if (   regno == FRAME_POINTER_REGNUM
       || regno == ARG_POINTER_REGNUM)
@@ -10187,7 +10171,6 @@ thumb_expand_prologue ()
 	  if (regno > LAST_LO_REGNUM) /* Very unlikely */
 	    {
 	      rtx spare = gen_rtx (REG, SImode, IP_REGNUM);
-	      rtx insn;
 
 	      /* Choose an arbitary, non-argument low register.  */
 	      reg = gen_rtx (REG, SImode, LAST_LO_REGNUM);
@@ -10312,7 +10295,7 @@ thumb_output_function_prologue (f, size)
     
   if (current_function_pretend_args_size)
     {
-      if (current_function_anonymous_args)
+      if (cfun->machine->uses_anonymous_args)
 	{
 	  int num_pushes;
 	  

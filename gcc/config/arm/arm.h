@@ -81,8 +81,6 @@ extern struct rtx_def * pool_vector_label;
 /* Set to 1 when a return insn is output, this means that the epilogue
    is not needed. */
 extern int return_used_this_function;
-/* Nonzero if the prologue must setup `fp'.  */
-extern int current_function_anonymous_args;
 
 /* Just in case configure has failed to define anything. */
 #ifndef TARGET_CPU_DEFAULT
@@ -1454,6 +1452,8 @@ typedef struct machine_function
   int lr_save_eliminated;
   /* Records the type of the current function.  */
   unsigned long func_type;
+  /* Record if the function has a variable argument list.  */
+  int uses_anonymous_args;
 }
 machine_function;
 
@@ -1536,8 +1536,7 @@ typedef struct
    that way.  */
 #define SETUP_INCOMING_VARARGS(CUM, MODE, TYPE, PRETEND_SIZE, NO_RTL)	\
 {									\
-  extern int current_function_anonymous_args;				\
-  current_function_anonymous_args = 1;					\
+  cfun->machine->uses_anonymous_args = 1;				\
   if ((CUM).nregs < NUM_ARG_REGS)					\
     (PRETEND_SIZE) = (NUM_ARG_REGS - (CUM).nregs) * UNITS_PER_WORD;	\
 }
