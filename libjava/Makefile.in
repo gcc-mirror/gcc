@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -96,10 +96,12 @@ GOBJECT_QUERY = @GOBJECT_QUERY@
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_LIBS = @GTK_LIBS@
 HASH_SYNC_SPEC = @HASH_SYNC_SPEC@
+HAVE_LIB = @HAVE_LIB@
 IEEESPEC = @IEEESPEC@
 INCLTDL = @INCLTDL@
 INTERPRETER = @INTERPRETER@
 JC1GCSPEC = @JC1GCSPEC@
+LIB = @LIB@
 LIBART_CFLAGS = @LIBART_CFLAGS@
 LIBART_CONFIG = @LIBART_CONFIG@
 LIBART_LIBS = @LIBART_LIBS@
@@ -113,6 +115,7 @@ LIBICONV = @LIBICONV@
 LIBLTDL = @LIBLTDL@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTLIB = @LTLIB@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
@@ -1502,9 +1505,17 @@ javax/print/attribute/TextSyntax.java \
 javax/print/attribute/UnmodifiableSetException.java \
 javax/print/attribute/URISyntax.java \
 javax/print/attribute/standard/Copies.java \
+javax/print/attribute/standard/DateTimeAtCompleted.java \
+javax/print/attribute/standard/DateTimeAtCreation.java \
+javax/print/attribute/standard/DateTimeAtProcessing.java \
 javax/print/attribute/standard/JobImpressions.java \
+javax/print/attribute/standard/JobImpressionsCompleted.java \
+javax/print/attribute/standard/JobKOctets.java \
+javax/print/attribute/standard/JobKOctetsProcessed.java \
 javax/print/attribute/standard/JobMediaSheets.java \
+javax/print/attribute/standard/JobMediaSheetsCompleted.java \
 javax/print/attribute/standard/JobPriority.java \
+javax/print/attribute/standard/JobPrioritySupported.java \
 javax/print/attribute/standard/NumberOfDocuments.java \
 javax/print/attribute/standard/NumberOfInterveningJobs.java \
 javax/print/attribute/standard/NumberUp.java \
@@ -2699,6 +2710,82 @@ org/w3c/dom/traversal/NodeIterator.lo \
 org/w3c/dom/traversal/TreeWalker.lo
 lib_gnu_java_awt_peer_gtk_la_LDFLAGS = 
 lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = 
+@GTK_CAIRO_FALSE@lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkClasspathFontPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkClasspathFontPeerMetrics.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkFontMetrics.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkGlyphVector.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkGraphics.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkGraphics2D.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkPixbufDecoder.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkArg.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkArgList.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkButtonPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkCanvasPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkCheckboxPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkChoicePeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkClipboard.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkComponentPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkContainerPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkDialogPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkFileDialogPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkFontPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkFramePeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkGenericPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkImage.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkImagePainter.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkLabelPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkListPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkMainThread.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkMenuBarPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkMenuComponentPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkMenuItemPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkMenuPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkOffScreenImage.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkPanelPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkPopupMenuPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkScrollPanePeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkScrollbarPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkTextAreaPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkTextComponentPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkTextFieldPeer.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkToolkit.lo \
+@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkWindowPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gthread-jni.lo jni/classpath/jcl.lo \
+@GTK_CAIRO_FALSE@jni/classpath/jnilink.lo jni/classpath/native_state.lo \
+@GTK_CAIRO_FALSE@jni/classpath/primlib.lo
 @GTK_CAIRO_TRUE@lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
 @GTK_CAIRO_TRUE@gnu/java/awt/peer/gtk/GdkClasspathFontPeer.lo \
 @GTK_CAIRO_TRUE@gnu/java/awt/peer/gtk/GdkClasspathFontPeerMetrics.lo \
@@ -2779,82 +2866,6 @@ lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES =
 @GTK_CAIRO_TRUE@jni/gtk-peer/gthread-jni.lo jni/classpath/jcl.lo \
 @GTK_CAIRO_TRUE@jni/classpath/jnilink.lo jni/classpath/native_state.lo \
 @GTK_CAIRO_TRUE@jni/classpath/primlib.lo
-@GTK_CAIRO_FALSE@lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkClasspathFontPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkClasspathFontPeerMetrics.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkFontMetrics.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkGlyphVector.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkGraphics.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkGraphics2D.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkPixbufDecoder.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkArg.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkArgList.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkButtonPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkCanvasPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkCheckboxPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkChoicePeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkClipboard.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkComponentPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkContainerPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkDialogPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkFileDialogPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkFontPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkFramePeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkGenericPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkImage.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkImagePainter.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkLabelPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkListPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkMainThread.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkMenuBarPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkMenuComponentPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkMenuItemPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkMenuPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkOffScreenImage.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkPanelPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkPopupMenuPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkScrollPanePeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkScrollbarPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkTextAreaPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkTextComponentPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkTextFieldPeer.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkToolkit.lo \
-@GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GtkWindowPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.lo \
-@GTK_CAIRO_FALSE@jni/gtk-peer/gthread-jni.lo jni/classpath/jcl.lo \
-@GTK_CAIRO_FALSE@jni/classpath/jnilink.lo jni/classpath/native_state.lo \
-@GTK_CAIRO_FALSE@jni/classpath/primlib.lo
 lib_gnu_awt_xlib_la_OBJECTS =  gnu/gcj/xlib/natClip.lo \
 gnu/gcj/xlib/natColormap.lo gnu/gcj/xlib/natDisplay.lo \
 gnu/gcj/xlib/natDrawable.lo gnu/gcj/xlib/natFont.lo \
@@ -2898,7 +2909,7 @@ libgcj-test.spec.in libgcj.pc.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -4221,9 +4232,17 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/print/attribute/URISyntax.P \
 .deps/javax/print/attribute/UnmodifiableSetException.P \
 .deps/javax/print/attribute/standard/Copies.P \
+.deps/javax/print/attribute/standard/DateTimeAtCompleted.P \
+.deps/javax/print/attribute/standard/DateTimeAtCreation.P \
+.deps/javax/print/attribute/standard/DateTimeAtProcessing.P \
 .deps/javax/print/attribute/standard/JobImpressions.P \
+.deps/javax/print/attribute/standard/JobImpressionsCompleted.P \
+.deps/javax/print/attribute/standard/JobKOctets.P \
+.deps/javax/print/attribute/standard/JobKOctetsProcessed.P \
 .deps/javax/print/attribute/standard/JobMediaSheets.P \
+.deps/javax/print/attribute/standard/JobMediaSheetsCompleted.P \
 .deps/javax/print/attribute/standard/JobPriority.P \
+.deps/javax/print/attribute/standard/JobPrioritySupported.P \
 .deps/javax/print/attribute/standard/NumberOfDocuments.P \
 .deps/javax/print/attribute/standard/NumberOfInterveningJobs.P \
 .deps/javax/print/attribute/standard/NumberUp.P \
@@ -4827,7 +4846,7 @@ uninstall-toolexecmainlibDATA:
 all-recursive install-data-recursive install-exec-recursive \
 installdirs-recursive install-recursive uninstall-recursive  \
 check-recursive installcheck-recursive info-recursive dvi-recursive:
-	@set fnord $$MAKEFLAGS; amf=$$2; \
+	@set fnord $(MAKEFLAGS); amf=$$2; \
 	dot_seen=no; \
 	target=`echo $@ | sed s/-recursive//`; \
 	list='$(SUBDIRS)'; for subdir in $$list; do \
@@ -4847,11 +4866,11 @@ check-recursive installcheck-recursive info-recursive dvi-recursive:
 
 mostlyclean-recursive clean-recursive distclean-recursive \
 maintainer-clean-recursive:
-	@set fnord $$MAKEFLAGS; amf=$$2; \
+	@set fnord $(MAKEFLAGS); amf=$$2; \
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" != "." || dot_seen=yes; \
+	  test "$$subdir" = "." && dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \

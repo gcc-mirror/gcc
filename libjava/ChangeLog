@@ -1,5 +1,17 @@
 2004-01-06  Michael Koch  <konqueror@gmx.de>
 
+	* javax/print/attribute/standard/DateTimeAtCompleted.java,
+	javax/print/attribute/standard/DateTimeAtCreation.java,
+	javax/print/attribute/standard/DateTimeAtProcessing.java,
+	javax/print/attribute/standard/JobImpressionsCompleted.java,
+	javax/print/attribute/standard/JobKOctets.java,
+	javax/print/attribute/standard/JobKOctetsProcessed.java,
+	javax/print/attribute/standard/JobMediaSheetsCompleted.java,
+	javax/print/attribute/standard/JobPrioritySupported.java: New files.
+	* Makefile.am (javax_source_files): Added new files.
+	* Makefile.in: Regenerated.
+2004-01-06  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/URLConnection.java
 	(contentHandler): Removed.
 	(locale): Removed.
