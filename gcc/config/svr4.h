@@ -251,7 +251,9 @@ do {				 				\
 
 /* Use DWARF debugging info by default.  */
 
+#ifndef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
+#endif
 
 /* Make LBRAC and RBRAC addresses relative to the start of the
    function.  The native Solaris stabs debugging format works this
