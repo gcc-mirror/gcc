@@ -1,3 +1,10 @@
+2005-02-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfgcleanup.c, df.h, diagnostic.c, rtl.c, tree-vectorizer.h,
+	config/darwin7.h, config/mips/mips.c,
+	config/rs6000/altivec.md, config/rs6000/darwin-tramp.asm:
+	Update copyright.
+
 2005-02-07  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/19775
