@@ -2829,16 +2829,30 @@ find_and_verify_loops (f)
 		rtx target
 		  = JUMP_LABEL (insn) ? JUMP_LABEL (insn) : get_last_insn ();
 		int target_loop_num = uid_loop_num[INSN_UID (target)];
-		rtx loc;
+		rtx loc, loc2;
 
 		for (loc = target; loc; loc = PREV_INSN (loc))
 		  if (GET_CODE (loc) == BARRIER
+		      /* Don't move things inside a tablejump.  */
+		      && ((loc2 = next_nonnote_insn (loc)) == 0
+			  || GET_CODE (loc2) != CODE_LABEL
+			  || (loc2 = next_nonnote_insn (loc2)) == 0
+			  || GET_CODE (loc2) != JUMP_INSN
+			  || (GET_CODE (PATTERN (loc2)) != ADDR_VEC
+			      && GET_CODE (PATTERN (loc2)) != ADDR_DIFF_VEC))
 		      && uid_loop_num[INSN_UID (loc)] == target_loop_num)
 		    break;
 
 		if (loc == 0)
 		  for (loc = target; loc; loc = NEXT_INSN (loc))
 		    if (GET_CODE (loc) == BARRIER
+			/* Don't move things inside a tablejump.  */
+			&& ((loc2 = next_nonnote_insn (loc)) == 0
+			    || GET_CODE (loc2) != CODE_LABEL
+			    || (loc2 = next_nonnote_insn (loc2)) == 0
+			    || GET_CODE (loc2) != JUMP_INSN
+			    || (GET_CODE (PATTERN (loc2)) != ADDR_VEC
+				&& GET_CODE (PATTERN (loc2)) != ADDR_DIFF_VEC))
 			&& uid_loop_num[INSN_UID (loc)] == target_loop_num)
 		      break;
 

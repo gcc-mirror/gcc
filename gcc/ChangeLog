@@ -1,5 +1,9 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Sun Oct 10 13:28:48 1999  Bernd Schmidt  <bernds@redhat.co.uk>
+	* loop.c (find_and_verify_loops): When looking for a BARRIER, don't
+	use one before a jump table.
+
 	Fri Jul  9 10:48:28 1999  Bernd Schmidt  <bernds@redhat.co.uk>
 	* loop.c (check_dbra_loop): When reversing a loop, delete all
 	REG_EQUAL notes referencing the reversed biv except those which are
