@@ -82,6 +82,9 @@ static tree handle_no_limit_stack_attribute PARAMS ((tree *, tree, tree, int,
 						     bool *));
 static tree handle_pure_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
+static tree handle_vector_size_attribute PARAMS ((tree *, tree, tree, int,
+						  bool *));
+static tree vector_size_helper PARAMS ((tree, tree));
 
 /* Table of machine-independent attributes common to all C-like languages.  */
 static const struct attribute_spec c_common_attribute_table[] =
@@ -135,6 +138,8 @@ static const struct attribute_spec c_common_attribute_table[] =
 			      handle_no_limit_stack_attribute },
   { "pure",                   0, 0, true,  false, false,
 			      handle_pure_attribute },
+  { "vector_size",	      1, 1, false, true, false,
+			      handle_vector_size_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
@@ -363,6 +368,18 @@ decl_attributes (node, attributes, flags)
 	returned_attrs = chainon ((*spec->handler) (anode, name, args,
 						    flags, &no_add_attrs),
 				  returned_attrs);
+
+      /* Layout the decl in case anything changed.  */
+      if (spec->type_required && DECL_P (*node)
+	  && TREE_CODE (*node) == VAR_DECL)
+	{
+	  /* Force a recalculation of mode and size.  */
+	  DECL_MODE (*node) = VOIDmode;
+	  DECL_SIZE (*node) = 0;
+
+	  layout_decl (*node, 0);
+	}
+
       if (!no_add_attrs)
 	{
 	  tree old_attrs;
@@ -1117,6 +1134,128 @@ handle_pure_attribute (node, name, args, flags, no_add_attrs)
     }
 
   return NULL_TREE;
+}
+
+/* Handle a "vector_size" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  unsigned int vecsize, nunits;
+  enum machine_mode mode, orig_mode, new_mode;
+  tree type = *node, new_type;
+
+  *no_add_attrs = true;
+
+  if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      return NULL_TREE;
+    }
+
+  /* Get the vector size (in bytes).  */
+  vecsize = TREE_INT_CST_LOW (TREE_VALUE (args));
+
+  /* We need to provide for vector pointers, vector arrays, and
+     functions returning vectors.  For example:
+
+       __attribute__((vector_size(16))) short *foo;
+
+     In this case, the mode is SI, but the type being modified is
+     HI, so we need to look further.  */
+
+  while (POINTER_TYPE_P (type)
+	 || TREE_CODE (type) == FUNCTION_TYPE
+	 || TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  /* Get the mode of the type being modified.  */
+  orig_mode = TYPE_MODE (type);
+
+  if (TREE_CODE (type) == RECORD_TYPE ||
+      (GET_MODE_CLASS (orig_mode) != MODE_FLOAT
+       && GET_MODE_CLASS (orig_mode) != MODE_INT))
+    {
+      error ("invalid vector type for attribute `%s'",
+	     IDENTIFIER_POINTER (name));
+      return NULL_TREE;
+    }
+
+  /* Calculate how many units fit in the vector.  */
+  nunits = vecsize / TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
+
+  /* Find a suitably sized vector.  */
+  new_mode = VOIDmode;
+  for (mode = GET_CLASS_NARROWEST_MODE (GET_MODE_CLASS (orig_mode) == MODE_INT
+					? MODE_VECTOR_INT
+					: MODE_VECTOR_FLOAT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (vecsize == GET_MODE_SIZE (mode)	&& nunits == GET_MODE_NUNITS (mode))
+      {
+	new_mode = mode;
+	break;
+      }
+
+  if (new_mode == VOIDmode)
+    error ("no vector mode with the size and type specified could be found");
+  else
+    {
+      new_type = type_for_mode (new_mode, TREE_UNSIGNED (type));
+      if (!new_type)
+	error ("no vector mode with the size and type specified could be found");
+      else
+	/* Build back pointers if needed.  */
+	*node = vector_size_helper (*node, new_type);
+    }
+    
+  return NULL_TREE;
+}
+
+/* HACK.  GROSS.  This is absolutely disgusting.  I wish there was a
+   better way.
+
+   If we requested a pointer to a vector, build up the pointers that
+   we stripped off while looking for the inner type.  Similarly for
+   return values from functions.
+
+   The argument "type" is the top of the chain, and "bottom" is the
+   new type which we will point to.  */
+
+static tree
+vector_size_helper (type, bottom)
+     tree type, bottom;
+{
+  tree inner, outer;
+
+  if (POINTER_TYPE_P (type))
+    {
+      inner = vector_size_helper (TREE_TYPE (type), bottom);
+      outer = build_pointer_type (inner);
+    }
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      inner = vector_size_helper (TREE_TYPE (type), bottom);
+      outer = build_array_type (inner, TYPE_VALUES (type));
+    }
+  else if (TREE_CODE (type) == FUNCTION_TYPE)
+    {
+      inner = vector_size_helper (TREE_TYPE (type), bottom);
+      outer = build_function_type (inner, TYPE_VALUES (type));
+    }
+  else
+    return bottom;
+  
+  TREE_READONLY (outer) = TREE_READONLY (type);
+  TREE_THIS_VOLATILE (outer) = TREE_THIS_VOLATILE (type);
+
+  return outer;
 }
 
 /* Split SPECS_ATTRS, a list of declspecs and prefix attributes, into two
