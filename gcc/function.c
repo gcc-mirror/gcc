@@ -5072,15 +5072,11 @@ assign_parms (tree fndecl)
 	}
     }
 
-  if (SPLIT_COMPLEX_ARGS)
+  if (SPLIT_COMPLEX_ARGS && fnargs != orig_fnargs)
     {
-      parm = orig_fnargs;
-
-      for (; parm; parm = TREE_CHAIN (parm))
+      for (parm = orig_fnargs; parm; parm = TREE_CHAIN (parm))
 	{
-	  tree type = TREE_TYPE (parm);
-
-	  if (TREE_CODE (type) == COMPLEX_TYPE)
+	  if (TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE)
 	    {
 	      SET_DECL_RTL (parm,
 			    gen_rtx_CONCAT (DECL_MODE (parm),
@@ -5205,30 +5201,49 @@ assign_parms (tree fndecl)
     }
 }
 
+/* If ARGS contains entries with complex types, split the entry into two
+   entries of the component type.  Return a new list of substitutions are
+   needed, else the old list.  */
+
 static tree
 split_complex_args (tree args)
 {
   tree p;
 
+  /* Before allocating memory, check for the common case of no complex.  */
+  for (p = args; p; p = TREE_CHAIN (p))
+    if (TREE_CODE (TREE_TYPE (p)) == COMPLEX_TYPE)
+      goto found;
+  return args;
+
+ found:
   args = copy_list (args);
 
   for (p = args; p; p = TREE_CHAIN (p))
     {
-      tree complex_type = TREE_TYPE (p);
-
-      if (TREE_CODE (complex_type) == COMPLEX_TYPE)
+      tree type = TREE_TYPE (p);
+      if (TREE_CODE (type) == COMPLEX_TYPE)
 	{
 	  tree decl;
-	  tree subtype = TREE_TYPE (complex_type);
+	  tree subtype = TREE_TYPE (type);
 
 	  /* Rewrite the PARM_DECL's type with its component.  */
 	  TREE_TYPE (p) = subtype;
 	  DECL_ARG_TYPE (p) = TREE_TYPE (DECL_ARG_TYPE (p));
+	  DECL_MODE (p) = VOIDmode;
+	  DECL_SIZE (p) = NULL;
+	  DECL_SIZE_UNIT (p) = NULL;
+	  layout_decl (p, 0);
 
+	  /* Build a second synthetic decl.  */
 	  decl = build_decl (PARM_DECL, NULL_TREE, subtype);
 	  DECL_ARG_TYPE (decl) = DECL_ARG_TYPE (p);
+	  layout_decl (decl, 0);
+
+	  /* Splice it in; skip the new decl.  */
 	  TREE_CHAIN (decl) = TREE_CHAIN (p);
 	  TREE_CHAIN (p) = decl;
+	  p = decl;
 	}
     }
 
