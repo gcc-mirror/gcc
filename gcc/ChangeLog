@@ -1,3 +1,11 @@
+2001-10-19  Catherine Moore  <clm@redhat.com>
+
+        * config/stormy16/stormy-abi:  Updates to varargs descriptions.
+        * config/stormy16/stormy16.c (stormy16_build_va_list):  Reverse
+        base and count fields.
+        (stormy16_expand_builtin_va_start):  last_reg_count changed to
+        size_of_reg_args.  Use count + size in first comparison.
+
 Fri Oct 19 15:24:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* langhooks.h (LANG_HOOKS_HONOR_READONLY): New macro.
