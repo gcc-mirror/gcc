@@ -1,5 +1,9 @@
 2004-05-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/15025
+	* decl.c (xref_tag): Issue errors about redeclaring template
+	classes as non-template classes.
+
 	PR c++/14821
 	* name-lookup.c (supplement_binding): Allow redefinitions of
 	namespace aliases.

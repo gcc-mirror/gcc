@@ -9463,6 +9463,13 @@ xref_tag (enum tag_types tag_code, tree name,
     {
       if (!globalize && processing_template_decl && IS_AGGR_TYPE (t))
 	redeclare_class_template (t, current_template_parms);
+      else if (!processing_template_decl 
+	       && CLASS_TYPE_P (t)
+	       && CLASSTYPE_IS_TEMPLATE (t))
+	{
+	  error ("redeclaration of `%T' as a non-template", t);
+	  t = error_mark_node;
+	}
     }
 
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
