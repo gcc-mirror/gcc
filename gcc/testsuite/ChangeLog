@@ -1,4 +1,7 @@
-2004-05-28  Janis Johnson  <janis187@us.ibm.com
+2004-05-28  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/target-supports.exp (check_vmx_hw_available): New.
+	* gcc.dg/vmx/vmx.exp: Use it to determine default action.
 
 	* lib/target-supports.exp (check_alias_available,
 	check_iconv_available, check_named_sections_available): Use
