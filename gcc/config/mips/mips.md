@@ -277,6 +277,13 @@
 		 (const_string "yes")
 		 (const_string "no"))))
 
+;; True if an instruction might assign to hi or lo when reloaded.
+;; This is used by the TUNE_MACC_CHAINS code.
+(define_attr "may_clobber_hilo" "no,yes"
+  (if_then_else (eq_attr "type" "imul,imadd,idiv,mthilo")
+		(const_string "yes")
+		(const_string "no")))
+
 ;; Describe a user's asm statement.
 (define_asm_attributes
   [(set_attr "type" "multi")])

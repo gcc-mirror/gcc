@@ -1,3 +1,15 @@
+2004-04-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_linked_macc_p): Declare.
+	* config/mips/mips.h (TUNE_MACC_CHAINS): New macro.
+	* config/mips/mips.c (TARGET_SCHED_REORDER): Define.
+	(TARGET_SCHED_VARIABLE_ISSUE): Define.
+	(mips_adjust_cost): Move later in file, next to other sched hooks.
+	(mips_macc_chains_last_hilo): New variable.
+	(mips_linked_madd_p, mips_macc_chains_record, mips_macc_chains_reorder)
+	(mips_promote_ready, mips_sched_reorder, mips_variable_issue): New.
+	* config/mips/mips.md (may_clobber_hilo): New attribute.
+
 2004-04-24  Roger Sayle  <roger@eyesopen.com>
 	    Bruce Korb  <bkorb@gnu.org>
 

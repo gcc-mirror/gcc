@@ -226,9 +226,14 @@ static bool mips_strict_matching_cpu_name_p (const char *, const char *);
 static bool mips_matching_cpu_name_p (const char *, const char *);
 static const struct mips_cpu_info *mips_parse_cpu (const char *, const char *);
 static const struct mips_cpu_info *mips_cpu_info_from_isa (int);
-static int mips_adjust_cost (rtx, rtx, rtx, int);
 static bool mips_return_in_memory (tree, tree);
 static bool mips_strict_argument_naming (CUMULATIVE_ARGS *);
+static void mips_macc_chains_record (rtx);
+static void mips_macc_chains_reorder (rtx *, int);
+static void mips_promote_ready (rtx *, int, int);
+static int mips_sched_reorder (FILE *, int, rtx *, int *, int);
+static int mips_variable_issue (FILE *, int, rtx, int);
+static int mips_adjust_cost (rtx, rtx, rtx, int);
 static int mips_issue_rate (void);
 static int mips_use_dfa_pipeline_interface (void);
 static int mips_multipass_dfa_lookahead (void);
@@ -670,6 +675,10 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #undef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION mips_select_rtx_section
 
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER mips_sched_reorder
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE mips_variable_issue
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST mips_adjust_cost
 #undef TARGET_SCHED_ISSUE_RATE
@@ -9152,20 +9161,6 @@ mips_cpu_info_from_isa (int isa)
   return 0;
 }
 
-/* Adjust the cost of INSN based on the relationship between INSN that
-   is dependent on DEP_INSN through the dependence LINK.  The default
-   is to make no adjustment to COST.
-
-   On the MIPS, ignore the cost of anti- and output-dependencies.  */
-static int
-mips_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
-		  rtx dep ATTRIBUTE_UNUSED, int cost)
-{
-  if (REG_NOTE_KIND (link) != 0)
-    return 0;	/* Anti or output dependence.  */
-  return cost;
-}
-
 /* Implement HARD_REGNO_NREGS.  The size of FP registers are controlled
    by UNITS_PER_FPREG.  All other registers are word sized.  */
 
@@ -9200,6 +9195,140 @@ mips_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
   return !TARGET_OLDABI;
 }
 
+/* Return true if INSN is a multiply-add or multiply-subtract
+   instruction and PREV assigns to the accumulator operand.  */
+
+bool
+mips_linked_madd_p (rtx prev, rtx insn)
+{
+  rtx x;
+
+  x = single_set (insn);
+  if (x == 0)
+    return false;
+
+  x = SET_SRC (x);
+
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == MULT
+      && reg_set_p (XEXP (x, 1), prev))
+    return true;
+
+  if (GET_CODE (x) == MINUS
+      && GET_CODE (XEXP (x, 1)) == MULT
+      && reg_set_p (XEXP (x, 0), prev))
+    return true;
+
+  return false;
+}
+
+/* Used by TUNE_MACC_CHAINS to record the last scheduled instruction
+   that may clobber hi or lo.  */
+
+static rtx mips_macc_chains_last_hilo;
+
+/* A TUNE_MACC_CHAINS helper function.  Record that instruction INSN has
+   been scheduled, updating mips_macc_chains_last_hilo appropriately.  */
+
+static void
+mips_macc_chains_record (rtx insn)
+{
+  if (get_attr_may_clobber_hilo (insn))
+    mips_macc_chains_last_hilo = insn;
+}
+
+/* A TUNE_MACC_CHAINS helper function.  Search ready queue READY, which
+   has NREADY elements, looking for a multiply-add or multiply-subtract
+   instruction that is cumulative with mips_macc_chains_last_hilo.
+   If there is one, promote it ahead of anything else that might
+   clobber hi or lo.  */
+
+static void
+mips_macc_chains_reorder (rtx *ready, int nready)
+{
+  int i, j;
+
+  if (mips_macc_chains_last_hilo != 0)
+    for (i = nready - 1; i >= 0; i--)
+      if (mips_linked_madd_p (mips_macc_chains_last_hilo, ready[i]))
+	{
+	  for (j = nready - 1; j > i; j--)
+	    if (recog_memoized (ready[j]) >= 0
+		&& get_attr_may_clobber_hilo (ready[j]))
+	      {
+		mips_promote_ready (ready, i, j);
+		break;
+	      }
+	  break;
+	}
+}
+
+/* Remove the instruction at index LOWER from ready queue READY and
+   reinsert it in front of the instruction at index HIGHER.  LOWER must
+   be <= HIGHER.  */
+
+static void
+mips_promote_ready (rtx *ready, int lower, int higher)
+{
+  rtx new_head;
+  int i;
+
+  new_head = ready[lower];
+  for (i = lower; i < higher; i++)
+    ready[i] = ready[i + 1];
+  ready[i] = new_head;
+}
+
+/* Implement TARGET_SCHED_REORDER.  */
+
+static int
+mips_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
+		    rtx *ready, int *nreadyp, int cycle)
+{
+  if (!reload_completed && TUNE_MACC_CHAINS)
+    {
+      if (cycle == 0)
+	mips_macc_chains_last_hilo = 0;
+      if (*nreadyp > 0)
+	mips_macc_chains_reorder (ready, *nreadyp);
+    }
+  return mips_issue_rate ();
+}
+
+/* Implement TARGET_SCHED_VARIABLE_ISSUE.  */
+
+static int
+mips_variable_issue (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
+		     rtx insn, int more)
+{
+  switch (GET_CODE (PATTERN (insn)))
+    {
+    case USE:
+    case CLOBBER:
+      /* Don't count USEs and CLOBBERs against the issue rate.  */
+      break;
+
+    default:
+      more--;
+      if (!reload_completed && TUNE_MACC_CHAINS)
+	mips_macc_chains_record (insn);
+      break;
+    }
+  return more;
+}
+
+/* Implement TARGET_SCHED_ADJUST_COST.  We assume that anti and output
+   dependencies have no cost.  */
+
+static int
+mips_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
+		  rtx dep ATTRIBUTE_UNUSED, int cost)
+{
+  if (REG_NOTE_KIND (link) != 0)
+    return 0;
+  return cost;
+}
+
 /* Return the number of instructions that can be issued per cycle.  */
 
 static int

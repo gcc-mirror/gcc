@@ -340,6 +340,39 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TUNE_MIPS9000               (mips_tune == PROCESSOR_R9000)
 #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1)
 
+/* True if the pre-reload scheduler should try to create chains of
+   multiply-add or multiply-subtract instructions.  For example,
+   suppose we have:
+
+	t1 = a * b
+	t2 = t1 + c * d
+	t3 = c * d
+	t4 = t3 - c * d
+
+   t1 will have a higher priority and t2 and t3 will have a higher
+   priority than t4.  However, before reload, there is no dependence
+   between t1 and t3, and they can often have similar priorities.
+   The scheduler will then tend to prefer:
+
+	t1 = a * b
+	t3 = e * f
+	t2 = t1 + c * d
+	t4 = t3 - g * h
+
+   which stops us from making full use of macc/madd-style instructions.
+   This sort of situation occurs frequently in Fourier transforms and
+   in unrolled loops.
+
+   To counter this, the TUNE_MACC_CHAINS code will reorder the ready
+   queue so that chained multiply-add and multiply-subtract instructions
+   appear ahead of any other instruction that is likely to clobber lo.
+   In the example above, if t2 and t3 become ready at the same time,
+   the code ensures that t2 is scheduled first.
+
+   Multiply-accumulate instructions are a bigger win for some targets
+   than others, so this macro is defined on an opt-in basis.  */
+#define TUNE_MACC_CHAINS	    TUNE_MIPS5500
+
 #define TARGET_OLDABI		    (mips_abi == ABI_32 || mips_abi == ABI_O64)
 #define TARGET_NEWABI		    (mips_abi == ABI_N32 || mips_abi == ABI_64)
 
