@@ -3757,7 +3757,7 @@ returnjump_p_1 (loc, data)
      void *data ATTRIBUTE_UNUSED;
 {
   rtx x = *loc;
-  return GET_CODE (x) == RETURN;
+  return x && GET_CODE (x) == RETURN;
 }
 
 int
