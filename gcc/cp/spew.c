@@ -1432,7 +1432,7 @@ replace_defarg (arg, init)
     {
       if (! processing_template_decl
           && ! can_convert_arg (TREE_VALUE (arg), TREE_TYPE (init), init))
-        cp_pedwarn ("invalid type `%T' for default argument to `%T'",
+        pedwarn ("invalid type `%T' for default argument to `%T'",
   	    	    TREE_TYPE (init), TREE_VALUE (arg));
       if (!defarg_depfns)
         TREE_PURPOSE (arg) = init;

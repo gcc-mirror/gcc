@@ -1,3 +1,14 @@
+2001-12-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* cp-tree.h: Delete #defines for cp_error, cp_warning,
+	cp_pedwarn, and cp_compiler_error.
+	* call.c, class.c, cp-tree.h, cvt.c, decl.c, decl2.c, error.c,
+	except.c, friend.c, init.c, lex.c, method.c, parse.y, pt.c,
+	rtti.c, search.c, semantics.c, spew.c, tree.c, typeck.c,
+	typeck2.c: Change calls to the above macros to use their
+	language-independent equivalents: error, warning, pedwarn, and
+	internal_error respectively.
+
 2001-12-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* decl2.c (finish_file): Remove back_end_hook.
@@ -50,7 +61,7 @@
 	(ctor_label): Remove.
 	* semantics.c (finish_return_stmt): Lose ctor_label support.
 	* decl.c (finish_constructor_body, mark_lang_function): Likewise.
-	* typeck.c (check_return_expr): Check DECL_DESTRUCTOR_P, not 
+	* typeck.c (check_return_expr): Check DECL_DESTRUCTOR_P, not
 	dtor_label.
 
 	* call.c (build_new_method_call): Let resolves_to_fixed_type_p
@@ -125,8 +136,8 @@
 
 2001-12-08  Aldy Hernandez  <aldyh@redhat.com>
 
-        * lex.c (rid_to_yy): Add RID_CHOOSE_EXPR and
-        RID_TYPES_COMPATIBLE_P.
+	* lex.c (rid_to_yy): Add RID_CHOOSE_EXPR and
+	RID_TYPES_COMPATIBLE_P.
 
 2001-12-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
@@ -225,7 +236,7 @@ Wed Dec  5 17:00:49 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	PR c++/3048
 	* cp-tree.h (ovl_member): Remove.
-	* decl2.c (merge_functions): Handle extern "C" functions 
+	* decl2.c (merge_functions): Handle extern "C" functions
 	specially.
 	* tree.c (ovl_member): Remove.
 
@@ -303,7 +314,7 @@ Tue Nov 27 09:03:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cp/search.c (lookup_base_r): Declare bk in variable declaration
 	space.
-	
+
 2001-11-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR g++/3145
@@ -351,9 +362,9 @@ Tue Nov 27 09:03:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cp-tree.h (CP_TYPE_QUALS): Removed.
 	* decl.c (cxx_init_decl_processing): Don't set lang_dump_tree.
-	* cp-lang.c: Set LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN and 
+	* cp-lang.c: Set LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN and
 	LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN.
-	* dump.c (cp_dump_tree): Use void* dump_info argument to match 
+	* dump.c (cp_dump_tree): Use void* dump_info argument to match
 	lang-hooks prototype.
 	* call.c, cp-tree.h, cvt.c, decl.c, init.c, mangle.c, method.c, pt.c,
 	rtti.c, semantics.c, tree.c, typeck.c, typeck2.c: All references to
@@ -371,7 +382,7 @@ Tue Nov 27 09:03:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-11-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (non_reference): Add documentation.
-	(convert_class_to_reference): Do not strip reference types 
+	(convert_class_to_reference): Do not strip reference types
 	from conversion operators.
 	(maybe_handle_ref_bind): Simplify.
 	(compare_ics): Correct handling of references.
@@ -382,7 +393,7 @@ Tue Nov 27 09:03:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(cp_dump_tree): Dump CLASSTYPE_TEMPLATE_SPECIALIZATION.  Use
 	dump_op.  Dump DECL_MUTABLE, access and staticness for VAR_DECLs.
 	DECL_PURE_VIRTUAL_P, DECL_VIRTUAL_P,
-	
+
 2001-11-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR4629
@@ -494,7 +505,7 @@ Tue Nov 27 09:03:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(struct lang_hooks): Constify.
 	* lex.c (cxx_init_options): Update.
 	(lang_identify): Remove.
-	* parse.y (language_string): Remove.	
+	* parse.y (language_string): Remove.
 
 2001-11-08  Andreas Franck  <afranck@gmx.de>
 

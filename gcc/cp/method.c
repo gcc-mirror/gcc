@@ -185,13 +185,13 @@ hack_identifier (value, name)
 	{
 	  if (current_function_decl 
 	      && DECL_STATIC_FUNCTION_P (current_function_decl))
-	    cp_error ("invalid use of member `%D' in static member function",
+	    error ("invalid use of member `%D' in static member function",
 		      value);
 	  else
 	    /* We can get here when processing a bad default
 	       argument, like:
 	         struct S { int a; void f(int i = a); }  */
-	    cp_error ("invalid use of member `%D'", value);
+	    error ("invalid use of member `%D'", value);
 
 	  return error_mark_node;
 	}
@@ -233,12 +233,12 @@ hack_identifier (value, name)
     }
   else if (TREE_CODE (value) == NAMESPACE_DECL)
     {
-      cp_error ("use of namespace `%D' as expression", value);
+      error ("use of namespace `%D' as expression", value);
       return error_mark_node;
     }
   else if (DECL_CLASS_TEMPLATE_P (value))
     {
-      cp_error ("use of class template `%T' as expression", value);
+      error ("use of class template `%T' as expression", value);
       return error_mark_node;
     }
   else
@@ -251,7 +251,7 @@ hack_identifier (value, name)
       if (context != NULL_TREE && context != current_function_decl
 	  && ! TREE_STATIC (value))
 	{
-	  cp_error ("use of %s from containing function",
+	  error ("use of %s from containing function",
 		      (TREE_CODE (value) == VAR_DECL
 		       ? "`auto' variable" : "parameter"));
 	  cp_error_at ("  `%#D' declared here", value);
@@ -272,7 +272,7 @@ hack_identifier (value, name)
   else if (TREE_CODE (value) == TREE_LIST 
 	   && TREE_TYPE (value) == error_mark_node)
     {
-      cp_error ("\
+      error ("\
 request for member `%D' is ambiguous in multiple inheritance lattice",
 		name);
       print_candidates (value);
@@ -325,7 +325,7 @@ make_thunk (function, delta, vcall_index)
   thunk = IDENTIFIER_GLOBAL_VALUE (thunk_id);
   if (thunk && !DECL_THUNK_P (thunk))
     {
-      cp_error ("implementation-reserved name `%D' used", thunk_id);
+      error ("implementation-reserved name `%D' used", thunk_id);
       thunk = NULL_TREE;
       SET_IDENTIFIER_GLOBAL_VALUE (thunk_id, thunk);
     }
@@ -445,7 +445,7 @@ use_thunk (thunk_fndecl, emit_p)
     tree a, t;
 
     if (varargs_function_p (function))
-      cp_error ("generic thunk code fails for method `%#D' which uses `...'",
+      error ("generic thunk code fails for method `%#D' which uses `...'",
 		function);
 
     /* Set up clone argument trees for the thunk.  */
@@ -675,12 +675,12 @@ do_build_assign_ref (fndecl)
 
 	  if (CP_TYPE_CONST_P (TREE_TYPE (field)))
 	    {
-              cp_error ("non-static const member `%#D', can't use default assignment operator", field);
+              error ("non-static const member `%#D', can't use default assignment operator", field);
 	      continue;
 	    }
 	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
 	    {
-	      cp_error ("non-static reference member `%#D', can't use default assignment operator", field);
+	      error ("non-static reference member `%#D', can't use default assignment operator", field);
 	      continue;
 	    }
 

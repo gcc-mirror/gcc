@@ -758,7 +758,7 @@ grok_method_quals (ctype, function, quals)
   while (quals);
 
   if (dup_quals != TYPE_UNQUALIFIED)
-    cp_error ("duplicate type qualifiers in %s declaration",
+    error ("duplicate type qualifiers in %s declaration",
 	      TREE_CODE (function) == FUNCTION_DECL 
 	      ? "member function" : "type");
 
@@ -797,7 +797,7 @@ warn_if_unknown_interface (decl)
 	  lineno = TINST_LINE (til);
 	  input_filename = TINST_FILE (til);
 	}
-      cp_warning ("template `%#D' instantiated in file without #pragma interface",
+      warning ("template `%#D' instantiated in file without #pragma interface",
 		  decl);
       lineno = sl;
       input_filename = sf;
@@ -1066,7 +1066,7 @@ grok_array_decl (array_expr, index_exp)
     array_expr = p2, index_exp = i1;
   else
     {
-      cp_error ("invalid types `%T[%T]' for array subscript",
+      error ("invalid types `%T[%T]' for array subscript",
 		type, TREE_TYPE (index_exp));
       return error_mark_node;
     }
@@ -1114,7 +1114,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 
   if (t == NULL_TREE || t == error_mark_node)
     {
-      cp_error ("type `%#T' argument given to `delete', expected pointer",
+      error ("type `%#T' argument given to `delete', expected pointer",
 		TREE_TYPE (exp));
       return error_mark_node;
     }
@@ -1139,7 +1139,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
   /* Deleting ptr to void is undefined behaviour [expr.delete/3].  */
   if (TREE_CODE (TREE_TYPE (type)) == VOID_TYPE)
     {
-      cp_warning ("deleting `%T' is undefined", type);
+      warning ("deleting `%T' is undefined", type);
       doing_vec = 0;
     }
 
@@ -1147,7 +1147,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
   if (TREE_CODE (t) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (t, 0)) == VAR_DECL
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == ARRAY_TYPE)
-    cp_warning ("deleting array `%#D'", TREE_OPERAND (t, 0));
+    warning ("deleting array `%#D'", TREE_OPERAND (t, 0));
 
   /* Deleting a pointer with the value zero is valid and has no effect.  */
   if (integer_zerop (t))
@@ -1194,7 +1194,7 @@ check_member_template (tmpl)
 	/* 14.5.2.2 [temp.mem]
 	   
 	   A local class shall not have member templates. */
-	cp_error ("invalid declaration of member template `%#D' in local class",
+	error ("invalid declaration of member template `%#D' in local class",
 		  decl);
       
       if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
@@ -1202,7 +1202,7 @@ check_member_template (tmpl)
 	  /* 14.5.2.3 [temp.mem]
 
 	     A member function template shall not be virtual.  */
-	  cp_error 
+	  error 
 	    ("invalid use of `virtual' in template declaration of `%#D'",
 	     decl);
 	  DECL_VIRTUAL_P (decl) = 0;
@@ -1213,7 +1213,7 @@ check_member_template (tmpl)
       DECL_IGNORED_P (tmpl) = 1;
     } 
   else
-    cp_error ("template declaration of `%#D'", decl);
+    error ("template declaration of `%#D'", decl);
 }
 
 /* Return true iff TYPE is a valid Java parameter or return type. */
@@ -1263,7 +1263,7 @@ check_java_method (method)
   tree ret_type = TREE_TYPE (TREE_TYPE (method));
   if (! acceptable_java_type (ret_type))
     {
-      cp_error ("Java method '%D' has non-Java return type `%T'",
+      error ("Java method '%D' has non-Java return type `%T'",
 		method, ret_type);
       jerr++;
     }
@@ -1272,7 +1272,7 @@ check_java_method (method)
       tree type = TREE_VALUE (arg_types);
       if (! acceptable_java_type (type))
 	{
-	  cp_error ("Java method '%D' has non-Java parameter type `%T'",
+	  error ("Java method '%D' has non-Java parameter type `%T'",
 		    method, type);
 	  jerr++;
 	}
@@ -1368,7 +1368,7 @@ check_classfn (ctype, function)
   if (methods != end && *methods)
     {
       tree fndecl = *methods;
-      cp_error ("prototype for `%#D' does not match any in class `%T'",
+      error ("prototype for `%#D' does not match any in class `%T'",
 		function, ctype);
       cp_error_at ("candidate%s: %+#D", OVL_NEXT (fndecl) ? "s are" : " is",
 		   OVL_CURRENT (fndecl));
@@ -1381,7 +1381,7 @@ check_classfn (ctype, function)
       if (!COMPLETE_TYPE_P (ctype))
         incomplete_type_error (function, ctype);
       else
-        cp_error ("no `%#D' member function declared in class `%T'",
+        error ("no `%#D' member function declared in class `%T'",
 		  function, ctype);
     }
 
@@ -1491,10 +1491,10 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	 Explain that to the user.  */
       static int explained;
 
-      cp_error ("invalid data member initialization");
+      error ("invalid data member initialization");
       if (!explained)
 	{
-	  cp_error ("(use `=' to initialize static data members)");
+	  error ("(use `=' to initialize static data members)");
 	  explained = 1;
 	}
 
@@ -1534,7 +1534,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
   if (DECL_NAME (value) != NULL_TREE
       && IDENTIFIER_POINTER (DECL_NAME (value))[0] == '_'
       && ! strcmp (IDENTIFIER_POINTER (DECL_NAME (value)), "_vptr"))
-    cp_error ("member `%D' conflicts with virtual function table field name",
+    error ("member `%D' conflicts with virtual function table field name",
 	      value);
 
   /* Stash away type declarations.  */
@@ -1554,7 +1554,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 
   if (DECL_IN_AGGR_P (value))
     {
-      cp_error ("`%D' is already defined in `%T'", value,
+      error ("`%D' is already defined in `%T'", value,
 		DECL_CONTEXT (value));
       return void_type_node;
     }
@@ -1628,7 +1628,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
   if (TREE_CODE (value) == FIELD_DECL)
     {
       if (asmspec)
-	cp_error ("`asm' specifiers are not permitted on non-static data members");
+	error ("`asm' specifiers are not permitted on non-static data members");
       if (DECL_INITIAL (value) == error_mark_node)
 	init = error_mark_node;
       cp_finish_decl (value, init, NULL_TREE, flags);
@@ -1680,24 +1680,24 @@ grokbitfield (declarator, declspecs, width)
 
   if (TREE_CODE (value) == TYPE_DECL)
     {
-      cp_error ("cannot declare `%D' to be a bitfield type", value);
+      error ("cannot declare `%D' to be a bitfield type", value);
       return NULL_TREE;
     }
 
-  /* Usually, finish_struct_1 catches bitifields with invalid types.
+  /* Usually, finish_struct_1 catches bitfields with invalid types.
      But, in the case of bitfields with function type, we confuse
      ourselves into thinking they are member functions, so we must
      check here.  */
   if (TREE_CODE (value) == FUNCTION_DECL)
     {
-      cp_error ("cannot declare bitfield `%D' with function type",
-		DECL_NAME (value));
+      error ("cannot declare bitfield `%D' with function type",
+	     DECL_NAME (value));
       return NULL_TREE;
     }
 
   if (DECL_IN_AGGR_P (value))
     {
-      cp_error ("`%D' is already defined in the class %T", value,
+      error ("`%D' is already defined in the class %T", value,
 		  DECL_CONTEXT (value));
       return void_type_node;
     }
@@ -1706,7 +1706,7 @@ grokbitfield (declarator, declspecs, width)
 
   if (TREE_STATIC (value))
     {
-      cp_error ("static member `%D' cannot be a bitfield", value);
+      error ("static member `%D' cannot be a bitfield", value);
       return NULL_TREE;
     }
   cp_finish_decl (value, NULL_TREE, NULL_TREE, 0);
@@ -1775,11 +1775,11 @@ grok_function_init (decl, init)
   tree type = TREE_TYPE (decl);
 
   if (TREE_CODE (type) == FUNCTION_TYPE)
-    cp_error ("initializer specified for non-member function `%D'", decl);
+    error ("initializer specified for non-member function `%D'", decl);
   else if (integer_zerop (init))
     DECL_PURE_VIRTUAL_P (decl) = 1;
   else
-    cp_error ("invalid initializer for virtual method `%D'", decl);
+    error ("invalid initializer for virtual method `%D'", decl);
 }
 
 void
@@ -2056,7 +2056,7 @@ coerce_new_type (type)
   my_friendly_assert (TREE_CODE (type) == FUNCTION_TYPE, 20001107);
   
   if (!same_type_p (TREE_TYPE (type), ptr_type_node))
-    e = 1, cp_error ("`operator new' must return type `%T'", ptr_type_node);
+    e = 1, error ("`operator new' must return type `%T'", ptr_type_node);
 
   if (!args || args == void_list_node
       || !same_type_p (TREE_VALUE (args), c_size_type_node))
@@ -2064,7 +2064,7 @@ coerce_new_type (type)
       e = 2;
       if (args && args != void_list_node)
         args = TREE_CHAIN (args);
-      cp_error ("`operator new' takes type `size_t' (`%T') as first parameter", c_size_type_node);
+      error ("`operator new' takes type `size_t' (`%T') as first parameter", c_size_type_node);
     }
   switch (e)
   {
@@ -2091,7 +2091,7 @@ coerce_delete_type (type)
   my_friendly_assert (TREE_CODE (type) == FUNCTION_TYPE, 20001107);
 
   if (!same_type_p (TREE_TYPE (type), void_type_node))
-    e = 1, cp_error ("`operator delete' must return type `%T'", void_type_node);
+    e = 1, error ("`operator delete' must return type `%T'", void_type_node);
 
   if (!args || args == void_list_node
       || !same_type_p (TREE_VALUE (args), ptr_type_node))
@@ -2099,7 +2099,7 @@ coerce_delete_type (type)
       e = 2;
       if (args && args != void_list_node)
         args = TREE_CHAIN (args);
-      cp_error ("`operator delete' takes type `%T' as first parameter", ptr_type_node);
+      error ("`operator delete' takes type `%T' as first parameter", ptr_type_node);
     }
   switch (e)
   {
@@ -4198,7 +4198,7 @@ ambiguous_decl (name, old, new, flags)
 		 repeat ourselves.  */
 	      if (BINDING_VALUE (old) != error_mark_node)
 		{
-		  cp_error ("use of `%D' is ambiguous", name);
+		  error ("use of `%D' is ambiguous", name);
 		  cp_error_at ("  first declared as `%#D' here",
 			       BINDING_VALUE (old));
 		}
@@ -4217,7 +4217,7 @@ ambiguous_decl (name, old, new, flags)
     {
       if (flags & LOOKUP_COMPLAIN)
         {
-          cp_error ("`%D' denotes an ambiguous type",name);
+          error ("`%D' denotes an ambiguous type",name);
           cp_error_at ("  first type here", BINDING_TYPE (old));
           cp_error_at ("  other type here", type);
         }
@@ -4316,7 +4316,7 @@ set_decl_namespace (decl, scope, friendp)
   
   /* It is ok for friends to be qualified in parallel space.  */
   if (!friendp && !is_namespace_ancestor (current_namespace, scope))
-    cp_error ("declaration of `%D' not in a namespace surrounding `%D'",
+    error ("declaration of `%D' not in a namespace surrounding `%D'",
 	      decl, scope);
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
   if (scope != current_namespace)
@@ -4350,7 +4350,7 @@ set_decl_namespace (decl, scope, friendp)
   else
     return;
  complain:
-  cp_error ("`%D' should have been declared inside `%D'",
+  error ("`%D' should have been declared inside `%D'",
 	    decl, scope);
 } 
 
@@ -4486,7 +4486,7 @@ add_function (k, fn)
 	}
       cp_error_at ("`%D' is not a function,", f1);
       cp_error_at ("  conflict with `%D'", f2);
-      cp_error ("  in call to `%D'", k->name);
+      error ("  in call to `%D'", k->name);
       return 1;
     }
 
@@ -4799,7 +4799,7 @@ do_namespace_alias (alias, namespace)
   if (TREE_CODE (namespace) != NAMESPACE_DECL)
     {
       /* The parser did not find it, so it's not there. */
-      cp_error ("unknown namespace `%D'", namespace);
+      error ("unknown namespace `%D'", namespace);
       return;
     }
 
@@ -4833,9 +4833,9 @@ validate_nonmember_using_decl (decl, scope, name)
           if(TREE_CODE (*scope) != NAMESPACE_DECL)
             {
               if (TYPE_P (*scope))
-                cp_error ("`%T' is not a namespace", *scope);
+                error ("`%T' is not a namespace", *scope);
               else
-                cp_error ("`%D' is not a namespace", *scope);
+                error ("`%D' is not a namespace", *scope);
               return NULL_TREE;
             }
           
@@ -4844,7 +4844,7 @@ validate_nonmember_using_decl (decl, scope, name)
           if (TREE_CODE (*name) == TEMPLATE_ID_EXPR)
             {
               *name = TREE_OPERAND (*name, 0);
-              cp_error ("a using-declaration cannot specify a template-id.  Try `using %D'", *name);
+              error ("a using-declaration cannot specify a template-id.  Try `using %D'", *name);
               return NULL_TREE;
             }
         }
@@ -4858,7 +4858,7 @@ validate_nonmember_using_decl (decl, scope, name)
     }
   else if (TREE_CODE (decl) == NAMESPACE_DECL)
     {
-      cp_error ("namespace `%D' not allowed in using-declaration", decl);
+      error ("namespace `%D' not allowed in using-declaration", decl);
       return NULL_TREE;
     }
   else
@@ -4887,7 +4887,7 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
 
   if (!BINDING_VALUE (decls) && !BINDING_TYPE (decls))
     {
-      cp_error ("`%D' not declared", name);
+      error ("`%D' not declared", name);
       return;
     }
 
@@ -4929,7 +4929,7 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
 		     this scope with the same parameter types. If both
 	             are the same extern "C" functions, that's ok.  */
                   if (!decls_match (new_fn, old_fn))
-    	            cp_error ("`%D' is already declared in this scope", name);
+    	            error ("`%D' is already declared in this scope", name);
 		  break;
 		}
 	    }
@@ -4956,7 +4956,7 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
   *newtype = BINDING_TYPE (decls);
   if (oldtype && *newtype && oldtype != *newtype)
     {
-      cp_error ("using declaration `%D' introduced ambiguous type `%T'",
+      error ("using declaration `%D' introduced ambiguous type `%T'",
 		name, oldtype);
       return;
     }
@@ -5047,19 +5047,19 @@ do_class_using_decl (decl)
   if (TREE_CODE (decl) != SCOPE_REF
       || !TYPE_P (TREE_OPERAND (decl, 0)))
     {
-      cp_error ("using-declaration for non-member at class scope");
+      error ("using-declaration for non-member at class scope");
       return NULL_TREE;
     }
   name = TREE_OPERAND (decl, 1);
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
-      cp_error ("using-declaration for destructor");
+      error ("using-declaration for destructor");
       return NULL_TREE;
     }
   else if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {
       name = TREE_OPERAND (name, 0);
-      cp_error ("a using-declaration cannot specify a template-id.  Try  `using %T::%D'", TREE_OPERAND (decl, 0), name);
+      error ("a using-declaration cannot specify a template-id.  Try  `using %T::%D'", TREE_OPERAND (decl, 0), name);
       return NULL_TREE;
     }
   if (TREE_CODE (name) == TYPE_DECL || TREE_CODE (name) == TEMPLATE_DECL)
@@ -5088,13 +5088,13 @@ do_using_directive (namespace)
     {
       /* Lookup in lexer did not find a namespace. */
       if (!processing_template_decl)
-	cp_error ("namespace `%T' undeclared", namespace);
+	error ("namespace `%T' undeclared", namespace);
       return;
     }
   if (TREE_CODE (namespace) != NAMESPACE_DECL)
     {
       if (!processing_template_decl)
-	cp_error ("`%T' is not a namespace", namespace);
+	error ("`%T' is not a namespace", namespace);
       return;
     }
   namespace = ORIGINAL_NAMESPACE (namespace);
@@ -5198,13 +5198,13 @@ handle_class_head (aggr, scope, id)
           /* We've been given AGGR SCOPE::ID, when we're already inside SCOPE.
              Be nice about it.  */
           if (pedantic)
-            cp_pedwarn ("extra qualification `%T::' on member `%D' ignored",
+            pedwarn ("extra qualification `%T::' on member `%D' ignored",
                         FROB_CONTEXT (scope), id);
         }
       else if (scope != global_namespace)
-	cp_error ("`%T' does not have a nested type named `%D'", scope, id);
+	error ("`%T' does not have a nested type named `%D'", scope, id);
       else
-	cp_error ("no file-scope type named `%D'", id);
+	error ("no file-scope type named `%D'", id);
       
       /* Inject it at the current scope.  */
       if (! decl)

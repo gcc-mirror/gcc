@@ -3780,14 +3780,6 @@ extern tree set_guard                           PARAMS ((tree));
 /* in parse.y */
 extern void cp_parse_init			PARAMS ((void));
 
-/* Obsolete names, formerly found in errfn.c, which no longer exists.
-   These are all variadic functions and therefore cannot be defined
-   as function-like macros.  */
-#define cp_error		error
-#define cp_warning		warning
-#define cp_pedwarn		pedwarn
-#define cp_compiler_error	internal_error
-
 extern void cp_error_at		PARAMS ((const char *msgid, ...));
 extern void cp_warning_at	PARAMS ((const char *msgid, ...));
 extern void cp_pedwarn_at	PARAMS ((const char *msgid, ...));
@@ -3795,8 +3787,8 @@ extern void cp_pedwarn_at	PARAMS ((const char *msgid, ...));
 /* XXX Not i18n clean.  */
 #define cp_deprecated(str) \
  do { if (warn_deprecated) \
-      cp_warning("%s is deprecated, please see the documentation for details", \
-		 str); \
+        warning("%s is deprecated, please see the documentation for details", \
+		str); \
  } while (0)
 
 /* in error.c */

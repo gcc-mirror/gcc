@@ -1000,7 +1000,7 @@ check_for_missing_semicolon (type)
 	error ("semicolon missing after %s declaration",
 	       TREE_CODE (type) == ENUMERAL_TYPE ? "enum" : "struct");
       else
-	cp_error ("semicolon missing after declaration of `%T'", type);
+	error ("semicolon missing after declaration of `%T'", type);
       shadow_tag (build_tree_list (0, type));
     }
   /* Could probably also hack cases where class { ... } f (); appears.  */
@@ -1248,12 +1248,12 @@ do_identifier (token, parsing, args)
       else if (IDENTIFIER_OPNAME_P (token))
 	{
 	  if (token != ansi_opname (ERROR_MARK))
-	    cp_error ("`%D' not defined", token);
+	    error ("`%D' not defined", token);
 	  id = error_mark_node;
 	}
       else if (current_function_decl == 0)
 	{
-	  cp_error ("`%D' was not declared in this scope", token);
+	  error ("`%D' was not declared in this scope", token);
 	  id = error_mark_node;
 	}
       else
@@ -1263,7 +1263,7 @@ do_identifier (token, parsing, args)
 	    {
 	      static int undeclared_variable_notice;
 
-	      cp_error ("`%D' undeclared (first use this function)", token);
+	      error ("`%D' undeclared (first use this function)", token);
 
 	      if (! undeclared_variable_notice)
 		{
@@ -1378,7 +1378,7 @@ do_scoped_id (token, parsing)
 	  return id;
 	}
       if (IDENTIFIER_NAMESPACE_VALUE (token) != error_mark_node)
-        cp_error ("`::%D' undeclared (first use here)", token);
+        error ("`::%D' undeclared (first use here)", token);
       id = error_mark_node;
       /* Prevent repeated error messages.  */
       SET_IDENTIFIER_NAMESPACE_VALUE (token, error_mark_node);

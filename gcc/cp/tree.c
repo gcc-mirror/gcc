@@ -533,7 +533,7 @@ cp_build_qualified_type_real (type, type_quals, complain)
 	  || TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE))
     {
       if (complain)
-	cp_error ("`%T' cannot be `restrict'-qualified", type);
+	error ("`%T' cannot be `restrict'-qualified", type);
       else
 	return error_mark_node;
 
@@ -544,7 +544,7 @@ cp_build_qualified_type_real (type, type_quals, complain)
       && TREE_CODE (type) == FUNCTION_TYPE)
     {
       if (complain)
-	cp_error ("`%T' cannot be `const'-, `volatile'-, or `restrict'-qualified", type);
+	error ("`%T' cannot be `const'-, `volatile'-, or `restrict'-qualified", type);
       else
 	return error_mark_node;
       type_quals = TYPE_UNQUALIFIED;

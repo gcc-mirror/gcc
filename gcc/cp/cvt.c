@@ -85,7 +85,7 @@ cp_convert_to_pointer (type, expr, force)
       intype = complete_type (intype);
       if (!COMPLETE_TYPE_P (intype))
 	{
-	  cp_error ("can't convert from incomplete type `%T' to `%T'",
+	  error ("can't convert from incomplete type `%T' to `%T'",
 		    intype, type);
 	  return error_mark_node;
 	}
@@ -94,7 +94,7 @@ cp_convert_to_pointer (type, expr, force)
       if (rval)
 	{
 	  if (rval == error_mark_node)
-	    cp_error ("conversion of `%E' from `%T' to `%T' is ambiguous",
+	    error ("conversion of `%E' from `%T' to `%T' is ambiguous",
 		      expr, intype, type);
 	  return rval;
 	}
@@ -123,7 +123,7 @@ cp_convert_to_pointer (type, expr, force)
 	{
 	  if (TREE_CODE (TREE_TYPE (TREE_TYPE (expr))) == METHOD_TYPE)
 	    if (pedantic || warn_pmf2ptr)
-	      cp_pedwarn ("converting from `%T' to `%T'", TREE_TYPE (expr),
+	      pedwarn ("converting from `%T' to `%T'", TREE_TYPE (expr),
 			  type);
 	  return build1 (NOP_EXPR, type, expr);
 	}
@@ -195,11 +195,11 @@ cp_convert_to_pointer (type, expr, force)
           if (bk == bk_via_virtual)
 	    {
 	      if (force)
-	        cp_warning ("pointer to member cast from `%T' to `%T' is via virtual base",
+	        warning ("pointer to member cast from `%T' to `%T' is via virtual base",
 	                    TREE_TYPE (intype), TREE_TYPE (type));
               else
                 {
-		  cp_error ("pointer to member cast from `%T' to `%T' is via virtual base",
+		  error ("pointer to member cast from `%T' to `%T' is via virtual base",
 			    TREE_TYPE (intype), TREE_TYPE (type));
 	          return error_mark_node;
 	        }
@@ -217,7 +217,7 @@ cp_convert_to_pointer (type, expr, force)
 	}
       else if (TYPE_PTRMEMFUNC_P (type))
 	{
-	  cp_error ("cannot convert `%E' from type `%T' to type `%T'",
+	  error ("cannot convert `%E' from type `%T' to type `%T'",
 		    expr, intype, type);
 	  return error_mark_node;
 	}
@@ -230,7 +230,7 @@ cp_convert_to_pointer (type, expr, force)
     return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0);
   else if (TYPE_PTRMEMFUNC_P (intype))
     {
-      cp_error ("cannot convert `%E' from type `%T' to type `%T'",
+      error ("cannot convert `%E' from type `%T' to type `%T'",
 		expr, intype, type);
       return error_mark_node;
     }
@@ -269,7 +269,7 @@ cp_convert_to_pointer (type, expr, force)
   if (type_unknown_p (expr))
     return instantiate_type (type, expr, itf_complain);
 
-  cp_error ("cannot convert `%E' from type `%T' to type `%T'",
+  error ("cannot convert `%E' from type `%T' to type `%T'",
 	    expr, intype, type);
   return error_mark_node;
 }
@@ -451,7 +451,7 @@ warn_ref_binding (reftype, intype, decl)
       else
 	  msg = "conversion to non-const reference type `%#T' from rvalue of type `%T'";
 
-      cp_pedwarn (msg, reftype, intype);
+      pedwarn (msg, reftype, intype);
     }
 }
 
@@ -523,7 +523,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	  
 	  if (! (convtype & CONV_CONST)
 		   && !at_least_as_qualified_p (ttl, ttr))
-	    cp_pedwarn ("conversion from `%T' to `%T' discards qualifiers",
+	    pedwarn ("conversion from `%T' to `%T' discards qualifiers",
 			ttr, reftype);
 	}
 
@@ -541,7 +541,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       if (TREE_CODE (intype) == POINTER_TYPE
 	  && (comptypes (TREE_TYPE (intype), type, 
 			 COMPARE_BASE | COMPARE_RELAXED )))
-	cp_warning ("casting `%T' to `%T' does not dereference pointer",
+	warning ("casting `%T' to `%T' does not dereference pointer",
 		    intype, reftype);
 	  
       rval = build_unary_op (ADDR_EXPR, expr, 0);
@@ -570,7 +570,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
   my_friendly_assert (TREE_CODE (intype) != OFFSET_TYPE, 189);
 
   if (flags & LOOKUP_COMPLAIN)
-    cp_error ("cannot convert type `%T' to type `%T'", intype, reftype);
+    error ("cannot convert type `%T' to type `%T'", intype, reftype);
 
   if (flags & LOOKUP_SPECULATIVELY)
     return NULL_TREE;
@@ -687,7 +687,7 @@ ocp_convert (type, expr, convtype, flags)
 	  && ((ARITHMETIC_TYPE_P (intype) && ! (convtype & CONV_STATIC))
 	      || (TREE_CODE (intype) == POINTER_TYPE)))
 	{
-	  cp_pedwarn ("conversion from `%#T' to `%#T'", intype, type);
+	  pedwarn ("conversion from `%#T' to `%#T'", intype, type);
 
 	  if (flag_pedantic_errors)
 	    return error_mark_node;
@@ -699,7 +699,7 @@ ocp_convert (type, expr, convtype, flags)
 	  if (rval)
 	    return rval;
 	  if (flags & LOOKUP_COMPLAIN)
-	    cp_error ("`%#T' used where a `%T' was expected", intype, type);
+	    error ("`%#T' used where a `%T' was expected", intype, type);
 	  if (flags & LOOKUP_SPECULATIVELY)
 	    return NULL_TREE;
 	  return error_mark_node;
@@ -716,7 +716,7 @@ ocp_convert (type, expr, convtype, flags)
 		   && TREE_CODE (TREE_OPERAND (expr, 0)) == FUNCTION_DECL)
 	    fn = TREE_OPERAND (expr, 0);
 	  if (fn && !DECL_WEAK (fn))
-	    cp_warning ("the address of `%D', will always be `true'", fn);
+	    warning ("the address of `%D', will always be `true'", fn);
 	  return cp_truthvalue_conversion (e);
 	}
       return fold (convert_to_integer (type, e));
@@ -736,7 +736,7 @@ ocp_convert (type, expr, convtype, flags)
 	    return rval;
 	  else
 	    if (flags & LOOKUP_COMPLAIN)
-	      cp_error ("`%#T' used where a floating point value was expected",
+	      error ("`%#T' used where a floating point value was expected",
 			TREE_TYPE (e));
 	}
       if (code == REAL_TYPE)
@@ -791,7 +791,7 @@ ocp_convert (type, expr, convtype, flags)
     return e;
 
   if (flags & LOOKUP_COMPLAIN)
-    cp_error ("conversion from `%T' to non-scalar type `%T' requested",
+    error ("conversion from `%T' to non-scalar type `%T' requested",
 	      TREE_TYPE (expr), type);
   if (flags & LOOKUP_SPECULATIVELY)
     return NULL_TREE;
@@ -876,10 +876,10 @@ convert_to_void (expr, implicit)
         int is_complete = COMPLETE_TYPE_P (complete_type (type));
         
         if (is_volatile && !is_complete)
-          cp_warning ("object of incomplete type `%T' will not be accessed in %s",
+          warning ("object of incomplete type `%T' will not be accessed in %s",
                       type, implicit ? implicit : "void context");
         else if (is_reference && is_volatile)
-          cp_warning ("object of type `%T' will not be accessed in %s",
+          warning ("object of type `%T' will not be accessed in %s",
                       TREE_TYPE (TREE_OPERAND (expr, 0)),
                       implicit ? implicit : "void context");
         if (is_reference || !is_volatile || !is_complete)
@@ -895,7 +895,7 @@ convert_to_void (expr, implicit)
         int is_complete = COMPLETE_TYPE_P (complete_type (type));
         
         if (TYPE_VOLATILE (type) && !is_complete)
-          cp_warning ("object `%E' of incomplete type `%T' will not be accessed in %s",
+          warning ("object `%E' of incomplete type `%T' will not be accessed in %s",
                       expr, type, implicit ? implicit : "void context");
         break;
       }
@@ -915,12 +915,12 @@ convert_to_void (expr, implicit)
       {
 	/* [over.over] enumerates the places where we can take the address
 	   of an overloaded function, and this is not one of them.  */
-	cp_pedwarn ("%s cannot resolve address of overloaded function",
+	pedwarn ("%s cannot resolve address of overloaded function",
 		    implicit ? implicit : "void cast");
       }
     else if (implicit && probe == expr && is_overloaded_fn (probe))
       /* Only warn when there is no &.  */
-      cp_warning ("%s is a reference, not call, to function `%E'",
+      warning ("%s is a reference, not call, to function `%E'",
 		  implicit, expr);
   }
   
@@ -1058,7 +1058,7 @@ build_expr_type_conversion (desires, expr, complain)
   if (expr == null_node 
       && (desires & WANT_INT) 
       && !(desires & WANT_NULL))
-    cp_warning ("converting NULL to non-pointer type");
+    warning ("converting NULL to non-pointer type");
     
   if (TREE_CODE (expr) == OFFSET_REF)
     expr = resolve_offset_ref (expr);
@@ -1134,9 +1134,9 @@ build_expr_type_conversion (desires, expr, complain)
 	    {
 	      if (complain)
 		{
-		  cp_error ("ambiguous default type conversion from `%T'",
+		  error ("ambiguous default type conversion from `%T'",
 			    basetype);
-		  cp_error ("  candidate conversions include `%D' and `%D'",
+		  error ("  candidate conversions include `%D' and `%D'",
 			    winner, cand);
 		}
 	      return error_mark_node;

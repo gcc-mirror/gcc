@@ -281,7 +281,7 @@ build_base_path (code, expr, binfo, nonnull)
   
   if (code == MINUS_EXPR && v_binfo)
     {
-      cp_error ("cannot convert from base `%T' to derived type `%T' via virtual base `%T'",
+      error ("cannot convert from base `%T' to derived type `%T' via virtual base `%T'",
 		BINFO_TYPE (binfo), BINFO_TYPE (t), BINFO_TYPE (v_binfo));
       return error_mark_node;
     }
@@ -991,7 +991,7 @@ add_method (type, method, error_p)
 			/* Defer to the local function.  */
 			return;
 		      else
-			cp_error ("`%#D' and `%#D' cannot be overloaded",
+			error ("`%#D' and `%#D' cannot be overloaded",
 				  fn, method);
 		    }
 		}
@@ -1323,7 +1323,7 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
 	 dtor is handled in finish_struct_1.  */
       if (warn_ecpp && ! TYPE_POLYMORPHIC_P (basetype)
 	  && TYPE_HAS_DESTRUCTOR (basetype))
-	cp_warning ("base class `%#T' has a non-virtual destructor",
+	warning ("base class `%#T' has a non-virtual destructor",
 		    basetype);
 
       /* If the base class doesn't have copy constructors or
@@ -1343,7 +1343,7 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
 	{
 	  *cant_have_default_ctor_p = 1;
 	  if (! TYPE_HAS_CONSTRUCTOR (t))
-            cp_pedwarn ("base `%T' with only non-default constructor in class without a constructor",
+            pedwarn ("base `%T' with only non-default constructor in class without a constructor",
                         basetype);
 	}
 
@@ -1929,7 +1929,7 @@ maybe_warn_about_overly_private_class (t)
 	  }
       if (!has_nonprivate_method) 
 	{
-	  cp_warning ("all member functions in class `%T' are private", t);
+	  warning ("all member functions in class `%T' are private", t);
 	  return;
 	}
     }
@@ -1943,7 +1943,7 @@ maybe_warn_about_overly_private_class (t)
 
       if (TREE_PRIVATE (dtor))
 	{
-	  cp_warning ("`%#T' only defines a private destructor and has no friends",
+	  warning ("`%#T' only defines a private destructor and has no friends",
 		      t);
 	  return;
 	}
@@ -1986,7 +1986,7 @@ maybe_warn_about_overly_private_class (t)
 
       if (nonprivate_ctor == 0)
 	{
-	  cp_warning ("`%#T' only defines private constructors and has no friends",
+	  warning ("`%#T' only defines private constructors and has no friends",
 		      t);
 	  return;
 	}
@@ -2107,7 +2107,7 @@ void
 duplicate_tag_error (t)
      tree t;
 {
-  cp_error ("redefinition of `%#T'", t);
+  error ("redefinition of `%#T'", t);
   cp_error_at ("previous definition of `%#T'", t);
 
   /* Pretend we haven't defined this type.  */
@@ -2438,7 +2438,7 @@ find_final_overrider (t, binfo, fn)
   /* If there was no winner, issue an error message.  */
   if (!ffod.overriding_fn)
     {
-      cp_error ("no unique final overrider for `%D' in `%T'", fn, t);
+      error ("no unique final overrider for `%D' in `%T'", fn, t);
       return error_mark_node;
     }
 
@@ -3426,16 +3426,16 @@ check_field_decls (t, access_decls, empty_p,
   if (has_pointers && warn_ecpp && TYPE_HAS_CONSTRUCTOR (t)
       && ! (TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
     {
-      cp_warning ("`%#T' has pointer data members", t);
+      warning ("`%#T' has pointer data members", t);
       
       if (! TYPE_HAS_INIT_REF (t))
 	{
-	  cp_warning ("  but does not override `%T(const %T&)'", t, t);
+	  warning ("  but does not override `%T(const %T&)'", t, t);
 	  if (! TYPE_HAS_ASSIGN_REF (t))
-	    cp_warning ("  or `operator=(const %T&)'", t);
+	    warning ("  or `operator=(const %T&)'", t);
 	}
       else if (! TYPE_HAS_ASSIGN_REF (t))
-	cp_warning ("  but does not override `operator=(const %T&)'", t);
+	warning ("  but does not override `operator=(const %T&)'", t);
     }
 
 
@@ -4687,7 +4687,7 @@ layout_virtual_bases (t, offsets)
 	tree basetype = BINFO_TYPE (TREE_VALUE (vbases));
 	
 	if (!lookup_base (t, basetype, ba_ignore | ba_quiet, NULL))
-	  cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
+	  warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
 		      basetype, t);
       }
 }
@@ -4757,7 +4757,7 @@ warn_about_ambiguous_direct_bases (t)
       tree basetype = TYPE_BINFO_BASETYPE (t, i);
 
       if (!lookup_base (t, basetype, ba_ignore | ba_quiet, NULL))
-	cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
+	warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
 		    basetype, t);
     }
 }
@@ -5011,7 +5011,7 @@ finish_struct_1 (t)
   if (COMPLETE_TYPE_P (t))
     {
       if (IS_AGGR_TYPE (t))
-	cp_error ("redefinition of `%#T'", t);
+	error ("redefinition of `%#T'", t);
       else
 	my_friendly_abort (172);
       popclass ();
@@ -5174,7 +5174,7 @@ finish_struct_1 (t)
 
   if (warn_nonvdtor && TYPE_POLYMORPHIC_P (t) && TYPE_HAS_DESTRUCTOR (t)
       && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1)) == NULL_TREE)
-    cp_warning ("`%#T' has virtual functions but non-virtual destructor", t);
+    warning ("`%#T' has virtual functions but non-virtual destructor", t);
 
   hack_incomplete_structures (t);
 
@@ -5811,7 +5811,7 @@ resolve_address_of_overloaded_function (target_type,
   else 
     {
       if (complain)
-	cp_error ("\
+	error ("\
 cannot resolve overloaded function `%D' based on conversion to type `%T'", 
 		  DECL_NAME (OVL_FUNCTION (overload)), target_type);
       return error_mark_node;
@@ -5932,7 +5932,7 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
       /* There were *no* matches.  */
       if (complain)
 	{
- 	  cp_error ("no matches converting function `%D' to type `%#T'", 
+ 	  error ("no matches converting function `%D' to type `%#T'", 
 		    DECL_NAME (OVL_FUNCTION (overload)),
 		    target_type);
 
@@ -5955,7 +5955,7 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
 	{
 	  tree match;
 
- 	  cp_error ("converting overloaded function `%D' to type `%#T' is ambiguous", 
+ 	  error ("converting overloaded function `%D' to type `%#T' is ambiguous", 
 		    DECL_NAME (OVL_FUNCTION (overload)),
 		    target_type);
 
@@ -5981,10 +5981,10 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
       if (!complain)
         return error_mark_node;
 
-      cp_pedwarn ("assuming pointer to member `%D'", fn);
+      pedwarn ("assuming pointer to member `%D'", fn);
       if (!explained)
         {
-          cp_pedwarn ("(a pointer to member can only be formed with `&%E')", fn);
+          pedwarn ("(a pointer to member can only be formed with `&%E')", fn);
           explained = 1;
         }
     }
@@ -6037,7 +6037,7 @@ instantiate_type (lhstype, rhs, flags)
       if (comptypes (lhstype, TREE_TYPE (rhs), strict))
 	return rhs;
       if (complain)
-	cp_error ("argument of type `%T' does not match `%T'",
+	error ("argument of type `%T' does not match `%T'",
 		  TREE_TYPE (rhs), lhstype);
       return error_mark_node;
     }
@@ -6431,7 +6431,7 @@ note_name_declared_in_class (name, decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      cp_error ("declaration of `%#D'", decl);
+      error ("declaration of `%#D'", decl);
       cp_error_at ("changes meaning of `%D' from `%+#D'", 
 		   DECL_NAME (OVL_CURRENT (decl)),
 		   (tree) n->value);

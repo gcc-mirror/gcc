@@ -498,7 +498,7 @@ extdef:
 		{ do_pending_inlines (); }
 
 	| EXPORT
-		{ cp_warning ("keyword `export' not implemented, and will be ignored"); }
+		{ warning ("keyword `export' not implemented, and will be ignored"); }
 	  template_def
 		{ do_pending_inlines (); }
 	| template_def
@@ -602,7 +602,7 @@ extern_lang_string:
 		{ push_lang_context ($1); }
 	| extern_lang_string EXTERN_LANG_STRING
 		{ if (current_lang_name != $2)
-		    cp_error ("use of linkage spec `%D' is different from previous spec `%D'", $2, current_lang_name);
+		    error ("use of linkage spec `%D' is different from previous spec `%D'", $2, current_lang_name);
 		  pop_lang_context (); push_lang_context ($2); }
 	;
 
@@ -1108,7 +1108,7 @@ template_arg:
 		{
 		  if (!processing_template_decl)
 		    {
-		      cp_error ("use of template qualifier outside template");
+		      error ("use of template qualifier outside template");
 		      $$ = error_mark_node;
 		    }
 		  else
@@ -1169,9 +1169,9 @@ condition:
 		    if (TREE_CODE (d) == TYPE_DECL) {
 		      tree s = TREE_TYPE (d);
 		      if (TREE_CODE (s) == RECORD_TYPE)
-			cp_error ("definition of class `%T' in condition", s);
+			error ("definition of class `%T' in condition", s);
 		      else if (TREE_CODE (s) == ENUMERAL_TYPE)
-			cp_error ("definition of enum `%T' in condition", s);
+			error ("definition of enum `%T' in condition", s);
 		    }
 		  }
 		  current_declspecs = $1.t;
@@ -1182,7 +1182,7 @@ condition:
 		  parse_end_decl ($<ttype>6, $7, $4);
 		  $$ = convert_from_reference ($<ttype>6); 
 		  if (TREE_CODE (TREE_TYPE ($$)) == ARRAY_TYPE)
-		    cp_error ("definition of array `%#D' in condition", $$); 
+		    error ("definition of array `%#D' in condition", $$); 
 		}
 	| expr
 	;
@@ -1291,7 +1291,7 @@ new_placement:
 	  '(' nonnull_exprlist ')'
                 { $$ = $2; }
 	| '{' nonnull_exprlist '}'
-                { cp_pedwarn ("old style placement syntax, use () instead");
+                { pedwarn ("old style placement syntax, use () instead");
 		  $$ = $2; }
 	;
 
@@ -1302,7 +1302,7 @@ new_initializer:
 		{ $$ = void_zero_node; }
 	| '(' typespec ')'
 		{
-		  cp_error ("`%T' is not a valid expression", $2.t);
+		  error ("`%T' is not a valid expression", $2.t);
 		  $$ = error_mark_node;
 		}
 	/* GNU extension so people can use initializer lists.  Note that
@@ -2275,7 +2275,7 @@ structsp:
 		{ $$.t = $2;
 		  $$.new_type_flag = 0; 
 		  if (!processing_template_decl)
-		    cp_pedwarn ("using `typename' outside of template"); }
+		    pedwarn ("using `typename' outside of template"); }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head '{'
                 { $1.t = begin_class_definition ($1.t); 
@@ -2319,7 +2319,7 @@ structsp:
 		    $$.t = $1.t;
 		  else if (TYPE_BINFO ($1.t) == NULL_TREE)
 		    {
-		      cp_error ("%T is not a class type", $1.t);
+		      error ("%T is not a class type", $1.t);
 		      $$.t = error_mark_node;
 		    } 
 		  else
@@ -2330,7 +2330,7 @@ structsp:
 			  && TYPE_BINFO_BASETYPES ($$.t) 
 			  && !COMPLETE_TYPE_P ($$.t)
 			  && ! TYPE_BEING_DEFINED ($$.t))
-			cp_error ("base clause without member specification for `%#T'",
+			error ("base clause without member specification for `%#T'",
 				  $$.t);
 		    }
 		}
@@ -2448,7 +2448,7 @@ named_class_head:
 		      $$.new_type_flag = $1.new_type_flag;
 		      if ((current_aggr == union_type_node)
 			  != (TREE_CODE (type) == UNION_TYPE))
-			cp_pedwarn (current_aggr == union_type_node
+			pedwarn (current_aggr == union_type_node
 	                            ? "`union' tag used in declaring `%#T'"
 	                            : "non-`union' tag used in declaring `%#T'", 
 				    type);
@@ -2524,7 +2524,7 @@ base_class_access_list:
 	  VISSPEC see_typename
 	| SCSPEC see_typename
 		{ if ($1 != ridpointers[(int)RID_VIRTUAL])
-		    cp_error ("`%D' access", $1);
+		    error ("`%D' access", $1);
 		  $$ = access_default_virtual_node; }
 	| base_class_access_list VISSPEC see_typename
 		{
@@ -2539,7 +2539,7 @@ base_class_access_list:
 		}
 	| base_class_access_list SCSPEC see_typename
 		{ if ($2 != ridpointers[(int)RID_VIRTUAL])
-		    cp_error ("`%D' access", $2);
+		    error ("`%D' access", $2);
 		  else if ($$ == access_public_node)
 		    $$ = access_public_virtual_node;
 		  else if ($$ == access_protected_node)
@@ -3085,7 +3085,7 @@ typename_sub0:
 		  if (TYPE_P ($1))
 		    $$ = make_typename_type ($1, $2, /*complain=*/1);
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
-		    cp_error ("`%T' is not a class or namespace", $2);
+		    error ("`%T' is not a class or namespace", $2);
 		  else
 		    {
 		      $$ = $2;
@@ -3105,7 +3105,7 @@ typename_sub1:
 	  typename_sub2
 		{
 		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
-		    cp_error ("`%T' is not a class or namespace", $1);
+		    error ("`%T' is not a class or namespace", $1);
 		  else if (TREE_CODE ($1) == TYPE_DECL)
 		    $$ = TREE_TYPE ($1);
 		}
@@ -3114,7 +3114,7 @@ typename_sub1:
 		  if (TYPE_P ($1))
 		    $$ = make_typename_type ($1, $2, /*complain=*/1);
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
-		    cp_error ("`%T' is not a class or namespace", $2);
+		    error ("`%T' is not a class or namespace", $2);
 		  else
 		    {
 		      $$ = $2;
@@ -3143,7 +3143,7 @@ typename_sub2:
 		  got_scope = complete_type (TREE_TYPE ($$));
 
 		  if ($$ == error_mark_node)
-		    cp_error ("`%T' is not a class or namespace", $1);
+		    error ("`%T' is not a class or namespace", $1);
 		}
 	| SELFNAME SCOPE
 		{
@@ -3770,7 +3770,7 @@ bad_parm:
 		  if (TREE_CODE ($$) == SCOPE_REF
 		      && (TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TYPE_PARM
 			  || TREE_CODE (TREE_OPERAND ($$, 0)) == BOUND_TEMPLATE_TEMPLATE_PARM))
-		    cp_error ("  perhaps you want `typename %E' to make it a type", $$);
+		    error ("  perhaps you want `typename %E' to make it a type", $$);
 		  $$ = build_tree_list (integer_type_node, $$);
 		}
 	;
@@ -3778,7 +3778,7 @@ bad_parm:
 bad_decl:
           IDENTIFIER template_arg_list_ignore IDENTIFIER arg_list_ignore ';'
 		{
-                  cp_error("'%D' is used as a type, but is not defined as a type.", $1);
+                  error("'%D' is used as a type, but is not defined as a type.", $1);
                   $3 = error_mark_node;
 		}
         ;

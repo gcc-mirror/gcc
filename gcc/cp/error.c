@@ -939,7 +939,7 @@ dump_decl (t, flags)
       break;
 
       /* These special cases are duplicated here so that other functions
-	 can feed identifiers to cp_error and get them demangled properly.  */
+	 can feed identifiers to error and get them demangled properly.  */
     case IDENTIFIER_NODE:
       if (IDENTIFIER_TYPENAME_P (t))
 	{
@@ -1093,7 +1093,7 @@ dump_template_decl (t, flags)
 
 /* Pretty print a function decl. There are several ways we want to print a
    function declaration. The TFF_ bits in FLAGS tells us how to behave.
-   As cp_error can only apply the '#' flag once to give 0 and 1 for V, there
+   As error can only apply the '#' flag once to give 0 and 1 for V, there
    is %D which doesn't print the throw specs, and %F which does. */
 
 static void
@@ -2215,7 +2215,7 @@ cp_line_of (t)
   return line;
 }
 
-/* Now the interfaces from cp_error et al to dump_type et al. Each takes an
+/* Now the interfaces from error et al to dump_type et al. Each takes an
    on/off VERBOSE flag and supply the appropriate TFF_ flags to a dump_
    function.  */
 

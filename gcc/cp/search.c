@@ -337,7 +337,7 @@ lookup_base (t, base, access, kind_ptr)
       binfo = NULL_TREE;
       if (!(access & ba_quiet))
 	{
-	  cp_error ("`%T' is an inaccessible base of `%T'", base, t);
+	  error ("`%T' is an inaccessible base of `%T'", base, t);
 	  binfo = error_mark_node;
 	}
       break;
@@ -347,7 +347,7 @@ lookup_base (t, base, access, kind_ptr)
 	  binfo = NULL_TREE;
 	  if (!(access & ba_quiet))
 	    {
-	      cp_error ("`%T' is an ambiguous base of `%T'", base, t);
+	      error ("`%T' is an ambiguous base of `%T'", base, t);
 	      binfo = error_mark_node;
 	    }
 	}
@@ -1456,7 +1456,7 @@ lookup_member (xbasetype, name, protect, want_type)
 
   if (errstr && protect)
     {
-      cp_error (errstr, name, type);
+      error (errstr, name, type);
       if (lfi.ambiguous)
         print_candidates (lfi.ambiguous);
       rval = error_mark_node;
@@ -2127,7 +2127,7 @@ get_pure_virtuals (type)
 	{
 	  tree base_fndecl = BV_FN (virtuals);
 	  if (DECL_NEEDS_FINAL_OVERRIDER_P (base_fndecl))
-	    cp_error ("`%#D' needs a final overrider", base_fndecl);
+	    error ("`%#D' needs a final overrider", base_fndecl);
 	}
     }
 }
