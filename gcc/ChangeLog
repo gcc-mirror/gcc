@@ -1,3 +1,9 @@
+2004-04-25  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold): Prefer fold_convert (negate_expr (...)) to
+	fold (build1 (NEGATE_EXPR, ...)).  Optimize X / -1 as -X and
+	X % -1 as 0.
+
 2004-04-26  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR bootstrap/15141
