@@ -1,3 +1,15 @@
+2004-12-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/17383
+
+	* Makefile.def (target_modules): Remove stage parameter,
+	it is always true now.
+	* Makefile.tpl (configure-build-[+module+],
+	configure-target-[+module+]): Always build symlink tree
+	for the directory and for include.  BUILD_SUBDIR and
+	TARGET_SUBDIR cannot be . anymore.
+	* Makefile.in: Regenerate.
+
 2004-12-25  David Edelsohn  <edelsohn@gnu.org>
 
 	Revert 2004-12-08 Makefile changes.

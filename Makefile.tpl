@@ -822,31 +822,30 @@ configure-build-[+module+]:
 	echo Configuring in $(BUILD_SUBDIR)/[+module+]; \
 	cd "$(BUILD_SUBDIR)/[+module+]" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(BUILD_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../[+module+]; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
@@ -1032,38 +1031,37 @@ ENDIF raw_cxx +]
 	echo Configuring in $(TARGET_SUBDIR)/[+module+]; \
 	cd "$(TARGET_SUBDIR)/[+module+]" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
-	esac; \[+ IF stage +]
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
+	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../[+module+]; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
-	else \[+ ENDIF stage +]
+	else \
 	  srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	  libsrcdir="$$s/[+module+]"; \[+ IF stage +]
-	fi; \[+ ENDIF stage +]
+	  libsrcdir="$$s/[+module+]"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \

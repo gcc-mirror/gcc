@@ -2174,31 +2174,30 @@ configure-build-libiberty:
 	echo Configuring in $(BUILD_SUBDIR)/libiberty; \
 	cd "$(BUILD_SUBDIR)/libiberty" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(BUILD_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/libiberty "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libiberty "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libiberty; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
@@ -2239,31 +2238,30 @@ configure-build-bison:
 	echo Configuring in $(BUILD_SUBDIR)/bison; \
 	cd "$(BUILD_SUBDIR)/bison" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(BUILD_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/bison "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/bison "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../bison; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
@@ -2304,31 +2302,30 @@ configure-build-byacc:
 	echo Configuring in $(BUILD_SUBDIR)/byacc; \
 	cd "$(BUILD_SUBDIR)/byacc" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(BUILD_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/byacc "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/byacc "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../byacc; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
@@ -2369,31 +2366,30 @@ configure-build-flex:
 	echo Configuring in $(BUILD_SUBDIR)/flex; \
 	cd "$(BUILD_SUBDIR)/flex" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(BUILD_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/flex "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/flex "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../flex; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
@@ -2434,31 +2430,30 @@ configure-build-m4:
 	echo Configuring in $(BUILD_SUBDIR)/m4; \
 	cd "$(BUILD_SUBDIR)/m4" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(BUILD_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/m4 "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/m4 "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../m4; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
@@ -2499,31 +2494,30 @@ configure-build-texinfo:
 	echo Configuring in $(BUILD_SUBDIR)/texinfo; \
 	cd "$(BUILD_SUBDIR)/texinfo" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(BUILD_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/texinfo "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/texinfo "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../texinfo; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
@@ -2564,31 +2558,30 @@ configure-build-fixincludes:
 	echo Configuring in $(BUILD_SUBDIR)/fixincludes; \
 	cd "$(BUILD_SUBDIR)/fixincludes" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(BUILD_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/fixincludes "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/fixincludes "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../fixincludes; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
@@ -24261,16 +24254,37 @@ configure-target-libstdc++-v3: $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/libstdc++-v3; \
 	cd "$(TARGET_SUBDIR)/libstdc++-v3" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libstdc++-v3 "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libstdc++-v3; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/libstdc++-v3"; \
 	  libsrcdir="$$s/libstdc++-v3"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -24603,16 +24617,37 @@ configure-target-libmudflap: $(TARGET_SUBDIR)/libmudflap/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/libmudflap; \
 	cd "$(TARGET_SUBDIR)/libmudflap" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libmudflap "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libmudflap; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/libmudflap"; \
 	  libsrcdir="$$s/libmudflap"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -24945,16 +24980,37 @@ configure-target-newlib: $(TARGET_SUBDIR)/newlib/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/newlib; \
 	cd "$(TARGET_SUBDIR)/newlib" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/newlib "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../newlib; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/newlib"; \
 	  libsrcdir="$$s/newlib"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -25287,16 +25343,37 @@ configure-target-libgfortran: $(TARGET_SUBDIR)/libgfortran/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/libgfortran; \
 	cd "$(TARGET_SUBDIR)/libgfortran" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libgfortran "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libgfortran; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/libgfortran"; \
 	  libsrcdir="$$s/libgfortran"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -25629,16 +25706,37 @@ configure-target-libobjc: $(TARGET_SUBDIR)/libobjc/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/libobjc; \
 	cd "$(TARGET_SUBDIR)/libobjc" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libobjc "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libobjc; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/libobjc"; \
 	  libsrcdir="$$s/libobjc"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -25971,31 +26069,30 @@ configure-target-libtermcap: $(TARGET_SUBDIR)/libtermcap/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/libtermcap; \
 	cd "$(TARGET_SUBDIR)/libtermcap" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/libtermcap "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libtermcap "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libtermcap; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
@@ -26270,16 +26367,37 @@ configure-target-winsup: $(TARGET_SUBDIR)/winsup/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/winsup; \
 	cd "$(TARGET_SUBDIR)/winsup" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/winsup "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../winsup; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/winsup"; \
 	  libsrcdir="$$s/winsup"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -26612,16 +26730,37 @@ configure-target-libgloss: $(TARGET_SUBDIR)/libgloss/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/libgloss; \
 	cd "$(TARGET_SUBDIR)/libgloss" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libgloss "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libgloss; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/libgloss"; \
 	  libsrcdir="$$s/libgloss"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -26949,16 +27088,37 @@ configure-target-libiberty: $(TARGET_SUBDIR)/libiberty/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/libiberty; \
 	cd "$(TARGET_SUBDIR)/libiberty" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libiberty "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libiberty; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/libiberty"; \
 	  libsrcdir="$$s/libiberty"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -27291,16 +27451,37 @@ configure-target-gperf: $(TARGET_SUBDIR)/gperf/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/gperf; \
 	cd "$(TARGET_SUBDIR)/gperf" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/gperf "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../gperf; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/gperf"; \
 	  libsrcdir="$$s/gperf"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -27633,16 +27814,37 @@ configure-target-examples: $(TARGET_SUBDIR)/examples/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/examples; \
 	cd "$(TARGET_SUBDIR)/examples" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/examples "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../examples; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/examples"; \
 	  libsrcdir="$$s/examples"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -27965,16 +28167,37 @@ configure-target-libffi: $(TARGET_SUBDIR)/libffi/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/libffi; \
 	cd "$(TARGET_SUBDIR)/libffi" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libffi "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libffi; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/libffi"; \
 	  libsrcdir="$$s/libffi"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -28307,16 +28530,37 @@ configure-target-libjava: $(TARGET_SUBDIR)/libjava/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/libjava; \
 	cd "$(TARGET_SUBDIR)/libjava" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libjava "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libjava; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/libjava"; \
 	  libsrcdir="$$s/libjava"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -28649,31 +28893,30 @@ configure-target-zlib: $(TARGET_SUBDIR)/zlib/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/zlib; \
 	cd "$(TARGET_SUBDIR)/zlib" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
 	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/zlib "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/zlib "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
 	        true; \
+	      else \
+	        exit 1; \
 	      fi; \
 	    else \
-	      exit 1; \
+	      true; \
 	    fi; \
 	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
 	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../zlib; \
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
@@ -29013,16 +29256,37 @@ configure-target-boehm-gc: $(TARGET_SUBDIR)/boehm-gc/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/boehm-gc; \
 	cd "$(TARGET_SUBDIR)/boehm-gc" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/boehm-gc "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../boehm-gc; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/boehm-gc"; \
 	  libsrcdir="$$s/boehm-gc"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -29355,16 +29619,37 @@ configure-target-qthreads: $(TARGET_SUBDIR)/qthreads/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/qthreads; \
 	cd "$(TARGET_SUBDIR)/qthreads" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/qthreads "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../qthreads; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/qthreads"; \
 	  libsrcdir="$$s/qthreads"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -29697,16 +29982,37 @@ configure-target-rda: $(TARGET_SUBDIR)/rda/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/rda; \
 	cd "$(TARGET_SUBDIR)/rda" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/rda "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../rda; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/rda"; \
 	  libsrcdir="$$s/rda"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -30039,16 +30345,37 @@ configure-target-libada: $(TARGET_SUBDIR)/libada/multilib.out
 	echo Configuring in $(TARGET_SUBDIR)/libada; \
 	cd "$(TARGET_SUBDIR)/libada" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir="../../$(srcdir)" ;; \
 	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if $(SHELL) $$s/symlink-tree $${topdir}/libada "no-such-file" ; then \
+	    if [ -f Makefile ]; then \
+	      if $(MAKE) distclean; then \
+	        true; \
+	      else \
+	        exit 1; \
+	      fi; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    exit 1; \
+	  fi; \
+	  if [ -d ../include ] ; then \
+	    true; \
+	  else \
+	    mkdir ../include; \
+	    cd ../include; \
+	    $(SHELL) $$s/symlink-tree $${topdir}/include "no-such-file"; \
+	    cd ../libada; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
 	  srcdiroption="--srcdir=$${topdir}/libada"; \
 	  libsrcdir="$$s/libada"; \
+	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
