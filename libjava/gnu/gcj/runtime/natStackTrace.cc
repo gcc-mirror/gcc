@@ -44,16 +44,15 @@ details.  */
 #include <unwind.h>
 
 
-// Fill in this stack trace with N elements starting at offset.
+// Fill in this stack trace with MAXLEN elements starting at offset.
 void
 gnu::gcj::runtime::StackTrace::fillInStackTrace (jint maxlen, jint offset)
 {
-#if defined (HAVE_BACKTRACE)
+#ifdef HAVE_BACKTRACE
   offset += 1;
   void *_p[maxlen + offset];
   len = backtrace (_p, maxlen + offset) - offset;
   void **p = _p + offset;
-#endif
   _Jv_frame_info *frame;
   if (len > 0)
     {
@@ -86,6 +85,10 @@ gnu::gcj::runtime::StackTrace::fillInStackTrace (jint maxlen, jint offset)
     frame = NULL;
 
   addrs = reinterpret_cast<gnu::gcj::RawData *> (frame);
+#else // HAVE_BACKTRACE
+  (void)maxlen;
+  (void)offset;
+#endif // HAVE_BACKTRACE
 }
 
 /* Obtain the next power-of-2 of some integer.  */
