@@ -1,3 +1,8 @@
+2000-12-29  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm.c (arm_override_options): Fix typo in warning
+	message.
+
 2000-12-29  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_expand_block_move): Initialize
