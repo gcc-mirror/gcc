@@ -1,3 +1,7 @@
+Wed Sep 30 20:22:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* parse.c (emit_label): Fix return-type of prototype.
+
 Wed Sep 30 19:41:36 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* actions.c (chill_handle_multi_case_label): Always return a value
