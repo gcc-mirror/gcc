@@ -46,6 +46,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "basic-block.h"
 #include "output.h"
+#include "ssa.h"
 
 /* We cannot use <assert.h> in GCC source, since that would include
    GCC's assert.h, which may not be compatible with the host compiler.  */
@@ -91,24 +92,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    left in for a limited time only, as a debugging tool until the
    coalescing algorithm is validated.  */
 
-/* All pseudo-registers (having register number >=
-   FIRST_PSEUDO_REGISTER) and hard registers satisfying
-   CONVERT_HARD_REGISTER_TO_SSA_P are converted to SSA form.  */
-
-/* Given a hard register number REG_NO, return nonzero if and only if
-   the register should be converted to SSA.  */
-
-#ifndef CONVERT_HARD_REGISTER_TO_SSA_P
-#define CONVERT_HARD_REGISTER_TO_SSA_P(REG_NO) (0) /* default of no hard registers */
-#endif /* CONVERT_HARD_REGISTER_TO_SSA_P  */
-
-/* Given a register number REG_NO, return nonzero if and only if the
-   register should be converted to SSA.  */
-
-#define CONVERT_REGISTER_TO_SSA_P(REG_NO)	\
-	((!HARD_REGISTER_NUM_P (REG_NO)) || \
-	 (CONVERT_HARD_REGISTER_TO_SSA_P (REG_NO)))
-
 static int conservative_reg_partition;
 
 /* This flag is set when the CFG is in SSA form.  */
@@ -152,20 +135,20 @@ struct ssa_rename_from_hash_table_data {
   partition reg_partition;
 };
 
-void ssa_rename_from_initialize
+static void ssa_rename_from_initialize
   PARAMS ((void));
-rtx ssa_rename_from_lookup
+static rtx ssa_rename_from_lookup
   PARAMS ((int reg));
-unsigned int original_register
+static unsigned int original_register
   PARAMS ((unsigned int regno));
-void ssa_rename_from_insert
+static void ssa_rename_from_insert
   PARAMS ((unsigned int reg, rtx r));
-void ssa_rename_from_free
+static void ssa_rename_from_free
   PARAMS ((void));
 typedef int (*srf_trav) PARAMS ((int regno, rtx r, sbitmap canonical_elements, partition reg_partition));
 static void ssa_rename_from_traverse
   PARAMS ((htab_trav callback_function, sbitmap canonical_elements, partition reg_partition));
-static void ssa_rename_from_print
+/*static Avoid warnign message.  */ void ssa_rename_from_print
   PARAMS ((void));
 static int ssa_rename_from_print_1
   PARAMS ((void **slot, void *data));
@@ -299,7 +282,7 @@ ssa_rename_to_insert(reg, r)
 
 /* Prepare ssa_rename_from for use.  */
 
-void
+static void
 ssa_rename_from_initialize ()
 {
   /* We use an arbitrary initial hash table size of 64.  */
@@ -312,7 +295,7 @@ ssa_rename_from_initialize ()
 /* Find the REG entry in ssa_rename_from.  Return NULL_RTX if no entry is
    found.  */
 
-rtx
+static rtx
 ssa_rename_from_lookup (reg)
      int reg;
 {
@@ -329,7 +312,7 @@ ssa_rename_from_lookup (reg)
    the register is a pseudo, return the original register's number.
    Otherwise, return this register number REGNO.  */
 
-unsigned int
+static unsigned int
 original_register (regno)
      unsigned int regno;
 {
@@ -339,7 +322,7 @@ original_register (regno)
 
 /* Add mapping from R to REG to ssa_rename_from even if already present.  */
 
-void
+static void
 ssa_rename_from_insert (reg, r)
      unsigned int reg;
      rtx r;
@@ -359,7 +342,7 @@ ssa_rename_from_insert (reg, r)
    CANONICAL_ELEMENTS and REG_PARTITION pass data needed by the only
    current use of this function.  */
 
-void
+static void
 ssa_rename_from_traverse (callback_function,
 			  canonical_elements, reg_partition)
      htab_trav callback_function;
@@ -374,7 +357,7 @@ ssa_rename_from_traverse (callback_function,
 
 /* Destroy ssa_rename_from.  */
 
-void
+static void
 ssa_rename_from_free ()
 {
   htab_delete (ssa_rename_from_ht);
@@ -382,7 +365,8 @@ ssa_rename_from_free ()
 
 /* Print the contents of ssa_rename_from.  */
 
-static void
+/* static  Avoid erroneous error message.  */
+void
 ssa_rename_from_print ()
 {
   printf ("ssa_rename_from's hash table contents:\n");
@@ -1146,9 +1130,6 @@ rename_registers (nregs, idom)
      int nregs;
      int *idom;
 {
-  int reg;
-  int mach_mode;
-
   VARRAY_RTX_INIT (ssa_definition, nregs * 3, "ssa_definition");
   VARRAY_RTX_INIT (ssa_uses, nregs * 3, "ssa_uses");
   ssa_rename_from_initialize ();

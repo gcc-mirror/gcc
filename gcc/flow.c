@@ -136,6 +136,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "insn-flags.h"
 #include "expr.h"
+#include "ssa.h"
 
 #include "obstack.h"
 #include "splay-tree.h"
@@ -308,6 +309,20 @@ struct propagate_block_info
   int flags;
 };
 
+/* Store the data structures necessary for depth-first search. */
+struct depth_first_search_dsS {
+  /* stack for backtracking during the algorithm */
+  basic_block *stack;
+
+  /* number of edges in the stack.  That is, positions 0, ..., sp-1
+     have edges. */
+  unsigned int sp;
+
+  /* record of basic blocks already seen by depth-first search */
+  sbitmap visited_blocks;
+};
+typedef struct depth_first_search_dsS *depth_first_search_ds;
+
 /* Forward declarations */
 static int count_basic_blocks		PARAMS ((rtx));
 static void find_basic_blocks_1		PARAMS ((rtx));
@@ -398,6 +413,14 @@ static int flow_loop_nested_p		PARAMS ((struct loop *, struct loop *));
 static int flow_loop_exits_find		PARAMS ((const sbitmap, edge **));
 static int flow_loop_nodes_find	PARAMS ((basic_block, basic_block, sbitmap));
 static int flow_depth_first_order_compute PARAMS ((int *, int *));
+static void flow_dfs_compute_reverse_init
+  PARAMS ((depth_first_search_ds));
+static void flow_dfs_compute_reverse_add_bb
+  PARAMS ((depth_first_search_ds, basic_block));
+static basic_block flow_dfs_compute_reverse_execute
+  PARAMS ((depth_first_search_ds));
+static void flow_dfs_compute_reverse_finish
+  PARAMS ((depth_first_search_ds));
 static basic_block flow_loop_pre_header_find PARAMS ((basic_block, const sbitmap *));
 static void flow_loop_tree_node_add	PARAMS ((struct loop *, struct loop *));
 static void flow_loops_tree_build	PARAMS ((struct loops *));
@@ -3741,7 +3764,7 @@ init_propagate_block_info (bb, live, local_set, flags)
 	    && GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
 	  {
 	    rtx mem = SET_DEST (PATTERN (insn));
-
+	    
 	    if (XEXP (mem, 0) == frame_pointer_rtx
 		|| (GET_CODE (XEXP (mem, 0)) == PLUS
 		    && XEXP (XEXP (mem, 0), 0) == frame_pointer_rtx
@@ -6254,7 +6277,6 @@ compute_immediate_postdominators (idom, postdominators)
      sbitmap *postdominators;
 {
   compute_immediate_dominators (idom, postdominators);
-  return;
 }
 
 /* Recompute register set/reference counts immediately prior to register
@@ -6888,7 +6910,6 @@ verify_edge_list (f, elist)
 
 /* This routine will determine what, if any, edge there is between
    a specified predecessor and successor.  */
-
 int
 find_edge_index (edge_list, pred, succ)
      struct edge_list *edge_list;
@@ -6984,8 +7005,44 @@ add_noreturn_fake_exit_edges ()
       make_edge (NULL, BASIC_BLOCK (x), EXIT_BLOCK_PTR, EDGE_FAKE);
 }
 
-/* Redirect an edge's successor from one block to another.  */
+/* This function adds a fake edge between any infinite loops to the
+   exit block.  Some optimizations require a path from each node to
+   the exit node.
 
+   See also Morgan, Figure 3.10, pp. 82-83.
+
+   The current implementation is ugly, not attempting to minimize the
+   number of inserted fake edges.  To reduce the number of fake edges
+   to insert, add fake edges from _innermost_ loops containing only
+   nodes not reachable from the exit block. */
+void
+connect_infinite_loops_to_exit ()
+{
+  basic_block unvisited_block;
+
+  /* Perform depth-first search in the reverse graph to find nodes
+     reachable from the exit block. */
+  struct depth_first_search_dsS dfs_ds;
+
+  flow_dfs_compute_reverse_init (&dfs_ds);
+  flow_dfs_compute_reverse_add_bb (&dfs_ds, EXIT_BLOCK_PTR);
+  
+  /* Repeatedly add fake edges, updating the unreachable nodes. */
+  while (1)
+    {
+      unvisited_block = flow_dfs_compute_reverse_execute (&dfs_ds);
+      if (!unvisited_block)
+	break;
+      make_edge (NULL, unvisited_block, EXIT_BLOCK_PTR, EDGE_FAKE);
+      flow_dfs_compute_reverse_add_bb (&dfs_ds, unvisited_block);
+    }
+
+  flow_dfs_compute_reverse_finish (&dfs_ds);
+
+  return;
+}
+
+/* Redirect an edge's successor from one block to another.  */
 void
 redirect_edge_succ (e, new_succ)
      edge e;
@@ -7005,7 +7062,6 @@ redirect_edge_succ (e, new_succ)
 }
 
 /* Redirect an edge's predecessor from one block to another.  */
-
 void
 redirect_edge_pred (e, new_pred)
      edge e;
@@ -7426,6 +7482,115 @@ flow_depth_first_order_compute (dfs_order, rc_order)
   return dfsnum;
 }
 
+
+/* Compute the depth first search order on the _reverse_ graph and
+   store in the array DFS_ORDER, marking the nodes visited in VISITED.
+   Returns the number of nodes visited.
+
+   The computation is split into three pieces:
+
+   flow_dfs_compute_reverse_init () creates the necessary data
+   structures.
+
+   flow_dfs_compute_reverse_add_bb () adds a basic block to the data
+   structures.  The block will start the search.
+
+   flow_dfs_compute_reverse_execute () continues (or starts) the
+   search using the block on the top of the stack, stopping when the
+   stack is empty.
+
+   flow_dfs_compute_reverse_finish () destroys the necessary data
+   structures.
+
+   Thus, the user will probably call ..._init(), call ..._add_bb() to
+   add a beginning basic block to the stack, call ..._execute(),
+   possibly add another bb to the stack and again call ..._execute(),
+   ..., and finally call _finish(). */
+
+/* Initialize the data structures used for depth-first search on the
+   reverse graph.  If INITIALIZE_STACK is nonzero, the exit block is
+   added to the basic block stack.  DATA is the current depth-first
+   search context.  If INITIALIZE_STACK is non-zero, there is an
+   element on the stack.  */
+
+static void
+flow_dfs_compute_reverse_init (data)
+     depth_first_search_ds data;
+{
+  /* Allocate stack for back-tracking up CFG.  */
+  data->stack =
+    (basic_block *) xmalloc ((n_basic_blocks - (INVALID_BLOCK+1)) 
+			     * sizeof (basic_block));
+  data->sp = 0;
+
+  /* Allocate bitmap to track nodes that have been visited.  */
+  data->visited_blocks 
+    = sbitmap_alloc (n_basic_blocks - (INVALID_BLOCK + 1));
+
+  /* None of the nodes in the CFG have been visited yet.  */
+  sbitmap_zero (data->visited_blocks);
+
+  return;
+}
+
+/* Add the specified basic block to the top of the dfs data
+   structures.  When the search continues, it will start at the
+   block. */
+
+static void
+flow_dfs_compute_reverse_add_bb (data, bb)
+     depth_first_search_ds data;
+     basic_block bb;
+{
+  data->stack[data->sp++] = bb;
+  return;
+}
+
+/* Continue the depth-first search through the reverse graph starting
+   with the block at the stack's top and ending when the stack is
+   empty.  Visited nodes are marked.  Returns an unvisited basic
+   block, or NULL if there is none available.  */
+static basic_block
+flow_dfs_compute_reverse_execute (data)
+     depth_first_search_ds data;
+{
+  basic_block bb;
+  edge e;
+  int i;
+
+  while (data->sp > 0)
+    {
+      bb = data->stack[--data->sp];
+
+      /* Mark that we have visited this node. */
+      if (!TEST_BIT (data->visited_blocks, bb->index - (INVALID_BLOCK+1)))
+	{
+	  SET_BIT (data->visited_blocks, bb->index - (INVALID_BLOCK+1));
+
+	  /* Perform depth-first search on adjacent vertices. */
+	  for (e = bb->pred; e; e = e->pred_next)
+	    flow_dfs_compute_reverse_add_bb (data, e->src);
+	}
+    }
+
+  /* Determine if there are unvisited basic blocks. */
+  for (i = n_basic_blocks - (INVALID_BLOCK+1); --i >= 0; )
+    if (!TEST_BIT (data->visited_blocks, i))
+      return BASIC_BLOCK (i + (INVALID_BLOCK+1));
+  return NULL;
+}
+
+/* Destroy the data structures needed for depth-first search on the
+   reverse graph. */
+
+static void
+flow_dfs_compute_reverse_finish (data)
+     depth_first_search_ds data;
+{
+  free (data->stack);
+  sbitmap_free (data->visited_blocks);
+  return;
+}
 
 /* Return the block for the pre-header of the loop with header
    HEADER where DOM specifies the dominator information.  Return NULL if
