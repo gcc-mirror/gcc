@@ -7240,12 +7240,19 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 					    - bitsize),
 				  op0, 1);
 
+	    /* If the result type is BLKmode, store the data into a temporary
+	       of the appropriate type, but with the mode corresponding to the
+	       mode for the data we have (op0's mode).  It's tempting to make
+	       this a constant type, since we know it's only being stored once,
+	       but that can cause problems if we are taking the address of this
+	       COMPONENT_REF because the MEM of any reference via that address
+	       will have flags corresponding to the type, which will not
+	       necessarily be constant.  */
 	    if (mode == BLKmode)
 	      {
-		rtx new = assign_temp (build_qualified_type
-				       ((*lang_hooks.types.type_for_mode)
-					(ext_mode, 0),
-					TYPE_QUAL_CONST), 0, 1, 1);
+		rtx new
+		  = assign_stack_temp_for_type
+		    (ext_mode, GET_MODE_BITSIZE (ext_mode), 0, type);
 
 		emit_move_insn (new, op0);
 		op0 = copy_rtx (new);
