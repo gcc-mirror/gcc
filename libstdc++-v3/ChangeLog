@@ -1,3 +1,10 @@
+2000-10-09  Richard Henderson  <rth@cygnus.com>
+
+	* libsupc++/pure.cc: New file.
+	* libsupc++/Makefile.am (INCLUDES): Add top_builddir.
+	(sources): Add pure.cc.
+	* libsupc++/Makefile.in: Regenerate.
+
 2000-10-09  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* docs/configopts.html: Edit.
