@@ -33,13 +33,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "server.h"
 
-#define NO_BOGOSITY
-
-/*  Quality Assurance Marker  :-)
-
-    Any file that contains this string is presumed to have
-    been carefully constructed and will not be fixed  */
-
 /*  The contents of this string are not very important.  It is mostly
     just used as part of the "I am alive and working" test.  */
 
@@ -244,33 +237,7 @@ main (argc, argv)
         continue;
       *pz_end = NUL;
 
-#ifdef NO_BOGOSITY
       process ();
-#else
-      /*  Prevent duplicate output by child process  */
-
-      fflush (stdout);
-      fflush (stderr);
-
-      {
-        void wait_for_pid _P_(( pid_t ));
-        pid_t child = fork ();
-        if (child == NULLPROCESS)
-          {
-            process ();
-            return EXIT_SUCCESS;
-          }
-
-        if (child == NOPROCESS)
-          {
-            fprintf (stderr, "Error %d (%s) forking in main\n",
-                     errno, xstrerror (errno));
-            exit (EXIT_FAILURE);
-          }
-
-        wait_for_pid( child );
-      }
-#endif
     } /*  for (;;) */
 
 #ifdef DO_STATS
@@ -302,7 +269,7 @@ do_version ()
   */
   run_compiles ();
   sprintf (zBuf, zFmt, program_id);
-  fputs (zBuf + 5, stdout);
+  puts (zBuf + 5);
   exit (strcmp (run_shell (zBuf), program_id));
 }
 
@@ -405,75 +372,7 @@ initialize ()
   signal (SIGPIPE, SIG_IGN);
   signal (SIGALRM, SIG_IGN);
   signal (SIGTERM, SIG_IGN);
-#ifndef NO_BOGOSITY
-  /*
-     Make sure that if we opened a server process, we close it now.
-     This is the grandparent process.  We don't need the server anymore
-     and our children should make their own.  */
-
-  close_server ();
-  (void)wait ( (int*)NULL );
-#endif
 }
-
-#ifndef NO_BOGOSITY
-/* * * * * * * * * * * * *
-
-   wait_for_pid  -  Keep calling `wait(2)' until it returns
-   the process id we are looking for.  Not every system has
-   `waitpid(2)'.  We also ensure that the children exit with success. */
-
-void
-wait_for_pid(child)
-     pid_t child;
-{
-  for (;;) {
-    int status;
-    pid_t dead_kid = wait (&status);
-
-    if (dead_kid == child)
-      {
-        if (! WIFEXITED( status ))
-          {
-            if (WSTOPSIG( status ) == 0)
-              break;
-
-            fprintf (stderr, "child process %d is hung on signal %d\n",
-                     child, WSTOPSIG( status ));
-            exit (EXIT_FAILURE);
-          }
-        if (WEXITSTATUS( status ) != 0)
-          {
-            fprintf (stderr, "child process %d exited with status %d\n",
-                     child, WEXITSTATUS( status ));
-            exit (EXIT_FAILURE);
-          }
-        break; /* normal child completion */
-      }
-
-    /*
-       IF there is an error, THEN see if it is retryable.
-       If it is not retryable, then break out of this loop.  */
-    if (dead_kid == NOPROCESS)
-      {
-        switch (errno) {
-        case EINTR:
-        case EAGAIN:
-          break;
-
-        default:
-          if (NOT_SILENT)
-            fprintf (stderr, "Error %d (%s) waiting for %d to finish\n",
-                     errno, xstrerror( errno ), child );
-          /* FALLTHROUGH */
-
-        case ECHILD: /* no children to wait for?? */
-          return;
-        }
-      }
-  } done_waiting:;
-}
-#endif /* NO_BOGOSITY */
 
 /* * * * * * * * * * * * *
 
