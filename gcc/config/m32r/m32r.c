@@ -1551,9 +1551,14 @@ m32r_expand_prologue ()
 
   /* Allocate space for register arguments if this is a variadic function.  */
   if (current_frame_info.pretend_size != 0)
-    emit_insn (gen_addsi3 (stack_pointer_rtx,
-			   stack_pointer_rtx,
-			   GEN_INT (-current_frame_info.pretend_size)));
+    {
+      /* Use a HOST_WIDE_INT temporary, since negating an unsigned int gives
+	 the wrong result on a 64-bit host.  */
+      HOST_WIDE_INT pretend_size = current_frame_info.pretend_size;
+      emit_insn (gen_addsi3 (stack_pointer_rtx,
+			     stack_pointer_rtx,
+			     GEN_INT (-pretend_size)));
+    }
 
   /* Save any registers we need to and set up fp.  */
 

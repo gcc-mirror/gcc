@@ -553,6 +553,20 @@ endian (e, x, mode)
 	  abort ();
 	}
     }
+
+  /* If 32 bits is an entire word for the target, but not for the host,
+     then sign-extend on the host so that the number will look the same
+     way on the host that it would on the target.  See for instance
+     simplify_unary_operation.  */
+
+  if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT && BITS_PER_WORD == 32)
+    {
+      if (x[0] & ((HOST_WIDE_INT) 1 << 31))
+	x[0] |= ((HOST_WIDE_INT) (-1) << 32);
+
+      if (x[1] & ((HOST_WIDE_INT) 1 << 31))
+	x[1] |= ((HOST_WIDE_INT) (-1) << 32);
+    }
 }
 
 

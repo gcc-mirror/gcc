@@ -1,3 +1,13 @@
+Thu Dec 10 16:02:06 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* cse.c (simplify_unary_operation): Sign-extend constants when
+	they have the most significant bit set for the target.
+	* real.c (endian): Sign-extend 32 bit output values on a 64 bit
+	host.
+	* m32r/m32r.c (m32r_expand_prologue): Store pretend_size in
+	HOST_WIDE_INT temporary before negating it.
+	* m32r/m32r.md (movsi_insn+1): Use ~0xffff instead of 0xffff0000.
+
 Thu Dec 10 15:05:59 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* objc/objc-act.c (lang_init_options): Enclose cpplib related code in
