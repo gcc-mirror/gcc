@@ -1,3 +1,11 @@
+2004-05-30  Roger Sayle  <roger@eyesopen.com>
+
+	* doc/c-tree.texi (Expressions): Document FLOOR_DIV_EXPR,
+	CEIL_DIV_EXPR, ROUND_DIV_EXPR, FLOOR_MOD_EXPR, CEIL_MOD_EXPR,
+	ROUND_MOD_EXPR, EXACT_DIV_EXPR.  Improve documentation of
+	TRUNC_DIV_EXPR, TRUNC_MOD_EXPR and comparison operations.
+	Add missing (but documented) tree nodes to the index.
+
 2004-05-30  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/14819
