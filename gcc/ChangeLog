@@ -1,3 +1,10 @@
+2001-05-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-lex.c (lex_number): If pedantic and not C99, pedwarn exactly
+	once for hexadecimal floats, whether or not they contain a decimal
+	point.  Don't let the setting of pedantic otherwise affect the
+	parsing of hexadecimal floats.
+
 2001-05-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README.ACORN: Remove obsolete file.
