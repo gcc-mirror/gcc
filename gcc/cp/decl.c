@@ -6157,7 +6157,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	{
 	  if (type == error_mark_node)
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
-	  if (TREE_CODE (type) == TYPENAME_TYPE && TREE_TYPE (type))
+	  if (IMPLICIT_TYPENAME_P (type))
 	    type = TREE_TYPE (type);
 
 	  if (TYPE_P (type))

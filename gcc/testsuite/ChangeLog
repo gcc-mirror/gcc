@@ -5,6 +5,9 @@
 
 2003-02-21  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8906
+	* g++.dg/template/nested2.C: New test.
+	
 	PR c++/8724
 	* g++.dg/expr/dtor1.C: New test.
 

@@ -4892,6 +4892,9 @@ handle_class_head (tag_kind, scope, id, attributes, defn_p, new_type_p)
 	 is different to the current scope.  */
       tree context = CP_DECL_CONTEXT (decl);
 
+      if (IMPLICIT_TYPENAME_P (context))
+	context = TREE_TYPE (context);
+
       *new_type_p = (current != context
 		     && TREE_CODE (context) != TEMPLATE_TYPE_PARM
 		     && TREE_CODE (context) != BOUND_TEMPLATE_TEMPLATE_PARM);

@@ -1,5 +1,9 @@
 2003-02-21  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8906
+	* decl.c (lookup_name_real): Use IMPLICIT_TYPENAME_P.
+	* decl2.c (handle_class_head): Check it.
+
 	PR c++/8724
 	* call.c (build_method_call): Make sure that the type destroyed in
 	an explicit destructor call is complete.
