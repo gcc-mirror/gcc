@@ -310,13 +310,14 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
 <p>Achieving link- and run-time coexistence is not a trivial
   implementation task. To achieve this goal we required a small
   extension to the GNU C++ compiler (described in the GCC Manual for
-  C++ Extensions, see <a href =
-  http://gcc.gnu.org/onlinedocs/gcc/Strong-Using.html>strong
+  C++ Extensions, see <a
+  href="http://gcc.gnu.org/onlinedocs/gcc/Strong-Using.html">strong
   using</a>), and a complex organization of debug- and
   release-modes. The end result is that we have achieved per-use
   recompilation but have had to give up some checking of the
   <code>std::basic_string</code> class template (namely, safe
   iterators).
+</p>
 
 <h4><a name="compile_coexistence">Compile-time coexistence of release- and
     debug-mode components</a></h4>
@@ -415,10 +416,10 @@ release-mode or a debug-mode string. In practice, this results in
 runtime errors. A simplified example of this problem is as follows.
 </p>
 
-<p> Take this translation unit, compiled in debug-mode: <p>
+<p> Take this translation unit, compiled in debug-mode: </p>
 <pre>
 // -D_GLIBCXX_DEBUG
-#include <string>
+#include &lt;string&gt;
 
 std::string test02();
  
@@ -437,7 +438,7 @@ int main()
 <p> ... and linked to this translation unit, compiled in release mode:</p>
 
 <pre>
-#include <string>
+#include &lt;string&gt;
  
 std::string
 test02()
@@ -467,7 +468,7 @@ test02()
   <li>They have virtual functions returning strings: these functions
   mangle in the same way regardless of the mangling of their return
   types (see above), and their precise signatures can be relied upon
-  by users because they may be overridden in derived classes.
+  by users because they may be overridden in derived classes.</li>
 </ol>
 
 <p>With the design of libstdc++ debug mode, we cannot effectively hide
@@ -509,7 +510,7 @@ test02()
     reuse the <code>Allocator</code> template parameter of containers
     by adding a sentinel wrapper <code>debug&lt;&gt;</code> that
     signals the user's intention to use debugging, and pick up
-    the <code>debug&lr;&gt;</code> allocator wrapper in a partial
+    the <code>debug&lt;&gt;</code> allocator wrapper in a partial
     specialization. However, this has two drawbacks: first, there is a
     conformance issue because the default allocator would not be the
     standard-specified <code>std::allocator&lt;T&gt;</code>. Secondly
@@ -531,7 +532,7 @@ test02()
     namespaces. </em>
     See <a
     href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00004.html"> this post
-    </a> </li>
+    </a>
     This method fails the <b>correctness</b> criteria.</li>
 
   <li><em>Extension: allow reopening on namespaces</em>: This would
@@ -546,7 +547,6 @@ test02()
     objects! This solution would fails the <b>minimize
     recompilation</b> requirement, because we would only be able to
     support option (1) or (2).</li>
-  </li>
 
   <li><em>Extension: use link name</em>: This option involves
     complicated re-naming between debug-mode and release-mode
@@ -561,7 +561,6 @@ test02()
     See <a
     href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html">link
     name</a> </li>
-  </li>
 </ul>
 
 <p>Other options may exist for implementing the debug mode, many of
