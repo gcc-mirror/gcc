@@ -2278,7 +2278,7 @@ phi_alternatives_equal (basic_block dest, edge e1, edge e2)
       val1 = PHI_ARG_DEF (phi, n1);
       val2 = PHI_ARG_DEF (phi, n2);
 
-      if (!operand_equal_p (val1, val2, 0))
+      if (!operand_equal_for_phi_arg_p (val1, val2))
 	return false;
     }
 
