@@ -671,36 +671,81 @@ propagate_binfo_offsets (binfo, offset)
   tree binfos = BINFO_BASETYPES (binfo);
   int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
-  for (i = 0; i < n_baselinks; /* note increment is done in the loop.  */)
+  if (flag_new_abi)
     {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-
-      if (TREE_VIA_VIRTUAL (base_binfo))
-	i += 1;
-      else
+      for (i = 0; i < n_baselinks; ++i)
 	{
-	  int j;
-	  tree delta = NULL_TREE;
+	  tree base_binfo;
 
-	  for (j = i+1; j < n_baselinks; j++)
-	    if (! TREE_VIA_VIRTUAL (TREE_VEC_ELT (binfos, j)))
-	      {
-		/* The next basetype offset must take into account the space
-		   between the classes, not just the size of each class.  */
-		delta = size_binop (MINUS_EXPR,
-				    BINFO_OFFSET (TREE_VEC_ELT (binfos, j)),
-				    BINFO_OFFSET (base_binfo));
-		break;
-	      }
+	  /* Figure out which base we're looking at.  */
+	  base_binfo = TREE_VEC_ELT (binfos, i);
 
-	  BINFO_OFFSET (base_binfo) = offset;
+	  /* Skip virtual bases.  Their BINFO_OFFSET doesn't matter
+	     since they are always reached by using offsets looked up
+	     at run-time.  */
+	  if (TREE_VIA_VIRTUAL (base_binfo))
+	    continue;
+
+	  /* Whatever offset this class used to have in its immediate
+	     derived class, it is now at OFFSET more bytes in its
+	     final derived class, since the immediate derived class is
+	     already at the indicated OFFSET.  */
+	  BINFO_OFFSET (base_binfo)
+	    = size_binop (PLUS_EXPR, BINFO_OFFSET (base_binfo), offset);
 
 	  propagate_binfo_offsets (base_binfo, offset);
+	}
+    }
+  else
+    {
+      /* This algorithm, used for the old ABI, is neither simple, nor
+	 general.  For example, it mishandles the case of:
+       
+           struct A;
+	   struct B : public A;
+	   struct C : public B;
+	   
+	 if B is at offset zero in C, but A is not in offset zero in
+	 B.  In that case, it sets the BINFO_OFFSET for A to zero.
+	 (This sitution arises in the new ABI if B has virtual
+	 functions, but A does not.)  Rather than change this
+	 algorithm, and risking breaking the old ABI, it is preserved
+	 here.  */
+      for (i = 0; i < n_baselinks; /* note increment is done in the
+				      loop.  */)
+	{
+	  tree base_binfo = TREE_VEC_ELT (binfos, i);
 
-	  /* Go to our next class that counts for offset propagation.  */
-	  i = j;
-	  if (i < n_baselinks)
-	    offset = size_binop (PLUS_EXPR, offset, delta);
+	  if (TREE_VIA_VIRTUAL (base_binfo))
+	    i += 1;
+	  else
+	    {
+	      int j;
+	      tree delta = NULL_TREE;
+
+	      for (j = i+1; j < n_baselinks; j++)
+		if (! TREE_VIA_VIRTUAL (TREE_VEC_ELT (binfos, j)))
+		  {
+		    /* The next basetype offset must take into account
+		       the space between the classes, not just the
+		       size of each class.  */
+		    delta = size_binop (MINUS_EXPR,
+					BINFO_OFFSET (TREE_VEC_ELT (binfos, 
+								    j)),
+					BINFO_OFFSET (base_binfo));
+		    break;
+		  }
+
+	      BINFO_OFFSET (base_binfo) = offset;
+
+	      propagate_binfo_offsets (base_binfo, offset);
+
+	      /* Go to our next class that counts for offset
+                 propagation.  */
+	      i = j;
+	      if (i < n_baselinks)
+		offset = size_binop (PLUS_EXPR, offset, delta);
+	    }
 	}
     }
 }

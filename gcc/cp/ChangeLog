@@ -1,5 +1,12 @@
 1999-12-29  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (create_vtable_ptr): Put the vtable at the beginning of
+	the class, not the end, in the new ABI.
+	* tree.c (propagate_binfo_offsets): Do the right thing for the new
+	ABI.
+
+1999-12-29  Mark Mitchell  <mark@codesourcery.com>
+
 	* cp-tree.h (lang_type): Add nearly_empty_p.  Adjust dummy.
 	(CLASSTYPE_NEARLY_EMPTY_P): New macro.
 	* class.c (check_bases): Update CLASSTYPE_NEARLY_EMPTY_P.
