@@ -2907,7 +2907,25 @@ extern rtx emit_line_note		PARAMS ((const char *, int));
 extern int setjmp_call_p		PARAMS ((tree));
 
 /* In attribs.c.  */
+
+/* Process the attributes listed in ATTRIBUTES and install them in *NODE,
+   which is either a DECL (including a TYPE_DECL) or a TYPE.  If a DECL,
+   it should be modified in place; if a TYPE, a copy should be created
+   unless ATTR_FLAG_TYPE_IN_PLACE is set in FLAGS.  FLAGS gives further
+   information, in the form of a bitwise OR of flags in enum attribute_flags
+   from tree.h.  Depending on these flags, some attributes may be
+   returned to be applied at a later stage (for example, to apply
+   a decl attribute to the declaration rather than to its type).  */
 extern tree decl_attributes		PARAMS ((tree *, tree, int));
+
+/* Table of machine-independent attributes for checking formats, if used.  */
+extern const struct attribute_spec *format_attribute_table;
+
+/* Table of machine-independent attributes for a particular language.  */
+extern const struct attribute_spec *lang_attribute_table;
+
+/* Flag saying whether common language attributes are to be supported.  */
+extern int lang_attribute_common;
 
 /* In front end.  */
 
