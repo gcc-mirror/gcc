@@ -131,21 +131,21 @@ RELA relocs are used exclusively.  The relocation types defined are:
 
 Name			Value	Field	Calculation	Overflow
 ----------------------------------------------------------------
-R_XSTORMY16_NONE		0	none	none		none
-R_XSTORMY16_32		1	32	S + A		none
-R_XSTORMY16_16		2	16	S + A		unsigned
-R_XSTORMY16_8		3	8	S + A		unsigned
-R_XSTORMY16_PC32		4	32	S + A - P	none
-R_XSTORMY16_PC16		5	16	S + A - P	signed
-R_XSTORMY16_PC8		6	8	S + A - P	signed
-R_XSTORMY16_REL_12	7	16:12:0	S + A - P	signed
-R_XSTORMY16_24		8	32:23:1	(S + A) >> 1	unsigned
-R_XSTORMY16_GNU_VTINHERIT 9	n/a	n/a		n/a
-R_XSTORMY16_GNU_VTENTRY	10	n/a	n/a		n/a
-
-In the 'Calculation' column, 'S' is the value of the symbol to which
-the reloc refers, 'A' is the addend, and 'P' represents the place of
-the storage unit being relocated.
+R_XSTORMY16_NONE           0     none      none           none
+R_XSTORMY16_32             1      32       S + A          none
+R_XSTORMY16_16             2      16       S + A          none
+R_XSTORMY16_8              3       8       S + A          unsigned
+R_XSTORMY16_PC32           4      32       S + A - P      none
+R_XSTORMY16_PC16           5      16       S + A - P      signed
+R_XSTORMY16_PC8            6       8       S + A - P      signed
+R_XSTORMY16_REL_12         7      16:12:0  S + A - P      signed
+R_XSTORMY16_24             8      32:23:1 (S + A) >> 1    unsigned
+R_XSTORMY16_FPTR16         9      16       S + A          either
+R_XSTORMY16_LO16           10     16       S + A          none
+R_XSTORMY16_HI16           11     32:16:16 S + A          none
+R_XSTORMY16_12             12     16:12:0  S + A          signed
+R_XSTORMY16_GNU_VTINHERIT  128    n/a      n/a            n/a
+R_XSTORMY16_GNU_VTENTRY    129    n/a      n/a            n/a
 
 In the 'Field' column, the first number indicates whether the
 relocation refers to a byte, word or doubleword.  The second number,
@@ -153,3 +153,15 @@ if any, indicates the size of the bit-field into which the relocation
 is to occur (and also the size for overflow checking).  The third
 number indicates the first bit of the bit-field in the word or
 doubleword, counting the LSB as bit 0.
+
+In the 'Calculation' column, 'S' is the value of the symbol to which
+the reloc refers, 'A' is the addend, and 'P' represents the place of
+the storage unit being relocated.
+
+In the 'Overflow' column, 'none' means that any overflow of the
+computation perfomed in the 'Calculation' column is ignored.
+'signed' means that the overflow is only reported if it happens when
+the values are treated as signed quantities.  'unsigned' is the same,
+except that the values are treated as unsigned qunatities.  'either'
+means that overflow is reported for either signed or unsigned
+overflow.
