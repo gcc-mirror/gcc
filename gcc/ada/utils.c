@@ -2009,11 +2009,11 @@ max_size (tree exp, bool max_p)
 
   switch (TREE_CODE_CLASS (code))
     {
-    case 'd':
-    case 'c':
+    case tcc_declaration:
+    case tcc_constant:
       return exp;
 
-    case 'x':
+    case tcc_exceptional:
       if (code == TREE_LIST)
 	return tree_cons (TREE_PURPOSE (exp),
 			  max_size (TREE_VALUE (exp), max_p),
@@ -2021,7 +2021,7 @@ max_size (tree exp, bool max_p)
 			  ? max_size (TREE_CHAIN (exp), max_p) : NULL_TREE);
       break;
 
-    case 'r':
+    case tcc_reference:
       /* If this contains a PLACEHOLDER_EXPR, it is the thing we want to
 	 modify.  Otherwise, we treat it like a variable.  */
       if (!CONTAINS_PLACEHOLDER_P (exp))
@@ -2031,12 +2031,12 @@ max_size (tree exp, bool max_p)
       return
 	max_size (max_p ? TYPE_MAX_VALUE (type) : TYPE_MIN_VALUE (type), true);
 
-    case '<':
+    case tcc_comparison:
       return max_p ? size_one_node : size_zero_node;
 
-    case '1':
-    case '2':
-    case 'e':
+    case tcc_unary:
+    case tcc_binary:
+    case tcc_expression:
       switch (TREE_CODE_LENGTH (code))
 	{
 	case 1:
@@ -2087,6 +2087,10 @@ max_size (tree exp, bool max_p)
 	    return build3 (CALL_EXPR, type, TREE_OPERAND (exp, 0),
 			   max_size (TREE_OPERAND (exp, 1), max_p), NULL);
 	}
+
+      /* Other tree classes cannot happen.  */
+    default:
+      break;
     }
 
   abort ();

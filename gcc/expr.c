@@ -3527,7 +3527,7 @@ expand_assignment (tree to, tree from, int want_value)
 	  src = from;
 	  STRIP_NOPS (src);
 	  if (TREE_CODE (TREE_TYPE (src)) != INTEGER_TYPE
-	      || TREE_CODE_CLASS (TREE_CODE (src)) != '2')
+	      || !BINARY_CLASS_P (src))
 	    break;
 
 	  op0 = TREE_OPERAND (src, 0);
@@ -5755,14 +5755,14 @@ safe_from_p (rtx x, tree exp, int top_p)
   /* Now look at our tree code and possibly recurse.  */
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
-    case 'd':
+    case tcc_declaration:
       exp_rtl = DECL_RTL_IF_SET (exp);
       break;
 
-    case 'c':
+    case tcc_constant:
       return 1;
 
-    case 'x':
+    case tcc_exceptional:
       if (TREE_CODE (exp) == TREE_LIST)
 	{
 	  while (1)
@@ -5781,7 +5781,7 @@ safe_from_p (rtx x, tree exp, int top_p)
       else
 	return 0;
 
-    case 's':
+    case tcc_statement:
       /* The only case we look at here is the DECL_INITIAL inside a
 	 DECL_EXPR.  */
       return (TREE_CODE (exp) != DECL_EXPR
@@ -5789,17 +5789,17 @@ safe_from_p (rtx x, tree exp, int top_p)
 	      || !DECL_INITIAL (DECL_EXPR_DECL (exp))
 	      || safe_from_p (x, DECL_INITIAL (DECL_EXPR_DECL (exp)), 0));
 
-    case '2':
-    case '<':
+    case tcc_binary:
+    case tcc_comparison:
       if (!safe_from_p (x, TREE_OPERAND (exp, 1), 0))
 	return 0;
       /* Fall through.  */
 
-    case '1':
+    case tcc_unary:
       return safe_from_p (x, TREE_OPERAND (exp, 0), 0);
 
-    case 'e':
-    case 'r':
+    case tcc_expression:
+    case tcc_reference:
       /* Now do code-specific tests.  EXP_RTL is set to any rtx we find in
 	 the expression.  If it is set, we conflict iff we are that rtx or
 	 both are in memory.  Otherwise, we check all operands of the
@@ -5872,6 +5872,11 @@ safe_from_p (rtx x, tree exp, int top_p)
 	  >= (unsigned int) LAST_AND_UNUSED_TREE_CODE
 	  && !lang_hooks.safe_from_p (x, exp))
 	return 0;
+      break;
+
+    case tcc_type:
+      /* Should never get a type here.  */
+      gcc_unreachable ();
     }
 
   /* If we have an rtl, find any enclosed object.  Then see if we conflict
@@ -6068,7 +6073,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
      generating ADDR_EXPR of something that isn't an LVALUE.  The only
      exception here is STRING_CST.  */
   if (TREE_CODE (exp) == CONSTRUCTOR
-      || TREE_CODE_CLASS (TREE_CODE (exp)) == 'c')
+      || CONSTANT_CLASS_P (exp))
     return XEXP (output_constant_def (exp, 0), 0);
 
   /* Everything must be something allowed by is_gimple_addressable.  */
@@ -6400,12 +6405,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  return const0_rtx;
 	}
 
-      if (TREE_CODE_CLASS (code) == '1' || code == COMPONENT_REF
-	  || code == INDIRECT_REF)
+      if (TREE_CODE_CLASS (code) == tcc_unary
+	  || code == COMPONENT_REF || code == INDIRECT_REF)
 	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
 			    modifier);
 
-      else if (TREE_CODE_CLASS (code) == '2' || TREE_CODE_CLASS (code) == '<'
+      else if (TREE_CODE_CLASS (code) == tcc_binary
+	       || TREE_CODE_CLASS (code) == tcc_comparison
 	       || code == ARRAY_REF || code == ARRAY_RANGE_REF)
 	{
 	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, modifier);

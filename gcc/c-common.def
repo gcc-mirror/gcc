@@ -25,46 +25,46 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Tree nodes relevant to both C and C++. These were originally in
 cp-tree.def in the cp subdir.  */
 
-DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", '1', 1)
-DEFTREECODE (ARROW_EXPR, "arrow_expr", 'e', 1)
-DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", '1', 1)
+DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_unary, 1)
+DEFTREECODE (ARROW_EXPR, "arrow_expr", tcc_expression, 1)
+DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", tcc_unary, 1)
 
 /* Used to represent an expression statement.  Use `EXPR_STMT_EXPR' to
    obtain the expression.  */
-DEFTREECODE (EXPR_STMT, "expr_stmt", 'e', 1)
+DEFTREECODE (EXPR_STMT, "expr_stmt", tcc_expression, 1)
 
 /* Used to represent a `for' statement. The operands are
    FOR_INIT_STMT, FOR_COND, FOR_EXPR, and FOR_BODY, respectively.  */
-DEFTREECODE (FOR_STMT, "for_stmt", 'e', 4)
+DEFTREECODE (FOR_STMT, "for_stmt", tcc_expression, 4)
 
 /* Used to represent a 'while' statement. The operands are WHILE_COND
    and WHILE_BODY, respectively.  */
-DEFTREECODE (WHILE_STMT, "while_stmt", 'e', 2)
+DEFTREECODE (WHILE_STMT, "while_stmt", tcc_expression, 2)
 
 /* Used to represent a 'do' statement. The operands are DO_BODY and
    DO_COND, respectively.  */
-DEFTREECODE (DO_STMT, "do_stmt", 'e', 2)
+DEFTREECODE (DO_STMT, "do_stmt", tcc_expression, 2)
 
 /* Used to represent a 'break' statement.  */
-DEFTREECODE (BREAK_STMT, "break_stmt", 'e', 0)
+DEFTREECODE (BREAK_STMT, "break_stmt", tcc_expression, 0)
 
 /* Used to represent a 'continue' statement.  */
-DEFTREECODE (CONTINUE_STMT, "continue_stmt", 'e', 0)
+DEFTREECODE (CONTINUE_STMT, "continue_stmt", tcc_expression, 0)
 
 /* Used to represent a 'switch' statement. The operands are
    SWITCH_COND, SWITCH_BODY and SWITCH_TYPE, respectively.  */
-DEFTREECODE (SWITCH_STMT, "switch_stmt", 'e', 3)
+DEFTREECODE (SWITCH_STMT, "switch_stmt", tcc_expression, 3)
 
 /* A STMT_EXPR represents a statement-expression.  The
    STMT_EXPR_STMT is the statement given by the expression.  */
-DEFTREECODE (STMT_EXPR, "stmt_expr", 'e', 1)
+DEFTREECODE (STMT_EXPR, "stmt_expr", tcc_expression, 1)
 
 /* A COMPOUND_LITERAL_EXPR represents a C99 compound literal.  The
    COMPOUND_LITERAL_EXPR_DECL_STMT is the a DECL_STMT containing the decl
    for the anonymous object represented by the COMPOUND_LITERAL;
    the DECL_INITIAL of that decl is the CONSTRUCTOR that initializes
    the compound literal.  */
-DEFTREECODE (COMPOUND_LITERAL_EXPR, "compound_literal_expr", 'e', 1)
+DEFTREECODE (COMPOUND_LITERAL_EXPR, "compound_literal_expr", tcc_expression, 1)
 
 /*
 Local variables:

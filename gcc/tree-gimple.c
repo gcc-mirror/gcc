@@ -201,9 +201,9 @@ is_gimple_formal_tmp_rhs (tree t)
 
   switch (TREE_CODE_CLASS (code))
     {
-    case '1':
-    case '2':
-    case '<':
+    case tcc_unary:
+    case tcc_binary:
+    case tcc_comparison:
       return true;
 
     default:
@@ -312,8 +312,7 @@ is_gimple_lvalue (tree t)
 bool
 is_gimple_condexpr (tree t)
 {
-  return (is_gimple_val (t)
-	  || TREE_CODE_CLASS (TREE_CODE (t)) == '<');
+  return (is_gimple_val (t) || COMPARISON_CLASS_P (t));
 }
 
 /*  Return true if T is something whose address can be taken.  */
@@ -579,7 +578,7 @@ recalculate_side_effects (tree t)
 
   switch (TREE_CODE_CLASS (code))
     {
-    case 'e':
+    case tcc_expression:
       switch (code)
 	{
 	case INIT_EXPR:
@@ -598,10 +597,10 @@ recalculate_side_effects (tree t)
 	}
       /* Fall through.  */
 
-    case '<':  /* a comparison expression */
-    case '1':  /* a unary arithmetic expression */
-    case '2':  /* a binary arithmetic expression */
-    case 'r':  /* a reference */
+    case tcc_comparison:  /* a comparison expression */
+    case tcc_unary:       /* a unary arithmetic expression */
+    case tcc_binary:      /* a binary arithmetic expression */
+    case tcc_reference:   /* a reference */
       TREE_SIDE_EFFECTS (t) = TREE_THIS_VOLATILE (t);
       for (i = 0; i < fro; ++i)
 	{
@@ -610,5 +609,9 @@ recalculate_side_effects (tree t)
 	    TREE_SIDE_EFFECTS (t) = 1;
 	}
       break;
+
+    default:
+      /* Can never be used with non-expressions.  */
+      gcc_unreachable ();
    }
 }

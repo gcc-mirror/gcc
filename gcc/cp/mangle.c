@@ -1997,7 +1997,7 @@ write_expression (tree expr)
       || code == TEMPLATE_PARM_INDEX)
     write_template_param (expr);
   /* Handle literals.  */
-  else if (TREE_CODE_CLASS (code) == 'c' 
+  else if (TREE_CODE_CLASS (code) == tcc_constant
 	   || (abi_version_at_least (2) && code == CONST_DECL))
     write_template_arg_literal (expr);
   else if (DECL_P (expr))
@@ -2260,7 +2260,7 @@ write_template_arg (tree node)
   else if (code == TEMPLATE_DECL)
     /* A template appearing as a template arg is a template template arg.  */
     write_template_template_arg (node);
-  else if ((TREE_CODE_CLASS (code) == 'c' && code != PTRMEM_CST)
+  else if ((TREE_CODE_CLASS (code) == tcc_constant && code != PTRMEM_CST)
 	   || (abi_version_at_least (2) && code == CONST_DECL))
     write_template_arg_literal (node);
   else if (DECL_P (node))

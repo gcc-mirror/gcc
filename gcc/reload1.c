@@ -2032,7 +2032,7 @@ alter_reg (int i, int from_reg)
       /* If we have a decl for the original register, set it for the
 	 memory.  If this is a shared MEM, make a copy.  */
       if (REG_EXPR (regno_reg_rtx[i])
-	  && TREE_CODE_CLASS (TREE_CODE (REG_EXPR (regno_reg_rtx[i]))) == 'd')
+	  && DECL_P (REG_EXPR (regno_reg_rtx[i])))
 	{
 	  rtx decl = DECL_RTL_IF_SET (REG_EXPR (regno_reg_rtx[i]));
 

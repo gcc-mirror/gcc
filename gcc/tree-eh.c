@@ -1,5 +1,5 @@
 /* Exception handling semantics and decomposition for trees.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1719,9 +1719,9 @@ tree_could_trap_p (tree expr)
   bool honor_trapv = false;
   tree t, base, idx;
 
-  if (TREE_CODE_CLASS (code) == '<'
-      || TREE_CODE_CLASS (code) == '1'
-      || TREE_CODE_CLASS (code) == '2')
+  if (TREE_CODE_CLASS (code) == tcc_comparison
+      || TREE_CODE_CLASS (code) == tcc_unary
+      || TREE_CODE_CLASS (code) == tcc_binary)
     {
       t = TREE_TYPE (expr);
       fp_operation = FLOAT_TYPE_P (t);

@@ -848,15 +848,21 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
   if (expr == NULL)
     return NULL;
 
+  if (is_gimple_min_invariant (expr))
+    return expr;
+
   /* Phi translations of a given expression don't change,  */
   phitrans = phi_trans_lookup (expr, pred);
   if (phitrans)
     return phitrans;
   
-  
   switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
-    case '2':
+    case tcc_reference:
+      /* XXX: Until we have PRE of loads working, none will be ANTIC. */
+      return NULL;
+
+    case tcc_binary:
       {
 	tree oldop1 = TREE_OPERAND (expr, 0);
 	tree oldop2 = TREE_OPERAND (expr, 1);
@@ -884,13 +890,9 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	    phi_trans_add (oldexpr, newexpr, pred);	    
 	  }
       }
-      break;
-      /* XXX: Until we have PRE of loads working, none will be ANTIC.
-       */
-    case 'r':
-      return NULL;
-      break;
-    case '1':
+      return expr;
+
+    case tcc_unary:
       {
 	tree oldop1 = TREE_OPERAND (expr, 0);
 	tree newop1;
@@ -911,10 +913,9 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	    phi_trans_add (oldexpr, newexpr, pred);
 	  }
       }
-      break;
-    case 'd':
-      gcc_unreachable ();
-    case 'x':
+      return expr;
+
+    case tcc_exceptional:
       {
 	tree phi = NULL;
 	int i;
@@ -934,9 +935,11 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	      return PHI_ARG_DEF (phi, i);
 	    }
       }
-      break;
+      return expr;
+
+    default:
+      gcc_unreachable ();
     }
-  return expr;
 }
 
 static void
@@ -1046,34 +1049,31 @@ valid_in_set (value_set_t set, tree expr)
 {
   switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
-    case '2':
+    case tcc_binary:
       {
 	tree op1 = TREE_OPERAND (expr, 0);
 	tree op2 = TREE_OPERAND (expr, 1);
 	return set_contains_value (set, op1) && set_contains_value (set, op2);
       }
-      break;
-    case '1':
+
+    case tcc_unary:
       {
 	tree op1 = TREE_OPERAND (expr, 0);
 	return set_contains_value (set, op1);
       }
-      break;
-      /* XXX: Until PRE of loads works, no reference nodes are ANTIC.
-       */
-    case 'r':
-      {
-	return false;
-      }
-    case 'x':
-      {
-	gcc_assert (TREE_CODE (expr) == SSA_NAME);
-	return true;
-      }
-    case 'c':
-      gcc_unreachable ();
-    }
-  return false;
+
+    case tcc_reference:
+      /* XXX: Until PRE of loads works, no reference nodes are ANTIC.  */
+      return false;
+
+    case tcc_exceptional:
+      gcc_assert (TREE_CODE (expr) == SSA_NAME);
+      return true;
+
+    default:
+      /* No other cases should be encountered.  */
+      gcc_unreachable (); 
+   }
 }
 
 /* Clean the set of expressions that are no longer valid in SET.  This
@@ -1291,9 +1291,9 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
   if (genop == NULL)
     {
       genop = VALUE_HANDLE_EXPR_SET (expr)->head->expr;
-      gcc_assert (TREE_CODE_CLASS (TREE_CODE (genop)) == '1'
-		  || TREE_CODE_CLASS (TREE_CODE (genop)) == '2'
-		  || TREE_CODE_CLASS (TREE_CODE (genop)) == 'r');
+      gcc_assert (UNARY_CLASS_P (genop)
+		  || BINARY_CLASS_P (genop)
+		  || REFERENCE_CLASS_P (genop));
       genop = create_expression_by_pieces (block, genop, stmts);
     }
   return genop;
@@ -1323,7 +1323,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
   
   switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
-    case '2':
+    case tcc_binary:
       {
 	tree_stmt_iterator tsi;
 	tree genop1, genop2;
@@ -1345,7 +1345,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	pre_stats.insertions++;
 	break;
       }
-    case '1':
+    case tcc_unary:
       {
 	tree_stmt_iterator tsi;
 	tree genop1;
@@ -1423,8 +1423,8 @@ insert_aux (basic_block block)
 		   node;
 		   node = node->next)
 		{
-		  if (TREE_CODE_CLASS (TREE_CODE (node->expr)) == '2'
-		      || TREE_CODE_CLASS (TREE_CODE (node->expr)) == '1')
+		  if (BINARY_CLASS_P (node->expr)
+		      || UNARY_CLASS_P (node->expr))
 		    {
 		      tree *avail;
 		      tree val;
@@ -1528,8 +1528,8 @@ insert_aux (basic_block block)
 			      tree builtexpr;
 			      bprime = pred->src;
 			      eprime = avail[bprime->index];
-			      if (TREE_CODE_CLASS (TREE_CODE (eprime)) == '2'
-				  || TREE_CODE_CLASS (TREE_CODE (eprime)) == '1')
+			      if (BINARY_CLASS_P (eprime)
+				  || UNARY_CLASS_P (eprime))
 				{
 				  builtexpr = create_expression_by_pieces (bprime,
 									   eprime,
@@ -1668,13 +1668,13 @@ create_value_expr_from (tree expr, basic_block block, vuse_optype vuses)
   enum tree_code code = TREE_CODE (expr);
   tree vexpr;
 
-  gcc_assert (TREE_CODE_CLASS (code) == '1'
-	      || TREE_CODE_CLASS (code) == '2'
-	      || TREE_CODE_CLASS (code) == 'r');
+  gcc_assert (TREE_CODE_CLASS (code) == tcc_unary
+	      || TREE_CODE_CLASS (code) == tcc_binary
+	      || TREE_CODE_CLASS (code) == tcc_reference);
 
-  if (TREE_CODE_CLASS (code) == '1')
+  if (TREE_CODE_CLASS (code) == tcc_unary)
     vexpr = pool_alloc (unary_node_pool);
-  else if (TREE_CODE_CLASS (code) == 'r')
+  else if (TREE_CODE_CLASS (code) == tcc_reference)
     vexpr = pool_alloc (reference_node_pool);
   else
     vexpr = pool_alloc (binary_node_pool);
@@ -1791,8 +1791,7 @@ compute_avail (basic_block block)
 		    value_insert_into_set (EXP_GEN (block), rhs);
 		  continue;
 		}	   
-	      else if (TREE_CODE_CLASS (TREE_CODE (rhs)) == '1'
-		       || TREE_CODE_CLASS (TREE_CODE (rhs)) == '2'
+	      else if (UNARY_CLASS_P (rhs) || BINARY_CLASS_P (rhs)
 		       || TREE_CODE (rhs) == INDIRECT_REF)
 		{
 		  /* For binary, unary, and reference expressions,

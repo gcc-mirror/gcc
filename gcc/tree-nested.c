@@ -831,7 +831,7 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
       break;
 
     default:
-      if (!DECL_P (t) && !TYPE_P (t))
+      if (!IS_TYPE_OR_DECL_P (t))
 	{
 	  *walk_subtrees = 1;
           wi->val_only = true;
@@ -945,7 +945,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
       break;
 
     default:
-      if (!DECL_P (t) && !TYPE_P (t))
+      if (!IS_TYPE_OR_DECL_P (t))
 	{
 	  *walk_subtrees = 1;
 	  wi->val_only = true;
@@ -1124,7 +1124,7 @@ convert_tramp_reference (tree *tp, int *walk_subtrees, void *data)
       break;
 
     default:
-      if (!DECL_P (t) && !TYPE_P (t))
+      if (!IS_TYPE_OR_DECL_P (t))
 	*walk_subtrees = 1;
       break;
     }

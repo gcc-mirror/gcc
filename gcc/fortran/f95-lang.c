@@ -153,7 +153,7 @@ const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-const char tree_code_type[] = {
+const enum tree_code_class tree_code_type[] = {
 #include "tree.def"
 };
 #undef DEFTREECODE
@@ -221,7 +221,7 @@ gfc_truthvalue_conversion (tree expr)
     case BOOLEAN_TYPE:
       if (TREE_TYPE (expr) == boolean_type_node)
 	return expr;
-      else if (TREE_CODE_CLASS (TREE_CODE (expr)) == '<')
+      else if (COMPARISON_CLASS_P (expr))
 	{
 	  TREE_TYPE (expr) = boolean_type_node;
 	  return expr;

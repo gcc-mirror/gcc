@@ -99,8 +99,7 @@ associated_type (tree decl)
 	t = TYPE_MAIN_VARIANT
 	  (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)))));
     }
-  else if (DECL_CONTEXT (decl)
-	   && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (decl))) == 't')
+  else if (DECL_CONTEXT (decl) && TYPE_P (DECL_CONTEXT (decl)))
     t = DECL_CONTEXT (decl);
 
   return t;

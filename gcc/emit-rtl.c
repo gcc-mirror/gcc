@@ -1592,7 +1592,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	}
 
       /* If this is a constant, we know the alignment.  */
-      else if (TREE_CODE_CLASS (TREE_CODE (t)) == 'c')
+      else if (CONSTANT_CLASS_P (t))
 	{
 	  align = TYPE_ALIGN (type);
 #ifdef CONSTANT_ALIGNMENT

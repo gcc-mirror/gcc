@@ -1,3 +1,11 @@
+2004-09-17  Jeffrey D. Oldham  <oldham@codesourcery.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* java-tree.def: Use tree_code_class enumeration constants
+	instead of code letters.
+	* java-gimplify.c, jcf-write.c, lang.c, parse.y: Update for
+	new tree-class enumeration constants.
+
 2004-09-13  Tom Tromey  <tromey@redhat.com>
 
 	PR java/17216:
@@ -131,7 +139,7 @@
 	* class.c (build_utf8_ref, build_static_field_ref,
 	make_field_value, make_method_value, get_dispatch_table,
 	make_class_data, emit_symbol_table, emit_catch_table): Likewise.
-	* constants.c (get_tag_node,  build_ref_from_constant_pool, 
+	* constants.c (get_tag_node,  build_ref_from_constant_pool,
 	build_constants_constructor): Likewise.
 	* decl.c (java_init_decl_processing): Likewise.
 	* expr.c (build_java_array_length_access, build_newarray,
@@ -627,7 +635,7 @@
 	set_nested_class_simple_name_value.
 
 2004-06-22  Andrew Haley  <aph@redhat.com>
-            Ranjit Mathew  <rmathew@hotmail.com>
+	    Ranjit Mathew  <rmathew@hotmail.com>
 
 	Fixes PR java/16113.
 	* decl.c (force_poplevels): Remove call to expand_end_bindings.
@@ -699,7 +707,7 @@
 	of unordered conditionals. Add comment.
 
 2004-05-29  Ranjit Mathew  <rmathew@hotmail.com>
-            Per Bothner  <per@bothner.com>
+	    Per Bothner  <per@bothner.com>
 
 	* java-tree.h (DECL_LOCAL_FINAL_IUD): New macro to test if a
 	local variable was initialised upon declaration.

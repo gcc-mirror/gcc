@@ -1,6 +1,6 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1554,12 +1554,12 @@ cp_tree_equal (tree t1, tree t2)
 
   switch (TREE_CODE_CLASS (code1))
     {
-    case '1':
-    case '2':
-    case '<':
-    case 'e':
-    case 'r':
-    case 's':
+    case tcc_unary:
+    case tcc_binary:
+    case tcc_comparison:
+    case tcc_expression:
+    case tcc_reference:
+    case tcc_statement:
       {
 	int i;
 
@@ -1570,11 +1570,12 @@ cp_tree_equal (tree t1, tree t2)
 	return true;
       }
 
-    case 't':
+    case tcc_type:
       return same_type_p (t1, t2);
+    default:
+      gcc_unreachable ();
     }
-
-  gcc_unreachable ();
+  /* We can get here with --disable-checking.  */
   return false;
 }
 

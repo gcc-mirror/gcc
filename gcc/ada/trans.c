@@ -3219,7 +3219,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	/* If this is a comparison operator, convert any references to
 	   an unconstrained array value into a reference to the
 	   actual array.  */
-	if (TREE_CODE_CLASS (code) == '<')
+	if (TREE_CODE_CLASS (code) == tcc_comparison)
 	  {
 	    gnu_lhs = maybe_unconstrained_array (gnu_lhs);
 	    gnu_rhs = maybe_unconstrained_array (gnu_rhs);
@@ -4035,7 +4035,7 @@ gnat_to_gnu (Node_Id gnat_node)
   /* Set the location information into the result.  If we're supposed to
      return something of void_type, it means we have something we're
      elaborating for effect, so just return.  */
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (gnu_result))))
+  if (EXPR_P (gnu_result))
     annotate_with_node (gnu_result, gnat_node);
 
   if (TREE_CODE (gnu_result_type) == VOID_TYPE)
@@ -5712,13 +5712,13 @@ gnat_stabilize_reference_1 (tree e, bool force)
 
   switch (TREE_CODE_CLASS (code))
     {
-    case 'x':
-    case 't':
-    case 'd':
-    case '<':
-    case 's':
-    case 'e':
-    case 'r':
+    case tcc_exceptional:
+    case tcc_type:
+    case tcc_declaration:
+    case tcc_comparison:
+    case tcc_statement:
+    case tcc_expression:
+    case tcc_reference:
       /* If this is a COMPONENT_REF of a fat pointer, save the entire
 	 fat pointer.  This may be more efficient, but will also allow
 	 us to more easily find the match for the PLACEHOLDER_EXPR.  */
@@ -5734,12 +5734,12 @@ gnat_stabilize_reference_1 (tree e, bool force)
 	return e;
       break;
 
-    case 'c':
+    case tcc_constant:
       /* Constants need no processing.  In fact, we should never reach
 	 here.  */
       return e;
 
-    case '2':
+    case tcc_binary:
       /* Recursively stabilize each operand.  */
       result = build2 (code, type,
 		       gnat_stabilize_reference_1 (TREE_OPERAND (e, 0), force),
@@ -5747,7 +5747,7 @@ gnat_stabilize_reference_1 (tree e, bool force)
 						   force));
       break;
 
-    case '1':
+    case tcc_unary:
       /* Recursively stabilize each operand.  */
       result = build1 (code, type,
 		       gnat_stabilize_reference_1 (TREE_OPERAND (e, 0),

@@ -1,33 +1,34 @@
 /* Shift right, logical. */
 
-DEFTREECODE (URSHIFT_EXPR, "urshift_expr", '2', 2)
+DEFTREECODE (URSHIFT_EXPR, "urshift_expr", tcc_binary, 2)
 
 /* Return -1, 0, 1 depending on whether the first argument is
    less, equal, or greater to the second argument. */
-DEFTREECODE (COMPARE_EXPR, "compare_expr", '2', 2)
+DEFTREECODE (COMPARE_EXPR, "compare_expr", tcc_binary, 2)
 
 /* Same as COMPARE_EXPR, but if either value is NaN, the result is -1. */
-DEFTREECODE (COMPARE_L_EXPR, "compare_l_expr", '2', 2)
+DEFTREECODE (COMPARE_L_EXPR, "compare_l_expr", tcc_binary, 2)
 /* Same as COMPARE_EXPR, but if either value is NaN, the result is 1. */
-DEFTREECODE (COMPARE_G_EXPR, "compare_g_expr", '2', 2)
+DEFTREECODE (COMPARE_G_EXPR, "compare_g_expr", tcc_binary, 2)
 
 /* Unary plus. Operand 0 is the expression the unary plus is applied
    to */
-DEFTREECODE (UNARY_PLUS_EXPR, "unary_plus_expr", '1', 1)
+DEFTREECODE (UNARY_PLUS_EXPR, "unary_plus_expr", tcc_unary, 1)
 
 /* New array creation expression.
    Operand 0 is the array base type.
    Operand 1 is the list of dimension expressions. 
    Operand 2 is the number of other dimensions of unspecified range.
    Once patched, the node will bear the type of the created array.  */
-DEFTREECODE (NEW_ARRAY_EXPR, "new_array_expr", 'e', 3)
+DEFTREECODE (NEW_ARRAY_EXPR, "new_array_expr", tcc_expression, 3)
 
 /* New anonymous array creation expression.
    Operand 0 is the base type of the anonymous array.
    Operand 1 is the signature of the dimensions this array contains.
    Operand 2 is the anonymous array initializer.
    Once patched, the node will bear the type of the created array.  */
-DEFTREECODE (NEW_ANONYMOUS_ARRAY_EXPR, "new_anonymous_array", 'e', 3)
+DEFTREECODE (NEW_ANONYMOUS_ARRAY_EXPR, "new_anonymous_array",
+	     tcc_expression, 3)
 
 /* New class creation expression.
    Operand 0 is the name of the class to be created
@@ -35,68 +36,69 @@ DEFTREECODE (NEW_ANONYMOUS_ARRAY_EXPR, "new_anonymous_array", 'e', 3)
    There is no operand 2.  That slot is used for the
    CALL_EXPR_RTL macro (see preexpand_calls).
    The type should be the one of the created class.  */
-DEFTREECODE (NEW_CLASS_EXPR, "new_class_expr", 'e', 3)
+DEFTREECODE (NEW_CLASS_EXPR, "new_class_expr", tcc_expression, 3)
 
 /* Defines `this' as an expression.  */
-DEFTREECODE (THIS_EXPR, "this", '1', 0)
+DEFTREECODE (THIS_EXPR, "this", tcc_unary, 0)
 
 /* Case statement expression.
    Operand 1 is the case value.  */
-DEFTREECODE (CASE_EXPR, "case", 'e', 1)
+DEFTREECODE (CASE_EXPR, "case", tcc_expression, 1)
 
 /* Default statement expression. */
-DEFTREECODE (DEFAULT_EXPR, "default", 'e', 0)
+DEFTREECODE (DEFAULT_EXPR, "default", tcc_expression, 0)
 
 /* Try expression
    Operand 0 is the tried block,
    Operand 1 contains chained catch nodes. */
-DEFTREECODE (TRY_EXPR, "try-catch", 'e', 2)
+DEFTREECODE (TRY_EXPR, "try-catch", tcc_expression, 2)
 
 /* Catch clause.
    Operand 0 is the catch clause block, which contains the declaration of
    the catch clause parameter.  */
-DEFTREECODE (JAVA_CATCH_EXPR, "catch", '1', 1)
+DEFTREECODE (JAVA_CATCH_EXPR, "catch", tcc_unary, 1)
 
 /* Synchronized statement.
    Operand 0 is the expression on which we wish to synchronize,
    Operand 1 is the synchronized expression block.  */
-DEFTREECODE (SYNCHRONIZED_EXPR, "synchronized", 'e', 2)
+DEFTREECODE (SYNCHRONIZED_EXPR, "synchronized", tcc_expression, 2)
 
 /* Throw statement.
    Operand 0 is the throw expression.  */
-DEFTREECODE (THROW_EXPR, "throw", '1', 1)
+DEFTREECODE (THROW_EXPR, "throw", tcc_unary, 1)
 
 /* Conditional operator.
    Operand 0 is the condition expression
    Operand 1 is the then-value
    Operand 2 is the else-value.  */
-DEFTREECODE (CONDITIONAL_EXPR, "?:", 'e', 3)
+DEFTREECODE (CONDITIONAL_EXPR, "?:", tcc_expression, 3)
 
 /* instanceof operator.
    Operand 0 is the expression that is getting tested
    Operand 1 is the class used for the test.  */
-DEFTREECODE (INSTANCEOF_EXPR, "instanceof", 'e', 2)
+DEFTREECODE (INSTANCEOF_EXPR, "instanceof", tcc_expression, 2)
 
 /* Array initializers.
    Operand 0 is the (sub) array target to initialize, left to NULL_TREE
    when the node is created.
    Operand 1 is a CONSTRUCTOR node.  */
-DEFTREECODE (NEW_ARRAY_INIT, "new_array_init", '1', 1)
+DEFTREECODE (NEW_ARRAY_INIT, "new_array_init", tcc_unary, 1)
 
 /* Class literal.
    Operand 0 is the name of the class we're trying to build a
    reference from.  */
-DEFTREECODE (CLASS_LITERAL, "class_literal", '1', 1)
+DEFTREECODE (CLASS_LITERAL, "class_literal", tcc_unary, 1)
 
 /* The Java object within the exception object from the runtime.  */
-DEFTREECODE (JAVA_EXC_OBJ_EXPR, "java_exc_obj_expr", 'e', 0)
+DEFTREECODE (JAVA_EXC_OBJ_EXPR, "java_exc_obj_expr", tcc_expression, 0)
 
 /* Annotates a tree node (usually an expression) with source location
    information: a file name (EXPR_WFL_FILENAME);  a line number
    (EXPR_WFL_LINENO); and column number (EXPR_WFL_COLNO).  It is
    expanded as the contained node (EXPR_WFL_NODE);  a line note should
    be emitted first if EXPR_WFL_EMIT_LINE_NOTE.  */
-DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location", 'e', 3)
+DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location",
+	     tcc_expression, 3)
 
 /*
 Local variables:

@@ -78,9 +78,9 @@ static void java_clear_binding_stack (void);
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-const char tree_code_type[] = {
+const enum tree_code_class tree_code_type[] = {
 #include "tree.def"
-  'x',
+  tcc_exceptional,
 #include "java-tree.def"
 };
 #undef DEFTREECODE
@@ -430,8 +430,7 @@ put_decl_node (tree node)
       node = TREE_TYPE (node);
       was_pointer = 1;
     }
-  if (TREE_CODE_CLASS (TREE_CODE (node)) == 'd'
-      && DECL_NAME (node) != NULL_TREE)
+  if (DECL_P (node) && DECL_NAME (node) != NULL_TREE)
     {
       if (TREE_CODE (node) == FUNCTION_DECL)
 	{
@@ -464,8 +463,7 @@ put_decl_node (tree node)
       else
 	put_decl_node (DECL_NAME (node));
     }
-  else if (TREE_CODE_CLASS (TREE_CODE (node)) == 't'
-      && TYPE_NAME (node) != NULL_TREE)
+  else if (TYPE_P (node) && TYPE_NAME (node) != NULL_TREE)
     {
       if (TREE_CODE (node) == RECORD_TYPE && TYPE_ARRAY_P (node))
 	{

@@ -316,7 +316,7 @@ handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
     warning ("junk at end of #pragma weak");
 
   decl = identifier_global_value (name);
-  if (decl && TREE_CODE_CLASS (TREE_CODE (decl)) == 'd')
+  if (decl && DECL_P (decl))
     {
       apply_pragma_weak (decl, value);
       if (value)

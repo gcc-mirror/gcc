@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -70,7 +70,7 @@ do_niy (pretty_printer *buffer, tree node)
   pp_string (buffer, "<<< Unknown tree: ");
   pp_string (buffer, tree_code_name[(int) TREE_CODE (node)]);
 
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (node))))
+  if (EXPR_P (node))
     {
       len = first_rtl_op (TREE_CODE (node));
       for (i = 0; i < len; ++i)
@@ -303,7 +303,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case CHAR_TYPE:
       {
 	unsigned int quals = TYPE_QUALS (node);
-	char class;
+	enum tree_code_class class;
 
 	if (quals & TYPE_QUAL_CONST)
 	  pp_string (buffer, "const ");
@@ -314,14 +314,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
 	class = TREE_CODE_CLASS (TREE_CODE (node));
 
-	if (class == 'd')
+	if (class == tcc_declaration)
 	  {
 	    if (DECL_NAME (node))
 	      dump_decl_name (buffer, node, flags);
 	    else
               pp_string (buffer, "<unnamed type decl>");
 	  }
-	else if (class == 't')
+	else if (class == tcc_type)
 	  {
 	    if (TYPE_NAME (node))
 	      {
@@ -1330,9 +1330,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case GOTO_EXPR:
       op0 = GOTO_DESTINATION (node);
-      if (TREE_CODE (op0) != SSA_NAME
-	  && DECL_P (op0)
-	  && DECL_NAME (op0))
+      if (TREE_CODE (op0) != SSA_NAME && DECL_P (op0) && DECL_NAME (op0))
 	{
 	  const char *name = IDENTIFIER_POINTER (DECL_NAME (op0));
 	  if (strcmp (name, "break") == 0

@@ -564,13 +564,13 @@ set_rhs (tree *stmt_p, tree expr)
   ssa_op_iter iter;
 
   /* Verify the constant folded result is valid gimple.  */
-  if (TREE_CODE_CLASS (code) == '2')
+  if (TREE_CODE_CLASS (code) == tcc_binary)
     {
       if (!is_gimple_val (TREE_OPERAND (expr, 0))
 	  || !is_gimple_val (TREE_OPERAND (expr, 1)))
 	return false;
     }
-  else if (TREE_CODE_CLASS (code) == '1')
+  else if (TREE_CODE_CLASS (code) == tcc_unary)
     {
       if (!is_gimple_val (TREE_OPERAND (expr, 0)))
 	return false;

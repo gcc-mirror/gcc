@@ -1420,7 +1420,7 @@ find_induction_var_from_exit_cond (struct loop *loop)
   if (TREE_CODE (expr) != COND_EXPR)
     return NULL_TREE;
   test = TREE_OPERAND (expr, 0);
-  if (TREE_CODE_CLASS (TREE_CODE (test)) != '<')
+  if (!COMPARISON_CLASS_P (test))
     return NULL_TREE;
   /* This is a guess.  We say that for a <,!=,<= b, a is the induction
      variable.

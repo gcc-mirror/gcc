@@ -1154,7 +1154,8 @@ static void
 pp_cxx_parameter_declaration_clause (cxx_pretty_printer *pp, tree t)
 {
   tree args = TYPE_P (t) ? NULL : FUNCTION_FIRST_USER_PARM (t);
-  tree types = TYPE_P (t) ? TYPE_ARG_TYPES (t) : FUNCTION_FIRST_USER_PARMTYPE (t);
+  tree types = 
+    TYPE_P (t) ? TYPE_ARG_TYPES (t) : FUNCTION_FIRST_USER_PARMTYPE (t);
   const bool abstract = args == NULL
     || pp_c_base (pp)->flags & pp_c_flag_abstract;
   bool first = true;
@@ -1441,7 +1442,7 @@ pp_cxx_template_argument_list (cxx_pretty_printer *pp, tree t)
       if (i != 0)
         pp_cxx_separate_with (pp, ',');
       if (TYPE_P (arg) || (TREE_CODE (arg) == TEMPLATE_DECL
-                           && TYPE_P (DECL_TEMPLATE_RESULT (arg))))
+			   && TYPE_P (DECL_TEMPLATE_RESULT (arg))))
         pp_cxx_type_id (pp, arg);
       else
         pp_cxx_expression (pp, arg);

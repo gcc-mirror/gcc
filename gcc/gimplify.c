@@ -562,9 +562,7 @@ should_carry_locus_p (tree stmt)
 static void
 annotate_one_with_locus (tree t, location_t locus)
 {
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (t)))
-      && ! EXPR_HAS_LOCATION (t)
-      && should_carry_locus_p (t))
+  if (EXPR_P (t) && ! EXPR_HAS_LOCATION (t) && should_carry_locus_p (t))
     SET_EXPR_LOCATION (t, locus);
 }
 
@@ -599,9 +597,9 @@ mostly_copy_tree_r (tree *tp, int *walk_subtrees, void *data)
 {
   enum tree_code code = TREE_CODE (*tp);
   /* Don't unshare types, decls, constants and SAVE_EXPR nodes.  */
-  if (TREE_CODE_CLASS (code) == 't'
-      || TREE_CODE_CLASS (code) == 'd'
-      || TREE_CODE_CLASS (code) == 'c'
+  if (TREE_CODE_CLASS (code) == tcc_type
+      || TREE_CODE_CLASS (code) == tcc_declaration
+      || TREE_CODE_CLASS (code) == tcc_constant
       || code == SAVE_EXPR || code == TARGET_EXPR
       /* We can't do anything sensible with a BLOCK used as an expression,
 	 but we also can't abort when we see it because of non-expression
@@ -637,9 +635,9 @@ copy_if_shared_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
      types and the bounds of types.  Mark them as visited so we properly
      unmark their subtrees on the unmark pass.  If we've already seen them,
      don't look down further.  */
-  if (TREE_CODE_CLASS (code) == 't'
-      || TREE_CODE_CLASS (code) == 'd'
-      || TREE_CODE_CLASS (code) == 'c')
+  if (TREE_CODE_CLASS (code) == tcc_type
+      || TREE_CODE_CLASS (code) == tcc_declaration
+      || TREE_CODE_CLASS (code) == tcc_constant)
     {
       if (TREE_VISITED (t))
 	*walk_subtrees = 0;
@@ -2319,7 +2317,7 @@ gimplify_init_ctor_preeval_1 (tree *tp, int *walk_subtrees, void *xdata)
       && alias_sets_conflict_p (data->lhs_alias_set, get_alias_set (t)))
     return t;
 
-  if (DECL_P (t) || TYPE_P (t))
+  if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
   return NULL;
 }
@@ -3872,7 +3870,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	default:
 	  switch (TREE_CODE_CLASS (TREE_CODE (*expr_p)))
 	    {
-	    case '<':
+	    case tcc_comparison:
 	      /* If this is a comparison of objects of aggregate type,
 	     	 handle it specially (by converting to a call to
 	     	 memcmp).  It would be nice to only have to do this
@@ -3886,12 +3884,12 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	      
 	    /* If *EXPR_P does not need to be special-cased, handle it
 	       according to its class.  */
-	    case '1':
+	    case tcc_unary:
 	      ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p,
 				   post_p, is_gimple_val, fb_rvalue);
 	      break;
 
-	    case '2':
+	    case tcc_binary:
 	    expr_2:
 	      {
 		enum gimplify_status r0, r1;
@@ -3905,8 +3903,8 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 		break;
 	      }
 	      
-	    case 'd':
-	    case 'c':
+	    case tcc_declaration:
+	    case tcc_constant:
 	      ret = GS_ALL_DONE;
 	      goto dont_recalculate;
 	      

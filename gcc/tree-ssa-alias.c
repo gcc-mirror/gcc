@@ -1790,7 +1790,7 @@ add_pointed_to_var (struct alias_info *ai, tree ptr, tree value)
   gcc_assert (TREE_CODE (value) == ADDR_EXPR);
 
   pt_var = TREE_OPERAND (value, 0);
-  if (TREE_CODE_CLASS (TREE_CODE (pt_var)) == 'r')
+  if (REFERENCE_CLASS_P (pt_var))
     pt_var = get_base_address (pt_var);
 
   if (pt_var && SSA_VAR_P (pt_var))

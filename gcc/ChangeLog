@@ -1,3 +1,44 @@
+2004-09-17  Jeffrey D. Oldham  <oldham@codesourcery.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* alias.c (find_base_decl): Remove unreachable case '3' block.
+	* expr.c (safe_from_p): Abort if passed a type.
+	* tree-gimple.c (recalculate_side_effects): Abort if passed
+	anything other than an expression.
+	* tree-ssa-pre.c (phi_translate): Return expr immediately if
+	is_gimple_min_invariant is true for it.  Reorder cases for clarity.
+	Abort on un-handled tree classes.
+	(valid_in_set): Likewise.
+	* tree.c (tree_code_class_strings): New static data.
+
+	* tree.h (enum tree_code_class): New.
+	(tree_code_class_strings): Declare.
+	(TREE_CODE_CLASS_STRING, EXCEPTIONAL_CLASS_P, CONSTANT_CLASS_P)
+	(REFERENCE_CLASS_P, COMPARISON_CLASS_P, UNARY_CLASS_P, BINARY_CLASS_P)
+	(STATEMENT_CLASS_P, EXPRESSION_CLASS_P, IS_TYPE_OR_DECL_P): New macros.
+	(TYPE_P, DECL_P, IS_NON_TYPE_CODE_CLASS, IS_EXPR_CODE_CLASS)
+	(checking macros, EXPR_LOCATION, SET_EXPR_LOCATION, EXPR_LOCUS): Update.
+
+	* tree.def, c-common.def, objc/objc-tree.def: Use
+	tree_code_class enumeration constants instead of code letters.
+
+	* alias.c, builtins.c, c-common.c, c-format.c, c-lang.c, c-pragma.c
+	* c-typeck.c, cgraphunit.c, convert.c, dbxout.c, dwarf2out.c
+	* emit-rtl.c expr.c, fold-const.c, gimplify.c, lambda-code.c
+	* langhooks.c, langhooks.h, predict.c, print-tree.c, reload1.c, stmt.c
+	* tree-browser.c, tree-cfg.c, tree-chrec.c, tree-complex.c, tree-dfa.c
+	* tree-dump.c, tree-eh.c, tree-gimple.c, tree-inline.c, tree-nested.c
+	* tree-outof-ssa.c, tree-pretty-print.c, tree-sra.c, tree-ssa-ccp.c
+	* tree-ssa-dce.c, tree-ssa-dom.c, tree-ssa-forwprop.c, tree-ssa-live.c
+	* tree-ssa-loop-im.c, tree-ssa-loop-ivopts.c, tree-ssa-operands.c
+	* tree-ssa-phiopt.c, tree-ssa-pre.c, tree-ssa-propagate.c
+	* tree-ssa.c, tree-ssanames.c, tree-tailcall.c, tree.c, varasm.c
+	* config/sol2-c.c, config/arm/arm.c, config/i386/winnt.c
+	* config/pa/pa.c, config/pa/pa.h, config/sh/sh.c, objc/objc-lang.c
+	Update to match.
+
+	* LANGUAGES: Add note about change.
+
 2004-09-17  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/17319
@@ -33,7 +74,7 @@
 	(dbxout_init): Include lang number in N_SO  stab.
 	* dbxout.h (N_SO_AS, N_SO_C, N_SO_ANSI_C, N_SO_CC, N_SO_FORTRAN,
 	N_SO_PASCAL, N_SO_FORTRAN90, N_SO_OBJC, N_SO_OBJCPLUS): New #define.
-	
+
 2004-09-17  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/17273
@@ -63,7 +104,7 @@
 
 2004-09-17  Sylvain Pion  <Sylvain.Pion@sophia.inria.fr>
 
-        * doc/extend.texi: Fix duplicated word.
+	* doc/extend.texi: Fix duplicated word.
 
 2004-09-17  Toon Moene  <toon@moene.indiv.nluug.nl>
 
@@ -115,7 +156,7 @@
 
 2004-09-17  Steven Bosscher  <stevenb@suse.de>
 
-        PR tree-optimization/17513
+	PR tree-optimization/17513
 	* cfgexpand.c (construct_init_block): Clear EDGE_EXECUTABLE
 	for successors of the entry block.
 
@@ -208,11 +249,11 @@
 2004-09-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/17517
-	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Don't 
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Don't
 	coalesce same-root variables without checking for abnormal PHI usage.
 
 2004-09-16  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* cfgloop.h (duplicate_loop):  Add prototype.
 	* cfgloopmanip.c (duplicate_loop): Make non-static.
 	* lambda-code.c (perfect_nestify): Factor out test whether
@@ -229,7 +270,7 @@
 	loop invariant as well.
 	(perfect_nestify): new function.
 	(gcc_loop_to_lambda_loop): New parameters to track lower bounds,
-	upper bounds, and steps. 
+	upper bounds, and steps.
 	Set outerinductionvar properly.
 	(gcc_loopnest_to_lambda_loopnest): Add loops and need_perfect
 	parameters.
@@ -254,9 +295,9 @@
 2004-09-16  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-loop-linear.c (gather_interchange_stats): Add more comments.
-	Gather also strides of accessed data.  Pass in the data references 
+	Gather also strides of accessed data.  Pass in the data references
 	array.
-	(try_interchange_loops): Add a new heuristic for handling the temporal 
+	(try_interchange_loops): Add a new heuristic for handling the temporal
 	locality.  Pass in the data references array.
 	(linear_transform_loops): Pass the data references array to
 	try_interchange_loops.
@@ -369,7 +410,7 @@
 
 	* Makefile.in (tree-ssa-dom.o): Depend on tree-ssa-propagate.h.
 	* tree-ssa-dom.c (cprop_into_stmt): Recompute TREE_INVARIANT
-        after propagating into an ADDR_EXPR.
+	after propagating into an ADDR_EXPR.
 
 2004-09-15  Andrew Pinski  <apinski@apple.com>
 
@@ -587,7 +628,7 @@
 2004-09-14  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (stmts_to_rescan): Move from a block-local
-	to a global varray.  
+	to a global varray.
 	(tree_ssa_dominator_optimize): Allocate stmts_to_rescan.
 	(dom_opt_initialize_block_local_data): No longer test state
 	of stmts_to_rescan.
@@ -824,7 +865,7 @@
 	PR tree-optimization/17400
 	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Don't
 	coalesce partitions when one occurs in an abnormal PHI.
-							      
+
 2004-09-13  Andrew Pinski  <apinski@apple.com>
 
 	* config/rs6000/darwin.h (ASM_OUTPUT_COMMON): Change variable size's

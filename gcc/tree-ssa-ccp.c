@@ -787,7 +787,7 @@ ccp_fold (tree stmt)
 {
   tree rhs = get_rhs (stmt);
   enum tree_code code = TREE_CODE (rhs);
-  int kind = TREE_CODE_CLASS (code);
+  enum tree_code_class kind = TREE_CODE_CLASS (code);
   tree retval = NULL_TREE;
   vuse_optype vuses;
   
@@ -805,7 +805,7 @@ ccp_fold (tree stmt)
   /* Unary operators.  Note that we know the single operand must
      be a constant.  So this should almost always return a
      simplified RHS.  */
-  if (kind == '1')
+  if (kind == tcc_unary)
     {
       /* Handle unary operators which can appear in GIMPLE form.  */
       tree op0 = TREE_OPERAND (rhs, 0);
@@ -845,8 +845,8 @@ ccp_fold (tree stmt)
 
   /* Binary and comparison operators.  We know one or both of the
      operands are constants.  */
-  else if (kind == '2'
-           || kind == '<'
+  else if (kind == tcc_binary
+           || kind == tcc_comparison
            || code == TRUTH_AND_EXPR
            || code == TRUTH_OR_EXPR
            || code == TRUTH_XOR_EXPR)
@@ -2035,7 +2035,8 @@ fold_stmt (tree *stmt_p)
 	  if (TREE_CODE (callee) == OBJ_TYPE_REF
 	      && lang_hooks.fold_obj_type_ref
 	      && TREE_CODE (OBJ_TYPE_REF_OBJECT (callee)) == ADDR_EXPR
-	      && DECL_P (TREE_OPERAND (OBJ_TYPE_REF_OBJECT (callee), 0)))
+	      && DECL_P (TREE_OPERAND
+			 (OBJ_TYPE_REF_OBJECT (callee), 0)))
 	    {
 	      tree t;
 

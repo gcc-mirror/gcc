@@ -425,7 +425,7 @@ expand_complex_operations_1 (block_stmt_iterator *bsi)
   ar = extract_component (bsi, ac, 0);
   ai = extract_component (bsi, ac, 1);
 
-  if (TREE_CODE_CLASS (code) == '1')
+  if (TREE_CODE_CLASS (code) == tcc_unary)
     bc = br = bi = NULL;
   else
     {
@@ -776,8 +776,8 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
     return;
 
   code = TREE_CODE (rhs);
-  if (TREE_CODE_CLASS (code) != '1'
-      && TREE_CODE_CLASS (code) != '2')
+  if (TREE_CODE_CLASS (code) != tcc_unary
+      && TREE_CODE_CLASS (code) != tcc_binary)
     return;
 
   if (code == NOP_EXPR || code == VIEW_CONVERT_EXPR)
@@ -872,7 +872,7 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
 	break;
       }
 
-  if (TREE_CODE_CLASS (code) == '1')
+  if (TREE_CODE_CLASS (code) == tcc_unary)
     *p_rhs = expand_vector_piecewise (bsi, do_unop, type, compute_type,
 				      TREE_OPERAND (rhs, 0),
 				      NULL_TREE, code);

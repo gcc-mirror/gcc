@@ -303,7 +303,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	   && is_invisiref_parm (TREE_OPERAND (stmt, 0)))
     /* Don't dereference an invisiref RESULT_DECL inside a RETURN_EXPR.  */
     *walk_subtrees = 0;
-  else if (DECL_P (stmt) || TYPE_P (stmt))
+  else if (IS_TYPE_OR_DECL_P (stmt))
     *walk_subtrees = 0;
 
   /* Due to the way voidify_wrapper_expr is written, we don't get a chance

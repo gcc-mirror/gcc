@@ -1750,7 +1750,7 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
 {
   tree t = *tp;
 
-  if (TYPE_P (t) || DECL_P (t))
+  if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
   else if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
     {

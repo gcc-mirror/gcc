@@ -401,7 +401,7 @@ convert_to_integer (tree type, tree expr)
 	 we must also change the types of the operands to maintain type
 	 correctness.  */
 
-      if (TREE_CODE_CLASS (ex_form) == '<')
+      if (TREE_CODE_CLASS (ex_form) == tcc_comparison)
 	{
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;

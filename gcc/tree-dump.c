@@ -216,7 +216,7 @@ dequeue_and_dump (dump_info_p di)
   tree t;
   unsigned int index;
   enum tree_code code;
-  char code_class;
+  enum tree_code_class code_class;
   const char* code_name;
 
   /* Get the next node from the queue.  */
@@ -292,19 +292,19 @@ dequeue_and_dump (dump_info_p di)
 
       switch (code_class)
 	{
-	case '1':
+	case tcc_unary:
 	  dump_child ("op 0", TREE_OPERAND (t, 0));
 	  break;
 
-	case '2':
-	case '<':
+	case tcc_binary:
+	case tcc_comparison:
 	  dump_child ("op 0", TREE_OPERAND (t, 0));
 	  dump_child ("op 1", TREE_OPERAND (t, 1));
 	  break;
 
-	case 'e':
-	case 'r':
-	case 's':
+	case tcc_expression:
+	case tcc_reference:
+	case tcc_statement:
 	  /* These nodes are handled explicitly below.  */
 	  break;
 
@@ -346,7 +346,7 @@ dequeue_and_dump (dump_info_p di)
       if (TREE_CHAIN (t) && !dump_flag (di, TDF_SLIM, NULL))
 	dump_child ("chan", TREE_CHAIN (t));
     }
-  else if (code_class == 't')
+  else if (code_class == tcc_type)
     {
       /* All types have qualifiers.  */
       int quals = lang_hooks.tree_dump.type_quals (t);
@@ -373,7 +373,7 @@ dequeue_and_dump (dump_info_p di)
       /* All types have alignments.  */
       dump_int (di, "algn", TYPE_ALIGN (t));
     }
-  else if (code_class == 'c')
+  else if (code_class == tcc_constant)
     /* All constants can have types.  */
     queue_and_dump_type (di, t);
 

@@ -402,7 +402,7 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
 	 a global variable.  Otherwise, we check if the base variable
 	 is a global.  */
       lhs = TREE_OPERAND (stmt, 0);
-      if (TREE_CODE_CLASS (TREE_CODE (lhs)) == 'r')
+      if (REFERENCE_CLASS_P (lhs))
 	lhs = get_base_address (lhs);
 
       if (lhs == NULL_TREE)

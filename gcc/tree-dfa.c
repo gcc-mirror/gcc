@@ -847,9 +847,7 @@ find_vars_r (tree *tp, int *walk_subtrees, void *data)
 
   /* Type, _DECL and constant nodes have no interesting children.
      Ignore them.  */
-  else if (DECL_P (*tp)
-	   || TYPE_P (*tp)
-	   || TREE_CODE_CLASS (TREE_CODE (*tp)) == 'c')
+  else if (IS_TYPE_OR_DECL_P (*tp) || CONSTANT_CLASS_P (*tp))
     *walk_subtrees = 0;
 
   return NULL_TREE;

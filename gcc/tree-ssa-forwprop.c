@@ -172,7 +172,7 @@ record_single_argument_cond_exprs (varray_type cond_worklist,
 	  if (cond_code == SSA_NAME
 	      || ((cond_code == EQ_EXPR || cond_code == NE_EXPR)
 		  && TREE_CODE (TREE_OPERAND (cond, 0)) == SSA_NAME
-		  && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (cond, 1))) == 'c'
+		  && CONSTANT_CLASS_P (TREE_OPERAND (cond, 1))
 		  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (cond, 1)))))
 	    {
 	      tree def;
@@ -209,7 +209,7 @@ record_single_argument_cond_exprs (varray_type cond_worklist,
 		      /* The first operand must be an SSA_NAME and the second
 			 operand must be a constant.  */
 		      if (TREE_CODE (op0) != SSA_NAME
-			  || TREE_CODE_CLASS (TREE_CODE (op1)) != 'c'
+			  || !CONSTANT_CLASS_P (op1)
 			  || !INTEGRAL_TYPE_P (TREE_TYPE (op1)))
 			continue;
 		    }
@@ -223,7 +223,7 @@ record_single_argument_cond_exprs (varray_type cond_worklist,
 		      /* If TEST_VAR is set from a relational operation
 			 between two SSA_NAMEs or a combination of an SSA_NAME
 			 and a constant, then it is interesting.  */
-		      if (TREE_CODE_CLASS (TREE_CODE (def_rhs)) == '<')
+		      if (COMPARISON_CLASS_P (def_rhs))
 			{
 			  tree op0 = TREE_OPERAND (def_rhs, 0);
 			  tree op1 = TREE_OPERAND (def_rhs, 1);
@@ -364,7 +364,7 @@ substitute_single_use_vars (varray_type *cond_worklist,
 	      new_cond = build (cond_code, boolean_type_node, op0, t);
 	    }
 	  /* If the variable is defined by a conditional expression... */
-	  else if (TREE_CODE_CLASS (def_rhs_code) == '<')
+	  else if (TREE_CODE_CLASS (def_rhs_code) == tcc_comparison)
 	    {
 	      /* TEST_VAR was set from a relational operator.  */
 	      tree op0 = TREE_OPERAND (def_rhs, 0);
@@ -382,7 +382,7 @@ substitute_single_use_vars (varray_type *cond_worklist,
 
 		  /* If we did not get a simple relational expression or
 		     bare SSA_NAME, then we can not optimize this case.  */
-		  if (TREE_CODE_CLASS (TREE_CODE (new_cond)) != '<'
+		  if (!COMPARISON_CLASS_P (new_cond)
 		      && TREE_CODE (new_cond) != SSA_NAME)
 		    continue;
 		}

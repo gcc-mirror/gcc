@@ -1,3 +1,9 @@
+2004-09-17  Jeffrey D. Oldham  <oldham@codesourcery.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* f95-lang.c, trans-expr.c, trans.c: Update for new tree-class
+	enumeration constants.
+
 2004-09-17  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.h (struct gfc_linebuf): Don't use C99 empty arrays.
@@ -312,30 +318,30 @@
 
 2004-08-26  Richard Henderson  <rth@redhat.com>
 
-        * arith.c: Include system.h, not real system headers.
-        (MPZ_NULL, MPF_NULL, DEF_GFC_INTEGER_KIND, DEF_GFC_LOGICAL_KIND,
-        DEF_GFC_REAL_KIND, GFC_SP_KIND, GFC_SP_PREC, GFC_SP_EMIN, GFC_SP_EMAX,
-        GFC_DP_KIND, GFC_DP_PREC, GFC_DP_EMIN, GFC_DP_EMAX, GFC_QP_KIND,
-        GFC_QP_PREC, GFC_QP_EMIN, GFC_QP_EMAX): Remove.
-        (gfc_integer_kinds, gfc_logical_kinds, gfc_real_kinds,
-        gfc_index_integer_kind, gfc_default_integer_kind,
-        gfc_default_real_kind,gfc_default_double_kind,
-        gfc_default_character_kind, gfc_default_logical_kind,
-        gfc_default_complex_kind, validate_integer, validate_real,
-        validate_logical, validate_character,
-        gfc_validate_kind): Move to trans-types.c.
-        (gfc_set_model_kind): Use gfc_validate_kind.
-        (gfc_set_model): Just copy the current precision to default.
-        (gfc_arith_init_1): Use mpfr precision 128 for integer setup.
-        * f95-lang.c (gfc_init_decl_processing): Invoke gfc_init_kinds.
-        * gfortran.h: Update file commentary.
-        * trans-types.c (MAX_INT_KINDS, MAX_REAL_KINDS): New.
-        (gfc_default_integer_kind_1, gfc_default_real_kind_1,
-        gfc_default_double_kind_1, gfc_default_character_kind_1,
-        gfc_default_logical_kind_1, gfc_default_complex_kind_1): New.
-        (gfc_init_kinds): New.
-        (gfc_init_types): Don't set gfc_index_integer_kind here.
-        * trans-types.h (gfc_init_kinds): Declare.
+	* arith.c: Include system.h, not real system headers.
+	(MPZ_NULL, MPF_NULL, DEF_GFC_INTEGER_KIND, DEF_GFC_LOGICAL_KIND,
+	DEF_GFC_REAL_KIND, GFC_SP_KIND, GFC_SP_PREC, GFC_SP_EMIN, GFC_SP_EMAX,
+	GFC_DP_KIND, GFC_DP_PREC, GFC_DP_EMIN, GFC_DP_EMAX, GFC_QP_KIND,
+	GFC_QP_PREC, GFC_QP_EMIN, GFC_QP_EMAX): Remove.
+	(gfc_integer_kinds, gfc_logical_kinds, gfc_real_kinds,
+	gfc_index_integer_kind, gfc_default_integer_kind,
+	gfc_default_real_kind,gfc_default_double_kind,
+	gfc_default_character_kind, gfc_default_logical_kind,
+	gfc_default_complex_kind, validate_integer, validate_real,
+	validate_logical, validate_character,
+	gfc_validate_kind): Move to trans-types.c.
+	(gfc_set_model_kind): Use gfc_validate_kind.
+	(gfc_set_model): Just copy the current precision to default.
+	(gfc_arith_init_1): Use mpfr precision 128 for integer setup.
+	* f95-lang.c (gfc_init_decl_processing): Invoke gfc_init_kinds.
+	* gfortran.h: Update file commentary.
+	* trans-types.c (MAX_INT_KINDS, MAX_REAL_KINDS): New.
+	(gfc_default_integer_kind_1, gfc_default_real_kind_1,
+	gfc_default_double_kind_1, gfc_default_character_kind_1,
+	gfc_default_logical_kind_1, gfc_default_complex_kind_1): New.
+	(gfc_init_kinds): New.
+	(gfc_init_types): Don't set gfc_index_integer_kind here.
+	* trans-types.h (gfc_init_kinds): Declare.
 	* doc/invoke.texi: Clarify DOUBLE PRECISION behaviour wrt -r8.
 
 2004-08-26  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
@@ -422,7 +428,7 @@
 	build.
 	* trans-array.c (gfc_conv_descriptor_data,
 	gfc_conv_descriptor_offset, gfc_conv_descriptor_dimension,
-	gfc_conv_descriptor_stride, gfc_conv_descriptor_lbound, 
+	gfc_conv_descriptor_stride, gfc_conv_descriptor_lbound,
 	gfc_conv_descriptor_ubound, gfc_trans_allocate_array_storage,
 	gfc_trans_allocate_temp_array,
 	gfc_trans_array_constructor_subarray,
@@ -480,7 +486,7 @@
 
 2004-08-25  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
-	* trans-const.c (gfc_conv_mpz_to_tree): Change call to 
+	* trans-const.c (gfc_conv_mpz_to_tree): Change call to
 	build_int_cst to build_int_cst_wide in accordance to Nathan's
 	previous patch.
 
@@ -503,7 +509,7 @@
 
 2004-08-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
-	* trans-decl.c, trans-types.c: Add and remove blank lines as 
+	* trans-decl.c, trans-types.c: Add and remove blank lines as
 	required.
 
 2004-08-24  Richard Henderson  <rth@redhat.com>
@@ -512,9 +518,9 @@
 
 2004-08-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
-	* resolve.c (merge_argument_lists): Revert unintentionally 
+	* resolve.c (merge_argument_lists): Revert unintentionally
 	committed change.
-	
+
 2004-08-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-decl.c (build_function_decl): Fix spelling in comment.
@@ -545,15 +551,15 @@
 2004-08-22  Richard Henderson  <rth@redhat.com>
 
 	PR 13465
-        * data.c (find_con_by_offset): Search ordered list; handle
-        elements with repeat counts.
-        (gfc_assign_data_value_range): New.
-        * gfortran.h (struct gfc_data_value): Make repeat unsigned.
-        (gfc_assign_data_value_range): Declare.
-        * match.c (top_val_list): Extract repeat count into a temporary.
-        * resolve.c (values): Make left unsigned.
-        (next_data_value): Don't decrement left.
-        (check_data_variable): Use gfc_assign_data_value_range.
+	* data.c (find_con_by_offset): Search ordered list; handle
+	elements with repeat counts.
+	(gfc_assign_data_value_range): New.
+	* gfortran.h (struct gfc_data_value): Make repeat unsigned.
+	(gfc_assign_data_value_range): Declare.
+	* match.c (top_val_list): Extract repeat count into a temporary.
+	* resolve.c (values): Make left unsigned.
+	(next_data_value): Don't decrement left.
+	(check_data_variable): Use gfc_assign_data_value_range.
 
 2004-08-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
@@ -1416,7 +1422,7 @@
 	unused variables if they're use associated.
 
 2004-06-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
-        Andrew Vaught <andyv@firstinter.net>
+	Andrew Vaught <andyv@firstinter.net>
 
 	PR fortran/14928
 	* gfortran.h (gfc_check_f): Add new field f3ml.
@@ -1769,7 +1775,7 @@
 2004-05-17  Steve Kargl  <kargls@comcast.net>
 
 	* arith.c (gfc_real2complex): Range checking wrong part of complex
-        number.
+	number.
 
 2004-05-16  Paul Brook  <paul@codesourcery.com>
 
@@ -1911,15 +1917,15 @@
 
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
-        PR fortran/14066
+	PR fortran/14066
 	* match.c (gfc_match_do): Allow infinite loops with
 	label-do-stmt. Do not enforce space after comma.
 
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
-        PR fortran/15051
+	PR fortran/15051
 	* parse.c (parse_interface): Allow empty INTERFACE, remove
-        seen_body.
+	seen_body.
 
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
@@ -1941,7 +1947,7 @@
 
 	PR fortran/14568
 	* trans-decl.c (generate_local_decl): Don't warn for unused
-        variables which are in common blocks.
+	variables which are in common blocks.
 
 2004-05-13  Diego Novillo  <dnovillo@redhat.com>
 
@@ -2166,9 +2172,9 @@
 
 2004-03-24  Bud Davis  <bdavis9659@comcast.net>
 
-        PR 14055
+	PR 14055
 	* arith.c (gfc_convert_integer,gfc_convert_real):  Removed leading '+'
-        before conversion by gmp library call.
+	before conversion by gmp library call.
 
 2004-03-24  Bud Davis  <bdavis9659@comcast.net>
 
@@ -3103,8 +3109,8 @@
 	* lang-options.h: Remove.
 
 2003-07-23  Arnaud Desitter  <arnaud.desitter@geography.oxford.ac.uk>
-        * iresolve.c (g95_resolve_transpose): Proper variable in switch.
-        * simplify.c (g95_simplify_nearest): Fix typo and use a correct test
+	* iresolve.c (g95_resolve_transpose): Proper variable in switch.
+	* simplify.c (g95_simplify_nearest): Fix typo and use a correct test
 	on kind.
 
 2003-07-22  Steven Bosscher  <steven@gcc.gnu.org>
@@ -3749,21 +3755,21 @@
 
 2003-04-10  Canqun Yang  <canqun@yahoo.com.cn>
 
-        * trans-stmt.c (g95_trans_forall): Implement WHERE inside FORALL.
-        (g95_trans_forall_body): New function.
+	* trans-stmt.c (g95_trans_forall): Implement WHERE inside FORALL.
+	(g95_trans_forall_body): New function.
 
 2003-04-10  Canqun Yang  <canqun@yahoo.com.cn>
 
-        * resolve.c (resove_where): New function.
-        (resolve_where_shape): New function.
-        (resolve_code): Add call to 'resolve_where'
-        * trans-stmt.c (g95_trans_where): Modified.
-        (g95_trans_where_2): New function.
-        (g95_trans_where_assign): New function.
-        (g95_evaluate_where_mask): New function.
-        (g95_add_to_stmt_list): New function.
-        (g95_get_temp_expr): New function.
-        * trans.h (where_stmt_list): New structure.
+	* resolve.c (resove_where): New function.
+	(resolve_where_shape): New function.
+	(resolve_code): Add call to 'resolve_where'
+	* trans-stmt.c (g95_trans_where): Modified.
+	(g95_trans_where_2): New function.
+	(g95_trans_where_assign): New function.
+	(g95_evaluate_where_mask): New function.
+	(g95_add_to_stmt_list): New function.
+	(g95_get_temp_expr): New function.
+	* trans.h (where_stmt_list): New structure.
 
 2003-04-10  Paul Brook  <paul@nowt.org>
 
@@ -3851,7 +3857,7 @@
 
 	* arith.c (validate_logical), g95.h, options.c (g95_init_options):
 	Remove option l1.
-        * g95.h, intrinsic.c(g95_get_intrinsic_sub_symbol): Add const.
+	* g95.h, intrinsic.c(g95_get_intrinsic_sub_symbol): Add const.
 	* iresolve.c(g95_resolve_cpu_time, g95_resolve_random_number): Add
 	const.
 	* lang-options.h: Remove -finline-repack-arrays. Add -fg77-calls.
@@ -4092,7 +4098,7 @@
 2003-02-05  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* lang-options.h: Fix warning involving C90 concatenated
-        strings.
+	strings.
 
 2003-02-06  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 	    Arnaud Desitter  <arnaud.desitter@geography.oxford.ac.uk>
@@ -4178,7 +4184,7 @@
 
 2003-01-28  Steven Bosscher  <s.bosscher@student.tudelft.n>
 
-        * Make-lang.in: Don't build with broken tree-ssa-pre.
+	* Make-lang.in: Don't build with broken tree-ssa-pre.
 
 2003-01-28  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
@@ -4515,7 +4521,7 @@
 
 2003-01-10  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
-        * dump-parse-tree.c (g95_show_namespace): Fixed another
+	* dump-parse-tree.c (g95_show_namespace): Fixed another
 	typo.  Sorry, it's Friday...
 
 2003-01-10  Steven Bosscher  <s.bosscher@student.tudelft.nl>
@@ -5018,7 +5024,7 @@
 2002-09-01  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g95_conv_mpz_to_tree: Free storage pointed to by q,
-        not by buff.
+	not by buff.
 
 2002-08-30  Paul Brook  <paul@nowt.org>
 

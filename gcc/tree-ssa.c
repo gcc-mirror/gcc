@@ -1296,7 +1296,7 @@ warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data)
       warn_uninit (t, "%H'%D' is used uninitialized in this function", locus);
       *walk_subtrees = 0;
     }
-  else if (DECL_P (t) || TYPE_P (t))
+  else if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
 
   return NULL_TREE;

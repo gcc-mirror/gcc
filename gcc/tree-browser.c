@@ -1,5 +1,5 @@
 /* Tree browser.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -262,14 +262,14 @@ browse_tree (tree begin)
 	  break;
 
 	case TB_REFERENCE_TO_THIS:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 't')
+	  if (head && TYPE_P (head))
 	    TB_SET_HEAD (TYPE_REFERENCE_TO (head));
 	  else
 	    TB_WF;
 	  break;
 
 	case TB_POINTER_TO_THIS:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 't')
+	  if (head && TYPE_P (head))
 	    TB_SET_HEAD (TYPE_POINTER_TO (head));
 	  else
 	    TB_WF;
@@ -338,28 +338,28 @@ browse_tree (tree begin)
 	  break;
 
 	case TB_INITIAL:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'd')
+	  if (head && DECL_P (head))
 	    TB_SET_HEAD (DECL_INITIAL (head));
 	  else
 	    TB_WF;
 	  break;
 
 	case TB_RESULT:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'd')
+	  if (head && DECL_P (head))
 	    TB_SET_HEAD (DECL_RESULT_FLD (head));
 	  else
 	    TB_WF;
 	  break;
 
 	case TB_ARGUMENTS:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'd')
+	  if (head && DECL_P (head))
 	    TB_SET_HEAD (DECL_ARGUMENTS (head));
 	  else
 	    TB_WF;
 	  break;
 
 	case TB_ABSTRACT_ORIGIN:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'd')
+	  if (head && DECL_P (head))
 	    TB_SET_HEAD (DECL_ABSTRACT_ORIGIN (head));
 	  else if (head && TREE_CODE (head) == BLOCK)
 	    TB_SET_HEAD (BLOCK_ABSTRACT_ORIGIN (head));
@@ -368,18 +368,18 @@ browse_tree (tree begin)
 	  break;
 
 	case TB_ATTRIBUTES:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'd')
+	  if (head && DECL_P (head))
 	    TB_SET_HEAD (DECL_ATTRIBUTES (head));
-	  else if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 't')
+	  else if (head && TYPE_P (head))
 	    TB_SET_HEAD (TYPE_ATTRIBUTES (head));
 	  else
 	    TB_WF;
 	  break;
 
 	case TB_CONTEXT:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'd')
+	  if (head && DECL_P (head))
 	    TB_SET_HEAD (DECL_CONTEXT (head));
-	  else if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 't'
+	  else if (head && TYPE_P (head)
 		   && TYPE_CONTEXT (head))
 	    TB_SET_HEAD (TYPE_CONTEXT (head));
 	  else
@@ -401,18 +401,18 @@ browse_tree (tree begin)
           break;
 
 	case TB_UNIT_SIZE:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'd')
+	  if (head && DECL_P (head))
 	    TB_SET_HEAD (DECL_SIZE_UNIT (head));
-	  else if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 't')
+	  else if (head && TYPE_P (head))
 	    TB_SET_HEAD (TYPE_SIZE_UNIT (head));
 	  else
 	    TB_WF;
 	  break;
 
 	case TB_SIZE:
-	  if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 'd')
+	  if (head && DECL_P (head))
 	    TB_SET_HEAD (DECL_SIZE (head));
-	  else if (head && TREE_CODE_CLASS (TREE_CODE (head)) == 't')
+	  else if (head && TYPE_P (head))
 	    TB_SET_HEAD (TYPE_SIZE (head));
 	  else
 	    TB_WF;
@@ -441,32 +441,28 @@ browse_tree (tree begin)
 	  break;
 
 	case TB_CHILD_0:
-	  if (head && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (head)))
-	      && TREE_OPERAND (head, 0))
+	  if (head && EXPR_P (head) && TREE_OPERAND (head, 0))
 	    TB_SET_HEAD (TREE_OPERAND (head, 0));
 	  else
 	    TB_WF;
 	  break;
 
 	case TB_CHILD_1:
-          if (head && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (head)))
-	      && TREE_OPERAND (head, 1))
+          if (head && EXPR_P (head) && TREE_OPERAND (head, 1))
 	    TB_SET_HEAD (TREE_OPERAND (head, 1));
 	  else
 	    TB_WF;
           break;
 
 	case TB_CHILD_2:
-          if (head && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (head)))
-	      && TREE_OPERAND (head, 2))
+          if (head && EXPR_P (head) && TREE_OPERAND (head, 2))
 	    TB_SET_HEAD (TREE_OPERAND (head, 2));
 	  else
 	    TB_WF;
 	  break;
 
 	case TB_CHILD_3:
-	  if (head && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (head)))
-	      && TREE_OPERAND (head, 3))
+	  if (head && EXPR_P (head) && TREE_OPERAND (head, 3))
 	    TB_SET_HEAD (TREE_OPERAND (head, 3));
 	  else
 	    TB_WF;
@@ -751,7 +747,7 @@ store_child_info (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
   node = *tp;
 
   /* 'node' is the parent of 'TREE_OPERAND (node, *)'.  */
-  if (TREE_CODE_CLASS (TREE_CODE (node)) == 'e')
+  if (EXPRESSION_CLASS_P (node))
     {
 
 #define STORE_CHILD(N) do {                                                \
@@ -808,7 +804,7 @@ TB_parent_eq (const void *p1, const void *p2)
   if (p1 == NULL || p2 == NULL)
     return 0;
 
-  if (TREE_CODE_CLASS(TREE_CODE(parent)) == 'e')
+  if (EXPRESSION_CLASS_P (parent))
     {
 
 #define TEST_CHILD(N) do {               \
