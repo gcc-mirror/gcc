@@ -20,6 +20,7 @@
 #02111-1307, USA.
 
 SHELL = /bin/sh
+MAKEOVERRIDES=
 
 #### Start of system configuration section. ####
 
