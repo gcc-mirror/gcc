@@ -1504,8 +1504,8 @@ lookup_field_r (binfo, data)
   return NULL_TREE;
 }
 
-/* Look for a memer named NAME in an inheritance lattice dominated by
-   XBASETYPE.  PROTECT is 0 or two, we do not check access.  If it is
+/* Look for a member named NAME in an inheritance lattice dominated by
+   XBASETYPE.  If PROTECT is 0 or two, we do not check access.  If it is
    1, we enforce accessibility.  If PROTECT is zero, then, for an
    ambiguous lookup, we return NULL.  If PROTECT is 1, we issue an
    error message.  If PROTECT is 2, we return a TREE_LIST whose

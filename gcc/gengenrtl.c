@@ -180,7 +180,7 @@ special_format (fmt)
 
 /* Return nonzero if the RTL code given by index IDX is one that we should not
    generate a gen_RTX_FOO function foo (because that function is present
-   elsewhere in the compiler.  */
+   elsewhere in the compiler).  */
 
 static int
 special_rtx (idx)
