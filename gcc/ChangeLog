@@ -1,3 +1,12 @@
+2003-04-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/ia64/ia64.c (issue_nops_and_insn): Add new parameter.
+	Check that asm insn starts on a new cycle.  Add nops after asm
+	insn to end bundle.
+	(bundling): Move insn type evaluation from the loop.  Call
+	issue_nops_and_insn with the new parameter.  Ignore changing
+	position for nops after asm insn.
+
 2003-04-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* optabs.c: Comment that gen_add2_insn and others may actually
