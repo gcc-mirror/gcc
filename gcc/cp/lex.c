@@ -2985,11 +2985,14 @@ do_identifier (token, parsing, args)
 	  /* protected is OK, since it's an enum of `this'.  */
 	}
       if (!processing_template_decl
-	  /* Don't resolve enumeration constants while processing
-	     template declarations, unless they're for global
-	     enumerations and therefore cannot involve template
-	     parameters.  */
-	  || (!DECL_CONTEXT (id)
+	  /* Really, if we're processing a template, we just want to
+	     resolve template parameters, and not enumeration
+	     constants.  But, they're hard to tell apart.  (Note that
+	     a non-type template parameter may have enumeration type.)
+	     Fortunately, there's no harm in resolving *global*
+	     enumeration constants, since they can't depend on
+	     template parameters.  */
+	  || (TREE_CODE (CP_DECL_CONTEXT (id)) == NAMESPACE_DECL
 	      && TREE_CODE (DECL_INITIAL (id)) == TEMPLATE_PARM_INDEX))
 	id = DECL_INITIAL (id);
     }

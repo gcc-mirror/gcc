@@ -1,3 +1,7 @@
+1998-08-28  Mark Mitchell  <mark@markmitchell.com>
+
+	* lex.c (do_identifier): Fix thinko in previous change.
+
 1998-08-28  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* search.c (dfs_search, binfo_for_vtable, dfs_bfv_helper): New fns.
@@ -20,12 +24,13 @@
 	* decl.c (finish_enum): Don't set the TREE_TYPE for the
 	enumeration constant values if we're processing_template_decls.
 	Don't set the type for the CONST_DECLs either; that's done in
-	build_enumerator. (
+	build_enumerator. 
 	(build_enumerator): Take the enumeration type as a
-	paramter. 
+	parameter. 
 	* lex.c (do_identifier): Don't resolve enumeration constants while
 	processing template declarations, even if they happen to be
 	TEMPLATE_PARM_INDEXs. 
+
 	* parse.y (current_enum_type): New variable.
 	(primary): Don't allow statement-expression in local classes just
 	as we don't in global classes.
