@@ -1,3 +1,11 @@
+Fri Jun  5 15:53:17 1998  Per Bothner  <bothner@cygnus.com>
+
+	* gcc.c (lang_specific_pre_link):  New LANG_SPECIFIC_DRIVER function.
+	(lang_specific_extra_outfiles):  New LANG_SPECIFIC_DRIVER variable.
+	(do_spec, input_filename, input_filename_length):  Make public.
+	(main):  Adjust outfiles allocation by lang_specific_extra_outfiles.
+	Call lang_specific_pre_link befor elinking.
+
 Fri Jun  5 12:29:28 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (rank_for_schedule): For "equally good insns", prefer
