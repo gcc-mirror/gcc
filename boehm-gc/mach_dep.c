@@ -405,6 +405,8 @@ void GC_generic_push_regs(cold_gc_frame)
 ptr_t cold_gc_frame;
 {
 	{
+	    word dummy;
+
 #	    ifdef HAVE_BUILTIN_UNWIND_INIT
 	      /* This was suggested by Richard Henderson as the way to	*/
 	      /* force callee-save registers and register windows onto	*/
@@ -448,6 +450,10 @@ ptr_t cold_gc_frame;
 	      }
 #           endif
 	    GC_push_current_stack(cold_gc_frame);
+	    /* Strongly discourage the compiler from treating the above	*/
+	    /* as a tail-call, since that would pop the register 	*/
+	    /* contents before we get a chance to look at them.		*/
+	    GC_noop1((word)(&dummy));
 	}
 }
 #endif /* USE_GENERIC_PUSH_REGS */

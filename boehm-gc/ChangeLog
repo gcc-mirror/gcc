@@ -1,3 +1,12 @@
+2003-10-03  Hans Boehm  <Hans.Boehm@hp.com>
+
+	* configure.in: Remove NO_GETENV definition for win32.
+	* mach_dep.c (GC_generic_push_regs): Prevent tail call optimization.
+	* misc.c (GC_init_inner): Call GC_thr_init for win32.
+	  (GC_set_warn_proc): Add assertion.
+	* win32_threads.c: Import 6.3alpha2 version.
+	* include/private/gc_priv.h: Add support for EMPTY_GETENV_RESULTS.
+
 2003-09-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Remove wildcard from Solaris 8-9/Intel and Solaris
