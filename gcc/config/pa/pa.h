@@ -887,7 +887,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 
 
 /* Similar, but when scanning the definition of a procedure.  We always
-   set NARGS_PROTOTYPE large so we never return an EXPR_LIST.  */
+   set NARGS_PROTOTYPE large so we never return a PARALLEL.  */
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM,FNTYPE,IGNORE) \
   (CUM).words = 0,				\
@@ -984,16 +984,23 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 							      (TYPE))))))\
    /* We are calling a non-prototyped function with floating point	\
       arguments using the portable conventions.  */			\
-   : gen_rtx (EXPR_LIST, VOIDmode,					\
-	      gen_rtx (REG, (MODE),					\
-		       (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
-			? ((CUM).words ? 38 : 34)			\
-			: (32 + 2 * (CUM).words))),			\
-	      gen_rtx (REG, (MODE),					\
-		       (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
-			? ((CUM).words ? 23 : 25)			\
-			: (27 - (CUM).words - FUNCTION_ARG_SIZE ((MODE),\
-								 (TYPE)))))) \
+   : gen_rtx (PARALLEL, (MODE),						\
+	      gen_rtvec							\
+	      (2,							\
+	       gen_rtx (EXPR_LIST, VOIDmode,				\
+			gen_rtx (REG, (MODE),				\
+				 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1 \
+				  ? ((CUM).words ? 38 : 34)		\
+				  : (32 + 2 * (CUM).words))),		\
+			const0_rtx),					\
+	       gen_rtx (EXPR_LIST, VOIDmode,				\
+			gen_rtx (REG, (MODE),				\
+				 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1 \
+				  ? ((CUM).words ? 23 : 25)		\
+				  : (27 - (CUM).words -			\
+				     FUNCTION_ARG_SIZE ((MODE),		\
+							(TYPE))))),	\
+			const0_rtx)))					\
   /* Pass this parameter in the stack.  */				\
   : 0)
 
