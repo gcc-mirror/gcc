@@ -1,3 +1,7 @@
+Wed Feb 26 19:46:25 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* objc-act.c: (mark_referenced_methods): Fix compilation problem.
+
 2003-02-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcov-dump.c (print_prefix): Fix signedness warning.
