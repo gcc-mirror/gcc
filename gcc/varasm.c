@@ -1711,7 +1711,7 @@ assemble_name (file, name)
   if (name[0] == '*')
     fputs (&name[1], file);
   else
-    ASM_OUTPUT_LABELREF (file, real_name);
+    ASM_OUTPUT_LABELREF (file, name);
 }
 
 /* Allocate SIZE bytes writable static space with a gensym name

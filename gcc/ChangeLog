@@ -986,10 +986,6 @@ Sat Jan  6 00:09:34 2001  J"orn Rennecke <amylaar@redhat.com>
 	* pa.md (return, return_internal): Modify patterns to prevent regrename
 	mucking with the return pointer.
 
-2001-01-05  Mike Stump  <mrs@wrs.com>
-
-	* varasm.c (assemble_name): Ensure we output the stripped name.
-
 2001-01-05  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor) [case MEM]: Revert 10-31 change.
