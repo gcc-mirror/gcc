@@ -49,7 +49,7 @@ check-script-install: $(top_builddir)/mkcheck
 baseline_file = @baseline_file@
 check-abi: $(top_builddir)/testsuite/abi_check
 	-(cd testsuite; \
-	  abi_check @baseline_file@)
+	  ./abi_check ${baseline_file})
 
 # These rules are messy, but are hella worth it.
 doxygen:
