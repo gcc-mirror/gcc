@@ -2861,8 +2861,8 @@ simplify_unary_operation (code, mode, op, op_mode)
     }
 #endif
 
-  else if (GET_CODE (op) == CONST_INT
-	   && width <= HOST_BITS_PER_WIDE_INT && width > 0)
+  if (GET_CODE (op) == CONST_INT
+      && width <= HOST_BITS_PER_WIDE_INT && width > 0)
     {
       register HOST_WIDE_INT arg0 = INTVAL (op);
       register HOST_WIDE_INT val;
