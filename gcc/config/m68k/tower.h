@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1994 Free Software Foundation, Inc.
 
    Written by Robert Andersson, International Systems, Oslo, Norway.
    Please send bug reports, questions and improvements to ra@intsys.no.
@@ -95,6 +95,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 {"%d0", "%d1", "%d2", "%d3", "%d4", "%d5", "%d6", "%d7",                      \
  "%a0", "%a1", "%a2", "%a3", "%a4", "%a5", "%a6", "%sp",                      \
  "%fp0", "%fp1", "%fp2", "%fp3", "%fp4", "%fp5", "%fp6", "%fp7"};
+
+#undef REGISTER_PREFIX
+#define REGISTER_PREFIX "%"
+
+#undef IMMEDIATE_PREFIX
+#define IMMEDIATE_PREFIX
 
 /* We do not want leading underscores.  */
 
