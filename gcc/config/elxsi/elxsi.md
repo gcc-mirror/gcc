@@ -1,7 +1,6 @@
-;;- Machine description for GNU compiler
-;;- Elxsi Version
-;;   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
-;;  This port done by Mike Stump <mrs@cygnus.com> in 1988, and is the first
+;;- Machine description for GNU compiler, Elxsi Version
+;;  Copyright (C) 1987, 1988, 1992, 1994 Free Software Foundation, Inc.
+;;  Contributed by Mike Stump <mrs@cygnus.com> in 1988, and is the first
 ;;  64 bit port of GNU CC.
 ;;  Based upon the VAX port.
 
@@ -792,14 +791,6 @@
 ")
 
 
-
-(define_insn "lshldi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(lshift:DI (match_operand:DI 1 "register_operand" "r")
-		   (match_operand:SI 2 "general_operand" "rn")))]
-  ""
-  "sll\\t%0,%1,%2")
-
 (define_insn "ashrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "r")

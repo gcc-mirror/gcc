@@ -1,6 +1,6 @@
 ;;- Machine description for GNU compiler, ns32000 Version
-;;   Copyright (C) 1988, 1994 Free Software Foundation, Inc.
-;;   Contributed by Michael Tiemann (tiemann@mcc.com)
+;;  Copyright (C) 1988, 1994 Free Software Foundation, Inc.
+;;  Contributed by Michael Tiemann (tiemann@mcc.com)
 
 ;; This file is part of GNU CC.
 
@@ -1548,27 +1548,6 @@
   "ashb %2,%0")
 
 ;; logical shift instructions
-
-(define_insn "lshlsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
-	(lshift:SI (match_operand:SI 1 "general_operand" "0")
-		   (match_operand:SI 2 "general_operand" "rmn")))]
-  ""
-  "lshd %2,%0")
-
-(define_insn "lshlhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
-	(lshift:HI (match_operand:HI 1 "general_operand" "0")
-		   (match_operand:SI 2 "general_operand" "rmn")))]
-  ""
-  "lshw %2,%0")
-
-(define_insn "lshlqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
-	(lshift:QI (match_operand:QI 1 "general_operand" "0")
-		   (match_operand:SI 2 "general_operand" "rmn")))]
-  ""
-  "lshb %2,%0")
 
 ;; Logical right shift on the 32k works by negating the shift count.
 (define_expand "lshrsi3"

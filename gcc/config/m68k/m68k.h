@@ -1,7 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
    Copyright (C) 1987, 1988, 1993, 1994 Free Software Foundation, Inc.
 
-
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -1391,7 +1390,6 @@ __transfer_from_trampoline ()					\
     break;							\
   case ASHIFT:							\
   case ASHIFTRT:						\
-  case LSHIFT:							\
   case LSHIFTRT:						\
     /* A shift by a big integer takes an extra instruction.  */ \
     if (GET_CODE (XEXP (X, 1)) == CONST_INT			\

@@ -983,7 +983,7 @@ extern enum reg_class regno_reg_class[];
     switch (GET_CODE (cc_status.value2))			\
       { case PLUS: case MINUS: case MULT:			\
 	case DIV: case UDIV: case MOD: case UMOD: case NEG:	\
-	case ASHIFT: case LSHIFT: case ASHIFTRT: case LSHIFTRT:	\
+	case ASHIFT:  case ASHIFTRT: case LSHIFTRT:		\
 	case ROTATE: case ROTATERT:				\
 	  if (GET_MODE (cc_status.value2) != VOIDmode)		\
 	    cc_status.flags |= CC_NO_OVERFLOW;			\

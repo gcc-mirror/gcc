@@ -1,6 +1,5 @@
 ;;- Machine description for GNU compiler, Clipper Version
-;;   Copyright (C) 1987, 1988, 1991, 1993 Free Software Foundation, Inc.
-
+;;   Copyright (C) 1987, 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
 ;; Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 ;; This file is part of GNU CC.
@@ -1129,25 +1128,6 @@
   "shlw   %2,%0"
  [(set_attr "type" "arith")])
 
-(define_insn "lshldi3"
-  [(set (match_operand:DI 0 "int_reg_operand" "=r,r")
-	(lshift:DI (match_operand:DI 1 "int_reg_operand" "0,0")
-		   (match_operand:SI 2 "nonmemory_operand" "r,n")))]
-  ""
-  "@
-   shll   %2,%0
-   shlli  %2,%0"
- [(set_attr "type" "arith")])
-
-(define_insn "lshlsi3"
-  [(set (match_operand:SI 0 "int_reg_operand" "=r,r")
-	(lshift:SI (match_operand:SI 1 "int_reg_operand" "0,0")
-		   (match_operand:SI 2 "nonmemory_operand" "r,n")))]
-  ""
-  "@
-   shlw   %2,%0
-   shli   %2,%0"
- [(set_attr "type" "arith")])
 
 ;;
 ;; rotate insn

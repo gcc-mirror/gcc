@@ -1,8 +1,6 @@
-;;- Machine description for GNU compiler
-;;- Fujitsu Gmicro Version
-;;- Ported by M.Yuhara, Fujitsu Laboratories LTD.
-;;
-;;   Copyright (C) 1990 Free Software Foundation, Inc.
+;;- Machine description for GNU compiler, Fujitsu Gmicro Version
+;;  Copyright (C) 1990, 1994 Free Software Foundation, Inc.
+;;  Contributed by M.Yuhara, Fujitsu Laboratories LTD.
 
 ;; This file is part of GNU CC.
 
@@ -1858,50 +1856,86 @@
 
 ;; logical shift instructions
 
-(define_insn "lshlsi3"
+;; Logical right shift on the gmicro works by negating the shift count,
+;; then emitting a right shift with the shift count negated.  This means
+;; that all actual shift counts in the RTL will be positive.  This 
+;; prevents converting shifts to ZERO_EXTRACTs with negative positions,
+;; which isn't valid.
+
+(define_expand "lshrsi3"
+  [(set (match_operand:SI 0 "general_operand" "=g")
+	(lshiftrt:SI (match_operand:SI 1 "general_operand" "g")
+		     (match_operand:SI 2 "general_operand" "g")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+}")
+
+(define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=rm")
-	(lshift:SI (match_operand:SI 1 "general_operand" "0")
-		   (match_operand:SI 2 "general_operand" "rmi")))]
+	(lshiftrt:SI (match_operand:SI 1 "general_operand" "0")
+		     (match_operand:SI 2 "const_int_operand" "n")))]
+  ""
+  "shl.w %n2,%0")
+
+(define_insn ""
+  [(set (match_operand:SI 0 "general_operand" "=rm")
+	(lshiftrt:SI (match_operand:SI 1 "general_operand" "0")
+		     (neg:SI (match_operand:SI 2 "general_operand" "rm"))))]
   ""
   "shl.w %2,%0")
 
-(define_insn "lshlhi3"
+(define_expand "lshrhi3"
+  [(set (match_operand:HI 0 "general_operand" "=g")
+	(lshiftrt:HI (match_operand:HI 1 "general_operand" "g")
+		     (match_operand:HI 2 "general_operand" "g")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    operands[2] = gen_rtx (NEG, HImode, negate_rtx (HImode, operands[2]));
+}")
+
+(define_insn ""
   [(set (match_operand:HI 0 "general_operand" "=rm")
-	(lshift:HI (match_operand:HI 1 "general_operand" "0")
-		   (match_operand:HI 2 "general_operand" "rmi")))]
+	(lshiftrt:HI (match_operand:HI 1 "general_operand" "0")
+		     (match_operand:HI 2 "const_int_operand" "n")))]
+  ""
+  "shl.h %n2,%0")
+
+(define_insn ""
+  [(set (match_operand:HI 0 "general_operand" "=rm")
+	(lshiftrt:HI (match_operand:HI 1 "general_operand" "0")
+		     (neg:HI (match_operand:HI 2 "general_operand" "rm"))))]
   ""
   "shl.h %2,%0")
 
-(define_insn "lshlqi3"
+(define_expand "lshrqi3"
+  [(set (match_operand:QI 0 "general_operand" "=g")
+	(lshiftrt:QI (match_operand:QI 1 "general_operand" "g")
+		     (match_operand:QI 2 "general_operand" "g")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[2]) != CONST_INT)
+    operands[2] = gen_rtx (NEG, QImode, negate_rtx (QImode, operands[2]));
+}")
+
+(define_insn ""
   [(set (match_operand:QI 0 "general_operand" "=rm")
-	(lshift:QI (match_operand:QI 1 "general_operand" "0")
-		   (match_operand:QI 2 "general_operand" "rmi")))]
+	(lshiftrt:QI (match_operand:QI 1 "general_operand" "0")
+		     (match_operand:QI 2 "const_int_operand" "n")))]
+  ""
+  "shl.b %n2,%0")
+
+(define_insn ""
+  [(set (match_operand:QI 0 "general_operand" "=rm")
+	(lshiftrt:QI (match_operand:QI 1 "general_operand" "0")
+		     (neg:QI (match_operand:QI 2 "general_operand" "rm"))))]
   ""
   "shl.b %2,%0")
-
-;; lshiftrt -> lshift
-(define_expand "lshrsi3"
-  [(set (match_operand:SI 0 "general_operand" "=rm")
-	(lshift:SI (match_operand:SI 1 "general_operand" "0")
-		     (match_operand:SI 2 "general_operand" "rmi")))]
-  ""
-  " { operands[2] = negate_rtx (SImode, operands[2]); }")
-
-;; lshiftrt -> lshift
-(define_expand "lshrhi3"
-  [(set (match_operand:HI 0 "general_operand" "=rm")
-	(lshift:HI (match_operand:HI 1 "general_operand" "0")
-		     (match_operand:HI 2 "general_operand" "rmi")))]
-  ""
-  " { operands[2] = negate_rtx (HImode, operands[2]); }")
-
-;; lshiftrt -> lshift
-(define_expand "lshrqi3"
-  [(set (match_operand:QI 0 "general_operand" "=rm")
-	(lshift:QI (match_operand:QI 1 "general_operand" "0")
-		     (match_operand:QI 2 "general_operand" "rmi")))]
-  ""
-  " { operands[2] = negate_rtx (QImode, operands[2]); }")
 
 ;; rotate instructions
 

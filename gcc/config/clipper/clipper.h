@@ -1,6 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Clipper version.
-   Copyright (C) 1987, 1988, 1991, 1993 Free Software Foundation, Inc.
-
+   Copyright (C) 1987, 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 This file is part of GNU CC.
@@ -879,7 +878,6 @@ do									      \
   case MOD:						\
   case UMOD:						\
     return COSTS_N_INSNS (40);				\
-  case LSHIFT:						\
   case ASHIFT:						\
   case LSHIFTRT:					\
   case ASHIFTRT:					\

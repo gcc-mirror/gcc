@@ -1,7 +1,6 @@
-;;- Machine description for GNU compiler
-;;- AT&T we32000 Version
-;;  Contributed by John Wehle (john@feith1.uucp)
-;;   Copyright (C) 1991-1992 Free Software Foundation, Inc.
+;; Machine description for GNU compiler, AT&T we32000 Version
+;; Copyright (C) 1991, 1992, 1994 Free Software Foundation, Inc.
+;; Contributed by John Wehle (john@feith1.uucp)
 
 ;; This file is part of GNU CC.
 
@@ -681,13 +680,6 @@
   "ARSW3 %2, %1, %0")
 
 ;; logical shift instructions
-
-;; (define_insn "lshlsi3"
-;;   [(set (match_operand:SI 0 "nonimmediate_operand" "=mr")
-;;         (lshift:SI (match_operand:SI 1 "general_operand" "mri")
-;;                    (match_operand:SI 2 "general_operand" "mri")))]
-;;   ""
-;;   "LLSW3 %2, %1, %0")
 
 (define_insn "lshrsi3"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=mr")
