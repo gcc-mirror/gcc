@@ -56,9 +56,9 @@ namespace std {
 #define _GLIBCPP_BASIC_FILE_ENCAPSULATION 1
   typedef FILE __c_file_type;
 
-  typedef _IO_wide_data __c_wfile_type;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
+  typedef _IO_wide_data __c_wfile_type;
   extern "C" struct __c_libio_codecvt { };
 #endif 
 
