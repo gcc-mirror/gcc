@@ -3854,6 +3854,7 @@ init_cumulative_args (cum, fntype, libname)
     }
 
   *cum = zero_cum;
+  cum->prototype = (fntype && TYPE_ARG_TYPES (fntype));
 
   /* Determine if this function has variable arguments.  This is
      indicated by the last argument being 'void_type_mode' if there
@@ -6650,7 +6651,7 @@ mips_emit_frame_related_store (mem, reg, offset)
     }
   else
     dwarf_expr = mips_frame_set (GET_MODE (reg), REGNO (reg), offset);
-      
+
   mips_annotate_frame_insn (emit_move_insn (mem, reg), dwarf_expr);
 }
 
