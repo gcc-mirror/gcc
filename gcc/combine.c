@@ -1728,17 +1728,17 @@ try_combine (i3, i2, i1)
 	    ? gen_rtx_SET (VOIDmode, i1dest, i1src) : PATTERN (i1));
 
      if (added_sets_2)
-	{
-	  /* If there is no I1, use I2's body as is.  We used to also not do
-	     the subst call below if I2 was substituted into I3,
-	     but that could lose a simplification.  */
-	  if (i1 == 0)
-	    XVECEXP (newpat, 0, --total_sets) = i2pat;
-	  else
-	    /* See comment where i2pat is assigned.  */
-	    XVECEXP (newpat, 0, --total_sets)
-	      = subst (i2pat, i1dest, i1src, 0, 0);
-	}
+       {
+	 /* If there is no I1, use I2's body as is.  We used to also not do
+	    the subst call below if I2 was substituted into I3,
+	    but that could lose a simplification.  */
+	 if (i1 == 0)
+	   XVECEXP (newpat, 0, --total_sets) = i2pat;
+	 else
+	   /* See comment where i2pat is assigned.  */
+	   XVECEXP (newpat, 0, --total_sets)
+	     = subst (i2pat, i1dest, i1src, 0, 0);
+       }
     }
 
   /* We come here when we are replacing a destination in I2 with the
