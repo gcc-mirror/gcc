@@ -44,10 +44,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 # define ENOTDIR 0
 #endif
 
-/* Suppress warning about function macros used w/o arguments in traditional
-   C.  It is unlikely that glibc's strcmp macro helps this file at all.  */
-#undef strcmp
-
 /* This structure is used for the table of all includes.  */
 struct include_file {
   const char *name;		/* actual path name of file */
@@ -98,7 +94,7 @@ static char *remap_filename 	PARAMS ((cpp_reader *, char *,
 static struct cpp_path *search_from PARAMS ((cpp_reader *,
 						enum include_type));
 static struct include_file *
-	find_include_file PARAMS ((cpp_reader *, const cpp_token *,
+	find_include_file PARAMS ((cpp_reader *, const char *, int,
 				   enum include_type));
 static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
 static struct include_file *validate_pch PARAMS ((cpp_reader *,
@@ -597,21 +593,27 @@ cpp_included (pfile, fname)
   return 0;
 }
 
-/* Search for HEADER.  Return 0 if there is no such file (or it's
+/* Search for FNAME.  Return 0 if there is no such file (or it's
    un-openable), in which case an error code will be in errno.  If
    there is no include path to use it returns NO_INCLUDE_PATH,
    otherwise an include_file structure.  If this request originates
    from a directive of TYPE #include_next, set INCLUDE_NEXT to true.  */
 static struct include_file *
-find_include_file (pfile, header, type)
+find_include_file (pfile, fname, angle_brackets, type)
      cpp_reader *pfile;
-     const cpp_token *header;
+     const char *fname;
+     int angle_brackets;
      enum include_type type;
 {
-  const char *fname = (const char *) header->val.str.text;
   struct cpp_path *path;
   struct include_file *file;
   char *name, *n;
+
+  if (*fname == '\0')
+    {
+      cpp_error (pfile, DL_ERROR, "empty file name");
+      return NO_INCLUDE_PATH;
+    }
 
   if (IS_ABSOLUTE_PATHNAME (fname))
     return open_file_pch (pfile, fname);
@@ -621,7 +623,7 @@ find_include_file (pfile, header, type)
      path use the normal search logic.  */
   if (type == IT_INCLUDE_NEXT && pfile->buffer->inc->foundhere)
     path = pfile->buffer->inc->foundhere->next;
-  else if (header->type == CPP_HEADER_NAME)
+  else if (angle_brackets)
     path = pfile->bracket_include;
   else
     path = search_from (pfile, type);
@@ -751,17 +753,18 @@ handle_missing_header (pfile, fname, angle_brackets)
    including HEADER, and the command line -imacros and -include.
    Returns true if a buffer was stacked.  */
 bool
-_cpp_execute_include (pfile, header, type)
+_cpp_execute_include (pfile, fname, angle_brackets, type)
      cpp_reader *pfile;
-     const cpp_token *header;
+     const char *fname;
+     int angle_brackets;
      enum include_type type;
 {
   bool stacked = false;
-  struct include_file *inc = find_include_file (pfile, header, type);
+  struct include_file *inc;
 
+  inc = find_include_file (pfile, fname, angle_brackets, type);
   if (inc == 0)
-    handle_missing_header (pfile, (const char *) header->val.str.text,
-			   header->type == CPP_HEADER_NAME);
+    handle_missing_header (pfile, fname, angle_brackets);
   else if (inc != NO_INCLUDE_PATH)
     {
       stacked = stack_include_file (pfile, inc);
@@ -777,12 +780,14 @@ _cpp_execute_include (pfile, header, type)
    file.  If it cannot be located or dated, return -1, if it is newer
    newer, return 1, otherwise 0.  */
 int
-_cpp_compare_file_date (pfile, header)
+_cpp_compare_file_date (pfile, fname, angle_brackets)
      cpp_reader *pfile;
-     const cpp_token *header;
+     const char *fname;
+     int angle_brackets;
 {
-  struct include_file *inc = find_include_file (pfile, header, 0);
+  struct include_file *inc;
 
+  inc = find_include_file (pfile, fname, angle_brackets, IT_INCLUDE);
   if (inc == NULL || inc == NO_INCLUDE_PATH)
     return -1;
 
@@ -825,15 +830,9 @@ cpp_push_include (pfile, filename)
      cpp_reader *pfile;
      const char *filename;
 {
-  cpp_token header;
-
-  header.type = CPP_STRING;
-  header.val.str.text = (const unsigned char *) filename;
-  header.val.str.len = strlen (filename);
   /* Make the command line directive take up a line.  */
   pfile->line++;
-
-  return _cpp_execute_include (pfile, &header, IT_CMDLINE);
+  return _cpp_execute_include (pfile, filename, false, IT_CMDLINE);
 }
 
 /* Do appropriate cleanup when a file INC's buffer is popped off the

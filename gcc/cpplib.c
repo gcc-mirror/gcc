@@ -104,8 +104,8 @@ static void directive_diagnostics
 	PARAMS ((cpp_reader *, const directive *, int));
 static void run_directive	PARAMS ((cpp_reader *, int,
 					 const char *, size_t));
-static const cpp_token *glue_header_name PARAMS ((cpp_reader *));
-static const cpp_token *parse_include PARAMS ((cpp_reader *));
+static char *glue_header_name	PARAMS ((cpp_reader *));
+static const char *parse_include PARAMS ((cpp_reader *, int *));
 static void push_conditional	PARAMS ((cpp_reader *, int, int,
 					 const cpp_hashnode *));
 static unsigned int read_flag	PARAMS ((cpp_reader *, unsigned int));
@@ -570,96 +570,89 @@ do_undef (pfile)
 
 /* Helper routine used by parse_include.  Reinterpret the current line
    as an h-char-sequence (< ... >); we are looking at the first token
-   after the <.  Returns the header as a token, or NULL on failure.  */
-static const cpp_token *
+   after the <.  Returns a malloced filename.  */
+static char *
 glue_header_name (pfile)
      cpp_reader *pfile;
 {
-  cpp_token *header = NULL;
   const cpp_token *token;
-  unsigned char *buffer;
+  char *buffer;
   size_t len, total_len = 0, capacity = 1024;
 
   /* To avoid lexed tokens overwriting our glued name, we can only
      allocate from the string pool once we've lexed everything.  */
-  buffer = (unsigned char *) xmalloc (capacity);
+  buffer = xmalloc (capacity);
   for (;;)
     {
       token = get_token_no_padding (pfile);
 
-      if (token->type == CPP_GREATER || token->type == CPP_EOF)
+      if (token->type == CPP_GREATER)
 	break;
+      if (token->type == CPP_EOF)
+	{
+	  cpp_error (pfile, DL_ERROR, "missing terminating > character");
+	  break;
+	}
 
       len = cpp_token_len (token);
       if (total_len + len > capacity)
 	{
 	  capacity = (capacity + len) * 2;
-	  buffer = (unsigned char *) xrealloc (buffer, capacity);
+	  buffer = xrealloc (buffer, capacity);
 	}
 
       if (token->flags & PREV_WHITE)
 	buffer[total_len++] = ' ';
 
-      total_len = cpp_spell_token (pfile, token, &buffer[total_len]) - buffer;
+      total_len = (cpp_spell_token (pfile, token, (uchar *) &buffer[total_len])
+		   - (uchar *) buffer);
     }
 
-  if (token->type == CPP_EOF)
-    cpp_error (pfile, DL_ERROR, "missing terminating > character");
-  else
-    {
-      unsigned char *token_mem = _cpp_unaligned_alloc (pfile, total_len + 1);
-      memcpy (token_mem, buffer, total_len);
-      token_mem[total_len] = '\0';
-
-      header = _cpp_temp_token (pfile);
-      header->type = CPP_HEADER_NAME;
-      header->flags = 0;
-      header->val.str.len = total_len;
-      header->val.str.text = token_mem;
-    }
-
-  free ((PTR) buffer);
-  return header;
+  buffer[total_len] = '\0';
+  return buffer;
 }
 
-/* Returns the header string of #include, #include_next, #import and
-   #pragma dependency.  Returns NULL on error.  */
-static const cpp_token *
-parse_include (pfile)
+/* Returns the file name of #include, #include_next, #import and
+   #pragma dependency.  The string is malloced and the caller should
+   free it.  Returns NULL on error.  */
+static const char *
+parse_include (pfile, pangle_brackets)
      cpp_reader *pfile;
+     int *pangle_brackets;
 {
-  const unsigned char *dir;
+  char *fname;
   const cpp_token *header;
-
-  if (pfile->directive == &dtable[T_PRAGMA])
-    dir = U"pragma dependency";
-  else
-    dir = pfile->directive->name;
 
   /* Allow macro expansion.  */
   header = get_token_no_padding (pfile);
-  if (header->type != CPP_STRING && header->type != CPP_HEADER_NAME)
+  if (header->type == CPP_STRING || header->type == CPP_HEADER_NAME)
     {
-      if (header->type != CPP_LESS)
-	{
-	  cpp_error (pfile, DL_ERROR,
-		     "#%s expects \"FILENAME\" or <FILENAME>", dir);
-	  return NULL;
-	}
-
-      header = glue_header_name (pfile);
-      if (header == NULL)
-	return header;
+      fname = xmalloc (header->val.str.len + 1);
+      memcpy (fname, header->val.str.text, header->val.str.len);
+      fname[header->val.str.len] = '\0';
+      *pangle_brackets = header->type == CPP_HEADER_NAME;
     }
-
-  if (header->val.str.len == 0)
+  else if (header->type == CPP_LESS)
     {
-      cpp_error (pfile, DL_ERROR, "empty file name in #%s", dir);
+      fname = glue_header_name (pfile);
+      *pangle_brackets = 1;
+    }
+  else
+    {
+      const unsigned char *dir;
+
+      if (pfile->directive == &dtable[T_PRAGMA])
+	dir = U"pragma dependency";
+      else
+	dir = pfile->directive->name;
+      cpp_error (pfile, DL_ERROR, "#%s expects \"FILENAME\" or <FILENAME>",
+		 dir);
+
       return NULL;
     }
 
   check_eol (pfile);
-  return header;
+  return fname;
 }
 
 /* Handle #include, #include_next and #import.  */
@@ -668,25 +661,29 @@ do_include_common (pfile, type)
      cpp_reader *pfile;
      enum include_type type;
 {
-  const cpp_token *header = parse_include (pfile);
-  if (!header)
+  const char *fname;
+  int angle_brackets;
+
+  fname = parse_include (pfile, &angle_brackets);
+  if (!fname)
     return;
 
   /* Prevent #include recursion.  */
   if (pfile->line_maps.depth >= CPP_STACK_MAX)
+    cpp_error (pfile, DL_ERROR, "#include nested too deeply");
+  else
     {
-      cpp_error (pfile, DL_ERROR, "#include nested too deeply");
-      return;
+      /* Get out of macro context, if we are.  */
+      skip_rest_of_line (pfile);
+
+      if (pfile->cb.include)
+	(*pfile->cb.include) (pfile, pfile->directive_line,
+			      pfile->directive->name, fname, angle_brackets);
+
+      _cpp_execute_include (pfile, fname, angle_brackets, type);
     }
 
-  /* Get out of macro context, if we are.  */
-  skip_rest_of_line (pfile);
-
-  if (pfile->cb.include)
-    (*pfile->cb.include) (pfile, pfile->directive_line,
-			  pfile->directive->name, header);
-
-  _cpp_execute_include (pfile, header, type);
+  free ((PTR) fname);
 }
 
 static void
@@ -1305,27 +1302,27 @@ static void
 do_pragma_dependency (pfile)
      cpp_reader *pfile;
 {
-  const cpp_token *header;
-  int ordering;
+  const char *fname;
+  int angle_brackets, ordering;
 
-  header = parse_include (pfile);
-  if (!header)
+  fname = parse_include (pfile, &angle_brackets);
+  if (!fname)
     return;
 
-  ordering = _cpp_compare_file_date (pfile, header);
+  ordering = _cpp_compare_file_date (pfile, fname, angle_brackets);
   if (ordering < 0)
-    cpp_error (pfile, DL_WARNING, "cannot find source %s",
-	       cpp_token_as_text (pfile, header));
+    cpp_error (pfile, DL_WARNING, "cannot find source file %s", fname);
   else if (ordering > 0)
     {
-      cpp_error (pfile, DL_WARNING, "current file is older than %s",
-		 cpp_token_as_text (pfile, header));
+      cpp_error (pfile, DL_WARNING, "current file is older than %s", fname);
       if (cpp_get_token (pfile)->type != CPP_EOF)
 	{
 	  _cpp_backup_tokens (pfile, 1);
 	  do_diagnostic (pfile, DL_WARNING, 0);
 	}
     }
+
+  free ((PTR) fname);
 }
 
 /* Get a token but skip padding.  */
