@@ -97,6 +97,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_free free
 
 extern void free ();
+extern rtx read_rtx ();
 
 static void fatal ();
 void fancy_abort ();
@@ -3830,7 +3831,6 @@ main (argc, argv)
 {
   rtx desc;
   FILE *infile;
-  extern rtx read_rtx ();
   register int c;
   struct attr_desc *attr;
   struct attr_value *av;

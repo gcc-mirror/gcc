@@ -57,6 +57,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_free free
 
 extern void free ();
+extern rtx read_rtx ();
 
 /* Data structure for a listhead of decision trees.  The alternatives
    to a node are kept in a doublely-linked list so we can easily add nodes
@@ -1650,7 +1651,6 @@ main (argc, argv)
   struct decision_head recog_tree;
   struct decision_head split_tree;
   FILE *infile;
-  extern rtx read_rtx ();
   register int c;
 
   obstack_init (rtl_obstack);

@@ -32,6 +32,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_free free
 
 extern void free ();
+extern rtx read_rtx ();
 
 /* flags to determine output of machine description dependent #define's.  */
 static int max_recog_operands;
@@ -257,7 +258,6 @@ main (argc, argv)
 {
   rtx desc;
   FILE *infile;
-  extern rtx read_rtx ();
   register int c;
 
   obstack_init (rtl_obstack);
