@@ -1,3 +1,24 @@
+2002-06-04  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (mode_mask_operand): Simplify without ifdefs.
+	(print_operand) ['U']: Likewise.
+	(alpha_expand_unaligned_store): Correct constants for 32-bit cross.
+	(alpha_expand_unaligned_store_words): Likewise.
+	(alpha_expand_builtin_vector_binop): Fix typo.
+	(enum alpha_builtin, code_for_builtin): Add remaining ext, ins, msk,
+	umulh, and cix insns.
+	(one_arg_builtins): Add cix builtins.
+	(two_arg_builtins): Add ext, ins, msk, umulh builtins.
+	(alpha_expand_builtin): Fix typo in arity.
+	* config/alpha/alpha.md (UNSPEC_CTLZ, UNSPEC_CTPOP): New.
+	(builtin_extbl, builtin_extwl, builtin_extll, builtin_extwh,
+	builtin_extlh, builtin_insbl, builtin_inswl, builtin_insll,
+	builtin_insql, builtin_inswh, builtin_inslh, builtin_insqh,
+	builtin_mskbl, builtin_mskwl, builtin_mskll, builtin_mskql,
+	builtin_mskwh, builtin_msklh, builtin_mskqh, builtin_cttz,
+	builtin_ctlz, builtin_ctpop): New.
+	* doc/extend.texi (Alpha Built-in Functions): Update.
+
 2002-06-04  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gengtype.c (write_gc_root): Don't unnecessarily prevent
