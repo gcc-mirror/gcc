@@ -120,6 +120,8 @@ extern int target_flags;
 
 #define TARGET_SWITCHES  \
   { {"fpu", 1},			\
+    {"no-fpu", -1},		\
+    {"hard-float", 1},		\
     {"soft-float", -1},		\
     {"epilogue", 2},		\
     {"no-epilogue", -2},	\
@@ -299,6 +301,21 @@ extern int target_flags;
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1}
+
+/* If !TARGET_FPU, then make the fp registers fixed so that they won't
+   be allocated.  */
+
+#define CONDITIONAL_REGISTER_USAGE				\
+do								\
+  {								\
+    if (! TARGET_FPU)						\
+      {								\
+	int regno;						\
+	for (regno = 32; regno < 64; regno++)			\
+	  fixed_regs[regno] = 1;				\
+      }								\
+  }								\
+while (0)
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -654,9 +671,9 @@ extern char leaf_reg_backmap[];
 
 /* Some subroutine macros specific to this machine.  */
 #define BASE_RETURN_VALUE_REG(MODE) \
- ((MODE) == SFmode || (MODE) == DFmode ? 32 : 8)
+ (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32 : 8)
 #define BASE_OUTGOING_VALUE_REG(MODE) \
- ((MODE) == SFmode || (MODE) == DFmode ? 32 : 24)
+ (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32 : 24)
 #define BASE_PASSING_ARG_REG(MODE) (8)
 #define BASE_INCOMING_ARG_REG(MODE) (24)
 
