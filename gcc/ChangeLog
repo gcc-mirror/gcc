@@ -1,3 +1,43 @@
+2002-07-07  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	Emit MMIX function prologue and epilogue as rtl.
+	* config/mmix/mmix.md ("call"): Use mmix_get_hard_reg_initial_val,
+	not unprototyped get_hard_reg_initial_val.
+	("call_value", "nonlocal_goto_receiver"): Ditto.
+	("return"): Make define_expand.  Move real insn to...
+	("*expanded_return"): New pattern.
+	("prologue", "epilogue"): New define_expands.
+	* config/mmix/mmix.h (MMIX_rO_REGNUM): New macro.
+	(struct machine_function): New member in_prologue.
+	(FIRST_PSEUDO_REGISTER): Adjust for including rO as register.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Ditto.
+	(MMIX_MMIXWARE_ABI_REG_ALLOC_ORDER): Ditto.
+	(MMIX_GNU_ABI_REG_ALLOC_ORDER, REG_CLASS_CONTENTS): Ditto.
+	(REGISTER_NAMES, ADDITIONAL_REGISTER_NAMES): Ditto.
+	(LOCAL_REGNO): Define.  Adjust comment.
+	* config/mmix/mmix.c (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS):
+	Consider regs_ever_live[MMIX_rJ_REGNUM], not just
+	leaf_function_p.
+	(MMIX_OUTPUT_REGNO): Don't translate registers while outputting
+	the prologue.
+	(mmix_target_asm_function_prologue): Make static.  Just mark that
+	the prologue is being emitted.  Move guts to...
+	(mmix_expand_prologue): New function.  Adjust for emitting
+	prologue as rtl.  For sizes, use HOST_WIDE_INT only.
+	(mmix_target_asm_function_epilogue): Make static.  Simply emit a
+	\n.  Move guts to...
+	(mmix_expand_epilogue): New function.  Adjust for emitting
+	epilogue as rtl.  For sizes, use HOST_WIDE_INT only.
+	(mmix_target_asm_function_end_prologue): Mark that the prologue
+	has ended.
+	(TARGET_ASM_FUNCTION_END_PROLOGUE): Define.
+	(mmix_conditional_register_usage): Improve comments.
+	(mmix_local_regno): New function.
+	(mmix_emit_sp_add, mmix_get_hard_reg_initial_val): Ditto.
+	* config/mmix/mmix-protos.h (mmix_local_regno): Prototype.
+	(mmix_expand_prologue, mmix_expand_epilogue): Ditto.
+	(mmix_get_hard_reg_initial_val): Ditto.
+
 2002-07-06  Andreas Jaeger  <aj@suse.de>
 
 	* toplev.c (set_fast_math_flags): Don't use ISO C style function
