@@ -1,7 +1,5 @@
 1998-06-16  Jason Merrill  <jason@yorick.cygnus.com>
 
-	* method.c (hack_identifier): Don't let a class template out.
-
 	* call.c (check_dtor_name): Split out.
 	(build_scoped_method_call): Use it.
 	(build_method_call): Use it.
