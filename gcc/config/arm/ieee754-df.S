@@ -1,6 +1,6 @@
 /* ieee754-df.S double-precision floating point support for ARM
 
-   Copyright (C) 2003  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
    Contributed by Nicolas Pitre (nico@cam.org)
 
    This file is free software; you can redistribute it and/or modify it
@@ -940,19 +940,19 @@ LSYM(Ldv_s):
 
 #ifdef L_cmpdf2
 
-FUNC_START gedf2
 ARM_FUNC_START gtdf2
+ARM_FUNC_ALIAS gedf2 gtdf2
 	mov	ip, #-1
 	b	1f
 
-FUNC_START ledf2
 ARM_FUNC_START ltdf2
+ARM_FUNC_ALIAS ledf2 ltdf2
 	mov	ip, #1
 	b	1f
 
-FUNC_START nedf2
-FUNC_START eqdf2
 ARM_FUNC_START cmpdf2
+ARM_FUNC_ALIAS nedf2 cmpdf2
+ARM_FUNC_ALIAS eqdf2 cmpdf2
 	mov	ip, #1			@ how should we specify unordered here?
 
 1:	stmfd	sp!, {r4, r5, lr}
