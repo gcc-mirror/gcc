@@ -531,12 +531,15 @@ bits in @code{target_flags}.  Its definition is an initializer
 with a subgrouping for each command option.
 
 Each subgrouping contains a string constant, that defines the option
-name, and a number, which contains the bits to set in
-@code{target_flags}.  A negative number says to clear bits instead;
-the negative of the number is which bits to clear.  The actual option
-name is made by appending @samp{-m} to the specified name.
+name, a number, which contains the bits to set in
+@code{target_flags}, and a second string which is the description
+displayed by --help.  If the number is negative then the bits specified
+by the number are cleared instead of being set.  If the description
+string is present but empty, then no help information will be displayed
+for that option.  The actual option name is made by appending @samp{-m}
+to the specified name. 
 
-One of the subgroupings should have a null string.  The number in
+One of the subgroupings should have an empty string.  The number in
 this grouping is the default value for @code{target_flags}.  Any
 target options act starting with that value.
 
@@ -545,9 +548,9 @@ with opposite meanings, and picks the latter as the default:
 
 @smallexample
 #define TARGET_SWITCHES \
-  @{ @{ "68020", 1@},      \
-    @{ "68000", -1@},     \
-    @{ "", 1@}@}
+  @{ @{ "68020", 1, "" @},      \
+    @{ "68000", -1, "Compile for the 68000" @}, \
+    @{ "", 1, "" @}@}
 @end smallexample
 
 @findex TARGET_OPTIONS
@@ -557,10 +560,10 @@ options that have values.  Its definition is an initializer with a
 subgrouping for each command option.
 
 Each subgrouping contains a string constant, that defines the fixed part
-of the option name, and the address of a variable.  The variable, type
-@code{char *}, is set to the variable part of the given option if the fixed
-part matches.  The actual option name is made by appending @samp{-m} to the
-specified name.
+of the option name, the address of a variable, and a description string.
+The variable, type @code{char *}, is set to the variable part of the
+given option if the fixed part matches.  The actual option name is made
+by appending @samp{-m} to the specified name.
 
 Here is an example which defines @samp{-mshort-data-@var{number}}.  If the
 given option is @samp{-mshort-data-512}, the variable @code{m88k_short_data}
@@ -569,7 +572,7 @@ will be set to the string @code{"512"}.
 @smallexample
 extern char *m88k_short_data;
 #define TARGET_OPTIONS \
- @{ @{ "short-data-", &m88k_short_data @} @}
+ @{ @{ "short-data-", &m88k_short_data, "Specify the size of the short data section" @} @}
 @end smallexample
 
 @findex TARGET_VERSION
