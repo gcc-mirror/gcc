@@ -298,6 +298,11 @@ update_path (path, key)
 	path = translate_name (path);
     }
 
+#ifdef UPDATE_PATH_HOST_CANONICALIZE
+/* Perform host dependant canonicalization when needed.  */
+UPDATE_PATH_HOST_CANONICALIZE (path, key);
+#endif
+
 #ifdef DIR_SEPARATOR_2
   /* Convert DIR_SEPARATOR_2 to DIR_SEPARATOR. */
   if (DIR_SEPARATOR != DIR_SEPARATOR_2)

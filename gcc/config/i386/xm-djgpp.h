@@ -54,3 +54,60 @@ Boston, MA 02111-1307, USA.  */
       strcat (xref_file, xref_ext); \
   } while (0)
 
+/* Change /dev/env/DJDIR/prefix/dir/ to canonical form so gcc_exec_prefix
+   is set properly in 'gcc.c'. It also helps to cut down the number of times
+   the value of the DJGPP environment variable 'DJDIR' is evaluated.  */
+#undef GCC_DRIVER_HOST_INITIALIZATION
+#define GCC_DRIVER_HOST_INITIALIZATION \
+  do { \
+    /* If the environment variable DJDIR is not defined, then DJGPP is not \
+       installed correctly and GCC will quickly become confused with the \
+       default prefix settings. Report the problem now so the user doesn't \
+       receive deceptive "file not found" error messages later.  */ \
+    char *djdir = getenv ("DJDIR"); \
+    if (djdir == NULL) \
+      { \
+        /* DJDIR is automatically defined by the DJGPP environment config \
+           file pointed to by the environment variable DJGPP. Examine DJGPP \
+           to try and figure out what's wrong.  */ \
+        char *djgpp = getenv ("DJGPP"); \
+        if (djgpp == NULL) \
+          fatal ("Environment variable DJGPP not defined."); \
+        else if (access (djgpp, R_OK) == 0) \
+          fatal ("Environment variable DJGPP points to missing file '%s'.", \
+                 djgpp); \
+        else \
+          fatal ("Environment variable DJGPP points to corrupt file '%s'.", \
+                  djgpp); \
+      } \
+    standard_exec_prefix = update_path (standard_exec_prefix, NULL); \
+    standard_bindir_prefix = update_path (standard_bindir_prefix, NULL); \
+    standard_startfile_prefix = update_path (standard_startfile_prefix, NULL); \
+    md_exec_prefix = update_path (md_exec_prefix, NULL); \
+  } while (0)
+
+/* Canonicalize paths containing '/dev/env/', especially those in
+   prefix.c.  */
+#define UPDATE_PATH_HOST_CANONICALIZE(PATH, KEY) \
+  do { \
+    if (strncmp (PATH, "/dev/env/", sizeof("/dev/env/") - 1) == 0) \
+      { \
+        static char *djdir; \
+        static int djdir_len; \
+        static char fixed_path[FILENAME_MAX + 1]; \
+        char *new_path; \
+        /* The default prefixes all use '/dev/env/DJDIR', so optimize \
+           for this. All other uses of '/dev/env/' go through \
+           libc's canonicalization function.  */ \
+        _fixpath (PATH, fixed_path); \
+        /* _fixpath removes any trailing '/', so add it back.  */ \
+        strcat (fixed_path, "/"); \
+        new_path = xstrdup (fixed_path); \
+        PATH = new_path; \
+        return PATH; \
+      } \
+    /* If DIR_SEPARATOR_2 isn't in PATH, nothing more need be done.  */ \
+    if (strchr (PATH, DIR_SEPARATOR_2) == NULL) \
+      return PATH; \
+  } while (0)
+

@@ -1,3 +1,22 @@
+2000-07-17  Mark Elbrecht  <snowball3@bigfoot.com>
+
+	* i386/x-djgpp: Delete code that conditionally modifies target_alias.
+	Delete code that conditionally modifies 'version'.
+	Delete X_CPPFLAGS. Add comment for SYSTEM_HEADER_DIR.
+	* i386/xm-djgpp.h (GCC_DRIVER_HOST_INITIALIZATION): New macro.
+	* gcc.c (main): Use it.
+	* config/i386/xm-djgpp.h (UPDATE_PATH_HOST_CANONICALIZE): New macro.
+	* prefix.c (update_path): Use it.
+	* i386/djgpp.h (STANDARD_INCLUDE_DIR): Define.
+	(MD_EXEC_PREFIX): Set to '/dev/env/DJDIR/bin/'.
+	(ASM_OUTPUT_SECTION_NAME): Add code attribute to sections containing
+	code.
+	(SUPPORTS_WEAK, SUPPORTS_ONE_ONLY): Default to true.
+	(SUBTARGET_SWITCHES): Adjust.
+	(WCHAR_UNSIGNED, WCHAR_TYPE_SIZE, WCHAR_TYPE): Undefine before
+	defining.
+	(WINT_TYPE, SIZE_TYPE, PTRDIFF_TYPE): Define.
+
 2000-08-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.h (flag_isoc94): Declare.

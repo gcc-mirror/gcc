@@ -5110,6 +5110,11 @@ main (argc, argv)
     --p;
   programname = p;
 
+#ifdef GCC_DRIVER_HOST_INITIALIZATION
+  /* Perform host dependant initialization when needed.  */
+  GCC_DRIVER_HOST_INITIALIZATION;
+#endif
+
 #ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
 #endif

@@ -18,7 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
 #include "dbxcoff.h"
 
 /* Don't assume anything about the header files. */
@@ -76,8 +75,12 @@ Boston, MA 02111-1307, USA.  */
 #undef TEXT_SECTION_ASM_OP
 #define TEXT_SECTION_ASM_OP "\t.section .text"
 
+/* Tell GCC where our standard include directory is.  */
+#undef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/dev/env/DJDIR/include/"
+
 /* Search for as.exe and ld.exe in DJGPP's binary directory. */ 
-#define MD_EXEC_PREFIX "$DJDIR/bin/"
+#define MD_EXEC_PREFIX "/dev/env/DJDIR/bin/"
 
 /* Correctly handle absolute filename detection in cp/xref.c */
 #define FILE_NAME_ABSOLUTE_P(NAME) \
@@ -161,10 +164,13 @@ dtor_section ()							\
     fprintf (FILE, "\n");			\
   } while (0)
 
-/* Allow (eg) __attribute__((section "locked")) to work */
+/* Tell GCC how to output a section name. Add "x" for code sections.  */
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)\
-  do {						\
-    fprintf (FILE, "\t.section %s\n", NAME);	\
+  do {									\
+    if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
+      fprintf ((FILE), "\t.section %s,\"x\"\n", (NAME));		\
+    else								\
+      fprintf ((FILE), "\t.section %s\n", (NAME));			\
   } while (0)
 
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
@@ -207,11 +213,25 @@ dtor_section ()							\
    in libgcc, nor call one in main().  */
 #define HAS_INIT_SECTION
 
-/* Definitions to set wchar_t type to 'unsigned short int' to help out
-   add-on Windows compilers for DJGPP. */
+/* Definitions for types and sizes. Wide characters are 16-bits long so
+   Win32 compiler add-ons will be wide character compatible.  */
+#undef WCHAR_UNSIGNED
 #define WCHAR_UNSIGNED 1
+
+#undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
+
+#undef WCHAR_TYPE
 #define WCHAR_TYPE "short unsigned int"
+
+#undef WINT_TYPE
+#define WINT_TYPE "int"
+
+#undef SIZE_TYPE
+#define SIZE_TYPE "long unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
 
 /* Used to be defined in xm-djgpp.h, but moved here for cross-compilers.  */
 #define LIBSTDCXX "-lstdcxx"
@@ -222,16 +242,16 @@ dtor_section ()							\
 
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES 		\
-  { "bnu210", MASK_BNU210, N_("Enable weak symbol and enhanced C++ template support. Binutils 2.9.5.1 or higher required.") }, \
-  { "no-bnu210", -MASK_BNU210, N_("Disable weak symbol and enhanced C++ template support.") },
+  { "bnu210", -MASK_BNU210, "Enable weak symbol and enhanced C++ template support. Binutils 2.10 or higher required." }, \
+  { "no-bnu210", MASK_BNU210, "Disable weak symbol and enhanced C++ template support." },
 
-/* Weak symbols and .gnu.linkonce are only in the binutils snapshots
-   and binutils-2.10.  So do it only when -mbnu210 is specified.  */
+/* Weak symbols and .gnu.linkonce are only in Binutils-2.10 and later. 
+   Default to using Binutils 2.10 features.  */
 #undef SUPPORTS_WEAK
-#define SUPPORTS_WEAK (target_flags & MASK_BNU210)
+#define SUPPORTS_WEAK ((target_flags & MASK_BNU210) == 0)
 
 #undef SUPPORTS_ONE_ONLY
-#define SUPPORTS_ONE_ONLY (target_flags & MASK_BNU210)
+#define SUPPORTS_ONE_ONLY ((target_flags & MASK_BNU210) == 0)
 
 /* Support for C++ templates.  */
 #undef MAKE_DECL_ONE_ONLY
