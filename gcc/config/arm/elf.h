@@ -60,16 +60,20 @@ Boston, MA 02111-1307, USA.  */
 /* Write the extra assembler code needed to declare a function properly.
    Some svr4 assemblers need to also have something extra said about the
    function's return value.  We allow for that here.  */
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
-  do {									\
-    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
-    assemble_name (FILE, NAME);						\
-    putc (',', FILE);							\
-    fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
-    putc ('\n', FILE);							\
-    ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
-    ASM_OUTPUT_LABEL(FILE, NAME);					\
-  } while (0)
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)	\
+  do							\
+    {							\
+      if (TARGET_POKE_FUNCTION_NAME)			\
+        arm_poke_function_name (FILE, NAME);		\
+      fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);		\
+      assemble_name (FILE, NAME);			\
+      putc (',', FILE);					\
+      fprintf (FILE, TYPE_OPERAND_FMT, "function");	\
+      putc ('\n', FILE);				\
+      ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));	\
+      ASM_OUTPUT_LABEL(FILE, NAME);			\
+    }							\
+  while (0)
 
 /* Write the extra assembler code needed to declare an object properly.  */
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\

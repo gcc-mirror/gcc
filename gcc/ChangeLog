@@ -1,3 +1,15 @@
+Fri May  7 09:54:11 1999  Nick Clifton  <nickc@cygnus.com>
+
+	Patch from: Nick Burrett  <nick.burrett@btinternet.com>
+
+	* arm.c (arm_poke_function_name): New function to implement
+	-mpoke-function-name.
+	* aof.h (ASM_DECLARE_FUNCTION_NAME): Call it.
+	* aout.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* elf.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* arm.h: Prototype it.
+	(TARGET_SWITCHES): Add `no-poke-function-name'.
+
 Fri May  7 14:19:31 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 	* fixinc/server.c (read_pipe_timeout): Declare volatile, modified
 	in signal handler.

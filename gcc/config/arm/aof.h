@@ -324,6 +324,8 @@ do {					\
 
 #define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL) \
 {						\
+  if (TARGET_POKE_FUNCTION_NAME)		\
+    arm_poke_function_name ((STREAM), (NAME));	\
   ASM_OUTPUT_LABEL (STREAM, NAME);		\
   if (! TREE_PUBLIC (DECL))			\
     {						\
