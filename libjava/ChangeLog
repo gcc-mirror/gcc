@@ -1,3 +1,25 @@
+2003-12-31  Guilhem Lavaux  <guilhem@kaffe.org>
+
+	* java/io/ObjectOutputStream.java
+	(putFields): Reindented. Fixed behaviour: currentPutField should be
+	null
+	before calling this method.
+	(writeFields): Likewise.
+	(markFieldsWritten): Fixed the exception message.
+	(callWriteMethod): Ensure currentPutField is null.
+	(getBooleanField): Translate IllegalArgumentException into
+	InvalidClassException.
+	(getByteField): Likewise.
+	(getCharField): Likewise.
+	(getDoubleField): Likewise.
+	(getFloatField): Likewise.
+	(getIntField): Likewise.
+	(getLongField): Likewise.
+	(getShortField): Likewise.
+	(getObjectField): Check the type code before returning the object.
+	(getField): Translate NoSuchFieldException into InvalidClassException
+	directly.
+
 2003-12-31 Guilhem Lavaux <guilhem@kaffe.org>
 
 	* java/net/URL.java
