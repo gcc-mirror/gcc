@@ -277,6 +277,11 @@ round_up (tree value, int divisor)
 {
   tree t;
 
+  if (divisor == 0)
+    abort ();
+  if (divisor == 1)
+    return value;
+
   /* If divisor is a power of two, simplify this to bit manipulation.  */
   if (divisor == (divisor & -divisor))
     {
@@ -301,6 +306,11 @@ tree
 round_down (tree value, int divisor)
 {
   tree t;
+
+  if (divisor == 0)
+    abort ();
+  if (divisor == 1)
+    return value;
 
   /* If divisor is a power of two, simplify this to bit manipulation.  */
   if (divisor == (divisor & -divisor))
