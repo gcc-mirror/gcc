@@ -646,7 +646,7 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
   int all_one = 0;
 
   if (! SLOW_UNALIGNED_ACCESS (word_mode, struct_align))
-    struct_align = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+    struct_align = BIGGEST_ALIGNMENT;
     
   /* There is a case not handled here:
      a structure with a known alignment of just a halfword
@@ -674,7 +674,7 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
 	 a word, we won't be doing the extraction the normal way.  */
 
       mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT,
-			    struct_align * BITS_PER_UNIT, word_mode,
+			    struct_align, word_mode,
 			    GET_CODE (op0) == MEM && MEM_VOLATILE_P (op0));
 
       if (mode == VOIDmode)
