@@ -75,6 +75,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
+/* Which processor to schedule for. The cpu attribute defines a list that
+   mirrors this list, so changes to alpha.md must be made at the same time.  */
+
+enum processor_type
+ {PROCESSOR_EV4,			/* 2106[46]{a,} */
+  PROCESSOR_EV5};			/* 21164{a,} */
+
+extern enum processor_type alpha_cpu;
+
 enum alpha_trap_precision
 {
   ALPHA_TP_PROG,	/* No precision (default).  */
@@ -182,12 +191,14 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 	extern char *m88k_short_data;
 	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
+extern char *alpha_cpu_string;  /* For -mcpu=ev[4|5] */
 extern char *alpha_fprm_string;	/* For -mfp-rounding-mode=[n|m|c|d] */
 extern char *alpha_fptm_string;	/* For -mfp-trap-mode=[n|u|su|sui]  */
 extern char *alpha_tp_string;	/* For -mtrap-precision=[p|f|i] */
 
 #define TARGET_OPTIONS				\
 {						\
+  {"cpu=",		&alpha_cpu_string},	\
   {"fp-rounding-mode=",	&alpha_fprm_string},	\
   {"fp-trap-mode=",	&alpha_fptm_string},	\
   {"trap-precision=",	&alpha_tp_string},	\
@@ -1540,7 +1551,13 @@ extern void final_prescan_insn ();
   case CONST:							\
   case SYMBOL_REF:						\
   case LABEL_REF:						\
-    return COSTS_N_INSNS (3);
+  switch (alpha_cpu)						\
+    {								\
+    case PROCESSOR_EV4:						\
+      return COSTS_N_INSNS (3);					\
+    case PROCESSOR_EV5:						\
+      return COSTS_N_INSNS (2);					\
+    }
     
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  */
@@ -1548,39 +1565,85 @@ extern void final_prescan_insn ();
 #define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case PLUS:  case MINUS:				\
     if (FLOAT_MODE_P (GET_MODE (X)))			\
-      return COSTS_N_INSNS (6);				\
+      switch (alpha_cpu)				\
+        {						\
+        case PROCESSOR_EV4:				\
+          return COSTS_N_INSNS (6);			\
+        case PROCESSOR_EV5:				\
+          return COSTS_N_INSNS (4); 			\
+	}						\
     else if (GET_CODE (XEXP (X, 0)) == MULT		\
 	     && const48_operand (XEXP (XEXP (X, 0), 1), VOIDmode)) \
       return (2 + rtx_cost (XEXP (XEXP (X, 0), 0), OUTER_CODE)	\
 	      + rtx_cost (XEXP (X, 1), OUTER_CODE));	\
     break;						\
   case MULT:						\
-    if (FLOAT_MODE_P (GET_MODE (X)))			\
-      return COSTS_N_INSNS (6);				\
-    return COSTS_N_INSNS (23);				\
+    switch (alpha_cpu)					\
+      {							\
+      case PROCESSOR_EV4:				\
+        if (FLOAT_MODE_P (GET_MODE (X)))		\
+          return COSTS_N_INSNS (6);			\
+        return COSTS_N_INSNS (23);			\
+      case PROCESSOR_EV5:				\
+        if (FLOAT_MODE_P (GET_MODE (X)))		\
+          return COSTS_N_INSNS (4);			\
+        else if (GET_MODE (X) == DImode)		\
+          return COSTS_N_INSNS (12);			\
+        else						\
+          return COSTS_N_INSNS (8);			\
+      }							\
   case ASHIFT:						\
     if (GET_CODE (XEXP (X, 1)) == CONST_INT		\
 	&& INTVAL (XEXP (X, 1)) <= 3)			\
       break;						\
     /* ... fall through ... */				\
   case ASHIFTRT:  case LSHIFTRT:  case IF_THEN_ELSE:	\
-    return COSTS_N_INSNS (2);				\
+    switch (alpha_cpu)					\
+      {							\
+      case PROCESSOR_EV4:				\
+        return COSTS_N_INSNS (2);			\
+      case PROCESSOR_EV5:				\
+        return COSTS_N_INSNS (1); 			\
+      }							\
   case DIV:  case UDIV:  case MOD:  case UMOD:		\
-    if (GET_MODE (X) == SFmode)				\
-      return COSTS_N_INSNS (34);			\
-    else if (GET_MODE (X) == DFmode)			\
-      return COSTS_N_INSNS (63);			\
-    else						\
-      return COSTS_N_INSNS (70);			\
+    switch (alpha_cpu)					\
+      {							\
+      case PROCESSOR_EV4:				\
+        if (GET_MODE (X) == SFmode)			\
+          return COSTS_N_INSNS (34);			\
+        else if (GET_MODE (X) == DFmode)		\
+          return COSTS_N_INSNS (63);			\
+        else						\
+          return COSTS_N_INSNS (70);			\
+      case PROCESSOR_EV5:				\
+        if (GET_MODE (X) == SFmode)			\
+          return COSTS_N_INSNS (15);			\
+        else if (GET_MODE (X) == DFmode)		\
+          return COSTS_N_INSNS (22);			\
+        else						\
+          return COSTS_N_INSNS (70);	/* EV5 ??? */	\
+      }							\
   case MEM:						\
-    return COSTS_N_INSNS (3);				\
+    switch (alpha_cpu)					\
+      {							\
+      case PROCESSOR_EV4:				\
+        return COSTS_N_INSNS (3);			\
+      case PROCESSOR_EV5:				\
+        return COSTS_N_INSNS (2); 			\
+      }							\
+  case NEG:  case ABS:					\
+    if (! FLOAT_MODE_P (GET_MODE (X)))			\
+      break;						\
+    /* ... fall through ... */				\
   case FLOAT:  case UNSIGNED_FLOAT:  case FIX:  case UNSIGNED_FIX: \
   case FLOAT_EXTEND:  case FLOAT_TRUNCATE:		\
-    return COSTS_N_INSNS (6);				\
-  case NEG:  case ABS:					\
-    if (FLOAT_MODE_P (GET_MODE (X)))			\
-      return COSTS_N_INSNS (6);				\
-    break;
+    switch (alpha_cpu)					\
+      {							\
+      case PROCESSOR_EV4:				\
+        return COSTS_N_INSNS (6);			\
+      case PROCESSOR_EV5:				\
+        return COSTS_N_INSNS (4); 			\
+      }
 
 /* Control the assembler format that we output.  */
 
