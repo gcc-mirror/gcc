@@ -687,6 +687,11 @@ extern bool gnat_mark_addressable (tree);
 extern tree builtin_function (const char *, tree, int, enum built_in_class,
 			      const char *, tree);
 
+/* Search the chain of currently reachable declarations for a builtin
+   FUNCTION_DECL node corresponding to function NAME (an IDENTIFIER_NODE).
+   Return the first node found, if any, or NULL_TREE otherwise.  */
+extern tree builtin_decl_for (tree);
+
 /* This function is called by the front end to enumerate all the supported
    modes for the machine.  We pass a function which is called back with
    the following integer parameters:
