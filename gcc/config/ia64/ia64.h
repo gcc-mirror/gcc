@@ -1376,15 +1376,11 @@ do {									\
 /* If defined, a C expression that gives the alignment boundary, in bits, of an
    argument with the specified mode and type.  */
 
-/* Arguments with alignment larger than 8 bytes start at the next even
-   boundary.  See ia64_function_arg.  */
+/* Return the alignment boundary in bits for an argument with a specified
+   mode and type.  */
 
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-  (((TYPE) ? (TYPE_ALIGN (TYPE) > 8 * BITS_PER_UNIT)		\
-    : (((((MODE) == BLKmode					\
-	  ? int_size_in_bytes (TYPE) : GET_MODE_SIZE (MODE))	\
-	 + UNITS_PER_WORD - 1) / UNITS_PER_WORD) > 1))		\
-    ? 128 : PARM_BOUNDARY)
+  ia64_function_arg_boundary (MODE, TYPE)
 
 /* A C expression that is nonzero if REGNO is the number of a hard register in
    which function arguments are sometimes passed.  This does *not* include

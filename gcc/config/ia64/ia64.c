@@ -3325,10 +3325,11 @@ ia64_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       cum->fp_regs = fp_regs;
     }
 
-  /* Integral and aggregates go in general registers.  If we have run out of
-     FR registers, then FP values must also go in general registers.  This can
-     happen when we have a SFmode HFA.  */
-  else if (! FLOAT_MODE_P (mode) || cum->fp_regs == MAX_ARGUMENT_SLOTS)
+  /* Integral and aggregates go in general registers.  So do TFmode FP values.
+     If we have run out of FR registers, then other FP values must also go in
+     general registers.  This can happen when we have a SFmode HFA.  */
+  else if (mode == TFmode || mode == TCmode
+           || (! FLOAT_MODE_P (mode) || cum->fp_regs == MAX_ARGUMENT_SLOTS))
     cum->int_regs = cum->words;
 
   /* If there is a prototype, then FP values go in a FR register when
@@ -3349,6 +3350,31 @@ ia64_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       cum->fp_regs += (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
       cum->int_regs = cum->words;
     }
+}
+
+/* Arguments with alignment larger than 8 bytes start at the next even
+   boundary.  On ILP32 HPUX, TFmode arguments start on next even boundery
+   even though their normal alignment is 8 bytes.  See ia64_function_arg.  */
+
+int
+ia64_function_arg_boundary (enum machine_mode mode, tree type)
+{
+
+  if (mode == TFmode && TARGET_HPUX && TARGET_ILP32)
+    return PARM_BOUNDARY * 2;
+
+  if (type)
+    {
+      if (TYPE_ALIGN (type) > PARM_BOUNDARY)
+        return PARM_BOUNDARY * 2;
+      else
+        return PARM_BOUNDARY;
+    }
+
+  if (GET_MODE_BITSIZE (mode) > PARM_BOUNDARY)
+    return PARM_BOUNDARY * 2;
+  else
+    return PARM_BOUNDARY;
 }
 
 /* Variable sized types are passed by reference.  */

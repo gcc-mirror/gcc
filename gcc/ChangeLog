@@ -1,3 +1,12 @@
+2004-10-06  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.h (FUNCTION_ARG_BOUNDARY): Change macro to
+	call ia64_function_arg_boundary.
+	* config/ia64/ia64-protos.h (ia64_function_arg_boundary): New.
+	* config/ia64/ia64.c (ia64_function_arg_boundary): New.
+	(ia64_function_arg_advance): Do not put 128 bit floats into
+	FP registers.
+
 2004-10-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_strcpy): Delete duplicate code.
