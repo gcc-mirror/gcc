@@ -1268,6 +1268,72 @@ call_cleanups (limit, state)
     }
 }
 
+void
+generate_bytecode_return (exp, state)
+     tree exp;
+     struct jcf_partial *state;
+{
+  tree return_type = TREE_TYPE (TREE_TYPE (state->current_method));
+  int returns_void = TREE_CODE (return_type) == VOID_TYPE;
+  int op;
+ again:
+  if (exp != NULL)
+    {
+      switch (TREE_CODE (exp))
+	{
+ 	case COMPOUND_EXPR:	
+	  generate_bytecode_insns (TREE_OPERAND (exp, 0), IGNORE_TARGET,
+				   state);
+	  exp = TREE_OPERAND (exp, 1);
+	  goto again;
+	case COND_EXPR:
+	  {
+	    struct jcf_block *then_label = gen_jcf_label (state);
+	    struct jcf_block *else_label = gen_jcf_label (state);
+	    generate_bytecode_conditional (TREE_OPERAND (exp, 0),
+					   then_label, else_label, 1, state);
+	    define_jcf_label (then_label, state);
+	    generate_bytecode_return (TREE_OPERAND (exp, 1), state);
+	    define_jcf_label (else_label, state);
+	    generate_bytecode_return (TREE_OPERAND (exp, 2), state);
+	  }
+	  return;
+	default:
+	  generate_bytecode_insns (exp,
+				   returns_void ? IGNORE_TARGET
+				   : STACK_TARGET, state);
+	}
+    }
+  if (returns_void)
+    {
+      op = OPCODE_return;
+      call_cleanups (NULL_TREE, state);
+    }
+  else
+    {
+      op = OPCODE_ireturn + adjust_typed_op (return_type, 4);
+      if (state->num_finalizers > 0)
+	{
+	  if (state->return_value_decl == NULL_TREE)
+	    {
+	      state->return_value_decl
+		= build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
+	      localvar_alloc (state->return_value_decl, state);
+	    }
+	  emit_store (state->return_value_decl, state);
+	  call_cleanups (NULL_TREE, state);
+	  emit_load (state->return_value_decl, state);
+	  /* If we call localvar_free (state->return_value_decl, state),
+	     then we risk the save decl erroneously re-used in the
+	     finalizer.  Instead, we keep the state->return_value_decl
+	     allocated through the rest of the method.  This is not
+	     the greatest solution, but it is at least simple and safe. */
+	}
+    }
+  RESERVE (1);
+  OP1 (op);
+}
+
 /* Generate bytecode for sub-expression EXP of METHOD.
    TARGET is one of STACK_TARGET or IGNORE_TARGET. */
 
@@ -1362,20 +1428,26 @@ generate_bytecode_insns (exp, target, state)
 	}
       break;
     case REAL_CST:
-      offset = find_constant_index (exp, state);
-      switch (TYPE_PRECISION (type))
-	{
-	case 32:
-	  push_constant1 (offset, state);
-	  NOTE_PUSH (1);
-	  break;
-	case 64:
-	  push_constant2 (offset, state);
-	  NOTE_PUSH (2);
-	  break;
-	default:
-	  abort ();
-	}
+      {
+	int prec = TYPE_PRECISION (type) >> 5;
+	RESERVE(1);
+	if (real_zerop (exp))
+	  OP1 (prec == 1 ? OPCODE_fconst_0 : OPCODE_dconst_0);
+	else if (real_onep (exp))
+	  OP1 (prec == 1 ? OPCODE_fconst_1 : OPCODE_dconst_1);
+	/* FIXME Should also use fconst_2 for 2.0f.
+	   Also, should use iconst_2/ldc followed by i2f/i2d
+	   for other float/double when the value is a small integer. */
+	else
+	  {
+	    offset = find_constant_index (exp, state);
+	    if (prec == 1)
+	      push_constant1 (offset, state);
+	    else
+	      push_constant2 (offset, state);
+	  }
+	NOTE_PUSH (prec);
+      }
       break;
     case STRING_CST:
       push_constant1 (find_string_constant (&state->cpool, exp), state);
@@ -1651,39 +1723,14 @@ generate_bytecode_insns (exp, target, state)
       }
 
     case RETURN_EXPR:
-      if (!TREE_OPERAND (exp, 0))
-	{
-	  op = OPCODE_return;
-	  call_cleanups (NULL_TREE, state);
-	}
+      exp = TREE_OPERAND (exp, 0);
+      if (exp == NULL_TREE)
+	exp = empty_stmt_node;
+      else if (TREE_CODE (exp) != MODIFY_EXPR) 
+	abort ();
       else
-	{
-	  exp = TREE_OPERAND (exp, 0);
-	  if (TREE_CODE (exp) != MODIFY_EXPR)
-	    abort ();
-	  exp = TREE_OPERAND (exp, 1);
-	  op = OPCODE_ireturn + adjust_typed_op (TREE_TYPE (exp), 4);
-	  generate_bytecode_insns (exp, STACK_TARGET, state);
-	  if (state->num_finalizers > 0)
-	    {
-	      if (state->return_value_decl == NULL_TREE)
-		{
-		  state->return_value_decl
-		    = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
-		  localvar_alloc (state->return_value_decl, state);
-		}
-	      emit_store (state->return_value_decl, state);
-	      call_cleanups (NULL_TREE, state);
-	      emit_load (state->return_value_decl, state);
-	      /* If we call localvar_free (state->return_value_decl, state),
-		 then we risk the save decl erroneously re-used in the
-		 finalizer.  Instead, we keep the state->return_value_decl
-		 allocated through the rest of the method.  This is not
-		 the greatest solution, but it is at least simple and safe. */
-	    }
-	}
-      RESERVE (1);
-      OP1 (op);
+	exp = TREE_OPERAND (exp, 1);
+      generate_bytecode_return (exp, state);
       break;
     case LABELED_BLOCK_EXPR:
       {
