@@ -923,14 +923,14 @@ int align_functions;
 int align_functions_log;
 
 /* Table of supported debugging formats.  */
-static struct
+static const struct
 {
-  const char *arg;
+  const char *const arg;
   /* Since PREFERRED_DEBUGGING_TYPE isn't necessarily a
      constant expression, we use NO_DEBUG in its place.  */
-  enum debug_info_type debug_type;
-  int use_extensions_p;
-  const char *description;
+  const enum debug_info_type debug_type;
+  const int use_extensions_p;
+  const char *const description;
 } *da,
 debug_args[] =
 {
@@ -1192,10 +1192,10 @@ lang_independent_options f_options[] =
 
 /* Table of language-specific options.  */
 
-static struct lang_opt
+static const struct lang_opt
 {
-  const char *option;
-  const char *description;
+  const char *const option;
+  const char *const description;
 }
 documented_lang_options[] =
 {
@@ -1378,22 +1378,22 @@ documented_lang_options[] =
    If VALUE is negative, -VALUE is bits to clear.
    (The sign bit is not used so there is no confusion.)  */
 
-struct
+static const struct
 {
-  const char *name;
-  int value;
-  const char *description;
+  const char *const name;
+  const int value;
+  const char *const description;
 }
 target_switches [] = TARGET_SWITCHES;
 
 /* This table is similar, but allows the switch to have a value.  */
 
 #ifdef TARGET_OPTIONS
-struct
+static const struct
 {
-  const char *prefix;
-  const char **variable;
-  const char *description;
+  const char *const prefix;
+  const char **const variable;
+  const char *const description;
 }
 target_options [] = TARGET_OPTIONS;
 #endif

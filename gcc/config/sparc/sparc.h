@@ -721,9 +721,9 @@ extern enum processor_type sparc_cpu;
 struct sparc_cpu_select
 {
   const char *string;
-  const char *name;
-  int set_tune_p;
-  int set_arch_p;
+  const char *const name;
+  const int set_tune_p;
+  const int set_arch_p;
 };
 
 extern struct sparc_cpu_select sparc_select[];
@@ -1433,7 +1433,7 @@ extern enum reg_class sparc_regno_reg_class[];
 extern char sparc_leaf_regs[];
 #define LEAF_REGISTERS sparc_leaf_regs
 
-extern char leaf_reg_remap[];
+extern const char leaf_reg_remap[];
 #define LEAF_REG_REMAP(REGNO) (leaf_reg_remap[REGNO])
 
 /* The class value for index registers, and the one for base regs.  */

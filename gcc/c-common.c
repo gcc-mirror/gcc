@@ -220,9 +220,9 @@ int skip_evaluation;
 /* Information about how a function name is generated.  */
 struct fname_var_t
 {
-  tree *decl;	/* pointer to the VAR_DECL.  */
-  unsigned rid;	/* RID number for the identifier.  */
-  int pretty;	/* How pretty is it? */
+  tree *const decl;	/* pointer to the VAR_DECL.  */
+  const unsigned rid;	/* RID number for the identifier.  */
+  const int pretty;	/* How pretty is it? */
 };
 
 /* The three ways of getting then name of the current function.  */
@@ -3446,7 +3446,7 @@ c_unsafe_for_reeval (exp)
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-static char c_tree_code_type[] = {
+static const char c_tree_code_type[] = {
   'x',
 #include "c-common.def"
 };
@@ -3458,7 +3458,7 @@ static char c_tree_code_type[] = {
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
 
-static int c_tree_code_length[] = {
+static const int c_tree_code_length[] = {
   0,
 #include "c-common.def"
 };

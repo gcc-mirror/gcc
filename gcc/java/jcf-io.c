@@ -625,7 +625,7 @@ DEFUN(format_uint, (buffer, value, base),
   /* Note this code does not pretend to be optimized. */
   do {
     int digit = value % base;
-    static char digit_chars[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+    static const char digit_chars[] = "0123456789abcdefghijklmnopqrstuvwxyz";
     *--buf_ptr = digit_chars[digit];
     value /= base;
   } while (value != 0);

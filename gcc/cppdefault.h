@@ -96,11 +96,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 struct default_include
 {
-  const char *fname;		/* The name of the directory.  */
-  const char *component;	/* The component containing the directory
+  const char *const fname;	/* The name of the directory.  */
+  const char *const component;	/* The component containing the directory
 				   (see update_path in prefix.c) */
-  int cplusplus;		/* Only look here if we're compiling C++.  */
-  int cxx_aware;		/* Includes in this directory don't need to
+  const int cplusplus;		/* Only look here if we're compiling C++.  */
+  const int cxx_aware;		/* Includes in this directory don't need to
 				   be wrapped in extern "C" when compiling
 				   C++.  */
 };

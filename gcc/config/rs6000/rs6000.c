@@ -164,7 +164,7 @@ char rs6000_reg_names[][8] =
 };
 
 #ifdef TARGET_REGNAMES
-static char alt_reg_names[][8] =
+static const char alt_reg_names[][8] =
 {
    "%r0",   "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",
    "%r8",   "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
@@ -227,11 +227,11 @@ rs6000_override_options (default_cpu)
 
   static struct ptt
     {
-      const char *name;		/* Canonical processor name.  */
-      enum processor_type processor; /* Processor type enum value.  */
-      int target_enable;	/* Target flags to enable.  */
-      int target_disable;	/* Target flags to disable.  */
-    } processor_target_table[]
+      const char *const name;		/* Canonical processor name.  */
+      const enum processor_type processor; /* Processor type enum value.  */
+      const int target_enable;	/* Target flags to enable.  */
+      const int target_disable;	/* Target flags to disable.  */
+    } const processor_target_table[]
       = {{"common", PROCESSOR_COMMON, MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_MASKS},
 	 {"power", PROCESSOR_POWER,

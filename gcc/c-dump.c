@@ -809,8 +809,8 @@ static struct dump_file_info dump_files[TDI_end] =
 /* Define a name->number mapping for a dump flag value. */
 struct dump_option_value_info
 {
-  const char *name;		/* the name of the value */
-  int value;			/* the value of the name */
+  const char *const name;	/* the name of the value */
+  const int value;		/* the value of the name */
 };
 
 /* Table of dump options. This must be consistent with the TDF_* flags

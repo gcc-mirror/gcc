@@ -1,3 +1,16 @@
+Sun Oct  7 12:27:54 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (_ffebad_message_, ffebad_messages_): Const-ify.
+	* bld.c (ffebld_arity_op_): Likewise.
+	* bld.h (ffebld_arity_op_): Likewise.
+	* com.c (ffecom_init_0): Likewise.
+	* intdoc.c (_ffeintrin_name_, _ffeintrin_gen_, _ffeintrin_spec_,
+	_ffeintrin_imp_, names, gens, imps, specs, cc_pair,
+	cc_descriptions, cc_summaries): Likewise.
+	* intrin.c (_ffeintrin_name_, _ffeintrin_gen_, _ffeintrin_spec_,
+	_ffeintrin_imp_, ffeintrin_names_, ffeintrin_gens_,
+	ffeintrin_imps_, ffeintrin_specs_): Likewise.
+
 2001-10-05  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Document libf2c being built as a shared library.

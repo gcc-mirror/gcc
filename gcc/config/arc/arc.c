@@ -1299,7 +1299,7 @@ arc_output_function_epilogue (file, size)
 
       /* Emit the return instruction.  */
       {
-	static int regs[4] = {
+	static const int regs[4] = {
 	  0, RETURN_ADDR_REGNUM, ILINK1_REGNUM, ILINK2_REGNUM
 	};
 	fprintf (file, "\tj.d %s\n", reg_names[regs[fn_type]]);

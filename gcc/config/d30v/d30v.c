@@ -247,7 +247,7 @@ override_options ()
 
 #if 0
       {
-	static char *names[] = REG_CLASS_NAMES;
+	static const char *const names[] = REG_CLASS_NAMES;
 	fprintf (stderr, "Register %s class is %s, can hold modes", reg_names[regno], names[class]);
 	for (mode1 = VOIDmode;
 	     (int)mode1 < NUM_MACHINE_MODES;

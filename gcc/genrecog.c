@@ -181,10 +181,10 @@ static int error_count;
    of tree nodes.  Also, if a predicate can match only one code, we can
    hardwire that code into the node testing the predicate.  */
 
-static struct pred_table
+static const struct pred_table
 {
-  const char *name;
-  RTX_CODE codes[NUM_RTX_CODE];
+  const char *const name;
+  const RTX_CODE codes[NUM_RTX_CODE];
 } preds[] = {
   {"general_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
 		       LABEL_REF, SUBREG, REG, MEM}},

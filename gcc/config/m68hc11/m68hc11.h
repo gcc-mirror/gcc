@@ -212,21 +212,21 @@ extern const char *m68hc11_soft_reg_count;
 
 /* Define cost parameters for a given processor variant.  */
 struct processor_costs {
-  int add;		/* cost of an add instruction */
-  int logical;          /* cost of a logical instruction */
-  int shift_var;
-  int shiftQI_const[8];
-  int shiftHI_const[16];
-  int multQI;
-  int multHI;
-  int multSI;
-  int divQI;
-  int divHI;
-  int divSI;
+  const int add;		/* cost of an add instruction */
+  const int logical;          /* cost of a logical instruction */
+  const int shift_var;
+  const int shiftQI_const[8];
+  const int shiftHI_const[16];
+  const int multQI;
+  const int multHI;
+  const int multSI;
+  const int divQI;
+  const int divHI;
+  const int divSI;
 };
 
 /* Costs for the current processor.  */
-extern struct processor_costs *m68hc11_cost;
+extern const struct processor_costs *m68hc11_cost;
 
 
 /* target machine storage layout */

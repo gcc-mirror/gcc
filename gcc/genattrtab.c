@@ -2448,8 +2448,8 @@ make_length_attrs ()
   static const char *const new_names[] = {"*insn_default_length",
 				      "*insn_variable_length_p",
 				      "*insn_current_length"};
-  static rtx (*no_address_fn[]) PARAMS ((rtx)) = {identity_fn, zero_fn, zero_fn};
-  static rtx (*address_fn[]) PARAMS ((rtx)) = {max_fn, one_fn, identity_fn};
+  static rtx (*const no_address_fn[]) PARAMS ((rtx)) = {identity_fn, zero_fn, zero_fn};
+  static rtx (*const address_fn[]) PARAMS ((rtx)) = {max_fn, one_fn, identity_fn};
   size_t i;
   struct attr_desc *length_attr, *new_attr;
   struct attr_value *av, *new_av;
@@ -5657,7 +5657,7 @@ write_function_unit_info ()
      the function units.   The name is included for documentation purposes
      only.  */
 
-  printf ("struct function_unit_desc function_units[] = {\n");
+  printf ("const struct function_unit_desc function_units[] = {\n");
 
   /* Write out the descriptions in numeric order, but don't force that order
      on the list.  Doing so increases the runtime of genattrtab.c.  */

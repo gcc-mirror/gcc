@@ -503,7 +503,7 @@ c4x_hard_regno_rename_ok (regno1, regno2)
    Don't use R0 to pass arguments in, we use 0 to indicate a stack
    argument.  */
 
-static int c4x_int_reglist[3][6] =
+static const int c4x_int_reglist[3][6] =
 {
   {AR2_REGNO, R2_REGNO, R3_REGNO, RC_REGNO, RS_REGNO, RE_REGNO},
   {AR2_REGNO, R3_REGNO, RC_REGNO, RS_REGNO, RE_REGNO, 0},

@@ -1,3 +1,74 @@
+2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_setjmp_receiver): Const-ify.
+	* c-common.c (fname_var_t, c_tree_code_type, c_tree_code_length):
+	Likewise.
+	* c-dump.c (dump_option_value_info): Likewise.
+	* c-format.c (format_length_info, format_char_info,
+	format_flag_spec, format_flag_pair, format_kind_info): Likewise.
+	* collect2.c (names): Likewise.
+	* cppdefault.h (default_include): Likewise.
+	* cppexp.c (suffix, vsuf_1, vsuf_2, vsuf_3): Likewise.
+	* flow.c (life_analysis): Likewise.
+	* gcc.c (dir_separator_str, modify_target, option_map,
+	target_option_translations, spec_list_1, extra_specs_1,
+	init_spec): Likewise.
+	* gcov.c (gcov_version_string): Likewise.
+	* genattr.c (write_units): Likewise.
+	* genattrtab.c (make_length_attrs, write_function_unit_info): Likewise.
+	* gengenrtl.c (rtx_definition, defs): Likewise.
+	* genrecog.c (pred_table): Likewise.
+	* global.c (global_alloc): Likewise.
+	* lcm.c (optimize_mode_switching): Likewise.
+	* local-alloc.c (find_free_reg): Likewise.
+	* params.h (param_info): Likewise.
+	* predict.c (predictor_info): Likewise.
+	* protoize.c (unexpansion_struct): Likewise.
+	* real.c (bmask): Likewise.
+	* recog.h (insn_operand_data, insn_data): Likewise.
+	* regclass.c (initial_fixed_regs, initial_call_used_regs): Likewise.
+	* stmt.c (expand_nl_goto_receiver): Likewise.
+	* toplev.c (da, debug_args, lang_opt, documented_lang_options,
+	target_switches, target_options): Likewise.
+	* tradcif.y (token, tokentab2, yylex): Likewise.
+	* tree.h (attribute_spec): Likewise.
+	
+	* alpha.c (override_options, alpha_lookup_xfloating_lib_func):
+	Likewise.
+	* arc.c (arc_output_function_epilogue): Likewise.
+	* arm.c (processors, all_cores, all_architectures,
+	arm_override_options, isr_attribute_arg, isr_attribute_args,
+	arm_isr_value): Likewise.
+	* avr.c (mcu_type_s, reg_class_tab, order_regs_for_local_alloc):
+	Likewise.
+	* c4x.c (c4x_int_reglist): Likewise.
+	* d30v.c (override_options): Likewise.
+	* h8300.c (shift_insn): Likewise.
+	* i386.c (size_cost, i386_cost, i486_cost, pentium_cost,
+	pentiumpro_cost, k6_cost, athlon_cost, pentium4_cost, ix86_cost,
+	ix86_expand_sse_comi, ix86_expand_sse_compare, override_options,
+	builtin_description, bdesc_comi, bdesc_2arg, bdesc_1arg,
+	ix86_init_mmx_sse_builtins, ix86_expand_builtin): Likewise.
+	* i386.h (processor_costs, ix86_cost): Likewise.
+	* m68hc11.c (m68hc11_cost, m6811_cost, m6812_cost): Likewise.
+	* m68hc11.h (processor_costs, m68hc11_cost): Likewise.
+	* m68k.c (codes_68881, codes_FPA): Likewise.
+	* m88k.c (mode_from_align, max_from_align, all_from_align,
+	best_from_align, m_options): Likewise.
+	* m88k.h (ORDER_REGS_FOR_LOCAL_ALLOC): Likewise.
+	* mcore.c (mode_from_align): Likewise.
+	* mips/elf64.h (UNIQUE_SECTION): Likewise.
+	* mips/iris6gld.h (UNIQUE_SECTION): Likewise.
+	* mips.c (mips_sw_reg_names, mips_regno_to_class): Likewise.
+	* mips.h (mips_regno_to_class): Likewise.
+	* ns32k.c (scales): Likewise.
+	* pa.c (import_string, magic_milli): Likewise.
+	* rs6000.c (alt_reg_names, rs6000_override_options): Likewise.
+	* sparc.c (leaf_reg_remap, sparc_override_options,
+	reg_leaf_alloc_order, reg_nonleaf_alloc_order, reg_alloc_orders):
+	Likewise.
+	* sparc.h (sparc_cpu_select, leaf_reg_remap): Likewise.
+
 2001-10-07  Dale Johannesen  <dalej@apple.com>
 
 	* reload1.c (reload_reg_free_p): Teach register interference

@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Processor costs (relative to an add) */
+static const 
 struct processor_costs size_cost = {	/* costs for tunning for size */
   2,					/* cost of an add instruction */
   3,					/* cost of a lea instruction */
@@ -80,6 +81,7 @@ struct processor_costs size_cost = {	/* costs for tunning for size */
   3,					/* MMX or SSE register to integer */
 };
 /* Processor costs (relative to an add) */
+static const 
 struct processor_costs i386_cost = {	/* 386 specific costs */
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -112,6 +114,7 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   3,					/* MMX or SSE register to integer */
 };
 
+static const 
 struct processor_costs i486_cost = {	/* 486 specific costs */
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -144,6 +147,7 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   3					/* MMX or SSE register to integer */
 };
 
+static const 
 struct processor_costs pentium_cost = {
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -176,6 +180,7 @@ struct processor_costs pentium_cost = {
   3					/* MMX or SSE register to integer */
 };
 
+static const 
 struct processor_costs pentiumpro_cost = {
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -208,6 +213,7 @@ struct processor_costs pentiumpro_cost = {
   3					/* MMX or SSE register to integer */
 };
 
+static const 
 struct processor_costs k6_cost = {
   1,					/* cost of an add instruction */
   2,					/* cost of a lea instruction */
@@ -240,6 +246,7 @@ struct processor_costs k6_cost = {
   6					/* MMX or SSE register to integer */
 };
 
+static const 
 struct processor_costs athlon_cost = {
   1,					/* cost of an add instruction */
   2,					/* cost of a lea instruction */
@@ -272,6 +279,7 @@ struct processor_costs athlon_cost = {
   6					/* MMX or SSE register to integer */
 };
 
+static const 
 struct processor_costs pentium4_cost = {
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -304,7 +312,7 @@ struct processor_costs pentium4_cost = {
   10,					/* MMX or SSE register to integer */
 };
 
-struct processor_costs *ix86_cost = &pentium_cost;
+const struct processor_costs *ix86_cost = &pentium_cost;
 
 /* Processor feature/optimization bitmasks.  */
 #define m_386 (1<<PROCESSOR_I386)
@@ -641,10 +649,10 @@ struct ix86_address
 static int ix86_decompose_address PARAMS ((rtx, struct ix86_address *));
 
 struct builtin_description;
-static rtx ix86_expand_sse_comi PARAMS ((struct builtin_description *, tree,
-					 rtx));
-static rtx ix86_expand_sse_compare PARAMS ((struct builtin_description *, tree,
-					    rtx));
+static rtx ix86_expand_sse_comi PARAMS ((const struct builtin_description *,
+					 tree, rtx));
+static rtx ix86_expand_sse_compare PARAMS ((const struct builtin_description *,
+					    tree, rtx));
 static rtx ix86_expand_unop1_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx ix86_expand_unop_builtin PARAMS ((enum insn_code, tree, rtx, int));
 static rtx ix86_expand_binop_builtin PARAMS ((enum insn_code, tree, rtx));
@@ -770,13 +778,13 @@ override_options ()
 
   static struct ptt
     {
-      struct processor_costs *cost;	/* Processor costs */
-      int target_enable;		/* Target flags to enable.  */
-      int target_disable;		/* Target flags to disable.  */
-      int align_loop;			/* Default alignments.  */
-      int align_jump;
-      int align_func;
-      int branch_cost;
+      const struct processor_costs *cost;	/* Processor costs */
+      const int target_enable;			/* Target flags to enable.  */
+      const int target_disable;			/* Target flags to disable.  */
+      const int align_loop;			/* Default alignments.  */
+      const int align_jump;
+      const int align_func;
+      const int branch_cost;
     }
   const processor_target_table[PROCESSOR_max] =
     {
@@ -791,8 +799,8 @@ override_options ()
 
   static struct pta
     {
-      const char *name;		/* processor name or nickname.  */
-      enum processor_type processor;
+      const char *const name;		/* processor name or nickname.  */
+      const enum processor_type processor;
     }
   const processor_alias_table[] =
     {
@@ -10708,15 +10716,15 @@ do {									\
 
 struct builtin_description
 {
-  unsigned int mask;
-  enum insn_code icode;
-  const char * name;
-  enum ix86_builtins code;
-  enum rtx_code comparison;
-  unsigned int flag;
+  const unsigned int mask;
+  const enum insn_code icode;
+  const char *const name;
+  const enum ix86_builtins code;
+  const enum rtx_code comparison;
+  const unsigned int flag;
 };
 
-static struct builtin_description bdesc_comi[] =
+static const struct builtin_description bdesc_comi[] =
 {
   { MASK_SSE, CODE_FOR_sse_comi, "__builtin_ia32_comieq", IX86_BUILTIN_COMIEQSS, EQ, 0 },
   { MASK_SSE, CODE_FOR_sse_comi, "__builtin_ia32_comilt", IX86_BUILTIN_COMILTSS, LT, 0 },
@@ -10732,7 +10740,7 @@ static struct builtin_description bdesc_comi[] =
   { MASK_SSE, CODE_FOR_sse_ucomi, "__builtin_ia32_ucomineq", IX86_BUILTIN_UCOMINEQSS, NE, 0 }
 };
 
-static struct builtin_description bdesc_2arg[] =
+static const struct builtin_description bdesc_2arg[] =
 {
   /* SSE */
   { MASK_SSE, CODE_FOR_addv4sf3, "__builtin_ia32_addps", IX86_BUILTIN_ADDPS, 0, 0 },
@@ -10865,7 +10873,7 @@ static struct builtin_description bdesc_2arg[] =
 
 };
 
-static struct builtin_description bdesc_1arg[] =
+static const struct builtin_description bdesc_1arg[] =
 {
   { MASK_SSE | MASK_3DNOW_A, CODE_FOR_mmx_pmovmskb, 0, IX86_BUILTIN_PMOVMSKB, 0, 0 },
   { MASK_SSE, CODE_FOR_sse_movmskps, 0, IX86_BUILTIN_MOVMSKPS, 0, 0 },
@@ -10894,7 +10902,7 @@ ix86_init_builtins ()
 void
 ix86_init_mmx_sse_builtins ()
 {
-  struct builtin_description * d;
+  const struct builtin_description * d;
   size_t i;
   tree endlink = void_list_node;
 
@@ -11472,7 +11480,7 @@ ix86_expand_unop1_builtin (icode, arglist, target)
 
 static rtx
 ix86_expand_sse_compare (d, arglist, target)
-     struct builtin_description *d;
+     const struct builtin_description *d;
      tree arglist;
      rtx target;
 {
@@ -11524,7 +11532,7 @@ ix86_expand_sse_compare (d, arglist, target)
 
 static rtx
 ix86_expand_sse_comi (d, arglist, target)
-     struct builtin_description *d;
+     const struct builtin_description *d;
      tree arglist;
      rtx target;
 {
@@ -11585,7 +11593,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
      enum machine_mode mode ATTRIBUTE_UNUSED;
      int ignore ATTRIBUTE_UNUSED;
 {
-  struct builtin_description *d;
+  const struct builtin_description *d;
   size_t i;
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);

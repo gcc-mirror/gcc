@@ -435,7 +435,7 @@ static void
 build_vtable_entry_ref (basetype, idx)
      tree basetype, idx;
 {
-  static char asm_stmt[] = ".vtable_entry %c0, %c1";
+  static const char asm_stmt[] = ".vtable_entry %c0, %c1";
   tree s, i, i2;
   tree vtable = get_vtbl_decl_for_binfo (TYPE_BINFO (basetype));
   tree first_fn = TYPE_BINFO_VTABLE (basetype);

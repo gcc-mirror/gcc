@@ -120,8 +120,8 @@ enum avr_arch {
 };
 
 struct mcu_type_s {
-  const char *name;
-  enum avr_arch arch;
+  const char *const name;
+  const enum avr_arch arch;
 };
 
 /* List of all known AVR MCU types - if updated, it has to be kept
@@ -242,7 +242,7 @@ avr_init_once ()
 
 /*  return register class from register number */
 
-static int reg_class_tab[]={
+static const int reg_class_tab[]={
   GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,
   GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,
   GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,GENERAL_REGS,
@@ -4831,7 +4831,7 @@ void
 order_regs_for_local_alloc ()
 {
   unsigned int i;
-  int order_0[] = {
+  static const int order_0[] = {
     24,25,
     18,19,
     20,21,
@@ -4843,7 +4843,7 @@ order_regs_for_local_alloc ()
     0,1,
     32,33,34,35
   };
-  int order_1[] = {
+  static const int order_1[] = {
     18,19,
     20,21,
     22,23,
@@ -4855,7 +4855,7 @@ order_regs_for_local_alloc ()
     0,1,
     32,33,34,35
   };
-  int order_2[] = {
+  static const int order_2[] = {
     25,24,
     23,22,
     21,20,
@@ -4869,9 +4869,9 @@ order_regs_for_local_alloc ()
     32,33,34,35
   };
   
-  int *order = (TARGET_ORDER_1 ? order_1 :
-		TARGET_ORDER_2 ? order_2 :
-		order_0);
+  const int *order = (TARGET_ORDER_1 ? order_1 :
+		      TARGET_ORDER_2 ? order_2 :
+		      order_0);
   for (i=0; i < ARRAY_SIZE (order_0); ++i)
       reg_alloc_order[i] = order[i];
 }

@@ -122,7 +122,7 @@ extern int getrusage PARAMS ((int, struct rusage *));
 #endif /* DIR_UP */
 #endif /* VMS */
 
-static char dir_separator_str[] = { DIR_SEPARATOR, 0 };
+static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -226,11 +226,11 @@ static const char *cross_compile = "0";
    switch.  The only case we support now is simply appending or deleting a
    string to or from the end of the first part of the configuration name.  */
 
-struct modify_target
+const struct modify_target
 {
-  const char *sw;
-  enum add_del {ADD, DELETE} add_del;
-  const char *str;
+  const char *const sw;
+  const enum add_del {ADD, DELETE} add_del;
+  const char *const str;
 }
 modify_target[] = MODIFY_TARGET_NAME;
 #endif
@@ -857,21 +857,21 @@ static char **preprocessor_options;
 struct option_map
 {
   /* The long option's name.  */
-  const char *name;
+  const char *const name;
   /* The equivalent short option.  */
-  const char *equivalent;
+  const char *const equivalent;
   /* Argument info.  A string of flag chars; NULL equals no options.
      a => argument required.
      o => argument optional.
      j => join argument to equivalent, making one word.
      * => require other text after NAME as an argument.  */
-  const char *arg_info;
+  const char *const arg_info;
 };
 
 /* This is the table of mappings.  Mappings are tried sequentially
    for each option encountered; the first one that matches, wins.  */
 
-struct option_map option_map[] =
+static const struct option_map option_map[] =
  {
    {"--all-warnings", "-Wall", 0},
    {"--ansi", "-ansi", 0},
@@ -954,9 +954,9 @@ struct option_map option_map[] =
 
 
 #ifdef TARGET_OPTION_TRANSLATE_TABLE
-static struct {
-  const char *option_found;
-  const char *replacements;
+static const struct {
+  const char *const option_found;
+  const char *const replacements;
 } target_option_translations[] =
 {
   TARGET_OPTION_TRANSLATE_TABLE,
@@ -1361,11 +1361,11 @@ static struct spec_list static_specs[] =
    That is all that the EXTRA_SPECS macro gives us.  */
 struct spec_list_1
 {
-  const char *name;
-  const char *ptr;
+  const char *const name;
+  const char *const ptr;
 };
 
-static struct spec_list_1 extra_specs_1[] = { EXTRA_SPECS };
+static const struct spec_list_1 extra_specs_1[] = { EXTRA_SPECS };
 static struct spec_list *extra_specs = (struct spec_list *) 0;
 #endif
 
@@ -1519,7 +1519,7 @@ init_spec ()
 #ifdef USE_AS_TRADITIONAL_FORMAT
   /* Prepend "--traditional-format" to whatever asm_spec we had before.  */
   {
-    static char tf[] = "--traditional-format ";
+    static const char tf[] = "--traditional-format ";
     obstack_grow (&obstack, tf, sizeof(tf) - 1);
     obstack_grow0 (&obstack, asm_spec, strlen (asm_spec));
     asm_spec = obstack_finish (&obstack);

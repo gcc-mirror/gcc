@@ -167,8 +167,8 @@ static char * syscalls_absolute_filename;
 /* Type of the structure that holds information about macro unexpansions.  */
 
 struct unexpansion_struct {
-  const char *expanded;
-  const char *contracted;
+  const char *const expanded;
+  const char *const contracted;
 };
 typedef struct unexpansion_struct unexpansion;
 

@@ -1877,7 +1877,7 @@ mcore_store_multiple_operation (op, mode)
    known constants.  DEST and SRC are registers.  OFFSET is the known
    starting point for the output pattern.  */
 
-static enum machine_mode mode_from_align[] =
+static const enum machine_mode mode_from_align[] =
 {
   VOIDmode, QImode, HImode, VOIDmode, SImode,
   VOIDmode, VOIDmode, VOIDmode, DImode

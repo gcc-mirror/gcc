@@ -213,7 +213,7 @@ int interface_unknown;		/* whether or not we know this class
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-static char cplus_tree_code_type[] = {
+static const char cplus_tree_code_type[] = {
   'x',
 #include "cp-tree.def"
 };
@@ -225,7 +225,7 @@ static char cplus_tree_code_type[] = {
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
 
-static int cplus_tree_code_length[] = {
+static const int cplus_tree_code_length[] = {
   0,
 #include "cp-tree.def"
 };
@@ -390,9 +390,9 @@ init_operators ()
 /* The reserved keyword table.  */
 struct resword
 {
-  const char *word;
-  ENUM_BITFIELD(rid) rid : 16;
-  unsigned int disable   : 16;
+  const char *const word;
+  const ENUM_BITFIELD(rid) rid : 16;
+  const unsigned int disable   : 16;
 };
 
 /* Disable mask.  Keywords are disabled if (reswords[i].disable & mask) is

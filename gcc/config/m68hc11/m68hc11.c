@@ -128,10 +128,10 @@ rtx m68hc11_compare_op0;
 rtx m68hc11_compare_op1;
 
 
-struct processor_costs *m68hc11_cost;
+const struct processor_costs *m68hc11_cost;
 
 /* Costs for a 68HC11.  */
-struct processor_costs m6811_cost = {
+static const struct processor_costs m6811_cost = {
   /* add */
   COSTS_N_INSNS (2),
   /* logical */
@@ -166,7 +166,7 @@ struct processor_costs m6811_cost = {
 };
 
 /* Costs for a 68HC12.  */
-struct processor_costs m6812_cost = {
+static const struct processor_costs m6812_cost = {
   /* add */
   COSTS_N_INSNS (1),
   /* logical */

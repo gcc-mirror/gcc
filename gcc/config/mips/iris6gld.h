@@ -54,10 +54,10 @@ Boston, MA 02111-1307, USA.  */
     {								\
       int len;							\
       int sec;							\
-      char *name;						\
+      const char *name;						\
       char *string;						\
-      char *prefix;						\
-      static char *prefixes[/*4*/3][2] =			\
+      const char *prefix;					\
+      static const char *const prefixes[/*4*/3][2] =		\
       {								\
 	{ ".text.",   ".gnu.linkonce.t." },			\
 	{ ".rodata.", ".gnu.linkonce.r." },			\

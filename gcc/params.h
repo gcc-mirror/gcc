@@ -45,11 +45,11 @@ typedef struct param_info
 {
   /* The name used with the `--param <name>=<value>' switch to set this
      value.  */
-  const char *option;
+  const char *const option;
   /* The associated value.  */
   int value;
   /* A short description of the option.  */
-   const char *help;
+  const char *const help;
 } param_info;
 
 /* An array containing the compiler parameters and their current

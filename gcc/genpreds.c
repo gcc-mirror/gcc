@@ -34,9 +34,9 @@ static void
 output_predicate_decls ()
 {
 #ifdef PREDICATE_CODES
-  static struct {
-    const char *name;
-    RTX_CODE codes[NUM_RTX_CODE];
+  static const struct {
+    const char *const name;
+    const RTX_CODE codes[NUM_RTX_CODE];
   } predicate[] = {
     PREDICATE_CODES
   };

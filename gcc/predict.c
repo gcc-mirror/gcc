@@ -69,10 +69,10 @@ static void counts_to_freqs		 PARAMS ((void));
    Filled using information from predict.def.  */
 struct predictor_info
 {
-  const char *name;	/* Name used in the debugging dumps.  */
-  int hitrate;		/* Expected hitrate used by
-			   predict_insn_def call.  */
-  int flags;
+  const char *const name;	/* Name used in the debugging dumps.  */
+  const int hitrate;		/* Expected hitrate used by
+				   predict_insn_def call.  */
+  const int flags;
 };
 
 /* Use given predictor without Dempster-Shaffer theory if it matches
@@ -84,7 +84,7 @@ struct predictor_info
 #define HITRATE(VAL) ((int)((VAL) * REG_BR_PROB_BASE + 50) / 100)
 
 #define DEF_PREDICTOR(ENUM, NAME, HITRATE, FLAGS) {NAME, HITRATE, FLAGS},
-struct predictor_info predictor_info[] = {
+static const struct predictor_info predictor_info[] = {
 #include "predict.def"
 
   /* Upper bound on predictors.  */

@@ -51,42 +51,42 @@ Boston, MA 02111-1307, USA. */
 /* Define the specific costs for a given cpu */
 
 struct processor_costs {
-  int add;			/* cost of an add instruction */
-  int lea;			/* cost of a lea instruction */
-  int shift_var;		/* variable shift costs */
-  int shift_const;		/* constant shift costs */
-  int mult_init;		/* cost of starting a multiply */
-  int mult_bit;			/* cost of multiply per each bit set */
-  int divide;			/* cost of a divide/mod */
-  int large_insn;		/* insns larger than this cost more */
-  int move_ratio;		/* The threshold of number of scalar
+  const int add;		/* cost of an add instruction */
+  const int lea;		/* cost of a lea instruction */
+  const int shift_var;		/* variable shift costs */
+  const int shift_const;	/* constant shift costs */
+  const int mult_init;		/* cost of starting a multiply */
+  const int mult_bit;		/* cost of multiply per each bit set */
+  const int divide;		/* cost of a divide/mod */
+  const int large_insn;		/* insns larger than this cost more */
+  const int move_ratio;		/* The threshold of number of scalar
 				   memory-to-memory move insns.  */
-  int movzbl_load;		/* cost of loading using movzbl */
-  int int_load[3];		/* cost of loading integer registers
+  const int movzbl_load;	/* cost of loading using movzbl */
+  const int int_load[3];	/* cost of loading integer registers
 				   in QImode, HImode and SImode relative
 				   to reg-reg move (2).  */
-  int int_store[3];		/* cost of storing integer register
+  const int int_store[3];	/* cost of storing integer register
 				   in QImode, HImode and SImode */
-  int fp_move;			/* cost of reg,reg fld/fst */
-  int fp_load[3];		/* cost of loading FP register
+  const int fp_move;		/* cost of reg,reg fld/fst */
+  const int fp_load[3];		/* cost of loading FP register
 				   in SFmode, DFmode and XFmode */
-  int fp_store[3];		/* cost of storing FP register
+  const int fp_store[3];	/* cost of storing FP register
 				   in SFmode, DFmode and XFmode */
-  int mmx_move;			/* cost of moving MMX register.  */
-  int mmx_load[2];		/* cost of loading MMX register
+  const int mmx_move;		/* cost of moving MMX register.  */
+  const int mmx_load[2];	/* cost of loading MMX register
 				   in SImode and DImode */
-  int mmx_store[2];		/* cost of storing MMX register
+  const int mmx_store[2];	/* cost of storing MMX register
 				   in SImode and DImode */
-  int sse_move;			/* cost of moving SSE register.  */
-  int sse_load[3];		/* cost of loading SSE register
+  const int sse_move;		/* cost of moving SSE register.  */
+  const int sse_load[3];	/* cost of loading SSE register
 				   in SImode, DImode and TImode*/
-  int sse_store[3];		/* cost of storing SSE register
+  const int sse_store[3];	/* cost of storing SSE register
 				   in SImode, DImode and TImode*/
-  int mmxsse_to_integer;	/* cost of moving mmxsse register to
+  const int mmxsse_to_integer;	/* cost of moving mmxsse register to
 				   integer and vice versa.  */
 };
 
-extern struct processor_costs *ix86_cost;
+extern const struct processor_costs *ix86_cost;
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 

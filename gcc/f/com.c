@@ -11386,16 +11386,16 @@ ffecom_init_0 ()
 
   if (ffe_is_do_internal_checks ())
     {
-      static char names[][12]
+      static const char names[][12]
 	=
       {"bar", "bletch", "foo", "foobar"};
-      char *name;
+      const char *name;
       unsigned long ul;
       double fl;
 
       name = bsearch ("foo", &names[0], ARRAY_SIZE (names), sizeof (names[0]),
 		      (int (*)(const void *, const void *)) strcmp);
-      if (name != (char *) &names[2])
+      if (name != &names[0][2])
 	{
 	  assert ("bsearch doesn't work, #define FFEPROJ_BSEARCH 0 in proj.h"
 		  == NULL);

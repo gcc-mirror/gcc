@@ -63,23 +63,23 @@ struct op
 
 struct suffix
 {
-  unsigned char s[4];
-  unsigned char u;
-  unsigned char l;
+  const unsigned char s[4];
+  const unsigned char u;
+  const unsigned char l;
 };
 
-const struct suffix vsuf_1[] = {
+static const struct suffix vsuf_1[] = {
   { "u", 1, 0 }, { "U", 1, 0 },
   { "l", 0, 1 }, { "L", 0, 1 }
 };
 
-const struct suffix vsuf_2[] = {
+static const struct suffix vsuf_2[] = {
   { "ul", 1, 1 }, { "UL", 1, 1 }, { "uL", 1, 1 }, { "Ul", 1, 1 },
   { "lu", 1, 1 }, { "LU", 1, 1 }, { "Lu", 1, 1 }, { "lU", 1, 1 },
   { "ll", 0, 2 }, { "LL", 0, 2 }
 };
 
-const struct suffix vsuf_3[] = {
+static const struct suffix vsuf_3[] = {
   { "ull", 1, 2 }, { "ULL", 1, 2 }, { "uLL", 1, 2 }, { "Ull", 1, 2 },
   { "llu", 1, 2 }, { "LLU", 1, 2 }, { "LLu", 1, 2 }, { "llU", 1, 2 }
 };

@@ -87,7 +87,7 @@ static rtx leaf_label;
    registers.  FRAME_POINTER_REGNUM cannot be remapped by
    this function to eliminate it.  You must use -fomit-frame-pointer
    to get that.  */
-char leaf_reg_remap[] =
+const char leaf_reg_remap[] =
 { 0, 1, 2, 3, 4, 5, 6, 7,
   -1, -1, -1, -1, -1, -1, 14, -1,
   -1, -1, -1, -1, -1, -1, -1, -1,
@@ -226,9 +226,9 @@ void
 sparc_override_options ()
 {
   static struct code_model {
-    const char *name;
-    int value;
-  } cmodels[] = {
+    const char *const name;
+    const int value;
+  } const cmodels[] = {
     { "32", CM_32 },
     { "medlow", CM_MEDLOW },
     { "medmid", CM_MEDMID },
@@ -236,12 +236,12 @@ sparc_override_options ()
     { "embmedany", CM_EMBMEDANY },
     { 0, 0 }
   };
-  struct code_model *cmodel;
+  const struct code_model *cmodel;
   /* Map TARGET_CPU_DEFAULT to value for -m{arch,tune}=.  */
   static struct cpu_default {
-    int cpu;
-    const char *name;
-  } cpu_default[] = {
+    const int cpu;
+    const char *const name;
+  } const cpu_default[] = {
     /* There must be one entry here for each TARGET_CPU value.  */
     { TARGET_CPU_sparc, "cypress" },
     { TARGET_CPU_sparclet, "tsc701" },
@@ -254,14 +254,14 @@ sparc_override_options ()
     { TARGET_CPU_ultrasparc, "ultrasparc" },
     { 0, 0 }
   };
-  struct cpu_default *def;
+  const struct cpu_default *def;
   /* Table of values for -m{cpu,tune}=.  */
   static struct cpu_table {
-    const char *name;
-    enum processor_type processor;
-    int disable;
-    int enable;
-  } cpu_table[] = {
+    const char *const name;
+    const enum processor_type processor;
+    const int disable;
+    const int enable;
+  } const cpu_table[] = {
     { "v7",         PROCESSOR_V7, MASK_ISA, 0 },
     { "cypress",    PROCESSOR_CYPRESS, MASK_ISA, 0 },
     { "v8",         PROCESSOR_V8, MASK_ISA, MASK_V8 },
@@ -286,8 +286,8 @@ sparc_override_options ()
     						    |MASK_DEPRECATED_V8_INSNS},
     { 0, 0, 0, 0 }
   };
-  struct cpu_table *cpu;
-  struct sparc_cpu_select *sel;
+  const struct cpu_table *cpu;
+  const struct sparc_cpu_select *sel;
   int fpu;
   
 #ifndef SPARC_BI_ARCH
@@ -5564,13 +5564,13 @@ output_return (operands)
 
 /* Leaf functions and non-leaf functions have different needs.  */
 
-static int
+static const int
 reg_leaf_alloc_order[] = REG_LEAF_ALLOC_ORDER;
 
-static int
+static const int
 reg_nonleaf_alloc_order[] = REG_ALLOC_ORDER;
 
-static int *reg_alloc_orders[] = {
+static const int *const reg_alloc_orders[] = {
   reg_leaf_alloc_order,
   reg_nonleaf_alloc_order};
 
@@ -5583,7 +5583,7 @@ order_regs_for_local_alloc ()
     {
       last_order_nonleaf = !last_order_nonleaf;
       memcpy ((char *) reg_alloc_order,
-	      (char *) reg_alloc_orders[last_order_nonleaf],
+	      (const char *) reg_alloc_orders[last_order_nonleaf],
 	      FIRST_PSEUDO_REGISTER * sizeof (int));
     }
 }
