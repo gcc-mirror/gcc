@@ -37,10 +37,12 @@
 ;;			9	sethh
 ;;			10	setlm
 ;;			11	embmedany_sethi, embmedany_brsum
+;;                      12	movsf_const_high
 ;;			13	embmedany_textuhi
 ;;			14	embmedany_texthi
 ;;			15	embmedany_textulo
 ;;			16	embmedany_textlo
+;;                      17	movsf_const_lo
 ;;			18	sethm
 ;;			19	setlo
 ;;
@@ -983,8 +985,7 @@
       if (gen_v9_scc (LTU, operands))
 	DONE;
     }
-  /* XXX less than unsigned == Carry */
-  FAIL;
+  operands[1] = gen_compare_reg (LTU, sparc_compare_op0, sparc_compare_op1);
 }")
 
 (define_expand "sgeu"
@@ -998,7 +999,7 @@
       if (gen_v9_scc (GEU, operands))
 	DONE;
     }
-  FAIL;
+  operands[1] = gen_compare_reg (GEU, sparc_compare_op0, sparc_compare_op1);
 }")
 
 (define_expand "sleu"
@@ -2722,6 +2723,74 @@
 
 ;; Floating point move insns
 
+(define_insn "*movsf_const_intreg"
+  [(set (match_operand:SF 0 "general_operand" "=f,r")
+        (match_operand:SF 1 ""                 "m,F"))]
+  "TARGET_FPU
+   && GET_CODE (operands[1]) == CONST_DOUBLE
+   && GET_CODE (operands[0]) == REG"
+  "*
+{
+  REAL_VALUE_TYPE r;
+  long i;
+
+  if (which_alternative == 0)
+    return \"ld\\t%1, %0\";
+
+  REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+  REAL_VALUE_TO_TARGET_SINGLE (r, i);
+  if (SPARC_SIMM13_P (i) || SPARC_SETHI_P (i))
+    {
+      operands[1] = GEN_INT (i);
+      if (SPARC_SIMM13_P (INTVAL (operands[1])))
+        return \"mov\\t%1, %0\";
+      else if (SPARC_SETHI_P (INTVAL (operands[1])))
+        return \"sethi\\t%%hi(%a1), %0\";
+    }
+  else
+    return \"#\";
+}"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+;; There isn't much I can do about this, if I change the
+;; mode then flow info gets really confused because the
+;; destination no longer looks the same.  Ho hum...
+(define_insn "*movsf_const_high"
+  [(set (match_operand:SF 0 "register_operand" "=r")
+        (unspec:SF [(match_operand 1 "const_int_operand" "")] 12))]
+  ""
+  "sethi\\t%%hi(%a1), %0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_insn "*movsf_const_lo"
+  [(set (match_operand:SF 0 "register_operand" "=r")
+        (unspec:SF [(match_operand 1 "register_operand" "r")
+                    (match_operand 2 "const_int_operand" "")] 17))]
+  ""
+  "or\\t%1, %%lo(%a2), %0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_split
+  [(set (match_operand:SF 0 "register_operand" "")
+        (match_operand:SF 1 "const_double_operand" ""))]
+  "TARGET_FPU
+   && GET_CODE (operands[0]) == REG
+   && REGNO (operands[0]) < 32"
+  [(set (match_dup 0) (unspec:SF [(match_dup 1)] 12))
+   (set (match_dup 0) (unspec:SF [(match_dup 0) (match_dup 1)] 17))]
+  "
+{
+  REAL_VALUE_TYPE r;
+  long i;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+  REAL_VALUE_TO_TARGET_SINGLE (r, i);
+  operands[1] = GEN_INT (i);
+}")
+
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_operand" "")
 	(match_operand:SF 1 "general_operand" ""))]
@@ -2807,6 +2876,60 @@
    st\\t%1, %0"
   [(set_attr "type" "move,load,store")
    (set_attr "length" "1")])
+
+(define_insn "*movdf_const_intreg"
+  [(set (match_operand:DF 0 "general_operand" "=e,e,r")
+        (match_operand:DF 1 ""                 "T,o,F"))]
+  "TARGET_FPU
+   && GET_CODE (operands[1]) == CONST_DOUBLE
+   && GET_CODE (operands[0]) == REG"
+  "*
+{
+  if (which_alternative == 0)
+    return \"ldd\\t%1, %0\";
+  else
+    return \"#\";
+}"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "")
+        (match_operand:DF 1 "const_double_operand" ""))]
+  "TARGET_FPU
+   && GET_CODE (operands[1]) == CONST_DOUBLE
+   && GET_CODE (operands[0]) == REG
+   && REGNO (operands[0]) < 32
+   && reload_completed"
+  [(clobber (const_int 0))]
+  "
+{
+  REAL_VALUE_TYPE r;
+  long l[2];
+
+  REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+  REAL_VALUE_TO_TARGET_DOUBLE (r, l);
+  operands[0] = gen_rtx_raw_REG (DImode, REGNO (operands[0]));
+
+  emit_insn (gen_movsi (gen_highpart (SImode, operands[0]),
+			GEN_INT (l[0])));
+
+  /* Slick... but this trick loses if this subreg constant part
+     can be done in one insn.  */
+  if (l[1] == l[0]
+      && !(SPARC_SETHI_P (l[0])
+	   || SPARC_SIMM13_P (l[0])))
+    {
+      emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
+			    gen_highpart (SImode, operands[0])));
+    }
+  else
+    {
+      emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
+			    GEN_INT (l[1])));
+    }
+  DONE;
+}")
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "general_operand" "")
@@ -6274,44 +6397,109 @@
   [(set_attr "type" "fpdivs")
    (set_attr "length" "1")])
 
-;; XXX
-(define_insn "negtf2"
+(define_expand "negtf2"
+  [(set (match_operand:TF 0 "register_operand" "=e,e")
+	(neg:TF (match_operand:TF 1 "register_operand" "0,e")))]
+  "TARGET_FPU"
+  "")
+
+(define_insn "*negtf2_notv9"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(neg:TF (match_operand:TF 1 "register_operand" "0,e")))]
   ; We don't use quad float insns here so we don't need TARGET_HARD_QUAD.
-  "TARGET_FPU"
-  "*
-{
-  /* v9: can't use fnegs, won't work with upper regs.  */
-  if (which_alternative == 0)
-   return TARGET_V9 ? \"fnegd %0,%0\" : \"fnegs %0,%0\";
-  else
-   return TARGET_V9 ? \"fnegd %1,%0\;fmovd %S1,%S0\"
-     : \"fnegs %1,%0\;fmovs %R1,%R0\;fmovs %S1,%S0\;fmovs %T1,%T0\";
-}"
+  "TARGET_FPU
+   && ! TARGET_V9"
+  "@
+  fnegs\\t%0, %0
+  #"
   [(set_attr "type" "fpmove")
-   (set_attr_alternative "length"
-     [(const_int 1)
-      (if_then_else (eq_attr "isa" "v9") (const_int 2) (const_int 4))])])
+   (set_attr "length" "1,2")])
 
-;; XXX
-(define_insn "negdf2"
+(define_split
+  [(set (match_operand:TF 0 "register_operand" "")
+	(neg:TF (match_operand:TF 1 "register_operand" "")))]
+  "TARGET_FPU
+   && ! TARGET_V9
+   && GET_CODE (operands[0]) == REG
+   && GET_CODE (operands[1]) == REG
+   && REGNO (operands[0]) != REGNO (operands[1])
+   && reload_completed"
+  [(set (match_dup 2) (neg (match_dup 3)))
+   (set (match_dup 4) (match_dup 5))
+   (set (match_dup 6) (match_dup 7))]
+  "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
+   operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
+   operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
+   operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);
+   operands[6] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 2);
+   operands[7] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 2);")
+
+(define_insn "*negtf2_v9"
+  [(set (match_operand:TF 0 "register_operand" "=e,e")
+	(neg:TF (match_operand:TF 1 "register_operand" "0,e")))]
+  ; We don't use quad float insns here so we don't need TARGET_HARD_QUAD.
+  "TARGET_FPU && TARGET_V9"
+  "@
+  fnegd\\t%0, %0
+  #"
+  [(set_attr "type" "fpmove")
+   (set_attr "length" "1,2")])
+
+(define_split
+  [(set (match_operand:TF 0 "register_operand" "")
+	(neg:TF (match_operand:TF 1 "register_operand" "")))]
+  "TARGET_FPU
+   && TARGET_V9
+   && GET_CODE (operands[0]) == REG
+   && GET_CODE (operands[1]) == REG
+   && REGNO (operands[0]) != REGNO (operands[1])
+   && reload_completed"
+  [(set (match_dup 2) (neg:DF (match_dup 3)))
+   (set (match_dup 4) (match_dup 5))]
+  "operands[2] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]));
+   operands[3] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]));
+   operands[4] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]) + 2);
+   operands[5] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);")
+
+(define_expand "negdf2"
+  [(set (match_operand:DF 0 "register_operand" "")
+	(neg:DF (match_operand:DF 1 "register_operand" "")))]
+  "TARGET_FPU"
+  "")
+
+(define_insn "*negdf2_notv9"
   [(set (match_operand:DF 0 "register_operand" "=e,e")
 	(neg:DF (match_operand:DF 1 "register_operand" "0,e")))]
-  "TARGET_FPU"
-  "*
-{
-  if (TARGET_V9)
-    return \"fnegd %1,%0\";
-  else if (which_alternative == 0)
-   return \"fnegs %0,%0\";
-  else
-   return \"fnegs %1,%0\;fmovs %R1,%R0\";
-}"
+  "TARGET_FPU && ! TARGET_V9"
+  "@
+  fnegs\\t%0, %0
+  #"
   [(set_attr "type" "fpmove")
-   (set_attr_alternative "length"
-     [(const_int 1)
-      (if_then_else (eq_attr "isa" "v9") (const_int 1) (const_int 2))])])
+   (set_attr "length" "1,2")])
+
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "")
+        (neg:DF (match_operand:DF 1 "register_operand" "")))]
+  "TARGET_FPU
+   && ! TARGET_V9
+   && GET_CODE (operands[0]) == REG
+   && GET_CODE (operands[1]) == REG
+   && REGNO (operands[0]) != REGNO (operands[1])
+   && reload_completed"
+  [(set (match_dup 2) (neg:SF (match_dup 3)))
+   (set (match_dup 4) (match_dup 5))]
+  "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
+   operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
+   operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
+   operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);")
+
+(define_insn "*negdf2_v9"
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(neg:DF (match_operand:DF 1 "register_operand" "e")))]
+  "TARGET_FPU && TARGET_V9"
+  "fnegd\\t%0, %0"
+  [(set_attr "type" "fpmove")
+   (set_attr "length" "1")])
 
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -6321,44 +6509,108 @@
   [(set_attr "type" "fpmove")
    (set_attr "length" "1")])
 
-;; XXX
 (define_insn "abstf2"
+  [(set (match_operand:TF 0 "register_operand" "")
+	(abs:TF (match_operand:TF 1 "register_operand" "")))]
+  "TARGET_FPU"
+  "")
+
+(define_insn "*abstf2_notv9"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
   ; We don't use quad float insns here so we don't need TARGET_HARD_QUAD.
-  "TARGET_FPU"
-  "*
-{
-  /* v9: can't use fabss, won't work with upper regs.  */
-  if (which_alternative == 0)
-    return TARGET_V9 ? \"fabsd %0,%0\" : \"fabss %0,%0\";
-  else
-    return TARGET_V9 ? \"fabsd %1,%0\;fmovd %S1,%S0\"
-      : \"fabss %1,%0\;fmovs %R1,%R0\;fmovs %S1,%S0\;fmovs %T1,%T0\";
-}"
+  "TARGET_FPU && ! TARGET_V9"
+  "@
+  fabss\\t%0, %0
+  #"
   [(set_attr "type" "fpmove")
-   (set_attr_alternative "length"
-     [(const_int 1)
-      (if_then_else (eq_attr "isa" "v9") (const_int 2) (const_int 4))])])
+   (set_attr "length" "1,2")])
 
-;; XXX
-(define_insn "absdf2"
+(define_split
+  [(set (match_operand:TF 0 "register_operand" "=e,e")
+	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
+  "TARGET_FPU
+   && ! TARGET_V9
+   && GET_CODE (operands[0]) == REG
+   && GET_CODE (operands[1]) == REG
+   && REGNO (operands[0]) != REGNO (operands[1])
+   && reload_completed"
+  [(set (match_dup 2) (abs:SF (match_dup 3)))
+   (set (match_dup 4) (match_dup 5))
+   (set (match_dup 6) (match_dup 7))]
+  "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
+   operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
+   operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
+   operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);
+   operands[6] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 2);
+   operands[7] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 2);")
+
+(define_insn "*abstf2_v9"
+  [(set (match_operand:TF 0 "register_operand" "=e,e")
+	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
+  ; We don't use quad float insns here so we don't need TARGET_HARD_QUAD.
+  "TARGET_FPU && TARGET_V9"
+  "@
+  fabsd\\t%0, %0
+  #"
+  [(set_attr "type" "fpmove")
+   (set_attr "length" "1,2")])
+
+(define_split
+  [(set (match_operand:TF 0 "register_operand" "=e,e")
+	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
+  "TARGET_FPU
+   && TARGET_V9
+   && GET_CODE (operands[0]) == REG
+   && GET_CODE (operands[1]) == REG
+   && REGNO (operands[0]) != REGNO (operands[1])
+   && reload_completed"
+  [(set (match_dup 2) (abs:DF (match_dup 3)))
+   (set (match_dup 4) (match_dup 5))]
+  "operands[2] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]));
+   operands[3] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]));
+   operands[4] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]) + 2);
+   operands[5] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);")
+
+(define_expand "absdf2"
+  [(set (match_operand:DF 0 "register_operand" "")
+	(abs:DF (match_operand:DF 1 "register_operand" "")))]
+  "TARGET_FPU"
+  "")
+
+(define_insn "*absdf2_notv9"
   [(set (match_operand:DF 0 "register_operand" "=e,e")
 	(abs:DF (match_operand:DF 1 "register_operand" "0,e")))]
-  "TARGET_FPU"
-  "*
-{
-  if (TARGET_V9)
-    return \"fabsd %1,%0\";
-  else if (which_alternative == 0)
-    return \"fabss %0,%0\";
-  else
-    return \"fabss %1,%0\;fmovs %R1,%R0\";
-}"
+  "TARGET_FPU && ! TARGET_V9"
+  "@
+  fabss\\t%0, %0
+  #"
   [(set_attr "type" "fpmove")
-   (set_attr_alternative "length"
-     [(const_int 1)
-      (if_then_else (eq_attr "isa" "v9") (const_int 1) (const_int 2))])])
+   (set_attr "length" "1,2")])
+
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "=e,e")
+	(abs:DF (match_operand:DF 1 "register_operand" "0,e")))]
+  "TARGET_FPU
+   && ! TARGET_V9
+   && GET_CODE (operands[0]) == REG
+   && GET_CODE (operands[1]) == REG
+   && REGNO (operands[0]) != REGNO (operands[1])
+   && reload_completed"
+  [(set (match_dup 2) (abs:SF (match_dup 3)))
+   (set (match_dup 4) (match_dup 5))]
+  "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
+   operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
+   operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
+   operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);")
+
+(define_insn "*absdf2_v9"
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(abs:DF (match_operand:DF 1 "register_operand" "e")))]
+  "TARGET_FPU && TARGET_V9"
+  "fabsd\\t%0, %0"
+  [(set_attr "type" "fpmove")
+   (set_attr "length" "1")])
 
 (define_insn "abssf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
