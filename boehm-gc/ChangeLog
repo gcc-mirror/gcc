@@ -1,3 +1,7 @@
+2003-10-03  Jeff Sturm  <jsturm@one-point.com>
+
+	* configure: Rebuild.
+
 2003-10-03  Hans Boehm  <Hans.Boehm@hp.com>
 
 	* configure.in: Remove NO_GETENV definition for win32.
